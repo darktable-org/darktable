@@ -31,6 +31,7 @@
 #include "develop/imageop.h"
 #include "dtgtk/gradientslider.h"
 #include "dtgtk/togglebutton.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -68,6 +69,7 @@ typedef struct dt_iop_relight_gui_data_t
   GtkWidget *scale1, *scale2;           // ev,width
   GtkDarktableGradientSlider *gslider1; // center
   GtkDarktableToggleButton *tbutton1;   // Pick median lightness
+  dt_iop_color_picker_t color_picker;
 } dt_iop_relight_gui_data_t;
 
 typedef struct dt_iop_relight_data_t
@@ -206,58 +208,40 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-static void picker_callback(GtkDarktableToggleButton *button, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-
-  self->request_color_pick
-      = (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)) ? DT_REQUEST_COLORPICK_MODULE
-                                                                 : DT_REQUEST_COLORPICK_OFF);
-
-  /* set the area sample size*/
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
-  {
-    dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
-    dt_dev_reprocess_all(self->dev);
-  }
-  else
-    dt_control_queue_redraw();
-
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-  dt_iop_request_focus(self);
-}
-
 static void ev_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
   p->ev = dt_bauhaus_slider_get(slider);
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void width_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
   p->width = dt_bauhaus_slider_get(slider);
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void center_callback(GtkDarktableGradientSlider *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
   {
     p->center = dtgtk_gradient_slider_get_value(slider);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
 }
-
-
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -282,13 +266,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_reset(struct dt_iop_module_t *self)
-{
-  dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->tbutton1), 0);
-}
-
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
@@ -298,9 +275,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->scale1, p->ev);
   dt_bauhaus_slider_set(g->scale2, p->width);
   dtgtk_gradient_slider_set_value(g->gslider1, p->center);
-
-  if (self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->tbutton1), 0);
 }
 
 void init(dt_iop_module_t *module)
@@ -323,14 +297,12 @@ void cleanup(dt_iop_module_t *module)
 }
 
 
-static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
+static void _iop_color_picker_apply(dt_iop_module_t *self)
 {
-  // capture gui color picked event.
-  if(darktable.gui->reset) return FALSE;
-
+  dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   float mean, min, max;
 
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF && self->picked_color_max[0] >= 0.0f)
+  if(self->picked_color_max[0] >= 0.0f)
   {
     mean = fmin(fmax(self->picked_color[0] / 100.0f, 0.0f), 1.0f);
     min = fmin(fmax(self->picked_color_min[0] / 100.0f, 0.0f), 1.0f);
@@ -341,12 +313,9 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
     mean = min = max = NAN;
   }
 
-  dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   dtgtk_gradient_slider_set_picker_meanminmax(DTGTK_GRADIENT_SLIDER(g->gslider1), mean, min, max);
 
   gtk_widget_queue_draw(GTK_WIDGET(g->gslider1));
-
-  return FALSE;
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -357,8 +326,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
-  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
 
   /* exposure */
   g->scale1 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.05, p->ev, 2);
@@ -387,7 +354,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->tbutton1 = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL));
   gtk_widget_set_size_request(GTK_WIDGET(g->tbutton1), DT_PIXEL_APPLY_DPI(22), DT_PIXEL_APPLY_DPI(22));
 
-  g_signal_connect(G_OBJECT(g->tbutton1), "toggled", G_CALLBACK(picker_callback), self);
+  g_signal_connect(G_OBJECT(g->tbutton1), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
 
   gtk_box_pack_start(hbox, GTK_WIDGET(g->gslider1), TRUE, TRUE, 0);
   gtk_box_pack_start(hbox, GTK_WIDGET(g->tbutton1), FALSE, FALSE, 0);
@@ -399,11 +366,16 @@ void gui_init(struct dt_iop_module_t *self)
 
 
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->tbutton1), _("toggle tool for picking median lightness in image"));
+
+  init_single_picker(&g->color_picker,
+                     self,
+                     GTK_WIDGET(g->tbutton1),
+                     DT_COLOR_PICKER_POINT,
+                     _iop_color_picker_apply);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   free(self->gui_data);
   self->gui_data = NULL;
 }
