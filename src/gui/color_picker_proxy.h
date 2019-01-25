@@ -77,6 +77,11 @@ void init_single_picker (dt_iop_color_picker_t *picker,
 
       g_signal_connect(G_OBJECT(g->button), "quad-pressed",
                        G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
+
+or for a simple togglebutton:
+
+      g_signal_connect(G_OBJECT(g->color_picker_button), "toggled",
+                       G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
 */
 void dt_iop_color_picker_callback(GtkWidget *button, dt_iop_color_picker_t *self);
 
