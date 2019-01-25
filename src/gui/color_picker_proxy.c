@@ -48,6 +48,7 @@ void dt_iop_color_picker_update(dt_iop_color_picker_t *picker)
 
 void init_picker (dt_iop_color_picker_t *picker,
                   dt_iop_module_t *module,
+                  dt_iop_color_picker_kind_t kind,
                   int (*get_set)(dt_iop_module_t *self, GtkWidget *button),
                   void (*apply)(dt_iop_module_t *self),
                   void (*reset)(dt_iop_module_t *self),
@@ -58,6 +59,7 @@ void init_picker (dt_iop_color_picker_t *picker,
   picker->apply   = apply;
   picker->reset   = reset;
   picker->update  = update;
+  picker->kind    = kind;
 
   dt_iop_color_picker_reset(picker, TRUE);
 
@@ -80,7 +82,10 @@ void dt_iop_color_picker_callback(GtkWidget *button, dt_iop_color_picker_t *self
   if(self->module->request_color_pick == DT_REQUEST_COLORPICK_OFF || clicked_colorpick != ALREADY_SELECTED)
   {
     self->module->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+    if(self->kind == DT_COLOR_PICKER_AREA)
+      dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+    else
+      dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
     dt_dev_reprocess_all(self->module->dev);
   }
   else
