@@ -531,7 +531,7 @@ static void grey_point_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-  
+
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
@@ -956,6 +956,7 @@ void gui_init(dt_iop_module_t *self)
 
   init_picker(&g->color_picker,
               self,
+              DT_COLOR_PICKER_AREA,
               _iop_color_picker_get_set,
               _iop_color_picker_apply,
               _iop_color_picker_reset,
