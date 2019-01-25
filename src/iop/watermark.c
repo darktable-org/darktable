@@ -25,6 +25,7 @@
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 #include <assert.h>
@@ -107,7 +108,8 @@ typedef struct dt_iop_watermark_gui_data_t
   GtkWidget *text;
   GtkWidget *colorpick;
   GtkWidget *fontsel;
-  GtkToggleButton *color_picker;
+  GtkToggleButton *color_picker_button;
+  dt_iop_color_picker_t color_picker;
 } dt_iop_watermark_gui_data_t;
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -1032,23 +1034,17 @@ static void watermark_callback(GtkWidget *tb, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static gboolean watermark_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
+static void _iop_color_picker_apply(dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return FALSE;
-  if(self->picked_output_color_max[0] < 0) return FALSE;
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF) return FALSE;
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
-
-  // interrupt if no valid color reading
-  if(self->picked_color_min[0] == INFINITY) return FALSE;
 
   if(fabsf(p->color[0] - self->picked_color[0]) < 0.0001f
      && fabsf(p->color[1] - self->picked_color[1]) < 0.0001f
      && fabsf(p->color[2] - self->picked_color[2]) < 0.0001f)
   {
     // interrupt infinite loops
-    return FALSE;
+    return;
   }
 
   GdkRGBA c = (GdkRGBA){.red   = self->picked_color[0],
@@ -1062,7 +1058,6 @@ static gboolean watermark_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpick), &c);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-  return FALSE;
 }
 
 static void load_watermarks(const char *basedir, dt_iop_watermark_gui_data_t *g)
@@ -1253,33 +1248,6 @@ static void sizeto_callback(GtkWidget *tb, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-
-  self->request_color_pick
-      = (gtk_toggle_button_get_active(togglebutton) ? DT_REQUEST_COLORPICK_MODULE : DT_REQUEST_COLORPICK_OFF);
-
-  /* use point sample */
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
-  {
-    dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
-    dt_dev_reprocess_all(self->dev);
-  }
-  else
-    dt_control_queue_redraw();
-
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-  dt_iop_request_focus(self);
-}
-
-void gui_reset(struct dt_iop_module_t *self)
-{
-  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  gtk_toggle_button_set_active(g->color_picker, FALSE);
-}
-
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1339,9 +1307,6 @@ void gui_update(struct dt_iop_module_t *self)
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpick), &color);
   gtk_font_button_set_font_name(GTK_FONT_BUTTON(g->fontsel), p->font);
-
-  if (self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->color_picker), 0);
 }
 
 void init(dt_iop_module_t *module)
@@ -1412,13 +1377,13 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select watermark color"));
 
-  g->color_picker = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->color_picker), _("pick color from image"));
-  gtk_widget_set_size_request(GTK_WIDGET(g->color_picker), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
-  g_signal_connect(G_OBJECT(g->color_picker), "toggled", G_CALLBACK(request_pick_toggled), self);
+  g->color_picker_button = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->color_picker_button), _("pick color from image"));
+  gtk_widget_set_size_request(GTK_WIDGET(g->color_picker_button), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
+  g_signal_connect(G_OBJECT(g->color_picker_button), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
 
   gtk_box_pack_start(GTK_BOX(box), g->colorpick, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->color_picker), FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->color_picker_button), FALSE, TRUE, 0);
 
   gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(self->widget), box, label, GTK_POS_RIGHT, 2, 1);
@@ -1522,14 +1487,18 @@ void gui_init(struct dt_iop_module_t *self)
 
   refresh_watermarks(self);
 
-
   g_signal_connect(G_OBJECT(g->watermarks), "value-changed", G_CALLBACK(watermark_callback), self);
   g_signal_connect(G_OBJECT(g->sizeto), "value-changed", G_CALLBACK(sizeto_callback), self);
 
   g_signal_connect(G_OBJECT(g->text), "changed", G_CALLBACK(text_callback), self);
   g_signal_connect(G_OBJECT(g->colorpick), "color-set", G_CALLBACK(colorpick_color_set), self);
   g_signal_connect(G_OBJECT(g->fontsel), "font-set", G_CALLBACK(fontsel_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(watermark_draw), self);
+
+  init_single_picker(&g->color_picker,
+                     self,
+                     GTK_WIDGET(g->color_picker_button),
+                     DT_COLOR_PICKER_POINT,
+                     _iop_color_picker_apply);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
