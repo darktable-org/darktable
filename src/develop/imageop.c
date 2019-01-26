@@ -2084,7 +2084,7 @@ got_image:
   gtk_widget_set_margin_start(iopw, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_end(iopw, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_top(iopw, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_bottom(iopw, DT_PIXEL_APPLY_DPI(24));
+  gtk_widget_set_margin_bottom(iopw, DT_PIXEL_APPLY_DPI(8));
 
   gtk_widget_hide(iopw);
 
