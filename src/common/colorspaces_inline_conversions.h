@@ -3,6 +3,7 @@
  *    copyright (c) 2009--2017 johannes hanika.
  *    copyright (c) 2011--2017 tobias ellinghaus.
  *    copyright (c) 2015 Bruce Guenter
+ *    copyright (c) 2019 Aurélien Pierre.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -20,23 +21,101 @@
 
 #pragma once
 
+#include "common/colorspaces.h"
+#include <math.h>
+
 #ifdef __SSE2__
 #include "common/sse.h"
 #include <xmmintrin.h>
+#endif
 
-#define d50_sse _mm_set_ps(0.0f, 0.8249f, 1.0f, 0.9642f)
-#define d50_inv_sse _mm_set_ps(1.0f, 0.8249f, 1.0f, 0.9642f)
+/***
+ * Lab <-> XYZ
+ *
+ * Lab is non-linear and the conversion is slow, so we use an approximation of the
+ * cubic root, which accuracy is subject to caution.
+ *
+ * Lab is the standard color-space of the pixelpipe between input color-profile and
+ * output color-profile IOPs, both of them assume a D50 illuminant.
+***/
 
-#define coef_Lab_to_XYZ_sse _mm_set_ps(0.0f, -1.0f / 200.0f, 1.0f / 116.0f, 1.0f / 500.0f)
-#define offset_Lab_to_XYZ_sse _mm_set1_ps(0.137931034f)
-#define epsilon_Lab_to_XYZ_sse _mm_set1_ps(0.20689655172413796f) // cbrtf(216.0f/24389.0f);
+/** Constants **/
+static const float d50[3]              = { 0.9642f, 1.0f, 0.8249f };
+static const float epsilon_XYZ_to_Lab  = 216.0f / 24389.0f;
+static const float epsilon_Lab_to_XYZ  = 0.206896552f; //cubic root(epsilon_XYZ_to_Lab)
+static const float kappa               = 24389.0f / 27.0f;
+static const float Lab_coeff[3]        = { 116.0f, 500.0f, 200.0f };
 
-#define coef_XYZ_to_Lab_sse _mm_set_ps(0.0f, 200.0f, 500.0f, 116.0f)
-#define kappa_sse _mm_set1_ps(24389.0f / 27.0f)
-#define kappa_rcp_x16_sse 16.0f / kappa_sse
-#define kappa_rcp_x116_sse 116.0f / kappa_sse
-#define epsilon_XYZ_to_Lab_sse _mm_set1_ps(216.0f / 24389.0f)
+#ifdef __SSE2__
+#define d50_sse                        _mm_set_ps(0.0f, d50[2], d50[1], d50[0])
+#define d50_inv_sse                    _mm_set_ps(1.0f, d50[2], d50[1], d50[0])
+#define epsilon_Lab_to_XYZ_sse         _mm_set1_ps(epsilon_Lab_to_XYZ)
+#define kappa_sse                      _mm_set1_ps(kappa)
+#define epsilon_XYZ_to_Lab_sse         _mm_set1_ps(epsilon_XYZ_to_Lab)
+#define coef_XYZ_to_Lab_sse            _mm_set_ps(0.0f, Lab_coeff[2], Lab_coeff[1], Lab_coeff[0])
+#define coef_Lab_to_XYZ_sse            _mm_set_ps(0.0f, -1.0f / Lab_coeff[2], 1.0f / Lab_coeff[0], 1.0f / Lab_coeff[1])
+#define offset_Lab_to_XYZ_sse          _mm_set1_ps(0.137931034f)
+#define kappa_rcp_x16_sse              _mm_set1_ps(16.0f) / kappa_sse
+#define kappa_rcp_x116_sse             _mm_set1_ps(116.0f) / kappa_sse
+#endif
 
+/** Conversions **/
+
+static inline float cbrt_5f(float f)
+{
+  uint32_t *p = (uint32_t *)&f;
+  *p = *p / 3 + 709921077;
+  return f;
+}
+
+static inline float cbrta_halleyf(const float a, const float R)
+{
+  const float a3 = a * a * a;
+  const float b = a * (a3 + R + R) / (a3 + a3 + R);
+  return b;
+}
+
+static inline float lab_f(const float x)
+{
+  if(x > epsilon_XYZ_to_Lab)
+  {
+    // Cubic root approximation
+    return cbrta_halleyf(cbrt_5f(x), x);
+  }
+  else
+    return (kappa * x + 16.0f) / 116.0f;
+}
+
+static inline void dt_XYZ_to_Lab(const float *XYZ, float *Lab)
+{
+  const float f[3] = { lab_f(XYZ[0] / d50[0]),
+                       lab_f(XYZ[1] / d50[1]),
+                       lab_f(XYZ[2] / d50[2]) };
+
+  Lab[0] = Lab_coeff[0] * f[1] - 16.0f;
+  Lab[1] = Lab_coeff[1] * (f[0] - f[1]);
+  Lab[2] = Lab_coeff[2] * (f[1] - f[2]);
+}
+
+static inline float lab_f_inv(const float x)
+{
+  if(x > epsilon_Lab_to_XYZ)
+    return x * x * x;
+  else
+    return (116.0f * x - 16.0f) / kappa;
+}
+
+static inline void dt_Lab_to_XYZ(const float *Lab, float *XYZ)
+{
+  const float fy = (Lab[0] + 16.0f) / Lab_coeff[0];
+  const float fx = Lab[1] / Lab_coeff[1] + fy;
+  const float fz = fy - Lab[2] / Lab_coeff[2];
+  XYZ[0] = d50[0] * lab_f_inv(fx);
+  XYZ[1] = d50[1] * lab_f_inv(fy);
+  XYZ[2] = d50[2] * lab_f_inv(fz);
+}
+
+#ifdef __SSE2__
 static inline __m128 lab_f_inv_m(const __m128 x)
 {
   // x > epsilon
@@ -49,7 +128,6 @@ static inline __m128 lab_f_inv_m(const __m128 x)
   return _mm_or_ps(_mm_and_ps(mask, res_big), _mm_andnot_ps(mask, res_small));
 }
 
-/** uses D50 white point. */
 static inline __m128 dt_Lab_to_XYZ_sse2(const __m128 Lab)
 {
   // last component ins shuffle taken from 1st component of Lab to make sure it is not nan, so it will become
@@ -76,19 +154,31 @@ static inline __m128 lab_f_m_sse2(const __m128 x)
   return _mm_or_ps(_mm_and_ps(mask, res_big), _mm_andnot_ps(mask, res_small));
 }
 
-/** uses D50 white point. */
 static inline __m128 dt_XYZ_to_Lab_sse2(const __m128 XYZ)
 {
   const __m128 f = lab_f_m_sse2(XYZ / d50_inv_sse);
   // because d50_inv.z is 0.0f, lab_f(0) == 16/116, so Lab[0] = 116*f[0] - 16 equal to 116*(f[0]-f[3])
   return coef_XYZ_to_Lab_sse * (_mm_shuffle_ps(f, f, _MM_SHUFFLE(3, 1, 0, 1)) - _mm_shuffle_ps(f, f, _MM_SHUFFLE(3, 2, 1, 3)));
 }
+#endif
 
+
+/***
+ * XYZ <-> xyY
+ *
+ * xyY is an XYZ space normalized in luminance, so manipulations of Y (the scene-referred
+ * luminance) don't affect the scene-referred colors.
+ *
+ * The pure-C function have a SSE check so, if they are called from within a process() function
+ * and SSE is available, they will branch to the fast path. This is usefull for IOPs which
+ * don't have a process_sse2() function, like tonecurve.
+ ***/
+
+
+#ifdef __SSE2__
 static inline __m128 dt_XYZ_to_xyY_sse2(const __m128 XYZ)
 {
-  /** The xyY space is essentially a normalized XYZ space, where Y is the linear luminance
-   * and (x, y) the normalized chroma coordinates
-   *
+  /**
    xyY    = XYZ    / sum
    --------------------------------------------
    xyY[0] = XYZ[0] / (XYZ[0] + XYZ[1] + XYZ[2])
@@ -97,7 +187,6 @@ static inline __m128 dt_XYZ_to_xyY_sse2(const __m128 XYZ)
    xyY[3] = some crap (alpha layer, we don't care)
    * */
 
-  // Normalize XYZ
   __m128 xyY = XYZ /
                 ( _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(3, 0, 0, 0)) +
                   _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(3, 1, 1, 1)) +
@@ -106,23 +195,87 @@ static inline __m128 dt_XYZ_to_xyY_sse2(const __m128 XYZ)
   return xyY;
 }
 
-static inline __m128 dt_xyY_to_XYZ_sse2(const __m128 xyY)    // XYZ  = [  .   Y  |  y    x   ]
+static inline __m128 dt_xyY_to_XYZ_sse2(const __m128 xyY)
 {
   /**
   XYZ    = sums                     * xyY[2] / shuf
   ---------------------------------------------------
   XYZ[0] = xyY[0]                   * xyY[2] / xyY[1]
-  XYZ[1] = xyY[1]                   * xyY[2] / xyY[1] = xyY[2]
+  XYZ[1] = xyY[1]                   * xyY[2] / xyY[1] == xyY[2]
   XYZ[2] = (1.0f - xyY[0] - xyY[1]) * xyY[2] / xyY[1]
   XYZ[3] = some crap (alpha layer, we don't care)
   **/
 
   __m128 XYZ = xyY;
   XYZ[2] = 1.0f - xyY[0] - xyY[1];
-  XYZ = XYZ * _mm_set1_ps(xyY[2] / xyY[1]);
+  XYZ = XYZ * _mm_shuffle_ps(xyY, xyY, _MM_SHUFFLE(2, 2, 2, 2)) /
+          _mm_shuffle_ps(xyY, xyY, _MM_SHUFFLE(2, 1, 1, 1));
   return XYZ;
 }
+#endif
 
+static inline void dt_XYZ_to_xyY(const float *XYZ, float *xyY)
+{
+#if defined(__SSE__) // last chance to get the fast variant
+  _mm_store_ps(xyY, dt_XYZ_to_xyY_sse2(_mm_load_ps(XYZ)));
+#else
+  const float sum = XYZ[0] + XYZ[1] + XYZ[2];
+  xyY[0] = XYZ[0] / sum;
+  xyY[1] = XYZ[1] / sum;
+  xyY[2] = XYZ[1];
+#endif
+}
+
+static inline void dt_xyY_to_XYZ(const float *xyY, float *XYZ)
+{
+#if defined(__SSE__) // last chance to get the fast variant
+  _mm_store_ps(XYZ, dt_xyY_to_XYZ_sse2(_mm_load_ps(xyY)));
+#else
+  XYZ[0] = xyY[0] * xyY[2] / xyY[1];
+  XYZ[1] = xyY[2];
+  XYZ[2] = (1.0f - xyY[0] - xyY[1]) * xyY[2] / xyY[1];
+#endif
+}
+
+
+/***
+ * XYZ <-> RGB
+ *
+ * Simple matrix/vector dot products.
+ *
+ * The RGB matrices assume a D50 illuminant in and out.
+ ***/
+
+/** Matrices **/
+static const float xyz_to_prophotorgb[3][3] = {
+    { 1.3459433f, -0.2556075f, -0.0511118f},
+    {-0.5445989f,  1.5081673f,  0.0205351f},
+    { 0.0000000f,  0.0000000f,  1.2118128f},
+  };
+
+static const float prophotorgb_to_xyz[3][3] = {
+    {0.7976749f, 0.1351917f, 0.0313534f},
+    {0.2880402f, 0.7118741f, 0.0000857f},
+    {0.0000000f, 0.0000000f, 0.8252100f},
+  };
+
+ static inline void dt_XYZ_to_prophotorgb(const float *const XYZ, float *rgb)
+{
+
+  rgb[0] = rgb[1] = rgb[2] = 0.0f;
+  for(int r = 0; r < 3; r++)
+    for(int c = 0; c < 3; c++) rgb[r] += xyz_to_prophotorgb[r][c] * XYZ[c];
+}
+
+static inline void dt_prophotorgb_to_XYZ(const float *const rgb, float *XYZ)
+{
+  XYZ[0] = XYZ[1] = XYZ[2] = 0.0f;
+  for(int r = 0; r < 3; r++)
+    for(int c = 0; c < 3; c++) XYZ[r] += prophotorgb_to_xyz[r][c] * rgb[c];
+}
+
+
+#ifdef __SSE2__
 /** XYZ -> LCM, assuming XYZ D50, adjusted from D65 values using Bradford transform
 * https://en.wikipedia.org/wiki/LMS_color_space
 *
@@ -173,14 +326,15 @@ static inline __m128 dt_LMS_to_XYZ_sse2(const __m128 LMS)
   return xyz;
 }
 
-#define epsilon_LMS_hdr _mm_set1_ps(0.5213250183194932)
+#define epsilon_LMS_hdr _mm_set1_ps(0.5213250183194932f)
 #define two_pow_epsilon _mm_pow_ps(_mm_set1_ps(2.0f), epsilon_LMS_hdr)
 #define inv_epsilon_LMS_hdr 1.0f / epsilon_LMS_hdr
 
 static inline __m128 dt_Michaelis_Menten(const __m128 LMS)
 {
-  /** Outputs NaN where LMS < 0
-   * */
+  /**
+   * Outputs NaN where LMS < 0
+   **/
   // See https://eng.aurelienpierre.com/2019/01/17/derivating-hdr-ipt-direct-and-inverse-transformations/#fixing_ipt-hdr
   const __m128 LMS_pow_epsilon = _mm_pow_ps(LMS, epsilon_LMS_hdr);
   __m128 hdr = 246.06076715f * LMS_pow_epsilon / (LMS_pow_epsilon + two_pow_epsilon);
@@ -199,9 +353,10 @@ static inline __m128 dt_Michaelis_Menten_inverse(const __m128 LMShdr)
 
 static inline __m128 dt_LMS_to_LMShdr(const __m128 LMS)
 {
-  /** Returns dt_Michaelis_Menten(LMS) where LMS >= 0
+  /**
+   * Returns dt_Michaelis_Menten(LMS) where LMS >= 0
    * and - dt_Michaelis_Menten(-LMS) where LMS < 0
-   * */
+   **/
   // See https://eng.aurelienpierre.com/2019/01/17/derivating-hdr-ipt-direct-and-inverse-transformations/#fixing_ipt-hdr
   const __m128 negative = _mm_cmplt_ps(LMS, zeros_sse); // stricly negative
   return _mm_or_ps(_mm_andnot_ps(negative, dt_Michaelis_Menten(LMS)),
@@ -210,13 +365,17 @@ static inline __m128 dt_LMS_to_LMShdr(const __m128 LMS)
 
 static inline __m128 dt_LMShdr_to_LMS(const __m128 LMShdr)
 {
-  /** Returns dt_Michaelis_Menten_inv(LMS) where LMS >= 0
+  /**
+   * Returns dt_Michaelis_Menten_inv(LMS) where LMS >= 0
    * and - dt_Michaelis_Menten_inv(-LMS) where LMS < 0
-   * */
+   **/
   // See https://eng.aurelienpierre.com/2019/01/17/derivating-hdr-ipt-direct-and-inverse-transformations/#fixing_ipt-hdr
+  /*
   const __m128 negative = _mm_cmplt_ps(LMShdr, zeros_sse); // stricly negative
   return _mm_or_ps(_mm_andnot_ps(negative, dt_Michaelis_Menten_inverse(LMShdr)),
                     _mm_and_ps(negative, -dt_Michaelis_Menten_inverse(-LMShdr)));
+  */
+  return  dt_Michaelis_Menten_inverse(LMShdr);
 }
 
 // LMS-HDR -> IPT-HDR
@@ -262,16 +421,12 @@ static inline __m128 dt_IPThdr_to_LMShdr_sse2(const __m128 IPThdr)
 
 static inline __m128 dt_XYZ_to_IPThdr_sse2(const __m128 XYZ)
 {
-  /** Wrapper function for direct transfer **/
   return dt_LMShdr_to_IPThdr_sse2(dt_LMS_to_LMShdr(dt_XYZ_to_LMS_sse2(XYZ)));
-  //return dt_XYZ_to_LMS_sse2(XYZ);
 }
 
 static inline __m128 dt_IPThdr_to_XYZ_sse2(const __m128 IPT)
 {
-  /** Wrapper function for direct transfer **/
   return dt_LMS_to_XYZ_sse2(dt_LMShdr_to_LMS(dt_IPThdr_to_LMShdr_sse2(IPT)));
-  //return dt_LMS_to_XYZ_sse2(IPT);
 }
 
 static inline __m128 dt_Lab_to_Lch_sse2(const __m128 Lab)
@@ -367,88 +522,7 @@ static inline __m128 dt_prophotoRGB_to_XYZ_sse2(__m128 rgb)
 }
 #endif
 
-static inline float cbrt_5f(float f)
-{
-  uint32_t *p = (uint32_t *)&f;
-  *p = *p / 3 + 709921077;
-  return f;
-}
 
-static inline float cbrta_halleyf(const float a, const float R)
-{
-  const float a3 = a * a * a;
-  const float b = a * (a3 + R + R) / (a3 + a3 + R);
-  return b;
-}
-
-static inline float lab_f(const float x)
-{
-  const float epsilon = 216.0f / 24389.0f;
-  const float kappa = 24389.0f / 27.0f;
-  if(x > epsilon)
-  {
-    // approximate cbrtf(x):
-    const float a = cbrt_5f(x);
-    return cbrta_halleyf(a, x);
-  }
-  else
-    return (kappa * x + 16.0f) / 116.0f;
-}
-
-/** uses D50 white point. */
-static inline void dt_XYZ_to_Lab(const float *XYZ, float *Lab)
-{
-  const float d50[3] = { 0.9642f, 1.0f, 0.8249f };
-  const float f[3] = { lab_f(XYZ[0] / d50[0]), lab_f(XYZ[1]), lab_f(XYZ[2] / d50[2]) };
-  Lab[0] = 116.0f * f[1] - 16.0f;
-  Lab[1] = 500.0f * (f[0] - f[1]);
-  Lab[2] = 200.0f * (f[1] - f[2]);
-}
-
-static inline float lab_f_inv(const float x)
-{
-  const float epsilon = 0.20689655172413796f; // cbrtf(216.0f/24389.0f);
-  const float kappa = 24389.0f / 27.0f;
-  if(x > epsilon)
-    return x * x * x;
-  else
-    return (116.0f * x - 16.0f) / kappa;
-}
-
-/** uses D50 white point. */
-static inline void dt_Lab_to_XYZ(const float *Lab, float *XYZ)
-{
-  const float d50[3] = { 0.9642f, 1.0f, 0.8249f };
-  const float fy = (Lab[0] + 16.0f) / 116.0f;
-  const float fx = Lab[1] / 500.0f + fy;
-  const float fz = fy - Lab[2] / 200.0f;
-  XYZ[0] = d50[0] * lab_f_inv(fx);
-  XYZ[1] = lab_f_inv(fy);
-  XYZ[2] = d50[2] * lab_f_inv(fz);
-}
-
-static inline void dt_XYZ_to_xyY(const float *XYZ, float *xyY)
-{
-#if defined(__SSE__) // last chance to get the fast variant
-  _mm_store_ps(xyY, dt_XYZ_to_xyY_sse2(_mm_load_ps(XYZ)));
-#else
-  const float sum = XYZ[0] + XYZ[1] + XYZ[2];
-  xyY[0] = XYZ[0] / sum;
-  xyY[1] = XYZ[1] / sum;
-  xyY[2] = XYZ[1];
-#endif
-}
-
-static inline void dt_xyY_to_XYZ(const float *xyY, float *XYZ)
-{
-#if defined(__SSE__) // last chance to get the fast variant
-  _mm_store_ps(XYZ, dt_xyY_to_XYZ_sse2(_mm_load_ps(xyY)));
-#else
-  XYZ[0] = xyY[0] * xyY[2] / xyY[1];
-  XYZ[1] = xyY[2];
-  XYZ[2] = (1.0f - xyY[0] - xyY[1]) * xyY[2] / xyY[1];
-#endif
-}
 
 static inline void dt_Lab_to_Lch(const float *Lab, float *Lch)
 {
@@ -507,33 +581,6 @@ static inline void dt_sRGB_to_XYZ(const float *const sRGB, float *XYZ)
   for(int r = 0; r < 3; r++)
     for(int c = 0; c < 3; c++) XYZ[r] += srgb_to_xyz[r][c] * rgb[c];
 }
-
-static inline void dt_XYZ_to_prophotorgb(const float *const XYZ, float *rgb)
-{
-  const float xyz_to_rgb[3][3] = {
-    // prophoto rgb d50
-    { 1.3459433f, -0.2556075f, -0.0511118f},
-    {-0.5445989f,  1.5081673f,  0.0205351f},
-    { 0.0000000f,  0.0000000f,  1.2118128f},
-  };
-  rgb[0] = rgb[1] = rgb[2] = 0.0f;
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++) rgb[r] += xyz_to_rgb[r][c] * XYZ[c];
-}
-
-static inline void dt_prophotorgb_to_XYZ(const float *const rgb, float *XYZ)
-{
-  const float rgb_to_xyz[3][3] = {
-    // prophoto rgb
-    {0.7976749f, 0.1351917f, 0.0313534f},
-    {0.2880402f, 0.7118741f, 0.0000857f},
-    {0.0000000f, 0.0000000f, 0.8252100f},
-  };
-  XYZ[0] = XYZ[1] = XYZ[2] = 0.0f;
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++) XYZ[r] += rgb_to_xyz[r][c] * rgb[c];
-}
-
 
 static inline void dt_Lab_to_prophotorgb(const float *const Lab, float *rgb)
 {
