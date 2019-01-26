@@ -248,8 +248,8 @@ if(USE_OPENMP)
 endif(USE_OPENMP)
 
 if(USE_DARKTABLE_PROFILING)
-	add_definitions(-DUSE_DARKTABLE_PROFILING)
-	set(SOURCES ${SOURCES} "common/profiling.c")
+  add_definitions(-DUSE_DARKTABLE_PROFILING)
+  set(SOURCES ${SOURCES} "common/profiling.c")
 endif()
 
 #
@@ -508,9 +508,15 @@ if(NOT CUSTOM_CFLAGS)
   #endif()
 
   #-g MUST be set for ALL builds, or there will be no support for them when bugs happen
+
+  # TODO: check if these flags bring some good :
+  # -ftree-loop-distribution -fivopts -fipa-matrix-reorg -ftracer -fvect-cost-model -fvariable-expansion-in-unroller
+  # -fprefetch-loop-arrays -ftree-vect-loop-version -freorder-blocks-and-partition -fmodulo-sched-allow-regmoves
+  # -ftree-loop-im -ftree-loop-ivcanon -fsplit-ivs-in-unroller -funroll-loops
+  # also, in IOPs, in-loops branches could be forced to be compiled as different loops variants
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MARCH} ${DT_REQ_INSTRUCTIONS} -g")
   set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -O2")
-  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -ffast-math -fno-finite-math-only")
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
   if(CMAKE_COMPILER_IS_GNUCC)
     if(BUILD_SSE2_CODEPATHS)
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -mfpmath=sse")
@@ -524,7 +530,7 @@ if(NOT CUSTOM_CFLAGS)
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MARCH} ${DT_REQ_INSTRUCTIONS} -g")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O2")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -fno-finite-math-only")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
   if(CMAKE_COMPILER_IS_GNUCXX)
     if(BUILD_SSE2_CODEPATHS)
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mfpmath=sse")
