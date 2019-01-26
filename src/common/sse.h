@@ -138,6 +138,20 @@ static inline float _mm_vectorGetByIndex( __m128 V, unsigned int i)
   return converter.a[i];
 }
 
+/**
+ * Return pow(x) where x is positive, or 0 elsewhere
+ **/
+#define zeros_sse _mm_setzero_ps()
+
+static inline void _mm_apow_ps(__m128 *x, __m128 exponent)
+{
+  const __m128 positive = _mm_cmpgt_ps(*x, zeros_sse); // strictly positive
+  const __m128 powx = _mm_pow_ps(*x, exponent);
+
+  *x = _mm_or_ps(_mm_and_ps(positive, powx), _mm_andnot_ps(positive, zeros_sse));
+}
+#undef zeros_sse
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-space on;
