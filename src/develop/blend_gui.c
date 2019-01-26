@@ -669,7 +669,8 @@ static void _blendop_masks_modes_toggle(GtkToggleButton *button, dt_iop_module_t
   {
     _blendop_masks_mode_callback(DEVELOP_MASK_DISABLED, data);
     data->selected_mask_mode = GTK_WIDGET(
-        g_list_nth_data(data->masks_modes_toggles, g_list_index(data->masks_modes, DEVELOP_MASK_DISABLED)));
+      g_list_nth_data(data->masks_modes_toggles,
+                      g_list_index(data->masks_modes, (gconstpointer)DEVELOP_MASK_DISABLED)));
   }
 }
 
@@ -2035,7 +2036,7 @@ static void _add_blendmode_combo(GList **list, GtkWidget *combobox, GList *compl
 
 void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 {
-  
+
   /* create and add blend mode if module supports it */
   if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
   {
@@ -2173,7 +2174,8 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     }
     // initial state is no mask
     bd->selected_mask_mode = GTK_WIDGET(
-        g_list_nth_data(bd->masks_modes_toggles, g_list_index(bd->masks_modes, DEVELOP_MASK_DISABLED)));
+        g_list_nth_data(bd->masks_modes_toggles,
+                        g_list_index(bd->masks_modes, (gconstpointer)DEVELOP_MASK_DISABLED)));
 
     bd->blend_modes_combo = dt_bauhaus_combobox_new(module);
     dt_bauhaus_widget_set_label(bd->blend_modes_combo, _("blend"), _("blend mode"));
