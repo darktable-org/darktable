@@ -244,18 +244,11 @@ inline void dt_linear_saturation_rgb_sse2(__m128 *RGB, const __m128 luminance, c
 static inline void lin_to_log2f(float *lin, const float middle_grey,
                                     const float min_exposure, const float dynamic_range)
 {
-  if (*lin <= 0.0f)
-  {
-    *lin = 0.0f;
-    return;
-  }
-
   const float logNorm = (dt_fast_log2f(*lin / middle_grey) - min_exposure) / dynamic_range;
 
-  if( logNorm < 0.0f)
+  if( logNorm < 0.0f || *lin <= 0.0f)
   {
     *lin = 0.0f;
-    return;
   }
   else
   {
@@ -266,7 +259,6 @@ static inline void lin_to_log2f(float *lin, const float middle_grey,
 #if defined(__SSE__)
 #define zeros_sse _mm_setzero_ps()
 #define ones_sse _mm_set1_ps(1.0f)
-
 static inline void lin_to_log2f_sse(__m128 *lin, const __m128 middle_grey,
                                     const __m128 min_exposure, const __m128 dynamic_range)
 {
@@ -277,6 +269,8 @@ static inline void lin_to_log2f_sse(__m128 *lin, const __m128 middle_grey,
 
   *lin = _mm_or_ps(_mm_and_ps(positive, logNorm), _mm_andnot_ps(positive, zeros_sse));
 }
+#undef zeros_sse
+#undef ones_sse
 #endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
