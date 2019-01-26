@@ -42,8 +42,9 @@ typedef struct _iop_color_picker_t
 {
   dt_iop_module_t *module;
   dt_iop_color_picker_kind_t kind;
-  int internal;
+  unsigned short current_picker;
   GtkWidget *colorpick;
+  float pick_pos[9][2]; // last picker positions (max 9 picker per module)
   /* get and set the selected picker corresponding to button, the module must record the previous
      selected picker and return ALREADY_SELECTED if the same picker has been selected. The return
      value corresponds to the module internal picker id. */
@@ -51,8 +52,6 @@ typedef struct _iop_color_picker_t
   /* apply the picked color to the selected picker (internal picker id, if multiple are available
      on the module */
   void (*apply)(dt_iop_module_t *self);
-  /* reset the color picker status, deselect all pickers */
-  void (*reset)(dt_iop_module_t *self);
   /* update the picker icon to correspond to the current selected picker if any */
   void (*update)(dt_iop_module_t *self);
 } dt_iop_color_picker_t;
@@ -63,7 +62,6 @@ void init_picker (dt_iop_color_picker_t *picker,
                   dt_iop_color_picker_kind_t kind,
                   int (*get_set)(dt_iop_module_t *self, GtkWidget *button),
                   void (*apply)(dt_iop_module_t *self),
-                  void (*reset)(dt_iop_module_t *self),
                   void (*update)(dt_iop_module_t *self));
 
 /* init for a single color picker in iop, this must be called when all picker widget are created */
@@ -89,10 +87,10 @@ void dt_iop_color_picker_callback(GtkWidget *button, dt_iop_color_picker_t *self
 int dt_iop_color_picker_get_set(dt_iop_color_picker_t *picker, GtkWidget *button);
 /* call proxy apply */
 void dt_iop_color_picker_apply(dt_iop_color_picker_t *picker);
-/* call proxy reset, and if update is TRUE also call update proxy */
-void dt_iop_color_picker_reset(dt_iop_color_picker_t *picker, gboolean update);
 /* call proxy update */
 void dt_iop_color_picker_update(dt_iop_color_picker_t *picker);
+/* reset current color picker, and if update is TRUE also call update proxy */
+void dt_iop_color_picker_reset(dt_iop_color_picker_t *picker, gboolean update);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
