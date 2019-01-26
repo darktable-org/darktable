@@ -63,11 +63,6 @@ static int _internal_iop_color_picker_get_set(dt_iop_color_picker_t *picker, Gtk
     return picker->current_picker;
 }
 
-static void _internal_iop_color_picker_reset(dt_iop_color_picker_t *picker)
-{
-  picker->current_picker = PICKER_STATUS_NONE;
-}
-
 static void _internal_iop_color_picker_update(dt_iop_color_picker_t *picker)
 {
   const int old_reset = darktable.gui->reset;
@@ -84,10 +79,7 @@ static void _internal_iop_color_picker_update(dt_iop_color_picker_t *picker)
 void dt_iop_color_picker_reset(dt_iop_color_picker_t *picker, gboolean update)
 {
   picker->module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  if(picker->reset)
-    picker->reset(picker->module);
-  else
-    _internal_iop_color_picker_reset(picker);
+  picker->current_picker = PICKER_STATUS_NONE;
   if (update) dt_iop_color_picker_update(picker);
 }
 
@@ -119,7 +111,7 @@ void init_single_picker (dt_iop_color_picker_t *picker,
                          void (*apply)(dt_iop_module_t *self))
 {
   picker->colorpick = colorpick;
-  init_picker(picker, module, kind, NULL, apply, NULL, NULL);
+  init_picker(picker, module, kind, NULL, apply, NULL);
 }
 
 void init_picker (dt_iop_color_picker_t *picker,
@@ -127,13 +119,11 @@ void init_picker (dt_iop_color_picker_t *picker,
                   dt_iop_color_picker_kind_t kind,
                   int (*get_set)(dt_iop_module_t *self, GtkWidget *button),
                   void (*apply)(dt_iop_module_t *self),
-                  void (*reset)(dt_iop_module_t *self),
                   void (*update)(dt_iop_module_t *self))
 {
   picker->module  = module;
   picker->get_set = get_set;
   picker->apply   = apply;
-  picker->reset   = reset;
   picker->update  = update;
   picker->kind    = kind;
 
@@ -162,7 +152,9 @@ void dt_iop_color_picker_callback(GtkWidget *button, dt_iop_color_picker_t *self
   if(self->module->request_color_pick == DT_REQUEST_COLORPICK_OFF || clicked_colorpick != ALREADY_SELECTED)
   {
     self->module->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-    self->current_picker = clicked_colorpick;
+
+    if(clicked_colorpick != ALREADY_SELECTED)
+      self->current_picker = clicked_colorpick;
 
     if(self->kind == DT_COLOR_PICKER_AREA)
       dt_lib_colorpicker_set_area(darktable.lib, 0.99);
