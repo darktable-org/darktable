@@ -264,8 +264,7 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self)
 
   float mean_picked_color = *self->picked_color / 100.0;
 
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF
-     && self->color_picker_point[0] >= 0.0f
+  if(self->color_picker_point[0] >= 0.0f
      && self->color_picker_point[1] >= 0.0f
      && self->picked_color_max[0] >= 0.0f
      && mean_picked_color != c->last_picked_color)

@@ -181,6 +181,9 @@ static gboolean _iop_color_picker_draw(GtkWidget *widget, cairo_t *cr, dt_iop_co
 {
   if(darktable.gui->reset) return FALSE;
 
+  /* The color picker is off */
+  if(self->module->request_color_pick == DT_REQUEST_COLORPICK_OFF) return FALSE;
+
   /* No color picked, or picked color already applied */
   if(self->module->picked_color_max[0] == -INFINITY) return FALSE;
 
