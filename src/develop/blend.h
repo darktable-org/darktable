@@ -362,6 +362,7 @@ typedef struct dt_iop_blend_mode_t
   unsigned int mode;
 } dt_iop_blend_mode_t;
 
+
 /** blend gui data */
 typedef struct dt_iop_gui_blend_data_t
 {
@@ -375,6 +376,7 @@ typedef struct dt_iop_gui_blend_data_t
   dt_iop_module_t *module;
   GList *blend_modes;
   GList *masks_modes;
+  GList *masks_modes_toggles;
   GList *masks_combine;
   GList *masks_invert;
   GList *masks_feathering_guide;
@@ -382,6 +384,7 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *iopw;
   GtkBox *top_box;
   GtkBox *bottom_box;
+  GtkBox *masks_modes_box;
   GtkBox *blendif_box;
   GtkBox *masks_box;
   GtkBox *raster_box;
@@ -391,15 +394,15 @@ typedef struct dt_iop_gui_blend_data_t
   GtkLabel *lower_label[8];
   GtkLabel *upper_picker_label;
   GtkLabel *lower_picker_label;
+  GtkWidget *selected_mask_mode;
   GtkWidget *upper_polarity;
   GtkWidget *lower_polarity;
   GtkWidget *colorpicker;
   GtkWidget *showmask;
   GtkWidget *suppress;
   void (*scale_print[8])(float value, char *string, int n);
-  GtkWidget *masks_modes_combo;
-  GtkWidget *blend_modes_combo;
   GtkWidget *masks_combine_combo;
+  GtkWidget *blend_modes_combo;
   GtkWidget *masks_invert_combo;
   GtkWidget *opacity_slider;
   GtkWidget *masks_feathering_guide_combo;
