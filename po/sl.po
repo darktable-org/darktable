@@ -1,4 +1,4 @@
-# # Slovenian translation for Darktable
+# Slovenian translation for Darktable
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 #
@@ -47,13 +47,13 @@
 # tiling = prekrivanje
 # warp = zvitek, izkrivljenje, popačenje, osnova (pri tkanju)
 #
-# Matjaž Jeran <matjaz.jeran@amis.net>, 2015-2018.
+# Matjaž Jeran <matjaz.jeran@amis.net>, 2015-2018, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 2.6.0\n"
 "Report-Msgid-Bugs-To: matjaz.jeran@amis.net\n"
 "POT-Creation-Date: 2018-11-28 09:13+0100\n"
-"PO-Revision-Date: 2018-12-17 15:17+0100\n"
+"PO-Revision-Date: 2019-01-14 13:07+0100\n"
 "Last-Translator: Matjaž Jeran <matjaz.jeran@amis.net>\n"
 "Language-Team: Slovenian <lugos-slo@lugos.si>\n"
 "Language: sl\n"
@@ -62,7 +62,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
 "%100==4 ? 2 : 3);\n"
-"X-Generator: Poedit 2.1.1\n"
+"X-Generator: Poedit 2.2\n"
 
 #: ../build/src/preferences_gen.h:1686
 msgid "GUI options"
@@ -3608,7 +3608,7 @@ msgstr "izdelovalec"
 #: ../src/gui/presets.c:433 ../src/libs/collect.h:36
 #: ../src/libs/metadata_view.c:108
 msgid "lens"
-msgstr "lečje"
+msgstr "objektiv"
 
 #. iso
 #: ../src/gui/preferences.c:432 ../src/gui/preferences.c:1263
@@ -10759,7 +10759,7 @@ msgstr "zastavice"
 
 #: ../src/libs/metadata_view.c:112
 msgid "focus distance"
-msgstr "goriščna razdalja"
+msgstr "izmerjena razdalja"
 
 #: ../src/libs/metadata_view.c:114
 msgid "datetime"
@@ -11044,7 +11044,7 @@ msgstr "tiskalnik"
 
 #: ../src/libs/print_settings.c:1176
 msgid "media"
-msgstr "medija"
+msgstr "medij"
 
 #: ../src/libs/print_settings.c:1195
 msgid "color management in printer driver"
