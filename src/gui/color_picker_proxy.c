@@ -31,21 +31,36 @@ typedef enum _internal__status
    to used to apply the picked value (requested in dt_iop_color_picker_callback) when available. */
 static gboolean _iop_color_picker_draw(GtkWidget *widget, cairo_t *cr, dt_iop_color_picker_t *self);
 
-static int _internal_iop_color_picker_get_set(dt_iop_color_picker_t *picker, GtkWidget *button)
+static void _iop_record_point(dt_iop_color_picker_t *self)
 {
-  const int current_picker = picker->internal;
-
-  picker->internal = PICKER_STATUS_SELECTED;
-
-  if (current_picker == picker->internal)
-    return ALREADY_SELECTED;
-  else
-    return picker->internal;
+  const int pick_index = CLAMP(self->current_picker, 1, 9) - 1;
+  self->pick_pos[pick_index][0] = self->module->color_picker_point[0];
+  self->pick_pos[pick_index][1] = self->module->color_picker_point[1];
 }
 
-static void _internal_iop_color_picker_reset(dt_iop_color_picker_t *picker)
+static void _iop_get_point(dt_iop_color_picker_t *self, float *pos)
 {
-  picker->internal = PICKER_STATUS_NONE;
+  const int pick_index = CLAMP(self->current_picker, 1, 9) - 1;
+
+  pos[0] = pos[1] = 0.5f;
+
+  if(self->pick_pos[pick_index][0] != NAN && self->pick_pos[pick_index][1] != NAN)
+  {
+    pos[0] = self->pick_pos[pick_index][0];
+    pos[1] = self->pick_pos[pick_index][1];
+  }
+}
+
+static int _internal_iop_color_picker_get_set(dt_iop_color_picker_t *picker, GtkWidget *button)
+{
+  const int current_picker = picker->current_picker;
+
+  picker->current_picker = PICKER_STATUS_SELECTED;
+
+  if (current_picker == picker->current_picker)
+    return ALREADY_SELECTED;
+  else
+    return picker->current_picker;
 }
 
 static void _internal_iop_color_picker_update(dt_iop_color_picker_t *picker)
@@ -54,9 +69,9 @@ static void _internal_iop_color_picker_update(dt_iop_color_picker_t *picker)
   darktable.gui->reset = 1;
 
   if(DTGTK_IS_TOGGLEBUTTON(picker->colorpick))
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(picker->colorpick), picker->internal == PICKER_STATUS_SELECTED);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(picker->colorpick), picker->current_picker == PICKER_STATUS_SELECTED);
   else
-    dt_bauhaus_widget_set_quad_active(picker->colorpick, picker->internal == PICKER_STATUS_SELECTED);
+    dt_bauhaus_widget_set_quad_active(picker->colorpick, picker->current_picker == PICKER_STATUS_SELECTED);
 
   darktable.gui->reset = old_reset;
 }
@@ -64,10 +79,7 @@ static void _internal_iop_color_picker_update(dt_iop_color_picker_t *picker)
 void dt_iop_color_picker_reset(dt_iop_color_picker_t *picker, gboolean update)
 {
   picker->module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  if(picker->reset)
-    picker->reset(picker->module);
-  else
-    _internal_iop_color_picker_reset(picker);
+  picker->current_picker = PICKER_STATUS_NONE;
   if (update) dt_iop_color_picker_update(picker);
 }
 
@@ -99,7 +111,7 @@ void init_single_picker (dt_iop_color_picker_t *picker,
                          void (*apply)(dt_iop_module_t *self))
 {
   picker->colorpick = colorpick;
-  init_picker(picker, module, kind, NULL, apply, NULL, NULL);
+  init_picker(picker, module, kind, NULL, apply, NULL);
 }
 
 void init_picker (dt_iop_color_picker_t *picker,
@@ -107,15 +119,17 @@ void init_picker (dt_iop_color_picker_t *picker,
                   dt_iop_color_picker_kind_t kind,
                   int (*get_set)(dt_iop_module_t *self, GtkWidget *button),
                   void (*apply)(dt_iop_module_t *self),
-                  void (*reset)(dt_iop_module_t *self),
                   void (*update)(dt_iop_module_t *self))
 {
   picker->module  = module;
   picker->get_set = get_set;
   picker->apply   = apply;
-  picker->reset   = reset;
   picker->update  = update;
   picker->kind    = kind;
+
+  for(int i = 0; i<9; i++)
+    for(int j = 0; j<2; j++)
+      picker->pick_pos[i][j] = NAN;
 
   dt_iop_color_picker_reset(picker, TRUE);
 
@@ -138,10 +152,19 @@ void dt_iop_color_picker_callback(GtkWidget *button, dt_iop_color_picker_t *self
   if(self->module->request_color_pick == DT_REQUEST_COLORPICK_OFF || clicked_colorpick != ALREADY_SELECTED)
   {
     self->module->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
+
+    if(clicked_colorpick != ALREADY_SELECTED)
+      self->current_picker = clicked_colorpick;
+
     if(self->kind == DT_COLOR_PICKER_AREA)
       dt_lib_colorpicker_set_area(darktable.lib, 0.99);
     else
-      dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
+    {
+      float pos[2];
+      _iop_get_point(self, pos);
+      dt_lib_colorpicker_set_point(darktable.lib, pos[0], pos[1]);
+    }
+
     dt_dev_reprocess_all(self->module->dev);
   }
   else
@@ -158,10 +181,16 @@ static gboolean _iop_color_picker_draw(GtkWidget *widget, cairo_t *cr, dt_iop_co
 {
   if(darktable.gui->reset) return FALSE;
 
+  /* The color picker is off */
+  if(self->module->request_color_pick == DT_REQUEST_COLORPICK_OFF) return FALSE;
+
   /* No color picked, or picked color already applied */
   if(self->module->picked_color_max[0] == -INFINITY) return FALSE;
 
   self->apply(self->module);
+
+  _iop_record_point(self);
+
   /* Make sure next call won't re-apply in loop: draw -> picker -> set_sliders -> draw. */
   self->module->picked_color_max[0] = -INFINITY;
 
