@@ -274,12 +274,12 @@ static inline __m128 dt_prophotoRGB_to_XYZ_sse2(__m128 rgb)
 
 static inline void dt_XYZ_to_prophotorgb(const float *const XYZ, float *const rgb)
 {
-  mat3mulv(rgb, (const float *)&xyz_to_prophotorgb[0][0], XYZ);
+  mat3mulv(rgb, xyz_to_prophotorgb, XYZ);
 }
 
 static inline void dt_prophotorgb_to_XYZ(const float *const rgb, float *const XYZ)
 {
-  mat3mulv(XYZ, (const float *)&prophotorgb_to_xyz[0][0], rgb);
+  mat3mulv(XYZ, prophotorgb_to_xyz, rgb);
 }
 
 

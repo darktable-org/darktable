@@ -711,7 +711,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
       pi[1] = y;
       pi[2] = 1.0f;
       // moutput expects input in (x:y:1) format and gives output as (x:y:1)
-      mat3mulv(po, (float *)moutput, pi);
+      mat3mulv(po, moutput, pi);
       umin = fmin(umin, po[0] / po[2]);
       vmin = fmin(vmin, po[1] / po[2]);
     }
@@ -796,7 +796,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   {
     float pi[3] = { points[i], points[i + 1], 1.0f };
     float po[3];
-    mat3mulv(po, (float *)homograph, pi);
+    mat3mulv(po, homograph, pi);
     points[i] = po[0] / po[2] - cx;
     points[i + 1] = po[1] / po[2] - cy;
   }
@@ -830,7 +830,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   {
     float pi[3] = { points[i] + cx, points[i + 1] + cy, 1.0f };
     float po[3];
-    mat3mulv(po, (float *)ihomograph, pi);
+    mat3mulv(po, ihomograph, pi);
     points[i] = po[0] / po[2];
     points[i + 1] = po[1] / po[2];
   }
@@ -882,7 +882,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
       pout[2] = 1.0f;
 
       // apply homograph
-      mat3mulv(pin, (float *)ihomograph, pout);
+      mat3mulv(pin, ihomograph, pout);
 
       // convert to input pixel coordinates
       pin[0] /= pin[2];
@@ -929,7 +929,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
       pin[2] = 1.0f;
 
       // apply homograph
-      mat3mulv(pout, (float *)homograph, pin);
+      mat3mulv(pout, homograph, pin);
 
       // convert to output image coordinates
       pout[0] /= pout[2];
@@ -997,7 +997,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
       pout[2] = 1.0f;
 
       // apply homograph
-      mat3mulv(pin, (float *)ihomograph, pout);
+      mat3mulv(pin, ihomograph, pout);
 
       // convert to input image coordinates
       pin[0] /= pin[2];
@@ -1927,8 +1927,8 @@ static double model_fitness(double *params, void *data)
 
     // apply homographic transformation to the end points
     float P1[3], P2[3];
-    mat3mulv(P1, (float *)homograph, lines[n].p1);
-    mat3mulv(P2, (float *)homograph, lines[n].p2);
+    mat3mulv(P1, homograph, lines[n].p1);
+    mat3mulv(P2, homograph, lines[n].p2);
 
     // get line connecting the two points
     float L[3];
@@ -2125,7 +2125,7 @@ static dt_iop_ashift_nmsresult_t nmsfit(dt_iop_module_t *module, dt_iop_ashift_p
       pi[0] = x;
       pi[1] = y;
       pi[2] = 1.0f;
-      mat3mulv(po, (float *)homograph, pi);
+      mat3mulv(po, homograph, pi);
       po[0] /= po[2];
       po[1] /= po[2];
       xm = fmin(xm, po[0]);
@@ -2261,7 +2261,7 @@ static double crop_fitness(double *params, void *data)
 
   // convert to the output image coordinates and normalize
   float P[3];
-  mat3mulv(P, (float *)cropfit->homograph, Pc);
+  mat3mulv(P, cropfit->homograph, Pc);
   P[0] /= P[2];
   P[1] /= P[2];
   P[2] = 1.0f;
@@ -2373,7 +2373,7 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   // convert the vertices to output image coordinates
   float V[4][3];
   for(int n = 0; n < 4; n++)
-    mat3mulv(V[n], (float *)cropfit.homograph, Vc[n]);
+    mat3mulv(V[n], cropfit.homograph, Vc[n]);
 
   // get width and height of output image for later use
   float xmin = FLT_MAX, ymin = FLT_MAX, xmax = FLT_MIN, ymax = FLT_MIN;
@@ -2444,7 +2444,7 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
 
   // convert rectangle center to output image coordinates and normalize
   float P[3];
-  mat3mulv(P, (float *)cropfit.homograph, Pc);
+  mat3mulv(P, cropfit.homograph, Pc);
   P[0] /= P[2];
   P[1] /= P[2];
 
@@ -2515,7 +2515,7 @@ static void crop_adjust(dt_iop_module_t *module, dt_iop_ashift_params_t *p, cons
   // convert the vertices to output image coordinates
   float V[4][3];
   for(int n = 0; n < 4; n++)
-    mat3mulv(V[n], (float *)homograph, Vc[n]);
+    mat3mulv(V[n], homograph, Vc[n]);
 
   // get width and height of output image
   float xmin = FLT_MAX, ymin = FLT_MAX, xmax = FLT_MIN, ymax = FLT_MIN;
@@ -2826,7 +2826,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       pout[2] = 1.0f;
 
       // apply homograph
-      mat3mulv(pin, (float *)ihomograph, pout);
+      mat3mulv(pin, ihomograph, pout);
 
       // convert to input pixel coordinates
       pin[0] /= pin[2];

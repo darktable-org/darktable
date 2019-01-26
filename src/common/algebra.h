@@ -51,15 +51,6 @@ static inline void mat3mul(float *dst, const float *const m1, const float *const
 
 // multiply 3x3 matrix with 3x1 vector
 // dst needs to be different from v
-static inline void mat3mulv(float *dst, const float *const mat, const float *const v)
-{
-  for(int k = 0; k < 3; k++)
-  {
-    float x = 0.0f;
-    for(int i = 0; i < 3; i++) x += mat[3 * k + i] * v[i];
-    dst[k] = x;
-  }
-}
 
 #ifdef __SSE2__
 // Transpose a 3×3 matrice and put the columns into 3 SSE vectors
@@ -79,6 +70,16 @@ static inline void mat3mulv_sse2(__m128 *dst, const float mat[3][3], const __m12
 }
 #endif
 
+
+static inline void mat3mulv(float *dst, const float mat[3][3], const float *const v)
+{
+  for(int k = 0; k < 3; k++)
+  {
+    float x = 0.0f;
+    for(int i = 0; i < 3; i++) x += mat[k][i] * v[i];
+    dst[k] = x;
+  }
+}
 
 // multiply 4x4 matrix with 4x1 vector
 // dst needs to be different from v
