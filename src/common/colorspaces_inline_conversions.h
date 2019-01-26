@@ -21,6 +21,7 @@
 
 #pragma once
 
+#include "common/algebra.h"
 #include "common/colorspaces.h"
 #include <math.h>
 
@@ -214,36 +215,30 @@ static inline __m128 dt_xyY_to_XYZ_sse2(const __m128 xyY)
 }
 #endif
 
-static inline void dt_XYZ_to_xyY(const float *XYZ, float *xyY)
+static inline void dt_XYZ_to_xyY(const float *XYZ, float *const xyY)
 {
-#if defined(__SSE__) // last chance to get the fast variant
-  _mm_store_ps(xyY, dt_XYZ_to_xyY_sse2(_mm_load_ps(XYZ)));
-#else
   const float sum = XYZ[0] + XYZ[1] + XYZ[2];
   xyY[0] = XYZ[0] / sum;
   xyY[1] = XYZ[1] / sum;
   xyY[2] = XYZ[1];
-#endif
 }
 
-static inline void dt_xyY_to_XYZ(const float *xyY, float *XYZ)
+static inline void dt_xyY_to_XYZ(const float *xyY, float *const XYZ)
 {
-#if defined(__SSE__) // last chance to get the fast variant
-  _mm_store_ps(XYZ, dt_xyY_to_XYZ_sse2(_mm_load_ps(xyY)));
-#else
   XYZ[0] = xyY[0] * xyY[2] / xyY[1];
   XYZ[1] = xyY[2];
   XYZ[2] = (1.0f - xyY[0] - xyY[1]) * xyY[2] / xyY[1];
-#endif
 }
 
 
 /***
  * XYZ <-> RGB
  *
- * Simple matrix/vector dot products.
+ * Simple matrix-vector dot products choosing the right matrix.
  *
  * The RGB matrices assume a D50 illuminant in and out.
+ *
+ * see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
  ***/
 
 /** Matrices **/
@@ -259,19 +254,32 @@ static const float prophotorgb_to_xyz[3][3] = {
     {0.0000000f, 0.0000000f, 0.8252100f},
   };
 
- static inline void dt_XYZ_to_prophotorgb(const float *const XYZ, float *rgb)
-{
+/** Conversions **/
 
-  rgb[0] = rgb[1] = rgb[2] = 0.0f;
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++) rgb[r] += xyz_to_prophotorgb[r][c] * XYZ[c];
+#ifdef __SSE2__
+static inline __m128 dt_XYZ_to_prophotoRGB_sse2(__m128 XYZ)
+{
+  __m128 rgb;
+  mat3mulv_sse2(&rgb, xyz_to_prophotorgb, &XYZ);
+  return rgb;
 }
 
-static inline void dt_prophotorgb_to_XYZ(const float *const rgb, float *XYZ)
+static inline __m128 dt_prophotoRGB_to_XYZ_sse2(__m128 rgb)
 {
-  XYZ[0] = XYZ[1] = XYZ[2] = 0.0f;
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++) XYZ[r] += prophotorgb_to_xyz[r][c] * rgb[c];
+  __m128 XYZ;
+  mat3mulv_sse2(&XYZ, prophotorgb_to_xyz, &rgb);
+  return XYZ;
+}
+#endif
+
+static inline void dt_XYZ_to_prophotorgb(const float *const XYZ, float *const rgb)
+{
+  mat3mulv(rgb, (const float *)&xyz_to_prophotorgb[0][0], XYZ);
+}
+
+static inline void dt_prophotorgb_to_XYZ(const float *const rgb, float *const XYZ)
+{
+  mat3mulv(XYZ, (const float *)&prophotorgb_to_xyz[0][0], rgb);
 }
 
 
@@ -485,39 +493,6 @@ static inline __m128 dt_sRGB_to_XYZ_sse2(__m128 rgb)
       = srgb_to_xyz_0 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(0, 0, 0, 0)) +
         srgb_to_xyz_1 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(1, 1, 1, 1)) +
         srgb_to_xyz_2 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(2, 2, 2, 2));
-  return XYZ;
-}
-
-/** uses D50 white point. */
-// XYZ -> prophotoRGB matrix, D50
-#define xyz_to_rgb_0_sse _mm_setr_ps( 1.3459433f, -0.5445989f, 0.0000000f, 0.0f)
-#define xyz_to_rgb_1_sse _mm_setr_ps(-0.2556075f,  1.5081673f, 0.0000000f, 0.0f)
-#define xyz_to_rgb_2_sse _mm_setr_ps(-0.0511118f,  0.0205351f,  1.2118128f, 0.0f)
-
-// see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
-static inline __m128 dt_XYZ_to_prophotoRGB_sse2(__m128 XYZ)
-{
-  __m128 rgb
-      = xyz_to_rgb_0_sse * _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(0, 0, 0, 0)) +
-        xyz_to_rgb_1_sse * _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(1, 1, 1, 1)) +
-        xyz_to_rgb_2_sse * _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(2, 2, 2, 2));
-  return rgb;
-}
-
-// prophotoRGB -> XYZ matrix, D50
-#define rgb_to_xyz_0_sse _mm_setr_ps(0.7976749f, 0.2880402f, 0.0000000f, 0.0f)
-#define rgb_to_xyz_1_sse _mm_setr_ps(0.1351917f, 0.7118741f, 0.0000000f, 0.0f)
-#define rgb_to_xyz_2_sse _mm_setr_ps(0.0313534f, 0.0000857f, 0.8252100f, 0.0f)
-
-/** uses D50 white point. */
-// see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
-static inline __m128 dt_prophotoRGB_to_XYZ_sse2(__m128 rgb)
-{
-
-  __m128 XYZ
-      = rgb_to_xyz_0_sse * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(0, 0, 0, 0)) +
-        rgb_to_xyz_1_sse * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(1, 1, 1, 1)) +
-        rgb_to_xyz_2_sse * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(2, 2, 2, 2));
   return XYZ;
 }
 #endif
