@@ -42,8 +42,9 @@ typedef struct _iop_color_picker_t
 {
   dt_iop_module_t *module;
   dt_iop_color_picker_kind_t kind;
-  int internal;
+  unsigned short current_picker;
   GtkWidget *colorpick;
+  float pick_pos[9][2]; // last picker positions (max 9 picker per module)
   /* get and set the selected picker corresponding to button, the module must record the previous
      selected picker and return ALREADY_SELECTED if the same picker has been selected. The return
      value corresponds to the module internal picker id. */
