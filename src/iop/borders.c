@@ -97,7 +97,6 @@ typedef struct dt_iop_borders_gui_data_t
   GtkWidget *frame_colorpick;
   GtkToggleButton *frame_picker; // the 2nd button
   dt_iop_color_picker_t color_picker;
-  dt_iop_borders_pickcolor_type_t which_colorpicker;
 } dt_iop_borders_gui_data_t;
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -594,19 +593,19 @@ static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
 
-  const dt_iop_borders_pickcolor_type_t current_picker = g->which_colorpicker;
+  const dt_iop_borders_pickcolor_type_t current_picker = g->color_picker.current_picker;
 
-  g->which_colorpicker = DT_BORDERS_NONE;
+  g->color_picker.current_picker = DT_BORDERS_NONE;
 
   if(button == GTK_WIDGET(g->frame_picker))
-    g->which_colorpicker = DT_BORDERS_FRAME;
+    g->color_picker.current_picker = DT_BORDERS_FRAME;
   else if(button == GTK_WIDGET(g->border_picker))
-    g->which_colorpicker = DT_BORDERS_BORDER;
+    g->color_picker.current_picker = DT_BORDERS_BORDER;
 
-  if (current_picker == g->which_colorpicker)
+  if (current_picker == g->color_picker.current_picker)
     return ALREADY_SELECTED;
   else
-    return g->which_colorpicker;
+    return g->color_picker.current_picker;
 }
 
 static void _iop_color_picker_apply(struct dt_iop_module_t *self)
@@ -635,14 +634,14 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self)
                         .blue = self->picked_color[2],
                         .alpha = 1.0 };
 
-  if(g->which_colorpicker == DT_BORDERS_FRAME)
+  if(g->color_picker.current_picker == DT_BORDERS_FRAME)
   {
     p->frame_color[0] = self->picked_color[0];
     p->frame_color[1] = self->picked_color[1];
     p->frame_color[2] = self->picked_color[2];
     gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->frame_colorpick), &c);
   }
-  else if(g->which_colorpicker == DT_BORDERS_BORDER)
+  else if(g->color_picker.current_picker == DT_BORDERS_BORDER)
   {
     p->color[0] = self->picked_color[0];
     p->color[1] = self->picked_color[1];
@@ -656,17 +655,11 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self)
 static void _iop_color_picker_update(dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
-  const dt_iop_borders_pickcolor_type_t which_colorpicker = g->which_colorpicker;
+  const dt_iop_borders_pickcolor_type_t which_colorpicker = g->color_picker.current_picker;
   darktable.gui->reset = 1;
   gtk_toggle_button_set_active(g->frame_picker, which_colorpicker == DT_BORDERS_FRAME);
   gtk_toggle_button_set_active(g->border_picker, which_colorpicker == DT_BORDERS_BORDER);
   darktable.gui->reset = 0;
-}
-
-static void _iop_color_picker_reset(struct dt_iop_module_t *self)
-{
-  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
-  g->which_colorpicker = DT_BORDERS_NONE;
 }
 
 static void aspect_changed(GtkWidget *combo, dt_iop_module_t *self)
@@ -1107,7 +1100,6 @@ void gui_init(struct dt_iop_module_t *self)
               DT_COLOR_PICKER_POINT,
               _iop_color_picker_get_set,
               _iop_color_picker_apply,
-              _iop_color_picker_reset,
               _iop_color_picker_update);
 }
 
