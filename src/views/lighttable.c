@@ -1646,8 +1646,6 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   free(images);
 
 
-  failure:
-
   sqlite3_finalize(stmt);
 
   /* free allocated strings */
