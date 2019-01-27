@@ -982,7 +982,7 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
     pango_layout_set_font_description(layout, desc);
     cairo_set_font_size(cr, fs);
     cairo_set_source_rgba(cr, .7, .7, .7, 1.0f);
-    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+    //cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     pango_layout_set_text(layout, _("there are no images in this collection"), -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     cairo_move_to(cr, offx, offy - ink.height - ink.x);
