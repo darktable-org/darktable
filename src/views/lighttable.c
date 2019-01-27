@@ -533,14 +533,6 @@ void cleanup(dt_view_t *self)
  * \return The absolute, zero-based index of the specified grid location
  */
 
-#if 0
-static int
-grid_to_index (int row, int col, int stride, int offset)
-{
-  return row * stride + col + offset;
-}
-#endif
-
 static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
                                int32_t pointery)
 {
@@ -1530,7 +1522,8 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
       if(!dt_imageio_large_thumbnail(filename, &lib->full_res_thumb,
                                                &lib->full_res_thumb_wd,
                                                &lib->full_res_thumb_ht,
-                                               &color_space)) {
+                                               &color_space))
+      {
         lib->full_res_thumb_orientation = ORIENTATION_NONE;
         lib->full_res_thumb_id = lib->full_preview_id;
       }
@@ -1542,64 +1535,6 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
       }
     }
   }
-#if 0 // expose full res thumbnail:
-  if(lib->full_res_thumb_id == lib->full_preview_id)
-  {
-    static float pointerx_c = 0, pointery_c = 0;
-    const int32_t stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, lib->full_res_thumb_wd);
-    cairo_surface_t *surface = cairo_image_surface_create_for_data (lib->full_res_thumb, CAIRO_FORMAT_RGB24, lib->full_res_thumb_wd, lib->full_res_thumb_ht, stride);
-    cairo_save(cr);
-    int wd = lib->full_res_thumb_wd, ht = lib->full_res_thumb_ht;
-    if(lib->full_res_thumb_orientation & ORIENTATION_SWAP_XY)
-      wd = lib->full_res_thumb_ht, ht = lib->full_res_thumb_wd;
-    if(pointerx >= 0 && pointery >= 0)
-    { // avoid jumps in case mouse leaves drawing area
-      pointerx_c = pointerx;
-      pointery_c = pointery;
-    }
-    const float tx = -(wd - width ) * CLAMP(pointerx_c/(float)width,  0.0f, 1.0f),
-                ty = -(ht - height) * CLAMP(pointery_c/(float)height, 0.0f, 1.0f);
-    cairo_translate(cr, tx, ty);
-    if(lib->full_res_thumb_orientation & ORIENTATION_SWAP_XY)
-    {
-      cairo_matrix_t m = (cairo_matrix_t){0.0, 1.0, 1.0, 0.0, 0.0, 0.0};
-      cairo_transform(cr, &m);
-    }
-    if(lib->full_res_thumb_orientation & ORIENTATION_FLIP_X)
-    {
-      cairo_scale(cr, 1, -1);
-      cairo_translate(cr, 0, -lib->full_res_thumb_ht-1);
-    }
-    if(lib->full_res_thumb_orientation & ORIENTATION_FLIP_Y)
-    {
-      cairo_scale(cr, -1, 1);
-      cairo_translate(cr, -lib->full_res_thumb_wd-1, 0);
-    }
-    cairo_set_source_surface (cr, surface, 0, 0);
-      cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
-    cairo_rectangle(cr, 0, 0, lib->full_res_thumb_wd, lib->full_res_thumb_ht);
-    cairo_fill(cr);
-    cairo_surface_destroy (surface);
-
-    // draw clustered focus regions
-    for(int k=0;k<49;k++)
-    {
-      const float intens = (lib->full_res_focus[k].thrs - FOCUS_THRS)/FOCUS_THRS;
-      if(lib->full_res_focus[k].n > lib->full_res_thumb_wd*lib->full_res_thumb_ht/49.0f * 0.01f)
-      // if(intens > 0.5f)
-      {
-        const float stddevx = sqrtf(lib->full_res_focus[k].x2 - lib->full_res_focus[k].x*lib->full_res_focus[k].x);
-        const float stddevy = sqrtf(lib->full_res_focus[k].y2 - lib->full_res_focus[k].y*lib->full_res_focus[k].y);
-        cairo_set_source_rgb(cr, intens, 0.0, 0.0);
-        cairo_set_line_width(cr, 5.0f*intens);
-        cairo_rectangle(cr, lib->full_res_focus[k].x - stddevx, lib->full_res_focus[k].y - stddevy, 2*stddevx, 2*stddevy);
-        cairo_stroke(cr);
-      }
-    }
-    cairo_restore(cr);
-  }
-  else
-#endif
   const int missing = dt_view_image_expose(&(lib->image_over), lib->full_preview_id, cr,
                                            width, height, 1, pointerx, pointery, TRUE, FALSE);
 
