@@ -1068,6 +1068,7 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
 
       dt_ratings_apply_to_image_or_group(mouse_over_id, num);
 
+      dt_collection_update_query(darktable.collection); // update the counter and selection
       dt_collection_hint_message(darktable.collection); // More than this, we need to redraw all
 
       if(mouse_over_id == activated_image)
