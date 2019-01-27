@@ -1940,7 +1940,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
         break;
     }
   }
-  if(lib->layout != 0)
+  if(lib->layout != DT_LAYOUT_ZOOMABLE)
   { // file manager
     lib->activate_on_release = DT_VIEW_ERR;
   }
@@ -2548,7 +2548,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         // activated control. In the second case, we cancel the action, and
         // instead we begin to pan. We do this for those users intending to
         // pan that accidentally hit a control element.
-        if(lib->layout == 1) // filemanager
+        if(lib->layout != DT_LAYOUT_ZOOMABLE) // filemanager/expose
           activate_control_element(self);
         else // zoomable lighttable --> defer action to check for pan
           lib->activate_on_release = lib->image_over;
