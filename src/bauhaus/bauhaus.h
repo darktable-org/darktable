@@ -210,7 +210,7 @@ typedef struct dt_bauhaus_t
   int cursor_blink_counter;
 
   // colors:
-  GdkRGBA color_fg, color_fg_insensitive, color_bg, color_border;
+  GdkRGBA color_fg, color_fg_insensitive, color_bg, color_border, indicator_border;
 } dt_bauhaus_t;
 
 static inline int dt_bauhaus_get_widget_space()

@@ -1659,7 +1659,7 @@ void gui_init(dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_filmic_gui_data_t));
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
-  const int margin_width = (int)dt_conf_get_int("panel_width") / 10.0;
+  const int margin_width = (int)dt_conf_get_int("panel_width") / 8.0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));

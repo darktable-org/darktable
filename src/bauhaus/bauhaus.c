@@ -443,7 +443,7 @@ void dt_bauhaus_init()
 
   darktable.bauhaus->line_space = 2;
   darktable.bauhaus->line_height = 13;
-  darktable.bauhaus->marker_size = 0.35f;
+  darktable.bauhaus->marker_size = 0.28f;
   darktable.bauhaus->label_font_size = 0.65f;
   darktable.bauhaus->value_font_size = 0.65f;
 
@@ -482,6 +482,14 @@ void dt_bauhaus_init()
     darktable.bauhaus->color_border.red = 0x19 / 255.0;
     darktable.bauhaus->color_border.green = 0x19 / 255.0;
     darktable.bauhaus->color_border.blue = 0x19 / 255.0;
+    darktable.bauhaus->color_border.alpha = 1.0;
+  }
+
+  if(!gtk_style_context_lookup_color(ctx, "bauhaus_indicator_border", &darktable.bauhaus->indicator_border))
+  {
+    darktable.bauhaus->color_border.red = 0.9;
+    darktable.bauhaus->color_border.green = 0.9;
+    darktable.bauhaus->color_border.blue = 0.9;
     darktable.bauhaus->color_border.alpha = 1.0;
   }
 
@@ -1209,7 +1217,7 @@ static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t
   draw_equilateral_triangle(cr, ht * get_marker_size());
   cairo_fill_preserve(cr);
   cairo_set_line_width(cr, 0.5);
-  set_color(cr, darktable.bauhaus->color_border);
+  set_color(cr, darktable.bauhaus->indicator_border);
   cairo_stroke(cr);
   cairo_restore(cr);
 }
