@@ -36,7 +36,7 @@
 @define-color filmstrip_bg_color @lighttable_bg_color;
 
 * {
-  font: 11pt "Roboto Light", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  font: 10.5pt "Roboto Light", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   color: @fg_color;
   background-color: @bg_color;
   border-color: @border-color;
@@ -216,7 +216,6 @@ table
 {
   color: @fg_color;
   background-color: @bg_color;
-  font-size: 11pt;
   margin:0;
   border:0;
   padding:0;
@@ -225,7 +224,6 @@ table
 #section_label
 {
   padding: 3pt;
-  font-size: 11pt;
   border-bottom: 0.5pt solid @fg_color;
 }
 

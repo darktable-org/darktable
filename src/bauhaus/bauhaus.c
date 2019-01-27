@@ -442,7 +442,7 @@ void dt_bauhaus_init()
   gtk_widget_set_name(darktable.bauhaus->popup_area, "bauhaus-popup");
 
   darktable.bauhaus->line_space = 2;
-  darktable.bauhaus->line_height = 14;
+  darktable.bauhaus->line_height = 13;
   darktable.bauhaus->marker_size = 0.35f;
   darktable.bauhaus->label_font_size = 0.65f;
   darktable.bauhaus->value_font_size = 0.65f;
