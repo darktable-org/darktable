@@ -2236,6 +2236,7 @@ void enter(dt_view_t *self)
   lib->pan = 0;
   lib->force_expose_all = TRUE;
   lib->activate_on_release = DT_VIEW_ERR;
+  lib->layout = -1;
   dt_collection_hint_message(darktable.collection);
 
   // hide panel if we are in full preview mode
@@ -3099,6 +3100,7 @@ void gui_init(dt_view_t *self)
   // and the popup window
   const int panel_width = dt_conf_get_int("panel_width");
   lib->profile_floating_window = gtk_popover_new(profile_button);
+  lib->layout = -1;
 
   gtk_widget_set_size_request(GTK_WIDGET(lib->profile_floating_window), panel_width, -1);
 #if GTK_CHECK_VERSION(3, 16, 0)
