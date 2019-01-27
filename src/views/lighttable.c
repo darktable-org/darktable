@@ -1630,8 +1630,19 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     cairo_save(cr);
     // if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
     cairo_translate(cr, images[i].x, images[i].y);
-    dt_view_image_expose(&(lib->image_over), images[i].imgid, cr, images[i].width, images[i].height, 1, 0,
-                                    0, FALSE, TRUE);
+    int img_pointerx =
+      pointerx > images[i].x
+      && pointerx < images[i].x + images[i].width
+      ? pointerx - images[i].x
+      : images[i].width;
+    int img_pointery =
+      pointery > images[i].y
+      && pointery < images[i].y + images[i].height
+      ? pointery - images[i].y
+      : images[i].height;
+
+    dt_view_image_expose(&(lib->image_over), images[i].imgid, cr, images[i].width, images[i].height, 1,
+                         img_pointerx, img_pointery, TRUE, FALSE);
     cairo_restore(cr);
 
     // set mouse over id
