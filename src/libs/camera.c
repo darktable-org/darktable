@@ -408,7 +408,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
 {
   // Setup cairo font..
   cairo_set_font_size(cr, 11.5);
-  cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+  //cairo_select_font_face(cr, "Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 
   _expose_info_bar(self, cr, width, height, pointerx, pointery);
   _expose_settings_bar(self, cr, width, height, pointerx, pointery);
