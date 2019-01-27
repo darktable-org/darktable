@@ -1439,6 +1439,9 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   int32_t mouse_over_id;
   int missing = 0;
 
+  lib->image_over = DT_VIEW_DESERT;
+  lib->pointed_img_over = DT_VIEW_ERR;
+
   dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
   cairo_paint(cr);
 
