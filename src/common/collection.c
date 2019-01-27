@@ -133,11 +133,13 @@ static char * and_operator(int *term)
   {
     *term = 1;
     return "";
-  } else {
+  }
+  else
+  {
     return " AND ";
   }
 
-  assert(0);  // Not reached.
+  assert(0); // Not reached.
 }
 
 
