@@ -25,6 +25,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 
+#include <assert.h>
 #include <glib.h>
 #include <memory.h>
 #include <stdio.h>
@@ -119,6 +120,30 @@ const dt_collection_params_t *dt_collection_params(const dt_collection_t *collec
   return &collection->params;
 }
 
+
+// Return a pointer to a static string for an "AND" operator if the
+// number of terms processed so far requires it.  The variable used
+// for term should be an int intiailized to and_operator_initial()
+// before use.
+#define and_operator_initial() (0)
+static char * and_operator(int *term)
+{
+  assert(term != NULL);
+  if(*term == 0)
+  {
+    *term = 1;
+    return "";
+  }
+  else
+  {
+    return " AND ";
+  }
+
+  assert(0); // Not reached.
+}
+
+
+
 int dt_collection_update(const dt_collection_t *collection)
 {
   uint32_t result;
@@ -129,42 +154,38 @@ int dt_collection_update(const dt_collection_t *collection)
   gchar *where_ext = dt_collection_get_extended_where(collection, -1);
   if(!(collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
   {
-    int need_operator = 0;
+    int and_term = and_operator_initial();
     dt_collection_filter_t rating = collection->params.rating;
     if(rating == DT_COLLECTION_FILTER_NOT_REJECT) rating = DT_COLLECTION_FILTER_STAR_NO;
 
     /* add default filters */
     if(collection->params.filter_flags & COLLECTION_FILTER_FILM_ID)
     {
-      wq = dt_util_dstrcat(wq, "(film_id = %d)", collection->params.film_id);
-      need_operator = 1;
+      wq = dt_util_dstrcat(wq, "%s (film_id = %d)", and_operator(&and_term), collection->params.film_id);
     }
     // DON'T SELECT IMAGES MARKED TO BE DELETED.
     wq = dt_util_dstrcat(wq, " %s (flags & %d) != %d",
-                         (need_operator) ? "AND" : ((need_operator = 1) ? "" : ""), DT_IMAGE_REMOVE,
+                         and_operator(&and_term), DT_IMAGE_REMOVE,
                          DT_IMAGE_REMOVE);
 
     if(collection->params.filter_flags & COLLECTION_FILTER_CUSTOM_COMPARE)
       wq = dt_util_dstrcat(wq, " %s (flags & 7) %s %d AND (flags & 7) != 6",
-                           (need_operator) ? "and" : ((need_operator = 1) ? "" : ""),
+                           and_operator(&and_term),
                            comparators[collection->params.comparator], rating - 1);
     else if(collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_RATING)
       wq = dt_util_dstrcat(wq, " %s (flags & 7) >= %d AND (flags & 7) != 6",
-                           (need_operator) ? "and" : ((need_operator = 1) ? "" : ""), rating - 1);
+                           and_operator(&and_term), rating - 1);
     else if(collection->params.filter_flags & COLLECTION_FILTER_EQUAL_RATING)
-      wq = dt_util_dstrcat(wq, " %s (flags & 7) == %d",
-                           (need_operator) ? "AND" : ((need_operator = 1) ? "" : ""), rating - 1);
+      wq = dt_util_dstrcat(wq, " %s (flags & 7) == %d", and_operator(&and_term), rating - 1);
 
     if(collection->params.filter_flags & COLLECTION_FILTER_ALTERED)
-      wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.history WHERE imgid=id)",
-                           (need_operator) ? "AND" : ((need_operator = 1) ? "" : ""));
+      wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.history WHERE imgid=id)", and_operator(&and_term));
     else if(collection->params.filter_flags & COLLECTION_FILTER_UNALTERED)
-      wq = dt_util_dstrcat(wq, " %s id NOT IN (SELECT imgid FROM main.history WHERE imgid=id)",
-                           (need_operator) ? "AND" : ((need_operator = 1) ? "" : ""));
+      wq = dt_util_dstrcat(wq, " %s id NOT IN (SELECT imgid FROM main.history WHERE imgid=id)", and_operator(&and_term));
 
     /* add where ext if wanted */
     if((collection->params.query_flags & COLLECTION_QUERY_USE_WHERE_EXT))
-      wq = dt_util_dstrcat(wq, " %s %s", (need_operator) ? "AND" : "", where_ext);
+      wq = dt_util_dstrcat(wq, " %s %s", and_operator(&and_term), where_ext);
   }
   else
     wq = dt_util_dstrcat(wq, "%s", where_ext);
