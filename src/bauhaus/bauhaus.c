@@ -442,12 +442,10 @@ void dt_bauhaus_init()
   gtk_widget_set_name(darktable.bauhaus->popup_area, "bauhaus-popup");
 
   darktable.bauhaus->line_space = 2;
-  darktable.bauhaus->line_height = 11;
-  darktable.bauhaus->marker_size = 0.3f;
-  darktable.bauhaus->label_font_size = 0.6f;
-  darktable.bauhaus->value_font_size = 0.6f;
-  g_strlcpy(darktable.bauhaus->label_font, "sans", sizeof(darktable.bauhaus->label_font));
-  g_strlcpy(darktable.bauhaus->value_font, "sans", sizeof(darktable.bauhaus->value_font));
+  darktable.bauhaus->line_height = 14;
+  darktable.bauhaus->marker_size = 0.35f;
+  darktable.bauhaus->label_font_size = 0.65f;
+  darktable.bauhaus->value_font_size = 0.65f;
 
   GtkWidget *root_window = dt_ui_main_window(darktable.gui->ui);
   GtkStyleContext *ctx = gtk_style_context_new();
@@ -508,7 +506,7 @@ void dt_bauhaus_init()
   cairo_surface_destroy(cst);
 
   darktable.bauhaus->scale = (pango_height + 0.0f) / PANGO_SCALE / 8.5f;
-  darktable.bauhaus->widget_space = 2.5f * darktable.bauhaus->scale;
+  darktable.bauhaus->widget_space = 3.0f * darktable.bauhaus->scale;
 
   // keys are freed with g_free, values are ptrs to the widgets, these don't need to be cleaned up.
   darktable.bauhaus->keymap = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
@@ -1210,7 +1208,7 @@ static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t
   cairo_scale(cr, 1.0f, -1.0f);
   draw_equilateral_triangle(cr, ht * get_marker_size());
   cairo_fill_preserve(cr);
-  cairo_set_line_width(cr, 1.);
+  cairo_set_line_width(cr, 0.5);
   set_color(cr, darktable.bauhaus->color_border);
   cairo_stroke(cr);
   cairo_restore(cr);
@@ -1249,9 +1247,9 @@ static void dt_bauhaus_draw_quad(dt_bauhaus_widget_t *w, cairo_t *cr)
     {
       case DT_BAUHAUS_COMBOBOX:
         cairo_translate(cr, width - height * .5f, get_label_font_size() * .5f);
-        draw_equilateral_triangle(cr, height * get_marker_size());
+        draw_equilateral_triangle(cr, height * get_marker_size() * 0.6f);
         cairo_fill_preserve(cr);
-        cairo_set_line_width(cr, 1.);
+        cairo_set_line_width(cr, 0.5);
         set_color(cr, darktable.bauhaus->color_border);
         cairo_stroke(cr);
         break;
@@ -1317,7 +1315,7 @@ static void dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
   }
 
   cairo_rectangle(cr, 2, htm, wd - 4 - ht - 2, htM);
-  cairo_set_line_width(cr, 1.);
+  cairo_set_line_width(cr, 0.5);
   set_color(cr, darktable.bauhaus->color_border);
   cairo_stroke(cr);
 
@@ -1443,7 +1441,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   gtk_style_context_get_color(context, GTK_STATE_FLAG_PRELIGHT, &text_color_hover);
 
   // draw line around popup
-  cairo_set_line_width(cr, 1.0);
+  cairo_set_line_width(cr, 0.5);
   set_color(cr, darktable.bauhaus->color_border);
   if(w->type == DT_BAUHAUS_COMBOBOX)
   {
@@ -1494,8 +1492,8 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_set_line_width(cr, 1.);
       const int num_scales = 1.f / d->scale;
       // don't draw over orientation line
-      cairo_rectangle(cr, 0.0f, 0.9 * ht, width, height);
-      cairo_clip(cr);
+      cairo_rectangle(cr, 0.0f, ht, width, height);
+      //cairo_clip(cr);
       GdkRGBA color = darktable.bauhaus->color_border;
       for(int k = 0; k < num_scales; k++)
       {

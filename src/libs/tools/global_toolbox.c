@@ -331,10 +331,10 @@ static void _paint_help(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags,
   // grow is needed because ink.* are int and everything gets rounded to 1 or so otherwise,
   // leading to imprecise positioning
   static const float grow = 10.0;
-  PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
-  pango_font_description_set_absolute_size(desc, 2.7 * grow * PANGO_SCALE);
+  //PangoFontDescription *desc = pango_font_description_from_string("sans-serif bold");
+  //pango_font_description_set_absolute_size(desc, 2.7 * grow * PANGO_SCALE);
   layout = pango_cairo_create_layout(cr);
-  pango_layout_set_font_description(layout, desc);
+  //pango_layout_set_font_description(layout, desc);
   gint s = (w < h ? w : h);
   cairo_translate(cr, x + (w / 2.0), y + (h / 2.0));
   cairo_scale(cr, s / grow, s / grow);
@@ -343,7 +343,7 @@ static void _paint_help(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags,
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, 0 - ink.x - ink.width / 2.0, 0 - ink.y - ink.height / 2.0);
   pango_cairo_show_layout(cr, layout);
-  pango_font_description_free(desc);
+  //pango_font_description_free(desc);
   g_object_unref(layout);
 }
 

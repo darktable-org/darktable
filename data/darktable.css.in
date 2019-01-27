@@ -1,24 +1,25 @@
 @define-color bg_color #212121;
-@define-color plugin_bg_color #252525;
+@define-color plugin_bg_color #242424;
+@define-color border-color shade(@bg_color, 0.5);
 @define-color fg_color #cacaca;
 @define-color base_color #ffffff;
 @define-color text_color #3C3C3C;
-@define-color selected_bg_color #353535;
+@define-color selected_bg_color #313131;
 @define-color selected_fg_color #e2e2e2;
 @define-color tooltip_bg_color #000000;
 @define-color tooltip_fg_color #ffffff;
 @define-color really_dark_bg_color #111;
-@define-color darkroom_bg_color #333333;
-@define-color darkroom_preview_bg_color shade(@darkroom_bg_color, .5);
-@define-color lighttable_bg_color @darkroom_bg_color;
+@define-color darkroom_bg_color #777;
+@define-color darkroom_preview_bg_color shade(@darkroom_bg_color, 0.5);
+@define-color lighttable_bg_color #333;
 @define-color lighttable_preview_bg_color shade(@lighttable_bg_color, .5);
 @define-color brush_cursor alpha(white, .9);
 @define-color brush_trace alpha(black, .8);
 
-@define-color bauhaus_fg #ccc;
-@define-color bauhaus_border #191919;
-@define-color bauhaus_bg alpha(@bauhaus_border, 0.2);
-@define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5);
+@define-color bauhaus_fg shade(@plugin_bg_color, 3.0);
+@define-color bauhaus_border shade(@plugin_bg_color, 0.3);
+@define-color bauhaus_bg alpha(@plugin_bg_color, 0.3);
+@define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.7);
 
 @define-color thumbnail_bg_color #666666; /* area between border and outline */
 @define-color thumbnail_selected_bg_color #999999;
@@ -35,10 +36,10 @@
 @define-color filmstrip_bg_color @lighttable_bg_color;
 
 * {
-  font: ${GTK_CSS_FONT};
+  font: 11pt "Roboto Light", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   color: @fg_color;
   background-color: @bg_color;
-  border-color: #111111;
+  border-color: @border-color;
   text-shadow:none;
 /*  margin: 0; */ /* this makes scroll bars super wide. */
   padding: 0;
@@ -62,6 +63,7 @@ alignment
   border:0;
   padding:0;
 }
+
 #iop-plugin-ui eventbox,
 #lib-plugin-ui eventbox
 {
@@ -97,7 +99,7 @@ combobox *:hover,
   padding:0;
   border:0;
   margin:0;
-  background-color: @plugin_bg_color;
+  background-color: shade(@plugin_bg_color, 0.5);
   outline-style:none;
 }
 #lib-plugin-ui *,
@@ -110,40 +112,38 @@ combobox *:hover,
   color: @fg_color;
   outline-style:none;
 }
+
 /* buttons in plugins */
 #lib-plugin-ui * button,
+#iop-plugin-ui * button,
 button
 {
-  border-radius: 0;
-  border-style: none;
+  border: 0.5pt solid @border-color;
+  border-radius: 2pt;
   box-shadow:none;
   outline-width:0;
   border-image:none;
-  padding:1pt;
+  padding:2pt;
   margin:0;
-  border:0;
-  background-color: shade(@selected_bg_color, 1.2);
+  background-color: shade(@selected_bg_color, 1.3);
   background-image: none;
   min-height: 5pt;
   min-width: 5pt;
 }
 
-#iop-plugin-ui * button
-{
-  padding:1pt;
-  background-color: transparent;
-}
+
 #lib-plugin-ui * button:hover,
 #iop-plugin-ui * button:hover,
 button:hover
 {
   background-color: shade(@selected_bg_color, 1.7);
 }
+
 #lib-plugin-ui * button:checked,
 #iop-plugin-ui * button:checked,
 button:checked
 {
-  background-color: shade(@selected_bg_color, 1.4);
+  background-color: shade(@selected_bg_color, 1.5);
 }
 
 #lib-plugin-ui checkbutton *,
@@ -155,21 +155,20 @@ button:checked
 /* frame around plugin boxes */
 #iop-plugin-ui
 {
-  border: 1pt solid #171717;
-  border-radius: 1.5pt;
-  box-shadow: inset 0 0 1pt #171717;
+  border: 0.5pt solid @border-color;
+  border-radius: 2pt;
   margin: 0pt;
-  padding: 1pt 4pt 1pt 4pt;
+  padding: 1pt;
   background-color: @plugin_bg_color;
 }
+
 #iop-plugin-ui:selected,
 #lib-plugin-ui
 {
-  border: 1pt solid #111111;
-  box-shadow: inset 0 0 1pt #141414;
+  border: 0.5pt solid @border-color;
   border-radius: 1.5pt;
   margin: 0pt;
-  padding: 1pt 4pt 1pt 4pt;
+  padding: 1pt;
   color: @selected_fg_color;
   background-color: @selected_bg_color;
 }
@@ -217,6 +216,7 @@ table
 {
   color: @fg_color;
   background-color: @bg_color;
+  font-size: 11pt;
   margin:0;
   border:0;
   padding:0;
@@ -224,8 +224,9 @@ table
 
 #section_label
 {
-  padding-right: 0.5em;
-  border-bottom: 1pt solid @fg_color;
+  padding: 3pt;
+  font-size: 11pt;
+  border-bottom: 0.5pt solid @fg_color;
 }
 
 #lib-modulelist *
@@ -237,13 +238,12 @@ popover {
   opacity: 0.9;
   border: 0;
   border-radius: 0;
-  box-shadow: 0 0 0 2pt #111111;
   background-color: @selected_bg_color;
   padding: 1pt;
 }
 
 frame {
-  border: 1pt solid #111111;
+  border: 1pt solid @border-color;
   background-color: @selected_bg_color;
   color: @selected_fg_color;
 }
@@ -399,8 +399,8 @@ scrollbar.contents.trough.highlight
 #iop-plugin-ui scrollbar slider,
 scrollbar slider
 {
-    border-color: transparent;
-    background-color: @selected_bg_color;
+  border-color: transparent;
+  background-color: @selected_bg_color;
 }
 
 context-menu
@@ -491,9 +491,10 @@ separator, separator:hover
 {
   color: @selected_bg_color;
   border-style: solid;
-  border-width: 2pt;
+  border-width: 1pt;
   border-color: @selected_bg_color;
   background-color: @selected_bg_color;
+  margin-top: 2pt;
 }
 
 /* dialogs */

@@ -541,7 +541,6 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->storage), "value-changed", G_CALLBACK(storage_changed), (gpointer)d);
 
   label = dt_ui_section_label_new(_("format options"));
-  gtk_widget_set_margin_top(label, DT_PIXEL_APPLY_DPI(20));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
   dt_gui_add_help_link(self->widget, "export_selected.html#export_selected_usage");
 
@@ -565,7 +564,6 @@ void gui_init(dt_lib_module_t *self)
   } while((it = g_list_next(it)));
 
   label = dt_ui_section_label_new(_("global options"));
-  gtk_widget_set_margin_top(label, DT_PIXEL_APPLY_DPI(20));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
   dt_gui_add_help_link(self->widget, "export_selected.html#export_selected_usage");
 
