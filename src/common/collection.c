@@ -129,8 +129,8 @@ const dt_collection_params_t *dt_collection_params(const dt_collection_t *collec
 static char * and_operator(int *term)
 {
   assert(term != NULL);
-
-  if ( *term == 0 ) {
+  if(*term == 0)
+  {
     *term = 1;
     return "";
   } else {
