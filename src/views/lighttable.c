@@ -2424,7 +2424,7 @@ void activate_control_element(dt_view_t *self)
     case DT_VIEW_STAR_4:
     case DT_VIEW_STAR_5:
     {
-      int32_t mouse_over_id = dt_control_get_mouse_over_id();
+      const int32_t mouse_over_id = dt_control_get_mouse_over_id();
       dt_ratings_apply_to_image_or_group(mouse_over_id, lib->image_over);
       _update_collected_images(self);
       break;
