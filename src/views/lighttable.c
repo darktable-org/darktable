@@ -2529,8 +2529,8 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         // the pointer to GDK_HAND1 until we can exclude that it is a click,
         // namely until the pointer has moved a little distance. The code taking
         // care of this is in expose(). Pan only makes sense in zoomable lt.
-        if(lib->layout == 0) begin_pan(lib, x, y);
-        if(lib->layout == 1 && lib->using_arrows)
+        if(lib->layout == DT_LAYOUT_ZOOMABLE) begin_pan(lib, x, y);
+        if(lib->layout == DT_LAYOUT_FILEMANAGER && lib->using_arrows)
         {
           // in this case dt_control_get_mouse_over_id() means "last image visited with arrows"
           lib->using_arrows = 0;
