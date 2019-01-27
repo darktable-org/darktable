@@ -302,8 +302,6 @@ static inline void dt_ui_section_label_set(GtkWidget *label)
 {
   gtk_widget_set_halign(label, GTK_ALIGN_FILL); // make it span the whole available width
   g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);    // make the text left aligned
-  gtk_widget_set_margin_top(label, DT_PIXEL_APPLY_DPI(10)); // gtk+ css doesn't support margins :(
-  gtk_widget_set_margin_bottom(label, DT_PIXEL_APPLY_DPI(5)); // gtk+ css doesn't support margins :(
   gtk_widget_set_name(label, "section_label"); // make sure that we can style these easily
 }
 static inline GtkWidget *dt_ui_section_label_new(const gchar *str)

@@ -225,6 +225,8 @@ table
 {
   padding: 3pt;
   border-bottom: 0.5pt solid @fg_color;
+  margin: 5pt 0;
+  font-family: "Roboto";
 }
 
 #lib-modulelist *
