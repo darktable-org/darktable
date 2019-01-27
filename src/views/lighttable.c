@@ -2412,13 +2412,16 @@ void activate_control_element(dt_view_t *self)
   {
     case DT_VIEW_DESERT:
     {
-      int32_t id = dt_control_get_mouse_over_id();
-      if((lib->modifiers & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == 0)
-        dt_selection_select_single(darktable.selection, id);
-      else if((lib->modifiers & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
-        dt_selection_toggle(darktable.selection, id);
-      else if((lib->modifiers & (GDK_SHIFT_MASK)) == GDK_SHIFT_MASK)
-        dt_selection_select_range(darktable.selection, id);
+      if(lib->layout != DT_LAYOUT_EXPOSE)
+      {
+        int32_t id = dt_control_get_mouse_over_id();
+        if((lib->modifiers & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == 0)
+          dt_selection_select_single(darktable.selection, id);
+        else if((lib->modifiers & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
+          dt_selection_toggle(darktable.selection, id);
+        else if((lib->modifiers & (GDK_SHIFT_MASK)) == GDK_SHIFT_MASK)
+          dt_selection_select_range(darktable.selection, id);
+      }
       break;
     }
     case DT_VIEW_REJECT:
