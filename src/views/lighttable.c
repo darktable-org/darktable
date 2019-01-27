@@ -235,13 +235,11 @@ static void switch_layout_to(dt_library_t *lib, int new_layout)
   }
 
   dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
-  gtk_widget_show(GTK_WIDGET(m->widget));
 
-  if(new_layout == DT_LAYOUT_EXPOSE) {
+  if(new_layout == DT_LAYOUT_EXPOSE)
     gtk_widget_show(GTK_WIDGET(m->widget));
-  } else {
+  else
     gtk_widget_hide(GTK_WIDGET(m->widget));
-  }
 }
 
 static void move_view(dt_library_t *lib, dt_lighttable_direction_t dir)
@@ -2178,6 +2176,10 @@ static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, g
 
 void enter(dt_view_t *self)
 {
+  // hide filmstrip when entering the view
+  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
+  gtk_widget_hide(GTK_WIDGET(m->widget));
+
   gtk_drag_dest_set(dt_ui_center(darktable.gui->ui), GTK_DEST_DEFAULT_ALL, target_list_all, n_targets_all,
                     GDK_ACTION_COPY);
 
