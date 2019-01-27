@@ -1494,7 +1494,8 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   float avg_ratio = 0;
 
   // Get total window width and max window width/height
-  for(i = 0; i < sel_img_count; i++) {
+  for(i = 0; i < sel_img_count; i++)
+  {
     sum_w += images[i].width;
     max_w = MAX(max_w, images[i].width);
     max_h = MAX(max_h, images[i].height);
@@ -1510,18 +1511,23 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   float tmp_slot_ratio, slot_ratio;
   tmp_slot_ratio = slot_ratio = (width/ (float) per_row) / (height/ (float) per_col);
 
-
-  do {
+  do
+  {
     per_row = tmp_per_row;
     per_col = tmp_per_col;
     slot_ratio = tmp_slot_ratio;
 
-    if(avg_ratio > slot_ratio) {
+    if(avg_ratio > slot_ratio)
+    {
       tmp_per_row = per_row - 1;
-    } else {
+    }
+    else
+    {
       tmp_per_row = per_row + 1;
     }
+
     if(tmp_per_row == 0) break;
+
     tmp_per_col = (sel_img_count + tmp_per_row - 1) / tmp_per_row; //ceil(sel_img_count / tmp_per_row);
 
     tmp_slot_ratio = (width/ (float) tmp_per_row) / (height/( float) tmp_per_col);
@@ -1529,16 +1535,18 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   } while(per_row > 0 && per_row <= sel_img_count && absmul(tmp_slot_ratio, avg_ratio) < absmul(slot_ratio, avg_ratio));
 
 
-
   // Vertical layout
-  for(i = 0; i < sel_img_count; i++) {
+  for(i = 0; i < sel_img_count; i++)
+  {
     GList *slot_iter = g_list_first(slots);
-    for (; slot_iter; slot_iter = slot_iter->next) {
+    for (; slot_iter; slot_iter = slot_iter->next)
+    {
       GList *slot = (GList *) slot_iter->data;
       // Calculate current total height of slot
       int slot_h = distance;
       GList *slot_cw_iter = slot;
-      while(slot_cw_iter != NULL) {
+      while(slot_cw_iter != NULL)
+      {
         dt_layout_image_t *slot_cw = (dt_layout_image_t *) slot_cw_iter->data;
         slot_h = slot_h + slot_cw->height + distance;
         slot_cw_iter = slot_cw_iter->next;
@@ -1559,27 +1567,35 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   {
     int row_y = 0, x = 0, row_h = 0;
     int max_row_w = sum_w/per_col;//sqrt((float) sum_w * max_h);// * pow((float) width/height, 0.02);
-    for (GList *slot_iter = slots; slot_iter != NULL; slot_iter = slot_iter->next) {
+    for (GList *slot_iter = slots; slot_iter != NULL; slot_iter = slot_iter->next)
+    {
       GList *slot = (GList *) slot_iter->data;
+
       // Max width of windows in the slot
       int slot_max_w = 0;
-      for (GList *slot_cw_iter = slot; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next) {
+      for (GList *slot_cw_iter = slot; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next)
+      {
         dt_layout_image_t *cw = (dt_layout_image_t *) slot_cw_iter->data;
         slot_max_w = MAX(slot_max_w, cw->width);
       }
+
       int y = row_y;
-      for (GList *slot_cw_iter = slot; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next) {
+      for (GList *slot_cw_iter = slot; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next)
+      {
         dt_layout_image_t *cw = (dt_layout_image_t *) slot_cw_iter->data;
         cw->x = x + (slot_max_w - cw->width) / 2;
         cw->y = y;
         y += cw->height + distance;
         rows->data = g_list_append(rows->data, cw);
       }
+
       row_h = MAX(row_h, y - row_y);
       total_height = MAX(total_height, y);
       x += slot_max_w + distance;
       total_width = MAX(total_width, x);
-      if (x > max_row_w) {
+
+      if (x > max_row_w)
+      {
         x = 0;
         row_y += row_h;
         row_h = 0;
@@ -1595,15 +1611,21 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   total_width -= distance;
   total_height -= distance;
 
-  for (GList *iter = rows; iter != NULL; iter = iter->next) {
+  for (GList *iter = rows; iter != NULL; iter = iter->next)
+  {
     GList *row = (GList *) iter->data;
     int row_w = 0, xoff;
-    for (GList *slot_cw_iter = row; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next) {
+
+    for (GList *slot_cw_iter = row; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next)
+    {
       dt_layout_image_t *cw = (dt_layout_image_t *) slot_cw_iter->data;
       row_w = MAX(row_w, cw->x + cw->width);
     }
+
     xoff = (total_width - row_w) / 2;
-    for (GList *cw_iter = row; cw_iter != NULL; cw_iter = cw_iter->next) {
+
+    for (GList *cw_iter = row; cw_iter != NULL; cw_iter = cw_iter->next)
+    {
       dt_layout_image_t *cw = (dt_layout_image_t *) cw_iter->data;
       cw->x += xoff;
     }
@@ -1619,14 +1641,17 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
 
   int xoff = (width - (float) total_width * factor) / 2;
   int yoff = (height - (float) total_height * factor) / 2;
-  for(i = 0; i < sel_img_count; i++) {
+
+  for(i = 0; i < sel_img_count; i++)
+  {
     images[i].width = images[i].width * factor;
     images[i].height = images[i].height * factor;
     images[i].x = images[i].x * factor + xoff;
     images[i].y = images[i].y * factor + yoff;
   }
 
-  for(i = 0; i < sel_img_count; i++) {
+  for(i = 0; i < sel_img_count; i++)
+  {
     cairo_save(cr);
     // if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
     cairo_translate(cr, images[i].x, images[i].y);
@@ -1654,7 +1679,6 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   }
 
   free(images);
-
 
   sqlite3_finalize(stmt);
 
