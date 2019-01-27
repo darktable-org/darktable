@@ -78,7 +78,7 @@ typedef enum dt_lighttable_layout_t
   DT_LAYOUT_ZOOMABLE = 0,
   DT_LAYOUT_FILEMANAGER = 1,
   DT_LAYOUT_EXPOSE = 2,
-  DT_LAYOUT_LAST = 2
+  DT_LAYOUT_LAST = 3
 } dt_lighttable_layout_t;
 
 static gboolean rating_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -237,7 +237,7 @@ static void switch_layout_to(dt_library_t *lib, int new_layout)
   dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
   gtk_widget_show(GTK_WIDGET(m->widget));
 
-  if(new_layout == 2) {
+  if(new_layout == DT_LAYOUT_EXPOSE) {
     gtk_widget_show(GTK_WIDGET(m->widget));
   } else {
     gtk_widget_hide(GTK_WIDGET(m->widget));
@@ -493,6 +493,7 @@ void init(dt_view_t *self)
   lib->first_visible_filemanager = -1;
   lib->button = 0;
   lib->modifiers = 0;
+  lib->layout = -1;
   lib->center = lib->pan = lib->track = 0;
   lib->activate_on_release = DT_VIEW_ERR;
   lib->zoom_x = dt_conf_get_float("lighttable/ui/zoom_x");
