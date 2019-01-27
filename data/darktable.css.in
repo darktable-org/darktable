@@ -1,44 +1,69 @@
-@define-color bg_color #212121;
-@define-color plugin_bg_color #252525;
-@define-color fg_color #cacaca;
-@define-color base_color #ffffff;
-@define-color text_color #3C3C3C;
-@define-color selected_bg_color #353535;
-@define-color selected_fg_color #e2e2e2;
-@define-color tooltip_bg_color #000000;
-@define-color tooltip_fg_color #ffffff;
-@define-color really_dark_bg_color #111;
-@define-color darkroom_bg_color #333333;
-@define-color darkroom_preview_bg_color shade(@darkroom_bg_color, .5);
-@define-color lighttable_bg_color @darkroom_bg_color;
-@define-color lighttable_preview_bg_color shade(@lighttable_bg_color, .5);
+/* Perceptually uniform grey gradient */
+/* pure black is forbidden for visual assessment */
+@define-color grey_05 #111111;
+@define-color grey_10 #1b1b1b;
+@define-color grey_15 #262626;
+@define-color grey_20 #303030;
+@define-color grey_25 #3b3b3b;
+@define-color grey_30 #474747;
+@define-color grey_35 #525252;
+@define-color grey_40 #5e5e5e;
+@define-color grey_45 #6a6a6a;
+@define-color grey_50 #777777;
+@define-color grey_55 #848484;
+@define-color grey_60 #919191;
+@define-color grey_65 #9e9e9e;
+@define-color grey_70 #ababab;
+@define-color grey_75 #b9b9b9;
+@define-color grey_80 #c6c6c6;
+@define-color grey_85 #d4d4d4;
+@define-color grey_90 #e2e2e2;
+@define-color grey_95 #f1f1f1;
+/* pure white is forbidden for visual assessment */
+
+@define-color bg_color @grey_15;
+@define-color plugin_bg_color @grey_10;
+@define-color border-color @grey_10;
+@define-color fg_color @grey_80;
+@define-color base_color @grey_95;
+@define-color text_color @grey_35;
+@define-color selected_bg_color @grey_20;
+@define-color selected_fg_color @grey_85;
+@define-color tooltip_bg_color @grey_05;
+@define-color tooltip_fg_color @grey_70;
+@define-color really_dark_bg_color @grey_05;
+@define-color darkroom_bg_color @grey_50;
+@define-color darkroom_preview_bg_color @grey_25;
+@define-color lighttable_bg_color @grey_25;
+@define-color lighttable_preview_bg_color @grey_15;
 @define-color brush_cursor alpha(white, .9);
 @define-color brush_trace alpha(black, .8);
 
-@define-color bauhaus_fg #ccc;
-@define-color bauhaus_border #191919;
-@define-color bauhaus_bg alpha(@bauhaus_border, 0.2);
-@define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5);
+@define-color bauhaus_fg @grey_55;
+@define-color bauhaus_border shade(@plugin_bg_color, 0.5);
+@define-color bauhaus_indicator_border @grey_65;
+@define-color bauhaus_bg alpha(@grey_10, 0.25);
+@define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5 );
 
-@define-color thumbnail_bg_color #666666; /* area between border and outline */
-@define-color thumbnail_selected_bg_color #999999;
-@define-color thumbnail_hover_bg_color #cccccc;
-@define-color thumbnail_outline_color #333333; /* square around image+metadata */
-@define-color thumbnail_selected_outline_color #666666;
-@define-color thumbnail_hover_outline_color #999999;
-@define-color thumbnail_font_color #6c6c6c;
-@define-color thumbnail_selected_font_color #7f7f7f;
-@define-color thumbnail_hover_font_color #b2b2b2;
-@define-color thumbnail_border_color #191919; /* rectangle directly around image */
-@define-color thumbnail_selected_border_color #e5e5e5;
+@define-color thumbnail_bg_color @grey_45; /* area between border and outline */
+@define-color thumbnail_selected_bg_color @grey_65;
+@define-color thumbnail_hover_bg_color @grey_80;
+@define-color thumbnail_outline_color @grey_20; /* square around image+metadata */
+@define-color thumbnail_selected_outline_color @grey_45;
+@define-color thumbnail_hover_outline_color @grey_65;
+@define-color thumbnail_font_color @grey_45;
+@define-color thumbnail_selected_font_color @grey_50;
+@define-color thumbnail_hover_font_color @grey_75;
+@define-color thumbnail_border_color @grey_15; /* rectangle directly around image */
+@define-color thumbnail_selected_border_color @grey_90;
 
 @define-color filmstrip_bg_color @lighttable_bg_color;
 
 * {
-  font: ${GTK_CSS_FONT};
+  font: 1em "Roboto Light", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   color: @fg_color;
   background-color: @bg_color;
-  border-color: #111111;
+  border-color: @border-color;
   text-shadow:none;
 /*  margin: 0; */ /* this makes scroll bars super wide. */
   padding: 0;
@@ -62,6 +87,7 @@ alignment
   border:0;
   padding:0;
 }
+
 #iop-plugin-ui eventbox,
 #lib-plugin-ui eventbox
 {
@@ -97,7 +123,7 @@ combobox *:hover,
   padding:0;
   border:0;
   margin:0;
-  background-color: @plugin_bg_color;
+  background-color: shade(@plugin_bg_color, 0.5);
   outline-style:none;
 }
 #lib-plugin-ui *,
@@ -110,40 +136,38 @@ combobox *:hover,
   color: @fg_color;
   outline-style:none;
 }
+
 /* buttons in plugins */
 #lib-plugin-ui * button,
+#iop-plugin-ui * button,
 button
 {
-  border-radius: 0;
-  border-style: none;
+  border: 0.5pt solid @border-color;
+  border-radius: 2pt;
   box-shadow:none;
   outline-width:0;
   border-image:none;
-  padding:1pt;
+  padding:2pt;
   margin:0;
-  border:0;
-  background-color: shade(@selected_bg_color, 1.2);
+  background-color: shade(@selected_bg_color, 1.3);
   background-image: none;
   min-height: 5pt;
   min-width: 5pt;
 }
 
-#iop-plugin-ui * button
-{
-  padding:1pt;
-  background-color: transparent;
-}
+
 #lib-plugin-ui * button:hover,
 #iop-plugin-ui * button:hover,
 button:hover
 {
   background-color: shade(@selected_bg_color, 1.7);
 }
+
 #lib-plugin-ui * button:checked,
 #iop-plugin-ui * button:checked,
 button:checked
 {
-  background-color: shade(@selected_bg_color, 1.4);
+  background-color: shade(@selected_bg_color, 1.5);
 }
 
 #lib-plugin-ui checkbutton *,
@@ -155,21 +179,20 @@ button:checked
 /* frame around plugin boxes */
 #iop-plugin-ui
 {
-  border: 1pt solid #171717;
-  border-radius: 1.5pt;
-  box-shadow: inset 0 0 1pt #171717;
+  border: 0.5pt solid @border-color;
+  border-radius: 2pt;
   margin: 0pt;
-  padding: 1pt 4pt 1pt 4pt;
+  padding: 1pt;
   background-color: @plugin_bg_color;
 }
+
 #iop-plugin-ui:selected,
 #lib-plugin-ui
 {
-  border: 1pt solid #111111;
-  box-shadow: inset 0 0 1pt #141414;
-  border-radius: 1.5pt;
+  border: 0.5pt solid @border-color;
+  border-radius: 2pt;
   margin: 0pt;
-  padding: 1pt 4pt 1pt 4pt;
+  padding: 1pt;
   color: @selected_fg_color;
   background-color: @selected_bg_color;
 }
@@ -217,6 +240,7 @@ table
 {
   color: @fg_color;
   background-color: @bg_color;
+  font: 0.95em "Roboto Condensed Light";
   margin:0;
   border:0;
   padding:0;
@@ -224,8 +248,11 @@ table
 
 #section_label
 {
-  padding-right: 0.5em;
-  border-bottom: 1pt solid @fg_color;
+  padding: 3pt 0;
+  color: shade(@fg_color, 0.65);
+  border-bottom: 0.5pt solid  shade(@fg_color, 0.65);
+  margin: 0;
+  font-family: "Roboto";
 }
 
 #lib-modulelist *
@@ -237,13 +264,12 @@ popover {
   opacity: 0.9;
   border: 0;
   border-radius: 0;
-  box-shadow: 0 0 0 2pt #111111;
   background-color: @selected_bg_color;
   padding: 1pt;
 }
 
 frame {
-  border: 1pt solid #111111;
+  border: 1pt solid @border-color;
   background-color: @selected_bg_color;
   color: @selected_fg_color;
 }
@@ -399,8 +425,8 @@ scrollbar.contents.trough.highlight
 #iop-plugin-ui scrollbar slider,
 scrollbar slider
 {
-    border-color: transparent;
-    background-color: @selected_bg_color;
+  border-color: transparent;
+  background-color: @selected_bg_color;
 }
 
 context-menu
@@ -491,9 +517,10 @@ separator, separator:hover
 {
   color: @selected_bg_color;
   border-style: solid;
-  border-width: 2pt;
+  border-width: 1pt;
   border-color: @selected_bg_color;
   background-color: @selected_bg_color;
+  margin-top: 2pt;
 }
 
 /* dialogs */
