@@ -209,6 +209,11 @@ static inline dt_lighttable_layout_t get_layout(void)
   return dt_view_lighttable_get_layout(darktable.view_manager);
 }
 
+static inline gint get_zoom(void)
+{
+  return dt_view_lighttable_get_zoom(darktable.view_manager);
+}
+
 static void check_layout(dt_library_t *lib)
 {
   const dt_lighttable_layout_t layout = get_layout();
@@ -242,7 +247,7 @@ static void check_layout(dt_library_t *lib)
 
 static void move_view(dt_library_t *lib, dt_lighttable_direction_t dir)
 {
-  const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
+  const int iir = get_zoom();
   const int current_offset = lib->offset;
 
   switch(dir)
@@ -567,7 +572,7 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
   if(darktable.gui->center_tooltip == 1) darktable.gui->center_tooltip = 2;
 
   /* get grid stride */
-  const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
+  const int iir = get_zoom();
 
   /* get image over id */
   lib->image_over = DT_VIEW_DESERT;
@@ -1143,7 +1148,7 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   mouse_over_id = dt_control_get_mouse_over_id();
   /* need to keep this one as it needs to be refreshed */
   const int initial_mouse_over_id = mouse_over_id;
-  zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
+  zoom = get_zoom();
   zoom_x = lib->zoom_x;
   zoom_y = lib->zoom_y;
   pan = lib->pan;
@@ -1959,7 +1964,7 @@ static gboolean go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *
     move_view(lib, DIRECTION_PGUP);
   else
   {
-    const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
+    const int iir = get_zoom();
     const int scroll_by_rows = 4; /* This should be the number of visible rows. */
     const int offset_delta = scroll_by_rows * iir;
     lib->offset = MAX(lib->offset - offset_delta, 0);
@@ -1981,7 +1986,7 @@ static gboolean go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject
   }
   else
   {
-    const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
+    const int iir = get_zoom();
     const int scroll_by_rows = 4; /* This should be the number of visible rows. */
     const int offset_delta = scroll_by_rows * iir;
     lib->offset = MIN(lib->offset + offset_delta, lib->collection_count);
@@ -2273,7 +2278,7 @@ void mouse_leave(dt_view_t *self)
   if (lib->using_arrows == 0)
   {
     lib->last_mouse_over_id = dt_control_get_mouse_over_id(); // see mouse_enter (re: fluxbox)
-    if(!lib->pan && dt_conf_get_int("plugins/lighttable/images_in_row") != 1)
+    if(!lib->pan && get_zoom() != 1)
     {
       dt_control_set_mouse_over_id(-1);
       dt_control_queue_redraw_center();
@@ -2290,7 +2295,7 @@ void scrollbar_changed(dt_view_t *self, double x, double y)
   {
     case DT_LIGHTTABLE_LAYOUT_FILEMANAGER:
     {
-      const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
+      const int iir = get_zoom();
       _set_position(self, round(y/iir)*iir);
       break;
     }
@@ -2329,7 +2334,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   }
   else
   {
-    int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
+    int zoom = get_zoom();
     if(up)
     {
       zoom--;
@@ -2648,7 +2653,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
   if(!darktable.control->key_accelerators_on) return 0;
 
-  int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
+  int zoom = get_zoom();
 
   const dt_lighttable_layout_t layout = get_layout();
 

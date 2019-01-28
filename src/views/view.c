@@ -1935,6 +1935,14 @@ void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom)
   if(vm->proxy.lighttable.module) vm->proxy.lighttable.set_zoom(vm->proxy.lighttable.module, zoom);
 }
 
+gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm)
+{
+  if(vm->proxy.lighttable.module)
+    return vm->proxy.lighttable.get_zoom(vm->proxy.lighttable.module);
+  else
+    return 10;
+}
+
 dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm)
 {
   if(vm->proxy.lighttable.module)
