@@ -2136,7 +2136,8 @@ static gboolean rating_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
   _update_collected_images(self);
 
   dt_collection_update_query(darktable.collection); // update the counter
-  if(lib->collection_count != dt_collection_get_count(darktable.collection))
+
+  if(lib->layout != DT_LIGHTTABLE_LAYOUT_EXPOSE && lib->collection_count != dt_collection_get_count(darktable.collection))
   {
     // some images disappeared from collection. Selection is now invisible.
     // lib->collection_count  --> before the rating
