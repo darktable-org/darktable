@@ -711,10 +711,15 @@ static void sanitize_latitude(dt_iop_filmic_params_t *p, dt_iop_filmic_gui_data_
     // The film latitude is its linear part
     // it can never be higher than the dynamic range
     p->latitude_stops =  (p->white_point_source - p->black_point_source) * 0.99f;
-    darktable.gui->reset = 1;
-    dt_bauhaus_slider_set_soft(g->latitude_stops, p->latitude_stops);
-    darktable.gui->reset = 0;
   }
+  else if (p->latitude_stops <= 0.01f) // never initialized yet
+  {
+    p->latitude_stops =  2.0f;
+  }
+
+  darktable.gui->reset = 1;
+  dt_bauhaus_slider_set_soft(g->latitude_stops, p->latitude_stops);
+  darktable.gui->reset = 0;
 }
 
 static void apply_auto_grey(dt_iop_module_t *self)
