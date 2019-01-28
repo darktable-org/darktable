@@ -100,6 +100,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+  d->previous_layout =  d->layout = dt_conf_get_int("plugins/lighttable/layout");
 
   /* create layout selection combobox */
   d->layout_combo = gtk_combo_box_text_new();
@@ -107,7 +108,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->layout_combo), _("file manager"));
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->layout_combo), _("expose"));
 
-  gtk_combo_box_set_active(GTK_COMBO_BOX(d->layout_combo), dt_conf_get_int("plugins/lighttable/layout"));
+  gtk_combo_box_set_active(GTK_COMBO_BOX(d->layout_combo), d->layout);
 
   g_signal_connect(G_OBJECT(d->layout_combo), "changed", G_CALLBACK(_lib_lighttable_layout_changed), (gpointer)self);
 
