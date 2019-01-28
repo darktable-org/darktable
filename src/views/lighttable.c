@@ -72,14 +72,6 @@ typedef enum dt_lighttable_direction_t
   DIRECTION_CENTER = 10,
 } dt_lighttable_direction_t;
 
-typedef enum dt_lighttable_layout_t
-{
-  DT_LAYOUT_FIRST = -1,
-  DT_LAYOUT_ZOOMABLE = 0,
-  DT_LAYOUT_FILEMANAGER = 1,
-  DT_LAYOUT_LAST = 2
-} dt_lighttable_layout_t;
-
 static gboolean rating_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier, gpointer data);
 static gboolean colorlabels_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -119,7 +111,6 @@ typedef struct dt_library_t
   int using_arrows;
   int key_select;
   dt_lighttable_direction_t key_select_direction;
-  dt_lighttable_layout_t layout;
   uint32_t modifiers;
   uint32_t center, pan;
   dt_view_image_over_t activate_on_release;
@@ -176,6 +167,17 @@ typedef struct dt_library_t
 
 } dt_library_t;
 
+typedef struct dt_layout_image_t
+{
+    gint imgid;
+    gint width, height, x, y;
+} dt_layout_image_t;
+
+static inline float absmul(float a, float b) {
+  return a > b ? a/b : b/a;
+}
+
+
 /* drag and drop callbacks to reorder picture sequence (dnd)*/
 
 static void _dnd_get_picture_reorder(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
@@ -201,12 +203,18 @@ uint32_t view(const dt_view_t *self)
   return DT_VIEW_LIGHTTABLE;
 }
 
-static void switch_layout_to(dt_library_t *lib, int new_layout)
+static inline dt_lighttable_layout_t get_layout(void)
 {
-  // some sanity check for the new layout
-  lib->layout = (new_layout > DT_LAYOUT_FIRST && new_layout < DT_LAYOUT_LAST) ? new_layout : DT_LAYOUT_FILEMANAGER;
+  return darktable.view_manager->proxy.lighttable.get_layout
+    ? darktable.view_manager->proxy.lighttable.get_layout(darktable.view_manager->proxy.lighttable.module)
+    : DT_LIGHTTABLE_LAYOUT_FILEMANAGER;
+}
 
-  if(new_layout == DT_LAYOUT_FILEMANAGER)
+static void check_layout(dt_library_t *lib)
+{
+  const dt_lighttable_layout_t layout = get_layout();
+
+  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
   {
     if(lib->first_visible_zoomable >= 0)
     {
@@ -221,6 +229,13 @@ static void switch_layout_to(dt_library_t *lib, int new_layout)
     lib->offset_x = 0;
     lib->offset_y = 0;
   }
+
+  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
+
+  if(layout == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+    gtk_widget_show(GTK_WIDGET(m->widget));
+  else
+    gtk_widget_hide(GTK_WIDGET(m->widget));
 }
 
 static void move_view(dt_library_t *lib, dt_lighttable_direction_t dir)
@@ -435,7 +450,9 @@ static void _set_position(dt_view_t *self, uint32_t pos)
 static uint32_t _get_position(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-  if(lib->layout == DT_LAYOUT_FILEMANAGER)
+  const dt_lighttable_layout_t layout = get_layout();
+
+  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     return MAX(0, lib->first_visible_filemanager);
   else
     return MAX(0, lib->first_visible_zoomable);
@@ -1404,6 +1421,268 @@ failure:
   return missing;
 }
 
+static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
+                           int32_t pointery)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  int32_t mouse_over_id;
+  int missing = 0;
+
+  lib->image_over = DT_VIEW_DESERT;
+  lib->pointed_img_over = DT_VIEW_ERR;
+
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
+  cairo_paint(cr);
+
+  dt_view_set_scrollbar(self, 0, 0, 1, 1, 0, 0, 1, 1);
+
+  int sel_img_count = dt_collection_get_selected_count(NULL);
+
+  if(sel_img_count == 0) return 0;
+
+  gchar *query = NULL;
+  gchar *sq = NULL;
+
+  sq = dt_collection_get_sort_query(darktable.collection);
+
+  query = dt_util_dstrcat(query, "SELECT imgid, aspect_ratio, width, height FROM main.selected_images AS sel "
+                                 "JOIN main.images AS imgs ON sel.imgid = imgs.id %s", sq);
+
+
+  sqlite3_stmt *stmt;
+  /* prepare a new main query statement for collection */
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              query, -1,
+                              &stmt, NULL);
+
+  if(!stmt) return 0;
+
+  mouse_over_id = dt_control_get_mouse_over_id();
+
+  int id;
+  double aspect_ratio;
+
+  dt_layout_image_t *images = malloc(sel_img_count * sizeof(dt_layout_image_t));
+
+  int i = 0;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    id = sqlite3_column_int(stmt, 0);
+    aspect_ratio = sqlite3_column_double(stmt, 1);
+    if (!aspect_ratio) aspect_ratio = (double)sqlite3_column_int(stmt, 2) / (double)sqlite3_column_int(stmt, 3);
+
+    images[i].imgid = id;
+    images[i].width = (gint) (sqrt(aspect_ratio) * 100);
+    images[i].height = (gint) (1/sqrt(aspect_ratio) * 100);
+    i++;
+  }
+
+  int sum_w = 0, max_h = 0, max_w = 0;
+
+  GList *slots = NULL;
+
+  unsigned int total_width = 0, total_height = 0;
+  int distance = 1;
+  float avg_ratio = 0;
+
+  // Get total window width and max window width/height
+  for(i = 0; i < sel_img_count; i++)
+  {
+    sum_w += images[i].width;
+    max_w = MAX(max_w, images[i].width);
+    max_h = MAX(max_h, images[i].height);
+    avg_ratio += images[i].width / (float) images[i].height;
+  }
+
+  avg_ratio /= sel_img_count;
+
+  int per_row, tmp_per_row, per_col, tmp_per_col;
+  per_row = tmp_per_row = ceil(sqrt(sel_img_count));
+  per_col = tmp_per_col = (sel_img_count + per_row - 1) / per_row; // ceil(sel_img_count/per_row)
+
+  float tmp_slot_ratio, slot_ratio;
+  tmp_slot_ratio = slot_ratio = (width/ (float) per_row) / (height/ (float) per_col);
+
+  do
+  {
+    per_row = tmp_per_row;
+    per_col = tmp_per_col;
+    slot_ratio = tmp_slot_ratio;
+
+    if(avg_ratio > slot_ratio)
+    {
+      tmp_per_row = per_row - 1;
+    }
+    else
+    {
+      tmp_per_row = per_row + 1;
+    }
+
+    if(tmp_per_row == 0) break;
+
+    tmp_per_col = (sel_img_count + tmp_per_row - 1) / tmp_per_row; //ceil(sel_img_count / tmp_per_row);
+
+    tmp_slot_ratio = (width/ (float) tmp_per_row) / (height/( float) tmp_per_col);
+
+  } while(per_row > 0 && per_row <= sel_img_count && absmul(tmp_slot_ratio, avg_ratio) < absmul(slot_ratio, avg_ratio));
+
+
+  // Vertical layout
+  for(i = 0; i < sel_img_count; i++)
+  {
+    GList *slot_iter = g_list_first(slots);
+    for (; slot_iter; slot_iter = slot_iter->next)
+    {
+      GList *slot = (GList *) slot_iter->data;
+      // Calculate current total height of slot
+      int slot_h = distance;
+      GList *slot_cw_iter = slot;
+      while(slot_cw_iter != NULL)
+      {
+        dt_layout_image_t *slot_cw = (dt_layout_image_t *) slot_cw_iter->data;
+        slot_h = slot_h + slot_cw->height + distance;
+        slot_cw_iter = slot_cw_iter->next;
+      }
+      // Add window to slot if the slot height after adding the window
+      // doesn't exceed max window height
+      if (slot_h + distance + images[i].height < max_h) {
+        slot_iter->data = g_list_append(slot, &(images[i]));
+        break;
+      }
+    }
+    // Otherwise, create a new slot with only this window
+    if (!slot_iter)
+      slots = g_list_append(slots, g_list_append(NULL, &(images[i])));
+  }
+
+  GList *rows = g_list_append(NULL, NULL);
+  {
+    int row_y = 0, x = 0, row_h = 0;
+    int max_row_w = sum_w/per_col;//sqrt((float) sum_w * max_h);// * pow((float) width/height, 0.02);
+    for (GList *slot_iter = slots; slot_iter != NULL; slot_iter = slot_iter->next)
+    {
+      GList *slot = (GList *) slot_iter->data;
+
+      // Max width of windows in the slot
+      int slot_max_w = 0;
+      for (GList *slot_cw_iter = slot; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next)
+      {
+        dt_layout_image_t *cw = (dt_layout_image_t *) slot_cw_iter->data;
+        slot_max_w = MAX(slot_max_w, cw->width);
+      }
+
+      int y = row_y;
+      for (GList *slot_cw_iter = slot; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next)
+      {
+        dt_layout_image_t *cw = (dt_layout_image_t *) slot_cw_iter->data;
+        cw->x = x + (slot_max_w - cw->width) / 2;
+        cw->y = y;
+        y += cw->height + distance;
+        rows->data = g_list_append(rows->data, cw);
+      }
+
+      row_h = MAX(row_h, y - row_y);
+      total_height = MAX(total_height, y);
+      x += slot_max_w + distance;
+      total_width = MAX(total_width, x);
+
+      if (x > max_row_w)
+      {
+        x = 0;
+        row_y += row_h;
+        row_h = 0;
+        rows = g_list_append(rows, 0);
+        rows = rows->next;
+      }
+      g_list_free(slot);
+    }
+    g_list_free(slots);
+    slots = NULL;
+  }
+
+  total_width -= distance;
+  total_height -= distance;
+
+  for (GList *iter = rows; iter != NULL; iter = iter->next)
+  {
+    GList *row = (GList *) iter->data;
+    int row_w = 0, xoff;
+
+    for (GList *slot_cw_iter = row; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next)
+    {
+      dt_layout_image_t *cw = (dt_layout_image_t *) slot_cw_iter->data;
+      row_w = MAX(row_w, cw->x + cw->width);
+    }
+
+    xoff = (total_width - row_w) / 2;
+
+    for (GList *cw_iter = row; cw_iter != NULL; cw_iter = cw_iter->next)
+    {
+      dt_layout_image_t *cw = (dt_layout_image_t *) cw_iter->data;
+      cw->x += xoff;
+    }
+    g_list_free(row);
+  }
+
+  g_list_free(rows);
+
+  float factor;
+  factor = (float) (width - 1) / total_width;
+  if (factor * total_height > height - 1)
+    factor = (float) (height - 1) / total_height;
+
+  int xoff = (width - (float) total_width * factor) / 2;
+  int yoff = (height - (float) total_height * factor) / 2;
+
+  for(i = 0; i < sel_img_count; i++)
+  {
+    images[i].width = images[i].width * factor;
+    images[i].height = images[i].height * factor;
+    images[i].x = images[i].x * factor + xoff;
+    images[i].y = images[i].y * factor + yoff;
+  }
+
+  for(i = 0; i < sel_img_count; i++)
+  {
+    cairo_save(cr);
+    // if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
+    cairo_translate(cr, images[i].x, images[i].y);
+    int img_pointerx =
+      pointerx > images[i].x
+      && pointerx < images[i].x + images[i].width
+      ? pointerx - images[i].x
+      : images[i].width;
+    int img_pointery =
+      pointery > images[i].y
+      && pointery < images[i].y + images[i].height
+      ? pointery - images[i].y
+      : images[i].height;
+
+    dt_view_image_expose(&(lib->image_over), images[i].imgid, cr, images[i].width, images[i].height, 1,
+                         img_pointerx, img_pointery, TRUE, FALSE);
+    cairo_restore(cr);
+
+    // set mouse over id
+    if(pointerx > images[i].x && pointerx < images[i].x + images[i].width && pointery > images[i].y && pointery < images[i].y + images[i].height)
+    {
+      mouse_over_id = images[i].imgid;
+      dt_control_set_mouse_over_id(mouse_over_id);
+    }
+  }
+
+  free(images);
+
+  sqlite3_finalize(stmt);
+
+  /* free allocated strings */
+  g_free(sq);
+
+  g_free(query);
+
+  if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print(darktable.mipmap_cache);
+  return missing;
+}
+
 /**
  * Displays a full screen preview of the image currently under the mouse pointer.
  */
@@ -1566,16 +1845,14 @@ void begin_pan(dt_library_t *lib, double x, double y)
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   const double start = dt_get_wtime();
+  const dt_lighttable_layout_t layout = get_layout();
 
   // Let's show full preview if in that state...
   dt_library_t *lib = (dt_library_t *)self->data;
 
-  /* TODO: instead of doing a check here, the call to switch_layout_to
-     should be done in the place where the layout was actually changed. */
-  const int new_layout = dt_conf_get_int("plugins/lighttable/layout");
-  if(lib->layout != new_layout) switch_layout_to(lib, new_layout);
-
   int missing_thumbnails = 0;
+
+  check_layout(lib);
 
   if(lib->full_preview_id != -1)
   {
@@ -1583,17 +1860,24 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   }
   else // we do pass on expose to manager or zoomable
   {
-    switch(new_layout)
+    switch(layout)
     {
-      case DT_LAYOUT_FILEMANAGER:
+      case DT_LIGHTTABLE_LAYOUT_FILEMANAGER:
         missing_thumbnails = expose_filemanager(self, cr, width, height, pointerx, pointery);
         break;
-      case DT_LAYOUT_ZOOMABLE:
+      case DT_LIGHTTABLE_LAYOUT_ZOOMABLE: // zoomable
         missing_thumbnails = expose_zoomable(self, cr, width, height, pointerx, pointery);
+        break;
+      case DT_LIGHTTABLE_LAYOUT_EXPOSE: // compare
+        missing_thumbnails = expose_expose(self, cr, width, height, pointerx, pointery);
+        break;
+      case DT_LIGHTTABLE_LAYOUT_FIRST:
+      case DT_LIGHTTABLE_LAYOUT_LAST:
         break;
     }
   }
-  if(lib->layout != 0)
+
+  if(layout != DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
   { // file manager
     lib->activate_on_release = DT_VIEW_ERR;
   }
@@ -1605,7 +1889,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     // a pan. In the first case we begin the pan, in the second the pan was
     // already started however we did not signal it with the GDK_HAND1 pointer,
     // so we still have to set the pointer (see comments in button_pressed()).
-    float distance = fabs(pointerx - lib->pan_x) + fabs(pointery - lib->pan_y);
+    const float distance = fabs(pointerx - lib->pan_x) + fabs(pointery - lib->pan_y);
     if(lib->activate_on_release != lib->image_over
        || (lib->activate_on_release == DT_VIEW_DESERT && distance > DT_PIXEL_APPLY_DPI(5)))
     {
@@ -1635,10 +1919,11 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                          GdkModifierType modifier, gpointer data)
 {
-  const int layout = dt_conf_get_int("plugins/lighttable/layout");
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
-  if(layout == DT_LAYOUT_FILEMANAGER)
+  const dt_lighttable_layout_t layout = get_layout();
+
+  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     move_view(lib, DIRECTION_TOP);
   else
     lib->offset = 0;
@@ -1649,10 +1934,11 @@ static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *ac
 static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                            GdkModifierType modifier, gpointer data)
 {
-  const int layout = dt_conf_get_int("plugins/lighttable/layout");
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
-  if(layout == DT_LAYOUT_FILEMANAGER)
+  const dt_lighttable_layout_t layout = get_layout();
+
+  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     move_view(lib, DIRECTION_BOTTOM);
   else
     lib->offset = 0x1fffffff;
@@ -1665,8 +1951,9 @@ static gboolean go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *
 {
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
-  const int layout = dt_conf_get_int("plugins/lighttable/layout");
-  if(layout == DT_LAYOUT_FILEMANAGER)
+  const dt_lighttable_layout_t layout = get_layout();
+
+  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     move_view(lib, DIRECTION_PGUP);
   else
   {
@@ -1684,8 +1971,9 @@ static gboolean go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject
 {
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
-  const int layout = dt_conf_get_int("plugins/lighttable/layout");
-  if(layout == DT_LAYOUT_FILEMANAGER)
+  const dt_lighttable_layout_t layout = get_layout();
+
+  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
   {
     move_view(lib, DIRECTION_PGDOWN);
   }
@@ -1705,8 +1993,9 @@ static gboolean realign_key_accel_callback(GtkAccelGroup *accel_group, GObject *
 {
   dt_view_t *self = (dt_view_t *)data;
   dt_library_t *lib = (dt_library_t *)self->data;
-  const int layout = dt_conf_get_int("plugins/lighttable/layout");
-  if(layout == DT_LAYOUT_FILEMANAGER) move_view(lib, DIRECTION_CENTER);
+  const dt_lighttable_layout_t layout = get_layout();
+
+  if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER) move_view(lib, DIRECTION_CENTER);
   dt_control_queue_redraw_center();
   return TRUE;
 }
@@ -1742,6 +2031,7 @@ static gboolean rating_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
   int next_image_rowid = -1;
 
   dt_library_t *lib = (dt_library_t *)self->data;
+  const dt_lighttable_layout_t layout = get_layout();
 
   // needed as we can have a reordering of the pictures
   if(_is_rating_order_actif(self))
@@ -1788,7 +2078,8 @@ static gboolean rating_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
   _update_collected_images(self);
 
   dt_collection_update_query(darktable.collection); // update the counter
-  if(lib->collection_count != dt_collection_get_count(darktable.collection))
+
+  if(layout != DT_LIGHTTABLE_LAYOUT_EXPOSE && lib->collection_count != dt_collection_get_count(darktable.collection))
   {
     // some images disappeared from collection. Selection is now invisible.
     // lib->collection_count  --> before the rating
@@ -1864,6 +2155,10 @@ static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, g
 
 void enter(dt_view_t *self)
 {
+  // hide filmstrip when entering the view
+  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
+  gtk_widget_hide(GTK_WIDGET(m->widget));
+
   gtk_drag_dest_set(dt_ui_center(darktable.gui->ui), GTK_DEST_DEFAULT_ALL, target_list_all, n_targets_all,
                     GDK_ACTION_COPY);
 
@@ -1987,17 +2282,17 @@ void mouse_leave(dt_view_t *self)
 
 void scrollbar_changed(dt_view_t *self, double x, double y)
 {
-  const int layout = dt_conf_get_int("plugins/lighttable/layout");
+  const dt_lighttable_layout_t layout = get_layout();
 
   switch(layout)
   {
-    case DT_LAYOUT_FILEMANAGER:
+    case DT_LIGHTTABLE_LAYOUT_FILEMANAGER:
     {
       const int iir = dt_conf_get_int("plugins/lighttable/images_in_row");
       _set_position(self, round(y/iir)*iir);
       break;
     }
-    case DT_LAYOUT_ZOOMABLE:
+    case DT_LIGHTTABLE_LAYOUT_ZOOMABLE:
     {
       dt_library_t *lib = (dt_library_t *) self->data;
       lib->zoom_x = x;
@@ -2005,6 +2300,8 @@ void scrollbar_changed(dt_view_t *self, double x, double y)
       dt_control_queue_redraw_center();
       break;
     }
+    default:
+      break;
   }
 }
 
@@ -2012,7 +2309,8 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->force_expose_all = TRUE;
-  const int layout = dt_conf_get_int("plugins/lighttable/layout");
+  const dt_lighttable_layout_t layout = get_layout();
+
   if(lib->full_preview_id > -1)
   {
     if(up)
@@ -2020,7 +2318,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
     else
       lib->track = +DT_LIBRARY_MAX_ZOOM;
   }
-  else if(layout == DT_LAYOUT_FILEMANAGER && state == 0)
+  else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && state == 0)
   {
     if(up)
       move_view(lib, DIRECTION_UP);
@@ -2035,7 +2333,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       zoom--;
       if(zoom < 1)
         zoom = 1;
-      else if(layout == DT_LAYOUT_FILEMANAGER)
+      else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
         zoom_around_image(lib, x, y, self->width, self->height, zoom + 1, zoom);
     }
     else
@@ -2043,7 +2341,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       zoom++;
       if(zoom > 2 * DT_LIBRARY_MAX_ZOOM)
         zoom = 2 * DT_LIBRARY_MAX_ZOOM;
-      else if(layout == DT_LAYOUT_FILEMANAGER)
+      else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
         zoom_around_image(lib, x, y, self->width, self->height, zoom - 1, zoom);
     }
     dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
@@ -2053,17 +2351,22 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
 void activate_control_element(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
+  const dt_lighttable_layout_t layout = get_layout();
+
   switch(lib->image_over)
   {
     case DT_VIEW_DESERT:
     {
-      int32_t id = dt_control_get_mouse_over_id();
-      if((lib->modifiers & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == 0)
-        dt_selection_select_single(darktable.selection, id);
-      else if((lib->modifiers & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
-        dt_selection_toggle(darktable.selection, id);
-      else if((lib->modifiers & (GDK_SHIFT_MASK)) == GDK_SHIFT_MASK)
-        dt_selection_select_range(darktable.selection, id);
+      if(layout != DT_LIGHTTABLE_LAYOUT_EXPOSE)
+      {
+        int32_t id = dt_control_get_mouse_over_id();
+        if((lib->modifiers & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == 0)
+          dt_selection_select_single(darktable.selection, id);
+        else if((lib->modifiers & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
+          dt_selection_toggle(darktable.selection, id);
+        else if((lib->modifiers & (GDK_SHIFT_MASK)) == GDK_SHIFT_MASK)
+          dt_selection_select_range(darktable.selection, id);
+      }
       break;
     }
     case DT_VIEW_REJECT:
@@ -2073,7 +2376,7 @@ void activate_control_element(dt_view_t *self)
     case DT_VIEW_STAR_4:
     case DT_VIEW_STAR_5:
     {
-      int32_t mouse_over_id = dt_control_get_mouse_over_id();
+      const int32_t mouse_over_id = dt_control_get_mouse_over_id();
       dt_ratings_apply_to_image_or_group(mouse_over_id, lib->image_over);
       _update_collected_images(self);
       break;
@@ -2156,6 +2459,8 @@ static void _stop_audio(dt_library_t *lib)
 int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
+  const dt_lighttable_layout_t layout = get_layout();
+
   lib->modifiers = state;
   lib->key_jump_offset = 0;
   lib->button = which;
@@ -2178,8 +2483,8 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         // the pointer to GDK_HAND1 until we can exclude that it is a click,
         // namely until the pointer has moved a little distance. The code taking
         // care of this is in expose(). Pan only makes sense in zoomable lt.
-        if(lib->layout == 0) begin_pan(lib, x, y);
-        if(lib->layout == 1 && lib->using_arrows)
+        if(layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE) begin_pan(lib, x, y);
+        if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && lib->using_arrows)
         {
           // in this case dt_control_get_mouse_over_id() means "last image visited with arrows"
           lib->using_arrows = 0;
@@ -2197,7 +2502,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         // activated control. In the second case, we cancel the action, and
         // instead we begin to pan. We do this for those users intending to
         // pan that accidentally hit a control element.
-        if(lib->layout == 1) // filemanager
+        if(layout != DT_LIGHTTABLE_LAYOUT_ZOOMABLE) // filemanager/expose
           activate_control_element(self);
         else // zoomable lighttable --> defer action to check for pan
           lib->activate_on_release = lib->image_over;
@@ -2291,10 +2596,11 @@ int key_released(dt_view_t *self, guint key, guint state)
 {
   dt_control_accels_t *accels = &darktable.control->accels;
   dt_library_t *lib = (dt_library_t *)self->data;
+  const dt_lighttable_layout_t layout = get_layout();
 
   // in zoomable lighttable mode always expose full when a key is pressed as the whole area is
   // adjusted each time a navigation key is used.
-  if (lib->layout == DT_LAYOUT_ZOOMABLE)
+  if (layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
     lib->force_expose_all = TRUE;
 
   if(lib->key_select && (key == GDK_KEY_Shift_L || key == GDK_KEY_Shift_R))
@@ -2342,7 +2648,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
   int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
 
-  const int layout = dt_conf_get_int("plugins/lighttable/layout");
+  const dt_lighttable_layout_t layout = get_layout();
 
   if(lib->full_preview_id != -1 && ((key == accels->lighttable_preview_sticky_exit.accel_key
                                      && state == accels->lighttable_preview_sticky_exit.accel_mods)
@@ -2441,11 +2747,11 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
   // key move left
   if((key == accels->lighttable_left.accel_key && state == accels->lighttable_left.accel_mods)
-     || (key == accels->lighttable_left.accel_key && layout == DT_LAYOUT_FILEMANAGER && zoom != 1))
+     || (key == accels->lighttable_left.accel_key && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && zoom != 1))
   {
     if(lib->full_preview_id > -1)
       lib->track = -DT_LIBRARY_MAX_ZOOM;
-    else if(layout == DT_LAYOUT_FILEMANAGER)
+    else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
       if (zoom == 1)
       {
@@ -2466,11 +2772,11 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
   // key move right
   if((key == accels->lighttable_right.accel_key && state == accels->lighttable_right.accel_mods)
-     || (key == accels->lighttable_right.accel_key && layout == DT_LAYOUT_FILEMANAGER && zoom != 1))
+     || (key == accels->lighttable_right.accel_key && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && zoom != 1))
   {
     if(lib->full_preview_id > -1)
       lib->track = +DT_LIBRARY_MAX_ZOOM;
-    else if(layout == DT_LAYOUT_FILEMANAGER)
+    else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
       if (zoom == 1)
       {
@@ -2491,11 +2797,11 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
   // key move up
   if((key == accels->lighttable_up.accel_key && state == accels->lighttable_up.accel_mods)
-     || (key == accels->lighttable_up.accel_key && layout == DT_LAYOUT_FILEMANAGER && zoom != 1))
+     || (key == accels->lighttable_up.accel_key && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && zoom != 1))
   {
     if(lib->full_preview_id > -1)
       lib->track = -DT_LIBRARY_MAX_ZOOM;
-    else if(layout == DT_LAYOUT_FILEMANAGER)
+    else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
       if (zoom == 1)
       {
@@ -2514,11 +2820,11 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
   // key move donw
   if((key == accels->lighttable_down.accel_key && state == accels->lighttable_down.accel_mods)
-     || (key == accels->lighttable_down.accel_key && layout == DT_LAYOUT_FILEMANAGER && zoom != 1))
+     || (key == accels->lighttable_down.accel_key && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && zoom != 1))
   {
     if(lib->full_preview_id > -1)
       lib->track = +DT_LIBRARY_MAX_ZOOM;
-    else if(layout == DT_LAYOUT_FILEMANAGER)
+    else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
       if (zoom == 1)
       {
@@ -2813,13 +3119,13 @@ static gboolean _is_order_actif(dt_view_t *self, dt_collection_sort_t sort)
 {
   if (darktable.gui)
   {
-    const int layout = dt_conf_get_int("plugins/lighttable/layout");
+    const dt_lighttable_layout_t layout = get_layout();
 
     // only in file manager
     // only in light table
     // only if custom image order is selected
     dt_view_t *current_view = darktable.view_manager->current_view;
-    if (layout == DT_LAYOUT_FILEMANAGER
+    if (layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER
         && darktable.collection->params.sort == sort
         && current_view
         && current_view->view(self) == DT_VIEW_LIGHTTABLE)
