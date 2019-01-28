@@ -1953,7 +1953,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     // a pan. In the first case we begin the pan, in the second the pan was
     // already started however we did not signal it with the GDK_HAND1 pointer,
     // so we still have to set the pointer (see comments in button_pressed()).
-    float distance = fabs(pointerx - lib->pan_x) + fabs(pointery - lib->pan_y);
+    const float distance = fabs(pointerx - lib->pan_x) + fabs(pointery - lib->pan_y);
     if(lib->activate_on_release != lib->image_over
        || (lib->activate_on_release == DT_VIEW_DESERT && distance > DT_PIXEL_APPLY_DPI(5)))
     {
