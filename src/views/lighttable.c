@@ -206,9 +206,7 @@ uint32_t view(const dt_view_t *self)
 
 static inline dt_lighttable_layout_t get_layout(void)
 {
-  return darktable.view_manager->proxy.lighttable.get_layout
-    ? darktable.view_manager->proxy.lighttable.get_layout(darktable.view_manager->proxy.lighttable.module)
-    : DT_LIGHTTABLE_LAYOUT_FILEMANAGER;
+  return dt_view_lighttable_get_layout(darktable.view_manager);
 }
 
 static void check_layout(dt_library_t *lib)
