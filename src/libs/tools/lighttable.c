@@ -34,10 +34,12 @@ typedef struct dt_lib_tool_lighttable_t
   GtkWidget *zoom_entry;
   GtkWidget *layout_combo;
   dt_lighttable_layout_t layout, previous_layout;
+  int current_zoom;
 } dt_lib_tool_lighttable_t;
 
 /* set zoom proxy function */
 static void _lib_lighttable_set_zoom(dt_lib_module_t *self, gint zoom);
+static gint _lib_lighttable_get_zoom(dt_lib_module_t *self);
 
 /* get/set layout proxy function */
 static dt_lighttable_layout_t _lib_lighttable_get_layout(dt_lib_module_t *self);
@@ -101,6 +103,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
   d->previous_layout =  d->layout = dt_conf_get_int("plugins/lighttable/layout");
+  d->current_zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
 
   /* create layout selection combobox */
   d->layout_combo = gtk_combo_box_text_new();
@@ -134,7 +137,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->zoom), "value-changed", G_CALLBACK(_lib_lighttable_zoom_slider_changed),
                    (gpointer)self);
   g_signal_connect(d->zoom_entry, "key-press-event", G_CALLBACK(_lib_lighttable_zoom_entry_changed), self);
-  gtk_range_set_value(GTK_RANGE(d->zoom), dt_conf_get_int("plugins/lighttable/images_in_row"));
+  gtk_range_set_value(GTK_RANGE(d->zoom), d->current_zoom);
   _lib_lighttable_zoom_slider_changed(GTK_RANGE(d->zoom), self); // the slider defaults to 1 and GTK doesn't
                                                                  // fire a value-changed signal when setting
                                                                  // it to 1 => empty text box
@@ -144,6 +147,7 @@ void gui_init(dt_lib_module_t *self)
 
   darktable.view_manager->proxy.lighttable.module = self;
   darktable.view_manager->proxy.lighttable.set_zoom = _lib_lighttable_set_zoom;
+  darktable.view_manager->proxy.lighttable.get_zoom = _lib_lighttable_get_zoom;
   darktable.view_manager->proxy.lighttable.get_layout = _lib_lighttable_get_layout;
   darktable.view_manager->proxy.lighttable.set_layout = _lib_lighttable_set_layout;
 }
@@ -193,6 +197,7 @@ static void _lib_lighttable_zoom_slider_changed(GtkRange *range, gpointer user_d
   dt_conf_set_int("plugins/lighttable/images_in_row", i);
   gchar *i_as_str = g_strdup_printf("%d", i);
   gtk_entry_set_text(GTK_ENTRY(d->zoom_entry), i_as_str);
+  d->current_zoom = i;
   g_free(i_as_str);
   dt_control_queue_redraw_center();
 }
@@ -311,6 +316,13 @@ static void _lib_lighttable_set_zoom(dt_lib_module_t *self, gint zoom)
 {
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
   gtk_range_set_value(GTK_RANGE(d->zoom), zoom);
+  d->current_zoom = zoom;
+}
+
+static gint _lib_lighttable_get_zoom(dt_lib_module_t *self)
+{
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
+  return d->current_zoom;
 }
 
 static gboolean _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel_group,

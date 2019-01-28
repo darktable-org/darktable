@@ -254,6 +254,7 @@ typedef struct dt_view_manager_t
       struct dt_lib_module_t *module;
       struct dt_view_t *view;
       void (*set_zoom)(struct dt_lib_module_t *module, gint zoom);
+      gint (*get_zoom)(struct dt_lib_module_t *module);
       dt_lighttable_layout_t (*get_layout)(struct dt_lib_module_t *module);
       void (*set_layout)(struct dt_lib_module_t *module, dt_lighttable_layout_t layout);
       void (*set_position)(struct dt_view_t *view, uint32_t pos);
@@ -380,6 +381,8 @@ int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm);
 dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm);
 /** sets the lighttable image in row zoom */
 void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom);
+/** sets the lighttable image in row zoom */
+gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm);
 /** set first visible image offset */
 void dt_view_lighttable_set_position(dt_view_manager_t *vm, uint32_t pos);
 /** read first visible image offset */
