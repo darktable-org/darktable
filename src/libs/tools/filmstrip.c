@@ -412,6 +412,13 @@ static gboolean _lib_filmstrip_mouse_leave_callback(GtkWidget *w, GdkEventCrossi
   return TRUE;
 }
 
+static inline gboolean _is_on_lighttable()
+{
+  // on lighttable, does nothing and report that it has not been handled
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  return cv->view((dt_view_t *)cv) == DT_VIEW_LIGHTTABLE;
+}
+
 static gboolean _lib_filmstrip_size_handle_cursor_callback(GtkWidget *w, GdkEventCrossing *e,
                                                            gpointer user_data)
 {
@@ -1022,9 +1029,7 @@ static gboolean _lib_filmstrip_duplicate_image_key_accel_callback(GtkAccelGroup 
 {
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
 
-  // on lighttable, does nothing and report that it has not been handled
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view((dt_view_t *)cv) == DT_VIEW_LIGHTTABLE) return FALSE;
+  if(_is_on_lighttable()) return FALSE;
 
   strip->force_expose_all = TRUE;
 
@@ -1048,9 +1053,7 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
   dt_lib_module_t *self = (dt_lib_module_t *)darktable.view_manager->proxy.filmstrip.module;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
-  // on lighttable, does nothing and report that it has not been handled
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view((dt_view_t *)cv) == DT_VIEW_LIGHTTABLE) return FALSE;
+  if(_is_on_lighttable()) return FALSE;
 
   const int num = GPOINTER_TO_INT(data);
   strip->force_expose_all = TRUE;
@@ -1101,9 +1104,7 @@ static gboolean _lib_filmstrip_colorlabels_key_accel_callback(GtkAccelGroup *acc
   dt_lib_module_t *self = (dt_lib_module_t *)darktable.view_manager->proxy.filmstrip.module;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
-  // on lighttable, does nothing and report that it has not been handled
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view((dt_view_t *)cv) == DT_VIEW_LIGHTTABLE) return FALSE;
+  if(_is_on_lighttable()) return FALSE;
 
   strip->force_expose_all = TRUE;
 
@@ -1120,9 +1121,7 @@ static gboolean _lib_filmstrip_select_key_accel_callback(GtkAccelGroup *accel_gr
   dt_lib_module_t *self = (dt_lib_module_t *)darktable.view_manager->proxy.filmstrip.module;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
-  // on lighttable, does nothing and report that it has not been handled
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view((dt_view_t *)cv) == DT_VIEW_LIGHTTABLE) return FALSE;
+  if(_is_on_lighttable()) return FALSE;
 
   strip->force_expose_all = TRUE;
 
@@ -1155,9 +1154,7 @@ static void _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *c
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
-  // on lighttable, does nothing and report that it has not been handled
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view((dt_view_t *)cv) == DT_VIEW_LIGHTTABLE) return;
+  if(_is_on_lighttable()) return;
 
   g_assert(selection_data != NULL);
 
@@ -1219,9 +1216,7 @@ static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext 
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
-  // on lighttable, does nothing and report that it has not been handled
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view((dt_view_t *)cv) == DT_VIEW_LIGHTTABLE) return;
+  if(_is_on_lighttable()) return;
 
   int imgid = strip->mouse_over_id;
 
