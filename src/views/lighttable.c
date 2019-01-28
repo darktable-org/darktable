@@ -126,6 +126,7 @@ typedef struct dt_library_t
   int images_in_row;
   int max_rows;
   int32_t single_img_id;
+  dt_lighttable_layout_t current_layout;
 
   float pointed_img_x, pointed_img_y, pointed_img_wd, pointed_img_ht;
   dt_view_image_over_t pointed_img_over;
@@ -213,6 +214,9 @@ static inline dt_lighttable_layout_t get_layout(void)
 static void check_layout(dt_library_t *lib)
 {
   const dt_lighttable_layout_t layout = get_layout();
+
+  if(lib->current_layout == layout) return;
+  lib->current_layout = layout;
 
   if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
   {
