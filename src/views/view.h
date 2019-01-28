@@ -376,6 +376,8 @@ void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, g
 /** get the imageid from last filmstrip activate request */
 int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm);
 
+/** get the lighttable current layout */
+dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm);
 /** sets the lighttable image in row zoom */
 void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom);
 /** set first visible image offset */
