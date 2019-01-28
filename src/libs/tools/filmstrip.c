@@ -1021,6 +1021,11 @@ static gboolean _lib_filmstrip_duplicate_image_key_accel_callback(GtkAccelGroup 
                                                                   GdkModifierType modifier, gpointer data)
 {
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
+
+  // on lighttable, does nothing and report that it has not been handled
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view((dt_view_t *)cv) == DT_VIEW_LIGHTTABLE) return FALSE;
+
   strip->force_expose_all = TRUE;
 
   const int32_t mouse_over_id = dt_control_get_mouse_over_id();
@@ -1042,6 +1047,10 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
 {
   dt_lib_module_t *self = (dt_lib_module_t *)darktable.view_manager->proxy.filmstrip.module;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
+
+  // on lighttable, does nothing and report that it has not been handled
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view((dt_view_t *)cv) == DT_VIEW_LIGHTTABLE) return FALSE;
 
   const int num = GPOINTER_TO_INT(data);
   strip->force_expose_all = TRUE;
@@ -1092,6 +1101,10 @@ static gboolean _lib_filmstrip_colorlabels_key_accel_callback(GtkAccelGroup *acc
   dt_lib_module_t *self = (dt_lib_module_t *)darktable.view_manager->proxy.filmstrip.module;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
+  // on lighttable, does nothing and report that it has not been handled
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view((dt_view_t *)cv) == DT_VIEW_LIGHTTABLE) return FALSE;
+
   strip->force_expose_all = TRUE;
 
   dt_colorlabels_key_accel_callback(NULL, NULL, 0, 0, data);
@@ -1106,6 +1119,10 @@ static gboolean _lib_filmstrip_select_key_accel_callback(GtkAccelGroup *accel_gr
 {
   dt_lib_module_t *self = (dt_lib_module_t *)darktable.view_manager->proxy.filmstrip.module;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
+
+  // on lighttable, does nothing and report that it has not been handled
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view((dt_view_t *)cv) == DT_VIEW_LIGHTTABLE) return FALSE;
 
   strip->force_expose_all = TRUE;
 
@@ -1127,7 +1144,7 @@ static gboolean _lib_filmstrip_select_key_accel_callback(GtkAccelGroup *accel_gr
       dt_selection_select_filmroll(darktable.selection);
   }
 
-  //gtk_widget_queue_draw(strip->filmstrip);
+  gtk_widget_queue_draw(strip->filmstrip);
   return TRUE;
 }
 
@@ -1137,6 +1154,10 @@ static void _lib_filmstrip_dnd_get_callback(GtkWidget *widget, GdkDragContext *c
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
+
+  // on lighttable, does nothing and report that it has not been handled
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view((dt_view_t *)cv) == DT_VIEW_LIGHTTABLE) return;
 
   g_assert(selection_data != NULL);
 
@@ -1198,6 +1219,10 @@ static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext 
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
+  // on lighttable, does nothing and report that it has not been handled
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view((dt_view_t *)cv) == DT_VIEW_LIGHTTABLE) return;
+
   int imgid = strip->mouse_over_id;
 
   // imgid part of selection -> do nothing
@@ -1211,8 +1236,8 @@ static void _lib_filmstrip_dnd_begin_callback(GtkWidget *widget, GdkDragContext 
   {
     dt_selection_select_single(darktable.selection, imgid);
     /* redraw filmstrip */
-    //if(darktable.view_manager->proxy.filmstrip.module)
-    //  gtk_widget_queue_draw(darktable.view_manager->proxy.filmstrip.module->widget);
+    if(darktable.view_manager->proxy.filmstrip.module)
+      gtk_widget_queue_draw(darktable.view_manager->proxy.filmstrip.module->widget);
   }
   sqlite3_finalize(stmt);
 
