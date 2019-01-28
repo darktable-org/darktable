@@ -46,7 +46,7 @@
     control which view the module should be available in also
     which placement in the panels the module have.
 */
-typedef enum 
+typedef enum
 {
   DT_VIEW_LIGHTTABLE = 1,
   DT_VIEW_DARKROOM = 2,
