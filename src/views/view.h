@@ -254,11 +254,12 @@ typedef struct dt_view_manager_t
       struct dt_lib_module_t *module;
       struct dt_view_t *view;
       void (*set_zoom)(struct dt_lib_module_t *module, gint zoom);
+      dt_lighttable_layout_t (*get_layout)(struct dt_lib_module_t *module);
+      void (*set_layout)(struct dt_lib_module_t *module, dt_lighttable_layout_t layout);
       void (*set_position)(struct dt_view_t *view, uint32_t pos);
       uint32_t (*get_position)(struct dt_view_t *view);
       int (*get_images_in_row)(struct dt_view_t *view);
       int (*get_full_preview_id)(struct dt_view_t *view);
-      dt_lighttable_layout_t (*get_layout)(struct dt_view_t *view);
     } lighttable;
 
     /* tethering view proxy object */
