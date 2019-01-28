@@ -96,6 +96,8 @@ static gboolean _is_colorlabels_order_actif(dt_view_t *self);
 /* register for redraw only the selected images */
 static void _redraw_selected_images(dt_view_t *self);
 
+static gboolean _expose_again_full(gpointer user_data);
+
 /**
  * this organises the whole library:
  * previously imported film rolls..
@@ -214,8 +216,9 @@ static inline gint get_zoom(void)
   return dt_view_lighttable_get_zoom(darktable.view_manager);
 }
 
-static void check_layout(dt_library_t *lib)
+static void check_layout(dt_view_t *self)
 {
+  dt_library_t *lib = (dt_library_t *)self->data;
   const dt_lighttable_layout_t layout = get_layout();
 
   if(lib->current_layout == layout) return;
@@ -242,7 +245,10 @@ static void check_layout(dt_library_t *lib)
   if(layout == DT_LIGHTTABLE_LAYOUT_EXPOSE)
     gtk_widget_show(GTK_WIDGET(m->widget));
   else
+  {
     gtk_widget_hide(GTK_WIDGET(m->widget));
+    g_timeout_add(200, _expose_again_full, self);
+  }
 }
 
 static void move_view(dt_library_t *lib, dt_lighttable_direction_t dir)
@@ -1840,6 +1846,19 @@ static gboolean _expose_again(gpointer user_data)
   return FALSE; // don't call again
 }
 
+static gboolean _expose_again_full(gpointer user_data)
+{
+  dt_view_t *self = (dt_view_t *)user_data;
+  dt_library_t *lib = (dt_library_t *)self->data;
+  // unfortunately there might have been images without thumbnails during expose.
+  // this can have multiple reasons: not loaded yet (we'll receive a signal when done)
+  // or still locked for writing.. we won't be notified when this changes.
+  // so we just track whether there were missing images and expose again.
+  lib->force_expose_all = TRUE;
+  dt_control_queue_redraw_center();
+  return FALSE; // don't call again
+}
+
 void begin_pan(dt_library_t *lib, double x, double y)
 {
   lib->select_offset_x = lib->zoom_x + x;
@@ -1859,7 +1878,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 
   int missing_thumbnails = 0;
 
-  check_layout(lib);
+  check_layout(self);
 
   if(lib->full_preview_id != -1)
   {
