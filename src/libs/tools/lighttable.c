@@ -37,6 +37,10 @@ typedef struct dt_lib_tool_lighttable_t
 /* set zoom proxy function */
 static void _lib_lighttable_set_zoom(dt_lib_module_t *self, gint zoom);
 
+/* get/set layout proxy function */
+static dt_lighttable_layout_t _lib_lighttable_get_layout(dt_lib_module_t *self);
+static void _lib_lighttable_set_layout(dt_lib_module_t *self, dt_lighttable_layout_t layout);
+
 /* lightable layout changed */
 static void _lib_lighttable_layout_changed(GtkComboBox *widget, gpointer user_data);
 /* zoom slider change callback */
@@ -137,6 +141,8 @@ void gui_init(dt_lib_module_t *self)
 
   darktable.view_manager->proxy.lighttable.module = self;
   darktable.view_manager->proxy.lighttable.set_zoom = _lib_lighttable_set_zoom;
+  darktable.view_manager->proxy.lighttable.get_layout = _lib_lighttable_get_layout;
+  darktable.view_manager->proxy.lighttable.set_layout = _lib_lighttable_set_layout;
 }
 
 void init_key_accels(dt_lib_module_t *self)
@@ -270,6 +276,17 @@ static void _lib_lighttable_layout_changed(GtkComboBox *widget, gpointer user_da
   {
     dt_control_queue_redraw_center();
   }
+}
+
+static void _lib_lighttable_set_layout(dt_lib_module_t *self, dt_lighttable_layout_t layout)
+{
+  _lib_lighttable_change_layout(self, layout);
+}
+
+static dt_lighttable_layout_t _lib_lighttable_get_layout(dt_lib_module_t *self)
+{
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
+  return d->layout;
 }
 
 #define DT_LIBRARY_MAX_ZOOM 13
