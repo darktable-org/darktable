@@ -64,6 +64,16 @@ typedef enum dt_view_flags_t
   VIEW_FLAGS_HIDDEN = 1 << 0,       // Hide the view from userinterface
 } dt_view_flags_t;
 
+typedef enum dt_lighttable_layout_t
+{
+  DT_LIGHTTABLE_LAYOUT_FIRST = -1,
+  DT_LIGHTTABLE_LAYOUT_ZOOMABLE = 0,
+  DT_LIGHTTABLE_LAYOUT_FILEMANAGER = 1,
+  DT_LIGHTTABLE_LAYOUT_EXPOSE = 2,
+  DT_LIGHTTABLE_LAYOUT_LAST = 3
+} dt_lighttable_layout_t;
+
+
 #define DT_VIEW_ALL                                                                              \
   (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW | \
    DT_VIEW_PRINT | DT_VIEW_KNIGHT)
