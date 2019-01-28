@@ -463,6 +463,12 @@ static int _get_full_preview_id(dt_view_t *self)
   return lib->full_preview_id;
 }
 
+static int _get_layout(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  return lib->layout;
+}
+
 void init(dt_view_t *self)
 {
   self->data = calloc(1, sizeof(dt_library_t));
@@ -472,6 +478,7 @@ void init(dt_view_t *self)
   darktable.view_manager->proxy.lighttable.get_position = _get_position;
   darktable.view_manager->proxy.lighttable.get_images_in_row = _get_images_in_row;
   darktable.view_manager->proxy.lighttable.get_full_preview_id = _get_full_preview_id;
+  darktable.view_manager->proxy.lighttable.get_layout = _get_layout;
   darktable.view_manager->proxy.lighttable.view = self;
 
   lib->select_offset_x = lib->select_offset_y = 0.5f;
