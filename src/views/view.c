@@ -843,7 +843,7 @@ int32_t dt_view_get_image_to_act_on()
       darktable.view_manager->proxy.lighttable.view);
 
   const int layout = darktable.view_manager->proxy.lighttable.get_layout(
-      darktable.view_manager->proxy.lighttable.view);
+      darktable.view_manager->proxy.lighttable.module);
 
   if(zoom == 1 || full_preview_id > 1 || layout == DT_LIGHTTABLE_LAYOUT_EXPOSE)
   {
