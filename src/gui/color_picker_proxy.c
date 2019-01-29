@@ -185,7 +185,7 @@ static gboolean _iop_color_picker_draw(GtkWidget *widget, cairo_t *cr, dt_iop_co
   if(self->module->request_color_pick == DT_REQUEST_COLORPICK_OFF) return FALSE;
 
   /* No color picked, or picked color already applied */
-  if(self->module->picked_color_max[0] == -INFINITY) return FALSE;
+  if(self->module->picked_color_max[0] < 0.0f) return FALSE;
 
   self->apply(self->module);
 
