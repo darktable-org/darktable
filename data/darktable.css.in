@@ -91,9 +91,10 @@
 
 /* Graphs */
 @define-color graph_bg @grey_25;
-@define-color graph_border @border-color;
-@define-color graph_fg alpha(@grey_65, 0.5);
-@define-color graph_grid @border-color;
+@define-color graph_border @grey_05;
+@define-color graph_fg @grey_60;
+@define-color graph_fg_active @grey_80;
+@define-color graph_grid @grey_05;
 
 * {
   font-family: "Roboto Light", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
