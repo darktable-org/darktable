@@ -5054,6 +5054,15 @@ const wb_data wb_preset[] =
   { "Olympus", "E-PL7", "5000K", 0,		{ 1.828125, 1, 1.867188, 0 } },
   { "Olympus", "E-PL7", "2700K", 0,		{ 1.093750, 1, 3.781250, 0 } },
 
+  /* Body Firmware Version : 1.0 */
+  { "OLYMPUS", "E-PL8", "Sunny", 0,           { 1.859375, 1, 1.726563, 0 } }, /*5300K*/
+  { "OLYMPUS", "E-PL8", "Shadow", 0,          { 2.1875, 1, 1.320313, 0 } },   /*7500K*/
+  { "OLYMPUS", "E-PL8", "Cloudy", 0,          { 2, 1, 1.5625, 0 } },          /*6000K*/
+  { "OLYMPUS", "E-PL8", "Incandescent", 0,    { 1.132813, 1, 3.5, 0 } },      /*3000K*/
+  { "OLYMPUS", "E-PL8", "Fluorescent", 0,     { 1.835938, 1, 2.601563, 0 } }, /*4000K*/
+  { "OLYMPUS", "E-PL8", "Underwater", 0,      { 1.429688, 1, 2.414063, 0 } },
+  { "OLYMPUS", "E-PL8", "WB Flash", 0,        { 2.179688, 1, 1.492188, 0 } }, /*5500K*/
+
   /* Copied from Olympus E-PL3 presets */
   /* -7/+7 fine tuning is -7/+7 in amber-blue and zero in green-magenta */
   { "Olympus", "E-PM1", Daylight, -7,		{ 1.695313, 1, 1.656250, 0 } },
