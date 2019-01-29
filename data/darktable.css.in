@@ -1,5 +1,6 @@
 /* Perceptually uniform grey gradient */
-/* pure black is forbidden for visual assessment */
+
+/* grey_00 = pure black is forbidden for visual assessment */
 @define-color grey_05 #111111;
 @define-color grey_10 #1b1b1b;
 @define-color grey_15 #262626;
@@ -19,32 +20,62 @@
 @define-color grey_85 #d4d4d4;
 @define-color grey_90 #e2e2e2;
 @define-color grey_95 #f1f1f1;
-/* pure white is forbidden for visual assessment */
+/* grey_100 = pure white is forbidden for visual assessment */
 
-@define-color bg_color @grey_15;
-@define-color plugin_bg_color @grey_10;
+
+/* General rules :
+
+  * keep 60 % distance between background and foreground colors for active controls
+  * keep 40 % distance between background and foreground colors for labels and info
+  * keep 20 % distance between background and foreground colors for insensitive controls
+  * accents and borders are ± 5 % from the background color
+
+*/
+
+/* General */
 @define-color border-color @grey_10;
-@define-color fg_color @grey_80;
-@define-color base_color @grey_95;
-@define-color text_color @grey_35;
-@define-color selected_bg_color @grey_20;
-@define-color selected_fg_color @grey_85;
-@define-color tooltip_bg_color @grey_05;
-@define-color tooltip_fg_color @grey_70;
-@define-color really_dark_bg_color @grey_05;
-@define-color darkroom_bg_color @grey_50;
-@define-color darkroom_preview_bg_color @grey_25;
-@define-color lighttable_bg_color @grey_25;
-@define-color lighttable_preview_bg_color @grey_15;
-@define-color brush_cursor alpha(white, .9);
-@define-color brush_trace alpha(black, .8);
+@define-color bg_color @grey_15;
+@define-color fg_color @grey_75;
+@define-color base_color @fg_color;
 
+/* Scroll bars (sliders) */
+@define-color scroll-bar-inactive @grey_30;
+@define-color scroll-bar-active @grey_40;
+@define-color scroll_bar_bg @grey_10;
+
+/* Modules box */
+@define-color plugin_bg_color @grey_10; /* when inactive */
+@define-color text_color @grey_40;
+@define-color selected_bg_color @grey_20;
+@define-color selected_fg_color @grey_80;
+@define-color active_bg_color @grey_30;
+@define-color active_fg_color @grey_90;
+@define-color insensitive_fg_color shade(@bg_color, 2);
+
+/* Modules controls */
 @define-color bauhaus_fg @grey_55;
 @define-color bauhaus_border shade(@plugin_bg_color, 0.5);
 @define-color bauhaus_indicator_border @grey_65;
 @define-color bauhaus_bg alpha(@grey_10, 0.25);
-@define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5 );
+@define-color bauhaus_bg alpha(@grey_10, 0.25);
 
+/* Tooltips and contextual helpers */
+@define-color tooltip_bg_color @grey_05;
+@define-color tooltip_fg_color @grey_70;
+@define-color really_dark_bg_color @grey_05;
+
+/* Views */
+@define-color darkroom_bg_color @grey_50;
+@define-color darkroom_preview_bg_color @grey_25;
+@define-color lighttable_bg_color @grey_25;
+@define-color lighttable_preview_bg_color @grey_15;
+
+/* Brushes */
+@define-color brush_cursor alpha(white, .9);
+@define-color brush_trace alpha(black, .8);
+
+
+/* Lighttable and film-strip */
 @define-color thumbnail_bg_color @grey_45; /* area between border and outline */
 @define-color thumbnail_selected_bg_color @grey_65;
 @define-color thumbnail_hover_bg_color @grey_80;
@@ -56,16 +87,22 @@
 @define-color thumbnail_hover_font_color @grey_75;
 @define-color thumbnail_border_color @grey_15; /* rectangle directly around image */
 @define-color thumbnail_selected_border_color @grey_90;
-
 @define-color filmstrip_bg_color @lighttable_bg_color;
 
+/* Graphs */
+@define-color graph_bg @grey_25;
+@define-color graph_border @grey_05;
+@define-color graph_fg @grey_60;
+@define-color graph_fg_active @grey_80;
+@define-color graph_grid @grey_05;
+
 * {
-  font: 1em "Roboto Light", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  font-family: "Roboto Light", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  font-size: 1em;
   color: @fg_color;
   background-color: @bg_color;
   border-color: @border-color;
   text-shadow:none;
-/*  margin: 0; */ /* this makes scroll bars super wide. */
   padding: 0;
   background-image: none;
 }
@@ -96,6 +133,7 @@ alignment
   border:0;
   padding:0;
 }
+
 #iop-plugin-ui stack
 {
   background-color:transparent;
@@ -103,6 +141,7 @@ alignment
   border:0;
   padding:0;
 }
+
 combobox *,
 #lib-plugin-ui treeview,
 #lib-plugin-ui combobox *,
@@ -110,6 +149,7 @@ combobox *,
 {
   background-color: transparent;
 }
+
 combobox *:hover,
 #lib-plugin-ui combobox *:hover
 {
@@ -342,7 +382,7 @@ frame * {
 entry {
   border-radius: 0;
   border:0;
-  padding-left: 2px; /* align with bauhaus widgets */
+  padding-left: 1pt; /* align with bauhaus widgets */
   border-style: none;
   border-color: alpha(@fg_color, 0.5);
   border-image:none;
@@ -402,31 +442,10 @@ entry selection {
   background-color: @bg_color;
 }
 
-scale,
-scrollbar
-{
-  margin:0pt;
-}
-
-scale.trough.highlight,
-scrollbar.contents.trough.highlight
-{
-  background-color:@selected_bg_color;
-  background-image:none;
-}
-
 #recent-collection-ui button,
 #history-ui button
 {
   background-color: transparent;
-}
-
-#lib-plugin-ui scrollbar slider,
-#iop-plugin-ui scrollbar slider,
-scrollbar slider
-{
-  border-color: transparent;
-  background-color: @selected_bg_color;
 }
 
 context-menu
@@ -468,35 +487,44 @@ menuitem:hover
   background-color: shade(@selected_bg_color, 1.7);
 }
 
-/* sliders */
+/* sliders and scrollbars */
 
+slider,
+scale.trough.highlight,
+scrollbar.contents.trough.highlight,
+#lib-plugin-ui scrollbar slider,
+#iop-plugin-ui scrollbar slider,
+scrollbar slider
+{
+  border: none;
+  border-radius: 4pt;
+  background-color: @scroll-bar-inactive;
+}
+
+slider:hover,
+scale.trough.highlight:hover,
+scrollbar.contents.trough.highlight:hover,
+#lib-plugin-ui scrollbar slider:hover,
+#iop-plugin-ui scrollbar slider:hover,
+scrollbar slider:hover
+{
+  background-color: @scroll-bar-active;
+}
+
+GtkScrollbar,
+scale,
+scrollbar,
 scrollbar.horizontal,
-scrollbar.vertical {
-    border-color: @bg_color;
-    background-color: @selected_bg_color;
+scrollbar.vertical,
+#iop-plugin-ui scrollbar,
+#lib-plugin-ui scrollbar
+{
+  background-color: @scroll_bar_bg;
+  padding: 2pt;
+  border: none;
+  border-radius: 6pt;
 }
 
-scrollbar.horizontal:hover,
-scrollbar.vertical:hover {
-    border-color: @bg_color;
-    background-color: shade(@selected_bg_color, 1.3);
-}
-
-#iop-plugin-ui scrollbar.horizontal,
-#iop-plugin-ui scrollbar.vertical,
-#lib-plugin-ui scrollbar.horizontal,
-#lib-plugin-ui scrollbar.vertical {
-    border-color: @selected_bg_color;
-    background-color: @text_color;
-}
-
-#iop-plugin-ui scrollbar.horizontal:hover,
-#iop-plugin-ui scrollbar.vertical:hover,
-#lib-plugin-ui scrollbar.horizontal:hover,
-#lib-plugin-ui scrollbar.vertical:hover {
-    border-color: @selected_bg_color;
-    background-color: shade(@selected_bg_color, 1.3);
-}
 
 /* tooltip */
 
@@ -509,7 +537,7 @@ tooltip *
   color: @fg_color;
   background-color: @really_dark_bg_color;
   border-color: @selected_bg_color;
-  padding: 2pt;
+  padding: 1pt;
 }
 
 /* separator */
@@ -571,21 +599,21 @@ dialog eventbox *
 #lib-plugin-ui treeview.view *,
 treeview.view *
 {
-   background-color:shade(@selected_bg_color, 0.8);
+   background-color: @selected_bg_color;
 }
 
 #iop-plugin-ui treeview.view *:hover,
 #lib-plugin-ui treeview.view *:hover,
 treeview.view *:hover
 {
-   background-color: shade(@selected_bg_color, 1.7);
+   background-color: @active_bg_color;
 }
 
 #iop-plugin-ui treeview.view *:selected,
 #lib-plugin-ui treeview.view *:selected,
 treeview.view *:selected
 {
-   background-color: shade(@selected_bg_color, 1.2);
+   background-color: @selected_bg_color;
 }
 
 dialog scrolledwindow
@@ -617,12 +645,12 @@ notebook tab *
 
 notebook tab *:hover
 {
-  background-color:  shade(@selected_bg_color, 1.7);
+  background-color: @active_fg_color;
 }
 
 notebook tab:checked *
 {
-  background-color: shade(@selected_bg_color, 1.3);
+  background-color: @selected_bg_color;
 }
 
 notebook menuitem
@@ -633,7 +661,7 @@ notebook menuitem
 
 notebook menuitem:hover
 {
-  background-color: shade(@selected_bg_color, 1.7);
+  background-color: @active_fg_color;
 }
 
 /* empty space at top/bottom of sidepanels when scrolled */
@@ -683,7 +711,7 @@ filechooserdialog sidebar-row
 
 filechooserdialog sidebar-row:hover
 {
-  background-color: shade(@selected_bg_color, 1.7);
+  background-color: @active_fg_color;
 }
 
 progressbar
@@ -697,7 +725,7 @@ progressbar progress
 
 cell:selected
 {
-  background-color: shade(@selected_bg_color, 1.2);
+  background-color: @selected_fg_color;
 }
 
 #bauhaus-popup
@@ -710,24 +738,24 @@ cell:selected
 #bauhaus-popup:selected
 {
   /* SELECTED */
-  color: shade(@fg_color, 1.5);
+  color: @selected_fg_color;
 }
 
 #bauhaus-popup:hover
 {
   /* PRELIGHT */
-  color: shade(@fg_color, 0.7);
+  color: @active_fg_color;
 }
 
 #bauhaus-popup:disabled
 {
   /* insensitive */
-  color: black;
+  color: @insensitive_fg_color;
 }
 
 #show_mask_button
 {
-    color: #FFFF00;
+    color: @fg_color;
 }
 
 #pref_section
@@ -739,4 +767,9 @@ cell:selected
     font-size: 1.3em;
     margin-left: 10em;
     margin-right: 10em;
+}
+
+#main-histogram
+{
+  /* tweak histogram here */
 }

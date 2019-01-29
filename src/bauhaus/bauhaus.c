@@ -39,33 +39,6 @@ static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w);
 static void dt_bauhaus_widget_reject(dt_bauhaus_widget_t *w);
 
 
-static int get_line_space()
-{
-  return darktable.bauhaus->scale * darktable.bauhaus->line_space;
-}
-
-static int get_line_height()
-{
-  return darktable.bauhaus->scale * darktable.bauhaus->line_height;
-}
-
-static float get_marker_size()
-{
-  // will be fraction of the height, so doesn't depend on scale itself.
-  return darktable.bauhaus->marker_size;
-}
-
-// TODO: remove / make use of the pango font size / X height
-static float get_label_font_size()
-{
-  return get_line_height() * darktable.bauhaus->label_font_size;
-}
-
-static inline void set_color(cairo_t *cr, GdkRGBA color)
-{
-  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
-}
-
 static int show_pango_text(cairo_t *cr, char *text, float x_pos, float y_pos, float max_width, gboolean right_aligned)
 {
   PangoLayout *layout;
@@ -492,6 +465,11 @@ void dt_bauhaus_init()
     darktable.bauhaus->color_border.blue = 0.9;
     darktable.bauhaus->color_border.alpha = 1.0;
   }
+
+  gtk_style_context_lookup_color(ctx, "graph_bg", &darktable.bauhaus->graph_bg);
+  gtk_style_context_lookup_color(ctx, "graph_border", &darktable.bauhaus->graph_border);
+  gtk_style_context_lookup_color(ctx, "graph_grid", &darktable.bauhaus->graph_grid);
+  gtk_style_context_lookup_color(ctx, "graph_fg", &darktable.bauhaus->graph_fg);
 
 
   PangoFontDescription *pfont = 0;
