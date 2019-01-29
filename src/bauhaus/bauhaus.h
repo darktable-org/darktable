@@ -209,8 +209,11 @@ typedef struct dt_bauhaus_t
   gboolean cursor_visible;
   int cursor_blink_counter;
 
-  // colors:
+  // colors for sliders and comboboxes
   GdkRGBA color_fg, color_fg_insensitive, color_bg, color_border, indicator_border;
+
+  // colors for graphs
+  GdkRGBA graph_bg, graph_border, graph_fg, graph_grid;
 } dt_bauhaus_t;
 
 static inline int dt_bauhaus_get_widget_space()
@@ -306,6 +309,33 @@ void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct)(GtkWidg
 void dt_bauhaus_vimkey_exec(const char *input);
 // give autocomplete suggestions
 GList *dt_bauhaus_vimkey_complete(const char *input);
+
+inline int get_line_space()
+{
+  return darktable.bauhaus->scale * darktable.bauhaus->line_space;
+}
+
+inline int get_line_height()
+{
+  return darktable.bauhaus->scale * darktable.bauhaus->line_height;
+}
+
+inline float get_marker_size()
+{
+  // will be fraction of the height, so doesn't depend on scale itself.
+  return darktable.bauhaus->marker_size;
+}
+
+// TODO: remove / make use of the pango font size / X height
+inline float get_label_font_size()
+{
+  return get_line_height() * darktable.bauhaus->label_font_size;
+}
+
+inline void set_color(cairo_t *cr, GdkRGBA color)
+{
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
