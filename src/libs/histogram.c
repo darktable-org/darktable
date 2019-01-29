@@ -31,8 +31,6 @@
 
 DT_MODULE(1)
 
-#define DT_HIST_INSET 5
-
 typedef struct dt_lib_histogram_t
 {
   float exposure, black;
@@ -43,19 +41,6 @@ typedef struct dt_lib_histogram_t
   float mode_x, mode_w, red_x, green_x, blue_x;
   float color_w, button_h, button_y, button_spacing;
 } dt_lib_histogram_t;
-
-static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer user_data);
-static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,
-                                                      gpointer user_data);
-static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEventButton *event,
-                                                     gpointer user_data);
-static gboolean _lib_histogram_button_release_callback(GtkWidget *widget, GdkEventButton *event,
-                                                       gpointer user_data);
-static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data);
-static gboolean _lib_histogram_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
-                                                     gpointer user_data);
-static gboolean _lib_histogram_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
-                                                     gpointer user_data);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -84,101 +69,19 @@ int position()
 }
 
 
+// fucking GTK pretends to be CSS-compliant but sucks dicks when it comes to
+// actually use CSS margins, so we need hard-code them !?
+#define HMARGIN 2
+
 static void _lib_histogram_change_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_control_queue_redraw_widget(self->widget);
 }
 
-// WARNING: don't use this code as-is, it causes segfaults elsewhere!
-// static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEvent *event, gpointer user_data)
-// {
-//   dt_develop_t *dev = darktable.develop;
-//   dt_pthread_mutex_lock(&dev->histogram_waveform_mutex);
-//
-//   int width = allocation.width;
-//   int height = allocation.height;
-//   width -= 2 * 4 * DT_HIST_INSET;
-//   height -= 2 * DT_HIST_INSET;
-//
-//   const gint stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
-//
-//   free(dev->histogram_waveform);
-//   dev->histogram_waveform = (uint32_t*)calloc(height * stride / 4, sizeof(uint32_t));
-//   dev->histogram_waveform_width = width;
-//   dev->histogram_waveform_height = height;
-//   dev->histogram_waveform_stride = stride;
-//
-//   dt_pthread_mutex_unlock(&dev->histogram_waveform_mutex);
-//   return FALSE;
-// }
-
-void gui_init(dt_lib_module_t *self)
-{
-  /* initialize ui widgets */
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)g_malloc0(sizeof(dt_lib_histogram_t));
-  self->data = (void *)d;
-
-  d->red = dt_conf_get_bool("plugins/darkroom/histogram/show_red");
-  d->green = dt_conf_get_bool("plugins/darkroom/histogram/show_green");
-  d->blue = dt_conf_get_bool("plugins/darkroom/histogram/show_blue");
-
-  /* create drawingarea */
-  self->widget = gtk_drawing_area_new();
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
-
-  gtk_widget_add_events(self->widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
-                                      | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
-                                      //                         GDK_STRUCTURE_MASK |
-                                      darktable.gui->scroll_mask);
-
-  /* connect callbacks */
-  gtk_widget_set_tooltip_text(self->widget, _("drag to change exposure,\ndoubleclick resets"));
-  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_lib_histogram_draw_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "button-press-event",
-                   G_CALLBACK(_lib_histogram_button_press_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "button-release-event",
-                   G_CALLBACK(_lib_histogram_button_release_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "motion-notify-event",
-                   G_CALLBACK(_lib_histogram_motion_notify_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "leave-notify-event",
-                   G_CALLBACK(_lib_histogram_leave_notify_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "enter-notify-event",
-                   G_CALLBACK(_lib_histogram_enter_notify_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "scroll-event", G_CALLBACK(_lib_histogram_scroll_callback), self);
-  //   g_signal_connect (G_OBJECT (self->widget), "configure-event",
-  //                     G_CALLBACK (_lib_histogram_configure_callback), self);
-
-  /* set size of navigation draw area */
-  int panel_width = dt_conf_get_int("panel_width");
-  gtk_widget_set_size_request(self->widget, -1, panel_width * .5);
-
-  /* connect to preview pipe finished  signal */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
-                            G_CALLBACK(_lib_histogram_change_callback), self);
-}
-
-void gui_cleanup(dt_lib_module_t *self)
-{
-  /* disconnect callback from  signal */
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_histogram_change_callback), self);
-
-  dt_develop_t *dev = darktable.develop;
-
-  free(dev->histogram_waveform);
-  dev->histogram_waveform = NULL;
-
-  dev->histogram_waveform_stride = 0;
-  dev->histogram_waveform_height = 0;
-  dev->histogram_waveform_width = 0;
-
-  g_free(self->data);
-  self->data = NULL;
-}
-
 static void _draw_color_toggle(cairo_t *cr, float x, float y, float width, float height, gboolean state)
 {
-  float border = MIN(width * .1, height * .1);
+  float border = MIN(width * .05, height * .05);
   cairo_rectangle(cr, x + border, y + border, width - 2.0 * border, height - 2.0 * border);
   cairo_fill_preserve(cr);
   if(state)
@@ -195,8 +98,8 @@ static void _draw_mode_toggle(cairo_t *cr, float x, float y, float width, float 
   cairo_translate(cr, x, y);
 
   // border
-  float border = MIN(width * .1, height * .1);
-  cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.4);
+  float border = MIN(width * .05, height * .05);
+  set_color(cr, darktable.bauhaus->graph_border);
   cairo_rectangle(cr, border, border, width - 2.0 * border, height - 2.0 * border);
   cairo_fill_preserve(cr);
   cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.5);
@@ -262,23 +165,23 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   uint32_t *hist = dev->histogram;
   float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? dev->histogram_max
                                                                   : logf(1.0 + dev->histogram_max);
-  const int inset = DT_HIST_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
 
-  gtk_render_background(gtk_widget_get_style_context(widget), cr, 0, 0, allocation.width, allocation.height);
+  gtk_render_background(gtk_widget_get_style_context(widget), cr, 0, 0, width, height);
+  cairo_translate(cr, HMARGIN, 0.5);
+  width -= 2 * HMARGIN;
+  height -= 1;
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.5)); // borders width
 
-  cairo_translate(cr, 4 * inset, inset);
-  width -= 2 * 4 * inset;
-  height -= 2 * inset;
-
+  // Get the mode and color buttons position
   if(d->mode_x == 0)
   {
     d->color_w = 0.06 * width;
-    d->button_spacing = 0.01 * width;
+    d->button_spacing = 0.02 * width;
     d->button_h = 0.06 * width;
     d->button_y = d->button_spacing;
     d->mode_w = d->color_w;
@@ -300,34 +203,17 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     dev->histogram_waveform_stride = stride;
     dev->histogram_waveform_height = height;
     dev->histogram_waveform_width = width;
-    //     return TRUE; // there are enough expose events following ...
   }
 
-#if 1
-  // draw shadow around
-  float alpha = 1.0f;
-  cairo_set_line_width(cr, 0.2);
-  for(int k = 0; k < inset; k++)
-  {
-    cairo_rectangle(cr, -k, -k, width + 2 * k, height + 2 * k);
-    cairo_set_source_rgba(cr, 0, 0, 0, alpha);
-    alpha *= 0.5f;
-    cairo_fill(cr);
-  }
-  cairo_set_line_width(cr, 1.0);
-#else
-  cairo_set_line_width(cr, 1.0);
-  cairo_set_source_rgb(cr, .1, .1, .1);
+  // Draw frame and background
+  cairo_save(cr);
   cairo_rectangle(cr, 0, 0, width, height);
-  cairo_stroke(cr);
-#endif
-
-  cairo_rectangle(cr, 0, 0, width, height);
-  cairo_clip(cr);
-
-  cairo_set_source_rgb(cr, .3, .3, .3);
-  cairo_rectangle(cr, 0, 0, width, height);
+  set_color(cr, darktable.bauhaus->graph_border);
+  cairo_stroke_preserve(cr);
+  set_color(cr, darktable.bauhaus->graph_bg);
   cairo_fill(cr);
+  cairo_restore(cr);
+
   if(d->highlight == 1)
   {
     cairo_set_source_rgb(cr, .5, .5, .5);
@@ -342,13 +228,14 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   }
 
   // draw grid
-  cairo_set_line_width(cr, .4);
-  cairo_set_source_rgb(cr, .1, .1, .1);
+  set_color(cr, darktable.bauhaus->graph_grid);
+
   if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
     dt_draw_waveform_lines(cr, 0, 0, width, height);
   else
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
+  // draw histogram
   if(hist_max > 0.0f)
   {
     cairo_save(cr);
@@ -366,7 +253,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
           }
 
       cairo_surface_t *source
-          = cairo_image_surface_create_for_data(buf, CAIRO_FORMAT_ARGB32, width, height, stride);
+          = cairo_image_surface_create_for_data(buf, CAIRO_FORMAT_ARGB32, width - 2*HMARGIN, height, stride);
 
       cairo_set_source_surface(cr, source, 0.0, 0.0);
       cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
@@ -376,29 +263,26 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     }
     else
     {
-      // cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
       cairo_translate(cr, 0, height);
       cairo_scale(cr, width / 255.0, -(height - 10) / hist_max);
       cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-      // cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
       cairo_set_line_width(cr, 1.);
       if(d->red)
       {
-        cairo_set_source_rgba(cr, 1., 0., 0., 0.2);
+        cairo_set_source_rgba(cr, 1., 0., 0., 0.25);
         dt_draw_histogram_8(cr, hist, 4, 0, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
       }
       if(d->green)
       {
-        cairo_set_source_rgba(cr, 0., 1., 0., 0.2);
+        cairo_set_source_rgba(cr, 0., 1., 0., 0.25);
         dt_draw_histogram_8(cr, hist, 4, 1, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
       }
       if(d->blue)
       {
-        cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
+        cairo_set_source_rgba(cr, 0., 0., 1., 0.25);
         dt_draw_histogram_8(cr, hist, 4, 2, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
       }
       cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-      // cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
     }
     cairo_restore(cr);
   }
@@ -432,11 +316,11 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   if(d->highlight != 0)
   {
     _draw_mode_toggle(cr, d->mode_x, d->button_y, d->mode_w, d->button_h, dev->histogram_type);
-    cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.4);
+    cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.33);
     _draw_color_toggle(cr, d->red_x, d->button_y, d->color_w, d->button_h, d->red);
-    cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 0.4);
+    cairo_set_source_rgba(cr, 0.0, 1.0, 0.0, 0.33);
     _draw_color_toggle(cr, d->green_x, d->button_y, d->color_w, d->button_h, d->green);
-    cairo_set_source_rgba(cr, 0.0, 0.0, 1.0, 0.4);
+    cairo_set_source_rgba(cr, 0.0, 0.0, 1.0, 0.33);
     _draw_color_toggle(cr, d->blue_x, d->button_y, d->color_w, d->button_h, d->blue);
   }
 
@@ -444,8 +328,6 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
   cairo_surface_destroy(cst);
-  pango_font_description_free(desc);
-  g_object_unref(layout);
   return TRUE;
 }
 
@@ -474,10 +356,9 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
   }
   else
   {
-    const float offs = 4 * DT_HIST_INSET;
-    const float x = event->x - offs;
-    const float y = event->y - DT_HIST_INSET;
-    const float pos = x / (float)(allocation.width - 2 * offs);
+    const float x = event->x;
+    const float y = event->y;
+    const float pos = x / (float)(allocation.width);
 
 
     if(pos < 0 || pos > 1.0)
@@ -649,6 +530,66 @@ static gboolean _lib_histogram_leave_notify_callback(GtkWidget *widget, GdkEvent
   dt_control_change_cursor(GDK_LEFT_PTR);
   gtk_widget_queue_draw(widget);
   return TRUE;
+}
+
+void gui_init(dt_lib_module_t *self)
+{
+  /* initialize ui widgets */
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)g_malloc0(sizeof(dt_lib_histogram_t));
+  self->data = (void *)d;
+
+  d->red = dt_conf_get_bool("plugins/darkroom/histogram/show_red");
+  d->green = dt_conf_get_bool("plugins/darkroom/histogram/show_green");
+  d->blue = dt_conf_get_bool("plugins/darkroom/histogram/show_blue");
+
+  /* create drawingarea */
+  self->widget = gtk_drawing_area_new();
+  gtk_widget_set_name(self->widget, "main-histogram");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
+
+  gtk_widget_add_events(self->widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
+                                      | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
+                                      darktable.gui->scroll_mask);
+
+  /* connect callbacks */
+  gtk_widget_set_tooltip_text(self->widget, _("drag to change exposure,\ndoubleclick resets"));
+  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_lib_histogram_draw_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "button-press-event",
+                   G_CALLBACK(_lib_histogram_button_press_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "button-release-event",
+                   G_CALLBACK(_lib_histogram_button_release_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "motion-notify-event",
+                   G_CALLBACK(_lib_histogram_motion_notify_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "leave-notify-event",
+                   G_CALLBACK(_lib_histogram_leave_notify_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "enter-notify-event",
+                   G_CALLBACK(_lib_histogram_enter_notify_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "scroll-event", G_CALLBACK(_lib_histogram_scroll_callback), self);
+
+  /* set size of navigation draw area */
+  const int panel_width = dt_conf_get_int("panel_width");
+  gtk_widget_set_size_request(self->widget, -1, panel_width / 3.0f);
+
+  /* connect to preview pipe finished  signal */
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                            G_CALLBACK(_lib_histogram_change_callback), self);
+}
+
+void gui_cleanup(dt_lib_module_t *self)
+{
+  /* disconnect callback from  signal */
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_histogram_change_callback), self);
+
+  dt_develop_t *dev = darktable.develop;
+
+  free(dev->histogram_waveform);
+  dev->histogram_waveform = NULL;
+  dev->histogram_waveform_stride = 0;
+  dev->histogram_waveform_height = 0;
+  dev->histogram_waveform_width = 0;
+
+  g_free(self->data);
+  self->data = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
