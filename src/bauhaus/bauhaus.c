@@ -433,6 +433,8 @@ void dt_bauhaus_init()
   gtk_style_context_lookup_color(ctx, "graph_border", &darktable.bauhaus->graph_border);
   gtk_style_context_lookup_color(ctx, "graph_grid", &darktable.bauhaus->graph_grid);
   gtk_style_context_lookup_color(ctx, "graph_fg", &darktable.bauhaus->graph_fg);
+  gtk_style_context_lookup_color(ctx, "graph_fg_active", &darktable.bauhaus->graph_fg_active);
+  gtk_style_context_lookup_color(ctx, "inset_histogram", &darktable.bauhaus->inset_histogram);
 
   PangoFontDescription *pfont = 0;
   gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font", &pfont, NULL);
