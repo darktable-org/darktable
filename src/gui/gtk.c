@@ -987,17 +987,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   g_object_set(G_OBJECT(settings), "gtk-theme-name", "Adwaita", (gchar *)0);
   g_object_unref(settings);
 
-  GError *error = NULL;
-  GtkStyleProvider *themes_style_provider = GTK_STYLE_PROVIDER(gtk_css_provider_new());
-  gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), themes_style_provider, GTK_STYLE_PROVIDER_PRIORITY_USER + 1);
-
-  if(!gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(themes_style_provider), gui->gtkrc, &error))
-  {
-    printf("%s: error parsing %s: %s\n", G_STRFUNC, gui->gtkrc, error->message);
-    g_clear_error(&error);
-  }
-
-  g_object_unref(themes_style_provider);
+  // load theme
+  dt_gui_load_theme(gui->gtkrc);
 
   // Initializing the shortcut groups
   darktable.control->accelerators = gtk_accel_group_new();
@@ -2050,6 +2041,23 @@ void dt_gui_add_help_link(GtkWidget *widget, const char *link)
 {
   g_object_set_data(G_OBJECT(widget), "dt-help-url", (void *)link);
   gtk_widget_add_events(widget, GDK_BUTTON_PRESS_MASK);
+}
+
+// load a CSS theme
+void dt_gui_load_theme(const char *theme)
+{
+  GError *error = NULL;
+  GtkStyleProvider *themes_style_provider = GTK_STYLE_PROVIDER(gtk_css_provider_new());
+  gtk_style_context_add_provider_for_screen
+    (gdk_screen_get_default(), themes_style_provider, GTK_STYLE_PROVIDER_PRIORITY_USER + 1);
+
+  if(!gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(themes_style_provider), theme, &error))
+  {
+    printf("%s: error parsing %s: %s\n", G_STRFUNC, theme, error->message);
+    g_clear_error(&error);
+  }
+
+  g_object_unref(themes_style_provider);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
