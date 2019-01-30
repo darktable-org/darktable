@@ -988,9 +988,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   g_object_set(G_OBJECT(settings), "gtk-theme-name", "Adwaita", (gchar *)0);
   g_object_unref(settings);
 
-  // load theme
-  dt_gui_load_theme(gui->gtkrc);
-
   // Initializing the shortcut groups
   darktable.control->accelerators = gtk_accel_group_new();
 
@@ -1143,46 +1140,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   darktable.gui->reset = 0;
 
-  GdkRGBA *c = darktable.gui->colors;
-  GtkWidget *main_window = dt_ui_main_window(darktable.gui->ui);
-  GtkStyleContext *ctx = gtk_widget_get_style_context(main_window);
-
-  c[DT_GUI_COLOR_BG] = (GdkRGBA){ 0.1333, 0.1333, 0.1333, 1.0 };
-
-  struct color_init
-  {
-    const char *name;
-    GdkRGBA default_col;
-  } init[DT_GUI_COLOR_LAST] = {
-    [DT_GUI_COLOR_DARKROOM_BG] = { "darkroom_bg_color", { .2, .2, .2, 1.0 } },
-    [DT_GUI_COLOR_DARKROOM_PREVIEW_BG] = { "darkroom_preview_bg_color", { .1, .1, .1, 1.0 } },
-    [DT_GUI_COLOR_LIGHTTABLE_BG] = { "lighttable_bg_color", { .2, .2, .2, 1.0 } },
-    [DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG] = { "lighttable_preview_bg_color", { .1, .1, .1, 1.0 } },
-    [DT_GUI_COLOR_BRUSH_CURSOR] = { "brush_cursor", { 1., 1., 1., 0.9 } },
-    [DT_GUI_COLOR_BRUSH_TRACE] = { "brush_trace", { 0., 0., 0., 0.8 } },
-    [DT_GUI_COLOR_THUMBNAIL_BG] = { "thumbnail_bg_color", { 0.4, 0.4, 0.4, 1.0 } },
-    [DT_GUI_COLOR_THUMBNAIL_SELECTED_BG] = { "thumbnail_selected_bg_color", { 0.6, 0.6, 0.6, 1.0 } },
-    [DT_GUI_COLOR_THUMBNAIL_HOVER_BG] = { "thumbnail_hover_bg_color", { 0.8, 0.8, 0.8, 1.0 } },
-    [DT_GUI_COLOR_THUMBNAIL_OUTLINE] = { "thumbnail_outline_color", { 0.2, 0.2, 0.2, 1.0 } },
-    [DT_GUI_COLOR_THUMBNAIL_SELECTED_OUTLINE] = { "thumbnail_selected_outline_color", { 0.4, 0.4, 0.4, 1.0 } },
-    [DT_GUI_COLOR_THUMBNAIL_HOVER_OUTLINE] = { "thumbnail_hover_outline_color", { 0.6, 0.6, 0.6, 1.0 } },
-    [DT_GUI_COLOR_THUMBNAIL_FONT] = { "thumbnail_font_color", { 0.425, 0.425, 0.425, 1.0 } },
-    [DT_GUI_COLOR_THUMBNAIL_SELECTED_FONT] = { "thumbnail_selected_font_color", { 0.5, 0.5, 0.5, 1.0 } },
-    [DT_GUI_COLOR_THUMBNAIL_HOVER_FONT] = { "thumbnail_hover_font_color", { 0.7, 0.7, 0.7, 1.0 } },
-    [DT_GUI_COLOR_THUMBNAIL_BORDER] = { "thumbnail_border_color", { 0.1, 0.1, 0.1, 1.0 } },
-    [DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER] = { "thumbnail_selected_border_color", { 0.9, 0.9, 0.9, 1.0 } },
-    [DT_GUI_COLOR_FILMSTRIP_BG] = { "filmstrip_bg_color", { 0.2, 0.2, 0.2, 1.0 } },
-  };
-
-  // starting from 1 as DT_GUI_COLOR_BG is not part of this table
-  for(int i = 1; i < DT_GUI_COLOR_LAST; i++)
-  {
-    if(!gtk_style_context_lookup_color(ctx, init[i].name, &c[i]))
-    {
-      c[i] = init[i].default_col;
-    }
-  }
-
+  // load theme
+  dt_gui_load_theme(gui->gtkrc);
 
   // let's try to support pressure sensitive input devices like tablets for mask drawing
   dt_print(DT_DEBUG_INPUT, "[input device] Input devices found:\n\n");
@@ -2072,6 +2031,48 @@ void dt_gui_load_theme(const char *theme)
   }
 
   g_object_unref(themes_style_provider);
+
+  // setup the colors
+
+  GdkRGBA *c = darktable.gui->colors;
+  GtkWidget *main_window = dt_ui_main_window(darktable.gui->ui);
+  GtkStyleContext *ctx = gtk_widget_get_style_context(main_window);
+
+  c[DT_GUI_COLOR_BG] = (GdkRGBA){ 0.1333, 0.1333, 0.1333, 1.0 };
+
+  struct color_init
+  {
+    const char *name;
+    GdkRGBA default_col;
+  } init[DT_GUI_COLOR_LAST] = {
+    [DT_GUI_COLOR_DARKROOM_BG] = { "darkroom_bg_color", { .2, .2, .2, 1.0 } },
+    [DT_GUI_COLOR_DARKROOM_PREVIEW_BG] = { "darkroom_preview_bg_color", { .1, .1, .1, 1.0 } },
+    [DT_GUI_COLOR_LIGHTTABLE_BG] = { "lighttable_bg_color", { .2, .2, .2, 1.0 } },
+    [DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG] = { "lighttable_preview_bg_color", { .1, .1, .1, 1.0 } },
+    [DT_GUI_COLOR_BRUSH_CURSOR] = { "brush_cursor", { 1., 1., 1., 0.9 } },
+    [DT_GUI_COLOR_BRUSH_TRACE] = { "brush_trace", { 0., 0., 0., 0.8 } },
+    [DT_GUI_COLOR_THUMBNAIL_BG] = { "thumbnail_bg_color", { 0.4, 0.4, 0.4, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_SELECTED_BG] = { "thumbnail_selected_bg_color", { 0.6, 0.6, 0.6, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_HOVER_BG] = { "thumbnail_hover_bg_color", { 0.8, 0.8, 0.8, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_OUTLINE] = { "thumbnail_outline_color", { 0.2, 0.2, 0.2, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_SELECTED_OUTLINE] = { "thumbnail_selected_outline_color", { 0.4, 0.4, 0.4, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_HOVER_OUTLINE] = { "thumbnail_hover_outline_color", { 0.6, 0.6, 0.6, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_FONT] = { "thumbnail_font_color", { 0.425, 0.425, 0.425, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_SELECTED_FONT] = { "thumbnail_selected_font_color", { 0.5, 0.5, 0.5, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_HOVER_FONT] = { "thumbnail_hover_font_color", { 0.7, 0.7, 0.7, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_BORDER] = { "thumbnail_border_color", { 0.1, 0.1, 0.1, 1.0 } },
+    [DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER] = { "thumbnail_selected_border_color", { 0.9, 0.9, 0.9, 1.0 } },
+    [DT_GUI_COLOR_FILMSTRIP_BG] = { "filmstrip_bg_color", { 0.2, 0.2, 0.2, 1.0 } },
+  };
+
+  // starting from 1 as DT_GUI_COLOR_BG is not part of this table
+  for(int i = 1; i < DT_GUI_COLOR_LAST; i++)
+  {
+    if(!gtk_style_context_lookup_color(ctx, init[i].name, &c[i]))
+    {
+      c[i] = init[i].default_col;
+    }
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
