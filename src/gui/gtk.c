@@ -2010,11 +2010,20 @@ void dt_gui_load_theme(const char *theme)
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
+  // user dir them
   g_snprintf(path, sizeof(path), "%s/themes/%s.css", configdir, theme);
   if(!g_file_test(path, G_FILE_TEST_EXISTS))
   {
-    g_snprintf(path, sizeof(path), "%s/themes/darktable.css", datadir);
-    dt_conf_set_string("ui_last/theme", "darktable");
+    // dt dir theme
+    g_snprintf(path, sizeof(path), "%s/themes/%s.css", datadir, theme);
+    if(!g_file_test(path, G_FILE_TEST_EXISTS))
+    {
+      // fallback to default theme
+      g_snprintf(path, sizeof(path), "%s/themes/darktable.css", datadir);
+      dt_conf_set_string("ui_last/theme", "darktable");
+    }
+    else
+      dt_conf_set_string("ui_last/theme", theme);
   }
   else
     dt_conf_set_string("ui_last/theme", theme);
