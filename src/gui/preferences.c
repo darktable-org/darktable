@@ -157,8 +157,8 @@ static void load_themes_dir(const char *basedir)
 
 static void load_themes(void)
 {
-  // Clear combobox...
-  g_list_free(darktable.themes);
+  // Clear theme list...
+  g_list_free_full(darktable.themes, g_free);
   darktable.themes = NULL;
 
   // check themes dirs
