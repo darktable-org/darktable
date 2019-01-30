@@ -20,7 +20,7 @@ if ("${GTK3_VERSION}" VERSION_GREATER "3.19.0")
 else ()
   configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable-3.18.css.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.css )
 endif()
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.css DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.css DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/themes COMPONENT DTApplication)
 
 #
 # web gallery export support files:
@@ -191,4 +191,3 @@ endif(USE_XMLLINT)
 # postinst script should copy this into users homedirectory
 # $HOME/.config/darktable/darktable.rc
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktablerc DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable COMPONENT DTApplication)
-
