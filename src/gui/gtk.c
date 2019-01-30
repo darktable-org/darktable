@@ -956,7 +956,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   if(css_theme)
     g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "%s", css_theme);
   else
-    g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "darktable.css");
+    g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "darktable");
 
 #ifdef MAC_INTEGRATION
 #ifdef GTK_TYPE_OSX_APPLICATION
@@ -2052,12 +2052,12 @@ void dt_gui_load_theme(const char *theme)
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
-  g_snprintf(path, sizeof(path), "%s/themes/%s", configdir, gui->gtkrc);
+  g_snprintf(path, sizeof(path), "%s/themes/%s.css", configdir, gui->gtkrc);
 
   if(!g_file_test(path, G_FILE_TEST_EXISTS))
   {
     g_snprintf(path, sizeof(path), "%s/themes/darktable.css", datadir);
-    dt_conf_set_string("ui_last/theme", "darktable.css");
+    dt_conf_set_string("ui_last/theme", "darktable");
   }
   else
     dt_conf_set_string("ui_last/theme", gui->gtkrc);
