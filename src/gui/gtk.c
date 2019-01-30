@@ -451,70 +451,6 @@ static gboolean draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_data
   GdkRGBA color;
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
   gboolean color_found = gtk_style_context_lookup_color (context, "selected_bg_color", &color);
-  if(!color_found)
-  {
-    color.red = 1.0;
-    color.green = 0.0;
-    color.blue = 0.0;
-    color.alpha = 1.0;
-  }
-  gdk_cairo_set_source_rgba(cr, &color);
-  cairo_paint(cr);
-
-  // draw scrollbar indicators
-  const dt_view_t *view = dt_view_manager_get_current_view(darktable.view_manager);
-  color_found = gtk_style_context_lookup_color (context, "bg_color", &color);
-  if(!color_found)
-  {
-    color.red = 1.0;
-    color.green = 0.0;
-    color.blue = 0.0;
-    color.alpha = 1.0;
-  }
-  gdk_cairo_set_source_rgba(cr, &color);
-  const float border = 0.3;
-  if(!view)
-    cairo_paint(cr);
-  else
-  {
-    switch(which)
-    {
-      case 0:
-      case 1: // left, right: vertical
-        cairo_rectangle(cr, 0.0,
-                        (view->vscroll_pos - view->vscroll_lower) / (view->vscroll_size - view->vscroll_lower) * height,
-                        width,
-                        MAX(DT_PIXEL_APPLY_DPI(5),
-                            view->vscroll_viewport_size / (view->vscroll_size - view->vscroll_lower) * height));
-        break;
-      default: // bottom, top: horizontal
-        cairo_rectangle(cr,
-                        (view->hscroll_pos - view->hscroll_lower) / (view->hscroll_size - view->hscroll_lower) * width,
-                        0.0,
-                        MAX(DT_PIXEL_APPLY_DPI(5),
-                            view->hscroll_viewport_size / (view->hscroll_size - view->hscroll_lower) * width), height);
-        break;
-    }
-    cairo_fill(cr);
-    switch(which)
-    {
-      case 0:
-        cairo_rectangle(cr, (1.0 - border) * width, 0.0, border * width, height);
-        break;
-      case 1:
-        cairo_rectangle(cr, 0.0, 0.0, border * width, height);
-        break;
-      case 2:
-        cairo_rectangle(cr, (1.0 - border) * height, (1.0 - border) * height,
-                        width - 2 * (1.0 - border) * height, border * height);
-        break;
-      default:
-        cairo_rectangle(cr, (1.0 - border) * height, 0.0, width - 2 * (1.0 - border) * height,
-                        border * height);
-        break;
-    }
-    cairo_fill(cr);
-  }
 
   // draw gui arrows.
   color_found = gtk_style_context_lookup_color (context, "fg_color", &color);
@@ -1648,18 +1584,12 @@ void dt_ui_update_scrollbars(dt_ui_t *ui)
     gtk_adjustment_configure(gtk_range_get_adjustment(GTK_RANGE(darktable.gui->scrollbars.vscrollbar)),
                              cv->vscroll_pos, cv->vscroll_lower, cv->vscroll_size, 0, cv->vscroll_viewport_size,
                              cv->vscroll_viewport_size);
-    gtk_widget_set_margin_end(dt_ui_center(darktable.gui->ui), DT_PIXEL_APPLY_DPI(0));
-  } else {
-	gtk_widget_set_margin_end(dt_ui_center(darktable.gui->ui), DT_PIXEL_APPLY_DPI(6));
   }
 
   if(cv->hscroll_size > cv->hscroll_viewport_size){
     gtk_adjustment_configure(gtk_range_get_adjustment(GTK_RANGE(darktable.gui->scrollbars.hscrollbar)),
                              cv->hscroll_pos, cv->hscroll_lower, cv->hscroll_size, 0, cv->hscroll_viewport_size,
                              cv->hscroll_viewport_size);
-	gtk_widget_set_margin_bottom(dt_ui_center(darktable.gui->ui), DT_PIXEL_APPLY_DPI(0));
-  } else {
-	gtk_widget_set_margin_bottom(dt_ui_center(darktable.gui->ui), DT_PIXEL_APPLY_DPI(6));
   }
 
   gtk_widget_set_visible(darktable.gui->scrollbars.vscrollbar, cv->vscroll_size > cv->vscroll_viewport_size);
@@ -1680,24 +1610,6 @@ void dt_ui_scrollbars_show(dt_ui_t *ui, gboolean show)
     gtk_widget_hide(darktable.gui->scrollbars.hscrollbar);
     gtk_widget_set_margin_end(dt_ui_center(ui), DT_PIXEL_APPLY_DPI(6));
     gtk_widget_set_margin_bottom(dt_ui_center(ui), DT_PIXEL_APPLY_DPI(6));
-  }
-}
-
-void dt_ui_border_show(dt_ui_t *ui, gboolean show)
-{
-  if(show)
-  {
-    gtk_widget_show(darktable.gui->widgets.left_border);
-    gtk_widget_show(darktable.gui->widgets.right_border);
-    gtk_widget_show(darktable.gui->widgets.top_border);
-    gtk_widget_show(darktable.gui->widgets.bottom_border);
-  }
-  else
-  {
-    gtk_widget_hide(darktable.gui->widgets.left_border);
-    gtk_widget_hide(darktable.gui->widgets.right_border);
-    gtk_widget_hide(darktable.gui->widgets.top_border);
-    gtk_widget_hide(darktable.gui->widgets.bottom_border);
   }
 }
 
