@@ -225,7 +225,8 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
   r1 = pts[1] * cosv - pts[0] * sinv + pts[2] * sinv - pts[3] * cosv;
 
   // we search v2 so r2 as not the same sign as r1
-  float pas = M_PI / 16.0;
+  const float pas = M_PI / 16.0;
+
   do
   {
     v2 += pas;
@@ -236,6 +237,9 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
 
   if(v2 == M_PI) return 9;
 
+  // set precision for the iterative check
+  const float eps = .0001f;
+
   int iter = 0;
   do
   {
@@ -243,7 +247,7 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
     sinv = sinf(v), cosv = cosf(v);
     r = pts[1] * cosv - pts[0] * sinv + pts[2] * sinv - pts[3] * cosv;
 
-    if(r < 0.01 && r > -0.01) break;
+    if(r < eps && r > -eps) break;
 
     if(r * r2 < 0)
       v1 = v;
@@ -254,18 +258,28 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
     }
 
   } while(iter++ < 1000);
-  if(iter >= 1000) return 8;
+
+  if(iter >= 1000) return 8; // generally in less than 20 iterations all is good, so we are over conservative
 
   // be careful to the gnd direction
-  if(pts[2] - pts[0] > 0)
+
+  const float diff_x = pts[2] - pts[0];
+  const float MPI2 = (M_PI / 2.0f);
+
+  if(diff_x > eps)
   {
-    if(v >  M_PI) v = v - M_PI;
-    if(v < -M_PI) v = M_PI + v;
+    if(v >=  MPI2) v -= M_PI;
+    if(v <  -MPI2) v += M_PI;
   }
-  else if(pts[2] - pts[0] < 0)
+  else if(diff_x < -eps)
   {
-    if(v <  M_PI && v >= 0) v = v - M_PI;
-    if(v > -M_PI && v < 0)  v = v + M_PI;
+    if(v <  MPI2 && v >= 0) v -= M_PI;
+    if(v > -MPI2 && v < 0)  v += M_PI;
+  }
+  else // let's pretend that we are at PI/2
+  {
+    if(v <0) v = -MPI2;
+    else v = MPI2;
   }
 
   *rotation = -v * 180.0 / M_PI;
