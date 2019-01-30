@@ -239,6 +239,7 @@ typedef struct darktable_t
   dt_lua_state_t lua_state;
   GList *guides;
   double start_wtime;
+  GList *themes;
 } darktable_t;
 
 typedef struct
