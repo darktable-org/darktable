@@ -274,8 +274,6 @@ void dt_ui_container_foreach(struct dt_ui_t *ui, const dt_ui_container_t c, GtkC
 void dt_ui_container_destroy_children(struct dt_ui_t *ui, const dt_ui_container_t c);
 /** \brief shows/hide a panel */
 void dt_ui_panel_show(struct dt_ui_t *ui, const dt_ui_panel_t, gboolean show, gboolean write);
-/** show or hide outermost borders with expand arrows */
-void dt_ui_border_show(struct dt_ui_t *ui, gboolean show);
 /** \brief restore saved state of panel visibility for current view */
 void dt_ui_restore_panels(struct dt_ui_t *ui);
 /** \brief update scrollbars for current view */
