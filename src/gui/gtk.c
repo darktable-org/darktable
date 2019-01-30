@@ -952,10 +952,11 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
-  g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "%s/darktable.css", configdir);
-
-  if(!g_file_test(gui->gtkrc, G_FILE_TEST_EXISTS))
-    g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "%s/darktable.css", datadir);
+  const gchar *css_theme = dt_conf_get_string("ui_last/theme");
+  if(css_theme)
+    g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "%s", css_theme);
+  else
+    g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "darktable.css");
 
 #ifdef MAC_INTEGRATION
 #ifdef GTK_TYPE_OSX_APPLICATION
@@ -2046,14 +2047,29 @@ void dt_gui_add_help_link(GtkWidget *widget, const char *link)
 // load a CSS theme
 void dt_gui_load_theme(const char *theme)
 {
+  const dt_gui_gtk_t *gui = darktable.gui;
+  char path[PATH_MAX] = { 0 }, datadir[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  dt_loc_get_user_config_dir(configdir, sizeof(configdir));
+
+  g_snprintf(path, sizeof(path), "%s/themes/%s", configdir, gui->gtkrc);
+
+  if(!g_file_test(path, G_FILE_TEST_EXISTS))
+  {
+    g_snprintf(path, sizeof(path), "%s/themes/darktable.css", datadir);
+    dt_conf_set_string("ui_last/theme", "darktable.css");
+  }
+  else
+    dt_conf_set_string("ui_last/theme", gui->gtkrc);
+
   GError *error = NULL;
   GtkStyleProvider *themes_style_provider = GTK_STYLE_PROVIDER(gtk_css_provider_new());
   gtk_style_context_add_provider_for_screen
     (gdk_screen_get_default(), themes_style_provider, GTK_STYLE_PROVIDER_PRIORITY_USER + 1);
 
-  if(!gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(themes_style_provider), theme, &error))
+  if(!gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(themes_style_provider), path, &error))
   {
-    printf("%s: error parsing %s: %s\n", G_STRFUNC, theme, error->message);
+    printf("%s: error parsing %s: %s\n", G_STRFUNC, path, error->message);
     g_clear_error(&error);
   }
 
