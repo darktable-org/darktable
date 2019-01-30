@@ -2047,20 +2047,18 @@ void dt_gui_add_help_link(GtkWidget *widget, const char *link)
 // load a CSS theme
 void dt_gui_load_theme(const char *theme)
 {
-  const dt_gui_gtk_t *gui = darktable.gui;
   char path[PATH_MAX] = { 0 }, datadir[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
-  g_snprintf(path, sizeof(path), "%s/themes/%s.css", configdir, gui->gtkrc);
-
+  g_snprintf(path, sizeof(path), "%s/themes/%s.css", configdir, theme);
   if(!g_file_test(path, G_FILE_TEST_EXISTS))
   {
     g_snprintf(path, sizeof(path), "%s/themes/darktable.css", datadir);
     dt_conf_set_string("ui_last/theme", "darktable");
   }
   else
-    dt_conf_set_string("ui_last/theme", gui->gtkrc);
+    dt_conf_set_string("ui_last/theme", theme);
 
   GError *error = NULL;
   GtkStyleProvider *themes_style_provider = GTK_STYLE_PROVIDER(gtk_css_provider_new());
