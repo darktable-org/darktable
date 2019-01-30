@@ -876,6 +876,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   darktable.guides = dt_guides_init();
 
+  darktable.themes = NULL;
+
 #ifdef HAVE_GRAPHICSMAGICK
   /* GraphicsMagick init */
   InitializeMagick(darktable.progname);
