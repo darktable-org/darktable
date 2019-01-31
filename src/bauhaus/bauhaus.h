@@ -210,7 +210,7 @@ typedef struct dt_bauhaus_t
   int cursor_blink_counter;
 
   // colors for sliders and comboboxes
-  GdkRGBA color_fg, color_fg_insensitive, color_bg, color_border, indicator_border;
+  GdkRGBA color_fg, color_fg_insensitive, color_bg, color_border, indicator_border, color_fill;
 
   // colors for graphs
   GdkRGBA graph_bg, graph_border, graph_fg, graph_grid, graph_fg_active, inset_histogram;
