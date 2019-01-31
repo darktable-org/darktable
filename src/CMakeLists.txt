@@ -162,6 +162,9 @@ endif(WIN32)
 
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "ppc64le")
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ppc64le)
+endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/external)
