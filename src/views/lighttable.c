@@ -2194,9 +2194,12 @@ static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, g
 
 void enter(dt_view_t *self)
 {
-  // hide filmstrip when entering the view
+  // show/hide filmstrip when entering the view
   dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
-  gtk_widget_hide(GTK_WIDGET(m->widget));
+  if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+    gtk_widget_show(GTK_WIDGET(m->widget));
+  else
+    gtk_widget_hide(GTK_WIDGET(m->widget));
 
   gtk_drag_dest_set(dt_ui_center(darktable.gui->ui), GTK_DEST_DEFAULT_ALL, target_list_all, n_targets_all,
                     GDK_ACTION_COPY);
