@@ -9060,7 +9060,7 @@ msgstr "Lab, verknüpfte Kanäle"
 #: ../src/iop/tonecurve.c:1173
 #| msgctxt "blendmode"
 #| msgid "Lab a-channel"
-msgid "Lab, independant channels"
+msgid "Lab, independent channels"
 msgstr "Lab, unabhängige Kanäle"
 
 #: ../src/iop/tonecurve.c:1174

@@ -1174,7 +1174,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->autoscale_ab = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->autoscale_ab, NULL, _("color space"));
   dt_bauhaus_combobox_add(c->autoscale_ab, _("Lab, linked channels"));
-  dt_bauhaus_combobox_add(c->autoscale_ab, _("Lab, independant channels"));
+  dt_bauhaus_combobox_add(c->autoscale_ab, _("Lab, independent channels"));
   dt_bauhaus_combobox_add(c->autoscale_ab, _("XYZ, linked channels"));
   dt_bauhaus_combobox_add(c->autoscale_ab, _("RGB, linked channels"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->autoscale_ab, TRUE, TRUE, 0);

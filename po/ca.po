@@ -9318,7 +9318,7 @@ msgid "Lab, linked channels"
 msgstr "Lab, canals enllaçats"
 
 #: ../src/iop/tonecurve.c:1179
-msgid "Lab, independant channels"
+msgid "Lab, independent channels"
 msgstr "Lab, canals independents"
 
 #: ../src/iop/tonecurve.c:1180
