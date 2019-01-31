@@ -61,6 +61,11 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_COLLECTION_CHANGED,
 
+  /** \brief This signal is raised when the selection is changed
+  no param, no returned value
+    */
+  DT_SIGNAL_SELECTION_CHANGED,
+
   /** \brief This signal is raised when a tag is added/deleted/changed  */
   DT_SIGNAL_TAG_CHANGED,
 
