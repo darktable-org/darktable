@@ -8852,7 +8852,7 @@ msgid "Lab, linked channels"
 msgstr "Lab, koblede kanaler"
 
 #: ../src/iop/tonecurve.c:1173
-msgid "Lab, independant channels"
+msgid "Lab, independent channels"
 msgstr "Lab, uavhengige kanaler"
 
 #: ../src/iop/tonecurve.c:1174
