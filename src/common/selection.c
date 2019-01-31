@@ -94,7 +94,7 @@ void dt_selection_invert(dt_selection_t *selection)
 
   g_free(fullq);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -104,7 +104,7 @@ void dt_selection_clear(const dt_selection_t *selection)
 {
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -138,7 +138,7 @@ void dt_selection_select(dt_selection_t *selection, uint32_t imgid)
     }
   }
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -173,7 +173,7 @@ void dt_selection_deselect(dt_selection_t *selection, uint32_t imgid)
     }
   }
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -211,7 +211,7 @@ void dt_selection_toggle(dt_selection_t *selection, uint32_t imgid)
     selection->last_single_id = imgid;
   }
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -233,7 +233,7 @@ void dt_selection_select_all(dt_selection_t *selection)
 
   g_free(fullq);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);
@@ -374,7 +374,7 @@ void dt_selection_select_list(struct dt_selection_t *selection, GList *list)
     g_free(query);
   }
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
 
   /* update hint message */
   dt_collection_hint_message(darktable.collection);

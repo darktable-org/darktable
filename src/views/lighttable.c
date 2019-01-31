@@ -350,6 +350,18 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
   _update_collected_images(self);
 }
 
+static void _view_lighttable_selection_listener_callback(gpointer instance, gpointer user_data)
+{
+  dt_view_t *self = (dt_view_t *)user_data;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  // we handle change of selection only in expose mode. it is needed
+  // here as the selection from the filmstrip is actually was must be
+  // displayed in the expose view.
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+    _view_lighttable_collection_listener_callback(instance, user_data);
+}
+
 static void _update_collected_images(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -527,6 +539,9 @@ void init(dt_view_t *self)
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_view_lighttable_collection_listener_callback), (gpointer)self);
 
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+                            G_CALLBACK(_view_lighttable_selection_listener_callback), (gpointer)self);
+
   _view_lighttable_collection_listener_callback(NULL, self);
 
   /* initialize reusable sql statements */
@@ -541,6 +556,7 @@ void init(dt_view_t *self)
 void cleanup(dt_view_t *self)
 {
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_lighttable_collection_listener_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_lighttable_selection_listener_callback), self);
 
   dt_library_t *lib = (dt_library_t *)self->data;
   dt_conf_set_float("lighttable/ui/zoom_x", lib->zoom_x);
