@@ -38,6 +38,13 @@ static gboolean dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event
 static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w);
 static void dt_bauhaus_widget_reject(dt_bauhaus_widget_t *w);
 
+static GdkRGBA lookup_color(GtkStyleContext *context, const char *name)
+{
+  GdkRGBA color, fallback = {1.0, 0.0, 0.0, 1.0};
+  if(!gtk_style_context_lookup_color (context, name, &color))
+    color = fallback;
+  return color;
+}
 
 static int show_pango_text(cairo_t *cr, char *text, float x_pos, float y_pos, float max_width, gboolean right_aligned)
 {
@@ -1391,6 +1398,9 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
   gtk_render_background(context, cr, 0.0, 0.0, width, height);
 
+  // look up some colors once
+  GdkRGBA really_dark_bg_color = lookup_color(context, "really_dark_bg_color");
+
   GdkRGBA text_color, text_color_selected, text_color_hover;
   gtk_style_context_get_color(context, GTK_STATE_FLAG_NORMAL, &text_color);
   gtk_style_context_get_color(context, GTK_STATE_FLAG_SELECTED, &text_color_selected);
@@ -1407,9 +1417,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     cairo_line_to(cr, width - 1.0, height - 1.0);
     cairo_line_to(cr, width - 1.0, 1.0);
     cairo_stroke(cr);
-    GdkRGBA color = darktable.bauhaus->color_border;
-    color.alpha = 0.4;
-    set_color(cr, color);
+    set_color(cr, really_dark_bg_color);
     cairo_move_to(cr, 1.0, height - 1.0);
     cairo_line_to(cr, 1.0, 1.0);
     cairo_line_to(cr, width - 1.0, 1.0);
