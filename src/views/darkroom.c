@@ -1623,8 +1623,8 @@ void gui_init(dt_view_t *self)
   /* create profile popup tool & buttons (softproof + gamut) */
   {
     // the softproof button
-    dev->profile.softproof_button
-    = dtgtk_togglebutton_new(dtgtk_cairo_paint_softproof, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+    dev->profile.softproof_button =
+      dtgtk_togglebutton_new(dtgtk_cairo_paint_softproof, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_tooltip_text(dev->profile.softproof_button,
                                 _("toggle softproofing\nright click for profile options"));
     g_signal_connect(G_OBJECT(dev->profile.softproof_button), "clicked",
@@ -1637,8 +1637,8 @@ void gui_init(dt_view_t *self)
     dt_gui_add_help_link(dev->profile.softproof_button, dt_get_help_url("softproof"));
 
     // the gamut check button
-    dev->profile.gamut_button
-    = dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+    dev->profile.gamut_button =
+      dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_tooltip_text(dev->profile.gamut_button,
                  _("toggle gamut checking\nright click for profile options"));
     g_signal_connect(G_OBJECT(dev->profile.gamut_button), "clicked",
