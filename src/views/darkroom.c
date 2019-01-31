@@ -221,10 +221,7 @@ void expose(
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-    cairo_fill_preserve(cr);
-    cairo_set_line_width(cr, 1.0);
-    cairo_set_source_rgb(cr, .3, .3, .3);
-    cairo_stroke(cr);
+    cairo_fill(cr);
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
     image_surface_imgid = dev->image_storage.id;
@@ -364,7 +361,6 @@ void expose(
     cairo_scale(cri, zoom_scale, zoom_scale);
     cairo_translate(cri, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 
-    // cairo_set_operator(cri, CAIRO_OPERATOR_XOR);
     cairo_set_line_width(cri, 1.0 / zoom_scale);
     cairo_set_source_rgb(cri, .2, .2, .2);
 
