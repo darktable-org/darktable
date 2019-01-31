@@ -799,7 +799,8 @@ static gboolean _display_selected(gpointer user_data)
 
   if(!done)
   {
-    GList *collection_images = dt_collection_get_all(darktable.collection, -1);
+    dt_map_t *lib = (dt_map_t *)self->data;
+    GList *collection_images = dt_collection_get_all(darktable.collection, lib->max_images_drawn);
     if(collection_images)
     {
       done = _view_map_center_on_image_list(self, collection_images);
@@ -1090,10 +1091,11 @@ static void _view_map_check_preference_changed(gpointer instance, gpointer user_
 static void _view_map_collection_changed(gpointer instance, gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
+   dt_map_t *lib = (dt_map_t *)self->data;
 
   if(darktable.view_manager->proxy.map.view)
   {
-    GList *collection_images = dt_collection_get_all(darktable.collection, -1);
+    GList *collection_images = dt_collection_get_all(darktable.collection, lib->max_images_drawn);
     if(collection_images)
     {
       _view_map_center_on_image_list(self, collection_images);
@@ -1103,7 +1105,6 @@ static void _view_map_collection_changed(gpointer instance, gpointer user_data)
 
   if(dt_conf_get_bool("plugins/map/filter_images_drawn"))
   {
-    dt_map_t *lib = (dt_map_t *)self->data;
     /* only redraw when map mode is currently active, otherwise enter() does the magic */
     if(darktable.view_manager->proxy.map.view) g_signal_emit_by_name(lib->map, "changed");
   }
