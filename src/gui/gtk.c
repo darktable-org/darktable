@@ -1533,18 +1533,12 @@ void dt_ui_update_scrollbars(dt_ui_t *ui)
     gtk_adjustment_configure(gtk_range_get_adjustment(GTK_RANGE(darktable.gui->scrollbars.vscrollbar)),
                              cv->vscroll_pos, cv->vscroll_lower, cv->vscroll_size, 0, cv->vscroll_viewport_size,
                              cv->vscroll_viewport_size);
-    gtk_widget_set_margin_end(dt_ui_center(darktable.gui->ui), DT_PIXEL_APPLY_DPI(0));
-  } else {
-  gtk_widget_set_margin_end(dt_ui_center(darktable.gui->ui), DT_PIXEL_APPLY_DPI(6));
   }
 
   if(cv->hscroll_size > cv->hscroll_viewport_size){
     gtk_adjustment_configure(gtk_range_get_adjustment(GTK_RANGE(darktable.gui->scrollbars.hscrollbar)),
                              cv->hscroll_pos, cv->hscroll_lower, cv->hscroll_size, 0, cv->hscroll_viewport_size,
                              cv->hscroll_viewport_size);
-  gtk_widget_set_margin_bottom(dt_ui_center(darktable.gui->ui), DT_PIXEL_APPLY_DPI(0));
-  } else {
-  gtk_widget_set_margin_bottom(dt_ui_center(darktable.gui->ui), DT_PIXEL_APPLY_DPI(6));
   }
 
   gtk_widget_set_visible(darktable.gui->scrollbars.vscrollbar, cv->vscroll_size > cv->vscroll_viewport_size);
@@ -1565,24 +1559,6 @@ void dt_ui_scrollbars_show(dt_ui_t *ui, gboolean show)
     gtk_widget_hide(darktable.gui->scrollbars.hscrollbar);
     gtk_widget_set_margin_end(dt_ui_center(ui), DT_PIXEL_APPLY_DPI(6));
     gtk_widget_set_margin_bottom(dt_ui_center(ui), DT_PIXEL_APPLY_DPI(6));
-  }
-}
-
-void dt_ui_border_show(dt_ui_t *ui, gboolean show)
-{
-  if(show)
-  {
-    gtk_widget_show(darktable.gui->widgets.left_border);
-    gtk_widget_show(darktable.gui->widgets.right_border);
-    gtk_widget_show(darktable.gui->widgets.top_border);
-    gtk_widget_show(darktable.gui->widgets.bottom_border);
-  }
-  else
-  {
-    gtk_widget_hide(darktable.gui->widgets.left_border);
-    gtk_widget_hide(darktable.gui->widgets.right_border);
-    gtk_widget_hide(darktable.gui->widgets.top_border);
-    gtk_widget_hide(darktable.gui->widgets.bottom_border);
   }
 }
 
