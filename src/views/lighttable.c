@@ -409,8 +409,7 @@ static void _update_collected_images(dt_view_t *self)
   if(lib->full_preview_id != -1)
   {
     // note that this adjustement is needed as for a memory table the rowid doesn't start to 1 after the DELETE
-    // above,
-    // but rowid is incremented each time we INSERT.
+    // above, but rowid is incremented each time we INSERT.
     lib->full_preview_rowid += (min_after - min_before);
 
     char col_query[128] = { 0 };
@@ -418,7 +417,7 @@ static void _update_collected_images(dt_view_t *self)
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), col_query, -1, &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      int nid = sqlite3_column_int(stmt, 0);
+      const int nid = sqlite3_column_int(stmt, 0);
       if (nid != lib->full_preview_id)
       {
         lib->full_preview_id = sqlite3_column_int(stmt, 0);
@@ -435,7 +434,7 @@ static void _update_collected_images(dt_view_t *self)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, lib->single_img_id);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      int new_rowid = sqlite3_column_int(stmt, 0);
+      const int new_rowid = sqlite3_column_int(stmt, 0);
       lib->first_visible_filemanager = lib->offset = new_rowid - min_after;
     }
     sqlite3_finalize(stmt);
@@ -866,8 +865,7 @@ end_query_cache:
         if(iir == 1)
         {
           // we are on the single-image display at a time, in this case we want the selection to be updated to
-          // contain
-          // this single image.
+          // contain this single image.
           dt_selection_select_single(darktable.selection, id);
           lib->single_img_id = id;
         }
@@ -1409,8 +1407,7 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
         if(zoom == 1)
         {
           // we are on the single-image display at a time, in this case we want the selection to be updated to
-          // contain
-          // this single image.
+          // contain this single image.
           dt_selection_select_single(darktable.selection, id);
           lib->single_img_id = id;
         }
@@ -2510,6 +2507,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         // namely until the pointer has moved a little distance. The code taking
         // care of this is in expose(). Pan only makes sense in zoomable lt.
         if(layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE) begin_pan(lib, x, y);
+
         if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && lib->using_arrows)
         {
           // in this case dt_control_get_mouse_over_id() means "last image visited with arrows"
@@ -2533,6 +2531,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         else // zoomable lighttable --> defer action to check for pan
           lib->activate_on_release = lib->image_over;
         break;
+
       case DT_VIEW_GROUP:
       {
         const int32_t mouse_over_id = dt_control_get_mouse_over_id();
@@ -2541,6 +2540,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         const int group_id = image->group_id;
         const int id = image->id;
         dt_image_cache_read_release(darktable.image_cache, image);
+
         if(state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) // just add the whole group to the selection. TODO:
                                                         // make this also work for collapsed groups.
         {

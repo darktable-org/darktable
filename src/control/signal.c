@@ -135,7 +135,7 @@ dt_control_signal_t *dt_control_signal_init()
   ctlsig->sink = g_object_new(_signal_type, NULL);
 
   /* create the signals */
-  for(int k = 0; k < DT_SIGNAL_COUNT; k++) 
+  for(int k = 0; k < DT_SIGNAL_COUNT; k++)
   {
     g_signal_newv(_signal_description[k].name, _signal_type, G_SIGNAL_RUN_LAST, 0,
         _signal_description[k].accumulator, _signal_description[k].accu_data,
@@ -180,7 +180,7 @@ gboolean _async_com_callback(gpointer data)
   g_cond_signal(&communication->end_cond);
   g_mutex_unlock(&communication->end_mutex);
   return FALSE;
-} 
+}
 
 void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t signal, ...)
 {
