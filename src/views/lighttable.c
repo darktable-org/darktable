@@ -695,12 +695,6 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
   /* do we have a main query collection statement */
   if(!lib->statements.main_query) return 0;
 
-  /* safety check added to be able to work with zoom slider. The
-  * communication between zoom slider and lighttable should be handled
-  * differently (i.e. this is a clumsy workaround) */
-  if(lib->images_in_row != iir && lib->first_visible_filemanager < 0)
-    lib->offset = lib->first_visible_filemanager = 0;
-
   int32_t offset = lib->offset
       = MIN(lib->first_visible_filemanager, ((lib->collection_count + iir - 1) / iir - 1) * iir);
 
