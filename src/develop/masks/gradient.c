@@ -147,8 +147,8 @@ static int dt_gradient_events_button_pressed(struct dt_iop_module_t *module, flo
         = (dt_masks_point_gradient_t *)(malloc(sizeof(dt_masks_point_gradient_t)));
 
     // we change the offset value
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     gradient->anchor[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
@@ -360,10 +360,13 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
   double dashed[] = { 4.0, 4.0 };
   dashed[0] /= zoom_scale;
   dashed[1] /= zoom_scale;
-  int len = sizeof(dashed) / sizeof(dashed[0]);
+  const int len = sizeof(dashed) / sizeof(dashed[0]);
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
-  float dx = 0.0f, dy = 0.0f, sinv = 0.0f, cosv = 1.0f, xref = gpt->points[0], yref = gpt->points[1];
+  float dx = 0.0f, dy = 0.0f, sinv = 0.0f, cosv = 1.0f;
+  const float xref = gpt->points[0];
+  const float yref = gpt->points[1];
+
   if((gui->group_selected == index) && gui->form_dragging)
   {
     dx = gui->posx + gui->dx - xref;
@@ -371,7 +374,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
   }
   else if((gui->group_selected == index) && gui->form_rotating)
   {
-    float v = atan2(gui->posy - yref, gui->posx - xref) - atan2(-gui->dy, -gui->dx);
+    const float v = atan2(gui->posy - yref, gui->posx - xref) - atan2(-gui->dy, -gui->dx);
     sinv = sin(v);
     cosv = cos(v);
   }
@@ -444,14 +447,20 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     }
   }
 
+  float anchor_x, anchor_y;
+  float pivot_start_x, pivot_start_y;
+  float pivot_end_x, pivot_end_y;
+
+  _gradient_point_transform(xref, yref, gpt->points[0] + dx, gpt->points[1] + dy, sinv, cosv, &anchor_x, &anchor_y);
+  _gradient_point_transform(xref, yref, gpt->points[2] + dx, gpt->points[3] + dy, sinv, cosv, &pivot_end_x, &pivot_end_y);
+  _gradient_point_transform(xref, yref, gpt->points[4] + dx, gpt->points[5] + dy, sinv, cosv, &pivot_start_x, &pivot_start_y);
+
   // draw anchor point
-  if(TRUE)
   {
     cairo_set_dash(cr, dashed, 0, 0);
     float anchor_size = (gui->form_dragging || gui->form_selected) ? 7.0f / zoom_scale : 5.0f / zoom_scale;
     cairo_set_source_rgba(cr, .8, .8, .8, .8);
-    _gradient_point_transform(xref, yref, gpt->points[0] + dx, gpt->points[1] + dy, sinv, cosv, &x, &y);
-    cairo_rectangle(cr, x - (anchor_size * 0.5), y - (anchor_size * 0.5), anchor_size, anchor_size);
+    cairo_rectangle(cr, anchor_x - (anchor_size * 0.5), anchor_y - (anchor_size * 0.5), anchor_size, anchor_size);
     cairo_fill_preserve(cr);
 
     if((gui->group_selected == index) && (gui->form_dragging || gui->form_selected))
@@ -464,7 +473,6 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
 
 
   // draw pivot points
-  if(TRUE)
   {
     cairo_set_dash(cr, dashed, 0, 0);
     if((gui->group_selected == index) && (gui->border_selected))
@@ -473,35 +481,46 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
       cairo_set_line_width(cr, 1.0 / zoom_scale);
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
 
+    // from start to end
     cairo_set_source_rgba(cr, .8, .8, .8, .8);
-    _gradient_point_transform(xref, yref, gpt->points[0] + dx, gpt->points[1] + dy, sinv, cosv, &x, &y);
-    cairo_move_to(cr, x, y);
-    _gradient_point_transform(xref, yref, gpt->points[2] + dx, gpt->points[3] + dy, sinv, cosv, &x, &y);
-    cairo_line_to(cr, x, y);
-    cairo_set_line_width(cr, 1.0 / zoom_scale);
+    cairo_line_to(cr, pivot_start_x, pivot_start_y);
+    cairo_line_to(cr, pivot_end_x, pivot_end_y);
     cairo_stroke(cr);
 
-    // dark side of the gradient
-    cairo_arc(cr, x, y, 3.0f / zoom_scale, 0, 2.0f * M_PI);
+    // start side of the gradient
+    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    cairo_arc(cr, pivot_start_x, pivot_start_y, 3.0f / zoom_scale, 0, 2.0f * M_PI);
+    cairo_fill_preserve(cr);
+    cairo_stroke(cr);
+
+    // end side of the gradient
+    cairo_arc(cr, pivot_end_x, pivot_end_y, 1.0f / zoom_scale, 0, 2.0f * M_PI);
     cairo_fill_preserve(cr);
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
     cairo_stroke(cr);
 
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
-    _gradient_point_transform(xref, yref, gpt->points[0] + dx, gpt->points[1] + dy, sinv, cosv, &x, &y);
-    cairo_move_to(cr, x, y);
-    _gradient_point_transform(xref, yref, gpt->points[4] + dx, gpt->points[5] + dy, sinv, cosv, &x, &y);
-    cairo_line_to(cr, x, y);
-    cairo_stroke(cr);
+    // draw arrow on the end of the gradient to clearly display the direction
 
-    // light side of the gradient
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
-    cairo_arc(cr, x, y, 3.0f / zoom_scale, 0, 2.0f * M_PI);
+    // size & width of the arrow
+    const float arrow_angle = 0.25;
+    const float arrow_length = 15.0 / zoom_scale;
+
+    const float a_dx = anchor_x - pivot_end_x;
+    const float a_dy = pivot_end_y - anchor_y;
+    const float angle = atan2(a_dx, a_dy) - M_PI/2.0;
+
+    const float arrow_x1 = pivot_end_x + (arrow_length * cos(angle + arrow_angle));
+    const float arrow_x2 = pivot_end_x + (arrow_length * cos(angle - arrow_angle));
+    const float arrow_y1 = pivot_end_y + (arrow_length * sin(angle + arrow_angle));
+    const float arrow_y2 = pivot_end_y + (arrow_length * sin(angle - arrow_angle));
+
+    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    cairo_move_to(cr, pivot_end_x, pivot_end_y);
+    cairo_line_to(cr, arrow_x1, arrow_y1);
+    cairo_line_to(cr, arrow_x2, arrow_y2);
+    cairo_line_to(cr, pivot_end_x, pivot_end_y);
+    cairo_close_path(cr);
     cairo_fill_preserve(cr);
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
-    cairo_stroke(cr);
-
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
     cairo_stroke(cr);
   }
 }
@@ -533,7 +552,7 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
 
   if(sinv == 0.0f)
   {
-    float is = -offset / cosv;
+    const float is = -offset / cosv;
     if(is >= 0.0f && is <= ymax)
     {
       intercept[0] = 0;
@@ -545,7 +564,7 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   }
   else if(cosv == 0.0f)
   {
-    float is = offset / sinv;
+    const float is = offset / sinv;
     if(is >= 0.0f && is <= xmax)
     {
       intercept[0] = is;
