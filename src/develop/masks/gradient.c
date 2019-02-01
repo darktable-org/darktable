@@ -147,8 +147,8 @@ static int dt_gradient_events_button_pressed(struct dt_iop_module_t *module, flo
         = (dt_masks_point_gradient_t *)(malloc(sizeof(dt_masks_point_gradient_t)));
 
     // we change the offset value
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     gradient->anchor[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
@@ -360,10 +360,13 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
   double dashed[] = { 4.0, 4.0 };
   dashed[0] /= zoom_scale;
   dashed[1] /= zoom_scale;
-  int len = sizeof(dashed) / sizeof(dashed[0]);
+  const int len = sizeof(dashed) / sizeof(dashed[0]);
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
-  float dx = 0.0f, dy = 0.0f, sinv = 0.0f, cosv = 1.0f, xref = gpt->points[0], yref = gpt->points[1];
+  float dx = 0.0f, dy = 0.0f, sinv = 0.0f, cosv = 1.0f;
+  const float xref = gpt->points[0];
+  const float yref = gpt->points[1];
+
   if((gui->group_selected == index) && gui->form_dragging)
   {
     dx = gui->posx + gui->dx - xref;
@@ -371,7 +374,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
   }
   else if((gui->group_selected == index) && gui->form_rotating)
   {
-    float v = atan2(gui->posy - yref, gui->posx - xref) - atan2(-gui->dy, -gui->dx);
+    const float v = atan2(gui->posy - yref, gui->posx - xref) - atan2(-gui->dy, -gui->dx);
     sinv = sin(v);
     cosv = cos(v);
   }
@@ -445,7 +448,6 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
   }
 
   // draw anchor point
-  if(TRUE)
   {
     cairo_set_dash(cr, dashed, 0, 0);
     float anchor_size = (gui->form_dragging || gui->form_selected) ? 7.0f / zoom_scale : 5.0f / zoom_scale;
@@ -464,7 +466,6 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
 
 
   // draw pivot points
-  if(TRUE)
   {
     cairo_set_dash(cr, dashed, 0, 0);
     if((gui->group_selected == index) && (gui->border_selected))
@@ -533,7 +534,7 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
 
   if(sinv == 0.0f)
   {
-    float is = -offset / cosv;
+    const float is = -offset / cosv;
     if(is >= 0.0f && is <= ymax)
     {
       intercept[0] = 0;
@@ -545,7 +546,7 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   }
   else if(cosv == 0.0f)
   {
-    float is = offset / sinv;
+    const float is = offset / sinv;
     if(is >= 0.0f && is <= xmax)
     {
       intercept[0] = is;
