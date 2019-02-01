@@ -1917,11 +1917,13 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   }
 
   if(layout != DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
-  { // file manager
+  {
+    // file manager
     lib->activate_on_release = DT_VIEW_ERR;
   }
   else
-  { // zoomable lt
+  {
+    // zoomable lt
     // If the mouse button was clicked on a control element and we are now
     // leaving that element, or the mouse was clicked on an image and it has
     // moved a little, then we decide to interpret the action as the start of
