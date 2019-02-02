@@ -721,10 +721,10 @@ static void add_hdr_patches(int *N, double **target_L, double **target_a, double
 
   if(n_extra_patches > 0)
   {
-    *target_L = realloc(*target_L, (*N + n_extra_patches + 4) * sizeof(double));
-    *target_a = realloc(*target_a, (*N + n_extra_patches + 4) * sizeof(double));
-    *target_b = realloc(*target_b, (*N + n_extra_patches + 4) * sizeof(double));
-    *colorchecker_Lab = realloc(*colorchecker_Lab, 3 * (*N + n_extra_patches) * sizeof(double));
+    *target_L = dt_realloc(*target_L, (*N + n_extra_patches + 4) * sizeof(double));
+    *target_a = dt_realloc(*target_a, (*N + n_extra_patches + 4) * sizeof(double));
+    *target_b = dt_realloc(*target_b, (*N + n_extra_patches + 4) * sizeof(double));
+    *colorchecker_Lab = dt_realloc(*colorchecker_Lab, 3 * (*N + n_extra_patches) * sizeof(double));
 
     memmove(&(*target_L)[n_extra_patches], *target_L, *N * sizeof(double));
     memmove(&(*target_a)[n_extra_patches], *target_a, *N * sizeof(double));

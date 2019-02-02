@@ -95,7 +95,7 @@ int dt_opencl_get_device_info(dt_opencl_t *cl, cl_device_id device, cl_device_in
 
   // 3. make sure that *param_value points to big-enough memory block
   {
-    void *ptr = realloc(*param_value, *param_value_size);
+    void *ptr = dt_realloc(*param_value, *param_value_size);
     if(!ptr)
     {
       dt_print(DT_DEBUG_OPENCL,

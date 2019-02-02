@@ -328,7 +328,7 @@ static char *gen_params(char state, int *size, char *names)
     if(dt_iop_so_is_hidden(module) || (module->flags() & IOP_FLAGS_DEPRECATED)) continue;
     int op_len = strlen(module->op) + 1;
     int new_len = len + 1 + op_len;
-    char *tmp = realloc(params, new_len);
+    char *tmp = dt_realloc(params, new_len);
     if(!tmp)
     {
       free(params);
@@ -452,7 +452,7 @@ void *get_params(dt_lib_module_t *self, int *size)
     if(dt_iop_so_is_hidden(module) || (module->flags() & IOP_FLAGS_DEPRECATED)) continue;
     int op_len = strlen(module->op) + 1;
     int new_len = len + 1 + op_len;
-    char *tmp = realloc(params, new_len);
+    char *tmp = dt_realloc(params, new_len);
     if(!tmp)
     {
       free(params);

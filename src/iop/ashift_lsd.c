@@ -339,7 +339,7 @@ static void enlarge_ntuple_list(ntuple_list n_tuple)
   n_tuple->max_size *= 2;
 
   /* realloc memory */
-  n_tuple->values = (double *) realloc( (void *) n_tuple->values,
+  n_tuple->values = (double *) dt_realloc( (void *) n_tuple->values,
                       n_tuple->dim * n_tuple->max_size * sizeof(double) );
   if( n_tuple->values == NULL ) error("not enough memory.");
 }

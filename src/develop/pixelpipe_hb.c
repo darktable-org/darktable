@@ -958,7 +958,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                && pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
             {
               const size_t buf_size = 4 * piece->histogram_stats.bins_count * sizeof(uint32_t);
-              module->histogram = realloc(module->histogram, buf_size);
+              module->histogram = dt_realloc(module->histogram, buf_size);
               memcpy(module->histogram, piece->histogram, buf_size);
               module->histogram_stats = piece->histogram_stats;
               memcpy(module->histogram_max, piece->histogram_max, sizeof(piece->histogram_max));
@@ -1097,7 +1097,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                && pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
             {
               const size_t buf_size = 4 * piece->histogram_stats.bins_count * sizeof(uint32_t);
-              module->histogram = realloc(module->histogram, buf_size);
+              module->histogram = dt_realloc(module->histogram, buf_size);
               memcpy(module->histogram, piece->histogram, buf_size);
               module->histogram_stats = piece->histogram_stats;
               memcpy(module->histogram_max, piece->histogram_max, sizeof(piece->histogram_max));
@@ -1303,7 +1303,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                && pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
             {
               const size_t buf_size = 4 * piece->histogram_stats.bins_count * sizeof(uint32_t);
-              module->histogram = realloc(module->histogram, buf_size);
+              module->histogram = dt_realloc(module->histogram, buf_size);
               memcpy(module->histogram, piece->histogram, buf_size);
               module->histogram_stats = piece->histogram_stats;
               memcpy(module->histogram_max, piece->histogram_max, sizeof(piece->histogram_max));
@@ -1436,7 +1436,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
              && pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
           {
             const size_t buf_size = 4 * piece->histogram_stats.bins_count * sizeof(uint32_t);
-            module->histogram = realloc(module->histogram, buf_size);
+            module->histogram = dt_realloc(module->histogram, buf_size);
             memcpy(module->histogram, piece->histogram, buf_size);
             module->histogram_stats = piece->histogram_stats;
             memcpy(module->histogram_max, piece->histogram_max, sizeof(piece->histogram_max));
@@ -1534,7 +1534,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
            && pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
         {
           const size_t buf_size = 4 * piece->histogram_stats.bins_count * sizeof(uint32_t);
-          module->histogram = realloc(module->histogram, buf_size);
+          module->histogram = dt_realloc(module->histogram, buf_size);
           memcpy(module->histogram, piece->histogram, buf_size);
           module->histogram_stats = piece->histogram_stats;
           memcpy(module->histogram_max, piece->histogram_max, sizeof(piece->histogram_max));
@@ -1619,7 +1619,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
          && pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
       {
         const size_t buf_size = 4 * piece->histogram_stats.bins_count * sizeof(uint32_t);
-        module->histogram = realloc(module->histogram, buf_size);
+        module->histogram = dt_realloc(module->histogram, buf_size);
         memcpy(module->histogram, piece->histogram, buf_size);
         module->histogram_stats = piece->histogram_stats;
         memcpy(module->histogram_max, piece->histogram_max, sizeof(piece->histogram_max));

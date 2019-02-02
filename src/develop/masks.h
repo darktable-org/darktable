@@ -392,7 +392,7 @@ void dt_masks_dynbuf_add(dt_masks_dynbuf_t *a, float value)
     float *oldbuffer = a->buffer;
     size_t oldsize = a->size;
     a->size *= 2;
-    a->buffer = (float *)realloc(a->buffer, a->size * sizeof(float));
+    a->buffer = (float *)dt_realloc(a->buffer, a->size * sizeof(float));
     dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)\n", a->tag,
              (unsigned long)a->size, a->buffer, oldbuffer);
     if(a->buffer == NULL)

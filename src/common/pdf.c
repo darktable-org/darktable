@@ -201,7 +201,7 @@ static void _pdf_set_offset(dt_pdf_t *pdf, int id, size_t offset)
   if(id >= pdf->n_offsets)
   {
     pdf->n_offsets = MAX(pdf->n_offsets * 2, id);
-    pdf->offsets = realloc(pdf->offsets, pdf->n_offsets * sizeof(size_t));
+    pdf->offsets = dt_realloc(pdf->offsets, pdf->n_offsets * sizeof(size_t));
   }
   pdf->offsets[id] = offset;
 }

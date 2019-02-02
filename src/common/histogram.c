@@ -226,7 +226,7 @@ void dt_histogram_worker(dt_dev_histogram_collection_params_t *const histogram_p
   }
 
 #ifdef _OPENMP
-  *histogram = realloc(*histogram, buf_size);
+  *histogram = dt_realloc(*histogram, buf_size);
   memset(*histogram, 0, buf_size);
   uint32_t *hist = *histogram;
 
@@ -240,7 +240,7 @@ void dt_histogram_worker(dt_dev_histogram_collection_params_t *const histogram_p
     }
   }
 #else
-  *histogram = realloc(*histogram, buf_size);
+  *histogram = dt_realloc(*histogram, buf_size);
   memmove(*histogram, partial_hists, buf_size);
 #endif
   free(partial_hists);
