@@ -497,7 +497,7 @@ cairo_surface_t *dt_util_get_logo(float size)
           final_height = dimension.height * factor * ppd;
     int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, final_width);
 
-    guint8 *image_buffer = (guint8 *)calloc(stride * final_height, sizeof(guint8));
+    guint8 *image_buffer = (guint8 *)dt_calloc(stride * final_height, sizeof(guint8));
     if(darktable.gui)
       surface = dt_cairo_image_surface_create_for_data(image_buffer, CAIRO_FORMAT_ARGB32, final_width,
                                                       final_height, stride);
