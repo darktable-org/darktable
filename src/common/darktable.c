@@ -1158,8 +1158,7 @@ void *dt_alloc_align(size_t alignment, size_t size)
 
   if(ptr == NULL)
   {
-    dt_fail("Failed to allocate %lu bytes of %lu-aligned memory",
-            size, alignment);
+    dt_fail("Failed to allocate %lu bytes of %lu-aligned memory", size, alignment);
   }
 
   return ptr;
