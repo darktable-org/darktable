@@ -963,7 +963,7 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
     gtk_label_set_text(GTK_LABEL(self->result_label), result_string);
     g_free(result_string);
   }
-  
+
   dt_free(coeff_b);
   dt_free(coeff_a);
   dt_free(coeff_L);

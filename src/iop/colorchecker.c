@@ -342,7 +342,6 @@ void init_presets(dt_iop_module_so_t *self)
   assert(velvia_params);
   dt_gui_presets_add_generic(_("Fuji Velvia emulation"), self->op, self->version(), velvia_params, params_len, 1);
   dt_free(velvia_params);
-
 }
 
 // fast logarithms stolen from paul mineiro http://fastapprox.googlecode.com/svn/trunk/fastapprox/src/fastonebigheader.h

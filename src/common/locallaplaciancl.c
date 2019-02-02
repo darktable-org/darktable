@@ -60,7 +60,7 @@ void dt_local_laplacian_free_cl(dt_local_laplacian_cl_t *g)
     for(int k=0;k<num_gamma;k++)
       dt_opencl_release_mem_object(g->dev_processed[k][l]);
   }
-  for(int k=0;k<num_gamma;k++) dt_free(g->dev_processed[k]);
+  for(int k = 0; k < num_gamma; k++) dt_free(g->dev_processed[k]);
   dt_free(g->dev_padded);
   dt_free(g->dev_output);
   dt_free(g->dev_processed);

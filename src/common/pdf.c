@@ -948,10 +948,8 @@ int main(int argc, char *argv[])
 
   dt_pdf_finish(pdf, pages, n_pages);
 
-  for(int i = 0; i < n_images; i++)
-    dt_free(images[i]);
-  for(int i = 0; i < n_pages; i++)
-    dt_free(pages[i]);
+  for(int i = 0; i < n_images; i++) dt_free(images[i]);
+  for(int i = 0; i < n_pages; i++) dt_free(pages[i]);
 
   return 0;
 }

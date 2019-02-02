@@ -1992,7 +1992,6 @@ static int filter_cb(lua_State *L)
     }
     set_params(self,new_p,size);
     dt_free(new_p);
-
   }
   lua_newtable(L);
   for(int i = 0; i < p->rules; i++) {
