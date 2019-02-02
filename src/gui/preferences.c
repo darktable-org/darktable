@@ -140,6 +140,46 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
 
 static GtkWidget *_preferences_dialog;
 
+///////////// gui theme selection
+
+static void load_themes_dir(const char *basedir)
+{
+  char *themes_dir = g_build_filename(basedir, "themes", NULL);
+  GDir *dir = g_dir_open(themes_dir, 0, NULL);
+  if(dir)
+  {
+    const gchar *d_name;
+    while((d_name = g_dir_read_name(dir)))
+      darktable.themes = g_list_append(darktable.themes, g_strdup(d_name));
+    g_dir_close(dir);
+  }
+  g_free(themes_dir);
+}
+
+static void load_themes(void)
+{
+  // Clear theme list...
+  g_list_free_full(darktable.themes, g_free);
+  darktable.themes = NULL;
+
+  // check themes dirs
+  gchar configdir[PATH_MAX] = { 0 };
+  gchar datadir[PATH_MAX] = { 0 };
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  dt_loc_get_user_config_dir(configdir, sizeof(configdir));
+
+  load_themes_dir(datadir);
+  load_themes_dir(configdir);
+}
+
+static void theme_callback(GtkWidget *widget, gpointer user_data)
+{
+  const int selected = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+  gchar *theme = g_list_nth(darktable.themes, selected)->data;
+  gchar *i = g_strrstr(theme, ".");
+  if(i) *i = '\0';
+  dt_gui_load_theme(theme);
+}
 
 ///////////// gui language selection
 
@@ -171,6 +211,8 @@ static gboolean reset_language_widget(GtkWidget *label, GdkEventButton *event, G
 
 static void hardcoded_gui(GtkWidget *grid, int *line)
 {
+  // language
+
   GtkWidget *label = gtk_label_new(_("interface language"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   GtkWidget *labelev = gtk_event_box_new();
@@ -192,6 +234,38 @@ static void hardcoded_gui(GtkWidget *grid, int *line)
   gtk_grid_attach(GTK_GRID(grid), labelev, 0, (*line)++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), widget, labelev, GTK_POS_RIGHT, 1, 1);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_language_widget), (gpointer)widget);
+
+  // theme
+
+  load_themes();
+
+  label = gtk_label_new(_("theme"));
+  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+  widget = gtk_combo_box_text_new();
+
+  // read all themes
+  const char *theme_name = dt_conf_get_string("ui_last/theme");
+  int selected = 0;
+  int k = 0;
+
+  for(GList *iter = darktable.themes; iter; iter = g_list_next(iter))
+  {
+    gchar *name = g_strdup((gchar*)(iter->data));
+    // remove extension
+    gchar *i = g_strrstr(name, ".");
+    if(i) *i = '\0';
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), name);
+    if(!g_strcmp0(name, theme_name)) selected = k;
+    k++;
+  }
+
+  gtk_combo_box_set_active(GTK_COMBO_BOX(widget), selected);
+
+  g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(theme_callback), 0);
+  gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
+  gtk_grid_attach(GTK_GRID(grid), label, 0, (*line)++, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(grid), widget, label, GTK_POS_RIGHT, 1, 1);
 }
 
 ///////////// end of gui language selection

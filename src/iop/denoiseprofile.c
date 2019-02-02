@@ -65,7 +65,7 @@ typedef enum dt_iop_denoiseprofile_channel_t
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
-DT_MODULE_INTROSPECTION(5, dt_iop_denoiseprofile_params_t)
+DT_MODULE_INTROSPECTION(6, dt_iop_denoiseprofile_params_t)
 
 typedef struct dt_iop_denoiseprofile_params_v1_t
 {
@@ -85,11 +85,23 @@ typedef struct dt_iop_denoiseprofile_params_v4_t
   float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
 } dt_iop_denoiseprofile_params_v4_t;
 
+typedef struct dt_iop_denoiseprofile_params_v5_t
+{
+  float radius;                      // patch size
+  float nbhood;                      // search radius
+  float strength;                    // noise level after equalization
+  float a[3], b[3];                  // fit for poissonian-gaussian noise per color channel.
+  dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
+  float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
+  float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
+} dt_iop_denoiseprofile_params_v5_t;
+
 typedef struct dt_iop_denoiseprofile_params_t
 {
   float radius;     // patch size
   float nbhood;     // search radius
   float strength;   // noise level after equalization
+  float scattering; // spread the patch search zone without increasing number of patches
   float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
   dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
   float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
@@ -103,6 +115,7 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   GtkWidget *radius;
   GtkWidget *nbhood;
   GtkWidget *strength;
+  GtkWidget *scattering;
   dt_noiseprofile_t interpolated; // don't use name, maker or model, they may point to garbage
   GList *profiles;
   GtkWidget *stack;
@@ -127,6 +140,7 @@ typedef struct dt_iop_denoiseprofile_data_t
   float radius;                      // search radius
   float nbhood;                      // search radius
   float strength;                    // noise level after equalization
+  float scattering;                  // spread the search zone without changing number of patches
   float a[3], b[3];                  // fit for poissonian-gaussian noise per color channel.
   dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
   dt_draw_curve_t *curve[DT_DENOISE_PROFILE_NONE];
@@ -213,7 +227,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     else
       memcpy(&v4, old_params, sizeof(v4)); // was v4 already
 
-    dt_iop_denoiseprofile_params_t *v5 = new_params;
+    dt_iop_denoiseprofile_params_v5_t *v5 = new_params;
     v5->radius = v4.radius;
     v5->strength = v4.strength;
     v5->mode = v4.mode;
@@ -231,6 +245,38 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       }
     }
     v5->nbhood = 7; // set to old hardcoded default
+    return 0;
+  }
+  else if(new_version == 6)
+  {
+    dt_iop_denoiseprofile_params_v5_t v5;
+    if(old_version < 5)
+    {
+      // first update to v5
+      if(legacy_params(self, old_params, old_version, &v5, 5)) return 1;
+    }
+    else
+      memcpy(&v5, old_params, sizeof(v5)); // was v5 already
+
+    dt_iop_denoiseprofile_params_t *v6 = new_params;
+    v6->radius = v5.radius;
+    v6->strength = v5.strength;
+    v6->mode = v5.mode;
+    v6->nbhood = v5.nbhood;
+    for(int k = 0; k < 3; k++)
+    {
+      v6->a[k] = v5.a[k];
+      v6->b[k] = v5.b[k];
+    }
+    for(int b = 0; b < DT_IOP_DENOISE_PROFILE_BANDS; b++)
+    {
+      for(int c = 0; c < DT_DENOISE_PROFILE_NONE; c++)
+      {
+        v6->x[c][b] = v5.x[c][b];
+        v6->y[c][b] = v5.y[c][b];
+      }
+    }
+    v6->scattering = 0.0; // no scattering
     return 0;
   }
   return 1;
@@ -290,10 +336,10 @@ void init_presets(dt_iop_module_so_t *self)
 {
   // these blobs were exported as dtstyle and copied from there:
   add_preset(self, _("chroma (use on 1st instance)"),
-             "gz03eJxjYGiwZ2B44MAAphv2b4vdb1mnYGTFLcZomryXxzRr910TRgYYaLADEkB1DvYQ9eSLiUf9s+te/s/OjJPV/sA7Y3vZI/X2EHnyMAB8fx/c", 5,
+             "gz03eJxjYGiwZ2B44MAApkGgYf+22P2WdQpGVtxijKbJe3lMs3bfNWFkgIEGOyABVOtgj6SHLDHxqH923cv/2ZlxstofeGdsL3uk3h4iTx4GAIb7H9w=", 6,
              "gz12eJxjZGBgEGYAgRNODESDBnsIHll8AM62GP8=", 7);
   add_preset(self, _("luma (use on 2nd instance)"),
-             "gz03eJxjYGiwZ2B44DBr5kw7BoaG/X6WAZbuc/dZXtJTNU3keG4SnmltysgAAw1ANQxA9Q5ADNJHvpjfgz+2J1S17X6XL7QzzP5hV9i6FCpPHgYA0YsieQ==", 5,
+             "gz03eJxjYGiwZ2B44DBr5kw7BjBo2O9nGWDpPnef5SU9VdNEjucm4ZnWpowMMNAAUgfU4wDEIL3ki/k9+GN7QlXb7nf5QjvD7B92ha1LofLkYQDhMyJ5", 6,
              "gz12eJxjZGBgEGAAgR4nBqJBgz0Ejyw+AIdGGMA=", 7);
 }
 
@@ -324,11 +370,12 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   {
     const int P = ceilf(d->radius * fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f)); // pixel filter size
     const int K = ceilf(d->nbhood * fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f)); // nbhood
+    const int K_scattered = ceilf(d->scattering * (K * K + K * sqrt(K))) + K;
 
     tiling->factor = 4.0f + 0.25f * NUM_BUCKETS; // in + out + (2 + NUM_BUCKETS * 0.25) tmp
     tiling->maxbuf = 1.0f;
     tiling->overhead = 0;
-    tiling->overlap = P + K;
+    tiling->overlap = P + K_scattered;
     tiling->xalign = 1;
     tiling->yalign = 1;
   }
@@ -1056,6 +1103,11 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 #undef MAX_MAX_SCALE
 }
 
+static int sign(int a)
+{
+  return (a > 0) - (a < 0);
+}
+
 static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                             const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
                             const dt_iop_roi_t *const roi_out)
@@ -1087,10 +1139,18 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
 
   // for each shift vector
-  for(int kj = -K; kj <= K; kj++)
+  for(int kj_index = -K; kj_index <= K; kj_index++)
   {
-    for(int ki = -K; ki <= K; ki++)
+    for(int ki_index = -K; ki_index <= K; ki_index++)
     {
+      // This formula is made for:
+      // - ensuring that kj = kj_index and ki = ki_index when d->scattering is 0
+      // - ensuring that no patch can appear twice (provided that d->nbhood is in 0,1 range)
+      // - avoiding grid artifacts by trying to take patches on various lines and columns
+      int kj = (kj_index * kj_index + abs(ki_index) * sqrt(abs(kj_index))) * sign(kj_index) * d->scattering
+               + kj_index;
+      int ki = (ki_index * ki_index + abs(kj_index) * sqrt(abs(ki_index))) * sign(ki_index) * d->scattering
+               + ki_index;
       // TODO: adaptive K tests here!
       // TODO: expf eval for real bilateral experience :)
 
@@ -1234,10 +1294,18 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
 
   // for each shift vector
-  for(int kj = -K; kj <= K; kj++)
+  for(int kj_index = -K; kj_index <= K; kj_index++)
   {
-    for(int ki = -K; ki <= K; ki++)
+    for(int ki_index = -K; ki_index <= K; ki_index++)
     {
+      // This formula is made for:
+      // - ensuring that kj = kj_index and ki = ki_index when d->scattering is 0
+      // - ensuring that no patch can appear twice (provided that d->nbhood is in 0,1 range)
+      // - avoiding grid artifacts by trying to take patches on various lines and columns
+      int kj = (kj_index * kj_index + abs(ki_index) * sqrt(abs(kj_index))) * sign(kj_index) * d->scattering
+               + kj_index;
+      int ki = (ki_index * ki_index + abs(kj_index) * sqrt(abs(ki_index))) * sign(ki_index) * d->scattering
+               + ki_index;
       int inited_slide = 0;
 // don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else
 // we will add up errors)
@@ -1507,9 +1575,18 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   if(err != CL_SUCCESS) goto error;
 
 
-  for(int j = -K; j <= 0; j++)
-    for(int i = -K; i <= K; i++)
+  for(int kj_index = -K; kj_index <= 0; kj_index++)
+  {
+    for(int ki_index = -K; ki_index <= K; ki_index++)
     {
+      // This formula is made for:
+      // - ensuring that j = kj_index and i = ki_index when d->scattering is 0
+      // - ensuring that no patch can appear twice (provided that d->nbhood is in 0,1 range)
+      // - avoiding grid artifacts by trying to take patches on various lines and columns
+      int j = (kj_index * kj_index + abs(ki_index) * sqrt(abs(kj_index))) * sign(kj_index) * d->scattering
+              + kj_index;
+      int i = (ki_index * ki_index + abs(kj_index) * sqrt(abs(ki_index))) * sign(ki_index) * d->scattering
+              + ki_index;
       int q[2] = { i, j };
 
       dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
@@ -1575,6 +1652,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       // indirectly give gpu some air to breathe (and to do display related stuff)
       dt_iop_nap(darktable.opencl->micro_nap);
     }
+  }
 
   dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_finish, 1, sizeof(cl_mem), (void *)&dev_U2);
@@ -2036,6 +2114,7 @@ void reload_defaults(dt_iop_module_t *module)
 
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius = 1.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->nbhood = 7.0f;
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->scattering = 0.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
     for(int k = 0; k < 3; k++)
@@ -2151,6 +2230,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
   d->radius = p->radius;
   d->nbhood = p->nbhood;
+  d->scattering = p->scattering;
   d->strength = p->strength;
   for(int i = 0; i < 3; i++)
   {
@@ -2248,6 +2328,13 @@ static void nbhood_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void scattering_callback(GtkWidget *w, dt_iop_module_t *self)
+{
+  dt_iop_denoiseprofile_params_t *p = self->params;
+  p->scattering = dt_bauhaus_slider_get(w);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 static void strength_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
@@ -2263,6 +2350,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->radius, p->radius);
   dt_bauhaus_slider_set(g->nbhood, p->nbhood);
   dt_bauhaus_slider_set_soft(g->strength, p->strength);
+  dt_bauhaus_slider_set_soft(g->scattering, p->scattering);
   dt_bauhaus_combobox_set(g->mode, p->mode);
   dt_bauhaus_combobox_set(g->profile, -1);
   if(p->mode == MODE_WAVELETS)
@@ -2624,6 +2712,8 @@ void gui_init(dt_iop_module_t *self)
   g->radius = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1.f, 1.f, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->radius, 0.0, 10.0);
   g->nbhood = dt_bauhaus_slider_new_with_range(self, 1.0f, 30.0f, 1.f, 7.f, 0);
+  g->scattering = dt_bauhaus_slider_new_with_range(self, 0.0f, 0.5f, 0.01, 0.0f, 2);
+  dt_bauhaus_slider_enable_soft_boundaries(g->scattering, 0.0, 2.0);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
   dt_bauhaus_slider_enable_soft_boundaries(g->strength, 0.001f, 1000.0f);
   g->channel = dt_conf_get_int("plugins/darkroom/denoiseprofile/gui_channel");
@@ -2636,6 +2726,7 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(g->box_nlm), g->radius, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_nlm), g->nbhood, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_nlm), g->scattering, TRUE, TRUE, 0);
 
   g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
@@ -2697,6 +2788,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->radius, "%.0f");
   dt_bauhaus_widget_set_label(g->nbhood, NULL, _("search radius"));
   dt_bauhaus_slider_set_format(g->nbhood, "%.0f");
+  dt_bauhaus_widget_set_label(g->scattering, NULL, _("scattering (coarse-grain noise)"));
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means"));
   dt_bauhaus_combobox_add(g->mode, _("wavelets"));
@@ -2706,11 +2798,15 @@ void gui_init(dt_iop_module_t *self)
                                          "wavelets work best for `color' blending"));
   gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match. increase for more sharpness"));
   gtk_widget_set_tooltip_text(g->nbhood, _("emergency use only: radius of the neighbourhood to search patches in. increase for better denoising performance, but watch the long runtimes! large radii can be very slow. you have been warned"));
+  gtk_widget_set_tooltip_text(g->scattering,
+                              _("scattering of the neighbourhood to search patches in. increase for better "
+                                "coarse-grain noise reduction. does not affect execution time."));
   gtk_widget_set_tooltip_text(g->strength, _("finetune denoising strength"));
   g_signal_connect(G_OBJECT(g->profile), "value-changed", G_CALLBACK(profile_callback), self);
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
   g_signal_connect(G_OBJECT(g->radius), "value-changed", G_CALLBACK(radius_callback), self);
   g_signal_connect(G_OBJECT(g->nbhood), "value-changed", G_CALLBACK(nbhood_callback), self);
+  g_signal_connect(G_OBJECT(g->scattering), "value-changed", G_CALLBACK(scattering_callback), self);
   g_signal_connect(G_OBJECT(g->strength), "value-changed", G_CALLBACK(strength_callback), self);
 }
 

@@ -1035,7 +1035,7 @@ msgstr ""
 
 #: ../data/darktable.appdata.xml.in.h:4
 msgid ""
-"darktable supports most modern camera's raw formats, and does all of its "
+"darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
 "darktable ondersteunt van veel moderne camera's de raw-formaten en werkt met "
@@ -9325,7 +9325,7 @@ msgid "Lab, linked channels"
 msgstr "Lab, verbonden kanalen"
 
 #: ../src/iop/tonecurve.c:1179
-msgid "Lab, independant channels"
+msgid "Lab, independent channels"
 msgstr "Lab, onafhankelijke kanalen"
 
 #: ../src/iop/tonecurve.c:1180
