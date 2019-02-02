@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-02 10:59+0100\n"
-"PO-Revision-Date: 2019-02-02 13:00+0100\n"
+"POT-Creation-Date: 2019-02-02 13:02+0100\n"
+"PO-Revision-Date: 2019-02-02 13:02+0100\n"
 "Last-Translator: Milan Knížek <knizek@volny.cz>\n"
 "Language-Team: Czech <kde-i18n-doc@kde.org>\n"
 "Language: cs_CZ\n"
@@ -3593,7 +3593,7 @@ msgid "theme"
 msgstr "téma vzhledu"
 
 #: ../src/gui/preferences.c:265
-msgid "set the thme for the user interface"
+msgid "set the theme for the user interface"
 msgstr "vyberte téma uživatelského rozhraní"
 
 #: ../src/gui/preferences.c:276
