@@ -119,7 +119,7 @@ void *dt_realloc(void *ptr, size_t size)
 
 char *dt_strdup(const char *s)
 {
-  char *result = dt_strdup(s);
+  char *result = strdup(s);
   if(result == NULL)
   {
     dt_fail("Failed to duplicate string");
