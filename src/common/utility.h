@@ -26,17 +26,87 @@
 /** Standard Exit Point */
 void dt_fail(const char *format, ...);
 
+/** Error functions for the functions below.  These are in utility.c
+ * so their strings aren't rubberstamped everywhere.
+ */
+
+void dt_malloc_fail(size_t size);
+void dt_calloc_fail(size_t nmemb, size_t size);
+void dt_realloc_fail(size_t size);
+void dt_strdup_fail();
+
+
+
 /** Dynamic memory allocation and functions that use it */
 
-void *dt_malloc(size_t size);
-void *dt_calloc(size_t nmemb, size_t size);
-void *dt_realloc(void *ptr, size_t size);
-void *dt_realloc(void *ptr, size_t size);
-// Macrofy this in case we want to wrap it later.
-#define dt_free(p) (free((p)))
+static inline void *dt_malloc(size_t size)
+{
+  void *allocated = malloc(size);
 
-char *dt_strdup(const char *s);
-char *dt_strndup(const char *s, size_t n);
+  if(allocated == NULL)
+  {
+    dt_malloc_fail(size);
+  }
+
+  return allocated;
+}
+
+
+static inline void *dt_calloc(size_t nmemb, size_t size)
+{
+  void *allocated = calloc(nmemb, size);
+
+  if(allocated == NULL)
+  {
+    dt_calloc_fail(nmemb, size);
+  }
+
+  return allocated;
+}
+
+
+static inline void *dt_realloc(void *ptr, size_t size)
+{
+  void *allocated = realloc(ptr, size);
+
+  if(allocated == NULL)
+  {
+    dt_realloc_fail(size);
+  }
+
+  return allocated;
+}
+
+
+static inline void dt_free(void *ptr)
+{
+  free(ptr);
+}
+
+
+static inline char *dt_strdup(const char *s)
+{
+  char *result = strdup(s);
+  if(result == NULL)
+  {
+    dt_strdup_fail();
+  }
+
+  return result;
+}
+
+
+static inline char *dt_strndup(const char *s, size_t n)
+{
+  char *result = strndup(s, n);
+  if(result == NULL)
+  {
+    dt_strdup_fail();
+  }
+
+  return result;
+}
+
 
 
 

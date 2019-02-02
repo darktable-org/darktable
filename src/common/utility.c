@@ -73,72 +73,28 @@ void dt_fail(const char *format, ...)
 
 // Dynamic Memory Allocation
 
-// These functions are designed to be identical to their libc
-// counterparts, except that they exit through dt_fail on failure.
+// These get called when an allocation fails.  The functions that call
+// them are in the header so they can be inlined if the compiler sees
+// fit.
 
-void *dt_malloc(size_t size)
+void dt_malloc_fail(size_t size)
 {
-  void *allocated = malloc(size);
-
-  if(allocated == NULL)
-  {
     dt_fail("Failed to allocate %lu bytes of memory.", size);
-  }
-
-  return allocated;
 }
 
-
-void *dt_calloc(size_t nmemb, size_t size)
+void dt_calloc_fail(size_t nmemb, size_t size)
 {
-  void *allocated = calloc(nmemb, size);
-
-  if(allocated == NULL)
-  {
-    dt_fail("Failed to calloc %lu elements of %lu bytes each", nmemb, size);
-  }
-
-  return allocated;
+  dt_fail("Failed to calloc %lu elements of %lu bytes each", nmemb, size);
 }
 
-
-void *dt_realloc(void *ptr, size_t size)
+void dt_realloc_fail(size_t size)
 {
-  void *allocated = realloc(ptr, size);
-
-  if(allocated == NULL)
-  {
-    dt_fail("Failed to reallocate %lu bytes", size);
-  }
-
-  return allocated;
+    dt_fail("Failed to re-allocate %lu bytes of memory.", size);
 }
 
-
-// dt_free() is a macro in utility.h for the time being.
-
-
-char *dt_strdup(const char *s)
+void dt_strdup_fail()
 {
-  char *result = strdup(s);
-  if(result == NULL)
-  {
-    dt_fail("Failed to duplicate string");
-  }
-
-  return result;
-}
-
-
-char *dt_strndup(const char *s, size_t n)
-{
-  char *result = strndup(s, n);
-  if(result == NULL)
-  {
-    dt_fail("Failed to duplicate string");
-  }
-
-  return result;
+  dt_fail("Failed to duplicate string");
 }
 
 
