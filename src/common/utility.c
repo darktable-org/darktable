@@ -89,7 +89,7 @@ void dt_calloc_fail(size_t nmemb, size_t size)
 
 void dt_realloc_fail(size_t size)
 {
-    dt_fail("Failed to re-allocate %lu bytes of memory.", size);
+  dt_fail("Failed to re-allocate %lu bytes of memory.", size);
 }
 
 void dt_strdup_fail()
