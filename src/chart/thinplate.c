@@ -134,7 +134,7 @@ static inline int solve(double *As, double *w, double *v, const double *b, doubl
     coeff[j] = 0.0;
     for(int i = 0; i <= s; i++) coeff[j] += v[j * (s + 1) + i] * tmp[i];
   }
-  free(tmp);
+  dt_free(tmp);
   return 0;
 }
 
@@ -212,13 +212,13 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
 #ifndef REPLACEMENT
     if(patches >= S - 4)
     {
-      free(r);
-      free(b);
-      free(w);
-      free(v);
-      free(As);
-      free(norm);
-      free(A);
+      dt_free(r);
+      dt_free(b);
+      dt_free(w);
+      dt_free(v);
+      dt_free(As);
+      dt_free(norm);
+      dt_free(A);
       return sparsity;
     }
     assert(sparsity < S + 4);
@@ -243,13 +243,13 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
 
           if(solve(As, w, v, b[ch], coeff[ch], wd, sparsity, S))
           {
-            free(r);
-            free(b);
-            free(w);
-            free(v);
-            free(As);
-            free(norm);
-            free(A);
+            dt_free(r);
+            dt_free(b);
+            dt_free(w);
+            dt_free(v);
+            dt_free(As);
+            dt_free(norm);
+            dt_free(A);
             return sparsity;
           }
 
@@ -310,13 +310,13 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
 
           if(solve(As, w, v, b[ch], coeff[ch], wd, sparsity-1, S))
           {
-            free(r);
-            free(b);
-            free(w);
-            free(v);
-            free(As);
-            free(norm);
-            free(A);
+            dt_free(r);
+            dt_free(b);
+            dt_free(w);
+            dt_free(v);
+            dt_free(As);
+            dt_free(norm);
+            dt_free(A);
             return s;
           }
 
@@ -386,13 +386,13 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
       // on error, return last valid configuration
       if(solve(As, w, v, b[ch], coeff[ch], wd, sp, S))
       {
-        free(r);
-        free(b);
-        free(w);
-        free(v);
-        free(As);
-        free(norm);
-        free(A);
+        dt_free(r);
+        dt_free(b);
+        dt_free(w);
+        dt_free(v);
+        dt_free(As);
+        dt_free(norm);
+        dt_free(A);
         return sparsity;
       }
 
@@ -422,13 +422,13 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
     // if(err < 2.0) return sparsity+1;
     olderr = err;
   }
-  free(r);
-  free(b);
-  free(w);
-  free(v);
-  free(As);
-  free(norm);
-  free(A);
+  dt_free(r);
+  dt_free(b);
+  dt_free(w);
+  dt_free(v);
+  dt_free(As);
+  dt_free(norm);
+  dt_free(A);
   return -1;
 }
 

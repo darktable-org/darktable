@@ -161,8 +161,8 @@ static gboolean _signal_raise(gpointer user_data)
   _signal_param_t *params = (_signal_param_t *)user_data;
   g_signal_emitv(params->instance_and_params, params->signal_id, 0, NULL);
   for(int i = 0; i <= params->n_params; i++) g_value_unset(&params->instance_and_params[i]);
-  free(params->instance_and_params);
-  free(params);
+  dt_free(params->instance_and_params);
+  dt_free(params);
   return FALSE;
 }
 
@@ -196,7 +196,7 @@ void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t sign
   GValue *instance_and_params = dt_calloc(1 + signal_description->n_params, sizeof(GValue));
   if(!instance_and_params)
   {
-    free(params);
+    dt_free(params);
     return;
   }
 
@@ -227,8 +227,8 @@ void dt_control_signal_raise(const dt_control_signal_t *ctlsig, dt_signal_t sign
         fprintf(stderr, "error: unsupported parameter type `%s' for signal `%s'\n", g_type_name(type), signal_description->name);
         va_end(extra_args);
         for(int j = 0; j <= i; j++) g_value_unset(&instance_and_params[j]);
-        free(instance_and_params);
-        free(params);
+        dt_free(instance_and_params);
+        dt_free(params);
         return;
     }
   }

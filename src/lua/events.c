@@ -258,7 +258,7 @@ static gboolean shortcut_callback(GtkAccelGroup *accel_group, GObject *accelerat
 
 static void closure_destroy(gpointer data, GClosure *closure)
 {
-  free(data);
+  dt_free(data);
 }
 static int register_shortcut_event(lua_State *L)
 {

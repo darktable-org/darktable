@@ -812,7 +812,7 @@ static void free_tuple(gpointer data)
   name_key_tuple_t *tuple = (name_key_tuple_t *)data;
   g_free(tuple->name);
   g_free(tuple->collate_key);
-  free(tuple);
+  dt_free(tuple);
 }
 
 static gint sort_folder_tag(gconstpointer a, gconstpointer b)
@@ -1940,7 +1940,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_removed), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(tag_changed), self);
   darktable.view_manager->proxy.module_collect.module = NULL;
-  free(d->params);
+  dt_free(d->params);
 
   /* cleanup mem */
 
@@ -1949,7 +1949,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
   /* TODO: Make sure we are cleaning up all allocations */
 
-  free(self->data);
+  dt_free(self->data);
   self->data = NULL;
 }
 
@@ -1991,7 +1991,7 @@ static int filter_cb(lua_State *L)
       }
     }
     set_params(self,new_p,size);
-    free(new_p);
+    dt_free(new_p);
 
   }
   lua_newtable(L);
@@ -1999,7 +1999,7 @@ static int filter_cb(lua_State *L)
     luaA_push(L,dt_lib_collect_params_rule_t,&p->rule[i]);
     luaL_ref(L,-2);
   }
-  free(p);
+  dt_free(p);
   return 1;
 }
 

@@ -494,7 +494,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_styles_changed_callback), self);
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->entry));
-  free(self->data);
+  dt_free(self->data);
   self->data = NULL;
 }
 

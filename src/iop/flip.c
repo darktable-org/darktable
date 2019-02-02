@@ -354,7 +354,7 @@ void cleanup_global(dt_iop_module_so_t *self)
 {
   const dt_iop_flip_global_data_t *gd = (dt_iop_flip_global_data_t *)self->data;
   dt_opencl_free_kernel(gd->kernel_flip);
-  free(self->data);
+  dt_free(self->data);
   self->data = NULL;
 }
 
@@ -380,7 +380,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -461,7 +461,7 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 

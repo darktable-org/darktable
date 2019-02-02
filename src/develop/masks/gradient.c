@@ -212,7 +212,7 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
         {
           darktable.develop->form_visible->points
               = g_list_remove(darktable.develop->form_visible->points, gpt);
-          free(gpt);
+          dt_free(gpt);
           break;
         }
         forms = g_list_next(forms);
@@ -638,7 +638,7 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   if(dt_dev_distort_transform(dev, *points, l + 3)) return 1;
 
   // if we failed, then free all and return
-  free(*points);
+  dt_free(*points);
   *points = NULL;
   *points_count = 0;
   return 0;
@@ -729,8 +729,8 @@ static int dt_gradient_get_points_border(dt_develop_t *dev, float x, float y, fl
   }
 
 end:
-  free(points1);
-  free(points2);
+  dt_free(points1);
+  dt_free(points2);
 
   return res;
 }
@@ -826,7 +826,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   // we backtransform all these points
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, 0, module->priority, points, mw * mh))
   {
-    free(points);
+    dt_free(points);
     return 0;
   }
 
@@ -873,7 +873,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   *buffer = dt_calloc(w * h, sizeof(float));
   if(*buffer == NULL)
   {
-    free(points);
+    dt_free(points);
     return 0;
   }
 
@@ -900,7 +900,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     }
   }
 
-  free(points);
+  dt_free(points);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] gradient fill took %0.04f sec\n", form->name,
@@ -956,7 +956,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, 0, module->priority, points,
                                         (size_t)mw * mh))
   {
-    free(points);
+    dt_free(points);
     return 0;
   }
 
@@ -1024,7 +1024,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
     }
   }
 
-  free(points);
+  dt_free(points);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] gradient fill took %0.04f sec\n", form->name,

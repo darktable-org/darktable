@@ -1224,13 +1224,13 @@ static int edge_enhance(const double *in, double *out, const int width, const in
     out[k] = sqrt(Gx[k] * Gx[k] + Gy[k] * Gy[k]);
   }
 
-  free(Gx);
-  free(Gy);
+  dt_free(Gx);
+  dt_free(Gy);
   return TRUE;
 
 error:
-  if(Gx) free(Gx);
-  if(Gy) free(Gy);
+  if(Gx) dt_free(Gx);
+  if(Gy) dt_free(Gy);
   return FALSE;
 }
 
@@ -1492,13 +1492,13 @@ static int line_detect(float *in, const int width, const int height, const int x
   *alines = ashift_lines;
 
   // free intermediate buffers
-  free(lsd_lines);
-  free(greyscale);
+  dt_free(lsd_lines);
+  dt_free(greyscale);
   return lct > 0 ? TRUE : FALSE;
 
 error:
-  free(lsd_lines);
-  free(greyscale);
+  dt_free(lsd_lines);
+  dt_free(greyscale);
   return FALSE;
 }
 
@@ -1537,7 +1537,7 @@ static int get_structure(dt_iop_module_t *module, dt_iop_ashift_enhance_t enhanc
   g->lines_count = 0;
   g->vertical_count = 0;
   g->horizontal_count = 0;
-  free(g->lines);
+  dt_free(g->lines);
   g->lines = NULL;
 
   dt_iop_ashift_line_t *lines;
@@ -1567,11 +1567,11 @@ static int get_structure(dt_iop_module_t *module, dt_iop_ashift_enhance_t enhanc
   g->lines_suppressed = 0;
   g->lines = lines;
 
-  free(buffer);
+  dt_free(buffer);
   return TRUE;
 
 error:
-  free(buffer);
+  dt_free(buffer);
   return FALSE;
 }
 
@@ -1797,10 +1797,10 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
   memcpy(index_set, best_set, set_size);
   memcpy(inout_set, best_inout, set_size);
 
-  free(inout);
-  free(perm);
-  free(best_inout);
-  free(best_set);
+  dt_free(inout);
+  dt_free(perm);
+  dt_free(best_inout);
+  dt_free(best_set);
 }
 
 
@@ -1895,14 +1895,14 @@ static int remove_outliers(dt_iop_module_t *module)
   g->horizontal_count = hcount;
   g->lines_version++;
 
-  free(inout_set);
-  free(lines_set);
+  dt_free(inout_set);
+  dt_free(lines_set);
 
   return TRUE;
 
 error:
-  free(inout_set);
-  free(lines_set);
+  dt_free(inout_set);
+  dt_free(lines_set);
   return FALSE;
 }
 
@@ -2754,7 +2754,7 @@ static int do_clean_structure(dt_iop_module_t *module, dt_iop_ashift_params_t *p
   g->lines_count = 0;
   g->vertical_count = 0;
   g->horizontal_count = 0;
-  free(g->lines);
+  dt_free(g->lines);
   g->lines = NULL;
   g->lines_version++;
   g->lines_suppressed = 0;
@@ -2855,7 +2855,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(g->buf == NULL || (size_t)g->buf_width * g->buf_height < (size_t)width * height)
     {
       // if needed allocate buffer
-      free(g->buf); // a no-op if g->buf is NULL
+      dt_free(g->buf); // a no-op if g->buf is NULL
       // only get new buffer if no old buffer available or old buffer does not fit in terms of size
       g->buf = dt_malloc((size_t)width * height * 4 * sizeof(float));
     }
@@ -2987,7 +2987,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(g->buf == NULL || (size_t)g->buf_width * g->buf_height < (size_t)iwidth * iheight)
     {
       // if needed allocate buffer
-      free(g->buf); // a no-op if g->buf is NULL
+      dt_free(g->buf); // a no-op if g->buf is NULL
       // only get new buffer if no old buffer or old buffer does not fit in terms of size
       g->buf = dt_malloc((size_t)iwidth * iheight * 4 * sizeof(float));
     }
@@ -3336,8 +3336,8 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   return TRUE;
 
 error:
-  if(my_points_idx != NULL) free(my_points_idx);
-  if(my_points != NULL) free(my_points);
+  if(my_points_idx != NULL) dt_free(my_points_idx);
+  if(my_points != NULL) dt_free(my_points);
   return FALSE;
 }
 
@@ -3526,9 +3526,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     (g->lines_version > g->points_version && g->lines_hash != lines_hash))
   {
     // we need to reprocess points
-    free(g->points);
+    dt_free(g->points);
     g->points = NULL;
-    free(g->points_idx);
+    dt_free(g->points_idx);
     g->points_idx = NULL;
     g->points_lines_count = 0;
 
@@ -4445,7 +4445,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -4550,7 +4550,7 @@ void reload_defaults(dt_iop_module_t *module)
     dt_bauhaus_slider_set_default(g->crop_factor, tmp.crop_factor);
 
     dt_pthread_mutex_lock(&g->lock);
-    free(g->buf);
+    dt_free(g->buf);
     g->buf = NULL;
     g->buf_width = 0;
     g->buf_height = 0;
@@ -4563,7 +4563,7 @@ void reload_defaults(dt_iop_module_t *module)
     dt_pthread_mutex_unlock(&g->lock);
 
     g->fitting = 0;
-    free(g->lines);
+    dt_free(g->lines);
     g->lines = NULL;
     g->lines_count =0;
     g->horizontal_count = 0;
@@ -4583,9 +4583,9 @@ void reload_defaults(dt_iop_module_t *module)
     g->near_delta = 0;
     g->selecting_lines_version = 0;
 
-    free(g->points);
+    dt_free(g->points);
     g->points = NULL;
-    free(g->points_idx);
+    dt_free(g->points_idx);
     g->points_idx = NULL;
     g->points_lines_count = 0;
     g->points_version = 0;
@@ -4614,7 +4614,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -4625,7 +4625,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_ashift_bicubic);
   dt_opencl_free_kernel(gd->kernel_ashift_lanczos2);
   dt_opencl_free_kernel(gd->kernel_ashift_lanczos3);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -4953,11 +4953,11 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   dt_pthread_mutex_destroy(&g->lock);
-  free(g->lines);
-  free(g->buf);
-  free(g->points);
-  free(g->points_idx);
-  free(self->gui_data);
+  dt_free(g->lines);
+  dt_free(g->buf);
+  dt_free(g->points);
+  dt_free(g->points_idx);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

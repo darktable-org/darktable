@@ -424,7 +424,7 @@ static void free_guide(void *data)
 {
   dt_guides_t *guide = (dt_guides_t *)data;
   if(guide->free) guide->free(guide->user_data);
-  free(guide);
+  dt_free(guide);
 }
 
 void dt_guides_cleanup(GList *guides)

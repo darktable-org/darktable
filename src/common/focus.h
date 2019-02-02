@@ -342,7 +342,7 @@ static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid
     }
   }
   cairo_restore(cr);
-  free(pos);
+  dt_free(pos);
 }
 #undef CHANNEL
 #undef gbuf

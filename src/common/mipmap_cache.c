@@ -398,7 +398,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
 read_error:
           g_unlink(filename);
         }
-        free(blob);
+        dt_free(blob);
         fclose(f);
       }
     }
@@ -1169,7 +1169,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
           dt_iop_flip_and_zoom_8(tmp, jpg.width, jpg.height, buf, wd, ht, orientation, width, height);
           res = 0;
         }
-        free(tmp);
+        dt_free(tmp);
       }
     }
     else
@@ -1181,7 +1181,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
       {
         // scale to fit
         dt_iop_flip_and_zoom_8(tmp, thumb_width, thumb_height, buf, wd, ht, orientation, width, height);
-        free(tmp);
+        dt_free(tmp);
       }
     }
   }

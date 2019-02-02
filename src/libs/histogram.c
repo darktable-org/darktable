@@ -104,7 +104,7 @@ static void _lib_histogram_change_callback(gpointer instance, gpointer user_data
 //
 //   const gint stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
 //
-//   free(dev->histogram_waveform);
+//   dt_free(dev->histogram_waveform);
 //   dev->histogram_waveform = (uint32_t*)dt_calloc(height * stride / 4, sizeof(uint32_t));
 //   dev->histogram_waveform_width = width;
 //   dev->histogram_waveform_height = height;
@@ -166,7 +166,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
   dt_develop_t *dev = darktable.develop;
 
-  free(dev->histogram_waveform);
+  dt_free(dev->histogram_waveform);
   dev->histogram_waveform = NULL;
 
   dev->histogram_waveform_stride = 0;
@@ -373,7 +373,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
       cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
       cairo_paint(cr);
       cairo_surface_destroy(source);
-      free(buf);
+      dt_free(buf);
     }
     else
     {

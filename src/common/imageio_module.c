@@ -168,7 +168,7 @@ static int dt_imageio_load_modules_format(dt_imageio_t *iio)
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_format(module, libname, plugin_name))
     {
-      free(module);
+      dt_free(module);
       continue;
     }
     module->gui_data = NULL;
@@ -302,7 +302,7 @@ static int dt_imageio_load_modules_storage(dt_imageio_t *iio)
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_storage(module, libname, plugin_name))
     {
-      free(module);
+      dt_free(module);
       continue;
     }
     module->gui_data = NULL;
@@ -333,7 +333,7 @@ void dt_imageio_cleanup(dt_imageio_t *iio)
     module->cleanup(module);
     if(module->widget) g_object_unref(module->widget);
     if(module->module) g_module_close(module->module);
-    free(module);
+    dt_free(module);
     iio->plugins_format = g_list_delete_link(iio->plugins_format, iio->plugins_format);
   }
   while(iio->plugins_storage)
@@ -342,7 +342,7 @@ void dt_imageio_cleanup(dt_imageio_t *iio)
     module->gui_cleanup(module);
     if(module->widget) g_object_unref(module->widget);
     if(module->module) g_module_close(module->module);
-    free(module);
+    dt_free(module);
     iio->plugins_storage = g_list_delete_link(iio->plugins_storage, iio->plugins_storage);
   }
 }

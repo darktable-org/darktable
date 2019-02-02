@@ -247,22 +247,22 @@ static void add_preset(dt_iop_module_so_t *self, const char *name,
     if(dt_develop_blend_legacy_params_from_so(self, bp, blendop_version, bp_new, dt_develop_blend_version(),
       blen) == 0)
     {
-      free(bp);
+      dt_free(bp);
       bp = bp_new;
       blen = sizeof(dt_develop_blend_params_t);
     }
     else
     {
-      free(bp);
-      free(bp_new);
+      dt_free(bp);
+      dt_free(bp_new);
       bp = NULL;
     }
   }
 
   if(p && bp)
     dt_gui_presets_add_with_blendop(name, self->op, version, p, len, bp, 1);
-  free(bp);
-  free(p);
+  dt_free(bp);
+  dt_free(p);
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -1449,7 +1449,7 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -1470,7 +1470,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_colorbalance);
   dt_opencl_free_kernel(gd->kernel_colorbalance_lgg);
   dt_opencl_free_kernel(gd->kernel_colorbalance_cdl);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -1563,7 +1563,7 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -2241,7 +2241,7 @@ static gboolean dt_iop_area_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t
 
   cairo_set_source_surface(cr, source, 0.0, 0.0);
   cairo_paint(cr);
-  free(buf);
+  dt_free(buf);
 
   // draw border
   float line_width = 1;
@@ -2657,7 +2657,7 @@ void gui_init(dt_iop_module_t *self)
 void gui_cleanup(dt_iop_module_t *self)
 {
   // nothing else necessary, gtk will clean up the slider.
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

@@ -207,8 +207,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // printf("applied\n");
   for(int level = numl_cap - 1; level > 0; level--) dt_iop_equalizer_iwtf(ovoid, tmp, level, width, height);
 
-  for(int k = 1; k < numl_cap; k++) free(tmp[k]);
-  free(tmp);
+  for(int k = 1; k < numl_cap; k++) dt_free(tmp[k]);
+  dt_free(tmp);
 // printf("thread %d finished equalizer", (int)pthread_self());
 // if(piece->iscale != 1.0) printf(" for preview\n");
 // else printf("\n");
@@ -253,7 +253,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 // clean up everything again.
   dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)(piece->data);
   for(int ch = 0; ch < 3; ch++) dt_draw_curve_destroy(d->curve[ch]);
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -284,7 +284,7 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -406,7 +406,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

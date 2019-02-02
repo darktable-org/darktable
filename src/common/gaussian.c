@@ -149,9 +149,9 @@ dt_gaussian_t *dt_gaussian_init(const int width,    // width of input image
 
 error:
   dt_free_align(g->buf);
-  free(g->max);
-  free(g->min);
-  free(g);
+  dt_free(g->max);
+  dt_free(g->min);
+  dt_free(g);
   return NULL;
 }
 
@@ -492,9 +492,9 @@ void dt_gaussian_free(dt_gaussian_t *g)
 {
   if(!g) return;
   dt_free_align(g->buf);
-  free(g->min);
-  free(g->max);
-  free(g);
+  dt_free(g->min);
+  dt_free(g->max);
+  dt_free(g);
 }
 
 
@@ -517,12 +517,12 @@ void dt_gaussian_free_cl(dt_gaussian_cl_t *g)
   // be sure we're done with the memory:
   dt_opencl_finish(g->devid);
 
-  free(g->min);
-  free(g->max);
+  dt_free(g->min);
+  dt_free(g->max);
   // free device mem
   dt_opencl_release_mem_object(g->dev_temp1);
   dt_opencl_release_mem_object(g->dev_temp2);
-  free(g);
+  dt_free(g);
 }
 
 dt_gaussian_cl_t *dt_gaussian_init_cl(const int devid,
@@ -592,12 +592,12 @@ dt_gaussian_cl_t *dt_gaussian_init_cl(const int devid,
   return g;
 
 error:
-  free(g->min);
-  free(g->max);
+  dt_free(g->min);
+  dt_free(g->max);
   dt_opencl_release_mem_object(g->dev_temp1);
   dt_opencl_release_mem_object(g->dev_temp2);
   g->dev_temp1 = g->dev_temp2 = NULL;
-  free(g);
+  dt_free(g);
   return NULL;
 }
 
@@ -743,7 +743,7 @@ void dt_gaussian_free_cl_global(dt_gaussian_cl_global_t *g)
   dt_opencl_free_kernel(g->kernel_gaussian_transpose_1c);
   dt_opencl_free_kernel(g->kernel_gaussian_column_4c);
   dt_opencl_free_kernel(g->kernel_gaussian_transpose_4c);
-  free(g);
+  dt_free(g);
 }
 
 #endif

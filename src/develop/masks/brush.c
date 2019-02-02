@@ -124,7 +124,7 @@ static GList *_brush_ramer_douglas_peucker(const float *points, int points_count
 
     // remove last element from ResultList1
     GList *end1 = g_list_last(ResultList1);
-    free(end1->data);
+    dt_free(end1->data);
     ResultList1 = g_list_delete_link(ResultList1, end1);
 
     ResultList = g_list_concat(ResultList1, ResultList2);
@@ -861,13 +861,13 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, in
   }
 
   // if we failed, then free all and return
-  free(*points);
+  dt_free(*points);
   *points = NULL;
   *points_count = 0;
-  if(border) free(*border);
+  if(border) dt_free(*border);
   if(border) *border = NULL;
   if(border) *border_count = 0;
-  if(payload) free(*payload);
+  if(payload) dt_free(*payload);
   if(payload) *payload = NULL;
   if(payload) *payload_count = 0;
   return 0;
@@ -1430,7 +1430,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
           {
             darktable.develop->form_visible->points
                 = g_list_remove(darktable.develop->form_visible->points, gpt);
-            free(gpt);
+            dt_free(gpt);
             break;
           }
           forms = g_list_next(forms);
@@ -1447,7 +1447,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
     dt_masks_point_brush_t *point
         = (dt_masks_point_brush_t *)g_list_nth_data(form->points, gui->point_selected);
     form->points = g_list_remove(form->points, point);
-    free(point);
+    dt_free(point);
     gui->point_selected = -1;
     _brush_init_ctrl_points(form);
 
@@ -1498,7 +1498,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
         {
           darktable.develop->form_visible->points
               = g_list_remove(darktable.develop->form_visible->points, gpt);
-          free(gpt);
+          dt_free(gpt);
           break;
         }
         forms = g_list_next(forms);
@@ -2522,8 +2522,8 @@ static int dt_brush_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
   if(!_brush_get_points_border(module->dev, form, module->priority, piece->pipe, &points, &points_count,
                                &border, &border_count, NULL, NULL, 1))
   {
-    free(points);
-    free(border);
+    dt_free(points);
+    dt_free(border);
     return 0;
   }
 
@@ -2553,8 +2553,8 @@ static int dt_brush_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
     ymax = fmaxf(yy, ymax);
   }
 
-  free(points);
-  free(border);
+  dt_free(points);
+  dt_free(border);
   *height = ymax - ymin + 4;
   *width = xmax - xmin + 4;
   *posx = xmin - 2;
@@ -2572,8 +2572,8 @@ static int dt_brush_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   if(!_brush_get_points_border(module->dev, form, module->priority, piece->pipe, &points, &points_count,
                                &border, &border_count, NULL, NULL, 0))
   {
-    free(points);
-    free(border);
+    dt_free(points);
+    dt_free(border);
     return 0;
   }
 
@@ -2603,8 +2603,8 @@ static int dt_brush_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
     ymax = fmaxf(yy, ymax);
   }
 
-  free(points);
-  free(border);
+  dt_free(points);
+  dt_free(border);
 
   *height = ymax - ymin + 4;
   *width = xmax - xmin + 4;
@@ -2654,9 +2654,9 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   if(!_brush_get_points_border(module->dev, form, module->priority, piece->pipe, &points, &points_count,
                                &border, &border_count, &payload, &payload_count, 0))
   {
-    free(points);
-    free(border);
-    free(payload);
+    dt_free(points);
+    dt_free(border);
+    dt_free(payload);
     return 0;
   }
 
@@ -2716,9 +2716,9 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
     _brush_falloff(buffer, p0, p1, *posx, *posy, *width, payload[i * 2], payload[i * 2 + 1]);
   }
 
-  free(points);
-  free(border);
-  free(payload);
+  dt_free(points);
+  dt_free(border);
+  dt_free(payload);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush fill buffer took %0.04f sec\n", form->name,
@@ -2790,9 +2790,9 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   if(!_brush_get_points_border(module->dev, form, module->priority, piece->pipe, &points, &points_count,
                                &border, &border_count, &payload, &payload_count, 0))
   {
-    free(points);
-    free(border);
-    free(payload);
+    dt_free(points);
+    dt_free(border);
+    dt_free(payload);
     return 0;
   }
 
@@ -2856,9 +2856,9 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   // check if the path completely lies outside of roi -> we're done/mask remains empty
   if(xmax < 0 || ymax < 0 || xmin >= width || ymin >= height)
   {
-    free(points);
-    free(border);
-    free(payload);
+    dt_free(points);
+    dt_free(border);
+    dt_free(payload);
     return 1;
   }
 
@@ -2878,9 +2878,9 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
     _brush_falloff_roi(buffer, p0, p1, width, height, payload[i * 2], payload[i * 2 + 1]);
   }
 
-  free(points);
-  free(border);
-  free(payload);
+  dt_free(points);
+  dt_free(border);
+  dt_free(payload);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush fill buffer took %0.04f sec\n", form->name,

@@ -125,7 +125,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_lib_session_t *lib = self->data;
 
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(lib->gui.entry1));
-  free(self->data);
+  dt_free(self->data);
   self->data = NULL;
 }
 

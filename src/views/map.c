@@ -492,7 +492,7 @@ void cleanup(dt_view_t *self)
     //     g_object_unref(G_OBJECT(lib->map));
   }
   if(lib->statements.main_query) sqlite3_finalize(lib->statements.main_query);
-  free(self->data);
+  dt_free(self->data);
 }
 
 void configure(dt_view_t *self, int wd, int ht)

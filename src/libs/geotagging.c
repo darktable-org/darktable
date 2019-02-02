@@ -55,7 +55,7 @@ static void free_tz_tuple(gpointer data)
 #ifdef _WIN32
   g_free(tz_tuple->name); // on non-Windows both point to the same string
 #endif
-  free(tz_tuple);
+  dt_free(tz_tuple);
 }
 
 const char *name(dt_lib_module_t *self)
@@ -749,7 +749,7 @@ static GList *_lib_geotagging_get_timezones(void)
 
               subkeyname_utf8 = NULL; // to not free it later
             }
-            free(display_name);
+            dt_free(display_name);
           }
           g_free(subkeyname_utf8);
           g_free(subkeypath_utf8);
@@ -757,7 +757,7 @@ static GList *_lib_geotagging_get_timezones(void)
         }
       }
 
-      free(subkeyname);
+      dt_free(subkeyname);
     }
   }
 
@@ -828,7 +828,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_gui_key_accel_block_on_focus_disconnect(d->offset_entry);
   g_list_free_full(d->timezones, free_tz_tuple);
   d->timezones = NULL;
-  free(self->data);
+  dt_free(self->data);
   self->data = NULL;
 }
 

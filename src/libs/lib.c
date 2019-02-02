@@ -196,7 +196,7 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_lib_pre
   }
   gtk_widget_destroy(GTK_WIDGET(dialog));
   g_free(g->original_name);
-  free(g);
+  dt_free(g);
 }
 
 static void edit_preset(const char *name_in, dt_lib_module_info_t *minfo)
@@ -411,8 +411,8 @@ static void free_module_info(GtkWidget *widget, gpointer user_data)
 {
   dt_lib_module_info_t *minfo = (dt_lib_module_info_t *)user_data;
   g_free(minfo->plugin_name);
-  free(minfo->params);
-  free(minfo);
+  dt_free(minfo->params);
+  dt_free(minfo);
 }
 
 static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
@@ -637,7 +637,7 @@ static void *_update_params(dt_lib_module_t *module,
     size_t size;
     int version;
     void *new_params = module->legacy_params(module, params, old_params_size, old_version, &version, &size);
-    free(params);
+    dt_free(params);
     if(new_params == NULL) return NULL;
     params = new_params;
     old_version = version;
@@ -720,7 +720,7 @@ void dt_lib_init_presets(dt_lib_module_t *module)
           sqlite3_step(innerstmt);
           sqlite3_finalize(innerstmt);
         }
-        free(new_params);
+        dt_free(new_params);
       }
     }
     sqlite3_finalize(stmt);
@@ -1082,7 +1082,7 @@ void dt_lib_cleanup(dt_lib_t *lib)
         module->data = NULL;
       }
       dt_lib_unload_module(module);
-      free(module);
+      dt_free(module);
     }
     lib->plugins = g_list_delete_link(lib->plugins, lib->plugins);
   }

@@ -184,7 +184,7 @@ typedef struct dt_opencl_local_buffer_t
 
 /** internally calls dt_clGetDeviceInfo, and takes care of memory allocation
  * afterwards, *param_value will point to memory block of size at least *param_value
- * which needs to be free()'d manually */
+ * which needs to be dt_free()'d manually */
 int dt_opencl_get_device_info(dt_opencl_t *cl, cl_device_id device, cl_device_info param_name, void **param_value,
                               size_t *param_value_size);
 

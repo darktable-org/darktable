@@ -111,7 +111,7 @@ init(dt_view_t *self)
 void cleanup(dt_view_t *self)
 {
   dt_print_t *prt = (dt_print_t *)self->data;
-  free(prt);
+  dt_free(prt);
 }
 
 static void expose_print_page(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)

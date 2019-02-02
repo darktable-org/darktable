@@ -114,28 +114,28 @@ typedef struct pref_element
 
 static void destroy_pref_element(pref_element *elt)
 {
-  free(elt->script);
-  free(elt->name);
-  free(elt->label);
-  free(elt->tooltip);
-  free(elt->tooltip_reset);
+  dt_free(elt->script);
+  dt_free(elt->name);
+  dt_free(elt->label);
+  dt_free(elt->tooltip);
+  dt_free(elt->tooltip_reset);
   if(elt->widget) g_object_unref(elt->widget);
   switch(elt->type)
   {
     case pref_enum:
-      free(elt->type_data.enum_data.default_value);
+      dt_free(elt->type_data.enum_data.default_value);
       break;
     case pref_dir:
-      free(elt->type_data.dir_data.default_value);
+      dt_free(elt->type_data.dir_data.default_value);
       break;
     case pref_file:
-      free(elt->type_data.file_data.default_value);
+      dt_free(elt->type_data.file_data.default_value);
       break;
     case pref_string:
-      free(elt->type_data.string_data.default_value);
+      dt_free(elt->type_data.string_data.default_value);
       break;
     case pref_lua:
-      free(elt->type_data.lua_data.default_value);
+      dt_free(elt->type_data.lua_data.default_value);
       break;
     case pref_bool:
     case pref_int:
@@ -143,7 +143,7 @@ static void destroy_pref_element(pref_element *elt)
     default:
       break;
   }
-  free(elt);
+  dt_free(elt);
 }
 
 static pref_element *pref_list = NULL;
@@ -449,7 +449,7 @@ static void update_widget_enum(pref_element* cur_elt,GtkWidget* dialog,GtkWidget
       g_free(active_entry);
     }
   } while (true);
-  free(value);
+  dt_free(value);
 }
 
 static void update_widget_dir(pref_element* cur_elt,GtkWidget* dialog,GtkWidget* labelev)

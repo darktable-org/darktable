@@ -255,7 +255,7 @@ static inline int dsvd(
       }
       if (its >= 30) {
         fprintf(stderr, "[svd] no convergence after 30,000! iterations\n");
-        free(rv1);
+        dt_free(rv1);
         return 0;
       }
 
@@ -316,7 +316,7 @@ static inline int dsvd(
       w[k] = x;
     }
   }
-  free(rv1);
+  dt_free(rv1);
   return 1;
 }
 

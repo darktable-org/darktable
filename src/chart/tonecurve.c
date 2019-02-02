@@ -17,6 +17,7 @@
  */
 
 #include "chart/tonecurve.h"
+#include "common/utility.h"
 
 #include <assert.h>
 #include <stdint.h>
@@ -36,8 +37,8 @@ void tonecurve_delete(tonecurve_t *c)
 {
   if(!c) return;
 
-  free(c->y);
-  free(c->x);
+  dt_free(c->y);
+  dt_free(c->x);
 }
 
 static inline double _tonecurve_apply(const double *x, const double *y, const int32_t num, const double L)

@@ -341,7 +341,7 @@ static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       dt_dev_histogram_stats_t histogram_stats;
       deflicker_prepare_histogram(self, &histogram, &histogram_stats);
       compute_correction(self, &d->params, piece->pipe, histogram, &histogram_stats, &exposure);
-      free(histogram);
+      dt_free(histogram);
     }
 
     // second, show computed correction in UI.
@@ -466,7 +466,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -507,7 +507,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
 
-  free(g->deflicker_histogram);
+  dt_free(g->deflicker_histogram);
   g->deflicker_histogram = NULL;
 
   gtk_label_set_text(g->deflicker_used_EC, "");
@@ -571,7 +571,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -579,7 +579,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_exposure);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -595,7 +595,7 @@ static void mode_callback(GtkWidget *combo, gpointer user_data)
   const dt_iop_exposure_mode_t new_mode
       = GPOINTER_TO_UINT(g_list_nth_data(g->modes, dt_bauhaus_combobox_get(combo)));
 
-  free(g->deflicker_histogram);
+  dt_free(g->deflicker_histogram);
   g->deflicker_histogram = NULL;
 
   switch(new_mode)
@@ -961,13 +961,13 @@ void gui_cleanup(struct dt_iop_module_t *self)
     instances = next;
   }
 
-  free(g->deflicker_histogram);
+  dt_free(g->deflicker_histogram);
   g->deflicker_histogram = NULL;
   g_list_free(g->modes);
 
   dt_pthread_mutex_destroy(&g->lock);
 
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

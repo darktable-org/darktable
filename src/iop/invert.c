@@ -526,7 +526,7 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -535,7 +535,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_iop_invert_global_data_t *gd = (dt_iop_invert_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_invert_4f);
   dt_opencl_free_kernel(gd->kernel_invert_1f);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 

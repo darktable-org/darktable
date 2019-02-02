@@ -79,7 +79,7 @@ const backend_libsecret_context_t *dt_pwstorage_libsecret_new()
 
 void dt_pwstorage_libsecret_destroy(const backend_libsecret_context_t *context)
 {
-  free((backend_libsecret_context_t *)context);
+  dt_free((backend_libsecret_context_t *)context);
 }
 
 gboolean dt_pwstorage_libsecret_set(const backend_libsecret_context_t *context, const gchar *slot,

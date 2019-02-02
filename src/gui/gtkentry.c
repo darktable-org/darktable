@@ -241,7 +241,7 @@ gchar *dt_gtkentry_build_completion_tooltip_text(const gchar *header,
 
   gchar *ret = g_strjoinv("\n", (gchar **)lines);
 
-  free(lines);
+  dt_free(lines);
 
   return ret;
 }

@@ -2363,7 +2363,7 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -2401,7 +2401,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_retouch_image_lab2rgb);
   dt_opencl_free_kernel(gd->kernel_retouch_copy_mask_to_alpha);
 
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -2467,7 +2467,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -2962,7 +2962,7 @@ void gui_cleanup(dt_iop_module_t *self)
   {
     dt_pthread_mutex_destroy(&g->lock);
   }
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 
@@ -4125,7 +4125,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
           if(!rt_masks_get_delta_to_destination(self, piece, roi_layer, form, &dx, &dy))
           {
             forms = g_list_next(forms);
-            if(mask) free(mask);
+            if(mask) dt_free(mask);
             continue;
           }
         }
@@ -4139,7 +4139,7 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
         // we don't need the original mask anymore
         if(mask)
         {
-          free(mask);
+          dt_free(mask);
           mask = NULL;
         }
 
@@ -4193,8 +4193,8 @@ static void rt_process_forms(float *layer, dwt_params_t *const wt_p, const int s
             rt_copy_mask_to_alpha(layer, roi_layer, wt_p->ch, mask_scaled, &roi_mask_scaled, form_opacity);
         }
 
-        if(mask) free(mask);
-        if(mask_scaled) free(mask_scaled);
+        if(mask) dt_free(mask);
+        if(mask_scaled) dt_free(mask_scaled);
 
         forms = g_list_next(forms);
       }
@@ -4936,7 +4936,7 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
           if(!rt_masks_get_delta_to_destination(self, piece, roi_layer, form, &dx, &dy))
           {
             forms = g_list_next(forms);
-            if(mask) free(mask);
+            if(mask) dt_free(mask);
             continue;
           }
         }
@@ -4952,14 +4952,14 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
         // only heal needs mask scaled
         if(algo != DT_IOP_RETOUCH_HEAL && mask_scaled != NULL)
         {
-          free(mask_scaled);
+          dt_free(mask_scaled);
           mask_scaled = NULL;
         }
 
         // we don't need the original mask anymore
         if(mask)
         {
-          free(mask);
+          dt_free(mask);
           mask = NULL;
         }
 
@@ -5019,8 +5019,8 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
                                      gd);
         }
 
-        if(mask) free(mask);
-        if(mask_scaled) free(mask_scaled);
+        if(mask) dt_free(mask);
+        if(mask_scaled) dt_free(mask_scaled);
         if(dev_mask_scaled) dt_opencl_release_mem_object(dev_mask_scaled);
 
         forms = g_list_next(forms);

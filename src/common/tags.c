@@ -643,7 +643,7 @@ ssize_t dt_tag_import(const char *filename)
     }
   }
 
-  free(line);
+  dt_free(line);
   g_list_free_full(hierarchy, g_free);
   fclose(fd);
 

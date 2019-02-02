@@ -246,13 +246,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_tmp);
-  free(mat);
+  dt_free(mat);
   return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_tmp);
-  free(mat);
+  dt_free(mat);
   dt_print(DT_DEBUG_OPENCL, "[opencl_sharpen] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -694,7 +694,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -735,7 +735,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -745,7 +745,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_sharpen_hblur);
   dt_opencl_free_kernel(gd->kernel_sharpen_vblur);
   dt_opencl_free_kernel(gd->kernel_sharpen_mix);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -779,7 +779,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

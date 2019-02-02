@@ -123,9 +123,9 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *dsc, con
     }
   }
 
-  free(mmax);
-  free(mmin);
-  free(mean);
+  dt_free(mmax);
+  dt_free(mmin);
+  dt_free(mean);
 }
 
 static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *dsc, const float *const pixel,
@@ -241,10 +241,10 @@ static void color_picker_helper_bayer_parallel(const dt_iop_buffer_dsc_t *const 
     }
   }
 
-  free(cnt);
-  free(mmax);
-  free(mmin);
-  free(msum);
+  dt_free(cnt);
+  dt_free(mmax);
+  dt_free(mmin);
+  dt_free(msum);
 
   // and finally normalize data. For bayer, there is twice as much green.
   for(int c = 0; c < 4; c++)
@@ -368,10 +368,10 @@ static void color_picker_helper_xtrans_parallel(const dt_iop_buffer_dsc_t *const
     }
   }
 
-  free(cnt);
-  free(mmax);
-  free(mmin);
-  free(msum);
+  dt_free(cnt);
+  dt_free(mmax);
+  dt_free(mmin);
+  dt_free(msum);
 
   // and finally normalize data.
   // X-Trans RGB weighting averages to 2:5:2 for each 3x3 cell

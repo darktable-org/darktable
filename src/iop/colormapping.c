@@ -390,9 +390,9 @@ static void kmeans(const float *col, const int width, const int height, const in
     // var_out[k][0], var_out[k][1], weight_out[k]);
   }
 
-  free(cnt);
-  free(var);
-  free(mean);
+  dt_free(cnt);
+  dt_free(var);
+  dt_free(mean);
 
   for(int k = 0; k < n; k++)
   {
@@ -455,7 +455,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && (data->flag & ACQUIRE))
   {
     dt_pthread_mutex_lock(&g->lock);
-    if(g->buffer) free(g->buffer);
+    if(g->buffer) dt_free(g->buffer);
 
     g->buffer = dt_malloc((size_t)width * height * ch * sizeof(float));
     g->width = width;
@@ -515,8 +515,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dt_bilateral_t *b = dt_bilateral_init(width, height, sigma_s, sigma_r);
       if(!b)
       {
-        free(var_ratio);
-        free(mapio);
+        dt_free(var_ratio);
+        dt_free(mapio);
         return;
       }
       dt_bilateral_splat(b, out);
@@ -557,9 +557,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
     }
 
-    free(weight_buf);
-    free(var_ratio);
-    free(mapio);
+    dt_free(weight_buf);
+    dt_free(var_ratio);
+    dt_free(mapio);
   }
   // incomplete parameter set -> do nothing
   else
@@ -605,7 +605,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW && (data->flag & ACQUIRE))
   {
     dt_pthread_mutex_lock(&g->lock);
-    free(g->buffer);
+    dt_free(g->buffer);
 
     g->buffer = dt_malloc(width * height * ch * sizeof(float));
     g->width = width;
@@ -850,7 +850,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -886,7 +886,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -895,7 +895,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_iop_colormapping_global_data_t *gd = (dt_iop_colormapping_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_histogram);
   dt_opencl_free_kernel(gd->kernel_mapping);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -1047,7 +1047,7 @@ static void process_clusters(gpointer instance, gpointer user_data)
     dt_control_queue_redraw_widget(g->target_area);
   }
 
-  free(buffer);
+  dt_free(buffer);
 
   if(new_source_clusters)
   {
@@ -1171,8 +1171,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   cmsDeleteTransform(g->xform);
   dt_pthread_mutex_destroy(&g->lock);
-  free(g->buffer);
-  free(self->gui_data);
+  dt_free(g->buffer);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

@@ -96,7 +96,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
     *color_space = DT_COLORSPACE_SRGB;
     if(dt_imageio_jpeg_decompress(&jpg, *buffer))
     {
-      free(*buffer);
+      dt_free(*buffer);
       *buffer = NULL;
       goto error;
     }
@@ -140,7 +140,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
       if(gm_ret != MagickPass)
       {
         fprintf(stderr, "[dt_imageio_large_thumbnail GM] error_gm reading thumbnail\n");
-        free(*buffer);
+        dt_free(*buffer);
         *buffer = NULL;
         goto error_gm;
       }
@@ -171,8 +171,8 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
   }
 
 error:
-  free(mime_type);
-  free(buf);
+  dt_free(mime_type);
+  dt_free(buf);
   return res;
 }
 
@@ -646,9 +646,9 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     {
       GList *next = g_list_next(history);
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-      free(hist->params);
-      free(hist->blend_params);
-      free(history->data);
+      dt_free(hist->params);
+      dt_free(hist->blend_params);
+      dt_free(history->data);
       dev.history = g_list_delete_link(dev.history, history);
       history = next;
     }
@@ -680,7 +680,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
             }
             else
             {
-              free(h);
+              dt_free(h);
               goto error;
             }
           }
@@ -698,7 +698,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
             void *new_params = dt_malloc(m->params_size);
             m->legacy_params(m, h->params, s->module_version, new_params, labs(m->version()));
 
-            free(h->params);
+            dt_free(h->params);
             h->params = new_params;
           }
 
@@ -914,7 +914,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     res = format->write_image(format_params, filename, outbuf, icc_type, icc_filename, exif_profile, length, imgid,
                               num, total, &pipe);
 
-    free(exif_profile);
+    dt_free(exif_profile);
   }
   else
   {

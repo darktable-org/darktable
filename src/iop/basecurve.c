@@ -713,8 +713,8 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   dt_opencl_release_mem_object(dev_coeffs);
   dt_opencl_release_mem_object(dev_tmp1);
   dt_opencl_release_mem_object(dev_tmp2);
-  free(dev_comb);
-  free(dev_col);
+  dt_free(dev_comb);
+  dt_free(dev_col);
   return TRUE;
 
 error:
@@ -727,8 +727,8 @@ error:
   dt_opencl_release_mem_object(dev_coeffs);
   dt_opencl_release_mem_object(dev_tmp1);
   dt_opencl_release_mem_object(dev_tmp2);
-  free(dev_comb);
-  free(dev_col);
+  dt_free(dev_comb);
+  dt_free(dev_col);
   dt_print(DT_DEBUG_OPENCL, "[opencl_basecurve_fusion] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -1126,8 +1126,8 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     dt_free_align(col[k]);
     dt_free_align(comb[k]);
   }
-  free(col);
-  free(comb);
+  dt_free(col);
+  dt_free(comb);
 }
 
 void process_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -1223,7 +1223,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   // clean up everything again.
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)(piece->data);
   dt_draw_curve_destroy(d->curve);
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -1273,7 +1273,7 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -1318,7 +1318,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_basecurve_normalize);
   dt_opencl_free_kernel(gd->kernel_basecurve_reconstruct);
   dt_opencl_free_kernel(gd->kernel_basecurve_finalize);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -1994,7 +1994,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_draw_curve_destroy(c->minmax_curve);
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

@@ -275,7 +275,7 @@ int dt_film_import(const char *dirname)
       dt_film_remove(film->id);
     }
     dt_film_cleanup(film);
-    free(film);
+    dt_free(film);
     return 0;
   }
 
@@ -293,7 +293,7 @@ int dt_film_import(const char *dirname)
     fprintf(stderr, "[film_import] failed to open directory %s: %s\n", film->dirname, error->message);
     g_error_free(error);
     dt_film_cleanup(film);
-    free(film);
+    dt_free(film);
     return 0;
   }
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, dt_film_import1_create(film));

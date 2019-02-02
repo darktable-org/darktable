@@ -561,7 +561,7 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // clean up everything again.
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -628,13 +628,13 @@ void cleanup_global(dt_iop_module_so_t *self)
 {
   dt_iop_levels_global_data_t *gd = (dt_iop_levels_global_data_t *)self->data;
   dt_opencl_free_kernel(gd->kernel_levels);
-  free(self->data);
+  dt_free(self->data);
   self->data = NULL;
 }
 
 void cleanup(dt_iop_module_t *self)
 {
-  free(self->params);
+  dt_free(self->params);
   self->params = NULL;
 }
 
@@ -791,7 +791,7 @@ void gui_cleanup(dt_iop_module_t *self)
 
   dt_pthread_mutex_destroy(&g->lock);
 
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

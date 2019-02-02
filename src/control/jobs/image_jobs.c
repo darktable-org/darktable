@@ -93,7 +93,7 @@ static void dt_image_import_job_cleanup(void *p)
 
   g_free(params->filename);
 
-  free(params);
+  dt_free(params);
 }
 
 dt_job_t *dt_image_import_job_create(uint32_t filmid, const char *filename)

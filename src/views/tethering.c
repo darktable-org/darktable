@@ -129,7 +129,7 @@ void init(dt_view_t *self)
 
 void cleanup(dt_view_t *self)
 {
-  free(self->data);
+  dt_free(self->data);
 }
 
 

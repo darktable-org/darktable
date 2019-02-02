@@ -222,7 +222,7 @@ void dt_http_server_kill(dt_http_server_t *server)
   }
   g_free(server->url);
   server->url = NULL;
-  free(server);
+  dt_free(server);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

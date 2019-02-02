@@ -372,14 +372,14 @@ static void _print_job_cleanup(void *p)
 {
   dt_lib_print_job_t *params = p;
   if(params->pdf_filename[0]) g_unlink(params->pdf_filename);
-  free(params->pdf_image);
-  free(params->pdf_page);
-  free(params->buf);
+  dt_free(params->pdf_image);
+  dt_free(params->pdf_page);
+  dt_free(params->buf);
   g_free(params->style);
   g_free(params->buf_icc_profile);
   g_free(params->p_icc_profile);
   g_free(params->job_title);
-  free(params);
+  dt_free(params);
 }
 
 static void
@@ -1986,7 +1986,7 @@ gui_cleanup (dt_lib_module_t *self)
   g_free(ps->v_piccprofile);
   g_free(ps->v_style);
 
-  free(self->data);
+  dt_free(self->data);
   self->data = NULL;
 }
 

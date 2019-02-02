@@ -1059,37 +1059,37 @@ void dt_cleanup()
     dt_control_shutdown(darktable.control);
 
     dt_lib_cleanup(darktable.lib);
-    free(darktable.lib);
+    dt_free(darktable.lib);
   }
 #ifdef USE_LUA
   dt_lua_finalize();
 #endif
   dt_view_manager_cleanup(darktable.view_manager);
-  free(darktable.view_manager);
+  dt_free(darktable.view_manager);
   if(init_gui)
   {
     dt_imageio_cleanup(darktable.imageio);
-    free(darktable.imageio);
-    free(darktable.gui);
+    dt_free(darktable.imageio);
+    dt_free(darktable.gui);
   }
   dt_image_cache_cleanup(darktable.image_cache);
-  free(darktable.image_cache);
+  dt_free(darktable.image_cache);
   dt_mipmap_cache_cleanup(darktable.mipmap_cache);
-  free(darktable.mipmap_cache);
+  dt_free(darktable.mipmap_cache);
   if(init_gui)
   {
     dt_control_cleanup(darktable.control);
-    free(darktable.control);
+    dt_free(darktable.control);
     dt_undo_cleanup(darktable.undo);
   }
   dt_colorspaces_cleanup(darktable.color_profiles);
   dt_conf_cleanup(darktable.conf);
-  free(darktable.conf);
+  dt_free(darktable.conf);
   dt_points_cleanup(darktable.points);
-  free(darktable.points);
+  dt_free(darktable.points);
   dt_iop_unload_modules_so();
   dt_opencl_cleanup(darktable.opencl);
-  free(darktable.opencl);
+  dt_free(darktable.opencl);
 #ifdef HAVE_GPHOTO2
   dt_camctl_destroy((dt_camctl_t *)darktable.camctl);
 #endif

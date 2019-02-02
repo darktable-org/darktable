@@ -255,7 +255,7 @@ static _flickr_api_context_t *_flickr_api_authenticate(dt_storage_flickr_gui_dat
     }
   }
 
-  free(perms);
+  dt_free(perms);
 
   return NULL;
 }
@@ -868,7 +868,7 @@ void free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *pa
 
   _flickr_api_free(d->flickr_api); // TODO
 
-  free(params);
+  dt_free(params);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

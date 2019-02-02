@@ -153,7 +153,7 @@ static void default_init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *
 static void default_cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
                                  dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free(piece->data);
 }
 
 static void default_gui_cleanup(dt_iop_module_t *self)
@@ -865,7 +865,7 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
   if(ended)
   {
     gtk_widget_destroy(d->floating_window);
-    free(d);
+    dt_free(d);
     return TRUE;
   }
   return FALSE; /* event not handled */
@@ -1111,7 +1111,7 @@ void dt_iop_cleanup_histogram(gpointer data, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)data;
 
-  free(module->histogram);
+  dt_free(module->histogram);
   module->histogram = NULL;
   module->histogram_stats.bins_count = 0;
   module->histogram_stats.pixels = 0;
@@ -1195,7 +1195,7 @@ static void init_presets(dt_iop_module_so_t *module_so)
       module = (dt_iop_module_t *)dt_calloc(1, sizeof(dt_iop_module_t));
       if(dt_iop_load_module_by_so(module, module_so, NULL))
       {
-        free(module);
+        dt_free(module);
         continue;
       }
 
@@ -1203,7 +1203,7 @@ static void init_presets(dt_iop_module_so_t *module_so)
       if(module->params_size == 0)
       {
         dt_iop_cleanup_module(module);
-        free(module);
+        dt_free(module);
         continue;
       }
 
@@ -1216,9 +1216,9 @@ static void init_presets(dt_iop_module_so_t *module_so)
       // convert the old params to new
       if(module->legacy_params(module, old_params, old_params_version, new_params, module_version))
       {
-        free(new_params);
+        dt_free(new_params);
         dt_iop_cleanup_module(module);
-        free(module);
+        dt_free(module);
         continue;
       }
 
@@ -1240,9 +1240,9 @@ static void init_presets(dt_iop_module_so_t *module_so)
       sqlite3_step(stmt2);
       sqlite3_finalize(stmt2);
 
-      free(new_params);
+      dt_free(new_params);
       dt_iop_cleanup_module(module);
-      free(module);
+      dt_free(module);
     }
     else if(module_version > old_params_version)
     {
@@ -1263,14 +1263,14 @@ static void init_presets(dt_iop_module_so_t *module_so)
       module = (dt_iop_module_t *)dt_calloc(1, sizeof(dt_iop_module_t));
       if(dt_iop_load_module_by_so(module, module_so, NULL))
       {
-        free(module);
+        dt_free(module);
         continue;
       }
 
       if(module->params_size == 0)
       {
         dt_iop_cleanup_module(module);
-        free(module);
+        dt_free(module);
         continue;
       }
       void *new_blend_params = dt_malloc(sizeof(dt_develop_blend_params_t));
@@ -1303,9 +1303,9 @@ static void init_presets(dt_iop_module_so_t *module_so)
       sqlite3_step(stmt2);
       sqlite3_finalize(stmt2);
 
-      free(new_blend_params);
+      dt_free(new_blend_params);
       dt_iop_cleanup_module(module);
-      free(module);
+      dt_free(module);
     }
   }
   sqlite3_finalize(stmt);
@@ -1369,7 +1369,7 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, d
   memset(module, 0, sizeof(dt_iop_module_t));
   if(dt_iop_load_module_by_so(module, module_so, dev))
   {
-    free(module);
+    dt_free(module);
     return 1;
   }
   module->data = module_so->data;
@@ -1391,7 +1391,7 @@ GList *dt_iop_load_modules_ext(dt_develop_t *dev, gboolean no_image)
     module = (dt_iop_module_t *)dt_calloc(1, sizeof(dt_iop_module_t));
     if(dt_iop_load_module_by_so(module, module_so, dev))
     {
-      free(module);
+      dt_free(module);
       continue;
     }
     res = g_list_insert_sorted(res, module, sort_plugins);
@@ -1421,13 +1421,13 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
 {
   module->cleanup(module);
 
-  free(module->default_params);
+  dt_free(module->default_params);
   module->default_params = NULL;
-  free(module->blend_params);
+  dt_free(module->blend_params);
   module->blend_params = NULL;
-  free(module->default_blendop_params);
+  dt_free(module->default_blendop_params);
   module->default_blendop_params = NULL;
-  free(module->histogram);
+  dt_free(module->histogram);
   module->histogram = NULL;
   g_hash_table_destroy(module->raster_mask.source.users);
   g_hash_table_destroy(module->raster_mask.source.masks);
@@ -1442,7 +1442,7 @@ void dt_iop_unload_modules_so()
     dt_iop_module_so_t *module = (dt_iop_module_so_t *)darktable.iop->data;
     if(module->cleanup_global) module->cleanup_global(module);
     if(module->module) g_module_close(module->module);
-    free(darktable.iop->data);
+    dt_free(darktable.iop->data);
     darktable.iop = g_list_delete_link(darktable.iop, darktable.iop);
   }
 }
@@ -1534,7 +1534,7 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
     for(int i = 0; i < length; i++) hash = ((hash << 5) + hash) ^ str[i];
     piece->hash = hash;
 
-    free(str);
+    dt_free(str);
   }
   // printf("commit params hash += module %s: %lu, enabled = %d\n", piece->module->op, piece->hash,
   // piece->enabled);

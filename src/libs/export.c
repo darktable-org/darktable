@@ -710,7 +710,7 @@ void gui_cleanup(dt_lib_module_t *self)
     if(module->widget) gtk_container_remove(GTK_CONTAINER(d->format_extra_container), module->widget);
   } while((it = g_list_next(it)));
 
-  free(self->data);
+  dt_free(self->data);
   self->data = NULL;
 }
 
@@ -852,16 +852,16 @@ void init_presets(dt_lib_module_t *self)
         sqlite3_step(innerstmt);
         sqlite3_finalize(innerstmt);
 
-        free(new_fdata);
-        free(new_sdata);
-        free(new_params);
+        dt_free(new_fdata);
+        dt_free(new_sdata);
+        dt_free(new_params);
       }
 
       continue;
 
     delete_preset:
-      free(new_fdata);
-      free(new_sdata);
+      dt_free(new_fdata);
+      dt_free(new_sdata);
       fprintf(stderr, "[export_init_presets] export preset '%s' can't be updated from versions %d/%d to "
                       "versions %d/%d. dropping preset\n",
               name, fversion, sversion, new_fversion, new_sversion);
@@ -903,7 +903,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     dt_imageio_module_storage_t *smod = dt_imageio_get_storage_by_name(sname);
     if(!fmod || !smod)
     {
-      free(new_params);
+      dt_free(new_params);
       return NULL;
     }
 

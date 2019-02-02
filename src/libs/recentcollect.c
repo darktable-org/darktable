@@ -327,7 +327,7 @@ void gui_cleanup(dt_lib_module_t *self)
   uint32_t curr_pos = dt_view_lighttable_get_position(darktable.view_manager);
   dt_conf_set_int("plugins/lighttable/recentcollect/pos0", curr_pos);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_recentcollection_updated), self);
-  free(self->data);
+  dt_free(self->data);
   self->data = NULL;
 }
 

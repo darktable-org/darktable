@@ -233,9 +233,9 @@ exit:
     // Until we get symbolic error status codes, if rc is 1, return 0
     rc = (rc == 1) ? 0 : 1;
   }
-  free(profile);
+  dt_free(profile);
   profile = NULL;
-  free(rowdata);
+  dt_free(rowdata);
   rowdata = NULL;
 
   return rc;
@@ -355,7 +355,7 @@ void *get_params(dt_imageio_module_format_t *self)
 
 void free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
 {
-  free(params);
+  dt_free(params);
 }
 
 int set_params(dt_imageio_module_format_t *self, const void *params, const int size)
@@ -498,7 +498,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
 void gui_cleanup(dt_imageio_module_format_t *self)
 {
-  free(self->gui_data);
+  dt_free(self->gui_data);
 }
 
 void gui_reset(dt_imageio_module_format_t *self)

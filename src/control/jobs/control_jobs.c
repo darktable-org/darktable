@@ -173,7 +173,7 @@ static void dt_control_image_enumerator_cleanup(void *p)
 
   g_list_free(params->index);
 
-  free(params);
+  dt_free(params);
 }
 
 typedef enum {PROGRESS_NONE, PROGRESS_SIMPLE, PROGRESS_CANCELLABLE} progress_type_t;
@@ -487,7 +487,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   while(*c != '.' && c > pathname) c--;
   g_strlcpy(c, "-hdr.dng", sizeof(pathname) - (c - pathname));
   dt_imageio_write_dng(pathname, d.pixels, d.wd, d.ht, exif, exif_len, d.first_filter, (const uint8_t (*)[6])d.first_xtrans, 1.0f);
-  free(exif);
+  dt_free(exif);
 
   dt_control_job_set_progress(job, 1.0);
 
@@ -502,8 +502,8 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   g_free(directory);
 
 end:
-  free(d.pixels);
-  free(d.weight);
+  dt_free(d.pixels);
+  dt_free(d.weight);
 
   dt_control_queue_redraw_center();
   return 0;
@@ -644,7 +644,7 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
   if(!remove_ok)
   {
     dt_control_log(_("cannot remove local copy when the original file is not accessible."));
-    free(imgs);
+    dt_free(imgs);
     return 0;
   }
 
@@ -656,7 +656,7 @@ static int32_t dt_control_remove_images_job_run(dt_job_t *job)
   // We need a list of files to regenerate .xmp files if there are duplicates
   GList *list = _get_full_pathname(imgs);
 
-  free(imgs);
+  dt_free(imgs);
 
   while(t)
   {
@@ -880,7 +880,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
   // We need a list of files to regenerate .xmp files if there are duplicates
   GList *list = _get_full_pathname(imgs);
 
-  free(imgs);
+  dt_free(imgs);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT COUNT(*) FROM main.images WHERE filename IN (SELECT filename FROM "
@@ -1319,7 +1319,7 @@ static void dt_control_gpx_apply_job_cleanup(void *p)
   g_free(data->filename);
   g_free(data->tz);
 
-  free(data);
+  dt_free(data);
 
   dt_control_image_enumerator_cleanup(params);
 }
@@ -1627,7 +1627,7 @@ static void dt_control_export_cleanup(void *p)
   mstorage->free_params(mstorage, sdata);
 
   g_free(settings->icc_filename);
-  free(params->data);
+  dt_free(params->data);
 
   dt_control_image_enumerator_cleanup(params);
 }
@@ -1738,7 +1738,7 @@ static void dt_control_time_offset_job_cleanup(void *p)
 {
   dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)p;
 
-  free(params->data);
+  dt_free(params->data);
 
   dt_control_image_enumerator_cleanup(params);
 }

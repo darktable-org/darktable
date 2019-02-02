@@ -259,7 +259,7 @@ void *dt_alloc_align(size_t alignment, size_t size);
 void dt_free_align(void *mem);
 #define dt_free_align_ptr dt_free_align
 #else
-#define dt_free_align(A) free(A)
+#define dt_free_align(A) dt_free(A)
 #define dt_free_align_ptr free
 #endif
 
@@ -365,7 +365,7 @@ static inline void dt_print_mem_usage()
     else if(!strncmp(line, "VmHWM:", 6))
       g_strlcpy(vmhwm, line + 8, sizeof(vmhwm));
   }
-  free(line);
+  dt_free(line);
   fclose(f);
 
   fprintf(stderr, "[memory] max address space (vmpeak): %15s"
@@ -470,14 +470,14 @@ static inline int dt_get_num_atom_cores()
   ret = sysctl(mib, 2, hw_model, &length, NULL, 0);
   if(ret != 0)
   {
-    free(hw_model);
+    dt_free(hw_model);
     return 0;
   }
   hw_model[length] = '\0';
 
   /* Check if the processor model name contains "Atom". */
   index = strstr(hw_model, "Atom");
-  free(hw_model);
+  dt_free(hw_model);
   if(index == NULL)
   {
     return 0;
@@ -509,7 +509,7 @@ static inline size_t dt_get_total_memory()
   size_t len = 0;
   if(getline(&line, &len, f) != -1) mem = atol(line + 10);
   fclose(f);
-  if(len > 0) free(line);
+  if(len > 0) dt_free(line);
   return mem;
 #elif defined(__APPLE__) || defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__)            \
     || defined(__OpenBSD__)

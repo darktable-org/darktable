@@ -148,7 +148,7 @@ void dt_control_job_dispose(_dt_job_t *job)
   if(job->params_destroy) job->params_destroy(job->params);
   dt_pthread_mutex_destroy(&job->state_mutex);
   dt_pthread_mutex_destroy(&job->wait_mutex);
-  free(job);
+  dt_free(job);
 }
 
 void dt_control_job_set_state_callback(_dt_job_t *job, dt_job_state_change_callback cb)
@@ -515,7 +515,7 @@ static void *dt_control_work_res(void *ptr)
   char name[16] = {0};
   snprintf(name, sizeof(name), "worker res %d", threadid);
   dt_pthread_setname(name);
-  free(params);
+  dt_free(params);
   int32_t threadid_res = dt_control_get_threadid_res();
   while(dt_control_running())
   {
@@ -560,7 +560,7 @@ static void *dt_control_work(void *ptr)
   char name[16] = {0};
   snprintf(name, sizeof(name), "worker %d", threadid);
   dt_pthread_setname(name);
-  free(params);
+  dt_free(params);
   // int32_t threadid = dt_control_get_threadid();
   while(dt_control_running())
   {
@@ -641,8 +641,8 @@ void dt_control_jobs_init(dt_control_t *control)
 
 void dt_control_jobs_cleanup(dt_control_t *control)
 {
-  free(control->job);
-  free(control->thread);
+  dt_free(control->job);
+  dt_free(control->thread);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

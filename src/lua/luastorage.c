@@ -272,8 +272,8 @@ static void free_param_wrapper_destroy(void * data)
     lua_settable(darktable.lua_state.state, LUA_REGISTRYINDEX);
     dt_lua_unlock();
   }
-  free(d);
-  free(params);
+  dt_free(d);
+  dt_free(params);
 }
 static int32_t free_param_wrapper_job(dt_job_t *job)
 {

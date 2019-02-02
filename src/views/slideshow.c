@@ -317,7 +317,7 @@ void cleanup(dt_view_t *self)
 {
   dt_slideshow_t *lib = (dt_slideshow_t *)self->data;
   dt_pthread_mutex_destroy(&lib->lock);
-  free(self->data);
+  dt_free(self->data);
 }
 
 int try_enter(dt_view_t *self)

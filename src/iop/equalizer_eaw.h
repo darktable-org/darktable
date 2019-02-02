@@ -71,7 +71,7 @@ static void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, cons
       for(ch = 0; ch < 3; ch++) gbuf(buf, i, j) += gbuf(buf, i - st, j) * .5f;
   }
 
-  free((void *)tmp_width_buf);
+  dt_free((void *)tmp_width_buf);
 
   float *const tmp_height_buf = (float *)dt_malloc(height * dt_get_num_threads() * sizeof(float));
 #ifdef _OPENMP
@@ -101,7 +101,7 @@ static void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, cons
       for(ch = 0; ch < 3; ch++) gbuf(buf, i, j) += gbuf(buf, i, j - st) * .5f;
   }
 
-  free((void *)tmp_height_buf);
+  dt_free((void *)tmp_height_buf);
 }
 
 static void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, const int width, const int height)
@@ -137,7 +137,7 @@ static void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, con
       for(int ch = 0; ch < 3; ch++) gbuf(buf, i, j) += gbuf(buf, i, j - st);
   }
 
-  free((void *)tmp_height_buf);
+  dt_free((void *)tmp_height_buf);
 
   float *const tmp_width_buf = (float *)dt_malloc(width * dt_get_num_threads() * sizeof(float));
 #ifdef _OPENMP
@@ -166,7 +166,7 @@ static void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, con
       for(int ch = 0; ch < 3; ch++) gbuf(buf, i, j) += gbuf(buf, i - st, j);
   }
 
-  free((void *)tmp_width_buf);
+  dt_free((void *)tmp_width_buf);
 }
 
 #undef gbuf

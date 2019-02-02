@@ -79,13 +79,13 @@ void dt_style_item_free(gpointer data)
   dt_style_item_t *item = (dt_style_item_t *)data;
   g_free(item->name);
   g_free(item->operation);
-  free(item->params);
-  free(item->blendop_params);
+  dt_free(item->params);
+  dt_free(item->blendop_params);
   item->name = NULL;
   item->operation = NULL;
   item->params = NULL;
   item->blendop_params = NULL;
-  free(item);
+  dt_free(item);
 }
 
 static gboolean _apply_style_shortcut_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
@@ -1034,7 +1034,7 @@ static void dt_style_plugin_save(StylePluginData *plugin, gpointer styleId)
 
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  free(params);
+  dt_free(params);
 }
 
 static void dt_style_save(StyleData *style)

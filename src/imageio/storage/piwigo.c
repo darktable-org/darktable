@@ -155,7 +155,7 @@ static void _piwigo_ctx_destroy(_piwigo_api_context_t **ctx)
     g_free((*ctx)->server);
     g_free((*ctx)->username);
     g_free((*ctx)->password);
-    free(*ctx);
+    dt_free(*ctx);
     *ctx = NULL;
   }
 }
@@ -1176,7 +1176,7 @@ void free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *pa
     g_free(p->album);
     g_free(p->tags);
     _piwigo_ctx_destroy(&p->api);
-    free(p);
+    dt_free(p);
   }
 }
 

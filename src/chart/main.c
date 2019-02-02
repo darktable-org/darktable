@@ -299,7 +299,7 @@ static gboolean open_reference_image(dt_lut_t *self, const char *filename)
   {
     collect_reference_patches(self);
     update_table(self);
-    free(self->reference_filename);
+    dt_free(self->reference_filename);
     self->reference_filename = get_filename_base(filename);
   }
   gtk_widget_queue_draw(self->reference.drawing_area);
@@ -331,7 +331,7 @@ static gboolean open_image(image_t *image, const char *filename)
   {
     fprintf(stderr, "error creating cairo surface from `%s'\n", filename);
     cairo_surface_destroy(image_surface);
-    free(pfm);
+    dt_free(pfm);
     return FALSE;
   }
   image->surface = image_surface;
@@ -443,7 +443,7 @@ static gboolean open_it8(dt_lut_t *self, const char *filename)
     gtk_file_chooser_unselect_all(GTK_FILE_CHOOSER(self->it8_button));
   else
   {
-    free(self->reference_filename);
+    dt_free(self->reference_filename);
     self->reference_filename = get_filename_base(filename);
     gtk_widget_set_sensitive(self->process_button, TRUE);
   }
@@ -926,7 +926,7 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
     cy[k] = rgb[0];
   }
   tonecurve_create(&rgbcurve, cx, cy, num_tonecurve);
-  free(grays);
+  dt_free(grays);
 
   // now unapply the curve:
   for(int k = 0; k < N; k++)
@@ -964,9 +964,9 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
     g_free(result_string);
   }
   
-  free(coeff_b);
-  free(coeff_a);
-  free(coeff_L);
+  dt_free(coeff_b);
+  dt_free(coeff_a);
+  dt_free(coeff_L);
 
   int sp = 0;
   int cperm[300] = { 0 };
@@ -981,7 +981,7 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
             colorchecker_Lab[3 * cperm[k] + 1], colorchecker_Lab[3 * cperm[k] + 2]);
 #endif
 
-  free(perm);
+  dt_free(perm);
   self->tonecurve_encoded = encode_tonecurve(&tonecurve);
   self->colorchecker_encoded = encode_colorchecker(sp, colorchecker_Lab, target, cperm);
 
@@ -993,8 +993,8 @@ static void process_button_clicked_callback(GtkButton *button, gpointer user_dat
   dt_lut_t *self = (dt_lut_t *)user_data;
 
   gtk_widget_set_sensitive(self->export_button, FALSE);
-  free(self->tonecurve_encoded);
-  free(self->colorchecker_encoded);
+  dt_free(self->tonecurve_encoded);
+  dt_free(self->colorchecker_encoded);
   self->tonecurve_encoded = NULL;
   self->colorchecker_encoded = NULL;
 
@@ -1026,10 +1026,10 @@ static void process_button_clicked_callback(GtkButton *button, gpointer user_dat
 
   gtk_widget_set_sensitive(self->export_button, TRUE);
 
-  free(target_L);
-  free(target_a);
-  free(target_b);
-  free(colorchecker_Lab);
+  dt_free(target_L);
+  dt_free(target_a);
+  dt_free(target_b);
+  dt_free(colorchecker_Lab);
 }
 
 static void cht_state_callback(GtkWidget *widget, GtkStateFlags flags, gpointer user_data)
@@ -1534,7 +1534,7 @@ static void free_image(image_t *image)
   reset_bb(image);
   if(image->image) cairo_pattern_destroy(image->image);
   if(image->surface) cairo_surface_destroy(image->surface);
-  free(image->xyz);
+  dt_free(image->xyz);
   image->image = NULL;
   image->surface = NULL;
   image->xyz = NULL;
@@ -1749,10 +1749,10 @@ static int main_csv(dt_lut_t *self, int argc, char *argv[])
   {
     fprintf(stderr, "error parsing `%s', giving up\n", filename_csv);
 
-    free(target_L);
-    free(target_a);
-    free(target_b);
-    free(colorchecker_Lab);
+    dt_free(target_L);
+    dt_free(target_a);
+    dt_free(target_b);
+    dt_free(colorchecker_Lab);
 
     return 1;
   }
@@ -1763,12 +1763,12 @@ static int main_csv(dt_lut_t *self, int argc, char *argv[])
 
   export_style(self, filename_style, name, description);
 
-  free(target_L);
-  free(target_a);
-  free(target_b);
-  free(colorchecker_Lab);
-  free(name);
-  free(description);
+  dt_free(target_L);
+  dt_free(target_a);
+  dt_free(target_b);
+  dt_free(colorchecker_Lab);
+  dt_free(name);
+  dt_free(description);
 
   return 0;
 }
@@ -1813,9 +1813,9 @@ int main(int argc, char *argv[])
   free_image(&self->source);
   free_image(&self->reference);
   free_chart(self->chart);
-  free(self->tonecurve_encoded);
-  free(self->colorchecker_encoded);
-  free(self);
+  dt_free(self->tonecurve_encoded);
+  dt_free(self->colorchecker_encoded);
+  dt_free(self);
 
   return res;
 }

@@ -268,22 +268,22 @@ static void add_preset(
     if(dt_develop_blend_legacy_params_from_so(self, bp, blendop_version, bp_new, dt_develop_blend_version(),
       blen) == 0)
     {
-      free(bp);
+      dt_free(bp);
       bp = bp_new;
       blen = sizeof(dt_develop_blend_params_t);
     }
     else
     {
-      free(bp);
-      free(bp_new);
+      dt_free(bp);
+      dt_free(bp_new);
       bp = NULL;
     }
   }
 
   if(p && bp)
     dt_gui_presets_add_with_blendop(name, self->op, version, p, len, bp, 1);
-  free(bp);
-  free(p);
+  dt_free(bp);
+  dt_free(p);
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -1657,7 +1657,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     size_t region[] = { width, height, 1 };
     err = dt_opencl_enqueue_copy_image(devid, dev_in, dev_out, origin, origin, region);
     if(err != CL_SUCCESS) goto error;
-    free(dev_detail);
+    dt_free(dev_detail);
     return TRUE;
   }
 
@@ -1928,7 +1928,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   dt_opencl_release_mem_object(dev_filter);
   for(int k = 0; k < max_scale; k++)
     dt_opencl_release_mem_object(dev_detail[k]);
-  free(dev_detail);
+  dt_free(dev_detail);
   dt_free_align(sumsum);
   return TRUE;
 
@@ -1939,7 +1939,7 @@ error:
   dt_opencl_release_mem_object(dev_filter);
   for(int k = 0; k < max_scale; k++)
     dt_opencl_release_mem_object(dev_detail[k]);
-  free(dev_detail);
+  dt_free(dev_detail);
   dt_free_align(sumsum);
   dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d, devid %d\n", err, devid);
   return FALSE;
@@ -2072,7 +2072,7 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -2111,7 +2111,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_synthesize);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_reduce_first);
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_reduce_second);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -2203,7 +2203,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 {
   dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)(piece->data);
   for(int ch = 0; ch < DT_DENOISE_PROFILE_NONE; ch++) dt_draw_curve_destroy(d->curve[ch]);
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -2720,7 +2720,7 @@ void gui_cleanup(dt_iop_module_t *self)
   g_list_free_full(g->profiles, dt_noiseprofile_free);
   dt_draw_curve_destroy(g->transition_curve);
   // nothing else necessary, gtk will clean up the slider.
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

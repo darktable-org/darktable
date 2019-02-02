@@ -70,11 +70,11 @@ alloc_memory_fail:
 void dt_dev_pixelpipe_cache_cleanup(dt_dev_pixelpipe_cache_t *cache)
 {
   for(int k = 0; k < cache->entries; k++) dt_free_align(cache->data[k]);
-  free(cache->data);
-  free(cache->dsc);
-  free(cache->hash);
-  free(cache->used);
-  free(cache->size);
+  dt_free(cache->data);
+  dt_free(cache->dsc);
+  dt_free(cache->hash);
+  dt_free(cache->used);
+  dt_free(cache->size);
 }
 
 uint64_t dt_dev_pixelpipe_cache_hash(int imgid, const dt_iop_roi_t *roi, dt_dev_pixelpipe_t *pipe, int module)

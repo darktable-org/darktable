@@ -1400,7 +1400,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   // compute the curves and their LUT
   dt_iop_filmic_nodes_t *nodes_data = (dt_iop_filmic_nodes_t *)dt_malloc(sizeof(dt_iop_filmic_nodes_t));
   compute_curve_lut(p, d->table, d->table_temp, 0x10000, d, nodes_data);
-  free(nodes_data);
+  dt_free(nodes_data);
   nodes_data = NULL;
 
   // Build a window function based on the log.
@@ -1438,7 +1438,7 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -1521,7 +1521,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -1529,7 +1529,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_filmic_global_data_t *gd = (dt_iop_filmic_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_filmic);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -1619,7 +1619,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     cairo_fill(cr);
     cairo_stroke(cr);
   }
-  free(nodes_data);
+  dt_free(nodes_data);
   nodes_data = NULL;
 
   // draw curve
@@ -1874,7 +1874,7 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

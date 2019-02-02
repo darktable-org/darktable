@@ -123,7 +123,7 @@ static void _masks_free_undo(gpointer data)
   g_list_free_full(udata->forms, (void (*)(void *))dt_masks_free_form);
   udata->forms = NULL;
   dt_masks_free_form((dt_masks_form_t *)udata->form);
-  free(udata);
+  dt_free(udata);
 }
 
 static void _masks_do_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item)
@@ -292,10 +292,10 @@ void dt_masks_form_gui_points_free(gpointer data)
 
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)data;
 
-  free(gpt->points);
-  free(gpt->border);
-  free(gpt->source);
-  free(gpt);
+  dt_free(gpt->points);
+  dt_free(gpt->border);
+  dt_free(gpt->source);
+  dt_free(gpt);
 }
 
 void dt_masks_gui_form_remove(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index)
@@ -306,11 +306,11 @@ void dt_masks_gui_form_remove(dt_masks_form_t *form, dt_masks_form_gui_t *gui, i
   if(gpt)
   {
     gpt->points_count = gpt->border_count = gpt->source_count = 0;
-    free(gpt->points);
+    dt_free(gpt->points);
     gpt->points = NULL;
-    free(gpt->border);
+    dt_free(gpt->border);
     gpt->border = NULL;
-    free(gpt->source);
+    dt_free(gpt->source);
     gpt->source = NULL;
   }
 }
@@ -1255,7 +1255,7 @@ static void _masks_write_form_db(dt_masks_form_t *form, const int imgid, dt_deve
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, nb);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-    free(ptbuf);
+    dt_free(ptbuf);
   }
   else if(form->type & DT_MASKS_GROUP)
   {
@@ -1273,7 +1273,7 @@ static void _masks_write_form_db(dt_masks_form_t *form, const int imgid, dt_deve
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, nb);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-    free(ptbuf);
+    dt_free(ptbuf);
   }
   else if(form->type & DT_MASKS_GRADIENT)
   {
@@ -1307,7 +1307,7 @@ static void _masks_write_form_db(dt_masks_form_t *form, const int imgid, dt_deve
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, nb);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-    free(ptbuf);
+    dt_free(ptbuf);
   }
 }
 
@@ -1342,7 +1342,7 @@ void dt_masks_free_form(dt_masks_form_t *form)
   if(!form) return;
   g_list_free_full(form->points, free);
   form->points = NULL;
-  free(form);
+  dt_free(form);
 }
 
 int dt_masks_events_mouse_leave(struct dt_iop_module_t *module)
@@ -1883,7 +1883,7 @@ void dt_masks_iop_combo_populate(GtkWidget *w, struct dt_iop_module_t **m)
 
   // we determine a higher approx of the entry number
   guint nbe = 5 + g_list_length(darktable.develop->forms) + g_list_length(darktable.develop->iop);
-  free(bd->masks_combo_ids);
+  dt_free(bd->masks_combo_ids);
   bd->masks_combo_ids = dt_malloc(nbe * sizeof(int));
 
   int *cids = bd->masks_combo_ids;
@@ -2072,7 +2072,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
       {
         ok = 1;
         grp->points = g_list_remove(grp->points, grpt);
-        free(grpt);
+        dt_free(grpt);
         break;
       }
       forms = g_list_next(forms);
@@ -2129,7 +2129,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
             {
               ok = 1;
               iopgrp->points = g_list_remove(iopgrp->points, grpt);
-              free(grpt);
+              dt_free(grpt);
               forms = g_list_first(iopgrp->points);
               continue;
             }
@@ -2500,7 +2500,7 @@ void dt_masks_cleanup_unused(dt_develop_t *dev)
 
   // and we save all that
   dt_masks_write_forms(dev);
-  free(used);
+  dt_free(used);
 }
 
 int dt_masks_point_in_form_exact(float x, float y, float *points, int points_start, int points_count)

@@ -137,7 +137,7 @@ void gui_init(dt_lib_module_t *self)
     if(cairo_surface_status(d->image) != CAIRO_STATUS_SUCCESS)
     {
       fprintf(stderr, "warning: can't load darktable logo from PNG file `%s'\n", filename);
-      free(d->image_buffer);
+      dt_free(d->image_buffer);
       d->image_buffer = NULL;
       cairo_surface_destroy(d->image);
       d->image = NULL;
@@ -169,7 +169,7 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
   cairo_surface_destroy(d->image);
-  free(d->image_buffer);
+  dt_free(d->image_buffer);
   g_free(self->data);
   self->data = NULL;
 }

@@ -165,13 +165,13 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
 {
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -208,7 +208,7 @@ void gui_init(dt_iop_module_t *self)
 void gui_cleanup(dt_iop_module_t *self)
 {
   // nothing else necessary, gtk will clean up the slider.
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

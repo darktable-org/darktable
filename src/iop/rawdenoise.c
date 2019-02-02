@@ -339,7 +339,7 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
     }
   }
 #endif
-  free(fimg);
+  dt_free(fimg);
 }
 
 static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_iop_roi_t *const roi,
@@ -464,7 +464,7 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
     }
   }
 
-  free(fimg);
+  dt_free(fimg);
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -545,9 +545,9 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -592,7 +592,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 {
   dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)(piece->data);
   for(int ch = 0; ch < DT_RAWDENOISE_NONE; ch++) dt_draw_curve_destroy(d->curve[ch]);
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -1024,7 +1024,7 @@ void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_draw_curve_destroy(c->transition_curve);
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

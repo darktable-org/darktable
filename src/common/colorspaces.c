@@ -853,8 +853,8 @@ void dt_colorspaces_get_profile_name(cmsHPROFILE p, const char *language, const 
     g_strlcpy(name, utf8, len);
   }
 
-  free(buf);
-  free(wbuf);
+  dt_free(buf);
+  dt_free(wbuf);
   g_free(utf8);
   return;
 
@@ -863,8 +863,8 @@ error:
     g_strlcpy(name, buf, len); // better a little weird than totally borked
   else
     *name = '\0'; // nothing to do here
-  free(buf);
-  free(wbuf);
+  dt_free(buf);
+  dt_free(wbuf);
   g_free(utf8);
 }
 
@@ -1116,7 +1116,7 @@ static GList *load_profile_from_dir(const char *subdir)
 
 icc_loading_done:
         if(fd) fclose(fd);
-        free(icc_content);
+        dt_free(icc_content);
       }
       g_free(filename);
     }
@@ -1268,7 +1268,7 @@ void dt_colorspaces_cleanup(dt_colorspaces_t *self)
   pthread_rwlock_destroy(&self->xprofile_lock);
   g_free(self->colord_profile_file);
   g_free(self->xprofile_data);
-  free(self);
+  dt_free(self);
 }
 
 const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type, const char *filename)

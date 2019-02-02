@@ -272,7 +272,7 @@ int main(int argc, char *arg[])
     }
   }
   write_pfm("LL.pfm", out, wd/2, ht/2);
-  free(out);
+  dt_free(out);
 #endif
 
   // sort pairs (LL,HH) for each color channel:
@@ -356,8 +356,8 @@ int main(int argc, char *arg[])
     for(int k=0;k<3;k++) cdf[k] += std[i][k];
   }
 
-  free(llhh);
-  free(input);
+  dt_free(llhh);
+  dt_free(input);
   exit(0);
 }
 

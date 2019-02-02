@@ -205,7 +205,7 @@ void gui_cleanup(dt_imageio_module_storage_t *self)
   latex_t *d = (latex_t *)self->gui_data;
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->entry));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->title_entry));
-  free(self->gui_data);
+  dt_free(self->gui_data);
 }
 
 void gui_reset(dt_imageio_module_storage_t *self)
@@ -423,7 +423,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
   {
     pair_t *p = (pair_t *)d->l->data;
     fprintf(f, "%s", p->line);
-    free(p);
+    dt_free(p);
     d->l = g_list_delete_link(d->l, d->l);
   }
 
@@ -469,7 +469,7 @@ void free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *pa
   if(!params) return;
   dt_imageio_latex_t *d = (dt_imageio_latex_t *)params;
   dt_variables_params_destroy(d->vp);
-  free(params);
+  dt_free(params);
 }
 
 int set_params(dt_imageio_module_storage_t *self, const void *params, const int size)

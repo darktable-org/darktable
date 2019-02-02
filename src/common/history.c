@@ -985,7 +985,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
       }
 
       // and add it to dest image
-      // we can do this because dev->allforms will take care of free() the form
+      // we can do this because dev->allforms will take care of dt_free() the form
       // if that changes we'll have to duplicate the form
       dev_dest->forms = g_list_append(dev_dest->forms, form);
     }
@@ -1001,7 +1001,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
   dt_dev_cleanup(dev_dest);
 
   g_list_free(modules_used);
-  free(forms_used_replace);
+  dt_free(forms_used_replace);
 
   return 0;
 }

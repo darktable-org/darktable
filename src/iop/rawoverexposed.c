@@ -478,7 +478,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_rawoverexposed_falsecolor);
   dt_opencl_free_kernel(gd->kernel_rawoverexposed_mark_solid);
   dt_opencl_free_kernel(gd->kernel_rawoverexposed_mark_cfa);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -490,7 +490,7 @@ void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -507,7 +507,7 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 

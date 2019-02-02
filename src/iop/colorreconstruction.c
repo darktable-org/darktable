@@ -235,14 +235,14 @@ static void dt_iop_colorreconstruct_bilateral_dump(dt_iop_colorreconstruct_bilat
 {
   if(!bf) return;
   dt_free_align(bf->buf);
-  free(bf);
+  dt_free(bf);
 }
 
 static void dt_iop_colorreconstruct_bilateral_free(dt_iop_colorreconstruct_bilateral_t *b)
 {
   if(!b) return;
   dt_free_align(b->buf);
-  free(b);
+  dt_free(b);
 }
 
 static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_init(const dt_iop_roi_t *roi, // dimensions of input image
@@ -688,7 +688,7 @@ static void dt_iop_colorreconstruct_bilateral_free_cl(dt_iop_colorreconstruct_bi
   // free device mem
   dt_opencl_release_mem_object(b->dev_grid);
   dt_opencl_release_mem_object(b->dev_grid_tmp);
-  free(b);
+  dt_free(b);
 }
 
 static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral_init_cl(
@@ -1267,7 +1267,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -1326,7 +1326,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -1337,7 +1337,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_colorreconstruct_splat);
   dt_opencl_free_kernel(gd->kernel_colorreconstruct_blur_line);
   dt_opencl_free_kernel(gd->kernel_colorreconstruct_slice);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -1416,7 +1416,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
   dt_pthread_mutex_destroy(&g->lock);
   dt_iop_colorreconstruct_bilateral_dump(g->can);
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

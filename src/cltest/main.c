@@ -40,7 +40,7 @@ int main(int argc, char *arg[])
   argc += m_argc;
   if(dt_init(argc, argv, FALSE, FALSE, NULL)) goto end;
   dt_cleanup();
-  free(argv);
+  dt_free(argv);
 
   result = 0;
 end:

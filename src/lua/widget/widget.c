@@ -84,7 +84,7 @@ static int widget_gc(lua_State *L)
   //dt_lua_type_gpointer_drop(L,lwidget);
   //dt_lua_type_gpointer_drop(L,lwidget->widget);
   g_idle_add(on_destroy_wrapper,lwidget->widget);
-  free(lwidget);
+  dt_free(lwidget);
   return 0;
 }
 
@@ -209,7 +209,7 @@ static int tooltip_member(lua_State *L)
   }
   char* result = gtk_widget_get_tooltip_text(widget->widget);
   lua_pushstring(L,result);
-  free(result);
+  dt_free(result);
   return 1;
 }
 

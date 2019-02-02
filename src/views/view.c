@@ -1330,7 +1330,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
       cairo_rectangle(cr, 0, 0, buf.width, buf.height);
     }
 
-    free(rgbbuf);
+    dt_free(rgbbuf);
 
     if (image_only)
     {

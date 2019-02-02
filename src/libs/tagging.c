@@ -330,7 +330,7 @@ static void delete_button_clicked(GtkButton *button, gpointer user_data)
     gtk_window_set_title(GTK_WINDOW(dialog), _("delete tag?"));
     res = gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
-    free(tagname);
+    dt_free(tagname);
   }
   if(res != GTK_RESPONSE_YES) return;
 
@@ -622,7 +622,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->entry));
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_tagging_redraw_callback), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
-  free(self->data);
+  dt_free(self->data);
   self->data = NULL;
 }
 
@@ -687,7 +687,7 @@ static gboolean _match_selected_func(GtkEntryCompletion *completion, GtkTreeMode
   {
     cut_off = (int)(g_utf8_strlen(currentText, -1) - g_utf8_strlen(lastTag, -1))+1;
   }
-  free(currentText);
+  dt_free(currentText);
 
   gtk_editable_delete_text(e, cut_off, cur_pos);
   cur_pos = cut_off;

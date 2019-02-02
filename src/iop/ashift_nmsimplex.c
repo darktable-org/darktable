@@ -406,16 +406,16 @@ static int simplex(double (*objfunc)(double[], void *params), double start[], in
     start[j] = v[vs][j];
   }
 #endif
-  free(f);
-  free(vr);
-  free(ve);
-  free(vc);
-  free(vm);
+  dt_free(f);
+  dt_free(vr);
+  dt_free(ve);
+  dt_free(vc);
+  dt_free(vm);
   for(i = 0; i <= n; i++)
   {
-    free(v[i]);
+    dt_free(v[i]);
   }
-  free(v);
+  dt_free(v);
   return itr;
 }
 

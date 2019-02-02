@@ -117,7 +117,7 @@ float *read_pfm(const char *filename, int *wd, int *ht)
     memcpy(image + width * j * 3, image + width * (height - 1 - j) * 3, 3 * sizeof(float) * width);
     memcpy(image + width * (height - 1 - j) * 3, line, 3 * sizeof(float) * width);
   }
-  free(line);
+  dt_free(line);
   fclose(f);
 
   if(wd) *wd = width;

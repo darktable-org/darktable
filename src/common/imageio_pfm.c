@@ -91,7 +91,7 @@ dt_imageio_retval_t dt_imageio_open_pfm(dt_image_t *img, const char *filename, d
            4 * sizeof(float) * img->width);
     memcpy(buf + img->width * (img->height - 1 - j) * 4, line, 4 * sizeof(float) * img->width);
   }
-  free(line);
+  dt_free(line);
   fclose(f);
   return DT_IMAGEIO_OK;
 

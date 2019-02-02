@@ -374,7 +374,7 @@ dt_masks_dynbuf_t *dt_masks_dynbuf_init(size_t size, const char *tag)
              (unsigned long)a->size, a->buffer);
     if(a->buffer == NULL)
     {
-      free(a);
+      dt_free(a);
       a = NULL;
     }
   }
@@ -466,8 +466,8 @@ void dt_masks_dynbuf_free(dt_masks_dynbuf_t *a)
   if(a == NULL) return;
   dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] freed (was %p)\n", a->tag,
           a->buffer);
-  free(a->buffer);
-  free(a);
+  dt_free(a->buffer);
+  dt_free(a);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

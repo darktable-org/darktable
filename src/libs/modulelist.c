@@ -331,7 +331,7 @@ static char *gen_params(char state, int *size, char *names)
     char *tmp = dt_realloc(params, new_len);
     if(!tmp)
     {
-      free(params);
+      dt_free(params);
       params = NULL;
       len = 0;
       break;
@@ -436,9 +436,9 @@ void init_presets(dt_lib_module_t *self)
   dt_lib_presets_add(_("subset: technical modules only"), self->plugin_name, self->version(), params, len);
 
 
-  free(params_none);
-  free(params_all);
-  free(params);
+  dt_free(params_none);
+  dt_free(params_all);
+  dt_free(params);
 }
 
 void *get_params(dt_lib_module_t *self, int *size)
@@ -455,7 +455,7 @@ void *get_params(dt_lib_module_t *self, int *size)
     char *tmp = dt_realloc(params, new_len);
     if(!tmp)
     {
-      free(params);
+      dt_free(params);
       params = NULL;
       len = 0;
       break;

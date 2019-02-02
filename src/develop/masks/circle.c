@@ -333,7 +333,7 @@ static int dt_circle_events_button_released(struct dt_iop_module_t *module, floa
         {
           darktable.develop->form_visible->points
               = g_list_remove(darktable.develop->form_visible->points, gpt);
-          free(gpt);
+          dt_free(gpt);
           break;
         }
         forms = g_list_next(forms);
@@ -734,7 +734,7 @@ static int dt_circle_get_points(dt_develop_t *dev, float x, float y, float radiu
   if(dt_dev_distort_transform(dev, *points, l + 1)) return 1;
 
   // if we failed, then free all and return
-  free(*points);
+  dt_free(*points);
   *points = NULL;
   *points_count = 0;
   return 0;
@@ -765,7 +765,7 @@ static int dt_circle_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_i
   // and we transform them with all distorted modules
   if(!dt_dev_distort_transform_plus(darktable.develop, piece->pipe, 0, module->priority, points, l + 1))
   {
-    free(points);
+    dt_free(points);
     return 0;
   }
 
@@ -780,7 +780,7 @@ static int dt_circle_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_i
     ymin = fminf(points[i * 2 + 1], ymin);
     ymax = fmaxf(points[i * 2 + 1], ymax);
   }
-  free(points);
+  dt_free(points);
   // and we set values
   *posx = xmin;
   *posy = ymin;
@@ -814,7 +814,7 @@ static int dt_circle_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
   // and we transform them with all distorted modules
   if(!dt_dev_distort_transform_plus(module->dev, piece->pipe, 0, module->priority, points, l + 1))
   {
-    free(points);
+    dt_free(points);
     return 0;
   }
 
@@ -829,7 +829,7 @@ static int dt_circle_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
     ymin = fminf(points[i * 2 + 1], ymin);
     ymax = fmaxf(points[i * 2 + 1], ymax);
   }
-  free(points);
+  dt_free(points);
 
   // and we set values
   *posx = xmin;
@@ -871,7 +871,7 @@ static int dt_circle_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
   // we back transform all this points
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, 0, module->priority, points, w * h))
   {
-    free(points);
+    dt_free(points);
     return 0;
   }
 
@@ -905,7 +905,7 @@ static int dt_circle_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
       else
         (*buffer)[i * w + j] = 0.0f;
     }
-  free(points);
+  dt_free(points);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] circle fill took %0.04f sec\n", form->name, dt_get_wtime() - start2);
@@ -959,7 +959,7 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, 0, module->priority, points,
                                         (size_t)mw * mh))
   {
-    free(points);
+    dt_free(points);
     return 0;
   }
 
@@ -1025,7 +1025,7 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
     }
   }
 
-  free(points);
+  dt_free(points);
 
 
   if(darktable.unmuted & DT_DEBUG_PERF)

@@ -43,9 +43,9 @@ heap_t *heap_init(uint32_t size)
 
 void heap_cleanup(heap_t *h)
 {
-  free(h->keys);
-  free(h->vals);
-  free(h);
+  dt_free(h->keys);
+  dt_free(h->vals);
+  dt_free(h);
 }
 
 int heap_empty(heap_t *h)

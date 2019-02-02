@@ -307,7 +307,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_colorzones_global_data_t *gd = (dt_iop_colorzones_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_colorzones);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -374,7 +374,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
 
   for(int ch = 0; ch < 3; ch++) dt_draw_curve_destroy(d->curve[ch]);
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -410,7 +410,7 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -1149,7 +1149,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_conf_set_int("plugins/darkroom/colorzones/gui_channel", c->channel);
   cmsDeleteTransform(c->xform);
   dt_draw_curve_destroy(c->minmax_curve);
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

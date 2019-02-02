@@ -217,13 +217,13 @@ void dt_dev_pixelpipe_cleanup_nodes(dt_dev_pixelpipe_t *pipe)
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
     // printf("cleanup module `%s'\n", piece->module->name());
     piece->module->cleanup_pipe(piece->module, pipe, piece);
-    free(piece->blendop_data);
+    dt_free(piece->blendop_data);
     piece->blendop_data = NULL;
-    free(piece->histogram);
+    dt_free(piece->histogram);
     piece->histogram = NULL;
     g_hash_table_destroy(piece->raster_masks);
     piece->raster_masks = NULL;
-    free(piece);
+    dt_free(piece);
     nodes = g_list_next(nodes);
   }
   g_list_free(pipe->nodes);
@@ -2149,7 +2149,7 @@ post_process_collect_info:
           }
         }
 
-        free(buf);
+        dt_free(buf);
       }
       //       dt_pthread_mutex_unlock(&dev->histogram_waveform_mutex);
 

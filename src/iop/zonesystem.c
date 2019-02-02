@@ -406,7 +406,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_zonesystem_global_data_t *gd = (dt_iop_zonesystem_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_zonesystem);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -441,7 +441,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -470,7 +470,7 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -498,7 +498,7 @@ static void size_allocate_callback(GtkWidget *widget, GtkAllocation *allocation,
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
 
   if(g->image) cairo_surface_destroy(g->image);
-  free(g->image_buffer);
+  dt_free(g->image_buffer);
 
   /* load the dt logo as a brackground */
   g->image = dt_util_get_logo(MIN(allocation->width, allocation->height) * 0.75);
@@ -580,9 +580,9 @@ void gui_cleanup(struct dt_iop_module_t *self)
   g_free(g->in_preview_buffer);
   g_free(g->out_preview_buffer);
   if(g->image) cairo_surface_destroy(g->image);
-  free(g->image_buffer);
+  dt_free(g->image_buffer);
   dt_pthread_mutex_destroy(&g->lock);
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

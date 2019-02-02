@@ -690,7 +690,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   // clean up everything again.
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
   for(int ch = 0; ch < ch_max; ch++) dt_draw_curve_destroy(d->curve[ch]);
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -808,13 +808,13 @@ void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_tonecurve);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -1294,7 +1294,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_draw_curve_destroy(c->minmax_curve[ch_L]);
   dt_draw_curve_destroy(c->minmax_curve[ch_a]);
   dt_draw_curve_destroy(c->minmax_curve[ch_b]);
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

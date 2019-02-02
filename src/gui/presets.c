@@ -351,7 +351,7 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
   g_free(g->original_name);
-  free(g);
+  dt_free(g);
 }
 
 static void check_buttons_activated(GtkCheckButton *button, dt_gui_presets_edit_dialog_t *g)

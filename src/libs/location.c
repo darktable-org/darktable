@@ -150,7 +150,7 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_location_t *lib = self->data;
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(lib->search));
-  free(self->data);
+  dt_free(self->data);
   self->data = NULL;
 }
 
@@ -258,7 +258,7 @@ static void free_location(_lib_location_result_t *location)
 {
   g_free(location->name);
   g_list_free_full(location->marker_points, free);
-  free(location);
+  dt_free(location);
 }
 
 static void clear_search(dt_lib_location_t *lib)

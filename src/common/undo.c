@@ -54,7 +54,7 @@ static void _free_undo_data(void *p)
 {
   dt_undo_item_t *item = (dt_undo_item_t *)p;
   if (item->free_data) item->free_data(item->data);
-  free(item);
+  dt_free(item);
 }
 
 void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data,

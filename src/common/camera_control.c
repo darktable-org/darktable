@@ -1040,7 +1040,7 @@ static int _camctl_recursive_get_previews(const dt_camctl_t *c, dt_camera_previe
               if(!dt_exif_get_thumbnail(fullpath, &buf, &bufsize, &mime_type))
                 gp_file_set_data_and_size(preview, (char *)buf, bufsize);
 
-              free(mime_type);
+              dt_free(mime_type);
             }
           }
         }

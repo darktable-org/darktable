@@ -453,7 +453,7 @@ static gchar *array2string(const gchar *pos, guint *length)
   GError *error = NULL;
   gchar *out = g_utf16_to_utf8(tmp_string, *length / sizeof(gunichar2), &read, &written, &error);
 
-  free(tmp_string);
+  dt_free(tmp_string);
 
   if(error)
   {

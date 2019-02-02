@@ -275,7 +275,7 @@ static void _inverse_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   }
 
   // we free the old buffer
-  free(*buffer);
+  dt_free(*buffer);
   (*buffer) = buf;
 
   // we return correct values for positions;
@@ -426,27 +426,27 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
 //     start2 = dt_get_wtime();
   }
 
-  free(op);
-  free(states);
-  free(ok);
-  free(py);
-  free(px);
-  free(h);
-  free(w);
-  for(int i = 0; i < nb; i++) free(bufs[i]);
-  free(bufs);
+  dt_free(op);
+  dt_free(states);
+  dt_free(ok);
+  dt_free(py);
+  dt_free(px);
+  dt_free(h);
+  dt_free(w);
+  for(int i = 0; i < nb; i++) dt_free(bufs[i]);
+  dt_free(bufs);
   return 1;
 
 error:
-  free(op);
-  free(states);
-  free(ok);
-  free(py);
-  free(px);
-  free(h);
-  free(w);
-  for(int i = 0; i < nb; i++) free(bufs[i]);
-  free(bufs);
+  dt_free(op);
+  dt_free(states);
+  dt_free(ok);
+  dt_free(py);
+  dt_free(px);
+  dt_free(h);
+  dt_free(w);
+  for(int i = 0; i < nb; i++) dt_free(bufs[i]);
+  dt_free(bufs);
   return 0;
 }
 
@@ -476,7 +476,7 @@ int dt_masks_group_render(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   int fhh = fh * scale;
   if(fxx > roi[0] + roi[2])
   {
-    free(fm);
+    dt_free(fm);
     return 1;
   }
 
@@ -503,7 +503,7 @@ int dt_masks_group_render(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   }
 
   // we free the mask
-  free(fm);
+  dt_free(fm);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks] scale all masks took %0.04f sec\n", dt_get_wtime() - start2);

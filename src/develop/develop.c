@@ -139,12 +139,12 @@ void dt_dev_cleanup(dt_develop_t *dev)
   if(dev->pipe)
   {
     dt_dev_pixelpipe_cleanup(dev->pipe);
-    free(dev->pipe);
+    dt_free(dev->pipe);
   }
   if(dev->preview_pipe)
   {
     dt_dev_pixelpipe_cleanup(dev->preview_pipe);
-    free(dev->preview_pipe);
+    dt_free(dev->preview_pipe);
   }
   while(dev->history)
   {
@@ -154,19 +154,19 @@ void dt_dev_cleanup(dt_develop_t *dev)
   while(dev->iop)
   {
     dt_iop_cleanup_module((dt_iop_module_t *)dev->iop->data);
-    free(dev->iop->data);
+    dt_free(dev->iop->data);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
   }
   while(dev->alliop)
   {
     dt_iop_cleanup_module((dt_iop_module_t *)dev->alliop->data);
-    free(dev->alliop->data);
+    dt_free(dev->alliop->data);
     dev->alliop = g_list_delete_link(dev->alliop, dev->alliop);
   }
   dt_pthread_mutex_destroy(&dev->history_mutex);
-  free(dev->histogram);
-  free(dev->histogram_pre_tonecurve);
-  free(dev->histogram_pre_levels);
+  dt_free(dev->histogram);
+  dt_free(dev->histogram_pre_tonecurve);
+  dt_free(dev->histogram_pre_levels);
 
   g_list_free(dev->forms);
   g_list_free_full(dev->allforms, (void (*)(void *))dt_masks_free_form);
@@ -710,9 +710,9 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
 void dt_dev_free_history_item(gpointer data)
 {
   dt_dev_history_item_t *item = (dt_dev_history_item_t *)data;
-  free(item->params);
-  free(item->blend_params);
-  free(item);
+  dt_free(item->params);
+  dt_free(item->blend_params);
+  dt_free(item);
 }
 
 void dt_dev_reload_history_items(dt_develop_t *dev)
@@ -1083,7 +1083,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     {
       fprintf(stderr, "[dev_read_history] database history for image `%s' seems to be corrupted!\n",
               dev->image_storage.filename);
-      free(hist);
+      dt_free(hist);
       continue;
     }
 
@@ -1133,13 +1133,13 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
           stderr,
           "[dev_read_history] the module `%s' requested by image `%s' is not installed on this computer!\n",
           opname, dev->image_storage.filename);
-      free(hist);
+      dt_free(hist);
       continue;
     }
 
     if(hist->module->flags() & IOP_FLAGS_NO_HISTORY_STACK)
     {
-      free(hist);
+      dt_free(hist);
       continue;
     }
 

@@ -396,7 +396,7 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, int nb_corners
   dt_masks_dynbuf_t *extra = dt_masks_dynbuf_init(100000, "path extra");
   if(extra == NULL)
   {
-    free(binter);
+    dt_free(binter);
     return 0;
   }
 
@@ -492,7 +492,7 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, int nb_corners
   }
 
   dt_masks_dynbuf_free(extra);
-  free(binter);
+  dt_free(binter);
 
   // and we return the number of self-intersection found
   return inter_count;
@@ -736,18 +736,18 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
                  dt_get_wtime() - start2);
 //       start2 = dt_get_wtime();
       dt_masks_dynbuf_free(intersections);
-      free(border_init);
+      dt_free(border_init);
       return 1;
     }
   }
 
   // if we failed, then free all and return
   dt_masks_dynbuf_free(intersections);
-  free(border_init);
-  free(*points);
+  dt_free(border_init);
+  dt_free(*points);
   *points = NULL;
   *points_count = 0;
-  if(border) free(*border);
+  if(border) dt_free(*border);
   if(border) *border = NULL;
   if(border) *border_count = 0;
   return 0;
@@ -1003,7 +1003,7 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
       // we delete last point (the one we are currently dragging)
       dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_last(form->points)->data;
       form->points = g_list_remove(form->points, point);
-      free(point);
+      dt_free(point);
       point = NULL;
 
       gui->point_dragging = -1;
@@ -1267,7 +1267,7 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
           {
             darktable.develop->form_visible->points
                 = g_list_remove(darktable.develop->form_visible->points, gpt);
-            free(gpt);
+            dt_free(gpt);
             break;
           }
           forms = g_list_next(forms);
@@ -1284,7 +1284,7 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
     dt_masks_point_path_t *point
         = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->point_selected);
     form->points = g_list_remove(form->points, point);
-    free(point);
+    dt_free(point);
     // form->points = g_list_delete_link(form->points, g_list_nth(form->points, gui->point_selected));
     gui->point_selected = -1;
     _path_init_ctrl_points(form);
@@ -1338,7 +1338,7 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
         {
           darktable.develop->form_visible->points
               = g_list_remove(darktable.develop->form_visible->points, gpt);
-          free(gpt);
+          dt_free(gpt);
           break;
         }
         forms = g_list_next(forms);
@@ -2027,8 +2027,8 @@ static int dt_path_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop
   if(!_path_get_points_border(module->dev, form, module->priority, piece->pipe, &points, &points_count,
                               &border, &border_count, 1))
   {
-    free(points);
-    free(border);
+    dt_free(points);
+    dt_free(border);
     return 0;
   }
 
@@ -2064,8 +2064,8 @@ static int dt_path_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop
     ymax = fmaxf(yy, ymax);
   }
 
-  free(points);
-  free(border);
+  dt_free(points);
+  dt_free(border);
   *height = ymax - ymin + 4;
   *width = xmax - xmin + 4;
   *posx = xmin - 2;
@@ -2083,8 +2083,8 @@ static int dt_path_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   if(!_path_get_points_border(module->dev, form, module->priority, piece->pipe, &points, &points_count,
                               &border, &border_count, 0))
   {
-    free(points);
-    free(border);
+    dt_free(points);
+    dt_free(border);
     return 0;
   }
 
@@ -2120,8 +2120,8 @@ static int dt_path_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
     ymax = fmaxf(yy, ymax);
   }
 
-  free(points);
-  free(border);
+  dt_free(points);
+  dt_free(border);
 
   *height = ymax - ymin + 4;
   *width = xmax - xmin + 4;
@@ -2168,8 +2168,8 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   if(!_path_get_points_border(module->dev, form, module->priority, piece->pipe, &points, &points_count,
                               &border, &border_count, 0))
   {
-    free(points);
-    free(border);
+    dt_free(points);
+    dt_free(border);
     return 0;
   }
 
@@ -2385,8 +2385,8 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
     dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill fill falloff took %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
 
-  free(points);
-  free(border);
+  dt_free(points);
+  dt_free(border);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] path fill buffer took %0.04f sec\n", form->name,
@@ -2593,8 +2593,8 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   if(!_path_get_points_border(module->dev, form, module->priority, piece->pipe, &points, &points_count,
                               &border, &border_count, 0) || (points_count <= 2))
   {
-    free(points);
-    free(border);
+    dt_free(points);
+    dt_free(border);
     return 0;
   }
 
@@ -2688,8 +2688,8 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   // if path and feather completely lie outside of roi -> we're done/mask remains empty
   if(!path_in_roi && !feather_in_roi)
   {
-    free(points);
-    free(border);
+    dt_free(points);
+    dt_free(border);
     return 1;
   }
 
@@ -2734,8 +2734,8 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     cpoints = dt_malloc(2 * points_count * sizeof(float));
     if(cpoints == NULL)
     {
-      free(points);
-      free(border);
+      dt_free(points);
+      dt_free(border);
       return 0;
     }
     memcpy(cpoints, points, 2 * points_count * sizeof(float));
@@ -2829,7 +2829,7 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
                  dt_get_wtime() - start2);
       start2 = dt_get_wtime();
     }
-    free(cpoints);
+    dt_free(cpoints);
   }
 
   // deal with feather if it does not lie outside of roi
@@ -2883,8 +2883,8 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
                dt_get_wtime() - start2);
   }
 
-  free(points);
-  free(border);
+  dt_free(points);
+  dt_free(border);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] path fill buffer took %0.04f sec\n", form->name,

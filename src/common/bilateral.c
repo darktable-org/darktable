@@ -343,7 +343,7 @@ void dt_bilateral_free(dt_bilateral_t *b)
 {
   if(!b) return;
   dt_free_align(b->buf);
-  free(b);
+  dt_free(b);
 }
 
 #undef DT_COMMON_BILATERAL_MAX_RES_S

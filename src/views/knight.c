@@ -453,8 +453,8 @@ void cleanup(dt_view_t *self)
   g_list_free_full(d->surfaces, (GDestroyNotify)cairo_surface_destroy);
   g_list_free_full(d->bufs, free);
 
-  free(d->letters);
-  free(self->data);
+  dt_free(d->letters);
+  dt_free(self->data);
 }
 
 // get the next alien in move order: bottom left to top right
@@ -514,7 +514,7 @@ static inline void _add_mystery_ship(dt_knight_t *d)
   d->mystery_ship_potential_shot_x = (float)rand() / (float)RAND_MAX;
 }
 
-// return a new explosion object with the fields initialized. has to be free()'d
+// return a new explosion object with the fields initialized. has to be dt_free()'d
 static dt_knight_explosion_t *_new_explosion(float x, float y, int ttl, cairo_pattern_t *sprite)
 {
   dt_knight_explosion_t *explosion = (dt_knight_explosion_t *)dt_malloc(sizeof(dt_knight_explosion_t));
@@ -651,7 +651,7 @@ static gboolean _event_loop_game(dt_knight_t *d)
     explosion->ttl--;
     if(explosion->ttl == 0)
     {
-      free(explosion);
+      dt_free(explosion);
       iter = d->explosions = g_list_delete_link(d->explosions, iter);
     }
   }

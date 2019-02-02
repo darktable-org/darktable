@@ -655,7 +655,7 @@ static void _history_undo_data_free(gpointer data)
   dt_undo_history_t *hist = (dt_undo_history_t *)data;
   GList *snapshot = hist->snapshot;
   g_list_free_full(snapshot, dt_dev_free_history_item);
-  free(data);
+  dt_free(data);
 }
 
 static void _lib_history_module_remove_callback(gpointer instance, dt_iop_module_t *module, gpointer user_data)

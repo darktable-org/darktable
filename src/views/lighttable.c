@@ -519,8 +519,8 @@ void cleanup(dt_view_t *self)
   dt_conf_set_float("lighttable/ui/zoom_y", lib->zoom_y);
   if(lib->audio_player_id != -1) _stop_audio(lib);
   g_hash_table_destroy(lib->thumbs_table);
-  free(lib->full_res_thumb);
-  free(self->data);
+  dt_free(lib->full_res_thumb);
+  dt_free(self->data);
 }
 
 /**
@@ -1087,12 +1087,12 @@ after_drawing:
       dt_mipmap_cache_get(darktable.mipmap_cache, NULL, imgids[imgids_num], mip, DT_MIPMAP_PREFETCH, 'r');
     }
 
-    free(imgids);
+    dt_free(imgids);
   }
 
   lib->offset_changed = FALSE;
 
-  free(query_ids);
+  dt_free(query_ids);
   // oldpan = pan;
   if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print(darktable.mipmap_cache);
 
@@ -1510,7 +1510,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
         dt_mipmap_cache_get(darktable.mipmap_cache, NULL, preload_stack[count], mip, DT_MIPMAP_PREFETCH, 'r');
     }
 
-    free(preload_stack);
+    dt_free(preload_stack);
   }
 
   lib->image_over = DT_VIEW_DESERT;
@@ -1525,7 +1525,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
       gboolean from_cache = TRUE;
       char filename[PATH_MAX] = { 0 };
       dt_image_full_path(lib->full_preview_id, filename, sizeof(filename), &from_cache);
-      free(lib->full_res_thumb);
+      dt_free(lib->full_res_thumb);
       lib->full_res_thumb = NULL;
       dt_colorspaces_color_profile_type_t color_space;
       if(!dt_imageio_large_thumbnail(filename, &lib->full_res_thumb,

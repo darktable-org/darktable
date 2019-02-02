@@ -210,7 +210,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       for(int y = 0; y < roi_out->height; y++) blurlightness[y * roi_out->width + x] = scanline[y];
     }
   }
-  free(scanline_buf);
+  dt_free(scanline_buf);
 
 /* screen blend lightness with original */
 #ifdef _OPENMP
@@ -227,7 +227,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 
-  free(blurlightness);
+  dt_free(blurlightness);
 }
 
 #ifdef HAVE_OPENCL
@@ -417,7 +417,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_bloom_hblur);
   dt_opencl_free_kernel(gd->kernel_bloom_vblur);
   dt_opencl_free_kernel(gd->kernel_bloom_mix);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -467,7 +467,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -496,7 +496,7 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -538,7 +538,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

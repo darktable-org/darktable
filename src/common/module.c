@@ -52,7 +52,7 @@ GList *dt_module_load_modules(const char *subdir, size_t module_size,
     g_free(plugin_name);
     if(res)
     {
-      free(module);
+      dt_free(module);
       continue;
     }
     plugin_list = g_list_append(plugin_list, module);

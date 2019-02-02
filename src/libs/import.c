@@ -333,7 +333,7 @@ static gboolean _camctl_camera_control_status_callback_gui_thread(gpointer user_
     break;
   }
 
-  free(params);
+  dt_free(params);
   return FALSE;
 }
 
@@ -693,8 +693,8 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
 
     cleanup:
       gdk_pixbuf_loader_close(loader, NULL);
-      free(mime_type);
-      free(buffer);
+      dt_free(mime_type);
+      dt_free(buffer);
       g_object_unref(loader); // This should clean up tmp as well
     }
   }
@@ -756,7 +756,7 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
       pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, image_width, image_height);
 
       cairo_surface_destroy(surface);
-      free(image_buffer);
+      dt_free(image_buffer);
 
       have_preview = TRUE;
     }

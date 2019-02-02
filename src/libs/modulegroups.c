@@ -387,7 +387,7 @@ static gboolean _lib_modulegroups_set_gui_thread(gpointer user_data)
   if(d->current == group)
   {
     _lib_modulegroups_update_iop_visibility(params->self);
-    free(params);
+    dt_free(params);
     return FALSE;
   }
 
@@ -395,7 +395,7 @@ static gboolean _lib_modulegroups_set_gui_thread(gpointer user_data)
   if(params->group < DT_MODULEGROUP_SIZE && GTK_IS_TOGGLE_BUTTON(d->buttons[params->group]))
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[params->group]), TRUE);
 
-  free(params);
+  dt_free(params);
   return FALSE;
 }
 

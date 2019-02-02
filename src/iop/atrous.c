@@ -895,7 +895,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_release_mem_object(dev_tmp);
   for(int k = 0; k < max_scale; k++)
     dt_opencl_release_mem_object(dev_detail[k]);
-  free(dev_detail);
+  dt_free(dev_detail);
   return TRUE;
 
 error:
@@ -903,7 +903,7 @@ error:
   dt_opencl_release_mem_object(dev_tmp);
   for(int k = 0; k < max_scale; k++)
     dt_opencl_release_mem_object(dev_detail[k]);
-  free(dev_detail);
+  dt_free(dev_detail);
   dt_print(DT_DEBUG_OPENCL, "[opencl_atrous] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -962,7 +962,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -971,7 +971,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_decompose);
   dt_opencl_free_kernel(gd->kernel_synthesize);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -1018,7 +1018,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)(piece->data);
   for(int ch = 0; ch < atrous_none; ch++) dt_draw_curve_destroy(d->curve[ch]);
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -1864,7 +1864,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_conf_set_int("plugins/darkroom/atrous/gui_channel", c->channel);
   dt_draw_curve_destroy(c->minmax_curve);
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

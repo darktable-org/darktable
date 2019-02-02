@@ -817,7 +817,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
       points[i + 1] = buf[3];
     }
   }
-  free(buf);
+  dt_free(buf);
   lf_modifier_destroy(modifier);
 
   return 1;
@@ -845,7 +845,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
       points[i + 1] = buf[3];
     }
   }
-  free(buf);
+  dt_free(buf);
   lf_modifier_destroy(modifier);
   return 1;
 }
@@ -1122,7 +1122,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
     lf_lens_destroy(d->lens);
     d->lens = NULL;
   }
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -1187,7 +1187,7 @@ void reload_defaults(dt_iop_module_t *module)
 
   char *new_lens = _lens_sanitize(img->exif_lens);
   g_strlcpy(tmp.lens, new_lens, sizeof(tmp.lens));
-  free(new_lens);
+  dt_free(new_lens);
   g_strlcpy(tmp.camera, img->exif_model, sizeof(tmp.camera));
   tmp.crop = img->exif_crop;
   tmp.aperture = img->exif_aperture;
@@ -1312,7 +1312,7 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -1327,7 +1327,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_lens_distort_lanczos2);
   dt_opencl_free_kernel(gd->kernel_lens_distort_lanczos3);
   dt_opencl_free_kernel(gd->kernel_lens_vignette);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -2428,7 +2428,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   dt_pthread_mutex_destroy(&g->lock);
 
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

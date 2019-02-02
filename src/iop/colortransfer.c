@@ -309,9 +309,9 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
     // for(int k=0;k<n;k++) printf("%f %f -- var %f %f\n", mean_out[k][0], mean_out[k][1], var_out[k][0],
     // var_out[k][1]);
   }
-  free(cnt);
-  free(var);
-  free(mean);
+  dt_free(cnt);
+  dt_free(var);
+  dt_free(mean);
   for(int k = 0; k < n; k++)
   {
     // we actually want the std deviation.
@@ -416,9 +416,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
     }
 
-    free(mapio);
-    free(var);
-    free(mean);
+    dt_free(mapio);
+    dt_free(var);
+    dt_free(mean);
   }
   else
   {
@@ -539,7 +539,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -576,7 +576,7 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -699,7 +699,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   //  dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
   //  cmsDeleteTransform(g->xform);
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

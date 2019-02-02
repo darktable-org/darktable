@@ -185,7 +185,7 @@ void gui_cleanup(dt_imageio_module_storage_t *self)
 {
   disk_t *d = (disk_t *)self->gui_data;
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->entry));
-  free(self->gui_data);
+  dt_free(self->gui_data);
 }
 
 void gui_reset(dt_imageio_module_storage_t *self)
@@ -335,7 +335,7 @@ void free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *pa
   if(!params) return;
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)params;
   dt_variables_params_destroy(d->vp);
-  free(params);
+  dt_free(params);
 }
 
 int set_params(dt_imageio_module_storage_t *self, const void *params, const int size)

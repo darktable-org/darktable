@@ -202,7 +202,7 @@ marker_is_icc (jpeg_saved_marker_ptr marker)
  * returned data, and *icc_data_len is set to its length.
  *
  * IMPORTANT: the data at **icc_data_ptr has been allocated with dt_malloc()
- * and must be freed by the caller with free() when the caller no longer
+ * and must be freed by the caller with dt_free() when the caller no longer
  * needs it.  (Alternatively, we could write this routine to use the
  * IJG library's memory allocator, so that the data would be freed implicitly
  * at jpeg_finish_decompress() time.  But it seems likely that many apps
@@ -376,7 +376,7 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
       unsigned char *buf = dt_malloc(len * sizeof(unsigned char));
       cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg->cinfo), buf, len);
-      free(buf);
+      dt_free(buf);
     }
   }
 
@@ -392,7 +392,7 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
     jpeg_write_scanlines(&(jpg->cinfo), tmp, 1);
   }
   jpeg_finish_compress(&(jpg->cinfo));
-  free(row);
+  dt_free(row);
   jpeg_destroy_compress(&(jpg->cinfo));
   fclose(f);
 
@@ -454,13 +454,13 @@ int read_image(dt_imageio_module_data_t *jpg_tmp, uint8_t *out)
   if(setjmp(jerr.setjmp_buffer))
   {
     jpeg_destroy_decompress(&(jpg->dinfo));
-    free(row_pointer[0]);
+    dt_free(row_pointer[0]);
     fclose(jpg->f);
     return 1;
   }
   (void)jpeg_finish_decompress(&(jpg->dinfo));
   jpeg_destroy_decompress(&(jpg->dinfo));
-  free(row_pointer[0]);
+  dt_free(row_pointer[0]);
   fclose(jpg->f);
   return 0;
 }
@@ -521,7 +521,7 @@ void *get_params(dt_imageio_module_format_t *self)
 
 void free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
 {
-  free(params);
+  dt_free(params);
 }
 
 int set_params(dt_imageio_module_format_t *self, const void *params, const int size)
@@ -601,7 +601,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
 void gui_cleanup(dt_imageio_module_format_t *self)
 {
-  free(self->gui_data);
+  dt_free(self->gui_data);
 }
 
 void gui_reset(dt_imageio_module_format_t *self)

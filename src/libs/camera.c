@@ -165,8 +165,8 @@ static void _lib_property_free(gpointer data)
   dt_lib_camera_property_t * prop = (dt_lib_camera_property_t *)data;
   g_object_unref(prop->osd);
   g_object_unref(prop->values);
-  free(prop->name);
-  free(prop->property_name);
+  dt_free(prop->name);
+  dt_free(prop->property_name);
 }
 
 static gint _compare_property_by_name(gconstpointer a, gconstpointer b)
@@ -562,9 +562,9 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_lib_camera_t *lib = self->data;
   dt_gui_key_accel_block_on_focus_disconnect(lib->gui.plabel);
   dt_gui_key_accel_block_on_focus_disconnect(lib->gui.pname);
-  free(lib->data.listener);
+  dt_free(lib->data.listener);
   lib->data.listener = NULL;
-  free(self->data);
+  dt_free(self->data);
   self->data = NULL;
 }
 

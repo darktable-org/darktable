@@ -87,7 +87,7 @@ static int style_getnumber(lua_State *L)
   items = g_list_remove(items, item);
   g_list_free_full(items, dt_style_item_free);
   luaA_push(L, dt_style_item_t, item);
-  free(item);
+  dt_free(item);
   return 1;
 }
 
@@ -158,8 +158,8 @@ static int style_item_gc(lua_State *L)
   dt_style_item_t *item = luaL_checkudata(L, -1, "dt_style_item_t");
   g_free(item->name);
   g_free(item->operation);
-  free(item->params);
-  free(item->blendop_params);
+  dt_free(item->params);
+  dt_free(item->blendop_params);
   return 0;
 }
 
@@ -199,7 +199,7 @@ static int style_table_index(lua_State *L)
     const char *name = (const char *)sqlite3_column_text(stmt, 0);
     dt_style_t *style = dt_styles_get_by_name(name);
     luaA_push(L, dt_style_t, style);
-    free(style);
+    dt_free(style);
   }
   else
   {

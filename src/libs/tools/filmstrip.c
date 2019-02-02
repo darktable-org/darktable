@@ -393,7 +393,7 @@ void gui_cleanup(dt_lib_module_t *self)
   g_hash_table_destroy(strip->thumbs_table);
 
   /* cleanup */
-  free(self->data);
+  dt_free(self->data);
   self->data = NULL;
 }
 

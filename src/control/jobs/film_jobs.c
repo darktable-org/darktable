@@ -54,9 +54,9 @@ static void dt_film_import1_cleanup(void *p)
   dt_film_import1_t *params = p;
 
   dt_film_cleanup(params->film);
-  free(params->film);
+  dt_free(params->film);
 
-  free(params);
+  dt_free(params);
 }
 
 dt_job_t *dt_film_import1_create(dt_film_t *film)
@@ -241,7 +241,7 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
           dt_film_remove(cfr->id);
         }
         dt_film_cleanup(cfr);
-        free(cfr);
+        dt_free(cfr);
         cfr = NULL;
       }
 
@@ -296,7 +296,7 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
   if(cfr && cfr != film)
   {
     dt_film_cleanup(cfr);
-    free(cfr);
+    dt_free(cfr);
   }
 }
 

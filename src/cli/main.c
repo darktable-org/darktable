@@ -187,7 +187,7 @@ int main(int argc, char *arg[])
   if(file_counter < 2 || file_counter > 3)
   {
     usage(arg[0]);
-    free(m_arg);
+    dt_free(m_arg);
     exit(1);
   }
   else if(file_counter == 2)
@@ -201,7 +201,7 @@ int main(int argc, char *arg[])
   {
     fprintf(stderr, _("error: output file is a directory. please specify file name"));
     fprintf(stderr, "\n");
-    free(m_arg);
+    dt_free(m_arg);
     exit(1);
   }
 
@@ -214,7 +214,7 @@ int main(int argc, char *arg[])
   // init dt without gui and without data.db:
   if(dt_init(m_argc, m_arg, FALSE, TRUE, NULL))
   {
-    free(m_arg);
+    dt_free(m_arg);
     exit(1);
   }
 
@@ -227,7 +227,7 @@ int main(int argc, char *arg[])
     {
       fprintf(stderr, _("error: can't open folder %s"), input_filename);
       fprintf(stderr, "\n");
-      free(m_arg);
+      dt_free(m_arg);
       exit(1);
     }
     id_list = dt_film_get_image_ids(filmid);
@@ -245,7 +245,7 @@ int main(int argc, char *arg[])
     {
       fprintf(stderr, _("error: can't open file %s"), input_filename);
       fprintf(stderr, "\n");
-      free(m_arg);
+      dt_free(m_arg);
       exit(1);
     }
     g_free(directory);
@@ -258,7 +258,7 @@ int main(int argc, char *arg[])
   if(total == 0)
   {
     fprintf(stderr, _("no images to export, aborting\n"));
-    free(m_arg);
+    dt_free(m_arg);
     exit(1);
   }
 
@@ -273,7 +273,7 @@ int main(int argc, char *arg[])
       {
         fprintf(stderr, _("error: can't open xmp file %s"), xmp_filename);
         fprintf(stderr, "\n");
-        free(m_arg);
+        dt_free(m_arg);
         exit(1);
       }
       // don't write new xmp:
@@ -313,7 +313,7 @@ int main(int argc, char *arg[])
     fprintf(
         stderr, "%s\n",
         _("cannot find disk storage module. please check your installation, something seems to be broken."));
-    free(m_arg);
+    dt_free(m_arg);
     exit(1);
   }
 
@@ -321,7 +321,7 @@ int main(int argc, char *arg[])
   if(sdata == NULL)
   {
     fprintf(stderr, "%s\n", _("failed to get parameters from storage module, aborting export ..."));
-    free(m_arg);
+    dt_free(m_arg);
     exit(1);
   }
 
@@ -335,7 +335,7 @@ int main(int argc, char *arg[])
   {
     fprintf(stderr, _("unknown extension '.%s'"), ext);
     fprintf(stderr, "\n");
-    free(m_arg);
+    dt_free(m_arg);
     exit(1);
   }
 
@@ -343,7 +343,7 @@ int main(int argc, char *arg[])
   if(fdata == NULL)
   {
     fprintf(stderr, "%s\n", _("failed to get parameters from format module, aborting export ..."));
-    free(m_arg);
+    dt_free(m_arg);
     exit(1);
   }
 
@@ -409,7 +409,7 @@ int main(int argc, char *arg[])
 
   dt_cleanup();
 
-  free(m_arg);
+  dt_free(m_arg);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

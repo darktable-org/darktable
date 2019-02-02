@@ -30,7 +30,7 @@ static int tag_name(lua_State *L)
   luaA_to(L, dt_lua_tag_t, &tagid1, -2);
   gchar *name = dt_tag_get_name(tagid1);
   lua_pushstring(L, name);
-  free(name);
+  dt_free(name);
   return 1;
 }
 
@@ -40,7 +40,7 @@ static int tag_tostring(lua_State *L)
   luaA_to(L, dt_lua_tag_t, &tagid1, -1);
   gchar *name = dt_tag_get_name(tagid1);
   lua_pushstring(L, name);
-  free(name);
+  dt_free(name);
   return 1;
 }
 

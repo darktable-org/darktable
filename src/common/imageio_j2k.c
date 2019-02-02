@@ -221,7 +221,7 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
     color_apply_icc_profile(image);
 #endif
 
-    free(image->icc_profile_buf);
+    dt_free(image->icc_profile_buf);
     image->icc_profile_buf = NULL;
     image->icc_profile_len = 0;
   }
@@ -517,11 +517,11 @@ static void sycc444_to_rgb(opj_image_t *img)
     ++g;
     ++b;
   }
-  free(img->comps[0].data);
+  dt_free(img->comps[0].data);
   img->comps[0].data = d0;
-  free(img->comps[1].data);
+  dt_free(img->comps[1].data);
   img->comps[1].data = d1;
-  free(img->comps[2].data);
+  dt_free(img->comps[2].data);
   img->comps[2].data = d2;
 } /* sycc444_to_rgb() */
 
@@ -568,11 +568,11 @@ static void sycc422_to_rgb(opj_image_t *img)
       ++cr;
     }
   }
-  free(img->comps[0].data);
+  dt_free(img->comps[0].data);
   img->comps[0].data = d0;
-  free(img->comps[1].data);
+  dt_free(img->comps[1].data);
   img->comps[1].data = d1;
-  free(img->comps[2].data);
+  dt_free(img->comps[2].data);
   img->comps[2].data = d2;
 
   img->comps[1].w = maxw;
@@ -649,11 +649,11 @@ static void sycc420_to_rgb(opj_image_t *img)
     g += maxw;
     b += maxw;
   }
-  free(img->comps[0].data);
+  dt_free(img->comps[0].data);
   img->comps[0].data = d0;
-  free(img->comps[1].data);
+  dt_free(img->comps[1].data);
   img->comps[1].data = d1;
-  free(img->comps[2].data);
+  dt_free(img->comps[2].data);
   img->comps[2].data = d2;
 
   img->comps[1].w = maxw;

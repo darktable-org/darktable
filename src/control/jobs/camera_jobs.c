@@ -193,7 +193,7 @@ static void dt_camera_capture_cleanup(void *p)
 
   dt_import_session_destroy(params->shared.session);
 
-  free(params);
+  dt_free(params);
 }
 
 dt_job_t *dt_camera_capture_job_create(const char *jobcode, uint32_t delay, uint32_t count, uint32_t brackets,
@@ -246,7 +246,7 @@ static void dt_camera_get_previews_cleanup(void *p)
 
   g_free(params->listener);
 
-  free(params);
+  dt_free(params);
 }
 
 dt_job_t *dt_camera_get_previews_job_create(dt_camera_t *camera, dt_camctl_listener_t *listener,
@@ -374,7 +374,7 @@ static void dt_camera_import_cleanup(void *p)
 
   dt_import_session_destroy(params->shared.session);
 
-  free(params);
+  dt_free(params);
 }
 
 dt_job_t *dt_camera_import_job_create(const char *jobcode, GList *images, struct dt_camera_t *camera,

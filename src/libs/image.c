@@ -287,7 +287,7 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_preference_changed), self);
 
-  free(self->data);
+  dt_free(self->data);
   self->data = NULL;
 }
 

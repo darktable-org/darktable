@@ -93,7 +93,7 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
 
   cmsDeleteTransform(hTransform);
 
-  free(*in);
+  dt_free(*in);
   *in = out;
 
   return 0;

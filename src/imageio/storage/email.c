@@ -89,7 +89,7 @@ void gui_init(dt_imageio_module_storage_t *self)
 
 void gui_cleanup(dt_imageio_module_storage_t *self)
 {
-  free(self->gui_data);
+  dt_free(self->gui_data);
 }
 
 void gui_reset(dt_imageio_module_storage_t *self)
@@ -177,7 +177,7 @@ int set_params(dt_imageio_module_storage_t *self, const void *params, const int 
 void free_params(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *params)
 {
   if(!params) return;
-  free(params);
+  dt_free(params);
 }
 
 void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *params)

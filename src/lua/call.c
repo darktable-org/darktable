@@ -295,7 +295,7 @@ static void alien_job_destroy(void *data_ptr)
     }
   }
   g_list_free(data->extra);
-  free(data);
+  dt_free(data);
 }
 
 static gboolean alien_job_dispatch (GSource* source, GSourceFunc callback, gpointer user_data)
@@ -401,8 +401,8 @@ static gboolean string_job_prepare (GSource *source, gint    *timeout)
 
 static void string_data_destroy(string_call_data * data)
 {
-  free(data->function);
-  free(data);
+  dt_free(data->function);
+  dt_free(data);
 }
 
 static gboolean string_job_dispatch (GSource* source, GSourceFunc callback, gpointer user_data)

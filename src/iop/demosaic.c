@@ -2211,7 +2211,7 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
     }
   }
 
-  free(lookup);
+  dt_free(lookup);
 }
 
 
@@ -3781,7 +3781,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   dt_opencl_release_mem_object(dev_lookup);
   dev_lookup = NULL;
 
-  free(lookup);
+  dt_free(lookup);
 
   dt_opencl_release_mem_object(dev_code);
   dev_code = NULL;
@@ -3792,7 +3792,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   dt_opencl_release_mem_object(dev_green_eq);
   dev_green_eq = NULL;
 
-  free(ips);
+  dt_free(ips);
   ips = NULL;
 
   // color smoothing
@@ -3809,11 +3809,11 @@ error:
   dt_opencl_release_mem_object(dev_tmp);
   dt_opencl_release_mem_object(dev_xtrans);
   dt_opencl_release_mem_object(dev_lookup);
-  free(lookup);
+  dt_free(lookup);
   dt_opencl_release_mem_object(dev_code);
   dt_opencl_release_mem_object(dev_ips);
   dt_opencl_release_mem_object(dev_green_eq);
-  free(ips);
+  dt_free(ips);
   dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -4739,7 +4739,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -4782,7 +4782,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_markesteijn_zero);
   dt_opencl_free_kernel(gd->kernel_markesteijn_accu);
   dt_opencl_free_kernel(gd->kernel_markesteijn_final);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -4868,7 +4868,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -5120,7 +5120,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

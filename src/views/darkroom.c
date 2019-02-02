@@ -110,7 +110,7 @@ void cleanup(dt_view_t *self)
 {
   dt_develop_t *dev = (dt_develop_t *)self->data;
   dt_dev_cleanup(dev);
-  free(dev);
+  dt_free(dev);
 }
 
 static cairo_status_t write_snapshot_data(void *closure, const unsigned char *data, unsigned int length)
@@ -565,9 +565,9 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   while(dev->history)
   {
     // clear history of old image
-    free(((dt_dev_history_item_t *)dev->history->data)->params);
-    free(((dt_dev_history_item_t *)dev->history->data)->blend_params);
-    free((dt_dev_history_item_t *)dev->history->data);
+    dt_free(((dt_dev_history_item_t *)dev->history->data)->params);
+    dt_free(((dt_dev_history_item_t *)dev->history->data)->blend_params);
+    dt_free((dt_dev_history_item_t *)dev->history->data);
     dev->history = g_list_delete_link(dev->history, dev->history);
   }
 
@@ -616,7 +616,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       dt_accel_cleanup_locals_iop(module);
       module->accel_closures = NULL;
       dt_iop_cleanup_module(module);
-      free(module);
+      dt_free(module);
     }
   }
 
@@ -624,7 +624,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   while(dev->alliop)
   {
     dt_iop_cleanup_module((dt_iop_module_t *)dev->alliop->data);
-    free(dev->alliop->data);
+    dt_free(dev->alliop->data);
     dev->alliop = g_list_delete_link(dev->alliop, dev->alliop);
   }
 
@@ -1927,11 +1927,11 @@ void leave(dt_view_t *self)
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(dev->history->data);
     // printf("removing history item %d - %s, data %f %f\n", hist->module->instance, hist->module->op, *(float
     // *)hist->params, *((float *)hist->params+1));
-    free(hist->params);
+    dt_free(hist->params);
     hist->params = NULL;
-    free(hist->blend_params);
+    dt_free(hist->blend_params);
     hist->blend_params = NULL;
-    free(hist);
+    dt_free(hist);
     dev->history = g_list_delete_link(dev->history, dev->history);
   }
 
@@ -1943,13 +1943,13 @@ void leave(dt_view_t *self)
     dt_dev_cleanup_module_accels(module);
     module->accel_closures = NULL;
     dt_iop_cleanup_module(module);
-    free(module);
+    dt_free(module);
     dev->iop = g_list_delete_link(dev->iop, dev->iop);
   }
   while(dev->alliop)
   {
     dt_iop_cleanup_module((dt_iop_module_t *)dev->alliop->data);
-    free(dev->alliop->data);
+    dt_free(dev->alliop->data);
     dev->alliop = g_list_delete_link(dev->alliop, dev->alliop);
   }
 
@@ -1961,9 +1961,9 @@ void leave(dt_view_t *self)
   // cleanup visible masks
   if(dev->form_gui)
   {
-    dev->gui_module = NULL; // modules have already been free()
+    dev->gui_module = NULL; // modules have already been dt_free()
     dt_masks_clear_form_gui(dev);
-    free(dev->form_gui);
+    dt_free(dev->form_gui);
     dev->form_gui = NULL;
     dt_masks_change_form_gui(NULL);
   }

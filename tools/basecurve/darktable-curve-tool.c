@@ -167,7 +167,7 @@ read_ppm16(const char *filename, int *wd, int *ht)
   if(rd != (*wd)*(*ht))
   {
     fprintf(stderr, "[read_ppm] unexpected end of file! maybe you're loading an 8-bit ppm here instead of a 16-bit one? (%s)\n", filename);
-    free(p);
+    dt_free(p);
     p = NULL;
   }
 
@@ -200,7 +200,7 @@ read_ppm8(const char *filename, int *wd, int *ht)
   if(rd != (*wd)*(*ht))
   {
     fprintf(stderr, "[read_ppm] unexpected end of file! (%s)\n", filename);
-    free(p);
+    dt_free(p);
     p  = NULL;
   }
 
@@ -845,7 +845,7 @@ main(int argc, char** argv)
   linearize_16bit(raw_width, raw_height, raw_buff, raw_buff_f);
 
   // get rid of original 16bit data
-  free(raw_buff);
+  dt_free(raw_buff);
   raw_buff = NULL;
 
   jpeg_buff_f = dt_calloc(1, 3 * jpeg_width * jpeg_height * sizeof(float));
@@ -858,7 +858,7 @@ main(int argc, char** argv)
   linearize_8bit(jpeg_width, jpeg_height, jpeg_buff, jpeg_buff_f);
 
   // get rid of original 8bit data
-  free(jpeg_buff);
+  dt_free(jpeg_buff);
   jpeg_buff = NULL;
 
   /* ------------------------------------------------------------------------
@@ -955,10 +955,10 @@ main(int argc, char** argv)
   fclose(f);
   f = NULL;
 
-  free(raw_buff_f);
+  dt_free(raw_buff_f);
   raw_buff_f = NULL;
 
-  free(jpeg_buff_f);
+  dt_free(jpeg_buff_f);
   jpeg_buff_f = NULL;
 
   /* ------------------------------------------------------------------------
@@ -1173,34 +1173,34 @@ exit:
     f = NULL;
   }
   if (raw_buff) {
-    free(raw_buff);
+    dt_free(raw_buff);
     raw_buff = NULL;
   }
   if (jpeg_buff) {
-    free(jpeg_buff);
+    dt_free(jpeg_buff);
     jpeg_buff = NULL;
   }
   if (raw_buff_f) {
-    free(raw_buff_f);
+    dt_free(raw_buff_f);
     raw_buff_f = NULL;
   }
   if (jpeg_buff_f) {
-    free(jpeg_buff_f);
+    dt_free(jpeg_buff_f);
     jpeg_buff_f = NULL;
   }
   if (csample.m_Samples)
   {
-    free(csample.m_Samples);
+    dt_free(csample.m_Samples);
     csample.m_Samples = NULL;
   }
   if (curve)
   {
-    free(curve);
+    dt_free(curve);
     curve = NULL;
   }
   if (hist)
   {
-    free(hist);
+    dt_free(hist);
     hist = NULL;
   }
 

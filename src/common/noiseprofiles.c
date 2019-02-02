@@ -370,7 +370,7 @@ void dt_noiseprofile_free(gpointer data)
   g_free(profile->name);
   g_free(profile->maker);
   g_free(profile->model);
-  free(profile);
+  dt_free(profile);
 }
 
 void dt_noiseprofile_interpolate(

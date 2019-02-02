@@ -379,9 +379,9 @@ ERROR_EXIT:
   memcpy(o, i, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
 
 FINISH_PROCESS:
-  free(xy_artifact);
-  free(xy_small);
-  free(xy_avg);
+  dt_free(xy_artifact);
+  dt_free(xy_small);
+  dt_free(xy_avg);
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -405,7 +405,7 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -484,7 +484,7 @@ void gui_update(dt_iop_module_t *module)
 
 void gui_cleanup(dt_iop_module_t *module)
 {
-  free(module->gui_data);
+  dt_free(module->gui_data);
   module->gui_data = NULL;
 }
 

@@ -188,7 +188,7 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
                    (png_const_bytep)buf,
 #endif
                    len);
-      free(buf);
+      dt_free(buf);
     }
   }
 
@@ -219,7 +219,7 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
 
   png_write_image(png_ptr, row_pointers);
 
-  free(row_pointers);
+  dt_free(row_pointers);
 
   png_write_end(png_ptr, info_ptr);
   png_destroy_write_struct(&png_ptr, &info_ptr);
@@ -443,7 +443,7 @@ void *get_params(dt_imageio_module_format_t *self)
 
 void free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
 {
-  free(params);
+  dt_free(params);
 }
 
 int set_params(dt_imageio_module_format_t *self, const void *params, const int size)
@@ -546,7 +546,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
 void gui_cleanup(dt_imageio_module_format_t *self)
 {
-  free(self->gui_data);
+  dt_free(self->gui_data);
 }
 
 void gui_reset(dt_imageio_module_format_t *self)

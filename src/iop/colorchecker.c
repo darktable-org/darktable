@@ -278,7 +278,7 @@ void init_presets(dt_iop_module_so_t *self)
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(hk_params);
   dt_gui_presets_add_generic(_("helmholtz/kohlrausch monochrome"), self->op, self->version(), hk_params, params_len, 1);
-  free(hk_params);
+  dt_free(hk_params);
 
   /** The following are based on Jo's Fuji film emulations, without tonecurve which is let to user choice
    *  https://jo.dreggn.org/blog/darktable-fuji-styles.tar.xz
@@ -293,7 +293,7 @@ void init_presets(dt_iop_module_so_t *self)
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(astia_params);
   dt_gui_presets_add_generic(_("Fuji Astia emulation"), self->op, self->version(), astia_params, params_len, 1);
-  free(astia_params);
+  dt_free(astia_params);
 
 
   const char *chrome_params_input =
@@ -305,7 +305,7 @@ void init_presets(dt_iop_module_so_t *self)
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(chrome_params);
   dt_gui_presets_add_generic(_("Fuji Classic Chrome emulation"), self->op, self->version(), chrome_params, params_len, 1);
-  free(chrome_params);
+  dt_free(chrome_params);
 
 
   const char *mchrome_params_input =
@@ -317,7 +317,7 @@ void init_presets(dt_iop_module_so_t *self)
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(mchrome_params);
   dt_gui_presets_add_generic(_("Fuji Monochrome emulation"), self->op, self->version(), mchrome_params, params_len, 1);
-  free(mchrome_params);
+  dt_free(mchrome_params);
 
 
   const char *provia_params_input =
@@ -329,7 +329,7 @@ void init_presets(dt_iop_module_so_t *self)
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(provia_params);
   dt_gui_presets_add_generic(_("Fuji Provia emulation"), self->op, self->version(), provia_params, params_len, 1);
-  free(provia_params);
+  dt_free(provia_params);
 
 
   const char *velvia_params_input =
@@ -341,7 +341,7 @@ void init_presets(dt_iop_module_so_t *self)
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(velvia_params);
   dt_gui_presets_add_generic(_("Fuji Velvia emulation"), self->op, self->version(), velvia_params, params_len, 1);
-  free(velvia_params);
+  dt_free(velvia_params);
 
 }
 
@@ -582,11 +582,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(err != CL_SUCCESS) goto error;
 
   dt_opencl_release_mem_object(dev_params);
-  free(params);
+  dt_free(params);
   return TRUE;
 
 error:
-  free(params);
+  dt_free(params);
   dt_opencl_release_mem_object(dev_params);
   dt_print(DT_DEBUG_OPENCL, "[opencl_colorchecker] couldn't enqueue kernel! %d\n", err);
   return FALSE;
@@ -797,9 +797,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       for(int i=0;i<N+4;i++) d->coeff_b[i] = b[i];
     }
     // free resources
-    free(pivot);
-    free(b);
-    free(A);
+    dt_free(pivot);
+    dt_free(b);
+    dt_free(A);
   }
   }
 }
@@ -812,7 +812,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -894,7 +894,7 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -912,7 +912,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_colorchecker_global_data_t *gd = (dt_iop_colorchecker_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_colorchecker);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -1409,7 +1409,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   cmsDeleteTransform(g->xform);
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

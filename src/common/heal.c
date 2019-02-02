@@ -289,7 +289,7 @@ void dt_heal_free_cl_global(dt_heal_cl_global_t *g)
 {
   if(!g) return;
 
-  free(g);
+  dt_free(g);
 }
 
 heal_params_cl_t *dt_heal_init_cl(const int devid)
@@ -311,7 +311,7 @@ void dt_heal_free_cl(heal_params_cl_t *p)
   // be sure we're done with the memory:
   dt_opencl_finish(p->devid);
 
-  free(p);
+  dt_free(p);
 }
 
 cl_int dt_heal_cl(heal_params_cl_t *p, cl_mem dev_src, cl_mem dev_dest, const float *const mask_buffer,

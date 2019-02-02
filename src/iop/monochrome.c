@@ -323,7 +323,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_iop_monochrome_global_data_t *gd = (dt_iop_monochrome_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_monochrome_filter);
   dt_opencl_free_kernel(gd->kernel_monochrome);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -351,7 +351,7 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -363,7 +363,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -626,7 +626,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
   cmsDeleteTransform(g->xform);
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 

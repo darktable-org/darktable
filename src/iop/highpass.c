@@ -265,13 +265,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_tmp);
-  free(mat);
+  dt_free(mat);
   return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_tmp);
-  free(mat);
+  dt_free(mat);
   dt_print(DT_DEBUG_OPENCL, "[opencl_highpass] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -361,7 +361,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
-  free(scanline);
+  dt_free(scanline);
 
   const float contrast_scale = ((data->contrast / 100.0) * 7.5);
 #ifdef _OPENMP
@@ -415,7 +415,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -456,7 +456,7 @@ void init_global(dt_iop_module_so_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
@@ -467,7 +467,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_highpass_hblur);
   dt_opencl_free_kernel(gd->kernel_highpass_vblur);
   dt_opencl_free_kernel(gd->kernel_highpass_mix);
-  free(module->data);
+  dt_free(module->data);
   module->data = NULL;
 }
 
@@ -500,7 +500,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -202,7 +202,7 @@ int main(int argc, char *arg[])
   // init dt without gui:
   if(dt_init(m_argc, m_arg, FALSE, TRUE, NULL))
   {
-    free(m_arg);
+    dt_free(m_arg);
     exit(EXIT_FAILURE);
   }
 
@@ -213,14 +213,14 @@ int main(int argc, char *arg[])
               "to pre-generate thumbnails and for darktable to use them, you need to enable disk backend "
               "for thumbnail cache\nno thumbnails to be generated, done."));
     dt_cleanup();
-    free(m_arg);
+    dt_free(m_arg);
     exit(EXIT_FAILURE);
   }
 
   if(min_mip > max_mip)
   {
     fprintf(stderr, _("error: ensure that min_mip <= max_mip\n"));
-    free(m_arg);
+    dt_free(m_arg);
     exit(EXIT_FAILURE);
   }
 
@@ -228,13 +228,13 @@ int main(int argc, char *arg[])
 
   if(generate_thumbnail_cache(min_mip, max_mip, min_imgid, max_imgid))
   {
-    free(m_arg);
+    dt_free(m_arg);
     exit(EXIT_FAILURE);
   }
 
   dt_cleanup();
 
-  free(m_arg);
+  dt_free(m_arg);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

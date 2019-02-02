@@ -55,7 +55,7 @@ void dt_dwt_free(dwt_params_t *p)
 {
   if(!p) return;
 
-  free(p);
+  dt_free(p);
 }
 
 static int _get_max_scale(const int width, const int height, const float preview_scale)
@@ -490,7 +490,7 @@ void dt_dwt_free_cl_global(dt_dwt_cl_global_t *g)
   dt_opencl_free_kernel(g->kernel_dwt_hat_transform_row);
   dt_opencl_free_kernel(g->kernel_dwt_init_buffer);
 
-  free(g);
+  dt_free(g);
 }
 
 dwt_params_cl_t *dt_dwt_init_cl(const int devid, cl_mem image, const int width, const int height, const int scales,
@@ -522,7 +522,7 @@ void dt_dwt_free_cl(dwt_params_cl_t *p)
   // be sure we're done with the memory:
   dt_opencl_finish(p->devid);
 
-  free(p);
+  dt_free(p);
 }
 
 int dwt_get_max_scale_cl(dwt_params_cl_t *p)

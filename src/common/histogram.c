@@ -243,7 +243,7 @@ void dt_histogram_worker(dt_dev_histogram_collection_params_t *const histogram_p
   *histogram = dt_realloc(*histogram, buf_size);
   memmove(*histogram, partial_hists, buf_size);
 #endif
-  free(partial_hists);
+  dt_free(partial_hists);
 
   histogram_stats->bins_count = histogram_params->bins_count;
   histogram_stats->pixels = (roi->width - roi->crop_width - roi->crop_x)

@@ -331,7 +331,7 @@ static void _remove_sample(GtkButton *widget, gpointer data)
   gtk_widget_destroy(sample->container);
   darktable.lib->proxy.colorpicker.live_samples
       = g_slist_remove(darktable.lib->proxy.colorpicker.live_samples, data);
-  free(sample);
+  dt_free(sample);
   dt_dev_invalidate_from_gui(darktable.develop);
 }
 
@@ -624,12 +624,12 @@ void gui_cleanup(dt_lib_module_t *self)
 
   darktable.lib->proxy.colorpicker.set_sample_area = NULL;
 
-  free(darktable.lib->proxy.colorpicker.picked_color_rgb_mean);
-  free(darktable.lib->proxy.colorpicker.picked_color_rgb_min);
-  free(darktable.lib->proxy.colorpicker.picked_color_rgb_max);
-  free(darktable.lib->proxy.colorpicker.picked_color_lab_mean);
-  free(darktable.lib->proxy.colorpicker.picked_color_lab_min);
-  free(darktable.lib->proxy.colorpicker.picked_color_lab_max);
+  dt_free(darktable.lib->proxy.colorpicker.picked_color_rgb_mean);
+  dt_free(darktable.lib->proxy.colorpicker.picked_color_rgb_min);
+  dt_free(darktable.lib->proxy.colorpicker.picked_color_rgb_max);
+  dt_free(darktable.lib->proxy.colorpicker.picked_color_lab_mean);
+  dt_free(darktable.lib->proxy.colorpicker.picked_color_lab_min);
+  dt_free(darktable.lib->proxy.colorpicker.picked_color_lab_max);
   darktable.lib->proxy.colorpicker.picked_color_rgb_mean
       = darktable.lib->proxy.colorpicker.picked_color_rgb_min
       = darktable.lib->proxy.colorpicker.picked_color_rgb_max = NULL;
@@ -641,7 +641,7 @@ void gui_cleanup(dt_lib_module_t *self)
   while(darktable.lib->proxy.colorpicker.live_samples)
     _remove_sample(NULL, darktable.lib->proxy.colorpicker.live_samples->data);
 
-  free(self->data);
+  dt_free(self->data);
   self->data = NULL;
 }
 

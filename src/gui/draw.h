@@ -211,8 +211,8 @@ static inline dt_draw_curve_t *dt_draw_curve_new(const float min, const float ma
 
 static inline void dt_draw_curve_destroy(dt_draw_curve_t *c)
 {
-  free(c->csample.m_Samples);
-  free(c);
+  dt_free(c->csample.m_Samples);
+  dt_free(c);
 }
 
 static inline void dt_draw_curve_set_point(dt_draw_curve_t *c, const int num, const float x, const float y)
@@ -255,7 +255,7 @@ static inline float dt_draw_curve_calc_value(dt_draw_curve_t *c, const float x)
   }
   ypp = interpolate_set(c->c.m_numAnchors, xa, ya, c->c.m_spline_type);
   val = interpolate_val(c->c.m_numAnchors, xa, x, ya, ypp, c->c.m_spline_type);
-  free(ypp);
+  dt_free(ypp);
   return MIN(MAX(val, c->c.m_min_y), c->c.m_max_y);
 }
 

@@ -50,7 +50,7 @@ void dt_bilateral_free_cl(dt_bilateral_cl_t *b)
   // free device mem
   dt_opencl_release_mem_object(b->dev_grid);
   dt_opencl_release_mem_object(b->dev_grid_tmp);
-  free(b);
+  dt_free(b);
 }
 
 
@@ -339,7 +339,7 @@ void dt_bilateral_free_cl_global(dt_bilateral_cl_global_t *b)
   dt_opencl_free_kernel(b->kernel_blur_line_z);
   dt_opencl_free_kernel(b->kernel_slice);
   dt_opencl_free_kernel(b->kernel_slice2);
-  free(b);
+  dt_free(b);
 }
 
 #endif

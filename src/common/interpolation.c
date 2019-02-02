@@ -1812,7 +1812,7 @@ void dt_interpolation_free_cl_global(dt_interpolation_cl_global_t *g)
   if(!g) return;
   // destroy kernels
   dt_opencl_free_kernel(g->kernel_interpolation_resample);
-  free(g);
+  dt_free(g);
 }
 
 static uint32_t roundToNextPowerOfTwo(uint32_t x)

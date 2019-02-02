@@ -151,7 +151,7 @@ int read_image(dt_imageio_png_t *png, void *out)
   png_read_end(png->png_ptr, png->info_ptr);
   png_destroy_read_struct(&png->png_ptr, &png->info_ptr, NULL);
 
-  free(row_pointers);
+  dt_free(row_pointers);
   fclose(png->f);
   return 0;
 }

@@ -1511,7 +1511,7 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
   tree_insert_presets(tree_store);
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
-  free(g);
+  dt_free(g);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

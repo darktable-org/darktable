@@ -403,7 +403,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->title))));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->description))));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(gtk_bin_get_child(GTK_BIN(d->creator))));
-  free(self->data);
+  dt_free(self->data);
   self->data = NULL;
 }
 
@@ -414,7 +414,7 @@ static void add_rights_preset(dt_lib_module_t *self, char *name, char *string)
   char *params = dt_calloc(sizeof(char), params_size);
   memcpy(params + 2, string, params_size - 5);
   dt_lib_presets_add(name, self->plugin_name, self->version(), params, params_size);
-  free(params);
+  dt_free(params);
 }
 
 void init_presets(dt_lib_module_t *self)

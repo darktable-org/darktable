@@ -44,7 +44,7 @@ void free_chart(chart_t *chart)
   if(chart->d_table) g_hash_table_unref(chart->d_table);
   if(chart->box_table) g_hash_table_unref(chart->box_table);
   if(chart->patch_sets) g_hash_table_unref(chart->patch_sets);
-  free(chart);
+  dt_free(chart);
 }
 
 static char *parse_string(char **c)
@@ -359,8 +359,8 @@ chart_t *parse_cht(const char *filename)
           if(kl == 'X' || kl == 'Y')
             g_hash_table_insert(result->patch_sets, g_strdup_printf("%s .. %s", first_label, last_label), labels);
 
-          free(y_label);
-          free(x_label);
+          dt_free(y_label);
+          dt_free(x_label);
         }
         else
           ERROR;

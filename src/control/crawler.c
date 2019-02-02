@@ -198,7 +198,7 @@ static void dt_control_crawler_response_callback(GtkWidget *dialog, gint respons
   dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)user_data;
   g_object_unref(G_OBJECT(gui->model));
   gtk_widget_destroy(dialog);
-  free(gui);
+  dt_free(gui);
 }
 
 // unselect the "select all" toggle

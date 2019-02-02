@@ -459,7 +459,7 @@ void gui_cleanup(dt_lib_module_t *self)
   // g_list_free(lib->guides_widgets_list);
   // INTENTIONAL. it's supposed to be leaky until lua is fixed.
 
-  free(self->data);
+  dt_free(self->data);
   self->data = NULL;
 }
 

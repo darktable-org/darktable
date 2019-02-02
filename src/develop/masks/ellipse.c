@@ -328,7 +328,7 @@ static int dt_ellipse_get_points(dt_develop_t *dev, float xx, float yy, float ra
   if(dt_dev_distort_transform(dev, *points, l + 5)) return 1;
 
   // if we failed, then free all and return
-  free(*points);
+  dt_free(*points);
   *points = NULL;
   *points_count = 0;
   return 0;
@@ -740,7 +740,7 @@ static int dt_ellipse_events_button_released(struct dt_iop_module_t *module, flo
         {
           darktable.develop->form_visible->points
               = g_list_remove(darktable.develop->form_visible->points, gpt);
-          free(gpt);
+          dt_free(gpt);
           break;
         }
         forms = g_list_next(forms);
@@ -1152,8 +1152,8 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
         dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
       }
 
-      if(points) free(points);
-      if(border) free(border);
+      if(points) dt_free(points);
+      if(border) dt_free(border);
     }
     return;
   }
@@ -1396,7 +1396,7 @@ static int dt_ellipse_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_
   // and we transform them with all distorted modules
   if(!dt_dev_distort_transform_plus(darktable.develop, piece->pipe, 0, module->priority, points, l + 5))
   {
-    free(points);
+    dt_free(points);
     return 0;
   }
 
@@ -1411,7 +1411,7 @@ static int dt_ellipse_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_
     ymin = fminf(points[i * 2 + 1], ymin);
     ymax = fmaxf(points[i * 2 + 1], ymax);
   }
-  free(points);
+  dt_free(points);
   // and we set values
   *posx = xmin;
   *posy = ymin;
@@ -1482,7 +1482,7 @@ static int dt_ellipse_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
   // and we transform them with all distorted modules
   if(!dt_dev_distort_transform_plus(module->dev, piece->pipe, 0, module->priority, points, l + 5))
   {
-    free(points);
+    dt_free(points);
     return 0;
   }
 
@@ -1497,7 +1497,7 @@ static int dt_ellipse_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
     ymin = fminf(points[i * 2 + 1], ymin);
     ymax = fmaxf(points[i * 2 + 1], ymax);
   }
-  free(points);
+  dt_free(points);
 
   // and we set values
   *posx = xmin;
@@ -1539,7 +1539,7 @@ static int dt_ellipse_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
   // we back transform all this points
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, 0, module->priority, points, w * h))
   {
-    free(points);
+    dt_free(points);
     return 0;
   }
 
@@ -1599,7 +1599,7 @@ static int dt_ellipse_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
       else
         (*buffer)[i * w + j] = 0.0f;
     }
-  free(points);
+  dt_free(points);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse fill took %0.04f sec\n", form->name, dt_get_wtime() - start2);
@@ -1653,7 +1653,7 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, 0, module->priority, points,
                                         (size_t)mw * mh))
   {
-    free(points);
+    dt_free(points);
     return 0;
   }
 
@@ -1743,7 +1743,7 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
     }
   }
 
-  free(points);
+  dt_free(points);
 
 
   if(darktable.unmuted & DT_DEBUG_PERF)
