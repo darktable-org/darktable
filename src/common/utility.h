@@ -19,7 +19,22 @@
 #pragma once
 
 #include <gtk/gtk.h>
+#include <stdlib.h>
 #include <string.h>
+
+
+/** Standard Exit Point */
+void dt_fail(const char *format, ...);
+
+/** Dynamic Memory Allocation */
+void *dt_malloc(size_t size);
+void *dt_calloc(size_t nmemb, size_t size);
+void *dt_realloc(void *ptr, size_t size);
+
+// Macrofy this in case we want to wrap it later.
+#define dt_free(p) (free((p)))
+
+
 
 /** dynamically allocate and concatenate string */
 gchar *dt_util_dstrcat(gchar *str, const gchar *format, ...) __attribute__((format(printf, 2, 3)));

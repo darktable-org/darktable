@@ -53,6 +53,71 @@
 #include <librsvg/rsvg-cairo.h>
 #endif
 
+#include <stdarg.h>
+#include <stdlib.h>
+
+
+// This function serves as a universal exit point for failures.
+
+void dt_fail(const char *format, ...)
+{
+  va_list args;
+  va_start(args, format);
+  vfprintf(stderr, format, args);
+  va_end(args);
+
+  exit(1);
+}
+
+
+// Dynamic Memory Allocation
+
+// These functions are designed to be identical to their libc
+// counterparts, except that they exit through dt_fail on failure.
+
+void *dt_malloc(size_t size)
+{
+  void *allocated = malloc(size);
+
+  if(allocated == NULL)
+  {
+    dt_fail("Failed to allocate %lu bytes of memory.", size);
+  }
+
+  return allocated;
+}
+
+
+void *dt_calloc(size_t nmemb, size_t size)
+{
+  void *allocated = calloc(nmemb, size);
+
+  if(allocated == NULL)
+  {
+    dt_fail("Failed to calloc %lu elements of %lu bytes each", nmemb, size);
+  }
+
+  return allocated;
+}
+
+
+void *dt_realloc(void *ptr, size_t size)
+{
+  void *allocated = realloc(ptr, size);
+
+  if(allocated == NULL)
+  {
+    dt_fail("Failed to reallocate %lu bytes", size);
+  }
+
+  return allocated;
+}
+
+
+// dt_free() is a macro in utility.h for the time being.
+
+
+
 gchar *dt_util_dstrcat(gchar *str, const gchar *format, ...)
 {
   va_list args;
