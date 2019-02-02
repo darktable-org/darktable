@@ -2787,7 +2787,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->radius, "%.0f");
   dt_bauhaus_widget_set_label(g->nbhood, NULL, _("search radius"));
   dt_bauhaus_slider_set_format(g->nbhood, "%.0f");
-  dt_bauhaus_widget_set_label(g->scattering, NULL, _("scattering (coarse-grain noise reduction)"));
+  dt_bauhaus_widget_set_label(g->scattering, NULL, _("scattering (coarse-grain noise)"));
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means"));
   dt_bauhaus_combobox_add(g->mode, _("wavelets"));
