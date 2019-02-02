@@ -24,6 +24,7 @@
 #include "chart/thinplate.h"
 #include "chart/tonecurve.h"
 #include "common/exif.h"
+#include "common/utility.h"
 
 #include <gtk/gtk.h>
 #include <stdio.h>
@@ -855,9 +856,9 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
                          double *colorchecker_Lab, int N, int sparsity)
 {
   // get all the memory, just in case:
-  double *cx = malloc(sizeof(double)*N);
-  double *cy = malloc(sizeof(double)*N);
-  double *grays = malloc(sizeof(double) * 6 * N);
+  double *cx = dt_malloc(sizeof(double)*N);
+  double *cy = dt_malloc(sizeof(double)*N);
+  double *grays = dt_malloc(sizeof(double) * 6 * N);
   tonecurve_t tonecurve;
   int num_tonecurve = 0;
   {
@@ -910,8 +911,8 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
 #else // rgb tonecurve affecting colours, too
   tonecurve_t rgbcurve;
   // ownership transferred to tonecurve object, so we just alloc without free here:
-  cx = malloc(sizeof(double)*num_tonecurve);
-  cy = malloc(sizeof(double)*num_tonecurve);
+  cx = dt_malloc(sizeof(double)*num_tonecurve);
+  cy = dt_malloc(sizeof(double)*num_tonecurve);
   cx[0] = cy[0] = 0.0;                           // fix black
   cx[num_tonecurve - 1] = cy[num_tonecurve - 1] = 100.0; // fix white
   for(int k = 1; k < num_tonecurve-1; k++)
@@ -947,11 +948,11 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
 #endif
 
   const double *target[3] = { target_L, target_a, target_b };
-  double *coeff_L = malloc((N + 4) * sizeof(double));
-  double *coeff_a = malloc((N + 4) * sizeof(double));
-  double *coeff_b = malloc((N + 4) * sizeof(double));
+  double *coeff_L = dt_malloc((N + 4) * sizeof(double));
+  double *coeff_a = dt_malloc((N + 4) * sizeof(double));
+  double *coeff_b = dt_malloc((N + 4) * sizeof(double));
   double *coeff[] = { coeff_L, coeff_a, coeff_b };
-  int *perm = malloc((N + 4) * sizeof(int));
+  int *perm = dt_malloc((N + 4) * sizeof(int));
   double avgerr, maxerr;
   sparsity = thinplate_match(&tonecurve, 3, N, colorchecker_Lab, target, sparsity, perm, coeff, &avgerr, &maxerr);
 

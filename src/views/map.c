@@ -24,6 +24,7 @@
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
 #include "common/undo.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
@@ -319,7 +320,7 @@ static GdkPixbuf *init_image_pin()
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
   size_t size = w * h * 4;
-  uint8_t *buf = (uint8_t *)malloc(size);
+  uint8_t *buf = (uint8_t *)dt_malloc(size);
   memcpy(buf, data, size);
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
                                                (GdkPixbufDestroyNotify)free, NULL);
@@ -367,7 +368,7 @@ static GdkPixbuf *init_place_pin()
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
   size_t size = w * h * 4;
-  uint8_t *buf = (uint8_t *)malloc(size);
+  uint8_t *buf = (uint8_t *)dt_malloc(size);
   memcpy(buf, data, size);
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
                                                (GdkPixbufDestroyNotify)free, NULL);
@@ -615,7 +616,7 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
 
       const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
       if(!cimg) goto map_changed_failure;
-      dt_map_image_t *entry = (dt_map_image_t *)malloc(sizeof(dt_map_image_t));
+      dt_map_image_t *entry = (dt_map_image_t *)dt_malloc(sizeof(dt_map_image_t));
       if(!entry)
       {
         dt_image_cache_read_release(darktable.image_cache, cimg);
@@ -1205,7 +1206,7 @@ static void pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *da
 
 static void _push_position(dt_view_t *self, int imgid, float longitude, float latitude, float elevation)
 {
-  dt_undo_geotag_t *geotag = malloc(sizeof(dt_undo_geotag_t));
+  dt_undo_geotag_t *geotag = dt_malloc(sizeof(dt_undo_geotag_t));
 
   geotag->imgid = imgid;
   geotag->longitude = longitude;

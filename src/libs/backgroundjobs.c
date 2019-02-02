@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/progress.h"
@@ -149,7 +150,7 @@ static void *_lib_backgroundjobs_added(dt_lib_module_t *self, gboolean has_progr
   dt_lib_backgroundjob_element_t *instance
       = (dt_lib_backgroundjob_element_t *)calloc(1, sizeof(dt_lib_backgroundjob_element_t));
   if(!instance) return NULL;
-  _added_gui_thread_t *params = (_added_gui_thread_t *)malloc(sizeof(_added_gui_thread_t));
+  _added_gui_thread_t *params = (_added_gui_thread_t *)dt_malloc(sizeof(_added_gui_thread_t));
   if(!params)
   {
     free(instance);
@@ -218,7 +219,7 @@ static gboolean _destroyed_gui_thread(gpointer user_data)
 // remove the gui that is pointed to in instance
 static void _lib_backgroundjobs_destroyed(dt_lib_module_t *self, dt_lib_backgroundjob_element_t *instance)
 {
-  _destroyed_gui_thread_t *params = (_destroyed_gui_thread_t *)malloc(sizeof(_destroyed_gui_thread_t));
+  _destroyed_gui_thread_t *params = (_destroyed_gui_thread_t *)dt_malloc(sizeof(_destroyed_gui_thread_t));
   if(!params) return;
   params->self = self;
   params->instance = instance;
@@ -259,7 +260,7 @@ static void _lib_backgroundjobs_cancellable(dt_lib_module_t *self, dt_lib_backgr
   // progress); to be called
   if(!darktable.control->running) return;
 
-  _cancellable_gui_thread_t *params = (_cancellable_gui_thread_t *)malloc(sizeof(_cancellable_gui_thread_t));
+  _cancellable_gui_thread_t *params = (_cancellable_gui_thread_t *)dt_malloc(sizeof(_cancellable_gui_thread_t));
   if(!params) return;
   params->instance = instance;
   params->progress = progress;
@@ -288,7 +289,7 @@ static void _lib_backgroundjobs_updated(dt_lib_module_t *self, dt_lib_background
   // update the progress bar
   if(!darktable.control->running) return;
 
-  _update_gui_thread_t *params = (_update_gui_thread_t *)malloc(sizeof(_update_gui_thread_t));
+  _update_gui_thread_t *params = (_update_gui_thread_t *)dt_malloc(sizeof(_update_gui_thread_t));
   if(!params) return;
   params->instance = instance;
   params->value = value;
@@ -318,7 +319,7 @@ static void _lib_backgroundjobs_message_updated(dt_lib_module_t *self, dt_lib_ba
   // update the progress bar
   if(!darktable.control->running) return;
 
-  _update_label_gui_thread_t *params = (_update_label_gui_thread_t *)malloc(sizeof(_update_label_gui_thread_t));
+  _update_label_gui_thread_t *params = (_update_label_gui_thread_t *)dt_malloc(sizeof(_update_label_gui_thread_t));
   if(!params) return;
   params->instance = instance;
   params->message = g_strdup(message);

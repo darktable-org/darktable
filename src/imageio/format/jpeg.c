@@ -26,6 +26,7 @@
 #include "common/exif.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "imageio/format/imageio_format_api.h"
 #include <inttypes.h>
@@ -200,7 +201,7 @@ marker_is_icc (jpeg_saved_marker_ptr marker)
  * If TRUE is returned, *icc_data_ptr is set to point to the
  * returned data, and *icc_data_len is set to its length.
  *
- * IMPORTANT: the data at **icc_data_ptr has been allocated with malloc()
+ * IMPORTANT: the data at **icc_data_ptr has been allocated with dt_malloc()
  * and must be freed by the caller with free() when the caller no longer
  * needs it.  (Alternatively, we could write this routine to use the
  * IJG library's memory allocator, so that the data would be freed implicitly
@@ -372,14 +373,14 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
     cmsSaveProfileToMem(out_profile, 0, &len);
     if(len > 0)
     {
-      unsigned char *buf = malloc(len * sizeof(unsigned char));
+      unsigned char *buf = dt_malloc(len * sizeof(unsigned char));
       cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg->cinfo), buf, len);
       free(buf);
     }
   }
 
-  uint8_t *row = malloc((size_t)3 * jpg->global.width * sizeof(uint8_t));
+  uint8_t *row = dt_malloc((size_t)3 * jpg->global.width * sizeof(uint8_t));
   const uint8_t *buf;
   while(jpg->cinfo.next_scanline < jpg->cinfo.image_height)
   {
@@ -437,7 +438,7 @@ int read_image(dt_imageio_module_data_t *jpg_tmp, uint8_t *out)
   }
   (void)jpeg_start_decompress(&(jpg->dinfo));
   JSAMPROW row_pointer[1];
-  row_pointer[0] = (uint8_t *)malloc((size_t)jpg->dinfo.output_width * jpg->dinfo.num_components);
+  row_pointer[0] = (uint8_t *)dt_malloc((size_t)jpg->dinfo.output_width * jpg->dinfo.num_components);
   uint8_t *tmp = out;
   while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
   {
@@ -489,7 +490,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     } dt_imageio_jpeg_v1_t;
 
     const dt_imageio_jpeg_v1_t *o = (dt_imageio_jpeg_v1_t *)old_params;
-    dt_imageio_jpeg_t *n = (dt_imageio_jpeg_t *)malloc(sizeof(dt_imageio_jpeg_t));
+    dt_imageio_jpeg_t *n = (dt_imageio_jpeg_t *)dt_malloc(sizeof(dt_imageio_jpeg_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -584,7 +585,7 @@ static void quality_changed(GtkWidget *slider, gpointer user_data)
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)malloc(sizeof(dt_imageio_jpeg_gui_data_t));
+  dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)dt_malloc(sizeof(dt_imageio_jpeg_gui_data_t));
   self->gui_data = g;
   // construct gui with jpeg specific options:
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 20);

@@ -26,6 +26,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -423,7 +424,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int wdh = ceilf(3.0f * sigma);
   const int wd = 2 * wdh + 1;
   const size_t mat_size = sizeof(float) * wd;
-  float *mat = malloc(mat_size);
+  float *mat = dt_malloc(mat_size);
   float *m = mat + wdh;
   float weight = 0.0f;
 
@@ -582,7 +583,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 9; // soften.cl, from programs.conf
   dt_iop_soften_global_data_t *gd
-      = (dt_iop_soften_global_data_t *)malloc(sizeof(dt_iop_soften_global_data_t));
+      = (dt_iop_soften_global_data_t *)dt_malloc(sizeof(dt_iop_soften_global_data_t));
   module->data = gd;
   gd->kernel_soften_overexposed = dt_opencl_create_kernel(program, "soften_overexposed");
   gd->kernel_soften_hblur = dt_opencl_create_kernel(program, "soften_hblur");
@@ -695,7 +696,7 @@ void cleanup(dt_iop_module_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_soften_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_soften_gui_data_t));
   dt_iop_soften_gui_data_t *g = (dt_iop_soften_gui_data_t *)self->gui_data;
   dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)self->params;
 

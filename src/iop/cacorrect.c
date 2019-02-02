@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "common/darktable.h"
+#include "common/utility.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "gui/gtk.h"
@@ -341,7 +342,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   float *Gtmp = (float(*))calloc((height) * (width), sizeof *Gtmp);
 
   // temporary array to avoid race conflicts, only every second pixel needs to be saved here
-  float *RawDataTmp = (float *)malloc(height * width * sizeof(float) / 2 + 4);
+  float *RawDataTmp = (float *)dt_malloc(height * width * sizeof(float) / 2 + 4);
 
   float blockave[2][2] = { { 0, 0 }, { 0, 0 } }, blocksqave[2][2] = { { 0, 0 }, { 0, 0 } },
         blockdenom[2][2] = { { 0, 0 }, { 0, 0 } }, blockvar[2][2];
@@ -394,7 +395,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
     // assign working space
     const int buffersize = 3 * sizeof(float) * ts * ts + 6 * sizeof(float) * ts * tsh + 8 * 64 + 63;
-    char *buffer = (char *)malloc(buffersize);
+    char *buffer = (char *)dt_malloc(buffersize);
     char *data = (char *)(((uintptr_t)buffer + (uintptr_t)63) / 64 * 64);
 
     // shift the beginning of all arrays but the first by 64 bytes to avoid cache miss conflicts on CPUs which
@@ -1520,7 +1521,7 @@ end:
 void init(dt_iop_module_t *module)
 {
   // we don't need global data:
-  module->data = NULL; // malloc(sizeof(dt_iop_cacorrect_global_data_t));
+  module->data = NULL; // dt_malloc(sizeof(dt_iop_cacorrect_global_data_t));
   module->params = calloc(1, sizeof(dt_iop_cacorrect_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_cacorrect_params_t));
   // our module is disabled by default
@@ -1553,7 +1554,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_cacorrect_data_t));
+  piece->data = dt_malloc(sizeof(dt_iop_cacorrect_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 

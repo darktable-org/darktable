@@ -27,6 +27,7 @@
 #include "common/colorspaces.h"
 #include "common/debug.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -1024,7 +1025,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 8; // extended.cl, from programs.conf
   dt_iop_graduatednd_global_data_t *gd
-      = (dt_iop_graduatednd_global_data_t *)malloc(sizeof(dt_iop_graduatednd_global_data_t));
+      = (dt_iop_graduatednd_global_data_t *)dt_malloc(sizeof(dt_iop_graduatednd_global_data_t));
   module->data = gd;
   gd->kernel_graduatedndp = dt_opencl_create_kernel(program, "graduatedndp");
   gd->kernel_graduatedndm = dt_opencl_create_kernel(program, "graduatedndm");
@@ -1173,7 +1174,7 @@ static void saturation_callback(GtkWidget *slider, gpointer user_data)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_graduatednd_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_graduatednd_gui_data_t));
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
 

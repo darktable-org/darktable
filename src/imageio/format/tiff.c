@@ -22,6 +22,7 @@
 #include "common/exif.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "imageio/format/imageio_format_api.h"
 #include <inttypes.h>
@@ -71,7 +72,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     cmsSaveProfileToMem(out_profile, 0, &profile_len);
     if(profile_len > 0)
     {
-      profile = malloc(profile_len);
+      profile = dt_malloc(profile_len);
       if(!profile)
       {
         rc = 1;
@@ -152,7 +153,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   }
 
   const size_t rowsize = (d->global.width * 3) * d->bpp / 8;
-  if((rowdata = malloc(rowsize)) == NULL)
+  if((rowdata = dt_malloc(rowsize)) == NULL)
   {
     rc = 1;
     goto exit;
@@ -447,7 +448,7 @@ void cleanup(dt_imageio_module_format_t *self)
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  dt_imageio_tiff_gui_t *gui = (dt_imageio_tiff_gui_t *)malloc(sizeof(dt_imageio_tiff_gui_t));
+  dt_imageio_tiff_gui_t *gui = (dt_imageio_tiff_gui_t *)dt_malloc(sizeof(dt_imageio_tiff_gui_t));
   self->gui_data = (void *)gui;
 
   const int bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");

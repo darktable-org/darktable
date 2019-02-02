@@ -23,6 +23,7 @@
 #include "common/debug.h"
 #include "common/l10n.h"
 #include "common/presets.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "gui/accelerators.h"
@@ -1269,7 +1270,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   GtkWidget *label;
 
   dt_gui_presets_edit_dialog_t *g
-      = (dt_gui_presets_edit_dialog_t *)malloc(sizeof(dt_gui_presets_edit_dialog_t));
+      = (dt_gui_presets_edit_dialog_t *)dt_malloc(sizeof(dt_gui_presets_edit_dialog_t));
   g->rowid = rowid;
   g->tree = tree;
   g->name = GTK_LABEL(gtk_label_new(name));

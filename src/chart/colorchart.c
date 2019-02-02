@@ -244,7 +244,7 @@ chart_t *parse_cht(const char *filename)
           y_max = MAX(y_max, y2);
           y_max = MAX(y_max, y3);
 
-          f_line_t *l = (f_line_t *)malloc(sizeof(f_line_t));
+          f_line_t *l = (f_line_t *)dt_malloc(sizeof(f_line_t));
 
           l->p[0].x = x0;
           l->p[0].y = y0;
@@ -298,8 +298,8 @@ chart_t *parse_cht(const char *filename)
           const size_t x_label_size = lxe_len + 1;
           const size_t y_label_size = lye_len + 1;
 
-          char *x_label = malloc(x_label_size * sizeof(char));
-          char *y_label = malloc(y_label_size * sizeof(char));
+          char *x_label = dt_malloc(x_label_size * sizeof(char));
+          char *y_label = dt_malloc(y_label_size * sizeof(char));
 
           char *first_label = NULL, *last_label = NULL;
           GList *labels = NULL;

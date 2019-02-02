@@ -20,6 +20,7 @@
 #include "common/image.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "common/utility.h"
 #include "control/jobs.h"
 #include "lua/call.h"
 #include "lua/glist.h"
@@ -245,7 +246,7 @@ static size_t params_size_wrapper(struct dt_imageio_module_storage_t *self)
 }
 static void *get_params_wrapper(struct dt_imageio_module_storage_t *self)
 {
-  lua_storage_t *d = malloc(sizeof(lua_storage_t));
+  lua_storage_t *d = dt_malloc(sizeof(lua_storage_t));
   d->data_created = false;
   return d;
 }
@@ -372,9 +373,9 @@ static int register_storage(lua_State *L)
   lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_storages");
   lua_newtable(L);
 
-  dt_imageio_module_storage_t *storage = malloc(sizeof(dt_imageio_module_storage_t));
+  dt_imageio_module_storage_t *storage = dt_malloc(sizeof(dt_imageio_module_storage_t));
   memcpy(storage, &ref_storage, sizeof(dt_imageio_module_storage_t));
-  storage->gui_data = malloc(sizeof(lua_storage_gui_t));
+  storage->gui_data = dt_malloc(sizeof(lua_storage_gui_t));
   lua_storage_gui_t *data = storage->gui_data;
 
   const char *plugin_name = luaL_checkstring(L, 1);

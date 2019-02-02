@@ -17,6 +17,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/debug.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -144,7 +145,7 @@ static int dt_gradient_events_button_pressed(struct dt_iop_module_t *module, flo
     dt_iop_module_t *crea_module = gui->creation_module;
     // we create the circle
     dt_masks_point_gradient_t *gradient
-        = (dt_masks_point_gradient_t *)(malloc(sizeof(dt_masks_point_gradient_t)));
+        = (dt_masks_point_gradient_t *)(dt_malloc(sizeof(dt_masks_point_gradient_t)));
 
     // we change the offset value
     float wd = darktable.develop->preview_pipe->backbuf_width;
@@ -675,7 +676,7 @@ static int dt_gradient_get_points_border(dt_develop_t *dev, float x, float y, fl
   if(r1 && r2 && points_count1 > 4 && points_count2 > 4)
   {
     int k = 0;
-    *points = malloc(2 * ((points_count1 - 3) + (points_count2 - 3) + 1) * sizeof(float));
+    *points = dt_malloc(2 * ((points_count1 - 3) + (points_count2 - 3) + 1) * sizeof(float));
     if(*points == NULL) goto end;
     *points_count = (points_count1 - 3) + (points_count2 - 3) + 1;
     for(int i = 3; i < points_count1; i++)
@@ -698,7 +699,7 @@ static int dt_gradient_get_points_border(dt_develop_t *dev, float x, float y, fl
   else if(r1 && points_count1 > 4)
   {
     int k = 0;
-    *points = malloc(2 * ((points_count1 - 3)) * sizeof(float));
+    *points = dt_malloc(2 * ((points_count1 - 3)) * sizeof(float));
     if(*points == NULL) goto end;
     *points_count = points_count1 - 3;
     for(int i = 3; i < points_count1; i++)
@@ -713,7 +714,7 @@ static int dt_gradient_get_points_border(dt_develop_t *dev, float x, float y, fl
   else if(r2 && points_count2 > 4)
   {
     int k = 0;
-    *points = malloc(2 * ((points_count2 - 3)) * sizeof(float));
+    *points = dt_malloc(2 * ((points_count2 - 3)) * sizeof(float));
     if(*points == NULL) goto end;
     *points_count = points_count2 - 3;
 
@@ -800,7 +801,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   const int mw = (w + mesh - 1) / mesh + 1;
   const int mh = (h + mesh - 1) / mesh + 1;
 
-  float *points = malloc(mw * mh * 2 * sizeof(float));
+  float *points = dt_malloc(mw * mh * 2 * sizeof(float));
   if(points == NULL) return 0;
 
 #ifdef _OPENMP
@@ -928,7 +929,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   const int mw = (w + mesh - 1) / mesh + 1;
   const int mh = (h + mesh - 1) / mesh + 1;
 
-  float *points = malloc((size_t)mw * mh * 2 * sizeof(float));
+  float *points = dt_malloc((size_t)mw * mh * 2 * sizeof(float));
   if(points == NULL) return 0;
 
 #ifdef _OPENMP

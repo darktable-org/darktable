@@ -22,6 +22,7 @@
 
 #include "common/darktable.h"
 #include "common/http_server.h"
+#include "common/utility.h"
 
 #ifndef SOUP_CHECK_VERSION
 // SOUP_CHECK_VERSION was introduced only in 2.42
@@ -186,10 +187,10 @@ dt_http_server_t *dt_http_server_create(const int *ports, const int n_ports, con
 
 #endif
 
-  dt_http_server_t *server = (dt_http_server_t *)malloc(sizeof(dt_http_server_t));
+  dt_http_server_t *server = (dt_http_server_t *)dt_malloc(sizeof(dt_http_server_t));
   server->server = httpserver;
 
-  _connection_t *params = (_connection_t *)malloc(sizeof(_connection_t));
+  _connection_t *params = (_connection_t *)dt_malloc(sizeof(_connection_t));
   params->id = id;
   params->server = server;
   params->callback = callback;

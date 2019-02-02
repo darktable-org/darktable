@@ -16,6 +16,7 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "lua/lualib.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
 #include "libs/lib.h"
@@ -201,7 +202,7 @@ static dt_lib_module_t ref_lib = {
 
 static int register_lib(lua_State *L)
 {
-  dt_lib_module_t *lib = malloc(sizeof(dt_lib_module_t));
+  dt_lib_module_t *lib = dt_malloc(sizeof(dt_lib_module_t));
   memcpy(lib, &ref_lib, sizeof(dt_lib_module_t));
   lib->data = calloc(1, sizeof(lua_lib_data_t));
   lua_lib_data_t *data = lib->data;
@@ -236,7 +237,7 @@ static int register_lib(lua_State *L)
     luaA_to(L, dt_lua_view_t, &tmp_view, -2);
 
     luaL_checktype(L, -1, LUA_TTABLE);
-    position_description_t *position_description = malloc(sizeof(position_description_t));
+    position_description_t *position_description = dt_malloc(sizeof(position_description_t));
     data->position_descriptions = g_list_append(data->position_descriptions, position_description);
 
     position_description->view = tmp_view->module_name;

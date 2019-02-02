@@ -29,6 +29,8 @@
 
 #pragma once
 
+#include "common/utility.h"
+
 #include <math.h>
 #include <stdlib.h>
 
@@ -96,7 +98,7 @@ static void gauss_solve_triangular(const double *A, const int *p, double *b, int
 
 static int gauss_solve(double *A, double *b, int n)
 {
-  int *p = malloc(n * sizeof(*p));
+  int *p = dt_malloc(n * sizeof(*p));
   int err_code = 1;
   if((err_code = gauss_make_triangular(A, p, n))) gauss_solve_triangular(A, p, b, n);
   free(p);

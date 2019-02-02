@@ -29,6 +29,7 @@
 #include "common/module.h"
 #include "common/opencl.h"
 #include "common/usermanual_url.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/blend.h"
 #include "develop/develop.h"
@@ -145,7 +146,7 @@ static void default_commit_params(struct dt_iop_module_t *self, dt_iop_params_t 
 static void default_init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
                               dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(self->params_size);
+  piece->data = dt_malloc(self->params_size);
   default_commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -1272,7 +1273,7 @@ static void init_presets(dt_iop_module_so_t *module_so)
         free(module);
         continue;
       }
-      void *new_blend_params = malloc(sizeof(dt_develop_blend_params_t));
+      void *new_blend_params = dt_malloc(sizeof(dt_develop_blend_params_t));
 
       // convert the old blend params to new
       if(old_blend_params
@@ -1507,7 +1508,7 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, blendop_params->mask_id);
     length += dt_masks_group_get_hash_buffer_length(grp);
 
-    char *str = malloc(length);
+    char *str = dt_malloc(length);
     memcpy(str, module->params, module->params_size);
     int pos = module->params_size;
     /* if module supports blend op add blend params into account */

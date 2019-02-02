@@ -22,6 +22,7 @@
 #include "common/exif.h"
 #include "common/noiseprofiles.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
@@ -262,7 +263,7 @@ static void add_preset(
   if(blendop_version != dt_develop_blend_version())
   {
     // update to current blendop params format
-    void *bp_new = malloc(sizeof(dt_develop_blend_params_t));
+    void *bp_new = dt_malloc(sizeof(dt_develop_blend_params_t));
 
     if(dt_develop_blend_legacy_params_from_so(self, bp, blendop_version, bp_new, dt_develop_blend_version(),
       blen) == 0)
@@ -2079,7 +2080,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 11; // denoiseprofile.cl, from programs.conf
   dt_iop_denoiseprofile_global_data_t *gd
-      = (dt_iop_denoiseprofile_global_data_t *)malloc(sizeof(dt_iop_denoiseprofile_global_data_t));
+      = (dt_iop_denoiseprofile_global_data_t *)dt_malloc(sizeof(dt_iop_denoiseprofile_global_data_t));
   module->data = gd;
   gd->kernel_denoiseprofile_precondition = dt_opencl_create_kernel(program, "denoiseprofile_precondition");
   gd->kernel_denoiseprofile_init = dt_opencl_create_kernel(program, "denoiseprofile_init");
@@ -2185,7 +2186,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)malloc(sizeof(dt_iop_denoiseprofile_data_t));
+  dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)dt_malloc(sizeof(dt_iop_denoiseprofile_data_t));
   dt_iop_denoiseprofile_params_t *default_params = (dt_iop_denoiseprofile_params_t *)self->default_params;
 
   piece->data = (void *)d;
@@ -2612,7 +2613,7 @@ static void denoiseprofile_tab_switch(GtkNotebook *notebook, GtkWidget *page, gu
 void gui_init(dt_iop_module_t *self)
 {
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
-  self->gui_data = malloc(sizeof(dt_iop_denoiseprofile_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_denoiseprofile_gui_data_t));
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);

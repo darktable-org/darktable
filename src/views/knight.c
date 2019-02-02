@@ -16,6 +16,7 @@
  *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "common/utility.h"
 #include "control/control.h"
 #include "views/knight_font.h"
 #include "views/view.h"
@@ -349,7 +350,7 @@ static inline cairo_pattern_t *_new_sprite(const uint8_t *data, const int width,
                                            int *_stride, GList **bufs, GList **surfaces, GList **patterns)
 {
   const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, width);
-  uint8_t *buf = (uint8_t *)malloc(stride * height);
+  uint8_t *buf = (uint8_t *)dt_malloc(stride * height);
   for(int y = 0; y < height; y++) memcpy(&buf[y * stride], &(data[y * width]), width * sizeof(uint8_t));
   cairo_surface_t *surface = cairo_image_surface_create_for_data(buf, CAIRO_FORMAT_A8, width, height, stride);
   cairo_pattern_t *pattern = cairo_pattern_create_for_surface(surface);
@@ -438,7 +439,7 @@ void init(dt_view_t *self)
     d->bunker_buf[i] = (uint8_t *)g_list_last(d->bufs)->data;
   }
   // font
-  d->letters = (cairo_pattern_t **)malloc(n_letters * sizeof(cairo_pattern_t *));
+  d->letters = (cairo_pattern_t **)dt_malloc(n_letters * sizeof(cairo_pattern_t *));
   for(int i = 0; i < n_letters; i++)
     d->letters[i]
         = _new_sprite(font[i], FONT_WIDTH, FONT_HEIGHT, NULL, &(d->bufs), &(d->surfaces), &(d->patterns));
@@ -516,7 +517,7 @@ static inline void _add_mystery_ship(dt_knight_t *d)
 // return a new explosion object with the fields initialized. has to be free()'d
 static dt_knight_explosion_t *_new_explosion(float x, float y, int ttl, cairo_pattern_t *sprite)
 {
-  dt_knight_explosion_t *explosion = (dt_knight_explosion_t *)malloc(sizeof(dt_knight_explosion_t));
+  dt_knight_explosion_t *explosion = (dt_knight_explosion_t *)dt_malloc(sizeof(dt_knight_explosion_t));
   explosion->x = x;
   explosion->y = y;
   explosion->ttl = ttl;

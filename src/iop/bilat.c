@@ -24,6 +24,7 @@
 #include "common/bilateralcl.h"
 #include "common/locallaplacian.h"
 #include "common/locallaplaciancl.h"
+#include "common/utility.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/tiling.h"
@@ -509,7 +510,7 @@ void gui_update(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
-  self->gui_data = malloc(sizeof(dt_iop_bilat_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_bilat_gui_data_t));
   dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
   memset(&g->ll_boundary, 0, sizeof(local_laplacian_boundary_t));
   dt_pthread_mutex_init(&g->lock, NULL);

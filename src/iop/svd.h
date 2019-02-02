@@ -20,6 +20,8 @@
 
 #pragma once
 
+#include "common/utility.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,7 +64,7 @@ static inline int dsvd(
     return(0);
   }
 
-  double *rv1 = malloc(n * sizeof(double));
+  double *rv1 = dt_malloc(n * sizeof(double));
 
   /* Householder reduction to bidiagonal form */
   for (i = 0; i < n; i++) 

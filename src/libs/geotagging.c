@@ -19,6 +19,7 @@
 // #include "control/control.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
+#include "common/utility.h"
 #include "control/conf.h"
 // #include "gui/accelerators.h"
 // #include "gui/gtk.h"
@@ -661,7 +662,7 @@ static GList *_lib_geotagging_get_timezones(void)
     }
     size_t last_char = strlen(name) - 1;
     if(name[last_char] == '\n') name[last_char] = '\0';
-    tz_tuple_t *tz_tuple = (tz_tuple_t *)malloc(sizeof(tz_tuple_t));
+    tz_tuple_t *tz_tuple = (tz_tuple_t *)dt_malloc(sizeof(tz_tuple_t));
     tz_tuple->display = name;
     tz_tuple->name = name;
     timezones = g_list_prepend(timezones, tz_tuple);
@@ -672,7 +673,7 @@ static GList *_lib_geotagging_get_timezones(void)
   // sort timezones
   timezones = g_list_sort(timezones, _sort_timezones);
 
-  tz_tuple_t *utc = (tz_tuple_t *)malloc(sizeof(tz_tuple_t));
+  tz_tuple_t *utc = (tz_tuple_t *)dt_malloc(sizeof(tz_tuple_t));
   utc->display = g_strdup("UTC");
   utc->name = utc->display;
   timezones = g_list_prepend(timezones, utc);
@@ -705,7 +706,7 @@ static GList *_lib_geotagging_get_timezones(void)
                        NULL,
                        NULL) == ERROR_SUCCESS)
     {
-      wchar_t *subkeyname = (wchar_t *)malloc((max_subkey_len + 1) * sizeof(wchar_t));
+      wchar_t *subkeyname = (wchar_t *)dt_malloc((max_subkey_len + 1) * sizeof(wchar_t));
 
       for(DWORD i = 1; i < n_subkeys; i++)
       {
@@ -731,7 +732,7 @@ static GList *_lib_geotagging_get_timezones(void)
                           NULL,
                           &buffer_size) == ERROR_SUCCESS)
           {
-            wchar_t *display_name = (wchar_t *)malloc(buffer_size);
+            wchar_t *display_name = (wchar_t *)dt_malloc(buffer_size);
             if(RegGetValueW(HKEY_LOCAL_MACHINE,
                             subkeypath,
                             L"Display",
@@ -740,7 +741,7 @@ static GList *_lib_geotagging_get_timezones(void)
                             display_name,
                             &buffer_size) == ERROR_SUCCESS)
             {
-              tz_tuple_t *tz = (tz_tuple_t *)malloc(sizeof(tz_tuple_t));
+              tz_tuple_t *tz = (tz_tuple_t *)dt_malloc(sizeof(tz_tuple_t));
 
               tz->name = subkeyname_utf8;
               tz->display = g_utf16_to_utf8(display_name, -1, NULL, NULL, NULL);
@@ -771,7 +772,7 @@ static GList *_lib_geotagging_get_timezones(void)
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)malloc(sizeof(dt_lib_geotagging_t));
+  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)dt_malloc(sizeof(dt_lib_geotagging_t));
   self->data = (void *)d;
   d->timezones = _lib_geotagging_get_timezones();
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));

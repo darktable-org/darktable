@@ -86,7 +86,7 @@ void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_par
       GList *l;
     } dt_imageio_gallery_v1_t;
 
-    dt_imageio_gallery_t *n = (dt_imageio_gallery_t *)malloc(sizeof(dt_imageio_gallery_t));
+    dt_imageio_gallery_t *n = (dt_imageio_gallery_t *)dt_malloc(sizeof(dt_imageio_gallery_t));
     dt_imageio_gallery_v1_t *o = (dt_imageio_gallery_v1_t *)old_params;
 
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
@@ -146,7 +146,7 @@ static void title_changed_callback(GtkEntry *entry, gpointer user_data)
 
 void gui_init(dt_imageio_module_storage_t *self)
 {
-  gallery_t *d = (gallery_t *)malloc(sizeof(gallery_t));
+  gallery_t *d = (gallery_t *)dt_malloc(sizeof(gallery_t));
   self->gui_data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
@@ -285,7 +285,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   sprintf(c, ".%s", ext);
 
   // save image to list, in order:
-  pair_t *pair = malloc(sizeof(pair_t));
+  pair_t *pair = dt_malloc(sizeof(pair_t));
 
   char *title = NULL, *description = NULL;
   GList *res_title, *res_desc;

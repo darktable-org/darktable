@@ -460,7 +460,7 @@ static inline int dt_get_num_atom_cores()
     return 0;
   }
 
-  hw_model = (char *)malloc(length + 1);
+  hw_model = (char *)dt_malloc(length + 1);
   if(hw_model == NULL)
   {
     return 0;

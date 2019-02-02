@@ -20,6 +20,7 @@
 #endif
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -131,7 +132,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   for(int k = 1; k < numl_cap; k++)
   {
     const int wd = (int)(1 + (width >> (k - 1))), ht = (int)(1 + (height >> (k - 1)));
-    tmp[k] = (float *)malloc((size_t)sizeof(float) * wd * ht);
+    tmp[k] = (float *)dt_malloc((size_t)sizeof(float) * wd * ht);
   }
 
   for(int level = 1; level < numl_cap; level++) dt_iop_equalizer_wtf(ovoid, tmp, level, width, height);
@@ -232,7 +233,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // create part of the pixelpipe
-  dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)malloc(sizeof(dt_iop_equalizer_data_t));
+  dt_iop_equalizer_data_t *d = (dt_iop_equalizer_data_t *)dt_malloc(sizeof(dt_iop_equalizer_data_t));
   dt_iop_equalizer_params_t *default_params = (dt_iop_equalizer_params_t *)self->default_params;
   piece->data = (void *)d;
   for(int ch = 0; ch < 3; ch++)
@@ -345,7 +346,7 @@ void init_presets (dt_iop_module_so_t *self)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_equalizer_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_equalizer_gui_data_t));
   self->widget = gtk_label_new(_("this module will be removed in the future\nand is only here so you can "
                                  "switch it off\nand move to the new equalizer."));
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);

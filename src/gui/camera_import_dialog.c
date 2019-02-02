@@ -386,7 +386,7 @@ static int _camera_storage_image_filename(const dt_camera_t *camera, const char 
   }
 #endif
 
-  _image_filename_t *params = (_image_filename_t *)malloc(sizeof(_image_filename_t));
+  _image_filename_t *params = (_image_filename_t *)dt_malloc(sizeof(_image_filename_t));
   if(!params)
   {
     if(pixbuf) g_object_unref(pixbuf);

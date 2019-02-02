@@ -28,6 +28,7 @@
 #include "common/printprof.h"
 #include "common/styles.h"
 #include "common/tags.h"
+#include "common/utility.h"
 #include "common/variables.h"
 #include "control/jobs.h"
 #include "dtgtk/resetlabel.h"
@@ -155,7 +156,7 @@ static int write_image(dt_imageio_module_data_t *data, const char *filename, con
 {
   dt_print_format_t *d = (dt_print_format_t *)data;
 
-  d->params->buf = (uint16_t *)malloc(d->width * d->height * 3 * (d->bpp == 8?1:2));
+  d->params->buf = (uint16_t *)dt_malloc(d->width * d->height * 3 * (d->bpp == 8?1:2));
 
   if (d->bpp == 8)
   {
@@ -1112,7 +1113,7 @@ void view_leave(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
 void
 gui_init (dt_lib_module_t *self)
 {
-  dt_lib_print_settings_t *d = (dt_lib_print_settings_t*)malloc(sizeof(dt_lib_print_settings_t));
+  dt_lib_print_settings_t *d = (dt_lib_print_settings_t*)dt_malloc(sizeof(dt_lib_print_settings_t));
   self->data = d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   dt_gui_add_help_link(self->widget, "print_chapter.html#print_overview");
@@ -1679,7 +1680,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     size_t new_params_size = old_params_size - profile_len - pprofile_len;
     new_params_size += 2 * sizeof(dt_colorspaces_color_profile_type_t);
     new_params_size += new_profile_len + new_pprofile_len;
-    void *new_params = malloc(new_params_size);
+    void *new_params = dt_malloc(new_params_size);
 
     size_t pos = 0;
     //   char *printer
@@ -1921,7 +1922,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   *size = printer_len + paper_len + media_len + profile_len + pprofile_len + style_len + 8 * sizeof(int32_t) + 4 * sizeof(double);
 
   // allocate the parameter buffer
-  char *params = (char *)malloc(*size);
+  char *params = (char *)dt_malloc(*size);
 
   int pos = 0;
 

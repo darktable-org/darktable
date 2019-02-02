@@ -44,6 +44,7 @@
 #include "common/imageio_tiff.h"
 #include "common/mipmap_cache.h"
 #include "common/styles.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -86,7 +87,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
     // Decompress the JPG into our own memory format
     dt_imageio_jpeg_t jpg;
     if(dt_imageio_jpeg_decompress_header(buf, bufsize, &jpg)) goto error;
-    *buffer = (uint8_t *)malloc((size_t)sizeof(uint8_t) * jpg.width * jpg.height * 4);
+    *buffer = (uint8_t *)dt_malloc((size_t)sizeof(uint8_t) * jpg.width * jpg.height * 4);
     if(!*buffer) goto error;
 
     *width = jpg.width;
@@ -126,7 +127,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
     *height = image->rows;
     *color_space = DT_COLORSPACE_SRGB; // FIXME: this assumes that embedded thumbnails are always srgb
 
-    *buffer = (uint8_t *)malloc((size_t)sizeof(uint8_t) * image->columns * image->rows * 4);
+    *buffer = (uint8_t *)dt_malloc((size_t)sizeof(uint8_t) * image->columns * image->rows * 4);
     if(!*buffer) goto error_gm;
 
     for(uint32_t row = 0; row < image->rows; row++)
@@ -663,7 +664,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
         if(!strcmp(m->op, s->operation))
         {
-          dt_dev_history_item_t *h = malloc(sizeof(dt_dev_history_item_t));
+          dt_dev_history_item_t *h = dt_malloc(sizeof(dt_dev_history_item_t));
           dt_iop_module_t *style_module = m;
 
           if((format_params->style_append && !(m->flags() & IOP_FLAGS_ONE_INSTANCE)) || m->multi_priority != s->multi_priority)
@@ -694,7 +695,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
           if(m->legacy_params && (s->module_version != m->version()))
           {
-            void *new_params = malloc(m->params_size);
+            void *new_params = dt_malloc(m->params_size);
             m->legacy_params(m, h->params, s->module_version, new_params, labs(m->version()));
 
             free(h->params);

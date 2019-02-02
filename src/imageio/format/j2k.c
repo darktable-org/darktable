@@ -55,6 +55,7 @@
 #include "common/exif.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "imageio/format/imageio_format_api.h"
 #include <stdio.h>
@@ -536,7 +537,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     } dt_imageio_j2k_v1_t;
 
     dt_imageio_j2k_v1_t *o = (dt_imageio_j2k_v1_t *)old_params;
-    dt_imageio_j2k_t *n = (dt_imageio_j2k_t *)malloc(sizeof(dt_imageio_j2k_t));
+    dt_imageio_j2k_t *n = (dt_imageio_j2k_t *)dt_malloc(sizeof(dt_imageio_j2k_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -632,7 +633,7 @@ static void quality_changed(GtkWidget *slider, gpointer user_data)
 // TODO: some quality/compression stuff in case "off" is selected
 void gui_init(dt_imageio_module_format_t *self)
 {
-  dt_imageio_j2k_gui_t *gui = (dt_imageio_j2k_gui_t *)malloc(sizeof(dt_imageio_j2k_gui_t));
+  dt_imageio_j2k_gui_t *gui = (dt_imageio_j2k_gui_t *)dt_malloc(sizeof(dt_imageio_j2k_gui_t));
   self->gui_data = (void *)gui;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
 

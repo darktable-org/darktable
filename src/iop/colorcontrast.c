@@ -25,6 +25,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "gui/accelerators.h"
@@ -274,7 +275,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 8; // extended.cl, from programs.conf
   dt_iop_colorcontrast_global_data_t *gd
-      = (dt_iop_colorcontrast_global_data_t *)malloc(sizeof(dt_iop_colorcontrast_global_data_t));
+      = (dt_iop_colorcontrast_global_data_t *)dt_malloc(sizeof(dt_iop_colorcontrast_global_data_t));
   module->data = gd;
   gd->kernel_colorcontrast = dt_opencl_create_kernel(program, "colorcontrast");
 }
@@ -336,7 +337,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_colorcontrast_data_t));
+  piece->data = dt_malloc(sizeof(dt_iop_colorcontrast_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -382,7 +383,7 @@ void gui_update(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
-  self->gui_data = malloc(sizeof(dt_iop_colorcontrast_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_colorcontrast_gui_data_t));
   dt_iop_colorcontrast_gui_data_t *g = (dt_iop_colorcontrast_gui_data_t *)self->gui_data;
   dt_iop_colorcontrast_params_t *p = (dt_iop_colorcontrast_params_t *)self->params;
 

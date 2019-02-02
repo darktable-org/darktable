@@ -37,6 +37,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
+#include "common/utility.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "gui/gtk.h"
@@ -170,7 +171,7 @@ void gui_update(struct dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_hazeremoval_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_hazeremoval_gui_data_t));
   dt_iop_hazeremoval_gui_data_t *g = (dt_iop_hazeremoval_gui_data_t *)self->gui_data;
   dt_iop_hazeremoval_params_t *p = (dt_iop_hazeremoval_params_t *)self->params;
 

@@ -27,6 +27,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -959,7 +960,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_highlights_global_data_t *gd
-      = (dt_iop_highlights_global_data_t *)malloc(sizeof(dt_iop_highlights_global_data_t));
+      = (dt_iop_highlights_global_data_t *)dt_malloc(sizeof(dt_iop_highlights_global_data_t));
   module->data = gd;
   gd->kernel_highlights_1f_clip = dt_opencl_create_kernel(program, "highlights_1f_clip");
   gd->kernel_highlights_1f_lch_bayer = dt_opencl_create_kernel(program, "highlights_1f_lch_bayer");
@@ -980,7 +981,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_highlights_data_t));
+  piece->data = dt_malloc(sizeof(dt_iop_highlights_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -1021,7 +1022,7 @@ end:
 
 void init(dt_iop_module_t *module)
 {
-  // module->data = malloc(sizeof(dt_iop_highlights_data_t));
+  // module->data = dt_malloc(sizeof(dt_iop_highlights_data_t));
   module->params = calloc(1, sizeof(dt_iop_highlights_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_highlights_params_t));
   module->priority = 57; // module order created by iop_dependencies.py, do not edit!
@@ -1038,7 +1039,7 @@ void cleanup(dt_iop_module_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_highlights_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_highlights_gui_data_t));
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
   dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
 

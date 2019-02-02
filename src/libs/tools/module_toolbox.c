@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/utility.h"
 #include "control/signal.h"
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
@@ -116,7 +117,7 @@ static void _lib_module_toolbox_add(dt_lib_module_t *self, GtkWidget *widget, dt
   gtk_box_pack_start(GTK_BOX(d->container), widget, TRUE, FALSE, 0);
   gtk_widget_show_all(widget);
 
-  child_data_t *child_data = malloc(sizeof(child_data_t));
+  child_data_t *child_data = dt_malloc(sizeof(child_data_t));
   child_data->child = widget;
   child_data->views = views;
   d->child_views = g_list_prepend(d->child_views,child_data);

@@ -17,6 +17,7 @@
 */
 
 #include "paint.h"
+#include "common/utility.h"
 #include "gui/draw.h"
 #include <math.h>
 
@@ -600,7 +601,7 @@ void _gradient_arc(cairo_t *cr, double lw, int nb_steps, double x_center, double
 {
   cairo_set_line_width(cr, lw);
 
-  double *portions = malloc((1 + nb_steps) * sizeof(double));
+  double *portions = dt_malloc((1 + nb_steps) * sizeof(double));
 
   // note: cairo angles seems to be shifted by M_PI relatively to the unit circle
   angle_from = angle_from + M_PI;

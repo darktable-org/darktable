@@ -18,6 +18,7 @@
 
 #include "common/color_picker.h"
 #include "common/darktable.h"
+#include "common/utility.h"
 #include "develop/format.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
@@ -67,9 +68,9 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *dsc, con
 
   const int numthreads = dt_get_num_threads();
 
-  float *const mean = malloc((size_t)3 * numthreads * sizeof(float));
-  float *const mmin = malloc((size_t)3 * numthreads * sizeof(float));
-  float *const mmax = malloc((size_t)3 * numthreads * sizeof(float));
+  float *const mean = dt_malloc((size_t)3 * numthreads * sizeof(float));
+  float *const mmin = dt_malloc((size_t)3 * numthreads * sizeof(float));
+  float *const mmax = dt_malloc((size_t)3 * numthreads * sizeof(float));
 
   for(int n = 0; n < 3 * numthreads; n++)
   {
@@ -185,10 +186,10 @@ static void color_picker_helper_bayer_parallel(const dt_iop_buffer_dsc_t *const 
 
   const int numthreads = dt_get_num_threads();
 
-  float *const msum = malloc((size_t)4 * numthreads * sizeof(float));
-  float *const mmin = malloc((size_t)4 * numthreads * sizeof(float));
-  float *const mmax = malloc((size_t)4 * numthreads * sizeof(float));
-  uint32_t *const cnt = malloc((size_t)4 * numthreads * sizeof(uint32_t));
+  float *const msum = dt_malloc((size_t)4 * numthreads * sizeof(float));
+  float *const mmin = dt_malloc((size_t)4 * numthreads * sizeof(float));
+  float *const mmax = dt_malloc((size_t)4 * numthreads * sizeof(float));
+  uint32_t *const cnt = dt_malloc((size_t)4 * numthreads * sizeof(uint32_t));
 
   for(int n = 0; n < 4 * numthreads; n++)
   {
@@ -312,10 +313,10 @@ static void color_picker_helper_xtrans_parallel(const dt_iop_buffer_dsc_t *const
 
   const int numthreads = dt_get_num_threads();
 
-  float *const msum = malloc((size_t)3 * numthreads * sizeof(float));
-  float *const mmin = malloc((size_t)3 * numthreads * sizeof(float));
-  float *const mmax = malloc((size_t)3 * numthreads * sizeof(float));
-  uint32_t *const cnt = malloc((size_t)3 * numthreads * sizeof(uint32_t));
+  float *const msum = dt_malloc((size_t)3 * numthreads * sizeof(float));
+  float *const mmin = dt_malloc((size_t)3 * numthreads * sizeof(float));
+  float *const mmax = dt_malloc((size_t)3 * numthreads * sizeof(float));
+  uint32_t *const cnt = dt_malloc((size_t)3 * numthreads * sizeof(uint32_t));
 
   for(int n = 0; n < 3 * numthreads; n++)
   {

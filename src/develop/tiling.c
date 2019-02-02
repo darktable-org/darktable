@@ -19,6 +19,7 @@
 
 #include "develop/tiling.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/blend.h"
 #include "develop/pixelpipe.h"
@@ -202,17 +203,17 @@ static int _simplex(double (*objfunc)(double[], void *[]), double start[], int n
   /* dynamically allocate arrays */
 
   /* allocate the rows of the arrays */
-  v = (double **)malloc((n + 1) * sizeof(double *));
-  f = (double *)malloc((n + 1) * sizeof(double));
-  vr = (double *)malloc(n * sizeof(double));
-  ve = (double *)malloc(n * sizeof(double));
-  vc = (double *)malloc(n * sizeof(double));
-  vm = (double *)malloc(n * sizeof(double));
+  v = (double **)dt_malloc((n + 1) * sizeof(double *));
+  f = (double *)dt_malloc((n + 1) * sizeof(double));
+  vr = (double *)dt_malloc(n * sizeof(double));
+  ve = (double *)dt_malloc(n * sizeof(double));
+  vc = (double *)dt_malloc(n * sizeof(double));
+  vm = (double *)dt_malloc(n * sizeof(double));
 
   /* allocate the columns of the arrays */
   for(i = 0; i <= n; i++)
   {
-    v[i] = (double *)malloc(n * sizeof(double));
+    v[i] = (double *)dt_malloc(n * sizeof(double));
   }
 
   /* create the initial simplex */

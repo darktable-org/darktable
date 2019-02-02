@@ -18,6 +18,7 @@
 
 #include "common/bilateral.h"
 #include "common/darktable.h" // for CLAMPS, dt_alloc_align, dt_free_align
+#include "common/utility.h"
 #include <glib.h>             // for MIN, MAX
 #include <math.h>             // for roundf
 #include <stdlib.h>           // for size_t, free, malloc, NULL
@@ -94,7 +95,7 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
                                   const float sigma_s, // spatial sigma (blur pixel coords)
                                   const float sigma_r) // range sigma (blur luma values)
 {
-  dt_bilateral_t *b = (dt_bilateral_t *)malloc(sizeof(dt_bilateral_t));
+  dt_bilateral_t *b = (dt_bilateral_t *)dt_malloc(sizeof(dt_bilateral_t));
   if(!b) return NULL;
   // if(width/sigma_s < 4 || width/sigma_s > 1000) fprintf(stderr, "[bilateral] need to clamp sigma_s!\n");
   // if(height/sigma_s < 4 || height/sigma_s > 1000) fprintf(stderr, "[bilateral] need to clamp sigma_s!\n");

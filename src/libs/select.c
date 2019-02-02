@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/selection.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
@@ -88,7 +89,7 @@ int position()
 #define ellipsize_button(button) gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_END);
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_select_t *d = (dt_lib_select_t *)malloc(sizeof(dt_lib_select_t));
+  dt_lib_select_t *d = (dt_lib_select_t *)dt_malloc(sizeof(dt_lib_select_t));
   self->data = d;
   self->widget = gtk_grid_new();
   dt_gui_add_help_link(self->widget, "select.html#select_usage");
@@ -220,7 +221,7 @@ static int lua_register_selection(lua_State *L)
   gtk_grid_attach_next_to(GTK_GRID(self->widget), button, NULL, GTK_POS_BOTTOM, 2, 1);
 
 
-  lua_callback_data * data = malloc(sizeof(lua_callback_data));
+  lua_callback_data * data = dt_malloc(sizeof(lua_callback_data));
   data->key = dt_strdup(key);
   data->self = self;
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(lua_button_clicked), data);

@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/imageio.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -716,7 +717,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_dither_data_t));
+  piece->data = dt_malloc(sizeof(dt_iop_dither_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -773,7 +774,7 @@ void cleanup(dt_iop_module_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_dither_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_dither_gui_data_t));
   dt_iop_dither_gui_data_t *g = (dt_iop_dither_gui_data_t *)self->gui_data;
   dt_iop_dither_params_t *p = (dt_iop_dither_params_t *)self->params;
 

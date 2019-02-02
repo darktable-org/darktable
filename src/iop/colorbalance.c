@@ -28,6 +28,7 @@ http://www.youtube.com/watch?v=JVoUgR6bhBc
 #include "common/exif.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
@@ -241,7 +242,7 @@ static void add_preset(dt_iop_module_so_t *self, const char *name,
   if(blendop_version != dt_develop_blend_version())
   {
     // update to current blendop params format
-    void *bp_new = malloc(sizeof(dt_develop_blend_params_t));
+    void *bp_new = dt_malloc(sizeof(dt_develop_blend_params_t));
 
     if(dt_develop_blend_legacy_params_from_so(self, bp, blendop_version, bp_new, dt_develop_blend_version(),
       blen) == 0)
@@ -1456,7 +1457,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 8; // extended.cl, from programs.conf
   dt_iop_colorbalance_global_data_t *gd
-      = (dt_iop_colorbalance_global_data_t *)malloc(sizeof(dt_iop_colorbalance_global_data_t));
+      = (dt_iop_colorbalance_global_data_t *)dt_malloc(sizeof(dt_iop_colorbalance_global_data_t));
   module->data = gd;
   gd->kernel_colorbalance = dt_opencl_create_kernel(program, "colorbalance");
   gd->kernel_colorbalance_lgg = dt_opencl_create_kernel(program, "colorbalance_lgg");
@@ -2202,7 +2203,7 @@ static gboolean dt_iop_area_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t
 
   /* Create an image initialized with the ring colors */
   gint stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, width);
-  guint32 *buf = (guint32 *)malloc(sizeof(guint32) * height * stride / 4);
+  guint32 *buf = (guint32 *)dt_malloc(sizeof(guint32) * height * stride / 4);
 
   for(int y = 0; y < height; y++)
   {
@@ -2303,7 +2304,7 @@ static void draw_hue_slider(GtkWidget *slider)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_colorbalance_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_colorbalance_gui_data_t));
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   dt_iop_colorbalance_params_t *p = (dt_iop_colorbalance_params_t *)self->params;
 

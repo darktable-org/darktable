@@ -29,6 +29,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "utility.h"
 
 #define _XOPEN_SOURCE 700
 #include <errno.h>
@@ -274,7 +275,7 @@ static size_t _pdf_stream_encoder_Flate(dt_pdf_t *pdf, const unsigned char *data
 {
   int result;
   uLongf destLen = compressBound(len);
-  unsigned char *buffer = (unsigned char *)malloc(destLen);
+  unsigned char *buffer = (unsigned char *)dt_malloc(destLen);
 
   result = compress(buffer, &destLen, data, len);
 
@@ -321,7 +322,7 @@ int dt_pdf_add_icc(dt_pdf_t *pdf, const char *filename)
     return 0;
   }
 
-  unsigned char *data = (unsigned char *)malloc(file_size);
+  unsigned char *data = (unsigned char *)dt_malloc(file_size);
   size_t len = fread(data, 1, file_size, in);
   fclose(in);
   if(len != file_size)
@@ -800,12 +801,12 @@ float * read_ppm(const char * filename, int * wd, int * ht)
     return NULL;
   }
 
-  float *image = (float*)malloc(sizeof(float) * width * height * 3);
+  float *image = (float*)dt_malloc(sizeof(float) * width * height * 3);
 
   if(max <= 255)
   {
     // read a 8 bit PPM
-    uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t) * width * height * 3);
+    uint8_t *tmp = (uint8_t *)dt_malloc(sizeof(uint8_t) * width * height * 3);
     int res = fread(tmp, sizeof(uint8_t) * 3, width * height, f);
     if(res != width * height)
     {
@@ -826,7 +827,7 @@ float * read_ppm(const char * filename, int * wd, int * ht)
   else
   {
     // read a 16 bit PPM
-    uint16_t *tmp = (uint16_t *)malloc(sizeof(uint16_t) * width * height * 3);
+    uint16_t *tmp = (uint16_t *)dt_malloc(sizeof(uint16_t) * width * height * 3);
     int res = fread(tmp, sizeof(uint16_t) * 3, width * height, f);
     if(res != width * height)
     {
@@ -892,7 +893,7 @@ int main(int argc, char *argv[])
     int width, height;
     float *image = read_ppm(argv[i + 1], &width, &height);
     if(!image) exit(1);
-    uint16_t *data = (uint16_t *)malloc(width * height * 3 * sizeof(uint16_t));
+    uint16_t *data = (uint16_t *)dt_malloc(width * height * 3 * sizeof(uint16_t));
     if(!data)
     {
       free(image);

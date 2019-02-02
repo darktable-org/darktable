@@ -18,6 +18,7 @@
 
 #include "common/interpolation.h"
 #include "common/darktable.h"
+#include "common/utility.h"
 #include "control/conf.h"
 
 #include <assert.h>
@@ -1799,7 +1800,7 @@ void dt_interpolation_resample_roi(const struct dt_interpolation *itor, float *o
 dt_interpolation_cl_global_t *dt_interpolation_init_cl_global()
 {
   dt_interpolation_cl_global_t *g
-      = (dt_interpolation_cl_global_t *)malloc(sizeof(dt_interpolation_cl_global_t));
+      = (dt_interpolation_cl_global_t *)dt_malloc(sizeof(dt_interpolation_cl_global_t));
 
   const int program = 2; // basic.cl, from programs.conf
   g->kernel_interpolation_resample = dt_opencl_create_kernel(program, "interpolation_resample");

@@ -23,13 +23,14 @@
 #include "CL/cl_platform.h"   // for cl_int
 #include "common/darktable.h" // for CLAMPS, dt_print, darktable, darktable_t
 #include "common/opencl.h"    // for dt_opencl_set_kernel_arg, dt_opencl_cr...
+#include "common/utility.h"
 #include <glib.h>             // for MAX
 #include <math.h>             // for roundf
 #include <stdlib.h>           // for free, malloc
 
 dt_bilateral_cl_global_t *dt_bilateral_init_cl_global()
 {
-  dt_bilateral_cl_global_t *b = (dt_bilateral_cl_global_t *)malloc(sizeof(dt_bilateral_cl_global_t));
+  dt_bilateral_cl_global_t *b = (dt_bilateral_cl_global_t *)dt_malloc(sizeof(dt_bilateral_cl_global_t));
 
   const int program = 10; // bilateral.cl, from programs.conf
   b->kernel_zero = dt_opencl_create_kernel(program, "zero");
@@ -131,7 +132,7 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
     return NULL;
   }
 
-  dt_bilateral_cl_t *b = (dt_bilateral_cl_t *)malloc(sizeof(dt_bilateral_cl_t));
+  dt_bilateral_cl_t *b = (dt_bilateral_cl_t *)dt_malloc(sizeof(dt_bilateral_cl_t));
   if(!b) return NULL;
 
   b->global = darktable.opencl->bilateral;

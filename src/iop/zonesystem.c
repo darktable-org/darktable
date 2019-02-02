@@ -26,6 +26,7 @@
 #include "common/darktable.h"
 #include "common/gaussian.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -396,7 +397,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_zonesystem_global_data_t *gd
-      = (dt_iop_zonesystem_global_data_t *)malloc(sizeof(dt_iop_zonesystem_global_data_t));
+      = (dt_iop_zonesystem_global_data_t *)dt_malloc(sizeof(dt_iop_zonesystem_global_data_t));
   module->data = gd;
   gd->kernel_zonesystem = dt_opencl_create_kernel(program, "zonesystem");
 }
@@ -517,7 +518,7 @@ static void size_allocate_callback(GtkWidget *widget, GtkAllocation *allocation,
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_zonesystem_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_zonesystem_gui_data_t));
   dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
   g->in_preview_buffer = g->out_preview_buffer = NULL;
   g->is_dragging = FALSE;

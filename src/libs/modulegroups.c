@@ -20,6 +20,7 @@
 #include "common/debug.h"
 #include "common/image_cache.h"
 #include "common/iop_group.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -401,7 +402,7 @@ static gboolean _lib_modulegroups_set_gui_thread(gpointer user_data)
 /* this is a proxy function so it might be called from another thread */
 static void _lib_modulegroups_set(dt_lib_module_t *self, uint32_t group)
 {
-  _set_gui_thread_t *params = (_set_gui_thread_t *)malloc(sizeof(_set_gui_thread_t));
+  _set_gui_thread_t *params = (_set_gui_thread_t *)dt_malloc(sizeof(_set_gui_thread_t));
   if(!params) return;
   params->self = self;
   params->group = group;

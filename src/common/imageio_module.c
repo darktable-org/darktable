@@ -19,6 +19,7 @@
 #include "common/imageio_module.h"
 #include "common/darktable.h"
 #include "common/imageio.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/signal.h"
@@ -163,7 +164,7 @@ static int dt_imageio_load_modules_format(dt_imageio_t *iio)
     if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
     strncpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end);
     plugin_name[strlen(d_name) - name_end] = '\0';
-    module = (dt_imageio_module_format_t *)malloc(sizeof(dt_imageio_module_format_t));
+    module = (dt_imageio_module_format_t *)dt_malloc(sizeof(dt_imageio_module_format_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_format(module, libname, plugin_name))
     {
@@ -297,7 +298,7 @@ static int dt_imageio_load_modules_storage(dt_imageio_t *iio)
     if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
     strncpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end);
     plugin_name[strlen(d_name) - name_end] = '\0';
-    module = (dt_imageio_module_storage_t *)malloc(sizeof(dt_imageio_module_storage_t));
+    module = (dt_imageio_module_storage_t *)dt_malloc(sizeof(dt_imageio_module_storage_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_storage(module, libname, plugin_name))
     {

@@ -32,6 +32,7 @@
 #include "common/opencl.h"
 #include "common/tags.h"
 #include "common/undo.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -97,8 +98,8 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 
   if(dev->gui_attached)
   {
-    dev->pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
-    dev->preview_pipe = (dt_dev_pixelpipe_t *)malloc(sizeof(dt_dev_pixelpipe_t));
+    dev->pipe = (dt_dev_pixelpipe_t *)dt_malloc(sizeof(dt_dev_pixelpipe_t));
+    dev->preview_pipe = (dt_dev_pixelpipe_t *)dt_malloc(sizeof(dt_dev_pixelpipe_t));
     dt_dev_pixelpipe_init(dev->pipe);
     dt_dev_pixelpipe_init_preview(dev->preview_pipe);
 
@@ -599,7 +600,7 @@ void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gbo
       // ((dt_dev_history_item_t *)history->data)->module->op);
       dev->history_end++;
 
-      hist = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
+      hist = (dt_dev_history_item_t *)dt_malloc(sizeof(dt_dev_history_item_t));
       if(enable)
       {
         module->enabled = TRUE;
@@ -617,11 +618,11 @@ void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gbo
       hist->focus_hash = dev->focus_hash;
       hist->enabled = module->enabled;
       hist->module = module;
-      hist->params = malloc(module->params_size);
+      hist->params = dt_malloc(module->params_size);
       hist->multi_priority = module->multi_priority;
       snprintf(hist->multi_name, sizeof(hist->multi_name), "%s", module->multi_name);
       /* allocate and set hist blend_params */
-      hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
+      hist->blend_params = dt_malloc(sizeof(dt_develop_blend_params_t));
       memcpy(hist->params, module->params, module->params_size);
       memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
 
@@ -1072,7 +1073,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     // db record:
     // 0-img, 1-num, 2-module_instance, 3-operation char, 4-params blob, 5-enabled, 6-blend_params,
     // 7-blendop_version, 8 multi_priority, 9 multi_name
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)dt_malloc(sizeof(dt_dev_history_item_t));
     hist->enabled = sqlite3_column_int(stmt, 5);
 
     const char *opname = (const char *)sqlite3_column_text(stmt, 3);
@@ -1144,8 +1145,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 
     int modversion = sqlite3_column_int(stmt, 2);
     assert(strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op) == 0);
-    hist->params = malloc(hist->module->params_size);
-    hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
+    hist->params = dt_malloc(hist->module->params_size);
+    hist->blend_params = dt_malloc(sizeof(dt_develop_blend_params_t));
     snprintf(hist->op_name, sizeof(hist->op_name), "%s", hist->module->op);
     snprintf(hist->multi_name, sizeof(hist->multi_name), "%s", multi_name);
     hist->multi_priority = multi_priority;

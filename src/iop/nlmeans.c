@@ -20,6 +20,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
@@ -713,7 +714,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 5; // nlmeans.cl, from programs.conf
   dt_iop_nlmeans_global_data_t *gd
-      = (dt_iop_nlmeans_global_data_t *)malloc(sizeof(dt_iop_nlmeans_global_data_t));
+      = (dt_iop_nlmeans_global_data_t *)dt_malloc(sizeof(dt_iop_nlmeans_global_data_t));
   module->data = gd;
   gd->kernel_nlmeans_init = dt_opencl_create_kernel(program, "nlmeans_init");
   gd->kernel_nlmeans_dist = dt_opencl_create_kernel(program, "nlmeans_dist");
@@ -749,7 +750,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_nlmeans_data_t));
+  piece->data = dt_malloc(sizeof(dt_iop_nlmeans_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -808,7 +809,7 @@ void gui_update(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
-  self->gui_data = malloc(sizeof(dt_iop_nlmeans_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_nlmeans_gui_data_t));
   dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));

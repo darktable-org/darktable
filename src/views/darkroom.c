@@ -28,6 +28,7 @@
 #include "common/styles.h"
 #include "common/tags.h"
 #include "common/undo.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -96,7 +97,7 @@ const char *name(dt_view_t *self)
 
 void init(dt_view_t *self)
 {
-  self->data = malloc(sizeof(dt_develop_t));
+  self->data = dt_malloc(sizeof(dt_develop_t));
   dt_dev_init((dt_develop_t *)self->data, 1);
 }
 

@@ -19,6 +19,7 @@
 #include "libs/lib.h"
 #include "common/debug.h"
 #include "common/module.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
@@ -628,7 +629,7 @@ static void *_update_params(dt_lib_module_t *module,
                             int target_version, size_t *new_size)
 {
   // make a copy of the old params so we can free it in the loop
-  void *params = malloc(old_params_size);
+  void *params = dt_malloc(old_params_size);
   if(params == NULL) return NULL;
   memcpy(params, old_params, old_params_size);
   while(old_version < target_version)

@@ -22,6 +22,7 @@
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -561,7 +562,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 8; // extended.cl from programs.conf
   dt_iop_global_tonemap_global_data_t *gd
-      = (dt_iop_global_tonemap_global_data_t *)malloc(sizeof(dt_iop_global_tonemap_global_data_t));
+      = (dt_iop_global_tonemap_global_data_t *)dt_malloc(sizeof(dt_iop_global_tonemap_global_data_t));
   module->data = gd;
   gd->kernel_pixelmax_first = dt_opencl_create_kernel(program, "pixelmax_first");
   gd->kernel_pixelmax_second = dt_opencl_create_kernel(program, "pixelmax_second");
@@ -680,7 +681,7 @@ void cleanup(dt_iop_module_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_global_tonemap_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_global_tonemap_gui_data_t));
   dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
   dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)self->params;
 

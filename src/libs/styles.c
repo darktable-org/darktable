@@ -17,6 +17,7 @@
 */
 #include "common/styles.h"
 #include "common/darktable.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -386,7 +387,7 @@ static void _styles_changed_callback(gpointer instance, gpointer user_data)
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_styles_t *d = (dt_lib_styles_t *)malloc(sizeof(dt_lib_styles_t));
+  dt_lib_styles_t *d = (dt_lib_styles_t *)dt_malloc(sizeof(dt_lib_styles_t));
   self->data = (void *)d;
   d->edit_button = NULL;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);

@@ -23,6 +23,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -223,7 +224,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 2; // basic.cl from programs.conf
   dt_iop_lowlight_global_data_t *gd
-      = (dt_iop_lowlight_global_data_t *)malloc(sizeof(dt_iop_lowlight_global_data_t));
+      = (dt_iop_lowlight_global_data_t *)dt_malloc(sizeof(dt_iop_lowlight_global_data_t));
   module->data = gd;
   gd->kernel_lowlight = dt_opencl_create_kernel(program, "lowlight");
 }
@@ -254,7 +255,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_lowlight_data_t *d = (dt_iop_lowlight_data_t *)malloc(sizeof(dt_iop_lowlight_data_t));
+  dt_iop_lowlight_data_t *d = (dt_iop_lowlight_data_t *)dt_malloc(sizeof(dt_iop_lowlight_data_t));
   dt_iop_lowlight_params_t *default_params = (dt_iop_lowlight_params_t *)self->default_params;
   piece->data = (void *)d;
   d->curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
@@ -816,7 +817,7 @@ static void blueness_callback(GtkWidget *slider, gpointer user_data)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_lowlight_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_lowlight_gui_data_t));
   dt_iop_lowlight_gui_data_t *c = (dt_iop_lowlight_gui_data_t *)self->gui_data;
   dt_iop_lowlight_params_t *p = (dt_iop_lowlight_params_t *)self->params;
 

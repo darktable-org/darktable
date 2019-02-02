@@ -21,6 +21,7 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
@@ -63,7 +64,7 @@ void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_par
       GList *images;
     } dt_imageio_email_v1_t;
 
-    dt_imageio_email_t *n = (dt_imageio_email_t *)malloc(sizeof(dt_imageio_email_t));
+    dt_imageio_email_t *n = (dt_imageio_email_t *)dt_malloc(sizeof(dt_imageio_email_t));
     dt_imageio_email_v1_t *o = (dt_imageio_email_v1_t *)old_params;
 
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));

@@ -20,6 +20,7 @@
  * implemented by Michael F. Hutt.
  * Changes versus the original code:
  *      do not include "nmsimplex.h" (not needed)
+ *      include dt's utilities for dynamic memory
  *      renamed configuration variables to NMS_*
  *      add additional argument to objfun for arbitrary parameters
  *      simplex() returns number of used iterations instead of min value
@@ -76,6 +77,8 @@
  */
 
 //#include "nmsimplex.h"
+#include "common/utility.h"
+
 
 static int simplex(double (*objfunc)(double[], void *params), double start[], int n, double EPSILON, double scale,
                    int maxiter, void (*constrain)(double[], int n), void *params)
@@ -106,17 +109,17 @@ static int simplex(double (*objfunc)(double[], void *params), double start[], in
   /* dynamically allocate arrays */
 
   /* allocate the rows of the arrays */
-  v = (double **)malloc((n + 1) * sizeof(double *));
-  f = (double *)malloc((n + 1) * sizeof(double));
-  vr = (double *)malloc(n * sizeof(double));
-  ve = (double *)malloc(n * sizeof(double));
-  vc = (double *)malloc(n * sizeof(double));
-  vm = (double *)malloc(n * sizeof(double));
+  v = (double **)dt_malloc((n + 1) * sizeof(double *));
+  f = (double *)dt_malloc((n + 1) * sizeof(double));
+  vr = (double *)dt_malloc(n * sizeof(double));
+  ve = (double *)dt_malloc(n * sizeof(double));
+  vc = (double *)dt_malloc(n * sizeof(double));
+  vm = (double *)dt_malloc(n * sizeof(double));
 
   /* allocate the columns of the arrays */
   for(i = 0; i <= n; i++)
   {
-    v[i] = (double *)malloc(n * sizeof(double));
+    v[i] = (double *)dt_malloc(n * sizeof(double));
   }
 
   /* create the initial simplex */

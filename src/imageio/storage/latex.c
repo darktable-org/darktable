@@ -85,7 +85,7 @@ void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_par
       GList *l;
     } dt_imageio_latex_v1_t;
 
-    dt_imageio_latex_t *n = (dt_imageio_latex_t *)malloc(sizeof(dt_imageio_latex_t));
+    dt_imageio_latex_t *n = (dt_imageio_latex_t *)dt_malloc(sizeof(dt_imageio_latex_t));
     dt_imageio_latex_v1_t *o = (dt_imageio_latex_v1_t *)old_params;
 
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
@@ -145,7 +145,7 @@ static void title_changed_callback(GtkEntry *entry, gpointer user_data)
 
 void gui_init(dt_imageio_module_storage_t *self)
 {
-  latex_t *d = (latex_t *)malloc(sizeof(latex_t));
+  latex_t *d = (latex_t *)dt_malloc(sizeof(latex_t));
   self->gui_data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
@@ -284,7 +284,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     sprintf(c, ".%s", ext);
 
     // save image to list, in order:
-    pair_t *pair = malloc(sizeof(pair_t));
+    pair_t *pair = dt_malloc(sizeof(pair_t));
 
 
 #if 0 // let's see if we actually want titles and such to be exported:

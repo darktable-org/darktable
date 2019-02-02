@@ -25,6 +25,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -150,7 +151,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int wdh = ceilf(3.0f * sigma);
   const int wd = 2 * wdh + 1;
   const size_t mat_size = (size_t)wd * sizeof(float);
-  float *mat = malloc(mat_size);
+  float *mat = dt_malloc(mat_size);
   float *m = mat + wdh;
   float weight = 0.0f;
 
@@ -444,7 +445,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 4; // highpass.cl, from programs.conf
   dt_iop_highpass_global_data_t *gd
-      = (dt_iop_highpass_global_data_t *)malloc(sizeof(dt_iop_highpass_global_data_t));
+      = (dt_iop_highpass_global_data_t *)dt_malloc(sizeof(dt_iop_highpass_global_data_t));
   module->data = gd;
   gd->kernel_highpass_invert = dt_opencl_create_kernel(program, "highpass_invert");
   gd->kernel_highpass_hblur = dt_opencl_create_kernel(program, "highpass_hblur");
@@ -473,7 +474,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_highpass_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_highpass_gui_data_t));
   dt_iop_highpass_gui_data_t *g = (dt_iop_highpass_gui_data_t *)self->gui_data;
   dt_iop_highpass_params_t *p = (dt_iop_highpass_params_t *)self->params;
 

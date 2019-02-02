@@ -19,6 +19,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/mipmap_cache.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "common/undo.h"
@@ -52,7 +53,7 @@ static dt_masks_form_t *_dup_masks_form(const dt_masks_form_t *form)
 {
   if (!form) return NULL;
 
-  dt_masks_form_t *new_form = malloc(sizeof(struct dt_masks_form_t));
+  dt_masks_form_t *new_form = dt_malloc(sizeof(struct dt_masks_form_t));
   memcpy(new_form, form, sizeof(struct dt_masks_form_t));
 
   // then duplicate the GList *points
@@ -81,7 +82,7 @@ static dt_masks_form_t *_dup_masks_form(const dt_masks_form_t *form)
       GList *pt = g_list_first(form->points);
       while (pt)
       {
-        void *item = malloc(size_item);
+        void *item = dt_malloc(size_item);
         memcpy(item, pt->data, size_item);
         new_form->points = g_list_append(new_form->points, item);
         pt = g_list_next(pt);
@@ -109,7 +110,7 @@ GList *dt_masks_dup_forms_deep(GList *forms, dt_masks_form_t *form)
 
 static _masks_undo_data_t *_create_snapshot(GList *forms, dt_masks_form_t *form, dt_develop_t *dev)
 {
-  _masks_undo_data_t *data = malloc(sizeof(struct _masks_undo_data_t));
+  _masks_undo_data_t *data = dt_malloc(sizeof(struct _masks_undo_data_t));
   data->forms = dt_masks_dup_forms_deep(forms, form);
   data->form  = dev->form_visible ? _dup_masks_form(dev->form_visible) : NULL;
   return data;
@@ -445,7 +446,7 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev, dt_iop_module_t *module,
       module->blend_params->mask_id = grpid = grp->formid;
     }
     // we add the form in this group
-    dt_masks_point_group_t *grpt = malloc(sizeof(dt_masks_point_group_t));
+    dt_masks_point_group_t *grpt = dt_malloc(sizeof(dt_masks_point_group_t));
     grpt->formid = form->formid;
     grpt->parentid = grpid;
     grpt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
@@ -486,7 +487,7 @@ int dt_masks_form_duplicate(dt_develop_t *dev, int formid)
     while(pts)
     {
       dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
-      dt_masks_point_group_t *npt = (dt_masks_point_group_t *)malloc(sizeof(dt_masks_point_group_t));
+      dt_masks_point_group_t *npt = (dt_masks_point_group_t *)dt_malloc(sizeof(dt_masks_point_group_t));
 
       npt->formid = dt_masks_form_duplicate(dev, pt->formid);
       npt->parentid = fdest->formid;
@@ -502,7 +503,7 @@ int dt_masks_form_duplicate(dt_develop_t *dev, int formid)
     while(pts)
     {
       dt_masks_point_circle_t *pt = (dt_masks_point_circle_t *)pts->data;
-      dt_masks_point_circle_t *npt = (dt_masks_point_circle_t *)malloc(sizeof(dt_masks_point_circle_t));
+      dt_masks_point_circle_t *npt = (dt_masks_point_circle_t *)dt_malloc(sizeof(dt_masks_point_circle_t));
       memcpy(npt, pt, sizeof(dt_masks_point_circle_t));
       fdest->points = g_list_append(fdest->points, npt);
       pts = g_list_next(pts);
@@ -514,7 +515,7 @@ int dt_masks_form_duplicate(dt_develop_t *dev, int formid)
     while(pts)
     {
       dt_masks_point_path_t *pt = (dt_masks_point_path_t *)pts->data;
-      dt_masks_point_path_t *npt = (dt_masks_point_path_t *)malloc(sizeof(dt_masks_point_path_t));
+      dt_masks_point_path_t *npt = (dt_masks_point_path_t *)dt_malloc(sizeof(dt_masks_point_path_t));
       memcpy(npt, pt, sizeof(dt_masks_point_path_t));
       fdest->points = g_list_append(fdest->points, npt);
       pts = g_list_next(pts);
@@ -526,7 +527,7 @@ int dt_masks_form_duplicate(dt_develop_t *dev, int formid)
     while(pts)
     {
       dt_masks_point_gradient_t *pt = (dt_masks_point_gradient_t *)pts->data;
-      dt_masks_point_gradient_t *npt = (dt_masks_point_gradient_t *)malloc(sizeof(dt_masks_point_gradient_t));
+      dt_masks_point_gradient_t *npt = (dt_masks_point_gradient_t *)dt_malloc(sizeof(dt_masks_point_gradient_t));
       memcpy(npt, pt, sizeof(dt_masks_point_gradient_t));
       fdest->points = g_list_append(fdest->points, npt);
       pts = g_list_next(pts);
@@ -538,7 +539,7 @@ int dt_masks_form_duplicate(dt_develop_t *dev, int formid)
     while(pts)
     {
       dt_masks_point_ellipse_t *pt = (dt_masks_point_ellipse_t *)pts->data;
-      dt_masks_point_ellipse_t *npt = (dt_masks_point_ellipse_t *)malloc(sizeof(dt_masks_point_ellipse_t));
+      dt_masks_point_ellipse_t *npt = (dt_masks_point_ellipse_t *)dt_malloc(sizeof(dt_masks_point_ellipse_t));
       memcpy(npt, pt, sizeof(dt_masks_point_ellipse_t));
       fdest->points = g_list_append(fdest->points, npt);
       pts = g_list_next(pts);
@@ -550,7 +551,7 @@ int dt_masks_form_duplicate(dt_develop_t *dev, int formid)
     while(pts)
     {
       dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)pts->data;
-      dt_masks_point_brush_t *npt = (dt_masks_point_brush_t *)malloc(sizeof(dt_masks_point_brush_t));
+      dt_masks_point_brush_t *npt = (dt_masks_point_brush_t *)dt_malloc(sizeof(dt_masks_point_brush_t));
       memcpy(npt, pt, sizeof(dt_masks_point_brush_t));
       fdest->points = g_list_append(fdest->points, npt);
       pts = g_list_next(pts);
@@ -1104,7 +1105,7 @@ void dt_masks_read_forms_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     // and now we "read" the blob
     if(form->type & DT_MASKS_CIRCLE)
     {
-      dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)malloc(sizeof(dt_masks_point_circle_t));
+      dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)dt_malloc(sizeof(dt_masks_point_circle_t));
       memcpy(circle, sqlite3_column_blob(stmt, 5), sizeof(dt_masks_point_circle_t));
       form->points = g_list_append(form->points, circle);
     }
@@ -1113,7 +1114,7 @@ void dt_masks_read_forms_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
       dt_masks_point_path_t *ptbuf = (dt_masks_point_path_t *)sqlite3_column_blob(stmt, 5);
       for(int i = 0; i < nb_points; i++)
       {
-        dt_masks_point_path_t *point = (dt_masks_point_path_t *)malloc(sizeof(dt_masks_point_path_t));
+        dt_masks_point_path_t *point = (dt_masks_point_path_t *)dt_malloc(sizeof(dt_masks_point_path_t));
         memcpy(point, ptbuf + i, sizeof(dt_masks_point_path_t));
         form->points = g_list_append(form->points, point);
       }
@@ -1123,7 +1124,7 @@ void dt_masks_read_forms_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
       dt_masks_point_group_t *ptbuf = (dt_masks_point_group_t *)sqlite3_column_blob(stmt, 5);
       for(int i = 0; i < nb_points; i++)
       {
-        dt_masks_point_group_t *point = (dt_masks_point_group_t *)malloc(sizeof(dt_masks_point_group_t));
+        dt_masks_point_group_t *point = (dt_masks_point_group_t *)dt_malloc(sizeof(dt_masks_point_group_t));
         memcpy(point, ptbuf + i, sizeof(dt_masks_point_group_t));
         form->points = g_list_append(form->points, point);
       }
@@ -1131,14 +1132,14 @@ void dt_masks_read_forms_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     else if(form->type & DT_MASKS_GRADIENT)
     {
       dt_masks_point_gradient_t *gradient
-          = (dt_masks_point_gradient_t *)malloc(sizeof(dt_masks_point_gradient_t));
+          = (dt_masks_point_gradient_t *)dt_malloc(sizeof(dt_masks_point_gradient_t));
       memcpy(gradient, sqlite3_column_blob(stmt, 5), sizeof(dt_masks_point_gradient_t));
       form->points = g_list_append(form->points, gradient);
     }
     else if(form->type & DT_MASKS_ELLIPSE)
     {
       dt_masks_point_ellipse_t *ellipse
-          = (dt_masks_point_ellipse_t *)malloc(sizeof(dt_masks_point_ellipse_t));
+          = (dt_masks_point_ellipse_t *)dt_malloc(sizeof(dt_masks_point_ellipse_t));
       memcpy(ellipse, sqlite3_column_blob(stmt, 5), sizeof(dt_masks_point_ellipse_t));
       form->points = g_list_append(form->points, ellipse);
     }
@@ -1147,7 +1148,7 @@ void dt_masks_read_forms_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
       dt_masks_point_brush_t *ptbuf = (dt_masks_point_brush_t *)sqlite3_column_blob(stmt, 5);
       for(int i = 0; i < nb_points; i++)
       {
-        dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)malloc(sizeof(dt_masks_point_brush_t));
+        dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)dt_malloc(sizeof(dt_masks_point_brush_t));
         memcpy(point, ptbuf + i, sizeof(dt_masks_point_brush_t));
         form->points = g_list_append(form->points, point);
       }
@@ -1681,7 +1682,7 @@ void dt_masks_set_edit_mode_single_form(struct dt_iop_module_t *module, const in
   dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, formid);
   if(form)
   {
-    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)malloc(sizeof(dt_masks_point_group_t));
+    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)dt_malloc(sizeof(dt_masks_point_group_t));
     fpt->formid = formid;
     fpt->parentid = grid;
     fpt->state = DT_MASKS_STATE_USE;
@@ -1883,7 +1884,7 @@ void dt_masks_iop_combo_populate(GtkWidget *w, struct dt_iop_module_t **m)
   // we determine a higher approx of the entry number
   guint nbe = 5 + g_list_length(darktable.develop->forms) + g_list_length(darktable.develop->iop);
   free(bd->masks_combo_ids);
-  bd->masks_combo_ids = malloc(nbe * sizeof(int));
+  bd->masks_combo_ids = dt_malloc(nbe * sizeof(int));
 
   int *cids = bd->masks_combo_ids;
   GtkWidget *combo = bd->masks_combo;
@@ -2258,7 +2259,7 @@ dt_masks_point_group_t *dt_masks_group_add_form(dt_masks_form_t *grp, dt_masks_f
   // or we go through all points of form to see if we find a ref to grp->formid
   if(!(form->type & DT_MASKS_GROUP) || _find_in_group(form, grp->formid) == 0)
   {
-    dt_masks_point_group_t *grpt = malloc(sizeof(dt_masks_point_group_t));
+    dt_masks_point_group_t *grpt = dt_malloc(sizeof(dt_masks_point_group_t));
     grpt->formid = form->formid;
     grpt->parentid = grp->formid;
     grpt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
@@ -2290,7 +2291,7 @@ void dt_masks_group_ungroup(dt_masks_form_t *dest_grp, dt_masks_form_t *grp)
       }
       else
       {
-        dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)malloc(sizeof(dt_masks_point_group_t));
+        dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)dt_malloc(sizeof(dt_masks_point_group_t));
         fpt->formid = grpt->formid;
         fpt->parentid = grpt->parentid;
         fpt->state = grpt->state;

@@ -16,6 +16,7 @@
    You should have received a copy of the GNU General Public License
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "common/utility.h"
 #include "control/control.h"
 #include "lua/call.h"
 #include "lua/modules.h"
@@ -93,7 +94,7 @@ static int get_widget_params(lua_State *L)
   if(G_TYPE_IS_ABSTRACT(widget_type->gtk_type)){
     luaL_error(L,"Trying to create a widget of an abstract type : %s\n",widget_type->name);
   }
-  lua_widget widget= malloc(widget_type->alloc_size);
+  lua_widget widget= dt_malloc(widget_type->alloc_size);
   widget->widget = gtk_widget_new(widget_type->gtk_type,NULL);
   gtk_widget_show(widget->widget);// widgets are invisible by default
   g_object_ref_sink(widget->widget);

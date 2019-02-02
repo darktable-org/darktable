@@ -25,6 +25,7 @@
 #include "common/colorspaces.h"
 #include "common/opencl.h"
 #include "common/points.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -298,9 +299,9 @@ static void kmeans(const float *col, const int width, const int height, const in
   const int nit = 40;                       // number of iterations
   const int samples = width * height * 0.2; // samples: only a fraction of the buffer.
 
-  float(*const mean)[2] = malloc(2 * n * sizeof(float));
-  float(*const var)[2] = malloc(2 * n * sizeof(float));
-  int *const cnt = malloc(n * sizeof(int));
+  float(*const mean)[2] = dt_malloc(2 * n * sizeof(float));
+  float(*const var)[2] = dt_malloc(2 * n * sizeof(float));
+  int *const cnt = dt_malloc(n * sizeof(int));
   int count;
 
   float a_min = FLT_MAX, b_min = FLT_MAX, a_max = FLT_MIN, b_max = FLT_MIN;
@@ -456,7 +457,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_pthread_mutex_lock(&g->lock);
     if(g->buffer) free(g->buffer);
 
-    g->buffer = malloc((size_t)width * height * ch * sizeof(float));
+    g->buffer = dt_malloc((size_t)width * height * ch * sizeof(float));
     g->width = width;
     g->height = height;
     g->ch = ch;
@@ -475,12 +476,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float equalization = data->equalization / 100.0f;
 
     // get mapping from input clusters to target clusters
-    int *const mapio = malloc(data->n * sizeof(int));
+    int *const mapio = dt_malloc(data->n * sizeof(int));
 
     get_cluster_mapping(data->n, data->target_mean, data->target_weight, data->source_mean,
                         data->source_weight, dominance, mapio);
 
-    float(*const var_ratio)[2] = malloc(2 * data->n * sizeof(float));
+    float(*const var_ratio)[2] = dt_malloc(2 * data->n * sizeof(float));
 
     for(int i = 0; i < data->n; i++)
     {
@@ -524,7 +525,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dt_bilateral_free(b);
     }
 
-    float *const weight_buf = malloc(data->n * dt_get_num_threads() * sizeof(float));
+    float *const weight_buf = dt_malloc(data->n * dt_get_num_threads() * sizeof(float));
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) shared(data, in, out, equalization)
@@ -606,7 +607,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_pthread_mutex_lock(&g->lock);
     free(g->buffer);
 
-    g->buffer = malloc(width * height * ch * sizeof(float));
+    g->buffer = dt_malloc(width * height * ch * sizeof(float));
     g->width = width;
     g->height = height;
     g->ch = ch;
@@ -843,7 +844,7 @@ static void acquire_target_button_pressed(GtkButton *button, dt_iop_module_t *se
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_colormapping_data_t));
+  piece->data = dt_malloc(sizeof(dt_iop_colormapping_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -877,7 +878,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 8; // extended.cl, from programs.conf
   dt_iop_colormapping_global_data_t *gd
-      = (dt_iop_colormapping_global_data_t *)malloc(sizeof(dt_iop_colormapping_global_data_t));
+      = (dt_iop_colormapping_global_data_t *)dt_malloc(sizeof(dt_iop_colormapping_global_data_t));
   module->data = gd;
   gd->kernel_histogram = dt_opencl_create_kernel(program, "colormapping_histogram");
   gd->kernel_mapping = dt_opencl_create_kernel(program, "colormapping_mapping");
@@ -1006,7 +1007,7 @@ static void process_clusters(gpointer instance, gpointer user_data)
   const int width = g->width;
   const int height = g->height;
   const int ch = g->ch;
-  float *buffer = malloc(width * height * ch * sizeof(float));
+  float *buffer = dt_malloc(width * height * ch * sizeof(float));
   if(!buffer)
   {
     dt_pthread_mutex_unlock(&g->lock);
@@ -1076,7 +1077,7 @@ static void process_clusters(gpointer instance, gpointer user_data)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_colormapping_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_colormapping_gui_data_t));
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
   dt_iop_colormapping_params_t *p = (dt_iop_colormapping_params_t *)self->params;
 

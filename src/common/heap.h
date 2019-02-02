@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include "common/utility.h"
+
 // simple implementation of a heap/priority queue, using uint64_t as key and
 // float values to sort the elements.
 // meant to support scheduling of background jobs with priorities.
@@ -31,9 +33,9 @@ typedef struct heap_t
 
 heap_t *heap_init(uint32_t size)
 {
-  heap_t *h = (heap_t *)malloc(sizeof(heap_t));
-  h->keys = (uint64_t *)malloc(sizeof(uint64_t) * size);
-  h->vals = (float *)malloc(sizeof(float) * size);
+  heap_t *h = (heap_t *)dt_malloc(sizeof(heap_t));
+  h->keys = (uint64_t *)dt_malloc(sizeof(uint64_t) * size);
+  h->vals = (float *)dt_malloc(sizeof(float) * size);
   h->size = size;
   h->end = 0;
   return h;

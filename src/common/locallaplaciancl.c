@@ -19,6 +19,7 @@
 #include "common/darktable.h"
 #include "common/opencl.h"
 #include "common/locallaplaciancl.h"
+#include "common/utility.h"
 
 #define max_levels 30
 #define num_gamma 6
@@ -33,7 +34,7 @@ static inline uint64_t dl(uint64_t size, const int level)
 
 dt_local_laplacian_cl_global_t *dt_local_laplacian_init_cl_global()
 {
-  dt_local_laplacian_cl_global_t *g = (dt_local_laplacian_cl_global_t *)malloc(sizeof(dt_local_laplacian_cl_global_t));
+  dt_local_laplacian_cl_global_t *g = (dt_local_laplacian_cl_global_t *)dt_malloc(sizeof(dt_local_laplacian_cl_global_t));
 
   const int program = 19; // locallaplacian.cl, from programs.conf
   g->kernel_pad_input          = dt_opencl_create_kernel(program, "pad_input");
@@ -77,7 +78,7 @@ dt_local_laplacian_cl_t *dt_local_laplacian_init_cl(
     const float highlights,     // user param: compress highlights
     const float clarity)        // user param: increase clarity/local contrast
 {
-  dt_local_laplacian_cl_t *g = (dt_local_laplacian_cl_t *)malloc(sizeof(dt_local_laplacian_cl_t));
+  dt_local_laplacian_cl_t *g = (dt_local_laplacian_cl_t *)dt_malloc(sizeof(dt_local_laplacian_cl_t));
   if(!g) return 0;
 
   g->global = darktable.opencl->local_laplacian;

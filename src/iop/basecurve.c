@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -980,8 +981,8 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   // allocate temporary buffer for wavelet transform + blending
   const int wd = roi_in->width, ht = roi_in->height;
   int num_levels = 8;
-  float **col = malloc(num_levels * sizeof(float *));
-  float **comb = malloc(num_levels * sizeof(float *));
+  float **col = dt_malloc(num_levels * sizeof(float *));
+  float **comb = dt_malloc(num_levels * sizeof(float *));
   int w = wd, h = ht;
   const int rad = MIN(wd, (int)ceilf(256 * roi_in->scale / piece->iscale));
   int step = 1;
@@ -1280,7 +1281,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 18; // basecurve.cl, from programs.conf
   dt_iop_basecurve_global_data_t *gd
-      = (dt_iop_basecurve_global_data_t *)malloc(sizeof(dt_iop_basecurve_global_data_t));
+      = (dt_iop_basecurve_global_data_t *)dt_malloc(sizeof(dt_iop_basecurve_global_data_t));
   module->data = gd;
   gd->kernel_basecurve_lut = dt_opencl_create_kernel(program, "basecurve_lut");
   gd->kernel_basecurve_zero = dt_opencl_create_kernel(program, "basecurve_zero");
@@ -1914,7 +1915,7 @@ static void scale_callback(GtkWidget *widget, gpointer user_data)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_basecurve_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_basecurve_gui_data_t));
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
 

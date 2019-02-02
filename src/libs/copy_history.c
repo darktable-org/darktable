@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/history.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -269,7 +270,7 @@ int position()
 #define ellipsize_button(button) gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_END);
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)malloc(sizeof(dt_lib_copy_history_t));
+  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)dt_malloc(sizeof(dt_lib_copy_history_t));
   self->data = (void *)d;
   self->widget = gtk_grid_new();
   GtkGrid *grid = GTK_GRID(self->widget);

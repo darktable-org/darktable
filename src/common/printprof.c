@@ -18,6 +18,7 @@
 
 #include "common/printprof.h"
 #include "common/colorspaces.h"
+#include "common/utility.h"
 #include "lcms2.h"
 #include <glib.h>
 #include <unistd.h>
@@ -65,7 +66,7 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
     return 1;
   }
 
-  void *out = (void *)malloc(width*height*3);
+  void *out = (void *)dt_malloc(width*height*3);
 
   if (bpp == 8)
   {

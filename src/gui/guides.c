@@ -20,6 +20,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
+#include "common/utility.h"
 #include "gui/guides.h"
 
 typedef struct dt_QRect_t
@@ -385,7 +386,7 @@ static void _guides_add_guide(GList **list, const char *name,
                               dt_guides_widget_callback widget,
                               void *user_data, GDestroyNotify free)
 {
-  dt_guides_t *guide = (dt_guides_t *)malloc(sizeof(dt_guides_t));
+  dt_guides_t *guide = (dt_guides_t *)dt_malloc(sizeof(dt_guides_t));
   g_strlcpy(guide->name, name, sizeof(guide->name));
   guide->draw = draw;
   guide->widget = widget;
@@ -411,7 +412,7 @@ GList *dt_guides_init()
   _guides_add_guide(&guides, _("diagonal method"), _guides_draw_diagonal_method, NULL, NULL, NULL);
   _guides_add_guide(&guides, _("harmonious triangles"), _guides_draw_harmonious_triangles, NULL, NULL, NULL);
   {
-    _golden_mean_t *user_data = (_golden_mean_t *)malloc(sizeof(_golden_mean_t));
+    _golden_mean_t *user_data = (_golden_mean_t *)dt_malloc(sizeof(_golden_mean_t));
     _golden_mean_set_data(user_data, dt_conf_get_int("plugins/darkroom/clipping/golden_extras"));
     _guides_add_guide(&guides, _("golden mean"), _guides_draw_golden_mean, _guides_gui_golden_mean, user_data, free);
   }

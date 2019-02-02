@@ -19,6 +19,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/selection.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
@@ -84,7 +85,7 @@ static void _map_source_changed(GtkWidget *widget, gpointer data)
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_map_settings_t *d = (dt_lib_map_settings_t *)malloc(sizeof(dt_lib_map_settings_t));
+  dt_lib_map_settings_t *d = (dt_lib_map_settings_t *)dt_malloc(sizeof(dt_lib_map_settings_t));
   self->data = d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));

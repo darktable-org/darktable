@@ -20,6 +20,7 @@
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/signal.h"
@@ -450,7 +451,7 @@ void *get_params(dt_lib_module_t *self, int *size)
 
   *size = title_len + description_len + rights_len + creator_len + publisher_len;
 
-  char *params = (char *)malloc(*size);
+  char *params = (char *)dt_malloc(*size);
 
   int pos = 0;
   memcpy(params + pos, title, title_len);

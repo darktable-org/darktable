@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/undo.h"
+#include "common/utility.h"
 #include <glib.h>    // for GList, gpointer, g_list_first, g_list_prepend
 #include <stdlib.h>  // for NULL, malloc, free
 #include <sys/time.h>
@@ -36,7 +37,7 @@ typedef struct dt_undo_item_t
 
 dt_undo_t *dt_undo_init(void)
 {
-  dt_undo_t *udata = malloc(sizeof(dt_undo_t));
+  dt_undo_t *udata = dt_malloc(sizeof(dt_undo_t));
   udata->undo_list = NULL;
   udata->redo_list = NULL;
   dt_pthread_mutex_init(&udata->mutex, NULL);
@@ -62,7 +63,7 @@ void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt
 {
   if(!self) return;
 
-  dt_undo_item_t *item = malloc(sizeof(dt_undo_item_t));
+  dt_undo_item_t *item = dt_malloc(sizeof(dt_undo_item_t));
 
   item->user_data = user_data;
   item->type      = type;

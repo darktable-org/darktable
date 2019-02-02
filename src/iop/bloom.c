@@ -20,6 +20,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -140,7 +141,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int hr = range / 2;
 
   const size_t size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
-  float *const scanline_buf = malloc(size * dt_get_num_threads() * sizeof(float));
+  float *const scanline_buf = dt_malloc(size * dt_get_num_threads() * sizeof(float));
 
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
@@ -401,7 +402,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 12; // bloom.cl, from programs.conf
-  dt_iop_bloom_global_data_t *gd = (dt_iop_bloom_global_data_t *)malloc(sizeof(dt_iop_bloom_global_data_t));
+  dt_iop_bloom_global_data_t *gd = (dt_iop_bloom_global_data_t *)dt_malloc(sizeof(dt_iop_bloom_global_data_t));
   module->data = gd;
   gd->kernel_bloom_threshold = dt_opencl_create_kernel(program, "bloom_threshold");
   gd->kernel_bloom_hblur = dt_opencl_create_kernel(program, "bloom_hblur");
@@ -501,7 +502,7 @@ void cleanup(dt_iop_module_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_bloom_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_bloom_gui_data_t));
   dt_iop_bloom_gui_data_t *g = (dt_iop_bloom_gui_data_t *)self->gui_data;
   const dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)self->params;
 

@@ -28,6 +28,7 @@
 #include "common/gaussian.h"
 #include "common/heal.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "develop/blend.h"
 #include "develop/imageop_math.h"
 #include "develop/masks.h"
@@ -776,7 +777,7 @@ static void rt_show_forms_for_current_scale(dt_iop_module_t *self)
       dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, formid);
       if(form)
       {
-        dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)malloc(sizeof(dt_masks_point_group_t));
+        dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)dt_malloc(sizeof(dt_masks_point_group_t));
         fpt->formid = formid;
         fpt->parentid = grid;
         fpt->state = DT_MASKS_STATE_USE;
@@ -2369,7 +2370,7 @@ void cleanup(dt_iop_module_t *module)
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 21; // retouch.cl, from programs.conf
-  dt_iop_retouch_global_data_t *gd = (dt_iop_retouch_global_data_t *)malloc(sizeof(dt_iop_retouch_global_data_t));
+  dt_iop_retouch_global_data_t *gd = (dt_iop_retouch_global_data_t *)dt_malloc(sizeof(dt_iop_retouch_global_data_t));
   module->data = gd;
   gd->kernel_retouch_clear_alpha = dt_opencl_create_kernel(program, "retouch_clear_alpha");
   gd->kernel_retouch_copy_alpha = dt_opencl_create_kernel(program, "retouch_copy_alpha");
@@ -2460,7 +2461,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_retouch_data_t));
+  piece->data = dt_malloc(sizeof(dt_iop_retouch_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -2550,7 +2551,7 @@ void gui_init(dt_iop_module_t *self)
 {
   const int bs = DT_PIXEL_APPLY_DPI(14);
 
-  self->gui_data = malloc(sizeof(dt_iop_retouch_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_retouch_gui_data_t));
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
 

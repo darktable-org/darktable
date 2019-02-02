@@ -23,6 +23,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "common/utility.h"
 
 #include "common/curve_tools.h"
 #include <cairo.h>
@@ -194,10 +195,10 @@ static inline void dt_draw_endmarker(cairo_t *cr, const int width, const int hei
 
 static inline dt_draw_curve_t *dt_draw_curve_new(const float min, const float max, unsigned int type)
 {
-  dt_draw_curve_t *c = (dt_draw_curve_t *)malloc(sizeof(dt_draw_curve_t));
+  dt_draw_curve_t *c = (dt_draw_curve_t *)dt_malloc(sizeof(dt_draw_curve_t));
   c->csample.m_samplingRes = 0x10000;
   c->csample.m_outputRes = 0x10000;
-  c->csample.m_Samples = (uint16_t *)malloc(sizeof(uint16_t) * 0x10000);
+  c->csample.m_Samples = (uint16_t *)dt_malloc(sizeof(uint16_t) * 0x10000);
 
   c->c.m_spline_type = type;
   c->c.m_numAnchors = 0;

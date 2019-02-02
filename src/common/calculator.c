@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "utility.h"
 #include <glib.h>
 #include <math.h>
 #include <stdio.h>
@@ -71,7 +72,7 @@ static token_t *get_token(parser_state_t *self)
 {
   if(!self->p) return NULL;
 
-  token_t *token = (token_t *)malloc(sizeof(token_t));
+  token_t *token = (token_t *)dt_malloc(sizeof(token_t));
 
   for(; *self->p; self->p++)
   {
@@ -325,7 +326,7 @@ float dt_calculator_solve(float x, const char *formula)
 
   float result;
   gchar *dotformula = g_strdup(formula);
-  parser_state_t *self = (parser_state_t *)malloc(sizeof(parser_state_t));
+  parser_state_t *self = (parser_state_t *)dt_malloc(sizeof(parser_state_t));
 
   self->p = g_strdelimit(dotformula, ",", '.');
   self->x = x;

@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -83,7 +84,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch = piece->colors;
 
   // PASS1: Get a luminance map of image...
-  float *luminance = (float *)malloc(((size_t)roi_out->width * roi_out->height) * sizeof(float));
+  float *luminance = (float *)dt_malloc(((size_t)roi_out->width * roi_out->height) * sizeof(float));
 // double lsmax=0.0,lsmin=1.0;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) shared(luminance)
@@ -111,7 +112,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float slope = data->slope;
 
   const size_t destbuf_size = roi_out->width;
-  float *const dest_buf = malloc(destbuf_size * sizeof(float) * dt_get_num_threads());
+  float *const dest_buf = dt_malloc(destbuf_size * sizeof(float) * dt_get_num_threads());
 
 // CLAHE
 #ifdef _OPENMP
@@ -310,7 +311,7 @@ void cleanup(dt_iop_module_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_rlce_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_rlce_gui_data_t));
   dt_iop_rlce_gui_data_t *g = (dt_iop_rlce_gui_data_t *)self->gui_data;
   dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)self->params;
 

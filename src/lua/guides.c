@@ -17,6 +17,7 @@
  */
 #include "gui/guides.h"
 #include "common/darktable.h"
+#include "common/utility.h"
 #include "lua/cairo.h"
 #include "lua/call.h"
 #include "lua/lua.h"
@@ -97,7 +98,7 @@ static int register_guide(lua_State *L)
   luaL_checktype(L, 2, LUA_TFUNCTION);
   draw_callback_id = luaL_ref(L, LUA_REGISTRYINDEX);
 
-  callback_data_t *user_data = (callback_data_t *)malloc(sizeof(callback_data_t));
+  callback_data_t *user_data = (callback_data_t *)dt_malloc(sizeof(callback_data_t));
   user_data->draw_callback_id = draw_callback_id;
   user_data->gui_callback_id = gui_callback_id;
 

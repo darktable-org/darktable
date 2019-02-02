@@ -25,6 +25,7 @@
 #include "common/debug.h"
 #include "common/interpolation.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -1204,10 +1205,10 @@ static int edge_enhance(const double *in, double *out, const int width, const in
   double *Gx = NULL;
   double *Gy = NULL;
 
-  Gx = malloc((size_t)width * height * sizeof(double));
+  Gx = dt_malloc((size_t)width * height * sizeof(double));
   if(Gx == NULL) goto error;
 
-  Gy = malloc((size_t)width * height * sizeof(double));
+  Gy = dt_malloc((size_t)width * height * sizeof(double));
   if(Gy == NULL) goto error;
 
   // perform edge enhancement in both directions
@@ -1354,7 +1355,7 @@ static int line_detect(float *in, const int width, const int height, const int x
   }
 
   // allocate intermediate buffers
-  greyscale = malloc((size_t)width * height * sizeof(double));
+  greyscale = dt_malloc((size_t)width * height * sizeof(double));
   if(greyscale == NULL) goto error;
 
   // convert to greyscale image
@@ -1381,7 +1382,7 @@ static int line_detect(float *in, const int width, const int height, const int x
   if(lines_count > 0)
   {
     // aggregate lines data into our own structures
-    ashift_lines = (dt_iop_ashift_line_t *)malloc((size_t)lines_count * sizeof(dt_iop_ashift_line_t));
+    ashift_lines = (dt_iop_ashift_line_t *)dt_malloc((size_t)lines_count * sizeof(dt_iop_ashift_line_t));
     if(ashift_lines == NULL) goto error;
 
     for(int n = 0; n < lines_count; n++)
@@ -1524,7 +1525,7 @@ static int get_structure(dt_iop_module_t *module, dt_iop_ashift_enhance_t enhanc
     scale = g->buf_scale;
 
     // create a temporary buffer to hold image data
-    buffer = malloc((size_t)width * height * 4 * sizeof(float));
+    buffer = dt_malloc((size_t)width * height * 4 * sizeof(float));
     if(buffer != NULL)
       memcpy(buffer, g->buf, (size_t)width * height * 4 * sizeof(float));
   }
@@ -1639,7 +1640,7 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
   if(set_count < 3) return;
 
   const size_t set_size = set_count * sizeof(int);
-  int *best_set = malloc(set_size);
+  int *best_set = dt_malloc(set_size);
   memcpy(best_set, index_set, set_size);
   int *best_inout = calloc(1, set_size);
 
@@ -1659,12 +1660,12 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
   const int riter = (set_count > RANSAC_HURDLE) ? RANSAC_RUNS : fact(set_count);
 
   // some data needed for quickperm
-  int *perm = malloc((set_count + 1) * sizeof(int));
+  int *perm = dt_malloc((set_count + 1) * sizeof(int));
   for(int n = 0; n < set_count + 1; n++) perm[n] = n;
   int piter = 1;
 
   // inout holds good/bad qualification for each line
-  int *inout = malloc(set_size);
+  int *inout = dt_malloc(set_size);
 
   for(int r = 0; r < optiruns + riter; r++)
   {
@@ -1817,9 +1818,9 @@ static int remove_outliers(dt_iop_module_t *module)
   const int ymax = ymin + height;
 
   // holds the index set of lines we want to work on
-  int *lines_set = malloc(g->lines_count * sizeof(int));
+  int *lines_set = dt_malloc(g->lines_count * sizeof(int));
   // holds the result of ransac
-  int *inout_set = malloc(g->lines_count * sizeof(int));
+  int *inout_set = dt_malloc(g->lines_count * sizeof(int));
 
   // some accounting variables
   int vnb = 0, vcount = 0;
@@ -2856,7 +2857,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       // if needed allocate buffer
       free(g->buf); // a no-op if g->buf is NULL
       // only get new buffer if no old buffer available or old buffer does not fit in terms of size
-      g->buf = malloc((size_t)width * height * 4 * sizeof(float));
+      g->buf = dt_malloc((size_t)width * height * 4 * sizeof(float));
     }
 
     if(g->buf /* && hash != g->buf_hash */)
@@ -2988,7 +2989,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       // if needed allocate buffer
       free(g->buf); // a no-op if g->buf is NULL
       // only get new buffer if no old buffer or old buffer does not fit in terms of size
-      g->buf = malloc((size_t)iwidth * iheight * 4 * sizeof(float));
+      g->buf = dt_malloc((size_t)iwidth * iheight * 4 * sizeof(float));
     }
 
     if(g->buf /* && hash != g->buf_hash */)
@@ -3237,7 +3238,7 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   const int isflipped = g->isflipped;
 
   // allocate new index array
-  my_points_idx = (dt_iop_ashift_points_idx_t *)malloc(lines_count * sizeof(dt_iop_ashift_points_idx_t));
+  my_points_idx = (dt_iop_ashift_points_idx_t *)dt_malloc(lines_count * sizeof(dt_iop_ashift_points_idx_t));
   if(my_points_idx == NULL) goto error;
 
   // account for total number of points
@@ -3273,7 +3274,7 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   }
 
   // now allocate new points buffer
-  my_points = (float *)malloc((size_t)2 * total_points * sizeof(float));
+  my_points = (float *)dt_malloc((size_t)2 * total_points * sizeof(float));
   if(my_points == NULL) goto error;
 
   // second step: generate points for each line
@@ -4601,7 +4602,7 @@ void reload_defaults(dt_iop_module_t *module)
 void init_global(dt_iop_module_so_t *module)
 {
   dt_iop_ashift_global_data_t *gd
-      = (dt_iop_ashift_global_data_t *)malloc(sizeof(dt_iop_ashift_global_data_t));
+      = (dt_iop_ashift_global_data_t *)dt_malloc(sizeof(dt_iop_ashift_global_data_t));
   module->data = gd;
 
   const int program = 2; // basic.cl, from programs.conf
@@ -4697,7 +4698,7 @@ static float log2_callback(GtkWidget *self, float inval, dt_bauhaus_callback_t d
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_ashift_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_ashift_gui_data_t));
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
   dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
 

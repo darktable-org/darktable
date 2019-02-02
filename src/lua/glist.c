@@ -16,6 +16,7 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "common/utility.h"
 #include "lua/glist.h"
 #include <lauxlib.h>
 #include <stdlib.h>
@@ -41,7 +42,7 @@ GList *dt_lua_to_glist_type(lua_State *L, luaA_Type elt_type, int index)
   while(lua_next(L, index - 1) != 0)
   {
     /* uses 'key' (at index -2) and 'value' (at index -1) */
-    void *obj = malloc(type_size);
+    void *obj = dt_malloc(type_size);
     luaA_to_type(L, elt_type, obj, -1);
     lua_pop(L, 1);
     list = g_list_prepend(list, (gpointer)obj);

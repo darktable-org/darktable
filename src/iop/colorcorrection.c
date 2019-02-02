@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -173,7 +174,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 2; // basic.cl from programs.conf
   dt_iop_colorcorrection_global_data_t *gd
-      = (dt_iop_colorcorrection_global_data_t *)malloc(sizeof(dt_iop_colorcorrection_global_data_t));
+      = (dt_iop_colorcorrection_global_data_t *)dt_malloc(sizeof(dt_iop_colorcorrection_global_data_t));
   module->data = gd;
   gd->kernel_colorcorrection = dt_opencl_create_kernel(program, "colorcorrection");
 }
@@ -202,7 +203,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_colorcorrection_data_t));
+  piece->data = dt_malloc(sizeof(dt_iop_colorcorrection_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -223,7 +224,7 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  // module->data = malloc(sizeof(dt_iop_colorcorrection_data_t));
+  // module->data = dt_malloc(sizeof(dt_iop_colorcorrection_data_t));
   module->params = calloc(1, sizeof(dt_iop_colorcorrection_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colorcorrection_params_t));
   module->default_enabled = 0;
@@ -254,7 +255,7 @@ static gboolean dt_iop_colorcorrection_key_press(GtkWidget *widget, GdkEventKey 
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_colorcorrection_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_colorcorrection_gui_data_t));
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
 
   g->selected = 0;

@@ -52,6 +52,7 @@
 #include "common/points.h"
 #include "common/resource_limits.h"
 #include "common/undo.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/crawler.h"
@@ -1145,7 +1146,7 @@ void dt_gettime(char *datetime, size_t datetime_len)
 void *dt_alloc_align(size_t alignment, size_t size)
 {
 #if defined(__FreeBSD_version) && __FreeBSD_version < 700013
-  return malloc(size);
+  return dt_malloc(size);
 #elif defined(_WIN32)
   return _aligned_malloc(size, alignment);
 #else

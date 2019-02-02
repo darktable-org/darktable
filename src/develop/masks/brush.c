@@ -18,6 +18,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/debug.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -130,7 +131,7 @@ static GList *_brush_ramer_douglas_peucker(const float *points, int points_count
   }
   else
   {
-    dt_masks_point_brush_t *point1 = malloc(sizeof(dt_masks_point_brush_t));
+    dt_masks_point_brush_t *point1 = dt_malloc(sizeof(dt_masks_point_brush_t));
     point1->corner[0] = points[0];
     point1->corner[1] = points[1];
     point1->ctrl1[0] = point1->ctrl1[1] = point1->ctrl2[0] = point1->ctrl2[1] = -1.0f;
@@ -140,7 +141,7 @@ static GList *_brush_ramer_douglas_peucker(const float *points, int points_count
     point1->state = DT_MASKS_POINT_STATE_NORMAL;
     ResultList = g_list_append(ResultList, (gpointer)point1);
 
-    dt_masks_point_brush_t *pointn = malloc(sizeof(dt_masks_point_brush_t));
+    dt_masks_point_brush_t *pointn = dt_malloc(sizeof(dt_masks_point_brush_t));
     pointn->corner[0] = points[(points_count - 1) * 2];
     pointn->corner[1] = points[(points_count - 1) * 2 + 1];
     pointn->ctrl1[0] = pointn->ctrl1[1] = pointn->ctrl2[0] = pointn->ctrl2[1] = -1.0f;
@@ -1343,7 +1344,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
       if((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
       {
         // we add a new point to the brush
-        dt_masks_point_brush_t *bzpt = (dt_masks_point_brush_t *)(malloc(sizeof(dt_masks_point_brush_t)));
+        dt_masks_point_brush_t *bzpt = (dt_masks_point_brush_t *)(dt_malloc(sizeof(dt_masks_point_brush_t)));
 
         float wd = darktable.develop->preview_pipe->backbuf_width;
         float ht = darktable.develop->preview_pipe->backbuf_height;

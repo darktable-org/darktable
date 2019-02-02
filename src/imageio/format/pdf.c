@@ -22,6 +22,7 @@
 #include "common/darktable.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "common/utility.h"
 #include "common/variables.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
@@ -288,11 +289,11 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
       cmsSaveProfileToMem(profile->profile, 0, &len);
       if(len > 0)
       {
-        unsigned char *buf = malloc(len * sizeof(unsigned char));
+        unsigned char *buf = dt_malloc(len * sizeof(unsigned char));
         cmsSaveProfileToMem(profile->profile, buf, &len);
         icc_id = dt_pdf_add_icc_from_data(d->pdf, buf, len);
         free(buf);
-        _pdf_icc_t *icc = (_pdf_icc_t *)malloc(sizeof(_pdf_icc_t));
+        _pdf_icc_t *icc = (_pdf_icc_t *)dt_malloc(sizeof(_pdf_icc_t));
         icc->profile = profile;
         icc->icc_id = icc_id;
         d->icc_profiles = g_list_append(d->icc_profiles, icc);
@@ -309,7 +310,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   {
     if(d->params.bpp == 8)
     {
-      image_data = malloc(data->width * data->height * 3);
+      image_data = dt_malloc(data->width * data->height * 3);
       const uint8_t *in_ptr = (const uint8_t *)in;
       uint8_t *out_ptr = (uint8_t *)image_data;
       for(int y = 0; y < data->height; y++)
@@ -320,7 +321,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     }
     else
     {
-      image_data = malloc(data->width * data->height * 3 * sizeof(uint16_t));
+      image_data = dt_malloc(data->width * data->height * 3 * sizeof(uint16_t));
       const uint16_t *in_ptr = (const uint16_t *)in;
       uint16_t *out_ptr = (uint16_t *)image_data;
       for(int y = 0; y < data->height; y++)
@@ -345,7 +346,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   if(num == total)
   {
     int n_images = g_list_length(d->images);
-    dt_pdf_page_t **pages = malloc(n_images * sizeof(dt_pdf_page_t *));
+    dt_pdf_page_t **pages = dt_malloc(n_images * sizeof(dt_pdf_page_t *));
 
     gboolean outline_mode = d->params.mode != MODE_NORMAL;
     gboolean show_bb = d->params.mode == MODE_DEBUG;

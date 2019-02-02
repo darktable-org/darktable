@@ -162,7 +162,7 @@ void *get_params(dt_lib_module_t *self, int *size)
 
   /* allocate a copy of params to return, freed by caller */
   *size = sizeof(dt_lib_collect_params_t);
-  void *p = malloc(*size);
+  void *p = dt_malloc(*size);
   memcpy(p, ((dt_lib_collect_t *)self->data)->params, *size);
   return p;
 }
@@ -789,7 +789,7 @@ static char **split_path(const char *path)
   // there are size + 1 elements in tokens -- the final NULL! we want to ignore it.
   unsigned int size = g_strv_length(tokens);
 
-  result = malloc(size * sizeof(char *));
+  result = dt_malloc(size * sizeof(char *));
   for(unsigned int i = 0; i < size; i++)
     result[i] = tokens[i + 1];
 
@@ -937,7 +937,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       else if(tags)
         collate_key = tag_collate_key(name);
 
-      name_key_tuple_t *tuple = (name_key_tuple_t *)malloc(sizeof(name_key_tuple_t));
+      name_key_tuple_t *tuple = (name_key_tuple_t *)dt_malloc(sizeof(name_key_tuple_t));
       tuple->name = name;
       tuple->collate_key = collate_key;
       tuple->count = count;
@@ -1822,7 +1822,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->active_rule = 0;
   d->nb_rules = 0;
-  d->params = (dt_lib_collect_params_t *)malloc(sizeof(dt_lib_collect_params_t));
+  d->params = (dt_lib_collect_params_t *)dt_malloc(sizeof(dt_lib_collect_params_t));
 
   GtkBox *box;
   GtkWidget *w;

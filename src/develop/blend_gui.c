@@ -21,6 +21,7 @@
 #include "common/debug.h"
 #include "common/dtpthread.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/blend.h"
 #include "develop/develop.h"
@@ -1648,7 +1649,7 @@ static void _raster_combo_populate(GtkWidget *w, struct dt_iop_module_t **m)
 
   dt_bauhaus_combobox_clear(w);
 
-  raster_combo_entry_t *entry = (raster_combo_entry_t *)malloc(sizeof(raster_combo_entry_t));
+  raster_combo_entry_t *entry = (raster_combo_entry_t *)dt_malloc(sizeof(raster_combo_entry_t));
   entry->module = NULL;
   entry->id = 0;
   dt_bauhaus_combobox_add_full(w, _("no mask used"), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, entry, free);
@@ -1669,7 +1670,7 @@ static void _raster_combo_populate(GtkWidget *w, struct dt_iop_module_t **m)
     {
       const int id = GPOINTER_TO_INT(key);
       const char *modulename = (char *)value;
-      entry = (raster_combo_entry_t *)malloc(sizeof(raster_combo_entry_t));
+      entry = (raster_combo_entry_t *)dt_malloc(sizeof(raster_combo_entry_t));
       entry->module = iop;
       entry->id = id;
       dt_bauhaus_combobox_add_full(w, modulename, DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, entry, free);

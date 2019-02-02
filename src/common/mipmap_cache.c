@@ -25,6 +25,7 @@
 #include "common/imageio.h"
 #include "common/imageio_jpeg.h"
 #include "common/imageio_module.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/jobs.h"
 #include "develop/imageop_math.h"
@@ -372,7 +373,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
         fseek(f, 0, SEEK_END);
         len = ftell(f);
         if(len <= 0) goto read_error; // coverity madness
-        blob = (uint8_t *)malloc(len);
+        blob = (uint8_t *)dt_malloc(len);
         if(!blob) goto read_error;
         fseek(f, 0, SEEK_SET);
         int rd = fread(blob, sizeof(uint8_t), len, f);
@@ -1160,7 +1161,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
       dt_imageio_jpeg_t jpg;
       if(!dt_imageio_jpeg_read_header(filename, &jpg))
       {
-        uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t) * jpg.width * jpg.height * 4);
+        uint8_t *tmp = (uint8_t *)dt_malloc(sizeof(uint8_t) * jpg.width * jpg.height * 4);
         *color_space = dt_imageio_jpeg_read_color_space(&jpg);
         if(!dt_imageio_jpeg_read(&jpg, tmp))
         {

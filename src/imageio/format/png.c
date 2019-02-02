@@ -33,6 +33,7 @@
 #include "common/darktable.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "imageio/format/imageio_format_api.h"
 
@@ -175,7 +176,7 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
     cmsSaveProfileToMem(out_profile, 0, &len);
     if(len > 0)
     {
-      char *buf = malloc(len * sizeof(char));
+      char *buf = dt_malloc(len * sizeof(char));
       char name[512] = { 0 };
       cmsSaveProfileToMem(out_profile, buf, &len);
       dt_colorspaces_get_profile_name(out_profile, "en", "US", name, sizeof(name));
@@ -202,7 +203,7 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
    */
   png_set_filler(png_ptr, 0, PNG_FILLER_AFTER);
 
-  png_bytep *row_pointers = malloc((size_t)height * sizeof(png_bytep));
+  png_bytep *row_pointers = dt_malloc((size_t)height * sizeof(png_bytep));
 
   if(p->bpp > 8)
   {
@@ -369,7 +370,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     } dt_imageio_png_v1_t;
 
     dt_imageio_png_v1_t *o = (dt_imageio_png_v1_t *)old_params;
-    dt_imageio_png_t *n = (dt_imageio_png_t *)malloc(sizeof(dt_imageio_png_t));
+    dt_imageio_png_t *n = (dt_imageio_png_t *)dt_malloc(sizeof(dt_imageio_png_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -400,7 +401,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     } dt_imageio_png_v2_t;
 
     dt_imageio_png_v2_t *o = (dt_imageio_png_v2_t *)old_params;
-    dt_imageio_png_t *n = (dt_imageio_png_t *)malloc(sizeof(dt_imageio_png_t));
+    dt_imageio_png_t *n = (dt_imageio_png_t *)dt_malloc(sizeof(dt_imageio_png_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -510,7 +511,7 @@ void cleanup(dt_imageio_module_format_t *self)
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  dt_imageio_png_gui_t *gui = (dt_imageio_png_gui_t *)malloc(sizeof(dt_imageio_png_gui_t));
+  dt_imageio_png_gui_t *gui = (dt_imageio_png_gui_t *)dt_malloc(sizeof(dt_imageio_png_gui_t));
   self->gui_data = (void *)gui;
   int bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
 

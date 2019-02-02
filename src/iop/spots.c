@@ -18,6 +18,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -95,7 +96,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       // spots v1 was before raw orientation changes
       form->version = 1;
 
-      dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(malloc(sizeof(dt_masks_point_circle_t)));
+      dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(dt_malloc(sizeof(dt_masks_point_circle_t)));
       circle->center[0] = o->spot[i].x;
       circle->center[1] = o->spot[i].y;
       circle->radius = o->spot[i].radius;
@@ -432,7 +433,7 @@ void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
         const int dy = posy - posy_source;
         const int fw = 2 * rad, fh = 2 * rad;
 
-        float *filter = malloc((2 * rad + 1) * sizeof(float));
+        float *filter = dt_malloc((2 * rad + 1) * sizeof(float));
 
         if(rad > 0)
         {
@@ -543,7 +544,7 @@ void distort_mask(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 void init(dt_iop_module_t *module)
 {
   // we don't need global data:
-  module->data = NULL; // malloc(sizeof(dt_iop_spots_global_data_t));
+  module->data = NULL; // dt_malloc(sizeof(dt_iop_spots_global_data_t));
   module->params = calloc(1, sizeof(dt_iop_spots_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_spots_params_t));
   // our module is disabled by default
@@ -600,7 +601,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_spots_data_t));
+  piece->data = dt_malloc(sizeof(dt_iop_spots_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -642,7 +643,7 @@ void gui_update(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   const int bs = DT_PIXEL_APPLY_DPI(14);
-  self->gui_data = malloc(sizeof(dt_iop_spots_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_spots_gui_data_t));
   dt_iop_spots_gui_data_t *g = (dt_iop_spots_gui_data_t *)self->gui_data;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);

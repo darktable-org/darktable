@@ -26,6 +26,8 @@
 #define _XOPEN_SOURCE
 #endif
 
+#include "common/utility.h"
+
 #include <stdlib.h>
 
 // xorshift128+, period 2^128-1, apparently passes all TestU01 suite tests.
@@ -42,7 +44,7 @@ typedef struct dt_points_t
 
 static inline void dt_points_init(dt_points_t *p, const unsigned int num_threads)
 {
-  p->s = (dt_points_state_t *)malloc(sizeof(dt_points_state_t) * num_threads);
+  p->s = (dt_points_state_t *)dt_malloc(sizeof(dt_points_state_t) * num_threads);
   for(int k = 0; k < num_threads; k++)
   {
     p->s[k].state0 = 1 + k;

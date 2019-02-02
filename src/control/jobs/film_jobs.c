@@ -18,6 +18,7 @@
 #include "control/jobs/film_jobs.h"
 #include "common/darktable.h"
 #include "common/film.h"
+#include "common/utility.h"
 #include <stdlib.h>
 
 typedef struct dt_film_import1_t
@@ -245,7 +246,7 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
       }
 
       /* initialize and create a new film to import to */
-      cfr = malloc(sizeof(dt_film_t));
+      cfr = dt_malloc(sizeof(dt_film_t));
       dt_film_init(cfr);
       dt_film_new(cfr, cdn);
     }

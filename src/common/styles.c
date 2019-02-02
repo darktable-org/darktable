@@ -25,6 +25,7 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/tags.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 
@@ -136,7 +137,7 @@ static void _dt_style_cleanup_multi_instance(int id)
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    struct _data *d = malloc(sizeof(struct _data));
+    struct _data *d = dt_malloc(sizeof(struct _data));
     const char *operation = (const char *)sqlite3_column_text(stmt, 1);
 
     if(strncmp(last_operation, operation, 128) != 0)
@@ -709,10 +710,10 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
         const unsigned char *bop_blob = sqlite3_column_blob(stmt, 6);
         const int32_t bop_len = sqlite3_column_bytes(stmt, 6);
 
-        item->params = malloc(op_len);
+        item->params = dt_malloc(op_len);
         memcpy(item->params, op_blob, op_len);
 
-        item->blendop_params = malloc(bop_len);
+        item->blendop_params = dt_malloc(bop_len);
         memcpy(item->blendop_params, bop_blob, bop_len);
       }
       else

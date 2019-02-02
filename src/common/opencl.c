@@ -30,6 +30,7 @@
 #include "common/heal.h"
 #include "common/nvidia_gpus.h"
 #include "common/opencl_drivers_blacklist.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -228,7 +229,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
 
 
   cname_size = infostr_size;
-  cname = malloc(cname_size);
+  cname = dt_malloc(cname_size);
   _ascii_str_canonical(infostr, cname, sizeof(cname_size));
 
   if(!strncasecmp(vendor, "NVIDIA", 6))
@@ -595,8 +596,8 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   g_free(library);
 
   cl_int err;
-  all_platforms = malloc(DT_OPENCL_MAX_PLATFORMS * sizeof(cl_platform_id));
-  all_num_devices = malloc(DT_OPENCL_MAX_PLATFORMS * sizeof(cl_uint));
+  all_platforms = dt_malloc(DT_OPENCL_MAX_PLATFORMS * sizeof(cl_platform_id));
+  all_num_devices = dt_malloc(DT_OPENCL_MAX_PLATFORMS * sizeof(cl_uint));
   cl_uint num_platforms = DT_OPENCL_MAX_PLATFORMS;
   err = (cl->dlocl->symbols->dt_clGetPlatformIDs)(DT_OPENCL_MAX_PLATFORMS, all_platforms, &num_platforms);
   if(err != CL_SUCCESS)
@@ -634,8 +635,8 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   cl_device_id *devices = 0;
   if(num_devices)
   {
-    cl->dev = (dt_opencl_device_t *)malloc(sizeof(dt_opencl_device_t) * num_devices);
-    devices = (cl_device_id *)malloc(sizeof(cl_device_id) * num_devices);
+    cl->dev = (dt_opencl_device_t *)dt_malloc(sizeof(dt_opencl_device_t) * num_devices);
+    devices = (cl_device_id *)dt_malloc(sizeof(cl_device_id) * num_devices);
     if(!cl->dev || !devices)
     {
       free(cl->dev);
@@ -686,10 +687,10 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     cl->inited = 1;
     cl->enabled = dt_conf_get_bool("opencl");
     memset(cl->mandatory, 0, sizeof(cl->mandatory));
-    cl->dev_priority_image = (int *)malloc(sizeof(int) * (dev + 1));
-    cl->dev_priority_preview = (int *)malloc(sizeof(int) * (dev + 1));
-    cl->dev_priority_export = (int *)malloc(sizeof(int) * (dev + 1));
-    cl->dev_priority_thumbnail = (int *)malloc(sizeof(int) * (dev + 1));
+    cl->dev_priority_image = (int *)dt_malloc(sizeof(int) * (dev + 1));
+    cl->dev_priority_preview = (int *)dt_malloc(sizeof(int) * (dev + 1));
+    cl->dev_priority_export = (int *)dt_malloc(sizeof(int) * (dev + 1));
+    cl->dev_priority_thumbnail = (int *)dt_malloc(sizeof(int) * (dev + 1));
 
     // only check successful malloc in debug mode; darktable will crash anyhow sooner or later if mallocs that
     // small would fail
@@ -1134,7 +1135,7 @@ static char *_ascii_str_canonical(const char *in, char *out, int maxlen)
   if(out == NULL)
   {
     maxlen = strlen(in) + 1;
-    out = malloc(maxlen);
+    out = dt_malloc(maxlen);
     if(out == NULL) return NULL;
   }
 
@@ -1198,7 +1199,7 @@ static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *prio
 {
   int devs = cl->num_devs;
   int count = 0;
-  int *full = malloc((size_t)(devs + 1) * sizeof(int));
+  int *full = dt_malloc((size_t)(devs + 1) * sizeof(int));
   int mnd = 0;
 
   // NULL or empty configstring?
@@ -1348,7 +1349,7 @@ int dt_opencl_lock_device(const int pipetype)
   dt_pthread_mutex_lock(&cl->lock);
 
   size_t prio_size = sizeof(int) * (cl->num_devs + 1);
-  int *priority = (int *)malloc(prio_size);
+  int *priority = (int *)dt_malloc(prio_size);
   int mandatory;
 
   switch(pipetype)
@@ -1477,7 +1478,7 @@ void dt_opencl_md5sum(const char **files, char **md5sums)
     }
 
     size_t filesize = filestat.st_size;
-    char *file = (char *)malloc(filesize);
+    char *file = (char *)dt_malloc(filesize);
 
     if(!file)
     {
@@ -1533,7 +1534,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   if(!f) return 0;
 
   size_t filesize = filestat.st_size;
-  char *file = (char *)malloc(filesize + 2048);
+  char *file = (char *)dt_malloc(filesize + 2048);
   size_t rd = fread(file, sizeof(char), filesize, f);
   fclose(f);
   if(rd != filesize)
@@ -1603,7 +1604,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
         // md5sum matches, load cached binary
         size_t cached_filesize = cachedstat.st_size;
 
-        unsigned char *cached_content = (unsigned char *)malloc(cached_filesize + 1);
+        unsigned char *cached_content = (unsigned char *)dt_malloc(cached_filesize + 1);
         rd = fread(cached_content, sizeof(char), cached_filesize, cached);
         if(rd != cached_filesize)
         {
@@ -1698,7 +1699,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
                                                  &ret_val_size);
   if(ret_val_size != SIZE_MAX)
   {
-    build_log = (char *)malloc(sizeof(char) * (ret_val_size + 1));
+    build_log = (char *)dt_malloc(sizeof(char) * (ret_val_size + 1));
     if(build_log)
     {
       (cl->dlocl->symbols->dt_clGetProgramBuildInfo)(program, cl->dev[dev].devid, CL_PROGRAM_BUILD_LOG,
@@ -1730,7 +1731,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
         return CL_SUCCESS;
       }
 
-      cl_device_id *devices = malloc(numdev * sizeof(cl_device_id));
+      cl_device_id *devices = dt_malloc(numdev * sizeof(cl_device_id));
       err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_DEVICES,
                                                       sizeof(cl_device_id) * numdev, devices, NULL);
       if(err != CL_SUCCESS)
@@ -1740,7 +1741,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
         return CL_SUCCESS;
       }
 
-      size_t *binary_sizes = malloc(numdev * sizeof(size_t));
+      size_t *binary_sizes = dt_malloc(numdev * sizeof(size_t));
       err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_BINARY_SIZES,
                                                       sizeof(size_t) * numdev, binary_sizes, NULL);
       if(err != CL_SUCCESS)
@@ -1751,8 +1752,8 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
         return CL_SUCCESS;
       }
 
-      unsigned char **binaries = malloc(numdev * sizeof(unsigned char *));
-      for(int i = 0; i < numdev; i++) binaries[i] = (unsigned char *)malloc(binary_sizes[i]);
+      unsigned char **binaries = dt_malloc(numdev * sizeof(unsigned char *));
+      for(int i = 0; i < numdev; i++) binaries[i] = (unsigned char *)dt_malloc(binary_sizes[i]);
       err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_BINARIES,
                                                       sizeof(unsigned char *) * numdev, binaries, NULL);
       if(err != CL_SUCCESS)
@@ -2784,8 +2785,8 @@ void dt_opencl_events_profiling(const int devid, const int aggregated)
   if(*eventlist == NULL || *numevents == 0 || *eventtags == NULL || *eventsconsolidated == 0)
     return; // nothing to do
 
-  char **tags = malloc((*eventsconsolidated + 1) * sizeof(char *));
-  float *timings = malloc((*eventsconsolidated + 1) * sizeof(float));
+  char **tags = dt_malloc((*eventsconsolidated + 1) * sizeof(char *));
+  float *timings = dt_malloc((*eventsconsolidated + 1) * sizeof(float));
   int items = 1;
   tags[0] = "";
   timings[0] = 0.0f;

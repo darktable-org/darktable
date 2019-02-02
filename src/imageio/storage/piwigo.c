@@ -25,6 +25,7 @@
 #include "common/metadata.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/tags.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
@@ -123,7 +124,7 @@ static size_t curl_write_data_cb(void *ptr, size_t size, size_t nmemb, void *dat
 
 static GList *_piwigo_query_add_arguments(GList *args, const char *name, const char *value)
 {
-  _curl_args_t *arg = malloc(sizeof(_curl_args_t));
+  _curl_args_t *arg = dt_malloc(sizeof(_curl_args_t));
   g_strlcpy(arg->name, name, sizeof(arg->name));
   g_strlcpy(arg->value, value, sizeof(arg->value));
   return g_list_append(args, arg);
@@ -131,7 +132,7 @@ static GList *_piwigo_query_add_arguments(GList *args, const char *name, const c
 
 static _piwigo_api_context_t *_piwigo_ctx_init(void)
 {
-  _piwigo_api_context_t *ctx = malloc(sizeof(struct _piwigo_api_context_t));
+  _piwigo_api_context_t *ctx = dt_malloc(sizeof(struct _piwigo_api_context_t));
 
   ctx->curl_ctx = curl_easy_init();
   ctx->json_parser = json_parser_new();
@@ -193,7 +194,7 @@ static void _piwigo_load_account(dt_storage_piwigo_gui_data_t *ui)
       if(root)
       {
         JsonObject *obj = json_node_get_object(root);
-        _piwigo_account_t *account = malloc(sizeof(_piwigo_account_t));
+        _piwigo_account_t *account = dt_malloc(sizeof(_piwigo_account_t));
 
         account->server =  g_strdup(json_object_get_string_member(obj, "server"));
         account->username =  g_strdup(json_object_get_string_member(obj, "username"));

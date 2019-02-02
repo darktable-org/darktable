@@ -22,6 +22,7 @@
 #include "common/darktable.h"
 #include "common/interpolation.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -2158,7 +2159,7 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
   // COLORB TOT_WEIGHT
   // COLORPIX                   # color of center pixel
 
-  int(*const lookup)[16][32] = malloc((size_t)16 * 16 * 32 * sizeof(int));
+  int(*const lookup)[16][32] = dt_malloc((size_t)16 * 16 * 32 * sizeof(int));
 
   const int size = (filters == 9) ? 6 : 16;
   for(int row = 0; row < size; row++)
@@ -3458,7 +3459,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     // COLORB TOT_WEIGHT
     // COLORPIX                   # color of center pixel
     const size_t lookup_size = (size_t)16 * 16 * 32 * sizeof(int32_t);
-    lookup = malloc(lookup_size);
+    lookup = dt_malloc(lookup_size);
 
     for(int row = 0; row < size; row++)
       for(int col = 0; col < size; col++)
@@ -3510,7 +3511,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       = { -1, -1, -1, 0, -1, +1, 0, +1, +1, +1, +1, 0, +1, -1, 0, -1 };
 
     const size_t ips_size = (size_t)prow * pcol * 352 * sizeof(int);
-    ips = malloc(ips_size);
+    ips = dt_malloc(ips_size);
 
     int *ip = ips;
     int code[16][16];
@@ -4689,7 +4690,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 0; // from programs.conf
   dt_iop_demosaic_global_data_t *gd
-      = (dt_iop_demosaic_global_data_t *)malloc(sizeof(dt_iop_demosaic_global_data_t));
+      = (dt_iop_demosaic_global_data_t *)dt_malloc(sizeof(dt_iop_demosaic_global_data_t));
   module->data = gd;
   gd->kernel_zoom_half_size = dt_opencl_create_kernel(program, "clip_and_zoom_demosaic_half_size");
   gd->kernel_ppg_green = dt_opencl_create_kernel(program, "ppg_demosaic_green");
@@ -4861,7 +4862,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_demosaic_data_t));
+  piece->data = dt_malloc(sizeof(dt_iop_demosaic_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -5048,7 +5049,7 @@ static void demosaic_method_xtrans_callback(GtkWidget *combo, dt_iop_module_t *s
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_demosaic_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_demosaic_gui_data_t));
   dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
   dt_iop_demosaic_params_t *p = (dt_iop_demosaic_params_t *)self->params;
 

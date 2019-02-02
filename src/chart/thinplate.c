@@ -23,6 +23,9 @@
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 #endif
 
+#if 0
+#include "common/utility.h"
+#endif
 #include "chart/thinplate.h"
 #include "chart/deltaE.h"
 #include "iop/svd.h"
@@ -120,7 +123,7 @@ static inline int solve(double *As, double *w, double *v, const double *b, doubl
   dsvd(As, wd, s + 1, S, w, v); // As is wd x s+1 but row stride S.
   if(w[s] < 1e-3)               // if the smallest singular value becomes too small, we're done
     return 1;
-  double *tmp = malloc(S * sizeof(double));
+  double *tmp = dt_malloc(S * sizeof(double));
   for(int i = 0; i <= s; i++) // compute tmp = u^t * b
   {
     tmp[i] = 0.0;
@@ -140,6 +143,7 @@ static inline int solve(double *As, double *w, double *v, const double *b, doubl
 #pragma GCC diagnostic push
 #pragma GCC diagnostic warning "-Wvla"
 
+
 // returns sparsity <= S
 int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (needed for error estimation)
                     int dim,                  // dimensionality of points
@@ -157,7 +161,7 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
   if(maxerr) *maxerr = 0.0;
 
   const int wd = N + 4;
-  double *A = malloc(wd * wd * sizeof(double));
+  double *A = dt_malloc(wd * wd * sizeof(double));
   // construct system matrix A such that:
   // A c = f
   //
@@ -181,7 +185,7 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
     for(int i = N; i < wd; i++) A[j * wd + i] = 0.0f;
 
   // precompute normalisation factors for columns of A
-  double *norm = malloc(wd * sizeof(double));
+  double *norm = dt_malloc(wd * sizeof(double));
   for(int i = 0; i < wd; i++)
   {
     norm[i] = 0.0;
@@ -191,13 +195,17 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
 
   // XXX do we need these explicitly?
   // residual = target vector
+  #if 0
+  double(*r)[wd] = dt_malloc(dim * wd * sizeof(double));
+  #else
   double(*r)[wd] = malloc(dim * wd * sizeof(double));
-  const double **b = malloc(dim * sizeof(double *));
+  #endif
+  const double **b = dt_malloc(dim * sizeof(double *));
   for(int k = 0; k < dim; k++) b[k] = target[k];
   for(int k = 0; k < dim; k++) memcpy(r[k], b[k], wd * sizeof(double));
 
-  double *w = malloc(S * sizeof(double));
-  double *v = malloc(S * S * sizeof(double));
+  double *w = dt_malloc(S * sizeof(double));
+  double *v = dt_malloc(S * S * sizeof(double));
   double *As = calloc(wd * S, sizeof(double));
 
   // for rank from 0 to sparsity level

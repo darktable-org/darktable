@@ -22,6 +22,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -94,7 +95,7 @@ static void _view_print_settings(const dt_view_t *view, dt_print_info_t *pinfo)
 void
 init(dt_view_t *self)
 {
-  self->data = malloc(sizeof(dt_print_t));
+  self->data = dt_malloc(sizeof(dt_print_t));
   dt_print_t *prt = (dt_print_t *)self->data;
 
   prt->image_id = -1;

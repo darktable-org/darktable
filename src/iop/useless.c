@@ -20,6 +20,7 @@
 #endif
 // our includes go first:
 #include "bauhaus/bauhaus.h"
+#include "common/utility.h"
 #include "develop/imageop.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
@@ -140,7 +141,7 @@ void reload_defaults(dt_iop_module_t *module)
 void init(dt_iop_module_t *module)
 {
   // we don't need global data:
-  module->data = NULL; // malloc(sizeof(dt_iop_useless_global_data_t));
+  module->data = NULL; // dt_malloc(sizeof(dt_iop_useless_global_data_t));
   module->params = calloc(1, sizeof(dt_iop_useless_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_useless_params_t));
   // our module is disabled by default
@@ -159,7 +160,7 @@ void init(dt_iop_module_t *module)
 
 void init_global(dt_iop_module_so_t *module)
 {
-  module->data = malloc(sizeof(dt_iop_useless_global_data_t));
+  module->data = dt_malloc(sizeof(dt_iop_useless_global_data_t));
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -197,7 +198,7 @@ void gui_update(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
-  self->gui_data = malloc(sizeof(dt_iop_useless_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_useless_gui_data_t));
   dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
   g->scale = dt_bauhaus_slider_new_with_range(self, 1, 100, 1, 50, 0);
   self->widget = g->scale;

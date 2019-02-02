@@ -22,6 +22,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/utility.h"
 #include "develop/blend.h"
 #include "develop/develop.h"
 #include "gui/accelerators.h"
@@ -398,7 +399,7 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   GtkWidget *label;
 
   dt_gui_presets_edit_dialog_t *g
-      = (dt_gui_presets_edit_dialog_t *)malloc(sizeof(dt_gui_presets_edit_dialog_t));
+      = (dt_gui_presets_edit_dialog_t *)dt_malloc(sizeof(dt_gui_presets_edit_dialog_t));
   g->old_id = -1;
   g->original_name = name;
   g->module = module;

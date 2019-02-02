@@ -21,6 +21,7 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/utility.h"
 #include "common/imageio_module.h"
 #include "common/styles.h"
 #include "control/conf.h"
@@ -505,7 +506,7 @@ static void _lib_export_styles_changed_callback(gpointer instance, gpointer user
 
 void gui_init(dt_lib_module_t *self)
 {
-  dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
+  dt_lib_export_t *d = (dt_lib_export_t *)dt_malloc(sizeof(dt_lib_export_t));
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
@@ -817,7 +818,7 @@ void init_presets(dt_lib_module_t *self)
       {
         // we got an updated blob -> reassemble the parts and update the preset
         size_t new_params_size = op_params_size - (fsize + ssize) + (new_fsize + new_ssize);
-        void *new_params = malloc(new_params_size);
+        void *new_params = dt_malloc(new_params_size);
         memcpy(new_params, op_params, copy_over_part);
         // next we have fversion, sversion, fsize, ssize, fdata, sdata which is the stuff that might change
         size_t pos = copy_over_part;
@@ -882,7 +883,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
   {
     // add version of format & storage to params
     size_t new_params_size = old_params_size + 2 * sizeof(int32_t);
-    void *new_params = malloc(new_params_size);
+    void *new_params = dt_malloc(new_params_size);
 
     const char *buf = (const char *)old_params;
 

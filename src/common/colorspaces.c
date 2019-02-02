@@ -22,6 +22,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/srgb_tone_curve_values.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/imageop.h"
@@ -1092,7 +1093,7 @@ static GList *load_profile_from_dir(const char *subdir)
         size_t end = ftell(fd);
         rewind(fd);
 
-        icc_content = (char *)malloc(end * sizeof(char));
+        icc_content = (char *)dt_malloc(end * sizeof(char));
         if(!icc_content) goto icc_loading_done;
         if(fread(icc_content, sizeof(char), end, fd) != end) goto icc_loading_done;
 

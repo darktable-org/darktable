@@ -37,6 +37,7 @@
 #include "common/imageio_jpeg.h"
 #include "common/imageio_module.h"
 #include "common/points.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
 
@@ -174,7 +175,7 @@ int main(int argc, char *arg[])
   }
 
   int m_argc = 0;
-  char **m_arg = malloc((5 + argc - k + 1) * sizeof(char *));
+  char **m_arg = dt_malloc((5 + argc - k + 1) * sizeof(char *));
   m_arg[m_argc++] = "darktable-cli";
   m_arg[m_argc++] = "--library";
   m_arg[m_argc++] = ":memory:";

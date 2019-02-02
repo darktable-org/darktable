@@ -19,6 +19,7 @@
 
 #include "common/darktable.h"
 #include "common/geo.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -191,7 +192,7 @@ static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib, _lib_lo
   gtk_widget_show_all(eb);
 
   /* connect button press signal for result item */
-  _callback_param_t *param = (_callback_param_t *)malloc(sizeof(_callback_param_t));
+  _callback_param_t *param = (_callback_param_t *)dt_malloc(sizeof(_callback_param_t));
   lib->callback_params = g_list_append(lib->callback_params, param);
   param->lib = lib;
   param->result = place;
@@ -508,7 +509,7 @@ broken_bbox:
           if(*endptr == ')')
           {
             place->marker_type = MAP_DISPLAY_POINT;
-            dt_geo_map_display_point_t *p = malloc(sizeof(dt_geo_map_display_point_t));
+            dt_geo_map_display_point_t *p = dt_malloc(sizeof(dt_geo_map_display_point_t));
             p->lon = lon;
             p->lat = lat;
             place->marker_points = g_list_append(place->marker_points, p);
@@ -539,7 +540,7 @@ broken_bbox:
               error = TRUE;
               break;
             }
-            dt_geo_map_display_point_t *p = malloc(sizeof(dt_geo_map_display_point_t));
+            dt_geo_map_display_point_t *p = dt_malloc(sizeof(dt_geo_map_display_point_t));
             p->lon = lon;
             p->lat = lat;
             place->marker_points = g_list_append(place->marker_points, p);
@@ -623,7 +624,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   const size_t size_points = 2 * sizeof(float) * g_list_length(location->marker_points);
   const size_t size_total = size_fixed + size_name + size_points;
 
-  void *params = malloc(size_total);
+  void *params = dt_malloc(size_total);
   struct params_fixed_t *params_fixed = (struct params_fixed_t *)params;
   params_fixed->relevance = location->relevance;
   params_fixed->type = location->type;
@@ -667,7 +668,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   if(size_points % 2 * sizeof(float) != 0) return 1;
 
-  _lib_location_result_t *location = (_lib_location_result_t *)malloc(sizeof(_lib_location_result_t));
+  _lib_location_result_t *location = (_lib_location_result_t *)dt_malloc(sizeof(_lib_location_result_t));
 
   location->relevance = params_fixed->relevance;
   location->type = params_fixed->type;
@@ -683,7 +684,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   for(const float *points = (float *)(params + size_fixed + size_name); (void *)points < params + size; points += 2)
   {
-    dt_geo_map_display_point_t *p = (dt_geo_map_display_point_t *)malloc(sizeof(dt_geo_map_display_point_t));
+    dt_geo_map_display_point_t *p = (dt_geo_map_display_point_t *)dt_malloc(sizeof(dt_geo_map_display_point_t));
     p->lat = points[0];
     p->lon = points[1];
     location->marker_points = g_list_append(location->marker_points, p);

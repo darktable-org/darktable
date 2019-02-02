@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/styles.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -262,7 +263,7 @@ static void _tree_group(GtkButton *button, dt_lib_module_t *self)
       g_value_unset(&gv);
       if(id > 0)
       {
-        dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)malloc(sizeof(dt_masks_point_group_t));
+        dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)dt_malloc(sizeof(dt_masks_point_group_t));
         fpt->formid = id;
         fpt->parentid = grp->formid;
         fpt->opacity = 1.0f;
@@ -879,7 +880,7 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
       dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, id);
       if(form)
       {
-        dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)malloc(sizeof(dt_masks_point_group_t));
+        dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)dt_malloc(sizeof(dt_masks_point_group_t));
         fpt->formid = id;
         fpt->parentid = grid;
         fpt->state = DT_MASKS_STATE_USE;

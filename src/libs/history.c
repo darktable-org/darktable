@@ -20,6 +20,7 @@
 #include "common/debug.h"
 #include "common/styles.h"
 #include "common/undo.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -208,7 +209,7 @@ static GList *_duplicate_history(GList *hist)
   {
     const dt_dev_history_item_t *old = (dt_dev_history_item_t *)(h->data);
 
-    dt_dev_history_item_t *new = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
+    dt_dev_history_item_t *new = (dt_dev_history_item_t *)dt_malloc(sizeof(dt_dev_history_item_t));
 
     memcpy(new, old, sizeof(dt_dev_history_item_t));
 
@@ -231,8 +232,8 @@ static GList *_duplicate_history(GList *hist)
       }
     }
 
-    new->params = malloc(params_size);
-    new->blend_params = malloc(sizeof(dt_develop_blend_params_t));
+    new->params = dt_malloc(params_size);
+    new->blend_params = dt_malloc(sizeof(dt_develop_blend_params_t));
 
     memcpy(new->params, old->params, params_size);
     memcpy(new->blend_params, old->blend_params, sizeof(dt_develop_blend_params_t));
@@ -680,7 +681,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   if (d->record_undo == TRUE)
   {
     /* record undo/redo history snapshot */
-    dt_undo_history_t *hist = malloc(sizeof(dt_undo_history_t));
+    dt_undo_history_t *hist = dt_malloc(sizeof(dt_undo_history_t));
     hist->snapshot = _duplicate_history(darktable.develop->history);
     hist->end = darktable.develop->history_end;
 

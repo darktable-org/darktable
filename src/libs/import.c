@@ -25,6 +25,7 @@
 #include "common/imageio.h"
 #include "common/imageio_jpeg.h"
 #include "common/mipmap_cache.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #ifdef HAVE_GPHOTO2
@@ -339,7 +340,7 @@ static gboolean _camctl_camera_control_status_callback_gui_thread(gpointer user_
 static void _camctl_camera_control_status_callback(dt_camctl_status_t status, void *data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)data;
-  _control_status_params_t *params = (_control_status_params_t *)malloc(sizeof(_control_status_params_t));
+  _control_status_params_t *params = (_control_status_params_t *)dt_malloc(sizeof(_control_status_params_t));
   if(!params) return;
   params->status = status;
   params->self = self;

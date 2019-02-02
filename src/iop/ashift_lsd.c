@@ -16,10 +16,10 @@
   along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 /* For line detection we are using the LSD code as published below.
  * Changes versus the original code:
  *      do not include "lsd.h" (not needed)
+ *      include dt's utilities for memoryu allocation
  *      make all interface functions static
  *      comment out unsused interface functions
  *      catch (unlikely) division by zero near line 2035
@@ -144,6 +144,7 @@
 #include <limits.h>
 #include <float.h>
 //#include "lsd.h"
+#include "common/utility.h"
 
 /** ln(10) */
 #ifndef M_LN10
@@ -310,7 +311,7 @@ static ntuple_list new_ntuple_list(unsigned int dim)
   if( dim == 0 ) error("new_ntuple_list: 'dim' must be positive.");
 
   /* get memory for list structure */
-  n_tuple = (ntuple_list) malloc( sizeof(struct ntuple_list_s) );
+  n_tuple = (ntuple_list) dt_malloc( sizeof(struct ntuple_list_s) );
   if( n_tuple == NULL ) error("not enough memory.");
 
   /* initialize list */
@@ -319,7 +320,7 @@ static ntuple_list new_ntuple_list(unsigned int dim)
   n_tuple->dim = dim;
 
   /* get memory for tuples */
-  n_tuple->values = (double *) malloc( dim*n_tuple->max_size * sizeof(double) );
+  n_tuple->values = (double *) dt_malloc( dim*n_tuple->max_size * sizeof(double) );
   if( n_tuple->values == NULL ) error("not enough memory.");
 
   return n_tuple;
@@ -412,7 +413,7 @@ static image_char new_image_char(unsigned int xsize, unsigned int ysize)
   if( xsize == 0 || ysize == 0 ) error("new_image_char: invalid image size.");
 
   /* get memory */
-  image = (image_char) malloc( sizeof(struct image_char_s) );
+  image = (image_char) dt_malloc( sizeof(struct image_char_s) );
   if( image == NULL ) error("not enough memory.");
   image->data = (unsigned char *) calloc( (size_t) (xsize*ysize),
                                           sizeof(unsigned char) );
@@ -472,7 +473,7 @@ static image_int new_image_int(unsigned int xsize, unsigned int ysize)
   if( xsize == 0 || ysize == 0 ) error("new_image_int: invalid image size.");
 
   /* get memory */
-  image = (image_int) malloc( sizeof(struct image_int_s) );
+  image = (image_int) dt_malloc( sizeof(struct image_int_s) );
   if( image == NULL ) error("not enough memory.");
   image->data = (int *) calloc( (size_t) (xsize*ysize), sizeof(int) );
   if( image->data == NULL ) error("not enough memory.");
@@ -538,7 +539,7 @@ static image_double new_image_double(unsigned int xsize, unsigned int ysize)
   if( xsize == 0 || ysize == 0 ) error("new_image_double: invalid image size.");
 
   /* get memory */
-  image = (image_double) malloc( sizeof(struct image_double_s) );
+  image = (image_double) dt_malloc( sizeof(struct image_double_s) );
   if( image == NULL ) error("not enough memory.");
   image->data = (double *) calloc( (size_t) (xsize*ysize), sizeof(double) );
   if( image->data == NULL ) error("not enough memory.");
@@ -565,7 +566,7 @@ static image_double new_image_double_ptr( unsigned int xsize,
   if( data == NULL ) error("new_image_double_ptr: NULL data pointer.");
 
   /* get memory */
-  image = (image_double) malloc( sizeof(struct image_double_s) );
+  image = (image_double) dt_malloc( sizeof(struct image_double_s) );
   if( image == NULL ) error("not enough memory.");
 
   /* set image */
@@ -1080,7 +1081,7 @@ static double *inv = NULL; /* table to keep computed inverse values */
 __attribute__((constructor)) static void invConstructor()
 {
   if(inv) return;
-  inv = malloc(sizeof(double) * TABSIZE);
+  inv = dt_malloc(sizeof(double) * TABSIZE);
 }
 
 __attribute__((destructor)) static void invDestructor()
@@ -1479,7 +1480,7 @@ static rect_iter * ri_ini(struct rect * r)
   if( r == NULL ) error("ri_ini: invalid rectangle.");
 
   /* get memory */
-  i = (rect_iter *) malloc(sizeof(rect_iter));
+  i = (rect_iter *) dt_malloc(sizeof(rect_iter));
   if( i == NULL ) error("ri_ini: Not enough memory.");
 
   /* build list of rectangle corners ordered

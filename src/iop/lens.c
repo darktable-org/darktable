@@ -22,6 +22,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -310,7 +311,7 @@ static char *_lens_sanitize(const char *orig_lens)
 
     if(pos > 0)
     {
-      char *new_lens = (char *)malloc(pos + 1);
+      char *new_lens = (char *)dt_malloc(pos + 1);
 
       strncpy(new_lens, orig_lens, pos);
       new_lens[pos] = '\0';
@@ -805,7 +806,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
   int modflags = lf_modifier_initialize(modifier, d->lens, LF_PF_F32, d->focal, d->aperture, d->distance,
                                         d->scale, d->target_geom, d->modify_flags, !d->inverse);
-  float *buf = malloc(2 * 3 * sizeof(float));
+  float *buf = dt_malloc(2 * 3 * sizeof(float));
 
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
@@ -833,7 +834,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 
   int modflags = lf_modifier_initialize(modifier, d->lens, LF_PF_F32, d->focal, d->aperture, d->distance,
                                         d->scale, d->target_geom, d->modify_flags, d->inverse);
-  float *buf = malloc(2 * 3 * sizeof(float));
+  float *buf = dt_malloc(2 * 3 * sizeof(float));
 
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
@@ -2126,7 +2127,7 @@ static void corrections_done(gpointer instance, gpointer user_data)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_lensfun_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_lensfun_gui_data_t));
   // dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
   // lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;

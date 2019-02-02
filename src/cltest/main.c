@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/opencl.h"
+#include "common/utility.h"
 
 #ifdef _WIN32
 #include <conio.h>
@@ -30,7 +31,7 @@ int main(int argc, char *arg[])
   // only used to force-init opencl, so we want these options:
   char *m_arg[] = { "-d", "opencl", "--library", ":memory:"};
   const int m_argc = sizeof(m_arg) / sizeof(m_arg[0]);
-  char **argv = malloc(argc * sizeof(arg[0]) + sizeof(m_arg));
+  char **argv = dt_malloc(argc * sizeof(arg[0]) + sizeof(m_arg));
   if(!argv) goto end;
   for(int i = 0; i < argc; i++)
     argv[i] = arg[i];

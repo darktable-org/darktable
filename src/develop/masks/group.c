@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/debug.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -252,7 +253,7 @@ static void _inverse_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   // we create a new buffer
   int wt = piece->iwidth;
   int ht = piece->iheight;
-  float *buf = malloc((size_t)ht * wt * sizeof(float));
+  float *buf = dt_malloc((size_t)ht * wt * sizeof(float));
 
   // we fill this buffer
   for(int yy = 0; yy < MIN(*posy, ht); yy++)
@@ -291,13 +292,13 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   const guint nb = g_list_length(form->points);
   if(nb == 0) return 0;
   float **bufs = calloc(nb, sizeof(float *));
-  int *w = malloc(nb * sizeof(int));
-  int *h = malloc(nb * sizeof(int));
-  int *px = malloc(nb * sizeof(int));
-  int *py = malloc(nb * sizeof(int));
-  int *ok = malloc(nb * sizeof(int));
-  int *states = malloc(nb * sizeof(int));
-  float *op = malloc(nb * sizeof(float));
+  int *w = dt_malloc(nb * sizeof(int));
+  int *h = dt_malloc(nb * sizeof(int));
+  int *px = dt_malloc(nb * sizeof(int));
+  int *py = dt_malloc(nb * sizeof(int));
+  int *ok = dt_malloc(nb * sizeof(int));
+  int *states = dt_malloc(nb * sizeof(int));
+  float *op = dt_malloc(nb * sizeof(float));
 
   // and we get all masks
   GList *fpts = g_list_first(form->points);
@@ -344,7 +345,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   *height = b - t;
 
   // we allocate the buffer
-  *buffer = malloc(sizeof(float) * (r - l) * (b - t));
+  *buffer = dt_malloc(sizeof(float) * (r - l) * (b - t));
 
   // and we copy each buffer inside, row by row
   for(int i = 0; i < nb; i++)

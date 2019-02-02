@@ -17,6 +17,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/debug.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -604,7 +605,7 @@ static int dt_ellipse_events_button_pressed(struct dt_iop_module_t *module, floa
     dt_iop_module_t *crea_module = gui->creation_module;
     // we create the ellipse
     dt_masks_point_ellipse_t *ellipse
-        = (dt_masks_point_ellipse_t *)(malloc(sizeof(dt_masks_point_ellipse_t)));
+        = (dt_masks_point_ellipse_t *)(dt_malloc(sizeof(dt_masks_point_ellipse_t)));
 
     // we change the center value
     float wd = darktable.develop->preview_pipe->backbuf_width;
@@ -1523,7 +1524,7 @@ static int dt_ellipse_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
 
   // we create a buffer of points with all points in the area
   int w = *width, h = *height;
-  float *points = malloc(w * h * 2 * sizeof(float));
+  float *points = dt_malloc(w * h * 2 * sizeof(float));
   for(int i = 0; i < h; i++)
     for(int j = 0; j < w; j++)
     {
@@ -1626,7 +1627,7 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
   const int mw = (w + mesh - 1) / mesh + 1;
   const int mh = (h + mesh - 1) / mesh + 1;
 
-  float *points = malloc((size_t)mw * mh * 2 * sizeof(float));
+  float *points = dt_malloc((size_t)mw * mh * 2 * sizeof(float));
   if(points == NULL) return 0;
 
 #ifdef _OPENMP

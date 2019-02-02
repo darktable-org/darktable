@@ -19,6 +19,7 @@
 #include "common/colorspaces.h"
 #include "common/opencl.h"
 #include "common/exif.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -547,7 +548,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem dev_params = NULL;
 
   const size_t params_size = (size_t)(4 * (2 * num_patches + 4)) * sizeof(float);
-  float *params = malloc(params_size);
+  float *params = dt_malloc(params_size);
   float *idx = params;
 
   // re-arrange data->source_Lab and data->coeff_{L,a,b} into float4
@@ -760,8 +761,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   default:
   {
     // setup linear system of equations
-    double *A = malloc(N4 * N4 * sizeof(*A));
-    double *b = malloc(N4 * sizeof(*b));
+    double *A = dt_malloc(N4 * N4 * sizeof(*A));
+    double *b = dt_malloc(N4 * sizeof(*b));
     // coefficients from nonlinear radial kernel functions
     for(int j=0;j<N;j++)
       for(int i=j;i<N;i++)
@@ -776,7 +777,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       for(int i=N;i<N4;i++)
         A[j*N4+i] = 0;
     // make coefficient matrix triangular
-    int *pivot = malloc(N4 * sizeof(*pivot));
+    int *pivot = dt_malloc(N4 * sizeof(*pivot));
     if (gauss_make_triangular(A, pivot, N4))
     {
       // calculate coefficients for L channel
@@ -805,7 +806,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_colorchecker_data_t));
+  piece->data = dt_malloc(sizeof(dt_iop_colorchecker_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -900,7 +901,7 @@ void cleanup(dt_iop_module_t *module)
 void init_global(dt_iop_module_so_t *module)
 {
   dt_iop_colorchecker_global_data_t *gd
-      = (dt_iop_colorchecker_global_data_t *)malloc(sizeof(dt_iop_colorchecker_global_data_t));
+      = (dt_iop_colorchecker_global_data_t *)dt_malloc(sizeof(dt_iop_colorchecker_global_data_t));
   module->data = gd;
 
   const int program = 8; // extended.cl, from programs.conf
@@ -1321,7 +1322,7 @@ static gboolean checker_leave_notify(GtkWidget *widget, GdkEventCrossing *event,
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_colorchecker_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_colorchecker_gui_data_t));
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
 

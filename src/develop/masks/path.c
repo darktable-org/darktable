@@ -17,6 +17,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/debug.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -570,7 +571,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, int
     }
   }
 
-  float *border_init = malloc((size_t)6 * nb * sizeof(float));
+  float *border_init = dt_malloc((size_t)6 * nb * sizeof(float));
   int cw = _path_is_clockwise(form);
   if(cw == 0) cw = -1;
 
@@ -1066,7 +1067,7 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
   {
     if(gui->creation)
     {
-      dt_masks_point_path_t *bzpt = (dt_masks_point_path_t *)(malloc(sizeof(dt_masks_point_path_t)));
+      dt_masks_point_path_t *bzpt = (dt_masks_point_path_t *)(dt_malloc(sizeof(dt_masks_point_path_t)));
       int nb = g_list_length(form->points);
       // change the values
       float wd = darktable.develop->preview_pipe->backbuf_width;
@@ -1084,7 +1085,7 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
       // if that's the first point we should had another one as base point
       if(nb == 0)
       {
-        dt_masks_point_path_t *bzpt2 = (dt_masks_point_path_t *)(malloc(sizeof(dt_masks_point_path_t)));
+        dt_masks_point_path_t *bzpt2 = (dt_masks_point_path_t *)(dt_malloc(sizeof(dt_masks_point_path_t)));
         bzpt2->corner[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
         bzpt2->corner[1] = pts[1] / darktable.develop->preview_pipe->iheight;
         bzpt2->ctrl1[0] = bzpt2->ctrl1[1] = bzpt2->ctrl2[0] = bzpt2->ctrl2[1] = -1.0;
@@ -1201,7 +1202,7 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
       if((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
       {
         // we add a new point to the path
-        dt_masks_point_path_t *bzpt = (dt_masks_point_path_t *)(malloc(sizeof(dt_masks_point_path_t)));
+        dt_masks_point_path_t *bzpt = (dt_masks_point_path_t *)(dt_malloc(sizeof(dt_masks_point_path_t)));
         // change the values
         float wd = darktable.develop->preview_pipe->backbuf_width;
         float ht = darktable.develop->preview_pipe->backbuf_height;
@@ -2730,7 +2731,7 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   if(path_in_roi)
   {
     // second copy of path which we can modify when cropping to roi
-    cpoints = malloc(2 * points_count * sizeof(float));
+    cpoints = dt_malloc(2 * points_count * sizeof(float));
     if(cpoints == NULL)
     {
       free(points);

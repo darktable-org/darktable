@@ -27,6 +27,7 @@
 #endif
 
 #include "common/dynload.h"
+#include "utility.h"
 
 
 /* check if gmodules is supported on this platform */
@@ -58,7 +59,7 @@ dt_gmodule_t *dt_gmodule_open(const char *library)
 
   if(gmodule != NULL)
   {
-    module = (dt_gmodule_t *)malloc(sizeof(dt_gmodule_t));
+    module = (dt_gmodule_t *)dt_malloc(sizeof(dt_gmodule_t));
     module->gmodule = gmodule;
     module->library = name;
   }

@@ -20,6 +20,7 @@
 #endif
 #include "common/colorspaces.h"
 #include "common/points.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -242,9 +243,9 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
   const int nit = 10;                                 // number of iterations
   const int samples = roi->width * roi->height * 0.2; // samples: only a fraction of the buffer.
 
-  float(*const mean)[2] = malloc(2 * n * sizeof(float));
-  float(*const var)[2] = malloc(2 * n * sizeof(float));
-  int *const cnt = malloc(n * sizeof(int));
+  float(*const mean)[2] = dt_malloc(2 * n * sizeof(float));
+  float(*const var)[2] = dt_malloc(2 * n * sizeof(float));
+  int *const cnt = dt_malloc(n * sizeof(int));
 
   // init n clusters for a, b channels at random
   for(int k = 0; k < n; k++)
@@ -372,13 +373,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 
     // cluster input buffer
-    float(*const mean)[2] = malloc(2 * data->n * sizeof(float));
-    float(*const var)[2] = malloc(2 * data->n * sizeof(float));
+    float(*const mean)[2] = dt_malloc(2 * data->n * sizeof(float));
+    float(*const var)[2] = dt_malloc(2 * data->n * sizeof(float));
 
     kmeans(in, roi_in, data->n, mean, var);
 
     // get mapping from input clusters to target clusters
-    int *const mapio = malloc(data->n * sizeof(int));
+    int *const mapio = dt_malloc(data->n * sizeof(int));
 
     get_cluster_mapping(data->n, mean, data->mean, mapio);
 
@@ -530,7 +531,7 @@ void commit_params (struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pi
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_colortransfer_data_t));
+  piece->data = dt_malloc(sizeof(dt_iop_colortransfer_data_t));
   dt_iop_colortransfer_data_t *d = (dt_iop_colortransfer_data_t *)piece->data;
   d->flag = NEUTRAL;
   self->commit_params(self, self->default_params, pipe, piece);
@@ -556,7 +557,7 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  // module->data = malloc(sizeof(dt_iop_colortransfer_data_t));
+  // module->data = dt_malloc(sizeof(dt_iop_colortransfer_data_t));
   module->params = calloc(1, sizeof(dt_iop_colortransfer_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colortransfer_params_t));
   module->default_enabled = 0;
@@ -642,13 +643,13 @@ cluster_preview_draw (GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
 void gui_init(struct dt_iop_module_t *self)
 {
 
-  self->gui_data = malloc(sizeof(dt_iop_colortransfer_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_colortransfer_gui_data_t));
   self->widget = gtk_label_new(_("this module will be removed in the future\nand is only here so you can "
                                  "switch it off\nand move to the new color mapping module."));
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
 
 #if 0
-  self->gui_data = malloc(sizeof(dt_iop_colortransfer_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_colortransfer_gui_data_t));
   dt_iop_colortransfer_gui_data_t *g = (dt_iop_colortransfer_gui_data_t *)self->gui_data;
   // dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
 

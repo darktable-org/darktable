@@ -23,6 +23,7 @@
 #include "common/dtpthread.h"
 #include "common/image_cache.h"
 #include "common/tags.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -227,7 +228,7 @@ int dt_film_import(const char *dirname)
   GError *error = NULL;
 
   /* initialize a film object*/
-  dt_film_t *film = (dt_film_t *)malloc(sizeof(dt_film_t));
+  dt_film_t *film = (dt_film_t *)dt_malloc(sizeof(dt_film_t));
   dt_film_init(film);
   film->id = -1;
 

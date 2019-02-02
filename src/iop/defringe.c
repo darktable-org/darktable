@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/gaussian.h"
+#include "common/utility.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "gui/gtk.h"
@@ -215,7 +216,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   // Pre-Compute Fibonacci Lattices
 
   // precompute all required fibonacci lattices:
-  if((xy_avg = malloc((size_t)2 * sizeof(int) * samples_avg)))
+  if((xy_avg = dt_malloc((size_t)2 * sizeof(int) * samples_avg)))
   {
     int *tmp = xy_avg;
     for(int u = 0; u < samples_avg; u++)
@@ -232,7 +233,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
     goto ERROR_EXIT;
   }
 
-  if((xy_small = malloc((size_t)2 * sizeof(int) * samples_small)))
+  if((xy_small = dt_malloc((size_t)2 * sizeof(int) * samples_small)))
   {
     int *tmp = xy_small;
     for(int u = 0; u < samples_small; u++)
@@ -433,7 +434,7 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *module)
 
 void gui_init(dt_iop_module_t *module)
 {
-  module->gui_data = malloc(sizeof(dt_iop_defringe_gui_data_t));
+  module->gui_data = dt_malloc(sizeof(dt_iop_defringe_gui_data_t));
   dt_iop_defringe_gui_data_t *g = (dt_iop_defringe_gui_data_t *)module->gui_data;
   dt_iop_defringe_params_t *p = (dt_iop_defringe_params_t *)module->params;
 

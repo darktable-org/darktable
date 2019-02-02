@@ -59,6 +59,7 @@
 #endif
 
 #include "backend_kwallet.h"
+#include "common/utility.h"
 #include "control/conf.h"
 
 #include <string.h>
@@ -440,7 +441,7 @@ static gchar *array2string(const gchar *pos, guint *length)
   pos += sizeof(gint);
   guint j;
 
-  gunichar2 *tmp_string = (gunichar2 *)malloc(*length);
+  gunichar2 *tmp_string = (gunichar2 *)dt_malloc(*length);
   memcpy(tmp_string, pos, *length);
 
   for(j = 0; j < ((*length) / sizeof(gunichar2)); j++)

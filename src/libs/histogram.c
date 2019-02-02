@@ -21,6 +21,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -355,7 +356,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     if(dev->histogram_type == DT_DEV_HISTOGRAM_WAVEFORM)
     {
       // make the color channel selector work:
-      uint8_t *buf = (uint8_t *)malloc(sizeof(uint8_t) * height * stride);
+      uint8_t *buf = (uint8_t *)dt_malloc(sizeof(uint8_t) * height * stride);
       uint8_t mask[3] = { d->blue, d->green, d->red };
       memcpy(buf, dev->histogram_waveform, sizeof(uint8_t) * height * stride);
       for(int y = 0; y < height; y++)

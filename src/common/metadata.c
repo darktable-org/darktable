@@ -18,6 +18,7 @@
 
 #include "common/metadata.h"
 #include "common/debug.h"
+#include "common/utility.h"
 
 #include <stdlib.h>
 
@@ -336,7 +337,7 @@ static GList *dt_metadata_get_exif(int id, const char *key, uint32_t *count)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     local_count++;
-    double *tmp = (double *)malloc(sizeof(double));
+    double *tmp = (double *)dt_malloc(sizeof(double));
     *tmp = sqlite3_column_double(stmt, 0);
     result = g_list_append(result, tmp);
   }

@@ -27,6 +27,7 @@
 #include "common/image_cache.h"
 #include "common/ratings.h"
 #include "common/selection.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -1063,7 +1064,7 @@ after_drawing:
   {
     int32_t imgids_num = 0;
     const int prefetchrows = .5 * max_rows + 1;
-    int32_t *imgids = malloc(prefetchrows * iir * sizeof(int32_t));
+    int32_t *imgids = dt_malloc(prefetchrows * iir * sizeof(int32_t));
 
     /* clear and reset main query */
     DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
@@ -1473,7 +1474,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), stmt_string, -1, &stmt, NULL);
 
     /* Walk through the "next" images, activate preload and find out where to go if moving */
-    int *preload_stack = malloc(preload_num * sizeof(int));
+    int *preload_stack = dt_malloc(preload_num * sizeof(int));
     for(int i = 0; i < preload_num; ++i)
     {
       preload_stack[i] = -1;

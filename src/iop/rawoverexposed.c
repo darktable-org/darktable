@@ -24,6 +24,7 @@
 #include "common/image.h"        // for dt_image_t, ::DT_IMAGE_4BAYER
 #include "common/mipmap_cache.h" // for dt_mipmap_buffer_t, dt_mipmap_cach...
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "control/control.h"      // for dt_control_log
 #include "develop/develop.h"      // for dt_develop_t, dt_develop_t::(anony...
 #include "develop/imageop.h"      // for dt_iop_module_t, dt_iop_roi_t, dt_...
@@ -463,7 +464,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 2; // basic.cl from programs.conf
-  module->data = malloc(sizeof(dt_iop_rawoverexposed_global_data_t));
+  module->data = dt_malloc(sizeof(dt_iop_rawoverexposed_global_data_t));
   dt_iop_rawoverexposed_global_data_t *gd = module->data;
   gd->kernel_rawoverexposed_mark_cfa = dt_opencl_create_kernel(program, "rawoverexposed_mark_cfa");
   gd->kernel_rawoverexposed_mark_solid = dt_opencl_create_kernel(program, "rawoverexposed_mark_solid");
@@ -483,7 +484,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_rawoverexposed_data_t));
+  piece->data = dt_malloc(sizeof(dt_iop_rawoverexposed_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 

@@ -22,6 +22,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
@@ -362,7 +363,7 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
   const int width = roi->width;
   const int height = roi->height;
   const size_t size = (size_t)width * height;
-  float *const fimg = malloc((size_t)size * 4 * sizeof(float));
+  float *const fimg = dt_malloc((size_t)size * 4 * sizeof(float));
 
   for(int c = 0; c < 3; c++)
   {
@@ -574,7 +575,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)malloc(sizeof(dt_iop_rawdenoise_data_t));
+  dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)dt_malloc(sizeof(dt_iop_rawdenoise_data_t));
   dt_iop_rawdenoise_params_t *default_params = (dt_iop_rawdenoise_params_t *)self->default_params;
 
   piece->data = (void *)d;
@@ -935,7 +936,7 @@ static void rawdenoise_tab_switch(GtkNotebook *notebook, GtkWidget *page, guint 
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_rawdenoise_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_rawdenoise_gui_data_t));
   dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
 

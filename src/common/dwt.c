@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "dwt.h"
@@ -33,7 +34,7 @@ dwt_params_t *dt_dwt_init(float *image, const int width, const int height, const
                           const int return_layer, const int merge_from_scale, void *user_data,
                           const float preview_scale, const int use_sse)
 {
-  dwt_params_t *p = (dwt_params_t *)malloc(sizeof(dwt_params_t));
+  dwt_params_t *p = (dwt_params_t *)dt_malloc(sizeof(dwt_params_t));
   if(!p) return NULL;
 
   p->image = image;
@@ -467,7 +468,7 @@ void dwt_decompose(dwt_params_t *p, _dwt_layer_func layer_func)
 #ifdef HAVE_OPENCL
 dt_dwt_cl_global_t *dt_dwt_init_cl_global()
 {
-  dt_dwt_cl_global_t *g = (dt_dwt_cl_global_t *)malloc(sizeof(dt_dwt_cl_global_t));
+  dt_dwt_cl_global_t *g = (dt_dwt_cl_global_t *)dt_malloc(sizeof(dt_dwt_cl_global_t));
 
   const int program = 20; // dwt.cl, from programs.conf
   g->kernel_dwt_add_img_to_layer = dt_opencl_create_kernel(program, "dwt_add_img_to_layer");
@@ -496,7 +497,7 @@ dwt_params_cl_t *dt_dwt_init_cl(const int devid, cl_mem image, const int width, 
                                 const int return_layer, const int merge_from_scale, void *user_data,
                                 const float preview_scale)
 {
-  dwt_params_cl_t *p = (dwt_params_cl_t *)malloc(sizeof(dwt_params_cl_t));
+  dwt_params_cl_t *p = (dwt_params_cl_t *)dt_malloc(sizeof(dwt_params_cl_t));
   if(!p) return NULL;
 
   p->global = darktable.opencl->dwt;

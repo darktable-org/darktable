@@ -26,6 +26,7 @@
 #include "common/database.h"
 #include "common/history.h"
 #include "common/image.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "crawler.h"
 #include "gui/gtk.h"
@@ -101,7 +102,7 @@ GList *dt_control_crawler_run()
       if(timestamp < statbuf.st_mtime)
       {
         dt_control_crawler_result_t *item
-            = (dt_control_crawler_result_t *)malloc(sizeof(dt_control_crawler_result_t));
+            = (dt_control_crawler_result_t *)dt_malloc(sizeof(dt_control_crawler_result_t));
         item->id = id;
         item->timestamp_xmp = statbuf.st_mtime;
         item->timestamp_db = timestamp;
@@ -299,7 +300,7 @@ void dt_control_crawler_show_image_list(GList *images)
 {
   if(!images) return;
 
-  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)malloc(sizeof(dt_control_crawler_gui_t));
+  dt_control_crawler_gui_t *gui = (dt_control_crawler_gui_t *)dt_malloc(sizeof(dt_control_crawler_gui_t));
 
   // a list with all the images
   GtkTreeViewColumn *column;

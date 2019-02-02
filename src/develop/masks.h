@@ -19,6 +19,7 @@
 #pragma once
 
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "develop/pixelpipe.h"
 #include "dtgtk/button.h"
 #include "dtgtk/gradientslider.h"
@@ -368,7 +369,7 @@ dt_masks_dynbuf_t *dt_masks_dynbuf_init(size_t size, const char *tag)
     a->tag[sizeof(a->tag)-1] = '\0';
     a->pos = 0;
     a->size = size;
-    a->buffer = (float *)malloc(size * sizeof(float));
+    a->buffer = (float *)dt_malloc(size * sizeof(float));
     dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] with initial size %lu (is %p)\n", a->tag,
              (unsigned long)a->size, a->buffer);
     if(a->buffer == NULL)

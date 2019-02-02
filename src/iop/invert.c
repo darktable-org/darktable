@@ -28,6 +28,7 @@
 #include <xmmintrin.h>
 #endif
 #include "common/colorspaces.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
@@ -506,7 +507,7 @@ void reload_defaults(dt_iop_module_t *self)
 void init_global(dt_iop_module_so_t *module)
 {
   const int program = 2; // basic.cl, from programs.conf
-  module->data = malloc(sizeof(dt_iop_invert_global_data_t));
+  module->data = dt_malloc(sizeof(dt_iop_invert_global_data_t));
 
   dt_iop_invert_global_data_t *gd = module->data;
   gd->kernel_invert_1f = dt_opencl_create_kernel(program, "invert_1f");

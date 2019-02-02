@@ -23,6 +23,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/imageio_rawspeed.h" // for dt_rawspeed_crop_dcraw_filters
 #include "common/opencl.h"
+#include "common/utility.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
@@ -710,7 +711,7 @@ end:
 void init_global(dt_iop_module_so_t *self)
 {
   const int program = 2; // basic.cl, from programs.conf
-  self->data = malloc(sizeof(dt_iop_rawprepare_global_data_t));
+  self->data = dt_malloc(sizeof(dt_iop_rawprepare_global_data_t));
 
   dt_iop_rawprepare_global_data_t *gd = self->data;
   gd->kernel_rawprepare_1f = dt_opencl_create_kernel(program, "rawprepare_1f");
@@ -813,7 +814,7 @@ static void callback(GtkWidget *widget, gpointer *user_data)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_rawprepare_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_rawprepare_gui_data_t));
 
   dt_iop_rawprepare_gui_data_t *g = (dt_iop_rawprepare_gui_data_t *)self->gui_data;
   dt_iop_rawprepare_params_t *p = (dt_iop_rawprepare_params_t *)self->params;

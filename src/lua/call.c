@@ -16,6 +16,7 @@
    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "lua/call.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "lua/lua.h"
 #ifndef _WIN32
@@ -497,7 +498,7 @@ void dt_lua_async_call_alien_internal(const char * call_function, int line,lua_C
 #ifdef _DEBUG
   dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s %d\n",__FUNCTION__,call_function,line);
 #endif
-  async_call_data*data = malloc(sizeof(async_call_data));
+  async_call_data*data = dt_malloc(sizeof(async_call_data));
   data->pusher = pusher;
   data->extra=NULL;
   data->cb = cb;
@@ -559,7 +560,7 @@ void dt_lua_async_call_string_internal(const char* function, int line,const char
 #ifdef _DEBUG
   dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s %d, string %s\n",__FUNCTION__,function,line,lua_string);
 #endif
-  string_call_data*data = malloc(sizeof(string_call_data));
+  string_call_data*data = dt_malloc(sizeof(string_call_data));
   data->function = dt_strdup(lua_string);
   data->cb = cb;
   data->cb_data = cb_data;

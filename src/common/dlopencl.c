@@ -21,6 +21,7 @@
 #include "common/dlopencl.h"
 #include "common/darktable.h"
 #include "common/dynload.h"
+#include "common/utility.h"
 
 #include <assert.h>
 #include <signal.h>
@@ -89,7 +90,7 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
   {
     /* now bind symbols */
     success = TRUE;
-    ocl = (dt_dlopencl_t *)malloc(sizeof(dt_dlopencl_t));
+    ocl = (dt_dlopencl_t *)dt_malloc(sizeof(dt_dlopencl_t));
 
     if(ocl == NULL)
     {

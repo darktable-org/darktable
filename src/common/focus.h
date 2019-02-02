@@ -18,6 +18,7 @@
 #pragma once
 
 #include "common/image_cache.h"
+#include "common/utility.h"
 
 typedef struct dt_focus_cluster_t
 {
@@ -230,7 +231,7 @@ static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid
   int wd = buffer_width + image.crop_x, ht = buffer_height + image.crop_y;
 
   // array with cluster positions
-  float *pos = malloc(fs * 6 * sizeof(float));
+  float *pos = dt_malloc(fs * 6 * sizeof(float));
   float *offx = pos + fs * 2, *offy = pos + fs * 4;
   for(int k = 0; k < fs; k++)
   {
