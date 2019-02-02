@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-02 15:43+0100\n"
-"PO-Revision-Date: 2019-02-02 15:43+0100\n"
+"POT-Creation-Date: 2019-02-02 18:38+0100\n"
+"PO-Revision-Date: 2019-02-02 18:48+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -3514,7 +3514,7 @@ msgid "golden spiral"
 msgstr "spirale d'or"
 
 #: ../src/gui/guides.c:374 ../src/imageio/format/pdf.c:678
-#: ../src/iop/denoiseprofile.c:2642 ../src/iop/lens.c:2156
+#: ../src/iop/denoiseprofile.c:2733 ../src/iop/lens.c:2156
 #: ../src/iop/rawdenoise.c:952 ../src/libs/tools/filter.c:117
 msgid "all"
 msgstr "tout"
@@ -5095,12 +5095,12 @@ msgstr "défloutage: moyen, force 1"
 msgid "deblur: fine blur, strength 1"
 msgstr "défloutage: fine, force 1"
 
-#: ../src/iop/atrous.c:1576 ../src/iop/denoiseprofile.c:2457
+#: ../src/iop/atrous.c:1576 ../src/iop/denoiseprofile.c:2545
 #: ../src/iop/rawdenoise.c:781
 msgid "coarse"
 msgstr "global"
 
-#: ../src/iop/atrous.c:1583 ../src/iop/denoiseprofile.c:2465
+#: ../src/iop/atrous.c:1583 ../src/iop/denoiseprofile.c:2553
 #: ../src/iop/rawdenoise.c:789
 msgid "fine"
 msgstr "détail"
@@ -5110,11 +5110,11 @@ msgid "contrasty"
 msgstr "contrasté"
 
 #: ../src/iop/atrous.c:1596 ../src/iop/atrous.c:1600
-#: ../src/iop/denoiseprofile.c:2474 ../src/iop/rawdenoise.c:798
+#: ../src/iop/denoiseprofile.c:2562 ../src/iop/rawdenoise.c:798
 msgid "smooth"
 msgstr "flou"
 
-#: ../src/iop/atrous.c:1601 ../src/iop/denoiseprofile.c:2479
+#: ../src/iop/atrous.c:1601 ../src/iop/denoiseprofile.c:2567
 #: ../src/iop/rawdenoise.c:803
 msgid "noisy"
 msgstr "bruité"
@@ -5332,7 +5332,7 @@ msgid "local laplacian: inconsistent output"
 msgstr "laplacien local: résultat incohérent"
 
 #: ../src/iop/bilat.c:521 ../src/iop/colorbalance.c:2323
-#: ../src/iop/denoiseprofile.c:2694 ../src/iop/exposure.c:852
+#: ../src/iop/denoiseprofile.c:2785 ../src/iop/exposure.c:852
 #: ../src/iop/lens.c:2299 ../src/iop/levels.c:665
 #: ../src/iop/profile_gamma.c:842 ../src/libs/copy_history.c:322
 #: ../src/libs/export.c:648 ../src/libs/print_settings.c:1514
@@ -5503,7 +5503,7 @@ msgstr "seuil"
 msgid "the threshold of light"
 msgstr "seuil de lumière"
 
-#: ../src/iop/bloom.c:526 ../src/iop/denoiseprofile.c:2699
+#: ../src/iop/bloom.c:526 ../src/iop/denoiseprofile.c:2791
 #: ../src/iop/grain.c:629 ../src/iop/hazeremoval.c:188
 #: ../src/iop/hotpixels.c:462 ../src/iop/nlmeans.c:827 ../src/iop/velvia.c:380
 msgid "strength"
@@ -6470,7 +6470,7 @@ msgstr "impossible de générer le profil d'entrée"
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "profil d'entrée non supporté, remplacé par linéaire RGB Rec709 !"
 
-#: ../src/iop/colorin.c:1844 ../src/iop/denoiseprofile.c:2693
+#: ../src/iop/colorin.c:1844 ../src/iop/denoiseprofile.c:2784
 #: ../src/libs/export.c:607 ../src/libs/print_settings.c:1187
 #: ../src/libs/print_settings.c:1407
 msgid "profile"
@@ -6979,62 +6979,66 @@ msgstr ""
 "dématriçage\n"
 "uniquement pour les images raw"
 
-#: ../src/iop/denoiseprofile.c:241
+#: ../src/iop/denoiseprofile.c:287
 msgid "denoise (profiled)"
 msgstr "réduction du bruit (profil)"
 
 #. these blobs were exported as dtstyle and copied from there:
-#: ../src/iop/denoiseprofile.c:291
+#: ../src/iop/denoiseprofile.c:337
 msgid "chroma (use on 1st instance)"
 msgstr "chroma (utiliser sur 1ère instance)"
 
-#: ../src/iop/denoiseprofile.c:294
+#: ../src/iop/denoiseprofile.c:340
 msgid "luma (use on 2nd instance)"
 msgstr "luma (utiliser sur la 2nd instance)"
 
-#: ../src/iop/denoiseprofile.c:2014
+#: ../src/iop/denoiseprofile.c:2092
 #, c-format
 msgid "found match for ISO %d"
 msgstr "profil pour ISO %d trouvé"
 
-#: ../src/iop/denoiseprofile.c:2023
+#: ../src/iop/denoiseprofile.c:2101
 #, c-format
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolé depuis ISO %d et %d"
 
-#: ../src/iop/denoiseprofile.c:2644 ../src/iop/rawdenoise.c:954
+#: ../src/iop/denoiseprofile.c:2735 ../src/iop/rawdenoise.c:954
 msgid "R"
 msgstr "R"
 
-#: ../src/iop/denoiseprofile.c:2646 ../src/iop/rawdenoise.c:956
+#: ../src/iop/denoiseprofile.c:2737 ../src/iop/rawdenoise.c:956
 msgid "G"
 msgstr "G"
 
-#: ../src/iop/denoiseprofile.c:2648 ../src/iop/rawdenoise.c:958
+#: ../src/iop/denoiseprofile.c:2739 ../src/iop/rawdenoise.c:958
 msgid "B"
 msgstr "B"
 
-#: ../src/iop/denoiseprofile.c:2695 ../src/iop/nlmeans.c:825
+#: ../src/iop/denoiseprofile.c:2786 ../src/iop/nlmeans.c:825
 msgid "patch size"
 msgstr "taille"
 
-#: ../src/iop/denoiseprofile.c:2697
+#: ../src/iop/denoiseprofile.c:2788
 msgid "search radius"
 msgstr "rayon"
 
-#: ../src/iop/denoiseprofile.c:2700
+#: ../src/iop/denoiseprofile.c:2790
+msgid "scattering (coarse-grain noise)"
+msgstr "diffusion (bruit à grain grossier)"
+
+#: ../src/iop/denoiseprofile.c:2792
 msgid "non-local means"
 msgstr "moyenne non-locales"
 
-#: ../src/iop/denoiseprofile.c:2701
+#: ../src/iop/denoiseprofile.c:2793
 msgid "wavelets"
 msgstr "ondelettes"
 
-#: ../src/iop/denoiseprofile.c:2702
+#: ../src/iop/denoiseprofile.c:2794
 msgid "profile used for variance stabilization"
 msgstr "profil utilisé pour la stabilisation de variance"
 
-#: ../src/iop/denoiseprofile.c:2703
+#: ../src/iop/denoiseprofile.c:2795
 msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
@@ -7043,11 +7047,11 @@ msgstr ""
 "fonctionne mieux pour le mode de fusion 'luminosité'. 'ondelettes' "
 "fonctionnent pour le mode de fusion 'couleur'"
 
-#: ../src/iop/denoiseprofile.c:2706
+#: ../src/iop/denoiseprofile.c:2798
 msgid "radius of the patches to match. increase for more sharpness"
 msgstr "rayon des éléments à identifier. augmenter pour plus de netteté."
 
-#: ../src/iop/denoiseprofile.c:2707
+#: ../src/iop/denoiseprofile.c:2799
 msgid ""
 "emergency use only: radius of the neighbourhood to search patches in. "
 "increase for better denoising performance, but watch the long runtimes! "
@@ -7057,7 +7061,15 @@ msgstr ""
 "meilleure suppression du bruit au détriment de la performance qui peut très "
 "vite devenir très pénalisante."
 
-#: ../src/iop/denoiseprofile.c:2708
+#: ../src/iop/denoiseprofile.c:2801
+msgid ""
+"scattering of the neighbourhood to search patches in. increase for better "
+"coarse-grain noise reduction. does not affect execution time."
+msgstr ""
+"diffusion du voisinage pour la recherche de similarité, augmenter pour "
+"traiter un grain grossier. n'affecte pas le temps d'exécution."
+
+#: ../src/iop/denoiseprofile.c:2803
 msgid "finetune denoising strength"
 msgstr "réglage fin de la force de réduction"
 
@@ -10418,7 +10430,7 @@ msgstr "exporte avec les réglages actuels"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1195 ../src/libs/styles.c:71
-#: ../src/views/darkroom.c:2481
+#: ../src/views/darkroom.c:2483
 msgctxt "accel"
 msgid "export"
 msgstr "exporter"
@@ -12545,115 +12557,115 @@ msgstr "profils ICC d'épreuvage dans %s ou %s"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:2473 ../src/views/map.c:893 ../src/views/print.c:329
+#: ../src/views/darkroom.c:2475 ../src/views/map.c:893 ../src/views/print.c:329
 #: ../src/views/tethering.c:388
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "activer/désactiver le bandeau"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2476
+#: ../src/views/darkroom.c:2478
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom en gros plan"
 
-#: ../src/views/darkroom.c:2477
+#: ../src/views/darkroom.c:2479
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoomer"
 
-#: ../src/views/darkroom.c:2478
+#: ../src/views/darkroom.c:2480
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajusté"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2484
+#: ../src/views/darkroom.c:2486
 msgctxt "accel"
 msgid "image forward"
 msgstr "image suivante"
 
-#: ../src/views/darkroom.c:2485
+#: ../src/views/darkroom.c:2487
 msgctxt "accel"
 msgid "image back"
 msgstr "image précédente"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:2488
+#: ../src/views/darkroom.c:2490
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "raw sur-exposé"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:2491
+#: ../src/views/darkroom.c:2493
 msgctxt "accel"
 msgid "overexposed"
 msgstr "sur-exposition"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:2494
+#: ../src/views/darkroom.c:2496
 msgctxt "accel"
 msgid "softproof"
 msgstr "épreuvage"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:2497
+#: ../src/views/darkroom.c:2499
 msgctxt "accel"
 msgid "gamut check"
 msgstr "vérification de gamut"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2500
+#: ../src/views/darkroom.c:2502
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "augmenter la taille du pinceau"
 
-#: ../src/views/darkroom.c:2501
+#: ../src/views/darkroom.c:2503
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "diminuer la taille du pinceau"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2504
+#: ../src/views/darkroom.c:2506
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "augmenter la dureté du pinceau"
 
-#: ../src/views/darkroom.c:2505
+#: ../src/views/darkroom.c:2507
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "diminuer la dureté du pinceau"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2508
+#: ../src/views/darkroom.c:2510
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "augmenter la luminosité du pinceau"
 
-#: ../src/views/darkroom.c:2509
+#: ../src/views/darkroom.c:2511
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "diminuer la luminosité du pinceau"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:2512
+#: ../src/views/darkroom.c:2514
 msgctxt "accel"
 msgid "full preview"
 msgstr "aperçu complet"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2515 ../src/views/map.c:890
+#: ../src/views/darkroom.c:2517 ../src/views/map.c:890
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/darkroom.c:2516 ../src/views/map.c:891
+#: ../src/views/darkroom.c:2518 ../src/views/map.c:891
 msgctxt "accel"
 msgid "redo"
 msgstr "refaire"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:2519
+#: ../src/views/darkroom.c:2521
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "permet de recadrer et zoomer pendant l'édition des masques"
@@ -13000,17 +13012,6 @@ msgstr ""
 
 #~ msgid "auto tune"
 #~ msgstr "réglage auto"
-
-#~ msgid "coarse-grain noise reduction"
-#~ msgstr "réduction du grain grossier"
-
-#~ msgid ""
-#~ "size of the zone around the pixel to search for similar patches. increase "
-#~ "if you see coarse-grain noise. reduce if you see grid artefacts."
-#~ msgstr ""
-#~ "taille de la zone autour du pixel pour la recherche de similarité, "
-#~ "augmenter pour traiter un grain grossier et réduire pour un bruit "
-#~ "structuré"
 
 #~ msgid "grey fulcrum"
 #~ msgstr "gris pivot"
