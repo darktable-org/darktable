@@ -26,13 +26,17 @@
 /** Standard Exit Point */
 void dt_fail(const char *format, ...);
 
-/** Dynamic Memory Allocation */
+/** Dynamic memory allocation and functions that use it */
+
 void *dt_malloc(size_t size);
 void *dt_calloc(size_t nmemb, size_t size);
 void *dt_realloc(void *ptr, size_t size);
-
+void *dt_realloc(void *ptr, size_t size);
 // Macrofy this in case we want to wrap it later.
 #define dt_free(p) (free((p)))
+
+char *dt_strdup(const char *s);
+char *dt_strndup(const char *s, size_t n);
 
 
 

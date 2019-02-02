@@ -117,6 +117,31 @@ void *dt_realloc(void *ptr, size_t size)
 // dt_free() is a macro in utility.h for the time being.
 
 
+char *dt_strdup(const char *s)
+{
+  char *result = strdup(s);
+  if(result == NULL)
+  {
+    dt_fail("Failed to duplicate string");
+  }
+
+  return result;
+}
+
+
+char *dt_strndup(const char *s, size_t n)
+{
+  char *result = strndup(s, n);
+  if(result == NULL)
+  {
+    dt_fail("Failed to duplicate string");
+  }
+
+  return result;
+}
+
+
+
 
 gchar *dt_util_dstrcat(gchar *str, const gchar *format, ...)
 {
