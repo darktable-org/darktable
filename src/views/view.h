@@ -46,8 +46,7 @@
     control which view the module should be available in also
     which placement in the panels the module have.
 */
-typedef enum
-{
+typedef enum {
   DT_VIEW_LIGHTTABLE = 1,
   DT_VIEW_DARKROOM = 2,
   DT_VIEW_TETHERING = 4,
@@ -64,8 +63,7 @@ typedef enum dt_view_flags_t
   VIEW_FLAGS_HIDDEN = 1 << 0,       // Hide the view from userinterface
 } dt_view_flags_t;
 
-typedef enum dt_lighttable_layout_t
-{
+typedef enum dt_lighttable_layout_t {
   DT_LIGHTTABLE_LAYOUT_FIRST = -1,
   DT_LIGHTTABLE_LAYOUT_ZOOMABLE = 0,
   DT_LIGHTTABLE_LAYOUT_FILEMANAGER = 1,

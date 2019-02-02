@@ -149,8 +149,7 @@ static void load_themes_dir(const char *basedir)
   if(dir)
   {
     const gchar *d_name;
-    while((d_name = g_dir_read_name(dir)))
-      darktable.themes = g_list_append(darktable.themes, g_strdup(d_name));
+    while((d_name = g_dir_read_name(dir))) darktable.themes = g_list_append(darktable.themes, g_strdup(d_name));
     g_dir_close(dir);
   }
   g_free(themes_dir);
@@ -251,7 +250,7 @@ static void hardcoded_gui(GtkWidget *grid, int *line)
 
   for(GList *iter = darktable.themes; iter; iter = g_list_next(iter))
   {
-    gchar *name = g_strdup((gchar*)(iter->data));
+    gchar *name = g_strdup((gchar *)(iter->data));
     // remove extension
     gchar *i = g_strrstr(name, ".");
     if(i) *i = '\0';

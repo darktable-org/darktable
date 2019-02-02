@@ -453,8 +453,10 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
   float pivot_end_x, pivot_end_y;
 
   _gradient_point_transform(xref, yref, gpt->points[0] + dx, gpt->points[1] + dy, sinv, cosv, &anchor_x, &anchor_y);
-  _gradient_point_transform(xref, yref, gpt->points[2] + dx, gpt->points[3] + dy, sinv, cosv, &pivot_end_x, &pivot_end_y);
-  _gradient_point_transform(xref, yref, gpt->points[4] + dx, gpt->points[5] + dy, sinv, cosv, &pivot_start_x, &pivot_start_y);
+  _gradient_point_transform(xref, yref, gpt->points[2] + dx, gpt->points[3] + dy, sinv, cosv, &pivot_end_x,
+                            &pivot_end_y);
+  _gradient_point_transform(xref, yref, gpt->points[4] + dx, gpt->points[5] + dy, sinv, cosv, &pivot_start_x,
+                            &pivot_start_y);
 
   // draw anchor point
   {
@@ -508,7 +510,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
 
     const float a_dx = anchor_x - pivot_end_x;
     const float a_dy = pivot_end_y - anchor_y;
-    const float angle = atan2(a_dx, a_dy) - M_PI/2.0;
+    const float angle = atan2(a_dx, a_dy) - M_PI / 2.0;
 
     const float arrow_x1 = pivot_end_x + (arrow_length * cos(angle + arrow_angle));
     const float arrow_x2 = pivot_end_x + (arrow_length * cos(angle - arrow_angle));

@@ -1092,7 +1092,7 @@ static void _view_map_check_preference_changed(gpointer instance, gpointer user_
 static void _view_map_collection_changed(gpointer instance, gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
-   dt_map_t *lib = (dt_map_t *)self->data;
+  dt_map_t *lib = (dt_map_t *)self->data;
 
   if(darktable.view_manager->proxy.map.view)
   {

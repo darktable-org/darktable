@@ -65,9 +65,9 @@ static gboolean _lib_lighttable_key_accel_zoom_in_callback(GtkAccelGroup *accel_
 static gboolean _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel_group,
                                                             GObject *acceleratable, guint keyval,
                                                             GdkModifierType modifier, gpointer data);
-static gboolean _lib_lighttable_key_accel_toggle_expose_mode(GtkAccelGroup *accel_group,
-                                                             GObject *acceleratable, guint keyval,
-                                                             GdkModifierType modifier, gpointer data);
+static gboolean _lib_lighttable_key_accel_toggle_expose_mode(GtkAccelGroup *accel_group, GObject *acceleratable,
+                                                             guint keyval, GdkModifierType modifier,
+                                                             gpointer data);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -102,7 +102,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
-  d->previous_layout =  d->layout = dt_conf_get_int("plugins/lighttable/layout");
+  d->previous_layout = d->layout = dt_conf_get_int("plugins/lighttable/layout");
   d->current_zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
 
   /* create layout selection combobox */
@@ -113,7 +113,8 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_combo_box_set_active(GTK_COMBO_BOX(d->layout_combo), d->layout);
 
-  g_signal_connect(G_OBJECT(d->layout_combo), "changed", G_CALLBACK(_lib_lighttable_layout_changed), (gpointer)self);
+  g_signal_connect(G_OBJECT(d->layout_combo), "changed", G_CALLBACK(_lib_lighttable_layout_changed),
+                   (gpointer)self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), d->layout_combo, TRUE, TRUE, 0);
 
@@ -376,8 +377,8 @@ static gboolean _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel
   return TRUE;
 }
 
-static gboolean _lib_lighttable_key_accel_toggle_expose_mode(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                                             GdkModifierType modifier, gpointer data)
+static gboolean _lib_lighttable_key_accel_toggle_expose_mode(GtkAccelGroup *accel_group, GObject *acceleratable,
+                                                             guint keyval, GdkModifierType modifier, gpointer data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;

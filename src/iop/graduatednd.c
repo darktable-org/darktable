@@ -269,18 +269,20 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
 
   if(diff_x > eps)
   {
-    if(v >=  MPI2) v -= M_PI;
-    if(v <  -MPI2) v += M_PI;
+    if(v >= MPI2) v -= M_PI;
+    if(v < -MPI2) v += M_PI;
   }
   else if(diff_x < -eps)
   {
-    if(v <  MPI2 && v >= 0) v -= M_PI;
-    if(v > -MPI2 && v < 0)  v += M_PI;
+    if(v < MPI2 && v >= 0) v -= M_PI;
+    if(v > -MPI2 && v < 0) v += M_PI;
   }
   else // let's pretend that we are at PI/2
   {
-    if(v <0) v = -MPI2;
-    else v = MPI2;
+    if(v < 0)
+      v = -MPI2;
+    else
+      v = MPI2;
   }
 
   *rotation = -v * 180.0 / M_PI;

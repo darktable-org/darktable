@@ -173,12 +173,13 @@ typedef struct dt_library_t
 
 typedef struct dt_layout_image_t
 {
-    gint imgid;
-    gint width, height, x, y;
+  gint imgid;
+  gint width, height, x, y;
 } dt_layout_image_t;
 
-static inline float absmul(float a, float b) {
-  return a > b ? a/b : b/a;
+static inline float absmul(float a, float b)
+{
+  return a > b ? a / b : b / a;
 }
 
 
@@ -1448,7 +1449,7 @@ failure:
 }
 
 static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
-                           int32_t pointery)
+                         int32_t pointery)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   int32_t mouse_over_id;
@@ -1471,15 +1472,15 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
 
   sq = dt_collection_get_sort_query(darktable.collection);
 
-  query = dt_util_dstrcat(query, "SELECT imgid, aspect_ratio, width, height FROM main.selected_images AS sel "
-                                 "JOIN main.images AS imgs ON sel.imgid = imgs.id %s", sq);
+  query = dt_util_dstrcat(query,
+                          "SELECT imgid, aspect_ratio, width, height FROM main.selected_images AS sel "
+                          "JOIN main.images AS imgs ON sel.imgid = imgs.id %s",
+                          sq);
 
 
   sqlite3_stmt *stmt;
   /* prepare a new main query statement for collection */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              query, -1,
-                              &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
   if(!stmt) return 0;
 
@@ -1495,11 +1496,11 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   {
     id = sqlite3_column_int(stmt, 0);
     aspect_ratio = sqlite3_column_double(stmt, 1);
-    if (!aspect_ratio) aspect_ratio = (double)sqlite3_column_int(stmt, 2) / (double)sqlite3_column_int(stmt, 3);
+    if(!aspect_ratio) aspect_ratio = (double)sqlite3_column_int(stmt, 2) / (double)sqlite3_column_int(stmt, 3);
 
     images[i].imgid = id;
-    images[i].width = (gint) (sqrt(aspect_ratio) * 100);
-    images[i].height = (gint) (1/sqrt(aspect_ratio) * 100);
+    images[i].width = (gint)(sqrt(aspect_ratio) * 100);
+    images[i].height = (gint)(1 / sqrt(aspect_ratio) * 100);
     i++;
   }
 
@@ -1517,7 +1518,7 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     sum_w += images[i].width;
     max_w = MAX(max_w, images[i].width);
     max_h = MAX(max_h, images[i].height);
-    avg_ratio += images[i].width / (float) images[i].height;
+    avg_ratio += images[i].width / (float)images[i].height;
   }
 
   avg_ratio /= sel_img_count;
@@ -1527,7 +1528,7 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   per_col = tmp_per_col = (sel_img_count + per_row - 1) / per_row; // ceil(sel_img_count/per_row)
 
   float tmp_slot_ratio, slot_ratio;
-  tmp_slot_ratio = slot_ratio = (width/ (float) per_row) / (height/ (float) per_col);
+  tmp_slot_ratio = slot_ratio = (width / (float)per_row) / (height / (float)per_col);
 
   do
   {
@@ -1546,61 +1547,62 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
 
     if(tmp_per_row == 0) break;
 
-    tmp_per_col = (sel_img_count + tmp_per_row - 1) / tmp_per_row; //ceil(sel_img_count / tmp_per_row);
+    tmp_per_col = (sel_img_count + tmp_per_row - 1) / tmp_per_row; // ceil(sel_img_count / tmp_per_row);
 
-    tmp_slot_ratio = (width/ (float) tmp_per_row) / (height/( float) tmp_per_col);
+    tmp_slot_ratio = (width / (float)tmp_per_row) / (height / (float)tmp_per_col);
 
-  } while(per_row > 0 && per_row <= sel_img_count && absmul(tmp_slot_ratio, avg_ratio) < absmul(slot_ratio, avg_ratio));
+  } while(per_row > 0 && per_row <= sel_img_count
+          && absmul(tmp_slot_ratio, avg_ratio) < absmul(slot_ratio, avg_ratio));
 
 
   // Vertical layout
   for(i = 0; i < sel_img_count; i++)
   {
     GList *slot_iter = g_list_first(slots);
-    for (; slot_iter; slot_iter = slot_iter->next)
+    for(; slot_iter; slot_iter = slot_iter->next)
     {
-      GList *slot = (GList *) slot_iter->data;
+      GList *slot = (GList *)slot_iter->data;
       // Calculate current total height of slot
       int slot_h = distance;
       GList *slot_cw_iter = slot;
       while(slot_cw_iter != NULL)
       {
-        dt_layout_image_t *slot_cw = (dt_layout_image_t *) slot_cw_iter->data;
+        dt_layout_image_t *slot_cw = (dt_layout_image_t *)slot_cw_iter->data;
         slot_h = slot_h + slot_cw->height + distance;
         slot_cw_iter = slot_cw_iter->next;
       }
       // Add window to slot if the slot height after adding the window
       // doesn't exceed max window height
-      if (slot_h + distance + images[i].height < max_h) {
+      if(slot_h + distance + images[i].height < max_h)
+      {
         slot_iter->data = g_list_append(slot, &(images[i]));
         break;
       }
     }
     // Otherwise, create a new slot with only this window
-    if (!slot_iter)
-      slots = g_list_append(slots, g_list_append(NULL, &(images[i])));
+    if(!slot_iter) slots = g_list_append(slots, g_list_append(NULL, &(images[i])));
   }
 
   GList *rows = g_list_append(NULL, NULL);
   {
     int row_y = 0, x = 0, row_h = 0;
-    int max_row_w = sum_w/per_col;//sqrt((float) sum_w * max_h);// * pow((float) width/height, 0.02);
-    for (GList *slot_iter = slots; slot_iter != NULL; slot_iter = slot_iter->next)
+    int max_row_w = sum_w / per_col; // sqrt((float) sum_w * max_h);// * pow((float) width/height, 0.02);
+    for(GList *slot_iter = slots; slot_iter != NULL; slot_iter = slot_iter->next)
     {
-      GList *slot = (GList *) slot_iter->data;
+      GList *slot = (GList *)slot_iter->data;
 
       // Max width of windows in the slot
       int slot_max_w = 0;
-      for (GList *slot_cw_iter = slot; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next)
+      for(GList *slot_cw_iter = slot; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next)
       {
-        dt_layout_image_t *cw = (dt_layout_image_t *) slot_cw_iter->data;
+        dt_layout_image_t *cw = (dt_layout_image_t *)slot_cw_iter->data;
         slot_max_w = MAX(slot_max_w, cw->width);
       }
 
       int y = row_y;
-      for (GList *slot_cw_iter = slot; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next)
+      for(GList *slot_cw_iter = slot; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next)
       {
-        dt_layout_image_t *cw = (dt_layout_image_t *) slot_cw_iter->data;
+        dt_layout_image_t *cw = (dt_layout_image_t *)slot_cw_iter->data;
         cw->x = x + (slot_max_w - cw->width) / 2;
         cw->y = y;
         y += cw->height + distance;
@@ -1612,7 +1614,7 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       x += slot_max_w + distance;
       total_width = MAX(total_width, x);
 
-      if (x > max_row_w)
+      if(x > max_row_w)
       {
         x = 0;
         row_y += row_h;
@@ -1629,22 +1631,22 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   total_width -= distance;
   total_height -= distance;
 
-  for (GList *iter = rows; iter != NULL; iter = iter->next)
+  for(GList *iter = rows; iter != NULL; iter = iter->next)
   {
-    GList *row = (GList *) iter->data;
+    GList *row = (GList *)iter->data;
     int row_w = 0, xoff;
 
-    for (GList *slot_cw_iter = row; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next)
+    for(GList *slot_cw_iter = row; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next)
     {
-      dt_layout_image_t *cw = (dt_layout_image_t *) slot_cw_iter->data;
+      dt_layout_image_t *cw = (dt_layout_image_t *)slot_cw_iter->data;
       row_w = MAX(row_w, cw->x + cw->width);
     }
 
     xoff = (total_width - row_w) / 2;
 
-    for (GList *cw_iter = row; cw_iter != NULL; cw_iter = cw_iter->next)
+    for(GList *cw_iter = row; cw_iter != NULL; cw_iter = cw_iter->next)
     {
-      dt_layout_image_t *cw = (dt_layout_image_t *) cw_iter->data;
+      dt_layout_image_t *cw = (dt_layout_image_t *)cw_iter->data;
       cw->x += xoff;
     }
     g_list_free(row);
@@ -1653,12 +1655,11 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   g_list_free(rows);
 
   float factor;
-  factor = (float) (width - 1) / total_width;
-  if (factor * total_height > height - 1)
-    factor = (float) (height - 1) / total_height;
+  factor = (float)(width - 1) / total_width;
+  if(factor * total_height > height - 1) factor = (float)(height - 1) / total_height;
 
-  int xoff = (width - (float) total_width * factor) / 2;
-  int yoff = (height - (float) total_height * factor) / 2;
+  int xoff = (width - (float)total_width * factor) / 2;
+  int yoff = (height - (float)total_height * factor) / 2;
 
   for(i = 0; i < sel_img_count; i++)
   {
@@ -1673,23 +1674,18 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     cairo_save(cr);
     // if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
     cairo_translate(cr, images[i].x, images[i].y);
-    int img_pointerx =
-      pointerx > images[i].x
-      && pointerx < images[i].x + images[i].width
-      ? pointerx - images[i].x
-      : images[i].width;
-    int img_pointery =
-      pointery > images[i].y
-      && pointery < images[i].y + images[i].height
-      ? pointery - images[i].y
-      : images[i].height;
+    int img_pointerx = pointerx > images[i].x && pointerx < images[i].x + images[i].width ? pointerx - images[i].x
+                                                                                          : images[i].width;
+    int img_pointery = pointery > images[i].y && pointery < images[i].y + images[i].height ? pointery - images[i].y
+                                                                                           : images[i].height;
 
     dt_view_image_expose(&(lib->image_over), images[i].imgid, cr, images[i].width, images[i].height, 1,
                          img_pointerx, img_pointery, TRUE, FALSE);
     cairo_restore(cr);
 
     // set mouse over id
-    if(pointerx > images[i].x && pointerx < images[i].x + images[i].width && pointery > images[i].y && pointery < images[i].y + images[i].height)
+    if(pointerx > images[i].x && pointerx < images[i].x + images[i].width && pointery > images[i].y
+       && pointery < images[i].y + images[i].height)
     {
       mouse_over_id = images[i].imgid;
       dt_control_set_mouse_over_id(mouse_over_id);
@@ -1824,10 +1820,8 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
       dt_free(lib->full_res_thumb);
       lib->full_res_thumb = NULL;
       dt_colorspaces_color_profile_type_t color_space;
-      if(!dt_imageio_large_thumbnail(filename, &lib->full_res_thumb,
-                                               &lib->full_res_thumb_wd,
-                                               &lib->full_res_thumb_ht,
-                                               &color_space))
+      if(!dt_imageio_large_thumbnail(filename, &lib->full_res_thumb, &lib->full_res_thumb_wd,
+                                     &lib->full_res_thumb_ht, &color_space))
       {
         lib->full_res_thumb_orientation = ORIENTATION_NONE;
         lib->full_res_thumb_id = lib->full_preview_id;
@@ -2120,7 +2114,8 @@ static gboolean rating_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
 
   dt_collection_update_query(darktable.collection); // update the counter
 
-  if(layout != DT_LIGHTTABLE_LAYOUT_EXPOSE && lib->collection_count != dt_collection_get_count(darktable.collection))
+  if(layout != DT_LIGHTTABLE_LAYOUT_EXPOSE
+     && lib->collection_count != dt_collection_get_count(darktable.collection))
   {
     // some images disappeared from collection. Selection is now invisible.
     // lib->collection_count  --> before the rating
@@ -2647,8 +2642,7 @@ int key_released(dt_view_t *self, guint key, guint state)
 
   // in zoomable lighttable mode always expose full when a key is pressed as the whole area is
   // adjusted each time a navigation key is used.
-  if (layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
-    lib->force_expose_all = TRUE;
+  if(layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE) lib->force_expose_all = TRUE;
 
   if(lib->key_select && (key == GDK_KEY_Shift_L || key == GDK_KEY_Shift_R))
   {
@@ -3172,10 +3166,8 @@ static gboolean _is_order_actif(dt_view_t *self, dt_collection_sort_t sort)
     // only in light table
     // only if custom image order is selected
     dt_view_t *current_view = darktable.view_manager->current_view;
-    if (layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER
-        && darktable.collection->params.sort == sort
-        && current_view
-        && current_view->view(self) == DT_VIEW_LIGHTTABLE)
+    if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && darktable.collection->params.sort == sort && current_view
+       && current_view->view(self) == DT_VIEW_LIGHTTABLE)
     {
       return TRUE;
     }

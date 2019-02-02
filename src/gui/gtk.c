@@ -2030,8 +2030,8 @@ void dt_gui_load_theme(const char *theme)
 
   GError *error = NULL;
   GtkStyleProvider *themes_style_provider = GTK_STYLE_PROVIDER(gtk_css_provider_new());
-  gtk_style_context_add_provider_for_screen
-    (gdk_screen_get_default(), themes_style_provider, GTK_STYLE_PROVIDER_PRIORITY_USER + 1);
+  gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), themes_style_provider,
+                                            GTK_STYLE_PROVIDER_PRIORITY_USER + 1);
 
   if(!gtk_css_provider_load_from_path(GTK_CSS_PROVIDER(themes_style_provider), path, &error))
   {
