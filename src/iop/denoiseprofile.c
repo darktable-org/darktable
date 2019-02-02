@@ -1645,7 +1645,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   cl_mem dev_m = NULL;
   cl_mem dev_r = NULL;
   cl_mem dev_filter = NULL;
-  cl_mem *dev_detail = calloc(max_max_scale, sizeof(cl_mem));
+  cl_mem *dev_detail = dt_calloc(max_max_scale, sizeof(cl_mem));
   float *sumsum = NULL;
 
   // corner case of extremely small image. this is not really likely to happen but would cause issues later
@@ -2050,8 +2050,8 @@ void reload_defaults(dt_iop_module_t *module)
 /** init, cleanup, commit to pipeline */
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_denoiseprofile_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_denoiseprofile_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_denoiseprofile_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_denoiseprofile_params_t));
   module->priority = 128; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_denoiseprofile_params_t);
   module->gui_data = NULL;

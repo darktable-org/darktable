@@ -291,7 +291,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   // we allocate buffers and values
   const guint nb = g_list_length(form->points);
   if(nb == 0) return 0;
-  float **bufs = calloc(nb, sizeof(float *));
+  float **bufs = dt_calloc(nb, sizeof(float *));
   int *w = dt_malloc(nb * sizeof(int));
   int *h = dt_malloc(nb * sizeof(int));
   int *px = dt_malloc(nb * sizeof(int));

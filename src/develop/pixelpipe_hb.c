@@ -249,7 +249,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
-    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)calloc(1, sizeof(dt_dev_pixelpipe_iop_t));
+    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)dt_calloc(1, sizeof(dt_dev_pixelpipe_iop_t));
     piece->enabled = module->enabled;
     piece->request_histogram = DT_REQUEST_ONLY_IN_GUI;
     piece->histogram_params.roi = NULL;
@@ -2087,7 +2087,7 @@ post_process_collect_info:
       //       dt_pthread_mutex_lock(&dev->histogram_waveform_mutex);
       if(dev->histogram_waveform_width != 0 && input)
       {
-        uint32_t *buf = (uint32_t *)calloc(dev->histogram_waveform_height * dev->histogram_waveform_width * 3,
+        uint32_t *buf = (uint32_t *)dt_calloc(dev->histogram_waveform_height * dev->histogram_waveform_width * 3,
                                            sizeof(uint32_t));
         memset(dev->histogram_waveform, 0,
                sizeof(uint32_t) * dev->histogram_waveform_height * dev->histogram_waveform_stride / 4);

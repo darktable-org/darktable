@@ -282,7 +282,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     } dt_imageio_tiff_v1_t;
 
     const dt_imageio_tiff_v1_t *o = (dt_imageio_tiff_v1_t *)old_params;
-    dt_imageio_tiff_t *n = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
+    dt_imageio_tiff_t *n = (dt_imageio_tiff_t *)dt_calloc(1, sizeof(dt_imageio_tiff_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -311,7 +311,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     } dt_imageio_tiff_v2_t;
 
     const dt_imageio_tiff_v2_t *o = (dt_imageio_tiff_v2_t *)old_params;
-    dt_imageio_tiff_t *n = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
+    dt_imageio_tiff_t *n = (dt_imageio_tiff_t *)dt_calloc(1, sizeof(dt_imageio_tiff_t));
 
     n->global.max_width = o->max_width;
     n->global.max_height = o->max_height;
@@ -331,7 +331,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
+  dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)dt_calloc(1, sizeof(dt_imageio_tiff_t));
   d->bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
   if(d->bpp == 16)
     d->bpp = 16;

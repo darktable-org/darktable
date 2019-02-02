@@ -1227,7 +1227,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
     uint8_t *rgbbuf = NULL;
     if(buf.buf)
     {
-      rgbbuf = (uint8_t *)calloc(buf.width * buf.height * 4, sizeof(uint8_t));
+      rgbbuf = (uint8_t *)dt_calloc(buf.width * buf.height * 4, sizeof(uint8_t));
       if(rgbbuf)
       {
         gboolean have_lock = FALSE;

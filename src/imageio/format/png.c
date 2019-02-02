@@ -422,7 +422,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_png_t *d = (dt_imageio_png_t *)calloc(1, sizeof(dt_imageio_png_t));
+  dt_imageio_png_t *d = (dt_imageio_png_t *)dt_calloc(1, sizeof(dt_imageio_png_t));
   d->bpp = dt_conf_get_int("plugins/imageio/format/png/bpp");
   if(d->bpp < 12)
     d->bpp = 8;

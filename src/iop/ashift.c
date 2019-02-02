@@ -1642,7 +1642,7 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
   const size_t set_size = set_count * sizeof(int);
   int *best_set = dt_malloc(set_size);
   memcpy(best_set, index_set, set_size);
-  int *best_inout = calloc(1, set_size);
+  int *best_inout = dt_calloc(1, set_size);
 
   float best_quality = 0.0f;
 
@@ -4438,7 +4438,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_ashift_data_t *d = (dt_iop_ashift_data_t *)calloc(1, sizeof(dt_iop_ashift_data_t));
+  dt_iop_ashift_data_t *d = (dt_iop_ashift_data_t *)dt_calloc(1, sizeof(dt_iop_ashift_data_t));
   piece->data = (void *)d;
   self->commit_params(self, self->default_params, pipe, piece);
 }
@@ -4487,8 +4487,8 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_ashift_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_ashift_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_ashift_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_ashift_params_t));
   module->default_enabled = 0;
   module->priority = 214; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_ashift_params_t);

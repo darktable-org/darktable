@@ -299,7 +299,7 @@ static int dt_ellipse_get_points(dt_develop_t *dev, float xx, float yy, float ra
                   * (1.0f + (3.0f * lambda * lambda) / (10.0f + sqrtf(4.0f - 3.0f * lambda * lambda)))) / n));
 
   // buffer allocations
-  *points = calloc(2 * (l + 5), sizeof(float));
+  *points = dt_calloc(2 * (l + 5), sizeof(float));
   *points_count = l + 5;
 
   // now we set the points
@@ -1370,7 +1370,7 @@ static int dt_ellipse_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_
                       * (1.0f + (3.0f * lambda * lambda) / (10.0f + sqrtf(4.0f - 3.0f * lambda * lambda))));
 
   // buffer allocations
-  float *points = calloc(2 * (l + 5), sizeof(float));
+  float *points = dt_calloc(2 * (l + 5), sizeof(float));
 
   // now we set the points
   const float x = points[0] = ellipse->center[0] * wd;
@@ -1456,7 +1456,7 @@ static int dt_ellipse_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
                       * (1.0f + (3.0f * lambda * lambda) / (10.0f + sqrtf(4.0f - 3.0f * lambda * lambda))));
 
   // buffer allocations
-  float *points = calloc(2 * (l + 5), sizeof(float));
+  float *points = dt_calloc(2 * (l + 5), sizeof(float));
 
   // now we set the points
   const float x = points[0] = ellipse->center[0] * wd;
@@ -1549,7 +1549,7 @@ static int dt_ellipse_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
   start2 = dt_get_wtime();
 
   // we allocate the buffer
-  *buffer = calloc(w * h, sizeof(float));
+  *buffer = dt_calloc(w * h, sizeof(float));
 
   // we populate the buffer
   const int wi = piece->pipe->iwidth, hi = piece->pipe->iheight;

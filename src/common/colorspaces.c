@@ -836,7 +836,7 @@ void dt_colorspaces_get_profile_name(cmsHPROFILE p, const char *language, const 
   size = cmsGetProfileInfoASCII(p, cmsInfoDescription, language, country, NULL, 0);
   if(size == 0) goto error;
 
-  buf = (char *)calloc(size + 1, sizeof(char));
+  buf = (char *)dt_calloc(size + 1, sizeof(char));
   size = cmsGetProfileInfoASCII(p, cmsInfoDescription, language, country, buf, size);
   if(size == 0) goto error;
 
@@ -845,7 +845,7 @@ void dt_colorspaces_get_profile_name(cmsHPROFILE p, const char *language, const 
     g_strlcpy(name, buf, len); // better a little weird than totally borked
   else
   {
-    wbuf = (wchar_t *)calloc(size + 1, sizeof(wchar_t));
+    wbuf = (wchar_t *)dt_calloc(size + 1, sizeof(wchar_t));
     size = cmsGetProfileInfo(p, cmsInfoDescription, language, country, wbuf, sizeof(wchar_t) * size);
     if(size == 0) goto error;
     utf8 = g_ucs4_to_utf8((gunichar *)wbuf, -1, NULL, NULL, NULL);
@@ -954,7 +954,7 @@ static dt_colorspaces_color_profile_t *_create_profile(dt_colorspaces_color_prof
                                                        int in_pos, int out_pos, int display_pos)
 {
   dt_colorspaces_color_profile_t *prof;
-  prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+  prof = (dt_colorspaces_color_profile_t *)dt_calloc(1, sizeof(dt_colorspaces_color_profile_t));
   prof->type = type;
   g_strlcpy(prof->name, name, sizeof(prof->name));
   prof->profile = profile;
@@ -1100,7 +1100,7 @@ static GList *load_profile_from_dir(const char *subdir)
         tmpprof = _ensure_rgb_profile(cmsOpenProfileFromMem(icc_content, end * sizeof(char)));
         if(tmpprof)
         {
-          dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+          dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)dt_calloc(1, sizeof(dt_colorspaces_color_profile_t));
           dt_colorspaces_get_profile_name(tmpprof, lang, lang + 3, prof->name, sizeof(prof->name));
 
           g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
@@ -1130,7 +1130,7 @@ dt_colorspaces_t *dt_colorspaces_init()
 {
   cmsSetLogErrorHandler(cms_error_handler);
 
-  dt_colorspaces_t *res = (dt_colorspaces_t *)calloc(1, sizeof(dt_colorspaces_t));
+  dt_colorspaces_t *res = (dt_colorspaces_t *)dt_calloc(1, sizeof(dt_colorspaces_t));
 
   pthread_rwlock_init(&res->xprofile_lock, NULL);
 

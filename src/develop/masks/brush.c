@@ -2701,7 +2701,7 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
 //   start2 = dt_get_wtime();
 
   // we allocate the buffer
-  *buffer = calloc((size_t)(*width) * (*height), sizeof(float));
+  *buffer = dt_calloc((size_t)(*width) * (*height), sizeof(float));
 
   // now we fill the falloff
   int p0[2], p1[2];

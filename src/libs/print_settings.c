@@ -409,7 +409,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   dt_job_t *job = dt_control_job_create(&_print_job_run, "print image %d", imgid);
   if(!job) return;
 
-  dt_lib_print_job_t *params = calloc(1, sizeof(dt_lib_print_job_t));
+  dt_lib_print_job_t *params = dt_calloc(1, sizeof(dt_lib_print_job_t));
   dt_control_job_set_params(job, params, _print_job_cleanup);
 
   params->imgid = imgid;
@@ -1718,7 +1718,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
   {
     // add upscale to params
     size_t new_params_size = old_params_size + 1;
-    void *new_params = calloc(1, new_params_size);
+    void *new_params = dt_calloc(1, new_params_size);
 
     memcpy(new_params, old_params, old_params_size);
     // no media type specified

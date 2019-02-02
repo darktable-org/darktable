@@ -143,7 +143,7 @@ static void free_labels_list(gpointer data)
 // XLIST, YLIST and EXPECTED."
 chart_t *parse_cht(const char *filename)
 {
-  chart_t *result = (chart_t *)calloc(1, sizeof(chart_t));
+  chart_t *result = (chart_t *)dt_calloc(1, sizeof(chart_t));
   int lineno = 0;
 
   FILE *fp = g_fopen(filename, "rb");
@@ -330,7 +330,7 @@ chart_t *parse_cht(const char *filename)
               last_label = label;
 
               // store it
-              box_t *box = (box_t *)calloc(1, sizeof(box_t));
+              box_t *box = (box_t *)dt_calloc(1, sizeof(box_t));
               box->p.x = x;
               box->p.y = y;
               box->w = w;

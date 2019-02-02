@@ -160,7 +160,7 @@ static void entry_it_callback(GtkEntryBuffer *entrybuffer, guint a1, gchar *a2, 
 static _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog_t *dlg, gchar *label,
                                                            gchar *confstring)
 {
-  _camera_gconf_widget_t *gcw = calloc(1, sizeof(_camera_gconf_widget_t));
+  _camera_gconf_widget_t *gcw = dt_calloc(1, sizeof(_camera_gconf_widget_t));
   GtkWidget *vbox, *hbox;
   gcw->widget = vbox = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   hbox = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));

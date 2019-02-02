@@ -234,7 +234,7 @@ end:
 
 dt_l10n_t *dt_l10n_init(gboolean init_list)
 {
-  dt_l10n_t *result = (dt_l10n_t *)calloc(1, sizeof(dt_l10n_t));
+  dt_l10n_t *result = (dt_l10n_t *)dt_calloc(1, sizeof(dt_l10n_t));
   result->selected = -1;
   result->sys_default = -1;
 
@@ -267,7 +267,7 @@ dt_l10n_t *dt_l10n_init(gboolean init_list)
     dt_l10n_language_t *selected = NULL;
     dt_l10n_language_t *sys_default = NULL;
 
-    dt_l10n_language_t *language = (dt_l10n_language_t *)calloc(1, sizeof(dt_l10n_language_t));
+    dt_l10n_language_t *language = (dt_l10n_language_t *)dt_calloc(1, sizeof(dt_l10n_language_t));
     language->code = g_strdup("C");
     language->base_code = g_strdup("C");
     language->name = g_strdup("English");
@@ -288,7 +288,7 @@ dt_l10n_t *dt_l10n_init(gboolean init_list)
         gchar *testname = g_build_filename(localedir, locale, "LC_MESSAGES", GETTEXT_PACKAGE ".mo", NULL);
         if(g_file_test(testname, G_FILE_TEST_EXISTS))
         {
-          language = (dt_l10n_language_t *)calloc(1, sizeof(dt_l10n_language_t));
+          language = (dt_l10n_language_t *)dt_calloc(1, sizeof(dt_l10n_language_t));
           result->languages = g_list_prepend(result->languages, language);
 
           // some languages have a regional part in the filename, we don't want that for name lookup

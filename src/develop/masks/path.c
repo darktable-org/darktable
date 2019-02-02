@@ -390,7 +390,7 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, int nb_corners
   const size_t ss = (size_t)hb * wb;
   if(ss < 10) return 0;
 
-  int *binter = calloc(ss, sizeof(int));
+  int *binter = dt_calloc(ss, sizeof(int));
   if(binter == NULL) return 0;
 
   dt_masks_dynbuf_t *extra = dt_masks_dynbuf_init(100000, "path extra");
@@ -2222,7 +2222,7 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
 
   // we allocate the buffer
   const size_t bufsize = (size_t)(*width) * (*height);
-  *buffer = calloc(bufsize, sizeof(float));
+  *buffer = dt_calloc(bufsize, sizeof(float));
 
   // we write all the point around the path into the buffer
   int nbp = border_count;

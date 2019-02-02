@@ -485,8 +485,8 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->init(module);
 
   /* initialize blendop params and default values */
-  module->blend_params = calloc(1, sizeof(dt_develop_blend_params_t));
-  module->default_blendop_params = calloc(1, sizeof(dt_develop_blend_params_t));
+  module->blend_params = dt_calloc(1, sizeof(dt_develop_blend_params_t));
+  module->default_blendop_params = dt_calloc(1, sizeof(dt_develop_blend_params_t));
   memcpy(module->default_blendop_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
   dt_iop_commit_blend_params(module, &_default_blendop_params);
 
@@ -508,7 +508,7 @@ void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t 
                       struct dt_dev_pixelpipe_iop_t *piece)
 {
   module->init_pipe(module, pipe, piece);
-  piece->blendop_data = calloc(1, sizeof(dt_develop_blend_params_t));
+  piece->blendop_data = dt_calloc(1, sizeof(dt_develop_blend_params_t));
   /// FIXME: Commit params is already done in module
   dt_iop_commit_params(module, module->default_params, module->default_blendop_params, pipe, piece);
 }
@@ -876,7 +876,7 @@ static void _iop_gui_rename_module(dt_iop_module_t *module)
   const int bs = DT_PIXEL_APPLY_DPI(12);
   gint px = 0, py = 0;
 
-  dt_iop_gui_rename_module_t *d = (dt_iop_gui_rename_module_t *)calloc(1, sizeof(dt_iop_gui_rename_module_t));
+  dt_iop_gui_rename_module_t *d = (dt_iop_gui_rename_module_t *)dt_calloc(1, sizeof(dt_iop_gui_rename_module_t));
   d->module = module;
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
 
@@ -1192,7 +1192,7 @@ static void init_presets(dt_iop_module_so_t *module_so)
     {
       // we need a dt_iop_module_t for legacy_params()
       dt_iop_module_t *module;
-      module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+      module = (dt_iop_module_t *)dt_calloc(1, sizeof(dt_iop_module_t));
       if(dt_iop_load_module_by_so(module, module_so, NULL))
       {
         free(module);
@@ -1211,7 +1211,7 @@ static void init_presets(dt_iop_module_so_t *module_so)
       if(module->reload_defaults) module->reload_defaults(module);
 
       int32_t new_params_size = module->params_size;
-      void *new_params = calloc(1, new_params_size);
+      void *new_params = dt_calloc(1, new_params_size);
 
       // convert the old params to new
       if(module->legacy_params(module, old_params, old_params_version, new_params, module_version))
@@ -1260,7 +1260,7 @@ static void init_presets(dt_iop_module_so_t *module_so)
       // we need a dt_iop_module_t for dt_develop_blend_legacy_params()
       // using dt_develop_blend_legacy_params_by_so won't help as we need "module" anyway
       dt_iop_module_t *module;
-      module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+      module = (dt_iop_module_t *)dt_calloc(1, sizeof(dt_iop_module_t));
       if(dt_iop_load_module_by_so(module, module_so, NULL))
       {
         free(module);
@@ -1388,7 +1388,7 @@ GList *dt_iop_load_modules_ext(dt_develop_t *dev, gboolean no_image)
   while(iop)
   {
     module_so = (dt_iop_module_so_t *)iop->data;
-    module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+    module = (dt_iop_module_t *)dt_calloc(1, sizeof(dt_iop_module_t));
     if(dt_iop_load_module_by_so(module, module_so, dev))
     {
       free(module);

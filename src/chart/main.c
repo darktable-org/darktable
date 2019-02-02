@@ -1003,10 +1003,10 @@ static void process_button_clicked_callback(GtkButton *button, gpointer user_dat
   int i = 0;
   int N = g_hash_table_size(self->chart->box_table);
 
-  double *target_L = (double *)calloc(sizeof(double), (N + 4));
-  double *target_a = (double *)calloc(sizeof(double), (N + 4));
-  double *target_b = (double *)calloc(sizeof(double), (N + 4));
-  double *colorchecker_Lab = (double *)calloc(3 * sizeof(double), N);
+  double *target_L = (double *)dt_calloc(sizeof(double), (N + 4));
+  double *target_a = (double *)dt_calloc(sizeof(double), (N + 4));
+  double *target_b = (double *)dt_calloc(sizeof(double), (N + 4));
+  double *colorchecker_Lab = (double *)dt_calloc(3 * sizeof(double), N);
 
   GHashTableIter table_iter;
   gpointer set_key, value;
@@ -1391,7 +1391,7 @@ static box_t *find_patch(GHashTable *table, gpointer key)
   if(!patch)
   {
     // the patch won't be found in the first pass
-    patch = (box_t *)calloc(1, sizeof(box_t));
+    patch = (box_t *)dt_calloc(1, sizeof(box_t));
     g_hash_table_insert(table, g_strdup(key), patch);
   }
   return patch;
@@ -1678,10 +1678,10 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
   unused = fscanf(f, "%*[^\n]\n");
   N--;
 
-  double *target_L = (double *)calloc(sizeof(double), (N + 4));
-  double *target_a = (double *)calloc(sizeof(double), (N + 4));
-  double *target_b = (double *)calloc(sizeof(double), (N + 4));
-  double *source_Lab = (double *)calloc(3 * sizeof(double), N);
+  double *target_L = (double *)dt_calloc(sizeof(double), (N + 4));
+  double *target_a = (double *)dt_calloc(sizeof(double), (N + 4));
+  double *target_b = (double *)dt_calloc(sizeof(double), (N + 4));
+  double *source_Lab = (double *)dt_calloc(3 * sizeof(double), N);
   *target_L_ptr = target_L;
   *target_a_ptr = target_a;
   *target_b_ptr = target_b;
@@ -1791,7 +1791,7 @@ int main(int argc, char *argv[])
 #endif
 
   int res = 1;
-  dt_lut_t *self = (dt_lut_t *)calloc(1, sizeof(dt_lut_t));
+  dt_lut_t *self = (dt_lut_t *)dt_calloc(1, sizeof(dt_lut_t));
   self->picked_source_patches = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, free);
 
   if(argc >= 2 && !strcmp(argv[1], "--help"))

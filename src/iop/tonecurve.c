@@ -762,8 +762,8 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_tonecurve_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_tonecurve_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_tonecurve_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_tonecurve_params_t));
   module->default_enabled = 0;
   module->request_histogram |= (DT_REQUEST_ON);
   module->priority = 685; // module order created by iop_dependencies.py, do not edit!

@@ -1752,8 +1752,8 @@ void gui_update(struct dt_iop_module_t *self)
 void init(dt_iop_module_t *module)
 {
   // module->data = dt_malloc(sizeof(dt_iop_clipping_data_t));
-  module->params = calloc(1, sizeof(dt_iop_clipping_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_clipping_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_clipping_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_clipping_params_t));
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_clipping_params_t);
   module->gui_data = NULL;
@@ -1905,7 +1905,7 @@ static gchar *format_aspect(gchar *original, int adim, int bdim)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = calloc(1, sizeof(dt_iop_clipping_gui_data_t));
+  self->gui_data = dt_calloc(1, sizeof(dt_iop_clipping_gui_data_t));
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
   dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
 

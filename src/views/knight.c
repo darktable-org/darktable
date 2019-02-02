@@ -409,7 +409,7 @@ static void _reset_board(dt_knight_t *d)
 
 void init(dt_view_t *self)
 {
-  self->data = calloc(1, sizeof(dt_knight_t));
+  self->data = dt_calloc(1, sizeof(dt_knight_t));
   dt_knight_t *d = (dt_knight_t *)self->data;
 
   _reset_board(d);

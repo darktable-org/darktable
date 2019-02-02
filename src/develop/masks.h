@@ -361,7 +361,7 @@ static inline
 dt_masks_dynbuf_t *dt_masks_dynbuf_init(size_t size, const char *tag)
 {
   assert(size > 0);
-  dt_masks_dynbuf_t *a = (dt_masks_dynbuf_t *)calloc(1, sizeof(dt_masks_dynbuf_t));
+  dt_masks_dynbuf_t *a = (dt_masks_dynbuf_t *)dt_calloc(1, sizeof(dt_masks_dynbuf_t));
 
   if(a != NULL)
   {

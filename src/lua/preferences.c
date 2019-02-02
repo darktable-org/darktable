@@ -531,7 +531,7 @@ static int register_pref_sub(lua_State *L)
   // this is complicated, but needed
   pref_element **tmp = lua_touserdata(L, -1);
   lua_pop(L, 1);
-  *tmp = calloc(1, sizeof(pref_element));
+  *tmp = dt_calloc(1, sizeof(pref_element));
   pref_element *built_elt = *tmp;
   int cur_param = 1;
 

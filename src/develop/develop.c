@@ -103,9 +103,9 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
     dt_dev_pixelpipe_init(dev->pipe);
     dt_dev_pixelpipe_init_preview(dev->preview_pipe);
 
-    dev->histogram = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
-    dev->histogram_pre_tonecurve = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
-    dev->histogram_pre_levels = (uint32_t *)calloc(4 * 256, sizeof(uint32_t));
+    dev->histogram = (uint32_t *)dt_calloc(4 * 256, sizeof(uint32_t));
+    dev->histogram_pre_tonecurve = (uint32_t *)dt_calloc(4 * 256, sizeof(uint32_t));
+    dev->histogram_pre_levels = (uint32_t *)dt_calloc(4 * 256, sizeof(uint32_t));
 
     dev->histogram_max = -1;
     dev->histogram_pre_tonecurve_max = -1;
@@ -1113,7 +1113,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     if(!hist->module && find_op)
     {
       // we have to add a new instance of this module and set index to modindex
-      dt_iop_module_t *new_module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+      dt_iop_module_t *new_module = (dt_iop_module_t *)dt_calloc(1, sizeof(dt_iop_module_t));
       if(!dt_iop_load_module(new_module, find_op->so, dev))
       {
         dt_iop_update_multi_priority(new_module, multi_priority);
@@ -1552,7 +1552,7 @@ void dt_dev_average_delay_update(const dt_times_t *start, uint32_t *average_dela
 dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *base, int priority)
 {
   // we create the new module
-  dt_iop_module_t *module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+  dt_iop_module_t *module = (dt_iop_module_t *)dt_calloc(1, sizeof(dt_iop_module_t));
   if(dt_iop_load_module(module, base->so, base->dev)) return NULL;
   module->instance = base->instance;
 

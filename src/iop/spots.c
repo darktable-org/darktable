@@ -545,8 +545,8 @@ void init(dt_iop_module_t *module)
 {
   // we don't need global data:
   module->data = NULL; // dt_malloc(sizeof(dt_iop_spots_global_data_t));
-  module->params = calloc(1, sizeof(dt_iop_spots_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_spots_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_spots_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_spots_params_t));
   // our module is disabled by default
   // by default:
   module->default_enabled = 0;

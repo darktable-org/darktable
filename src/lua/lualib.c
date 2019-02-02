@@ -204,7 +204,7 @@ static int register_lib(lua_State *L)
 {
   dt_lib_module_t *lib = dt_malloc(sizeof(dt_lib_module_t));
   memcpy(lib, &ref_lib, sizeof(dt_lib_module_t));
-  lib->data = calloc(1, sizeof(lua_lib_data_t));
+  lib->data = dt_calloc(1, sizeof(lua_lib_data_t));
   lua_lib_data_t *data = lib->data;
 
   const char *plugin_name = luaL_checkstring(L, 1);
@@ -258,7 +258,7 @@ static int register_lib(lua_State *L)
 
     lua_pop(L, 1);
   }
-  data->views = calloc(g_list_length(data->position_descriptions) + 1, sizeof(char *));
+  data->views = dt_calloc(g_list_length(data->position_descriptions) + 1, sizeof(char *));
   int i = 0;
   for(GList *iter = data->position_descriptions; iter; iter = g_list_next(iter))
   {

@@ -161,7 +161,7 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
 
 static void *dt_control_image_enumerator_alloc()
 {
-  dt_control_image_enumerator_t *params = calloc(1, sizeof(dt_control_image_enumerator_t));
+  dt_control_image_enumerator_t *params = dt_calloc(1, sizeof(dt_control_image_enumerator_t));
   if(!params) return NULL;
 
   return params;
@@ -322,8 +322,8 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
     roi.y = image.crop_y;
     for(int j=0;j<6;j++)
       for(int i = 0; i < 6; i++) d->first_xtrans[j][i] = FCxtrans(j, i, &roi, image.buf_dsc.xtrans);
-    d->pixels = calloc(datai->width * datai->height, sizeof(float));
-    d->weight = calloc(datai->width * datai->height, sizeof(float));
+    d->pixels = dt_calloc(datai->width * datai->height, sizeof(float));
+    d->weight = dt_calloc(datai->width * datai->height, sizeof(float));
     d->wd = datai->width;
     d->ht = datai->height;
     d->orientation = image.orientation;
@@ -565,7 +565,7 @@ static char *_get_image_list(GList *l)
 {
   const guint size = g_list_length(l);
   char num[8];
-  char *buffer = calloc(size, sizeof(num));
+  char *buffer = dt_calloc(size, sizeof(num));
   int imgid;
   gboolean first = TRUE;
 
@@ -1301,7 +1301,7 @@ static dt_control_image_enumerator_t *dt_control_gpx_apply_alloc()
   dt_control_image_enumerator_t *params = dt_control_image_enumerator_alloc();
   if(!params) return NULL;
 
-  params->data = calloc(1, sizeof(dt_control_gpx_apply_t));
+  params->data = dt_calloc(1, sizeof(dt_control_gpx_apply_t));
   if(!params->data)
   {
     dt_control_image_enumerator_cleanup(params);
@@ -1606,7 +1606,7 @@ static dt_control_image_enumerator_t *dt_control_export_alloc()
   dt_control_image_enumerator_t *params = dt_control_image_enumerator_alloc();
   if(!params) return NULL;
 
-  params->data = calloc(1, sizeof(dt_control_export_t));
+  params->data = dt_calloc(1, sizeof(dt_control_export_t));
   if(!params->data)
   {
     dt_control_image_enumerator_cleanup(params);
@@ -1724,7 +1724,7 @@ static void *dt_control_time_offset_alloc()
   dt_control_image_enumerator_t *params = dt_control_image_enumerator_alloc();
   if(!params) return NULL;
 
-  params->data = calloc(1, sizeof(dt_control_time_offset_t));
+  params->data = dt_calloc(1, sizeof(dt_control_time_offset_t));
   if(!params->data)
   {
     dt_control_image_enumerator_cleanup(params);

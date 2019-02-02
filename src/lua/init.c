@@ -204,7 +204,7 @@ static int load_from_lua(lua_State *L)
   }
   int argc = lua_gettop(L);
 
-  char **argv = calloc(argc + 1, sizeof(char *));
+  char **argv = dt_calloc(argc + 1, sizeof(char *));
   char **argv_copy = dt_malloc((argc + 1) * sizeof(char *));
   argv[0] = dt_strdup("lua");
   argv_copy[0] = argv[0];

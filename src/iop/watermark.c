@@ -1312,9 +1312,9 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_watermark_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_watermark_params_t));
   module->params_size = sizeof(dt_iop_watermark_params_t);
-  module->default_params = calloc(1, sizeof(dt_iop_watermark_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_watermark_params_t));
   module->default_enabled = 0;
   module->priority = 971; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_watermark_params_t);
@@ -1334,7 +1334,7 @@ void cleanup(dt_iop_module_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = calloc(1, sizeof(dt_iop_watermark_gui_data_t));
+  self->gui_data = dt_calloc(1, sizeof(dt_iop_watermark_gui_data_t));
   dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 

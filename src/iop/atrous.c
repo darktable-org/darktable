@@ -793,7 +793,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_int err = -999;
   cl_mem dev_filter = NULL;
   cl_mem dev_tmp = NULL;
-  cl_mem *dev_detail = calloc(max_scale, sizeof(cl_mem));
+  cl_mem *dev_detail = dt_calloc(max_scale, sizeof(cl_mem));
 
   float m[] = { 0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f }; // 1/16, 4/16, 6/16, 4/16, 1/16
   float mm[5][5];
@@ -931,8 +931,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_atrous_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_atrous_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_atrous_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_atrous_params_t));
   module->default_enabled = 0;
   module->priority = 571; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_atrous_params_t);

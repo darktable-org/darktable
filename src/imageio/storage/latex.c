@@ -448,7 +448,7 @@ void init(dt_imageio_module_storage_t *self)
 }
 void *get_params(dt_imageio_module_storage_t *self)
 {
-  dt_imageio_latex_t *d = (dt_imageio_latex_t *)calloc(1, sizeof(dt_imageio_latex_t));
+  dt_imageio_latex_t *d = (dt_imageio_latex_t *)dt_calloc(1, sizeof(dt_imageio_latex_t));
   d->vp = NULL;
   d->l = NULL;
   dt_variables_params_init(&d->vp);

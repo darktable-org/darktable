@@ -23,6 +23,7 @@
 #include "config.h"
 #include "common/file_location.h"
 #include "common/module.h"
+#include "common/utility.h"
 
 GList *dt_module_load_modules(const char *subdir, size_t module_size,
                               int (*load_module_so)(void *module, const char *libname, const char *plugin_name),
@@ -44,7 +45,7 @@ GList *dt_module_load_modules(const char *subdir, size_t module_size,
     if(!g_str_has_prefix(dir_name, SHARED_MODULE_PREFIX)) continue;
     if(!g_str_has_suffix(dir_name, SHARED_MODULE_SUFFIX)) continue;
     char *plugin_name = g_strndup(dir_name + name_offset, strlen(dir_name) - name_end);
-    void *module = calloc(1, module_size);
+    void *module = dt_calloc(1, module_size);
     gchar *libname = g_module_build_path(plugindir, plugin_name);
     int res = load_module_so(module, libname, plugin_name);
     g_free(libname);

@@ -695,8 +695,8 @@ void reload_defaults(dt_iop_module_t *module)
 /** init, cleanup, commit to pipeline */
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_nlmeans_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_nlmeans_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_nlmeans_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_nlmeans_params_t));
   // about the first thing to do in Lab space:
   module->priority = 528; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_nlmeans_params_t);

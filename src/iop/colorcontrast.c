@@ -302,8 +302,8 @@ void reload_defaults(dt_iop_module_t *module)
 /** init, cleanup, commit to pipeline */
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_colorcontrast_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colorcontrast_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_colorcontrast_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_colorcontrast_params_t));
   // our module is disabled by default
   module->default_enabled = 0;
   // we are pretty late in the pipe:

@@ -2329,8 +2329,8 @@ void masks_selection_changed(struct dt_iop_module_t *self, const int form_select
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_retouch_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_retouch_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_retouch_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_retouch_params_t));
   // our module is disabled by default
   module->default_enabled = 0;
   module->priority = 185; // module order created by iop_dependencies.py, do not edit!
@@ -3712,7 +3712,7 @@ static void rt_build_scaled_mask(float *const mask, dt_iop_roi_t *const roi_mask
   const int x_to = roi_mask_scaled->width + roi_mask_scaled->x;
   const int y_to = roi_mask_scaled->height + roi_mask_scaled->y;
 
-  mask_tmp = calloc(roi_mask_scaled->width * roi_mask_scaled->height, sizeof(float));
+  mask_tmp = dt_calloc(roi_mask_scaled->width * roi_mask_scaled->height, sizeof(float));
   if(mask_tmp == NULL)
   {
     fprintf(stderr, "rt_build_scaled_mask: error allocating memory\n");

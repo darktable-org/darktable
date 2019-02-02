@@ -1109,7 +1109,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = calloc(1, sizeof(dt_iop_lensfun_data_t));
+  piece->data = dt_calloc(1, sizeof(dt_iop_lensfun_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -1130,7 +1130,7 @@ void init_global(dt_iop_module_so_t *module)
 {
   const int program = 2; // basic.cl, from programs.conf
   dt_iop_lensfun_global_data_t *gd
-      = (dt_iop_lensfun_global_data_t *)calloc(1, sizeof(dt_iop_lensfun_global_data_t));
+      = (dt_iop_lensfun_global_data_t *)dt_calloc(1, sizeof(dt_iop_lensfun_global_data_t));
   module->data = gd;
   gd->kernel_lens_distort_bilinear = dt_opencl_create_kernel(program, "lens_distort_bilinear");
   gd->kernel_lens_distort_bicubic = dt_opencl_create_kernel(program, "lens_distort_bicubic");
@@ -1302,8 +1302,8 @@ end:
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_lensfun_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_lensfun_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_lensfun_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_lensfun_params_t));
   module->default_enabled = 0;
   module->params_size = sizeof(dt_iop_lensfun_params_t);
   module->gui_data = NULL;

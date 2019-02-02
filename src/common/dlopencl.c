@@ -98,7 +98,7 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
       return NULL;
     }
 
-    ocl->symbols = (dt_dlopencl_symbols_t *)calloc(1, sizeof(dt_dlopencl_symbols_t));
+    ocl->symbols = (dt_dlopencl_symbols_t *)dt_calloc(1, sizeof(dt_dlopencl_symbols_t));
 
     if(ocl->symbols == NULL)
     {

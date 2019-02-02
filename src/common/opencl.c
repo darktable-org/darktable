@@ -945,7 +945,7 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
   const float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
   const float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
 
-  unsigned int *const tea_states = calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
+  unsigned int *const tea_states = dt_calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
 
   buf = dt_alloc_align(16, width * height * bpp);
   if(buf == NULL) goto error;
@@ -1018,7 +1018,7 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
   const float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
   const float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
 
-  unsigned int *const tea_states = calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
+  unsigned int *const tea_states = dt_calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
 
   buf = dt_alloc_align(16, width * height * bpp);
   if(buf == NULL) goto error;
@@ -2530,8 +2530,8 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
   if(*eventlist == NULL)
   {
     int newevents = DT_OPENCL_EVENTLISTSIZE;
-    *eventlist = calloc(newevents, sizeof(cl_event));
-    *eventtags = calloc(newevents, sizeof(dt_opencl_eventtag_t));
+    *eventlist = dt_calloc(newevents, sizeof(cl_event));
+    *eventtags = dt_calloc(newevents, sizeof(dt_opencl_eventtag_t));
     if(!*eventlist || !*eventtags)
     {
       free(*eventlist);
@@ -2570,8 +2570,8 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
   if(*numevents == *maxevents)
   {
     int newevents = *maxevents + DT_OPENCL_EVENTLISTSIZE;
-    cl_event *neweventlist = calloc(newevents, sizeof(cl_event));
-    dt_opencl_eventtag_t *neweventtags = calloc(newevents, sizeof(dt_opencl_eventtag_t));
+    cl_event *neweventlist = dt_calloc(newevents, sizeof(cl_event));
+    dt_opencl_eventtag_t *neweventtags = dt_calloc(newevents, sizeof(dt_opencl_eventtag_t));
     if(!neweventlist || !neweventtags)
     {
       free(neweventlist);

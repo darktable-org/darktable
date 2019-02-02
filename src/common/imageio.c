@@ -670,7 +670,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
           if((format_params->style_append && !(m->flags() & IOP_FLAGS_ONE_INSTANCE)) || m->multi_priority != s->multi_priority)
           {
             // dt_dev_module_duplicate() doesn't work here, it's trying too hard to be clever
-            style_module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+            style_module = (dt_iop_module_t *)dt_calloc(1, sizeof(dt_iop_module_t));
             if(style_module && !dt_iop_load_module(style_module, m->so, m->dev))
             {
               style_module->instance = m->instance;

@@ -530,7 +530,7 @@ static int _create_deleted_modules(GList **_iop_list, GList *history_list)
       // from there we create a new module for this base instance. The goal is to do a very minimal setup of the
       // new module to be able to write the history items. From there we reload the whole history back and this
       // will recreate the proper module instances.
-      dt_iop_module_t *module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+      dt_iop_module_t *module = (dt_iop_module_t *)dt_calloc(1, sizeof(dt_iop_module_t));
       if(dt_iop_load_module(module, base_module->so, base_module->dev))
       {
         return changed;

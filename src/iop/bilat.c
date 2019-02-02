@@ -249,7 +249,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = calloc(1, sizeof(dt_iop_bilat_data_t));
+  piece->data = dt_calloc(1, sizeof(dt_iop_bilat_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -381,8 +381,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 /** init, cleanup, commit to pipeline */
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_bilat_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_bilat_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_bilat_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_bilat_params_t));
   // our module is disabled by default
   // by default:
   module->default_enabled = 0;

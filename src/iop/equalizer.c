@@ -128,7 +128,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // printf("level range in %d %d: %f %f, cap: %d\n", 1, d->num_levels, l1, lm, numl_cap);
 
   // TODO: fixed alloc for data piece at capped resolution?
-  float **tmp = (float **)calloc(numl_cap, sizeof(float *));
+  float **tmp = (float **)dt_calloc(numl_cap, sizeof(float *));
   for(int k = 1; k < numl_cap; k++)
   {
     const int wd = (int)(1 + (width >> (k - 1))), ht = (int)(1 + (height >> (k - 1)));
@@ -265,8 +265,8 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_equalizer_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_equalizer_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_equalizer_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_equalizer_params_t));
   module->default_enabled = 0; // we're a rather slow and rare op.
   module->priority = 428; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_equalizer_params_t);

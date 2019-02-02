@@ -35,14 +35,14 @@
 int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, size_t size)
 {
   cache->entries = entries;
-  cache->data = (void **)calloc(entries, sizeof(void *));
-  cache->size = (size_t *)calloc(entries, sizeof(size_t));
-  cache->dsc = (dt_iop_buffer_dsc_t *)calloc(entries, sizeof(dt_iop_buffer_dsc_t));
+  cache->data = (void **)dt_calloc(entries, sizeof(void *));
+  cache->size = (size_t *)dt_calloc(entries, sizeof(size_t));
+  cache->dsc = (dt_iop_buffer_dsc_t *)dt_calloc(entries, sizeof(dt_iop_buffer_dsc_t));
 #ifdef _DEBUG
   memset(cache->dsc, 0x2c, sizeof(dt_iop_buffer_dsc_t) * entries);
 #endif
-  cache->hash = (uint64_t *)calloc(entries, sizeof(uint64_t));
-  cache->used = (int32_t *)calloc(entries, sizeof(int32_t));
+  cache->hash = (uint64_t *)dt_calloc(entries, sizeof(uint64_t));
+  cache->used = (int32_t *)dt_calloc(entries, sizeof(int32_t));
   for(int k = 0; k < entries; k++)
   {
     cache->size[k] = size;

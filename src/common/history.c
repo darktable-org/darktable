@@ -105,7 +105,7 @@ static void _dt_history_cleanup_multi_instance()
       continue;
     }
 
-    _history_item_t *hi = (_history_item_t *)calloc(1, sizeof(_history_item_t));
+    _history_item_t *hi = (_history_item_t *)dt_calloc(1, sizeof(_history_item_t));
     hi->num = sqlite3_column_int(stmt, 0);
     snprintf(hi->op, sizeof(hi->op), "%s", sqlite3_column_text(stmt, 1));
     hi->mi = sqlite3_column_int(stmt, 2);
@@ -781,7 +781,7 @@ static int _history_merge_module_into_history(dt_develop_t *dev_dest, dt_iop_mod
     if(!mod_replace)
     {
       dt_iop_module_t *base = _search_list_iop_by_op(dev_dest->iop, mod_src->op);
-      module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+      module = (dt_iop_module_t *)dt_calloc(1, sizeof(dt_iop_module_t));
       if(dt_iop_load_module(module, base->so, dev_dest))
       {
         module_added = 0;
@@ -915,7 +915,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
 
   // we will copy only used forms
   guint nbf = g_list_length(dev_src->forms);
-  int *forms_used_replace = calloc(nbf, sizeof(int));
+  int *forms_used_replace = dt_calloc(nbf, sizeof(int));
 
   // the user have selected some history entries
   if(ops)

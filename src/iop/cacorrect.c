@@ -339,7 +339,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   // local variables
   //   const int width = W, height = H;
   // temporary array to store simple interpolation of G
-  float *Gtmp = (float(*))calloc((height) * (width), sizeof *Gtmp);
+  float *Gtmp = (float(*))dt_calloc((height) * (width), sizeof *Gtmp);
 
   // temporary array to avoid race conflicts, only every second pixel needs to be saved here
   float *RawDataTmp = (float *)dt_malloc(height * width * sizeof(float) / 2 + 4);
@@ -358,7 +358,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   const int vblsz = ceil((float)(height + border2) / (ts - border2) + 2 + vz1);
   const int hblsz = ceil((float)(width + border2) / (ts - border2) + 2 + hz1);
 
-  char *buffer1 = (char *)calloc(vblsz * hblsz * (2 * 2 + 1), sizeof(float));
+  char *buffer1 = (char *)dt_calloc(vblsz * hblsz * (2 * 2 + 1), sizeof(float));
 
   // block CA shift values and weight assigned to block
   float *blockwt = (float *)buffer1;
@@ -1522,8 +1522,8 @@ void init(dt_iop_module_t *module)
 {
   // we don't need global data:
   module->data = NULL; // dt_malloc(sizeof(dt_iop_cacorrect_global_data_t));
-  module->params = calloc(1, sizeof(dt_iop_cacorrect_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_cacorrect_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_cacorrect_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_cacorrect_params_t));
   // our module is disabled by default
   // by default:
   module->default_enabled = 0;

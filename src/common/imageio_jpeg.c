@@ -460,7 +460,7 @@ static boolean read_icc_profile(j_decompress_ptr dinfo, JOCTET **icc_data_ptr, u
   if(total_length == 0) return FALSE; /* found only empty markers? */
 
   /* Allocate space for assembled data */
-  icc_data = (JOCTET *)calloc(total_length, sizeof(JOCTET));
+  icc_data = (JOCTET *)dt_calloc(total_length, sizeof(JOCTET));
   if(icc_data == NULL) return FALSE; /* oops, out of memory */
 
   /* and fill it in */

@@ -496,8 +496,8 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_rawoverexposed_t));
-  module->default_params = calloc(1, sizeof(dt_iop_rawoverexposed_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_rawoverexposed_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_rawoverexposed_t));
   module->hide_enable_button = 1;
   module->default_enabled = 1;
   module->priority = 942; // module order created by iop_dependencies.py, do not edit!

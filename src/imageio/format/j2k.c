@@ -347,7 +347,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
 
   if(parameters.cp_cinema)
   {
-    rates = (float *)calloc(parameters.tcp_numlayers, sizeof(float));
+    rates = (float *)dt_calloc(parameters.tcp_numlayers, sizeof(float));
     for(int i = 0; i < parameters.tcp_numlayers; i++)
     {
       rates[i] = parameters.tcp_rates[i];
@@ -557,7 +557,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_j2k_t *d = (dt_imageio_j2k_t *)calloc(1, sizeof(dt_imageio_j2k_t));
+  dt_imageio_j2k_t *d = (dt_imageio_j2k_t *)dt_calloc(1, sizeof(dt_imageio_j2k_t));
   d->bpp = 16; // can be 8, 12 or 16
   d->format = dt_conf_get_int("plugins/imageio/format/j2k/format");
   d->preset = dt_conf_get_int("plugins/imageio/format/j2k/preset");

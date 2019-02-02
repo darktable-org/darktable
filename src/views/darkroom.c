@@ -555,7 +555,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // cleanup visible masks
   if(!dev->form_gui)
   {
-    dev->form_gui = (dt_masks_form_gui_t *)calloc(1, sizeof(dt_masks_form_gui_t));
+    dev->form_gui = (dt_masks_form_gui_t *)dt_calloc(1, sizeof(dt_masks_form_gui_t));
     dt_masks_init_form_gui(dev->form_gui);
   }
   dt_masks_change_form_gui(NULL);
@@ -1756,7 +1756,7 @@ void enter(dt_view_t *self)
   dt_develop_t *dev = (dt_develop_t *)self->data;
   if(!dev->form_gui)
   {
-    dev->form_gui = (dt_masks_form_gui_t *)calloc(1, sizeof(dt_masks_form_gui_t));
+    dev->form_gui = (dt_masks_form_gui_t *)dt_calloc(1, sizeof(dt_masks_form_gui_t));
     dt_masks_init_form_gui(dev->form_gui);
   }
   dt_masks_change_form_gui(NULL);

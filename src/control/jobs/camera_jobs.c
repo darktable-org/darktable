@@ -178,7 +178,7 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
 
 static dt_camera_capture_t *dt_camera_capture_alloc()
 {
-  dt_camera_capture_t *params = calloc(1, sizeof(dt_camera_capture_t));
+  dt_camera_capture_t *params = dt_calloc(1, sizeof(dt_camera_capture_t));
   if(!params) return NULL;
 
   // FIXME: unused
@@ -232,7 +232,7 @@ static int32_t dt_camera_get_previews_job_run(dt_job_t *job)
 
 static dt_camera_get_previews_t *dt_camera_get_previews_alloc()
 {
-  dt_camera_get_previews_t *params = calloc(1, sizeof(dt_camera_get_previews_t));
+  dt_camera_get_previews_t *params = dt_calloc(1, sizeof(dt_camera_get_previews_t));
   if(!params) return NULL;
 
   params->listener = g_malloc(sizeof(dt_camctl_listener_t));
@@ -358,7 +358,7 @@ static int32_t dt_camera_import_job_run(dt_job_t *job)
 
 static dt_camera_import_t *dt_camera_import_alloc()
 {
-  dt_camera_import_t *params = calloc(1, sizeof(dt_camera_import_t));
+  dt_camera_import_t *params = dt_calloc(1, sizeof(dt_camera_import_t));
   if(!params) return NULL;
 
   params->shared.session = dt_import_session_new();

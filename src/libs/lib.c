@@ -781,7 +781,7 @@ static void popup_callback(GtkButton *button, GdkEventButton *event, dt_lib_modu
 {
   if(event->button != 1 && event->button != 2) return;
 
-  dt_lib_module_info_t *mi = (dt_lib_module_info_t *)calloc(1, sizeof(dt_lib_module_info_t));
+  dt_lib_module_info_t *mi = (dt_lib_module_info_t *)dt_calloc(1, sizeof(dt_lib_module_info_t));
 
   mi->plugin_name = g_strdup(module->plugin_name);
   mi->version = module->version(module);

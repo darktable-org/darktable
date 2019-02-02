@@ -105,7 +105,7 @@ static void _lib_histogram_change_callback(gpointer instance, gpointer user_data
 //   const gint stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
 //
 //   free(dev->histogram_waveform);
-//   dev->histogram_waveform = (uint32_t*)calloc(height * stride / 4, sizeof(uint32_t));
+//   dev->histogram_waveform = (uint32_t*)dt_calloc(height * stride / 4, sizeof(uint32_t));
 //   dev->histogram_waveform_width = width;
 //   dev->histogram_waveform_height = height;
 //   dev->histogram_waveform_stride = stride;
@@ -297,7 +297,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   // size of the widget doesn't change!
   if(dev->histogram_waveform_width == 0)
   {
-    dev->histogram_waveform = (uint32_t *)calloc(height * stride / 4, sizeof(uint32_t));
+    dev->histogram_waveform = (uint32_t *)dt_calloc(height * stride / 4, sizeof(uint32_t));
     dev->histogram_waveform_stride = stride;
     dev->histogram_waveform_height = height;
     dev->histogram_waveform_width = width;

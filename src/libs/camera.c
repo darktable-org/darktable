@@ -131,7 +131,7 @@ static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, con
       // We got a value for property lets construct the gui for the property and add values
       int i = 0;
       const char *current_value = dt_camctl_camera_get_property(darktable.camctl, NULL, propertyname);
-      dt_lib_camera_property_t *prop = calloc(1, sizeof(dt_lib_camera_property_t));
+      dt_lib_camera_property_t *prop = dt_calloc(1, sizeof(dt_lib_camera_property_t));
       prop->name = dt_strdup(label);
       prop->property_name = dt_strdup(propertyname);
       prop->values = dt_bauhaus_combobox_new(NULL);
@@ -416,11 +416,11 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
 
 void gui_init(dt_lib_module_t *self)
 {
-  self->data = calloc(1, sizeof(dt_lib_camera_t));
+  self->data = dt_calloc(1, sizeof(dt_lib_camera_t));
 
   // Setup lib data
   dt_lib_camera_t *lib = self->data;
-  lib->data.listener = calloc(1, sizeof(dt_camctl_listener_t));
+  lib->data.listener = dt_calloc(1, sizeof(dt_camctl_listener_t));
   lib->data.listener->data = lib;
   lib->data.listener->camera_error = _camera_error_callback;
   lib->data.listener->camera_property_value_changed = _camera_property_value_changed;

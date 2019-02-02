@@ -3529,7 +3529,7 @@ error:
 dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void)
 {
 #ifdef HAVE_OPENCL
-  dt_blendop_cl_global_t *b = (dt_blendop_cl_global_t *)calloc(1, sizeof(dt_blendop_cl_global_t));
+  dt_blendop_cl_global_t *b = (dt_blendop_cl_global_t *)dt_calloc(1, sizeof(dt_blendop_cl_global_t));
 
   const int program = 3; // blendop.cl, from programs.conf
   b->kernel_blendop_mask_Lab = dt_opencl_create_kernel(program, "blendop_mask_Lab");
@@ -3806,7 +3806,7 @@ int dt_develop_blend_legacy_params_from_so(dt_iop_module_so_t *module_so, const 
 {
   // we need a dt_iop_module_t for dt_develop_blend_legacy_params()
   dt_iop_module_t *module;
-  module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+  module = (dt_iop_module_t *)dt_calloc(1, sizeof(dt_iop_module_t));
   if(dt_iop_load_module_by_so(module, module_so, NULL))
   {
     free(module);

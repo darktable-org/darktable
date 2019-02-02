@@ -23,9 +23,7 @@
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 #endif
 
-#if 0
 #include "common/utility.h"
-#endif
 #include "chart/thinplate.h"
 #include "chart/deltaE.h"
 #include "iop/svd.h"
@@ -195,18 +193,14 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
 
   // XXX do we need these explicitly?
   // residual = target vector
-  #if 0
-  double(*r)[wd] = dt_malloc(dim * wd * sizeof(double));
-  #else
   double(*r)[wd] = malloc(dim * wd * sizeof(double));
-  #endif
   const double **b = dt_malloc(dim * sizeof(double *));
   for(int k = 0; k < dim; k++) b[k] = target[k];
   for(int k = 0; k < dim; k++) memcpy(r[k], b[k], wd * sizeof(double));
 
   double *w = dt_malloc(S * sizeof(double));
   double *v = dt_malloc(S * S * sizeof(double));
-  double *As = calloc(wd * S, sizeof(double));
+  double *As = dt_calloc(wd * S, sizeof(double));
 
   // for rank from 0 to sparsity level
   int s = 0, patches = 0;

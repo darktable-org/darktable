@@ -235,7 +235,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_webp_t *d = (dt_imageio_webp_t *)calloc(1, sizeof(dt_imageio_webp_t));
+  dt_imageio_webp_t *d = (dt_imageio_webp_t *)dt_calloc(1, sizeof(dt_imageio_webp_t));
   d->comp_type = dt_conf_get_int("plugins/imageio/format/webp/comp_type");
   if(d->comp_type == webp_lossy)
     d->quality = dt_conf_get_int("plugins/imageio/format/webp/quality");

@@ -378,7 +378,7 @@ static GdkPixbuf *init_place_pin()
 
 void init(dt_view_t *self)
 {
-  self->data = calloc(1, sizeof(dt_map_t));
+  self->data = dt_calloc(1, sizeof(dt_map_t));
 
   dt_map_t *lib = (dt_map_t *)self->data;
 

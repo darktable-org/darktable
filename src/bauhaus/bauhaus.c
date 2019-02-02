@@ -435,7 +435,7 @@ static void dt_bh_class_init(DtBauhausWidgetClass *class)
 
 void dt_bauhaus_init()
 {
-  darktable.bauhaus = (dt_bauhaus_t *)calloc(1, sizeof(dt_bauhaus_t));
+  darktable.bauhaus = (dt_bauhaus_t *)dt_calloc(1, sizeof(dt_bauhaus_t));
   darktable.bauhaus->keys_cnt = 0;
   darktable.bauhaus->current = NULL;
   darktable.bauhaus->popup_area = gtk_drawing_area_new();

@@ -1695,8 +1695,8 @@ end:
 void init(dt_iop_module_t *module)
 {
   // module->data = dt_malloc(sizeof(dt_iop_colorin_data_t));
-  module->params = calloc(1, sizeof(dt_iop_colorin_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colorin_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_colorin_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_colorin_params_t));
   module->params_size = sizeof(dt_iop_colorin_params_t);
   module->gui_data = NULL;
   module->priority = 371; // module order created by iop_dependencies.py, do not edit!
@@ -1726,7 +1726,7 @@ static void update_profile_list(dt_iop_module_t *self)
   if(cimg->profile)
   {
     dt_colorspaces_color_profile_t *prof
-        = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+        = (dt_colorspaces_color_profile_t *)dt_calloc(1, sizeof(dt_colorspaces_color_profile_t));
     g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_EMBEDDED_ICC, ""), sizeof(prof->name));
     prof->type = DT_COLORSPACE_EMBEDDED_ICC;
     g->image_profiles = g_list_append(g->image_profiles, prof);
@@ -1737,7 +1737,7 @@ static void update_profile_list(dt_iop_module_t *self)
   if(!isnan(self->dev->image_storage.d65_color_matrix[0]))
   {
     dt_colorspaces_color_profile_t *prof
-        = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+        = (dt_colorspaces_color_profile_t *)dt_calloc(1, sizeof(dt_colorspaces_color_profile_t));
     g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_EMBEDDED_MATRIX, ""), sizeof(prof->name));
     prof->type = DT_COLORSPACE_EMBEDDED_MATRIX;
     g->image_profiles = g_list_append(g->image_profiles, prof);
@@ -1756,7 +1756,7 @@ static void update_profile_list(dt_iop_module_t *self)
   if(!isnan(cam_xyz[0]) && !(self->dev->image_storage.flags & DT_IMAGE_4BAYER))
   {
     dt_colorspaces_color_profile_t *prof
-        = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+        = (dt_colorspaces_color_profile_t *)dt_calloc(1, sizeof(dt_colorspaces_color_profile_t));
     g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_STANDARD_MATRIX, ""), sizeof(prof->name));
     prof->type = DT_COLORSPACE_STANDARD_MATRIX;
     g->image_profiles = g_list_append(g->image_profiles, prof);
@@ -1769,7 +1769,7 @@ static void update_profile_list(dt_iop_module_t *self)
     if(!strcasecmp(self->dev->image_storage.camera_makermodel, dt_profiled_colormatrices[k].makermodel))
     {
       dt_colorspaces_color_profile_t *prof
-          = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+          = (dt_colorspaces_color_profile_t *)dt_calloc(1, sizeof(dt_colorspaces_color_profile_t));
       g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_ENHANCED_MATRIX, ""), sizeof(prof->name));
       prof->type = DT_COLORSPACE_ENHANCED_MATRIX;
       g->image_profiles = g_list_append(g->image_profiles, prof);
@@ -1784,7 +1784,7 @@ static void update_profile_list(dt_iop_module_t *self)
     if(!strcmp(self->dev->image_storage.camera_makermodel, dt_vendor_colormatrices[k].makermodel))
     {
       dt_colorspaces_color_profile_t *prof
-          = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+          = (dt_colorspaces_color_profile_t *)dt_calloc(1, sizeof(dt_colorspaces_color_profile_t));
       g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_VENDOR_MATRIX, ""), sizeof(prof->name));
       prof->type = DT_COLORSPACE_VENDOR_MATRIX;
       g->image_profiles = g_list_append(g->image_profiles, prof);
@@ -1799,7 +1799,7 @@ static void update_profile_list(dt_iop_module_t *self)
     if(!strcmp(self->dev->image_storage.camera_makermodel, dt_alternate_colormatrices[k].makermodel))
     {
       dt_colorspaces_color_profile_t *prof
-          = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
+          = (dt_colorspaces_color_profile_t *)dt_calloc(1, sizeof(dt_colorspaces_color_profile_t));
       g_strlcpy(prof->name, dt_colorspaces_get_name(DT_COLORSPACE_ALTERNATE_MATRIX, ""), sizeof(prof->name));
       prof->type = DT_COLORSPACE_ALTERNATE_MATRIX;
       g->image_profiles = g_list_append(g->image_profiles, prof);

@@ -680,7 +680,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
     {
       // name of current item of style
       char iname[512] = { 0 };
-      dt_style_item_t *item = calloc(1, sizeof(dt_style_item_t));
+      dt_style_item_t *item = dt_calloc(1, sizeof(dt_style_item_t));
 
       if(sqlite3_column_type(stmt, 0) == SQLITE_NULL)
         item->num = -1;

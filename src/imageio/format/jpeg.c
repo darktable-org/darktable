@@ -275,7 +275,7 @@ read_icc_profile (j_decompress_ptr cinfo,
     return FALSE;		/* found only empty markers? */
 
   /* Allocate space for assembled data */
-  icc_data = (JOCTET *) calloc(total_length, sizeof(JOCTET));
+  icc_data = (JOCTET *) dt_calloc(total_length, sizeof(JOCTET));
   if (icc_data == NULL)
     return FALSE;		/* oops, out of memory */
 
@@ -513,7 +513,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
 void *get_params(dt_imageio_module_format_t *self)
 {
   // adjust this if more params are stored (subsampling etc)
-  dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)calloc(1, sizeof(dt_imageio_jpeg_t));
+  dt_imageio_jpeg_t *d = (dt_imageio_jpeg_t *)dt_calloc(1, sizeof(dt_imageio_jpeg_t));
   d->quality = dt_conf_get_int("plugins/imageio/format/jpeg/quality");
   if(d->quality <= 0 || d->quality > 100) d->quality = 100;
   return d;

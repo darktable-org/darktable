@@ -288,7 +288,7 @@ void connect_key_accels(dt_lib_module_t *self)
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
-  dt_lib_filmstrip_t *d = (dt_lib_filmstrip_t *)calloc(1, sizeof(dt_lib_filmstrip_t));
+  dt_lib_filmstrip_t *d = (dt_lib_filmstrip_t *)dt_calloc(1, sizeof(dt_lib_filmstrip_t));
   self->data = (void *)d;
 
   d->last_selected_id = -1;

@@ -603,7 +603,7 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   }
 
   // buffer allocations
-  *points = calloc(2 * (l + 3), sizeof(float));
+  *points = dt_calloc(2 * (l + 3), sizeof(float));
   if(*points == NULL) return 0;
   *points_count = l + 3;
 
@@ -870,7 +870,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   }
 
   // we allocate the buffer
-  *buffer = calloc(w * h, sizeof(float));
+  *buffer = dt_calloc(w * h, sizeof(float));
   if(*buffer == NULL)
   {
     free(points);

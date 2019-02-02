@@ -415,7 +415,7 @@ static image_char new_image_char(unsigned int xsize, unsigned int ysize)
   /* get memory */
   image = (image_char) dt_malloc( sizeof(struct image_char_s) );
   if( image == NULL ) error("not enough memory.");
-  image->data = (unsigned char *) calloc( (size_t) (xsize*ysize),
+  image->data = (unsigned char *) dt_calloc( (size_t) (xsize*ysize),
                                           sizeof(unsigned char) );
   if( image->data == NULL ) error("not enough memory.");
 
@@ -475,7 +475,7 @@ static image_int new_image_int(unsigned int xsize, unsigned int ysize)
   /* get memory */
   image = (image_int) dt_malloc( sizeof(struct image_int_s) );
   if( image == NULL ) error("not enough memory.");
-  image->data = (int *) calloc( (size_t) (xsize*ysize), sizeof(int) );
+  image->data = (int *) dt_calloc( (size_t) (xsize*ysize), sizeof(int) );
   if( image->data == NULL ) error("not enough memory.");
 
   /* set image size */
@@ -541,7 +541,7 @@ static image_double new_image_double(unsigned int xsize, unsigned int ysize)
   /* get memory */
   image = (image_double) dt_malloc( sizeof(struct image_double_s) );
   if( image == NULL ) error("not enough memory.");
-  image->data = (double *) calloc( (size_t) (xsize*ysize), sizeof(double) );
+  image->data = (double *) dt_calloc( (size_t) (xsize*ysize), sizeof(double) );
   if( image->data == NULL ) error("not enough memory.");
 
   /* set image size */
@@ -831,11 +831,11 @@ static image_double ll_angle( image_double in, double threshold,
   *modgrad = new_image_double(in->xsize,in->ysize);
 
   /* get memory for "ordered" list of pixels */
-  list = (struct coorlist *) calloc( (size_t) (n*p), sizeof(struct coorlist) );
+  list = (struct coorlist *) dt_calloc( (size_t) (n*p), sizeof(struct coorlist) );
   *mem_p = (void *) list;
-  range_l_s = (struct coorlist **) calloc( (size_t) n_bins,
+  range_l_s = (struct coorlist **) dt_calloc( (size_t) n_bins,
                                            sizeof(struct coorlist *) );
-  range_l_e = (struct coorlist **) calloc( (size_t) n_bins,
+  range_l_e = (struct coorlist **) dt_calloc( (size_t) n_bins,
                                            sizeof(struct coorlist *) );
   if( list == NULL || range_l_s == NULL || range_l_e == NULL )
     error("not enough memory.");
@@ -2168,7 +2168,7 @@ double * LineSegmentDetection( int * n_out,
   if( reg_img != NULL && reg_x != NULL && reg_y != NULL ) /* save region data */
     region = new_image_int_ini(angles->xsize,angles->ysize,0);
   used = new_image_char_ini(xsize,ysize,NOTUSED);
-  reg = (struct point *) calloc( (size_t) (xsize*ysize), sizeof(struct point) );
+  reg = (struct point *) dt_calloc( (size_t) (xsize*ysize), sizeof(struct point) );
   if( reg == NULL ) error("not enough memory!");
 
 

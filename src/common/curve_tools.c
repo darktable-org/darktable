@@ -20,6 +20,7 @@
 */
 
 #include "curve_tools.h"
+#include "common/utility.h"
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
@@ -110,7 +111,7 @@ float *d3_np_fs(int n, float a[], float b[])
       return NULL;
     }
   }
-  x = (float *)calloc(n, sizeof(float));
+  x = (float *)dt_calloc(n, sizeof(float));
   // nc_merror(x, "d3_np_fs");
 
   for(i = 0; i < n; i++)
@@ -272,9 +273,9 @@ static float *spline_cubic_set_internal(int n, float t[], float y[], int ibcbeg,
       return NULL;
     }
   }
-  a = (float *)calloc(3 * n, sizeof(float));
+  a = (float *)dt_calloc(3 * n, sizeof(float));
   // nc_merror(a, "spline_cubic_set");
-  b = (float *)calloc(n, sizeof(float));
+  b = (float *)dt_calloc(n, sizeof(float));
   // nc_merror(b, "spline_cubic_set");
   //
   //  Set up the first equation.
@@ -349,7 +350,7 @@ static float *spline_cubic_set_internal(int n, float t[], float y[], int ibcbeg,
   //
   if(n == 2 && ibcbeg == 0 && ibcend == 0)
   {
-    ypp = (float *)calloc(2, sizeof(float));
+    ypp = (float *)dt_calloc(2, sizeof(float));
     // nc_merror(ypp, "spline_cubic_set");
 
     ypp[0] = 0.0E+00;
@@ -418,9 +419,9 @@ float *monotone_hermite_set(int n, float x[], float y[])
     }
   }
 
-  delta = (float *)calloc(n, sizeof(float));
+  delta = (float *)dt_calloc(n, sizeof(float));
   // nc_merror(delta, "spline_cubic_set");
-  m = (float *)calloc(n + 1, sizeof(float));
+  m = (float *)dt_calloc(n + 1, sizeof(float));
   // nc_merror(m, "spline_cubic_set");
   // calculate the slopes
   for(i = 0; i < n - 1; i++)
@@ -494,7 +495,7 @@ float *catmull_rom_set(int n, float x[], float y[])
     }
   }
   // nc_merror(delta, "spline_cubic_set");
-  m = (float *)calloc(n, sizeof(float));
+  m = (float *)dt_calloc(n, sizeof(float));
   // nc_merror(m, "spline_cubic_set");
 
   // calculate the slopes

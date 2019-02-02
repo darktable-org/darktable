@@ -316,7 +316,7 @@ void gui_init(dt_lib_module_t *self)
   GtkEntryCompletion *completion;
   int line = 0;
 
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)calloc(1, sizeof(dt_lib_metadata_t));
+  dt_lib_metadata_t *d = (dt_lib_metadata_t *)dt_calloc(1, sizeof(dt_lib_metadata_t));
   self->data = (void *)d;
 
   d->imgsel = -1;
@@ -411,7 +411,7 @@ static void add_rights_preset(dt_lib_module_t *self, char *name, char *string)
 {
   const unsigned int params_size = strlen(string) + 5;
 
-  char *params = calloc(sizeof(char), params_size);
+  char *params = dt_calloc(sizeof(char), params_size);
   memcpy(params + 2, string, params_size - 5);
   dt_lib_presets_add(name, self->plugin_name, self->version(), params, params_size);
   free(params);

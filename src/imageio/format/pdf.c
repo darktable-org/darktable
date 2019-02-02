@@ -566,7 +566,7 @@ static void compression_toggle_callback(GtkWidget *widget, gpointer user_data)
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  pdf_t *d = calloc(1, sizeof(pdf_t));
+  pdf_t *d = dt_calloc(1, sizeof(pdf_t));
   self->gui_data = (void *)d;
   self->widget = gtk_grid_new();
   GtkGrid *grid = GTK_GRID(self->widget);
@@ -771,7 +771,7 @@ size_t params_size(dt_imageio_module_format_t *self)
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_pdf_t *d = (dt_imageio_pdf_t *)calloc(1, sizeof(dt_imageio_pdf_t));
+  dt_imageio_pdf_t *d = (dt_imageio_pdf_t *)dt_calloc(1, sizeof(dt_imageio_pdf_t));
 
   if(d)
   {

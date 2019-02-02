@@ -55,7 +55,7 @@ static const SecretSchema *secret_darktable_get_schema(void)
 const backend_libsecret_context_t *dt_pwstorage_libsecret_new()
 {
   GError *error = NULL;
-  backend_libsecret_context_t *context = calloc(1, sizeof(backend_libsecret_context_t));
+  backend_libsecret_context_t *context = dt_calloc(1, sizeof(backend_libsecret_context_t));
   if(context == NULL)
   {
     return NULL;

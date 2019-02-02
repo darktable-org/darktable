@@ -1023,8 +1023,8 @@ end:
 void init(dt_iop_module_t *module)
 {
   // module->data = dt_malloc(sizeof(dt_iop_highlights_data_t));
-  module->params = calloc(1, sizeof(dt_iop_highlights_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_highlights_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_highlights_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_highlights_params_t));
   module->priority = 57; // module order created by iop_dependencies.py, do not edit!
   module->default_enabled = 1;
   module->params_size = sizeof(dt_iop_highlights_params_t);

@@ -737,7 +737,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = calloc(1, sizeof(dt_iop_profilegamma_data_t));
+  piece->data = dt_calloc(1, sizeof(dt_iop_profilegamma_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -790,8 +790,8 @@ void gui_update(dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_profilegamma_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_profilegamma_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_profilegamma_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_profilegamma_params_t));
   module->default_enabled = 0;
   module->priority = 342; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_profilegamma_params_t);

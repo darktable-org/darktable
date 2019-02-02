@@ -226,7 +226,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = calloc(1, sizeof(dt_iop_scalepixels_data_t));
+  piece->data = dt_calloc(1, sizeof(dt_iop_scalepixels_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -271,8 +271,8 @@ void init(dt_iop_module_t *self)
 {
   const dt_image_t *const image = &(self->dev->image_storage);
 
-  self->params = calloc(1, sizeof(dt_iop_scalepixels_params_t));
-  self->default_params = calloc(1, sizeof(dt_iop_scalepixels_params_t));
+  self->params = dt_calloc(1, sizeof(dt_iop_scalepixels_params_t));
+  self->default_params = dt_calloc(1, sizeof(dt_iop_scalepixels_params_t));
   self->default_enabled = (!isnan(image->pixel_aspect_ratio) && image->pixel_aspect_ratio > 0.0f
                            && image->pixel_aspect_ratio != 1.0f);
   self->priority = 257; // module order created by iop_dependencies.py, do not edit!

@@ -210,7 +210,7 @@ void dt_histogram_worker(dt_dev_histogram_collection_params_t *const histogram_p
 
   const size_t bins_total = (size_t)4 * histogram_params->bins_count;
   const size_t buf_size = bins_total * sizeof(uint32_t);
-  void *partial_hists = calloc(nthreads, buf_size);
+  void *partial_hists = dt_calloc(nthreads, buf_size);
 
   if(histogram_params->mul == 0) histogram_params->mul = (double)(histogram_params->bins_count - 1);
 

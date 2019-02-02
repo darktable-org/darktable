@@ -316,7 +316,7 @@ void init(dt_imageio_module_storage_t *self)
 
 void *get_params(dt_imageio_module_storage_t *self)
 {
-  dt_imageio_disk_t *d = (dt_imageio_disk_t *)calloc(1, sizeof(dt_imageio_disk_t));
+  dt_imageio_disk_t *d = (dt_imageio_disk_t *)dt_calloc(1, sizeof(dt_imageio_disk_t));
 
   char *text = dt_conf_get_string("plugins/imageio/storage/disk/file_directory");
   g_strlcpy(d->filename, text, sizeof(d->filename));

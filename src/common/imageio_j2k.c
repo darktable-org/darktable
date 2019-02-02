@@ -503,9 +503,9 @@ static void sycc444_to_rgb(opj_image_t *img)
   cb = img->comps[1].data;
   cr = img->comps[2].data;
 
-  d0 = r = (int *)calloc(max, sizeof(int));
-  d1 = g = (int *)calloc(max, sizeof(int));
-  d2 = b = (int *)calloc(max, sizeof(int));
+  d0 = r = (int *)dt_calloc(max, sizeof(int));
+  d1 = g = (int *)dt_calloc(max, sizeof(int));
+  d2 = b = (int *)dt_calloc(max, sizeof(int));
 
   for(i = 0; i < max; ++i)
   {
@@ -545,9 +545,9 @@ static void sycc422_to_rgb(opj_image_t *img)
   cb = img->comps[1].data;
   cr = img->comps[2].data;
 
-  d0 = r = (int *)calloc(max, sizeof(int));
-  d1 = g = (int *)calloc(max, sizeof(int));
-  d2 = b = (int *)calloc(max, sizeof(int));
+  d0 = r = (int *)dt_calloc(max, sizeof(int));
+  d1 = g = (int *)dt_calloc(max, sizeof(int));
+  d2 = b = (int *)dt_calloc(max, sizeof(int));
 
   for(i = 0; i < maxh; ++i)
   {
@@ -605,9 +605,9 @@ static void sycc420_to_rgb(opj_image_t *img)
   cb = img->comps[1].data;
   cr = img->comps[2].data;
 
-  d0 = r = (int *)calloc(max, sizeof(int));
-  d1 = g = (int *)calloc(max, sizeof(int));
-  d2 = b = (int *)calloc(max, sizeof(int));
+  d0 = r = (int *)dt_calloc(max, sizeof(int));
+  d1 = g = (int *)dt_calloc(max, sizeof(int));
+  d2 = b = (int *)dt_calloc(max, sizeof(int));
 
   for(i = 0; i < maxh; i += 2)
   {

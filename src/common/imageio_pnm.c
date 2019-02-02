@@ -37,7 +37,7 @@ static dt_imageio_retval_t _read_pbm(dt_image_t *img, FILE*f, float *buf)
   dt_imageio_retval_t result = DT_IMAGEIO_OK;
 
   int bytes_needed = (img->width + 7) / 8;
-  uint8_t *line = calloc(bytes_needed, sizeof(uint8_t));
+  uint8_t *line = dt_calloc(bytes_needed, sizeof(uint8_t));
 
   float *buf_iter = buf;
   for(size_t y = 0; y < img->height; y++)
@@ -77,7 +77,7 @@ static dt_imageio_retval_t _read_pgm(dt_image_t *img, FILE*f, float *buf)
 
   if(max <= 255)
   {
-    uint8_t *line = calloc(img->width, sizeof(uint8_t));
+    uint8_t *line = dt_calloc(img->width, sizeof(uint8_t));
 
     float *buf_iter = buf;
     for(size_t y = 0; y < img->height; y++)
@@ -99,7 +99,7 @@ static dt_imageio_retval_t _read_pgm(dt_image_t *img, FILE*f, float *buf)
   }
   else
   {
-    uint16_t *line = calloc(img->width, sizeof(uint16_t));
+    uint16_t *line = dt_calloc(img->width, sizeof(uint16_t));
 
     float *buf_iter = buf;
     for(size_t y = 0; y < img->height; y++)
@@ -137,7 +137,7 @@ static dt_imageio_retval_t _read_ppm(dt_image_t *img, FILE*f, float *buf)
 
   if(max <= 255)
   {
-    uint8_t *line = calloc((size_t)3 * img->width, sizeof(uint8_t));
+    uint8_t *line = dt_calloc((size_t)3 * img->width, sizeof(uint8_t));
 
     float *buf_iter = buf;
     for(size_t y = 0; y < img->height; y++)
@@ -161,7 +161,7 @@ static dt_imageio_retval_t _read_ppm(dt_image_t *img, FILE*f, float *buf)
   }
   else
   {
-    uint16_t *line = calloc((size_t)3 * img->width, sizeof(uint16_t));
+    uint16_t *line = dt_calloc((size_t)3 * img->width, sizeof(uint16_t));
 
     float *buf_iter = buf;
     for(size_t y = 0; y < img->height; y++)

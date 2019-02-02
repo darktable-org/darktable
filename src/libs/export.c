@@ -931,7 +931,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
   {
     // add upscale to params
     size_t new_params_size = old_params_size + sizeof(int32_t);
-    void *new_params = calloc(1, new_params_size);
+    void *new_params = dt_calloc(1, new_params_size);
 
     memcpy(new_params, old_params, 2 * sizeof(int32_t));
     memcpy(new_params + 3 * sizeof(int32_t), old_params + 2 * sizeof(int32_t), old_params_size - 2 * sizeof(int32_t));
@@ -978,7 +978,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
       new_params_size += strlen(iccfilename);
     }
 
-    void *new_params = calloc(1, new_params_size);
+    void *new_params = dt_calloc(1, new_params_size);
     size_t pos = 0;
     memcpy(new_params, old_params, 4 * sizeof(int32_t));
     pos += 4 * sizeof(int32_t);
@@ -1054,7 +1054,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   *size = fname_len + sname_len + 2 + 4 * sizeof(int32_t) + fsize + ssize + 5 * sizeof(int32_t)
           + strlen(iccfilename) + 1;
 
-  char *params = (char *)calloc(1, *size);
+  char *params = (char *)dt_calloc(1, *size);
   int pos = 0;
   memcpy(params + pos, &max_width, sizeof(int32_t));
   pos += sizeof(int32_t);

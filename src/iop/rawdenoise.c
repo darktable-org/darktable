@@ -199,7 +199,7 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
   for (c=0; c<4; c++)
     cblack[c] *= BIT16;
 #endif
-  float *const fimg = calloc(size * 4, sizeof *fimg);
+  float *const fimg = dt_calloc(size * 4, sizeof *fimg);
 
 
   const int nc = 4;
@@ -521,8 +521,8 @@ end:
 void init(dt_iop_module_t *module)
 {
   module->data = NULL;
-  module->params = calloc(1, sizeof(dt_iop_rawdenoise_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_rawdenoise_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_rawdenoise_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_rawdenoise_params_t));
   module->default_enabled = 0;
 
   // raw denoise must come just before demosaicing.

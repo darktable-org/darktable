@@ -456,7 +456,7 @@ static int _get_full_preview_id(dt_view_t *self)
 
 void init(dt_view_t *self)
 {
-  self->data = calloc(1, sizeof(dt_library_t));
+  self->data = dt_calloc(1, sizeof(dt_library_t));
   dt_library_t *lib = (dt_library_t *)self->data;
 
   darktable.view_manager->proxy.lighttable.set_position = _set_position;
@@ -698,7 +698,7 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
 
   // prefetch the ids so that we can peek into the future to see if there are adjacent images in the same
   // group.
-  int *query_ids = (int *)calloc(max_rows * max_cols, sizeof(int));
+  int *query_ids = (int *)dt_calloc(max_rows * max_cols, sizeof(int));
   if(!query_ids) goto after_drawing;
   for(int row = 0; row < max_rows; row++)
   {

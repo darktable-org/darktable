@@ -127,7 +127,7 @@ int position()
  */
 void gui_init(dt_lib_module_t *self)
 {
-  self->data = calloc(1, sizeof(dt_lib_location_t));
+  self->data = dt_calloc(1, sizeof(dt_lib_location_t));
   dt_lib_location_t *lib = self->data;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));

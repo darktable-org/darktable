@@ -598,7 +598,7 @@ static void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
 
   const float dither = powf(2.0f, data->random.damping / 10.0f);
 
-  unsigned int *const tea_states = calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
+  unsigned int *const tea_states = dt_calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
@@ -753,8 +753,8 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_dither_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_dither_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_dither_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_dither_params_t));
   module->default_enabled = 0;
   module->priority = 985; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_dither_params_t);

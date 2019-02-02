@@ -282,8 +282,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 void init(dt_iop_module_t *module)
 {
   // module->data = dt_malloc(sizeof(dt_iop_gamma_data_t));
-  module->params = calloc(1, sizeof(dt_iop_gamma_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_gamma_params_t));
+  module->params = dt_calloc(1, sizeof(dt_iop_gamma_params_t));
+  module->default_params = dt_calloc(1, sizeof(dt_iop_gamma_params_t));
   module->params_size = sizeof(dt_iop_gamma_params_t);
   module->gui_data = NULL;
   module->priority = 1000; // module order created by iop_dependencies.py, do not edit!
