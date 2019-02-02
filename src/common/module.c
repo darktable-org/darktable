@@ -20,10 +20,10 @@
 #include <string.h>
 #include <gmodule.h>
 
-#include "config.h"
 #include "common/file_location.h"
 #include "common/module.h"
 #include "common/utility.h"
+#include "config.h"
 
 GList *dt_module_load_modules(const char *subdir, size_t module_size,
                               int (*load_module_so)(void *module, const char *libname, const char *plugin_name),

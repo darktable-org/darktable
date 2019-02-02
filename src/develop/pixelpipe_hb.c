@@ -2088,7 +2088,7 @@ post_process_collect_info:
       if(dev->histogram_waveform_width != 0 && input)
       {
         uint32_t *buf = (uint32_t *)dt_calloc(dev->histogram_waveform_height * dev->histogram_waveform_width * 3,
-                                           sizeof(uint32_t));
+                                              sizeof(uint32_t));
         memset(dev->histogram_waveform, 0,
                sizeof(uint32_t) * dev->histogram_waveform_height * dev->histogram_waveform_stride / 4);
 

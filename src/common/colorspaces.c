@@ -1100,7 +1100,8 @@ static GList *load_profile_from_dir(const char *subdir)
         tmpprof = _ensure_rgb_profile(cmsOpenProfileFromMem(icc_content, end * sizeof(char)));
         if(tmpprof)
         {
-          dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)dt_calloc(1, sizeof(dt_colorspaces_color_profile_t));
+          dt_colorspaces_color_profile_t *prof
+              = (dt_colorspaces_color_profile_t *)dt_calloc(1, sizeof(dt_colorspaces_color_profile_t));
           dt_colorspaces_get_profile_name(tmpprof, lang, lang + 3, prof->name, sizeof(prof->name));
 
           g_strlcpy(prof->filename, d_name, sizeof(prof->filename));

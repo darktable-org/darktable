@@ -768,7 +768,7 @@ main(int argc, char** argv)
     opt.num_nodes = 20;
   }
 
-  curve = dt_calloc(1, CURVE_RESOLUTION*sizeof(float)*6);
+  curve = dt_calloc(1, CURVE_RESOLUTION * sizeof(float) * 6);
   if (!curve) {
     fprintf(stderr, "error: failed allocating curve\n");
     ret = -1;
@@ -777,7 +777,7 @@ main(int argc, char** argv)
   curve_base = curve;
   curve_tone = curve + 3*CURVE_RESOLUTION;
 
-  hist = dt_calloc(1, CURVE_RESOLUTION*sizeof(uint32_t)*6);
+  hist = dt_calloc(1, CURVE_RESOLUTION * sizeof(uint32_t) * 6);
   if (!hist) {
     fprintf(stderr, "error: failed allocating histogram\n");
     ret = -1;
@@ -835,7 +835,7 @@ main(int argc, char** argv)
     }
   }
 
-  raw_buff_f = dt_calloc(1, 3*raw_width*raw_height*sizeof(float));
+  raw_buff_f = dt_calloc(1, 3 * raw_width * raw_height * sizeof(float));
   if (!raw_buff_f) {
     fprintf(stderr, "error: failed allocating raw file float buffer\n");
     goto exit;
@@ -848,7 +848,7 @@ main(int argc, char** argv)
   free(raw_buff);
   raw_buff = NULL;
 
-  jpeg_buff_f = dt_calloc(1, 3*jpeg_width*jpeg_height*sizeof(float));
+  jpeg_buff_f = dt_calloc(1, 3 * jpeg_width * jpeg_height * sizeof(float));
   if (!jpeg_buff_f) {
     fprintf(stderr, "error: failed allocating JPEG file float buffer\n");
     goto exit;
@@ -1005,7 +1005,7 @@ fit:;
 
   csample.m_samplingRes = CURVE_RESOLUTION;
   csample.m_outputRes = CURVE_RESOLUTION;
-  csample.m_Samples = (uint16_t *)dt_calloc(1, sizeof(uint16_t)*CURVE_RESOLUTION);
+  csample.m_Samples = (uint16_t *)dt_calloc(1, sizeof(uint16_t) * CURVE_RESOLUTION);
 
   /* ------------------------------------------------------------------------
    * Basecurve fit
