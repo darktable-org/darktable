@@ -193,7 +193,7 @@ int thinplate_match(const tonecurve_t *curve, // tonecurve to apply after this (
 
   // XXX do we need these explicitly?
   // residual = target vector
-  double(*r)[wd] = malloc(dim * wd * sizeof(double));
+  double(*r)[wd] = dt_malloc(dim * wd * sizeof(double));
   const double **b = dt_malloc(dim * sizeof(double *));
   for(int k = 0; k < dim; k++) b[k] = target[k];
   for(int k = 0; k < dim; k++) memcpy(r[k], b[k], wd * sizeof(double));
