@@ -217,7 +217,7 @@ static int register_lib(lua_State *L)
   const char *name = luaL_checkstring(L, 2);
   lua_pushvalue(L, 2);
   lua_setfield(L, -2, "name");
-  data->name = strdup(name);
+  data->name = dt_strdup(name);
   data->widget = NULL;
 
   luaL_checktype(L,3,LUA_TBOOLEAN);

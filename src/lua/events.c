@@ -250,7 +250,7 @@ static gboolean shortcut_callback(GtkAccelGroup *accel_group, GObject *accelerat
   dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
       0, NULL, NULL,
       LUA_ASYNC_TYPENAME,"const char*","shortcut",
-      LUA_ASYNC_TYPENAME_WITH_FREE,"char*",strdup(p),g_cclosure_new(G_CALLBACK(&free),NULL,NULL),
+      LUA_ASYNC_TYPENAME_WITH_FREE,"char*",dt_strdup(p),g_cclosure_new(G_CALLBACK(&free),NULL,NULL),
       LUA_ASYNC_DONE);
   return TRUE;
 }
@@ -267,7 +267,7 @@ static int register_shortcut_event(lua_State *L)
   // 3 is the action to perform (checked)
   // 4 is the key itself
 
-  char *tmp = strdup(luaL_checkstring(L, 4));
+  char *tmp = dt_strdup(luaL_checkstring(L, 4));
   int result = dt_lua_event_keyed_register(L); // will raise an error in case of duplicate key
   dt_accel_register_lua(tmp, 0, 0);
   dt_accel_connect_lua(tmp, g_cclosure_new(G_CALLBACK(shortcut_callback), tmp, closure_destroy));

@@ -560,7 +560,7 @@ void dt_lua_async_call_string_internal(const char* function, int line,const char
   dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s %d, string %s\n",__FUNCTION__,function,line,lua_string);
 #endif
   string_call_data*data = malloc(sizeof(string_call_data));
-  data->function = strdup(lua_string);
+  data->function = dt_strdup(lua_string);
   data->cb = cb;
   data->cb_data = cb_data;
   data->nresults = nresults;

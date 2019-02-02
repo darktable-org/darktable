@@ -380,7 +380,7 @@ static int lua_register_action(lua_State *L)
 
 
   lua_callback_data * data = malloc(sizeof(lua_callback_data));
-  data->key = strdup(key);
+  data->key = dt_strdup(key);
   data->self = self;
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(lua_button_clicked), data);
   gtk_widget_show_all(button);

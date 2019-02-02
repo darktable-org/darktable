@@ -132,8 +132,8 @@ static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, con
       int i = 0;
       const char *current_value = dt_camctl_camera_get_property(darktable.camctl, NULL, propertyname);
       dt_lib_camera_property_t *prop = calloc(1, sizeof(dt_lib_camera_property_t));
-      prop->name = strdup(label);
-      prop->property_name = strdup(propertyname);
+      prop->name = dt_strdup(label);
+      prop->property_name = dt_strdup(propertyname);
       prop->values = dt_bauhaus_combobox_new(NULL);
       dt_bauhaus_widget_set_label(prop->values, NULL, label);
       g_object_ref_sink(prop->values);

@@ -172,7 +172,7 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
     while(lua_next(L, -2) != 0)
     {
       /* uses 'key' (at index -2) and 'value' (at index -1) */
-      void *filename = strdup(luaL_checkstring(L, -1));
+      void *filename = dt_strdup(luaL_checkstring(L, -1));
       lua_pop(L, 1);
       images = g_list_prepend(images, filename);
     }

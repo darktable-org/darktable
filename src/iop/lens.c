@@ -319,13 +319,13 @@ static char *_lens_sanitize(const char *orig_lens)
     }
     else
     {
-      char *new_lens = strdup(orig_lens);
+      char *new_lens = dt_strdup(orig_lens);
       return new_lens;
     }
   }
   else
   {
-    char *new_lens = strdup(orig_lens);
+    char *new_lens = dt_strdup(orig_lens);
     return new_lens;
   }
 }

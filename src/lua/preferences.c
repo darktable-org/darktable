@@ -535,19 +535,19 @@ static int register_pref_sub(lua_State *L)
   pref_element *built_elt = *tmp;
   int cur_param = 1;
 
-  built_elt->script = strdup(luaL_checkstring(L, cur_param));
+  built_elt->script = dt_strdup(luaL_checkstring(L, cur_param));
   cur_param++;
 
-  built_elt->name = strdup(luaL_checkstring(L, cur_param));
+  built_elt->name = dt_strdup(luaL_checkstring(L, cur_param));
   cur_param++;
 
   luaA_to(L, lua_pref_type, &built_elt->type, cur_param);
   cur_param++;
 
-  built_elt->label = strdup(luaL_checkstring(L, cur_param));
+  built_elt->label = dt_strdup(luaL_checkstring(L, cur_param));
   cur_param++;
 
-  built_elt->tooltip = strdup(luaL_checkstring(L, cur_param));
+  built_elt->tooltip = dt_strdup(luaL_checkstring(L, cur_param));
   cur_param++;
 
   char pref_name[1024];
@@ -562,7 +562,7 @@ static int register_pref_sub(lua_State *L)
       built_elt->widget = gtk_combo_box_text_new();
 
       int value = 0;
-      built_elt->type_data.enum_data.default_value = strdup(luaL_checkstring(L, cur_param));
+      built_elt->type_data.enum_data.default_value = dt_strdup(luaL_checkstring(L, cur_param));
       while(!lua_isnoneornil(L, cur_param))
       {
         luaA_enum_value_type(L, enum_type, &value, luaL_checkstring(L, cur_param));
@@ -583,7 +583,7 @@ static int register_pref_sub(lua_State *L)
       break;
     }
     case pref_dir:
-      built_elt->type_data.dir_data.default_value = strdup(luaL_checkstring(L, cur_param));
+      built_elt->type_data.dir_data.default_value = dt_strdup(luaL_checkstring(L, cur_param));
       cur_param++;
 
       if(!dt_conf_key_exists(pref_name)) {
@@ -596,7 +596,7 @@ static int register_pref_sub(lua_State *L)
       built_elt->update_widget = update_widget_dir;
       break;
     case pref_file:
-      built_elt->type_data.file_data.default_value = strdup(luaL_checkstring(L, cur_param));
+      built_elt->type_data.file_data.default_value = dt_strdup(luaL_checkstring(L, cur_param));
       cur_param++;
 
       if(!dt_conf_key_exists(pref_name))
@@ -609,7 +609,7 @@ static int register_pref_sub(lua_State *L)
       built_elt->update_widget = update_widget_file;
       break;
     case pref_string:
-      built_elt->type_data.string_data.default_value = strdup(luaL_checkstring(L, cur_param));
+      built_elt->type_data.string_data.default_value = dt_strdup(luaL_checkstring(L, cur_param));
       cur_param++;
 
       if(!dt_conf_key_exists(pref_name))
@@ -690,7 +690,7 @@ static int register_pref_sub(lua_State *L)
       }
     case pref_lua:
       {
-        built_elt->type_data.lua_data.default_value = strdup(luaL_checkstring(L, cur_param));
+        built_elt->type_data.lua_data.default_value = dt_strdup(luaL_checkstring(L, cur_param));
         cur_param++;
 
         if(!dt_conf_key_exists(pref_name))

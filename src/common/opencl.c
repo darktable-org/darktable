@@ -288,9 +288,9 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     goto end;
   }
 
-  cl->dev[dev].vendor = strdup(dt_opencl_get_vendor_by_id(vendor_id));
-  cl->dev[dev].name = strdup(infostr);
-  cl->dev[dev].cname = strdup(cname);
+  cl->dev[dev].vendor = dt_strdup(dt_opencl_get_vendor_by_id(vendor_id));
+  cl->dev[dev].name = dt_strdup(infostr);
+  cl->dev[dev].cname = dt_strdup(cname);
 
   cl->crc = crc32(cl->crc, (const unsigned char *)infostr, strlen(infostr));
 
@@ -387,7 +387,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   options = g_strdup_printf("-cl-fast-relaxed-math %s -D%s=1 -I%s",
                             (cl->dev[dev].nvidia_sm_20 ? " -DNVIDIA_SM_20=1" : ""),
                             dt_opencl_get_vendor_by_id(vendor_id), escapedkerneldir);
-  cl->dev[dev].options = strdup(options);
+  cl->dev[dev].options = dt_strdup(options);
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] options for OpenCL compiler: %s\n", options);
 
@@ -507,7 +507,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   // constants if locale is different from "C".
   // we save the current locale, set locale to "C", and restore the previous setting after OpenCL is
   // initialized
-  char *locale = strdup(setlocale(LC_ALL, NULL));
+  char *locale = dt_strdup(setlocale(LC_ALL, NULL));
   setlocale(LC_ALL, "C");
 
   int handles = dt_conf_get_int("opencl_number_event_handles");
