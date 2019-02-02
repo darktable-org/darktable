@@ -262,7 +262,7 @@ static void hardcoded_gui(GtkWidget *grid, int *line)
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), selected);
 
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(theme_callback), 0);
-  gtk_widget_set_tooltip_text(widget, _("set the thme for the user interface"));
+  gtk_widget_set_tooltip_text(widget, _("set the theme for the user interface"));
   gtk_grid_attach(GTK_GRID(grid), label, 0, (*line)++, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(grid), widget, label, GTK_POS_RIGHT, 1, 1);
 }
