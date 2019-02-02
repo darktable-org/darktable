@@ -356,13 +356,13 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   double tstart, tend, tdiff;
   dt_loc_get_user_cache_dir(dtcache, sizeof(dtcache));
 
-  int len = strlen(infostr);
+  int len = MIN(strlen(infostr),sizeof(devname));;
   int j = 0;
   // remove non-alphanumeric chars from device name
   for(int i = 0; i < len; i++)
     if(isalnum(infostr[i])) devname[j++] = infostr[i];
   devname[j] = 0;
-  len = strlen(driverversion);
+  len = MIN(strlen(driverversion),sizeof(drvversion));
   j = 0;
   // remove non-alphanumeric chars from driver version
   for(int i = 0; i < len; i++)
