@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-02-02 10:59+0100\n"
-"PO-Revision-Date: 2019-01-02 20:20+0100\n"
+"PO-Revision-Date: 2019-02-02 13:00+0100\n"
 "Last-Translator: Milan Knížek <knizek@volny.cz>\n"
 "Language-Team: Czech <kde-i18n-doc@kde.org>\n"
 "Language: cs_CZ\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 "X-Poedit-SourceCharset: UTF-8\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Poedit 2.0.6\n"
 
 #: ../build/src/preferences_gen.h:1789
 msgid "GUI options"
@@ -496,7 +496,7 @@ msgstr "(vyžaduje opětovné spuštění)"
 
 #: ../build/src/preferences_gen.h:2665
 msgid "waiting time between each picture in slideshow"
-msgstr ""
+msgstr "prodleva mezi snímky v prezentaci"
 
 #: ../build/src/preferences_gen.h:2691
 msgid "number of folder levels to show in lists"
@@ -2355,14 +2355,12 @@ msgid "add brush"
 msgstr "přidat štětec"
 
 #: ../src/develop/blend_gui.c:1766 ../src/develop/blend_gui.c:2169
-#, fuzzy
 msgid "raster mask"
-msgstr "parametrická maska"
+msgstr "rastrová maska"
 
 #: ../src/develop/blend_gui.c:1776
-#, fuzzy
 msgid "toggle polarity of raster mask"
-msgstr "přepnout polaritu načrtnuté masky"
+msgstr "přepnout polaritu rastrové masky"
 
 #. * generate a list of all available blend modes
 #: ../src/develop/blend_gui.c:2069 ../src/libs/live_view.c:408
@@ -2841,57 +2839,59 @@ msgid "ctrl+click to add a node"
 msgstr "ctrl + kliknutí pro přidání uzlu"
 
 #: ../src/develop/masks/masks.c:210 ../src/develop/masks/masks.c:248
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"
 msgstr ""
-"otáčením kolečka nastavte velikost, shift + rolování pro velikost prolnutí,\n"
-"ctrl + rolování pro krytí tvaru"
+"shift + rolování pro velikost prolnutí,\n"
+"ctrl + rolování pro průhlednost tvaru (%d%%)"
 
 #: ../src/develop/masks/masks.c:215
-#, fuzzy, c-format
+#, c-format
 msgid "ctrl+scroll to set shape opacity (%d%%)"
-msgstr "ctrl + rolování pro nastavení krytí"
+msgstr "ctrl + rolování pro nastavení průhlednosti (%d%%)"
 
 #: ../src/develop/masks/masks.c:217
 msgid "move to rotate shape"
 msgstr "přesunout pro rotaci tvaru"
 
 #: ../src/develop/masks/masks.c:223 ../src/develop/masks/masks.c:245
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "scroll to set size, shift+scroll to set feather size\n"
 "ctrl+scroll to set shape opacity (%d%%)"
 msgstr ""
 "otáčením kolečka nastavte velikost, shift + rolování pro velikost prolnutí,\n"
-"ctrl + rolování pro krytí tvaru"
+"ctrl + rolování pro průhlednost tvaru (%d%%)"
 
 #: ../src/develop/masks/masks.c:225
 msgid "ctrl+click to rotate"
 msgstr "ctrl + kliknutí pro rotaci"
 
 #: ../src/develop/masks/masks.c:228
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "shift+click to switch feathering mode, ctrl+click to rotate\n"
 "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%),"
 msgstr ""
-"shift + kliknutí: přepnout režim prolnutí, ctrl + rolování: krytí tvaru,\n"
-"shift + rolování: velikost prolnutí okraje, ctrl + kliknutí: rotace"
+"shift + kliknutí: přepnout režim prolnutí, ctrl + kliknutí: rotace\n"
+"shift + rolování: velikost prolnutí okraje, ctrl + rolování: průhlednost "
+"tvaru (%d%%),"
 
 #: ../src/develop/masks/masks.c:234
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "scroll to set brush size, shift+scroll to set hardness,\n"
 "ctrl+scroll to set opacity (%d%%)"
 msgstr ""
 "otáčením kolečka nastavte velikost štětce, shift + rolování pro tvrdost,\n"
-"ctrl + rolování pro krytí"
+"ctrl + rolování pro krytí (%d%%)"
 
 #: ../src/develop/masks/masks.c:237
-#, fuzzy, c-format
+#, c-format
 msgid "scroll to set hardness, ctrl+scroll to set shape opacity (%d%%)"
-msgstr "otáčením kolečka nastavte tvrdost, ctrl + rolování pro nastavení krytí"
+msgstr ""
+"otáčením kolečka nastavte tvrdost, ctrl + rolování pro nastavení krytí (%d%%)"
 
 #: ../src/develop/masks/masks.c:239
 msgid "scroll to set brush size"
@@ -3590,12 +3590,11 @@ msgstr ""
 
 #: ../src/gui/preferences.c:241
 msgid "theme"
-msgstr ""
+msgstr "téma vzhledu"
 
 #: ../src/gui/preferences.c:265
-#, fuzzy
 msgid "set the thme for the user interface"
-msgstr "zadejte název webové stránky"
+msgstr "vyberte téma uživatelského rozhraní"
 
 #: ../src/gui/preferences.c:276
 msgid "darktable preferences"
@@ -3726,14 +3725,12 @@ msgstr ""
 
 #. Zero value indicates import
 #: ../src/gui/preferences.c:1208
-#, fuzzy
 msgid "select preset to import"
-msgstr "vyberte soubory k importu"
+msgstr "vyberte předvolbu k importu"
 
 #: ../src/gui/preferences.c:1227
-#, fuzzy
 msgid "failed to import preset"
-msgstr "vyberte soubory k importu"
+msgstr "import předvolby selhal"
 
 #: ../src/gui/preferences.c:1327 ../src/gui/presets.c:385
 #, c-format
@@ -3819,9 +3816,9 @@ msgid "_select as output destination"
 msgstr "_vybrat jako cíl pro výstup"
 
 #: ../src/gui/preferences.c:1575
-#, fuzzy, c-format
+#, c-format
 msgid "preset %s was successfully saved"
-msgstr "styl %s byl úspěšně uložen"
+msgstr "předvolba %s byl úspěšně uložena"
 
 #. then show edit dialog
 #: ../src/gui/presets.c:218 ../src/gui/presets.c:641 ../src/gui/presets.c:648
@@ -4700,6 +4697,9 @@ msgid ""
 "default protocol is https\n"
 "specify http:// if non secure server"
 msgstr ""
+"jméno serveru\n"
+"výchozí protokol je https\n"
+"napište http:// pokud je server nezabezpečený"
 
 #: ../src/imageio/storage/piwigo.c:782
 msgid "user"
@@ -6044,21 +6044,20 @@ msgid "split-toning teal-orange (1st instance)"
 msgstr "rozdělené tónování modrozelená-oranžová (1. instance)"
 
 #: ../src/iop/colorbalance.c:277
-#, fuzzy
 msgid "generic film"
-msgstr "obecné"
+msgstr "obecný film"
 
 #: ../src/iop/colorbalance.c:281
 msgid "similar to Kodak Portra"
-msgstr ""
+msgstr "podobný s Kodak Porta"
 
 #: ../src/iop/colorbalance.c:285
 msgid "similar to Kodak Ektar"
-msgstr ""
+msgstr "podobný s Kodak Ektar"
 
 #: ../src/iop/colorbalance.c:289
 msgid "similar to Kodachrome"
-msgstr ""
+msgstr "podobný s Kodachrome"
 
 #: ../src/iop/colorbalance.c:296 ../src/iop/exposure.c:120
 #: ../src/iop/profile_gamma.c:121
@@ -6262,25 +6261,24 @@ msgid "helmholtz/kohlrausch monochrome"
 msgstr "helmholtz/kohlrausch monochromatický"
 
 #: ../src/iop/colorchecker.c:294
-#, fuzzy
 msgid "Fuji Astia emulation"
-msgstr "vyrovnání histogramu"
+msgstr "emulace Fuji Astia"
 
 #: ../src/iop/colorchecker.c:306
 msgid "Fuji Classic Chrome emulation"
-msgstr ""
+msgstr "emulace Fuji Classic Chrome"
 
 #: ../src/iop/colorchecker.c:318
 msgid "Fuji Monochrome emulation"
-msgstr ""
+msgstr "emulace Fuji Monochrome"
 
 #: ../src/iop/colorchecker.c:330
 msgid "Fuji Provia emulation"
-msgstr ""
+msgstr "emulace Fuji Provia"
 
 #: ../src/iop/colorchecker.c:342
 msgid "Fuji Velvia emulation"
-msgstr ""
+msgstr "emulace Fuji Velvia"
 
 #: ../src/iop/colorchecker.c:837 ../src/iop/colorchecker.c:1351
 #, c-format
@@ -7146,11 +7144,14 @@ msgid ""
 "if poorly set, it will clip near-black colors out of gamut\n"
 "by pushing RGB values into negatives."
 msgstr ""
+"nastavte úroveň černé, aby hodnoty RGB nebyly záporné.\n"
+"nepoužívat pro zvýraznění černé!\n"
+"při špatném nastavení se barvy blízké černé dostanou\n"
+" mimo gamut kvůli hodnotám RGB které se stanou zápornými."
 
 #: ../src/iop/exposure.c:871
-#, fuzzy
 msgid "black level correction"
-msgstr "úroveň černé %i"
+msgstr "korekce úrovně černé"
 
 #: ../src/iop/exposure.c:882
 msgid "adjust the exposure correction"
@@ -9601,9 +9602,8 @@ msgid "select watermark color"
 msgstr "vybrat barvu textu"
 
 #: ../src/iop/watermark.c:1381
-#, fuzzy
 msgid "pick color from image"
-msgstr "kliknutím vybrat barvu z obrázku"
+msgstr "vybrat barvu z obrázku"
 
 #. Simple text
 #: ../src/iop/watermark.c:1392
@@ -11688,9 +11688,8 @@ msgstr ""
 "dvojitým kliknutím je přiřadíte"
 
 #: ../src/libs/styles.c:417
-#, fuzzy
 msgid "filter style names"
-msgstr "zadejte jméno stylu"
+msgstr "filtr jména stylu"
 
 #: ../src/libs/styles.c:432
 msgid "create duplicate"
@@ -12163,9 +12162,8 @@ msgid "file manager"
 msgstr "souborový manažer"
 
 #: ../src/libs/tools/lighttable.c:112
-#, fuzzy
 msgid "expose"
-msgstr "expozice"
+msgstr "exponovat"
 
 #. view accels
 #: ../src/libs/tools/lighttable.c:158
@@ -12179,10 +12177,9 @@ msgid "zoom min"
 msgstr "zoom max. oddálit"
 
 #: ../src/libs/tools/lighttable.c:163
-#, fuzzy
 msgctxt "accel"
 msgid "toggle exposé mode"
-msgstr "přepnout zobrazení panelů"
+msgstr "přepnout režim zobrazení"
 
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
@@ -12650,20 +12647,19 @@ msgstr "promítání"
 
 #: ../src/views/slideshow.c:393
 msgid "waiting to start slideshow"
-msgstr ""
+msgstr "čekám na spoštění prezentace"
 
 #: ../src/views/slideshow.c:511
-#, fuzzy
 msgid "slideshow paused"
-msgstr "režim promítání"
+msgstr "prezentace pozastavena"
 
 #: ../src/views/slideshow.c:518 ../src/views/slideshow.c:525
 #, c-format
 msgid "slideshow delay set to %d second"
 msgid_plural "slideshow delay set to %d seconds"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "prodleva prezentace nastavena na %d sekundu"
+msgstr[1] "prodleva prezentace nastavena na %d sekundy"
+msgstr[2] "prodleva prezentace nastavena na %d sekund"
 
 #: ../src/views/slideshow.c:541
 msgctxt "accel"
