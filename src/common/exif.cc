@@ -65,8 +65,8 @@ extern "C" {
 #include "common/tags.h"
 #include "common/utility.h"
 #include "control/conf.h"
-#include "develop/imageop.h"
 #include "develop/blend.h"
+#include "develop/imageop.h"
 #include "develop/masks.h"
 }
 
@@ -1427,7 +1427,7 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
     Exiv2::Blob blob;
     Exiv2::ExifParser::encode(blob, Exiv2::bigEndian, exifData);
     const int length = blob.size();
-    *buf = (uint8_t *)dt_malloc(length+6);
+    *buf = (uint8_t *)dt_malloc(length + 6);
     if (!*buf)
     {
       return 0;
