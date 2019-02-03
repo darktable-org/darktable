@@ -66,14 +66,15 @@ typedef struct dt_lib_collect_t
 
   GtkScrolledWindow *sw2;
 
+  gboolean singleclick;
   struct dt_lib_collect_params_t *params;
 } dt_lib_collect_t;
 
 typedef struct dt_lib_collect_params_rule_t
 {
-    uint32_t item : 16;
-    uint32_t mode : 16;
-    char string[PARAM_STRING_SIZE];
+  uint32_t item : 16;
+  uint32_t mode : 16;
+  char string[PARAM_STRING_SIZE];
 } dt_lib_collect_params_rule_t;
 
 typedef struct dt_lib_collect_params_t
@@ -390,7 +391,8 @@ static void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, dt_lib_c
 static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event, dt_lib_collect_t *d)
 {
   if((d->view_rule == DT_COLLECTION_PROP_FOLDERS && event->type == GDK_BUTTON_PRESS && event->button == 3)
-     || (event->type == GDK_2BUTTON_PRESS && event->button == 1))
+     || (!d->singleclick && event->type == GDK_2BUTTON_PRESS && event->button == 1)
+     || (d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == 1))
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
 
@@ -414,7 +416,10 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
 
       gtk_tree_path_free(path);
     }
-    return TRUE; /* we handled this */
+    if(!d->singleclick)
+      return TRUE; /* we stop propagation */
+    else
+      return FALSE; /* we allow propagation (expand/collapse row) */
   }
   return FALSE; /* we did not handle this */
 }
@@ -1812,6 +1817,13 @@ static gboolean popup_button_callback(GtkWidget *widget, GdkEventButton *event, 
   return TRUE;
 }
 
+static void view_set_click(gpointer instance, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  d->singleclick = dt_conf_get_bool("plugins/lighttable/collect/single-click");
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)calloc(1, sizeof(dt_lib_collect_t));
@@ -1823,6 +1835,7 @@ void gui_init(dt_lib_module_t *self)
   d->active_rule = 0;
   d->nb_rules = 0;
   d->params = (dt_lib_collect_params_t *)malloc(sizeof(dt_lib_collect_params_t));
+  view_set_click(NULL, self);
 
   GtkBox *box;
   GtkWidget *w;
@@ -1926,6 +1939,8 @@ void gui_init(dt_lib_module_t *self)
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_TAG_CHANGED, G_CALLBACK(tag_changed),
                             self);
+
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(view_set_click), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -1939,6 +1954,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_imported), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_removed), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(tag_changed), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(view_set_click), self);
   darktable.view_manager->proxy.module_collect.module = NULL;
   free(d->params);
 
