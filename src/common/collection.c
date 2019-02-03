@@ -205,9 +205,9 @@ int dt_collection_update(const dt_collection_t *collection)
                               * representative image.
                               * The *2+CASE statement are to break ties, so that when id < group_id, it's
                               * weighted a little higher than when id > group_id. */
-                             "(ABS(id-group_id)*2 + CASE WHEN (id-group_id) < 0 THEN 1 ELSE 0 END) IN "
-                             "(SELECT MIN(ABS(id-group_id)*2 + CASE WHEN (id-group_id) < 0 THEN 1 ELSE 0 END) "
-                             "FROM main.images WHERE %s GROUP BY group_id))",
+                             "id IN (SELECT id FROM "
+                             "(SELECT id, MIN(ABS(id-group_id)*2 + CASE WHEN (id-group_id) < 0 THEN 1 ELSE 0 END) "
+                             "FROM main.images WHERE %s GROUP BY group_id)))",
                          darktable.gui->expanded_group_id, wq_no_group);
 
     /* Additionally, when a group is expanded, make sure the representative image wasn't filtered out.
