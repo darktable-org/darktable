@@ -581,7 +581,7 @@ void local_laplacian_internal(
 
   // allocate memory for intermediate laplacian pyramids
   float *buf[num_gamma][max_levels] = {{0}};
-  for(int k=0;k<num_gamma;k++)
+  for(int k = 0; k < num_gamma; k++)
     for(int l = 0; l <= last_level; l++) buf[k][l] = dt_malloc_aligned(16, sizeof(float) * dl(w, l) * dl(h, l));
 
   // the paper says remapping only level 3 not 0 does the trick, too
