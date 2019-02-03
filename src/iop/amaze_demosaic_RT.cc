@@ -23,6 +23,7 @@
 #endif
 
 extern "C" {
+#include "common/utility.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 
@@ -412,7 +413,7 @@ void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     constexpr int cldf = 2; // factor to multiply cache line distance. 1 = 64 bytes, 2 = 128 bytes ...
     // assign working space
     char *buffer
-        = (char *)calloc(14 * sizeof(float) * ts * ts + sizeof(char) * ts * tsh + 18 * cldf * 64 + 63, 1);
+        = (char *)dt_calloc(14 * sizeof(float) * ts * ts + sizeof(char) * ts * tsh + 18 * cldf * 64 + 63, 1);
     // aligned to 64 byte boundary
     char *data = (char *)((uintptr_t(buffer) + uintptr_t(63)) / 64 * 64);
 
@@ -2396,7 +2397,7 @@ void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     } // end of main loop
 
     // clean up
-    free(buffer);
+    dt_free(buffer);
   }
 
   //   if(plistener)

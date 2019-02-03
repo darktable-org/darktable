@@ -63,6 +63,7 @@ extern "C" {
 #include "common/imageio_jpeg.h"
 #include "common/metadata.h"
 #include "common/tags.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
@@ -217,7 +218,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
       if(FIND_XMP_TAG("Xmp.dc.rights"))
       {
         // rights
-        char *rights = strdup(pos->toString().c_str());
+        char *rights = dt_strdup(pos->toString().c_str());
         char *adr = rights;
         if(strncmp(rights, "lang=", 5) == 0)
         {
@@ -225,12 +226,12 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
           if(rights != NULL) rights++;
         }
         dt_metadata_set(img->id, "Xmp.dc.rights", rights);
-        free(adr);
+        dt_free(adr);
       }
       if(FIND_XMP_TAG("Xmp.dc.description"))
       {
         // description
-        char *description = strdup(pos->toString().c_str());
+        char *description = dt_strdup(pos->toString().c_str());
         char *adr = description;
         if(strncmp(description, "lang=", 5) == 0)
         {
@@ -238,12 +239,12 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
           if(description != NULL) description++;
         }
         dt_metadata_set(img->id, "Xmp.dc.description", description);
-        free(adr);
+        dt_free(adr);
       }
       if(FIND_XMP_TAG("Xmp.dc.title"))
       {
         // title
-        char *title = strdup(pos->toString().c_str());
+        char *title = dt_strdup(pos->toString().c_str());
         char *adr = title;
         if(strncmp(title, "lang=", 5) == 0)
         {
@@ -251,12 +252,12 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
           if(title != NULL) title++;
         }
         dt_metadata_set(img->id, "Xmp.dc.title", title);
-        free(adr);
+        dt_free(adr);
       }
       if(FIND_XMP_TAG("Xmp.dc.creator"))
       {
         // creator
-        char *creator = strdup(pos->toString().c_str());
+        char *creator = dt_strdup(pos->toString().c_str());
         char *adr = creator;
         if(strncmp(creator, "lang=", 5) == 0)
         {
@@ -264,12 +265,12 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
           if(creator != NULL) creator++;
         }
         dt_metadata_set(img->id, "Xmp.dc.creator", creator);
-        free(adr);
+        dt_free(adr);
       }
       if(FIND_XMP_TAG("Xmp.dc.publisher"))
       {
         // publisher
-        char *publisher = strdup(pos->toString().c_str());
+        char *publisher = dt_strdup(pos->toString().c_str());
         char *adr = publisher;
         if(strncmp(publisher, "lang=", 5) == 0)
         {
@@ -277,7 +278,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
           if(publisher != NULL) publisher++;
         }
         dt_metadata_set(img->id, "Xmp.dc.publisher", publisher);
-        free(adr);
+        dt_free(adr);
       }
     }
 
@@ -349,7 +350,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
     if(FIND_XMP_TAG("Xmp.exifEX.LensModel"))
     {
       // lens model
-      char *lens = strdup(pos->toString().c_str());
+      char *lens = dt_strdup(pos->toString().c_str());
       char *adr =  lens;
       if(strncmp(lens, "lang=", 5) == 0)
       {
@@ -358,13 +359,13 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
       }
       // no need to do any Unicode<->locale conversion, the field is specified as ASCII
       g_strlcpy(img->exif_lens, lens, sizeof(img->exif_lens));
-      free(adr);
+      dt_free(adr);
     }
 
     /* read timestamp from Xmp.exif.DateTimeOriginal */
     if(FIND_XMP_TAG("Xmp.exif.DateTimeOriginal"))
     {
-      char *datetime = strdup(pos->toString().c_str());
+      char *datetime = dt_strdup(pos->toString().c_str());
 
       /*
        * exiftool (but apparently not evix2) convert
@@ -384,7 +385,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
       }
 
       g_strlcpy(img->exif_datetime_taken, datetime, sizeof(img->exif_datetime_taken));
-      free(datetime);
+      dt_free(datetime);
     }
 
     return true;
@@ -1010,8 +1011,8 @@ int dt_exif_get_thumbnail(const char *path, uint8_t **buffer, size_t *size, char
     size_t _size = preview.size();
 
     *size = _size;
-    *mime_type = strdup(preview.mimeType().c_str());
-    *buffer = (uint8_t *)malloc(_size);
+    *mime_type = dt_strdup(preview.mimeType().c_str());
+    *buffer = (uint8_t *)dt_malloc(_size);
     if(!*buffer) {
       std::cerr << "[exiv2] couldn't allocate memory for thumbnail for " << path << std::endl;
       return 1;
@@ -1426,7 +1427,7 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
     Exiv2::Blob blob;
     Exiv2::ExifParser::encode(blob, Exiv2::bigEndian, exifData);
     const int length = blob.size();
-    *buf = (uint8_t *)malloc(length+6);
+    *buf = (uint8_t *)dt_malloc(length+6);
     if (!*buf)
     {
       return 0;
@@ -1440,7 +1441,7 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
     // std::cerr.rdbuf(savecerr);
     std::string s(e.what());
     std::cerr << "[exiv2] " << path << ": " << s << std::endl;
-    free(*buf);
+    dt_free(*buf);
     *buf = NULL;
     return 0;
   }
@@ -1481,13 +1482,13 @@ char *dt_exif_xmp_encode_internal(const unsigned char *input, const int len, int
   {
     int result;
     uLongf destLen = compressBound(len);
-    unsigned char *buffer1 = (unsigned char *)malloc(destLen);
+    unsigned char *buffer1 = (unsigned char *)dt_malloc(destLen);
 
     result = compress(buffer1, &destLen, input, len);
 
     if(result != Z_OK)
     {
-      free(buffer1);
+      dt_free(buffer1);
       return NULL;
     }
 
@@ -1495,11 +1496,11 @@ char *dt_exif_xmp_encode_internal(const unsigned char *input, const int len, int
     const int factor = MIN(len / destLen + 1, 99);
 
     char *buffer2 = (char *)g_base64_encode(buffer1, destLen);
-    free(buffer1);
+    dt_free(buffer1);
     if(!buffer2) return NULL;
 
     int outlen = strlen(buffer2) + 5; // leading "gz" + compression factor + base64 string + trailing '\0'
-    output = (char *)malloc(outlen);
+    output = (char *)dt_malloc(outlen);
     if(!output)
     {
       g_free(buffer2);
@@ -1519,7 +1520,7 @@ char *dt_exif_xmp_encode_internal(const unsigned char *input, const int len, int
   {
     const char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
-    output = (char *)malloc(2 * len + 1);
+    output = (char *)dt_malloc(2 * len + 1);
     if(!output) return NULL;
 
     if(output_len) *output_len = 2 * len + 1;
@@ -1551,7 +1552,7 @@ unsigned char *dt_exif_xmp_decode(const char *input, const int len, int *output_
     const float factor = 10 * (input[2] - '0') + (input[3] - '0');
 
     // get a rw copy of input buffer omitting leading "gz" and compression factor
-    unsigned char *buffer = (unsigned char *)strdup(input + 4);
+    unsigned char *buffer = (unsigned char *)dt_strdup(input + 4);
     if(!buffer) return NULL;
 
     // decode from base64 to compressed binary
@@ -1567,8 +1568,8 @@ unsigned char *dt_exif_xmp_decode(const char *input, const int len, int *output_
     // increasing buffer sizes, eg. we don't know (unlikely) factors > 99
     do
     {
-      if(output) free(output);
-      output = (unsigned char *)malloc(bufLen);
+      if(output) dt_free(output);
+      output = (unsigned char *)dt_malloc(bufLen);
       if(!output) break;
 
       destLen = bufLen;
@@ -1580,11 +1581,11 @@ unsigned char *dt_exif_xmp_decode(const char *input, const int len, int *output_
     } while(result == Z_BUF_ERROR);
 
 
-    free(buffer);
+    dt_free(buffer);
 
     if(result != Z_OK)
     {
-      if(output) free(output);
+      if(output) dt_free(output);
       return NULL;
     }
 
@@ -1602,7 +1603,7 @@ unsigned char *dt_exif_xmp_decode(const char *input, const int len, int *output_
     // make sure that we don't find any unexpected characters indicating corrupted data
     if(strspn(input, "0123456789abcdef") != strlen(input)) return NULL;
 
-    output = (unsigned char *)malloc(len / 2);
+    output = (unsigned char *)dt_malloc(len / 2);
     if(!output) return NULL;
 
     if(output_len) *output_len = len / 2;
@@ -1735,9 +1736,9 @@ static void free_history_entry(gpointer data)
   history_entry_t *entry = (history_entry_t *)data;
   g_free(entry->operation);
   g_free(entry->multi_name);
-  free(entry->params);
-  free(entry->blendop_params);
-  free(entry);
+  dt_free(entry->params);
+  dt_free(entry->blendop_params);
+  dt_free(entry);
 }
 
 // we have to use pugixml as the old format could contain empty rdf:li elements in the multi_name array
@@ -1828,7 +1829,7 @@ static GList *read_history_v1(const std::string &xmpPacket, const char *filename
 
   for(pugi::xml_node operation_iter: operation.node().children())
   {
-    history_entry_t *current_entry = (history_entry_t *)calloc(1, sizeof(history_entry_t));
+    history_entry_t *current_entry = (history_entry_t *)dt_calloc(1, sizeof(history_entry_t));
     current_entry->blendop_version = 1; // default version in case it's not specified
     history_entries = g_list_append(history_entries, current_entry);
 
@@ -1916,7 +1917,7 @@ static GList *read_history_v2(Exiv2::XmpData &xmpData, const char *filename)
       unsigned int length = g_list_length(history_entries);
       if(n > length)
       {
-        current_entry = (history_entry_t *)calloc(1, sizeof(history_entry_t));
+        current_entry = (history_entry_t *)dt_calloc(1, sizeof(history_entry_t));
         current_entry->blendop_version = 1; // default version in case it's not specified
         history_entries = g_list_append(history_entries, current_entry);
       }
@@ -1993,9 +1994,9 @@ void free_mask_entry(gpointer data)
 {
   mask_entry_t *entry = (mask_entry_t *)data;
   g_free(entry->mask_name);
-  free(entry->mask);
-  free(entry->mask_src);
-  free(entry);
+  dt_free(entry->mask);
+  dt_free(entry->mask_src);
+  dt_free(entry);
 }
 
 static GHashTable *read_masks(Exiv2::XmpData &xmpData, const char *filename)
@@ -2024,7 +2025,7 @@ static GHashTable *read_masks(Exiv2::XmpData &xmpData, const char *filename)
     {
       for(int i = 0; i < cnt; i++)
       {
-        mask_entry_t *entry = (mask_entry_t *)calloc(1, sizeof(mask_entry_t));
+        mask_entry_t *entry = (mask_entry_t *)dt_calloc(1, sizeof(mask_entry_t));
 
         entry->mask_id = mask_id->toLong(i);
         entry->mask_type = mask_type->toLong(i);
@@ -2542,7 +2543,7 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     tvm.read(mask_d);
     snprintf(key, sizeof(key), "Xmp.darktable.mask[%d]", num);
     xmpData.add(Exiv2::XmpKey(key), &tvm);
-    free(mask_d);
+    dt_free(mask_d);
 
     int32_t mask_nb = sqlite3_column_int(stmt, 6);
     snprintf(val, sizeof(val), "%d", mask_nb);
@@ -2555,7 +2556,7 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     tvm.read(mask_src);
     snprintf(key, sizeof(key), "Xmp.darktable.mask_src[%d]", num);
     xmpData.add(Exiv2::XmpKey(key), &tvm);
-    free(mask_src);
+    dt_free(mask_src);
 
     num++;
   }
@@ -2614,10 +2615,10 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
       xmpData[key] = blendop_version;
       snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:blendop_params", num);
       xmpData[key] = blendop_params;
-      free(blendop_params);
+      dt_free(blendop_params);
     }
 
-    free(params);
+    dt_free(params);
 
     num++;
   }
@@ -2797,12 +2798,12 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
         fseek(fd, 0, SEEK_END);
         size_t end = ftell(fd);
         rewind(fd);
-        unsigned char *content = (unsigned char *)malloc(end * sizeof(char));
+        unsigned char *content = (unsigned char *)dt_malloc(end * sizeof(char));
         if(content)
         {
           if(fread(content, sizeof(unsigned char), end, fd) == end)
             checksum_old = g_compute_checksum_for_data(G_CHECKSUM_MD5, content, end);
-          free(content);
+          dt_free(content);
         }
         fclose(fd);
       }

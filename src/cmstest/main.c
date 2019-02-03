@@ -28,8 +28,6 @@
 #include "config.h"
 #endif
 
-#include "common/utility.h"
-
 #include <glib-object.h>
 #include <glib.h>
 #include <lcms2.h>
@@ -101,16 +99,16 @@ char *get_profile_description(unsigned char *data, long data_size)
     result = g_strdup(utf8);
   }
 
-  dt_free(buf);
-  dt_free(wbuf);
+  free(buf);
+  free(wbuf);
   g_free(utf8);
   cmsCloseProfile(p);
   return result;
 
 error:
   if(buf) result = g_strdup(buf); // better a little weird than totally borked
-  dt_free(buf);
-  dt_free(wbuf);
+  free(buf);
+  free(wbuf);
   g_free(utf8);
   cmsCloseProfile(p);
   return result;

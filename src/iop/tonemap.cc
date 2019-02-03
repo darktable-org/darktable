@@ -38,6 +38,7 @@ extern "C" {
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -234,13 +235,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_tonemapping_data_t));
+  piece->data = dt_malloc(sizeof(dt_iop_tonemapping_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
+  dt_free(piece->data);
   piece->data = NULL;
 }
 
@@ -262,9 +263,9 @@ void reload_defaults(dt_iop_module_t *module)
 
 void init(dt_iop_module_t *module)
 {
-  // module->data = malloc(sizeof(dt_iop_tonemapping_data_t));
-  module->params = (dt_iop_params_t *)malloc(sizeof(dt_iop_tonemapping_params_t));
-  module->default_params = (dt_iop_params_t *)malloc(sizeof(dt_iop_tonemapping_params_t));
+  // module->data = dt_malloc(sizeof(dt_iop_tonemapping_data_t));
+  module->params = (dt_iop_params_t *)dt_malloc(sizeof(dt_iop_tonemapping_params_t));
+  module->default_params = (dt_iop_params_t *)dt_malloc(sizeof(dt_iop_tonemapping_params_t));
   module->default_enabled = 0;
   module->priority = 142; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_tonemapping_params_t);
@@ -273,13 +274,13 @@ void init(dt_iop_module_t *module)
 
 void cleanup(dt_iop_module_t *module)
 {
-  free(module->params);
+  dt_free(module->params);
   module->params = NULL;
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_tonemapping_gui_data_t));
+  self->gui_data = dt_malloc(sizeof(dt_iop_tonemapping_gui_data_t));
   dt_iop_tonemapping_gui_data_t *g = (dt_iop_tonemapping_gui_data_t *)self->gui_data;
   dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)self->params;
 
@@ -303,7 +304,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  free(self->gui_data);
+  dt_free(self->gui_data);
   self->gui_data = NULL;
 }
 }

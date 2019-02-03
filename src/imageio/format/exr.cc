@@ -38,6 +38,7 @@ extern "C" {
 #include "common/imageio.h"
 #include "common/imageio_exr.h"
 #include "common/imageio_module.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "imageio/format/imageio_format_api.h"
 }
@@ -230,7 +231,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
 {
   if(old_version == 1 && new_version == 4)
   {
-    dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
+    dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)dt_malloc(sizeof(dt_imageio_exr_t));
     memcpy(new_params, old_params, old_params_size);
     new_params->compression = (dt_imageio_exr_compression_t)PIZ_COMPRESSION;
     new_params->global.style_append = FALSE;
@@ -257,7 +258,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     };
 
     const dt_imageio_exr_v2_t *o = (dt_imageio_exr_v2_t *)old_params;
-    dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
+    dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)dt_malloc(sizeof(dt_imageio_exr_t));
 
     // last param was dropped (pixel type)
     memcpy(new_params, old_params, old_params_size);
@@ -278,7 +279,7 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     };
 
     const dt_imageio_exr_v3_t *o = (dt_imageio_exr_v3_t *)old_params;
-    dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)malloc(sizeof(dt_imageio_exr_t));
+    dt_imageio_exr_t *new_params = (dt_imageio_exr_t *)dt_malloc(sizeof(dt_imageio_exr_t));
 
     memcpy(new_params, old_params, sizeof(dt_imageio_exr_t));
     new_params->global.style_append = FALSE;
@@ -292,14 +293,14 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
 
 void *get_params(dt_imageio_module_format_t *self)
 {
-  dt_imageio_exr_t *d = (dt_imageio_exr_t *)calloc(1, sizeof(dt_imageio_exr_t));
+  dt_imageio_exr_t *d = (dt_imageio_exr_t *)dt_calloc(1, sizeof(dt_imageio_exr_t));
   d->compression = (dt_imageio_exr_compression_t)dt_conf_get_int("plugins/imageio/format/exr/compression");
   return d;
 }
 
 void free_params(dt_imageio_module_format_t *self, dt_imageio_module_data_t *params)
 {
-  free(params);
+  dt_free(params);
 }
 
 int set_params(dt_imageio_module_format_t *self, const void *params, const int size)
@@ -344,7 +345,7 @@ static void combobox_changed(GtkWidget *widget, gpointer user_data)
 
 void gui_init(dt_imageio_module_format_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_imageio_exr_gui_t));
+  self->gui_data = dt_malloc(sizeof(dt_imageio_exr_gui_t));
   dt_imageio_exr_gui_t *gui = (dt_imageio_exr_gui_t *)self->gui_data;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
@@ -369,7 +370,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
 void gui_cleanup(dt_imageio_module_format_t *self)
 {
-  free(self->gui_data);
+  dt_free(self->gui_data);
 }
 
 void gui_reset(dt_imageio_module_format_t *self)

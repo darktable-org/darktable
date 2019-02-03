@@ -1489,7 +1489,7 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   int id;
   double aspect_ratio;
 
-  dt_layout_image_t *images = malloc(sel_img_count * sizeof(dt_layout_image_t));
+  dt_layout_image_t *images = dt_malloc(sel_img_count * sizeof(dt_layout_image_t));
 
   int i = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -1692,7 +1692,7 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     }
   }
 
-  free(images);
+  dt_free(images);
 
   sqlite3_finalize(stmt);
 
