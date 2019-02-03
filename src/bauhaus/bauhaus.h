@@ -194,9 +194,9 @@ typedef struct dt_bauhaus_t
   // appearance relevant stuff:
   // sizes and fonts:
   float scale;                           // gui scale multiplier
-  int widget_space;                      // space between widgets in a module
-  int line_space;                        // space between lines of text in e.g. the combo box
-  int line_height;                       // height of a line of text
+  float widget_space;                      // space between widgets in a module
+  float line_space;                        // space between lines of text in e.g. the combo box
+  float line_height;                       // height of a line of text
   float marker_size;                     // height of the slider indicator
   float label_font_size;                 // percent of line height to fill with font for labels
   float value_font_size;                 // percent of line height to fill with font for values
