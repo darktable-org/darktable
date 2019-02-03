@@ -1387,10 +1387,6 @@ static void init_main_table(GtkWidget *container)
   gtk_widget_set_size_request(cda, DT_PIXEL_APPLY_DPI(50), DT_PIXEL_APPLY_DPI(200));
   gtk_widget_set_hexpand(cda, TRUE);
   gtk_widget_set_vexpand(cda, TRUE);
-  gtk_widget_set_margin_start(cda, DT_PIXEL_APPLY_DPI(6));
-  gtk_widget_set_margin_end(cda, DT_PIXEL_APPLY_DPI(6));
-  gtk_widget_set_margin_top(cda, DT_PIXEL_APPLY_DPI(6));
-  gtk_widget_set_margin_bottom(cda, DT_PIXEL_APPLY_DPI(6));
   gtk_widget_set_app_paintable(cda, TRUE);
   gtk_widget_set_events(cda, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK
                              | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
@@ -1931,10 +1927,6 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
   g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  gtk_widget_set_margin_start(vbox, 10);
-  gtk_widget_set_margin_end(vbox, 10);
-  gtk_widget_set_margin_top(vbox, 7);
-  gtk_widget_set_margin_bottom(vbox, 5);
   gtk_container_add(GTK_CONTAINER(window), vbox);
 
   GtkWidget *label = gtk_label_new(NULL);
@@ -1942,7 +1934,6 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
   gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  gtk_widget_set_margin_top(hbox, 10);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
   result_t result = {.result = RESULT_NONE, .window = window};
