@@ -1470,14 +1470,17 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
 
   gchar *imgids = NULL;
 
-  while(selected)
+  // build the image ids for the SQL 'in' where clause.
+
+  GList *l = selected;
+  while(l)
   {
-    const int imgid = GPOINTER_TO_INT(selected->data);
+    const int imgid = GPOINTER_TO_INT(l->data);
     if(imgids)
       imgids = dt_util_dstrcat(imgids, ", %d", imgid);
     else
       imgids = dt_util_dstrcat(imgids, "(%d", imgid);
-    selected = g_list_next(selected);
+    l = g_list_next(l);
   }
   imgids = dt_util_dstrcat(imgids, ")");
 
