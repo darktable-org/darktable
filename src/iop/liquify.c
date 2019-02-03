@@ -786,7 +786,7 @@ static const float complex point_at_arc_length (const float complex points[],
 static float *
 build_lookup_table (const int distance, const float control1, const float control2)
 {
-  float complex *clookup = dt_malloc_aligned (16, (distance + 2) * sizeof (float complex));
+  float complex *clookup = dt_malloc_aligned(16, (distance + 2) * sizeof(float complex));
 
   interpolate_cubic_bezier (I, control1 + I, control2, 1.0, clookup, distance + 2);
 
@@ -811,7 +811,7 @@ build_lookup_table (const int distance, const float control1, const float contro
   }
   *ptr++ = 0.0;
 
-  dt_free_aligned (clookup);
+  dt_free_aligned(clookup);
   return lookup;
 }
 
@@ -949,7 +949,7 @@ static void build_round_stamp (float complex **pstamp,
   next_row: ; // ";" makes compiler happy
   }
 
-  dt_free_aligned ((void *) lookup_table);
+  dt_free_aligned((void *)lookup_table);
   *pstamp = stamp;
 }
 
@@ -1099,7 +1099,7 @@ static float complex *create_global_distortion_map (const cairo_rectangle_int_t 
 {
   // allocate distortion map big enough to contain all paths
   const int mapsize = map_extent->width * map_extent->height;
-  float complex * map = dt_malloc_aligned (16, mapsize * sizeof (float complex));
+  float complex *map = dt_malloc_aligned(16, mapsize * sizeof(float complex));
   memset (map, 0, mapsize * sizeof (float complex));
 
   // build map
@@ -1115,7 +1115,7 @@ static float complex *create_global_distortion_map (const cairo_rectangle_int_t 
 
   if (inverted)
   {
-    float complex * const imap = dt_malloc_aligned (16, mapsize * sizeof (float complex));
+    float complex *const imap = dt_malloc_aligned(16, mapsize * sizeof(float complex));
     memset (imap, 0, mapsize * sizeof (float complex));
 
     // copy map into imap (inverted map).
@@ -1141,7 +1141,7 @@ static float complex *create_global_distortion_map (const cairo_rectangle_int_t 
       }
     }
 
-    dt_free_aligned ((void *) map);
+    dt_free_aligned((void *)map);
 
     // now just do a pass to avoid gap with a displacement of zero, note that we do not need high
     // precision here as the inverted distortion mask is only used to compute a final displacement
@@ -1322,7 +1322,7 @@ static int _distort_xtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
       }
     }
 
-    dt_free_aligned ((void *) map);
+    dt_free_aligned((void *)map);
   }
 
   return 1;
@@ -1371,8 +1371,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
     piece->colors = ch;
   }
 
-  dt_free_aligned ((void *) map);
-
+  dt_free_aligned((void *)map);
 }
 
 void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, const void *const in,
@@ -1407,7 +1406,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   if (map_extent.width != 0 && map_extent.height != 0)
     apply_global_distortion_map (module, piece, in, out, roi_in, roi_out, map, &map_extent);
 
-  dt_free_aligned ((void *) map);
+  dt_free_aligned((void *)map);
 }
 
 #ifdef HAVE_OPENCL
@@ -1578,7 +1577,7 @@ int process_cl (struct dt_iop_module_t *module,
   if (map_extent.width != 0 && map_extent.height != 0)
     err = apply_global_distortion_map_cl (module, piece, dev_in, dev_out, roi_in, roi_out, map, &map_extent);
 
-  dt_free_aligned ((void *) map);
+  dt_free_aligned((void *)map);
   if (err != CL_SUCCESS) goto error;
 
   return TRUE;

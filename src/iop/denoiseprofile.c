@@ -966,8 +966,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   float *buf[MAX_MAX_SCALE];
   float *tmp = NULL;
   float *buf1 = NULL, *buf2 = NULL;
-  for(int k = 0; k < max_scale; k++)
-    buf[k] = dt_malloc_aligned(64, (size_t)4 * sizeof(float) * npixels);
+  for(int k = 0; k < max_scale; k++) buf[k] = dt_malloc_aligned(64, (size_t)4 * sizeof(float) * npixels);
   tmp = dt_malloc_aligned(64, (size_t)4 * sizeof(float) * npixels);
 
   const float wb[3] = { // twice as many samples in green channel:

@@ -139,7 +139,7 @@ static inline void gauss_reduce_sse2(
   //   - do vertical convolution via sse and write to coarse output buf
 
   const int stride = ((cw+8)&~7); // assure sse alignment of rows
-  float *ringbuf = dt_malloc_aligned(16, sizeof(*ringbuf)*stride*5);
+  float *ringbuf = dt_malloc_aligned(16, sizeof(*ringbuf) * stride * 5);
   float *rows[5] = {0};
   int rowj = 0; // we initialised this many rows so far
 
@@ -246,7 +246,7 @@ static inline float *ll_pad_input(
   const int stride = 4;
   *wd2 = 2*max_supp + wd;
   *ht2 = 2*max_supp + ht;
-  float *const out = dt_malloc_aligned(16, *wd2**ht2*sizeof(*out));
+  float *const out = dt_malloc_aligned(16, *wd2 * *ht2 * sizeof(*out));
 
   if(b && b->mode == 2)
   { // pad by preview buffer
@@ -552,15 +552,13 @@ void local_laplacian_internal(
     padded[0] = ll_pad_input(input, wd, ht, max_supp, &w, &h, 0);
 
   // allocate pyramid pointers for padded input
-  for(int l=1;l<=last_level;l++)
-    padded[l] = dt_malloc_aligned(16, sizeof(float)*dl(w,l)*dl(h,l));
+  for(int l = 1; l <= last_level; l++) padded[l] = dt_malloc_aligned(16, sizeof(float) * dl(w, l) * dl(h, l));
 
   // allocate pyramid pointers for output
   float *output[max_levels] = {0};
-  for(int l=0;l<=last_level;l++)
-    output[l] = dt_malloc_aligned(16, sizeof(float)*dl(w,l)*dl(h,l));
+  for(int l = 0; l <= last_level; l++) output[l] = dt_malloc_aligned(16, sizeof(float) * dl(w, l) * dl(h, l));
 
-  // create gauss pyramid of padded input, write coarse directly to output
+    // create gauss pyramid of padded input, write coarse directly to output
 #if defined(__SSE2__)
   if(use_sse2)
   {
@@ -583,8 +581,8 @@ void local_laplacian_internal(
 
   // allocate memory for intermediate laplacian pyramids
   float *buf[num_gamma][max_levels] = {{0}};
-  for(int k=0;k<num_gamma;k++) for(int l=0;l<=last_level;l++)
-    buf[k][l] = dt_malloc_aligned(16, sizeof(float)*dl(w,l)*dl(h,l));
+  for(int k=0;k<num_gamma;k++)
+    for(int l = 0; l <= last_level; l++) buf[k][l] = dt_malloc_aligned(16, sizeof(float) * dl(w, l) * dl(h, l));
 
   // the paper says remapping only level 3 not 0 does the trick, too
   // (but i really like the additional octave of sharpness we get,
@@ -745,9 +743,9 @@ void local_laplacian_internal(
   // free all buffers except the ones passed out for preview rendering
   for(int l=0;l<max_levels;l++)
   {
-    if(!b || b->mode != 1 || l)   dt_free_aligned(padded[l]);
-    if(!b || b->mode != 1)        dt_free_aligned(output[l]);
-    for(int k=0; k<num_gamma;k++) dt_free_aligned(buf[k][l]);
+    if(!b || b->mode != 1 || l) dt_free_aligned(padded[l]);
+    if(!b || b->mode != 1) dt_free_aligned(output[l]);
+    for(int k = 0; k < num_gamma; k++) dt_free_aligned(buf[k][l]);
   }
 #undef num_levels
 #undef num_gamma

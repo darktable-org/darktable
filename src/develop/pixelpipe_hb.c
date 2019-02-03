@@ -2470,9 +2470,8 @@ float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe, const dt_iop_modul
                     && module->processed_roi_in.width == 0
                     && module->processed_roi_in.height == 0))
             {
-              float *transformed_mask = dt_malloc_aligned(64, sizeof(float)
-                                                          * module->processed_roi_out.width
-                                                          * module->processed_roi_out.height);
+              float *transformed_mask = dt_malloc_aligned(64, sizeof(float) * module->processed_roi_out.width
+                                                                  * module->processed_roi_out.height);
               module->module->distort_mask(module->module,
                                           module,
                                           raster_mask,
