@@ -102,7 +102,8 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
-  d->previous_layout =  d->layout = dt_conf_get_int("plugins/lighttable/layout");
+  d->layout =  dt_conf_get_int("plugins/lighttable/layout");
+  d->previous_layout = d->layout == DT_LIGHTTABLE_LAYOUT_EXPOSE ? DT_LIGHTTABLE_LAYOUT_FILEMANAGER : DT_LIGHTTABLE_LAYOUT_EXPOSE;
   d->current_zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
 
   /* create layout selection combobox */
