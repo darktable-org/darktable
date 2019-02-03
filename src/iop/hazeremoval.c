@@ -236,13 +236,13 @@ typedef struct gray_image
 // allocate space for 1-component image of size width x height
 static inline gray_image new_gray_image(int width, int height)
 {
-  return (gray_image){ dt_alloc_align(64, sizeof(float) * width * height), width, height };
+  return (gray_image){ dt_malloc_aligned(64, sizeof(float) * width * height), width, height };
 }
 
 // free space for 1-component image
 static inline void free_gray_image(gray_image *img_p)
 {
-  dt_free_align(img_p->data);
+  dt_free_aligned(img_p->data);
   img_p->data = NULL;
 }
 

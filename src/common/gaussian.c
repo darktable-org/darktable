@@ -142,13 +142,13 @@ dt_gaussian_t *dt_gaussian_init(const int width,    // width of input image
     g->min[k] = min[k];
   }
 
-  g->buf = dt_alloc_align(64, (size_t)width * height * channels * sizeof(float));
+  g->buf = dt_malloc_aligned(64, (size_t)width * height * channels * sizeof(float));
   if(!g->buf) goto error;
 
   return g;
 
 error:
-  dt_free_align(g->buf);
+  dt_free_aligned(g->buf);
   dt_free(g->max);
   dt_free(g->min);
   dt_free(g);
@@ -491,7 +491,7 @@ void dt_gaussian_blur_4c(dt_gaussian_t *g, const float *const in, float *const o
 void dt_gaussian_free(dt_gaussian_t *g)
 {
   if(!g) return;
-  dt_free_align(g->buf);
+  dt_free_aligned(g->buf);
   dt_free(g->min);
   dt_free(g->max);
   dt_free(g);

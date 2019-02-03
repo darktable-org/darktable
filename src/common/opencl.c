@@ -956,7 +956,7 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
 
   unsigned int *const tea_states = dt_calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
 
-  buf = dt_alloc_align(16, width * height * bpp);
+  buf = dt_malloc_aligned(16, width * height * bpp);
   if(buf == NULL) goto error;
 
 #ifdef _OPENMP
@@ -1006,13 +1006,13 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
   // end timer
   double end = dt_get_wtime();
 
-  dt_free_align(buf);
+  dt_free_aligned(buf);
   dt_free(tea_states);
   return (end - start);
 
 error:
   dt_gaussian_free_cl(g);
-  dt_free_align(buf);
+  dt_free_aligned(buf);
   dt_free(tea_states);
   dt_opencl_release_mem_object(dev_mem);
   return INFINITY;
@@ -1029,7 +1029,7 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
 
   unsigned int *const tea_states = dt_calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
 
-  buf = dt_alloc_align(16, width * height * bpp);
+  buf = dt_malloc_aligned(16, width * height * bpp);
   if(buf == NULL) goto error;
 
 #ifdef _OPENMP
@@ -1067,13 +1067,13 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
   // end timer
   double end = dt_get_wtime();
 
-  dt_free_align(buf);
+  dt_free_aligned(buf);
   dt_free(tea_states);
   return (end - start);
 
 error:
   dt_gaussian_free(g);
-  dt_free_align(buf);
+  dt_free_aligned(buf);
   dt_free(tea_states);
   return INFINITY;
 }

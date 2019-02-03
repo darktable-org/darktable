@@ -523,7 +523,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   const int height = roi->height;
 
   // we need to allocate a temporary buffer for intermediate creation of individual shapes
-  float *bufs = dt_alloc_align(64, (size_t)width * height * sizeof(float));
+  float *bufs = dt_malloc_aligned(64, (size_t)width * height * sizeof(float));
   if(bufs == NULL) return 0;
 
   // empty the output buffer
@@ -667,7 +667,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   }
 
   // and we free the intermediate buffer
-  dt_free_align(bufs);
+  dt_free_aligned(bufs);
 
   return (nb_ok != 0);
 }

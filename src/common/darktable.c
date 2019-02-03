@@ -1145,33 +1145,6 @@ void dt_gettime(char *datetime, size_t datetime_len)
   dt_gettime_t(datetime, datetime_len, time(NULL));
 }
 
-// TODO: This should be moved into utility.[ch]
-// TODO: Make this inline like dt
-void *dt_alloc_align(size_t alignment, size_t size)
-{
-#if defined(__FreeBSD_version) && __FreeBSD_version < 700013
-  void *ptr = dt_malloc(size);
-#elif defined(_WIN32)
-  void *ptr = _aligned_malloc(size, alignment);
-#else
-  void *ptr = NULL;
-  posix_memalign(&ptr, alignment, size);
-#endif
-
-  if(ptr == NULL)
-  {
-    dt_fail("Failed to allocate %lu bytes of %lu-aligned memory", size, alignment);
-  }
-
-  return ptr;
-}
-
-#ifdef _WIN32
-void dt_free_align(void *mem)
-{
-  _aligned_free(mem);
-}
-#endif
 
 void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...)
 {

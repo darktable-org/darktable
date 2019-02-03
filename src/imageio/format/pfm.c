@@ -47,7 +47,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     while((len + 1 + off) & 0xf) off++;
     while(off-- > 0) fprintf(f, "0");
     fprintf(f, "\n");
-    void *buf_line = dt_alloc_align(16, 3 * sizeof(float) * pfm->width);
+    void *buf_line = dt_malloc_aligned(16, 3 * sizeof(float) * pfm->width);
     for(int j = 0; j < pfm->height; j++)
     {
       // NOTE: pfm has rows in reverse order
@@ -65,7 +65,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
       else
         status = 0;
     }
-    dt_free_align(buf_line);
+    dt_free_aligned(buf_line);
     buf_line = NULL;
     fclose(f);
   }

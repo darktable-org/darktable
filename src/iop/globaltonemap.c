@@ -409,7 +409,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_second, sizes, local);
       if(err != CL_SUCCESS) goto error;
 
-      maximum = dt_alloc_align(16, reducesize * sizeof(float));
+      maximum = dt_malloc_aligned(16, reducesize * sizeof(float));
       err = dt_opencl_read_buffer_from_device(devid, (void *)maximum, dev_r, 0,
                                             (size_t)reducesize * sizeof(float), CL_TRUE);
       if(err != CL_SUCCESS) goto error;
@@ -427,7 +427,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
       tmp_lwmax = MAX(eps, (maximum[0] * 0.01f));
 
-      dt_free_align(maximum);
+      dt_free_aligned(maximum);
       maximum = NULL;
     }
 
@@ -490,7 +490,7 @@ error:
   if(b) dt_bilateral_free_cl(b);
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_r);
-  dt_free_align(maximum);
+  dt_free_aligned(maximum);
   dt_print(DT_DEBUG_OPENCL, "[opencl_global_tonemap] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }

@@ -261,11 +261,11 @@ void *dt_mipmap_cache_alloc(dt_mipmap_buffer_t *buf, const dt_image_t *img)
   // so only check size and re-alloc if necessary:
   if(!buf->buf || ((void *)dsc == (void *)dt_mipmap_cache_static_dead_image) || (entry->data_size < buffer_size))
   {
-    if((void *)dsc != (void *)dt_mipmap_cache_static_dead_image) dt_free_align(entry->data);
+    if((void *)dsc != (void *)dt_mipmap_cache_static_dead_image) dt_free_aligned(entry->data);
 
     entry->data_size = 0;
 
-    entry->data = dt_alloc_align(64, buffer_size);
+    entry->data = dt_malloc_aligned(64, buffer_size);
 
     if(!entry->data)
     {
@@ -326,7 +326,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
       entry->data_size = sizeof(*dsc) + sizeof(float) * 4 * 64;
     }
 
-    entry->data = dt_alloc_align(16, entry->data_size);
+    entry->data = dt_malloc_aligned(16, entry->data_size);
 
     // fprintf(stderr, "[mipmap cache] alloc dynamic for key %u %p\n", key, *buf);
     if(!(entry->data))
@@ -497,7 +497,7 @@ write_error:
       }
     }
   }
-  dt_free_align(entry->data);
+  dt_free_aligned(entry->data);
 }
 
 static uint32_t nearest_power_of_two(const uint32_t value)

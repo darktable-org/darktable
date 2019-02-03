@@ -549,7 +549,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
   const int ndir = 4 << (passes > 1);
 
   const size_t buffer_size = (size_t)TS * TS * (ndir * 4 + 3) * sizeof(float);
-  char *const all_buffers = (char *)dt_alloc_align(16, dt_get_num_threads() * buffer_size);
+  char *const all_buffers = (char *)dt_malloc_aligned(16, dt_get_num_threads() * buffer_size);
   if(!all_buffers)
   {
     printf("[demosaic] not able to allocate Markesteijn buffers\n");
@@ -989,7 +989,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         }
     }
   }
-  dt_free_align(all_buffers);
+  dt_free_aligned(all_buffers);
 }
 
 #undef TS
@@ -1542,7 +1542,7 @@ static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, con
               1.221201e-03f - 5.982162e-19f * _Complex_I } } };
 
   const size_t buffer_size = (size_t)TS * TS * (ndir * 4 + 7) * sizeof(float);
-  char *const all_buffers = (char *)dt_alloc_align(16, dt_get_num_threads() * buffer_size);
+  char *const all_buffers = (char *)dt_malloc_aligned(16, dt_get_num_threads() * buffer_size);
   if(!all_buffers)
   {
     fprintf(stderr, "[demosaic] not able to allocate FDC base buffers\n");
@@ -2099,7 +2099,7 @@ static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, con
         }
     }
   }
-  dt_free_align(all_buffers);
+  dt_free_aligned(all_buffers);
 }
 
 #undef PIX_SWAP
@@ -2273,7 +2273,7 @@ static void vng_interpolate(float *out, const float *const in,
   if(only_vng_linear) return;
 
   char *buffer
-      = (char *)dt_alloc_align(16, (size_t)sizeof(**brow) * width * 3 + sizeof(*ip) * prow * pcol * 320);
+      = (char *)dt_malloc_aligned(16, (size_t)sizeof(**brow) * width * 3 + sizeof(*ip) * prow * pcol * 320);
   if(!buffer)
   {
     fprintf(stderr, "[demosaic] not able to allocate VNG buffer\n");
@@ -2385,7 +2385,7 @@ static void vng_interpolate(float *out, const float *const in,
   // copy the final two rows to the image
   memcpy(out + (4 * ((height - 4) * width + 2)), brow[0] + 2, (size_t)(width - 4) * 4 * sizeof(*out));
   memcpy(out + (4 * ((height - 3) * width + 2)), brow[1] + 2, (size_t)(width - 4) * 4 * sizeof(*out));
-  dt_free_align(buffer);
+  dt_free_aligned(buffer);
 
   if(filters != 9 && !FILTERS_ARE_4BAYER(filters)) // x-trans or CYGM/RGBE
 // for Bayer mix the two greens to make VNG4
@@ -2467,7 +2467,7 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
   const float *input = in;
   if(median)
   {
-    float *med_in = (float *)dt_alloc_align(16, (size_t)roi_in->height * roi_in->width * sizeof(float));
+    float *med_in = (float *)dt_malloc_aligned(16, (size_t)roi_in->height * roi_in->width * sizeof(float));
     pre_median(med_in, in, roi_in, filters, 1, thrs);
     input = med_in;
   }
@@ -2638,7 +2638,7 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
     }
   }
   // _mm_sfence();
-  if(median) dt_free_align((float *)input);
+  if(median) dt_free_aligned((float *)input);
 }
 
 void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
@@ -2827,7 +2827,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       roo.width = roi_in->width;
       roo.height = roi_in->height;
       roo.scale = 1.0f;
-      tmp = (float *)dt_alloc_align(16, (size_t)roo.width * roo.height * 4 * sizeof(float));
+      tmp = (float *)dt_malloc_aligned(16, (size_t)roo.width * roo.height * 4 * sizeof(float));
     }
 
     if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
@@ -2851,7 +2851,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       if(!(img->flags & DT_IMAGE_4BAYER) && data->green_eq != DT_IOP_GREEN_EQ_NO)
       {
-        in = (float *)dt_alloc_align(16, (size_t)roi_in->height * roi_in->width * sizeof(float));
+        in = (float *)dt_malloc_aligned(16, (size_t)roi_in->height * roi_in->width * sizeof(float));
         switch(data->green_eq)
         {
           case DT_IOP_GREEN_EQ_FULL:
@@ -2863,12 +2863,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                      roi_in->x, roi_in->y, threshold);
             break;
           case DT_IOP_GREEN_EQ_BOTH:
-            aux = dt_alloc_align(16, (size_t)roi_in->height * roi_in->width * sizeof(float));
+            aux = dt_malloc_aligned(16, (size_t)roi_in->height * roi_in->width * sizeof(float));
             green_equilibration_favg(aux, pixels, roi_in->width, roi_in->height, piece->pipe->dsc.filters,
                                      roi_in->x, roi_in->y);
             green_equilibration_lavg(in, aux, roi_in->width, roi_in->height, piece->pipe->dsc.filters, roi_in->x,
                                      roi_in->y, threshold);
-            dt_free_align(aux);
+            dt_free_aligned(aux);
             break;
         }
       }
@@ -2888,14 +2888,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       else
         amaze_demosaic_RT(self, piece, in, tmp, &roi, &roo, piece->pipe->dsc.filters);
 
-      if(!(img->flags & DT_IMAGE_4BAYER) && data->green_eq != DT_IOP_GREEN_EQ_NO) dt_free_align(in);
+      if(!(img->flags & DT_IMAGE_4BAYER) && data->green_eq != DT_IOP_GREEN_EQ_NO) dt_free_aligned(in);
     }
 
     if(scaled)
     {
       roi = *roi_out;
       dt_iop_clip_and_zoom_roi((float *)o, tmp, &roi, &roo, roi.width, roo.width);
-      dt_free_align(tmp);
+      dt_free_aligned(tmp);
     }
   }
   else
@@ -3085,7 +3085,7 @@ static int green_equilibration_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
                                                  slocal);
     if(err != CL_SUCCESS) goto error;
 
-    sumsum = dt_alloc_align(16, (size_t)reducesize * 2 * sizeof(float));
+    sumsum = dt_malloc_aligned(16, (size_t)reducesize * 2 * sizeof(float));
     if(sumsum == NULL) goto error;
     err = dt_opencl_read_buffer_from_device(devid, (void *)sumsum, dev_r, 0,
                                             (size_t)reducesize * 2 * sizeof(float), CL_TRUE);
@@ -3145,14 +3145,14 @@ static int green_equilibration_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
   dt_opencl_release_mem_object(dev_tmp);
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_r);
-  dt_free_align(sumsum);
+  dt_free_aligned(sumsum);
   return TRUE;
 
 error:
   dt_opencl_release_mem_object(dev_tmp);
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_r);
-  dt_free_align(sumsum);
+  dt_free_aligned(sumsum);
   dt_print(DT_DEBUG_OPENCL, "[opencl_demosaic_green_equilibration] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }

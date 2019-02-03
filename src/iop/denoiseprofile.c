@@ -967,8 +967,8 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   float *tmp = NULL;
   float *buf1 = NULL, *buf2 = NULL;
   for(int k = 0; k < max_scale; k++)
-    buf[k] = dt_alloc_align(64, (size_t)4 * sizeof(float) * npixels);
-  tmp = dt_alloc_align(64, (size_t)4 * sizeof(float) * npixels);
+    buf[k] = dt_malloc_aligned(64, (size_t)4 * sizeof(float) * npixels);
+  tmp = dt_malloc_aligned(64, (size_t)4 * sizeof(float) * npixels);
 
   const float wb[3] = { // twice as many samples in green channel:
                         2.0f * piece->pipe->dsc.processed_maximum[0] * d->strength * (in_scale * in_scale),
@@ -1097,8 +1097,8 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
   backtransform((float *)ovoid, width, height, aa, bb);
 
-  for(int k = 0; k < max_scale; k++) dt_free_align(buf[k]);
-  dt_free_align(tmp);
+  for(int k = 0; k < max_scale; k++) dt_free_aligned(buf[k]);
+  dt_free_aligned(tmp);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, width, height);
 
@@ -1128,10 +1128,10 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
 
   // P == 0 : this will degenerate to a (fast) bilateral filter.
 
-  float *Sa = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * dt_get_num_threads());
+  float *Sa = dt_malloc_aligned(64, (size_t)sizeof(float) * roi_out->width * dt_get_num_threads());
   // we want to sum up weights in col[3], so need to init to 0:
   memset(ovoid, 0x0, (size_t)sizeof(float) * roi_out->width * roi_out->height * 4);
-  float *in = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
+  float *in = dt_malloc_aligned(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
 
   const float wb[3] = { piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale),
                         piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale),
@@ -1260,8 +1260,8 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   }
 
   // free shared tmp memory:
-  dt_free_align(Sa);
-  dt_free_align(in);
+  dt_free_aligned(Sa);
+  dt_free_aligned(in);
   backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, bb);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
@@ -1283,10 +1283,10 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
 
   // P == 0 : this will degenerate to a (fast) bilateral filter.
 
-  float *Sa = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * dt_get_num_threads());
+  float *Sa = dt_malloc_aligned(64, (size_t)sizeof(float) * roi_out->width * dt_get_num_threads());
   // we want to sum up weights in col[3], so need to init to 0:
   memset(ovoid, 0x0, (size_t)sizeof(float) * roi_out->width * roi_out->height * 4);
-  float *in = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
+  float *in = dt_malloc_aligned(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
 
   const float wb[3] = { piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale),
                         piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale),
@@ -1461,8 +1461,8 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
     }
   }
   // free shared tmp memory:
-  dt_free_align(Sa);
-  dt_free_align(in);
+  dt_free_aligned(Sa);
+  dt_free_aligned(in);
   backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, bb);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
@@ -1770,7 +1770,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   dev_r = dt_opencl_alloc_device_buffer(devid, (size_t)reducesize * 4 * sizeof(float));
   if(dev_r == NULL) goto error;
 
-  sumsum = dt_alloc_align(16, (size_t)reducesize * 4 * sizeof(float));
+  sumsum = dt_malloc_aligned(16, (size_t)reducesize * 4 * sizeof(float));
   if(sumsum == NULL) goto error;
 
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
@@ -2009,7 +2009,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   for(int k = 0; k < max_scale; k++)
     dt_opencl_release_mem_object(dev_detail[k]);
   dt_free(dev_detail);
-  dt_free_align(sumsum);
+  dt_free_aligned(sumsum);
   return TRUE;
 
 error:
@@ -2020,7 +2020,7 @@ error:
   for(int k = 0; k < max_scale; k++)
     dt_opencl_release_mem_object(dev_detail[k]);
   dt_free(dev_detail);
-  dt_free_align(sumsum);
+  dt_free_aligned(sumsum);
   dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d, devid %d\n", err, devid);
   return FALSE;
 }

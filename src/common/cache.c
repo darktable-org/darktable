@@ -61,7 +61,7 @@ void dt_cache_cleanup(dt_cache_t *cache)
       cache->cleanup(cache->cleanup_data, entry);
     }
     else
-      dt_free_align(entry->data);
+      dt_free_aligned(entry->data);
 
     dt_pthread_rwlock_destroy(&entry->lock);
     g_slice_free1(sizeof(*entry), entry);
@@ -232,7 +232,7 @@ restart:
   if(cache->allocate)
     cache->allocate(cache->allocate_data, entry);
   else
-    entry->data = dt_alloc_align(16, entry->data_size);
+    entry->data = dt_malloc_aligned(16, entry->data_size);
 
   assert(entry->data_size);
   ASAN_POISON_MEMORY_REGION(entry->data, entry->data_size);
@@ -307,7 +307,7 @@ restart:
     cache->cleanup(cache->cleanup_data, entry);
   }
   else
-    dt_free_align(entry->data);
+    dt_free_aligned(entry->data);
 
   dt_pthread_rwlock_unlock(&entry->lock);
   dt_pthread_rwlock_destroy(&entry->lock);
@@ -354,7 +354,7 @@ void dt_cache_gc(dt_cache_t *cache, const float fill_ratio)
       cache->cleanup(cache->cleanup_data, entry);
     }
     else
-      dt_free_align(entry->data);
+      dt_free_aligned(entry->data);
 
     dt_pthread_rwlock_unlock(&entry->lock);
     dt_pthread_rwlock_destroy(&entry->lock);

@@ -149,7 +149,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
 
   const size_t scanline_size = (size_t)4 * size;
-  float *const scanline_buf = dt_alloc_align(16, scanline_size * dt_get_num_threads() * sizeof(float));
+  float *const scanline_buf = dt_malloc_aligned(16, scanline_size * dt_get_num_threads() * sizeof(float));
 
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
@@ -256,7 +256,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
-  dt_free_align(scanline_buf);
+  dt_free_aligned(scanline_buf);
 
   const float amount = (d->amount / 100.0);
   const float amount_1 = (1 - (d->amount) / 100.0);
@@ -306,7 +306,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
   const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
 
-  __m128 *const scanline_buf = dt_alloc_align(16, size * dt_get_num_threads() * sizeof(__m128));
+  __m128 *const scanline_buf = dt_malloc_aligned(16, size * dt_get_num_threads() * sizeof(__m128));
 
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
@@ -376,7 +376,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     }
   }
 
-  dt_free_align(scanline_buf);
+  dt_free_aligned(scanline_buf);
 
   const __m128 amount = _mm_set1_ps(data->amount / 100.0);
   const __m128 amount_1 = _mm_set1_ps(1 - (data->amount) / 100.0);

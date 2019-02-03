@@ -60,13 +60,13 @@ typedef struct gray_image
 // allocate space for 1-component image of size width x height
 static inline gray_image new_gray_image(int width, int height)
 {
-  return (gray_image){ dt_alloc_align(64, sizeof(float) * width * height), width, height };
+  return (gray_image){ dt_malloc_aligned(64, sizeof(float) * width * height), width, height };
 }
 
 // free space for 1-component image
 static inline void free_gray_image(gray_image *img_p)
 {
-  dt_free_align(img_p->data);
+  dt_free_aligned(img_p->data);
   img_p->data = NULL;
 }
 
@@ -379,9 +379,9 @@ void guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out, const int 
 {
   // fall-back implementation: copy data from device memory to host memory and perform filter
   // by CPU until there is a proper OpenCL implementation
-  float *guide_host = dt_alloc_align(64, sizeof(*guide_host) * width * height * ch);
-  float *in_host = dt_alloc_align(64, sizeof(*in_host) * width * height);
-  float *out_host = dt_alloc_align(64, sizeof(*out_host) * width * height);
+  float *guide_host = dt_malloc_aligned(64, sizeof(*guide_host) * width * height * ch);
+  float *in_host = dt_malloc_aligned(64, sizeof(*in_host) * width * height);
+  float *out_host = dt_malloc_aligned(64, sizeof(*out_host) * width * height);
   int err;
   err = dt_opencl_read_host_from_device(devid, guide_host, guide, width, height, ch * sizeof(float));
   if(err != CL_SUCCESS) goto error;
@@ -391,8 +391,8 @@ void guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out, const int 
   err = dt_opencl_write_host_to_device(devid, out_host, out, width, height, sizeof(float));
   if(err != CL_SUCCESS) goto error;
 error:
-  dt_free_align(guide_host);
-  dt_free_align(in_host);
-  dt_free_align(out_host);
+  dt_free_aligned(guide_host);
+  dt_free_aligned(in_host);
+  dt_free_aligned(out_host);
 }
 #endif

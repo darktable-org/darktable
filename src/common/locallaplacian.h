@@ -25,14 +25,14 @@
 typedef struct local_laplacian_boundary_t
 {
   int mode;                // 0-regular, 1-preview/collect, 2-full/read
-  float *pad0;             // padded preview buffer, grey levels (allocated via dt_alloc_align)
+  float *pad0;             // padded preview buffer, grey levels (allocated via dt_malloc_aligned)
   int wd;                  // preview width
   int ht;                  // preview height
   int pwd;                 // padded preview width
   int pht;                 // padded preview height
   const dt_iop_roi_t *roi; // roi of current view (pointing to pixelpipe roi)
   const dt_iop_roi_t *buf; // dimensions of full buffer
-  float *output[30];       // output pyramid of preview pass (allocated via dt_alloc_align)
+  float *output[30];       // output pyramid of preview pass (allocated via dt_malloc_aligned)
   int num_levels;          // number of levels in preview output pyramid
 }
 local_laplacian_boundary_t;
@@ -40,8 +40,8 @@ local_laplacian_boundary_t;
 void local_laplacian_boundary_free(
     local_laplacian_boundary_t *b)
 {
-  dt_free_align(b->pad0);
-  for(int l=0;l<b->num_levels;l++) dt_free_align(b->output[l]);
+  dt_free_aligned(b->pad0);
+  for(int l=0;l<b->num_levels;l++) dt_free_aligned(b->output[l]);
   memset(b, 0, sizeof(*b));
 }
 

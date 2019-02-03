@@ -702,14 +702,14 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
            tiles_x, tiles_y, width, height, overlap);
 
   /* reserve input and output buffers for tiles */
-  input = dt_alloc_align(64, (size_t)width * height * in_bpp);
+  input = dt_malloc_aligned(64, (size_t)width * height * in_bpp);
   if(input == NULL)
   {
     dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] could not alloc input buffer for module '%s'\n",
              self->op);
     goto error;
   }
-  output = dt_alloc_align(64, (size_t)width * height * out_bpp);
+  output = dt_malloc_aligned(64, (size_t)width * height * out_bpp);
   if(output == NULL)
   {
     dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] could not alloc output buffer for module '%s'\n",
@@ -806,8 +806,8 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
   /* copy back final processed_maximum */
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_new[k];
 
-  if(input != NULL) dt_free_align(input);
-  if(output != NULL) dt_free_align(output);
+  if(input != NULL) dt_free_aligned(input);
+  if(output != NULL) dt_free_aligned(output);
   piece->pipe->tiling = 0;
   return;
 
@@ -816,8 +816,8 @@ error:
 // fall through
 
 fallback:
-  if(input != NULL) dt_free_align(input);
-  if(output != NULL) dt_free_align(output);
+  if(input != NULL) dt_free_aligned(input);
+  if(output != NULL) dt_free_aligned(output);
   piece->pipe->tiling = 0;
   dt_print(DT_DEBUG_DEV, "[default_process_tiling_ptp] fall back to standard processing for module '%s'\n",
            self->op);
@@ -1081,14 +1081,14 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
 
 
       /* prepare input tile buffer */
-      input = dt_alloc_align(64, (size_t)iroi_full.width * iroi_full.height * in_bpp);
+      input = dt_malloc_aligned(64, (size_t)iroi_full.width * iroi_full.height * in_bpp);
       if(input == NULL)
       {
         dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] could not alloc input buffer for module '%s'\n",
                  self->op);
         goto error;
       }
-      output = dt_alloc_align(64, (size_t)oroi_full.width * oroi_full.height * out_bpp);
+      output = dt_malloc_aligned(64, (size_t)oroi_full.width * oroi_full.height * out_bpp);
       if(output == NULL)
       {
         dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] could not alloc output buffer for module '%s'\n",
@@ -1133,16 +1133,16 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
                (char *)output + ((j + origin_y) * oroi_full.width + origin_x) * out_bpp,
                (size_t)oroi_good.width * out_bpp);
 
-      dt_free_align(input);
-      dt_free_align(output);
+      dt_free_aligned(input);
+      dt_free_aligned(output);
       input = output = NULL;
     }
 
   /* copy back final processed_maximum */
   for(int k = 0; k < 4; k++) piece->pipe->dsc.processed_maximum[k] = processed_maximum_new[k];
 
-  if(input != NULL) dt_free_align(input);
-  if(output != NULL) dt_free_align(output);
+  if(input != NULL) dt_free_aligned(input);
+  if(output != NULL) dt_free_aligned(output);
   piece->pipe->tiling = 0;
   return;
 
@@ -1151,8 +1151,8 @@ error:
 // fall through
 
 fallback:
-  if(input != NULL) dt_free_align(input);
-  if(output != NULL) dt_free_align(output);
+  if(input != NULL) dt_free_aligned(input);
+  if(output != NULL) dt_free_aligned(output);
   piece->pipe->tiling = 0;
   dt_print(DT_DEBUG_DEV, "[default_process_tiling_roi] fall back to standard processing for module '%s'\n",
            self->op);

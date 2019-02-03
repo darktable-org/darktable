@@ -369,8 +369,8 @@ void enter(dt_view_t *self)
 
   d->width = rect.width * darktable.gui->ppd;
   d->height = rect.height * darktable.gui->ppd;
-  d->buf1 = dt_alloc_align(64, sizeof(uint32_t) * d->width * d->height);
-  d->buf2 = dt_alloc_align(64, sizeof(uint32_t) * d->width * d->height);
+  d->buf1 = dt_malloc_aligned(64, sizeof(uint32_t) * d->width * d->height);
+  d->buf2 = dt_malloc_aligned(64, sizeof(uint32_t) * d->width * d->height);
   d->front = d->buf1;
   d->back = d->buf2;
 
@@ -404,8 +404,8 @@ void leave(dt_view_t *self)
   d->auto_advance = 0;
   dt_view_lighttable_set_position(darktable.view_manager, d->front_num);
   dt_pthread_mutex_lock(&d->lock);
-  dt_free_align(d->buf1);
-  dt_free_align(d->buf2);
+  dt_free_aligned(d->buf1);
+  dt_free_aligned(d->buf2);
   d->buf1 = d->buf2 = d->front = d->back = 0;
   dt_pthread_mutex_unlock(&d->lock);
 }

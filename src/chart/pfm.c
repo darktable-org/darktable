@@ -58,7 +58,7 @@ float *read_pfm(const char *filename, int *wd, int *ht)
   float scale_factor = g_ascii_strtod(scale_factor_string, NULL);
   int swap_byte_order = (scale_factor >= 0.0) ^ (G_BYTE_ORDER == G_BIG_ENDIAN);
 
-  float *image = (float *)dt_alloc_align(16, sizeof(float) * width * height * 3);
+  float *image = (float *)dt_malloc_aligned(16, sizeof(float) * width * height * 3);
   if(!image)
   {
     fprintf(stderr, "error allocating memory\n");
@@ -72,7 +72,7 @@ float *read_pfm(const char *filename, int *wd, int *ht)
     if(ret != width * height)
     {
       fprintf(stderr, "error reading PFM\n");
-      dt_free_align(image);
+      dt_free_aligned(image);
       fclose(f);
       return NULL;
     }
@@ -103,7 +103,7 @@ float *read_pfm(const char *filename, int *wd, int *ht)
         if(ret != 1)
         {
           fprintf(stderr, "error reading PFM\n");
-          dt_free_align(image);
+          dt_free_aligned(image);
           fclose(f);
           return NULL;
         }
@@ -132,7 +132,7 @@ void write_pfm(const char *filename, int width, int height, float *data)
   {
     // INFO: per-line fwrite call seems to perform best. LebedevRI, 18.04.2014
     (void)fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
-    void *buf_line = dt_alloc_align(16, 3 * sizeof(float) * width);
+    void *buf_line = dt_malloc_aligned(16, 3 * sizeof(float) * width);
     for(int j = 0; j < height; j++)
     {
       // NOTE: pfm has rows in reverse order
@@ -146,7 +146,7 @@ void write_pfm(const char *filename, int width, int height, float *data)
       int cnt = fwrite(buf_line, 3 * sizeof(float), width, f);
       if(cnt != width) break;
     }
-    dt_free_align(buf_line);
+    dt_free_aligned(buf_line);
     buf_line = NULL;
     fclose(f);
   }

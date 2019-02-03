@@ -31,6 +31,7 @@ void dt_fail(const char *format, ...);
  */
 
 void dt_malloc_fail(size_t size);
+void dt_malloc_aligned_fail(size_t alignment, size_t size);
 void dt_calloc_fail(size_t nmemb, size_t size);
 void dt_realloc_fail(size_t size);
 void dt_strdup_fail();
@@ -38,6 +39,7 @@ void dt_strdup_fail();
 
 
 /** Dynamic memory allocation and functions that use it */
+
 
 static inline void *dt_malloc(size_t size)
 {
@@ -50,6 +52,27 @@ static inline void *dt_malloc(size_t size)
 
   return allocated;
 }
+
+
+static inline void *dt_malloc_aligned(size_t alignment, size_t size)
+{
+#if defined(__FreeBSD_version) && __FreeBSD_version < 700013
+  void *allocated = dt_malloc(size);
+#elif defined(_WIN32)
+  void *allocated = _aligned_malloc(size, alignment);
+#else
+  void *allocated = NULL;
+  posix_memalign(&allocated, alignment, size);
+#endif
+
+  if(allocated == NULL)
+  {
+    dt_malloc_aligned_fail(alignment, size);
+  }
+
+  return allocated;
+}
+
 
 
 static inline void *dt_calloc(size_t nmemb, size_t size)
@@ -82,6 +105,18 @@ static inline void dt_free(void *ptr)
 {
   free(ptr);
 }
+
+
+static inline void dt_free_aligned(void *ptr)
+{
+  // TODO: Rawspeed's cmake does this, we should too:
+  // CHECK_CXX_SYMBOL_EXISTS(_aligned_free   malloc.h HAVE_ALIGNED_FREE)
+#ifdef _WIN32
+  _aligned_free(ptr);
+#else
+  dt_free(ptr);
+}
+#endif
 
 
 static inline char *dt_strdup(const char *s)

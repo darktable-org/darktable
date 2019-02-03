@@ -701,7 +701,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  tmp = (float *)dt_alloc_align(64, (size_t)sizeof(float) * 4 * width * height);
+  tmp = (float *)dt_malloc_aligned(64, (size_t)sizeof(float) * 4 * width * height);
   if(tmp == NULL)
   {
     fprintf(stderr, "[atrous] failed to allocate coarse buffer!\n");
@@ -710,7 +710,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
   for(int k = 0; k < max_scale; k++)
   {
-    detail[k] = (float *)dt_alloc_align(64, (size_t)sizeof(float) * 4 * width * height);
+    detail[k] = (float *)dt_malloc_aligned(64, (size_t)sizeof(float) * 4 * width * height);
     if(detail[k] == NULL)
     {
       fprintf(stderr, "[atrous] failed to allocate one of the detail buffers!\n");
@@ -739,8 +739,8 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   }
   /* due to symmetric processing, output will be left in (float *)o */
 
-  for(int k = 0; k < max_scale; k++) dt_free_align(detail[k]);
-  dt_free_align(tmp);
+  for(int k = 0; k < max_scale; k++) dt_free_aligned(detail[k]);
+  dt_free_aligned(tmp);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, width, height);
 
@@ -748,8 +748,8 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
 error:
   for(int k = 0; k < max_scale; k++)
-    if(detail[k] != NULL) dt_free_align(detail[k]);
-  if(tmp != NULL) dt_free_align(tmp);
+    if(detail[k] != NULL) dt_free_aligned(detail[k]);
+  if(tmp != NULL) dt_free_aligned(tmp);
   return;
 }
 

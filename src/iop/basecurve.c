@@ -881,7 +881,7 @@ static inline void gauss_blur(
     const size_t ht)
 {
   const float w[5] = { 1.f / 16.f, 4.f / 16.f, 6.f / 16.f, 4.f / 16.f, 1.f / 16.f };
-  float *tmp = dt_alloc_align(64, (size_t)wd*ht*4*sizeof(float));
+  float *tmp = dt_malloc_aligned(64, (size_t)wd*ht*4*sizeof(float));
   memset(tmp, 0, 4*wd*ht*sizeof(float));
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) shared(tmp)
@@ -917,7 +917,7 @@ static inline void gauss_blur(
       for(int jj=-2;jj<=2;jj++)
         output[4*(j*wd+i)+c] += tmp[4*(MIN(j+jj, ht-(j+jj-ht+1))*wd+i)+c] * w[jj+2];
   }
-  dt_free_align(tmp);
+  dt_free_aligned(tmp);
 }
 
 static inline void gauss_expand(
@@ -955,11 +955,11 @@ static inline void gauss_reduce(
   // blur, store only coarse res
   const size_t cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 
-  float *blurred = dt_alloc_align(64, (size_t)wd*ht*4*sizeof(float));
+  float *blurred = dt_malloc_aligned(64, (size_t)wd*ht*4*sizeof(float));
   gauss_blur(input, blurred, wd, ht);
   for(size_t j=0;j<ch;j++) for(size_t i=0;i<cw;i++)
     for(int c=0;c<4;c++) coarse[4*(j*cw+i)+c] = blurred[4*(2*j*wd+2*i)+c];
-  dt_free_align(blurred);
+  dt_free_aligned(blurred);
 
   if(detail)
   {
@@ -989,8 +989,8 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   for(int k = 0; k < num_levels; k++)
   {
     // coarsest step is some % of image width.
-    col[k] = dt_alloc_align(64, sizeof(float) * 4 * w * h);
-    comb[k] = dt_alloc_align(64, sizeof(float) * 4 * w * h);
+    col[k] = dt_malloc_aligned(64, sizeof(float) * 4 * w * h);
+    comb[k] = dt_malloc_aligned(64, sizeof(float) * 4 * w * h);
     memset(comb[k], 0, sizeof(float) * 4 * w * h);
     w = (w - 1) / 2 + 1;
     h = (h - 1) / 2 + 1;
@@ -1123,8 +1123,8 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   // free temp buffers
   for(int k = 0; k < num_levels; k++)
   {
-    dt_free_align(col[k]);
-    dt_free_align(comb[k]);
+    dt_free_aligned(col[k]);
+    dt_free_aligned(comb[k]);
   }
   dt_free(col);
   dt_free(comb);

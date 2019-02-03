@@ -1260,7 +1260,7 @@ const struct dt_interpolation *dt_interpolation_new(enum dt_interpolation_type t
  * @param in [in] Number of input samples
  * @param out [in] Number of output samples
  * @param plength [out] Array of lengths for each pixel filtering (number
- * of taps/indexes to use). This array mus be freed with dt_free_align() when you're
+ * of taps/indexes to use). This array mus be freed with dt_free_aligned() when you're
  * done with the plan.
  * @param pkernel [out] Array of filter kernel taps
  * @param pindex [out] Array of sample indexes to be used for applying each kernel tap
@@ -1313,7 +1313,7 @@ static int prepare_resampling_plan(const struct dt_interpolation *itor, int in, 
 
   void *blob = NULL;
   size_t totalreq = kernelreq + lengthreq + indexreq + scratchreq + metareq;
-  blob = dt_alloc_align(SSE_ALIGNMENT, totalreq);
+  blob = dt_malloc_aligned(SSE_ALIGNMENT, totalreq);
   if(!blob)
   {
     return 1;
@@ -1598,8 +1598,8 @@ exit:
   /* Free the resampling plans. It's nasty to optimize allocs like that, but
    * it simplifies the code :-D. The length array is in fact the only memory
    * allocated. */
-  dt_free_align(hlength);
-  dt_free_align(vlength);
+  dt_free_aligned(hlength);
+  dt_free_aligned(vlength);
 }
 
 #if defined(__SSE2__)
@@ -1755,8 +1755,8 @@ exit:
   /* Free the resampling plans. It's nasty to optimize allocs like that, but
    * it simplifies the code :-D. The length array is in fact the only memory
    * allocated. */
-  dt_free_align(hlength);
-  dt_free_align(vlength);
+  dt_free_aligned(hlength);
+  dt_free_aligned(vlength);
 }
 #endif
 
@@ -2012,8 +2012,8 @@ int dt_interpolation_resample_cl(const struct dt_interpolation *itor, int devid,
   dt_opencl_release_mem_object(dev_vlength);
   dt_opencl_release_mem_object(dev_vkernel);
   dt_opencl_release_mem_object(dev_vmeta);
-  dt_free_align(hlength);
-  dt_free_align(vlength);
+  dt_free_aligned(hlength);
+  dt_free_aligned(vlength);
   return CL_SUCCESS;
 
 error:
@@ -2025,8 +2025,8 @@ error:
   dt_opencl_release_mem_object(dev_vlength);
   dt_opencl_release_mem_object(dev_vkernel);
   dt_opencl_release_mem_object(dev_vmeta);
-  dt_free_align(hlength);
-  dt_free_align(vlength);
+  dt_free_aligned(hlength);
+  dt_free_aligned(vlength);
   dt_print(DT_DEBUG_OPENCL, "[opencl_resampling] couldn't enqueue kernel! %d\n", err);
   return err;
 }
@@ -2197,8 +2197,8 @@ static void dt_interpolation_resample_1c_plain(const struct dt_interpolation *it
   /* Free the resampling plans. It's nasty to optimize allocs like that, but
    * it simplifies the code :-D. The length array is in fact the only memory
    * allocated. */
-  dt_free_align(hlength);
-  dt_free_align(vlength);
+  dt_free_aligned(hlength);
+  dt_free_aligned(vlength);
 }
 
 /** Applies resampling (re-scaling) on *full* input and output buffers.

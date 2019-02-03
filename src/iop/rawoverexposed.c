@@ -186,7 +186,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   // acquire temp memory for distorted pixel coords
   const size_t coordbufsize = (size_t)roi_out->width * 2;
-  void *coordbuf = dt_alloc_align(16, coordbufsize * sizeof(float) * dt_get_num_threads());
+  void *coordbuf = dt_malloc_aligned(16, coordbufsize * sizeof(float) * dt_get_num_threads());
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) shared(self, coordbuf, buf) schedule(static)
@@ -246,7 +246,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     }
   }
 
-  dt_free_align(coordbuf);
+  dt_free_aligned(coordbuf);
 
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
@@ -308,7 +308,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   const size_t coordbufsize = (size_t)height * width * 2 * sizeof(float);
 
-  coordbuf = dt_alloc_align(16, coordbufsize);
+  coordbuf = dt_malloc_aligned(16, coordbufsize);
   if(coordbuf == NULL) goto error;
 
 #ifdef _OPENMP
@@ -395,7 +395,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_release_mem_object(dev_colors);
   dt_opencl_release_mem_object(dev_thresholds);
   dt_opencl_release_mem_object(dev_coord);
-  dt_free_align(coordbuf);
+  dt_free_aligned(coordbuf);
   dt_opencl_release_mem_object(dev_raw);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 
@@ -406,7 +406,7 @@ error:
   dt_opencl_release_mem_object(dev_colors);
   dt_opencl_release_mem_object(dev_thresholds);
   dt_opencl_release_mem_object(dev_coord);
-  dt_free_align(coordbuf);
+  dt_free_aligned(coordbuf);
   dt_opencl_release_mem_object(dev_raw);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   dt_print(DT_DEBUG_OPENCL, "[opencl_rawoverexposed] couldn't enqueue kernel! %d\n", err);

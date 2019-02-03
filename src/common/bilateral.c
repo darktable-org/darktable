@@ -17,8 +17,8 @@
 */
 
 #include "common/bilateral.h"
-#include "common/darktable.h" // for CLAMPS, dt_alloc_align, dt_free_align
-#include "common/utility.h"
+#include "common/darktable.h" // for CLAMPS
+#include "common/utility.h"   // for dt_malloc_aligned, dt_free_aligned
 #include <glib.h>             // for MIN, MAX
 #include <math.h>             // for roundf
 #include <stdlib.h>           // for size_t, free, malloc, NULL
@@ -110,7 +110,7 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
   b->height = height;
   b->sigma_s = MAX(height / (b->size_y - 1.0f), width / (b->size_x - 1.0f));
   b->sigma_r = 100.0f / (b->size_z - 1.0f);
-  b->buf = dt_alloc_align(16, b->size_x * b->size_y * b->size_z * sizeof(float));
+  b->buf = dt_malloc_aligned(16, b->size_x * b->size_y * b->size_z * sizeof(float));
 
   memset(b->buf, 0, b->size_x * b->size_y * b->size_z * sizeof(float));
 #if 0
@@ -342,7 +342,7 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *co
 void dt_bilateral_free(dt_bilateral_t *b)
 {
   if(!b) return;
-  dt_free_align(b->buf);
+  dt_free_aligned(b->buf);
   dt_free(b);
 }
 

@@ -287,7 +287,7 @@ static void dwt_wavelet_decompose(float *img, dwt_params_t *const p, _dwt_layer_
   /* image buffers */
   buffer[0] = img;
   /* temporary storage */
-  buffer[1] = dt_alloc_align(64, size * sizeof(float));
+  buffer[1] = dt_malloc_aligned(64, size * sizeof(float));
   if(buffer[1] == NULL)
   {
     printf("not enough memory for wavelet decomposition");
@@ -296,7 +296,7 @@ static void dwt_wavelet_decompose(float *img, dwt_params_t *const p, _dwt_layer_
   memset(buffer[1], 0, size * sizeof(float));
 
   // setup a temp buffer
-  temp = dt_alloc_align(64, MAX(p->width, p->height) * p->ch * sizeof(float));
+  temp = dt_malloc_aligned(64, MAX(p->width, p->height) * p->ch * sizeof(float));
   if(temp == NULL)
   {
     printf("not enough memory for wavelet decomposition");
@@ -305,7 +305,7 @@ static void dwt_wavelet_decompose(float *img, dwt_params_t *const p, _dwt_layer_
   memset(temp, 0, MAX(p->width, p->height) * p->ch * sizeof(float));
 
   // buffer to reconstruct the image
-  layers = dt_alloc_align(64, p->width * p->height * p->ch * sizeof(float));
+  layers = dt_malloc_aligned(64, p->width * p->height * p->ch * sizeof(float));
   if(layers == NULL)
   {
     printf("not enough memory for wavelet decomposition");
@@ -315,7 +315,7 @@ static void dwt_wavelet_decompose(float *img, dwt_params_t *const p, _dwt_layer_
 
   if(p->merge_from_scale > 0)
   {
-    merged_layers = dt_alloc_align(64, p->width * p->height * p->ch * sizeof(float));
+    merged_layers = dt_malloc_aligned(64, p->width * p->height * p->ch * sizeof(float));
     if(merged_layers == NULL)
     {
       printf("not enough memory for wavelet decomposition");
@@ -426,10 +426,10 @@ static void dwt_wavelet_decompose(float *img, dwt_params_t *const p, _dwt_layer_
   }
 
 cleanup:
-  if(layers) dt_free_align(layers);
-  if(merged_layers) dt_free_align(merged_layers);
-  if(temp) dt_free_align(temp);
-  if(buffer[1]) dt_free_align(buffer[1]);
+  if(layers) dt_free_aligned(layers);
+  if(merged_layers) dt_free_aligned(merged_layers);
+  if(temp) dt_free_aligned(temp);
+  if(buffer[1]) dt_free_aligned(buffer[1]);
 }
 
 #undef INDEX_WT_IMAGE

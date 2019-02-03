@@ -2889,7 +2889,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   const float opacity = fminf(fmaxf(0.0f, (d->opacity / 100.0f)), 1.0f);
 
   // allocate space for blend mask
-  float *_mask = dt_alloc_align(64, buffsize * sizeof(float));
+  float *_mask = dt_malloc_aligned(64, buffsize * sizeof(float));
   if(!_mask)
   {
     dt_control_log(_("could not allocate buffer for blending"));
@@ -2926,7 +2926,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   #pragma omp parallel for default(none) shared(raster_mask)
 #endif
         for(size_t i = 0; i < buffsize; i++) mask[i] = raster_mask[i] * opacity;
-      if(free_mask) dt_free_align(raster_mask);
+      if(free_mask) dt_free_aligned(raster_mask);
     }
     else
     {
@@ -3011,12 +3011,12 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
         default:
           assert(0);
       }
-      float *mask_bak = dt_alloc_align(64, sizeof(*mask_bak) * buffsize);
+      float *mask_bak = dt_malloc_aligned(64, sizeof(*mask_bak) * buffsize);
       memcpy(mask_bak, mask, sizeof(*mask_bak) * buffsize);
       float *guide = d->feathering_guide == DEVELOP_MASK_GUIDE_IN ? (float *)ivoid : (float *)ovoid;
       if(!rois_equal && d->feathering_guide == DEVELOP_MASK_GUIDE_IN)
       {
-        float *const guide_tmp = dt_alloc_align(64, sizeof(*guide_tmp) * buffsize * ch);
+        float *const guide_tmp = dt_malloc_aligned(64, sizeof(*guide_tmp) * buffsize * ch);
 #ifdef _OPENMP
 #pragma omp parallel for default(none)
 #endif
@@ -3029,8 +3029,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
         guide = guide_tmp;
       }
       guided_filter(guide, mask_bak, mask, owidth, oheight, ch, w, sqrt_eps, guide_weight, 0.f, 1.f);
-      if(!rois_equal && d->feathering_guide == DEVELOP_MASK_GUIDE_IN) dt_free_align(guide);
-      dt_free_align(mask_bak);
+      if(!rois_equal && d->feathering_guide == DEVELOP_MASK_GUIDE_IN) dt_free_aligned(guide);
+      dt_free_aligned(mask_bak);
     }
     if(mask_blur)
     {
@@ -3115,7 +3115,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   else
   {
     g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(0));
-    dt_free_align(_mask);
+    dt_free_aligned(_mask);
   }
 }
 
@@ -3187,7 +3187,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   const float opacity = fminf(fmaxf(0.0f, (d->opacity / 100.0f)), 1.0f);
 
   // allocate space for blend mask
-  float *_mask = dt_alloc_align(64, buffsize * sizeof(float));
+  float *_mask = dt_malloc_aligned(64, buffsize * sizeof(float));
   if(!_mask)
   {
     dt_control_log(_("could not allocate buffer for blending"));
@@ -3272,7 +3272,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   #pragma omp parallel for default(none) shared(raster_mask)
 #endif
         for(size_t i = 0; i < buffsize; i++) mask[i] = raster_mask[i] * opacity;
-      if(free_mask) dt_free_align(raster_mask);
+      if(free_mask) dt_free_aligned(raster_mask);
     }
     else
     {
@@ -3506,7 +3506,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   else
   {
     g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(0));
-    dt_free_align(_mask);
+    dt_free_aligned(_mask);
   }
 
   dt_opencl_release_mem_object(dev_m);
@@ -3515,7 +3515,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   return TRUE;
 
 error:
-  dt_free_align(_mask);
+  dt_free_aligned(_mask);
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_mask_1);
   dt_opencl_release_mem_object(dev_mask_2);

@@ -267,7 +267,7 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     piece->hash = 0;
     piece->process_cl_ready = 0;
     piece->process_tiling_ready = 0;
-    piece->raster_masks = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, dt_free_align_ptr);
+    piece->raster_masks = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, dt_free_aligned);
     memset(&piece->processed_roi_in, 0, sizeof(piece->processed_roi_in));
     memset(&piece->processed_roi_out, 0, sizeof(piece->processed_roi_out));
     dt_iop_init_pipe(piece->module, pipe, piece);
@@ -420,14 +420,14 @@ static void histogram_collect_cl(int devid, dt_dev_pixelpipe_iop_t *piece, cl_me
   if(buffer && bufsize >= (size_t)roi->width * roi->height * 4 * sizeof(float))
     pixel = buffer;
   else
-    pixel = tmpbuf = dt_alloc_align(64, (size_t)roi->width * roi->height * 4 * sizeof(float));
+    pixel = tmpbuf = dt_malloc_aligned(64, (size_t)roi->width * roi->height * 4 * sizeof(float));
 
   if(!pixel) return;
 
   cl_int err = dt_opencl_copy_device_to_host(devid, pixel, img, roi->width, roi->height, 4 * sizeof(float));
   if(err != CL_SUCCESS)
   {
-    if(tmpbuf) dt_free_align(tmpbuf);
+    if(tmpbuf) dt_free_aligned(tmpbuf);
     return;
   }
 
@@ -450,7 +450,7 @@ static void histogram_collect_cl(int devid, dt_dev_pixelpipe_iop_t *piece, cl_me
   dt_histogram_helper(&histogram_params, &piece->histogram_stats, cst, pixel, histogram);
   dt_histogram_max_helper(&piece->histogram_stats, cst, histogram, histogram_max);
 
-  if(tmpbuf) dt_free_align(tmpbuf);
+  if(tmpbuf) dt_free_aligned(tmpbuf);
 }
 #endif
 
@@ -574,7 +574,7 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_iop_buffe
   if(buffer && bufsize >= size * bpp)
     pixel = buffer;
   else
-    pixel = tmpbuf = dt_alloc_align(64, size * bpp);
+    pixel = tmpbuf = dt_malloc_aligned(64, size * bpp);
 
   if(pixel == NULL) return;
 
@@ -593,7 +593,7 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_iop_buffe
   dt_color_picker_helper(dsc, pixel, &roi_copy, box, picked_color, picked_color_min, picked_color_max);
 
 error:
-  dt_free_align(tmpbuf);
+  dt_free_aligned(tmpbuf);
 }
 #endif
 
@@ -2470,7 +2470,7 @@ float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe, const dt_iop_modul
                     && module->processed_roi_in.width == 0
                     && module->processed_roi_in.height == 0))
             {
-              float *transformed_mask = dt_alloc_align(64, sizeof(float)
+              float *transformed_mask = dt_malloc_aligned(64, sizeof(float)
                                                           * module->processed_roi_out.width
                                                           * module->processed_roi_out.height);
               module->module->distort_mask(module->module,
@@ -2479,7 +2479,7 @@ float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe, const dt_iop_modul
                                           transformed_mask,
                                           &module->processed_roi_in,
                                           &module->processed_roi_out);
-              if(*free_mask) dt_free_align(raster_mask);
+              if(*free_mask) dt_free_aligned(raster_mask);
               *free_mask = TRUE;
               raster_mask = transformed_mask;
             }

@@ -189,7 +189,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  buf = dt_alloc_align(16, (size_t)image.height * png_get_rowbytes(image.png_ptr, image.info_ptr));
+  buf = dt_malloc_aligned(16, (size_t)image.height * png_get_rowbytes(image.png_ptr, image.info_ptr));
 
   if(!buf)
   {
@@ -201,7 +201,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
 
   if(read_image(&image, (void *)buf) != 0)
   {
-    dt_free_align(buf);
+    dt_free_aligned(buf);
     fprintf(stderr, "[png_open] could not read image `%s'\n", img->filename);
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
@@ -219,7 +219,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
                                              + buf[2 * (3 * (j * width + i) + k) + 1]) * (1.0f / 65535.0f);
   }
 
-  dt_free_align(buf);
+  dt_free_aligned(buf);
   return DT_IMAGEIO_OK;
 }
 
