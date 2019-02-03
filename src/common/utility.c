@@ -79,7 +79,7 @@ void dt_fail(const char *format, ...)
 
 void dt_malloc_fail(size_t size)
 {
-    dt_fail("Failed to allocate %lu bytes of memory.", size);
+  dt_fail("Failed to allocate %lu bytes of memory.", size);
 }
 
 void dt_malloc_aligned_fail(size_t alignment, size_t size)
