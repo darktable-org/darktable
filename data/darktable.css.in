@@ -132,7 +132,8 @@
 @define-color inset_histogram alpha(@grey_65, 0.50);
 
 * {
-  font-family: "Roboto Light", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  font-family: "Roboto", "Oxygen", "Segoe UI", "San Francisco", "Droid Sans", "Helvetica Neue", "Ubuntu", "Fira Sans", "Source Sans Pro", "Cantarell", sans-serif;
+  font-weight: 200;
   font-size: 1em;
   color: @fg_color;
   background-color: @bg_color;
@@ -142,7 +143,6 @@
   border: 0;
   outline-style:none;
   background-image: none;
-  -GtkRange-slider-width: 16;
 }
 
 /* Reset GTK defaults */
@@ -188,16 +188,24 @@ eventbox *
 
 /* Frame around plugin boxes */
 
-#iop-plugin-ui,
 #lib-plugin-ui,
-frame
+#iop-plugin-ui
 {
   border: 0.5pt solid @border_color;
   border-radius: 0.5em;
   margin: 0pt;
-  padding: 1pt;
+  /*padding: 10pt;*/
   color: @plugin_fg_color;
+  padding: 1pt; /* this actually serves as a separator between modules */
   background-color: @plugin_bg_color;
+}
+
+#lib-plugin-ui:selected,
+#iop-plugin-ui:selected,
+#lib-plugin-ui:active,
+#iop-plugin-ui:active
+{
+  padding: 5pt;
 }
 
 /* Buttons */
@@ -372,10 +380,11 @@ combobox button,
 {
   color: @fg_color;
   background-color: @bg_color;
-  font: 0.95em "Roboto Condensed Light";
   margin:0;
   border:0;
   padding:0;
+  font-weight: 200;
+  font-stretch: extra-condensed;
 }
 
 
@@ -385,7 +394,7 @@ combobox button,
   color: @section_label;
   border-bottom: 0.5pt solid  @section_label;
   margin: 0 0 3pt 0;
-  font-family: "Roboto";
+  font-weight: 400;
 }
 
 #view_dropdown *
@@ -532,6 +541,7 @@ notebook tab *
   background-color: @button_bg;
   color: @button_fg;
   border-radius: 0.5em 0.5em 0 0;
+  font-weight: 400;
 }
 
 #iop-plugin-ui notebook tab *:hover,

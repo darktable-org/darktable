@@ -1919,7 +1919,6 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   GtkWidget *header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *iopw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
   GtkWidget *expander = dtgtk_expander_new(header, iopw);
 
   GtkWidget *header_evb = dtgtk_expander_get_header_event_box(DTGTK_EXPANDER(expander));
@@ -1947,14 +1946,6 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   /* add the expand indicator icon */
   hw[idx] = dtgtk_icon_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT, NULL);
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
-
-  /* add duplicate button */
-  /*hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_plusminus, CPF_ACTIVE|CPF_STYLE_FLAT|CPF_DO_NOT_USE_BORDER, NULL);
-  module->duplicate_button = GTK_WIDGET(hw[idx]);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("add new instance"));
-  g_signal_connect (G_OBJECT (hw[idx]), "clicked",
-                    G_CALLBACK (dt_iop_gui_duplicate_callback), module);
-  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]),bs,bs);*/
 
   /* add module icon */
   GdkPixbuf *pixbuf;
@@ -2066,13 +2057,7 @@ got_image:
   gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
   dt_iop_gui_init_blending(iopw, module);
 
-
   /* add empty space around module widget */
-  gtk_widget_set_margin_start(iopw, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_end(iopw, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_top(iopw, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_bottom(iopw, DT_PIXEL_APPLY_DPI(8));
-
   gtk_widget_hide(iopw);
 
   module->expander = expander;
@@ -2083,7 +2068,6 @@ got_image:
 
   gtk_widget_set_hexpand(module->widget, FALSE);
   gtk_widget_set_vexpand(module->widget, FALSE);
-
 
   return module->expander;
 }

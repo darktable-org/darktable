@@ -977,9 +977,6 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   g_signal_connect(G_OBJECT(header_evb), "button-press-event", G_CALLBACK(_lib_plugin_header_button_press),
                    module);
 
-  /* setup plugin content frame */
-  gtk_frame_set_shadow_type(GTK_FRAME(pluginui_frame), GTK_SHADOW_IN);
-
   /*
    * initialize the header widgets
    */
@@ -992,7 +989,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 
   /* add module label */
   char label[128];
-  g_snprintf(label, sizeof(label), "<span size=\"larger\">%s</span>", module->name(module));
+  g_snprintf(label, sizeof(label), "%s", module->name(module));
   hw[idx] = gtk_label_new("");
   gtk_widget_set_name(hw[idx], "panel_label");
   gtk_label_set_markup(GTK_LABEL(hw[idx]), label);
