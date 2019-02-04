@@ -617,9 +617,11 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
 /* kernel for the tonecurve plugin. */
 kernel void
 tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-           read_only image2d_t table_L, read_only image2d_t table_a, read_only image2d_t table_b,
-           const int autoscale_ab, const int unbound_ab, global float *coeffs_L, global float *coeffs_ab,
-           const float low_approximation)
+           const int tc_mode, const int unbound_ab, const float low_approximation,
+           read_only image2d_t table_0, read_only image2d_t table_1,
+           read_only image2d_t table_2, read_only image2d_t table_3,
+           global float *coeffs_0, global float *coeffs_1,
+           global float *coeffs_2, global float *coeffs_3)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -629,27 +631,27 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   const float L_in = pixel.x/100.0f;
   // use lut or extrapolation:
-  const float L = lookup_unbounded(table_L, L_in, coeffs_L);
+  const float L = lookup_unbounded(table_0, L_in, coeffs_0);
 
-  if (autoscale_ab == 0)
+  if (tc_mode == 0)
   {
     const float a_in = (pixel.y + 128.0f) / 256.0f;
     const float b_in = (pixel.z + 128.0f) / 256.0f;
 
     if (unbound_ab == 0)
     {
-      pixel.y = lookup(table_a, a_in);
-      pixel.z = lookup(table_b, b_in);
+      pixel.y = lookup(table_1, a_in);
+      pixel.z = lookup(table_2, b_in);
     }
     else
     {
       // use lut or two-sided extrapolation
-      pixel.y = lookup_unbounded_twosided(table_a, a_in, coeffs_ab);
-      pixel.z = lookup_unbounded_twosided(table_b, b_in, coeffs_ab + 6);
+      pixel.y = lookup_unbounded_twosided(table_1, a_in, coeffs_1);
+      pixel.z = lookup_unbounded_twosided(table_2, b_in, coeffs_2);
     }
     pixel.x = L;
   }
-  else if(autoscale_ab == 1)
+  else if(tc_mode == 1)
   {
     if(L_in > 0.01f)
     {
@@ -663,21 +665,32 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
     }
     pixel.x = L;
   }
-  else if(autoscale_ab == 2)
+  else if(tc_mode == 2)
   {
     float4 xyz = Lab_to_XYZ(pixel);
-    xyz.x = lookup_unbounded(table_L, xyz.x, coeffs_L);
-    xyz.y = lookup_unbounded(table_L, xyz.y, coeffs_L);
-    xyz.z = lookup_unbounded(table_L, xyz.z, coeffs_L);
+    xyz.x = lookup_unbounded(table_0, xyz.x, coeffs_0);
+    xyz.y = lookup_unbounded(table_0, xyz.y, coeffs_0);
+    xyz.z = lookup_unbounded(table_0, xyz.z, coeffs_0);
     pixel.xyz = XYZ_to_Lab(xyz).xyz;
   }
-  else if(autoscale_ab == 3)
+  else if(tc_mode == 3)
   {
     float4 rgb = Lab_to_prophotorgb(pixel);
-    rgb.x = lookup_unbounded(table_L, rgb.x, coeffs_L);
-    rgb.y = lookup_unbounded(table_L, rgb.y, coeffs_L);
-    rgb.z = lookup_unbounded(table_L, rgb.z, coeffs_L);
+    rgb.x = lookup_unbounded(table_0, rgb.x, coeffs_0);
+    rgb.y = lookup_unbounded(table_0, rgb.y, coeffs_0);
+    rgb.z = lookup_unbounded(table_0, rgb.z, coeffs_0);
+    rgb.x = lookup_unbounded(table_1, rgb.x, coeffs_1);
+    rgb.y = lookup_unbounded(table_2, rgb.y, coeffs_2);
+    rgb.z = lookup_unbounded(table_3, rgb.z, coeffs_3);
     pixel.xyz = prophotorgb_to_Lab(rgb).xyz;
+  }
+  else if(tc_mode == 4)
+  {
+    float4 lch = Lab_2_LCH(pixel);
+    lch.x = L;
+    lch.y = lch.y * lookup_unbounded(table_1, L_in, coeffs_1) * 2.0f;
+    lch.y = lch.y * lookup_unbounded(table_2, lch.z, coeffs_2) * 2.0f;
+    pixel.xyz = LCH_2_Lab(lch).xyz;
   }
 
   write_imagef (out, (int2)(x, y), pixel);

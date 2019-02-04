@@ -20,6 +20,10 @@
 
 #pragma once
 
+#ifndef M_PI
+#define M_PI 3.141592653f
+#endif
+
 #ifdef __SSE2__
 #include "common/sse.h"
 #include "common/math.h"
@@ -121,7 +125,7 @@ static inline __m128 dt_sRGB_to_XYZ_sse2(__m128 rgb)
   rgb = _mm_or_ps(_mm_and_ps(mask, rgb0), _mm_andnot_ps(mask, rgb1));
 
   __m128 XYZ
-      = srgb_to_xyz_0 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(0, 0, 0, 0)) + 
+      = srgb_to_xyz_0 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(0, 0, 0, 0)) +
         srgb_to_xyz_1 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(1, 1, 1, 1)) +
         srgb_to_xyz_2 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(2, 2, 2, 2));
   return XYZ;

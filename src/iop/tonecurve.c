@@ -37,7 +37,6 @@
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
-#include "gui/color_picker_proxy.h"
 #include "iop/iop_api.h"
 #include "libs/colorpicker.h"
 
@@ -46,8 +45,9 @@
 
 #define DT_IOP_TONECURVE_RES 256
 #define DT_IOP_TONECURVE_MAXNODES 20
+#define DT_IOP_TONECURVE_MAX_CH 4
 
-DT_MODULE_INTROSPECTION(4, dt_iop_tonecurve_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_tonecurve_params_t)
 
 static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data);
 static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
@@ -56,13 +56,13 @@ static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossin
 static gboolean dt_iop_tonecurve_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data);
 static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 
-
 typedef enum tonecurve_channel_t
 {
   ch_L = 0,
   ch_a = 1,
+  ch_CL = 1,
   ch_b = 2,
-  ch_max = 3
+  ch_Ch = 2
 } tonecurve_channel_t;
 
 typedef struct dt_iop_tonecurve_node_t
@@ -71,16 +71,18 @@ typedef struct dt_iop_tonecurve_node_t
   float y;
 } dt_iop_tonecurve_node_t;
 
-typedef enum dt_iop_tonecurve_autoscale_t
+typedef enum dt_iop_tonecurve_mode_t
 {
-  DT_S_SCALE_MANUAL = 0,           // user specified curves
-  DT_S_SCALE_AUTOMATIC = 1,        // automatically adjust saturation based on L_out/L_in
+  DT_S_SCALE_MANUAL_LAB = 0,       // three curves (L, a, b)
+  DT_S_SCALE_AUTOMATIC_LAB = 1,    // automatically adjust saturation based on L_out/L_in
   DT_S_SCALE_AUTOMATIC_XYZ = 2,    // automatically adjust saturation by
                                    // transforming the curve C to C' like:
                                    // L_out=C(L_in) -> Y_out=C'(Y_in) and applying C' to the X and Z
                                    // channels, too (and then transforming it back to Lab of course)
-  DT_S_SCALE_AUTOMATIC_RGB = 3,    // similar to above but use an rgb working space
-} dt_iop_tonecurve_autoscale_t;
+//  DT_S_SCALE_AUTOMATIC_RGB = 3,    // similar to above but use an rgb working space
+  DT_S_SCALE_MANUAL_RGB = 3,
+  DT_S_SCALE_MANUAL_LCH = 4,       // manual LCh instead of manual Lab
+} dt_iop_tonecurve_mode_t;
 
 // parameter structure of tonecurve 1st version, needed for use in legacy_params()
 typedef struct dt_iop_tonecurve_params1_t
@@ -100,7 +102,7 @@ typedef struct dt_iop_tonecurve_params3_t
   int tonecurve_preset;
 } dt_iop_tonecurve_params3_t;
 
-typedef struct dt_iop_tonecurve_params_t
+typedef struct dt_iop_tonecurve_params4_t
 {
   dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES]; // three curves (L, a, b) with max number
                                                                    // of nodes
@@ -109,29 +111,37 @@ typedef struct dt_iop_tonecurve_params_t
   int tonecurve_autoscale_ab;
   int tonecurve_preset;
   int tonecurve_unbound_ab;
-} dt_iop_tonecurve_params_t;
+} dt_iop_tonecurve_params4_t;
 
+typedef struct dt_iop_tonecurve_params_t
+{
+  dt_iop_tonecurve_node_t tonecurve[DT_IOP_TONECURVE_MAX_CH][DT_IOP_TONECURVE_MAXNODES];
+  int tonecurve_nodes[DT_IOP_TONECURVE_MAX_CH];
+  int tonecurve_type[DT_IOP_TONECURVE_MAX_CH];
+  int tonecurve_tc_mode;
+  int tonecurve_preset;
+  int tonecurve_unbound_ab;
+} dt_iop_tonecurve_params_t;
 
 typedef struct dt_iop_tonecurve_gui_data_t
 {
-  dt_draw_curve_t *minmax_curve[3]; // curves for gui to draw
-  int minmax_curve_nodes[3];
-  int minmax_curve_type[3];
+  dt_draw_curve_t *minmax_curve[DT_IOP_TONECURVE_MAX_CH]; // curves for gui to draw
+  int minmax_curve_nodes[DT_IOP_TONECURVE_MAX_CH];
+  int minmax_curve_type[DT_IOP_TONECURVE_MAX_CH];
   GtkBox *hbox;
   GtkDrawingArea *area;
   GtkSizeGroup *sizegroup;
-  GtkWidget *autoscale_ab;
+  GtkWidget *tc_mode;
   GtkNotebook *channel_tabs;
   GtkWidget *colorpicker;
-  dt_iop_color_picker_t color_picker;
   GtkWidget *interpolator;
   GtkWidget *scale;
   tonecurve_channel_t channel;
   double mouse_x, mouse_y;
   int selected;
   float draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
-  float draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
-  float draw_max_xs[DT_IOP_TONECURVE_RES], draw_max_ys[DT_IOP_TONECURVE_RES];
+//  float draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];  // not used
+//  float draw_max_xs[DT_IOP_TONECURVE_RES], draw_max_ys[DT_IOP_TONECURVE_RES];  // not used
   float loglogscale;
   int semilog;
   GtkWidget *logbase;
@@ -139,22 +149,75 @@ typedef struct dt_iop_tonecurve_gui_data_t
 
 typedef struct dt_iop_tonecurve_data_t
 {
-  dt_draw_curve_t *curve[3];     // curves for pipe piece and pixel processing
-  int curve_nodes[3];            // number of nodes
-  int curve_type[3];             // curve style (e.g. CUBIC_SPLINE)
-  float table[3][0x10000];       // precomputed look-up tables for tone curve
-  float unbounded_coeffs_L[3];   // approximation for extrapolation of L
-  float unbounded_coeffs_ab[12]; // approximation for extrapolation of ab (left and right)
-  int autoscale_ab;
+  dt_draw_curve_t *curve[DT_IOP_TONECURVE_MAX_CH];     // curves for pipe piece and pixel processing
+  int curve_nodes[DT_IOP_TONECURVE_MAX_CH];            // number of nodes
+  int curve_type[DT_IOP_TONECURVE_MAX_CH];             // curve style (e.g. CUBIC_SPLINE)
+  float table[DT_IOP_TONECURVE_MAX_CH][0x10000];       // precomputed look-up tables for tone curve
+  float unbounded_coeffs[DT_IOP_TONECURVE_MAX_CH][6];   // approximation coef for extrapolation
+  int tc_mode;
   int unbound_ab;
 } dt_iop_tonecurve_data_t;
 
+static const struct
+{
+//  const char *tab_label; doesn't work with _("") translation method
+  int chx; // if chx = chy identity = diagonal else  identity = y=0.5
+  int chy;
+  float c_min_pipe_value;  // pipe value
+  float c_max_pipe_value;  // pipe value
+  float c_min_display_value;  // display value
+  float c_max_display_value;  // display value
+  float c_lut_factor; // can be used to save multiplication/division
+  int c_histogram_enabled;    // 0 = disabled, 1 = enabled
+  int c_log_enabled;   // 0 = disabled, 1 = enabled
+  int c_extrapolation; // 1 = Single; 2 = Double
+  int c_nb_nodes;
+  dt_iop_tonecurve_node_t c_nodes[DT_IOP_TONECURVE_MAXNODES];
+} curve_detail[] = {
+  // 0 - L(Lab) - L(LCh)
+  {0, 0, 0.0f, 100.0f, 0.0f, 100.0f, 100.0f, 1, 1, 1, 2, { { 0.0f, 0.0f }, { 1.0f, 1.0f } }},
+  // 1 - a (Lab)
+  {1, 1, -128.0f, 127.0f, -128.0f, 127.0f, 256.0f, 1, 0, 2, 3, { { 0.0, 0.0 }, { 0.5, 0.5 }, { 1.0, 1.0 } }},
+  // 2 - b (Lab)
+  {2, 2, -128.0f, 127.0f, -128.0f, 127.0f, 256.0f, 1, 0, 2, 3, { { 0.0, 0.0 }, { 0.5, 0.5 }, { 1.0, 1.0 } }},
+  // 3 - C(L) (LCh)
+  {0, 1, 0.0f, 182.019f, 0.0f, 100.0f, 1.0f, 0, 1, 1, 2, { { 0.0f, 0.5f }, { 1.0f, 0.5f } }},
+  // 4 - C(h) (LCH_2_Lab)
+  {2, 1, 0.0f, 1.0f, 0.0f, 360.0f, 1.0f, 0, 0, 1, 2, { { 0.0f, 0.5f }, { 1.0f, 0.5f } }},
+  // 5 - L(RGB) - L(XYZ)
+  {0, 0, 0.0f, 1.0f, 0.0f, 100.0f, 1.0f, 0, 1, 1, 2, { { 0.0f, 0.0f }, { 1.0f, 1.0f } }},
+  // 6 - R (RGB)
+  {1, 1, 0.0f, 1.0f, 0.0f, 100.0f, 1.0f, 0, 1, 1, 2, { { 0.0f, 0.0f}, { 1.0f, 1.0f } }},
+  // 7 - G (RGB)
+  {2, 2, 0.0f, 1.0f, 0.0f, 100.0f, 1.0f, 0, 1, 1, 2, { { 0.0f, 0.0f }, { 1.0f, 1.0f } }},
+  // 8 - B (RGB)
+  {3, 3, 0.0f, 1.0f, 0.0f, 100.0f, 1.0f, 0, 1, 1, 2, { { 0.0f, 0.0f }, { 1.0f, 1.0f } }}
+};
+
+typedef enum dt_iop_tonecurve_colorspace_t // could use the standard dt colorspace enum
+{                                           // but not sure they have the same meaning
+  DT_TC_LAB = 0,
+  DT_TC_XYZ = 1,
+  DT_TC_RGB = 2,
+  DT_TC_LCH = 3,
+} dt_iop_tonecurve_colorspace_t;
+
+static const struct
+{
+  int nb_ch;
+  int colorspace;
+  int curve_detail_i[DT_IOP_TONECURVE_MAX_CH];
+} mode_curves[] = {
+  {3, DT_TC_LAB, {0, 1, 2}},  // DT_S_SCALE_MANUAL_LAB
+  {1, DT_TC_LAB, {0}},  // DT_S_SCALE_AUTOMATIC_LAB
+  {1, DT_TC_XYZ, {5}}, // DT_S_SCALE_AUTOMATIC_XYZ
+//  {1, DT_TC_RGB, {5}}, // DT_S_SCALE_AUTOMATIC_RGB
+  {4, DT_TC_RGB, {5, 6, 7, 8}}, // DT_S_SCALE_MANUAL_RGB
+  {3, DT_TC_LCH, {0, 3, 4}}  // DT_S_SCALE_MANUAL_LCH
+};
+
 typedef struct dt_iop_tonecurve_global_data_t
 {
-  float picked_color[3];
-  float picked_color_min[3];
-  float picked_color_max[3];
-  float picked_output_color[3];
   int kernel_tonecurve;
 } dt_iop_tonecurve_global_data_t;
 
@@ -182,7 +245,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 4)
+  if(old_version == 1 && new_version == 5)
   {
     dt_iop_tonecurve_params1_t *o = (dt_iop_tonecurve_params1_t *)old_params;
     dt_iop_tonecurve_params_t *n = (dt_iop_tonecurve_params_t *)new_params;
@@ -191,9 +254,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     // unfortunately default_params aren't inited at this stage.
     *n = (dt_iop_tonecurve_params_t){ { { { 0.0, 0.0 }, { 1.0, 1.0 } },
                                         { { 0.0, 0.0 }, { 0.5, 0.5 }, { 1.0, 1.0 } },
-                                        { { 0.0, 0.0 }, { 0.5, 0.5 }, { 1.0, 1.0 } } },
-                                      { 2, 3, 3 },
-                                      { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
+                                        { { 0.0, 0.0 }, { 0.5, 0.5 }, { 1.0, 1.0 } },
+                                        { { 0.0, 0.0 }, { 1.0, 1.0 } } },
+                                      { 2, 3, 3, 2 },
+                                      { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
                                       1,
                                       0,
                                       1 };
@@ -201,25 +265,38 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     for(int k = 0; k < 6; k++) n->tonecurve[ch_L][k].y = o->tonecurve_y[k];
     n->tonecurve_nodes[ch_L] = 6;
     n->tonecurve_type[ch_L] = CUBIC_SPLINE;
-    n->tonecurve_autoscale_ab = 1;
+    n->tonecurve_tc_mode = DT_S_SCALE_AUTOMATIC_LAB;
     n->tonecurve_preset = o->tonecurve_preset;
     n->tonecurve_unbound_ab = 0;
     return 0;
   }
-  else if(old_version == 2 && new_version == 4)
+  else if(old_version == 2 && new_version == 5)
   {
     // version 2 never really materialized so there should be no legacy history stacks of that version around
     return 1;
   }
-  else if(old_version == 3 && new_version == 4)
+  else if(old_version == 3 && new_version == 5)
   {
     dt_iop_tonecurve_params3_t *o = (dt_iop_tonecurve_params3_t *)old_params;
     dt_iop_tonecurve_params_t *n = (dt_iop_tonecurve_params_t *)new_params;
 
-    memcpy(n->tonecurve, o->tonecurve, sizeof(n->tonecurve));
-    memcpy(n->tonecurve_nodes, o->tonecurve_nodes, sizeof(n->tonecurve_nodes));
-    memcpy(n->tonecurve_type, o->tonecurve_type, sizeof(n->tonecurve_type));
-    n->tonecurve_autoscale_ab = o->tonecurve_autoscale_ab;
+    memcpy(n->tonecurve, o->tonecurve, sizeof(o->tonecurve));
+    memcpy(n->tonecurve_nodes, o->tonecurve_nodes, sizeof(o->tonecurve_nodes));
+    memcpy(n->tonecurve_type, o->tonecurve_type, sizeof(o->tonecurve_type));
+    n->tonecurve_tc_mode = o->tonecurve_autoscale_ab;
+    n->tonecurve_preset = o->tonecurve_preset;
+    n->tonecurve_unbound_ab = 0;
+    return 0;
+  }
+  else if(old_version == 4 && new_version == 5)
+  {
+    dt_iop_tonecurve_params3_t *o = (dt_iop_tonecurve_params3_t *)old_params;
+    dt_iop_tonecurve_params_t *n = (dt_iop_tonecurve_params_t *)new_params;
+
+    memcpy(n->tonecurve, o->tonecurve, sizeof(o->tonecurve));
+    memcpy(n->tonecurve_nodes, o->tonecurve_nodes, sizeof(o->tonecurve_nodes));
+    memcpy(n->tonecurve_type, o->tonecurve_type, sizeof(o->tonecurve_type));
+    n->tonecurve_tc_mode = o->tonecurve_autoscale_ab;
     n->tonecurve_preset = o->tonecurve_preset;
     n->tonecurve_unbound_ab = 0;
     return 0;
@@ -234,64 +311,62 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)piece->data;
   dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->data;
-  cl_mem dev_L = NULL;
-  cl_mem dev_a = NULL;
-  cl_mem dev_b = NULL;
-  cl_mem dev_coeffs_L = NULL;
-  cl_mem dev_coeffs_ab = NULL;
+  cl_mem dev_ch[DT_IOP_TONECURVE_MAX_CH];
+  cl_mem dev_coeffs[DT_IOP_TONECURVE_MAX_CH];
+  for(int ch = 0; ch < DT_IOP_TONECURVE_MAX_CH; ch++)
+  {
+    dev_ch[ch] = NULL;
+    dev_coeffs[ch] = NULL;
+  }
   cl_int err = -999;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const int autoscale_ab = d->autoscale_ab;
+  const int tc_mode = d->tc_mode;
+//  const int nb_ch = mode_curves[tc_mode].nb_ch;
   const int unbound_ab = d->unbound_ab;
   const float low_approximation = d->table[0][(int)(0.01f * 0x10000ul)];
 
-  dev_L = dt_opencl_copy_host_to_device(devid, d->table[ch_L], 256, 256, sizeof(float));
-  if(dev_L == NULL) goto error;
-
-  dev_a = dt_opencl_copy_host_to_device(devid, d->table[ch_a], 256, 256, sizeof(float));
-  if(dev_a == NULL) goto error;
-
-  dev_b = dt_opencl_copy_host_to_device(devid, d->table[ch_b], 256, 256, sizeof(float));
-  if(dev_b == NULL) goto error;
-
-  dev_coeffs_L = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs_L);
-  if(dev_coeffs_L == NULL) goto error;
-
-  dev_coeffs_ab = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 12, d->unbounded_coeffs_ab);
-  if(dev_coeffs_ab == NULL) goto error;
+  for(int ch = 0; ch < DT_IOP_TONECURVE_MAX_CH; ch++)
+  {
+    dev_ch[ch] = dt_opencl_copy_host_to_device(devid, d->table[ch], 256, 256, sizeof(float));
+    if(dev_ch[ch] == NULL) goto error;
+    dev_coeffs[ch] = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 6, d->unbounded_coeffs[ch]);
+    if(dev_coeffs[ch] == NULL) goto error;
+  }
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 2, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 4, sizeof(cl_mem), (void *)&dev_L);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 5, sizeof(cl_mem), (void *)&dev_a);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 6, sizeof(cl_mem), (void *)&dev_b);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 7, sizeof(int), (void *)&autoscale_ab);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 8, sizeof(int), (void *)&unbound_ab);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 9, sizeof(cl_mem), (void *)&dev_coeffs_L);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 10, sizeof(cl_mem), (void *)&dev_coeffs_ab);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 11, sizeof(float), (void *)&low_approximation);
+//  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 4, sizeof(int), (void *)&nb_ch);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 5, sizeof(int), (void *)&tc_mode);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 6, sizeof(int), (void *)&unbound_ab);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 7, sizeof(float), (void *)&low_approximation);
+  for(int ch = 0; ch < DT_IOP_TONECURVE_MAX_CH; ch++)
+  {
+    dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 8 + 2 * ch, sizeof(cl_mem), (void *)&dev_ch[ch]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 9 + 2 * ch, sizeof(cl_mem), (void *)&dev_coeffs[ch]);
+  }
+
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_tonecurve, sizes);
 
   if(err != CL_SUCCESS) goto error;
-  dt_opencl_release_mem_object(dev_L);
-  dt_opencl_release_mem_object(dev_a);
-  dt_opencl_release_mem_object(dev_b);
-  dt_opencl_release_mem_object(dev_coeffs_L);
-  dt_opencl_release_mem_object(dev_coeffs_ab);
+  for(int ch = 0; ch < DT_IOP_TONECURVE_MAX_CH; ch++)
+  {
+    dt_opencl_release_mem_object(dev_ch[ch]);
+    dt_opencl_release_mem_object(dev_coeffs[ch]);
+  }
   return TRUE;
 
 error:
-  dt_opencl_release_mem_object(dev_L);
-  dt_opencl_release_mem_object(dev_a);
-  dt_opencl_release_mem_object(dev_b);
-  dt_opencl_release_mem_object(dev_coeffs_L);
-  dt_opencl_release_mem_object(dev_coeffs_ab);
+for(int ch = 0; ch < DT_IOP_TONECURVE_MAX_CH; ch++)
+{
+  dt_opencl_release_mem_object(dev_ch[ch]);
+  dt_opencl_release_mem_object(dev_coeffs[ch]);
+}
   dt_print(DT_DEBUG_OPENCL, "[opencl_tonecurve] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -302,17 +377,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   const int ch = piece->colors;
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
-
-  const float xm_L = 1.0f / d->unbounded_coeffs_L[0];
-  const float xm_ar = 1.0f / d->unbounded_coeffs_ab[0];
-  const float xm_al = 1.0f - 1.0f / d->unbounded_coeffs_ab[3];
-  const float xm_br = 1.0f / d->unbounded_coeffs_ab[6];
-  const float xm_bl = 1.0f - 1.0f / d->unbounded_coeffs_ab[9];
+  const float xm[DT_IOP_TONECURVE_MAX_CH][2] = {
+    {1.0f / d->unbounded_coeffs[0][0], 1.0f - 1.0f / d->unbounded_coeffs[0][3]},
+    {1.0f / d->unbounded_coeffs[1][0], 1.0f - 1.0f / d->unbounded_coeffs[1][3]},
+    {1.0f / d->unbounded_coeffs[2][0], 1.0f - 1.0f / d->unbounded_coeffs[2][3]},
+    {1.0f / d->unbounded_coeffs[3][0], 1.0f - 1.0f / d->unbounded_coeffs[3][3]} };
   const float low_approximation = d->table[0][(int)(0.01f * 0x10000ul)];
 
   const int width = roi_out->width;
   const int height = roi_out->height;
-  const int autoscale_ab = d->autoscale_ab;
+  const int tc_mode = d->tc_mode;
   const int unbound_ab = d->unbound_ab;
 
 #ifdef _OPENMP
@@ -325,13 +399,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     for(int j = 0; j < width; j++, in += ch, out += ch)
     {
-      const float L_in = in[0] / 100.0f;
-
-      out[0] = (L_in < xm_L) ? d->table[ch_L][CLAMP((int)(L_in * 0x10000ul), 0, 0xffff)]
-                             : dt_iop_eval_exp(d->unbounded_coeffs_L, L_in);
-
-      if(autoscale_ab == DT_S_SCALE_MANUAL)
+      if(tc_mode == DT_S_SCALE_MANUAL_LAB)
       {
+        const float L_in = in[0] / 100.0f;
+        out[0] = (L_in < xm[ch_L][0]) ? d->table[ch_L][CLAMP((int)(L_in * 0x10000ul), 0, 0xffff)]
+                               : dt_iop_eval_exp(d->unbounded_coeffs[0], L_in);
         const float a_in = (in[1] + 128.0f) / 256.0f;
         const float b_in = (in[2] + 128.0f) / 256.0f;
 
@@ -345,18 +417,39 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         {
           // new style handling of a/b curves: lut lookup with two-sided extrapolation;
           // mind the x-axis reversal for the left-handed side
-          out[1] = (a_in > xm_ar)
-                       ? dt_iop_eval_exp(d->unbounded_coeffs_ab, a_in)
-                       : ((a_in < xm_al) ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 3, 1.0f - a_in)
+          out[1] = (a_in > xm[ch_a][0])
+                       ? dt_iop_eval_exp(d->unbounded_coeffs[ch_a], a_in)
+                       : ((a_in < xm[ch_a][1]) ? dt_iop_eval_exp(d->unbounded_coeffs[ch_a] + 3, 1.0f - a_in)
                                          : d->table[ch_a][CLAMP((int)(a_in * 0x10000ul), 0, 0xffff)]);
-          out[2] = (b_in > xm_br)
-                       ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 6, b_in)
-                       : ((b_in < xm_bl) ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 9, 1.0f - b_in)
+          out[2] = (b_in > xm[ch_b][0])
+                       ? dt_iop_eval_exp(d->unbounded_coeffs[ch_b], b_in)
+                       : ((b_in < xm[ch_b][1]) ? dt_iop_eval_exp(d->unbounded_coeffs[ch_b] + 3, 1.0f - b_in)
                                          : d->table[ch_b][CLAMP((int)(b_in * 0x10000ul), 0, 0xffff)]);
         }
       }
-      else if(autoscale_ab == DT_S_SCALE_AUTOMATIC)
+      else if(tc_mode == DT_S_SCALE_MANUAL_LCH)
       {
+        const float L_in = in[0] / 100.0f;
+        out[0] = (L_in < xm[0][0]) ? d->table[ch_L][CLAMP((int)(L_in * 0x10000ul), 0, 0xffff)]
+                               : dt_iop_eval_exp(d->unbounded_coeffs[0], L_in);
+        float LCh[3] = {0, 0, 0};
+        out[1] = in[1];
+        out[2] =out[2];
+        dt_Lab_2_LCH(in, LCh);
+        const float chroma = LCh[1];
+        if (chroma > 0.0f)
+        {
+          LCh[1] = LCh[1] * d->table[ch_CL][CLAMP((int)(L_in * 0x10000ul), 0, 0xffff)] * 2.0f;
+          LCh[1] = LCh[1] * d->table[ch_Ch][CLAMP((int)(LCh[2] * 0x10000ul), 0, 0xffff)] * 2.0f;
+          out[1] = in[1] * (LCh[1] / chroma);
+          out[2] = in[2] * (LCh[1] / chroma);
+        }
+      }
+      else if(tc_mode == DT_S_SCALE_AUTOMATIC_LAB)
+      {
+        const float L_in = in[0] / 100.0f;
+        out[0] = (L_in < xm[0][0]) ? d->table[ch_L][CLAMP((int)(L_in * 0x10000ul), 0, 0xffff)]
+                               : dt_iop_eval_exp(d->unbounded_coeffs[0], L_in);
         // in Lab: correct compressed Luminance for saturation:
         if(L_in > 0.01f)
         {
@@ -369,25 +462,38 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           out[2] = in[2] * low_approximation;
         }
       }
-      else if(autoscale_ab == DT_S_SCALE_AUTOMATIC_XYZ)
+      else if(tc_mode == DT_S_SCALE_AUTOMATIC_XYZ)
       {
         float XYZ[3];
         dt_Lab_to_XYZ(in, XYZ);
-        for(int c=0;c<3;c++)
-          XYZ[c] = (XYZ[c] < xm_L) ? d->table[ch_L][CLAMP((int)(XYZ[c] * 0x10000ul), 0, 0xffff)]
-                                   : dt_iop_eval_exp(d->unbounded_coeffs_L, XYZ[c]);
+        for(int c=0; c<3; c++)
+          XYZ[c] = (XYZ[c] < xm[0][0]) ? d->table[ch_L][CLAMP((int)(XYZ[c] * 0x10000ul), 0, 0xffff)]
+                                   : dt_iop_eval_exp(d->unbounded_coeffs[0], XYZ[c]);
         dt_XYZ_to_Lab(XYZ, out);
       }
-      else if(autoscale_ab == DT_S_SCALE_AUTOMATIC_RGB)
+/*      else if(tc_mode == DT_S_SCALE_AUTOMATIC_RGB)
       {
         float rgb[3] = {0, 0, 0};
         dt_Lab_to_prophotorgb(in, rgb);
-        for(int c=0;c<3;c++)
-          rgb[c] = (rgb[c] < xm_L) ? d->table[ch_L][CLAMP((int)(rgb[c] * 0x10000ul), 0, 0xffff)]
-                                   : dt_iop_eval_exp(d->unbounded_coeffs_L, rgb[c]);
+        for(int c=0; c<3; c++)
+          rgb[c] = (rgb[c] < xm[ch_L][0]) ? d->table[ch_L][CLAMP((int)(rgb[c] * 0x10000ul), 0, 0xffff)]
+                                   : dt_iop_eval_exp(d->unbounded_coeffs[0], rgb[c]);
+        dt_prophotorgb_to_Lab(rgb, out);
+      } */
+      else if(tc_mode == DT_S_SCALE_MANUAL_RGB)
+      {
+        float rgb[3] = {0, 0, 0};
+        dt_Lab_to_prophotorgb(in, rgb);
+        for(int c=0; c<3; c++)
+        {
+          rgb[c] = (rgb[c] < xm[ch_L][0]) ? d->table[ch_L][CLAMP((int)(rgb[c] * 0x10000ul), 0, 0xffff)]
+                                   : dt_iop_eval_exp(d->unbounded_coeffs[0], rgb[c]);
+//          rgb[c] = rgb[c] / 100.0f;
+          rgb[c] = (rgb[c] < xm[c+1][0]) ? d->table[c+1][CLAMP((int)(rgb[c] * 0x10000ul), 0, 0xffff)]
+                                   : dt_iop_eval_exp(d->unbounded_coeffs[c+1], rgb[c]);
+        }
         dt_prophotorgb_to_Lab(rgb, out);
       }
-
       out[3] = in[3];
     }
   }
@@ -433,7 +539,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.tonecurve_type[ch_a] = CUBIC_SPLINE;
   p.tonecurve_type[ch_b] = CUBIC_SPLINE;
   p.tonecurve_preset = 0;
-  p.tonecurve_autoscale_ab = DT_S_SCALE_AUTOMATIC_RGB;
+  p.tonecurve_tc_mode = DT_S_SCALE_MANUAL_RGB;
   p.tonecurve_unbound_ab = 1;
 
   float linear_ab[7] = { 0.0, 0.08, 0.3, 0.5, 0.7, 0.92, 1.0 };
@@ -556,13 +662,19 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)p1;
 
+  const int tc_mode = p->tonecurve_tc_mode;
+  const int nb_ch = mode_curves[tc_mode].nb_ch;
+
   if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
     piece->request_histogram |= (DT_REQUEST_ON);
   else
     piece->request_histogram &= ~(DT_REQUEST_ON);
 
-  for(int ch = 0; ch < ch_max; ch++)
+  for(int ch = 0; ch < nb_ch; ch++)
   {
+    const int curve_detail_i = mode_curves[tc_mode].curve_detail_i[ch];
+    const int lut_factor = curve_detail[curve_detail_i].c_lut_factor;
+    const int extrapolation = curve_detail[curve_detail_i].c_extrapolation;
     // take care of possible change of curve type or number of nodes (not yet implemented in UI)
     if(d->curve_type[ch] != p->tonecurve_type[ch] || d->curve_nodes[ch] != p->tonecurve_nodes[ch])
     {
@@ -579,86 +691,46 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
         dt_draw_curve_set_point(d->curve[ch], k, p->tonecurve[ch][k].x, p->tonecurve[ch][k].y);
     }
     dt_draw_curve_calc_values(d->curve[ch], 0.0f, 1.0f, 0x10000, NULL, d->table[ch]);
+
+    if (extrapolation == 1)
+    {
+      if (lut_factor != 1.0f)
+        for(int k = 0; k < 0x10000; k++) d->table[ch][k] *= lut_factor;
+      // extrapolation for single curve (right hand side only):
+      const float xm_L = p->tonecurve[ch][p->tonecurve_nodes[ch] - 1].x;
+      const float x_L[4] = { 0.7f * xm_L, 0.8f * xm_L, 0.9f * xm_L, 1.0f * xm_L };
+      const float y_L[4] = { d->table[ch][CLAMP((int)(x_L[0] * 0x10000ul), 0, 0xffff)],
+                             d->table[ch][CLAMP((int)(x_L[1] * 0x10000ul), 0, 0xffff)],
+                             d->table[ch][CLAMP((int)(x_L[2] * 0x10000ul), 0, 0xffff)],
+                             d->table[ch][CLAMP((int)(x_L[3] * 0x10000ul), 0, 0xffff)] };
+      dt_iop_estimate_exp(x_L, y_L, 4, d->unbounded_coeffs[ch]);
+    }
+    else if (extrapolation == 2)
+    {
+      if (lut_factor != 1.0f)
+        for(int k = 0; k < 0x10000; k++) d->table[ch][k] = d->table[ch][k] * lut_factor - lut_factor / 2.0f;
+      // extrapolation for double curve right side:
+      const float xm_ar = p->tonecurve[ch][p->tonecurve_nodes[ch] - 1].x;
+      const float x_ar[4] = { 0.7f * xm_ar, 0.8f * xm_ar, 0.9f * xm_ar, 1.0f * xm_ar };
+      const float y_ar[4] = { d->table[ch][CLAMP((int)(x_ar[0] * 0x10000ul), 0, 0xffff)],
+                              d->table[ch][CLAMP((int)(x_ar[1] * 0x10000ul), 0, 0xffff)],
+                              d->table[ch][CLAMP((int)(x_ar[2] * 0x10000ul), 0, 0xffff)],
+                              d->table[ch][CLAMP((int)(x_ar[3] * 0x10000ul), 0, 0xffff)] };
+      dt_iop_estimate_exp(x_ar, y_ar, 4, d->unbounded_coeffs[ch]);
+      // extrapolation for double curve left side (we need to mirror the x-axis):
+      const float xm_al = 1.0f - p->tonecurve[ch][0].x;
+      const float x_al[4] = { 0.7f * xm_al, 0.8f * xm_al, 0.9f * xm_al, 1.0f * xm_al };
+      const float y_al[4] = { d->table[ch][CLAMP((int)((1.0f - x_al[0]) * 0x10000ul), 0, 0xffff)],
+                              d->table[ch][CLAMP((int)((1.0f - x_al[1]) * 0x10000ul), 0, 0xffff)],
+                              d->table[ch][CLAMP((int)((1.0f - x_al[2]) * 0x10000ul), 0, 0xffff)],
+                              d->table[ch][CLAMP((int)((1.0f - x_al[3]) * 0x10000ul), 0, 0xffff)] };
+      dt_iop_estimate_exp(x_al, y_al, 4, d->unbounded_coeffs[ch] + 3);
+    }
   }
-  for(int k = 0; k < 0x10000; k++) d->table[ch_L][k] *= 100.0f;
-  for(int k = 0; k < 0x10000; k++) d->table[ch_a][k] = d->table[ch_a][k] * 256.0f - 128.0f;
-  for(int k = 0; k < 0x10000; k++) d->table[ch_b][k] = d->table[ch_b][k] * 256.0f - 128.0f;
 
   piece->process_cl_ready = 1;
-  if(p->tonecurve_autoscale_ab == DT_S_SCALE_AUTOMATIC_XYZ)
-  {
-    // derive curve for XYZ:
-    for(int k=0;k<0x10000;k++)
-    {
-      float XYZ[3] = {k/(float)0x10000, k/(float)0x10000, k/(float)0x10000};
-      float Lab[3] = {0.0};
-      dt_XYZ_to_Lab(XYZ, Lab);
-      Lab[0] = d->table[ch_L][CLAMP((int)(Lab[0]/100.0f * 0x10000), 0, 0xffff)];
-      dt_Lab_to_XYZ(Lab, XYZ);
-      d->table[ch_L][k] = XYZ[1]; // now mapping Y_in to Y_out
-    }
-  }
-  else if(p->tonecurve_autoscale_ab == DT_S_SCALE_AUTOMATIC_RGB)
-  {
-    // derive curve for rgb:
-    for(int k=0;k<0x10000;k++)
-    {
-      float rgb[3] = {k/(float)0x10000, k/(float)0x10000, k/(float)0x10000};
-      float Lab[3] = {0.0};
-      dt_prophotorgb_to_Lab(rgb, Lab);
-      Lab[0] = d->table[ch_L][CLAMP((int)(Lab[0]/100.0f * 0x10000), 0, 0xffff)];
-      dt_Lab_to_prophotorgb(Lab, rgb);
-      d->table[ch_L][k] = rgb[1]; // now mapping G_in to G_out
-    }
-  }
-
-  d->autoscale_ab = p->tonecurve_autoscale_ab;
+  d->tc_mode = p->tonecurve_tc_mode;
   d->unbound_ab = p->tonecurve_unbound_ab;
-
-  // extrapolation for L-curve (right hand side only):
-  const float xm_L = p->tonecurve[ch_L][p->tonecurve_nodes[ch_L] - 1].x;
-  const float x_L[4] = { 0.7f * xm_L, 0.8f * xm_L, 0.9f * xm_L, 1.0f * xm_L };
-  const float y_L[4] = { d->table[ch_L][CLAMP((int)(x_L[0] * 0x10000ul), 0, 0xffff)],
-                         d->table[ch_L][CLAMP((int)(x_L[1] * 0x10000ul), 0, 0xffff)],
-                         d->table[ch_L][CLAMP((int)(x_L[2] * 0x10000ul), 0, 0xffff)],
-                         d->table[ch_L][CLAMP((int)(x_L[3] * 0x10000ul), 0, 0xffff)] };
-  dt_iop_estimate_exp(x_L, y_L, 4, d->unbounded_coeffs_L);
-
-  // extrapolation for a-curve right side:
-  const float xm_ar = p->tonecurve[ch_a][p->tonecurve_nodes[ch_a] - 1].x;
-  const float x_ar[4] = { 0.7f * xm_ar, 0.8f * xm_ar, 0.9f * xm_ar, 1.0f * xm_ar };
-  const float y_ar[4] = { d->table[ch_a][CLAMP((int)(x_ar[0] * 0x10000ul), 0, 0xffff)],
-                          d->table[ch_a][CLAMP((int)(x_ar[1] * 0x10000ul), 0, 0xffff)],
-                          d->table[ch_a][CLAMP((int)(x_ar[2] * 0x10000ul), 0, 0xffff)],
-                          d->table[ch_a][CLAMP((int)(x_ar[3] * 0x10000ul), 0, 0xffff)] };
-  dt_iop_estimate_exp(x_ar, y_ar, 4, d->unbounded_coeffs_ab);
-
-  // extrapolation for a-curve left side (we need to mirror the x-axis):
-  const float xm_al = 1.0f - p->tonecurve[ch_a][0].x;
-  const float x_al[4] = { 0.7f * xm_al, 0.8f * xm_al, 0.9f * xm_al, 1.0f * xm_al };
-  const float y_al[4] = { d->table[ch_a][CLAMP((int)((1.0f - x_al[0]) * 0x10000ul), 0, 0xffff)],
-                          d->table[ch_a][CLAMP((int)((1.0f - x_al[1]) * 0x10000ul), 0, 0xffff)],
-                          d->table[ch_a][CLAMP((int)((1.0f - x_al[2]) * 0x10000ul), 0, 0xffff)],
-                          d->table[ch_a][CLAMP((int)((1.0f - x_al[3]) * 0x10000ul), 0, 0xffff)] };
-  dt_iop_estimate_exp(x_al, y_al, 4, d->unbounded_coeffs_ab + 3);
-
-  // extrapolation for b-curve right side:
-  const float xm_br = p->tonecurve[ch_b][p->tonecurve_nodes[ch_b] - 1].x;
-  const float x_br[4] = { 0.7f * xm_br, 0.8f * xm_br, 0.9f * xm_br, 1.0f * xm_br };
-  const float y_br[4] = { d->table[ch_b][CLAMP((int)(x_br[0] * 0x10000ul), 0, 0xffff)],
-                          d->table[ch_b][CLAMP((int)(x_br[1] * 0x10000ul), 0, 0xffff)],
-                          d->table[ch_b][CLAMP((int)(x_br[2] * 0x10000ul), 0, 0xffff)],
-                          d->table[ch_b][CLAMP((int)(x_br[3] * 0x10000ul), 0, 0xffff)] };
-  dt_iop_estimate_exp(x_br, y_br, 4, d->unbounded_coeffs_ab + 6);
-
-  // extrapolation for b-curve left side (we need to mirror the x-axis):
-  const float xm_bl = 1.0f - p->tonecurve[ch_b][0].x;
-  const float x_bl[4] = { 0.7f * xm_bl, 0.8f * xm_bl, 0.9f * xm_bl, 1.0f * xm_bl };
-  const float y_bl[4] = { d->table[ch_b][CLAMP((int)((1.0f - x_bl[0]) * 0x10000ul), 0, 0xffff)],
-                          d->table[ch_b][CLAMP((int)((1.0f - x_bl[1]) * 0x10000ul), 0, 0xffff)],
-                          d->table[ch_b][CLAMP((int)((1.0f - x_bl[2]) * 0x10000ul), 0, 0xffff)],
-                          d->table[ch_b][CLAMP((int)((1.0f - x_bl[3]) * 0x10000ul), 0, 0xffff)] };
-  dt_iop_estimate_exp(x_bl, y_bl, 4, d->unbounded_coeffs_ab + 9);
 }
 
 static float eval_grey(float x)
@@ -673,9 +745,9 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)malloc(sizeof(dt_iop_tonecurve_data_t));
   dt_iop_tonecurve_params_t *default_params = (dt_iop_tonecurve_params_t *)self->default_params;
   piece->data = (void *)d;
-  d->autoscale_ab = DT_S_SCALE_AUTOMATIC;
+  const int tc_mode = d->tc_mode = DT_S_SCALE_AUTOMATIC_LAB;
   d->unbound_ab = 1;
-  for(int ch = 0; ch < ch_max; ch++)
+  for(int ch = 0; ch < DT_IOP_TONECURVE_MAX_CH; ch++)
   {
     d->curve[ch] = dt_draw_curve_new(0.0, 1.0, default_params->tonecurve_type[ch]);
     d->curve_nodes[ch] = default_params->tonecurve_nodes[ch];
@@ -684,16 +756,29 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
       (void)dt_draw_curve_add_point(d->curve[ch], default_params->tonecurve[ch][k].x,
                                     default_params->tonecurve[ch][k].y);
   }
-  for(int k = 0; k < 0x10000; k++) d->table[ch_L][k] = 100.0f * k / 0x10000;          // identity for L
-  for(int k = 0; k < 0x10000; k++) d->table[ch_a][k] = 256.0f * k / 0x10000 - 128.0f; // identity for a
-  for(int k = 0; k < 0x10000; k++) d->table[ch_b][k] = 256.0f * k / 0x10000 - 128.0f; // identity for b
+  const int nb_ch = mode_curves[tc_mode].nb_ch;
+  for(int ch = 0; ch < nb_ch; ch++)
+  {
+    const int curve_detail_i = mode_curves[tc_mode].curve_detail_i[ch];
+    const int lut_factor = curve_detail[curve_detail_i].c_lut_factor;
+    const int extrapolation = curve_detail[curve_detail_i].c_extrapolation;
+    if (curve_detail[curve_detail_i].chx ==curve_detail[curve_detail_i].chy)
+    {
+      if (extrapolation == 1)
+        for(int k = 0; k < 0x10000; k++) d->table[ch][k] = lut_factor * k / 0x10000;          // identity for x'=f(x)
+      else if (extrapolation == 2)
+        for(int k = 0; k < 0x10000; k++) d->table[ch][k] = lut_factor * k / 0x10000 - lut_factor / 2.0f; // identity for x'=f(x)
+    }
+    else
+      for(int k = 0; k < 0x10000; k++) d->table[ch][k] = 0.5f;  // identity for x'=f(y)
+  }
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   // clean up everything again.
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
-  for(int ch = 0; ch < ch_max; ch++) dt_draw_curve_destroy(d->curve[ch]);
+  for(int ch = 0; ch < DT_IOP_TONECURVE_MAX_CH; ch++) dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
   piece->data = NULL;
 }
@@ -703,6 +788,8 @@ void gui_reset(struct dt_iop_module_t *self)
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   dt_bauhaus_combobox_set(g->interpolator, p->tonecurve_type[ch_L]);
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), 0);
 
   dt_bauhaus_combobox_set(g->scale, 0); // linear
   g->loglogscale = 0;
@@ -712,41 +799,98 @@ void gui_reset(struct dt_iop_module_t *self)
   gtk_widget_queue_draw(self->widget);
 }
 
+void tabs_update(struct dt_iop_module_t *self, int reset_nodes)
+{
+  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+  dt_iop_tonecurve_params_t *d = (dt_iop_tonecurve_params_t *)self->default_params;
+
+  const int nb_ch = mode_curves[p->tonecurve_tc_mode].nb_ch;
+  char* tab_label[DT_IOP_TONECURVE_MAX_CH];
+  char* tab_tooltip[DT_IOP_TONECURVE_MAX_CH];
+  tab_label[0] = _("  L  ");
+  tab_tooltip[0] = _("tonecurve for L channel");
+
+  switch(p->tonecurve_tc_mode)
+  {
+    case DT_S_SCALE_MANUAL_LAB:
+    {
+      tab_label[1] = _("  a  ");
+      tab_tooltip[1] = _("tonecurve for a channel");
+      tab_label[2] = _("  b  ");
+      tab_tooltip[2] = _("tonecurve for b channel");
+      break;
+    }
+    case DT_S_SCALE_MANUAL_LCH:
+    {
+      tab_label[1] = _(" C(L) ");
+      tab_tooltip[1] = _("tonecurve for C(L)");
+      tab_label[2] = _(" C(h) ");
+      tab_tooltip[2] = _("tonecurve for C(h)");
+      break;
+    }
+    case DT_S_SCALE_MANUAL_RGB:
+    {
+      tab_label[1] = _("  R  ");
+      tab_tooltip[1] = _("tonecurve for R channel");
+      tab_label[2] = _("  G  ");
+      tab_tooltip[2] = _("tonecurve for G channel");
+      tab_label[3] = _("  B  ");
+      tab_tooltip[3] = _("tonecurve for B channel");
+      break;
+    }
+  }
+  for(int ch=1; ch<nb_ch; ch++)
+  {
+    const int curve_detail_i = mode_curves[p->tonecurve_tc_mode].curve_detail_i[ch];
+    // set default nodes
+    const int nb_nodes = curve_detail[curve_detail_i].c_nb_nodes;
+    for (int j=0; j<nb_nodes; j++)
+    {
+      d->tonecurve[ch][j].x = curve_detail[curve_detail_i].c_nodes[j].x;
+      d->tonecurve[ch][j].y = curve_detail[curve_detail_i].c_nodes[j].y;
+      if (reset_nodes)
+      {
+        p->tonecurve[ch][j].x = curve_detail[curve_detail_i].c_nodes[j].x;
+        p->tonecurve[ch][j].y = curve_detail[curve_detail_i].c_nodes[j].y;
+      }
+    }
+    d->tonecurve_nodes[ch] = nb_nodes;
+    if (reset_nodes) p->tonecurve_nodes[ch] = nb_nodes;
+  }
+  if (nb_ch>1)
+  {
+    for(int ch=0; ch < nb_ch; ch++)
+    {
+      GtkWidget *tabid = gtk_notebook_get_nth_page(g->channel_tabs, ch);
+//printf("set tab label - mode: %d, ch: %d, nbch: %d\n", p->tonecurve_tc_mode, ch, nb_ch);
+      gtk_notebook_set_tab_label_text(g->channel_tabs, tabid, tab_label[ch]);
+      gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(g->channel_tabs, tabid), tab_tooltip[ch]);
+      gtk_widget_show(tabid);
+    }
+    for(int ch=nb_ch; ch < DT_IOP_TONECURVE_MAX_CH; ch++)
+    {
+      GtkWidget *tabid = gtk_notebook_get_nth_page(g->channel_tabs, ch);
+//printf("hide tab - mode: %d, ch: %d, nbch: %d\n", p->tonecurve_tc_mode, ch, nb_ch);
+      gtk_widget_hide(tabid);
+    }
+    gtk_notebook_set_show_tabs(g->channel_tabs, TRUE);
+  }
+  else
+  {
+    gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+  }
+  g->channel = (tonecurve_channel_t)ch_L;
+}
+
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
 
-  switch(p->tonecurve_autoscale_ab)
-  {
-    case DT_S_SCALE_MANUAL:
-    {
-      dt_bauhaus_combobox_set(g->autoscale_ab, 1);
-      gtk_notebook_set_show_tabs(g->channel_tabs, TRUE);
-      break;
-    }
-    case DT_S_SCALE_AUTOMATIC:
-    {
-      dt_bauhaus_combobox_set(g->autoscale_ab, 0);
-      g->channel = (tonecurve_channel_t)ch_L;
-      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
-      break;
-    }
-    case DT_S_SCALE_AUTOMATIC_XYZ:
-    {
-      dt_bauhaus_combobox_set(g->autoscale_ab, 2);
-      g->channel = (tonecurve_channel_t)ch_L;
-      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
-      break;
-    }
-    case DT_S_SCALE_AUTOMATIC_RGB:
-    {
-      dt_bauhaus_combobox_set(g->autoscale_ab, 3);
-      g->channel = (tonecurve_channel_t)ch_L;
-      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
-      break;
-    }
-  }
+  dt_bauhaus_combobox_set(g->tc_mode, p->tonecurve_tc_mode);
+
+  tabs_update(self, FALSE);
 
   dt_bauhaus_combobox_set(g->interpolator, p->tonecurve_type[ch_L]);
 
@@ -762,10 +906,14 @@ void gui_update(struct dt_iop_module_t *self)
 
   // that's all, gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
+
+  if (self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), 0);
 }
 
 void init(dt_iop_module_t *module)
 {
+//  setvbuf(stdout, NULL, _IONBF, 0);
   module->params = calloc(1, sizeof(dt_iop_tonecurve_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_tonecurve_params_t));
   module->default_enabled = 0;
@@ -773,17 +921,15 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_tonecurve_params_t);
   module->gui_data = NULL;
   dt_iop_tonecurve_params_t tmp = (dt_iop_tonecurve_params_t){
-    { { // three curves (L, a, b) with a number of nodes
-        { 0.0, 0.0 },
-        { 1.0, 1.0 }
-      },
-      { { 0.0, 0.0 }, { 0.5, 0.5 }, { 1.0, 1.0 } },
-      { { 0.0, 0.0 }, { 0.5, 0.5 }, { 1.0, 1.0 } } },
-    { 2, 3, 3 }, // number of nodes per curve
+    { { { 0.0, 0.0 }, { 1.0, 1.0 } },
+      { { 0.0, 0.0 }, { 1.0, 1.0 } },
+      { { 0.0, 0.0 }, { 1.0, 1.0 } },
+      { { 0.0, 0.0 }, { 1.0, 1.0 } } },
+    { 2, 2, 2 }, // number of nodes per curve
     // { CATMULL_ROM, CATMULL_ROM, CATMULL_ROM},  // curve types
-    { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
+    { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
     // { CUBIC_SPLINE, CUBIC_SPLINE, CUBIC_SPLINE},
-    DT_S_SCALE_AUTOMATIC_RGB, // autoscale_ab
+    DT_S_SCALE_MANUAL_RGB, // tc_mode
     0,
     1 // unbound_ab
   };
@@ -798,13 +944,6 @@ void init_global(dt_iop_module_so_t *module)
       = (dt_iop_tonecurve_global_data_t *)malloc(sizeof(dt_iop_tonecurve_global_data_t));
   module->data = gd;
   gd->kernel_tonecurve = dt_opencl_create_kernel(program, "tonecurve");
-  for(int k=0; k<3; k++)
-  {
-    gd->picked_color[k] = .0f;
-    gd->picked_color_min[k] = .0f;
-    gd->picked_color_max[k] = .0f;
-    gd->picked_output_color[k] = .0f;
-  }
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -875,11 +1014,12 @@ static void logbase_callback(GtkWidget *slider, dt_iop_module_t *self)
   }
 }
 
-static void autoscale_ab_callback(GtkWidget *widget, dt_iop_module_t *self)
+static void tc_mode_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+//  dt_iop_tonecurve_params_t *d = (dt_iop_tonecurve_params_t *)self->default_params;
   const int combo = dt_bauhaus_combobox_get(widget);
 
   g->channel = (tonecurve_channel_t)ch_L;
@@ -888,26 +1028,25 @@ static void autoscale_ab_callback(GtkWidget *widget, dt_iop_module_t *self)
   switch(combo)
   {
     case 0:
-      p->tonecurve_autoscale_ab = DT_S_SCALE_AUTOMATIC;
-      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+      p->tonecurve_tc_mode = DT_S_SCALE_AUTOMATIC_LAB;
       break;
-
     case 1:
-      p->tonecurve_autoscale_ab = DT_S_SCALE_MANUAL;
-      gtk_notebook_set_show_tabs(g->channel_tabs, TRUE);
+      p->tonecurve_tc_mode = DT_S_SCALE_MANUAL_LAB;
       break;
-
     case 2:
-      p->tonecurve_autoscale_ab = DT_S_SCALE_AUTOMATIC_XYZ;
-      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+      p->tonecurve_tc_mode = DT_S_SCALE_AUTOMATIC_XYZ;
       break;
-
+//    case 3:
+//      p->tonecurve_tc_mode = DT_S_SCALE_AUTOMATIC_RGB;
+//      break;
     case 3:
-      p->tonecurve_autoscale_ab = DT_S_SCALE_AUTOMATIC_RGB;
-      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+      p->tonecurve_tc_mode = DT_S_SCALE_MANUAL_RGB;
+      break;
+    case 4:
+      p->tonecurve_tc_mode = DT_S_SCALE_MANUAL_LCH;
       break;
   }
-
+  tabs_update(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
@@ -918,9 +1057,12 @@ static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   const int combo = dt_bauhaus_combobox_get(widget);
-  if(combo == 0) p->tonecurve_type[ch_L] = p->tonecurve_type[ch_a] = p->tonecurve_type[ch_b] = CUBIC_SPLINE;
-  if(combo == 1) p->tonecurve_type[ch_L] = p->tonecurve_type[ch_a] = p->tonecurve_type[ch_b] = CATMULL_ROM;
-  if(combo == 2) p->tonecurve_type[ch_L] = p->tonecurve_type[ch_a] = p->tonecurve_type[ch_b] = MONOTONE_HERMITE;
+  for(int ch=0; ch<DT_IOP_TONECURVE_MAX_CH; ch++)
+  {
+    if(combo == 0) p->tonecurve_type[ch] = CUBIC_SPLINE;
+    if(combo == 1) p->tonecurve_type[ch] = CATMULL_ROM;
+    if(combo == 2) p->tonecurve_type[ch] = MONOTONE_HERMITE;
+  }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
@@ -945,10 +1087,10 @@ static gboolean area_resized(GtkWidget *widget, GdkEvent *event, gpointer user_d
   return TRUE;
 }
 
-static float to_log(const float x, const float base, const int ch, const int semilog, const int is_ordinate)
+static float to_log(const float x, const float base, const int log_enabled, const int semilog, const int is_ordinate)
 {
   // don't log-encode the a and b channels
-  if(base > 0.0f && base != 1.0f && ch == ch_L)
+  if(base > 0.0f && base != 1.0f && log_enabled)
   {
     if (semilog == 1 && is_ordinate == 1)
     {
@@ -971,10 +1113,10 @@ static float to_log(const float x, const float base, const int ch, const int sem
   }
 }
 
-static float to_lin(const float x, const float base, const int ch, const int semilog, const int is_ordinate)
+static float to_lin(const float x, const float base, const int log_enabled, const int semilog, const int is_ordinate)
 {
   // don't log-encode the a and b channels
-  if(base > 0.0f && base != 1.0f && ch == ch_L)
+  if(base > 0.0f && base != 1.0f && log_enabled)
   {
     if (semilog == 1 && is_ordinate == 1)
     {
@@ -999,14 +1141,16 @@ static float to_lin(const float x, const float base, const int ch, const int sem
 
 static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->data;
+  if(darktable.gui->reset) return;
 
-  for(int k=0; k<3; k++)
+  self->request_color_pick
+      = (gtk_toggle_button_get_active(togglebutton) ? DT_REQUEST_COLORPICK_MODULE : DT_REQUEST_COLORPICK_OFF);
+
+  /* set the area sample size */
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
-    gd->picked_color[k] = self->picked_color[k];
-    gd->picked_color_min[k] = self->picked_color_min[k];
-    gd->picked_color_max[k] = self->picked_color_max[k];
-    gd->picked_output_color[k] = self->picked_output_color[k];
+    dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
+    dt_dev_reprocess_all(self->dev);
   }
   dt_control_queue_redraw_widget(self->widget);
 }
@@ -1041,13 +1185,13 @@ static void dt_iop_tonecurve_sanity_check(dt_iop_module_t *self, GtkWidget *widg
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
 
-  int ch = c->channel;
-  int nodes = p->tonecurve_nodes[ch];
+  const int ch = c->channel;
+  const int nodes = p->tonecurve_nodes[ch];
   dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
-  int autoscale_ab = p->tonecurve_autoscale_ab;
+  int nb_ch = mode_curves[p->tonecurve_tc_mode].nb_ch;
 
-  // if autoscale_ab is on: do not modify a and b curves
-  if((autoscale_ab != DT_S_SCALE_MANUAL) && ch != ch_L) return;
+  // if channel not included in this mode
+  if (ch > nb_ch - 1) return;
 
   if(nodes <= 2) return;
 
@@ -1116,10 +1260,10 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
 
   int ch = c->channel;
-  int autoscale_ab = p->tonecurve_autoscale_ab;
+  int nb_ch = mode_curves[p->tonecurve_tc_mode].nb_ch;
 
-  // if autoscale_ab is on: do not modify a and b curves
-  if((autoscale_ab != DT_S_SCALE_MANUAL) && ch != ch_L) return TRUE;
+  // if channel not included in this mode
+  if (ch > nb_ch - 1) return TRUE;
 
   if(c->selected < 0) return TRUE;
 
@@ -1140,10 +1284,10 @@ static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget, GdkEventKey *event
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
 
   int ch = c->channel;
-  int autoscale_ab = p->tonecurve_autoscale_ab;
+  int nb_ch = mode_curves[p->tonecurve_tc_mode].nb_ch;
 
-  // if autoscale_ab is on: do not modify a and b curves
-  if((autoscale_ab != DT_S_SCALE_MANUAL) && ch != ch_L) return TRUE;
+  // if channel not included in this mode
+  if (ch > nb_ch - 1) return TRUE;
 
   if(c->selected < 0) return TRUE;
 
@@ -1183,7 +1327,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
 
-  for(int ch = 0; ch < ch_max; ch++)
+  for(int ch = 0; ch < DT_IOP_TONECURVE_MAX_CH; ch++)
   {
     c->minmax_curve[ch] = dt_draw_curve_new(0.0, 1.0, p->tonecurve_type[ch]);
     c->minmax_curve_nodes[ch] = p->tonecurve_nodes[ch];
@@ -1201,18 +1345,20 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  c->autoscale_ab = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->autoscale_ab, NULL, _("color space"));
-  dt_bauhaus_combobox_add(c->autoscale_ab, _("Lab, linked channels"));
-  dt_bauhaus_combobox_add(c->autoscale_ab, _("Lab, independent channels"));
-  dt_bauhaus_combobox_add(c->autoscale_ab, _("XYZ, linked channels"));
-  dt_bauhaus_combobox_add(c->autoscale_ab, _("RGB, linked channels"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->autoscale_ab, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(c->autoscale_ab, _("if set to auto, a and b curves have no effect and are "
+  c->tc_mode = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(c->tc_mode, NULL, _("color space"));
+  dt_bauhaus_combobox_add(c->tc_mode, _("Lab, linked channels"));
+  dt_bauhaus_combobox_add(c->tc_mode, _("Lab, independent channels"));
+  dt_bauhaus_combobox_add(c->tc_mode, _("XYZ, linked channels"));
+//  dt_bauhaus_combobox_add(c->tc_mode, _("RGB, linked channels"));
+  dt_bauhaus_combobox_add(c->tc_mode, _("RGB, independent channels"));
+  dt_bauhaus_combobox_add(c->tc_mode, _("LCh, independent channels"));
+  gtk_box_pack_start(GTK_BOX(self->widget), c->tc_mode, TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(c->tc_mode, _("if set to Lab linked channels, a and b curves have no effect and are "
                                                  "not displayed. chroma values (a and b) of each pixel are "
-                                                 "then adjusted based on L curve data. auto XYZ is similar "
+                                                 "then adjusted based on L curve data. XYZ is similar "
                                                  "but applies the saturation changes in XYZ space."));
-  g_signal_connect(G_OBJECT(c->autoscale_ab), "value-changed", G_CALLBACK(autoscale_ab_callback), self);
+  g_signal_connect(G_OBJECT(c->tc_mode), "value-changed", G_CALLBACK(tc_mode_callback), self);
 
   // tabs
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
@@ -1229,6 +1375,10 @@ void gui_init(struct dt_iop_module_t *self)
                            GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)), gtk_label_new(_("  b  ")));
   gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
                               _("tonecurve for b channel"));
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
+                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)), gtk_label_new("spare"));
+  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
+                              "spare");
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
@@ -1321,9 +1471,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   // this one we need to unref manually. not so the initially unowned widgets.
   g_object_unref(c->sizegroup);
-  dt_draw_curve_destroy(c->minmax_curve[ch_L]);
-  dt_draw_curve_destroy(c->minmax_curve[ch_a]);
-  dt_draw_curve_destroy(c->minmax_curve[ch_b]);
+  for(int ch = 0; ch < DT_IOP_TONECURVE_MAX_CH; ch++) dt_draw_curve_destroy(c->minmax_curve[ch]);
   free(self->gui_data);
   self->gui_data = NULL;
 }
@@ -1340,11 +1488,44 @@ static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossin
   return TRUE;
 }
 
-static void picker_scale(const float *in, float *out)
+static void picker_scale(const float *in, float *out, int tc_mode)
 {
-  out[0] = CLAMP(in[0] / 100.0f, 0.0f, 1.0f);
-  out[1] = CLAMP((in[1] + 128.0f) / 256.0f, 0.0f, 1.0f);
-  out[2] = CLAMP((in[2] + 128.0f) / 256.0f, 0.0f, 1.0f);
+  float inl[DT_IOP_TONECURVE_MAX_CH];
+  const int colorspace = mode_curves[tc_mode].colorspace;
+  const int nb_ch = mode_curves[tc_mode].nb_ch;
+  for(int ch = 0; ch < DT_IOP_TONECURVE_MAX_CH ; ch++) inl[ch] = in[ch];
+  if (colorspace == DT_TC_LCH)
+    dt_Lab_2_LCH(in, inl);
+  else if (colorspace == DT_TC_RGB)
+    dt_Lab_to_prophotorgb(in, inl);
+  else if (colorspace == DT_TC_XYZ)
+    dt_Lab_to_XYZ(in, inl);
+  for(int ch = 0; ch < nb_ch ; ch++)
+  {
+    const int j = mode_curves[tc_mode].curve_detail_i[ch];
+    if (curve_detail[j].c_extrapolation == 2)
+    {
+      inl[ch] = CLAMP((inl[ch] - curve_detail[j].c_min_pipe_value) / (curve_detail[j].c_max_pipe_value - curve_detail[j].c_min_pipe_value + 1.0f), 0.0f, 1.0f);
+    }
+    else
+    {
+      inl[ch] = CLAMP(inl[ch] / curve_detail[j].c_max_pipe_value, 0.0f, 1.0f);
+    }
+  }
+  if (colorspace == DT_TC_RGB)
+  {
+    out[0] = 0.2126f * inl[0] + 0.7152f * inl[1] + 0.0722f * inl[2];  // luminance RGB
+    out[1] = inl[0];
+    out[2] = inl[1];
+    out[3] = inl[2];
+  }
+  else
+  {
+    out[0] = inl[0];
+    out[1] = inl[1];
+    out[2] = inl[2];
+  }
+//printf("tc mode: %d, cs: %d - in[0]: %.2f, in[1]: %2.f, in[2]: %.2f \n  inl[0]: %.2f, inl[1]: %2.f, in_l[2]: %.2f\n  out[0]: %.2f, out[1]: %2.f, out[2]: %.2f, out[3]: %.2f\n  ", tc_mode, colorspace, in[0], in[1], in[2], inl[0], inl[1], inl[2], out[0], out[1], out[2], out[3] );
 }
 
 static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
@@ -1353,18 +1534,16 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   dt_develop_t *dev = darktable.develop;
-  dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->data;
-
-  const float color_labels_left[3][3]
-      = { { 0.3f, 0.3f, 0.3f }, { 0.0f, 0.34f, 0.27f }, { 0.0f, 0.27f, 0.58f } };
-
-  const float color_labels_right[3][3]
-      = { { 0.3f, 0.3f, 0.3f }, { 0.53f, 0.08f, 0.28f }, { 0.81f, 0.66f, 0.0f } };
 
   int ch = c->channel;
   int nodes = p->tonecurve_nodes[ch];
   dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
-  int autoscale_ab = p->tonecurve_autoscale_ab;
+  const int tc_mode = p->tonecurve_tc_mode;
+  const int curve_detail_i = mode_curves[tc_mode].curve_detail_i[ch];
+  const int chx = curve_detail[curve_detail_i].chx;
+  const int chy = curve_detail[curve_detail_i].chy;
+  const int log_enabled = curve_detail[curve_detail_i].c_log_enabled;
+
   if(c->minmax_curve_type[ch] != p->tonecurve_type[ch] || c->minmax_curve_nodes[ch] != p->tonecurve_nodes[ch])
   {
     dt_draw_curve_destroy(c->minmax_curve[ch]);
@@ -1430,18 +1609,43 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_fill(cr);
 
   // draw color labels
-  const int cells = 8;
-  for(int j = 0; j < cells; j++)
+  if (tc_mode == DT_S_SCALE_MANUAL_LAB)  // Lab
   {
+    const int cells = 8;
+    const float color_labels_left[3][3] =
+          { { 0.3f, 0.3f, 0.3f }, { 0.0f, 0.34f, 0.27f }, { 0.0f, 0.27f, 0.58f } };
+    const float color_labels_right[3][3] =
+          { { 0.3f, 0.3f, 0.3f }, { 0.53f, 0.08f, 0.28f }, { 0.81f, 0.66f, 0.0f } };
+    for(int j = 0; j < cells; j++)
+    {
+      for(int i = 0; i < cells; i++)
+      {
+        const float f = (cells - 1 - j + i) / (2.0f * cells - 2.0f);
+        cairo_set_source_rgba(cr, (1.0f - f) * color_labels_left[ch][0] + f * color_labels_right[ch][0],
+                              (1.0f - f) * color_labels_left[ch][1] + f * color_labels_right[ch][1],
+                              (1.0f - f) * color_labels_left[ch][2] + f * color_labels_right[ch][2],
+                              .5f); // blend over to make colors darker, so the overlay is more visible
+        cairo_rectangle(cr, width * i / (float)cells, height * j / (float)cells, width / (float)cells,
+                        height / (float)cells);
+        cairo_fill(cr);
+      }
+    }
+  }
+  else if (tc_mode == DT_S_SCALE_MANUAL_LCH && ch == ch_Ch) // Ch
+  {
+    const int cells = 64;
+    const float color_labels[5][3] =
+          { { 0.53f, 0.08f, 0.28f }, { 0.81f, 0.66f, 0.0f }, { 0.0f, 0.34f, 0.27f }, { 0.0f, 0.27f, 0.58f }, { 0.53f, 0.08f, 0.28f } };
     for(int i = 0; i < cells; i++)
     {
-      const float f = (cells - 1 - j + i) / (2.0f * cells - 2.0f);
-      cairo_set_source_rgba(cr, (1.0f - f) * color_labels_left[ch][0] + f * color_labels_right[ch][0],
-                            (1.0f - f) * color_labels_left[ch][1] + f * color_labels_right[ch][1],
-                            (1.0f - f) * color_labels_left[ch][2] + f * color_labels_right[ch][2],
-                            .5f); // blend over to make colors darker, so the overlay is more visible
-      cairo_rectangle(cr, width * i / (float)cells, height * j / (float)cells, width / (float)cells,
-                      height / (float)cells);
+      const int j = i * 4 / cells;
+      const float f = fmod((float)i, (float)cells / 4.0f) / ((float)cells / 4.0f);
+      cairo_set_source_rgba(cr, (1.0f - f) * color_labels[j][0] + f * color_labels[j+1][0],
+                            (1.0f - f) * color_labels[j][1] + f * color_labels[j+1][1],
+                            (1.0f - f) * color_labels[j][2] + f * color_labels[j+1][2],
+                            1.0f);
+      cairo_rectangle(cr, width * i / (float)cells, height * (cells - 1) / (float)cells, width / (float)cells,
+                    height / (float)cells);
       cairo_fill(cr);
     }
   }
@@ -1450,7 +1654,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
   cairo_set_source_rgb(cr, .1, .1, .1);
 
-  if (c->loglogscale > 0.0f && ch == ch_L )
+  if (c->loglogscale > 0.0f && log_enabled )
   {
     if (c->semilog == 0)
     {
@@ -1471,12 +1675,21 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   }
 
   // draw identity line
-  cairo_move_to(cr, 0, height);
-  cairo_line_to(cr, width, 0);
+  if (chx == chy)
+  {
+    cairo_move_to(cr, 0, height);
+    cairo_line_to(cr, width, 0);
+  }
+  else
+  {
+    const float height2 = to_log(height / 2.0f, c->loglogscale, log_enabled, c->semilog, 1);
+    cairo_move_to(cr, 0, height2);
+    cairo_line_to(cr, width, height2);
+  }
   cairo_stroke(cr);
 
-  // if autoscale_ab is on: do not display a and b curves
-  if((autoscale_ab != DT_S_SCALE_MANUAL) && ch != ch_L) goto finally;
+  // if channel not included in this mode
+  if(ch > mode_curves[tc_mode].nb_ch - 1)  goto finally;
 
   // draw nodes positions
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
@@ -1485,8 +1698,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
   for(int k = 0; k < nodes; k++)
   {
-    const float x = to_log(tonecurve[k].x, c->loglogscale, ch, c->semilog, 0),
-                y = to_log(tonecurve[k].y, c->loglogscale, ch, c->semilog, 1);
+    const float x = to_log(tonecurve[k].x, c->loglogscale, log_enabled, c->semilog, 0),
+                y = to_log(tonecurve[k].y, c->loglogscale, log_enabled, c->semilog, 1);
 
     cairo_arc(cr, x * width, -y * height, DT_PIXEL_APPLY_DPI(3), 0, 2. * M_PI);
     cairo_stroke(cr);
@@ -1498,8 +1711,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   if(c->selected >= 0)
   {
     cairo_set_source_rgb(cr, .9, .9, .9);
-    const float x = to_log(tonecurve[c->selected].x, c->loglogscale, ch, c->semilog, 0),
-                y = to_log(tonecurve[c->selected].y, c->loglogscale, ch, c->semilog, 1);
+    const float x = to_log(tonecurve[c->selected].x, c->loglogscale, log_enabled, c->semilog, 0),
+                y = to_log(tonecurve[c->selected].y, c->loglogscale, log_enabled, c->semilog, 1);
 
     cairo_arc(cr, x * width, -y * height, DT_PIXEL_APPLY_DPI(4), 0, 2. * M_PI);
     cairo_stroke(cr);
@@ -1507,21 +1720,25 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
   // draw histogram in background
   // only if module is enabled
-  if(self->enabled)
+  if(self->enabled )
   {
     float *raw_mean, *raw_min, *raw_max;
     float *raw_mean_output;
-    float picker_mean[3], picker_min[3], picker_max[3];
+    float picker_mean[DT_IOP_TONECURVE_MAX_CH];
+    float picker_min[DT_IOP_TONECURVE_MAX_CH];
+    float picker_max[DT_IOP_TONECURVE_MAX_CH];
+    float picker_mean_output[DT_IOP_TONECURVE_MAX_CH];
 
-    raw_mean = gd->picked_color;
-    raw_min = gd->picked_color_min;
-    raw_max = gd->picked_color_max;
-    raw_mean_output = gd->picked_output_color;
+    raw_mean = self->picked_color;
+    raw_min = self->picked_color_min;
+    raw_max = self->picked_color_max;
+    raw_mean_output = self->picked_output_color;
 
-    const uint32_t *hist = self->histogram;
-    const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? self->histogram_max[ch]
-                                                                          : logf(1.0 + self->histogram_max[ch]);
-    if(hist && hist_max > 0.0f)
+    hist = self->histogram;
+    hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? self->histogram_max[ch]
+                                                              : logf(1.0 + self->histogram_max[ch]);
+    // not for C(L) or C(h) tabs
+    if(hist && hist_max > 0.0f && curve_detail[curve_detail_i].c_histogram_enabled)
     {
       cairo_save(cr);
       cairo_scale(cr, width / 255.0, -(height - DT_PIXEL_APPLY_DPI(5)) / hist_max);
@@ -1549,22 +1766,22 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       {
         sample = samples->data;
 
-        picker_scale(sample->picked_color_lab_mean, picker_mean);
-        picker_scale(sample->picked_color_lab_min, picker_min);
-        picker_scale(sample->picked_color_lab_max, picker_max);
-
+        picker_scale(sample->picked_color_lab_mean, picker_mean, tc_mode);
+        picker_scale(sample->picked_color_lab_min, picker_min, tc_mode);
+        picker_scale(sample->picked_color_lab_max, picker_max, tc_mode);
         // Convert abcissa to log coordinates if needed
-        picker_min[ch] = to_log(picker_min[ch], c->loglogscale, ch, c->semilog, 0);
-        picker_max[ch] = to_log(picker_max[ch], c->loglogscale, ch, c->semilog, 0);
-        picker_mean[ch] = to_log(picker_mean[ch], c->loglogscale, ch, c->semilog, 0);
+        picker_min[ch] = to_log(picker_min[ch], c->loglogscale, log_enabled, c->semilog, 0);
+        picker_max[ch] = to_log(picker_max[ch], c->loglogscale, log_enabled, c->semilog, 0);
+        picker_mean[ch] = to_log(picker_mean[ch], c->loglogscale, log_enabled, c->semilog, 0);
 
+        const int ch2 = (chx == chy) ? ch : chx; // display the reference value for the measure
         cairo_set_source_rgba(cr, 0.5, 0.7, 0.5, 0.15);
-        cairo_rectangle(cr, width * picker_min[ch], 0, width * fmax(picker_max[ch] - picker_min[ch], 0.0f),
+        cairo_rectangle(cr, width * picker_min[ch2], 0, width * fmax(picker_max[ch2] - picker_min[ch2], 0.0f),
                         -height);
         cairo_fill(cr);
         cairo_set_source_rgba(cr, 0.5, 0.7, 0.5, 0.5);
-        cairo_move_to(cr, width * picker_mean[ch], 0);
-        cairo_line_to(cr, width * picker_mean[ch], -height);
+        cairo_move_to(cr, width * picker_mean[ch2], 0);
+        cairo_line_to(cr, width * picker_mean[ch2], -height);
         cairo_stroke(cr);
 
         samples = g_slist_next(samples);
@@ -1580,10 +1797,14 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         pango_font_description_set_absolute_size(desc, PANGO_SCALE);
         layout = pango_cairo_create_layout(cr);
         pango_layout_set_font_description(layout, desc);
-
-        picker_scale(raw_mean, picker_mean);
-        picker_scale(raw_min, picker_min);
-        picker_scale(raw_max, picker_max);
+        picker_scale(raw_mean, picker_mean, tc_mode);
+        picker_scale(raw_min, picker_min, tc_mode);
+        picker_scale(raw_max, picker_max, tc_mode);
+        const float picker_mean2 = picker_mean[chy]; // keep memory for value display
+        // Convert abcissa to log coordinates if needed
+        picker_min[ch] = to_log(picker_min[ch], c->loglogscale, log_enabled, c->semilog, 0);
+        picker_max[ch] = to_log(picker_max[ch], c->loglogscale, log_enabled, c->semilog, 0);
+        picker_mean[ch] = to_log(picker_mean[ch], c->loglogscale, log_enabled, c->semilog, 0);
 
         // scale conservatively to 100% of width:
         snprintf(text, sizeof(text), "100.00 / 100.00 ( +100.00)");
@@ -1591,21 +1812,29 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         pango_layout_get_pixel_extents(layout, &ink, NULL);
         pango_font_description_set_absolute_size(desc, width*1.0/ink.width * PANGO_SCALE);
         pango_layout_set_font_description(layout, desc);
-
-        picker_min[ch] = to_log(picker_min[ch], c->loglogscale, ch, c->semilog, 0);
-        picker_max[ch] = to_log(picker_max[ch], c->loglogscale, ch, c->semilog, 0);
-        picker_mean[ch] = to_log(picker_mean[ch], c->loglogscale, ch, c->semilog, 0);
-
+//printf("tc: %d, ch: %d, chx: %d, chy %d ", tc_mode, ch, chx, chy);
+        const int ch2 = (chx == chy) ? ch : chx; // display the reference value for the measure
+                                                  // for colorspace <> Lab, min & max may not be valid
         cairo_set_source_rgba(cr, 0.7, 0.5, 0.5, 0.33);
-        cairo_rectangle(cr, width * picker_min[ch], 0, width * fmax(picker_max[ch] - picker_min[ch], 0.0f),
+        cairo_rectangle(cr, width * picker_min[ch2], 0, width * fmax(picker_max[ch2] - picker_min[ch2], 0.0f),
                         -height);
+//printf("min: %.2f, max: %.2f, mean: %.2f\n", picker_min[ch2] , picker_max[ch2], picker_mean[ch2]);
         cairo_fill(cr);
         cairo_set_source_rgba(cr, 0.9, 0.7, 0.7, 0.5);
-        cairo_move_to(cr, width * picker_mean[ch], 0);
-        cairo_line_to(cr, width * picker_mean[ch], -height);
+        cairo_move_to(cr, width * picker_mean[ch2], 0);
+        cairo_line_to(cr, width * picker_mean[ch2], -height);
         cairo_stroke(cr);
 
-        snprintf(text, sizeof(text), "%.1f → %.1f", raw_mean[ch], raw_mean_output[ch]);
+        picker_scale(raw_mean_output, picker_mean_output, tc_mode);
+        float max_scale_value = curve_detail[mode_curves[tc_mode].curve_detail_i[chy]].c_max_display_value;
+        const float min_scale_value = curve_detail[mode_curves[tc_mode].curve_detail_i[chy]].c_min_display_value;
+        if (curve_detail[mode_curves[tc_mode].curve_detail_i[chy]].c_extrapolation == 2)
+        {
+          max_scale_value = max_scale_value - min_scale_value + 1.0f;
+          snprintf(text, sizeof(text), "%.1f → %.1f", picker_mean2 * max_scale_value + min_scale_value, picker_mean_output[chy] * max_scale_value + min_scale_value);
+        }
+        else
+          snprintf(text, sizeof(text), "%.1f → %.1f", picker_mean2 * max_scale_value, picker_mean_output[chy] * max_scale_value);
 
         cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
         cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(0.04) * height);
@@ -1638,14 +1867,23 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     pango_font_description_set_absolute_size(desc, width*1.0/ink.width * PANGO_SCALE);
     pango_layout_set_font_description(layout, desc);
 
-    const float min_scale_value = ch == ch_L ? 0.0f : -128.0f;
-    const float max_scale_value = ch == ch_L ? 100.0f : 128.0f;
+//    const float min_scale_value = ch == ch_L ? 0.0f : (tc_mode != DT_S_SCALE_MANUAL_LCH ? -128.0f : 0.0f) ;
+//    const float max_scale_value = ch == ch_L ? 100.0f : (tc_mode != DT_S_SCALE_MANUAL_LCH ? 128.0f : 100.0f);
+    const float min_scale_value = curve_detail[mode_curves[tc_mode].curve_detail_i[chy]].c_min_display_value;
+    const float max_scale_value = curve_detail[mode_curves[tc_mode].curve_detail_i[chy]].c_max_display_value;
 
     const float x_node_value = tonecurve[c->selected].x * (max_scale_value - min_scale_value) + min_scale_value;
     const float y_node_value = tonecurve[c->selected].y * (max_scale_value - min_scale_value) + min_scale_value;
     const float d_node_value = y_node_value - x_node_value;
-    snprintf(text, sizeof(text), "%.1f / %.1f ( %+.1f)", x_node_value, y_node_value, d_node_value);
 
+    if (chx == chy)
+    {
+      snprintf(text, sizeof(text), "%.1f / %.1f ( %+.1f)", x_node_value, y_node_value, d_node_value);
+    }
+    else // x & y are not meaningful x & y are different data. Keep only the variation
+    {
+      snprintf(text, sizeof(text), "( %+.1f%%)", (y_node_value - 50.0f) * 2.0f);
+    }
     cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
     pango_layout_set_text(layout, text, -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
@@ -1657,8 +1895,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
     // enlarge selected node
     cairo_set_source_rgb(cr, .9, .9, .9);
-    const float x = to_log(tonecurve[c->selected].x, c->loglogscale, ch, c->semilog, 0),
-                y = to_log(tonecurve[c->selected].y, c->loglogscale, ch, c->semilog, 1);
+    const float x = to_log(tonecurve[c->selected].x, c->loglogscale, log_enabled, c->semilog, 0),
+                y = to_log(tonecurve[c->selected].y, c->loglogscale, log_enabled, c->semilog, 1);
 
     cairo_arc(cr, x * width, -y * height, DT_PIXEL_APPLY_DPI(4),
               0, 2. * M_PI);
@@ -1670,7 +1908,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_set_source_rgb(cr, .9, .9, .9);
   // cairo_set_line_cap  (cr, CAIRO_LINE_CAP_SQUARE);
 
-  const float y_offset = to_log(c->draw_ys[0], c->loglogscale, ch, c->semilog, 1);
+  const float y_offset = to_log(c->draw_ys[0], c->loglogscale, log_enabled, c->semilog, 1);
   cairo_move_to(cr, 0, -height * y_offset);
 
   for(int k = 1; k < DT_IOP_TONECURVE_RES; k++)
@@ -1687,8 +1925,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       yy = c->draw_ys[k];
     }
 
-    const float x = to_log(xx, c->loglogscale, ch, c->semilog, 0),
-                y = to_log(yy, c->loglogscale, ch, c->semilog, 1);
+    const float x = to_log(xx, c->loglogscale, log_enabled, c->semilog, 0),
+                y = to_log(yy, c->loglogscale, log_enabled, c->semilog, 1);
 
     cairo_line_to(cr, x * width, -height * y);
   }
@@ -1737,13 +1975,13 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
 
-  int ch = c->channel;
+  const int ch = c->channel;
   int nodes = p->tonecurve_nodes[ch];
   dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
-  int autoscale_ab = p->tonecurve_autoscale_ab;
+  const int tc_mode = p->tonecurve_tc_mode;
+  const int log_enabled = curve_detail[mode_curves[tc_mode].curve_detail_i[ch]].c_log_enabled;
 
-  // if autoscale_ab is on: do not modify a and b curves
-  if((autoscale_ab != DT_S_SCALE_MANUAL) && ch != ch_L) goto finally;
+  if (ch >= mode_curves[tc_mode].nb_ch) goto finally;
 
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
@@ -1756,8 +1994,8 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
 
   const float mx = CLAMP(c->mouse_x, 0, width) / width;
   const float my = 1.0f - CLAMP(c->mouse_y, 0, height) / height;
-  const float linx = to_lin(mx, c->loglogscale, ch, c->semilog, 0),
-              liny = to_lin(my, c->loglogscale, ch, c->semilog, 1);
+  const float linx = to_lin(mx, c->loglogscale, log_enabled, c->semilog, 0),
+              liny = to_lin(my, c->loglogscale, log_enabled, c->semilog, 1);
 
   if(event->state & GDK_BUTTON1_MASK)
   {
@@ -1765,13 +2003,13 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
     if(c->selected >= 0)
     {
       // this is used to translate mause position in loglogscale to make this behavior unified with linear scale.
-      const float translate_mouse_x = old_m_x / width - to_log(tonecurve[c->selected].x, c->loglogscale, ch, c->semilog, 0);
-      const float translate_mouse_y = 1 - old_m_y / height - to_log(tonecurve[c->selected].y, c->loglogscale, ch, c->semilog, 1);
+      const float translate_mouse_x = old_m_x / width - to_log(tonecurve[c->selected].x, c->loglogscale, log_enabled, c->semilog, 0);
+      const float translate_mouse_y = 1 - old_m_y / height - to_log(tonecurve[c->selected].y, c->loglogscale, log_enabled, c->semilog, 1);
       // dx & dy are in linear coordinates
-      const float dx = to_lin(c->mouse_x / width - translate_mouse_x, c->loglogscale, ch, c->semilog, 0)
-                       - to_lin(old_m_x / width - translate_mouse_x, c->loglogscale, ch, c->semilog, 0);
-      const float dy = to_lin(1 - c->mouse_y / height - translate_mouse_y, c->loglogscale, ch, c->semilog, 1)
-                       - to_lin(1 - old_m_y / height - translate_mouse_y, c->loglogscale, ch, c->semilog, 1);
+      const float dx = to_lin(c->mouse_x / width - translate_mouse_x, c->loglogscale, log_enabled, c->semilog, 0)
+                       - to_lin(old_m_x / width - translate_mouse_x, c->loglogscale, log_enabled, c->semilog, 0);
+      const float dy = to_lin(1 - c->mouse_y / height - translate_mouse_y, c->loglogscale, log_enabled, c->semilog, 1)
+                       - to_lin(1 - old_m_y / height - translate_mouse_y, c->loglogscale, log_enabled, c->semilog, 1);
       return _move_point_internal(self, widget, dx, dy, event->state);
     }
     else if(nodes < DT_IOP_TONECURVE_MAXNODES && c->selected >= -1)
@@ -1790,8 +2028,8 @@ static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion
     for(int k = 0; k < nodes; k++)
     {
       float dist
-          = (my - to_log(tonecurve[k].y, c->loglogscale, ch, c->semilog, 1)) * (my - to_log(tonecurve[k].y, c->loglogscale, ch, c->semilog, 1))
-            + (mx - to_log(tonecurve[k].x, c->loglogscale, ch, c->semilog, 0)) * (mx - to_log(tonecurve[k].x, c->loglogscale, ch, c->semilog, 0));
+          = (my - to_log(tonecurve[k].y, c->loglogscale, log_enabled, c->semilog, 1)) * (my - to_log(tonecurve[k].y, c->loglogscale, log_enabled, c->semilog, 1))
+            + (mx - to_log(tonecurve[k].x, c->loglogscale, log_enabled, c->semilog, 0)) * (mx - to_log(tonecurve[k].x, c->loglogscale, log_enabled, c->semilog, 0));
       if(dist < min)
       {
         min = dist;
@@ -1814,9 +2052,11 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
 
   int ch = c->channel;
-  int autoscale_ab = p->tonecurve_autoscale_ab;
+//  int tc_mode = p->tonecurve_tc_mode;
   int nodes = p->tonecurve_nodes[ch];
   dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
+  const int tc_mode = p->tonecurve_tc_mode;
+  const int log_enabled = curve_detail[mode_curves[tc_mode].curve_detail_i[ch]].c_log_enabled;
 
   if(event->button == 1)
   {
@@ -1832,7 +2072,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
       c->mouse_y = event->y - inset;
 
       const float mx = CLAMP(c->mouse_x, 0, width) / (float)width;
-      const float linx = to_lin(mx, c->loglogscale, ch, c->semilog, 0);
+      const float linx = to_lin(mx, c->loglogscale, log_enabled, c->semilog, 0);
 
       // don't add a node too close to others in x direction, it can crash dt
       int selected = -1;
@@ -1868,7 +2108,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
           min *= min; // comparing against square
           for(int k = 0; k < nodes; k++)
           {
-            float other_y = to_log(tonecurve[k].y, c->loglogscale, ch, c->semilog, 1);
+            float other_y = to_log(tonecurve[k].y, c->loglogscale, log_enabled, c->semilog, 1);
             float dist = (y - other_y) * (y - other_y);
             if(dist < min) c->selected = selected;
           }
@@ -1882,9 +2122,9 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
     else if(event->type == GDK_2BUTTON_PRESS)
     {
       // reset current curve
-      // if autoscale_ab is on: allow only reset of L curve
-      if(!((autoscale_ab != DT_S_SCALE_MANUAL) && ch != ch_L))
-      {
+      // if tc_mode is on: allow only reset of L curve
+//      if(!((tc_mode != DT_S_SCALE_MANUAL_LAB && tc_mode != DT_S_SCALE_MANUAL_LCH) && ch != ch_L))
+//      {
         p->tonecurve_nodes[ch] = d->tonecurve_nodes[ch];
         p->tonecurve_type[ch] = d->tonecurve_type[ch];
         for(int k = 0; k < d->tonecurve_nodes[ch]; k++)
@@ -1896,18 +2136,19 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
         dt_bauhaus_combobox_set(c->interpolator, p->tonecurve_type[ch_L]);
         dt_dev_add_history_item(darktable.develop, self, TRUE);
         gtk_widget_queue_draw(self->widget);
-      }
-      else
+//      }
+/*      else
       {
         if(ch != ch_L)
         {
-          p->tonecurve_autoscale_ab = DT_S_SCALE_MANUAL;
+//          p->tonecurve_tc_mode = DT_S_SCALE_MANUAL_LAB;  // not sure what that's about ...
+          p->tonecurve_tc_mode = tc_mode;
           c->selected = -2; // avoid motion notify re-inserting immediately.
-          dt_bauhaus_combobox_set(c->autoscale_ab, 1);
+          dt_bauhaus_combobox_set(c->tc_mode, (tc_mode == DT_S_SCALE_MANUAL_LAB) ? 1 : 4);
           dt_dev_add_history_item(darktable.develop, self, TRUE);
           gtk_widget_queue_draw(self->widget);
         }
-      }
+      } */
       return TRUE;
     }
   }
@@ -1915,8 +2156,9 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
   {
     if(c->selected == 0 || c->selected == nodes - 1)
     {
-      float reset_value = c->selected == 0 ? 0 : 1;
-      tonecurve[c->selected].y = tonecurve[c->selected].x = reset_value;
+      int k = c->selected == 0 ? 0 : d->tonecurve_nodes[ch] - 1;
+      p->tonecurve[ch][c->selected].x = d->tonecurve[ch][k].x;
+      p->tonecurve[ch][c->selected].y = d->tonecurve[ch][k].y;
       gtk_widget_queue_draw(self->widget);
       dt_dev_add_history_item(darktable.develop, self, TRUE);
       return TRUE;
