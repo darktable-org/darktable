@@ -29,7 +29,7 @@ msgstr "Breite der Seitenleisten in Pixeln"
 #: ../src/lua/preferences.c:658
 #, c-format
 msgid "double click to reset to `%d'"
-msgstr "Doppelklick, um auf ‚%d‘ zurückzusetzen"
+msgstr "Doppelklick, um auf „%d” zurückzusetzen"
 
 #: ../build/src/preferences_gen.h:1708
 msgid "(needs a restart)"
@@ -69,7 +69,7 @@ msgstr "Eingebettete Vorschau-JPEGs nicht nutzen, sondern Raw halber Größe"
 #: ../src/lua/preferences.c:635 ../src/lua/preferences.c:699
 #, c-format
 msgid "double click to reset to `%s'"
-msgstr "Doppelklick, um auf ‚%s‘ zurückzusetzen"
+msgstr "Doppelklick, um auf „%s” zurückzusetzen"
 
 #: ../build/src/preferences_gen.h:1725 ../build/src/preferences_gen.h:1845
 #: ../build/src/preferences_gen.h:1892 ../build/src/preferences_gen.h:1912
@@ -186,7 +186,7 @@ msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
 msgstr ""
-"Wenn Raw+JPEG-Bilder zusammen in einem Verzeichnis liegen ist es nicht "
+"Wenn Raw+JPEG-Bilder zusammen in einem Verzeichnis liegen, ist es nicht "
 "sinnvoll, beides zu importieren. Mit dieser Option können alle gefundenen "
 "JPEGs ignoriert werden."
 
@@ -282,7 +282,7 @@ msgid ""
 "the full quality rendering path (better but slower)."
 msgstr ""
 "wenn die Größe eines Vorschaubildes größer als dieser Wert ist, dann wird es "
-"mit voller Qualität berechnet (besser, aber langsamer)."
+"mit voller Qualität berechnet (besser aber langsamer)."
 
 #: ../build/src/preferences_gen.h:2140
 msgid "enable extended thumb overlay"
@@ -405,7 +405,7 @@ msgid ""
 "number of images drawn and thus reduces the time needed to draw the images."
 msgstr ""
 "Nutze die aktuellen Filter-Einstellungen, um die Bilder auszuwählen, die auf "
-"der Karte angezeigt werden, d.h. es werden nur die Bilder auf der Karte "
+"der Karte angezeigt werden, d.h., es werden nur die Bilder auf der Karte "
 "angezeigt, die momentan im Filmstreifen zu sehen sind. Dies beschränkt die "
 "Anzahl der anzuzeigenden Bilder und verringert daher die Zeit, die zum "
 "Zeichnen der Karte benötigt wird."
@@ -614,9 +614,9 @@ msgid ""
 "filmstrip can show correct colors. otherwise the results may look wrong once "
 "the display profile gets changed."
 msgstr ""
-"Wenn die Farbverwaltung für gespeicherte Vorschaubilder aktiviert ist werden "
+"Wenn die Farbverwaltung für gespeicherte Vorschaubilder aktiviert ist, werden "
 "auf dem Leuchttisch und im Filmstreifen korrekte Farben angezeigt. "
-"Andernfalls können die Bilder sobald das Bildschirmfarbprofil geändert wurde "
+"Andernfalls können die Bilder, sobald das Bildschirmfarbprofil geändert wurde, "
 "falsch aussehen."
 
 #: ../build/src/preferences_gen.h:2755
@@ -709,8 +709,8 @@ msgid ""
 "ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgstr ""
 "Beim Export von Bildern werden die hierarchischen Tags auch in einer "
-"einfachen, flachen Liste gespeichert um die Kompatibilität mit einigen "
-"anderen Programmen zu verbessern. Wenn diese Option ausgewählt ist wird nur "
+"einfachen, flachen Liste gespeichert, um die Kompatibilität mit einigen "
+"anderen Programmen zu verbessern. Wenn diese Option ausgewählt ist, wird nur "
 "der letzte Teil genommen und der Rest ignoriert. Von 'foo|bar|baz' wird also "
 "nur 'baz' eingefügt."
 
@@ -723,7 +723,7 @@ msgid ""
 "if found, use OpenCL runtime on your system for improved processing speed. "
 "can be switched on and off at any time."
 msgstr ""
-"Benutze OpenCL-Laufzeitumgebung für schnellere Verarbeitung wenn sie "
+"Benutze OpenCL-Laufzeitumgebung für schnellere Verarbeitung, wenn sie "
 "gefunden werden kann. Kann jederzeit an- und ausgeschaltet werden."
 
 #: ../build/src/preferences_gen.h:2938 ../build/src/preferences_gen.h:2993
@@ -895,7 +895,7 @@ msgid ""
 "check file modification times of all xmp files on startup to check if any "
 "got updated in the meantime"
 msgstr ""
-"Prüfe die Zeitstempel aller XMP-Dateien beim Start um diejenigen zu finden, "
+"Prüfe die Zeitstempel aller XMP-Dateien beim Start, um diejenigen zu finden, "
 "die zwischenzeitlich bearbeitet wurden"
 
 #: ../build/src/preferences_gen.h:3221
@@ -907,7 +907,7 @@ msgid ""
 "this external program is used to play audio files some cameras record to "
 "keep notes for images"
 msgstr ""
-"Dieses externe Programm wird benutzt um die Audiodateien abzuspielen, die "
+"Dieses externe Programm wird benutzt, um die Audiodateien abzuspielen, die "
 "einige Kameras für Notizen zu Bildern aufzeichnen"
 
 #: ../build/src/preferences_gen.h:3245
@@ -919,7 +919,7 @@ msgid ""
 "use the per-camera basecurve by default instead of the generic manufacturer "
 "one if there is one available (needs a restart)"
 msgstr ""
-"Benutze standardmäßig die kameraspezifischen Basiskurven, anstatt die "
+"Benutze standardmäßig die kameraspezifischen Basiskurven anstatt die "
 "generischen Herstellerkurven (erfordert Neustart)"
 
 # zu frei?
@@ -1061,12 +1061,12 @@ msgstr "Ausgabedatei existiert bereits, sie wird umbenannt"
 #: ../src/cli/main.c:214
 #, c-format
 msgid "error: can't open folder %s"
-msgstr "Fehler: kann Ordner %s nicht öffnen"
+msgstr "Fehler: kann Ordner „%s” nicht öffnen"
 
 #: ../src/cli/main.c:232
 #, c-format
 msgid "error: can't open file %s"
-msgstr "Fehler: kann Datei %s nicht öffnen"
+msgstr "Fehler: kann Datei „%s” nicht öffnen"
 
 #: ../src/cli/main.c:246
 #, c-format
@@ -1076,7 +1076,7 @@ msgstr "keine Bilder zum exportieren gefunden, breche ab\n"
 #: ../src/cli/main.c:260
 #, c-format
 msgid "error: can't open xmp file %s"
-msgstr "Fehler: kann XMP-Datei %s nicht öffnen"
+msgstr "Fehler: kann XMP-Datei „%s” nicht öffnen"
 
 #: ../src/cli/main.c:278
 msgid "empty history stack"
@@ -1248,7 +1248,7 @@ msgstr "BRG (zum Testen)"
 #, c-format
 msgid "file `%s' to print not found for image %d on `%s'"
 msgstr ""
-"Datei ‚%s‘ zum Drucken von Bild %d konnte auf ‚%s‘ nicht gefunden werden"
+"Datei „%s” zum Drucken von Bild %d konnte auf „%s” nicht gefunden werden"
 
 #: ../src/common/cups_print.c:426
 msgid "failed to create temporary file for printing options"
@@ -1257,37 +1257,37 @@ msgstr "Fehler beim Erstellen der temporären Datei für Druckoptionen"
 #: ../src/common/cups_print.c:494
 #, c-format
 msgid "printing on `%s' cancelled"
-msgstr "drucken des Bildes auf `%s' abgebrochen"
+msgstr "Drucken des Bildes auf „%s” abgebrochen"
 
 #: ../src/common/cups_print.c:557
 #, c-format
 msgid "error while printing `%s' on `%s'"
-msgstr "Fehler beim Drucken von Bild ‚%s‘ auf ‚%s‘"
+msgstr "Fehler beim Drucken von Bild „%s” auf „%s”"
 
 #: ../src/common/cups_print.c:559
 #, c-format
 msgid "printing `%s' on `%s'"
-msgstr "drucke Bild ‚%s‘ auf ‚%s‘"
+msgstr "drucke Bild „%s” auf „%s”"
 
 #: ../src/common/darktable.c:225
 #, c-format
 msgid "found strange path `%s'"
-msgstr "Ungewöhnlicher Pfad ‚%s‘ gefunden"
+msgstr "Ungewöhnlicher Pfad „%s” gefunden"
 
 #: ../src/common/darktable.c:242
 #, c-format
 msgid "error loading directory `%s'"
-msgstr "Fehler beim Laden von Verzeichnis ‚%s‘"
+msgstr "Fehler beim Laden von Verzeichnis „%s”"
 
 #: ../src/common/darktable.c:265
 #, c-format
 msgid "file `%s' has unknown format!"
-msgstr "Datei ‚%s‘ hat ein unbekanntes Format!"
+msgstr "Datei „%s” hat ein unbekanntes Format!"
 
 #: ../src/common/darktable.c:278 ../src/libs/import.c:841
 #, c-format
 msgid "error loading file `%s'"
-msgstr "Fehler beim Laden von Datei ‚%s‘"
+msgstr "Fehler beim Laden von Datei „%s”"
 
 #: ../src/common/darktable.c:782
 msgid "darktable - run performance configuration?"
@@ -1495,7 +1495,7 @@ msgstr[1] "%d lokale Kopien wurden synchronisiert"
 #: ../src/common/imageio.c:609 ../src/common/mipmap_cache.c:1038
 #, c-format
 msgid "image `%s' is not available!"
-msgstr "Bild ‚%s‘ ist nicht verfügbar!"
+msgstr "Bild „%s” ist nicht verfügbar!"
 
 #: ../src/common/imageio.c:627
 #, c-format
@@ -1519,7 +1519,7 @@ msgstr "Exportieren"
 #: ../src/common/imageio.c:638
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
-msgstr "Stil ‚%s‘ kann zum Exportieren nicht gefunden werden."
+msgstr "Stil „%s” kann zum Exportieren nicht gefunden werden."
 
 #: ../src/common/import_session.c:272
 msgid ""
@@ -1617,12 +1617,12 @@ msgstr[1] "wende Bewertung %d auf %d Bilder an"
 
 #: ../src/common/ratings.c:143
 msgid "no images selected to apply rating"
-msgstr "kein Bild ausgewählt um Bewertung anzuwenden"
+msgstr "kein Bild ausgewählt, um Bewertung anzuwenden"
 
 #: ../src/common/styles.c:181
 #, c-format
 msgid "style with name '%s' already exists"
-msgstr "Stil mit dem Namen ‚%s‘ existiert bereits"
+msgstr "Stil mit dem Namen „%s” existiert bereits"
 
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:307 ../src/common/styles.c:311
@@ -1637,7 +1637,7 @@ msgstr "Stile/%s anwenden"
 #: ../src/common/styles.c:397 ../src/gui/styles_dialog.c:144
 #, c-format
 msgid "style named '%s' successfully created"
-msgstr "Stil mit dem Namen ‚%s‘ erfolgreich angelegt"
+msgstr "Stil mit dem Namen „%s” erfolgreich angelegt"
 
 #. fail :(
 #: ../src/common/styles.c:494 ../src/common/styles.c:512
@@ -1648,17 +1648,17 @@ msgstr "Kein Bild ausgewählt!"
 #: ../src/common/styles.c:816
 #, c-format
 msgid "failed to overwrite style file for %s"
-msgstr "Fehler beim Überschreiben der Stil-Datei für %s"
+msgstr "Fehler beim Überschreiben der Stil-Datei für „%s”"
 
 #: ../src/common/styles.c:822
 #, c-format
 msgid "style file for %s exists"
-msgstr "Stil-Datei für ‚%s‘ existiert bereits"
+msgstr "Stil-Datei für „%s” existiert bereits"
 
 #: ../src/common/styles.c:1050
 #, c-format
 msgid "style %s was successfully imported"
-msgstr "Stil ‚%s‘ erfolgreich importiert"
+msgstr "Stil „%s” erfolgreich importiert"
 
 #: ../src/common/utility.c:456
 msgid "above sea level"
@@ -1722,7 +1722,7 @@ msgstr[1] "%d Bilder aufnehmen"
 
 #: ../src/control/jobs/camera_jobs.c:120
 msgid "please set your camera to manual mode first!"
-msgstr "Bitte die Kamera erst auf manuellen Modus setzen!"
+msgstr "Bitte die Kamera erst auf manuellen Modus einstellen!"
 
 #: ../src/control/jobs/camera_jobs.c:210
 msgid "capture images"
@@ -1774,7 +1774,7 @@ msgstr[1] "%d Bilder zusammenfassen"
 #: ../src/control/jobs/control_jobs.c:493
 #, c-format
 msgid "wrote merged HDR `%s'"
-msgstr "Zusammengefasstes HDR ‚%s‘ geschrieben"
+msgstr "Zusammengefasstes HDR „%s” geschrieben"
 
 #: ../src/control/jobs/control_jobs.c:519
 #, c-format
@@ -1908,7 +1908,7 @@ msgstr[1] "%d Bilder nach %s exportieren"
 #: ../src/views/print.c:262
 #, c-format
 msgid "image `%s' is currently unavailable"
-msgstr "Bild ‚%s‘ ist momentan nicht verfügbar"
+msgstr "Bild „%s” ist momentan nicht verfügbar"
 
 #: ../src/control/jobs/control_jobs.c:1350
 msgid "merge hdr image"
@@ -2043,7 +2043,7 @@ msgstr "Bilder lokal kopieren"
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
-"Konnte keine Einstellungen vom Speicher-Modul ‚%s‘ bekommen, breche Export "
+"Konnte keine Einstellungen vom Speicher-Modul „%s” bekommen, breche Export "
 "ab.."
 
 #: ../src/control/jobs/control_jobs.c:1660
@@ -2099,7 +2099,7 @@ msgstr "Bild importieren"
 #: ../src/develop/blend.c:2861 ../src/develop/blend.c:3114
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
-msgstr "Überblenden in Modul ‚%s‘ ausgelassen: ROIs stimmen nicht überein"
+msgstr "Überblenden in Modul „%s” ausgelassen: ROIs stimmen nicht überein"
 
 #: ../src/develop/blend.c:2894 ../src/develop/blend.c:3149
 msgid "could not allocate buffer for blending"
@@ -2554,7 +2554,7 @@ msgstr "Maske normal oder invertiert anwenden"
 #| msgctxt "accel"
 #| msgid "tethering view"
 msgid "feathering guide"
-msgstr "Ausblenden anwenden auf"
+msgstr "Maskenanpassung mittels"
 
 #: ../src/develop/blend_gui.c:2085
 msgid "output image"
@@ -2566,18 +2566,18 @@ msgstr "Eingangsbild"
 
 #: ../src/develop/blend_gui.c:2095
 msgid "choose to guide mask by input or output image"
-msgstr "Wähle die Anwendung der Maske durch das Eingangs- oder Ausgangsbild."
+msgstr "Legt fest, durch welches Bild die kantensensitive Anapssung der Maske erfolgt."
 
 #: ../src/develop/blend_gui.c:2101
 #| msgctxt "accel"
 #| msgid "tethering view"
 msgid "feathering radius"
-msgstr "Ausblend-Radius"
+msgstr "Anpassungsradius"
 
 #: ../src/develop/blend_gui.c:2103
 #| msgid "spatial extent of the unblurring"
 msgid "spatial radius of feathering"
-msgstr "Räumlicher Radius für das Ausblenden"
+msgstr "Räumlicher Radius für die kantensensitive Anapssung der Maske"
 
 #: ../src/develop/blend_gui.c:2109
 msgid "mask blur"
@@ -2617,7 +2617,7 @@ msgid ""
 "to display channel. hover over parametric mask slider to select channel for "
 "display"
 msgstr ""
-"Maske und/oder Farbkanal anzeigen. Strg+Klick um die Maske zu zeigen, "
+"Maske und/oder Farbkanal anzeigen. Strg+Klick, um die Maske zu zeigen, "
 "Umschalt+Klick für den Kanal. Mit der Maus über die Masken-Regler fahren, um "
 "den Kanal für die Anzeige auszuwählen"
 
@@ -2636,7 +2636,7 @@ msgstr "Maskenverfeinerung"
 #: ../src/develop/develop.c:1185
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
-msgstr "%s: Modul ‚%s‘ hat unpassende Version: %d != %d"
+msgstr "%s: Modul „%s” hat unpassende Version: %d != %d"
 
 #: ../src/develop/imageop.c:1008
 msgid "new instance"
@@ -2742,7 +2742,7 @@ msgstr "Lightroom-XMP kann nicht gefunden werden!"
 #: ../src/develop/lightroom.c:1106
 #, c-format
 msgid "`%s' not a lightroom XMP!"
-msgstr "‚%s‘ ist kein Lightroom-XMP!"
+msgstr "„%s” ist kein Lightroom-XMP!"
 
 #: ../src/develop/lightroom.c:1566 ../src/libs/import.c:596
 msgid "tags"
@@ -2785,12 +2785,12 @@ msgstr "Rechtsklick um die Krümmung zurückzusetzen"
 
 #: ../src/develop/masks/masks.c:168
 msgid "ctrl+click to add a node"
-msgstr "Strg+Klick um einen Knoten hinzuzufügen"
+msgstr "Strg+Klick, um einen Knoten hinzuzufügen"
 
 #: ../src/develop/masks/masks.c:170 ../src/develop/masks/masks.c:203
 msgid "ctrl+scroll to set shape opacity, shift+scroll to set feather size"
 msgstr ""
-"Strg+Scrollen um die Deckkraft zu ändern, Umschalt+Scrollen ändert die "
+"Strg+Scrollen, um die Deckkraft zu ändern, Umschalt+Scrollen ändert die "
 "Randgröße"
 
 #: ../src/develop/masks/masks.c:175
@@ -2809,9 +2809,9 @@ msgid ""
 "scroll to set size, shift+scroll to set feather size\n"
 "ctrl+scroll to set shape opacity"
 msgstr ""
-"scrollen um die Größe einzustellen, Umschalt+scrollen um Ausblend-Größe "
+"scrollen, um die Größe einzustellen, Umschalt+scrollen, um Ausblend-Größe "
 "einzustellen\n"
-"Strg+scrollen um die Deckkraft einzustellen"
+"Strg+scrollen, um die Deckkraft einzustellen"
 
 #: ../src/develop/masks/masks.c:184
 msgid "ctrl+click to rotate"
@@ -2825,9 +2825,9 @@ msgid ""
 "shift+click to switch feathering mode, ctrl+scroll to set shape opacity,\n"
 "shift+scroll to set feather size, ctrl+click to rotate"
 msgstr ""
-"Umschalt+Klick um den Ausblend-Modus zu wechseln, Strg+Scrollen um die "
+"Umschalt+Klick, um den Ausblend-Modus zu wechseln, Strg+Scrollen, um die "
 "Deckkraft zu ändern,\n"
-"Shift+Scrollen um Ausblend-Größe einzustellen, Strg+Klick zum Drehen"
+"Shift+Scrollen, um Ausblend-Größe einzustellen, Strg+Klick zum Drehen"
 
 #: ../src/develop/masks/masks.c:191
 msgid ""
@@ -2845,7 +2845,7 @@ msgstr "Scrollen um die Pinselgröße zu ändern"
 #: ../src/develop/masks/masks.c:196
 msgid "scroll to set hardness, ctrl+scroll to set shape opacity"
 msgstr ""
-"Scrollen um die Härte zu ändern, Strg+Scrollen um die Deckkraft zu ändern"
+"Scrollen, um die Härte zu ändern, Strg+Scrollen, um die Deckkraft zu ändern"
 
 #: ../src/develop/masks/masks.c:335
 #, c-format
@@ -2906,7 +2906,7 @@ msgstr ""
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr ""
-"Kachelung für Modul ‚%s‘ fehlgeschlagen. Die Ausgabe könnte fehlerhaft sein."
+"Kachelung für Modul „%s” fehlgeschlagen. Die Ausgabe könnte fehlerhaft sein."
 
 #: ../src/dtgtk/resetlabel.c:58
 msgid "double-click to reset"
@@ -2953,7 +2953,7 @@ msgstr "Glühlampe, warm"
 #. Same as "Incandescent":
 #: ../src/external/wb_presets.c:54
 msgid "tungsten"
-msgstr "Wolfram"
+msgstr "Wolframlampe"
 
 #: ../src/external/wb_presets.c:55
 msgid "fluorescent"
@@ -2962,32 +2962,32 @@ msgstr "Fluoreszierend"
 #. In Canon cameras and some newer Nikon cameras:
 #: ../src/external/wb_presets.c:57
 msgid "fluorescent high"
-msgstr "Hoch fluoreszierend"
+msgstr "hoch fluoreszierend"
 
 #: ../src/external/wb_presets.c:58
 msgid "cool white fluorescent"
-msgstr "Kalt weiß fluoreszierend"
+msgstr "kalt weiß fluoreszierend"
 
 #: ../src/external/wb_presets.c:59
 msgid "warm white fluorescent"
-msgstr "Warm weiß fluoreszierend"
+msgstr "warm weiß fluoreszierend"
 
 #: ../src/external/wb_presets.c:60
 msgid "daylight fluorescent"
-msgstr "Tageslicht-fluoreszierend"
+msgstr "Tageslicht fluoreszierend"
 
 #: ../src/external/wb_presets.c:61
 msgid "neutral fluorescent"
-msgstr "Neutral fluoreszierend"
+msgstr "neutral fluoreszierend"
 
 #: ../src/external/wb_presets.c:62
 msgid "white fluorescent"
-msgstr "Weiß fluoreszierend"
+msgstr "weiß fluoreszierend"
 
 #. In some newer Nikon cameras:
 #: ../src/external/wb_presets.c:64
 msgid "sodium-vapor fluorescent"
-msgstr "Natriumdampf-fluoreszierend"
+msgstr "Natriumdampflampe fluoreszierend"
 
 #: ../src/external/wb_presets.c:65
 msgid "day white fluorescent"
@@ -2996,7 +2996,7 @@ msgstr "Tagesweiß-fluoreszierend"
 # too long?
 #: ../src/external/wb_presets.c:66
 msgid "high temp. mercury-vapor fluorescent"
-msgstr "Hochtemperatur-Quecksilberdampf-fluoreszierend"
+msgstr "Hochtemperatur-Quecksilberdampflampe fluoreszierend"
 
 #: ../src/external/wb_presets.c:68
 msgid "flash"
@@ -3013,11 +3013,11 @@ msgstr "Abendsonne"
 
 #: ../src/external/wb_presets.c:72
 msgid "underwater"
-msgstr "Unter Wasser"
+msgstr "unter Wasser"
 
 #: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1546
 msgid "black & white"
-msgstr "Schwarz & Weiß"
+msgstr "schwarz & weiß"
 
 #: ../src/external/wb_presets.c:75
 msgid "spot WB"
@@ -3025,7 +3025,7 @@ msgstr "manuell setzen"
 
 #: ../src/external/wb_presets.c:76
 msgid "manual WB"
-msgstr "Manueller Weißabgleich"
+msgstr "manueller Weißabgleich"
 
 #: ../src/external/wb_presets.c:77
 msgid "camera WB"
@@ -3033,7 +3033,7 @@ msgstr "Kamera Weißabgleich"
 
 #: ../src/external/wb_presets.c:78
 msgid "auto WB"
-msgstr "Automatischer Weißabgleich"
+msgstr "automatischer Weißabgleich"
 
 #: ../src/generate-cache/main.c:45
 #, c-format
@@ -3043,12 +3043,12 @@ msgstr "erstelle Cache-Verzeichnisse\n"
 #: ../src/generate-cache/main.c:51
 #, c-format
 msgid "creating cache directory '%s'\n"
-msgstr "erstelle Cache-Verzeichnis ‚%s‘\n"
+msgstr "erstelle Cache-Verzeichnis „%s”\n"
 
 #: ../src/generate-cache/main.c:54
 #, c-format
 msgid "could not create directory '%s'!\n"
-msgstr "Konnte Verzeichnis ‚%s‘ nicht erstellen!\n"
+msgstr "Konnte Verzeichnis „%s” nicht erstellen!\n"
 
 #: ../src/generate-cache/main.c:78
 #, c-format
@@ -3638,7 +3638,7 @@ msgstr "Neue Tastenkombination drücken..."
 #: ../src/gui/preferences.c:971 ../src/gui/presets.c:178 ../src/libs/lib.c:331
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
-msgstr "Soll die Voreinstellung ‚%s‘ wirklich gelöscht werden?"
+msgstr "Soll die Voreinstellung „%s” wirklich gelöscht werden?"
 
 #: ../src/gui/preferences.c:972 ../src/gui/presets.c:179 ../src/libs/lib.c:332
 msgid "delete preset?"
@@ -3772,7 +3772,7 @@ msgid ""
 "preset `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
-"Voreinstellung ‚%s‘ existiert bereits.\n"
+"Voreinstellung „%s” existiert bereits.\n"
 "Soll sie überschrieben werden?"
 
 #: ../src/gui/presets.c:246 ../src/libs/lib.c:141
@@ -3815,7 +3815,7 @@ msgstr "Favorit"
 #: ../src/libs/styles.c:224
 #, c-format
 msgid "style %s was successfully saved"
-msgstr "Stil ‚%s‘ erfolgreich gespeichert"
+msgstr "Stil „%s” erfolgreich gespeichert"
 
 #: ../src/gui/styles_dialog.c:272
 msgid "edit style"
@@ -3966,7 +3966,7 @@ msgstr "ungültige Randgröße wurde durch 0 ersetzt"
 #: ../src/imageio/storage/gallery.c:383 ../src/imageio/storage/picasa.c:1296
 #, c-format
 msgid "could not export to file `%s'!"
-msgstr "Konnte nicht in Datei ‚%s‘ exportieren!"
+msgstr "Konnte nicht in Datei „%s” exportieren!"
 
 #: ../src/imageio/format/pdf.c:410
 msgid "PDF"
@@ -4002,7 +4002,7 @@ msgid ""
 msgstr ""
 "Papierformat des PDFs\n"
 "entweder eins aus der Liste oder \"<Breite> [Einheit] x <Höhe> <Einheit>\n"
-"Beispiel: 210 mm x 2.97 cm"
+"Beispiel: 210 mm x 2,97 cm"
 
 #: ../src/imageio/format/pdf.c:618
 msgid "page orientation"
@@ -4193,7 +4193,7 @@ msgstr "verlustlos"
 
 #: ../src/imageio/format/webp.c:312
 msgid "applies only to lossy setting"
-msgstr "spielt nur bei verlustbehafteter Kompression eine Rolle"
+msgstr "nur bei verlustbehafteter Kompression relevant"
 
 #: ../src/imageio/format/webp.c:319
 msgid "image hint"
@@ -4263,12 +4263,12 @@ msgstr "überschreiben"
 #: ../src/imageio/storage/latex.c:272
 #, c-format
 msgid "could not create directory `%s'!"
-msgstr "Konnte Verzeichnis ‚%s‘ nicht erstellen!"
+msgstr "Konnte Verzeichnis „%s” nicht erstellen!"
 
 #: ../src/imageio/storage/disk.c:262
 #, c-format
 msgid "could not write to directory `%s'!"
-msgstr "Konnte nicht in Verzeichnis ‚%s‘ schreiben!"
+msgstr "Konnte nicht in Verzeichnis „%s” schreiben!"
 
 #: ../src/imageio/storage/disk.c:299 ../src/imageio/storage/email.c:142
 #: ../src/imageio/storage/gallery.c:391 ../src/imageio/storage/latex.c:361
@@ -4280,7 +4280,7 @@ msgstr[1] "%d/%d exportiert nach `%s'"
 
 #: ../src/imageio/storage/email.c:51
 msgid "send as email"
-msgstr "Email senden"
+msgstr "E-Mail senden"
 
 #: ../src/imageio/storage/email.c:196
 msgid "images exported from darktable"
@@ -4345,7 +4345,7 @@ msgid ""
 msgstr ""
 "Ein neues Fenster oder Tab sollte sich in Ihrem Browser geöffnet haben. "
 "Loggen Sie sich dort nun in Ihren Facebook-Account ein und autorisieren Sie "
-"darktable Fotos hochzuladen, bevor Sie fortfahren."
+"darktable, Fotos hochzuladen, bevor Sie fortfahren."
 
 #: ../src/imageio/storage/facebook.c:842 ../src/imageio/storage/picasa.c:904
 msgid "new account"
@@ -4442,7 +4442,7 @@ msgid ""
 msgstr ""
 "Schritt 1: Ein neues Fenster oder Tab sollte sich in Ihrem Browser geöffnet "
 "haben. Loggen Sie sich dort nun in Ihren Flickr-Account ein und autorisieren "
-"Sie darktable Fotos hochzuladen, bevor Sie fortfahren."
+"Sie darktable, Fotos hochzuladen, bevor Sie fortfahren."
 
 #: ../src/imageio/storage/flickr.c:195
 msgid "step 2: click the OK button once you are done."
@@ -4754,7 +4754,7 @@ msgstr "Hilfslinien anzeigen"
 
 #: ../src/iop/ashift.c:4827 ../src/iop/clipping.c:1897
 msgid "automatically crop to avoid black edges"
-msgstr "Automatisch zuschneiden um schwarze Ränder zu vermeiden"
+msgstr "Automatisch zuschneiden, um schwarze Ränder zu vermeiden"
 
 #: ../src/iop/ashift.c:4828
 msgid ""
@@ -4809,8 +4809,8 @@ msgid ""
 "shift-click to only fit lens shift"
 msgstr ""
 "automatisch die horizontale perspektivische Verzerrung korrigieren\n"
-"Strg-Klick um nur die Drehung anzupassen\n"
-"Umschalt-Klick um nur die Objektivverschiebung anzupassen"
+"Strg-Klick, um nur die Drehung anzupassen\n"
+"Umschalt-Klick, um nur die Objektivverschiebung anzupassen"
 
 #: ../src/iop/ashift.c:4844
 msgid ""
@@ -4823,9 +4823,9 @@ msgstr ""
 "automatisch die vertikale und horizontale perspektivische Verzerrung "
 "korrigieren; passt Drehung, Verschiebung in beide Richtungen und Scherung "
 "an\n"
-"Strg-Klick um nur die Drehung anzupassen\n"
-"Umschalt-Klick um nur die Objektivverschiebung anzupassen\n"
-"Strg-Umschalt-Klick um nur Drehung und Objektivverschiebung anzupassen"
+"Strg-Klick, um nur die Drehung anzupassen\n"
+"Umschalt-Klick, um nur die Objektivverschiebung anzupassen\n"
+"Strg-Umschalt-Klick, um nur Drehung und Objektivverschiebung anzupassen"
 
 #: ../src/iop/ashift.c:4850
 msgid ""
@@ -5099,7 +5099,7 @@ msgstr ""
 #: ../src/iop/basecurve.c:1952
 msgid "how many stops to shift the individual exposures apart"
 msgstr ""
-"wie viele Blendenstufen sollen die einzelnen Belichtungen auseinander liegen"
+"wie viele Blendenstufen die einzelnen Belichtungen auseinander liegen sollen"
 
 #: ../src/iop/basecurve.c:1953
 msgid "exposure shift"
@@ -5621,7 +5621,7 @@ msgstr "Menge"
 
 #: ../src/iop/clahe.c:337
 msgid "size of features to preserve"
-msgstr "Größe der Features, die erhalten bleiben sollen"
+msgstr "Größe der Strukturen, die erhalten bleiben sollen"
 
 #: ../src/iop/clahe.c:338 ../src/iop/nlmeans.c:859
 msgid "strength of the effect"
@@ -5754,7 +5754,7 @@ msgstr "3:1, Panorama"
 #: ../src/iop/clipping.c:1952 ../src/iop/clipping.c:1964
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
-msgstr "Ungültiges Seitenverhältnis für ‚%s‘. Es sollte „Zahl:Zahl“ sein"
+msgstr "Ungültiges Seitenverhältnis für „%s”. Es sollte „Zahl:Zahl“ sein"
 
 #: ../src/iop/clipping.c:2011
 msgid ""
@@ -5762,11 +5762,11 @@ msgid ""
 "the list is sorted: from most square to least square"
 msgstr ""
 "Seitenverhältnis\n"
-"die Liste ist nach absteigender Quadratigkeit sortiert"
+"die Liste ist nach absteigendem Seitenverhätnis sortiert"
 
 #: ../src/iop/clipping.c:2047 ../src/libs/live_view.c:370
 msgid "display guide lines to help compose your photograph"
-msgstr "Hilfslinien anzeigen, die beim Komponieren der Fotographie helfen."
+msgstr "Hilfslinien anzeigen, die beim Komponieren der Fotografie helfen."
 
 #: ../src/iop/clipping.c:2051 ../src/iop/clipping.c:2056
 #: ../src/libs/live_view.c:379
@@ -5869,7 +5869,7 @@ msgstr "optimiere Luma"
 
 #: ../src/iop/colorbalance.c:1007
 msgid "neutralize colors from patches"
-msgstr "neutralisiert Farben aus Patches"
+msgstr "neutralisiert Farben aus Feldern"
 
 #: ../src/iop/colorbalance.c:1009 ../src/iop/colorbalance.c:2679
 msgid "neutralize colors"
@@ -6032,7 +6032,7 @@ msgstr "Autooptimierer"
 #: ../src/iop/colorbalance.c:2675
 msgid "fit the whole histogram and center the average luma"
 msgstr ""
-"gesamtes Histogramm anpassen und den durchschnittlichen Luma zentrieren."
+"gesamtes Histogramm anpassen und die durchschnittliche Luminanz zentrieren"
 
 #: ../src/iop/colorbalance.c:2684
 msgid "optimize the RGB curves to remove color casts"
@@ -6070,7 +6070,7 @@ msgstr ""
 "Klick zum Auswählen\n"
 "Doppelklick zum Zurücksetzen\n"
 "Rechtsklick zum Löschen des Felds\n"
-"Umschalt-Klick während die Pipette aktiv ist zum ersetzen des Felds"
+"Umschalt-Klick während die Pipette aktiv ist zum Ersetzen des Felds"
 
 #: ../src/iop/colorchecker.c:1282
 msgid "patch"
@@ -6189,7 +6189,7 @@ msgstr "Eingabefarbprofil"
 #: ../src/iop/colorin.c:1395
 #, c-format
 msgid "`%s' color matrix not found!"
-msgstr "‚%s‘ Farbmatrix nicht gefunden!"
+msgstr "„%s” Farbmatrix nicht gefunden!"
 
 #: ../src/iop/colorin.c:1429
 msgid "input profile could not be generated!"
@@ -6407,7 +6407,7 @@ msgstr "inkonsistente Ausgabe"
 
 #: ../src/iop/colorreconstruction.c:663
 msgid "module `color reconstruction' failed"
-msgstr "Modul`Farbrekonstruktion'  fehlgeschlagen"
+msgstr "Modul „Farbrekonstruktion” fehlgeschlagen"
 
 #: ../src/iop/colorreconstruction.c:1363 ../src/iop/shadhi.c:855
 #: ../src/iop/tonemap.cc:300
@@ -6592,7 +6592,7 @@ msgstr "Kantenschwellwert"
 #: ../src/iop/demosaic.c:4835
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
-msgstr "‚%s‘ Farbmatrix für 4-Bayer-Bild nicht gefunden!"
+msgstr "„%s” Farbmatrix für 4-Bayer-Bild nicht gefunden!"
 
 #: ../src/iop/demosaic.c:5039 ../src/iop/demosaic.c:5048
 #: ../src/iop/dither.c:795 ../src/iop/highlights.c:1051
@@ -6643,8 +6643,8 @@ msgid ""
 "set to 1.0 to ignore edges."
 msgstr ""
 "Schwellwert für kanten-bewussten Median.\n"
-"Auf 0.0 setzen zum Ausschalten.\n"
-"Auf 1.0 setzen um Kanten zu ignorieren."
+"Auf 0,0 setzen zum Ausschalten.\n"
+"Auf 1,0 setzen, um Kanten zu ignorieren."
 
 #: ../src/iop/demosaic.c:5060
 msgid "edge threshold"
@@ -6908,7 +6908,7 @@ msgstr "Magic Lantern-Standard"
 #: ../src/iop/rawoverexposed.c:278
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
-msgstr "Fehler beim Laden der Raw-Daten für Bild ‚%s‘"
+msgstr "Fehler beim Laden der Raw-Daten für Bild „%s”"
 
 #: ../src/iop/exposure.c:855 ../src/iop/levels.c:591
 msgctxt "mode"
@@ -6935,7 +6935,7 @@ msgstr "Belichtungskorrektur anpassen"
 msgid ""
 "percentage of bright values clipped out, toggle color picker to activate"
 msgstr ""
-"Prozentsatz der hellen Werte, die abgeschnitten werden. Zum aktivieren die "
+"Prozentsatz der hellen Werte, die abgeschnitten werden. Zum Aktivieren die "
 "Pipette auswählen"
 
 #: ../src/iop/exposure.c:889 ../src/iop/highlights.c:1060
@@ -7011,7 +7011,7 @@ msgid ""
 "this is a reading a posemeter would give you on the scene"
 msgstr ""
 "Anzahl der Stufen zwischen mittel grau und rein weiß\n"
-"die entspricht einer Messung, die ein Belichtungsmesser liefern würde"
+"dies entspricht einer Messung, die ein Belichtungsmesser liefern würde"
 
 #: ../src/iop/filmic.c:1449 ../src/iop/profile_gamma.c:901
 #| msgid "three exposures"
@@ -7024,7 +7024,7 @@ msgid ""
 "this is a reading a posemeter would give you on the scene"
 msgstr ""
 "Anzahl der Stufen zwischen mittel grau und absolutem schwarz\n"
-"die entspricht einer Messung, die ein Belichtungsmesser liefern würde"
+"dies entspricht einer Messung, die ein Belichtungsmesser liefern würde"
 
 #: ../src/iop/filmic.c:1460
 msgid "auto tuning safety factor"
@@ -7041,7 +7041,7 @@ msgid ""
 "useful in conjunction with \"auto tune levels\""
 msgstr ""
 "vergrößert oder verkleinert den berechneten Dynamikbereich\n"
-"nützlich in Verbindung mit \"Auto-Tune-Levels\""
+"nützlich in Verbindung mit „Auto-Tune-Levels”"
 
 #: ../src/iop/filmic.c:1470 ../src/iop/profile_gamma.c:933
 #| msgid "apply auto levels"
@@ -7073,7 +7073,7 @@ msgid ""
 "increase to get more contrast at the extreme luminances"
 msgstr ""
 "Linearitätsbereich in der Mitte der Kurve\n"
-"erhöhe um mehr Kontrast bei den extremen Helligkeitswerten zu erhalten. "
+"erhöhe, um mehr Kontrast bei den extremen Helligkeitswerten zu erhalten."
 
 #: ../src/iop/filmic.c:1498
 #| msgid "shadows and highlights"
@@ -7129,8 +7129,8 @@ msgid ""
 "may produce over-saturated colors and reinforce lens chromatic aberrations"
 msgstr ""
 "stellt sicher, dass die Originalfarbe erhalten bleibt\n"
-"kann zu übersättigten Farben führen und die chromatischen Aberrationen der "
-"Linse verstärken"
+"kann zu übersättigten Farben führen und die chromatischen Aberrationen des "
+"Objektivs verstärken"
 
 #: ../src/iop/filmic.c:1537
 #| msgid "destination"
@@ -7147,7 +7147,7 @@ msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
 msgstr ""
-"Luminanz der Ausgabe rein schwarz sollte 0% sein\n"
+"Luminanz der Ausgabe rein schwarz sollte 0% sein,\n"
 "außer ein verblasster Look ist erwünscht"
 
 #: ../src/iop/filmic.c:1551
@@ -7161,7 +7161,7 @@ msgid ""
 "you should never touch that unless you know what you are doing."
 msgstr ""
 "Mittlerer Grauwert der Zielanzeige oder des Farbraums.\n"
-"sollte nicht geändert werden, es sei denn du weißt was du tust."
+"sollte nicht geändert werden, es sei denn, du weißt, was du tust."
 
 #: ../src/iop/filmic.c:1560
 #| msgctxt "modulename"
@@ -7174,7 +7174,7 @@ msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
 msgstr ""
-"Luminanz der Ausgabe rein weiß sollte 100% sein\n"
+"Luminanz der Ausgabe rein weiß sollte 100% sein,\n"
 "außer ein verblasster Look ist erwünscht"
 
 #: ../src/iop/filmic.c:1569
@@ -7188,7 +7188,7 @@ msgid ""
 "you should never touch that unless you know what you are doing."
 msgstr ""
 "Power oder Gamma der Übertragungsfunktion des Displays oder des Farbraums.\n"
-"sollte nicht geändert werden, es sei denn du weißt was du tust."
+"sollte nicht geändert werden, es sei denn, du weißt, was du tust."
 
 #: ../src/iop/finalscale.c:39
 msgctxt "modulename"
@@ -7274,7 +7274,7 @@ msgid ""
 "the bias for tonemapper controls the linearity, the higher the more details "
 "in blacks"
 msgstr ""
-"das Bias des Tonemappers bestimmt die Linearität, je höher desto mehr "
+"der Bias des Tonemappers bestimmt die Linearität, je höher desto mehr "
 "Details in schwarzen Bereichen"
 
 #: ../src/iop/globaltonemap.c:718
@@ -7417,11 +7417,11 @@ msgstr "Dunstentfernung"
 
 #: ../src/iop/hazeremoval.c:190
 msgid "amount of haze reduction"
-msgstr "Menge der Dunstentfernung"
+msgstr "Anteil der Dunstentfernung"
 
 #: ../src/iop/hazeremoval.c:195
 msgid "distance"
-msgstr "Entfernung"
+msgstr "Distanz"
 
 #: ../src/iop/hazeremoval.c:196
 msgid "limit haze removal up to a specific spatial depth"
@@ -7524,7 +7524,7 @@ msgstr ""
 #: ../src/iop/invert.c:97 ../src/iop/invert.c:525
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image"
-msgstr "‚%s‘ Farbmatrix für 4Bayer-Bild nicht gefunden"
+msgstr "„%s” Farbmatrix für 4Bayer-Bild nicht gefunden"
 
 #: ../src/iop/invert.c:113
 msgid "invert"
@@ -7722,7 +7722,7 @@ msgstr "Panorama"
 
 #: ../src/iop/lens.c:2215
 msgid "equirectangular"
-msgstr "equirectangular"
+msgstr "äquirektangulär"
 
 #: ../src/iop/lens.c:2217
 msgid "orthographic"
@@ -7840,9 +7840,9 @@ msgid ""
 "scroll to change size\n"
 "shift-scroll to change strength - ctrl-scroll to change direction"
 msgstr ""
-"Klick und ziehen um Punkt hinzufügen\n"
-"scrollen um Größe zu ändern\n"
-"Shift+scrollen um die Stärke zu ändern – Strg+scrollen um die Richtung zu "
+"Klick und ziehen, um Punkt hinzufügen\n"
+"scrollen, um Größe zu ändern\n"
+"Shift+scrollen, um die Stärke zu ändern – Strg+scrollen, um die Richtung zu "
 "ändern"
 
 #: ../src/iop/liquify.c:3293
@@ -7851,9 +7851,9 @@ msgid ""
 "scroll to change size\n"
 "shift-scroll to change strength - ctrl-scroll to change direction"
 msgstr ""
-"Klick zu hinzufügen einer Linie\n"
-"scrollen um Größe ändern\n"
-"Shift+scrollen um die Stärke zu ändern – Strg+scrollen um die Richtung zu "
+"Klick zum Hinzufügen einer Linie\n"
+"scrollen, um Größe ändern\n"
+"Shift+scrollen, um die Stärke zu ändern – Strg+scrollen, um die Richtung zu "
 "ändern"
 
 #: ../src/iop/liquify.c:3297
@@ -7863,8 +7863,8 @@ msgid ""
 "shift-scroll to change strength - ctrl-scroll to change direction"
 msgstr ""
 "Klick zu hinzufügen einer Kurve\n"
-"scrollen zum ändern der Größe\n"
-"Shift+scrollen um die Stärke zu ändern – Strg+scrollen um die Richtung zu "
+"scrollen zum Ändern der Größe\n"
+"Shift+scrollen, um die Stärke zu ändern – Strg+scrollen um die Richtung zu "
 "ändern"
 
 #: ../src/iop/liquify.c:3300
@@ -7876,7 +7876,7 @@ msgid ""
 "use a tool to add warps.\n"
 "right-click to remove a warp."
 msgstr ""
-"Werkzeug auswählen um Verformung hinzuzufügen\n"
+"Werkzeug auswählen, um Verformung hinzuzufügen\n"
 "Rechts-Klick entfernt eine Verformung"
 
 #: ../src/iop/liquify.c:3374
@@ -8223,8 +8223,8 @@ msgid ""
 "number of stops between pure black and pure white\n"
 "this is a reading a posemeter would give you on the scene"
 msgstr ""
-"Anzahl der Stufen zwischen absolutem schwarz und reinem weiß\n"
-"die entspricht einer Messung, die ein Belichtungsmesser liefern würde"
+"Anzahl der Stufen zwischen absolutem Schwarz und reinem Weiß\n"
+"dies entspricht einer Messung, die ein Belichtungsmesser liefern würde"
 
 #. Security factor
 #: ../src/iop/profile_gamma.c:923
@@ -8238,7 +8238,7 @@ msgid ""
 "this is usefull when noise perturbates the measurements"
 msgstr ""
 "vergrößert oder verkleinert den berechneten Dynamikbereich\n"
-"die entspricht einer Messung, die ein Belichtungsmesser liefern würde"
+"dies entspricht einer Messung, die ein Belichtungsmesser liefern würde"
 
 #: ../src/iop/rawdenoise.c:124
 msgid "raw denoise"
@@ -8403,7 +8403,7 @@ msgid ""
 "only works for the sensors that need it."
 msgstr ""
 "Automatische Pixel-Skalierung funktioniert\n"
-"nur für Sensoren, die es benötigen."
+"nur für Sensoren, die es erfordern."
 
 #: ../src/iop/shadhi.c:178
 msgid "shadows and highlights"
@@ -8644,7 +8644,7 @@ msgstr ""
 #: ../src/iop/retouch.c:2199
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
-"kann Maske nicht anzeigen solange die Maske zum Überblenden aktiviert ist"
+"kann Maske nicht anzeigen, solange die Maske zum Überblenden aktiviert ist"
 
 #: ../src/iop/retouch.c:2583
 #| msgid "shape"
@@ -8707,10 +8707,10 @@ msgid ""
 "red box indicates the current scale\n"
 "green line indicates that the scale has shapes on it"
 msgstr ""
-"der obere Schieberegler regelt die Startposition der Zusammenführungsskala\n"
-"der untere Schieberegler regelt die Skaleneinteilung\n"
+"der obere Schieberegler bestimmt die Startposition der Zusammenführungsskala\n"
+"der untere Schieberegler legt die Skaleneinteilung fest\n"
 "die rote Box zeigt die aktelle Skala an\n"
-"die grüne Linie zeigt an, dass die Skala aufweist."
+"die grüne Linie zeigt an, dass die Skala Formen enthält."
 
 #: ../src/iop/retouch.c:2721
 #| msgid "display mask"
@@ -8804,7 +8804,7 @@ msgstr ""
 #: ../src/iop/retouch.c:2871
 #| msgid "type"
 msgid "blur type"
-msgstr "Blur-Typ"
+msgstr "Weichzeichnungstyp"
 
 #: ../src/iop/retouch.c:2873
 #| msgid "bilateral grid"
@@ -8813,18 +8813,18 @@ msgstr "bilateral"
 
 #: ../src/iop/retouch.c:2874
 msgid "type for the blur algorithm"
-msgstr "Typ des Blur-Algorithmus"
+msgstr "Typ des Weichzeichnungsalgorithmus"
 
 #: ../src/iop/retouch.c:2880
 #| msgid "radius"
 msgid "blur radius"
-msgstr "Blur-Radius"
+msgstr "Weichzeichnungsradius"
 
 # Ugh ...
 #: ../src/iop/retouch.c:2881
 #| msgid "radius of the patches to match"
 msgid "radius of the selected blur type"
-msgstr "Radius des selektierten Blur-Typ"
+msgstr "Radius des selektierten Weichzeichnungstyp"
 
 #: ../src/iop/retouch.c:2889
 #| msgid "set the opacity of the blending"
@@ -8842,7 +8842,7 @@ msgstr "Retusche-Werkzeuge"
 #: ../src/iop/retouch.c:2902
 #| msgid "wavelets"
 msgid "wavelet decompose"
-msgstr "Wavelets zerlegen"
+msgstr "Waveletzerlegung"
 
 #. shapes
 #: ../src/iop/retouch.c:2916
@@ -8946,7 +8946,7 @@ msgstr "manuell setzen"
 #: ../src/iop/temperature.c:940
 #, c-format
 msgid "`%s' color matrix not found for image"
-msgstr "‚%s‘ Farbmatrix für Bild nicht gefunden"
+msgstr "„%s” Farbmatrix für Bild nicht gefunden"
 
 #: ../src/iop/temperature.c:994
 #, c-format
@@ -9243,7 +9243,7 @@ msgstr "Lomo"
 
 #: ../src/iop/vignette.c:1130
 msgid "automatic ratio"
-msgstr "autom. Verhältnis"
+msgstr "automatisches Verhältnis"
 
 #: ../src/iop/vignette.c:1144
 msgid "8-bit output"
@@ -9322,7 +9322,7 @@ msgstr "Verhältnis Breite zu Höhe"
 #: ../src/iop/vignette.c:1186
 msgid "add some level of random noise to prevent banding"
 msgstr ""
-"füge ein gewisses Maß an zufälligem Rauschen hinzu um Banding zu vermeiden"
+"füge ein gewisses Maß an zufälligem Rauschen hinzu, um Banding zu vermeiden"
 
 #: ../src/iop/watermark.c:235
 msgid "watermark"
@@ -9420,7 +9420,7 @@ msgstr "langer Seite"
 
 #: ../src/iop/watermark.c:1402
 msgid "smaller border"
-msgstr "kurzer Seite"
+msgstr "kürzere Seite"
 
 #: ../src/iop/watermark.c:1404
 msgid "scale on"
@@ -9460,7 +9460,6 @@ msgstr "Größe des Wasserzeichens"
 msgid "the rotation of the watermark"
 msgstr "Drehung des Wasserzeichens"
 
-# klingt zwar wie "DDR", macht aber nix. mal sehen, ob sich jemand beschwert. ^^
 #: ../src/iop/zonesystem.c:118
 msgid "zone system"
 msgstr "Zonensystem"
@@ -9473,7 +9472,7 @@ msgid ""
 "right-click on a marker to delete it"
 msgstr ""
 "Helligkeitsbereiche\n"
-"Anzahl Zonen kann mit dem Mausrad geändert werden\n"
+"Anzahl der Zonen kann mit dem Mausrad geändert werden\n"
 "Links-Klick auf eine Grenze setzt eine Markierung\n"
 "Rechts-Klick auf eine Markierung löscht diese"
 
@@ -9558,7 +9557,7 @@ msgid ""
 "sequences."
 msgstr ""
 "Anzahl Bilder, die hintereinander gemacht werden sollen,\n"
-"dies kann zusammen mit verzögerte Aufnahme benutzt werden,\n"
+"dies kann zusammen mit verzögerter Aufnahme benutzt werden,\n"
 "um Stop-Motion-Sequenzen zu erstellen."
 
 #: ../src/libs/camera.c:495
@@ -9868,7 +9867,7 @@ msgstr "alle Dateien"
 #: ../src/libs/copy_history.c:104
 #, c-format
 msgid "error loading file '%s'"
-msgstr "Fehler beim Laden von Datei '%s'"
+msgstr "Fehler beim Laden von Datei „%s”"
 
 #: ../src/libs/copy_history.c:196
 #, c-format
@@ -9887,8 +9886,8 @@ msgid ""
 "copy part history stack of\n"
 "first selected image"
 msgstr ""
-"kopiere den Verlaufsstapel des ersten\n"
-"ausgewählten Bildes teilweise"
+"kopiere einen Teil des Verlaufsstapels\n"
+"des ersten ausgewählten Bildes"
 
 #: ../src/libs/copy_history.c:285
 msgid "copy all"
@@ -10013,7 +10012,7 @@ msgstr "Existierenden Duplikate"
 #: ../src/libs/duplicate.c:356
 msgid "create a 'virgin' duplicate of the image without any development"
 msgstr ""
-"Erstellt ein 'jungfräuliches' Duplikat des Bildes ohne jegliche Entwicklung"
+"Erstellt ein „jungfräuliches” Duplikat des Bildes ohne jegliche Entwicklung"
 
 #: ../src/libs/duplicate.c:360
 msgid "create a duplicate of the image with same history stack"
@@ -10481,7 +10480,7 @@ msgstr "Metadaten zu allen neu importierten Bildern hinzufügen."
 
 #: ../src/libs/import.c:526
 msgid "comma separated list of tags"
-msgstr "Liste Komma-separierter Tags"
+msgstr "Liste komma-separierter Tags"
 
 #: ../src/libs/import.c:801
 msgid "supported images"
@@ -10520,7 +10519,7 @@ msgstr "Suche nach neu angeschlossenen Geräten"
 #: ../src/libs/lib.c:213
 #, c-format
 msgid "edit `%s'"
-msgstr "‚%s‘ bearbeiten"
+msgstr "„%s” bearbeiten"
 
 #: ../src/libs/lib.c:492
 msgid "nothing to save"
@@ -10792,7 +10791,7 @@ msgstr "<nicht ändern>"
 #: ../src/libs/metadata.c:298
 msgctxt "accel"
 msgid "clear"
-msgstr "Löschen"
+msgstr "löschen"
 
 #: ../src/libs/metadata.c:374
 msgid "clear"
@@ -11130,12 +11129,12 @@ msgstr "Druckeinstellungen"
 #: ../src/libs/print_settings.c:241 ../src/libs/print_settings.c:436
 #, c-format
 msgid "processing `%s' for `%s'"
-msgstr "Verarbeiten von `%s' für `%s'"
+msgstr "Verarbeiten von „%s” für „%s”"
 
 #: ../src/libs/print_settings.c:280
 #, c-format
 msgid "cannot open printer profile `%s'"
-msgstr "Konnte Druckerprofile ‚%s‘ nicht öffnen"
+msgstr "Konnte Druckerprofile „%s” nicht öffnen"
 
 #: ../src/libs/print_settings.c:289
 #, c-format
@@ -11145,7 +11144,7 @@ msgstr "Fehler für das Ausgabeprofils des Bildes %d"
 #: ../src/libs/print_settings.c:297
 #, c-format
 msgid "cannot apply printer profile `%s'"
-msgstr "Konnte Druckerprofile ‚%s‘ nicht anwenden"
+msgstr "Konnte Druckerprofile „%s” nicht anwenden"
 
 #: ../src/libs/print_settings.c:317
 msgid "failed to create temporary pdf for printing"
@@ -11979,7 +11978,7 @@ msgstr ""
 #: ../src/views/darkroom.c:944
 #, c-format
 msgid "applied style `%s' on current image"
-msgstr "Stil ‚%s‘ auf aktuelles Bild angewandt"
+msgstr "Stil „%s” auf aktuelles Bild angewandt"
 
 #: ../src/views/darkroom.c:1003
 msgid "no styles have been created yet"
@@ -12397,7 +12396,7 @@ msgstr "Tethering"
 #: ../src/views/tethering.c:149
 #, c-format
 msgid "new session initiated '%s'"
-msgstr "neue Sitzung ‚%s‘ gestartet"
+msgstr "neue Sitzung „%s” gestartet"
 
 #: ../src/views/tethering.c:243
 msgid "no camera with tethering support available for use..."
@@ -12467,7 +12466,7 @@ msgstr ""
 #~ msgstr "automatisch in RGB"
 
 #~ msgid "prepare printing image %d on `%s'"
-#~ msgstr "bereite Druck von Bild %d auf ‚%s‘ vor"
+#~ msgstr "bereite Druck von Bild %d auf „%s” vor"
 
 #~ msgid "Virtual dark room, split toning an image"
 #~ msgstr "Split-Toning in der Dunkelkammer"
@@ -12574,7 +12573,7 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "[init_f] `%s' color matrix not found for 4bayer image!\n"
-#~ msgstr "‚%s‘ Farbmatrix nicht gefunden!"
+#~ msgstr "„%s” Farbmatrix nicht gefunden!"
 
 # Probleme mit "löschen" != "datei löschen"?
 #~ msgid "clear selection (ctrl-shift-a)"
@@ -12586,11 +12585,11 @@ msgstr ""
 
 #, fuzzy
 #~ msgid "[colorspaces] `%s' color matrix not found for 4bayer image!\n"
-#~ msgstr "‚%s‘ Farbmatrix nicht gefunden!"
+#~ msgstr "„%s” Farbmatrix nicht gefunden!"
 
 #, fuzzy
 #~ msgid "[temperature] `%s' color matrix not found for 4bayer image!\n"
-#~ msgstr "‚%s‘ Farbmatrix nicht gefunden!"
+#~ msgstr "„%s” Farbmatrix nicht gefunden!"
 
 #~ msgid "select text color"
 #~ msgstr "Textfarbe wählen"
@@ -12733,7 +12732,7 @@ msgstr ""
 #~ msgstr "manuell setzen"
 
 #~ msgid "invalid ratio format for `%s'. it should be \"number:number\"\n"
-#~ msgstr "Ungültiges Seitenverhältnis für ‚%s‘. Es sollte „Zahl:Zahl“ sein"
+#~ msgstr "Ungültiges Seitenverhältnis für „%s”. Es sollte „Zahl:Zahl“ sein"
 
 #, fuzzy
 #~ msgid "paper"
@@ -12897,7 +12896,7 @@ msgstr ""
 #~ msgstr "Entflackern"
 
 #~ msgid "cache locally"
-#~ msgstr "lokal cachen"
+#~ msgstr "lokal zwischenspeichern"
 
 #~ msgid "remove the local copy of the image"
 #~ msgstr "lokale Kopie des Bildes aus dem Cache entfernen"
@@ -13543,7 +13542,7 @@ msgstr ""
 #~ msgstr ""
 #~ "Überschreibe die transversale chromatische\n"
 #~ "Aberrationskorrektur für den Rot-Kanal.\n"
-#~ "für Standardwert bei 1.0 belassen"
+#~ "für Standardwert bei 1,0 belassen"
 
 #~ msgid ""
 #~ "override transversal chromatic aberration correction for blue channel\n"
@@ -13551,7 +13550,7 @@ msgstr ""
 #~ msgstr ""
 #~ "Überschreibe die transversale chromatische\n"
 #~ "Aberrationskorrektur für den Blau-Kanal.\n"
-#~ "für Standardwert bei 1.0 belassen"
+#~ "für Standardwert bei 1,0 belassen"
 
 #~ msgid "advanced edit of style"
 #~ msgstr "Erweiterter Stil-Editor"
