@@ -2330,7 +2330,7 @@ void dt_bauhaus_vimkey_exec(const char *input)
   char module[64], label[64], value[256], *key;
   float old_value, new_value;
 
-  sscanf(input, ":set %[^.].%[^=]=%s", module, label, value);
+  sscanf(input, ":set %63[^.].%63[^=]=%255s", module, label, value);
   fprintf(stderr, "[vimkey] setting module `%s', slider `%s' to `%s'", module, label, value);
   key = g_strjoin(".", module, label, NULL);
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)g_hash_table_lookup(darktable.bauhaus->keymap, key);
