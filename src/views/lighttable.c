@@ -1488,6 +1488,8 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
 
   gchar *query =  g_strdup_printf("SELECT id, aspect_ratio, width, height FROM images WHERE id IN %s", imgids);
 
+  g_free(imgids);
+
   /* prepare a new main query statement for collection */
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
