@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-03 09:22+0300\n"
+"POT-Creation-Date: 2019-02-05 08:25+0300\n"
 "PO-Revision-Date: 2019-02-03 09:47+0300\n"
 "Last-Translator: Timur Davletshin <timur.davletshin@gmail.com>\n"
 "Language-Team: русский\n"
@@ -1195,7 +1195,7 @@ msgstr "Изменённые"
 
 #: ../src/common/collection.c:1113 ../src/libs/collect.c:1165
 msgid "tagged"
-msgstr "С метками"
+msgstr "Помеченные"
 
 #: ../src/common/collection.c:1119 ../src/libs/collect.c:1174
 msgid "not copied locally"
@@ -1990,7 +1990,7 @@ msgstr[2] "Вы действительно хотите удалить %d выб
 
 #: ../src/control/jobs/control_jobs.c:1412
 msgid "remove images?"
-msgstr "Убрать снимки из коллекции?"
+msgstr "Удаление снимков из коллекции"
 
 #. first get all selected images, to avoid the set changing during ui interaction
 #: ../src/control/jobs/control_jobs.c:1428
@@ -2003,8 +2003,7 @@ msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
 msgstr[0] "Вы действительно хотите переместить в корзину %d выбранный снимок?"
 msgstr[1] "Вы действительно хотите переместить в корзину %d выбранных снимка?"
-msgstr[2] ""
-"Вы действительно хотите переместить в корзину %d выбранных снимков с диска?"
+msgstr[2] "Вы действительно хотите переместить в корзину %d выбранных снимков?"
 
 #: ../src/control/jobs/control_jobs.c:1454
 #, c-format
@@ -2017,7 +2016,7 @@ msgstr[2] "Вы действительно хотите удалить %d выб
 
 #: ../src/control/jobs/control_jobs.c:1461
 msgid "trash images?"
-msgstr "Удалить снимки в корзину?"
+msgstr "Удаление снимков в корзину"
 
 #: ../src/control/jobs/control_jobs.c:1461
 msgid "delete images?"
@@ -2034,7 +2033,7 @@ msgstr "Перемещение снимков"
 #: ../src/imageio/storage/latex.c:106 ../src/imageio/storage/latex.c:177
 #: ../src/libs/styles.c:300 ../src/lua/preferences.c:592
 msgid "select directory"
-msgstr "Выберите папку"
+msgstr "Выбор папки"
 
 #: ../src/control/jobs/control_jobs.c:1487
 #: ../src/control/jobs/control_jobs.c:1547
@@ -2065,9 +2064,9 @@ msgstr[2] ""
 #: ../src/control/jobs/control_jobs.c:1517
 msgid "move image?"
 msgid_plural "move images?"
-msgstr[0] "Переместить снимок?"
-msgstr[1] "Переместить снимки?"
-msgstr[2] "Переместить снимки?"
+msgstr[0] "Перемещение снимка"
+msgstr[1] "Перемещение снимков"
+msgstr[2] "Перемещение снимков"
 
 #: ../src/control/jobs/control_jobs.c:1542
 msgid "copy images"
@@ -2084,9 +2083,9 @@ msgstr[2] "Вы действительно хотите скопировать %
 #: ../src/control/jobs/control_jobs.c:1574
 msgid "copy image?"
 msgid_plural "copy images?"
-msgstr[0] "Скопировать снимок?"
-msgstr[1] "Скопировать снимки?"
-msgstr[2] "Скопировать снимки?"
+msgstr[0] "Копирование снимка"
+msgstr[1] "Копирование снимков"
+msgstr[2] "Копирование снимков"
 
 #: ../src/control/jobs/control_jobs.c:1594
 #: ../src/control/jobs/control_jobs.c:1601
@@ -3193,7 +3192,7 @@ msgstr "Использовать это значение по умолчанию
 
 #: ../src/gui/camera_import_dialog.c:188
 msgid "reset value to default"
-msgstr "Сбросить значение до исходного"
+msgstr "Сбросить до значения по умолчанию"
 
 #: ../src/gui/camera_import_dialog.c:212 ../src/libs/geotagging.c:422
 msgid "cancel"
@@ -3202,7 +3201,7 @@ msgstr "Отменить"
 #: ../src/gui/camera_import_dialog.c:212
 msgctxt "camera import"
 msgid "import"
-msgstr "Импортировать"
+msgstr "Импорт"
 
 #. Top info
 #: ../src/gui/camera_import_dialog.c:229
@@ -3266,7 +3265,7 @@ msgstr "Параметры"
 msgid ""
 "select the images from the list below that you want to import into a new "
 "filmroll"
-msgstr "Выберите снимки, чтобы импортировать их как новую съёмку"
+msgstr "Выберите снимки, чтобы импортировать их в качестве новой съёмки"
 
 #: ../src/gui/camera_import_dialog.c:552
 msgid "please use YYYY-MM-DD format for date override"
@@ -3339,12 +3338,12 @@ msgid "switch view"
 msgstr "Переключить режим"
 
 #. Global zoom in & zoom out
-#: ../src/gui/gtk.c:1138 ../src/libs/tools/lighttable.c:159
+#: ../src/gui/gtk.c:1138 ../src/libs/tools/lighttable.c:160
 msgctxt "accel"
 msgid "zoom in"
 msgstr "Приблизить"
 
-#: ../src/gui/gtk.c:1139 ../src/libs/tools/lighttable.c:160
+#: ../src/gui/gtk.c:1139 ../src/libs/tools/lighttable.c:161
 msgctxt "accel"
 msgid "zoom out"
 msgstr "Отдалить"
@@ -3527,7 +3526,7 @@ msgstr "Золотое сечение"
 
 #: ../src/gui/hist_dialog.c:140
 msgid "select parts"
-msgstr "Выберите части"
+msgstr "Выбрать части"
 
 #: ../src/gui/hist_dialog.c:141
 msgid "select _all"
@@ -3699,12 +3698,12 @@ msgstr "Удалить этот профиль?"
 #. Non-zero value indicates export
 #: ../src/gui/preferences.c:1098
 msgid "select file to export"
-msgstr "Выберите файл для сохранения схемы клавиш"
+msgstr "Выбор файла для сохранения схемы клавиш"
 
 #. Zero value indicates import
 #: ../src/gui/preferences.c:1124
 msgid "select file to import"
-msgstr "Выберите файл загружаемой схемы клавиш"
+msgstr "Выбор файла загружаемой схемы клавиш"
 
 #: ../src/gui/preferences.c:1125 ../src/gui/preferences.c:1209
 #: ../src/libs/collect.c:243 ../src/libs/copy_history.c:78
@@ -3724,7 +3723,7 @@ msgstr ""
 #. Zero value indicates import
 #: ../src/gui/preferences.c:1208
 msgid "select preset to import"
-msgstr "Выберите профиль для импорта"
+msgstr "Выбор профиля для импорта"
 
 #: ../src/gui/preferences.c:1227
 msgid "failed to import preset"
@@ -3890,11 +3889,11 @@ msgstr "Стиль «%s» успешно сохранён"
 
 #: ../src/gui/styles_dialog.c:272
 msgid "edit style"
-msgstr "Изменить стиль"
+msgstr "Изменение стиля"
 
 #: ../src/gui/styles_dialog.c:273
 msgid "duplicate style"
-msgstr "Создать копию стиля"
+msgstr "Создание копии стиля"
 
 #: ../src/gui/styles_dialog.c:274
 msgid "creates a duplicate of the style before applying changes"
@@ -3902,7 +3901,7 @@ msgstr "Создать копию этого стиля перед внесен�
 
 #: ../src/gui/styles_dialog.c:278
 msgid "create new style"
-msgstr "Создать новый стиль"
+msgstr "Создание нового стиля"
 
 #: ../src/gui/styles_dialog.c:317
 msgid "enter a name for the new style"
@@ -3910,7 +3909,7 @@ msgstr "Введите имя нового стиля"
 
 #: ../src/gui/styles_dialog.c:321
 msgid "enter a description for the new style, this description is searchable"
-msgstr "Введите описание нового стиля, по которому выполняется поиск"
+msgstr "Введите описание нового стиля, по которому может выполняться поиск"
 
 #: ../src/gui/styles_dialog.c:376
 msgid "update"
@@ -4307,7 +4306,7 @@ msgstr ""
 
 #: ../src/imageio/storage/disk.c:174
 msgid "on conflict"
-msgstr "При конфликте"
+msgstr "Конфликт имён"
 
 #: ../src/imageio/storage/disk.c:175
 msgid "create unique filename"
@@ -6436,7 +6435,7 @@ msgstr "Неподдерживаемый профиль ввода заменё�
 #: ../src/libs/export.c:607 ../src/libs/print_settings.c:1187
 #: ../src/libs/print_settings.c:1407
 msgid "profile"
-msgstr "Профиль"
+msgstr "Цветовой профиль"
 
 #: ../src/iop/colorin.c:1854 ../src/iop/colorout.c:803
 #, c-format
@@ -6571,36 +6570,36 @@ msgstr "Неподдерживаемый профиль вывода заме�
 
 #: ../src/iop/colorout.c:779
 msgid "output intent"
-msgstr "Цветопередача вывода"
+msgstr "Цветопередача"
 
 #: ../src/iop/colorout.c:780 ../src/libs/export.c:631
 #: ../src/libs/print_settings.c:1243 ../src/libs/print_settings.c:1458
-#: ../src/views/darkroom.c:1678 ../src/views/lighttable.c:3126
+#: ../src/views/darkroom.c:1678 ../src/views/lighttable.c:3130
 msgid "perceptual"
 msgstr "Воспринимаемая"
 
 #: ../src/iop/colorout.c:781 ../src/libs/export.c:632
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1459
-#: ../src/views/darkroom.c:1679 ../src/views/lighttable.c:3127
+#: ../src/views/darkroom.c:1679 ../src/views/lighttable.c:3131
 msgid "relative colorimetric"
 msgstr "Отн. колориметрическая"
 
 #: ../src/iop/colorout.c:782 ../src/libs/export.c:633
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
-#: ../src/views/darkroom.c:1680 ../src/views/lighttable.c:3128
+#: ../src/views/darkroom.c:1680 ../src/views/lighttable.c:3132
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Насыщенная"
 
 #: ../src/iop/colorout.c:783 ../src/libs/export.c:634
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
-#: ../src/views/darkroom.c:1681 ../src/views/lighttable.c:3129
+#: ../src/views/darkroom.c:1681 ../src/views/lighttable.c:3133
 msgid "absolute colorimetric"
 msgstr "Абс. колориметрическая"
 
 #: ../src/iop/colorout.c:792
 msgid "output profile"
-msgstr "Профиль вывода"
+msgstr "Цветовой профиль"
 
 #: ../src/iop/colorout.c:800
 msgid "rendering intent"
@@ -9902,19 +9901,19 @@ msgstr ""
 #: ../src/libs/collect.c:1476 ../src/libs/collect.c:1851
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
-msgstr "Введите запрос, используйте «%» для выбора всего"
+msgstr "Критерий поиска, используйте % для выбора всего"
 
 #: ../src/libs/collect.c:1771
 msgid "narrow down search"
-msgstr "Уточнить поиск"
+msgstr "Добавить критерий: И"
 
 #: ../src/libs/collect.c:1776
 msgid "add more images"
-msgstr "Добавить фотографии"
+msgstr "Добавить критерий: ИЛИ"
 
 #: ../src/libs/collect.c:1781
 msgid "exclude images"
-msgstr "Исключить фотографии"
+msgstr "Добавить критерий: КРОМЕ"
 
 #: ../src/libs/collect.c:1788
 msgid "change to: and"
@@ -10094,7 +10093,7 @@ msgstr[2] ""
 
 #: ../src/libs/copy_history.c:205
 msgid "delete images' history?"
-msgstr "Удалить историю изменений снимка?"
+msgstr "Удаление истории изменений"
 
 #: ../src/libs/copy_history.c:287
 msgid ""
@@ -10126,7 +10125,7 @@ msgid ""
 "all selected images"
 msgstr ""
 "Удалить историю изменений\n"
-"всех выделенных снимков"
+"всех выбранных снимков"
 
 #: ../src/libs/copy_history.c:306
 msgid "paste"
@@ -10138,7 +10137,7 @@ msgid ""
 "all selected images"
 msgstr ""
 "Вставить часть истории изменений\n"
-"в выбранные снимки"
+"для выбранных снимков"
 
 #: ../src/libs/copy_history.c:314
 msgid "paste all"
@@ -10150,7 +10149,7 @@ msgid ""
 "all selected images"
 msgstr ""
 "Вставить всю историю изменений\n"
-"в выбранные снимки"
+"для выбранных снимков"
 
 #: ../src/libs/copy_history.c:323
 msgid "append"
@@ -10377,7 +10376,7 @@ msgstr "Загрузить из GPX"
 #: ../src/libs/geotagging.c:819
 msgid "parses a GPX file and updates location of selected images"
 msgstr ""
-"Открыть файл GPX и обновить данные о геопозиционировании в выбранных снимках"
+"Открыть файл GPX и обновить данные о геопозиционировании для выбранных снимков"
 
 #: ../src/libs/histogram.c:62
 msgid "histogram"
@@ -10394,39 +10393,39 @@ msgstr ""
 
 #: ../src/libs/histogram.c:491
 msgid "set histogram mode to linear"
-msgstr "Выбрать линейный вид гистограммы"
+msgstr "Линейная гистограмма"
 
 #: ../src/libs/histogram.c:494
 msgid "set histogram mode to waveform"
-msgstr "Переключить режим гистограммы в волновую форму"
+msgstr "Волновая гистограмма"
 
 #: ../src/libs/histogram.c:497
 msgid "set histogram mode to logarithmic"
-msgstr "Выбрать логарифмический вид гистограммы"
+msgstr "Логарифмическая гистограмма"
 
 #: ../src/libs/histogram.c:506
 msgid "click to hide red channel"
-msgstr "Щёлкните, чтобы скрыть красный канал"
+msgstr "Скрыть красный канал"
 
 #: ../src/libs/histogram.c:506
 msgid "click to show red channel"
-msgstr "Щёлкните, чтобы показать красный канал"
+msgstr "Показать красный канал"
 
 #: ../src/libs/histogram.c:511
 msgid "click to hide green channel"
-msgstr "Щёлкните, чтобы скрыть зелёный канал"
+msgstr "Скрыть зелёный канал"
 
 #: ../src/libs/histogram.c:512
 msgid "click to show green channel"
-msgstr "Щёлкните, чтобы показать зелёный канал"
+msgstr "Показать зелёный канал"
 
 #: ../src/libs/histogram.c:517
 msgid "click to hide blue channel"
-msgstr "Щёлкните, чтобы скрыть синий канал"
+msgstr "Скрыть синий канал"
 
 #: ../src/libs/histogram.c:517
 msgid "click to show blue channel"
-msgstr "Щёлкните, чтобы показать синий канал"
+msgstr "Показать синий канал"
 
 #: ../src/libs/histogram.c:522
 msgid ""
@@ -10445,19 +10444,19 @@ msgstr "Создать стиль из истории изменений"
 #: ../src/libs/history.c:86
 msgctxt "accel"
 msgid "compress history stack"
-msgstr "Сжать историю изменений"
+msgstr "Сжать историю"
 
 #: ../src/libs/history.c:113
 msgid "compress history stack"
-msgstr "Сжать историю изменений"
+msgstr "Сжать историю"
 
 #: ../src/libs/history.c:115
 msgid "create a minimal history stack which produces the same image"
-msgstr "Создать минимальную историю, дающую тот же результат"
+msgstr "Минимизировать историю изменений"
 
 #: ../src/libs/history.c:123
 msgid "create a style from the current history stack"
-msgstr "Создать стиль из этой истории изменений"
+msgstr "Создать стиль из текущей истории изменений"
 
 #: ../src/libs/history.c:676 ../src/libs/snapshots.c:345
 msgid "original"
@@ -10481,7 +10480,7 @@ msgstr "Физически удалить с диска"
 
 #: ../src/libs/image.c:185
 msgid "remove from the collection"
-msgstr "Убрать из коллекции"
+msgstr "Удалить из коллекции"
 
 #: ../src/libs/image.c:197
 msgid "move"
@@ -10509,7 +10508,7 @@ msgstr "Создать копию"
 
 #: ../src/libs/image.c:222
 msgid "add a duplicate to the collection, including its history stack"
-msgstr "Создать дубликат вместе с историей изменений в текущую коллекцию"
+msgstr "Создать дубликат в текущей коллекции вместе с историей изменений"
 
 #: ../src/libs/image.c:229
 msgid "rotate selected images 90 degrees CCW"
@@ -10563,7 +10562,7 @@ msgstr "Убрать выбранные фото из группы"
 #: ../src/libs/image.c:295
 msgctxt "accel"
 msgid "remove from collection"
-msgstr "Убрать из коллекции"
+msgstr "Удалить из коллекции"
 
 #: ../src/libs/image.c:296
 msgctxt "accel"
@@ -10647,7 +10646,7 @@ msgstr "Дистанционная съёмка"
 #. No supported devices is detected lets notice user..
 #: ../src/libs/import.c:266
 msgid "no supported devices found"
-msgstr "Устройства не обнаружены"
+msgstr "Камеры не обнаружены"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
 #: ../src/libs/import.c:430
@@ -10692,7 +10691,7 @@ msgstr "Импорт съёмки"
 
 #: ../src/libs/import.c:1001
 msgid "select one or more images to import"
-msgstr "Выберите один или несколько снимков для импорта"
+msgstr "Выбор снимков для импорта"
 
 #. adding the import folder button
 #: ../src/libs/import.c:1008
@@ -10701,7 +10700,7 @@ msgstr "Папка"
 
 #: ../src/libs/import.c:1012
 msgid "select a folder to import as film roll"
-msgstr "Выберите папку для импорта как съёмки"
+msgstr "Выбор папки для импорта"
 
 #. add the rescan button
 #: ../src/libs/import.c:1020
@@ -10710,7 +10709,7 @@ msgstr "Поиск устройств"
 
 #: ../src/libs/import.c:1024
 msgid "scan for newly attached devices"
-msgstr "Найти подключенные устройства"
+msgstr "Поиск подключенных камеры"
 
 #: ../src/libs/lib.c:216
 #, c-format
@@ -10798,7 +10797,7 @@ msgstr "Переместить точку фокусировки обратно 
 
 #: ../src/libs/live_view.c:383
 msgid "overlay"
-msgstr "Перекрытие"
+msgstr "Наложение"
 
 #: ../src/libs/live_view.c:385
 msgid "selected image"
@@ -10823,7 +10822,7 @@ msgstr "Введите ID снимка для перекрытия"
 
 #: ../src/libs/live_view.c:407
 msgid "overlay mode"
-msgstr "Режим перекрытия"
+msgstr "Режим наложения"
 
 #: ../src/libs/live_view.c:409
 msgctxt "blendmode"
@@ -10887,7 +10886,7 @@ msgstr "Светлота в HSL"
 
 #: ../src/libs/live_view.c:429
 msgid "mode of the overlay"
-msgstr "Режим перекрытия"
+msgstr "Режим наложения"
 
 #: ../src/libs/live_view.c:435
 msgid "split line"
@@ -10999,7 +10998,7 @@ msgstr "Удалить метаданные из выбранных снимко
 
 #: ../src/libs/metadata.c:384
 msgid "write metadata for selected images"
-msgstr "Записать метаданные в выбранные снимки"
+msgstr "Записать метаданные для выбранных снимков"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
 #: ../src/libs/metadata.c:424
@@ -11265,16 +11264,16 @@ msgstr "Список модулей"
 
 #: ../src/libs/modulelist.c:365
 msgid "subset: no module"
-msgstr "Скрыть все модули"
+msgstr "Скрыть все"
 
 #: ../src/libs/modulelist.c:366
 msgid "subset: all modules"
-msgstr "Показать все модули"
+msgstr "Показать все"
 
 #. the modules that are activated by default in the initial configuration
 #: ../src/libs/modulelist.c:369
 msgid "subset: default modules"
-msgstr "Модули по-умолчанию"
+msgstr "По-умолчанию"
 
 #. raw handling
 #. tones
@@ -11283,7 +11282,7 @@ msgstr "Модули по-умолчанию"
 #. image reconstruction
 #: ../src/libs/modulelist.c:378
 msgid "workspace: all-purpose"
-msgstr "Модули общего назначения"
+msgstr "Общего назначения"
 
 #. raw handling
 #. tones
@@ -11775,7 +11774,7 @@ msgstr "Удалить метку?"
 
 #: ../src/libs/tagging.c:375
 msgid "Select a keyword file"
-msgstr "Выберите файл"
+msgstr "Выбор файла меток"
 
 #: ../src/libs/tagging.c:378
 msgid "_import"
@@ -11792,7 +11791,7 @@ msgstr "Импортировано меток: %zd"
 
 #: ../src/libs/tagging.c:415
 msgid "Select file to export to"
-msgstr "Выберите файл для экспорта"
+msgstr "Выбор файла для экспорта"
 
 #: ../src/libs/tagging.c:418
 msgid "_export"
@@ -11864,7 +11863,7 @@ msgstr "Импорт"
 
 #: ../src/libs/tagging.c:587
 msgid "import tags from a Lightroom keyword file"
-msgstr "Импорт меток из файла ключевых слов Lightroom"
+msgstr "Импорт из файла меток Lightroom"
 
 #: ../src/libs/tagging.c:592
 msgctxt "verb"
@@ -11873,7 +11872,7 @@ msgstr "Экспорт"
 
 #: ../src/libs/tagging.c:594
 msgid "export all tags to a Lightroom keyword file"
-msgstr "Экспорт меток в файл ключевых слов Lightroom"
+msgstr "Экспорт в файл меток Lightroom"
 
 #: ../src/libs/tools/battery_indicator.c:38
 #: ../src/libs/tools/battery_indicator.c:71
@@ -11890,40 +11889,35 @@ msgid ""
 "toggle red label\n"
 "of selected images"
 msgstr ""
-"Переключить красную метку во всех\n"
-"выбранных снимках"
+"Переключить статус красной метки выбранных снимков"
 
 #: ../src/libs/tools/colorlabels.c:72
 msgid ""
 "toggle yellow label\n"
 "of selected images"
 msgstr ""
-"Переключить жёлтую метку во всех\n"
-"выбранных снимках"
+"Переключить статус жёлтой метки выбранных снимков"
 
 #: ../src/libs/tools/colorlabels.c:73
 msgid ""
 "toggle green label\n"
 "of selected images"
 msgstr ""
-"Переключить зелёную метку во всех\n"
-"выбранных снимках"
+"Переключить статус зелёной метки выбранных снимков"
 
 #: ../src/libs/tools/colorlabels.c:74
 msgid ""
 "toggle blue label\n"
 "of selected images"
 msgstr ""
-"Переключить синюю метку во всех\n"
-"выбранных снимках"
+"Переключить статус синей метки выбранных снимков"
 
 #: ../src/libs/tools/colorlabels.c:75
 msgid ""
 "toggle purple label\n"
 "of selected images"
 msgstr ""
-"Переключить пурпурную метку во всех\n"
-"выбранных снимках"
+"Переключить статус пурпурной метки выбранных снимков"
 
 #: ../src/libs/tools/colorlabels.c:76
 msgid "clear all labels of selected images"
@@ -11954,40 +11948,40 @@ msgstr "Лента снимков"
 
 #. setup rating key accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:2935
+#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:2939
 msgctxt "accel"
 msgid "rate 0"
-msgstr "Оценка 0"
+msgstr "Оценка: 0"
 
-#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:2936
+#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:2940
 msgctxt "accel"
 msgid "rate 1"
-msgstr "Оценка 1"
+msgstr "Оценка: 1"
 
-#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:2937
+#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:2941
 msgctxt "accel"
 msgid "rate 2"
-msgstr "Оценка 2"
+msgstr "Оценка: 2"
 
-#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:2938
+#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:2942
 msgctxt "accel"
 msgid "rate 3"
-msgstr "Оценка 3"
+msgstr "Оценка: 3"
 
-#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:2939
+#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:2943
 msgctxt "accel"
 msgid "rate 4"
-msgstr "Оценка 4"
+msgstr "Оценка: 4"
 
-#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:2940
+#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:2944
 msgctxt "accel"
 msgid "rate 5"
-msgstr "Оценка 5"
+msgstr "Оценка: 5"
 
-#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:2941
+#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:2945
 msgctxt "accel"
 msgid "rate reject"
-msgstr "Отклонить"
+msgstr "Оценка: К удалению"
 
 #. setup history key accelerators
 #: ../src/libs/tools/filmstrip.c:188
@@ -12023,27 +12017,27 @@ msgstr "Создать копию снимка"
 #. setup color label accelerators
 #. Initializing accelerators
 #. Color labels keys
-#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:2927
+#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:2931
 msgctxt "accel"
 msgid "color red"
 msgstr "Красная метка"
 
-#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:2928
+#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:2932
 msgctxt "accel"
 msgid "color yellow"
 msgstr "Жёлтая метка"
 
-#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:2929
+#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:2933
 msgctxt "accel"
 msgid "color green"
 msgstr "Зелёная метка"
 
-#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:2930
+#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:2934
 msgctxt "accel"
 msgid "color blue"
 msgstr "Синяя метка"
 
-#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:2931
+#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:2935
 msgctxt "accel"
 msgid "color purple"
 msgstr "Пурпурная метка"
@@ -12063,11 +12057,11 @@ msgstr "Без оценки"
 
 #: ../src/libs/tools/filter.c:124
 msgid "rejected only"
-msgstr "Отклонённые"
+msgstr "К удалению"
 
 #: ../src/libs/tools/filter.c:125
 msgid "all except rejected"
-msgstr "Все кроме отклонённых"
+msgstr "Кроме отмеченных к удалению"
 
 #. sort by label
 #: ../src/libs/tools/filter.c:133
@@ -12151,30 +12145,30 @@ msgstr "Показать подсказки о снимках"
 msgid "hinter"
 msgstr "hinter"
 
-#: ../src/libs/tools/lighttable.c:110
+#: ../src/libs/tools/lighttable.c:111
 msgid "zoomable light table"
 msgstr "Световой стол"
 
-#: ../src/libs/tools/lighttable.c:111
-msgid "file manager"
-msgstr "Файловый менеджер"
-
 #: ../src/libs/tools/lighttable.c:112
+msgid "file manager"
+msgstr "Менеджер файлов"
+
+#: ../src/libs/tools/lighttable.c:113
 msgid "expose"
 msgstr "Экспонирование"
 
 #. view accels
-#: ../src/libs/tools/lighttable.c:158
+#: ../src/libs/tools/lighttable.c:159
 msgctxt "accel"
 msgid "zoom max"
 msgstr "Макс. приближение"
 
-#: ../src/libs/tools/lighttable.c:161
+#: ../src/libs/tools/lighttable.c:162
 msgctxt "accel"
 msgid "zoom min"
 msgstr "Макс. удаление"
 
-#: ../src/libs/tools/lighttable.c:163
+#: ../src/libs/tools/lighttable.c:164
 msgctxt "accel"
 msgid "toggle exposé mode"
 msgstr "Переключить режим экспонирования"
@@ -12366,19 +12360,19 @@ msgstr ""
 "Переключить проверку цветового охвата.\n"
 "Профили выбираются по щелчку правой кнопкой мыши."
 
-#: ../src/views/darkroom.c:1676 ../src/views/lighttable.c:3124
+#: ../src/views/darkroom.c:1676 ../src/views/lighttable.c:3128
 msgid "display intent"
-msgstr "Цветопередача монитора"
+msgstr "Цветопередача"
 
 #: ../src/views/darkroom.c:1691
 msgid "softproof profile"
 msgstr "Профиль цветопробы"
 
-#: ../src/views/darkroom.c:1692 ../src/views/lighttable.c:3132
+#: ../src/views/darkroom.c:1692 ../src/views/lighttable.c:3136
 msgid "display profile"
-msgstr "Профиль монитора"
+msgstr "Цветовой профиль"
 
-#: ../src/views/darkroom.c:1724 ../src/views/lighttable.c:3152
+#: ../src/views/darkroom.c:1724 ../src/views/lighttable.c:3156
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "Показывать цветовые профили из %s или %s"
@@ -12529,102 +12523,102 @@ msgstr "Попробуйте изменить фильтр перечисляе�
 msgid "or add images in the collection module in the left panel"
 msgstr "или выбрать их через модуль коллекций слева."
 
-#: ../src/views/lighttable.c:2932
+#: ../src/views/lighttable.c:2936
 msgctxt "accel"
 msgid "clear color labels"
 msgstr "Удалить цветовые метки"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:2944
+#: ../src/views/lighttable.c:2948
 msgctxt "accel"
 msgid "navigate up"
 msgstr "Перейти выше"
 
-#: ../src/views/lighttable.c:2945
+#: ../src/views/lighttable.c:2949
 msgctxt "accel"
 msgid "navigate down"
 msgstr "Перейти ниже"
 
-#: ../src/views/lighttable.c:2946
+#: ../src/views/lighttable.c:2950
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "Перейти на страницу выше"
 
-#: ../src/views/lighttable.c:2947
+#: ../src/views/lighttable.c:2951
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "Перейти на страницу ниже"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:2950
+#: ../src/views/lighttable.c:2954
 msgctxt "accel"
 msgid "scroll up"
 msgstr "Прокрутить вверх"
 
-#: ../src/views/lighttable.c:2951
+#: ../src/views/lighttable.c:2955
 msgctxt "accel"
 msgid "scroll down"
 msgstr "Прокрутить вниз"
 
-#: ../src/views/lighttable.c:2952
+#: ../src/views/lighttable.c:2956
 msgctxt "accel"
 msgid "scroll left"
 msgstr "Прокрутить влево"
 
-#: ../src/views/lighttable.c:2953
+#: ../src/views/lighttable.c:2957
 msgctxt "accel"
 msgid "scroll right"
 msgstr "Прокрутить вправо"
 
-#: ../src/views/lighttable.c:2954
+#: ../src/views/lighttable.c:2958
 msgctxt "accel"
 msgid "scroll center"
 msgstr "Прокрутить в центр"
 
-#: ../src/views/lighttable.c:2955
+#: ../src/views/lighttable.c:2959
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "Заново выровнять фотографии по сетке"
 
-#: ../src/views/lighttable.c:2956
+#: ../src/views/lighttable.c:2960
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "Инвертировать выбор"
 
-#: ../src/views/lighttable.c:2957
+#: ../src/views/lighttable.c:2961
 msgctxt "accel"
 msgid "select single image"
 msgstr "Выбрать один снимок"
 
 #. Preview key
-#: ../src/views/lighttable.c:2960
+#: ../src/views/lighttable.c:2964
 msgctxt "accel"
 msgid "preview"
 msgstr "Предпросмотр"
 
-#: ../src/views/lighttable.c:2961
+#: ../src/views/lighttable.c:2965
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "Предпросмотр с определением фокуса"
 
-#: ../src/views/lighttable.c:2962
+#: ../src/views/lighttable.c:2966
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "Предпросмотр"
 
-#: ../src/views/lighttable.c:2963
+#: ../src/views/lighttable.c:2967
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "Предпросмотр с определением фокуса"
 
-#: ../src/views/lighttable.c:2964
+#: ../src/views/lighttable.c:2968
 msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "Выйти из предпросмотра"
 
-#: ../src/views/lighttable.c:3096
+#: ../src/views/lighttable.c:3100
 msgid "set display profile"
-msgstr "Установить профиль монитора"
+msgstr "Настройки монитора"
 
 #: ../src/views/map.c:134
 msgid "map"
