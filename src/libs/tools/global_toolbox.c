@@ -46,7 +46,6 @@ static void _lib_preferences_button_clicked(GtkWidget *widget, gpointer user_dat
 static void _lib_overlays_button_clicked(GtkWidget *widget, gpointer user_data);
 /* callback for help button */
 static void _lib_help_button_clicked(GtkWidget *widget, gpointer user_data);
-static void _paint_help(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -104,7 +103,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->overlays_button), darktable.gui->show_overlays);
 
   /* create the widget help button */
-  d->help_button = dtgtk_togglebutton_new(_paint_help, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  d->help_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_help, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), d->help_button, FALSE, FALSE, 2);
   gtk_widget_set_tooltip_text(d->help_button, _("enable this, then click on a control element to see its online help"));
   g_signal_connect(G_OBJECT(d->help_button), "clicked", G_CALLBACK(_lib_help_button_clicked), d);
@@ -320,24 +319,7 @@ static void _lib_help_button_clicked(GtkWidget *widget, gpointer user_data)
   gdk_event_handler_set(_main_do_event, user_data, NULL);
 }
 
-static void _paint_help(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
-{
-  PangoLayout *layout;
-  PangoRectangle ink;
-  // grow is needed because ink.* are int and everything gets rounded to 1 or so otherwise,
-  // leading to imprecise positioning
-  static const float grow = 10.0;
-  layout = pango_cairo_create_layout(cr);
-  gint s = (w < h ? w : h);
-  cairo_translate(cr, x + (w / 2.0), y + (h / 2.0));
-  cairo_scale(cr, s / grow, s / grow);
 
-  pango_layout_set_text(layout, "?", -1);
-  pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_move_to(cr, 0 - ink.x - ink.width / 2.0, 0 - ink.y - ink.height / 2.0);
-  pango_cairo_show_layout(cr, layout);
-  g_object_unref(layout);
-}
 
 void init_key_accels(dt_lib_module_t *self)
 {

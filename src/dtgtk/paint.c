@@ -1247,6 +1247,25 @@ void dtgtk_cairo_paint_overlays(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   cairo_stroke(cr);
 }
 
+void dtgtk_cairo_paint_help(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PangoLayout *layout;
+  PangoRectangle ink;
+  // grow is needed because ink.* are int and everything gets rounded to 1 or so otherwise,
+  // leading to imprecise positioning
+  static const float grow = 15.0;
+  layout = pango_cairo_create_layout(cr);
+  gint s = (w < h ? w : h);
+  cairo_translate(cr, x + (w / 2.0), y + (h / 2.0));
+  cairo_scale(cr, s / grow, s / grow);
+
+  pango_layout_set_text(layout, "?", -1);
+  pango_layout_get_pixel_extents(layout, &ink, NULL);
+  cairo_move_to(cr, 0 - ink.x - ink.width / 2.0, 0 - ink.y - ink.height / 2.0);
+  pango_cairo_show_layout(cr, layout);
+  g_object_unref(layout);
+}
+
 // TODO: Find better icon
 void dtgtk_cairo_paint_grouping(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
@@ -1254,7 +1273,7 @@ void dtgtk_cairo_paint_grouping(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   PangoRectangle ink;
   // grow is needed because ink.* are int and everything gets rounded to 1 or so otherwise,
   // leading to imprecise positioning
-  static const float grow = 10.0;
+  static const float grow = 15.0;
   layout = pango_cairo_create_layout(cr);
   gint s = (w < h ? w : h);
   cairo_translate(cr, x + (w / 2.0), y + (h / 2.0));
