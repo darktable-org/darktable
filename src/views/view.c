@@ -973,7 +973,7 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
     {
       // draw grouping icon and border if the current group is expanded
       // align to the right, left of altered
-      float s = (r1 + r2) * .6;
+      float s = (r1 + r2) * .5;
       if(zoom != 1)
       {
         x = width * 0.9 - s * 2.5;
