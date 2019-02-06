@@ -299,7 +299,11 @@ static inline int dt_draw_curve_add_point(dt_draw_curve_t *c, const float x, con
 static inline void dt_draw_histogram_8_linear(cairo_t *cr, const uint32_t *hist, int32_t channels, int32_t channel)
 {
   cairo_move_to(cr, 0, 0);
-  for(int k = 0; k < 256; k++) cairo_line_to(cr, k, hist[channels * k + channel]);
+  for(int k = 0; k < 256; k++)
+  {
+    const float y = hist[channels * k + channel];
+    cairo_line_to(cr, k, y);
+  }
   cairo_line_to(cr, 255, 0);
   cairo_close_path(cr);
   cairo_fill(cr);
@@ -324,21 +328,56 @@ static inline void dt_draw_histogram_8_zoomed(cairo_t *cr, const uint32_t *hist,
 static inline void dt_draw_histogram_8_log(cairo_t *cr, const uint32_t *hist, int32_t channels, int32_t channel)
 {
   cairo_move_to(cr, 0, 0);
-  for(int k = 0; k < 256; k++) cairo_line_to(cr, k, logf(1.0 + hist[channels * k + channel]));
+  for(int k = 0; k < 256; k++)
+  {
+    const float y = logf(1.0 + hist[channels * k + channel]);
+    cairo_line_to(cr, k, y);
+  }
   cairo_line_to(cr, 255, 0);
   cairo_close_path(cr);
   cairo_fill(cr);
 }
 
-static inline void dt_draw_histogram_8_log_base(cairo_t *cr, const uint32_t *hist, int32_t channels, int32_t channel, float base_log)
+// log x (scalable) & linear y
+static inline void dt_draw_histogram_8_logx_liny(cairo_t *cr, uint32_t *hist, int32_t channels, int32_t channel, float base_log)
 {
   cairo_move_to(cr, 0, 0);
   for(int k = 0; k < 256; k++)
   {
-    const float x = (float)k / 255.0f;
-    cairo_line_to(cr, logf(x * (base_log - 1.0f) + 1.0f) / logf(base_log), logf(1.0 + hist[channels * k + channel]));
+    const float x = logf((float)k / 255.0f * (base_log - 1.0f) + 1.0f) / logf(base_log) * 255.0f;
+    const float y = hist[channels * k + channel];
+    cairo_line_to(cr, x, y);
   }
+  cairo_line_to(cr, 255, 0);
+  cairo_close_path(cr);
+  cairo_fill(cr);
+}
 
+// linear x & log y (scalable)
+static inline void dt_draw_histogram_8_linx_logy(cairo_t *cr, uint32_t *hist, int32_t channels, int32_t channel, float base_log)
+{
+  cairo_move_to(cr, 0, 0);
+  for(int k = 0; k < 256; k++)
+  {
+    const float x = (float)k;
+    const float y = logf(hist[channels * k + channel] / 255.0f * (base_log - 1.0f) + 1.0f) / logf(base_log) * 255.0f;
+    cairo_line_to(cr, x, y);
+  }
+  cairo_line_to(cr, 255, 0);
+  cairo_close_path(cr);
+  cairo_fill(cr);
+}
+
+// log x (scalable) & log y (scalable)
+static inline void dt_draw_histogram_8_logx_logy(cairo_t *cr, uint32_t *hist, int32_t channels, int32_t channel, float base_log)
+{
+  cairo_move_to(cr, 0, 0);
+  for(int k = 0; k < 256; k++)
+  {
+    const float x = logf((float)k / 255.0f * (base_log - 1.0f) + 1.0f) / logf(base_log) * 255.0f;
+    const float y = logf(hist[channels * k + channel] / 255.0f * (base_log - 1.0f) + 1.0f) / logf(base_log) * 255.0f;
+    cairo_line_to(cr, x, y);
+  }
   cairo_line_to(cr, 255, 0);
   cairo_close_path(cr);
   cairo_fill(cr);
