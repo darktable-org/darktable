@@ -213,7 +213,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         for(int c = 0; c < 3; c++)
         {
           const float value = colors[c] * (1.0f - alpha) + yellow[c] * alpha;
-          out[2 - c] = ((uint8_t)(CLAMP(((uint32_t)255.0f * value), 0x0, 0xff)));
+          out[2 - c] = ((uint8_t)(CLAMP(round(255.0f * value), 0x0, 0xff)));
         }
       }
     }
@@ -234,7 +234,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         for(int c = 0; c < 3; c++)
         {
           const float value = in[1] * (1.0f - alpha) + yellow[c] * alpha;
-          out[2 - c] = ((uint8_t)(CLAMP(((uint32_t)255.0f * value), 0x0, 0xff)));
+          out[2 - c] = ((uint8_t)(CLAMP(round(255.0f * value), 0x0, 0xff)));
         }
       }
     }
@@ -256,7 +256,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         for(int c = 0; c < 3; c++)
         {
           const float value = gray * (1.0f - alpha) + yellow[c] * alpha;
-          out[2 - c] = ((uint8_t)(CLAMP(((uint32_t)255.0f * value), 0x0, 0xff)));
+          out[2 - c] = ((uint8_t)(CLAMP(round(255.0f * value), 0x0, 0xff)));
         }
       }
     }
@@ -272,7 +272,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       uint8_t *out = ((uint8_t *)o) + (size_t)ch * k * roi_out->width;
       for(int j = 0; j < roi_out->width; j++, in += ch, out += ch)
       {
-        for(int c = 0; c < 3; c++) out[2 - c] = ((uint8_t)(CLAMP(((uint32_t)255.0f * in[c]), 0x0, 0xff)));
+        for(int c = 0; c < 3; c++) out[2 - c] = ((uint8_t)(CLAMP(round(255.0f * in[c]), 0x0, 0xff)));
       }
     }
   }
