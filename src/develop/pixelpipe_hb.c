@@ -597,9 +597,9 @@ error:
 }
 #endif
 
-static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_roi_t *roi_in, cmsHTRANSFORM xform_rgb2lab, 
+static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_roi_t *roi_in, cmsHTRANSFORM xform_rgb2lab,
     const float *const  pick_box, const float *const  pick_point, const int pick_size,
-    uint8_t *pick_color_rgb_min, uint8_t *pick_color_rgb_max, uint8_t *pick_color_rgb_mean, 
+    uint8_t *pick_color_rgb_min, uint8_t *pick_color_rgb_max, uint8_t *pick_color_rgb_mean,
     float *pick_color_lab_min, float *pick_color_lab_max, float *pick_color_lab_mean)
 {
   float picked_color_rgb_min[3];
@@ -608,22 +608,22 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
 
   for(int k = 0; k < 3; k++) picked_color_rgb_min[k] = FLT_MAX;
   for(int k = 0; k < 3; k++) picked_color_rgb_max[k] = FLT_MIN;
-  
+
   int box[4];
   int point[2];
-  
+
   for(int k = 0; k < 4; k += 2)
     box[k] = MIN(roi_in->width - 1, MAX(0, pick_box[k] * roi_in->width));
   for(int k = 1; k < 4; k += 2)
     box[k] = MIN(roi_in->height - 1, MAX(0, pick_box[k] * roi_in->height));
   point[0] = MIN(roi_in->width - 1, MAX(0, pick_point[0] * roi_in->width));
   point[1] = MIN(roi_in->height - 1, MAX(0, pick_point[1] * roi_in->height));
-  
+
   float rgb[3];
   for(int k = 0; k < 3; k++) rgb[k] = 0.0f;
-  
+
   const float w = 1.0 / ((box[3] - box[1] + 1) * (box[2] - box[0] + 1));
-  
+
   if(pick_size == DT_COLORPICKER_SIZE_BOX)
   {
     for(int j = box[1]; j <= box[3]; j++)
@@ -653,7 +653,7 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
     pick_color_rgb_min[i] = round(picked_color_rgb_min[i] * 255.f);
     pick_color_rgb_max[i] = round(picked_color_rgb_max[i] * 255.f);
   }
-  
+
   // Converting the RGB values to Lab
   if(xform_rgb2lab)
   {
@@ -683,7 +683,7 @@ static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_
   cmsHPROFILE display_profile = NULL;
   cmsHPROFILE lab_profile = NULL;
   cmsHTRANSFORM xform_rgb2lab = NULL;
-  
+
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
@@ -691,7 +691,7 @@ static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_
                                                        darktable.color_profiles->display_filename,
                                                        DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
   if(d_profile) display_profile = d_profile->profile;
-  
+
   lab_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
   // display rgb --> lab
@@ -714,11 +714,11 @@ static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_
       continue;
     }
 
-    _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab, 
+    _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab,
         sample->box, sample->point, sample->size,
-        sample->picked_color_rgb_min, sample->picked_color_rgb_max, sample->picked_color_rgb_mean, 
+        sample->picked_color_rgb_min, sample->picked_color_rgb_max, sample->picked_color_rgb_mean,
         sample->picked_color_lab_min, sample->picked_color_lab_max, sample->picked_color_lab_mean);
-    
+
     samples = g_slist_next(samples);
   }
 
@@ -730,7 +730,7 @@ static void _pixelpipe_pick_primary_colorpicker(dt_develop_t *dev, const float *
   cmsHPROFILE display_profile = NULL;
   cmsHPROFILE lab_profile = NULL;
   cmsHTRANSFORM xform_rgb2lab = NULL;
-  
+
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
@@ -738,7 +738,7 @@ static void _pixelpipe_pick_primary_colorpicker(dt_develop_t *dev, const float *
                                                        darktable.color_profiles->display_filename,
                                                        DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
   if(d_profile) display_profile = d_profile->profile;
-  
+
   lab_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
   // display rgb --> lab
@@ -748,9 +748,9 @@ static void _pixelpipe_pick_primary_colorpicker(dt_develop_t *dev, const float *
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
-  _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab, 
+  _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab,
       dev->gui_module->color_picker_box, dev->gui_module->color_picker_point, darktable.lib->proxy.colorpicker.size,
-      darktable.lib->proxy.colorpicker.picked_color_rgb_min, darktable.lib->proxy.colorpicker.picked_color_rgb_max, darktable.lib->proxy.colorpicker.picked_color_rgb_mean, 
+      darktable.lib->proxy.colorpicker.picked_color_rgb_min, darktable.lib->proxy.colorpicker.picked_color_rgb_max, darktable.lib->proxy.colorpicker.picked_color_rgb_mean,
       darktable.lib->proxy.colorpicker.picked_color_lab_min, darktable.lib->proxy.colorpicker.picked_color_lab_max, darktable.lib->proxy.colorpicker.picked_color_lab_mean);
 
   if(xform_rgb2lab) cmsDeleteTransform(xform_rgb2lab);
@@ -762,9 +762,9 @@ static void _pixelpipe_final_histogram(dt_develop_t *dev, const float *const inp
   const dt_iop_colorspace_type_t cst = iop_cs_rgb;
   dt_dev_histogram_stats_t histogram_stats = { .bins_count = 256, .ch = 4, .pixels = 0 };
   uint32_t histogram_max[4] = { 0 };
-  dt_histogram_roi_t histogram_roi = { .width = roi_in->width, .height = roi_in->height, 
+  dt_histogram_roi_t histogram_roi = { .width = roi_in->width, .height = roi_in->height,
                                       .crop_x = 0, .crop_y = 0, .crop_width = 0, .crop_height = 0 };
-  
+
   // Constraining the area if the colorpicker is active in area mode
   if(dev->gui_module && !strcmp(dev->gui_module->op, "colorout")
      && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF
@@ -804,13 +804,13 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
                                      sizeof(uint32_t));
   memset(dev->histogram_waveform, 0,
          sizeof(uint32_t) * dev->histogram_waveform_height * dev->histogram_waveform_stride / 4);
-  
+
   // 1.0 is at 8/9 of the height!
   const double bin_width = (double)(roi_in->width) / (double)dev->histogram_waveform_width,
                _height = (double)(dev->histogram_waveform_height - 1);
   const float *const pixel = (const float *const )input;
   //         uint32_t mincol[3] = {UINT32_MAX,UINT32_MAX,UINT32_MAX}, maxcol[3] = {0,0,0};
-  
+
   // count the colors into buf ...
   for(int y = 0; y < roi_in->height; y++)
   {
@@ -818,7 +818,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
     {
       float rgb[3];
       for(int k = 0; k < 3; k++) rgb[k] = pixel[4 * y * roi_in->width + 4 * x + 2 - k];
-  
+
       const int out_x = MIN(x / bin_width, dev->histogram_waveform_width - 1);
       for(int k = 0; k < 3; k++)
       {
@@ -832,12 +832,12 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
       }
     }
   }
-  
+
   // TODO: Find a nicer function to map buf -> image than just clipping
   //         float factor[3];
   //         for(int k = 0; k < 3; k++)
   //           factor[k] = 255.0 / (float)(maxcol[k] - mincol[k]); // leave some clipping
-  
+
   // ... and scale that into a nice image. putting the pixels into the image directly gets too
   // saturated/clips.
   // new scale factor to do about the same as the old one for 1MP views, but scale to hidpi
@@ -861,7 +861,7 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
       }
     }
   }
-  
+
   free(buf);
 }
 
