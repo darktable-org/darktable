@@ -201,7 +201,8 @@ static inline int dsvd(
   /* diagonalize the bidiagonal form */
   for (k = n - 1; k >= 0; k--) 
   {                             /* loop over singular values */
-    for (its = 0; its < 30; its++) 
+    const int max_its = 30;
+    for (its = 0; its <= max_its; its++) 
     {                         /* loop over allowed iterations */
       flag = 1;
       for (l = k; l >= 0; l--) 
@@ -251,8 +252,8 @@ static inline int dsvd(
         }
         break;
       }
-      if (its >= 30) {
-        fprintf(stderr, "[svd] no convergence after 30,000! iterations\n");
+      if (its >= max_its) {
+        fprintf(stderr, "[svd] no convergence after %d iterations\n", its);
         free(rv1);
         return 0;
       }
