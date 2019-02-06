@@ -247,7 +247,7 @@ static void check_layout(dt_view_t *self)
   else
   {
     gtk_widget_hide(GTK_WIDGET(m->widget));
-    g_timeout_add(200, _expose_again_full, self);
+    g_timeout_add(500, _expose_again_full, self);
   }
 }
 
@@ -1950,7 +1950,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     dt_print(DT_DEBUG_LIGHTTABLE, "[lighttable] expose took %0.04f sec\n", end - start);
 
   if(missing_thumbnails)
-    g_timeout_add(250, _expose_again, self);
+    g_timeout_add(500, _expose_again, self);
   else
   {
     // clear hash map of thumb to redisplay, we are done

@@ -43,8 +43,8 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 
-#define DT_DEV_AVERAGE_DELAY_START 250
-#define DT_DEV_PREVIEW_AVERAGE_DELAY_START 50
+#define DT_DEV_AVERAGE_DELAY_START 1000
+#define DT_DEV_PREVIEW_AVERAGE_DELAY_START 1000
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
 
 const gchar *dt_dev_histogram_type_names[DT_DEV_HISTOGRAM_N] = { "logarithmic", "linear", "waveform" };
