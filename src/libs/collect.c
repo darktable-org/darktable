@@ -66,14 +66,15 @@ typedef struct dt_lib_collect_t
 
   GtkScrolledWindow *sw2;
 
+  gboolean singleclick;
   struct dt_lib_collect_params_t *params;
 } dt_lib_collect_t;
 
 typedef struct dt_lib_collect_params_rule_t
 {
-    uint32_t item : 16;
-    uint32_t mode : 16;
-    char string[PARAM_STRING_SIZE];
+  uint32_t item : 16;
+  uint32_t mode : 16;
+  char string[PARAM_STRING_SIZE];
 } dt_lib_collect_params_rule_t;
 
 typedef struct dt_lib_collect_params_t
@@ -94,14 +95,13 @@ typedef enum dt_lib_collect_cols_t
   DT_LIB_COLLECT_NUM_COLS
 } dt_lib_collect_cols_t;
 
-typedef struct _image_t
+typedef struct _range_t
 {
-  int id;
-  int filmid;
-  gchar *path;
-  gchar *filename;
-  int exists;
-} _image_t;
+  gchar *start;
+  gchar *stop;
+  GtkTreePath *path1;
+  GtkTreePath *path2;
+} _range_t;
 
 static void _lib_collect_gui_update(dt_lib_module_t *self);
 static void _lib_folders_update_collection(const gchar *filmroll);
@@ -390,31 +390,51 @@ static void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, dt_lib_c
 static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event, dt_lib_collect_t *d)
 {
   if((d->view_rule == DT_COLLECTION_PROP_FOLDERS && event->type == GDK_BUTTON_PRESS && event->button == 3)
-     || (event->type == GDK_2BUTTON_PRESS && event->button == 1))
+     || (!d->singleclick && event->type == GDK_2BUTTON_PRESS && event->button == 1)
+     || (d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == 1))
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+    GtkTreePath *path = NULL;
 
-    if(gtk_tree_selection_count_selected_rows(selection) <= 1)
+    /* Get tree path for row that was clicked */
+    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), (gint)event->x, (gint)event->y, &path, NULL, NULL,
+                                     NULL))
     {
-      GtkTreePath *path = NULL;
-
-      /* Get tree path for row that was clicked */
-      if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), (gint)event->x, (gint)event->y, &path, NULL,
-                                       NULL, NULL))
+      if(d->singleclick && (event->state & GDK_SHIFT_MASK) && gtk_tree_selection_count_selected_rows(selection) > 0
+         && (d->view_rule == DT_COLLECTION_PROP_DAY || d->view_rule == DT_COLLECTION_PROP_TIME
+             || d->view_rule == DT_COLLECTION_PROP_APERTURE || d->view_rule == DT_COLLECTION_PROP_FOCAL_LENGTH
+             || d->view_rule == DT_COLLECTION_PROP_ISO || d->view_rule == DT_COLLECTION_PROP_EXPOSURE
+             || d->view_rule == DT_COLLECTION_PROP_ASPECT_RATIO))
+      {
+        // range selection
+        GList *sels = gtk_tree_selection_get_selected_rows(selection, NULL);
+        GtkTreePath *path2 = (GtkTreePath *)g_list_nth_data(sels, 0);
+        gtk_tree_selection_unselect_all(selection);
+        if(gtk_tree_path_compare(path, path2) > 0)
+          gtk_tree_selection_select_range(selection, path, path2);
+        else
+          gtk_tree_selection_select_range(selection, path2, path);
+      }
+      else
       {
         gtk_tree_selection_unselect_all(selection);
         gtk_tree_selection_select_path(selection, path);
       }
-
-      /* single click on folder with the right mouse button? */
-      if (d->view_rule == DT_COLLECTION_PROP_FOLDERS && (event->type == GDK_BUTTON_PRESS && event->button == 3))
-        view_popup_menu(treeview, event, d);
-      else
-        row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
-
-      gtk_tree_path_free(path);
     }
-    return TRUE; /* we handled this */
+
+    /* single click on folder with the right mouse button? */
+    if(d->view_rule == DT_COLLECTION_PROP_FOLDERS && (event->type == GDK_BUTTON_PRESS && event->button == 3))
+      view_popup_menu(treeview, event, d);
+    else
+      row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
+
+    gtk_tree_path_free(path);
+
+    if((d->view_rule == DT_COLLECTION_PROP_DAY || d->view_rule == DT_COLLECTION_PROP_TIME)
+       && !(event->state & GDK_SHIFT_MASK))
+      return FALSE; /* we allow propagation (expand/collapse row) */
+    else
+      return TRUE; /* we stop propagation */
   }
   return FALSE; /* we did not handle this */
 }
@@ -449,6 +469,37 @@ static gboolean list_select(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   {
     gtk_tree_selection_select_path(gtk_tree_view_get_selection(d->view), path);
     gtk_tree_view_scroll_to_cell(d->view, path, NULL, FALSE, 0.2, 0);
+  }
+
+  g_free(haystack);
+  g_free(needle);
+  g_free(str);
+
+  return FALSE;
+}
+static gboolean range_select(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
+{
+  _range_t *range = (_range_t *)data;
+  gchar *str = NULL;
+
+  gtk_tree_model_get(model, iter, DT_LIB_COLLECT_COL_PATH, &str, -1);
+
+  gchar *haystack = g_utf8_strdown(str, -1);
+  gchar *needle;
+  if(range->path1)
+    needle = g_utf8_strdown(range->stop, -1);
+  else
+    needle = g_utf8_strdown(range->start, -1);
+
+  if(strcmp(haystack, needle) == 0)
+  {
+    if(range->path1)
+    {
+      range->path2 = gtk_tree_path_copy(path);
+      return TRUE;
+    }
+    else
+      range->path1 = gtk_tree_path_copy(path);
   }
 
   g_free(haystack);
@@ -1073,6 +1124,16 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
     d->treefilter = _create_filtered_model(model, dr);
 
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->view));
+    if(property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_TIME)
+    {
+      gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
+    }
+    else
+    {
+      gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
+    }
+
     gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), d->treefilter);
     gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
     gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
@@ -1088,7 +1149,44 @@ static void tree_view(dt_lib_collect_rule_t *dr)
   // we update tree expansion and selection
   gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
   gtk_tree_view_collapse_all(d->view);
-  gtk_tree_model_foreach(d->treefilter, (GtkTreeModelForeachFunc)tree_expand, dr);
+
+  if(property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_TIME)
+  {
+    // test selection range [xxx;xxx]
+    GRegex *regex;
+    GMatchInfo *match_info;
+    int match_count;
+
+    regex = g_regex_new("^\\s*\\[\\s*(.*)\\s*;\\s*(.*)\\s*\\]\\s*$", 0, 0, NULL);
+    g_regex_match_full(regex, gtk_entry_get_text(GTK_ENTRY(dr->text)), -1, 0, 0, &match_info, NULL);
+    match_count = g_match_info_get_match_count(match_info);
+
+    if(match_count == 3)
+    {
+      _range_t *range = (_range_t *)calloc(1, sizeof(_range_t));
+      /* inversed as dates are in reverse order */
+      range->start = g_match_info_fetch(match_info, 2);
+      range->stop = g_match_info_fetch(match_info, 1);
+
+      gtk_tree_model_foreach(d->treefilter, (GtkTreeModelForeachFunc)range_select, range);
+      if(range->path1 && range->path2)
+      {
+        gtk_tree_selection_select_range(gtk_tree_view_get_selection(d->view), range->path1, range->path2);
+      }
+      g_free(range->start);
+      g_free(range->stop);
+      gtk_tree_path_free(range->path1);
+      gtk_tree_path_free(range->path2);
+      free(range);
+    }
+    else
+      gtk_tree_model_foreach(d->treefilter, (GtkTreeModelForeachFunc)tree_expand, dr);
+
+    g_match_info_free(match_info);
+    g_regex_unref(regex);
+  }
+  else
+    gtk_tree_model_foreach(d->treefilter, (GtkTreeModelForeachFunc)tree_expand, dr);
 }
 
 static void list_view(dt_lib_collect_rule_t *dr)
@@ -1319,6 +1417,18 @@ static void list_view(dt_lib_collect_rule_t *dr)
 
     d->listfilter = _create_filtered_model(model, dr);
 
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->view));
+    if(property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
+       || property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_EXPOSURE
+       || property == DT_COLLECTION_PROP_ASPECT_RATIO)
+    {
+      gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
+    }
+    else
+    {
+      gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
+    }
+
     gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), d->listfilter);
     gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
     gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
@@ -1329,18 +1439,54 @@ static void list_view(dt_lib_collect_rule_t *dr)
   }
 
   // if needed, we restrict the tree to matching entries
-  if (dr->typing
-     &&(property == DT_COLLECTION_PROP_CAMERA || property == DT_COLLECTION_PROP_CREATOR
-     || property == DT_COLLECTION_PROP_DAY || property == DT_COLLECTION_PROP_DESCRIPTION
-     || property == DT_COLLECTION_PROP_FILENAME || property == DT_COLLECTION_PROP_FILMROLL
-     || property == DT_COLLECTION_PROP_LENS || property == DT_COLLECTION_PROP_PUBLISHER
-     || property == DT_COLLECTION_PROP_RIGHTS || property == DT_COLLECTION_PROP_TIME
-     || property == DT_COLLECTION_PROP_TITLE || property == DT_COLLECTION_PROP_APERTURE
-     || property == DT_COLLECTION_PROP_FOCAL_LENGTH || property == DT_COLLECTION_PROP_ISO))
+  if(dr->typing && (property == DT_COLLECTION_PROP_CAMERA || property == DT_COLLECTION_PROP_CREATOR
+                    || property == DT_COLLECTION_PROP_DESCRIPTION || property == DT_COLLECTION_PROP_FILENAME
+                    || property == DT_COLLECTION_PROP_FILMROLL || property == DT_COLLECTION_PROP_LENS
+                    || property == DT_COLLECTION_PROP_PUBLISHER || property == DT_COLLECTION_PROP_RIGHTS
+                    || property == DT_COLLECTION_PROP_TITLE || property == DT_COLLECTION_PROP_APERTURE
+                    || property == DT_COLLECTION_PROP_FOCAL_LENGTH || property == DT_COLLECTION_PROP_ISO))
     gtk_tree_model_foreach(model, (GtkTreeModelForeachFunc)list_match_string, dr);
   // we update list selection
   gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
-  gtk_tree_model_foreach(d->listfilter, (GtkTreeModelForeachFunc)list_select, dr);
+
+  if(property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
+     || property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_EXPOSURE
+     || property == DT_COLLECTION_PROP_ASPECT_RATIO)
+  {
+    // test selection range [xxx;xxx]
+    GRegex *regex;
+    GMatchInfo *match_info;
+    int match_count;
+
+    regex = g_regex_new("^\\s*\\[\\s*(.*)\\s*;\\s*(.*)\\s*\\]\\s*$", 0, 0, NULL);
+    g_regex_match_full(regex, gtk_entry_get_text(GTK_ENTRY(dr->text)), -1, 0, 0, &match_info, NULL);
+    match_count = g_match_info_get_match_count(match_info);
+
+    if(match_count == 3)
+    {
+      _range_t *range = (_range_t *)calloc(1, sizeof(_range_t));
+      range->start = g_match_info_fetch(match_info, 1);
+      range->stop = g_match_info_fetch(match_info, 2);
+
+      gtk_tree_model_foreach(d->listfilter, (GtkTreeModelForeachFunc)range_select, range);
+      if(range->path1 && range->path2)
+      {
+        gtk_tree_selection_select_range(gtk_tree_view_get_selection(d->view), range->path1, range->path2);
+      }
+      g_free(range->start);
+      g_free(range->stop);
+      gtk_tree_path_free(range->path1);
+      gtk_tree_path_free(range->path2);
+      free(range);
+    }
+    else
+      gtk_tree_model_foreach(d->listfilter, (GtkTreeModelForeachFunc)list_select, dr);
+
+    g_match_info_free(match_info);
+    g_regex_unref(regex);
+  }
+  else
+    gtk_tree_model_foreach(d->listfilter, (GtkTreeModelForeachFunc)list_select, dr);
 }
 
 static void update_view(dt_lib_collect_rule_t *dr)
@@ -1487,7 +1633,11 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
   GtkTreeModel *model = NULL;
 
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
-  if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
+  if(gtk_tree_selection_count_selected_rows(selection) < 1) return;
+  GList *sels = gtk_tree_selection_get_selected_rows(selection, &model);
+  GtkTreePath *path1 = (GtkTreePath *)g_list_nth_data(sels, 0);
+  if(!gtk_tree_model_get_iter(model, &iter, path1)) return;
+
   gchar *text;
 
   const int active = d->active_rule;
@@ -1496,21 +1646,48 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
   const int item = gtk_combo_box_get_active(GTK_COMBO_BOX(d->rule[active].combo));
   gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
 
-  if(text && strlen(text)>0 && item == DT_COLLECTION_PROP_TAG && gtk_tree_model_iter_has_child (model, &iter))
+  if(text && strlen(text) > 0)
   {
-    /* if a tag has children, ctrl-clicking on a parent node should display all images under this hierarchy. */
-    if(event->state & GDK_CONTROL_MASK)
+    if(gtk_tree_selection_count_selected_rows(selection) > 1
+       && (item == DT_COLLECTION_PROP_DAY || item == DT_COLLECTION_PROP_TIME || item == DT_COLLECTION_PROP_APERTURE
+           || item == DT_COLLECTION_PROP_FOCAL_LENGTH || item == DT_COLLECTION_PROP_ISO
+           || item == DT_COLLECTION_PROP_EXPOSURE || item == DT_COLLECTION_PROP_ASPECT_RATIO))
     {
-      gchar *n_text = g_strconcat(text, "|%", NULL);
+      /* this is a range selection */
+      GtkTreeIter iter2;
+      GtkTreePath *path2 = (GtkTreePath *)g_list_last(sels)->data;
+      if(!gtk_tree_model_get_iter(model, &iter2, path2)) return;
+
+      gchar *text2;
+      gtk_tree_model_get(model, &iter2, DT_LIB_COLLECT_COL_PATH, &text2, -1);
+
+      gchar *n_text;
+      if(item == DT_COLLECTION_PROP_DAY || item == DT_COLLECTION_PROP_TIME)
+        n_text = g_strdup_printf("[%s;%s]", text2, text); /* dates are in reverse order */
+      else
+        n_text = g_strdup_printf("[%s;%s]", text, text2);
+
       g_free(text);
+      g_free(text2);
       text = n_text;
     }
-    /* if a tag has children, shift-clicking on a parent node should display all images in and under this hierarchy. */
-    else if(event->state & GDK_SHIFT_MASK)
+    else if(item == DT_COLLECTION_PROP_TAG && gtk_tree_model_iter_has_child(model, &iter))
     {
-      gchar *n_text = g_strconcat(text, "%", NULL);
-      g_free(text);
-      text = n_text;
+      /* if a tag has children, ctrl-clicking on a parent node should display all images under this hierarchy. */
+      if(event->state & GDK_CONTROL_MASK)
+      {
+        gchar *n_text = g_strconcat(text, "|%", NULL);
+        g_free(text);
+        text = n_text;
+      }
+      /* if a tag has children, shift-clicking on a parent node should display all images in and under this
+       * hierarchy. */
+      else if(event->state & GDK_SHIFT_MASK)
+      {
+        gchar *n_text = g_strconcat(text, "%", NULL);
+        g_free(text);
+        text = n_text;
+      }
     }
   }
 
@@ -1812,6 +1989,13 @@ static gboolean popup_button_callback(GtkWidget *widget, GdkEventButton *event, 
   return TRUE;
 }
 
+static void view_set_click(gpointer instance, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_collect_t *d = (dt_lib_collect_t *)self->data;
+  d->singleclick = dt_conf_get_bool("plugins/lighttable/collect/single-click");
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)calloc(1, sizeof(dt_lib_collect_t));
@@ -1823,6 +2007,7 @@ void gui_init(dt_lib_module_t *self)
   d->active_rule = 0;
   d->nb_rules = 0;
   d->params = (dt_lib_collect_params_t *)malloc(sizeof(dt_lib_collect_params_t));
+  view_set_click(NULL, self);
 
   GtkBox *box;
   GtkWidget *w;
@@ -1926,6 +2111,8 @@ void gui_init(dt_lib_module_t *self)
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_TAG_CHANGED, G_CALLBACK(tag_changed),
                             self);
+
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(view_set_click), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -1939,6 +2126,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_imported), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(filmrolls_removed), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(tag_changed), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(view_set_click), self);
   darktable.view_manager->proxy.module_collect.module = NULL;
   free(d->params);
 
