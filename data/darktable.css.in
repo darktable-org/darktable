@@ -223,21 +223,21 @@ eventbox *
 {
   border-radius: 2pt;
   box-shadow:none;
-  padding: 2pt 4pt;
+  padding: 2pt;
   margin: 0pt 0.5pt;
   border: 0.5pt solid @border_color;
   background-color: @plugin_bg_color;
   color: @button_fg;
   font-family: "Roboto";
-  min-height: 9pt;
-  min-width: 9pt;
+  min-height: 8pt;
+  min-width: 8pt;
 }
 
 #lib-plugin-ui * button,
 #iop-plugin-ui * button
 {
   margin: 1pt 0.5pt;
-  padding: 2pt 4pt;
+  padding: 2pt;
   border: 0.5pt solid @button_border;
   background-color: @button_bg;
   color: @button_fg;
@@ -249,6 +249,11 @@ eventbox *
   background-color: transparent;
   border: 0;
   border-radius: 0;
+}
+
+label
+{
+  padding: 2pt 1em;
 }
 
 #lib-plugin-ui * button:checked,
