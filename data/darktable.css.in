@@ -205,10 +205,19 @@ eventbox *
 #lib-plugin-ui:selected,
 #iop-plugin-ui:selected,
 #lib-plugin-ui:active,
-#iop-plugin-ui:active
+#iop-plugin-ui:active,
+#lib-plugin-ui:focus,
+#iop-plugin-ui:focus
 {
-  padding: 5pt;
+  padding: 8pt;
 }
+
+#lib-plugin-ui *,
+#iop-plugin-ui *
+{
+  font-size: 1em;
+}
+
 
 /* Buttons */
 
@@ -385,13 +394,14 @@ combobox
 {
   color: @fg_color;
   background-color: @bg_color;
+  font-size:0.95em;
   margin:0;
   border:0;
   padding:0;
   font-weight: 200;
-  font-stretch: extra-condensed;
+  font-stretch: condensed;
+  font-family: "Roboto Condensed";
 }
-
 
 #section_label
 {
@@ -596,12 +606,30 @@ notebook tab:checked *
   color: @bauhaus_fg;
 }
 
+/* Modules buttons */
+
+#dt-button,
 #dt-toggle-button,
 #dt-icon
 {
-  min-height: 1.5em;
-  min-width: 1.5em;
+  font-size: 14pt;
+  min-height: 14pt;
+  min-width: 14pt;
   padding: 1pt;
+}
+
+#module-preset-button,
+#module-reset-button,
+#module-spacer,
+#module-enable-button,
+#module-instance-button,
+#module-icon,
+#module-expander-arrow
+{
+  min-height: 8pt;
+  min-width: 8pt;
+  padding: 1pt;
+  font-size: 8pt;
 }
 
 /* separator */

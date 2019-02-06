@@ -1981,8 +1981,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 got_image:
   surface = dt_gdk_cairo_surface_create_from_pixbuf(pixbuf, 1, NULL);
   hw[idx] = gtk_image_new_from_surface(surface);
-  gtk_widget_set_margin_start(GTK_WIDGET(hw[idx]), DT_PIXEL_APPLY_DPI(5));
-  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+  gtk_widget_set_name(GTK_WIDGET(hw[idx++]), "module-icon");
   cairo_surface_destroy(surface);
   g_object_unref(pixbuf);
 
@@ -1994,7 +1993,6 @@ got_image:
   if(module->flags() & IOP_FLAGS_ONE_INSTANCE)
   {
     hw[idx] = gtk_fixed_new();
-    gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
   }
   else
   {
@@ -2004,8 +2002,9 @@ got_image:
                                 _("multiple instances actions\nmiddle-click creates new instance"));
     g_signal_connect(G_OBJECT(hw[idx]), "button-press-event", G_CALLBACK(dt_iop_gui_multiinstance_callback),
                      module);
-    gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
   }
+
+  gtk_widget_set_name(GTK_WIDGET(hw[idx++]), "module-instance-button");
 
   dt_gui_add_help_link(expander, dt_get_help_url(module->op));
 
@@ -2014,7 +2013,7 @@ got_image:
   module->reset_button = GTK_WIDGET(hw[idx]);
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("reset parameters"));
   g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(dt_iop_gui_reset_callback), module);
-  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+  gtk_widget_set_name(GTK_WIDGET(hw[idx++]), "module-reset-button");
 
 
   /* add preset button if module has implementation */
@@ -2025,12 +2024,12 @@ got_image:
   else
     gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("presets\nmiddle-click to apply on new instance"));
   g_signal_connect(G_OBJECT(hw[idx]), "button-press-event", G_CALLBACK(popup_callback), module);
-  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+  gtk_widget_set_name(GTK_WIDGET(hw[idx++]), "module-preset-button");
 
   /* add enabled button spacer */
   hw[idx] = gtk_fixed_new();
   gtk_widget_set_no_show_all(hw[idx], TRUE);
-  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+  gtk_widget_set_name(GTK_WIDGET(hw[idx++]), "module-spacer");
 
   /* add enabled button */
   hw[idx] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_BG_TRANSPARENT, NULL);
@@ -2043,7 +2042,7 @@ got_image:
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[idx]), module->enabled);
   g_signal_connect(G_OBJECT(hw[idx]), "toggled", G_CALLBACK(dt_iop_gui_off_callback), module);
   module->off = DTGTK_TOGGLEBUTTON(hw[idx]);
-  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+  gtk_widget_set_name(GTK_WIDGET(hw[idx++]), "module-enable-button");
 
   /* reorder header, for now, iop are always in the right panel */
   for(int i = 7; i >= 0; i--)

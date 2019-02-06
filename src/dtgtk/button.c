@@ -140,7 +140,7 @@ GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void
   button->icon = paint;
   button->icon_flags = paintflags;
   button->icon_data = paintdata;
-  gtk_widget_set_size_request(GTK_WIDGET(button), DT_PIXEL_APPLY_DPI(17), DT_PIXEL_APPLY_DPI(17));
+  gtk_widget_set_name(GTK_WIDGET(button), "dt-button");
   return (GtkWidget *)button;
 }
 

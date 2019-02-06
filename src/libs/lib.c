@@ -989,12 +989,12 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 
   /* add module label */
   char label[128];
-  g_snprintf(label, sizeof(label), "%s", module->name(module));
+  g_snprintf(label, sizeof(label), "<span size=\"larger\">%s</span>", module->name(module));
   hw[idx] = gtk_label_new("");
-  gtk_widget_set_name(hw[idx], "panel_label");
   gtk_label_set_markup(GTK_LABEL(hw[idx]), label);
   gtk_widget_set_tooltip_text(hw[idx], module->name(module));
-  gtk_label_set_ellipsize(GTK_LABEL(hw[idx++]), PANGO_ELLIPSIZE_MIDDLE);
+  gtk_label_set_ellipsize(GTK_LABEL(hw[idx]), PANGO_ELLIPSIZE_MIDDLE);
+  gtk_widget_set_name(hw[idx++], "panel_label");
 
   /* add reset button if module has implementation */
   if(module->gui_reset)
@@ -1006,7 +1006,8 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   }
   else
     hw[idx] = gtk_fixed_new();
-  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+
+  gtk_widget_set_name(GTK_WIDGET(hw[idx++]), "module-reset-button");
 
   /* add preset button if module has implementation */
   if(module->get_params)
@@ -1018,11 +1019,12 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   }
   else
     hw[idx] = gtk_fixed_new();
-  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+
+  gtk_widget_set_name(GTK_WIDGET(hw[idx++]), "module-preset-button");
 
   /* add a spacer to align buttons with iop buttons (enabled button) */
   hw[idx] = gtk_fixed_new();
-  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+  gtk_widget_set_name(GTK_WIDGET(hw[idx]), "module-spacer");
 
   /* lets order header elements depending on left/right side panel placement */
   int c = module->container(module);
