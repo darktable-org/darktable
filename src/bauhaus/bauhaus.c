@@ -1425,16 +1425,6 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     cairo_line_to(cr, width, height);
     cairo_line_to(cr, width, 2.0 * ht);
     cairo_stroke(cr);
-    // fade in line around popup:
-    for(int k = 0; k < 4; k++)
-    {
-      cairo_set_line_width(cr, (k + 1) / 4.0f);
-      cairo_move_to(cr, 0.0, ht * (2.f + k / 4.0f));
-      cairo_line_to(cr, 0.0, ht * (2.f + (k + 1) / 4.0f));
-      cairo_move_to(cr, width, ht * (2.f + k / 4.0f));
-      cairo_line_to(cr, width, ht * (2.f + (k + 1) / 4.0f));
-      cairo_stroke(cr);
-    }
   }
 
   // switch on bauhaus widget type (so we only need one static window)

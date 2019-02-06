@@ -113,7 +113,7 @@ void gui_init(dt_lib_module_t *self)
   // that's done so that buttons added via Lua will come first.
 
   /* create the preference button */
-  d->preferences_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  d->preferences_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   gtk_box_pack_end(GTK_BOX(self->widget), d->preferences_button, FALSE, FALSE, 2);
   gtk_widget_set_tooltip_text(d->preferences_button, _("show global preferences"));
   g_signal_connect(G_OBJECT(d->preferences_button), "clicked", G_CALLBACK(_lib_preferences_button_clicked),

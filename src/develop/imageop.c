@@ -1941,22 +1941,6 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
   return FALSE;
 }
 
-static GdkPixbuf *load_image(const char *filename, int size)
-{
-  GError *error = NULL;
-  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return NULL;
-
-  GdkPixbuf *pixbuf = dt_gdk_pixbuf_new_from_file_at_size(filename, size, size, &error);
-  if(!pixbuf)
-  {
-    fprintf(stderr, "error loading file `%s': %s\n", filename, error->message);
-    g_error_free(error);
-  }
-  return pixbuf;
-}
-
-static const uint8_t fallback_pixel[4] = { 0, 0, 0, 0 };
-
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 {
   int bs = DT_PIXEL_APPLY_DPI(12);
@@ -1984,62 +1968,23 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
    * initialize the header widgets
    */
   int idx = 0;
-  GtkWidget *hw[8] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+  GtkWidget *hw[7] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
   /* add the expand indicator icon */
   hw[idx] = dtgtk_icon_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT, NULL);
   gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
-
-  /* add module icon */
-  GdkPixbuf *pixbuf;
-  cairo_surface_t *surface;
-  char filename[PATH_MAX] = { 0 };
-  char datadir[PATH_MAX] = { 0 };
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-
-  // make the icons a little more visible
-  #define ICON_SIZE (bs * 1.7)
-
-  snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/%s.svg", datadir, module->op);
-  pixbuf = load_image(filename, ICON_SIZE);
-  if(pixbuf) goto got_image;
-
-  snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/%s.png", datadir, module->op);
-  pixbuf = load_image(filename, ICON_SIZE);
-  if(pixbuf) goto got_image;
-
-  snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/template.svg", datadir);
-  pixbuf = load_image(filename, ICON_SIZE);
-  if(pixbuf) goto got_image;
-
-  snprintf(filename, sizeof(filename), "%s/pixmaps/plugins/darkroom/template.png", datadir);
-  pixbuf = load_image(filename, ICON_SIZE);
-  if(pixbuf) goto got_image;
-
-  #undef ICON_SIZE
-
-  // wow, we could neither load the SVG nor the PNG files. something is fucked up.
-  pixbuf = gdk_pixbuf_new_from_data(fallback_pixel, GDK_COLORSPACE_RGB, TRUE, 8, 1, 1, 4, NULL, NULL);
-
-got_image:
-  surface = dt_gdk_cairo_surface_create_from_pixbuf(pixbuf, 1, NULL);
-  hw[idx] = gtk_image_new_from_surface(surface);
-  gtk_widget_set_margin_start(GTK_WIDGET(hw[idx]), DT_PIXEL_APPLY_DPI(5));
-  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
-  cairo_surface_destroy(surface);
-  g_object_unref(pixbuf);
 
   /* add module label */
   hw[idx] = gtk_label_new("");
   _iop_panel_label(hw[idx++], module);
 
   /* add multi instances menu button */
-    hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-    module->multimenu_button = GTK_WIDGET(hw[idx]);
-    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]),
-                                _("multiple instances actions\nmiddle-click creates new instance"));
-    g_signal_connect(G_OBJECT(hw[idx]), "button-press-event", G_CALLBACK(dt_iop_gui_multiinstance_callback), module);
-    gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+  hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  module->multimenu_button = GTK_WIDGET(hw[idx]);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]),
+                              _("multiple instances actions\nmiddle-click creates new instance"));
+  g_signal_connect(G_OBJECT(hw[idx]), "button-press-event", G_CALLBACK(dt_iop_gui_multiinstance_callback), module);
+  gtk_widget_set_name(GTK_WIDGET(hw[idx++]), "module-instance-button");
 
   dt_gui_add_help_link(expander, dt_get_help_url(module->op));
 
@@ -2048,7 +1993,7 @@ got_image:
   module->reset_button = GTK_WIDGET(hw[idx]);
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("reset parameters"));
   g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(dt_iop_gui_reset_callback), module);
-  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+  gtk_widget_set_name(GTK_WIDGET(hw[idx++]), "module-reset-button");
 
 
   /* add preset button if module has implementation */
@@ -2059,12 +2004,12 @@ got_image:
   else
     gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]), _("presets\nmiddle-click to apply on new instance"));
   g_signal_connect(G_OBJECT(hw[idx]), "button-press-event", G_CALLBACK(popup_callback), module);
-  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+  gtk_widget_set_name(GTK_WIDGET(hw[idx++]), "module-preset-button");
 
   /* add enabled button spacer */
   hw[idx] = gtk_fixed_new();
   gtk_widget_set_no_show_all(hw[idx], TRUE);
-  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+  gtk_widget_set_name(GTK_WIDGET(hw[idx++]), "module-spacer");
 
   /* add enabled button */
   hw[idx] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_BG_TRANSPARENT, NULL);
@@ -2077,14 +2022,14 @@ got_image:
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[idx]), module->enabled);
   g_signal_connect(G_OBJECT(hw[idx]), "toggled", G_CALLBACK(dt_iop_gui_off_callback), module);
   module->off = DTGTK_TOGGLEBUTTON(hw[idx]);
-  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+  gtk_widget_set_name(GTK_WIDGET(hw[idx++]), "module-enable-button");
 
   /* reorder header, for now, iop are always in the right panel */
-  for(int i = 7; i >= 0; i--)
+  for(int i = 6; i >= 0; i--)
     if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 2 ? TRUE : FALSE, i == 2 ? TRUE : FALSE, 2);
   dt_gui_add_help_link(header, "interacting.html");
 
-  gtk_widget_set_halign(hw[2], GTK_ALIGN_END);
+  gtk_widget_set_halign(hw[2], GTK_ALIGN_START);
   dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT, NULL);
 
   /* add the blending ui if supported */
@@ -2092,6 +2037,10 @@ got_image:
   dt_iop_gui_init_blending(iopw, module);
 
   /* add empty space around module widget */
+  gtk_widget_set_margin_start(module->widget, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_end(module->widget, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_top(module->widget, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_bottom(module->widget, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_hide(iopw);
 
   module->expander = expander;
