@@ -65,7 +65,7 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   int flags = DTGTK_TOGGLEBUTTON(widget)->icon_flags;
 
   /* set inner border */
-  int border = DT_PIXEL_APPLY_DPI((flags & CPF_DO_NOT_USE_BORDER) ? 2 : 6);
+  int border = DT_PIXEL_APPLY_DPI((flags & CPF_DO_NOT_USE_BORDER) ? 3 : 6);
 
   /* update active state paint flag */
   gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
@@ -146,10 +146,10 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
     {
       if(text)
         DTGTK_TOGGLEBUTTON(widget)
-            ->icon(cr, border, border, height - (border * 2), height - (border * 2), flags, icon_data);
+            ->icon(cr, border, border, icon_height, icon_height, flags, icon_data);
       else
         DTGTK_TOGGLEBUTTON(widget)
-            ->icon(cr, border, border, width - (border * 2), height - (border * 2), flags, icon_data);
+            ->icon(cr, border, border, icon_height, icon_height, flags, icon_data);
     }
   }
 
