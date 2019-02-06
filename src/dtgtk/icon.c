@@ -68,6 +68,7 @@ GtkWidget *dtgtk_icon_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void *
   icon->icon = paint;
   icon->icon_flags = paintflags;
   icon->icon_data = paintdata;
+  gtk_widget_set_size_request(GTK_WIDGET(icon), DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
   return (GtkWidget *)icon;
 }
 
