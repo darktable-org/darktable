@@ -1200,7 +1200,7 @@ static void _softproof_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 
   _update_softproof_gamut_checking(d);
 
-  dt_dev_reprocess_all(d);
+  dt_dev_reprocess_center(d);
 }
 
 static gboolean _softproof_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
@@ -1241,7 +1241,7 @@ static void _gamut_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 
   _update_softproof_gamut_checking(d);
 
-  dt_dev_reprocess_all(d);
+  dt_dev_reprocess_center(d);
 }
 
 static gboolean _gamut_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
@@ -1500,11 +1500,6 @@ void gui_init(dt_view_t *self)
 #endif
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(8));
-    gtk_widget_set_margin_end(vbox, DT_PIXEL_APPLY_DPI(8));
-    gtk_widget_set_margin_top(vbox, DT_PIXEL_APPLY_DPI(8));
-    gtk_widget_set_margin_bottom(vbox, DT_PIXEL_APPLY_DPI(8));
-
     gtk_container_add(GTK_CONTAINER(dev->rawoverexposed.floating_window), vbox);
 
     /** let's fill the encapsulating widgets */
@@ -1569,11 +1564,6 @@ void gui_init(dt_view_t *self)
 #endif
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(8));
-    gtk_widget_set_margin_end(vbox, DT_PIXEL_APPLY_DPI(8));
-    gtk_widget_set_margin_top(vbox, DT_PIXEL_APPLY_DPI(8));
-    gtk_widget_set_margin_bottom(vbox, DT_PIXEL_APPLY_DPI(8));
-
     gtk_container_add(GTK_CONTAINER(dev->overexposed.floating_window), vbox);
 
     /** let's fill the encapsulating widgets */
@@ -1646,11 +1636,6 @@ void gui_init(dt_view_t *self)
 #endif
 
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(8));
-    gtk_widget_set_margin_end(vbox, DT_PIXEL_APPLY_DPI(8));
-    gtk_widget_set_margin_top(vbox, DT_PIXEL_APPLY_DPI(8));
-    gtk_widget_set_margin_bottom(vbox, DT_PIXEL_APPLY_DPI(8));
-
     gtk_container_add(GTK_CONTAINER(dev->profile.floating_window), vbox);
 
     /** let's fill the encapsulating widgets */
