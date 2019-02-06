@@ -403,7 +403,8 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
       if(d->singleclick && (event->state & GDK_SHIFT_MASK) && gtk_tree_selection_count_selected_rows(selection) > 0
          && (d->view_rule == DT_COLLECTION_PROP_DAY || d->view_rule == DT_COLLECTION_PROP_TIME
              || d->view_rule == DT_COLLECTION_PROP_APERTURE || d->view_rule == DT_COLLECTION_PROP_FOCAL_LENGTH
-             || d->view_rule == DT_COLLECTION_PROP_ISO || d->view_rule == DT_COLLECTION_PROP_EXPOSURE))
+             || d->view_rule == DT_COLLECTION_PROP_ISO || d->view_rule == DT_COLLECTION_PROP_EXPOSURE
+             || d->view_rule == DT_COLLECTION_PROP_ASPECT_RATIO))
       {
         // range selection
         GList *sels = gtk_tree_selection_get_selected_rows(selection, NULL);
@@ -1418,7 +1419,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
 
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->view));
     if(property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
-       || property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_EXPOSURE)
+       || property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_EXPOSURE
+       || property == DT_COLLECTION_PROP_ASPECT_RATIO)
     {
       gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
     }
@@ -1448,7 +1450,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
   gtk_tree_selection_unselect_all(gtk_tree_view_get_selection(d->view));
 
   if(property == DT_COLLECTION_PROP_APERTURE || property == DT_COLLECTION_PROP_FOCAL_LENGTH
-     || property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_EXPOSURE)
+     || property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_EXPOSURE
+     || property == DT_COLLECTION_PROP_ASPECT_RATIO)
   {
     // test selection range [xxx;xxx]
     GRegex *regex;
@@ -1648,7 +1651,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
     if(gtk_tree_selection_count_selected_rows(selection) > 1
        && (item == DT_COLLECTION_PROP_DAY || item == DT_COLLECTION_PROP_TIME || item == DT_COLLECTION_PROP_APERTURE
            || item == DT_COLLECTION_PROP_FOCAL_LENGTH || item == DT_COLLECTION_PROP_ISO
-           || item == DT_COLLECTION_PROP_EXPOSURE))
+           || item == DT_COLLECTION_PROP_EXPOSURE || item == DT_COLLECTION_PROP_ASPECT_RATIO))
     {
       /* this is a range selection */
       GtkTreeIter iter2;
