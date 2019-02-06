@@ -568,7 +568,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* set size of navigation draw area */
   const int panel_width = dt_conf_get_int("panel_width");
-  gtk_widget_set_size_request(self->widget, -1, panel_width / 3.0f);
+  gtk_widget_set_size_request(self->widget, -1, panel_width * 0.5f);
 
   /* connect to preview pipe finished  signal */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,

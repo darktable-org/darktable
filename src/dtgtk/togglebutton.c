@@ -146,10 +146,10 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
     {
       if(text)
         DTGTK_TOGGLEBUTTON(widget)
-            ->icon(cr, border, border, icon_height, icon_height, flags, icon_data);
+            ->icon(cr, border, border, icon_width, icon_height, flags, icon_data);
       else
         DTGTK_TOGGLEBUTTON(widget)
-            ->icon(cr, border, border, icon_height, icon_height, flags, icon_data);
+            ->icon(cr, border, border, icon_width, icon_height, flags, icon_data);
     }
   }
 
@@ -178,7 +178,7 @@ GtkWidget *dtgtk_togglebutton_new(DTGTKCairoPaintIconFunc paint, gint paintflags
   button->icon = paint;
   button->icon_flags = paintflags;
   button->icon_data = paintdata;
-  gtk_widget_set_size_request(GTK_WIDGET(button), DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
+  gtk_widget_set_name(GTK_WIDGET(button), "dt-toggle-button");
   return (GtkWidget *)button;
 }
 
