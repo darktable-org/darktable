@@ -142,6 +142,8 @@
   border: 0;
   outline-style:none;
   background-image: none;
+  min-width: 0;
+  min-height: 0;
 }
 
 /* Reset GTK defaults */
@@ -206,7 +208,6 @@ eventbox *
 #lib-plugin-ui:focus,
 #iop-plugin-ui:focus
 {
-  padding: 8pt;
 }
 
 #lib-plugin-ui *,
@@ -235,7 +236,6 @@ eventbox *
 #lib-plugin-ui * button,
 #iop-plugin-ui * button
 {
-  border-radius: 1em;
   margin: 1pt 0.5pt;
   padding: 2pt 4pt;
   border: 0.5pt solid @button_border;
@@ -303,6 +303,7 @@ entry {
   border: 0.5pt solid @border_color;
   color:@bauhaus_fg;
   background-color: @field_bg;
+  padding: 2pt;
 }
 
 #iop-plugin-ui entry:hover,
@@ -341,11 +342,11 @@ entry selection {
 entry *,
 #iop-plugin-ui entry * button,
 #lib-plugin-ui entry * button,
-entry button,
-spinbutton button
+entry * button,
+spinbutton.horizontal button.up,
+spinbutton.horizontal button.down
 {
-  padding: 0;
-  border-radius: 0;
+  padding: 2pt;
 }
 
 /* Combobox */
@@ -628,6 +629,14 @@ notebook tab:checked *
   min-width: 8pt;
   padding: 1pt;
   font-size: 8pt;
+}
+
+#iop-plugin-ui #dt-button,
+#iop-plugin-ui #dt-toggle-button
+{
+  font-size: 8pt;
+  min-height: 10pt;
+  min-width: 10pt;
 }
 
 /* separator */
