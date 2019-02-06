@@ -767,7 +767,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>use single-click in the collect panel</shortdescription>
-    <longdescription>check this option to use single-click to select items in the collect panel. This will allow you to do range selections for date-time and numeric values.</longdescription>
+    <longdescription>check this option to use single-click to select items in the collect panel. this will allow you to do range selections for date-time and numeric values.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/collect/num_rules</name>
