@@ -596,6 +596,14 @@ notebook tab:checked *
   color: @bauhaus_fg;
 }
 
+#dt-toggle-button,
+#dt-icon
+{
+  min-height: 1.5em;
+  min-width: 1.5em;
+  padding: 1pt;
+}
+
 /* separator */
 
 separator, separator:hover
