@@ -355,10 +355,9 @@ combobox button,
 #background_job_eventbox,
 #iop-plugin-ui combobox,
 #lib-plugin-ui combobox,
-#iop-plugin-ui combobox *,
-#lib-plugin-ui combobox *
+combobox
 {
-  background-color: @bauhaus_bg_color;
+  background-color: transparent;
 }
 
 /* Labels */
@@ -470,12 +469,14 @@ dialog scrollbar.horizontal slider:hover
 /* Context menu & tooltips */
 
 context-menu,
-tooltip
+menu,
+tooltip,
+popover
 {
   background-color: @really_dark_bg_color;
-  box-shadow: 0 0 0 5pt @border_color;
   outline-style:none;
   border-radius: 2pt;
+  padding: 4pt;
 }
 
 #main_window context-menu menuitem *:disabled,
@@ -488,12 +489,14 @@ context-menu menuitem *:disabled
 #iop-plugin-ui menuitem,
 notebook menuitem,
 menuitem,
-tooltip *
+tooltip *,
+popover *,
+menu *
 {
-  padding: 4pt;
-  background-color:@really_dark_bg_color;
+  background-color: transparent;
   color: @fg_color;
   outline-style:none;
+  padding: 1pt;
 }
 
 #lib-plugin-ui menuitem:hover,
@@ -505,7 +508,7 @@ menuitem:hover
   color: @button_hover_fg;
 }
 
-/* Tree view : not sure what it does, if it does anything */
+/* Tree view (lists and tables) */
 
 #iop-plugin-ui treeview.view *,
 #lib-plugin-ui treeview.view *,
@@ -513,6 +516,14 @@ treeview.view *
 {
    background-color: @plugin_bg_color;
    color: @plugin_fg_color;
+}
+
+#iop-plugin-ui treeview.view header *,
+#lib-plugin-ui treeview.view header *,
+treeview.view header *
+{
+  background-color: @button_bg;
+  color: @button_fg;
 }
 
 #iop-plugin-ui treeview.view *:hover,
@@ -527,7 +538,8 @@ treeview.view *:hover
 #lib-plugin-ui treeview.view *:selected,
 treeview.view *:selected
 {
-   background-color: shade(@plugin_bg, 1.2);
+  background-color: @button_checked_bg;
+  color: @button_checked_fg;
 }
 
 /* Notebooks tabs */
