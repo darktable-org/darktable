@@ -247,13 +247,13 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       if(ib)
       {
         g_signal_connect(G_OBJECT(ib), "clicked", G_CALLBACK(_lib_import_from_camera_callback), camera);
-        gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(ib)), GTK_ALIGN_START);
+        gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(ib)), GTK_ALIGN_CENTER);
         dt_gui_add_help_link(ib, "lighttable_panels.html#import_from_camera");
       }
       if(tb)
       {
         g_signal_connect(G_OBJECT(tb), "clicked", G_CALLBACK(_lib_import_tethered_callback), camera);
-        gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(tb)), GTK_ALIGN_START);
+        gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(tb)), GTK_ALIGN_CENTER);
         dt_gui_add_help_link(tb, "lighttable_panels.html#import_from_camera");
       }
       gtk_box_pack_start(GTK_BOX(d->devices), vbx, FALSE, FALSE, 0);
@@ -431,7 +431,6 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_module_t *self,dt_lib_impo
   gtk_expander_set_expanded(GTK_EXPANDER(expander), dt_conf_get_bool("ui_last/import_options_expanded"));
 
   GtkWidget *frame = gtk_frame_new(NULL);
-  gtk_frame_set_shadow_type(GTK_FRAME(frame), GTK_SHADOW_IN);
   gtk_widget_set_hexpand(frame, TRUE);
   GtkWidget *event_box = gtk_event_box_new();
 
