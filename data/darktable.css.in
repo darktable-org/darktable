@@ -151,12 +151,14 @@
 #iop-plugin-ui *,
 combobox,
 combobox *,
-combobox togglebutton *,
+togglebutton,
+togglebutton *,
 notebook,
 notebook *,
 notebook tab *,
 table,
 popover,
+frame,
 frame *,
 #lib-modulelist *,
 alignment,
@@ -210,12 +212,11 @@ eventbox *
 
 /* Buttons */
 
-button,
-dialog button
+* button
 {
   border-radius: 2pt;
   box-shadow:none;
-  padding: 1pt 4pt;
+  padding: 2pt 4pt;
   margin: 0pt 0.5pt;
   border: 0.5pt solid @border_color;
   background-color: @plugin_bg_color;
@@ -228,9 +229,9 @@ dialog button
 #lib-plugin-ui * button,
 #iop-plugin-ui * button
 {
-  padding: 1pt 4pt;
   border-radius: 1em;
   margin: 1pt 0.5pt;
+  padding: 2pt 4pt;
   border: 0.5pt solid @button_border;
   background-color: @button_bg;
   color: @button_fg;
@@ -241,12 +242,8 @@ dialog button
 {
   background-color: transparent;
   border: 0;
+  border-radius: 0;
   font: 0.95em "Roboto Condensed Light";
-}
-
-#panel_label button
-{
-  font-size: 0.9em;
 }
 
 #lib-plugin-ui * button:checked,
@@ -291,7 +288,7 @@ checkbutton check
 @define-color field_bg @grey_20;
 @define-color field_fg @grey_80;
 @define-color field_bg_active @grey_30;
-@define-color feild_fg_active @grey_90;
+@define-color field_fg_active @grey_90;
 @define-color field_bg_hover @grey40;
 
 #iop-plugin-ui entry,
@@ -301,7 +298,6 @@ entry {
   border: 0.5pt solid @border_color;
   color:@bauhaus_fg;
   background-color: @field_bg;
-  padding:0 2pt;
 }
 
 #iop-plugin-ui entry:hover,
@@ -323,10 +319,8 @@ entry:active,
 #lib-plugin-ui entry:focus,
 entry:focus
  {
-  border-radius: 2pt;
-  border: 0.5pt solid @border_color;
-  color:@bauhaus_fg;
-  background-color: @field_active_bg;
+  color:@field_fg_active;
+  background-color: @field_bg_active;
 }
 
 #iop-plugin-ui entry selection,
@@ -335,6 +329,18 @@ entry selection {
   background-color:shade(@selected_bg_color, 1.7);
   min-height: 0;
   min-width: 0;
+}
+
+#iop-plugin-ui entry *,
+#lib-plugin-ui entry *,
+entry *,
+#iop-plugin-ui entry * button,
+#lib-plugin-ui entry * button,
+entry button,
+spinbutton button
+{
+  padding: 0;
+  border-radius: 0;
 }
 
 /* Combobox */
@@ -485,9 +491,6 @@ context-menu menuitem *:disabled
   color: @plugin_bg_color;
 }
 
-#lib-plugin-ui menuitem,
-#iop-plugin-ui menuitem,
-notebook menuitem,
 menuitem,
 tooltip *,
 popover *,
@@ -499,9 +502,6 @@ menu *
   padding: 1pt;
 }
 
-#lib-plugin-ui menuitem:hover,
-#iop-plugin-ui menuitem:hover,
-notebook menuitem:hover,
 menuitem:hover
 {
   background-color: @button_hover_bg;
@@ -510,33 +510,35 @@ menuitem:hover
 
 /* Tree view (lists and tables) */
 
-#iop-plugin-ui treeview.view *,
-#lib-plugin-ui treeview.view *,
 treeview.view *
 {
    background-color: @plugin_bg_color;
    color: @plugin_fg_color;
 }
 
-#iop-plugin-ui treeview.view header *,
-#lib-plugin-ui treeview.view header *,
+#iop-plugin-ui treeview.view *,
+#lib-plugin-ui treeview.view *
+{
+  background-color: @field_bg;
+  color: @field_fg;
+}
+
 treeview.view header *
 {
   background-color: @button_bg;
   color: @button_fg;
 }
 
-#iop-plugin-ui treeview.view *:hover,
-#lib-plugin-ui treeview.view *:hover,
-treeview.view *:hover
+treeview *:hover
 {
   background-color: @button_hover_bg;
   color: @button_hover_fg;
 }
 
-#iop-plugin-ui treeview.view *:selected,
-#lib-plugin-ui treeview.view *:selected,
-treeview.view *:selected
+treeview *:selected,
+treeview *:checked,
+treeview *:active,
+treeview *:focus
 {
   background-color: @button_checked_bg;
   color: @button_checked_fg;
@@ -552,7 +554,6 @@ notebook tab *
   border: 0.5pt solid @button_border;
   background-color: @button_bg;
   color: @button_fg;
-  border-radius: 0.5em 0.5em 0 0;
   font-weight: 400;
 }
 
@@ -562,8 +563,6 @@ notebook tab *:hover
 {
   background-color: @button_hover_bg;
   color: @button_hover_fg;
-  border-radius: 0.5em 0.5em 0 0;
-  border-radius: 0.5em 0.5em 0 0;
 }
 
 #iop-plugin-ui notebook tab:checked *,
@@ -572,7 +571,6 @@ notebook tab:checked *
 {
   background-color: @button_checked_bg;
   color: @button_checked_fg;
-  border-radius: 0.5em 0.5em 0 0;
 }
 
 /* Bauhaus controls (sliders etc.) */
