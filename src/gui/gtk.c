@@ -1866,10 +1866,6 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
   g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  gtk_widget_set_margin_start(vbox, 10);
-  gtk_widget_set_margin_end(vbox, 10);
-  gtk_widget_set_margin_top(vbox, 7);
-  gtk_widget_set_margin_bottom(vbox, 5);
   gtk_container_add(GTK_CONTAINER(window), vbox);
 
   GtkWidget *label = gtk_label_new(NULL);
@@ -1877,7 +1873,6 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
   gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  gtk_widget_set_margin_top(hbox, 10);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
   result_t result = {.result = RESULT_NONE, .window = window};
