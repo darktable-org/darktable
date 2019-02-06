@@ -1063,8 +1063,7 @@ static void _overexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data)
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->overexposed.enabled = !d->overexposed.enabled;
-  //   dt_dev_reprocess_center(d);
-  dt_dev_reprocess_all(d);
+  dt_dev_reprocess_center(d);
 }
 
 static gboolean _overexposed_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
@@ -1098,8 +1097,7 @@ static void colorscheme_callback(GtkWidget *combo, gpointer user_data)
   if(d->overexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->overexposed.button));
   else
-    //     dt_dev_reprocess_center(d);
-    dt_dev_reprocess_all(d);
+    dt_dev_reprocess_center(d);
 }
 
 static void lower_callback(GtkWidget *slider, gpointer user_data)
@@ -1109,8 +1107,7 @@ static void lower_callback(GtkWidget *slider, gpointer user_data)
   if(d->overexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->overexposed.button));
   else
-    //     dt_dev_reprocess_center(d);
-    dt_dev_reprocess_all(d);
+    dt_dev_reprocess_center(d);
 }
 
 static void upper_callback(GtkWidget *slider, gpointer user_data)
@@ -1120,8 +1117,7 @@ static void upper_callback(GtkWidget *slider, gpointer user_data)
   if(d->overexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->overexposed.button));
   else
-    //     dt_dev_reprocess_center(d);
-    dt_dev_reprocess_all(d);
+    dt_dev_reprocess_center(d);
 }
 
 /* rawoverexposed */
@@ -1129,8 +1125,7 @@ static void _rawoverexposed_quickbutton_clicked(GtkWidget *w, gpointer user_data
 {
   dt_develop_t *d = (dt_develop_t *)user_data;
   d->rawoverexposed.enabled = !d->rawoverexposed.enabled;
-  //   dt_dev_reprocess_center(d);
-  dt_dev_reprocess_all(d);
+  dt_dev_reprocess_center(d);
 }
 
 static gboolean _rawoverexposed_quickbutton_pressed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
@@ -1164,8 +1159,7 @@ static void rawoverexposed_mode_callback(GtkWidget *combo, gpointer user_data)
   if(d->rawoverexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->rawoverexposed.button));
   else
-    //     dt_dev_reprocess_center(d);
-    dt_dev_reprocess_all(d);
+    dt_dev_reprocess_center(d);
 }
 
 static void rawoverexposed_colorscheme_callback(GtkWidget *combo, gpointer user_data)
@@ -1175,8 +1169,7 @@ static void rawoverexposed_colorscheme_callback(GtkWidget *combo, gpointer user_
   if(d->rawoverexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->rawoverexposed.button));
   else
-    //     dt_dev_reprocess_center(d);
-    dt_dev_reprocess_all(d);
+    dt_dev_reprocess_center(d);
 }
 
 static void rawoverexposed_threshold_callback(GtkWidget *slider, gpointer user_data)
@@ -1186,8 +1179,7 @@ static void rawoverexposed_threshold_callback(GtkWidget *slider, gpointer user_d
   if(d->rawoverexposed.enabled == FALSE)
     gtk_button_clicked(GTK_BUTTON(d->rawoverexposed.button));
   else
-    //     dt_dev_reprocess_center(d);
-    dt_dev_reprocess_all(d);
+    dt_dev_reprocess_center(d);
 }
 
 static gboolean _toolbox_toggle_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
