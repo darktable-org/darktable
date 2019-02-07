@@ -597,7 +597,8 @@ error:
 }
 #endif
 
-static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_roi_t *roi_in, cmsHTRANSFORM xform_rgb2lab,
+static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_roi_t *roi_in, 
+    cmsHTRANSFORM xform_rgb2lab, cmsHTRANSFORM xform_rgb2rgb,
     const float *const  pick_box, const float *const  pick_point, const int pick_size,
     uint8_t *pick_color_rgb_min, uint8_t *pick_color_rgb_max, uint8_t *pick_color_rgb_mean,
     float *pick_color_lab_min, float *pick_color_lab_max, float *pick_color_lab_mean)
@@ -647,11 +648,36 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
           = picked_color_rgb_max[i] = pixel[4 * (roi_in->width * point[1] + point[0]) + i];
   }
 
-  for(int i = 0; i < 3; i++)
+  // Converting the display RGB values to histogram RGB
+  if(xform_rgb2rgb)
   {
-    pick_color_rgb_mean[i] = round(picked_color_rgb_mean[i] * 255.f);
-    pick_color_rgb_min[i] = round(picked_color_rgb_min[i] * 255.f);
-    pick_color_rgb_max[i] = round(picked_color_rgb_max[i] * 255.f);
+    // Preparing the data for transformation
+    float rgb_ddata[9];
+    for(int i = 0; i < 3; i++)
+    {
+      rgb_ddata[i] = picked_color_rgb_mean[i];
+      rgb_ddata[i + 3] = picked_color_rgb_min[i];
+      rgb_ddata[i + 6] = picked_color_rgb_max[i];
+    }
+
+    float rgb_odata[9];
+    cmsDoTransform(xform_rgb2rgb, rgb_ddata, rgb_odata, 3);
+
+    for(int i = 0; i < 3; i++)
+    {
+      pick_color_rgb_mean[i] = round(rgb_odata[i] * 255.f);
+      pick_color_rgb_min[i] = round(rgb_odata[i + 3] * 255.f);
+      pick_color_rgb_max[i] = round(rgb_odata[i + 6] * 255.f);
+    }
+  }
+  else
+  {
+    for(int i = 0; i < 3; i++)
+    {
+      pick_color_rgb_mean[i] = round(picked_color_rgb_mean[i] * 255.f);
+      pick_color_rgb_min[i] = round(picked_color_rgb_min[i] * 255.f);
+      pick_color_rgb_max[i] = round(picked_color_rgb_max[i] * 255.f);
+    }
   }
 
   // Converting the RGB values to Lab
@@ -678,13 +704,76 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
   }
 }
 
+static void _pixelpipe_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *out_type, gchar **out_filename)
+{
+  dt_colorspaces_color_mode_t mode = darktable.color_profiles->mode;
+  
+  // if in gamut check use soft proof
+  if(mode != DT_PROFILE_NORMAL || darktable.color_profiles->histogram_type == DT_COLORSPACE_SOFTPROOF)
+  {
+    *out_type = darktable.color_profiles->softproof_type;
+    *out_filename = darktable.color_profiles->softproof_filename;
+  }
+  else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
+  {
+    // use introspection to get the params values
+    dt_iop_module_so_t *colorout_so = NULL;
+    dt_iop_module_t *colorout = NULL;
+    GList *modules = g_list_last(darktable.iop);
+    while(modules)
+    {
+      dt_iop_module_so_t *module_so = (dt_iop_module_so_t *)(modules->data);
+      if(!strcmp(module_so->op, "colorout"))
+      {
+        colorout_so = module_so;
+        break;
+      }
+      modules = g_list_previous(modules);
+    }
+    if(colorout_so && colorout_so->get_p)
+    {
+      modules = g_list_last(darktable.develop->iop);
+      while(modules)
+      {
+        dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+        if(!strcmp(module->op, "colorout"))
+        {
+          colorout = module;
+          break;
+        }
+        modules = g_list_previous(modules);
+      }
+    }
+    if(colorout)
+    {
+      dt_colorspaces_color_profile_type_t *_type = colorout_so->get_p(colorout->params, "type");
+      char *_filename = colorout_so->get_p(colorout->params, "filename");
+      if(_type) *out_type = *_type;
+      if(_filename) *out_filename = _filename;
+    }
+  }
+  else
+  {
+    *out_type = darktable.color_profiles->histogram_type;
+    *out_filename = darktable.color_profiles->histogram_filename;
+  }
+}
+
 static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_roi_t *roi_in)
 {
   cmsHPROFILE display_profile = NULL;
+  cmsHPROFILE histogram_profile = NULL;
   cmsHPROFILE lab_profile = NULL;
   cmsHTRANSFORM xform_rgb2lab = NULL;
+  cmsHTRANSFORM xform_rgb2rgb = NULL;
+  dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
+  gchar *histogram_filename = NULL;
+  gchar _histogram_filename[1] = { 0 };
 
-  if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
+  _pixelpipe_get_histogram_profile_type(&histogram_type, &histogram_filename);
+  if(histogram_filename == NULL) histogram_filename = _histogram_filename;
+  
+  if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
   const dt_colorspaces_color_profile_t *d_profile = dt_colorspaces_get_profile(darktable.color_profiles->display_type,
@@ -692,13 +781,27 @@ static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_
                                                        DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
   if(d_profile) display_profile = d_profile->profile;
 
+  if((histogram_type != darktable.color_profiles->display_type) || 
+      (histogram_type == DT_COLORSPACE_FILE &&
+      strcmp(histogram_filename, darktable.color_profiles->display_filename)))
+  {
+    const dt_colorspaces_color_profile_t *d_histogram = dt_colorspaces_get_profile(histogram_type,
+                                                         histogram_filename,
+                                                         DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
+    if(d_histogram) histogram_profile = d_histogram->profile;
+  }
+  
   lab_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
   // display rgb --> lab
   if(display_profile && lab_profile)
     xform_rgb2lab = cmsCreateTransform(display_profile, TYPE_RGB_FLT, lab_profile, TYPE_Lab_FLT, INTENT_PERCEPTUAL, 0);
 
-  if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
+  // display rgb --> histogram rgb
+  if(display_profile && histogram_profile)
+    xform_rgb2rgb = cmsCreateTransform(display_profile, TYPE_RGB_FLT, histogram_profile, TYPE_RGB_FLT, INTENT_PERCEPTUAL, 0);
+
+  if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
   dt_colorpicker_sample_t *sample = NULL;
@@ -714,7 +817,7 @@ static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_
       continue;
     }
 
-    _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab,
+    _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab, xform_rgb2rgb,
         sample->box, sample->point, sample->size,
         sample->picked_color_rgb_min, sample->picked_color_rgb_max, sample->picked_color_rgb_mean,
         sample->picked_color_lab_min, sample->picked_color_lab_max, sample->picked_color_lab_mean);
@@ -723,15 +826,24 @@ static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_
   }
 
   if(xform_rgb2lab) cmsDeleteTransform(xform_rgb2lab);
+  if(xform_rgb2rgb) cmsDeleteTransform(xform_rgb2rgb);
 }
 
 static void _pixelpipe_pick_primary_colorpicker(dt_develop_t *dev, const float *const input, const dt_iop_roi_t *roi_in)
 {
   cmsHPROFILE display_profile = NULL;
+  cmsHPROFILE histogram_profile = NULL;
   cmsHPROFILE lab_profile = NULL;
   cmsHTRANSFORM xform_rgb2lab = NULL;
+  cmsHTRANSFORM xform_rgb2rgb = NULL;
+  dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
+  gchar *histogram_filename = NULL;
+  gchar _histogram_filename[1] = { 0 };
 
-  if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
+  _pixelpipe_get_histogram_profile_type(&histogram_type, &histogram_filename);
+  if(histogram_filename == NULL) histogram_filename = _histogram_filename;
+  
+  if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
   const dt_colorspaces_color_profile_t *d_profile = dt_colorspaces_get_profile(darktable.color_profiles->display_type,
@@ -739,25 +851,42 @@ static void _pixelpipe_pick_primary_colorpicker(dt_develop_t *dev, const float *
                                                        DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
   if(d_profile) display_profile = d_profile->profile;
 
+  if((histogram_type != darktable.color_profiles->display_type) || 
+      (histogram_type == DT_COLORSPACE_FILE &&
+      strcmp(histogram_filename, darktable.color_profiles->display_filename)))
+  {
+    const dt_colorspaces_color_profile_t *d_histogram = dt_colorspaces_get_profile(histogram_type,
+                                                         histogram_filename,
+                                                         DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
+    if(d_histogram) histogram_profile = d_histogram->profile;
+  }
+  
   lab_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
   // display rgb --> lab
   if(display_profile && lab_profile)
     xform_rgb2lab = cmsCreateTransform(display_profile, TYPE_RGB_FLT, lab_profile, TYPE_Lab_FLT, INTENT_PERCEPTUAL, 0);
 
-  if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
+  // display rgb --> histogram rgb
+  if(display_profile && histogram_profile)
+    xform_rgb2rgb = cmsCreateTransform(display_profile, TYPE_RGB_FLT, histogram_profile, TYPE_RGB_FLT, INTENT_PERCEPTUAL, 0);
+
+  if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
-  _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab,
+  _pixelpipe_pick_from_image(input, roi_in, xform_rgb2lab, xform_rgb2rgb,
       dev->gui_module->color_picker_box, dev->gui_module->color_picker_point, darktable.lib->proxy.colorpicker.size,
       darktable.lib->proxy.colorpicker.picked_color_rgb_min, darktable.lib->proxy.colorpicker.picked_color_rgb_max, darktable.lib->proxy.colorpicker.picked_color_rgb_mean,
       darktable.lib->proxy.colorpicker.picked_color_lab_min, darktable.lib->proxy.colorpicker.picked_color_lab_max, darktable.lib->proxy.colorpicker.picked_color_lab_mean);
 
   if(xform_rgb2lab) cmsDeleteTransform(xform_rgb2lab);
+  if(xform_rgb2rgb) cmsDeleteTransform(xform_rgb2rgb);
 }
 
 static void _pixelpipe_final_histogram(dt_develop_t *dev, const float *const input, const dt_iop_roi_t *roi_in)
 {
+  float *img_tmp = NULL;
+  
   dt_dev_histogram_collection_params_t histogram_params = { 0 };
   const dt_iop_colorspace_type_t cst = iop_cs_rgb;
   dt_dev_histogram_stats_t histogram_stats = { .bins_count = 256, .ch = 4, .pixels = 0 };
@@ -786,6 +915,48 @@ static void _pixelpipe_final_histogram(dt_develop_t *dev, const float *const inp
     }
   }
 
+  dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
+  gchar *histogram_filename = NULL;
+  gchar _histogram_filename[1] = { 0 };
+
+  _pixelpipe_get_histogram_profile_type(&histogram_type, &histogram_filename);
+  if(histogram_filename == NULL) histogram_filename = _histogram_filename;
+  
+  if((histogram_type != darktable.color_profiles->display_type) || 
+      (histogram_type == DT_COLORSPACE_FILE &&
+      strcmp(histogram_filename, darktable.color_profiles->display_filename)))
+  {
+    cmsHPROFILE display_profile = NULL;
+    cmsHPROFILE histogram_profile = NULL;
+    cmsHTRANSFORM xform_rgb2rgb = NULL;
+    
+    if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
+      pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+
+    const dt_colorspaces_color_profile_t *d_profile = dt_colorspaces_get_profile(darktable.color_profiles->display_type,
+                                                         darktable.color_profiles->display_filename,
+                                                         DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
+    if(d_profile) display_profile = d_profile->profile;
+
+    const dt_colorspaces_color_profile_t *d_histogram = dt_colorspaces_get_profile(histogram_type,
+                                                         histogram_filename,
+                                                         DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
+    if(d_histogram) histogram_profile = d_histogram->profile;
+    
+    if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
+      pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+  
+    // display rgb --> histogram rgb
+    if(display_profile && histogram_profile)
+      xform_rgb2rgb = cmsCreateTransform(display_profile, TYPE_RGBA_FLT, histogram_profile, TYPE_RGBA_FLT, INTENT_PERCEPTUAL, 0);
+    
+    img_tmp = dt_alloc_align(64, roi_in->width * roi_in->height * 4 * sizeof(float));
+    
+    cmsDoTransform(xform_rgb2rgb, input, img_tmp, roi_in->width * roi_in->height);
+
+    if(xform_rgb2rgb) cmsDeleteTransform(xform_rgb2rgb);
+  }
+
   dev->histogram_max = 0;
   memset(dev->histogram, 0, sizeof(uint32_t) * 4 * 256);
 
@@ -793,9 +964,11 @@ static void _pixelpipe_final_histogram(dt_develop_t *dev, const float *const inp
   histogram_params.bins_count = 256;
   histogram_params.mul = histogram_params.bins_count - 1;
 
-  dt_histogram_helper(&histogram_params, &histogram_stats, cst, input, &dev->histogram);
+  dt_histogram_helper(&histogram_params, &histogram_stats, cst, (img_tmp) ? img_tmp: input, &dev->histogram);
   dt_histogram_max_helper(&histogram_stats, cst, &dev->histogram, histogram_max);
   dev->histogram_max = MAX(MAX(histogram_max[0], histogram_max[1]), histogram_max[2]);
+  
+  if(img_tmp) dt_free_align(img_tmp);
 }
 
 static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *const input, const dt_iop_roi_t *roi_in)

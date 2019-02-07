@@ -945,12 +945,15 @@ static const char *_profile_names[] =
   N_("standard color matrix"),
   N_("enhanced color matrix"),
   N_("vendor color matrix"),
-  N_("alternate color matrix")
+  N_("alternate color matrix"),
+  N_("BRG (experimental)"),
+  N_("export profile"),
+  N_("softproof profile")
 };
 
 static dt_colorspaces_color_profile_t *_create_profile(dt_colorspaces_color_profile_type_t type,
                                                        cmsHPROFILE profile, const char *name,
-                                                       int in_pos, int out_pos, int display_pos)
+                                                       int in_pos, int out_pos, int display_pos, int category_pos)
 {
   dt_colorspaces_color_profile_t *prof;
   prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
@@ -960,6 +963,7 @@ static dt_colorspaces_color_profile_t *_create_profile(dt_colorspaces_color_prof
   prof->in_pos = in_pos;
   prof->out_pos = out_pos;
   prof->display_pos = display_pos;
+  prof->category_pos = category_pos;
   return prof;
 }
 
@@ -1109,6 +1113,7 @@ static GList *load_profile_from_dir(const char *subdir)
           prof->in_pos = -1;
           prof->out_pos = -1;
           prof->display_pos = -1;
+          prof->category_pos = -1;
           temp_profiles = g_list_append(temp_profiles, prof);
         }
 
@@ -1135,60 +1140,68 @@ dt_colorspaces_t *dt_colorspaces_init()
 
   int in_pos = -1,
       out_pos = -1,
-      display_pos = -1;
+      display_pos = -1,
+      category_pos = -1;
+
+  // init the category profile with NULL profile, the actual profile must be retrieved dinamically by the caller
+  res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_EXPORT, NULL,
+                                                               _("export profile"), -1, -1, -1, ++category_pos));
+
+  res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_SOFTPROOF, NULL,
+                                                               _("softproof profile"), -1, -1, -1, ++category_pos));
 
   // init the display profile with srgb so some stupid code that runs before the real profile could be fetched has something to work with
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_DISPLAY, dt_colorspaces_create_srgb_profile(),
-                                                               _("system display profile"), -1, -1, ++display_pos));
+                                                               _("system display profile"), -1, -1, ++display_pos, ++category_pos));
   // we want a v4 with parametric curve for input and a v2 with point trc for output
   // see http://ninedegreesbelow.com/photography/lcms-make-icc-profiles.html#profile-variants-and-versions
   // TODO: what about display?
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_SRGB,
                                                                dt_colorspaces_create_srgb_profile_v4(),
                                                                _("sRGB (e.g. JPG)"),
-                                                               ++in_pos, -1, -1));
+                                                               ++in_pos, -1, -1, -1));
 
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_SRGB,
                                                                dt_colorspaces_create_srgb_profile(),
                                                                _("sRGB (web-safe)"),
-                                                               -1, ++out_pos, ++display_pos));
+                                                               -1, ++out_pos, ++display_pos, ++category_pos));
 
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_ADOBERGB,
                                                                dt_colorspaces_create_adobergb_profile(),
                                                                _("Adobe RGB (compatible)"),
-                                                               ++in_pos, ++out_pos, ++display_pos));
+                                                               ++in_pos, ++out_pos, ++display_pos, ++category_pos));
 
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_LIN_REC709,
                                                                dt_colorspaces_create_linear_rec709_rgb_profile(),
                                                                _("linear Rec709 RGB"),
-                                                               ++in_pos, ++out_pos, ++display_pos));
+                                                               ++in_pos, ++out_pos, ++display_pos, ++category_pos));
 
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_LIN_REC2020,
                                                                dt_colorspaces_create_linear_rec2020_rgb_profile(),
                                                                _("linear Rec2020 RGB"),
-                                                               ++in_pos, ++out_pos, ++display_pos));
+                                                               ++in_pos, ++out_pos, ++display_pos, ++category_pos));
 
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_XYZ,
                                                                dt_colorspaces_create_xyz_profile(),
                                                                _("linear XYZ"),
                                                                ++in_pos,
-                                                               dt_conf_get_bool("allow_lab_output") ?  ++out_pos : -1, -1));
+                                                               dt_conf_get_bool("allow_lab_output") ?  ++out_pos : -1, -1, -1));
 
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_LAB,
                                                                dt_colorspaces_create_lab_profile(),
                                                                _("Lab"),
                                                                ++in_pos,
-                                                               dt_conf_get_bool("allow_lab_output") ?  ++out_pos : -1, -1));
+                                                               dt_conf_get_bool("allow_lab_output") ?  ++out_pos : -1, -1, -1));
 
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_INFRARED,
                                                                dt_colorspaces_create_linear_infrared_profile(),
                                                                _("linear infrared BGR"),
-                                                               ++in_pos, -1, -1));
+                                                               ++in_pos, -1, -1, -1));
 
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_BRG,
                                                                dt_colorspaces_create_brg_profile(),
                                                                _("BRG (for testing)"),
-                                                               ++in_pos, ++out_pos, ++display_pos));
+                                                               ++in_pos, ++out_pos, ++display_pos, -1));
 
   // temporary list of profiles to be added, we keep this separate to be able to sort it before adding
   GList *temp_profiles;
@@ -1209,17 +1222,22 @@ dt_colorspaces_t *dt_colorspaces_init()
     dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)iter->data;
     prof->out_pos = ++out_pos;
     prof->display_pos = ++display_pos;
+    prof->category_pos = ++category_pos;
   }
   res->profiles = g_list_concat(res->profiles, temp_profiles);
 
   // init display profile and softproof/gama checking from conf
   res->display_type = dt_conf_get_int("ui_last/color/display_type");
   res->softproof_type = dt_conf_get_int("ui_last/color/softproof_type");
+  res->histogram_type = dt_conf_get_int("ui_last/color/histogram_type");
   char *tmp = dt_conf_get_string("ui_last/color/display_filename");
   g_strlcpy(res->display_filename, tmp, sizeof(res->display_filename));
   g_free(tmp);
   tmp = dt_conf_get_string("ui_last/color/softproof_filename");
   g_strlcpy(res->softproof_filename, tmp, sizeof(res->softproof_filename));
+  g_free(tmp);
+  tmp = dt_conf_get_string("ui_last/color/histogram_filename");
+  g_strlcpy(res->histogram_filename, tmp, sizeof(res->histogram_filename));
   g_free(tmp);
   res->display_intent = dt_conf_get_int("ui_last/color/display_intent");
   res->softproof_intent = dt_conf_get_int("ui_last/color/softproof_intent");
@@ -1237,6 +1255,11 @@ dt_colorspaces_t *dt_colorspaces_init()
         && (!res->softproof_filename[0] || !g_file_test(res->softproof_filename, G_FILE_TEST_IS_REGULAR))))
     res->softproof_type = DT_COLORSPACE_SRGB;
 
+  if((unsigned int)res->histogram_type >= DT_COLORSPACE_LAST
+    || (res->histogram_type == DT_COLORSPACE_FILE
+        && (!res->histogram_filename[0] || !g_file_test(res->histogram_filename, G_FILE_TEST_IS_REGULAR))))
+    res->histogram_type = DT_COLORSPACE_SRGB;
+
   if((unsigned int)res->mode > DT_PROFILE_GAMUTCHECK) res->mode = DT_PROFILE_NORMAL;
 
   _update_display_transforms(res);
@@ -1249,8 +1272,10 @@ void dt_colorspaces_cleanup(dt_colorspaces_t *self)
   // remember display profile and softproof/gama checking from conf
   dt_conf_set_int("ui_last/color/display_type", self->display_type);
   dt_conf_set_int("ui_last/color/softproof_type", self->softproof_type);
+  dt_conf_set_int("ui_last/color/histogram_type", self->histogram_type);
   dt_conf_set_string("ui_last/color/display_filename", self->display_filename);
   dt_conf_set_string("ui_last/color/softproof_filename", self->softproof_filename);
+  dt_conf_set_string("ui_last/color/histogram_filename", self->histogram_filename);
   dt_conf_set_int("ui_last/color/display_intent", self->display_intent);
   dt_conf_set_int("ui_last/color/softproof_intent", self->softproof_intent);
   dt_conf_set_int("ui_last/color/mode", self->mode);
