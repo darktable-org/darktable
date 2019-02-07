@@ -2510,21 +2510,27 @@ int dt_masks_point_in_form_exact(float x, float y, float *points, int points_sta
 
   if(points_count > 2 + points_start)
   {
-    float last = isnan(points[points_count * 2 - 1]) ? -INFINITY : points[points_count * 2 - 1];
+    int start = isnan(points[points_start * 2]) && !isnan(points[points_start * 2 + 1])
+                    ? points[points_start * 2 + 1]
+                    : points_start;
+
     float yf = (float)y;
     int nb = 0;
-    for(int i = points_start; i < points_count; i++)
+    for(int i = start, next = start + 1; i < points_count;)
     {
-      float yy = points[i * 2 + 1];
+      float y1 = points[i * 2 + 1];
+      float y2 = points[next * 2 + 1];
       //if we need to skip points (in case of deleted point, because of self-intersection)
-      if(isnan(points[i * 2]))
+      if(isnan(points[next * 2]))
       {
-        if(isnan(yy)) break;
-        i = (int)yy - 1;
+        next = isnan(y2) ? start : (int)y2;
         continue;
       }
-      if (((yf<=yy && yf>last) || (yf>=yy && yf<last)) && (points[i * 2] > x)) nb++;
-      last = yy;
+      if(((yf <= y2 && yf > y1) || (yf >= y2 && yf < y1)) && (points[i * 2] > x)) nb++;
+
+      if(next == start) break;
+      i = next++;
+      if(next >= points_count) next = start;
     }
     return (nb & 1);
   }
@@ -2541,25 +2547,31 @@ int dt_masks_point_in_form_near(float x, float y, float *points, int points_star
 
   if(points_count > 2 + points_start)
   {
-    float last = isnan(points[points_count * 2 - 1]) ? -INFINITY : points[points_count * 2 - 1];
+    int start = isnan(points[points_start * 2]) && !isnan(points[points_start * 2 + 1])
+                    ? points[points_start * 2 + 1]
+                    : points_start;
+
     float yf = (float)y;
     int nb = 0;
-    for(int i = points_start; i < points_count; i++)
+    for(int i = start, next = start + 1; i < points_count;)
     {
-      float yy = points[i * 2 + 1];
+      float y1 = points[i * 2 + 1];
+      float y2 = points[next * 2 + 1];
       //if we need to jump to skip points (in case of deleted point, because of self-intersection)
-      if(isnan(points[i * 2]))
+      if(isnan(points[next * 2]))
       {
-        if(isnan(yy)) break;
-        i = (int)yy - 1;
+        next = isnan(y2) ? start : (int)y2;
         continue;
       }
-      if ((yf<=yy && yf>last) || (yf>=yy && yf<last))
+      if((yf <= y2 && yf > y1) || (yf >= y2 && yf < y1))
       {
         if(points[i * 2] > x) nb++;
         if(points[i * 2] - x < distance && points[i * 2] - x > -distance) *near = 1;
       }
-      last = yy;
+
+      if(next == start) break;
+      i = next++;
+      if(next >= points_count) next = start;
     }
     return (nb & 1);
   }
