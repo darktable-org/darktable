@@ -636,8 +636,10 @@ int dt_view_manager_button_released(dt_view_manager_t *vm, double x, double y, i
     plugins = g_list_previous(plugins);
   }
 
+  if(handled) return 1;
   /* if not handled by any plugin let pass to view handler*/
-  if(!handled && v->button_released) v->button_released(v, x, y, which, state);
+  else if(v->button_released)
+    v->button_released(v, x, y, which, state);
 
   return 0;
 }
@@ -663,8 +665,10 @@ int dt_view_manager_button_pressed(dt_view_manager_t *vm, double x, double y, do
     plugins = g_list_previous(plugins);
   }
 
+  if(handled) return 1;
   /* if not handled by any plugin let pass to view handler*/
-  if(!handled && v->button_pressed) return v->button_pressed(v, x, y, pressure, which, type, state);
+  else if(v->button_pressed)
+    return v->button_pressed(v, x, y, pressure, which, type, state);
 
   return 0;
 }
