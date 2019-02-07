@@ -87,7 +87,7 @@ static void _update_softproof_gamut_checking(dt_develop_t *d);
 /* signal handler for filmstrip image switching */
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance, gpointer user_data);
 
-#define DT_DARKROOM_PROCESS_TIMEOUT 10
+#define DT_DARKROOM_PROCESS_TIMEOUT 200
 
 const char *name(dt_view_t *self)
 {
