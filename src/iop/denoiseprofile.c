@@ -28,6 +28,7 @@
 #include "develop/imageop_math.h"
 #include "develop/tiling.h"
 #include "dtgtk/drawingarea.h"
+#include "dtgtk/expander.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -132,6 +133,8 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   float draw_xs[DT_IOP_DENOISE_PROFILE_RES], draw_ys[DT_IOP_DENOISE_PROFILE_RES];
   float draw_min_xs[DT_IOP_DENOISE_PROFILE_RES], draw_min_ys[DT_IOP_DENOISE_PROFILE_RES];
   float draw_max_xs[DT_IOP_DENOISE_PROFILE_RES], draw_max_ys[DT_IOP_DENOISE_PROFILE_RES];
+  GtkWidget *extra_expander;
+  GtkWidget *extra_toggle;
 } dt_iop_denoiseprofile_gui_data_t;
 
 typedef struct dt_iop_denoiseprofile_data_t
@@ -2197,6 +2200,15 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
+void gui_reset(dt_iop_module_t *self)
+{
+  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander), FALSE);
+  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->extra_toggle), dtgtk_cairo_paint_solid_arrow,
+                               CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->extra_toggle), FALSE);
+}
+
 static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self)
 {
   GList *profiles = dt_noiseprofile_get_matching(&self->dev->image_storage);
@@ -2378,6 +2390,8 @@ void gui_update(dt_iop_module_t *self)
       }
     }
   }
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander),
+                              gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->extra_toggle)));
 }
 
 static void dt_iop_denoiseprofile_get_params(dt_iop_denoiseprofile_params_t *p, const int ch, const double mouse_x,
@@ -2701,6 +2715,17 @@ static void denoiseprofile_tab_switch(GtkNotebook *notebook, GtkWidget *page, gu
   gtk_widget_queue_draw(self->widget);
 }
 
+static void _extra_options_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->extra_toggle));
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander), active);
+  dtgtk_togglebutton_set_paint(
+      DTGTK_TOGGLEBUTTON(g->extra_toggle), dtgtk_cairo_paint_solid_arrow,
+      CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | (active ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
@@ -2720,9 +2745,6 @@ void gui_init(dt_iop_module_t *self)
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
   dt_bauhaus_slider_enable_soft_boundaries(g->strength, 0.001f, 1000.0f);
   g->channel = dt_conf_get_int("plugins/darkroom/denoiseprofile/gui_channel");
-
-  gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
 
   g->box_nlm = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g->box_wavelets = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -2776,7 +2798,25 @@ void gui_init(dt_iop_module_t *self)
 
   g->stack = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(g->stack), FALSE);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->stack, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
+
+  // add collapsable section for those extra options that are generally not to be used
+  GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
+  GtkWidget *destdisp = dt_ui_section_label_new(_("backward compatibility"));
+  g->extra_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow,
+                                           CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
+  gtk_widget_set_size_request(g->extra_toggle, DT_PIXEL_APPLY_DPI(15), DT_PIXEL_APPLY_DPI(15));
+  GtkWidget *extra_options = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  gtk_box_pack_start(GTK_BOX(destdisp_head), destdisp, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(destdisp_head), g->extra_toggle, FALSE, FALSE, 0);
+  gtk_widget_set_visible(extra_options, FALSE);
+  g->extra_expander = dtgtk_expander_new(destdisp_head, extra_options);
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander), TRUE);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->extra_expander, FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->extra_toggle), "toggled", G_CALLBACK(_extra_options_button_changed), (gpointer)self);
 
   gtk_widget_show_all(g->box_nlm);
   gtk_widget_show_all(g->box_wavelets);
@@ -2784,7 +2824,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_stack_add_named(GTK_STACK(g->stack), g->box_wavelets, "wavelets");
   gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "nlm");
 
-  gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->profile, NULL, _("profile"));
   dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
   dt_bauhaus_widget_set_label(g->radius, NULL, _("patch size"));
