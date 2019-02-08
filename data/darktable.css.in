@@ -94,6 +94,12 @@
 @define-color button_hover_bg @grey_45;
 @define-color button_hover_fg @grey_95;
 
+@define-color field_bg @grey_20;
+@define-color field_fg @grey_80;
+@define-color field_bg_active @grey_30;
+@define-color field_fg_active @grey_90;
+@define-color field_bg_hover @grey40;
+
 /* Tooltips and contextual helpers */
 @define-color tooltip_bg_color @grey_05;
 @define-color tooltip_fg_color @grey_70;
@@ -135,7 +141,6 @@
   font-family: "Roboto Light", "Segoe UI Light", "SF Pro Display Light", "Ubuntu Light", "Cantarell", sans-serif;
   font-size: 1em;
   color: @fg_color;
-  background-color: @bg_color;
   text-shadow:none;
   padding: 0;
   margin: 0;
@@ -174,7 +179,9 @@ stack *,
 scrollbar,
 scrollbar *
 eventbox,
-eventbox *
+eventbox *,
+dialog,
+dialog *
 {
   background-color:transparent;
   margin:0;
@@ -184,6 +191,11 @@ eventbox *
 }
 
 /* General properties */
+
+#main_window
+{
+  background-color: @bg_color;
+}
 
 #main_window *:disabled {
   color: @grey_10;
@@ -199,48 +211,40 @@ eventbox *
   color: @plugin_fg_color;
   padding: 0.25pt;
   background-color: @plugin_bg_color;
-}
-
-#lib-plugin-ui:selected,
-#iop-plugin-ui:selected,
-#lib-plugin-ui:active,
-#iop-plugin-ui:active,
-#lib-plugin-ui:focus,
-#iop-plugin-ui:focus
-{
+  min-height: 0;
 }
 
 #lib-plugin-ui *,
 #iop-plugin-ui *
 {
   font-size: 1em;
+  min-height: 0;
 }
-
 
 /* Buttons */
 
-* button
+button
 {
   border-radius: 2pt;
   box-shadow:none;
   padding: 2pt;
-  margin: 0pt 0.5pt;
+  margin: 1pt 0.5pt;
   border: 0.5pt solid @border_color;
   background-color: @plugin_bg_color;
   color: @button_fg;
-  font-family: "Roboto";
-  min-height: 8pt;
-  min-width: 8pt;
+  font-weight: 600;
+  font-family: "Roboto Medium", "Segoe UI Semibold", "SF Pro Display Medium", "Ubuntu Medium", "Cantarell", sans-serif;
+  min-height: 1em;
+  min-width: 1em;
 }
 
 #lib-plugin-ui * button,
 #iop-plugin-ui * button
 {
-  margin: 1pt 0.5pt;
-  padding: 2pt;
-  border: 0.5pt solid @button_border;
   background-color: @button_bg;
   color: @button_fg;
+  min-height: 1em;
+  min-width: 1em;
 }
 
 #recent-collection-ui button,
@@ -249,11 +253,6 @@ eventbox *
   background-color: transparent;
   border: 0;
   border-radius: 0;
-}
-
-label
-{
-  padding: 2pt 1em;
 }
 
 #lib-plugin-ui * button:checked,
@@ -295,12 +294,6 @@ checkbutton check
 
 /* Text fields and text boxes */
 
-@define-color field_bg @grey_20;
-@define-color field_fg @grey_80;
-@define-color field_bg_active @grey_30;
-@define-color field_fg_active @grey_90;
-@define-color field_bg_hover @grey40;
-
 #iop-plugin-ui entry,
 #lib-plugin-ui entry,
 entry {
@@ -338,44 +331,17 @@ entry:focus
 #lib-plugin-ui entry selection,
 entry selection {
   background-color:shade(@selected_bg_color, 1.7);
-  min-height: 0;
-  min-width: 0;
 }
 
 #iop-plugin-ui entry *,
 #lib-plugin-ui entry *,
-entry *,
-#iop-plugin-ui entry * button,
-#lib-plugin-ui entry * button,
-entry * button,
-spinbutton.horizontal button.up,
-spinbutton.horizontal button.down
+entry *
 {
   padding: 2pt;
+  min-height: 1em;
+  min-width: 1em;
 }
 
-/* Combobox */
-
-/* garbage GTK treats comboboxes as buttons, so we have to overwrite
-the general button settings above to match GTK comboboxes with bauhaus ones */
-
-combobox button,
-#iop-plugin-ui combobox button,
-#lib-plugin-ui combobox button
-{
-  border: 0;
-  background-color: transparent;
-  border-radius: 2pt;
-  color: @bauhaus_fg;
-}
-
-#background_job_eventbox,
-#iop-plugin-ui combobox,
-#lib-plugin-ui combobox,
-combobox
-{
-  background-color: transparent;
-}
 
 /* Labels */
 
@@ -384,8 +350,7 @@ combobox
 #view_label,
 #view_dropdown
 {
-  color: @fg_color;
-  background-color: @bg_color;
+  background-color: transparent;
   font-size: 1.5em;
   margin:0;
   border:0;
@@ -394,7 +359,6 @@ combobox
 
 #panel_label
 {
-  color: @fg_color;
   background-color: @bg_color;
   font-size:0.95em;
   margin:0;
@@ -415,30 +379,7 @@ combobox
   font-family: "Roboto Medium", "Segoe UI Semibold", "SF Pro Display Medium", "Ubuntu Medium", "Cantarell", sans-serif;
 }
 
-#view_dropdown *
-{
-  color: shade(@fg_color, 0.7);
-  margin: 0;
-  padding: 0;
-}
-
-#view_dropdown *:disabled
-{
-  color: shade(@fg_color, 0.5);
-}
-
-#view_dropdown *:selected,
-#view_label:selected {
-  color: shade(@fg_color, 0.9);
-}
-
-#view_dropdown menuitem:hover *
-{
-  color: @fg_color;
-}
-
-
-/* sliders */
+/* sliders and scales */
 
 scale{}
 scale.trough.highlight{}
@@ -471,6 +412,8 @@ dialog scrollbar.horizontal
   border-color: @scroll_bar_bg;
   background-color: @scroll_bar_bg;
   border-radius: 4pt;
+  min-height: 4pt;
+  min-width: 4pt;
 }
 
 scrollbar.horizontal slider:hover,
@@ -485,21 +428,60 @@ dialog scrollbar.horizontal slider:hover
   background-color: @scroll_bar_active;
 }
 
-/* Context menu & tooltips */
+/* Context menu & tooltips & comboboxes */
+/* Basically everything that pops out/over on UI */
+
+#iop-plugin-ui combobox,
+#lib-plugin-ui combobox,
+combobox,
+#iop-plugin-ui combobox *,
+#lib-plugin-ui combobox *,
+combobox *,
+#iop-plugin-ui combobox button,
+#lib-plugin-ui combobox button,
+combobox button,
+dialog combobox button
+{
+  border: 0;
+  background-color: transparent;
+  border-radius: 2pt;
+  color: @bauhaus_fg;
+  outline-style: none;
+  min-height: 1em;
+  min-width: 1em;
+}
 
 context-menu,
 menu,
 tooltip,
-popover
+popover,
+#background_job_eventbox,
+#iop-plugin-ui combobox window,
+#lib-plugin-ui combobox window,
+combobox window,
+dialog combobox window
 {
   background-color: @really_dark_bg_color;
   outline-style:none;
   border-radius: 2pt;
+  border: 0;
+  outline-style: none;
+  min-height: 1em;
+  min-width: 1em;
   padding: 4pt;
 }
 
+#view_dropdown
+{
+  background-color: transparent;
+  outline-style:none;
+  border-radius: 2pt;
+  padding: 2pt;
+}
+
 #main_window context-menu menuitem *:disabled,
-context-menu menuitem *:disabled
+context-menu menuitem *:disabled,
+#view_dropdown *:disabled
 {
   color: @plugin_bg_color;
 }
@@ -507,18 +489,46 @@ context-menu menuitem *:disabled
 menuitem,
 tooltip *,
 popover *,
-menu *
+menu *,
+combobox window *,
+#iop-plugin-ui combobox window *,
+#lib-plugin-ui combobox window *,
+dialog combobox window *
 {
   background-color: transparent;
   color: @fg_color;
-  outline-style:none;
-  padding: 1pt;
 }
 
-menuitem:hover
+menuitem:hover,
+#view_dropdown menuitem:hover,
+#iop-plugin-ui combobox window *:hover,
+#lib-plugin-ui combobox window *:hover,
+combobox window *:hover
 {
   background-color: @button_hover_bg;
   color: @button_hover_fg;
+}
+
+#view_dropdown *:selected,
+#view_label:selected {
+  color: @plugin_fg_color;
+}
+
+#iop-plugin-ui combobox window *:checked,
+#lib-plugin-ui combobox window *:checked,
+combobox window *:checked,
+#iop-plugin-ui combobox window *:active,
+#lib-plugin-ui combobox window *:active,
+combobox window *:active,
+#iop-plugin-ui combobox window *:focus,
+#lib-plugin-ui combobox window *:focus,
+combobox window *:focus,
+#iop-plugin-ui combobox window *:selected,
+#lib-plugin-ui combobox window *:selected,
+combobox window *:selected
+{
+  background-color: @button_checked_bg;
+  color: @button_checked_fg;
 }
 
 /* Tree view (lists and tables) */
@@ -687,11 +697,7 @@ undershoot.right
 
 /* STUFF TO MERGE WITH ABOVE RULES */
 
-aboutdialog
-{
-  background-color: @bg_color;
-}
-
+aboutdialog,
 aboutdialog box,
 aboutdialog box *
 {
@@ -730,7 +736,7 @@ filechooserdialog sidebar-row:hover
 
 progressbar
 {
-  background-color: @text_color;
+  background-color: @really_dark_bg_color;
 }
 progressbar progress
 {
