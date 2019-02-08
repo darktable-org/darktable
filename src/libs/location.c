@@ -358,6 +358,12 @@ static gboolean _lib_location_search(gpointer user_data)
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
   curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20L);
 
+  char datadir[PATH_MAX] = { 0 };
+  dt_loc_get_datadir(datadir, sizeof(datadir));
+  gchar *crtfilename = g_build_filename(datadir, "..", "curl", "curl-ca-bundle.crt", NULL);
+  if(g_file_test(crtfilename, G_FILE_TEST_EXISTS)) curl_easy_setopt(curl, CURLOPT_CAINFO, crtfilename);
+  g_free(crtfilename);
+
   res = curl_easy_perform(curl);
   if(res != 0) goto bail_out;
 
