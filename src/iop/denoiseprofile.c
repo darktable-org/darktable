@@ -65,7 +65,7 @@ typedef enum dt_iop_denoiseprofile_channel_t
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
-DT_MODULE_INTROSPECTION(6, dt_iop_denoiseprofile_params_t)
+DT_MODULE_INTROSPECTION(7, dt_iop_denoiseprofile_params_t)
 
 typedef struct dt_iop_denoiseprofile_params_v1_t
 {
@@ -96,6 +96,18 @@ typedef struct dt_iop_denoiseprofile_params_v5_t
   float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
 } dt_iop_denoiseprofile_params_v5_t;
 
+typedef struct dt_iop_denoiseprofile_params_v6_t
+{
+  float radius;                      // patch size
+  float nbhood;                      // search radius
+  float strength;                    // noise level after equalization
+  float scattering;                  // spread the patch search zone without increasing number of patches
+  float a[3], b[3];                  // fit for poissonian-gaussian noise per color channel.
+  dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
+  float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
+  float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
+} dt_iop_denoiseprofile_params_v6_t;
+
 typedef struct dt_iop_denoiseprofile_params_t
 {
   float radius;     // patch size
@@ -106,6 +118,8 @@ typedef struct dt_iop_denoiseprofile_params_t
   dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
   float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
   float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
+  // backward compatibility options
+  gboolean fix_anscombe;
 } dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
@@ -135,6 +149,8 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   float draw_max_xs[DT_IOP_DENOISE_PROFILE_RES], draw_max_ys[DT_IOP_DENOISE_PROFILE_RES];
   GtkWidget *extra_expander;
   GtkWidget *extra_toggle;
+  // backward compatibility options
+  GtkWidget *fix_anscombe;
 } dt_iop_denoiseprofile_gui_data_t;
 
 typedef struct dt_iop_denoiseprofile_data_t
@@ -148,6 +164,8 @@ typedef struct dt_iop_denoiseprofile_data_t
   dt_draw_curve_t *curve[DT_DENOISE_PROFILE_NONE];
   dt_iop_denoiseprofile_channel_t channel;
   float force[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
+  // backward compatibility options
+  gboolean fix_anscombe;
 } dt_iop_denoiseprofile_data_t;
 
 typedef struct dt_iop_denoiseprofile_global_data_t
@@ -2124,6 +2142,7 @@ void reload_defaults(dt_iop_module_t *module)
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->scattering = 0.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->fix_anscombe = TRUE;
     for(int k = 0; k < 3; k++)
     {
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->a[k] = g->interpolated.a[k];
@@ -2277,6 +2296,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
                             p->y[ch][DT_IOP_DENOISE_PROFILE_BANDS - 1]);
     dt_draw_curve_calc_values(d->curve[ch], 0.0, 1.0, DT_IOP_DENOISE_PROFILE_BANDS, NULL, d->force[ch]);
   }
+
+  d->fix_anscombe = p->fix_anscombe;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -2392,6 +2413,7 @@ void gui_update(dt_iop_module_t *self)
   }
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander),
                               gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->extra_toggle)));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_anscombe), p->fix_anscombe);
 }
 
 static void dt_iop_denoiseprofile_get_params(dt_iop_denoiseprofile_params_t *p, const int ch, const double mouse_x,
@@ -2726,6 +2748,14 @@ static void _extra_options_button_changed(GtkDarktableToggleButton *widget, gpoi
       CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | (active ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
 }
 
+static void fix_anscombe_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  p->fix_anscombe = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
@@ -2817,6 +2847,15 @@ void gui_init(dt_iop_module_t *self)
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), g->extra_expander, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->extra_toggle), "toggled", G_CALLBACK(_extra_options_button_changed), (gpointer)self);
+  g->fix_anscombe = gtk_check_button_new_with_label(_("fix anscombe transform"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_anscombe), p->fix_anscombe);
+  gtk_widget_set_tooltip_text(g->fix_anscombe, _("fix bugs in anscombe transform resulting\n"
+                                                 "in undersmoothing of the green channel in\n"
+                                                 "wavelets mode, combined with a bad handling\n"
+                                                 "of white balance coefficients."));
+  gtk_box_pack_start(GTK_BOX(extra_options), g->fix_anscombe, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->fix_anscombe), "toggled", G_CALLBACK(fix_anscombe_callback), self);
+
 
   gtk_widget_show_all(g->box_nlm);
   gtk_widget_show_all(g->box_wavelets);
