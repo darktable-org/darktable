@@ -71,7 +71,7 @@ int position()
 
 // fucking GTK pretends to be CSS-compliant but sucks dicks when it comes to
 // actually use CSS margins, so we need hard-code them !?
-#define HMARGIN 2
+#define HMARGIN 6
 
 static void _lib_histogram_change_callback(gpointer instance, gpointer user_data)
 {

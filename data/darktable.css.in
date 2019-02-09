@@ -207,7 +207,9 @@ scale *,
 
 #main-histogram
 {
-  padding: 0 6pt;
+  /* the main histogram is a Cairo drawing area
+  as of GTK 3.22, margin and padding have no effect on it, so they are
+  hard-coded */
 }
 
 /* Side panels */
