@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2017-2018 Heiko Bauke.
+    copyright (c) 2017-2019 Heiko Bauke.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -263,28 +263,12 @@ static inline int max_i(int a, int b)
   return a > b ? a : b;
 }
 
-// swap two floats
-static inline void swap_f(float a, float b)
-{
-  float t = a;
-  a = b;
-  b = t;
-}
-
 // swap the two floats that the pointers point to
 static inline void pointer_swap_f(float *a, float *b)
 {
   float t = *a;
   *a = *b;
   *b = t;
-}
-
-// swap two pointers
-static inline void swap_pointer_f(float *a, float *b)
-{
-  float *t = a;
-  a = b;
-  b = t;
 }
 
 // calculate the one-dimensional moving average over a window of size 2*w+1
@@ -723,12 +707,13 @@ void quick_select(float *first, float *nth, float *last)
   if(first == last) return;
   for(;;)
   {
+    // select pivot by median of three heuristic for better performance
     float *p1 = first;
     float *pivot = first + (last - first) / 2;
     float *p3 = last - 1;
-    if(!(*p1 < *pivot)) swap_pointer_f(p1, pivot);
-    if(!(*p1 < *p3)) swap_pointer_f(p1, p3);
-    if(!(*pivot < *p3)) swap_pointer_f(pivot, p3);
+    if(!(*p1 < *pivot)) pointer_swap_f(p1, pivot);
+    if(!(*p1 < *p3)) pointer_swap_f(p1, p3);
+    if(!(*pivot < *p3)) pointer_swap_f(pivot, p3);
     pointer_swap_f(pivot, last - 1); // move pivot to end
     partition(first, last - 1, *(last - 1));
     pointer_swap_f(last - 1, pivot); // move pivot to its final place
