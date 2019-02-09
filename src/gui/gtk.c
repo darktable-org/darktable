@@ -1688,7 +1688,6 @@ static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
   /* create left panel main widget and add it to ui */
   widget = ui->panels[DT_UI_PANEL_LEFT] = dtgtk_side_panel_new();
   gtk_widget_set_name(widget, "left");
-//   gtk_widget_set_margin_left(widget, DT_PIXEL_APPLY_DPI(5)); // i prefer it with less blank space
   gtk_grid_attach(GTK_GRID(container), widget, 1, 1, 1, 1);
 
   /* add top,center,bottom*/
@@ -1708,7 +1707,6 @@ static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
   /* create left panel main widget and add it to ui */
   widget = ui->panels[DT_UI_PANEL_RIGHT] = dtgtk_side_panel_new();
   gtk_widget_set_name(widget, "right");
-//   gtk_widget_set_margin_right(widget, DT_PIXEL_APPLY_DPI(5)); // i prefer it with less blank space
   gtk_grid_attach(GTK_GRID(container), widget, 3, 1, 1, 1);
 
   /* add top,center,bottom*/
