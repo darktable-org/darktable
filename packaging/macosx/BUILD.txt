@@ -10,7 +10,9 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      +no_gnome +no_x11 +quartz -x11 -gnome
     You will also need to add patches for python (https://trac.macports.org/ticket/51736), GraphicsMagick, ImageMagick, libraw and pugixml
     (all fixes are required due to set deployment target):
-     $ mkdir -p ~/ports/lang/python36/files ~/ports/lang/python37/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/graphics/libraw/files ~/ports/textproc
+     $ mkdir -p ~/ports/devel/gnutls/files ~/ports/lang/python36/files ~/ports/lang/python37/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/graphics/libraw/files ~/ports/textproc
+     $ cp -R "$(port dir gnutls)" ~/ports/devel
+     $ curl -Lo ~/ports/devel/gnutls/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gnutls-disable-connectx.diff
      $ cp -R "$(port dir python36)" ~/ports/lang
      $ curl -Lo ~/ports/lang/python36/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python36-stack_size.diff
      $ cp -R "$(port dir python37)" ~/ports/lang

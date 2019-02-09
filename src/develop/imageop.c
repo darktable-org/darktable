@@ -1918,7 +1918,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   char tooltip[512];
 
   GtkWidget *header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *iopw = gtk_box_new(GTK_ORIENTATION_VERTICAL, 3 * DT_BAUHAUS_SPACE);
+  GtkWidget *iopw = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   GtkWidget *expander = dtgtk_expander_new(header, iopw);
 
@@ -2071,7 +2071,7 @@ got_image:
   gtk_widget_set_margin_start(iopw, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_end(iopw, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_top(iopw, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_bottom(iopw, DT_PIXEL_APPLY_DPI(24));
+  gtk_widget_set_margin_bottom(iopw, DT_PIXEL_APPLY_DPI(8));
 
   gtk_widget_hide(iopw);
 

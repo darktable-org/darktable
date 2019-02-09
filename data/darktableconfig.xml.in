@@ -22,6 +22,12 @@
     <shortdescription>width of the side panels in pixels</shortdescription>
     <longdescription>(needs a restart)</longdescription>
   </dtconfig>
+  <dtconfig prefs="gui">
+    <name>slideshow_delay</name>
+    <type>int</type>
+    <default>5</default>
+    <shortdescription>waiting time between each picture in slideshow</shortdescription>
+  </dtconfig>
   <dtconfig prefs="core" section="cpugpu">
     <name>cache_memory</name>
     <type factor="(1.0 / (1024.0 * 1024.0))" min="(1024 * 1024 * 100)">int64</type>

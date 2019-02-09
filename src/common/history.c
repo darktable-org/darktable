@@ -612,7 +612,7 @@ static dt_dev_history_item_t *_search_history_by_module(dt_develop_t *dev, dt_io
   return hist_mod;
 }
 
-// returns the first history item with corresponding module->op 
+// returns the first history item with corresponding module->op
 static dt_dev_history_item_t *_search_history_by_op(dt_develop_t *dev, dt_iop_module_t *module)
 {
   dt_dev_history_item_t *hist_mod = NULL;
@@ -815,14 +815,14 @@ static int _history_merge_module_into_history(dt_develop_t *dev_dest, dt_iop_mod
   {
     dt_dev_add_history_item_ext(dev_dest, module, FALSE, TRUE);
     dt_dev_pop_history_items_ext(dev_dest, dev_dest->history_end);
-    
+
     // we have added the module, now we need to make it last on the pipe
     // for this we increment 1 to all instances with multi_priority < than this one
     // and assign to it multi_priority = 0
     if(module->multi_priority > 0)
     {
       multi_priority = module->multi_priority;
-      
+
       GList *modules_dest = g_list_first(dev_dest->iop);
       while(modules_dest)
       {
@@ -834,7 +834,7 @@ static int _history_merge_module_into_history(dt_develop_t *dev_dest, dt_iop_mod
             dt_iop_update_multi_priority(mod_dest, mod_dest->multi_priority + 1);
           else if(mod_dest == module)
             dt_iop_update_multi_priority(mod_dest, 0);
-          
+
           // also update the history
           GList *history = g_list_first(dev_dest->history);
           while(history)
@@ -843,11 +843,11 @@ static int _history_merge_module_into_history(dt_develop_t *dev_dest, dt_iop_mod
 
             if(hist->module->instance == module->instance)
               hist->multi_priority = hist->module->multi_priority;
-            
+
             history = g_list_next(history);
           }
         }
-        
+
         modules_dest = g_list_next(modules_dest);
       }
     }
@@ -906,7 +906,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
 
   dt_masks_read_forms_ext(dev_src, imgid, TRUE);
   dt_masks_read_forms_ext(dev_dest, dest_imgid, TRUE);
-  
+
   dt_dev_read_history_ext(dev_src, imgid, TRUE);
   dt_dev_read_history_ext(dev_dest, dest_imgid, TRUE);
 
@@ -932,7 +932,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
       {
         // merge the entry
         _history_merge_module_into_history(dev_dest, hist->module, &modules_used, FALSE);
-        
+
         // record the masks used by this module
         if(hist->module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
         {
@@ -957,7 +957,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
       {
         // merge the module into dest image
         _history_merge_module_into_history(dev_dest, mod_src, &modules_used, FALSE);
-        
+
         // record the masks used by this module
         if(mod_src->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
         {
@@ -977,13 +977,13 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
     if(form)
     {
       // check if the form already exists in dest image
-      // if so we'll remove it, so it is replaced 
+      // if so we'll remove it, so it is replaced
       dt_masks_form_t *form_dest = dt_masks_get_from_id_ext(dev_dest->forms, forms_used_replace[i]);
       if(form_dest)
       {
         dev_dest->forms = g_list_remove(dev_dest->forms, form_dest);
       }
-      
+
       // and add it to dest image
       // we can do this because dev->allforms will take care of free() the form
       // if that changes we'll have to duplicate the form
@@ -1031,7 +1031,7 @@ static int _history_copy_and_paste_on_image_overwrite(int32_t imgid, int32_t des
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  
+
   // the user wants an exact duplicate of the history, so just copy the db
   if(!ops)
   {
@@ -1047,7 +1047,7 @@ static int _history_copy_and_paste_on_image_overwrite(int32_t imgid, int32_t des
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-    
+
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "INSERT INTO main.mask "
                                 "(imgid, formid, form, name, version, points, points_count, source) SELECT "
@@ -1058,7 +1058,7 @@ static int _history_copy_and_paste_on_image_overwrite(int32_t imgid, int32_t des
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-    
+
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "UPDATE main.images SET history_end = (SELECT history_end FROM main.images "
                                 "WHERE id = ?1) WHERE id = ?2",
@@ -1073,7 +1073,7 @@ static int _history_copy_and_paste_on_image_overwrite(int32_t imgid, int32_t des
     // since the history and masks where deleted we can do a merge
     ret_val = _history_copy_and_paste_on_image_merge(imgid, dest_imgid, ops);
   }
-  
+
   return ret_val;
 }
 
@@ -1100,6 +1100,7 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   /* if current image in develop reload history */
   if(dt_dev_is_current_image(darktable.develop, dest_imgid))
   {
+    dt_masks_read_forms(darktable.develop);
     dt_dev_reload_history_items(darktable.develop);
     dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
   }

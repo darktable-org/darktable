@@ -131,7 +131,6 @@ typedef struct dt_iop_filmic_gui_data_t
   GtkWidget *preserve_color;
   GtkWidget *extra_expander;
   GtkWidget *extra_toggle;
-  int which_colorpicker;
   dt_iop_color_picker_t color_picker;
   GtkDrawingArea *area;
   float table[256];      // precomputed look-up table
@@ -537,8 +536,13 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const float grey = data->grey_source;
   const float black = data->black_source;
   const float dynamic_range = data->dynamic_range;
-  const __m128 power = _mm_set1_ps(data->output_power);
   const float saturation = (data->global_saturation / 100.0f);
+
+  const __m128 grey_sse = _mm_set1_ps(grey);
+  const __m128 black_sse = _mm_set1_ps(black);
+  const __m128 dynamic_range_sse = _mm_set1_ps(dynamic_range);
+  const __m128 power = _mm_set1_ps(data->output_power);
+  const __m128 saturation_sse = _mm_set1_ps(saturation);
 
   // If saturation == 100, we have a no-op. Disable the op then.
   const int desaturate = (data->global_saturation == 100.0f) ? FALSE : TRUE;
@@ -559,21 +563,21 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     __m128 XYZ = dt_Lab_to_XYZ_sse2(_mm_load_ps(in));
     __m128 rgb = dt_XYZ_to_prophotoRGB_sse2(XYZ);
 
-    float concavity;
-    float luma;
+    __m128 concavity;
+    __m128 luma;
 
     // Global saturation adjustment
     if (desaturate)
     {
-      luma = XYZ[1];
-      rgb = luma + saturation * (rgb - luma);
+      luma = _mm_set1_ps(XYZ[1]);
+      rgb = luma + saturation_sse * (rgb - luma);
     }
 
     if (preserve_color)
     {
       // Get the max of the RGB values
       float max = fmax(fmaxf(rgb[0], rgb[1]), rgb[2]);
-      __m128 max_sse = _mm_set_ps(max, max, max, max);
+      __m128 max_sse = _mm_set1_ps(max);
 
       // Save the ratios
       const __m128 ratios = rgb / max_sse;
@@ -586,26 +590,27 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       // Filmic S curve on the max RGB
       const int index = CLAMP(max * 0x10000ul, 0, 0xffff);
       max = data->table[index];
-      concavity = data->grad_2[index];
+      concavity = _mm_set1_ps(data->grad_2[index]);
 
       // Re-apply ratios
-      rgb = ratios * max;
-      luma = max;
+      max_sse = _mm_set1_ps(max);
+      rgb = ratios * max_sse;
+      luma = max_sse;
     }
     else
     {
       // Log tone-mapping
-      rgb = rgb / grey;
+      rgb = rgb / grey_sse;
       rgb = _mm_max_ps(rgb, EPS);
       rgb = _mm_log2_ps(rgb);
-      rgb -= black;
-      rgb /=  dynamic_range;
+      rgb -= black_sse;
+      rgb /=  dynamic_range_sse;
       rgb = _mm_max_ps(rgb, zero);
       rgb = _mm_min_ps(rgb, one);
 
       // Store the derivative at the pixel luminance
       XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
-      concavity = data->grad_2[(int)CLAMP(XYZ[1] * 0x10000ul, 0, 0xffff)];
+      concavity = _mm_set1_ps(data->grad_2[(int)CLAMP(XYZ[1] * 0x10000ul, 0, 0xffff)]);
 
       // Unpack SSE vector to regular array
       float rgb_unpack[4];
@@ -618,7 +623,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
       rgb = _mm_load_ps(rgb_unpack);
       XYZ = dt_prophotoRGB_to_XYZ_sse2(rgb);
-      luma = XYZ[1];
+      luma = _mm_set1_ps(XYZ[1]);
     }
 
     rgb = luma + concavity * (rgb - luma);
@@ -870,29 +875,29 @@ static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
 {
   dt_iop_filmic_gui_data_t *g =  (dt_iop_filmic_gui_data_t *)self->gui_data;
 
-  const int current_picker = g->which_colorpicker;
+  const int current_picker = g->color_picker.current_picker;
 
-  g->which_colorpicker = DT_PICKPROFLOG_NONE;
+  g->color_picker.current_picker = DT_PICKPROFLOG_NONE;
 
   if(button == g->grey_point_source)
-    g->which_colorpicker = DT_PICKPROFLOG_GREY_POINT;
+    g->color_picker.current_picker = DT_PICKPROFLOG_GREY_POINT;
   else if(button == g->black_point_source)
-    g->which_colorpicker = DT_PICKPROFLOG_BLACK_POINT;
+    g->color_picker.current_picker = DT_PICKPROFLOG_BLACK_POINT;
   else if(button == g->white_point_source)
-    g->which_colorpicker = DT_PICKPROFLOG_WHITE_POINT;
+    g->color_picker.current_picker = DT_PICKPROFLOG_WHITE_POINT;
   else if(button == g->auto_button)
-    g->which_colorpicker = DT_PICKPROFLOG_AUTOTUNE;
+    g->color_picker.current_picker = DT_PICKPROFLOG_AUTOTUNE;
 
-  if (current_picker == g->which_colorpicker)
+  if (current_picker == g->color_picker.current_picker)
     return ALREADY_SELECTED;
   else
-    return g->which_colorpicker;
+    return g->color_picker.current_picker;
 }
 
 static void _iop_color_picker_apply(struct dt_iop_module_t *self)
 {
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
-  switch(g->which_colorpicker)
+  switch(g->color_picker.current_picker)
   {
      case DT_PICKPROFLOG_GREY_POINT:
        apply_auto_grey(self);
@@ -914,17 +919,11 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self)
 static void _iop_color_picker_update(dt_iop_module_t *self)
 {
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
-  const int which_colorpicker = g->which_colorpicker;
+  const int which_colorpicker = g->color_picker.current_picker;
   dt_bauhaus_widget_set_quad_active(g->grey_point_source, which_colorpicker == DT_PICKPROFLOG_GREY_POINT);
   dt_bauhaus_widget_set_quad_active(g->black_point_source, which_colorpicker == DT_PICKPROFLOG_BLACK_POINT);
   dt_bauhaus_widget_set_quad_active(g->white_point_source, which_colorpicker == DT_PICKPROFLOG_WHITE_POINT);
   dt_bauhaus_widget_set_quad_active(g->auto_button, which_colorpicker == DT_PICKPROFLOG_AUTOTUNE);
-}
-
-static void _iop_color_picker_reset(struct dt_iop_module_t *self)
-{
-  dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
-  g->which_colorpicker = DT_PICKPROFLOG_NONE;
 }
 
 static void grey_point_source_callback(GtkWidget *slider, gpointer user_data)
@@ -1865,9 +1864,9 @@ void gui_init(dt_iop_module_t *self)
 
   init_picker(&g->color_picker,
               self,
+              DT_COLOR_PICKER_AREA,
               _iop_color_picker_get_set,
               _iop_color_picker_apply,
-              _iop_color_picker_reset,
               _iop_color_picker_update);
 }
 

@@ -136,7 +136,6 @@ typedef struct dt_iop_colorbalance_gui_data_t
   _colorbalance_patch_t color_patches_flags[LEVELS];
   float luma_patches[LEVELS];
   _colorbalance_patch_t luma_patches_flags[LEVELS];
-  int which_colorpicker;
   dt_iop_color_picker_t color_picker;
 } dt_iop_colorbalance_gui_data_t;
 
@@ -1339,7 +1338,7 @@ static void apply_autoluma(dt_iop_module_t *self)
 static void _iop_color_picker_update(dt_iop_module_t *self)
 {
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
-  const int which_colorpicker = g->which_colorpicker;
+  const int which_colorpicker = g->color_picker.current_picker;
 
   dt_bauhaus_widget_set_quad_active(g->hue_lift, which_colorpicker == DT_PICKCOLBAL_HUE_LIFT);
   dt_bauhaus_widget_set_quad_active(g->hue_gamma, which_colorpicker == DT_PICKCOLBAL_HUE_GAMMA);
@@ -1352,16 +1351,10 @@ static void _iop_color_picker_update(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->auto_color, which_colorpicker == DT_PICKCOLBAL_AUTOCOLOR);
 }
 
-static void _iop_color_picker_reset(struct dt_iop_module_t *self)
-{
-  dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
-  g->which_colorpicker = DT_PICKCOLBAL_NONE;
-}
-
 static void _iop_color_picker_apply(struct dt_iop_module_t *self)
 {
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
-  switch(g->which_colorpicker)
+  switch(g->color_picker.current_picker)
   {
     case DT_PICKCOLBAL_HUE_LIFT:
       apply_lift_neutralize(self);
@@ -1399,31 +1392,31 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self)
 static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
 {
   dt_iop_colorbalance_gui_data_t *g =  (dt_iop_colorbalance_gui_data_t *)self->gui_data;
-  const int current_picker = g->which_colorpicker;
+  const int current_picker = g->color_picker.current_picker;
 
   if(button == g->hue_lift)
-    g->which_colorpicker = DT_PICKCOLBAL_HUE_LIFT;
+    g->color_picker.current_picker = DT_PICKCOLBAL_HUE_LIFT;
   else if(button == g->hue_gamma)
-    g->which_colorpicker = DT_PICKCOLBAL_HUE_GAMMA;
+    g->color_picker.current_picker = DT_PICKCOLBAL_HUE_GAMMA;
   else if(button == g->hue_gain)
-    g->which_colorpicker = DT_PICKCOLBAL_HUE_GAIN;
+    g->color_picker.current_picker = DT_PICKCOLBAL_HUE_GAIN;
   else if(button == g->lift_factor)
-    g->which_colorpicker = DT_PICKCOLBAL_LIFT_FACTOR;
+    g->color_picker.current_picker = DT_PICKCOLBAL_LIFT_FACTOR;
   else if(button == g->gamma_factor)
-    g->which_colorpicker = DT_PICKCOLBAL_GAMMA_FACTOR;
+    g->color_picker.current_picker = DT_PICKCOLBAL_GAMMA_FACTOR;
   else if(button == g->gain_factor)
-    g->which_colorpicker = DT_PICKCOLBAL_GAIN_FACTOR;
+    g->color_picker.current_picker = DT_PICKCOLBAL_GAIN_FACTOR;
   else if(button == g->grey)
-    g->which_colorpicker = DT_PICKCOLBAL_GREY;
+    g->color_picker.current_picker = DT_PICKCOLBAL_GREY;
   else if(button == g->auto_luma)
-    g->which_colorpicker = DT_PICKCOLBAL_AUTOLUMA;
+    g->color_picker.current_picker = DT_PICKCOLBAL_AUTOLUMA;
   else if(button == g->auto_color)
-    g->which_colorpicker = DT_PICKCOLBAL_AUTOCOLOR;
+    g->color_picker.current_picker = DT_PICKCOLBAL_AUTOCOLOR;
 
-  if (current_picker == g->which_colorpicker)
+  if (current_picker == g->color_picker.current_picker)
     return ALREADY_SELECTED;
   else
-    return g->which_colorpicker;
+    return g->color_picker.current_picker;
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
@@ -2653,9 +2646,9 @@ void gui_init(dt_iop_module_t *self)
 
   init_picker(&g->color_picker,
               self,
+              DT_COLOR_PICKER_AREA,
               _iop_color_picker_get_set,
               _iop_color_picker_apply,
-              _iop_color_picker_reset,
               _iop_color_picker_update);
 
 }

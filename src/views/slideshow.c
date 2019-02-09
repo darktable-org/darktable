@@ -36,17 +36,17 @@ DT_MODULE(1)
 
 typedef enum dt_slideshow_event_t
 {
-  s_request_step,
-  s_request_step_back,
-  s_image_loaded,
-  s_blended,
+  S_REQUEST_STEP,
+  S_REQUEST_STEP_BACK,
+  S_IMAGE_LOADED,
+  S_BLENDED
 } dt_slideshow_event_t;
 
 typedef enum dt_slideshow_state_t
 {
-  s_prefetching,
-  s_waiting_for_user,
-  s_blending,
+  S_PREFETCHING,
+  S_WAITING_FOR_USER,
+  S_BLENDING
 } dt_slideshow_state_t;
 
 typedef struct dt_slideshow_t
@@ -72,6 +72,7 @@ typedef struct dt_slideshow_t
   uint32_t state_waiting_for_user; // user input (needed to step the cycle at one point)
 
   uint32_t auto_advance;
+  int delay;
 
   // some magic to hide the mosue pointer
   guint mouse_timeout;
@@ -118,7 +119,7 @@ static int write_image(dt_imageio_module_data_t *datai, const char *filename, co
     data->d->back_height = datai->height;
   }
   dt_pthread_mutex_unlock(&data->d->lock);
-  _step_state(data->d, s_image_loaded);
+  _step_state(data->d, S_IMAGE_LOADED);
   // trigger expose
   dt_control_queue_redraw_center();
   return 0;
@@ -211,7 +212,7 @@ static gboolean auto_advance(gpointer user_data)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)user_data;
   if(!d->auto_advance) return FALSE;
-  _step_state(d, s_request_step);
+  _step_state(d, S_REQUEST_STEP);
   return FALSE;
 }
 
@@ -220,10 +221,10 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
 {
   dt_pthread_mutex_lock(&d->lock);
 
-  if(event == s_request_step || event == s_request_step_back)
+  if(event == S_REQUEST_STEP || event == S_REQUEST_STEP_BACK)
   {
-    if(event == s_request_step) d->step = 1;
-    if(event == s_request_step_back) d->step = -1;
+    if(event == S_REQUEST_STEP) d->step = 1;
+    if(event == S_REQUEST_STEP_BACK) d->step = -1;
     // make sure we only enter busy if really flipping the bit
     if(d->state_waiting_for_user) dt_control_log_busy_enter();
     d->state_waiting_for_user = 0;
@@ -231,19 +232,19 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
 
   switch(d->state)
   {
-    case s_prefetching:
-      if(event == s_image_loaded)
+    case S_PREFETCHING:
+      if(event == S_IMAGE_LOADED)
       {
-        d->state = s_waiting_for_user;
+        d->state = S_WAITING_FOR_USER;
         // and go to next case
       }
       else
         break;
 
-    case s_waiting_for_user:
+    case S_WAITING_FOR_USER:
       if(d->state_waiting_for_user == 0)
       {
-        d->state = s_blending;
+        d->state = S_BLENDING;
         // swap buffers, start blending cycle
         if(d->front_num + d->step == d->back_num)
         {
@@ -263,14 +264,14 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
           // start new one-off timer from when flipping buffers.
           // this will show images before processing-heavy shots a little
           // longer, but at least not result in shorter viewing times just after these
-          if(d->auto_advance) g_timeout_add_seconds(5, auto_advance, d);
+          if(d->auto_advance) g_timeout_add_seconds(d->delay, auto_advance, d);
         }
         // and execute the next case, too
       }
       else
         break;
 
-    case s_blending:
+    case S_BLENDING:
       // draw new front buf
       dt_control_queue_redraw_center();
 
@@ -279,14 +280,14 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
       {
         // start bgjob
         dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, process_job_create(d));
-        d->state = s_prefetching;
+        d->state = S_PREFETCHING;
       }
       break;
 
     default:
       // uh. should never happen. sanitize:
       d->state_waiting_for_user = 1;
-      d->state = s_prefetching;
+      d->state = S_PREFETCHING;
       break;
   }
   dt_pthread_mutex_unlock(&d->lock);
@@ -375,18 +376,21 @@ void enter(dt_view_t *self)
 
   // start in prefetching phase, do that by initing one state before
   // and stepping through that at the very end of this function
-  d->state = s_blending;
+  d->state = S_BLENDING;
   d->state_waiting_for_user = 1;
 
   d->auto_advance = 0;
-
+  d->delay = dt_conf_get_int("slideshow_delay");
   // restart from beginning, will first increment counter by step and then prefetch
   d->front_num = d->back_num = dt_view_lighttable_get_position(darktable.view_manager) - 1;
   d->step = 1;
   dt_pthread_mutex_unlock(&d->lock);
 
+  gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+
   // start first job
-  _step_state(d, s_request_step);
+  _step_state(d, S_REQUEST_STEP);
+  dt_control_log(_("waiting to start slideshow"));
 }
 
 void leave(dt_view_t *self)
@@ -429,7 +433,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     cairo_surface_t *surface = NULL;
     const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->front_width);
     surface = dt_cairo_image_surface_create_for_data((uint8_t *)d->front, CAIRO_FORMAT_RGB24, d->front_width,
-                                                  d->front_height, stride);
+                                                     d->front_height, stride);
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
     cairo_rectangle(cr, 0, 0, d->front_width/darktable.gui->ppd, d->front_height/darktable.gui->ppd);
@@ -439,6 +443,9 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     cairo_save(cr); // pretend we didn't already pop the stack
     cairo_save(cr);
   }
+
+  d->width = width;
+  d->height = height;
   dt_pthread_mutex_unlock(&d->lock);
 }
 
@@ -472,9 +479,9 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
   if(which == 1)
-    _step_state(d, s_request_step);
+    _step_state(d, S_REQUEST_STEP);
   else if(which == 3)
-    _step_state(d, s_request_step_back);
+    _step_state(d, S_REQUEST_STEP_BACK);
   else
     return 1;
 
@@ -490,17 +497,40 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
   dt_control_accels_t *accels = &darktable.control->accels;
+
   if(key == accels->slideshow_start.accel_key && state == accels->slideshow_start.accel_mods)
   {
     if(!d->auto_advance)
     {
       d->auto_advance = 1;
-      _step_state(d, s_request_step);
+      _step_state(d, S_REQUEST_STEP);
     }
     else
+    {
       d->auto_advance = 0;
+      dt_control_log(_("slideshow paused"));
+    }
     return 0;
   }
+  else if(key == GDK_KEY_Right || key == GDK_KEY_KP_Add)
+  {
+    d->delay = CLAMP(d->delay + 1, 1, 60);
+    dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
+    dt_conf_set_int("slideshow_delay", d->delay);
+    return 0;
+  }
+  else if(key == GDK_KEY_Left || key == GDK_KEY_KP_Subtract)
+  {
+    d->delay = CLAMP(d->delay - 1, 1, 60);
+    dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
+    dt_conf_set_int("slideshow_delay", d->delay);
+    return 0;
+  }
+  else if(key == GDK_KEY_Shift_L || key == GDK_KEY_Shift_R)
+  {
+    return 0;
+  }
+
   // go back to lt mode
   dt_ctl_switch_mode_to("lighttable");
   return 0;

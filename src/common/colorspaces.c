@@ -1102,7 +1102,7 @@ static GList *load_profile_from_dir(const char *subdir)
           dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
           dt_colorspaces_get_profile_name(tmpprof, lang, lang + 3, prof->name, sizeof(prof->name));
 
-          g_strlcpy(prof->filename, d_name, sizeof(prof->filename));
+          g_strlcpy(prof->filename, filename, sizeof(prof->filename));
           prof->type = DT_COLORSPACE_FILE;
           prof->profile = tmpprof;
           // these will be set after sorting!
@@ -1224,14 +1224,19 @@ dt_colorspaces_t *dt_colorspaces_init()
   res->display_intent = dt_conf_get_int("ui_last/color/display_intent");
   res->softproof_intent = dt_conf_get_int("ui_last/color/softproof_intent");
   res->mode = dt_conf_get_int("ui_last/color/mode");
+
+  // sanity checks to ensure the profile filenames are present
+
   if((unsigned int)res->display_type >= DT_COLORSPACE_LAST
     || (res->display_type == DT_COLORSPACE_FILE
         && (!res->display_filename[0] || !g_file_test(res->display_filename, G_FILE_TEST_IS_REGULAR))))
     res->display_type = DT_COLORSPACE_DISPLAY;
+
   if((unsigned int)res->softproof_type >= DT_COLORSPACE_LAST
     || (res->softproof_type == DT_COLORSPACE_FILE
         && (!res->softproof_filename[0] || !g_file_test(res->softproof_filename, G_FILE_TEST_IS_REGULAR))))
     res->softproof_type = DT_COLORSPACE_SRGB;
+
   if((unsigned int)res->mode > DT_PROFILE_GAMUTCHECK) res->mode = DT_PROFILE_NORMAL;
 
   _update_display_transforms(res);
