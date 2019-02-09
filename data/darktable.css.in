@@ -212,6 +212,7 @@ dialog *
   padding: 0.25pt;
   background-color: @plugin_bg_color;
   min-height: 0;
+  margin: 0 4pt;
 }
 
 #lib-plugin-ui *,
@@ -392,7 +393,6 @@ dialog scrollbar slider
 {
   background-color:@scroll_bar_inactive;
   border: 2pt solid transparent;
-  background-color: @scroll_bar_inactive;
   margin: 0;
   min-width: 4pt;
   min-height: 4pt;
@@ -414,6 +414,7 @@ dialog scrollbar.horizontal
   border-radius: 4pt;
   min-height: 4pt;
   min-width: 4pt;
+  margin: 2pt;
 }
 
 scrollbar.horizontal slider:hover,
@@ -650,8 +651,8 @@ notebook tab:checked *
 #iop-plugin-ui #dt-toggle-button
 {
   font-size: 8pt;
-  min-height: 10pt;
-  min-width: 10pt;
+  min-height: 12pt;
+  min-width: 12pt;
 }
 
 /* separator */

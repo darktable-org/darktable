@@ -1553,8 +1553,6 @@ void dt_ui_scrollbars_show(dt_ui_t *ui, gboolean show)
   {
     gtk_widget_hide(darktable.gui->scrollbars.vscrollbar);
     gtk_widget_hide(darktable.gui->scrollbars.hscrollbar);
-    gtk_widget_set_margin_end(dt_ui_center(ui), DT_PIXEL_APPLY_DPI(6));
-    gtk_widget_set_margin_bottom(dt_ui_center(ui), DT_PIXEL_APPLY_DPI(6));
   }
 }
 

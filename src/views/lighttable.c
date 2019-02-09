@@ -3110,10 +3110,6 @@ void gui_init(dt_view_t *self)
   g_signal_connect_swapped(G_OBJECT(profile_button), "button-press-event", G_CALLBACK(gtk_widget_show_all), lib->profile_floating_window);
 
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_end(vbox, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_top(vbox, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_bottom(vbox, DT_PIXEL_APPLY_DPI(8));
 
   gtk_container_add(GTK_CONTAINER(lib->profile_floating_window), vbox);
 
