@@ -206,6 +206,13 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     endforeach()
   endif(ISO_CODES_FOUND)
 
+  # Add ca-cert for curl
+  install(FILES
+      "${MINGW_PATH}/../ssl/certs/ca-bundle.crt"
+      DESTINATION share/curl/
+      RENAME curl-ca-bundle.crt
+      COMPONENT DTApplication)
+
 endif(WIN32 AND NOT BUILD_MSYS2_INSTALL)
 
 endfunction()
