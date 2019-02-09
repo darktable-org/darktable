@@ -181,7 +181,9 @@ scrollbar *
 eventbox,
 eventbox *,
 dialog,
-dialog *
+dialog *,
+scale,
+scale *
 {
   background-color:transparent;
   margin:0;
@@ -382,10 +384,6 @@ entry *
 
 /* sliders and scales */
 
-scale{}
-scale.trough.highlight{}
-scrollbar.contents.trough.highlight{}
-
 #lib-plugin-ui scrollbar slider,
 #iop-plugin-ui scrollbar slider,
 scrollbar slider,
@@ -398,6 +396,21 @@ dialog scrollbar slider
   min-height: 4pt;
 }
 
+scale contents trough highlight
+{
+  min-height: 0;
+  min-width: 0;
+}
+
+scale contents trough slider
+{
+  border: 0.5pt solid @border_color;
+  font-size: 1em;
+  min-width: 1em;
+  min-height: 1em;
+  background-color: @scroll_bar_inactive;
+}
+
 scrollbar,
 dialog scrollbar
 scrollbar.horizontal,
@@ -407,14 +420,15 @@ scrollbar.vertical,
 #lib-plugin-ui scrollbar.horizontal,
 #lib-plugin-ui scrollbar.vertical,
 dialog scrollbar.vertical,
-dialog scrollbar.horizontal
+dialog scrollbar.horizontal,
+scale contents
 {
   border-color: @scroll_bar_bg;
   background-color: @scroll_bar_bg;
   border-radius: 4pt;
   min-height: 4pt;
   min-width: 4pt;
-  margin: 2pt;
+  margin: 1pt;
 }
 
 scrollbar.horizontal slider:hover,
@@ -424,7 +438,8 @@ scrollbar.vertical slider:hover,
 #lib-plugin-ui scrollbar.horizontal slider:hover,
 #lib-plugin-ui scrollbar.vertical slider:hover,
 dialog scrollbar.vertical slider:hover,
-dialog scrollbar.horizontal slider:hover
+dialog scrollbar.horizontal slider:hover,
+scale contents trough slider:hover
 {
   background-color: @scroll_bar_active;
 }
