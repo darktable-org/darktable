@@ -23,7 +23,7 @@
 #include "common/curl_tools.h"
 #include "control/control.h"
 
-void dt_curl_init(CURL *curl)
+void dt_curl_init(CURL *curl, gboolean verbose)
 {
   curl_easy_reset(curl);
 
@@ -34,6 +34,9 @@ void dt_curl_init(CURL *curl)
   g_free(crtfilename);
 
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
+  if(verbose)
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 2);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
