@@ -1024,11 +1024,9 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
       GtkWidget *header = gtk_bin_get_child(GTK_BIN(g_list_nth_data(childs, 0)));
       g_list_free(childs);
 
-      /* get arrow icon widget */
       childs = gtk_container_get_children(GTK_CONTAINER(header));
-      wlabel = g_list_nth(childs, 5)->data;
+      wlabel = g_list_nth(childs, 2)->data;
       g_list_free(childs);
-
       gchar *label = dt_history_item_get_name_html(module);
       gtk_label_set_markup(GTK_LABEL(wlabel), label);
       g_free(label);

@@ -449,19 +449,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
   /* raise view changed signal */
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, old_view, new_view);
 
-  /* add endmarkers to left and right center containers */
-  GtkWidget *endmarker = gtk_drawing_area_new();
-  dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_LEFT_CENTER, endmarker);
-  g_signal_connect(G_OBJECT(endmarker), "draw", G_CALLBACK(dt_control_draw_endmarker), 0);
-  gtk_widget_set_size_request(endmarker, -1, DT_PIXEL_APPLY_DPI(50));
-  gtk_widget_show(endmarker);
-
-  endmarker = gtk_drawing_area_new();
-  dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, endmarker);
-  g_signal_connect(G_OBJECT(endmarker), "draw", G_CALLBACK(dt_control_draw_endmarker), GINT_TO_POINTER(1));
-  gtk_widget_set_size_request(endmarker, -1, DT_PIXEL_APPLY_DPI(50));
-  gtk_widget_show(endmarker);
-
   return 0;
 }
 
@@ -1440,9 +1427,6 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
         cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1. / scale));
         if(zoom == 1)
         {
-          // draw shadow around border
-          cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
-          cairo_stroke(cr);
           cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
           float alpha = 1.0f;
           for(int k = 0; k < 16; k++)

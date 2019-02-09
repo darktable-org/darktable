@@ -73,9 +73,9 @@
 @define-color scroll_bar_bg @grey_10;
 
 /* Modules box */
-@define-color plugin_bg_color @grey_25;
-@define-color plugin_fg_color @grey_85;
-@define-color section_label @grey_60;
+@define-color plugin_bg_color @grey_20;
+@define-color plugin_fg_color @grey_80;
+@define-color section_label @grey_55;
 
 /* Modules controls */
 @define-color bauhaus_fg @grey_70;
@@ -93,12 +93,13 @@
 @define-color button_checked_fg @grey_80;
 @define-color button_hover_bg @grey_45;
 @define-color button_hover_fg @grey_95;
+@define-color buttor_insensitive_fg @grey_10;
 
-@define-color field_bg @grey_20;
-@define-color field_fg @grey_80;
-@define-color field_bg_active @grey_30;
-@define-color field_fg_active @grey_90;
-@define-color field_bg_hover @grey40;
+@define-color field_bg @grey_25;
+@define-color field_fg @grey_85;
+@define-color field_bg_active @grey_35;
+@define-color field_fg_active @grey_95;
+@define-color field_bg_hover @grey45;
 
 /* Tooltips and contextual helpers */
 @define-color tooltip_bg_color @grey_05;
@@ -183,7 +184,11 @@ eventbox *,
 dialog,
 dialog *,
 scale,
-scale *
+scale *,
+#modules-tabs,
+#modules-tabs *,
+button,
+button *
 {
   background-color:transparent;
   margin:0;
@@ -199,9 +204,42 @@ scale *
   background-color: @bg_color;
 }
 
-#main_window *:disabled {
-  color: @grey_10;
+#iop-plugin-ui #dt-button *:disabled,
+#iop-plugin-ui #dt-toggle-button *:disabled,
+*:disabled {
+  background-color: transparent;
+  color: transparent;
+  border-color: transparent;
 }
+
+#main-histogram
+{
+  /* the main histogram is a Cairo drawing area.
+  as of GTK 3.22, margin and padding have no effect on it, so they are
+  hard-coded */
+}
+
+/* Side panels */
+
+#left scrolledwindow
+{
+  margin: 0 0 0 2pt;
+  padding: 0 4pt 0 2pt;
+}
+
+#right scrolledwindow
+{
+  margin: 0 2pt 0 0;
+  padding: 0 2pt 0 4pt;
+}
+
+#lib-plugin-ui scrolledwindow,
+#iop-plugin-ui scrolledwindow
+{
+  margin: 0;
+  padding: 0;
+}
+
 
 /* Frame around plugin boxes */
 
@@ -214,7 +252,6 @@ scale *
   padding: 0.25pt;
   background-color: @plugin_bg_color;
   min-height: 0;
-  margin: 0 4pt;
 }
 
 #lib-plugin-ui *,
@@ -275,12 +312,19 @@ dialog button:hover *
   color: @button_hover_fg;
 }
 
-#lib-plugin-ui * button:disabled,
-#iop-plugin-ui * button:disabled,
+#lib-plugin-ui button:disabled,
+#iop-plugin-ui button:disabled,
 button:disabled
 {
-  background-color: @bauhaus_bg;
-  border: 0;
+  background-color: transparent;
+  color: transparent;
+  border-color: transparent;
+}
+
+button.text-button,
+label
+{
+  padding: 1pt 4pt;
 }
 
 /* Checkbox */
@@ -305,6 +349,7 @@ entry {
   color:@bauhaus_fg;
   background-color: @field_bg;
   padding: 2pt;
+  margin: 0;
 }
 
 #iop-plugin-ui entry:hover,
@@ -343,6 +388,7 @@ entry *
   padding: 2pt;
   min-height: 1em;
   min-width: 1em;
+  margin: 0;
 }
 
 
@@ -513,6 +559,7 @@ dialog combobox window *
 {
   background-color: transparent;
   color: @fg_color;
+  min-height: 1.2em;
 }
 
 menuitem:hover,
@@ -617,7 +664,7 @@ notebook tab:checked *
 
 #bauhaus-popup
 {
-  background-color: @bauhaus_bg;
+  background-color: @really_dark_bg_color;
   color: @bauhaus_fg;
 }
 
@@ -642,10 +689,19 @@ notebook tab:checked *
 #dt-toggle-button,
 #dt-icon
 {
-  font-size: 14pt;
-  min-height: 14pt;
-  min-width: 14pt;
-  padding: 1pt;
+  font-size: 1em;
+  min-height: 1em;
+  min-width: 1em;
+  padding: 0;
+  margin: 1pt;
+}
+
+#iop-plugin-ui #dt-button,
+#iop-plugin-ui #dt-toggle-button
+{
+  font-size: 1em;
+  min-height: 1em;
+  min-width: 1em;
 }
 
 #module-preset-button,
@@ -654,20 +710,38 @@ notebook tab:checked *
 #module-enable-button,
 #module-instance-button,
 #module-icon,
+#module-icon *,
 #module-expander-arrow
 {
-  min-height: 8pt;
-  min-width: 8pt;
-  padding: 1pt;
-  font-size: 8pt;
+  min-height: 1.75ex;
+  min-width: 1.75ex;
+  font-size: 1ex;
 }
 
-#iop-plugin-ui #dt-button,
-#iop-plugin-ui #dt-toggle-button
+#module-enable-button
+{
+  min-width: 2ex;
+}
+
+
+/* modules tabs */
+
+#modules-tabs
+{
+  background-color: @plugin_bg_color;
+}
+
+#modules-tabs #dt-toggle-button
 {
   font-size: 8pt;
-  min-height: 12pt;
-  min-width: 12pt;
+  min-height: 22pt;
+  min-width: 22pt;
+  margin: 0;
+}
+
+#modules-tabs button:checked
+{
+  background-color: @really_dark_bg_color;
 }
 
 /* separator */
