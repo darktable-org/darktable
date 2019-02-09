@@ -25,6 +25,7 @@
 #include "common/metadata.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/tags.h"
+#include "common/curl_tools.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
@@ -308,13 +309,14 @@ static JsonObject *picasa_query_get(PicasaContext *ctx, const gchar *method, GHa
 
   // send the request
   GString *response = g_string_new("");
-  curl_easy_reset(ctx->curl_ctx);
+
+  dt_curl_init(ctx->curl_ctx);
+
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, url->str);
 #ifdef picasa_EXTRA_VERBOSE
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
 #endif
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_SSL_VERIFYPEER, FALSE);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
   int res = curl_easy_perform(ctx->curl_ctx);
 
@@ -360,14 +362,15 @@ static JsonObject *picasa_query_post_auth(PicasaContext *ctx, const gchar *metho
 
   // send the requests
   GString *response = g_string_new("");
-  curl_easy_reset(ctx->curl_ctx);
+
+  dt_curl_init(ctx->curl_ctx);
+
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, url->str);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_POST, 1);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_COPYPOSTFIELDS, args);
 #ifdef picasa_EXTRA_VERBOSE
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
 #endif
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_SSL_VERIFYPEER, FALSE);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
 
@@ -493,6 +496,8 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
   headers = curl_slist_append(headers, "MIME-version: 1.0");
   headers = curl_slist_append(headers, "GData-Version: 3");
   headers = curl_slist_append(headers, authHeader);
+
+  dt_curl_init(ctx->curl_ctx);
 
   snprintf(uri, sizeof(uri), "https://picasaweb.google.com/data/feed/api/user/default/albumid/%s", albumid);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, uri);
