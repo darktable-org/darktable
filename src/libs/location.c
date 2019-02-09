@@ -351,10 +351,9 @@ static gboolean _lib_location_search(gpointer user_data)
   curl = curl_easy_init();
   if(!curl) goto bail_out;
 
-  dt_curl_init(curl);
+  dt_curl_init(curl, FALSE);
 
   curl_easy_setopt(curl, CURLOPT_URL, query);
-  // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, lib);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _lib_location_curl_write_data);
   curl_easy_setopt(curl, CURLOPT_USERAGENT, (char *)darktable_package_string);

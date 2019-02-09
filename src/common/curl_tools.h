@@ -24,7 +24,7 @@
 #include "curl/curl.h"
 
 /* reset connection and set initial setup */
-void dt_curl_init(CURL *curl);
+void dt_curl_init(CURL *curl, gboolean verbose);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

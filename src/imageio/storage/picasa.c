@@ -55,6 +55,8 @@ DT_MODULE(2)
 #define MSGCOLOR_RED "#e07f7f"
 #define MSGCOLOR_GREEN "#7fe07f"
 
+#define picasa_EXTRA_VERBOSE FALSE
+
 /** Authenticate against google picasa service*/
 typedef struct _buffer_t
 {
@@ -231,7 +233,7 @@ static size_t curl_write_data_cb(void *ptr, size_t size, size_t nmemb, void *dat
 {
   GString *string = (GString *)data;
   g_string_append_len(string, ptr, size * nmemb);
-#ifdef picasa_EXTRA_VERBOSE
+#if picasa_EXTRA_VERBOSE == TRUE
   g_printf("server reply: %s\n", string->str);
 #endif
   return size * nmemb;
@@ -310,12 +312,9 @@ static JsonObject *picasa_query_get(PicasaContext *ctx, const gchar *method, GHa
   // send the request
   GString *response = g_string_new("");
 
-  dt_curl_init(ctx->curl_ctx);
+  dt_curl_init(ctx->curl_ctx, picasa_EXTRA_VERBOSE);
 
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, url->str);
-#ifdef picasa_EXTRA_VERBOSE
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
-#endif
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
   int res = curl_easy_perform(ctx->curl_ctx);
@@ -363,14 +362,11 @@ static JsonObject *picasa_query_post_auth(PicasaContext *ctx, const gchar *metho
   // send the requests
   GString *response = g_string_new("");
 
-  dt_curl_init(ctx->curl_ctx);
+  dt_curl_init(ctx->curl_ctx, picasa_EXTRA_VERBOSE);
 
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, url->str);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_POST, 1);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_COPYPOSTFIELDS, args);
-#ifdef picasa_EXTRA_VERBOSE
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
-#endif
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
 
@@ -497,13 +493,10 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
   headers = curl_slist_append(headers, "GData-Version: 3");
   headers = curl_slist_append(headers, authHeader);
 
-  dt_curl_init(ctx->curl_ctx);
+  dt_curl_init(ctx->curl_ctx, picasa_EXTRA_VERBOSE);
 
   snprintf(uri, sizeof(uri), "https://picasaweb.google.com/data/feed/api/user/default/albumid/%s", albumid);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, uri);
-#ifdef picasa_EXTRA_VERBOSE
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
-#endif
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_HTTPHEADER, headers);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_UPLOAD, 0); // A post request !
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_POST, 1);
@@ -523,7 +516,7 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
     return NULL;
   }
 
-#ifdef picasa_EXTRA_VERBOSE
+#if picasa_EXTRA_VERBOSE == TRUE
   printf("Uploading: %s\n", buffer.data);
 #endif
 
@@ -610,10 +603,9 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
       writebuffer.size = datasize;
       writebuffer.offset = 0;
 
+      dt_curl_init(ctx->curl_ctx, picasa_EXTRA_VERBOSE);
+
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, updateUri);
-#ifdef picasa_iEXTRA_VERBOSE
-      curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
-#endif
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_HTTPHEADER, headers);
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_UPLOAD, 1); // A put request
       curl_easy_setopt(ctx->curl_ctx, CURLOPT_READDATA, &writebuffer);
@@ -626,7 +618,7 @@ static const gchar *picasa_upload_photo_to_album(PicasaContext *ctx, gchar *albu
       if(res != CURLE_OK)
         fprintf(stderr, "[picasa] error updating photo: %s\n", curl_easy_strerror(res));
 
-#ifdef picasa_EXTRA_VERBOSE
+#if picasa_EXTRA_VERBOSE == TRUE
       printf("Uploading: %s\n", response.data);
 #endif
 
