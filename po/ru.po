@@ -414,14 +414,14 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2483
 msgid "pretty print the image location"
-msgstr "Название местоположения в информация о снимке"
+msgstr "Местоположение в формате градусы° минуты'"
 
 #: ../build/src/preferences_gen.h:2495
 msgid ""
 "show a more readable representation of the location in the image information "
 "module"
 msgstr ""
-"Показывать удобочитаемое название местоположения в информации о снимке."
+"Показывать местоположение в десятичном или в формате градусы° минуты'."
 
 #: ../build/src/preferences_gen.h:2503
 msgid "security"
