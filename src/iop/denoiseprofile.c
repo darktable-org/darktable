@@ -1033,9 +1033,20 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   float wb[3] = { wb_mean, wb_mean, wb_mean };
   if(d->fix_anscombe)
   {
-    wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (in_scale * in_scale);
-    wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (in_scale * in_scale);
-    wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (in_scale * in_scale);
+    if(wb_mean != 0.0f)
+    {
+      wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (in_scale * in_scale);
+      wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (in_scale * in_scale);
+      wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (in_scale * in_scale);
+    }
+    else
+    {
+      // temperature coeffs are equal to 0 if we open a JPG image.
+      // in this case, consider them equal to 1.
+      wb[0] = d->strength * (in_scale * in_scale);
+      wb[1] = d->strength * (in_scale * in_scale);
+      wb[2] = d->strength * (in_scale * in_scale);
+    }
   }
   else
   {
@@ -1209,9 +1220,20 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   float wb[3] = { wb_mean, wb_mean, wb_mean };
   if(d->fix_anscombe)
   {
-    wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (scale * scale);
-    wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (scale * scale);
-    wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (scale * scale);
+    if(wb_mean != 0.0f)
+    {
+      wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (scale * scale);
+      wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (scale * scale);
+      wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (scale * scale);
+    }
+    else
+    {
+      // temperature coeffs are equal to 0 if we open a JPG image.
+      // in this case, consider them equal to 1.
+      wb[0] = d->strength * (scale * scale);
+      wb[1] = d->strength * (scale * scale);
+      wb[2] = d->strength * (scale * scale);
+    }
   }
   else
   {
@@ -1379,9 +1401,20 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   float wb[3] = { wb_mean, wb_mean, wb_mean };
   if(d->fix_anscombe)
   {
-    wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (scale * scale);
-    wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (scale * scale);
-    wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (scale * scale);
+    if(wb_mean != 0.0f)
+    {
+      wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (scale * scale);
+      wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (scale * scale);
+      wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (scale * scale);
+    }
+    else
+    {
+      // temperature coeffs are equal to 0 if we open a JPG image.
+      // in this case, consider them equal to 1.
+      wb[0] = d->strength * (scale * scale);
+      wb[1] = d->strength * (scale * scale);
+      wb[2] = d->strength * (scale * scale);
+    }
   }
   else
   {
@@ -1614,9 +1647,20 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   float wb[4] = { wb_mean, wb_mean, wb_mean, 0.0f };
   if(d->fix_anscombe)
   {
-    wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (scale * scale);
-    wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (scale * scale);
-    wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (scale * scale);
+    if(wb_mean != 0.0f)
+    {
+      wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (scale * scale);
+      wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (scale * scale);
+      wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (scale * scale);
+    }
+    else
+    {
+      // temperature coeffs are equal to 0 if we open a JPG image.
+      // in this case, consider them equal to 1.
+      wb[0] = d->strength * (scale * scale);
+      wb[1] = d->strength * (scale * scale);
+      wb[2] = d->strength * (scale * scale);
+    }
   }
   else
   {
@@ -1911,9 +1955,20 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   float wb[4] = { wb_mean, wb_mean, wb_mean, 0.0f };
   if(d->fix_anscombe)
   {
-    wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (scale * scale);
-    wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (scale * scale);
-    wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (scale * scale);
+    if(wb_mean != 0.0f)
+    {
+      wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (scale * scale);
+      wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (scale * scale);
+      wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (scale * scale);
+    }
+    else
+    {
+      // temperature coeffs are equal to 0 if we open a JPG image.
+      // in this case, consider them equal to 1.
+      wb[0] = d->strength * (scale * scale);
+      wb[1] = d->strength * (scale * scale);
+      wb[2] = d->strength * (scale * scale);
+    }
   }
   else
   {
