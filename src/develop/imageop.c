@@ -1975,7 +1975,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   hw[5] = gtk_fixed_new();
   gtk_widget_set_no_show_all(hw[5], TRUE);
   gtk_widget_set_name(GTK_WIDGET(hw[5]), "module-spacer");
-  gtk_widget_set_size_request(GTK_WIDGET(hw[5]), 16, 16);
+  gtk_widget_set_size_request(GTK_WIDGET(hw[5]), 17, 17);
 
   /* add enabled button */
   hw[6] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_BG_TRANSPARENT, NULL);

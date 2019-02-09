@@ -205,6 +205,11 @@ scale *,
   color: @grey_10;
 }
 
+#main-histogram
+{
+  padding: 0 6pt;
+}
+
 /* Side panels */
 
 #left scrolledwindow
