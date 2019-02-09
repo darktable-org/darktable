@@ -25,6 +25,7 @@
 #include "common/metadata.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/tags.h"
+#include "common/curl_tools.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
@@ -57,6 +58,7 @@ DT_MODULE(1)
 
 #define MSGCOLOR_RED "#e07f7f"
 #define MSGCOLOR_GREEN "#7fe07f"
+#define FACEBOOK_EXTRA_VERBOSE FALSE
 
 typedef enum ComboUserModel
 {
@@ -262,7 +264,7 @@ static size_t curl_write_data_cb(void *ptr, size_t size, size_t nmemb, void *dat
 {
   GString *string = (GString *)data;
   g_string_append_len(string, ptr, size * nmemb);
-#ifdef FACEBOOK_EXTRA_VERBOSE
+#if FACEBOOK_EXTRA_VERBOSE == TRUE
   g_printf("server reply: %s\n", string->str);
 #endif
   return size * nmemb;
@@ -326,13 +328,11 @@ static JsonObject *fb_query_get(FBContext *ctx, const gchar *method, GHashTable 
 
   // send the request
   GString *response = g_string_new("");
-  curl_easy_reset(ctx->curl_ctx);
+
+  dt_curl_init(ctx->curl_ctx, FACEBOOK_EXTRA_VERBOSE);
+
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, url->str);
-#ifdef FACEBOOK_EXTRA_VERBOSE
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
-#endif
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_SSL_VERIFYPEER, FALSE);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
   int res = curl_easy_perform(ctx->curl_ctx);
 
@@ -404,13 +404,11 @@ static JsonObject *fb_query_post(FBContext *ctx, const gchar *method, GHashTable
 
   // send the requests
   GString *response = g_string_new("");
-  curl_easy_reset(ctx->curl_ctx);
+
+  dt_curl_init(ctx->curl_ctx, FACEBOOK_EXTRA_VERBOSE);
+
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, url->str);
-#ifdef FACEBOOK_EXTRA_VERBOSE
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
-#endif
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_HTTPPOST, formlist.formpost);
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_SSL_VERIFYPEER, FALSE);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
   int res = curl_easy_perform(ctx->curl_ctx);

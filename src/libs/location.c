@@ -19,6 +19,7 @@
 
 #include "common/darktable.h"
 #include "common/geo.h"
+#include "common/curl_tools.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -350,19 +351,13 @@ static gboolean _lib_location_search(gpointer user_data)
   curl = curl_easy_init();
   if(!curl) goto bail_out;
 
+  dt_curl_init(curl, FALSE);
+
   curl_easy_setopt(curl, CURLOPT_URL, query);
-  // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, lib);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _lib_location_curl_write_data);
   curl_easy_setopt(curl, CURLOPT_USERAGENT, (char *)darktable_package_string);
-  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
   curl_easy_setopt(curl, CURLOPT_TIMEOUT, 20L);
-
-  char datadir[PATH_MAX] = { 0 };
-  dt_loc_get_datadir(datadir, sizeof(datadir));
-  gchar *crtfilename = g_build_filename(datadir, "..", "curl", "curl-ca-bundle.crt", NULL);
-  if(g_file_test(crtfilename, G_FILE_TEST_EXISTS)) curl_easy_setopt(curl, CURLOPT_CAINFO, crtfilename);
-  g_free(crtfilename);
 
   res = curl_easy_perform(curl);
   if(res != 0) goto bail_out;
