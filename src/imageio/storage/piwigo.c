@@ -39,7 +39,7 @@
 
 DT_MODULE(1)
 
-// #define piwigo_EXTRA_VERBOSE
+#define piwigo_EXTRA_VERBOSE FALSE
 
 #define MAX_ALBUM_NAME_SIZE 100
 
@@ -116,7 +116,7 @@ static size_t curl_write_data_cb(void *ptr, size_t size, size_t nmemb, void *dat
 {
   GString *string = (GString *)data;
   g_string_append_len(string, ptr, size * nmemb);
-#ifdef piwigo_EXTRA_VERBOSE
+#if piwigo_EXTRA_VERBOSE == TRUE
   g_printf("server reply: %s\n", string->str);
 #endif
   return size * nmemb;
@@ -277,13 +277,10 @@ static int _piwigo_api_post_internal(_piwigo_api_context_t *ctx, GList *args, ch
   // send the requests
   GString *response = g_string_new("");
 
-  dt_curl_init(ctx->curl_ctx);
+  dt_curl_init(ctx->curl_ctx, piwigo_EXTRA_VERBOSE);
 
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, url->str);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_POST, 1);
-#ifdef piwigo_EXTRA_VERBOSE
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
-#endif
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
 
@@ -351,7 +348,7 @@ static int _piwigo_api_post_internal(_piwigo_api_context_t *ctx, GList *args, ch
 
   int res = curl_easy_perform(ctx->curl_ctx);
 
-#ifdef piwigo_EXTRA_VERBOSE
+#if piwigo_EXTRA_VERBOSE == TRUE
   g_printf("curl_easy_perform status %d\n", res);
 #endif
 
@@ -406,7 +403,7 @@ static void _piwigo_api_post(_piwigo_api_context_t *ctx, GList *args, char *file
 
   if(res == CURLE_COULDNT_CONNECT || res == CURLE_SSL_CONNECT_ERROR)
   {
-#ifdef piwigo_EXTRA_VERBOSE
+#if piwigo_EXTRA_VERBOSE == TRUE
     g_printf("curl post error (%d), try authentication again\n", res);
 #endif
 
@@ -426,17 +423,17 @@ static void _piwigo_api_post(_piwigo_api_context_t *ctx, GList *args, char *file
     if(ctx->response && !ctx->error_occured)
     {
       ctx->authenticated = TRUE;
-#ifdef piwigo_EXTRA_VERBOSE
+#if piwigo_EXTRA_VERBOSE == TRUE
       g_printf("authenticated again, retry\n");
 #endif
       res = _piwigo_api_post_internal(ctx, args, filename, isauth);
-#ifdef piwigo_EXTRA_VERBOSE
+#if piwigo_EXTRA_VERBOSE == TRUE
       g_printf("second post exit with status %d\n", res);
 #endif
     }
     else
     {
-#ifdef piwigo_EXTRA_VERBOSE
+#if piwigo_EXTRA_VERBOSE == TRUE
       g_printf("failed second authentication\n");
 #endif
     }
