@@ -671,9 +671,9 @@ notebook tab:checked *
 #dt-toggle-button,
 #dt-icon
 {
-  font-size: 14pt;
-  min-height: 14pt;
-  min-width: 14pt;
+  font-size: 13pt;
+  min-height: 13pt;
+  min-width: 13pt;
   padding: 1pt;
 }
 
@@ -691,12 +691,19 @@ notebook tab:checked *
   font-size: 8pt;
 }
 
+#module-spacer
+{
+  min-width: 16pt;
+  font-size: 16pt;
+  margin: 8pt;
+}
+
 #iop-plugin-ui #dt-button,
 #iop-plugin-ui #dt-toggle-button
 {
   font-size: 8pt;
-  min-height: 12pt;
-  min-width: 12pt;
+  min-height: 13pt;
+  min-width: 13pt;
 }
 
 /* separator */
