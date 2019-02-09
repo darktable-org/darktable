@@ -183,7 +183,9 @@ eventbox *,
 dialog,
 dialog *,
 scale,
-scale *
+scale *,
+#modules-tabs,
+#modules-tabs *
 {
   background-color:transparent;
   margin:0;
@@ -207,14 +209,14 @@ scale *
 
 #left scrolledwindow
 {
-  margin: 2pt 0 2pt 2pt;
-  padding: 2pt 4pt 2pt 2pt;
+  margin: 0 0 0 2pt;
+  padding: 0 4pt 0 2pt;
 }
 
 #right scrolledwindow
 {
-  margin: 2pt 2pt 2pt 0;
-  padding: 2pt 2pt 2pt 4pt;
+  margin: 0 2pt 0 0;
+  padding: 0 2pt 0 4pt;
 }
 
 #lib-plugin-ui scrolledwindow,
@@ -646,7 +648,7 @@ notebook tab:checked *
 
 #bauhaus-popup
 {
-  background-color: @bauhaus_bg;
+  background-color: @really_dark_bg_color;
   color: @bauhaus_fg;
 }
 
@@ -704,6 +706,26 @@ notebook tab:checked *
   font-size: 8pt;
   min-height: 13pt;
   min-width: 13pt;
+}
+
+/* modules tabs */
+
+#modules-tabs
+{
+  background-color: @plugin_bg_color;
+}
+
+#modules-tabs #dt-toggle-button
+{
+  font-size: 8pt;
+  min-height: 22pt;
+  min-width: 22pt;
+  margin: 0;
+}
+
+#modules-tabs button:checked
+{
+  background-color: @really_dark_bg_color;
 }
 
 /* separator */

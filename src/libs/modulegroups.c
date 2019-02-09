@@ -122,6 +122,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
+  gtk_widget_set_name(self->widget, "modules-tabs");
 
   dtgtk_cairo_paint_flags_t pf = CPF_STYLE_FLAT;
 
@@ -168,17 +169,12 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->buttons[g_index], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
   gtk_widget_set_tooltip_text(d->buttons[g_index], _("effects group"));
 
-  /* minimize table height before adding the buttons */
-  gtk_widget_set_size_request(self->widget, -1, -1);
-
   /*
    * layout button row
    */
-  int iconsize = DT_PIXEL_APPLY_DPI(28);
   GtkWidget *br = self->widget;
   for(int k = 0; k < DT_MODULEGROUP_SIZE; k++)
   {
-    gtk_widget_set_size_request(d->buttons[k], iconsize, iconsize);
     gtk_box_pack_start(GTK_BOX(br), d->buttons[k], TRUE, TRUE, 0);
   }
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[d->current]), TRUE);
