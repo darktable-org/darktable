@@ -278,7 +278,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     else
       memcpy(&v5, old_params, sizeof(v5)); // was v5 already
 
-    dt_iop_denoiseprofile_params_t *v6 = new_params;
+    dt_iop_denoiseprofile_params_v6_t *v6 = new_params;
     v6->radius = v5.radius;
     v6->strength = v5.strength;
     v6->mode = v5.mode;
@@ -297,6 +297,38 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       }
     }
     v6->scattering = 0.0; // no scattering
+    return 0;
+  }
+  else if(new_version == 7)
+  {
+    dt_iop_denoiseprofile_params_v6_t v6;
+    if(old_version < 6)
+    {
+      // first update to v6
+      if(legacy_params(self, old_params, old_version, &v6, 6)) return 1;
+    }
+    else
+      memcpy(&v6, old_params, sizeof(v6)); // was v6 already
+    dt_iop_denoiseprofile_params_t *v7 = new_params;
+    v7->radius = v6.radius;
+    v7->strength = v6.strength;
+    v7->mode = v6.mode;
+    v7->nbhood = v6.nbhood;
+    for(int k = 0; k < 3; k++)
+    {
+      v7->a[k] = v6.a[k];
+      v7->b[k] = v6.b[k];
+    }
+    for(int b = 0; b < DT_IOP_DENOISE_PROFILE_BANDS; b++)
+    {
+      for(int c = 0; c < DT_DENOISE_PROFILE_NONE; c++)
+      {
+        v7->x[c][b] = v6.x[c][b];
+        v7->y[c][b] = v6.y[c][b];
+      }
+    }
+    v7->scattering = v6.scattering;
+    v7->fix_anscombe = FALSE; // don't fix anscombe for backward compatibility
     return 0;
   }
   return 1;
@@ -993,11 +1025,24 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     buf[k] = dt_alloc_align(64, (size_t)4 * sizeof(float) * npixels);
   tmp = dt_alloc_align(64, (size_t)4 * sizeof(float) * npixels);
 
-  const float wb[3] = { // twice as many samples in green channel:
-                        2.0f * piece->pipe->dsc.processed_maximum[0] * d->strength * (in_scale * in_scale),
-                        piece->pipe->dsc.processed_maximum[1] * d->strength * (in_scale * in_scale),
-                        2.0f * piece->pipe->dsc.processed_maximum[2] * d->strength * (in_scale * in_scale)
-  };
+  const float wb_mean = (piece->pipe->dsc.temperature.coeffs[0] + piece->pipe->dsc.temperature.coeffs[1]
+                         + piece->pipe->dsc.temperature.coeffs[2])
+                        / 3.0f;
+  // we init wb by the mean of the coeffs, which corresponds to the mean
+  // amplification that is done in addition to the "ISO" related amplification
+  float wb[3] = { wb_mean, wb_mean, wb_mean };
+  if(d->fix_anscombe)
+  {
+    wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (in_scale * in_scale);
+    wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (in_scale * in_scale);
+    wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (in_scale * in_scale);
+  }
+  else
+  {
+    wb[0] = 2.0f * piece->pipe->dsc.processed_maximum[0] * d->strength * (in_scale * in_scale);
+    wb[1] = piece->pipe->dsc.processed_maximum[1] * d->strength * (in_scale * in_scale);
+    wb[2] = 2.0f * piece->pipe->dsc.processed_maximum[2] * d->strength * (in_scale * in_scale);
+  }
   // only use green channel + wb for now:
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
@@ -1156,9 +1201,24 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   memset(ovoid, 0x0, (size_t)sizeof(float) * roi_out->width * roi_out->height * 4);
   float *in = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
 
-  const float wb[3] = { piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale),
-                        piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale),
-                        piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale) };
+  const float wb_mean = (piece->pipe->dsc.temperature.coeffs[0] + piece->pipe->dsc.temperature.coeffs[1]
+                         + piece->pipe->dsc.temperature.coeffs[2])
+                        / 3.0f;
+  // we init wb by the mean of the coeffs, which corresponds to the mean
+  // amplification that is done in addition to the "ISO" related amplification
+  float wb[3] = { wb_mean, wb_mean, wb_mean };
+  if(d->fix_anscombe)
+  {
+    wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (scale * scale);
+    wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (scale * scale);
+    wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (scale * scale);
+  }
+  else
+  {
+    wb[0] = piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale);
+    wb[1] = piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale);
+    wb[2] = piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale);
+  }
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
   precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
@@ -1311,9 +1371,24 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   memset(ovoid, 0x0, (size_t)sizeof(float) * roi_out->width * roi_out->height * 4);
   float *in = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
 
-  const float wb[3] = { piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale),
-                        piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale),
-                        piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale) };
+  const float wb_mean = (piece->pipe->dsc.temperature.coeffs[0] + piece->pipe->dsc.temperature.coeffs[1]
+                         + piece->pipe->dsc.temperature.coeffs[2])
+                        / 3.0f;
+  // we init wb by the mean of the coeffs, which corresponds to the mean
+  // amplification that is done in addition to the "ISO" related amplification
+  float wb[3] = { wb_mean, wb_mean, wb_mean };
+  if(d->fix_anscombe)
+  {
+    wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (scale * scale);
+    wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (scale * scale);
+    wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (scale * scale);
+  }
+  else
+  {
+    wb[0] = piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale);
+    wb[1] = piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale);
+    wb[2] = piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale);
+  }
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
   precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
@@ -1531,10 +1606,25 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   const int K = ceilf(d->nbhood * scale); // nbhood
   const float norm = 0.015f / (2 * P + 1);
 
+  const float wb_mean = (piece->pipe->dsc.temperature.coeffs[0] + piece->pipe->dsc.temperature.coeffs[1]
+                         + piece->pipe->dsc.temperature.coeffs[2])
+                        / 3.0f;
+  // we init wb by the mean of the coeffs, which corresponds to the mean
+  // amplification that is done in addition to the "ISO" related amplification
+  float wb[4] = { wb_mean, wb_mean, wb_mean, 0.0f };
+  if(d->fix_anscombe)
+  {
+    wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (scale * scale);
+    wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (scale * scale);
+    wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (scale * scale);
+  }
+  else
+  {
+    wb[0] = piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale);
+    wb[1] = piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale);
+    wb[2] = piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale);
+  }
 
-  const float wb[4] = { piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale),
-                        piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale),
-                        piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale), 0.0f };
   const float aa[4] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2], 1.0f };
   const float bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 1.0f };
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
@@ -1813,9 +1903,24 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     if(dev_detail[k] == NULL) goto error;
   }
 
-  const float wb[4] = { 2.0f * piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale),
-                        piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale),
-                        2.0f * piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale), 0.0f };
+  const float wb_mean = (piece->pipe->dsc.temperature.coeffs[0] + piece->pipe->dsc.temperature.coeffs[1]
+                         + piece->pipe->dsc.temperature.coeffs[2])
+                        / 3.0f;
+  // we init wb by the mean of the coeffs, which corresponds to the mean
+  // amplification that is done in addition to the "ISO" related amplification
+  float wb[4] = { wb_mean, wb_mean, wb_mean, 0.0f };
+  if(d->fix_anscombe)
+  {
+    wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (scale * scale);
+    wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (scale * scale);
+    wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (scale * scale);
+  }
+  else
+  {
+    wb[0] = 2.0f * piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale);
+    wb[1] = piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale);
+    wb[2] = 2.0f * piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale);
+  }
   const float aa[4] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2], 1.0f };
   const float bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 1.0f };
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
