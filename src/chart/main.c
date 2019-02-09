@@ -1675,12 +1675,7 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
   N--;
 
   // skip the column title line
-  for (;;)
-  {
-    int c = fgetc(f);
-    if (c == '\n' || c == EOF)
-      break;
-  }
+  read_res = fscanf(f, "%*[^\n]\n");
   N--;
 
   double *target_L = (double *)calloc(sizeof(double), (N + 4));

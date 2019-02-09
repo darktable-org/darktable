@@ -470,7 +470,7 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
       {
         char optname[100];
         char optvalue[100];
-        const int ropt = fscanf(stream, "%*s %[^= ]=%s", optname, optvalue);
+        const int ropt = fscanf(stream, "%*s %99[^= ]=%99s", optname, optvalue);
 
         // if we parsed an option name=value
         if (ropt==2)
