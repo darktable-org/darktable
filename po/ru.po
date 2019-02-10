@@ -8517,7 +8517,7 @@ msgstr "Автоматические настройки"
 #: ../src/iop/profile_gamma.c:920
 msgid ""
 "enlarge or shrink the computed dynamic range\n"
-"this is usefull when noise perturbates the measurements"
+"this is useful when noise perturbates the measurements"
 msgstr ""
 "Относительное изменение широты динамического диапазона.\n"
 "Полезно при больших значениях шума."
