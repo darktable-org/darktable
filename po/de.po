@@ -8623,7 +8623,7 @@ msgstr "automatisch optimieren"
 #: ../src/iop/profile_gamma.c:920
 msgid ""
 "enlarge or shrink the computed dynamic range\n"
-"this is usefull when noise perturbates the measurements"
+"this is useful when noise perturbates the measurements"
 msgstr ""
 "vergrößert oder verkleinert den berechneten Dynamikbereich\n"
 "dies entspricht einer Messung, die ein Belichtungsmesser liefern würde"

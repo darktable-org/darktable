@@ -8099,7 +8099,7 @@ msgstr "automatikus optimalizálás"
 #: ../src/iop/profile_gamma.c:928
 msgid ""
 "enlarge or shrink the computed dynamic range\n"
-"this is usefull when noise perturbates the measurements"
+"this is useful when noise perturbates the measurements"
 msgstr ""
 "bővítés vagy zsugorítás a számított dinamikatartományhoz\n"
 "akkor hasznos, ha a zaj pertubálja mérést"

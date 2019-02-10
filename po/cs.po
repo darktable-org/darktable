@@ -8546,7 +8546,7 @@ msgstr "optimalizovat automaticky"
 #: ../src/iop/profile_gamma.c:920
 msgid ""
 "enlarge or shrink the computed dynamic range\n"
-"this is usefull when noise perturbates the measurements"
+"this is useful when noise perturbates the measurements"
 msgstr ""
 "zvětšit či zmenšit vypočtený dynamický rozsah\n"
 "toto je užitečné, když jsou měření ovlivněna šumem"
