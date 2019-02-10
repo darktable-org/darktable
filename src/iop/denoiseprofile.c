@@ -2781,14 +2781,14 @@ void gui_init(dt_iop_module_t *self)
   gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "nlm");
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->profile, NULL, _("profile"));
+  dt_bauhaus_widget_set_label(g->profile, NULL, C_("denoise", "profile"));
   dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
   dt_bauhaus_widget_set_label(g->radius, NULL, _("patch size"));
   dt_bauhaus_slider_set_format(g->radius, "%.0f");
   dt_bauhaus_widget_set_label(g->nbhood, NULL, _("search radius"));
   dt_bauhaus_slider_set_format(g->nbhood, "%.0f");
   dt_bauhaus_widget_set_label(g->scattering, NULL, _("scattering (coarse-grain noise)"));
-  dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
+  dt_bauhaus_widget_set_label(g->strength, NULL, C_("denoise", "strength"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means"));
   dt_bauhaus_combobox_add(g->mode, _("wavelets"));
   gtk_widget_set_tooltip_text(g->profile, _("profile used for variance stabilization"));
