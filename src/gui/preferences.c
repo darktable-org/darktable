@@ -622,7 +622,7 @@ static void init_tab_accels(GtkWidget *book)
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 
   // Adding the restore defaults button
-  button = gtk_button_new_with_label(C_("preferences", "default"));
+  button = gtk_button_new_with_label(C_("preferences, button", "default"));
   gtk_box_pack_end(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(restore_defaults), NULL);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(update_accels_model), (gpointer)model);
