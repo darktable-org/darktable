@@ -438,7 +438,7 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev, dt_iop_module_t *module,
       else
         grp = dt_masks_create(DT_MASKS_GROUP);
       gchar *module_label = dt_history_item_get_name(module);
-      snprintf(grp->name, sizeof(grp->name), "grp %s", module_label);
+      snprintf(grp->name, sizeof(grp->name), _("grp %s"), module_label);
       g_free(module_label);
       _check_id(grp);
       dev->forms = g_list_append(dev->forms, grp);
