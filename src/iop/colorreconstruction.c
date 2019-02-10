@@ -1365,9 +1365,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->hue, NULL, _("hue"));
 
   dt_bauhaus_widget_set_label(g->precedence, NULL, _("precedence"));
-  dt_bauhaus_combobox_add(g->precedence, _("none"));
+  dt_bauhaus_combobox_add(g->precedence, C_("color reconstruction precedence", "none"));
   dt_bauhaus_combobox_add(g->precedence, _("saturated colors"));
-  dt_bauhaus_combobox_add(g->precedence, _("hue"));
+  dt_bauhaus_combobox_add(g->precedence, C_("color reconstruction precedence", "hue"));
 
   dt_bauhaus_slider_set_stop(g->hue, 0.0f, 1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(g->hue, 0.166f, 1.0f, 1.0f, 0.0f);
