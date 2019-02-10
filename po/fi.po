@@ -11658,7 +11658,7 @@ msgid "access the online usermanual?"
 msgstr "Käytä verkossa olevaa käyttöohjetta?"
 
 #: ../src/libs/tools/global_toolbox.c:283
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "Ohjeen verkkosivu avattin selaimessa."
 
 #: ../src/libs/tools/global_toolbox.c:288

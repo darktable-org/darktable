@@ -11564,7 +11564,7 @@ msgid "access the online usermanual?"
 msgstr "オンライン・ユーザーマニュアルにアクセスしますか?"
 
 #: ../src/libs/tools/global_toolbox.c:277
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "WebブラウザでヘルプURLを開きます"
 
 #: ../src/libs/tools/global_toolbox.c:282
