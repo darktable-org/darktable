@@ -201,7 +201,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(8));
 
-  button = gtk_button_new_with_label(_("copy"));
+  button = gtk_button_new_with_label(C_("button", "copy"));
   ellipsize_button(button);
   d->copy_button = button;
   gtk_widget_set_tooltip_text(button, _("copy to other folder"));
@@ -216,7 +216,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(7));
   gtk_widget_set_tooltip_text(button, _("create a high dynamic range image from selected shots"));
 
-  button = gtk_button_new_with_label(_("duplicate"));
+  button = gtk_button_new_with_label(C_("button", "duplicate"));
   ellipsize_button(button);
   d->duplicate_button = button;
   gtk_widget_set_tooltip_text(button, _("add a duplicate to the collection, including its history stack"));
@@ -259,7 +259,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(13));
 
 
-  button = gtk_button_new_with_label(_("group"));
+  button = gtk_button_new_with_label(C_("button", "group"));
   ellipsize_button(button);
   d->group_button = button;
   gtk_widget_set_tooltip_text(button, _("add selected images to expanded group or create a new one"));
