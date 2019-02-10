@@ -381,7 +381,7 @@ void dt_control_crawler_show_image_list(GList *images)
 
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
   gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 0);
-  GtkWidget *select_all = gtk_check_button_new_with_label(_("select all"));
+  GtkWidget *select_all = gtk_check_button_new_with_label(C_("checkbox", "select all"));
   gtk_box_pack_start(GTK_BOX(box), select_all, FALSE, FALSE, 0);
   gui->select_all_handler_id = g_signal_connect(select_all, "toggled", G_CALLBACK(_select_all_callback), gui);
   gui->select_all = select_all;
