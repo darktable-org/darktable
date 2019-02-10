@@ -8844,7 +8844,7 @@ msgid "cut shapes from current scale"
 msgstr "couper les formes de l'échelle de décomposition actuelle"
 
 #: ../src/iop/retouch.c:2751
-msgid "paste cutted shapes to current scale"
+msgid "paste cut shapes to current scale"
 msgstr "coller les formes sur l'échelle de décomposition actuelle"
 
 #: ../src/iop/retouch.c:2776

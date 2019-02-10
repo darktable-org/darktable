@@ -8580,7 +8580,7 @@ msgid "cut shapes from current scale"
 msgstr "alakzatok kivágása az aktuális skáláról"
 
 #: ../src/iop/retouch.c:2778
-msgid "paste cutted shapes to current scale"
+msgid "paste cut shapes to current scale"
 msgstr "kivágott alakzatok beillesztése az aktuális skálára"
 
 #: ../src/iop/retouch.c:2803

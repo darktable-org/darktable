@@ -8530,7 +8530,7 @@ msgid "cut shapes from current scale"
 msgstr "現在のスケールからシェイプを切り抜きます"
 
 #: ../src/iop/retouch.c:2778
-msgid "paste cutted shapes to current scale"
+msgid "paste cut shapes to current scale"
 msgstr "カットされたシェイプを現在のスケールに貼り付けます"
 
 #: ../src/iop/retouch.c:2803
