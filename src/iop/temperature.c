@@ -1334,6 +1334,9 @@ static void presets_changed(GtkWidget *widget, gpointer user_data)
 
 static void finetune_changed(GtkWidget *widget, gpointer user_data)
 {
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  dt_bauhaus_slider_set_format(g->finetune, ngettext("%.0f mired", "%.0f mireds", (int)dt_bauhaus_slider_get(g->finetune)));
   apply_preset((dt_iop_module_t *)user_data);
 }
 
@@ -1445,7 +1448,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->finetune = dt_bauhaus_slider_new_with_range(self, -9.0, 9.0, 1.0, 0.0, 0);
   dt_bauhaus_widget_set_label(g->finetune, NULL, _("finetune"));
-  dt_bauhaus_slider_set_format(g->finetune, _("%.0f mired"));
+  dt_bauhaus_slider_set_format(g->finetune, ngettext("%.0f mired", "%.0f mireds", (int)dt_bauhaus_slider_get(g->finetune)));
   // initially doesn't have fine tuning stuff (camera wb)
   gtk_widget_set_sensitive(g->finetune, FALSE);
   gtk_box_pack_start(GTK_BOX(g->box_enabled), g->finetune, TRUE, TRUE, 0);
