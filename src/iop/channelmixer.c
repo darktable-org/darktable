@@ -446,12 +446,12 @@ void gui_init(struct dt_iop_module_t *self)
   /* output */
   g->combo1 = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->combo1, NULL, _("destination"));
-  dt_bauhaus_combobox_add(g->combo1, _("hue"));
-  dt_bauhaus_combobox_add(g->combo1, _("saturation"));
-  dt_bauhaus_combobox_add(g->combo1, _("lightness"));
-  dt_bauhaus_combobox_add(g->combo1, _("red"));
-  dt_bauhaus_combobox_add(g->combo1, _("green"));
-  dt_bauhaus_combobox_add(g->combo1, _("blue"));
+  dt_bauhaus_combobox_add(g->combo1, C_("channelmixer", "hue"));
+  dt_bauhaus_combobox_add(g->combo1, C_("channelmixer", "saturation"));
+  dt_bauhaus_combobox_add(g->combo1, C_("channelmixer", "lightness"));
+  dt_bauhaus_combobox_add(g->combo1, C_("channelmixer", "red"));
+  dt_bauhaus_combobox_add(g->combo1, C_("channelmixer", "green"));
+  dt_bauhaus_combobox_add(g->combo1, C_("channelmixer", "blue"));
   dt_bauhaus_combobox_add(g->combo1, C_("channelmixer", "gray"));
   dt_bauhaus_combobox_set(g->combo1, CHANNEL_RED);
 
