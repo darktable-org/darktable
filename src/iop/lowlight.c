@@ -326,7 +326,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.transition_y[5] = 1.000000;
 
   p.blueness = 0.0f;
-  dt_gui_presets_add_generic(_("daylight"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(C_("lowlight preset", "daylight"), self->op, self->version(), &p, sizeof(p), 1);
 
   p.transition_x[0] = 0.000000;
   p.transition_x[1] = 0.200000;
