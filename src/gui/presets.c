@@ -508,7 +508,7 @@ static void edit_preset(const char *name_in, dt_iop_module_t *module)
   gtk_grid_attach_next_to(GTK_GRID(g->details), g->focal_length_max, g->focal_length_min, GTK_POS_RIGHT, 1, 1);
 
   // raw/hdr/ldr
-  label = gtk_label_new(_("format"));
+  label = gtk_label_new(C_("raw/hdr/ldr", "format"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line, 1, 1);
 
