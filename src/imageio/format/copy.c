@@ -121,7 +121,7 @@ const char *extension(dt_imageio_module_data_t *data)
 
 const char *name()
 {
-  return _("copy");
+  return C_("export file format", "copy");
 }
 
 void init(dt_imageio_module_format_t *self)
