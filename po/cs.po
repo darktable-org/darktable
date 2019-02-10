@@ -8773,7 +8773,7 @@ msgid "cut shapes from current scale"
 msgstr "odstranit tvary z aktuálního měřítka"
 
 #: ../src/iop/retouch.c:2751
-msgid "paste cutted shapes to current scale"
+msgid "paste cut shapes to current scale"
 msgstr "vložit odstraněné tvary na aktuální měřítko"
 
 #: ../src/iop/retouch.c:2776
