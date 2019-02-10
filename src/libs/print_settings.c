@@ -1280,7 +1280,7 @@ gui_init (dt_lib_module_t *self)
   //// portrait / landscape
 
   d->orientation = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->orientation, NULL, _("orientation"));
+  dt_bauhaus_widget_set_label(d->orientation, NULL, C_("printing", "orientation"));
   dt_bauhaus_combobox_add(d->orientation, _("portrait"));
   dt_bauhaus_combobox_add(d->orientation, _("landscape"));
 
