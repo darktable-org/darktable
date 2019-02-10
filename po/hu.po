@@ -11625,7 +11625,7 @@ msgid "access the online usermanual?"
 msgstr "megnyitja az online kézikönyvet?"
 
 #: ../src/libs/tools/global_toolbox.c:283
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "súgó url megnyitva a böngészőben"
 
 #: ../src/libs/tools/global_toolbox.c:288

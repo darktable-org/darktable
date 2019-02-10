@@ -12100,7 +12100,7 @@ msgid "access the online usermanual?"
 msgstr "Открыть онлайн справку?"
 
 #: ../src/libs/tools/global_toolbox.c:284
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "Онлайн справка по указанному элементу открыта в браузере"
 
 #: ../src/libs/tools/global_toolbox.c:289

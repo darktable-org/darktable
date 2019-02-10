@@ -12173,7 +12173,7 @@ msgid "access the online usermanual?"
 msgstr "online gebruikershandleiding benaderen?"
 
 #: ../src/libs/tools/global_toolbox.c:284
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "help url geopend in webbrowser"
 
 #: ../src/libs/tools/global_toolbox.c:289

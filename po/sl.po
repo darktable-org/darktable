@@ -11728,7 +11728,7 @@ msgid "access the online usermanual?"
 msgstr "dostop do mrežnega uporabniškega priročnika?"
 
 #: ../src/libs/tools/global_toolbox.c:277
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "pomoč url odprt v brskalniku"
 
 #: ../src/libs/tools/global_toolbox.c:282
