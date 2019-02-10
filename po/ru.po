@@ -8710,7 +8710,7 @@ msgid "cut shapes from current scale"
 msgstr "Вырезать фигуры из текущего уровня"
 
 #: ../src/iop/retouch.c:2751
-msgid "paste cutted shapes to current scale"
+msgid "paste cut shapes to current scale"
 msgstr "Вставлять вырезанные фигуры в текущий уровень"
 
 #: ../src/iop/retouch.c:2776

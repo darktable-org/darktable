@@ -8560,7 +8560,7 @@ msgid "cut shapes from current scale"
 msgstr "fjern former fra skala i bruk"
 
 #: ../src/iop/retouch.c:2752
-msgid "paste cutted shapes to current scale"
+msgid "paste cut shapes to current scale"
 msgstr "lim inn markerte former på skala i bruk"
 
 #: ../src/iop/retouch.c:2777

@@ -8731,7 +8731,7 @@ msgid "cut shapes from current scale"
 msgstr "Zuschneiden der Formen vom aktuellen Maßstab"
 
 #: ../src/iop/retouch.c:2752
-msgid "paste cutted shapes to current scale"
+msgid "paste cut shapes to current scale"
 msgstr "Zugeschnittene Formen des aktuellen Maßstab einfügen"
 
 #: ../src/iop/retouch.c:2777

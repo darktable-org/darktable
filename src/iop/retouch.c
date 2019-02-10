@@ -2777,7 +2777,7 @@ void gui_init(dt_iop_module_t *self)
 
   g->bt_paste_scale
       = dtgtk_togglebutton_new(_retouch_cairo_paint_paste_forms, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  g_object_set(G_OBJECT(g->bt_paste_scale), "tooltip-text", _("paste cutted shapes to current scale"),
+  g_object_set(G_OBJECT(g->bt_paste_scale), "tooltip-text", _("paste cut shapes to current scale"),
                (char *)NULL);
   g_signal_connect(G_OBJECT(g->bt_paste_scale), "toggled", G_CALLBACK(rt_copypaste_scale_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_paste_scale), bs, bs);

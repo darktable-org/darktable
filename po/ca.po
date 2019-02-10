@@ -8766,7 +8766,7 @@ msgid "cut shapes from current scale"
 msgstr "retalla formes de l'escala actual"
 
 #: ../src/iop/retouch.c:2779
-msgid "paste cutted shapes to current scale"
+msgid "paste cut shapes to current scale"
 msgstr "enganxa les formes retallades a l'actual escala"
 
 #: ../src/iop/retouch.c:2804
