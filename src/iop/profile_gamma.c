@@ -841,7 +841,7 @@ void gui_init(dt_iop_module_t *self)
   g->mode = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
   dt_bauhaus_combobox_add(g->mode, _("logarithmic"));
-  dt_bauhaus_combobox_add(g->mode, _("gamma"));
+  dt_bauhaus_combobox_add(g->mode, C_("unbreak input profile, mode", "gamma"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->mode), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->mode, _("tone mapping method"));
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
@@ -856,14 +856,14 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *vbox_gamma = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
   // linear slider
   g->linear = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.0001, p->linear, 4);
-  dt_bauhaus_widget_set_label(g->linear, NULL, _("linear"));
+  dt_bauhaus_widget_set_label(g->linear, NULL, C_("unbreak input profile, gamma mode", "linear"));
   gtk_box_pack_start(GTK_BOX(vbox_gamma), g->linear, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->linear, _("linear part"));
   g_signal_connect(G_OBJECT(g->linear), "value-changed", G_CALLBACK(linear_callback), self);
 
   // gamma slider
   g->gamma = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.0001, p->gamma, 4);
-  dt_bauhaus_widget_set_label(g->gamma, NULL, _("gamma"));
+  dt_bauhaus_widget_set_label(g->gamma, NULL, C_("unbreak input profile, gamma mode", "gamma"));
   gtk_box_pack_start(GTK_BOX(vbox_gamma), g->gamma, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->gamma, _("gamma exponential factor"));
   g_signal_connect(G_OBJECT(g->gamma), "value-changed", G_CALLBACK(gamma_callback), self);
