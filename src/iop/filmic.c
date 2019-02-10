@@ -75,7 +75,7 @@ DT_MODULE_INTROSPECTION(3, dt_iop_filmic_params_t)
  * The filmic curves are tonecurves intended to simulate the luminance
  * transfer function of film with "S" curves. These could be reproduced in
  * the tonecurve.c IOP, however what we offer here is a parametric
- * interface usefull to remap accurately and promptly the middle grey
+ * interface useful to remap accurately and promptly the middle grey
  * to any arbitrary value choosen accordingly to the destination space.
  *
  * The combined use of both define a modern way to deal with large
