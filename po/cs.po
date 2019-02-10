@@ -12153,7 +12153,7 @@ msgid "access the online usermanual?"
 msgstr "zobrazit online uživatelský manuál?"
 
 #: ../src/libs/tools/global_toolbox.c:284
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "url nápovědy otevřeno ve webovém prohlížeči"
 
 #: ../src/libs/tools/global_toolbox.c:289

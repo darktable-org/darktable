@@ -281,7 +281,7 @@ static void _main_do_event(GdkEvent *event, gpointer data)
 #endif
             g_free(base_url);
             g_free(url);
-            dt_control_log(_("help url opened in web brower"));
+            dt_control_log(_("help url opened in web browser"));
           }
         }
         else

@@ -11661,7 +11661,7 @@ msgid "access the online usermanual?"
 msgstr "acessar o manual do usuário online?"
 
 #: ../src/libs/tools/global_toolbox.c:283
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "url de ajuda aberta no browser"
 
 #: ../src/libs/tools/global_toolbox.c:288

@@ -12277,7 +12277,7 @@ msgid "access the online usermanual?"
 msgstr "Auf das Online-Benutzerhandbuch zugreifen?"
 
 #: ../src/libs/tools/global_toolbox.c:284
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "Hilfe-URL wird in Webbrowser geöffnet"
 
 #: ../src/libs/tools/global_toolbox.c:289
