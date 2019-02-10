@@ -11610,7 +11610,7 @@ msgid "access the online usermanual?"
 msgstr "otworzyć podręcznik użytkownika online?"
 
 #: ../src/libs/tools/global_toolbox.c:284
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "url pomocy otwarty w przeglądarce"
 
 #: ../src/libs/tools/global_toolbox.c:289

@@ -12140,7 +12140,7 @@ msgid "access the online usermanual?"
 msgstr "accedir al manual d'usuari en línia?"
 
 #: ../src/libs/tools/global_toolbox.c:284
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "url d'ajuda oberta al navegador web"
 
 #: ../src/libs/tools/global_toolbox.c:289
