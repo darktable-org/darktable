@@ -2333,7 +2333,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->controls, NULL, _("color control sliders"));
   dt_bauhaus_combobox_add(g->controls, _("HSL"));
   dt_bauhaus_combobox_add(g->controls, _("RGBL"));
-  dt_bauhaus_combobox_add(g->controls, _("both"));
+  dt_bauhaus_combobox_add(g->controls, C_("color control sliders", "both"));
   dt_bauhaus_combobox_set_default(g->controls, HSL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->controls), TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->controls, _("color-grading mapping method"));
