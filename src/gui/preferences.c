@@ -1454,7 +1454,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   gtk_widget_set_hexpand(GTK_WIDGET(g->focal_length_max), TRUE);
 
   // raw/hdr/ldr
-  label = gtk_label_new(_("format"));
+  label = gtk_label_new(C_("raw/hdr/ldr", "format"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(g->details), label, 0, line, 1, 1);
 
