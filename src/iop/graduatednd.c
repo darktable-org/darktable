@@ -1204,7 +1204,7 @@ void gui_init(struct dt_iop_module_t *self)
   /* compression */
   g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->compression, 0);
   dt_bauhaus_slider_set_format(g->scale2, "%.0f%%");
-  dt_bauhaus_widget_set_label(g->scale2, NULL, _("compression"));
+  dt_bauhaus_widget_set_label(g->scale2, NULL, C_("graduated density", "compression"));
   /* xgettext:no-c-format */
   gtk_widget_set_tooltip_text(g->scale2, _("compression of graduation:\n0% = soft, 100% = hard"));
   g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(compression_callback), self);
