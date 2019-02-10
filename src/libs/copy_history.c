@@ -281,7 +281,7 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_hist_dialog_init(&d->dg);
 
 
-  GtkWidget *copy_parts = gtk_button_new_with_label(_("copy"));
+  GtkWidget *copy_parts = gtk_button_new_with_label(C_("button", "copy"));
   ellipsize_button(copy_parts);
   d->copy_parts_button = copy_parts;
   gtk_widget_set_tooltip_text(copy_parts, _("copy part history stack of\nfirst selected image"));
