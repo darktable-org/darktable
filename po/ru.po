@@ -8790,7 +8790,7 @@ msgid "color"
 msgstr "Цвет"
 
 #: ../src/iop/retouch.c:2828
-msgid "erase the detail or fills with choosen color"
+msgid "erase the detail or fills with chosen color"
 msgstr "Стереть детали или залить их выбранным цветом"
 
 #: ../src/iop/retouch.c:2840 ../src/iop/retouch.c:2841

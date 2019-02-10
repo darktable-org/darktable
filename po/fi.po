@@ -8650,7 +8650,7 @@ msgid "color"
 msgstr "Väri"
 
 #: ../src/iop/retouch.c:2855
-msgid "erase the detail or fills with choosen color"
+msgid "erase the detail or fills with chosen color"
 msgstr "Pyyhi yksityiskohtia tai täytä valitulla värillä."
 
 #: ../src/iop/retouch.c:2867 ../src/iop/retouch.c:2868

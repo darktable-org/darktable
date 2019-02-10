@@ -8813,7 +8813,7 @@ msgid "color"
 msgstr "color"
 
 #: ../src/iop/retouch.c:2828
-msgid "erase the detail or fills with choosen color"
+msgid "erase the detail or fills with chosen color"
 msgstr "smaže detail nebo vyplní vybranou barvou"
 
 #: ../src/iop/retouch.c:2840 ../src/iop/retouch.c:2841
