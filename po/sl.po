@@ -8683,7 +8683,7 @@ msgid "cut shapes from current scale"
 msgstr "izreži oblike iz trenutnega merila"
 
 #: ../src/iop/retouch.c:2752
-msgid "paste cutted shapes to current scale"
+msgid "paste cut shapes to current scale"
 msgstr "prilepi izrezane oblike na trenutno merilo"
 
 #: ../src/iop/retouch.c:2777
