@@ -102,7 +102,7 @@ typedef struct dt_iop_exposure_global_data_t
 
 const char *name()
 {
-  return _("exposure");
+  return C_("modulename", "exposure");
 }
 
 int default_group()
@@ -881,7 +881,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->exposure = dt_bauhaus_slider_new_with_range(self, -3.0, 3.0, .02, p->exposure, 3);
   gtk_widget_set_tooltip_text(g->exposure, _("adjust the exposure correction"));
   dt_bauhaus_slider_set_format(g->exposure, "%.2fEV");
-  dt_bauhaus_widget_set_label(g->exposure, NULL, _("exposure"));
+  dt_bauhaus_widget_set_label(g->exposure, NULL, C_("exposure correction", "exposure"));
   dt_bauhaus_slider_enable_soft_boundaries(g->exposure, -18.0, 18.0);
   gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(g->exposure), TRUE, TRUE, 0);
 
