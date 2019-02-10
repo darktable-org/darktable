@@ -937,7 +937,7 @@ static void gui_init_aspect(struct dt_iop_module_t *self)
 {
   dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
 
-  dt_bauhaus_combobox_add(g->aspect, _("image"));
+  dt_bauhaus_combobox_add(g->aspect, C_("borders aspect", "image"));
   dt_bauhaus_combobox_add(g->aspect, _("3:1"));
   dt_bauhaus_combobox_add(g->aspect, _("95:33"));
   dt_bauhaus_combobox_add(g->aspect, _("2:1"));
@@ -1019,8 +1019,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->aspect, _("select the aspect ratio or right click and type your own (w:h)"));
 
   g->aspect_orient = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->aspect_orient, NULL, _("orientation"));
-  dt_bauhaus_combobox_add(g->aspect_orient, _("auto"));
+  dt_bauhaus_widget_set_label(g->aspect_orient, NULL, C_("border", "orientation"));
+  dt_bauhaus_combobox_add(g->aspect_orient, C_("border orientation", "auto"));
   dt_bauhaus_combobox_add(g->aspect_orient, _("portrait"));
   dt_bauhaus_combobox_add(g->aspect_orient, _("landscape"));
   gtk_widget_set_tooltip_text(g->aspect_orient, _("aspect ratio orientation of the image with border"));
