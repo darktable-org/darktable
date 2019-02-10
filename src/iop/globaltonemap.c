@@ -695,9 +695,9 @@ void gui_init(struct dt_iop_module_t *self)
   g->operator= dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->operator, NULL, _("operator"));
 
-  dt_bauhaus_combobox_add(g->operator, "reinhard");
-  dt_bauhaus_combobox_add(g->operator, "filmic");
-  dt_bauhaus_combobox_add(g->operator, "drago");
+  dt_bauhaus_combobox_add(g->operator, C_("global tonemap operator", "reinhard"));
+  dt_bauhaus_combobox_add(g->operator, C_("global tonemap operator", "filmic"));
+  dt_bauhaus_combobox_add(g->operator, C_("global tonemap operator", "drago"));
 
   gtk_widget_set_tooltip_text(g->operator, _("the global tonemap operator"));
   g_signal_connect(G_OBJECT(g->operator), "value-changed", G_CALLBACK(operator_callback), self);
