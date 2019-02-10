@@ -9238,7 +9238,7 @@ msgstr "cercle de correction des taches"
 
 #: ../src/iop/spots.c:702
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "ellipse de correction des taches"
 
 #: ../src/iop/spots.c:703
