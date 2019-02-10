@@ -430,7 +430,8 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
 
     gtk_tree_path_free(path);
 
-    if((d->view_rule == DT_COLLECTION_PROP_DAY || d->view_rule == DT_COLLECTION_PROP_TIME)
+    if((d->view_rule == DT_COLLECTION_PROP_DAY || d->view_rule == DT_COLLECTION_PROP_TIME
+        || d->view_rule == DT_COLLECTION_PROP_FOLDERS || d->view_rule == DT_COLLECTION_PROP_TAG)
        && !(event->state & GDK_SHIFT_MASK))
       return FALSE; /* we allow propagation (expand/collapse row) */
     else
