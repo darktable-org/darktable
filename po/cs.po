@@ -9164,7 +9164,7 @@ msgstr "nástroj bodového kruhu"
 
 #: ../src/iop/spots.c:702
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "nástroj bodových elips"
 
 #: ../src/iop/spots.c:703

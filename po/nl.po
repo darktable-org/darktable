@@ -9184,7 +9184,7 @@ msgstr "spot cirkel gereedschap"
 
 #: ../src/iop/spots.c:702
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "spot ellips gereedschap"
 
 #: ../src/iop/spots.c:703

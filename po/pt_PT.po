@@ -8279,7 +8279,7 @@ msgstr "gradiente #%d"
 #: ../src/develop/masks/masks.c:160
 #, c-format
 msgid "ellipse #%d"
-msgstr "elipse  #%d"
+msgstr "ellipse  #%d"
 
 #: ../src/develop/masks/masks.c:161
 #, c-format

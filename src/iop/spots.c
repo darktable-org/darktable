@@ -699,7 +699,7 @@ void gui_cleanup(dt_iop_module_t *self)
 void init_key_accels (dt_iop_module_so_t *module)
 {
   dt_accel_register_iop (module, TRUE, NC_("accel", "spot circle tool"),   0, 0);
-  dt_accel_register_iop (module, TRUE, NC_("accel", "spot elipse tool"),   0, 0);
+  dt_accel_register_iop (module, TRUE, NC_("accel", "spot ellipse tool"),   0, 0);
   dt_accel_register_iop (module, TRUE, NC_("accel", "spot path tool"),     0, 0);
   dt_accel_register_iop (module, TRUE, NC_("accel", "spot show or hide"),  0, 0);
 }
@@ -750,7 +750,7 @@ void connect_key_accels (dt_iop_module_t *module)
   dt_accel_connect_iop (module, "spot circle tool", closure);
 
   closure = g_cclosure_new(G_CALLBACK(_add_ellipse_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop (module, "spot elipse tool", closure);
+  dt_accel_connect_iop (module, "spot ellipse tool", closure);
 
   closure = g_cclosure_new(G_CALLBACK(_add_path_key_accel), (gpointer)module, NULL);
   dt_accel_connect_iop (module, "spot path tool", closure);

@@ -7927,7 +7927,7 @@ msgstr "Strumento cerchio di correzione macchie"
 
 #: ../src/iop/spots.c:690
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "Strumento ellittico di correzione macchie"
 
 #: ../src/iop/spots.c:691

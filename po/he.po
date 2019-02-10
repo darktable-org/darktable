@@ -7791,7 +7791,7 @@ msgstr "מכחול כתם עגול"
 
 #: ../src/iop/spots.c:690
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "מכחול כתם אליפסה"
 
 #: ../src/iop/spots.c:691

@@ -8476,7 +8476,7 @@ msgstr "folt kör eszköz"
 
 #: ../src/iop/spots.c:693
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "folt ellipszis eszköz"
 
 #: ../src/iop/spots.c:694

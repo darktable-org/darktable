@@ -9156,7 +9156,7 @@ msgstr "eina cercle (elimina punts)"
 
 #: ../src/iop/spots.c:702
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "eina el·lipse (elimina punts)"
 
 #: ../src/iop/spots.c:703

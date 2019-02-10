@@ -8427,7 +8427,7 @@ msgstr "スポット 円ツール"
 
 #: ../src/iop/spots.c:693
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "スポット 楕円ツール"
 
 #: ../src/iop/spots.c:694

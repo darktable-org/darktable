@@ -2832,7 +2832,7 @@ msgstr "gradiente #%d"
 #: ../src/develop/masks/masks.c:361
 #, c-format
 msgid "ellipse #%d"
-msgstr "elipse #%d"
+msgstr "ellipse #%d"
 
 #: ../src/develop/masks/masks.c:363
 #, c-format
@@ -8502,7 +8502,7 @@ msgstr "remoção de mancha por círculo"
 
 #: ../src/iop/spots.c:693
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "remoção de mancha por elipse"
 
 #: ../src/iop/spots.c:694

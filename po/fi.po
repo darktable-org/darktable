@@ -8507,7 +8507,7 @@ msgstr "Ympyräpistetyökalu"
 
 #: ../src/iop/spots.c:693
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "Ellipsipistetyökalu"
 
 #: ../src/iop/spots.c:694
