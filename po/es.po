@@ -2861,7 +2861,7 @@ msgstr "gradiente #%d"
 #: ../src/develop/masks/masks.c:407
 #, c-format
 msgid "ellipse #%d"
-msgstr "elipse #%d"
+msgstr "ellipse #%d"
 
 #: ../src/develop/masks/masks.c:409
 #, c-format
@@ -9019,7 +9019,7 @@ msgstr "herramienta circular"
 
 #: ../src/iop/spots.c:693
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "herramienta ovalada"
 
 #: ../src/iop/spots.c:694

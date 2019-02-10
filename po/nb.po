@@ -8458,7 +8458,7 @@ msgstr "flekk-verktøy sirkel"
 
 #: ../src/iop/spots.c:693
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "flekk-verktøy ellipse"
 
 #: ../src/iop/spots.c:694

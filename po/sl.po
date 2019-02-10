@@ -8581,7 +8581,7 @@ msgstr "orodje za kroge"
 
 #: ../src/iop/spots.c:693
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "orodje za elipse"
 
 #: ../src/iop/spots.c:694

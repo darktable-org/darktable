@@ -9099,7 +9099,7 @@ msgstr "Инструмент для удаления пятен «окружно
 
 #: ../src/iop/spots.c:702
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "Инструмент для удаления пятен «эллипс»"
 
 #: ../src/iop/spots.c:703

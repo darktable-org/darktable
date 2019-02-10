@@ -8618,7 +8618,7 @@ msgstr "Kreiswerkzeug"
 
 #: ../src/iop/spots.c:693
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "Ellipsenwerkzeug"
 
 #: ../src/iop/spots.c:694
