@@ -71,38 +71,31 @@ typedef struct _buffer_t
   size_t offset;
 } _buffer_t;
 
-typedef enum ComboUserModel
+typedef enum _combo_user_model_t
 {
   COMBO_USER_MODEL_NAME_COL = 0,
   COMBO_USER_MODEL_TOKEN_COL,
   COMBO_USER_MODEL_REFRESH_TOKEN_COL,
   COMBO_USER_MODEL_ID_COL,
   COMBO_USER_MODEL_NB_COL
-} ComboUserModel;
+} dt_combo_user_model_t;
 
-typedef enum ComboAlbumModel
+typedef enum _combo_album_model_t
 {
   COMBO_ALBUM_MODEL_NAME_COL = 0,
   COMBO_ALBUM_MODEL_ID_COL,
   COMBO_ALBUM_MODEL_NB_COL
-} ComboAlbumModel;
-
-typedef enum GphotoAlbumPrivacyPolicy
-{
-  GPHOTO_ALBUM_PRIVACY_PUBLIC,
-  GPHOTO_ALBUM_PRIVACY_PRIVATE,
-} GphotoAlbumPrivacyPolicy;
+} dt_combo_album_model_t;
 
 /**
  * Represents information about an album
  */
-typedef struct GphotoAlbum
+typedef struct dt_gphoto_album_t
 {
   gchar *id;
   gchar *name;
   int size;
-  GphotoAlbumPrivacyPolicy privacy;
-} GphotoAlbum;
+} dt_gphoto_album_t;
 
 typedef struct _curl_args_t
 {
@@ -110,12 +103,12 @@ typedef struct _curl_args_t
   char value[2048];
 } _curl_args_t;
 
-static GphotoAlbum *gphoto_album_init()
+static dt_gphoto_album_t *gphoto_album_init()
 {
-  return (GphotoAlbum *)g_malloc0(sizeof(GphotoAlbum));
+  return (dt_gphoto_album_t *)g_malloc0(sizeof(dt_gphoto_album_t));
 }
 
-static void gphoto_album_destroy(GphotoAlbum *album)
+static void gphoto_album_destroy(dt_gphoto_album_t *album)
 {
   if(album == NULL) return;
   g_free(album->id);
@@ -126,20 +119,20 @@ static void gphoto_album_destroy(GphotoAlbum *album)
 /**
  * Represents information about an account
  */
-typedef struct GphotoAccountInfo
+typedef struct _gphoto_account_info_t
 {
   gchar *id;
   gchar *username;
   gchar *token;
   gchar *refresh_token;
-} GphotoAccountInfo;
+} dt_gphoto_account_info_t;
 
-static GphotoAccountInfo *gphoto_account_info_init()
+static dt_gphoto_account_info_t *gphoto_account_info_init()
 {
-  return (GphotoAccountInfo *)g_malloc0(sizeof(GphotoAccountInfo));
+  return (dt_gphoto_account_info_t *)g_malloc0(sizeof(dt_gphoto_account_info_t));
 }
 
-static void gphoto_account_info_destroy(GphotoAccountInfo *account)
+static void gphoto_account_info_destroy(dt_gphoto_account_info_t *account)
 {
   if(account == NULL) return;
   g_free(account->id);
@@ -147,7 +140,7 @@ static void gphoto_account_info_destroy(GphotoAccountInfo *account)
   g_free(account);
 }
 
-typedef struct GphotoContext
+typedef struct _gphoto_context_t
 {
   gchar album_id[1024];
   gchar userid[1024];
@@ -168,18 +161,18 @@ typedef struct GphotoContext
   gchar *refresh_token;
   gchar *google_client_id;
   gchar *google_client_secret;
-} GphotoContext;
+} dt_gphoto_context_t;
 
 typedef struct dt_storage_gphoto_gui_data_t
 {
   // == ui elements ==
   GtkLabel *label_status;
 
-  GtkComboBox *comboBox_username;
+  GtkComboBox *combo_username;
   GtkButton *button_login;
 
   GtkDarktableButton *dtbutton_refresh_album;
-  GtkComboBox *comboBox_album;
+  GtkComboBox *combo_album;
   int albums_count;
 
   //  === album creation section ===
@@ -191,13 +184,13 @@ typedef struct dt_storage_gphoto_gui_data_t
 
   // == context ==
   gboolean connected;
-  GphotoContext *gphoto_api;
+  dt_gphoto_context_t *gphoto_api;
 } dt_storage_gphoto_gui_data_t;
 
 
-static GphotoContext *gphoto_api_init()
+static dt_gphoto_context_t *gphoto_api_init()
 {
-  GphotoContext *ctx = (GphotoContext *)g_malloc0(sizeof(GphotoContext));
+  dt_gphoto_context_t *ctx = (dt_gphoto_context_t *)g_malloc0(sizeof(dt_gphoto_context_t));
   ctx->curl_ctx = curl_easy_init();
   ctx->errmsg = g_string_new("");
   ctx->response = g_string_new("");
@@ -207,7 +200,7 @@ static GphotoContext *gphoto_api_init()
   return ctx;
 }
 
-static void gphoto_api_destroy(GphotoContext *ctx)
+static void gphoto_api_destroy(dt_gphoto_context_t *ctx)
 {
   if(ctx == NULL) return;
   curl_easy_cleanup(ctx->curl_ctx);
@@ -227,12 +220,12 @@ static void gphoto_api_destroy(GphotoContext *ctx)
 typedef struct dt_storage_gphoto_param_t
 {
   gint64 hash;
-  GphotoContext *gphoto_ctx;
+  dt_gphoto_context_t *gphoto_ctx;
 } dt_storage_gphoto_param_t;
 
 
-static gchar *gphoto_get_user_refresh_token(GphotoContext *ctx);
-static void ui_refresh_albums_fill(GphotoAlbum *album, GtkListStore *list_store);
+static gchar *gphoto_get_user_refresh_token(dt_gphoto_context_t *ctx);
+static void ui_refresh_albums_fill(dt_gphoto_album_t *album, GtkListStore *list_store);
 
 //////////////////////////// curl requests related functions
 
@@ -261,7 +254,7 @@ static size_t curl_write_data_cb(void *ptr, size_t size, size_t nmemb, void *dat
   return size * nmemb;
 }
 
-static JsonObject *gphoto_parse_response(GphotoContext *ctx, GString *response)
+static JsonObject *gphoto_parse_response(dt_gphoto_context_t *ctx, GString *response)
 {
   GError *error = NULL;
   gboolean ret = json_parser_load_from_data(ctx->json_parser, response->str, response->len, &error);
@@ -304,7 +297,7 @@ static GList *_gphoto_query_add_arguments(GList *args, const char *name, const c
  * perform a GET request on google photo api
  * @returns NULL if the request fails, or a JsonObject of the reply
  */
-static JsonObject *gphoto_query_get(GphotoContext *ctx, const gchar *url, GList *args)
+static JsonObject *gphoto_query_get(dt_gphoto_context_t *ctx, const gchar *url, GList *args)
 {
   g_return_val_if_fail(ctx != NULL, NULL);
   g_return_val_if_fail(ctx->token != NULL, NULL);
@@ -361,7 +354,7 @@ static JsonObject *gphoto_query_get(GphotoContext *ctx, const gchar *url, GList 
  * perform a POST request on google photo api
  * @returns NULL if the request fails, or a JsonObject of the reply
  */
-static JsonObject *gphoto_query_post(GphotoContext *ctx, const gchar *url,
+static JsonObject *gphoto_query_post(dt_gphoto_context_t *ctx, const gchar *url,
                                      struct curl_slist *headers, GList *args, gchar *body, int size)
 {
   g_return_val_if_fail(ctx != NULL, NULL);
@@ -423,7 +416,7 @@ typedef struct
  * @returns NULL if the request fails, or a JsonObject of the reply
  */
 
-static JsonObject *gphoto_query_post_auth(GphotoContext *ctx, const gchar *url, gchar *args)
+static JsonObject *gphoto_query_post_auth(dt_gphoto_context_t *ctx, const gchar *url, gchar *args)
 {
   g_return_val_if_fail(ctx != NULL, NULL);
 
@@ -451,7 +444,7 @@ static JsonObject *gphoto_query_post_auth(GphotoContext *ctx, const gchar *url, 
 /**
  * @returns TRUE if the current token is valid
  */
-static gboolean gphoto_test_auth_token(GphotoContext *ctx)
+static gboolean gphoto_test_auth_token(dt_gphoto_context_t *ctx)
 {
   gchar *access_token = NULL;
   access_token = gphoto_get_user_refresh_token(ctx);
@@ -461,14 +454,14 @@ static gboolean gphoto_test_auth_token(GphotoContext *ctx)
   return access_token != NULL;
 }
 
-static GphotoAlbum *_json_new_album(JsonObject *obj)
+static dt_gphoto_album_t *_json_new_album(JsonObject *obj)
 {
   // handle on writable albums (in Google Photo only albums created by the API are writeable via the API)
 
   if(json_object_has_member(obj, "isWriteable"))
     if(json_object_get_boolean_member(obj, "isWriteable"))
     {
-      GphotoAlbum *album = gphoto_album_init();
+      dt_gphoto_album_t *album = gphoto_album_init();
       if(album == NULL) goto error;
 
       const char *id = json_object_get_string_member(obj, "id");
@@ -495,9 +488,9 @@ static GphotoAlbum *_json_new_album(JsonObject *obj)
 }
 
 /**
- * @return a GList of GphotoAlbums associated to the user
+ * @return a GList of dt_gphoto_album_ts associated to the user
  */
-static GList *gphoto_get_album_list(GphotoContext *ctx, gboolean *ok)
+static GList *gphoto_get_album_list(dt_gphoto_context_t *ctx, gboolean *ok)
 {
   if(!ok) return NULL;
 
@@ -520,7 +513,7 @@ static GList *gphoto_get_album_list(GphotoContext *ctx, gboolean *ok)
       JsonObject *obj = json_array_get_object_element(jsalbums, i);
       if(obj == NULL) continue;
 
-      GphotoAlbum *album = _json_new_album(obj);
+      dt_gphoto_album_t *album = _json_new_album(obj);
       if(album)
         album_list = g_list_append(album_list, album);
     }
@@ -556,7 +549,7 @@ static void ui_reset_albums_creation(struct dt_storage_gphoto_gui_data_t *ui)
  * @see https://developers.google.com/photos/library/guides/create-albums
  * @return the id of the newly reacted
  */
-static const gchar *gphoto_create_album(dt_storage_gphoto_gui_data_t *ui, GphotoContext *ctx, gchar *name, GphotoAlbumPrivacyPolicy privacy)
+static const gchar *gphoto_create_album(dt_storage_gphoto_gui_data_t *ui, dt_gphoto_context_t *ctx, gchar *name)
 {
   struct curl_slist *headers = NULL;
 
@@ -567,13 +560,13 @@ static const gchar *gphoto_create_album(dt_storage_gphoto_gui_data_t *ui, Gphoto
   JsonObject *response = gphoto_query_post(ctx, GOOGLE_GPHOTO "v1/albums", headers, NULL, jbody, strlen(jbody));
 
   // add new album into the list
-  GphotoAlbum *album = _json_new_album(response);
-  GtkListStore *model_album = GTK_LIST_STORE(gtk_combo_box_get_model(ui->comboBox_album));
+  dt_gphoto_album_t *album = _json_new_album(response);
+  GtkListStore *model_album = GTK_LIST_STORE(gtk_combo_box_get_model(ui->combo_album));
 
   if(album)
   {
     ui_refresh_albums_fill(album, model_album);
-    gtk_combo_box_set_active(ui->comboBox_album, ui->albums_count);
+    gtk_combo_box_set_active(ui->combo_album, ui->albums_count);
     ui->albums_count++;
     ui_reset_albums_creation(ui);
   }
@@ -587,7 +580,7 @@ static const gchar *gphoto_create_album(dt_storage_gphoto_gui_data_t *ui, Gphoto
  *  step.1: https://developers.google.com/photos/library/guides/upload-media#uploading-bytes
  *  step.2: https://developers.google.com/photos/library/guides/upload-media#creating-media-item
  */
-static const gchar *gphoto_upload_photo_to_album(GphotoContext *ctx, gchar *albumid, gchar *fname,
+static const gchar *gphoto_upload_photo_to_album(dt_gphoto_context_t *ctx, gchar *albumid, gchar *fname,
                                                  gchar *title, gchar *summary, const int imgid)
 {
   // step.1 : upload raw data
@@ -676,7 +669,7 @@ static const gchar *gphoto_upload_photo_to_album(GphotoContext *ctx, gchar *albu
  * @see https://developers.google.com/accounts/docs/OAuth2InstalledApp#callinganapi
  * @return basic information about the account
  */
-static GphotoAccountInfo *gphoto_get_account_info(GphotoContext *ctx)
+static dt_gphoto_account_info_t *gphoto_get_account_info(dt_gphoto_context_t *ctx)
 {
   JsonObject *obj = gphoto_query_get(ctx, GOOGLE_API_BASE_URL "oauth2/v1/userinfo", NULL);
   g_return_val_if_fail((obj != NULL), NULL);
@@ -690,7 +683,7 @@ static GphotoAccountInfo *gphoto_get_account_info(GphotoContext *ctx)
   gchar *name = NULL;
   name = dt_util_dstrcat(name, "%s - %s", user_name, email);
 
-  GphotoAccountInfo *accountinfo = gphoto_account_info_init();
+  dt_gphoto_account_info_t *accountinfo = gphoto_account_info_init();
   accountinfo->id = g_strdup(user_id);
   accountinfo->username = g_strdup(name);
   accountinfo->token = g_strdup(ctx->token);
@@ -719,7 +712,7 @@ static gboolean combobox_separator(GtkTreeModel *model, GtkTreeIter *iter, gpoin
   return FALSE;
 }
 
-static gchar *gphoto_get_user_refresh_token(GphotoContext *ctx)
+static gchar *gphoto_get_user_refresh_token(dt_gphoto_context_t *ctx)
 {
   gchar *refresh_token = NULL;
   JsonObject *reply;
@@ -853,7 +846,7 @@ static void load_account_info_fill(gchar *key, gchar *value, GSList **accountlis
   if(root)
   {
     JsonObject *obj = json_node_get_object(root);
-    GphotoAccountInfo *info = gphoto_account_info_init();
+    dt_gphoto_account_info_t *info = gphoto_account_info_init();
     info->id = g_strdup(key);
     info->token = g_strdup(json_object_get_string_member(obj, "token"));
     info->username = g_strdup(json_object_get_string_member(obj, "username"));
@@ -865,7 +858,7 @@ static void load_account_info_fill(gchar *key, gchar *value, GSList **accountlis
 }
 
 /**
- * @return a GSList of saved GphotoAccountInfo
+ * @return a GSList of saved dt_gphoto_account_info_t
  */
 static GSList *load_account_info()
 {
@@ -877,9 +870,9 @@ static GSList *load_account_info()
   return accountlist;
 }
 
-static void save_account_info(dt_storage_gphoto_gui_data_t *ui, GphotoAccountInfo *accountinfo)
+static void save_account_info(dt_storage_gphoto_gui_data_t *ui, dt_gphoto_account_info_t *accountinfo)
 {
-  GphotoContext *ctx = ui->gphoto_api;
+  dt_gphoto_context_t *ctx = ui->gphoto_api;
   g_return_if_fail(ctx != NULL);
 
   /// serialize data;
@@ -923,7 +916,7 @@ static void remove_account_info(const gchar *accountid)
   g_hash_table_destroy(table);
 }
 
-static void ui_refresh_users_fill(GphotoAccountInfo *value, gpointer dataptr)
+static void ui_refresh_users_fill(dt_gphoto_account_info_t *value, gpointer dataptr)
 {
   GtkListStore *liststore = GTK_LIST_STORE(dataptr);
   GtkTreeIter iter;
@@ -936,7 +929,7 @@ static void ui_refresh_users_fill(GphotoAccountInfo *value, gpointer dataptr)
 static void ui_refresh_users(dt_storage_gphoto_gui_data_t *ui)
 {
   GSList *accountlist = load_account_info();
-  GtkListStore *list_store = GTK_LIST_STORE(gtk_combo_box_get_model(ui->comboBox_username));
+  GtkListStore *list_store = GTK_LIST_STORE(gtk_combo_box_get_model(ui->combo_username));
   GtkTreeIter iter;
 
   gtk_list_store_clear(list_store);
@@ -957,13 +950,13 @@ static void ui_refresh_users(dt_storage_gphoto_gui_data_t *ui)
   }
 
   g_slist_foreach(accountlist, (GFunc)ui_refresh_users_fill, list_store);
-  gtk_combo_box_set_active(ui->comboBox_username, 0);
+  gtk_combo_box_set_active(ui->combo_username, 0);
 
   g_slist_free_full(accountlist, (GDestroyNotify)gphoto_account_info_destroy);
-  gtk_combo_box_set_row_separator_func(ui->comboBox_username, combobox_separator, ui->comboBox_username, NULL);
+  gtk_combo_box_set_row_separator_func(ui->combo_username, combobox_separator, ui->combo_username, NULL);
 }
 
-static void ui_refresh_albums_fill(GphotoAlbum *album, GtkListStore *list_store)
+static void ui_refresh_albums_fill(dt_gphoto_album_t *album, GtkListStore *list_store)
 {
   GtkTreeIter iter;
   gtk_list_store_append(list_store, &iter);
@@ -981,9 +974,9 @@ static void ui_refresh_albums(dt_storage_gphoto_gui_data_t *ui)
     goto cleanup;
   }
 
-  const int current_index = gtk_combo_box_get_active(ui->comboBox_album);
+  const int current_index = gtk_combo_box_get_active(ui->combo_album);
 
-  GtkListStore *model_album = GTK_LIST_STORE(gtk_combo_box_get_model(ui->comboBox_album));
+  GtkListStore *model_album = GTK_LIST_STORE(gtk_combo_box_get_model(ui->combo_album));
   GtkTreeIter iter;
   gtk_list_store_clear(model_album);
   gtk_list_store_append(model_album, &iter);
@@ -1001,17 +994,17 @@ static void ui_refresh_albums(dt_storage_gphoto_gui_data_t *ui)
 
   g_list_foreach(albumList, (GFunc)ui_refresh_albums_fill, model_album);
 
-  gtk_widget_show_all(GTK_WIDGET(ui->comboBox_album));
+  gtk_widget_show_all(GTK_WIDGET(ui->combo_album));
 
   if (albumList != NULL && current_index > 0)
   {
-    gtk_combo_box_set_active(ui->comboBox_album, current_index);
+    gtk_combo_box_set_active(ui->combo_album, current_index);
     gtk_widget_set_no_show_all(GTK_WIDGET(ui->hbox_album), TRUE);
     gtk_widget_hide(GTK_WIDGET(ui->hbox_album));
   }
   else
   {
-    gtk_combo_box_set_active(ui->comboBox_album, 0);
+    gtk_combo_box_set_active(ui->combo_album, 0);
     gtk_widget_set_no_show_all(GTK_WIDGET(ui->hbox_album), FALSE);
     gtk_widget_show_all(GTK_WIDGET(ui->hbox_album));
   }
@@ -1042,7 +1035,7 @@ static void ui_combo_username_changed(GtkComboBox *combo, struct dt_storage_gpho
     ui->connected = TRUE;
     gtk_button_set_label(ui->button_login, _("logout"));
     ui_refresh_albums(ui);
-    gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(ui->combo_album), TRUE);
   }
   else
   {
@@ -1050,8 +1043,8 @@ static void ui_combo_username_changed(GtkComboBox *combo, struct dt_storage_gpho
     g_free(ui->gphoto_api->token);
     g_free(ui->gphoto_api->refresh_token);
     ui->gphoto_api->token = ui->gphoto_api->refresh_token = NULL;
-    gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), FALSE);
-    GtkListStore *model_album = GTK_LIST_STORE(gtk_combo_box_get_model(ui->comboBox_album));
+    gtk_widget_set_sensitive(GTK_WIDGET(ui->combo_album), FALSE);
+    GtkListStore *model_album = GTK_LIST_STORE(gtk_combo_box_get_model(ui->combo_album));
     gtk_list_store_clear(model_album);
   }
 }
@@ -1060,7 +1053,7 @@ static void ui_combo_album_changed(GtkComboBox *combo, gpointer data)
 {
   dt_storage_gphoto_gui_data_t *ui = (dt_storage_gphoto_gui_data_t *)data;
 
-  const int index = gtk_combo_box_get_active(ui->comboBox_album);
+  const int index = gtk_combo_box_get_active(ui->combo_album);
 
   if(index == 0)
   {
@@ -1081,15 +1074,15 @@ static gboolean ui_authenticate(dt_storage_gphoto_gui_data_t *ui)
     ui->gphoto_api = gphoto_api_init();
   }
 
-  GphotoContext *ctx = ui->gphoto_api;
+  dt_gphoto_context_t *ctx = ui->gphoto_api;
   gboolean mustsaveaccount = FALSE;
 
   gchar *uiselectedaccounttoken = NULL;
   gchar *uiselectedaccountrefreshtoken = NULL;
   gchar *uiselecteduserid = NULL;
   GtkTreeIter iter;
-  gtk_combo_box_get_active_iter(ui->comboBox_username, &iter);
-  GtkTreeModel *accountModel = gtk_combo_box_get_model(ui->comboBox_username);
+  gtk_combo_box_get_active_iter(ui->combo_username, &iter);
+  GtkTreeModel *accountModel = gtk_combo_box_get_model(ui->combo_username);
   gtk_tree_model_get(accountModel, &iter, COMBO_USER_MODEL_TOKEN_COL, &uiselectedaccounttoken, -1);
   gtk_tree_model_get(accountModel, &iter, COMBO_USER_MODEL_REFRESH_TOKEN_COL, &uiselectedaccountrefreshtoken,
                      -1);
@@ -1134,12 +1127,12 @@ static gboolean ui_authenticate(dt_storage_gphoto_gui_data_t *ui)
     if(mustsaveaccount)
     {
       // Get first the refresh token
-      GphotoAccountInfo *accountinfo = gphoto_get_account_info(ui->gphoto_api);
+      dt_gphoto_account_info_t *accountinfo = gphoto_get_account_info(ui->gphoto_api);
       g_return_val_if_fail(accountinfo != NULL, FALSE);
       save_account_info(ui, accountinfo);
 
       // add account to user list and select it
-      GtkListStore *model = GTK_LIST_STORE(gtk_combo_box_get_model(ui->comboBox_username));
+      GtkListStore *model = GTK_LIST_STORE(gtk_combo_box_get_model(ui->combo_username));
       gboolean r;
       gchar *uid;
 
@@ -1167,10 +1160,10 @@ static gboolean ui_authenticate(dt_storage_gphoto_gui_data_t *ui)
                            COMBO_USER_MODEL_TOKEN_COL, accountinfo->token, COMBO_USER_MODEL_REFRESH_TOKEN_COL,
                            accountinfo->refresh_token, COMBO_USER_MODEL_ID_COL, accountinfo->id, -1);
       }
-      g_signal_handlers_block_matched(ui->comboBox_username, G_SIGNAL_MATCH_FUNC, 0, 0, NULL,
+      g_signal_handlers_block_matched(ui->combo_username, G_SIGNAL_MATCH_FUNC, 0, 0, NULL,
                                       ui_combo_username_changed, NULL);
-      gtk_combo_box_set_active_iter(ui->comboBox_username, &iter);
-      g_signal_handlers_unblock_matched(ui->comboBox_username, G_SIGNAL_MATCH_FUNC, 0, 0, NULL,
+      gtk_combo_box_set_active_iter(ui->combo_username, &iter);
+      g_signal_handlers_unblock_matched(ui->combo_username, G_SIGNAL_MATCH_FUNC, 0, 0, NULL,
                                         ui_combo_username_changed, NULL);
 
       gphoto_account_info_destroy(accountinfo);
@@ -1183,7 +1176,7 @@ static gboolean ui_authenticate(dt_storage_gphoto_gui_data_t *ui)
 static void ui_login_clicked(GtkButton *button, gpointer data)
 {
   dt_storage_gphoto_gui_data_t *ui = (dt_storage_gphoto_gui_data_t *)data;
-  gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), FALSE);
+  gtk_widget_set_sensitive(GTK_WIDGET(ui->combo_album), FALSE);
   if(ui->connected == FALSE)
   {
     if(ui_authenticate(ui))
@@ -1201,9 +1194,9 @@ static void ui_login_clicked(GtkButton *button, gpointer data)
   {
     if(ui->connected == TRUE && ui->gphoto_api->token != NULL)
     {
-      GtkTreeModel *model = gtk_combo_box_get_model(ui->comboBox_username);
+      GtkTreeModel *model = gtk_combo_box_get_model(ui->combo_username);
       GtkTreeIter iter;
-      gtk_combo_box_get_active_iter(ui->comboBox_username, &iter);
+      gtk_combo_box_get_active_iter(ui->combo_username, &iter);
       gchar *userid;
       gtk_tree_model_get(model, &iter, COMBO_USER_MODEL_ID_COL, &userid, -1);
       remove_account_info(userid);
@@ -1212,7 +1205,7 @@ static void ui_login_clicked(GtkButton *button, gpointer data)
       ui->connected = FALSE;
     }
   }
-  gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), TRUE);
+  gtk_widget_set_sensitive(GTK_WIDGET(ui->combo_album), TRUE);
 }
 
 
@@ -1244,16 +1237,16 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   GtkListStore *model_username
       = gtk_list_store_new(COMBO_USER_MODEL_NB_COL, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
                            G_TYPE_STRING); // text, token, refresh_token, id
-  ui->comboBox_username = GTK_COMBO_BOX(gtk_combo_box_new_with_model(GTK_TREE_MODEL(model_username)));
+  ui->combo_username = GTK_COMBO_BOX(gtk_combo_box_new_with_model(GTK_TREE_MODEL(model_username)));
   GtkCellRenderer *p_cell = gtk_cell_renderer_text_new();
   g_object_set(G_OBJECT(p_cell), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, "ellipsize-set", TRUE, "width-chars", 35,
                (gchar *)0);
-  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(ui->comboBox_username), p_cell, FALSE);
-  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(ui->comboBox_username), p_cell, "text", 0, NULL);
+  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(ui->combo_username), p_cell, FALSE);
+  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(ui->combo_username), p_cell, "text", 0, NULL);
 
   ui->entry_album_title = GTK_ENTRY(gtk_entry_new());
 
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->comboBox_username));
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->combo_username));
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->entry_album_title));
 
   // retrieve saved accounts
@@ -1263,16 +1256,16 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   GtkWidget *albumlist = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkListStore *model_album
       = gtk_list_store_new(COMBO_ALBUM_MODEL_NB_COL, G_TYPE_STRING, G_TYPE_STRING); // name, id
-  ui->comboBox_album = GTK_COMBO_BOX(gtk_combo_box_new_with_model(GTK_TREE_MODEL(model_album)));
+  ui->combo_album = GTK_COMBO_BOX(gtk_combo_box_new_with_model(GTK_TREE_MODEL(model_album)));
   p_cell = gtk_cell_renderer_text_new();
   g_object_set(G_OBJECT(p_cell), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, "ellipsize-set", TRUE, "width-chars", 35,
                (gchar *)0);
-  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(ui->comboBox_album), p_cell, FALSE);
-  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(ui->comboBox_album), p_cell, "text", 0, NULL);
+  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(ui->combo_album), p_cell, FALSE);
+  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(ui->combo_album), p_cell, "text", 0, NULL);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(ui->comboBox_album), FALSE);
-  gtk_combo_box_set_row_separator_func(ui->comboBox_album, combobox_separator, ui->comboBox_album, NULL);
-  gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->comboBox_album), TRUE, TRUE, 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(ui->combo_album), FALSE);
+  gtk_combo_box_set_row_separator_func(ui->combo_album, combobox_separator, ui->combo_album, NULL);
+  gtk_box_pack_start(GTK_BOX(albumlist), GTK_WIDGET(ui->combo_album), TRUE, TRUE, 0);
 
   ui->button_login = GTK_BUTTON(gtk_button_new_with_label(_("login")));
   ui->connected = FALSE;
@@ -1285,7 +1278,7 @@ void gui_init(struct dt_imageio_module_storage_t *self)
   gtk_box_pack_start(GTK_BOX(hbox_auth), vbox_auth_labels, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox_auth), vbox_auth_fields, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox_auth), TRUE, FALSE, 2);
-  gtk_box_pack_start(GTK_BOX(vbox_auth_fields), GTK_WIDGET(ui->comboBox_username), TRUE, FALSE, 2);
+  gtk_box_pack_start(GTK_BOX(vbox_auth_fields), GTK_WIDGET(ui->combo_username), TRUE, FALSE, 2);
 
   gtk_box_pack_start(GTK_BOX(vbox_auth_labels), GTK_WIDGET(gtk_label_new("")), TRUE, TRUE, 2);
   gtk_box_pack_start(GTK_BOX(vbox_auth_fields), GTK_WIDGET(ui->button_login), TRUE, FALSE, 2);
@@ -1305,9 +1298,9 @@ void gui_init(struct dt_imageio_module_storage_t *self)
 
   // connect buttons to signals
   g_signal_connect(G_OBJECT(ui->button_login), "clicked", G_CALLBACK(ui_login_clicked), (gpointer)ui);
-  g_signal_connect(G_OBJECT(ui->comboBox_username), "changed", G_CALLBACK(ui_combo_username_changed),
+  g_signal_connect(G_OBJECT(ui->combo_username), "changed", G_CALLBACK(ui_combo_username_changed),
                    (gpointer)ui);
-  g_signal_connect(G_OBJECT(ui->comboBox_album), "changed", G_CALLBACK(ui_combo_album_changed), (gpointer)ui);
+  g_signal_connect(G_OBJECT(ui->combo_album), "changed", G_CALLBACK(ui_combo_album_changed), (gpointer)ui);
 
   g_object_unref(model_username);
   g_object_unref(model_album);
@@ -1317,7 +1310,7 @@ void gui_init(struct dt_imageio_module_storage_t *self)
 void gui_cleanup(struct dt_imageio_module_storage_t *self)
 {
   dt_storage_gphoto_gui_data_t *ui = self->gui_data;
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->comboBox_username));
+  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->combo_username));
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(ui->entry_album_title));
 
   if(ui->gphoto_api != NULL) gphoto_api_destroy(ui->gphoto_api);
@@ -1346,7 +1339,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
   dt_storage_gphoto_gui_data_t *ui = self->gui_data;
 
   gint result = 1;
-  GphotoContext *ctx = (GphotoContext *)sdata;
+  dt_gphoto_context_t *ctx = (dt_gphoto_context_t *)sdata;
 
   const char *ext = format->extension(fdata);
   char fname[PATH_MAX] = { 0 };
@@ -1393,7 +1386,7 @@ int store(dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *sd
       result = 0;
       goto cleanup;
     }
-    const gchar *album_id  = gphoto_create_album(ui, ctx, ctx->album_title, ctx->album_permission);
+    const gchar *album_id  = gphoto_create_album(ui, ctx, ctx->album_title);
     if(album_id == NULL)
     {
       dt_control_log(_("unable to create album"));
@@ -1439,7 +1432,7 @@ void finalize_store(struct dt_imageio_module_storage_t *self, dt_imageio_module_
 
 size_t params_size(dt_imageio_module_storage_t *self)
 {
-  return sizeof(GphotoContext) - 8 * sizeof(void *);
+  return sizeof(dt_gphoto_context_t) - 8 * sizeof(void *);
 }
 
 void init(dt_imageio_module_storage_t *self)
@@ -1453,7 +1446,7 @@ void *get_params(struct dt_imageio_module_storage_t *self)
   {
     return NULL;
   }
-  GphotoContext *p = (GphotoContext *)g_malloc0(sizeof(GphotoContext));
+  dt_gphoto_context_t *p = (dt_gphoto_context_t *)g_malloc0(sizeof(dt_gphoto_context_t));
 
   p->curl_ctx = ui->gphoto_api->curl_ctx;
   p->json_parser = ui->gphoto_api->json_parser;
@@ -1461,7 +1454,7 @@ void *get_params(struct dt_imageio_module_storage_t *self)
   p->token = g_strdup(ui->gphoto_api->token);
   p->refresh_token = g_strdup(ui->gphoto_api->refresh_token);
 
-  int index = gtk_combo_box_get_active(ui->comboBox_album);
+  int index = gtk_combo_box_get_active(ui->combo_album);
   if(index < 0)
   {
     gphoto_api_destroy(p);
@@ -1477,10 +1470,10 @@ void *get_params(struct dt_imageio_module_storage_t *self)
   }
   else
   {
-    GtkTreeModel *model = gtk_combo_box_get_model(ui->comboBox_album);
+    GtkTreeModel *model = gtk_combo_box_get_model(ui->combo_album);
     GtkTreeIter iter;
     gchar *albumid = NULL;
-    gtk_combo_box_get_active_iter(ui->comboBox_album, &iter);
+    gtk_combo_box_get_active_iter(ui->combo_album, &iter);
     gtk_tree_model_get(model, &iter, COMBO_ALBUM_MODEL_ID_COL, &albumid, -1);
     g_snprintf(p->album_id, sizeof(p->album_id), "%s", albumid);
   }
@@ -1499,7 +1492,7 @@ void *get_params(struct dt_imageio_module_storage_t *self)
 void free_params(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data)
 {
   if(!data) return;
-  GphotoContext *ctx = (GphotoContext *)data;
+  dt_gphoto_context_t *ctx = (dt_gphoto_context_t *)data;
   gphoto_api_destroy(ctx);
 }
 
@@ -1507,13 +1500,13 @@ int set_params(struct dt_imageio_module_storage_t *self, const void *params, con
 {
   if(size != self->params_size(self)) return 1;
 
-  GphotoContext *d = (GphotoContext *)params;
+  dt_gphoto_context_t *d = (dt_gphoto_context_t *)params;
   dt_storage_gphoto_gui_data_t *g = (dt_storage_gphoto_gui_data_t *)self->gui_data;
 
   g_snprintf(g->gphoto_api->album_id, sizeof(g->gphoto_api->album_id), "%s", d->album_id);
   g_snprintf(g->gphoto_api->userid, sizeof(g->gphoto_api->userid), "%s", d->userid);
 
-  GtkListStore *model = GTK_LIST_STORE(gtk_combo_box_get_model(g->comboBox_username));
+  GtkListStore *model = GTK_LIST_STORE(gtk_combo_box_get_model(g->combo_username));
   GtkTreeIter iter;
   gboolean r;
   gchar *uid = NULL;
@@ -1525,20 +1518,20 @@ int set_params(struct dt_imageio_module_storage_t *self, const void *params, con
     gtk_tree_model_get(GTK_TREE_MODEL(model), &iter, COMBO_USER_MODEL_ID_COL, &uid, -1);
     if(g_strcmp0(uid, g->gphoto_api->userid) == 0)
     {
-      gtk_combo_box_set_active_iter(g->comboBox_username, &iter);
+      gtk_combo_box_set_active_iter(g->combo_username, &iter);
       break;
     }
   }
   g_free(uid);
 
-  model = GTK_LIST_STORE(gtk_combo_box_get_model(g->comboBox_album));
+  model = GTK_LIST_STORE(gtk_combo_box_get_model(g->combo_album));
   for(r = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(model), &iter); r == TRUE;
       r = gtk_tree_model_iter_next(GTK_TREE_MODEL(model), &iter))
   {
     gtk_tree_model_get(GTK_TREE_MODEL(model), &iter, COMBO_ALBUM_MODEL_ID_COL, &albumid, -1);
     if(g_strcmp0(albumid, g->gphoto_api->album_id) == 0)
     {
-      gtk_combo_box_set_active_iter(g->comboBox_album, &iter);
+      gtk_combo_box_set_active_iter(g->combo_album, &iter);
       break;
     }
   }
