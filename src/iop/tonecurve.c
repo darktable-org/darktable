@@ -153,6 +153,10 @@ typedef struct dt_iop_tonecurve_gui_data_t
   float loglogscale;
   int scale_mode;
   GtkWidget *logbase;
+  // local histogram
+  uint32_t local_histogram[256 * DT_IOP_TONECURVE_MAX_CH];
+  // maximum levels in histogram, one per channel
+  uint32_t local_histogram_max[DT_IOP_TONECURVE_MAX_CH];
 } dt_iop_tonecurve_gui_data_t;
 
 typedef struct dt_iop_tonecurve_data_t
@@ -193,15 +197,15 @@ static const struct
   // 4 - C(h) (LCH_2_Lab)
   {2, 1, 0.0f, 1.0f, 0.0f, 360.0f, 1.0f, 0, 0, 1, 2, { { 0.0f, 0.5f }, { 1.0f, 0.5f } }},
   // 5 - L(RGB) - L(XYZ)
-  {0, 0, 0.0f, 1.0f, 0.0f, 100.0f, 100.0f, 1, 1, 1, 2, { { 0.0f, 0.0f }, { 1.0f, 1.0f } }},
+  {0, 0, 0.0f, 100.0f, 0.0f, 100.0f, 100.0f, 1, 1, 1, 2, { { 0.0f, 0.0f }, { 1.0f, 1.0f } }},
   // 6 - L(LRGB)
-  {0, 0, 0.0f, 1.0f, 0.0f, 100.0f, 1.0f, 1, 1, 1, 2, { { 0.0f, 0.0f }, { 1.0f, 1.0f } }},
+  {0, 0, 0.0f, 100.0f, 0.0f, 100.0f, 1.0f, 1, 1, 1, 2, { { 0.0f, 0.0f }, { 1.0f, 1.0f } }},
   // 7 - R (LRGB)
-  {1, 1, 0.0f, 1.0f, 0.0f, 100.0f, 1.0f, 0, 1, 1, 2, { { 0.0f, 0.0f}, { 1.0f, 1.0f } }},
+  {1, 1, 0.0f, 100.0f, 0.0f, 100.0f, 1.0f, 1, 1, 1, 2, { { 0.0f, 0.0f}, { 1.0f, 1.0f } }},
   // 8 - G (LRGB)
-  {2, 2, 0.0f, 1.0f, 0.0f, 100.0f, 1.0f, 0, 1, 1, 2, { { 0.0f, 0.0f }, { 1.0f, 1.0f } }},
+  {2, 2, 0.0f, 100.0f, 0.0f, 100.0f, 1.0f, 1, 1, 1, 2, { { 0.0f, 0.0f }, { 1.0f, 1.0f } }},
   // 9 - B (LRGB)
-  {3, 3, 0.0f, 1.0f, 0.0f, 100.0f, 1.0f, 0, 1, 1, 2, { { 0.0f, 0.0f }, { 1.0f, 1.0f } }}
+  {3, 3, 0.0f, 100.0f, 0.0f, 100.0f, 1.0f, 1, 1, 1, 2, { { 0.0f, 0.0f }, { 1.0f, 1.0f } }}
 };
 
 typedef enum dt_iop_tonecurve_UI_colorspace_t // could use the standard dt colorspace enum
@@ -334,7 +338,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int width = roi_in->width;
   const int height = roi_in->height;
   const int tc_mode = d->tc_mode;
-//  const int nb_ch = mode_curves[tc_mode].nb_ch;
   const int unbound_ab = d->unbound_ab;
   const float low_approximation = d->table[0][(int)(0.01f * 0x10000ul)];
 
@@ -387,6 +390,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   const int ch = piece->colors;
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
+  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   const float xm[DT_IOP_TONECURVE_MAX_CH][2] = {
     {1.0f / d->unbounded_coeffs[0][0], 1.0f - 1.0f / d->unbounded_coeffs[0][3]},
     {1.0f / d->unbounded_coeffs[1][0], 1.0f - 1.0f / d->unbounded_coeffs[1][3]},
@@ -398,9 +402,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int height = roi_out->height;
   const int tc_mode = d->tc_mode;
   const int unbound_ab = d->unbound_ab;
+  if (g)
+   for (int c = 0; c < DT_IOP_TONECURVE_MAX_CH * 256; c++ )
+      g->local_histogram[c] = 0;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
+#pragma omp parallel for default(none) shared(d,g) schedule(static)
 #endif
   for(int k = 0; k < height; k++)
   {
@@ -494,6 +501,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       {
         float rgb[3] = {0, 0, 0};
         dt_Lab_to_prophotorgb(in, rgb);
+        if (g)
+        { // process local histogram
+          for(int c=0; c<3; c++)
+          {
+            const float fake_rgb[3] = {rgb[c], rgb[c], rgb[c]};
+            float lab[3];
+            // convert colors to pseudo-Lab for UI:
+            // only the [0] element of the vector is relevant (pseudo-L)
+            dt_prophotorgb_to_Lab(fake_rgb, lab);
+            // histogram_RGB can be put to 255 bins
+            g->local_histogram[4 * (uint8_t)CLAMP(lab[0]*2.55f, 0.0f, 255.0f) + c+1]++;
+          }
+        }
         for(int c=0; c<3; c++)
         {
           rgb[c] = (rgb[c] < xm[ch_L][0]) ? d->table[ch_L][CLAMP((int)(rgb[c] * 0x10000ul), 0, 0xffff)]
@@ -766,6 +786,22 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       Lab[0] = d->table[ch_L][CLAMP((int)(Lab[0]/100.0f * 0x10000), 0, 0xffff)];
       dt_Lab_to_prophotorgb(Lab, rgb);
       d->table[ch_L][k] = rgb[1]; // now mapping G_in to G_out
+    }
+  }
+  else if(p->tonecurve_tc_mode == DT_S_SCALE_MANUAL_RGB)
+  {
+    // derive curve for rgb:
+    for (int ch=0;ch<4;ch++)
+    {
+      for(int k=0;k<0x10000;k++)
+      {
+        float rgb[3] = {k/(float)0x10000, k/(float)0x10000, k/(float)0x10000};
+        float Lab[3] = {0.0};
+        dt_prophotorgb_to_Lab(rgb, Lab);
+        Lab[0] = d->table[ch][CLAMP((int)(Lab[0]/100.0f * 0x10000), 0, 0xffff)] * 100.0f;
+        dt_Lab_to_prophotorgb(Lab, rgb);
+        d->table[ch][k] = rgb[1]; // now mapping L, R, G, B_in to L, R, G, B_out
+      }
     }
   }
 
@@ -1539,9 +1575,20 @@ static void picker_scale(const float *in, float *out, int tc_mode)
   if (colorspace == DT_TC_LCH)
     dt_Lab_2_LCH(in, inl);
   else if (colorspace == DT_TC_RGB)
-    dt_Lab_to_prophotorgb(in, inl);
-  else if (colorspace == DT_TC_XYZ)
-    dt_Lab_to_XYZ(in, inl);
+  {
+    inl[0] = in[0];
+    for(int ch = 0; ch < 3; ch++)
+    {
+      float rgb[3];
+      float lab[3];
+      dt_Lab_to_prophotorgb(in, rgb);
+      const float fake_rgb[3] = {rgb[ch], rgb[ch], rgb[ch]};
+      dt_prophotorgb_to_Lab(fake_rgb, lab);
+      inl[ch+1] = lab[0];
+    }
+  }
+//  else if (colorspace == DT_TC_XYZ)
+//    dt_Lab_to_XYZ(in, inl);
   for(int ch = 0; ch < nb_ch ; ch++)
   {
     const int j = mode_curves[tc_mode].curve_detail_i[ch];
@@ -1554,19 +1601,7 @@ static void picker_scale(const float *in, float *out, int tc_mode)
       inl[ch] = CLAMP(inl[ch] / curve_detail[j].c_max_pipe_value, 0.0f, 1.0f);
     }
   }
-  if (colorspace == DT_TC_RGB)
-  {
-    out[0] = 0.2126f * inl[0] + 0.7152f * inl[1] + 0.0722f * inl[2];  // luminance RGB
-    out[1] = inl[0];
-    out[2] = inl[1];
-    out[3] = inl[2];
-  }
-  else
-  {
-    out[0] = inl[0];
-    out[1] = inl[1];
-    out[2] = inl[2];
-  }
+  for(int ch = 0; ch < nb_ch ; ch++) out[ch] = inl[ch];
 }
 
 static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
@@ -1574,6 +1609,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+
   dt_develop_t *dev = darktable.develop;
 
   int ch = c->channel;
@@ -1764,6 +1800,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   // only if module is enabled
   if(self->enabled )
   {
+    float hist_max;
     float *raw_mean, *raw_min, *raw_max;
     float *raw_mean_output;
     float picker_mean[DT_IOP_TONECURVE_MAX_CH];
@@ -1776,24 +1813,46 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     raw_max = self->picked_color_max;
     raw_mean_output = self->picked_output_color;
 
-    if (curve_detail[curve_detail_i].c_histogram_enabled)
+    uint32_t *hist;
+    hist = self->histogram;
+    if (hist && curve_detail[curve_detail_i].c_histogram_enabled)
     {
-      hist = self->histogram;
+      uint32_t *histogram_max;
+      float hist_color[3] = {0.2f, 0.2f, 0.2f};;
+      if (tc_mode == DT_S_SCALE_MANUAL_RGB)
+      {
+        c->local_histogram_max[ch] = 0;
+        for(int i=0; i<256*4; i+=4)
+        {
+          c->local_histogram[i] = hist[i]; // get channel 0 histogram
+          if (c->local_histogram[i] > c->local_histogram_max[ch]) c->local_histogram_max[ch] = c->local_histogram[i];
+        }
+//        for (int i = 0; i < 4 * 255; i++)
+//            c->local_histogram_max[ch] = (c->local_histogram[i] > c->local_histogram_max[ch]) ? c->local_histogram[i] : c->local_histogram_max[ch];
+        hist = &c->local_histogram[0];
+        histogram_max = &c->local_histogram_max[0];
+        if (ch!=0) hist_color[ch-1] = 0.4f;
+      }
+      else
+      { // other cases we use the standard histogram
+        hist = self->histogram;
+        histogram_max = &self->histogram_max[0];
+      }
       if ((c->scale_mode != linxliny) && curve_detail[curve_detail_i].c_log_enabled)
       {
-        hist_max = c->scale_mode == logxliny ? self->histogram_max[ch]
-                        : logf(self->histogram_max[ch] / 255.0f * (logscale - 1.0f) + 1.0f) / logf(logscale) * 255.0f;
+        hist_max = c->scale_mode == logxliny ? histogram_max[ch]
+                        : logf(histogram_max[ch] / 255.0f * (logscale - 1.0f) + 1.0f) / logf(logscale) * 255.0f;
       }
       else
       {
-        hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? self->histogram_max[ch]
-                        : logf(1.0 + self->histogram_max[ch]);
+        hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? histogram_max[ch]
+                        : logf(1.0 + histogram_max[ch]);
       }
       if(hist && hist_max > 0.0f)
       {
         cairo_save(cr);
         cairo_scale(cr, width / 255.0, -(height - DT_PIXEL_APPLY_DPI(5)) / hist_max);
-        cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
+        cairo_set_source_rgba(cr, hist_color[0], hist_color[1], hist_color[2], 0.5);
         if ((c->scale_mode != linxliny) && curve_detail[curve_detail_i].c_log_enabled)
         {
           if (c->scale_mode == logxliny)
