@@ -455,7 +455,7 @@ void dt_bauhaus_init()
   cairo_destroy(cr);
   cairo_surface_destroy(cst);
 
-  darktable.bauhaus->scale = (pango_height + 0.0f) / PANGO_SCALE / 8.5f;
+  darktable.bauhaus->scale = pango_height / PANGO_SCALE / 10.0;
   darktable.bauhaus->widget_space = darktable.bauhaus->scale;
 
   // keys are freed with g_free, values are ptrs to the widgets, these don't need to be cleaned up.
@@ -567,12 +567,14 @@ static void dt_bauhaus_widget_init(dt_bauhaus_widget_t *w, dt_iop_module_t *self
   {
     case DT_BAUHAUS_SLIDER:
     {
-      gtk_widget_set_size_request(GTK_WIDGET(w), -1, get_line_height() * darktable.bauhaus->line_space + darktable.bauhaus->widget_space);
+      gtk_widget_set_size_request(GTK_WIDGET(w), -1, get_line_height() * darktable.bauhaus->line_space + 5.0 * darktable.bauhaus->widget_space);
+      gtk_widget_set_name(GTK_WIDGET(w), "bauhaus-slider");
       break;
     }
     case DT_BAUHAUS_COMBOBOX:
     {
       gtk_widget_set_size_request(GTK_WIDGET(w), -1, get_line_height() + 3.0 * darktable.bauhaus->widget_space);
+      gtk_widget_set_name(GTK_WIDGET(w), "bauhaus-combobox");
       break;
     }
   }
@@ -1167,7 +1169,7 @@ static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t
   const float r = 1.0f - (ht + 4.0f) / wd;
   set_color(cr, darktable.bauhaus->color_fg);
   cairo_translate(cr, (l + pos * (r - l)) * wd,
-                  get_line_height() * (darktable.bauhaus->label_font_size * darktable.bauhaus->line_space + 0.28f));
+                  get_line_height() * (darktable.bauhaus->label_font_size * darktable.bauhaus->line_space + 0.55f));
   cairo_scale(cr, 1.0f, -1.0f);
   draw_equilateral_triangle(cr, ht * get_marker_size());
   cairo_fill_preserve(cr);
