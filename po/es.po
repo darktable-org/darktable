@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 2.6.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-11 00:42-0600\n"
-"PO-Revision-Date: 2019-02-11 00:48-0600\n"
+"POT-Creation-Date: 2019-02-15 22:14-0600\n"
+"PO-Revision-Date: 2019-02-15 14:02-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Tatica Leandro, Edgar Lux, Salvador Calero, J. Karlos D, "
 "Pablo Carrascón\n"
@@ -1275,35 +1275,35 @@ msgid "sRGB"
 msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
-#: ../src/common/colorspaces.c:936 ../src/common/colorspaces.c:1158
+#: ../src/common/colorspaces.c:936 ../src/common/colorspaces.c:1171
 #: ../src/iop/colorin.c:1867 ../src/libs/print_settings.c:1038
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatible)"
 
-#: ../src/common/colorspaces.c:937 ../src/common/colorspaces.c:1163
+#: ../src/common/colorspaces.c:937 ../src/common/colorspaces.c:1176
 #: ../src/iop/colorin.c:1868
 msgid "linear Rec709 RGB"
 msgstr "linear Rec709 RGB"
 
-#: ../src/common/colorspaces.c:938 ../src/common/colorspaces.c:1168
+#: ../src/common/colorspaces.c:938 ../src/common/colorspaces.c:1181
 #: ../src/iop/colorin.c:1869
 msgid "linear Rec2020 RGB"
 msgstr "linear Rec2020 RGB"
 
-#: ../src/common/colorspaces.c:939 ../src/common/colorspaces.c:1173
+#: ../src/common/colorspaces.c:939 ../src/common/colorspaces.c:1186
 msgid "linear XYZ"
 msgstr "lineal XYZ"
 
-#: ../src/common/colorspaces.c:940 ../src/common/colorspaces.c:1179
+#: ../src/common/colorspaces.c:940 ../src/common/colorspaces.c:1192
 #: ../src/libs/colorpicker.c:555 ../src/libs/colorpicker.c:592
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/common/colorspaces.c:941 ../src/common/colorspaces.c:1185
+#: ../src/common/colorspaces.c:941 ../src/common/colorspaces.c:1198
 msgid "linear infrared BGR"
 msgstr "infrarrojo lineal RGB"
 
-#: ../src/common/colorspaces.c:942 ../src/common/colorspaces.c:1142
+#: ../src/common/colorspaces.c:942 ../src/common/colorspaces.c:1155
 msgid "system display profile"
 msgstr "perfil de pantalla del s.o"
 
@@ -1331,15 +1331,29 @@ msgstr "matriz de color"
 msgid "alternate color matrix"
 msgstr "matriz de color alternativa"
 
-#: ../src/common/colorspaces.c:1148
+#: ../src/common/colorspaces.c:949
+msgid "BRG (experimental)"
+msgstr "BRG (para pruebas)"
+
+#: ../src/common/colorspaces.c:950 ../src/common/colorspaces.c:1148
+#: ../src/iop/colorout.c:819
+msgid "export profile"
+msgstr "perfil de exportación"
+
+#: ../src/common/colorspaces.c:951 ../src/common/colorspaces.c:1151
+#: ../src/views/darkroom.c:1725
+msgid "softproof profile"
+msgstr "perfil (impresión)"
+
+#: ../src/common/colorspaces.c:1161
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (e.g. JPG)"
 
-#: ../src/common/colorspaces.c:1153 ../src/libs/print_settings.c:1031
+#: ../src/common/colorspaces.c:1166 ../src/libs/print_settings.c:1031
 msgid "sRGB (web-safe)"
 msgstr "sRGB (seguro para web)"
 
-#: ../src/common/colorspaces.c:1190
+#: ../src/common/colorspaces.c:1203
 msgid "BRG (for testing)"
 msgstr "BRG (para pruebas)"
 
@@ -2986,7 +3000,7 @@ msgstr "usar la misma figura como"
 msgid "masks can not contain themselves"
 msgstr "las mascaras no pueden contenerse a si mismas"
 
-#: ../src/develop/pixelpipe_hb.c:2330
+#: ../src/develop/pixelpipe_hb.c:2503
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -3107,7 +3121,7 @@ msgstr "sol de tarde"
 msgid "underwater"
 msgstr "bajo el agua"
 
-#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1595
+#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1628
 msgid "black & white"
 msgstr "blanco y negro"
 
@@ -3321,78 +3335,78 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "por favor use el formato AAAA-MM-DD para sobrescribir la fecha"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:1084
+#: ../src/gui/gtk.c:1087
 msgctxt "accel"
 msgid "tethering view"
 msgstr "vista de captura"
 
-#: ../src/gui/gtk.c:1085
+#: ../src/gui/gtk.c:1088
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "vista de mesa de luz"
 
-#: ../src/gui/gtk.c:1086
+#: ../src/gui/gtk.c:1089
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "vista de cuarto oscuro"
 
-#: ../src/gui/gtk.c:1087
+#: ../src/gui/gtk.c:1090
 msgctxt "accel"
 msgid "map view"
 msgstr "vista de mapa"
 
-#: ../src/gui/gtk.c:1088
+#: ../src/gui/gtk.c:1091
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "vista de diapositivas"
 
-#: ../src/gui/gtk.c:1089
+#: ../src/gui/gtk.c:1092
 msgctxt "accel"
 msgid "print view"
 msgstr "vista de imprimir"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:1112
+#: ../src/gui/gtk.c:1115
 msgctxt "accel"
 msgid "quit"
 msgstr "salir"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:1117
+#: ../src/gui/gtk.c:1120
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "activar pantalla completa"
 
-#: ../src/gui/gtk.c:1118
+#: ../src/gui/gtk.c:1121
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "salir de pantalla completa"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:1126
+#: ../src/gui/gtk.c:1129
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "activar paneles laterales"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:1129
+#: ../src/gui/gtk.c:1132
 msgctxt "accel"
 msgid "toggle header"
 msgstr "activar cabecera"
 
 #. View-switch
-#: ../src/gui/gtk.c:1132
+#: ../src/gui/gtk.c:1135
 msgctxt "accel"
 msgid "switch view"
 msgstr "cambiar vista"
 
 #. Global zoom in & zoom out
-#: ../src/gui/gtk.c:1138 ../src/libs/tools/lighttable.c:160
+#: ../src/gui/gtk.c:1141 ../src/libs/tools/lighttable.c:160
 msgctxt "accel"
 msgid "zoom in"
 msgstr "acercar"
 
-#: ../src/gui/gtk.c:1139 ../src/libs/tools/lighttable.c:161
+#: ../src/gui/gtk.c:1142 ../src/libs/tools/lighttable.c:161
 msgctxt "accel"
 msgid "zoom out"
 msgstr "alejar"
@@ -4391,7 +4405,7 @@ msgstr "enviar como correo electrónico"
 msgid "images exported from darktable"
 msgstr "imágenes exportadas desde dartable"
 
-#: ../src/imageio/storage/email.c:242
+#: ../src/imageio/storage/email.c:249
 msgid "could not launch email client!"
 msgstr "no se pudo abrir el cliente de correo!"
 
@@ -5358,7 +5372,7 @@ msgstr "laplaciano local: salida inconsistente"
 #: ../src/iop/lens.c:2299 ../src/iop/levels.c:665
 #: ../src/iop/profile_gamma.c:842 ../src/libs/copy_history.c:322
 #: ../src/libs/export.c:648 ../src/libs/print_settings.c:1514
-#: ../src/views/darkroom.c:1525
+#: ../src/views/darkroom.c:1558
 msgid "mode"
 msgstr "modo"
 
@@ -5724,15 +5738,15 @@ msgid "pick frame line color from image"
 msgstr "seleccionar color del marco de la imagen"
 
 #. make sure you put all your translatable strings into _() !
-#: ../src/iop/cacorrect.c:62
+#: ../src/iop/cacorrect.c:55
 msgid "chromatic aberrations"
 msgstr "aberración cromática"
 
-#: ../src/iop/cacorrect.c:1570
+#: ../src/iop/cacorrect.c:1559
 msgid "automatic chromatic aberration correction"
 msgstr "corrección automática de aberración cromática"
 
-#: ../src/iop/cacorrect.c:1573
+#: ../src/iop/cacorrect.c:1562
 msgid ""
 "automatic chromatic aberration correction\n"
 "disabled for non-Bayer sensors"
@@ -5740,7 +5754,7 @@ msgstr ""
 "corrección automática de aberración cromática\n"
 "desactivado para sensores no-Bayer"
 
-#: ../src/iop/cacorrect.c:1576
+#: ../src/iop/cacorrect.c:1565
 msgid ""
 "automatic chromatic aberration correction\n"
 "only works for raw images."
@@ -6491,7 +6505,7 @@ msgstr ""
 msgid "profile"
 msgstr "perfil"
 
-#: ../src/iop/colorin.c:1854 ../src/iop/colorout.c:803
+#: ../src/iop/colorin.c:1854 ../src/iop/colorout.c:830
 #, c-format
 msgid "ICC profiles in %s or %s"
 msgstr "Perfiles ICC en %s o %s"
@@ -6610,52 +6624,48 @@ msgstr "nivel de equalización del histograma"
 msgid "output color profile"
 msgstr "perfil de color de salida"
 
-#: ../src/iop/colorout.c:580
+#: ../src/iop/colorout.c:607
 msgid "missing output profile has been replaced by sRGB!"
 msgstr "perfil de salida no entontrado reemplazado por sRGB!"
 
-#: ../src/iop/colorout.c:597
+#: ../src/iop/colorout.c:624
 msgid "missing softproof profile has been replaced by sRGB!"
 msgstr "perfil de salida no encontrado ha sido reemplazado por sRGB!"
 
-#: ../src/iop/colorout.c:640
+#: ../src/iop/colorout.c:667
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "perfil de salida no soportado reemplazado por sRGB!"
 
-#: ../src/iop/colorout.c:779
+#: ../src/iop/colorout.c:806
 msgid "output intent"
 msgstr "salida"
 
-#: ../src/iop/colorout.c:780 ../src/libs/export.c:631
+#: ../src/iop/colorout.c:807 ../src/libs/export.c:631
 #: ../src/libs/print_settings.c:1243 ../src/libs/print_settings.c:1458
-#: ../src/views/darkroom.c:1678 ../src/views/lighttable.c:3130
+#: ../src/views/darkroom.c:1711 ../src/views/lighttable.c:3138
 msgid "perceptual"
 msgstr "perceptual"
 
-#: ../src/iop/colorout.c:781 ../src/libs/export.c:632
+#: ../src/iop/colorout.c:808 ../src/libs/export.c:632
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1459
-#: ../src/views/darkroom.c:1679 ../src/views/lighttable.c:3131
+#: ../src/views/darkroom.c:1712 ../src/views/lighttable.c:3139
 msgid "relative colorimetric"
 msgstr "relativo colorimétrico"
 
-#: ../src/iop/colorout.c:782 ../src/libs/export.c:633
+#: ../src/iop/colorout.c:809 ../src/libs/export.c:633
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
-#: ../src/views/darkroom.c:1680 ../src/views/lighttable.c:3132
+#: ../src/views/darkroom.c:1713 ../src/views/lighttable.c:3140
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturación"
 
-#: ../src/iop/colorout.c:783 ../src/libs/export.c:634
+#: ../src/iop/colorout.c:810 ../src/libs/export.c:634
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
-#: ../src/views/darkroom.c:1681 ../src/views/lighttable.c:3133
+#: ../src/views/darkroom.c:1714 ../src/views/lighttable.c:3141
 msgid "absolute colorimetric"
 msgstr "absoluto colorimétrico"
 
-#: ../src/iop/colorout.c:792
-msgid "output profile"
-msgstr "perfil (salida)"
-
-#: ../src/iop/colorout.c:800
+#: ../src/iop/colorout.c:827
 msgid "rendering intent"
 msgstr "representación de color"
 
@@ -7239,11 +7249,11 @@ msgstr "ajusta la corrección de exposición"
 msgid ""
 "percentage of bright values clipped out, toggle color picker to activate"
 msgstr ""
-"porcentaje de valores de brillo excluidos, activa el selector de color a "
+"porcentaje del valor del brillo excluido, alternar selector de color para "
 "activar"
 
 #: ../src/iop/exposure.c:891 ../src/iop/highlights.c:1059
-#: ../src/views/darkroom.c:1553
+#: ../src/views/darkroom.c:1586
 msgid "clipping threshold"
 msgstr "umbral superior"
 
@@ -8990,16 +9000,16 @@ msgstr "agregar pincel"
 msgid "max scale is %i for this image size"
 msgstr "la escala máxima es %i para este tamaño de imagen"
 
-#: ../src/iop/rotatepixels.c:70
+#: ../src/iop/rotatepixels.c:76
 msgctxt "modulename"
 msgid "rotate pixels"
 msgstr "rotar pixeles"
 
-#: ../src/iop/rotatepixels.c:341
+#: ../src/iop/rotatepixels.c:347
 msgid "automatic pixel rotation"
 msgstr "rotación automática de pixeles"
 
-#: ../src/iop/rotatepixels.c:344
+#: ../src/iop/rotatepixels.c:350
 msgid ""
 "automatic pixel rotation\n"
 "only works for the sensors that need it."
@@ -10423,7 +10433,7 @@ msgstr "exportar con la configuración actual"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1195 ../src/libs/styles.c:71
-#: ../src/views/darkroom.c:2483
+#: ../src/views/darkroom.c:2533
 msgctxt "accel"
 msgid "export"
 msgstr "exportar"
@@ -12072,37 +12082,37 @@ msgstr "tira de imágenes"
 
 #. setup rating key accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:2939
+#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:2947
 msgctxt "accel"
 msgid "rate 0"
 msgstr "0 estrellas"
 
-#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:2940
+#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:2948
 msgctxt "accel"
 msgid "rate 1"
 msgstr "1 estrella"
 
-#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:2941
+#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:2949
 msgctxt "accel"
 msgid "rate 2"
 msgstr "2 estrellas"
 
-#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:2942
+#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:2950
 msgctxt "accel"
 msgid "rate 3"
 msgstr "3 estrellas"
 
-#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:2943
+#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:2951
 msgctxt "accel"
 msgid "rate 4"
 msgstr "4 estrellas"
 
-#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:2944
+#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:2952
 msgctxt "accel"
 msgid "rate 5"
 msgstr "5 estrellas"
 
-#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:2945
+#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:2953
 msgctxt "accel"
 msgid "rate reject"
 msgstr "rechazar"
@@ -12141,27 +12151,27 @@ msgstr "duplicar imagen"
 #. setup color label accelerators
 #. Initializing accelerators
 #. Color labels keys
-#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:2931
+#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:2939
 msgctxt "accel"
 msgid "color red"
 msgstr "etiqueta roja"
 
-#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:2932
+#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:2940
 msgctxt "accel"
 msgid "color yellow"
 msgstr "etiqueta amarilla"
 
-#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:2933
+#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:2941
 msgctxt "accel"
 msgid "color green"
 msgstr "etiqueta verde"
 
-#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:2934
+#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:2942
 msgctxt "accel"
 msgid "color blue"
 msgstr "etiqueta azul"
 
-#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:2935
+#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:2943
 msgctxt "accel"
 msgid "color purple"
 msgstr "etiqueta morada"
@@ -12360,15 +12370,15 @@ msgstr "estilo aplicado '%s' en la imagen actual"
 msgid "no styles have been created yet"
 msgstr "no se han creado estilos todavia"
 
-#: ../src/views/darkroom.c:1476
+#: ../src/views/darkroom.c:1509
 msgid "quick access to presets of your favorites"
 msgstr "acceso rápido a los preajustes de tus módulos favoritos"
 
-#: ../src/views/darkroom.c:1485
+#: ../src/views/darkroom.c:1518
 msgid "quick access for applying any of your styles"
 msgstr "acceso rápido para aplicar cualquiera de tus estilos"
 
-#: ../src/views/darkroom.c:1497
+#: ../src/views/darkroom.c:1530
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -12376,47 +12386,47 @@ msgstr ""
 "activar el indicador de sobre exposición\n"
 "clic derecho para opciones"
 
-#: ../src/views/darkroom.c:1526
+#: ../src/views/darkroom.c:1559
 msgid "mark with CFA color"
 msgstr "marcar con color CFA"
 
-#: ../src/views/darkroom.c:1527
+#: ../src/views/darkroom.c:1560
 msgid "mark with solid color"
 msgstr "marcar con color sólido"
 
-#: ../src/views/darkroom.c:1528
+#: ../src/views/darkroom.c:1561
 msgid "false color"
 msgstr "color falso"
 
-#: ../src/views/darkroom.c:1530
+#: ../src/views/darkroom.c:1563
 msgid "select how to mark the clipped pixels"
 msgstr "seleccione como marcar los pixeles cortados"
 
-#: ../src/views/darkroom.c:1537 ../src/views/darkroom.c:1594
+#: ../src/views/darkroom.c:1570 ../src/views/darkroom.c:1627
 msgid "color scheme"
 msgstr "esquema de color"
 
-#: ../src/views/darkroom.c:1538
+#: ../src/views/darkroom.c:1571
 msgctxt "solidcolor"
 msgid "red"
 msgstr "rojo"
 
-#: ../src/views/darkroom.c:1539
+#: ../src/views/darkroom.c:1572
 msgctxt "solidcolor"
 msgid "green"
 msgstr "verde"
 
-#: ../src/views/darkroom.c:1540
+#: ../src/views/darkroom.c:1573
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "azul"
 
-#: ../src/views/darkroom.c:1541
+#: ../src/views/darkroom.c:1574
 msgctxt "solidcolor"
 msgid "black"
 msgstr "negro"
 
-#: ../src/views/darkroom.c:1545
+#: ../src/views/darkroom.c:1578
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -12424,7 +12434,7 @@ msgstr ""
 "seleccione el color sólido para indicar sobre-exposición.\n"
 "solo será utilizado si el modo = esta marcado con un color sólido"
 
-#: ../src/views/darkroom.c:1555
+#: ../src/views/darkroom.c:1588
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -12434,7 +12444,7 @@ msgstr ""
 "1.0 - nivel blanco\n"
 "0.0 - nivel negro"
 
-#: ../src/views/darkroom.c:1566
+#: ../src/views/darkroom.c:1599
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -12442,35 +12452,35 @@ msgstr ""
 "activar el indicador de exposición\n"
 "clic derecho para opciones"
 
-#: ../src/views/darkroom.c:1596
+#: ../src/views/darkroom.c:1629
 msgid "red & blue"
 msgstr "rojo y azul"
 
-#: ../src/views/darkroom.c:1597
+#: ../src/views/darkroom.c:1630
 msgid "purple & green"
 msgstr "púrpura y verde"
 
-#: ../src/views/darkroom.c:1599
+#: ../src/views/darkroom.c:1632
 msgid "select colors to indicate over/under exposure"
 msgstr "seleccionar los colores para indicar sobre/sub exposición"
 
-#: ../src/views/darkroom.c:1608
+#: ../src/views/darkroom.c:1641
 msgid "lower threshold"
 msgstr "umbral inferior"
 
-#: ../src/views/darkroom.c:1609
+#: ../src/views/darkroom.c:1642
 msgid "threshold of what shall be considered underexposed"
 msgstr "umbral bajo el que se considerará subexpuesto"
 
-#: ../src/views/darkroom.c:1617
+#: ../src/views/darkroom.c:1650
 msgid "upper threshold"
 msgstr "umbral superior"
 
-#: ../src/views/darkroom.c:1618
+#: ../src/views/darkroom.c:1651
 msgid "threshold of what shall be considered overexposed"
 msgstr "umbral sobre el que se considerará sobreexpuesto"
 
-#: ../src/views/darkroom.c:1629
+#: ../src/views/darkroom.c:1662
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -12478,7 +12488,7 @@ msgstr ""
 "activar pruebas en pantalla\n"
 "clic derecho para opciones de perfil"
 
-#: ../src/views/darkroom.c:1643
+#: ../src/views/darkroom.c:1676
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -12486,139 +12496,144 @@ msgstr ""
 "activar la revisión de gama\n"
 "clic derecho para opciones del perfil"
 
-#: ../src/views/darkroom.c:1676 ../src/views/lighttable.c:3128
+#: ../src/views/darkroom.c:1709 ../src/views/lighttable.c:3136
 msgid "display intent"
 msgstr "salida en pantalla"
 
-#: ../src/views/darkroom.c:1691
-msgid "softproof profile"
-msgstr "perfil (impresión)"
-
-#: ../src/views/darkroom.c:1692 ../src/views/lighttable.c:3136
+#: ../src/views/darkroom.c:1726 ../src/views/lighttable.c:3144
 msgid "display profile"
 msgstr "perfil (pantalla)"
 
-#: ../src/views/darkroom.c:1724 ../src/views/lighttable.c:3156
+#: ../src/views/darkroom.c:1727
+msgid "histogram profile"
+msgstr "perfil del histograma"
+
+#: ../src/views/darkroom.c:1770 ../src/views/lighttable.c:3164
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "mostrar perfiles ICC en %s o %s"
 
-#: ../src/views/darkroom.c:1727
+#: ../src/views/darkroom.c:1773
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "prueba de perfiles ICC en %s o %s"
 
+#: ../src/views/darkroom.c:1776
+#, c-format
+msgid "histogram and color picker ICC profiles in %s or %s"
+msgstr "histograma y selector de color de perfiles ICC en %s o %s"
+
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:2475 ../src/views/map.c:893 ../src/views/print.c:329
+#: ../src/views/darkroom.c:2525 ../src/views/map.c:893 ../src/views/print.c:329
 #: ../src/views/tethering.c:388
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "activar o desactivar la tira de imágenes"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:2478
+#: ../src/views/darkroom.c:2528
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom acercar"
 
-#: ../src/views/darkroom.c:2479
+#: ../src/views/darkroom.c:2529
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoom rellenar"
 
-#: ../src/views/darkroom.c:2480
+#: ../src/views/darkroom.c:2530
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajustar"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:2486
+#: ../src/views/darkroom.c:2536
 msgctxt "accel"
 msgid "image forward"
 msgstr "imagen siguiente"
 
-#: ../src/views/darkroom.c:2487
+#: ../src/views/darkroom.c:2537
 msgctxt "accel"
 msgid "image back"
 msgstr "imagen anterior"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:2490
+#: ../src/views/darkroom.c:2540
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "raw sobre-expuesto"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:2493
+#: ../src/views/darkroom.c:2543
 msgctxt "accel"
 msgid "overexposed"
 msgstr "sobreexpuesto"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:2496
+#: ../src/views/darkroom.c:2546
 msgctxt "accel"
 msgid "softproof"
 msgstr "prueba en pantalla"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:2499
+#: ../src/views/darkroom.c:2549
 msgctxt "accel"
 msgid "gamut check"
 msgstr "revisión de gama"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:2502
+#: ../src/views/darkroom.c:2552
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "aumentar tamaño del pincel"
 
-#: ../src/views/darkroom.c:2503
+#: ../src/views/darkroom.c:2553
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "reducir tamaño del pincel"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:2506
+#: ../src/views/darkroom.c:2556
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "incrementar dureza del pincel"
 
-#: ../src/views/darkroom.c:2507
+#: ../src/views/darkroom.c:2557
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "reducir dureza del pincel"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:2510
+#: ../src/views/darkroom.c:2560
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "incrementar opacidad del pincel"
 
-#: ../src/views/darkroom.c:2511
+#: ../src/views/darkroom.c:2561
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "reducir opacidad del pincel"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:2514
+#: ../src/views/darkroom.c:2564
 msgctxt "accel"
 msgid "full preview"
 msgstr "vista previa completa"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2517 ../src/views/map.c:890
+#: ../src/views/darkroom.c:2567 ../src/views/map.c:890
 msgctxt "accel"
 msgid "undo"
 msgstr "deshacer"
 
-#: ../src/views/darkroom.c:2518 ../src/views/map.c:891
+#: ../src/views/darkroom.c:2568 ../src/views/map.c:891
 msgctxt "accel"
 msgid "redo"
 msgstr "rehacer"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:2521
+#: ../src/views/darkroom.c:2571
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "permitir paneo y zoom mientras se editan máscaras"
@@ -12627,120 +12642,120 @@ msgstr "permitir paneo y zoom mientras se editan máscaras"
 msgid "good knight"
 msgstr "buenas noche"
 
-#: ../src/views/lighttable.c:655 ../src/views/slideshow.c:332
+#: ../src/views/lighttable.c:658 ../src/views/slideshow.c:332
 msgid "there are no images in this collection"
 msgstr "no hay imágenes en esta colección"
 
-#: ../src/views/lighttable.c:659
+#: ../src/views/lighttable.c:662
 msgid "if you have not imported any images yet"
 msgstr "si no ha importado ninguna imagen aún"
 
-#: ../src/views/lighttable.c:663
+#: ../src/views/lighttable.c:666
 msgid "you can do so in the import module"
 msgstr "puede hacerlo en el módulo importar"
 
-#: ../src/views/lighttable.c:671
+#: ../src/views/lighttable.c:674
 msgid "try to relax the filter settings in the top panel"
 msgstr "intente relajar las condiciones del filtro en el panel superior"
 
-#: ../src/views/lighttable.c:680
+#: ../src/views/lighttable.c:683
 msgid "or add images in the collection module in the left panel"
 msgstr "o agregue imágenes en el módulo de colección en el panel izquierdo"
 
-#: ../src/views/lighttable.c:2936
+#: ../src/views/lighttable.c:2944
 msgctxt "accel"
 msgid "clear color labels"
 msgstr "limpiar marcas de color"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:2948
+#: ../src/views/lighttable.c:2956
 msgctxt "accel"
 msgid "navigate up"
 msgstr "subir"
 
-#: ../src/views/lighttable.c:2949
+#: ../src/views/lighttable.c:2957
 msgctxt "accel"
 msgid "navigate down"
 msgstr "bajar"
 
-#: ../src/views/lighttable.c:2950
+#: ../src/views/lighttable.c:2958
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "avanzar página"
 
-#: ../src/views/lighttable.c:2951
+#: ../src/views/lighttable.c:2959
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "retroceder página"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:2954
+#: ../src/views/lighttable.c:2962
 msgctxt "accel"
 msgid "scroll up"
 msgstr "desplazar arriba"
 
-#: ../src/views/lighttable.c:2955
+#: ../src/views/lighttable.c:2963
 msgctxt "accel"
 msgid "scroll down"
 msgstr "desplazar abajo"
 
-#: ../src/views/lighttable.c:2956
+#: ../src/views/lighttable.c:2964
 msgctxt "accel"
 msgid "scroll left"
 msgstr "desplazar izquierda"
 
-#: ../src/views/lighttable.c:2957
+#: ../src/views/lighttable.c:2965
 msgctxt "accel"
 msgid "scroll right"
 msgstr "deplazar derecha"
 
-#: ../src/views/lighttable.c:2958
+#: ../src/views/lighttable.c:2966
 msgctxt "accel"
 msgid "scroll center"
 msgstr "desplazar al centro"
 
-#: ../src/views/lighttable.c:2959
+#: ../src/views/lighttable.c:2967
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "realinear imagenes a la cuadrícula"
 
-#: ../src/views/lighttable.c:2960
+#: ../src/views/lighttable.c:2968
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "seleccionar imagen activa"
 
-#: ../src/views/lighttable.c:2961
+#: ../src/views/lighttable.c:2969
 msgctxt "accel"
 msgid "select single image"
 msgstr "seleccionar imagen única"
 
 #. Preview key
-#: ../src/views/lighttable.c:2964
+#: ../src/views/lighttable.c:2972
 msgctxt "accel"
 msgid "preview"
 msgstr "vista previa rápida"
 
-#: ../src/views/lighttable.c:2965
+#: ../src/views/lighttable.c:2973
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "vista previa rápida con detección de foco"
 
-#: ../src/views/lighttable.c:2966
+#: ../src/views/lighttable.c:2974
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "vista previa"
 
-#: ../src/views/lighttable.c:2967
+#: ../src/views/lighttable.c:2975
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "vista previa con detección de foco"
 
-#: ../src/views/lighttable.c:2968
+#: ../src/views/lighttable.c:2976
 msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "salir de vista previa"
 
-#: ../src/views/lighttable.c:3100
+#: ../src/views/lighttable.c:3108
 msgid "set display profile"
 msgstr "ajustar perfil de pantalla"
 
@@ -12946,9 +12961,6 @@ msgstr ""
 
 #~ msgid "almost no clipping"
 #~ msgstr "casi sin recorte"
-
-#~ msgid "histogram of"
-#~ msgstr "histograma de"
 
 #~ msgid "pre-processed image"
 #~ msgstr "imágene pre-procesada"
