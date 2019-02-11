@@ -286,7 +286,7 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
 int32_t dt_image_copy(const int32_t imgid, const int32_t filmid);
 /** physically copy image to the folder of the film roll with filmid and
  *  the name given by newname, and duplicate update database entries. */
-int32_t dt_image_copy_r(const int32_t imgid, const int32_t filmid, const gchar *newname);
+int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gchar *newname);
 int dt_image_local_copy_set(const int32_t imgid);
 int dt_image_local_copy_reset(const int32_t imgid);
 /* check whether it is safe to remove a file */

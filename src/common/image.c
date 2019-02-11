@@ -1338,6 +1338,8 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
         // write through to db, but not to xmp
         dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
         dup_list = g_list_delete_link(dup_list, dup_list);
+        // write xmp file
+        dt_image_write_sidecar_file(id);
       }
       g_list_free(dup_list);
 
@@ -1376,7 +1378,7 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
   return dt_image_rename(imgid, filmid, NULL);
 }
 
-int32_t dt_image_copy_r(const int32_t imgid, const int32_t filmid, const gchar *newname)
+int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gchar *newname)
 {
   int32_t newid = -1;
   sqlite3_stmt *stmt;
@@ -1604,7 +1606,7 @@ int32_t dt_image_copy_r(const int32_t imgid, const int32_t filmid, const gchar *
 
 int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
 {
-  return dt_image_copy_r(imgid, filmid, NULL);
+  return dt_image_copy_rename(imgid, filmid, NULL);
 }
 
 int dt_image_local_copy_set(const int32_t imgid)

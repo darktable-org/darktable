@@ -94,7 +94,7 @@ int dt_lua_copy_image(lua_State *L)
   dt_lua_image_t new_image;
   if(newname)
   {
-    new_image = dt_image_copy_r(imgid, filmid, newname);
+    new_image = dt_image_copy_rename(imgid, filmid, newname);
   }
   else
   {
