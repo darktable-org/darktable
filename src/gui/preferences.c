@@ -244,10 +244,9 @@ static void hardcoded_gui(GtkWidget *grid, int *line)
   widget = gtk_combo_box_text_new();
 
   // read all themes
-  const char *theme_name = dt_conf_get_string("ui_last/theme");
+  char *theme_name = dt_conf_get_string("ui_last/theme");
   int selected = 0;
   int k = 0;
-
   for(GList *iter = darktable.themes; iter; iter = g_list_next(iter))
   {
     gchar *name = g_strdup((gchar*)(iter->data));
@@ -258,6 +257,7 @@ static void hardcoded_gui(GtkWidget *grid, int *line)
     if(!g_strcmp0(name, theme_name)) selected = k;
     k++;
   }
+  g_free(theme_name);
 
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), selected);
 
