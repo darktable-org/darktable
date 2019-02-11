@@ -559,7 +559,7 @@ dialog combobox window *
 {
   background-color: transparent;
   color: @fg_color;
-  min-height: 1.2em;
+  min-height: 1.5em;
 }
 
 menuitem:hover,
@@ -681,6 +681,11 @@ notebook tab:checked *
 #bauhaus-popup:disabled
 {
   color: @bauhaus_fg;
+}
+
+#bauhaus-combobox
+{
+  min-height: 2em;
 }
 
 /* Modules buttons */
