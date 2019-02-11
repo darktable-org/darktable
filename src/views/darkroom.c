@@ -2024,6 +2024,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
 
     dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
     dt_dev_invalidate_all(dev);
+    dt_control_queue_redraw();
     return;
   }
   // masks
@@ -2053,6 +2054,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     ctl->button_x = x - offx;
     ctl->button_y = y - offy;
     dt_dev_invalidate(dev);
+    dt_control_queue_redraw_center();
   }
 }
 
@@ -2110,6 +2112,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
       dev->gui_module->color_picker_point[1] = .5f + zoom_y;
       dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
       dt_dev_invalidate_all(dev);
+      dt_control_queue_redraw();
     }
     return 1;
   }
@@ -2287,6 +2290,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   dt_control_set_dev_zoom_x(zoom_x);
   dt_control_set_dev_zoom_y(zoom_y);
   dt_dev_invalidate(dev);
+  dt_control_queue_redraw();
 }
 
 int key_released(dt_view_t *self, guint key, guint state)
@@ -2353,6 +2357,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
       lib->full_preview_last_module = darktable.develop->gui_module;
       dt_iop_request_focus(NULL);
       dt_dev_invalidate(darktable.develop);
+      dt_control_queue_redraw_center();
     }
     else
       return 0;
@@ -2412,6 +2417,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     dt_control_set_dev_zoom_y(zy);
 
     dt_dev_invalidate(dev);
+    dt_control_queue_redraw_center();
 
     return 1;
   }
