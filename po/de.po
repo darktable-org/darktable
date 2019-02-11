@@ -8623,7 +8623,7 @@ msgstr "automatisch optimieren"
 #: ../src/iop/profile_gamma.c:920
 msgid ""
 "enlarge or shrink the computed dynamic range\n"
-"this is usefull when noise perturbates the measurements"
+"this is useful when noise perturbates the measurements"
 msgstr ""
 "vergrößert oder verkleinert den berechneten Dynamikbereich\n"
 "dies entspricht einer Messung, die ein Belichtungsmesser liefern würde"
@@ -8856,7 +8856,7 @@ msgid "cut shapes from current scale"
 msgstr "Zuschneiden der Formen vom aktuellen Maßstab"
 
 #: ../src/iop/retouch.c:2751
-msgid "paste cutted shapes to current scale"
+msgid "paste cut shapes to current scale"
 msgstr "Zugeschnittene Formen des aktuellen Maßstab einfügen"
 
 #: ../src/iop/retouch.c:2776
@@ -8896,7 +8896,7 @@ msgid "color"
 msgstr "Farbe"
 
 #: ../src/iop/retouch.c:2828
-msgid "erase the detail or fills with choosen color"
+msgid "erase the detail or fills with chosen color"
 msgstr "löscht das Detail oder füllt mit der gewählten Farbe"
 
 #: ../src/iop/retouch.c:2840 ../src/iop/retouch.c:2841
@@ -9251,7 +9251,7 @@ msgstr "Kreiswerkzeug"
 
 #: ../src/iop/spots.c:702
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "Ellipsenwerkzeug"
 
 #: ../src/iop/spots.c:703
@@ -12277,7 +12277,7 @@ msgid "access the online usermanual?"
 msgstr "Auf das Online-Benutzerhandbuch zugreifen?"
 
 #: ../src/libs/tools/global_toolbox.c:284
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "Hilfe-URL wird in Webbrowser geöffnet"
 
 #: ../src/libs/tools/global_toolbox.c:289

@@ -8202,7 +8202,7 @@ msgstr "avtomatično optimiziraj"
 #: ../src/iop/profile_gamma.c:928
 msgid ""
 "enlarge or shrink the computed dynamic range\n"
-"this is usefull when noise perturbates the measurements"
+"this is useful when noise perturbates the measurements"
 msgstr ""
 "razširi ali skrči dinamični razpon izračuna\n"
 "uporabno kadar šum moti meritve"
@@ -8581,7 +8581,7 @@ msgstr "orodje za kroge"
 
 #: ../src/iop/spots.c:693
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "orodje za elipse"
 
 #: ../src/iop/spots.c:694
@@ -8683,7 +8683,7 @@ msgid "cut shapes from current scale"
 msgstr "izreži oblike iz trenutnega merila"
 
 #: ../src/iop/retouch.c:2752
-msgid "paste cutted shapes to current scale"
+msgid "paste cut shapes to current scale"
 msgstr "prilepi izrezane oblike na trenutno merilo"
 
 #: ../src/iop/retouch.c:2777
@@ -8723,7 +8723,7 @@ msgid "color"
 msgstr "barva"
 
 #: ../src/iop/retouch.c:2829
-msgid "erase the detail or fills with choosen color"
+msgid "erase the detail or fills with chosen color"
 msgstr "obriši podrobnost ali napolni z izbrano barvo"
 
 #: ../src/iop/retouch.c:2841 ../src/iop/retouch.c:2842
@@ -11728,7 +11728,7 @@ msgid "access the online usermanual?"
 msgstr "dostop do mrežnega uporabniškega priročnika?"
 
 #: ../src/libs/tools/global_toolbox.c:277
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "pomoč url odprt v brskalniku"
 
 #: ../src/libs/tools/global_toolbox.c:282

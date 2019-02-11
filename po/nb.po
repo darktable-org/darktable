@@ -8081,7 +8081,7 @@ msgstr "optimaliser automatisk"
 #: ../src/iop/profile_gamma.c:928
 msgid ""
 "enlarge or shrink the computed dynamic range\n"
-"this is usefull when noise perturbates the measurements"
+"this is useful when noise perturbates the measurements"
 msgstr ""
 "utvid eller reduser den beregnede dynamiske spennvidde\n"
 "dette er nyttig når støy forstyrrer målingene"
@@ -8458,7 +8458,7 @@ msgstr "flekk-verktøy sirkel"
 
 #: ../src/iop/spots.c:693
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "flekk-verktøy ellipse"
 
 #: ../src/iop/spots.c:694
@@ -8560,7 +8560,7 @@ msgid "cut shapes from current scale"
 msgstr "fjern former fra skala i bruk"
 
 #: ../src/iop/retouch.c:2752
-msgid "paste cutted shapes to current scale"
+msgid "paste cut shapes to current scale"
 msgstr "lim inn markerte former på skala i bruk"
 
 #: ../src/iop/retouch.c:2777
@@ -8600,7 +8600,7 @@ msgid "color"
 msgstr "farge"
 
 #: ../src/iop/retouch.c:2829
-msgid "erase the detail or fills with choosen color"
+msgid "erase the detail or fills with chosen color"
 msgstr "visker ut detalj eller fyller med valgt farge"
 
 #: ../src/iop/retouch.c:2841 ../src/iop/retouch.c:2842
@@ -11595,7 +11595,7 @@ msgid "access the online usermanual?"
 msgstr "vis brukermanual på nettet?"
 
 #: ../src/libs/tools/global_toolbox.c:277
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "hjelpetekst fra nettet vises i nettleseren"
 
 #: ../src/libs/tools/global_toolbox.c:282

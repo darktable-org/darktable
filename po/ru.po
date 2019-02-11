@@ -414,14 +414,14 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2483
 msgid "pretty print the image location"
-msgstr "Название местоположения в информация о снимке"
+msgstr "Местоположение в формате градусы° минуты'"
 
 #: ../build/src/preferences_gen.h:2495
 msgid ""
 "show a more readable representation of the location in the image information "
 "module"
 msgstr ""
-"Показывать удобочитаемое название местоположения в информации о снимке."
+"Показывать местоположение в десятичном или в формате градусы° минуты'."
 
 #: ../build/src/preferences_gen.h:2503
 msgid "security"
@@ -8517,7 +8517,7 @@ msgstr "Автоматические настройки"
 #: ../src/iop/profile_gamma.c:920
 msgid ""
 "enlarge or shrink the computed dynamic range\n"
-"this is usefull when noise perturbates the measurements"
+"this is useful when noise perturbates the measurements"
 msgstr ""
 "Относительное изменение широты динамического диапазона.\n"
 "Полезно при больших значениях шума."
@@ -8750,7 +8750,7 @@ msgid "cut shapes from current scale"
 msgstr "Вырезать фигуры из текущего уровня"
 
 #: ../src/iop/retouch.c:2751
-msgid "paste cutted shapes to current scale"
+msgid "paste cut shapes to current scale"
 msgstr "Вставить вырезанные фигуры в текущий уровень"
 
 #: ../src/iop/retouch.c:2776
@@ -8790,7 +8790,7 @@ msgid "color"
 msgstr "Цвет"
 
 #: ../src/iop/retouch.c:2828
-msgid "erase the detail or fills with choosen color"
+msgid "erase the detail or fills with chosen color"
 msgstr "Стереть детали или залить их выбранным цветом"
 
 #: ../src/iop/retouch.c:2840 ../src/iop/retouch.c:2841
@@ -9139,7 +9139,7 @@ msgstr "Инструмент для удаления пятен «окружно
 
 #: ../src/iop/spots.c:702
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "Инструмент для удаления пятен «эллипс»"
 
 #: ../src/iop/spots.c:703
@@ -12131,7 +12131,7 @@ msgid "access the online usermanual?"
 msgstr "Открытие онлайн справки"
 
 #: ../src/libs/tools/global_toolbox.c:284
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "Онлайн справка по указанному элементу открыта в браузере"
 
 #: ../src/libs/tools/global_toolbox.c:289

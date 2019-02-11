@@ -65,7 +65,7 @@ DT_MODULE_INTROSPECTION(3, dt_iop_filmic_params_t)
  *
  * The ACES log implementation is taken from the profile_gamma.c IOP
  * where it works in camera RGB space. Here, it works on an arbitrary RGB
- * space. ProPhotoRGB has been choosen for its wide gamut coverage and
+ * space. ProPhotoRGB has been chosen for its wide gamut coverage and
  * for conveniency because it's already in darktable's libs. Any other
  * RGB working space could work. This chouice could (should) also be
  * exposed to the user.
@@ -73,8 +73,8 @@ DT_MODULE_INTROSPECTION(3, dt_iop_filmic_params_t)
  * The filmic curves are tonecurves intended to simulate the luminance
  * transfer function of film with "S" curves. These could be reproduced in
  * the tonecurve.c IOP, however what we offer here is a parametric
- * interface usefull to remap accurately and promptly the middle grey
- * to any arbitrary value choosen accordingly to the destination space.
+ * interface useful to remap accurately and promptly the middle grey
+ * to any arbitrary value chosen accordingly to the destination space.
  *
  * The combined use of both define a modern way to deal with large
  * dynamic range photographs by remapping the values with a comprehensive
