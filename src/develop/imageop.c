@@ -1061,27 +1061,14 @@ static void _iop_gui_update_header(dt_iop_module_t *module)
 {
   GList *childs = gtk_container_get_children(GTK_CONTAINER(module->header));
 
-  /* get the enable button spacer and button */
-  GtkWidget *eb = g_list_nth_data(childs, 0);
-  GtkWidget *ebs = g_list_nth_data(childs, 1);
+  /* get the enable button and button */
   GtkWidget *lab = g_list_nth_data(childs, 5);
 
   g_list_free(childs);
 
   // set panel name to display correct multi-instance
   _iop_panel_label(lab, module);
-
-  if(module->hide_enable_button)
-  {
-    gtk_widget_hide(eb);
-    gtk_widget_show(ebs);
-  }
-  else
-  {
-    gtk_widget_show(eb);
-    gtk_widget_hide(ebs);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
-  }
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
 }
 
 void dt_iop_gui_update_header(dt_iop_module_t *module)
@@ -1898,7 +1885,6 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
 
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 {
-  int bs = DT_PIXEL_APPLY_DPI(12);
   char tooltip[512];
 
   GtkWidget *header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -1924,31 +1910,25 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   /*
    * initialize the header widgets
    */
-  GtkWidget *hw[7] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
+  GtkWidget *hw[6] = { NULL, NULL, NULL, NULL, NULL, NULL };
 
   /* add the expand indicator icon */
   hw[0] = dtgtk_icon_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT, NULL);
-  gtk_widget_set_size_request(GTK_WIDGET(hw[0]), bs, bs);
+  gtk_widget_set_name(GTK_WIDGET(hw[0]), "module-expander-arrow");
 
   /* add module label */
   hw[1] = gtk_label_new("");
   _iop_panel_label(hw[1], module);
 
   /* add multi instances menu button */
-  if(module->flags() & IOP_FLAGS_ONE_INSTANCE)
-  {
-    hw[2] = gtk_fixed_new();
-  }
-  else
-  {
-    hw[2] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-    module->multimenu_button = GTK_WIDGET(hw[2]);
-    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[2]),
-                                _("multiple instances actions\nmiddle-click creates new instance"));
-    g_signal_connect(G_OBJECT(hw[2]), "button-press-event", G_CALLBACK(dt_iop_gui_multiinstance_callback),
-                     module);
-  }
+  hw[2] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  module->multimenu_button = GTK_WIDGET(hw[2]);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[2]),
+                              _("multiple instances actions\nmiddle-click creates new instance"));
+  g_signal_connect(G_OBJECT(hw[2]), "button-press-event", G_CALLBACK(dt_iop_gui_multiinstance_callback),
+                   module);
 
+  if(module->flags() & IOP_FLAGS_ONE_INSTANCE) gtk_widget_set_sensitive(GTK_WIDGET(hw[2]), FALSE);
   gtk_widget_set_name(GTK_WIDGET(hw[2]), "module-instance-button");
 
   dt_gui_add_help_link(expander, dt_get_help_url(module->op));
@@ -1971,27 +1951,22 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   g_signal_connect(G_OBJECT(hw[4]), "button-press-event", G_CALLBACK(popup_callback), module);
   gtk_widget_set_name(GTK_WIDGET(hw[4]), "module-preset-button");
 
-  /* add enabled button spacer */
-  hw[5] = gtk_fixed_new();
-  gtk_widget_set_no_show_all(hw[5], TRUE);
-  gtk_widget_set_name(GTK_WIDGET(hw[5]), "module-spacer");
-  gtk_widget_set_size_request(GTK_WIDGET(hw[5]), 17, 17);
-
   /* add enabled button */
-  hw[6] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_BG_TRANSPARENT, NULL);
-  gtk_widget_set_no_show_all(hw[6], TRUE);
+  hw[5] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_BG_TRANSPARENT, NULL);
   gchar *module_label = dt_history_item_get_name(module);
   snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"),
            module_label);
   g_free(module_label);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[6]), tooltip);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[6]), module->enabled);
-  g_signal_connect(G_OBJECT(hw[6]), "toggled", G_CALLBACK(dt_iop_gui_off_callback), module);
-  module->off = DTGTK_TOGGLEBUTTON(hw[6]);
-  gtk_widget_set_name(GTK_WIDGET(hw[6]), "module-enable-button");
+  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[5]), tooltip);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[5]), module->enabled);
+  g_signal_connect(G_OBJECT(hw[5]), "toggled", G_CALLBACK(dt_iop_gui_off_callback), module);
+  module->off = DTGTK_TOGGLEBUTTON(hw[5]);
+  if(module->hide_enable_button) gtk_widget_set_sensitive(GTK_WIDGET(hw[5]), FALSE);
+
+  gtk_widget_set_name(GTK_WIDGET(hw[5]), "module-enable-button");
 
   /* reorder header, for now, iop are always in the right panel */
-  for(int i = 6; i >= 0; i--)
+  for(int i = 5; i >= 0; i--)
     if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 2 ? TRUE : FALSE, i == 2 ? TRUE : FALSE, 2);
   dt_gui_add_help_link(header, "interacting.html");
 
@@ -2002,7 +1977,9 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
   dt_iop_gui_init_blending(iopw, module);
 
-  /* add empty space around module widget */
+  /* add empty space around module widget
+   * this cannot be set in CSS because the module collapsing is badly handled
+   * */
   gtk_widget_set_margin_start(module->widget, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_end(module->widget, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_set_margin_top(module->widget, DT_PIXEL_APPLY_DPI(8));

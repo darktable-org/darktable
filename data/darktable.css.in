@@ -93,6 +93,7 @@
 @define-color button_checked_fg @grey_80;
 @define-color button_hover_bg @grey_45;
 @define-color button_hover_fg @grey_95;
+@define-color buttor_insensitive_fg @grey_10;
 
 @define-color field_bg @grey_25;
 @define-color field_fg @grey_85;
@@ -185,7 +186,9 @@ dialog *,
 scale,
 scale *,
 #modules-tabs,
-#modules-tabs *
+#modules-tabs *,
+button,
+button *
 {
   background-color:transparent;
   margin:0;
@@ -201,13 +204,17 @@ scale *,
   background-color: @bg_color;
 }
 
-#main_window *:disabled {
-  color: @grey_10;
+#iop-plugin-ui #dt-button *:disabled,
+#iop-plugin-ui #dt-toggle-button *:disabled,
+*:disabled {
+  background-color: transparent;
+  color: transparent;
+  border-color: transparent;
 }
 
 #main-histogram
 {
-  /* the main histogram is a Cairo drawing area
+  /* the main histogram is a Cairo drawing area.
   as of GTK 3.22, margin and padding have no effect on it, so they are
   hard-coded */
 }
@@ -305,12 +312,13 @@ dialog button:hover *
   color: @button_hover_fg;
 }
 
-#lib-plugin-ui * button:disabled,
-#iop-plugin-ui * button:disabled,
+#lib-plugin-ui button:disabled,
+#iop-plugin-ui button:disabled,
 button:disabled
 {
-  background-color: @bauhaus_bg;
-  border: 0;
+  background-color: transparent;
+  color: transparent;
+  border-color: transparent;
 }
 
 button.text-button,
@@ -680,10 +688,19 @@ notebook tab:checked *
 #dt-toggle-button,
 #dt-icon
 {
-  font-size: 13pt;
-  min-height: 13pt;
-  min-width: 13pt;
-  padding: 1pt;
+  font-size: 1em;
+  min-height: 1em;
+  min-width: 1em;
+  padding: 0;
+  margin:0;
+}
+
+#iop-plugin-ui #dt-button,
+#iop-plugin-ui #dt-toggle-button
+{
+  font-size: 1em;
+  min-height: 1em;
+  min-width: 1em;
 }
 
 #module-preset-button,
@@ -692,27 +709,22 @@ notebook tab:checked *
 #module-enable-button,
 #module-instance-button,
 #module-icon,
+#module-icon *,
 #module-expander-arrow
 {
-  min-height: 8pt;
-  min-width: 8pt;
-  padding: 1pt;
-  font-size: 8pt;
+  min-height: 1ex;
+  min-width: 1.75ex;
+  padding: 0;
+  margin:0;
+  font-size: 1em;
 }
 
-#module-spacer
+#module-expander-arrow
 {
   min-width: 16pt;
-  font-size: 16pt;
-  margin: 8pt;
-}
-
-#iop-plugin-ui #dt-button,
-#iop-plugin-ui #dt-toggle-button
-{
-  font-size: 8pt;
-  min-height: 13pt;
-  min-width: 13pt;
+  min-height: 12pt;
+  font-size: 1em;
+  padding: 16pt;
 }
 
 /* modules tabs */
