@@ -1967,11 +1967,12 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   /* reorder header, for now, iop are always in the right panel */
   for(int i = 5; i >= 0; i--)
-    if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 2 ? TRUE : FALSE, i == 2 ? TRUE : FALSE, 2);
+    if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 2 ? TRUE : FALSE, i == 2 ? TRUE : FALSE, 0);
   dt_gui_add_help_link(header, "interacting.html");
 
   gtk_widget_set_halign(hw[2], GTK_ALIGN_START);
   dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT, NULL);
+  gtk_widget_show_all(GTK_WIDGET(hw[0]));
 
   /* add the blending ui if supported */
   gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);

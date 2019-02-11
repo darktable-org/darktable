@@ -1018,14 +1018,14 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
      || (c == DT_UI_CONTAINER_PANEL_LEFT_BOTTOM))
   {
     for(int i = 0; i < 4; i++)
-      if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 1 ? TRUE : FALSE, i == 1 ? TRUE : FALSE, 2);
+      if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 1 ? TRUE : FALSE, i == 1 ? TRUE : FALSE, 0);
     gtk_widget_set_halign(hw[1], GTK_ALIGN_START);
     dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_RIGHT, NULL);
   }
   else
   {
     for(int i = 3; i >= 0; i--)
-      if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 1 ? TRUE : FALSE, i == 1 ? TRUE : FALSE, 2);
+      if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 1 ? TRUE : FALSE, i == 1 ? TRUE : FALSE, 0);
     gtk_widget_set_halign(hw[1], GTK_ALIGN_END);
     dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT, NULL);
   }

@@ -692,7 +692,7 @@ notebook tab:checked *
   min-height: 1em;
   min-width: 1em;
   padding: 0;
-  margin:0;
+  margin: 1pt;
 }
 
 #iop-plugin-ui #dt-button,
@@ -712,11 +712,11 @@ notebook tab:checked *
 #module-icon *,
 #module-expander-arrow
 {
-  min-height: 1ex;
-  min-width: 1.75ex;
-  padding: 0;
-  margin:0;
-  font-size: 1em;
+  min-height: 2ex;
+  min-width: 2ex;
+  padding: 2pt;
+  margin:0 1pt;
+  font-size: 1ex;
 }
 
 #module-expander-arrow
