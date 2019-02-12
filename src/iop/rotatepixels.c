@@ -32,6 +32,10 @@
 
 DT_MODULE_INTROSPECTION(1, dt_iop_rotatepixels_params_t)
 
+typedef struct dt_iop_rotatepixels_gui_data_t
+{
+} dt_iop_rotatepixels_gui_data_t;
+
 typedef struct dt_iop_rotatepixels_params_t
 {
   uint32_t rx, ry;
@@ -43,6 +47,8 @@ typedef struct dt_iop_rotatepixels_data_t
   uint32_t rx, ry; // rotation center
   float m[4];      // rotation matrix
 } dt_iop_rotatepixels_data_t;
+
+dt_iop_rotatepixels_gui_data_t dummy;
 
 static void mul_mat_vec_2(const float *m, const float *p, float *o)
 {
@@ -349,7 +355,7 @@ void init(dt_iop_module_t *self)
   self->params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
   self->params_size = sizeof(dt_iop_rotatepixels_params_t);
-  self->gui_data = NULL;
+  self->gui_data = &dummy;
   self->priority = 242; // module order created by iop_dependencies.py, do not edit!
 }
 
@@ -368,7 +374,6 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  free(self->gui_data);
   self->gui_data = NULL;
 }
 
