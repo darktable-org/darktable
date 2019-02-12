@@ -1484,7 +1484,7 @@ void dt_control_move_images()
 
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
       _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
-      GTK_RESPONSE_CANCEL, C_("for moving", "_select as destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+      GTK_RESPONSE_CANCEL, C_("to move", "_select as destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
 #endif
@@ -1544,7 +1544,7 @@ void dt_control_copy_images()
 
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
       _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
-      GTK_RESPONSE_CANCEL, C_("for copying", "_select as destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+      GTK_RESPONSE_CANCEL, C_("to copy", "_select as destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
 #endif
