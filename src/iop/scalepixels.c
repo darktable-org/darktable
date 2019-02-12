@@ -41,7 +41,6 @@ typedef struct dt_iop_scalepixels_params_t
 
 typedef struct dt_iop_scalepixels_gui_data_t
 {
-  GtkWidget *pixel_aspect_ratio;
 } dt_iop_scalepixels_gui_data_t;
 
 typedef struct dt_iop_scalepixels_data_t {
@@ -50,6 +49,7 @@ typedef struct dt_iop_scalepixels_data_t {
   float y_scale;
 } dt_iop_scalepixels_data_t;
 
+static dt_iop_scalepixels_gui_data_t dummy;
 
 const char *name()
 {
@@ -277,7 +277,7 @@ void init(dt_iop_module_t *self)
                            && image->pixel_aspect_ratio != 1.0f);
   self->priority = 257; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_scalepixels_params_t);
-  self->gui_data = NULL;
+  self->gui_data = &dummy;
 }
 
 void cleanup(dt_iop_module_t *self)
@@ -295,7 +295,6 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  free(self->gui_data);
   self->gui_data = NULL;
 }
 
