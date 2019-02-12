@@ -1876,7 +1876,7 @@ msgstr "Удалить из коллекции"
 
 #: ../src/control/jobs/control_jobs.c:735
 msgid "skip to next file"
-msgstr "Переход к следующему файлу"
+msgstr "Перейти к следующему файлу"
 
 #: ../src/control/jobs/control_jobs.c:736
 msgid "stop process"
@@ -1884,7 +1884,7 @@ msgstr "Остановить процесс"
 
 #: ../src/control/jobs/control_jobs.c:741
 msgid "trashing error"
-msgstr "Ошибка удалении в корзину!"
+msgstr "Ошибка удаления в корзину!"
 
 #: ../src/control/jobs/control_jobs.c:742
 msgid "deletion error"
