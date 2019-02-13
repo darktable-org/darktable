@@ -48,7 +48,7 @@
   * keep just enough contrast in the UI to make text readable, but not
   too much to avoid distractions from the picture,
   * avoid sharp and unnecessary details for the same reason (shadows,
-  borders, fancy bits). Use plain shapes.
+  borders, colors, fancy bits). Use plain shapes and flat design.
   * keep 60 % distance between background and foreground colors for active controls
   * keep 30 % distance between background and foreground colors for labels and info
   * keep 20 % distance between background and foreground colors for insensitive controls
@@ -56,6 +56,7 @@
   * borders are ± 5 % from the background
   * buttons and control follow Google Material Design principles :
     https://material.io/design/
+  * create optical margins by aligning content properly, not by using borders.
 */
 
 
@@ -246,14 +247,10 @@ treeview *
 
 #left scrolledwindow
 {
-  margin: 0 0 0 2pt;
-  padding: 0 4pt 0 2pt;
 }
 
 #right scrolledwindow
 {
-  margin: 0 2pt 0 0;
-  padding: 0 2pt 0 4pt;
 }
 
 #lib-plugin-ui scrolledwindow,
@@ -269,7 +266,7 @@ treeview *
 #iop-plugin-ui
 {
   border: 0.5pt solid @border_color;
-  margin: 0 0 2pt 0;
+  margin: 0 4pt 2pt 4pt;
   border-radius: 4pt;
   color: @plugin_fg_color;
   padding: 0.25pt;
@@ -415,12 +412,21 @@ entry *
   padding:0;
 }
 
-#panel_label
+#lib-panel-label
 {
   background-color: @bg_color;
-  font-size:0.95em;
   border:0;
-  padding: 2pt 2pt 2pt 4pt;
+  padding: 0 2pt 2pt 4.5pt;
+  font-weight: 400;
+  font-stretch: condensed;
+  font-family: "Roboto Condensed","Segoe UI Condensed", "SF Pro Display", "Ubuntu Condensed", "Cantarell", sans-serif;
+}
+
+#iop-panel-label
+{
+  background-color: @bg_color;
+  border:0;
+  padding: 0 2pt 2pt 0;
   font-weight: 400;
   font-stretch: condensed;
   font-family: "Roboto Condensed","Segoe UI Condensed", "SF Pro Display", "Ubuntu Condensed", "Cantarell", sans-serif;

@@ -958,7 +958,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_label_set_markup(GTK_LABEL(hw[DT_MODULE_LABEL]), label);
   gtk_widget_set_tooltip_text(hw[DT_MODULE_LABEL], module->name(module));
   gtk_label_set_ellipsize(GTK_LABEL(hw[DT_MODULE_LABEL]), PANGO_ELLIPSIZE_MIDDLE);
-  gtk_widget_set_name(hw[DT_MODULE_LABEL], "panel_label");
+  gtk_widget_set_name(hw[DT_MODULE_LABEL], "lib-panel-label");
 
   /* add reset button if module has implementation */
   hw[DT_MODULE_RESET] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
@@ -985,11 +985,13 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_widget_set_halign(hw[DT_MODULE_LABEL], GTK_ALIGN_START);
   gtk_widget_set_halign(hw[DT_MODULE_RESET], GTK_ALIGN_END);
 
-  /* add empty space around widget */
-  gtk_widget_set_margin_start(module->widget, DT_PIXEL_APPLY_DPI(4));
-  gtk_widget_set_margin_end(module->widget, DT_PIXEL_APPLY_DPI(4));
-  gtk_widget_set_margin_top(module->widget, DT_PIXEL_APPLY_DPI(4));
-  gtk_widget_set_margin_bottom(module->widget, DT_PIXEL_APPLY_DPI(4));
+  /* add empty space around module widget
+   * this cannot be set in CSS because the module collapsing is badly handled
+   * */
+  gtk_widget_set_margin_start(module->widget, DT_PIXEL_APPLY_DPI(16));
+  gtk_widget_set_margin_end(module->widget, DT_PIXEL_APPLY_DPI(16));
+  gtk_widget_set_margin_top(module->widget, DT_PIXEL_APPLY_DPI(16));
+  gtk_widget_set_margin_bottom(module->widget, DT_PIXEL_APPLY_DPI(16));
   gtk_widget_show_all(module->widget);
   gtk_widget_set_name(pluginui_frame, "lib-plugin-ui");
   module->expander = expander;

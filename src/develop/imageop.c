@@ -1053,7 +1053,7 @@ gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
 
 static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
 {
-  gtk_widget_set_name(lab, "panel_label");
+  gtk_widget_set_name(lab, "iop-panel-label");
   gchar *label = dt_history_item_get_name_html(module);
   gchar *tooltip;
   if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
@@ -1964,10 +1964,10 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   /* add empty space around module widget
    * this cannot be set in CSS because the module collapsing is badly handled
    * */
-  gtk_widget_set_margin_start(module->widget, DT_PIXEL_APPLY_DPI(4));
-  gtk_widget_set_margin_end(module->widget, DT_PIXEL_APPLY_DPI(4));
-  gtk_widget_set_margin_top(module->widget, DT_PIXEL_APPLY_DPI(4));
-  gtk_widget_set_margin_bottom(module->widget, DT_PIXEL_APPLY_DPI(4));
+  gtk_widget_set_margin_start(module->widget, DT_PIXEL_APPLY_DPI(16));
+  gtk_widget_set_margin_end(module->widget, DT_PIXEL_APPLY_DPI(16));
+  gtk_widget_set_margin_top(module->widget, DT_PIXEL_APPLY_DPI(16));
+  gtk_widget_set_margin_bottom(module->widget, DT_PIXEL_APPLY_DPI(16));
   gtk_widget_hide(iopw);
 
   module->expander = expander;
