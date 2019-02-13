@@ -519,7 +519,7 @@ void gui_init(dt_imageio_module_format_t *self)
   if(dt_conf_key_exists("plugins/imageio/format/png/compression"))
     compression = dt_conf_get_int("plugins/imageio/format/png/compression");
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   // Bit depth combo box
   gui->bit_depth = dt_bauhaus_combobox_new(NULL);

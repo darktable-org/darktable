@@ -369,7 +369,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(width_callback), self);
 
   /* lightnessslider */
-  GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2));
+  GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
 #define NEUTRAL_GRAY 0.5
   static const GdkRGBA _gradient_L[]
@@ -379,7 +379,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->gslider1), _("select the center of fill-light\nctrl+click to select an area"));
   g_signal_connect(G_OBJECT(g->gslider1), "value-changed", G_CALLBACK(center_callback), self);
   g->tbutton1 = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL));
-  gtk_widget_set_size_request(GTK_WIDGET(g->tbutton1), DT_PIXEL_APPLY_DPI(22), DT_PIXEL_APPLY_DPI(22));
 
   g_signal_connect(G_OBJECT(g->tbutton1), "button-press-event", G_CALLBACK(dt_iop_color_picker_callback_button_press), &g->color_picker);
 

@@ -683,7 +683,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), c->mode_stack, TRUE, TRUE, 0);
 
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
-  GtkWidget *vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
+  GtkWidget *vbox_manual = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
   gtk_widget_set_tooltip_text(GTK_WIDGET(c->area),_("drag handles to set black, gray, and white points. "
@@ -701,7 +701,6 @@ void gui_init(dt_iop_module_t *self)
 
   GtkWidget *autobutton = gtk_button_new_with_label(_("auto"));
   gtk_widget_set_tooltip_text(autobutton, _("apply auto levels"));
-  gtk_widget_set_size_request(autobutton, -1, DT_PIXEL_APPLY_DPI(24));
 
   c->blackpick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(c->blackpick, _("pick black point from image"));
@@ -720,7 +719,7 @@ void gui_init(dt_iop_module_t *self)
   color.red = color.green = color.blue = 1.0;
   dtgtk_togglebutton_override_color(DTGTK_TOGGLEBUTTON(c->whitepick), &color);
 
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(autobutton), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(c->blackpick), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(c->greypick), TRUE, TRUE, 0);
@@ -746,7 +745,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(c->percentile_white, "%.1f%%");
   dt_bauhaus_widget_set_label(c->percentile_white, NULL, _("white"));
 
-  GtkWidget *vbox_automatic = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
+  GtkWidget *vbox_automatic = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_box_pack_start(GTK_BOX(vbox_automatic), GTK_WIDGET(c->percentile_black), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox_automatic), GTK_WIDGET(c->percentile_grey), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(vbox_automatic), GTK_WIDGET(c->percentile_white), FALSE, FALSE, 0);

@@ -4101,7 +4101,7 @@ void gui_init(dt_view_t *self)
 #endif
   g_signal_connect_swapped(G_OBJECT(profile_button), "button-press-event", G_CALLBACK(gtk_widget_show_all), lib->profile_floating_window);
 
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   gtk_container_add(GTK_CONTAINER(lib->profile_floating_window), vbox);
 
