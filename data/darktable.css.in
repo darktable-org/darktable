@@ -273,6 +273,11 @@ treeview *
   background-color: @plugin_bg_color;
 }
 
+#blending-box
+{
+  margin: 6pt 12pt 6pt 12pt;
+}
+
 /* Buttons */
 
 button
@@ -434,12 +439,25 @@ entry *
 
 #section_label
 {
-  padding: 3pt 0;
+  margin: 0 0 6pt 0;
+  padding: 0 0 3pt 0;
   color: @section_label;
   border-bottom: 0.5pt solid  @section_label;
-  margin: 3pt 0;
   font-weight: 600;
   font-family: "Roboto Medium", "Segoe UI Semibold", "SF Pro Display Medium", "Ubuntu Medium", "Cantarell", sans-serif;
+}
+
+#iop-plugin-ui #section_label,
+#lib-plugin-ui #section_label
+{
+  margin: 12pt 0 6pt 0;
+}
+
+/* Note : the section labels in blending boxes don't need an extra margin */
+
+#blending-box #section_label
+{
+  margin: 0 0 6pt 0;
 }
 
 /* sliders and scales */
@@ -617,7 +635,8 @@ treeview *:focus
 /* Notebooks tabs */
 
 notebook tabs,
-#modules-tabs
+#modules-tabs,
+#blending-tabs
 {
   border: 0;
   padding: 0;
@@ -627,7 +646,8 @@ notebook tabs,
   font-family: "Roboto", "Segoe UI", "SF Pro Text", "Cantarell", sans-serif;
 }
 
-#modules-tabs
+#modules-tabs,
+#blending-tabs
 {
   background-color: @button_bg;
 }
@@ -640,10 +660,18 @@ notebook tabs,
   margin: 0;
 }
 
+#blending-tabs *
+{
+  font-size: 8pt;
+  min-height: 17pt;
+  min-width: 17pt;
+  margin: 0;
+}
+
 notebook tab
 {
   border-bottom: 2pt solid transparent;
-  padding: 3pt 8pt 3pt 8pt;
+  padding: 3pt;
 }
 
 notebook tab label /* disabled tabs */
@@ -678,7 +706,7 @@ notebook tab:focus label
   background-color: @button_focus_bg;
 }
 
-/* Bauhaus controls (sliders etc.) */
+/* Bauhaus controls (sliders and comboboxes) */
 
 #bauhaus-popup
 {
@@ -698,7 +726,7 @@ notebook tab:focus label
 
 #bauhaus-popup:disabled
 {
-  color: @bauhaus_fg;
+  color: @plugin_bg;
 }
 
 #bauhaus-combobox
