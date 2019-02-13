@@ -273,6 +273,11 @@ treeview *
   background-color: @plugin_bg_color;
 }
 
+#module-header
+{
+ padding: 2pt 0;
+}
+
 #blending-box
 {
   margin: 6pt 12pt 6pt 12pt;
@@ -351,9 +356,11 @@ button:focus,
 #module-reset-button * button,
 #module-enable-button * button,
 #module-instance-button * button,
-#module-enable-button * button
+#module-enable-button * button,
+#module-collapse-button * button
 {
   font-size: 0.8em;
+  background-color: transparent;
 }
 
 /* Checkbox */
@@ -417,17 +424,8 @@ entry *
   padding:0;
 }
 
+#iop-panel-label,
 #lib-panel-label
-{
-  background-color: @bg_color;
-  border:0;
-  padding: 0 2pt 2pt 4.5pt;
-  font-weight: 400;
-  font-stretch: condensed;
-  font-family: "Roboto Condensed","Segoe UI Condensed", "SF Pro Display", "Ubuntu Condensed", "Cantarell", sans-serif;
-}
-
-#iop-panel-label
 {
   background-color: @bg_color;
   border:0;
