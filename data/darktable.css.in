@@ -49,11 +49,11 @@
   too much to avoid distractions from the picture,
   * avoid sharp and unnecessary details for the same reason (shadows,
   borders, colors, fancy bits). Use plain shapes and flat design.
-  * keep 60 % distance between background and foreground colors for active controls
+  * keep 50 % distance between background and foreground colors for active controls
   * keep 30 % distance between background and foreground colors for labels and info
-  * keep 20 % distance between background and foreground colors for insensitive controls
-  * accents are ± 10 % from the background color
-  * borders are ± 5 % from the background
+  * keep 10 % distance between background and foreground colors for insensitive controls
+  * events are ± 20 % from the normal color
+  * borders and accents are ± 5 % from the background
   * buttons and control follow Google Material Design principles :
     https://material.io/design/
   * create optical margins by aligning content properly, not by using borders.
@@ -90,17 +90,21 @@
 
 @define-color button_bg @grey_25;
 @define-color button_fg @grey_85;
-@define-color button_border @grey_35;
-@define-color button_checked_bg @grey_15;
-@define-color button_checked_fg @grey_75;
-@define-color button_hover_bg @grey_35;
-@define-color button_hover_fg @grey_95;
-@define-color button_focus_bg @grey_30;
-@define-color button_focus_fg @grey_90;
-@define-color button_insensitive_fg @grey_10;
+@define-color button_border @grey_30;
+@define-color button_focus_bg @grey_45;
+@define-color button_focus_fg @grey_95;
+@define-color button_checked_bg @grey_45;
+@define-color button_checked_fg @grey_95;
+@define-color button_hover_bg @grey_65;
+@define-color button_hover_fg @grey_15;
 
 @define-color field_bg @grey_15;
 @define-color field_fg @grey_75;
+@define-color field_active_bg @grey_20;
+@define-color field_active_fg @grey_80;
+@define-color field_hover_bg @grey_25;
+@define-color field_hover_fg @grey_85;
+@define-color field_select_bg @grey_05;
 
 /* Tooltips and contextual helpers */
 @define-color tooltip_bg_color @grey_05;
@@ -161,6 +165,8 @@
 #iop-plugin-ui,
 #lib-modulelist,
 #modules-tabs,
+#left,
+#right,
 combobox,
 combobox *,
 togglebutton,
@@ -171,6 +177,8 @@ notebook tab,
 notebook tab *,
 table,
 table *,
+row,
+row *,
 frame,
 frame *,
 alignment,
@@ -191,7 +199,14 @@ scale *,
 button,
 button *,
 treeview,
-treeview *
+treeview *,
+menu,
+menu *,
+separator,
+eventbox,
+eventbox *,
+box,
+box *
 {
   font-family: "Roboto Light", "Segoe UI Light", "SF Pro Display Light", "Ubuntu Light", "Cantarell", sans-serif;
   font-size: 1em;
@@ -207,16 +222,10 @@ treeview *
   min-height: 0;
 }
 
-
 /* General properties */
 
-
-*:disabled,
-*:insensitive {
-  background-color: transparent;
-  color: @bg_color;
-  color: transparent;
-  border-color: transparent;
+*:disabled {
+  color: shade(@fg_color, .33);
 }
 
 /**** General events properties for reference
@@ -245,12 +254,21 @@ treeview *
 
 /* Side panels */
 
-#left scrolledwindow
+#left
 {
+  padding-right: 8pt;
 }
 
+#right
+{
+  padding-left: 8pt;
+}
+
+#left scrolledwindow,
 #right scrolledwindow
 {
+  margin: 0;
+  padding: 4pt 0;
 }
 
 #lib-plugin-ui scrolledwindow,
@@ -265,22 +283,26 @@ treeview *
 #lib-plugin-ui,
 #iop-plugin-ui
 {
-  border: 0.5pt solid @border_color;
-  margin: 0 4pt 2pt 4pt;
-  border-radius: 4pt;
+  margin: 0;
+  border-radius: 0;
   color: @plugin_fg_color;
-  padding: 0.25pt;
   background-color: @plugin_bg_color;
+}
+
+#iop-plugin-ui-main,
+#lib-plugin-ui-main
+{
+  padding: 8pt;
 }
 
 #module-header
 {
- padding: 2pt 0;
+ padding: 4pt 0 2pt 0;
 }
 
 #blending-box
 {
-  margin: 6pt 12pt 6pt 12pt;
+  padding: 8pt;
 }
 
 /* Buttons */
@@ -289,8 +311,8 @@ button
 {
   border-radius: 2pt;
   padding: 2pt;
-  margin: 0 0.5pt;
-  border: 0.5pt solid @border_color;
+  margin: 0;
+  border: 1px solid @button_border;
   background-color: @button_bg;
   color: @button_fg;
   font-weight: 600;
@@ -299,40 +321,49 @@ button
   min-width: 1em;
 }
 
-#recent-collection-ui button,
-#history-ui button
+#recent-collection-button,
+#history-button
 {
   background-color: transparent;
+  border-color: transparent;
   border: 0;
 }
 
 button:selected,
 button:active,
 button:checked,
-#recent-collection-ui button:selected,
-#history-ui button:selected,
-#recent-collection-ui button:active,
-#history-ui button:active,
-#recent-collection-ui button:checked,
-#history-ui button:checked {
+#recent-collection-button:selected,
+#history-button:selected,
+#recent-collection-button:active,
+#history-button:active,
+#recent-collection-button:checked,
+#history-button:checked {
   background-color: @button_checked_bg;
   color: @button_checked_fg;
 }
 
 button:hover,
-#recent-collection-ui button:hover,
-#history-ui button:hover
+#recent-collection-button:hover,
+#history-button:hover
 {
   background-color: @button_hover_bg;
   color: @button_hover_fg;
 }
 
 button:focus,
-#recent-collection-ui button:focus,
-#history-ui button:focus
+#recent-collection-button:focus,
+#history-button:focus
 {
   background-color: @button_focus_bg;
   color: @button_focus_fg;
+}
+
+button:disabled,
+#recent-collection-button:disabled,
+#history-button:disabled
+{
+  color: @bg_color;
+  background-color: transparent;
 }
 
 #dt-button button,
@@ -340,7 +371,7 @@ button:focus,
 #dt-icon
 {
   padding: 2pt;
-  margin: 1pt;
+  margin: 0;
   min-height: 1em;
   min-width: 1em;
 }
@@ -380,12 +411,14 @@ checkbutton check
 entry {
   border-radius: 2pt;
   border: 0.5pt solid @border_color;
-  color:@bauhaus_fg;
+  padding: 2pt;
+  margin: 0 2pt;
+  color: @field_fg;
   background-color: @field_bg;
 }
 
 entry:hover {
-  color:@bauhaus_fg;
+  color: @field_hover_fg;
   background-color: @field_hover_bg;
 }
 
@@ -393,12 +426,12 @@ entry:checked,
 entry:active,
 entry:focus
  {
-  color:@field_fg_active;
-  background-color: @field_bg_active;
+  color: @field_active_fg;
+  background-color: @field_active_bg;
 }
 
 entry selection {
-  background-color: @field_hover_bg;
+  background-color: @field_select_bg;
 }
 
 entry *
@@ -449,6 +482,10 @@ entry *
 #lib-plugin-ui #section_label
 {
   margin: 12pt 0 6pt 0;
+}
+
+#lib-modulelist
+{
 }
 
 /* Note : the section labels in blending boxes don't need an extra margin */
@@ -554,7 +591,7 @@ dialog combobox window
   outline-style: none;
   min-height: 1em;
   min-width: 1em;
-  padding: 4pt;
+  padding: 8pt;
 }
 
 #view_dropdown,
@@ -610,14 +647,6 @@ treeview header
   color: @button_fg;
 }
 
-treeview *:selected,
-treeview *:active,
-treeview *:checked
-{
-  background-color: @button_checked_bg;
-  color: @button_checked_fg;
-}
-
 treeview *:hover
 {
   background-color: @button_hover_bg;
@@ -628,6 +657,19 @@ treeview *:focus
 {
   background-color: @button_focus_bg;
   color: @button_focus_fg;
+}
+
+treeview *:active,
+treeview *:checked
+{
+  background-color: @button_checked_bg;
+  color: @button_checked_fg;
+}
+
+treeview *:selected
+{
+  background-color: @button_bg;
+  color: @button_fg;
 }
 
 /* Notebooks tabs */
@@ -642,6 +684,10 @@ notebook tabs,
   color: @button_fg;
   font-weight: 400;
   font-family: "Roboto", "Segoe UI", "SF Pro Text", "Cantarell", sans-serif;
+}
+
+#blending-tabs
+{
 }
 
 #modules-tabs,
@@ -697,11 +743,6 @@ notebook tab:checked label,
 notebook tab:focus label
 {
   color: @button_focus_fg;
-}
-
-#modules-tabs button:checked
-{
-  background-color: @button_focus_bg;
 }
 
 /* Bauhaus controls (sliders and comboboxes) */

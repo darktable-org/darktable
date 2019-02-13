@@ -1655,7 +1655,7 @@ GtkWidget *dt_ui_main_window(dt_ui_t *ui)
 static GtkWidget *_ui_init_panel_container_top(GtkWidget *container)
 {
   GtkWidget *w = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_UI_PANEL_MODULE_SPACING);
-  gtk_box_pack_start(GTK_BOX(container), w, FALSE, FALSE, 4);
+  gtk_box_pack_start(GTK_BOX(container), w, FALSE, FALSE, 0);
   return w;
 }
 
@@ -1728,7 +1728,7 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean
 
   /* create the container */
   container = widget;
-  widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_UI_PANEL_MODULE_SPACING);
+  widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(widget, "plugins_vbox_left");
   gtk_container_add(GTK_CONTAINER(container), widget);
 
@@ -1737,8 +1737,8 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean
 
 static GtkWidget *_ui_init_panel_container_bottom(GtkWidget *container)
 {
-  GtkWidget *w = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_UI_PANEL_MODULE_SPACING);
-  gtk_box_pack_start(GTK_BOX(container), w, FALSE, FALSE, DT_UI_PANEL_MODULE_SPACING);
+  GtkWidget *w = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_pack_start(GTK_BOX(container), w, FALSE, FALSE, 0);
   return w;
 }
 
@@ -1922,14 +1922,14 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
   gtk_window_set_title(GTK_WINDOW(window), title);
   g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add(GTK_CONTAINER(window), vbox);
 
   GtkWidget *label = gtk_label_new(NULL);
   gtk_label_set_markup(GTK_LABEL(label), markup);
   gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
 
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
   result_t result = {.result = RESULT_NONE, .window = window};

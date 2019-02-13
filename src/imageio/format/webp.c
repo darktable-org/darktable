@@ -312,7 +312,7 @@ void gui_init(dt_imageio_module_format_t *self)
   const int quality = dt_conf_get_int("plugins/imageio/format/webp/quality");
   const int hint = dt_conf_get_int("plugins/imageio/format/webp/hint");
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   gui->compression = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(gui->compression, NULL, _("compression type"));

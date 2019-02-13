@@ -1382,12 +1382,10 @@ void gui_init(struct dt_iop_module_t *self)
   g->colorpick = gtk_color_button_new_with_rgba(&color);
   gtk_widget_set_tooltip_text(g->colorpick, _("watermark color, tag:\n$(WATERMARK_COLOR)"));
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select watermark color"));
 
   g->color_picker_button = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->color_picker_button), _("pick color from image"));
-  gtk_widget_set_size_request(GTK_WIDGET(g->color_picker_button), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
   g_signal_connect(G_OBJECT(g->color_picker_button), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
 
   gtk_box_pack_start(GTK_BOX(box), g->colorpick, TRUE, TRUE, 0);
@@ -1460,7 +1458,6 @@ void gui_init(struct dt_iop_module_t *self)
   for(int i = 0; i < 9; i++)
   {
     g->align[i] = dtgtk_togglebutton_new(dtgtk_cairo_paint_alignment, CPF_STYLE_FLAT | (CPF_SPECIAL_FLAG << i), NULL);
-    gtk_widget_set_size_request(GTK_WIDGET(g->align[i]), DT_PIXEL_APPLY_DPI(16), DT_PIXEL_APPLY_DPI(16));
     gtk_grid_attach(GTK_GRID(bat), GTK_WIDGET(g->align[i]), i%3, i/3, 1, 1);
     g_signal_connect(G_OBJECT(g->align[i]), "toggled", G_CALLBACK(alignment_callback), self);
   }
