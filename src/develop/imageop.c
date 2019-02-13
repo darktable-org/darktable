@@ -1966,8 +1966,8 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
    * */
   gtk_widget_set_margin_start(module->widget, DT_PIXEL_APPLY_DPI(16));
   gtk_widget_set_margin_end(module->widget, DT_PIXEL_APPLY_DPI(16));
-  gtk_widget_set_margin_top(module->widget, DT_PIXEL_APPLY_DPI(16));
-  gtk_widget_set_margin_bottom(module->widget, DT_PIXEL_APPLY_DPI(16));
+  gtk_widget_set_margin_top(module->widget, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_margin_bottom(module->widget, DT_PIXEL_APPLY_DPI(8));
   gtk_widget_hide(iopw);
 
   module->expander = expander;
