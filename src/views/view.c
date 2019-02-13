@@ -1602,7 +1602,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
 
         if (zoom != 1)
         {
-          double x0 = DT_PIXEL_APPLY_DPI(1), y0 = DT_PIXEL_APPLY_DPI(1), rect_width = width - DT_PIXEL_APPLY_DPI(2),
+          const double x0 = DT_PIXEL_APPLY_DPI(1), y0 = DT_PIXEL_APPLY_DPI(1), rect_width = width - DT_PIXEL_APPLY_DPI(2),
                 radius = DT_PIXEL_APPLY_DPI(5);
           double x1, off, off1;
 
@@ -1623,9 +1623,9 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
         }
         else
         {
-          const float x_zoom = 0.325;
-          const float y_zoom = 0.112;
-          const float edge_length = 0.016 * fscale;
+          const float x_zoom = 0.280;
+          const float y_zoom = 0.110;
+          const float edge_length = 0.018 * fscale;
 
           cairo_rectangle(cr, x_zoom * fscale, y_zoom * fscale, edge_length, edge_length);
           cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
