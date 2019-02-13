@@ -25,6 +25,7 @@
 #include "common/metadata.h"
 #include "common/pwstorage/pwstorage.h"
 #include "common/tags.h"
+#include "common/curl_tools.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
@@ -35,10 +36,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <inttypes.h>
 
 DT_MODULE(1)
 
-// #define piwigo_EXTRA_VERBOSE
+#define piwigo_EXTRA_VERBOSE FALSE
 
 #define MAX_ALBUM_NAME_SIZE 100
 
@@ -115,7 +117,7 @@ static size_t curl_write_data_cb(void *ptr, size_t size, size_t nmemb, void *dat
 {
   GString *string = (GString *)data;
   g_string_append_len(string, ptr, size * nmemb);
-#ifdef piwigo_EXTRA_VERBOSE
+#if piwigo_EXTRA_VERBOSE == TRUE
   g_printf("server reply: %s\n", string->str);
 #endif
   return size * nmemb;
@@ -276,13 +278,10 @@ static int _piwigo_api_post_internal(_piwigo_api_context_t *ctx, GList *args, ch
   // send the requests
   GString *response = g_string_new("");
 
-  curl_easy_reset(ctx->curl_ctx);
+  dt_curl_init(ctx->curl_ctx, piwigo_EXTRA_VERBOSE);
+
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_URL, url->str);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_POST, 1);
-#ifdef piwigo_EXTRA_VERBOSE
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_VERBOSE, 2);
-#endif
-  curl_easy_setopt(ctx->curl_ctx, CURLOPT_SSL_VERIFYPEER, FALSE);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEFUNCTION, curl_write_data_cb);
   curl_easy_setopt(ctx->curl_ctx, CURLOPT_WRITEDATA, response);
 
@@ -350,7 +349,7 @@ static int _piwigo_api_post_internal(_piwigo_api_context_t *ctx, GList *args, ch
 
   int res = curl_easy_perform(ctx->curl_ctx);
 
-#ifdef piwigo_EXTRA_VERBOSE
+#if piwigo_EXTRA_VERBOSE == TRUE
   g_printf("curl_easy_perform status %d\n", res);
 #endif
 
@@ -389,6 +388,8 @@ static void _piwigo_api_authenticate(_piwigo_api_context_t *ctx)
   args = _piwigo_query_add_arguments(args, "password", ctx->password);
   if(!strcmp(ctx->server, "piwigo.com"))
     ctx->url = g_strdup_printf("https://%s.piwigo.com/ws.php?format=json", ctx->username);
+  else if(strstr(ctx->server, "http") == ctx->server)
+    ctx->url = g_strdup_printf("%s/ws.php?format=json", ctx->server);
   else
     ctx->url = g_strdup_printf("https://%s/ws.php?format=json", ctx->server);
 
@@ -403,7 +404,7 @@ static void _piwigo_api_post(_piwigo_api_context_t *ctx, GList *args, char *file
 
   if(res == CURLE_COULDNT_CONNECT || res == CURLE_SSL_CONNECT_ERROR)
   {
-#ifdef piwigo_EXTRA_VERBOSE
+#if piwigo_EXTRA_VERBOSE == TRUE
     g_printf("curl post error (%d), try authentication again\n", res);
 #endif
 
@@ -412,24 +413,28 @@ static void _piwigo_api_post(_piwigo_api_context_t *ctx, GList *args, char *file
     ctx->curl_ctx = curl_easy_init();
     ctx->authenticated = FALSE;
 
-    // an error during the curl post command, could be an authentication issue, try to authenticate again
-    _piwigo_api_authenticate(ctx);
+    if(!isauth)
+    {
+      // an error during the curl post command, could be an authentication issue, try to authenticate again
+      // but only if this is not an authentication post, otherwise this will happen below anyway.
+      _piwigo_api_authenticate(ctx);
+    }
 
     // authentication ok, send again
     if(ctx->response && !ctx->error_occured)
     {
       ctx->authenticated = TRUE;
-#ifdef piwigo_EXTRA_VERBOSE
+#if piwigo_EXTRA_VERBOSE == TRUE
       g_printf("authenticated again, retry\n");
 #endif
       res = _piwigo_api_post_internal(ctx, args, filename, isauth);
-#ifdef piwigo_EXTRA_VERBOSE
+#if piwigo_EXTRA_VERBOSE == TRUE
       g_printf("second post exit with status %d\n", res);
 #endif
     }
     else
     {
-#ifdef piwigo_EXTRA_VERBOSE
+#if piwigo_EXTRA_VERBOSE == TRUE
       g_printf("failed second authentication\n");
 #endif
     }
@@ -608,7 +613,7 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui, const gchar
         while(*p++) if(*p == ',') indent++;
       }
 
-      snprintf(data, sizeof(data), "%*c%s (%ld)", indent * 3, ' ', new_album->name, new_album->size);
+      snprintf(data, sizeof(data), "%*c%s (%"PRId64")", indent * 3, ' ', new_album->name, new_album->size);
 
       if(to_select && !strcmp(new_album->name, to_select)) index = i + 1;
 
@@ -640,7 +645,7 @@ static const gboolean _piwigo_api_create_new_album(dt_storage_piwigo_params_t *p
   if(p->parent_album_id != 0)
   {
     char pid[100];
-    snprintf(pid, sizeof(pid), "%ld", p->parent_album_id);
+    snprintf(pid, sizeof(pid), "%"PRId64, p->parent_album_id);
     args = _piwigo_query_add_arguments(args, "parent", pid);
   }
   args = _piwigo_query_add_arguments(args, "status", p->privacy==0?"public":"private");
@@ -670,7 +675,7 @@ static const gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p, gc
   char cat[10];
   char privacy[10];
 
-  snprintf(cat, sizeof(cat), "%ld", p->album_id);
+  snprintf(cat, sizeof(cat), "%"PRId64, p->album_id);
   snprintf(privacy, sizeof(privacy), "%d", p->privacy);
 
   args = _piwigo_query_add_arguments(args, "method", "pwg.images.addSimple");
@@ -759,6 +764,8 @@ void gui_init(dt_imageio_module_storage_t *self)
   label = gtk_label_new(_("server"));
   g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
   ui->server_entry = GTK_ENTRY(gtk_entry_new());
+  gtk_widget_set_tooltip_text(GTK_WIDGET(ui->server_entry),
+                              _("the server name\ndefault protocol is https\nspecify http:// if non secure server"));
   gtk_widget_set_hexpand(GTK_WIDGET(ui->server_entry), TRUE);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(ui->server_entry));
   gtk_entry_set_text(ui->server_entry, last_account?last_account->server:"piwigo.com");

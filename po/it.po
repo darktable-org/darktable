@@ -942,7 +942,7 @@ msgstr ""
 
 #: ../data/darktable.appdata.xml.in.h:4
 msgid ""
-"darktable supports most modern camera's raw formats, and does all of its "
+"darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
 "darktable supporta i formati raw delle più moderne fotocamere, e ne esegue "
@@ -7927,7 +7927,7 @@ msgstr "Strumento cerchio di correzione macchie"
 
 #: ../src/iop/spots.c:690
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "Strumento ellittico di correzione macchie"
 
 #: ../src/iop/spots.c:691

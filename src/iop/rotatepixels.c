@@ -32,6 +32,10 @@
 
 DT_MODULE_INTROSPECTION(1, dt_iop_rotatepixels_params_t)
 
+typedef struct dt_iop_rotatepixels_gui_data_t
+{
+} dt_iop_rotatepixels_gui_data_t;
+
 typedef struct dt_iop_rotatepixels_params_t
 {
   uint32_t rx, ry;
@@ -43,6 +47,8 @@ typedef struct dt_iop_rotatepixels_data_t
   uint32_t rx, ry; // rotation center
   float m[4];      // rotation matrix
 } dt_iop_rotatepixels_data_t;
+
+dt_iop_rotatepixels_gui_data_t dummy;
 
 static void mul_mat_vec_2(const float *m, const float *p, float *o)
 {
@@ -146,6 +152,14 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   }
 
   return 1;
+}
+
+void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  // TODO
+  memset(out, 0, sizeof(float) * roi_out->width * roi_out->height);
+  fprintf(stderr, "TODO: implement %s() in %s\n", __FUNCTION__, __FILE__);
 }
 
 // 1st pass: how large would the output be, given this input roi?
@@ -341,7 +355,7 @@ void init(dt_iop_module_t *self)
   self->params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
   self->params_size = sizeof(dt_iop_rotatepixels_params_t);
-  self->gui_data = NULL;
+  self->gui_data = &dummy;
   self->priority = 242; // module order created by iop_dependencies.py, do not edit!
 }
 
@@ -360,7 +374,6 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  free(self->gui_data);
   self->gui_data = NULL;
 }
 

@@ -813,7 +813,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     memcpy(module->params, module->default_params, module->params_size);
-    memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+    dt_iop_commit_blend_params(module, module->default_blendop_params);
     module->enabled = module->default_enabled;
     module->multi_name[0] = '\0';
     modules = g_list_next(modules);
@@ -824,7 +824,7 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     memcpy(hist->module->params, hist->params, hist->module->params_size);
-    memcpy(hist->module->blend_params, hist->blend_params, sizeof(dt_develop_blend_params_t));
+    dt_iop_commit_blend_params(hist->module, hist->blend_params);
 
     hist->module->enabled = hist->enabled;
     snprintf(hist->module->multi_name, sizeof(hist->module->multi_name), "%s", hist->multi_name);
@@ -1115,7 +1115,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
       dt_iop_module_t *new_module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
       if(!dt_iop_load_module(new_module, find_op->so, dev))
       {
-        new_module->multi_priority = multi_priority;
+        dt_iop_update_multi_priority(new_module, multi_priority);
 
         snprintf(new_module->multi_name, sizeof(new_module->multi_name), "%s", multi_name);
 
@@ -1193,8 +1193,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
         {
           // quick and dirty hack to handle spot removal legacy_params
           memcpy(hist->blend_params, hist->module->blend_params, sizeof(dt_develop_blend_params_t));
-          memcpy(hist->module->blend_params, hist->module->default_blendop_params,
-                 sizeof(dt_develop_blend_params_t));
+          dt_iop_commit_blend_params(hist->module, hist->module->default_blendop_params);
         }
       }
 
@@ -1567,7 +1566,7 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
       // if the module is after the new one, we have to increment his priority
       if(mod->multi_priority >= priority)
       {
-        mod->multi_priority += 1;
+        dt_iop_update_multi_priority(mod, mod->multi_priority + 1);
       }
       if(pmax < mod->multi_priority) pmax = mod->multi_priority;
     }
@@ -1575,7 +1574,7 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
   }
   pmax += 1;
   if(priority < pmax) pmax = priority;
-  module->multi_priority = pmax;
+  dt_iop_update_multi_priority(module, pmax);
 
   // since we do not rename the module we need to check that an old module does not have the same name. Indeed
   // the multi_priority
@@ -1723,7 +1722,7 @@ void dt_dev_modules_update_multishow(dt_develop_t *dev)
     modules = g_list_next(modules);
   }
 }
-gchar *dt_history_item_get_name(struct dt_iop_module_t *module)
+gchar *dt_history_item_get_name(const struct dt_iop_module_t *module)
 {
   gchar *label;
   /* create a history button and add to box */
@@ -1733,7 +1732,8 @@ gchar *dt_history_item_get_name(struct dt_iop_module_t *module)
     label = g_strdup_printf("%s %s", module->name(), module->multi_name);
   return label;
 }
-gchar *dt_history_item_get_name_html(struct dt_iop_module_t *module)
+
+gchar *dt_history_item_get_name_html(const struct dt_iop_module_t *module)
 {
   gchar *label;
   /* create a history button and add to box */

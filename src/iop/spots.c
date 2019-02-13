@@ -359,19 +359,15 @@ static int masks_get_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   return res;
 }
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
-             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in,
+              float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out, const int ch)
 {
   dt_iop_spots_params_t *d = (dt_iop_spots_params_t *)piece->data;
   dt_develop_blend_params_t *bp = self->blend_params;
 
-  const int ch = piece->colors;
-  const float *in = (float *)i;
-  float *out = (float *)o;
-
 // we don't modify most of the image:
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(out, in)
+#pragma omp parallel for schedule(static) default(none)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -466,9 +462,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
             const float f = filter[xx - posx + 1] * filter[yy - posy + 1];
             for(int c = 0; c < ch; c++)
-              out[4 * ((size_t)roi_out->width * (yy - roi_out->y) + xx - roi_out->x) + c]
-                  = out[4 * ((size_t)roi_out->width * (yy - roi_out->y) + xx - roi_out->x) + c] * (1.0f - f)
-                    + in[4 * ((size_t)roi_in->width * (yy - posy + posy_source - roi_in->y) + xx - posx
+              out[ch * ((size_t)roi_out->width * (yy - roi_out->y) + xx - roi_out->x) + c]
+                  = out[ch * ((size_t)roi_out->width * (yy - roi_out->y) + xx - roi_out->x) + c] * (1.0f - f)
+                    + in[ch * ((size_t)roi_in->width * (yy - posy + posy_source - roi_in->y) + xx - posx
                               + posx_source - roi_in->x) + c] * f;
           }
         }
@@ -515,9 +511,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                              + (int)((xx - fls) / roi_in->scale)] * grpt->opacity;
 
               for(int c = 0; c < ch; c++)
-                out[4 * ((size_t)roi_out->width * (yy - roi_out->y) + xx - roi_out->x) + c]
-                    = out[4 * ((size_t)roi_out->width * (yy - roi_out->y) + xx - roi_out->x) + c] * (1.0f - f)
-                      + in[4 * ((size_t)roi_in->width * (yy - dy - roi_in->y) + xx - dx - roi_in->x) + c] * f;
+                out[ch * ((size_t)roi_out->width * (yy - roi_out->y) + xx - roi_out->x) + c]
+                    = out[ch * ((size_t)roi_out->width * (yy - roi_out->y) + xx - roi_out->x) + c] * (1.0f - f)
+                      + in[ch * ((size_t)roi_in->width * (yy - dy - roi_in->y) + xx - dx - roi_in->x) + c] * f;
             }
           }
         }
@@ -527,6 +523,20 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       forms = g_list_next(forms);
     }
   }
+}
+
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const float *in = (float *)i;
+  float *out = (float *)o;
+  _process(self, piece, in, out, roi_in, roi_out, piece->colors);
+}
+
+void distort_mask(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  _process(self, piece, in, out, roi_in, roi_out, 1);
 }
 
 /** init, cleanup, commit to pipeline */
@@ -689,7 +699,7 @@ void gui_cleanup(dt_iop_module_t *self)
 void init_key_accels (dt_iop_module_so_t *module)
 {
   dt_accel_register_iop (module, TRUE, NC_("accel", "spot circle tool"),   0, 0);
-  dt_accel_register_iop (module, TRUE, NC_("accel", "spot elipse tool"),   0, 0);
+  dt_accel_register_iop (module, TRUE, NC_("accel", "spot ellipse tool"),   0, 0);
   dt_accel_register_iop (module, TRUE, NC_("accel", "spot path tool"),     0, 0);
   dt_accel_register_iop (module, TRUE, NC_("accel", "spot show or hide"),  0, 0);
 }
@@ -740,7 +750,7 @@ void connect_key_accels (dt_iop_module_t *module)
   dt_accel_connect_iop (module, "spot circle tool", closure);
 
   closure = g_cclosure_new(G_CALLBACK(_add_ellipse_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop (module, "spot elipse tool", closure);
+  dt_accel_connect_iop (module, "spot ellipse tool", closure);
 
   closure = g_cclosure_new(G_CALLBACK(_add_path_key_accel), (gpointer)module, NULL);
   dt_accel_connect_iop (module, "spot path tool", closure);

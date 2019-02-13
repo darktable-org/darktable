@@ -297,7 +297,8 @@ static float envelope(const float xx)
 static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const char *filename,
                                         const void *const ivoid,
                                         dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                                        void *exif, int exif_len, int imgid, int num, int total)
+                                        void *exif, int exif_len, int imgid, int num, int total,
+                                        dt_dev_pixelpipe_t *pipe)
 {
   dt_control_merge_hdr_format_t *data = (dt_control_merge_hdr_format_t *)datai;
   dt_control_merge_hdr_t *d = data->d;
@@ -449,8 +450,9 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
 
     const uint32_t imgid = GPOINTER_TO_INT(t->data);
 
-    dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, 1, 0, 0, 1, 0,
-                                 "pre:rawprepare", 0, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL, NULL, num, total);
+    dt_imageio_export_with_flags(imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE, TRUE,
+                                 FALSE, "pre:rawprepare", FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL, NULL,
+                                 num, total);
 
     t = g_list_delete_link(t, t);
 

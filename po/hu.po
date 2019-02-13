@@ -966,7 +966,7 @@ msgstr ""
 
 #: ../data/darktable.appdata.xml.in.h:4
 msgid ""
-"darktable supports most modern camera's raw formats, and does all of its "
+"darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
 "a darktable támogatja a legtöbb modern kamera raw formátumát, a "
@@ -8099,7 +8099,7 @@ msgstr "automatikus optimalizálás"
 #: ../src/iop/profile_gamma.c:928
 msgid ""
 "enlarge or shrink the computed dynamic range\n"
-"this is usefull when noise perturbates the measurements"
+"this is useful when noise perturbates the measurements"
 msgstr ""
 "bővítés vagy zsugorítás a számított dinamikatartományhoz\n"
 "akkor hasznos, ha a zaj pertubálja mérést"
@@ -8476,7 +8476,7 @@ msgstr "folt kör eszköz"
 
 #: ../src/iop/spots.c:693
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "folt ellipszis eszköz"
 
 #: ../src/iop/spots.c:694
@@ -8580,7 +8580,7 @@ msgid "cut shapes from current scale"
 msgstr "alakzatok kivágása az aktuális skáláról"
 
 #: ../src/iop/retouch.c:2778
-msgid "paste cutted shapes to current scale"
+msgid "paste cut shapes to current scale"
 msgstr "kivágott alakzatok beillesztése az aktuális skálára"
 
 #: ../src/iop/retouch.c:2803
@@ -8620,7 +8620,7 @@ msgid "color"
 msgstr "szín"
 
 #: ../src/iop/retouch.c:2855
-msgid "erase the detail or fills with choosen color"
+msgid "erase the detail or fills with chosen color"
 msgstr "a választott szín részleteit vagy kitöltését törli"
 
 #: ../src/iop/retouch.c:2867 ../src/iop/retouch.c:2868
@@ -8874,7 +8874,7 @@ msgid "Lab, linked channels"
 msgstr "Lab, kapcsolt csatornák"
 
 #: ../src/iop/tonecurve.c:1177
-msgid "Lab, independant channels"
+msgid "Lab, independent channels"
 msgstr "Lab, független csatornák"
 
 #: ../src/iop/tonecurve.c:1178
@@ -11625,7 +11625,7 @@ msgid "access the online usermanual?"
 msgstr "megnyitja az online kézikönyvet?"
 
 #: ../src/libs/tools/global_toolbox.c:283
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "súgó url megnyitva a böngészőben"
 
 #: ../src/libs/tools/global_toolbox.c:288

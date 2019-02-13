@@ -51,10 +51,7 @@ typedef enum
 
 typedef struct dt_imageio_webp_t
 {
-  int max_width, max_height;
-  int width, height;
-  char style[128];
-  gboolean style_append;
+  dt_imageio_module_data_t global;
   int comp_type;
   int quality;
   int hint;
@@ -126,7 +123,7 @@ static int FileWriter(const uint8_t *data, size_t data_size, const WebPPicture *
 
 int write_image(dt_imageio_module_data_t *webp, const char *filename, const void *in_tmp,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total)
+                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe)
 {
   FILE *out = NULL;
   WebPPicture pic;
@@ -161,13 +158,13 @@ int write_image(dt_imageio_module_data_t *webp, const char *filename, const void
 
   if(!WebPPictureInit(&pic)) goto error;
   pic_init = 1;
-  pic.width = webp_data->width;
-  pic.height = webp_data->height;
+  pic.width = webp_data->global.width;
+  pic.height = webp_data->global.height;
   pic.use_argb = !!(config.lossless);
   pic.writer = FileWriter;
   pic.custom_ptr = out;
 
-  WebPPictureImportRGBX(&pic, (const uint8_t *)in_tmp, webp_data->width * 4);
+  WebPPictureImportRGBX(&pic, (const uint8_t *)in_tmp, webp_data->global.width * 4);
   if(!config.lossless)
   {
     // webp is more efficient at coding YUV images, as we go lossy
@@ -220,12 +217,12 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     dt_imageio_webp_v1_t *o = (dt_imageio_webp_v1_t *)old_params;
     dt_imageio_webp_t *n = (dt_imageio_webp_t *)malloc(sizeof(dt_imageio_webp_t));
 
-    n->max_width = o->max_width;
-    n->max_height = o->max_height;
-    n->width = o->width;
-    n->height = o->height;
-    g_strlcpy(n->style, o->style, sizeof(o->style));
-    n->style_append = 0;
+    n->global.max_width = o->max_width;
+    n->global.max_height = o->max_height;
+    n->global.width = o->width;
+    n->global.height = o->height;
+    g_strlcpy(n->global.style, o->style, sizeof(o->style));
+    n->global.style_append = FALSE;
     n->comp_type = o->comp_type;
     n->quality = o->quality;
     n->hint = o->hint;

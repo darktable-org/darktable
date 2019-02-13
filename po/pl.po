@@ -960,7 +960,7 @@ msgstr ""
 
 #: ../data/darktable.appdata.xml.in.h:4
 msgid ""
-"darktable supports most modern camera's raw formats, and does all of its "
+"darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
 "darktable obsługuje większość formatów raw współczesnych aparatów i wykonuje "
@@ -8085,7 +8085,7 @@ msgstr ""
 #: ../src/iop/profile_gamma.c:928
 msgid ""
 "enlarge or shrink the computed dynamic range\n"
-"this is usefull when noise perturbates the measurements"
+"this is useful when noise perturbates the measurements"
 msgstr ""
 
 #: ../src/iop/rawdenoise.c:124
@@ -8462,7 +8462,7 @@ msgstr ""
 
 #: ../src/iop/spots.c:693
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr ""
 
 #: ../src/iop/spots.c:694
@@ -8558,7 +8558,7 @@ msgid "cut shapes from current scale"
 msgstr ""
 
 #: ../src/iop/retouch.c:2779
-msgid "paste cutted shapes to current scale"
+msgid "paste cut shapes to current scale"
 msgstr ""
 
 #: ../src/iop/retouch.c:2804
@@ -8596,7 +8596,7 @@ msgid "color"
 msgstr "kolor"
 
 #: ../src/iop/retouch.c:2856
-msgid "erase the detail or fills with choosen color"
+msgid "erase the detail or fills with chosen color"
 msgstr ""
 
 #: ../src/iop/retouch.c:2868 ../src/iop/retouch.c:2869
@@ -8848,7 +8848,7 @@ msgid "Lab, linked channels"
 msgstr "Lab, połączone kanały"
 
 #: ../src/iop/tonecurve.c:1177
-msgid "Lab, independant channels"
+msgid "Lab, independent channels"
 msgstr "Lab, niezależne kanały"
 
 #: ../src/iop/tonecurve.c:1178
@@ -11610,7 +11610,7 @@ msgid "access the online usermanual?"
 msgstr "otworzyć podręcznik użytkownika online?"
 
 #: ../src/libs/tools/global_toolbox.c:284
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "url pomocy otwarty w przeglądarce"
 
 #: ../src/libs/tools/global_toolbox.c:289

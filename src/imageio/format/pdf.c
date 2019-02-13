@@ -88,7 +88,7 @@ typedef struct _pdf_icc_t
 // saved params -- just there to get the sizeof() without worrying about padding, ...
 typedef struct dt_imageio_pdf_params_t
 {
-  dt_imageio_module_data_t  parent;
+  dt_imageio_module_data_t  global;
   char                      title[128];
   char                      size[64];
   _pdf_orientation_t        orientation;
@@ -232,7 +232,7 @@ static int _paper_size(dt_imageio_pdf_params_t *d, float *page_width, float *pag
 
 int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total)
+                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe)
 {
   dt_imageio_pdf_t *d = (dt_imageio_pdf_t *)data;
 
@@ -334,7 +334,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     }
   }
 
-  dt_pdf_image_t *image = dt_pdf_add_image(d->pdf, image_data, d->params.parent.width, d->params.parent.height, d->params.bpp, icc_id, d->page_border);
+  dt_pdf_image_t *image = dt_pdf_add_image(d->pdf, image_data, d->params.global.width, d->params.global.height, d->params.bpp, icc_id, d->page_border);
 
   free(image_data);
 

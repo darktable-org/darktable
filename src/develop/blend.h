@@ -24,7 +24,7 @@
 #include "dtgtk/button.h"
 #include "dtgtk/gradientslider.h"
 
-#define DEVELOP_BLEND_VERSION (8)
+#define DEVELOP_BLEND_VERSION (9)
 
 typedef enum dt_develop_blend_mode_t
 {
@@ -69,11 +69,12 @@ typedef enum dt_develop_blend_mode_t
 
 typedef enum dt_develop_mask_mode_t
 {
-  DEVELOP_MASK_DISABLED = 0x00,
-  DEVELOP_MASK_ENABLED = 0x01,
-  DEVELOP_MASK_MASK = 0x02,
-  DEVELOP_MASK_CONDITIONAL = 0x04,
-  DEVELOP_MASK_BOTH = (DEVELOP_MASK_MASK | DEVELOP_MASK_CONDITIONAL)
+  DEVELOP_MASK_DISABLED = 0,                                                         // off
+  DEVELOP_MASK_ENABLED = 1,                                                          // uniformly
+  DEVELOP_MASK_MASK = 1 << 1,                                                        // drawn mask
+  DEVELOP_MASK_CONDITIONAL = 1 << 2,                                                 // parametric mask
+  DEVELOP_MASK_RASTER = 1 << 3,                                                      // raster mask
+  DEVELOP_MASK_MASK_CONDITIONAL = (DEVELOP_MASK_MASK | DEVELOP_MASK_CONDITIONAL)     // drawn & parametric
 } dt_develop_mask_mode_t;
 
 typedef enum dt_develop_mask_combine_mode_t
@@ -265,8 +266,8 @@ typedef struct dt_develop_blend_params7_t
   float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
 } dt_develop_blend_params7_t;
 
-/** blend parameters current version */
-typedef struct dt_develop_blend_params_t
+/** blend legacy parameters version 8 */
+typedef struct dt_develop_blend_params8_t
 {
   /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask */
   uint32_t mask_mode;
@@ -294,8 +295,43 @@ typedef struct dt_develop_blend_params_t
   uint32_t reserved[4];
   /** blendif parameters */
   float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
-} dt_develop_blend_params_t;
+} dt_develop_blend_params8_t;
 
+/** blend parameters current version */
+typedef struct dt_develop_blend_params_t
+{
+  /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask
+   *  or raster mask */
+  uint32_t mask_mode;
+  /** blending mode */
+  uint32_t blend_mode;
+  /** mixing opacity */
+  float opacity;
+  /** how masks are combined */
+  uint32_t mask_combine;
+  /** id of mask in current pipeline */
+  uint32_t mask_id;
+  /** blendif mask */
+  uint32_t blendif;
+  /** feathering radius */
+  float feathering_radius;
+  /** feathering guide */
+  uint32_t feathering_guide;
+  /** blur radius */
+  float blur_radius;
+  /** mask contrast enhancement */
+  float contrast;
+  /** mask brightness adjustment */
+  float brightness;
+  /** some reserved fields for future use */
+  uint32_t reserved[4];
+  /** blendif parameters */
+  float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
+  dt_dev_operation_t raster_mask_source;
+  int raster_mask_instance;
+  int raster_mask_id;
+  gboolean raster_mask_invert;
+} dt_develop_blend_params_t;
 
 
 typedef struct dt_blendop_cl_global_t
@@ -326,6 +362,7 @@ typedef struct dt_iop_blend_mode_t
   unsigned int mode;
 } dt_iop_blend_mode_t;
 
+
 /** blend gui data */
 typedef struct dt_iop_gui_blend_data_t
 {
@@ -334,10 +371,12 @@ typedef struct dt_iop_gui_blend_data_t
   int blendif_inited;
   int masks_support;
   int masks_inited;
+  int raster_inited;
   dt_iop_colorspace_type_t csp;
   dt_iop_module_t *module;
   GList *blend_modes;
   GList *masks_modes;
+  GList *masks_modes_toggles;
   GList *masks_combine;
   GList *masks_invert;
   GList *masks_feathering_guide;
@@ -345,23 +384,25 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *iopw;
   GtkBox *top_box;
   GtkBox *bottom_box;
+  GtkBox *masks_modes_box;
   GtkBox *blendif_box;
   GtkBox *masks_box;
+  GtkBox *raster_box;
   GtkDarktableGradientSlider *upper_slider;
   GtkDarktableGradientSlider *lower_slider;
   GtkLabel *upper_label[8];
   GtkLabel *lower_label[8];
   GtkLabel *upper_picker_label;
   GtkLabel *lower_picker_label;
+  GtkWidget *selected_mask_mode;
   GtkWidget *upper_polarity;
   GtkWidget *lower_polarity;
   GtkWidget *colorpicker;
   GtkWidget *showmask;
   GtkWidget *suppress;
   void (*scale_print[8])(float value, char *string, int n);
-  GtkWidget *masks_modes_combo;
-  GtkWidget *blend_modes_combo;
   GtkWidget *masks_combine_combo;
+  GtkWidget *blend_modes_combo;
   GtkWidget *masks_invert_combo;
   GtkWidget *opacity_slider;
   GtkWidget *masks_feathering_guide_combo;
@@ -389,6 +430,10 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *masks_polarity;
   int *masks_combo_ids;
   int masks_shown;
+
+  GtkWidget *raster_combo;
+  GtkWidget *raster_polarity;
+
   int control_button_pressed;
   dt_pthread_mutex_t lock;
 } dt_iop_gui_blend_data_t;

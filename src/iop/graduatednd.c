@@ -34,6 +34,7 @@
 #include "develop/tiling.h"
 #include "dtgtk/gradientslider.h"
 #include "gui/accelerators.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
@@ -116,6 +117,8 @@ typedef struct dt_iop_graduatednd_gui_data_t
   GtkWidget *label1, *label2, *label3, *label5, *label6; // density, compression, rotation, hue, saturation
   GtkWidget *scale1, *scale2, *scale3;                   // density, compression, rotation
   GtkWidget *gslider1, *gslider2;                        // hue, saturation
+
+  dt_iop_color_picker_t color_picker;
 
   int selected;
   int dragging;
@@ -222,7 +225,8 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
   r1 = pts[1] * cosv - pts[0] * sinv + pts[2] * sinv - pts[3] * cosv;
 
   // we search v2 so r2 as not the same sign as r1
-  float pas = M_PI / 16.0;
+  const float pas = M_PI / 16.0;
+
   do
   {
     v2 += pas;
@@ -233,6 +237,9 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
 
   if(v2 == M_PI) return 9;
 
+  // set precision for the iterative check
+  const float eps = .0001f;
+
   int iter = 0;
   do
   {
@@ -240,7 +247,7 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
     sinv = sinf(v), cosv = cosf(v);
     r = pts[1] * cosv - pts[0] * sinv + pts[2] * sinv - pts[3] * cosv;
 
-    if(r < 0.01 && r > -0.01) break;
+    if(r < eps && r > -eps) break;
 
     if(r * r2 < 0)
       v1 = v;
@@ -251,14 +258,29 @@ static int set_grad_from_points(struct dt_iop_module_t *self, float xa, float ya
     }
 
   } while(iter++ < 1000);
-  if(iter >= 1000) return 8;
+
+  if(iter >= 1000) return 8; // generally in less than 20 iterations all is good, so we are over conservative
 
   // be careful to the gnd direction
-  if(pts[2] - pts[0] > 0 && v > M_PI * 0.5) v = v - M_PI;
-  if(pts[2] - pts[0] > 0 && v < -M_PI * 0.5) v = M_PI + v;
 
-  if(pts[2] - pts[0] < 0 && v < M_PI * 0.5 && v >= 0) v = v - M_PI;
-  if(pts[2] - pts[0] < 0 && v > -M_PI * 0.5 && v < 0) v = v + M_PI;
+  const float diff_x = pts[2] - pts[0];
+  const float MPI2 = (M_PI / 2.0f);
+
+  if(diff_x > eps)
+  {
+    if(v >=  MPI2) v -= M_PI;
+    if(v <  -MPI2) v += M_PI;
+  }
+  else if(diff_x < -eps)
+  {
+    if(v <  MPI2 && v >= 0) v -= M_PI;
+    if(v > -MPI2 && v < 0)  v += M_PI;
+  }
+  else // let's pretend that we are at PI/2
+  {
+    if(v <0) v = -MPI2;
+    else v = MPI2;
+  }
 
   *rotation = -v * 180.0 / M_PI;
 
@@ -388,6 +410,46 @@ static int set_points_from_grad(struct dt_iop_module_t *self, float *xa, float *
   *xb = pts[2] / self->dev->preview_pipe->backbuf_width;
   *yb = pts[3] / self->dev->preview_pipe->backbuf_height;
   return 1;
+}
+
+static inline void update_saturation_slider_end_color(GtkWidget *slider, float hue)
+{
+  float rgb[3];
+  hsl2rgb(rgb, hue, 1.0, 0.5);
+  dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
+}
+
+static void _iop_color_picker_apply(struct dt_iop_module_t *self)
+{
+  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
+  dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
+
+  // convert picker RGB 2 HSL
+  float H = .0f, S = .0f, L = .0f;
+  rgb2hsl(self->picked_color, &H, &S, &L);
+
+  if(fabsf(p->hue - H) < 0.0001f && fabsf(p->saturation - S) < 0.0001f)
+  {
+    // interrupt infinite loops
+    return;
+  }
+
+  p->hue        = H;
+  p->saturation = S;
+
+  darktable.gui->reset = 1;
+  dt_bauhaus_slider_set(g->gslider1, p->hue);
+  dt_bauhaus_slider_set(g->gslider2, p->saturation);
+  update_saturation_slider_end_color(g->gslider2, p->hue);
+  darktable.gui->reset = 0;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+void gui_reset(struct dt_iop_module_t *self)
+{
+  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
 }
 
 void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
@@ -1055,18 +1117,14 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-static inline void update_saturation_slider_end_color(GtkWidget *slider, float hue)
-{
-  float rgb[3];
-  hsl2rgb(rgb, hue, 1.0, 0.5);
-  dt_bauhaus_slider_set_stop(slider, 1.0, rgb[0], rgb[1], rgb[2]);
-}
-
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)module->params;
+
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+
   dt_bauhaus_slider_set(g->scale1, p->density);
   dt_bauhaus_slider_set(g->scale2, p->compression);
   dt_bauhaus_slider_set(g->scale3, p->rotation);
@@ -1176,8 +1234,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->gslider1, 1.0f, 1.0f, 0.0f, 0.0f);
   gtk_widget_set_tooltip_text(g->gslider1, _("select the hue tone of filter"));
   g_signal_connect(G_OBJECT(g->gslider1), "value-changed", G_CALLBACK(hue_callback), self);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), g->gslider1, TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_quad_paint(g->gslider1, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->gslider1, TRUE);
+  g_signal_connect(G_OBJECT(g->gslider1), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
 
   /* saturation slider */
   g->gslider2 = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01f, 0.0f, 2);
@@ -1187,10 +1246,18 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->gslider2, _("select the saturation of filter"));
   g_signal_connect(G_OBJECT(g->gslider2), "value-changed", G_CALLBACK(saturation_callback), self);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), g->gslider2, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->gslider1), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->gslider2), TRUE, TRUE, 0);
+
   g->selected = 0;
   g->dragging = 0;
   g->define = 0;
+
+  init_single_picker(&g->color_picker,
+                     self,
+                     g->gslider1,
+                     DT_COLOR_PICKER_POINT,
+                     _iop_color_picker_apply);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

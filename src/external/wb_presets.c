@@ -2890,6 +2890,15 @@ const wb_data wb_preset[] =
   { "Nikon", "D300S", HighTempMercuryVaporFluorescent, 0, { 1.961, 1, 1.328, 0 } },
   { "Nikon", "D300S", HighTempMercuryVaporFluorescent, 6, { 1.855, 1, 1.523, 0 } },
 
+  /*NIKON D500 Software Ver.1.12*/
+  { "Nikon", "D500", DirectSunlight      , 0, { 2.271484375, 1, 1.526855469, 0 } },
+  { "Nikon", "D500", Shade               , 0, { 2.876464844, 1, 1.242675781, 0 } },
+  { "Nikon", "D500", Cloudy              , 0, { 2.452636719, 1, 1.384765625, 0 } },
+  { "Nikon", "D500", Incandescent        , 0, { 1.431640625, 1, 2.411621094, 0 } },
+  { "Nikon", "D500", CoolWhiteFluorescent, 0, { 2.032714844, 1, 2.232910156, 0 } },
+  { "Nikon", "D500", Flash               , 0, { 2.592773438, 1, 1.320800781, 0 } },
+  { "Nikon", "D500", "5000K"             , 0, { 2.216308594, 1, 1.577148438, 0 } },
+
   { "Nikon", "D600", DirectSunlight, 0,		{ 1.906250, 1, 1.390625, 0 } },
   { "Nikon", "D600", Flash, 0,			{ 2.136719, 1, 1.214844, 0 } },
   { "Nikon", "D600", Cloudy, 0,			{ 2.039063, 1, 1.261719, 0 } },
@@ -5044,6 +5053,15 @@ const wb_data wb_preset[] =
   { "Olympus", "E-PL7", Flash, 0,		{ 2.218750, 1, 1.531250, 0 } },
   { "Olympus", "E-PL7", "5000K", 0,		{ 1.828125, 1, 1.867188, 0 } },
   { "Olympus", "E-PL7", "2700K", 0,		{ 1.093750, 1, 3.781250, 0 } },
+
+  /* Body Firmware Version : 1.0 */
+  { "OLYMPUS", "E-PL8", "Sunny", 0,           { 1.859375, 1, 1.726563, 0 } }, /*5300K*/
+  { "OLYMPUS", "E-PL8", "Shadow", 0,          { 2.1875, 1, 1.320313, 0 } },   /*7500K*/
+  { "OLYMPUS", "E-PL8", "Cloudy", 0,          { 2, 1, 1.5625, 0 } },          /*6000K*/
+  { "OLYMPUS", "E-PL8", "Incandescent", 0,    { 1.132813, 1, 3.5, 0 } },      /*3000K*/
+  { "OLYMPUS", "E-PL8", "Fluorescent", 0,     { 1.835938, 1, 2.601563, 0 } }, /*4000K*/
+  { "OLYMPUS", "E-PL8", "Underwater", 0,      { 1.429688, 1, 2.414063, 0 } },
+  { "OLYMPUS", "E-PL8", "WB Flash", 0,        { 2.179688, 1, 1.492188, 0 } }, /*5500K*/
 
   /* Copied from Olympus E-PL3 presets */
   /* -7/+7 fine tuning is -7/+7 in amber-blue and zero in green-magenta */

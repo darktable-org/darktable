@@ -21,6 +21,7 @@ FILE(GLOB SOURCE_FILES
   "common/colorlabels.c"
   "common/colorspaces.c"
   "common/curve_tools.c"
+  "common/curl_tools.c"
   "common/cpuid.c"
   "common/darktable.c"
   "common/database.c"
@@ -58,6 +59,7 @@ FILE(GLOB SOURCE_FILES
   "common/module.c"
   "common/noiseprofiles.c"
   "common/pdf.c"
+  "common/presets.c"
   "common/styles.c"
   "common/selection.c"
   "common/system_signal_handling.c"
@@ -161,6 +163,9 @@ endif(WIN32)
 
 set(SOURCES ${SOURCE_FILES} ${HEADER_FILES})
 
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "ppc64le")
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/ppc64le)
+endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/external)
@@ -307,7 +312,16 @@ if(USE_WEBP)
   else(USE_WEBP)
 endif(USE_WEBP)
 
-foreach(lib ${OUR_LIBS} LensFun GIO GThread GModule PangoCairo Rsvg2 LibXml2 Sqlite3 CURL PNG JPEG TIFF LCMS2 JsonGlib)
+if(USE_LENSFUN)
+  find_package(LensFun)
+  if(LENSFUN_FOUND)
+    include_directories(SYSTEM ${LensFun_INCLUDE_DIRS})
+    list(APPEND LIBS ${LensFun_LIBRARIES})
+    add_definitions(${LensFun_DEFINITIONS})
+  endif()
+endif()
+
+foreach(lib ${OUR_LIBS} GIO GThread GModule PangoCairo Rsvg2 LibXml2 Sqlite3 CURL PNG JPEG TIFF LCMS2 JsonGlib)
   find_package(${lib} REQUIRED)
   include_directories(SYSTEM ${${lib}_INCLUDE_DIRS})
   list(APPEND LIBS ${${lib}_LIBRARIES})

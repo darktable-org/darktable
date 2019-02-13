@@ -21,11 +21,13 @@
 #include <string.h>
 
 // FIXME: in the future, we may want to also take DRIVER_VERSION into account
-static const char *bad_opencl_drivers[] = {
+static const gchar *bad_opencl_drivers[] =
+{
   // clang-format off
 
   "beignet",
   "pocl",
+  "neo",
   NULL
 
   // clang-format on
@@ -35,16 +37,19 @@ static const char *bad_opencl_drivers[] = {
 // else it is blacklisted
 int dt_opencl_check_driver_blacklist(const char *device_version)
 {
+  gchar *device = g_ascii_strdown(device_version, -1);
+
   for(int i = 0; bad_opencl_drivers[i]; i++)
   {
-    // FIXME: cAsE?
-    if(!strstr(device_version, bad_opencl_drivers[i])) continue;
+    if(!g_strrstr(device, bad_opencl_drivers[i])) continue;
 
     // oops, found in black list
+    g_free(device);
     return 1;
   }
 
   // did not find in the black list, guess it's ok.
+  g_free(device);
   return 0;
 }
 

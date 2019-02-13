@@ -492,17 +492,13 @@ int try_enter(dt_view_t *self)
 
 static void select_this_image(const int imgid)
 {
-  // select this image, if no multiple selection:
-  if(dt_collection_get_selected_count(NULL) < 2)
-  {
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "INSERT OR IGNORE INTO main.selected_images VALUES (?1)", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-  }
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "INSERT OR IGNORE INTO main.selected_images VALUES (?1)", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
 }
 
 static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
@@ -962,7 +958,6 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
     do
     {
       dt_style_t *style = (dt_style_t *)styles->data;
-      GtkWidget *mi = gtk_menu_item_new_with_label(style->name);
 
       char *items_string = dt_styles_get_item_list_as_string(style->name);
       gchar *tooltip = NULL;
@@ -976,9 +971,62 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
         tooltip = g_strdup(items_string);
       }
 
-      gtk_widget_set_tooltip_markup(mi, tooltip);
+      gchar **split = g_strsplit(style->name, "|", 0);
 
-      gtk_menu_shell_append(menu, mi);
+      // if sub-menu, do not put leading group in final name
+
+      gchar *mi_name = NULL;
+
+      if(split[1])
+      {
+        mi_name = g_strdup(split[1]);
+        for(int i=2; split[i]; i++)
+          mi_name = g_strconcat(mi_name, " | ", split[i], NULL);
+      }
+      else
+        mi_name = g_strdup(split[0]);
+
+      GtkWidget *mi = gtk_menu_item_new_with_label(mi_name);
+      gtk_widget_set_tooltip_markup(mi, tooltip);
+      g_free(mi_name);
+
+      // check if we already have a sub-menu with this name
+      GtkMenu *sm = NULL;
+
+      GList *childs = gtk_container_get_children(GTK_CONTAINER(menu));
+      while(childs)
+      {
+        GtkMenuItem *smi = (GtkMenuItem *)childs->data;
+        if(!g_strcmp0(split[0],gtk_menu_item_get_label(smi)))
+        {
+          sm = (GtkMenu *)gtk_menu_item_get_submenu(smi);
+          g_list_free(childs);
+          break;
+        }
+        childs = g_list_next(childs);
+      }
+
+      GtkMenuItem *smi = NULL;
+
+      // no sub-menu, but we need one
+      if(!sm && split[1])
+      {
+        smi = (GtkMenuItem *)gtk_menu_item_new_with_label(split[0]);
+        sm = (GtkMenu *)gtk_menu_new();
+        gtk_menu_item_set_submenu(smi, GTK_WIDGET(sm));
+      }
+
+      if(sm)
+        gtk_menu_shell_append(GTK_MENU_SHELL(sm), mi);
+      else
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+
+      if(smi)
+      {
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), GTK_WIDGET(smi));
+        gtk_widget_show(GTK_WIDGET(smi));
+      }
+
       g_signal_connect_swapped(G_OBJECT(mi), "activate",
                                G_CALLBACK(_darkroom_ui_apply_style_activate_callback),
                                (gpointer)g_strdup(style->name));
@@ -986,6 +1034,7 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
 
       g_free(items_string);
       g_free(tooltip);
+      g_strfreev(split);
     } while((styles = g_list_next(styles)) != NULL);
     g_list_free_full(styles, dt_style_free);
   }
@@ -1574,8 +1623,8 @@ void gui_init(dt_view_t *self)
   /* create profile popup tool & buttons (softproof + gamut) */
   {
     // the softproof button
-    dev->profile.softproof_button
-    = dtgtk_togglebutton_new(dtgtk_cairo_paint_softproof, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+    dev->profile.softproof_button =
+      dtgtk_togglebutton_new(dtgtk_cairo_paint_softproof, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_tooltip_text(dev->profile.softproof_button,
                                 _("toggle softproofing\nright click for profile options"));
     g_signal_connect(G_OBJECT(dev->profile.softproof_button), "clicked",
@@ -1588,8 +1637,8 @@ void gui_init(dt_view_t *self)
     dt_gui_add_help_link(dev->profile.softproof_button, dt_get_help_url("softproof"));
 
     // the gamut check button
-    dev->profile.gamut_button
-    = dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+    dev->profile.gamut_button =
+      dtgtk_togglebutton_new(dtgtk_cairo_paint_gamut_check, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_tooltip_text(dev->profile.gamut_button,
                  _("toggle gamut checking\nright click for profile options"));
     g_signal_connect(G_OBJECT(dev->profile.gamut_button), "clicked",
@@ -1925,6 +1974,8 @@ void leave(dt_view_t *self)
 
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 
+  darktable.develop->image_storage.id = -1;
+
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }
 
@@ -1943,6 +1994,13 @@ void mouse_leave(dt_view_t *self)
 
   // reset any changes the selected plugin might have made.
   dt_control_change_cursor(GDK_LEFT_PTR);
+}
+
+void mouse_enter(dt_view_t *self)
+{
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  // masks
+  dt_masks_events_mouse_enter(dev->gui_module);
 }
 
 void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which)
@@ -2245,14 +2303,16 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
     closeup = 1;  // enable closeup mode (pixel doubling)
   }
 
-  dt_control_set_dev_zoom_scale(scale);
   if(fabsf(scale - 1.0f) < 0.001f) zoom = DT_ZOOM_1;
   if(fabsf(scale - fitscale) < 0.001f) zoom = DT_ZOOM_FIT;
+  dt_control_set_dev_zoom_scale(scale);
+  dt_control_set_dev_closeup(closeup);
+  scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
+
   zoom_x -= mouse_off_x / (procw * scale);
   zoom_y -= mouse_off_y / (proch * scale);
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
   dt_control_set_dev_zoom(zoom);
-  dt_control_set_dev_closeup(closeup);
   dt_control_set_dev_zoom_x(zoom_x);
   dt_control_set_dev_zoom_y(zoom_y);
 

@@ -49,7 +49,7 @@ typedef enum dt_imageio_format_flags_t
  */
 
 /*
- * custom data for the module. append private stuff after width and height.
+ * custom data for the module. append private stuff after these.
  * this will be inited once when the export button is hit, so the user can make
  * gui adjustments that won't affect the currently running export.
  */
@@ -62,6 +62,7 @@ typedef struct dt_imageio_module_data_t
 } dt_imageio_module_data_t;
 
 struct dt_imageio_module_format_t;
+struct dt_dev_pixelpipe_t;
 /* responsible for image encoding, such as jpg,png,etc */
 typedef struct dt_imageio_module_format_t
 {
@@ -117,7 +118,7 @@ typedef struct dt_imageio_module_format_t
   /* write to file, with exif if not NULL, and icc profile if supported. */
   int (*write_image)(dt_imageio_module_data_t *data, const char *filename, const void *in,
                      dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                     void *exif, int exif_len, int imgid, int num, int total);
+                     void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe);
   /* flag that describes the available precision/levels of output format. mainly used for dithering. */
   int (*levels)(dt_imageio_module_data_t *data);
 

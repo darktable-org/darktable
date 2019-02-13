@@ -25,6 +25,7 @@
 #include "dtgtk/resetlabel.h"
 #include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 #include <assert.h>
@@ -107,6 +108,8 @@ typedef struct dt_iop_watermark_gui_data_t
   GtkWidget *text;
   GtkWidget *colorpick;
   GtkWidget *fontsel;
+  GtkToggleButton *color_picker_button;
+  dt_iop_color_picker_t color_picker;
 } dt_iop_watermark_gui_data_t;
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -1031,6 +1034,31 @@ static void watermark_callback(GtkWidget *tb, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void _iop_color_picker_apply(dt_iop_module_t *self)
+{
+  dt_iop_watermark_gui_data_t *g = (dt_iop_watermark_gui_data_t *)self->gui_data;
+  dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
+
+  if(fabsf(p->color[0] - self->picked_color[0]) < 0.0001f
+     && fabsf(p->color[1] - self->picked_color[1]) < 0.0001f
+     && fabsf(p->color[2] - self->picked_color[2]) < 0.0001f)
+  {
+    // interrupt infinite loops
+    return;
+  }
+
+  GdkRGBA c = (GdkRGBA){.red   = self->picked_color[0],
+                        .green = self->picked_color[1],
+                        .blue  = self->picked_color[2],
+                        .alpha = 1.0 };
+
+  p->color[0] = self->picked_color[0];
+  p->color[1] = self->picked_color[1];
+  p->color[2] = self->picked_color[2];
+  gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpick), &c);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
 
 static void load_watermarks(const char *basedir, dt_iop_watermark_gui_data_t *g)
 {
@@ -1340,6 +1368,8 @@ void gui_init(struct dt_iop_module_t *self)
   float blue = dt_conf_get_float("plugins/darkroom/watermark/color_blue");
   GdkRGBA color = (GdkRGBA){.red = red, .green = green, .blue = blue, .alpha = 1.0 };
 
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
   label = dtgtk_reset_label_new(_("color"), self, &p->color, 3 * sizeof(float));
   g->colorpick = gtk_color_button_new_with_rgba(&color);
   gtk_widget_set_tooltip_text(g->colorpick, _("watermark color, tag:\n$(WATERMARK_COLOR)"));
@@ -1347,8 +1377,16 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
   gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select watermark color"));
 
+  g->color_picker_button = GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->color_picker_button), _("pick color from image"));
+  gtk_widget_set_size_request(GTK_WIDGET(g->color_picker_button), DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
+  g_signal_connect(G_OBJECT(g->color_picker_button), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
+
+  gtk_box_pack_start(GTK_BOX(box), g->colorpick, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->color_picker_button), FALSE, TRUE, 0);
+
   gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
-  gtk_grid_attach_next_to(GTK_GRID(self->widget), g->colorpick, label, GTK_POS_RIGHT, 2, 1);
+  gtk_grid_attach_next_to(GTK_GRID(self->widget), box, label, GTK_POS_RIGHT, 2, 1);
 
   // Simple text
   label = gtk_label_new(_("text"));
@@ -1449,13 +1487,18 @@ void gui_init(struct dt_iop_module_t *self)
 
   refresh_watermarks(self);
 
-
   g_signal_connect(G_OBJECT(g->watermarks), "value-changed", G_CALLBACK(watermark_callback), self);
   g_signal_connect(G_OBJECT(g->sizeto), "value-changed", G_CALLBACK(sizeto_callback), self);
 
   g_signal_connect(G_OBJECT(g->text), "changed", G_CALLBACK(text_callback), self);
   g_signal_connect(G_OBJECT(g->colorpick), "color-set", G_CALLBACK(colorpick_color_set), self);
   g_signal_connect(G_OBJECT(g->fontsel), "font-set", G_CALLBACK(fontsel_callback), self);
+
+  init_single_picker(&g->color_picker,
+                     self,
+                     GTK_WIDGET(g->color_picker_button),
+                     DT_COLOR_PICKER_POINT,
+                     _iop_color_picker_apply);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)

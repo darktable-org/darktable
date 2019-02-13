@@ -25,6 +25,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 
+#include <assert.h>
 #include <glib.h>
 #include <memory.h>
 #include <stdio.h>
@@ -119,6 +120,30 @@ const dt_collection_params_t *dt_collection_params(const dt_collection_t *collec
   return &collection->params;
 }
 
+
+// Return a pointer to a static string for an "AND" operator if the
+// number of terms processed so far requires it.  The variable used
+// for term should be an int intiailized to and_operator_initial()
+// before use.
+#define and_operator_initial() (0)
+static char * and_operator(int *term)
+{
+  assert(term != NULL);
+  if(*term == 0)
+  {
+    *term = 1;
+    return "";
+  }
+  else
+  {
+    return " AND ";
+  }
+
+  assert(0); // Not reached.
+}
+
+
+
 int dt_collection_update(const dt_collection_t *collection)
 {
   uint32_t result;
@@ -129,42 +154,38 @@ int dt_collection_update(const dt_collection_t *collection)
   gchar *where_ext = dt_collection_get_extended_where(collection, -1);
   if(!(collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
   {
-    int need_operator = 0;
+    int and_term = and_operator_initial();
     dt_collection_filter_t rating = collection->params.rating;
     if(rating == DT_COLLECTION_FILTER_NOT_REJECT) rating = DT_COLLECTION_FILTER_STAR_NO;
 
     /* add default filters */
     if(collection->params.filter_flags & COLLECTION_FILTER_FILM_ID)
     {
-      wq = dt_util_dstrcat(wq, "(film_id = %d)", collection->params.film_id);
-      need_operator = 1;
+      wq = dt_util_dstrcat(wq, "%s (film_id = %d)", and_operator(&and_term), collection->params.film_id);
     }
     // DON'T SELECT IMAGES MARKED TO BE DELETED.
     wq = dt_util_dstrcat(wq, " %s (flags & %d) != %d",
-                         (need_operator) ? "AND" : ((need_operator = 1) ? "" : ""), DT_IMAGE_REMOVE,
+                         and_operator(&and_term), DT_IMAGE_REMOVE,
                          DT_IMAGE_REMOVE);
 
     if(collection->params.filter_flags & COLLECTION_FILTER_CUSTOM_COMPARE)
       wq = dt_util_dstrcat(wq, " %s (flags & 7) %s %d AND (flags & 7) != 6",
-                           (need_operator) ? "and" : ((need_operator = 1) ? "" : ""),
+                           and_operator(&and_term),
                            comparators[collection->params.comparator], rating - 1);
     else if(collection->params.filter_flags & COLLECTION_FILTER_ATLEAST_RATING)
       wq = dt_util_dstrcat(wq, " %s (flags & 7) >= %d AND (flags & 7) != 6",
-                           (need_operator) ? "and" : ((need_operator = 1) ? "" : ""), rating - 1);
+                           and_operator(&and_term), rating - 1);
     else if(collection->params.filter_flags & COLLECTION_FILTER_EQUAL_RATING)
-      wq = dt_util_dstrcat(wq, " %s (flags & 7) == %d",
-                           (need_operator) ? "AND" : ((need_operator = 1) ? "" : ""), rating - 1);
+      wq = dt_util_dstrcat(wq, " %s (flags & 7) == %d", and_operator(&and_term), rating - 1);
 
     if(collection->params.filter_flags & COLLECTION_FILTER_ALTERED)
-      wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.history WHERE imgid=id)",
-                           (need_operator) ? "AND" : ((need_operator = 1) ? "" : ""));
+      wq = dt_util_dstrcat(wq, " %s id IN (SELECT imgid FROM main.history WHERE imgid=id)", and_operator(&and_term));
     else if(collection->params.filter_flags & COLLECTION_FILTER_UNALTERED)
-      wq = dt_util_dstrcat(wq, " %s id NOT IN (SELECT imgid FROM main.history WHERE imgid=id)",
-                           (need_operator) ? "AND" : ((need_operator = 1) ? "" : ""));
+      wq = dt_util_dstrcat(wq, " %s id NOT IN (SELECT imgid FROM main.history WHERE imgid=id)", and_operator(&and_term));
 
     /* add where ext if wanted */
     if((collection->params.query_flags & COLLECTION_QUERY_USE_WHERE_EXT))
-      wq = dt_util_dstrcat(wq, " %s %s", (need_operator) ? "AND" : "", where_ext);
+      wq = dt_util_dstrcat(wq, " %s %s", and_operator(&and_term), where_ext);
   }
   else
     wq = dt_util_dstrcat(wq, "%s", where_ext);
@@ -184,9 +205,9 @@ int dt_collection_update(const dt_collection_t *collection)
                               * representative image.
                               * The *2+CASE statement are to break ties, so that when id < group_id, it's
                               * weighted a little higher than when id > group_id. */
-                             "(ABS(id-group_id)*2 + CASE WHEN (id-group_id) < 0 THEN 1 ELSE 0 END) IN "
-                             "(SELECT MIN(ABS(id-group_id)*2 + CASE WHEN (id-group_id) < 0 THEN 1 ELSE 0 END) "
-                             "FROM main.images WHERE %s GROUP BY group_id))",
+                             "id IN (SELECT id FROM "
+                             "(SELECT id, MIN(ABS(id-group_id)*2 + CASE WHEN (id-group_id) < 0 THEN 1 ELSE 0 END) "
+                             "FROM main.images WHERE %s GROUP BY group_id)))",
                          darktable.gui->expanded_group_id, wq_no_group);
 
     /* Additionally, when a group is expanded, make sure the representative image wasn't filtered out.
@@ -648,54 +669,48 @@ uint32_t dt_collection_get_selected_count(const dt_collection_t *collection)
 GList *dt_collection_get(const dt_collection_t *collection, int limit, gboolean selected)
 {
   GList *list = NULL;
-  gchar *query = NULL;
-  gchar *sq = NULL;
-
-  /* get collection order */
-  if((collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    sq = dt_collection_get_sort_query(collection);
-
-  sqlite3_stmt *stmt = NULL;
-
-  /* build the query string */
-  query = dt_util_dstrcat(query, "SELECT DISTINCT a.id FROM main.images AS a ");
-
-  if(collection->params.sort == DT_COLLECTION_SORT_COLOR
-     && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    query = dt_util_dstrcat(query, "LEFT OUTER JOIN main.color_labels AS b ON a.id = b.imgid ");
-  else if(collection->params.sort == DT_COLLECTION_SORT_TITLE
-     && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    query = dt_util_dstrcat(query,
-                            "LEFT OUTER JOIN main.meta_data AS m ON a.id = m.id AND m.key = %d ", DT_METADATA_XMP_DC_TITLE);
-  else if(collection->params.sort == DT_COLLECTION_SORT_DESCRIPTION
-     && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    query = dt_util_dstrcat(query,
-                            "LEFT OUTER JOIN main.meta_data AS m ON a.id = m.id AND m.key = %d ", DT_METADATA_XMP_DC_DESCRIPTION);
-  else if(collection->params.sort == DT_COLLECTION_SORT_PATH
-          && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
-    query = dt_util_dstrcat(
-        query, "JOIN (SELECT id AS film_rolls_id, folder FROM main.film_rolls) ON film_id = film_rolls_id ");
-
-  if (selected)
-    query = dt_util_dstrcat(query, "WHERE a.id IN (SELECT imgid FROM main.selected_images) %s LIMIT ?1", sq);
-  else
-    query = dt_util_dstrcat(query, "%s LIMIT ?1", sq);
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, limit);
-
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  const gchar *query = dt_collection_get_query(collection);
+  if(query)
   {
-    const int imgid = sqlite3_column_int(stmt, 0);
-    list = g_list_append(list, GINT_TO_POINTER(imgid));
+    sqlite3_stmt *stmt = NULL;
+    gchar *q;
+
+    if(selected)
+      q = g_strdup_printf("SELECT id FROM main.selected_images AS s JOIN (%s) AS a WHERE a.id = s.imgid LIMIT -1, ?3", query);
+    else
+      q = g_strdup_printf("%s", query);
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), q, -1, &stmt, NULL);
+
+    if(selected)
+    {
+      if(collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
+      {
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, -1);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
+      }
+
+      // the limit is done on the main select and not on the JOIN
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, limit);
+    }
+    else
+    {
+      if(collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
+      {
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, -1);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, limit);
+      }
+    }
+
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      const int imgid = sqlite3_column_int(stmt, 0);
+      list = g_list_append(list, GINT_TO_POINTER(imgid));
+    }
+
+    sqlite3_finalize(stmt);
+    g_free(q);
   }
-
-  sqlite3_finalize(stmt);
-
-  /* free allocated strings */
-  g_free(sq);
-
-  g_free(query);
 
   return list;
 }

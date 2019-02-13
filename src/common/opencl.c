@@ -352,16 +352,23 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   char dtcache[PATH_MAX] = { 0 };
   char cachedir[PATH_MAX] = { 0 };
   char devname[1024];
+  char drvversion[1024];
   double tstart, tend, tdiff;
   dt_loc_get_user_cache_dir(dtcache, sizeof(dtcache));
 
-  int len = strlen(infostr);
+  int len = MIN(strlen(infostr),sizeof(devname));;
   int j = 0;
   // remove non-alphanumeric chars from device name
   for(int i = 0; i < len; i++)
     if(isalnum(infostr[i])) devname[j++] = infostr[i];
   devname[j] = 0;
-  snprintf(cachedir, sizeof(cachedir), "%s" G_DIR_SEPARATOR_S "cached_kernels_for_%s", dtcache, devname);
+  len = MIN(strlen(driverversion),sizeof(drvversion));
+  j = 0;
+  // remove non-alphanumeric chars from driver version
+  for(int i = 0; i < len; i++)
+    if(isalnum(driverversion[i])) drvversion[j++] = driverversion[i];
+  drvversion[j] = 0;
+  snprintf(cachedir, sizeof(cachedir), "%s" G_DIR_SEPARATOR_S "cached_kernels_for_%s_%s", dtcache, devname, drvversion);
   if(g_mkdir_with_parents(cachedir, 0700) == -1)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to create directory `%s'!\n", cachedir);

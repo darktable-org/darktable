@@ -86,10 +86,7 @@ typedef enum
 
 typedef struct dt_imageio_j2k_t
 {
-  int max_width, max_height;
-  int width, height;
-  char style[128];
-  gboolean style_append;
+  dt_imageio_module_data_t global;
   int bpp;
   dt_imageio_j2k_format_t format;
   dt_imageio_j2k_preset_t preset;
@@ -323,7 +320,7 @@ static void cinema_setup_encoder(opj_cparameters_t *parameters, opj_image_t *ima
 
 int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const void *in_tmp,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total)
+                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe)
 {
   const float *in = (const float *)in_tmp;
   dt_imageio_j2k_t *j2k = (dt_imageio_j2k_t *)j2k_tmp;
@@ -366,7 +363,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
     const int subsampling_dy = parameters.subsampling_dy;
     const int numcomps = 3;
     const int prec = 12; // TODO: allow other bitdepths!
-    const int w = j2k->width, h = j2k->height;
+    const int w = j2k->global.width, h = j2k->global.height;
 
     opj_image_cmptparm_t cmptparm[4]; /* RGBA: max. 4 components */
     memset(&cmptparm[0], 0, numcomps * sizeof(opj_image_cmptparm_t));
@@ -541,12 +538,12 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     dt_imageio_j2k_v1_t *o = (dt_imageio_j2k_v1_t *)old_params;
     dt_imageio_j2k_t *n = (dt_imageio_j2k_t *)malloc(sizeof(dt_imageio_j2k_t));
 
-    n->max_width = o->max_width;
-    n->max_height = o->max_height;
-    n->width = o->width;
-    n->height = o->height;
-    g_strlcpy(n->style, o->style, sizeof(o->style));
-    n->style_append = 0;
+    n->global.max_width = o->max_width;
+    n->global.max_height = o->max_height;
+    n->global.width = o->width;
+    n->global.height = o->height;
+    g_strlcpy(n->global.style, o->style, sizeof(o->style));
+    n->global.style_append = FALSE;
     n->bpp = o->bpp;
     n->format = o->format;
     n->preset = o->preset;

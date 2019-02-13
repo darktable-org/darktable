@@ -58,16 +58,17 @@ ENV LLVM_VER=7
 # pls keep sorted :)
 RUN rm -rf /var/lib/apt/lists/* && apt-get update && \
     apt-get install appstream-util clang-$LLVM_VER cmake desktop-file-utils \
-    g++-$GCC_VER gcc-$GCC_VER gettext git intltool libatk1.0-dev libcairo2-dev \
-    libcolord-dev libcolord-gtk-dev libcups2-dev libcurl4-gnutls-dev \
-    libexiv2-dev libflickcurl-dev libgdk-pixbuf2.0-dev libglib2.0-dev \
-    libgphoto2-dev libgraphicsmagick1-dev libgtk-3-dev libjpeg-dev \
-    libjson-glib-dev liblcms2-dev liblensfun-dev liblua5.2-dev liblua5.3-dev \
-    libopenexr-dev libopenjp2-7-dev libosmgpsmap-1.0-dev libpango1.0-dev \
-    libpng-dev libpugixml-dev librsvg2-dev libsaxon-java libsecret-1-dev \
-    libsoup2.4-dev libsqlite3-dev libtiff5-dev libwebp-dev libx11-dev \
-    libxml2-dev libxml2-utils make ninja-build perl po4a python3-jsonschema \
-    xsltproc zlib1g-dev && \
+    g++-$GCC_VER gcc-$GCC_VER gettext git intltool libatk1.0-dev \
+    libc++-$LLVM_VER-dev libcairo2-dev libcolord-dev libcolord-gtk-dev \
+    libcups2-dev libcurl4-gnutls-dev libexiv2-dev libflickcurl-dev \
+    libgdk-pixbuf2.0-dev libglib2.0-dev libgphoto2-dev libgraphicsmagick1-dev \
+    libgtk-3-dev libjpeg-dev libjson-glib-dev liblcms2-dev liblensfun-dev \
+    liblua5.2-dev liblua5.3-dev libomp-$LLVM_VER-dev libopenexr-dev \
+    libopenjp2-7-dev libosmgpsmap-1.0-dev libpango1.0-dev libpng-dev \
+    libpugixml-dev librsvg2-dev libsaxon-java libsecret-1-dev libsoup2.4-dev \
+    libsqlite3-dev libtiff5-dev libwebp-dev libx11-dev libxml2-dev \
+    libxml2-utils make ninja-build perl po4a python3-jsonschema xsltproc \
+    zlib1g-dev && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # i'd like to explicitly use ld.gold

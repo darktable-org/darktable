@@ -1,4 +1,4 @@
-# # Slovenian translation for Darktable
+# Slovenian translation for Darktable
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 #
@@ -47,13 +47,13 @@
 # tiling = prekrivanje
 # warp = zvitek, izkrivljenje, popačenje, osnova (pri tkanju)
 #
-# Matjaž Jeran <matjaz.jeran@amis.net>, 2015-2018.
+# Matjaž Jeran <matjaz.jeran@amis.net>, 2015-2018, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 2.6.0\n"
 "Report-Msgid-Bugs-To: matjaz.jeran@amis.net\n"
 "POT-Creation-Date: 2018-11-28 09:13+0100\n"
-"PO-Revision-Date: 2018-12-17 15:17+0100\n"
+"PO-Revision-Date: 2019-01-14 13:07+0100\n"
 "Last-Translator: Matjaž Jeran <matjaz.jeran@amis.net>\n"
 "Language-Team: Slovenian <lugos-slo@lugos.si>\n"
 "Language: sl\n"
@@ -62,7 +62,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
 "%100==4 ? 2 : 3);\n"
-"X-Generator: Poedit 2.1.1\n"
+"X-Generator: Poedit 2.2\n"
 
 #: ../build/src/preferences_gen.h:1686
 msgid "GUI options"
@@ -1002,7 +1002,7 @@ msgstr ""
 
 #: ../data/darktable.appdata.xml.in.h:4
 msgid ""
-"darktable supports most modern camera's raw formats, and does all of its "
+"darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
 "darktable podpira večino surovih formatov modernih kamer in jih obdeluje z "
@@ -3608,7 +3608,7 @@ msgstr "izdelovalec"
 #: ../src/gui/presets.c:433 ../src/libs/collect.h:36
 #: ../src/libs/metadata_view.c:108
 msgid "lens"
-msgstr "lečje"
+msgstr "objektiv"
 
 #. iso
 #: ../src/gui/preferences.c:432 ../src/gui/preferences.c:1263
@@ -8202,7 +8202,7 @@ msgstr "avtomatično optimiziraj"
 #: ../src/iop/profile_gamma.c:928
 msgid ""
 "enlarge or shrink the computed dynamic range\n"
-"this is usefull when noise perturbates the measurements"
+"this is useful when noise perturbates the measurements"
 msgstr ""
 "razširi ali skrči dinamični razpon izračuna\n"
 "uporabno kadar šum moti meritve"
@@ -8581,7 +8581,7 @@ msgstr "orodje za kroge"
 
 #: ../src/iop/spots.c:693
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "orodje za elipse"
 
 #: ../src/iop/spots.c:694
@@ -8683,7 +8683,7 @@ msgid "cut shapes from current scale"
 msgstr "izreži oblike iz trenutnega merila"
 
 #: ../src/iop/retouch.c:2752
-msgid "paste cutted shapes to current scale"
+msgid "paste cut shapes to current scale"
 msgstr "prilepi izrezane oblike na trenutno merilo"
 
 #: ../src/iop/retouch.c:2777
@@ -8723,7 +8723,7 @@ msgid "color"
 msgstr "barva"
 
 #: ../src/iop/retouch.c:2829
-msgid "erase the detail or fills with choosen color"
+msgid "erase the detail or fills with chosen color"
 msgstr "obriši podrobnost ali napolni z izbrano barvo"
 
 #: ../src/iop/retouch.c:2841 ../src/iop/retouch.c:2842
@@ -8976,7 +8976,7 @@ msgid "Lab, linked channels"
 msgstr "Lab, povezani kanali"
 
 #: ../src/iop/tonecurve.c:1173
-msgid "Lab, independant channels"
+msgid "Lab, independent channels"
 msgstr "Lab, neodvisni kanali"
 
 #: ../src/iop/tonecurve.c:1174
@@ -10759,7 +10759,7 @@ msgstr "zastavice"
 
 #: ../src/libs/metadata_view.c:112
 msgid "focus distance"
-msgstr "goriščna razdalja"
+msgstr "izmerjena razdalja"
 
 #: ../src/libs/metadata_view.c:114
 msgid "datetime"
@@ -11044,7 +11044,7 @@ msgstr "tiskalnik"
 
 #: ../src/libs/print_settings.c:1176
 msgid "media"
-msgstr "medija"
+msgstr "medij"
 
 #: ../src/libs/print_settings.c:1195
 msgid "color management in printer driver"
@@ -11728,7 +11728,7 @@ msgid "access the online usermanual?"
 msgstr "dostop do mrežnega uporabniškega priročnika?"
 
 #: ../src/libs/tools/global_toolbox.c:277
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "pomoč url odprt v brskalniku"
 
 #: ../src/libs/tools/global_toolbox.c:282

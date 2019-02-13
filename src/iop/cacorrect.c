@@ -46,14 +46,7 @@ typedef struct dt_iop_cacorrect_gui_data_t
 {
 } dt_iop_cacorrect_gui_data_t;
 
-typedef struct dt_iop_cacorrect_data_t
-{
-} dt_iop_cacorrect_data_t;
-
-typedef struct dt_iop_cacorrect_global_data_t
-{
-} dt_iop_cacorrect_global_data_t;
-
+dt_iop_cacorrect_gui_data_t dummy;
 
 // this returns a translatable name
 const char *name()
@@ -71,12 +64,6 @@ int flags()
 {
   return IOP_FLAGS_ONE_INSTANCE;
 }
-
-/** modify regions of interest (optional, per pixel ops don't need this) */
-// void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t
-// *roi_out, const dt_iop_roi_t *roi_in);
-// void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t
-// *roi_out, dt_iop_roi_t *roi_in);
 
 /*==================================================================================
  * begin raw therapee code, hg checkout of march 09, 2016 branch master.
@@ -1551,21 +1538,17 @@ void cleanup(dt_iop_module_t *module)
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  // dt_iop_cacorrect_params_t *p = (dt_iop_cacorrect_params_t *)params;
-  // dt_iop_cacorrect_data_t *d = (dt_iop_cacorrect_data_t *)piece->data;
   dt_image_t *img = &pipe->image;
   if(!(img->flags & DT_IMAGE_RAW) || dt_image_is_monochrome(img)) piece->enabled = 0;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(sizeof(dt_iop_cacorrect_data_t));
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  free(piece->data);
   piece->data = NULL;
 }
 
@@ -1584,9 +1567,9 @@ void gui_update(dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = NULL;
   self->widget = gtk_label_new("");
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
+  self->gui_data = &dummy;
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 }
 

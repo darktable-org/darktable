@@ -77,7 +77,6 @@ typedef struct dt_iop_profilegamma_gui_data_t
   GtkWidget *shadows_range;
   GtkWidget *security_factor;
   GtkWidget *auto_button;
-  int which_colorpicker;
   dt_iop_color_picker_t color_picker;
 } dt_iop_profilegamma_gui_data_t;
 
@@ -531,7 +530,7 @@ static void grey_point_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-  
+
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
@@ -599,29 +598,29 @@ static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
 {
   dt_iop_profilegamma_gui_data_t *g =  (dt_iop_profilegamma_gui_data_t *)self->gui_data;
 
-  const int current_picker = g->which_colorpicker;
+  const int current_picker = g->color_picker.current_picker;
 
-  g->which_colorpicker = DT_PICKPROFLOG_NONE;
+  g->color_picker.current_picker = DT_PICKPROFLOG_NONE;
 
   if(button == g->grey_point)
-    g->which_colorpicker = DT_PICKPROFLOG_GREY_POINT;
+    g->color_picker.current_picker = DT_PICKPROFLOG_GREY_POINT;
   else if(button == g->shadows_range)
-    g->which_colorpicker = DT_PICKPROFLOG_SHADOWS_RANGE;
+    g->color_picker.current_picker = DT_PICKPROFLOG_SHADOWS_RANGE;
   else if(button == g->dynamic_range)
-    g->which_colorpicker = DT_PICKPROFLOG_DYNAMIC_RANGE;
+    g->color_picker.current_picker = DT_PICKPROFLOG_DYNAMIC_RANGE;
   else if(button == g->auto_button)
-    g->which_colorpicker = DT_PICKPROFLOG_AUTOTUNE;
+    g->color_picker.current_picker = DT_PICKPROFLOG_AUTOTUNE;
 
-  if (current_picker == g->which_colorpicker)
+  if (current_picker == g->color_picker.current_picker)
     return ALREADY_SELECTED;
   else
-    return g->which_colorpicker;
+    return g->color_picker.current_picker;
 }
 
 static void _iop_color_picker_apply(struct dt_iop_module_t *self)
 {
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-  switch(g->which_colorpicker)
+  switch(g->color_picker.current_picker)
   {
      case DT_PICKPROFLOG_GREY_POINT:
        apply_auto_grey(self);
@@ -643,16 +642,10 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self)
 static void _iop_color_picker_update(dt_iop_module_t *self)
 {
   dt_iop_profilegamma_gui_data_t *g =  (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-  dt_bauhaus_widget_set_quad_active(g->grey_point, g->which_colorpicker == DT_PICKPROFLOG_GREY_POINT);
-  dt_bauhaus_widget_set_quad_active(g->shadows_range, g->which_colorpicker == DT_PICKPROFLOG_SHADOWS_RANGE);
-  dt_bauhaus_widget_set_quad_active(g->dynamic_range, g->which_colorpicker == DT_PICKPROFLOG_DYNAMIC_RANGE);
-  dt_bauhaus_widget_set_quad_active(g->auto_button, g->which_colorpicker == DT_PICKPROFLOG_AUTOTUNE);
-}
-
-static void _iop_color_picker_reset(struct dt_iop_module_t *self)
-{
-  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-  g->which_colorpicker = DT_PICKPROFLOG_NONE;
+  dt_bauhaus_widget_set_quad_active(g->grey_point, g->color_picker.current_picker == DT_PICKPROFLOG_GREY_POINT);
+  dt_bauhaus_widget_set_quad_active(g->shadows_range, g->color_picker.current_picker == DT_PICKPROFLOG_SHADOWS_RANGE);
+  dt_bauhaus_widget_set_quad_active(g->dynamic_range, g->color_picker.current_picker == DT_PICKPROFLOG_DYNAMIC_RANGE);
+  dt_bauhaus_widget_set_quad_active(g->auto_button, g->color_picker.current_picker == DT_PICKPROFLOG_AUTOTUNE);
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
@@ -924,7 +917,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->security_factor, NULL, _("safety factor"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->security_factor, TRUE, TRUE, 0);
   dt_bauhaus_slider_set_format(g->security_factor, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or shrink the computed dynamic range\nthis is usefull when noise perturbates the measurements"));
+  gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or shrink the computed dynamic range\nthis is useful when noise perturbates the measurements"));
   g_signal_connect(G_OBJECT(g->security_factor), "value-changed", G_CALLBACK(security_threshold_callback), self);
 
   // Auto tune slider
@@ -956,9 +949,9 @@ void gui_init(dt_iop_module_t *self)
 
   init_picker(&g->color_picker,
               self,
+              DT_COLOR_PICKER_AREA,
               _iop_color_picker_get_set,
               _iop_color_picker_apply,
-              _iop_color_picker_reset,
               _iop_color_picker_update);
 }
 

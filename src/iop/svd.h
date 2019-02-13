@@ -24,16 +24,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define SIGN(a, b) copysign(a, b)
+
+static inline double SIGN(double a, double b)
+{
+  return copysign(a, b);
+}
+
 
 static inline double PYTHAG(double a, double b)
 {
-  double at = fabs(a), bt = fabs(b), ct, result;
-
-  if (at > bt)       { ct = bt / at; result = at * sqrt(1.0 + ct * ct); }
-  else if (bt > 0.0) { ct = at / bt; result = bt * sqrt(1.0 + ct * ct); }
-  else result = 0.0;
-  return result;
+  const double at = fabs(a), bt = fabs(b);
+  if (at > bt)
+  {
+    const double ct = bt / at;
+    return at * sqrt(1.0 + ct * ct);
+  }
+  if (bt > 0.0)
+  {
+    const double ct = at / bt;
+    return bt * sqrt(1.0 + ct * ct);
+  }
+  return 0.0;
 }
 
 
@@ -52,20 +63,19 @@ static inline int dsvd(
     double *w,    // output singular values w[n]
     double *v)    // output v matrix v[n*n]
 {
-  int flag, i, its, j, jj, k, l, nm;
-  double c, f, h, s, x, y, z;
-  double anorm = 0.0, g = 0.0, scale = 0.0;
-
-  if (m < n) 
+  if (m < n)
   {
     fprintf(stderr, "[svd] #rows must be >= #cols \n");
-    return(0);
+    return 0;
   }
 
+  double c, f, h, s, x, y, z;
+  double anorm = 0.0, g = 0.0, scale = 0.0;
   double *rv1 = malloc(n * sizeof(double));
+  int l;
 
   /* Householder reduction to bidiagonal form */
-  for (i = 0; i < n; i++) 
+  for (int i = 0; i < n; i++)
   {
     /* left-hand reduction */
     l = i + 1;
@@ -73,11 +83,11 @@ static inline int dsvd(
     g = s = scale = 0.0;
     if (i < m) 
     {
-      for (k = i; k < m; k++) 
+      for (int k = i; k < m; k++)
         scale += fabs(a[k*str+i]);
-      if (scale) 
+      if (scale != 0.0)
       {
-        for (k = i; k < m; k++) 
+        for (int k = i; k < m; k++)
         {
           a[k*str+i] = a[k*str+i]/scale;
           s += a[k*str+i] * a[k*str+i];
@@ -88,16 +98,17 @@ static inline int dsvd(
         a[i*str+i] = f - g;
         if (i != n - 1) 
         {
-          for (j = l; j < n; j++) 
+          for (int j = l; j < n; j++)
           {
-            for (s = 0.0, k = i; k < m; k++) 
+            s = 0.0;
+            for (int k = i; k < m; k++)
               s += a[k*str+i] * a[k*str+j];
             f = s / h;
-            for (k = i; k < m; k++) 
+            for (int k = i; k < m; k++)
               a[k*str+j] += f * a[k*str+i];
           }
         }
-        for (k = i; k < m; k++) 
+        for (int k = i; k < m; k++)
           a[k*str+i] = a[k*str+i]*scale;
       }
     }
@@ -107,11 +118,11 @@ static inline int dsvd(
     g = s = scale = 0.0;
     if (i < m && i != n - 1) 
     {
-      for (k = l; k < n; k++) 
+      for (int k = l; k < n; k++)
         scale += fabs(a[i*str+k]);
-      if (scale) 
+      if (scale != 0.0)
       {
-        for (k = l; k < n; k++) 
+        for (int k = l; k < n; k++)
         {
           a[i*str+k] = a[i*str+k]/scale;
           s += a[i*str+k] * a[i*str+k];
@@ -120,19 +131,20 @@ static inline int dsvd(
         g = -SIGN(sqrt(s), f);
         h = f * g - s;
         a[i*str+l] = f - g;
-        for (k = l; k < n; k++) 
+        for (int k = l; k < n; k++)
           rv1[k] = a[i*str+k] / h;
         if (i != m - 1) 
         {
-          for (j = l; j < m; j++) 
+          for (int j = l; j < m; j++)
           {
-            for (s = 0.0, k = l; k < n; k++) 
+            s = 0.0;
+            for (int k = l; k < n; k++)
               s += a[j*str+k] * a[i*str+k];
-            for (k = l; k < n; k++) 
+            for (int k = l; k < n; k++)
               a[j*str+k] += s * rv1[k];
           }
         }
-        for (k = l; k < n; k++) 
+        for (int k = l; k < n; k++)
           a[i*str+k] = a[i*str+k]*scale;
       }
     }
@@ -140,24 +152,25 @@ static inline int dsvd(
   }
 
   /* accumulate the right-hand transformation */
-  for (i = n - 1; i >= 0; i--) 
+  for (int i = n - 1; i >= 0; i--)
   {
     if (i < n - 1) 
     {
-      if (g) 
+      if (g != 0.0)
       {
-        for (j = l; j < n; j++)
+        for (int j = l; j < n; j++)
           v[j*n+i] = a[i*str+j] / a[i*str+l] / g;
         /* double division to avoid underflow */
-        for (j = l; j < n; j++) 
+        for (int j = l; j < n; j++)
         {
-          for (s = 0.0, k = l; k < n; k++) 
+          s = 0.0;
+          for (int k = l; k < n; k++)
             s += a[i*str+k] * v[k*n+j];
-          for (k = l; k < n; k++) 
+          for (int k = l; k < n; k++)
             v[k*n+j] += s * v[k*n+i];
         }
       }
-      for (j = l; j < n; j++) 
+      for (int j = l; j < n; j++)
         v[i*n+j] = v[j*n+i] = 0.0;
     }
     v[i*n+i] = 1.0;
@@ -166,44 +179,47 @@ static inline int dsvd(
   }
 
   /* accumulate the left-hand transformation */
-  for (i = n - 1; i >= 0; i--) 
+  for (int i = n - 1; i >= 0; i--)
   {
     l = i + 1;
     g = w[i];
     if (i < n - 1) 
-      for (j = l; j < n; j++) 
+      for (int j = l; j < n; j++)
         a[i*str+j] = 0.0;
-    if (g) 
+    if (g != 0.0)
     {
       g = 1.0 / g;
       if (i != n - 1) 
       {
-        for (j = l; j < n; j++) 
+        for (int j = l; j < n; j++)
         {
-          for (s = 0.0, k = l; k < m; k++) 
+          s = 0.0;
+          for (int k = l; k < m; k++)
             s += a[k*str+i] * a[k*str+j];
           f = (s / a[i*str+i]) * g;
-          for (k = i; k < m; k++) 
+          for (int k = i; k < m; k++)
             a[k*str+j] += f * a[k*str+i];
         }
       }
-      for (j = i; j < m; j++) 
+      for (int j = i; j < m; j++)
         a[j*str+i] = a[j*str+i]*g;
     }
     else 
     {
-      for (j = i; j < m; j++) 
+      for (int j = i; j < m; j++)
         a[j*str+i] = 0.0;
     }
     ++a[i*str+i];
   }
 
   /* diagonalize the bidiagonal form */
-  for (k = n - 1; k >= 0; k--) 
+  for (int k = n - 1; k >= 0; k--)
   {                             /* loop over singular values */
-    for (its = 0; its < 30; its++) 
+    const int max_its = 30;
+    for (int its = 0; its <= max_its; its++)
     {                         /* loop over allowed iterations */
-      flag = 1;
+      _Bool flag = 1;
+      int nm = 0;
       for (l = k; l >= 0; l--) 
       {                     /* test for splitting */
         nm = MAX(0, l - 1);
@@ -217,9 +233,8 @@ static inline int dsvd(
       }
       if (flag) 
       {
-        c = 0.0;
         s = 1.0;
-        for (i = l; i <= k; i++) 
+        for (int i = l; i <= k; i++)
         {
           f = s * rv1[i];
           if (fabs(f) + anorm != anorm) 
@@ -230,7 +245,7 @@ static inline int dsvd(
             h = 1.0 / h;
             c = g * h;
             s = (- f * h);
-            for (j = 0; j < m; j++) 
+            for (int j = 0; j < m; j++)
             {
               y = a[j*str+nm];
               z = a[j*str+i];
@@ -246,13 +261,13 @@ static inline int dsvd(
         if (z < 0.0) 
         {              /* make singular value nonnegative */
           w[k] = -z;
-          for (j = 0; j < n; j++) 
-            v[j*n+k] = (-v[j*n+k]);
+          for (int j = 0; j < n; j++)
+            v[j*n+k] = -v[j*n+k];
         }
         break;
       }
-      if (its >= 30) {
-        fprintf(stderr, "[svd] no convergence after 30,000! iterations\n");
+      if (its >= max_its) {
+        fprintf(stderr, "[svd] no convergence after %d iterations\n", its);
         free(rv1);
         return 0;
       }
@@ -269,9 +284,9 @@ static inline int dsvd(
 
       /* next QR transformation */
       c = s = 1.0;
-      for (j = l; j <= nm; j++) 
+      for (int j = l; j <= nm; j++)
       {
-        i = j + 1;
+        const int i = j + 1;
         g = rv1[i];
         y = w[i];
         h = s * g;
@@ -284,7 +299,7 @@ static inline int dsvd(
         g = g * c - x * s;
         h = y * s;
         y = y * c;
-        for (jj = 0; jj < n; jj++) 
+        for (int jj = 0; jj < n; jj++)
         {
           x = v[jj*n+j];
           z = v[jj*n+i];
@@ -293,7 +308,7 @@ static inline int dsvd(
         }
         z = PYTHAG(f, h);
         w[j] = z;
-        if (z) 
+        if (z != 0.0)
         {
           z = 1.0 / z;
           c = f * z;
@@ -301,7 +316,7 @@ static inline int dsvd(
         }
         f = (c * g) + (s * y);
         x = (c * y) - (s * g);
-        for (jj = 0; jj < m; jj++) 
+        for (int jj = 0; jj < m; jj++)
         {
           y = a[jj*str+j];
           z = a[jj*str+i];

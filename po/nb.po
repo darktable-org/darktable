@@ -949,7 +949,7 @@ msgstr ""
 
 #: ../data/darktable.appdata.xml.in.h:4
 msgid ""
-"darktable supports most modern camera's raw formats, and does all of its "
+"darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
 "darktable støtter de fleste moderne kameraers RAW-formater, og foretar all "
@@ -8081,7 +8081,7 @@ msgstr "optimaliser automatisk"
 #: ../src/iop/profile_gamma.c:928
 msgid ""
 "enlarge or shrink the computed dynamic range\n"
-"this is usefull when noise perturbates the measurements"
+"this is useful when noise perturbates the measurements"
 msgstr ""
 "utvid eller reduser den beregnede dynamiske spennvidde\n"
 "dette er nyttig når støy forstyrrer målingene"
@@ -8458,7 +8458,7 @@ msgstr "flekk-verktøy sirkel"
 
 #: ../src/iop/spots.c:693
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "flekk-verktøy ellipse"
 
 #: ../src/iop/spots.c:694
@@ -8560,7 +8560,7 @@ msgid "cut shapes from current scale"
 msgstr "fjern former fra skala i bruk"
 
 #: ../src/iop/retouch.c:2752
-msgid "paste cutted shapes to current scale"
+msgid "paste cut shapes to current scale"
 msgstr "lim inn markerte former på skala i bruk"
 
 #: ../src/iop/retouch.c:2777
@@ -8600,7 +8600,7 @@ msgid "color"
 msgstr "farge"
 
 #: ../src/iop/retouch.c:2829
-msgid "erase the detail or fills with choosen color"
+msgid "erase the detail or fills with chosen color"
 msgstr "visker ut detalj eller fyller med valgt farge"
 
 #: ../src/iop/retouch.c:2841 ../src/iop/retouch.c:2842
@@ -8852,7 +8852,7 @@ msgid "Lab, linked channels"
 msgstr "Lab, koblede kanaler"
 
 #: ../src/iop/tonecurve.c:1173
-msgid "Lab, independant channels"
+msgid "Lab, independent channels"
 msgstr "Lab, uavhengige kanaler"
 
 #: ../src/iop/tonecurve.c:1174
@@ -11595,7 +11595,7 @@ msgid "access the online usermanual?"
 msgstr "vis brukermanual på nettet?"
 
 #: ../src/libs/tools/global_toolbox.c:277
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "hjelpetekst fra nettet vises i nettleseren"
 
 #: ../src/libs/tools/global_toolbox.c:282

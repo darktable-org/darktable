@@ -22,6 +22,12 @@
     <shortdescription>width of the side panels in pixels</shortdescription>
     <longdescription>(needs a restart)</longdescription>
   </dtconfig>
+  <dtconfig prefs="gui">
+    <name>slideshow_delay</name>
+    <type>int</type>
+    <default>5</default>
+    <shortdescription>waiting time between each picture in slideshow</shortdescription>
+  </dtconfig>
   <dtconfig prefs="core" section="cpugpu">
     <name>cache_memory</name>
     <type factor="(1.0 / (1024.0 * 1024.0))" min="(1024 * 1024 * 100)">int64</type>
@@ -756,6 +762,13 @@
     <shortdescription>append or replace history stack if pasted</shortdescription>
     <longdescription>0 -- append on top of stack, 1 -- replace it.</longdescription>
   </dtconfig>
+  <dtconfig prefs="gui" section="lighttable">
+    <name>plugins/lighttable/collect/single-click</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>use single-click in the collect panel</shortdescription>
+    <longdescription>check this option to use single-click to select items in the collect panel. this will allow you to do range selections for date-time and numeric values.</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/collect/num_rules</name>
     <type>int</type>
@@ -1202,6 +1215,13 @@
     <default>98.0</default>
     <shortdescription/>
     <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/demosaic/fdc_xover_iso</name>
+    <type>int</type>
+    <default>1600</default>
+    <shortdescription>crossover iso for X-Trans fdc demosaicing</shortdescription>
+    <longdescription>up to, and including, this iso, X-Trans frequency domain chroma demosaicing uses the hybrid mode for determining chroma; for all higher iso values the pure fdc is used.</longdescription>
   </dtconfig>
   <dtconfig prefs="core" section="quality">
     <name>plugins/darkroom/demosaic/quality</name>

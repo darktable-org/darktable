@@ -291,7 +291,7 @@ const char *name()
 
 int default_group()
 {
-return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT;
 }
 
 int flags()
@@ -1037,15 +1037,26 @@ static void apply_global_distortion_map (struct dt_iop_module_t *module,
           // point actually warped ?
           (*row != 0))
         {
-          dt_interpolation_compute_pixel4c (
-            interpolation,
-            in,
-            out_sample,
-            x + creal (*row) - roi_in->x,
-            y + cimag (*row) - roi_in->y,
-            roi_in->width,
-            roi_in->height,
-            ch_width);
+          if(ch == 1)
+            *out_sample = dt_interpolation_compute_sample(interpolation,
+                                                          in,
+                                                          x + creal (*row) - roi_in->x,
+                                                          y + cimag (*row) - roi_in->y,
+                                                          roi_in->width,
+                                                          roi_in->height,
+                                                          ch,
+                                                          ch_width);
+          else
+            dt_interpolation_compute_pixel4c (
+              interpolation,
+              in,
+              out_sample,
+              x + creal (*row) - roi_in->x,
+              y + cimag (*row) - roi_in->y,
+              roi_in->width,
+              roi_in->height,
+              ch_width);
+
         }
         ++row;
         out_sample += ch;
@@ -1325,6 +1336,43 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   return _distort_xtransform(self, piece, points, points_count, FALSE);
+}
+
+void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  // 1. copy the whole image (we'll change only a small part of it)
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none)
+#endif
+  for (int i = 0; i < roi_out->height; i++)
+  {
+    float *destrow = out + (size_t) i * roi_out->width;
+    const float *srcrow = in + (size_t) (roi_in->width * (i + roi_out->y - roi_in->y) + roi_out->x - roi_in->x);
+
+    memcpy (destrow, srcrow, sizeof (float) * roi_out->width);
+  }
+
+  // 2. build the distortion map
+
+  cairo_rectangle_int_t map_extent;
+  float complex *map = build_global_distortion_map (self, piece, roi_in, roi_out, &map_extent);
+  if (map == NULL)
+    return;
+
+  // 3. apply the map
+
+  if (map_extent.width != 0 && map_extent.height != 0)
+  {
+    int ch = piece->colors;
+    piece->colors = 1;
+    apply_global_distortion_map (self, piece, in, out, roi_in, roi_out, map, &map_extent);
+    piece->colors = ch;
+  }
+
+  dt_free_align ((void *) map);
+
 }
 
 void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, const void *const in,

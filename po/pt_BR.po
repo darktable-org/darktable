@@ -968,7 +968,7 @@ msgstr ""
 
 #: ../data/darktable.appdata.xml.in.h:4
 msgid ""
-"darktable supports most modern camera's raw formats, and does all of its "
+"darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
 "o darktable suporta o formato raw da maioria das câmeras modernas, e faz "
@@ -2832,7 +2832,7 @@ msgstr "gradiente #%d"
 #: ../src/develop/masks/masks.c:361
 #, c-format
 msgid "ellipse #%d"
-msgstr "elipse #%d"
+msgstr "ellipse #%d"
 
 #: ../src/develop/masks/masks.c:363
 #, c-format
@@ -8123,7 +8123,7 @@ msgstr "otimizar automaticamente"
 #: ../src/iop/profile_gamma.c:928
 msgid ""
 "enlarge or shrink the computed dynamic range\n"
-"this is usefull when noise perturbates the measurements"
+"this is useful when noise perturbates the measurements"
 msgstr ""
 "aumenta ou diminui a faixa dinâmica calculada\n"
 "é útil quando o ruído perturba as medidas"
@@ -8502,7 +8502,7 @@ msgstr "remoção de mancha por círculo"
 
 #: ../src/iop/spots.c:693
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "remoção de mancha por elipse"
 
 #: ../src/iop/spots.c:694
@@ -8608,7 +8608,7 @@ msgid "cut shapes from current scale"
 msgstr "cortar formas a na escala atual"
 
 #: ../src/iop/retouch.c:2778
-msgid "paste cutted shapes to current scale"
+msgid "paste cut shapes to current scale"
 msgstr "colar formas na escala atual"
 
 #: ../src/iop/retouch.c:2803
@@ -8649,7 +8649,7 @@ msgid "color"
 msgstr "cor"
 
 #: ../src/iop/retouch.c:2855
-msgid "erase the detail or fills with choosen color"
+msgid "erase the detail or fills with chosen color"
 msgstr "apagar detalhes ou preencher com a cor escolhida"
 
 #: ../src/iop/retouch.c:2867 ../src/iop/retouch.c:2868
@@ -8901,7 +8901,7 @@ msgid "Lab, linked channels"
 msgstr "Lab, canais ligados"
 
 #: ../src/iop/tonecurve.c:1177
-msgid "Lab, independant channels"
+msgid "Lab, independent channels"
 msgstr "Lab, canais independentes"
 
 #: ../src/iop/tonecurve.c:1178
@@ -11661,7 +11661,7 @@ msgid "access the online usermanual?"
 msgstr "acessar o manual do usuário online?"
 
 #: ../src/libs/tools/global_toolbox.c:283
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "url de ajuda aberta no browser"
 
 #: ../src/libs/tools/global_toolbox.c:288

@@ -939,7 +939,7 @@ msgstr ""
 
 #: ../data/darktable.appdata.xml.in.h:4
 msgid ""
-"darktable supports most modern camera's raw formats, and does all of its "
+"darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
 "darktableは、最新のCamera RAWフォーマットをサポートし、非常に高い精度ですべて"
@@ -8048,7 +8048,7 @@ msgstr "自動的に最適化します"
 #: ../src/iop/profile_gamma.c:928
 msgid ""
 "enlarge or shrink the computed dynamic range\n"
-"this is usefull when noise perturbates the measurements"
+"this is useful when noise perturbates the measurements"
 msgstr ""
 "算出されたダイナミックレンジを増減します\n"
 "ノイズが測定を妨げる場合に便利です"
@@ -8427,7 +8427,7 @@ msgstr "スポット 円ツール"
 
 #: ../src/iop/spots.c:693
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "スポット 楕円ツール"
 
 #: ../src/iop/spots.c:694
@@ -8530,7 +8530,7 @@ msgid "cut shapes from current scale"
 msgstr "現在のスケールからシェイプを切り抜きます"
 
 #: ../src/iop/retouch.c:2778
-msgid "paste cutted shapes to current scale"
+msgid "paste cut shapes to current scale"
 msgstr "カットされたシェイプを現在のスケールに貼り付けます"
 
 #: ../src/iop/retouch.c:2803
@@ -8570,7 +8570,7 @@ msgid "color"
 msgstr "カラー"
 
 #: ../src/iop/retouch.c:2855
-msgid "erase the detail or fills with choosen color"
+msgid "erase the detail or fills with chosen color"
 msgstr "ディテールを消去するか、選択した色で塗りつぶします"
 
 #: ../src/iop/retouch.c:2867 ../src/iop/retouch.c:2868
@@ -8822,7 +8822,7 @@ msgid "Lab, linked channels"
 msgstr "Lab, 連結チャンネル"
 
 #: ../src/iop/tonecurve.c:1177
-msgid "Lab, independant channels"
+msgid "Lab, independent channels"
 msgstr "Lab, 独立チャンネル"
 
 #: ../src/iop/tonecurve.c:1178
@@ -11564,7 +11564,7 @@ msgid "access the online usermanual?"
 msgstr "オンライン・ユーザーマニュアルにアクセスしますか?"
 
 #: ../src/libs/tools/global_toolbox.c:277
-msgid "help url opened in web brower"
+msgid "help url opened in web browser"
 msgstr "WebブラウザでヘルプURLを開きます"
 
 #: ../src/libs/tools/global_toolbox.c:282

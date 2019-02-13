@@ -845,7 +845,7 @@ msgstr ""
 
 #: ../data/darktable.appdata.xml.in.h:4
 msgid ""
-"darktable supports most modern camera's raw formats, and does all of its "
+"darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
 "Program darktable podporuje raw formáty najnovších fotoaparátov a dokáže "
@@ -7128,7 +7128,7 @@ msgstr "nástroj bodu kruhu"
 
 #: ../src/iop/spots.c:693
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "nástroj bodu elipsy"
 
 #: ../src/iop/spots.c:694

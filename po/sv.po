@@ -830,7 +830,7 @@ msgstr ""
 
 #: ../data/darktable.appdata.xml.in.h:4
 msgid ""
-"darktable supports most modern camera's raw formats, and does all of its "
+"darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
 "darktable stöder de flesta moderna kamerornas råformat, och gör alla "
@@ -7469,7 +7469,7 @@ msgstr "cirkelverktyg"
 
 #: ../src/iop/spots.c:694
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "elipsverktyg"
 
 #: ../src/iop/spots.c:695

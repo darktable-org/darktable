@@ -232,6 +232,8 @@ typedef struct dt_iop_module_so_t
                            size_t points_count);
   int (*distort_backtransform)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                                float *points, size_t points_count);
+  void (*distort_mask)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                       float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
 
   // introspection related callbacks
   gboolean have_introspection;
@@ -299,11 +301,26 @@ typedef struct dt_iop_module_t
   struct dt_develop_blend_params_t *blend_params, *default_blendop_params;
   /** holder for blending ui control */
   gpointer blend_data;
+  struct {
+    struct {
+      /** if this module generates a mask, is it used later on? needed to decide if the mask should be stored.
+          maps dt_iop_module_t* -> id
+      */
+      GHashTable *users;
+      /** the masks this module has to offer. maps id -> name */
+      GHashTable *masks;
+    } source;
+    struct {
+      /** the module that provides the raster mask (if any). keep in sync with blend_params! */
+      struct dt_iop_module_t *source;
+      int id;
+    } sink;
+  } raster_mask;
   /** child widget which is added to the GtkExpander. copied from module_so_t. */
   GtkWidget *widget;
   /** off button, somewhere in header, common to all plug-ins. */
   GtkDarktableToggleButton *off;
-  /** this is the module header, contains labe and buttons */
+  /** this is the module header, contains label and buttons */
   GtkWidget *header;
 
   /** expander containing the widget and flag to store expanded state */
@@ -445,6 +462,9 @@ typedef struct dt_iop_module_t
   /** reverse points after the iop is applied => point before process */
   int (*distort_backtransform)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                                float *points, size_t points_count);
+  /** apply the image distortion to a single channel float buffer. only needed by iops that distort the image */
+  void (*distort_mask)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
+                       float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
 
   /** Key accelerator registration callbacks */
   void (*connect_key_accels)(struct dt_iop_module_t *self);
@@ -503,6 +523,9 @@ void dt_iop_gui_update_header(dt_iop_module_t *module);
 void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
                           struct dt_develop_blend_params_t *blendop_params, struct dt_dev_pixelpipe_t *pipe,
                           struct dt_dev_pixelpipe_iop_t *piece);
+void dt_iop_commit_blend_params(dt_iop_module_t *module, const struct dt_develop_blend_params_t *blendop_params);
+/** make sure the raster mask is advertised if available */
+void dt_iop_set_mask_mode(dt_iop_module_t *module, int mask_mode);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module);
 /** get the widget of plugin ui in expander */
@@ -547,6 +570,12 @@ gchar *dt_iop_get_localized_name(const gchar *op);
 
 /** Connects common accelerators to an iop module */
 void dt_iop_connect_common_accels(dt_iop_module_t *module);
+
+/** set multi_priority and update raster mask links */
+void dt_iop_update_multi_priority(dt_iop_module_t *module, int new_priority);
+
+/** iterates over the users hash table and checks if a specific mask is being used */
+gboolean dt_iop_is_raster_mask_used(dt_iop_module_t *module, int id);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

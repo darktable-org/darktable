@@ -33,6 +33,7 @@
 #include "develop/imageop_math.h"
 #include "dtgtk/button.h"
 #include "dtgtk/resetlabel.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
@@ -52,6 +53,7 @@ typedef struct dt_iop_invert_gui_data_t
   GtkWidget *picker;
   double RGB_to_CAM[4][3];
   double CAM_to_RGB[3][4];
+  dt_iop_color_picker_t color_picker;
 } dt_iop_invert_gui_data_t;
 
 typedef struct dt_iop_invert_global_data_t
@@ -134,25 +136,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_button_iop(self, "pick color of film material from image", GTK_WIDGET(g->colorpicker));
 }
 
-static void request_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-
-  self->request_color_pick
-      = (gtk_toggle_button_get_active(togglebutton) ? DT_REQUEST_COLORPICK_MODULE : DT_REQUEST_COLORPICK_OFF);
-
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
-  {
-    dt_lib_colorpicker_set_area(darktable.lib, 0.99);
-    dt_dev_reprocess_all(self->dev);
-  }
-  else
-    dt_control_queue_redraw();
-
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
-  dt_iop_request_focus(self);
-}
-
 static void gui_update_from_coeffs(dt_iop_module_t *self)
 {
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
@@ -176,17 +159,13 @@ static void gui_update_from_coeffs(dt_iop_module_t *self)
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpicker), &color);
 }
 
-static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
+static void _iop_color_picker_apply(dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return FALSE;
-  if(self->picked_color_max[0] < 0.0f) return FALSE;
-  if(self->request_color_pick == DT_REQUEST_COLORPICK_OFF) return FALSE;
-
   static float old[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
   const float *grayrgb = self->picked_color;
 
-  if(grayrgb[0] == old[0] && grayrgb[1] == old[1] && grayrgb[2] == old[2] && grayrgb[3] == old[3]) return FALSE;
+  if(grayrgb[0] == old[0] && grayrgb[1] == old[1] && grayrgb[2] == old[2] && grayrgb[3] == old[3]) return;
 
   for(int k = 0; k < 4; k++) old[k] = grayrgb[k];
 
@@ -198,7 +177,6 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   darktable.gui->reset = 0;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
-  return FALSE;
 }
 
 static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
@@ -207,8 +185,7 @@ static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
-  // turn off the other color picker so that this tool actually works ...
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->picker), FALSE);
+  dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
   GdkRGBA c;
   gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &c);
@@ -590,17 +567,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_reset(struct dt_iop_module_t *self)
-{
-  dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->picker), 0);
-}
-
 void gui_update(dt_iop_module_t *self)
 {
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-
   dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
 
   if(!dt_image_is_monochrome(&self->dev->image_storage))
@@ -608,9 +576,6 @@ void gui_update(dt_iop_module_t *self)
     gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), TRUE);
     dtgtk_reset_label_set_text(g->label, _("color of film material"));
     gui_update_from_coeffs(self);
-
-    if (self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->picker), 0);
   }
   else
   {
@@ -645,10 +610,14 @@ void gui_init(dt_iop_module_t *self)
   g->picker = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->picker, _("pick color of film material from image"));
   gtk_widget_set_size_request(g->picker, DT_PIXEL_APPLY_DPI(24), DT_PIXEL_APPLY_DPI(24));
-  g_signal_connect(G_OBJECT(g->picker), "toggled", G_CALLBACK(request_pick_toggled), self);
+  g_signal_connect(G_OBJECT(g->picker), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
   gtk_box_pack_start(GTK_BOX(g->pickerbuttons), g->picker, TRUE, TRUE, 5);
 
-  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(draw), self);
+  init_single_picker(&g->color_picker,
+                     self,
+                     GTK_WIDGET(g->picker),
+                     DT_COLOR_PICKER_AREA,
+                     _iop_color_picker_apply);
 }
 
 void gui_cleanup(dt_iop_module_t *self)

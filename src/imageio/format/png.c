@@ -40,10 +40,7 @@ DT_MODULE(3)
 
 typedef struct dt_imageio_png_t
 {
-  int max_width, max_height;
-  int width, height;
-  char style[128];
-  gboolean style_append;
+  dt_imageio_module_data_t global;
   int bpp;
   int compression;
   FILE *f;
@@ -124,10 +121,10 @@ static void PNGwriteRawProfile(png_struct *ping, png_info *ping_info, char *prof
 
 int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const void *ivoid,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total)
+                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe)
 {
   dt_imageio_png_t *p = (dt_imageio_png_t *)p_tmp;
-  const int width = p->width, height = p->height;
+  const int width = p->global.width, height = p->global.height;
   FILE *f = g_fopen(filename, "wb");
   if(!f) return 1;
 
@@ -298,8 +295,8 @@ static int __attribute__((__unused__)) read_header(const char *filename, dt_imag
     png_set_gray_to_rgb(png->png_ptr);
 
   // png->bytespp = 3*bit_depth/8;
-  png->width = png_get_image_width(png->png_ptr, png->info_ptr);
-  png->height = png_get_image_height(png->png_ptr, png->info_ptr);
+  png->global.width = png_get_image_width(png->png_ptr, png->info_ptr);
+  png->global.height = png_get_image_height(png->png_ptr, png->info_ptr);
 
   return 0;
 
@@ -337,7 +334,7 @@ int read_image(dt_imageio_module_data_t *p_tmp, uint8_t *out)
   png_bytep row_pointer = (png_bytep)out;
   unsigned long rowbytes = png_get_rowbytes(png->png_ptr, png->info_ptr);
 
-  for(int y = 0; y < png->height; y++)
+  for(int y = 0; y < png->global.height; y++)
   {
     png_read_row(png->png_ptr, row_pointer, NULL);
     row_pointer += rowbytes;
@@ -374,12 +371,12 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     dt_imageio_png_v1_t *o = (dt_imageio_png_v1_t *)old_params;
     dt_imageio_png_t *n = (dt_imageio_png_t *)malloc(sizeof(dt_imageio_png_t));
 
-    n->max_width = o->max_width;
-    n->max_height = o->max_height;
-    n->width = o->width;
-    n->height = o->height;
-    g_strlcpy(n->style, o->style, sizeof(o->style));
-    n->style_append = 0;
+    n->global.max_width = o->max_width;
+    n->global.max_height = o->max_height;
+    n->global.width = o->width;
+    n->global.height = o->height;
+    g_strlcpy(n->global.style, o->style, sizeof(o->style));
+    n->global.style_append = FALSE;
     n->bpp = o->bpp;
     n->compression = Z_BEST_COMPRESSION;
     n->f = o->f;
@@ -405,12 +402,12 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     dt_imageio_png_v2_t *o = (dt_imageio_png_v2_t *)old_params;
     dt_imageio_png_t *n = (dt_imageio_png_t *)malloc(sizeof(dt_imageio_png_t));
 
-    n->max_width = o->max_width;
-    n->max_height = o->max_height;
-    n->width = o->width;
-    n->height = o->height;
-    g_strlcpy(n->style, o->style, sizeof(o->style));
-    n->style_append = o->style_append;
+    n->global.max_width = o->max_width;
+    n->global.max_height = o->max_height;
+    n->global.width = o->width;
+    n->global.height = o->height;
+    g_strlcpy(n->global.style, o->style, sizeof(o->style));
+    n->global.style_append = o->style_append;
     n->bpp = o->bpp;
     n->compression = Z_BEST_COMPRESSION;
     n->f = o->f;

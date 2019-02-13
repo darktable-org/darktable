@@ -43,10 +43,7 @@ DT_MODULE(2)
 
 typedef struct dt_imageio_jpeg_t
 {
-  int max_width, max_height;
-  int width, height;
-  char style[128];
-  gboolean style_append;
+  dt_imageio_module_data_t global;
   int quality;
   struct jpeg_source_mgr src;
   struct jpeg_destination_mgr dest;
@@ -315,7 +312,7 @@ read_icc_profile (j_decompress_ptr cinfo,
 
 int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const void *in_tmp,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total)
+                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe)
 {
   dt_imageio_jpeg_t *jpg = (dt_imageio_jpeg_t *)jpg_tmp;
   const uint8_t *in = (const uint8_t *)in_tmp;
@@ -333,8 +330,8 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
   if(!f) return 1;
   jpeg_stdio_dest(&(jpg->cinfo), f);
 
-  jpg->cinfo.image_width = jpg->width;
-  jpg->cinfo.image_height = jpg->height;
+  jpg->cinfo.image_width = jpg->global.width;
+  jpg->cinfo.image_height = jpg->global.height;
   jpg->cinfo.input_components = 3;
   jpg->cinfo.in_color_space = JCS_RGB;
   jpeg_set_defaults(&(jpg->cinfo));
@@ -382,13 +379,13 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
     }
   }
 
-  uint8_t *row = malloc((size_t)3 * jpg->width * sizeof(uint8_t));
+  uint8_t *row = malloc((size_t)3 * jpg->global.width * sizeof(uint8_t));
   const uint8_t *buf;
   while(jpg->cinfo.next_scanline < jpg->cinfo.image_height)
   {
     JSAMPROW tmp[1];
     buf = in + (size_t)jpg->cinfo.next_scanline * jpg->cinfo.image_width * 4;
-    for(int i = 0; i < jpg->width; i++)
+    for(int i = 0; i < jpg->global.width; i++)
       for(int k = 0; k < 3; k++) row[3 * i + k] = buf[4 * i + k];
     tmp[0] = row;
     jpeg_write_scanlines(&(jpg->cinfo), tmp, 1);
@@ -421,8 +418,8 @@ static int __attribute__((__unused__)) read_header(const char *filename, dt_imag
   jpeg_stdio_src(&(jpg->dinfo), jpg->f);
   // jpg->dinfo.buffered_image = TRUE;
   jpeg_read_header(&(jpg->dinfo), TRUE);
-  jpg->width = jpg->dinfo.image_width;
-  jpg->height = jpg->dinfo.image_height;
+  jpg->global.width = jpg->dinfo.image_width;
+  jpg->global.height = jpg->dinfo.image_height;
   return 0;
 }
 
@@ -451,7 +448,7 @@ int read_image(dt_imageio_module_data_t *jpg_tmp, uint8_t *out)
     else
       for(JDIMENSION i = 0; i < jpg->dinfo.image_width; i++)
         for(int k = 0; k < 3; k++) tmp[4 * i + k] = row_pointer[0][3 * i + k];
-    tmp += 4 * jpg->width;
+    tmp += 4 * jpg->global.width;
   }
   if(setjmp(jerr.setjmp_buffer))
   {
@@ -494,12 +491,12 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
     const dt_imageio_jpeg_v1_t *o = (dt_imageio_jpeg_v1_t *)old_params;
     dt_imageio_jpeg_t *n = (dt_imageio_jpeg_t *)malloc(sizeof(dt_imageio_jpeg_t));
 
-    n->max_width = o->max_width;
-    n->max_height = o->max_height;
-    n->width = o->width;
-    n->height = o->height;
-    g_strlcpy(n->style, o->style, sizeof(o->style));
-    n->style_append = 0;
+    n->global.max_width = o->max_width;
+    n->global.max_height = o->max_height;
+    n->global.width = o->width;
+    n->global.height = o->height;
+    g_strlcpy(n->global.style, o->style, sizeof(o->style));
+    n->global.style_append = FALSE;
     n->quality = o->quality;
     n->src = o->src;
     n->dest = o->dest;

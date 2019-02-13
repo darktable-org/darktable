@@ -152,9 +152,49 @@ static void _do_record_undo(dt_develop_t *dev, dt_masks_form_t *form)
                  _masks_do_undo, _masks_free_undo);
 }
 
-static void _set_hinter_message(dt_masks_form_gui_t *gui, dt_masks_type_t formtype)
+static int _get_opacity(dt_masks_form_gui_t *gui, const dt_masks_form_t *form)
+{
+  const dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
+  const dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
+  if(!sel) return 0;
+  const int formid = sel->formid;
+
+  // look for apacity
+  const dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, fpt->parentid);
+  if(!grp || !(grp->type & DT_MASKS_GROUP)) return 0;
+
+  int opacity = 0;
+  GList *fpts = g_list_first(grp->points);
+
+  while(fpts)
+  {
+    const dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
+    if(fpt->formid == formid)
+    {
+      opacity = fpt->opacity * 100;
+      break;
+    }
+    fpts = g_list_next(fpts);
+  }
+
+  return opacity;
+}
+
+static void _set_hinter_message(dt_masks_form_gui_t *gui, const dt_masks_form_t *form)
 {
   char msg[256] = "";
+
+  int ftype = form->type;
+
+  if(!(ftype & DT_MASKS_GROUP) || gui->group_edited < 0) return;
+
+  // we get the selected form
+  const dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
+  const dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
+  if(!sel) return;
+
+  const dt_masks_type_t formtype = sel->type;
+  const int opacity = _get_opacity(gui, form);
 
   if(formtype & DT_MASKS_PATH)
   {
@@ -167,40 +207,45 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, dt_masks_type_t formty
     else if(gui->seg_selected >= 0)
       g_strlcat(msg, _("ctrl+click to add a node"), sizeof(msg));
     else if(gui->form_selected)
-      g_strlcat(msg, _("ctrl+scroll to set shape opacity, shift+scroll to set feather size"), sizeof(msg));
+      g_snprintf(msg, sizeof(msg), _("shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"), opacity);
   }
   else if(formtype & DT_MASKS_GRADIENT)
   {
     if(gui->form_selected)
-      g_strlcat(msg, _("ctrl+scroll to set shape opacity"), sizeof(msg));
+      g_snprintf(msg, sizeof(msg), _("ctrl+scroll to set shape opacity (%d%%)"), opacity);
     else if(gui->pivot_selected)
       g_strlcat(msg, _("move to rotate shape"), sizeof(msg));
   }
   else if(formtype & DT_MASKS_ELLIPSE)
   {
     if(gui->creation)
-      g_strlcat(msg, _("scroll to set size, shift+scroll to set feather size\nctrl+scroll to set shape opacity"), sizeof(msg));
+      g_snprintf(msg, sizeof(msg),
+                 _("scroll to set size, shift+scroll to set feather size\nctrl+scroll to set shape opacity (%d%%)"), opacity);
     else if(gui->point_selected >= 0)
       g_strlcat(msg, _("ctrl+click to rotate"), sizeof(msg));
     else if(gui->form_selected)
-      g_strlcat(msg, _("shift+click to switch feathering mode, ctrl+scroll to set shape opacity,\nshift+scroll to set feather size, ctrl+click to rotate"), sizeof(msg));
+      g_snprintf(msg, sizeof(msg),
+                 _("shift+click to switch feathering mode, ctrl+click to rotate\nshift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%),"), opacity);
   }
   else if(formtype & DT_MASKS_BRUSH)
   {
     if(gui->creation)
-      g_strlcat(msg, _("scroll to set brush size, shift+scroll to set hardness,\nctrl+scroll to set opacity"),
-                sizeof(msg));
+      g_snprintf(msg, sizeof(msg),
+                 _("scroll to set brush size, shift+scroll to set hardness,\nctrl+scroll to set opacity (%d%%)"), opacity);
+    else if(gui->form_selected)
+      g_snprintf(msg, sizeof(msg),
+                 _("scroll to set hardness, ctrl+scroll to set shape opacity (%d%%)"), opacity);
     else if(gui->border_selected)
       g_strlcat(msg, _("scroll to set brush size"), sizeof(msg));
-    else if(gui->form_selected)
-      g_strlcat(msg, _("scroll to set hardness, ctrl+scroll to set shape opacity"), sizeof(msg));
   }
   else if(formtype & DT_MASKS_CIRCLE)
   {
     if(gui->creation)
-      g_strlcat(msg, _("scroll to set size, shift+scroll to set feather size\nctrl+scroll to set shape opacity"), sizeof(msg));
+      g_snprintf(msg, sizeof(msg),
+                 _("scroll to set size, shift+scroll to set feather size\nctrl+scroll to set shape opacity (%d%%)"), opacity);
     else if(gui->form_selected)
-      g_strlcat(msg, _("ctrl+scroll to set shape opacity, shift+scroll to set feather size"), sizeof(msg));
+      g_snprintf(msg, sizeof(msg),
+                 _("shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"), opacity);
   }
 
   dt_control_hinter_message(darktable.control, msg);
@@ -211,6 +256,7 @@ void dt_masks_init_form_gui(dt_masks_form_gui_t *gui)
   memset(gui, 0, sizeof(dt_masks_form_gui_t));
 
   gui->posx = gui->posy = -1.0f;
+  gui->mouse_leaved_center = TRUE;
   gui->posx_source = gui->posy_source = -1.0f;
   gui->source_pos_type = DT_MASKS_SOURCE_POS_RELATIVE_TEMP;
 }
@@ -1300,17 +1346,20 @@ void dt_masks_free_form(dt_masks_form_t *form)
 
 int dt_masks_events_mouse_leave(struct dt_iop_module_t *module)
 {
-  // reset mouse position for masks
   if(darktable.develop->form_gui)
   {
     dt_masks_form_gui_t *gui = darktable.develop->form_gui;
+    gui->mouse_leaved_center = TRUE;
+  }
+  return 0;
+}
 
-    // if masks are being created or edited don't reset the position
-    if(gui->creation || gui->form_dragging || gui->source_dragging || gui->point_dragging >= 0
-       || gui->feather_dragging >= 0 || gui->seg_dragging >= 0 || gui->point_border_dragging >= 0)
-      return 0;
-
-    gui->posx = gui->posy = -1.f;
+int dt_masks_events_mouse_enter(struct dt_iop_module_t *module)
+{
+  if(darktable.develop->form_gui)
+  {
+    dt_masks_form_gui_t *gui = darktable.develop->form_gui;
+    gui->mouse_leaved_center = FALSE;
   }
   return 0;
 }
@@ -1328,6 +1377,8 @@ int dt_masks_events_mouse_moved(struct dt_iop_module_t *module, double x, double
 
   if(gui)
   {
+    // This assume that if this event is generated the mouse is over the center window
+    gui->mouse_leaved_center = FALSE;
     gui->posx = pzx * darktable.develop->preview_pipe->backbuf_width;
     gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
   }
@@ -1352,23 +1403,7 @@ int dt_masks_events_mouse_moved(struct dt_iop_module_t *module, double x, double
   else if(form->type & DT_MASKS_BRUSH)
     rep = dt_brush_events_mouse_moved(module, pzx, pzy, pressure, which, form, 0, gui, 0);
 
-  if(gui)
-  {
-    int ftype = form->type;
-    if(ftype & DT_MASKS_GROUP)
-    {
-      if(gui->group_edited >= 0)
-      {
-        // we get the slected form
-        dt_masks_point_group_t *fpt
-            = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
-        dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
-        if(!sel) return 0;
-        ftype = sel->type;
-      }
-    }
-    _set_hinter_message(gui, ftype);
-  }
+  if(gui) _set_hinter_message(gui, form);
 
   return rep;
 }
@@ -1424,7 +1459,7 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module, double x, dou
         || gui->feather_selected)
        && !gui->creation && gui->group_edited >= 0)
     {
-      // we get the slected form
+      // we get the selected form
       dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
       if(fpt)
       {
@@ -1463,20 +1498,24 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
   pzx += 0.5f;
   pzy += 0.5f;
 
-  if(form->type & DT_MASKS_CIRCLE)
-    return dt_circle_events_mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
-  else if(form->type & DT_MASKS_PATH)
-    return dt_path_events_mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
-  else if(form->type & DT_MASKS_GROUP)
-    return dt_group_events_mouse_scrolled(module, pzx, pzy, up, state, form, gui);
-  else if(form->type & DT_MASKS_GRADIENT)
-    return dt_gradient_events_mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
-  else if(form->type & DT_MASKS_ELLIPSE)
-    return dt_ellipse_events_mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
-  else if(form->type & DT_MASKS_BRUSH)
-    return dt_brush_events_mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
+  int ret = 0;
 
-  return 0;
+  if(form->type & DT_MASKS_CIRCLE)
+    ret = dt_circle_events_mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
+  else if(form->type & DT_MASKS_PATH)
+    ret = dt_path_events_mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
+  else if(form->type & DT_MASKS_GROUP)
+    ret = dt_group_events_mouse_scrolled(module, pzx, pzy, up, state, form, gui);
+  else if(form->type & DT_MASKS_GRADIENT)
+    ret = dt_gradient_events_mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
+  else if(form->type & DT_MASKS_ELLIPSE)
+    ret = dt_ellipse_events_mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
+  else if(form->type & DT_MASKS_BRUSH)
+    ret = dt_brush_events_mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
+
+  if(gui) _set_hinter_message(gui, form);
+
+  return ret;
 }
 void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, int32_t width, int32_t height,
                                  int32_t pointerx, int32_t pointery)
@@ -2130,7 +2169,7 @@ void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up)
 
   // we first need to test if the opacity can be set to the form
   if(form->type & DT_MASKS_GROUP) return;
-  int id = form->formid;
+  const int id = form->formid;
   float amount = 0.05f;
   if(!up) amount = -amount;
 
@@ -2141,7 +2180,7 @@ void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up)
     dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
     if(fpt->formid == id)
     {
-      float nv = fpt->opacity + amount;
+      const float nv = fpt->opacity + amount;
       if(nv <= 1.0f && nv >= 0.0f)
       {
         fpt->opacity = nv;
@@ -2199,7 +2238,7 @@ static int _find_in_group(dt_masks_form_t *grp, int formid)
   int nb = 0;
   while(forms)
   {
-    dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
+    const dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
     dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, grpt->formid);
     if(form)
     {
@@ -2471,21 +2510,27 @@ int dt_masks_point_in_form_exact(float x, float y, float *points, int points_sta
 
   if(points_count > 2 + points_start)
   {
-    float last = isnan(points[points_count * 2 - 1]) ? -INFINITY : points[points_count * 2 - 1];
+    int start = isnan(points[points_start * 2]) && !isnan(points[points_start * 2 + 1])
+                    ? points[points_start * 2 + 1]
+                    : points_start;
+
     float yf = (float)y;
     int nb = 0;
-    for(int i = points_start; i < points_count; i++)
+    for(int i = start, next = start + 1; i < points_count;)
     {
-      float yy = points[i * 2 + 1];
+      float y1 = points[i * 2 + 1];
+      float y2 = points[next * 2 + 1];
       //if we need to skip points (in case of deleted point, because of self-intersection)
-      if(isnan(points[i * 2]))
+      if(isnan(points[next * 2]))
       {
-        if(isnan(yy)) break;
-        i = (int)yy - 1;
+        next = isnan(y2) ? start : (int)y2;
         continue;
       }
-      if (((yf<=yy && yf>last) || (yf>=yy && yf<last)) && (points[i * 2] > x)) nb++;
-      last = yy;
+      if(((yf <= y2 && yf > y1) || (yf >= y2 && yf < y1)) && (points[i * 2] > x)) nb++;
+
+      if(next == start) break;
+      i = next++;
+      if(next >= points_count) next = start;
     }
     return (nb & 1);
   }
@@ -2502,25 +2547,31 @@ int dt_masks_point_in_form_near(float x, float y, float *points, int points_star
 
   if(points_count > 2 + points_start)
   {
-    float last = isnan(points[points_count * 2 - 1]) ? -INFINITY : points[points_count * 2 - 1];
+    int start = isnan(points[points_start * 2]) && !isnan(points[points_start * 2 + 1])
+                    ? points[points_start * 2 + 1]
+                    : points_start;
+
     float yf = (float)y;
     int nb = 0;
-    for(int i = points_start; i < points_count; i++)
+    for(int i = start, next = start + 1; i < points_count;)
     {
-      float yy = points[i * 2 + 1];
+      float y1 = points[i * 2 + 1];
+      float y2 = points[next * 2 + 1];
       //if we need to jump to skip points (in case of deleted point, because of self-intersection)
-      if(isnan(points[i * 2]))
+      if(isnan(points[next * 2]))
       {
-        if(isnan(yy)) break;
-        i = (int)yy - 1;
+        next = isnan(y2) ? start : (int)y2;
         continue;
       }
-      if ((yf<=yy && yf>last) || (yf>=yy && yf<last))
+      if((yf <= y2 && yf > y1) || (yf >= y2 && yf < y1))
       {
         if(points[i * 2] > x) nb++;
         if(points[i * 2] - x < distance && points[i * 2] - x > -distance) *near = 1;
       }
-      last = yy;
+
+      if(next == start) break;
+      i = next++;
+      if(next >= points_count) next = start;
     }
     return (nb & 1);
   }
