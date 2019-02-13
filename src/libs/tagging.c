@@ -531,7 +531,7 @@ void gui_init(dt_lib_module_t *self)
 
   // right side, related
   box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
 
   // text entry and new button
   w = gtk_entry_new();

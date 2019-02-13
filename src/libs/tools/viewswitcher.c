@@ -125,7 +125,7 @@ void gui_init(dt_lib_module_t *self)
         GtkWidget *sep = gtk_label_new("|");
         gtk_widget_set_halign(sep, GTK_ALIGN_START);
         gtk_widget_set_name(sep, "view_label");
-        gtk_box_pack_start(GTK_BOX(self->widget), sep, FALSE, FALSE, DT_PIXEL_APPLY_DPI(5));
+        gtk_box_pack_start(GTK_BOX(self->widget), sep, FALSE, FALSE, 0);
       }
     }
     else

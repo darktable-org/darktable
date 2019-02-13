@@ -69,10 +69,6 @@ int position()
 }
 
 
-// fucking GTK pretends to be CSS-compliant but sucks dicks when it comes to
-// actually use CSS margins, so we need hard-code them !?
-#define HMARGIN 6
-
 static void _lib_histogram_change_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -172,9 +168,6 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   cairo_t *cr = cairo_create(cst);
 
   gtk_render_background(gtk_widget_get_style_context(widget), cr, 0, 0, width, height);
-  cairo_translate(cr, HMARGIN, 0.5);
-  width -= 2 * HMARGIN;
-  height -= 1;
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.5)); // borders width
 
   // Get the mode and color buttons position
@@ -253,7 +246,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
           }
 
       cairo_surface_t *source
-          = cairo_image_surface_create_for_data(buf, CAIRO_FORMAT_ARGB32, width - 2*HMARGIN, height, stride);
+          = cairo_image_surface_create_for_data(buf, CAIRO_FORMAT_ARGB32, width, height, stride);
 
       cairo_set_source_surface(cr, source, 0.0, 0.0);
       cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
@@ -269,17 +262,17 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
       cairo_set_line_width(cr, 1.);
       if(d->red)
       {
-        cairo_set_source_rgba(cr, 1., 0., 0., 0.25);
+        cairo_set_source_rgba(cr, 1., 0., 0., 0.33);
         dt_draw_histogram_8(cr, hist, 4, 0, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
       }
       if(d->green)
       {
-        cairo_set_source_rgba(cr, 0., 1., 0., 0.25);
+        cairo_set_source_rgba(cr, 0., 1., 0., 0.33);
         dt_draw_histogram_8(cr, hist, 4, 1, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
       }
       if(d->blue)
       {
-        cairo_set_source_rgba(cr, 0., 0., 1., 0.25);
+        cairo_set_source_rgba(cr, 0., 0., 1., 0.33);
         dt_draw_histogram_8(cr, hist, 4, 2, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
       }
       cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
