@@ -527,7 +527,7 @@ static void init_tab_presets(GtkWidget *book)
   gtk_box_pack_start(GTK_BOX(container), scroll, TRUE, TRUE, 0);
 
   // Adding the import/export buttons
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   GtkWidget *button = gtk_button_new_with_label(C_("preferences", "import"));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
@@ -559,7 +559,7 @@ static void init_tab_presets(GtkWidget *book)
 
 static void init_tab_accels(GtkWidget *book)
 {
-  GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   GtkWidget *tree = gtk_tree_view_new();
   GtkWidget *button;
@@ -612,7 +612,7 @@ static void init_tab_accels(GtkWidget *book)
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_box_pack_start(GTK_BOX(container), scroll, TRUE, TRUE, 0);
 
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   // Adding the restore defaults button
   button = gtk_button_new_with_label(C_("preferences", "default"));
@@ -1327,7 +1327,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   dt_osx_disallow_fullscreen(dialog);
 #endif
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
-  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
+  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_container_add(content_area, GTK_WIDGET(box));
   GtkWidget *label;
 

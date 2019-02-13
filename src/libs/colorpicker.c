@@ -359,7 +359,7 @@ static void _add_sample(GtkButton *widget, gpointer self)
   sample->rgb.alpha = 1.0;
 
   // Initializing the UI
-  sample->container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+  sample->container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(data->samples_container), sample->container, TRUE, TRUE, 0);
 
   sample->color_patch = gtk_drawing_area_new();
@@ -481,13 +481,13 @@ void gui_init(dt_lib_module_t *self)
 {
   unsigned int i;
 
-  GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
-  GtkWidget *output_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5));
-  GtkWidget *output_options = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
-  GtkWidget *picker_subrow = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(2));
+  GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *output_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *output_options = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  GtkWidget *picker_subrow = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *restrict_button;
   GtkWidget *samples_label = dt_ui_section_label_new(_("live samples"));
-  GtkWidget *samples_options_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(2));
+  GtkWidget *samples_options_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   // Initializing self data structure
   dt_lib_colorpicker_t *data = (dt_lib_colorpicker_t *)calloc(1, sizeof(dt_lib_colorpicker_t));
@@ -617,7 +617,7 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(G_OBJECT(data->add_sample_button), "clicked", G_CALLBACK(_add_sample), self);
 
-  data->samples_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(2));
+  data->samples_container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(container), data->samples_container, TRUE, TRUE, 0);
 
   data->display_samples_check_box = gtk_check_button_new_with_label(_("display sample areas on image"));

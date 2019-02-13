@@ -23,7 +23,7 @@
 #include <gtk/gtk.h>
 #include <stdint.h>
 
-#define DT_GUI_IOP_MODULE_CONTROL_SPACING 2
+#define DT_GUI_IOP_MODULE_CONTROL_SPACING 0
 
 /* helper macro that applies the DPI transformation to fixed pixel values. input should be defaulting to 96
  * DPI */

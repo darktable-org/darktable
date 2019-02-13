@@ -81,7 +81,7 @@ static void create_callback(GtkButton *button, gpointer user_data)
 
 void gui_init(dt_lib_module_t *self)
 {
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, "tethering_panels.html#session");
   self->data = calloc(1, sizeof(dt_lib_session_t));
 
@@ -89,13 +89,13 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_session_t *lib = self->data;
 
   // Setup gui
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkBox *hbox, *vbox1, *vbox2;
 
   // Session settings
-  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5)));
-  vbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5)));
-  vbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5)));
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  vbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  vbox2 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
   lib->gui.label1 = GTK_LABEL(gtk_label_new(_("jobcode")));
   gtk_widget_set_halign(GTK_WIDGET(lib->gui.label1), GTK_ALIGN_START);

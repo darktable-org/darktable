@@ -570,7 +570,6 @@ static inline int gui_init_tab(struct dt_iop_module_t *self, int line, const cha
   // color button
   GtkWidget *color;
   *ppcolor = color = gtk_color_button_new_with_rgba(c);
-  gtk_widget_set_size_request(GTK_WIDGET(color), DT_PIXEL_APPLY_DPI(32), DT_PIXEL_APPLY_DPI(32));
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(color), FALSE);
   gtk_color_button_set_title(GTK_COLOR_BUTTON(color), _("select tone color"));
 
@@ -639,7 +638,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_stop(g->scale1, 0.0f, 0.5f, 0.5f, 0.5f);
   dt_bauhaus_slider_set_stop(g->scale1, 1.0f, 0.5f, 0.5f, 0.5f);
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("balance"));
-  gtk_widget_set_margin_top(g->scale1, 6 * DT_BAUHAUS_SPACE);
   gtk_grid_attach(grid, g->scale1, 0, line++, 2, 1);
 
 

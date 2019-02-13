@@ -520,20 +520,18 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = NULL;
   dt_iop_flip_params_t *p = (dt_iop_flip_params_t *)self->params;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   GtkWidget *label = dtgtk_reset_label_new(_("rotate"), self, &p->orientation, sizeof(int32_t));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  gtk_widget_set_size_request(button, -1, DT_PIXEL_APPLY_DPI(24));
   gtk_widget_set_tooltip_text(button, _("rotate 90 degrees CCW"));
   gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_ccw), (gpointer)self);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | 1, NULL);
-  gtk_widget_set_size_request(button, -1, DT_PIXEL_APPLY_DPI(24));
   gtk_widget_set_tooltip_text(button, _("rotate 90 degrees CW"));
   gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_cw), (gpointer)self);

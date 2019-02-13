@@ -323,10 +323,6 @@ static gboolean ask_and_delete(gpointer user_data)
 
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   gtk_widget_set_vexpand(scroll, TRUE);
-  gtk_widget_set_margin_start(scroll, DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_end(scroll, DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_top(scroll, DT_PIXEL_APPLY_DPI(0));
-  gtk_widget_set_margin_bottom(scroll, DT_PIXEL_APPLY_DPI(0));
 
   GtkListStore *store = gtk_list_store_new(1, G_TYPE_STRING);
 

@@ -634,7 +634,7 @@ void gui_init(dt_imageio_module_format_t *self)
 {
   dt_imageio_j2k_gui_t *gui = (dt_imageio_j2k_gui_t *)malloc(sizeof(dt_imageio_j2k_gui_t));
   self->gui_data = (void *)gui;
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   const int format_last = dt_conf_get_int("plugins/imageio/format/j2k/format");
   const int preset_last = dt_conf_get_int("plugins/imageio/format/j2k/preset");
