@@ -1020,11 +1020,11 @@ void dtgtk_cairo_paint_cancel(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
 
   cairo_set_line_width(cr, 0.1);
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-  cairo_move_to(cr, 0.8, 0.2);
-  cairo_line_to(cr, 0.2, 0.8);
+  cairo_move_to(cr, 0.9, 0.1);
+  cairo_line_to(cr, 0.1, 0.9);
   cairo_stroke(cr);
-  cairo_move_to(cr, 0.78, 0.75);
-  cairo_line_to(cr, 0.3, 0.25);
+  cairo_move_to(cr, 0.9, 0.9);
+  cairo_line_to(cr, 0.1, 0.1);
   cairo_stroke(cr);
 }
 

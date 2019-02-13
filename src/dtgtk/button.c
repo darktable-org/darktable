@@ -50,7 +50,7 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   int flags = DTGTK_BUTTON(widget)->icon_flags;
 
   /* set inner border */
-  int border = DT_PIXEL_APPLY_DPI((flags & CPF_DO_NOT_USE_BORDER) ? 2 : 6);
+  int border = DT_PIXEL_APPLY_DPI((flags & CPF_DO_NOT_USE_BORDER) ? 3 : 6);
 
   /* prelight */
   if(state & GTK_STATE_FLAG_PRELIGHT)
