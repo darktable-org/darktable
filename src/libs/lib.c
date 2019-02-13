@@ -231,10 +231,6 @@ static void edit_preset(const char *name_in, dt_lib_module_info_t *minfo)
 #endif
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
   GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  gtk_widget_set_margin_start(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_end(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_top(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_bottom(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
   gtk_container_add(content_area, GTK_WIDGET(box));
 
   dt_lib_presets_edit_dialog_t *g
@@ -962,10 +958,10 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_label_set_markup(GTK_LABEL(hw[DT_MODULE_LABEL]), label);
   gtk_widget_set_tooltip_text(hw[DT_MODULE_LABEL], module->name(module));
   gtk_label_set_ellipsize(GTK_LABEL(hw[DT_MODULE_LABEL]), PANGO_ELLIPSIZE_MIDDLE);
-  gtk_widget_set_name(hw[DT_MODULE_LABEL], "panel_label");
+  gtk_widget_set_name(hw[DT_MODULE_LABEL], "lib-panel-label");
 
   /* add reset button if module has implementation */
-  hw[DT_MODULE_RESET] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  hw[DT_MODULE_RESET] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
   module->reset_button = GTK_WIDGET(hw[DT_MODULE_RESET]);
   gtk_widget_set_tooltip_text(hw[DT_MODULE_RESET], _("reset parameters"));
   g_signal_connect(G_OBJECT(hw[DT_MODULE_RESET]), "clicked", G_CALLBACK(dt_lib_gui_reset_callback), module);
@@ -974,7 +970,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_RESET]), "module-reset-button");
 
   /* add preset button if module has implementation */
-  hw[DT_MODULE_PRESETS] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  hw[DT_MODULE_PRESETS] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
   module->presets_button = GTK_WIDGET(hw[DT_MODULE_PRESETS]);
   gtk_widget_set_tooltip_text(hw[DT_MODULE_PRESETS], _("presets"));
   g_signal_connect(G_OBJECT(hw[DT_MODULE_PRESETS]), "button-press-event", G_CALLBACK(popup_callback), module);
@@ -985,15 +981,17 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   /* lets order header elements depending on left/right side panel placement */
 
   for(int i = 0; i < 4; i++)
-    if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == DT_MODULE_LABEL ? TRUE : FALSE, i == DT_MODULE_LABEL ? TRUE : FALSE, 1);
+    if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == DT_MODULE_LABEL ? TRUE : FALSE, i == DT_MODULE_LABEL ? TRUE : FALSE, 0);
   gtk_widget_set_halign(hw[DT_MODULE_LABEL], GTK_ALIGN_START);
   gtk_widget_set_halign(hw[DT_MODULE_RESET], GTK_ALIGN_END);
 
-  /* add empty space around widget */
-  gtk_widget_set_margin_start(module->widget, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_end(module->widget, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_top(module->widget, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_bottom(module->widget, DT_PIXEL_APPLY_DPI(8));
+  /* add empty space around module widget
+   * this cannot be set in CSS because the module collapsing is badly handled
+   * */
+  gtk_widget_set_margin_start(module->widget, DT_PIXEL_APPLY_DPI(16));
+  gtk_widget_set_margin_end(module->widget, DT_PIXEL_APPLY_DPI(16));
+  gtk_widget_set_margin_top(module->widget, DT_PIXEL_APPLY_DPI(16));
+  gtk_widget_set_margin_bottom(module->widget, DT_PIXEL_APPLY_DPI(16));
   gtk_widget_show_all(module->widget);
   gtk_widget_set_name(pluginui_frame, "lib-plugin-ui");
   module->expander = expander;

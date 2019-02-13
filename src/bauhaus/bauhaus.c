@@ -1166,7 +1166,7 @@ static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t
   cairo_save(cr);
 
   const float l = 4.0f / wd;
-  const float r = 1.0f - (ht + 4.0f) / wd;
+  const float r = 1.0f - (ht * 0.66 + 4.0f) / wd;
   set_color(cr, darktable.bauhaus->color_fg);
   cairo_translate(cr, (l + pos * (r - l)) * wd,
                   get_line_height() * (darktable.bauhaus->label_font_size * darktable.bauhaus->line_space + 0.55f));
@@ -1190,14 +1190,25 @@ static void dt_bauhaus_draw_quad(dt_bauhaus_widget_t *w, cairo_t *cr)
 
   if(w->quad_paint)
   {
-    const float font_size = get_label_font_size();
+    const float font_size = get_label_font_size() * 1.5;
     cairo_save(cr);
 
     if(sensitive && (w->quad_paint_flags & CPF_ACTIVE))
       set_color(cr, darktable.bauhaus->color_fg);
     else
       set_color(cr, darktable.bauhaus->color_fg_insensitive);
-    w->quad_paint(cr, width - height, 0, height, font_size, w->quad_paint_flags, w->quad_paint_data);
+
+    switch(w->type)
+    {
+      case DT_BAUHAUS_COMBOBOX:
+        w->quad_paint(cr, width - height * 0.85, 0, height, font_size, w->quad_paint_flags, w->quad_paint_data);
+        break;
+      case DT_BAUHAUS_SLIDER:
+      {
+        w->quad_paint(cr, width - height * 0.72, 0.33 * height, height, font_size, w->quad_paint_flags, w->quad_paint_data);
+        break;
+      }
+    }
     cairo_restore(cr);
   }
   else
@@ -1251,7 +1262,7 @@ static void dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
   if(d->grad_cnt > 0)
   {
     // gradient line as used in some modules
-    gradient = cairo_pattern_create_linear(0, 0, wd - 4 - ht, ht);
+    gradient = cairo_pattern_create_linear(0, 0, wd - ht * 0.66 - 4, ht);
     for(int k = 0; k < d->grad_cnt; k++)
       cairo_pattern_add_color_stop_rgba(gradient, d->grad_pos[k], d->grad_col[k][0], d->grad_col[k][1],
                                         d->grad_col[k][2], 0.4f);
@@ -1263,7 +1274,7 @@ static void dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
     set_color(cr, darktable.bauhaus->color_bg);
   }
 
-  cairo_rectangle(cr, 0, htm, wd - 4 - ht, htM);
+  cairo_rectangle(cr, 0, htm, wd - ht * 0.66 - 4, htM);
   cairo_fill(cr);
 
   // have a `fill ratio feel'
@@ -1273,13 +1284,13 @@ static void dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
     // only brighten, useful for colored sliders to not get too faint:
     cairo_set_operator(cr, CAIRO_OPERATOR_SCREEN);
     set_color(cr, darktable.bauhaus->color_fill);
-    cairo_rectangle(cr, 0, htm, d->pos * (wd - 4 - ht), htM);
+    cairo_rectangle(cr, 0, htm, d->pos * (wd - 4 - ht * 0.66), htM);
     cairo_fill(cr);
     // change back to default cairo operator:
     cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
   }
 
-  cairo_rectangle(cr, 0, htm, wd - 4 - ht, htM);
+  cairo_rectangle(cr, 0, htm, wd - ht * 0.66 - 4, htM);
   cairo_set_line_width(cr, 0.5);
   set_color(cr, darktable.bauhaus->color_border);
   cairo_stroke(cr);
@@ -1442,7 +1453,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_set_line_width(cr, 0.5);
       const int num_scales = 1.f / d->scale;
 
-      GdkRGBA color = darktable.bauhaus->color_border;
+      GdkRGBA color = darktable.bauhaus->color_fg;
       for(int k = 0; k < num_scales; k++)
       {
         const float off = k * d->scale - d->oldpos;
@@ -1478,7 +1489,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       const float fc = d->callback(widget, f, DT_BAUHAUS_GET);
       snprintf(text, sizeof(text), d->format, fc);
       set_color(cr, text_color);
-      show_pango_text(cr, text, wd - 4 - ht, 0, 0, TRUE);
+      show_pango_text(cr, text, wd - ht, 0, 0, TRUE);
 
       cairo_restore(cr);
     }
@@ -1646,7 +1657,7 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
         const float fc = d->callback(widget, f, DT_BAUHAUS_GET);
         snprintf(text, sizeof(text), d->format, fc);
         set_color(cr, text_color);
-        show_pango_text(cr, text, width - 4 - height, 0, 0, TRUE);
+        show_pango_text(cr, text, width - height * 0.66 - 4, 0, 0, TRUE);
       }
       // label on top of marker:
       set_color(cr, text_color);
