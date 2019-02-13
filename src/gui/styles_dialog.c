@@ -290,10 +290,6 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
 
   // label box
   GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5)));
-  gtk_widget_set_margin_start(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_end(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_top(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_bottom(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
 
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
@@ -301,10 +297,6 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
 //  only available in 3.22, and not making the expected job anyway
 //  gtk_scrolled_window_set_max_content_height(GTK_SCROLLED_WINDOW(scroll), DT_PIXEL_APPLY_DPI(700));
 //  gtk_scrolled_window_set_propagate_natural_height(GTK_SCROLLED_WINDOW(scroll), TRUE);
-  gtk_widget_set_margin_start(scroll, DT_PIXEL_APPLY_DPI(5));
-  gtk_widget_set_margin_end(scroll, DT_PIXEL_APPLY_DPI(5));
-  gtk_widget_set_margin_top(scroll, DT_PIXEL_APPLY_DPI(5));
-  gtk_widget_set_margin_bottom(scroll, DT_PIXEL_APPLY_DPI(5));
 
   // box in scrollwindow containing the two possible trees
   GtkBox *sbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5)));

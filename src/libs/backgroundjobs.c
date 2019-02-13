@@ -134,7 +134,7 @@ static gboolean _added_gui_thread(gpointer user_data)
   _added_gui_thread_t *params = (_added_gui_thread_t *)user_data;
 
   /* lets show jobbox if its hidden */
-  gtk_box_pack_start(GTK_BOX(params->self_widget), params->instance_widget, TRUE, FALSE, 1);
+  gtk_box_pack_start(GTK_BOX(params->self_widget), params->instance_widget, TRUE, FALSE, 0);
   gtk_box_reorder_child(GTK_BOX(params->self_widget), params->instance_widget, 1);
   gtk_widget_show_all(params->instance_widget);
   gtk_widget_show(params->self_widget);
@@ -176,7 +176,7 @@ static void *_lib_backgroundjobs_added(dt_lib_module_t *self, gboolean has_progr
   if(has_progress_bar)
   {
     instance->progressbar = gtk_progress_bar_new();
-    gtk_box_pack_start(GTK_BOX(vbox), instance->progressbar, TRUE, FALSE, 2);
+    gtk_box_pack_start(GTK_BOX(vbox), instance->progressbar, TRUE, FALSE, 0);
   }
 
   /* lets show jobbox if its hidden */
