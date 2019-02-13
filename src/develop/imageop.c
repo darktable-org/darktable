@@ -1002,9 +1002,20 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
   if(!darktable.gui->reset)
   {
     if(gtk_toggle_button_get_active(togglebutton))
+    {
       module->enabled = 1;
+
+      // Expand the module
+      dt_iop_request_focus(module);
+      if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
+        darktable.gui->scroll_to[1] = module->expander;
+      dt_iop_gui_set_expanded(module, TRUE, FALSE);
+    }
     else
+    {
       module->enabled = 0;
+      dt_iop_gui_set_expanded(module, FALSE, FALSE);
+    }
     dt_dev_add_history_item(module->dev, module, FALSE);
   }
   char tooltip[512];
@@ -1013,14 +1024,6 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
            module_label);
   g_free(module_label);
   gtk_widget_set_tooltip_text(GTK_WIDGET(togglebutton), tooltip);
-
-  // Expand the module
-  if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
-      darktable.gui->scroll_to[1] = module->expander;
-
-  dt_iop_gui_set_expanded(module, module->enabled, dt_conf_get_bool("darkroom/ui/single_module"));
-  dt_iop_request_focus(module);
-
   gtk_widget_queue_draw(GTK_WIDGET(togglebutton));
 }
 
