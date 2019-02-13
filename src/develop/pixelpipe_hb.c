@@ -632,10 +632,10 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
         for(int k = 0; k < 3; k++)
         {
           picked_color_rgb_min[k]
-              = MIN(picked_color_rgb_min[k], pixel[4 * (roi_in->width * j + i) + 2 - k]);
+              = MIN(picked_color_rgb_min[k], pixel[4 * (roi_in->width * j + i) + k]);
           picked_color_rgb_max[k]
-              = MAX(picked_color_rgb_max[k], pixel[4 * (roi_in->width * j + i) + 2 - k]);
-          rgb[k] += w * pixel[4 * (roi_in->width * j + i) + 2 - k];
+              = MAX(picked_color_rgb_max[k], pixel[4 * (roi_in->width * j + i) + k]);
+          rgb[k] += w * pixel[4 * (roi_in->width * j + i) + k];
         }
       }
     for(int k = 0; k < 3; k++) picked_color_rgb_mean[k] = rgb[k];
@@ -644,7 +644,7 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
   {
     for(int i = 0; i < 3; i++)
       picked_color_rgb_mean[i] = picked_color_rgb_min[i]
-          = picked_color_rgb_max[i] = pixel[4 * (roi_in->width * point[1] + point[0]) + 2 - i];
+          = picked_color_rgb_max[i] = pixel[4 * (roi_in->width * point[1] + point[0]) + i];
   }
 
   for(int i = 0; i < 3; i++)
