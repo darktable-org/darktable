@@ -912,7 +912,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->dynamic_range), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
 
   // Security factor
-  gtk_box_pack_start(GTK_BOX(vbox_log), dt_ui_section_label_new(_("optimize automatically")), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(vbox_log), dt_ui_section_label_new(_("optimize automatically")), FALSE, FALSE, 0);
   g->security_factor = dt_bauhaus_slider_new_with_range(self, -100., 100., 0.1, p->security_factor, 2);
   dt_bauhaus_widget_set_label(g->security_factor, NULL, _("safety factor"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->security_factor, TRUE, TRUE, 0);

@@ -60,7 +60,7 @@
  * NEW UI API
  */
 
-#define DT_UI_PANEL_MODULE_SPACING 3
+#define DT_UI_PANEL_MODULE_SPACING 0
 
 typedef enum dt_gui_view_switch_t
 {
@@ -1406,7 +1406,7 @@ void dt_ui_container_add_widget(dt_ui_t *ui, const dt_ui_container_t c, GtkWidge
     case DT_UI_CONTAINER_PANEL_TOP_RIGHT:
     case DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT:
     case DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT:
-      gtk_box_pack_end(GTK_BOX(ui->containers[c]), w, FALSE, FALSE, 2);
+      gtk_box_pack_end(GTK_BOX(ui->containers[c]), w, FALSE, FALSE, 0);
       break;
 
     /* if box is center we want it to fill as much as it can */
@@ -1414,12 +1414,12 @@ void dt_ui_container_add_widget(dt_ui_t *ui, const dt_ui_container_t c, GtkWidge
     case DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER:
     case DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER:
     case DT_UI_CONTAINER_PANEL_BOTTOM:
-      gtk_box_pack_start(GTK_BOX(ui->containers[c]), w, TRUE, TRUE, 2);
+      gtk_box_pack_start(GTK_BOX(ui->containers[c]), w, TRUE, TRUE, 0);
       break;
 
     default:
     {
-      gtk_box_pack_start(GTK_BOX(ui->containers[c]), w, FALSE, FALSE, 2);
+      gtk_box_pack_start(GTK_BOX(ui->containers[c]), w, FALSE, FALSE, 0);
     }
     break;
   }

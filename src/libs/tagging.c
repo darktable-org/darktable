@@ -530,7 +530,7 @@ void gui_init(dt_lib_module_t *self)
 
   // right side, related
   box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
 
   // text entry and new button
   w = gtk_entry_new();
@@ -673,7 +673,7 @@ static gboolean _match_selected_func(GtkEntryCompletion *completion, GtkTreeMode
   }
 
   gtk_tree_model_get(model, iter, column, &tag, -1);
-  
+
   gint cut_off, cur_pos = gtk_editable_get_position(e);
 
   gchar *currentText = gtk_editable_get_chars(e, 0, -1);
@@ -693,7 +693,7 @@ static gboolean _match_selected_func(GtkEntryCompletion *completion, GtkTreeMode
   gtk_editable_insert_text(e, tag, -1, &cur_pos);
   gtk_editable_set_position(e, cur_pos);
   return TRUE;
-}      
+}
 
 static gboolean _completion_match_func(GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter,
                                        gpointer user_data)
@@ -706,15 +706,15 @@ static gboolean _completion_match_func(GtkEntryCompletion *completion, const gch
   {
     return FALSE;
   }
-  
+
   gint cur_pos = gtk_editable_get_position(e);
   gboolean onLastTag = (g_strstr_len(&key[cur_pos], -1, ",") == NULL);
   if(!onLastTag)
   {
     return FALSE;
   }
-  
-  
+
+
   char *tag = NULL;
   GtkTreeModel *model = gtk_entry_completion_get_model(completion);
   int column = gtk_entry_completion_get_text_column(completion);

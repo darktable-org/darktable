@@ -1671,7 +1671,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("logarithmic shaper")), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("logarithmic shaper")), FALSE, FALSE, 0);
 
   // grey_point_source slider
   g->grey_point_source = dt_bauhaus_slider_new_with_range(self, 0.1, 36., 0.1, p->grey_point_source, 2);
@@ -1735,7 +1735,7 @@ void gui_init(dt_iop_module_t *self)
                                                 "works better for landscapes and evenly-lit pictures\nbut fails for high-keys and low-keys." ));
   gtk_box_pack_start(GTK_BOX(self->widget), g->auto_button, TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("filmic S curve")), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("filmic S curve")), FALSE, FALSE, 0);
 
   // contrast slider
   g->contrast = dt_bauhaus_slider_new_with_range(self, 1., 2., 0.01, p->contrast, 3);

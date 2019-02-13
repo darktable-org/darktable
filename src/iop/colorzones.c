@@ -1099,7 +1099,7 @@ void gui_init(struct dt_iop_module_t *self)
   // the nice graph
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 0);
 
   c->strength = dt_bauhaus_slider_new_with_range(self, -200, 200.0, 10.0, p->strength, 1);
   dt_bauhaus_slider_set_format(c->strength, "%.01f%%");

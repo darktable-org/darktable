@@ -854,7 +854,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(c->scale_blueness, "%0.2f%%");
   gtk_widget_set_tooltip_text(c->scale_blueness, _("blueness in shadows"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->scale_blueness), TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->scale_blueness), TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(c->scale_blueness), "value-changed", G_CALLBACK(blueness_callback), self);
 }

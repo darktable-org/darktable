@@ -131,11 +131,11 @@
 @define-color filmstrip_bg_color @lighttable_bg_color;
 
 /* Graphs */
-@define-color graph_bg alpha(@grey_25, 1);
+@define-color graph_bg @grey_10;
 @define-color graph_border @grey_05;
 @define-color graph_fg @grey_75;
 @define-color graph_fg_active @grey_95;
-@define-color graph_grid @grey_05;
+@define-color graph_grid #000;
 @define-color inset_histogram alpha(@grey_65, 0.50);
 
 /* Reset GTK defaults */
@@ -269,7 +269,8 @@ treeview *
 #iop-plugin-ui
 {
   border: 0.5pt solid @border_color;
-  border-radius: 0.5em;
+  margin: 0 0 2pt 0;
+  border-radius: 4pt;
   color: @plugin_fg_color;
   padding: 0.25pt;
   background-color: @plugin_bg_color;
@@ -288,7 +289,7 @@ button
   font-weight: 600;
   font-family: "Roboto Medium", "Segoe UI Semibold", "SF Pro Display Medium", "Ubuntu Medium", "Cantarell", sans-serif;
   min-height: 1em;
-  min-width: 0.5em;
+  min-width: 1em;
 }
 
 #recent-collection-ui button,
@@ -325,6 +326,32 @@ button:focus,
 {
   background-color: @button_focus_bg;
   color: @button_focus_fg;
+}
+
+#dt-button button,
+#dt-toggle-button button,
+#dt-icon
+{
+  padding: 2pt;
+  margin: 1pt;
+  min-height: 1em;
+  min-width: 1em;
+}
+
+#iop-plugin-ui #dt-button button,
+#iop-plugin-ui #dt-toggle-button button
+{
+  min-height: 1em;
+  min-width: 1em;
+}
+
+#module-preset-button * button,
+#module-reset-button * button,
+#module-enable-button * button,
+#module-instance-button * button,
+#module-enable-button * button
+{
+  font-size: 0.8em;
 }
 
 /* Checkbox */
@@ -392,9 +419,8 @@ entry *
 {
   background-color: @bg_color;
   font-size:0.95em;
-  margin:0;
   border:0;
-  padding:0;
+  padding: 2pt 2pt 2pt 4pt;
   font-weight: 400;
   font-stretch: condensed;
   font-family: "Roboto Condensed","Segoe UI Condensed", "SF Pro Display", "Ubuntu Condensed", "Cantarell", sans-serif;
@@ -405,7 +431,7 @@ entry *
   padding: 3pt 0;
   color: @section_label;
   border-bottom: 0.5pt solid  @section_label;
-  margin: 0 0 3pt 0;
+  margin: 3pt 0;
   font-weight: 600;
   font-family: "Roboto Medium", "Segoe UI Semibold", "SF Pro Display Medium", "Ubuntu Medium", "Cantarell", sans-serif;
 }
@@ -498,7 +524,8 @@ popover,
 combobox window,
 dialog combobox window
 {
-  background-color: @really_dark_bg_color;
+  background-color: @tooltip_bg_color;
+  color: @tooltip_fg_color;
   outline-style:none;
   border-radius: 2pt;
   border: 0;
@@ -508,36 +535,28 @@ dialog combobox window
   padding: 4pt;
 }
 
-#view_dropdown
+#view_dropdown,
+#view_label
 {
   background-color: transparent;
   outline-style:none;
   border-radius: 2pt;
   padding: 2pt;
+  color: @section_label;
 }
 
-#main_window context-menu menuitem *:disabled,
-context-menu menuitem *:disabled,
-#view_dropdown *:disabled
-{
-  color: @plugin_bg_color;
-}
-
-menuitem,
-tooltip *,
+menuitem button *,
 popover *,
-menu *,
-combobox window *,
-dialog combobox window *
+tooltip *
 {
   background-color: transparent;
-  color: @fg_color;
-  min-height: 1.5em;
 }
 
 menuitem:hover,
 #view_dropdown menuitem:hover,
-combobox window *:hover
+combobox window *:hover,
+#view_dropdown:hover,
+#view_label:hover
 {
   background-color: @button_hover_bg;
   color: @button_hover_fg;
@@ -546,6 +565,12 @@ combobox window *:hover
 #view_dropdown *:selected,
 #view_label:selected {
   color: @plugin_fg_color;
+}
+
+#view_dropdown *:disabled,
+#view_label:disabled
+{
+  color: @tooltip_bg_color;
 }
 
 
@@ -647,8 +672,6 @@ notebook tab:focus label
   background-color: @button_focus_bg;
 }
 
-
-
 /* Bauhaus controls (sliders etc.) */
 
 #bauhaus-popup
@@ -676,47 +699,6 @@ notebook tab:focus label
 {
   min-height: 2em;
 }
-
-/* Modules buttons */
-
-#dt-button,
-#dt-toggle-button,
-#dt-icon
-{
-  font-size: 1em;
-  min-height: 1em;
-  min-width: 1em;
-  padding: 0;
-  margin: 1pt;
-}
-
-#iop-plugin-ui #dt-button,
-#iop-plugin-ui #dt-toggle-button
-{
-  font-size: 1em;
-  min-height: 1em;
-  min-width: 1em;
-}
-
-#module-preset-button,
-#module-reset-button,
-#module-spacer,
-#module-enable-button,
-#module-instance-button,
-#module-icon,
-#module-icon *,
-#module-expander-arrow
-{
-  min-height: 1.75ex;
-  min-width: 1.75ex;
-  font-size: 1ex;
-}
-
-#module-enable-button
-{
-  min-width: 2ex;
-}
-
 
 /* separator */
 
