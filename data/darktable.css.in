@@ -161,6 +161,8 @@
 #iop-plugin-ui,
 #lib-modulelist,
 #modules-tabs,
+#left,
+#right,
 combobox,
 combobox *,
 togglebutton,
@@ -191,7 +193,10 @@ scale *,
 button,
 button *,
 treeview,
-treeview *
+treeview *,
+menu,
+menu *,
+separator
 {
   font-family: "Roboto Light", "Segoe UI Light", "SF Pro Display Light", "Ubuntu Light", "Cantarell", sans-serif;
   font-size: 1em;
@@ -211,8 +216,7 @@ treeview *
 /* General properties */
 
 
-*:disabled,
-*:insensitive {
+*:disabled {
   background-color: transparent;
   color: @bg_color;
   color: transparent;
@@ -245,12 +249,11 @@ treeview *
 
 /* Side panels */
 
-#left scrolledwindow
-{
-}
-
+#left scrolledwindow,
 #right scrolledwindow
 {
+  margin: 0;
+  padding: 0 0 4pt 0;
 }
 
 #lib-plugin-ui scrolledwindow,
@@ -453,6 +456,10 @@ entry *
   margin: 12pt 0 6pt 0;
 }
 
+#lib-modulelist
+{
+}
+
 /* Note : the section labels in blending boxes don't need an extra margin */
 
 #blending-box #section_label
@@ -612,14 +619,6 @@ treeview header
   color: @button_fg;
 }
 
-treeview *:selected,
-treeview *:active,
-treeview *:checked
-{
-  background-color: @button_checked_bg;
-  color: @button_checked_fg;
-}
-
 treeview *:hover
 {
   background-color: @button_hover_bg;
@@ -630,6 +629,19 @@ treeview *:focus
 {
   background-color: @button_focus_bg;
   color: @button_focus_fg;
+}
+
+treeview *:active,
+treeview *:checked
+{
+  background-color: @button_checked_bg;
+  color: @button_checked_fg;
+}
+
+treeview *:selected
+{
+  background-color: @button_bg;
+  color: @button_fg;
 }
 
 /* Notebooks tabs */
