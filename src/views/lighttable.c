@@ -353,6 +353,9 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
   dt_view_t *self = (dt_view_t *)user_data;
   dt_library_t *lib = (dt_library_t *)self->data;
 
+  // we need to redraw all thumbs to display the selected ones, record full redraw here
+  lib->force_expose_all = TRUE;
+
   // we handle change of selection only in expose mode. it is needed
   // here as the selection from the filmstrip is actually was must be
   // displayed in the expose view.
