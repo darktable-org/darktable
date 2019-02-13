@@ -468,7 +468,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
   gtk_grid_attach(GTK_GRID(self->widget), label, 0, line++, 1, 1);
 
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   ui->user_entry = GTK_ENTRY(gtk_entry_new());
   gtk_widget_set_hexpand(GTK_WIDGET(ui->user_entry), TRUE);
@@ -511,7 +511,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(ui->permission_list), 0, line++, 2, 1);
 
 
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5));
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   ui->album_list = dt_bauhaus_combobox_new(NULL); // Available albums
   dt_bauhaus_widget_set_label(ui->album_list, NULL, _("photosets"));
@@ -528,12 +528,12 @@ void gui_init(dt_imageio_module_storage_t *self)
 
 
   // the box that gets shown when a new album is to be created
-  ui->create_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5)));
+  ui->create_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_widget_set_no_show_all(GTK_WIDGET(ui->create_box), TRUE);
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(ui->create_box), 0, line++, 2, 1);
 
 
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   label = gtk_label_new(_("title"));
   g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
@@ -548,7 +548,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_box_pack_start(ui->create_box, hbox, FALSE, FALSE, 0);
 
 
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   label = gtk_label_new(_("summary"));
   g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);

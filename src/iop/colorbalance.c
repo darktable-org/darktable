@@ -2598,7 +2598,7 @@ void gui_init(dt_iop_module_t *self)
   g->optim_label =  dt_ui_section_label_new(_("auto optimizers"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->optim_label, FALSE, FALSE, 0);
 
-  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
+  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
 
   g->auto_luma = dt_bauhaus_combobox_new(self);
