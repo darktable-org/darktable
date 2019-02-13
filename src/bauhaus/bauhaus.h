@@ -216,11 +216,7 @@ typedef struct dt_bauhaus_t
   GdkRGBA graph_bg, graph_border, graph_fg, graph_grid, graph_fg_active, inset_histogram;
 } dt_bauhaus_t;
 
-static inline int dt_bauhaus_get_widget_space()
-{
-  return darktable.bauhaus->widget_space;
-}
-#define DT_BAUHAUS_SPACE dt_bauhaus_get_widget_space()
+#define DT_BAUHAUS_SPACE 0
 
 
 void dt_bauhaus_init();
