@@ -454,6 +454,12 @@ entry *
   margin: 12pt 0 6pt 0;
 }
 
+#iop-plugin-ui-main,
+#lib-plugin-ui-main
+{
+    padding: 2pt 2pt 2pt 12pt;
+}
+
 #lib-modulelist
 {
 }

@@ -1954,13 +1954,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
   dt_iop_gui_init_blending(iopw, module);
 
-  /* add empty space around module widget
-   * this cannot be set in CSS because the module collapsing is badly handled
-   * */
-  gtk_widget_set_margin_start(module->widget, DT_PIXEL_APPLY_DPI(16));
-  gtk_widget_set_margin_end(module->widget, DT_PIXEL_APPLY_DPI(16));
-  gtk_widget_set_margin_top(module->widget, DT_PIXEL_APPLY_DPI(16));
-  gtk_widget_set_margin_bottom(module->widget, DT_PIXEL_APPLY_DPI(16));
+  gtk_widget_set_name(module->widget, "iop-plugin-ui-main");
   gtk_widget_hide(iopw);
 
   module->expander = expander;
