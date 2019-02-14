@@ -120,6 +120,7 @@ typedef struct dt_iop_denoiseprofile_params_t
   float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
   // backward compatibility options
   gboolean fix_anscombe;
+  gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
 } dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
@@ -147,6 +148,7 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   float draw_xs[DT_IOP_DENOISE_PROFILE_RES], draw_ys[DT_IOP_DENOISE_PROFILE_RES];
   float draw_min_xs[DT_IOP_DENOISE_PROFILE_RES], draw_min_ys[DT_IOP_DENOISE_PROFILE_RES];
   float draw_max_xs[DT_IOP_DENOISE_PROFILE_RES], draw_max_ys[DT_IOP_DENOISE_PROFILE_RES];
+  GtkWidget *wb_adaptive_anscombe;
   GtkWidget *extra_expander;
   GtkWidget *extra_toggle;
   // backward compatibility options
@@ -166,6 +168,7 @@ typedef struct dt_iop_denoiseprofile_data_t
   float force[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
   // backward compatibility options
   gboolean fix_anscombe;
+  gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
 } dt_iop_denoiseprofile_data_t;
 
 typedef struct dt_iop_denoiseprofile_global_data_t
@@ -329,6 +332,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     }
     v7->scattering = v6.scattering;
     v7->fix_anscombe = FALSE; // don't fix anscombe for backward compatibility
+    v7->wb_adaptive_anscombe = TRUE;
     return 0;
   }
   return 1;
@@ -1033,27 +1037,27 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   float wb[3] = { wb_mean, wb_mean, wb_mean };
   if(d->fix_anscombe)
   {
-    if(wb_mean != 0.0f)
+    if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
     {
-      wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (in_scale * in_scale);
-      wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (in_scale * in_scale);
-      wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (in_scale * in_scale);
+      for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.temperature.coeffs[i];
     }
-    else
+    else if(wb_mean == 0.0f)
     {
       // temperature coeffs are equal to 0 if we open a JPG image.
-      // in this case, consider them equal to 1.
-      wb[0] = d->strength * (in_scale * in_scale);
-      wb[1] = d->strength * (in_scale * in_scale);
-      wb[2] = d->strength * (in_scale * in_scale);
+      // in this case consider them equal to 1.
+      for(int i = 0; i < 3; i++) wb[i] = 1.0f;
     }
+    // else, wb_adaptive_anscombe is false and our wb array is
+    // filled with the wb_mean
   }
   else
   {
-    wb[0] = 2.0f * piece->pipe->dsc.processed_maximum[0] * d->strength * (in_scale * in_scale);
-    wb[1] = piece->pipe->dsc.processed_maximum[1] * d->strength * (in_scale * in_scale);
-    wb[2] = 2.0f * piece->pipe->dsc.processed_maximum[2] * d->strength * (in_scale * in_scale);
+    wb[0] = 2.0f * piece->pipe->dsc.processed_maximum[0];
+    wb[1] = piece->pipe->dsc.processed_maximum[1];
+    wb[2] = 2.0f * piece->pipe->dsc.processed_maximum[2];
   }
+  // update the coeffs with strength and scale
+  for(int i = 0; i < 3; i++) wb[i] *= d->strength * (in_scale * in_scale);
   // only use green channel + wb for now:
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
@@ -1220,27 +1224,26 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   float wb[3] = { wb_mean, wb_mean, wb_mean };
   if(d->fix_anscombe)
   {
-    if(wb_mean != 0.0f)
+    if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
     {
-      wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (scale * scale);
-      wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (scale * scale);
-      wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (scale * scale);
+      for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.temperature.coeffs[i];
     }
-    else
+    else if(wb_mean == 0.0f)
     {
       // temperature coeffs are equal to 0 if we open a JPG image.
-      // in this case, consider them equal to 1.
-      wb[0] = d->strength * (scale * scale);
-      wb[1] = d->strength * (scale * scale);
-      wb[2] = d->strength * (scale * scale);
+      // in this case consider them equal to 1.
+      for(int i = 0; i < 3; i++) wb[i] = 1.0f;
     }
+    // else, wb_adaptive_anscombe is false and our wb array is
+    // filled with the wb_mean
   }
   else
   {
-    wb[0] = piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale);
-    wb[1] = piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale);
-    wb[2] = piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale);
+    for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
   }
+  // update the coeffs with strength and scale
+  for(int i = 0; i < 3; i++) wb[i] *= d->strength * (scale * scale);
+
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
   precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
@@ -1401,27 +1404,26 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   float wb[3] = { wb_mean, wb_mean, wb_mean };
   if(d->fix_anscombe)
   {
-    if(wb_mean != 0.0f)
+    if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
     {
-      wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (scale * scale);
-      wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (scale * scale);
-      wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (scale * scale);
+      for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.temperature.coeffs[i];
     }
-    else
+    else if(wb_mean == 0.0f)
     {
       // temperature coeffs are equal to 0 if we open a JPG image.
-      // in this case, consider them equal to 1.
-      wb[0] = d->strength * (scale * scale);
-      wb[1] = d->strength * (scale * scale);
-      wb[2] = d->strength * (scale * scale);
+      // in this case consider them equal to 1.
+      for(int i = 0; i < 3; i++) wb[i] = 1.0f;
     }
+    // else, wb_adaptive_anscombe is false and our wb array is
+    // filled with the wb_mean
   }
   else
   {
-    wb[0] = piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale);
-    wb[1] = piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale);
-    wb[2] = piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale);
+    for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
   }
+  // update the coeffs with strength and scale
+  for(int i = 0; i < 3; i++) wb[i] *= d->strength * (scale * scale);
+
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
   precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
@@ -1647,27 +1649,25 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   float wb[4] = { wb_mean, wb_mean, wb_mean, 0.0f };
   if(d->fix_anscombe)
   {
-    if(wb_mean != 0.0f)
+    if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
     {
-      wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (scale * scale);
-      wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (scale * scale);
-      wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (scale * scale);
+      for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.temperature.coeffs[i];
     }
-    else
+    else if(wb_mean == 0.0f)
     {
       // temperature coeffs are equal to 0 if we open a JPG image.
-      // in this case, consider them equal to 1.
-      wb[0] = d->strength * (scale * scale);
-      wb[1] = d->strength * (scale * scale);
-      wb[2] = d->strength * (scale * scale);
+      // in this case consider them equal to 1.
+      for(int i = 0; i < 3; i++) wb[i] = 1.0f;
     }
+    // else, wb_adaptive_anscombe is false and our wb array is
+    // filled with the wb_mean
   }
   else
   {
-    wb[0] = piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale);
-    wb[1] = piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale);
-    wb[2] = piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale);
+    for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
   }
+  // update the coeffs with strength and scale
+  for(int i = 0; i < 3; i++) wb[i] *= d->strength * (scale * scale);
 
   const float aa[4] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2], 1.0f };
   const float bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 1.0f };
@@ -1955,27 +1955,28 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   float wb[4] = { wb_mean, wb_mean, wb_mean, 0.0f };
   if(d->fix_anscombe)
   {
-    if(wb_mean != 0.0f)
+    if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
     {
-      wb[0] = piece->pipe->dsc.temperature.coeffs[0] * d->strength * (scale * scale);
-      wb[1] = piece->pipe->dsc.temperature.coeffs[1] * d->strength * (scale * scale);
-      wb[2] = piece->pipe->dsc.temperature.coeffs[2] * d->strength * (scale * scale);
+      for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.temperature.coeffs[i];
     }
-    else
+    else if(wb_mean == 0.0f)
     {
       // temperature coeffs are equal to 0 if we open a JPG image.
-      // in this case, consider them equal to 1.
-      wb[0] = d->strength * (scale * scale);
-      wb[1] = d->strength * (scale * scale);
-      wb[2] = d->strength * (scale * scale);
+      // in this case consider them equal to 1.
+      for(int i = 0; i < 3; i++) wb[i] = 1.0f;
     }
+    // else, wb_adaptive_anscombe is false and our wb array is
+    // filled with the wb_mean
   }
   else
   {
-    wb[0] = 2.0f * piece->pipe->dsc.processed_maximum[0] * d->strength * (scale * scale);
-    wb[1] = piece->pipe->dsc.processed_maximum[1] * d->strength * (scale * scale);
-    wb[2] = 2.0f * piece->pipe->dsc.processed_maximum[2] * d->strength * (scale * scale);
+    wb[0] = 2.0f * piece->pipe->dsc.processed_maximum[0];
+    wb[1] = piece->pipe->dsc.processed_maximum[1];
+    wb[2] = 2.0f * piece->pipe->dsc.processed_maximum[2];
   }
+  // update the coeffs with strength and scale
+  for(int i = 0; i < 3; i++) wb[i] *= d->strength * (scale * scale);
+
   const float aa[4] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2], 1.0f };
   const float bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 1.0f };
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
@@ -2309,6 +2310,8 @@ void reload_defaults(dt_iop_module_t *module)
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->b[k] = g->interpolated.b[k];
     }
     memcpy(module->params, module->default_params, sizeof(dt_iop_denoiseprofile_params_t));
+    g->fix_anscombe = TRUE;
+    g->wb_adaptive_anscombe = TRUE;
   }
 }
 
@@ -2457,6 +2460,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     dt_draw_curve_calc_values(d->curve[ch], 0.0, 1.0, DT_IOP_DENOISE_PROFILE_BANDS, NULL, d->force[ch]);
   }
 
+  d->wb_adaptive_anscombe = p->wb_adaptive_anscombe;
   d->fix_anscombe = p->fix_anscombe;
 }
 
@@ -2571,6 +2575,7 @@ void gui_update(dt_iop_module_t *self)
       }
     }
   }
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_adaptive_anscombe), p->wb_adaptive_anscombe);
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander),
                               gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->extra_toggle)));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_anscombe), p->fix_anscombe);
@@ -2908,6 +2913,14 @@ static void _extra_options_button_changed(GtkDarktableToggleButton *widget, gpoi
       CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | (active ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
 }
 
+static void wb_adaptive_anscombe_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  p->wb_adaptive_anscombe = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 static void fix_anscombe_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -2986,9 +2999,21 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(denoiseprofile_leave_notify), self);
   g_signal_connect(G_OBJECT(g->area), "scroll-event", G_CALLBACK(denoiseprofile_scrolled), self);
 
+  g->wb_adaptive_anscombe = gtk_check_button_new_with_label(_("whitebalance-adaptive transform"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_adaptive_anscombe), p->wb_adaptive_anscombe);
+  gtk_widget_set_tooltip_text(g->wb_adaptive_anscombe, _("adapt denoising according to the\n"
+                                                         "white balance coefficients.\n"
+                                                         "should be enabled on a first instance\n"
+                                                         "for better denoising.\n"
+                                                         "should be disabled if an earlier instance\n"
+                                                         "has been used with a color blending mode."));
+  g_signal_connect(G_OBJECT(g->wb_adaptive_anscombe), "toggled", G_CALLBACK(wb_adaptive_anscombe_callback), self);
+
+
   g->stack = gtk_stack_new();
   gtk_stack_set_homogeneous(GTK_STACK(g->stack), FALSE);
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->wb_adaptive_anscombe, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->stack, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
