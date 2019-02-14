@@ -153,7 +153,6 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_navigation_t *d = (dt_lib_navigation_t *)self->data;
 
-  const int inset = DT_NAVIGATION_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   int width = allocation.width, height = allocation.height;
@@ -190,10 +189,6 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
   gtk_render_background(context, cr, 0, 0, allocation.width, allocation.height);
 
-  width -= 2 * inset;
-  height -= 2 * inset;
-  cairo_translate(cr, inset, inset);
-
   /* draw navigation image if available */
   if(d->buffer)
   {
@@ -209,19 +204,9 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
     cairo_scale(cr, scale, scale);
     cairo_translate(cr, -.5f * wd, -.5f * ht);
 
-    // draw shadow around
-    float alpha = 1.0f;
-    for(int k = 0; k < 4; k++)
-    {
-      cairo_rectangle(cr, -k / scale, -k / scale, wd + 2 * k / scale, ht + 2 * k / scale);
-      cairo_set_source_rgba(cr, 0, 0, 0, alpha);
-      alpha *= 0.6f;
-      cairo_fill(cr);
-    }
-
     cairo_rectangle(cr, 0, 0, wd - 2, ht - 1);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
+    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
     cairo_fill(cr);
     cairo_surface_destroy(surface);
 

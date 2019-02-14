@@ -1326,16 +1326,10 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   dt_develop_t *dev = darktable.develop;
   dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->data;
 
-  const float color_labels_left[3][3]
-      = { { 0.3f, 0.3f, 0.3f }, { 0.0f, 0.34f, 0.27f }, { 0.0f, 0.27f, 0.58f } };
-
-  const float color_labels_right[3][3]
-      = { { 0.3f, 0.3f, 0.3f }, { 0.53f, 0.08f, 0.28f }, { 0.81f, 0.66f, 0.0f } };
-
   int ch = c->channel;
   int nodes = p->tonecurve_nodes[ch];
   dt_iop_tonecurve_node_t *tonecurve = p->tonecurve[ch];
-  int autoscale_ab = p->tonecurve_autoscale_ab;
+
   if(c->minmax_curve_type[ch] != p->tonecurve_type[ch] || c->minmax_curve_nodes[ch] != p->tonecurve_nodes[ch])
   {
     dt_draw_curve_destroy(c->minmax_curve[ch]);
@@ -1370,56 +1364,57 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   int width = allocation.width, height = allocation.height;
   cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
   cairo_t *cr = cairo_create(cst);
-  // clear bg
-  cairo_set_source_rgb(cr, .2, .2, .2);
-  cairo_paint(cr);
 
   cairo_translate(cr, inset, inset);
   width -= 2 * inset;
   height -= 2 * inset;
   char text[256];
 
-#if 0
-  // draw shadow around
-  float alpha = 1.0f;
-  for(int k=0; k<inset; k++)
-  {
-    cairo_rectangle(cr, -k, -k, width + 2*k, height + 2*k);
-    cairo_set_source_rgba(cr, 0, 0, 0, alpha);
-    alpha *= 0.6f;
-    cairo_fill(cr);
-  }
-#else
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
-  cairo_set_source_rgb(cr, .1, .1, .1);
+  // Draw frame borders
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5));
+  set_color(cr, darktable.bauhaus->graph_border);
   cairo_rectangle(cr, 0, 0, width, height);
-  cairo_stroke(cr);
-#endif
+  cairo_stroke_preserve(cr);
 
-  cairo_set_source_rgb(cr, .3, .3, .3);
-  cairo_rectangle(cr, 0, 0, width, height);
-  cairo_fill(cr);
+  // Draw the background gradient along the diagonal
+  // ch == 0 : black to white
+  // ch == 1 : green to magenta
+  // ch == 2 : blue to yellow
+  const float origin[3][3] = { { 0.0f, 0.0f, 0.0f },                  // L = 0, @ (a, b) = 0
+                               { 0.0f, 231.0f/255.0f, 181.0f/255.0f },// a = -128 @ L = 75, b = 0
+                               { 0.0f, 30.0f/255.0f, 195.0f/255.0f}}; // b = -128 @ L = 75, a = 0
 
-  // draw color labels
-  const int cells = 8;
-  for(int j = 0; j < cells; j++)
-  {
-    for(int i = 0; i < cells; i++)
-    {
-      const float f = (cells - 1 - j + i) / (2.0f * cells - 2.0f);
-      cairo_set_source_rgba(cr, (1.0f - f) * color_labels_left[ch][0] + f * color_labels_right[ch][0],
-                            (1.0f - f) * color_labels_left[ch][1] + f * color_labels_right[ch][1],
-                            (1.0f - f) * color_labels_left[ch][2] + f * color_labels_right[ch][2],
-                            .5f); // blend over to make colors darker, so the overlay is more visible
-      cairo_rectangle(cr, width * i / (float)cells, height * j / (float)cells, width / (float)cells,
-                      height / (float)cells);
-      cairo_fill(cr);
-    }
-  }
+  const float destin[3][3] = { { 1.0f, 1.0f, 1.0f },                  // L = 100 @ (a, b) = 0
+                               { 1.0f, 0.0f, 192.0f/255.0f } ,        // a = 128 @ L = 75, b = 0
+                               { 215.0f/255.0f, 182.0f/255.0f, 0.0f}};// b = 128 @ L = 75, a = 0
+
+  // since Cairo paints with sRGB at gamma 2.4, linear gradients are not linear but garbage and, at 50%,
+  // we dont see the neutral grey we would expect in the middle of a linear gradient between
+  // 2 complimentary colors. So we add it artifically, but that will break the smoothness
+  // of the transition. Maybe this will help people understand how broken are Lab and non-linear
+  // spaces for editing, so let it be ugly to teach them a lesson.
+
+  // middle step for gradients (50 %)
+  const float midgrey = to_log(0.45f, c->loglogscale, ch, c->semilog, 0);
+
+  const float middle[3][3] = { { midgrey, midgrey, midgrey },   // L = 50 @ (a, b) = 0
+                               { 0.67f, 0.67f, 0.67f},          // L = 75 @ (a, b) = 0
+                               { 0.67f, 0.67f, 0.67f}};         // L = 75 @ (a, b) = 0
+
+  const float opacities[3] = { 0.5f, 0.5f, 0.5f};
+
+  cairo_pattern_t *pat;
+  pat = cairo_pattern_create_linear (height, 0.0,  0.0, width);
+  cairo_pattern_add_color_stop_rgba (pat, 1, origin[ch][0], origin[ch][1], origin[ch][2], opacities[ch]);
+  cairo_pattern_add_color_stop_rgba (pat, 0.5, middle[ch][0], middle[ch][1], middle[ch][2], opacities[ch]);
+  cairo_pattern_add_color_stop_rgba (pat, 0, destin[ch][0], destin[ch][1], destin[ch][2], opacities[ch]);
+  cairo_set_source (cr, pat);
+  cairo_fill (cr);
+  cairo_pattern_destroy (pat);
+
 
   // draw grid
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
-  cairo_set_source_rgb(cr, .1, .1, .1);
+  set_color(cr, darktable.bauhaus->graph_border);
 
   if (c->loglogscale > 0.0f && ch == ch_L )
   {
@@ -1445,36 +1440,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_move_to(cr, 0, height);
   cairo_line_to(cr, width, 0);
   cairo_stroke(cr);
-
-  // if autoscale_ab is on: do not display a and b curves
-  if((autoscale_ab != DT_S_SCALE_MANUAL) && ch != ch_L) goto finally;
-
-  // draw nodes positions
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
-  cairo_set_source_rgb(cr, 0.6, 0.6, 0.6);
   cairo_translate(cr, 0, height);
-
-  for(int k = 0; k < nodes; k++)
-  {
-    const float x = to_log(tonecurve[k].x, c->loglogscale, ch, c->semilog, 0),
-                y = to_log(tonecurve[k].y, c->loglogscale, ch, c->semilog, 1);
-
-    cairo_arc(cr, x * width, -y * height, DT_PIXEL_APPLY_DPI(3), 0, 2. * M_PI);
-    cairo_stroke(cr);
-  }
-
-  // draw selected cursor
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
-
-  if(c->selected >= 0)
-  {
-    cairo_set_source_rgb(cr, .9, .9, .9);
-    const float x = to_log(tonecurve[c->selected].x, c->loglogscale, ch, c->semilog, 0),
-                y = to_log(tonecurve[c->selected].y, c->loglogscale, ch, c->semilog, 1);
-
-    cairo_arc(cr, x * width, -y * height, DT_PIXEL_APPLY_DPI(4), 0, 2. * M_PI);
-    cairo_stroke(cr);
-  }
 
   // draw histogram in background
   // only if module is enabled
@@ -1498,7 +1464,8 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     {
       cairo_save(cr);
       cairo_scale(cr, width / 255.0, -(height - DT_PIXEL_APPLY_DPI(5)) / hist_max);
-      cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
+      cairo_move_to(cr, 0, height);
+      set_color(cr, darktable.bauhaus->inset_histogram);
 
       if (ch == ch_L && c->loglogscale > 0.0f && c->semilog != -1)
       {
@@ -1513,11 +1480,14 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_restore(cr);
     }
 
+    cairo_move_to(cr, 0, height);
     if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
     {
       // the global live samples ...
       GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
       dt_colorpicker_sample_t *sample = NULL;
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3));
+
       while(samples)
       {
         sample = samples->data;
@@ -1531,7 +1501,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         picker_max[ch] = to_log(picker_max[ch], c->loglogscale, ch, c->semilog, 0);
         picker_mean[ch] = to_log(picker_mean[ch], c->loglogscale, ch, c->semilog, 0);
 
-        cairo_set_source_rgba(cr, 0.5, 0.7, 0.5, 0.15);
+        cairo_set_source_rgba(cr, 0.5, 0.7, 0.5, 0.35);
         cairo_rectangle(cr, width * picker_min[ch], 0, width * fmax(picker_max[ch] - picker_min[ch], 0.0f),
                         -height);
         cairo_fill(cr);
@@ -1546,6 +1516,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       // ... and the local sample
       if(raw_max[0] >= 0.0f)
       {
+        cairo_save(cr);
         PangoLayout *layout;
         PangoRectangle ink;
         PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
@@ -1569,7 +1540,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         picker_max[ch] = to_log(picker_max[ch], c->loglogscale, ch, c->semilog, 0);
         picker_mean[ch] = to_log(picker_mean[ch], c->loglogscale, ch, c->semilog, 0);
 
-        cairo_set_source_rgba(cr, 0.7, 0.5, 0.5, 0.33);
+        cairo_set_source_rgba(cr, 0.7, 0.5, 0.5, 0.35);
         cairo_rectangle(cr, width * picker_min[ch], 0, width * fmax(picker_max[ch] - picker_min[ch], 0.0f),
                         -height);
         cairo_fill(cr);
@@ -1580,7 +1551,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
         snprintf(text, sizeof(text), "%.1f → %.1f", raw_mean[ch], raw_mean_output[ch]);
 
-        cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+        set_color(cr, darktable.bauhaus->graph_fg);
         cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(0.04) * height);
         pango_layout_set_text(layout, text, -1);
         pango_layout_get_pixel_extents(layout, &ink, NULL);
@@ -1589,10 +1560,51 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         cairo_stroke(cr);
         pango_font_description_free(desc);
         g_object_unref(layout);
+        cairo_restore(cr);
       }
     }
   }
 
+  // draw curve
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3));
+  set_color(cr, darktable.bauhaus->graph_fg);
+
+  for(int k = 0; k < DT_IOP_TONECURVE_RES; k++)
+  {
+    const float xx = k / (DT_IOP_TONECURVE_RES - 1.0f);
+    float yy;
+
+    if(xx > xm)
+    {
+      yy = dt_iop_eval_exp(unbounded_coeffs, xx);
+    }
+    else
+    {
+      yy = c->draw_ys[k];
+    }
+
+    const float x = to_log(xx, c->loglogscale, ch, c->semilog, 0),
+                y = to_log(yy, c->loglogscale, ch, c->semilog, 1);
+
+    cairo_line_to(cr, x * width, -height * y);
+  }
+  cairo_stroke(cr);
+
+  // draw nodes positions
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3));
+  for(int k = 0; k < nodes; k++)
+  {
+    const float x = to_log(tonecurve[k].x, c->loglogscale, ch, c->semilog, 0),
+                y = to_log(tonecurve[k].y, c->loglogscale, ch, c->semilog, 1);
+
+    cairo_arc(cr, x * width, -y * height, DT_PIXEL_APPLY_DPI(4), 0, 2. * M_PI);
+    set_color(cr, darktable.bauhaus->graph_fg);
+    cairo_stroke_preserve(cr);
+    set_color(cr, darktable.bauhaus->graph_bg);
+    cairo_fill(cr);
+  }
+
+  // draw selected cursor
   if(c->selected >= 0)
   {
     // draw information about current selected node
@@ -1619,7 +1631,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     const float d_node_value = y_node_value - x_node_value;
     snprintf(text, sizeof(text), "%.1f / %.1f ( %+.1f)", x_node_value, y_node_value, d_node_value);
 
-    cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+    set_color(cr, darktable.bauhaus->graph_fg);
     pango_layout_set_text(layout, text, -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     cairo_move_to(cr, 0.98f * width - ink.width - ink.x, -0.02 * height - ink.height - ink.y);
@@ -1629,45 +1641,14 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     g_object_unref(layout);
 
     // enlarge selected node
-    cairo_set_source_rgb(cr, .9, .9, .9);
+    set_color(cr, darktable.bauhaus->graph_fg_active);
     const float x = to_log(tonecurve[c->selected].x, c->loglogscale, ch, c->semilog, 0),
                 y = to_log(tonecurve[c->selected].y, c->loglogscale, ch, c->semilog, 1);
 
-    cairo_arc(cr, x * width, -y * height, DT_PIXEL_APPLY_DPI(4),
-              0, 2. * M_PI);
-    cairo_stroke(cr);
+    cairo_arc(cr, x * width, -y * height, DT_PIXEL_APPLY_DPI(6), 0, 2. * M_PI);
+    cairo_fill(cr);
   }
 
-  // draw curve
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
-  cairo_set_source_rgb(cr, .9, .9, .9);
-  // cairo_set_line_cap  (cr, CAIRO_LINE_CAP_SQUARE);
-
-  const float y_offset = to_log(c->draw_ys[0], c->loglogscale, ch, c->semilog, 1);
-  cairo_move_to(cr, 0, -height * y_offset);
-
-  for(int k = 1; k < DT_IOP_TONECURVE_RES; k++)
-  {
-    const float xx = k / (DT_IOP_TONECURVE_RES - 1.0f);
-    float yy;
-
-    if(xx > xm)
-    {
-      yy = dt_iop_eval_exp(unbounded_coeffs, xx);
-    }
-    else
-    {
-      yy = c->draw_ys[k];
-    }
-
-    const float x = to_log(xx, c->loglogscale, ch, c->semilog, 0),
-                y = to_log(yy, c->loglogscale, ch, c->semilog, 1);
-
-    cairo_line_to(cr, x * width, -height * y);
-  }
-  cairo_stroke(cr);
-
-finally:
   cairo_destroy(cr);
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);

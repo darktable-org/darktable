@@ -97,7 +97,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* list label */
   widget = gtk_label_new(_("view"));
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 4);
+  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
 
   d->comparator = widget = gtk_combo_box_text_new();
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
@@ -131,7 +131,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* sort by label */
   widget = gtk_label_new(_("sort by"));
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 4);
+  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
 
   /* sort combobox */
   d->sort = widget = gtk_combo_box_text_new();

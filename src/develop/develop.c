@@ -43,8 +43,8 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 
-#define DT_DEV_AVERAGE_DELAY_START 250
-#define DT_DEV_PREVIEW_AVERAGE_DELAY_START 50
+#define DT_DEV_AVERAGE_DELAY_START 1000
+#define DT_DEV_PREVIEW_AVERAGE_DELAY_START 1000
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
 
 const gchar *dt_dev_histogram_type_names[DT_DEV_HISTOGRAM_N] = { "logarithmic", "linear", "waveform" };
@@ -788,11 +788,9 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
       GtkWidget *header = gtk_bin_get_child(GTK_BIN(g_list_nth_data(childs, 0)));
       g_list_free(childs);
 
-      /* get arrow icon widget */
       childs = gtk_container_get_children(GTK_CONTAINER(header));
-      wlabel = g_list_nth(childs, 5)->data;
+      wlabel = g_list_nth(childs, 2)->data;
       g_list_free(childs);
-
       gchar *label = dt_history_item_get_name_html(module);
       gtk_label_set_markup(GTK_LABEL(wlabel), label);
       g_free(label);
