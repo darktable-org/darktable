@@ -34,6 +34,7 @@
 #include "develop/develop.h"
 #include "dtgtk/expander.h"
 #include "gui/accelerators.h"
+#include "gui/draw.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #ifdef GDK_WINDOWING_QUARTZ
@@ -737,22 +738,6 @@ static inline void dt_view_draw_audio(cairo_t *cr, const float x, const float y,
   cairo_stroke(cr);
 }
 
-static inline void dt_view_star(cairo_t *cr, float x, float y, float r1, float r2)
-{
-  const float d = 2.0 * M_PI * 0.1f;
-  const float dx[10] = { sinf(0.0),   sinf(d),     sinf(2 * d), sinf(3 * d), sinf(4 * d),
-                         sinf(5 * d), sinf(6 * d), sinf(7 * d), sinf(8 * d), sinf(9 * d) };
-  const float dy[10] = { cosf(0.0),   cosf(d),     cosf(2 * d), cosf(3 * d), cosf(4 * d),
-                         cosf(5 * d), cosf(6 * d), cosf(7 * d), cosf(8 * d), cosf(9 * d) };
-  cairo_move_to(cr, x + r1 * dx[0], y - r1 * dy[0]);
-  for(int k = 1; k < 10; k++)
-    if(k & 1)
-      cairo_line_to(cr, x + r2 * dx[k], y - r2 * dy[k]);
-    else
-      cairo_line_to(cr, x + r1 * dx[k], y - r1 * dy[k]);
-  cairo_close_path(cr);
-}
-
 int32_t dt_view_get_image_to_act_on()
 {
   // this works as follows:
@@ -817,6 +802,12 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
     r2 = 0.007 * fscale;
   }
 
+  if(cr)
+  {
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1));
+    cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+  }
+
   gboolean extended_thumb_overlay = dt_conf_get_bool("plugins/lighttable/extended_thumb_overlay");
   float x, y;
   if(zoom != 1)
@@ -838,7 +829,7 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
       else
         x = (.08 + (what - DT_VIEW_STAR_1) * 0.04) * fscale;
 
-      if(cr) dt_view_star(cr, x, y, r1, r2);
+      if(cr) dt_draw_star(cr, x, y, r1, r2);
 
       if(active && (px - x) * (px - x) + (py - y) * (py - y) < r1 * r1)
       {
@@ -878,7 +869,7 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
 
       if(cr)
       {
-        if(rejected) cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.5));
+        if(rejected) cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2));
 
         // reject cross:
         cairo_move_to(cr, x - r2, y - r2);
@@ -888,7 +879,7 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
         cairo_close_path(cr);
         cairo_stroke(cr);
         dt_gui_gtk_set_source_rgb(cr, outlinecol);
-        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1));
       }
 
       break;

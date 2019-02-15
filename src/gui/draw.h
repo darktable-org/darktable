@@ -43,7 +43,6 @@ typedef struct dt_draw_curve_t
 } dt_draw_curve_t;
 
 /** draws a rating star
-   TODO: Use this instead of views/view.c dt_view_star in lightable expose.
 */
 static inline void dt_draw_star(cairo_t *cr, float x, float y, float r1, float r2)
 {
@@ -52,6 +51,7 @@ static inline void dt_draw_star(cairo_t *cr, float x, float y, float r1, float r
                          sinf(5 * d), sinf(6 * d), sinf(7 * d), sinf(8 * d), sinf(9 * d) };
   const float dy[10] = { cosf(0.0),   cosf(d),     cosf(2 * d), cosf(3 * d), cosf(4 * d),
                          cosf(5 * d), cosf(6 * d), cosf(7 * d), cosf(8 * d), cosf(9 * d) };
+
   cairo_move_to(cr, x + r1 * dx[0], y - r1 * dy[0]);
   for(int k = 1; k < 10; k++)
     if(k & 1)
