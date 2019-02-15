@@ -1466,7 +1466,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     if(draw_metadata && width > DECORATION_SIZE_LIMIT)
     {
       // draw mouseover hover effects, set event hook for mouse button down!
-      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1));
       dt_gui_gtk_set_source_rgb(cr, outlinecol);
       cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
 
