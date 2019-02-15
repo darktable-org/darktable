@@ -1392,6 +1392,39 @@ end:
   }
 }
 
+static void histogram_profile_callback(GtkWidget *combo, gpointer user_data)
+{
+  dt_develop_t *d = (dt_develop_t *)user_data;
+  gboolean profile_changed = FALSE;
+  const int pos = dt_bauhaus_combobox_get(combo);
+  for(GList *profiles = darktable.color_profiles->profiles; profiles; profiles = g_list_next(profiles))
+  {
+    dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)profiles->data;
+    if(pp->category_pos == pos)
+    {
+      if(darktable.color_profiles->histogram_type != pp->type
+        || (darktable.color_profiles->histogram_type == DT_COLORSPACE_FILE
+            && strcmp(darktable.color_profiles->histogram_filename, pp->filename)))
+      {
+        darktable.color_profiles->histogram_type = pp->type;
+        g_strlcpy(darktable.color_profiles->histogram_filename, pp->filename,
+                  sizeof(darktable.color_profiles->histogram_filename));
+        profile_changed = TRUE;
+      }
+      goto end;
+    }
+  }
+
+  // profile not found, fall back to export profile. shouldn't happen
+  fprintf(stderr, "can't find histogram profile `%s', using export profile instead\n", dt_bauhaus_combobox_get_text(combo));
+  profile_changed = darktable.color_profiles->histogram_type != DT_COLORSPACE_EXPORT;
+  darktable.color_profiles->histogram_type = DT_COLORSPACE_EXPORT;
+  darktable.color_profiles->histogram_filename[0] = '\0';
+
+end:
+  if(profile_changed) dt_dev_reprocess_all(d);
+}
+
 // FIXME: turning off lcms2 in prefs hides the widget but leaves the window sized like before -> ugly-ish
 static void _preference_changed(gpointer instance, gpointer user_data)
 {
@@ -1688,10 +1721,13 @@ void gui_init(dt_view_t *self)
 
     GtkWidget *display_profile = dt_bauhaus_combobox_new(NULL);
     GtkWidget *softproof_profile = dt_bauhaus_combobox_new(NULL);
+    GtkWidget *histogram_profile = dt_bauhaus_combobox_new(NULL);
     dt_bauhaus_widget_set_label(softproof_profile, NULL, _("softproof profile"));
     dt_bauhaus_widget_set_label(display_profile, NULL, _("display profile"));
+    dt_bauhaus_widget_set_label(histogram_profile, NULL, _("histogram profile"));
     gtk_box_pack_start(GTK_BOX(vbox), softproof_profile, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), display_profile, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), histogram_profile, TRUE, TRUE, 0);
 
     GList *l = darktable.color_profiles->profiles;
     while(l)
@@ -1716,6 +1752,16 @@ void gui_init(dt_view_t *self)
               || !strcmp(prof->filename, darktable.color_profiles->softproof_filename)))
           dt_bauhaus_combobox_set(softproof_profile, prof->out_pos);
       }
+      if(prof->category_pos > -1)
+      {
+        dt_bauhaus_combobox_add(histogram_profile, prof->name);
+        if(prof->type == darktable.color_profiles->histogram_type
+          && (prof->type != DT_COLORSPACE_FILE
+              || !strcmp(prof->filename, darktable.color_profiles->histogram_filename)))
+        {
+          dt_bauhaus_combobox_set(histogram_profile, prof->category_pos);
+        }
+      }
       l = g_list_next(l);
     }
 
@@ -1727,13 +1773,17 @@ void gui_init(dt_view_t *self)
     tooltip = g_strdup_printf(_("softproof ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
     gtk_widget_set_tooltip_text(softproof_profile, tooltip);
     g_free(tooltip);
+    tooltip = g_strdup_printf(_("histogram and color picker ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
+    gtk_widget_set_tooltip_text(histogram_profile, tooltip);
+    g_free(tooltip);
     g_free(system_profile_dir);
     g_free(user_profile_dir);
 
     g_signal_connect(G_OBJECT(display_intent), "value-changed", G_CALLBACK(display_intent_callback), dev);
     g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), dev);
     g_signal_connect(G_OBJECT(softproof_profile), "value-changed", G_CALLBACK(softproof_profile_callback), dev);
-
+    g_signal_connect(G_OBJECT(histogram_profile), "value-changed", G_CALLBACK(histogram_profile_callback), dev);
+    
     _update_softproof_gamut_checking(dev);
 
     // update the gui when the preferences changed (i.e. show intent when using lcms2)

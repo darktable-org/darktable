@@ -1496,7 +1496,12 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   /* prepare a new main query statement for collection */
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  if(!stmt) return 0;
+  if(stmt == NULL)
+  {
+    free(images);
+    g_free(query);
+    return 0;
+  }
 
   int i = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
