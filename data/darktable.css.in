@@ -814,6 +814,15 @@ undershoot.right
 }
 
 
+/* Rating stars in lighttable */
+#lib-rating-stars
+{
+  min-height: 1em;
+  min-width: 7em;
+  margin-right: 1em;
+}
+
+
 /* STUFF TO MERGE WITH ABOVE RULES */
 
 aboutdialog,
@@ -882,3 +891,4 @@ cell:selected
     margin-left: 10em;
     margin-right: 10em;
 }
+
