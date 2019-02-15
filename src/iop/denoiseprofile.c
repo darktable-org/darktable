@@ -118,9 +118,10 @@ typedef struct dt_iop_denoiseprofile_params_t
   dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
   float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
   float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
+  gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
   // backward compatibility options
   gboolean fix_anscombe;
-  gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
+  gboolean fix_nlmeans_norm;
 } dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
@@ -153,6 +154,7 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   GtkWidget *extra_toggle;
   // backward compatibility options
   GtkWidget *fix_anscombe;
+  GtkWidget *fix_nlmeans_norm;
 } dt_iop_denoiseprofile_gui_data_t;
 
 typedef struct dt_iop_denoiseprofile_data_t
@@ -166,9 +168,10 @@ typedef struct dt_iop_denoiseprofile_data_t
   dt_draw_curve_t *curve[DT_DENOISE_PROFILE_NONE];
   dt_iop_denoiseprofile_channel_t channel;
   float force[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
+  gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
   // backward compatibility options
   gboolean fix_anscombe;
-  gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
+  gboolean fix_nlmeans_norm;
 } dt_iop_denoiseprofile_data_t;
 
 typedef struct dt_iop_denoiseprofile_global_data_t
@@ -331,7 +334,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       }
     }
     v7->scattering = v6.scattering;
-    v7->fix_anscombe = FALSE; // don't fix anscombe for backward compatibility
+    v7->fix_anscombe = FALSE;     // don't fix anscombe to ensure backward compatibility
+    v7->fix_nlmeans_norm = FALSE; // don't fix norm to ensure backward compatibility
     v7->wb_adaptive_anscombe = TRUE;
     return 0;
   }
@@ -2298,20 +2302,20 @@ void reload_defaults(dt_iop_module_t *module)
       dt_bauhaus_combobox_add(g->profile, profile->name);
     }
 
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->wb_adaptive_anscombe = TRUE;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius = 1.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->nbhood = 7.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->scattering = 0.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->fix_anscombe = TRUE;
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->fix_nlmeans_norm = TRUE;
     for(int k = 0; k < 3; k++)
     {
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->a[k] = g->interpolated.a[k];
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->b[k] = g->interpolated.b[k];
     }
     memcpy(module->params, module->default_params, sizeof(dt_iop_denoiseprofile_params_t));
-    g->fix_anscombe = TRUE;
-    g->wb_adaptive_anscombe = TRUE;
   }
 }
 
@@ -2462,6 +2466,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
   d->wb_adaptive_anscombe = p->wb_adaptive_anscombe;
   d->fix_anscombe = p->fix_anscombe;
+  d->fix_nlmeans_norm = p->fix_nlmeans_norm;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -2579,6 +2584,7 @@ void gui_update(dt_iop_module_t *self)
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander),
                               gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->extra_toggle)));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_anscombe), p->fix_anscombe);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_nlmeans_norm), p->fix_nlmeans_norm);
 }
 
 static void dt_iop_denoiseprofile_get_params(dt_iop_denoiseprofile_params_t *p, const int ch, const double mouse_x,
@@ -2929,6 +2935,15 @@ static void fix_anscombe_callback(GtkWidget *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void fix_nlmeans_norm_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  p->fix_nlmeans_norm = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+
 void gui_init(dt_iop_module_t *self)
 {
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
@@ -3040,6 +3055,13 @@ void gui_init(dt_iop_module_t *self)
                                                  "of white balance coefficients."));
   gtk_box_pack_start(GTK_BOX(extra_options), g->fix_anscombe, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->fix_anscombe), "toggled", G_CALLBACK(fix_anscombe_callback), self);
+  g->fix_nlmeans_norm = gtk_check_button_new_with_label(_("fix patch normalization"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_nlmeans_norm), p->fix_nlmeans_norm);
+  gtk_widget_set_tooltip_text(g->fix_nlmeans_norm, _("fix patch norm computation in non-local\n"
+                                                     "means so that the denoising force becomes\n"
+                                                     "independent of patch size."));
+  gtk_box_pack_start(GTK_BOX(extra_options), g->fix_nlmeans_norm, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->fix_nlmeans_norm), "toggled", G_CALLBACK(fix_nlmeans_norm_callback), self);
 
 
   gtk_widget_show_all(g->box_nlm);
