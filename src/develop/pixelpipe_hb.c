@@ -600,7 +600,7 @@ error:
 static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_roi_t *roi_in, 
     cmsHTRANSFORM xform_rgb2lab, cmsHTRANSFORM xform_rgb2rgb,
     const float *const  pick_box, const float *const  pick_point, const int pick_size,
-    uint8_t *pick_color_rgb_min, uint8_t *pick_color_rgb_max, uint8_t *pick_color_rgb_mean,
+    float *pick_color_rgb_min, float *pick_color_rgb_max, float *pick_color_rgb_mean,
     float *pick_color_lab_min, float *pick_color_lab_max, float *pick_color_lab_mean)
 {
   float picked_color_rgb_min[3];
@@ -665,18 +665,18 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
 
     for(int i = 0; i < 3; i++)
     {
-      pick_color_rgb_mean[i] = round(rgb_odata[i] * 255.f);
-      pick_color_rgb_min[i] = round(rgb_odata[i + 3] * 255.f);
-      pick_color_rgb_max[i] = round(rgb_odata[i + 6] * 255.f);
+      pick_color_rgb_mean[i] = rgb_odata[i];
+      pick_color_rgb_min[i] = rgb_odata[i + 3];
+      pick_color_rgb_max[i] = rgb_odata[i + 6];
     }
   }
   else
   {
     for(int i = 0; i < 3; i++)
     {
-      pick_color_rgb_mean[i] = round(picked_color_rgb_mean[i] * 255.f);
-      pick_color_rgb_min[i] = round(picked_color_rgb_min[i] * 255.f);
-      pick_color_rgb_max[i] = round(picked_color_rgb_max[i] * 255.f);
+      pick_color_rgb_mean[i] = picked_color_rgb_mean[i];
+      pick_color_rgb_min[i] = picked_color_rgb_min[i];
+      pick_color_rgb_max[i] = picked_color_rgb_max[i];
     }
   }
 

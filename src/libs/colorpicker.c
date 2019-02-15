@@ -149,7 +149,7 @@ static void _update_picker_output(dt_lib_module_t *self)
 
     // always adjust picked color:
     int m = dt_conf_get_int("ui_last/colorpicker_mode");
-    uint8_t *rgb;
+    float *rgb;
     float *lab;
     switch(m)
     {
@@ -169,7 +169,7 @@ static void _update_picker_output(dt_lib_module_t *self)
     switch(input_color)
     {
       case 0: // rgb
-        snprintf(colstring, sizeof(colstring), "(%d, %d, %d)", rgb[0], rgb[1], rgb[2]);
+        snprintf(colstring, sizeof(colstring), "(%d, %d, %d)", (int)round(rgb[0] * 255.f), (int)round(rgb[1] * 255.f), (int)round(rgb[2] * 255.f));
         break;
       case 1: // Lab
         snprintf(colstring, sizeof(colstring), "(%.03f, %.03f, %.03f)", lab[0], lab[1], lab[2]);
@@ -178,9 +178,9 @@ static void _update_picker_output(dt_lib_module_t *self)
     gtk_label_set_label(GTK_LABEL(data->output_label), colstring);
 
     // Setting the button color
-    data->rgb.red = rgb[0] / 255.0;
-    data->rgb.green = rgb[1] / 255.0;
-    data->rgb.blue = rgb[2] / 255.0;
+    data->rgb.red = CLAMP(rgb[0], 0.f, 1.f);
+    data->rgb.green = CLAMP(rgb[1], 0.f, 1.f);
+    data->rgb.blue = CLAMP(rgb[2], 0.f, 1.f);
     gtk_widget_queue_draw(data->color_patch);
   }
 }
@@ -235,8 +235,8 @@ static void _size_changed(GtkComboBox *widget, gpointer p)
 static void _update_samples_output(dt_lib_module_t *self)
 {
   float fallback[] = { 0., 0., 0. };
-  uint8_t fallback_rgb[] = { 0, 0, 0 };
-  uint8_t *rgb = fallback_rgb;
+  float fallback_rgb[] = { 0, 0, 0 };
+  float *rgb = fallback_rgb;
   float *lab = fallback;
   char text[1024];
   GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
@@ -268,9 +268,9 @@ static void _update_samples_output(dt_lib_module_t *self)
     }
 
     // Setting the output button
-    sample->rgb.red = rgb[0] / 255.0;
-    sample->rgb.green = rgb[1] / 255.0;
-    sample->rgb.blue = rgb[2] / 255.0;
+    sample->rgb.red = CLAMP(rgb[0], 0.f, 1.f);
+    sample->rgb.green = CLAMP(rgb[1], 0.f, 1.f);
+    sample->rgb.blue = CLAMP(rgb[2], 0.f, 1.f);
     gtk_widget_queue_draw(sample->color_patch);
 
     // Setting the output label
@@ -278,7 +278,7 @@ static void _update_samples_output(dt_lib_module_t *self)
     {
       case 0:
         // RGB
-        snprintf(text, sizeof(text), "(%d, %d, %d)", rgb[0], rgb[1], rgb[2]);
+        snprintf(text, sizeof(text), "(%d, %d, %d)", (int)round(rgb[0] * 255.f), (int)round(rgb[1] * 255.f), (int)round(rgb[2] * 255.f));
         break;
 
       case 1:
@@ -489,9 +489,9 @@ void gui_init(dt_lib_module_t *self)
   darktable.lib->proxy.colorpicker.size = dt_conf_get_int("ui_last/colorpicker_size");
   darktable.lib->proxy.colorpicker.display_samples = dt_conf_get_int("ui_last/colorpicker_display_samples");
   darktable.lib->proxy.colorpicker.live_samples = NULL;
-  darktable.lib->proxy.colorpicker.picked_color_rgb_mean = (uint8_t *)malloc(sizeof(uint8_t) * 3);
-  darktable.lib->proxy.colorpicker.picked_color_rgb_min = (uint8_t *)malloc(sizeof(uint8_t) * 3);
-  darktable.lib->proxy.colorpicker.picked_color_rgb_max = (uint8_t *)malloc(sizeof(uint8_t) * 3);
+  darktable.lib->proxy.colorpicker.picked_color_rgb_mean = (float *)malloc(sizeof(float) * 3);
+  darktable.lib->proxy.colorpicker.picked_color_rgb_min = (float *)malloc(sizeof(float) * 3);
+  darktable.lib->proxy.colorpicker.picked_color_rgb_max = (float *)malloc(sizeof(float) * 3);
   darktable.lib->proxy.colorpicker.picked_color_lab_mean = (float *)malloc(sizeof(float) * 3);
   darktable.lib->proxy.colorpicker.picked_color_lab_min = (float *)malloc(sizeof(float) * 3);
   darktable.lib->proxy.colorpicker.picked_color_lab_max = (float *)malloc(sizeof(float) * 3);
