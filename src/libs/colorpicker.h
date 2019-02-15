@@ -35,9 +35,9 @@ typedef struct dt_colorpicker_sample_t
   int locked;
 
   /** The actual picked colors */
-  uint8_t picked_color_rgb_mean[3];
-  uint8_t picked_color_rgb_min[3];
-  uint8_t picked_color_rgb_max[3];
+  float picked_color_rgb_mean[3];
+  float picked_color_rgb_min[3];
+  float picked_color_rgb_max[3];
 
   float picked_color_lab_mean[3];
   float picked_color_lab_min[3];
