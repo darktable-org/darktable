@@ -546,10 +546,37 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
   else
   {
-    /* we are not exporting, using display profile as output */
-    out_type = darktable.color_profiles->display_type;
-    out_filename = darktable.color_profiles->display_filename;
-    out_intent = darktable.color_profiles->display_intent;
+    // we are not exporting
+    if(!self->dev->overexposed.enabled)
+    {
+      // not display overexposed, using display profile as output
+      out_type = darktable.color_profiles->display_type;
+      out_filename = darktable.color_profiles->display_filename;
+      out_intent = darktable.color_profiles->display_intent;
+    }
+    else
+    {
+      // display mask, using histogram profile as output
+      // category types must be handled dynamically
+      if(darktable.color_profiles->histogram_type == DT_COLORSPACE_SOFTPROOF)
+      {
+        out_type = darktable.color_profiles->softproof_type;
+        out_filename = darktable.color_profiles->softproof_filename;
+        out_intent = darktable.color_profiles->softproof_intent;
+      }
+      else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
+      {
+        out_type = p->type;
+        out_filename = p->filename;
+        out_intent = p->intent;
+      }
+      else
+      {
+        out_type = darktable.color_profiles->histogram_type;
+        out_filename = darktable.color_profiles->histogram_filename;
+        out_intent = darktable.color_profiles->display_intent;
+      }
+    }
   }
 
   // when the output type is Lab then process is a nop, so we can avoid creating a transform
@@ -789,7 +816,7 @@ void gui_init(struct dt_iop_module_t *self)
   }
 
   g->output_profile = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->output_profile, NULL, _("output profile"));
+  dt_bauhaus_widget_set_label(g->output_profile, NULL, _("export profile"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->output_profile, TRUE, TRUE, 0);
   for(GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
   {
