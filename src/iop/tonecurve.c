@@ -87,9 +87,9 @@ typedef enum dt_iop_tonecurve_mode_t
                                    // transforming the curve C to C' like:
                                    // L_out=C(L_in) -> Y_out=C'(Y_in) and applying C' to the X and Z
                                    // channels, too (and then transforming it back to Lab of course)
-  DT_S_SCALE_AUTOMATIC_RGB = 3,    // similar to above but use an rgb working space
-  DT_S_SCALE_MANUAL_RGB = 4,
-  DT_S_SCALE_MANUAL_LCH = 5,       // manual LCh instead of manual Lab
+//  DT_S_SCALE_AUTOMATIC_RGB = 3,    // similar to above but use an rgb working space
+  DT_S_SCALE_MANUAL_RGB = 3,
+  DT_S_SCALE_MANUAL_LCH = 4,       // manual LCh instead of manual Lab
 } dt_iop_tonecurve_mode_t;
 
 // parameter structure of tonecurve 1st version, needed for use in legacy_params()
@@ -157,6 +157,7 @@ typedef struct dt_iop_tonecurve_gui_data_t
   uint32_t local_histogram[256 * DT_IOP_TONECURVE_MAX_CH];
   // maximum levels in histogram, one per channel
   uint32_t local_histogram_max[DT_IOP_TONECURVE_MAX_CH];
+  gboolean got_focus;
 } dt_iop_tonecurve_gui_data_t;
 
 typedef struct dt_iop_tonecurve_data_t
@@ -193,9 +194,9 @@ static const struct
   // 2 - b (Lab)
   {2, 2, -128.0f, 127.0f, -128.0f, 127.0f, 256.0f, 1, 0, 2, 3, { { 0.0, 0.0 }, { 0.5, 0.5 }, { 1.0, 1.0 } }},
   // 3 - C(L) (LCh)
-  {0, 1, 0.0f, 182.019f, 0.0f, 100.0f, 1.0f, 0, 0, 1, 2, { { 0.0f, 0.5f }, { 1.0f, 0.5f } }},
-  // 4 - C(h) (LCH_2_Lab)
-  {2, 1, 0.0f, 1.0f, 0.0f, 360.0f, 1.0f, 0, 0, 1, 2, { { 0.0f, 0.5f }, { 1.0f, 0.5f } }},
+  {0, 1, 0.0f, 182.019f, 0.0f, 100.0f, 1.0f, 1, 0, 1, 2, { { 0.0f, 0.5f }, { 1.0f, 0.5f } }},
+  // 4 - C(h) (LCh)
+  {2, 1, 0.0f, 1.0f, 0.0f, 360.0f, 1.0f, 1, 0, 1, 2, { { 0.0f, 0.5f }, { 1.0f, 0.5f } }},
   // 5 - L(RGB) - L(XYZ)
   {0, 0, 0.0f, 100.0f, 0.0f, 100.0f, 100.0f, 1, 1, 1, 2, { { 0.0f, 0.0f }, { 1.0f, 1.0f } }},
   // 6 - L(LRGB)
@@ -225,7 +226,7 @@ static const struct
   {3, DT_TC_LAB, {0, 1, 2}},  // DT_S_SCALE_MANUAL_LAB
   {1, DT_TC_LAB, {0}},  // DT_S_SCALE_AUTOMATIC_LAB
   {1, DT_TC_LAB, {5}}, // DT_S_SCALE_AUTOMATIC_XYZ
-  {1, DT_TC_LAB, {5}}, // DT_S_SCALE_AUTOMATIC_RGB
+//  {1, DT_TC_LAB, {5}}, // DT_S_SCALE_AUTOMATIC_RGB
   {4, DT_TC_RGB, {6, 7, 8, 9}}, // DT_S_SCALE_MANUAL_RGB
   {3, DT_TC_LCH, {0, 3, 4}}  // DT_S_SCALE_MANUAL_LCH
 };
@@ -390,6 +391,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   const int ch = piece->colors;
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
+  dt_dev_pixelpipe_t *pipe = (dt_dev_pixelpipe_t *)(piece->pipe);
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   const float xm[DT_IOP_TONECURVE_MAX_CH][2] = {
     {1.0f / d->unbounded_coeffs[0][0], 1.0f - 1.0f / d->unbounded_coeffs[0][3]},
@@ -402,7 +404,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int height = roi_out->height;
   const int tc_mode = d->tc_mode;
   const int unbound_ab = d->unbound_ab;
-  if (g)
+//  uint32_t local_histogram[256 * DT_IOP_TONECURVE_MAX_CH];
+  const gboolean histogram_needed = g && g->got_focus
+      && pipe->type != DT_DEV_PIXELPIPE_PREVIEW
+      && (tc_mode == DT_S_SCALE_MANUAL_RGB || tc_mode == DT_S_SCALE_MANUAL_LCH) ? TRUE : FALSE;
+  if (histogram_needed)
    for (int c = 0; c < DT_IOP_TONECURVE_MAX_CH * 256; c++ )
       g->local_histogram[c] = 0;
 
@@ -453,6 +459,17 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         out[1] = in[1];
         out[2] =out[2];
         dt_Lab_2_LCH(in, LCh);
+        if (histogram_needed)
+        { // process local histogram
+          for(int c=0; c<3; c++)
+          {
+            // histogram_LCh can be put to 255 bins
+            if (c==1)
+              g->local_histogram[4 * (uint8_t)CLAMP(LCh[c]*1.40095, 0.0f, 255.0f) + c]++;  // 255 / 182.019 = 1.40095
+            else if (c==2)
+              g->local_histogram[4 * (uint8_t)CLAMP(LCh[c]*255.0f, 0.0f, 255.0f) + c]++;
+          }
+        }
         const float chroma = LCh[1];
         if (chroma > 0.0f)
         {
@@ -488,7 +505,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                    : dt_iop_eval_exp(d->unbounded_coeffs[0], XYZ[c]);
         dt_XYZ_to_Lab(XYZ, out);
       }
-      else if(tc_mode == DT_S_SCALE_AUTOMATIC_RGB)
+/*      else if(tc_mode == DT_S_SCALE_AUTOMATIC_RGB)
       {
         float rgb[3] = {0, 0, 0};
         dt_Lab_to_prophotorgb(in, rgb);
@@ -496,12 +513,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           rgb[c] = (rgb[c] < xm[ch_L][0]) ? d->table[ch_L][CLAMP((int)(rgb[c] * 0x10000ul), 0, 0xffff)]
                                    : dt_iop_eval_exp(d->unbounded_coeffs[0], rgb[c]);
         dt_prophotorgb_to_Lab(rgb, out);
-      }
-      else if(tc_mode == DT_S_SCALE_MANUAL_RGB)
+      } */
+      else if (tc_mode == DT_S_SCALE_MANUAL_RGB)
       {
         float rgb[3] = {0, 0, 0};
         dt_Lab_to_prophotorgb(in, rgb);
-        if (g)
+        if (histogram_needed)
         { // process local histogram
           for(int c=0; c<3; c++)
           {
@@ -570,7 +587,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.tonecurve_type[ch_b] = CUBIC_SPLINE;
   p.tonecurve_type[3] = CUBIC_SPLINE;
   p.tonecurve_preset = 0;
-  p.tonecurve_tc_mode = DT_S_SCALE_AUTOMATIC_RGB;
+  p.tonecurve_tc_mode = DT_S_SCALE_MANUAL_RGB;
   p.tonecurve_unbound_ab = 1;
 
   float linear_ab[7] = { 0.0, 0.08, 0.3, 0.5, 0.7, 0.92, 1.0 };
@@ -775,7 +792,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       d->table[ch_L][k] = XYZ[1]; // now mapping Y_in to Y_out
     }
   }
-  else if(p->tonecurve_tc_mode == DT_S_SCALE_AUTOMATIC_RGB)
+/*  else if(p->tonecurve_tc_mode == DT_S_SCALE_AUTOMATIC_RGB)
   {
     // derive curve for rgb:
     for(int k=0;k<0x10000;k++)
@@ -787,7 +804,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       dt_Lab_to_prophotorgb(Lab, rgb);
       d->table[ch_L][k] = rgb[1]; // now mapping G_in to G_out
     }
-  }
+  } */
   else if(p->tonecurve_tc_mode == DT_S_SCALE_MANUAL_RGB)
   {
     // derive curve for rgb:
@@ -839,7 +856,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
     const int curve_detail_i = mode_curves[tc_mode].curve_detail_i[ch];
     const int lut_factor = curve_detail[curve_detail_i].c_lut_factor;
     const int extrapolation = curve_detail[curve_detail_i].c_extrapolation;
-    if (curve_detail[curve_detail_i].chx ==curve_detail[curve_detail_i].chy)
+    if (curve_detail[curve_detail_i].chx == curve_detail[curve_detail_i].chy)
     {
       if (extrapolation == 1)
         for(int k = 0; k < 0x10000; k++) d->table[ch][k] = lut_factor * k / 0x10000;          // identity for x'=f(x)
@@ -940,7 +957,6 @@ void tabs_update(struct dt_iop_module_t *self, int reset_nodes)
     for(int ch=0; ch < nb_ch; ch++)
     {
       GtkWidget *tabid = gtk_notebook_get_nth_page(g->channel_tabs, ch);
-//printf("set tab label - mode: %d, ch: %d, nbch: %d\n", p->tonecurve_tc_mode, ch, nb_ch);
       gtk_notebook_set_tab_label_text(g->channel_tabs, tabid, tab_label[ch]);
       gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(g->channel_tabs, tabid), tab_tooltip[ch]);
       gtk_widget_show(tabid);
@@ -948,7 +964,6 @@ void tabs_update(struct dt_iop_module_t *self, int reset_nodes)
     for(int ch=nb_ch; ch < DT_IOP_TONECURVE_MAX_CH; ch++)
     {
       GtkWidget *tabid = gtk_notebook_get_nth_page(g->channel_tabs, ch);
-//printf("hide tab - mode: %d, ch: %d, nbch: %d\n", p->tonecurve_tc_mode, ch, nb_ch);
       gtk_widget_hide(tabid);
     }
     gtk_notebook_set_show_tabs(g->channel_tabs, TRUE);
@@ -1000,7 +1015,7 @@ void init(dt_iop_module_t *module)
       { { 0.0, 0.0 }, { 1.0, 1.0 } },
       { { 0.0, 0.0 }, { 1.0, 1.0 } },
       { { 0.0, 0.0 }, { 1.0, 1.0 } } },
-    { 2, 2, 2 }, // number of nodes per curve
+    { 2, 2, 2, 2 }, // number of nodes per curve
     // { CATMULL_ROM, CATMULL_ROM, CATMULL_ROM},  // curve types
     { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
     // { CUBIC_SPLINE, CUBIC_SPLINE, CUBIC_SPLINE},
@@ -1111,13 +1126,13 @@ static void tc_mode_callback(GtkWidget *widget, dt_iop_module_t *self)
     case 2:
       p->tonecurve_tc_mode = DT_S_SCALE_AUTOMATIC_XYZ;
       break;
-    case 3:
+/*    case 3:
         p->tonecurve_tc_mode = DT_S_SCALE_AUTOMATIC_RGB;
-        break;
-    case 4:
+        break; */
+    case 3:
       p->tonecurve_tc_mode = DT_S_SCALE_MANUAL_RGB;
       break;
-    case 5:
+    case 4:
       p->tonecurve_tc_mode = DT_S_SCALE_MANUAL_LCH;
       break;
   }
@@ -1399,6 +1414,14 @@ static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget, GdkEventKey *event
 
 #undef TONECURVE_DEFAULT_STEP
 
+void gui_focus(struct dt_iop_module_t *self, gboolean in)
+{
+  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+  if (in & (p->tonecurve_tc_mode == DT_S_SCALE_MANUAL_LCH || p->tonecurve_tc_mode ==DT_S_SCALE_MANUAL_RGB))
+    c->got_focus = in;
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_tonecurve_gui_data_t));
@@ -1419,6 +1442,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->selected = -1;
   c->loglogscale = 0;
   c->scale_mode = linxliny;
+  c->got_focus = FALSE;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
@@ -1428,7 +1452,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(c->tc_mode, _("Lab, linked channels"));
   dt_bauhaus_combobox_add(c->tc_mode, _("Lab, independent channels"));
   dt_bauhaus_combobox_add(c->tc_mode, _("XYZ, linked channels"));
-  dt_bauhaus_combobox_add(c->tc_mode, _("RGB, linked channels"));
+//  dt_bauhaus_combobox_add(c->tc_mode, _("RGB, linked channels"));
   dt_bauhaus_combobox_add(c->tc_mode, _("RGB, independent channels"));
   dt_bauhaus_combobox_add(c->tc_mode, _("LCh, independent channels"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->tc_mode, TRUE, TRUE, 0);
@@ -1817,22 +1841,31 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     hist = self->histogram;
     if (hist && curve_detail[curve_detail_i].c_histogram_enabled)
     {
-      uint32_t *histogram_max;
       float hist_color[3] = {0.2f, 0.2f, 0.2f};;
-      if (tc_mode == DT_S_SCALE_MANUAL_RGB)
-      {
-        c->local_histogram_max[ch] = 0;
-        for(int i=0; i<256*4; i+=4)
+      uint32_t *histogram_max;
+        if (tc_mode == DT_S_SCALE_MANUAL_RGB)
         {
-          c->local_histogram[i] = hist[i]; // get channel 0 histogram
-          if (c->local_histogram[i] > c->local_histogram_max[ch]) c->local_histogram_max[ch] = c->local_histogram[i];
+          c->local_histogram_max[ch] = 0;
+          for(int i = 0; i < 4 * 256; i+=4)
+          {
+            c->local_histogram[i] = hist[i]; // get channel 0 histogram
+            if (c->local_histogram[i] > c->local_histogram_max[ch]) c->local_histogram_max[ch] = c->local_histogram[i]; // get channel 0 max
+          }
+          if (ch!=0) hist_color[ch-1] = 0.4f;
+          hist = &c->local_histogram[0];
+          histogram_max = &c->local_histogram_max[0];
         }
-//        for (int i = 0; i < 4 * 255; i++)
-//            c->local_histogram_max[ch] = (c->local_histogram[i] > c->local_histogram_max[ch]) ? c->local_histogram[i] : c->local_histogram_max[ch];
-        hist = &c->local_histogram[0];
-        histogram_max = &c->local_histogram_max[0];
-        if (ch!=0) hist_color[ch-1] = 0.4f;
-      }
+        else if (tc_mode == DT_S_SCALE_MANUAL_LCH)
+        {
+          c->local_histogram_max[ch] = 0;
+          if (ch==0)
+            for(int i = 0; i < 4 * 256; i+=4)
+              c->local_histogram[i] = hist[i]; // get channel 0 histogram
+          for (int i = 0; i < 4 * 256; i+=4)
+              c->local_histogram_max[ch] = (c->local_histogram[i+ch] > c->local_histogram_max[ch]) ? c->local_histogram[i+ch] : c->local_histogram_max[ch];
+          hist = &c->local_histogram[0];
+          histogram_max = &c->local_histogram_max[0];
+        }
       else
       { // other cases we use the standard histogram
         hist = self->histogram;
