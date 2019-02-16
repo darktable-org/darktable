@@ -20,6 +20,7 @@
 #include "common/gaussian.h"
 #include "common/guided_filter.h"
 #include "common/math.h"
+#include "common/opencl.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
@@ -3498,7 +3499,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     //  get back final mask from the device to store it for later use
     if(!(mask_mode & DEVELOP_MASK_RASTER))
     {
-      err = dt_opencl_read_buffer_from_device(devid, mask, dev_mask_1, owidth, oheight, sizeof(float));
+      err = dt_opencl_copy_device_to_host(devid, mask, dev_mask_1, owidth, oheight, sizeof(float));
       if(err != CL_SUCCESS) goto error;
     }
     g_hash_table_replace(piece->raster_masks, GINT_TO_POINTER(0), _mask);
