@@ -4643,8 +4643,8 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   char string_v[256];
   char string_h[256];
 
-  snprintf(string_v, sizeof(string_v), _("lens shift (%s)"), isflipped ? _("horizontal") : _("vertical"));
-  snprintf(string_h, sizeof(string_h), _("lens shift (%s)"), isflipped ? _("vertical") : _("horizontal"));
+  snprintf(string_v, sizeof(string_v), "%s", isflipped ? _("lens shift (horizontal)") : _("lens shift (vertical)"));
+  snprintf(string_h, sizeof(string_h), "%s", isflipped ? _("lens shift (vertical)") : _("lens shift (horizontal)"));
 
   darktable.gui->reset = 1;
   dt_bauhaus_widget_set_label(g->lensshift_v, NULL, string_v);
