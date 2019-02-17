@@ -3230,6 +3230,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   cl_mem dev_mask_1 = NULL;
   cl_mem dev_mask_2 = NULL;
   cl_mem dev_tmp = NULL;
+  cl_mem dev_guide = NULL;
   size_t origin[] = { 0, 0, 0 };
   size_t region[] = { owidth, oheight, 1 };
 
@@ -3382,8 +3383,9 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       cl_mem guide = d->feathering_guide == DEVELOP_MASK_GUIDE_IN ? dev_in : dev_out;
       if(!rois_equal && d->feathering_guide == DEVELOP_MASK_GUIDE_IN)
       {
-        guide = dt_opencl_alloc_device(devid, owidth, oheight, 4 * sizeof(float));
-        if(guide == NULL) goto error;
+        dev_guide = dt_opencl_alloc_device(devid, owidth, oheight, 4 * sizeof(float));
+        if(dev_guide == NULL) goto error;
+        guide = dev_guide;
         size_t origin_1[] = { xoffs, yoffs, 0 };
         size_t origin_2[] = { 0, 0, 0 };
         err = dt_opencl_enqueue_copy_image(devid, dev_in, guide, origin_2, origin_1, region);
@@ -3391,7 +3393,11 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       }
       guided_filter_cl(devid, guide, dev_mask_2, dev_mask_1, owidth, oheight, ch, w, sqrt_eps, guide_weight, 0.f,
                        1.f);
-      if(!rois_equal && d->feathering_guide == DEVELOP_MASK_GUIDE_IN) dt_opencl_release_mem_object(guide);
+      if(dev_guide)
+      {
+        dt_opencl_release_mem_object(dev_guide);
+        dev_guide = NULL;
+      }
     }
     else
     {
@@ -3521,6 +3527,7 @@ error:
   dt_opencl_release_mem_object(dev_mask_1);
   dt_opencl_release_mem_object(dev_mask_2);
   dt_opencl_release_mem_object(dev_tmp);
+  dt_opencl_release_mem_object(dev_guide);
   dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -3579,7 +3586,7 @@ void tiling_callback_blendop(struct dt_iop_module_t *self, struct dt_dev_pixelpi
                              const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
                              struct dt_develop_tiling_t *tiling)
 {
-  tiling->factor = 3.25f; // in + out + tmp + one quarter buffer for the mask
+  tiling->factor = 3.5f; // in + out + (guide, tmp) + two quarter buffers for the mask
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 0;
