@@ -589,7 +589,7 @@ static int register_pref_sub(lua_State *L)
       if(!dt_conf_key_exists(pref_name)) {
         dt_conf_set_string(pref_name, built_elt->type_data.dir_data.default_value);
       }
-      built_elt->widget = gtk_file_chooser_button_new(_("select directory"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+      built_elt->widget = gtk_file_chooser_button_new(C_("button", "select directory"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
       gtk_file_chooser_button_set_width_chars(GTK_FILE_CHOOSER_BUTTON(built_elt->widget), 20);
       g_object_ref_sink(G_OBJECT(built_elt->widget));
       built_elt->tooltip_reset = g_strdup_printf( _("double click to reset to `%s'"), built_elt->type_data.dir_data.default_value);
@@ -602,7 +602,7 @@ static int register_pref_sub(lua_State *L)
       if(!dt_conf_key_exists(pref_name))
         dt_conf_set_string(pref_name, built_elt->type_data.file_data.default_value);
 
-      built_elt->widget = gtk_file_chooser_button_new(_("select file"), GTK_FILE_CHOOSER_ACTION_OPEN);
+      built_elt->widget = gtk_file_chooser_button_new(C_("button", "select file"), GTK_FILE_CHOOSER_ACTION_OPEN);
       gtk_file_chooser_button_set_width_chars(GTK_FILE_CHOOSER_BUTTON(built_elt->widget), 20);
       built_elt->tooltip_reset= g_strdup_printf( _("double click to reset to `%s'"), built_elt->type_data.file_data.default_value);
       g_object_ref_sink(G_OBJECT(built_elt->widget));
