@@ -2837,8 +2837,8 @@ void gui_init(dt_iop_module_t *self)
   g->colorpick = gtk_color_button_new_with_rgba(&color);
   gtk_color_chooser_set_use_alpha(GTK_COLOR_CHOOSER(g->colorpick), FALSE);
   gtk_widget_set_size_request(GTK_WIDGET(g->colorpick), bs, bs);
-  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), _("select fill color"));
-  g_object_set(G_OBJECT(g->colorpick), "tooltip-text", _("select fill color"), (char *)NULL);
+  gtk_color_button_set_title(GTK_COLOR_BUTTON(g->colorpick), C_("dialog title", "select fill color"));
+  g_object_set(G_OBJECT(g->colorpick), "tooltip-text", C_("button tooltip", "select fill color"), (char *)NULL);
 
   g_signal_connect(G_OBJECT(g->colorpick), "color-set", G_CALLBACK(rt_colorpick_color_set_callback), self);
 
