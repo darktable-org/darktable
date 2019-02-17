@@ -503,7 +503,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
 
     if(darktable.gui->last_preset && found)
     {
-      char *markup = g_markup_printf_escaped("%s <span weight=\"bold\">%s</span>", _("update preset"),
+      char *markup = g_markup_printf_escaped(_("update preset <span weight=\"bold\">%s</span>"),
                                              darktable.gui->last_preset);
       mi = gtk_menu_item_new_with_label("");
       gtk_widget_set_sensitive(mi, minfo->params_size > 0);
