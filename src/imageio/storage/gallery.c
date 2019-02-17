@@ -104,7 +104,7 @@ static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
   gallery_t *d = (gallery_t *)self->gui_data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
+      C_("dialog title", "select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
       GTK_RESPONSE_CANCEL, _("_select as output destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
@@ -175,7 +175,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   g_free(tooltip_text);
 
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_DO_NOT_USE_BORDER, NULL);
-  gtk_widget_set_tooltip_text(widget, _("select directory"));
+  gtk_widget_set_tooltip_text(widget, C_("button tooltip", "select directory"));
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 
