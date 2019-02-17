@@ -1560,7 +1560,7 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
 
     GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
     GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
+      C_("dialog title", "select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
       GTK_RESPONSE_CANCEL, _("_select as output destination"), GTK_RESPONSE_ACCEPT, (char *)NULL);
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(filechooser);
