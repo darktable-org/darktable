@@ -241,12 +241,18 @@ static void check_layout(dt_view_t *self)
   }
 
   dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
+  dt_lib_module_t *timeline = darktable.view_manager->proxy.timeline.module;
+  gboolean vs = dt_lib_is_visible(timeline);
 
   if(layout == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+  {
+    gtk_widget_hide(GTK_WIDGET(timeline->widget));
     gtk_widget_show(GTK_WIDGET(m->widget));
+  }
   else
   {
     gtk_widget_hide(GTK_WIDGET(m->widget));
+    if(vs) gtk_widget_show(GTK_WIDGET(timeline->widget));
     g_timeout_add(200, _expose_again_full, self);
   }
 }
@@ -2923,6 +2929,15 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   return 0;
 }
 
+static gboolean timeline_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                            GdkModifierType modifier, gpointer data)
+{
+  dt_lib_module_t *m = darktable.view_manager->proxy.timeline.module;
+  gboolean vs = dt_lib_is_visible(m);
+  dt_lib_set_visible(m, !vs);
+  return TRUE;
+}
+
 void init_key_accels(dt_view_t *self)
 {
   // Initializing accelerators
@@ -2966,6 +2981,9 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "sticky preview"), 0, 0);
   dt_accel_register_view(self, NC_("accel", "sticky preview with focus detection"), 0, 0);
   dt_accel_register_view(self, NC_("accel", "exit sticky preview"), 0, 0);
+
+  // timeline
+  dt_accel_register_view(self, NC_("accel", "toggle timeline"), GDK_KEY_f, GDK_CONTROL_MASK);
 }
 
 void connect_key_accels(dt_view_t *self)
@@ -3017,6 +3035,10 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "select single image", closure);
   closure = g_cclosure_new(G_CALLBACK(realign_key_accel_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "realign images to grid", closure);
+
+  // timeline
+  closure = g_cclosure_new(G_CALLBACK(timeline_key_accel_callback), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "toggle timeline", closure);
 }
 
 static void display_intent_callback(GtkWidget *combo, gpointer user_data)
