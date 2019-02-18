@@ -618,6 +618,7 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
 kernel void
 tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
            const int tc_mode, const int unbound_ab, const float low_approximation,
+           /*const int histogram_needed, global int *local_histogram,*/
            read_only image2d_t table_0, read_only image2d_t table_1,
            read_only image2d_t table_2, read_only image2d_t table_3,
            global float *coeffs_0, global float *coeffs_1,
@@ -679,14 +680,42 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
     rgb.x = lookup_unbounded(table_0, rgb.x, coeffs_0);
     rgb.y = lookup_unbounded(table_0, rgb.y, coeffs_0);
     rgb.z = lookup_unbounded(table_0, rgb.z, coeffs_0);
+    pixel.xyz = prophotorgb_to_Lab(rgb).xyz;
+  }
+  else if(tc_mode == 4)
+  {
+    float4 rgb = Lab_to_prophotorgb(pixel);
+/*    if (histogram_needed)
+    { // process local histogram
+      local_histogram[4 * clamp((int)(pixel.x*2.55f), 0, 255)]++;
+      const float rgba[3] = {rgb.x, rgb.y, rgb.z};
+      for(int c=0; c<3; c++)
+      {
+        float4 fake_rgb;
+        fake_rgb.x = fake_rgb.y = fake_rgb.z = rgba[c];
+        float4 lab = prophotorgb_to_Lab(fake_rgb);
+        // histogram_RGB can be put to 255 bins
+        local_histogram[4 * clamp((int)(lab.x*2.55f), 0, 255) + c+1]++;
+      }
+    } */
+    rgb.x = lookup_unbounded(table_0, rgb.x, coeffs_0);
+    rgb.y = lookup_unbounded(table_0, rgb.y, coeffs_0);
+    rgb.z = lookup_unbounded(table_0, rgb.z, coeffs_0);
     rgb.x = lookup_unbounded(table_1, rgb.x, coeffs_1);
     rgb.y = lookup_unbounded(table_2, rgb.y, coeffs_2);
     rgb.z = lookup_unbounded(table_3, rgb.z, coeffs_3);
     pixel.xyz = prophotorgb_to_Lab(rgb).xyz;
   }
-  else if(tc_mode == 4)
+  else if(tc_mode == 5)
   {
     float4 lch = Lab_2_LCH(pixel);
+/*    if (histogram_needed)
+    { // process local histogram
+      // histogram_LCh can be put to 255 bins
+      local_histogram[4 * clamp((int)(lch.x*2.55f), 0, 255)]++;
+      local_histogram[4 * clamp((int)(lch.y*1.40095f), 0, 255) + 1]++;  // 255 / 182.019 = 1.40095
+      local_histogram[4 * clamp((int)(lch.z*255.0f), 0, 255) + 2]++;
+    } */
     lch.x = L;
     lch.y = lch.y * lookup_unbounded(table_1, L_in, coeffs_1) * 2.0f;
     lch.y = lch.y * lookup_unbounded(table_2, lch.z, coeffs_2) * 2.0f;
