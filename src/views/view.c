@@ -1595,9 +1595,8 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   // kill all paths, in case img was not loaded yet, or is blocked:
   cairo_new_path(cr);
 
-  if (draw_colorlabels)
+  if (draw_colorlabels && (darktable.gui->show_overlays || imgsel == imgid || full_preview || zoom == 1))
   {
-    // TODO: make mouse sensitive, just as stars!
     // TODO: cache in image struct!
 
     // TODO: there is a branch that sets the bg == colorlabel
