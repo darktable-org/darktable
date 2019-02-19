@@ -199,6 +199,12 @@ static void clear_button_clicked(GtkButton *button, gpointer user_data)
   update(user_data, FALSE);
 }
 
+static void _append_kv(GList **l, const gchar *key, const gchar *value)
+{
+  *l = g_list_append(*l, (gchar *)key);
+  *l = g_list_append(*l, (gchar *)value);
+}
+
 static void write_metadata(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
@@ -215,20 +221,25 @@ static void write_metadata(dt_lib_module_t *self)
   gchar *creator = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->creator));
   gchar *publisher = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(d->publisher));
 
+  GList *key_value = NULL;
+
   if(title != NULL && (d->multi_title == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->title)) != 0))
-    dt_metadata_set(mouse_over_id, "Xmp.dc.title", title);
+    _append_kv(&key_value, "Xmp.dc.title", title);
   if(description != NULL
      && (d->multi_description == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->description)) != 0))
-    dt_metadata_set(mouse_over_id, "Xmp.dc.description", description);
+    _append_kv(&key_value, "Xmp.dc.description", description);
   if(rights != NULL && (d->multi_rights == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->rights)) != 0))
-    dt_metadata_set(mouse_over_id, "Xmp.dc.rights", rights);
+    _append_kv(&key_value, "Xmp.dc.rights", rights);
   if(creator != NULL
      && (d->multi_creator == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->creator)) != 0))
-    dt_metadata_set(mouse_over_id, "Xmp.dc.creator", creator);
+    _append_kv(&key_value, "Xmp.dc.creator", creator);
   if(publisher != NULL
      && (d->multi_publisher == FALSE || gtk_combo_box_get_active(GTK_COMBO_BOX(d->publisher)) != 0))
-    dt_metadata_set(mouse_over_id, "Xmp.dc.publisher", publisher);
+    _append_kv(&key_value, "Xmp.dc.publisher", publisher);
 
+  dt_metadata_set_list(mouse_over_id, key_value);
+
+  g_list_free(key_value);
   g_free(title);
   g_free(description);
   g_free(rights);
@@ -290,7 +301,7 @@ static void _mouse_over_image_callback(gpointer instace, gpointer user_data)
     write_metadata(user_data);
     gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
   }
-  gtk_widget_queue_draw(GTK_WIDGET(self->widget));
+  update(user_data, FALSE);
 }
 
 void init_key_accels(dt_lib_module_t *self)
@@ -418,7 +429,6 @@ static void add_rights_preset(dt_lib_module_t *self, char *name, char *string)
 
 void init_presets(dt_lib_module_t *self)
 {
-
   // <title>\0<description>\0<rights>\0<creator>\0<publisher>
 
   add_rights_preset(self, _("CC BY"), _("Creative Commons Attribution (CC BY)"));
@@ -502,11 +512,17 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   if(size != title_len + description_len + rights_len + creator_len + publisher_len)
     return 1;
 
-  if(title[0] != '\0') dt_metadata_set(-1, "Xmp.dc.title", title);
-  if(description[0] != '\0') dt_metadata_set(-1, "Xmp.dc.description", description);
-  if(rights[0] != '\0') dt_metadata_set(-1, "Xmp.dc.rights", rights);
-  if(creator[0] != '\0') dt_metadata_set(-1, "Xmp.dc.creator", creator);
-  if(publisher[0] != '\0') dt_metadata_set(-1, "Xmp.dc.publisher", publisher);
+  GList *key_value = NULL;
+
+  if(title[0] != '\0') _append_kv(&key_value, "Xmp.dc.title", title);
+  if(description[0] != '\0') _append_kv(&key_value, "Xmp.dc.description", description);
+  if(rights[0] != '\0') _append_kv(&key_value, "Xmp.dc.rights", rights);
+  if(creator[0] != '\0') _append_kv(&key_value, "Xmp.dc.creator", creator);
+  if(publisher[0] != '\0') _append_kv(&key_value, "Xmp.dc.publisher", publisher);
+
+  dt_metadata_set_list(-1, key_value);
+
+  g_list_free(key_value);
 
   dt_image_synch_xmp(-1);
   update(self, FALSE);
