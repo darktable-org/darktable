@@ -19,17 +19,55 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
+#include "common/ratings.h"
+#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "gui/gtk.h"
 
+typedef struct dt_undo_ratings_t
+{
+  int imgid;
+  int before_rating;
+  int after_rating;
+} dt_undo_ratings_t;
 
-void dt_ratings_apply_to_image(int imgid, int rating)
+static void _ratings_apply_to_image(int imgid, int rating, gboolean undo);
+
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data, dt_undo_action_t action)
+{
+  if(type == DT_UNDO_RATINGS)
+  {
+    dt_undo_ratings_t *ratings = (dt_undo_ratings_t *)data;
+
+    if(action == DT_ACTION_UNDO)
+      _ratings_apply_to_image(ratings->imgid, ratings->before_rating, FALSE);
+    else
+      _ratings_apply_to_image(ratings->imgid, ratings->after_rating, FALSE);
+  }
+}
+
+static void _ratings_undo_data_free(gpointer data)
+{
+  free(data);
+}
+
+static void _ratings_apply_to_image(int imgid, int rating, gboolean undo)
 {
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
   if(image)
   {
+    if(undo)
+    {
+      dt_undo_ratings_t *ratings = malloc(sizeof(dt_undo_ratings_t));
+      ratings->imgid = imgid;
+      ratings->before_rating = 0x7 & image->flags;
+      ratings->after_rating = rating;
+      dt_undo_record(darktable.undo, NULL, DT_UNDO_RATINGS, (dt_undo_data_t *)ratings,
+                     _pop_undo, _ratings_undo_data_free);
+    }
+
     image->flags = (image->flags & ~0x7) | (0x7 & rating);
     // synch through:
     dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
@@ -40,6 +78,11 @@ void dt_ratings_apply_to_image(int imgid, int rating)
   {
     dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
   }
+}
+
+void dt_ratings_apply_to_image(int imgid, int rating)
+{
+  _ratings_apply_to_image(imgid, rating, TRUE);
 }
 
 void dt_ratings_apply_to_image_or_group(int imgid, int rating)
@@ -61,6 +104,8 @@ void dt_ratings_apply_to_image_or_group(int imgid, int rating)
 
     dt_image_cache_read_release(darktable.image_cache, image);
 
+    dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
+
     // If we're clicking on a grouped image, apply the rating to all images in the group.
     if(darktable.gui && darktable.gui->grouping && darktable.gui->expanded_group_id != img_group_id)
     {
@@ -69,6 +114,7 @@ void dt_ratings_apply_to_image_or_group(int imgid, int rating)
                                   "SELECT id FROM main.images WHERE group_id = ?1", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img_group_id);
       int count = 0;
+
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
         dt_ratings_apply_to_image(sqlite3_column_int(stmt, 0), rating);
@@ -89,6 +135,8 @@ void dt_ratings_apply_to_image_or_group(int imgid, int rating)
     {
       dt_ratings_apply_to_image(imgid, rating);
     }
+
+    dt_undo_end_group(darktable.undo);
   }
 }
 
@@ -112,6 +160,7 @@ void dt_ratings_apply_to_selection(int rating)
     /* for each selected image update rating */
     sqlite3_stmt *stmt;
     gboolean first = TRUE;
+    dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
                                 NULL);
     while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -134,6 +183,7 @@ void dt_ratings_apply_to_selection(int rating)
       dt_ratings_apply_to_image(sqlite3_column_int(stmt, 0), rating);
     }
     sqlite3_finalize(stmt);
+    dt_undo_end_group(darktable.undo);
 
     /* redraw view */
     /* dt_control_queue_redraw_center() */
