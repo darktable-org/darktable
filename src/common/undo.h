@@ -32,6 +32,12 @@ typedef enum dt_undo_type_t
   DT_UNDO_ALL = DT_UNDO_GEOTAG | DT_UNDO_HISTORY | DT_UNDO_MASK
 } dt_undo_type_t;
 
+typedef enum dt_undo_action_t
+{
+  DT_ACTION_UNDO,
+  DT_ACTION_REDO
+} dt_undo_action_t;
+
 typedef void *dt_undo_data_t;
 
 typedef struct dt_undo_t
@@ -51,7 +57,7 @@ void dt_undo_end_group(dt_undo_t *self);
 
 // record a change that will be insered into the undo list
 void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data,
-                    void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item),
+                    void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item, dt_undo_action_t action),
                     void (*free_data)(gpointer data));
 
 //  undo an element which correspond to filter. filter here is expected to be

@@ -31,7 +31,7 @@ typedef struct dt_undo_item_t
   dt_undo_data_t *data;
   double ts;
   gboolean is_group;
-  void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data);
+  void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data, dt_undo_action_t action);
   void (*free_data)(gpointer data);
 } dt_undo_item_t;
 
@@ -66,7 +66,7 @@ static void _free_undo_data(void *p)
 
 static void _undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data,
                          gboolean is_group,
-                         void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item),
+                         void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item, dt_undo_action_t action),
                          void (*free_data)(gpointer data))
 {
   if(!self) return;
@@ -113,7 +113,7 @@ void dt_undo_end_group(dt_undo_t *self)
 }
 
 void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data,
-                    void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item),
+                    void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item, dt_undo_action_t action),
                     void (*free_data)(gpointer data))
 {
   _undo_record(self, user_data, type, data, FALSE, undo, free_data);
@@ -135,31 +135,62 @@ void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
 
     if(item->type & filter)
     {
-      const double first_item_ts = item->ts;
-
-      //  when found, redo all items of the same type and in the same time period
-
-      do
+      if(item->is_group)
       {
+        gboolean is_group = FALSE;
+
         GList *next = g_list_next(l);
 
-        //  first remove element from _redo_list
+        //  first move the group item into the undo list
         self->redo_list = g_list_remove(self->redo_list, item);
-
-        //  callback with redo data
-        item->undo(item->user_data, item->type, item->data);
-
-        //  add old position back into the undo list
         self->undo_list = g_list_prepend(self->undo_list, item);
 
-        l = next;
-        if (l) item = (dt_undo_item_t *)l->data;
-      } while (l && (item->type & filter) && (item->ts - first_item_ts < MAX_TIME_PERIOD));
+        while((l = next) && !is_group)
+        {
+          item = (dt_undo_item_t *)l->data;
+          next = g_list_next(l);
+
+          //  first remove element from _redo_list
+          self->redo_list = g_list_remove(self->redo_list, item);
+
+          //  callback with redo data
+          if(item->is_group)
+            is_group = TRUE;
+          else
+            item->undo(item->user_data, item->type, item->data, DT_ACTION_REDO);
+
+          //  add old position back into the undo list
+          self->undo_list = g_list_prepend(self->undo_list, item);
+        }
+      }
+      else
+      {
+        const double first_item_ts = item->ts;
+
+        //  when found, redo all items of the same type and in the same time period
+
+        do
+        {
+          GList *next = g_list_next(l);
+
+          //  first remove element from _redo_list
+          self->redo_list = g_list_remove(self->redo_list, item);
+
+          //  callback with redo data
+          item->undo(item->user_data, item->type, item->data, DT_ACTION_REDO);
+
+          //  add old position back into the undo list
+          self->undo_list = g_list_prepend(self->undo_list, item);
+
+          l = next;
+          if (l) item = (dt_undo_item_t *)l->data;
+        } while (l && (item->type & filter) && (item->ts - first_item_ts < MAX_TIME_PERIOD));
+      }
 
       break;
     }
     l = g_list_next(l);
-  };
+  }
   dt_pthread_mutex_unlock(&self->mutex);
 }
 
@@ -198,7 +229,7 @@ void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
           if(item->is_group)
             break;
           else
-            item->undo(item->user_data, item->type, item->data);
+            item->undo(item->user_data, item->type, item->data, DT_ACTION_UNDO);
 
           l = next;
         }
@@ -220,7 +251,7 @@ void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
           if(item->is_group) break;
 
           //  undo item
-          item->undo(item->user_data, item->type, item->data);
+          item->undo(item->user_data, item->type, item->data, DT_ACTION_UNDO);
 
           //  if we are on the same time frame, just continue
           if ((item->type & filter) && (first_item_ts - item->ts < MAX_TIME_PERIOD))
