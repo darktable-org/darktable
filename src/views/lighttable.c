@@ -4090,6 +4090,7 @@ void gui_init(dt_view_t *self)
                                                      NULL);
   gtk_widget_set_tooltip_text(profile_button, _("set display profile"));
   dt_view_manager_module_toolbox_add(darktable.view_manager, profile_button, DT_VIEW_LIGHTTABLE);
+  gtk_widget_set_name(GTK_WIDGET(profile_button), "footer-toolbar");
 
   // and the popup window
   const int panel_width = dt_conf_get_int("panel_width");

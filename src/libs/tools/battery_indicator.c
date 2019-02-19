@@ -67,6 +67,7 @@ void gui_init(dt_lib_module_t *self)
   d->fill = _get_fill();
 
   self->widget = d->icon = dtgtk_icon_new(_paint_battery, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, d);
+  gtk_widget_set_name(GTK_WIDGET(self->widget), "header-toolbar");
   gtk_widget_set_tooltip_text(d->icon, _("battery indicator"));
 
   g_timeout_add_seconds(60, _check_fill, d); // TODO: is checking the battery status once per minute fine?
