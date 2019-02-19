@@ -18,19 +18,128 @@
 
 #include "common/metadata.h"
 #include "common/debug.h"
+#include "common/undo.h"
+#include "control/signal.h"
 
 #include <stdlib.h>
 
-static void dt_metadata_set_xmp(int id, const char *key, const char *value)
+typedef struct dt_undo_metadata_t
 {
+  int imgid;
+  GList *before;      // list of key/value before
+  gint keyid;         // new value (key, value)
+  gchar *value;
+} dt_undo_metadata_t;
+
+static void _metadata_set_xmp(int id, const gint keyid, const char *value, gboolean undo_actif);
+
+static void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t *data, const dt_undo_action_t action)
+{
+  if(type == DT_UNDO_METADATA)
+  {
+    GList *list = (GList *)data;
+
+    while(list)
+    {
+      dt_undo_metadata_t *metadata = (dt_undo_metadata_t *)list->data;
+
+      GList *tag_list = metadata->before;
+
+      // remove from meta_data
+      dt_metadata_clear(metadata->imgid);
+
+      // iterate over tag_list and attach tagid to imgid
+
+      while(tag_list)
+      {
+        const gchar *key = (gchar *)tag_list->data;
+        const gint keyid = atoi(key);
+        tag_list = g_list_next(tag_list);
+        const gchar *value = (gchar *)tag_list->data;
+        tag_list = g_list_next(tag_list);
+        _metadata_set_xmp(metadata->imgid, keyid, value, FALSE);
+      }
+
+      if(action == DT_ACTION_REDO)
+      {
+        _metadata_set_xmp(metadata->imgid, metadata->keyid, metadata->value, FALSE);
+      }
+
+      list = g_list_next(list);
+    }
+
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+  }
+}
+
+static dt_undo_metadata_t *_get_metadata(const int imgid, const gint keyid, const gchar *value)
+{
+  dt_undo_metadata_t *result = (dt_undo_metadata_t *)malloc(sizeof(dt_undo_metadata_t));
+  result->imgid  = imgid;
+  result->before = NULL;
+  result->keyid  = keyid;
+  result->value  = g_strdup(value);
+
   sqlite3_stmt *stmt;
 
-  int keyid = dt_metadata_get_keyid(key);
-  if(keyid == -1) // unknown key
-    return;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT key, value FROM main.meta_data WHERE id=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const gchar *ckey = dt_util_dstrcat(NULL, "%d", sqlite3_column_int(stmt, 0));
+    const gchar *cvalue = g_strdup((const char *)sqlite3_column_text(stmt, 1));
+    result->before = g_list_append(result->before, (gpointer)ckey);
+    result->before = g_list_append(result->before, (gpointer)cvalue);
+  }
+  sqlite3_finalize(stmt);
+
+  return result;
+}
+
+GList *_get_metadata_selection(const gint keyid, const gchar *value)
+{
+  GList *result = NULL;
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt, NULL);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int imgid = sqlite3_column_int(stmt, 0);
+    result = g_list_append(result, _get_metadata(imgid, keyid, value));
+  }
+
+  sqlite3_finalize(stmt);
+
+  return result;
+}
+
+static void _undo_metadata_free(gpointer data)
+{
+  dt_undo_metadata_t *metadata = (dt_undo_metadata_t *)data;
+  g_list_free_full(metadata->before, g_free);
+  g_free(metadata->value);
+}
+
+static void _metadata_undo_data_free(gpointer data)
+{
+  GList *l = (GList *)data;
+  g_list_free_full(l, _undo_metadata_free);
+}
+
+static void _metadata_set_xmp(const int id, const gint keyid, const char *value, gboolean undo_actif)
+{
+  sqlite3_stmt *stmt;
+  GList *undo = NULL;
+
+  if(undo_actif) dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);
 
   if(id == -1)
   {
+    if(undo_actif) undo = _get_metadata_selection(keyid, value);
+
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "DELETE FROM main.meta_data WHERE id IN (SELECT imgid FROM main.selected_images) "
                                 "AND key = ?1",
@@ -53,6 +162,8 @@ static void dt_metadata_set_xmp(int id, const char *key, const char *value)
   }
   else
   {
+    if(undo_actif) undo = g_list_append(undo, _get_metadata(id, keyid, value));
+
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "DELETE FROM main.meta_data WHERE id = ?1 AND key = ?2", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
@@ -72,6 +183,21 @@ static void dt_metadata_set_xmp(int id, const char *key, const char *value)
       sqlite3_finalize(stmt);
     }
   }
+
+  if(undo_actif)
+  {
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, (dt_undo_data_t *)undo, &_pop_undo, _metadata_undo_data_free);
+    dt_undo_end_group(darktable.undo);
+  }
+}
+
+static void dt_metadata_set_xmp(int id, const char *key, const char *value)
+{
+  int keyid = dt_metadata_get_keyid(key);
+  if(keyid == -1) // unknown key
+    return;
+
+  _metadata_set_xmp(id, keyid, value, TRUE);
 }
 
 static void dt_metadata_set_exif(int id, const char *key, const char *value)
@@ -412,6 +538,24 @@ void dt_metadata_set(int id, const char *key, const char *value)
     dt_metadata_set_exif(id, key, c);
 
   g_free(v);
+}
+
+void dt_metadata_set_list(int id, GList *key_value)
+{
+  dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);
+
+  GList *kv = key_value;
+
+  while(kv)
+  {
+    const gchar *key = (const gchar *)kv->data;
+    kv = g_list_next(kv);
+    const gchar *value = (const gchar *)kv->data;
+    kv = g_list_next(kv);
+    dt_metadata_set(id, key, value);
+  }
+
+  dt_undo_end_group(darktable.undo);
 }
 
 GList *dt_metadata_get(int id, const char *key, uint32_t *count)
