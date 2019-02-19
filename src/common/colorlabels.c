@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/image_cache.h"
+#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "gui/gtk.h"
@@ -29,6 +30,89 @@ const char *dt_colorlabels_name[] = {
   "red", "yellow", "green", "blue", "purple",
   NULL // termination
 };
+
+typedef struct dt_undo_colorlabels_t
+{
+  int imgid;
+  uint8_t before;
+  uint8_t after;
+} dt_undo_colorlabels_t;
+
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data, dt_undo_action_t action)
+{
+  if(type == DT_UNDO_COLORLABELS)
+  {
+    GList *list = (GList *)data;
+
+    while(list)
+    {
+      dt_undo_colorlabels_t *clabels = (dt_undo_colorlabels_t *)list->data;
+      uint8_t labels;
+      dt_colorlabels_remove_labels(clabels->imgid);
+
+      if(action == DT_ACTION_UNDO)
+        labels = clabels->before;
+      else
+        labels = clabels->after;
+
+      for(int color=0; color<5; color++)
+        if(labels & (1<<color))
+          dt_colorlabels_set_label(clabels->imgid, color);
+
+      list = g_list_next(list);
+    }
+  }
+}
+
+static dt_undo_colorlabels_t *_get_labels(int imgid, uint8_t label, gboolean add)
+{
+  dt_undo_colorlabels_t *result = (dt_undo_colorlabels_t *)malloc(sizeof(dt_undo_colorlabels_t));
+  result->before = 0;
+  result->imgid = imgid;
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT color FROM main.color_labels WHERE imgid=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int color = sqlite3_column_int(stmt, 0);
+    result->before |= (1 << color);
+  }
+  sqlite3_finalize(stmt);
+
+  if(add)
+    result->after = result->before | label;
+  else
+    result->after = result->before & (~label);
+
+  return result;
+}
+
+GList *_get_labels_selection(uint8_t label, gboolean add)
+{
+  GList *result = NULL;
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt, NULL);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int imgid = sqlite3_column_int(stmt, 0);
+    result = g_list_append(result, _get_labels(imgid, label, add));
+  }
+
+  sqlite3_finalize(stmt);
+
+  return result;
+}
+
+static void _colorlabels_undo_data_free(gpointer data)
+{
+  GList *l = (GList *)data;
+  g_list_free(l);
+}
 
 void dt_colorlabels_remove_labels_selection()
 {
@@ -73,6 +157,10 @@ void dt_colorlabels_toggle_label_selection(const int color)
 {
   sqlite3_stmt *stmt, *stmt2;
 
+  GList *undo = NULL;
+
+  dt_undo_start_group(darktable.undo, DT_UNDO_COLORLABELS);
+
   // check if all images in selection have that color label, i.e. try to get those which do not have the label
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images WHERE imgid "
                                                              "NOT IN (SELECT a.imgid FROM main.selected_images AS "
@@ -82,6 +170,7 @@ void dt_colorlabels_toggle_label_selection(const int color)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, color);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
+    undo = _get_labels_selection(1 << color, TRUE);
     // none or only part of images have that color label, so label them all
     DT_DEBUG_SQLITE3_PREPARE_V2(
         dt_database_get(darktable.db),
@@ -93,6 +182,7 @@ void dt_colorlabels_toggle_label_selection(const int color)
   }
   else
   {
+    undo = _get_labels_selection(1 << color, FALSE);
     // none of the selected images without that color label, so delete them all
     DT_DEBUG_SQLITE3_PREPARE_V2(
         dt_database_get(darktable.db),
@@ -104,6 +194,9 @@ void dt_colorlabels_toggle_label_selection(const int color)
   }
   sqlite3_finalize(stmt);
 
+  dt_undo_record(darktable.undo, NULL, DT_UNDO_COLORLABELS, (dt_undo_data_t *)undo, &_pop_undo, _colorlabels_undo_data_free);
+  dt_undo_end_group(darktable.undo);
+
   dt_collection_hint_message(darktable.collection);
 }
 
@@ -111,6 +204,10 @@ void dt_colorlabels_toggle_label(const int imgid, const int color)
 {
   if(imgid <= 0) return;
   sqlite3_stmt *stmt, *stmt2;
+  GList *undo = NULL;
+
+  dt_undo_start_group(darktable.undo, DT_UNDO_COLORLABELS);
+
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT * FROM main.color_labels WHERE imgid=?1 AND color=?2 LIMIT 1",
                               -1, &stmt, NULL);
@@ -118,6 +215,7 @@ void dt_colorlabels_toggle_label(const int imgid, const int color)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, color);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
+    undo = g_list_append(undo, _get_labels(imgid, 1 << color, FALSE));
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "DELETE FROM main.color_labels WHERE imgid=?1 AND color=?2", -1, &stmt2, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, imgid);
@@ -127,6 +225,7 @@ void dt_colorlabels_toggle_label(const int imgid, const int color)
   }
   else
   {
+    undo = g_list_append(undo, _get_labels(imgid, 1 << color, TRUE));
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "INSERT INTO main.color_labels (imgid, color) VALUES (?1, ?2)", -1, &stmt2, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, imgid);
@@ -135,6 +234,9 @@ void dt_colorlabels_toggle_label(const int imgid, const int color)
     sqlite3_finalize(stmt2);
   }
   sqlite3_finalize(stmt);
+
+  dt_undo_record(darktable.undo, NULL, DT_UNDO_COLORLABELS, (dt_undo_data_t *)undo, &_pop_undo, _colorlabels_undo_data_free);
+  dt_undo_end_group(darktable.undo);
 
   dt_collection_hint_message(darktable.collection);
 }
