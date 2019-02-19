@@ -881,7 +881,9 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
       mi = gtk_menu_item_new_with_label("");
       if(isdefault)
       {
-        markup = g_markup_printf_escaped("<span weight=\"bold\">%s %s</span>", name, _("(default)"));
+        // allow word order to be changed in translations:
+        markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>",
+                                         g_strdup_printf(_("%s (default)"), name));
       }
       else
         markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>", name);
@@ -894,7 +896,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
       {
         char *markup;
         mi = gtk_menu_item_new_with_label("");
-        markup = g_markup_printf_escaped("%s %s", name, _("(default)"));
+        markup = g_markup_printf_escaped(_("%s (default)"), name);
         gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
         g_free(markup);
       }
@@ -945,8 +947,10 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
 
       if(darktable.gui->last_preset && found)
       {
-        char *markup = g_markup_printf_escaped(_("update preset <span weight=\"bold\">%s</span>"),
-                                               darktable.gui->last_preset);
+        // allow word order to be changed in translations:
+        char *markup = g_strdup_printf(_("update preset %s"),
+                                       g_markup_printf_escaped("<span weight=\"bold\">%s</span>",
+                                                               darktable.gui->last_preset));
         mi = gtk_menu_item_new_with_label("");
         gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
         g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(darktable.gui->last_preset), g_free);
