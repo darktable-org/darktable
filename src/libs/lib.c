@@ -503,8 +503,10 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
 
     if(darktable.gui->last_preset && found)
     {
-      char *markup = g_markup_printf_escaped(_("update preset <span weight=\"bold\">%s</span>"),
-                                             darktable.gui->last_preset);
+      // allow word order to be changed in translations:
+      char *markup = g_strdup_printf(_("update preset %s"),
+                                     g_markup_printf_escaped("<span weight=\"bold\">%s</span>",
+                                                             darktable.gui->last_preset));
       mi = gtk_menu_item_new_with_label("");
       gtk_widget_set_sensitive(mi, minfo->params_size > 0);
       gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
