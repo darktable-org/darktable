@@ -48,6 +48,7 @@ typedef struct dt_undo_t
 {
   GList *undo_list, *redo_list;
   dt_undo_type_t group;
+  int group_indent;
   dt_pthread_mutex_t mutex;
   gboolean disable_next;
 } dt_undo_t;
