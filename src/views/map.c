@@ -1276,10 +1276,12 @@ static void _view_map_add_image_to_map(dt_view_t *self, int imgid, gint x, gint 
 
 static void _view_map_record_current_location(dt_view_t *self, int imgid)
 {
-  float longitude, latitude, elevation;
-  _get_image_location(imgid, &longitude, &latitude, &elevation);
   if (!_in_undo(imgid))
+  {
+    float longitude, latitude, elevation;
+    _get_image_location(imgid, &longitude, &latitude, &elevation);
     _push_position(self, imgid, longitude, latitude, elevation);
+  }
 }
 
 static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
