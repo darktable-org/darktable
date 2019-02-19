@@ -27,6 +27,7 @@
 #include "common/image_cache.h"
 #include "common/ratings.h"
 #include "common/selection.h"
+#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -2206,6 +2207,9 @@ static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, g
 
 void enter(dt_view_t *self)
 {
+  // clean the undo list
+  dt_undo_clear(darktable.undo, DT_UNDO_LIGHTTABLE);
+
   // show/hide filmstrip when entering the view
   dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
   if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE)
@@ -2974,6 +2978,34 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "sticky preview"), 0, 0);
   dt_accel_register_view(self, NC_("accel", "sticky preview with focus detection"), 0, 0);
   dt_accel_register_view(self, NC_("accel", "exit sticky preview"), 0, 0);
+
+  // undo/redo
+  dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "redo"), GDK_KEY_y, GDK_CONTROL_MASK);
+}
+
+static gboolean _lighttable_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                          GdkModifierType modifier, gpointer data)
+{
+  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  dt_undo_do_undo(darktable.undo, DT_UNDO_LIGHTTABLE);
+
+  lib->force_expose_all = TRUE;
+  return TRUE;
+}
+
+static gboolean _lighttable_redo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                          GdkModifierType modifier, gpointer data)
+{
+  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  dt_undo_do_redo(darktable.undo, DT_UNDO_LIGHTTABLE);
+
+  lib->force_expose_all = TRUE;
+  return TRUE;
 }
 
 void connect_key_accels(dt_view_t *self)
@@ -3025,6 +3057,12 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "select single image", closure);
   closure = g_cclosure_new(G_CALLBACK(realign_key_accel_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "realign images to grid", closure);
+
+  // undo/redo
+  closure = g_cclosure_new(G_CALLBACK(_lighttable_undo_callback), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "undo", closure);
+  closure = g_cclosure_new(G_CALLBACK(_lighttable_redo_callback), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "redo", closure);
 }
 
 static void display_intent_callback(GtkWidget *combo, gpointer user_data)
