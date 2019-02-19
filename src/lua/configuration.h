@@ -38,7 +38,7 @@
 /* backward compatible API change */
 #define LUA_API_VERSION_MINOR 0
 /* bugfixes that should not change anything to the API */
-#define LUA_API_VERSION_PATCH 0
+#define LUA_API_VERSION_PATCH 1
 /* suffix for unstable version */
 #define LUA_API_VERSION_SUFFIX ""
 
