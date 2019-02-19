@@ -77,6 +77,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* create buttons */
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(GTK_WIDGET(self->widget), "footer-toolbar");
   GtkWidget *button;
   for(int k = 0; k < 6; k++)
   {

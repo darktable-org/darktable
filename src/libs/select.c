@@ -92,6 +92,8 @@ void gui_init(dt_lib_module_t *self)
   self->data = d;
   self->widget = gtk_grid_new();
   dt_gui_add_help_link(self->widget, "select.html#select_usage");
+  gtk_widget_set_name(GTK_WIDGET(self->widget), "header-toolbar");
+
   GtkGrid *grid = GTK_GRID(self->widget);
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));

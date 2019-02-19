@@ -1286,7 +1286,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   widget = gtk_drawing_area_new();
   gui->widgets.top_border = widget;
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
-  gtk_widget_set_size_request(widget, -1, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_size_request(widget, -1, DT_PIXEL_APPLY_DPI(5));
   gtk_widget_set_app_paintable(widget, TRUE);
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
@@ -1300,7 +1300,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   widget = gtk_drawing_area_new();
   gui->widgets.bottom_border = widget;
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
-  gtk_widget_set_size_request(widget, -1, DT_PIXEL_APPLY_DPI(8));
+  gtk_widget_set_size_request(widget, -1, DT_PIXEL_APPLY_DPI(5));
   gtk_widget_set_app_paintable(widget, TRUE);
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
@@ -1345,7 +1345,7 @@ static void init_main_table(GtkWidget *container)
   widget = gtk_drawing_area_new();
   darktable.gui->widgets.left_border = widget;
 
-  gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(8), -1);
+  gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(5), -1);
   gtk_widget_set_app_paintable(widget, TRUE);
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
@@ -1357,7 +1357,7 @@ static void init_main_table(GtkWidget *container)
   widget = gtk_drawing_area_new();
   darktable.gui->widgets.right_border = widget;
 
-  gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(8), -1);
+  gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(5), -1);
   gtk_widget_set_app_paintable(widget, TRUE);
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
