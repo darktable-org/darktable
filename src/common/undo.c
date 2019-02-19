@@ -43,6 +43,7 @@ dt_undo_t *dt_undo_init(void)
   udata->disable_next = FALSE;
   dt_pthread_mutex_init(&udata->mutex, NULL);
   udata->group = 0;
+  udata->group_indent = 0;
   return udata;
 }
 
@@ -102,14 +103,25 @@ static void _undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t typ
 
 void dt_undo_start_group(dt_undo_t *self, dt_undo_type_t type)
 {
-  self->group = type;
-  _undo_record(self, NULL, type, NULL, TRUE, NULL, NULL);
+  if(self->group == 0)
+  {
+    self->group = type;
+    self->group_indent = 1;
+    _undo_record(self, NULL, type, NULL, TRUE, NULL, NULL);
+  }
+  else
+    self->group_indent++;
 }
 
 void dt_undo_end_group(dt_undo_t *self)
 {
-  _undo_record(self, NULL, self->group, NULL, TRUE, NULL, NULL);
-  self->group = 0;
+  assert(self->group_indent>0);
+  self->group_indent--;
+  if(self->group_indent == 0)
+  {
+    _undo_record(self, NULL, self->group, NULL, TRUE, NULL, NULL);
+    self->group = 0;
+  }
 }
 
 void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data,
