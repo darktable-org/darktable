@@ -75,6 +75,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* the toolbar container */
   d->container = self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(GTK_WIDGET(self->widget), "footer-toolbar");
 
   /* setup proxy */
   darktable.view_manager->proxy.view_toolbox.module = self;

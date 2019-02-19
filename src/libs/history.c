@@ -165,6 +165,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   /* create toggle button */
   widget = gtk_toggle_button_new_with_label(numlabel);
   gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_START);
+  gtk_widget_set_name(GTK_WIDGET(widget), "history-button");
   g_object_set_data(G_OBJECT(widget), "history_number", GINT_TO_POINTER(num + 1));
   g_object_set_data(G_OBJECT(widget), "label", (gpointer)label);
   if(selected) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);

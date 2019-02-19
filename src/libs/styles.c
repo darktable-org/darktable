@@ -390,6 +390,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   d->edit_button = NULL;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_widget_set_name(GTK_WIDGET(self->widget), "footer-toolbar");
   dt_gui_add_help_link(self->widget, "styles.html#styles_usage");
   GtkWidget *w;
   GtkWidget *scrolled;

@@ -254,21 +254,35 @@ box *
 
 /* Side panels */
 
+/* Remember, in gui/gtk.c, outer borders (active areas used to collapse panels)
+*  are defined to 5 px × DPI. We cheat by setting inner borders/spacing here to 5 px as well
+*/
+
 #left
 {
-  padding-right: 8pt;
+  padding-right: 5px;
 }
 
 #right
 {
-  padding-left: 8pt;
+  padding-left: 5px;
+}
+
+#header-toolbar
+{
+  padding-bottom: 5px;
+}
+
+#footer-toolbar
+{
+  padding-top: 5px;
 }
 
 #left scrolledwindow,
 #right scrolledwindow
 {
   margin: 0;
-  padding: 4pt 0;
+  padding: 0 0 4pt 0;
 }
 
 #lib-plugin-ui scrolledwindow,
@@ -277,6 +291,8 @@ box *
   margin: 0;
   padding: 0;
 }
+
+
 
 /* Frame around plugin boxes */
 
@@ -290,9 +306,10 @@ box *
 }
 
 #iop-plugin-ui-main,
-#lib-plugin-ui-main
+#lib-plugin-ui-main,
+#blending-box
 {
-  padding: 8pt;
+  padding: 7pt;
 }
 
 #module-header
@@ -300,10 +317,6 @@ box *
  padding: 4pt 0 2pt 0;
 }
 
-#blending-box
-{
-  padding: 8pt;
-}
 
 /* Buttons */
 
@@ -820,6 +833,12 @@ undershoot.right
   min-height: 1em;
   min-width: 7em;
   margin-right: 1em;
+}
+
+/* Special modules */
+#navigation-module
+{
+  background-color: @graph_bg;
 }
 
 

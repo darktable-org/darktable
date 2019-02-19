@@ -99,7 +99,8 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_viewswitcher_t *d = (dt_lib_viewswitcher_t *)g_malloc0(sizeof(dt_lib_viewswitcher_t));
   self->data = (void *)d;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5));
+  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(GTK_WIDGET(self->widget), "header-toolbar");
   d->dropdown = NULL;
   GtkTreeIter tree_iter;
   GtkListStore *model = NULL;
