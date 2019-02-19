@@ -24,6 +24,11 @@
 
 /** Set metadata for a specific image, or all selected for id == -1. */
 void dt_metadata_set(int id, const char *key, const char *value);
+
+/** Set metadata for a specific image, or all selected for id == -1. */
+/** list is a set of key, value */
+void dt_metadata_set_list(int id, GList *key_value);
+
 /** Get metadata for a specific image, or all selected for id == -1.
     For keys which return a string, the caller has to make sure that it
     is freed after usage. */
