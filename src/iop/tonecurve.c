@@ -130,6 +130,7 @@ typedef struct dt_iop_tonecurve_params_t
   int tonecurve_tc_mode;
   int tonecurve_preset;
   int tonecurve_unbound_ab;
+  int rgb_norm;
 } dt_iop_tonecurve_params_t;
 
 typedef struct dt_iop_tonecurve_gui_data_t
@@ -154,6 +155,7 @@ typedef struct dt_iop_tonecurve_gui_data_t
   float loglogscale;
   int scale_mode;
   GtkWidget *logbase;
+  GtkWidget *rgb_norm;
   gboolean got_focus;
   // local histogram
   uint32_t local_histogram[DT_IOP_TONECURVE_BINS * DT_IOP_TONECURVE_MAX_CH];
@@ -170,6 +172,7 @@ typedef struct dt_iop_tonecurve_data_t
   float unbounded_coeffs[DT_IOP_TONECURVE_MAX_CH][6];   // approximation coef for extrapolation
   int tc_mode;
   int unbound_ab;
+  int rgb_norm;
 } dt_iop_tonecurve_data_t;
 
 static const struct
@@ -284,6 +287,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->tonecurve_tc_mode = DT_S_SCALE_AUTOMATIC_LAB;
     n->tonecurve_preset = o->tonecurve_preset;
     n->tonecurve_unbound_ab = 0;
+    n->rgb_norm = 0;
     return 0;
   }
   else if(old_version == 2 && new_version == 5)
@@ -302,6 +306,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->tonecurve_tc_mode = o->tonecurve_autoscale_ab;
     n->tonecurve_preset = o->tonecurve_preset;
     n->tonecurve_unbound_ab = 0;
+    n->rgb_norm = 0;
     return 0;
   }
   else if(old_version == 4 && new_version == 5)
@@ -315,10 +320,61 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->tonecurve_tc_mode = o->tonecurve_autoscale_ab;
     n->tonecurve_preset = o->tonecurve_preset;
     n->tonecurve_unbound_ab = 0;
+    n->rgb_norm = 0;
     return 0;
   }
 
   return 1;
+}
+
+typedef enum dt_rgb_norm_t //
+{
+  DT_RGB_NORM_L = 1,
+  DT_RGB_NORM_L1 = 2,
+  DT_RGB_NORM_L2 = 3,
+  DT_RGB_NORM_LN = 4,
+  DT_RGB_NORM_BP = 5,
+  DT_RGB_NORM_WYP = 6,
+} dt_rgb_norm_t;
+
+float dt_rgb_norm_vect(float rgb[4], int rgb_norm, float norm_exp)
+{
+// RGB values are in[0,1]
+// ensure (norm >= 0.0f) in GUI controls for better perf
+
+// no RGB value shall be < 0 until we discover negative light energy
+// because of this, we can avoid to fabsf(RGB) and speed thins up
+  if(rgb[0] < 0.0f || rgb[1] < 0.0f || rgb[2] < 0.0f) return -1;
+
+  switch(rgb_norm)
+  {
+  case DT_RGB_NORM_L:  // norm L infinite = max
+    return fmaxf(rgb[0], fmaxf(rgb[1], rgb[2]));
+  case DT_RGB_NORM_L1:  // norm L1 - bypass the powf for performance
+    return (rgb[0] + rgb[1] + rgb[2]) / 3;
+  case DT_RGB_NORM_L2:  // norm L2 = euclidian norm - bypass the powf for performance
+    return sqrtf((rgb[0] * rgb[0] + rgb[1] * rgb[1] + rgb[2] * rgb[2]) / 3);
+  case DT_RGB_NORM_LN:  // general Lp norm (pseudo-norm if p < 1) - slow variant
+    return powf((powf(rgb[0], norm_exp) + powf(rgb[1], norm_exp) + powf(rgb[2], norm_exp)) / 3, 1.0f/norm_exp);
+  case DT_RGB_NORM_BP:  // basic power norm
+    {
+      float R, G, B;
+      R = rgb[0] * rgb[0];
+      G = rgb[1] * rgb[1];
+      B = rgb[2] * rgb[2];
+      return (rgb[0] * R + rgb[1] * G + rgb[2] * B) / (R + G + B);
+    }
+  case DT_RGB_NORM_WYP: // weighted yellow power norm
+    {
+      float R, G, B;
+      R = 1.22f * rgb[0] * 1.22f * rgb[0];
+      G = 1.20f * rgb[1] * 1.20f * rgb[1];
+      B = 0.58f * rgb[2] * 0.58f * rgb[2];
+      R *= R; G *= G; B *= B;
+      return 0.83743219f * (1.22f * rgb[0] * R + 1.20f * rgb[1] * G + 0.58 * rgb[2] * B) / (R + G + B);
+    }
+  default: {return -1;}
+  }
 }
 
 typedef void((*worker_t)(const float *pixel, uint32_t *histogram));
@@ -411,6 +467,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int tc_mode = d->tc_mode;
   const int unbound_ab = d->unbound_ab;
   const float low_approximation = d->table[0][(int)(0.01f * 0x10000ul)];
+  const int rgb_norm = d->rgb_norm;
   const gboolean histogram_needed = g && g->got_focus
       && pipe->type != DT_DEV_PIXELPIPE_PREVIEW
       && (tc_mode == DT_S_SCALE_MANUAL_RGB || tc_mode == DT_S_SCALE_MANUAL_LCH) ? TRUE : FALSE;
@@ -432,10 +489,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 4, sizeof(int), (void *)&tc_mode);
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 5, sizeof(int), (void *)&unbound_ab);
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 6, sizeof(float), (void *)&low_approximation);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 7, sizeof(float), (void *)&rgb_norm);
   for(int ch = 0; ch < DT_IOP_TONECURVE_MAX_CH; ch++)
   {
-    dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 7 + ch, sizeof(cl_mem), (void *)&dev_ch[ch]);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 7 + DT_IOP_TONECURVE_MAX_CH + ch, sizeof(cl_mem), (void *)&dev_coeffs[ch]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 8 + ch, sizeof(cl_mem), (void *)&dev_ch[ch]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 8 + DT_IOP_TONECURVE_MAX_CH + ch, sizeof(cl_mem), (void *)&dev_coeffs[ch]);
   }
 
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_tonecurve, sizes);
@@ -493,11 +551,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {1.0f / d->unbounded_coeffs[2][0], 1.0f - 1.0f / d->unbounded_coeffs[2][3]},
     {1.0f / d->unbounded_coeffs[3][0], 1.0f - 1.0f / d->unbounded_coeffs[3][3]} };
   const float low_approximation = d->table[0][(int)(0.01f * 0x10000ul)];
-
   const int width = roi_out->width;
   const int height = roi_out->height;
   const int tc_mode = d->tc_mode;
   const int unbound_ab = d->unbound_ab;
+  const int rgb_norm = d->rgb_norm;
   const gboolean histogram_needed = g && g->got_focus
       && pipe->type != DT_DEV_PIXELPIPE_PREVIEW
       && (tc_mode == DT_S_SCALE_MANUAL_RGB || tc_mode == DT_S_SCALE_MANUAL_LCH) ? TRUE : FALSE;
@@ -590,9 +648,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       {
         float rgb[3] = {0, 0, 0};
         dt_Lab_to_prophotorgb(in, rgb);
-        for(int c=0; c<3; c++)
-          rgb[c] = (rgb[c] < xm[ch_L][0]) ? d->table[ch_L][CLAMP((int)(rgb[c] * 0x10000ul), 0, 0xffff)]
-                                   : dt_iop_eval_exp(d->unbounded_coeffs[0], rgb[c]);
+        if (rgb_norm != 0)
+        {
+          float norm = dt_rgb_norm_vect( rgb, rgb_norm, 0.333333f);
+          norm = (norm < xm[ch_L][0]) ? d->table[ch_L][CLAMP((int)(norm * 0x10000ul), 0, 0xffff)] / norm
+                                   : dt_iop_eval_exp(d->unbounded_coeffs[0], norm) / norm;
+          for(int c=0; c<3; c++) rgb[c] *= norm;
+        }
+        else
+        {
+          for(int c=0; c<3; c++)
+            rgb[c] = (rgb[c] < xm[ch_L][0]) ? d->table[ch_L][CLAMP((int)(rgb[c] * 0x10000ul), 0, 0xffff)]
+                                    : dt_iop_eval_exp(d->unbounded_coeffs[0], rgb[c]);
+        }
         dt_prophotorgb_to_Lab(rgb, out);
       }
       else if (tc_mode == DT_S_SCALE_MANUAL_RGB)
@@ -667,6 +735,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.tonecurve_preset = 0;
   p.tonecurve_tc_mode = DT_S_SCALE_AUTOMATIC_RGB;
   p.tonecurve_unbound_ab = 1;
+  p.rgb_norm = 0;
 
   float linear_ab[7] = { 0.0, 0.08, 0.3, 0.5, 0.7, 0.92, 1.0 };
 
@@ -878,6 +947,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   d->tc_mode = p->tonecurve_tc_mode;
   d->unbound_ab = p->tonecurve_unbound_ab;
+  d->rgb_norm = p->rgb_norm;
 
   for(int ch = 0; ch < nb_ch; ch++)
   {
@@ -998,20 +1068,28 @@ void tabs_update(struct dt_iop_module_t *self, int reset_nodes)
 
   switch(p->tonecurve_tc_mode)
   {
+    case DT_S_SCALE_AUTOMATIC_LAB:
+    {
+      gtk_widget_set_visible(g->rgb_norm, FALSE);
+      break;
+    }
     case DT_S_SCALE_MANUAL_LAB:
     {
       tab_label[1] = _("  a  ");
       tab_tooltip[1] = _("tonecurve for a channel");
       tab_label[2] = _("  b  ");
       tab_tooltip[2] = _("tonecurve for b channel");
+      gtk_widget_set_visible(g->rgb_norm, FALSE);
       break;
     }
-    case DT_S_SCALE_MANUAL_LCH:
+    case DT_S_SCALE_AUTOMATIC_XYZ:
     {
-      tab_label[1] = _(" C(L) ");
-      tab_tooltip[1] = _("tonecurve for C(L) - histogram(C)");
-      tab_label[2] = _(" C(h) ");
-      tab_tooltip[2] = _("tonecurve for C(h) - histogram(h)");
+      gtk_widget_set_visible(g->rgb_norm, FALSE);
+      break;
+    }
+    case DT_S_SCALE_AUTOMATIC_RGB:
+    {
+      gtk_widget_set_visible(g->rgb_norm, TRUE);
       break;
     }
     case DT_S_SCALE_MANUAL_RGB:
@@ -1022,6 +1100,16 @@ void tabs_update(struct dt_iop_module_t *self, int reset_nodes)
       tab_tooltip[2] = _("tonecurve for G channel");
       tab_label[3] = _("  B  ");
       tab_tooltip[3] = _("tonecurve for B channel");
+      gtk_widget_set_visible(g->rgb_norm, FALSE);
+      break;
+    }
+    case DT_S_SCALE_MANUAL_LCH:
+    {
+      tab_label[1] = _(" C(L) ");
+      tab_tooltip[1] = _("tonecurve for C(L) - histogram(C)");
+      tab_label[2] = _(" C(h) ");
+      tab_tooltip[2] = _("tonecurve for C(h) - histogram(h)");
+      gtk_widget_set_visible(g->rgb_norm, FALSE);
       break;
     }
   }
@@ -1110,6 +1198,7 @@ void gui_update(struct dt_iop_module_t *self)
       break;
     }
   }
+  dt_bauhaus_combobox_set(g->rgb_norm, p->rgb_norm);
   tabs_update(self, FALSE);
 
   dt_bauhaus_combobox_set(g->interpolator, p->tonecurve_type[ch_L]);
@@ -1129,7 +1218,7 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-//setvbuf(stdout, NULL, _IONBF, 0);
+setvbuf(stdout, NULL, _IONBF, 0);
   module->params = calloc(1, sizeof(dt_iop_tonecurve_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_tonecurve_params_t));
   module->default_enabled = 0;
@@ -1217,6 +1306,15 @@ static void scale_callback(GtkWidget *widget, dt_iop_module_t *self)
   else
     gtk_widget_set_visible(g->logbase, FALSE);
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
+}
+
+static void rgb_norm_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+  p->rgb_norm = dt_bauhaus_combobox_get(widget);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  gtk_widget_queue_draw(self->widget);
 }
 
 static void logbase_callback(GtkWidget *slider, dt_iop_module_t *self)
@@ -1680,6 +1778,18 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), c->logbase , TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
 
+  c->rgb_norm = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(c->rgb_norm, NULL, _("rgb norm"));
+  dt_bauhaus_combobox_add(c->rgb_norm, _("none"));
+  dt_bauhaus_combobox_add(c->rgb_norm, _("L infinite (maxRGB)"));
+  dt_bauhaus_combobox_add(c->rgb_norm, _("L1 (avgRGB)"));
+  dt_bauhaus_combobox_add(c->rgb_norm, _("L2"));
+  dt_bauhaus_combobox_add(c->rgb_norm, _("Lp power"));
+  dt_bauhaus_combobox_add(c->rgb_norm, _("basic power"));
+  dt_bauhaus_combobox_add(c->rgb_norm, _("weighted yellow power"));
+  gtk_widget_set_tooltip_text(c->rgb_norm, _("apply normalization factor"));
+  gtk_box_pack_start(GTK_BOX(self->widget), c->rgb_norm, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(c->rgb_norm), "value-changed", G_CALLBACK(rgb_norm_callback), self);
 
   c->sizegroup = GTK_SIZE_GROUP(gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL));
   gtk_size_group_add_widget(c->sizegroup, GTK_WIDGET(c->area));

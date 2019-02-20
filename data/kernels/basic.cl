@@ -614,11 +614,54 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+float
+rgb_norm_vect (float4 rgb, int rgb_norm, float norm_exp)
+{
+  switch(rgb_norm)
+  {
+  case 1:  // norm L infinite = max
+    {
+      return max(rgb.x, max(rgb.y, rgb.z));
+    }
+  case 2:  // norm L1 - bypass the powf for performance
+    {
+      return (rgb.x + rgb.y + rgb.z) / 3;
+    }
+  case 3:  // norm L2 = euclidian norm - bypass the powf for performance
+    {
+      return sqrt((rgb.x * rgb.x + rgb.y * rgb.y + rgb.z * rgb.z) / 3);
+    }
+  case 4:  // general Lp norm (pseudo-norm if p < 1) - slow variant
+    {
+      return pow((pow(rgb.x, norm_exp) + pow(rgb.y, norm_exp) + pow(rgb.z, norm_exp)) / 3, 1.0f/norm_exp);
+      break;
+    }
+  case 5:  // basic power norm
+    {
+      float R, G, B;
+      R = rgb.x * rgb.x;
+      G = rgb.y * rgb.y;
+      B = rgb.z * rgb.z;
+      return (rgb.x * R + rgb.y * G + rgb.z * B) / (R + G + B);
+    }
+  case 6: // weighted yellow power norm
+    {
+      float R, G, B;
+      R = 1.22f * rgb.x * 1.22f * rgb.x;
+      G = 1.20f * rgb.y * 1.20f * rgb.y;
+      B = 0.58f * rgb.z * 0.58f * rgb.z;
+      R *= R; G *= G; B *= B;
+      return 0.83743219f * (1.22f * rgb.x * R + 1.20f * rgb.y * G + 0.58 * rgb.z * B) / (R + G + B);
+    }
+  default: {return -1;}
+  }
+}
+
 /* kernel for the tonecurve plugin. */
 kernel void
 tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
            const int tc_mode, const int unbound_ab, const float low_approximation,
-           /*const int histogram_needed, global int *local_histogram,*/
+           const int rgb_norm,
            read_only image2d_t table_0, read_only image2d_t table_1,
            read_only image2d_t table_2, read_only image2d_t table_3,
            global float *coeffs_0, global float *coeffs_1,
@@ -677,27 +720,24 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
   else if(tc_mode == 3)
   {
     float4 rgb = Lab_to_prophotorgb(pixel);
-    rgb.x = lookup_unbounded(table_0, rgb.x, coeffs_0);
-    rgb.y = lookup_unbounded(table_0, rgb.y, coeffs_0);
-    rgb.z = lookup_unbounded(table_0, rgb.z, coeffs_0);
-    pixel.xyz = prophotorgb_to_Lab(rgb).xyz;
+    float norm = 0;
+    if (rgb_norm != 0)
+    {
+      norm = rgb_norm_vect( rgb, rgb_norm, 0.333333f);
+      norm = lookup_unbounded(table_0, norm, coeffs_0) / norm;
+      rgb.xyz *= norm;
+    }
+    else
+    {
+      rgb.x = lookup_unbounded(table_0, rgb.x, coeffs_0);
+      rgb.y = lookup_unbounded(table_0, rgb.y, coeffs_0);
+      rgb.z = lookup_unbounded(table_0, rgb.z, coeffs_0);
+    }
+  pixel.xyz = prophotorgb_to_Lab(rgb).xyz;
   }
   else if(tc_mode == 4)
   {
     float4 rgb = Lab_to_prophotorgb(pixel);
-/*    if (histogram_needed)
-    { // process local histogram
-      local_histogram[4 * clamp((int)(pixel.x*2.55f), 0, 255)]++;
-      const float rgba[3] = {rgb.x, rgb.y, rgb.z};
-      for(int c=0; c<3; c++)
-      {
-        float4 fake_rgb;
-        fake_rgb.x = fake_rgb.y = fake_rgb.z = rgba[c];
-        float4 lab = prophotorgb_to_Lab(fake_rgb);
-        // histogram_RGB can be put to 255 bins
-        local_histogram[4 * clamp((int)(lab.x*2.55f), 0, 255) + c+1]++;
-      }
-    } */
     rgb.x = lookup_unbounded(table_0, rgb.x, coeffs_0);
     rgb.y = lookup_unbounded(table_0, rgb.y, coeffs_0);
     rgb.z = lookup_unbounded(table_0, rgb.z, coeffs_0);
@@ -709,13 +749,6 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
   else if(tc_mode == 5)
   {
     float4 lch = Lab_2_LCH(pixel);
-/*    if (histogram_needed)
-    { // process local histogram
-      // histogram_LCh can be put to 255 bins
-      local_histogram[4 * clamp((int)(lch.x*2.55f), 0, 255)]++;
-      local_histogram[4 * clamp((int)(lch.y*1.40095f), 0, 255) + 1]++;  // 255 / 182.019 = 1.40095
-      local_histogram[4 * clamp((int)(lch.z*255.0f), 0, 255) + 2]++;
-    } */
     lch.x = L;
     lch.y = lch.y * lookup_unbounded(table_1, L_in, coeffs_1) * 2.0f;
     lch.y = lch.y * lookup_unbounded(table_2, lch.z, coeffs_2) * 2.0f;
