@@ -2933,8 +2933,15 @@ static gboolean timeline_key_accel_callback(GtkAccelGroup *accel_group, GObject 
                                             GdkModifierType modifier, gpointer data)
 {
   dt_lib_module_t *m = darktable.view_manager->proxy.timeline.module;
-  gboolean vs = dt_lib_is_visible(m);
-  dt_lib_set_visible(m, !vs);
+  if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+  {
+    gtk_widget_hide(GTK_WIDGET(m->widget)); // to be sure
+  }
+  else
+  {
+    gboolean vs = dt_lib_is_visible(m);
+    dt_lib_set_visible(m, !vs);
+  }
   return TRUE;
 }
 
