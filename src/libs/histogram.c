@@ -525,6 +525,21 @@ static gboolean _lib_histogram_leave_notify_callback(GtkWidget *widget, GdkEvent
   return TRUE;
 }
 
+static gboolean _lib_histogram_collapse_callback(GtkAccelGroup *accel_group,
+                                                GObject *acceleratable, guint keyval,
+                                                GdkModifierType modifier, gpointer data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)data;
+
+  // Get the state
+  gint visible = dt_lib_is_visible(self);
+
+  // Inverse the visibility
+  dt_lib_set_visible(self, !visible);
+
+  return TRUE;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui widgets */
