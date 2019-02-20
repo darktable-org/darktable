@@ -1556,8 +1556,9 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
     }
     else if(i == active)
     {
-      button->icon = dtgtk_cairo_paint_dropdown;
       gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule or add new rules"));
+      gint flags = CPF_DIRECTION_DOWN | CPF_BG_TRANSPARENT | CPF_STYLE_FLAT;
+      dtgtk_button_set_paint(button, dtgtk_cairo_paint_solid_arrow, flags, NULL);
     }
     else
     {
