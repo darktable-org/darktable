@@ -546,37 +546,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
   else
   {
-    // we are not exporting
-    if(!self->dev->overexposed.enabled)
-    {
-      // not display overexposed, using display profile as output
-      out_type = darktable.color_profiles->display_type;
-      out_filename = darktable.color_profiles->display_filename;
-      out_intent = darktable.color_profiles->display_intent;
-    }
-    else
-    {
-      // display mask, using histogram profile as output
-      // category types must be handled dynamically
-      if(darktable.color_profiles->histogram_type == DT_COLORSPACE_SOFTPROOF)
-      {
-        out_type = darktable.color_profiles->softproof_type;
-        out_filename = darktable.color_profiles->softproof_filename;
-        out_intent = darktable.color_profiles->softproof_intent;
-      }
-      else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
-      {
-        out_type = p->type;
-        out_filename = p->filename;
-        out_intent = p->intent;
-      }
-      else
-      {
-        out_type = darktable.color_profiles->histogram_type;
-        out_filename = darktable.color_profiles->histogram_filename;
-        out_intent = darktable.color_profiles->display_intent;
-      }
-    }
+    /* we are not exporting, using display profile as output */
+    out_type = darktable.color_profiles->display_type;
+    out_filename = darktable.color_profiles->display_filename;
+    out_intent = darktable.color_profiles->display_intent;
   }
 
   // when the output type is Lab then process is a nop, so we can avoid creating a transform
