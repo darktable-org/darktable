@@ -24,6 +24,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
@@ -598,6 +599,17 @@ void gui_cleanup(dt_lib_module_t *self)
 
   g_free(self->data);
   self->data = NULL;
+}
+
+void init_key_accels(dt_lib_module_t *self)
+{
+  dt_accel_register_lib(self, NC_("accel", "hide histogram"), GDK_KEY_H, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+}
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_accel_connect_lib(self, "hide histogram",
+                     g_cclosure_new(G_CALLBACK(_lib_histogram_collapse_callback), self, NULL));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
