@@ -95,8 +95,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_name(GTK_WIDGET(self->widget), "header-toolbar");
 
   GtkGrid *grid = GTK_GRID(self->widget);
-  gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
-  gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_homogeneous(grid, TRUE);
   int line = 0;
   GtkWidget *button;
