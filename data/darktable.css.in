@@ -270,12 +270,12 @@ box *
 
 #header-toolbar
 {
-  padding-bottom: 5px;
+  padding: 0 5px 5px 5px;
 }
 
 #footer-toolbar
 {
-  padding-top: 5px;
+  padding: 5px 5px 0 5px;
 }
 
 #left scrolledwindow,
@@ -292,8 +292,6 @@ box *
   padding: 0;
 }
 
-
-
 /* Frame around plugin boxes */
 
 #lib-plugin-ui,
@@ -309,7 +307,7 @@ box *
 #lib-plugin-ui-main,
 #blending-box
 {
-  padding: 7pt;
+  padding: 0.5em;
 }
 
 #module-header
@@ -383,17 +381,6 @@ button:disabled,
 #dt-toggle-button button,
 #dt-icon
 {
-  padding: 2pt;
-  margin: 0;
-  min-height: 1em;
-  min-width: 1em;
-}
-
-#iop-plugin-ui #dt-button button,
-#iop-plugin-ui #dt-toggle-button button
-{
-  min-height: 1em;
-  min-width: 1em;
 }
 
 #module-preset-button * button,
@@ -413,7 +400,6 @@ button:disabled,
 #iop-plugin-ui checkbutton check,
 checkbutton check
 {
-  margin-right: 8pt;
   background-color: @bauhaus_bg;
   color: @bauhaus_fg;
   border: 1pt solid @border_color;
@@ -424,10 +410,10 @@ checkbutton check
 entry {
   border-radius: 2pt;
   border: 0.5pt solid @border_color;
-  padding: 2pt;
-  margin: 0 2pt;
   color: @field_fg;
   background-color: @field_bg;
+  min-height: 0;
+  min-width: 0;
 }
 
 entry:hover {
@@ -445,14 +431,6 @@ entry:focus
 
 entry selection {
   background-color: @field_select_bg;
-}
-
-entry *
-{
-  padding: 2pt;
-  min-height: 1em;
-  min-width: 1em;
-  margin: 0;
 }
 
 
@@ -501,7 +479,6 @@ entry *
 {
 }
 
-/* Note : the section labels in blending boxes don't need an extra margin */
 
 #blending-box #section_label
 {
@@ -576,14 +553,19 @@ scale contents trough slider:focus
 /* Basically everything that pops out/over on UI */
 
 combobox,
-combobox *,
 combobox button
 {
-  border: 0;
+  border: 1px solid transparent;
   background-color: transparent;
   border-radius: 2pt;
   color: @bauhaus_fg;
   outline-style: none;
+  min-height: 1em;
+  min-width: 1em;
+}
+
+combobox *
+{
   min-height: 1em;
   min-width: 1em;
 }
@@ -604,7 +586,7 @@ dialog combobox window
   outline-style: none;
   min-height: 1em;
   min-width: 1em;
-  padding: 8pt;
+  padding: 2pt;
 }
 
 #view_dropdown,
@@ -712,16 +694,16 @@ notebook tabs,
 #modules-tabs #dt-toggle-button
 {
   font-size: 8pt;
-  min-height: 20pt;
-  min-width: 20pt;
+  min-height: 2em;
+  min-width: 2em;
   margin: 0;
 }
 
 #blending-tabs *
 {
   font-size: 8pt;
-  min-height: 17pt;
-  min-width: 17pt;
+  min-height: 1.5em;
+  min-width: 1.5em;
   margin: 0;
 }
 
@@ -739,6 +721,7 @@ notebook tab label /* disabled tabs */
 notebook tab:hover
 {
   border-bottom: 2pt solid @button_hover_fg;
+  color: @button_hover_fg;
 }
 
 notebook tab:hover label
@@ -750,12 +733,13 @@ notebook tab:checked,
 notebook tab:focus
 {
   border-bottom: 2pt solid @button_checked_fg;
+  color: @button_checked_fg;
 }
 
 notebook tab:checked label,
 notebook tab:focus label
 {
-  color: @button_focus_fg;
+  color: @button_checked_fg;
 }
 
 /* Bauhaus controls (sliders and comboboxes) */
@@ -790,11 +774,11 @@ notebook tab:focus label
 
 separator, separator:hover
 {
-  color: @selected_bg_color;
+  color: transparent;
   border-style: solid;
-  border-width: 2pt;
-  border-color: @selected_bg_color;
-  background-color: @selected_bg_color;
+  border-width: 0.25em;
+  border-color: transparent;
+  background-color: transparent;
 }
 
 /* Dialog window */
@@ -841,6 +825,44 @@ undershoot.right
   background-color: @graph_bg;
 }
 
+
+/* Widget margins */
+
+#lib-plugin-ui combobox,
+#iop-plugin-ui combobox
+{
+  margin: 2pt 0;
+}
+
+entry
+{
+  margin: 2pt 0;
+}
+
+#lib-plugin-ui checkbutton check,
+#iop-plugin-ui checkbutton check,
+checkbutton check
+{
+  margin: 5px 8pt 5px 0;
+}
+
+#iop-plugin-ui button,
+#lib-plugin-ui button
+{
+  margin: 2pt;
+}
+
+#bauhaus-slider,
+#bauhaus-combobox
+{
+  margin: 5px 0;
+  min-height: 2em;
+}
+
+combobox label
+{
+  margin: 5px 5px 5px 0;
+}
 
 /* STUFF TO MERGE WITH ABOVE RULES */
 
