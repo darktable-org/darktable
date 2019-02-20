@@ -704,9 +704,10 @@ enum _dt_delete_status
 enum _dt_delete_dialog_choice
 {
   _DT_DELETE_DIALOG_CHOICE_DELETE = 1,
-  _DT_DELETE_DIALOG_CHOICE_REMOVE = 2,
-  _DT_DELETE_DIALOG_CHOICE_CONTINUE = 3,
-  _DT_DELETE_DIALOG_CHOICE_STOP = 4
+  _DT_DELETE_DIALOG_CHOICE_DELETE_ALL = 2,
+  _DT_DELETE_DIALOG_CHOICE_REMOVE = 3,
+  _DT_DELETE_DIALOG_CHOICE_CONTINUE = 4,
+  _DT_DELETE_DIALOG_CHOICE_STOP = 5
 };
 
 static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
@@ -730,7 +731,10 @@ static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
 #endif
 
   if (modal_dialog->send_to_trash)
+  {
     gtk_dialog_add_button(GTK_DIALOG(dialog), _("physically delete"), _DT_DELETE_DIALOG_CHOICE_DELETE);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("physically delete all files"), _DT_DELETE_DIALOG_CHOICE_DELETE_ALL);
+  }
   gtk_dialog_add_button(GTK_DIALOG(dialog), _("only remove from the collection"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
   gtk_dialog_add_button(GTK_DIALOG(dialog), _("skip to next file"), _DT_DELETE_DIALOG_CHOICE_CONTINUE);
   gtk_dialog_add_button(GTK_DIALOG(dialog), _("stop process"), _DT_DELETE_DIALOG_CHOICE_STOP);
@@ -776,7 +780,7 @@ static gint _dt_delete_file_display_modal_dialog(int send_to_trash, const char *
   return modal_dialog.dialog_result;
 }
 
-static enum _dt_delete_status delete_file_from_disk(const char *filename)
+static enum _dt_delete_status delete_file_from_disk(const char *filename, gboolean *delete_on_trash_error)
 {
   enum _dt_delete_status delete_status = _DT_DELETE_STATUS_UNKNOWN;
 
@@ -808,6 +812,12 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename)
     {
       delete_status = _DT_DELETE_STATUS_OK_TO_REMOVE;
     }
+    else if (send_to_trash && *delete_on_trash_error)
+    {
+      // Loop again, this time delete instead of trashing
+      delete_status = _DT_DELETE_STATUS_UNKNOWN;
+      send_to_trash = FALSE;
+    }
     else
     {
       const char *filename_display = NULL;
@@ -832,6 +842,13 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename)
         // Loop again, this time delete instead of trashing
         delete_status = _DT_DELETE_STATUS_UNKNOWN;
         send_to_trash = FALSE;
+      }
+      else if (send_to_trash && res == _DT_DELETE_DIALOG_CHOICE_DELETE_ALL)
+      {
+        // Loop again, this time delete instead of trashing
+        delete_status = _DT_DELETE_STATUS_UNKNOWN;
+        send_to_trash = FALSE;
+        *delete_on_trash_error = TRUE;
       }
       else if (res == _DT_DELETE_DIALOG_CHOICE_REMOVE)
       {
@@ -867,6 +884,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
   guint total = g_list_length(t);
   char message[512] = { 0 };
   double fraction = 0;
+  gboolean delete_on_trash_error = FALSE;
   if (dt_conf_get_bool("send_to_trash"))
     snprintf(message, sizeof(message), ngettext("trashing %d image", "trashing %d images", total), total);
   else
@@ -916,7 +934,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       dt_image_remove(imgid);
 
       // there are no further duplicates so we can remove the source data file
-      delete_status = delete_file_from_disk(filename);
+      delete_status = delete_file_from_disk(filename, &delete_on_trash_error);
       if (delete_status != _DT_DELETE_STATUS_OK_TO_REMOVE)
         goto delete_next_file;
 
@@ -973,7 +991,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       GList *file_iter = g_list_first(files);
       while(file_iter != NULL)
       {
-        delete_status = delete_file_from_disk(file_iter->data);
+        delete_status = delete_file_from_disk(file_iter->data, &delete_on_trash_error);
         if (delete_status != _DT_DELETE_STATUS_OK_TO_REMOVE)
           break;
         file_iter = g_list_next(file_iter);
@@ -995,7 +1013,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       dt_image_remove(imgid);
 
       // ... and delete afterwards because removing will re-write the XMP
-      delete_file_from_disk(filename);
+      delete_status = delete_file_from_disk(filename, &delete_on_trash_error);
     }
 
 delete_next_file:
