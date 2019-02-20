@@ -136,8 +136,8 @@ void dt_tag_reorganize(const gchar *source, const gchar *dest)
   if(!strcmp(source, dest)) return;
 
   gchar *tag = g_strrstr(source, "|");
-
-  if(!tag) tag = g_strconcat("|", source, NULL);
+  gchar *tag_to_free = NULL;
+  if(tag == NULL) tag_to_free = tag = g_strconcat("|", source, NULL);
 
   if(!strcmp(dest, " "))
   {
@@ -167,6 +167,7 @@ void dt_tag_reorganize(const gchar *source, const gchar *dest)
 
   g_free(source_expr);
   g_free(new_expr);
+  g_free(tag_to_free);
 
   /* raise signal of tags change to refresh keywords module */
   // dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);

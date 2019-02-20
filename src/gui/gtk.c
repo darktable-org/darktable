@@ -952,9 +952,12 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
-  const gchar *css_theme = dt_conf_get_string("ui_last/theme");
+  gchar *css_theme = dt_conf_get_string("ui_last/theme");
   if(css_theme)
+  {
     g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "%s", css_theme);
+    g_free(css_theme);
+  }
   else
     g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "darktable");
 

@@ -762,6 +762,17 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
   const int img_pointerx = (int)fmodf(pointerx, wd);
   const int img_pointery = (int)pointery;
 
+  const dt_collection_sort_t current_sort = dt_collection_get_sort_field(darktable.collection);
+  const gboolean reverse = dt_collection_get_sort_descending(darktable.collection);
+
+  // we disable the shuffle sort on the filmstrip as this cannot be work with the current implementation. On each redraw
+  // we get a new order for the collection.
+  if(current_sort == DT_COLLECTION_SORT_SHUFFLE)
+  {
+    dt_collection_set_sort(darktable.collection, DT_COLLECTION_SORT_ID, reverse);
+    dt_collection_update(darktable.collection);
+  }
+
   /* get the count of current collection */
   strip->collection_count = dt_collection_get_count(darktable.collection);
 
@@ -775,6 +786,13 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, offset - max_cols / 2);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, max_cols);
+
+  // reset previous sort
+  if(current_sort == DT_COLLECTION_SORT_SHUFFLE)
+  {
+    dt_collection_set_sort(darktable.collection, current_sort, reverse);
+    dt_collection_update(darktable.collection);
+  }
 
   cairo_save(cr);
   cairo_translate(cr, empty_edge, 0.0f);
@@ -1071,16 +1089,18 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
     case DT_VIEW_STAR_5:
     {
       const int32_t mouse_over_id = dt_control_get_mouse_over_id();
-      if(mouse_over_id <= 0) return FALSE;
+
       /* get image from cache */
 
       const int32_t activated_image = darktable.view_manager->proxy.filmstrip.activated_image(
         darktable.view_manager->proxy.filmstrip.module);
 
+      const int32_t image_id = mouse_over_id == -1 ? activated_image : mouse_over_id;
+
       int offset = 0;
       if(mouse_over_id == activated_image) offset = dt_collection_image_offset(mouse_over_id);
 
-      dt_ratings_apply_to_image_or_group(mouse_over_id, num);
+      dt_ratings_apply_to_image_or_group(image_id, num);
 
       dt_collection_update_query(darktable.collection); // update the counter and selection
       dt_collection_hint_message(darktable.collection); // More than this, we need to redraw all

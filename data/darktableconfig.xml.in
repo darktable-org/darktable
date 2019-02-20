@@ -762,6 +762,13 @@
     <shortdescription>append or replace history stack if pasted</shortdescription>
     <longdescription>0 -- append on top of stack, 1 -- replace it.</longdescription>
   </dtconfig>
+  <dtconfig prefs="gui" section="lighttable">
+    <name>plugins/lighttable/collect/single-click</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>use single-click in the collect panel</shortdescription>
+    <longdescription>check this option to use single-click to select items in the collect panel. this will allow you to do range selections for date-time and numeric values.</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/collect/num_rules</name>
     <type>int</type>

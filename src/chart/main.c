@@ -468,9 +468,9 @@ static char *get_export_filename(dt_lut_t *self, const char *extension, char **n
     *last_dot = '\0';
     char *new_filename = g_strconcat(reference_filename, extension, NULL);
     gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(dialog), new_filename);
-    g_free(reference_filename);
     g_free(new_filename);
   }
+  g_free(reference_filename);
 
   GtkWidget *grid = gtk_grid_new();
   gtk_grid_set_row_spacing(GTK_GRID(grid), 10);
@@ -762,27 +762,29 @@ static char *encode_tonecurve(const tonecurve_t *c)
   dt_iop_tonecurve_params_t params;
   memset(&params, 0, sizeof(params));
   params.tonecurve_autoscale_ab = 3; // prophoto rgb
-  params.tonecurve_type[0] = 2;      // MONOTONE_HERMITE
-  params.tonecurve_type[1] = 2;      // MONOTONE_HERMITE
-  params.tonecurve_type[2] = 2;      // MONOTONE_HERMITE
-  params.tonecurve_nodes[0] = 20;
-  params.tonecurve_nodes[1] = 2;
-  params.tonecurve_nodes[2] = 2;
-  params.tonecurve[1][0].x = 0.0f;
-  params.tonecurve[1][0].y = 0.0f;
-  params.tonecurve[1][1].x = 1.0f;
-  params.tonecurve[1][1].y = 1.0f;
-  params.tonecurve[2][0].x = 0.0f;
-  params.tonecurve[2][0].y = 0.0f;
-  params.tonecurve[2][1].x = 1.0f;
-  params.tonecurve[2][1].y = 1.0f;
 
+  params.tonecurve_type[0] = 2;      // MONOTONE_HERMITE
+  params.tonecurve_nodes[0] = 20;
   for(int k = 0; k < 20; k++)
   {
     const double x = (k / 19.0) * (k / 19.0);
     params.tonecurve[0][k].x = x;
     params.tonecurve[0][k].y = tonecurve_apply(c, 100.0 * x) / 100.0;
   }
+
+  params.tonecurve_type[1] = 2;      // MONOTONE_HERMITE
+  params.tonecurve_nodes[1] = 2;
+  params.tonecurve[1][0].x = 0.0f;
+  params.tonecurve[1][0].y = 0.0f;
+  params.tonecurve[1][1].x = 1.0f;
+  params.tonecurve[1][1].y = 1.0f;
+
+  params.tonecurve_type[2] = 2;      // MONOTONE_HERMITE
+  params.tonecurve_nodes[2] = 2;
+  params.tonecurve[2][0].x = 0.0f;
+  params.tonecurve[2][0].y = 0.0f;
+  params.tonecurve[2][1].x = 1.0f;
+  params.tonecurve[2][1].y = 1.0f;
 
   return dt_exif_xmp_encode_internal((uint8_t *)&params, sizeof(params), NULL, FALSE);
 }
@@ -1633,7 +1635,6 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
   FILE *f = g_fopen(filename, "rb");
   if(!f) return 0;
   int N = 0;
-  int r = 0;
   while(fscanf(f, "%*[^\n]\n") != EOF) N++;
   fseek(f, 0, SEEK_SET);
 
@@ -1645,8 +1646,8 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
 
   // header lines
   char key[16] = {0}, value[256] = {0};
-  int unused = fscanf(f, "%15[^;];%255[^\n]\n", key, value);
-  if(g_strcmp0(key, "name") || unused == EOF)
+  int read_res = fscanf(f, "%15[^;];%255[^\n]\n", key, value);
+  if(g_strcmp0(key, "name") || read_res == EOF)
   {
     fprintf(stderr, "error: expected `name' in the first line\n");
     fclose(f);
@@ -1655,8 +1656,8 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
   *name = g_strdup(value);
   N--;
 
-  unused = fscanf(f, "%15[^;];%255[^\n]\n", key, value);
-  if(g_strcmp0(key, "description") || unused == EOF)
+  read_res = fscanf(f, "%15[^;];%255[^\n]\n", key, value);
+  if(g_strcmp0(key, "description") || read_res == EOF)
   {
     fprintf(stderr, "error: expected `description' in the second line\n");
     fclose(f);
@@ -1665,8 +1666,8 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
   *description = g_strdup(value);
   N--;
 
-  unused = fscanf(f, "%15[^;];%d\n", key, num_gray);
-  if(g_strcmp0(key, "num_gray") || unused == EOF)
+  read_res = fscanf(f, "%15[^;];%d\n", key, num_gray);
+  if(g_strcmp0(key, "num_gray") || read_res == EOF)
   {
     fprintf(stderr, "error: missing num_gray in csv\n");
     fclose(f);
@@ -1675,7 +1676,7 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
   N--;
 
   // skip the column title line
-  unused = fscanf(f, "%*[^\n]\n");
+  read_res = fscanf(f, "%*[^\n]\n");
   N--;
 
   double *target_L = (double *)dt_calloc(sizeof(double), (N + 4));
@@ -1725,7 +1726,6 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
     }
   }
 
-  if(r != 0 || unused == EOF) fprintf(stderr, "just keeping compiler happy\n");
   fclose(f);
   return N;
 }

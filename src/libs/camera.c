@@ -355,7 +355,7 @@ static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, 
   pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
   pango_layout_set_font_description(layout, desc);
   char model[4096] = { 0 };
-  sprintf(model + strlen(model), "%s", lib->data.camera_model);
+  snprintf(model, strlen(model), "%s", lib->data.camera_model);
   pango_layout_set_text(layout, model, -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, DT_PIXEL_APPLY_DPI(5), DT_PIXEL_APPLY_DPI(1) + BAR_HEIGHT - ink.height / 2 - fontsize);

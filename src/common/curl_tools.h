@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Robert Bieber.
+    copyright (c) 2019 Pascal Obry
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -14,42 +14,17 @@
 
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+
+    part of this file is based on nikon_curve.h from UFraw
+    Copyright 2004-2008 by Shawn Freeman, Udi Fuchs
 */
 
 #pragma once
 
-#include <gtk/gtk.h>
-#include <inttypes.h>
+#include "curl/curl.h"
 
-#define DT_COLORPICKER_SIZE_POINT 0
-#define DT_COLORPICKER_SIZE_BOX 1
-
-/** The struct for live color picker samples */
-typedef struct dt_colorpicker_sample_t
-{
-
-  /** The sample area or point */
-  float point[2];
-  float box[4];
-  int size;
-  int locked;
-
-  /** The actual picked colors */
-  float picked_color_rgb_mean[3];
-  float picked_color_rgb_min[3];
-  float picked_color_rgb_max[3];
-
-  float picked_color_lab_mean[3];
-  float picked_color_lab_min[3];
-  float picked_color_lab_max[3];
-
-  /** The GUI elements */
-  GtkWidget *container;
-  GtkWidget *color_patch;
-  GtkWidget *output_label;
-  GtkWidget *delete_button;
-  GdkRGBA rgb;
-} dt_colorpicker_sample_t;
+/* reset connection and set initial setup */
+void dt_curl_init(CURL *curl, gboolean verbose);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

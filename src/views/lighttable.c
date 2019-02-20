@@ -355,6 +355,9 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
   dt_view_t *self = (dt_view_t *)user_data;
   dt_library_t *lib = (dt_library_t *)self->data;
 
+  // we need to redraw all thumbs to display the selected ones, record full redraw here
+  lib->force_expose_all = TRUE;
+
   // we handle change of selection only in expose mode. it is needed
   // here as the selection from the filmstrip is actually was must be
   // displayed in the expose view.
@@ -1463,40 +1466,52 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
 
   dt_view_set_scrollbar(self, 0, 0, 1, 1, 0, 0, 1, 1);
 
-  int sel_img_count = dt_collection_get_selected_count(NULL);
-
+  GList *selected = dt_collection_get_selected(darktable.collection, -1);
+  const int sel_img_count = g_list_length(selected);
   if(sel_img_count == 0) return 0;
-
-  gchar *query = NULL;
-  gchar *sq = NULL;
-
-  sq = dt_collection_get_sort_query(darktable.collection);
-
-  query = dt_util_dstrcat(query,
-                          "SELECT imgid, aspect_ratio, width, height FROM main.selected_images AS sel "
-                          "JOIN main.images AS imgs ON sel.imgid = imgs.id %s",
-                          sq);
-
-
-  sqlite3_stmt *stmt;
-  /* prepare a new main query statement for collection */
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-
-  if(!stmt) return 0;
 
   mouse_over_id = dt_control_get_mouse_over_id();
 
-  int id;
-  double aspect_ratio;
+  dt_layout_image_t *images = malloc(sel_img_count * sizeof(dt_layout_image_t));
 
-  dt_layout_image_t *images = dt_malloc(sel_img_count * sizeof(dt_layout_image_t));
+  gchar *imgids = NULL;
+
+  // build the image ids for the SQL 'in' where clause.
+
+  GList *l = selected;
+  while(l)
+  {
+    const int imgid = GPOINTER_TO_INT(l->data);
+    if(imgids)
+      imgids = dt_util_dstrcat(imgids, ", %d", imgid);
+    else
+      imgids = dt_util_dstrcat(imgids, "(%d", imgid);
+    l = g_list_next(l);
+  }
+  imgids = dt_util_dstrcat(imgids, ")");
+
+  g_list_free(selected);
+
+  gchar *query =  g_strdup_printf("SELECT id, aspect_ratio, width, height FROM images WHERE id IN %s", imgids);
+
+  g_free(imgids);
+
+  /* prepare a new main query statement for collection */
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if(stmt == NULL)
+  {
+    dt_free(images);
+    g_free(query);
+    return 0;
+  }
 
   int i = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    id = sqlite3_column_int(stmt, 0);
-    aspect_ratio = sqlite3_column_double(stmt, 1);
-    if(!aspect_ratio) aspect_ratio = (double)sqlite3_column_int(stmt, 2) / (double)sqlite3_column_int(stmt, 3);
+    const int32_t id = sqlite3_column_int(stmt, 0);
+    double aspect_ratio = sqlite3_column_double(stmt, 1);
+    if (!aspect_ratio) aspect_ratio = (double)sqlite3_column_int(stmt, 2) / (double)sqlite3_column_int(stmt, 3);
 
     images[i].imgid = id;
     images[i].width = (gint)(sqrt(aspect_ratio) * 100);
@@ -1695,9 +1710,6 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   dt_free(images);
 
   sqlite3_finalize(stmt);
-
-  /* free allocated strings */
-  g_free(sq);
 
   g_free(query);
 
