@@ -45,7 +45,7 @@ typedef struct dt_lib_copy_history_t
   GtkButton *paste, *paste_parts;
   GtkWidget *copy_button, *delete_button, *load_button, *write_button;
   GtkWidget *copy_parts_button;
-  GtkWidget *compress;
+  GtkButton *compress_button;
 
   dt_gui_hist_dialog_t dg;
 } dt_lib_copy_history_t;
@@ -352,11 +352,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
   gtk_grid_attach(grid, GTK_WIDGET(d->paste), 3, line++, 3, 1);
 
-  GtkWidget *compress = gtk_button_new_with_label(_("compress history"));
-  ellipsize_button(compress);
-  d->compress = compress;
-  gtk_widget_set_tooltip_text(compress, _("compress history stack of\nall selected images"));
-  gtk_grid_attach(grid, compress, 0, line, 3, 1);
+  d->compress_button = GTK_BUTTON(gtk_button_new_with_label(_("compress history")));
+  ellipsize_button(d->compress_button);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->compress_button), _("compress history stack of\nall selected images"));
+  gtk_grid_attach(grid, GTK_WIDGET(d->compress_button), 0, line, 3, 1);
 
   GtkWidget *delete = gtk_button_new_with_label(_("discard history"));
   ellipsize_button(delete);
@@ -393,7 +392,7 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(G_OBJECT(copy), "clicked", G_CALLBACK(copy_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(copy_parts), "clicked", G_CALLBACK(copy_parts_button_clicked), (gpointer)self);
-  g_signal_connect(G_OBJECT(compress), "clicked", G_CALLBACK(compress_button_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(d->compress_button), "clicked", G_CALLBACK(compress_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(delete), "clicked", G_CALLBACK(delete_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->paste_parts), "clicked", G_CALLBACK(paste_parts_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->paste), "clicked", G_CALLBACK(paste_button_clicked), (gpointer)self);
@@ -412,7 +411,8 @@ void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "copy all"), GDK_KEY_c, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "copy"), GDK_KEY_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
-  dt_accel_register_lib(self, NC_("accel", "discard"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "compress history"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "discard history"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "paste all"), GDK_KEY_v, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "paste"), GDK_KEY_v, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   dt_accel_register_lib(self, NC_("accel", "load sidecar files"), 0, 0);
@@ -426,6 +426,7 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "copy all", GTK_WIDGET(d->copy_button));
   dt_accel_connect_button_lib(self, "copy", GTK_WIDGET(d->copy_parts_button));
   dt_accel_connect_button_lib(self, "discard", GTK_WIDGET(d->delete_button));
+  dt_accel_connect_button_lib(self, "compress", GTK_WIDGET(d->compress_button));
   dt_accel_connect_button_lib(self, "paste all", GTK_WIDGET(d->paste));
   dt_accel_connect_button_lib(self, "paste", GTK_WIDGET(d->paste_parts));
   dt_accel_connect_button_lib(self, "load sidecar files", GTK_WIDGET(d->load_button));
