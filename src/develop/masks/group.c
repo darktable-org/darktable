@@ -311,10 +311,10 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
       ok[pos] = dt_masks_get_mask(module, piece, sel, &bufs[pos], &w[pos], &h[pos], &px[pos], &py[pos]);
       if(fpt->state & DT_MASKS_STATE_INVERSE)
       {
-        double start2 = dt_get_wtime();
+        double start = dt_get_wtime();
         _inverse_mask(module, piece, sel, &bufs[pos], &w[pos], &h[pos], &px[pos], &py[pos]);
         if(darktable.unmuted & DT_DEBUG_PERF)
-          dt_print(DT_DEBUG_MASKS, "[masks %s] inverse took %0.04f sec\n", sel->name, dt_get_wtime() - start2);
+          dt_print(DT_DEBUG_MASKS, "[masks %s] inverse took %0.04f sec\n", sel->name, dt_get_wtime() - start);
       }
       op[pos] = fpt->opacity;
       states[pos] = fpt->state;
@@ -347,7 +347,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   // and we copy each buffer inside, row by row
   for(int i = 0; i < nb; i++)
   {
-    double start2 = dt_get_wtime();
+    double start = dt_get_wtime();
     if(states[i] & DT_MASKS_STATE_UNION)
     {
       for(int y = 0; y < h[i]; y++)
@@ -419,7 +419,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
     }
 
     if(darktable.unmuted & DT_DEBUG_PERF)
-      dt_print(DT_DEBUG_MASKS, "[masks %d] combine took %0.04f sec\n", i, dt_get_wtime() - start2);
+      dt_print(DT_DEBUG_MASKS, "[masks %d] combine took %0.04f sec\n", i, dt_get_wtime() - start);
   }
 
   free(op);
@@ -449,7 +449,7 @@ error:
 static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
                                  dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
 {
-  double start2 = dt_get_wtime();
+  double start = dt_get_wtime();
   const guint nb = g_list_length(form->points);
   if(nb == 0) return 0;
   int nb_ok = 0;
@@ -592,8 +592,8 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
         }
 
         if(darktable.unmuted & DT_DEBUG_PERF)
-          dt_print(DT_DEBUG_MASKS, "[masks %d] combine took %0.04f sec\n", nb_ok, dt_get_wtime() - start2);
-        start2 = dt_get_wtime();
+          dt_print(DT_DEBUG_MASKS, "[masks %d] combine took %0.04f sec\n", nb_ok, dt_get_wtime() - start);
+        start = dt_get_wtime();
 
         nb_ok++;
       }
@@ -610,13 +610,13 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 int dt_masks_group_render_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
                               const dt_iop_roi_t *roi, float *buffer)
 {
-  double start2 = dt_get_wtime();
+  double start = dt_get_wtime();
   if(!form) return 0;
 
   int ok = dt_masks_get_mask_roi(module, piece, form, roi, buffer);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
-    dt_print(DT_DEBUG_MASKS, "[masks] render all masks took %0.04f sec\n", dt_get_wtime() - start2);
+    dt_print(DT_DEBUG_MASKS, "[masks] render all masks took %0.04f sec\n", dt_get_wtime() - start);
   return ok;
 }
 
