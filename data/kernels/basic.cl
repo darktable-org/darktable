@@ -617,26 +617,22 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
 float
 rgb_norm_vect (float4 rgb, int rgb_norm, float norm_exp)
 {
+  if(rgb.x < 0.0f || rgb.y < 0.0f || rgb.z < 0.0f) return -1;
+
   switch(rgb_norm)
   {
   case 1:  // norm L infinite = max
     {
       return max(rgb.x, max(rgb.y, rgb.z));
     }
-  case 2:  // norm L1 - bypass the powf for performance
+  case 2:  // general Lp norm (pseudo-norm if p < 1) - slow variant
     {
-      return (rgb.x + rgb.y + rgb.z) / 3;
-    }
-  case 3:  // norm L2 = euclidian norm - bypass the powf for performance
-    {
-      return sqrt((rgb.x * rgb.x + rgb.y * rgb.y + rgb.z * rgb.z) / 3);
-    }
-  case 4:  // general Lp norm (pseudo-norm if p < 1) - slow variant
-    {
-      return pow((pow(rgb.x, norm_exp) + pow(rgb.y, norm_exp) + pow(rgb.z, norm_exp)) / 3, 1.0f/norm_exp);
+      return native_powr((native_powr(rgb.x, norm_exp) +
+                native_powr(rgb.y, norm_exp) +
+                native_powr(rgb.z, norm_exp)), 1.0f/norm_exp);
       break;
     }
-  case 5:  // basic power norm
+  case 3:  // basic power norm
     {
       float R, G, B;
       R = rgb.x * rgb.x;
@@ -644,14 +640,13 @@ rgb_norm_vect (float4 rgb, int rgb_norm, float norm_exp)
       B = rgb.z * rgb.z;
       return (rgb.x * R + rgb.y * G + rgb.z * B) / (R + G + B);
     }
-  case 6: // weighted yellow power norm
+  case 4: // weighted yellow power norm
     {
-      float R, G, B;
-      R = 1.22f * rgb.x * 1.22f * rgb.x;
-      G = 1.20f * rgb.y * 1.20f * rgb.y;
-      B = 0.58f * rgb.z * 0.58f * rgb.z;
-      R *= R; G *= G; B *= B;
-      return 0.83743219f * (1.22f * rgb.x * R + 1.20f * rgb.y * G + 0.58 * rgb.z * B) / (R + G + B);
+      const float4 coeff = {1.22f, 1.20f, 0.58f, 1.0f};
+      const float4 coeff4 = {2.21533456f, 2.0736f, 0.11316496f, 1.0f};  // 1.22^4, 1.20^4, 0.58^4
+      const float4 rgb4 = rgb * rgb * rgb * rgb * coeff4;
+      const float4 rgb5 = rgb4 * rgb * coeff;
+      return 0.83743219f * (rgb5.x + rgb5.y + rgb5.z) / (rgb4.x + rgb4.y + rgb4.z);
     }
   default: {return -1;}
   }
@@ -661,7 +656,7 @@ rgb_norm_vect (float4 rgb, int rgb_norm, float norm_exp)
 kernel void
 tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
            const int tc_mode, const int unbound_ab, const float low_approximation,
-           const int rgb_norm,
+           const int rgb_norm, const float rgb_norm_exp,
            read_only image2d_t table_0, read_only image2d_t table_1,
            read_only image2d_t table_2, read_only image2d_t table_3,
            global float *coeffs_0, global float *coeffs_1,
@@ -723,12 +718,15 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
     float norm = 0;
     if (rgb_norm != 0)
     {
-      norm = rgb_norm_vect( rgb, rgb_norm, 0.333333f);
-      norm = lookup_unbounded(table_0, norm, coeffs_0) / norm;
-      rgb.xyz *= norm;
+      float norm = rgb_norm_vect( rgb, rgb_norm, rgb_norm_exp); // compute the norm == luminance estimator
+      if (norm < 0) goto no_norm;
+      const float4 rgb_ratios = rgb / norm; // these ratios are the actual colors, independent from the luminance
+      norm = lookup_unbounded(table_0, norm, coeffs_0); // compute the curve on the luminance
+      rgb.xyz = (norm * rgb_ratios).xyz; // restore the colors from the original ratios and the new luminance
     }
     else
     {
+no_norm:
       rgb.x = lookup_unbounded(table_0, rgb.x, coeffs_0);
       rgb.y = lookup_unbounded(table_0, rgb.y, coeffs_0);
       rgb.z = lookup_unbounded(table_0, rgb.z, coeffs_0);
