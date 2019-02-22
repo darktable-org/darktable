@@ -86,7 +86,7 @@ typedef struct dt_lib_timeline_t
   gboolean has_selection;
   gboolean selecting;
 
-  int last_motion;
+  gboolean autoscroll;
   gboolean in;
 
   gboolean size_handle_is_dragging;
@@ -1006,7 +1006,12 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
       // we draw the selection
       if(start >= 0)
       {
-        dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG);
+        // dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG);
+        dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 0.8);
+        cairo_move_to(wcr, start, 0);
+        cairo_line_to(wcr, start, allocation.height);
+        cairo_stroke(wcr);
+        dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_FILMSTRIP_BG, 0.3);
         cairo_move_to(wcr, start, 0);
         cairo_line_to(wcr, start, allocation.height);
         cairo_stroke(wcr);
@@ -1016,7 +1021,11 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
       cairo_fill(wcr);
       if(stop <= strip->panel_width)
       {
-        dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG);
+        dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 0.8);
+        cairo_move_to(wcr, stop, 0);
+        cairo_line_to(wcr, stop, allocation.height);
+        cairo_stroke(wcr);
+        dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_FILMSTRIP_BG, 0.3);
         cairo_move_to(wcr, stop, 0);
         cairo_line_to(wcr, stop, allocation.height);
         cairo_stroke(wcr);
@@ -1171,6 +1180,44 @@ static gboolean _selection_stop(GtkAccelGroup *accel_group, GObject *aceeleratab
   gtk_widget_queue_draw(strip->timeline);
   return TRUE;
 }
+static gboolean _block_autoscroll(gpointer user_data)
+{
+  // this function is called repetidly until the pointer is not more in the autoscoll zone
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
+
+  if(!strip->in)
+  {
+    strip->autoscroll = FALSE;
+    return FALSE;
+  }
+
+  int move = 0;
+  if(strip->current_x < 10)
+    move = -1;
+  else if(strip->current_x > strip->panel_width - 10)
+    move = 1;
+
+  if(move == 0)
+  {
+    strip->autoscroll = FALSE;
+    return FALSE;
+  }
+
+  _time_add(&(strip->time_pos), move, strip->zoom);
+  // we ensure that the fimlstrip stay in the bounds
+  dt_lib_timeline_time_t tt = _selection_scroll_to(strip->time_pos, strip);
+  if(_time_compare(tt, strip->time_pos) != 0)
+  {
+    strip->autoscroll = FALSE;
+    return FALSE;
+  }
+
+  cairo_surface_destroy(strip->surface);
+  strip->surface = NULL;
+  gtk_widget_queue_draw(strip->timeline);
+  return TRUE;
+}
 
 static gboolean _lib_timeline_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, gpointer user_data)
 {
@@ -1180,26 +1227,13 @@ static gboolean _lib_timeline_motion_notify_callback(GtkWidget *w, GdkEventMotio
   strip->in = TRUE;
 
   // auto-scroll if cursor is at one end of the panel
-  if(e->x < 10 && e->time - strip->last_motion > 500)
+  if((e->x < 10 || e->x > strip->panel_width - 10) && !strip->autoscroll)
   {
-    strip->last_motion = e->time;
-    if(_time_compare(strip->time_pos, strip->time_mini) > 0)
+    // first scroll immediatly and then every 400ms until cursor quit the "auto-zone"
+    if(_block_autoscroll(user_data))
     {
-      _time_add(&(strip->time_pos), -1, strip->zoom);
-      cairo_surface_destroy(strip->surface);
-      strip->surface = NULL;
-      gtk_widget_queue_draw(strip->timeline);
-    }
-  }
-  else if(e->x > strip->panel_width - 10 && e->time - strip->last_motion > 500)
-  {
-    strip->last_motion = e->time;
-    if(strip->surface_width >= strip->panel_width)
-    {
-      _time_add(&(strip->time_pos), 1, strip->zoom);
-      cairo_surface_destroy(strip->surface);
-      strip->surface = NULL;
-      gtk_widget_queue_draw(strip->timeline);
+      strip->autoscroll = TRUE;
+      g_timeout_add(400, _block_autoscroll, user_data);
     }
   }
 
