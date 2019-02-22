@@ -861,7 +861,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   //  width/height of current (possibly cropped) image
   const float iw = piece->buf_in.width;
   const float ih = piece->buf_in.height;
-  const float uscale = data->scale / 100.0; // user scale, from GUI in percent
+  const float uscale = data->scale / 100.0f; // user scale, from GUI in percent
 
   // wbase, hbase are the base width and height, this is the multiplicator used for the offset computing
   // scale is the scale of the watermark itself and is used only to render it.
@@ -938,10 +938,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   // compute bounding box of rotated watermark
   float bb_width, bb_height;
-  bb_width = fabs(svg_width * cos(angle)) + fabs(svg_height * sin(angle));
-  bb_height = fabs(svg_width * sin(angle)) + fabs(svg_height * cos(angle));
-  float bX = bb_width / 2.0 - svg_width / 2.0;
-  float bY = bb_height / 2.0 - svg_height / 2.0;
+  bb_width = fabsf(svg_width * cosf(angle)) + fabsf(svg_height * sinf(angle));
+  bb_height = fabsf(svg_width * sinf(angle)) + fabsf(svg_height * cosf(angle));
+  float bX = bb_width / 2.0f - svg_width / 2.0f;
+  float bY = bb_height / 2.0f - svg_height / 2.0f;
 
   // compute translation for the given alignment in image dimension
 
@@ -970,8 +970,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   cairo_translate(cr, tx * roi_out->scale, ty * roi_out->scale);
 
   // compute the center of the svg to rotate from the center
-  float cX = svg_width / 2.0 * roi_out->scale;
-  float cY = svg_height / 2.0 * roi_out->scale;
+  float cX = svg_width / 2.0f * roi_out->scale;
+  float cY = svg_height / 2.0f * roi_out->scale;
 
   cairo_translate(cr, cX, cY);
   cairo_rotate(cr, angle);
@@ -993,7 +993,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   /* render surface on output */
   guint8 *sd = image;
-  float opacity = data->opacity / 100.0;
+  float opacity = data->opacity / 100.0f;
   /*
   #ifdef _OPENMP
     #pragma omp parallel for default(none) shared(in, out,sd,opacity) schedule(static)
@@ -1002,11 +1002,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   for(int j = 0; j < roi_out->height; j++)
     for(int i = 0; i < roi_out->width; i++)
     {
-      float alpha = (sd[3] / 255.0) * opacity;
+      float alpha = (sd[3] / 255.0f) * opacity;
       /* svg uses a premultiplied alpha, so only use opacity for the blending */
-      out[0] = ((1.0 - alpha) * in[0]) + (opacity * (sd[2] / 255.0));
-      out[1] = ((1.0 - alpha) * in[1]) + (opacity * (sd[1] / 255.0));
-      out[2] = ((1.0 - alpha) * in[2]) + (opacity * (sd[0] / 255.0));
+      out[0] = ((1.0 - alpha) * in[0]) + (opacity * (sd[2] / 255.0f));
+      out[1] = ((1.0 - alpha) * in[1]) + (opacity * (sd[1] / 255.0f));
+      out[2] = ((1.0 - alpha) * in[2]) + (opacity * (sd[0] / 255.0f));
       out[3] = in[3];
 
       out += ch;
@@ -1316,9 +1316,8 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_watermark_params_t));
   module->default_enabled = 0;
   module->priority = 971; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_watermark_params_t);
   module->gui_data = NULL;
-  dt_iop_watermark_params_t tmp = (dt_iop_watermark_params_t){
+  dt_iop_watermark_params_t tmp = {
     100.0, 100.0, 0.0, 0.0, 4, 0.0, DT_SCALE_IMAGE, { "darktable.svg" }, { "" }, {0.0, 0.0, 0.0}, {"DejaVu Sans 10"}
   }; // opacity,scale,xoffs,yoffs,alignment
   memcpy(module->params, &tmp, sizeof(dt_iop_watermark_params_t));
