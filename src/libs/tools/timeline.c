@@ -31,9 +31,13 @@ DT_MODULE(1)
 
 typedef enum dt_lib_timeline_zooms_t {
   DT_LIB_TIMELINE_ZOOM_YEAR = 0,
+  DT_LIB_TIMELINE_ZOOM_4MONTH,
   DT_LIB_TIMELINE_ZOOM_MONTH,
+  DT_LIB_TIMELINE_ZOOM_10DAY,
   DT_LIB_TIMELINE_ZOOM_DAY,
+  DT_LIB_TIMELINE_ZOOM_6HOUR,
   DT_LIB_TIMELINE_ZOOM_HOUR,
+  DT_LIB_TIMELINE_ZOOM_10MINUTE,
   DT_LIB_TIMELINE_ZOOM_MINUTE
 } dt_lib_timeline_zooms_t;
 
@@ -62,6 +66,7 @@ typedef struct dt_lib_timeline_block_t
 typedef struct dt_lib_timeline_t
 {
   dt_lib_timeline_time_t time_mini;
+  dt_lib_timeline_time_t time_maxi;
   dt_lib_timeline_time_t time_pos;
 
   GtkWidget *timeline;
@@ -71,6 +76,7 @@ typedef struct dt_lib_timeline_t
 
   GList *blocks;
   dt_lib_timeline_zooms_t zoom;
+  dt_lib_timeline_zooms_t precision;
 
   int start_x;
   int stop_x;
@@ -157,10 +163,16 @@ static int _block_get_bar_width(dt_lib_timeline_zooms_t zoom)
 {
   if(zoom == DT_LIB_TIMELINE_ZOOM_YEAR)
     return 10;
+  else if(zoom == DT_LIB_TIMELINE_ZOOM_4MONTH)
+    return 1;
   else if(zoom == DT_LIB_TIMELINE_ZOOM_MONTH)
     return 4;
+  else if(zoom == DT_LIB_TIMELINE_ZOOM_10DAY)
+    return 1;
   else if(zoom == DT_LIB_TIMELINE_ZOOM_DAY)
     return 5;
+  else if(zoom == DT_LIB_TIMELINE_ZOOM_6HOUR)
+    return 1;
   else if(zoom == DT_LIB_TIMELINE_ZOOM_HOUR)
     return 2;
   return 1; /* dummy value */
@@ -170,10 +182,20 @@ static int _block_get_bar_count(dt_lib_timeline_time_t t, dt_lib_timeline_zooms_
 {
   if(zoom == DT_LIB_TIMELINE_ZOOM_YEAR)
     return 12;
+  else if(zoom == DT_LIB_TIMELINE_ZOOM_4MONTH)
+  {
+    int ti = (t.month - 1) / 4 * 4 + 1;
+    return _time_days_in_month(t.year, ti) + _time_days_in_month(t.year, ti + 1)
+           + _time_days_in_month(t.year, ti + 2) + _time_days_in_month(t.year, ti + 3);
+  }
   else if(zoom == DT_LIB_TIMELINE_ZOOM_MONTH)
     return _time_days_in_month(t.year, t.month);
+  else if(zoom == DT_LIB_TIMELINE_ZOOM_10DAY)
+    return 120;
   else if(zoom == DT_LIB_TIMELINE_ZOOM_DAY)
     return 24;
+  else if(zoom == DT_LIB_TIMELINE_ZOOM_6HOUR)
+    return 120;
   else if(zoom == DT_LIB_TIMELINE_ZOOM_HOUR)
     return 60;
   return 1; /* dummy value */
@@ -199,18 +221,26 @@ static dt_lib_timeline_time_t _time_init()
 static int _time_compare_at_zoom(dt_lib_timeline_time_t t1, dt_lib_timeline_time_t t2, dt_lib_timeline_zooms_t zoom)
 {
   if(t1.year != t2.year) return (t1.year - t2.year);
-  if(zoom > DT_LIB_TIMELINE_ZOOM_YEAR)
+  if(zoom >= DT_LIB_TIMELINE_ZOOM_YEAR)
   {
     if(t1.month != t2.month) return (t1.month - t2.month);
-    if(zoom > DT_LIB_TIMELINE_ZOOM_MONTH)
+    if(zoom >= DT_LIB_TIMELINE_ZOOM_4MONTH)
     {
       if(t1.day != t2.day) return (t1.day - t2.day);
-      if(zoom > DT_LIB_TIMELINE_ZOOM_DAY)
+      if(zoom >= DT_LIB_TIMELINE_ZOOM_10DAY)
       {
-        if(t1.hour != t2.hour) return (t1.hour - t2.hour);
-        if(zoom > DT_LIB_TIMELINE_ZOOM_HOUR)
+        if(t1.hour / 2 != t2.hour / 2) return (t1.hour / 2 - t2.hour / 2);
+        if(zoom >= DT_LIB_TIMELINE_ZOOM_DAY)
         {
-          if(t1.minute != t2.minute) return (t1.minute - t2.minute);
+          if(t1.hour != t2.hour) return (t1.hour - t2.hour);
+          if(zoom >= DT_LIB_TIMELINE_ZOOM_6HOUR)
+          {
+            if(t1.minute / 3 != t2.minute / 3) return (t1.minute / 3 - t2.minute / 3);
+            if(zoom >= DT_LIB_TIMELINE_ZOOM_HOUR)
+            {
+              if(t1.minute != t2.minute) return (t1.minute - t2.minute);
+            }
+          }
         }
       }
     }
@@ -236,6 +266,20 @@ static void _time_add(dt_lib_timeline_time_t *t, int val, dt_lib_timeline_zooms_
   {
     t->year += val;
   }
+  else if(level == DT_LIB_TIMELINE_ZOOM_4MONTH)
+  {
+    t->month += val * 4;
+    while(t->month > 12)
+    {
+      t->year++;
+      t->month -= 12;
+    }
+    while(t->month < 1)
+    {
+      t->year--;
+      t->month += 12;
+    }
+  }
   else if(level == DT_LIB_TIMELINE_ZOOM_MONTH)
   {
     t->month += val;
@@ -248,6 +292,20 @@ static void _time_add(dt_lib_timeline_time_t *t, int val, dt_lib_timeline_zooms_
     {
       t->year--;
       t->month += 12;
+    }
+  }
+  else if(level == DT_LIB_TIMELINE_ZOOM_10DAY)
+  {
+    t->day += val * 10;
+    while(t->day > _time_days_in_month(t->year, t->month))
+    {
+      t->day -= _time_days_in_month(t->year, t->month);
+      _time_add(t, 1, DT_LIB_TIMELINE_ZOOM_MONTH);
+    }
+    while(t->day < 1)
+    {
+      _time_add(t, -1, DT_LIB_TIMELINE_ZOOM_MONTH);
+      t->day += _time_days_in_month(t->year, t->month);
     }
   }
   else if(level == DT_LIB_TIMELINE_ZOOM_DAY)
@@ -264,6 +322,20 @@ static void _time_add(dt_lib_timeline_time_t *t, int val, dt_lib_timeline_zooms_
       t->day += _time_days_in_month(t->year, t->month);
     }
   }
+  else if(level == DT_LIB_TIMELINE_ZOOM_6HOUR)
+  {
+    t->hour += val * 6;
+    while(t->hour > 23)
+    {
+      t->hour -= 24;
+      _time_add(t, 1, DT_LIB_TIMELINE_ZOOM_DAY);
+    }
+    while(t->hour < 0)
+    {
+      t->hour += 24;
+      _time_add(t, -1, DT_LIB_TIMELINE_ZOOM_DAY);
+    }
+  }
   else if(level == DT_LIB_TIMELINE_ZOOM_HOUR)
   {
     t->hour += val;
@@ -276,6 +348,20 @@ static void _time_add(dt_lib_timeline_time_t *t, int val, dt_lib_timeline_zooms_
     {
       t->hour += 24;
       _time_add(t, -1, DT_LIB_TIMELINE_ZOOM_DAY);
+    }
+  }
+  else if(level == DT_LIB_TIMELINE_ZOOM_MINUTE)
+  {
+    t->minute += val;
+    while(t->minute > 59)
+    {
+      t->minute -= 60;
+      _time_add(t, 1, DT_LIB_TIMELINE_ZOOM_HOUR);
+    }
+    while(t->minute < 0)
+    {
+      t->hour += 60;
+      _time_add(t, -1, DT_LIB_TIMELINE_ZOOM_HOUR);
     }
   }
 
@@ -295,30 +381,50 @@ static dt_lib_timeline_time_t _time_get_from_pos(int pos, dt_lib_timeline_t *str
     dt_lib_timeline_block_t *blo = bl->data;
     if(pos < x + blo->width)
     {
+      tt.year = blo->init.year;
+      if(strip->zoom >= DT_LIB_TIMELINE_ZOOM_4MONTH) tt.month = blo->init.month;
+      if(strip->zoom >= DT_LIB_TIMELINE_ZOOM_10DAY) tt.day = blo->init.day;
+      if(strip->zoom >= DT_LIB_TIMELINE_ZOOM_6HOUR) tt.hour = blo->init.hour;
+
       if(strip->zoom == DT_LIB_TIMELINE_ZOOM_YEAR)
       {
         tt.month = (pos - x) / _block_get_bar_width(strip->zoom) + 1;
         if(tt.month < 1) tt.month = 1;
+      }
+      else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_4MONTH)
+      {
+        int nb = (pos - x) / _block_get_bar_width(strip->zoom) + 1;
+        _time_add(&tt, nb, DT_LIB_TIMELINE_ZOOM_DAY);
+        if(tt.day < 1) tt.day = 1;
       }
       else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_MONTH)
       {
         tt.day = (pos - x) / _block_get_bar_width(strip->zoom) + 1;
         if(tt.day < 1) tt.day = 1;
       }
+      else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_10DAY)
+      {
+        int nb = (pos - x) / _block_get_bar_width(strip->zoom) + 1;
+        _time_add(&tt, nb * 2, DT_LIB_TIMELINE_ZOOM_HOUR);
+        if(tt.hour < 0) tt.hour = 0;
+      }
       else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_DAY)
       {
         tt.hour = (pos - x) / _block_get_bar_width(strip->zoom) + 1;
         if(tt.hour < 0) tt.hour = 0;
+      }
+      else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_6HOUR)
+      {
+        int nb = (pos - x) / _block_get_bar_width(strip->zoom) + 1;
+        _time_add(&tt, nb * 3, DT_LIB_TIMELINE_ZOOM_MINUTE);
+        if(tt.minute < 0) tt.minute = 0;
       }
       else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_HOUR)
       {
         tt.minute = (pos - x) / _block_get_bar_width(strip->zoom) + 1;
         if(tt.minute < 0) tt.minute = 0;
       }
-      tt.year = blo->init.year;
-      if(strip->zoom >= DT_LIB_TIMELINE_ZOOM_MONTH) tt.month = blo->init.month;
-      if(strip->zoom >= DT_LIB_TIMELINE_ZOOM_DAY) tt.day = blo->init.day;
-      if(strip->zoom >= DT_LIB_TIMELINE_ZOOM_HOUR) tt.hour = blo->init.hour;
+
       return tt;
     }
     x += blo->width + 2;
@@ -382,6 +488,22 @@ static gboolean _time_read_bounds_from_db(dt_lib_module_t *self)
   }
   sqlite3_finalize(stmt);
 
+  const char *query2 = "SELECT datetime_taken FROM main.images WHERE LENGTH(datetime_taken) = 19 ORDER BY "
+                       "datetime_taken DESC LIMIT 1";
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt, NULL);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *tx = (const char *)sqlite3_column_text(stmt, 0);
+    strip->time_maxi.year = MAX(strtol(tx, NULL, 10), 0);
+    strip->time_maxi.month = CLAMP(strtol(tx + 5, NULL, 10), 1, 12);
+    strip->time_maxi.day
+        = CLAMP(strtol(tx + 8, NULL, 10), 1, _time_days_in_month(strip->time_mini.year, strip->time_mini.month));
+    strip->time_maxi.hour = CLAMP(strtol(tx + 11, NULL, 10), 0, 23);
+    strip->time_maxi.minute = CLAMP(strtol(tx + 14, NULL, 10), 0, 59);
+  }
+  sqlite3_finalize(stmt);
+
   return TRUE;
 }
 
@@ -391,17 +513,39 @@ static gchar *_time_format_for_ui(dt_lib_timeline_time_t t, dt_lib_timeline_zoom
   {
     return g_strdup_printf("%04d", t.year);
   }
+  else if(zoom == DT_LIB_TIMELINE_ZOOM_4MONTH)
+  {
+    int x = (t.month - 1) / 4 * 4 + 1; // This is NOT a no-op (rounding)
+    return g_strdup_printf("(%02d-%02d)/%04d", x, x + 3, t.year);
+  }
   else if(zoom == DT_LIB_TIMELINE_ZOOM_MONTH)
   {
     return g_strdup_printf("%02d/%04d", t.month, t.year);
+  }
+  else if(zoom == DT_LIB_TIMELINE_ZOOM_10DAY)
+  {
+    int x = (t.day - 1) / 10 * 10 + 1; // This is NOT a no-op (rounding)
+    int x2 = x + 9;
+    if(x2 == 30) x2 = _time_days_in_month(t.year, t.month);
+    return g_strdup_printf("(%02d-%02d)/%02d/%02d", x, x2, t.month, t.year % 100);
   }
   else if(zoom == DT_LIB_TIMELINE_ZOOM_DAY)
   {
     return g_strdup_printf("%02d/%02d/%02d", t.day, t.month, t.year % 100);
   }
+  else if(zoom == DT_LIB_TIMELINE_ZOOM_6HOUR)
+  {
+    return g_strdup_printf("%02d/%02d/%02d (%02dh-%02dh)", t.day, t.month, t.year % 100, t.hour / 6 * 6,
+                           t.hour / 6 * 6 + 5);
+  }
   else if(zoom == DT_LIB_TIMELINE_ZOOM_HOUR)
   {
     return g_strdup_printf("%02d/%02d/%02d %02dh", t.day, t.month, t.year % 100, t.hour);
+  }
+  else if(zoom == DT_LIB_TIMELINE_ZOOM_10MINUTE)
+  {
+    return g_strdup_printf("%02d/%02d/%02d %02dh(%02d-%02d)", t.day, t.month, t.year % 100, t.hour,
+                           t.minute / 10 * 10, t.minute / 10 * 10 + 9);
   }
   else if(zoom == DT_LIB_TIMELINE_ZOOM_MINUTE)
   {
@@ -419,28 +563,28 @@ static gchar *_time_format_for_db(dt_lib_timeline_time_t t, dt_lib_timeline_zoom
     else
       return g_strdup_printf("%04d", t.year);
   }
-  else if(zoom == DT_LIB_TIMELINE_ZOOM_MONTH)
+  else if(zoom == DT_LIB_TIMELINE_ZOOM_4MONTH || zoom == DT_LIB_TIMELINE_ZOOM_MONTH)
   {
     if(full)
       return g_strdup_printf("%04d:%02d:01 00:00:00", t.year, t.month);
     else
       return g_strdup_printf("%04d:%02d", t.year, t.month);
   }
-  else if(zoom == DT_LIB_TIMELINE_ZOOM_DAY)
+  else if(zoom == DT_LIB_TIMELINE_ZOOM_10DAY || zoom == DT_LIB_TIMELINE_ZOOM_DAY)
   {
     if(full)
       return g_strdup_printf("%04d:%02d:%02d 00:00:00", t.year, t.month, t.day);
     else
       return g_strdup_printf("%04d:%02d:%02d", t.year, t.month, t.day);
   }
-  else if(zoom == DT_LIB_TIMELINE_ZOOM_HOUR)
+  else if(zoom == DT_LIB_TIMELINE_ZOOM_6HOUR || zoom == DT_LIB_TIMELINE_ZOOM_HOUR)
   {
     if(full)
       return g_strdup_printf("%04d:%02d:%02d %02d:00:00", t.year, t.month, t.day, t.hour);
     else
       return g_strdup_printf("%04d:%02d:%02d %02d", t.year, t.month, t.day, t.hour);
   }
-  else if(zoom == DT_LIB_TIMELINE_ZOOM_MINUTE)
+  else if(zoom == DT_LIB_TIMELINE_ZOOM_10MINUTE || zoom == DT_LIB_TIMELINE_ZOOM_MINUTE)
   {
     if(full)
       return g_strdup_printf("%04d:%02d:%02d %02d:%02d:00", t.year, t.month, t.day, t.hour, t.minute);
@@ -482,6 +626,29 @@ static dt_lib_timeline_time_t _time_get_from_db(gchar *tx, gboolean last)
   return tt;
 }
 
+// get the time of the first block of the strip in order to show the selection
+static dt_lib_timeline_time_t _selection_scroll_to(dt_lib_timeline_time_t t, dt_lib_timeline_t *strip)
+{
+  dt_lib_timeline_time_t tt = t;
+  int nb = strip->panel_width / 122;
+
+  for(int i = 0; i < nb; i++)
+  {
+    // we ensure that we are not before the strip bound
+    if(_time_compare(tt, strip->time_mini) <= 0) return strip->time_mini;
+
+    // and we dont want to display blocks after the bounds too
+    dt_lib_timeline_time_t ttt = tt;
+    _time_add(&ttt, nb - 1, strip->zoom);
+    if(_time_compare(ttt, strip->time_maxi) <= 0) return tt;
+
+    // we test the previous date
+    _time_add(&tt, -1, strip->zoom);
+  }
+  // if we are here that me we fail to scroll... why ?
+  return t;
+}
+
 // computes blocks at the current zoom level
 static int _block_get_at_zoom(dt_lib_module_t *self, int width)
 {
@@ -510,6 +677,36 @@ static int _block_get_at_zoom(dt_lib_module_t *self, int width)
   int stat = sqlite3_step(stmt);
   if(stat == SQLITE_ROW) tx = (char *)sqlite3_column_text(stmt, 0);
   dt_lib_timeline_time_t tt = strip->time_pos;
+  // we round correctly this date
+  if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_HOUR)
+  {
+    tt.minute = 0;
+    if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_6HOUR)
+    {
+      tt.hour = tt.hour / 6 * 6;
+      if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_DAY)
+      {
+        tt.hour = 0;
+        if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_10DAY)
+        {
+          tt.day = (tt.day - 1) / 10 * 10 + 1;
+          if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_MONTH)
+          {
+            tt.day = 1;
+            if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_4MONTH)
+            {
+              tt.month = (tt.month - 1) / 4 * 4 + 1;
+              if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_YEAR)
+              {
+                tt.month = 1;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   while(TRUE)
   {
     dt_lib_timeline_block_t *bloc = (dt_lib_timeline_block_t *)calloc(1, sizeof(dt_lib_timeline_block_t));
@@ -519,33 +716,47 @@ static int _block_get_at_zoom(dt_lib_module_t *self, int width)
     bloc->values = (int *)calloc(bloc->values_count, sizeof(int));
     bloc->width = bloc->values_count * _block_get_bar_width(strip->zoom);
 
+    if(strip->zoom == DT_LIB_TIMELINE_ZOOM_YEAR)
+      tt.month = 1;
+    else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_4MONTH || strip->zoom == DT_LIB_TIMELINE_ZOOM_MONTH)
+      tt.day = 1;
+    else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_10DAY || strip->zoom == DT_LIB_TIMELINE_ZOOM_DAY)
+      tt.hour = 0;
+    else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_6HOUR || strip->zoom == DT_LIB_TIMELINE_ZOOM_HOUR)
+      tt.minute = 0;
     // we count the number of photos per month
     for(int i = 0; i < bloc->values_count; i++)
     {
-      if(strip->zoom == DT_LIB_TIMELINE_ZOOM_YEAR)
-        tt.month = i + 1;
-      else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_MONTH)
-        tt.day = i + 1;
-      else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_DAY)
-        tt.hour = i;
-      else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_HOUR)
-        tt.minute = i;
+
       // if it's the selection start/stop time, we set the x value accordindgly
-      if(_time_compare_at_zoom(strip->start_t, tt, strip->zoom + 1) == 0)
+      if(_time_compare_at_zoom(strip->start_t, tt, strip->zoom) == 0)
         strip->start_x = w + i * _block_get_bar_width(strip->zoom);
-      if(_time_compare_at_zoom(strip->stop_t, tt, strip->zoom + 1) == 0)
+      if(_time_compare_at_zoom(strip->stop_t, tt, strip->zoom) == 0)
         strip->stop_x = w + (i + 1) * _block_get_bar_width(strip->zoom);
       // and we count how many photos we have for this time
-      while(stat == SQLITE_ROW && _time_compare_at_zoom(tt, _time_get_from_db(tx, FALSE), strip->zoom + 1) == 0)
+      while(stat == SQLITE_ROW && _time_compare_at_zoom(tt, _time_get_from_db(tx, FALSE), strip->zoom) == 0)
       {
         bloc->values[i]++;
         stat = sqlite3_step(stmt);
         tx = (char *)sqlite3_column_text(stmt, 0);
       }
+
+      // and we jump to next date
+      // if (i+1 >= bloc->values_count) break;
+      if(strip->zoom == DT_LIB_TIMELINE_ZOOM_YEAR)
+        _time_add(&tt, 1, DT_LIB_TIMELINE_ZOOM_MONTH);
+      else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_4MONTH || strip->zoom == DT_LIB_TIMELINE_ZOOM_MONTH)
+        _time_add(&tt, 1, DT_LIB_TIMELINE_ZOOM_DAY);
+      else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_10DAY)
+        _time_add(&tt, 2, DT_LIB_TIMELINE_ZOOM_HOUR);
+      else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_DAY)
+        _time_add(&tt, 1, DT_LIB_TIMELINE_ZOOM_HOUR);
+      else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_6HOUR)
+        _time_add(&tt, 3, DT_LIB_TIMELINE_ZOOM_MINUTE);
+      else if(strip->zoom == DT_LIB_TIMELINE_ZOOM_HOUR)
+        _time_add(&tt, 1, DT_LIB_TIMELINE_ZOOM_MINUTE);
     }
     strip->blocks = g_list_append(strip->blocks, bloc);
-
-    _time_add(&tt, 1, strip->zoom);
 
     w += bloc->width + 2;
     if(w > width || stat != SQLITE_ROW)
@@ -626,8 +837,8 @@ static void _lib_timeline_collection_changed(gpointer instance, gpointer user_da
   if(!read_ok) return;
 
   // is the selection up to date ?
-  if(_time_compare_at_zoom(start, strip->start_t, strip->zoom + 1) == 0
-     && _time_compare_at_zoom(stop, strip->stop_t, strip->zoom + 1) == 0)
+  if(_time_compare_at_zoom(start, strip->start_t, strip->zoom) == 0
+     && _time_compare_at_zoom(stop, strip->stop_t, strip->zoom) == 0)
     return;
 
   strip->start_t = start;
@@ -635,7 +846,7 @@ static void _lib_timeline_collection_changed(gpointer instance, gpointer user_da
   strip->has_selection = TRUE;
 
   // now we want to scroll to the start pos
-  strip->time_pos = strip->start_t;
+  strip->time_pos = _selection_scroll_to(strip->start_t, strip);
   cairo_surface_destroy(strip->surface);
   strip->surface = NULL;
   gtk_widget_queue_draw(strip->timeline);
@@ -661,7 +872,7 @@ static void _selection_collect(dt_lib_timeline_t *strip)
   }
   else if(strip->start_x == strip->stop_x)
   {
-    gchar *d1 = _time_format_for_db(strip->start_t, strip->zoom + 1, FALSE);
+    gchar *d1 = _time_format_for_db(strip->start_t, (strip->zoom + 1) / 2 * 2 + 2, FALSE);
     if(d1) coll = g_strdup_printf("1:0:5:%s$", d1);
     g_free(d1);
   }
@@ -675,8 +886,8 @@ static void _selection_collect(dt_lib_timeline_t *strip)
       start = strip->stop_t;
       stop = strip->start_t;
     }
-    gchar *d1 = _time_format_for_db(start, strip->zoom + 1, FALSE);
-    gchar *d2 = _time_format_for_db(stop, strip->zoom + 1, FALSE);
+    gchar *d1 = _time_format_for_db(start, (strip->zoom + 1) / 2 * 2 + 2, FALSE);
+    gchar *d2 = _time_format_for_db(stop, (strip->zoom + 1) / 2 * 2 + 2, FALSE);
     if(d1 && d2) coll = g_strdup_printf("1:0:5:[%s;%s]$", d1, d2);
     g_free(d1);
     g_free(d2);
@@ -700,16 +911,25 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
   const int32_t width = allocation.width;
 
   // windows could have been expanded for example, we need to create a new surface of the good size and redraw
-  if(strip->surface && width != strip->panel_width)
+  if(width != strip->panel_width)
   {
-    cairo_surface_destroy(strip->surface);
-    strip->surface = NULL;
+    // if it's the first show, we need to recompute the scroll too
+    if(strip->panel_width == 0 && strip->has_selection)
+    {
+      strip->panel_width = width;
+      strip->time_pos = _selection_scroll_to(strip->start_t, strip);
+    }
+    if(strip->surface)
+    {
+      cairo_surface_destroy(strip->surface);
+      strip->surface = NULL;
+    }
   }
 
   // create the persistent surface if it does not exists.
   if(!strip->surface)
   {
-    strip->surface_width = _block_get_at_zoom(self, allocation.width);
+    strip->surface_width = _block_get_at_zoom(self, width);
     strip->panel_width = width;
     // we set the width of a unit (bar) in the drawing (depending of the zoom level)
     int wu = _block_get_bar_width(strip->zoom);
@@ -816,7 +1036,7 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
       tt = strip->stop_t;
     else
       tt = _time_get_from_pos(strip->current_x, strip);
-    gchar *dte = _time_format_for_ui(tt, strip->zoom + 1);
+    gchar *dte = _time_format_for_ui(tt, strip->precision);
     cairo_text_extents_t te2;
     cairo_set_font_size(wcr, 10);
     cairo_text_extents(wcr, dte, &te2);
@@ -885,13 +1105,13 @@ static gboolean _lib_timeline_button_release_callback(GtkWidget *w, GdkEventButt
     strip->stop_x = e->x;
     strip->stop_t = _time_get_from_pos(e->x, strip);
     // we want to be at the "end" of this date
-    if(strip->zoom < DT_LIB_TIMELINE_ZOOM_HOUR)
+    if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_DAY)
     {
       strip->stop_t.minute = 59;
-      if(strip->zoom < DT_LIB_TIMELINE_ZOOM_DAY)
+      if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_MONTH)
       {
         strip->stop_t.hour = 23;
-        if(strip->zoom < DT_LIB_TIMELINE_ZOOM_MONTH)
+        if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_YEAR)
         {
           strip->stop_t.day = _time_days_in_month(strip->stop_t.year, strip->stop_t.month);
         }
@@ -1034,6 +1254,10 @@ static gboolean _lib_timeline_scroll_callback(GtkWidget *w, GdkEventScroll *e, g
     {
       strip->time_pos = _time_compute_offset_for_zoom(strip->current_x, strip, z);
       strip->zoom = z;
+      if(z % 2 == 0)
+        strip->precision = z + 2;
+      else
+        strip->precision = z + 1;
       cairo_surface_destroy(strip->surface);
       strip->surface = NULL;
       gtk_widget_queue_draw(strip->timeline);
@@ -1048,10 +1272,9 @@ static gboolean _lib_timeline_scroll_callback(GtkWidget *w, GdkEventScroll *e, g
       int move = -delta_x - delta_y;
       if(e->state & GDK_SHIFT_MASK) move *= 2;
 
-      if(_time_compare(strip->time_pos, strip->time_mini) <= 0 && move < 0) move = 0;
-      if(strip->panel_width >= strip->surface_width && move > 0) move = 0;
-
       _time_add(&(strip->time_pos), move, strip->zoom);
+      // we ensure that the fimlstrip stay in the bounds
+      strip->time_pos = _selection_scroll_to(strip->time_pos, strip);
 
       cairo_surface_destroy(strip->surface);
       strip->surface = NULL;
