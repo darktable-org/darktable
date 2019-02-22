@@ -860,14 +860,14 @@ static inline int isneutral(dt_iop_ashift_data_t *data)
 }
 
 
-int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
+int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const points, const size_t points_count)
 {
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
 
   // nothing to be done if parameters are set to neutral values
   if(isneutral(data)) return 1;
 
-  float homograph[3][3];
+  float *const homograph[3][3] __attribute__((aligned(16)));
   homography((float *)homograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_FORWARD);
 
@@ -878,13 +878,13 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   const float cy = fullheight * data->ct;
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(points, points_count, homograph)
+#pragma omp parallel for simd schedule(static)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    float pi[3] = { points[i], points[i + 1], 1.0f };
-    float po[3];
-    mat3mulv(po, (float *)homograph, pi);
+    float pi[3] __attribute__((aligned(16))) = { points[i], points[i + 1], 1.0f };
+    float po[3] __attribute__((aligned(16)));
+    mat3mulv(po, (float *const)homograph, pi);
     points[i] = po[0] / po[2] - cx;
     points[i + 1] = po[1] / po[2] - cy;
   }
@@ -893,15 +893,15 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 }
 
 
-int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
-                          size_t points_count)
+int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const points,
+                          const size_t points_count)
 {
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
 
   // nothing to be done if parameters are set to neutral values
   if(isneutral(data)) return 1;
 
-  float ihomograph[3][3];
+  float *const ihomograph[3][3] __attribute__((aligned(16)));
   homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
@@ -912,12 +912,12 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   const float cy = fullheight * data->ct;
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(points, points_count, ihomograph)
+#pragma omp parallel for simd schedule(static) default(none)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
-    float pi[3] = { points[i] + cx, points[i + 1] + cy, 1.0f };
-    float po[3];
+    float pi[3] __attribute__((aligned(16))) = { points[i] + cx, points[i + 1] + cy, 1.0f };
+    float po[3] __attribute__((aligned(16)));
     mat3mulv(po, (float *)ihomograph, pi);
     points[i] = po[0] / po[2];
     points[i + 1] = po[1] / po[2];
@@ -927,7 +927,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 }
 
 void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
-                  float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+                  float *const out, const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
 
@@ -938,9 +938,9 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
     return;
   }
 
-  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const struct dt_interpolation *const interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
-  float ihomograph[3][3];
+  float *const ihomograph[3][3] __attribute__((aligned(16)));
   homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
@@ -952,15 +952,15 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ihomograph, interpolation)
+#pragma omp parallel for simd schedule(static) default(none) collapse(2)
 #endif
   // go over all pixels of output image
   for(int j = 0; j < roi_out->height; j++)
   {
-    float *_out = out + (size_t)j * roi_out->width;
-    for(int i = 0; i < roi_out->width; i++, _out++)
+    for(int i = 0; i < roi_out->width; i++)
     {
-      float pin[3], pout[3];
+      float *_out = out + (size_t)j * roi_out->width + i;
+      float pin[3] __attribute__((aligned(16))), pout[3] __attribute__((aligned(16)));
 
       // convert output pixel coordinates to original image coordinates
       pout[0] = roi_out->x + i + cx;
@@ -1047,7 +1047,7 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
 }
 
 void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
-                   const dt_iop_roi_t *const roi_out, dt_iop_roi_t *roi_in)
+                   const dt_iop_roi_t *const restrict roi_out, dt_iop_roi_t *const restrict roi_in)
 {
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
   *roi_in = *roi_out;
@@ -1055,7 +1055,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   // nothing more to be done if parameters are set to neutral values
   if(isneutral(data)) return;
 
-  float ihomograph[3][3];
+  float *const ihomograph[3][3] __attribute__((aligned(16)));
   homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
@@ -1071,11 +1071,14 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
 
   // go through all four vertices of output roi and convert coordinates to input
+#ifdef _OPENMP
+#pragma omp parallel for simd schedule(static) default(none) collapse(2) shared(xm, xM, ym, yM)
+#endif
   for(int y = 0; y < roi_out->height; y += roi_out->height - 1)
   {
     for(int x = 0; x < roi_out->width; x += roi_out->width - 1)
     {
-      float pin[3], pout[3];
+      float pin[3] __attribute__((aligned(16))), pout[3] __attribute__((aligned(16)));
 
       // convert from output image coordinates to original image coordinates
       pout[0] = roi_out->x + x + cx;
@@ -1085,7 +1088,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
       pout[2] = 1.0f;
 
       // apply homograph
-      mat3mulv(pin, (float *)ihomograph, pout);
+      mat3mulv(pin, (float *const)ihomograph, pout);
 
       // convert to input image coordinates
       pin[0] /= pin[2];
@@ -1118,47 +1121,48 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
 // simple conversion of rgb image into greyscale variant suitable for line segment detection
 // the lsd routines expect input as *double, roughly in the range [0.0; 256.0]
-static void rgb2grey256(const float *in, double *out, const int width, const int height)
+static void rgb2grey256(const float *const restrict in, double *const restrict out, const int width, const int height)
 {
   const int ch = 4;
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out)
+#pragma omp parallel for simd schedule(static) default(none) collapse(2)
 #endif
   for(int j = 0; j < height; j++)
   {
-    const float *inp = in + (size_t)ch * j * width;
-    double *outp = out + (size_t)j * width;
-    for(int i = 0; i < width; i++, inp += ch, outp++)
+    for(int i = 0; i < width; i++)
     {
+      const float *inp = in + (size_t)ch * (j * width + i);
+      double *outp = out + (size_t)j * width + i;
       *outp = (0.3f * inp[0] + 0.59f * inp[1] + 0.11f * inp[2]) * 256.0;
     }
   }
 }
 
 // sobel edge enhancement in one direction
-static void edge_enhance_1d(const double *in, double *out, const int width, const int height,
+static void edge_enhance_1d(const double *const in, double *const out, const int width, const int height,
                             dt_iop_ashift_enhance_t dir)
 {
   // Sobel kernels for both directions
-  const double hkernel[3][3] = { { 1.0, 0.0, -1.0 }, { 2.0, 0.0, -2.0 }, { 1.0, 0.0, -1.0 } };
-  const double vkernel[3][3] = { { 1.0, 2.0, 1.0 }, { 0.0, 0.0, 0.0 }, { -1.0, -2.0, -1.0 } };
+  const double hkernel[3][3] __attribute__((aligned(16))) = { { 1.0, 0.0, -1.0 }, { 2.0, 0.0, -2.0 }, { 1.0, 0.0, -1.0 } };
+  const double vkernel[3][3] __attribute__((aligned(16))) = { { 1.0, 2.0, 1.0 }, { 0.0, 0.0, 0.0 }, { -1.0, -2.0, -1.0 } };
   const int kwidth = 3;
   const int khwidth = kwidth / 2;
 
   // select kernel
-  const double *kernel = (dir == ASHIFT_ENHANCE_HORIZONTAL) ? (const double *)hkernel : (const double *)vkernel;
+  const double *const kernel = (dir == ASHIFT_ENHANCE_HORIZONTAL) ? (const double *)hkernel : (const double *)vkernel;
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out, kernel)
+#pragma omp parallel for simd schedule(static) default(none) collapse(2)
 #endif
   // loop over image pixels and perform sobel convolution
   for(int j = khwidth; j < height - khwidth; j++)
   {
-    const double *inp = in + (size_t)j * width + khwidth;
-    double *outp = out + (size_t)j * width + khwidth;
-    for(int i = khwidth; i < width - khwidth; i++, inp++, outp++)
+    for(int i = khwidth; i < width - khwidth; i++)
     {
+      const double *inp = in + (size_t)j * width + khwidth + i;
+      double *outp = out + (size_t)j * width + khwidth + i;
+
       double sum = 0.0f;
       for(int jj = 0; jj < kwidth; jj++)
       {
@@ -1174,7 +1178,7 @@ static void edge_enhance_1d(const double *in, double *out, const int width, cons
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(out)
+#pragma omp parallel for simd schedule(static) default(none) collapse(2)
 #endif
   // border fill in output buffer, so we don't get pseudo lines at image frame
   for(int j = 0; j < height; j++)
@@ -1199,15 +1203,12 @@ static void edge_enhance_1d(const double *in, double *out, const int width, cons
 }
 
 // edge enhancement in both directions
-static int edge_enhance(const double *in, double *out, const int width, const int height)
+static int edge_enhance(const double *const in, double *const out, const int width, const int height)
 {
-  double *Gx = NULL;
-  double *Gy = NULL;
+  double *const Gx = malloc((size_t)width * height * sizeof(double));
+  double *const Gy =  malloc((size_t)width * height * sizeof(double));
 
-  Gx = malloc((size_t)width * height * sizeof(double));
   if(Gx == NULL) goto error;
-
-  Gy = malloc((size_t)width * height * sizeof(double));
   if(Gy == NULL) goto error;
 
   // perform edge enhancement in both directions
@@ -1216,7 +1217,7 @@ static int edge_enhance(const double *in, double *out, const int width, const in
 
 // calculate absolute values
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(Gx, Gy, out)
+#pragma omp parallel for simd schedule(static) default(none)
 #endif
   for(size_t k = 0; k < (size_t)width * height; k++)
   {
@@ -1233,8 +1234,13 @@ error:
   return FALSE;
 }
 
+/* THIS DUPLICATES common/colorspaces_inline_conversions.h
+ * PLEASE DON'T DO THAT
+ * TODO: MERGE !!!
+ * */
+
 // XYZ -> sRGB matrix
-static void XYZ_to_sRGB(const float *XYZ, float *sRGB)
+static void XYZ_to_sRGB(const float XYZ[3], float sRGB[3])
 {
   sRGB[0] =  3.1338561f * XYZ[0] - 1.6168667f * XYZ[1] - 0.4906146f * XYZ[2];
   sRGB[1] = -0.9787684f * XYZ[0] + 1.9161415f * XYZ[1] + 0.0334540f * XYZ[2];
@@ -1242,7 +1248,7 @@ static void XYZ_to_sRGB(const float *XYZ, float *sRGB)
 }
 
 // sRGB -> XYZ matrix
-static void sRGB_to_XYZ(const float *sRGB, float *XYZ)
+static void sRGB_to_XYZ(const float sRGB[3], float XYZ[3])
 {
   XYZ[0] = 0.4360747f * sRGB[0] + 0.3850649f * sRGB[1] + 0.1430804f * sRGB[2];
   XYZ[1] = 0.2225045f * sRGB[0] + 0.7168786f * sRGB[1] + 0.0606169f * sRGB[2];
@@ -1250,7 +1256,7 @@ static void sRGB_to_XYZ(const float *sRGB, float *XYZ)
 }
 
 // detail enhancement via bilateral grid (function arguments in and out may represent identical buffers)
-static int detail_enhance(const float *in, float *out, const int width, const int height)
+static int detail_enhance(const float *const in, float *const out, const int width, const int height)
 {
   const float sigma_r = 5.0f;
   const float sigma_s = fminf(width, height) * 0.02f;
@@ -1258,20 +1264,27 @@ static int detail_enhance(const float *in, float *out, const int width, const in
 
   int success = TRUE;
 
+  /* THIS MAKES A USELESS ROUNDTRIP TO Lab
+   *
+   * TODO: WRITE A PURE RGB BILATERAL FILTER
+   */
+
   // we need to convert from RGB to Lab first;
   // as colors don't matter we are safe to assume data to be sRGB
 
   // convert RGB input to Lab, use output buffer for intermediate storage
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out)
+#pragma omp parallel for simd schedule(static) default(none) collapse(2)
 #endif
   for(int j = 0; j < height; j++)
   {
-    const float *inp = in + (size_t)4 * j * width;
-    float *outp = out + (size_t)4 * j * width;
-    for(int i = 0; i < width; i++, inp += 4, outp += 4)
+    for(int i = 0; i < width; i++)
     {
-      float XYZ[3];
+      const float *inp = in + (size_t)4 * (j * width + i);
+      float *outp = out + (size_t)4 * (j * width + i);
+
+      float XYZ[3] __attribute__((aligned(16)));
+
       sRGB_to_XYZ(inp, XYZ);
       dt_XYZ_to_Lab(XYZ, outp);
     }
@@ -1292,14 +1305,15 @@ static int detail_enhance(const float *in, float *out, const int width, const in
 
   // convert resulting Lab to RGB output
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(out)
+#pragma omp parallel for simd schedule(static) default(none) collapse(2)
 #endif
   for(int j = 0; j < height; j++)
   {
-    float *outp = out + (size_t)4 * j * width;
-    for(int i = 0; i < width; i++, outp += 4)
+    for(int i = 0; i < width; i++)
     {
-      float XYZ[3];
+      float *outp = out + (size_t)4 * (j * width + i);
+      float XYZ[3] __attribute__((aligned(16)));
+
       dt_Lab_to_XYZ(outp, XYZ);
       XYZ_to_sRGB(XYZ, outp);
     }
@@ -1308,18 +1322,25 @@ static int detail_enhance(const float *in, float *out, const int width, const in
   return success;
 }
 
+/* THIS DOES A GAMMA CORRECTION BEFORE EDGE DECTECTION
+ * SOBEL FILTERS USUALLY NEED LINEAR DATA SO THIS MAY BE OUTPUTING CRAP
+ *
+ * TODO: CHECK IF IT IS REALLY NEEDED
+ */
+
 // apply gamma correction to RGB buffer (function arguments in and out may represent identical buffers)
-static void gamma_correct(const float *in, float *out, const int width, const int height)
+static void gamma_correct(const float *const in, float *const out, const int width, const int height)
 {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out)
+#pragma omp parallel for simd schedule(static) default(none) collapse(2)
 #endif
   for(int j = 0; j < height; j++)
   {
-    const float *inp = in + (size_t)4 * j * width;
-    float *outp = out + (size_t)4 * j * width;
-    for(int i = 0; i < width; i++, inp += 4, outp += 4)
+    for(int i = 0; i < width; i++)
     {
+      const float *inp = in + (size_t)4 * (j * width + i);
+      float *outp = out + (size_t)4 * (j * width + i);
+
       for(int c = 0; c < 3; c++)
         outp[c] = powf(inp[c], LSD_GAMMA);
     }
@@ -1328,7 +1349,7 @@ static void gamma_correct(const float *in, float *out, const int width, const in
 
 // do actual line_detection based on LSD algorithm and return results according
 // to this module's conventions
-static int line_detect(float *in, const int width, const int height, const int x_off, const int y_off,
+static int line_detect(float *const restrict in, const int width, const int height, const int x_off, const int y_off,
                        const float scale, dt_iop_ashift_line_t **alines, int *lcount, int *vcount, int *hcount,
                        float *vweight, float *hweight, dt_iop_ashift_enhance_t enhance, const int is_raw)
 {
@@ -2806,7 +2827,7 @@ error:
 
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+             void *const ovoid, const dt_iop_roi_t *const restrict roi_in, const dt_iop_roi_t *const restrict roi_out)
 {
   dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
@@ -2882,9 +2903,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     return;
   }
 
-  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const struct dt_interpolation *const interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
-  float ihomograph[3][3];
+  float *const ihomograph[3][3] __attribute__((aligned(16)));
   homography((float *)ihomograph, data->rotation, data->lensshift_v, data->lensshift_h, data->shear, data->f_length_kb,
              data->orthocorr, data->aspect, piece->buf_in.width, piece->buf_in.height, ASHIFT_HOMOGRAPH_INVERTED);
 
@@ -2896,15 +2917,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ihomograph, interpolation)
+#pragma omp parallel for simd schedule(static) default(none) collapse(2)
 #endif
   // go over all pixels of output image
   for(int j = 0; j < roi_out->height; j++)
   {
-    float *out = ((float *)ovoid) + (size_t)ch * j * roi_out->width;
-    for(int i = 0; i < roi_out->width; i++, out += ch)
+    for(int i = 0; i < roi_out->width; i++)
     {
-      float pin[3], pout[3];
+      float *out = ((float *)ovoid) + (size_t)ch * (j * roi_out->width + i);
+
+      float pin[3] __attribute__((aligned(16))), pout[3] __attribute__((aligned(16)));
 
       // convert output pixel coordinates to original image coordinates
       pout[0] = roi_out->x + i + cx;
@@ -2914,7 +2936,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       pout[2] = 1.0f;
 
       // apply homograph
-      mat3mulv(pin, (float *)ihomograph, pout);
+      mat3mulv(pin, (float *const)ihomograph, pout);
 
       // convert to input pixel coordinates
       pin[0] /= pin[2];
