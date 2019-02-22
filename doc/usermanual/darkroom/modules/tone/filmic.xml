@@ -219,7 +219,7 @@
         value), so the dynamic range is almost centered in 0EV. Another guide to validate the
         black exposure value is the S curve should always go through the center of the graph
         display (it will not when challenging parameter are set). Notice that the dynamic range
-        of the scene car be lower than the camera's one, especially indoors.
+        of the scene can be lower than the camera's one, especially indoors.
       </para>
     </sect5>
 
