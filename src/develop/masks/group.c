@@ -124,16 +124,16 @@ static int dt_group_events_button_released(struct dt_iop_module_t *module, float
 static int dt_group_events_mouse_moved(struct dt_iop_module_t *module, float pzx, float pzy, double pressure,
                                        int which, dt_masks_form_t *form, dt_masks_form_gui_t *gui)
 {
-  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  int closeup = dt_control_get_dev_closeup();
-  float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
-  float as = 0.005f / zoom_scale * darktable.develop->preview_pipe->backbuf_width;
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
+  const float as = 0.005f / zoom_scale * darktable.develop->preview_pipe->backbuf_width;
 
   // we first don't do anything if we are inside a scrolling session
 
   if(gui->scrollx != 0.0f && gui->scrolly != 0.0f)
   {
-    float as2 = 0.015f / zoom_scale;
+    const float as2 = 0.015f / zoom_scale;
     if((gui->scrollx - pzx < as2 && gui->scrollx - pzx > -as2)
        && (gui->scrolly - pzy < as2 && gui->scrolly - pzy > -as2))
       return 1;
@@ -186,8 +186,8 @@ static int dt_group_events_mouse_moved(struct dt_iop_module_t *module, float pzx
     int inside, inside_border, near, inside_source;
     inside = inside_border = inside_source = 0;
     near = -1;
-    float xx = pzx * darktable.develop->preview_pipe->backbuf_width,
-          yy = pzy * darktable.develop->preview_pipe->backbuf_height;
+    const float xx = pzx * darktable.develop->preview_pipe->backbuf_width,
+                yy = pzy * darktable.develop->preview_pipe->backbuf_height;
     if(sel->type & DT_MASKS_CIRCLE)
       dt_circle_get_distance(xx, yy, as, gui, pos, &inside, &inside_border, &near, &inside_source);
     else if(sel->type & DT_MASKS_PATH)
@@ -250,8 +250,8 @@ static void _inverse_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
                           float **buffer, int *width, int *height, int *posx, int *posy)
 {
   // we create a new buffer
-  int wt = piece->iwidth;
-  int ht = piece->iheight;
+  const int wt = piece->iwidth;
+  const int ht = piece->iheight;
   float *buf = malloc((size_t)ht * wt * sizeof(float));
 
   // we fill this buffer
@@ -311,7 +311,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
       ok[pos] = dt_masks_get_mask(module, piece, sel, &bufs[pos], &w[pos], &h[pos], &px[pos], &py[pos]);
       if(fpt->state & DT_MASKS_STATE_INVERSE)
       {
-        double start = dt_get_wtime();
+        const double start = dt_get_wtime();
         _inverse_mask(module, piece, sel, &bufs[pos], &w[pos], &h[pos], &px[pos], &py[pos]);
         if(darktable.unmuted & DT_DEBUG_PERF)
           dt_print(DT_DEBUG_MASKS, "[masks %s] inverse took %0.04f sec\n", sel->name, dt_get_wtime() - start);
@@ -347,7 +347,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   // and we copy each buffer inside, row by row
   for(int i = 0; i < nb; i++)
   {
-    double start = dt_get_wtime();
+    const double start = dt_get_wtime();
     if(states[i] & DT_MASKS_STATE_UNION)
     {
       for(int y = 0; y < h[i]; y++)
@@ -365,7 +365,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
       {
         for(int x = 0; x < r - l; x++)
         {
-          float b1 = (*buffer)[y * (r - l) + x];
+          const float b1 = (*buffer)[y * (r - l) + x];
           float b2 = 0.0f;
           if(y + t - py[i] >= 0 && y + t - py[i] < h[i] && x + l - px[i] >= 0 && x + l - px[i] < w[i])
             b2 = bufs[i][(y + t - py[i]) * w[i] + x + l - px[i]];
@@ -382,8 +382,8 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
       {
         for(int x = 0; x < w[i]; x++)
         {
-          float b1 = (*buffer)[(py[i] + y - t) * (r - l) + px[i] + x - l];
-          float b2 = bufs[i][y * w[i] + x] * op[i];
+          const float b1 = (*buffer)[(py[i] + y - t) * (r - l) + px[i] + x - l];
+          const float b2 = bufs[i][y * w[i] + x] * op[i];
           if(b1 > 0.0f && b2 > 0.0f) (*buffer)[(py[i] + y - t) * (r - l) + px[i] + x - l] = b1 * (1.0f - b2);
         }
       }
@@ -394,8 +394,8 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
       {
         for(int x = 0; x < w[i]; x++)
         {
-          float b1 = (*buffer)[(py[i] + y - t) * (r - l) + px[i] + x - l];
-          float b2 = bufs[i][y * w[i] + x] * op[i];
+          const float b1 = (*buffer)[(py[i] + y - t) * (r - l) + px[i] + x - l];
+          const float b2 = bufs[i][y * w[i] + x] * op[i];
           if(b1 > 0.0f && b2 > 0.0f)
             (*buffer)[(py[i] + y - t) * (r - l) + px[i] + x - l] = fmaxf((1.0f - b1) * b2, b1 * (1.0f - b2));
           else
@@ -493,7 +493,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
           for(int y = 0; y < height; y++)
             for(int x = 0; x < width; x++)
             {
-              size_t index = (size_t)y * width + x;
+              const size_t index = (size_t)y * width + x;
               bufs[index] = 1.0f - bufs[index];
             }
         }
@@ -510,7 +510,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
           for(int y = 0; y < height; y++)
             for(int x = 0; x < width; x++)
             {
-              size_t index = (size_t)y * width + x;
+              const size_t index = (size_t)y * width + x;
               buffer[index] = fmaxf(buffer[index], bufs[index] * op);
             }
         }
@@ -526,9 +526,9 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
           for(int y = 0; y < height; y++)
             for(int x = 0; x < width; x++)
             {
-              size_t index = (size_t)y * width + x;
-              float b1 = buffer[index];
-              float b2 = bufs[index];
+              const size_t index = (size_t)y * width + x;
+              const float b1 = buffer[index];
+              const float b2 = bufs[index];
               if(b1 > 0.0f && b2 > 0.0f)
                 buffer[index] = fminf(b1, b2 * op);
               else
@@ -547,9 +547,9 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
           for(int y = 0; y < height; y++)
             for(int x = 0; x < width; x++)
             {
-              size_t index = (size_t)y * width + x;
-              float b1 = buffer[index];
-              float b2 = bufs[index] * op;
+              const size_t index = (size_t)y * width + x;
+              const float b1 = buffer[index];
+              const float b2 = bufs[index] * op;
               if(b1 > 0.0f && b2 > 0.0f) buffer[index] = b1 * (1.0f - b2);
             }
         }
@@ -565,9 +565,9 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
           for(int y = 0; y < height; y++)
             for(int x = 0; x < width; x++)
             {
-              size_t index = (size_t)y * width + x;
-              float b1 = buffer[index];
-              float b2 = bufs[index] * op;
+              const size_t index = (size_t)y * width + x;
+              const float b1 = buffer[index];
+              const float b2 = bufs[index] * op;
               if(b1 > 0.0f && b2 > 0.0f)
                 buffer[index] = fmaxf((1.0f - b1) * b2, b1 * (1.0f - b2));
               else
@@ -586,7 +586,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
           for(int y = 0; y < height; y++)
             for(int x = 0; x < width; x++)
             {
-              size_t index = (size_t)y * width + x;
+              const size_t index = (size_t)y * width + x;
               buffer[index] = bufs[index] * op;
             }
         }
@@ -610,10 +610,10 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 int dt_masks_group_render_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
                               const dt_iop_roi_t *roi, float *buffer)
 {
-  double start = dt_get_wtime();
+  const double start = dt_get_wtime();
   if(!form) return 0;
 
-  int ok = dt_masks_get_mask_roi(module, piece, form, roi, buffer);
+  const int ok = dt_masks_get_mask_roi(module, piece, form, roi, buffer);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks] render all masks took %0.04f sec\n", dt_get_wtime() - start);
