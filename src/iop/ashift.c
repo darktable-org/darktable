@@ -529,7 +529,10 @@ void connect_key_accels(dt_iop_module_t *self)
 
 // multiply 3x3 matrix with 3x1 vector
 // dst needs to be different from v
-static inline void mat3mulv(float *dst, const float *const mat, const float *const v)
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static void mat3mulv(float *dst, const float *const mat, const float *const v)
 {
   for(int k = 0; k < 3; k++)
   {
@@ -541,7 +544,10 @@ static inline void mat3mulv(float *dst, const float *const mat, const float *con
 
 // multiply two 3x3 matrices
 // dst needs to be different from m1 and m2
-static inline void mat3mul(float *dst, const float *const m1, const float *const m2)
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static void mat3mul(float *dst, const float *const m1, const float *const m2)
 {
   for(int k = 0; k < 3; k++)
   {
@@ -556,7 +562,10 @@ static inline void mat3mul(float *dst, const float *const m1, const float *const
 
 // normalized product of two 3x1 vectors
 // dst needs to be different from v1 and v2
-static inline void vec3prodn(float *dst, const float *const v1, const float *const v2)
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static void vec3prodn(float *dst, const float *const v1, const float *const v2)
 {
   const float l1 = v1[1] * v2[2] - v1[2] * v2[1];
   const float l2 = v1[2] * v2[0] - v1[0] * v2[2];
@@ -574,7 +583,10 @@ static inline void vec3prodn(float *dst, const float *const v1, const float *con
 
 // normalize a 3x1 vector so that x^2 + y^2 + z^2 = 1
 // dst and v may be the same
-static inline void vec3norm(float *dst, const float *const v)
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static void vec3norm(float *dst, const float *const v)
 {
   const float sq = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 
@@ -589,7 +601,10 @@ static inline void vec3norm(float *dst, const float *const v)
 // normalize a 3x1 vector so that x^2 + y^2 = 1; a useful normalization for
 // lines in homogeneous coordinates
 // dst and v may be the same
-static inline void vec3lnorm(float *dst, const float *const v)
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static void vec3lnorm(float *dst, const float *const v)
 {
   const float sq = sqrt(v[0] * v[0] + v[1] * v[1]);
 
@@ -603,12 +618,18 @@ static inline void vec3lnorm(float *dst, const float *const v)
 
 
 // scalar product of two 3x1 vectors
-static inline float vec3scalar(const float *const v1, const float *const v2)
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static float vec3scalar(const float *const v1, const float *const v2)
 {
   return (v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2]);
 }
 
 // check if 3x1 vector is (very close to) null
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static inline int vec3isnull(const float *const v)
 {
   const float eps = 1e-10f;
