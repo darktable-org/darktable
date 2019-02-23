@@ -21,6 +21,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/imageio_png.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "develop/imageop.h"
 #include "dtgtk/button.h"
 #include "gui/gtk.h"
@@ -41,11 +42,13 @@ DT_MODULE_INTROSPECTION(1, dt_iop_lut3d_params_t)
 typedef struct dt_iop_lut3d_params_t
 {
   char filepath[512];
+  uint8_t colorspace;
 } dt_iop_lut3d_params_t;
 
 typedef struct dt_iop_lut3d_gui_data_t
 {
   GtkWidget *filepath;
+  GtkWidget *colorspace;
 } dt_iop_lut3d_gui_data_t;
 
 typedef struct dt_iop_lut3d_global_data_t
@@ -70,6 +73,7 @@ int groups()
 // From `HaldCLUT_correct.c' by Eskil Steenberg (http://www.quelsolaar.com) (BSD licensed)
 void correct_pixel(float *input, float *output, float *clut, unsigned int level)
 {
+  for(int c = 0; c < 3; ++c) input[c] = input[c] < 0.0f ? 0.0f : (input[c] > 1.0f ? 1.0f : input[c]);
   int color, red, green, blue, i, j;
   float tmp[6], r, g, b;
 //  level *= level;
@@ -320,12 +324,13 @@ uint8_t process_cube(dt_dev_pixelpipe_iop_t *piece, float **clut)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ibuf, void *const obuf,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_lut3d_params_t *params = (dt_iop_lut3d_params_t *)piece->data;
+  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)piece->data;
   const int ch = piece->colors;
+  const int colorspace = p->colorspace;
   float *clut = NULL;
   uint8_t level = 0;
 
-  if (!g_str_has_suffix (params->filepath, ".cube"))
+  if (!g_str_has_suffix (p->filepath, ".cube"))
   {
     level = process_haldclut(piece, &clut);
     level *= level;
@@ -345,8 +350,37 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       float *out = ((float *)obuf) + (size_t)ch * roi_out->width * j;
       for(int i = 0; i < roi_out->width; i++)
       {
-        for(int c = 0; c < 3; ++c) in[c] = in[c] < 0.0f ? 0.0f : (in[c] > 1.0f ? 1.0f : in[c]);
-        correct_pixel(in, out, clut, level);
+        float lin[3] = {0, 0, 0};
+        float lout[3] = {0, 0, 0};
+        if (colorspace == 0)
+        { // linear RGB
+          dt_Lab_to_prophotorgb(in, lin);
+          correct_pixel(lin, lout, clut, level);
+          dt_prophotorgb_to_Lab(lout, out);
+        }
+        else if (colorspace == 1) // gamma sRGB
+        { // linear RGB
+          dt_Lab_to_sRGB(in, lin);
+          correct_pixel(lin, lout, clut, level);
+          dt_sRGB_to_Lab(lout, out);
+        }
+        else if (colorspace == 2) // lab
+        {
+          lin[0] = in[0] / 100.0f;
+          lin[1] = in[1] / 255.0f;
+          lin[2] = in[2] / 255.0f;
+          correct_pixel(lin, lout, clut, level);
+          out[0] = lout[0] * 100.0f;
+          out[1] = lout[1] * 255.0f;
+          out[2] = lout[2] * 255.0f;
+        }
+        else if (colorspace == 3)
+        { // XYZ
+          dt_Lab_to_XYZ(in, lin);
+          correct_pixel(lin, lout, clut, level);
+          dt_XYZ_to_Lab(lout, out);
+        }
+        else for(int c = 0; c < 3; ++c) out[c] = in[c];
         in += ch;
         out += ch;
       }
@@ -381,10 +415,10 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_lut3d_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_lut3d_params_t));
   module->default_enabled = 0;
-  module->priority = 910; // module order created by iop_dependencies.py, do not edit!
+  module->priority = 680; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_lut3d_params_t);
   module->gui_data = NULL;
-  dt_iop_lut3d_params_t tmp = (dt_iop_lut3d_params_t){ { "" } };
+  dt_iop_lut3d_params_t tmp = (dt_iop_lut3d_params_t){ { "" }, 1 };
 
   memcpy(module->params, &tmp, sizeof(dt_iop_lut3d_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_lut3d_params_t));
@@ -413,6 +447,15 @@ static void filepath_callback(GtkWidget *w, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   snprintf(p->filepath, sizeof(p->filepath), "%s", gtk_entry_get_text(GTK_ENTRY(w)));
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void colorspace_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
+//  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
+  p->colorspace = dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -471,6 +514,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   gtk_entry_set_text(GTK_ENTRY(g->filepath), p->filepath);
+  dt_bauhaus_combobox_set(g->colorspace, p->colorspace);
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -479,6 +523,10 @@ setvbuf(stdout, NULL, _IONBF, 0);
 //printf("gui_init\n");
   self->gui_data = malloc(sizeof(dt_iop_lut3d_gui_data_t));
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
+//  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
+
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
   g->filepath = gtk_entry_new();
@@ -492,7 +540,20 @@ setvbuf(stdout, NULL, _IONBF, 0);
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), self);
 
-  self->widget = hbox;
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+
+  g->colorspace = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->colorspace, NULL, _("application color space"));
+  dt_bauhaus_combobox_add(g->colorspace, _("linear RGB"));
+  dt_bauhaus_combobox_add(g->colorspace, _("gamma sRGB"));
+  dt_bauhaus_combobox_add(g->colorspace, _("LAB"));
+  dt_bauhaus_combobox_add(g->colorspace, _("XYZ"));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->colorspace) , TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(g->colorspace, _("select the color space in which the LUT has to be applied\n"
+                                                 "if log RGB is desired, use unbreak module first then select linear RGB here\n"));
+  g_signal_connect(G_OBJECT(g->colorspace), "value-changed", G_CALLBACK(colorspace_callback), self);
+
+//  self->widget = hbox;
 }
 
 void gui_cleanup(dt_iop_module_t *self)
