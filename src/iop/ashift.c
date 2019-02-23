@@ -532,7 +532,7 @@ void connect_key_accels(dt_iop_module_t *self)
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static void mat3mulv(float *dst, const float *const mat, const float *const v)
+static void mat3mulv(float dst[3], const float *const mat, const float v[3])
 {
   for(int k = 0; k < 3; k++)
   {
@@ -547,7 +547,7 @@ static void mat3mulv(float *dst, const float *const mat, const float *const v)
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static void mat3mul(float *dst, const float *const m1, const float *const m2)
+static void mat3mul(float dst[3], const float *const m1, const float *const m2)
 {
   for(int k = 0; k < 3; k++)
   {
@@ -565,7 +565,7 @@ static void mat3mul(float *dst, const float *const m1, const float *const m2)
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static void vec3prodn(float *dst, const float *const v1, const float *const v2)
+static void vec3prodn(float dst[3], const float v1[3], const float v2[3])
 {
   const float l1 = v1[1] * v2[2] - v1[2] * v2[1];
   const float l2 = v1[2] * v2[0] - v1[0] * v2[2];
@@ -586,7 +586,7 @@ static void vec3prodn(float *dst, const float *const v1, const float *const v2)
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static void vec3norm(float *dst, const float *const v)
+static void vec3norm(float dst[3], const float v[3])
 {
   const float sq = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 
@@ -621,16 +621,13 @@ static void vec3lnorm(float *dst, const float *const v)
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static float vec3scalar(const float *const v1, const float *const v2)
+static float vec3scalar(const float v1[3], const float v2[3])
 {
   return (v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2]);
 }
 
 // check if 3x1 vector is (very close to) null
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline int vec3isnull(const float *const v)
+static inline int vec3isnull(const float v[3])
 {
   const float eps = 1e-10f;
   return (fabs(v[0]) < eps && fabs(v[1]) < eps && fabs(v[2]) < eps);
