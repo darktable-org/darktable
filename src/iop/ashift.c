@@ -4539,8 +4539,8 @@ void reload_defaults(dt_iop_module_t *module)
     char string_v[256];
     char string_h[256];
 
-    snprintf(string_v, sizeof(string_v), _("lens shift (%s)"), isflipped ? _("horizontal") : _("vertical"));
-    snprintf(string_h, sizeof(string_h), _("lens shift (%s)"), isflipped ? _("vertical") : _("horizontal"));
+    snprintf(string_v, sizeof(string_v), "%s", isflipped ? _("lens shift (horizontal)") : _("lens shift (vertical)"));
+    snprintf(string_h, sizeof(string_h), "%s", isflipped ? _("lens shift (vertical)") : _("lens shift (horizontal)"));
 
     dt_bauhaus_widget_set_label(g->lensshift_v, NULL, string_v);
     dt_bauhaus_widget_set_label(g->lensshift_h, NULL, string_h);
