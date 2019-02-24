@@ -219,7 +219,7 @@
         value), so the dynamic range is almost centered in 0EV. Another guide to validate the
         black exposure value is the S curve should always go through the center of the graph
         display (it will not when challenging parameter are set). Notice that the dynamic range
-        of the scene car be lower than the camera's one, especially indoors.
+        of the scene can be lower than the camera's one, especially indoors.
       </para>
     </sect5>
 
@@ -343,10 +343,10 @@
       </para>
       <para>
         When using the chrominance preservation mode, the RGB ratios are saved before any
-        correction in filmic. Only the maximum of the thre RGB channels is used in the
+        correction in filmic. Only the maximum of the three RGB channels is used in the
         tone-mapping, as an estimation of the luminance. At the end of the process, the RGB
         ratios are restored as before. This leads to marginally faster runtimes, and links the
-        thre RGB channels all along the process, to ensure the hue and the saturation are kept
+        three RGB channels all along the process, to ensure the hue and the saturation are kept
         untouched, which is desirable when you performed precise color adjustments. However,
         this does not follow the eye response to luminance, so, keeping the saturation as is
         when pushing up the luminance will always look oversaturated. This is why, when using
