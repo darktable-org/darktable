@@ -203,7 +203,7 @@ uint8_t parse_cube_line(char *line, char *token)
   while (*l != 0 && c < 3 && i < 50)
   {
     if (*l == '#' || *l == '\n' || *l == '\r')
-    { // end of useful line
+    { // end of useful part of the line
       if (i > 0)
       {
         *t = 0;
@@ -271,7 +271,7 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
       }
       else if (strcmp("LUT_1D_SIZE", token[0]) == 0)
       {
-        fprintf(stderr, "[lut3d] 1D cube lut not supported\n");
+        fprintf(stderr, "[lut3d] 1D cube lut is not supported\n");
         free(line);
         fclose(cube_file);
         return 0;
@@ -295,7 +295,7 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
       {
         if (!level)
         {
-          fprintf(stderr, "[lut3d] error cube lut size not defined\n");
+          fprintf(stderr, "[lut3d] error cube lut size is not defined\n");
           dt_free_align(lclut);
           free(line);
           fclose(cube_file);
@@ -309,7 +309,7 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
   }
   if (i != buf_size || i == 0)
   {
-    fprintf(stderr, "[lut3d] error cube lut lines number not correct\n");
+    fprintf(stderr, "[lut3d] error cube lut lines number is not correct\n");
     dt_free_align(lclut);
     free(line);
     fclose(cube_file);
@@ -454,12 +454,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_lut3d_global_data_t *gp = (dt_iop_lut3d_global_data_t *)self->data;
   if (!gp->clut)
   {
-    if (!g_str_has_suffix (p->filepath, ".cube"))
+    if (g_str_has_suffix (p->filepath, ".png") || g_str_has_suffix (p->filepath, ".PNG"))
     {
       gp->level = calculate_clut_haldclut(p->filepath, &gp->clut);
       gp->level *= gp->level;
     }
-    else if (!g_str_has_suffix (p->filepath, ".png"))
+    else if (g_str_has_suffix (p->filepath, ".cube") || g_str_has_suffix (p->filepath, ".CUBE"))
     {
       gp->level = calculate_clut_cube(p->filepath, &gp->clut);
     }
@@ -481,22 +481,13 @@ static void filepath_callback(GtkWidget *w, dt_iop_module_t *self)
   snprintf(p->filepath, sizeof(p->filepath), "%s", gtk_entry_get_text(GTK_ENTRY(w)));
 
   if (gp->clut)
-  {
+  { // the clut is obsolete
     dt_free_align(gp->clut);
   }
   gp->clut = NULL;
   gp->level = 0;
-/*
-  if (!g_str_has_suffix (p->filepath, ".cube"))
-  {
-    gp->level = calculate_clut_haldclut(p->filepath, &gp->clut);
-    gp->level *= gp->level;
-  }
-  else if (!g_str_has_suffix (p->filepath, ".png"))
-  {
-    gp->level = calculate_clut_cube(p->filepath, &gp->clut);
-  }
-  dt_dev_add_history_item(darktable.develop, self, TRUE); */
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void colorspace_callback(GtkWidget *widget, dt_iop_module_t *self)
@@ -504,7 +495,6 @@ static void colorspace_callback(GtkWidget *widget, dt_iop_module_t *self)
 //printf("colorspace_callback\n");
   if(darktable.gui->reset) return;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
-//  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   p->colorspace = dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -522,9 +512,7 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
 
   if (strlen(p->filepath) == 0 || access(p->filepath, F_OK) == -1)
   {
-    // not sure about this. How to init def_path ?
     gchar* def_path = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
-//printf("filepath = null; default path %s\n", def_path);
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), def_path);
     g_free(def_path);
   }
@@ -574,7 +562,6 @@ setvbuf(stdout, NULL, _IONBF, 0);
 //printf("gui_init\n");
   self->gui_data = malloc(sizeof(dt_iop_lut3d_gui_data_t));
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
-//  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
@@ -604,7 +591,6 @@ setvbuf(stdout, NULL, _IONBF, 0);
                                                  "if log RGB is desired, use unbreak module first then select linear RGB here\n"));
   g_signal_connect(G_OBJECT(g->colorspace), "value-changed", G_CALLBACK(colorspace_callback), self);
 
-//  self->widget = hbox;
 }
 
 void gui_cleanup(dt_iop_module_t *self)
