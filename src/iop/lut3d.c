@@ -53,6 +53,8 @@ typedef struct dt_iop_lut3d_gui_data_t
 
 typedef struct dt_iop_lut3d_global_data_t
 {
+  float *clut;  // cube lut pointer
+  uint8_t level; // cube_size
 } dt_iop_lut3d_global_data_t;
 
 const char *name()
@@ -71,7 +73,7 @@ int groups()
 }
 
 // From `HaldCLUT_correct.c' by Eskil Steenberg (http://www.quelsolaar.com) (BSD licensed)
-void correct_pixel(float *input, float *output, float *clut, unsigned int level)
+void correct_pixel(float *input, float *output, const float *const clut, const uint8_t level)
 {
   for(int c = 0; c < 3; ++c) input[c] = input[c] < 0.0f ? 0.0f : (input[c] > 1.0f ? 1.0f : input[c]);
   int color, red, green, blue, i, j;
@@ -137,13 +139,12 @@ void correct_pixel(float *input, float *output, float *clut, unsigned int level)
   output[2] = output[2] * (1 - b) + tmp[2] * b;
 }
 
-uint8_t process_haldclut(dt_dev_pixelpipe_iop_t *piece, float **clut)
+uint8_t calculate_clut_haldclut(char *filepath, float **clut)
 {
-  dt_iop_lut3d_params_t *params = (dt_iop_lut3d_params_t *)piece->data;
   dt_imageio_png_t png;
-  if(read_header(params->filepath, &png))
+  if(read_header(filepath, &png))
   {
-    fprintf(stderr, "[lut3d] invalid png header from `%s'\n", params->filepath);
+    fprintf(stderr, "[lut3d] invalid png header from `%s'\n", filepath);
     return 0;
   }
   dt_print(DT_DEBUG_DEV, "[lut3d] png: width=%d, height=%d, color_type=%d, bit_depth=%d\n", png.width,
@@ -157,6 +158,7 @@ uint8_t process_haldclut(dt_dev_pixelpipe_iop_t *piece, float **clut)
     png_destroy_read_struct(&png.png_ptr, &png.info_ptr, NULL);
     return 0;
   }
+//printf("haldclut file opened\n");
   const size_t buf_size = (size_t)png.height * png_get_rowbytes(png.png_ptr, png.info_ptr);
   dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for png lut\n", buf_size);
   uint8_t *buf = dt_alloc_align(16, buf_size);
@@ -170,7 +172,7 @@ uint8_t process_haldclut(dt_dev_pixelpipe_iop_t *piece, float **clut)
   if(read_image(&png, (void *)buf))
   {
     dt_free_align(buf);
-    fprintf(stderr, "[lut3d] could not read png image `%s'\n", params->filepath);
+    fprintf(stderr, "[lut3d] could not read png image `%s'\n", filepath);
     return 0;
   }
   float *lclut = dt_alloc_align(16, buf_size * sizeof(float));
@@ -190,7 +192,7 @@ uint8_t process_haldclut(dt_dev_pixelpipe_iop_t *piece, float **clut)
   return level;
 }
 
-uint8_t parse_line(char *line, char *token)
+uint8_t parse_cube_line(char *line, char *token)
 {
   uint8_t i, c;
   i = c = 0;
@@ -201,7 +203,7 @@ uint8_t parse_line(char *line, char *token)
   while (*l != 0 && c < 3 && i < 50)
   {
     if (*l == '#' || *l == '\n' || *l == '\r')
-    {
+    { // end of useful line
       if (i > 0)
       {
         *t = 0;
@@ -215,7 +217,7 @@ uint8_t parse_line(char *line, char *token)
       }
     }
     if (*l == ' ')
-    {
+    { // separator
       if (i > 0)
       {
         *t = 0;
@@ -225,7 +227,7 @@ uint8_t parse_line(char *line, char *token)
       }
     }
     else
-    {
+    { // capture info
       *t = *l;
       t++;
       i++;
@@ -234,9 +236,8 @@ uint8_t parse_line(char *line, char *token)
   }
   return c;
 }
-uint8_t process_cube(dt_dev_pixelpipe_iop_t *piece, float **clut)
+uint8_t calculate_clut_cube(char *filepath, float **clut)
 {
-  dt_iop_lut3d_params_t *params = (dt_iop_lut3d_params_t *)piece->data;
   FILE *cube_file;
   char *line = NULL;
   size_t len = 0;
@@ -247,26 +248,26 @@ uint8_t process_cube(dt_dev_pixelpipe_iop_t *piece, float **clut)
   uint32_t i = 0;
   uint32_t buf_size = 0;
 
-  if(!(cube_file = g_fopen(params->filepath, "r")))
+  if(!(cube_file = g_fopen(filepath, "r")))
   {
-    fprintf(stderr, "[lut3d] invalid cube file from `%s'\n", params->filepath);
+    fprintf(stderr, "[lut3d] invalid cube file from `%s'\n", filepath);
     return 0;
   }
 //printf("cube file opened\n");
   while ((read = getline(&line, &len, cube_file)) != -1)
   {
-    uint8_t nb_token = parse_line(line, &token[0][0]);
+    uint8_t nb_token = parse_cube_line(line, &token[0][0]);
     if (nb_token)
     {
 //printf("line parsed: %d tokens: %s, %s, %s\n", nb_token, (nb_token > 0) ? token[0] : "", (nb_token > 1) ? token[1] : "", (nb_token > 2) ? token[2] : "" );
       if (token[0][0] == 'T') continue;
-      if (strcmp("DOMAIN_MIN", token[0]) == 0)
+      else if (strcmp("DOMAIN_MIN", token[0]) == 0)
       {
-//        printf("->Domain min %d\n", atoll(token[1]));
+//printf("->Domain min %d\n", atoll(token[1]));
       }
       else if (strcmp("DOMAIN_MAX", token[0]) == 0)
       {
-//        printf("->Domain max %d\n", atoll(token[1]));
+//printf("->Domain max %d\n", atoll(token[1]));
       }
       else if (strcmp("LUT_1D_SIZE", token[0]) == 0)
       {
@@ -274,7 +275,7 @@ uint8_t process_cube(dt_dev_pixelpipe_iop_t *piece, float **clut)
         free(line);
         fclose(cube_file);
         return 0;
-//        printf("->Lut 1D %d\n", atoll(token[1]));
+//printf("->Lut 1D %d\n", atoll(token[1]));
       }
       else if (strcmp("LUT_3D_SIZE", token[0]) == 0)
       {
@@ -324,25 +325,17 @@ uint8_t process_cube(dt_dev_pixelpipe_iop_t *piece, float **clut)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ibuf, void *const obuf,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)piece->data;
+//printf("process\n");
+  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
+  dt_iop_lut3d_global_data_t *gp = (dt_iop_lut3d_global_data_t *)self->data;
   const int ch = piece->colors;
   const int colorspace = p->colorspace;
-  float *clut = NULL;
-  uint8_t level = 0;
-
-  if (!g_str_has_suffix (p->filepath, ".cube"))
-  {
-    level = process_haldclut(piece, &clut);
-    level *= level;
-  }
-  else
-  {
-    level = process_cube(piece, &clut);
-  }
+  const float *const clut = (float *)gp->clut;
+  const uint8_t level = gp->level;
   if (clut)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(clut, level)
+#pragma omp parallel for default(none) schedule(static) // shared(clut, level)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -385,7 +378,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         out += ch;
       }
     }
-    dt_free_align(clut);
     return;
   }
   // no clut
@@ -404,41 +396,80 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 }
-void reload_defaults(dt_iop_module_t *module)
+void reload_defaults(dt_iop_module_t *self)
 {
 }
 
-void init(dt_iop_module_t *module)
+void init(dt_iop_module_t *self)
 {
 //printf("init\n");
-  module->data = NULL;
-  module->params = calloc(1, sizeof(dt_iop_lut3d_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_lut3d_params_t));
-  module->default_enabled = 0;
-  module->priority = 680; // module order created by iop_dependencies.py, do not edit!
-  module->params_size = sizeof(dt_iop_lut3d_params_t);
-  module->gui_data = NULL;
+  self->data = NULL;
+  self->params = calloc(1, sizeof(dt_iop_lut3d_params_t));
+  self->default_params = calloc(1, sizeof(dt_iop_lut3d_params_t));
+  self->default_enabled = 0;
+  self->priority = 680; // self order created by iop_dependencies.py, do not edit!
+  self->params_size = sizeof(dt_iop_lut3d_params_t);
+  self->gui_data = NULL;
   dt_iop_lut3d_params_t tmp = (dt_iop_lut3d_params_t){ { "" }, 1 };
 
-  memcpy(module->params, &tmp, sizeof(dt_iop_lut3d_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_lut3d_params_t));
+  memcpy(self->params, &tmp, sizeof(dt_iop_lut3d_params_t));
+  memcpy(self->default_params, &tmp, sizeof(dt_iop_lut3d_params_t));
 }
 
-void init_global(dt_iop_module_so_t *module)
+void init_global(dt_iop_module_so_t *self)
 {
-  module->data = malloc(sizeof(dt_iop_lut3d_global_data_t));
+//printf("init_global\n");
+  dt_iop_lut3d_global_data_t *gd
+      = (dt_iop_lut3d_global_data_t *)malloc(sizeof(dt_iop_lut3d_global_data_t));
+  self->data = gd;
+  gd->clut = NULL;
+  gd->level = 0;
 }
 
-void cleanup(dt_iop_module_t *module)
+void cleanup(dt_iop_module_t *self)
 {
-  free(module->params);
-  module->params = NULL;
+//printf("cleanup\n");
+  free(self->params);
+  self->params = NULL;
 }
 
-void cleanup_global(dt_iop_module_so_t *module)
+void cleanup_global(dt_iop_module_so_t *self)
 {
-  free(module->data);
-  module->data = NULL;
+//printf("cleanup_global\n");
+  dt_iop_lut3d_global_data_t *gp = (dt_iop_lut3d_global_data_t *)self->data;
+  if (gp->clut)
+  {
+    dt_free_align(gp->clut);
+    gp->clut = NULL;
+  }
+  free(self->data);
+  self->data = NULL;
+}
+
+void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece)
+{
+//printf("commit\n");
+  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
+  dt_iop_lut3d_global_data_t *gp = (dt_iop_lut3d_global_data_t *)self->data;
+  if (!gp->clut)
+  {
+    if (!g_str_has_suffix (p->filepath, ".cube"))
+    {
+      gp->level = calculate_clut_haldclut(p->filepath, &gp->clut);
+      gp->level *= gp->level;
+    }
+    else if (!g_str_has_suffix (p->filepath, ".png"))
+    {
+      gp->level = calculate_clut_cube(p->filepath, &gp->clut);
+    }
+  }
+}
+
+void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+//printf("init_pipe\n");
+  // create part of the pixelpipe
 }
 
 static void filepath_callback(GtkWidget *w, dt_iop_module_t *self)
@@ -446,12 +477,31 @@ static void filepath_callback(GtkWidget *w, dt_iop_module_t *self)
 //printf("filepath_callback\n");
   if(darktable.gui->reset) return;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
+  dt_iop_lut3d_global_data_t *gp = (dt_iop_lut3d_global_data_t *)self->data;
   snprintf(p->filepath, sizeof(p->filepath), "%s", gtk_entry_get_text(GTK_ENTRY(w)));
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+  if (gp->clut)
+  {
+    dt_free_align(gp->clut);
+  }
+  gp->clut = NULL;
+  gp->level = 0;
+/*
+  if (!g_str_has_suffix (p->filepath, ".cube"))
+  {
+    gp->level = calculate_clut_haldclut(p->filepath, &gp->clut);
+    gp->level *= gp->level;
+  }
+  else if (!g_str_has_suffix (p->filepath, ".png"))
+  {
+    gp->level = calculate_clut_cube(p->filepath, &gp->clut);
+  }
+  dt_dev_add_history_item(darktable.develop, self, TRUE); */
 }
 
 static void colorspace_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
+//printf("colorspace_callback\n");
   if(darktable.gui->reset) return;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
 //  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
@@ -461,6 +511,7 @@ static void colorspace_callback(GtkWidget *widget, dt_iop_module_t *self)
 
 static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
 {
+//printf("button_clicked\n");
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
