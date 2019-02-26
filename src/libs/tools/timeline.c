@@ -55,6 +55,7 @@ typedef struct dt_lib_timeline_block_t
 {
   gchar *name;
   int *values;
+  int *collect_values;
   int values_count;
   dt_lib_timeline_time_t init;
   int width;
@@ -72,6 +73,8 @@ typedef struct dt_lib_timeline_t
   GtkWidget *timeline;
   cairo_surface_t *surface;
   int surface_width;
+  int surface_height;
+  int graph_height;
   int32_t panel_width;
 
   GList *blocks;
@@ -83,8 +86,13 @@ typedef struct dt_lib_timeline_t
   int current_x;
   dt_lib_timeline_time_t start_t;
   dt_lib_timeline_time_t stop_t;
-  gboolean has_selection;
+  // gboolean has_selection;
   gboolean selecting;
+
+  // int collect_start_x;
+  // int collect_stop_x;
+  // dt_lib_timeline_time_t collect_start_t;
+  // dt_lib_timeline_time_t collect_stop_t;
 
   gboolean autoscroll;
   gboolean in;
@@ -154,6 +162,7 @@ static void _block_free(gpointer data)
   {
     g_free(bloc->name);
     free(bloc->values);
+    free(bloc->collect_values);
     free(bloc);
   }
 }
@@ -466,47 +475,6 @@ static dt_lib_timeline_time_t _time_compute_offset_for_zoom(int pos, dt_lib_time
   return tt;
 }
 
-// get all the datetimes from the database
-static gboolean _time_read_bounds_from_db(dt_lib_module_t *self)
-{
-  dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
-
-  sqlite3_stmt *stmt;
-  const char *query = "SELECT datetime_taken FROM main.images WHERE LENGTH(datetime_taken) = 19 ORDER BY "
-                      "datetime_taken ASC LIMIT 1";
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const char *tx = (const char *)sqlite3_column_text(stmt, 0);
-    strip->time_mini.year = MAX(strtol(tx, NULL, 10), 0);
-    strip->time_mini.month = CLAMP(strtol(tx + 5, NULL, 10), 1, 12);
-    strip->time_mini.day
-        = CLAMP(strtol(tx + 8, NULL, 10), 1, _time_days_in_month(strip->time_mini.year, strip->time_mini.month));
-    strip->time_mini.hour = CLAMP(strtol(tx + 11, NULL, 10), 0, 23);
-    strip->time_mini.minute = CLAMP(strtol(tx + 14, NULL, 10), 0, 59);
-  }
-  sqlite3_finalize(stmt);
-
-  const char *query2 = "SELECT datetime_taken FROM main.images WHERE LENGTH(datetime_taken) = 19 ORDER BY "
-                       "datetime_taken DESC LIMIT 1";
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt, NULL);
-
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    const char *tx = (const char *)sqlite3_column_text(stmt, 0);
-    strip->time_maxi.year = MAX(strtol(tx, NULL, 10), 0);
-    strip->time_maxi.month = CLAMP(strtol(tx + 5, NULL, 10), 1, 12);
-    strip->time_maxi.day
-        = CLAMP(strtol(tx + 8, NULL, 10), 1, _time_days_in_month(strip->time_mini.year, strip->time_mini.month));
-    strip->time_maxi.hour = CLAMP(strtol(tx + 11, NULL, 10), 0, 23);
-    strip->time_maxi.minute = CLAMP(strtol(tx + 14, NULL, 10), 0, 59);
-  }
-  sqlite3_finalize(stmt);
-
-  return TRUE;
-}
-
 static gchar *_time_format_for_ui(dt_lib_timeline_time_t t, dt_lib_timeline_zooms_t zoom)
 {
   if(zoom == DT_LIB_TIMELINE_ZOOM_YEAR)
@@ -594,6 +562,92 @@ static gchar *_time_format_for_db(dt_lib_timeline_time_t t, dt_lib_timeline_zoom
 
   return NULL;
 }
+
+// get all the datetimes from the database
+static gboolean _time_read_bounds_from_db(dt_lib_module_t *self)
+{
+  dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
+
+  sqlite3_stmt *stmt;
+  const char *query = "SELECT datetime_taken FROM main.images WHERE LENGTH(datetime_taken) = 19 ORDER BY "
+                      "datetime_taken ASC LIMIT 1";
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *tx = (const char *)sqlite3_column_text(stmt, 0);
+    strip->time_mini.year = MAX(strtol(tx, NULL, 10), 0);
+    strip->time_mini.month = CLAMP(strtol(tx + 5, NULL, 10), 1, 12);
+    strip->time_mini.day
+        = CLAMP(strtol(tx + 8, NULL, 10), 1, _time_days_in_month(strip->time_mini.year, strip->time_mini.month));
+    strip->time_mini.hour = CLAMP(strtol(tx + 11, NULL, 10), 0, 23);
+    strip->time_mini.minute = CLAMP(strtol(tx + 14, NULL, 10), 0, 59);
+  }
+  sqlite3_finalize(stmt);
+
+  const char *query2 = "SELECT datetime_taken FROM main.images WHERE LENGTH(datetime_taken) = 19 ORDER BY "
+                       "datetime_taken DESC LIMIT 1";
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt, NULL);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *tx = (const char *)sqlite3_column_text(stmt, 0);
+    strip->time_maxi.year = MAX(strtol(tx, NULL, 10), 0);
+    strip->time_maxi.month = CLAMP(strtol(tx + 5, NULL, 10), 1, 12);
+    strip->time_maxi.day
+        = CLAMP(strtol(tx + 8, NULL, 10), 1, _time_days_in_month(strip->time_mini.year, strip->time_mini.month));
+    strip->time_maxi.hour = CLAMP(strtol(tx + 11, NULL, 10), 0, 23);
+    strip->time_maxi.minute = CLAMP(strtol(tx + 14, NULL, 10), 0, 59);
+  }
+  sqlite3_finalize(stmt);
+
+  return TRUE;
+}
+
+// get all the datetimes from the actual collection
+static gboolean _time_read_bounds_from_collection(dt_lib_module_t *self)
+{
+  dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
+
+  sqlite3_stmt *stmt;
+  const char *query = "SELECT db.datetime_taken FROM main.images AS db, memory.collected_images AS col WHERE "
+                      "db.id=col.imgid AND LENGTH(db.datetime_taken) = 19 ORDER BY "
+                      "db.datetime_taken ASC LIMIT 1";
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *tx = (const char *)sqlite3_column_text(stmt, 0);
+    strip->start_t.year = MAX(strtol(tx, NULL, 10), 0);
+    strip->start_t.month = CLAMP(strtol(tx + 5, NULL, 10), 1, 12);
+    strip->start_t.day
+        = CLAMP(strtol(tx + 8, NULL, 10), 1, _time_days_in_month(strip->time_mini.year, strip->time_mini.month));
+    strip->start_t.hour = CLAMP(strtol(tx + 11, NULL, 10), 0, 23);
+    strip->start_t.minute = CLAMP(strtol(tx + 14, NULL, 10), 0, 59);
+  }
+  sqlite3_finalize(stmt);
+
+  const char *query2 = "SELECT db.datetime_taken FROM main.images AS db, memory.collected_images AS col WHERE "
+                       "db.id=col.imgid AND LENGTH(db.datetime_taken) = 19 ORDER BY "
+                       "db.datetime_taken DESC LIMIT 1";
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt, NULL);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const char *tx = (const char *)sqlite3_column_text(stmt, 0);
+    strip->stop_t.year = MAX(strtol(tx, NULL, 10), 0);
+    strip->stop_t.month = CLAMP(strtol(tx + 5, NULL, 10), 1, 12);
+    strip->stop_t.day
+        = CLAMP(strtol(tx + 8, NULL, 10), 1, _time_days_in_month(strip->time_mini.year, strip->time_mini.month));
+    strip->stop_t.hour = CLAMP(strtol(tx + 11, NULL, 10), 0, 23);
+    strip->stop_t.minute = CLAMP(strtol(tx + 14, NULL, 10), 0, 59);
+  }
+  sqlite3_finalize(stmt);
+
+  return TRUE;
+}
+
+
 static dt_lib_timeline_time_t _time_get_from_db(gchar *tx, gboolean last)
 {
   dt_lib_timeline_time_t tt = _time_init();
@@ -668,14 +722,21 @@ static int _block_get_at_zoom(dt_lib_module_t *self, int width)
   if(_time_compare_at_zoom(strip->stop_t, strip->time_pos, strip->zoom) < 0) strip->stop_x = -1;
 
   sqlite3_stmt *stmt;
-  gchar *query = g_strdup_printf("SELECT datetime_taken FROM main.images WHERE LENGTH(datetime_taken) = 19 AND "
-                                 "datetime_taken > '%s' ORDER BY datetime_taken ASC",
+  gchar *query = g_strdup_printf("SELECT db.datetime_taken, col.imgid FROM main.images AS db LEFT JOIN "
+                                 "memory.collected_images AS col ON db.id=col.imgid WHERE "
+                                 "LENGTH(db.datetime_taken) = 19 AND "
+                                 "db.datetime_taken > '%s' ORDER BY db.datetime_taken ASC",
                                  _time_format_for_db(strip->time_pos, strip->zoom, TRUE));
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
   char *tx = "";
+  int id = 0;
   int stat = sqlite3_step(stmt);
-  if(stat == SQLITE_ROW) tx = (char *)sqlite3_column_text(stmt, 0);
+  if(stat == SQLITE_ROW)
+  {
+    tx = (char *)sqlite3_column_text(stmt, 0);
+    id = sqlite3_column_int(stmt, 1);
+  }
   dt_lib_timeline_time_t tt = strip->time_pos;
   // we round correctly this date
   if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_HOUR)
@@ -714,6 +775,7 @@ static int _block_get_at_zoom(dt_lib_module_t *self, int width)
     bloc->init = tt;
     bloc->values_count = _block_get_bar_count(tt, strip->zoom);
     bloc->values = (int *)calloc(bloc->values_count, sizeof(int));
+    bloc->collect_values = (int *)calloc(bloc->values_count, sizeof(int));
     bloc->width = bloc->values_count * _block_get_bar_width(strip->zoom);
 
     if(strip->zoom == DT_LIB_TIMELINE_ZOOM_YEAR)
@@ -737,8 +799,10 @@ static int _block_get_at_zoom(dt_lib_module_t *self, int width)
       while(stat == SQLITE_ROW && _time_compare_at_zoom(tt, _time_get_from_db(tx, FALSE), strip->zoom) == 0)
       {
         bloc->values[i]++;
+        if(id > 0) bloc->collect_values[i]++;
         stat = sqlite3_step(stmt);
         tx = (char *)sqlite3_column_text(stmt, 0);
+        id = sqlite3_column_int(stmt, 1);
       }
 
       // and we jump to next date
@@ -779,74 +843,18 @@ static void _lib_timeline_collection_changed(gpointer instance, gpointer user_da
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
 
-  // we get the serialzed rules
-  char buf[4096];
-  if(dt_collection_serialize(buf, sizeof(buf))) return;
+  // we keep in mind the actual start bounds to detect changes
+  dt_lib_timeline_time_t start = strip->start_t;
+  // we read the collect bounds
+  _time_read_bounds_from_collection(self);
 
-  // we only handle unique datetime queries
-  if(!g_str_has_prefix(buf, "1:0:5:")) return;
-
-  GRegex *regex;
-  GMatchInfo *match_info;
-  int match_count;
-  dt_lib_timeline_time_t start, stop;
-  start = stop = _time_init();
-  gboolean read_ok = FALSE;
-  // we test the range expression first
-  // 2 elements : date-time1 and  date-time2
-  regex = g_regex_new("^\\s*\\[\\s*(\\d{4}[:\\d\\s]*)\\s*;\\s*(\\d{4}[:\\d\\s]*)\\s*\\]\\s*\\$$", 0, 0, NULL);
-  g_regex_match_full(regex, buf + 6, -1, 0, 0, &match_info, NULL);
-  match_count = g_match_info_get_match_count(match_info);
-
-  if(match_count == 3)
+  // if the bounds change, we recompute the start of the strip
+  if(_time_compare_at_zoom(start, strip->start_t, strip->zoom) != 0)
   {
-    gchar *txt = g_match_info_fetch(match_info, 1);
-    gchar *txt2 = g_match_info_fetch(match_info, 2);
-
-    start = _time_get_from_db(txt, FALSE);
-    stop = _time_get_from_db(txt2, TRUE);
-
-    g_free(txt);
-    g_free(txt2);
-    read_ok = TRUE;
-  }
-  else
-  {
-    // let's see if it's a simple date
-    g_match_info_free(match_info);
-    g_regex_unref(regex);
-    regex = g_regex_new("^\\s*(\\d{4}[:\\d\\s]*)\\s*\\$$", 0, 0, NULL);
-    g_regex_match_full(regex, buf + 6, -1, 0, 0, &match_info, NULL);
-    match_count = g_match_info_get_match_count(match_info);
-    if(match_count == 2)
-    {
-      gchar *txt = g_match_info_fetch(match_info, 1);
-
-      start = _time_get_from_db(txt, FALSE);
-      stop = _time_get_from_db(txt, TRUE);
-
-      g_free(txt);
-      read_ok = TRUE;
-    }
+    strip->time_pos = _selection_scroll_to(strip->start_t, strip);
   }
 
-  g_match_info_free(match_info);
-  g_regex_unref(regex);
-
-  // did we manage to read the rule ?
-  if(!read_ok) return;
-
-  // is the selection up to date ?
-  if(_time_compare_at_zoom(start, strip->start_t, strip->zoom) == 0
-     && _time_compare_at_zoom(stop, strip->stop_t, strip->zoom) == 0)
-    return;
-
-  strip->start_t = start;
-  strip->stop_t = stop;
-  strip->has_selection = TRUE;
-
-  // now we want to scroll to the start pos
-  strip->time_pos = _selection_scroll_to(strip->start_t, strip);
+  // in any case we redraw the strip (to reflect any selected image change)
   cairo_surface_destroy(strip->surface);
   strip->surface = NULL;
   gtk_widget_queue_draw(strip->timeline);
@@ -856,25 +864,26 @@ static void _lib_timeline_collection_changed(gpointer instance, gpointer user_da
 // add the selected portions to the collect
 static void _selection_collect(dt_lib_timeline_t *strip)
 {
-  /* NOTE :
-   * we reuse the same routines as in recent-collect module
-   * so we have to construct a "serialized" rule in the form
-   * 1:0:5:xxxxxx$ where
-   * 1=one unique rule
-   * 0=add mode
-   * 5=datetime type of rule
-  */
+  // if the last rule is date-time type, we modify it
+  // else we add a new rule date-time rule
 
-  gchar *coll = NULL;
-  if(!strip->has_selection)
+  int new_rule = 0;
+  const int nb_rules = dt_conf_get_int("plugins/lighttable/collect/num_rules");
+  if(nb_rules > 0)
   {
-    coll = g_strdup("1:0:5:%$");
+    char confname[200] = { 0 };
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", nb_rules - 1);
+    if(dt_conf_get_int(confname) == DT_COLLECTION_PROP_TIME)
+      new_rule = nb_rules - 1;
+    else
+      new_rule = nb_rules;
   }
-  else if(strip->start_x == strip->stop_x)
+
+  // we construct the rule
+  gchar *coll = NULL;
+  if(strip->start_x == strip->stop_x)
   {
-    gchar *d1 = _time_format_for_db(strip->start_t, (strip->zoom + 1) / 2 * 2 + 2, FALSE);
-    if(d1) coll = g_strdup_printf("1:0:5:%s$", d1);
-    g_free(d1);
+    coll = _time_format_for_db(strip->start_t, (strip->zoom + 1) / 2 * 2 + 2, FALSE);
   }
   else
   {
@@ -888,16 +897,24 @@ static void _selection_collect(dt_lib_timeline_t *strip)
     }
     gchar *d1 = _time_format_for_db(start, (strip->zoom + 1) / 2 * 2 + 2, FALSE);
     gchar *d2 = _time_format_for_db(stop, (strip->zoom + 1) / 2 * 2 + 2, FALSE);
-    if(d1 && d2) coll = g_strdup_printf("1:0:5:[%s;%s]$", d1, d2);
+    if(d1 && d2) coll = g_strdup_printf("[%s;%s]", d1, d2);
     g_free(d1);
     g_free(d2);
   }
 
-  // we write the new collect rule
   if(coll)
   {
-    dt_collection_deserialize(coll);
+    dt_conf_set_int("plugins/lighttable/collect/num_rules", new_rule + 1);
+    char confname[200] = { 0 };
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", new_rule);
+    dt_conf_set_int(confname, DT_COLLECTION_PROP_TIME);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", new_rule);
+    dt_conf_set_int(confname, 0);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", new_rule);
+    dt_conf_set_string(confname, coll);
     g_free(coll);
+
+    dt_collection_update_query(darktable.collection);
   }
 }
 
@@ -914,7 +931,7 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
   if(width != strip->panel_width)
   {
     // if it's the first show, we need to recompute the scroll too
-    if(strip->panel_width == 0 && strip->has_selection)
+    if(strip->panel_width == 0)
     {
       strip->panel_width = width;
       strip->time_pos = _selection_scroll_to(strip->start_t, strip);
@@ -931,6 +948,8 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
   {
     strip->surface_width = _block_get_at_zoom(self, width);
     strip->panel_width = width;
+    strip->surface_height = allocation.height;
+
     // we set the width of a unit (bar) in the drawing (depending of the zoom level)
     int wu = _block_get_bar_width(strip->zoom);
 
@@ -958,6 +977,7 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
       cairo_set_font_size(cr, 10);
       cairo_text_extents(cr, blo->name, &te);
       int bh = allocation.height - te.height - 4;
+      strip->graph_height = bh;
       cairo_move_to(cr, posx + (wb - te.width) / 2 - te.x_bearing, allocation.height - 2);
       cairo_show_text(cr, blo->name);
 
@@ -967,8 +987,12 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
 
       for(int i = 0; i < blo->values_count; i++)
       {
-        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG);
+        dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 0.5);
         int h = _block_get_bar_height(blo->values[i], bh);
+        cairo_rectangle(cr, posx + (i * wu), bh - h, wu, h);
+        cairo_fill(cr);
+        dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 1.0);
+        h = _block_get_bar_height(blo->collect_values[i], bh);
         cairo_rectangle(cr, posx + (i * wu), bh - h, wu, h);
         cairo_fill(cr);
       }
@@ -984,78 +1008,80 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
   cairo_set_source_surface(wcr, strip->surface, 0, 0);
   cairo_paint(wcr);
 
-  // we eventually draw the selection
-  if(strip->has_selection)
+  // we draw the selection
+  int stop = 0;
+  int start = 0;
+  if(strip->selecting)
+    stop = strip->current_x;
+  else
+    stop = strip->stop_x;
+  if(stop > strip->start_x)
+    start = strip->start_x;
+  else
   {
-    int stop = 0;
-    int start = 0;
-    if(strip->selecting)
-      stop = strip->current_x;
-    else
-      stop = strip->stop_x;
-    if(stop > strip->start_x)
-      start = strip->start_x;
-    else
+    start = stop;
+    stop = strip->start_x;
+  }
+  // we verify that the selection is not in a hidden zone
+  if(!(start < 0 && stop < 0) && !(start > strip->panel_width && stop > strip->panel_width))
+  {
+    // we draw the selection
+    if(start >= 0)
     {
-      start = stop;
-      stop = strip->start_x;
+      // dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG);
+      dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 0.8);
+      cairo_move_to(wcr, start, 0);
+      cairo_line_to(wcr, start, allocation.height);
+      cairo_stroke(wcr);
+      dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_FILMSTRIP_BG, 0.3);
+      cairo_move_to(wcr, start, 0);
+      cairo_line_to(wcr, start, allocation.height);
+      cairo_stroke(wcr);
     }
-    // we verify that the selection is not in a hidden zone
-    if(!(start < 0 && stop < 0) && !(start > strip->panel_width && stop > strip->panel_width))
+    dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 0.5);
+    cairo_rectangle(wcr, start, 0, stop - start, allocation.height);
+    cairo_fill(wcr);
+    if(stop <= strip->panel_width)
     {
-      // we draw the selection
-      if(start >= 0)
-      {
-        // dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG);
-        dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 0.8);
-        cairo_move_to(wcr, start, 0);
-        cairo_line_to(wcr, start, allocation.height);
-        cairo_stroke(wcr);
-        dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_FILMSTRIP_BG, 0.3);
-        cairo_move_to(wcr, start, 0);
-        cairo_line_to(wcr, start, allocation.height);
-        cairo_stroke(wcr);
-      }
-      dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 0.5);
-      cairo_rectangle(wcr, start, 0, stop - start, allocation.height);
-      cairo_fill(wcr);
-      if(stop <= strip->panel_width)
-      {
-        dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 0.8);
-        cairo_move_to(wcr, stop, 0);
-        cairo_line_to(wcr, stop, allocation.height);
-        cairo_stroke(wcr);
-        dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_FILMSTRIP_BG, 0.3);
-        cairo_move_to(wcr, stop, 0);
-        cairo_line_to(wcr, stop, allocation.height);
-        cairo_stroke(wcr);
-      }
+      dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 0.8);
+      cairo_move_to(wcr, stop, 0);
+      cairo_line_to(wcr, stop, allocation.height);
+      cairo_stroke(wcr);
+      dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_FILMSTRIP_BG, 0.3);
+      cairo_move_to(wcr, stop, 0);
+      cairo_line_to(wcr, stop, allocation.height);
+      cairo_stroke(wcr);
     }
   }
 
   // we draw the line under cursor and the date-time
   if(strip->in && strip->current_x > 0)
   {
-    dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_BRUSH_TRACE);
-    cairo_move_to(wcr, strip->current_x, 0);
-    cairo_line_to(wcr, strip->current_x, allocation.height);
-    cairo_stroke(wcr);
     dt_lib_timeline_time_t tt;
     if(strip->selecting)
       tt = strip->stop_t;
     else
       tt = _time_get_from_pos(strip->current_x, strip);
-    gchar *dte = _time_format_for_ui(tt, strip->precision);
-    cairo_text_extents_t te2;
-    cairo_set_font_size(wcr, 10);
-    cairo_text_extents(wcr, dte, &te2);
-    cairo_rectangle(wcr, strip->current_x, 8, te2.width + 4, te2.height + 4);
-    dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_BRUSH_TRACE);
-    cairo_fill(wcr);
-    cairo_move_to(wcr, strip->current_x + 2, 10 + te2.height);
-    dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_BRUSH_CURSOR);
-    cairo_show_text(wcr, dte);
-    g_free(dte);
+
+    // we don't display NULL date (if it's outside bounds)
+    if(_time_compare(tt, _time_init()) != 0)
+    {
+      dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_BRUSH_TRACE);
+      cairo_move_to(wcr, strip->current_x, 0);
+      cairo_line_to(wcr, strip->current_x, allocation.height);
+      cairo_stroke(wcr);
+      gchar *dte = _time_format_for_ui(tt, strip->precision);
+      cairo_text_extents_t te2;
+      cairo_set_font_size(wcr, 10);
+      cairo_text_extents(wcr, dte, &te2);
+      cairo_rectangle(wcr, strip->current_x, 8, te2.width + 4, te2.height + 4);
+      dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_BRUSH_TRACE);
+      cairo_fill(wcr);
+      cairo_move_to(wcr, strip->current_x + 2, 10 + te2.height);
+      dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_BRUSH_CURSOR);
+      cairo_show_text(wcr, dte);
+      g_free(dte);
+    }
   }
 
   return TRUE;
@@ -1088,7 +1114,6 @@ static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton
         strip->start_t = strip->stop_t = _time_get_from_pos(e->x, strip);
       }
       strip->selecting = TRUE;
-      strip->has_selection = TRUE;
       gtk_widget_queue_draw(strip->timeline);
     }
   }
@@ -1096,7 +1121,6 @@ static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton
   {
     // we remove the selection
     strip->selecting = FALSE;
-    strip->has_selection = FALSE;
     _selection_collect(strip);
     gtk_widget_queue_draw(strip->timeline);
   }
@@ -1141,13 +1165,11 @@ static gboolean _selection_start(GtkAccelGroup *accel_group, GObject *aceelerata
 
   strip->start_x = strip->current_x;
   strip->start_t = _time_get_from_pos(strip->current_x, strip);
-  if(!strip->has_selection)
-  {
-    strip->stop_x = strip->start_x;
-    strip->stop_t = strip->start_t;
-    strip->selecting = TRUE;
-  }
-  strip->has_selection = TRUE;
+
+  strip->stop_x = strip->start_x;
+  strip->stop_t = strip->start_t;
+  strip->selecting = TRUE;
+
   gtk_widget_queue_draw(strip->timeline);
   return TRUE;
 }
@@ -1155,9 +1177,6 @@ static gboolean _selection_stop(GtkAccelGroup *accel_group, GObject *aceeleratab
                                 GdkModifierType modifier, gpointer data)
 {
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)data;
-
-  // we need to have defined a start point...
-  if(!strip->has_selection) return FALSE;
 
   strip->stop_x = strip->current_x;
   strip->stop_t = _time_get_from_pos(strip->current_x, strip);
