@@ -786,13 +786,13 @@ static const float complex point_at_arc_length (const float complex points[],
 static float *
 build_lookup_table (const int distance, const float control1, const float control2)
 {
-  float complex *clookup = dt_alloc_align (16, (distance + 2) * sizeof (float complex));
+  float complex *clookup = dt_alloc_align(64, (distance + 2) * sizeof (float complex));
 
   interpolate_cubic_bezier (I, control1 + I, control2, 1.0, clookup, distance + 2);
 
   // reparameterize bezier by x and keep only y values
 
-  float *lookup = dt_alloc_align(16, (distance + 2) * sizeof(float));
+  float *lookup = dt_alloc_align(64, (distance + 2) * sizeof(float));
   float *ptr = lookup;
   float complex *cptr = clookup + 1;
   const float complex *cptr_end = cptr + distance;
@@ -1099,7 +1099,7 @@ static float complex *create_global_distortion_map (const cairo_rectangle_int_t 
 {
   // allocate distortion map big enough to contain all paths
   const int mapsize = map_extent->width * map_extent->height;
-  float complex * map = dt_alloc_align (16, mapsize * sizeof (float complex));
+  float complex * map = dt_alloc_align(64, mapsize * sizeof (float complex));
   memset (map, 0, mapsize * sizeof (float complex));
 
   // build map
@@ -1115,7 +1115,7 @@ static float complex *create_global_distortion_map (const cairo_rectangle_int_t 
 
   if (inverted)
   {
-    float complex * const imap = dt_alloc_align (16, mapsize * sizeof (float complex));
+    float complex * const imap = dt_alloc_align (64, mapsize * sizeof (float complex));
     memset (imap, 0, mapsize * sizeof (float complex));
 
     // copy map into imap (inverted map).
@@ -3188,7 +3188,7 @@ int button_released (struct dt_iop_module_t *module,
       if (g->last_hit.layer == DT_LIQUIFY_LAYER_CENTERPOINT)
       {
         const int oldsel = !!g->last_hit.elem->header.selected;
-	unselect_all (&g->params);
+  unselect_all (&g->params);
         g->last_hit.elem->header.selected = oldsel ? 0 : g->last_hit.layer;
         handled = 1;
         goto done;
@@ -3221,7 +3221,7 @@ int button_released (struct dt_iop_module_t *module,
         dt_liquify_path_data_t *prev = node_prev (&g->params, e);
         if (prev && e->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
         {
-	  // add node to curve
+    // add node to curve
           dt_liquify_path_data_t *curve1 = (dt_liquify_path_data_t *) e;
 
           dt_liquify_path_data_t *curve2 = (dt_liquify_path_data_t *)alloc_curve_to (module, 0);
@@ -3251,7 +3251,7 @@ int button_released (struct dt_iop_module_t *module,
         }
         if (prev && e->header.type == DT_LIQUIFY_PATH_LINE_TO_V1)
         {
-	  // add node to line
+    // add node to line
           dt_liquify_warp_t *warp1 = &prev->warp;
           dt_liquify_warp_t *warp3 = &e->warp;
           const float t = find_nearest_on_line_t (warp1->point, warp3->point, pt);

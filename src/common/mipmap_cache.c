@@ -45,7 +45,7 @@
 
 #if !defined(_WIN32)
 #include <sys/statvfs.h>
-#else 
+#else
 //statvfs does not exist in Windows, providing implementation
 #include "win/statvfs.h"
 #endif
@@ -325,7 +325,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
       entry->data_size = sizeof(*dsc) + sizeof(float) * 4 * 64;
     }
 
-    entry->data = dt_alloc_align(16, entry->data_size);
+    entry->data = dt_alloc_align(64, entry->data_size);
 
     // fprintf(stderr, "[mipmap cache] alloc dynamic for key %u %p\n", key, *buf);
     if(!(entry->data))

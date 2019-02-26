@@ -232,7 +232,7 @@ restart:
   if(cache->allocate)
     cache->allocate(cache->allocate_data, entry);
   else
-    entry->data = dt_alloc_align(16, entry->data_size);
+    entry->data = dt_alloc_align(64, entry->data_size);
 
   assert(entry->data_size);
   ASAN_POISON_MEMORY_REGION(entry->data, entry->data_size);
