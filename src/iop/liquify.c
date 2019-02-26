@@ -1115,7 +1115,7 @@ static float complex *create_global_distortion_map (const cairo_rectangle_int_t 
 
   if (inverted)
   {
-    float complex * const imap = dt_alloc_align (16, mapsize * sizeof (float complex));
+    float complex * const imap = dt_alloc_align (64, mapsize * sizeof (float complex));
     memset (imap, 0, mapsize * sizeof (float complex));
 
     // copy map into imap (inverted map).
