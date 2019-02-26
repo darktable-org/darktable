@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: Darktable 2.6.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-02-22 12:01-0600\n"
-"PO-Revision-Date: 2019-02-22 14:08-0600\n"
+"PO-Revision-Date: 2019-02-26 12:26-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Tatica Leandro, Edgar Lux, Salvador Calero, J. Karlos D, "
 "Pablo Carrascón\n"
@@ -603,15 +603,15 @@ msgstr "define cuándo mostrar las barras de desplazamiento"
 
 #: ../build/src/preferences_gen.h:2920
 msgid "always show panels' scrollbars"
-msgstr "mostrar siempre los páneles de barras de deplazamiento"
+msgstr "mostrar siempre las barras de desplazamiento de los paneles"
 
 #: ../build/src/preferences_gen.h:2932
 msgid ""
 "defines whether the panel scrollbars should be always visible or activated "
 "only depending on the content.  (need a restart)"
 msgstr ""
-"establece si las barras de desplazamiento son permanentes o se activan en "
-"función del contenido"
+"establece si las barras de desplazamiento del panel son permanentes o se "
+"activan en función del contenido. (necesita reiniciarse)"
 
 #: ../build/src/preferences_gen.h:2940
 msgid "method to use for getting the display profile"
