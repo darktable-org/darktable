@@ -57,7 +57,9 @@ typedef enum dt_colorspaces_color_profile_type_t
   DT_COLORSPACE_VENDOR_MATRIX = 13,
   DT_COLORSPACE_ALTERNATE_MATRIX = 14,
   DT_COLORSPACE_BRG = 15,
-  DT_COLORSPACE_LAST = 16
+  DT_COLORSPACE_EXPORT = 16, // export and softproof are categories and will return NULL with dt_colorspaces_get_profile()
+  DT_COLORSPACE_SOFTPROOF = 17,
+  DT_COLORSPACE_LAST = 18
 } dt_colorspaces_color_profile_type_t;
 
 typedef enum dt_colorspaces_color_mode_t
@@ -72,7 +74,8 @@ typedef enum dt_colorspaces_profile_direction_t
   DT_PROFILE_DIRECTION_IN = 1 << 0,
   DT_PROFILE_DIRECTION_OUT = 1 << 1,
   DT_PROFILE_DIRECTION_DISPLAY = 1 << 2,
-  DT_PROFILE_DIRECTION_ANY = DT_PROFILE_DIRECTION_IN | DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY
+  DT_PROFILE_DIRECTION_CATEGORY = 1 << 3,  // categories will return NULL with dt_colorspaces_get_profile()
+  DT_PROFILE_DIRECTION_ANY = DT_PROFILE_DIRECTION_IN | DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY | DT_PROFILE_DIRECTION_CATEGORY
 } dt_colorspaces_profile_direction_t;
 
 typedef struct dt_colorspaces_t
@@ -88,8 +91,10 @@ typedef struct dt_colorspaces_t
   // the current set of selected profiles
   dt_colorspaces_color_profile_type_t display_type;
   dt_colorspaces_color_profile_type_t softproof_type;
+  dt_colorspaces_color_profile_type_t histogram_type;
   char display_filename[512];
   char softproof_filename[512];
+  char histogram_filename[512];
   dt_iop_color_intent_t display_intent;
   dt_iop_color_intent_t softproof_intent;
 
@@ -108,6 +113,7 @@ typedef struct dt_colorspaces_color_profile_t
   int in_pos;                               // position in input combo box, -1 if not applicable
   int out_pos;                              // position in output combo box, -1 if not applicable
   int display_pos;                          // position in display combo box, -1 if not applicable
+  int category_pos;                         // position in category combo box, -1 if not applicable
 } dt_colorspaces_color_profile_t;
 
 int mat3inv_float(float *const dst, const float *const src);

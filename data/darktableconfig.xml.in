@@ -1077,6 +1077,13 @@
     <shortdescription>expand a single darkroom module at a time</shortdescription>
     <longdescription>this option toggles the behavior of shift clicking in darkroom mode</longdescription>
   </dtconfig>
+  <dtconfig prefs="gui" section="darkroom">
+    <name>darkroom/ui/activate_expand</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>expand the module when it is activated, and collapse it when disabled</shortdescription>
+    <longdescription>this option allows to expand or collapse automatically the module when it is enabled or disabled.</longdescription>
+  </dtconfig>
   <dtconfig prefs="gui" section="lighttable">
     <name>lighttable/ui/scroll_to_module</name>
     <type>bool</type>
@@ -1110,6 +1117,13 @@
     <default>lighttable</default>
     <shortdescription>show scrollbars for center view</shortdescription>
     <longdescription>defines where scrollbars should be displayed</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
+    <name>panel_scrollbars_always_visible</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>always show panels' scrollbars</shortdescription>
+    <longdescription>defines whether the panel scrollbars should be always visible or activated only depending on the content.  (need a restart)</longdescription>
   </dtconfig>
   <dtconfig>
     <name>ui_last/expander_metadata</name>
