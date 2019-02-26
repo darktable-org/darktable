@@ -41,6 +41,11 @@ typedef enum dt_lib_timeline_zooms_t {
   DT_LIB_TIMELINE_ZOOM_MINUTE
 } dt_lib_timeline_zooms_t;
 
+typedef enum dt_lib_timeline_mode_t {
+  DT_LIB_TIMELINE_MODE_AND = 0,
+  DT_LIB_TIMELINE_MODE_RESET
+} dt_lib_timeline_mode_t;
+
 typedef struct dt_lib_timeline_time_t
 {
   int year;
@@ -74,7 +79,6 @@ typedef struct dt_lib_timeline_t
   cairo_surface_t *surface;
   int surface_width;
   int surface_height;
-  int graph_height;
   int32_t panel_width;
 
   GList *blocks;
@@ -86,13 +90,8 @@ typedef struct dt_lib_timeline_t
   int current_x;
   dt_lib_timeline_time_t start_t;
   dt_lib_timeline_time_t stop_t;
-  // gboolean has_selection;
   gboolean selecting;
-
-  // int collect_start_x;
-  // int collect_stop_x;
-  // dt_lib_timeline_time_t collect_start_t;
-  // dt_lib_timeline_time_t collect_stop_t;
+  gboolean move_edge;
 
   gboolean autoscroll;
   gboolean in;
@@ -862,14 +861,14 @@ static void _lib_timeline_collection_changed(gpointer instance, gpointer user_da
 
 
 // add the selected portions to the collect
-static void _selection_collect(dt_lib_timeline_t *strip)
+static void _selection_collect(dt_lib_timeline_t *strip, dt_lib_timeline_mode_t mode)
 {
   // if the last rule is date-time type, we modify it
   // else we add a new rule date-time rule
 
   int new_rule = 0;
   const int nb_rules = dt_conf_get_int("plugins/lighttable/collect/num_rules");
-  if(nb_rules > 0)
+  if(nb_rules > 0 && mode != DT_LIB_TIMELINE_MODE_RESET)
   {
     char confname[200] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", nb_rules - 1);
@@ -977,7 +976,6 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
       cairo_set_font_size(cr, 10);
       cairo_text_extents(cr, blo->name, &te);
       int bh = allocation.height - te.height - 4;
-      strip->graph_height = bh;
       cairo_move_to(cr, posx + (wb - te.width) / 2 - te.x_bearing, allocation.height - 2);
       cairo_show_text(cr, blo->name);
 
@@ -1102,16 +1100,19 @@ static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton
         strip->start_t = strip->stop_t;
         strip->stop_x = e->x;
         strip->stop_t = _time_get_from_pos(e->x, strip);
+        strip->move_edge = TRUE;
       }
       else if(e->x - strip->stop_x < 2 && e->x - strip->stop_x > -2)
       {
         strip->stop_x = e->x;
         strip->stop_t = _time_get_from_pos(e->x, strip);
+        strip->move_edge = TRUE;
       }
       else
       {
         strip->start_x = strip->stop_x = e->x;
         strip->start_t = strip->stop_t = _time_get_from_pos(e->x, strip);
+        strip->move_edge = FALSE;
       }
       strip->selecting = TRUE;
       gtk_widget_queue_draw(strip->timeline);
@@ -1119,10 +1120,20 @@ static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton
   }
   else if(e->button == 3)
   {
-    // we remove the selection
-    strip->selecting = FALSE;
-    _selection_collect(strip);
-    gtk_widget_queue_draw(strip->timeline);
+    // we remove the last rule if it's a datetime one
+    const int nb_rules = dt_conf_get_int("plugins/lighttable/collect/num_rules");
+    if(nb_rules > 0)
+    {
+      char confname[200] = { 0 };
+      snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", nb_rules - 1);
+      if(dt_conf_get_int(confname) == DT_COLLECTION_PROP_TIME)
+      {
+        dt_conf_set_int("plugins/lighttable/collect/num_rules", nb_rules - 1);
+        dt_collection_update_query(darktable.collection);
+
+        strip->selecting = FALSE;
+      }
+    }
   }
 
   return FALSE;
@@ -1151,7 +1162,10 @@ static gboolean _lib_timeline_button_release_callback(GtkWidget *w, GdkEventButt
       }
     }
     strip->selecting = FALSE;
-    _selection_collect(strip);
+    if(!strip->move_edge && (e->state & GDK_SHIFT_MASK))
+      _selection_collect(strip, DT_LIB_TIMELINE_MODE_RESET);
+    else
+      _selection_collect(strip, DT_LIB_TIMELINE_MODE_AND);
     gtk_widget_queue_draw(strip->timeline);
   }
 
@@ -1195,7 +1209,7 @@ static gboolean _selection_stop(GtkAccelGroup *accel_group, GObject *aceeleratab
   }
 
   strip->selecting = FALSE;
-  _selection_collect(strip);
+  _selection_collect(strip, DT_LIB_TIMELINE_MODE_AND);
   gtk_widget_queue_draw(strip->timeline);
   return TRUE;
 }
