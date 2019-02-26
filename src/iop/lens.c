@@ -366,7 +366,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     {
       // acquire temp memory for distorted pixel coords
       const size_t bufsize = (size_t)roi_out->width * 2 * 3;
-      void *buf = dt_alloc_align(16, bufsize * dt_get_num_threads() * sizeof(float));
+      void *buf = dt_alloc_align(64, bufsize * dt_get_num_threads() * sizeof(float));
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(buf, modifier) schedule(static)
@@ -439,7 +439,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   {
     // acquire temp memory for image buffer
     const size_t bufsize = (size_t)roi_in->width * roi_in->height * ch * sizeof(float);
-    void *buf = dt_alloc_align(16, bufsize);
+    void *buf = dt_alloc_align(64, bufsize);
     memcpy(buf, ivoid, bufsize);
 
     if(modflags & LF_MODIFY_VIGNETTING)
@@ -461,7 +461,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     {
       // acquire temp memory for distorted pixel coords
       const size_t buf2size = (size_t)roi_out->width * 2 * 3;
-      void *buf2 = dt_alloc_align(16, buf2size * sizeof(float) * dt_get_num_threads());
+      void *buf2 = dt_alloc_align(64, buf2size * sizeof(float) * dt_get_num_threads());
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(buf2, buf, modifier) schedule(static)
@@ -593,7 +593,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       return FALSE;
   }
 
-  tmpbuf = (float *)dt_alloc_align(16, tmpbuflen);
+  tmpbuf = (float *)dt_alloc_align(64, tmpbuflen);
   if(tmpbuf == NULL) goto error;
 
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
@@ -881,7 +881,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
   // acquire temp memory for distorted pixel coords
   const size_t bufsize = (size_t)roi_out->width * 2 * 3;
-  float *buf = dt_alloc_align(16, bufsize * sizeof(float) * dt_get_num_threads());
+  float *buf = dt_alloc_align(64, bufsize * sizeof(float) * dt_get_num_threads());
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(buf, modifier) schedule(static)
@@ -948,7 +948,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
     const size_t nbpoints = 2 * awidth + 2 * aheight;
 
-    float *const buf = dt_alloc_align(16, nbpoints * 2 * 3 * sizeof(float));
+    float *const buf = dt_alloc_align(64, nbpoints * 2 * 3 * sizeof(float));
 
 #ifdef _OPENMP
 #pragma omp parallel default(none) shared(modifier) reduction(min : xm, ym) reduction(max : xM, yM)

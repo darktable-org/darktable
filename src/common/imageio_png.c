@@ -188,7 +188,7 @@ dt_imageio_retval_t dt_imageio_open_png(dt_image_t *img, const char *filename, d
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  buf = dt_alloc_align(16, (size_t)image.height * png_get_rowbytes(image.png_ptr, image.info_ptr));
+  buf = dt_alloc_align(64, (size_t)image.height * png_get_rowbytes(image.png_ptr, image.info_ptr));
 
   if(!buf)
   {

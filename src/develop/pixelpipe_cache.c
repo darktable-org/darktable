@@ -48,7 +48,7 @@ int dt_dev_pixelpipe_cache_init(dt_dev_pixelpipe_cache_t *cache, int entries, si
     cache->size[k] = size;
     if(size)
     { // allow 0 initial buffer size (yet unknown dimensions)
-      cache->data[k] = (void *)dt_alloc_align(16, size);
+      cache->data[k] = (void *)dt_alloc_align(64, size);
       if(!cache->data[k]) goto alloc_memory_fail;
 #ifdef _DEBUG
       memset(cache->data[k], 0x5d, size);
@@ -170,7 +170,7 @@ int dt_dev_pixelpipe_cache_get_weighted(dt_dev_pixelpipe_cache_t *cache, const u
     if(cache->size[max] < size)
     {
       dt_free_align(cache->data[max]);
-      cache->data[max] = (void *)dt_alloc_align(16, size);
+      cache->data[max] = (void *)dt_alloc_align(64, size);
       cache->size[max] = size;
     }
     *data = cache->data[max];
