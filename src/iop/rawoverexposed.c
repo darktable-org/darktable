@@ -44,7 +44,7 @@ typedef struct dt_iop_rawoverexposed_t
   int dummy;
 } dt_iop_rawoverexposed_t;
 
-static const float dt_iop_rawoverexposed_colors[][4] __attribute__((aligned(16))) = {
+static const float dt_iop_rawoverexposed_colors[][4] __attribute__((aligned(64))) = {
   { 1.0f, 0.0f, 0.0f, 1.0f }, // red
   { 0.0f, 1.0f, 0.0f, 1.0f }, // green
   { 0.0f, 0.0f, 1.0f, 1.0f }, // blue
@@ -185,7 +185,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   // acquire temp memory for distorted pixel coords
   const size_t coordbufsize = (size_t)roi_out->width * 2;
-  void *coordbuf = dt_alloc_align(16, coordbufsize * sizeof(float) * dt_get_num_threads());
+  void *coordbuf = dt_alloc_align(64, coordbufsize * sizeof(float) * dt_get_num_threads());
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) shared(self, coordbuf, buf) schedule(static)
@@ -307,7 +307,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   const size_t coordbufsize = (size_t)height * width * 2 * sizeof(float);
 
-  coordbuf = dt_alloc_align(16, coordbufsize);
+  coordbuf = dt_alloc_align(64, coordbufsize);
   if(coordbuf == NULL) goto error;
 
 #ifdef _OPENMP
