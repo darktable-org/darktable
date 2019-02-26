@@ -357,7 +357,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           correct_pixel(lin, lout, clut, level);
           dt_sRGB_to_Lab(lout, out);
         }
-        else if (colorspace == 2) // lab
+        else if (colorspace == 2) // REC.709
+        {
+          dt_Lab_to_REC709(in, lin);
+          correct_pixel(lin, lout, clut, level);
+          dt_REC709_to_Lab(lout, out);
+        }
+        else if (colorspace == 3)
+        { // XYZ
+          dt_Lab_to_XYZ(in, lin);
+          correct_pixel(lin, lout, clut, level);
+          dt_XYZ_to_Lab(lout, out);
+        }
+        else if (colorspace == 4) // lab
         {
           lin[0] = in[0] / 100.0f;
           lin[1] = in[1] / 255.0f;
@@ -366,12 +378,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           out[0] = lout[0] * 100.0f;
           out[1] = lout[1] * 255.0f;
           out[2] = lout[2] * 255.0f;
-        }
-        else if (colorspace == 3)
-        { // XYZ
-          dt_Lab_to_XYZ(in, lin);
-          correct_pixel(lin, lout, clut, level);
-          dt_XYZ_to_Lab(lout, out);
         }
         else for(int c = 0; c < 3; ++c) out[c] = in[c];
         in += ch;
@@ -452,7 +458,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 //printf("commit\n");
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   dt_iop_lut3d_global_data_t *gp = (dt_iop_lut3d_global_data_t *)self->data;
-  if (!gp->clut)
+  if (p->filepath[0] && !gp->clut)
   {
     if (g_str_has_suffix (p->filepath, ".png") || g_str_has_suffix (p->filepath, ".PNG"))
     {
@@ -497,6 +503,10 @@ static void colorspace_callback(GtkWidget *widget, dt_iop_module_t *self)
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   p->colorspace = dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+// I've noticed that when I switch between 2 colorspaces back and forth dt stops quikly refreshing ...
+// I've seen the same defect on other modules too.
+// the I've added the following to overcome
+//  dt_dev_reprocess_all(self->dev);
 }
 
 static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
@@ -583,8 +593,8 @@ setvbuf(stdout, NULL, _IONBF, 0);
   g->colorspace = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->colorspace, NULL, _("application color space"));
   dt_bauhaus_combobox_add(g->colorspace, _("linear RGB"));
-  dt_bauhaus_combobox_add(g->colorspace, _("gamma sRGB"));
-  dt_bauhaus_combobox_add(g->colorspace, _("LAB"));
+  dt_bauhaus_combobox_add(g->colorspace, _("sRGB"));
+  dt_bauhaus_combobox_add(g->colorspace, _("REC.709"));
   dt_bauhaus_combobox_add(g->colorspace, _("XYZ"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->colorspace) , TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->colorspace, _("select the color space in which the LUT has to be applied\n"
