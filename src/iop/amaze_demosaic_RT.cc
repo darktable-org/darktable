@@ -2109,8 +2109,8 @@ void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
                                     * tempv;
               vfloat redv2 = greenv - vdup(LVFU(Dgrb[0][indx >> 1]));
               vfloat bluev2 = greenv - vdup(LVFU(Dgrb[1][indx >> 1]));
-              __attribute__((aligned(16))) float _r[4];
-              __attribute__((aligned(16))) float _b[4];
+              __attribute__((aligned(64))) float _r[4];
+              __attribute__((aligned(64))) float _b[4];
               STVF(*_r, vself(selmask, redv1, redv2));
               STVF(*_b, vself(selmask, bluev1, bluev2));
               for(int c = 0; c < 4; c++)

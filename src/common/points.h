@@ -145,10 +145,10 @@ static inline float dt_points_get()
 */
 
 /** These definitions are part of a 128-bit period certification vector.
-#define PARITY1	0x00000001U
-#define PARITY2	0x00000000U
-#define PARITY3	0x00000000U
-#define PARITY4	0xc98e126aU
+#define PARITY1 0x00000001U
+#define PARITY2 0x00000000U
+#define PARITY3 0x00000000U
+#define PARITY4 0xc98e126aU
 */
 
 #if 0
@@ -1125,7 +1125,7 @@ void init_by_array(sfmt_state_t *s, uint32_t *init_key, int key_length)
 
 static inline void dt_points_init(dt_points_t *p, const unsigned int num_threads)
 {
-  sfmt_state_t *states = (sfmt_state_t *)dt_alloc_align(16, sizeof(sfmt_state_t) * num_threads);
+  sfmt_state_t *states = (sfmt_state_t *)dt_alloc_align(64, sizeof(sfmt_state_t) * num_threads);
   p->s = (sfmt_state_t **)calloc(num_threads, sizeof(sfmt_state_t *));
   p->num = num_threads;
 
