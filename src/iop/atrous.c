@@ -146,9 +146,9 @@ void connect_key_accels(dt_iop_module_t *self)
     (a), (a), (a), (a)                                                                                       \
   }
 
-static const __m128 fone ALIGNED(16) = VEC4(0x3f800000u);
-static const __m128 femo ALIGNED(16) = VEC4(0x00adf880u);
-static const __m128 ooo1 ALIGNED(16) = { 0.f, 0.f, 0.f, 1.f };
+static const __m128 fone ALIGNED(64) = VEC4(0x3f800000u);
+static const __m128 femo ALIGNED(64) = VEC4(0x00adf880u);
+static const __m128 ooo1 ALIGNED(64) = { 0.f, 0.f, 0.f, 1.f };
 
 /* SSE intrinsics version of dt_fast_expf defined in darktable.h */
 static inline __m128 dt_fast_expf_sse2(const __m128 x)

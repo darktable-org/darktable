@@ -1767,7 +1767,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   dev_r = dt_opencl_alloc_device_buffer(devid, (size_t)reducesize * 4 * sizeof(float));
   if(dev_r == NULL) goto error;
 
-  sumsum = dt_alloc_align(16, (size_t)reducesize * 4 * sizeof(float));
+  sumsum = dt_alloc_align(64, (size_t)reducesize * 4 * sizeof(float));
   if(sumsum == NULL) goto error;
 
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));

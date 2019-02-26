@@ -953,7 +953,7 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
 
   unsigned int *const tea_states = calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
 
-  buf = dt_alloc_align(16, width * height * bpp);
+  buf = dt_alloc_align(64, width * height * bpp);
   if(buf == NULL) goto error;
 
 #ifdef _OPENMP
@@ -1026,7 +1026,7 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
 
   unsigned int *const tea_states = calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
 
-  buf = dt_alloc_align(16, width * height * bpp);
+  buf = dt_alloc_align(64, width * height * bpp);
   if(buf == NULL) goto error;
 
 #ifdef _OPENMP
