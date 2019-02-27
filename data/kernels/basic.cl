@@ -625,14 +625,18 @@ rgb_norm_vect (float4 rgb, int rgb_norm, float norm_exp)
     {
       return max(rgb.x, max(rgb.y, rgb.z));
     }
-  case 2:  // general Lp norm (pseudo-norm if p < 1) - slow variant
+  case 2:  // norm L average(rgb)
+    {
+      return (rgb.x + rgb.y + rgb.z) / 3.0f;
+    }
+  case 3:  // general Lp norm (pseudo-norm if p < 1) - slow variant
     {
       return native_powr((native_powr(rgb.x, norm_exp) +
                 native_powr(rgb.y, norm_exp) +
                 native_powr(rgb.z, norm_exp)), 1.0f/norm_exp);
       break;
     }
-  case 3:  // basic power norm
+  case 4:  // basic power norm
     {
       float R, G, B;
       R = rgb.x * rgb.x;
@@ -640,7 +644,7 @@ rgb_norm_vect (float4 rgb, int rgb_norm, float norm_exp)
       B = rgb.z * rgb.z;
       return (rgb.x * R + rgb.y * G + rgb.z * B) / (R + G + B);
     }
-  case 4: // weighted yellow power norm
+  case 5: // weighted yellow power norm
     {
       const float4 coeff = {1.22f, 1.20f, 0.58f, 1.0f};
       const float4 coeff4 = {2.21533456f, 2.0736f, 0.11316496f, 1.0f};  // 1.22^4, 1.20^4, 0.58^4

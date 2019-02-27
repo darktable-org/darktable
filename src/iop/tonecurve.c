@@ -279,19 +279,20 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
                                         { { 0.0, 0.0 }, { 0.5, 0.5 }, { 1.0, 1.0 } },
                                         { { 0.0, 0.0 }, { 1.0, 1.0 } } },
                                       { 2, 3, 3, 2 },
-                                      { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
-                                      1,
+                                      { CUBIC_SPLINE, CUBIC_SPLINE, CUBIC_SPLINE, CUBIC_SPLINE },
+                                      DT_S_SCALE_AUTOMATIC_LAB,
                                       0,
-                                      1 };
+                                      0,
+                                      2};
     for(int k = 0; k < 6; k++) n->tonecurve[ch_L][k].x = o->tonecurve_x[k];
     for(int k = 0; k < 6; k++) n->tonecurve[ch_L][k].y = o->tonecurve_y[k];
     n->tonecurve_nodes[ch_L] = 6;
-    n->tonecurve_type[ch_L] = CUBIC_SPLINE;
-    n->tonecurve_tc_mode = DT_S_SCALE_AUTOMATIC_LAB;
+//    n->tonecurve_type[ch_L] = CUBIC_SPLINE;
+//    n->tonecurve_tc_mode = DT_S_SCALE_AUTOMATIC_LAB;
     n->tonecurve_preset = o->tonecurve_preset;
-    n->tonecurve_unbound_ab = 0;
-    n->rgb_norm = 0;
-    n->rgb_norm_exp = 2.0f;
+//    n->tonecurve_unbound_ab = 0;
+//    n->rgb_norm = 0;
+//    n->rgb_norm_exp = 2.0f;
     return 0;
   }
   else if(old_version == 2 && new_version == 5)
@@ -336,9 +337,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 typedef enum dt_rgb_norm_t //
 {
   DT_RGB_NORM_L = 1,
-  DT_RGB_NORM_LP = 2,
-  DT_RGB_NORM_BP = 3,
-  DT_RGB_NORM_WYP = 4,
+  DT_RGB_NORM_AVG = 2,
+  DT_RGB_NORM_LP = 3,
+  DT_RGB_NORM_BP = 4,
+  DT_RGB_NORM_WYP = 5,
 } dt_rgb_norm_t;
 
 float dt_rgb_norm_vect(float rgb[4], int rgb_norm, float norm_exp)
@@ -346,18 +348,18 @@ float dt_rgb_norm_vect(float rgb[4], int rgb_norm, float norm_exp)
 // RGB values are in[0,1]
 // ensure (norm >= 0.0f) in GUI controls for better perf
 
-// no RGB value shall be < 0 until we discover negative light energy
-// because of this, we can avoid to fabsf(RGB) and speed thins up
   if(rgb[0] < 0.0f || rgb[1] < 0.0f || rgb[2] < 0.0f) return -1;
 
   switch(rgb_norm)
   {
   case DT_RGB_NORM_L:  // norm L infinite = max
     return fmaxf(rgb[0], fmaxf(rgb[1], rgb[2]));
+  case DT_RGB_NORM_AVG:  // norm L average(rgb)
+      return (rgb[0] + rgb[1] + rgb[2]) / 3.0f;
   case DT_RGB_NORM_LP:  // general Lp norm (pseudo-norm if p < 1) - slow variant
-    if (norm_exp == 1.0f) return (rgb[0] + rgb[1] + rgb[2]) / 3.0f;
-    else if (norm_exp == 2.0f) return sqrtf((rgb[0] * rgb[0] + rgb[1] * rgb[1] + rgb[2] * rgb[2]) / 3.0f);
-    return powf((powf(rgb[0], norm_exp) + powf(rgb[1], norm_exp) + powf(rgb[2], norm_exp)) /3.0f, 1.0f/norm_exp);
+    if (norm_exp == 1.0f) return (rgb[0] + rgb[1] + rgb[2]);
+    else if (norm_exp == 2.0f) return sqrtf((rgb[0] * rgb[0] + rgb[1] * rgb[1] + rgb[2] * rgb[2]));
+    return powf((powf(rgb[0], norm_exp) + powf(rgb[1], norm_exp) + powf(rgb[2], norm_exp)), 1.0f/norm_exp);
   case DT_RGB_NORM_BP:  // basic power norm
     {
       float R, G, B;
@@ -1258,7 +1260,9 @@ setvbuf(stdout, NULL, _IONBF, 0);
     // { CUBIC_SPLINE, CUBIC_SPLINE, CUBIC_SPLINE},
     DT_S_SCALE_AUTOMATIC_RGB, // tc_mode
     0,
-    1 // unbound_ab
+    1, // unbound_ab
+    0, //rgb_norm
+    2, //rgb_norm_exp
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_tonecurve_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_tonecurve_params_t));
@@ -1336,7 +1340,7 @@ static void rgb_norm_callback(GtkWidget *widget, dt_iop_module_t *self)
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   p->rgb_norm = dt_bauhaus_combobox_get(widget);
-  if (dt_bauhaus_combobox_get(g->rgb_norm) == DT_RGB_NORM_LP)
+  if (p->rgb_norm == DT_RGB_NORM_LP)
     gtk_widget_set_visible(g->rgb_norm_exp, TRUE);
   else
     gtk_widget_set_visible(g->rgb_norm_exp, FALSE);
@@ -1351,7 +1355,7 @@ static void rgb_norm_exp_callback(GtkWidget *slider, dt_iop_module_t *self)
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   if (dt_bauhaus_combobox_get(g->rgb_norm) == DT_RGB_NORM_LP)
   {
-    p->rgb_norm_exp = dt_bauhaus_slider_get(g->rgb_norm_exp);
+    p->rgb_norm_exp = dt_bauhaus_slider_get(slider);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     gtk_widget_queue_draw(self->widget);
   }
@@ -1822,6 +1826,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(c->rgb_norm, NULL, _("rgb norm"));
   dt_bauhaus_combobox_add(c->rgb_norm, _("none"));
   dt_bauhaus_combobox_add(c->rgb_norm, _("L infinite (maxRGB)"));
+  dt_bauhaus_combobox_add(c->rgb_norm, _("L average (avgRGB)"));
   dt_bauhaus_combobox_add(c->rgb_norm, _("L power"));
   dt_bauhaus_combobox_add(c->rgb_norm, _("basic power"));
   dt_bauhaus_combobox_add(c->rgb_norm, _("weighted yellow power"));
