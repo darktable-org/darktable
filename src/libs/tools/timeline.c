@@ -90,6 +90,7 @@ typedef struct dt_lib_timeline_t
   int current_x;
   dt_lib_timeline_time_t start_t;
   dt_lib_timeline_time_t stop_t;
+  gboolean has_selection;
   gboolean selecting;
   gboolean move_edge;
 
@@ -568,7 +569,8 @@ static gboolean _time_read_bounds_from_db(dt_lib_module_t *self)
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
 
   sqlite3_stmt *stmt;
-  const char *query = "SELECT datetime_taken FROM main.images WHERE LENGTH(datetime_taken) = 19 ORDER BY "
+  const char *query = "SELECT datetime_taken FROM main.images WHERE LENGTH(datetime_taken) = 19 AND "
+                      "datetime_taken > '0001:01:01 00:00:00' ORDER BY "
                       "datetime_taken ASC LIMIT 1";
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
@@ -581,10 +583,14 @@ static gboolean _time_read_bounds_from_db(dt_lib_module_t *self)
         = CLAMP(strtol(tx + 8, NULL, 10), 1, _time_days_in_month(strip->time_mini.year, strip->time_mini.month));
     strip->time_mini.hour = CLAMP(strtol(tx + 11, NULL, 10), 0, 23);
     strip->time_mini.minute = CLAMP(strtol(tx + 14, NULL, 10), 0, 59);
+    strip->has_selection = TRUE;
   }
+  else
+    strip->has_selection = FALSE;
   sqlite3_finalize(stmt);
 
-  const char *query2 = "SELECT datetime_taken FROM main.images WHERE LENGTH(datetime_taken) = 19 ORDER BY "
+  const char *query2 = "SELECT datetime_taken FROM main.images WHERE LENGTH(datetime_taken) = 19 AND "
+                       "datetime_taken > '0001:01:01 00:00:00' ORDER BY "
                        "datetime_taken DESC LIMIT 1";
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt, NULL);
 
@@ -610,7 +616,8 @@ static gboolean _time_read_bounds_from_collection(dt_lib_module_t *self)
 
   sqlite3_stmt *stmt;
   const char *query = "SELECT db.datetime_taken FROM main.images AS db, memory.collected_images AS col WHERE "
-                      "db.id=col.imgid AND LENGTH(db.datetime_taken) = 19 ORDER BY "
+                      "db.id=col.imgid AND LENGTH(db.datetime_taken) = 19 AND db.datetime_taken > '0001:01:01 "
+                      "00:00:00' ORDER BY "
                       "db.datetime_taken ASC LIMIT 1";
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
@@ -623,11 +630,15 @@ static gboolean _time_read_bounds_from_collection(dt_lib_module_t *self)
         = CLAMP(strtol(tx + 8, NULL, 10), 1, _time_days_in_month(strip->time_mini.year, strip->time_mini.month));
     strip->start_t.hour = CLAMP(strtol(tx + 11, NULL, 10), 0, 23);
     strip->start_t.minute = CLAMP(strtol(tx + 14, NULL, 10), 0, 59);
+    strip->has_selection = TRUE;
   }
+  else
+    strip->has_selection = FALSE;
   sqlite3_finalize(stmt);
 
   const char *query2 = "SELECT db.datetime_taken FROM main.images AS db, memory.collected_images AS col WHERE "
-                       "db.id=col.imgid AND LENGTH(db.datetime_taken) = 19 ORDER BY "
+                       "db.id=col.imgid AND LENGTH(db.datetime_taken) = 19 AND db.datetime_taken > '0001:01:01 "
+                       "00:00:00' ORDER BY "
                        "db.datetime_taken DESC LIMIT 1";
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt, NULL);
 
@@ -698,7 +709,7 @@ static dt_lib_timeline_time_t _selection_scroll_to(dt_lib_timeline_time_t t, dt_
     // we test the previous date
     _time_add(&tt, -1, strip->zoom);
   }
-  // if we are here that me we fail to scroll... why ?
+  // if we are here that means we fail to scroll... why ?
   return t;
 }
 
@@ -837,18 +848,33 @@ static int _block_get_at_zoom(dt_lib_module_t *self, int width)
   return w;
 }
 
+static gboolean _time_is_visible(dt_lib_timeline_time_t t, dt_lib_timeline_t *strip)
+{
+  // first case, the date is before the strip
+  if(_time_compare_at_zoom(t, strip->time_pos, strip->zoom) < 0) return FALSE;
+
+  // now the end of the visible strip
+  // if the date is in the last block, we consider it's outside, because the last block can be partially hidden
+  GList *bl = g_list_last(strip->blocks);
+  if(bl)
+  {
+    dt_lib_timeline_block_t *blo = bl->data;
+    if(_time_compare_at_zoom(t, blo->init, strip->zoom) > 0) return FALSE;
+  }
+
+  return TRUE;
+}
+
 static void _lib_timeline_collection_changed(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_timeline_t *strip = (dt_lib_timeline_t *)self->data;
 
-  // we keep in mind the actual start bounds to detect changes
-  dt_lib_timeline_time_t start = strip->start_t;
   // we read the collect bounds
   _time_read_bounds_from_collection(self);
 
-  // if the bounds change, we recompute the start of the strip
-  if(_time_compare_at_zoom(start, strip->start_t, strip->zoom) != 0)
+  // if the start in not visible, we recompute the start of the strip
+  if(!_time_is_visible(strip->start_t, strip))
   {
     strip->time_pos = _selection_scroll_to(strip->start_t, strip);
   }
@@ -1007,48 +1033,51 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
   cairo_paint(wcr);
 
   // we draw the selection
-  int stop = 0;
-  int start = 0;
-  if(strip->selecting)
-    stop = strip->current_x;
-  else
-    stop = strip->stop_x;
-  if(stop > strip->start_x)
-    start = strip->start_x;
-  else
+  if(strip->has_selection)
   {
-    start = stop;
-    stop = strip->start_x;
-  }
-  // we verify that the selection is not in a hidden zone
-  if(!(start < 0 && stop < 0) && !(start > strip->panel_width && stop > strip->panel_width))
-  {
-    // we draw the selection
-    if(start >= 0)
+    int stop = 0;
+    int start = 0;
+    if(strip->selecting)
+      stop = strip->current_x;
+    else
+      stop = strip->stop_x;
+    if(stop > strip->start_x)
+      start = strip->start_x;
+    else
     {
-      // dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG);
-      dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 0.8);
-      cairo_move_to(wcr, start, 0);
-      cairo_line_to(wcr, start, allocation.height);
-      cairo_stroke(wcr);
-      dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_FILMSTRIP_BG, 0.3);
-      cairo_move_to(wcr, start, 0);
-      cairo_line_to(wcr, start, allocation.height);
-      cairo_stroke(wcr);
+      start = stop;
+      stop = strip->start_x;
     }
-    dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 0.5);
-    cairo_rectangle(wcr, start, 0, stop - start, allocation.height);
-    cairo_fill(wcr);
-    if(stop <= strip->panel_width)
+    // we verify that the selection is not in a hidden zone
+    if(!(start < 0 && stop < 0) && !(start > strip->panel_width && stop > strip->panel_width))
     {
-      dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 0.8);
-      cairo_move_to(wcr, stop, 0);
-      cairo_line_to(wcr, stop, allocation.height);
-      cairo_stroke(wcr);
-      dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_FILMSTRIP_BG, 0.3);
-      cairo_move_to(wcr, stop, 0);
-      cairo_line_to(wcr, stop, allocation.height);
-      cairo_stroke(wcr);
+      // we draw the selection
+      if(start >= 0)
+      {
+        // dt_gui_gtk_set_source_rgb(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG);
+        dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 0.8);
+        cairo_move_to(wcr, start, 0);
+        cairo_line_to(wcr, start, allocation.height);
+        cairo_stroke(wcr);
+        dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_FILMSTRIP_BG, 0.3);
+        cairo_move_to(wcr, start, 0);
+        cairo_line_to(wcr, start, allocation.height);
+        cairo_stroke(wcr);
+      }
+      dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 0.5);
+      cairo_rectangle(wcr, start, 0, stop - start, allocation.height);
+      cairo_fill(wcr);
+      if(stop <= strip->panel_width)
+      {
+        dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_THUMBNAIL_HOVER_BG, 0.8);
+        cairo_move_to(wcr, stop, 0);
+        cairo_line_to(wcr, stop, allocation.height);
+        cairo_stroke(wcr);
+        dt_gui_gtk_set_source_rgba(wcr, DT_GUI_COLOR_FILMSTRIP_BG, 0.3);
+        cairo_move_to(wcr, stop, 0);
+        cairo_line_to(wcr, stop, allocation.height);
+        cairo_stroke(wcr);
+      }
     }
   }
 
@@ -1115,6 +1144,7 @@ static gboolean _lib_timeline_button_press_callback(GtkWidget *w, GdkEventButton
         strip->move_edge = FALSE;
       }
       strip->selecting = TRUE;
+      strip->has_selection = TRUE;
       gtk_widget_queue_draw(strip->timeline);
     }
   }
@@ -1162,6 +1192,7 @@ static gboolean _lib_timeline_button_release_callback(GtkWidget *w, GdkEventButt
       }
     }
     strip->selecting = FALSE;
+
     if(!strip->move_edge && (e->state & GDK_SHIFT_MASK))
       _selection_collect(strip, DT_LIB_TIMELINE_MODE_RESET);
     else
@@ -1457,6 +1488,11 @@ void gui_init(dt_lib_module_t *self)
   /* initialize ui widgets */
   dt_lib_timeline_t *d = (dt_lib_timeline_t *)calloc(1, sizeof(dt_lib_timeline_t));
   self->data = (void *)d;
+
+  if(d->zoom % 2 == 0)
+    d->precision = d->zoom + 2;
+  else
+    d->precision = d->zoom + 1;
 
   _time_read_bounds_from_db(self);
   d->time_pos = d->time_mini;
