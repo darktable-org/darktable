@@ -1350,6 +1350,7 @@ static gboolean _lib_timeline_scroll_callback(GtkWidget *w, GdkEventScroll *e, g
     // if the zoom as changed, we need to recompute blocks and redraw
     if(z != strip->zoom)
     {
+      dt_conf_set_int("plugins/lighttable/timeline/last_zoom", z);
       strip->time_pos = _time_compute_offset_for_zoom(strip->current_x, strip, z);
       strip->zoom = z;
       if(z % 2 == 0)
@@ -1489,6 +1490,7 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_timeline_t *d = (dt_lib_timeline_t *)calloc(1, sizeof(dt_lib_timeline_t));
   self->data = (void *)d;
 
+  d->zoom = CLAMP(dt_conf_get_int("plugins/lighttable/timeline/last_zoom"), 0, 8);
   if(d->zoom % 2 == 0)
     d->precision = d->zoom + 2;
   else
