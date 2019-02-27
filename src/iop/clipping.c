@@ -50,10 +50,8 @@ DT_MODULE_INTROSPECTION(5, dt_iop_clipping_params_t)
 /** flip H/V, rotate an image, then clip the buffer. */
 typedef enum dt_iop_clipping_flags_t
 {
-  FLAG_FLIP_NONE = 0,
-  FLAG_FLIP_HORIZONTAL = 1<<0,
-  FLAG_FLIP_VERTICAL = 1<<1,
-  FLAG_FLIP_BOTH = FLAG_FLIP_HORIZONTAL|FLAG_FLIP_VERTICAL
+  FLAG_FLIP_HORIZONTAL = 1 << 0,
+  FLAG_FLIP_VERTICAL = 1 << 1
 } dt_iop_clipping_flags_t;
 
 typedef struct dt_iop_clipping_aspect_t
@@ -119,11 +117,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     if(is_horizontal)
     {
       n->k_h = floatk;
-      n->k_v = 0.0;
+      n->k_v = 0.0f;
     }
     else
     {
-      n->k_h = 0.0;
+      n->k_h = 0.0f;
       n->k_v = floatk;
     }
 
@@ -200,6 +198,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
   return 0;
 }
+
 typedef struct dt_iop_clipping_gui_data_t
 {
   GtkWidget *angle;
@@ -221,8 +220,6 @@ typedef struct dt_iop_clipping_gui_data_t
       button_down_angle; // position in image where the button has been pressed.
   /* current clip box */
   float clip_x, clip_y, clip_w, clip_h, handle_x, handle_y;
-  /* last committed clip box */
-  float old_clip_x, old_clip_y, old_clip_w, old_clip_h;
   /* last box before change */
   float prev_clip_x, prev_clip_y, prev_clip_w, prev_clip_h;
   /* maximum clip box */
@@ -245,7 +242,7 @@ typedef struct dt_iop_clipping_data_t
   float ki_v, k_v;          // keystone correction, ki and corrected k
   float tx, ty;             // rotation center
   float cx, cy, cw, ch;     // crop window
-  float cix, ciy, ciw, cih; // crop window on roi_out 1.0 scale
+  float cix, ciy;           // crop window on roi_out 1.0 scale
   uint32_t all_off;         // 1: v and h off, else one of them is used
   uint32_t flags;           // flipping flags
   uint32_t flip;            // flipped output buffer so more area would fit.
@@ -270,19 +267,19 @@ typedef struct dt_iop_clipping_global_data_t
 static void commit_box(dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clipping_params_t *p);
 
 
-static void mul_mat_vec_2(const float *m, const float *p, float *o)
+static inline void mul_mat_vec_2(const float *m, const float *p, float *o)
 {
   o[0] = p[0] * m[0] + p[1] * m[1];
   o[1] = p[0] * m[2] + p[1] * m[3];
 }
 
 // helper to count corners in for loops:
-static void get_corner(const float *aabb, const int i, float *p)
+static inline void get_corner(const float *aabb, const int i, float *p)
 {
   for(int k = 0; k < 2; k++) p[k] = aabb[2 * ((i >> k) & 1) + k];
 }
 
-static void adjust_aabb(const float *p, float *aabb)
+static inline void adjust_aabb(const float *p, float *aabb)
 {
   aabb[0] = fminf(aabb[0], p[0]);
   aabb[1] = fminf(aabb[1], p[1]);
@@ -356,45 +353,43 @@ static void keystone_get_matrix(float *k_space, float kxa, float kxb, float kxc,
           + kyb * kyb * (kxc * kxd * kxd * kyc - kxc * kxc * kxd * kyd));
 }
 
-static void keystone_backtransform(float *i, float *k_space, float a, float b, float d, float e, float g,
-                                   float h, float kxa, float kya)
+static inline void keystone_backtransform(float *i, float *k_space, float a, float b, float d, float e, float g,
+                                          float h, float kxa, float kya)
 {
-  float xx = i[0] - k_space[0];
-  float yy = i[1] - k_space[1];
+  const float xx = i[0] - k_space[0];
+  const float yy = i[1] - k_space[1];
 
-  float div = ((d * xx - a * yy) * h + (b * yy - e * xx) * g + a * e - b * d);
+  const float div = ((d * xx - a * yy) * h + (b * yy - e * xx) * g + a * e - b * d);
 
   i[0] = (e * xx - b * yy) / div + kxa;
   i[1] = -(d * xx - a * yy) / div + kya;
 }
 
-static int keystone_transform(float *i, float *k_space, float a, float b, float d, float e, float g, float h,
-                              float kxa, float kya)
+static inline void keystone_transform(float *i, float *k_space, float a, float b, float d, float e, float g, float h,
+                                      float kxa, float kya)
 {
-  float xx = i[0] - kxa;
-  float yy = i[1] - kya;
+  const float xx = i[0] - kxa;
+  const float yy = i[1] - kya;
 
-  float div = g * xx + h * yy + 1;
+  const float div = g * xx + h * yy + 1;
   i[0] = (a * xx + b * yy) / div + k_space[0];
   i[1] = (d * xx + e * yy) / div + k_space[1];
-  return 1;
 }
 
-static void backtransform(float *x, float *o, const float *m, const float t_h, const float t_v)
+static inline void backtransform(float *x, float *o, const float *m, const float t_h, const float t_v)
 {
   x[1] /= (1.0f + x[0] * t_h);
   x[0] /= (1.0f + x[1] * t_v);
   mul_mat_vec_2(m, x, o);
 }
 
-static void transform(float *x, float *o, const float *m, const float t_h, const float t_v)
+static inline void transform(float *x, float *o, const float *m, const float t_h, const float t_v)
 {
-  float rt[] = { m[0], -m[1], -m[2], m[3] };
+  const float rt[] = { m[0], -m[1], -m[2], m[3] };
   mul_mat_vec_2(rt, x, o);
-  o[1] *= (1.0f + o[0] * t_h);
-  o[0] *= (1.0f + o[1] * t_v);
+  o[1] *= 1.0f + o[0] * t_h;
+  o[0] *= 1.0f + o[1] * t_v;
 }
-
 
 
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
@@ -738,20 +733,11 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
       o[1] = corn_y[c];
       if(d->k_apply == 1)
       {
-        o[0] /= (float)roi_in->width, o[1] /= (float)roi_in->height;
-        if(keystone_transform(o, d->k_space, d->a, d->b, d->d, d->e, d->g, d->h, d->kxa, d->kya) != 1)
-        {
-          // we set the point to maximum possible
-          if(o[0] < 0.5f)
-            o[0] = -1.0f;
-          else
-            o[0] = 2.0f;
-          if(o[1] < 0.5f)
-            o[1] = -1.0f;
-          else
-            o[1] = 2.0f;
-        }
-        o[0] *= roi_in->width, o[1] *= roi_in->height;
+        o[0] /= (float)roi_in->width;
+        o[1] /= (float)roi_in->height;
+        keystone_transform(o, d->k_space, d->a, d->b, d->d, d->e, d->g, d->h, d->kxa, d->kya);
+        o[0] *= roi_in->width;
+        o[1] *= roi_in->height;
       }
       // rotation
       p[0] = o[0] - .5f * roi_in->width;
@@ -765,15 +751,14 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
       corn_out_y[c] = o[1];
     }
 
-    float new_x, new_y, new_sc_x, new_sc_y;
-    new_x = fminf(fminf(fminf(corn_out_x[0], corn_out_x[1]), corn_out_x[2]), corn_out_x[3]);
+    float new_x = fminf(fminf(fminf(corn_out_x[0], corn_out_x[1]), corn_out_x[2]), corn_out_x[3]);
     if(new_x + roi_in->width < 0) new_x = -roi_in->width;
-    new_y = fminf(fminf(fminf(corn_out_y[0], corn_out_y[1]), corn_out_y[2]), corn_out_y[3]);
+    float new_y = fminf(fminf(fminf(corn_out_y[0], corn_out_y[1]), corn_out_y[2]), corn_out_y[3]);
     if(new_y + roi_in->height < 0) new_y = -roi_in->height;
 
-    new_sc_x = fmaxf(fmaxf(fmaxf(corn_out_x[0], corn_out_x[1]), corn_out_x[2]), corn_out_x[3]);
+    float new_sc_x = fmaxf(fmaxf(fmaxf(corn_out_x[0], corn_out_x[1]), corn_out_x[2]), corn_out_x[3]);
     if(new_sc_x > 2.0f * roi_in->width) new_sc_x = 2.0f * roi_in->width;
-    new_sc_y = fmaxf(fmaxf(fmaxf(corn_out_y[0], corn_out_y[1]), corn_out_y[2]), corn_out_y[3]);
+    float new_sc_y = fmaxf(fmaxf(fmaxf(corn_out_y[0], corn_out_y[1]), corn_out_y[2]), corn_out_y[3]);
     if(new_sc_y > 2.0f * roi_in->height) new_sc_y = 2.0f * roi_in->height;
 
     // be careful, we don't want too small area here !
@@ -821,8 +806,6 @@ void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t 
   // save rotation crop on output buffer in world scale:
   d->cix = roi_out->x;
   d->ciy = roi_out->y;
-  d->ciw = roi_out->width;
-  d->cih = roi_out->height;
 }
 
 // 2nd pass: which roi would this operation need as input to fill the given output region?
@@ -1124,7 +1107,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->ki_h = d->ki_v = d->k_h = d->k_v = 0.0f;
   d->tx = d->ty = 0.0f;
   d->cix = d->ciy = 0.0f;
-  d->cih = d->ciw = 1.0f;
   d->kxa = d->kxd = d->kya = d->kyb = 0.0f;
   d->kxb = d->kxc = d->kyc = d->kyd = 0.6f;
   d->k_space[0] = d->k_space[1] = 0.2f;
@@ -1171,9 +1153,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     if(p->k_type == 1) // we want horizontal points to be aligned
     {
       // line equations parameters
-      float a1 = (d->kxd - d->kxa) / (float)(d->kyd - d->kya);
+      float a1 = (d->kxd - d->kxa) / (d->kyd - d->kya);
       float b1 = d->kxa - a1 * d->kya;
-      float a2 = (d->kxc - d->kxb) / (float)(d->kyc - d->kyb);
+      float a2 = (d->kxc - d->kxb) / (d->kyc - d->kyb);
       float b2 = d->kxb - a2 * d->kyb;
 
       if(d->kya > d->kyb)
@@ -1205,9 +1187,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     else if(p->k_type == 2) // we want vertical points to be aligned
     {
       // line equations parameters
-      float a1 = (d->kyb - d->kya) / (float)(d->kxb - d->kxa);
+      float a1 = (d->kyb - d->kya) / (d->kxb - d->kxa);
       float b1 = d->kya - a1 * d->kxa;
-      float a2 = (d->kyc - d->kyd) / (float)(d->kxc - d->kxd);
+      float a2 = (d->kyc - d->kyd) / (d->kxc - d->kxd);
       float b2 = d->kyd - a2 * d->kxd;
 
       if(d->kxa > d->kxd)
@@ -1343,7 +1325,10 @@ static float _ratio_get_aspect(dt_iop_module_t *self)
   if(p->ratio_d == -2 && p->ratio_n == -2)
   {
     if(fabsf(p->cw) == 1.0 && p->cx == 0.0 && fabsf(p->ch) == 1.0 && p->cy == 0.0)
-      p->ratio_d = -1, p->ratio_n = -1;
+    {
+      p->ratio_d = -1;
+      p->ratio_n = -1;
+    }
     else
     {
       const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
@@ -1353,46 +1338,89 @@ static float _ratio_get_aspect(dt_iop_module_t *self)
 
       float prec = 0.0003f;
       if(fabsf(whratio - 3.0f / 2.0f) < prec)
-        p->ratio_d = 3, p->ratio_n = 2;
-      else if(fabsf(whratio - 3.0f / 2.0f) < prec)
-        p->ratio_d = 3, p->ratio_n = 2;
+      {
+        p->ratio_d = 3;
+        p->ratio_n = 2;
+      }
       else if(fabsf(whratio - 2.0f / 1.0f) < prec)
-        p->ratio_d = 2, p->ratio_n = 1;
+      {
+        p->ratio_d = 2;
+        p->ratio_n = 1;
+      }
       else if(fabsf(whratio - 7.0f / 5.0f) < prec)
-        p->ratio_d = 7, p->ratio_n = 5;
+      {
+        p->ratio_d = 7;
+        p->ratio_n = 5;
+      }
       else if(fabsf(whratio - 4.0f / 3.0f) < prec)
-        p->ratio_d = 4, p->ratio_n = 3;
+      {
+        p->ratio_d = 4;
+        p->ratio_n = 3;
+      }
       else if(fabsf(whratio - 5.0f / 4.0f) < prec)
-        p->ratio_d = 5, p->ratio_n = 4;
+      {
+        p->ratio_d = 5;
+        p->ratio_n = 4;
+      }
       else if(fabsf(whratio - 1.0f / 1.0f) < prec)
-        p->ratio_d = 1, p->ratio_n = 1;
+      {
+        p->ratio_d = 1;
+        p->ratio_n = 1;
+      }
       else if(fabsf(whratio - 16.0f / 9.0f) < prec)
-        p->ratio_d = 16, p->ratio_n = 9;
+      {
+        p->ratio_d = 16;
+        p->ratio_n = 9;
+      }
       else if(fabsf(whratio - 16.0f / 10.0f) < prec)
-        p->ratio_d = 16, p->ratio_n = 10;
+      {
+        p->ratio_d = 16;
+        p->ratio_n = 10;
+      }
       else if(fabsf(whratio - 244.5f / 203.2f) < prec)
-        p->ratio_d = 2445, p->ratio_n = 2032;
-      else if(fabsf(whratio - sqrtf(2.0)) < prec)
-        p->ratio_d = 14142136, p->ratio_n = 10000000;
+      {
+        p->ratio_d = 2445;
+        p->ratio_n = 2032;
+      }
+      else if(fabsf(whratio - sqrtf(2.0f)) < prec)
+      {
+        p->ratio_d = 14142136;
+        p->ratio_n = 10000000;
+      }
       else if(fabsf(whratio - PHI) < prec)
-        p->ratio_d = 16180340, p->ratio_n = 10000000;
+      {
+        p->ratio_d = 16180340;
+        p->ratio_n = 10000000;
+      }
       else if(fabsf(whratio - ri) < prec)
-        p->ratio_d = 1, p->ratio_n = 0;
+      {
+        p->ratio_d = 1;
+        p->ratio_n = 0;
+      }
       else
-        p->ratio_d = 0, p->ratio_n = 0;
+      {
+        p->ratio_d = 0;
+        p->ratio_n = 0;
+      }
     }
   }
 
   if(p->ratio_d == 0 && p->ratio_n == 0) return -1.0f;
   float d = 1.0f, n = 1.0f;
   if(p->ratio_n == 0)
-    d = copysign(iwd, p->ratio_d), n = iht;
+  {
+    d = copysignf(iwd, p->ratio_d);
+    n = iht;
+  }
   else
-    d = p->ratio_d, n = p->ratio_n;
+  {
+    d = p->ratio_d;
+    n = p->ratio_n;
+  }
 
   // make aspect ratios like 3:2 and 2:3 to be the same thing
-  const float dn = copysign(MAX(fabsf(d), fabsf(n)), d);
-  const float nn = copysign(MIN(fabsf(d), fabsf(n)), n);
+  const float dn = copysignf(MAX(fabsf(d), fabsf(n)), d);
+  const float nn = copysignf(MIN(fabsf(d), fabsf(n)), n);
 
   if(dn < 0)
     return -nn / dn;
@@ -1412,7 +1440,7 @@ static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
 
   // since one rarely changes between portrait and landscape by cropping,
   // long side of the crop box should match the long side of the image.
-  if(iwd < iht) aspect = 1.0 / aspect;
+  if(iwd < iht) aspect = 1.0f / aspect;
 
   if(aspect > 0)
   {
@@ -1421,7 +1449,7 @@ static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
     double clip_x = g->clip_x, clip_y = g->clip_y, clip_w = g->clip_w, clip_h = g->clip_h;
 
     // if we only modified one dim, respectively, we wanted these values:
-    const double target_h = (double)iwd * g->clip_w / (double)((double)iht * aspect);
+    const double target_h = (double)iwd * g->clip_w / ((double)iht * aspect);
     const double target_w = (double)iht * g->clip_h * aspect / (double)iwd;
     // i.e. target_w/h = w/target_h = aspect
     // first fix aspect ratio:
@@ -1879,8 +1907,8 @@ static gint _aspect_ratio_cmp(const dt_iop_clipping_aspect_t *a, const dt_iop_cl
   const float an = MIN(a->d, a->n);
   const float bd = MAX(b->d, b->n);
   const float bn = MIN(b->d, b->n);
-  const float aratio = (float)ad / (float)an;
-  const float bratio = (float)bd / (float)bn;
+  const float aratio = ad / an;
+  const float bratio = bd / bn;
 
   if(aratio < bratio) return -1;
 
@@ -1894,11 +1922,9 @@ static gint _aspect_ratio_cmp(const dt_iop_clipping_aspect_t *a, const dt_iop_cl
 static gchar *format_aspect(gchar *original, int adim, int bdim)
 {
   // Special ratios:  freehand, original image
-  if ( bdim == 0 ) {
-    return g_strdup(original);
-  }
+  if ( bdim == 0 ) return g_strdup(original);
 
-  return g_strdup_printf("%s  %4.2f", original, ((float)adim / (float)bdim));
+  return g_strdup_printf("%s  %4.2f", original, (float)adim / (float)bdim);
 }
 
 
@@ -1911,8 +1937,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->aspect_list = NULL;
   g->clip_x = g->clip_y = g->handle_x = g->handle_y = 0.0;
   g->clip_w = g->clip_h = 1.0;
-  g->old_clip_x = g->old_clip_y = 0.0;
-  g->old_clip_w = g->old_clip_h = 1.0;
   g->clip_max_x = g->clip_max_y = 0.0;
   g->clip_max_w = g->clip_max_h = 1.0;
   g->clip_max_pipe_hash = 0;
@@ -2394,14 +2418,14 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       if(p->k_type == 3)
       {
         // determine extremity of the lines
-        int v1t = pts[0] - (pts[6] - pts[0]) * pts[1] / (float)(pts[7] - pts[1]);
-        int v1b = (pts[6] - pts[0]) * ht / (float)(pts[7] - pts[1]) + v1t;
-        int v2t = pts[2] - (pts[4] - pts[2]) * pts[3] / (float)(pts[5] - pts[3]);
-        int v2b = (pts[4] - pts[2]) * ht / (float)(pts[5] - pts[3]) + v2t;
-        int h1l = pts[1] - (pts[3] - pts[1]) * pts[0] / (float)(pts[2] - pts[0]);
-        int h1r = (pts[3] - pts[1]) * wd / (float)(pts[2] - pts[0]) + h1l;
-        int h2l = pts[7] - (pts[5] - pts[7]) * pts[6] / (float)(pts[4] - pts[6]);
-        int h2r = (pts[5] - pts[7]) * wd / (float)(pts[4] - pts[6]) + h2l;
+        int v1t = pts[0] - (pts[6] - pts[0]) * pts[1] / (pts[7] - pts[1]);
+        int v1b = (pts[6] - pts[0]) * ht / (pts[7] - pts[1]) + v1t;
+        int v2t = pts[2] - (pts[4] - pts[2]) * pts[3] / (pts[5] - pts[3]);
+        int v2b = (pts[4] - pts[2]) * ht / (pts[5] - pts[3]) + v2t;
+        int h1l = pts[1] - (pts[3] - pts[1]) * pts[0] / (pts[2] - pts[0]);
+        int h1r = (pts[3] - pts[1]) * wd / (pts[2] - pts[0]) + h1l;
+        int h2l = pts[7] - (pts[5] - pts[7]) * pts[6] / (pts[4] - pts[6]);
+        int h2r = (pts[5] - pts[7]) * wd / (pts[4] - pts[6]) + h2l;
 
         // draw the lines
         cairo_move_to(cr, v1t, 0);
@@ -2446,10 +2470,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       else if(p->k_type == 2)
       {
         // determine extremity of the lines
-        int h1l = pts[1] - (pts[3] - pts[1]) * pts[0] / (float)(pts[2] - pts[0]);
-        int h1r = (pts[3] - pts[1]) * wd / (float)(pts[2] - pts[0]) + h1l;
-        int h2l = pts[7] - (pts[5] - pts[7]) * pts[6] / (float)(pts[4] - pts[6]);
-        int h2r = (pts[5] - pts[7]) * wd / (float)(pts[4] - pts[6]) + h2l;
+        int h1l = pts[1] - (pts[3] - pts[1]) * pts[0] / (pts[2] - pts[0]);
+        int h1r = (pts[3] - pts[1]) * wd / (pts[2] - pts[0]) + h1l;
+        int h2l = pts[7] - (pts[5] - pts[7]) * pts[6] / (pts[4] - pts[6]);
+        int h2r = (pts[5] - pts[7]) * wd / (pts[4] - pts[6]) + h2l;
 
         // draw the lines
         cairo_move_to(cr, 0, h1l);
@@ -2476,10 +2500,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       else if(p->k_type == 1)
       {
         // determine extremity of the lines
-        int v1t = pts[0] - (pts[6] - pts[0]) * pts[1] / (float)(pts[7] - pts[1]);
-        int v1b = (pts[6] - pts[0]) * ht / (float)(pts[7] - pts[1]) + v1t;
-        int v2t = pts[2] - (pts[4] - pts[2]) * pts[3] / (float)(pts[5] - pts[3]);
-        int v2b = (pts[4] - pts[2]) * ht / (float)(pts[5] - pts[3]) + v2t;
+        int v1t = pts[0] - (pts[6] - pts[0]) * pts[1] / (pts[7] - pts[1]);
+        int v1b = (pts[6] - pts[0]) * ht / (pts[7] - pts[1]) + v1t;
+        int v2t = pts[2] - (pts[4] - pts[2]) * pts[3] / (pts[5] - pts[3]);
+        int v2b = (pts[4] - pts[2]) * ht / (pts[5] - pts[3]) + v2t;
 
         // draw the lines
         cairo_move_to(cr, v1t, 0);
@@ -2792,22 +2816,22 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
         {
           /* the center is locked, scale crop radial with locked ratio */
           gboolean flag = FALSE;
-          float length = 0.0;
-          float xx = 0.0;
-          float yy = 0.0;
+          float length = 0.0f;
+          float xx = 0.0f;
+          float yy = 0.0f;
 
           if(grab & GRAB_LEFT || grab & GRAB_RIGHT) xx = (grab & GRAB_LEFT) ? (pzx - bzx) : (bzx - pzx);
           if(grab & GRAB_TOP || grab & GRAB_BOTTOM) yy = (grab & GRAB_TOP) ? (pzy - bzy) : (bzy - pzy);
 
-          length = (fabs(xx) > fabs(yy)) ? xx : yy;
+          length = (fabsf(xx) > fabsf(yy)) ? xx : yy;
 
           if((g->prev_clip_w - (length + length)) < 0.1 || (g->prev_clip_h - (length + length)) < 0.1)
             flag = TRUE;
 
           g->clip_x = flag ? g->clip_x : g->prev_clip_x + length;
           g->clip_y = flag ? g->clip_y : g->prev_clip_y + length;
-          g->clip_w = fmax(0.1, g->prev_clip_w - (length + length));
-          g->clip_h = fmax(0.1, g->prev_clip_h - (length + length));
+          g->clip_w = fmaxf(0.1f, g->prev_clip_w - (length + length));
+          g->clip_h = fmaxf(0.1f, g->prev_clip_h - (length + length));
         }
         else
         {
@@ -2912,9 +2936,6 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
             g->k_selected_segment = 0;
           else if(dist_seg(p->kxd, p->kyd, p->kxc, p->kyc, xx, yy) < ext * ext)
             g->k_selected_segment = 2;
-        }
-        if(p->k_type == 1 || p->k_type == 3)
-        {
           if(dist_seg(p->kxb, p->kyb, p->kxc, p->kyc, xx, yy) < ext * ext)
             g->k_selected_segment = 1;
           else if(dist_seg(p->kxd, p->kyd, p->kxa, p->kya, xx, yy) < ext * ext)
@@ -2935,10 +2956,6 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
 static void commit_box(dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clipping_params_t *p)
 {
   if(darktable.gui->reset) return;
-  g->old_clip_x = g->clip_x;
-  g->old_clip_y = g->clip_y;
-  g->old_clip_w = g->clip_w;
-  g->old_clip_h = g->clip_h;
   g->cropping = 0;
   if(!self->enabled)
   {
