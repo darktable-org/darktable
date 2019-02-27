@@ -221,7 +221,6 @@ static void gphoto_api_destroy(dt_gphoto_context_t *ctx)
 typedef struct dt_storage_gphoto_param_t
 {
   gint64 hash;
-  dt_gphoto_context_t *gphoto_ctx;
 } dt_storage_gphoto_param_t;
 
 
