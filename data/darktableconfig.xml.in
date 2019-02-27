@@ -1328,6 +1328,20 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/imageio/storage/gphoto/id</name>
+    <type>string</type>
+    <default>642055548087-n01fgvugnbns7a9jq8jfucjsn5l1t6so.apps.googleusercontent.com</default>
+    <shortdescription>google photo client id</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/storage/gphoto/secret</name>
+    <type>string</type>
+    <default>o29QcbsDWS5cauRqdmGdF3sP</default>
+    <shortdescription>google photo client secret</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/imageio/format/pdf/size</name>
     <type>string</type>
     <default>a4</default>
