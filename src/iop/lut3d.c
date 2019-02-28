@@ -39,16 +39,20 @@
 
 DT_MODULE_INTROSPECTION(1, dt_iop_lut3d_params_t)
 
+typedef void((*dt_interpolation_worker)(float *input, float *output, const float *const clut, const uint8_t level));
+
 typedef struct dt_iop_lut3d_params_t
 {
   char filepath[512];
   uint8_t colorspace;
+  uint8_t interpolation;
 } dt_iop_lut3d_params_t;
 
 typedef struct dt_iop_lut3d_gui_data_t
 {
   GtkWidget *filepath;
   GtkWidget *colorspace;
+  GtkWidget *interpolation;
 } dt_iop_lut3d_gui_data_t;
 
 typedef struct dt_iop_lut3d_global_data_t
@@ -73,9 +77,8 @@ int groups()
 }
 
 // From `HaldCLUT_correct.c' by Eskil Steenberg (http://www.quelsolaar.com) (BSD licensed)
-void correct_pixel(float *input, float *output, const float *const clut, const uint8_t level)
+void correct_pixel_trilinear(float *input, float *output, const float *const clut, const uint8_t level)
 {
-  for(int c = 0; c < 3; ++c) input[c] = input[c] < 0.0f ? 0.0f : (input[c] > 1.0f ? 1.0f : input[c]);
   int color, red, green, blue, i, j;
   float tmp[6], r, g, b;
 //  level *= level;
@@ -92,21 +95,21 @@ void correct_pixel(float *input, float *output, const float *const clut, const u
   if(blue > level - 2) blue = (float)level - 2;
   if(blue < 0) blue = 0;
 
-  r = input[0] * (float)(level - 1) - red;
-  g = input[1] * (float)(level - 1) - green;
-  b = input[2] * (float)(level - 1) - blue;
+  r = input[0] * (float)(level - 1) - red; // delta red
+  g = input[1] * (float)(level - 1) - green; // delta green
+  b = input[2] * (float)(level - 1) - blue; // delta blue
 
+// indexes of P000 to P111 in clut
   color = red + green * level + blue * level * level;
-
-  i = color * 3;
-  j = (color + 1) * 3;
+  i = color * 3;  // P000
+  j = (color + 1) * 3;  // P100
 
   tmp[0] = clut[i++] * (1 - r) + clut[j++] * r;
   tmp[1] = clut[i++] * (1 - r) + clut[j++] * r;
   tmp[2] = clut[i] * (1 - r) + clut[j] * r;
 
-  i = (color + level) * 3;
-  j = (color + level + 1) * 3;
+  i = (color + level) * 3;  // P010
+  j = (color + level + 1) * 3;  //P110
 
   tmp[3] = clut[i++] * (1 - r) + clut[j++] * r;
   tmp[4] = clut[i++] * (1 - r) + clut[j++] * r;
@@ -116,15 +119,15 @@ void correct_pixel(float *input, float *output, const float *const clut, const u
   output[1] = tmp[1] * (1 - g) + tmp[4] * g;
   output[2] = tmp[2] * (1 - g) + tmp[5] * g;
 
-  i = (color + level * level) * 3;
-  j = (color + level * level + 1) * 3;
+  i = (color + level * level) * 3;  // P001
+  j = (color + level * level + 1) * 3;  // P101
 
   tmp[0] = clut[i++] * (1 - r) + clut[j++] * r;
   tmp[1] = clut[i++] * (1 - r) + clut[j++] * r;
   tmp[2] = clut[i] * (1 - r) + clut[j] * r;
 
-  i = (color + level + level * level) * 3;
-  j = (color + level + level * level + 1) * 3;
+  i = (color + level + level * level) * 3;  // P011
+  j = (color + level + level * level + 1) * 3;  // P111
 
   tmp[3] = clut[i++] * (1 - r) + clut[j++] * r;
   tmp[4] = clut[i++] * (1 - r) + clut[j++] * r;
@@ -137,6 +140,81 @@ void correct_pixel(float *input, float *output, const float *const clut, const u
   output[0] = output[0] * (1 - b) + tmp[0] * b;
   output[1] = output[1] * (1 - b) + tmp[1] * b;
   output[2] = output[2] * (1 - b) + tmp[2] * b;
+}
+
+void correct_pixel_tetrahedral(float *input, float *output, const float *const clut, const uint8_t level)
+{
+  int color, red, green, blue;
+  float r, g, b;
+  const int level2 = level * level;
+
+  red = input[0] * (float)(level - 1);
+  if(red > level - 2) red = (float)level - 2;
+  if(red < 0) red = 0;
+  green = input[1] * (float)(level - 1);
+  if(green > level - 2) green = (float)level - 2;
+  if(green < 0) green = 0;
+  blue = input[2] * (float)(level - 1);
+  if(blue > level - 2) blue = (float)level - 2;
+  if(blue < 0) blue = 0;
+
+  r = input[0] * (float)(level - 1) - red; // delta red
+  g = input[1] * (float)(level - 1) - green; // delta green
+  b = input[2] * (float)(level - 1) - blue; // delta blue
+
+// indexes of P000 to P111 in clut
+  color = red + green * level + blue * level * level;
+  const int i000 = color * 3;  // P000
+  const int i100 = (color + 1) * 3;  // P100
+  const int i010 = (color + level) * 3;  // P010
+  const int i110 = (color + level + 1) * 3;  //P110
+  const int i001 = (color + level2) * 3;  // P001
+  const int i101 = (color + level2 + 1) * 3;  // P101
+  const int i011 = (color + level + level2) * 3;  // P011
+  const int i111 = (color + level + level2 + 1) * 3;  // P111
+
+  if (r > g)
+  {
+    if (g > b)
+    {
+      output[0] = (1-r)*clut[i000] + (r-g)*clut[i100] + (g-b)*clut[i110] + b*clut[i111];
+      output[1] = (1-r)*clut[i000+1] + (r-g)*clut[i100+1] + (g-b)*clut[i110+1] + b*clut[i111+1];
+      output[2] = (1-r)*clut[i000+2] + (r-g)*clut[i100+2] + (g-b)*clut[i110+2] + b*clut[i111+2];
+    }
+    else if (r > b)
+    {
+      output[0] = (1-r)*clut[i000] + (r-b)*clut[i100] + (b-g)*clut[i101] + g*clut[i111];
+      output[1] = (1-r)*clut[i000+1] + (r-b)*clut[i100+1] + (b-g)*clut[i101+1] + g*clut[i111+1];
+      output[2] = (1-r)*clut[i000+2] + (r-b)*clut[i100+2] + (b-g)*clut[i101+2] + g*clut[i111+2];
+    }
+    else
+    {
+      output[0] = (1-b)*clut[i000] + (b-r)*clut[i001] + (r-g)*clut[i101] + g*clut[i111];
+      output[1] = (1-b)*clut[i000+1] + (b-r)*clut[i001+1] + (r-g)*clut[i101+1] + g*clut[i111+1];
+      output[2] = (1-b)*clut[i000+2] + (b-r)*clut[i001+2] + (r-g)*clut[i101+2] + g*clut[i111+2];
+    }
+  }
+  else
+  {
+    if (b > g)
+    {
+      output[0] = (1-b)*clut[i000] + (b-g)*clut[i001] + (g-r)*clut[i011] + r*clut[i111];
+      output[1] = (1-b)*clut[i000+1] + (b-g)*clut[i001+1] + (g-r)*clut[i011+1] + r*clut[i111+1];
+      output[2] = (1-b)*clut[i000+2] + (b-g)*clut[i001+2] + (g-r)*clut[i011+2] + r*clut[i111+2];
+    }
+    else if (b > r)
+    {
+      output[0] = (1-g)*clut[i000] + (g-b)*clut[i010] + (b-r)*clut[i011] + r*clut[i111];
+      output[1] = (1-g)*clut[i000+1] + (g-b)*clut[i010+1] + (b-r)*clut[i011+1] + r*clut[i111+1];
+      output[2] = (1-g)*clut[i000+2] + (g-b)*clut[i010+2] + (b-r)*clut[i011+2] + r*clut[i111+2];
+    }
+    else
+    {
+      output[0] = (1-g)*clut[i000] + (g-r)*clut[i010] + (r-b)*clut[i110] + b*clut[i111];
+      output[1] = (1-g)*clut[i000+1] + (g-r)*clut[i010+1] + (r-b)*clut[i110+1] + b*clut[i111+1];
+      output[2] = (1-g)*clut[i000+2] + (g-r)*clut[i010+2] + (r-b)*clut[i110+2] + b*clut[i111+2];
+    }
+  }
 }
 
 uint8_t calculate_clut_haldclut(char *filepath, float **clut)
@@ -192,6 +270,7 @@ uint8_t calculate_clut_haldclut(char *filepath, float **clut)
   return level;
 }
 
+// retun max 3 tokens from the line (separator = ' ' and token length = 50)
 uint8_t parse_cube_line(char *line, char *token)
 {
   uint8_t i, c;
@@ -332,6 +411,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int colorspace = p->colorspace;
   const float *const clut = (float *)gp->clut;
   const uint8_t level = gp->level;
+  const dt_interpolation_worker interpolation_worker = (p->interpolation == 0) ? correct_pixel_tetrahedral
+                                                          : correct_pixel_trilinear;
+
   if (clut)
   {
 #ifdef _OPENMP
@@ -345,28 +427,28 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       {
         float lin[3] = {0, 0, 0};
         float lout[3] = {0, 0, 0};
-        if (colorspace == 0)
-        { // linear RGB
+        if (colorspace == 0) // linear RGB
+        {
           dt_Lab_to_prophotorgb(in, lin);
-          correct_pixel(lin, lout, clut, level);
+          interpolation_worker(lin, lout, clut, level);
           dt_prophotorgb_to_Lab(lout, out);
         }
         else if (colorspace == 1) // gamma sRGB
-        { // linear RGB
+        {
           dt_Lab_to_sRGB(in, lin);
-          correct_pixel(lin, lout, clut, level);
+          interpolation_worker(lin, lout, clut, level);
           dt_sRGB_to_Lab(lout, out);
         }
         else if (colorspace == 2) // REC.709
         {
           dt_Lab_to_REC709(in, lin);
-          correct_pixel(lin, lout, clut, level);
+          interpolation_worker(lin, lout, clut, level);
           dt_REC709_to_Lab(lout, out);
         }
-        else if (colorspace == 3)
-        { // XYZ
+        else if (colorspace == 3) // XYZ
+        {
           dt_Lab_to_XYZ(in, lin);
-          correct_pixel(lin, lout, clut, level);
+          interpolation_worker(lin, lout, clut, level);
           dt_XYZ_to_Lab(lout, out);
         }
         else if (colorspace == 4) // lab
@@ -374,7 +456,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           lin[0] = in[0] / 100.0f;
           lin[1] = in[1] / 255.0f;
           lin[2] = in[2] / 255.0f;
-          correct_pixel(lin, lout, clut, level);
+          interpolation_worker(lin, lout, clut, level);
           out[0] = lout[0] * 100.0f;
           out[1] = lout[1] * 255.0f;
           out[2] = lout[2] * 255.0f;
@@ -416,7 +498,7 @@ void init(dt_iop_module_t *self)
   self->priority = 680; // self order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_lut3d_params_t);
   self->gui_data = NULL;
-  dt_iop_lut3d_params_t tmp = (dt_iop_lut3d_params_t){ { "" }, 1 };
+  dt_iop_lut3d_params_t tmp = (dt_iop_lut3d_params_t){ { "" }, 1, 0 };
 
   memcpy(self->params, &tmp, sizeof(dt_iop_lut3d_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_lut3d_params_t));
@@ -507,6 +589,15 @@ static void colorspace_callback(GtkWidget *widget, dt_iop_module_t *self)
 // I've seen the same defect on other modules too.
 // the I've added the following to overcome
 //  dt_dev_reprocess_all(self->dev);
+}
+
+static void interpolation_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+//printf("colorspace_callback\n");
+  if(darktable.gui->reset) return;
+  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
+  p->interpolation = dt_bauhaus_combobox_get(widget);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
@@ -600,6 +691,14 @@ setvbuf(stdout, NULL, _IONBF, 0);
   gtk_widget_set_tooltip_text(g->colorspace, _("select the color space in which the LUT has to be applied\n"
                                                  "if log RGB is desired, use unbreak module first then select linear RGB here\n"));
   g_signal_connect(G_OBJECT(g->colorspace), "value-changed", G_CALLBACK(colorspace_callback), self);
+
+  g->interpolation = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->interpolation, NULL, _("interpolation"));
+  dt_bauhaus_combobox_add(g->interpolation, _("tetrahedral"));
+  dt_bauhaus_combobox_add(g->interpolation, _("trilinear"));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->interpolation) , TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(g->interpolation, _("select the interpolation method\n"));
+  g_signal_connect(G_OBJECT(g->interpolation), "value-changed", G_CALLBACK(interpolation_callback), self);
 
 }
 
