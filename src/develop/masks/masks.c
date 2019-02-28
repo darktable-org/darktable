@@ -125,7 +125,7 @@ static void _masks_free_undo(gpointer data)
   free(udata);
 }
 
-static void _masks_do_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item)
+static void _masks_do_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item, dt_undo_action_t action)
 {
   dt_develop_t *dev = (dt_develop_t *)user_data;
   _masks_undo_data_t *udata = (_masks_undo_data_t *)item;
