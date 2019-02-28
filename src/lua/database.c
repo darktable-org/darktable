@@ -123,7 +123,7 @@ static int import_images(lua_State *L)
       return luaL_error(L, "Error while importing : %s\n", strerror(errno));
     }
     result = dt_film_new(&new_film, final_path);
-    free(final_path);
+    g_free(final_path);
     if(result == 0)
     {
       if(dt_film_is_empty(new_film.id)) dt_film_remove(new_film.id);
