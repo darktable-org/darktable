@@ -889,7 +889,7 @@ static void _lib_timeline_collection_changed(gpointer instance, gpointer user_da
 // add the selected portions to the collect
 static void _selection_collect(dt_lib_timeline_t *strip, dt_lib_timeline_mode_t mode)
 {
-  // if the last rule is date-time type, we modify it
+  // if the last rule is date-time type or is empty, we modify it
   // else we add a new rule date-time rule
 
   int new_rule = 0;
@@ -898,10 +898,18 @@ static void _selection_collect(dt_lib_timeline_t *strip, dt_lib_timeline_mode_t 
   {
     char confname[200] = { 0 };
     snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", nb_rules - 1);
-    if(dt_conf_get_int(confname) == DT_COLLECTION_PROP_TIME)
+    dt_collection_properties_t prop = dt_conf_get_int(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", nb_rules - 1);
+    int rmode = dt_conf_get_int(confname);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", nb_rules - 1);
+    gchar *string = dt_conf_get_string(confname);
+    string = g_strstrip(string);
+    if((prop == DT_COLLECTION_PROP_TIME && rmode == 0) || !string || strlen(string) == 0
+       || g_strcmp0(string, "%") == 0)
       new_rule = nb_rules - 1;
     else
       new_rule = nb_rules;
+    g_free(string);
   }
 
   // we construct the rule
