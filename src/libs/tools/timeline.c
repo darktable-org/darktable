@@ -747,6 +747,9 @@ static int _block_get_at_zoom(dt_lib_module_t *self, int width)
     tx = (char *)sqlite3_column_text(stmt, 0);
     id = sqlite3_column_int(stmt, 1);
   }
+  else
+    return 0;
+
   dt_lib_timeline_time_t tt = strip->time_pos;
   // we round correctly this date
   if(strip->zoom <= DT_LIB_TIMELINE_ZOOM_HOUR)
@@ -1503,6 +1506,11 @@ void gui_init(dt_lib_module_t *self)
     d->precision = d->zoom + 2;
   else
     d->precision = d->zoom + 1;
+
+  d->time_mini = _time_init();
+  d->time_maxi = _time_init();
+  d->start_t = _time_init();
+  d->stop_t = _time_init();
 
   _time_read_bounds_from_db(self);
   d->time_pos = d->time_mini;
