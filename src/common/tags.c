@@ -20,12 +20,126 @@
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include <glib.h>
 #if defined (_WIN32)
 #include "win/getdelim.h"
 #endif // defined (_WIN32)
+
+typedef struct dt_undo_tags_t
+{
+  int imgid;
+  GList *before; // list of tagid before
+  guint tagid;   // tag added or removed from before
+  gboolean add;
+} dt_undo_tags_t;
+
+static void _attach_tag(guint tagid, gint imgid, gboolean undo_actif);
+static void _detach_tag(guint tagid, gint imgid, gboolean undo_actif);
+
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data, dt_undo_action_t action)
+{
+  if(type == DT_UNDO_TAGS)
+  {
+    sqlite3_stmt *stmt;
+    GList *list = (GList *)data;
+
+    while(list)
+    {
+      dt_undo_tags_t *tags = (dt_undo_tags_t *)list->data;
+
+      GList *tag_list = tags->before;
+
+      // remove from tagged_images
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "DELETE FROM main.tagged_images WHERE imgid = ?1", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tags->imgid);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+
+      // iterate over tag_list and attach tagid to imgid
+
+      while(tag_list)
+      {
+        const guint tagid = (guint)GPOINTER_TO_INT(tag_list->data);
+        _attach_tag(tagid, tags->imgid, FALSE);
+        tag_list = g_list_next(tag_list);
+      }
+
+      if(action == DT_ACTION_REDO)
+      {
+        if(tags->add)
+          _attach_tag(tags->tagid, tags->imgid, FALSE);
+        else
+          _detach_tag(tags->tagid, tags->imgid, FALSE);
+      }
+
+      dt_image_synch_xmp(tags->imgid);
+
+      list = g_list_next(list);
+    }
+
+    dt_tag_update_used_tags();
+    dt_collection_update_query(darktable.collection);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  }
+}
+
+static dt_undo_tags_t *_get_tags(int imgid, guint tagid, gboolean add)
+{
+  dt_undo_tags_t *result = (dt_undo_tags_t *)malloc(sizeof(dt_undo_tags_t));
+  result->imgid  = imgid;
+  result->before = NULL;
+  result->tagid  = tagid;
+  result->add    = add;
+
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT tagid FROM main.tagged_images WHERE imgid=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const guint tag = sqlite3_column_int(stmt, 0);
+    result->before = g_list_append(result->before, GINT_TO_POINTER(tag));
+  }
+  sqlite3_finalize(stmt);
+
+  return result;
+}
+
+GList *_get_tags_selection(guint tagid, gboolean add)
+{
+  GList *result = NULL;
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt, NULL);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    const int imgid = sqlite3_column_int(stmt, 0);
+    result = g_list_append(result, _get_tags(imgid, tagid, add));
+  }
+
+  sqlite3_finalize(stmt);
+
+  return result;
+}
+
+static void _undo_tags_free(gpointer data)
+{
+  dt_undo_tags_t *tag = (dt_undo_tags_t *)data;
+  g_list_free(tag->before);
+}
+
+static void _tags_undo_data_free(gpointer data)
+{
+  GList *l = (GList *)data;
+  g_list_free_full(l, _undo_tags_free);
+}
 
 gboolean dt_tag_new(const char *name, guint *tagid)
 {
@@ -195,11 +309,17 @@ gboolean dt_tag_exists(const char *name, guint *tagid)
 }
 
 // we keep this separate so that updating the gui only happens once (and it's the caller's responsibility)
-static void _attach_tag(guint tagid, gint imgid)
+static void _attach_tag(guint tagid, gint imgid, gboolean undo_actif)
 {
   sqlite3_stmt *stmt;
+  GList *undo = NULL;
+
+  if(undo_actif) dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
+
   if(imgid > 0)
   {
+    if(undo_actif) undo = g_list_append(undo, _get_tags(imgid, tagid, TRUE));
+
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "INSERT OR REPLACE INTO main.tagged_images (imgid, tagid) VALUES (?1, ?2)", -1,
                                 &stmt, NULL);
@@ -210,6 +330,8 @@ static void _attach_tag(guint tagid, gint imgid)
   }
   else
   {
+    if(undo_actif) undo = _get_tags_selection(tagid, TRUE);
+
     // insert into tagged_images if not there already.
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "INSERT OR REPLACE INTO main.tagged_images SELECT imgid, ?1 "
@@ -219,11 +341,17 @@ static void _attach_tag(guint tagid, gint imgid)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
+
+  if(undo_actif)
+  {
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_TAGS, (dt_undo_data_t *)undo, &_pop_undo, _tags_undo_data_free);
+    dt_undo_end_group(darktable.undo);
+  }
 }
 
 void dt_tag_attach(guint tagid, gint imgid)
 {
-  _attach_tag(tagid, imgid);
+  _attach_tag(tagid, imgid, TRUE);
 
   dt_tag_update_used_tags();
 
@@ -235,7 +363,7 @@ void dt_tag_attach_list(GList *tags, gint imgid)
   GList *child = NULL;
   if((child = g_list_first(tags)) != NULL) do
     {
-      _attach_tag(GPOINTER_TO_INT(child->data), imgid);
+      _attach_tag(GPOINTER_TO_INT(child->data), imgid, TRUE);
     } while((child = g_list_next(child)) != NULL);
 
   dt_tag_update_used_tags();
@@ -261,7 +389,7 @@ void dt_tag_attach_string_list(const gchar *tags, gint imgid)
         // add the tag to the image
         guint tagid = 0;
         dt_tag_new(e, &tagid);
-        _attach_tag(tagid, imgid);
+        _attach_tag(tagid, imgid, TRUE);
       }
       entry++;
     }
@@ -273,11 +401,17 @@ void dt_tag_attach_string_list(const gchar *tags, gint imgid)
   g_strfreev(tokens);
 }
 
-void dt_tag_detach(guint tagid, gint imgid)
+void _detach_tag(guint tagid, gint imgid, gboolean undo_actif)
 {
   sqlite3_stmt *stmt;
+  GList *undo = NULL;
+
+  if(undo_actif) dt_undo_start_group(darktable.undo, DT_UNDO_TAGS);
+
   if(imgid > 0)
   {
+    if(undo_actif) undo = g_list_append(undo, _get_tags(imgid, tagid, FALSE));
+
     // remove from tagged_images
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "DELETE FROM main.tagged_images WHERE tagid = ?1 AND imgid = ?2", -1, &stmt, NULL);
@@ -288,6 +422,8 @@ void dt_tag_detach(guint tagid, gint imgid)
   }
   else
   {
+    if(undo_actif) undo = _get_tags_selection(tagid, FALSE);
+
     // remove from tagged_images
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "DELETE FROM main.tagged_images WHERE tagid = ?1 AND imgid IN "
@@ -297,6 +433,18 @@ void dt_tag_detach(guint tagid, gint imgid)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
+
+  if(undo_actif)
+  {
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_TAGS, (dt_undo_data_t *)undo, &_pop_undo, _tags_undo_data_free);
+    dt_undo_end_group(darktable.undo);
+  }
+
+}
+
+void dt_tag_detach(guint tagid, gint imgid)
+{
+  _detach_tag(tagid, imgid, TRUE);
 
   dt_tag_update_used_tags();
 
