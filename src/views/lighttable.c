@@ -2670,6 +2670,10 @@ int key_released(dt_view_t *self, guint key, guint state)
   if(key == accels->global_sideborders.accel_key && state == accels->global_sideborders.accel_mods)
     lib->force_expose_all = TRUE;
 
+  // hide/show timeline, we need a full expose
+  if(key == accels->lighttable_timeline.accel_key && state == accels->lighttable_timeline.accel_mods)
+    lib->force_expose_all = TRUE;
+
   if(((key == accels->lighttable_preview.accel_key && state == accels->lighttable_preview.accel_mods)
       || (key == accels->lighttable_preview_display_focus.accel_key
           && state == accels->lighttable_preview_display_focus.accel_mods)) && lib->full_preview_id != -1)
