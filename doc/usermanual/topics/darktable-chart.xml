@@ -25,7 +25,7 @@
       is able to convert luminance and color values of the source image to produce the target
       image. This style employs the <emphasis>tone curve</emphasis> module, the <emphasis>input
       color profile</emphasis>, and the <emphasis>color look up table</emphasis> module for that
-      purpose (see <xref linkend="base_curve"/>, <xref linkend="input_color_profile"/>, and
+      purpose (see <xref linkend="tone_curve"/>, <xref linkend="input_color_profile"/>, and
       <xref linkend="color_look_up_table"/>).
     </para>
 
