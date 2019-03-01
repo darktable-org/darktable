@@ -279,6 +279,12 @@ typedef struct dt_view_manager_t
       void (*update)(struct dt_lib_module_t *);
     } more_module;
 
+    /* timeline module proxy */
+    struct
+    {
+      struct dt_lib_module_t *module;
+    } timeline;
+
 
 /* map view proxy object */
 #ifdef HAVE_MAP
