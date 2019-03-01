@@ -39,6 +39,21 @@
 
 DT_MODULE_INTROSPECTION(1, dt_iop_lut3d_params_t)
 
+typedef enum dt_iop_lut3d_colorspace_t
+{
+  DT_IOP_LINEAR_RGB = 0,
+  DT_IOP_SRGB = 1,
+  DT_IOP_REC709 = 2,
+  DT_IOP_XYZ = 3,
+} dt_iop_lut3d_colorspace_t;
+
+typedef enum dt_iop_lut3d_interpolation_t
+{
+  DT_IOP_TETRAHEDRAL = 0,
+  DT_IOP_TRILINEAR = 1,
+  DT_IOP_PYRAMID = 2,
+} dt_iop_lut3d_interpolation_t;
+
 typedef void((*dt_interpolation_worker)(float *input, float *output, const float *const clut, const uint8_t level));
 
 typedef struct dt_iop_lut3d_params_t
@@ -79,28 +94,27 @@ int groups()
 // From `HaldCLUT_correct.c' by Eskil Steenberg (http://www.quelsolaar.com) (BSD licensed)
 void correct_pixel_trilinear(float *input, float *output, const float *const clut, const uint8_t level)
 {
-  int color, red, green, blue, i, j;
-  float tmp[6], r, g, b;
-//  level *= level;
+  int red, green, blue, i, j;
+  float tmp[6];
+  const int level2 = level * level;
 
+  for(int c = 0; c < 3; ++c) input[c] = input[c] < 0.0f ? 0.0f : (input[c] > 1.0f ? 1.0f : input[c]);
   red = input[0] * (float)(level - 1);
   if(red > level - 2) red = (float)level - 2;
   if(red < 0) red = 0;
-
   green = input[1] * (float)(level - 1);
   if(green > level - 2) green = (float)level - 2;
   if(green < 0) green = 0;
-
   blue = input[2] * (float)(level - 1);
   if(blue > level - 2) blue = (float)level - 2;
   if(blue < 0) blue = 0;
 
-  r = input[0] * (float)(level - 1) - red; // delta red
-  g = input[1] * (float)(level - 1) - green; // delta green
-  b = input[2] * (float)(level - 1) - blue; // delta blue
+  const float r = input[0] * (float)(level - 1) - red; // delta red
+  const float g = input[1] * (float)(level - 1) - green; // delta green
+  const float b = input[2] * (float)(level - 1) - blue; // delta blue
 
 // indexes of P000 to P111 in clut
-  color = red + green * level + blue * level * level;
+  const int color = red + green * level + blue * level * level;
   i = color * 3;  // P000
   j = (color + 1) * 3;  // P100
 
@@ -119,15 +133,15 @@ void correct_pixel_trilinear(float *input, float *output, const float *const clu
   output[1] = tmp[1] * (1 - g) + tmp[4] * g;
   output[2] = tmp[2] * (1 - g) + tmp[5] * g;
 
-  i = (color + level * level) * 3;  // P001
-  j = (color + level * level + 1) * 3;  // P101
+  i = (color + level2) * 3;  // P001
+  j = (color + level2 + 1) * 3;  // P101
 
   tmp[0] = clut[i++] * (1 - r) + clut[j++] * r;
   tmp[1] = clut[i++] * (1 - r) + clut[j++] * r;
   tmp[2] = clut[i] * (1 - r) + clut[j] * r;
 
-  i = (color + level + level * level) * 3;  // P011
-  j = (color + level + level * level + 1) * 3;  // P111
+  i = (color + level + level2) * 3;  // P011
+  j = (color + level + level2 + 1) * 3;  // P111
 
   tmp[3] = clut[i++] * (1 - r) + clut[j++] * r;
   tmp[4] = clut[i++] * (1 - r) + clut[j++] * r;
@@ -144,10 +158,10 @@ void correct_pixel_trilinear(float *input, float *output, const float *const clu
 
 void correct_pixel_tetrahedral(float *input, float *output, const float *const clut, const uint8_t level)
 {
-  int color, red, green, blue;
-  float r, g, b;
+  int red, green, blue;
   const int level2 = level * level;
 
+  for(int c = 0; c < 3; ++c) input[c] = input[c] < 0.0f ? 0.0f : (input[c] > 1.0f ? 1.0f : input[c]);
   red = input[0] * (float)(level - 1);
   if(red > level - 2) red = (float)level - 2;
   if(red < 0) red = 0;
@@ -158,12 +172,12 @@ void correct_pixel_tetrahedral(float *input, float *output, const float *const c
   if(blue > level - 2) blue = (float)level - 2;
   if(blue < 0) blue = 0;
 
-  r = input[0] * (float)(level - 1) - red; // delta red
-  g = input[1] * (float)(level - 1) - green; // delta green
-  b = input[2] * (float)(level - 1) - blue; // delta blue
+  const float r = input[0] * (float)(level - 1) - red; // delta red
+  const float g = input[1] * (float)(level - 1) - green; // delta green
+  const float b = input[2] * (float)(level - 1) - blue; // delta blue
 
 // indexes of P000 to P111 in clut
-  color = red + green * level + blue * level * level;
+  const int color = red + green * level + blue * level2;
   const int i000 = color * 3;  // P000
   const int i100 = (color + 1) * 3;  // P100
   const int i010 = (color + level) * 3;  // P010
@@ -214,6 +228,66 @@ void correct_pixel_tetrahedral(float *input, float *output, const float *const c
       output[1] = (1-g)*clut[i000+1] + (g-r)*clut[i010+1] + (r-b)*clut[i110+1] + b*clut[i111+1];
       output[2] = (1-g)*clut[i000+2] + (g-r)*clut[i010+2] + (r-b)*clut[i110+2] + b*clut[i111+2];
     }
+  }
+}
+
+void correct_pixel_pyramid(float *input, float *output, const float *const clut, const uint8_t level)
+{
+  int red, green, blue;
+  const int level2 = level * level;
+
+  for(int c = 0; c < 3; ++c) input[c] = input[c] < 0.0f ? 0.0f : (input[c] > 1.0f ? 1.0f : input[c]);
+  red = input[0] * (float)(level - 1);
+  if(red > level - 2) red = (float)level - 2;
+  if(red < 0) red = 0;
+  green = input[1] * (float)(level - 1);
+  if(green > level - 2) green = (float)level - 2;
+  if(green < 0) green = 0;
+  blue = input[2] * (float)(level - 1);
+  if(blue > level - 2) blue = (float)level - 2;
+  if(blue < 0) blue = 0;
+
+  const float r = input[0] * (float)(level - 1) - red; // delta red
+  const float g = input[1] * (float)(level - 1) - green; // delta green
+  const float b = input[2] * (float)(level - 1) - blue; // delta blue
+
+// indexes of P000 to P111 in clut
+  const int color = red + green * level + blue * level2;
+  const int i000 = color * 3;  // P000
+  const int i100 = (color + 1) * 3;  // P100
+  const int i010 = (color + level) * 3;  // P010
+  const int i110 = (color + level + 1) * 3;  //P110
+  const int i001 = (color + level2) * 3;  // P001
+  const int i101 = (color + level2 + 1) * 3;  // P101
+  const int i011 = (color + level + level2) * 3;  // P011
+  const int i111 = (color + level + level2 + 1) * 3;  // P111
+
+  if (g > r && b > r)
+  {
+    output[0] = clut[i000] + (clut[i111]-clut[i011])*r + (clut[i010]-clut[i000])*g + (clut[i001]-clut[i000])*b
+      + (clut[i011]-clut[i001]-clut[i010]+clut[i000])*g*b;
+    output[1] = clut[i000+1] + (clut[i111+1]-clut[i011+1])*r + (clut[i010+1]-clut[i000+1])*g + (clut[i001+1]-clut[i000+1])*b
+      + (clut[i011+1]-clut[i001+1]-clut[i010+1]+clut[i000+1])*g*b;
+    output[2] = clut[i000+2] + (clut[i111+2]-clut[i011+2])*r + (clut[i010+2]-clut[i000+2])*g + (clut[i001+2]-clut[i000+2])*b
+      + (clut[i011+2]-clut[i001+2]-clut[i010+2]+clut[i000+2])*g*b;
+  }
+  else if (r > g && b > g)
+  {
+    output[0] = clut[i000] + (clut[i100]-clut[i000])*r + (clut[i111]-clut[i101])*g + (clut[i001]-clut[i000])*b
+      + (clut[i101]-clut[i001]-clut[i100]+clut[i000])*r*b;
+    output[1] = clut[i000+1] + (clut[i100+1]-clut[i000+1])*r + (clut[i111+1]-clut[i101+1])*g + (clut[i001+1]-clut[i000+1])*b
+      + (clut[i101+1]-clut[i001+1]-clut[i100+1]+clut[i000+1])*r*b;
+    output[2] = clut[i000+2] + (clut[i100+2]-clut[i000+2])*r + (clut[i111]-clut[i101+2])*g + (clut[i001+2]-clut[i000+2])*b
+      + (clut[i101+2]-clut[i001+2]-clut[i100+2]+clut[i000+2])*r*b;
+  }
+  else
+  {
+    output[0] = clut[i000] + (clut[i100]-clut[i000])*r + (clut[i010]-clut[i000])*g + (clut[i111]-clut[i110])*b
+      + (clut[i110]-clut[i100]-clut[i010]+clut[i000])*r*g;
+    output[1] = clut[i000+1] + (clut[i100+1]-clut[i000+1])*r + (clut[i010+1]-clut[i000+1])*g + (clut[i111+1]-clut[i110+1])*b
+      + (clut[i110+1]-clut[i100+1]-clut[i010+1]+clut[i000+1])*r*g;
+    output[2] = clut[i000+2] + (clut[i100+2]-clut[i000+2])*r + (clut[i010+2]-clut[i000+2])*g + (clut[i111+2]-clut[i110+2])*b
+      + (clut[i110+2]-clut[i100+2]-clut[i010+2]+clut[i000+2])*r*g;
   }
 }
 
@@ -342,10 +416,24 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
       if (token[0][0] == 'T') continue;
       else if (strcmp("DOMAIN_MIN", token[0]) == 0)
       {
+        if (strtod(token[1], NULL) != 0.0f)
+        {
+          fprintf(stderr, "DOMAIN MIN <> 0.0 is not supported\n");
+          if (lclut) dt_free_align(lclut);
+          free(line);
+          fclose(cube_file);
+        }
 //printf("->Domain min %d\n", atoll(token[1]));
       }
       else if (strcmp("DOMAIN_MAX", token[0]) == 0)
       {
+        if (strtod(token[1], NULL) != 1.0f)
+        {
+          fprintf(stderr, "DOMAIN MAX <> 1.0 is not supported\n");
+          if (lclut) dt_free_align(lclut);
+          free(line);
+          fclose(cube_file);
+        }
 //printf("->Domain max %d\n", atoll(token[1]));
       }
       else if (strcmp("LUT_1D_SIZE", token[0]) == 0)
@@ -375,7 +463,6 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
         if (!level)
         {
           fprintf(stderr, "[lut3d] error cube lut size is not defined\n");
-          dt_free_align(lclut);
           free(line);
           fclose(cube_file);
           return 0;
@@ -404,20 +491,20 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ibuf, void *const obuf,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-//printf("process\n");
+printf("process\n");
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   dt_iop_lut3d_global_data_t *gp = (dt_iop_lut3d_global_data_t *)self->data;
   const int ch = piece->colors;
   const int colorspace = p->colorspace;
   const float *const clut = (float *)gp->clut;
   const uint8_t level = gp->level;
-  const dt_interpolation_worker interpolation_worker = (p->interpolation == 0) ? correct_pixel_tetrahedral
-                                                          : correct_pixel_trilinear;
-
+  const dt_interpolation_worker interpolation_worker = (p->interpolation == DT_IOP_TETRAHEDRAL) ? correct_pixel_tetrahedral
+                                                          : (p->interpolation == DT_IOP_TRILINEAR) ? correct_pixel_trilinear
+                                                          : correct_pixel_pyramid;
   if (clut)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) // shared(clut, level)
+#pragma omp parallel for default(none) schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -427,31 +514,31 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       {
         float lin[3] = {0, 0, 0};
         float lout[3] = {0, 0, 0};
-        if (colorspace == 0) // linear RGB
+        if (colorspace == DT_IOP_LINEAR_RGB) // linear RGB
         {
           dt_Lab_to_prophotorgb(in, lin);
           interpolation_worker(lin, lout, clut, level);
           dt_prophotorgb_to_Lab(lout, out);
         }
-        else if (colorspace == 1) // gamma sRGB
+        else if (colorspace == DT_IOP_SRGB) // gamma sRGB
         {
           dt_Lab_to_sRGB(in, lin);
           interpolation_worker(lin, lout, clut, level);
           dt_sRGB_to_Lab(lout, out);
         }
-        else if (colorspace == 2) // REC.709
+        else if (colorspace == DT_IOP_REC709) // gamma REC.709
         {
           dt_Lab_to_REC709(in, lin);
           interpolation_worker(lin, lout, clut, level);
           dt_REC709_to_Lab(lout, out);
         }
-        else if (colorspace == 3) // XYZ
+        else if (colorspace == DT_IOP_XYZ) // XYZ
         {
           dt_Lab_to_XYZ(in, lin);
           interpolation_worker(lin, lout, clut, level);
           dt_XYZ_to_Lab(lout, out);
         }
-        else if (colorspace == 4) // lab
+/*        else if (colorspace == 4) // lab
         {
           lin[0] = in[0] / 100.0f;
           lin[1] = in[1] / 255.0f;
@@ -460,7 +547,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           out[0] = lout[0] * 100.0f;
           out[1] = lout[1] * 255.0f;
           out[2] = lout[2] * 255.0f;
-        }
+        } */
         else for(int c = 0; c < 3; ++c) out[c] = in[c];
         in += ch;
         out += ch;
@@ -490,15 +577,15 @@ void reload_defaults(dt_iop_module_t *self)
 
 void init(dt_iop_module_t *self)
 {
-//printf("init\n");
+printf("init\n");
   self->data = NULL;
   self->params = calloc(1, sizeof(dt_iop_lut3d_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_lut3d_params_t));
   self->default_enabled = 0;
-  self->priority = 680; // self order created by iop_dependencies.py, do not edit!
+  self->priority = 710; // self order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_lut3d_params_t);
   self->gui_data = NULL;
-  dt_iop_lut3d_params_t tmp = (dt_iop_lut3d_params_t){ { "" }, 1, 0 };
+  dt_iop_lut3d_params_t tmp = (dt_iop_lut3d_params_t){ { "" }, DT_IOP_SRGB, DT_IOP_TETRAHEDRAL };
 
   memcpy(self->params, &tmp, sizeof(dt_iop_lut3d_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_lut3d_params_t));
@@ -506,7 +593,7 @@ void init(dt_iop_module_t *self)
 
 void init_global(dt_iop_module_so_t *self)
 {
-//printf("init_global\n");
+printf("init_global\n");
   dt_iop_lut3d_global_data_t *gd
       = (dt_iop_lut3d_global_data_t *)malloc(sizeof(dt_iop_lut3d_global_data_t));
   self->data = gd;
@@ -516,14 +603,14 @@ void init_global(dt_iop_module_so_t *self)
 
 void cleanup(dt_iop_module_t *self)
 {
-//printf("cleanup\n");
+printf("cleanup\n");
   free(self->params);
   self->params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
-//printf("cleanup_global\n");
+printf("cleanup_global\n");
   dt_iop_lut3d_global_data_t *gp = (dt_iop_lut3d_global_data_t *)self->data;
   if (gp->clut)
   {
@@ -537,7 +624,7 @@ void cleanup_global(dt_iop_module_so_t *self)
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-//printf("commit\n");
+printf("commit\n");
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   dt_iop_lut3d_global_data_t *gp = (dt_iop_lut3d_global_data_t *)self->data;
   if (p->filepath[0] && !gp->clut)
@@ -556,13 +643,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-//printf("init_pipe\n");
+printf("init_pipe\n");
   // create part of the pixelpipe
 }
 
 static void filepath_callback(GtkWidget *w, dt_iop_module_t *self)
 {
-//printf("filepath_callback\n");
+printf("filepath_callback\n");
   if(darktable.gui->reset) return;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   dt_iop_lut3d_global_data_t *gp = (dt_iop_lut3d_global_data_t *)self->data;
@@ -580,7 +667,7 @@ static void filepath_callback(GtkWidget *w, dt_iop_module_t *self)
 
 static void colorspace_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
-//printf("colorspace_callback\n");
+printf("colorspace_callback\n");
   if(darktable.gui->reset) return;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   p->colorspace = dt_bauhaus_combobox_get(widget);
@@ -593,7 +680,7 @@ static void colorspace_callback(GtkWidget *widget, dt_iop_module_t *self)
 
 static void interpolation_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
-//printf("colorspace_callback\n");
+printf("colorspace_callback\n");
   if(darktable.gui->reset) return;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   p->interpolation = dt_bauhaus_combobox_get(widget);
@@ -602,7 +689,8 @@ static void interpolation_callback(GtkWidget *widget, dt_iop_module_t *self)
 
 static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
 {
-//printf("button_clicked\n");
+  int filetype;
+printf("button_clicked\n");
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
@@ -619,19 +707,26 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
   }
   else
   {
-//printf("filepath <> null\n");
+printf("filepath <> null\n");
     gtk_file_chooser_select_filename(GTK_FILE_CHOOSER(filechooser), p->filepath);
   }
 
+  filetype = 1;
+  if (p->filepath[0] && (g_str_has_suffix (p->filepath, ".cube") || g_str_has_suffix (p->filepath, ".CUBE")))
+    filetype = 2;
+
   GtkFileFilter* filter = GTK_FILE_FILTER(gtk_file_filter_new());
-  gtk_file_filter_add_mime_type(filter, "image/png");
+//  gtk_file_filter_add_mime_type(filter, "image/png");
+  gtk_file_filter_add_pattern(filter, "*.png");
   gtk_file_filter_set_name(filter, _("hald cluts (png)"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
+  if (filetype == 1) gtk_file_chooser_set_filter (GTK_FILE_CHOOSER(filechooser), filter);
 
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
   gtk_file_filter_add_pattern(filter, "*.cube");
   gtk_file_filter_set_name(filter, _("3Dlut (cube)"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
+  if (filetype == 2) gtk_file_chooser_set_filter (GTK_FILE_CHOOSER(filechooser), filter);
 
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
   gtk_file_filter_add_pattern(filter, "*");
@@ -650,7 +745,7 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
 
 void gui_update(dt_iop_module_t *self)
 {
-//printf("gui_update\n");
+printf("gui_update\n");
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   gtk_entry_set_text(GTK_ENTRY(g->filepath), p->filepath);
@@ -696,6 +791,7 @@ setvbuf(stdout, NULL, _IONBF, 0);
   dt_bauhaus_widget_set_label(g->interpolation, NULL, _("interpolation"));
   dt_bauhaus_combobox_add(g->interpolation, _("tetrahedral"));
   dt_bauhaus_combobox_add(g->interpolation, _("trilinear"));
+  dt_bauhaus_combobox_add(g->interpolation, _("pyramid"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->interpolation) , TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->interpolation, _("select the interpolation method\n"));
   g_signal_connect(G_OBJECT(g->interpolation), "value-changed", G_CALLBACK(interpolation_callback), self);
@@ -704,7 +800,7 @@ setvbuf(stdout, NULL, _IONBF, 0);
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-//printf("gui_cleanup\n");
+printf("gui_cleanup\n");
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(g->filepath));
   free(self->gui_data);
