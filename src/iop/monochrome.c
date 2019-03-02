@@ -445,6 +445,7 @@ static void _iop_color_picker_apply(dt_iop_module_t *self)
   p->size = CLAMP((da + db)/128.0, .5, 3.0);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_control_queue_redraw_widget(self->widget);
 }
 
 static gboolean dt_iop_monochrome_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
@@ -614,7 +615,7 @@ void gui_init(struct dt_iop_module_t *self)
   cmsHPROFILE hLab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
   g->xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL,
                                 0); // cmsFLAGS_NOTPRECALC);
-  init_single_picker(&g->color_picker,
+  dt_iop_init_single_picker(&g->color_picker,
                      self,
                      GTK_WIDGET(g->colorpicker),
                      DT_COLOR_PICKER_AREA,
