@@ -27,7 +27,7 @@
   a single color picker is available in a module.
 */
 
-#define ALREADY_SELECTED -1
+#define DT_COLOR_PICKER_ALREADY_SELECTED -1
 
 #include <gtk/gtk.h>
 #include "develop/imageop.h"
@@ -46,7 +46,7 @@ typedef struct dt_iop_color_picker_t
   GtkWidget *colorpick;
   float pick_pos[9][2]; // last picker positions (max 9 picker per module)
   /* get and set the selected picker corresponding to button, the module must record the previous
-     selected picker and return ALREADY_SELECTED if the same picker has been selected. The return
+     selected picker and return DT_COLOR_PICKER_ALREADY_SELECTED if the same picker has been selected. The return
      value corresponds to the module internal picker id. */
   int (*get_set)(dt_iop_module_t *self, GtkWidget *button);
   /* apply the picked color to the selected picker (internal picker id, if multiple are available

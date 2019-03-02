@@ -54,7 +54,7 @@ static int _internal_iop_color_picker_get_set(dt_iop_color_picker_t *picker, Gtk
   picker->current_picker = PICKER_STATUS_SELECTED;
 
   if (current_picker == picker->current_picker)
-    return ALREADY_SELECTED;
+    return DT_COLOR_PICKER_ALREADY_SELECTED;
   else
     return picker->current_picker;
 }
@@ -152,11 +152,11 @@ void dt_iop_color_picker_callback(GtkWidget *button, dt_iop_color_picker_t *self
   // should returns -1 if the same picker was already selected.
   const int clicked_colorpick = dt_iop_color_picker_get_set(self, button);
 
-  if(self->module->request_color_pick == DT_REQUEST_COLORPICK_OFF || clicked_colorpick != ALREADY_SELECTED)
+  if(self->module->request_color_pick == DT_REQUEST_COLORPICK_OFF || clicked_colorpick != DT_COLOR_PICKER_ALREADY_SELECTED)
   {
     self->module->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
 
-    if(clicked_colorpick != ALREADY_SELECTED)
+    if(clicked_colorpick != DT_COLOR_PICKER_ALREADY_SELECTED)
       self->current_picker = clicked_colorpick;
 
     if(self->kind == DT_COLOR_PICKER_AREA)
