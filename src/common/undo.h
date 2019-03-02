@@ -51,6 +51,7 @@ typedef struct dt_undo_t
   dt_undo_type_t group;
   int group_indent;
   dt_pthread_mutex_t mutex;
+  gboolean locked;
   gboolean disable_next;
 } dt_undo_t;
 
