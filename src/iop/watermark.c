@@ -1498,7 +1498,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->colorpick), "color-set", G_CALLBACK(colorpick_color_set), self);
   g_signal_connect(G_OBJECT(g->fontsel), "font-set", G_CALLBACK(fontsel_callback), self);
 
-  init_single_picker(&g->color_picker,
+  dt_iop_init_single_picker(&g->color_picker,
                      self,
                      GTK_WIDGET(g->color_picker_button),
                      DT_COLOR_PICKER_POINT,

@@ -947,7 +947,7 @@ void gui_init(dt_iop_module_t *self)
       break;
   }
 
-  init_picker(&g->color_picker,
+  dt_iop_init_picker(&g->color_picker,
               self,
               DT_COLOR_PICKER_AREA,
               _iop_color_picker_get_set,
