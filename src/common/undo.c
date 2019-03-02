@@ -41,10 +41,32 @@ dt_undo_t *dt_undo_init(void)
   udata->undo_list = NULL;
   udata->redo_list = NULL;
   udata->disable_next = FALSE;
+  udata->locked = FALSE;
   dt_pthread_mutex_init(&udata->mutex, NULL);
   udata->group = 0;
   udata->group_indent = 0;
   return udata;
+}
+
+gboolean _undo_mutex_lock(dt_undo_t *self, gboolean wait)
+{
+  if(self->locked && !wait)
+    return 1;
+  else
+  {
+    dt_pthread_mutex_lock(&self->mutex);
+    self->locked = TRUE;
+    return 0;
+  }
+}
+
+void _undo_mutex_unlock(dt_undo_t *self)
+{
+  if(self->locked)
+  {
+    dt_pthread_mutex_unlock(&self->mutex);
+    self->locked = FALSE;
+  }
 }
 
 void dt_undo_disable_next(dt_undo_t *self)
@@ -79,7 +101,10 @@ static void _undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t typ
   }
   else
   {
-    dt_pthread_mutex_lock(&self->mutex);
+    // do not block, if an undo record is asked and there is a lock it means that this call has been done in un
+    // undo/redo callback. We just skip this event.
+
+    if(_undo_mutex_lock(self, FALSE)) return;
 
     dt_undo_item_t *item = malloc(sizeof(dt_undo_item_t));
 
@@ -97,7 +122,7 @@ static void _undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t typ
     g_list_free_full(self->redo_list, _free_undo_data);
     self->redo_list = NULL;
 
-    dt_pthread_mutex_unlock(&self->mutex);
+    _undo_mutex_unlock(self);
   }
 }
 
@@ -135,7 +160,7 @@ void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
 {
   if(!self) return;
 
-  dt_pthread_mutex_lock(&self->mutex);
+  _undo_mutex_lock(self, TRUE);
 
   GList *l = g_list_first(self->redo_list);
 
@@ -203,14 +228,14 @@ void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
     }
     l = g_list_next(l);
   }
-  dt_pthread_mutex_unlock(&self->mutex);
+  _undo_mutex_unlock(self);
 }
 
 void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
 {
   if(!self) return;
 
-  dt_pthread_mutex_lock(&self->mutex);
+  _undo_mutex_lock(self, TRUE);
 
   GList *l = g_list_first(self->undo_list);
 
@@ -282,7 +307,7 @@ void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
     l = next;
   }
 
-  dt_pthread_mutex_unlock(&self->mutex);
+  _undo_mutex_unlock(self);
 }
 
 static void _undo_clear_list(GList **list, uint32_t filter)
@@ -309,13 +334,13 @@ void dt_undo_clear(dt_undo_t *self, uint32_t filter)
 {
   if(!self) return;
 
-  dt_pthread_mutex_lock(&self->mutex);
+  _undo_mutex_lock(self, TRUE);
   _undo_clear_list(&self->undo_list, filter);
   _undo_clear_list(&self->redo_list, filter);
   self->undo_list = NULL;
   self->redo_list = NULL;
   self->disable_next = FALSE;
-  dt_pthread_mutex_unlock(&self->mutex);
+  _undo_mutex_unlock(self);
 }
 
 static void _undo_iterate(GList *list, uint32_t filter, gpointer user_data,
@@ -351,9 +376,9 @@ void dt_undo_iterate(dt_undo_t *self, uint32_t filter, gpointer user_data,
 {
   if(!self) return;
 
-  dt_pthread_mutex_lock(&self->mutex);
+  _undo_mutex_lock(self, TRUE);
   dt_undo_iterate_internal(self, filter, user_data, apply);
-  dt_pthread_mutex_unlock(&self->mutex);
+  _undo_mutex_unlock(self);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
