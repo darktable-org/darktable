@@ -64,8 +64,8 @@ void _undo_mutex_unlock(dt_undo_t *self)
 {
   if(self->locked)
   {
-    dt_pthread_mutex_unlock(&self->mutex);
     self->locked = FALSE;
+    dt_pthread_mutex_unlock(&self->mutex);
   }
 }
 
