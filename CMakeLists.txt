@@ -7,6 +7,10 @@ cmake_policy(SET CMP0048 NEW)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules/")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
+### Add defaults for cmake
+# These defaults need to be included before the project() call.
+include(DefineCMakeDefaults)
+
 #
 # Avoid source tree pollution
 #
