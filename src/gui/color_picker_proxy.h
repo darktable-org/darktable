@@ -27,7 +27,7 @@
   a single color picker is available in a module.
 */
 
-#define ALREADY_SELECTED -1
+#define DT_COLOR_PICKER_ALREADY_SELECTED -1
 
 #include <gtk/gtk.h>
 #include "develop/imageop.h"
@@ -38,7 +38,7 @@ typedef enum _iop_color_picker_kind_t
   DT_COLOR_PICKER_AREA
 } dt_iop_color_picker_kind_t;
 
-typedef struct _iop_color_picker_t
+typedef struct dt_iop_color_picker_t
 {
   dt_iop_module_t *module;
   dt_iop_color_picker_kind_t kind;
@@ -46,7 +46,7 @@ typedef struct _iop_color_picker_t
   GtkWidget *colorpick;
   float pick_pos[9][2]; // last picker positions (max 9 picker per module)
   /* get and set the selected picker corresponding to button, the module must record the previous
-     selected picker and return ALREADY_SELECTED if the same picker has been selected. The return
+     selected picker and return DT_COLOR_PICKER_ALREADY_SELECTED if the same picker has been selected. The return
      value corresponds to the module internal picker id. */
   int (*get_set)(dt_iop_module_t *self, GtkWidget *button);
   /* apply the picked color to the selected picker (internal picker id, if multiple are available
@@ -57,7 +57,7 @@ typedef struct _iop_color_picker_t
 } dt_iop_color_picker_t;
 
 /* init color picker, this must be called when all picker widgets are created */
-void init_picker (dt_iop_color_picker_t *picker,
+void dt_iop_init_picker(dt_iop_color_picker_t *picker,
                   dt_iop_module_t *module,
                   dt_iop_color_picker_kind_t kind,
                   int (*get_set)(dt_iop_module_t *self, GtkWidget *button),
@@ -65,7 +65,7 @@ void init_picker (dt_iop_color_picker_t *picker,
                   void (*update)(dt_iop_module_t *self));
 
 /* init for a single color picker in iop, this must be called when all picker widget are created */
-void init_single_picker (dt_iop_color_picker_t *picker,
+void dt_iop_init_single_picker(dt_iop_color_picker_t *picker,
                          dt_iop_module_t *module,
                          GtkWidget *colorpick,
                          dt_iop_color_picker_kind_t kind,
@@ -82,6 +82,9 @@ or for a simple togglebutton:
                        G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
 */
 void dt_iop_color_picker_callback(GtkWidget *button, dt_iop_color_picker_t *self);
+
+/* called by pixelpipe when color has been updated */
+void dt_iop_color_picker_apply_module(dt_iop_module_t *module);
 
 /* call proxy get_set */
 int dt_iop_color_picker_get_set(dt_iop_color_picker_t *picker, GtkWidget *button);

@@ -248,7 +248,7 @@ static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
     g->color_picker.current_picker = WHITE;
 
   if (current_picker == g->color_picker.current_picker)
-    return ALREADY_SELECTED;
+    return DT_COLOR_PICKER_ALREADY_SELECTED;
   else
     return g->color_picker.current_picker;
 }
@@ -775,7 +775,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->greypick), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &c->color_picker);
   g_signal_connect(G_OBJECT(c->whitepick), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &c->color_picker);
 
-  init_picker(&c->color_picker,
+  dt_iop_init_picker(&c->color_picker,
               self,
               DT_COLOR_PICKER_POINT,
               _iop_color_picker_get_set,

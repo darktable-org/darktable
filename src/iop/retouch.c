@@ -2939,7 +2939,7 @@ void gui_init(dt_iop_module_t *self)
 
   rt_show_hide_controls(self, g, p, g);
 
-  init_single_picker(&g->color_picker,
+  dt_iop_init_single_picker(&g->color_picker,
                      self,
                      GTK_WIDGET(g->colorpicker),
                      DT_COLOR_PICKER_POINT,

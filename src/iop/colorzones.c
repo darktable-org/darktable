@@ -1042,6 +1042,7 @@ static void _iop_color_picker_apply(dt_iop_module_t *self)
     gd->picked_color[k] = self->picked_color[k];
     gd->picked_color_max[k] = self->picked_color_max[k];
   }
+  dt_control_queue_redraw_widget(self->widget);
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -1135,7 +1136,7 @@ void gui_init(struct dt_iop_module_t *self)
   cmsHPROFILE hLab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
   c->xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL, 0);
 
-  init_single_picker(&c->color_picker,
+  dt_iop_init_single_picker(&c->color_picker,
                      self,
                      GTK_WIDGET(c->colorpicker),
                      DT_COLOR_PICKER_POINT,

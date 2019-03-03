@@ -889,7 +889,7 @@ static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
     g->color_picker.current_picker = DT_PICKPROFLOG_AUTOTUNE;
 
   if (current_picker == g->color_picker.current_picker)
-    return ALREADY_SELECTED;
+    return DT_COLOR_PICKER_ALREADY_SELECTED;
   else
     return g->color_picker.current_picker;
 }
@@ -1862,7 +1862,7 @@ void gui_init(dt_iop_module_t *self)
                                                  "you should never touch that unless you know what you are doing."));
   g_signal_connect(G_OBJECT(g->output_power), "value-changed", G_CALLBACK(output_power_callback), self);
 
-  init_picker(&g->color_picker,
+  dt_iop_init_picker(&g->color_picker,
               self,
               DT_COLOR_PICKER_AREA,
               _iop_color_picker_get_set,

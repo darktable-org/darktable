@@ -431,7 +431,7 @@ static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
     g->color_picker.current_picker = DT_SPLITTONING_SHADOWS;
 
   if (current_picker == g->color_picker.current_picker)
-    return ALREADY_SELECTED;
+    return DT_COLOR_PICKER_ALREADY_SELECTED;
   else
     return g->color_picker.current_picker;
 }
@@ -663,7 +663,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->colorpick1), "color-set", G_CALLBACK(colorpick_callback), self);
   g_signal_connect(G_OBJECT(g->colorpick2), "color-set", G_CALLBACK(colorpick_callback), self);
 
-  init_picker(&g->color_picker,
+  dt_iop_init_picker(&g->color_picker,
               self,
               DT_COLOR_PICKER_POINT,
               _iop_color_picker_get_set,

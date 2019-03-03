@@ -44,6 +44,7 @@ struct dt_dev_pixelpipe_t;
 struct dt_dev_pixelpipe_iop_t;
 struct dt_develop_blend_params_t;
 struct dt_develop_tiling_t;
+struct dt_iop_color_picker_t;
 
 /** module group */
 typedef enum dt_iop_group_t
@@ -269,6 +270,8 @@ typedef struct dt_iop_module_t
   /** set to 1 if you want the blendif to be completely suppressed in the module in focus. only when the module has
    * the focus. */
   int32_t bypass_blendif;
+  /** color picker proxy */
+  struct dt_iop_color_picker_t *picker;
   /** bounding box in which the mean color is requested. */
   float color_picker_box[4];
   /** single point to pick if in point mode */
