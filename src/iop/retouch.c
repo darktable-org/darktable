@@ -1092,11 +1092,10 @@ static gboolean rt_add_shape(GtkWidget *widget, const int creation_continuous, d
 static void rt_colorpick_color_set_callback(GtkColorButton *widget, dt_iop_module_t *self)
 {
   if(self->dt->gui->reset) return;
-  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
 
   // turn off the other color picker
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
 
   GdkRGBA c
       = (GdkRGBA){.red = p->fill_color[0], .green = p->fill_color[1], .blue = p->fill_color[2], .alpha = 1.0 };
@@ -2079,7 +2078,7 @@ static gboolean rt_edit_masks_callback(GtkWidget *widget, GdkEventButton *event,
     const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
 
-    dt_iop_color_picker_reset(&g->color_picker, TRUE);
+    dt_iop_color_picker_reset(self, TRUE);
 
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, self->blend_params->mask_id);
     if(grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points) > 0)

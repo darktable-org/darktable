@@ -23,6 +23,7 @@
 #include "develop/pixelpipe.h"
 #include "dtgtk/button.h"
 #include "dtgtk/gradientslider.h"
+#include "gui/color_picker_proxy.h"
 
 #define DEVELOP_BLEND_VERSION (9)
 
@@ -398,6 +399,9 @@ typedef struct dt_iop_gui_blend_data_t
   GtkWidget *upper_polarity;
   GtkWidget *lower_polarity;
   GtkWidget *colorpicker;
+  GtkWidget *colorpicker_set_values;
+  dt_iop_color_picker_t color_picker;
+  int picker_set_upper_lower;
   GtkWidget *showmask;
   GtkWidget *suppress;
   void (*scale_print[8])(float value, char *string, int n);

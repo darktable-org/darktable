@@ -229,22 +229,20 @@ static inline void update_saturation_slider_end_color(GtkWidget *slider, float h
 static void lightness_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;
   p->lightness = dt_bauhaus_slider_get(slider);
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void source_lightness_mix_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;
   p->source_lightness_mix = dt_bauhaus_slider_get(slider);
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -262,18 +260,17 @@ static void hue_callback(GtkWidget *slider, gpointer user_data)
   gtk_widget_queue_draw(GTK_WIDGET(g->gslider2));
 
   p->hue = hue;
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void saturation_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;
 
   p->saturation = dt_bauhaus_slider_get(slider);
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -311,8 +308,7 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self)
 
 void gui_reset(struct dt_iop_module_t *self)
 {
-  dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -368,7 +364,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)module->params;
 
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
 
   dt_bauhaus_slider_set(g->gslider1, p->hue);
   dt_bauhaus_slider_set(g->gslider2, p->saturation);

@@ -23,7 +23,8 @@ struct dt_iop_roi_t;
 
 void dt_color_picker_helper(const struct dt_iop_buffer_dsc_t *dsc, const float *const pixel,
                             const struct dt_iop_roi_t *roi, const int *const box, float *const picked_color,
-                            float *const picked_color_min, float *const picked_color_max);
+                            float *const picked_color_min, float *const picked_color_max,
+                            const int image_cst, const int picker_cst);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
