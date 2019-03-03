@@ -74,11 +74,12 @@ None.
 
 - Catalan
 - Czech
-- German
-- Spanish
+- Dutch
 - Finnish
 - French
-- Dutch
+- German
+- Norwegian bokmål
+- Polish
 - Russian
 - Slovenian
-- Norwegian bokmål
+- Spanish
