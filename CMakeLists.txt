@@ -11,12 +11,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 # These defaults need to be included before the project() call.
 include(DefineCMakeDefaults)
 
-#
-# Avoid source tree pollution
-#
-set(CMAKE_DISABLE_SOURCE_CHANGES ON)
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
-
 If(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
   message(FATAL_ERROR "In-source builds are not permitted. Make a separate folder for building:\nmkdir build; cd build; cmake ..\nBefore that, remove the files already created:\nrm -rf CMakeCache.txt CMakeFiles")
 endif(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
@@ -27,8 +21,6 @@ else()
   # Actual version string will be generated from git later
   project(darktable VERSION 0 LANGUAGES CXX C)
 endif()
-
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Allow forcing the C/CPP compiler that is actually used during the compilation
 # to something other than what is used by the cmake run. This is useful when
