@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-03-03 16:54+0100\n"
-"PO-Revision-Date: 2019-03-03 17:03+0100\n"
+"PO-Revision-Date: 2019-03-04 00:03+0100\n"
 "Last-Translator: Tomasz Golinski <tomaszg@math.uwb.edu.pl>\n"
 "Language-Team: Polish < >\n"
 "Language: pl_PL\n"
@@ -388,8 +388,8 @@ msgid ""
 "number of images drawn and thus reduces the time needed to draw the images."
 msgstr ""
 "użyj aktualnych ustawień filtrowania, aby wybrać zdjęcia z geotagami do "
-"narysowania na mapie, tj. ogranicz rysowane zdjęcia do bieżącej rolki filmu. "
-"ogranicza to ilość zdjęć do narysowania i redukuje czas operacji."
+"narysowania na mapie, tj. ogranicz rysowane zdjęcia do bieżącej taśmy "
+"filmowej. ogranicza to ilość zdjęć do narysowania i redukuje czas operacji."
 
 #: ../build/src/preferences_gen.h:2411
 msgid "maximum number of images drawn on map"
@@ -517,11 +517,11 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2718
 msgid "enable filmstrip"
-msgstr "włącz rolkę filmu"
+msgstr "włącz taśmę filmową"
 
 #: ../build/src/preferences_gen.h:2730
 msgid "enable the filmstrip in darkroom, tethering and map modes."
-msgstr "włącz rolkę filmu w trybach ciemni, tetheringu i mapy."
+msgstr "włącz taśmę filmową w trybach ciemni, tetheringu i mapy."
 
 #: ../build/src/preferences_gen.h:2738
 msgid "overlay txt sidecar over zoomed images"
@@ -609,7 +609,7 @@ msgid ""
 "the display profile gets changed."
 msgstr ""
 "po włączeniu, zapisane miniaturki będą poddane zarządzaniu kolorem. dzięki "
-"temu stół podświetlany i rolka filmu będą miały poprawne kolory. w "
+"temu stół podświetlany i taśma filmowa będą miały poprawne kolory. w "
 "przeciwnym wypadku rezultat może być niepoprawny przy zmianie profilu "
 "wyświetlania."
 
@@ -2772,7 +2772,7 @@ msgstr "ustawienie zapisane"
 #: ../src/develop/imageop.c:1346
 msgctxt "accel"
 msgid "fusion"
-msgstr "łącznie"
+msgstr ""
 
 #. Adding the optional show accelerator to the table (blank)
 #: ../src/develop/imageop.c:1351
@@ -9209,7 +9209,7 @@ msgstr "balans bieli"
 #: ../src/iop/temperature.c:202
 msgctxt "accel"
 msgid "tint"
-msgstr "zafarb"
+msgstr "odcień"
 
 #: ../src/iop/temperature.c:203
 msgctxt "accel"
@@ -9270,7 +9270,7 @@ msgstr "szmaragdowy"
 
 #: ../src/iop/temperature.c:1427
 msgid "tint"
-msgstr "zafarb"
+msgstr "odcień"
 
 #: ../src/iop/temperature.c:1428
 msgid "temperature"
@@ -12012,7 +12012,7 @@ msgstr ""
 
 #: ../src/libs/tools/filmstrip.c:152
 msgid "filmstrip"
-msgstr "rolka filmu"
+msgstr "taśma filmowa"
 
 #. setup rating key accelerators
 #. Rating keys
@@ -12460,7 +12460,7 @@ msgstr "profile histogramu i próbnika koloru ICC w %s lub %s"
 #: ../src/views/tethering.c:388
 msgctxt "accel"
 msgid "toggle film strip"
-msgstr "przełącz rolkę filmu"
+msgstr "przełącz taśmę filmową"
 
 #. Zoom shortcuts
 #: ../src/views/darkroom.c:2528
@@ -12569,7 +12569,7 @@ msgstr "powtórz"
 #: ../src/views/darkroom.c:2571
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
-msgstr ""
+msgstr "zezwól na przesuwanie i powiększanie podczas edycji masek"
 
 #: ../src/views/knight.c:334
 msgid "good knight"
