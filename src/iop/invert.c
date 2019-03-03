@@ -177,6 +177,7 @@ static void _iop_color_picker_apply(dt_iop_module_t *self)
   darktable.gui->reset = 0;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_control_queue_redraw_widget(self->widget);
 }
 
 static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
@@ -613,7 +614,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->picker), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
   gtk_box_pack_start(GTK_BOX(g->pickerbuttons), g->picker, TRUE, TRUE, 5);
 
-  init_single_picker(&g->color_picker,
+  dt_iop_init_single_picker(&g->color_picker,
                      self,
                      GTK_WIDGET(g->picker),
                      DT_COLOR_PICKER_AREA,
