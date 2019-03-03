@@ -234,6 +234,7 @@ static void center_callback(GtkDarktableGradientSlider *slider, gpointer user_da
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
+  if(self->dt->gui->reset) return;
   dt_iop_relight_params_t *p = (dt_iop_relight_params_t *)self->params;
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
 
@@ -314,8 +315,6 @@ static void _iop_color_picker_apply(dt_iop_module_t *self)
   }
 
   dtgtk_gradient_slider_set_picker_meanminmax(DTGTK_GRADIENT_SLIDER(g->gslider1), mean, min, max);
-
-  gtk_widget_queue_draw(GTK_WIDGET(g->gslider1));
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -367,7 +366,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->tbutton1), _("toggle tool for picking median lightness in image"));
 
-  init_single_picker(&g->color_picker,
+  dt_iop_init_single_picker(&g->color_picker,
                      self,
                      GTK_WIDGET(g->tbutton1),
                      DT_COLOR_PICKER_POINT,

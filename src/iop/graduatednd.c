@@ -437,11 +437,12 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self)
   p->hue        = H;
   p->saturation = S;
 
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set(g->gslider1, p->hue);
   dt_bauhaus_slider_set(g->gslider2, p->saturation);
   update_saturation_slider_end_color(g->gslider2, p->hue);
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1253,7 +1254,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->dragging = 0;
   g->define = 0;
 
-  init_single_picker(&g->color_picker,
+  dt_iop_init_single_picker(&g->color_picker,
                      self,
                      g->gslider1,
                      DT_COLOR_PICKER_POINT,

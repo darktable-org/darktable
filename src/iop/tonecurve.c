@@ -1004,6 +1004,7 @@ static void _iop_color_picker_apply(dt_iop_module_t *self)
     gd->picked_color_max[k] = self->picked_color_max[k];
     gd->picked_output_color[k] = self->picked_output_color[k];
   }
+  dt_control_queue_redraw_widget(self->widget);
 }
 
 static void dt_iop_tonecurve_sanity_check(dt_iop_module_t *self, GtkWidget *widget)
@@ -1278,7 +1279,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_size_group_add_widget(c->sizegroup, GTK_WIDGET(c->area));
   gtk_size_group_add_widget(c->sizegroup, GTK_WIDGET(c->channel_tabs));
 
-  init_single_picker(&c->color_picker,
+  dt_iop_init_single_picker(&c->color_picker,
                      self,
                      GTK_WIDGET(c->colorpicker),
                      DT_COLOR_PICKER_POINT,
@@ -1513,7 +1514,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_restore(cr);
     }
 
-    if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+    if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
     {
       // the global live samples ...
       GSList *samples = darktable.lib->proxy.colorpicker.live_samples;

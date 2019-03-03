@@ -42,6 +42,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "gui/color_picker_proxy.h"
 #include "libs/modulegroups.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -381,6 +382,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
     module->picked_color_min[k] = module->picked_output_color_min[k] = 666.0f;
     module->picked_color_max[k] = module->picked_output_color_max[k] = -666.0f;
   }
+  module->picker = NULL;
   module->color_picker_box[0] = module->color_picker_box[1] = .25f;
   module->color_picker_box[2] = module->color_picker_box[3] = .75f;
   module->color_picker_point[0] = module->color_picker_point[1] = 0.5f;
@@ -1426,6 +1428,7 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
   module->blend_params = NULL;
   free(module->default_blendop_params);
   module->default_blendop_params = NULL;
+  module->picker = NULL;
   free(module->histogram);
   module->histogram = NULL;
   g_hash_table_destroy(module->raster_mask.source.users);
