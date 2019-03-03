@@ -533,7 +533,8 @@ static void pixelpipe_picker(dt_iop_module_t *module, dt_iop_buffer_dsc_t *dsc, 
   if(pixelpipe_picker_helper(module, roi, picked_color, picked_color_min, picked_color_max, picker_source, box))
     return;
 
-  dt_color_picker_helper(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
+  dt_color_picker_helper(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max,
+      dt_iop_module_colorspace(module), module->picker_cst);
 }
 
 
@@ -591,7 +592,8 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_iop_buffe
   box[2] = region[0];
   box[3] = region[1];
 
-  dt_color_picker_helper(dsc, pixel, &roi_copy, box, picked_color, picked_color_min, picked_color_max);
+  dt_color_picker_helper(dsc, pixel, &roi_copy, box, picked_color, picked_color_min, picked_color_max,
+      dt_iop_module_colorspace(module), module->picker_cst);
 
 error:
   dt_free_align(tmpbuf);
@@ -1039,14 +1041,6 @@ static void _pixelpipe_final_histogram_waveform(dt_develop_t *dev, const float *
   free(buf);
 }
 
-static inline void _pixelpipe_apply_module_colorpicker(dt_iop_module_t *module)
-{
-  if(module->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
-    dt_iop_color_picker_apply_module(module);
-  else if(module->widget)
-    dt_control_queue_redraw_widget(module->widget);
-}
-
 // recursive helper for process:
 static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void **output,
                                         void **cl_mem_output, dt_iop_buffer_dsc_t **out_format,
@@ -1462,7 +1456,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-            _pixelpipe_apply_module_colorpicker(module);
+            dt_iop_color_picker_apply_module(module);
 
             dt_pthread_mutex_lock(&pipe->busy_mutex);
           }
@@ -1594,7 +1588,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-            _pixelpipe_apply_module_colorpicker(module);
+            dt_iop_color_picker_apply_module(module);
 
             dt_pthread_mutex_lock(&pipe->busy_mutex);
           }
@@ -1808,7 +1802,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-            _pixelpipe_apply_module_colorpicker(module);
+            dt_iop_color_picker_apply_module(module);
 
             dt_pthread_mutex_lock(&pipe->busy_mutex);
           }
@@ -1941,7 +1935,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
           dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-          _pixelpipe_apply_module_colorpicker(module);
+          dt_iop_color_picker_apply_module(module);
 
           dt_pthread_mutex_lock(&pipe->busy_mutex);
         }
@@ -2039,7 +2033,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
         dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-        _pixelpipe_apply_module_colorpicker(module);
+        dt_iop_color_picker_apply_module(module);
 
         dt_pthread_mutex_lock(&pipe->busy_mutex);
       }
@@ -2123,7 +2117,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-      _pixelpipe_apply_module_colorpicker(module);
+      dt_iop_color_picker_apply_module(module);
 
       dt_pthread_mutex_lock(&pipe->busy_mutex);
     }

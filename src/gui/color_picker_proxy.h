@@ -35,13 +35,15 @@
 typedef enum _iop_color_picker_kind_t
 {
   DT_COLOR_PICKER_POINT = 0,
-  DT_COLOR_PICKER_AREA
+  DT_COLOR_PICKER_AREA,
+  DT_COLOR_PICKER_POINT_AREA // allow the user to select between point and area
 } dt_iop_color_picker_kind_t;
 
 typedef struct dt_iop_color_picker_t
 {
   dt_iop_module_t *module;
   dt_iop_color_picker_kind_t kind;
+  int requested_by;
   unsigned short current_picker;
   GtkWidget *colorpick;
   float pick_pos[9][2]; // last picker positions (max 9 picker per module)
@@ -71,6 +73,14 @@ void dt_iop_init_single_picker(dt_iop_color_picker_t *picker,
                          dt_iop_color_picker_kind_t kind,
                          void (*apply)(dt_iop_module_t *self));
 
+/* same as previous but for the blend module */
+void dt_iop_init_blend_picker(dt_iop_color_picker_t *picker,
+                  dt_iop_module_t *module,
+                  dt_iop_color_picker_kind_t kind,
+                  int (*get_set)(dt_iop_module_t *self, GtkWidget *button),
+                  void (*apply)(dt_iop_module_t *self),
+                  void (*update)(dt_iop_module_t *self));
+
 /* the color picker callback which must be used for every picker, as an example:
 
       g_signal_connect(G_OBJECT(g->button), "quad-pressed",
@@ -83,6 +93,13 @@ or for a simple togglebutton:
 */
 void dt_iop_color_picker_callback(GtkWidget *button, dt_iop_color_picker_t *self);
 
+/* same as before but when DT_COLOR_PICKER_POINT_AREA is used, works only with togglebutton
+
+      g_signal_connect(G_OBJECT(g->color_picker_button), "button-press-event",
+                       G_CALLBACK(dt_iop_color_picker_callback_button_press), &g->color_picker);
+*/
+gboolean dt_iop_color_picker_callback_button_press(GtkWidget *button, GdkEventButton *e, dt_iop_color_picker_t *self);
+
 /* called by pixelpipe when color has been updated */
 void dt_iop_color_picker_apply_module(dt_iop_module_t *module);
 
@@ -92,8 +109,8 @@ int dt_iop_color_picker_get_set(dt_iop_color_picker_t *picker, GtkWidget *button
 void dt_iop_color_picker_apply(dt_iop_color_picker_t *picker);
 /* call proxy update */
 void dt_iop_color_picker_update(dt_iop_color_picker_t *picker);
-/* reset current color picker, and if update is TRUE also call update proxy */
-void dt_iop_color_picker_reset(dt_iop_color_picker_t *picker, gboolean update);
+/* reset current color picker and/or blend color picker, and if update is TRUE also call update proxy */
+void dt_iop_color_picker_reset(dt_iop_module_t *module, gboolean update);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
