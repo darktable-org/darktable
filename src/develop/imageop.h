@@ -270,8 +270,9 @@ typedef struct dt_iop_module_t
   /** set to 1 if you want the blendif to be completely suppressed in the module in focus. only when the module has
    * the focus. */
   int32_t bypass_blendif;
-  /** color picker proxy */
+  /** color picker proxys */
   struct dt_iop_color_picker_t *picker;
+  struct dt_iop_color_picker_t *blend_picker;
   /** bounding box in which the mean color is requested. */
   float color_picker_box[4];
   /** single point to pick if in point mode */
@@ -280,6 +281,12 @@ typedef struct dt_iop_module_t
   float picked_color[4], picked_color_min[4], picked_color_max[4];
   /** place to store the picked color of module output (before blending). */
   float picked_output_color[4], picked_output_color_min[4], picked_output_color_max[4];
+  /** requested colorspace for the color picker, valid options are:
+   * -1: module colorspace
+   * iop_cs_LCh: for Lab modules
+   * iop_cs_HSL: for RGB modules
+   */
+  int picker_cst;
   /** pointer to pre-module histogram data; if available: histogram_bins_count bins with 4 channels each */
   uint32_t *histogram;
   /** stats of captured histogram */
@@ -558,9 +565,11 @@ void dt_iop_nap(int32_t usec);
 /** colorspace enums */
 typedef enum dt_iop_colorspace_type_t
 {
-  iop_cs_RAW,
-  iop_cs_Lab,
-  iop_cs_rgb
+  iop_cs_RAW = 0,
+  iop_cs_Lab = 1,
+  iop_cs_rgb = 2,
+  iop_cs_LCh = 3,
+  iop_cs_HSL = 4
 } dt_iop_colorspace_type_t;
 
 /** find which colorspace the module works within */
