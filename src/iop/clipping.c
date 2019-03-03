@@ -98,6 +98,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   dt_iop_clipping_params_t *n = (dt_iop_clipping_params_t *)new_params;
   if(old_version == 2 && new_version == 5)
   {
+    union {
+        float f;
+        uint32_t u;
+    } k;
     // old structure def
     typedef struct old_params_t
     {
@@ -106,23 +110,22 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     old_params_t *o = (old_params_t *)old_params;
 
-    uint32_t intk = *(uint32_t *)&o->k_h;
+    k.f = o->k_h;
     int is_horizontal;
-    if(intk & 0x40000000u)
+    if(k.u & 0x40000000u)
       is_horizontal = 1;
     else
       is_horizontal = 0;
-    intk &= ~0x40000000;
-    float floatk = *(float *)&intk;
+    k.u &= ~0x40000000;
     if(is_horizontal)
     {
-      n->k_h = floatk;
+      n->k_h = k.f;
       n->k_v = 0.0f;
     }
     else
     {
       n->k_h = 0.0f;
-      n->k_v = floatk;
+      n->k_v = k.f;
     }
 
     n->angle = o->angle, n->cx = o->cx, n->cy = o->cy, n->cw = o->cw, n->ch = o->ch;
