@@ -449,8 +449,7 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self)
 
 void gui_reset(struct dt_iop_module_t *self)
 {
-  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
 }
 
 void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
@@ -1124,7 +1123,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
   dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)module->params;
 
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
 
   dt_bauhaus_slider_set(g->scale1, p->density);
   dt_bauhaus_slider_set(g->scale2, p->compression);
