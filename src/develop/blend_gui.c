@@ -441,6 +441,12 @@ static void _blendop_blendif_contrast_callback(GtkWidget *slider, dt_iop_gui_ble
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
 
+static void _blendop_blendif_reset_picker_set_values(dt_iop_gui_blend_data_t *data)
+{
+  if(data->color_picker.current_picker == DT_BLENDIF_PICK_SET_VALUES)
+    dt_iop_color_picker_reset(data->module, TRUE);
+}
+
 static void _blendop_blendif_upper_callback(GtkDarktableGradientSlider *slider, dt_iop_gui_blend_data_t *data)
 {
   if(darktable.gui->reset) return;
@@ -451,6 +457,8 @@ static void _blendop_blendif_upper_callback(GtkDarktableGradientSlider *slider, 
 
   float *parameters = &(bp->blendif_parameters[4 * ch]);
 
+  _blendop_blendif_reset_picker_set_values(data);
+  
   for(int k = 0; k < 4; k++) parameters[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
 
   for(int k = 0; k < 4; k++)
@@ -480,6 +488,8 @@ static void _blendop_blendif_lower_callback(GtkDarktableGradientSlider *slider, 
 
   float *parameters = &(bp->blendif_parameters[4 * ch]);
 
+  _blendop_blendif_reset_picker_set_values(data);
+  
   for(int k = 0; k < 4; k++) parameters[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
 
   for(int k = 0; k < 4; k++)
@@ -1042,21 +1052,46 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *module)
     _blendif_scale(cst, raw_min, picker_min);
     _blendif_scale(cst, raw_max, picker_max);
 
-    picker_values[0] = CLAMP(picker_min[tab] - .02f, 0.f, 1.f);
-    picker_values[1] = CLAMP(picker_min[tab], 0.f, 1.f);
-    picker_values[2] = CLAMP(picker_max[tab], 0.f, 1.f);
-    picker_values[3] = CLAMP(picker_max[tab] + .02f, 0.f, 1.f);
+    const float feather = 0.01f;
+
+    if(picker_min[tab] > picker_max[tab])
+    {
+      const float tmp = picker_min[tab];
+      picker_min[tab] = picker_max[tab];
+      picker_max[tab] = tmp;
+    }
+    
+    picker_values[0] = CLAMP(picker_min[tab] - feather, 0.f, 1.f);
+    picker_values[1] = CLAMP(picker_min[tab] + feather, 0.f, 1.f);
+    picker_values[2] = CLAMP(picker_max[tab] - feather, 0.f, 1.f);
+    picker_values[3] = CLAMP(picker_max[tab] + feather, 0.f, 1.f);
+
+    if(picker_values[1] > picker_values[2])
+    {
+      picker_values[1] = CLAMP(picker_min[tab], 0.f, 1.f);
+      picker_values[2] = CLAMP(picker_max[tab], 0.f, 1.f);
+    }
     
     picker_values[0] = CLAMP(picker_values[0], 0.f, picker_values[1]);
     picker_values[3] = CLAMP(picker_values[3], picker_values[2], 1.f);
-    
+
     for(int k = 0; k < 4; k++)
       dtgtk_gradient_slider_multivalue_set_value(slider, picker_values[k], k);
 
     // update picked values
     _update_gradient_slider(GTK_WIDGET(data->lower_slider), module);
     _update_gradient_slider(GTK_WIDGET(data->upper_slider), module);
-    
+
+    for(int k = 0; k < 4; k++)
+    {
+      char text[256];
+      (data->scale_print[tab])(dtgtk_gradient_slider_multivalue_get_value(slider, k), text, sizeof(text));
+      if(lower_upper == 0)
+        gtk_label_set_text(data->lower_label[k], text);
+      else
+        gtk_label_set_text(data->upper_label[k], text);
+    }
+
     darktable.gui->reset = reset;
 
     // save values to parameters
