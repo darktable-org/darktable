@@ -1042,10 +1042,10 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *module)
     _blendif_scale(cst, raw_min, picker_min);
     _blendif_scale(cst, raw_max, picker_max);
 
-    picker_values[0] = CLAMP(picker_min[tab] - .01f, 0.f, 1.f);
+    picker_values[0] = CLAMP(picker_min[tab] - .02f, 0.f, 1.f);
     picker_values[1] = CLAMP(picker_min[tab], 0.f, 1.f);
     picker_values[2] = CLAMP(picker_max[tab], 0.f, 1.f);
-    picker_values[3] = CLAMP(picker_max[tab] + .01f, 0.f, 1.f);
+    picker_values[3] = CLAMP(picker_max[tab] + .02f, 0.f, 1.f);
     
     picker_values[0] = CLAMP(picker_values[0], 0.f, picker_values[1]);
     picker_values[3] = CLAMP(picker_values[3], picker_values[2], 1.f);
