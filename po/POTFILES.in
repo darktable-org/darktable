@@ -70,7 +70,7 @@ src/imageio/storage/facebook.c
 src/imageio/storage/flickr.c
 src/imageio/storage/gallery.c
 src/imageio/storage/latex.c
-src/imageio/storage/picasa.c
+src/imageio/storage/googlephoto.c
 src/imageio/storage/piwigo.c
 src/iop/amaze_demosaic_RT.cc
 src/iop/ashift.c
