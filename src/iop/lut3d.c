@@ -41,10 +41,12 @@ DT_MODULE_INTROSPECTION(1, dt_iop_lut3d_params_t)
 
 typedef enum dt_iop_lut3d_colorspace_t
 {
-  DT_IOP_LINEAR_RGB = 0,
+  DT_IOP_LOG_RGB = 0,
   DT_IOP_SRGB = 1,
   DT_IOP_REC709 = 2,
-  DT_IOP_XYZ = 3,
+  DT_IOP_LIN_REC709 = 3,
+  DT_IOP_LIN_PROPHOTORGB = 4,
+  DT_IOP_LOG_FUJI = 5,
 } dt_iop_lut3d_colorspace_t;
 
 typedef enum dt_iop_lut3d_interpolation_t
@@ -61,6 +63,10 @@ typedef struct dt_iop_lut3d_params_t
   char filepath[512];
   uint8_t colorspace;
   uint8_t interpolation;
+  float middle_grey;
+  float min_exposure;
+  float dynamic_range;
+  int log2tolin;
 } dt_iop_lut3d_params_t;
 
 typedef struct dt_iop_lut3d_gui_data_t
@@ -68,6 +74,11 @@ typedef struct dt_iop_lut3d_gui_data_t
   GtkWidget *filepath;
   GtkWidget *colorspace;
   GtkWidget *interpolation;
+  GtkWidget *middle_grey;
+  GtkWidget *min_exposure;
+  GtkWidget *dynamic_range;
+  GtkWidget *log2tolin;
+  GtkWidget *log_options;
 } dt_iop_lut3d_gui_data_t;
 
 typedef struct dt_iop_lut3d_global_data_t
@@ -369,7 +380,7 @@ uint8_t parse_cube_line(char *line, char *token)
         return c;
       }
     }
-    if (*l == ' ')
+    if (*l == ' ' || *l == '\t')
     { // separator
       if (i > 0)
       {
@@ -488,6 +499,92 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
   return level;
 }
 
+static inline void lin_to_logFuji(float *lin)
+{
+  for (int ch=0; ch<3; ch++)
+  {
+    const float a = 0.555556f * 7.28132488f;
+    const float b = 0.009468f;
+    const float c = 0.344676f;
+    const float d = 0.790453f;
+    const float e = 8.735631f * 7.28132488f;
+    const float f = 0.092864f;
+    const float cut = 0.00089f / 7.28132488f;
+    float logNorm;
+
+    if (lin[ch] >= cut)
+      logNorm = c * log10f(a * lin[ch] +b) + d;
+    else
+      logNorm = e * lin[ch] + f;
+    if( logNorm < 0.0f || lin[ch] <= 0.0f)
+      lin[ch] = 0.0f;
+    else
+      lin[ch] = logNorm;
+  }
+}
+
+static inline void logFuji_to_lin(float *lout)
+{
+  for (int ch=0; ch<3; ch++)
+  {
+    const float a = 0.555556f * 7.28132488f;
+    const float b = 0.009468f;
+    const float c = 0.344676f;
+    const float d = 0.790453f;
+    const float e = 8.735631f * 7.28132488f;
+    const float f = 0.092864f;
+    const float cut = 0.100537775223865;
+    float Norm;
+
+    if (lout[ch] >= cut)
+      Norm = (powf(10, (lout[ch] - d) / c) - b) / a;
+    else Norm = (lout[ch] - f) / e;
+    lout[ch] = Norm < 0.0f ? 0.0f : Norm > 1.0f ? 1.0f : Norm;
+  }
+}
+
+// From data/kernels/extended.cl
+static inline float fastlog2(float x)
+{
+  union { float f; unsigned int i; } vx = { x };
+  union { unsigned int i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
+
+  float y = vx.i;
+
+  y *= 1.1920928955078125e-7f;
+
+  return y - 124.22551499f
+    - 1.498030302f * mx.f
+    - 1.72587999f / (0.3520887068f + mx.f);
+}
+
+static inline void lin_to_log2(float *lin, const float middle_grey,
+                                    const float min_exposure, const float dynamic_range)
+{
+  for (int ch=0; ch<3; ch++)
+  {
+    const float logNorm = (fastlog2(lin[ch] / middle_grey) - min_exposure) / dynamic_range;
+    if( logNorm < 0.0f || lin[ch] <= 0.0f)
+    {
+      lin[ch] = 0.0f;
+    }
+    else
+    {
+      lin[ch] = logNorm;
+    }
+  }
+}
+
+static inline void log2_to_lin(float *lout, const float middle_grey,
+                                    const float min_exposure, const float dynamic_range)
+{
+  for (int ch=0; ch<3; ch++)
+  {
+    const float Norm = middle_grey * powf(2, lout[ch] * dynamic_range + min_exposure);
+    lout[ch] = Norm < 0.0f ? 0.0f : Norm > 1.0f ? 1.0f : Norm;
+  }
+}
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ibuf, void *const obuf,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -496,6 +593,10 @@ printf("process\n");
   dt_iop_lut3d_global_data_t *gp = (dt_iop_lut3d_global_data_t *)self->data;
   const int ch = piece->colors;
   const int colorspace = p->colorspace;
+  const float middle_grey = p->middle_grey * 0.01f;
+  const float min_exposure = p->min_exposure;
+  const float dynamic_range = p->dynamic_range;
+  const int log2tolin = p->log2tolin;
   const float *const clut = (float *)gp->clut;
   const uint8_t level = gp->level;
   const dt_interpolation_worker interpolation_worker = (p->interpolation == DT_IOP_TETRAHEDRAL) ? correct_pixel_tetrahedral
@@ -514,10 +615,12 @@ printf("process\n");
       {
         float lin[3] = {0, 0, 0};
         float lout[3] = {0, 0, 0};
-        if (colorspace == DT_IOP_LINEAR_RGB) // linear RGB
+        if (colorspace == DT_IOP_LOG_RGB) // log RGB
         {
           dt_Lab_to_prophotorgb(in, lin);
+          lin_to_log2(lin, middle_grey, min_exposure, dynamic_range);
           interpolation_worker(lin, lout, clut, level);
+          if (log2tolin) log2_to_lin(lout, middle_grey, min_exposure, dynamic_range);
           dt_prophotorgb_to_Lab(lout, out);
         }
         else if (colorspace == DT_IOP_SRGB) // gamma sRGB
@@ -532,13 +635,33 @@ printf("process\n");
           interpolation_worker(lin, lout, clut, level);
           dt_REC709_to_Lab(lout, out);
         }
-        else if (colorspace == DT_IOP_XYZ) // XYZ
+        else if (colorspace == DT_IOP_LIN_REC709) // linear REC.709
+        {
+          dt_Lab_to_linear_sRGB(in, lin);
+          interpolation_worker(lin, lout, clut, level);
+          dt_linear_sRGB_to_Lab(lout, out);
+        }
+        else if (colorspace == DT_IOP_LIN_PROPHOTORGB) // gamma REC.709
+        {
+          dt_Lab_to_prophotorgb(in, lin);
+          interpolation_worker(lin, lout, clut, level);
+          dt_prophotorgb_to_Lab(lout, out);
+        }
+        else if (colorspace == DT_IOP_LOG_FUJI) // log RGB Fuji
+        {
+          dt_Lab_to_prophotorgb(in, lin);
+          lin_to_logFuji(lin);
+          interpolation_worker(lin, lout, clut, level);
+          logFuji_to_lin(lout);
+          dt_prophotorgb_to_Lab(lout, out);
+        }
+/*        else if (colorspace == DT_IOP_XYZ) // XYZ
         {
           dt_Lab_to_XYZ(in, lin);
           interpolation_worker(lin, lout, clut, level);
           dt_XYZ_to_Lab(lout, out);
         }
-/*        else if (colorspace == 4) // lab
+        else if (colorspace == 4) // lab
         {
           lin[0] = in[0] / 100.0f;
           lin[1] = in[1] / 255.0f;
@@ -585,7 +708,15 @@ printf("init\n");
   self->priority = 710; // self order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_lut3d_params_t);
   self->gui_data = NULL;
-  dt_iop_lut3d_params_t tmp = (dt_iop_lut3d_params_t){ { "" }, DT_IOP_SRGB, DT_IOP_TETRAHEDRAL };
+  dt_iop_lut3d_params_t tmp = (dt_iop_lut3d_params_t)
+    { { "" },
+    DT_IOP_SRGB,
+    DT_IOP_TETRAHEDRAL,
+    50.0f,  // grey point
+    -6.0f,  // shadows range
+    10.0f,   // dynamic range
+    1  // log2 to lin
+  };
 
   memcpy(self->params, &tmp, sizeof(dt_iop_lut3d_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_lut3d_params_t));
@@ -670,7 +801,12 @@ static void colorspace_callback(GtkWidget *widget, dt_iop_module_t *self)
 printf("colorspace_callback\n");
   if(darktable.gui->reset) return;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
+  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   p->colorspace = dt_bauhaus_combobox_get(widget);
+  if (p->colorspace == DT_IOP_LOG_RGB)
+    gtk_widget_set_visible(g->log_options, TRUE);
+  else
+    gtk_widget_set_visible(g->log_options, FALSE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 // I've noticed that when I switch between 2 colorspaces back and forth dt stops quikly refreshing ...
 // I've seen the same defect on other modules too.
@@ -684,6 +820,41 @@ printf("colorspace_callback\n");
   if(darktable.gui->reset) return;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   p->interpolation = dt_bauhaus_combobox_get(widget);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void middle_grey_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
+  p->middle_grey = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void dynamic_range_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
+  p->dynamic_range = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void min_exposure_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return;
+  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
+  p->min_exposure = dt_bauhaus_slider_get(slider);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void log2tolin_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
+  p->log2tolin = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -750,14 +921,22 @@ printf("gui_update\n");
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   gtk_entry_set_text(GTK_ENTRY(g->filepath), p->filepath);
   dt_bauhaus_combobox_set(g->colorspace, p->colorspace);
+  dt_bauhaus_slider_set_soft(g->middle_grey, p->middle_grey);
+  dt_bauhaus_slider_set_soft(g->min_exposure, p->min_exposure);
+  dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
+  if (p->colorspace == DT_IOP_LOG_RGB)
+    gtk_widget_set_visible(g->log_options, TRUE);
+  else
+    gtk_widget_set_visible(g->log_options, FALSE);
 }
 
 void gui_init(dt_iop_module_t *self)
 {
 setvbuf(stdout, NULL, _IONBF, 0);
-//printf("gui_init\n");
+printf("gui_init\n");
   self->gui_data = malloc(sizeof(dt_iop_lut3d_gui_data_t));
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
+  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
@@ -778,10 +957,12 @@ setvbuf(stdout, NULL, _IONBF, 0);
 
   g->colorspace = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->colorspace, NULL, _("application color space"));
-  dt_bauhaus_combobox_add(g->colorspace, _("linear RGB"));
+  dt_bauhaus_combobox_add(g->colorspace, _("log RGB"));
   dt_bauhaus_combobox_add(g->colorspace, _("sRGB"));
   dt_bauhaus_combobox_add(g->colorspace, _("REC.709"));
-  dt_bauhaus_combobox_add(g->colorspace, _("XYZ"));
+  dt_bauhaus_combobox_add(g->colorspace, _("lin sRGB"));
+  dt_bauhaus_combobox_add(g->colorspace, _("lin prophoto RGB"));
+  dt_bauhaus_combobox_add(g->colorspace, _("log Fuji"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->colorspace) , TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->colorspace, _("select the color space in which the LUT has to be applied\n"
                                                  "if log RGB is desired, use unbreak module first then select linear RGB here\n"));
@@ -795,6 +976,47 @@ setvbuf(stdout, NULL, _IONBF, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->interpolation) , TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->interpolation, _("select the interpolation method\n"));
   g_signal_connect(G_OBJECT(g->interpolation), "value-changed", G_CALLBACK(interpolation_callback), self);
+
+  // add collapsable section for those extra options that are generally not to be used
+
+  g->log_options = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->log_options, TRUE, TRUE, 0);
+  if (p->colorspace == DT_IOP_LOG_RGB)
+    gtk_widget_set_visible(g->log_options, TRUE);
+  else
+    gtk_widget_set_visible(g->log_options, FALSE);
+
+  // middle_grey slider
+  g->middle_grey = dt_bauhaus_slider_new_with_range(self, 0.1, 100., 0.5, p->middle_grey, 2);
+  dt_bauhaus_widget_set_label(g->middle_grey, NULL, _("middle grey luma"));
+  gtk_box_pack_start(GTK_BOX(g->log_options), g->middle_grey, TRUE, TRUE, 0);
+  dt_bauhaus_slider_set_format(g->middle_grey, "%.2f %%");
+  gtk_widget_set_tooltip_text(g->middle_grey, _("adjust to match the average luma of the subject"));
+  g_signal_connect(G_OBJECT(g->middle_grey), "value-changed", G_CALLBACK(middle_grey_callback), self);
+
+  // Shadows range slider
+  g->min_exposure = dt_bauhaus_slider_new_with_range(self, -16.0, -0.0, 0.1, p->min_exposure, 2);
+  dt_bauhaus_slider_enable_soft_boundaries(g->min_exposure, -16., 16.0);
+  dt_bauhaus_widget_set_label(g->min_exposure, NULL, _("black relative exposure"));
+  gtk_box_pack_start(GTK_BOX(g->log_options), g->min_exposure, TRUE, TRUE, 0);
+  dt_bauhaus_slider_set_format(g->min_exposure, "%.2f EV");
+  gtk_widget_set_tooltip_text(g->min_exposure, _("number of stops between middle grey and pure black\nthis is a reading a posemeter would give you on the scene"));
+  g_signal_connect(G_OBJECT(g->min_exposure), "value-changed", G_CALLBACK(min_exposure_callback), self);
+
+  // Dynamic range slider
+  g->dynamic_range = dt_bauhaus_slider_new_with_range(self, 0.5, 16.0, 0.1, p->dynamic_range, 2);
+  dt_bauhaus_slider_enable_soft_boundaries(g->dynamic_range, 0.01, 32.0);
+  dt_bauhaus_widget_set_label(g->dynamic_range, NULL, _("dynamic range"));
+  gtk_box_pack_start(GTK_BOX(g->log_options), g->dynamic_range, TRUE, TRUE, 0);
+  dt_bauhaus_slider_set_format(g->dynamic_range, "%.2f EV");
+  gtk_widget_set_tooltip_text(g->dynamic_range, _("number of stops between pure black and pure white\nthis is a reading a posemeter would give you on the scene"));
+  g_signal_connect(G_OBJECT(g->dynamic_range), "value-changed", G_CALLBACK(dynamic_range_callback), self);
+
+  g->log2tolin = gtk_check_button_new_with_label(_("log2 to lin"));
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(g->log2tolin), p->log2tolin);
+  gtk_widget_set_tooltip_text(g->log2tolin, _("convert back to lin"));
+  gtk_box_pack_start(GTK_BOX(g->log_options), g->log2tolin , TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->log2tolin), "toggled", G_CALLBACK(log2tolin_callback), self);
 
 }
 
