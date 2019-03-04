@@ -117,6 +117,16 @@ typedef enum dt_dev_request_colorpick_flags_t
   DT_REQUEST_COLORPICK_BLEND = 1 << 1   // requested by parametric blending gui
 } dt_dev_request_colorpick_flags_t;
 
+/** colorspace enums */
+typedef enum dt_iop_colorspace_type_t
+{
+  iop_cs_RAW = 0,
+  iop_cs_Lab = 1,
+  iop_cs_rgb = 2,
+  iop_cs_LCh = 3,
+  iop_cs_HSL = 4
+} dt_iop_colorspace_type_t;
+
 /** part of the module which only contains the cached dlopen stuff. */
 struct dt_iop_module_so_t;
 struct dt_iop_module_t;
@@ -286,7 +296,7 @@ typedef struct dt_iop_module_t
    * iop_cs_LCh: for Lab modules
    * iop_cs_HSL: for RGB modules
    */
-  int picker_cst;
+  dt_iop_colorspace_type_t picker_cst;
   /** pointer to pre-module histogram data; if available: histogram_bins_count bins with 4 channels each */
   uint32_t *histogram;
   /** stats of captured histogram */
@@ -561,16 +571,6 @@ int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
 
 /** allow plugins to relinquish CPU and go to sleep for some time */
 void dt_iop_nap(int32_t usec);
-
-/** colorspace enums */
-typedef enum dt_iop_colorspace_type_t
-{
-  iop_cs_RAW = 0,
-  iop_cs_Lab = 1,
-  iop_cs_rgb = 2,
-  iop_cs_LCh = 3,
-  iop_cs_HSL = 4
-} dt_iop_colorspace_type_t;
 
 /** find which colorspace the module works within */
 dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module);

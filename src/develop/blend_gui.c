@@ -527,9 +527,9 @@ static void _blendop_blendif_polarity_callback(GtkToggleButton *togglebutton, dt
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
 
-static int _blendop_blendif_get_picker_colorspace(dt_iop_gui_blend_data_t *bd)
+static dt_iop_colorspace_type_t _blendop_blendif_get_picker_colorspace(dt_iop_gui_blend_data_t *bd)
 {
-  int picker_cst = -1;
+  dt_iop_colorspace_type_t picker_cst = -1;
 
   if(bd->csp == iop_cs_rgb)
   {
@@ -614,7 +614,8 @@ static void _blendop_blendif_tab_switch(GtkNotebook *notebook, GtkWidget *page, 
 
   data->tab = page_num;
 
-  if(data->module->request_color_pick == DT_REQUEST_COLORPICK_BLEND && cst_old != _blendop_blendif_get_picker_colorspace(data))
+  if(data->module->request_color_pick == DT_REQUEST_COLORPICK_BLEND && 
+      (cst_old != _blendop_blendif_get_picker_colorspace(data) || data->color_picker.current_picker == DT_BLENDIF_PICK_SET_VALUES))
   {
     data->module->picker_cst = _blendop_blendif_get_picker_colorspace(data);
     dt_dev_reprocess_all(data->module->dev);
@@ -756,6 +757,7 @@ static void _blendop_blendif_reset(GtkButton *button, dt_iop_module_t *module)
   memcpy(module->blend_params->blendif_parameters, module->default_blendop_params->blendif_parameters,
          4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
 
+  dt_iop_color_picker_reset(module, TRUE);
   dt_iop_gui_update_blendif(module);
   dt_dev_add_history_item(darktable.develop, module, TRUE);
 }
