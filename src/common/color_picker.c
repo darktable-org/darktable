@@ -26,7 +26,7 @@
 static void color_picker_helper_4ch_seq(const dt_iop_buffer_dsc_t *dsc, const float *const pixel,
                                         const dt_iop_roi_t *roi, const int *const box, float *const picked_color,
                                         float *const picked_color_min, float *const picked_color_max,
-                                        const int cst_to)
+                                        const dt_iop_colorspace_type_t cst_to)
 {
   const int width = roi->width;
 
@@ -61,7 +61,7 @@ static void color_picker_helper_4ch_seq(const dt_iop_buffer_dsc_t *dsc, const fl
 static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *dsc, const float *const pixel,
                                              const dt_iop_roi_t *roi, const int *const box,
                                              float *const picked_color, float *const picked_color_min,
-                                             float *const picked_color_max, const int cst_to)
+                                             float *const picked_color_max, const dt_iop_colorspace_type_t cst_to)
 {
   const int width = roi->width;
 
@@ -135,7 +135,7 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *dsc, con
 
 static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *dsc, const float *const pixel,
                                     const dt_iop_roi_t *roi, const int *const box, float *const picked_color,
-                                    float *const picked_color_min, float *const picked_color_max, const int cst_to)
+                                    float *const picked_color_min, float *const picked_color_max, const dt_iop_colorspace_type_t cst_to)
 {
   const size_t size = ((box[3] - box[1]) * (box[2] - box[0]));
 
@@ -401,7 +401,7 @@ static void color_picker_helper_xtrans(const dt_iop_buffer_dsc_t *dsc, const flo
 
 void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const pixel, const dt_iop_roi_t *roi,
                             const int *const box, float *const picked_color, float *const picked_color_min,
-                            float *const picked_color_max, const int image_cst, const int picker_cst)
+                            float *const picked_color_max, const dt_iop_colorspace_type_t image_cst, const dt_iop_colorspace_type_t picker_cst)
 {
   if((dsc->channels == 4u) && ((image_cst == picker_cst) || (picker_cst == -1)))
     color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst);
