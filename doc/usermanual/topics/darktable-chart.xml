@@ -23,9 +23,9 @@
       purpose is to compare a source image (typically a largely unprocessed raw image) to a
       target image (typically a JPEG image created in-camera) and produce a darktable style that
       is able to convert luminance and color values of the source image to produce the target
-      image. This style employs the <emphasis>base curve</emphasis> module, the <emphasis>input
+      image. This style employs the <emphasis>tone curve</emphasis> module, the <emphasis>input
       color profile</emphasis>, and the <emphasis>color look up table</emphasis> module for that
-      purpose (see <xref linkend="base_curve"/>, <xref linkend="input_color_profile"/>, and
+      purpose (see <xref linkend="tone_curve"/>, <xref linkend="input_color_profile"/>, and
       <xref linkend="color_look_up_table"/>).
     </para>
 
@@ -268,6 +268,8 @@
       namely vignetting correction, to the resulting JPEG file. In this case you need to
       activate the <emphasis>lens correction</emphasis> module in darktable so that raw
       processing matches the JPEG in this respect (see <xref linkend="lens_correction"/>).
+      However, since darktable's vignetting correction may not exactly match the in-camera
+      correction, it's better to disable this correction in the camera if possible.
     </para>
 
     <para>
