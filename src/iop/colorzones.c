@@ -1012,12 +1012,11 @@ static void colorzones_tab_switch(GtkNotebook *notebook, GtkWidget *page, guint 
 static void select_by_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
   memcpy(p, self->default_params, sizeof(dt_iop_colorzones_params_t));
   p->channel = 2 - (dt_iop_colorzones_channel_t)dt_bauhaus_combobox_get(widget);
-  dt_iop_color_picker_reset(&c->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
@@ -1025,11 +1024,10 @@ static void select_by_changed(GtkWidget *widget, gpointer user_data)
 static void strength_changed(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
   p->strength = dt_bauhaus_slider_get(slider);
-  dt_iop_color_picker_reset(&c->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 

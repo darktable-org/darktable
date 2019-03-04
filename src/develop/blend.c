@@ -19,6 +19,7 @@
 #include "blend.h"
 #include "common/gaussian.h"
 #include "common/guided_filter.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
@@ -38,54 +39,6 @@ typedef struct _blend_buffer_desc_t
 
 typedef void(_blend_row_func)(const _blend_buffer_desc_t *bd, const float *a, float *b, const float *mask,
                               int flag);
-
-static inline void _RGB_2_HSL(const float *RGB, float *HSL)
-{
-  float H, S, L;
-
-  float R = RGB[0];
-  float G = RGB[1];
-  float B = RGB[2];
-
-  float var_Min = fminf(R, fminf(G, B));
-  float var_Max = fmaxf(R, fmaxf(G, B));
-  float del_Max = var_Max - var_Min;
-
-  L = (var_Max + var_Min) / 2.0f;
-
-  if(del_Max < 1e-6f)
-  {
-    H = 0.0f;
-    S = 0.0f;
-  }
-  else
-  {
-    if(L < 0.5f)
-      S = del_Max / (var_Max + var_Min);
-    else
-      S = del_Max / (2.0f - var_Max - var_Min);
-
-    float del_R = (((var_Max - R) / 6.0f) + (del_Max / 2.0f)) / del_Max;
-    float del_G = (((var_Max - G) / 6.0f) + (del_Max / 2.0f)) / del_Max;
-    float del_B = (((var_Max - B) / 6.0f) + (del_Max / 2.0f)) / del_Max;
-
-    if(R == var_Max)
-      H = del_B - del_G;
-    else if(G == var_Max)
-      H = (1.0f / 3.0f) + del_R - del_B;
-    else if(B == var_Max)
-      H = (2.0f / 3.0f) + del_G - del_R;
-    else
-      H = 0.0f; // make GCC happy
-
-    if(H < 0.0f) H += 1.0f;
-    if(H > 1.0f) H -= 1.0f;
-  }
-
-  HSL[0] = H;
-  HSL[1] = S;
-  HSL[2] = L;
-}
 
 static inline float _Hue_2_RGB(float v1, float v2, float vH)
 {
@@ -211,20 +164,6 @@ static inline void _HSV_2_RGB(const float *HSV, float *RGB)
   }
 }
 
-static inline void _Lab_2_LCH(const float *Lab, float *LCH)
-{
-  float var_H = atan2f(Lab[2], Lab[1]);
-
-  if(var_H > 0.0f)
-    var_H = var_H / (2.0f * DT_M_PI_F);
-  else
-    var_H = 1.0f + var_H / (2.0f * DT_M_PI_F);
-
-  LCH[0] = Lab[0];
-  LCH[1] = sqrtf(Lab[1] * Lab[1] + Lab[2] * Lab[2]);
-  LCH[2] = var_H;
-}
-
 static inline void _LCH_2_Lab(const float *LCH, float *Lab)
 {
   Lab[0] = LCH[0];
@@ -274,8 +213,8 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst, const float *i
       {
         float LCH_input[3];
         float LCH_output[3];
-        _Lab_2_LCH(input, LCH_input);
-        _Lab_2_LCH(output, LCH_output);
+        dt_Lab_2_LCH(input, LCH_input);
+        dt_Lab_2_LCH(output, LCH_output);
 
         scaled[DEVELOP_BLENDIF_C_in] = CLAMP_RANGE(LCH_input[1] / (128.0f * sqrtf(2.0f)), 0.0f,
                                                    1.0f);                     // C scaled to 0..1
@@ -306,8 +245,8 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst, const float *i
       {
         float HSL_input[3];
         float HSL_output[3];
-        _RGB_2_HSL(input, HSL_input);
-        _RGB_2_HSL(output, HSL_output);
+        dt_RGB_2_HSL(input, HSL_input);
+        dt_RGB_2_HSL(output, HSL_output);
 
         scaled[DEVELOP_BLENDIF_H_in] = CLAMP_RANGE(HSL_input[0], 0.0f, 1.0f); // H scaled to 0..1
         scaled[DEVELOP_BLENDIF_S_in] = CLAMP_RANGE(HSL_input[1], 0.0f, 1.0f); // S scaled to 0..1
@@ -1916,8 +1855,8 @@ static void _blend_lightness(const _blend_buffer_desc_t *bd, const float *a, flo
       _CLAMP_XYZ(ta, min, max);
       _CLAMP_XYZ(&b[j], min, max);
 
-      _RGB_2_HSL(ta, tta);
-      _RGB_2_HSL(&b[j], ttb);
+      dt_RGB_2_HSL(ta, tta);
+      dt_RGB_2_HSL(&b[j], ttb);
 
       ttb[0] = tta[0];
       ttb[1] = tta[1];
@@ -1949,11 +1888,11 @@ static void _blend_chroma(const _blend_buffer_desc_t *bd, const float *a, float 
       float tta[3], ttb[3];
       _blend_Lab_scale(&a[j], ta);
       _CLAMP_XYZ(ta, min, max);
-      _Lab_2_LCH(ta, tta);
+      dt_Lab_2_LCH(ta, tta);
 
       _blend_Lab_scale(&b[j], tb);
       _CLAMP_XYZ(tb, min, max);
-      _Lab_2_LCH(tb, ttb);
+      dt_Lab_2_LCH(tb, ttb);
 
       ttb[0] = tta[0];
       ttb[1] = (tta[1] * (1.0f - local_opacity)) + ttb[1] * local_opacity;
@@ -1977,8 +1916,8 @@ static void _blend_chroma(const _blend_buffer_desc_t *bd, const float *a, float 
       _CLAMP_XYZ(ta, min, max);
       _CLAMP_XYZ(&b[j], min, max);
 
-      _RGB_2_HSL(ta, tta);
-      _RGB_2_HSL(&b[j], ttb);
+      dt_RGB_2_HSL(ta, tta);
+      dt_RGB_2_HSL(&b[j], ttb);
 
       ttb[0] = tta[0];
       ttb[1] = (tta[1] * (1.0f - local_opacity)) + ttb[1] * local_opacity;
@@ -2009,11 +1948,11 @@ static void _blend_hue(const _blend_buffer_desc_t *bd, const float *a, float *b,
       float tta[3], ttb[3];
       _blend_Lab_scale(&a[j], ta);
       _CLAMP_XYZ(ta, min, max);
-      _Lab_2_LCH(ta, tta);
+      dt_Lab_2_LCH(ta, tta);
 
       _blend_Lab_scale(&b[j], tb);
       _CLAMP_XYZ(tb, min, max);
-      _Lab_2_LCH(tb, ttb);
+      dt_Lab_2_LCH(tb, ttb);
 
       ttb[0] = tta[0];
       ttb[1] = tta[1];
@@ -2040,8 +1979,8 @@ static void _blend_hue(const _blend_buffer_desc_t *bd, const float *a, float *b,
       _CLAMP_XYZ(ta, min, max);
       _CLAMP_XYZ(&b[j], min, max);
 
-      _RGB_2_HSL(ta, tta);
-      _RGB_2_HSL(&b[j], ttb);
+      dt_RGB_2_HSL(ta, tta);
+      dt_RGB_2_HSL(&b[j], ttb);
 
       /* blend hue along shortest distance on color circle */
       float d = fabsf(tta[0] - ttb[0]);
@@ -2075,11 +2014,11 @@ static void _blend_color(const _blend_buffer_desc_t *bd, const float *a, float *
       float tta[3], ttb[3];
       _blend_Lab_scale(&a[j], ta);
       _CLAMP_XYZ(ta, min, max);
-      _Lab_2_LCH(ta, tta);
+      dt_Lab_2_LCH(ta, tta);
 
       _blend_Lab_scale(&b[j], tb);
       _CLAMP_XYZ(tb, min, max);
-      _Lab_2_LCH(tb, ttb);
+      dt_Lab_2_LCH(tb, ttb);
 
       ttb[0] = tta[0];
       ttb[1] = (tta[1] * (1.0f - local_opacity)) + ttb[1] * local_opacity;
@@ -2108,8 +2047,8 @@ static void _blend_color(const _blend_buffer_desc_t *bd, const float *a, float *
       _CLAMP_XYZ(ta, min, max);
       _CLAMP_XYZ(&b[j], min, max);
 
-      _RGB_2_HSL(ta, tta);
-      _RGB_2_HSL(&b[j], ttb);
+      dt_RGB_2_HSL(ta, tta);
+      dt_RGB_2_HSL(&b[j], ttb);
 
       /* blend hue along shortest distance on color circle */
       float d = fabsf(tta[0] - ttb[0]);
@@ -2145,11 +2084,11 @@ static void _blend_coloradjust(const _blend_buffer_desc_t *bd, const float *a, f
       float tta[3], ttb[3];
       _blend_Lab_scale(&a[j], ta);
       _CLAMP_XYZ(ta, min, max);
-      _Lab_2_LCH(ta, tta);
+      dt_Lab_2_LCH(ta, tta);
 
       _blend_Lab_scale(&b[j], tb);
       _CLAMP_XYZ(tb, min, max);
-      _Lab_2_LCH(tb, ttb);
+      dt_Lab_2_LCH(tb, ttb);
 
       // ttb[0] (output lightness) unchanged
       ttb[1] = (tta[1] * (1.0f - local_opacity)) + ttb[1] * local_opacity;
@@ -2177,8 +2116,8 @@ static void _blend_coloradjust(const _blend_buffer_desc_t *bd, const float *a, f
       _CLAMP_XYZ(ta, min, max);
       _CLAMP_XYZ(&b[j], min, max);
 
-      _RGB_2_HSL(ta, tta);
-      _RGB_2_HSL(&b[j], ttb);
+      dt_RGB_2_HSL(ta, tta);
+      dt_RGB_2_HSL(&b[j], ttb);
 
       /* blend hue along shortest distance on color circle */
       float d = fabsf(tta[0] - ttb[0]);
@@ -2606,7 +2545,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
         float LCH[3];
-        _Lab_2_LCH(a + j, LCH);
+        dt_Lab_2_LCH(a + j, LCH);
         const float c = CLAMP_RANGE(LCH[1] / (128.0f * sqrtf(2.0f)), 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
@@ -2615,7 +2554,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
         float LCH[3];
-        _Lab_2_LCH(b + j, LCH);
+        dt_Lab_2_LCH(b + j, LCH);
         const float c = CLAMP_RANGE(LCH[1] / (128.0f * sqrtf(2.0f)), 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
@@ -2624,7 +2563,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
         float LCH[3];
-        _Lab_2_LCH(a + j, LCH);
+        dt_Lab_2_LCH(a + j, LCH);
         const float c = CLAMP_RANGE(LCH[2], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
@@ -2633,7 +2572,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
         float LCH[3];
-        _Lab_2_LCH(b + j, LCH);
+        dt_Lab_2_LCH(b + j, LCH);
         const float c = CLAMP_RANGE(LCH[2], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
@@ -2642,7 +2581,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
         float HSL[3];
-        _RGB_2_HSL(a + j, HSL);
+        dt_RGB_2_HSL(a + j, HSL);
         const float c = CLAMP_RANGE(HSL[0], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
@@ -2651,7 +2590,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
         float HSL[3];
-        _RGB_2_HSL(b + j, HSL);
+        dt_RGB_2_HSL(b + j, HSL);
         const float c = CLAMP_RANGE(HSL[0], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
@@ -2660,7 +2599,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
         float HSL[3];
-        _RGB_2_HSL(a + j, HSL);
+        dt_RGB_2_HSL(a + j, HSL);
         const float c = CLAMP_RANGE(HSL[1], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
@@ -2669,7 +2608,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
         float HSL[3];
-        _RGB_2_HSL(b + j, HSL);
+        dt_RGB_2_HSL(b + j, HSL);
         const float c = CLAMP_RANGE(HSL[1], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
@@ -2678,7 +2617,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
         float HSL[3];
-        _RGB_2_HSL(a + j, HSL);
+        dt_RGB_2_HSL(a + j, HSL);
         const float c = CLAMP_RANGE(HSL[2], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
@@ -2687,7 +2626,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
         float HSL[3];
-        _RGB_2_HSL(b + j, HSL);
+        dt_RGB_2_HSL(b + j, HSL);
         const float c = CLAMP_RANGE(HSL[2], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }

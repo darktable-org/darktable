@@ -55,6 +55,12 @@ typedef enum _iop_gui_blendif_channel_t
   ch_max = 4
 } _iop_gui_blendif_channel_t;
 
+typedef enum dt_gui_blendif_pickcolor_type_t
+{
+  DT_BLENDIF_PICK_NONE = 0,
+  DT_BLENDIF_PICK_COLORPICK = 1,
+  DT_BLENDIF_PICK_SET_VALUES = 2
+} dt_gui_blendif_pickcolor_type_t;
 
 
 static const dt_iop_gui_blendif_colorstop_t _gradient_L[]
@@ -114,94 +120,72 @@ static const dt_iop_gui_blendif_colorstop_t _gradient_HUE[]
         { 1.0f, { NEUTRAL_GRAY, 0, 0, 1.0 } } };
 
 
-static inline void _RGB_2_HSL(const float *RGB, float *HSL)
+static void _cairo_paint_colorpicker_set_values(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  float H, S, L;
+  gint s = (w < h ? w : h);
+  cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
+  cairo_scale(cr, s, s);
 
-  float R = RGB[0];
-  float G = RGB[1];
-  float B = RGB[2];
+  /* draw pipette */
 
-  float var_Min = fminf(R, fminf(G, B));
-  float var_Max = fmaxf(R, fmaxf(G, B));
-  float del_Max = var_Max - var_Min;
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
-  L = (var_Max + var_Min) / 2.0f;
+  // drop
+  cairo_set_line_width(cr, 0.15);
+  cairo_move_to(cr, 0.08, 1. - 0.01 + 0.05);
+  cairo_line_to(cr, 0.08, 1. - 0.09 + 0.05);
+  cairo_stroke(cr);
 
-  if(del_Max == 0.0f)
-  {
-    H = 0.0f;
-    S = 0.0f;
-  }
-  else
-  {
-    if(L < 0.5f)
-      S = del_Max / (var_Max + var_Min);
-    else
-      S = del_Max / (2.0f - var_Max - var_Min);
+  cairo_set_line_width(cr, 0.2);
+  // cross line
+  cairo_move_to(cr, 0.48, 1. - 0.831 + 0.05);
+  cairo_line_to(cr, 0.739, 1. - 0.482 + 0.05);
+  // shaft
+  cairo_move_to(cr, 0.124, 1. - 0.297 + 0.05);
+  cairo_line_to(cr, 0.823, 1. - 0.814 + 0.05);
+  cairo_stroke(cr);
 
-    float del_R = (((var_Max - R) / 6.0f) + (del_Max / 2.0f)) / del_Max;
-    float del_G = (((var_Max - G) / 6.0f) + (del_Max / 2.0f)) / del_Max;
-    float del_B = (((var_Max - B) / 6.0f) + (del_Max / 2.0f)) / del_Max;
-
-    if(R == var_Max)
-      H = del_B - del_G;
-    else if(G == var_Max)
-      H = (1.0f / 3.0f) + del_R - del_B;
-    else if(B == var_Max)
-      H = (2.0f / 3.0f) + del_G - del_R;
-    else
-      H = 0.0f; // make GCC happy
-
-    if(H < 0.0f) H += 1.0f;
-    if(H > 1.0f) H -= 1.0f;
-  }
-
-  HSL[0] = H;
-  HSL[1] = S;
-  HSL[2] = L;
+  // end
+  cairo_set_line_width(cr, 0.35);
+  cairo_move_to(cr, 0.823, 1. - 0.814 + 0.05);
+  cairo_line_to(cr, 0.648, 1. - 0.685 + 0.05);
+  cairo_stroke(cr);
+  
+  // plus sign
+  cairo_set_line_width(cr, 0.2);
+  cairo_move_to(cr, 0.20, 0.01);
+  cairo_line_to(cr, 0.20, 0.41);
+  cairo_stroke(cr);
+  cairo_move_to(cr, 0.01, 0.20);
+  cairo_line_to(cr, 0.41, 0.20);
+  cairo_stroke(cr);
 }
-
-
-static inline void _Lab_2_LCH(const float *Lab, float *LCH)
-{
-  float var_H = atan2f(Lab[2], Lab[1]);
-
-  if(var_H > 0.0f)
-    var_H = var_H / (2.0f * M_PI);
-  else
-    var_H = 1.0f - fabs(var_H) / (2.0f * M_PI);
-
-  LCH[0] = Lab[0];
-  LCH[1] = sqrtf(Lab[1] * Lab[1] + Lab[2] * Lab[2]);
-  LCH[2] = var_H;
-}
-
 
 static void _blendif_scale(dt_iop_colorspace_type_t cst, const float *in, float *out)
 {
-  float temp[4];
+  out[0] = out[1] = out[2] = out[3] = out[4] = out[5] = out[6] = out[7] = -1.0f;
 
   switch(cst)
   {
     case iop_cs_Lab:
-      _Lab_2_LCH(in, temp);
       out[0] = CLAMP_RANGE(in[0] / 100.0f, 0.0f, 1.0f);
       out[1] = CLAMP_RANGE((in[1] + 128.0f) / 256.0f, 0.0f, 1.0f);
       out[2] = CLAMP_RANGE((in[2] + 128.0f) / 256.0f, 0.0f, 1.0f);
-      out[3] = CLAMP_RANGE(temp[1] / (128.0f * sqrtf(2.0f)), 0.0f, 1.0f);
-      out[4] = CLAMP_RANGE(temp[2], 0.0f, 1.0f);
-      out[5] = out[6] = out[7] = -1;
       break;
     case iop_cs_rgb:
-      _RGB_2_HSL(in, temp);
       out[0] = CLAMP_RANGE(0.3f * in[0] + 0.59f * in[1] + 0.11f * in[2], 0.0f, 1.0f);
       out[1] = CLAMP_RANGE(in[0], 0.0f, 1.0f);
       out[2] = CLAMP_RANGE(in[1], 0.0f, 1.0f);
       out[3] = CLAMP_RANGE(in[2], 0.0f, 1.0f);
-      out[4] = CLAMP_RANGE(temp[0], 0.0f, 1.0f);
-      out[5] = CLAMP_RANGE(temp[1], 0.0f, 1.0f);
-      out[6] = CLAMP_RANGE(temp[2], 0.0f, 1.0f);
+      break;
+    case iop_cs_LCh:
+      out[3] = CLAMP_RANGE(in[1] / (128.0f * sqrtf(2.0f)), 0.0f, 1.0f);
+      out[4] = CLAMP_RANGE(in[2], 0.0f, 1.0f);
+      break;
+    case iop_cs_HSL:
+      out[4] = CLAMP_RANGE(in[0], 0.0f, 1.0f);
+      out[5] = CLAMP_RANGE(in[1], 0.0f, 1.0f);
+      out[6] = CLAMP_RANGE(in[2], 0.0f, 1.0f);
       out[7] = -1;
       break;
     default:
@@ -211,29 +195,29 @@ static void _blendif_scale(dt_iop_colorspace_type_t cst, const float *in, float 
 
 static void _blendif_cook(dt_iop_colorspace_type_t cst, const float *in, float *out)
 {
-  float temp[4];
+  out[0] = out[1] = out[2] = out[3] = out[4] = out[5] = out[6] = out[7] = -1.0f;
 
   switch(cst)
   {
     case iop_cs_Lab:
-      _Lab_2_LCH(in, temp);
       out[0] = in[0];
       out[1] = in[1];
       out[2] = in[2];
-      out[3] = temp[1] / (128.0f * sqrtf(2.0f)) * 100.0f;
-      out[4] = temp[2] * 360.0f;
-      out[5] = out[6] = out[7] = -1;
       break;
     case iop_cs_rgb:
-      _RGB_2_HSL(in, temp);
       out[0] = (0.3f * in[0] + 0.59f * in[1] + 0.11f * in[2]) * 255.0f;
       out[1] = in[0] * 255.0f;
       out[2] = in[1] * 255.0f;
       out[3] = in[2] * 255.0f;
-      out[4] = temp[0] * 360.0f;
-      out[5] = temp[1] * 100.0f;
-      out[6] = temp[2] * 100.0f;
-      out[7] = -1;
+      break;
+    case iop_cs_LCh:
+      out[3] = in[1] / (128.0f * sqrtf(2.0f)) * 100.0f;
+      out[4] = in[2] * 360.0f;
+      break;
+    case iop_cs_HSL:
+      out[4] = in[0] * 360.0f;
+      out[5] = in[1] * 100.0f;
+      out[6] = in[2] * 100.0f;
       break;
     default:
       out[0] = out[1] = out[2] = out[3] = out[4] = out[5] = out[6] = out[7] = -1.0f;
@@ -378,12 +362,8 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gu
   }
   else if(data->blendif_inited)
   {
-    /* switch off color picker - only if it was requested by blendif */
-    if(data->module->request_color_pick == DT_REQUEST_COLORPICK_BLEND)
-    {
-      data->module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->colorpicker), 0);
-    }
+    /* switch off color picker */
+    dt_iop_color_picker_reset(data->module, TRUE);
 
     gtk_widget_hide(GTK_WIDGET(data->blendif_box));
   }
@@ -461,6 +441,12 @@ static void _blendop_blendif_contrast_callback(GtkWidget *slider, dt_iop_gui_ble
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
 
+static void _blendop_blendif_reset_picker_set_values(dt_iop_gui_blend_data_t *data)
+{
+  if(data->color_picker.current_picker == DT_BLENDIF_PICK_SET_VALUES)
+    dt_iop_color_picker_reset(data->module, TRUE);
+}
+
 static void _blendop_blendif_upper_callback(GtkDarktableGradientSlider *slider, dt_iop_gui_blend_data_t *data)
 {
   if(darktable.gui->reset) return;
@@ -471,6 +457,8 @@ static void _blendop_blendif_upper_callback(GtkDarktableGradientSlider *slider, 
 
   float *parameters = &(bp->blendif_parameters[4 * ch]);
 
+  _blendop_blendif_reset_picker_set_values(data);
+  
   for(int k = 0; k < 4; k++) parameters[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
 
   for(int k = 0; k < 4; k++)
@@ -500,6 +488,8 @@ static void _blendop_blendif_lower_callback(GtkDarktableGradientSlider *slider, 
 
   float *parameters = &(bp->blendif_parameters[4 * ch]);
 
+  _blendop_blendif_reset_picker_set_values(data);
+  
   for(int k = 0; k < 4; k++) parameters[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
 
   for(int k = 0; k < 4; k++)
@@ -547,41 +537,102 @@ static void _blendop_blendif_polarity_callback(GtkToggleButton *togglebutton, dt
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
 
+static dt_iop_colorspace_type_t _blendop_blendif_get_picker_colorspace(dt_iop_gui_blend_data_t *bd)
+{
+  dt_iop_colorspace_type_t picker_cst = -1;
+
+  if(bd->csp == iop_cs_rgb)
+  {
+    if(bd->tab < 4)
+      picker_cst = iop_cs_rgb;
+    else
+      picker_cst = iop_cs_HSL;
+  }
+  else if(bd->csp == iop_cs_Lab)
+  {
+    if(bd->tab < 3)
+      picker_cst = iop_cs_Lab;
+    else
+      picker_cst = iop_cs_LCh;
+  }
+
+  return picker_cst;
+}
+
+static void _update_gradient_slider(GtkWidget *widget, dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *data = module->blend_data;
+  float picker_mean[8], picker_min[8], picker_max[8];
+  float cooked[8];
+  float *raw_mean, *raw_min, *raw_max;
+  char text[256];
+  GtkLabel *label;
+
+  if(widget == GTK_WIDGET(data->lower_slider))
+  {
+    raw_mean = module->picked_color;
+    raw_min = module->picked_color_min;
+    raw_max = module->picked_color_max;
+    label = data->lower_picker_label;
+  }
+  else
+  {
+    raw_mean = module->picked_output_color;
+    raw_min = module->picked_output_color_min;
+    raw_max = module->picked_output_color_max;
+    label = data->upper_picker_label;
+  }
+
+  const int reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
+  if((module->request_color_pick == DT_REQUEST_COLORPICK_BLEND) && (raw_min[0] != INFINITY))
+  {
+    const int cst = (module->picker_cst == -1) ? data->csp: module->picker_cst;
+    _blendif_scale(cst, raw_mean, picker_mean);
+    _blendif_scale(cst, raw_min, picker_min);
+    _blendif_scale(cst, raw_max, picker_max);
+    _blendif_cook(cst, raw_mean, cooked);
+
+    snprintf(text, sizeof(text), "(%.1f)", cooked[data->tab]);
+
+    dtgtk_gradient_slider_multivalue_set_picker_meanminmax(
+        DTGTK_GRADIENT_SLIDER(widget), picker_mean[data->tab], picker_min[data->tab], picker_max[data->tab]);
+    gtk_label_set_text(label, text);
+  }
+  else
+  {
+    dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(widget), NAN);
+    gtk_label_set_text(label, "");
+  }
+
+  darktable.gui->reset = reset;
+}
+
+static gboolean _blendop_blendif_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *module)
+{
+  if(darktable.gui->reset) return FALSE;
+
+  _update_gradient_slider(widget, module);
+
+  return FALSE;
+}
 
 static void _blendop_blendif_tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num,
                                         dt_iop_gui_blend_data_t *data)
 {
+  const int cst_old = _blendop_blendif_get_picker_colorspace(data);
+
   data->tab = page_num;
-  dt_iop_gui_update_blendif(data->module);
-}
 
-
-static void _blendop_blendif_pick_toggled(GtkToggleButton *togglebutton, dt_iop_module_t *module)
-{
-  if(darktable.gui->reset) return;
-
-  /* if module itself already requested color pick don't tamper with it. A module color picker takes
-   * precedence. */
-  if(module->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
+  if(data->module->request_color_pick == DT_REQUEST_COLORPICK_BLEND && 
+      (cst_old != _blendop_blendif_get_picker_colorspace(data) || data->color_picker.current_picker == DT_BLENDIF_PICK_SET_VALUES))
   {
-    gtk_toggle_button_set_active(togglebutton, 0);
-    return;
-  }
-
-  module->request_color_pick
-      = (gtk_toggle_button_get_active(togglebutton) ? DT_REQUEST_COLORPICK_BLEND : DT_REQUEST_COLORPICK_OFF);
-
-  /* set the area sample size */
-  if(module->request_color_pick != DT_REQUEST_COLORPICK_OFF)
-  {
-    dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
-    dt_dev_reprocess_all(module->dev);
-  }
-  else
+    data->module->picker_cst = _blendop_blendif_get_picker_colorspace(data);
+    dt_dev_reprocess_all(data->module->dev);
     dt_control_queue_redraw();
+  }
 
-  if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
-  dt_iop_request_focus(module);
+  dt_iop_gui_update_blendif(data->module);
 }
 
 static void _blendop_blendif_showmask_clicked(GtkWidget *button, GdkEventButton *event, dt_iop_module_t *module)
@@ -716,6 +767,7 @@ static void _blendop_blendif_reset(GtkButton *button, dt_iop_module_t *module)
   memcpy(module->blend_params->blendif_parameters, module->default_blendop_params->blendif_parameters,
          4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
 
+  dt_iop_color_picker_reset(module, TRUE);
   dt_iop_gui_update_blendif(module);
   dt_dev_add_history_item(darktable.develop, module, TRUE);
 }
@@ -741,6 +793,11 @@ static void _blendop_blendif_invert(GtkButton *button, dt_iop_module_t *module)
     case iop_cs_RAW:
       toggle_mask = 0;
       break;
+
+    case iop_cs_LCh:
+    case iop_cs_HSL:
+      toggle_mask = 0;
+      break;
   }
 
   module->blend_params->blendif ^= toggle_mask;
@@ -759,7 +816,7 @@ static int _blendop_masks_add_path(GtkWidget *widget, GdkEventButton *event, dt_
   {
     // we want to be sure that the iop has focus
     dt_iop_request_focus(self);
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+    dt_iop_color_picker_reset(self, TRUE);
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
@@ -784,7 +841,7 @@ static int _blendop_masks_add_circle(GtkWidget *widget, GdkEventButton *event, d
   {
     // we want to be sure that the iop has focus
     dt_iop_request_focus(self);
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+    dt_iop_color_picker_reset(self, TRUE);
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
@@ -809,7 +866,7 @@ static int _blendop_masks_add_ellipse(GtkWidget *widget, GdkEventButton *event, 
   {
     // we want to be sure that the iop has focus
     dt_iop_request_focus(self);
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+    dt_iop_color_picker_reset(self, TRUE);
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
@@ -834,7 +891,7 @@ static int _blendop_masks_add_brush(GtkWidget *widget, GdkEventButton *event, dt
   {
     // we want to be sure that the iop has focus
     dt_iop_request_focus(self);
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+    dt_iop_color_picker_reset(self, TRUE);
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
@@ -859,7 +916,7 @@ static int _blendop_masks_add_gradient(GtkWidget *widget, GdkEventButton *event,
   {
     // we want to be sure that the iop has focus
     dt_iop_request_focus(self);
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+    dt_iop_color_picker_reset(self, TRUE);
     bd->masks_shown = DT_MASKS_EDIT_FULL;
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), TRUE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
@@ -886,7 +943,7 @@ static int _blendop_masks_show_and_edit(GtkWidget *widget, GdkEventButton *event
     darktable.gui->reset = 1;
 
     dt_iop_request_focus(self);
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+    dt_iop_color_picker_reset(self, TRUE);
 
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, self->blend_params->mask_id);
     if(grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points) > 0)
@@ -937,62 +994,173 @@ static void _blendop_masks_polarity_callback(GtkToggleButton *togglebutton, dt_i
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static gboolean _blendop_blendif_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *module)
+static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
+{
+  dt_iop_gui_blend_data_t *data = self->blend_data;
+  const int current_picker = data->color_picker.current_picker;
+
+  data->color_picker.current_picker = DT_BLENDIF_PICK_NONE;
+
+  if(button == data->colorpicker)
+    data->color_picker.current_picker = DT_BLENDIF_PICK_COLORPICK;
+  else if(button == data->colorpicker_set_values)
+    data->color_picker.current_picker = DT_BLENDIF_PICK_SET_VALUES;
+
+  if(current_picker == data->color_picker.current_picker)
+    return DT_COLOR_PICKER_ALREADY_SELECTED;
+  else
+    return data->color_picker.current_picker;
+}
+
+static void _iop_color_picker_apply(struct dt_iop_module_t *module)
+{
+  if(darktable.gui->reset) return;
+  
+  dt_iop_gui_blend_data_t *data = module->blend_data;
+  switch(data->color_picker.current_picker)
+  {
+  case DT_BLENDIF_PICK_SET_VALUES:
+  {
+    const int reset = darktable.gui->reset;
+    darktable.gui->reset = 1;
+    
+    dt_develop_blend_params_t *bp = module->blend_params;
+    const int tab = data->tab;
+    const int lower_upper = data->picker_set_upper_lower; // lower=0, upper=1
+    const int ch = data->channels[tab][lower_upper];
+    float *parameters = &(bp->blendif_parameters[4 * ch]);
+    float *raw_mean, *raw_min, *raw_max;
+    float picker_mean[8], picker_min[8], picker_max[8];
+    float picker_values[4];
+    GtkDarktableGradientSlider *slider = (lower_upper == 0) ? data->lower_slider: data->upper_slider;
+
+    if(lower_upper == 0)
+    {
+      raw_mean = module->picked_color;
+      raw_min = module->picked_color_min;
+      raw_max = module->picked_color_max;
+    }
+    else
+    {
+      raw_mean = module->picked_output_color;
+      raw_min = module->picked_output_color_min;
+      raw_max = module->picked_output_color_max;
+    }
+    
+    const int cst = (module->picker_cst == -1) ? data->csp: module->picker_cst;
+    _blendif_scale(cst, raw_mean, picker_mean);
+    _blendif_scale(cst, raw_min, picker_min);
+    _blendif_scale(cst, raw_max, picker_max);
+
+    const float feather = 0.01f;
+
+    if(picker_min[tab] > picker_max[tab])
+    {
+      const float tmp = picker_min[tab];
+      picker_min[tab] = picker_max[tab];
+      picker_max[tab] = tmp;
+    }
+    
+    picker_values[0] = CLAMP(picker_min[tab] - feather, 0.f, 1.f);
+    picker_values[1] = CLAMP(picker_min[tab] + feather, 0.f, 1.f);
+    picker_values[2] = CLAMP(picker_max[tab] - feather, 0.f, 1.f);
+    picker_values[3] = CLAMP(picker_max[tab] + feather, 0.f, 1.f);
+
+    if(picker_values[1] > picker_values[2])
+    {
+      picker_values[1] = CLAMP(picker_min[tab], 0.f, 1.f);
+      picker_values[2] = CLAMP(picker_max[tab], 0.f, 1.f);
+    }
+    
+    picker_values[0] = CLAMP(picker_values[0], 0.f, picker_values[1]);
+    picker_values[3] = CLAMP(picker_values[3], picker_values[2], 1.f);
+
+    for(int k = 0; k < 4; k++)
+      dtgtk_gradient_slider_multivalue_set_value(slider, picker_values[k], k);
+
+    // update picked values
+    _update_gradient_slider(GTK_WIDGET(data->lower_slider), module);
+    _update_gradient_slider(GTK_WIDGET(data->upper_slider), module);
+
+    for(int k = 0; k < 4; k++)
+    {
+      char text[256];
+      (data->scale_print[tab])(dtgtk_gradient_slider_multivalue_get_value(slider, k), text, sizeof(text));
+      if(lower_upper == 0)
+        gtk_label_set_text(data->lower_label[k], text);
+      else
+        gtk_label_set_text(data->upper_label[k], text);
+    }
+
+    darktable.gui->reset = reset;
+
+    // save values to parameters
+    for(int k = 0; k < 4; k++)
+      parameters[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
+    
+    // de-activate processing of this channel if maximum span is selected
+    if(parameters[1] == 0.0f && parameters[2] == 1.0f)
+      bp->blendif &= ~(1 << ch);
+    else
+      bp->blendif |= (1 << ch);
+
+    dt_dev_add_history_item(darktable.develop, module, TRUE);
+  }
+  break;
+  case DT_BLENDIF_PICK_COLORPICK:
+    _update_gradient_slider(GTK_WIDGET(data->upper_slider), module);
+    _update_gradient_slider(GTK_WIDGET(data->lower_slider), module);
+    break;
+  default:
+    break;
+  }
+}
+
+static void _iop_color_picker_update(dt_iop_module_t *self)
+{
+  dt_iop_gui_blend_data_t *data = self->blend_data;
+  const int which_colorpicker = data->color_picker.current_picker;
+  const int reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
+  
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->colorpicker), which_colorpicker == DT_BLENDIF_PICK_COLORPICK);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->colorpicker_set_values), which_colorpicker == DT_BLENDIF_PICK_SET_VALUES);
+  
+  if(self->request_color_pick != DT_REQUEST_COLORPICK_BLEND)
+  {
+    self->picker_cst = -1;
+    
+    dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(data->upper_slider), NAN);
+    gtk_label_set_text(data->upper_picker_label, "");
+    dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(data->lower_slider), NAN);
+    gtk_label_set_text(data->lower_picker_label, "");
+  }
+
+  darktable.gui->reset = reset;
+}
+
+static gboolean _blendop_blendif_color_picker_callback_button_press(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return FALSE;
 
-  dt_iop_gui_blend_data_t *data = module->blend_data;
-
-  float picker_mean[8], picker_min[8], picker_max[8];
-  float cooked[8];
-  float *raw_mean, *raw_min, *raw_max;
-  char text[256];
-  GtkLabel *label;
-
-  if(widget == GTK_WIDGET(data->lower_slider))
-  {
-    raw_mean = module->picked_color;
-    raw_min = module->picked_color_min;
-    raw_max = module->picked_color_max;
-    label = data->lower_picker_label;
-  }
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
+  dt_iop_color_picker_t *color_picker = &bd->color_picker;
+  module->picker_cst = _blendop_blendif_get_picker_colorspace(bd);
+  
+  // this is not pretty but we don't have a kind per-picker
+  // if at some some point a module needs it we can think something more elegant
+  if(widget == bd->colorpicker)
+    color_picker->kind = DT_COLOR_PICKER_POINT_AREA;
   else
-  {
-    raw_mean = module->picked_output_color;
-    raw_min = module->picked_output_color_min;
-    raw_max = module->picked_output_color_max;
-    label = data->upper_picker_label;
-  }
-
-  darktable.gui->reset = 1;
-  if((module->request_color_pick == DT_REQUEST_COLORPICK_BLEND) && (raw_min[0] != INFINITY))
-  {
-    _blendif_scale(data->csp, raw_mean, picker_mean);
-    _blendif_scale(data->csp, raw_min, picker_min);
-    _blendif_scale(data->csp, raw_max, picker_max);
-    _blendif_cook(data->csp, raw_mean, cooked);
-
-    if(data->channels[data->tab][0] >= 8) // min and max make no sense for HSL and LCh
-      picker_min[data->tab] = picker_max[data->tab] = picker_mean[data->tab];
-
-    snprintf(text, sizeof(text), "(%.1f)", cooked[data->tab]);
-
-    dtgtk_gradient_slider_multivalue_set_picker_meanminmax(
-        DTGTK_GRADIENT_SLIDER(widget), picker_mean[data->tab], picker_min[data->tab], picker_max[data->tab]);
-    gtk_label_set_text(label, text);
-  }
+    color_picker->kind = DT_COLOR_PICKER_AREA;
+  
+  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+  if((e->state & modifiers) == GDK_CONTROL_MASK) // lower=0, upper=1
+    bd->picker_set_upper_lower = 1;
   else
-  {
-    dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(widget), NAN);
-    gtk_label_set_text(label, "");
-  }
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->colorpicker),
-                               (module->request_color_pick == DT_REQUEST_COLORPICK_BLEND ? 1 : 0));
-
-  darktable.gui->reset = 0;
-
-  return FALSE;
+    bd->picker_set_upper_lower = 0;
+  
+  return dt_iop_color_picker_callback_button_press(widget, e, color_picker);
 }
 
 // magic mode: if mouse curser enters a gradient slider with shift and/or control pressed we
@@ -1093,7 +1261,6 @@ static gboolean _blendop_blendif_leave(GtkWidget *widget, GdkEventCrossing *even
 
   return TRUE;
 }
-
 
 void dt_iop_gui_update_blendif(dt_iop_module_t *module)
 {
@@ -1373,8 +1540,14 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 
     bd->colorpicker
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-    gtk_widget_set_tooltip_text(bd->colorpicker, _("pick GUI color from image"));
+    gtk_widget_set_tooltip_text(bd->colorpicker, _("pick GUI color from image\ncntrl + click to select an area"));
     gtk_widget_set_size_request(GTK_WIDGET(bd->colorpicker), bs, bs);
+
+    bd->colorpicker_set_values
+        = dtgtk_togglebutton_new(_cairo_paint_colorpicker_set_values, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+    gtk_widget_set_tooltip_text(bd->colorpicker_set_values, _("set the range based on an area from the image\n"
+        "click + drag to use the input image\ncntrl + click + drag to use the output image"));
+    gtk_widget_set_size_request(GTK_WIDGET(bd->colorpicker_set_values), bs, bs);
 
     GtkWidget *res = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_tooltip_text(res, _("reset blend mask settings"));
@@ -1387,6 +1560,7 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(header), GTK_WIDGET(notebook), TRUE, TRUE, 0);
     gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(res), FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(inv), FALSE, FALSE, 0);
+    gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(bd->colorpicker_set_values), FALSE, FALSE, 0);
     gtk_box_pack_end(GTK_BOX(header), GTK_WIDGET(bd->colorpicker), FALSE, FALSE, 0);
 
     bd->lower_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
@@ -1454,7 +1628,9 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 
     g_signal_connect(G_OBJECT(bd->upper_slider), "enter-notify-event", G_CALLBACK(_blendop_blendif_enter), module);
 
-    g_signal_connect(G_OBJECT(bd->colorpicker), "toggled", G_CALLBACK(_blendop_blendif_pick_toggled), module);
+    g_signal_connect(G_OBJECT(bd->colorpicker), "button-press-event", G_CALLBACK(_blendop_blendif_color_picker_callback_button_press), module);
+
+    g_signal_connect(G_OBJECT(bd->colorpicker_set_values), "button-press-event", G_CALLBACK(_blendop_blendif_color_picker_callback_button_press), module);
 
     g_signal_connect(G_OBJECT(res), "clicked", G_CALLBACK(_blendop_blendif_reset), module);
 
@@ -1472,6 +1648,13 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(upslider), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(lowlabel), TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(lowslider), TRUE, FALSE, 0);
+
+    dt_iop_init_blend_picker(&bd->color_picker,
+                       module,
+                       DT_COLOR_PICKER_POINT_AREA,
+                       _iop_color_picker_get_set,
+                       _iop_color_picker_apply,
+                       _iop_color_picker_update);
 
     bd->blendif_inited = 1;
   }
@@ -1989,12 +2172,8 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   }
   else if(bd->blendif_inited)
   {
-    /* switch off color picker if it was requested by blendif */
-    if(module->request_color_pick == DT_REQUEST_COLORPICK_BLEND)
-    {
-      module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->colorpicker), 0);
-    }
+    /* switch off color picker */
+    dt_iop_color_picker_reset(module, TRUE);
 
     gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
   }
@@ -2063,6 +2242,8 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->timeout_handle = 0;
     bd->save_for_leave = 0;
     dt_pthread_mutex_unlock(&bd->lock);
+    
+    bd->picker_set_upper_lower = 0;
 
 
     /** generate a list of all available blend modes */
@@ -2324,6 +2505,9 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
                              DEVELOP_BLEND_LINEARLIGHT);
         _add_blendmode_combo(&(bd->blend_modes), bd->blend_modes_combo, bd->blend_modes_all,
                              DEVELOP_BLEND_PINLIGHT);
+        break;
+      case iop_cs_LCh:
+      case iop_cs_HSL:
         break;
     }
 

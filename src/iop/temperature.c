@@ -743,7 +743,7 @@ void gui_update(struct dt_iop_module_t *self)
   }
   gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "enabled");
 
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
   gtk_widget_hide(g->colorpicker);
 
   double TempK, tint;
@@ -1146,7 +1146,7 @@ static void temp_changed(dt_iop_module_t *self)
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
 
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
   
   const double TempK = dt_bauhaus_slider_get(g->scale_k);
   const double tint = dt_bauhaus_slider_get(g->scale_tint);
@@ -1195,7 +1195,7 @@ static void rgb_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
   const float value = dt_bauhaus_slider_get(slider);
   if(slider == g->scale_r)
     p->coeffs[0] = value;
@@ -1215,7 +1215,7 @@ static void apply_preset(dt_iop_module_t *self)
 {
   if(self->dt->gui->reset) return;
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
   dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->default_params;
   const int tune = dt_bauhaus_slider_get(g->finetune);
@@ -1481,8 +1481,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_reset(struct dt_iop_module_t *self)
 {
-  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
   gui_sliders_update(self);
 }
 

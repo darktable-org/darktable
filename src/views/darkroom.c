@@ -2098,8 +2098,6 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
       dev->gui_module->color_picker_point[1] = .5f + zoom_y;
     }
 
-    dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
-    dt_dev_invalidate_all(dev);
     dt_control_queue_redraw();
     return;
   }
@@ -2147,6 +2145,13 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
   if(height_i > capht) y += (capht - height_i) * .5f;
 
   int handled = 0;
+  if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 1)
+  {
+    dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
+    dt_dev_invalidate_all(dev);
+    dt_control_queue_redraw();
+    return 1;
+  }
   // masks
   if(dev->form_visible) handled = dt_masks_events_button_released(dev->gui_module, x, y, which, state);
   if(handled) return handled;
