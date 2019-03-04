@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
-"POT-Creation-Date: 2019-02-28 00:21-0600\n"
-"PO-Revision-Date: 2019-02-28 01:01-0600\n"
+"POT-Creation-Date: 2019-03-04 01:05-0600\n"
+"PO-Revision-Date: 2019-03-04 00:50-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es\n"
@@ -20,7 +20,6 @@ msgid "The founder of the darktable project is Johannes Hanika."
 msgstr "El fundador del proyecto darktable es Johannes Hanika."
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14(para)
-#, fuzzy
 msgid ""
 "darktable has been developed with major contribution by Aldric Renaudin, "
 "Alexander V. Smal, Alexandre Prokoudine, Ammon Riley, Anders Brander, "
@@ -67,7 +66,7 @@ msgstr ""
 "Richard Levitte, Richard Wonka, Robert Bieber, Roman Lebedev, Rostyslav "
 "Pidgornyi, Sergey Pavlov, Simon Spannagel, Stuart Henderson, Tatica Leandro, "
 "Thomas Pryds, Tobias Ellinghaus, Tom Vijlbrief, Ulrich Pegelow, Victor "
-"Lamoine, Wolfgang Goetz, Wyatt Olson y muchos otros."
+"Lamoine, Wolfgang Goetz, Wyatt Olson y muchos otros más."
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:42(para)
 msgid ""
@@ -158,9 +157,8 @@ msgid "darktable"
 msgstr "darktable"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:102(primary)
-#, fuzzy
 msgid "preface"
-msgstr "Prefacio"
+msgstr "prefacio"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:105(para)
 #, fuzzy
@@ -182,14 +180,14 @@ msgstr ""
 "2015 </entry></row></tbody></tgroup></informaltable>"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:147(para)
-#, fuzzy
 msgid ""
 "Translations of this manual to local languages are brought to you by "
 "Federico Bruni, Maurizio Paglia, Victor Lamoine, Michel Leblond, María "
 "Gracia Leandro, Pierre Metzner, Christian Kanzian and Wolfgang Arndt."
 msgstr ""
-"Las traducciones de este manual a su idioma local ha sido realizada por "
-"Federico Bruni, Victor Lamoine, Michel Leblond, and María Gracia Leandro."
+"La traducción de este manual a su idioma ha sido realizada por Federico "
+"Bruni, Victor Lamoine, Michel Leblond, María Gracia Leandro y Edgar De la "
+"Luz."
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:153(para)
 msgid ""
@@ -298,14 +296,13 @@ msgid "Overview"
 msgstr "Resumen"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:176(para)
-#, fuzzy
 msgid ""
 "darktable is an open source photography workflow application and raw "
 "developer, a virtual lighttable and darkroom for photographers."
 msgstr ""
-"darktable es una aplicación de código abierto para el flujo de trabajo "
-"fotográfico y revelado RAW, una mesa de luz virtual y un cuarto oscuro para "
-"fotógrafos."
+"darktable es una aplicación para el flujo de trabajo fotográfico y revelado "
+"digital RAW de código abierto, una mesa de luz y un cuarto oscuro virtuales "
+"para fotógrafos."
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:181(para)
 msgid ""
@@ -341,18 +338,17 @@ msgstr ""
 "flotante de 4x32-bit para un procesado más exacto, previniendo las bandas y "
 "rupturas de color."
 
-# streaming SIMD extensions - traducir o no?
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:203(para)
-#, fuzzy
 msgid ""
 "darktable makes heavy use of <emphasis>Streaming SIMD Extensions 2</"
 "emphasis> (SSE2) instructions of the CPU to speed up processing. In fact, "
 "darktable requires either an SSE2-capable x86 processor or an ARM64 "
 "processor."
 msgstr ""
-"darktable hace un gran uso de instrucciones <emphasis>Streaming SIMD "
-"Extensions 2</emphasis> (SSE2) del CPU para acelerar el procesamiento. De "
-"hecho, darktable solo corre en CPU que soporten SSE2."
+"darktable hace un gran uso de instrucciones de la <emphasis>segunda versión "
+"de extensiones SIMD en flujos</emphasis> (SSE2) de la CPU para acelerar el "
+"procesamiento. De hecho, darktable solo corre en un procesador x86 "
+"compatible con SSE2 o un procesador ARM64."
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:209(para)
 msgid "GPU acceleration via OpenCL (runtime detection and enabling)."
@@ -390,13 +386,12 @@ msgstr ""
 "relacionadas, son herramientas útiles para su flujo de trabajo diario."
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:230(para)
-#, fuzzy
 msgid ""
 "Import a variety of standard, raw and high dynamic range image formats (e.g. "
 "JPEG, CR2, DNG, OpenEXR, PFM, ...)."
 msgstr ""
-"Importa una gran variedad de estándares, tanto raw, como un alto rango "
-"dinámico de formatos de imagen (e.g. JPG, CR2, OpenEXR, PFM, ...)."
+"Importa una gran variedad de formatos habituales de imágenes, RAW y de rango "
+"dinámico amplio (p.ej. JPEG, CR2, DNG, OpenEXR, PFM...)."
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:235(para)
 msgid ""
@@ -412,7 +407,6 @@ msgid "Tethered shooting."
 msgstr "Captura."
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:244(para)
-#, fuzzy
 msgid ""
 "The powerful export system supports Google+ webalbum, flickr upload, disk "
 "storage, 1:1 copy, email attachments and can generate a simple html-based "
@@ -420,12 +414,12 @@ msgid ""
 "JPEG2000, PNG, TIFF, PDF), 16-bit (PPM, TIFF), or linear high dynamic range "
 "(PFM, EXR) images."
 msgstr ""
-"El poderoso sistema de exportado soporta álbumes web de Picasa, cargas a "
-"flickr, almacenamiento en disco, copias 1:1, archivos adjuntos a un correo "
-"electrónico y puede generar una sencilla galería web basada en html. "
-"darktable le permite exportar imágenes a un rango dinámico bajo (JPEG, "
-"JPEG2000, PNG, TIFF, PDF), 16-bit (PPM, TIFF), o imágenes con rango dinámico "
-"alto lineal (PFM, EXR)."
+"El poderoso sistema de exportado admite álbumes web Google+, cargas a "
+"flickr, almacenamiento en disco, copias 1 a 1, como archivo adjunto en un "
+"correo electrónico y puede también generar una galería web sencilla basada "
+"en html. darktable le permite exportar imágenes a un rango dinámico bajo "
+"(JPEG, JPEG2000, PNG, TIFF, PDF), 16-bit (PPM, TIFF), o imágenes con amplio "
+"rango dinámico lineal (PFM, EXR)."
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:251(para)
 msgid ""
@@ -438,16 +432,14 @@ msgstr ""
 "son leídos y escritos utilizando libexiv2."
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:256(para)
-#, fuzzy
 msgid ""
 "darktable comes with more than 60 image operation modules which cover "
 "everything from basic operations, tonal value changes, color manipulation, "
 "correction of common image defects to artistic effects."
 msgstr ""
-"darktable tiene más de 50 módulos para la manipulación de imágenes que "
-"cubren todo, desde operaciones básicas, cambios en valores tonales, "
-"manipulación de color, corrección de defectos comunes en la imagen hasta "
-"efectos artísticos."
+"darktable tiene más de 60 módulos para trabajar imágenes que cubren todo, "
+"desde operaciones básicas, cambios en valores tonales, manipulación de "
+"color, correcciones comunes de defectos hasta efectos artísticos."
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:262(para)
 msgid ""
@@ -531,12 +523,10 @@ msgstr ""
 "impresora conectada, con un soporte completo del manejo de color."
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:310(title)
-#, fuzzy
 msgid "Program invocation"
 msgstr "Ejecución del programa"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:313(primary)
-#, fuzzy
 msgid "program invocation"
 msgstr "ejecución del programa"
 
@@ -1300,9 +1290,8 @@ msgid "The name of the style file to be created."
 msgstr "El nombre del archivo a exportar."
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:935(para)
-#, fuzzy
 msgid "All parameters are mandatory. <placeholder-1/>"
-msgstr "array of<placeholder-1/>"
+msgstr "Todos los parámetros son obligatorios. <placeholder-1/>"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:977(title)
 msgid "<filename moreinfo=\"none\">darktable-cltest</filename> binary"
@@ -1597,7 +1586,7 @@ msgstr ""
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1254(title)
 msgid "Contextual help"
-msgstr ""
+msgstr "Ayuda contextual"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1256(para)
 #, fuzzy
@@ -3803,9 +3792,8 @@ msgid "Camera raw files"
 msgstr "Archivos RAW de la cámara"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2866(secondary)
-#, fuzzy
 msgid "raw files"
-msgstr "Archivos XMP"
+msgstr "Archivos en bruto"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2869(para)
 #, fuzzy
@@ -3872,7 +3860,7 @@ msgstr "Imágenes HDR"
 msgid ""
 "darktable reads high dynamic range images in OpenEXR, RGBE and PFM format."
 msgstr ""
-"darktable lee imágenes de alto rango dinámico en formatos OpenEXR, RGBE y "
+"darktable lee imágenes de rango dinámico amplio en formatos OpenEXR, RGBE y "
 "PFM."
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2928(title)
@@ -4121,9 +4109,8 @@ msgid "the filename of the physical input image"
 msgstr "el nombre del archivo físico de entrada"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3181(para)
-#, fuzzy
 msgid "the geo location of the image"
-msgstr "El tiempo de exposición de la imagen."
+msgstr "localización geográfica de la imagen"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2981(para)
 #, fuzzy
@@ -4304,7 +4291,7 @@ msgstr ""
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3283(title)
 msgid "updating folder path"
-msgstr ""
+msgstr "Actualizar la ruta de la carpeta"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3285(para)
 msgid ""
@@ -4343,9 +4330,8 @@ msgid "Image information"
 msgstr "Información de la imagen"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3352(primary)
-#, fuzzy
 msgid "Exif data"
-msgstr "día exif"
+msgstr "Datos Exif"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3361(entry)
 #, fuzzy
@@ -4564,7 +4550,6 @@ msgid "create hdr"
 msgstr "crear hdr"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3598(para)
-#, fuzzy
 msgid ""
 "Create a high dynamic range image from the selected images, and store it as "
 "a new source file in DNG format. Images need to be properly aligned, which "
@@ -4574,15 +4559,15 @@ msgid ""
 "darktable for further processing (see <xref linkend=\"supported_file_formats"
 "\"/>). Note that darktable will only creates HDR images from raw files."
 msgstr ""
-"Crea una imagen de alto rango dinámico a partir de las imágenes "
+"Crea una imagen de rango dinámico amplio a partir de las imágenes "
 "seleccionadas, y la guarda como un nuevo archivo fuente en formato DNG. Las "
 "imágenes deben estar debidamente alineadas, lo cual implica que deben ser "
-"tomadas sobre un trípode. También puede general HDRs con programas como "
+"tomadas sobre un trípode. También se pueden generar con programas como "
 "<ulink url=\"http://qtpfsgui.sourceforge.net/\"><emphasis>Luminance HDR</"
 "emphasis></ulink>, y luego importarlas a darktable para un procesado más a "
-"fondo (ver <xref linkend=\"supported_file_formats\"/>). Note que darktable "
-"actualmente no puede crear archivos HDR a partir de imágenes con sensores "
-"non-Bayer (e.g. Fujifilm X-Trans)."
+"fondo (ver <xref linkend=\"supported_file_formats\"/>). Note que "
+"actualmente, darktable no puede crear archivos HDR a partir de imágenes con "
+"sensores que no sean tipo Bayer (p.ej. Fujifilm X-Trans)."
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3612(title)
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7623(secondary)
@@ -4611,7 +4596,6 @@ msgid "rotation"
 msgstr "rotación"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3630(para)
-#, fuzzy
 msgid ""
 "Perform a counter-clockwise or clockwise rotation on selected images. The "
 "third button resets the image rotation to the value in the Exif data. This "
@@ -4619,11 +4603,11 @@ msgid ""
 "\"orientation\"/>) – adjustments are converted into history stack items of "
 "that module."
 msgstr ""
-"Crea una rotación a favor o en contra de las manecillas del reloj en las "
-"imágenes seleccionadas. El tercer botón reinicia la rotación de la imagen "
-"regresando al valor que tenía en los datos EXIF. Esta característica está "
-"enlazada directamente al módulo de orientación (ver <xref linkend="
-"\"orientation\"/>) – los ajustes se convierten en elementos del historial de "
+"Realiza una rotación de las imágenes seleccionadas en dirección de las "
+"manecillas del reloj o en contra. El tercer botón reinicia la rotación de la "
+"imagen regresando al valor que tenía en los datos EXIF. Esta característica "
+"está enlazada directamente al módulo de orientación (ver <xref linkend="
+"\"orientation\"/>). Los ajustes se convierten en elementos del historial de "
 "acciones."
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3641(title)
@@ -4762,15 +4746,14 @@ msgid "paste all"
 msgstr "pegar todo"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3783(para)
-#, fuzzy
 msgid ""
 "Paste all previously copied items of a history stack onto all selected "
 "images. This button is greyed out, until a history stack is copied from "
 "another image."
 msgstr ""
-"Pega todos los elementos anteriormente copiados de un historial de acciones "
-"a las imágenes seleccionadas. Este botón estará en gris, hasta que el "
-"historial de acciones sea copiado de otra imagen."
+"Pega todos los elementos previamente copiados de un historial de acciones a "
+"las imágenes seleccionadas. Este botón estará en gris, hasta que el "
+"historial de acciones de otra imagen sea copiado."
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3792(title)
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4997(title)
@@ -6721,17 +6704,17 @@ msgstr ""
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5425(title)
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18893(title)
 msgid "Undo/redo"
-msgstr ""
+msgstr "Deshacer/rehacer"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5428(primary)
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18896(primary)
 msgid "undo"
-msgstr ""
+msgstr "deshacer"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5432(primary)
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18900(primary)
 msgid "redo"
-msgstr ""
+msgstr "rehacer"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5435(para)
 msgid ""
@@ -12526,8 +12509,8 @@ msgid ""
 "with the whole dynamic range being 10 zones. As the Gaussian curve is "
 "symmetric, only even numbers can be entered."
 msgstr ""
-"Ajusta el ancho de la curva Gausiana. Este número es expresado en zonas, con "
-"el rango dinámico completo siendo 10 zonas. Ya que la curva Gausiana es "
+"Ajusta el ancho de la curva Gaussiana. Este número es expresado en zonas, "
+"con el rango dinámico completo siendo 10 zonas. Ya que la curva Gausiana es "
 "simétrica, solo números pares pueden ser ingresados."
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10394(title)
@@ -13121,9 +13104,8 @@ msgid ""
 msgstr ""
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10988(title)
-#, fuzzy
 msgid "Bilateral grid"
-msgstr "bilateral"
+msgstr "Rejilla bilateral"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10991(title)
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16676(title)
@@ -13420,7 +13402,7 @@ msgstr ""
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11332(title)
 msgid "Prerequisites"
-msgstr ""
+msgstr "Prerrequisitos"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11338(para)
 msgid ""
@@ -14299,11 +14281,11 @@ msgstr ""
 "colores."
 
 #. <para>
-#. Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
-#. by their specification. However, there is an established de-facto standard to embed
-#. profiles which darktable adheres to. Beware that some applications might fail to correctly
-#. handle those profiles and render colors incorrectly.
-#. </para>
+#.         Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
+#.         by their specification. However, there is an established de-facto standard to embed
+#.         profiles which darktable adheres to. Beware that some applications might fail to correctly
+#.         handle those profiles and render colors incorrectly.
+#.       </para>
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12244(para)
 msgid ""
 "As not all applications, e.g. image viewers, are aware of color profiles, a "
@@ -16468,12 +16450,12 @@ msgstr "Y aquí tiene la imagen resultante luego de la eliminación de manchas."
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14714(title)
 msgid "Retouch"
-msgstr ""
+msgstr "Retoque"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14718(secondary)
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14722(primary)
 msgid "retouch"
-msgstr ""
+msgstr "retoque"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14735(entry)
 msgid ""
@@ -16499,7 +16481,7 @@ msgstr ""
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14766(title)
 msgid "wavelet decompose section"
-msgstr ""
+msgstr "Sección de descomposición en ondículas"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14767(para)
 msgid ""
@@ -16704,7 +16686,7 @@ msgstr "lua_pref_type"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14943(para)
 msgid "Can be gaussian or bilateral."
-msgstr ""
+msgstr "Puede ser gaussiano o bilateral"
 
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14951(term)
 #, fuzzy
@@ -20731,25 +20713,25 @@ msgstr ""
 
 #. <bridgehead renderas="sect4">maximum width of image drawing area</bridgehead>
 #.
-#. <para>
-#. Maximum width of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your screen.
-#. Needs a restart and will invalidate current thumbnail caches (default 1300).
-#. </para>
+#.   <para>
+#.     Maximum width of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your screen.
+#.     Needs a restart and will invalidate current thumbnail caches (default 1300).
+#.   </para>
 #.
-#. <bridgehead renderas="sect4">maximum height of image drawing area</bridgehead>
+#.   <bridgehead renderas="sect4">maximum height of image drawing area</bridgehead>
 #.
-#. <para>
-#. Maximum height of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your
-#. screen. Needs a restart and will invalidate current thumbnail caches (default 1000).
-#. </para>
+#.   <para>
+#.     Maximum height of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your
+#.     screen. Needs a restart and will invalidate current thumbnail caches (default 1000).
+#.   </para>
+#.   
+#.   <bridgehead renderas="sect4">compression of thumbnail images</bridgehead>
 #.
-#. <bridgehead renderas="sect4">compression of thumbnail images</bridgehead>
-#.
-#. <para>
-#. Controls the compression of thumbnail images in memory and on disk. Options:
-#. <quote>off</quote>, <quote>low quality (fast)</quote>, <quote>high quality (slow)</quote>;
-#. (default off).
-#. </para>
+#.   <para>
+#.     Controls the compression of thumbnail images in memory and on disk. Options:
+#.     <quote>off</quote>, <quote>low quality (fast)</quote>, <quote>high quality (slow)</quote>;
+#.     (default off).
+#.   </para>
 #: /home/vuk/Programas/Darktable/repo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19649(bridgehead)
 msgid "pen pressure control for brush masks"
 msgstr "control de presión de lápiz para brochas de mascara"
