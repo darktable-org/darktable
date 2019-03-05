@@ -142,6 +142,7 @@ static void _iop_init_picker(dt_iop_color_picker_t *picker,
   picker->update  = update;
   picker->kind    = kind;
   picker->requested_by = requested_by;
+  picker->picker_cst = iop_cs_NONE;
   if(picker->requested_by == DT_COLOR_PICKER_REQ_MODULE)
     module->picker  = picker;
   else
@@ -269,6 +270,23 @@ void dt_iop_color_picker_callback(GtkWidget *button, dt_iop_color_picker_t *self
 gboolean dt_iop_color_picker_callback_button_press(GtkWidget *button, GdkEventButton *e, dt_iop_color_picker_t *self)
 {
   return _iop_color_picker_callback(button, e, self);
+}
+
+void dt_iop_color_picker_set_cst(dt_iop_color_picker_t *picker, const dt_iop_colorspace_type_t picker_cst)
+{
+  picker->picker_cst = picker_cst;
+}
+
+dt_iop_colorspace_type_t dt_iop_color_picker_get_active_cst(dt_iop_module_t *module)
+{
+  dt_iop_colorspace_type_t picker_cst = iop_cs_NONE;
+
+  if(module->request_color_pick == DT_REQUEST_COLORPICK_BLEND && module->blend_picker)
+    picker_cst = module->blend_picker->picker_cst;
+  else if(module->request_color_pick == DT_REQUEST_COLORPICK_MODULE && module->picker)
+    picker_cst = module->picker->picker_cst;
+
+  return picker_cst;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
