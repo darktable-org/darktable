@@ -320,7 +320,7 @@ static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
   const int current_picker = picker->current_picker;
 
   picker->current_picker = 1;
-  
+
   if(current_picker == picker->current_picker)
     return DT_COLOR_PICKER_ALREADY_SELECTED;
   else
@@ -336,7 +336,7 @@ static void _iop_color_picker_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->tbutton1), g->color_picker.current_picker == 1);
 
   darktable.gui->reset = old_reset;
-  
+
   if(g->color_picker.current_picker != 1)
     dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(g->gslider1), NAN);
 }
@@ -372,7 +372,7 @@ void gui_init(struct dt_iop_module_t *self)
       = { { 0, 0, 0, 1.0 }, { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } };
   g->gslider1 = DTGTK_GRADIENT_SLIDER(dtgtk_gradient_slider_new_with_color(_gradient_L[0], _gradient_L[1]));
 
-  gtk_widget_set_tooltip_text(GTK_WIDGET(g->gslider1), _("select the center of fill-light\ncntrl + click to select an area"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->gslider1), _("select the center of fill-light\nctrl+click to select an area"));
   g_signal_connect(G_OBJECT(g->gslider1), "value-changed", G_CALLBACK(center_callback), self);
   g->tbutton1 = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL));
   gtk_widget_set_size_request(GTK_WIDGET(g->tbutton1), DT_PIXEL_APPLY_DPI(22), DT_PIXEL_APPLY_DPI(22));

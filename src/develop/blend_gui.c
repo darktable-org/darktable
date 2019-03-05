@@ -1541,13 +1541,13 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 
     bd->colorpicker
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-    gtk_widget_set_tooltip_text(bd->colorpicker, _("pick GUI color from image\ncntrl + click to select an area"));
+    gtk_widget_set_tooltip_text(bd->colorpicker, _("pick GUI color from image\nctrl+click to select an area"));
     gtk_widget_set_size_request(GTK_WIDGET(bd->colorpicker), bs, bs);
 
     bd->colorpicker_set_values
         = dtgtk_togglebutton_new(_cairo_paint_colorpicker_set_values, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     gtk_widget_set_tooltip_text(bd->colorpicker_set_values, _("set the range based on an area from the image\n"
-        "click + drag to use the input image\ncntrl + click + drag to use the output image"));
+        "click+drag to use the input image\nctrl+click + drag to use the output image"));
     gtk_widget_set_size_request(GTK_WIDGET(bd->colorpicker_set_values), bs, bs);
 
     GtkWidget *res = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
