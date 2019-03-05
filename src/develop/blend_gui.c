@@ -796,6 +796,7 @@ static void _blendop_blendif_invert(GtkButton *button, dt_iop_module_t *module)
 
     case iop_cs_LCh:
     case iop_cs_HSL:
+    case iop_cs_NONE:
       toggle_mask = 0;
       break;
   }
@@ -2508,6 +2509,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
         break;
       case iop_cs_LCh:
       case iop_cs_HSL:
+      case iop_cs_NONE:
         break;
     }
 
