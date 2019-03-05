@@ -272,8 +272,8 @@
       </para>
 
       <para>
-        Similarly to the luma optimization, the color-picker next to the <emphasis>optimize luma</emphasis>
-        will trigger a general optimization over the whole picture. This works fairly in
+        Similarly to the luma optimization, the color-picker next to the <emphasis>neutralize colors</emphasis> 
+        label will trigger a general optimization over the whole picture. This works fairly in
         landscape photography, or any photography with a full spectrum of colors and
         luminances. For night and events photography, this will most likely fail and you will
         need to input manually the sampling areas with the color-pickers in front of each hue slider.
