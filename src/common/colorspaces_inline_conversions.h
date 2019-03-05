@@ -367,6 +367,13 @@ static inline void dt_Lab_2_LCH(const float *Lab, float *LCH)
   LCH[2] = var_H;
 }
 
+static inline void dt_LCH_2_Lab(const float *LCH, float *Lab)
+{
+  Lab[0] = LCH[0];
+  Lab[1] = cosf(2.0f * DT_M_PI_F * LCH[2]) * LCH[1];
+  Lab[2] = sinf(2.0f * DT_M_PI_F * LCH[2]) * LCH[1];
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
