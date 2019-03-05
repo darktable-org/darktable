@@ -1480,9 +1480,9 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
-      float *i = (float *)((char *)in + (size_t)in_stride * (y + roi_out->y) + x0);
-      float *o = (float *)((char *)out + (size_t)out_stride * y);
-      memcpy(o, i, out_stride);
+      memcpy((char *)out + (size_t)out_stride * y,
+             (char *)in + (size_t)in_stride * (y + roi_out->y) + x0,
+             out_stride);
     }
 #if DEBUG_RESAMPLING_TIMING
     ts_resampling = getts() - ts_resampling;
