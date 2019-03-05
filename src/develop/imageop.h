@@ -120,6 +120,7 @@ typedef enum dt_dev_request_colorpick_flags_t
 /** colorspace enums */
 typedef enum dt_iop_colorspace_type_t
 {
+  iop_cs_NONE = -1,
   iop_cs_RAW = 0,
   iop_cs_Lab = 1,
   iop_cs_rgb = 2,
