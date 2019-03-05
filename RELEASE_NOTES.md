@@ -22,17 +22,17 @@ and the changelog as compared to 2.6.0 can be found below.
 ## New Features
 
 - export module to piwigo
-- color Balance enhancements
-- color Contrast enhancements
-- filmic enhancements
-- add contextual help for Filmic module
+- color balance enhancements
+- color contrast enhancements
+- filmic enhancements (better auto-tuner)
+- add contextual help for filmic module
 - middle-click can be used to open the presets menu (this is consistent with the fact that middle-click can be used to create a new instance from a preset)
 - again, better CSS customization for lighttable, filmstrip and duplicates module
 - presets can now be imported/exported
 - all zoom levels can now be reached with a ctrl-scroll
-- the diaporama view will adjust automatically when darktable window is resized
+- the slideshow view will adjust automatically when darktable window is resized
 - add support for tiff CIELAB/ICCLAB 8/16 bits
-- add hierarchical view for tags (separated with |)
+- add hierarchical view for styles (separated with |)
 - forms opacity is displayed in hint messages
 - add a color picker in the watermark module
 
@@ -42,9 +42,9 @@ and the changelog as compared to 2.6.0 can be found below.
 - fix retouch module, mask areas are properly taking into account the source and destination
 - fix navigation from darkroom when groups are present and collapsed
 - fix a rare issue where masks could "jump" to some random location
-- keep reference point when zooming above 200%
+- keep reference point (mouse position) when zooming above 200%
 - title and description filters are now properly working
-- minor fix to gain some spaces in darktable module
+- minor UI fixes to gain some spaces in darktable modules
 - fix masks detection over the mouse in some complex cases
 
 ## Changed Dependencies
