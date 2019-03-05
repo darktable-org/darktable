@@ -20,6 +20,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/opencl.h"
@@ -27,10 +28,10 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "dtgtk/drawingarea.h"
+#include "gui/color_picker_proxy.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
-#include "gui/color_picker_proxy.h"
 #include "iop/iop_api.h"
 
 #include <inttypes.h>
@@ -79,6 +80,7 @@ typedef struct dt_iop_colorzones_gui_data_t
   dt_draw_curve_t *minmax_curve; // curve for gui to draw
   GtkBox *hbox;
   GtkDrawingArea *area;
+  GtkWidget *bottom_area;
   GtkNotebook *channel_tabs;
   GtkWidget *select_by;
   GtkWidget *strength;
@@ -107,8 +109,6 @@ typedef struct dt_iop_colorzones_data_t
 
 typedef struct dt_iop_colorzones_global_data_t
 {
-  float picked_color[3];
-  float picked_color_max[3];
   int kernel_colorzones;
 } dt_iop_colorzones_global_data_t;
 
@@ -295,11 +295,6 @@ void init_global(dt_iop_module_so_t *module)
       = (dt_iop_colorzones_global_data_t *)malloc(sizeof(dt_iop_colorzones_global_data_t));
   module->data = gd;
   gd->kernel_colorzones = dt_opencl_create_kernel(program, "colorzones");
-  for(int k=0; k<3; k++)
-  {
-    gd->picked_color[k] = .0f;
-    gd->picked_color_max[k] = .0f;
-  }
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -316,6 +311,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // pull in new params to pipe
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)p1;
+
+  if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+    piece->request_histogram |= (DT_REQUEST_ON);
+  else
+    piece->request_histogram &= ~(DT_REQUEST_ON);
 
 #if 0 // print new preset
   printf("p.channel = %d;\n", p->channel);
@@ -394,6 +394,7 @@ void init(dt_iop_module_t *module)
   module->priority = 599; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorzones_params_t);
   module->gui_data = NULL;
+  module->request_histogram |= (DT_REQUEST_ON);
   dt_iop_colorzones_params_t tmp;
   for(int ch = 0; ch < 3; ch++)
   {
@@ -568,12 +569,19 @@ static void dt_iop_colorzones_get_params(dt_iop_colorzones_params_t *p, const in
   }
 }
 
+static void picker_scale(const float *const in, float *out)
+{
+  out[0] = in[0] / 100.0;
+  out[1] = in[1] / 128.0f;
+  out[2] = in[2];
+}
+
 static gboolean colorzones_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   dt_iop_colorzones_params_t p = *(dt_iop_colorzones_params_t *)self->params;
-  dt_iop_colorzones_global_data_t *gd = (dt_iop_colorzones_global_data_t *)self->data;
+  dt_develop_t *dev = darktable.develop;
   int ch = (int)c->channel;
   if(p.channel == DT_IOP_COLORZONES_h)
     dt_draw_curve_set_point(c->minmax_curve, 0, p.equalizer_x[ch][DT_IOP_COLORZONES_BANDS - 2] - 1.0,
@@ -664,36 +672,57 @@ static gboolean colorzones_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
                               c->draw_max_ys);
   }
 
-  if(gd->picked_color_max[0] < 0.0f || gd->picked_color[0] == 0.0f)
+  float picked_color[3], picker_min[3], picker_max[3];
+
+  if(self->picked_color_max[0] < 0.0f || self->picked_color[0] == 0.0f)
   {
-    gd->picked_color[0] = 50.0f;
-    gd->picked_color[1] = 0.0f;
-    gd->picked_color[2] = -5.0f;
+    picked_color[0] = 50.0f;
+    picked_color[1] = 0.0f;
+    picked_color[2] = -5.0f;
+
+    picker_min[0] = 50.0f;
+    picker_min[1] = 0.0f;
+    picker_min[2] = -5.0f;
+
+    picker_max[0] = 50.0f;
+    picker_max[1] = 0.0f;
+    picker_max[2] = -5.0f;
   }
+  else
+  {
+    dt_LCH_2_Lab(self->picked_color, picked_color);
+    dt_LCH_2_Lab(self->picked_color_min, picker_min);
+    dt_LCH_2_Lab(self->picked_color_max, picker_max);
+  }
+
+  const float pickC = sqrtf(picked_color[1] * picked_color[1] + picked_color[2] * picked_color[2]);
+  const float pickC_min = sqrtf(picker_min[1] * picker_min[1] + picker_min[2] * picker_min[2]);
+  const float pickC_max = sqrtf(picker_max[1] * picker_max[1] + picker_max[2] * picker_max[2]);
 
   cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
 
-  const float pickC
-      = sqrtf(gd->picked_color[1] * gd->picked_color[1] + gd->picked_color[2] * gd->picked_color[2]);
-  const int cellsi = 16, cellsj = 9;
+  const int cellsi = 16;
+  const int cellsj = 9;
   for(int j = 0; j < cellsj; j++)
     for(int i = 0; i < cellsi; i++)
     {
       double rgb[3] = { 0.5, 0.5, 0.5 };
-      float jj = 1.0 - (j - .5) / (cellsj - 1.), ii = (i + .5) / (cellsi - 1.);
+      float jj = 1.0 - (j - .5) / (cellsj - 1.);
+      float ii = (i + .5) / (cellsi - 1.);
       cmsCIELab Lab;
+
       switch(p.channel)
       {
         // select by channel, abscissa:
         case DT_IOP_COLORZONES_L:
           Lab.L = ii * 100.0;
-          Lab.a = gd->picked_color[1];
-          Lab.b = gd->picked_color[2];
+          Lab.a = picked_color[1];
+          Lab.b = picked_color[2];
           break;
         case DT_IOP_COLORZONES_C:
           Lab.L = 50.0;
-          Lab.a = 64.0 * ii * gd->picked_color[1] / pickC;
-          Lab.b = 64.0 * ii * gd->picked_color[2] / pickC;
+          Lab.a = 64.0 * ii * picked_color[1] / pickC;
+          Lab.b = 64.0 * ii * picked_color[2] / pickC;
           break;
         default: // case DT_IOP_COLORZONES_h:
           Lab.L = 50.0;
@@ -701,6 +730,7 @@ static gboolean colorzones_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
           Lab.b = sinf(2.0 * M_PI * ii) * 64.0f;
           break;
       }
+
       const float L0 = Lab.L;
       const float angle = atan2f(Lab.b, Lab.a);
       switch(c->channel)
@@ -723,12 +753,13 @@ static gboolean colorzones_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
           }
           break;
       }
+
       // gamut mapping magic from iop/exposure.c:
       const float Lwhite = 100.0f, Lclip = 20.0f;
       const float Lcap = fminf(100.0, Lab.L);
-      const float clip = 1.0
-                         - (Lcap - L0) * (1.0 / 100.0) * fminf(Lwhite - Lclip, fmaxf(0.0, Lab.L - Lclip))
-                           / (Lwhite - Lclip);
+      const float clip
+          = 1.0
+            - (Lcap - L0) * (1.0 / 100.0) * fminf(Lwhite - Lclip, fmaxf(0.0, Lab.L - Lclip)) / (Lwhite - Lclip);
       const float clip2 = clip * clip * clip;
       Lab.a *= Lab.L / L0 * clip2;
       Lab.b *= Lab.L / L0 * clip2;
@@ -742,32 +773,69 @@ static gboolean colorzones_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
 
   cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
 
-  if(gd->picked_color_max[0] >= 0.0f)
+  // draw histogram in background
+  // only if module is enabled
+  if(self->enabled)
   {
-    // draw marker for currently selected color:
-    float picked_i = -1.0;
-    switch(p.channel)
+    uint32_t *hist;
+    float hist_max;
+    const int ch_hist = p.channel;
+    hist = self->histogram;
+    hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? self->histogram_max[ch_hist]
+                                                              : logf(1.0 + self->histogram_max[ch_hist]);
+    if(hist && hist_max > 0.0f)
     {
-      // select by channel, abscissa:
-      case DT_IOP_COLORZONES_L:
-        picked_i = gd->picked_color[0] / 100.0;
-        break;
-      case DT_IOP_COLORZONES_C:
-        picked_i = pickC / 128.0;
-        break;
-      default: // case DT_IOP_COLORZONES_h:
-        picked_i = fmodf(atan2f(gd->picked_color[2], gd->picked_color[1]) + 2.0 * M_PI, 2.0 * M_PI)
-                   / (2.0 * M_PI);
-        break;
+      cairo_save(cr);
+      cairo_translate(cr, 0, height);
+      cairo_scale(cr, width / 255.0, -(height - DT_PIXEL_APPLY_DPI(5)) / hist_max);
+
+      cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
+      dt_draw_histogram_8(cr, hist, 4, ch_hist, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+
+      cairo_restore(cr);
     }
-    cairo_save(cr);
-    cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
-    cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
-    cairo_move_to(cr, width * picked_i, 0.0);
-    cairo_line_to(cr, width * picked_i, height);
-    cairo_stroke(cr);
-    cairo_restore(cr);
+
+    if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
+    {
+      // draw marker for currently selected color:
+      float picked_i = -1.0;
+      float picked_min_i = -1.0;
+      float picked_max_i = -1.0;
+      switch(p.channel)
+      {
+        // select by channel, abscissa:
+        case DT_IOP_COLORZONES_L:
+          picked_i = picked_color[0] / 100.0;
+          picked_min_i = picker_min[0] / 100.0;
+          picked_max_i = picker_max[0] / 100.0;
+          break;
+        case DT_IOP_COLORZONES_C:
+          picked_i = pickC / 128.0;
+          picked_min_i = pickC_min / 128.0;
+          picked_max_i = pickC_max / 128.0;
+          break;
+        default: // case DT_IOP_COLORZONES_h:
+          picked_i = fmodf(atan2f(picked_color[2], picked_color[1]) + 2.0 * M_PI, 2.0 * M_PI) / (2.0 * M_PI);
+          picked_min_i = fmodf(atan2f(picker_min[2], picker_min[1]) + 2.0 * M_PI, 2.0 * M_PI) / (2.0 * M_PI);
+          picked_max_i = fmodf(atan2f(picker_max[2], picker_max[1]) + 2.0 * M_PI, 2.0 * M_PI) / (2.0 * M_PI);
+          break;
+      }
+
+      cairo_save(cr);
+
+      cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.25);
+      cairo_rectangle(cr, width * picked_min_i, 0, width * fmax(picked_max_i - picked_min_i, 0.0f), height);
+      cairo_fill(cr);
+
+      cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+      cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
+      cairo_move_to(cr, width * picked_i, 0.0);
+      cairo_line_to(cr, width * picked_i, height);
+      cairo_stroke(cr);
+
+      cairo_restore(cr);
+    }
   }
 
   // draw x positions
@@ -856,6 +924,150 @@ static gboolean colorzones_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
     float ht = -height * (f * c->draw_ys[k] + (1 - f) * c->draw_ys[k + 1]);
     cairo_arc(cr, c->mouse_x * width, ht, c->mouse_radius * width, 0, 2. * M_PI);
     cairo_stroke(cr);
+  }
+
+  cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+
+  cairo_destroy(cr);
+  cairo_set_source_surface(crf, cst, 0, 0);
+  cairo_paint(crf);
+  cairo_surface_destroy(cst);
+  return TRUE;
+}
+
+static gboolean colorzones_draw_bottom(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+  dt_iop_colorzones_params_t p = *(dt_iop_colorzones_params_t *)self->params;
+
+  GtkAllocation allocation;
+  gtk_widget_get_allocation(widget, &allocation);
+  const int inset = DT_IOP_COLORZONES_INSET;
+  int width = allocation.width, height = allocation.height;
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_t *cr = cairo_create(cst);
+  // clear bg, match color of the notebook tabs:
+  GdkRGBA color;
+  GtkStyleContext *context = gtk_widget_get_style_context(widget);
+  gboolean color_found = gtk_style_context_lookup_color(context, "selected_bg_color", &color);
+  if(!color_found)
+  {
+    color.red = 1.0;
+    color.green = 0.0;
+    color.blue = 0.0;
+    color.alpha = 1.0;
+  }
+  gdk_cairo_set_source_rgba(cr, &color);
+  cairo_paint(cr);
+
+  cairo_translate(cr, inset, inset);
+  width -= 2 * inset;
+  height -= 2 * inset;
+
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.0));
+  cairo_set_source_rgb(cr, .1, .1, .1);
+  cairo_rectangle(cr, 0, 0, width, height);
+  cairo_stroke(cr);
+
+  cairo_set_source_rgb(cr, .3, .3, .3);
+  cairo_rectangle(cr, 0, 0, width, height);
+  cairo_fill(cr);
+
+  float picked_color[3], picker_min[3], picker_max[3];
+
+  picker_scale(self->picked_color, picked_color);
+  picker_scale(self->picked_color_min, picker_min);
+  picker_scale(self->picked_color_max, picker_max);
+
+  if(picker_max[0] < 0.0f || picked_color[0] == 0.0f)
+  {
+    float Lab[3] = { 50.0f, 0.0f, -5.0f };
+    dt_Lab_2_LCH(Lab, picked_color);
+  }
+
+  const float pickC = picked_color[1];
+
+  cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
+
+  const int cellsi = 64;
+  for(int i = 0; i < cellsi; i++)
+  {
+    double rgb[3] = { 0.5, 0.5, 0.5 };
+    float ii = (i + .5) / (cellsi - 1.);
+    cmsCIELab Lab;
+
+    switch(p.channel)
+    {
+      // select by channel, abscissa:
+      case DT_IOP_COLORZONES_L:
+        Lab.L = ii * 100.0;
+        Lab.a = picked_color[1];
+        Lab.b = picked_color[2];
+        break;
+      case DT_IOP_COLORZONES_C:
+        Lab.L = 50.0;
+
+        Lab.a = cosf(2.0f * M_PI * picked_color[2]) * picked_color[1];
+        Lab.b = sinf(2.0f * M_PI * picked_color[2]) * picked_color[1];
+
+        Lab.a = 64.0 * ii * Lab.a / pickC;
+        Lab.b = 64.0 * ii * Lab.b / pickC;
+        break;
+      case DT_IOP_COLORZONES_h:
+      default:
+        Lab.L = 50.0;
+        Lab.a = cosf(2.0 * M_PI * ii) * 64.0f;
+        Lab.b = sinf(2.0 * M_PI * ii) * 64.0f;
+        break;
+    }
+    const float L0 = Lab.L;
+    // gamut mapping magic from iop/exposure.c:
+    const float Lwhite = 100.0f, Lclip = 20.0f;
+    const float Lcap = fminf(100.0, Lab.L);
+    const float clip
+        = 1.0 - (Lcap - L0) * (1.0 / 100.0) * fminf(Lwhite - Lclip, fmaxf(0.0, Lab.L - Lclip)) / (Lwhite - Lclip);
+    const float clip2 = clip * clip * clip;
+    Lab.a *= Lab.L / L0 * clip2;
+    Lab.b *= Lab.L / L0 * clip2;
+    cmsDoTransform(c->xform, &Lab, rgb, 1);
+    cairo_set_source_rgb(cr, rgb[0], rgb[1], rgb[2]);
+    cairo_rectangle(cr, width * i / (float)cellsi, 0, width / (float)cellsi, height);
+    cairo_fill(cr);
+  }
+
+  cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
+
+  if(self->enabled)
+  {
+    if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
+    {
+      const int ch_picker = p.channel;
+      // draw marker for currently selected color:
+      float picked_i = picked_color[ch_picker];
+
+      cairo_save(cr);
+
+      if(p.channel == DT_IOP_COLORZONES_h || c->channel == DT_IOP_COLORZONES_h)
+        cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.25);
+      else
+        cairo_set_source_rgba(cr, 0.7, 0.5, 0.5, 0.33);
+      cairo_rectangle(cr, width * picker_min[ch_picker], 0,
+                      width * fmax(picker_max[ch_picker] - picker_min[ch_picker], 0.0f), height);
+      cairo_fill(cr);
+
+      if(p.channel == DT_IOP_COLORZONES_h || c->channel == DT_IOP_COLORZONES_h)
+        cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+      else
+        cairo_set_source_rgba(cr, 0.9, 0.7, 0.7, 0.5);
+      cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
+      cairo_move_to(cr, width * picked_i, 0.0);
+      cairo_line_to(cr, width * picked_i, height);
+      cairo_stroke(cr);
+
+      cairo_restore(cr);
+    }
   }
 
   cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
@@ -1016,7 +1228,6 @@ static void select_by_changed(GtkWidget *widget, gpointer user_data)
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
   memcpy(p, self->default_params, sizeof(dt_iop_colorzones_params_t));
   p->channel = 2 - (dt_iop_colorzones_channel_t)dt_bauhaus_combobox_get(widget);
-  dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
@@ -1033,14 +1244,42 @@ static void strength_changed(GtkWidget *slider, gpointer user_data)
 
 static void _iop_color_picker_apply(dt_iop_module_t *self)
 {
-  dt_iop_colorzones_global_data_t *gd = (dt_iop_colorzones_global_data_t *)self->data;
-
-  for(int k=0; k<3; k++)
-  {
-    gd->picked_color[k] = self->picked_color[k];
-    gd->picked_color_max[k] = self->picked_color_max[k];
-  }
   dt_control_queue_redraw_widget(self->widget);
+}
+
+static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
+{
+  dt_iop_color_picker_t *picker = self->picker;
+  const int current_picker = picker->current_picker;
+
+  picker->current_picker = 1;
+
+  if(current_picker == picker->current_picker)
+    return DT_COLOR_PICKER_ALREADY_SELECTED;
+  else
+    return picker->current_picker;
+}
+
+static void _iop_color_picker_update(dt_iop_module_t *self)
+{
+  dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+  const int old_reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), g->color_picker.current_picker == 1);
+
+  darktable.gui->reset = old_reset;
+  dt_control_queue_redraw_widget(self->widget);
+}
+
+void gui_reset(struct dt_iop_module_t *self)
+{
+  dt_iop_color_picker_reset(self, TRUE);
+}
+
+void gui_focus(struct dt_iop_module_t *self, gboolean in)
+{
+  if(!in) dt_iop_color_picker_reset(self, TRUE);
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -1048,6 +1287,8 @@ void gui_init(struct dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_colorzones_gui_data_t));
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
+
+  self->histogram_cst = iop_cs_LCh;
 
   //   c->channel = DT_IOP_COLORZONES_C;
   c->channel = dt_conf_get_int("plugins/darkroom/colorzones/gui_channel");
@@ -1084,20 +1325,26 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
-
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
-  GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT  | CPF_DO_NOT_USE_BORDER, NULL);
-  gtk_widget_set_size_request(GTK_WIDGET(tb), DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
-  gtk_widget_set_tooltip_text(tb, _("pick GUI color from image"));
-  g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &c->color_picker);
-  gtk_box_pack_end(GTK_BOX(hbox), tb, FALSE, FALSE, 0);
-  c->colorpicker = tb;
+
+  c->colorpicker
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  gtk_widget_set_size_request(GTK_WIDGET(c->colorpicker), DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
+  gtk_widget_set_tooltip_text(c->colorpicker, _("pick GUI color from image"));
+  g_signal_connect(G_OBJECT(c->colorpicker), "button-press-event",
+                   G_CALLBACK(dt_iop_color_picker_callback_button_press), &c->color_picker);
+  gtk_box_pack_end(GTK_BOX(hbox), c->colorpicker, FALSE, FALSE, 0);
 
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(colorzones_tab_switch), self);
 
   // the nice graph
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
+
+  c->bottom_area = gtk_drawing_area_new();
+  gtk_widget_set_size_request(c->bottom_area, -1, DT_PIXEL_APPLY_DPI(20));
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->bottom_area), TRUE, TRUE, 0);
+
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
 
   c->strength = dt_bauhaus_slider_new_with_range(self, -200, 200.0, 10.0, p->strength, 1);
@@ -1129,16 +1376,15 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "enter-notify-event", G_CALLBACK(colorzones_enter_notify), self);
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(colorzones_scrolled), self);
 
+  g_signal_connect(G_OBJECT(c->bottom_area), "draw", G_CALLBACK(colorzones_draw_bottom), self);
 
   cmsHPROFILE hsRGB = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_IN)->profile;
   cmsHPROFILE hLab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
   c->xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL, 0);
 
-  dt_iop_init_single_picker(&c->color_picker,
-                     self,
-                     GTK_WIDGET(c->colorpicker),
-                     DT_COLOR_PICKER_POINT,
-                     _iop_color_picker_apply);
+  dt_iop_init_picker(&c->color_picker, self, DT_COLOR_PICKER_POINT_AREA, _iop_color_picker_get_set,
+                     _iop_color_picker_apply, _iop_color_picker_update);
+  dt_iop_color_picker_set_cst(&c->color_picker, iop_cs_LCh);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
