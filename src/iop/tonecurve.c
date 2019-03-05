@@ -1013,7 +1013,7 @@ static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
   const int current_picker = picker->current_picker;
 
   picker->current_picker = 1;
-  
+
   if(current_picker == picker->current_picker)
     return DT_COLOR_PICKER_ALREADY_SELECTED;
   else
@@ -1231,7 +1231,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   gtk_widget_set_size_request(GTK_WIDGET(tb), DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
-  gtk_widget_set_tooltip_text(tb, _("pick GUI color from image\ncntrl + click to select an area"));
+  gtk_widget_set_tooltip_text(tb, _("pick GUI color from image\nctrl+click to select an area"));
   c->colorpicker = tb;
 
   GtkWidget *notebook = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
