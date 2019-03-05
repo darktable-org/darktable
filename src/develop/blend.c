@@ -164,13 +164,6 @@ static inline void _HSV_2_RGB(const float *HSV, float *RGB)
   }
 }
 
-static inline void _LCH_2_Lab(const float *LCH, float *Lab)
-{
-  Lab[0] = LCH[0];
-  Lab[1] = cosf(2.0f * DT_M_PI_F * LCH[2]) * LCH[1];
-  Lab[2] = sinf(2.0f * DT_M_PI_F * LCH[2]) * LCH[1];
-}
-
 static inline void _CLAMP_XYZ(float *XYZ, const float *min, const float *max)
 {
   XYZ[0] = CLAMP_RANGE(XYZ[0], min[0], max[0]);
@@ -1898,7 +1891,7 @@ static void _blend_chroma(const _blend_buffer_desc_t *bd, const float *a, float 
       ttb[1] = (tta[1] * (1.0f - local_opacity)) + ttb[1] * local_opacity;
       ttb[2] = tta[2];
 
-      _LCH_2_Lab(ttb, tb);
+      dt_LCH_2_Lab(ttb, tb);
       _CLAMP_XYZ(tb, min, max);
       _blend_Lab_rescale(tb, &b[j]);
 
@@ -1961,7 +1954,7 @@ static void _blend_hue(const _blend_buffer_desc_t *bd, const float *a, float *b,
       float s = d > 0.5f ? -local_opacity * (1.0f - d) / d : local_opacity;
       ttb[2] = fmodf((tta[2] * (1.0f - s)) + ttb[2] * s + 1.0f, 1.0f);
 
-      _LCH_2_Lab(ttb, tb);
+      dt_LCH_2_Lab(ttb, tb);
       _CLAMP_XYZ(tb, min, max);
       _blend_Lab_rescale(tb, &b[j]);
 
@@ -2028,7 +2021,7 @@ static void _blend_color(const _blend_buffer_desc_t *bd, const float *a, float *
       float s = d > 0.5f ? -local_opacity * (1.0f - d) / d : local_opacity;
       ttb[2] = fmodf((tta[2] * (1.0f - s)) + ttb[2] * s + 1.0f, 1.0f);
 
-      _LCH_2_Lab(ttb, tb);
+      dt_LCH_2_Lab(ttb, tb);
       _CLAMP_XYZ(tb, min, max);
       _blend_Lab_rescale(tb, &b[j]);
 
@@ -2098,7 +2091,7 @@ static void _blend_coloradjust(const _blend_buffer_desc_t *bd, const float *a, f
       float s = d > 0.5f ? -local_opacity * (1.0f - d) / d : local_opacity;
       ttb[2] = fmodf((tta[2] * (1.0f - s)) + ttb[2] * s + 1.0f, 1.0f);
 
-      _LCH_2_Lab(ttb, tb);
+      dt_LCH_2_Lab(ttb, tb);
       _CLAMP_XYZ(tb, min, max);
       _blend_Lab_rescale(tb, &b[j]);
 
