@@ -202,13 +202,13 @@ static void invert_histogram(const int *hist, float *inv_hist)
       }
 #else
   int last = 31;
-  for(int i = 0; i <= last; i++) inv_hist[i] = 100.0 * i / (float)HISTN;
+  for(int i = 0; i <= last; i++) inv_hist[i] = 100.0f * i / (float)HISTN;
   for(int i = last + 1; i < HISTN; i++)
     for(int k = last; k < HISTN; k++)
       if(hist[k] >= i)
       {
         last = k;
-        inv_hist[i] = 100.0 * k / (float)HISTN;
+        inv_hist[i] = 100.0f * k / (float)HISTN;
         break;
       }
 #endif
@@ -223,7 +223,7 @@ static void invert_histogram(const int *hist, float *inv_hist)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic warning "-Wvla"
 
-static void get_cluster_mapping(const int n, float mi[n][2], float wi[n], float mo[n][2], float wo[n],
+static void get_cluster_mapping(const int n, float mi[n][2], const float wi[n], float mo[n][2], const float wo[n],
                                 const float dominance, int mapio[n])
 {
   const float weightscale = 10000.0f;
@@ -313,10 +313,10 @@ static void kmeans(const float *col, const int width, const int height, const in
     const float a = col[4 * (width * j + i) + 1];
     const float b = col[4 * (width * j + i) + 2];
 
-    a_min = fmin(a, a_min);
-    a_max = fmax(a, a_max);
-    b_min = fmin(b, b_min);
-    b_max = fmax(b, b_max);
+    a_min = fminf(a, a_min);
+    a_max = fmaxf(a, a_max);
+    b_min = fminf(b, b_min);
+    b_max = fmaxf(b, b_max);
   }
 
   // init n clusters for a, b channels at random
@@ -659,7 +659,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(dev_var_ratio == NULL) goto error;
 
     dev_mapio = dt_opencl_copy_host_to_device_constant(devid, sizeof(int) * MAXN, mapio);
-    if(dev_var_ratio == NULL) goto error;
+    if(dev_mapio == NULL) goto error;
 
     size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
 
@@ -756,12 +756,11 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
   tiling->factor = 3.0f + (float)dt_bilateral_memory_use(width, height, sigma_s, sigma_r) / basebuffer;
   tiling->maxbuf
-      = fmax(1.0f, (float)dt_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r) / basebuffer);
+      = fmaxf(1.0f, (float)dt_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r) / basebuffer);
   tiling->overhead = 0;
   tiling->overlap = ceilf(4 * sigma_s);
   tiling->xalign = 1;
   tiling->yalign = 1;
-  return;
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
@@ -969,10 +968,9 @@ static gboolean cluster_preview_draw(GtkWidget *widget, cairo_t *crf, dt_iop_mod
         // draw 9x9 grid showing mean and variance of this cluster.
         double rgb[3] = { 0.5, 0.5, 0.5 };
         cmsCIELab Lab;
-        Lab.L = 5.0; // 53.390011;
-        Lab.a = (mean[cl][0] + i * var[cl][0]); // / Lab.L;
-        Lab.b = (mean[cl][1] + j * var[cl][1]); // / Lab.L;
         Lab.L = 53.390011;
+        Lab.a = (mean[cl][0] + i * var[cl][0]);
+        Lab.b = (mean[cl][1] + j * var[cl][1]);
         cmsDoTransform(g->xform, &Lab, rgb, 1);
         cairo_set_source_rgb(cr, rgb[0], rgb[1], rgb[2]);
         cairo_rectangle(cr, qwd * (i + 1) / 3.0, height * (j + 1) / 3.0, qwd / 3.0 - DT_PIXEL_APPLY_DPI(.5),
@@ -1127,14 +1125,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(box, button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_target_button_pressed), (gpointer)self);
 
-  g->clusters = dt_bauhaus_slider_new_with_range(self, 1.0f, 5.0f, 1., p->n, 0);
+  g->clusters = dt_bauhaus_slider_new_with_range(self, 1.f, 5.f, 1.f, p->n, 0);
   dt_bauhaus_widget_set_label(g->clusters, NULL, _("number of clusters"));
   dt_bauhaus_slider_set_format(g->clusters, "%.0f");
   gtk_widget_set_tooltip_text(g->clusters, _("number of clusters to find in image. value change resets all clusters"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->clusters), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->clusters), "value-changed", G_CALLBACK(clusters_changed), (gpointer)self);
 
-  g->dominance = dt_bauhaus_slider_new_with_range(self, 0, 100.0, 2., p->dominance, 2);
+  g->dominance = dt_bauhaus_slider_new_with_range(self, 0.f, 100.f, 2.f, p->dominance, 2);
   dt_bauhaus_widget_set_label(g->dominance, NULL, _("color dominance"));
   gtk_widget_set_tooltip_text(g->dominance, _("how clusters are mapped. low values: based on color "
                                               "proximity, high values: based on color dominance"));
@@ -1142,7 +1140,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->dominance), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->dominance), "value-changed", G_CALLBACK(dominance_changed), self);
 
-  g->equalization = dt_bauhaus_slider_new_with_range(self, 0, 100.0, 2., p->equalization, 2);
+  g->equalization = dt_bauhaus_slider_new_with_range(self, 0.f, 100.f, 2.f, p->equalization, 2);
   dt_bauhaus_widget_set_label(g->equalization, NULL, _("histogram equalization"));
   gtk_widget_set_tooltip_text(g->equalization, _("level of histogram equalization"));
   dt_bauhaus_slider_set_format(g->equalization, "%.02f%%");
