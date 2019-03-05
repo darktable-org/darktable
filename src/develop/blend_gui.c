@@ -587,7 +587,9 @@ static void _update_gradient_slider(GtkWidget *widget, dt_iop_module_t *module)
   darktable.gui->reset = 1;
   if((module->request_color_pick == DT_REQUEST_COLORPICK_BLEND) && (raw_min[0] != INFINITY))
   {
-    const int cst = (module->picker_cst == -1) ? data->csp: module->picker_cst;
+    const int cst = (dt_iop_color_picker_get_active_cst(module) == iop_cs_NONE)
+                        ? data->csp
+                        : dt_iop_color_picker_get_active_cst(module);
     _blendif_scale(cst, raw_mean, picker_mean);
     _blendif_scale(cst, raw_min, picker_min);
     _blendif_scale(cst, raw_max, picker_max);
@@ -627,7 +629,7 @@ static void _blendop_blendif_tab_switch(GtkNotebook *notebook, GtkWidget *page, 
   if(data->module->request_color_pick == DT_REQUEST_COLORPICK_BLEND &&
       (cst_old != _blendop_blendif_get_picker_colorspace(data) || data->color_picker.current_picker == DT_BLENDIF_PICK_SET_VALUES))
   {
-    data->module->picker_cst = _blendop_blendif_get_picker_colorspace(data);
+    dt_iop_color_picker_set_cst(&data->color_picker, _blendop_blendif_get_picker_colorspace(data));
     dt_dev_reprocess_all(data->module->dev);
     dt_control_queue_redraw();
   }
@@ -1048,7 +1050,9 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *module)
       raw_max = module->picked_output_color_max;
     }
 
-    const int cst = (module->picker_cst == -1) ? data->csp: module->picker_cst;
+    const int cst = (dt_iop_color_picker_get_active_cst(module) == iop_cs_NONE)
+                        ? data->csp
+                        : dt_iop_color_picker_get_active_cst(module);
     _blendif_scale(cst, raw_mean, picker_mean);
     _blendif_scale(cst, raw_min, picker_min);
     _blendif_scale(cst, raw_max, picker_max);
@@ -1129,7 +1133,7 @@ static void _iop_color_picker_update(dt_iop_module_t *self)
 
   if(self->request_color_pick != DT_REQUEST_COLORPICK_BLEND)
   {
-    self->picker_cst = -1;
+    dt_iop_color_picker_set_cst(&data->color_picker, iop_cs_NONE);
 
     dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(data->upper_slider), NAN);
     gtk_label_set_text(data->upper_picker_label, "");
@@ -1146,7 +1150,7 @@ static gboolean _blendop_blendif_color_picker_callback_button_press(GtkWidget *w
 
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
   dt_iop_color_picker_t *color_picker = &bd->color_picker;
-  module->picker_cst = _blendop_blendif_get_picker_colorspace(bd);
+  dt_iop_color_picker_set_cst(&bd->color_picker, _blendop_blendif_get_picker_colorspace(bd));
 
   // this is not pretty but we don't have a kind per-picker
   // if at some some point a module needs it we can think something more elegant

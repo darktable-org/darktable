@@ -292,18 +292,17 @@ typedef struct dt_iop_module_t
   float picked_color[4], picked_color_min[4], picked_color_max[4];
   /** place to store the picked color of module output (before blending). */
   float picked_output_color[4], picked_output_color_min[4], picked_output_color_max[4];
-  /** requested colorspace for the color picker, valid options are:
-   * -1: module colorspace
-   * iop_cs_LCh: for Lab modules
-   * iop_cs_HSL: for RGB modules
-   */
-  dt_iop_colorspace_type_t picker_cst;
   /** pointer to pre-module histogram data; if available: histogram_bins_count bins with 4 channels each */
   uint32_t *histogram;
   /** stats of captured histogram */
   dt_dev_histogram_stats_t histogram_stats;
   /** maximum levels in histogram, one per channel */
   uint32_t histogram_max[4];
+  /** requested colorspace for the histogram, valid options are:
+   * iop_cs_NONE: module colorspace
+   * iop_cs_LCh: for Lab modules
+   */
+  dt_iop_colorspace_type_t histogram_cst;
   /** reference for dlopened libs. */
   darktable_t *dt;
   /** the module is used in this develop module. */

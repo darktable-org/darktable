@@ -384,7 +384,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   }
   module->picker = NULL;
   module->blend_picker = NULL;
-  module->picker_cst = iop_cs_NONE;
+  module->histogram_cst = iop_cs_NONE;
   module->color_picker_box[0] = module->color_picker_box[1] = .25f;
   module->color_picker_box[2] = module->color_picker_box[3] = .75f;
   module->color_picker_point[0] = module->color_picker_point[1] = 0.5f;

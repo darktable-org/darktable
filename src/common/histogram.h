@@ -46,11 +46,12 @@ void dt_histogram_worker(dt_dev_histogram_collection_params_t *const histogram_p
                          uint32_t **histogram, const dt_worker Worker);
 
 void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
-                         dt_dev_histogram_stats_t *histogram_stats, dt_iop_colorspace_type_t cst,
-                         const void *pixel, uint32_t **histogram);
+                         dt_dev_histogram_stats_t *histogram_stats, const dt_iop_colorspace_type_t cst,
+                         const dt_iop_colorspace_type_t cst_to, const void *pixel, uint32_t **histogram);
 
 void dt_histogram_max_helper(const dt_dev_histogram_stats_t *const histogram_stats,
-                             dt_iop_colorspace_type_t cst, uint32_t **histogram, uint32_t *histogram_max);
+                             const dt_iop_colorspace_type_t cst, const dt_iop_colorspace_type_t cst_to,
+                             uint32_t **histogram, uint32_t *histogram_max);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
