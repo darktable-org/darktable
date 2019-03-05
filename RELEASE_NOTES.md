@@ -68,7 +68,7 @@ None.
 ### Noise Profiles
 
 - Sony SLT-A35
-- Nkon Z6
+- Nikon Z6
 
 ## Translations
 
