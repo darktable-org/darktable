@@ -403,7 +403,7 @@ void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const p
                             const int *const box, float *const picked_color, float *const picked_color_min,
                             float *const picked_color_max, const dt_iop_colorspace_type_t image_cst, const dt_iop_colorspace_type_t picker_cst)
 {
-  if((dsc->channels == 4u) && ((image_cst == picker_cst) || (picker_cst == -1)))
+  if((dsc->channels == 4u) && ((image_cst == picker_cst) || (picker_cst == iop_cs_NONE)))
     color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst);
   else if(dsc->channels == 4u && image_cst == iop_cs_Lab && picker_cst == iop_cs_LCh)
     color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst);
