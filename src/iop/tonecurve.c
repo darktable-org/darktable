@@ -622,7 +622,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       {
         const float L_in = in[0] / 100.0f;
         out[0] = (L_in < xm[0][0]) ? d->table[ch_L][CLAMP((int)(L_in * 0x10000ul), 0, 0xffff)]
-                               : dt_iop_eval_exp(d->unbounded_coeffs[0], L_in);
+                    : dt_iop_eval_exp(d->unbounded_coeffs[0], L_in);
         float LCh[3] = {0, 0, 0};
         out[1] = in[1];
         out[2] = out[2];
@@ -630,9 +630,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         const float chroma = LCh[1] / 182.019f;
         if (chroma > 0.0f)
         {
-          LCh[1] = d->table[ch_C][CLAMP((int)(chroma * 0x10000ul), 0, 0xffff)];  // C(C)
-          LCh[1] = LCh[1] * d->table[ch_CL][CLAMP((int)(L_in * 0x10000ul), 0, 0xffff)] * 2.0f;  // C(L)
-          out[0] = out[0] * d->table[ch_LC][CLAMP((int)(LCh[1] * 0x10000ul), 0, 0xffff)] * 2.0f;  // L(C)
+          LCh[1] = (chroma < xm[ch_C][0]) ? d->table[ch_C][CLAMP((int)(chroma * 0x10000ul), 0, 0xffff)]
+              : dt_iop_eval_exp(d->unbounded_coeffs[ch_C], chroma);  // C(C)
+          LCh[1] = (L_in < xm[ch_CL][0]) ? LCh[1] * d->table[ch_CL][CLAMP((int)(L_in * 0x10000ul), 0, 0xffff)] * 2.0f
+              : LCh[1] * dt_iop_eval_exp(d->unbounded_coeffs[ch_CL], l_in) * 2.0f;  // C(L)
+          out[0] = (LCh[1] < xm[ch_LC][0] ? out[0] * d->table[ch_LC][CLAMP((int)(LCh[1] * 0x10000ul), 0, 0xffff)] * 2.0f
+              : out[0] * dt_iop_eval_exp(d->unbounded_coeffs[ch_LC], LCh[1]) * 2.0f;  // L(C)
 //          LCh[1] = LCh[1] * d->table[ch_Ch][CLAMP((int)(LCh[2] * 0x10000ul), 0, 0xffff)] * 2.0f;  // C(h)
           out[1] = in[1] * (LCh[1] / chroma);
           out[2] = in[2] * (LCh[1] / chroma);
@@ -1765,8 +1768,11 @@ void gui_init(struct dt_iop_module_t *self)
   c->channel = ch_L;
   c->mouse_x = c->mouse_y = -1.0;
   c->selected = -1;
-  c->loglogscale[ch_L] = 0;
-  c->scale_mode[ch_L] = linxliny;
+  for( int ch = 0; ch < DT_IOP_TONECURVE_MAX_CH; ch++)
+  {
+    c->loglogscale[ch] = 0;
+    c->scale_mode[ch] = linxliny;
+  }
   c->got_focus = FALSE;
   for (int i = 0; i < DT_IOP_TONECURVE_MAX_CH * DT_IOP_TONECURVE_BINS; i++) c->local_histogram[i] = 0;
 
