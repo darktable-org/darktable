@@ -24,21 +24,95 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 
 ## The Big Ones
 
-- No changes
+- The color picker on the blend, tone curve, color zones and fill
+  light modules now allows to select an area by ctrl+click on it.
+
+- Add undo support in lighttable for tags, color labels, rating and
+  metadata.
+
+- A new timeline view has been introduced in the lighttable.
+
+- A new exposé lighttable's mode to be used to compare multiple images.
+
+- A quite extensive rewrite of the lighttable has been made to improve
+  drastically the overall performance. This also includes the
+  filmstrip which has also see a big rewrite for the same reasons. The
+  lighttable is now usable on 4K and 5K monitors.
+
+- Add new raster mask supports. This is a copy of a parametric mask
+  which is stable during the whole pixel-pipe.
 
 ## New Features And Changes
 
-- A new profile ‘histogram profile’ has been added on the same pop-up that the softproof one on the darkroom. It controls the color space of the histogram, color picker and overexposed check. When gamut or softproof checks are active the histogram and color picker use the softproof profile, otherwise they use the histogram profile. The overexposed check always use the histogram profile.
+- A new profile ‘histogram profile’ has been added on the same pop-up
+  that the softproof one on the darkroom. It controls the color space
+  of the histogram, color picker and overexposed check. When gamut or
+  softproof checks are active the histogram and color picker use the
+  softproof profile, otherwise they use the histogram profile. The
+  overexposed check always use the histogram profile.
 
-- The color picker on the blend, tone curve, color zones and fill light modules now allows to select an area by cntrl + click on it.
+- A new color picker has been added to the blend module next to the
+  existing one that adjusts the range sliders based on the selected
+  area from the image. Click to adjust the input image slider,
+  ctrl+click to adjust the out image one.
 
-- A new color picker has been added to the blend module next to the existing one that adjusts the range sliders based on the selected area from the image. Click to adjust the input image slider, cntrl + click to adjust the out image one.
+- The color zones module now display an histogram based on the ‘select
+  by’ channel and displays the selected range if the color picker is
+  in area mode.
 
-- The color zones module now display an histogram based on the ‘select by’ channel and displays the selected range if the color picker is in area mode.
+- The picasa module has been renamed to googlephoto and completely
+  rewrited to support the new Google Photo API. It is now again
+  possible to create albums directly from the export module.
+
+- Many code optimizations for CPU and SSE paths.
+
+- A new preference to expand/collapse a darkroom module when it is
+  activated/deactivated.
+
+- The collect module supports single click if the corresponding new
+  option is activated.
+
+- The collect module supports range selection (for numerics/dates)
+  when using single click mode.
+
+- Add option to scatter the search zone in denoise profile non local
+  means mode.
+
+- The gradient mask orientation is now clearly displayed by using an
+  arrow.
+
+- Add support for theme, and allow to dynamically load theme from the
+  preferences.
+
+- The graduatednd module has better accuracy when computing the
+  rotation to avoid the gradiant to flip sporadically.
+
+- Make sure the OpenCL kernel code are recompiled when the driver
+  version is updated.
+
+- Add color pickers in the split toning module.
+
+- Add color pickers in the graduateddnd module.
+
+- Add color picker to the watermark module.
+
+- The color picker point positions are kept during the editing on the
+  module.
+
+- The map view will zoom on the images of the selected collection.
+
+- The slideshow supports changing the delay between each images.
+
+- Add soft boundaries for denoise profile controls.
 
 ## Bug fixes
 
-- No changes
+- The color picker support has been fixed by a complete rewrite. It
+  should now gives correct values in all cases.
+
+- Fix overexposed display.
+
+- Do not disable SSL for storage modules.
 
 ## Lua
 
