@@ -28,7 +28,13 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 
 ## New Features And Changes
 
-- No changes
+- A new profile ‘histogram profile’ has been added on the same pop-up that the softproof one on the darkroom. It controls the color space of the histogram, color picker and overexposed check. When gamut or softproof checks are active the histogram and color picker use the softproof profile, otherwise they use the histogram profile. The overexposed check always use the histogram profile.
+
+- The color picker on the blend, tone curve, color zones and fill light modules now allows to select an area by cntrl + click on it.
+
+- A new color picker has been added to the blend module next to the existing one that adjusts the range sliders based on the selected area from the image. Click to adjust the input image slider, cntrl + click to adjust the out image one.
+
+- The color zones module now display an histogram based on the ‘select by’ channel and displays the selected range if the color picker is in area mode.
 
 ## Bug fixes
 
