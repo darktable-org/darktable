@@ -1098,6 +1098,11 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   else
     ret_val = _history_copy_and_paste_on_image_overwrite(imgid, dest_imgid, ops);
 
+  /* attach changed tag reflecting actual change */
+  guint tagid = 0;
+  dt_tag_new("darktable|changed", &tagid);
+  dt_tag_attach(tagid, dest_imgid);
+
   /* if current image in develop reload history */
   if(dt_dev_is_current_image(darktable.develop, dest_imgid))
   {
