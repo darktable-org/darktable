@@ -551,17 +551,10 @@ static gboolean draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_data
 
   GdkRGBA color;
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  gboolean color_found = gtk_style_context_lookup_color (context, "selected_bg_color", &color);
+  gtk_render_background(context, cr, 0, 0, width, height);
+  gtk_style_context_get_color(context, gtk_widget_get_state_flags(widget), &color);
 
   // draw gui arrows.
-  color_found = gtk_style_context_lookup_color (context, "fg_color", &color);
-  if(!color_found)
-  {
-    color.red = 1.0;
-    color.green = 0.0;
-    color.blue = 0.0;
-    color.alpha = 1.0;
-  }
   gdk_cairo_set_source_rgba(cr, &color);
 
   switch(which)
@@ -1412,6 +1405,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
                                 | GDK_SCROLL_MASK);
+  gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
 
   // Initializing the main table
@@ -1426,6 +1420,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
                                 | GDK_SCROLL_MASK);
+  gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
 
   // Showing everything
@@ -1472,6 +1467,7 @@ static void init_main_table(GtkWidget *container)
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
                                 | GDK_SCROLL_MASK);
   gtk_grid_attach(GTK_GRID(container), widget, 0, 0, 1, 2);
+  gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
 
   // Adding the right border
@@ -1484,6 +1480,7 @@ static void init_main_table(GtkWidget *container)
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
                                 | GDK_SCROLL_MASK);
   gtk_grid_attach(GTK_GRID(container), widget, 4, 0, 1, 2);
+  gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
 
   /* initialize the top container */

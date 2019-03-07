@@ -258,14 +258,20 @@ box *
 *  are defined to 5 px × DPI. We cheat by setting inner borders/spacing here to 5 px as well
 */
 
+#outer-border
+{
+  background-color: #000;
+  min-width: 20px;
+}
+
 #left
 {
-  padding-right: 5px;
+  /*padding-right: 5px;*/
 }
 
 #right
 {
-  padding-left: 5px;
+  /*padding-left: 5px;*/
 }
 
 #header-toolbar
@@ -307,12 +313,12 @@ box *
 #lib-plugin-ui-main,
 #blending-box
 {
-  padding: 0.5em;
+  padding: 1em;
 }
 
 #module-header
 {
- padding: 4pt 0 2pt 0;
+ padding: 4pt 0.5em 2pt 0.5em;
 }
 
 
@@ -453,7 +459,7 @@ entry selection {
 {
   background-color: @bg_color;
   border:0;
-  padding: 0 2pt 2pt 0;
+  padding: 0 2pt 2pt 0.5em;
   font-weight: 400;
   font-stretch: condensed;
   font-family: "Roboto Condensed","Segoe UI Condensed", "SF Pro Display", "Ubuntu Condensed", "Cantarell", sans-serif;
@@ -694,8 +700,8 @@ notebook tabs,
 #modules-tabs #dt-toggle-button
 {
   font-size: 8pt;
-  min-height: 2em;
-  min-width: 2em;
+  min-height: 2.5em;
+  min-width: 2.5em;
   margin: 0;
 }
 
