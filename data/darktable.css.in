@@ -592,7 +592,7 @@ dialog combobox window
   outline-style: none;
   min-height: 1em;
   min-width: 1em;
-  padding: 2pt;
+  padding: 0.5em;
 }
 
 #view_dropdown,
@@ -773,7 +773,7 @@ notebook tab:focus label
 
 #bauhaus-combobox
 {
-  min-height: 2em;
+  min-height: 1em;
 }
 
 /* separator */
