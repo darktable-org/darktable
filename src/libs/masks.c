@@ -1560,7 +1560,6 @@ static void _lib_masks_selection_change(dt_lib_module_t *self, int selectid, int
 
 void gui_init(dt_lib_module_t *self)
 {
-  const int bs = DT_PIXEL_APPLY_DPI(14);
   const int bs2 = DT_PIXEL_APPLY_DPI(13);
 
   /* initialize ui widgets */
@@ -1649,7 +1648,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->bt_path), "button-press-event", G_CALLBACK(_bt_add_path), self);
   gtk_widget_set_tooltip_text(d->bt_path, _("add path"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_path), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox), d->bt_path, FALSE, FALSE, bs);
+  gtk_box_pack_end(GTK_BOX(hbox), d->bt_path, FALSE, FALSE, 0);
 
   d->bt_ellipse
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
