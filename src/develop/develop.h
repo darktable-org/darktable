@@ -38,8 +38,11 @@ typedef struct dt_dev_history_item_t
   dt_iop_params_t *params;        // parameters for this operation
   struct dt_develop_blend_params_t *blend_params;
   char op_name[20];
+  double iop_order;
   int multi_priority;
   char multi_name[128];
+  GList *forms; // snapshot of dt_develop_t->forms
+  int num; // num of history on database
   int32_t focus_hash;             // used to determine whether or not to start a new item or to merge down
 } dt_dev_history_item_t;
 
@@ -70,6 +73,15 @@ typedef enum dt_dev_histogram_type_t
   DT_DEV_HISTOGRAM_WAVEFORM,
   DT_DEV_HISTOGRAM_N // needs to be the last one
 } dt_dev_histogram_type_t;
+
+typedef enum dt_dev_transform_direction_t
+{
+  DT_DEV_TRANSFORM_DIR_ALL = 0,
+  DT_DEV_TRANSFORM_DIR_FORW_INCL = 1,
+  DT_DEV_TRANSFORM_DIR_FORW_EXCL = 2,
+  DT_DEV_TRANSFORM_DIR_BACK_INCL = 3,
+  DT_DEV_TRANSFORM_DIR_BACK_EXCL = 4
+} dt_dev_transform_direction_t;
 
 typedef enum dt_dev_pixelpipe_status_t
 {
@@ -154,6 +166,13 @@ typedef struct dt_develop_t
   // iop's to be deleted
   GList *alliop;
 
+  // iop order
+  int iop_order_version;
+  GList *iop_order_list;
+  
+  // profiles info
+  GList *allprofile_info;
+  
   // histogram for display.
   uint32_t *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
   uint32_t histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
@@ -272,6 +291,8 @@ void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid);
 int dt_dev_is_current_image(dt_develop_t *dev, uint32_t imgid);
 void dt_dev_add_history_item_ext(dt_develop_t *dev, struct dt_iop_module_t *module, gboolean enable, gboolean no_image);
 void dt_dev_add_history_item(dt_develop_t *dev, struct dt_iop_module_t *module, gboolean enable);
+void dt_dev_add_masks_history_item_ext(dt_develop_t *dev, struct dt_iop_module_t *_module, gboolean _enable, gboolean no_image);
+void dt_dev_add_masks_history_item(dt_develop_t *dev, struct dt_iop_module_t *_module, gboolean enable);
 void dt_dev_reload_history_items(dt_develop_t *dev);
 void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt);
 void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt);
@@ -334,6 +355,8 @@ void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group);
 uint32_t dt_dev_modulegroups_get(dt_develop_t *dev);
 /** test if iop group flags matches modulegroup */
 gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, uint32_t iop_group);
+/** reorder the module list */
+void dt_dev_reorder_gui_module_list(dt_develop_t *dev);
 
 /** request snapshot */
 void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename);
@@ -353,7 +376,7 @@ void dt_dev_masks_selection_change(dt_develop_t *dev, int selectid, int throw_ev
  * multi instances
  */
 /** duplicate a existent module */
-struct dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, struct dt_iop_module_t *base, int priority);
+struct dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, struct dt_iop_module_t *base);
 /** remove an existent module */
 void dt_dev_module_remove(dt_develop_t *dev, struct dt_iop_module_t *module);
 /** update "show" values of the multi instance part (show_move, show_delete, ...) */
@@ -372,9 +395,9 @@ int dt_dev_distort_transform(dt_develop_t *dev, float *points, size_t points_cou
 /** reverse apply all transforms to the specified points (in preview pipe space) */
 int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, size_t points_count);
 /** same fct, but we can specify iop with priority between pmin and pmax */
-int dt_dev_distort_transform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax,
+int dt_dev_distort_transform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction, 
                                   float *points, size_t points_count);
-int dt_dev_distort_backtransform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax,
+int dt_dev_distort_backtransform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction, 
                                       float *points, size_t points_count);
 /** get the iop_pixelpipe instance corresponding to the iop in the given pipe */
 struct dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
@@ -385,22 +408,22 @@ struct dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, st
 /** generate hash value out of all module settings of pixelpipe */
 uint64_t dt_dev_hash(dt_develop_t *dev);
 /** same function, but we can specify iop with priority between pmin and pmax */
-uint64_t dt_dev_hash_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax);
+uint64_t dt_dev_hash_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction);
 /** wait until hash value found in hash matches hash value defined by dev/pipe/pmin/pmax with timeout */
-int dt_dev_wait_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+int dt_dev_wait_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction, dt_pthread_mutex_t *lock,
                      const volatile uint64_t *const hash);
 /** synchronize pixelpipe by means hash values by waiting with timeout and potential reprocessing */
-int dt_dev_sync_pixelpipe_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+int dt_dev_sync_pixelpipe_hash(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction, dt_pthread_mutex_t *lock,
                                const volatile uint64_t *const hash);
 /** generate hash value out of module settings of all distorting modules of pixelpipe */
 uint64_t dt_dev_hash_distort(dt_develop_t *dev);
 /** same function, but we can specify iop with priority between pmin and pmax */
-uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax);
+uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction);
 /** same as dt_dev_wait_hash but only for distorting modules */
-int dt_dev_wait_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+int dt_dev_wait_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction, dt_pthread_mutex_t *lock,
                              const volatile uint64_t *const hash);
 /** same as dt_dev_sync_pixelpipe_hash but ony for distorting modules */
-int dt_dev_sync_pixelpipe_hash_distort (dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, int pmin, int pmax, dt_pthread_mutex_t *lock,
+int dt_dev_sync_pixelpipe_hash_distort (dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction, dt_pthread_mutex_t *lock,
                                         const volatile uint64_t *const hash);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

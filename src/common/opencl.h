@@ -114,6 +114,7 @@ struct dt_bilateral_cl_global_t;
 struct dt_local_laplacian_cl_global_t;
 struct dt_dwt_cl_global_t; // wavelet decompose
 struct dt_heal_cl_global_t; // healing
+struct dt_colorspaces_cl_global_t; // colorspaces transform
 
 /**
  * main struct, stored in darktable.opencl.
@@ -165,6 +166,9 @@ typedef struct dt_opencl_t
   
   // global kernels for heal filter.
   struct dt_heal_cl_global_t *heal;
+  
+  // global kernels for colorspaces filter.
+  struct dt_colorspaces_cl_global_t *colorspaces;
 } dt_opencl_t;
 
 /** description of memory requirements of local buffer

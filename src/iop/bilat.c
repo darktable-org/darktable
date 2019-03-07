@@ -107,6 +107,11 @@ int default_group()
   return IOP_GROUP_TONE;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
 int legacy_params(
     dt_iop_module_t *self, const void *const old_params, const int old_version,
     void *new_params, const int new_version)
@@ -303,7 +308,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         {
           // Don't try grabbing anything from preview pipe.
         }
-        else if(!dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
+        else if(!dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &g->lock, &g->hash))
         {
           // TODO: remove this debug output at some point:
           dt_control_log(_("local laplacian: inconsistent output"));
@@ -335,7 +340,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     // preview pixelpipe stores values.
     if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
     {
-      uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, 0, self->priority);
+      uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
       dt_pthread_mutex_lock(&g->lock);
       // store buffer pointers on gui struct. maybe need to swap/free old ones
       local_laplacian_boundary_free(&g->ll_boundary);
@@ -386,7 +391,6 @@ void init(dt_iop_module_t *module)
   // by default:
   module->default_enabled = 0;
   // order has to be changed by editing the dependencies in tools/iop_dependencies.py
-  module->priority = 585; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_bilat_params_t);
   module->gui_data = NULL;
   // init defaults:

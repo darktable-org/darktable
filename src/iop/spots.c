@@ -65,6 +65,11 @@ int flags()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_NO_MASKS;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
@@ -323,7 +328,7 @@ static int masks_point_calc_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
   masks_point_denormalize(piece, roi, target, 1, points);
   masks_point_denormalize(piece, roi, source, 1, points + 2);
 
-  int res = dt_dev_distort_transform_plus(self->dev, piece->pipe, 0, self->priority, points, 2);
+  int res = dt_dev_distort_transform_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, 2);
   if(!res) return res;
 
   *dx = points[0] - points[2];
@@ -411,7 +416,7 @@ void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
         masks_point_denormalize(piece, roi_in, circle->center, 1, points);
         masks_point_denormalize(piece, roi_in, form->source, 1, points + 2);
 
-        if(!dt_dev_distort_transform_plus(self->dev, piece->pipe, 0, self->priority, points, 2))
+        if(!dt_dev_distort_transform_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, 2))
         {
           forms = g_list_next(forms);
           pos++;
@@ -549,7 +554,6 @@ void init(dt_iop_module_t *module)
   // our module is disabled by default
   // by default:
   module->default_enabled = 0;
-  module->priority = 171; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_spots_params_t);
   module->gui_data = NULL;
   // init defaults:

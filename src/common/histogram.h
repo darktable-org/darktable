@@ -36,18 +36,22 @@ typedef struct dt_histogram_roi_t
 } dt_histogram_roi_t;
 
 void dt_histogram_helper_cs_RAW_uint16(const dt_dev_histogram_collection_params_t *histogram_params,
-                                       const void *pixel, uint32_t *histogram, int j);
+                                       const void *pixel, uint32_t *histogram, int j,
+                                       const dt_iop_order_iccprofile_info_t *const profile_info);
 
 typedef void((*dt_worker)(const dt_dev_histogram_collection_params_t *const histogram_params,
-                          const void *pixel, uint32_t *histogram, int j));
+                          const void *pixel, uint32_t *histogram, int j,
+                          const dt_iop_order_iccprofile_info_t *const profile_info));
 
 void dt_histogram_worker(dt_dev_histogram_collection_params_t *const histogram_params,
                          dt_dev_histogram_stats_t *histogram_stats, const void *const pixel,
-                         uint32_t **histogram, const dt_worker Worker);
+                         uint32_t **histogram, const dt_worker Worker,
+                         const dt_iop_order_iccprofile_info_t *const profile_info);
 
 void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
                          dt_dev_histogram_stats_t *histogram_stats, const dt_iop_colorspace_type_t cst,
-                         const dt_iop_colorspace_type_t cst_to, const void *pixel, uint32_t **histogram);
+                         const dt_iop_colorspace_type_t cst_to, const void *pixel, uint32_t **histogram,
+                         const int compensate_middle_grey, const dt_iop_order_iccprofile_info_t *const profile_info);
 
 void dt_histogram_max_helper(const dt_dev_histogram_stats_t *const histogram_stats,
                              const dt_iop_colorspace_type_t cst, const dt_iop_colorspace_type_t cst_to,

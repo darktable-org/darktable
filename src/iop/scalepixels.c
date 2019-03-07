@@ -71,6 +71,11 @@ int operation_tags()
   return IOP_TAG_DISTORT;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
 static void transform(const dt_dev_pixelpipe_iop_t *const piece, float *p)
 {
   dt_iop_scalepixels_data_t *d = piece->data;
@@ -275,7 +280,6 @@ void init(dt_iop_module_t *self)
   self->default_params = calloc(1, sizeof(dt_iop_scalepixels_params_t));
   self->default_enabled = (!isnan(image->pixel_aspect_ratio) && image->pixel_aspect_ratio > 0.0f
                            && image->pixel_aspect_ratio != 1.0f);
-  self->priority = 257; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_scalepixels_params_t);
   self->gui_data = &dummy;
 }

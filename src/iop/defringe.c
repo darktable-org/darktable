@@ -79,6 +79,11 @@ int flags()
   return IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
 // try without clipping for now, usually it should be fine
 //#define CLIP(x,y,z)  if (x < y) x = y; if (x > z) x = z;
 
@@ -396,7 +401,6 @@ void init(dt_iop_module_t *module)
 {
   module->params = calloc(1, sizeof(dt_iop_defringe_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_defringe_params_t));
-  module->priority = 414; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_defringe_params_t);
   module->gui_data = NULL;
   module->data = NULL;

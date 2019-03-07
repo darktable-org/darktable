@@ -2808,7 +2808,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   const int blendflag = self->flags() & IOP_FLAGS_BLEND_ONLY_LIGHTNESS;
 
   // get channel max values depending on colorspace
-  const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
+  const dt_iop_colorspace_type_t cst = self->blend_colorspace(self, piece->pipe, piece);
 
   // check if mask should be suppressed temporarily (i.e. just set to global
   // opacity value)
@@ -3106,7 +3106,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   const int blendflag = self->flags() & IOP_FLAGS_BLEND_ONLY_LIGHTNESS;
 
   // get channel max values depending on colorspace
-  const dt_iop_colorspace_type_t cst = dt_iop_module_colorspace(self);
+  const dt_iop_colorspace_type_t cst = self->blend_colorspace(self, piece->pipe, piece);
 
   // check if mask should be suppressed temporarily (i.e. just set to global
   // opacity value)
