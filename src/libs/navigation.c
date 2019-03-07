@@ -23,6 +23,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
@@ -92,6 +93,23 @@ static void _lib_navigation_control_redraw_callback(gpointer instance, gpointer 
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_control_queue_redraw_widget(self->widget);
 }
+
+
+static gboolean _lib_navigation_collapse_callback(GtkAccelGroup *accel_group,
+                                                GObject *acceleratable, guint keyval,
+                                                GdkModifierType modifier, gpointer data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)data;
+
+  // Get the state
+  gint visible = dt_lib_is_visible(self);
+
+  // Inverse the visibility
+  dt_lib_set_visible(self, !visible);
+
+  return TRUE;
+}
+
 
 void gui_init(dt_lib_module_t *self)
 {
@@ -575,6 +593,18 @@ static gboolean _lib_navigation_leave_notify_callback(GtkWidget *widget, GdkEven
 {
   return TRUE;
 }
+
+void init_key_accels(dt_lib_module_t *self)
+{
+  dt_accel_register_lib(self, NC_("accel", "hide navigation thumbnail"), GDK_KEY_N, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+}
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_accel_connect_lib(self, "hide navigation thumbnail",
+                     g_cclosure_new(G_CALLBACK(_lib_navigation_collapse_callback), self, NULL));
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
