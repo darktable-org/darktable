@@ -415,17 +415,32 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orienta
   const int iop_flip_MODVER = 2;
   int num = 0;
   if(sqlite3_step(stmt) == SQLITE_ROW) num = sqlite3_column_int(stmt, 0);
-
   sqlite3_finalize(stmt);
+  
+  double iop_order = DBL_MAX;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order FROM main.history "
+                                                             "WHERE imgid = ?1 AND operation = 'flip' ORDER BY num DESC", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW) iop_order = sqlite3_column_double(stmt, 0);
+  sqlite3_finalize(stmt);
+  
+  if(iop_order == DBL_MAX)
+  {
+    iop_order = dt_ioppr_get_iop_order(darktable.iop_order_list, "flip");
+  }
+  
+  if(iop_order != DBL_MAX)
+  {
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO main.history (imgid, num, module, operation, op_params, enabled, "
-                              "blendop_params, blendop_version, multi_priority, multi_name) VALUES "
-                              "(?1, ?2, ?3, 'flip', ?4, 1, NULL, 0, 0, '') ",
+                              "blendop_params, blendop_version, multi_priority, multi_name, iop_order) VALUES "
+                              "(?1, ?2, ?3, 'flip', ?4, 1, NULL, 0, 0, '', ?5) ",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, iop_flip_MODVER);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, &orientation, sizeof(int32_t), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 5, iop_order);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
@@ -439,6 +454,9 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orienta
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
   // write that through to xmp:
   dt_image_write_sidecar_file(imgid);
+  }
+  else
+    fprintf(stderr, "[dt_image_set_flip] can't find history entry for operation flip on image %i\n", imgid);
 }
 
 dt_image_orientation_t dt_image_get_orientation(const int imgid)
@@ -596,14 +614,14 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
       "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, "
       "raw_auto_bright_threshold, raw_black, raw_maximum, "
       "caption, description, license, sha1sum, orientation, histogram, lightmap, "
-      "longitude, latitude, altitude, color_matrix, colorspace, version, max_version, history_end, "
+      "longitude, latitude, altitude, color_matrix, colorspace, version, max_version, history_end, iop_order_version, "
       "position, aspect_ratio) "
       "SELECT NULL, group_id, film_id, width, height, filename, maker, model, lens, "
       "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
       "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
       "raw_auto_bright_threshold, raw_black, raw_maximum, "
       "caption, description, license, sha1sum, orientation, histogram, lightmap, "
-      "longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0, ?1, aspect_ratio "
+      "longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0, 0, ?1, aspect_ratio "
       "FROM main.images WHERE id = ?2",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT64(stmt, 1, new_image_position);
@@ -723,6 +741,11 @@ void dt_image_remove(const int32_t imgid)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1,
+                              &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid = ?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
@@ -978,8 +1001,8 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "INSERT INTO main.images (id, film_id, filename, caption, description, license, sha1sum, flags, version, "
-      "max_version, history_end, position) "
-      "SELECT NULL, ?1, ?2, '', '', '', '', ?3, 0, 0, 0, (IFNULL(MAX(position),0) & (4294967295 << 32))  + (1 << 32) "
+      "max_version, history_end, iop_order_version, position) "
+      "SELECT NULL, ?1, ?2, '', '', '', '', ?3, 0, 0, 0, 0, (IFNULL(MAX(position),0) & (4294967295 << 32))  + (1 << 32) "
       "FROM images",
       -1, &stmt, NULL);
 
@@ -1391,14 +1414,14 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
           "raw_auto_bright_threshold, raw_black, raw_maximum, "
           "caption, description, license, sha1sum, orientation, histogram, lightmap, "
           "longitude, latitude, altitude, color_matrix, colorspace, version, max_version, "
-          "position, aspect_ratio) "
+          "position, aspect_ratio, iop_order_version) "
           "SELECT NULL, group_id, ?1 as film_id, width, height, filename, maker, model, lens, "
           "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
           "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
           "raw_auto_bright_threshold, raw_black, raw_maximum, "
           "caption, description, license, sha1sum, orientation, histogram, lightmap, "
           "longitude, latitude, altitude, color_matrix, colorspace, -1, -1, "
-          "?2, aspect_ratio "
+          "?2, aspect_ratio, iop_order_version "
           "FROM main.images WHERE id = ?3",
           -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);

@@ -88,6 +88,11 @@ int default_group()
   return IOP_GROUP_BASIC;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
@@ -317,7 +322,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_colisa_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colisa_params_t));
   module->default_enabled = 0;
-  module->priority = 657; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colisa_params_t);
   module->gui_data = NULL;
   dt_iop_colisa_params_t tmp = (dt_iop_colisa_params_t){ 0, 0, 0 };

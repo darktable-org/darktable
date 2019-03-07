@@ -295,7 +295,7 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gu
      *
      * TODO: revisit if/once there semi-raw iops (e.g temperature) with blending
      */
-    if(dt_iop_module_colorspace(data->module) == iop_cs_RAW)
+    if(data->module->blend_colorspace(data->module, NULL, NULL) == iop_cs_RAW)
     {
       data->module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
       dtgtk_button_set_active(DTGTK_BUTTON(data->showmask), 0);
@@ -2117,7 +2117,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
      *
      * TODO: revisit if/once there semi-raw iops (e.g temperature) with blending
      */
-    if(dt_iop_module_colorspace(module) == iop_cs_RAW)
+    if(module->blend_colorspace(module, NULL, NULL) == iop_cs_RAW)
     {
       module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
       dtgtk_button_set_active(DTGTK_BUTTON(bd->showmask), 0);
@@ -2231,7 +2231,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
     bd->iopw = iopw;
     bd->module = module;
-    bd->csp = dt_iop_module_colorspace(module);
+    bd->csp = module->blend_colorspace(module, NULL, NULL);
     bd->blendif_support = (bd->csp == iop_cs_Lab || bd->csp == iop_cs_rgb);
     bd->masks_support = !(module->flags() & IOP_FLAGS_NO_MASKS);
 

@@ -53,7 +53,7 @@
 
 #define LUT_SAMPLES 0x10000
 
-DT_MODULE_INTROSPECTION(4, dt_iop_colorin_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_colorin_params_t)
 
 static void update_profile_list(dt_iop_module_t *self);
 
@@ -73,11 +73,14 @@ typedef struct dt_iop_colorin_params_t
   dt_iop_color_intent_t intent;
   int normalize;
   int blue_mapping;
+  // working color profile
+  dt_colorspaces_color_profile_type_t type_work;
+  char filename_work[DT_IOP_COLOR_ICC_LEN];
 } dt_iop_colorin_params_t;
 
 typedef struct dt_iop_colorin_gui_data_t
 {
-  GtkWidget *profile_combobox, *clipping_combobox;
+  GtkWidget *profile_combobox, *clipping_combobox, *work_combobox;
   GList *image_profiles;
   int n_image_profiles;
 } dt_iop_colorin_gui_data_t;
@@ -104,6 +107,8 @@ typedef struct dt_iop_colorin_data_t
   int blue_mapping;
   int nonlinearlut;
   dt_colorspaces_color_profile_type_t type;
+  dt_colorspaces_color_profile_type_t type_work;
+  char filename_work[DT_IOP_COLOR_ICC_LEN];
 } dt_iop_colorin_data_t;
 
 
@@ -122,10 +127,27 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
+int input_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
+                     dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
+int output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
+                      dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 4)
+  if(old_version == 1 && new_version == 5)
   {
     typedef struct dt_iop_colorin_params_v1_t
     {
@@ -172,9 +194,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->intent = old->intent;
     new->normalize = 0;
     new->blue_mapping = 1;
+    new->type_work = DT_COLORSPACE_LIN_REC709;
+    new->filename_work[0] = '\0';
     return 0;
   }
-  if(old_version == 2 && new_version == 4)
+  if(old_version == 2 && new_version == 5)
   {
     typedef struct dt_iop_colorin_params_v2_t
     {
@@ -222,9 +246,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->intent = old->intent;
     new->normalize = old->normalize;
     new->blue_mapping = 1;
+    new->type_work = DT_COLORSPACE_LIN_REC709;
+    new->filename_work[0] = '\0';
     return 0;
   }
-  if(old_version == 3 && new_version == 4)
+  if(old_version == 3 && new_version == 5)
   {
     typedef struct dt_iop_colorin_params_v3_t
     {
@@ -273,12 +299,38 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->intent = old->intent;
     new->normalize = old->normalize;
     new->blue_mapping = old->blue_mapping;
+    new->type_work = DT_COLORSPACE_LIN_REC709;
+    new->filename_work[0] = '\0';
+
+    return 0;
+  }
+  if(old_version == 4 && new_version == 5)
+  {
+    typedef struct dt_iop_colorin_params_v4_t
+    {
+      dt_colorspaces_color_profile_type_t type;
+      char filename[DT_IOP_COLOR_ICC_LEN];
+      dt_iop_color_intent_t intent;
+      int normalize;
+      int blue_mapping;
+    } dt_iop_colorin_params_v4_t;
+
+    const dt_iop_colorin_params_v4_t *old = (dt_iop_colorin_params_v4_t *)old_params;
+    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    memset(new_params, 0, sizeof(*new_params));
+
+    new->type = old->type;
+    g_strlcpy(new->filename, old->filename, sizeof(new->filename));
+    new->intent = old->intent;
+    new->normalize = old->normalize;
+    new->blue_mapping = old->blue_mapping;
+    new->type_work = DT_COLORSPACE_LIN_REC709;
+    new->filename_work[0] = '\0';
 
     return 0;
   }
   return 1;
 }
-
 
 void init_global(dt_iop_module_so_t *module)
 {
@@ -334,12 +386,71 @@ static void profile_changed(GtkWidget *widget, gpointer user_data)
       p->type = pp->type;
       memcpy(p->filename, pp->filename, sizeof(p->filename));
       dt_dev_add_history_item(darktable.develop, self, TRUE);
+      
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_INPUT);
       return;
     }
     prof = g_list_next(prof);
   }
   // should really never happen.
   fprintf(stderr, "[colorin] color profile %s seems to have disappeared!\n", dt_colorspaces_get_name(p->type, p->filename));
+}
+
+static void workicc_changed(GtkWidget *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
+  if(self->dt->gui->reset) return;
+  
+  dt_iop_request_focus(self);
+  
+  dt_colorspaces_color_profile_type_t type_work = DT_COLORSPACE_NONE;
+  char filename_work[DT_IOP_COLOR_ICC_LEN];
+  
+  int pos = dt_bauhaus_combobox_get(widget);
+  GList *prof = darktable.color_profiles->profiles;
+  while(prof)
+  {
+    dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)prof->data;
+    if(pp->work_pos == pos)
+    {
+      type_work = pp->type;
+      g_strlcpy(filename_work, pp->filename, sizeof(filename_work));
+      break;
+    }
+    prof = g_list_next(prof);
+  }
+  
+  if(type_work != DT_COLORSPACE_NONE)
+  {
+    p->type_work = type_work;
+    g_strlcpy(p->filename_work, filename_work, sizeof(p->filename_work));
+
+    const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_add_profile_info_to_list(self->dev, p->type_work, p->filename_work, DT_INTENT_PERCEPTUAL);
+    if(work_profile == NULL || isnan(work_profile->matrix_in[0]) || isnan(work_profile->matrix_out[0]))
+    {
+      fprintf(stderr, "[colorin] can't extract matrix from colorspace `%s', it will be replaced by Rec2020 RGB!\n", p->filename_work);
+      dt_control_log(_("can't extract matrix from colorspace `%s', it will be replaced by Rec2020 RGB!"), p->filename_work);
+
+    }
+    dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_WORK);
+    
+    // we need to rebuild the pipe so the profile take effect
+    self->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
+    self->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
+    self->dev->pipe->cache_obsolete = 1;
+    self->dev->preview_pipe->cache_obsolete = 1;
+
+    // invalidate buffers and force redraw of darkroom
+    dt_dev_invalidate_all(self->dev);
+  }
+  else
+  {
+    // should really never happen.
+    fprintf(stderr, "[colorin] color profile %s seems to have disappeared!\n", dt_colorspaces_get_name(p->type_work, p->filename_work));
+  }
 }
 
 
@@ -436,6 +547,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_release_mem_object(dev_g);
   dt_opencl_release_mem_object(dev_b);
   dt_opencl_release_mem_object(dev_coeffs);
+  
+  dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work, d->filename_work, DT_INTENT_PERCEPTUAL);
   return TRUE;
 
 error:
@@ -864,6 +977,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     process_lcms2(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
 
+  dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work, d->filename_work, DT_INTENT_PERCEPTUAL);
+  
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
@@ -1246,6 +1361,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     process_sse2_lcms2(self, piece, ivoid, ovoid, roi_in, roi_out);
   }
 
+  dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work, d->filename_work, DT_INTENT_PERCEPTUAL);
+  
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 #endif
@@ -1263,13 +1380,15 @@ static void mat3mul(float *dst, const float *const m1, const float *const m2)
   }
 }
 
-void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
-                   dt_dev_pixelpipe_iop_t *piece)
+void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   const dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)p1;
   dt_iop_colorin_data_t *d = (dt_iop_colorin_data_t *)piece->data;
 
   d->type = p->type;
+  d->type_work = p->type_work;
+  g_strlcpy(d->filename_work, p->filename_work, sizeof(d->filename_work));
+  
   const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
   // only clean up when it's a type that we created here
@@ -1585,8 +1704,29 @@ void gui_update(struct dt_iop_module_t *self)
 
   update_profile_list(self);
 
+  // working profile
+  int idx = -1;
+  GList *prof = darktable.color_profiles->profiles;
+  while(prof)
+  {
+    dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)prof->data;
+    if(pp->work_pos > -1 &&
+       pp->type == p->type_work && (pp->type != DT_COLORSPACE_FILE || !strcmp(pp->filename, p->filename_work)))
+    {
+      idx = pp->work_pos;
+      break;
+    }
+    prof = g_list_next(prof);
+  }  
+  if(idx < 0)
+  {
+    idx = 0;
+    fprintf(stderr, "[colorin] could not find requested working profile `%s'!\n", dt_colorspaces_get_name(p->type_work, p->filename_work));
+  }
+  dt_bauhaus_combobox_set(g->work_combobox, idx);
+
   // TODO: merge this into update_profile_list()
-  GList *prof = g->image_profiles;
+  prof = g->image_profiles;
   while(prof)
   {
     dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)prof->data;
@@ -1622,7 +1762,9 @@ void reload_defaults(dt_iop_module_t *module)
                                                            .filename = "",
                                                            .intent = DT_INTENT_PERCEPTUAL,
                                                            .normalize = DT_NORMALIZE_OFF,
-                                                           .blue_mapping = 0 };
+                                                           .blue_mapping = 0,
+                                                           .type_work = DT_COLORSPACE_LIN_REC2020,
+                                                           .filename_work = "" };
 
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev) goto end;
@@ -1698,7 +1840,6 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_colorin_params_t));
   module->params_size = sizeof(dt_iop_colorin_params_t);
   module->gui_data = NULL;
-  module->priority = 371; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->default_enabled = 1;
 }
@@ -1823,6 +1964,15 @@ static void update_profile_list(dt_iop_module_t *self)
     dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)l->data;
     if(prof->in_pos > -1) dt_bauhaus_combobox_add(g->profile_combobox, prof->name);
   }
+  
+  // working profile
+  dt_bauhaus_combobox_clear(g->work_combobox);
+
+  for(GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
+  {
+    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)l->data;
+    if(prof->work_pos > -1) dt_bauhaus_combobox_add(g->work_combobox, prof->name);
+  }
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -1841,23 +1991,40 @@ void gui_init(struct dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
   g->profile_combobox = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->profile_combobox, NULL, _("profile"));
+  dt_bauhaus_widget_set_label(g->profile_combobox, NULL, _("input profile"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile_combobox, TRUE, TRUE, 0);
+
+  g->work_combobox = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->work_combobox, NULL, _("working profile"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->work_combobox, TRUE, TRUE, 0);
 
   // now generate the list of profiles applicable to the current image and update the list
   update_profile_list(self);
 
   dt_bauhaus_combobox_set(g->profile_combobox, 0);
-
-  char *system_profile_dir = g_build_filename(datadir, "color", "in", NULL);
-  char *user_profile_dir = g_build_filename(confdir, "color", "in", NULL);
-  char *tooltip = g_strdup_printf(_("ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
-  gtk_widget_set_tooltip_text(g->profile_combobox, tooltip);
-  g_free(system_profile_dir);
-  g_free(user_profile_dir);
-  g_free(tooltip);
-
+  {
+    char *system_profile_dir = g_build_filename(datadir, "color", "in", NULL);
+    char *user_profile_dir = g_build_filename(confdir, "color", "in", NULL);
+    char *tooltip = g_strdup_printf(_("ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
+    gtk_widget_set_tooltip_text(g->profile_combobox, tooltip);
+    g_free(system_profile_dir);
+    g_free(user_profile_dir);
+    g_free(tooltip);
+  }
+  
+  dt_bauhaus_combobox_set(g->work_combobox, 0);
+  {
+    char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
+    char *user_profile_dir = g_build_filename(confdir, "color", "out", NULL);
+    char *tooltip = g_strdup_printf(_("ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
+    gtk_widget_set_tooltip_text(g->work_combobox, tooltip);
+    g_free(system_profile_dir);
+    g_free(user_profile_dir);
+    g_free(tooltip);
+  }
+  
   g_signal_connect(G_OBJECT(g->profile_combobox), "value-changed", G_CALLBACK(profile_changed), (gpointer)self);
+  g_signal_connect(G_OBJECT(g->work_combobox), "value-changed", G_CALLBACK(workicc_changed), (gpointer)self);
 
   g->clipping_combobox = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->clipping_combobox, NULL, _("gamut clipping"));

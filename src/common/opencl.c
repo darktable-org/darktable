@@ -729,6 +729,7 @@ finally:
     cl->local_laplacian = dt_local_laplacian_init_cl_global();
     cl->dwt = dt_dwt_init_cl_global();
     cl->heal = dt_heal_init_cl_global();
+    cl->colorspaces = dt_colorspaces_init_cl_global();
 
     char checksum[64];
     snprintf(checksum, sizeof(checksum), "%u", cl->crc);
@@ -832,6 +833,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
     dt_interpolation_free_cl_global(cl->interpolation);
     dt_dwt_free_cl_global(cl->dwt);
     dt_heal_free_cl_global(cl->heal);
+    dt_colorspaces_free_cl_global(cl->colorspaces);
 
     for(int i = 0; i < cl->num_devs; i++)
     {

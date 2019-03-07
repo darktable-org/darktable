@@ -91,6 +91,11 @@ int operation_tags()
   return IOP_TAG_DISTORT;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
 static void transform(const dt_dev_pixelpipe_iop_t *const piece, const float scale, const float *const x,
                       float *o)
 {
@@ -356,7 +361,6 @@ void init(dt_iop_module_t *self)
   self->default_params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
   self->params_size = sizeof(dt_iop_rotatepixels_params_t);
   self->gui_data = &dummy;
-  self->priority = 242; // module order created by iop_dependencies.py, do not edit!
 }
 
 void cleanup(dt_iop_module_t *self)

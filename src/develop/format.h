@@ -24,6 +24,7 @@
 struct dt_dev_pixelpipe_iop_t;
 struct dt_dev_pixelpipe_t;
 struct dt_iop_module_t;
+struct dt_iop_order_iccprofile_info_t;
 
 typedef enum dt_iop_buffer_type_t {
   TYPE_UNKNOWN,
@@ -56,6 +57,11 @@ typedef struct dt_iop_buffer_dsc_t
 
   /** sensor saturation, propagated through the operations */
   float processed_maximum[4];
+  
+  /** colorspace of the image */
+  int cst;
+  /** work profile info of the image */
+  struct dt_iop_order_iccprofile_info_t *work_profile_info;
 } dt_iop_buffer_dsc_t;
 
 size_t dt_iop_buffer_dsc_to_bpp(const struct dt_iop_buffer_dsc_t *dsc);
@@ -65,6 +71,11 @@ void default_input_format(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_
 
 void default_output_format(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                            struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_buffer_dsc_t *dsc);
+
+int default_input_colorspace(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+int default_output_colorspace(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+int default_blend_colorspace(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

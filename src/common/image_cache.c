@@ -102,11 +102,12 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
     for(uint8_t i = 0; i < 4; i++) img->raw_black_level_separate[i] = 0;
     img->raw_white_point = sqlite3_column_int(stmt, 26);
 
-    // buffer size?
+    // buffer size? colorspace?
     if(img->flags & DT_IMAGE_LDR)
     {
       img->buf_dsc.channels = 4;
       img->buf_dsc.datatype = TYPE_FLOAT;
+      img->buf_dsc.cst = iop_cs_rgb;
     }
     else if(img->flags & DT_IMAGE_HDR)
     {
@@ -114,11 +115,13 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       {
         img->buf_dsc.channels = 1;
         img->buf_dsc.datatype = TYPE_FLOAT;
+        img->buf_dsc.cst = iop_cs_RAW;
       }
       else
       {
         img->buf_dsc.channels = 4;
         img->buf_dsc.datatype = TYPE_FLOAT;
+        img->buf_dsc.cst = iop_cs_rgb;
       }
     }
     else
@@ -126,6 +129,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       // raw
       img->buf_dsc.channels = 1;
       img->buf_dsc.datatype = TYPE_UINT16;
+      img->buf_dsc.cst = iop_cs_RAW;
     }
   }
   else
