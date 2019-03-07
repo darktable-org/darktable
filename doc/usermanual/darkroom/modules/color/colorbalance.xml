@@ -206,7 +206,7 @@
     <sect5>
       <title>Shadows, Mid-tones, Highlights</title>
       <para>
-        Depending on the mode set, the shadows settings will control either the lift or the gain,
+        Depending on the mode set, the shadows settings will control either the lift or the offset,
         the mid-tones ones will control either the gamma or the power, and the highlights
         ones will control either the gain or the slope. Parameters are transfered as is
         when you change the mode.
@@ -272,8 +272,8 @@
       </para>
 
       <para>
-        Similarly to the luma optimization, the color-picker next to the <emphasis>optimize luma</emphasis>
-        will trigger a general optimization over the whole picture. This works fairly in
+        Similarly to the luma optimization, the color-picker next to the <emphasis>neutralize colors</emphasis> 
+        label will trigger a general optimization over the whole picture. This works fairly in
         landscape photography, or any photography with a full spectrum of colors and
         luminances. For night and events photography, this will most likely fail and you will
         need to input manually the sampling areas with the color-pickers in front of each hue slider.
