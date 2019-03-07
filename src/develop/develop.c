@@ -692,6 +692,12 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   }
 #endif
 
+  /* attach changed tag reflecting actual change */
+  const int imgid = dev->image_storage.id;
+  guint tagid = 0;
+  dt_tag_new("darktable|changed", &tagid);
+  dt_tag_attach(tagid, imgid);
+
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
@@ -860,7 +866,6 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
 {
   sqlite3_stmt *stmt;
 
-  gboolean changed = FALSE;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -872,7 +877,6 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     (void)dt_dev_write_history_item(imgid, hist, i);
     history = g_list_next(history);
-    changed = TRUE;
   }
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -882,14 +886,6 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-
-  /* attach / detach changed tag reflecting actual change */
-  guint tagid = 0;
-  dt_tag_new("darktable|changed", &tagid);
-  if(changed)
-    dt_tag_attach(tagid, imgid);
-  else
-    dt_tag_detach(tagid, imgid);
 }
 
 void dt_dev_write_history(dt_develop_t *dev)
