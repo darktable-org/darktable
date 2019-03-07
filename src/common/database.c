@@ -1014,6 +1014,10 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("CREATE INDEX main.masks_history_imgid_index ON masks_history (imgid)",
              "[init] can't create index `masks_history_imgid_index' in database\n");
 
+    // to speed up the mask look-up, and makes the following UPDATE instantaneous whereas it could takes hours
+    TRY_EXEC("CREATE INDEX main.mask_imgid_index ON mask (imgid);",
+             "[init] can't create index `mask_imgid_index' in database\n");
+
     // create a mask manager entry on history for all images containing all forms
     // make room for mask manager history entry
     TRY_EXEC("UPDATE main.history SET num=num+1 WHERE imgid IN (SELECT imgid FROM main.mask WHERE main.mask.imgid=main.history.imgid)", 
