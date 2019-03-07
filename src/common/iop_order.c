@@ -2141,6 +2141,12 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, float *co
     *converted_cst = cst_to;
     return;
   }
+  if(profile_info == NULL)
+  {
+    fprintf(stderr, "[dt_ioppr_transform_image_colorspace] module %s must be between input color profile and output color profile\n", self->op);
+    *converted_cst = cst_from;
+    return;
+  }
   if(profile_info->type == DT_COLORSPACE_NONE)
   {
     *converted_cst = cst_from;
@@ -2254,6 +2260,12 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
   {
     *converted_cst = cst_to;
     return TRUE;
+  }
+  if(profile_info == NULL)
+  {
+    fprintf(stderr, "[dt_ioppr_transform_image_colorspace_cl] module %s must be between input color profile and output color profile\n", self->op);
+    *converted_cst = cst_from;
+    return FALSE;
   }
   if(profile_info->type == DT_COLORSPACE_NONE)
   {
