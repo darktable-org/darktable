@@ -206,7 +206,7 @@
     <sect5>
       <title>Shadows, Mid-tones, Highlights</title>
       <para>
-        Depending on the mode set, the shadows settings will control either the lift or the gain,
+        Depending on the mode set, the shadows settings will control either the lift or the offset,
         the mid-tones ones will control either the gamma or the power, and the highlights
         ones will control either the gain or the slope. Parameters are transfered as is
         when you change the mode.
