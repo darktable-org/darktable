@@ -148,7 +148,6 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
              void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_defringe_data_t *d = (dt_iop_defringe_data_t *)piece->data;
-  assert(dt_iop_module_colorspace(module) == iop_cs_Lab);
 
   const int order = 1; // 0,1,2
   const float sigma = fmax(0.1f, fabs(d->radius)) * roi_in->scale / piece->iscale;
