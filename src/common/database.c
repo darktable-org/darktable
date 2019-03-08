@@ -1669,6 +1669,27 @@ static gboolean _lock_databases(dt_database_t *db)
   return TRUE;
 }
 
+void ask_for_upgrade(const gchar *dbname)
+{
+  // the database has to be upgraded, let's ask user
+
+  char *label_text = g_markup_printf_escaped(_("the database schema has to be upgraded for\n"
+                                               "\n"
+                                               "<span style=\"italic\">%s</span>\n"
+                                               "\n"
+                                               "do you want to proceed or quit now to do a backup\n"),
+                                               dbname);
+
+  gboolean shall_we_update_the_db =
+    dt_gui_show_standalone_yes_no_dialog(_("darktable - schema migration"), label_text,
+                                         _("close darktable"), _("upgrade database"));
+
+  g_free(label_text);
+
+  // if no upgrade, we exit now, nothing we can do more
+  if(!shall_we_update_the_db) exit(1);
+}
+
 dt_database_t *dt_database_init(const char *alternative, const gboolean load_data)
 {
   /*  set the threading mode to Serialized */
@@ -1807,6 +1828,8 @@ start:
       sqlite3_finalize(stmt);
       if(db_version < CURRENT_DATABASE_VERSION_DATA)
       {
+        ask_for_upgrade(dbfilename_data);
+
         // older: upgrade
         if(!_upgrade_data_schema(db, db_version))
         {
@@ -1883,6 +1906,8 @@ start:
     sqlite3_finalize(stmt);
     if(db_version < CURRENT_DATABASE_VERSION_LIBRARY)
     {
+      ask_for_upgrade(dbfilename_library);
+
       // older: upgrade
       if(!_upgrade_library_schema(db, db_version))
       {
