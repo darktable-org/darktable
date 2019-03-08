@@ -776,7 +776,8 @@ int dt_image_altered(const uint32_t imgid)
   int altered = 0;
   sqlite3_stmt *stmt;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT operation FROM main.history WHERE imgid = ?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT operation FROM main.history, main.images WHERE id=?1 AND imgid=id AND num<history_end AND enabled=1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -784,11 +785,11 @@ int dt_image_altered(const uint32_t imgid)
     const char *op = (const char *)sqlite3_column_text(stmt, 0);
     // FIXME: this is clearly a terrible way to determine which modules
     // are okay to still load the thumbnail and which aren't.
-    // (that's currently the only use of this function)
+    // it is also used to display the altered symbol on the thumbnails.
     if(!op) continue; // can happen while importing or something like that
-    if(!strcmp(op, "basecurve")) continue;
+    if(!strcmp(op, "basecurve") && dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply")) continue;
     if(!strcmp(op, "flip")) continue;
-    if(!strcmp(op, "sharpen")) continue;
+    if(!strcmp(op, "sharpen") && dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply")) continue;
     if(!strcmp(op, "dither")) continue;
     if(!strcmp(op, "highlights")) continue;
     altered = 1;
