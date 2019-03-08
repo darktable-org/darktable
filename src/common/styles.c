@@ -569,11 +569,11 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
     else
     {
       int do_merge = 1;
-      
+
       module->instance = mod_src->instance;
       module->multi_priority = _get_new_iop_multi_priority(dev, mod_src->op);
       module->iop_order = style_item->iop_order;
-      
+
       module->enabled = style_item->enabled;
       snprintf(module->multi_name, sizeof(module->multi_name), "%s", style_item->multi_name);
 
@@ -605,7 +605,7 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
                   module->op, style_item->module_version, module->version());
           dt_control_log(_("module `%s' version mismatch: %d != %d"), module->op,
                          module->version(), style_item->module_version);
-          
+
           do_merge = 0;
         }
         else
@@ -679,7 +679,7 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
     dt_dev_read_history_ext(dev_dest, newimgid, TRUE);
 
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image ");
-    
+
     dt_dev_pop_history_items_ext(dev_dest, dev_dest->history_end);
 
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 1");
@@ -712,7 +712,6 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
       style_item.iop_order = sqlite3_column_double(stmt, 9);
 
       dt_styles_apply_style_item(dev_dest, &style_item, &modules_used, FALSE);
-
     }
     sqlite3_finalize(stmt);
 
@@ -820,7 +819,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       if(strcmp((const char*)sqlite3_column_text(stmt, 3), "mask_manager") == 0) continue;
-      
+
       // name of current item of style
       char iname[512] = { 0 };
       dt_style_item_t *item = calloc(1, sizeof(dt_style_item_t));
@@ -1196,7 +1195,7 @@ static void dt_style_plugin_save(StylePluginData *plugin, gpointer styleId)
 static int _style_get_min_num(GList *style_plugins, const char *op)
 {
   int min_num = INT_MAX;
-  
+
   GList *plugins = g_list_first(style_plugins);
   while(plugins)
   {
@@ -1204,13 +1203,13 @@ static int _style_get_min_num(GList *style_plugins, const char *op)
 
     if(strcmp(plugin->operation->str, op) == 0)
       min_num = MIN(min_num, plugin->num);
-    
+
     plugins = g_list_next(plugins);
   }
 
   if(min_num == INT_MAX)
     min_num = 0;
-  
+
   return min_num;
 }
 
@@ -1224,13 +1223,13 @@ static void _style_rebuild_iop_order(GList *style_plugins, const int id)
 
     if(plugin->iop_order <= 0.0)
     {
-      plugin->iop_order = dt_ioppr_get_iop_order(darktable.iop_order_list, plugin->operation->str) + 
+      plugin->iop_order = dt_ioppr_get_iop_order(darktable.iop_order_list, plugin->operation->str) +
                             (plugin->num - _style_get_min_num(style_plugins, plugin->operation->str)) / 1000.0;
     }
-    
+
     plugins = g_list_next(plugins);
   }
-  
+
 }
 
 static void dt_style_save(StyleData *style)
@@ -1244,7 +1243,7 @@ static void dt_style_save(StyleData *style)
   if((id = dt_styles_get_id_by_name(style->info->name->str)) != 0)
   {
     _style_rebuild_iop_order(style->plugins, id);
-    
+
     g_list_foreach(style->plugins, (GFunc)dt_style_plugin_save, GINT_TO_POINTER(id));
     dt_control_log(_("style %s was successfully imported"), style->info->name->str);
   }
