@@ -237,7 +237,7 @@ static GList *_duplicate_history(GList *hist)
 
     memcpy(new->params, old->params, params_size);
     memcpy(new->blend_params, old->blend_params, sizeof(dt_develop_blend_params_t));
-    
+
     if(old->forms) new->forms = dt_masks_dup_forms_deep(old->forms, NULL);
 
     result = g_list_append(result, new);
@@ -619,7 +619,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *d
     // write new history and reload
     dt_dev_write_history(dev);
     dt_dev_reload_history_items(dev);
-    
+
     dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
   }
 }
@@ -719,7 +719,7 @@ static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer u
   int masks_count = 0;
   char op_mask_manager[20] = {0};
   g_strlcpy(op_mask_manager, "mask_manager", sizeof(op_mask_manager));
-  
+
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1 AND operation = ?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
@@ -742,7 +742,7 @@ static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer u
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW) masks_count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
-  
+
   if(masks_count > 0)
   {
     // set the masks history as first entry
@@ -750,16 +750,16 @@ static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer u
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-    
+
     // make room for mask manager history entry
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.history SET num=num+1 WHERE imgid = ?1", 
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.history SET num=num+1 WHERE imgid = ?1",
         -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
 
     // update history end
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.images SET history_end = history_end+1 WHERE id = ?1", 
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.images SET history_end = history_end+1 WHERE id = ?1",
         -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     sqlite3_step(stmt);
@@ -781,7 +781,7 @@ static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer u
     sqlite3_finalize(stmt);
 
   }
-  
+
   // load new history and write it back to ensure that all history are properly numbered without a gap
   dt_dev_reload_history_items(darktable.develop);
   dt_dev_write_history(darktable.develop);
