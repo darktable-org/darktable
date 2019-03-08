@@ -57,8 +57,6 @@ static void _lib_history_create_style_button_clicked_callback(GtkWidget *widget,
 static void _lib_history_change_callback(gpointer instance, gpointer user_data);
 static void _lib_history_module_remove_callback(gpointer instance, dt_iop_module_t *module, gpointer user_data);
 
-
-
 const char *name(dt_lib_module_t *self)
 {
   return _("history");
@@ -548,12 +546,12 @@ static int _create_deleted_modules(GList **_iop_list, GList *history_list)
 static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data, dt_undo_action_t action)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_develop_t *dev = darktable.develop;
 
   if(type == DT_UNDO_HISTORY)
   {
     dt_lib_history_t *d = (dt_lib_history_t *)self->data;
     dt_undo_history_t *hist = (dt_undo_history_t *)data;
+    dt_develop_t *dev = darktable.develop;
 
     // we will work on a copy of history and modules
     // when we're done we'll replace dev->history and dev->iop
