@@ -25,6 +25,7 @@
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/tags.h"
+#include "common/history_snapshot.h"
 #include "control/control.h"
 #include "develop/develop.h"
 
@@ -484,6 +485,7 @@ void dt_styles_apply_to_selection(const char *name, gboolean duplicate)
 
   /* for each selected image apply style */
   sqlite3_stmt *stmt;
+  dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images",
                               -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -493,6 +495,7 @@ void dt_styles_apply_to_selection(const char *name, gboolean duplicate)
     selected = TRUE;
   }
   sqlite3_finalize(stmt);
+  dt_undo_end_group(darktable.undo);
 
   if(!selected) dt_control_log(_("no image selected!"));
 }
@@ -717,8 +720,18 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
 
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 2");
 
+    dt_undo_lt_history_t *hist = dt_history_snapshot_item_init();
+    hist->imgid = newimgid;
+    dt_history_snapshot_undo_create(hist->imgid, &hist->before, &hist->before_history_end);
+
     // write history and forms to db
     dt_dev_write_history_ext(dev_dest, newimgid);
+
+    dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
+    dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t *)hist,
+                   &dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
+    dt_undo_end_group(darktable.undo);
 
     dt_dev_cleanup(dev_dest);
 
