@@ -1956,6 +1956,8 @@ static void _ui_init_panel_center_top(dt_ui_t *ui, GtkWidget *container)
 
   /* create the panel box */
   ui->panels[DT_UI_PANEL_CENTER_TOP] = widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(widget, "header-toolbar");
+
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
 
   /* add container for center top left */
@@ -1980,6 +1982,7 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
 
   /* create the panel box */
   ui->panels[DT_UI_PANEL_CENTER_BOTTOM] = widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(widget, "footer-toolbar");
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
 
   /* adding the center bottom left toolbox */
