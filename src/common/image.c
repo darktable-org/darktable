@@ -416,19 +416,19 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orienta
   int num = 0;
   if(sqlite3_step(stmt) == SQLITE_ROW) num = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
-  
+
   double iop_order = DBL_MAX;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order FROM main.history "
                                                              "WHERE imgid = ?1 AND operation = 'flip' ORDER BY num DESC", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW) iop_order = sqlite3_column_double(stmt, 0);
   sqlite3_finalize(stmt);
-  
+
   if(iop_order == DBL_MAX)
   {
     iop_order = dt_ioppr_get_iop_order(darktable.iop_order_list, "flip");
   }
-  
+
   if(iop_order != DBL_MAX)
   {
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
