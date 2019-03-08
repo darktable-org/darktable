@@ -274,21 +274,17 @@ box *
   /*padding-left: 5px;*/
 }
 
-#header-toolbar
-{
-  padding: 0 5px 5px 5px;
-}
-
+#header-toolbar,
 #footer-toolbar
 {
-  padding: 5px 5px 0 5px;
+  padding: 0.20em 0.40em;
 }
 
 #left scrolledwindow,
 #right scrolledwindow
 {
   margin: 0;
-  padding: 0 0 4pt 0;
+  padding: 0;
 }
 
 #lib-plugin-ui scrolledwindow,
@@ -318,7 +314,7 @@ box *
 
 #module-header
 {
- padding: 4pt 0.5em 2pt 0.5em;
+ padding: 0.5em 0.5em 0.25em 0.5em;
 }
 
 
@@ -326,8 +322,8 @@ box *
 
 button
 {
-  border-radius: 2pt;
-  padding: 2pt;
+  border-radius: 2px;
+  padding: 1px;
   margin: 0;
   border: 1px solid @button_border;
   background-color: @button_bg;
@@ -387,6 +383,18 @@ button:disabled,
 #dt-toggle-button button,
 #dt-icon
 {
+  border-radius: 2px;
+}
+
+#header-toolbar #dt-toggle-button,
+#header-toolbar #dt-button,
+#footer-toolbar #dt-toggle-button,
+#footer-toolbar #dt-button
+{
+  padding: 0.5em;
+  min-height: 1em; /* Align toolbox button height on comboboxe's one */
+  min-width: 1em;
+  border: 0;
 }
 
 #module-preset-button * button,
@@ -396,8 +404,9 @@ button:disabled,
 #module-enable-button * button,
 #module-collapse-button * button
 {
-  font-size: 0.8em;
   background-color: transparent;
+  min-height: 1em;
+  min-width: 1em;
 }
 
 /* Checkbox */
@@ -463,6 +472,7 @@ entry selection {
   font-weight: 400;
   font-stretch: condensed;
   font-family: "Roboto Condensed","Segoe UI Condensed", "SF Pro Display", "Ubuntu Condensed", "Cantarell", sans-serif;
+  font-size: 0.9em;
 }
 
 #section_label
@@ -505,18 +515,32 @@ dialog scrollbar slider
   min-height: 4pt;
 }
 
+scale contents trough
+{
+  background-color: @scroll_bar_bg;
+  border-radius: 2pt;
+  min-width: 0.5em;
+  min-height: 0.5em;
+}
+
+scale entry
+{
+  background-color: @field_bg;
+}
+
 scale contents trough highlight
 {
   min-height: 0;
   min-width: 0;
+  background-color: @button_bg;
 }
 
 scale contents trough slider
 {
   border: 0.5pt solid @border_color;
   font-size: 1em;
-  min-width: 1em;
-  min-height: 1em;
+  min-height: 0.5em;
+  min-width: 0.5em;
   background-color: @scroll_bar_inactive;
 }
 
@@ -562,18 +586,24 @@ combobox,
 combobox button
 {
   border: 1px solid transparent;
+  padding: 1px;
   background-color: transparent;
   border-radius: 2pt;
   color: @bauhaus_fg;
   outline-style: none;
-  min-height: 1em;
-  min-width: 1em;
+  min-height: 0.5em;
+  min-width: 0.5em;
+}
+
+combobox entry
+{
+  margin: 0 0.5em;
 }
 
 combobox *
 {
-  min-height: 1em;
-  min-width: 1em;
+  min-height: 0.5em;
+  min-width: 0.5em;
 }
 
 context-menu,
@@ -590,8 +620,8 @@ dialog combobox window
   border-radius: 2pt;
   border: 0;
   outline-style: none;
-  min-height: 1em;
-  min-width: 1em;
+  min-height: 0.5em;
+  min-width: 0.5em;
   padding: 0.5em;
 }
 
@@ -600,12 +630,12 @@ dialog combobox window
 {
   background-color: transparent;
   outline-style:none;
-  border-radius: 2pt;
-  padding: 2pt;
+  border-radius: 2px;
+  padding: 0.5em;
   color: @section_label;
 }
 
-menuitem button *,
+menuitem *,
 popover *,
 tooltip *
 {
@@ -622,6 +652,17 @@ combobox window *:hover,
   color: @button_hover_fg;
 }
 
+menuitem:selected,
+combobox window *:selected,
+menuitem:active,
+combobox window *:active,
+menuitem:focus,
+combobox window *:focus
+{
+  background-color: @button_checked_bg;
+  color: @button_checked_fg;
+}
+
 #view_dropdown *:selected,
 #view_label:selected {
   color: @plugin_fg_color;
@@ -633,6 +674,11 @@ combobox window *:hover,
   color: @tooltip_bg_color;
 }
 
+#header-toolbar combobox,
+#footer-toolbar combobox
+{
+  margin: 0 0.5em;
+}
 
 /* Tree view (lists and tables) */
 
@@ -699,10 +745,10 @@ notebook tabs,
 
 #modules-tabs #dt-toggle-button
 {
-  font-size: 8pt;
-  min-height: 2.5em;
-  min-width: 2.5em;
+  min-height: 2em;
+  min-width: 2em;
   margin: 0;
+  padding: 0.1em;
 }
 
 #blending-tabs *
@@ -710,6 +756,7 @@ notebook tabs,
   font-size: 8pt;
   min-height: 1.5em;
   min-width: 1.5em;
+  padding: 0.2em;
   margin: 0;
 }
 
@@ -821,7 +868,7 @@ undershoot.right
 #lib-rating-stars
 {
   min-height: 1em;
-  min-width: 7em;
+  min-width: 9em;
   margin-right: 1em;
 }
 
@@ -867,7 +914,7 @@ checkbutton check
 
 combobox label
 {
-  margin: 5px 5px 5px 0;
+  margin: 0 5px 0 0;
 }
 
 /* STUFF TO MERGE WITH ABOVE RULES */
