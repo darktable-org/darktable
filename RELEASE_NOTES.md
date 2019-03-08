@@ -136,6 +136,17 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   Both the contrast and the auto feature use the middle grey point, the
   default for this setting is based on the work profile.
 
+- A new module 'rgb curve' has been added. It has linked and independent RGB channels.
+  It works with the rgb colorspace selected on the work profile.
+  The curves and histogram can be displayed using the work profile or can be scaled to
+  be 50% grey.
+  The color picker allows to select by area with ctrl+click.
+  The second color picker add 4 nodes to the curve based on the area
+  selected from the image: min, average, middle, max.
+  When pressing the shortcut 'pan&zoom while editing masks' the draw area
+  can be zoomed.
+  Different types of curves can be selected.
+
 - A search text has been added to the module groups in the darkroom. It has a
   config option to show only the modules groups, only the search text or both.
   Modules are searched by name (localized).
