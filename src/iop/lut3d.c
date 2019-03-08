@@ -102,6 +102,11 @@ int groups()
   return IOP_GROUP_COLOR;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
 // From `HaldCLUT_correct.c' by Eskil Steenberg (http://www.quelsolaar.com) (BSD licensed)
 void correct_pixel_trilinear(float *input, float *output, const float *const clut, const uint8_t level)
 {
@@ -705,7 +710,7 @@ printf("init\n");
   self->params = calloc(1, sizeof(dt_iop_lut3d_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_lut3d_params_t));
   self->default_enabled = 0;
-  self->priority = 710; // self order created by iop_dependencies.py, do not edit!
+//  self->priority = 710; // self order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_lut3d_params_t);
   self->gui_data = NULL;
   dt_iop_lut3d_params_t tmp = (dt_iop_lut3d_params_t)
