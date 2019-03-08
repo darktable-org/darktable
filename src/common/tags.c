@@ -349,13 +349,34 @@ static void _attach_tag(guint tagid, gint imgid, gboolean undo_actif)
   }
 }
 
+gboolean _tag_is_attached(guint tagid, gint imgid)
+{
+  gboolean result = FALSE;
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT tagid FROM main.tagged_images WHERE imgid=?1 AND tagid=?2", -1,
+                              &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, tagid);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+    result = TRUE;
+
+  sqlite3_finalize(stmt);
+  return result;
+}
+
 void dt_tag_attach(guint tagid, gint imgid)
 {
-  _attach_tag(tagid, imgid, TRUE);
+  if(!_tag_is_attached(tagid, imgid))
+  {
+    _attach_tag(tagid, imgid, TRUE);
 
-  dt_tag_update_used_tags();
+    dt_tag_update_used_tags();
 
-  dt_collection_update_query(darktable.collection);
+    dt_collection_update_query(darktable.collection);
+  }
 }
 
 void dt_tag_attach_list(GList *tags, gint imgid)
