@@ -1010,7 +1010,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("CREATE TABLE main.masks_history (imgid INTEGER, num INTEGER, formid INTEGER, form INTEGER, name VARCHAR(256), "
              "version INTEGER, points BLOB, points_count INTEGER, source BLOB)",
              "[init] can't create `masks_history` table\n");
-    
+
     TRY_EXEC("CREATE INDEX main.masks_history_imgid_index ON masks_history (imgid)",
              "[init] can't create index `masks_history_imgid_index' in database\n");
 
@@ -1020,34 +1020,34 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     // create a mask manager entry on history for all images containing all forms
     // make room for mask manager history entry
-    TRY_EXEC("UPDATE main.history SET num=num+1 WHERE imgid IN (SELECT imgid FROM main.mask WHERE main.mask.imgid=main.history.imgid)", 
+    TRY_EXEC("UPDATE main.history SET num=num+1 WHERE imgid IN (SELECT imgid FROM main.mask WHERE main.mask.imgid=main.history.imgid)",
              "[init] can't update `num' with num+1\n");
 
     // update history end
-    TRY_EXEC("UPDATE main.images SET history_end = history_end+1 WHERE id IN (SELECT imgid FROM main.mask WHERE main.mask.imgid=main.images.id)", 
+    TRY_EXEC("UPDATE main.images SET history_end = history_end+1 WHERE id IN (SELECT imgid FROM main.mask WHERE main.mask.imgid=main.images.id)",
              "[init] can't update `history_end' with history_end+1\n");
 
     // copy all masks into history
     TRY_EXEC("INSERT INTO main.masks_history (imgid, num, formid, form, name, version, points, points_count, source) SELECT "
-             "imgid, 0, formid, form, name, version, points, points_count, source FROM main.mask", 
+             "imgid, 0, formid, form, name, version, points, points_count, source FROM main.mask",
              "[init] can't insert into masks_history\n");
 
     // create a mask manager entry for each image that has maks
     TRY_EXEC("INSERT INTO main.history (imgid, num, operation, op_params, module, enabled, "
              "blendop_params, blendop_version, multi_priority, multi_name) "
              "SELECT DISTINCT imgid, 0, 'mask_manager', NULL, 1, 0, NULL, 0, 0, '' FROM main.mask "
-             "GROUP BY imgid", 
+             "GROUP BY imgid",
              "[init] can't insert mask manager into history\n");
 
     TRY_EXEC("DROP TABLE main.mask", "[init] can't drop table `mask' from database\n");
-    
+
     ////////////////////////////// custom iop order
     int iop_order_version = 1;
     GList *prior_v1 = dt_ioppr_get_iop_order_list(&iop_order_version);
 
     TRY_EXEC("ALTER TABLE main.images ADD COLUMN iop_order_version INTEGER",
              "[init] can't add `iop_order_version' column to images table in database\n");
-    
+
     TRY_EXEC("UPDATE main.images SET iop_order_version = 0",
              "[init] can't update iop_order_version in database\n");
 
@@ -1272,7 +1272,7 @@ static void _create_library_schema(dt_database_t *db)
                "CREATE TABLE main.masks_history (imgid INTEGER, num INTEGER, formid INTEGER, form INTEGER, name VARCHAR(256), "
                "version INTEGER, points BLOB, points_count INTEGER, source BLOB)",
                NULL, NULL, NULL);
-  
+
   sqlite3_exec(db->handle,
       "CREATE INDEX main.masks_history_imgid_index ON masks_history (imgid)",
       NULL, NULL, NULL);

@@ -488,7 +488,7 @@ void dt_styles_apply_to_selection(const char *name, gboolean duplicate)
                               -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int imgid = sqlite3_column_int(stmt, 0);
+    const int imgid = sqlite3_column_int(stmt, 0);
     dt_styles_apply_to_image(name, duplicate, imgid);
     selected = TRUE;
   }
