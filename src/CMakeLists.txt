@@ -35,6 +35,7 @@ FILE(GLOB SOURCE_FILES
   "common/grouping.c"
   "common/guided_filter.c"
   "common/history.c"
+  "common/history_snapshot.c"
   "common/gpx.c"
   "common/image.c"
   "common/image_cache.c"
