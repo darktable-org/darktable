@@ -1078,16 +1078,22 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
     {
       module->enabled = 1;
 
-      // Expand the module
       dt_iop_request_focus(module);
+
       if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
         darktable.gui->scroll_to[1] = module->expander;
-      dt_iop_gui_set_expanded(module, TRUE, FALSE);
+
+      if(dt_conf_get_bool("darkroom/ui/activate_expand"))
+        dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
     }
     else
     {
       module->enabled = 0;
-      dt_iop_gui_set_expanded(module, FALSE, FALSE);
+
+      if(dt_conf_get_bool("darkroom/ui/activate_expand"))
+        dt_iop_gui_set_expanded(module, FALSE, FALSE);
+
+      dt_iop_request_focus(NULL);
     }
     dt_dev_add_history_item(module->dev, module, FALSE);
   }
@@ -1943,7 +1949,6 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   g_signal_connect(G_OBJECT(hw[DT_MODULE_INSTANCE]), "button-press-event", G_CALLBACK(dt_iop_gui_multiinstance_callback),
                    module);
 
-  if(module->flags() & IOP_FLAGS_ONE_INSTANCE) gtk_widget_set_sensitive(GTK_WIDGET(hw[DT_MODULE_INSTANCE]), FALSE);
   gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_INSTANCE]), "module-instance-button");
 
   dt_gui_add_help_link(expander, dt_get_help_url(module->op));
@@ -2084,11 +2089,12 @@ static gboolean enable_module_callback(GtkAccelGroup *accel_group, GObject *acce
   gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), !active);
 
-  // Expand the module
   if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
       darktable.gui->scroll_to[1] = module->expander;
 
-  dt_iop_gui_set_expanded(module, !active, dt_conf_get_bool("darkroom/ui/single_module"));
+  if(dt_conf_get_bool("darkroom/ui/activate_expand"))
+    dt_iop_gui_set_expanded(module, !active, dt_conf_get_bool("darkroom/ui/single_module"));
+
   dt_iop_request_focus(module);
 
   return TRUE;
