@@ -1356,12 +1356,17 @@ static void _create_memory_schema(dt_database_t *db)
       "operation VARCHAR(256) UNIQUE ON CONFLICT REPLACE, op_params BLOB, enabled INTEGER, "
       "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256), iop_order REAL)",
       NULL, NULL, NULL);
-/*  sqlite3_exec(
+  sqlite3_exec(
       db->handle,
-      "CREATE TABLE memory.style_items (styleid INTEGER, num INTEGER, module INTEGER, "
+      "CREATE TABLE memory.undo_history (id INTEGER, imgid INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
-      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
-      NULL, NULL, NULL);*/
+      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256), iop_order REAL)",
+      NULL, NULL, NULL);
+  sqlite3_exec(
+      db->handle,
+      "CREATE TABLE memory.undo_masks_history (id INTEGER, imgid INTEGER, num INTEGER, formid INTEGER, form INTEGER, "
+      "name VARCHAR(256), version INTEGER, points BLOB, points_count INTEGER, source BLOB)",
+      NULL, NULL, NULL);
 }
 
 static void _sanitize_db(dt_database_t *db)
