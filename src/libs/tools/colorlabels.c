@@ -77,11 +77,10 @@ void gui_init(dt_lib_module_t *self)
 
   /* create buttons */
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(GTK_WIDGET(self->widget), "footer-toolbar");
   GtkWidget *button;
   for(int k = 0; k < 6; k++)
   {
-    button = dtgtk_button_new(dtgtk_cairo_paint_label, (k | 8 | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER), NULL);
+    button = dtgtk_button_new(dtgtk_cairo_paint_label, (k | 8 | CPF_BG_TRANSPARENT), NULL);
     d->buttons[k] = button;
     gtk_widget_set_tooltip_text(button, d->tooltips[k]);
     gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);

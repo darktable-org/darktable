@@ -1114,12 +1114,6 @@ void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
   }
   cairo_fill(cr);
 
-  /* draw outline */
-  cairo_set_source_rgba(cr, 0.5, 0.5, 0.5, 0.5);
-  cairo_set_line_width(cr, 0.1);
-  cairo_arc(cr, 0.5, 0.5, r, 0.0, 2.0 * M_PI);
-  cairo_stroke(cr);
-
   /* draw cross overlay if highlighted */
   if(def == TRUE && (flags & CPF_PRELIGHT))
   {
@@ -1258,12 +1252,12 @@ void dtgtk_cairo_paint_preferences(cairo_t *cr, gint x, gint y, gint w, gint h, 
   cairo_scale(cr, s, s);
 
   cairo_set_line_width(cr, .25);
-  cairo_arc(cr, 0.5, 0.5, 0.7, 0., 2.0f * M_PI);
+  cairo_arc(cr, 0.5, 0.5, 0.6, 0., 2.0f * M_PI);
   cairo_stroke(cr);
 
   double dashes = .35;
   cairo_set_dash(cr, &dashes, 1, 0);
-  cairo_arc(cr, 0.5, 0.5, 0.9, 0., 2.0f * M_PI);
+  cairo_arc(cr, 0.5, 0.5, 0.8, 0., 2.0f * M_PI);
   cairo_stroke(cr);
 }
 
