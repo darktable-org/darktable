@@ -319,6 +319,16 @@ uint8_t calculate_clut_haldclut(char *filepath, float **clut)
   }
   dt_print(DT_DEBUG_DEV, "[lut3d] png: width=%d, height=%d, color_type=%d, bit_depth=%d\n", png.width,
            png.height, png.color_type, png.bit_depth);
+  printf("[lut3d] png: width=%d, height=%d, color_type=%d, bit_depth=%d\n", png.width,
+           png.height, png.color_type, png.bit_depth);
+  if (png.bit_depth !=8 && png.bit_depth != 16)
+  {
+    fprintf(stderr, "[lut3d] png bit-depth %d not supported", png.bit_depth);
+    fclose(png.f);
+    png_destroy_read_struct(&png.png_ptr, &png.info_ptr, NULL);
+    return 0;
+  }
+
   uint8_t level = 2;
   while(level * level * level < png.width) ++level;
   if(level * level * level != png.width)
@@ -331,7 +341,13 @@ uint8_t calculate_clut_haldclut(char *filepath, float **clut)
 //printf("haldclut file opened\n");
   const size_t buf_size = (size_t)png.height * png_get_rowbytes(png.png_ptr, png.info_ptr);
   dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for png lut\n", buf_size);
-  uint8_t *buf = dt_alloc_align(16, buf_size);
+  uint8_t *buf_8 = NULL;
+  uint16_t *buf_16 = NULL;
+  void *buf = NULL;
+  if (png.bit_depth == 8)
+    buf = buf_8 = dt_alloc_align(16, buf_size);
+  else
+    buf = buf_16 = dt_alloc_align(16, buf_size);
   if(!buf)
   {
     fclose(png.f);
@@ -339,23 +355,27 @@ uint8_t calculate_clut_haldclut(char *filepath, float **clut)
     fprintf(stderr, "[lut3d] error allocating buffer for png lut\n");
     return 0;
   }
-  if(read_image(&png, (void *)buf))
+  if (read_image(&png, buf))
   {
     dt_free_align(buf);
     fprintf(stderr, "[lut3d] could not read png image `%s'\n", filepath);
     return 0;
   }
-  float *lclut = dt_alloc_align(16, buf_size * sizeof(float));
+  const size_t buf_size_lut = (size_t)png.height * png.height * 3;
+  float *lclut=dt_alloc_align(16, buf_size_lut * sizeof(float));
   if(!lclut)
   {
     dt_free_align(buf);
     fprintf(stderr, "[lut3d] error allocating buffer for png lut\n");
     return 0;
   }
-  for(size_t i = 0; i < buf_size; ++i)
-  {
-    lclut[i] = buf[i] / 256.0f;
-  }
+  const float norm = powf(2.f, png.bit_depth) - 1.f;
+  if (png.bit_depth == 8)
+    for (size_t i = 0; i < buf_size_lut; ++i)
+      lclut[i] = buf_8[i] / norm;
+  else
+    for (size_t i = 0; i < buf_size_lut; ++i)
+      lclut[i] = buf_16[i] / norm;
   dt_free_align(buf);
   *clut = lclut;
 //printf("haldclut ok - level %d, size %d; clut %p\n", level, buf_size, lclut);
@@ -1021,10 +1041,7 @@ printf("gui_init\n");
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   GtkWidget *hbox0 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
-//  GtkWidget *lutfoldercaption = dt_ui_section_label_new(_("lut folder"));
-//  gtk_box_pack_start(GTK_BOX(hbox0), lutfoldercaption, TRUE, TRUE, 0);
   g->lutfolder = gtk_entry_new();
-//  dt_bauhaus_widget_set_label(g->lutfolder, NULL, _("lut folder"));
   gtk_box_pack_start(GTK_BOX(hbox0), g->lutfolder, TRUE, TRUE, 0);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(g->lutfolder));
   gtk_widget_set_tooltip_text(g->lutfolder, _("the lut folder is global and must be set once. Saved as a preference and not with the image (xmp)"));
@@ -1039,10 +1056,7 @@ printf("gui_init\n");
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox0), TRUE, TRUE, 0);
 
   g->hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
-//  GtkWidget *filepathcaption = dt_ui_section_label_new(_("lut path"));
-//  gtk_box_pack_start(GTK_BOX(g->hbox), filepathcaption, TRUE, TRUE, 0);
   g->filepath = gtk_entry_new();
-//  dt_bauhaus_widget_set_label(g->filepath, NULL, _("lut file"));
   gtk_box_pack_start(GTK_BOX(g->hbox), g->filepath, TRUE, TRUE, 0);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(g->filepath));
   gtk_widget_set_tooltip_text(g->filepath, _("the filepath (relative to lut folder) is saved with image (and not the lut data themselves)"));
