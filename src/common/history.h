@@ -34,7 +34,11 @@ int dt_history_merge_module_into_history(struct dt_develop_t *dev_dest, struct d
 /** copy history from imgid and pasts on dest_imgid, merge or overwrite... */
 int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboolean merge, GList *ops);
 
+/** delete all history for the given image */
 void dt_history_delete_on_image(int32_t imgid);
+
+/** as above but control whether to record undo/redo */
+void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo);
 
 /** copy history from imgid and pasts on selected images, merge or overwrite... */
 int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge, GList *ops);
