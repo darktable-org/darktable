@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    copyright (c) 2019 Aldric Renaudin.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -81,7 +81,7 @@ void _lib_imageinfo_update_message(gpointer instance, dt_lib_module_t *self)
   const int imgid = darktable.develop->image_storage.id;
   if(imgid < 0) return;
 
-  // we compute the info line (we reuse the function used in export lib)
+  // we compute the info line (we reuse the function used in export to disk)
   char input_dir[512] = { 0 };
   gboolean from_cache = TRUE;
   dt_image_full_path(imgid, input_dir, sizeof(input_dir), &from_cache);
