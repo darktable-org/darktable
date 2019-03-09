@@ -17,9 +17,9 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 
 #### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
-- Over 1600 commits to darktable+rawspeed since 2.6
-- 260+ pull requests handled
-- 250+ issues closed
+- Over ??? commits to darktable+rawspeed since 2.6
+- ???+ pull requests handled
+- ???+ issues closed
 - Updated user manual is coming soon™
 
 ## The Big Ones
@@ -27,8 +27,9 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - The color picker on the blend, tone curve, color zones and fill
   light modules now allows to select an area by ctrl+click on it.
 
-- Add undo support in lighttable for tags, color labels, rating and
-  metadata.
+- Add undo/redo support in lighttable for tags, color labels, rating,
+  metadata, deleted history stack, pasted history stack and applied
+  style.
 
 - A new timeline view has been introduced in the lighttable.
 
