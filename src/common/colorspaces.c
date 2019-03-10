@@ -1533,6 +1533,18 @@ static const dt_colorspaces_color_profile_t *_get_profile(dt_colorspaces_t *self
                                                           const char *filename,
                                                           dt_colorspaces_profile_direction_t direction)
 {
+  // for backward compatibility we need to also ensure that we check
+  // for basename, indeed filename parameter may be in fact just a
+  // basename as recorded in an iop.
+  gboolean is_base_name = TRUE;
+
+  char *f = (char *)filename;
+  while(*f)
+  {
+    if(*f == '/' || *f == '\\') is_base_name = FALSE;
+    f++;
+  }
+
   for(GList *iter = self->profiles; iter; iter = g_list_next(iter))
   {
     dt_colorspaces_color_profile_t *p = (dt_colorspaces_color_profile_t *)iter->data;
@@ -1540,7 +1552,8 @@ static const dt_colorspaces_color_profile_t *_get_profile(dt_colorspaces_t *self
         (direction & DT_PROFILE_DIRECTION_OUT && p->out_pos > -1) ||
         (direction & DT_PROFILE_DIRECTION_WORK && p->work_pos > -1) ||
         (direction & DT_PROFILE_DIRECTION_DISPLAY && p->display_pos > -1)) &&
-       (p->type == type && (type != DT_COLORSPACE_FILE || !strcmp(p->filename, filename))))
+       (p->type == type && (type != DT_COLORSPACE_FILE
+                            || is_base_name ? strstr(p->filename, filename)!=NULL : !strcmp(p->filename, filename))))
     {
       return p;
     }
