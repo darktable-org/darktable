@@ -832,8 +832,6 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
     // we save the new instance creation
     dt_dev_add_history_item(module->dev, module, TRUE);
 
-    /* update ui to default params*/
-    dt_iop_gui_update(module);
     /* add module to right panel */
     GtkWidget *expander = dt_iop_gui_get_expander(module);
     dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
@@ -878,6 +876,10 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
     // invalidate buffers and force redraw of darkroom
     dt_dev_invalidate_all(module->dev);
   }
+
+  /* update ui to new parameters */
+  dt_iop_gui_update(module);
+
   return module;
 }
 
