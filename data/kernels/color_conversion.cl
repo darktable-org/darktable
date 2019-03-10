@@ -21,9 +21,12 @@
 // must be in synch with dt_iop_colorspace_type_t in imageop.h
 typedef enum dt_iop_colorspace_type_t
 {
+  iop_cs_NONE = -1,
   iop_cs_RAW = 0,
   iop_cs_Lab = 1,
-  iop_cs_rgb = 2
+  iop_cs_rgb = 2,
+  iop_cs_LCh = 3,
+  iop_cs_HSL = 4
 } dt_iop_colorspace_type_t;
 
 // must be in synch with dt_colorspaces_iccprofile_info_cl_t
@@ -75,34 +78,6 @@ float lookup_unbounded(read_only image2d_t lut, const float x, global const floa
     else return a[1] * native_powr(x*a[0], a[2]);
   }
   else return x;
-}
-
-float get_lut_pow4(const float x, read_only image2d_t lut)
-{
-  if(x > 1.0f)
-  {
-    return native_powr(x, 4.f);
-  }
-  else
-  {
-    const int xi = clamp((int)(x * 0x10000ul), 0, 0xffff);
-    const int2 p = (int2)((xi & 0xff), (xi >> 8));
-    return read_imagef(lut, sampleri, p).x;
-  }
-}
-
-float get_lut_pow5(const float x, read_only image2d_t lut)
-{
-  if(x > 1.0f)
-  {
-    return native_powr(x, 5.f);
-  }
-  else
-  {
-    const int xi = clamp((int)(x * 0x10000ul), 0, 0xffff);
-    const int2 p = (int2)((xi & 0xff), (xi >> 8));
-    return read_imagef(lut, sampleri, p).x;
-  }
 }
 
 float4 apply_trc_in(const float4 rgb_in, global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
