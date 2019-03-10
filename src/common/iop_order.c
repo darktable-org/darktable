@@ -1903,14 +1903,7 @@ static int dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profil
   if(!isnan(profile_info->matrix_in[0]) && !isnan(profile_info->matrix_out[0]) && profile_info->nonlinearlut)
   {
     float rgb[3] = { 0.1842f, 0.1842f, 0.1842f };
-    float linear_rgb[3] = { 0.f };
-
-    _apply_trc_out(rgb, linear_rgb, profile_info);
-    
-    if(linear_rgb[0] == linear_rgb[1] && linear_rgb[1] == linear_rgb[2])
-      profile_info->grey = linear_rgb[0];
-    else // FIXME: not sure about this, if the luts are different, how to calculate the middle grey?
-      profile_info->grey = profile_info->matrix_out[3] * linear_rgb[0] + profile_info->matrix_out[4] * linear_rgb[1] + profile_info->matrix_out[5] * linear_rgb[2];
+    profile_info->grey = dt_ioppr_get_rgb_matrix_luminance(rgb, profile_info);
   }
   
   return err_code;
