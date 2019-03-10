@@ -328,7 +328,6 @@ uint8_t calculate_clut_haldclut(char *filepath, float **clut)
     png_destroy_read_struct(&png.png_ptr, &png.info_ptr, NULL);
     return 0;
   }
-
   uint8_t level = 2;
   while(level * level * level < png.width) ++level;
   if(level * level * level != png.width)
@@ -341,13 +340,8 @@ uint8_t calculate_clut_haldclut(char *filepath, float **clut)
 //printf("haldclut file opened\n");
   const size_t buf_size = (size_t)png.height * png_get_rowbytes(png.png_ptr, png.info_ptr);
   dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for png lut\n", buf_size);
-  uint8_t *buf_8 = NULL;
-  uint16_t *buf_16 = NULL;
   void *buf = NULL;
-  if (png.bit_depth == 8)
-    buf = buf_8 = dt_alloc_align(16, buf_size);
-  else
-    buf = buf_16 = dt_alloc_align(16, buf_size);
+  buf = dt_alloc_align(16, buf_size);
   if(!buf)
   {
     fclose(png.f);
@@ -369,17 +363,102 @@ uint8_t calculate_clut_haldclut(char *filepath, float **clut)
     fprintf(stderr, "[lut3d] error allocating buffer for png lut\n");
     return 0;
   }
-  const float norm = powf(2.f, png.bit_depth) - 1.f;
+  const float norm = powf(2.f, png.bit_depth) - 1.0f;
   if (png.bit_depth == 8)
+  {
+    const uint8_t *buf_8 = buf;
     for (size_t i = 0; i < buf_size_lut; ++i)
-      lclut[i] = buf_8[i] / norm;
+      lclut[i] = (float)buf_8[i] / norm;
+  }
   else
+  {
+    const uint16_t *buf_16 = buf;
     for (size_t i = 0; i < buf_size_lut; ++i)
-      lclut[i] = buf_16[i] / norm;
+      lclut[i] = (float)buf_16[i] / norm;
+  }
   dt_free_align(buf);
   *clut = lclut;
 //printf("haldclut ok - level %d, size %d; clut %p\n", level, buf_size, lclut);
   return level;
+}
+
+// provided by @rabauke ato replace strtod & sccanf which are locale dependent
+double dt_atof(const char *str)
+{
+  if (strncmp(str, "nan", 3) == 0 || strncmp(str, "NAN", 3) == 0)
+    return NAN;
+  double integral_result = 0;
+  double fractional_result = 0;
+  double sign = 1;
+  if (*str == '+') {
+    str++;
+    sign = +1;
+  } else if (*str == '-') {
+    str++;
+    sign = -1;
+  }
+  if (strncmp(str, "inf", 3) == 0 || strncmp(str, "INF", 3) == 0)
+    return sign * INFINITY;
+  // search for end of integral part and parse from
+  // right to left for numerical stability
+//  {
+    const char * istr_back = str;
+    while (*str >= '0' && *str <= '9')
+      str++;
+    const char * istr_2 = str;
+    double imultiplier = 1;
+    while (istr_2 != istr_back)
+    {
+      --istr_2;
+      integral_result += (*istr_2 - '0') * imultiplier;
+      imultiplier *= 10;
+    }
+    if (*str == '.')
+    {
+      str++;
+//  }
+  // search for end of fractional part and parse from
+  // right to left for numerical stability
+//  {
+    const char * fstr_back = str;
+    while (*str >= '0' && *str <= '9')
+      str++;
+    const char * fstr_2 = str;
+    double fmultiplier = 1;
+    while (fstr_2 != fstr_back)
+    {
+      --fstr_2;
+      fractional_result += (*fstr_2 - '0') * fmultiplier;
+      fmultiplier *= 10;
+    }
+    fractional_result /= fmultiplier;
+    }
+//  }
+  double result = sign * (integral_result + fractional_result);
+  if (*str == 'e' || *str == 'E')
+  {
+    str++;
+    double power_sign = 1;
+    if (*str == '+') {
+      str++;
+      power_sign = +1;
+    }
+    else if (*str == '-') {
+      str++;
+      power_sign = -1;
+    }
+    double power = 0;
+    while (*str >= '0' && *str <= '9') {
+      power *= 10;
+      power += *str - '0';
+      str++;
+    }
+    if (power_sign > 0)
+      result *= pow(10, power);
+    else
+      result /= pow(10, power);
+  }
+  return result;
 }
 
 // retun max 3 tokens from the line (separator = ' ' and token length = 50)
@@ -505,9 +584,13 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
           fclose(cube_file);
           return 0;
         }
-        for (int j=0; j < 3; j++) lclut[i+j] = strtod(token[j], NULL);
+        for (int j=0; j < 3; j++)
+        {
+          lclut[i+j] = dt_atof(token[j]);
+// if (fabsf(lclut[i+j] - strtod(token[j], NULL)) > 0.0002f) printf("atof %f; strtod %f\n",lclut[i+j],strtod(token[j], NULL));
+        }
         i += 3;
-//printf("->Values %f %f %f\n", strtod(token[0], NULL), strtod(token[1], NULL), strtod(token[2], NULL));
+// printf("->Values %f %f %f\n", strtod(token[0], NULL), strtod(token[1], NULL), strtod(token[2], NULL));
       }
     }
   }
