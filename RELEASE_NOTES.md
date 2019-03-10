@@ -65,6 +65,11 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   rewrited to support the new Google Photo API. It is now again
   possible to create albums directly from the export module.
 
+- New module image information which can be positioned at the bottom
+  or the top of the darkroom. The information displayed can be changed
+  via the preferences. This module can replace the image information
+  displayed on the histogram.
+
 - Many code optimizations for CPU and SSE paths.
 
 - A new preference to expand/collapse a darkroom module when it is
