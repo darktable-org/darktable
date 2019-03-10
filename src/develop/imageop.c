@@ -241,7 +241,7 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
     module->input_format = default_input_format;
   if(!g_module_symbol(module->module, "output_format", (gpointer) & (module->output_format)))
     module->output_format = default_output_format;
-  
+
   if(!g_module_symbol(module->module, "default_colorspace", (gpointer) & (module->default_colorspace))) goto error;
   if(!g_module_symbol(module->module, "input_colorspace", (gpointer) & (module->input_colorspace)))
     module->input_colorspace = default_input_colorspace;
@@ -512,7 +512,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
     module->iop_order = iop_order_entry->iop_order;
   else
     module->iop_order = -1.0;
-  
+
   if(module->iop_order <= 0.0)
   {
     fprintf(stderr, "[iop_load_module] `%s' needs to set iop_order!\n", so->op);
@@ -785,7 +785,7 @@ static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *modul
 dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_params)
 {
   uint32_t module_group = dt_dev_modulegroups_get(darktable.develop);
-  
+
   // make sure the duplicated module appears in the history
   dt_dev_add_history_item(base->dev, base, FALSE);
 
@@ -861,7 +861,7 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
 
   // we want to stay on the same group
   dt_dev_modulegroups_set(darktable.develop, module_group);
-  
+
   // we update show params for multi-instances for each other instances
   dt_dev_modules_update_multishow(module->dev);
 
@@ -2291,7 +2291,7 @@ void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t s
       mods = g_list_next(mods);
     }
     }
-    
+
     /* module is shown lets set conf values */
     snprintf(option, sizeof(option), "plugins/darkroom/%s/visible", module->op);
     dt_conf_set_bool(option, TRUE);
