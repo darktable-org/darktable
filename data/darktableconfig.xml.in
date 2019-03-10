@@ -646,6 +646,28 @@
     <shortdescription>display of individual color channels</shortdescription>
     <longdescription>defines how color channels are displayed when activated in the parametric masks feature.</longdescription>
   </dtconfig>
+  <dtconfig prefs="gui" section="darkroom">
+    <name>plugins/darkroom/image_infos_pattern</name>
+    <type>string</type>
+    <default>$(EXIF_EXPOSURE) f/$(EXIF_APERTURE) $(EXIF_FOCAL_LENGTH)mm ISO $(EXIF_ISO)</default>
+    <shortdescription>pattern for the image infos line</shortdescription>
+    <longdescription>see manual to know all the tags you can use.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui" section="darkroom">
+    <name>plugins/darkroom/image_infos_position</name>
+    <type>
+      <enum>
+        <option>top left</option>
+        <option>top right</option>
+        <option>top center</option>
+        <option>bottom</option>
+        <option>hidden</option>
+      </enum>
+    </type>
+    <default>bottom</default>
+    <shortdescription>position of the image infos line</shortdescription>
+    <longdescription/>
+  </dtconfig>
   <dtconfig>
     <name>database_cache_quality</name>
     <type>int</type>
