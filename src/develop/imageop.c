@@ -2042,7 +2042,7 @@ got_image:
     module->multimenu_button = GTK_WIDGET(hw[idx]);
     gtk_widget_set_tooltip_text(GTK_WIDGET(hw[idx]),
                                 _("multiple instances actions\nmiddle-click creates new instance"));
-    g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(dt_iop_gui_multiinstance_callback), module);
+    g_signal_connect(G_OBJECT(hw[idx]), "button-press-event", G_CALLBACK(dt_iop_gui_multiinstance_callback), module);
     gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
 
   dt_gui_add_help_link(expander, dt_get_help_url(module->op));
