@@ -32,7 +32,7 @@ DT_MODULE(1)
 
 typedef struct dt_lib_imageinfo_t
 {
-  GtkWidget *label;
+  GtkWidget *tview;
   gchar *pattern;
 } dt_lib_imageinfo_t;
 
@@ -43,6 +43,16 @@ const char *name(dt_lib_module_t *self)
 
 const char **views(dt_lib_module_t *self)
 {
+  /* we handle the hidden case here */
+  gchar *pos = dt_conf_get_string("plugins/darkroom/image_infos_position");
+  if(g_strcmp0(pos, "hidden") == 0)
+  {
+    static const char *vv[] = { NULL };
+    g_free(pos);
+    return vv;
+  }
+  g_free(pos);
+
   static const char *v[] = { "darkroom", NULL };
   return v;
 }
@@ -101,7 +111,7 @@ void _lib_imageinfo_update_message(gpointer instance, dt_lib_module_t *self)
   // we change the label
   GtkTextIter i1;
   GtkTextIter i2;
-  GtkTextBuffer *tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(d->label));
+  GtkTextBuffer *tbuf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(d->tview));
   gtk_text_buffer_get_start_iter(tbuf, &i1);
   gtk_text_buffer_get_end_iter(tbuf, &i2);
   gtk_text_buffer_delete(tbuf, &i1, &i2);
@@ -119,9 +129,9 @@ void gui_init(dt_lib_module_t *self)
   d->pattern = dt_conf_get_string("plugins/darkroom/image_infos_pattern");
 
   self->widget = gtk_event_box_new();
-  d->label = gtk_text_view_new();
-  gtk_text_view_set_justification(GTK_TEXT_VIEW(d->label), GTK_JUSTIFY_CENTER);
-  gtk_container_add(GTK_CONTAINER(self->widget), d->label);
+  d->tview = gtk_text_view_new();
+  gtk_text_view_set_justification(GTK_TEXT_VIEW(d->tview), GTK_JUSTIFY_CENTER);
+  gtk_container_add(GTK_CONTAINER(self->widget), d->tview);
 
   gtk_widget_show_all(self->widget);
 

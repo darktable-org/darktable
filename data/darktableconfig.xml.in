@@ -661,6 +661,7 @@
         <option>top right</option>
         <option>top center</option>
         <option>bottom</option>
+        <option>hidden</option>
       </enum>
     </type>
     <default>bottom</default>
