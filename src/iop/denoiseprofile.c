@@ -121,8 +121,7 @@ typedef struct dt_iop_denoiseprofile_params_t
   float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
   gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
   // backward compatibility options
-  gboolean fix_anscombe;
-  gboolean fix_nlmeans_norm;
+  gboolean fix_anscombe_and_nlmeans_norm;
 } dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
@@ -152,11 +151,8 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   float draw_min_xs[DT_IOP_DENOISE_PROFILE_RES], draw_min_ys[DT_IOP_DENOISE_PROFILE_RES];
   float draw_max_xs[DT_IOP_DENOISE_PROFILE_RES], draw_max_ys[DT_IOP_DENOISE_PROFILE_RES];
   GtkWidget *wb_adaptive_anscombe;
-  GtkWidget *extra_expander;
-  GtkWidget *extra_toggle;
   // backward compatibility options
-  GtkWidget *fix_anscombe;
-  GtkWidget *fix_nlmeans_norm;
+  GtkWidget *fix_anscombe_and_nlmeans_norm;
 } dt_iop_denoiseprofile_gui_data_t;
 
 typedef struct dt_iop_denoiseprofile_data_t
@@ -173,8 +169,7 @@ typedef struct dt_iop_denoiseprofile_data_t
   float force[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
   gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
   // backward compatibility options
-  gboolean fix_anscombe;
-  gboolean fix_nlmeans_norm;
+  gboolean fix_anscombe_and_nlmeans_norm;
 } dt_iop_denoiseprofile_data_t;
 
 typedef struct dt_iop_denoiseprofile_global_data_t
@@ -338,8 +333,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     }
     v7->scattering = v6.scattering;
     v7->central_pixel_weight = 0.0;
-    v7->fix_anscombe = FALSE;     // don't fix anscombe to ensure backward compatibility
-    v7->fix_nlmeans_norm = FALSE; // don't fix norm to ensure backward compatibility
+    v7->fix_anscombe_and_nlmeans_norm = FALSE; // don't fix anscombe and norm to ensure backward compatibility
     v7->wb_adaptive_anscombe = TRUE;
     return 0;
   }
@@ -1043,7 +1037,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   // we init wb by the mean of the coeffs, which corresponds to the mean
   // amplification that is done in addition to the "ISO" related amplification
   float wb[3] = { wb_mean, wb_mean, wb_mean };
-  if(d->fix_anscombe)
+  if(d->fix_anscombe_and_nlmeans_norm)
   {
     if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
     {
@@ -1230,7 +1224,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   // we init wb by the mean of the coeffs, which corresponds to the mean
   // amplification that is done in addition to the "ISO" related amplification
   float wb[3] = { wb_mean, wb_mean, wb_mean };
-  if(d->fix_anscombe)
+  if(d->fix_anscombe_and_nlmeans_norm)
   {
     if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
     {
@@ -1331,7 +1325,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
             // norm identical when P=1, as the norm for P=1 seemed
             // to work quite well: 0.045 = 0.015 * (2 * P + 1) with P=1.
             float norm = .045f / ((2 * P + 1) * (2 * P + 1));
-            if(!d->fix_nlmeans_norm)
+            if(!d->fix_anscombe_and_nlmeans_norm)
             {
               // use old formula
               norm = .015f / (2 * P + 1);
@@ -1429,7 +1423,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   // we init wb by the mean of the coeffs, which corresponds to the mean
   // amplification that is done in addition to the "ISO" related amplification
   float wb[3] = { wb_mean, wb_mean, wb_mean };
-  if(d->fix_anscombe)
+  if(d->fix_anscombe_and_nlmeans_norm)
   {
     if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
     {
@@ -1527,7 +1521,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
             // norm identical when P=1, as the norm for P=1 seemed
             // to work quite well: 0.045 = 0.015 * (2 * P + 1) with P=1.
             float norm = .045f / ((2 * P + 1) * (2 * P + 1));
-            if(!d->fix_nlmeans_norm)
+            if(!d->fix_anscombe_and_nlmeans_norm)
             {
               // use old formula
               norm = .015f / (2 * P + 1);
@@ -1692,7 +1686,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   // norm identical when P=1, as the norm for P=1 seemed
   // to work quite well: 0.045 = 0.015 * (2 * P + 1) with P=1.
   float norm = .045f / ((2 * P + 1) * (2 * P + 1));
-  if(!d->fix_nlmeans_norm)
+  if(!d->fix_anscombe_and_nlmeans_norm)
   {
     // use old formula
     norm = .015f / (2 * P + 1);
@@ -1704,7 +1698,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   // we init wb by the mean of the coeffs, which corresponds to the mean
   // amplification that is done in addition to the "ISO" related amplification
   float wb[4] = { wb_mean, wb_mean, wb_mean, 0.0f };
-  if(d->fix_anscombe)
+  if(d->fix_anscombe_and_nlmeans_norm)
   {
     if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
     {
@@ -2013,7 +2007,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   // we init wb by the mean of the coeffs, which corresponds to the mean
   // amplification that is done in addition to the "ISO" related amplification
   float wb[4] = { wb_mean, wb_mean, wb_mean, 0.0f };
-  if(d->fix_anscombe)
+  if(d->fix_anscombe_and_nlmeans_norm)
   {
     if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
     {
@@ -2365,8 +2359,7 @@ void reload_defaults(dt_iop_module_t *module)
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->central_pixel_weight = 0.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->fix_anscombe = TRUE;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->fix_nlmeans_norm = TRUE;
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->fix_anscombe_and_nlmeans_norm = TRUE;
     for(int k = 0; k < 3; k++)
     {
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->a[k] = g->interpolated.a[k];
@@ -2394,8 +2387,7 @@ void init(dt_iop_module_t *module)
       tmp.y[ch][k] = 0.5f;
     }
   }
-  tmp.fix_anscombe = TRUE;
-  tmp.fix_nlmeans_norm = TRUE;
+  tmp.fix_anscombe_and_nlmeans_norm = TRUE;
   tmp.wb_adaptive_anscombe = TRUE;
   memcpy(module->params, &tmp, sizeof(dt_iop_denoiseprofile_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_denoiseprofile_params_t));
@@ -2444,15 +2436,6 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_denoiseprofile_reduce_second);
   free(module->data);
   module->data = NULL;
-}
-
-void gui_reset(dt_iop_module_t *self)
-{
-  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander), FALSE);
-  dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->extra_toggle), dtgtk_cairo_paint_solid_arrow,
-                               CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->extra_toggle), FALSE);
 }
 
 static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self)
@@ -2526,8 +2509,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   }
 
   d->wb_adaptive_anscombe = p->wb_adaptive_anscombe;
-  d->fix_anscombe = p->fix_anscombe;
-  d->fix_nlmeans_norm = p->fix_nlmeans_norm;
+  d->fix_anscombe_and_nlmeans_norm = p->fix_anscombe_and_nlmeans_norm;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -2650,10 +2632,15 @@ void gui_update(dt_iop_module_t *self)
     }
   }
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_adaptive_anscombe), p->wb_adaptive_anscombe);
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander),
-                              gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->extra_toggle)));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_anscombe), p->fix_anscombe);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_nlmeans_norm), p->fix_nlmeans_norm);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_anscombe_and_nlmeans_norm), p->fix_anscombe_and_nlmeans_norm);
+  gtk_widget_set_visible(g->fix_anscombe_and_nlmeans_norm, !p->fix_anscombe_and_nlmeans_norm);
+}
+
+void gui_reset(dt_iop_module_t *self)
+{
+  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  gtk_widget_set_visible(g->fix_anscombe_and_nlmeans_norm, !p->fix_anscombe_and_nlmeans_norm);
 }
 
 static void dt_iop_denoiseprofile_get_params(dt_iop_denoiseprofile_params_t *p, const int ch, const double mouse_x,
@@ -2977,17 +2964,6 @@ static void denoiseprofile_tab_switch(GtkNotebook *notebook, GtkWidget *page, gu
   gtk_widget_queue_draw(self->widget);
 }
 
-static void _extra_options_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
-  const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->extra_toggle));
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander), active);
-  dtgtk_togglebutton_set_paint(
-      DTGTK_TOGGLEBUTTON(g->extra_toggle), dtgtk_cairo_paint_solid_arrow,
-      CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | (active ? CPF_DIRECTION_DOWN : CPF_DIRECTION_LEFT), NULL);
-}
-
 static void wb_adaptive_anscombe_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -2996,22 +2972,13 @@ static void wb_adaptive_anscombe_callback(GtkWidget *widget, dt_iop_module_t *se
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void fix_anscombe_callback(GtkWidget *widget, dt_iop_module_t *self)
+static void fix_anscombe_and_nlmeans_norm_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
-  p->fix_anscombe = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  p->fix_anscombe_and_nlmeans_norm = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
-
-static void fix_nlmeans_norm_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
-  p->fix_nlmeans_norm = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 
 void gui_init(dt_iop_module_t *self)
 {
@@ -3105,36 +3072,19 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->stack, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
 
-  // add collapsable section for those extra options that are generally not to be used
-  GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
-  GtkWidget *destdisp = dt_ui_section_label_new(_("backward compatibility"));
-  g->extra_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow,
-                                           CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
-  gtk_widget_set_size_request(g->extra_toggle, DT_PIXEL_APPLY_DPI(15), DT_PIXEL_APPLY_DPI(15));
-  GtkWidget *extra_options = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  gtk_box_pack_start(GTK_BOX(destdisp_head), destdisp, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(destdisp_head), g->extra_toggle, FALSE, FALSE, 0);
-  gtk_widget_set_visible(extra_options, FALSE);
-  g->extra_expander = dtgtk_expander_new(destdisp_head, extra_options);
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->extra_expander), TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->extra_expander, FALSE, FALSE, 0);
-  g_signal_connect(G_OBJECT(g->extra_toggle), "toggled", G_CALLBACK(_extra_options_button_changed), (gpointer)self);
-  g->fix_anscombe = gtk_check_button_new_with_label(_("fix anscombe transform"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_anscombe), p->fix_anscombe);
-  gtk_widget_set_tooltip_text(g->fix_anscombe, _("fix bugs in anscombe transform resulting\n"
+  g->fix_anscombe_and_nlmeans_norm = gtk_check_button_new_with_label(_("migrate to fixed algorithm"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_anscombe_and_nlmeans_norm), p->fix_anscombe_and_nlmeans_norm);
+  gtk_widget_set_tooltip_text(g->fix_anscombe_and_nlmeans_norm, _("fix bugs in anscombe transform resulting\n"
                                                  "in undersmoothing of the green channel in\n"
                                                  "wavelets mode, combined with a bad handling\n"
-                                                 "of white balance coefficients."));
-  gtk_box_pack_start(GTK_BOX(extra_options), g->fix_anscombe, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->fix_anscombe), "toggled", G_CALLBACK(fix_anscombe_callback), self);
-  g->fix_nlmeans_norm = gtk_check_button_new_with_label(_("fix patch normalization"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_nlmeans_norm), p->fix_nlmeans_norm);
-  gtk_widget_set_tooltip_text(g->fix_nlmeans_norm, _("fix patch norm computation in non-local\n"
-                                                     "means so that the denoising force becomes\n"
-                                                     "independent of patch size."));
-  gtk_box_pack_start(GTK_BOX(extra_options), g->fix_nlmeans_norm, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->fix_nlmeans_norm), "toggled", G_CALLBACK(fix_nlmeans_norm_callback), self);
-
+                                                 "of white balance coefficients, and a bug in\n"
+                                                 "non local means normalization resulting in\n"
+                                                 "undersmoothing when patch size was increased.\n"
+                                                 "enabling this option will change the denoising\n"
+                                                 "you get. once enabled, you won't be able to\n"
+                                                 "return back to old algorithm."));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->fix_anscombe_and_nlmeans_norm, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->fix_anscombe_and_nlmeans_norm), "toggled", G_CALLBACK(fix_anscombe_and_nlmeans_norm_callback), self);
 
   gtk_widget_show_all(g->box_nlm);
   gtk_widget_show_all(g->box_wavelets);
