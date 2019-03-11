@@ -160,8 +160,9 @@ denoiseprofile_horiz(global float* U4_in, global float* U4_out, const int width,
 
 
 kernel void
-denoiseprofile_vert(global float* U4_in, global float* U4_out, const int width, const int height, 
-              const int2 q, const int P, const float norm, local float *buffer)
+denoiseprofile_vert(global float* U4_in, global float* U4_out, const int width, const int height,
+              const int2 q, const int P, const float norm, local float *buffer,
+              const float central_pixel_weight, global float* U4_single_pixel)
 {
   const int lid = get_local_id(1);
   const int lsz = get_local_size(1);
@@ -206,6 +207,9 @@ denoiseprofile_vert(global float* U4_in, global float* U4_out, const int width, 
   {
     distacc += buffer[pj];
   }
+
+  distacc += U4_single_pixel[gidx] * (2 * P + 1) * (2 * P + 1) * central_pixel_weight;
+  distacc /= (1.0f + central_pixel_weight);
 
   distacc = fast_mexp2f(fmax(0.0f, distacc*norm - 2.0f));
 
