@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2016 pascal obry
+    copyright (c) 2016-2019 pascal obry
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -116,6 +116,8 @@ static void _undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t typ
 
 void dt_undo_start_group(dt_undo_t *self, dt_undo_type_t type)
 {
+  if(!self) return;
+
   if(self->group == 0)
   {
     self->group = type;
@@ -128,6 +130,8 @@ void dt_undo_start_group(dt_undo_t *self, dt_undo_type_t type)
 
 void dt_undo_end_group(dt_undo_t *self)
 {
+  if(!self) return;
+
   assert(self->group_indent>0);
   self->group_indent--;
   if(self->group_indent == 0)
