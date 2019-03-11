@@ -1865,7 +1865,7 @@ enum
 
 
 kernel void
-colorzones (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const int channel,
+colorzones_v3 (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const int channel,
             read_only image2d_t table_L, read_only image2d_t table_a, read_only image2d_t table_b)
 {
   const int x = get_global_id(0);
@@ -1908,6 +1908,47 @@ colorzones (read_only image2d_t in, write_only image2d_t out, const int width, c
   pixel.x = L;
   pixel.y = cos(2.0f*M_PI_F*(h + hm)) * Cm * C;
   pixel.z = sin(2.0f*M_PI_F*(h + hm)) * Cm * C;
+
+  write_imagef (out, (int2)(x, y), pixel);
+}
+
+kernel void
+colorzones (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const int channel,
+            read_only image2d_t table_L, read_only image2d_t table_C, read_only image2d_t table_h)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  float4 LCh;
+  const float normalize_C = 1.f / (128.0f * sqrt(2.f));
+
+  LCh = Lab_2_LCH(pixel);
+
+  float select = 0.0f;
+  switch(channel)
+  {
+    case DT_IOP_COLORZONES_L:
+      select = LCh.x * 0.01f;
+      break;
+    case DT_IOP_COLORZONES_C:
+      select = LCh.y * normalize_C;
+      break;
+    case DT_IOP_COLORZONES_h:
+    default:
+      select = LCh.z;
+      break;
+  }
+  select = clamp(select, 0.f, 1.f);
+
+  LCh.x *= native_powr(2.0f, 4.0f * (lookup(table_L, select) - .5f));
+  LCh.y *= 2.f * lookup(table_C, select);
+  LCh.z += lookup(table_h, select) - .5f;
+
+  pixel.xyz = LCH_2_Lab(LCh).xyz;
 
   write_imagef (out, (int2)(x, y), pixel);
 }

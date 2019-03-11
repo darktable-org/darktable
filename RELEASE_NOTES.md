@@ -111,6 +111,16 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 
 - Add soft boundaries for denoise profile controls.
 
+- The color zones module curve acts now like the tone curve (but horizontal),
+  it has two edit modes: edit by area is the former one, if not checked nodes
+  can be edited like in the tone curve.
+  A new process mode has been added: smooth is the former one, strong is new.
+  An interpolation method has been added that allows to select different types
+  of curves.
+  The color picker allows to select by area with cntrl+click.
+  A new color picker has benn added that creates a curve based on the area
+  selected from the image.
+
 ## Bug fixes
 
 - The color picker support has been fixed by a complete rewrite. It
