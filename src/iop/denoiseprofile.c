@@ -3107,7 +3107,9 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->mode, _("method used in the denoising core. "
                                          "non-local means works best for `lightness' blending, "
                                          "wavelets work best for `color' blending"));
-  gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match. increase for more sharpness"));
+  gtk_widget_set_tooltip_text(g->radius, _("radius of the patches to match.\n"
+                                           "increase for more sharpness on strong edges, and better denoising of smooth areas.\n"
+                                           "if details are oversmoothed, reduce this value or increase the details slider."));
   gtk_widget_set_tooltip_text(g->nbhood, _("emergency use only: radius of the neighbourhood to search patches in. increase for better denoising performance, but watch the long runtimes! large radii can be very slow. you have been warned"));
   gtk_widget_set_tooltip_text(g->scattering,
                               _("scattering of the neighbourhood to search patches in. increase for better "
