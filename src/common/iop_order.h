@@ -79,7 +79,8 @@ int dt_ioppr_move_iop_before(GList **_iop_list, struct dt_iop_module_t *module, 
 int dt_ioppr_move_iop_after(GList **_iop_list, struct dt_iop_module_t *module, struct dt_iop_module_t *module_prev,
                       const int validate_order, const int log_error);
 
-#define DT_IOPPR_COLOR_ICC_LEN 100
+// must be in synch with filename in dt_colorspaces_color_profile_t in colorspaces.h
+#define DT_IOPPR_COLOR_ICC_LEN 512
 
 typedef struct dt_iop_order_iccprofile_info_t
 {
@@ -134,14 +135,23 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev, int *profile_type,
 void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev, int *profile_type, char **profile_filename);
 
 /** transforms image from cst_from to cst_to colorspace using profile_info */
-void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, float *const image, const int width, const int height,
-    const int cst_from, const int cst_to, int *converted_cst, const dt_iop_order_iccprofile_info_t *const profile_info);
+void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const float *const image_in,
+                                         float *const image_out, const int width, const int height,
+                                         const int cst_from, const int cst_to, int *converted_cst,
+                                         const dt_iop_order_iccprofile_info_t *const profile_info);
+
+void dt_ioppr_transform_image_colorspace_rgb(const float *const image_in, float *const image_out, const int width,
+                                             const int height,
+                                             const dt_iop_order_iccprofile_info_t *const profile_info_from,
+                                             const dt_iop_order_iccprofile_info_t *const profile_info_to,
+                                             const char *message);
 
 #ifdef HAVE_OPENCL
 typedef struct dt_colorspaces_cl_global_t
 {
   int kernel_colorspaces_transform_lab_to_rgb_matrix;
   int kernel_colorspaces_transform_rgb_matrix_to_lab;
+  int kernel_colorspaces_transform_rgb_matrix_to_rgb;
 } dt_colorspaces_cl_global_t;
 
 // must be in synch with colorspaces.cl dt_colorspaces_iccprofile_info_cl_t
@@ -169,8 +179,16 @@ void dt_ioppr_get_profile_info_cl(const dt_iop_order_iccprofile_info_t *const pr
 cl_float *dt_ioppr_get_trc_cl(const dt_iop_order_iccprofile_info_t *const profile_info);
 
 /** same as the C version */
-int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const int devid, cl_mem dev_img, const int width, const int height,
-    const int cst_from, const int cst_to, int *converted_cst, const dt_iop_order_iccprofile_info_t *const profile_info);
+int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const int devid, cl_mem dev_img_in,
+                                           cl_mem dev_img_out, const int width, const int height,
+                                           const int cst_from, const int cst_to, int *converted_cst,
+                                           const dt_iop_order_iccprofile_info_t *const profile_info);
+
+int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_in, cl_mem dev_img_out,
+                                               const int width, const int height,
+                                               const dt_iop_order_iccprofile_info_t *const profile_info_from,
+                                               const dt_iop_order_iccprofile_info_t *const profile_info_to,
+                                               const char *message);
 #endif
 
 /** the folowing must have the matrix_in and matrix out generated */
