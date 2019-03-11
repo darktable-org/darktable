@@ -97,7 +97,6 @@ typedef struct dt_iop_colorzones_gui_data_t
   GtkWidget *colorpicker;
   GtkWidget *colorpicker_set_values;
   GtkWidget *chk_edit_by_area;
-  GtkWidget *chk_backgrownd_mixed;
   int picker_set_upper_lower; // creates the curve positive or negative
   dt_iop_colorzones_channel_t channel;
   float draw_xs[DT_IOP_COLORZONES_RES], draw_ys[DT_IOP_COLORZONES_RES];
@@ -107,7 +106,6 @@ typedef struct dt_iop_colorzones_gui_data_t
   float loglogscale;
   int semilog;
   int edit_by_area;
-  int backgrownd_mixed;
 } dt_iop_colorzones_gui_data_t;
 
 typedef struct dt_iop_colorzones_data_t
@@ -263,47 +261,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 #undef DT_IOP_COLORZONES1_BANDS
 
   return 1;
-}
-
-static void _cairo_paint_colorpicker_set_values(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
-{
-  gint s = (w < h ? w : h);
-  cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
-  cairo_scale(cr, s, s);
-
-  /* draw pipette */
-
-  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-
-  // drop
-  cairo_set_line_width(cr, 0.15);
-  cairo_move_to(cr, 0.08, 1. - 0.01 + 0.05);
-  cairo_line_to(cr, 0.08, 1. - 0.09 + 0.05);
-  cairo_stroke(cr);
-
-  cairo_set_line_width(cr, 0.2);
-  // cross line
-  cairo_move_to(cr, 0.48, 1. - 0.831 + 0.05);
-  cairo_line_to(cr, 0.739, 1. - 0.482 + 0.05);
-  // shaft
-  cairo_move_to(cr, 0.124, 1. - 0.297 + 0.05);
-  cairo_line_to(cr, 0.823, 1. - 0.814 + 0.05);
-  cairo_stroke(cr);
-
-  // end
-  cairo_set_line_width(cr, 0.35);
-  cairo_move_to(cr, 0.823, 1. - 0.814 + 0.05);
-  cairo_line_to(cr, 0.648, 1. - 0.685 + 0.05);
-  cairo_stroke(cr);
-
-  // plus sign
-  cairo_set_line_width(cr, 0.2);
-  cairo_move_to(cr, 0.20, 0.01);
-  cairo_line_to(cr, 0.20, 0.41);
-  cairo_stroke(cr);
-  cairo_move_to(cr, 0.01, 0.20);
-  cairo_line_to(cr, 0.41, 0.20);
-  cairo_stroke(cr);
 }
 
 // fills in new parameters based on mouse position (in 0,1)
@@ -795,218 +752,71 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
                                                                                                                   \
   cairo_set_source_rgb(cr, rgb[0], rgb[1], rgb[2]);
 
-static void _draw_background(cairo_t *cr, dt_iop_colorzones_gui_data_t *c, const int select_by_picker,
-                             const int width, const int height, const float *picked_color)
+static void _draw_background(cairo_t *cr, dt_iop_colorzones_params_t *p, dt_iop_colorzones_gui_data_t *c,
+                             const int select_by_picker, const int width, const int height,
+                             const float *picked_color)
 {
   const float normalize_C = (128.f * sqrtf(2.f));
 
-  if(c->channel == DT_IOP_COLORZONES_h && !select_by_picker)
+  const int cellsi = DT_COLORZONES_CELLSI;
+  const int cellsj = DT_COLORZONES_CELLSJ;
+
+  for(int j = 0; j < cellsj; j++)
   {
-    const int cellsi = DT_COLORZONES_CELLSI;
-    const int cellsj = DT_COLORZONES_CELLSJ;
-
-    for(int j = 0; j < cellsj; j++)
-    {
-      for(int i = 0; i < cellsi; i++)
-      {
-        float LCh[3] = { 0 };
-
-        const float jj = (((float)j / (float)(cellsj - 1)) - .5f);
-        const float ii = (float)i / (float)(cellsi - 1);
-
-        // select by channel, abscissa:
-        if(c->channel == DT_IOP_COLORZONES_h)
-        {
-          LCh[0] = 50.0f;
-          LCh[1] = normalize_C * .5f;
-          LCh[2] = ii - jj;
-        }
-
-        COLORZONES_DRAW_BACKGROUD_BOX
-
-        cairo_rectangle(cr, width * i / (float)cellsi, height * j / (float)cellsj, width / (float)cellsi,
-                        height / (float)cellsj);
-        cairo_fill(cr);
-      }
-    }
-  }
-  else
-  {
-    const int cellsj = DT_COLORZONES_CELLSJ;
-
-    for(int j = 0; j < cellsj; j++)
+    for(int i = 0; i < cellsi; i++)
     {
       float LCh[3] = { 0 };
 
-      if(select_by_picker && c->channel == DT_IOP_COLORZONES_h)
-      {
-        const float jj = (((float)j / (float)(cellsj - 1)) - .5f);
+      const float jj = 1.0f - ((float)j - .5f) / (float)(cellsj - 1);
+      const float jjh = (((float)j / (float)(cellsj - 1)) - .5f);
+      const float ii = ((float)i + .5f) / (float)(cellsi - 1);
+      const float iih = (float)i / (float)(cellsi - 1);
 
-        LCh[0] = 50.0f;
-        LCh[1] = normalize_C * .5f;
-        LCh[2] = picked_color[2] - jj;
+      // select by channel, abscissa:
+      switch(p->channel)
+      {
+        // select by channel, abscissa:
+        case DT_IOP_COLORZONES_L:
+          LCh[0] = 100.0f * ii;
+          LCh[1] = normalize_C * .5f;
+          LCh[2] = picked_color[2];
+          break;
+        case DT_IOP_COLORZONES_C:
+          LCh[0] = 50.0f;
+          LCh[1] = picked_color[1] * 2.f * ii;
+          LCh[2] = picked_color[2];
+          break;
+        default: // DT_IOP_COLORZONES_h
+          LCh[0] = 50.0f;
+          LCh[1] = normalize_C * .5f;
+          LCh[2] = iih;
+          break;
       }
-      else
+      // channel to be altered:
+      switch(c->channel)
       {
-        const float jj = 1.0f - (j - .5f) / (cellsj - 1.f);
-
-        switch(c->channel)
-        {
-          // select by channel, abscissa:
-          case DT_IOP_COLORZONES_L:
-            LCh[0] = 100.0f * jj;
-            LCh[1] = picked_color[1];
-            LCh[2] = picked_color[2];
-            break;
-          case DT_IOP_COLORZONES_C:
-            LCh[0] = 50.0f;
-            LCh[1] = picked_color[1] * 2.f * jj;
-            LCh[2] = picked_color[2];
-            break;
-          default:
-            LCh[0] = 0.0f;
-            LCh[1] = 0.0f;
-            LCh[2] = 0.0f;
-            break;
-        }
+        // select by channel, abscissa:
+        case DT_IOP_COLORZONES_L:
+          if(p->channel == DT_IOP_COLORZONES_L)
+            LCh[0] *= jj;
+          else
+            LCh[0] += -50.0 + 100.0 * jj;
+          break;
+        case DT_IOP_COLORZONES_C:
+          LCh[1] *= 2.f * jj;
+          break;
+        default: // DT_IOP_COLORZONES_h
+          LCh[2] -= jjh;
+          break;
       }
 
       COLORZONES_DRAW_BACKGROUD_BOX
 
-      cairo_rectangle(cr, 0, height * j / (float)cellsj, width, height / (float)cellsj);
+      cairo_rectangle(cr, width * i / (float)cellsi, height * j / (float)cellsj, width / (float)cellsi,
+                      height / (float)cellsj);
       cairo_fill(cr);
     }
   }
-}
-
-static void _draw_background_v3(cairo_t *cr, dt_iop_colorzones_params_t *p, dt_iop_colorzones_gui_data_t *c,
-                                const int select_by_picker, const int width, const int height,
-                                const float *picked_color)
-{
-  const float normalize_C = (128.f * sqrtf(2.f));
-
-  //  if(c->channel == DT_IOP_COLORZONES_h && !select_by_picker)
-  {
-    const int cellsi = DT_COLORZONES_CELLSI;
-    const int cellsj = DT_COLORZONES_CELLSJ;
-
-    for(int j = 0; j < cellsj; j++)
-    {
-      for(int i = 0; i < cellsi; i++)
-      {
-        float LCh[3] = { 0 };
-
-        const float jj = 1.0f - ((float)j - .5f) / (float)(cellsj - 1);
-        const float jjh = (((float)j / (float)(cellsj - 1)) - .5f);
-        float ii = ((float)i + .5f) / (float)(cellsi - 1);
-        const float iih = (float)i / (float)(cellsi - 1);
-
-        // select by channel, abscissa:
-        /*        if(c->channel == DT_IOP_COLORZONES_h)
-                {
-                  LCh[0] = 50.0f;
-                  LCh[1] = normalize_C * .5f;
-                  LCh[2] = ii - jj;
-                }*/
-        // select by channel, abscissa:
-        switch(p->channel)
-        {
-          // select by channel, abscissa:
-          case DT_IOP_COLORZONES_L:
-            LCh[0] = 100.0f * ii;
-            LCh[1] = normalize_C * .5f;
-            LCh[2] = picked_color[2];
-            break;
-          case DT_IOP_COLORZONES_C:
-            LCh[0] = 50.0f;
-            LCh[1] = picked_color[1] * 2.f * ii;
-            LCh[2] = picked_color[2];
-            break;
-          default: // DT_IOP_COLORZONES_h
-            LCh[0] = 50.0f;
-            LCh[1] = normalize_C * .5f;
-            LCh[2] = iih;
-            break;
-        }
-        // channel to be altered:
-        switch(c->channel)
-        {
-          // select by channel, abscissa:
-          case DT_IOP_COLORZONES_L:
-            if(p->channel == DT_IOP_COLORZONES_L)
-              LCh[0] *= jj;
-            else
-              LCh[0] += -50.0 + 100.0 * jj;
-            //           LCh[1] = picked_color[1];
-            //            LCh[2] = picked_color[2];
-            break;
-          case DT_IOP_COLORZONES_C:
-            //            LCh[0] = 50.0f;
-            LCh[1] *= 2.f * jj;
-            //            LCh[2] = picked_color[2];
-            break;
-          default: // DT_IOP_COLORZONES_h
-            //                   LCh[0] = 50.0f;
-            //                   LCh[1] = normalize_C * .5f;
-            LCh[2] -= jjh;
-            break;
-        }
-
-        COLORZONES_DRAW_BACKGROUD_BOX
-
-        cairo_rectangle(cr, width * i / (float)cellsi, height * j / (float)cellsj, width / (float)cellsi,
-                        height / (float)cellsj);
-        cairo_fill(cr);
-      }
-    }
-  }
-  /*  else
-    {
-      const int cellsj = DT_COLORZONES_CELLSJ;
-
-      for(int j = 0; j < cellsj; j++)
-      {
-        float LCh[3] = { 0 };
-
-        if(select_by_picker && c->channel == DT_IOP_COLORZONES_h)
-        {
-          const float jj = (((float)j / (float)(cellsj - 1)) - .5f);
-
-          LCh[0] = 50.0f;
-          LCh[1] = normalize_C * .5f;
-          LCh[2] = picked_color[2] - jj;
-        }
-        else
-        {
-          const float jj = 1.0f - (j - .5f) / (cellsj - 1.f);
-
-          switch(c->channel)
-          {
-            // select by channel, abscissa:
-            case DT_IOP_COLORZONES_L:
-              LCh[0] = 100.0f * jj;
-              LCh[1] = picked_color[1];
-              LCh[2] = picked_color[2];
-              break;
-            case DT_IOP_COLORZONES_C:
-              LCh[0] = 50.0f;
-              LCh[1] = picked_color[1] * 2.f * jj;
-              LCh[2] = picked_color[2];
-              break;
-            default:
-              LCh[0] = 0.0f;
-              LCh[1] = 0.0f;
-              LCh[2] = 0.0f;
-              break;
-          }
-        }
-
-        COLORZONES_DRAW_BACKGROUD_BOX
-
-        cairo_rectangle(cr, 0, height * j / (float)cellsj, width, height / (float)cellsj);
-        cairo_fill(cr);
-      }
-    }*/
 }
 
 static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_module_t *self)
@@ -1134,10 +944,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
 
   cairo_set_antialias(cr, CAIRO_ANTIALIAS_NONE);
 
-  if(c->backgrownd_mixed)
-    _draw_background_v3(cr, &p, c, select_by_picker, width, height, picked_color);
-  else
-    _draw_background(cr, c, select_by_picker, width, height, picked_color);
+  _draw_background(cr, &p, c, select_by_picker, width, height, picked_color);
 
   cairo_set_antialias(cr, CAIRO_ANTIALIAS_DEFAULT);
 
@@ -1971,16 +1778,6 @@ static void _edit_by_area_callback(GtkWidget *widget, dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static void _backgrownd_mixed_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
-
-  g->backgrownd_mixed = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-
-  gtk_widget_queue_draw(GTK_WIDGET(g->area));
-}
-
 static void _mode_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -2148,7 +1945,6 @@ void gui_init(struct dt_iop_module_t *self)
   c->mouse_radius = 1.0 / DT_IOP_COLORZONES_BANDS;
   c->dragging = 0;
   c->edit_by_area = 0;
-  c->backgrownd_mixed = 1;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
@@ -2175,8 +1971,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
 
   // color pickers
-  c->colorpicker_set_values
-      = dtgtk_togglebutton_new(_cairo_paint_colorpicker_set_values, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  c->colorpicker_set_values = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker_set_values,
+                                                     CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   gtk_widget_set_tooltip_text(c->colorpicker_set_values, _("create a curve based on an area from the image\n"
                                                            "ctrl+click + drag to create a negative curve"));
   gtk_widget_set_size_request(GTK_WIDGET(c->colorpicker_set_values), DT_PIXEL_APPLY_DPI(14),
@@ -2208,13 +2004,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(c->chk_edit_by_area, _("edit the curve nodes by area"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->chk_edit_by_area, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->chk_edit_by_area), "toggled", G_CALLBACK(_edit_by_area_callback), self);
-
-  c->chk_backgrownd_mixed = gtk_check_button_new_with_label(_("draw background mixed"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(c->chk_backgrownd_mixed), c->backgrownd_mixed);
-  gtk_widget_set_tooltip_text(c->chk_backgrownd_mixed,
-                              _("draw the background using select by and output channels"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->chk_backgrownd_mixed, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(c->chk_backgrownd_mixed), "toggled", G_CALLBACK(_backgrownd_mixed_callback), self);
 
   // select by which dimension
   c->select_by = dt_bauhaus_combobox_new(self);

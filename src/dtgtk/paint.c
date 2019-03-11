@@ -1195,6 +1195,46 @@ void dtgtk_cairo_paint_colorpicker(cairo_t *cr, gint x, gint y, gint w, gint h, 
   cairo_stroke(cr);
 }
 
+void dtgtk_cairo_paint_colorpicker_set_values(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  gint s = (w < h ? w : h);
+  cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
+  cairo_scale(cr, s, s);
+
+  /* draw pipette */
+
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+
+  // drop
+  cairo_set_line_width(cr, 0.15);
+  cairo_move_to(cr, 0.08, 1. - 0.01 + 0.05);
+  cairo_line_to(cr, 0.08, 1. - 0.09 + 0.05);
+  cairo_stroke(cr);
+
+  cairo_set_line_width(cr, 0.2);
+  // cross line
+  cairo_move_to(cr, 0.48, 1. - 0.831 + 0.05);
+  cairo_line_to(cr, 0.739, 1. - 0.482 + 0.05);
+  // shaft
+  cairo_move_to(cr, 0.124, 1. - 0.297 + 0.05);
+  cairo_line_to(cr, 0.823, 1. - 0.814 + 0.05);
+  cairo_stroke(cr);
+
+  // end
+  cairo_set_line_width(cr, 0.35);
+  cairo_move_to(cr, 0.823, 1. - 0.814 + 0.05);
+  cairo_line_to(cr, 0.648, 1. - 0.685 + 0.05);
+  cairo_stroke(cr);
+
+  // plus sign
+  cairo_set_line_width(cr, 0.2);
+  cairo_move_to(cr, 0.20, 0.01);
+  cairo_line_to(cr, 0.20, 0.41);
+  cairo_stroke(cr);
+  cairo_move_to(cr, 0.01, 0.20);
+  cairo_line_to(cr, 0.41, 0.20);
+  cairo_stroke(cr);
+}
 
 void dtgtk_cairo_paint_showmask(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
