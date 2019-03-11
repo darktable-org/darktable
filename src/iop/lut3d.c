@@ -314,16 +314,18 @@ uint8_t calculate_clut_haldclut(char *filepath, float **clut)
   dt_imageio_png_t png;
   if(read_header(filepath, &png))
   {
-    fprintf(stderr, "[lut3d] invalid png header from `%s'\n", filepath);
+    fprintf(stderr, "[lut3d] invalid png header from %s\n", filepath);
+    dt_control_log(_("invalid png header from %s"), filepath);
     return 0;
   }
   dt_print(DT_DEBUG_DEV, "[lut3d] png: width=%d, height=%d, color_type=%d, bit_depth=%d\n", png.width,
            png.height, png.color_type, png.bit_depth);
-  printf("[lut3d] png: width=%d, height=%d, color_type=%d, bit_depth=%d\n", png.width,
-           png.height, png.color_type, png.bit_depth);
+//  printf("[lut3d] png: width=%d, height=%d, color_type=%d, bit_depth=%d\n", png.width,
+//           png.height, png.color_type, png.bit_depth);
   if (png.bit_depth !=8 && png.bit_depth != 16)
   {
-    fprintf(stderr, "[lut3d] png bit-depth %d not supported", png.bit_depth);
+    fprintf(stderr, "[lut3d] png bit-depth %d not supported\n", png.bit_depth);
+    dt_control_log(_("png bit-depth %d not supported"), png.bit_depth);
     fclose(png.f);
     png_destroy_read_struct(&png.png_ptr, &png.info_ptr, NULL);
     return 0;
@@ -333,6 +335,7 @@ uint8_t calculate_clut_haldclut(char *filepath, float **clut)
   if(level * level * level != png.width)
   {
     fprintf(stderr, "[lut3d] invalid level in png file %d %d\n", level, png.width);
+    dt_control_log(_("invalid level in png file %d %d"), level, png.width);
     fclose(png.f);
     png_destroy_read_struct(&png.png_ptr, &png.info_ptr, NULL);
     return 0;
@@ -346,13 +349,15 @@ uint8_t calculate_clut_haldclut(char *filepath, float **clut)
   {
     fclose(png.f);
     png_destroy_read_struct(&png.png_ptr, &png.info_ptr, NULL);
-    fprintf(stderr, "[lut3d] error allocating buffer for png lut\n");
+    fprintf(stderr, "[lut3d] error - allocating buffer for png lut\n");
+    dt_control_log(_("error - allocating buffer for png lut"));
     return 0;
   }
   if (read_image(&png, buf))
   {
     dt_free_align(buf);
-    fprintf(stderr, "[lut3d] could not read png image `%s'\n", filepath);
+    fprintf(stderr, "[lut3d] error - could not read png image `%s'\n", filepath);
+    dt_control_log(_("error - could not read png image %s"), filepath);
     return 0;
   }
   const size_t buf_size_lut = (size_t)png.height * png.height * 3;
@@ -360,7 +365,8 @@ uint8_t calculate_clut_haldclut(char *filepath, float **clut)
   if(!lclut)
   {
     dt_free_align(buf);
-    fprintf(stderr, "[lut3d] error allocating buffer for png lut\n");
+    fprintf(stderr, "[lut3d] error - allocating buffer for png lut\n");
+    dt_control_log(_("error - allocating buffer for png lut"));
     return 0;
   }
   const float norm = powf(2.f, png.bit_depth) - 1.0f;
@@ -382,7 +388,7 @@ uint8_t calculate_clut_haldclut(char *filepath, float **clut)
   return level;
 }
 
-// provided by @rabauke ato replace strtod & sccanf which are locale dependent
+// provided by @rabauke, atof replaces strtod & sccanf which are locale dependent
 double dt_atof(const char *str)
 {
   if (strncmp(str, "nan", 3) == 0 || strncmp(str, "NAN", 3) == 0)
@@ -520,7 +526,8 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
 
   if(!(cube_file = g_fopen(filepath, "r")))
   {
-    fprintf(stderr, "[lut3d] invalid cube file from `%s'\n", filepath);
+    fprintf(stderr, "[lut3d] invalid cube file from %s\n", filepath);
+    dt_control_log(_("error - invalid cube file from %s"), filepath);
     return 0;
   }
 //printf("cube file opened\n");
@@ -535,7 +542,8 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
       {
         if (strtod(token[1], NULL) != 0.0f)
         {
-          fprintf(stderr, "DOMAIN MIN <> 0.0 is not supported\n");
+          fprintf(stderr, "[lut3d] DOMAIN MIN <> 0.0 is not supported\n");
+          dt_control_log(_("DOMAIN MIN <> 0.0 is not supported"));
           if (lclut) dt_free_align(lclut);
           free(line);
           fclose(cube_file);
@@ -546,7 +554,8 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
       {
         if (strtod(token[1], NULL) != 1.0f)
         {
-          fprintf(stderr, "DOMAIN MAX <> 1.0 is not supported\n");
+          fprintf(stderr, "[lut3d] DOMAIN MAX <> 1.0 is not supported\n");
+          dt_control_log(_("DOMAIN MAX <> 1.0 is not supported"));
           if (lclut) dt_free_align(lclut);
           free(line);
           fclose(cube_file);
@@ -556,6 +565,7 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
       else if (strcmp("LUT_1D_SIZE", token[0]) == 0)
       {
         fprintf(stderr, "[lut3d] 1D cube lut is not supported\n");
+        dt_control_log(_("[1D cube lut is not supported"));
         free(line);
         fclose(cube_file);
         return 0;
@@ -569,7 +579,8 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
 //printf("->Lut 3D %d buf_size %d\n", level, buf_size);
         if(!lclut)
         {
-          fprintf(stderr, "[lut3d] error allocating buffer for cube lut\n");
+          fprintf(stderr, "[lut3d] error - allocating buffer for cube lut\n");
+          dt_control_log(_("error - allocating buffer for cube lut"));
           free(line);
           fclose(cube_file);
           return 0;
@@ -579,7 +590,8 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
       {
         if (!level)
         {
-          fprintf(stderr, "[lut3d] error cube lut size is not defined\n");
+          fprintf(stderr, "[lut3d] error - cube lut size is not defined\n");
+          dt_control_log(_("error - cube lut size is not defined"));
           free(line);
           fclose(cube_file);
           return 0;
@@ -596,7 +608,8 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
   }
   if (i != buf_size || i == 0)
   {
-    fprintf(stderr, "[lut3d] error cube lut lines number is not correct\n");
+    fprintf(stderr, "[lut3d] error - cube lut lines number is not correct\n");
+    dt_control_log(_("error - cube lut lines number is not correct"));
     dt_free_align(lclut);
     free(line);
     fclose(cube_file);
@@ -1020,6 +1033,7 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
   if (strlen(lutfolder) == 0)
   {
     fprintf(stderr, "[lut3d] Lut root folder not defined\n");
+    dt_control_log(_("Lut root folder not defined"));
     g_free(lutfolder);
     return;
   }
@@ -1076,7 +1090,8 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
     }
     else // file chosen outside of root folder
     {
-      fprintf(stderr, "[lut3d] Selecting file outside Lut root folder is not allowed\n");
+      fprintf(stderr, "[lut3d] Select file outside Lut root folder is not allowed\n");
+      dt_control_log(_("Select file outside Lut root folder is not allowed"));
       g_free(lutfolder);
       gtk_widget_destroy(filechooser);
       return;
