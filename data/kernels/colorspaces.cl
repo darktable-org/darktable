@@ -58,3 +58,25 @@ colorspaces_transform_rgb_matrix_to_lab(read_only image2d_t in, write_only image
 
   write_imagef(out, (int2)(x, y), pixel);
 }
+
+kernel void
+colorspaces_transform_rgb_matrix_to_rgb(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+    global const dt_colorspaces_iccprofile_info_cl_t *profile_info_from, read_only image2d_t lut_from,
+    global const dt_colorspaces_iccprofile_info_cl_t *profile_info_to, read_only image2d_t lut_to)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+
+  float4 xyz, linear_rgb;
+
+  linear_rgb = apply_trc_in(pixel, profile_info_from, lut_from);
+  xyz = linear_rgb_matrix_to_xyz(linear_rgb, profile_info_from);
+  linear_rgb = xyz_to_linear_rgb_matrix(xyz, profile_info_to);
+  pixel.xyz = apply_trc_out(linear_rgb, profile_info_to, lut_to).xyz;
+
+  write_imagef(out, (int2)(x, y), pixel);
+}

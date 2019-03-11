@@ -909,35 +909,16 @@ static void _pixelpipe_final_histogram(dt_develop_t *dev, const float *const inp
       (histogram_type == DT_COLORSPACE_FILE &&
       strcmp(histogram_filename, darktable.color_profiles->display_filename)))
   {
-    cmsHPROFILE display_profile = NULL;
-    cmsHPROFILE histogram_profile = NULL;
-    cmsHTRANSFORM xform_rgb2rgb = NULL;
-    
-    if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
-      pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
-
-    const dt_colorspaces_color_profile_t *d_profile = dt_colorspaces_get_profile(darktable.color_profiles->display_type,
-                                                         darktable.color_profiles->display_filename,
-                                                         DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
-    if(d_profile) display_profile = d_profile->profile;
-
-    const dt_colorspaces_color_profile_t *d_histogram = dt_colorspaces_get_profile(histogram_type,
-                                                         histogram_filename,
-                                                         DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
-    if(d_histogram) histogram_profile = d_histogram->profile;
-    
-    if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
-      pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-  
-    // display rgb --> histogram rgb
-    if(display_profile && histogram_profile)
-      xform_rgb2rgb = cmsCreateTransform(display_profile, TYPE_RGBA_FLT, histogram_profile, TYPE_RGBA_FLT, INTENT_PERCEPTUAL, 0);
-    
     img_tmp = dt_alloc_align(64, roi_in->width * roi_in->height * 4 * sizeof(float));
-    
-    cmsDoTransform(xform_rgb2rgb, input, img_tmp, roi_in->width * roi_in->height);
 
-    if(xform_rgb2rgb) cmsDeleteTransform(xform_rgb2rgb);
+    const dt_iop_order_iccprofile_info_t *const profile_info_from
+        = dt_ioppr_add_profile_info_to_list(dev, darktable.color_profiles->display_type,
+                                            darktable.color_profiles->display_filename, INTENT_PERCEPTUAL);
+    const dt_iop_order_iccprofile_info_t *const profile_info_to
+        = dt_ioppr_add_profile_info_to_list(dev, histogram_type, histogram_filename, INTENT_PERCEPTUAL);
+
+    dt_ioppr_transform_image_colorspace_rgb(input, img_tmp, roi_in->width, roi_in->height, profile_info_from,
+                                            profile_info_to, "final histogram");
   }
 
   dev->histogram_max = 0;
@@ -1386,8 +1367,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           if(success_opencl)
           {
             success_opencl = dt_ioppr_transform_image_colorspace_cl(
-                module, piece->pipe->devid, cl_mem_input, roi_in.width, roi_in.height,
-                input_cst_cl, module->input_colorspace(module, pipe, piece), &input_cst_cl, dt_ioppr_get_pipe_work_profile_info(pipe));
+                module, piece->pipe->devid, cl_mem_input, cl_mem_input, roi_in.width, roi_in.height, input_cst_cl,
+                module->input_colorspace(module, pipe, piece), &input_cst_cl,
+                dt_ioppr_get_pipe_work_profile_info(pipe));
           }
 
           // histogram collection for module
@@ -1481,12 +1463,14 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             if(_transform_for_blend(module, piece, input_cst_cl, pipe->dsc.cst))
             {
               success_opencl = dt_ioppr_transform_image_colorspace_cl(
-                  module, piece->pipe->devid, cl_mem_input, roi_in.width, roi_in.height,
-                  input_cst_cl, module->blend_colorspace(module, pipe, piece), &input_cst_cl, dt_ioppr_get_pipe_work_profile_info(pipe));
-      
+                  module, piece->pipe->devid, cl_mem_input, cl_mem_input, roi_in.width, roi_in.height,
+                  input_cst_cl, module->blend_colorspace(module, pipe, piece), &input_cst_cl,
+                  dt_ioppr_get_pipe_work_profile_info(pipe));
+
               success_opencl = dt_ioppr_transform_image_colorspace_cl(
-                  module, piece->pipe->devid, *cl_mem_output, roi_out->width, roi_out->height,
-                  pipe->dsc.cst, module->blend_colorspace(module, pipe, piece), &pipe->dsc.cst, dt_ioppr_get_pipe_work_profile_info(pipe));
+                  module, piece->pipe->devid, *cl_mem_output, *cl_mem_output, roi_out->width, roi_out->height,
+                  pipe->dsc.cst, module->blend_colorspace(module, pipe, piece), &pipe->dsc.cst,
+                  dt_ioppr_get_pipe_work_profile_info(pipe));
             }
           }
           
@@ -1556,8 +1540,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           // transform to module input colorspace
           if(success_opencl)
           {
-            dt_ioppr_transform_image_colorspace(module, input, roi_in.width, roi_in.height,
-                input_format->cst, module->input_colorspace(module, pipe, piece), &input_format->cst, dt_ioppr_get_pipe_work_profile_info(pipe));
+            dt_ioppr_transform_image_colorspace(module, input, input, roi_in.width, roi_in.height,
+                                                input_format->cst, module->input_colorspace(module, pipe, piece),
+                                                &input_format->cst, dt_ioppr_get_pipe_work_profile_info(pipe));
           }
 
           // histogram collection for module
@@ -1639,11 +1624,13 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           {
             if(_transform_for_blend(module, piece, input_format->cst, pipe->dsc.cst))
             {
-              dt_ioppr_transform_image_colorspace(module, input, roi_in.width, roi_in.height,
-                  input_format->cst, module->blend_colorspace(module, pipe, piece), &input_format->cst, dt_ioppr_get_pipe_work_profile_info(pipe));
+              dt_ioppr_transform_image_colorspace(module, input, input, roi_in.width, roi_in.height,
+                                                  input_format->cst, module->blend_colorspace(module, pipe, piece),
+                                                  &input_format->cst, dt_ioppr_get_pipe_work_profile_info(pipe));
 
-              dt_ioppr_transform_image_colorspace(module, *output, roi_out->width, roi_out->height,
-                  pipe->dsc.cst, module->blend_colorspace(module, pipe, piece), &pipe->dsc.cst, dt_ioppr_get_pipe_work_profile_info(pipe));
+              dt_ioppr_transform_image_colorspace(module, *output, *output, roi_out->width, roi_out->height,
+                                                  pipe->dsc.cst, module->blend_colorspace(module, pipe, piece),
+                                                  &pipe->dsc.cst, dt_ioppr_get_pipe_work_profile_info(pipe));
             }
           }
           
@@ -1786,8 +1773,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           }
 
           // transform to module input colorspace
-          dt_ioppr_transform_image_colorspace(module, input, roi_in.width, roi_in.height,
-              input_format->cst, module->input_colorspace(module, pipe, piece), &input_format->cst, dt_ioppr_get_pipe_work_profile_info(pipe));
+          dt_ioppr_transform_image_colorspace(module, input, input, roi_in.width, roi_in.height, input_format->cst,
+                                              module->input_colorspace(module, pipe, piece), &input_format->cst,
+                                              dt_ioppr_get_pipe_work_profile_info(pipe));
 
           // histogram collection for module
           if((dev->gui_attached || !(piece->request_histogram & DT_REQUEST_ONLY_IN_GUI))
@@ -1874,11 +1862,13 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           // blend needs input/output images with default colorspace
           if(_transform_for_blend(module, piece, input_format->cst, pipe->dsc.cst))
           {
-            dt_ioppr_transform_image_colorspace(module, input, roi_in.width, roi_in.height,
-                input_format->cst, module->blend_colorspace(module, pipe, piece), &input_format->cst, dt_ioppr_get_pipe_work_profile_info(pipe));
-          
-            dt_ioppr_transform_image_colorspace(module, *output, roi_out->width, roi_out->height,
-                pipe->dsc.cst, module->blend_colorspace(module, pipe, piece), &pipe->dsc.cst, dt_ioppr_get_pipe_work_profile_info(pipe));
+            dt_ioppr_transform_image_colorspace(module, input, input, roi_in.width, roi_in.height,
+                                                input_format->cst, module->blend_colorspace(module, pipe, piece),
+                                                &input_format->cst, dt_ioppr_get_pipe_work_profile_info(pipe));
+
+            dt_ioppr_transform_image_colorspace(module, *output, *output, roi_out->width, roi_out->height,
+                                                pipe->dsc.cst, module->blend_colorspace(module, pipe, piece),
+                                                &pipe->dsc.cst, dt_ioppr_get_pipe_work_profile_info(pipe));
           }
           
           /* process blending on cpu */
@@ -1938,8 +1928,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         }
 
         // transform to module input colorspace
-        dt_ioppr_transform_image_colorspace(module, input, roi_in.width, roi_in.height,
-             input_format->cst, module->input_colorspace(module, pipe, piece), &input_format->cst, dt_ioppr_get_pipe_work_profile_info(pipe));
+        dt_ioppr_transform_image_colorspace(module, input, input, roi_in.width, roi_in.height, input_format->cst,
+                                            module->input_colorspace(module, pipe, piece), &input_format->cst,
+                                            dt_ioppr_get_pipe_work_profile_info(pipe));
 
         // histogram collection for module
         if((dev->gui_attached || !(piece->request_histogram & DT_REQUEST_ONLY_IN_GUI))
@@ -2026,11 +2017,13 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
         // blend needs input/output images with default colorspace
         if(_transform_for_blend(module, piece, input_format->cst, pipe->dsc.cst))
         {
-          dt_ioppr_transform_image_colorspace(module, input, roi_in.width, roi_in.height,
-               input_format->cst, module->blend_colorspace(module, pipe, piece), &input_format->cst, dt_ioppr_get_pipe_work_profile_info(pipe));
-        
-          dt_ioppr_transform_image_colorspace(module, *output, roi_out->width, roi_out->height,
-              pipe->dsc.cst, module->blend_colorspace(module, pipe, piece), &pipe->dsc.cst, dt_ioppr_get_pipe_work_profile_info(pipe));
+          dt_ioppr_transform_image_colorspace(module, input, input, roi_in.width, roi_in.height, input_format->cst,
+                                              module->blend_colorspace(module, pipe, piece), &input_format->cst,
+                                              dt_ioppr_get_pipe_work_profile_info(pipe));
+
+          dt_ioppr_transform_image_colorspace(module, *output, *output, roi_out->width, roi_out->height,
+                                              pipe->dsc.cst, module->blend_colorspace(module, pipe, piece),
+                                              &pipe->dsc.cst, dt_ioppr_get_pipe_work_profile_info(pipe));
         }
         
         /* process blending */
@@ -2053,8 +2046,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       /* opencl is not inited or not enabled or we got no resource/device -> everything runs on cpu */
 
       // transform to module input colorspace
-      dt_ioppr_transform_image_colorspace(module, input, roi_in.width, roi_in.height,
-          input_format->cst, module->input_colorspace(module, pipe, piece), &input_format->cst, dt_ioppr_get_pipe_work_profile_info(pipe));
+      dt_ioppr_transform_image_colorspace(module, input, input, roi_in.width, roi_in.height, input_format->cst,
+                                          module->input_colorspace(module, pipe, piece), &input_format->cst,
+                                          dt_ioppr_get_pipe_work_profile_info(pipe));
 
       // histogram collection for module
       if((dev->gui_attached || !(piece->request_histogram & DT_REQUEST_ONLY_IN_GUI))
@@ -2142,11 +2136,13 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       // blend needs input/output images with default colorspace
       if(_transform_for_blend(module, piece, input_format->cst, pipe->dsc.cst))
       {
-        dt_ioppr_transform_image_colorspace(module, input, roi_in.width, roi_in.height,
-            input_format->cst, module->blend_colorspace(module, pipe, piece), &input_format->cst, dt_ioppr_get_pipe_work_profile_info(pipe));
-      
-        dt_ioppr_transform_image_colorspace(module, *output, roi_out->width, roi_out->height,
-            pipe->dsc.cst, module->blend_colorspace(module, pipe, piece), &pipe->dsc.cst, dt_ioppr_get_pipe_work_profile_info(pipe));
+        dt_ioppr_transform_image_colorspace(module, input, input, roi_in.width, roi_in.height, input_format->cst,
+                                            module->blend_colorspace(module, pipe, piece), &input_format->cst,
+                                            dt_ioppr_get_pipe_work_profile_info(pipe));
+
+        dt_ioppr_transform_image_colorspace(module, *output, *output, roi_out->width, roi_out->height,
+                                            pipe->dsc.cst, module->blend_colorspace(module, pipe, piece),
+                                            &pipe->dsc.cst, dt_ioppr_get_pipe_work_profile_info(pipe));
       }
       
       /* process blending */
@@ -2156,8 +2152,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     }
 #else // HAVE_OPENCL
     // transform to module input colorspace
-    dt_ioppr_transform_image_colorspace(module, input, roi_in.width, roi_in.height,
-        input_format->cst, module->input_colorspace(module, pipe, piece), &input_format->cst, dt_ioppr_get_pipe_work_profile_info(pipe));
+    dt_ioppr_transform_image_colorspace(module, input, input, roi_in.width, roi_in.height, input_format->cst,
+                                        module->input_colorspace(module, pipe, piece), &input_format->cst,
+                                        dt_ioppr_get_pipe_work_profile_info(pipe));
 
     // histogram collection for module
     if((dev->gui_attached || !(piece->request_histogram & DT_REQUEST_ONLY_IN_GUI))
@@ -2243,11 +2240,13 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     // blend needs input/output images with default colorspace
     if(_transform_for_blend(module, piece, input_format->cst, pipe->dsc.cst))
     {
-      dt_ioppr_transform_image_colorspace(module, input, roi_in.width, roi_in.height,
-          input_format->cst, module->blend_colorspace(module, pipe, piece), &input_format->cst, dt_ioppr_get_pipe_work_profile_info(pipe));
-    
-      dt_ioppr_transform_image_colorspace(module, *output, roi_out->width, roi_out->height,
-          pipe->dsc.cst, module->blend_colorspace(module, pipe, piece), &pipe->dsc.cst, dt_ioppr_get_pipe_work_profile_info(pipe));
+      dt_ioppr_transform_image_colorspace(module, input, input, roi_in.width, roi_in.height, input_format->cst,
+                                          module->blend_colorspace(module, pipe, piece), &input_format->cst,
+                                          dt_ioppr_get_pipe_work_profile_info(pipe));
+
+      dt_ioppr_transform_image_colorspace(module, *output, *output, roi_out->width, roi_out->height, pipe->dsc.cst,
+                                          module->blend_colorspace(module, pipe, piece), &pipe->dsc.cst,
+                                          dt_ioppr_get_pipe_work_profile_info(pipe));
     }
     
     /* process blending */
