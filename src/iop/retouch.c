@@ -3494,8 +3494,8 @@ static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   int count = 0;
   int converted_cst;
 
-  dt_ioppr_transform_image_colorspace(self, img_src, width, height,
-      iop_cs_rgb, iop_cs_Lab, &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
+  dt_ioppr_transform_image_colorspace(self, img_src, img_src, width, height, iop_cs_rgb, iop_cs_Lab,
+                                      &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) reduction(+ : count, l_sum) reduction(max : l_max)        \
@@ -3509,8 +3509,8 @@ static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     count++;
   }
 
-  dt_ioppr_transform_image_colorspace(self, img_src, width, height,
-      iop_cs_Lab, iop_cs_rgb, &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
+  dt_ioppr_transform_image_colorspace(self, img_src, img_src, width, height, iop_cs_Lab, iop_cs_rgb,
+                                      &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
 
   levels[0] = l_min / 100.f;
   levels[2] = l_max / 100.f;
@@ -3533,9 +3533,9 @@ static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   const float tmp = (middle - mid) / delta;
   const float in_inv_gamma = pow(10, tmp);
   int converted_cst;
-  
-  dt_ioppr_transform_image_colorspace(self, img_src, width, height,
-      iop_cs_rgb, iop_cs_Lab, &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
+
+  dt_ioppr_transform_image_colorspace(self, img_src, img_src, width, height, iop_cs_rgb, iop_cs_Lab,
+                                      &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(img_src) schedule(static)
@@ -3557,9 +3557,9 @@ static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
       }
     }
   }
-  
-  dt_ioppr_transform_image_colorspace(self, img_src, width, height,
-      iop_cs_Lab, iop_cs_rgb, &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
+
+  dt_ioppr_transform_image_colorspace(self, img_src, img_src, width, height, iop_cs_Lab, iop_cs_rgb,
+                                      &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
 }
 
 #undef RT_WDBAR_INSET
@@ -3895,17 +3895,19 @@ static void retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *c
     if(b)
     {
       int converted_cst;
-      
-      dt_ioppr_transform_image_colorspace(self, img_dest, roi_mask_scaled->width, roi_mask_scaled->height,
-          iop_cs_rgb, iop_cs_Lab, &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
+
+      dt_ioppr_transform_image_colorspace(self, img_dest, img_dest, roi_mask_scaled->width,
+                                          roi_mask_scaled->height, iop_cs_rgb, iop_cs_Lab, &converted_cst,
+                                          dt_ioppr_get_pipe_work_profile_info(piece->pipe));
 
       dt_bilateral_splat(b, img_dest);
       dt_bilateral_blur(b);
       dt_bilateral_slice(b, img_dest, img_dest, detail);
       dt_bilateral_free(b);
 
-      dt_ioppr_transform_image_colorspace(self, img_dest, roi_mask_scaled->width, roi_mask_scaled->height,
-          iop_cs_Lab, iop_cs_rgb, &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
+      dt_ioppr_transform_image_colorspace(self, img_dest, img_dest, roi_mask_scaled->width,
+                                          roi_mask_scaled->height, iop_cs_Lab, iop_cs_rgb, &converted_cst,
+                                          dt_ioppr_get_pipe_work_profile_info(piece->pipe));
     }
   }
 
