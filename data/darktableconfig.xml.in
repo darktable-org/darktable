@@ -668,6 +668,19 @@
     <shortdescription>position of the image infos line</shortdescription>
     <longdescription/>
   </dtconfig>
+  <dtconfig prefs="gui" section="darkroom">
+    <name>plugins/darkroom/search_iop_by_text</name>
+    <type>
+      <enum>
+        <option>show search text</option>
+        <option>show groups</option>
+        <option>show both</option>
+      </enum>
+    </type>
+    <default>show both</default>
+    <shortdescription>show search module text entry</shortdescription>
+    <longdescription/>
+  </dtconfig>
   <dtconfig>
     <name>database_cache_quality</name>
     <type>int</type>
