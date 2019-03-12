@@ -135,50 +135,25 @@ static void _get_histogram_profile_type(dt_colorspaces_color_profile_type_t *out
   }
 }
 
-static void _transform_image_colorspace(const float *const img_in, float *const img_out, const dt_iop_roi_t *const roi_in)
+static void _transform_image_colorspace(dt_iop_module_t *self, const float *const img_in, float *const img_out,
+                                        const dt_iop_roi_t *const roi_in)
 {
-  cmsHPROFILE display_profile = NULL;
-  cmsHPROFILE histogram_profile = NULL;
-  cmsHTRANSFORM xform_rgb2rgb = NULL;
-
   dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
   gchar *histogram_filename = NULL;
-  
-  if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
-    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
   _get_histogram_profile_type(&histogram_type, &histogram_filename);
-  
-  const dt_colorspaces_color_profile_t *d_profile = dt_colorspaces_get_profile(darktable.color_profiles->display_type,
-                                                       darktable.color_profiles->display_filename,
-                                                       DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
-  if(d_profile) display_profile = d_profile->profile;
 
-  if((histogram_type != darktable.color_profiles->display_type) || 
-      (histogram_type == DT_COLORSPACE_FILE &&
-      strcmp(histogram_filename, darktable.color_profiles->display_filename)))
-  {
-    const dt_colorspaces_color_profile_t *d_histogram = dt_colorspaces_get_profile(histogram_type,
-                                                         histogram_filename,
-                                                         DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
-    if(d_histogram) histogram_profile = d_histogram->profile;
-  }
+  const dt_iop_order_iccprofile_info_t *const profile_info_from
+      = dt_ioppr_add_profile_info_to_list(self->dev, darktable.color_profiles->display_type,
+                                          darktable.color_profiles->display_filename, INTENT_PERCEPTUAL);
+  const dt_iop_order_iccprofile_info_t *const profile_info_to
+      = dt_ioppr_add_profile_info_to_list(self->dev, histogram_type, histogram_filename, INTENT_PERCEPTUAL);
 
-  // display rgb --> histogram rgb
-  if(display_profile && histogram_profile)
-  {
-    xform_rgb2rgb = cmsCreateTransform(display_profile, TYPE_RGBA_FLT, histogram_profile, TYPE_RGBA_FLT, INTENT_PERCEPTUAL, 0);
-    if(xform_rgb2rgb == NULL)
-      fprintf(stderr, "[overexposed _transform_image_colorspace] can't create colorspace transform\n");
-  }
-
-  if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
-    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-
-  if(xform_rgb2rgb)
-    cmsDoTransform(xform_rgb2rgb, img_in, img_out, roi_in->width * roi_in->height);
-  
-  if(xform_rgb2rgb) cmsDeleteTransform(xform_rgb2rgb);
+  if(profile_info_from && profile_info_to)
+    dt_ioppr_transform_image_colorspace_rgb(img_in, img_out, roi_in->width, roi_in->height, profile_info_from,
+                                            profile_info_to, self->op);
+  else
+    fprintf(stderr, "[_transform_image_colorspace] can't create transform profile\n");
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -206,7 +181,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *const out = (float *const)ovoid;
 
   // display mask using histogram profile as output
-  _transform_image_colorspace(in, img_tmp, roi_out);
+  _transform_image_colorspace(self, in, img_tmp, roi_out);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
@@ -244,6 +219,27 @@ cleanup:
 }
 
 #ifdef HAVE_OPENCL
+static void _transform_image_colorspace_cl(dt_iop_module_t *self, const int devid, cl_mem dev_img_in,
+                                           cl_mem dev_img_out, const dt_iop_roi_t *const roi_in)
+{
+  dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
+  gchar *histogram_filename = NULL;
+
+  _get_histogram_profile_type(&histogram_type, &histogram_filename);
+
+  const dt_iop_order_iccprofile_info_t *const profile_info_from
+      = dt_ioppr_add_profile_info_to_list(self->dev, darktable.color_profiles->display_type,
+                                          darktable.color_profiles->display_filename, INTENT_PERCEPTUAL);
+  const dt_iop_order_iccprofile_info_t *const profile_info_to
+      = dt_ioppr_add_profile_info_to_list(self->dev, histogram_type, histogram_filename, INTENT_PERCEPTUAL);
+
+  if(profile_info_from && profile_info_to)
+    dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_img_in, dev_img_out, roi_in->width, roi_in->height,
+                                               profile_info_from, profile_info_to, self->op);
+  else
+    fprintf(stderr, "[_transform_image_colorspace_cl] can't create transform profile\n");
+}
+
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -259,13 +255,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int width = roi_out->width;
   const int height = roi_out->height;
 
-  float *const img_tmp = dt_alloc_align(64, ch * width * height * sizeof(float));
-  if(img_tmp == NULL)
-  {
-    fprintf(stderr, "[overexposed process_cl] can't alloc temp image\n");
-    goto error;
-  }
-  
   // display mask using histogram profile as output
   dev_tmp = dt_opencl_alloc_device(devid, width, height, ch * sizeof(float));
   if(dev_tmp == NULL)
@@ -274,22 +263,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     fprintf(stderr, "[overexposed process_cl] error allocating memory for color transformation\n");
     goto error;
   }
-  
-  err = dt_opencl_copy_device_to_host(devid, img_tmp, dev_in, width, height, ch * sizeof(float));
-  if(err != CL_SUCCESS)
-  {
-    fprintf(stderr, "[overexposed process_cl] error allocating memory for color transformation\n");
-    goto error;
-  }
 
-  _transform_image_colorspace(img_tmp, img_tmp, roi_out);
-
-  err = dt_opencl_write_host_to_device(devid, img_tmp, dev_tmp, width, height, ch * sizeof(float));
-  if(err != CL_SUCCESS)
-  {
-    fprintf(stderr, "[dt_ioppr_transform_image_colorspace_cl] error allocating memory for color transformation 3\n");
-    goto error;
-  }
+  _transform_image_colorspace_cl(self, devid, dev_in, dev_tmp, roi_out);
 
   const float lower = MAX(dev->overexposed.lower / 100.0f, 1e-6f);
   const float upper = dev->overexposed.upper / 100.0f;
@@ -310,12 +285,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 8, 4 * sizeof(float), upper_color);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_overexposed, sizes);
   if(err != CL_SUCCESS) goto error;
-  if(img_tmp) dt_free_align(img_tmp);
   if(dev_tmp) dt_opencl_release_mem_object(dev_tmp);
   return TRUE;
 
 error:
-  if(img_tmp) dt_free_align(img_tmp);
   if(dev_tmp) dt_opencl_release_mem_object(dev_tmp);
   dt_print(DT_DEBUG_OPENCL, "[opencl_overexposed] couldn't enqueue kernel! %d\n", err);
   return FALSE;
