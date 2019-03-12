@@ -190,7 +190,7 @@ pdf_tools_installed() {
 		}
 		missing_tool=0
 	else
-		echo "pdftk or ghoscript are needed if you want one single result pdf."
+		echo "pdftk or ghostscript are needed if you want one single result pdf."
 	fi
 
 	return $missing_tool
