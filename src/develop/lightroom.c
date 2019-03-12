@@ -1580,7 +1580,10 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
   if(dev == NULL && data.has_gps)
   {
-    dt_image_set_location(imgid, data.lon, data.lat);
+    dt_image_geoloc_t geoloc;
+    geoloc.longitude = data.lon;
+    geoloc.latitude = data.lat;
+    dt_image_set_location(imgid, &geoloc);
 
     if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
     g_strlcat(imported, _("geotagging"), sizeof(imported));

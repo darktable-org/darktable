@@ -347,28 +347,28 @@ void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len)
              (int)img->exif_focal_length, (int)img->exif_iso);
 }
 
-void dt_image_set_location(const int32_t imgid, double lon, double lat)
+void dt_image_set_location(const int32_t imgid, dt_image_geoloc_t *geoloc)
 {
   /* fetch image from cache */
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
   /* set image location */
-  image->longitude = lon;
-  image->latitude = lat;
+  image->geoloc.longitude = geoloc->longitude;
+  image->geoloc.latitude = geoloc->latitude;
 
   /* store */
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_image_set_location_and_elevation(const int32_t imgid, double lon, double lat, double ele)
+void dt_image_set_location_and_elevation(const int32_t imgid, dt_image_geoloc_t *geoloc)
 {
   /* fetch image from cache */
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
   /* set image location and elevation */
-  image->longitude = lon;
-  image->latitude = lat;
-  image->elevation = ele;
+  image->geoloc.longitude = geoloc->longitude;
+  image->geoloc.latitude = geoloc->latitude;
+  image->geoloc.elevation = geoloc->elevation;
 
   /* store */
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
@@ -1218,9 +1218,9 @@ void dt_image_init(dt_image_t *img)
   img->exif_iso = 0;
   img->exif_focal_length = 0;
   img->exif_focus_distance = 0;
-  img->latitude = NAN;
-  img->longitude = NAN;
-  img->elevation = NAN;
+  img->geoloc.latitude = NAN;
+  img->geoloc.longitude = NAN;
+  img->geoloc.elevation = NAN;
   img->raw_black_level = 0;
   for(uint8_t i = 0; i < 4; i++) img->raw_black_level_separate[i] = 0;
   img->raw_white_point = 16384; // 2^14
