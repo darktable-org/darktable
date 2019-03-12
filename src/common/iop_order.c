@@ -2403,6 +2403,9 @@ void dt_ioppr_transform_image_colorspace_rgb(const float *const image_in, float 
   if(profile_info_from->type == profile_info_to->type
      && strcmp(profile_info_from->filename, profile_info_to->filename) == 0)
   {
+    if(image_in != image_out)
+      memcpy(image_out, image_in, width * height * 4 * sizeof(float));
+
     return;
   }
 
@@ -2687,7 +2690,21 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
   if(profile_info_from->type == profile_info_to->type
      && strcmp(profile_info_from->filename, profile_info_to->filename) == 0)
   {
-    return FALSE;
+    if(dev_img_in != dev_img_out)
+    {
+      size_t origin[] = { 0, 0, 0 };
+      size_t region[] = { width, height, 1 };
+      
+      err = dt_opencl_enqueue_copy_image(devid, dev_img_in, dev_img_out, origin, origin, region);
+      if(err != CL_SUCCESS)
+      {
+        fprintf(stderr,
+                "[dt_ioppr_transform_image_colorspace_rgb_cl] error on copy image for color transformation\n");
+        return FALSE;
+      }
+    }
+    
+    return TRUE;
   }
 
   const int ch = 4;
