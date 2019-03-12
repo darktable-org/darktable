@@ -119,7 +119,6 @@ static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *con
                                           gpointer data);
 
 static void _set_image_location(dt_view_t *self, int imgid, dt_image_geoloc_t *geoloc, gboolean set_elevation);
-static void _get_image_location(int imgid, dt_image_geoloc_t *geoloc);
 
 static gboolean _view_map_prefs_changed(dt_map_t *lib);
 static void _view_map_build_main_query(dt_map_t *lib);
@@ -1116,7 +1115,7 @@ static void _view_map_center_on_image(dt_view_t *self, const int32_t imgid)
   {
     const dt_map_t *lib = (dt_map_t *)self->data;
     dt_image_geoloc_t geoloc;
-    _get_image_location(imgid, &geoloc);
+    dt_image_get_location(imgid, &geoloc);
 
     if(!isnan(geoloc.longitude) && !isnan(geoloc.latitude))
     {
@@ -1143,7 +1142,7 @@ static gboolean _view_map_center_on_image_list(dt_view_t *self, const GList *sel
   {
     const int imgid = GPOINTER_TO_INT(l->data);
     dt_image_geoloc_t geoloc = { 0.0, 0.0, 0.0 };
-    _get_image_location(imgid, &geoloc);
+    dt_image_get_location(imgid, &geoloc);
 
     if(!isnan(geoloc.longitude) && !isnan(geoloc.latitude))
     {
@@ -1213,15 +1212,6 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *d
   }
 }
 
-static void _get_image_location(int imgid, dt_image_geoloc_t *geoloc)
-{
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-  geoloc->longitude = img->geoloc.longitude;
-  geoloc->latitude = img->geoloc.latitude;
-  geoloc->elevation = img->geoloc.elevation;
-  dt_image_cache_read_release(darktable.image_cache, img);
-}
-
 static void _set_image_location(dt_view_t *self, int imgid, dt_image_geoloc_t *geoloc, gboolean set_elevation)
 {
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
@@ -1250,7 +1240,7 @@ static void _view_map_add_image_to_map(dt_view_t *self, int imgid, gint x, gint 
   dt_image_geoloc_t geoloc;
 
   geotag->imgid = imgid;
-  _get_image_location(imgid, &geoloc);
+  dt_image_get_location(imgid, &geoloc);
 
   geotag->after.longitude = geoloc.longitude;
   geotag->after.latitude = geoloc.latitude;
