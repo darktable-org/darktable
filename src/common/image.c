@@ -347,6 +347,15 @@ void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len)
              (int)img->exif_focal_length, (int)img->exif_iso);
 }
 
+void dt_image_get_location(int imgid, dt_image_geoloc_t *geoloc)
+{
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  geoloc->longitude = img->geoloc.longitude;
+  geoloc->latitude = img->geoloc.latitude;
+  geoloc->elevation = img->geoloc.elevation;
+  dt_image_cache_read_release(darktable.image_cache, img);
+}
+
 void dt_image_set_location(const int32_t imgid, dt_image_geoloc_t *geoloc)
 {
   /* fetch image from cache */

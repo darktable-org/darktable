@@ -237,6 +237,8 @@ dt_image_orientation_t dt_image_get_orientation(const int imgid);
 gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height);
 /** set image location lon/lat */
 void dt_image_set_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
+/** get image location lon/lat */
+void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** set image location lon/lat/ele */
 void dt_image_set_location_and_elevation(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** returns 1 if there is history data found for this image, 0 else. */
