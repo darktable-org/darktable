@@ -1984,7 +1984,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->colorpicker
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   gtk_widget_set_size_request(GTK_WIDGET(c->colorpicker), DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
-  gtk_widget_set_tooltip_text(c->colorpicker, _("pick GUI color from image\ncntrl + click to select an area"));
+  gtk_widget_set_tooltip_text(c->colorpicker, _("pick GUI color from image\nctrl+click to select an area"));
   g_signal_connect(G_OBJECT(c->colorpicker), "button-press-event", G_CALLBACK(_color_picker_callback_button_press),
                    self);
   gtk_box_pack_end(GTK_BOX(hbox), c->colorpicker, FALSE, FALSE, 0);
