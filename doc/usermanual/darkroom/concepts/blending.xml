@@ -219,6 +219,10 @@
 
   <xi:include href="parametric_masks.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+<!-- Raster masks  -->
+
+  <xi:include href="raster_masks.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
 <!-- Combined masks  -->
 
   <xi:include href="combined_masks.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
