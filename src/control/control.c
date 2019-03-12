@@ -703,6 +703,13 @@ int dt_control_key_pressed_override(guint key, guint state)
     darktable.develop->darkroom_skip_mouse_events = TRUE;
     return 1;
   }
+  // set focus to the search module text box
+  else if(key == accels->darkroom_search_modules_focus.accel_key
+          && state == accels->darkroom_search_modules_focus.accel_mods)
+  {
+    dt_dev_modulegroups_search_text_focus(darktable.develop);
+    return 1;
+  }
   return 0;
 }
 

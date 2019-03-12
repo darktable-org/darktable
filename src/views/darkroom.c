@@ -2773,6 +2773,14 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     return 1;
   }
 
+  // set focus to the search module text box
+  if(key == accels->darkroom_search_modules_focus.accel_key
+     && state == accels->darkroom_search_modules_focus.accel_mods)
+  {
+    dt_dev_modulegroups_search_text_focus(darktable.develop);
+    return 1;
+  }
+
   return 1;
 }
 
@@ -2833,6 +2841,9 @@ void init_key_accels(dt_view_t *self)
 
   // add an option to allow skip mouse events while editing masks
   dt_accel_register_view(self, NC_("accel", "allow to pan & zoom while editing masks"), GDK_KEY_a, 0);
+
+  // set focus to the search modules text box
+  dt_accel_register_view(self, NC_("accel", "search modules"), GDK_KEY_a, GDK_CONTROL_MASK);
 }
 
 static gboolean _darkroom_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
