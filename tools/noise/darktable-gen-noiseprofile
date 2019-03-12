@@ -487,7 +487,7 @@ cat <<EOF
 --> Ready to profile images
 
 NOTE: This process takes some time and a lot of memory and disc space
-(up-to several gigabytes, depending on the number of ISO settings and
+up-to several gigabytes, depending on the number of ISO settings and
 the size of the RAW files.
 EOF
 
