@@ -43,6 +43,8 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - Add new raster mask supports. This is a copy of a parametric mask
   which is stable during the whole pixel-pipe.
 
+- Modules can now be re-ordered with shift+drag.
+
 ## New Features And Changes
 
 - A new profile ‘histogram profile’ has been added on the same pop-up
@@ -51,6 +53,10 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   softproof checks are active the histogram and color picker use the
   softproof profile, otherwise they use the histogram profile. The
   overexposed check always use the histogram profile.
+
+- A new profile 'work profile' has been added to the input color profile
+  module. Now RGB modules between the input and output color profile modules
+  will work with this profile.
 
 - A new color picker has been added to the blend module next to the
   existing one that adjusts the range sliders based on the selected
