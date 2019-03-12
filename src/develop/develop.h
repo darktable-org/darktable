@@ -216,6 +216,8 @@ typedef struct dt_develop_t
       gboolean (*test)(struct dt_lib_module_t *self, uint32_t group, uint32_t iop_group);
       /* switch to modulegroup */
       void (*switch_group)(struct dt_lib_module_t *self, struct dt_iop_module_t *module);
+      /* set focus to the search module text box */
+      void (*search_text_focus)(struct dt_lib_module_t *self);
     } modulegroups;
 
     // snapshots plugin hooks
@@ -349,6 +351,8 @@ float dt_dev_exposure_get_black(dt_develop_t *dev);
 gboolean dt_dev_modulegroups_available(dt_develop_t *dev);
 /** switch to modulegroup of module */
 void dt_dev_modulegroups_switch(dt_develop_t *dev, struct dt_iop_module_t *module);
+/** set the focus to modulegroup search text */
+void dt_dev_modulegroups_search_text_focus(dt_develop_t *dev);
 /** set the active modulegroup */
 void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group);
 /** get the active modulegroup */
