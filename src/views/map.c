@@ -1214,13 +1214,10 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *d
 
 static void _set_image_location(dt_view_t *self, int imgid, dt_image_geoloc_t *geoloc, gboolean set_elevation)
 {
-  dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-
-  img->geoloc.longitude = geoloc->longitude;
-  img->geoloc.latitude = geoloc->latitude;
-  if(set_elevation) img->geoloc.elevation = geoloc->elevation;
-
-  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+  if(set_elevation)
+    dt_image_set_location_and_elevation(imgid, geoloc);
+  else
+    dt_image_set_location(imgid, geoloc);
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
 }
