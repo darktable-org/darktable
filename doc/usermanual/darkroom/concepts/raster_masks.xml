@@ -14,7 +14,7 @@
 
   <para>
     When a <quote>drawn mask</quote> or a <quote>parametric mask</quote> is active
-    the final mask can be reused in other modules. This works becaues all the shapes from the drawn mask 
+    the final mask can be reused in other modules. This works because all the shapes from the drawn mask 
     and all the blend functions from the parametric mask of a module assemble a final mask,
     which internally is stored as a raster image and made accessible to other modules.
   </para>
@@ -34,7 +34,7 @@
       The selection of these masks can be saved as an alpha map, that is an image
       as big as the input image in which for each pixel an intensity value is being stored between zero
       and the maximum alpha value. If the value for a pixel is zero the input of the module is left unchanged, if the 
-      value has the maximum intensity the module has full effect and for each alpha value inbetween the 
+      value has the maximum intensity the module has full effect and for each alpha value in-between the 
       minimum and the maximum the effect is applied proportionally at that location.
     </para>
 
@@ -50,9 +50,9 @@
     <title>Usage</title>
 
     <sect5 id="raster_mask_usage_dropdown">
-      <title>Dropdown menu</title>
+      <title>Drop-down menu</title>
       <para>
-        If there is a mask in another module it will appear in the dropdown menu of the raster mask.
+        If there is a mask in another module it will appear in the drop-down menu of the raster mask.
         You can easily identify the mask by the name of the module it was defined in.
       </para>
     </sect5>  
