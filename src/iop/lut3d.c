@@ -71,7 +71,7 @@ typedef struct dt_iop_lut3d_params_t
 
 typedef struct dt_iop_lut3d_gui_data_t
 {
-  GtkWidget *lutfolder;
+//  GtkWidget *lutfolder;
   GtkWidget *hbox;
   GtkWidget *filepath;
   GtkWidget *colorspace;
@@ -526,8 +526,8 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
 
   if(!(cube_file = g_fopen(filepath, "r")))
   {
-    fprintf(stderr, "[lut3d] invalid cube file from %s\n", filepath);
-    dt_control_log(_("error - invalid cube file from %s"), filepath);
+    fprintf(stderr, "[lut3d] invalid cube file: %s\n", filepath);
+    dt_control_log(_("error - invalid cube file: %s"), filepath);
     return 0;
   }
 //printf("cube file opened\n");
@@ -906,7 +906,7 @@ printf("init_pipe\n");
 
 static void filepath_callback(GtkWidget *w, dt_iop_module_t *self)
 {
-printf("filepath_callback\n");
+//printf("filepath_callback\n");
   if(darktable.gui->reset) return;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   dt_iop_lut3d_global_data_t *gp = (dt_iop_lut3d_global_data_t *)self->data;
@@ -924,7 +924,7 @@ printf("filepath_callback\n");
 
 static void colorspace_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
-printf("colorspace_callback\n");
+//printf("colorspace_callback\n");
   if(darktable.gui->reset) return;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
@@ -938,7 +938,7 @@ printf("colorspace_callback\n");
 
 static void interpolation_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
-printf("interpolation_callback\n");
+//printf("interpolation_callback\n");
   if(darktable.gui->reset) return;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   p->interpolation = dt_bauhaus_combobox_get(widget);
@@ -980,49 +980,6 @@ static void log2tolin_callback(GtkWidget *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void button0_clicked(GtkWidget *widget, dt_iop_module_t *self)
-{
-//printf("button0_clicked\n");
-  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
-  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
-  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("select root lut folder"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"), GTK_RESPONSE_CANCEL,
-      _("_select"), GTK_RESPONSE_ACCEPT, (char *)NULL);
-  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
-  gtk_entry_set_text(GTK_ENTRY(g->filepath), "");
-  p->filepath[0] = 0;
-  gchar *oldlutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
-  char *c = g_strstr_len(oldlutfolder, -1, "$");
-  if(c) *c = '\0';
-  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), oldlutfolder);
-  g_free(oldlutfolder);
-  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
-  {
-    gchar *lutfolder = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    gtk_entry_set_text(GTK_ENTRY(g->lutfolder), lutfolder); // the signal handler will write this to conf
-    if (lutfolder[0] != 0)
-    {
-      gtk_widget_set_visible(g->hbox, TRUE);
-    }
-    else
-    {
-      gtk_widget_set_visible(g->hbox, FALSE);
-    }
-    g_free(lutfolder);
-  }
-  else
-  {
-    gtk_widget_set_visible(g->hbox, FALSE);
-  }
-  gtk_widget_destroy(filechooser);
-}
-
-static void lutfolder_callback(GtkEntry *entry, gpointer user_data)
-{
-  dt_conf_set_string("plugins/darkroom/lut3d/def_path", gtk_entry_get_text(entry));
-}
-
 static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
 {
   int filetype;
@@ -1060,7 +1017,6 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
     filetype = 2;
 
   GtkFileFilter* filter = GTK_FILE_FILTER(gtk_file_filter_new());
-//  gtk_file_filter_add_mime_type(filter, "image/png");
   gtk_file_filter_add_pattern(filter, "*.png");
   gtk_file_filter_set_name(filter, _("hald cluts (png)"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
@@ -1068,7 +1024,7 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
 
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
   gtk_file_filter_add_pattern(filter, "*.cube");
-  gtk_file_filter_set_name(filter, _("3Dlut (cube)"));
+  gtk_file_filter_set_name(filter, _("3D lut (cube)"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
   if (filetype == 2) gtk_file_chooser_set_filter (GTK_FILE_CHOOSER(filechooser), filter);
 
@@ -1083,7 +1039,7 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
 //    printf("button_clicked entered filepath %s\n", filepath);
 
     if (strcmp(lutfolder, filepath) < 0)
-    {
+    { // remove root lut folder from file path
       gchar *c = filepath + strlen(lutfolder) + 1;
 //      printf("button_clicked should be filepath %s\n", (gchar *)c);
       strcpy(filepath, (gchar *)c);
@@ -1107,16 +1063,21 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
 
 void gui_update(dt_iop_module_t *self)
 {
-printf("gui_update\n");
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   gchar *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
-  gtk_entry_set_text(GTK_ENTRY(g->lutfolder), lutfolder);
+//printf("gui_update, lut folder %s\n", lutfolder);
   gtk_entry_set_text(GTK_ENTRY(g->filepath), p->filepath);
-  if (lutfolder[0] != 0)
-    gtk_widget_set_visible(g->hbox, TRUE);
+  if (lutfolder[0] == 0)
+  {
+    dt_control_log(_("Lut folder not set in preferences (core options)"));
+    gtk_widget_set_sensitive(g->hbox, FALSE);
+  }
   else
-    gtk_widget_set_visible(g->hbox, FALSE);
+  {
+    gtk_widget_set_sensitive(g->hbox, TRUE);
+  }
+  g_free(lutfolder);
   dt_bauhaus_combobox_set(g->colorspace, p->colorspace);
   dt_bauhaus_slider_set_soft(g->middle_grey, p->middle_grey);
   dt_bauhaus_slider_set_soft(g->min_exposure, p->min_exposure);
@@ -1130,28 +1091,13 @@ printf("gui_update\n");
 void gui_init(dt_iop_module_t *self)
 {
 setvbuf(stdout, NULL, _IONBF, 0);
-printf("gui_init\n");
+//printf("gui_init\n");
   self->gui_data = malloc(sizeof(dt_iop_lut3d_gui_data_t));
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
-  GtkWidget *hbox0 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
-  g->lutfolder = gtk_entry_new();
-  gtk_box_pack_start(GTK_BOX(hbox0), g->lutfolder, TRUE, TRUE, 0);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(g->lutfolder));
-  gtk_widget_set_tooltip_text(g->lutfolder, _("the lut folder is global and must be set once. Saved as a preference and not with the image (xmp)"));
-  g_signal_connect(G_OBJECT(g->lutfolder), "changed", G_CALLBACK(lutfolder_callback), self);
-
-  GtkWidget *button0 = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_DO_NOT_USE_BORDER, NULL);
-  gtk_widget_set_size_request(button0, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
-  gtk_widget_set_tooltip_text(button0, _("select the lut 3D root folder"));
-  gtk_box_pack_start(GTK_BOX(hbox0), button0, FALSE, FALSE, 0);
-  g_signal_connect(G_OBJECT(button0), "clicked", G_CALLBACK(button0_clicked), self);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox0), TRUE, TRUE, 0);
 
   g->hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
   g->filepath = gtk_entry_new();
@@ -1234,7 +1180,7 @@ printf("gui_init\n");
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-printf("gui_cleanup\n");
+//printf("gui_cleanup\n");
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(g->filepath));
   free(self->gui_data);
