@@ -275,6 +275,19 @@ static inline void dt_draw_histogram_8_linear(cairo_t *cr, uint32_t *hist, int32
   cairo_fill(cr);
 }
 
+static inline void dt_draw_histogram_8_zoomed(cairo_t *cr, uint32_t *hist, int32_t channels, int32_t channel,
+                                              const float zoom_factor, const float zoom_offset_x,
+                                              const float zoom_offset_y)
+{
+  cairo_move_to(cr, -zoom_offset_x, -zoom_offset_y);
+  for(int k = 0; k < 256; k++)
+    cairo_line_to(cr, ((float)k - zoom_offset_x) * zoom_factor,
+                  ((float)hist[channels * k + channel] - zoom_offset_y) * zoom_factor);
+  cairo_line_to(cr, (255.f - zoom_offset_x), -zoom_offset_y * zoom_factor);
+  cairo_close_path(cr);
+  cairo_fill(cr);
+}
+
 static inline void dt_draw_histogram_8_log(cairo_t *cr, uint32_t *hist, int32_t channels, int32_t channel)
 {
   cairo_move_to(cr, 0, 0);
