@@ -988,21 +988,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   if(init_gui)
   {
     const char *mode = "lighttable";
-    // april 1st: you have to earn using dt first! or know that you can switch views with keyboard shortcuts
-    time_t now;
-    time(&now);
-    struct tm lt;
-    localtime_r(&now, &lt);
-    if(lt.tm_mon == 3 && lt.tm_mday == 1)
-    {
-      int current_year = lt.tm_year + 1900;
-      int last_year = dt_conf_get_int("ui_last/april1st");
-      if(last_year < current_year)
-      {
-        dt_conf_set_int("ui_last/april1st", current_year);
-        mode = "knight";
-      }
-    }
     // we have to call dt_ctl_switch_mode_to() here already to not run into a lua deadlock.
     // having another call later is ok
     dt_ctl_switch_mode_to(mode);
