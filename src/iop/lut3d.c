@@ -711,7 +711,7 @@ static inline void log2_to_lin(float *lout, const float middle_grey,
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ibuf, void *const obuf,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-printf("process\n");
+//printf("process\n");
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   dt_iop_lut3d_global_data_t *gp = (dt_iop_lut3d_global_data_t *)self->data;
   const int ch = piece->colors;
@@ -823,7 +823,7 @@ void reload_defaults(dt_iop_module_t *self)
 
 void init(dt_iop_module_t *self)
 {
-printf("init\n");
+//printf("init\n");
   self->data = NULL;
   self->params = calloc(1, sizeof(dt_iop_lut3d_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_lut3d_params_t));
@@ -847,7 +847,7 @@ printf("init\n");
 
 void init_global(dt_iop_module_so_t *self)
 {
-printf("init_global\n");
+//printf("init_global\n");
   dt_iop_lut3d_global_data_t *gd
       = (dt_iop_lut3d_global_data_t *)malloc(sizeof(dt_iop_lut3d_global_data_t));
   self->data = gd;
@@ -857,14 +857,14 @@ printf("init_global\n");
 
 void cleanup(dt_iop_module_t *self)
 {
-printf("cleanup\n");
+//printf("cleanup\n");
   free(self->params);
   self->params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
-printf("cleanup_global\n");
+//printf("cleanup_global\n");
   dt_iop_lut3d_global_data_t *gp = (dt_iop_lut3d_global_data_t *)self->data;
   if (gp->clut)
   {
@@ -878,7 +878,7 @@ printf("cleanup_global\n");
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-  printf("commit\n");
+//printf("commit\n");
     dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
     dt_iop_lut3d_global_data_t *gp = (dt_iop_lut3d_global_data_t *)self->data;
     gchar *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
@@ -900,7 +900,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-printf("init_pipe\n");
+//printf("init_pipe\n");
   // create part of the pixelpipe
 }
 
