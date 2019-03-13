@@ -3403,7 +3403,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
                           {   ixo + iwd,  iyo       } };
 
     // convert coordinates of corners to coordinates of this module's output
-    if(call_distort_transform(self->dev, self->dev->preview_pipe, self, (float *)V, 4))
+    if(!call_distort_transform(self->dev, self->dev->preview_pipe, self, (float *)V, 4))
       return;
 
     // get x/y-offset as well as width and height of output buffer
