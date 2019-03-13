@@ -57,10 +57,6 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   area from the image. Click to adjust the input image slider,
   ctrl+click to adjust the out image one.
 
-- The color zones module now display an histogram based on the ‘select
-  by’ channel and displays the selected range if the color picker is
-  in area mode.
-
 - The picasa module has been renamed to googlephoto and completely
   rewrited to support the new Google Photo API. It is now again
   possible to create albums directly from the export module.
@@ -111,15 +107,21 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 
 - Add soft boundaries for denoise profile controls.
 
-- The color zones module curve acts now like the tone curve (but horizontal),
+- The color zones module now display an histogram based on the ‘select
+  by’ channel and displays the selected range if the color picker is
+  in area mode.
+  It acts now like the tone curve (but horizontal),
   it has two edit modes: edit by area is the former one, if not checked nodes
-  can be edited like in the tone curve.
+  can be edited like in the tone curve, delete only works by right-click
+  when not in edit area mode.
   A new process mode has been added: smooth is the former one, strong is new.
   An interpolation method has been added that allows to select different types
   of curves.
   The color picker allows to select by area with cntrl+click.
-  A new color picker has benn added that creates a curve based on the area
+  A new color picker has been added that creates a curve based on the area
   selected from the image.
+  When pressing the shortcut 'pan&zoom while editing masks' the draw area
+  can now be zoomed.
 
 ## Bug fixes
 
