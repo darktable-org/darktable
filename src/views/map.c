@@ -1237,18 +1237,17 @@ static void _view_map_add_image_to_map(dt_view_t *self, int imgid, gint x, gint 
   // create the undo/redo data
 
   dt_undo_geotag_t *geotag = malloc(sizeof(dt_undo_geotag_t));
-  dt_image_geoloc_t geoloc;
 
   geotag->imgid = imgid;
-  dt_image_get_location(imgid, &geoloc);
+  dt_image_get_location(imgid, &(geotag->before));
 
-  geotag->after.longitude = geoloc.longitude;
-  geotag->after.latitude = geoloc.latitude;
+  geotag->after.longitude = longitude;
+  geotag->after.latitude = latitude;
   geotag->after.elevation = 0.0;
 
   dt_undo_record(darktable.undo, self, DT_UNDO_GEOTAG, (dt_undo_data_t *)geotag, &_pop_undo, free);
 
-  _set_image_location(self, imgid, &geotag->after, FALSE);
+  _set_image_location(self, imgid, &(geotag->after), FALSE);
 }
 
 static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
