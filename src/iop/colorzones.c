@@ -1360,7 +1360,7 @@ static gboolean _area_scrolled_callback(GtkWidget *widget, GdkEventScroll *event
       const float linx = _zoom_out(mx, c->zoom_factor, c->offset_x),
                   liny = _zoom_out(my, c->zoom_factor, c->offset_y);
 
-      c->zoom_factor *= 1.0 + 0.1 * delta_y;
+      c->zoom_factor *= 1.0 - 0.1 * delta_y;
       if(c->zoom_factor < 1.f) c->zoom_factor = 1.f;
 
       c->offset_x = linx - (mx / c->zoom_factor);
