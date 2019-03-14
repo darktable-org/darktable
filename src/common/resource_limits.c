@@ -26,6 +26,8 @@
 #include <stdint.h>       // for uintmax_t
 #include <stdio.h>        // for fprintf, stderr
 #include <string.h>       // for strerror
+#include <inttypes.h>
+
 #ifdef _WIN32
 #include "win/rlimit.h"
 #else
@@ -55,8 +57,8 @@ static void dt_set_rlimits_stack()
   {
     // looks like we need to bump/set it...
 
-    fprintf(stderr, "[dt_set_rlimits_stack] info: bumping RLIMIT_STACK rlim_cur from %ju to %i\n",
-            (uintmax_t)rlim.rlim_cur, WANTED_STACK_SIZE);
+    fprintf(stderr, "[dt_set_rlimits_stack] info: bumping RLIMIT_STACK rlim_cur from %"PRIuMAX" to %"PRIuMAX"\n",
+            (uintmax_t)rlim.rlim_cur, (uintmax_t)WANTED_STACK_SIZE);
 
     rlim.rlim_cur = WANTED_STACK_SIZE;
 
