@@ -25,6 +25,7 @@
 #include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <inttypes.h>
 
 #ifdef _WIN32
 #include "win/dtwin.h"
@@ -56,7 +57,7 @@ int dt_pthread_create(pthread_t *thread, void *(*start_routine)(void *), void *a
   {
     // looks like we need to bump/set it...
 
-    fprintf(stderr, "[dt_pthread_create] info: bumping pthread's stacksize from %zu to %ju\n", stacksize,
+    fprintf(stderr, "[dt_pthread_create] info: bumping pthread's stacksize from %zu to %"PRIuMAX"\n", stacksize,
             (uintmax_t)WANTED_THREADS_STACK_SIZE);
 
     ret = pthread_attr_setstacksize(&attr, WANTED_THREADS_STACK_SIZE);
