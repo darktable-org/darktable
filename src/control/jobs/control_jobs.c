@@ -1155,7 +1155,7 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
   guint tagid = 0;
   const guint total = g_list_length(t);
   double fraction = 0;
-  gboolean is_copy = params->flag == 1;
+  const gboolean is_copy = params->flag == 1;
   char message[512] = { 0 };
 
   if(is_copy)
