@@ -3320,6 +3320,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     // get parametric mask (if any) and apply global opacity
     const unsigned blendif = d->blendif;
     const unsigned int mask_combine = d->mask_combine;
+    const int use_work_profile = (work_profile == NULL) ? 0 : 1;
     dt_opencl_set_kernel_arg(devid, kernel_mask, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 1, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 2, sizeof(cl_mem), (void *)&dev_mask_1);
@@ -3334,6 +3335,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     dt_opencl_set_kernel_arg(devid, kernel_mask, 11, 2 * sizeof(int), (void *)&offs);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 12, sizeof(cl_mem), (void *)&dev_profile_info);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 13, sizeof(cl_mem), (void *)&dev_profile_lut);
+    dt_opencl_set_kernel_arg(devid, kernel_mask, 14, sizeof(int), (void *)&use_work_profile);
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_mask, sizes);
     if(err != CL_SUCCESS) goto error;
 
@@ -3438,6 +3440,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   if(request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY)
   {
     // let us display a specific channel
+    const int use_work_profile = (work_profile == NULL) ? 0 : 1;
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 1, sizeof(cl_mem), (void *)&dev_tmp);
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 2, sizeof(cl_mem), (void *)&dev_mask_1);
@@ -3448,6 +3451,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 7, sizeof(int), (void *)&request_mask_display);
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 8, sizeof(cl_mem), (void *)&dev_profile_info);
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 9, sizeof(cl_mem), (void *)&dev_profile_lut);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 10, sizeof(int), (void *)&use_work_profile);
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_display_channel, sizes);
     if(err != CL_SUCCESS) goto error;
   }
