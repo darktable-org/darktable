@@ -121,7 +121,7 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   A new color picker has been added that creates a curve based on the area
   selected from the image.
   When pressing the shortcut 'pan&zoom while editing masks' the draw area
-  can now be zoomed.
+  can now be zoomed. Double-click on the bottom bar resets the zoom.
 
 ## Bug fixes
 
