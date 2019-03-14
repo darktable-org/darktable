@@ -2407,8 +2407,7 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
   int handled = 0;
   if(dev->gui_module && dev->gui_module->request_color_pick != DT_REQUEST_COLORPICK_OFF && which == 1)
   {
-    dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
-    dt_dev_invalidate_all(dev);
+    dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
     dt_control_queue_redraw();
     return 1;
   }
@@ -2451,8 +2450,8 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
     {
       dev->gui_module->color_picker_point[0] = .5f + zoom_x;
       dev->gui_module->color_picker_point[1] = .5f + zoom_y;
-      dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
-      dt_dev_invalidate_all(dev);
+
+      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
     }
     dt_control_queue_redraw();
     return 1;

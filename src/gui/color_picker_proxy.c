@@ -249,7 +249,7 @@ static gboolean _iop_color_picker_callback(GtkWidget *button, GdkEventButton *e,
       dt_lib_colorpicker_set_point(darktable.lib, pos[0], pos[1]);
     }
 
-    dt_dev_reprocess_all(self->module->dev);
+    self->module->dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
   }
   else
   {
@@ -259,6 +259,7 @@ static gboolean _iop_color_picker_callback(GtkWidget *button, GdkEventButton *e,
   dt_iop_color_picker_update(self);
   dt_control_queue_redraw();
   dt_iop_request_focus(self->module);
+
   return TRUE;
 }
 
