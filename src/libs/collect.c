@@ -358,6 +358,8 @@ static void view_popup_menu_onRemove(GtkWidget *menuitem, gpointer userdata)
       gtk_tree_store_remove(GTK_TREE_STORE(gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model))),
                             &model_iter);
     }
+
+    g_free(fullq);
   }
 }
 
