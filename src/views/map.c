@@ -38,16 +38,11 @@
 
 DT_MODULE(1)
 
-typedef struct dt_geotag_pos_t
-{
-  float longitude, latitude, elevation;
-} dt_geotag_pos_t;
-
 typedef struct dt_undo_geotag_t
 {
   int imgid;
-  dt_geotag_pos_t before;
-  dt_geotag_pos_t after;
+  dt_image_geoloc_t before;
+  dt_image_geoloc_t after;
 } dt_undo_geotag_t;
 
 typedef struct dt_map_t
@@ -123,9 +118,7 @@ static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *con
                                           GtkSelectionData *selection_data, guint target_type, guint time,
                                           gpointer data);
 
-static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude, float elevation,
-                                gboolean set_elevation);
-static void _get_image_location(int imgid, float *longitude, float *latitude, float *elevation);
+static void _set_image_location(dt_view_t *self, int imgid, dt_image_geoloc_t *geoloc, gboolean set_elevation);
 
 static gboolean _view_map_prefs_changed(dt_map_t *lib);
 static void _view_map_build_main_query(dt_map_t *lib);
@@ -628,7 +621,7 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
         goto map_changed_failure;
       }
       entry->imgid = imgid;
-      entry->image = osm_gps_map_image_add_with_alignment(map, cimg->latitude, cimg->longitude, thumb, 0, 1);
+      entry->image = osm_gps_map_image_add_with_alignment(map, cimg->geoloc.latitude, cimg->geoloc.longitude, thumb, 0, 1);
       entry->width = w;
       entry->height = h;
       lib->images = g_slist_prepend(lib->images, entry);
@@ -1121,16 +1114,14 @@ static void _view_map_center_on_image(dt_view_t *self, const int32_t imgid)
   if(imgid)
   {
     const dt_map_t *lib = (dt_map_t *)self->data;
-    float longitude = 0;
-    float latitude = 0;
-    float elevation = 0;
-    _get_image_location(imgid, &longitude, &latitude, &elevation);
+    dt_image_geoloc_t geoloc;
+    dt_image_get_location(imgid, &geoloc);
 
-    if(!isnan(longitude) && !isnan(latitude))
+    if(!isnan(geoloc.longitude) && !isnan(geoloc.latitude))
     {
       int zoom;
       g_object_get(G_OBJECT(lib->map), "zoom", &zoom, NULL);
-      _view_map_center_on_location(self, longitude, latitude, zoom);
+      _view_map_center_on_location(self, geoloc.longitude, geoloc.latitude, zoom);
     }
   }
 }
@@ -1150,15 +1141,15 @@ static gboolean _view_map_center_on_image_list(dt_view_t *self, const GList *sel
   while(l)
   {
     const int imgid = GPOINTER_TO_INT(l->data);
-    float lon = 0, lat = 0, el = 0;
-    _get_image_location(imgid, &lon, &lat, &el);
+    dt_image_geoloc_t geoloc = { 0.0, 0.0, 0.0 };
+    dt_image_get_location(imgid, &geoloc);
 
-    if(!isnan(lon) && !isnan(lat))
+    if(!isnan(geoloc.longitude) && !isnan(geoloc.latitude))
     {
-      max_longitude = MAX(max_longitude, lon);
-      min_longitude = MIN(min_longitude, lon);
-      max_latitude = MAX(max_latitude, lat);
-      min_latitude = MIN(min_latitude, lat);
+      max_longitude = MAX(max_longitude, geoloc.longitude);
+      min_longitude = MIN(min_longitude, geoloc.longitude);
+      max_latitude = MAX(max_latitude, geoloc.latitude);
+      min_latitude = MIN(min_latitude, geoloc.latitude);
       count++;
     }
     l = g_list_next(l);
@@ -1209,37 +1200,24 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *d
   if(type == DT_UNDO_GEOTAG)
   {
     dt_undo_geotag_t *geotag = (dt_undo_geotag_t *)data;
-    dt_geotag_pos_t *pos;
+    dt_image_geoloc_t *pos;
 
     if(action == DT_ACTION_UNDO)
       pos = &(geotag->before);
     else
       pos = &(geotag->after);
 
-    _set_image_location(self, geotag->imgid, pos->longitude, pos->latitude, pos->elevation, TRUE);
+    _set_image_location(self, geotag->imgid, pos, TRUE);
     g_signal_emit_by_name(lib->map, "changed");
   }
 }
 
-static void _get_image_location(int imgid, float *longitude, float *latitude, float *elevation)
+static void _set_image_location(dt_view_t *self, int imgid, dt_image_geoloc_t *geoloc, gboolean set_elevation)
 {
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-  *longitude = img->longitude;
-  *latitude = img->latitude;
-  *elevation = img->elevation;
-  dt_image_cache_read_release(darktable.image_cache, img);
-}
-
-static void _set_image_location(dt_view_t *self, int imgid, float longitude, float latitude, float elevation,
-                                gboolean set_elevation)
-{
-  dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-
-  img->longitude = longitude;
-  img->latitude = latitude;
-  if(set_elevation) img->elevation = elevation;
-
-  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+  if(set_elevation)
+    dt_image_set_location_and_elevation(imgid, geoloc);
+  else
+    dt_image_set_location(imgid, geoloc);
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
 }
@@ -1258,7 +1236,7 @@ static void _view_map_add_image_to_map(dt_view_t *self, int imgid, gint x, gint 
   dt_undo_geotag_t *geotag = malloc(sizeof(dt_undo_geotag_t));
 
   geotag->imgid = imgid;
-  _get_image_location(imgid, &(geotag->before.longitude), &(geotag->before.latitude), &(geotag->before.elevation));
+  dt_image_get_location(imgid, &(geotag->before));
 
   geotag->after.longitude = longitude;
   geotag->after.latitude = latitude;
@@ -1266,7 +1244,7 @@ static void _view_map_add_image_to_map(dt_view_t *self, int imgid, gint x, gint 
 
   dt_undo_record(darktable.undo, self, DT_UNDO_GEOTAG, (dt_undo_data_t *)geotag, &_pop_undo, free);
 
-  _set_image_location(self, imgid, longitude, latitude, 0.0, FALSE);
+  _set_image_location(self, imgid, &(geotag->after), FALSE);
 }
 
 static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
@@ -1362,7 +1340,8 @@ static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *con
     if(*imgid > 0)
     {
       //  the image was dropped into the filmstrip, let's remove it in this case
-      _set_image_location(self, *imgid, NAN, NAN, NAN, TRUE);
+      dt_image_geoloc_t geoloc = { NAN, NAN, NAN };
+      _set_image_location(self, *imgid, &geoloc, TRUE);
       success = TRUE;
     }
   }
