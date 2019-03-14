@@ -762,17 +762,17 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     gchar *latitude = NULL, *longitude = NULL, *elevation = NULL;
     if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
     {
-      latitude = dt_util_latitude_str(image->latitude);
-      longitude = dt_util_longitude_str(image->longitude);
-      elevation = dt_util_elevation_str(image->elevation);
+      latitude = dt_util_latitude_str(image->geoloc.latitude);
+      longitude = dt_util_longitude_str(image->geoloc.longitude);
+      elevation = dt_util_elevation_str(image->geoloc.elevation);
     }
     else
     {
-      const gchar NS = image->latitude < 0 ? 'S' : 'N';
-      const gchar EW = image->longitude < 0 ? 'W' : 'E';
-      if(image->latitude) latitude = g_strdup_printf("%c %09.6f", NS, fabs(image->latitude));
-      if(image->longitude) longitude = g_strdup_printf("%c %010.6f", EW, fabs(image->longitude));
-      if(image->elevation) elevation = g_strdup_printf("%.2f %s", image->elevation, _("m"));
+      const gchar NS = image->geoloc.latitude < 0 ? 'S' : 'N';
+      const gchar EW = image->geoloc.longitude < 0 ? 'W' : 'E';
+      if(image->geoloc.latitude) latitude = g_strdup_printf("%c %09.6f", NS, fabs(image->geoloc.latitude));
+      if(image->geoloc.longitude) longitude = g_strdup_printf("%c %010.6f", EW, fabs(image->geoloc.longitude));
+      if(image->geoloc.elevation) elevation = g_strdup_printf("%.2f %s", image->geoloc.elevation, _("m"));
     }
     gchar *parts[4] = { 0 };
     int i = 0;
