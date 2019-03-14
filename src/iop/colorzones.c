@@ -1221,6 +1221,24 @@ static gboolean _bottom_area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_i
 #undef DT_COLORZONES_CELLSI
 #undef DT_COLORZONES_CELLSJ
 
+static gboolean _bottom_area_button_press_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
+{
+  dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+
+  if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
+  {
+    // reset zoom level
+    c->zoom_factor = 1.f;
+    c->offset_x = c->offset_y = 0.f;
+
+    gtk_widget_queue_draw(self->widget);
+
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
 static int _sanity_check(const float x, const int selected, const int nodes, const dt_iop_colorzones_node_t *curve)
 {
   int point_valid = 1;
@@ -2127,7 +2145,10 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "configure-event", G_CALLBACK(_area_resized_callback), self);
   g_signal_connect(G_OBJECT(c->area), "key-press-event", G_CALLBACK(_area_key_press_callback), self);
 
+  gtk_widget_add_events(GTK_WIDGET(c->bottom_area), GDK_BUTTON_PRESS_MASK);
   g_signal_connect(G_OBJECT(c->bottom_area), "draw", G_CALLBACK(_bottom_area_draw_callback), self);
+  g_signal_connect(G_OBJECT(c->bottom_area), "button-press-event", G_CALLBACK(_bottom_area_button_press_callback),
+                   self);
 
   /* From src/common/curve_tools.h :
     #define CUBIC_SPLINE 0
