@@ -45,6 +45,8 @@ GList *dt_ioppr_get_iop_order_list(int *_version);
 dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const char *op_name);
 /** returns the iop_order from iop_order_list list with operation = op_name */
 double dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name);
+/** returns colorin's iop_order */
+double dt_ioppr_get_colorin_iop_order(GList *iop_list);
 
 /** check if there's duplicate iop_order entries in iop_list */
 void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list);

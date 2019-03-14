@@ -118,7 +118,7 @@ typedef enum dt_dev_request_colorpick_flags_t
   DT_REQUEST_COLORPICK_BLEND = 1 << 1   // requested by parametric blending gui
 } dt_dev_request_colorpick_flags_t;
 
-/** colorspace enums */
+/** colorspace enums, must be in synch with dt_iop_colorspace_type_t in color_conversion.cl */
 typedef enum dt_iop_colorspace_type_t
 {
   iop_cs_NONE = -1,
