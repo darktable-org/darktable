@@ -117,9 +117,9 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
     params->data->exif_focal_length = img->exif_focal_length;
     if(!isnan(img->exif_focus_distance) && fpclassify(img->exif_focus_distance) != FP_ZERO)
       params->data->exif_focus_distance = img->exif_focus_distance;
-    if(!isnan(img->longitude)) params->data->longitude = img->longitude;
-    if(!isnan(img->latitude)) params->data->latitude = img->latitude;
-    if(!isnan(img->elevation)) params->data->elevation = img->elevation;
+    if(!isnan(img->geoloc.longitude)) params->data->longitude = img->geoloc.longitude;
+    if(!isnan(img->geoloc.latitude)) params->data->latitude = img->geoloc.latitude;
+    if(!isnan(img->geoloc.elevation)) params->data->elevation = img->geoloc.elevation;
 
     dt_image_cache_read_release(darktable.image_cache, img);
   }

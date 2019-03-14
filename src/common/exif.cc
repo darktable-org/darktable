@@ -96,7 +96,7 @@ const char *dt_xmp_keys[]
         "Xmp.darktable.blendop_version", "Xmp.darktable.multi_priority", "Xmp.darktable.multi_name", "Xmp.darktable.iop_order",
         "Xmp.darktable.xmp_version", "Xmp.darktable.raw_params", "Xmp.darktable.auto_presets_applied",
         "Xmp.darktable.mask_id", "Xmp.darktable.mask_type", "Xmp.darktable.mask_name",
-        "Xmp.darktable.masks_history", "Xmp.darktable.mask_num", "Xmp.darktable.mask_points", 
+        "Xmp.darktable.masks_history", "Xmp.darktable.mask_num", "Xmp.darktable.mask_points",
         "Xmp.darktable.mask_version", "Xmp.darktable.mask", "Xmp.darktable.mask_nb", "Xmp.darktable.mask_src",
         "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights",
         "Xmp.xmpMM.DerivedFrom" };
@@ -326,12 +326,12 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
     /* read gps location */
     if(FIND_XMP_TAG("Xmp.exif.GPSLatitude"))
     {
-      img->latitude = dt_util_gps_string_to_number(pos->toString().c_str());
+      img->geoloc.latitude = dt_util_gps_string_to_number(pos->toString().c_str());
     }
 
     if(FIND_XMP_TAG("Xmp.exif.GPSLongitude"))
     {
-      img->longitude = dt_util_gps_string_to_number(pos->toString().c_str());
+      img->geoloc.longitude = dt_util_gps_string_to_number(pos->toString().c_str());
     }
 
     if(FIND_XMP_TAG("Xmp.exif.GPSAltitude"))
@@ -343,7 +343,7 @@ static bool dt_exif_read_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
         const char *sign = sign_str.c_str();
         double elevation = 0.0;
         if(dt_util_gps_elevation_to_number(pos->toRational(0).first, pos->toRational(0).second, sign[0], &elevation))
-          img->elevation = elevation;
+          img->geoloc.elevation = elevation;
       }
     }
 
@@ -699,7 +699,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         if(dt_util_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
                                            pos->toRational(1).first, pos->toRational(1).second,
                                            pos->toRational(2).first, pos->toRational(2).second, sign[0], &latitude))
-          img->latitude = latitude;
+          img->geoloc.latitude = latitude;
       }
     }
 
@@ -714,7 +714,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         if(dt_util_gps_rationale_to_number(pos->toRational(0).first, pos->toRational(0).second,
                                            pos->toRational(1).first, pos->toRational(1).second,
                                            pos->toRational(2).first, pos->toRational(2).second, sign[0], &longitude))
-          img->longitude = longitude;
+          img->geoloc.longitude = longitude;
       }
     }
 
@@ -727,7 +727,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         const char *sign = sign_str.c_str();
         double elevation = 0.0;
         if(dt_util_gps_elevation_to_number(pos->toRational(0).first, pos->toRational(0).second, sign[0], &elevation))
-          img->elevation = elevation;
+          img->geoloc.elevation = elevation;
       }
     }
 
@@ -1381,16 +1381,16 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
 
       // GPS data
       const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-      if(!std::isnan(cimg->longitude) && !std::isnan(cimg->latitude))
+      if(!std::isnan(cimg->geoloc.longitude) && !std::isnan(cimg->geoloc.latitude))
       {
         exifData["Exif.GPSInfo.GPSVersionID"] = "02 02 00 00";
-        exifData["Exif.GPSInfo.GPSLongitudeRef"] = (cimg->longitude < 0) ? "W" : "E";
-        exifData["Exif.GPSInfo.GPSLatitudeRef"] = (cimg->latitude < 0) ? "S" : "N";
+        exifData["Exif.GPSInfo.GPSLongitudeRef"] = (cimg->geoloc.longitude < 0) ? "W" : "E";
+        exifData["Exif.GPSInfo.GPSLatitudeRef"] = (cimg->geoloc.latitude < 0) ? "S" : "N";
 
-        long long_deg = (int)floor(fabs(cimg->longitude));
-        long lat_deg = (int)floor(fabs(cimg->latitude));
-        long long_min = (int)floor((fabs(cimg->longitude) - floor(fabs(cimg->longitude))) * 60000000);
-        long lat_min = (int)floor((fabs(cimg->latitude) - floor(fabs(cimg->latitude))) * 60000000);
+        long long_deg = (int)floor(fabs(cimg->geoloc.longitude));
+        long lat_deg = (int)floor(fabs(cimg->geoloc.latitude));
+        long long_min = (int)floor((fabs(cimg->geoloc.longitude) - floor(fabs(cimg->geoloc.longitude))) * 60000000);
+        long lat_min = (int)floor((fabs(cimg->geoloc.latitude) - floor(fabs(cimg->geoloc.latitude))) * 60000000);
         gchar *long_str = g_strdup_printf("%ld/1 %ld/1000000 0/1", long_deg, long_min);
         gchar *lat_str = g_strdup_printf("%ld/1 %ld/1000000 0/1", lat_deg, lat_min);
         exifData["Exif.GPSInfo.GPSLongitude"] = long_str;
@@ -1398,12 +1398,12 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
         g_free(long_str);
         g_free(lat_str);
       }
-      if(!std::isnan(cimg->elevation))
+      if(!std::isnan(cimg->geoloc.elevation))
       {
         exifData["Exif.GPSInfo.GPSVersionID"] = "02 02 00 00";
-        exifData["Exif.GPSInfo.GPSAltitudeRef"] = (cimg->elevation < 0) ? "1" : "0";
+        exifData["Exif.GPSInfo.GPSAltitudeRef"] = (cimg->geoloc.elevation < 0) ? "1" : "0";
 
-        long ele_dm = (int)floor(fabs(10.0 * cimg->elevation));
+        long ele_dm = (int)floor(fabs(10.0 * cimg->geoloc.elevation));
         gchar *ele_str = g_strdup_printf("%ld/10", ele_dm);
         exifData["Exif.GPSInfo.GPSAltitude"] = ele_str;
         g_free(ele_str);
@@ -2177,7 +2177,7 @@ static void add_mask_entry_to_db(int imgid, mask_entry_t *entry)
   entry->already_added = TRUE;
 
   const int mask_num = 0;
-  
+
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
     dt_database_get(darktable.db),
@@ -2293,14 +2293,14 @@ static int history_v1_to_v3(const int imgid)
       if(multi_priority_max >= 0)
       {
         const float iop_order = ((float)(multi_priority_max + 1 - multi_priority) / 1000.0) + prior_v1->iop_order;
-  
+
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "UPDATE main.history SET iop_order = ?2 WHERE imgid = ?1 AND num = ?3", -1,
                                     &stmt, NULL);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
         DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 2, iop_order);
         DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, num);
-  
+
         if(sqlite3_step(stmt) != SQLITE_DONE)
         {
           fprintf(stderr, "[exif] error updating pipe order in history for image %d\n", imgid);
@@ -2395,12 +2395,12 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     {
       iop_order_version = pos->toLong();
     }
-    
+
 
     // masks
     GHashTable *mask_entries = NULL;
     GList *mask_entries_v3 = NULL;
-    
+
     // clean all old masks for this image
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid = ?1", -1,
                                 &stmt, NULL);
@@ -2427,9 +2427,9 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
       while(m_entries)
       {
         mask_entry_t *mask_entry = (mask_entry_t *)m_entries->data;
-        
+
         add_mask_entry_to_db(img->id, mask_entry);
-        
+
         m_entries = g_list_next(m_entries);
       }
     }
@@ -2543,7 +2543,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
       if(sqlite3_step(stmt) == SQLITE_ROW)
         num_masks = sqlite3_column_int(stmt, 0);
       sqlite3_finalize(stmt);
-      
+
       if(num_masks > 0)
       {
         // make room for mask_manager entry
@@ -2573,11 +2573,11 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
           goto end;
         }
         sqlite3_finalize(stmt);
-        
+
         num++;
       }
     }
-    
+
     // we shouldn't change history_end when no history was read!
     if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.history_end"))) != xmpData.end() && num > 0)
     {
