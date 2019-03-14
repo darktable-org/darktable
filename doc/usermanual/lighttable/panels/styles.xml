@@ -74,6 +74,12 @@
         history stack items which you want to not be part of the newly created style.
       </para>
 
+      <para>
+          The panel supports a hierarchical view, this means you can create categories using
+          the pipe symbol <quote>|</quote> as a separator. For example
+          <quote>print|tone curve +0.5 EV</quote> will create a print category.
+      </para>
+
     </sect4>
 
     <sect4 id="styles_usage_edit">
@@ -85,6 +91,10 @@
         are prompted with a dialogue to include or exclude specific items from the stack. Check
         option <quote>duplicate</quote> if you want to create a new style, instead of
         overwriting the existing one; you need to provide a new unique style name in this case.
+      </para>
+
+      <para>
+        See <emphasis>create</emphasis> how to create a hierarchical view.
       </para>
 
     </sect4>
