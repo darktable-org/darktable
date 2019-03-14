@@ -21,6 +21,8 @@
 #include "config.h"
 #endif
 
+#include "is_supported_platform.h"
+
 #if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__DragonFly__)
 #include <malloc.h>
 #endif
@@ -348,8 +350,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #endif
 
   dt_set_signal_handlers();
-
-#include "is_supported_platform.h"
 
   int sse2_supported = 0;
 
