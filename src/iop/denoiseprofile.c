@@ -28,7 +28,6 @@
 #include "develop/imageop_math.h"
 #include "develop/tiling.h"
 #include "dtgtk/drawingarea.h"
-#include "dtgtk/expander.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
