@@ -214,6 +214,10 @@ void dt_image_cache_read_release(dt_image_cache_t *cache, const dt_image_t *img)
 // is present, also to xmp sidecar files (safe setting).
 void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_image_cache_write_mode_t mode)
 {
+  union {
+      struct dt_image_raw_parameters_t s;
+      uint32_t u;
+  } flip;
   if(img->id <= 0) return;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -240,7 +244,8 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 13, img->flags);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 14, img->exif_crop);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, img->orientation);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, *(uint32_t *)(&img->legacy_flip));
+  flip.s = img->legacy_flip;
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, flip.u);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 17, img->group_id);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 18, img->longitude);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 19, img->latitude);

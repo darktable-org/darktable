@@ -613,12 +613,14 @@ static int image_is_normalized(const dt_image_t *const image)
   // if raw with floating-point data, if not special magic whitelevel, then it needs normalization
   if((image->flags & DT_IMAGE_HDR) == DT_IMAGE_HDR)
   {
-    // magic, see dt_imageio_dng_write_tiff_header()
-    const float normalized_float = 1.0f;
-    uint32_t normalized = *(uint32_t *)&normalized_float;
+    union {
+        float f;
+        uint32_t u;
+    } normalized;
+    normalized.f = 1.0f;
 
     // dng spec is just broken here.
-    return image->raw_white_point == normalized;
+    return image->raw_white_point == normalized.u;
   }
 
   // else, assume normalized

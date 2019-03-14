@@ -1,4 +1,5 @@
 build*/
+obj*/
 *~
 *.pot
 *.mo

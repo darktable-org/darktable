@@ -66,9 +66,13 @@ static inline float dt_points_get_for(dt_points_t *p, const unsigned int thread_
   s1 ^= s0 >> 26;
   p->s[thread_num].state1 = s1;
   // return (state0 + state1) / ((double)((uint64_t)-1) + 1.0);
-  uint32_t v = 0x3f800000
-               | ((p->s[thread_num].state0 + p->s[thread_num].state1) >> 41); // faster than double version.
-  return (*(float *)&v) - 1.0f;
+  union {
+      float f;
+      uint32_t u;
+  } v;
+  v.u = 0x3f800000 |
+      ((p->s[thread_num].state0 + p->s[thread_num].state1) >> 41); // faster than double version.
+  return v.f - 1.0f;
 }
 
 static inline float dt_points_get()
@@ -374,8 +378,12 @@ inline static double to_real2(uint32_t v)
 /** generates a random number on [0,1)-real-interval (float) */
 inline static float to_real2f(uint32_t v)
 {
-  v = 0x3f800000 | (v >> 9); // faster than double version.
-  return (*(float *)&v) - 1.0f;
+  union {
+      float f;
+      uint32_t u;
+  } x;
+  x.u = 0x3f800000 | (v >> 9); // faster than double version.
+  return x.f - 1.0f;
   /* divided by 2^32 */
 }
 

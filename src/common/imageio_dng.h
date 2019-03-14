@@ -145,8 +145,12 @@ static inline void dt_imageio_dng_write_tiff_header(
   // b = dt_imageio_dng_make_tag(34665, LONG, 1, 264, b, &cnt); // exif ifd
   b = dt_imageio_dng_make_tag(50706, BYTE, 4, (1 << 24) | (2 << 16), b, &cnt); // DNG Version/backward version
   b = dt_imageio_dng_make_tag(50707, BYTE, 4, (1 << 24) | (1 << 16), b, &cnt);
-  uint32_t whitei = *(uint32_t *)&whitelevel;
-  b = dt_imageio_dng_make_tag(50717, LONG, 1, whitei, b, &cnt); // WhiteLevel in float, actually.
+  union {
+      float f;
+      uint32_t u;
+  } white;
+  white.f = whitelevel;
+  b = dt_imageio_dng_make_tag(50717, LONG, 1, white.u, b, &cnt); // WhiteLevel in float, actually.
   // b = dt_imageio_dng_make_tag(50708, ASCII, 9, 484, b, &cnt); // unique camera model
   // b = dt_imageio_dng_make_tag(50721, SRATIONAL, 9, 328, b, &cnt); // ColorMatrix1 (XYZ->native cam)
   // b = dt_imageio_dng_make_tag(50728, RATIONAL, 3, 512, b, &cnt); // AsShotNeutral

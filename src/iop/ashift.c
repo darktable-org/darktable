@@ -3187,9 +3187,15 @@ static uint64_t get_lines_hash(const dt_iop_ashift_line_t *lines, const int line
   for(int n = 0; n < lines_count; n++)
   {
     float v[4] = { lines[n].p1[0], lines[n].p1[1], lines[n].p2[0], lines[n].p2[1] };
+    union {
+        float f;
+        uint32_t u;
+    } x;
 
-    for(int i = 0; i < 4; i++)
-      hash = ((hash << 5) + hash) ^ ((uint32_t *)v)[i];
+    for(size_t i = 0; i < 4; i++) {
+      x.f = v[i];
+      hash = ((hash << 5) + hash) ^ x.u;
+    }
   }
   return hash;
 }
