@@ -231,6 +231,26 @@ double dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name)
   return iop_order;
 }
 
+double dt_ioppr_get_colorin_iop_order(GList *iop_list)
+{
+  double iop_order = DBL_MAX;
+
+  GList *modules = g_list_first(iop_list);
+  while(modules)
+  {
+    dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
+    if(strcmp(mod->op, "colorin") == 0)
+    {
+      iop_order = mod->iop_order;
+      break;
+    }
+
+    modules = g_list_next(modules);
+  }
+
+  return iop_order;
+}
+
 // insert op_new before op_next on *_iop_order_list
 // it sets the iop_order on op_new
 // if check_history == 1 it check that the generated iop_order do not exists on any module in history
