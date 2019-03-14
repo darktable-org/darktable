@@ -1683,14 +1683,17 @@ int dt_image_local_copy_reset(const int32_t imgid)
 
     if(g_file_test(locppath, G_FILE_TEST_EXISTS)) g_file_delete(dest, NULL, NULL);
     g_object_unref(dest);
-
-    // update cache, remove local copy flags
-    dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-    img->flags &= ~DT_IMAGE_LOCAL_COPY;
-    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-
-    dt_control_queue_redraw_center();
   }
+
+  // update cache, remove local copy flags, this is done in all cases here as when we
+  // reach this point the local-copy flag is present and the file has been either removed
+  // or is not present.
+
+  dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  img->flags &= ~DT_IMAGE_LOCAL_COPY;
+  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+
+  dt_control_queue_redraw_center();
 
   return 0;
 }
