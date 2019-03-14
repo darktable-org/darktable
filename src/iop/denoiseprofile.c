@@ -135,7 +135,6 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   GtkWidget *central_pixel_weight;
   dt_noiseprofile_t interpolated; // don't use name, maker or model, they may point to garbage
   GList *profiles;
-  GtkWidget *stack;
   GtkWidget *box_nlm;
   GtkWidget *box_wavelets;
   dt_draw_curve_t *transition_curve; // curve for gui to draw
@@ -2556,9 +2555,15 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   p->mode = dt_bauhaus_combobox_get(w);
   if(p->mode == MODE_WAVELETS)
-    gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "wavelets");
+  {
+    gtk_widget_hide(g->box_nlm);
+    gtk_widget_show_all(g->box_wavelets);
+  }
   else
-    gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "nlm");
+  {
+    gtk_widget_hide(g->box_wavelets);
+    gtk_widget_show_all(g->box_nlm);
+  }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2610,9 +2615,15 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->mode, p->mode);
   dt_bauhaus_combobox_set(g->profile, -1);
   if(p->mode == MODE_WAVELETS)
-    gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "wavelets");
+  {
+    gtk_widget_hide(g->box_nlm);
+    gtk_widget_show_all(g->box_wavelets);
+  }
   else
-    gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "nlm");
+  {
+    gtk_widget_hide(g->box_wavelets);
+    gtk_widget_show_all(g->box_nlm);
+  }
   if(p->a[0] == -1.0)
   {
     dt_bauhaus_combobox_set(g->profile, 0);
@@ -3064,12 +3075,11 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->wb_adaptive_anscombe), "toggled", G_CALLBACK(wb_adaptive_anscombe_callback), self);
 
 
-  g->stack = gtk_stack_new();
-  gtk_stack_set_homogeneous(GTK_STACK(g->stack), FALSE);
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->wb_adaptive_anscombe, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->stack, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->box_nlm, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->box_wavelets, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
 
   g->fix_anscombe_and_nlmeans_norm = gtk_check_button_new_with_label(_("migrate to fixed algorithm"));
@@ -3088,9 +3098,6 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_widget_show_all(g->box_nlm);
   gtk_widget_show_all(g->box_wavelets);
-  gtk_stack_add_named(GTK_STACK(g->stack), g->box_nlm, "nlm");
-  gtk_stack_add_named(GTK_STACK(g->stack), g->box_wavelets, "wavelets");
-  gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "nlm");
 
   dt_bauhaus_widget_set_label(g->profile, NULL, _("profile"));
   dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
