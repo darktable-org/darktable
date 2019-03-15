@@ -375,7 +375,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(lib->flip_guides, _("none"));
   dt_bauhaus_combobox_add(lib->flip_guides, _("horizontally"));
   dt_bauhaus_combobox_add(lib->flip_guides, _("vertically"));
-  dt_bauhaus_combobox_add(lib->flip_guides, _("both"));
+  dt_bauhaus_combobox_add(lib->flip_guides, C_("flip direction", "both"));
   gtk_widget_set_tooltip_text(lib->flip_guides, _("flip guides"));
   gtk_box_pack_start(GTK_BOX(self->widget), lib->flip_guides, TRUE, TRUE, 0);
 
