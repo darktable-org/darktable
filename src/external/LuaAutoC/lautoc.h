@@ -120,6 +120,7 @@ void luaA_to_void_ptr(lua_State* L, luaA_Type,  void* c_out, int index);
 
 #define luaA_struct(L, type) luaA_struct_type(L, luaA_type(L, type))
 #define luaA_struct_member(L, type, member, member_type) luaA_struct_member_type(L, luaA_type(L, type), #member, luaA_type(L, member_type), offsetof(type, member))
+#define luaA_struct_member_name(L, type, member, member_type, member_name) luaA_struct_member_type(L, luaA_type(L, type), #member_name, luaA_type(L, member_type), offsetof(type, member))
 
 #define luaA_struct_push(L, type, c_in) luaA_struct_push_type(L, luaA_type(L, type), c_in)
 #define luaA_struct_push_member(L, type, member, c_in) luaA_struct_push_member_offset_type(L, luaA_type(L, type), offsetof(type, member), c_in)
