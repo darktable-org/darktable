@@ -37,7 +37,7 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 
 - A quite extensive rewrite of the lighttable has been made to improve
   drastically the overall performance. This also includes the
-  filmstrip which has also see a big rewrite for the same reasons. The
+  filmstrip which has also received a big rewrite for the same reasons. The
   lighttable is now usable on 4K and 5K monitors.
 
 - Add new raster mask supports. This is a copy of a parametric mask
@@ -68,7 +68,7 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   in area mode.
 
 - The picasa module has been renamed to googlephoto and completely
-  rewrited to support the new Google Photo API. It is now again
+  rewrote to support the new Google Photo API. It is now again
   possible to create albums directly from the export module.
 
 - New module image information which can be positioned at the bottom
@@ -84,7 +84,7 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - The collect module supports single click if the corresponding new
   option is activated.
 
-- The collect module supports range selection (for numerics/dates)
+- The collect module supports range selection (for numeric/dates)
   when using single click mode.
 
 - Add option to scatter the search zone in denoise profile non local
@@ -97,7 +97,7 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   preferences.
 
 - The graduatednd module has better accuracy when computing the
-  rotation to avoid the gradiant to flip sporadically.
+  rotation to avoid the gradient to flip sporadically.
 
 - Make sure the OpenCL kernel code are recompiled when the driver
   version is updated.
@@ -123,8 +123,8 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   A new process mode has been added: smooth is the former one, strong is new.
   An interpolation method has been added that allows to select different types
   of curves.
-  The color picker allows to select by area with cntrl+click.
-  A new color picker has benn added that creates a curve based on the area
+  The color picker allows to select by area with ctrl+click.
+  A new color picker has been added that creates a curve based on the area
   selected from the image.
 
 ## Bug fixes
