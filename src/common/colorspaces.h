@@ -194,6 +194,11 @@ const dt_colorspaces_color_profile_t *
 dt_colorspaces_get_profile(dt_colorspaces_color_profile_type_t type, const char *filename,
                            dt_colorspaces_profile_direction_t direction);
 
+/** check whether filename is the same profil as fullname, this is taking into account that
+ *  fullname is always the fullpathname to the profile and filename may be a full pathname
+ *  or just a base name */
+gboolean  dt_colorspaces_is_profile_equal(const char *fullname, const char *filename);
+
 /** update the display transforms of srgb and adobergb to the display profile.
  * make sure that darktable.color_profiles->xprofile_lock is held when calling this! */
 void dt_colorspaces_update_display_transforms();

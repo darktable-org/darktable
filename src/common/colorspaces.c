@@ -1528,23 +1528,43 @@ void dt_colorspaces_set_display_profile()
   g_free(profile_source);
 }
 
+static const gboolean _colorspaces_is_base_name(const char *profile)
+{
+  char *f = (char *)profile;
+  while(*f)
+  {
+    if(*f == '/' || *f == '\\') return FALSE;
+    f++;
+  }
+  return TRUE;
+}
+
+static const char *_colorspaces_get_base_name(const char *profile)
+{
+  const char* f = profile + strlen(profile);
+  for (; f >= profile; f--)
+  {
+    if(*f == '/' || *f == '\\')
+      return ++f;   // path separator found - return the filename only, without the leading separator
+  }
+  return f;         // no separator found - consider profile_name to be a "base" one
+}
+
+gboolean dt_colorspaces_is_profile_equal(const char *fullname, const char *filename)
+{
+  // for backward compatibility we need to also ensure that we check
+  // for basename, indeed filename parameter may be in fact just a
+  // basename as recorded in an iop.
+  return _colorspaces_is_base_name(filename)
+    ? !strcmp(_colorspaces_get_base_name(fullname), filename)
+    : !strcmp(fullname, filename);
+}
+
 static const dt_colorspaces_color_profile_t *_get_profile(dt_colorspaces_t *self,
                                                           dt_colorspaces_color_profile_type_t type,
                                                           const char *filename,
                                                           dt_colorspaces_profile_direction_t direction)
 {
-  // for backward compatibility we need to also ensure that we check
-  // for basename, indeed filename parameter may be in fact just a
-  // basename as recorded in an iop.
-  gboolean is_base_name = TRUE;
-
-  char *f = (char *)filename;
-  while(*f)
-  {
-    if(*f == '/' || *f == '\\') is_base_name = FALSE;
-    f++;
-  }
-
   for(GList *iter = self->profiles; iter; iter = g_list_next(iter))
   {
     dt_colorspaces_color_profile_t *p = (dt_colorspaces_color_profile_t *)iter->data;
@@ -1552,8 +1572,7 @@ static const dt_colorspaces_color_profile_t *_get_profile(dt_colorspaces_t *self
         (direction & DT_PROFILE_DIRECTION_OUT && p->out_pos > -1) ||
         (direction & DT_PROFILE_DIRECTION_WORK && p->work_pos > -1) ||
         (direction & DT_PROFILE_DIRECTION_DISPLAY && p->display_pos > -1)) &&
-       (p->type == type && (type != DT_COLORSPACE_FILE
-                            || is_base_name ? strstr(p->filename, filename)!=NULL : !strcmp(p->filename, filename))))
+       (p->type == type && (type != DT_COLORSPACE_FILE || dt_colorspaces_is_profile_equal(p->filename, filename))))
     {
       return p;
     }
