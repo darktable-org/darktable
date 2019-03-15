@@ -818,7 +818,7 @@ static inline double longBitsToDouble(int64_t i)
 
 static inline int ilogbp1(double d)
 {
-  int m = d < 4.9090934652977266E-91;
+  const int m = d < 4.9090934652977266E-91;
   d = m ? 2.037035976334486E90 * d : d;
   int q = (doubleToRawLongBits(d) >> 52) & 0x7ff;
   q = m ? q - (300 + 0x03fe) : q - 0x03fe;
@@ -842,11 +842,9 @@ static inline double ldexpk(double x, int q)
 
 static inline double xlog(double d)
 {
-  double x, x2, t, m;
-  int e;
-
-  e = ilogbp1(d * 0.7071);
-  m = ldexpk(d, -e);
+  double x, x2, t;
+  const int e = ilogbp1(d * 0.7071);
+  const double m = ldexpk(d, -e);
 
   x = (m - 1) / (m + 1);
   x2 = x * x;
@@ -1015,7 +1013,7 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
 
   float scale = 65536.0f;
 
-  int imax = 65536 >> histcompr;
+  const int imax = 65536 >> histcompr;
   int overex = 0;
   float sum = 0.f, hisum = 0.f, losum = 0.f;
   float ave = 0.f, hidev = 0.f, lodev = 0.f;
@@ -1188,7 +1186,7 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
   // compute exposure compensation as geometric mean of the amount that
   // sets the mean or median at middle gray, and the amount that sets the estimated top
   // of the histogram at or near clipping.
-  float expcomp1 = (log(midgray * scale / (ave - shc + midgray * shc))) / log(2.f);
+  const float expcomp1 = (log(midgray * scale / (ave - shc + midgray * shc))) / log(2.f);
   float expcomp2;
 
   if(overex == 0) // image is not overexposed
@@ -1247,7 +1245,7 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
   float gavg = 0.f;
 
   float val = 0.f;
-  float increment = corr * (1 << histcompr);
+  const float increment = corr * (1 << histcompr);
 
   for(int ii = 0; ii<65536>> histcompr; ii++)
   {
@@ -1260,8 +1258,8 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
 
   if(black < gavg)
   {
-    int maxwhiteclip = (gavg - black) * 4 / 3
-                       + black; // dont let whiteclip be such large that the histogram average goes above 3/4
+    const int maxwhiteclip = (gavg - black) * 4 / 3
+                             + black; // dont let whiteclip be such large that the histogram average goes above 3/4
 
     if(whiteclipg < maxwhiteclip)
     {
