@@ -1591,7 +1591,7 @@ void gui_update(struct dt_iop_module_t *self)
   while(prof)
   {
     dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)prof->data;
-    if(pp->type == p->type && (pp->type != DT_COLORSPACE_FILE || !strcmp(pp->filename, p->filename)))
+    if(pp->type == p->type && (pp->type != DT_COLORSPACE_FILE || dt_colorspaces_is_profile_equal(pp->filename, p->filename)))
     {
       dt_bauhaus_combobox_set(g->profile_combobox, pp->in_pos);
       return;
@@ -1603,7 +1603,7 @@ void gui_update(struct dt_iop_module_t *self)
   {
     dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)prof->data;
     if(pp->in_pos > -1 &&
-       pp->type == p->type && (pp->type != DT_COLORSPACE_FILE || !strcmp(pp->filename, p->filename)))
+       pp->type == p->type && (pp->type != DT_COLORSPACE_FILE || dt_colorspaces_is_profile_equal(pp->filename, p->filename)))
     {
       dt_bauhaus_combobox_set(g->profile_combobox, pp->in_pos + g->n_image_profiles);
       return;
