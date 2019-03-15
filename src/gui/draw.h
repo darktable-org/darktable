@@ -266,7 +266,7 @@ static inline int dt_draw_curve_add_point(dt_draw_curve_t *c, const float x, con
   return 0;
 }
 
-static inline void dt_draw_histogram_8_linear(cairo_t *cr, uint32_t *hist, int32_t channels, int32_t channel)
+static inline void dt_draw_histogram_8_linear(cairo_t *cr, const uint32_t *hist, int32_t channels, int32_t channel)
 {
   cairo_move_to(cr, 0, 0);
   for(int k = 0; k < 256; k++) cairo_line_to(cr, k, hist[channels * k + channel]);
@@ -275,7 +275,7 @@ static inline void dt_draw_histogram_8_linear(cairo_t *cr, uint32_t *hist, int32
   cairo_fill(cr);
 }
 
-static inline void dt_draw_histogram_8_zoomed(cairo_t *cr, uint32_t *hist, int32_t channels, int32_t channel,
+static inline void dt_draw_histogram_8_zoomed(cairo_t *cr, const uint32_t *hist, int32_t channels, int32_t channel,
                                               const float zoom_factor, const float zoom_offset_x,
                                               const float zoom_offset_y)
 {
@@ -288,7 +288,7 @@ static inline void dt_draw_histogram_8_zoomed(cairo_t *cr, uint32_t *hist, int32
   cairo_fill(cr);
 }
 
-static inline void dt_draw_histogram_8_log(cairo_t *cr, uint32_t *hist, int32_t channels, int32_t channel)
+static inline void dt_draw_histogram_8_log(cairo_t *cr, const uint32_t *hist, int32_t channels, int32_t channel)
 {
   cairo_move_to(cr, 0, 0);
   for(int k = 0; k < 256; k++) cairo_line_to(cr, k, logf(1.0 + hist[channels * k + channel]));
@@ -297,7 +297,7 @@ static inline void dt_draw_histogram_8_log(cairo_t *cr, uint32_t *hist, int32_t 
   cairo_fill(cr);
 }
 
-static inline void dt_draw_histogram_8_log_base(cairo_t *cr, uint32_t *hist, int32_t channels, int32_t channel, float base_log)
+static inline void dt_draw_histogram_8_log_base(cairo_t *cr, const uint32_t *hist, int32_t channels, int32_t channel, float base_log)
 {
   cairo_move_to(cr, 0, 0);
   for(int k = 0; k < 256; k++)
@@ -311,7 +311,7 @@ static inline void dt_draw_histogram_8_log_base(cairo_t *cr, uint32_t *hist, int
   cairo_fill(cr);
 }
 
-static inline void dt_draw_histogram_8(cairo_t *cr, uint32_t *hist, int32_t channels, int32_t channel, gboolean linear)
+static inline void dt_draw_histogram_8(cairo_t *cr, const uint32_t *hist, int32_t channels, int32_t channel, const gboolean linear)
 {
   if(linear)
     dt_draw_histogram_8_linear(cr, hist, channels, channel);
