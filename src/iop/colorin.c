@@ -386,7 +386,7 @@ static void profile_changed(GtkWidget *widget, gpointer user_data)
       p->type = pp->type;
       memcpy(p->filename, pp->filename, sizeof(p->filename));
       dt_dev_add_history_item(darktable.develop, self, TRUE);
-      
+
       dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_INPUT);
       return;
     }
@@ -401,12 +401,12 @@ static void workicc_changed(GtkWidget *widget, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
   if(self->dt->gui->reset) return;
-  
+
   dt_iop_request_focus(self);
-  
+
   dt_colorspaces_color_profile_type_t type_work = DT_COLORSPACE_NONE;
   char filename_work[DT_IOP_COLOR_ICC_LEN];
-  
+
   int pos = dt_bauhaus_combobox_get(widget);
   GList *prof = darktable.color_profiles->profiles;
   while(prof)
@@ -420,7 +420,7 @@ static void workicc_changed(GtkWidget *widget, gpointer user_data)
     }
     prof = g_list_next(prof);
   }
-  
+
   if(type_work != DT_COLORSPACE_NONE)
   {
     p->type_work = type_work;
@@ -436,7 +436,7 @@ static void workicc_changed(GtkWidget *widget, gpointer user_data)
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_WORK);
-    
+
     // we need to rebuild the pipe so the profile take effect
     self->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
     self->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
@@ -547,7 +547,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_release_mem_object(dev_g);
   dt_opencl_release_mem_object(dev_b);
   dt_opencl_release_mem_object(dev_coeffs);
-  
+
   dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work, d->filename_work, DT_INTENT_PERCEPTUAL);
   return TRUE;
 
@@ -978,7 +978,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 
   dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work, d->filename_work, DT_INTENT_PERCEPTUAL);
-  
+
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
@@ -1362,7 +1362,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   }
 
   dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work, d->filename_work, DT_INTENT_PERCEPTUAL);
-  
+
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 #endif
@@ -1388,7 +1388,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->type = p->type;
   d->type_work = p->type_work;
   g_strlcpy(d->filename_work, p->filename_work, sizeof(d->filename_work));
-  
+
   const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
   // only clean up when it's a type that we created here
@@ -1717,7 +1717,7 @@ void gui_update(struct dt_iop_module_t *self)
       break;
     }
     prof = g_list_next(prof);
-  }  
+  }
   if(idx < 0)
   {
     idx = 0;
@@ -1964,7 +1964,7 @@ static void update_profile_list(dt_iop_module_t *self)
     dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)l->data;
     if(prof->in_pos > -1) dt_bauhaus_combobox_add(g->profile_combobox, prof->name);
   }
-  
+
   // working profile
   dt_bauhaus_combobox_clear(g->work_combobox);
 
@@ -2011,7 +2011,7 @@ void gui_init(struct dt_iop_module_t *self)
     g_free(user_profile_dir);
     g_free(tooltip);
   }
-  
+
   dt_bauhaus_combobox_set(g->work_combobox, 0);
   {
     char *system_profile_dir = g_build_filename(datadir, "color", "out", NULL);
@@ -2022,7 +2022,7 @@ void gui_init(struct dt_iop_module_t *self)
     g_free(user_profile_dir);
     g_free(tooltip);
   }
-  
+
   g_signal_connect(G_OBJECT(g->profile_combobox), "value-changed", G_CALLBACK(profile_changed), (gpointer)self);
   g_signal_connect(G_OBJECT(g->work_combobox), "value-changed", G_CALLBACK(workicc_changed), (gpointer)self);
 
