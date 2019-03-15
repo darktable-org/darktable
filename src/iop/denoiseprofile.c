@@ -47,10 +47,10 @@
 #define DT_IOP_DENOISE_PROFILE_RES 64
 #define DT_IOP_DENOISE_PROFILE_BANDS 5
 
-typedef enum dt_iop_denoiseprofile_mode_t
-{
+typedef enum dt_iop_denoiseprofile_mode_t {
   MODE_NLMEANS = 0,
-  MODE_WAVELETS = 1
+  MODE_WAVELETS = 1,
+  MODE_VARIANCE = 2
 } dt_iop_denoiseprofile_mode_t;
 
 typedef enum dt_iop_denoiseprofile_channel_t
@@ -136,6 +136,7 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   GList *profiles;
   GtkWidget *box_nlm;
   GtkWidget *box_wavelets;
+  GtkWidget *box_variance;
   dt_draw_curve_t *transition_curve; // curve for gui to draw
   GtkDrawingArea *area;
   GtkNotebook *channel_tabs;
@@ -149,6 +150,13 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   float draw_min_xs[DT_IOP_DENOISE_PROFILE_RES], draw_min_ys[DT_IOP_DENOISE_PROFILE_RES];
   float draw_max_xs[DT_IOP_DENOISE_PROFILE_RES], draw_max_ys[DT_IOP_DENOISE_PROFILE_RES];
   GtkWidget *wb_adaptive_anscombe;
+  GtkLabel *label_var;
+  float variance_R;
+  GtkLabel *label_var_R;
+  float variance_G;
+  GtkLabel *label_var_G;
+  float variance_B;
+  GtkLabel *label_var_B;
   // backward compatibility options
   GtkWidget *fix_anscombe_and_nlmeans_norm;
 } dt_iop_denoiseprofile_gui_data_t;
@@ -2556,12 +2564,20 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
   if(p->mode == MODE_WAVELETS)
   {
     gtk_widget_hide(g->box_nlm);
+    gtk_widget_hide(g->box_variance);
     gtk_widget_show_all(g->box_wavelets);
+  }
+  else if(p->mode == MODE_NLMEANS)
+  {
+    gtk_widget_hide(g->box_wavelets);
+    gtk_widget_hide(g->box_variance);
+    gtk_widget_show_all(g->box_nlm);
   }
   else
   {
     gtk_widget_hide(g->box_wavelets);
-    gtk_widget_show_all(g->box_nlm);
+    gtk_widget_hide(g->box_nlm);
+    gtk_widget_show_all(g->box_variance);
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2616,12 +2632,20 @@ void gui_update(dt_iop_module_t *self)
   if(p->mode == MODE_WAVELETS)
   {
     gtk_widget_hide(g->box_nlm);
+    gtk_widget_hide(g->box_variance);
     gtk_widget_show_all(g->box_wavelets);
+  }
+  else if(p->mode == MODE_NLMEANS)
+  {
+    gtk_widget_hide(g->box_wavelets);
+    gtk_widget_hide(g->box_variance);
+    gtk_widget_show_all(g->box_nlm);
   }
   else
   {
     gtk_widget_hide(g->box_wavelets);
-    gtk_widget_show_all(g->box_nlm);
+    gtk_widget_hide(g->box_nlm);
+    gtk_widget_show_all(g->box_variance);
   }
   if(p->a[0] == -1.0)
   {
@@ -3014,11 +3038,44 @@ void gui_init(dt_iop_module_t *self)
 
   g->box_nlm = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g->box_wavelets = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  g->box_variance = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   gtk_box_pack_start(GTK_BOX(g->box_nlm), g->radius, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_nlm), g->nbhood, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_nlm), g->scattering, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_nlm), g->central_pixel_weight, TRUE, TRUE, 0);
+
+  g->label_var = GTK_LABEL(gtk_label_new(_("use only with a perfectly\n"
+                                           "uniform image if you want\n"
+                                           "variance values to accurately\n"
+                                           "estimate the noise variance.\n"
+                                           "use only at 100% zoom level.")));
+  gtk_widget_set_halign(GTK_WIDGET(g->label_var), GTK_ALIGN_START);
+  gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(g->label_var), TRUE, TRUE, 0);
+
+  GtkBox *hboxR = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  GtkLabel *labelR = GTK_LABEL(gtk_label_new(_("variance red: ")));
+  gtk_box_pack_start(GTK_BOX(hboxR), GTK_WIDGET(labelR), FALSE, FALSE, 0);
+  g->label_var_R = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_R), _("variance computed on the red channel"));
+  gtk_box_pack_start(GTK_BOX(hboxR), GTK_WIDGET(g->label_var_R), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxR), TRUE, TRUE, 0);
+
+  GtkBox *hboxG = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  GtkLabel *labelG = GTK_LABEL(gtk_label_new(_("variance green: ")));
+  gtk_box_pack_start(GTK_BOX(hboxG), GTK_WIDGET(labelG), FALSE, FALSE, 0);
+  g->label_var_G = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_G), _("variance computed on the green channel"));
+  gtk_box_pack_start(GTK_BOX(hboxG), GTK_WIDGET(g->label_var_G), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxG), TRUE, TRUE, 0);
+
+  GtkBox *hboxB = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  GtkLabel *labelB = GTK_LABEL(gtk_label_new(_("variance blue: ")));
+  gtk_box_pack_start(GTK_BOX(hboxB), GTK_WIDGET(labelB), FALSE, FALSE, 0);
+  g->label_var_B = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_B), _("variance computed on the blue channel"));
+  gtk_box_pack_start(GTK_BOX(hboxB), GTK_WIDGET(g->label_var_B), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxB), TRUE, TRUE, 0);
 
   g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
@@ -3080,6 +3137,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_nlm, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_wavelets, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->box_variance, TRUE, TRUE, 0);
 
   g->fix_anscombe_and_nlmeans_norm = gtk_check_button_new_with_label(_("migrate to fixed algorithm"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_anscombe_and_nlmeans_norm), p->fix_anscombe_and_nlmeans_norm);
@@ -3097,6 +3155,7 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_widget_show_all(g->box_nlm);
   gtk_widget_show_all(g->box_wavelets);
+  gtk_widget_show_all(g->box_variance);
 
   dt_bauhaus_widget_set_label(g->profile, NULL, _("profile"));
   dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
@@ -3109,6 +3168,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means"));
   dt_bauhaus_combobox_add(g->mode, _("wavelets"));
+  dt_bauhaus_combobox_add(g->mode, _("compute variance"));
   gtk_widget_set_tooltip_text(g->profile, _("profile used for variance stabilization"));
   gtk_widget_set_tooltip_text(g->mode, _("method used in the denoising core. "
                                          "non-local means works best for `lightness' blending, "
