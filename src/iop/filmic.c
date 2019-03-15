@@ -171,7 +171,7 @@ typedef struct dt_iop_filmic_global_data_t
 
 const char *name()
 {
-  return _("filmic");
+  return C_("modulename", "filmic");
 }
 
 int default_group()
