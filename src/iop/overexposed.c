@@ -81,6 +81,11 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_HIDDEN | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_NO_HISTORY_STACK;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
@@ -107,6 +112,50 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 //   dt_accel_connect_slider_iop(self, "color scheme", GTK_WIDGET(g->colorscheme));
 // }
 
+static void _get_histogram_profile_type(dt_colorspaces_color_profile_type_t *out_type, gchar **out_filename)
+{
+  // if in gamut check use soft proof
+  if(darktable.color_profiles->histogram_type == DT_COLORSPACE_SOFTPROOF)
+  {
+    *out_type = darktable.color_profiles->softproof_type;
+    *out_filename = darktable.color_profiles->softproof_filename;
+  }
+  else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
+  {
+    dt_ioppr_get_work_profile_type(darktable.develop, out_type, out_filename);
+  }
+  else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
+  {
+    dt_ioppr_get_export_profile_type(darktable.develop, out_type, out_filename);
+  }
+  else
+  {
+    *out_type = darktable.color_profiles->histogram_type;
+    *out_filename = darktable.color_profiles->histogram_filename;
+  }
+}
+
+static void _transform_image_colorspace(dt_iop_module_t *self, const float *const img_in, float *const img_out,
+                                        const dt_iop_roi_t *const roi_in)
+{
+  dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
+  gchar *histogram_filename = NULL;
+
+  _get_histogram_profile_type(&histogram_type, &histogram_filename);
+
+  const dt_iop_order_iccprofile_info_t *const profile_info_from
+      = dt_ioppr_add_profile_info_to_list(self->dev, darktable.color_profiles->display_type,
+                                          darktable.color_profiles->display_filename, INTENT_PERCEPTUAL);
+  const dt_iop_order_iccprofile_info_t *const profile_info_to
+      = dt_ioppr_add_profile_info_to_list(self->dev, histogram_type, histogram_filename, INTENT_PERCEPTUAL);
+
+  if(profile_info_from && profile_info_to)
+    dt_ioppr_transform_image_colorspace_rgb(img_in, img_out, roi_in->width, roi_in->height, profile_info_from,
+                                            profile_info_to, self->op);
+  else
+    fprintf(stderr, "[_transform_image_colorspace] can't create transform profile\n");
+}
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -114,6 +163,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const int ch = piece->colors;
 
+  float *const img_tmp = dt_alloc_align(64, ch * roi_out->width * roi_out->height * sizeof(float));
+  if(img_tmp == NULL)
+  {
+    fprintf(stderr, "[overexposed process] can't alloc temp image\n");
+    goto cleanup;
+  }
+  
   const float lower = MAX(dev->overexposed.lower / 100.0f, 1e-6f);
   const float upper = dev->overexposed.upper / 100.0f;
 
@@ -124,19 +180,22 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
+  // display mask using histogram profile as output
+  _transform_image_colorspace(self, in, img_tmp, roi_out);
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
   {
-    if(in[k + 0] >= upper || in[k + 1] >= upper || in[k + 2] >= upper)
+    if(img_tmp[k + 0] >= upper || img_tmp[k + 1] >= upper || img_tmp[k + 2] >= upper)
     {
       for(int c = 0; c < 3; c++)
       {
         out[k + c] = upper_color[c];
       }
     }
-    else if(in[k + 0] <= lower && in[k + 1] <= lower && in[k + 2] <= lower)
+    else if(img_tmp[k + 0] <= lower && img_tmp[k + 1] <= lower && img_tmp[k + 2] <= lower)
     {
       for(int c = 0; c < 3; c++)
       {
@@ -154,59 +213,33 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+
+cleanup:
+  if(img_tmp) dt_free_align(img_tmp);
 }
-
-#if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  dt_develop_t *dev = self->dev;
-
-  const int ch = piece->colors;
-  const float lower = MAX(dev->overexposed.lower / 100.0f, 1e-6f);
-  const float upper = dev->overexposed.upper / 100.0f;
-
-  const __m128 mupper = _mm_set_ps(FLT_MAX, upper, upper, upper);
-  const __m128 mlower = _mm_set_ps(FLT_MAX, lower, lower, lower);
-
-  const int colorscheme = dev->overexposed.colorscheme;
-  const __m128 upper_color = _mm_load_ps(dt_iop_overexposed_colors[colorscheme][0]);
-  const __m128 lower_color = _mm_load_ps(dt_iop_overexposed_colors[colorscheme][1]);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
-#endif
-  for(int k = 0; k < roi_out->height; k++)
-  {
-    const float *in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
-    float *out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
-
-    for(int j = 0; j < roi_out->width; j++, in += 4, out += 4)
-    {
-      const __m128 pixel = _mm_load_ps(in);
-
-      __m128 isoe = _mm_cmpge_ps(pixel, mupper);
-      isoe = _mm_or_ps(_mm_unpacklo_ps(isoe, isoe), _mm_unpackhi_ps(isoe, isoe));
-      isoe = _mm_or_ps(_mm_unpacklo_ps(isoe, isoe), _mm_unpackhi_ps(isoe, isoe));
-
-      __m128 isue = _mm_cmple_ps(pixel, mlower);
-      isue = _mm_and_ps(_mm_unpacklo_ps(isue, isue), _mm_unpackhi_ps(isue, isue));
-      isue = _mm_and_ps(_mm_unpacklo_ps(isue, isue), _mm_unpackhi_ps(isue, isue));
-
-      __m128 result = _mm_or_ps(_mm_andnot_ps(isoe, pixel), _mm_and_ps(isoe, upper_color));
-
-      result = _mm_or_ps(_mm_andnot_ps(isue, result), _mm_and_ps(isue, lower_color));
-
-      _mm_stream_ps(out, result);
-    }
-  }
-  _mm_sfence();
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
-}
-#endif
 
 #ifdef HAVE_OPENCL
+static void _transform_image_colorspace_cl(dt_iop_module_t *self, const int devid, cl_mem dev_img_in,
+                                           cl_mem dev_img_out, const dt_iop_roi_t *const roi_in)
+{
+  dt_colorspaces_color_profile_type_t histogram_type = DT_COLORSPACE_SRGB;
+  gchar *histogram_filename = NULL;
+
+  _get_histogram_profile_type(&histogram_type, &histogram_filename);
+
+  const dt_iop_order_iccprofile_info_t *const profile_info_from
+      = dt_ioppr_add_profile_info_to_list(self->dev, darktable.color_profiles->display_type,
+                                          darktable.color_profiles->display_filename, INTENT_PERCEPTUAL);
+  const dt_iop_order_iccprofile_info_t *const profile_info_to
+      = dt_ioppr_add_profile_info_to_list(self->dev, histogram_type, histogram_filename, INTENT_PERCEPTUAL);
+
+  if(profile_info_from && profile_info_to)
+    dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_img_in, dev_img_out, roi_in->width, roi_in->height,
+                                               profile_info_from, profile_info_to, self->op);
+  else
+    fprintf(stderr, "[_transform_image_colorspace_cl] can't create transform profile\n");
+}
+
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -216,8 +249,22 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_int err = -999;
   const int devid = piece->pipe->devid;
 
+  const int ch = piece->colors;
+  cl_mem dev_tmp = NULL;
+
   const int width = roi_out->width;
   const int height = roi_out->height;
+
+  // display mask using histogram profile as output
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, ch * sizeof(float));
+  if(dev_tmp == NULL)
+  {
+    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+    fprintf(stderr, "[overexposed process_cl] error allocating memory for color transformation\n");
+    goto error;
+  }
+
+  _transform_image_colorspace_cl(self, devid, dev_in, dev_tmp, roi_out);
 
   const float lower = MAX(dev->overexposed.lower / 100.0f, 1e-6f);
   const float upper = dev->overexposed.upper / 100.0f;
@@ -229,17 +276,20 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   size_t sizes[2] = { ROUNDUPWD(width), ROUNDUPHT(height) };
   dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 0, sizeof(cl_mem), &dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 1, sizeof(cl_mem), &dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 2, sizeof(int), &width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 3, sizeof(int), &height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 4, sizeof(float), &lower);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 5, sizeof(float), &upper);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 6, 4 * sizeof(float), lower_color);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 7, 4 * sizeof(float), upper_color);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 2, sizeof(cl_mem), &dev_tmp);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 3, sizeof(int), &width);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 4, sizeof(int), &height);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 5, sizeof(float), &lower);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 6, sizeof(float), &upper);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 7, 4 * sizeof(float), lower_color);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_overexposed, 8, 4 * sizeof(float), upper_color);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_overexposed, sizes);
   if(err != CL_SUCCESS) goto error;
+  if(dev_tmp) dt_opencl_release_mem_object(dev_tmp);
   return TRUE;
 
 error:
+  if(dev_tmp) dt_opencl_release_mem_object(dev_tmp);
   dt_print(DT_DEBUG_OPENCL, "[opencl_overexposed] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
@@ -286,7 +336,6 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_overexposed_t));
   module->hide_enable_button = 1;
   module->default_enabled = 1;
-  module->priority = 928; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_overexposed_t);
   module->gui_data = NULL;
 }

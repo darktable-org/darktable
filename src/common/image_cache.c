@@ -77,17 +77,17 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
     uint32_t tmp = sqlite3_column_int(stmt, 18);
     memcpy(&img->legacy_flip, &tmp, sizeof(dt_image_raw_parameters_t));
     if(sqlite3_column_type(stmt, 19) == SQLITE_FLOAT)
-      img->longitude = sqlite3_column_double(stmt, 19);
+      img->geoloc.longitude = sqlite3_column_double(stmt, 19);
     else
-      img->longitude = NAN;
+      img->geoloc.longitude = NAN;
     if(sqlite3_column_type(stmt, 20) == SQLITE_FLOAT)
-      img->latitude = sqlite3_column_double(stmt, 20);
+      img->geoloc.latitude = sqlite3_column_double(stmt, 20);
     else
-      img->latitude = NAN;
+      img->geoloc.latitude = NAN;
     if(sqlite3_column_type(stmt, 21) == SQLITE_FLOAT)
-      img->elevation = sqlite3_column_double(stmt, 21);
+      img->geoloc.elevation = sqlite3_column_double(stmt, 21);
     else
-      img->elevation = NAN;
+      img->geoloc.elevation = NAN;
     const void *color_matrix = sqlite3_column_blob(stmt, 22);
     if(color_matrix)
       memcpy(img->d65_color_matrix, color_matrix, sizeof(img->d65_color_matrix));
@@ -102,11 +102,12 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
     for(uint8_t i = 0; i < 4; i++) img->raw_black_level_separate[i] = 0;
     img->raw_white_point = sqlite3_column_int(stmt, 26);
 
-    // buffer size?
+    // buffer size? colorspace?
     if(img->flags & DT_IMAGE_LDR)
     {
       img->buf_dsc.channels = 4;
       img->buf_dsc.datatype = TYPE_FLOAT;
+      img->buf_dsc.cst = iop_cs_rgb;
     }
     else if(img->flags & DT_IMAGE_HDR)
     {
@@ -114,11 +115,13 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       {
         img->buf_dsc.channels = 1;
         img->buf_dsc.datatype = TYPE_FLOAT;
+        img->buf_dsc.cst = iop_cs_RAW;
       }
       else
       {
         img->buf_dsc.channels = 4;
         img->buf_dsc.datatype = TYPE_FLOAT;
+        img->buf_dsc.cst = iop_cs_rgb;
       }
     }
     else
@@ -126,6 +129,7 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
       // raw
       img->buf_dsc.channels = 1;
       img->buf_dsc.datatype = TYPE_UINT16;
+      img->buf_dsc.cst = iop_cs_RAW;
     }
   }
   else
@@ -210,6 +214,10 @@ void dt_image_cache_read_release(dt_image_cache_t *cache, const dt_image_t *img)
 // is present, also to xmp sidecar files (safe setting).
 void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_image_cache_write_mode_t mode)
 {
+  union {
+      struct dt_image_raw_parameters_t s;
+      uint32_t u;
+  } flip;
   if(img->id <= 0) return;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -236,11 +244,12 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 13, img->flags);
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 14, img->exif_crop);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 15, img->orientation);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, *(uint32_t *)(&img->legacy_flip));
+  flip.s = img->legacy_flip;
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 16, flip.u);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 17, img->group_id);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 18, img->longitude);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 19, img->latitude);
-  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 20, img->elevation);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 18, img->geoloc.longitude);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 19, img->geoloc.latitude);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 20, img->geoloc.elevation);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 21, &img->d65_color_matrix, sizeof(img->d65_color_matrix), SQLITE_STATIC);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 22, img->colorspace);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 23, img->raw_black_level);

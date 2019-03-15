@@ -358,6 +358,8 @@ static void view_popup_menu_onRemove(GtkWidget *menuitem, gpointer userdata)
       gtk_tree_store_remove(GTK_TREE_STORE(gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model))),
                             &model_iter);
     }
+
+    g_free(fullq);
   }
 }
 
@@ -430,7 +432,8 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
 
     gtk_tree_path_free(path);
 
-    if((d->view_rule == DT_COLLECTION_PROP_DAY || d->view_rule == DT_COLLECTION_PROP_TIME)
+    if((d->view_rule == DT_COLLECTION_PROP_DAY || d->view_rule == DT_COLLECTION_PROP_TIME
+        || d->view_rule == DT_COLLECTION_PROP_FOLDERS || d->view_rule == DT_COLLECTION_PROP_TAG)
        && !(event->state & GDK_SHIFT_MASK))
       return FALSE; /* we allow propagation (expand/collapse row) */
     else
@@ -947,15 +950,15 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     /* query construction */
     gchar *where_ext = dt_collection_get_extended_where(darktable.collection, dr->num);
     const char *query = g_strdup_printf(
-            folders ? "SELECT folder, film_rolls_id, COUNT(*) AS count FROM main.images "
+            folders ? "SELECT folder, film_rolls_id, COUNT(*) AS count FROM main.images AS mi "
                     "JOIN (SELECT id AS film_rolls_id, folder FROM main.film_rolls) ON film_id = film_rolls_id "
                     "WHERE %s GROUP BY folder, film_rolls_id":
-            tags ? "SELECT name, tag_id, COUNT(*) AS count FROM main.images JOIN main.tagged_images ON id = imgid "
+            tags ? "SELECT name, tag_id, COUNT(*) AS count FROM main.images AS mi JOIN main.tagged_images ON id = imgid "
                     "JOIN (SELECT name, id AS tag_id FROM data.tags) ON tagid = tag_id "
                     "WHERE %s GROUP BY name,tag_id" :
-            days ? "SELECT SUBSTR(datetime_taken, 1, 10) AS date, 1, COUNT(*) AS count FROM main.images "
+            days ? "SELECT SUBSTR(datetime_taken, 1, 10) AS date, 1, COUNT(*) AS count FROM main.images AS mi "
                     "WHERE %s GROUP BY date ORDER BY datetime_taken ASC" :
-            times ? "SELECT datetime_taken AS date, 1, COUNT(*) AS count FROM main.images "
+            times ? "SELECT datetime_taken AS date, 1, COUNT(*) AS count FROM main.images AS mi "
                     "WHERE %s GROUP BY date ORDER BY datetime_taken ASC" :
             NULL,
             where_ext);
@@ -1218,7 +1221,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
         int index = 0;
         gchar *makermodel_query = NULL;
         makermodel_query = dt_util_dstrcat(makermodel_query, "SELECT maker, model, COUNT(*) AS count "
-                "FROM main.images WHERE %s GROUP BY maker, model", where_ext);
+                "FROM main.images AS mi WHERE %s GROUP BY maker, model", where_ext);
 
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 makermodel_query,
@@ -1248,7 +1251,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
       case DT_COLLECTION_PROP_HISTORY: // History, 2 hardcoded alternatives
         g_snprintf(query, sizeof(query), "SELECT CASE "
                            "altered WHEN 1 THEN '%s' ELSE '%s' END as altered, 1, COUNT(*) AS count "
-                           "FROM main.images LEFT JOIN "
+                           "FROM main.images AS mi LEFT JOIN "
                            "(SELECT DISTINCT imgid AS history_id, 1 AS altered FROM main.history) ON id = history_id "
                            "WHERE %s GROUP BY altered ORDER BY altered ASC",
                    _("altered"),  _("not altered"), where_ext);
@@ -1258,7 +1261,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
         g_snprintf(query, sizeof(query), "SELECT CASE "
                            "WHEN latitude IS NOT NULL AND longitude IS NOT NULL THEN '%s' ELSE '%s' END as tagged, 1, "
                            "COUNT(*) AS count "
-                           "FROM main.images "
+                           "FROM main.images AS mi "
                            "WHERE %s GROUP BY tagged ORDER BY tagged ASC",
                        _("tagged"),  _("not tagged"), where_ext);
         break;
@@ -1267,13 +1270,13 @@ static void list_view(dt_lib_collect_rule_t *dr)
         g_snprintf(query, sizeof(query), "SELECT CASE "
                            "WHEN (flags & %d) THEN '%s' ELSE '%s' END as lcp, 1, "
                            "COUNT(*) AS count "
-                           "FROM main.images "
+                           "FROM main.images AS mi "
                            "WHERE %s GROUP BY lcp ORDER BY lcp ASC",
                    DT_IMAGE_LOCAL_COPY, _("copied locally"),  _("not copied locally"), where_ext);
         break;
 
       case DT_COLLECTION_PROP_ASPECT_RATIO: // aspect ratio, 3 hardcoded alternatives
-        g_snprintf(query, sizeof(query), "SELECT ROUND(aspect_ratio,1), 1, COUNT(*) AS count FROM main.images "
+        g_snprintf(query, sizeof(query), "SELECT ROUND(aspect_ratio,1), 1, COUNT(*) AS count FROM main.images AS mi "
                    "WHERE %s GROUP BY ROUND(aspect_ratio,1)", where_ext);
         break;
 
@@ -1281,7 +1284,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
         g_snprintf(query, sizeof(query), "SELECT CASE "
                            "color WHEN 0 THEN '%s' WHEN 1 THEN '%s' WHEN 2 THEN '%s' WHEN 3 THEN '%s' WHEN 4 THEN '%s' "
                            "ELSE '' END, color, COUNT(*) AS count "
-                           "FROM main.images JOIN "
+                           "FROM main.images AS mi JOIN "
                            "(SELECT imgid AS color_labels_id, color FROM main.color_labels) ON id = color_labels_id "
                            "WHERE %s GROUP BY color ORDER BY color DESC",
                    _("red"), _("yellow"), _("green"), _("blue"), _("purple"), where_ext);
@@ -1291,59 +1294,59 @@ static void list_view(dt_lib_collect_rule_t *dr)
       // TODO: Autogenerate this code?
       case DT_COLLECTION_PROP_TITLE: // title
         snprintf(query, sizeof(query),
-                 "SELECT value, 1, COUNT(*) AS count FROM main.images JOIN "
+                 "SELECT value, 1, COUNT(*) AS count FROM main.images AS mi JOIN "
                          "(SELECT id AS meta_data_id, value FROM main.meta_data WHERE key = %d) ON id = meta_data_id "
                          "WHERE %s GROUP BY value ORDER BY value",
                  DT_METADATA_XMP_DC_TITLE, where_ext);
         break;
       case DT_COLLECTION_PROP_DESCRIPTION: // description
         snprintf(query, sizeof(query),
-                 "SELECT value, 1, COUNT(*) AS count FROM main.images JOIN "
+                 "SELECT value, 1, COUNT(*) AS count FROM main.images AS mi JOIN "
                          "(SELECT id AS meta_data_id, value FROM main.meta_data WHERE key = %d) ON id = meta_data_id "
                          "WHERE %s GROUP BY value ORDER BY value",
                  DT_METADATA_XMP_DC_DESCRIPTION, where_ext);
         break;
       case DT_COLLECTION_PROP_CREATOR: // creator
         snprintf(query, sizeof(query),
-                 "SELECT value, 1, COUNT(*) AS count FROM main.images JOIN "
+                 "SELECT value, 1, COUNT(*) AS count FROM main.images AS mi JOIN "
                          "(SELECT id AS meta_data_id, value FROM main.meta_data WHERE key = %d) ON id = meta_data_id "
                          "WHERE %s GROUP BY value ORDER BY value",
                  DT_METADATA_XMP_DC_CREATOR, where_ext);
         break;
       case DT_COLLECTION_PROP_PUBLISHER: // publisher
         snprintf(query, sizeof(query),
-                 "SELECT value, 1, COUNT(*) AS count FROM main.images JOIN "
+                 "SELECT value, 1, COUNT(*) AS count FROM main.images AS mi JOIN "
                          "(SELECT id AS meta_data_id, value FROM main.meta_data WHERE key = %d) ON id = meta_data_id "
                          "WHERE %s GROUP BY value ORDER BY value",
                  DT_METADATA_XMP_DC_PUBLISHER, where_ext);
         break;
       case DT_COLLECTION_PROP_RIGHTS: // rights
         snprintf(query, sizeof(query),
-                 "SELECT value, 1, COUNT(*) AS count FROM main.images JOIN "
+                 "SELECT value, 1, COUNT(*) AS count FROM main.images AS mi JOIN "
                          "(SELECT id AS meta_data_id, value FROM main.meta_data WHERE key = %d) ON id = meta_data_id "
                          "WHERE %s GROUP BY value ORDER BY value",
                  DT_METADATA_XMP_DC_RIGHTS, where_ext);
         break;
       case DT_COLLECTION_PROP_LENS: // lens
         g_snprintf(query, sizeof(query), "SELECT lens, 1, COUNT(*) AS count "
-                "FROM main.images WHERE %s GROUP BY lens ORDER BY lens", where_ext);
+                "FROM main.images AS mi WHERE %s GROUP BY lens ORDER BY lens", where_ext);
         break;
 
       case DT_COLLECTION_PROP_FOCAL_LENGTH: // focal length
         g_snprintf(query, sizeof(query), "SELECT CAST(focal_length AS INTEGER) AS focal_length, 1, COUNT(*) AS count "
-                         "FROM main.images WHERE %s GROUP BY focal_length ORDER BY focal_length",
+                         "FROM main.images AS mi WHERE %s GROUP BY focal_length ORDER BY focal_length",
                    where_ext);
         break;
 
       case DT_COLLECTION_PROP_ISO: // iso
         g_snprintf(query, sizeof(query), "SELECT CAST(iso AS INTEGER) AS iso, 1, COUNT(*) AS count "
-                           "FROM main.images WHERE %s GROUP BY iso ORDER BY iso",
+                           "FROM main.images AS mi WHERE %s GROUP BY iso ORDER BY iso",
                    where_ext);
         break;
 
       case DT_COLLECTION_PROP_APERTURE: // aperture
         g_snprintf(query, sizeof(query), "SELECT ROUND(aperture,1) AS aperture, 1, COUNT(*) AS count "
-                           "FROM main.images WHERE %s GROUP BY aperture ORDER BY aperture",
+                           "FROM main.images AS mi WHERE %s GROUP BY aperture ORDER BY aperture",
                    where_ext);
         break;
 
@@ -1351,18 +1354,18 @@ static void list_view(dt_lib_collect_rule_t *dr)
         g_snprintf(query, sizeof(query), "SELECT CASE WHEN (exposure < 0.4) "
                               "THEN '1/' || CAST(1/exposure + 0.9 AS INTEGER) "
                            "ELSE ROUND(exposure,2) || '\"' END as _exposure, 1, COUNT(*) AS count "
-                "FROM main.images WHERE %s GROUP BY _exposure ORDER BY exposure",
+                "FROM main.images AS mi WHERE %s GROUP BY _exposure ORDER BY exposure",
                   where_ext);
         break;
 
       case DT_COLLECTION_PROP_FILENAME: // filename
         g_snprintf(query, sizeof(query), "SELECT filename, 1, COUNT(*) AS count "
-                "FROM main.images WHERE %s GROUP BY filename ORDER BY filename", where_ext);
+                "FROM main.images AS mi WHERE %s GROUP BY filename ORDER BY filename", where_ext);
         break;
 
       default: // filmroll
         g_snprintf(query, sizeof(query), "SELECT folder, film_rolls_id, COUNT(*) AS count "
-                "FROM main.images JOIN "
+                "FROM main.images AS mi JOIN "
                 "(SELECT id AS film_rolls_id, folder FROM main.film_rolls) ON film_id = film_rolls_id "
                 "WHERE %s GROUP BY folder ORDER BY folder DESC", where_ext);
         break;
@@ -1371,7 +1374,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
         g_snprintf(query, sizeof(query), "SELECT CASE "
                            "WHEN id = group_id THEN '%s' ELSE '%s' END as group_leader, 1, "
                            "COUNT(*) AS count "
-                           "FROM main.images "
+                           "FROM main.images AS mi "
                            "WHERE %s GROUP BY group_leader ORDER BY group_leader ASC",
                    _("group leaders"),  _("group followers"), where_ext);
         break;

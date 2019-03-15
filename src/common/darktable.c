@@ -45,6 +45,7 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio_module.h"
+#include "common/iop_order.h"
 #include "common/l10n.h"
 #include "common/mipmap_cache.h"
 #include "common/noiseprofiles.h"
@@ -926,8 +927,14 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
   dt_imageio_init(darktable.imageio);
 
+  // load iop order
+  darktable.iop_order_list = dt_ioppr_get_iop_order_list(NULL);
+  // load iop order rules
+  darktable.iop_order_rules = dt_ioppr_get_iop_order_rules();
   // load the darkroom mode plugins once:
   dt_iop_load_modules_so();
+  // check if all modules have a iop order assigned
+  if(dt_ioppr_check_so_iop_order(darktable.iop, darktable.iop_order_list)) return 1;
 
   if(init_gui)
   {
@@ -981,21 +988,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   if(init_gui)
   {
     const char *mode = "lighttable";
-    // april 1st: you have to earn using dt first! or know that you can switch views with keyboard shortcuts
-    time_t now;
-    time(&now);
-    struct tm lt;
-    localtime_r(&now, &lt);
-    if(lt.tm_mon == 3 && lt.tm_mday == 1)
-    {
-      int current_year = lt.tm_year + 1900;
-      int last_year = dt_conf_get_int("ui_last/april1st");
-      if(last_year < current_year)
-      {
-        dt_conf_set_int("ui_last/april1st", current_year);
-        mode = "knight";
-      }
-    }
     // we have to call dt_ctl_switch_mode_to() here already to not run into a lua deadlock.
     // having another call later is ok
     dt_ctl_switch_mode_to(mode);
@@ -1089,6 +1081,10 @@ void dt_cleanup()
   dt_points_cleanup(darktable.points);
   free(darktable.points);
   dt_iop_unload_modules_so();
+  g_list_free_full(darktable.iop_order_list, free);
+  darktable.iop_order_list = NULL;
+  g_list_free_full(darktable.iop_order_rules, free);
+  darktable.iop_order_rules = NULL;
   dt_opencl_cleanup(darktable.opencl);
   free(darktable.opencl);
 #ifdef HAVE_GPHOTO2

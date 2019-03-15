@@ -45,7 +45,7 @@ enum border_mode
 #define INTERPOLATION_BORDER_MODE BORDER_MIRROR
 
 // Defines minimum alignment requirement for critical SIMD code
-#define SSE_ALIGNMENT 16
+#define SSE_ALIGNMENT 64
 
 // Defines the maximum kernel half length
 // !! Make sure to sync this with the filter array !!
@@ -1480,9 +1480,9 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
-      float *i = (float *)((char *)in + (size_t)in_stride * (y + roi_out->y) + x0);
-      float *o = (float *)((char *)out + (size_t)out_stride * y);
-      memcpy(o, i, out_stride);
+      memcpy((char *)out + (size_t)out_stride * y,
+             (char *)in + (size_t)in_stride * (y + roi_out->y) + x0,
+             out_stride);
     }
 #if DEBUG_RESAMPLING_TIMING
     ts_resampling = getts() - ts_resampling;

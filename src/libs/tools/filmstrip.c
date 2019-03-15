@@ -1087,16 +1087,18 @@ static gboolean _lib_filmstrip_ratings_key_accel_callback(GtkAccelGroup *accel_g
     case DT_VIEW_STAR_5:
     {
       const int32_t mouse_over_id = dt_control_get_mouse_over_id();
-      if(mouse_over_id <= 0) return FALSE;
+
       /* get image from cache */
 
       const int32_t activated_image = darktable.view_manager->proxy.filmstrip.activated_image(
         darktable.view_manager->proxy.filmstrip.module);
 
+      const int32_t image_id = mouse_over_id == -1 ? activated_image : mouse_over_id;
+
       int offset = 0;
       if(mouse_over_id == activated_image) offset = dt_collection_image_offset(mouse_over_id);
 
-      dt_ratings_apply_to_image_or_group(mouse_over_id, num);
+      dt_ratings_apply_to_image_or_group(image_id, num);
 
       dt_collection_update_query(darktable.collection); // update the counter and selection
       dt_collection_hint_message(darktable.collection); // More than this, we need to redraw all

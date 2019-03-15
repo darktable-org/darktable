@@ -174,6 +174,11 @@ int flags()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
@@ -765,7 +770,6 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_tonecurve_params_t));
   module->default_enabled = 0;
   module->request_histogram |= (DT_REQUEST_ON);
-  module->priority = 685; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_tonecurve_params_t);
   module->gui_data = NULL;
   dt_iop_tonecurve_params_t tmp = (dt_iop_tonecurve_params_t){
@@ -1004,6 +1008,32 @@ static void _iop_color_picker_apply(dt_iop_module_t *self)
     gd->picked_color_max[k] = self->picked_color_max[k];
     gd->picked_output_color[k] = self->picked_output_color[k];
   }
+  dt_control_queue_redraw_widget(self->widget);
+}
+
+static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
+{
+  dt_iop_color_picker_t *picker = self->picker;
+  const int current_picker = picker->current_picker;
+
+  picker->current_picker = 1;
+
+  if(current_picker == picker->current_picker)
+    return DT_COLOR_PICKER_ALREADY_SELECTED;
+  else
+    return picker->current_picker;
+}
+
+static void _iop_color_picker_update(dt_iop_module_t *self)
+{
+  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  const int old_reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), g->color_picker.current_picker == 1);
+
+  darktable.gui->reset = old_reset;
+  dt_control_queue_redraw_widget(self->widget);
 }
 
 static void dt_iop_tonecurve_sanity_check(dt_iop_module_t *self, GtkWidget *widget)
@@ -1205,7 +1235,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   gtk_widget_set_size_request(GTK_WIDGET(tb), DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
-  gtk_widget_set_tooltip_text(tb, _("pick GUI color from image"));
+  gtk_widget_set_tooltip_text(tb, _("pick GUI color from image\nctrl+click to select an area"));
   c->colorpicker = tb;
 
   GtkWidget *notebook = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -1235,7 +1265,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "leave-notify-event", G_CALLBACK(dt_iop_tonecurve_leave_notify), self);
   g_signal_connect(G_OBJECT(c->area), "enter-notify-event", G_CALLBACK(dt_iop_tonecurve_enter_notify), self);
   g_signal_connect(G_OBJECT(c->area), "configure-event", G_CALLBACK(area_resized), self);
-  g_signal_connect(G_OBJECT(tb), "toggled", G_CALLBACK(dt_iop_color_picker_callback), &c->color_picker);
+  g_signal_connect(G_OBJECT(tb), "button-press-event", G_CALLBACK(dt_iop_color_picker_callback_button_press), &c->color_picker);
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(_scrolled), self);
   g_signal_connect(G_OBJECT(c->area), "key-press-event", G_CALLBACK(dt_iop_tonecurve_key_press), self);
 
@@ -1278,11 +1308,12 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_size_group_add_widget(c->sizegroup, GTK_WIDGET(c->area));
   gtk_size_group_add_widget(c->sizegroup, GTK_WIDGET(c->channel_tabs));
 
-  init_single_picker(&c->color_picker,
-                     self,
-                     GTK_WIDGET(c->colorpicker),
-                     DT_COLOR_PICKER_POINT,
-                     _iop_color_picker_apply);
+  dt_iop_init_picker(&c->color_picker,
+              self,
+              DT_COLOR_PICKER_POINT_AREA,
+              _iop_color_picker_get_set,
+              _iop_color_picker_apply,
+              _iop_color_picker_update);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -1297,7 +1328,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-
 static gboolean dt_iop_tonecurve_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
 {
   gtk_widget_queue_draw(widget);
@@ -1309,7 +1339,6 @@ static gboolean dt_iop_tonecurve_leave_notify(GtkWidget *widget, GdkEventCrossin
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
-
 
 static void picker_scale(const float *in, float *out)
 {
@@ -1480,8 +1509,6 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   // only if module is enabled
   if(self->enabled)
   {
-    uint32_t *hist;
-    float hist_max;
     float *raw_mean, *raw_min, *raw_max;
     float *raw_mean_output;
     float picker_mean[3], picker_min[3], picker_max[3];
@@ -1491,9 +1518,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     raw_max = gd->picked_color_max;
     raw_mean_output = gd->picked_output_color;
 
-    hist = self->histogram;
-    hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? self->histogram_max[ch]
-                                                              : logf(1.0 + self->histogram_max[ch]);
+    const uint32_t *hist = self->histogram;
+    const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? self->histogram_max[ch]
+                                                                          : logf(1.0 + self->histogram_max[ch]);
     if(hist && hist_max > 0.0f)
     {
       cairo_save(cr);
@@ -1513,7 +1540,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_restore(cr);
     }
 
-    if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+    if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
     {
       // the global live samples ...
       GSList *samples = darktable.lib->proxy.colorpicker.live_samples;

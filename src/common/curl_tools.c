@@ -36,7 +36,7 @@ void dt_curl_init(CURL *curl, gboolean verbose)
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
   if(verbose)
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, 2);
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

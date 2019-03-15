@@ -40,10 +40,12 @@ typedef struct dt_style_t
 typedef struct dt_style_item_t
 {
   int num, selimg_num, enabled, multi_priority;
-  gchar *name, *operation;
-  int module_version;
+  double iop_order;
+  gchar *name, *operation, *multi_name;
+  int module_version, blendop_version;
   dt_iop_params_t *params;
   dt_develop_blend_params_t *blendop_params;
+  int32_t params_size, blendop_params_size;
 } dt_style_item_t;
 
 /** helpers that free a style or style_item. can be used in g_list_free_full() */
@@ -67,6 +69,9 @@ void dt_styles_update(const char *name, const char *newname, const char *descrip
 
 /** applies the style to selection of images */
 void dt_styles_apply_to_selection(const char *name, gboolean duplicate);
+
+/** applies the item style to dev->history */
+void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, GList **modules_used, const int append);
 
 /** applies the style to image by imgid*/
 void dt_styles_apply_to_image(const char *name, gboolean dulpicate, int32_t imgid);

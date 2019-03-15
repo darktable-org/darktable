@@ -39,38 +39,18 @@ size_t dt_iop_buffer_dsc_to_bpp(const struct dt_iop_buffer_dsc_t *dsc)
   return bpp;
 }
 
-static int _iop_module_rawprepare = 0, _iop_module_demosaic = 0;
-static inline void _get_iop_priorities(const dt_iop_module_t *module)
-{
-  if(_iop_module_rawprepare && _iop_module_demosaic) return;
-
-  GList *iop = module->dev->iop;
-  while(iop)
-  {
-    dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
-
-    if(!strcmp(m->op, "rawprepare")) _iop_module_rawprepare = m->priority;
-    if(!strcmp(m->op, "demosaic")) _iop_module_demosaic = m->priority;
-
-    if(_iop_module_rawprepare && _iop_module_demosaic) break;
-
-    iop = g_list_next(iop);
-  }
-}
-
 void default_input_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
                           dt_iop_buffer_dsc_t *dsc)
 {
-  _get_iop_priorities(self);
-
   dsc->channels = 4;
   dsc->datatype = TYPE_FLOAT;
+  dsc->cst = self->input_colorspace(self, pipe, piece);
 
-  if(self->priority > _iop_module_demosaic) return;
+  if(dsc->cst != iop_cs_RAW) return;
 
   if(pipe->image.flags & DT_IMAGE_RAW) dsc->channels = 1;
 
-  if(self->priority > _iop_module_rawprepare) return;
+  if(dt_ioppr_get_iop_order(pipe->iop_order_list, self->op) > dt_ioppr_get_iop_order(pipe->iop_order_list, "rawprepare")) return;
 
   if(piece->pipe->dsc.filters)
     dsc->datatype = TYPE_UINT16;
@@ -79,19 +59,36 @@ void default_input_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_de
 void default_output_format(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece,
                            dt_iop_buffer_dsc_t *dsc)
 {
-  _get_iop_priorities(self);
-
   dsc->channels = 4;
   dsc->datatype = TYPE_FLOAT;
+  dsc->cst = self->output_colorspace(self, pipe, piece);
 
-  if(self->priority >= _iop_module_demosaic) return;
+  if(dsc->cst != iop_cs_RAW) return;
 
   if(pipe->image.flags & DT_IMAGE_RAW) dsc->channels = 1;
 
-  if(self->priority >= _iop_module_rawprepare) return;
+  if(dt_ioppr_get_iop_order(pipe->iop_order_list, self->op) >= dt_ioppr_get_iop_order(pipe->iop_order_list, "rawprepare")) return;
 
   if(piece->pipe->dsc.filters)
     dsc->datatype = TYPE_UINT16;
+}
+
+int default_input_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
+                     dt_dev_pixelpipe_iop_t *piece)
+{
+  return self->default_colorspace(self, pipe, piece);
+}
+
+int default_output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
+                      dt_dev_pixelpipe_iop_t *piece)
+{
+  return self->default_colorspace(self, pipe, piece);
+}
+
+int default_blend_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
+                      dt_dev_pixelpipe_iop_t *piece)
+{
+  return self->default_colorspace(self, pipe, piece);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

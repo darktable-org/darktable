@@ -24,6 +24,7 @@
 #include "common/image_cache.h"
 #include "common/metadata.h"
 #include "common/utility.h"
+#include "control/conf.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -47,6 +48,14 @@ typedef struct dt_variables_data_t
   int version;
   int stars;
   struct tm exif_tm;
+
+  float exif_exposure;
+  float exif_aperture;
+  float exif_focal_length;
+  float exif_focus_distance;
+  double longitude;
+  double latitude;
+  double elevation;
 
 } dt_variables_data_t;
 
@@ -79,6 +88,13 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
   params->data->camera_alias = NULL;
   params->data->version = 0;
   params->data->stars = 0;
+  params->data->exif_exposure = 0.0f;
+  params->data->exif_aperture = 0.0f;
+  params->data->exif_focal_length = 0.0f;
+  params->data->exif_focus_distance = 0.0f;
+  params->data->longitude = 0.0f;
+  params->data->latitude = 0.0f;
+  params->data->elevation = 0.0f;
   if(params->imgid)
   {
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
@@ -95,6 +111,15 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
     params->data->version = img->version;
     params->data->stars = (img->flags & 0x7);
     if(params->data->stars == 6) params->data->stars = -1;
+
+    params->data->exif_exposure = img->exif_exposure;
+    params->data->exif_aperture = img->exif_aperture;
+    params->data->exif_focal_length = img->exif_focal_length;
+    if(!isnan(img->exif_focus_distance) && fpclassify(img->exif_focus_distance) != FP_ZERO)
+      params->data->exif_focus_distance = img->exif_focus_distance;
+    if(!isnan(img->geoloc.longitude)) params->data->longitude = img->geoloc.longitude;
+    if(!isnan(img->geoloc.latitude)) params->data->latitude = img->geoloc.latitude;
+    if(!isnan(img->geoloc.elevation)) params->data->elevation = img->geoloc.elevation;
 
     dt_image_cache_read_release(darktable.image_cache, img);
   }
@@ -152,6 +177,68 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup_printf("%.2d", exif_tm.tm_sec);
   else if(has_prefix(variable, "EXIF_ISO"))
     result = g_strdup_printf("%d", params->data->exif_iso);
+  else if(has_prefix(variable, "NL") && g_strcmp0(params->jobcode, "infos") == 0)
+    result = g_strdup_printf("\n");
+  else if(has_prefix(variable, "EXIF_EXPOSURE"))
+  {
+    /* no special chars for all jobs except infos */
+    if(g_strcmp0(params->jobcode, "infos") != 0)
+      if(nearbyintf(params->data->exif_exposure) == params->data->exif_exposure)
+        result = g_strdup_printf("%.0f", params->data->exif_exposure);
+      else
+        result = g_strdup_printf("%.1f", params->data->exif_exposure);
+    else if(params->data->exif_exposure >= 1.0f)
+      if(nearbyintf(params->data->exif_exposure) == params->data->exif_exposure)
+        result = g_strdup_printf("%.0f″", params->data->exif_exposure);
+      else
+        result = g_strdup_printf("%.1f″", params->data->exif_exposure);
+    /* want to catch everything below 0.3 seconds */
+    else if(params->data->exif_exposure < 0.29f)
+      result = g_strdup_printf("1/%.0f", 1.0 / params->data->exif_exposure);
+    /* catch 1/2, 1/3 */
+    else if(nearbyintf(1.0f / params->data->exif_exposure) == 1.0f / params->data->exif_exposure)
+      result = g_strdup_printf("1/%.0f", 1.0 / params->data->exif_exposure);
+    /* catch 1/1.3, 1/1.6, etc. */
+    else if(10 * nearbyintf(10.0f / params->data->exif_exposure)
+            == nearbyintf(100.0f / params->data->exif_exposure))
+      result = g_strdup_printf("1/%.1f", 1.0 / params->data->exif_exposure);
+    else
+      result = g_strdup_printf("%.1f″", params->data->exif_exposure);
+  }
+  else if(has_prefix(variable, "EXIF_APERTURE"))
+    result = g_strdup_printf("%.1f", params->data->exif_aperture);
+  else if(has_prefix(variable, "EXIF_FOCAL_LENGTH"))
+    result = g_strdup_printf("%d", (int)params->data->exif_focal_length);
+  else if(has_prefix(variable, "EXIF_FOCUS_DISTANCE"))
+    result = g_strdup_printf("%.2f", params->data->exif_focus_distance);
+  else if(has_prefix(variable, "LONGITUDE"))
+  {
+    if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location")
+       && g_strcmp0(params->jobcode, "infos") == 0)
+    {
+      result = dt_util_latitude_str(params->data->longitude);
+    }
+    else
+    {
+      gchar NS = params->data->longitude < 0 ? 'W' : 'E';
+      result = g_strdup_printf("%c%010.6f", NS, fabs(params->data->longitude));
+    }
+  }
+  else if(has_prefix(variable, "LATITUDE"))
+  {
+    if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location")
+       && g_strcmp0(params->jobcode, "infos") == 0)
+    {
+      result = dt_util_latitude_str(params->data->latitude);
+    }
+    else
+    {
+      gchar NS = params->data->latitude < 0 ? 'S' : 'N';
+      result = g_strdup_printf("%c%09.6f", NS, fabs(params->data->latitude));
+    }
+  }
+  else if(has_prefix(variable, "ELEVATION"))
+    result = g_strdup_printf("%.2f", params->data->elevation);
   else if(has_prefix(variable, "MAKER"))
     result = g_strdup(params->data->camera_maker);
   else if(has_prefix(variable, "MODEL"))

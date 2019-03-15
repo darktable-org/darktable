@@ -314,16 +314,18 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
   // Check if plugin recommends a max dimension and set
   // if not implemented the stored conf values are used..
   uint32_t w = 0, h = 0;
-  w = dt_conf_get_int("plugins/lighttable/export/width");
-  h = dt_conf_get_int("plugins/lighttable/export/height");
   module->recommended_dimension(module, NULL, &w, &h);
-  // Set the recommended dimension, prevent signal changed...
-  g_signal_handlers_block_by_func(d->width, width_changed, NULL);
-  g_signal_handlers_block_by_func(d->height, height_changed, NULL);
+
+  const uint32_t cw = dt_conf_get_int("plugins/lighttable/export/width");
+  const uint32_t ch = dt_conf_get_int("plugins/lighttable/export/height");
+
+  // If user's selected value is below the max, select it
+  if(w > cw || w == 0) w = cw;
+  if(h > ch || h == 0) h = ch;
+
+  // Set the recommended dimension
   gtk_spin_button_set_value(d->width, w);
   gtk_spin_button_set_value(d->height, h);
-  g_signal_handlers_unblock_by_func(d->width, width_changed, NULL);
-  g_signal_handlers_unblock_by_func(d->height, height_changed, NULL);
 
   // Let's update formats combobox with supported formats of selected storage module...
   _update_formats_combobox(d);

@@ -129,6 +129,12 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_CONTROL_PROFILE_CHANGED,
 
+  /** \brief This signal is raised when a profile is changed by the user
+    1 uint32_t :  the profile type that has changed
+    no return
+    */
+  DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+
   /** \brief This signal is raised when a new image is imported (not cloned)
     1 uint32_t :  the new image id
     no return

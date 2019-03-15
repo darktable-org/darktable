@@ -343,6 +343,9 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   {
     fprintf(stderr, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
+    free(pair);
+    g_free(esc_relfilename);
+    g_free(esc_relthumbfilename);
     return 1;
   }
 

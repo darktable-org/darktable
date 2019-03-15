@@ -307,6 +307,11 @@ int flags()
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
 static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *presets, int count, gboolean camera)
 {
   const gboolean autoapply = dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply");
@@ -1252,7 +1257,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_basecurve_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_basecurve_params_t));
   module->default_enabled = 0;
-  module->priority = 314; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_basecurve_params_t);
   module->gui_data = NULL;
   dt_iop_basecurve_params_t tmp = (dt_iop_basecurve_params_t){

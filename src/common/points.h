@@ -66,9 +66,13 @@ static inline float dt_points_get_for(dt_points_t *p, const unsigned int thread_
   s1 ^= s0 >> 26;
   p->s[thread_num].state1 = s1;
   // return (state0 + state1) / ((double)((uint64_t)-1) + 1.0);
-  uint32_t v = 0x3f800000
-               | ((p->s[thread_num].state0 + p->s[thread_num].state1) >> 41); // faster than double version.
-  return (*(float *)&v) - 1.0f;
+  union {
+      float f;
+      uint32_t u;
+  } v;
+  v.u = 0x3f800000 |
+      ((p->s[thread_num].state0 + p->s[thread_num].state1) >> 41); // faster than double version.
+  return v.f - 1.0f;
 }
 
 static inline float dt_points_get()
@@ -145,10 +149,10 @@ static inline float dt_points_get()
 */
 
 /** These definitions are part of a 128-bit period certification vector.
-#define PARITY1	0x00000001U
-#define PARITY2	0x00000000U
-#define PARITY3	0x00000000U
-#define PARITY4	0xc98e126aU
+#define PARITY1 0x00000001U
+#define PARITY2 0x00000000U
+#define PARITY3 0x00000000U
+#define PARITY4 0xc98e126aU
 */
 
 #if 0
@@ -374,8 +378,12 @@ inline static double to_real2(uint32_t v)
 /** generates a random number on [0,1)-real-interval (float) */
 inline static float to_real2f(uint32_t v)
 {
-  v = 0x3f800000 | (v >> 9); // faster than double version.
-  return (*(float *)&v) - 1.0f;
+  union {
+      float f;
+      uint32_t u;
+  } x;
+  x.u = 0x3f800000 | (v >> 9); // faster than double version.
+  return x.f - 1.0f;
   /* divided by 2^32 */
 }
 
@@ -1125,7 +1133,7 @@ void init_by_array(sfmt_state_t *s, uint32_t *init_key, int key_length)
 
 static inline void dt_points_init(dt_points_t *p, const unsigned int num_threads)
 {
-  sfmt_state_t *states = (sfmt_state_t *)dt_alloc_align(16, sizeof(sfmt_state_t) * num_threads);
+  sfmt_state_t *states = (sfmt_state_t *)dt_alloc_align(64, sizeof(sfmt_state_t) * num_threads);
   p->s = (sfmt_state_t **)calloc(num_threads, sizeof(sfmt_state_t *));
   p->num = num_threads;
 

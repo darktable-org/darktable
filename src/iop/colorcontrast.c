@@ -100,6 +100,11 @@ int default_group()
   return IOP_GROUP_COLOR;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
@@ -139,7 +144,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
-  assert(dt_iop_module_colorspace(self) == iop_cs_Lab);
 
   // get our data struct:
   const dt_iop_colorcontrast_params_t *const d = (dt_iop_colorcontrast_params_t *)piece->data;
@@ -183,7 +187,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
-  assert(dt_iop_module_colorspace(self) == iop_cs_Lab);
 
   // get our data struct:
   dt_iop_colorcontrast_params_t *d = (dt_iop_colorcontrast_params_t *)piece->data;
@@ -306,7 +309,6 @@ void init(dt_iop_module_t *module)
   // our module is disabled by default
   module->default_enabled = 0;
   // we are pretty late in the pipe:
-  module->priority = 799; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorcontrast_params_t);
   module->gui_data = NULL;
   // init defaults:

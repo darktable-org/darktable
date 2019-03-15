@@ -675,32 +675,6 @@ int dt_view_manager_button_pressed(dt_view_manager_t *vm, double x, double y, do
 
 int dt_view_manager_key_pressed(dt_view_manager_t *vm, guint key, guint state)
 {
-  // ↑ ↑ ↓ ↓ ← → ← → b a
-  static int konami_state = 0;
-  static guint konami_sequence[] = {
-    GDK_KEY_Up,
-    GDK_KEY_Up,
-    GDK_KEY_Down,
-    GDK_KEY_Down,
-    GDK_KEY_Left,
-    GDK_KEY_Right,
-    GDK_KEY_Left,
-    GDK_KEY_Right,
-    GDK_KEY_b,
-    GDK_KEY_a
-  };
-  if(key == konami_sequence[konami_state])
-  {
-    konami_state++;
-    if(konami_state == G_N_ELEMENTS(konami_sequence))
-    {
-      dt_ctl_switch_mode_to("knight");
-      konami_state = 0;
-    }
-  }
-  else
-    konami_state = 0;
-
   int film_strip_result = 0;
   if(!vm->current_view) return 0;
   if(vm->current_view->key_pressed)
@@ -1602,7 +1576,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
 
         if (zoom != 1)
         {
-          double x0 = DT_PIXEL_APPLY_DPI(1), y0 = DT_PIXEL_APPLY_DPI(1), rect_width = width - DT_PIXEL_APPLY_DPI(2),
+          const double x0 = DT_PIXEL_APPLY_DPI(1), y0 = DT_PIXEL_APPLY_DPI(1), rect_width = width - DT_PIXEL_APPLY_DPI(2),
                 radius = DT_PIXEL_APPLY_DPI(5);
           double x1, off, off1;
 
@@ -1623,9 +1597,9 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
         }
         else
         {
-          const float x_zoom = 0.325;
-          const float y_zoom = 0.112;
-          const float edge_length = 0.016 * fscale;
+          const float x_zoom = 0.280;
+          const float y_zoom = 0.110;
+          const float edge_length = 0.018 * fscale;
 
           cairo_rectangle(cr, x_zoom * fscale, y_zoom * fscale, edge_length, edge_length);
           cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);

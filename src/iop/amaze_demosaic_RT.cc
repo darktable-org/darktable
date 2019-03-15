@@ -57,30 +57,45 @@ static __inline float clampnan(const float x, const float m, const float M)
 #ifndef __SSE2__
 static __inline float xmul2f(float d)
 {
-  if(*(int *)&d & 0x7FFFFFFF) // if f==0 do nothing
+  union {
+      float f;
+      uint32_t u;
+  } x;
+  x.f = d;
+  if(x.u & 0x7FFFFFFF) // if f==0 do nothing
   {
-    *(int *)&d += 1 << 23; // add 1 to the exponent
+    x.u += 1 << 23; // add 1 to the exponent
   }
-  return d;
+  return x.f;
 }
 #endif
 
 static __inline float xdiv2f(float d)
 {
-  if(*(int *)&d & 0x7FFFFFFF) // if f==0 do nothing
+  union {
+      float f;
+      uint32_t u;
+  } x;
+  x.f = d;
+  if(x.u & 0x7FFFFFFF) // if f==0 do nothing
   {
-    *(int *)&d -= 1 << 23; // sub 1 from the exponent
+    x.u -= 1 << 23; // sub 1 from the exponent
   }
-  return d;
+  return x.f;
 }
 
 static __inline float xdivf(float d, int n)
 {
-  if(*(int *)&d & 0x7FFFFFFF) // if f==0 do nothing
+  union {
+      float f;
+      uint32_t u;
+  } x;
+  x.f = d;
+  if(x.u & 0x7FFFFFFF) // if f==0 do nothing
   {
-    *(int *)&d -= n << 23; // add n to the exponent
+    x.u -= n << 23; // add n to the exponent
   }
-  return d;
+  return x.f;
 }
 
 
@@ -2109,8 +2124,8 @@ void amaze_demosaic_RT(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
                                     * tempv;
               vfloat redv2 = greenv - vdup(LVFU(Dgrb[0][indx >> 1]));
               vfloat bluev2 = greenv - vdup(LVFU(Dgrb[1][indx >> 1]));
-              __attribute__((aligned(16))) float _r[4];
-              __attribute__((aligned(16))) float _b[4];
+              __attribute__((aligned(64))) float _r[4];
+              __attribute__((aligned(64))) float _b[4];
               STVF(*_r, vself(selmask, redv1, redv2));
               STVF(*_b, vself(selmask, bluev1, bluev2));
               for(int c = 0; c < 4; c++)

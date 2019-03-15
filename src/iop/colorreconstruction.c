@@ -140,6 +140,11 @@ int default_group()
   return IOP_GROUP_BASIC;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
@@ -268,7 +273,7 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_in
   b->scale = iscale / roi->scale;
   b->sigma_s = MAX(roi->height / (b->size_y - 1.0f), roi->width / (b->size_x - 1.0f));
   b->sigma_r = 100.0f / (b->size_z - 1.0f);
-  b->buf = dt_alloc_align(16, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
+  b->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
   if(!b->buf)
   {
     fprintf(stderr, "[color reconstruction] not able to allocate buffer (b)\n");
@@ -306,7 +311,7 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
   bf->scale = b->scale;
   bf->sigma_s = b->sigma_s;
   bf->sigma_r = b->sigma_r;
-  bf->buf = dt_alloc_align(16, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
+  bf->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
   if(bf->buf && b->buf)
   {
     memcpy(bf->buf, b->buf, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
@@ -342,7 +347,7 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_th
   b->scale = bf->scale;
   b->sigma_s = bf->sigma_s;
   b->sigma_r = bf->sigma_r;
-  b->buf = dt_alloc_align(16, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
+  b->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
   if(b->buf && bf->buf)
   {
     memcpy(b->buf, bf->buf, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
@@ -621,7 +626,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // if we are zoomed in more than just a little bit, we try to use the canned grid of the preview pipeline
     if(cur_scale > 1.05f * min_scale)
     {
-      if(!dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
+      if(!dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &g->lock, &g->hash))
         dt_control_log(_("inconsistent output"));
 
       dt_pthread_mutex_lock(&g->lock);
@@ -648,7 +653,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // here is where we generate the canned bilateral grid of the preview pipe for later use
   if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
   {
-    uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, 0, self->priority);
+    uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
     dt_pthread_mutex_lock(&g->lock);
     dt_iop_colorreconstruct_bilateral_dump(g->can);
     g->can = dt_iop_colorreconstruct_bilateral_freeze(b);
@@ -812,7 +817,7 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
   bf->scale = b->scale;
   bf->sigma_s = b->sigma_s;
   bf->sigma_r = b->sigma_r;
-  bf->buf = dt_alloc_align(16, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
+  bf->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
   if(bf->buf && b->dev_grid)
   {
     // read bilateral grid from device memory to host buffer (blocking)
@@ -1074,7 +1079,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     // if we are zoomed in more than just a little bit, we try to use the canned grid of the preview pipeline
     if(cur_scale > 1.05f * min_scale)
     {
-      if(!dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, 0, self->priority, &g->lock, &g->hash))
+      if(!dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &g->lock, &g->hash))
         dt_control_log(_("inconsistent output"));
 
       dt_pthread_mutex_lock(&g->lock);
@@ -1103,7 +1108,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
   {
-    uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, 0, self->priority);
+    uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
     dt_pthread_mutex_lock(&g->lock);
     dt_iop_colorreconstruct_bilateral_dump(g->can);
     g->can = dt_iop_colorreconstruct_bilateral_freeze_cl(b);
@@ -1302,7 +1307,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_colorreconstruct_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_colorreconstruct_params_t));
   module->default_enabled = 0;
-  module->priority = 385; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_colorreconstruct_params_t);
   module->gui_data = NULL;
   dt_iop_colorreconstruct_params_t tmp = (dt_iop_colorreconstruct_params_t){ 100.0f, 400.0f, 10.0f, 0.66f, COLORRECONSTRUCT_PRECEDENCE_NONE };
