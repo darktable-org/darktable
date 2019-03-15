@@ -1,0 +1,62 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 status="draft" id="raster_mask">
+
+  <title>Raster mask</title>
+
+  <indexterm>
+    <primary>masks</primary>
+    <secondary>raster masks</secondary>
+  </indexterm>
+
+  <para>
+    When a <quote>drawn mask</quote> or a <quote>parametric mask</quote> is active
+    the final mask can be reused in other modules. This works because all the shapes from the drawn mask 
+    and all the blend functions from the parametric mask of a module assemble a final mask,
+    which internally is stored as a raster image and made accessible to other modules.
+  </para>
+
+  <sect4 status="draft" id="raster_mask_overview">
+
+    <title>Overview</title>
+
+    <para>
+      Each individual mask selects a set of pixels and how drastically the effect of the module
+      is applied to this selection. Several drawn masks and parametric blend functions can be defined 
+      and they all together render the final mask, the final settings of how drastically the effect 
+      of the module will be. 
+    </para>
+
+    <para>
+      The selection of these masks can be saved as an alpha map, that is an image
+      as big as the input image in which for each pixel an intensity value is being stored between zero
+      and the maximum alpha value. If the value for a pixel is zero the input of the module is left unchanged, if the 
+      value has the maximum intensity the module has full effect and for each alpha value in-between the 
+      minimum and the maximum the effect is applied proportionally at that location.
+    </para>
+
+    <para>
+      Internally for each module the alpha map is saved and made accessible to other modules in the raster mask button.
+      So a mask from any module can be reused from any other module easily.
+    </para>
+
+  </sect4>
+
+  <sect4 id="raster_mask_usage">
+
+    <title>Usage</title>
+
+    <sect5 id="raster_mask_usage_dropdown">
+      <title>Drop-down menu</title>
+      <para>
+        If there is a mask in another module it will appear in the drop-down menu of the raster mask.
+        You can easily identify the mask by the name of the module it was defined in.
+      </para>
+    </sect5>  
+
+  </sect4>
+
+</sect3>
