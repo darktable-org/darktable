@@ -918,12 +918,10 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
     // only if no color picker
     if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE)
     {
-      uint32_t *hist;
-      float hist_max;
       const int ch_hist = p.channel;
-      hist = self->histogram;
-      hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? self->histogram_max[ch_hist]
-                                                                : logf(1.0 + self->histogram_max[ch_hist]);
+      const uint32_t *hist = self->histogram;
+      const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? self->histogram_max[ch_hist]
+                                                                            : logf(1.0 + self->histogram_max[ch_hist]);
       if(hist && hist_max > 0.0f)
       {
         cairo_save(cr);
