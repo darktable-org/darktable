@@ -245,16 +245,19 @@ static inline void dt_draw_curve_calc_values(dt_draw_curve_t *c, const float min
 static inline float dt_draw_curve_calc_value(dt_draw_curve_t *c, const float x)
 {
   float xa[20], ya[20];
-  float val;
-  float *ypp;
+  float val = 0.f;
+  float *ypp = NULL;
   for(int i = 0; i < c->c.m_numAnchors; i++)
   {
     xa[i] = c->c.m_anchors[i].x;
     ya[i] = c->c.m_anchors[i].y;
   }
   ypp = interpolate_set(c->c.m_numAnchors, xa, ya, c->c.m_spline_type);
-  val = interpolate_val(c->c.m_numAnchors, xa, x, ya, ypp, c->c.m_spline_type);
-  free(ypp);
+  if(ypp)
+  {
+    val = interpolate_val(c->c.m_numAnchors, xa, x, ya, ypp, c->c.m_spline_type);
+    free(ypp);
+  }
   return MIN(MAX(val, c->c.m_min_y), c->c.m_max_y);
 }
 
