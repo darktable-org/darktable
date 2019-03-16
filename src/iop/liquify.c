@@ -443,6 +443,63 @@ static void path_delete (dt_iop_liquify_params_t *p, dt_liquify_path_data_t *thi
   node_gc (p);
 }
 
+int _dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
+                                  float *points, size_t points_count)
+{
+  // this is called from the dt_dev_distort_transform_plus(), so the history is already locked
+  GList *modules = g_list_first(pipe->iop);
+  GList *pieces = g_list_first(pipe->nodes);
+  while(modules)
+  {
+    if(!pieces)
+    {
+      return 0;
+    }
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
+    if(piece->enabled && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL && module->iop_order >= iop_order)
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL && module->iop_order > iop_order)
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL && module->iop_order <= iop_order)
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order)) && 
+      !(dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
+    {
+      module->distort_transform(module, piece, points, points_count);
+    }
+    modules = g_list_next(modules);
+    pieces = g_list_next(pieces);
+  }
+  return 1;
+}
+int _dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
+                                      float *points, size_t points_count)
+{
+  // this is called from the dt_dev_distort_backtransform_plus(), so the history is already locked
+  GList *modules = g_list_last(pipe->iop);
+  GList *pieces = g_list_last(pipe->nodes);
+  while(modules)
+  {
+    if(!pieces)
+    {
+      return 0;
+    }
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
+    if(piece->enabled && ((transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL && module->iop_order >= iop_order)
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL && module->iop_order > iop_order)
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL && module->iop_order <= iop_order)
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order)) &&
+      !(dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
+    {
+      module->distort_backtransform(module, piece, points, points_count);
+    }
+    modules = g_list_previous(modules);
+    pieces = g_list_previous(pieces);
+  }
+  return 1;
+}
+
 /**
  * The functions in this group help transform between coordinate
  * systems.  (In darktable nomenclature this kind of transform is
@@ -512,6 +569,7 @@ typedef struct
   float from_scale;
   float to_scale;
   int transf_direction;
+  gboolean from_distort_transform;
 } distort_params_t;
 
 static void _distort_paths (const struct dt_iop_module_t *module,
@@ -573,14 +631,27 @@ static void _distort_paths (const struct dt_iop_module_t *module,
       break;
     }
   }
-  if(params->transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
+  if(params->from_distort_transform)
   {
-    dt_dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL, buffer, len);
-    dt_dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, buffer, len);
+    if(params->transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
+    {
+      _dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL, buffer, len);
+      _dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, buffer, len);
+    }
+    else
+      _dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, params->transf_direction, buffer, len);
   }
   else
-    dt_dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, params->transf_direction, buffer, len);
-
+  {
+    if(params->transf_direction == DT_DEV_TRANSFORM_DIR_ALL)
+    {
+      dt_dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL, buffer, len);
+      dt_dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_FORW_EXCL, buffer, len);
+    }
+    else
+      dt_dev_distort_transform_plus(params->develop, params->pipe, module->iop_order, params->transf_direction, buffer, len);
+  }
+  
   // record back the transformed points
 
   b = buffer;
@@ -619,9 +690,10 @@ static void _distort_paths (const struct dt_iop_module_t *module,
 static void distort_paths_raw_to_piece (const struct dt_iop_module_t *module,
                                         dt_dev_pixelpipe_t *pipe,
                                         const float roi_in_scale,
-                                        dt_iop_liquify_params_t *p)
+                                        dt_iop_liquify_params_t *p,
+                                        const gboolean from_distort_transform)
 {
-  const distort_params_t params = { module->dev, pipe, pipe->iscale, roi_in_scale, DT_DEV_TRANSFORM_DIR_BACK_EXCL };
+  const distort_params_t params = { module->dev, pipe, pipe->iscale, roi_in_scale, DT_DEV_TRANSFORM_DIR_BACK_EXCL, from_distort_transform };
   _distort_paths (module, &params, p);
 }
 
@@ -1187,7 +1259,7 @@ static float complex *build_global_distortion_map (struct dt_iop_module_t *modul
   dt_iop_liquify_params_t copy_params;
   memcpy(&copy_params, (dt_iop_liquify_params_t *)piece->data, sizeof(dt_iop_liquify_params_t));
 
-  distort_paths_raw_to_piece (module, piece->pipe, roi_in->scale, &copy_params);
+  distort_paths_raw_to_piece (module, piece->pipe, roi_in->scale, &copy_params, FALSE);
 
   GList *interpolated = interpolate_paths (&copy_params);
 
@@ -1226,7 +1298,7 @@ void modify_roi_in (struct dt_iop_module_t *module,
   dt_iop_liquify_params_t copy_params;
   memcpy(&copy_params, (dt_iop_liquify_params_t*)piece->data, sizeof(dt_iop_liquify_params_t));
 
-  distort_paths_raw_to_piece (module, piece->pipe, roi_in->scale, &copy_params);
+  distort_paths_raw_to_piece (module, piece->pipe, roi_in->scale, &copy_params, FALSE);
 
   cairo_rectangle_int_t pipe_rect =
     {
@@ -1289,9 +1361,15 @@ static int _distort_xtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
 
   if (extent.width != 0 && extent.height != 0)
   {
+    // copy params
+    dt_iop_liquify_params_t copy_params;
+    memcpy(&copy_params, (dt_iop_liquify_params_t *)piece->data, sizeof(dt_iop_liquify_params_t));
+
+    distort_paths_raw_to_piece (self, piece->pipe, scale, &copy_params, TRUE);
+
     // create the distortion map for this extent
 
-    GList *interpolated = interpolate_paths ((dt_iop_liquify_params_t *)piece->data);
+    GList *interpolated = interpolate_paths (&copy_params);
 
     // we need to adjust the extent to be the union enclosing all the points (currently in extent) and
     // the warps that are in (possibly partly) in this same region.
@@ -1386,16 +1464,19 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   const int ch = piece->colors;
   assert (ch == 4);
 
+  const int height = MIN(roi_in->height, roi_out->height);
+  const int width = MIN(roi_in->width, roi_out->width);
+  
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none)
 #endif
-  for (int i = 0; i < roi_out->height; i++)
+  for (int i = 0; i < height; i++)
   {
     float *destrow = (float *)out + (size_t) ch * i * roi_out->width;
     const float *srcrow = (float *)in + (size_t) ch * (roi_in->width * (i + roi_out->y - roi_in->y) +
                                                        roi_out->x - roi_in->x);
 
-    memcpy (destrow, srcrow, sizeof (float) * ch * roi_out->width);
+    memcpy (destrow, srcrow, sizeof (float) * ch * width);
   }
 
   // 2. build the distortion map
@@ -1559,12 +1640,15 @@ int process_cl (struct dt_iop_module_t *module,
   cl_int_t err = -999;
   const int devid = piece->pipe->devid;
 
+  const int height = MIN(roi_in->height, roi_out->height);
+  const int width = MIN(roi_in->width, roi_out->width);
+  
   // 1. copy the whole image (we'll change only a small part of it)
 
   {
     size_t src[]    = { roi_out->x - roi_in->x, roi_out->y - roi_in->y, 0 };
     size_t dest[]   = { 0, 0, 0 };
-    size_t extent[] = { roi_out->width, roi_out->height, 1 };
+    size_t extent[] = { width, height, 1 };
     err = dt_opencl_enqueue_copy_image (devid, dev_in, dev_out, src, dest, extent);
     if (err != CL_SUCCESS) goto error;
   }
@@ -2630,7 +2714,7 @@ void gui_post_expose (struct dt_iop_module_t *module,
 
   // distort all points
   dt_pthread_mutex_lock(&develop->preview_pipe_mutex);
-  const distort_params_t d_params = { develop, develop->preview_pipe, iscale, 1.0 / scale, DT_DEV_TRANSFORM_DIR_ALL };
+  const distort_params_t d_params = { develop, develop->preview_pipe, iscale, 1.0 / scale, DT_DEV_TRANSFORM_DIR_ALL, FALSE };
   _distort_paths (module, &d_params, &copy_params);
   dt_pthread_mutex_unlock(&develop->preview_pipe_mutex);
 
