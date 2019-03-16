@@ -1222,9 +1222,10 @@ static gboolean _bottom_area_button_press_callback(GtkWidget *widget, GdkEventBu
   return FALSE;
 }
 
-static int _sanity_check(const float x, const int selected, const int nodes, const dt_iop_colorzones_node_t *curve)
+static gboolean _sanity_check(const float x, const int selected, const int nodes,
+                              const dt_iop_colorzones_node_t *curve)
 {
-  int point_valid = TRUE;
+  gboolean point_valid = TRUE;
 
   // check if it is not too close to other node
   const float min_dist = DT_IOP_COLORZONES_MIN_X_DISTANCE; // in curve coordinates
