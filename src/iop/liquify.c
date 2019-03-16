@@ -454,7 +454,7 @@ int _dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, con
   {
     if(!pieces)
     {
-      dt_pthread_mutex_unlock(&dev->history_mutex);
+//      dt_pthread_mutex_unlock(&dev->history_mutex);
       return 0;
     }
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
@@ -485,7 +485,7 @@ int _dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe,
   {
     if(!pieces)
     {
-      dt_pthread_mutex_unlock(&dev->history_mutex);
+//      dt_pthread_mutex_unlock(&dev->history_mutex);
       return 0;
     }
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
