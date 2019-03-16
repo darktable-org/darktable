@@ -447,14 +447,12 @@ int _dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, con
                                   float *points, size_t points_count)
 {
   // this is called from the dt_dev_distort_transform_plus(), so the history is already locked
-//  dt_pthread_mutex_lock(&dev->history_mutex);
   GList *modules = g_list_first(pipe->iop);
   GList *pieces = g_list_first(pipe->nodes);
   while(modules)
   {
     if(!pieces)
     {
-//      dt_pthread_mutex_unlock(&dev->history_mutex);
       return 0;
     }
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
@@ -471,21 +469,18 @@ int _dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, con
     modules = g_list_next(modules);
     pieces = g_list_next(pieces);
   }
-//  dt_pthread_mutex_unlock(&dev->history_mutex);
   return 1;
 }
 int _dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
                                       float *points, size_t points_count)
 {
   // this is called from the dt_dev_distort_backtransform_plus(), so the history is already locked
-//  dt_pthread_mutex_lock(&dev->history_mutex);
   GList *modules = g_list_last(pipe->iop);
   GList *pieces = g_list_last(pipe->nodes);
   while(modules)
   {
     if(!pieces)
     {
-//      dt_pthread_mutex_unlock(&dev->history_mutex);
       return 0;
     }
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
@@ -502,7 +497,6 @@ int _dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe,
     modules = g_list_previous(modules);
     pieces = g_list_previous(pieces);
   }
-//  dt_pthread_mutex_unlock(&dev->history_mutex);
   return 1;
 }
 
@@ -575,7 +569,7 @@ typedef struct
   float from_scale;
   float to_scale;
   int transf_direction;
-  int from_distort_transform;
+  gboolean from_distort_transform;
 } distort_params_t;
 
 static void _distort_paths (const struct dt_iop_module_t *module,
@@ -697,7 +691,7 @@ static void distort_paths_raw_to_piece (const struct dt_iop_module_t *module,
                                         dt_dev_pixelpipe_t *pipe,
                                         const float roi_in_scale,
                                         dt_iop_liquify_params_t *p,
-                                        const int from_distort_transform)
+                                        const gboolean from_distort_transform)
 {
   const distort_params_t params = { module->dev, pipe, pipe->iscale, roi_in_scale, DT_DEV_TRANSFORM_DIR_BACK_EXCL, from_distort_transform };
   _distort_paths (module, &params, p);
