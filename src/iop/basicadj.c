@@ -32,7 +32,8 @@ DT_MODULE_INTROSPECTION(1, dt_iop_basicadj_params_t)
 
 #define exposure2white(x) exp2f(-(x))
 
-typedef enum dt_iop_basicadj_preservecolors_t {
+typedef enum dt_iop_basicadj_preservecolors_t
+{
   DT_BASICADJ_PRESERVE_NONE = 0,
   DT_BASICADJ_PRESERVE_LUMINANCE = 1
 } dt_iop_basicadj_preservecolors_t;
@@ -480,7 +481,6 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   const float posy_from = fmin(g->posy_from, g->posy_to);
   const float posy_to = fmax(g->posy_from, g->posy_to);
 
-
   cairo_save(cr);
   cairo_set_line_width(cr, 1.0 / zoom_scale);
   cairo_set_source_rgb(cr, .2, .2, .2);
@@ -704,7 +704,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->cmb_preserve_colors = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->cmb_preserve_colors, NULL, _("preserve colors"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("(none)"));
+  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("none"));
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("luminance"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->cmb_preserve_colors, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
@@ -1212,7 +1212,6 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
   float corr = sqrt(gain * scale / rawmax);
   black = shc * corr;
 
-
   // now tune hlcompr to bring back rawmax to 65535
   hlcomprthresh = 0.f;
   // this is a series approximation of the actual formula for comp,
@@ -1273,15 +1272,7 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
   // corection with gamma
   black = (black / whiteclipg);
 
-  if(expcomp < -5.0f)
-  {
-    expcomp = -5.0f;
-  }
-
-  if(expcomp > 12.0f)
-  {
-    expcomp = 12.0f;
-  }
+  expcomp = CLAMP(expcomp, -5.0f, 12.0f);
 
   bright = MAX(-100.f, MIN(bright, 100.f));
 
