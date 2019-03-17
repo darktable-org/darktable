@@ -132,6 +132,7 @@ void gui_init(dt_lib_module_t *self)
   d->tview = gtk_text_view_new();
   gtk_text_view_set_justification(GTK_TEXT_VIEW(d->tview), GTK_JUSTIFY_CENTER);
   gtk_container_add(GTK_CONTAINER(self->widget), d->tview);
+  gtk_widget_set_name(GTK_WIDGET(d->tview), "image-info");
 
   gtk_widget_show_all(self->widget);
 

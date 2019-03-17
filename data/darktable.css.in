@@ -495,6 +495,11 @@ entry selection {
 {
 }
 
+#image-info
+{
+  font-size: 1.25em;
+  padding: 0.25em;
+}
 
 #blending-box #section_label
 {
@@ -591,8 +596,8 @@ combobox button
   border-radius: 2pt;
   color: @bauhaus_fg;
   outline-style: none;
-  min-height: 0.5em;
-  min-width: 0.5em;
+  min-height: 1em;
+  min-width: 1em;
 }
 
 combobox entry
@@ -602,8 +607,8 @@ combobox entry
 
 combobox *
 {
-  min-height: 0.5em;
-  min-width: 0.5em;
+  min-height: 1em;
+  min-width: 1em;
 }
 
 context-menu,
