@@ -145,6 +145,10 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 
 - Do not disable SSL for storage modules.
 
+- A long standing bug on mask distort in Liquify module has been
+  fixed. This was visible when a liquify mask was used together with
+  the perspective correction module activated.
+
 ## Lua
 
 - No changes
