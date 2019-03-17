@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-17 11:29+0100\n"
-"PO-Revision-Date: 2019-03-17 11:32+0100\n"
+"POT-Creation-Date: 2019-03-17 11:33+0100\n"
+"PO-Revision-Date: 2019-03-17 11:44+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -3814,8 +3814,8 @@ msgstr "ISO"
 
 #. exposure
 #: ../src/gui/preferences.c:513 ../src/gui/preferences.c:1412
-#: ../src/gui/presets.c:468 ../src/iop/exposure.c:107 ../src/iop/exposure.c:885
-#: ../src/iop/relight.c:360 ../src/libs/collect.h:37
+#: ../src/gui/presets.c:468 ../src/iop/basicadj.c:685 ../src/iop/exposure.c:107
+#: ../src/iop/exposure.c:885 ../src/iop/relight.c:360 ../src/libs/collect.h:37
 #: ../src/libs/metadata_view.c:110
 msgid "exposure"
 msgstr "exposition"
@@ -3834,8 +3834,8 @@ msgstr "ouverture"
 msgid "focal length"
 msgstr "focale"
 
-#: ../src/gui/preferences.c:526 ../src/iop/borders.c:1021
-#: ../src/iop/levels.c:702
+#: ../src/gui/preferences.c:526 ../src/iop/basicadj.c:741
+#: ../src/iop/borders.c:1021 ../src/iop/levels.c:702
 msgid "auto"
 msgstr "auto"
 
@@ -5436,11 +5436,11 @@ msgstr ""
 msgid "fusion"
 msgstr "fusion d'exposition"
 
-#: ../src/iop/basecurve.c:1952 ../src/iop/clipping.c:1677
-#: ../src/iop/clipping.c:1963 ../src/iop/clipping.c:1981
-#: ../src/iop/clipping.c:2121 ../src/iop/clipping.c:2148
-#: ../src/iop/colorreconstruction.c:1372 ../src/iop/lens.c:2154
-#: ../src/iop/retouch.c:582 ../src/libs/export.c:494
+#: ../src/iop/basecurve.c:1952 ../src/iop/basicadj.c:707
+#: ../src/iop/clipping.c:1677 ../src/iop/clipping.c:1963
+#: ../src/iop/clipping.c:1981 ../src/iop/clipping.c:2121
+#: ../src/iop/clipping.c:2148 ../src/iop/colorreconstruction.c:1372
+#: ../src/iop/lens.c:2154 ../src/iop/retouch.c:582 ../src/libs/export.c:494
 #: ../src/libs/live_view.c:350 ../src/libs/live_view.c:375
 #: ../src/libs/live_view.c:384 ../src/libs/print_settings.c:1473
 msgid "none"
@@ -5482,6 +5482,116 @@ msgstr ""
 #: ../src/iop/basecurve.c:1974
 msgid "exposure bias"
 msgstr "biais d'exposition"
+
+#: ../src/iop/basicadj.c:96
+msgid "basic adjustments"
+msgstr "ajustement de base"
+
+#: ../src/iop/basicadj.c:673 ../src/iop/exposure.c:872
+msgid "black level correction"
+msgstr "correction du niveau du noir"
+
+#: ../src/iop/basicadj.c:675
+msgid ""
+"adjust the black level to unclip negative RGB values.\n"
+"you should never use it to add more density in blacks!\n"
+"if poorly set, it will clip near-black colors out of gamut\n"
+"by pushing RGB values into negatives"
+msgstr ""
+"ajuste le niveau du noir pour éviter les valeurs négatives.\n"
+"ce réglage ne devrait jamais être utilisé pour augmenter la densité\n"
+"si mal ajusté, les couleurs très sombres hors gamut seront tronquées\n"
+"en poussant les valeurs RGB négativement."
+
+#: ../src/iop/basicadj.c:687 ../src/iop/exposure.c:883
+msgid "adjust the exposure correction"
+msgstr "ajuste la correction d'exposition"
+
+#: ../src/iop/basicadj.c:693
+msgid "highlight compression"
+msgstr "compression hautes lumières"
+
+#: ../src/iop/basicadj.c:694
+msgid "highlight compression adjustment"
+msgstr "ajustement de la compression des hautes lumières"
+
+#: ../src/iop/basicadj.c:700 ../src/iop/bilat.c:546 ../src/iop/colisa.c:370
+#: ../src/iop/colorbalance.c:2373 ../src/iop/colorbalance.c:2375
+#: ../src/iop/filmic.c:1737 ../src/iop/lowpass.c:676
+msgid "contrast"
+msgstr "contraste"
+
+#: ../src/iop/basicadj.c:701 ../src/iop/colisa.c:378
+msgid "contrast adjustment"
+msgstr "ajustement du contraste"
+
+#: ../src/iop/basicadj.c:706
+msgid "preserve colors"
+msgstr "préserver couleur"
+
+#: ../src/iop/basicadj.c:708
+msgid "luminance"
+msgstr "luminance"
+
+#: ../src/iop/basicadj.c:710
+msgid "method to preserve colors when applying contrast"
+msgstr ""
+"méthode pour préserver les couleurs lorsque de la modification du contraste"
+
+#: ../src/iop/basicadj.c:714
+msgid "middle grey"
+msgstr "gris moyen"
+
+#: ../src/iop/basicadj.c:716
+msgid "middle grey adjustment"
+msgstr "ajustement gris moyen"
+
+#: ../src/iop/basicadj.c:728 ../src/iop/colisa.c:371 ../src/iop/retouch.c:2881
+#: ../src/iop/soften.c:726 ../src/iop/vignette.c:1154
+msgid "brightness"
+msgstr "luminosité"
+
+#: ../src/iop/basicadj.c:729 ../src/iop/colisa.c:379
+msgid "brightness adjustment"
+msgstr "ajustement de la luminosité"
+
+#. dt_bauhaus_slider_set_format(g->gslider2, "");
+#: ../src/iop/basicadj.c:734 ../src/iop/channelmixer.c:454
+#: ../src/iop/colisa.c:372 ../src/iop/colorbalance.c:2471
+#: ../src/iop/colorbalance.c:2521 ../src/iop/colorbalance.c:2570
+#: ../src/iop/colorchecker.c:1381 ../src/iop/colorcorrection.c:292
+#: ../src/iop/colorize.c:428 ../src/iop/colorzones.c:2050
+#: ../src/iop/colorzones.c:2101 ../src/iop/graduatednd.c:1247
+#: ../src/iop/lowpass.c:678 ../src/iop/soften.c:719
+#: ../src/iop/splittoning.c:596 ../src/iop/vignette.c:1155
+msgid "saturation"
+msgstr "saturation"
+
+#: ../src/iop/basicadj.c:735
+msgid "saturation adjustment"
+msgstr "ajustement de la saturation"
+
+#: ../src/iop/basicadj.c:742
+msgid "apply auto exposure based on the entire image"
+msgstr "applique une exposition automatique en fonction de l'image complète"
+
+#: ../src/iop/basicadj.c:750
+msgid ""
+"apply auto exposure based on a region defined by the user\n"
+"click and drag to draw the area\n"
+"right click to cancel"
+msgstr ""
+"applique une exposition automatique en fonction de la sélection définie\n"
+"clic et déplacer pour sélectionner la zone\n"
+"clic-droit pour annuler"
+
+#: ../src/iop/basicadj.c:760
+msgid "clip"
+msgstr "tronquer"
+
+#: ../src/iop/basicadj.c:761
+msgid "adjusts clipping value for auto exposure calculation"
+msgstr "ajuste les valeurs seuils pour le calcul automatique de l'exposition"
 
 #: ../src/iop/bilat.c:95 ../src/iop/clahe.c:66
 msgid "local contrast"
@@ -5532,12 +5642,6 @@ msgstr "granularité"
 #: ../src/iop/bilat.c:542
 msgid "feature size of local details (spatial sigma of bilateral filter)"
 msgstr "taille des détails locaux (sigma spatial du filtre bilatéral)"
-
-#: ../src/iop/bilat.c:546 ../src/iop/colisa.c:370
-#: ../src/iop/colorbalance.c:2373 ../src/iop/colorbalance.c:2375
-#: ../src/iop/filmic.c:1737 ../src/iop/lowpass.c:676
-msgid "contrast"
-msgstr "contraste"
 
 #: ../src/iop/bilat.c:547
 msgid "L difference to detect edges (range sigma of bilateral filter)"
@@ -5913,18 +6017,6 @@ msgstr "canal de destination"
 msgid "hue"
 msgstr "teinte"
 
-#. dt_bauhaus_slider_set_format(g->gslider2, "");
-#: ../src/iop/channelmixer.c:454 ../src/iop/colisa.c:372
-#: ../src/iop/colorbalance.c:2471 ../src/iop/colorbalance.c:2521
-#: ../src/iop/colorbalance.c:2570 ../src/iop/colorchecker.c:1381
-#: ../src/iop/colorcorrection.c:292 ../src/iop/colorize.c:428
-#: ../src/iop/colorzones.c:2050 ../src/iop/colorzones.c:2101
-#: ../src/iop/graduatednd.c:1247 ../src/iop/lowpass.c:678
-#: ../src/iop/soften.c:719 ../src/iop/splittoning.c:596
-#: ../src/iop/vignette.c:1155
-msgid "saturation"
-msgstr "saturation"
-
 #: ../src/iop/channelmixer.c:455 ../src/iop/colorchecker.c:1363
 #: ../src/iop/colorize.c:439 ../src/iop/colorzones.c:2047
 #: ../src/iop/colorzones.c:2102
@@ -6210,19 +6302,6 @@ msgstr "luminosité"
 msgctxt "accel"
 msgid "saturation"
 msgstr "saturation"
-
-#: ../src/iop/colisa.c:371 ../src/iop/retouch.c:2881 ../src/iop/soften.c:726
-#: ../src/iop/vignette.c:1154
-msgid "brightness"
-msgstr "luminosité"
-
-#: ../src/iop/colisa.c:378
-msgid "contrast adjustment"
-msgstr "ajustement du contraste"
-
-#: ../src/iop/colisa.c:379
-msgid "brightness adjustment"
-msgstr "ajustement de la luminosité"
 
 #: ../src/iop/colisa.c:380
 msgid "color saturation adjustment"
@@ -7520,18 +7599,11 @@ msgstr ""
 "si mal ajusté, les couleurs très sombres hors gamut seront tronquées\n"
 "en poussant les valeurs RGB négativement."
 
-#: ../src/iop/exposure.c:872
-msgid "black level correction"
-msgstr "correction du niveau du noir"
-
-#: ../src/iop/exposure.c:883
-msgid "adjust the exposure correction"
-msgstr "ajuste la correction d'exposition"
-
 #: ../src/iop/exposure.c:890
 msgid ""
 "percentage of bright values clipped out, toggle color picker to activate"
-msgstr "pourcentage de valeurs hautes tronquées, "
+msgstr ""
+"pourcentage de valeurs hautes tronquées, utiliser la pipette pour définir"
 
 #: ../src/iop/exposure.c:892 ../src/iop/highlights.c:1063
 #: ../src/views/darkroom.c:1580
@@ -9044,9 +9116,8 @@ msgstr ""
 #: ../src/iop/relight.c:395
 msgid "toggle tool for picking median lightness in image"
 msgstr ""
-"activer/désactiver pour\n"
-"récupérer la lumière moyenne\n"
-" d'une zone de l'image"
+"activer/désactiver pour récupérer la \n"
+"lumière moyenne d'une zone de l'image"
 
 #: ../src/iop/retouch.c:193
 msgid "retouch"
@@ -13276,9 +13347,6 @@ msgstr ""
 
 #~ msgid "very dark subject, 14 EV"
 #~ msgstr "sujet très sombre, 14 EV"
-
-#~ msgid "middle grey destination"
-#~ msgstr "gris moyen cible"
 
 #~ msgid "destination power factor"
 #~ msgstr "gamma cible"
