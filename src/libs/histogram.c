@@ -281,31 +281,6 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
     cairo_restore(cr);
   }
 
-  cairo_set_source_rgb(cr, .25, .25, .25);
-  cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
-  PangoLayout *layout;
-  PangoRectangle ink;
-  PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-  pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-  layout = pango_cairo_create_layout(cr);
-  pango_font_description_set_absolute_size(desc, .1 * height * PANGO_SCALE);
-  pango_layout_set_font_description(layout, desc);
-
-  char exifline[50];
-  dt_image_print_exif(&dev->image_storage, exifline, sizeof(exifline));
-
-  pango_layout_set_text(layout, exifline, -1);
-  pango_layout_get_pixel_extents(layout, &ink, NULL);
-  cairo_move_to(cr, .02 * width, .98 * height - ink.height - ink.y);
-  cairo_save(cr);
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0));
-  cairo_set_source_rgba(cr, 1, 1, 1, 0.3);
-  pango_cairo_layout_path(cr, layout);
-  cairo_stroke_preserve(cr);
-  cairo_set_source_rgb(cr, .25, .25, .25);
-  cairo_fill(cr);
-  cairo_restore(cr);
-
   // buttons to control the display of the histogram: linear/log, r, g, b
   if(d->highlight != 0)
   {
