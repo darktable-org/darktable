@@ -3483,19 +3483,142 @@ void connect_key_accels(dt_iop_module_t *module)
 // process
 //--------------------------------------------------------------------------------------------------
 
-static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
-                             float *const img_src, const int width, const int height, const int ch,
-                             float levels[3], int use_sse)
+#ifdef __SSE2__
+/** uses D50 white point. */
+// see http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html for the transformation matrices
+static inline __m128 dt_XYZ_to_RGB_sse2(__m128 XYZ)
+{
+  // XYZ -> sRGB matrix, D65
+  const __m128 xyz_to_srgb_0 = _mm_setr_ps(3.1338561f, -0.9787684f, 0.0719453f, 0.0f);
+  const __m128 xyz_to_srgb_1 = _mm_setr_ps(-1.6168667f, 1.9161415f, -0.2289914f, 0.0f);
+  const __m128 xyz_to_srgb_2 = _mm_setr_ps(-0.4906146f, 0.0334540f, 1.4052427f, 0.0f);
+
+  __m128 rgb
+      = _mm_add_ps(_mm_mul_ps(xyz_to_srgb_0, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(0, 0, 0, 0))),
+                   _mm_add_ps(_mm_mul_ps(xyz_to_srgb_1, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(1, 1, 1, 1))),
+                              _mm_mul_ps(xyz_to_srgb_2, _mm_shuffle_ps(XYZ, XYZ, _MM_SHUFFLE(2, 2, 2, 2)))));
+
+  return rgb;
+}
+
+static inline __m128 dt_RGB_to_XYZ_sse2(__m128 rgb)
+{
+  // sRGB -> XYZ matrix, D65
+  const __m128 srgb_to_xyz_0 = _mm_setr_ps(0.4360747f, 0.2225045f, 0.0139322f, 0.0f);
+  const __m128 srgb_to_xyz_1 = _mm_setr_ps(0.3850649f, 0.7168786f, 0.0971045f, 0.0f);
+  const __m128 srgb_to_xyz_2 = _mm_setr_ps(0.1430804f, 0.0606169f, 0.7141733f, 0.0f);
+
+  __m128 XYZ
+      = _mm_add_ps(_mm_mul_ps(srgb_to_xyz_0, _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(0, 0, 0, 0))),
+                   _mm_add_ps(_mm_mul_ps(srgb_to_xyz_1, _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(1, 1, 1, 1))),
+                              _mm_mul_ps(srgb_to_xyz_2, _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(2, 2, 2, 2)))));
+  return XYZ;
+}
+#endif
+
+static inline void dt_linearRGB_to_XYZ(const float *const linearRGB, float *XYZ)
+{
+  const float srgb_to_xyz[3][3] = { { 0.4360747, 0.3850649, 0.1430804 },
+                                    { 0.2225045, 0.7168786, 0.0606169 },
+                                    { 0.0139322, 0.0971045, 0.7141733 } };
+
+  // sRGB -> XYZ
+  XYZ[0] = XYZ[1] = XYZ[2] = 0.0;
+  for(int r = 0; r < 3; r++)
+    for(int c = 0; c < 3; c++) XYZ[r] += srgb_to_xyz[r][c] * linearRGB[c];
+}
+
+static inline void dt_XYZ_to_linearRGB(const float *const XYZ, float *linearRGB)
+{
+  const float xyz_to_srgb_matrix[3][3] = { { 3.1338561, -1.6168667, -0.4906146 },
+                                           { -0.9787684, 1.9161415, 0.0334540 },
+                                           { 0.0719453, -0.2289914, 1.4052427 } };
+
+  // XYZ -> sRGB
+  linearRGB[0] = linearRGB[1] = linearRGB[2] = 0.f;
+  for(int r = 0; r < 3; r++)
+    for(int c = 0; c < 3; c++) linearRGB[r] += xyz_to_srgb_matrix[r][c] * XYZ[c];
+}
+
+static void image_rgb2lab(float *img_src, const int width, const int height, const int ch, const int use_sse)
+{
+  const int stride = width * height * ch;
+
+#if defined(__SSE__)
+  if(ch == 4 && use_sse)
+  {
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(img_src) schedule(static)
+#endif
+    for(int i = 0; i < stride; i += ch)
+    {
+      // RGB -> XYZ
+      __m128 rgb = _mm_load_ps(img_src + i);
+      __m128 XYZ = dt_RGB_to_XYZ_sse2(rgb);
+      // XYZ -> Lab
+      _mm_store_ps(img_src + i, dt_XYZ_to_Lab_sse2(XYZ));
+    }
+
+    return;
+  }
+#endif
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(img_src) schedule(static)
+#endif
+  for(int i = 0; i < stride; i += ch)
+  {
+    float XYZ[3] = { 0 };
+
+    dt_linearRGB_to_XYZ(img_src + i, XYZ);
+    dt_XYZ_to_Lab(XYZ, img_src + i);
+  }
+}
+
+static void image_lab2rgb(float *img_src, const int width, const int height, const int ch, const int use_sse)
+{
+  const int stride = width * height * ch;
+
+#if defined(__SSE__)
+  if(ch == 4 && use_sse)
+  {
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(img_src) schedule(static)
+#endif
+    for(int i = 0; i < stride; i += ch)
+    {
+      // Lab -> XYZ
+      __m128 Lab = _mm_load_ps(img_src + i);
+      __m128 XYZ = dt_Lab_to_XYZ_sse2(Lab);
+      // XYZ -> RGB
+      _mm_store_ps(img_src + i, dt_XYZ_to_RGB_sse2(XYZ));
+    }
+
+    return;
+  }
+#endif
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) shared(img_src) schedule(static)
+#endif
+  for(int i = 0; i < stride; i += ch)
+  {
+    float XYZ[3] = { 0 };
+
+    dt_Lab_to_XYZ(img_src + i, XYZ);
+    dt_XYZ_to_linearRGB(XYZ, img_src + i);
+  }
+}
+
+static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *const img_src,
+                             const int width, const int height, const int ch, float levels[3], int use_sse)
 {
   const int size = width * height * ch;
   float l_max = -INFINITY;
   float l_min = INFINITY;
   float l_sum = 0.f;
   int count = 0;
-  int converted_cst;
-
-  dt_ioppr_transform_image_colorspace(self, img_src, img_src, width, height, iop_cs_rgb, iop_cs_Lab,
-                                      &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static) reduction(+ : count, l_sum) reduction(max : l_max)        \
@@ -3503,24 +3626,35 @@ static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 #endif
   for(int i = 0; i < size; i += ch)
   {
-    l_max = MAX(l_max, img_src[i]);
-    l_min = MIN(l_min, img_src[i]);
-    l_sum += img_src[i];
+    float Lab[3] = { 0 };
+
+    if(work_profile)
+    {
+      dt_ioppr_rgb_matrix_to_lab(img_src + i, Lab, work_profile);
+    }
+    else
+    {
+      float XYZ[3] = { 0 };
+      dt_linearRGB_to_XYZ(img_src + i, XYZ);
+      dt_XYZ_to_Lab(XYZ, Lab);
+    }
+
+    l_max = MAX(l_max, Lab[0]);
+    l_min = MIN(l_min, Lab[0]);
+    l_sum += Lab[0];
     count++;
   }
-
-  dt_ioppr_transform_image_colorspace(self, img_src, img_src, width, height, iop_cs_Lab, iop_cs_rgb,
-                                      &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
 
   levels[0] = l_min / 100.f;
   levels[2] = l_max / 100.f;
   levels[1] = (l_sum / (float)count) / 100.f;
 }
 
-static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *img_src, const int width, const int height, const int ch,
-                             const float levels[3], int use_sse)
+static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *img_src, const int width,
+                             const int height, const int ch, const float levels[3], int use_sse)
 {
   const int size = width * height * ch;
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   const float left = levels[0];
   const float middle = levels[1];
@@ -3532,16 +3666,24 @@ static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   const float mid = left + delta;
   const float tmp = (middle - mid) / delta;
   const float in_inv_gamma = pow(10, tmp);
-  int converted_cst;
-
-  dt_ioppr_transform_image_colorspace(self, img_src, img_src, width, height, iop_cs_rgb, iop_cs_Lab,
-                                      &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) shared(img_src) schedule(static)
 #endif
   for(int i = 0; i < size; i += ch)
   {
+    if(work_profile)
+    {
+      dt_ioppr_rgb_matrix_to_lab(img_src + i, img_src + i, work_profile);
+    }
+    else
+    {
+      float XYZ[3] = { 0 };
+
+      dt_linearRGB_to_XYZ(img_src + i, XYZ);
+      dt_XYZ_to_Lab(XYZ, img_src + i);
+    }
+
     for(int c = 0; c < 1; c++)
     {
       const float L_in = img_src[i + c] / 100.0f;
@@ -3556,10 +3698,19 @@ static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
         img_src[i + c] = 100.0f * powf(percentage, in_inv_gamma);
       }
     }
-  }
 
-  dt_ioppr_transform_image_colorspace(self, img_src, img_src, width, height, iop_cs_Lab, iop_cs_rgb,
-                                      &converted_cst, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
+    if(work_profile)
+    {
+      dt_ioppr_lab_to_rgb_matrix(img_src + i, img_src + i, work_profile);
+    }
+    else
+    {
+      float XYZ[3] = { 0 };
+
+      dt_Lab_to_XYZ(img_src + i, XYZ);
+      dt_XYZ_to_linearRGB(XYZ, img_src + i);
+    }
+  }
 }
 
 #undef RT_WDBAR_INSET
@@ -3895,19 +4046,26 @@ static void retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *c
     if(b)
     {
       int converted_cst;
+      const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
-      dt_ioppr_transform_image_colorspace(self, img_dest, img_dest, roi_mask_scaled->width,
-                                          roi_mask_scaled->height, iop_cs_rgb, iop_cs_Lab, &converted_cst,
-                                          dt_ioppr_get_pipe_work_profile_info(piece->pipe));
+      if(work_profile)
+        dt_ioppr_transform_image_colorspace(self, img_dest, img_dest, roi_mask_scaled->width,
+                                            roi_mask_scaled->height, iop_cs_rgb, iop_cs_Lab, &converted_cst,
+                                            work_profile);
+      else
+        image_rgb2lab(img_dest, roi_mask_scaled->width, roi_mask_scaled->height, ch, use_sse);
 
       dt_bilateral_splat(b, img_dest);
       dt_bilateral_blur(b);
       dt_bilateral_slice(b, img_dest, img_dest, detail);
       dt_bilateral_free(b);
 
-      dt_ioppr_transform_image_colorspace(self, img_dest, img_dest, roi_mask_scaled->width,
-                                          roi_mask_scaled->height, iop_cs_Lab, iop_cs_rgb, &converted_cst,
-                                          dt_ioppr_get_pipe_work_profile_info(piece->pipe));
+      if(work_profile)
+        dt_ioppr_transform_image_colorspace(self, img_dest, img_dest, roi_mask_scaled->width,
+                                            roi_mask_scaled->height, iop_cs_Lab, iop_cs_rgb, &converted_cst,
+                                            work_profile);
+      else
+        image_lab2rgb(img_dest, roi_mask_scaled->width, roi_mask_scaled->height, ch, use_sse);
     }
   }
 
