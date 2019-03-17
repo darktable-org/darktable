@@ -1942,7 +1942,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   _iop_panel_label(hw[DT_MODULE_LABEL], module);
 
   /* add multi instances menu button */
-  hw[DT_MODULE_INSTANCE] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT, NULL);
+  hw[DT_MODULE_INSTANCE] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   module->multimenu_button = GTK_WIDGET(hw[DT_MODULE_INSTANCE]);
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[DT_MODULE_INSTANCE]),
                               _("multiple instances actions\nmiddle-click creates new instance"));
@@ -1954,7 +1954,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   dt_gui_add_help_link(expander, dt_get_help_url(module->op));
 
   /* add reset button */
-  hw[DT_MODULE_RESET] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT, NULL);
+  hw[DT_MODULE_RESET] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   module->reset_button = GTK_WIDGET(hw[DT_MODULE_RESET]);
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[DT_MODULE_RESET]), _("reset parameters"));
   g_signal_connect(G_OBJECT(hw[DT_MODULE_RESET]), "clicked", G_CALLBACK(dt_iop_gui_reset_callback), module);
@@ -1962,7 +1962,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
 
   /* add preset button if module has implementation */
-  hw[DT_MODULE_PRESETS] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
+  hw[DT_MODULE_PRESETS] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   module->presets_button = GTK_WIDGET(hw[DT_MODULE_PRESETS]);
   if (module->flags() & IOP_FLAGS_ONE_INSTANCE)
     gtk_widget_set_tooltip_text(GTK_WIDGET(hw[DT_MODULE_PRESETS]), _("presets"));
@@ -1972,7 +1972,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_PRESETS]), "module-preset-button");
 
   /* add enabled button */
-  hw[DT_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
+  hw[DT_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
   gchar *module_label = dt_history_item_get_name(module);
   snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"),
            module_label);
