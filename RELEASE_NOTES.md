@@ -129,6 +129,13 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   When pressing the shortcut 'pan&zoom while editing masks' the draw area
   can now be zoomed. Double-click on the bottom bar resets the zoom.
 
+- A new module 'basic adjustments' has been added. It allows to adjust
+  the exposure, highlight compression, contrast, brightness and saturation.
+  It also has an auto feature based on Rawtherapee's auto levels that can
+  work on the entire image or a user selected area.
+  Both the contrast and the auto feature use the middle grey point, the
+  default for this setting is based on the work profile.
+
 ## Bug fixes
 
 - The color picker support has been fixed by a complete rewrite. It
