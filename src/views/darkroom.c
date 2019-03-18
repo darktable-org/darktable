@@ -2843,7 +2843,7 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "allow to pan & zoom while editing masks"), GDK_KEY_a, 0);
 
   // set focus to the search modules text box
-  dt_accel_register_view(self, NC_("accel", "search modules"), GDK_KEY_a, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "search modules"), 0, 0);
 }
 
 static gboolean _darkroom_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,

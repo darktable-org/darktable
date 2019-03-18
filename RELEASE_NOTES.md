@@ -150,8 +150,10 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - A search text has been added to the module groups in the darkroom. It has a
   config option to show only the modules groups, only the search text or both.
   Modules are searched by name (localized).
-  If displaying only the search text, the active pipe modules are displayed when the search text is empty.
-  A darkroom shortcut ctrl+a set the focus on the search box.
+
+  If displaying only the search text, the active pipe modules are
+  displayed when the search text is empty.  A darkroom shortcut can be
+  set to focus on the search box.
 
 ## Bug fixes
 
