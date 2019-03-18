@@ -21,6 +21,7 @@
 #endif
 
 #include "bauhaus/bauhaus.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "dtgtk/drawingarea.h"
@@ -317,11 +318,11 @@ static float _mouse_to_curve(const float x, const float zoom_factor, const float
 }
 
 static void picker_scale(const float *const in, float *out, dt_iop_rgbcurve_params_t *p,
-                         const dt_iop_order_iccprofile_info_t *const profile_info)
+                         const dt_iop_order_iccprofile_info_t *const work_profile)
 {
-  if(p->compensate_middle_grey)
+  if(p->compensate_middle_grey && work_profile)
   {
-    for(int c = 0; c < 3; c++) out[c] = dt_ioppr_compensate_middle_grey(in[c], profile_info);
+    for(int c = 0; c < 3; c++) out[c] = dt_ioppr_compensate_middle_grey(in[c], work_profile);
   }
   else
   {
@@ -417,15 +418,11 @@ static void compensate_middle_grey_callback(GtkWidget *widget, dt_iop_module_t *
   dt_iop_rgbcurve_params_t *p = (dt_iop_rgbcurve_params_t *)self->params;
   dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
 
-  const int compensate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  const dt_iop_order_iccprofile_info_t *const work_profile
+      = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
+  if(work_profile == NULL) return;
 
-  const dt_iop_order_iccprofile_info_t *const profile_info = dt_ioppr_get_iop_work_profile_info(darktable.develop);
-  if(profile_info == NULL)
-  {
-    fprintf(stderr, "[rgbcurve compensate_middle_grey_callback] rgb curve must be between input color profile and "
-                    "output color profile\n");
-    return;
-  }
+  const int compensate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
   if(compensate && !p->compensate_middle_grey)
   {
@@ -434,8 +431,8 @@ static void compensate_middle_grey_callback(GtkWidget *widget, dt_iop_module_t *
     {
       for(int k = 0; k < p->curve_num_nodes[ch]; k++)
       {
-        p->curve_nodes[ch][k].x = dt_ioppr_compensate_middle_grey(p->curve_nodes[ch][k].x, profile_info);
-        p->curve_nodes[ch][k].y = dt_ioppr_compensate_middle_grey(p->curve_nodes[ch][k].y, profile_info);
+        p->curve_nodes[ch][k].x = dt_ioppr_compensate_middle_grey(p->curve_nodes[ch][k].x, work_profile);
+        p->curve_nodes[ch][k].y = dt_ioppr_compensate_middle_grey(p->curve_nodes[ch][k].y, work_profile);
       }
     }
   }
@@ -446,8 +443,8 @@ static void compensate_middle_grey_callback(GtkWidget *widget, dt_iop_module_t *
     {
       for(int k = 0; k < p->curve_num_nodes[ch]; k++)
       {
-        p->curve_nodes[ch][k].x = dt_ioppr_uncompensate_middle_grey(p->curve_nodes[ch][k].x, profile_info);
-        p->curve_nodes[ch][k].y = dt_ioppr_uncompensate_middle_grey(p->curve_nodes[ch][k].y, profile_info);
+        p->curve_nodes[ch][k].x = dt_ioppr_uncompensate_middle_grey(p->curve_nodes[ch][k].x, work_profile);
+        p->curve_nodes[ch][k].y = dt_ioppr_uncompensate_middle_grey(p->curve_nodes[ch][k].y, work_profile);
       }
     }
   }
@@ -528,11 +525,11 @@ static inline int _add_node_from_picker(dt_iop_rgbcurve_params_t *p, const float
   float val = 0.f;
 
   if(p->curve_autoscale == DT_S_SCALE_AUTOMATIC_RGB)
-    val = dt_ioppr_get_rgb_matrix_luminance(in, work_profile);
+    val = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(in, work_profile) : dt_camera_rgb_luminance(in);
   else
     val = in[ch];
 
-  if(p->compensate_middle_grey)
+  if(p->compensate_middle_grey && work_profile)
     y = x = dt_ioppr_compensate_middle_grey(val, work_profile);
   else
     y = x = val;
@@ -555,14 +552,8 @@ static void _iop_color_picker_apply(dt_iop_module_t *self)
     dt_iop_rgbcurve_params_t *d = (dt_iop_rgbcurve_params_t *)self->default_params;
 
     const int ch = g->channel;
-    const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(self->dev);
-    if(work_profile == NULL)
-    {
-      fprintf(stderr,
-              "[rgbcurve _iop_color_picker_apply] rgb curve must be between input color profile and output "
-              "color profile\n");
-      return;
-    }
+    const dt_iop_order_iccprofile_info_t *const work_profile
+        = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
 
     // reset current curve
     p->curve_num_nodes[ch] = d->curve_num_nodes[ch];
@@ -955,13 +946,8 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
 
     if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
     {
-      const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(dev);
-      if(work_profile == NULL)
-      {
-        fprintf(stderr, "[rgbcurve _area_draw_callback] rgb curve must be between input color profile and output "
-                        "color profile\n");
-        goto finally;
-      }
+      const dt_iop_order_iccprofile_info_t *const work_profile
+          = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
 
       float picker_mean[3], picker_min[3], picker_max[3];
 
@@ -1689,30 +1675,26 @@ void cleanup_global(dt_iop_module_so_t *module)
 // it must be executed only if profile info has changed
 static void _generate_curve_lut(dt_dev_pixelpipe_t *pipe, dt_iop_rgbcurve_data_t *d)
 {
-  const dt_iop_order_iccprofile_info_t *const profile_info = dt_ioppr_get_pipe_work_profile_info(pipe);
-  if(profile_info == NULL) fprintf(stderr, "[_generate_curve_lut] can't get pipe work profile info\n");
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(pipe);
 
   dt_iop_rgbcurve_node_t curve_nodes[3][DT_IOP_RGBCURVE_MAXNODES];
 
-  if(profile_info)
+  if(work_profile)
   {
-    if(d->type_work == profile_info->type && strcmp(d->filename_work, profile_info->filename) == 0) return;
+    if(d->type_work == work_profile->type && strcmp(d->filename_work, work_profile->filename) == 0) return;
   }
 
-  if(d->params.compensate_middle_grey)
+  if(work_profile && d->params.compensate_middle_grey)
   {
-    if(profile_info)
-    {
-      d->type_work = profile_info->type;
-      g_strlcpy(d->filename_work, profile_info->filename, sizeof(d->filename_work));
+    d->type_work = work_profile->type;
+    g_strlcpy(d->filename_work, work_profile->filename, sizeof(d->filename_work));
 
-      for(int ch = 0; ch < DT_IOP_RGBCURVE_MAX_CHANNELS; ch++)
+    for(int ch = 0; ch < DT_IOP_RGBCURVE_MAX_CHANNELS; ch++)
+    {
+      for(int k = 0; k < d->params.curve_num_nodes[ch]; k++)
       {
-        for(int k = 0; k < d->params.curve_num_nodes[ch]; k++)
-        {
-          curve_nodes[ch][k].x = dt_ioppr_uncompensate_middle_grey(d->params.curve_nodes[ch][k].x, profile_info);
-          curve_nodes[ch][k].y = dt_ioppr_uncompensate_middle_grey(d->params.curve_nodes[ch][k].y, profile_info);
-        }
+        curve_nodes[ch][k].x = dt_ioppr_uncompensate_middle_grey(d->params.curve_nodes[ch][k].x, work_profile);
+        curve_nodes[ch][k].y = dt_ioppr_uncompensate_middle_grey(d->params.curve_nodes[ch][k].y, work_profile);
       }
     }
   }
@@ -1782,13 +1764,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_order_iccprofile_info_t *const profile_info = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-  if(profile_info == NULL)
-  {
-    fprintf(stderr,
-            "[rgbcurve process_cl] rgb curve must be between input color profile and output color profile\n");
-    return FALSE;
-  }
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   dt_iop_rgbcurve_data_t *d = (dt_iop_rgbcurve_data_t *)piece->data;
   dt_iop_rgbcurve_global_data_t *gd = (dt_iop_rgbcurve_global_data_t *)self->data;
@@ -1805,9 +1781,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem dev_coeffs_b = NULL;
 
   cl_mem dev_profile_info = NULL;
-  cl_mem dev_lut = NULL;
-  dt_colorspaces_iccprofile_info_cl_t profile_info_cl;
-  cl_float *lut_cl = NULL;
+  cl_mem dev_profile_lut = NULL;
+  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl;
+  cl_float *profile_lut_cl = NULL;
+
+  const int use_work_profile = (work_profile == NULL) ? 0 : 1;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -1815,8 +1793,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int autoscale = d->params.curve_autoscale;
   const int preserve_colors = d->params.preserve_colors;
 
-  dt_ioppr_get_profile_info_cl(profile_info, &profile_info_cl);
-  lut_cl = dt_ioppr_get_trc_cl(profile_info);
+  err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &profile_info_cl, &profile_lut_cl,
+                                            &dev_profile_info, &dev_profile_lut);
+  if(err != CL_SUCCESS) goto cleanup;
 
   dev_r = dt_opencl_copy_host_to_device(devid, d->table[DT_IOP_RGBCURVE_R], 256, 256, sizeof(float));
   if(dev_r == NULL)
@@ -1866,22 +1845,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     goto cleanup;
   }
 
-  dev_profile_info = dt_opencl_copy_host_to_device_constant(devid, sizeof(profile_info_cl), &profile_info_cl);
-  if(dev_profile_info == NULL)
-  {
-    fprintf(stderr, "[rgbcurve process_cl] error allocating memory 9\n");
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-    goto cleanup;
-  }
-
-  dev_lut = dt_opencl_copy_host_to_device(devid, lut_cl, 256, 256 * 6, sizeof(float));
-  if(dev_lut == NULL)
-  {
-    fprintf(stderr, "[rgbcurve process_cl] error allocating memory 10\n");
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-    goto cleanup;
-  }
-
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
   dt_opencl_set_kernel_arg(devid, gd->kernel_rgbcurve, 0, sizeof(cl_mem), (void *)&dev_in);
   dt_opencl_set_kernel_arg(devid, gd->kernel_rgbcurve, 1, sizeof(cl_mem), (void *)&dev_out);
@@ -1896,7 +1859,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_rgbcurve, 10, sizeof(int), (void *)&autoscale);
   dt_opencl_set_kernel_arg(devid, gd->kernel_rgbcurve, 11, sizeof(int), (void *)&preserve_colors);
   dt_opencl_set_kernel_arg(devid, gd->kernel_rgbcurve, 12, sizeof(cl_mem), (void *)&dev_profile_info);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_rgbcurve, 13, sizeof(cl_mem), (void *)&dev_lut);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_rgbcurve, 13, sizeof(cl_mem), (void *)&dev_profile_lut);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_rgbcurve, 14, sizeof(int), (void *)&use_work_profile);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_rgbcurve, sizes);
   if(err != CL_SUCCESS)
   {
@@ -1911,9 +1875,7 @@ cleanup:
   if(dev_coeffs_r) dt_opencl_release_mem_object(dev_coeffs_r);
   if(dev_coeffs_g) dt_opencl_release_mem_object(dev_coeffs_g);
   if(dev_coeffs_b) dt_opencl_release_mem_object(dev_coeffs_b);
-  if(dev_profile_info) dt_opencl_release_mem_object(dev_profile_info);
-  if(dev_lut) dt_opencl_release_mem_object(dev_lut);
-  if(lut_cl) free(lut_cl);
+  dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
 
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_rgbcurve] couldn't enqueue kernel! %d\n", err);
 
@@ -1924,12 +1886,7 @@ cleanup:
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_order_iccprofile_info_t *const work_profile_info = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-  if(work_profile_info == NULL)
-  {
-    fprintf(stderr, "[rgbcurve process] rgb curve must be between input color profile and output color profile\n");
-    return;
-  }
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   const int ch = piece->colors;
   dt_iop_rgbcurve_data_t *d = (dt_iop_rgbcurve_data_t *)(piece->data);
@@ -1971,7 +1928,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         if(d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LUMINANCE)
         {
           float ratio = 1.f;
-          const float lum = dt_ioppr_get_rgb_matrix_luminance(in, work_profile_info);
+          const float lum
+              = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(in, work_profile) : dt_camera_rgb_luminance(in);
           if(lum > 0.f)
           {
             const float curve_lum = (lum < xm_L)

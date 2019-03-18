@@ -95,7 +95,8 @@ basicadj(read_only image2d_t in, write_only image2d_t out, const int width, cons
            const int process_saturation, const float saturation,
            const int process_hlcompr, const float hlcomp, const float hlrange,
            const float middle_grey, const float inv_middle_grey,
-           global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
+           global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut,
+           const int use_work_profile)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -111,7 +112,7 @@ basicadj(read_only image2d_t in, write_only image2d_t out, const int width, cons
   // highlight compression
   if(process_hlcompr)
   {
-    const float lum = get_rgb_matrix_luminance(pixel, profile_info, lut);
+    const float lum = (use_work_profile == 0) ? dt_camera_rgb_luminance(pixel): get_rgb_matrix_luminance(pixel, profile_info, lut);
     if(lum > 0.f)
     {
       const float ratio = hlcurve(lum, hlcomp, hlrange);
@@ -139,7 +140,7 @@ basicadj(read_only image2d_t in, write_only image2d_t out, const int width, cons
   if(preserve_colors == 1) // DT_BASICADJ_PRESERVE_LUMINANCE
   {
     float ratio = 1.f;
-    const float lum = get_rgb_matrix_luminance(pixel, profile_info, lut);
+    const float lum = (use_work_profile == 0) ? dt_camera_rgb_luminance(pixel): get_rgb_matrix_luminance(pixel, profile_info, lut);
     if(lum > 0.f)
     {
       const float contrast_lum = native_powr(lum / middle_grey, contrast) * middle_grey;
@@ -152,7 +153,7 @@ basicadj(read_only image2d_t in, write_only image2d_t out, const int width, cons
   // saturation
   if(process_saturation)
   {
-    const float luminance = get_rgb_matrix_luminance(pixel, profile_info, lut);
+    const float luminance = (use_work_profile == 0) ? dt_camera_rgb_luminance(pixel): get_rgb_matrix_luminance(pixel, profile_info, lut);
 
     pixel = luminance + saturation * (pixel - luminance);
   }

@@ -3180,7 +3180,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   cl_mem dev_guide = NULL;
   cl_mem dev_profile_info = NULL;
   cl_mem dev_profile_lut = NULL;
-  dt_colorspaces_iccprofile_info_cl_t profile_info_cl;
+  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl;
   cl_float *profile_lut_cl = NULL;
   size_t origin[] = { 0, 0, 0 };
   size_t region[] = { owidth, oheight, 1 };
@@ -3195,26 +3195,9 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
-  if(work_profile)
-  {
-    dt_ioppr_get_profile_info_cl(work_profile, &profile_info_cl);
-    profile_lut_cl = dt_ioppr_get_trc_cl(work_profile);
-
-    dev_profile_info = dt_opencl_copy_host_to_device_constant(devid, sizeof(profile_info_cl), &profile_info_cl);
-    if(dev_profile_info == NULL)
-    {
-      fprintf(stderr, "[dt_develop_blend_process_cl] error allocating memory for color transformation 1\n");
-      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-      goto error;
-    }
-    dev_profile_lut = dt_opencl_copy_host_to_device(devid, profile_lut_cl, 256, 256 * 6, sizeof(float));
-    if(dev_profile_lut == NULL)
-    {
-      fprintf(stderr, "[dt_develop_blend_process_cl] error allocating memory for color transformation 2\n");
-      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-      goto error;
-    }
-  }
+  err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &profile_info_cl, &profile_lut_cl,
+                                            &dev_profile_info, &dev_profile_lut);
+  if(err != CL_SUCCESS) goto error;
 
   if(mask_mode == DEVELOP_MASK_ENABLED || suppress_mask)
   {
@@ -3337,7 +3320,11 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     dt_opencl_set_kernel_arg(devid, kernel_mask, 13, sizeof(cl_mem), (void *)&dev_profile_lut);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 14, sizeof(int), (void *)&use_work_profile);
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_mask, sizes);
-    if(err != CL_SUCCESS) goto error;
+    if(err != CL_SUCCESS)
+    {
+      fprintf(stderr, "[dt_develop_blend_process_cl] error %i enqueue kernel\n", err);
+      goto error;
+    }
 
     if(mask_feather)
     {
@@ -3453,7 +3440,11 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 9, sizeof(cl_mem), (void *)&dev_profile_lut);
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 10, sizeof(int), (void *)&use_work_profile);
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_display_channel, sizes);
-    if(err != CL_SUCCESS) goto error;
+    if(err != CL_SUCCESS)
+    {
+      fprintf(stderr, "[dt_develop_blend_process_cl] error %i enqueue kernel\n", err);
+      goto error;
+    }
   }
   else
   {
@@ -3501,9 +3492,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_mask_1);
   dt_opencl_release_mem_object(dev_tmp);
-  if(dev_profile_info) dt_opencl_release_mem_object(dev_profile_info);
-  if(dev_profile_lut) dt_opencl_release_mem_object(dev_profile_lut);
-  if(profile_lut_cl) free(profile_lut_cl);
+  dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   return TRUE;
 
 error:
@@ -3513,9 +3502,7 @@ error:
   dt_opencl_release_mem_object(dev_mask_2);
   dt_opencl_release_mem_object(dev_tmp);
   dt_opencl_release_mem_object(dev_guide);
-  if(dev_profile_info) dt_opencl_release_mem_object(dev_profile_info);
-  if(dev_profile_lut) dt_opencl_release_mem_object(dev_profile_lut);
-  if(profile_lut_cl) free(profile_lut_cl);
+  dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }

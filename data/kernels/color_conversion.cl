@@ -158,3 +158,8 @@ float get_rgb_matrix_luminance(const float4 rgb, global const dt_colorspaces_icc
   
   return luminance;
 }
+
+float dt_camera_rgb_luminance(const float4 rgb)
+{
+  return (rgb.x * 0.2225045f + rgb.y * 0.7168786f + rgb.z * 0.0606169f);
+}
