@@ -82,6 +82,33 @@ static inline void dt_draw_grid(cairo_t *cr, const int num, const int left, cons
   }
 }
 
+static inline float dt_curve_to_mouse(const float x, const float zoom_factor, const float offset)
+{
+  return (x - offset) * zoom_factor;
+}
+
+/* left, right, top, bottom are in curve coordinates [0..1] */
+static inline void dt_draw_grid_zoomed(cairo_t *cr, const int num, const float left, const float top,
+                                       const float right, const float bottom, const float width,
+                                       const float height, const float zoom_factor, const float zoom_offset_x,
+                                       const float zoom_offset_y)
+{
+  for(int k = 1; k < num; k++)
+  {
+    dt_draw_line(cr, dt_curve_to_mouse(left + k / (float)num, zoom_factor, zoom_offset_x) * width,
+                 dt_curve_to_mouse(top, zoom_factor, zoom_offset_y) * -height,
+                 dt_curve_to_mouse(left + k / (float)num, zoom_factor, zoom_offset_x) * width,
+                 dt_curve_to_mouse(bottom, zoom_factor, zoom_offset_y) * -height);
+    cairo_stroke(cr);
+
+    dt_draw_line(cr, dt_curve_to_mouse(left, zoom_factor, zoom_offset_x) * width,
+                 dt_curve_to_mouse(top + k / (float)num, zoom_factor, zoom_offset_y) * -height,
+                 dt_curve_to_mouse(right, zoom_factor, zoom_offset_x) * width,
+                 dt_curve_to_mouse(top + k / (float)num, zoom_factor, zoom_offset_y) * -height);
+    cairo_stroke(cr);
+  }
+}
+
 static inline void dt_draw_loglog_grid(cairo_t *cr, const int num, const int left, const int top,
                                        const int right, const int bottom, const float base)
 {
