@@ -184,6 +184,7 @@ src/libs/tools/hinter.c
 src/libs/tools/lighttable.c
 src/libs/tools/module_toolbox.c
 src/libs/tools/ratings.c
+src/libs/tools/timeline.c
 src/libs/tools/view_toolbox.c
 src/libs/tools/viewswitcher.c
 src/lua/lualib.c
