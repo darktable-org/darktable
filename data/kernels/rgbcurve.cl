@@ -23,7 +23,8 @@ rgbcurve(read_only image2d_t in, write_only image2d_t out, const int width, cons
            read_only image2d_t table_r, read_only image2d_t table_g, read_only image2d_t table_b,
            global float *coeffs_r, global float *coeffs_g, global float *coeffs_b,
            const int autoscale, const int preserve_colors,
-           global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
+           global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut,
+           const int use_work_profile)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -43,7 +44,7 @@ rgbcurve(read_only image2d_t in, write_only image2d_t out, const int width, cons
     if(preserve_colors == 1) // DT_RGBCURVE_PRESERVE_LUMINANCE
     {
       float ratio = 1.f;
-      const float lum = get_rgb_matrix_luminance(pixel, profile_info, lut);
+      const float lum = (use_work_profile == 0) ? dt_camera_rgb_luminance(pixel): get_rgb_matrix_luminance(pixel, profile_info, lut);
       if(lum > 0.f)
       {
         const float curve_lum = lookup_unbounded(table_r, lum, coeffs_r);
