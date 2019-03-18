@@ -106,7 +106,7 @@ int groups()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-  return iop_cs_Lab;
+  return iop_cs_rgb;
 }
 
 // From `HaldCLUT_correct.c' by Eskil Steenberg (http://www.quelsolaar.com) (BSD licensed)
@@ -512,6 +512,7 @@ uint8_t parse_cube_line(char *line, char *token)
   }
   return c;
 }
+
 uint8_t calculate_clut_cube(char *filepath, float **clut)
 {
   FILE *cube_file;
@@ -622,7 +623,7 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
   return level;
 }
 
-static inline void lin_to_logFuji(float *lin)
+static inline void lin_to_logFuji(float *lin, float *lout)
 {
   for (int ch=0; ch<3; ch++)
   {
@@ -640,13 +641,13 @@ static inline void lin_to_logFuji(float *lin)
     else
       logNorm = e * lin[ch] + f;
     if( logNorm < 0.0f || lin[ch] <= 0.0f)
-      lin[ch] = 0.0f;
+      lout[ch] = 0.0f;
     else
-      lin[ch] = logNorm;
+      lout[ch] = logNorm;
   }
 }
 
-static inline void logFuji_to_lin(float *lout)
+static inline void logFuji_to_lin(float *lin, float *lout)
 {
   for (int ch=0; ch<3; ch++)
   {
@@ -659,9 +660,9 @@ static inline void logFuji_to_lin(float *lout)
     const float cut = 0.100537775223865;
     float Norm;
 
-    if (lout[ch] >= cut)
-      Norm = (powf(10, (lout[ch] - d) / c) - b) / a;
-    else Norm = (lout[ch] - f) / e;
+    if (lin[ch] >= cut)
+      Norm = (powf(10, (lin[ch] - d) / c) - b) / a;
+    else Norm = (lin[ch] - f) / e;
     lout[ch] = Norm < 0.0f ? 0.0f : Norm > 1.0f ? 1.0f : Norm;
   }
 }
@@ -681,7 +682,7 @@ static inline float fastlog2(float x)
     - 1.72587999f / (0.3520887068f + mx.f);
 }
 
-static inline void lin_to_log2(float *lin, const float middle_grey,
+static inline void lin_to_log2(float *lin, float *lout, const float middle_grey,
                                     const float min_exposure, const float dynamic_range)
 {
   for (int ch=0; ch<3; ch++)
@@ -689,21 +690,21 @@ static inline void lin_to_log2(float *lin, const float middle_grey,
     const float logNorm = (fastlog2(lin[ch] / middle_grey) - min_exposure) / dynamic_range;
     if( logNorm < 0.0f || lin[ch] <= 0.0f)
     {
-      lin[ch] = 0.0f;
+      lout[ch] = 0.0f;
     }
     else
     {
-      lin[ch] = logNorm;
+      lout[ch] = logNorm;
     }
   }
 }
 
-static inline void log2_to_lin(float *lout, const float middle_grey,
+static inline void log2_to_lin(float *lin, float *lout, const float middle_grey,
                                     const float min_exposure, const float dynamic_range)
 {
   for (int ch=0; ch<3; ch++)
   {
-    const float Norm = middle_grey * powf(2, lout[ch] * dynamic_range + min_exposure);
+    const float Norm = middle_grey * powf(2, lin[ch] * dynamic_range + min_exposure);
     lout[ch] = Norm < 0.0f ? 0.0f : Norm > 1.0f ? 1.0f : Norm;
   }
 }
@@ -740,11 +741,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         float lout[3] = {0, 0, 0};
         if (colorspace == DT_IOP_LOG_RGB) // log RGB
         {
-          dt_Lab_to_prophotorgb(in, lin);
-          lin_to_log2(lin, middle_grey, min_exposure, dynamic_range);
+//          dt_Lab_to_prophotorgb(in, lin);
+          lin_to_log2(in, lin, middle_grey, min_exposure, dynamic_range);
           interpolation_worker(lin, lout, clut, level);
-          if (log2tolin) log2_to_lin(lout, middle_grey, min_exposure, dynamic_range);
-          dt_prophotorgb_to_Lab(lout, out);
+          if (log2tolin) log2_to_lin(lout, out, middle_grey, min_exposure, dynamic_range);
+          else for(int c = 0; c < 3; ++c) out[c] = lout[c];
+//          dt_prophotorgb_to_Lab(lout, out);
         }
         else if (colorspace == DT_IOP_SRGB) // gamma sRGB
         {
@@ -764,19 +766,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           interpolation_worker(lin, lout, clut, level);
           dt_linear_sRGB_to_Lab(lout, out);
         }
-        else if (colorspace == DT_IOP_LIN_PROPHOTORGB) // gamma REC.709
+        else if (colorspace == DT_IOP_LIN_PROPHOTORGB)
         {
-          dt_Lab_to_prophotorgb(in, lin);
-          interpolation_worker(lin, lout, clut, level);
-          dt_prophotorgb_to_Lab(lout, out);
+//          dt_Lab_to_prophotorgb(in, lin);
+          interpolation_worker(in, out, clut, level);
+//          dt_prophotorgb_to_Lab(lout, out);
         }
         else if (colorspace == DT_IOP_LOG_FUJI) // log RGB Fuji
         {
-          dt_Lab_to_prophotorgb(in, lin);
-          lin_to_logFuji(lin);
+//          dt_Lab_to_prophotorgb(in, lin);
+          lin_to_logFuji(in, lin);
           interpolation_worker(lin, lout, clut, level);
-          logFuji_to_lin(lout);
-          dt_prophotorgb_to_Lab(lout, out);
+          logFuji_to_lin(lout, out);
+//          dt_prophotorgb_to_Lab(lout, out);
         }
 /*        else if (colorspace == DT_IOP_XYZ) // XYZ
         {

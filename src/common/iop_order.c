@@ -61,7 +61,8 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     _ioppr_move_iop_before(_iop_order_list, "colorout", "clahe", dont_move);
     _ioppr_insert_iop_after(_iop_order_list, history_list, "basicadj", "colorin", dont_move);
     _ioppr_insert_iop_after(_iop_order_list, history_list, "rgbcurve", "levels", dont_move);
-
+    _ioppr_insert_iop_after(_iop_order_list, history_list, "lut3d", "velvia", dont_move);
+    
     new_version = 2;
   }
 
@@ -173,7 +174,6 @@ static GList *_ioppr_get_iop_order_v1()
                                                   { 0.0, "vignette" },
                                                   { 0.0, "splittoning" },
                                                   { 0.0, "velvia" },
-                                                  { 0.0, "lut3d" },
                                                   { 0.0, "clahe" },
                                                   { 0.0, "finalscale" },
                                                   { 0.0, "overexposed" },
