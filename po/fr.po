@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-03-18 09:14+0100\n"
-"PO-Revision-Date: 2019-03-18 09:18+0100\n"
+"PO-Revision-Date: 2019-03-18 22:40+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -13096,7 +13096,7 @@ msgstr "permet de recadrer et zoomer pendant l'édition des masques"
 #: ../src/views/darkroom.c:2846
 msgctxt "accel"
 msgid "search modules"
-msgstr "module de recherche"
+msgstr "rechercher module"
 
 #: ../src/views/lighttable.c:665 ../src/views/slideshow.c:332
 msgid "there are no images in this collection"
