@@ -232,26 +232,6 @@ double dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name)
   return iop_order;
 }
 
-double dt_ioppr_get_colorin_iop_order(GList *iop_list)
-{
-  double iop_order = DBL_MAX;
-
-  GList *modules = g_list_first(iop_list);
-  while(modules)
-  {
-    dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
-    if(strcmp(mod->op, "colorin") == 0)
-    {
-      iop_order = mod->iop_order;
-      break;
-    }
-
-    modules = g_list_next(modules);
-  }
-
-  return iop_order;
-}
-
 // insert op_new before op_next on *_iop_order_list
 // it sets the iop_order on op_new
 // if check_history == 1 it check that the generated iop_order do not exists on any module in history
@@ -1970,17 +1950,48 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_add_profile_info_to_list(struct dt_deve
   return profile_info;
 }
 
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_develop_t *dev)
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_iop_module_t *module, GList *iop_list)
 {
   dt_iop_order_iccprofile_info_t *profile = NULL;
-  
-  dt_colorspaces_color_profile_type_t type = DT_COLORSPACE_NONE;
-  char *filename = NULL;
-  
-  dt_ioppr_get_work_profile_type(dev, &type, &filename);
-  if(filename)
-    profile = dt_ioppr_add_profile_info_to_list(dev, type, filename, DT_INTENT_PERCEPTUAL);
-  
+
+  // first check if the module is between colorin and colorout
+  gboolean in_between = FALSE;
+
+  GList *modules = g_list_first(iop_list);
+  while(modules)
+  {
+    dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
+
+    // we reach the module, that's it
+    if(strcmp(mod->op, module->op) == 0) break;
+
+    // if we reach colorout means that the module is after it
+    if(strcmp(mod->op, "colorout") == 0)
+    {
+      in_between = FALSE;
+      break;
+    }
+
+    // we reach colorin, so far we're good
+    if(strcmp(mod->op, "colorin") == 0)
+    {
+      in_between = TRUE;
+      break;
+    }
+
+    modules = g_list_next(modules);
+  }
+
+  if(in_between)
+  {
+    dt_colorspaces_color_profile_type_t type = DT_COLORSPACE_NONE;
+    char *filename = NULL;
+    dt_develop_t *dev = module->dev;
+
+    dt_ioppr_get_work_profile_type(dev, &type, &filename);
+    if(filename) profile = dt_ioppr_add_profile_info_to_list(dev, type, filename, DT_INTENT_PERCEPTUAL);
+  }
+
   return profile;
 }
 
@@ -2519,6 +2530,81 @@ cl_float *dt_ioppr_get_trc_cl(const dt_iop_order_iccprofile_info_t *const profil
         trc[x] = profile_info->lut_out[c][y];
   }
   return trc;
+}
+
+cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t *const profile_info,
+                                           const int devid, dt_colorspaces_iccprofile_info_cl_t **_profile_info_cl,
+                                           cl_float **_profile_lut_cl, cl_mem *_dev_profile_info,
+                                           cl_mem *_dev_profile_lut)
+{
+  cl_int err = CL_SUCCESS;
+
+  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl = calloc(1, sizeof(dt_colorspaces_iccprofile_info_cl_t));
+  cl_float *profile_lut_cl = NULL;
+  cl_mem dev_profile_info = NULL;
+  cl_mem dev_profile_lut = NULL;
+
+  if(profile_info)
+  {
+    dt_ioppr_get_profile_info_cl(profile_info, profile_info_cl);
+    profile_lut_cl = dt_ioppr_get_trc_cl(profile_info);
+
+    dev_profile_info = dt_opencl_copy_host_to_device_constant(devid, sizeof(*profile_info_cl), profile_info_cl);
+    if(dev_profile_info == NULL)
+    {
+      fprintf(stderr, "[dt_ioppr_build_iccprofile_params_cl] error allocating memory 5\n");
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+      goto cleanup;
+    }
+
+    dev_profile_lut = dt_opencl_copy_host_to_device(devid, profile_lut_cl, 256, 256 * 6, sizeof(float));
+    if(dev_profile_lut == NULL)
+    {
+      fprintf(stderr, "[dt_ioppr_build_iccprofile_params_cl] error allocating memory 6\n");
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+      goto cleanup;
+    }
+  }
+  else
+  {
+    profile_lut_cl = malloc(1 * 6 * sizeof(cl_float));
+
+    dev_profile_lut = dt_opencl_copy_host_to_device(devid, profile_lut_cl, 1, 1 * 6, sizeof(float));
+    if(dev_profile_lut == NULL)
+    {
+      fprintf(stderr, "[dt_ioppr_build_iccprofile_params_cl] error allocating memory 6\n");
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+      goto cleanup;
+    }
+  }
+
+cleanup:
+  *_profile_info_cl = profile_info_cl;
+  *_profile_lut_cl = profile_lut_cl;
+  *_dev_profile_info = dev_profile_info;
+  *_dev_profile_lut = dev_profile_lut;
+
+  return err;
+}
+
+void dt_ioppr_free_iccprofile_params_cl(dt_colorspaces_iccprofile_info_cl_t **_profile_info_cl,
+                                        cl_float **_profile_lut_cl, cl_mem *_dev_profile_info,
+                                        cl_mem *_dev_profile_lut)
+{
+  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl = *_profile_info_cl;
+  cl_float *profile_lut_cl = *_profile_lut_cl;
+  cl_mem dev_profile_info = *_dev_profile_info;
+  cl_mem dev_profile_lut = *_dev_profile_lut;
+
+  if(profile_info_cl) free(profile_info_cl);
+  if(dev_profile_info) dt_opencl_release_mem_object(dev_profile_info);
+  if(dev_profile_lut) dt_opencl_release_mem_object(dev_profile_lut);
+  if(profile_lut_cl) free(profile_lut_cl);
+
+  *_profile_info_cl = NULL;
+  *_profile_lut_cl = NULL;
+  *_dev_profile_info = NULL;
+  *_dev_profile_lut = NULL;
 }
 
 int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const int devid, cl_mem dev_img_in,
