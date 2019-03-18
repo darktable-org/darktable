@@ -229,7 +229,7 @@ void gui_init(dt_lib_module_t *self)
   }
 
   /* search box */
-  GtkWidget *label = gtk_label_new(_("search module  "));
+  GtkWidget *label = gtk_label_new(_("search module"));
   gtk_box_pack_start(GTK_BOX(d->hbox_search_box), label, FALSE, TRUE, 0);
 
   d->text_entry = gtk_entry_new();
