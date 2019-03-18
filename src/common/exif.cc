@@ -2419,7 +2419,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
     if(version < 3)
     {
-    g_hash_table_foreach(mask_entries, add_non_clone_mask_entries_to_db, &img->id);
+      g_hash_table_foreach(mask_entries, add_non_clone_mask_entries_to_db, &img->id);
     }
     else
     {
@@ -2483,7 +2483,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->id);
       if(version < 3)
       {
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
       }
       else
       {
@@ -2499,9 +2499,9 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
 
         if(version < 3)
         {
-        // check what mask entries belong to this iop and add them to the db
-        const dt_develop_blend_params_t *blendop_params = (dt_develop_blend_params_t *)entry->blendop_params;
-        add_mask_entries_to_db(img->id, mask_entries, blendop_params->mask_id);
+          // check what mask entries belong to this iop and add them to the db
+          const dt_develop_blend_params_t *blendop_params = (dt_develop_blend_params_t *)entry->blendop_params;
+          add_mask_entries_to_db(img->id, mask_entries, blendop_params->mask_id);
         }
       }
       else
