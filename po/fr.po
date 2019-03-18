@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-18 09:14+0100\n"
-"PO-Revision-Date: 2019-03-18 22:40+0100\n"
+"POT-Creation-Date: 2019-03-18 22:44+0100\n"
+"PO-Revision-Date: 2019-03-18 22:44+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -398,12 +398,12 @@ msgctxt "preferences"
 msgid "show search text"
 msgstr "montrer texte de recherche"
 
-#: ../build/src/preferences_gen.h:2636 ../build/src/preferences_gen.h:2656
+#: ../build/src/preferences_gen.h:2636
 msgctxt "preferences"
 msgid "show groups"
 msgstr "montrer les groupes"
 
-#: ../build/src/preferences_gen.h:2641
+#: ../build/src/preferences_gen.h:2641 ../build/src/preferences_gen.h:2656
 msgctxt "preferences"
 msgid "show both"
 msgstr "montrer les deux"
@@ -1463,31 +1463,31 @@ msgstr "erreur pendant l'impression de l'image « %s » sur « %s »"
 msgid "printing `%s' on `%s'"
 msgstr "impression de l'image « %s » sur « %s »"
 
-#: ../src/common/darktable.c:226
+#: ../src/common/darktable.c:229
 #, c-format
 msgid "found strange path `%s'"
 msgstr "chemin étrange « %s »"
 
-#: ../src/common/darktable.c:243
+#: ../src/common/darktable.c:246
 #, c-format
 msgid "error loading directory `%s'"
 msgstr "erreur de chargement du dossier « %s »"
 
-#: ../src/common/darktable.c:266
+#: ../src/common/darktable.c:269
 #, c-format
 msgid "file `%s' has unknown format!"
 msgstr "le fichier « %s » possède un format inconnu !"
 
-#: ../src/common/darktable.c:279 ../src/libs/import.c:841
+#: ../src/common/darktable.c:282 ../src/libs/import.c:841
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier « %s »"
 
-#: ../src/common/darktable.c:783
+#: ../src/common/darktable.c:784
 msgid "darktable - run performance configuration?"
 msgstr "darktable - exécute la configuration des performances?"
 
-#: ../src/common/darktable.c:784
+#: ../src/common/darktable.c:785
 msgid ""
 "we have an updated performance configuration logic - executing that might "
 "improve the performance of darktable.\n"
@@ -1501,14 +1501,14 @@ msgstr ""
 "particulièrement si la configuration a été changée manuellement.\n"
 "voulez-vous exécuter une nouvelle configuration de la performance?\n"
 
-#: ../src/common/darktable.c:788 ../src/imageio/format/pdf.c:666
+#: ../src/common/darktable.c:789 ../src/imageio/format/pdf.c:666
 #: ../src/imageio/format/pdf.c:691 ../src/imageio/storage/flickr.c:497
 #: ../src/imageio/storage/piwigo.c:822 ../src/iop/clipping.c:1991
 #: ../src/libs/export.c:597 ../src/libs/metadata_view.c:270
 msgid "no"
 msgstr "non"
 
-#: ../src/common/darktable.c:788 ../src/imageio/format/pdf.c:667
+#: ../src/common/darktable.c:789 ../src/imageio/format/pdf.c:667
 #: ../src/imageio/format/pdf.c:692 ../src/imageio/storage/flickr.c:496
 #: ../src/imageio/storage/piwigo.c:821 ../src/iop/clipping.c:1992
 #: ../src/libs/export.c:598 ../src/libs/metadata_view.c:270
@@ -11771,62 +11771,50 @@ msgctxt "accel"
 msgid "jump to film roll"
 msgstr "aller à la pellicule"
 
-#: ../src/libs/modulegroups.c:83
+#: ../src/libs/modulegroups.c:84
 msgid "modulegroups"
 msgstr "groupes de modules"
 
-#: ../src/libs/modulegroups.c:135
-msgid "show search text"
-msgstr "montrer texte de recherche"
-
-#: ../src/libs/modulegroups.c:137
-msgid "show groups"
-msgstr "montrer les groupes"
-
-#: ../src/libs/modulegroups.c:139
-msgid "show both"
-msgstr "montrer les deux"
-
-#: ../src/libs/modulegroups.c:178
+#: ../src/libs/modulegroups.c:179
 msgid "show only active modules"
 msgstr "afficher seulement les modules actifs"
 
-#: ../src/libs/modulegroups.c:185
+#: ../src/libs/modulegroups.c:186
 msgid "show only your favourite modules (selected in `more modules' below)"
 msgstr ""
 "affiche uniquement les modules favoris (sélectionner dans « plus de modules "
 "» ci-dessous)"
 
-#: ../src/libs/modulegroups.c:191
+#: ../src/libs/modulegroups.c:192
 msgid "basic group"
 msgstr "modules de base"
 
-#: ../src/libs/modulegroups.c:197
+#: ../src/libs/modulegroups.c:198
 msgid "tone group"
 msgstr "modules de tonalité"
 
-#: ../src/libs/modulegroups.c:203
+#: ../src/libs/modulegroups.c:204
 msgid "color group"
 msgstr "modules de couleur"
 
-#: ../src/libs/modulegroups.c:209
+#: ../src/libs/modulegroups.c:210
 msgid "correction group"
 msgstr "modules d'amélioration"
 
-#: ../src/libs/modulegroups.c:215
+#: ../src/libs/modulegroups.c:216
 msgid "effects group"
 msgstr "groupe d'effets"
 
 #. search box
-#: ../src/libs/modulegroups.c:232
+#: ../src/libs/modulegroups.c:233
 msgid "search module"
 msgstr "chercher module"
 
-#: ../src/libs/modulegroups.c:239
+#: ../src/libs/modulegroups.c:240
 msgid "search modules by name or tag"
 msgstr "rechercher les modules par nom ou mots-clés"
 
-#: ../src/libs/modulegroups.c:246
+#: ../src/libs/modulegroups.c:247
 msgid "clear text"
 msgstr "effacer texte"
 
@@ -12769,6 +12757,20 @@ msgstr "boîte à outils de module"
 msgid "ratings"
 msgstr "étoiles"
 
+#: ../src/libs/tools/timeline.c:110
+msgid "timeline"
+msgstr "chronologie"
+
+#: ../src/libs/tools/timeline.c:1486
+msgctxt "accel"
+msgid "start selection"
+msgstr "début de sélection"
+
+#: ../src/libs/tools/timeline.c:1487
+msgctxt "accel"
+msgid "stop selection"
+msgstr "fin de sélection"
+
 #: ../src/libs/tools/view_toolbox.c:46
 msgid "view toolbox"
 msgstr "afficher la boîte à outils"
@@ -13273,34 +13275,41 @@ msgstr "nouvelle session initiée « %s »"
 msgid "no camera with tethering support available for use..."
 msgstr "aucun boîtier disponible pour la capture..."
 
-#: ../src/views/view.c:270
-msgid "you are making a mistake!"
-msgstr "vous faites une erreur!"
+#~ msgid "show search text"
+#~ msgstr "montrer texte de recherche"
 
-#: ../src/views/view.c:271
-msgid "_yes, i understood. please let me suffer by using 32-bit darktable."
-msgstr ""
-"_oui, j'ai compris. laissez moi souffrir en utilisant la version 32 bits de "
-"darktable."
+#~ msgid "show groups"
+#~ msgstr "montrer les groupes"
 
-#: ../src/views/view.c:278
-msgid ""
-"warning!\n"
-"you are using a 32-bit build of darktable.\n"
-"the 32-bit build has severely limited virtual address space.\n"
-"we have had numerous reports that darktable exhibits sporadic issues and "
-"crashes when using 32-bit builds.\n"
-"we strongly recommend you switch to a proper 64-bit build.\n"
-"otherwise, you are GUARANTEED to experience issues which cannot be fixed.\n"
-msgstr ""
-"attention!\n"
-"vous utilisez une version 32 bits de darktable.\n"
-"la version 32 bits est très limitée en terme de mémoire disponible.\n"
-"on a eu de nombreux rapports à propos de problèmes et crashs avec la version "
-"32 bits.\n"
-"nous vous suggérons de passer à la version 64 bits.\n"
-"sans cela, vous êtes CERTAIN d'avoir des problèmes qui ne peuvent pas être "
-"corrigés.\n"
+#~ msgid "show both"
+#~ msgstr "montrer les deux"
+
+#~ msgid "you are making a mistake!"
+#~ msgstr "vous faites une erreur!"
+
+#~ msgid "_yes, i understood. please let me suffer by using 32-bit darktable."
+#~ msgstr ""
+#~ "_oui, j'ai compris. laissez moi souffrir en utilisant la version 32 bits "
+#~ "de darktable."
+
+#~ msgid ""
+#~ "warning!\n"
+#~ "you are using a 32-bit build of darktable.\n"
+#~ "the 32-bit build has severely limited virtual address space.\n"
+#~ "we have had numerous reports that darktable exhibits sporadic issues and "
+#~ "crashes when using 32-bit builds.\n"
+#~ "we strongly recommend you switch to a proper 64-bit build.\n"
+#~ "otherwise, you are GUARANTEED to experience issues which cannot be "
+#~ "fixed.\n"
+#~ msgstr ""
+#~ "attention!\n"
+#~ "vous utilisez une version 32 bits de darktable.\n"
+#~ "la version 32 bits est très limitée en terme de mémoire disponible.\n"
+#~ "on a eu de nombreux rapports à propos de problèmes et crashs avec la "
+#~ "version 32 bits.\n"
+#~ "nous vous suggérons de passer à la version 64 bits.\n"
+#~ "sans cela, vous êtes CERTAIN d'avoir des problèmes qui ne peuvent pas "
+#~ "être corrigés.\n"
 
 #~ msgid "search module  "
 #~ msgstr "module de recherche"
