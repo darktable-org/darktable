@@ -106,6 +106,7 @@ typedef struct dt_iop_rgbcurve_gui_data_t
   GtkWidget *cmb_preserve_colors;
   float zoom_factor;
   float offset_x, offset_y;
+  int picker_set_upper_lower; // creates the curve flat, positive or negative
 } dt_iop_rgbcurve_gui_data_t;
 
 typedef struct dt_iop_rgbcurve_data_t
@@ -360,6 +361,14 @@ static gboolean _color_picker_callback_button_press(GtkWidget *widget, GdkEventB
   else
     color_picker->kind = DT_COLOR_PICKER_AREA;
 
+  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+  if((e->state & modifiers) == GDK_CONTROL_MASK) // flat=0, lower=-1, upper=1
+    g->picker_set_upper_lower = 1;
+  else if((e->state & modifiers) == GDK_SHIFT_MASK)
+    g->picker_set_upper_lower = -1;
+  else
+    g->picker_set_upper_lower = 0;
+
   return dt_iop_color_picker_callback_button_press(widget, e, color_picker);
 }
 
@@ -511,8 +520,8 @@ static inline int _add_node(dt_iop_rgbcurve_node_t *curve_nodes, int *nodes, flo
   return selected;
 }
 
-static inline int _add_node_from_picker(dt_iop_rgbcurve_params_t *p, const float *const in, const int ch,
-                                        const dt_iop_order_iccprofile_info_t *const work_profile)
+static inline int _add_node_from_picker(dt_iop_rgbcurve_params_t *p, const float *const in, const float increment,
+                                        const int ch, const dt_iop_order_iccprofile_info_t *const work_profile)
 {
   float x = 0.f;
   float y = 0.f;
@@ -527,6 +536,9 @@ static inline int _add_node_from_picker(dt_iop_rgbcurve_params_t *p, const float
     y = x = dt_ioppr_compensate_middle_grey(val, work_profile);
   else
     y = x = val;
+
+  x -= increment;
+  y += increment;
 
   CLAMP(x, 0.f, 1.f);
   CLAMP(y, 0.f, 1.f);
@@ -562,14 +574,16 @@ static void _iop_color_picker_apply(dt_iop_module_t *self)
     }
 
     // now add 4 nodes: min, avg, center, max
-    _add_node_from_picker(p, self->picked_color_min, ch, work_profile);
-    _add_node_from_picker(p, self->picked_color, ch, work_profile);
-    _add_node_from_picker(p, self->picked_color_max, ch, work_profile);
+    const float increment = 0.05f * g->picker_set_upper_lower;
+
+    _add_node_from_picker(p, self->picked_color_min, 0.f, ch, work_profile);
+    _add_node_from_picker(p, self->picked_color, increment, ch, work_profile);
+    _add_node_from_picker(p, self->picked_color_max, 0.f, ch, work_profile);
 
     if(p->curve_num_nodes[ch] == 5)
       _add_node(p->curve_nodes[ch], &p->curve_num_nodes[ch],
-                p->curve_nodes[ch][1].x + (p->curve_nodes[ch][3].x - p->curve_nodes[ch][1].x) / 2.f,
-                p->curve_nodes[ch][1].y + (p->curve_nodes[ch][3].y - p->curve_nodes[ch][1].y) / 2.f);
+                p->curve_nodes[ch][1].x - increment + (p->curve_nodes[ch][3].x - p->curve_nodes[ch][1].x) / 2.f,
+                p->curve_nodes[ch][1].y + increment + (p->curve_nodes[ch][3].y - p->curve_nodes[ch][1].y) / 2.f);
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
@@ -1339,6 +1353,8 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
         }
         g->selected = -2; // avoid motion notify re-inserting immediately.
         dt_bauhaus_combobox_set(g->interpolator, p->curve_type[DT_IOP_RGBCURVE_R]);
+        if(g->color_picker.current_picker == DT_IOP_RGBCURVE_PICK_SET_VALUES)
+          dt_iop_color_picker_reset(self, TRUE);
         dt_dev_add_history_item(darktable.develop, self, TRUE);
         gtk_widget_queue_draw(self->widget);
       }
@@ -1349,6 +1365,8 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
           p->curve_autoscale = DT_S_SCALE_MANUAL_RGB;
           g->selected = -2; // avoid motion notify re-inserting immediately.
           dt_bauhaus_combobox_set(g->autoscale, 1);
+          if(g->color_picker.current_picker == DT_IOP_RGBCURVE_PICK_SET_VALUES)
+            dt_iop_color_picker_reset(self, TRUE);
           dt_dev_add_history_item(darktable.develop, self, TRUE);
           gtk_widget_queue_draw(self->widget);
         }
@@ -1362,8 +1380,9 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
     {
       const float reset_value = g->selected == 0 ? 0.f : 1.f;
       curve_nodes[g->selected].y = curve_nodes[g->selected].x = reset_value;
-      gtk_widget_queue_draw(self->widget);
+      if(g->color_picker.current_picker == DT_IOP_RGBCURVE_PICK_SET_VALUES) dt_iop_color_picker_reset(self, TRUE);
       dt_dev_add_history_item(darktable.develop, self, TRUE);
+      gtk_widget_queue_draw(self->widget);
       return TRUE;
     }
 
@@ -1374,8 +1393,9 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
     }
     g->selected = -2; // avoid re-insertion of that point immediately after this
     p->curve_num_nodes[ch]--;
-    gtk_widget_queue_draw(self->widget);
+    if(g->color_picker.current_picker == DT_IOP_RGBCURVE_PICK_SET_VALUES) dt_iop_color_picker_reset(self, TRUE);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
+    gtk_widget_queue_draw(self->widget);
     return TRUE;
   }
   return FALSE;
@@ -1406,6 +1426,7 @@ void change_image(struct dt_iop_module_t *self)
     g->selected = -1;
     g->offset_x = g->offset_y = 0.f;
     g->zoom_factor = 1.f;
+    g->picker_set_upper_lower = 0;
   }
 }
 
