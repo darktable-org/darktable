@@ -42,7 +42,8 @@ typedef struct dt_lib_modulegroups_t
   GtkWidget *hbox_search_box;
 } dt_lib_modulegroups_t;
 
-typedef enum dt_lib_modulegroup_iop_visibility_type_t {
+typedef enum dt_lib_modulegroup_iop_visibility_type_t
+{
   DT_MODULEGROUP_SEARCH_IOP_TEXT_VISIBLE,
   DT_MODULEGROUP_SEARCH_IOP_GROUPS_VISIBLE,
   DT_MODULEGROUP_SEARCH_IOP_TEXT_GROUPS_VISIBLE
