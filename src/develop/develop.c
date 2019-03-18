@@ -114,7 +114,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->iop_instance = 0;
   dev->iop = NULL;
   dev->alliop = NULL;
-  
+
   dev->allprofile_info = NULL;
 
   dev->iop_order_version = 0;
@@ -578,7 +578,7 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
 
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  
+
   // write masks (if any)
   GList *forms = g_list_first(h->forms);
   while(forms)
@@ -588,7 +588,7 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
       dt_masks_write_masks_history_item(imgid, num, form);
     forms = g_list_next(forms);
   }
-  
+
   return 0;
 }
 
@@ -613,7 +613,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
        || ((dev->focus_hash != hist->focus_hash)                 // or if focused out and in
        && (// but only add item if there is a difference at all for the same module
          (module->params_size != hist->module->params_size) ||
-         include_masks || 
+         include_masks ||
          (module->params_size == hist->module->params_size && memcmp(hist->params, module->params, module->params_size)))))
     {
       // new operation, push new item
@@ -756,7 +756,7 @@ void dt_dev_add_masks_history_item_ext(dt_develop_t *dev, dt_iop_module_t *_modu
 {
   dt_iop_module_t *module = _module;
   gboolean enable = _enable;
-  
+
   // no module means that is called from the mask manager, so find the iop
   if(module == NULL)
   {
@@ -821,7 +821,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
 {
   dev->focus_hash = 0;
   dt_dev_pop_history_items(dev, 0);
-  
+
   // remove unused history items:
   GList *history = g_list_nth(dev->history, dev->history_end);
   while(history)
@@ -878,7 +878,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
   }
 
   dt_dev_pop_history_items(dev, dev->history_end);
-  
+
   // set the module list order
   dt_dev_reorder_gui_module_list(dev);
 
@@ -924,11 +924,11 @@ void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
 
     history = g_list_next(history);
   }
-  
+
   dev->iop = g_list_sort(dev->iop, dt_sort_iop_by_order);
-  
+
   dt_ioppr_check_duplicate_iop_order(&dev->iop, dev->history);
-  
+
   dt_ioppr_check_iop_order(dev, 0, "dt_dev_pop_history_items_ext end");
 
   // check if masks have changed
@@ -1008,9 +1008,9 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   darktable.gui->reset = 0;
   dt_dev_invalidate_all(dev);
   dt_pthread_mutex_unlock(&dev->history_mutex);
-  
+
   dt_dev_masks_list_change(dev);
-  
+
   dt_control_queue_redraw_center();
 }
 
@@ -1241,13 +1241,13 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 {
   if(imgid <= 0) return;
   if(!dev->iop) return;
-  
+
   int history_end_current = 0;
 
   sqlite3_stmt *stmt;
 
   dev->iop_order_version = 0;
-  
+
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order_version FROM main.images WHERE id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -1256,7 +1256,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     dev->iop_order_version = sqlite3_column_int(stmt, 0);
   }
   sqlite3_finalize(stmt);
-  
+
   // free iop_order if any
   if(dev->iop_order_list) g_list_free_full(dev->iop_order_list, free);
   // read iop_order for this particular edit
@@ -1378,7 +1378,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     hist->multi_priority = multi_priority;
     // update module iop_order only on active history entries
     if(history_end_current > dev->history_end) hist->module->iop_order = hist->iop_order;
-    
+
     const void *blendop_params = sqlite3_column_blob(stmt, 6);
     int bl_length = sqlite3_column_bytes(stmt, 6);
     int blendop_version = sqlite3_column_int(stmt, 7);
@@ -1474,7 +1474,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 
   // now add any module created after dev->iop_order_version
   dt_ioppr_legacy_iop_order(&dev->iop, &dev->iop_order_list, dev->history, dev->iop_order_version);
-  
+
   //dt_ioppr_print_module_iop_order(dev->iop, "dt_dev_read_history_no_image end");
   //dt_ioppr_print_history_iop_order(dev->history, "dt_dev_read_history_no_image end");
   //dt_ioppr_print_iop_order(dev->iop_order_list, "dt_dev_read_history_no_image end");
@@ -1867,7 +1867,7 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
   {
     fprintf(stderr, "[dt_dev_module_duplicate] can't move new instance after the base one\n");
   }
-  
+
   // that's all. rest of insertion is gui work !
   return module;
 }
@@ -1971,7 +1971,7 @@ void _dev_module_update_multishow(dt_develop_t *dev, struct dt_iop_module_t *mod
 void dt_dev_modules_update_multishow(dt_develop_t *dev)
 {
   dt_ioppr_check_iop_order(dev, 0, "dt_dev_modules_update_multishow");
-  
+
   GList *modules = g_list_first(dev->iop);
   while(modules)
   {
@@ -2038,7 +2038,7 @@ int dt_dev_distort_transform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, c
                           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_INCL && module->iop_order >= iop_order)
                           || (transf_direction == DT_DEV_TRANSFORM_DIR_FORW_EXCL && module->iop_order > iop_order)
                           || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_INCL && module->iop_order <= iop_order)
-                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order)) && 
+                          || (transf_direction == DT_DEV_TRANSFORM_DIR_BACK_EXCL && module->iop_order < iop_order)) &&
       !(dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
     {
       module->distort_transform(module, piece, points, points_count);
