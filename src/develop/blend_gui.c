@@ -556,9 +556,8 @@ static void _update_gradient_slider(GtkWidget *widget, dt_iop_module_t *module)
     const int cst = (dt_iop_color_picker_get_active_cst(module) == iop_cs_NONE)
                         ? data->csp
                         : dt_iop_color_picker_get_active_cst(module);
-    const int use_work_profile = (module->iop_order > dt_ioppr_get_colorin_iop_order(module->dev->iop));
     const dt_iop_order_iccprofile_info_t *work_profile
-        = (use_work_profile) ? dt_ioppr_get_iop_work_profile_info(module->dev) : NULL;
+        = dt_ioppr_get_iop_work_profile_info(module, module->dev->iop);
     _blendif_scale(cst, raw_mean, picker_mean, work_profile);
     _blendif_scale(cst, raw_min, picker_min, work_profile);
     _blendif_scale(cst, raw_max, picker_max, work_profile);
@@ -1022,9 +1021,8 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *module)
     const int cst = (dt_iop_color_picker_get_active_cst(module) == iop_cs_NONE)
                         ? data->csp
                         : dt_iop_color_picker_get_active_cst(module);
-    const int use_work_profile = (module->iop_order > dt_ioppr_get_colorin_iop_order(module->dev->iop));
     const dt_iop_order_iccprofile_info_t *work_profile
-        = (use_work_profile) ? dt_ioppr_get_iop_work_profile_info(module->dev) : NULL;
+        = dt_ioppr_get_iop_work_profile_info(module, module->dev->iop);
     _blendif_scale(cst, raw_mean, picker_mean, work_profile);
     _blendif_scale(cst, raw_min, picker_min, work_profile);
     _blendif_scale(cst, raw_max, picker_max, work_profile);

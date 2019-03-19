@@ -25,6 +25,7 @@
 #endif
 
 #include "bauhaus/bauhaus.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "develop/imageop.h"
 #include "gui/color_picker_proxy.h"
 
@@ -346,15 +347,10 @@ static void _signal_profile_user_changed(gpointer instance, uint8_t profile_type
     dt_iop_basicadj_params_t *def = (dt_iop_basicadj_params_t *)self->default_params;
     dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
 
-    const dt_iop_order_iccprofile_info_t *const profile_info = dt_ioppr_get_iop_work_profile_info(self->dev);
-    if(profile_info == NULL)
-    {
-      fprintf(stderr,
-              "[basicadj _signal_profile_user_changed] basic adjustments must be between input color profile and "
-              "output color profile\n");
-      return;
-    }
-    const float def_middle_grey = dt_ioppr_get_profile_info_middle_grey(profile_info) * 100.f;
+    const dt_iop_order_iccprofile_info_t *const work_profile
+        = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
+    const float def_middle_grey
+        = (work_profile) ? (dt_ioppr_get_profile_info_middle_grey(work_profile) * 100.f) : 18.42f;
 
     if(def->middle_grey != def_middle_grey)
     {
@@ -526,9 +522,10 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self)
   dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
   dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
 
-  p->middle_grey
-      = dt_ioppr_get_rgb_matrix_luminance(self->picked_color, dt_ioppr_get_iop_work_profile_info(self->dev))
-        * 100.f;
+  const dt_iop_order_iccprofile_info_t *const work_profile
+      = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
+  p->middle_grey = (work_profile) ? (dt_ioppr_get_rgb_matrix_luminance(self->picked_color, work_profile) * 100.f)
+                                  : dt_camera_rgb_luminance(self->picked_color);
 
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set(g->sl_middle_grey, p->middle_grey);
@@ -1397,14 +1394,7 @@ static void _get_selected_area(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_order_iccprofile_info_t *const profile_info = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-  if(profile_info == NULL)
-  {
-    fprintf(
-        stderr,
-        "[basicadj process_cl] basic adjustments must be between input color profile and output color profile\n");
-    return FALSE;
-  }
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   const int ch = piece->colors;
   dt_iop_basicadj_data_t *d = (dt_iop_basicadj_data_t *)piece->data;
@@ -1420,9 +1410,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem dev_contrast = NULL;
 
   cl_mem dev_profile_info = NULL;
-  cl_mem dev_lut = NULL;
-  dt_colorspaces_iccprofile_info_cl_t profile_info_cl;
-  cl_float *lut_cl = NULL;
+  cl_mem dev_profile_lut = NULL;
+  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl;
+  cl_float *profile_lut_cl = NULL;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -1477,6 +1467,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     }
   }
 
+  const int use_work_profile = (work_profile == NULL) ? 0 : 1;
+
   const int plain_contrast = (!p->preserve_colors && p->contrast != 0.f);
   const int preserve_colors = (p->contrast != 0.f) ? p->preserve_colors : 0;
   const int process_gamma = (p->brightness != 0.f);
@@ -1499,8 +1491,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float shoulder = ((hlcomprthresh / 100.f) / 8.0f) + 0.1f;
   const float hlrange = 1.0f - shoulder;
 
-  dt_ioppr_get_profile_info_cl(profile_info, &profile_info_cl);
-  lut_cl = dt_ioppr_get_trc_cl(profile_info);
+  err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &profile_info_cl, &profile_lut_cl,
+                                            &dev_profile_info, &dev_profile_lut);
+  if(err != CL_SUCCESS) goto cleanup;
 
   dev_gamma = dt_opencl_copy_host_to_device(devid, d->lut_gamma, 256, 256, sizeof(float));
   if(dev_gamma == NULL)
@@ -1514,22 +1507,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(dev_contrast == NULL)
   {
     fprintf(stderr, "[basicadj process_cl] error allocating memory 4\n");
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-    goto cleanup;
-  }
-
-  dev_profile_info = dt_opencl_copy_host_to_device_constant(devid, sizeof(profile_info_cl), &profile_info_cl);
-  if(dev_profile_info == NULL)
-  {
-    fprintf(stderr, "[basicadj process_cl] error allocating memory 5\n");
-    err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
-    goto cleanup;
-  }
-
-  dev_lut = dt_opencl_copy_host_to_device(devid, lut_cl, 256, 256 * 6, sizeof(float));
-  if(dev_lut == NULL)
-  {
-    fprintf(stderr, "[basicadj process_cl] error allocating memory 6\n");
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     goto cleanup;
   }
@@ -1564,7 +1541,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 19, sizeof(float), (void *)&inv_middle_grey);
 
   dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 20, sizeof(cl_mem), (void *)&dev_profile_info);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 21, sizeof(cl_mem), (void *)&dev_lut);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 21, sizeof(cl_mem), (void *)&dev_profile_lut);
+
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 22, sizeof(int), (void *)&use_work_profile);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basicadj, sizes);
   if(err != CL_SUCCESS)
   {
@@ -1575,9 +1554,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 cleanup:
   if(dev_gamma) dt_opencl_release_mem_object(dev_gamma);
   if(dev_contrast) dt_opencl_release_mem_object(dev_contrast);
-  if(dev_profile_info) dt_opencl_release_mem_object(dev_profile_info);
-  if(dev_lut) dt_opencl_release_mem_object(dev_lut);
-  if(lut_cl) free(lut_cl);
+  dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
+
   if(src_buffer) dt_free_align(src_buffer);
 
   if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_basicadj] couldn't enqueue kernel! %d\n", err);
@@ -1589,13 +1567,7 @@ cleanup:
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_order_iccprofile_info_t *const work_profile_info = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-  if(work_profile_info == NULL)
-  {
-    fprintf(stderr,
-            "[basicadj process] basic adjustments must be between input color profile and output color profile\n");
-    return;
-  }
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   const int ch = piece->colors;
   dt_iop_basicadj_data_t *d = (dt_iop_basicadj_data_t *)piece->data;
@@ -1672,7 +1644,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // highlight compression
     if(process_hlcompr)
     {
-      const float lum = dt_ioppr_get_rgb_matrix_luminance(out + k, work_profile_info);
+      const float lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(out + k, work_profile)
+                                       : dt_camera_rgb_luminance(out + k);
       if(lum > 0.f)
       {
         const float ratio = hlcurve(lum, hlcomp, hlrange);
@@ -1698,7 +1671,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(preserve_colors == DT_BASICADJ_PRESERVE_LUMINANCE)
     {
       float ratio = 1.f;
-      const float lum = dt_ioppr_get_rgb_matrix_luminance(out + k, work_profile_info);
+      const float lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(out + k, work_profile)
+                                       : dt_camera_rgb_luminance(out + k);
       if(lum > 0.f)
       {
         const float contrast_lum = powf(lum * inv_middle_grey, contrast) * middle_grey;
@@ -1714,7 +1688,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // saturation
     if(process_saturation)
     {
-      const float luminance = dt_ioppr_get_rgb_matrix_luminance(out + k, work_profile_info);
+      const float luminance = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(out + k, work_profile)
+                                             : dt_camera_rgb_luminance(out + k);
 
       for(size_t c = 0; c < 3; c++)
       {
