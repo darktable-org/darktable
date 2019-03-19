@@ -45,8 +45,6 @@ GList *dt_ioppr_get_iop_order_list(int *_version);
 dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const char *op_name);
 /** returns the iop_order from iop_order_list list with operation = op_name */
 double dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name);
-/** returns colorin's iop_order */
-double dt_ioppr_get_colorin_iop_order(GList *iop_list);
 
 /** check if there's duplicate iop_order entries in iop_list */
 void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list);
@@ -117,9 +115,10 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_profile_info_from_list(struct dt_de
 dt_iop_order_iccprofile_info_t *dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev, const int profile_type, const char *profile_filename, const int intent);
 
 /** returns a reference to the work profile info as set on colorin iop
- * must not be cleanup()
+ * only if module is between colorin and colorout, otherwise returns NULL
+ * work profile must not be cleanup()
  */
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_develop_t *dev);
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_iop_module_t *module, GList *iop_list);
 
 /** set the work profile (type, filename) on the pipe, should be called on process*()
  * if matrix cannot be generated it defauls to linear rec 2020
@@ -179,6 +178,16 @@ void dt_ioppr_get_profile_info_cl(const dt_iop_order_iccprofile_info_t *const pr
  * to be used as a parameter when calling opencl
  */
 cl_float *dt_ioppr_get_trc_cl(const dt_iop_order_iccprofile_info_t *const profile_info);
+
+/** build the required parameters for a kernell that uses a profile info */
+cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t *const profile_info,
+                                           const int devid, dt_colorspaces_iccprofile_info_cl_t **_profile_info_cl,
+                                           cl_float **_profile_lut_cl, cl_mem *_dev_profile_info,
+                                           cl_mem *_dev_profile_lut);
+/** free parameters build with the previous function */
+void dt_ioppr_free_iccprofile_params_cl(dt_colorspaces_iccprofile_info_cl_t **_profile_info_cl,
+                                        cl_float **_profile_lut_cl, cl_mem *_dev_profile_info,
+                                        cl_mem *_dev_profile_lut);
 
 /** same as the C version */
 int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const int devid, cl_mem dev_img_in,
