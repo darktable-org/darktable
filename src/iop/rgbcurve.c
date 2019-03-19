@@ -320,13 +320,33 @@ static float _mouse_to_curve(const float x, const float zoom_factor, const float
 static void picker_scale(const float *const in, float *out, dt_iop_rgbcurve_params_t *p,
                          const dt_iop_order_iccprofile_info_t *const work_profile)
 {
-  if(p->compensate_middle_grey && work_profile)
+  switch(p->curve_autoscale)
   {
-    for(int c = 0; c < 3; c++) out[c] = dt_ioppr_compensate_middle_grey(in[c], work_profile);
-  }
-  else
-  {
-    for(int c = 0; c < 3; c++) out[c] = in[c];
+    case DT_S_SCALE_MANUAL_RGB:
+      if(p->compensate_middle_grey && work_profile)
+      {
+        for(int c = 0; c < 3; c++) out[c] = dt_ioppr_compensate_middle_grey(in[c], work_profile);
+      }
+      else
+      {
+        for(int c = 0; c < 3; c++) out[c] = in[c];
+      }
+      break;
+    case DT_S_SCALE_AUTOMATIC_RGB:
+    {
+      const float val
+          = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(in, work_profile) : dt_camera_rgb_luminance(in);
+      if(p->compensate_middle_grey && work_profile)
+      {
+        out[0] = dt_ioppr_compensate_middle_grey(val, work_profile);
+      }
+      else
+      {
+        out[0] = val;
+      }
+      out[1] = out[2] = 0.f;
+    }
+    break;
   }
 
   for(int c = 0; c < 3; c++) out[c] = CLAMP(out[c], 0.0f, 1.0f);
