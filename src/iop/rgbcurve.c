@@ -976,6 +976,10 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
       const float *const raw_max = self->picked_color_max;
       const float *const raw_mean_output = self->picked_output_color;
 
+/* this is working with the export profile while the module histogram works with the work profile or the
+   compensated one, so we need to transform the data to the work profile and then compensate if required. For
+   now just disable it. */
+#if 0
       // the global live samples ...
       GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
       dt_colorpicker_sample_t *sample = NULL;
@@ -1003,7 +1007,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
 
         samples = g_slist_next(samples);
       }
-
+#endif
       // ... and the local sample
       if(raw_max[ch] >= 0.0f)
       {
