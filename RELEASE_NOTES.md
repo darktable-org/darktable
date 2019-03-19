@@ -25,9 +25,10 @@ and the changelog as compared to 2.6.1 can be found below.
 
 ## Bugfixes
 
-- fix SSE bug introduced in #2025
-- fix issue when looking for input color profile (backward compatibility)
+- Fix SSE bug introduced in #2025
+- Fix issue when looking for input color profile (backward compatibility)
 - Add missing Czech translation file
+- Fix possible halo issue in local contrast module.
 
 ## Changed Dependencies
 
