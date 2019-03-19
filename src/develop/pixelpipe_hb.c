@@ -474,12 +474,6 @@ static int pixelpipe_picker_helper(dt_iop_module_t *module, const dt_iop_roi_t *
   const int width = roi->width;
   const int height = roi->height;
 
-  // initialize picker values. a positive value of picked_color_max[0] can later be used to check for validity
-  // of data
-  for(int k = 0; k < 4; k++) picked_color_min[k] = INFINITY;
-  for(int k = 0; k < 4; k++) picked_color_max[k] = -INFINITY;
-  for(int k = 0; k < 4; k++) picked_color[k] = 0.0f;
-
   // do not continue if one of the point coordinates is set to a negative value indicating a not yet defined
   // position
   if(module->color_picker_point[0] < 0 || module->color_picker_point[1] < 0) return 1;
@@ -541,10 +535,34 @@ static void pixelpipe_picker(dt_iop_module_t *module, dt_iop_buffer_dsc_t *dsc, 
   int box[4];
 
   if(pixelpipe_picker_helper(module, roi, picked_color, picked_color_min, picked_color_max, picker_source, box))
-    return;
+  {
+    for(int k = 0; k < 4; k++)
+    {
+      picked_color_min[k] = INFINITY;
+      picked_color_max[k] = -INFINITY;
+      picked_color[k] = 0.0f;
+    }
 
-  dt_color_picker_helper(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max,
-      image_cst, dt_iop_color_picker_get_active_cst(module));
+    return;
+  }
+
+  float min[4], max[4], avg[4];
+  for(int k = 0; k < 4; k++)
+  {
+    min[k] = INFINITY;
+    max[k] = -INFINITY;
+    avg[k] = 0.0f;
+  }
+
+  dt_color_picker_helper(dsc, pixel, roi, box, avg, min, max, image_cst,
+                         dt_iop_color_picker_get_active_cst(module));
+
+  for(int k = 0; k < 4; k++)
+  {
+    picked_color_min[k] = min[k];
+    picked_color_max[k] = max[k];
+    picked_color[k] = avg[k];
+  }
 }
 
 
@@ -561,7 +579,16 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_iop_buffe
   int box[4];
 
   if(pixelpipe_picker_helper(module, roi, picked_color, picked_color_min, picked_color_max, picker_source, box))
+  {
+    for(int k = 0; k < 4; k++)
+    {
+      picked_color_min[k] = INFINITY;
+      picked_color_max[k] = -INFINITY;
+      picked_color[k] = 0.0f;
+    }
+
     return;
+  }
 
   size_t origin[3];
   size_t region[3];
@@ -602,8 +629,23 @@ static void pixelpipe_picker_cl(int devid, dt_iop_module_t *module, dt_iop_buffe
   box[2] = region[0];
   box[3] = region[1];
 
-  dt_color_picker_helper(dsc, pixel, &roi_copy, box, picked_color, picked_color_min, picked_color_max,
-      image_cst, dt_iop_color_picker_get_active_cst(module));
+  float min[4], max[4], avg[4];
+  for(int k = 0; k < 4; k++)
+  {
+    min[k] = INFINITY;
+    max[k] = -INFINITY;
+    avg[k] = 0.0f;
+  }
+
+  dt_color_picker_helper(dsc, pixel, &roi_copy, box, avg, min, max, image_cst,
+                         dt_iop_color_picker_get_active_cst(module));
+
+  for(int k = 0; k < 4; k++)
+  {
+    picked_color_min[k] = min[k];
+    picked_color_max[k] = max[k];
+    picked_color[k] = avg[k];
+  }
 
 error:
   dt_free_align(tmpbuf);
@@ -1446,7 +1488,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-            dt_iop_color_picker_apply_module(module);
+            dt_iop_color_picker_apply_module(module, piece);
 
             dt_pthread_mutex_lock(&pipe->busy_mutex);
           }
@@ -1608,7 +1650,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-            dt_iop_color_picker_apply_module(module);
+            dt_iop_color_picker_apply_module(module, piece);
 
             dt_pthread_mutex_lock(&pipe->busy_mutex);
           }
@@ -1848,7 +1890,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
             dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-            dt_iop_color_picker_apply_module(module);
+            dt_iop_color_picker_apply_module(module, piece);
 
             dt_pthread_mutex_lock(&pipe->busy_mutex);
           }
@@ -2003,7 +2045,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
           dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-          dt_iop_color_picker_apply_module(module);
+          dt_iop_color_picker_apply_module(module, piece);
 
           dt_pthread_mutex_lock(&pipe->busy_mutex);
         }
@@ -2122,7 +2164,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
         dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-        dt_iop_color_picker_apply_module(module);
+        dt_iop_color_picker_apply_module(module, piece);
 
         dt_pthread_mutex_lock(&pipe->busy_mutex);
       }
@@ -2226,7 +2268,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
 
-      dt_iop_color_picker_apply_module(module);
+      dt_iop_color_picker_apply_module(module, piece);
 
       dt_pthread_mutex_lock(&pipe->busy_mutex);
     }

@@ -1356,7 +1356,7 @@ static void _iop_color_picker_update(dt_iop_module_t *self)
   dt_bauhaus_widget_set_quad_active(g->auto_color, which_colorpicker == DT_PICKCOLBAL_AUTOCOLOR);
 }
 
-static void _iop_color_picker_apply(struct dt_iop_module_t *self)
+static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorbalance_gui_data_t *g = (dt_iop_colorbalance_gui_data_t *)self->gui_data;
   switch(g->color_picker.current_picker)

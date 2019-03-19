@@ -951,7 +951,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
     pango_font_description_set_absolute_size(desc, width * 1.0 / ink.width * PANGO_SCALE);
     pango_layout_set_font_description(layout, desc);
 
-    snprintf(text, sizeof(text), "zoom: %i x: %i y: %ia", (int)((c->zoom_factor - 1.f) * 100.f),
+    snprintf(text, sizeof(text), "zoom: %i x: %i y: %i", (int)((c->zoom_factor - 1.f) * 100.f),
              (int)(c->offset_x * 100.f), (int)(c->offset_y * 100.f));
 
     cairo_set_source_rgba(cr, 0.1, 0.1, 0.1, 0.5);
@@ -1878,7 +1878,7 @@ static void _mode_callback(GtkWidget *widget, dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static void _iop_color_picker_apply(dt_iop_module_t *self)
+static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   if(g->color_picker.current_picker == DT_IOP_COLORZONES_PICK_SET_VALUES)
@@ -2022,7 +2022,7 @@ void gui_init(struct dt_iop_module_t *self)
     (void)dt_draw_curve_add_point(c->minmax_curve[ch], p->curve[ch][1].x + 1.0, p->curve[ch][1].y);
   }
 
-  c->mouse_x = c->mouse_y = /*c->mouse_pick =*/-1.0;
+  c->mouse_x = c->mouse_y = -1.0;
   c->selected = -1;
   c->offset_x = c->offset_y = 0.f;
   c->zoom_factor = 1.f;

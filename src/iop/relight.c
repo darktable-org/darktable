@@ -299,7 +299,7 @@ void cleanup(dt_iop_module_t *module)
 }
 
 
-static void _iop_color_picker_apply(dt_iop_module_t *self)
+static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
   float mean, min, max;

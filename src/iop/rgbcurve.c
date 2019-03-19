@@ -563,7 +563,7 @@ static inline int _add_node_from_picker(dt_iop_rgbcurve_params_t *p, const float
   return _add_node(p->curve_nodes[ch], &p->curve_num_nodes[ch], x, y);
 }
 
-static void _iop_color_picker_apply(dt_iop_module_t *self)
+static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
   if(g->color_picker.current_picker == DT_IOP_RGBCURVE_PICK_SET_VALUES)
@@ -572,8 +572,7 @@ static void _iop_color_picker_apply(dt_iop_module_t *self)
     dt_iop_rgbcurve_params_t *d = (dt_iop_rgbcurve_params_t *)self->default_params;
 
     const int ch = g->channel;
-    const dt_iop_order_iccprofile_info_t *const work_profile
-        = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
+    const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
     // reset current curve
     p->curve_num_nodes[ch] = d->curve_num_nodes[ch];
@@ -976,6 +975,10 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
       const float *const raw_max = self->picked_color_max;
       const float *const raw_mean_output = self->picked_output_color;
 
+/* this is working with the export profile while the module histogram works with the work profile or the
+   compensated one, so we need to transform the data to the work profile and then compensate if required. For
+   now just disable it. */
+#if 0
       // the global live samples ...
       GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
       dt_colorpicker_sample_t *sample = NULL;
@@ -1003,7 +1006,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
 
         samples = g_slist_next(samples);
       }
-
+#endif
       // ... and the local sample
       if(raw_max[ch] >= 0.0f)
       {

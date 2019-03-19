@@ -78,16 +78,16 @@ static void _internal_iop_color_picker_update(dt_iop_color_picker_t *picker)
   darktable.gui->reset = old_reset;
 }
 
-void dt_iop_color_picker_apply_module(dt_iop_module_t *module)
+void dt_iop_color_picker_apply_module(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece)
 {
   if(module->request_color_pick == DT_REQUEST_COLORPICK_MODULE && module->picker && module->picker->apply)
   {
-    module->picker->apply(module);
+    module->picker->apply(module, piece);
     _iop_record_point(module->picker);
   }
   else if(module->request_color_pick == DT_REQUEST_COLORPICK_BLEND && module->blend_picker && module->blend_picker->apply)
   {
-    module->blend_picker->apply(module);
+    module->blend_picker->apply(module, piece);
     _iop_record_point(module->blend_picker);
   }
 }
@@ -115,9 +115,9 @@ int dt_iop_color_picker_get_set(dt_iop_color_picker_t *picker, GtkWidget *button
     return _internal_iop_color_picker_get_set(picker, button);
 }
 
-void dt_iop_color_picker_apply(dt_iop_color_picker_t *picker)
+void dt_iop_color_picker_apply(dt_iop_color_picker_t *picker, dt_dev_pixelpipe_iop_t *piece)
 {
-  picker->apply(picker->module);
+  picker->apply(picker->module, piece);
 }
 
 void dt_iop_color_picker_update(dt_iop_color_picker_t *picker)
@@ -128,13 +128,11 @@ void dt_iop_color_picker_update(dt_iop_color_picker_t *picker)
     _internal_iop_color_picker_update(picker);
 }
 
-static void _iop_init_picker(dt_iop_color_picker_t *picker,
-                  dt_iop_module_t *module,
-                  dt_iop_color_picker_kind_t kind,
-                  const int requested_by,
-                  int (*get_set)(dt_iop_module_t *self, GtkWidget *button),
-                  void (*apply)(dt_iop_module_t *self),
-                  void (*update)(dt_iop_module_t *self))
+static void _iop_init_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *module,
+                             dt_iop_color_picker_kind_t kind, const int requested_by,
+                             int (*get_set)(dt_iop_module_t *self, GtkWidget *button),
+                             void (*apply)(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece),
+                             void (*update)(dt_iop_module_t *self))
 {
   picker->module  = module;
   picker->get_set = get_set;
@@ -155,22 +153,18 @@ static void _iop_init_picker(dt_iop_color_picker_t *picker,
   _iop_color_picker_reset(picker, TRUE);
 }
 
-void dt_iop_init_single_picker(dt_iop_color_picker_t *picker,
-                         dt_iop_module_t *module,
-                         GtkWidget *colorpick,
-                         dt_iop_color_picker_kind_t kind,
-                         void (*apply)(dt_iop_module_t *self))
+void dt_iop_init_single_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *module, GtkWidget *colorpick,
+                               dt_iop_color_picker_kind_t kind,
+                               void (*apply)(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece))
 {
   picker->colorpick = colorpick;
   dt_iop_init_picker(picker, module, kind, NULL, apply, NULL);
 }
 
-void dt_iop_init_picker(dt_iop_color_picker_t *picker,
-                  dt_iop_module_t *module,
-                  dt_iop_color_picker_kind_t kind,
-                  int (*get_set)(dt_iop_module_t *self, GtkWidget *button),
-                  void (*apply)(dt_iop_module_t *self),
-                  void (*update)(dt_iop_module_t *self))
+void dt_iop_init_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *module, dt_iop_color_picker_kind_t kind,
+                        int (*get_set)(dt_iop_module_t *self, GtkWidget *button),
+                        void (*apply)(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece),
+                        void (*update)(dt_iop_module_t *self))
 {
   _iop_init_picker(picker,
                     module,
@@ -181,12 +175,11 @@ void dt_iop_init_picker(dt_iop_color_picker_t *picker,
                     update);
 }
 
-void dt_iop_init_blend_picker(dt_iop_color_picker_t *picker,
-                  dt_iop_module_t *module,
-                  dt_iop_color_picker_kind_t kind,
-                  int (*get_set)(dt_iop_module_t *self, GtkWidget *button),
-                  void (*apply)(dt_iop_module_t *self),
-                  void (*update)(dt_iop_module_t *self))
+void dt_iop_init_blend_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *module,
+                              dt_iop_color_picker_kind_t kind,
+                              int (*get_set)(dt_iop_module_t *self, GtkWidget *button),
+                              void (*apply)(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece),
+                              void (*update)(dt_iop_module_t *self))
 {
   _iop_init_picker(picker,
                     module,

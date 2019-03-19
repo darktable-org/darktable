@@ -279,7 +279,7 @@ static void saturation_callback(GtkWidget *slider, gpointer user_data)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _iop_color_picker_apply(struct dt_iop_module_t *self)
+static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
   dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;

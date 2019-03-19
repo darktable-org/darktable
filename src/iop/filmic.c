@@ -899,7 +899,7 @@ static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
     return g->color_picker.current_picker;
 }
 
-static void _iop_color_picker_apply(struct dt_iop_module_t *self)
+static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   switch(g->color_picker.current_picker)
