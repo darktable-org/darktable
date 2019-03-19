@@ -983,7 +983,7 @@ static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
     return data->color_picker.current_picker;
 }
 
-static void _iop_color_picker_apply(struct dt_iop_module_t *module)
+static void _iop_color_picker_apply(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece)
 {
   if(darktable.gui->reset) return;
 
@@ -1021,8 +1021,7 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *module)
     const int cst = (dt_iop_color_picker_get_active_cst(module) == iop_cs_NONE)
                         ? data->csp
                         : dt_iop_color_picker_get_active_cst(module);
-    const dt_iop_order_iccprofile_info_t *work_profile
-        = dt_ioppr_get_iop_work_profile_info(module, module->dev->iop);
+    const dt_iop_order_iccprofile_info_t *work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
     _blendif_scale(cst, raw_mean, picker_mean, work_profile);
     _blendif_scale(cst, raw_min, picker_min, work_profile);
     _blendif_scale(cst, raw_max, picker_max, work_profile);

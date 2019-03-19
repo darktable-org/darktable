@@ -997,7 +997,7 @@ static float to_lin(const float x, const float base, const int ch, const int sem
   }
 }
 
-static void _iop_color_picker_apply(dt_iop_module_t *self)
+static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->data;
 

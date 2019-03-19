@@ -1878,7 +1878,7 @@ static void _mode_callback(GtkWidget *widget, dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static void _iop_color_picker_apply(dt_iop_module_t *self)
+static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   if(g->color_picker.current_picker == DT_IOP_COLORZONES_PICK_SET_VALUES)
