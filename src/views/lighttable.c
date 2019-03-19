@@ -27,6 +27,7 @@
 #include "common/image_cache.h"
 #include "common/ratings.h"
 #include "common/selection.h"
+#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -241,12 +242,18 @@ static void check_layout(dt_view_t *self)
   }
 
   dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
+  dt_lib_module_t *timeline = darktable.view_manager->proxy.timeline.module;
+  gboolean vs = dt_lib_is_visible(timeline);
 
   if(layout == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+  {
+    gtk_widget_hide(GTK_WIDGET(timeline->widget));
     gtk_widget_show(GTK_WIDGET(m->widget));
+  }
   else
   {
     gtk_widget_hide(GTK_WIDGET(m->widget));
+    if(vs) gtk_widget_show(GTK_WIDGET(timeline->widget));
     g_timeout_add(200, _expose_again_full, self);
   }
 }
@@ -352,6 +359,9 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
 {
   dt_view_t *self = (dt_view_t *)user_data;
   dt_library_t *lib = (dt_library_t *)self->data;
+
+  // we need to redraw all thumbs to display the selected ones, record full redraw here
+  lib->force_expose_all = TRUE;
 
   // we handle change of selection only in expose mode. it is needed
   // here as the selection from the filmstrip is actually was must be
@@ -1493,7 +1503,12 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   /* prepare a new main query statement for collection */
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  if(!stmt) return 0;
+  if(stmt == NULL)
+  {
+    free(images);
+    g_free(query);
+    return 0;
+  }
 
   int i = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -2198,6 +2213,9 @@ static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, g
 
 void enter(dt_view_t *self)
 {
+  // clean the undo list
+  dt_undo_clear(darktable.undo, DT_UNDO_LIGHTTABLE);
+
   // show/hide filmstrip when entering the view
   dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
   if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE)
@@ -2664,6 +2682,10 @@ int key_released(dt_view_t *self, guint key, guint state)
   if(key == accels->global_sideborders.accel_key && state == accels->global_sideborders.accel_mods)
     lib->force_expose_all = TRUE;
 
+  // hide/show timeline, we need a full expose
+  if(key == accels->lighttable_timeline.accel_key && state == accels->lighttable_timeline.accel_mods)
+    lib->force_expose_all = TRUE;
+
   if(((key == accels->lighttable_preview.accel_key && state == accels->lighttable_preview.accel_mods)
       || (key == accels->lighttable_preview_display_focus.accel_key
           && state == accels->lighttable_preview_display_focus.accel_mods)) && lib->full_preview_id != -1)
@@ -2923,6 +2945,22 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   return 0;
 }
 
+static gboolean timeline_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                            GdkModifierType modifier, gpointer data)
+{
+  dt_lib_module_t *m = darktable.view_manager->proxy.timeline.module;
+  if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+  {
+    gtk_widget_hide(GTK_WIDGET(m->widget)); // to be sure
+  }
+  else
+  {
+    gboolean vs = dt_lib_is_visible(m);
+    dt_lib_set_visible(m, !vs);
+  }
+  return TRUE;
+}
+
 void init_key_accels(dt_view_t *self)
 {
   // Initializing accelerators
@@ -2966,6 +3004,37 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "sticky preview"), 0, 0);
   dt_accel_register_view(self, NC_("accel", "sticky preview with focus detection"), 0, 0);
   dt_accel_register_view(self, NC_("accel", "exit sticky preview"), 0, 0);
+
+  // undo/redo
+  dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "redo"), GDK_KEY_y, GDK_CONTROL_MASK);
+
+  // timeline
+  dt_accel_register_view(self, NC_("accel", "toggle timeline"), GDK_KEY_f, GDK_CONTROL_MASK);
+}
+
+static gboolean _lighttable_undo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                          GdkModifierType modifier, gpointer data)
+{
+  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  dt_undo_do_undo(darktable.undo, DT_UNDO_LIGHTTABLE);
+
+  lib->force_expose_all = TRUE;
+  return TRUE;
+}
+
+static gboolean _lighttable_redo_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                          GdkModifierType modifier, gpointer data)
+{
+  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  dt_undo_do_redo(darktable.undo, DT_UNDO_LIGHTTABLE);
+
+  lib->force_expose_all = TRUE;
+  return TRUE;
 }
 
 void connect_key_accels(dt_view_t *self)
@@ -3017,6 +3086,16 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "select single image", closure);
   closure = g_cclosure_new(G_CALLBACK(realign_key_accel_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "realign images to grid", closure);
+
+  // undo/redo
+  closure = g_cclosure_new(G_CALLBACK(_lighttable_undo_callback), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "undo", closure);
+  closure = g_cclosure_new(G_CALLBACK(_lighttable_redo_callback), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "redo", closure);
+
+  // timeline
+  closure = g_cclosure_new(G_CALLBACK(timeline_key_accel_callback), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "toggle timeline", closure);
 }
 
 static void display_intent_callback(GtkWidget *combo, gpointer user_data)

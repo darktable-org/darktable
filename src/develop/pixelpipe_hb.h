@@ -20,6 +20,7 @@
 
 #include "common/image.h"
 #include "common/imageio.h"
+#include "common/iop_order.h"
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -32,6 +33,7 @@
  */
 struct dt_iop_module_t;
 struct dt_dev_raster_mask_t;
+struct dt_iop_order_iccprofile_info_t;
 
 typedef struct dt_dev_pixelpipe_raster_mask_t
 {
@@ -142,6 +144,8 @@ typedef struct dt_dev_pixelpipe_t
   dt_iop_color_intent_t icc_intent;
   // snapshot of modules
   GList *iop;
+  // snapshot of modules iop_order
+  GList *iop_order_list;
   // snapshot of mask list
   GList *forms;
   // the masks generated in the pipe for later reusal are inside dt_dev_pixelpipe_iop_t

@@ -347,28 +347,37 @@ void dt_image_print_exif(const dt_image_t *img, char *line, size_t line_len)
              (int)img->exif_focal_length, (int)img->exif_iso);
 }
 
-void dt_image_set_location(const int32_t imgid, double lon, double lat)
+void dt_image_get_location(int imgid, dt_image_geoloc_t *geoloc)
+{
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  geoloc->longitude = img->geoloc.longitude;
+  geoloc->latitude = img->geoloc.latitude;
+  geoloc->elevation = img->geoloc.elevation;
+  dt_image_cache_read_release(darktable.image_cache, img);
+}
+
+void dt_image_set_location(const int32_t imgid, dt_image_geoloc_t *geoloc)
 {
   /* fetch image from cache */
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
   /* set image location */
-  image->longitude = lon;
-  image->latitude = lat;
+  image->geoloc.longitude = geoloc->longitude;
+  image->geoloc.latitude = geoloc->latitude;
 
   /* store */
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_image_set_location_and_elevation(const int32_t imgid, double lon, double lat, double ele)
+void dt_image_set_location_and_elevation(const int32_t imgid, dt_image_geoloc_t *geoloc)
 {
   /* fetch image from cache */
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
   /* set image location and elevation */
-  image->longitude = lon;
-  image->latitude = lat;
-  image->elevation = ele;
+  image->geoloc.longitude = geoloc->longitude;
+  image->geoloc.latitude = geoloc->latitude;
+  image->geoloc.elevation = geoloc->elevation;
 
   /* store */
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
@@ -415,17 +424,32 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orienta
   const int iop_flip_MODVER = 2;
   int num = 0;
   if(sqlite3_step(stmt) == SQLITE_ROW) num = sqlite3_column_int(stmt, 0);
-
   sqlite3_finalize(stmt);
+
+  double iop_order = DBL_MAX;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order FROM main.history "
+                                                             "WHERE imgid = ?1 AND operation = 'flip' ORDER BY num DESC", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW) iop_order = sqlite3_column_double(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  if(iop_order == DBL_MAX)
+  {
+    iop_order = dt_ioppr_get_iop_order(darktable.iop_order_list, "flip");
+  }
+
+  if(iop_order != DBL_MAX)
+  {
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "INSERT INTO main.history (imgid, num, module, operation, op_params, enabled, "
-                              "blendop_params, blendop_version, multi_priority, multi_name) VALUES "
-                              "(?1, ?2, ?3, 'flip', ?4, 1, NULL, 0, 0, '') ",
+                              "blendop_params, blendop_version, multi_priority, multi_name, iop_order) VALUES "
+                              "(?1, ?2, ?3, 'flip', ?4, 1, NULL, 0, 0, '', ?5) ",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, num);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, iop_flip_MODVER);
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, &orientation, sizeof(int32_t), SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 5, iop_order);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
@@ -439,6 +463,9 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orienta
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
   // write that through to xmp:
   dt_image_write_sidecar_file(imgid);
+  }
+  else
+    fprintf(stderr, "[dt_image_set_flip] can't find history entry for operation flip on image %i\n", imgid);
 }
 
 dt_image_orientation_t dt_image_get_orientation(const int imgid)
@@ -596,14 +623,14 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
       "output_width, output_height, crop, raw_parameters, raw_denoise_threshold, "
       "raw_auto_bright_threshold, raw_black, raw_maximum, "
       "caption, description, license, sha1sum, orientation, histogram, lightmap, "
-      "longitude, latitude, altitude, color_matrix, colorspace, version, max_version, history_end, "
+      "longitude, latitude, altitude, color_matrix, colorspace, version, max_version, history_end, iop_order_version, "
       "position, aspect_ratio) "
       "SELECT NULL, group_id, film_id, width, height, filename, maker, model, lens, "
       "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
       "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
       "raw_auto_bright_threshold, raw_black, raw_maximum, "
       "caption, description, license, sha1sum, orientation, histogram, lightmap, "
-      "longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0, ?1, aspect_ratio "
+      "longitude, latitude, altitude, color_matrix, colorspace, NULL, NULL, 0, 0, ?1, aspect_ratio "
       "FROM main.images WHERE id = ?2",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT64(stmt, 1, new_image_position);
@@ -727,6 +754,11 @@ void dt_image_remove(const int32_t imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid = ?1", -1,
+                              &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.color_labels WHERE imgid = ?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -753,7 +785,8 @@ int dt_image_altered(const uint32_t imgid)
   int altered = 0;
   sqlite3_stmt *stmt;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT operation FROM main.history WHERE imgid = ?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT operation FROM main.history, main.images WHERE id=?1 AND imgid=id AND num<history_end AND enabled=1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -761,11 +794,11 @@ int dt_image_altered(const uint32_t imgid)
     const char *op = (const char *)sqlite3_column_text(stmt, 0);
     // FIXME: this is clearly a terrible way to determine which modules
     // are okay to still load the thumbnail and which aren't.
-    // (that's currently the only use of this function)
+    // it is also used to display the altered symbol on the thumbnails.
     if(!op) continue; // can happen while importing or something like that
-    if(!strcmp(op, "basecurve")) continue;
+    if(!strcmp(op, "basecurve") && dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply")) continue;
     if(!strcmp(op, "flip")) continue;
-    if(!strcmp(op, "sharpen")) continue;
+    if(!strcmp(op, "sharpen") && dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply")) continue;
     if(!strcmp(op, "dither")) continue;
     if(!strcmp(op, "highlights")) continue;
     altered = 1;
@@ -978,8 +1011,8 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "INSERT INTO main.images (id, film_id, filename, caption, description, license, sha1sum, flags, version, "
-      "max_version, history_end, position) "
-      "SELECT NULL, ?1, ?2, '', '', '', '', ?3, 0, 0, 0, (IFNULL(MAX(position),0) & (4294967295 << 32))  + (1 << 32) "
+      "max_version, history_end, iop_order_version, position) "
+      "SELECT NULL, ?1, ?2, '', '', '', '', ?3, 0, 0, 0, 0, (IFNULL(MAX(position),0) & (4294967295 << 32))  + (1 << 32) "
       "FROM images",
       -1, &stmt, NULL);
 
@@ -1194,9 +1227,9 @@ void dt_image_init(dt_image_t *img)
   img->exif_iso = 0;
   img->exif_focal_length = 0;
   img->exif_focus_distance = 0;
-  img->latitude = NAN;
-  img->longitude = NAN;
-  img->elevation = NAN;
+  img->geoloc.latitude = NAN;
+  img->geoloc.longitude = NAN;
+  img->geoloc.elevation = NAN;
   img->raw_black_level = 0;
   for(uint8_t i = 0; i < 4; i++) img->raw_black_level_separate[i] = 0;
   img->raw_white_point = 16384; // 2^14
@@ -1453,14 +1486,14 @@ int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gc
           "raw_auto_bright_threshold, raw_black, raw_maximum, "
           "caption, description, license, sha1sum, orientation, histogram, lightmap, "
           "longitude, latitude, altitude, color_matrix, colorspace, version, max_version, "
-          "position, aspect_ratio) "
+          "position, aspect_ratio, iop_order_version) "
           "SELECT NULL, group_id, ?1 as film_id, width, height, ?2 as filename, maker, model, lens, "
           "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
           "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
           "raw_auto_bright_threshold, raw_black, raw_maximum, "
           "caption, description, license, sha1sum, orientation, histogram, lightmap, "
           "longitude, latitude, altitude, color_matrix, colorspace, -1, -1, "
-          "?3, aspect_ratio "
+          "?3, aspect_ratio, iop_order_version "
           "FROM main.images WHERE id = ?4",
           -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
@@ -1737,14 +1770,17 @@ int dt_image_local_copy_reset(const int32_t imgid)
 
     if(g_file_test(locppath, G_FILE_TEST_EXISTS)) g_file_delete(dest, NULL, NULL);
     g_object_unref(dest);
-
-    // update cache, remove local copy flags
-    dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-    img->flags &= ~DT_IMAGE_LOCAL_COPY;
-    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-
-    dt_control_queue_redraw_center();
   }
+
+  // update cache, remove local copy flags, this is done in all cases here as when we
+  // reach this point the local-copy flag is present and the file has been either removed
+  // or is not present.
+
+  dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  img->flags &= ~DT_IMAGE_LOCAL_COPY;
+  dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+
+  dt_control_queue_redraw_center();
 
   return 0;
 }

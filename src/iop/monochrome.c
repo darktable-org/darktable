@@ -84,6 +84,11 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
@@ -340,7 +345,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_monochrome_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_monochrome_params_t));
   module->default_enabled = 0;
-  module->priority = 628; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_monochrome_params_t);
   module->gui_data = NULL;
   dt_iop_monochrome_params_t tmp = (dt_iop_monochrome_params_t){ 0., 0., 2., 0. };
@@ -445,6 +449,7 @@ static void _iop_color_picker_apply(dt_iop_module_t *self)
   p->size = CLAMP((da + db)/128.0, .5, 3.0);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_control_queue_redraw_widget(self->widget);
 }
 
 static gboolean dt_iop_monochrome_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
@@ -488,7 +493,7 @@ static gboolean dt_iop_monochrome_button_press(GtkWidget *widget, GdkEventButton
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
     dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
-    dt_iop_color_picker_reset(&g->color_picker, TRUE);
+    dt_iop_color_picker_reset(self, TRUE);
     if(event->type == GDK_2BUTTON_PRESS)
     {
       // reset
@@ -522,7 +527,7 @@ static gboolean dt_iop_monochrome_button_release(GtkWidget *widget, GdkEventButt
   {
     dt_iop_module_t *self = (dt_iop_module_t *)user_data;
     dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
-    dt_iop_color_picker_reset(&g->color_picker, TRUE);
+    dt_iop_color_picker_reset(self, TRUE);
     g->dragging = 0;
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     g_object_set(G_OBJECT(widget), "has-tooltip", TRUE, (gchar *)0);
@@ -543,10 +548,9 @@ static gboolean dt_iop_monochrome_leave_notify(GtkWidget *widget, GdkEventCrossi
 static gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
 
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
 
   gdouble delta_y;
   if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
@@ -563,9 +567,8 @@ static gboolean dt_iop_monochrome_scrolled(GtkWidget *widget, GdkEventScroll *ev
 static void highlights_callback(GtkWidget *w, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
   dt_iop_monochrome_params_t *p = (dt_iop_monochrome_params_t *)self->params;
-  dt_iop_color_picker_reset(&g->color_picker, TRUE);
+  dt_iop_color_picker_reset(self, TRUE);
   p->highlights = dt_bauhaus_slider_get(w);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -614,7 +617,7 @@ void gui_init(struct dt_iop_module_t *self)
   cmsHPROFILE hLab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
   g->xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL,
                                 0); // cmsFLAGS_NOTPRECALC);
-  init_single_picker(&g->color_picker,
+  dt_iop_init_single_picker(&g->color_picker,
                      self,
                      GTK_WIDGET(g->colorpicker),
                      DT_COLOR_PICKER_AREA,

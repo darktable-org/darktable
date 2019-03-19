@@ -159,12 +159,17 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_sticky_focus);
   dt_accel_path_view(path, sizeof(path), "lighttable", "exit sticky preview");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_sticky_exit);
+  dt_accel_path_view(path, sizeof(path), "lighttable", "toggle timeline");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_timeline);
   // darkroom
   dt_accel_path_view(path, sizeof(path), "darkroom", "full preview");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.darkroom_preview);
   // add an option to allow skip mouse events while editing masks
   dt_accel_path_view(path, sizeof(path), "darkroom", "allow to pan & zoom while editing masks");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.darkroom_skip_mouse_events);
+  // set focus to the search module text box
+  dt_accel_path_view(path, sizeof(path), "darkroom", "search modules");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.darkroom_search_modules_focus);
 
   // Global
   dt_accel_path_global(path, sizeof(path), "toggle side borders");
@@ -952,9 +957,12 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_loc_get_datadir(datadir, sizeof(datadir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
-  const gchar *css_theme = dt_conf_get_string("ui_last/theme");
+  gchar *css_theme = dt_conf_get_string("ui_last/theme");
   if(css_theme)
+  {
     g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "%s", css_theme);
+    g_free(css_theme);
+  }
   else
     g_snprintf(gui->gtkrc, sizeof(gui->gtkrc), "darktable");
 
@@ -1736,7 +1744,8 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean
   gtk_scrolled_window_set_placement(GTK_SCROLLED_WINDOW(widget),
                                     left ? GTK_CORNER_TOP_LEFT : GTK_CORNER_TOP_RIGHT);
   gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_AUTOMATIC, GTK_POLICY_ALWAYS);
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(widget), GTK_POLICY_AUTOMATIC,
+                                 dt_conf_get_bool("panel_scrollbars_always_visible")?GTK_POLICY_ALWAYS:GTK_POLICY_AUTOMATIC);
 
   g_signal_connect(G_OBJECT(gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(widget))), "notify::lower",
                    G_CALLBACK(_ui_panel_size_changed), GINT_TO_POINTER(left ? 1 : 0));

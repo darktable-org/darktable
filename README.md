@@ -50,11 +50,6 @@ There is a [comprehensive list](https://redmine.darktable.org/projects/darktable
 
 **Tip:** Check that you have the latest [gphoto2 library](http://www.gphoto.org/ "gphoto2 homepage") installed in order to support the newest cameras.
 
-Issue tracking
---------------
-
-[https://www.darktable.org/redmine/projects/darktable/issues](https://www.darktable.org/redmine/projects/darktable/issues "darktable issue tracking")
-
 Wiki
 ----
 

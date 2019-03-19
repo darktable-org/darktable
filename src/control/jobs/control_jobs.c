@@ -31,6 +31,7 @@
 #include "common/imageio_module.h"
 #include "common/mipmap_cache.h"
 #include "common/tags.h"
+#include "common/undo.h"
 #include "control/conf.h"
 #include "develop/imageop_math.h"
 
@@ -79,6 +80,12 @@ typedef struct dt_control_image_enumerator_t
   int flag;
   gpointer data;
 } dt_control_image_enumerator_t;
+
+typedef struct dt_undo_geotag_t
+{
+  GList *before;
+  GList *after;
+} dt_undo_geotag_t;
 
 /* enumerator of images from filmroll */
 static void dt_control_image_enumerator_job_film_init(dt_control_image_enumerator_t *t, int32_t filmid)
@@ -704,9 +711,10 @@ enum _dt_delete_status
 enum _dt_delete_dialog_choice
 {
   _DT_DELETE_DIALOG_CHOICE_DELETE = 1,
-  _DT_DELETE_DIALOG_CHOICE_REMOVE = 2,
-  _DT_DELETE_DIALOG_CHOICE_CONTINUE = 3,
-  _DT_DELETE_DIALOG_CHOICE_STOP = 4
+  _DT_DELETE_DIALOG_CHOICE_DELETE_ALL = 2,
+  _DT_DELETE_DIALOG_CHOICE_REMOVE = 3,
+  _DT_DELETE_DIALOG_CHOICE_CONTINUE = 4,
+  _DT_DELETE_DIALOG_CHOICE_STOP = 5
 };
 
 static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
@@ -730,7 +738,10 @@ static gboolean _dt_delete_dialog_main_thread(gpointer user_data)
 #endif
 
   if (modal_dialog->send_to_trash)
+  {
     gtk_dialog_add_button(GTK_DIALOG(dialog), _("physically delete"), _DT_DELETE_DIALOG_CHOICE_DELETE);
+    gtk_dialog_add_button(GTK_DIALOG(dialog), _("physically delete all files"), _DT_DELETE_DIALOG_CHOICE_DELETE_ALL);
+  }
   gtk_dialog_add_button(GTK_DIALOG(dialog), _("only remove from the collection"), _DT_DELETE_DIALOG_CHOICE_REMOVE);
   gtk_dialog_add_button(GTK_DIALOG(dialog), _("skip to next file"), _DT_DELETE_DIALOG_CHOICE_CONTINUE);
   gtk_dialog_add_button(GTK_DIALOG(dialog), _("stop process"), _DT_DELETE_DIALOG_CHOICE_STOP);
@@ -776,7 +787,7 @@ static gint _dt_delete_file_display_modal_dialog(int send_to_trash, const char *
   return modal_dialog.dialog_result;
 }
 
-static enum _dt_delete_status delete_file_from_disk(const char *filename)
+static enum _dt_delete_status delete_file_from_disk(const char *filename, gboolean *delete_on_trash_error)
 {
   enum _dt_delete_status delete_status = _DT_DELETE_STATUS_UNKNOWN;
 
@@ -808,6 +819,12 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename)
     {
       delete_status = _DT_DELETE_STATUS_OK_TO_REMOVE;
     }
+    else if (send_to_trash && *delete_on_trash_error)
+    {
+      // Loop again, this time delete instead of trashing
+      delete_status = _DT_DELETE_STATUS_UNKNOWN;
+      send_to_trash = FALSE;
+    }
     else
     {
       const char *filename_display = NULL;
@@ -832,6 +849,13 @@ static enum _dt_delete_status delete_file_from_disk(const char *filename)
         // Loop again, this time delete instead of trashing
         delete_status = _DT_DELETE_STATUS_UNKNOWN;
         send_to_trash = FALSE;
+      }
+      else if (send_to_trash && res == _DT_DELETE_DIALOG_CHOICE_DELETE_ALL)
+      {
+        // Loop again, this time delete instead of trashing
+        delete_status = _DT_DELETE_STATUS_UNKNOWN;
+        send_to_trash = FALSE;
+        *delete_on_trash_error = TRUE;
       }
       else if (res == _DT_DELETE_DIALOG_CHOICE_REMOVE)
       {
@@ -867,6 +891,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
   guint total = g_list_length(t);
   char message[512] = { 0 };
   double fraction = 0;
+  gboolean delete_on_trash_error = FALSE;
   if (dt_conf_get_bool("send_to_trash"))
     snprintf(message, sizeof(message), ngettext("trashing %d image", "trashing %d images", total), total);
   else
@@ -916,7 +941,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       dt_image_remove(imgid);
 
       // there are no further duplicates so we can remove the source data file
-      delete_status = delete_file_from_disk(filename);
+      delete_status = delete_file_from_disk(filename, &delete_on_trash_error);
       if (delete_status != _DT_DELETE_STATUS_OK_TO_REMOVE)
         goto delete_next_file;
 
@@ -973,7 +998,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       GList *file_iter = g_list_first(files);
       while(file_iter != NULL)
       {
-        delete_status = delete_file_from_disk(file_iter->data);
+        delete_status = delete_file_from_disk(file_iter->data, &delete_on_trash_error);
         if (delete_status != _DT_DELETE_STATUS_OK_TO_REMOVE)
           break;
         file_iter = g_list_next(file_iter);
@@ -995,7 +1020,7 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
       dt_image_remove(imgid);
 
       // ... and delete afterwards because removing will re-write the XMP
-      delete_file_from_disk(filename);
+      delete_status = delete_file_from_disk(filename, &delete_on_trash_error);
     }
 
 delete_next_file:
@@ -1027,6 +1052,48 @@ delete_next_file:
   return 0;
 }
 
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item, dt_undo_action_t action)
+{
+  dt_undo_geotag_t *geotags = (dt_undo_geotag_t *)item;
+  GList *l;
+
+  if(action == DT_ACTION_UNDO)
+    l = geotags->before;
+  else
+    l = geotags->after;
+
+  while(l)
+  {
+    const int imgid = GPOINTER_TO_INT((dt_image_geoloc_t *)l->data);
+
+    l = g_list_next(l);
+    dt_image_geoloc_t *geoloc = (dt_image_geoloc_t *)l->data;
+    dt_image_set_location_and_elevation(imgid, geoloc);
+
+    l = g_list_next(l);
+  }
+}
+
+void _geotags_free_undo_data_t(gpointer data)
+{
+  dt_undo_geotag_t *geotags = (dt_undo_geotag_t *)data;
+  GList *lb = geotags->before;
+  GList *la = geotags->after;
+
+  do
+  {
+    if(la) la = g_list_next(la);
+    if(la) g_free((dt_image_geoloc_t *)la->data);
+    if(lb) lb = g_list_next(lb);
+    if(lb) g_free((dt_image_geoloc_t *)lb->data);
+    if(la) la = g_list_next(la);
+    if(lb) lb = g_list_next(lb);
+  } while(la || lb);
+
+  g_list_free(geotags->before);
+  g_list_free(geotags->after);
+}
+
 static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params = dt_control_job_get_params(job);
@@ -1052,12 +1119,14 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
   if(!tz_camera) goto bail_out;
   GTimeZone *tz_utc = g_time_zone_new_utc();
 
+  dt_undo_geotag_t *geotags = g_malloc0(sizeof(dt_undo_geotag_t));
+
   /* go thru each selected image and lookup location in gpx */
   do
   {
     GTimeVal timestamp;
     GDateTime *exif_time, *utc_time;
-    gdouble lon, lat, ele;
+    dt_image_geoloc_t geoloc;
     int imgid = GPOINTER_TO_INT(t->data);
 
     /* get image */
@@ -1096,13 +1165,32 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
     if(!res) continue;
 
     /* only update image location if time is within gpx tack range */
-    if(dt_gpx_get_location(gpx, &timestamp, &lon, &lat, &ele))
+    if(dt_gpx_get_location(gpx, &timestamp, &geoloc))
     {
-      dt_image_set_location_and_elevation(imgid, lon, lat, ele);
+      dt_image_geoloc_t *before = g_malloc0(sizeof(dt_image_geoloc_t));
+      dt_image_geoloc_t *after = g_malloc0(sizeof(dt_image_geoloc_t));
+      memcpy(after, &geoloc, sizeof(dt_image_geoloc_t));
+      dt_image_get_location(imgid, before);
+
+      // first the image id and then the position
+      geotags->before = g_list_append(geotags->before, GINT_TO_POINTER(imgid));
+      geotags->before = g_list_append(geotags->before, (gpointer)before);
+      // likewise for the new position
+      geotags->after = g_list_append(geotags->after, GINT_TO_POINTER(imgid));
+      geotags->after = g_list_append(geotags->after, (gpointer)after);
+
+      dt_image_set_location_and_elevation(imgid, &geoloc);
       cntr++;
     }
 
   } while((t = g_list_next(t)) != NULL);
+
+  if(geotags->before)
+  {
+    dt_undo_start_group(darktable.undo, DT_UNDO_LT_GEOTAG);
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_GEOTAG, (dt_undo_data_t *)geotags, _pop_undo, _geotags_free_undo_data_t);
+    dt_undo_end_group(darktable.undo);
+  }
 
   dt_control_log(ngettext("applied matched GPX location onto %d image", "applied matched GPX location onto %d images", cntr), cntr);
 
@@ -1137,7 +1225,7 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
   guint tagid = 0;
   const guint total = g_list_length(t);
   double fraction = 0;
-  gboolean is_copy = params->flag == 1;
+  const gboolean is_copy = params->flag == 1;
   char message[512] = { 0 };
 
   if(is_copy)

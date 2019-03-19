@@ -22,16 +22,23 @@
 #include <inttypes.h>
 #include <sqlite3.h>
 
+struct dt_develop_t;
+struct dt_iop_module_t;
+
 /** helper function to free a GList of dt_history_item_t */
 void dt_history_item_free(gpointer data);
 
-/** adds to memory.style_items instances of operations that shoudn't be modified by the copy/paste or style */
-void dt_history_rebuild_multi_priority_merge(const int dest_imgid);
+/** adds to dev_dest module mod_src */
+int dt_history_merge_module_into_history(struct dt_develop_t *dev_dest, struct dt_develop_t *dev_src, struct dt_iop_module_t *mod_src, GList **_modules_used, const int append);
 
 /** copy history from imgid and pasts on dest_imgid, merge or overwrite... */
 int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboolean merge, GList *ops);
 
+/** delete all history for the given image */
 void dt_history_delete_on_image(int32_t imgid);
+
+/** as above but control whether to record undo/redo */
+void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo);
 
 /** copy history from imgid and pasts on selected images, merge or overwrite... */
 int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge, GList *ops);

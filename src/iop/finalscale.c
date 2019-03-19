@@ -41,12 +41,17 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_HIDDEN | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_NO_HISTORY_STACK;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_HIDDEN | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_NO_HISTORY_STACK | IOP_FLAGS_FENCE;
 }
 
 int default_group()
 {
   return IOP_GROUP_BASIC;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
 }
 
 void modify_roi_in(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *const roi_out,
@@ -125,7 +130,6 @@ void init(dt_iop_module_t *self)
   self->default_params = calloc(1, sizeof(dt_iop_finalscale_params_t));
   self->default_enabled = 1;
   self->hide_enable_button = 1;
-  self->priority = 914; // module order created by iop_dependencies.py, do not edit!
   self->params_size = sizeof(dt_iop_finalscale_params_t);
   self->gui_data = NULL;
 }

@@ -118,6 +118,11 @@ typedef enum dt_image_loader_t
   LOADER_PNM = 10,
 } dt_image_loader_t;
 
+typedef struct dt_image_geoloc_t
+{
+  double longitude, latitude, elevation;
+} dt_image_geoloc_t;
+
 struct dt_cache_entry_t;
 // TODO: add color labels and such as cachable
 // __attribute__ ((aligned (128)))
@@ -165,9 +170,7 @@ typedef struct dt_image_t
   dt_image_raw_parameters_t legacy_flip; // unfortunately needed to convert old bits to new flip module.
 
   /* gps coords */
-  double longitude;
-  double latitude;
-  double elevation;
+  dt_image_geoloc_t geoloc;
 
   /* needed in exposure iop for Deflicker */
   uint16_t raw_black_level;
@@ -233,9 +236,11 @@ dt_image_orientation_t dt_image_get_orientation(const int imgid);
 /** get max width and height of the final processed image with its current hisotry stack */
 gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height);
 /** set image location lon/lat */
-void dt_image_set_location(const int32_t imgid, double lon, double lat);
+void dt_image_set_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
+/** get image location lon/lat */
+void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** set image location lon/lat/ele */
-void dt_image_set_location_and_elevation(const int32_t imgid, double lon, double lat, double ele);
+void dt_image_set_location_and_elevation(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** returns 1 if there is history data found for this image, 0 else. */
 int dt_image_altered(const uint32_t imgid);
 /** set the image final/cropped aspect ratio */

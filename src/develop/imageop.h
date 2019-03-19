@@ -44,6 +44,7 @@ struct dt_dev_pixelpipe_t;
 struct dt_dev_pixelpipe_iop_t;
 struct dt_develop_blend_params_t;
 struct dt_develop_tiling_t;
+struct dt_iop_color_picker_t;
 
 /** module group */
 typedef enum dt_iop_group_t
@@ -91,7 +92,8 @@ typedef enum dt_iop_flags_t
   IOP_FLAGS_PREVIEW_NON_OPENCL
   = 1 << 8, // Preview pixelpipe of this module must not run on GPU but always on CPU
   IOP_FLAGS_NO_HISTORY_STACK = 1 << 9, // This iop will never show up in the history stack
-  IOP_FLAGS_NO_MASKS = 1 << 10         // The module doesn't support masks (used with SUPPORT_BLENDING)
+  IOP_FLAGS_NO_MASKS = 1 << 10,         // The module doesn't support masks (used with SUPPORT_BLENDING)
+  IOP_FLAGS_FENCE = 1 << 11              // No module can be moved pass this one
 } dt_iop_flags_t;
 
 /** status of a module*/
@@ -115,6 +117,17 @@ typedef enum dt_dev_request_colorpick_flags_t
   DT_REQUEST_COLORPICK_MODULE = 1 << 0, // requested by module (should take precedence)
   DT_REQUEST_COLORPICK_BLEND = 1 << 1   // requested by parametric blending gui
 } dt_dev_request_colorpick_flags_t;
+
+/** colorspace enums, must be in synch with dt_iop_colorspace_type_t in color_conversion.cl */
+typedef enum dt_iop_colorspace_type_t
+{
+  iop_cs_NONE = -1,
+  iop_cs_RAW = 0,
+  iop_cs_Lab = 1,
+  iop_cs_rgb = 2,
+  iop_cs_LCh = 3,
+  iop_cs_HSL = 4
+} dt_iop_colorspace_type_t;
 
 /** part of the module which only contains the cached dlopen stuff. */
 struct dt_iop_module_so_t;
@@ -164,6 +177,19 @@ typedef struct dt_iop_module_so_t
   void (*output_format)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                         struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_buffer_dsc_t *dsc);
 
+  /** what default colorspace this iop use? */
+  int (*default_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
+                       struct dt_dev_pixelpipe_iop_t *piece);
+  /** what input colorspace it expects? */
+  int (*input_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
+                       struct dt_dev_pixelpipe_iop_t *piece);
+  /** what will it output? */
+  int (*output_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
+                        struct dt_dev_pixelpipe_iop_t *piece);
+  /** what colorspace the blend module operates with? */
+  int (*blend_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
+                        struct dt_dev_pixelpipe_iop_t *piece);
+
   void (*tiling_callback)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                           const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out,
                           struct dt_develop_tiling_t *tiling);
@@ -197,6 +223,7 @@ typedef struct dt_iop_module_so_t
                     struct dt_dev_pixelpipe_iop_t *piece);
   void (*commit_params)(struct dt_iop_module_t *self, dt_iop_params_t *params,
                         struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
+  void (*change_image)(struct dt_iop_module_t *self);
   void (*reload_defaults)(struct dt_iop_module_t *self);
   void (*cleanup_pipe)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                        struct dt_dev_pixelpipe_iop_t *piece);
@@ -254,8 +281,8 @@ typedef struct dt_iop_module_t
   dt_dev_operation_t op;
   /** used to identify this module in the history stack. */
   int32_t instance;
-  /** order in which plugins are stacked. */
-  int32_t priority;
+  /** order of the module on the pipe. the pipe will be sorted by iop_order. */
+  double iop_order;
   /** module sets this if the enable checkbox should be hidden. */
   int32_t hide_enable_button;
   /** set to DT_REQUEST_COLORPICK_MODULE if you want an input color picked during next eval. gui mode only. */
@@ -269,6 +296,9 @@ typedef struct dt_iop_module_t
   /** set to 1 if you want the blendif to be completely suppressed in the module in focus. only when the module has
    * the focus. */
   int32_t bypass_blendif;
+  /** color picker proxys */
+  struct dt_iop_color_picker_t *picker;
+  struct dt_iop_color_picker_t *blend_picker;
   /** bounding box in which the mean color is requested. */
   float color_picker_box[4];
   /** single point to pick if in point mode */
@@ -283,6 +313,13 @@ typedef struct dt_iop_module_t
   dt_dev_histogram_stats_t histogram_stats;
   /** maximum levels in histogram, one per channel */
   uint32_t histogram_max[4];
+  /** requested colorspace for the histogram, valid options are:
+   * iop_cs_NONE: module colorspace
+   * iop_cs_LCh: for Lab modules
+   */
+  dt_iop_colorspace_type_t histogram_cst;
+  /** scale the histogram so the middle grey is at .5 */
+  int histogram_middle_grey;
   /** reference for dlopened libs. */
   darktable_t *dt;
   /** the module is used in this develop module. */
@@ -345,6 +382,7 @@ typedef struct dt_iop_module_t
   gboolean multi_show_close;
   gboolean multi_show_up;
   gboolean multi_show_down;
+  gboolean multi_show_new;
   GtkWidget *duplicate_button;
   GtkWidget *multimenu_button;
 
@@ -368,6 +406,20 @@ typedef struct dt_iop_module_t
   /** what will it output? */
   void (*output_format)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                         struct dt_dev_pixelpipe_iop_t *piece, struct dt_iop_buffer_dsc_t *dsc);
+
+  /** what default colorspace this iop use? */
+  int (*default_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
+                       struct dt_dev_pixelpipe_iop_t *piece);
+  /** what input colorspace it expects? */
+  int (*input_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
+                       struct dt_dev_pixelpipe_iop_t *piece);
+  /** what will it output? */
+  int (*output_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
+                        struct dt_dev_pixelpipe_iop_t *piece);
+  /** what colorspace the blend module operates with? */
+  int (*blend_colorspace)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
+                        struct dt_dev_pixelpipe_iop_t *piece);
+
   /** report back info for tiling: memory usage and overlap. Memory usage: factor * input_size + overhead */
   void (*tiling_callback)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                           const struct dt_iop_roi_t *roi_in, const struct dt_iop_roi_t *roi_out,
@@ -411,6 +463,8 @@ typedef struct dt_iop_module_t
                         struct dt_dev_pixelpipe_t *pipe, struct dt_dev_pixelpipe_iop_t *piece);
   /** this is the chance to update default parameters, after the full raw is loaded. */
   void (*reload_defaults)(struct dt_iop_module_t *self);
+  /** called after the image has changed in darkroom */
+  void (*change_image)(struct dt_iop_module_t *self);
   /** this destroys all resources needed by the piece of the pixelpipe. */
   void (*cleanup_pipe)(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
                        struct dt_dev_pixelpipe_iop_t *piece);
@@ -490,7 +544,6 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, st
 GList *dt_iop_load_modules_ext(struct dt_develop_t *dev, gboolean no_image);
 GList *dt_iop_load_modules(struct dt_develop_t *dev);
 int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, struct dt_develop_t *dev);
-gint sort_plugins(gconstpointer a, gconstpointer b);
 /** calls module->cleanup and closes the dl connection. */
 void dt_iop_cleanup_module(dt_iop_module_t *module);
 /** initialize pipe. */
@@ -552,17 +605,6 @@ int dt_iop_breakpoint(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe)
 /** allow plugins to relinquish CPU and go to sleep for some time */
 void dt_iop_nap(int32_t usec);
 
-/** colorspace enums */
-typedef enum dt_iop_colorspace_type_t
-{
-  iop_cs_RAW,
-  iop_cs_Lab,
-  iop_cs_rgb
-} dt_iop_colorspace_type_t;
-
-/** find which colorspace the module works within */
-dt_iop_colorspace_type_t dt_iop_module_colorspace(const dt_iop_module_t *module);
-
 dt_iop_module_t *get_colorout_module();
 
 /** returns the localized plugin name for a given op name. must not be freed. */
@@ -576,6 +618,11 @@ void dt_iop_update_multi_priority(dt_iop_module_t *module, int new_priority);
 
 /** iterates over the users hash table and checks if a specific mask is being used */
 gboolean dt_iop_is_raster_mask_used(dt_iop_module_t *module, int id);
+
+/** returns the previous visible module on the module list */
+dt_iop_module_t *dt_iop_gui_get_previous_visible_module(dt_iop_module_t *module);
+/** returns the next visible module on the module list */
+dt_iop_module_t *dt_iop_gui_get_next_visible_module(dt_iop_module_t *module);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

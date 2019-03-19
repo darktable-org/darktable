@@ -226,10 +226,9 @@ static void _tree_add_exist(GtkButton *button, dt_masks_form_t *grp)
   if(form && dt_masks_group_add_form(grp, form))
   {
     // we save the group
-    dt_masks_write_form(grp, darktable.develop);
+    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
 
     // and we apply the change
-    dt_dev_masks_list_change(darktable.develop);
     dt_masks_update_image(darktable.develop);
     dt_dev_masks_selection_change(darktable.develop, grp->formid, TRUE);
   }
@@ -279,7 +278,7 @@ static void _tree_group(GtkButton *button, dt_lib_module_t *self)
   darktable.develop->forms = g_list_append(darktable.develop->forms, grp);
 
   // add we save
-  dt_masks_write_forms(darktable.develop);
+  dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
   _lib_masks_recreate_list(self);
   // dt_masks_change_form_gui(grp);
 }
@@ -376,7 +375,7 @@ static void _tree_inverse(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_masks_write_forms(darktable.develop);
+    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
@@ -443,7 +442,7 @@ static void _tree_intersection(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_masks_write_forms(darktable.develop);
+    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
@@ -510,7 +509,7 @@ static void _tree_difference(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_masks_write_forms(darktable.develop);
+    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
@@ -577,7 +576,7 @@ static void _tree_exclusion(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_masks_write_forms(darktable.develop);
+    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
@@ -644,7 +643,7 @@ static void _tree_union(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_masks_write_forms(darktable.develop);
+    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
@@ -798,7 +797,6 @@ static void _tree_duplicate_shape(GtkButton *button, dt_lib_module_t *self)
 
     int nid = dt_masks_form_duplicate(darktable.develop, id);
     if(nid <= 0) return;
-    dt_dev_masks_list_change(darktable.develop);
     dt_dev_masks_selection_change(darktable.develop, nid, TRUE);
     //_lib_masks_recreate_list(self);
   }
@@ -833,7 +831,7 @@ static void _tree_cell_edited(GtkCellRendererText *cell, gchar *path_string, gch
   // first, we need to update the mask name
 
   g_strlcpy(form->name, text, sizeof(form->name));
-  dt_masks_write_form(form, darktable.develop);
+  dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
 
   // and we update the cell text
   _set_iter_name(lm, form, 0, 1.0f, model, &iter);
@@ -1370,8 +1368,11 @@ static void _lib_masks_recreate_list(dt_lib_module_t *self)
 {
   /* first destroy all buttons in list */
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
+  if(!lm) return;
   if(lm->gui_reset) return;
 
+  const int gui_reset = lm->gui_reset;
+  lm->gui_reset = 1;
   // if (lm->treeview) gtk_widget_destroy(lm->treeview);
 
   _lib_masks_inactivate_icons(self);
@@ -1402,6 +1403,8 @@ static void _lib_masks_recreate_list(dt_lib_module_t *self)
 
   gtk_tree_view_set_model(GTK_TREE_VIEW(lm->treeview), GTK_TREE_MODEL(treestore));
   g_object_unref(treestore);
+  
+  lm->gui_reset = gui_reset;
 }
 
 static gboolean _update_foreach(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)

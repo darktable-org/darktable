@@ -49,9 +49,12 @@ fast_expf(const float x)
   // const int k = CLAMPS(i1 + x * (i2 - i1), 0x0u, 0x7fffffffu);
   // without max clamping (doesn't work for large x, but is faster):
   const int k0 = i1 + x * (i2 - i1);
-  const int k = k0 > 0 ? k0 : 0;
-  const float f = *(const float *)&k;
-  return f;
+  union {
+      float f;
+      int k;
+  } u;
+  u.k = k0 > 0 ? k0 : 0;
+  return u.f;
 }
 
 kernel void

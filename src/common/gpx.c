@@ -134,8 +134,7 @@ void dt_gpx_destroy(struct dt_gpx_t *gpx)
   g_free(gpx);
 }
 
-gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GTimeVal *timestamp, gdouble *lon, gdouble *lat,
-                             gdouble *ele)
+gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GTimeVal *timestamp, dt_image_geoloc_t *geoloc)
 {
   g_assert(gpx != NULL);
 
@@ -153,9 +152,9 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GTimeVal *timestamp, gdouble 
        closest location value start or end point */
     if((!item->next && timestamp->tv_sec >= tp->time.tv_sec) || (timestamp->tv_sec <= tp->time.tv_sec))
     {
-      *lon = tp->longitude;
-      *lat = tp->latitude;
-      *ele = tp->elevation;
+      geoloc->longitude = tp->longitude;
+      geoloc->latitude = tp->latitude;
+      geoloc->elevation = tp->elevation;
       return FALSE;
     }
 
@@ -163,9 +162,9 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GTimeVal *timestamp, gdouble 
     if(timestamp->tv_sec >= tp->time.tv_sec
        && timestamp->tv_sec <= ((_gpx_track_point_t *)item->next->data)->time.tv_sec)
     {
-      *lon = tp->longitude;
-      *lat = tp->latitude;
-      *ele = tp->elevation;
+      geoloc->longitude = tp->longitude;
+      geoloc->latitude = tp->latitude;
+      geoloc->elevation = tp->elevation;
       return TRUE;
     }
 

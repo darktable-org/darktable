@@ -512,7 +512,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     /* geotagging */
     /* latitude */
-    if(isnan(img->latitude))
+    if(isnan(img->geoloc.latitude))
     {
       _metadata_update_value(d->metadata[md_geotagging_lat], NODATA_STRING);
     }
@@ -520,19 +520,19 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     {
       if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
       {
-        gchar *latitude = dt_util_latitude_str(img->latitude);
+        gchar *latitude = dt_util_latitude_str(img->geoloc.latitude);
         _metadata_update_value(d->metadata[md_geotagging_lat], latitude);
         g_free(latitude);
       }
       else
       {
-        gchar NS = img->latitude < 0 ? 'S' : 'N';
-        snprintf(value, sizeof(value), "%c %09.6f", NS, fabs(img->latitude));
+        const gchar NS = img->geoloc.latitude < 0 ? 'S' : 'N';
+        snprintf(value, sizeof(value), "%c %09.6f", NS, fabs(img->geoloc.latitude));
         _metadata_update_value(d->metadata[md_geotagging_lat], value);
       }
     }
     /* longitude */
-    if(isnan(img->longitude))
+    if(isnan(img->geoloc.longitude))
     {
       _metadata_update_value(d->metadata[md_geotagging_lon], NODATA_STRING);
     }
@@ -540,19 +540,19 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     {
       if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
       {
-        gchar *longitude = dt_util_longitude_str(img->longitude);
+        gchar *longitude = dt_util_longitude_str(img->geoloc.longitude);
         _metadata_update_value(d->metadata[md_geotagging_lon], longitude);
         g_free(longitude);
       }
       else
       {
-        gchar EW = img->longitude < 0 ? 'W' : 'E';
-        snprintf(value, sizeof(value), "%c %010.6f", EW, fabs(img->longitude));
+        const gchar EW = img->geoloc.longitude < 0 ? 'W' : 'E';
+        snprintf(value, sizeof(value), "%c %010.6f", EW, fabs(img->geoloc.longitude));
         _metadata_update_value(d->metadata[md_geotagging_lon], value);
       }
     }
     /* elevation */
-    if(isnan(img->elevation))
+    if(isnan(img->geoloc.elevation))
     {
       _metadata_update_value(d->metadata[md_geotagging_ele], NODATA_STRING);
     }
@@ -560,13 +560,13 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     {
       if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
       {
-        gchar *elevation = dt_util_elevation_str(img->elevation);
+        gchar *elevation = dt_util_elevation_str(img->geoloc.elevation);
         _metadata_update_value(d->metadata[md_geotagging_ele], elevation);
         g_free(elevation);
       }
       else
       {
-        snprintf(value, sizeof(value), "%.2f %s", img->elevation, _("m"));
+        snprintf(value, sizeof(value), "%.2f %s", img->geoloc.elevation, _("m"));
         _metadata_update_value(d->metadata[md_geotagging_ele], value);
       }
     }

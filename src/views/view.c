@@ -254,41 +254,6 @@ static void _remove_child(GtkWidget *child,GtkContainer *container)
     }
 }
 
-static void bitness_nagging()
-{
-  const int bits = (sizeof(void *) == 4) ? 32 : 64;
-  if((bits < 64) && !dt_conf_get_bool("please_let_me_suffer_by_using_32bit_darktable"))
-  {
-    fprintf(stderr, "warning: 32-bit build!\n");
-
-    GtkWidget *dialog, *content_area;
-    GtkDialogFlags flags;
-
-    // Create the widgets
-    flags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
-    dialog = gtk_dialog_new_with_buttons(
-        _("you are making a mistake!"), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), flags,
-        _("_yes, i understood. please let me suffer by using 32-bit darktable."), GTK_RESPONSE_NONE,
-        NULL);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-
-    const gchar *msg = _("warning!\nyou are using a 32-bit build of darktable.\nthe 32-bit build has "
-                          "severely limited virtual address space.\nwe have had numerous reports that "
-                          "darktable exhibits sporadic issues and crashes when using 32-bit builds.\nwe "
-                          "strongly recommend you switch to a proper 64-bit build.\notherwise, you are "
-                          "GUARANTEED to experience issues which cannot be fixed.\n");
-
-    gtk_container_add(GTK_CONTAINER(content_area), gtk_label_new(msg));
-    gtk_widget_show_all(dialog);
-
-    (void)gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-  }
-}
-
 int dt_view_manager_switch(dt_view_manager_t *vm, const char *view_name)
 {
   gboolean switching_to_none = *view_name == '\0';
@@ -374,9 +339,6 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
     int error = new_view->try_enter(new_view);
     if(error) return error;
   }
-
-  // annoy the users that are still on 32 bit systems!
-  bitness_nagging();
 
   /* cleanup current view before initialization of new  */
   if(old_view)
@@ -675,32 +637,6 @@ int dt_view_manager_button_pressed(dt_view_manager_t *vm, double x, double y, do
 
 int dt_view_manager_key_pressed(dt_view_manager_t *vm, guint key, guint state)
 {
-  // ↑ ↑ ↓ ↓ ← → ← → b a
-  static int konami_state = 0;
-  static guint konami_sequence[] = {
-    GDK_KEY_Up,
-    GDK_KEY_Up,
-    GDK_KEY_Down,
-    GDK_KEY_Down,
-    GDK_KEY_Left,
-    GDK_KEY_Right,
-    GDK_KEY_Left,
-    GDK_KEY_Right,
-    GDK_KEY_b,
-    GDK_KEY_a
-  };
-  if(key == konami_sequence[konami_state])
-  {
-    konami_state++;
-    if(konami_state == G_N_ELEMENTS(konami_sequence))
-    {
-      dt_ctl_switch_mode_to("knight");
-      konami_state = 0;
-    }
-  }
-  else
-    konami_state = 0;
-
   int film_strip_result = 0;
   if(!vm->current_view) return 0;
   if(vm->current_view->key_pressed)
@@ -1602,7 +1538,7 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
 
         if (zoom != 1)
         {
-          double x0 = DT_PIXEL_APPLY_DPI(1), y0 = DT_PIXEL_APPLY_DPI(1), rect_width = width - DT_PIXEL_APPLY_DPI(2),
+          const double x0 = DT_PIXEL_APPLY_DPI(1), y0 = DT_PIXEL_APPLY_DPI(1), rect_width = width - DT_PIXEL_APPLY_DPI(2),
                 radius = DT_PIXEL_APPLY_DPI(5);
           double x1, off, off1;
 
@@ -1623,9 +1559,9 @@ int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t imgid, cairo
         }
         else
         {
-          const float x_zoom = 0.325;
-          const float y_zoom = 0.112;
-          const float edge_length = 0.016 * fscale;
+          const float x_zoom = 0.280;
+          const float y_zoom = 0.110;
+          const float edge_length = 0.018 * fscale;
 
           cairo_rectangle(cr, x_zoom * fscale, y_zoom * fscale, edge_length, edge_length);
           cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);

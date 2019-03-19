@@ -81,7 +81,7 @@ int expandable(dt_lib_module_t *self)
 
 int position()
 {
-  return 1001;
+  return 2001;
 }
 
 void gui_init(dt_lib_module_t *self)

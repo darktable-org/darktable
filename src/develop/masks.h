@@ -277,18 +277,19 @@ int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_versio
 
 /** we create a completely new form. */
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type);
+/** we create a completely new form and add it to darktable.develop->allforms. */
+dt_masks_form_t *dt_masks_create_ext(dt_masks_type_t type);
+/** replace dev->forms with forms */
+void dt_masks_replace_current_forms(dt_develop_t *dev, GList *forms);
 /** returns a form with formid == id from a list of forms */
 dt_masks_form_t *dt_masks_get_from_id_ext(GList *forms, int id);
 /** returns a form with formid == id from dev->forms */
 dt_masks_form_t *dt_masks_get_from_id(dt_develop_t *dev, int id);
 
 /** read the forms from the db */
-void dt_masks_read_forms_ext(dt_develop_t *dev, const int imgid, gboolean no_image);
-void dt_masks_read_forms(dt_develop_t *dev);
+void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid);
 /** write the forms into the db */
-void dt_masks_write_forms_ext(dt_develop_t *dev, const int imgid, gboolean undo);
-void dt_masks_write_form(dt_masks_form_t *form, dt_develop_t *dev);
-void dt_masks_write_forms(dt_develop_t *dev);
+void dt_masks_write_masks_history_item(const int imgid, const int num, dt_masks_form_t *form);
 void dt_masks_free_form(dt_masks_form_t *form);
 void dt_masks_update_image(dt_develop_t *dev);
 void dt_masks_cleanup_unused(dt_develop_t *dev);
@@ -335,6 +336,8 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
 void dt_masks_form_change_opacity(dt_masks_form_t *form, int parentid, int up);
 void dt_masks_form_move(dt_masks_form_t *grp, int formid, int up);
 int dt_masks_form_duplicate(dt_develop_t *dev, int formid);
+/* returns a duplicate tof form, including the formid */
+dt_masks_form_t *dt_masks_dup_masks_form(const dt_masks_form_t *form);
 /* duplicate the list of forms, replace item in the list with form with the same formid */
 GList *dt_masks_dup_forms_deep(GList *forms, dt_masks_form_t *form);
 

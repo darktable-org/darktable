@@ -95,6 +95,11 @@ int default_group()
   return IOP_GROUP_EFFECT;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "size"));
@@ -148,7 +153,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
 
   const size_t scanline_size = (size_t)4 * size;
-  float *const scanline_buf = dt_alloc_align(16, scanline_size * dt_get_num_threads() * sizeof(float));
+  float *const scanline_buf = dt_alloc_align(64, scanline_size * dt_get_num_threads() * sizeof(float));
 
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
@@ -159,7 +164,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     for(int y = 0; y < roi_out->height; y++)
     {
       float *scanline = scanline_buf + scanline_size * dt_get_thread_num();
-      __attribute__((aligned(16))) float L[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      __attribute__((aligned(64))) float L[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
       size_t index = (size_t)y * roi_out->width;
       int hits = 0;
@@ -210,7 +215,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     for(int x = 0; x < roi_out->width; x++)
     {
       float *scanline = scanline_buf + scanline_size * dt_get_thread_num();
-      __attribute__((aligned(16))) float L[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+      __attribute__((aligned(64))) float L[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
       int hits = 0;
       size_t index = (size_t)x - radius * roi_out->width;
@@ -305,7 +310,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
   const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
 
-  __m128 *const scanline_buf = dt_alloc_align(16, size * dt_get_num_threads() * sizeof(__m128));
+  __m128 *const scanline_buf = dt_alloc_align(64, size * dt_get_num_threads() * sizeof(__m128));
 
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
@@ -679,7 +684,6 @@ void init(dt_iop_module_t *module)
   module->params = calloc(1, sizeof(dt_iop_soften_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_soften_params_t));
   module->default_enabled = 0;
-  module->priority = 842; // module order created by iop_dependencies.py, do not edit!
   module->params_size = sizeof(dt_iop_soften_params_t);
   module->gui_data = NULL;
   dt_iop_soften_params_t tmp = (dt_iop_soften_params_t){ 50, 100.0, 0.33, 50 };

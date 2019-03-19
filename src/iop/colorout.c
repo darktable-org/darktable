@@ -89,6 +89,34 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_ONE_INSTANCE;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
+int input_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
+                     dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
+int output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
+                      dt_dev_pixelpipe_iop_t *piece)
+{
+  int cst = iop_cs_rgb;
+  if(piece)
+  {
+    const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
+    if(d->type == DT_COLORSPACE_LAB) cst = iop_cs_Lab;
+  }
+  else
+  {
+    dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+    if(p->type == DT_COLORSPACE_LAB) cst = iop_cs_Lab;
+  }
+  return cst;
+}
+
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
@@ -183,6 +211,8 @@ static void output_profile_changed(GtkWidget *widget, gpointer user_data)
       p->type = pp->type;
       g_strlcpy(p->filename, pp->filename, sizeof(p->filename));
       dt_dev_add_history_item(darktable.develop, self, TRUE);
+      
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_EXPORT);
       return;
     }
   }
@@ -261,6 +291,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_release_mem_object(dev_g);
   dt_opencl_release_mem_object(dev_b);
   dt_opencl_release_mem_object(dev_coeffs);
+
+  // we no longer use the working profile
+  piece->pipe->dsc.work_profile_info = NULL;
+
   return TRUE;
 
 error:
@@ -389,6 +423,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
+  // we no longer use the working profile
+  piece->pipe->dsc.work_profile_info = NULL;
+
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
@@ -467,6 +504,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     }
     _mm_sfence();
   }
+
+  // we no longer use the working profile
+  piece->pipe->dsc.work_profile_info = NULL;
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
@@ -726,7 +766,6 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_colorout_params_t));
   module->params_size = sizeof(dt_iop_colorout_params_t);
   module->gui_data = NULL;
-  module->priority = 814; // module order created by iop_dependencies.py, do not edit!
   module->hide_enable_button = 1;
   module->default_enabled = 1;
   dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t){ DT_COLORSPACE_SRGB, "", DT_INTENT_PERCEPTUAL};
@@ -789,7 +828,7 @@ void gui_init(struct dt_iop_module_t *self)
   }
 
   g->output_profile = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->output_profile, NULL, _("output profile"));
+  dt_bauhaus_widget_set_label(g->output_profile, NULL, _("export profile"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->output_profile, TRUE, TRUE, 0);
   for(GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
   {

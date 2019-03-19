@@ -7128,7 +7128,7 @@ msgstr "nástroj bodu kruhu"
 
 #: ../src/iop/spots.c:693
 msgctxt "accel"
-msgid "spot elipse tool"
+msgid "spot ellipse tool"
 msgstr "nástroj bodu elipsy"
 
 #: ../src/iop/spots.c:694

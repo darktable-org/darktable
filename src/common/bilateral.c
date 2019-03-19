@@ -109,7 +109,7 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
   b->height = height;
   b->sigma_s = MAX(height / (b->size_y - 1.0f), width / (b->size_x - 1.0f));
   b->sigma_r = 100.0f / (b->size_z - 1.0f);
-  b->buf = dt_alloc_align(16, b->size_x * b->size_y * b->size_z * sizeof(float));
+  b->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(float));
 
   memset(b->buf, 0, b->size_x * b->size_y * b->size_z * sizeof(float));
 #if 0
