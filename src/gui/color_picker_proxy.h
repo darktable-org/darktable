@@ -51,6 +51,8 @@ typedef struct dt_iop_color_picker_t
    */
   dt_iop_colorspace_type_t picker_cst;
   unsigned short current_picker;
+  /** used to avoid recursion when a parameter is modified in the apply() */
+  gboolean skip_apply;
   GtkWidget *colorpick;
   float pick_pos[9][2]; // last picker positions (max 9 picker per module)
   /* get and set the selected picker corresponding to button, the module must record the previous
