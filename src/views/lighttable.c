@@ -57,6 +57,8 @@
 
 DT_MODULE(1)
 
+#define FULL_PREVIEW_IN_MEMORY_LIMIT 6
+
 typedef enum dt_lighttable_direction_t
 {
   DIRECTION_NONE = -1,
@@ -98,6 +100,17 @@ static gboolean _is_colorlabels_order_actif(dt_view_t *self);
 static void _redraw_selected_images(dt_view_t *self);
 
 static gboolean _expose_again_full(gpointer user_data);
+
+typedef struct dt_preview_surface_t
+{
+  int mip;
+  int32_t imgid;
+  int32_t width;
+  int32_t height;
+  cairo_surface_t *surface;
+  uint8_t *rgbbuf;
+  int w_lock;
+} dt_preview_surface_t;
 
 /**
  * this organises the whole library:
@@ -158,13 +171,7 @@ typedef struct dt_library_t
   float full_zoom;
   float full_x;
   float full_y;
-  int fp_surface_mip;
-  int32_t fp_surface_id;
-  int32_t fp_surface_wd;
-  int32_t fp_surface_ht;
-  cairo_surface_t *fp_surface;
-  uint8_t *fp_surface_buf;
-  int fp_surface_w_lock;
+  dt_preview_surface_t fp_surf[FULL_PREVIEW_IN_MEMORY_LIMIT];
 
   /* prepared and reusable statements */
   struct
@@ -273,15 +280,19 @@ static void check_layout(dt_view_t *self)
 static void _full_preview_destroy(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-  if(lib->fp_surface) cairo_surface_destroy(lib->fp_surface);
-  lib->fp_surface = NULL;
-  if(lib->fp_surface_buf) free(lib->fp_surface_buf);
-  lib->fp_surface_buf = NULL;
-  lib->fp_surface_mip = 0;
-  lib->fp_surface_wd = 0;
-  lib->fp_surface_ht = 0;
-  lib->fp_surface_id = -1;
-  lib->fp_surface_w_lock = 0;
+
+  for(int i = 0; i < FULL_PREVIEW_IN_MEMORY_LIMIT; i++)
+  {
+    if(lib->fp_surf[i].surface) cairo_surface_destroy(lib->fp_surf[i].surface);
+    lib->fp_surf[i].surface = NULL;
+    if(lib->fp_surf[i].rgbbuf) free(lib->fp_surf[i].rgbbuf);
+    lib->fp_surf[i].rgbbuf = NULL;
+    lib->fp_surf[i].mip = 0;
+    lib->fp_surf[i].width = 0;
+    lib->fp_surf[i].height = 0;
+    lib->fp_surf[i].imgid = -1;
+    lib->fp_surf[i].w_lock = 0;
+  }
 }
 
 static void move_view(dt_library_t *lib, dt_lighttable_direction_t dir)
@@ -377,6 +388,11 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
   lib->force_expose_all = TRUE;
   _unregister_custom_image_order_drag_n_drop(self);
   _register_custom_image_order_drag_n_drop(self);
+
+  _full_preview_destroy(self);
+  lib->full_zoom = 1.0f;
+  lib->full_x = 0.0f;
+  lib->full_y = 0.0f;
 
   _update_collected_images(self);
 }
@@ -576,12 +592,17 @@ void init(dt_view_t *self)
   lib->full_zoom = 1.0f;
   lib->full_x = 0;
   lib->full_y = 0;
-  lib->fp_surface_mip = 0;
-  lib->fp_surface_id = -1;
-  lib->fp_surface_wd = 0;
-  lib->fp_surface_ht = 0;
-  lib->fp_surface = NULL;
-  lib->fp_surface_buf = NULL;
+
+  for(int i = 0; i < FULL_PREVIEW_IN_MEMORY_LIMIT; i++)
+  {
+    lib->fp_surf[i].mip = 0;
+    lib->fp_surf[i].imgid = -1;
+    lib->fp_surf[i].width = 0;
+    lib->fp_surf[i].height = 0;
+    lib->fp_surf[i].surface = NULL;
+    lib->fp_surf[i].rgbbuf = NULL;
+    lib->fp_surf[i].w_lock = 0;
+  }
 
   lib->thumbs_table = g_hash_table_new(g_int_hash, g_int_equal);
 
@@ -1764,6 +1785,20 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     params.py = img_pointery;
     params.zoom = 1;
     params.full_preview = TRUE;
+    if(sel_img_count <= FULL_PREVIEW_IN_MEMORY_LIMIT)
+    {
+      params.full_zoom = &lib->full_zoom;
+      params.full_x = &lib->full_x;
+      params.full_y = &lib->full_y;
+      params.full_surface = &lib->fp_surf[i].surface;
+      params.full_rgbbuf = &lib->fp_surf[i].rgbbuf;
+      params.full_surface_mip = &lib->fp_surf[i].mip;
+      params.full_surface_id = &lib->fp_surf[i].imgid;
+      params.full_surface_wd = &lib->fp_surf[i].width;
+      params.full_surface_ht = &lib->fp_surf[i].height;
+      params.full_surface_w_lock = &lib->fp_surf[i].w_lock;
+    }
+
     dt_view_image_expose(&params);
     cairo_restore(cr);
 
@@ -1934,13 +1969,13 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
   params.full_zoom = &lib->full_zoom;
   params.full_x = &lib->full_x;
   params.full_y = &lib->full_y;
-  params.full_surface = &lib->fp_surface;
-  params.full_rgbbuf = &lib->fp_surface_buf;
-  params.full_surface_mip = &lib->fp_surface_mip;
-  params.full_surface_id = &lib->fp_surface_id;
-  params.full_surface_wd = &lib->fp_surface_wd;
-  params.full_surface_ht = &lib->fp_surface_ht;
-  params.full_surface_w_lock = &lib->fp_surface_w_lock;
+  params.full_surface = &lib->fp_surf[0].surface;
+  params.full_rgbbuf = &lib->fp_surf[0].rgbbuf;
+  params.full_surface_mip = &lib->fp_surf[0].mip;
+  params.full_surface_id = &lib->fp_surf[0].imgid;
+  params.full_surface_wd = &lib->fp_surf[0].width;
+  params.full_surface_ht = &lib->fp_surf[0].height;
+  params.full_surface_w_lock = &lib->fp_surf[0].w_lock;
 
   const int missing = dt_view_image_expose(&params);
 
@@ -2462,13 +2497,23 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   lib->force_expose_all = TRUE;
   const dt_lighttable_layout_t layout = get_layout();
 
-  if(lib->full_preview_id > -1 && (state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+  if((lib->full_preview_id > -1 || get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+     && (state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
   {
-    if(up)
-      lib->full_zoom = fminf(8.0f, lib->full_zoom + 0.5f);
+    GList *selected = dt_collection_get_selected(darktable.collection, -1);
+    const int sel_img_count = g_list_length(selected);
+    if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE && sel_img_count > FULL_PREVIEW_IN_MEMORY_LIMIT)
+    {
+      dt_control_log(_("zooming is limited to %d images"), FULL_PREVIEW_IN_MEMORY_LIMIT);
+    }
     else
-      lib->full_zoom = fmaxf(1.0f, lib->full_zoom - 0.5f);
-    dt_control_queue_redraw_center();
+    {
+      if(up)
+        lib->full_zoom = fminf(8.0f, lib->full_zoom + 0.5f);
+      else
+        lib->full_zoom = fmaxf(1.0f, lib->full_zoom - 0.5f);
+      dt_control_queue_redraw_center();
+    }
   }
   else if(lib->full_preview_id > -1)
   {
@@ -2551,7 +2596,8 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
 
   lib->using_arrows = 0;
 
-  if(lib->pan && lib->full_preview_id > -1 && lib->full_zoom > 1.0f)
+  if(lib->pan && (lib->full_preview_id > -1 || get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+     && lib->full_zoom > 1.0f)
   {
     lib->full_x += x - lib->pan_x;
     lib->full_y += y - lib->pan_y;
@@ -2650,7 +2696,8 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         // the pointer to GDK_HAND1 until we can exclude that it is a click,
         // namely until the pointer has moved a little distance. The code taking
         // care of this is in expose(). Pan only makes sense in zoomable lt.
-        if(layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE || (lib->full_preview_id > -1 && lib->full_zoom > 1.0f))
+        if(layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE || (lib->full_preview_id > -1 && lib->full_zoom > 1.0f)
+           || (get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE && lib->full_zoom > 1.0f))
           begin_pan(lib, x, y);
 
         if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && lib->using_arrows)
