@@ -668,12 +668,21 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
           float picked_min_i = -1.0;
           float picked_max_i = -1.0;
 
-          dt_ioppr_transform_image_colorspace_rgb(sample->picked_color_rgb_mean, pick_mean, 1, 1,
-                                                  histogram_profile, work_profile, "color zones");
-          dt_ioppr_transform_image_colorspace_rgb(sample->picked_color_rgb_min, pick_min, 1, 1, histogram_profile,
-                                                  work_profile, "color zones");
-          dt_ioppr_transform_image_colorspace_rgb(sample->picked_color_rgb_max, pick_max, 1, 1, histogram_profile,
-                                                  work_profile, "color zones");
+          // this functions need a 4c image
+          for(int k = 0; k < 3; k++)
+          {
+            pick_mean[k] = sample->picked_color_rgb_mean[k];
+            pick_min[k] = sample->picked_color_rgb_min[k];
+            pick_max[k] = sample->picked_color_rgb_max[k];
+          }
+          pick_mean[3] = pick_min[3] = pick_max[3] = 1.f;
+
+          dt_ioppr_transform_image_colorspace_rgb(pick_mean, pick_mean, 1, 1, histogram_profile, work_profile,
+                                                  "color zones");
+          dt_ioppr_transform_image_colorspace_rgb(pick_min, pick_min, 1, 1, histogram_profile, work_profile,
+                                                  "color zones");
+          dt_ioppr_transform_image_colorspace_rgb(pick_max, pick_max, 1, 1, histogram_profile, work_profile,
+                                                  "color zones");
 
           dt_ioppr_transform_image_colorspace(self, pick_mean, pick_mean, 1, 1, iop_cs_rgb, iop_cs_Lab,
                                               &converted_cst, work_profile);
