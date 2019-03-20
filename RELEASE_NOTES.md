@@ -1,4 +1,4 @@
-we’re proud to announce the first bugfix release for the 2.6 series of darktable, 2.6.2!
+we’re proud to announce the second bugfix release for the 2.6 series of darktable, 2.6.2!
 
 the github release is here: [https://github.com/darktable-org/darktable/releases/tag/release-2.6.2](https://github.com/darktable-org/darktable/releases/tag/release-2.6.2).
 
