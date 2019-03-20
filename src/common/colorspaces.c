@@ -1528,10 +1528,10 @@ void dt_colorspaces_set_display_profile()
   g_free(profile_source);
 }
 
-static const gboolean _colorspaces_is_base_name(const char *profile)
+static gboolean _colorspaces_is_base_name(const char *profile)
 {
-  char *f = (char *)profile;
-  while(*f)
+  const char *f = profile;
+  while(*f != '\0')
   {
     if(*f == '/' || *f == '\\') return FALSE;
     f++;

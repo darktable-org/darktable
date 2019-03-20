@@ -313,7 +313,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 /* Code common to op-engine and gui.                                          */
 /******************************************************************************/
 
-static const float get_rot(const dt_liquify_warp_type_enum_t warp_type)
+static float get_rot(const dt_liquify_warp_type_enum_t warp_type)
 {
   if (warp_type == DT_LIQUIFY_WARP_TYPE_RADIAL_SHRINK)
     return M_PI;
@@ -778,7 +778,7 @@ static GList *interpolate_paths (dt_iop_liquify_params_t *p);
   Used to approximate the arc length of a bezier curve.
 */
 
-static const float get_arc_length (const float complex points[], const int n_points)
+static float get_arc_length (const float complex points[], const int n_points)
 {
   float length = 0.0;
   for (int i = 1; i < n_points; i++)
@@ -799,10 +799,8 @@ typedef struct
   the arc length.
 */
 
-static const float complex point_at_arc_length (const float complex points[],
-                                                const int n_points,
-                                                const float arc_length,
-                                                restart_cookie_t *restart)
+static float complex point_at_arc_length (const float complex points[], const int n_points,
+                                          const float arc_length, restart_cookie_t *restart)
 {
   float length = restart ? restart->length : 0.0;
   int i        = restart ? restart->i      : 1;
@@ -2482,7 +2480,7 @@ static void smooth_path_linsys (size_t n,
   free (d);
 }
 
-static const int path_length(dt_iop_liquify_params_t *p, dt_liquify_path_data_t *n)
+static int path_length(dt_iop_liquify_params_t *p, dt_liquify_path_data_t *n)
 {
   int count = 1;
   while (n->header.next != -1)
