@@ -2029,6 +2029,9 @@ static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     x += feather;
     if(x > 0.f && x < 1.f) _add_node(curve, &p->curve_num_nodes[ch_curve], x, .5f);
 
+    // avoid recursion
+    self->picker->skip_apply = TRUE;
+
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
 
