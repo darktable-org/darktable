@@ -153,9 +153,32 @@ int32_t dt_view_get_image_to_act_on();
 /** guess the image_over flag assuming that all possible controls are displayed */
 dt_view_image_over_t dt_view_guess_image_over(int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py);
 
+typedef struct dt_view_image_expose_t
+{
+  dt_view_image_over_t *image_over;
+  uint32_t imgid;
+  cairo_t *cr;
+  int32_t width;
+  int32_t height;
+  int32_t zoom;
+  int32_t px;
+  int32_t py;
+  gboolean full_preview;
+  gboolean image_only;
+  float *full_zoom;
+  float *full_x;
+  float *full_y;
+
+  cairo_surface_t **full_surface;
+  uint8_t **full_rgbbuf;
+  int *full_surface_mip;
+  int *full_surface_id;
+  int *full_surface_wd;
+  int *full_surface_ht;
+  int *full_surface_w_lock;
+} dt_view_image_expose_t;
 /** expose an image, set image over flags. return != 0 if thumbnail wasn't loaded yet. */
-int dt_view_image_expose(dt_view_image_over_t *image_over, uint32_t index, cairo_t *cr, int32_t width,
-                         int32_t height, int32_t zoom, int32_t px, int32_t py, gboolean full_preview, gboolean image_only);
+int dt_view_image_expose(dt_view_image_expose_t *vals);
 
 /* expose only the image imgid at position (offsetx,offsety) into the cairo surface occupying width/height pixels.
    this routine does not output any meta-data as the version above.
