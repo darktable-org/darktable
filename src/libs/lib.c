@@ -526,7 +526,7 @@ gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
 }
 
 /* default expandable implementation */
-static int _lib_default_expandable()
+static int _lib_default_expandable(dt_lib_module_t *self)
 {
   return 1;
 }
