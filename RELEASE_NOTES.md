@@ -29,6 +29,7 @@ and the changelog as compared to 2.6.1 can be found below.
 - Fix issue when looking for input color profile (backward compatibility)
 - Add missing Czech translation file
 - Fix possible halo issue in local contrast module.
+- Fix contextual help link to point to new HTML manual for 2.6 series.
 
 ## Changed Dependencies
 
