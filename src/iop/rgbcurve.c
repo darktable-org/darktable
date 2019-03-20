@@ -595,6 +595,9 @@ static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_
                 p->curve_nodes[ch][1].x - increment + (p->curve_nodes[ch][3].x - p->curve_nodes[ch][1].x) / 2.f,
                 p->curve_nodes[ch][1].y + increment + (p->curve_nodes[ch][3].y - p->curve_nodes[ch][1].y) / 2.f);
 
+    // avoid recursion
+    self->picker->skip_apply = TRUE;
+
     dt_dev_add_history_item(darktable.develop, self, TRUE);
   }
 
