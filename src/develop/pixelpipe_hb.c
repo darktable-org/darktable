@@ -759,31 +759,6 @@ static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_ro
   }
 }
 
-static void _pixelpipe_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *out_type, gchar **out_filename)
-{
-  dt_colorspaces_color_mode_t mode = darktable.color_profiles->mode;
-  
-  // if in gamut check use soft proof
-  if(mode != DT_PROFILE_NORMAL || darktable.color_profiles->histogram_type == DT_COLORSPACE_SOFTPROOF)
-  {
-    *out_type = darktable.color_profiles->softproof_type;
-    *out_filename = darktable.color_profiles->softproof_filename;
-  }
-  else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
-  {
-    dt_ioppr_get_work_profile_type(darktable.develop, out_type, out_filename);
-  }
-  else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
-  {
-    dt_ioppr_get_export_profile_type(darktable.develop, out_type, out_filename);
-  }
-  else
-  {
-    *out_type = darktable.color_profiles->histogram_type;
-    *out_filename = darktable.color_profiles->histogram_filename;
-  }
-}
-
 static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_roi_t *roi_in)
 {
   cmsHPROFILE display_profile = NULL;
@@ -795,7 +770,7 @@ static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_
   gchar *histogram_filename = NULL;
   gchar _histogram_filename[1] = { 0 };
 
-  _pixelpipe_get_histogram_profile_type(&histogram_type, &histogram_filename);
+  dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
   if(histogram_filename == NULL) histogram_filename = _histogram_filename;
   
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
@@ -865,7 +840,7 @@ static void _pixelpipe_pick_primary_colorpicker(dt_develop_t *dev, const float *
   gchar *histogram_filename = NULL;
   gchar _histogram_filename[1] = { 0 };
 
-  _pixelpipe_get_histogram_profile_type(&histogram_type, &histogram_filename);
+  dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
   if(histogram_filename == NULL) histogram_filename = _histogram_filename;
   
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
@@ -944,7 +919,7 @@ static void _pixelpipe_final_histogram(dt_develop_t *dev, const float *const inp
   gchar *histogram_filename = NULL;
   gchar _histogram_filename[1] = { 0 };
 
-  _pixelpipe_get_histogram_profile_type(&histogram_type, &histogram_filename);
+  dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
   if(histogram_filename == NULL) histogram_filename = _histogram_filename;
   
   if((histogram_type != darktable.color_profiles->display_type) || 

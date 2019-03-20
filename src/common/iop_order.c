@@ -2010,6 +2010,15 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_work_profile_info(struct dt_de
   return profile_info;
 }
 
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev)
+{
+  dt_colorspaces_color_profile_type_t histogram_profile_type;
+  char *histogram_profile_filename;
+  dt_ioppr_get_histogram_profile_type(&histogram_profile_type, &histogram_profile_filename);
+  return dt_ioppr_add_profile_info_to_list(dev, histogram_profile_type, histogram_profile_filename,
+                                           DT_INTENT_PERCEPTUAL);
+}
+
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(struct dt_dev_pixelpipe_t *pipe)
 {
   return pipe->dsc.work_profile_info;
@@ -2113,6 +2122,31 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev, int *profile_typ
   }
   else
     fprintf(stderr, "[dt_ioppr_get_export_profile_type] can't find colorout iop\n");
+}
+
+void dt_ioppr_get_histogram_profile_type(int *profile_type, char **profile_filename)
+{
+  const dt_colorspaces_color_mode_t mode = darktable.color_profiles->mode;
+
+  // if in gamut check use soft proof
+  if(mode != DT_PROFILE_NORMAL || darktable.color_profiles->histogram_type == DT_COLORSPACE_SOFTPROOF)
+  {
+    *profile_type = darktable.color_profiles->softproof_type;
+    *profile_filename = darktable.color_profiles->softproof_filename;
+  }
+  else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
+  {
+    dt_ioppr_get_work_profile_type(darktable.develop, profile_type, profile_filename);
+  }
+  else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
+  {
+    dt_ioppr_get_export_profile_type(darktable.develop, profile_type, profile_filename);
+  }
+  else
+  {
+    *profile_type = darktable.color_profiles->histogram_type;
+    *profile_filename = darktable.color_profiles->histogram_filename;
+  }
 }
 
 float dt_ioppr_get_rgb_matrix_luminance(const float *const rgb, const dt_iop_order_iccprofile_info_t *const profile_info)
