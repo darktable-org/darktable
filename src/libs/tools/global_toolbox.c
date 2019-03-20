@@ -224,7 +224,9 @@ static void _main_do_event(GdkEvent *event, gpointer data)
           GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
           dt_print(DT_DEBUG_CONTROL, "[context help] opening `%s'\n", help_url);
           char *base_url = dt_conf_get_string("context_help/url");
-          if(!base_url || !*base_url)
+          // if url is https://www.darktable.org/usermanual/, it is the old deprecated
+          // url and we need to update it
+          if(!base_url || !*base_url || (0 == strcmp(base_url, "https://www.darktable.org/usermanual/")))
           {
             g_free(base_url);
             base_url = NULL;
@@ -232,7 +234,7 @@ static void _main_do_event(GdkEvent *event, gpointer data)
             // ask the user if darktable.org may be accessed
             GtkWidget *dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
                                                        GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-                                                       _("do you want to access https://www.darktable.org/?"));
+                                                       _("do you want to access https://darktable.gitlab.io/doc/?"));
 #ifdef GDK_WINDOWING_QUARTZ
             dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -242,7 +244,7 @@ static void _main_do_event(GdkEvent *event, gpointer data)
             gtk_widget_destroy(dialog);
             if(res == GTK_RESPONSE_YES)
             {
-              base_url = g_strdup("https://www.darktable.org/usermanual/");
+              base_url = g_strdup("https://darktable.gitlab.io/doc/");
               dt_conf_set_string("context_help/url", base_url);
             }
           }
@@ -259,7 +261,7 @@ static void _main_do_event(GdkEvent *event, gpointer data)
                 lang = language->code;
               // array of languages the usermanual supports.
               // NULL MUST remain the last element of the array
-              const char *supported_languages[] = { "en", "fr", "it", "es", NULL };
+              const char *supported_languages[] = { "en", "fr", "it", NULL };
               int i = 0;
               while(supported_languages[i])
               {
