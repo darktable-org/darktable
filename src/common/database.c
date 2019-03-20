@@ -1098,7 +1098,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     // check if there's any entry in history that was not updated
     sqlite3_stmt *sel_stmt;
-    TRY_PREPARE(sel_stmt, "SELECT DISTINCT operation FROM main.history WHERE iop_order <= 0",
+    TRY_PREPARE(sel_stmt, "SELECT DISTINCT operation FROM main.history WHERE iop_order <= 0 OR iop_order IS NULL",
                 "[init] can't prepare selecting history iop_order\n");
     while(sqlite3_step(sel_stmt) == SQLITE_ROW)
     {
@@ -1119,7 +1119,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
              "data.style_items.operation), -999999.) ",
              "[init] can't update iop_order in style_items table\n");
 
-    TRY_PREPARE(sel_stmt, "SELECT DISTINCT operation FROM data.style_items WHERE iop_order <= 0",
+    TRY_PREPARE(sel_stmt, "SELECT DISTINCT operation FROM data.style_items WHERE iop_order <= 0 OR iop_order IS NULL",
                 "[init] can't prepare selecting style_items iop_order\n");
     while(sqlite3_step(sel_stmt) == SQLITE_ROW)
     {
