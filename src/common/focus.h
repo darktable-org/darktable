@@ -216,7 +216,8 @@ static void dt_focus_create_clusters(dt_focus_cluster_t *focus, int frows, int f
 }
 
 static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid, int buffer_width,
-                                   int buffer_height, dt_focus_cluster_t *focus, int frows, int fcols)
+                                   int buffer_height, dt_focus_cluster_t *focus, int frows, int fcols,
+                                   float full_zoom, float full_x, float full_y)
 {
   const int fs = frows * fcols;
   cairo_save(cr);
@@ -272,10 +273,22 @@ static void dt_focus_draw_clusters(cairo_t *cr, int width, int height, int imgid
   }
 
   const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
-  const float scale = fminf((width-2*tb) / (float)wd, (height-2*tb) / (float)ht);
+  const float scale = fminf((width - 2 * tb) / (float)wd, (height - 2 * tb) / (float)ht) * full_zoom;
   cairo_scale(cr, scale, scale);
+  float fx = 0.0f;
+  float fy = 0.0f;
+  if(full_zoom > 1.0f)
+  {
+    // we want to be sure the image stay in the window
+    fx = fminf((wd * scale - width) / 2, fabsf(full_x));
+    if(full_x < 0) fx = -fx;
+    if(wd * scale <= width) fx = 0;
+    fy = fminf((ht * scale - height) / 2, fabsf(full_y));
+    if(full_y < 0) fy = -fy;
+    if(ht * scale <= height) fy = 0;
+  }
 
-  cairo_translate(cr, -wd / 2.0f, -ht / 2.0f);
+  cairo_translate(cr, -wd / 2.0f + fx / scale, -ht / 2.0f + fy / scale);
 
   cairo_rectangle(cr, 0, 0, wd, ht);
   cairo_clip(cr);

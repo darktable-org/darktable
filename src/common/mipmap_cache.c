@@ -359,7 +359,8 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
   int loaded_from_disk = 0;
   if(mip < DT_MIPMAP_F)
   {
-    if(cache->cachedir[0] && dt_conf_get_bool("cache_disk_backend"))
+    if(cache->cachedir[0] && ((dt_conf_get_bool("cache_disk_backend") && mip < DT_MIPMAP_8)
+                              || (dt_conf_get_bool("cache_disk_backend_full") && mip == DT_MIPMAP_8)))
     {
       // try and load from disk, if successful set flag
       char filename[PATH_MAX] = {0};
@@ -442,7 +443,8 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
       {
         dt_mipmap_cache_unlink_ondisk_thumbnail(data, get_imgid(entry->key), mip);
       }
-      else if(cache->cachedir[0] && dt_conf_get_bool("cache_disk_backend"))
+      else if(cache->cachedir[0] && ((dt_conf_get_bool("cache_disk_backend") && mip < DT_MIPMAP_8)
+                                     || (dt_conf_get_bool("cache_disk_backend_full") && mip == DT_MIPMAP_8)))
       {
         // serialize to disk
         char filename[PATH_MAX] = {0};
@@ -522,14 +524,15 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 
   // Fixed sizes for the thumbnail mip levels, selected for coverage of most screen sizes
   int32_t mipsizes[DT_MIPMAP_F][2] = {
-    {180,  110},  // mip0 - ~1/2 size previous one
-    {360,  225},  // mip1 - 1/2 size previous one
-    {720,  450},  // mip2 - 1/2 size previous one
-    {1440, 900},  // mip3 - covers 720p and 1366x768
-    {1920, 1200}, // mip4 - covers 1080p and 1600x1200
-    {2560, 1600}, // mip5 - covers 2560x1440
-    {4096, 2560}, // mip6 - covers 4K and UHD
-    {5120, 3200}, // mip7 - covers 5120x2880 panels
+    { 180, 110 },             // mip0 - ~1/2 size previous one
+    { 360, 225 },             // mip1 - 1/2 size previous one
+    { 720, 450 },             // mip2 - 1/2 size previous one
+    { 1440, 900 },            // mip3 - covers 720p and 1366x768
+    { 1920, 1200 },           // mip4 - covers 1080p and 1600x1200
+    { 2560, 1600 },           // mip5 - covers 2560x1440
+    { 4096, 2560 },           // mip6 - covers 4K and UHD
+    { 5120, 3200 },           // mip7 - covers 5120x2880 panels
+    { 999999999, 999999999 }, // mip8 - used for full preview at full size
   };
   // Set mipf to mip2 size as at most the user will be using an 8K screen and
   // have a preview that's ~4x smaller
@@ -1188,7 +1191,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
   if(res)
   {
     //try to generate mip from larger mip
-    for(dt_mipmap_size_t k = size + 1; k <= DT_MIPMAP_7; k++)
+    for(dt_mipmap_size_t k = size + 1; k < DT_MIPMAP_F; k++)
     {
       dt_mipmap_buffer_t tmp;
       dt_mipmap_cache_get(darktable.mipmap_cache, &tmp, imgid, k, DT_MIPMAP_TESTLOCK, 'r');
