@@ -636,7 +636,7 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui, const gchar
 }
 
 
-static const gboolean _piwigo_api_create_new_album(dt_storage_piwigo_params_t *p)
+static gboolean _piwigo_api_create_new_album(dt_storage_piwigo_params_t *p)
 {
   GList *args = NULL;
 
@@ -668,8 +668,8 @@ static const gboolean _piwigo_api_create_new_album(dt_storage_piwigo_params_t *p
   return TRUE;
 }
 
-static const gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p, gchar *fname,
-                                               gchar *author, gchar *caption, gchar *description)
+static gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p, gchar *fname,
+                                         gchar *author, gchar *caption, gchar *description)
 {
   GList *args = NULL;
   char cat[10];
