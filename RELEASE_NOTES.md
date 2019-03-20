@@ -25,7 +25,7 @@ and the changelog as compared to 2.6.1 can be found below.
 
 ## Bugfixes
 
-- Fix SSE bug introduced in #2025
+- Fix SSE bug in filmic introduced in #2025
 - Fix issue when looking for input color profile (backward compatibility)
 - Add missing Czech translation file
 - Fix possible halo issue in local contrast module.
