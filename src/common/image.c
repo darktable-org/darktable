@@ -1625,14 +1625,8 @@ int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gc
     g_object_unref(src);
     g_clear_error(&gerror);
   }
-  if(oldFilename)
-  {
-    g_free(oldFilename);
-  }
-  if(newFilename)
-  {
-    g_free(newFilename);
-  }
+  g_free(oldFilename);
+  g_free(newFilename);
 
   return newid;
 }
