@@ -448,6 +448,20 @@ static void _set_sample_area(dt_lib_module_t *self, float size)
   d->from_proxy = FALSE;
 }
 
+static void _set_sample_box_area(dt_lib_module_t *self, const float *const box)
+{
+  dt_lib_colorpicker_t *d = (dt_lib_colorpicker_t *)self->data;
+
+  if(darktable.develop->gui_module)
+  {
+    for(int k = 0; k < 4; k++) darktable.develop->gui_module->color_picker_box[k] = box[k];
+  }
+
+  d->from_proxy = TRUE;
+  gtk_combo_box_set_active(GTK_COMBO_BOX(d->size_selector), DT_COLORPICKER_SIZE_BOX);
+  d->from_proxy = FALSE;
+}
+
 static void _set_sample_point(dt_lib_module_t *self, float x, float y)
 {
   dt_lib_colorpicker_t *d = (dt_lib_colorpicker_t *)self->data;
@@ -506,6 +520,7 @@ void gui_init(dt_lib_module_t *self)
   darktable.lib->proxy.colorpicker.update_panel = _update_picker_output;
   darktable.lib->proxy.colorpicker.update_samples = _update_samples_output;
   darktable.lib->proxy.colorpicker.set_sample_area = _set_sample_area;
+  darktable.lib->proxy.colorpicker.set_sample_box_area = _set_sample_box_area;
   darktable.lib->proxy.colorpicker.set_sample_point = _set_sample_point;
 
   // Setting up the GUI
@@ -622,6 +637,7 @@ void gui_cleanup(dt_lib_module_t *self)
   darktable.lib->proxy.colorpicker.update_samples = NULL;
 
   darktable.lib->proxy.colorpicker.set_sample_area = NULL;
+  darktable.lib->proxy.colorpicker.set_sample_box_area = NULL;
 
   free(darktable.lib->proxy.colorpicker.picked_color_rgb_mean);
   free(darktable.lib->proxy.colorpicker.picked_color_rgb_min);

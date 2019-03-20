@@ -38,6 +38,7 @@ static void _iop_record_point(dt_iop_color_picker_t *self)
   const int pick_index = CLAMP(self->current_picker, 1, 9) - 1;
   self->pick_pos[pick_index][0] = self->module->color_picker_point[0];
   self->pick_pos[pick_index][1] = self->module->color_picker_point[1];
+  for(int k = 0; k < 4; k++) self->pick_box[pick_index][k] = self->module->color_picker_box[k];
 }
 
 static void _iop_get_point(dt_iop_color_picker_t *self, float *pos)
@@ -50,6 +51,23 @@ static void _iop_get_point(dt_iop_color_picker_t *self, float *pos)
   {
     pos[0] = self->pick_pos[pick_index][0];
     pos[1] = self->pick_pos[pick_index][1];
+  }
+}
+
+static void _iop_get_area(dt_iop_color_picker_t *self, float *box)
+{
+  const int pick_index = CLAMP(self->current_picker, 1, 9) - 1;
+
+  if(!isnan(self->pick_box[pick_index][0]) && !isnan(self->pick_box[pick_index][1]))
+  {
+    for(int k = 0; k < 4; k++) box[k] = self->pick_box[pick_index][k];
+  }
+  else
+  {
+    const float size = 0.99f;
+
+    box[0] = box[1] = 1.0f - size;
+    box[2] = box[3] = size;
   }
 }
 
@@ -157,8 +175,11 @@ static void _iop_init_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *mod
     module->blend_picker  = picker;
 
   for(int i = 0; i<9; i++)
+  {
     for(int j = 0; j<2; j++)
       picker->pick_pos[i][j] = NAN;
+    for(int j = 0; j < 4; j++) picker->pick_box[i][j] = NAN;
+  }
 
   _iop_color_picker_reset(picker, TRUE);
 }
@@ -243,7 +264,9 @@ static gboolean _iop_color_picker_callback(GtkWidget *button, GdkEventButton *e,
     }
     if(kind == DT_COLOR_PICKER_AREA)
     {
-      dt_lib_colorpicker_set_area(darktable.lib, 0.99);
+      float box[4];
+      _iop_get_area(self, box);
+      dt_lib_colorpicker_set_box_area(darktable.lib, box);
     }
     else
     {
