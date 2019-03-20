@@ -23,8 +23,7 @@
 #include "common/image.h"
 
 // sizes stored in the mipmap cache, set to fixed values in mipmap_cache.c
-typedef enum dt_mipmap_size_t
-{
+typedef enum dt_mipmap_size_t {
   DT_MIPMAP_0 = 0,
   DT_MIPMAP_1,
   DT_MIPMAP_2,
@@ -33,6 +32,7 @@ typedef enum dt_mipmap_size_t
   DT_MIPMAP_5,
   DT_MIPMAP_6,
   DT_MIPMAP_7,
+  DT_MIPMAP_8,
   DT_MIPMAP_F,
   DT_MIPMAP_FULL,
   DT_MIPMAP_NONE
