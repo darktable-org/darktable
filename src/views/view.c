@@ -1342,23 +1342,50 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
 
     cairo_scale(cr, scale, scale);
 
+    float rectw = width;
+    float recth = height;
+    float rectx = 0.0f;
+    float recty = 0.0f;
+    if(buf_ok)
+    {
+      rectw = buf_wd;
+      recth = buf_ht;
+    }
+
     if(surface)
     {
       // we move the full preview
       float fx = 0.0f;
       float fy = 0.0f;
-      if(fz > 1.0f && buf_sizeok && full_x && full_y)
+      if(fz > 1.0f && full_x && full_y)
       {
+        int w = width;
+        int h = height;
+        if(zoom == 1 && !image_only)
+        {
+          const int32_t tb = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
+          w -= 2 * tb;
+          h -= 2 * tb;
+        }
         // we want to be sure the image stay in the window
-        fx = fminf((buf_wd * scale - width) / 2, fabsf(*full_x));
+        fx = fminf((buf_wd * scale - w) / 2, fabsf(*full_x));
         if(*full_x < 0) fx = -fx;
-        if(buf_wd * scale <= width) fx = 0;
-        fy = fminf((buf_ht * scale - height) / 2, fabsf(*full_y));
+        if(buf_wd * scale <= w) fx = 0;
+        fy = fminf((buf_ht * scale - h) / 2, fabsf(*full_y));
         if(*full_y < 0) fy = -fy;
-        if(buf_ht * scale <= height) fy = 0;
-        *full_x = fx;
-        *full_y = fy;
-        // cairo_translate(cr, fx, fy);
+        if(buf_ht * scale <= h) fy = 0;
+
+        if(buf_sizeok)
+        {
+          *full_x = fx;
+          *full_y = fy;
+        }
+
+        // and we determine the rectangle where the image is display
+        rectw = fminf(w / scale, rectw);
+        recth = fminf(h / scale, recth);
+        rectx = 0.5 * buf_wd - fx / scale - 0.5 * rectw;
+        recty = 0.5 * buf_ht - fy / scale - 0.5 * recth;
       }
       if(!image_only) cairo_translate(cr, -0.5 * buf_wd + fx / scale, -0.5 * buf_ht + fy / scale);
       cairo_set_source_surface(cr, surface, 0, 0);
@@ -1368,11 +1395,13 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
       // in between, filtering just makes stuff go unsharp.
       if((buf_wd <= 8 && buf_ht <= 8) || fabsf(scale - 1.0f) < 0.01f)
         cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
-      cairo_rectangle(cr, 0, 0, buf_wd, buf_ht);
+
+      cairo_rectangle(cr, rectx, recty, rectw, recth);
+
       cairo_fill(cr);
       if(!vals->full_surface || !*(vals->full_surface)) cairo_surface_destroy(surface);
 
-      cairo_rectangle(cr, 0, 0, buf_wd, buf_ht);
+      cairo_rectangle(cr, rectx, recty, rectw, recth);
     }
 
     if(!vals->full_rgbbuf || !*(vals->full_rgbbuf)) free(rgbbuf);
@@ -1396,14 +1425,14 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
           // draw shadow around border
           cairo_set_source_rgb(cr, 0.2, 0.2, 0.2);
           cairo_stroke(cr);
-          // cairo_new_path(cr);
           cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
           float alpha = 1.0f;
           for(int k = 0; k < 16; k++)
           {
-            cairo_rectangle(cr, 0, 0, buf_wd, buf_ht);
+            cairo_rectangle(cr, rectx, recty, rectw, recth);
             cairo_new_sub_path(cr);
-            cairo_rectangle(cr, -k / scale, -k / scale, buf_wd + 2. * k / scale, buf_ht + 2. * k / scale);
+            cairo_rectangle(cr, rectx - k / scale, recty - k / scale, rectw + 2. * k / scale,
+                            recth + 2. * k / scale);
             cairo_set_source_rgba(cr, 0, 0, 0, alpha);
             alpha *= 0.6f;
             cairo_fill(cr);
@@ -1413,7 +1442,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
         {
           cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
           cairo_new_sub_path(cr);
-          cairo_rectangle(cr, -border, -border, buf_wd + 2. * border, buf_ht + 2. * border);
+          cairo_rectangle(cr, rectx - border, recty - border, rectw + 2. * border, recth + 2. * border);
           cairo_stroke_preserve(cr);
           dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
           cairo_fill(cr);
