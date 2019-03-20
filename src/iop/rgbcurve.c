@@ -985,12 +985,21 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
           {
             sample = samples->data;
 
-            dt_ioppr_transform_image_colorspace_rgb(sample->picked_color_rgb_mean, picker_mean, 1, 1,
-                                                    histogram_profile, work_profile, "rgb curve");
-            dt_ioppr_transform_image_colorspace_rgb(sample->picked_color_rgb_min, picker_min, 1, 1,
-                                                    histogram_profile, work_profile, "rgb curve");
-            dt_ioppr_transform_image_colorspace_rgb(sample->picked_color_rgb_max, picker_max, 1, 1,
-                                                    histogram_profile, work_profile, "rgb curve");
+            // this functions need a 4c image
+            for(int k = 0; k < 3; k++)
+            {
+              picker_mean[k] = sample->picked_color_rgb_mean[k];
+              picker_min[k] = sample->picked_color_rgb_min[k];
+              picker_max[k] = sample->picked_color_rgb_max[k];
+            }
+            picker_mean[3] = picker_min[3] = picker_max[3] = 1.f;
+
+            dt_ioppr_transform_image_colorspace_rgb(picker_mean, picker_mean, 1, 1, histogram_profile,
+                                                    work_profile, "rgb curve");
+            dt_ioppr_transform_image_colorspace_rgb(picker_min, picker_min, 1, 1, histogram_profile, work_profile,
+                                                    "rgb curve");
+            dt_ioppr_transform_image_colorspace_rgb(picker_max, picker_max, 1, 1, histogram_profile, work_profile,
+                                                    "rgb curve");
 
             picker_scale(picker_mean, picker_mean, p, work_profile);
             picker_scale(picker_min, picker_min, p, work_profile);
