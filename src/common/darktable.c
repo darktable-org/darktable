@@ -839,6 +839,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     return 1;
   }
 
+  dt_ioppr_check_db_integrity();
+  
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
 
