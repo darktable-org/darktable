@@ -22,6 +22,7 @@
 #include "common/darktable.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/iop_order.h"
+#include "common/debug.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/pixelpipe.h"
@@ -1016,6 +1017,24 @@ int dt_ioppr_move_iop_after(GList **_iop_list, dt_iop_module_t *module, dt_iop_m
 //--------------------------------------------------------------------
 // from here just for debug
 //--------------------------------------------------------------------
+int dt_ioppr_check_db_integrity()
+{
+  int ret = 0;
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT * FROM main.history WHERE iop_order <= 0 OR iop_order IS NULL",
+                              -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    ret = 1;
+    fprintf(stderr, "\nThere are unassigned iop_order in the history!!!\n\n");
+  }
+
+  sqlite3_finalize(stmt);
+  
+  return ret;
+}
+
 void dt_ioppr_print_module_iop_order(GList *iop_list, const char *msg)
 {
   GList *modules = g_list_first(iop_list);
