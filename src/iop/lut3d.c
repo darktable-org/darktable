@@ -84,11 +84,12 @@ typedef struct dt_iop_lut3d_gui_data_t
   GtkWidget *log_options;
 } dt_iop_lut3d_gui_data_t;
 
-typedef struct dt_iop_lut3d_global_data_t
+typedef struct dt_iop_lut3d_data_t
 {
+  dt_iop_lut3d_params_t params;
   float *clut;  // cube lut pointer
   uint8_t level; // cube_size
-} dt_iop_lut3d_global_data_t;
+} dt_iop_lut3d_data_t;
 
 const char *name()
 {
@@ -714,19 +715,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
 //printf("process\n");
-  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
-  dt_iop_lut3d_global_data_t *gp = (dt_iop_lut3d_global_data_t *)self->data;
+  dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
   const int ch = piece->colors;
-  const int colorspace = p->colorspace;
-  const float middle_grey = p->middle_grey * 0.01f;
-  const float min_exposure = p->min_exposure;
-  const float dynamic_range = p->dynamic_range;
-  const int log2tolin = p->log2tolin;
-  const float *const clut = (float *)gp->clut;
-  const uint8_t level = gp->level;
+  const int colorspace = d->params.colorspace;
+  const float middle_grey = d->params.middle_grey * 0.01f;
+  const float min_exposure = d->params.min_exposure;
+  const float dynamic_range = d->params.dynamic_range;
+  const int log2tolin = d->params.log2tolin;
+  const float *const clut = (float *)d->clut;
+  const uint8_t level = d->level;
 printf("process colorspace %d ch %d\n", colorspace, ch);
-  const dt_interpolation_worker interpolation_worker = (p->interpolation == DT_IOP_TETRAHEDRAL) ? correct_pixel_tetrahedral
-                                                          : (p->interpolation == DT_IOP_TRILINEAR) ? correct_pixel_trilinear
+  const dt_interpolation_worker interpolation_worker = (d->params.interpolation == DT_IOP_TETRAHEDRAL) ? correct_pixel_tetrahedral
+                                                          : (d->params.interpolation == DT_IOP_TRILINEAR) ? correct_pixel_trilinear
                                                           : correct_pixel_pyramid;
 
   const dt_iop_order_iccprofile_info_t *const dest_profile
@@ -833,19 +833,8 @@ printf("init\n");
     10.0f,   // dynamic range
     1  // log2 to lin
   };
-
   memcpy(self->params, &tmp, sizeof(dt_iop_lut3d_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_lut3d_params_t));
-}
-
-void init_global(dt_iop_module_so_t *self)
-{
-printf("init_global\n");
-  dt_iop_lut3d_global_data_t *gd
-      = (dt_iop_lut3d_global_data_t *)malloc(sizeof(dt_iop_lut3d_global_data_t));
-  self->data = gd;
-  gd->clut = NULL;
-  gd->level = 0;
 }
 
 void cleanup(dt_iop_module_t *self)
@@ -855,38 +844,35 @@ printf("cleanup\n");
   self->params = NULL;
 }
 
-void cleanup_global(dt_iop_module_so_t *self)
-{
-printf("cleanup_global\n");
-  dt_iop_lut3d_global_data_t *gd = (dt_iop_lut3d_global_data_t *)self->data;
-  if (gd->clut)
-  {
-    dt_free_align(gd->clut);
-    gd->clut = NULL;
-  }
-  free(self->data);
-  self->data = NULL;
-}
-
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
 printf("commit\n");
-    dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
-    dt_iop_lut3d_global_data_t *gd = (dt_iop_lut3d_global_data_t *)self->data;
+    dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)p1;
+    dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
+    if (strcmp(p->filepath, d->params.filepath) != 0)
+    {
+      if (d->clut)
+      {
+        dt_free_align(d->clut);
+        d->clut = NULL;
+        d->level = 0;
+      }
+    }
+    memcpy(&d->params, p, sizeof(dt_iop_lut3d_params_t));
     gchar *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
-    if (p->filepath[0] && lutfolder[0] && !gd->clut)
+    if (p->filepath[0] && lutfolder[0] && !d->clut)
     {
 printf("commit - new clut\n");
       char *fullpath = g_build_filename(lutfolder, p->filepath, NULL);
       if (g_str_has_suffix (p->filepath, ".png") || g_str_has_suffix (p->filepath, ".PNG"))
       {
-        gd->level = calculate_clut_haldclut(fullpath, &gd->clut);
-        gd->level *= gd->level;
+        d->level = calculate_clut_haldclut(fullpath, &d->clut);
+        d->level *= d->level;
       }
       else if (g_str_has_suffix (p->filepath, ".cube") || g_str_has_suffix (p->filepath, ".CUBE"))
       {
-        gd->level = calculate_clut_cube(fullpath, &gd->clut);
+        d->level = calculate_clut_cube(fullpath, &d->clut);
       }
       g_free(fullpath);
     }
@@ -896,6 +882,23 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 {
 printf("init_pipe\n");
   // create part of the pixelpipe
+  piece->data = malloc(sizeof(dt_iop_lut3d_data_t));
+  dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
+  d->clut = NULL;
+  d->level = 0;  
+  self->commit_params(self, self->default_params, pipe, piece);
+}
+
+void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
+  if (d->clut)
+  {
+    dt_free_align(d->clut);
+    d->clut = NULL;
+  }
+  free(piece->data);
+  piece->data = NULL;
 }
 
 static void filepath_callback(GtkWidget *w, dt_iop_module_t *self)
@@ -903,16 +906,7 @@ static void filepath_callback(GtkWidget *w, dt_iop_module_t *self)
 printf("filepath_callback\n");
   if(darktable.gui->reset) return;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
-  dt_iop_lut3d_global_data_t *gd = (dt_iop_lut3d_global_data_t *)self->data;
   snprintf(p->filepath, sizeof(p->filepath), "%s", gtk_entry_get_text(GTK_ENTRY(w)));
-
-  if (gd->clut)
-  { // the clut is obsolete
-    dt_free_align(gd->clut);
-  }
-  gd->clut = NULL;
-  gd->level = 0;
-
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1058,13 +1052,6 @@ printf("button_clicked\n");
 void gui_reset(dt_iop_module_t *self)
 {
 printf("gui_reset\n");
-  dt_iop_lut3d_global_data_t *gd = (dt_iop_lut3d_global_data_t *)self->data;
-//  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
-//  dt_iop_lut3d_params_t *dp = (dt_iop_lut3d_params_t *)self->default_params;
-  if (gd->clut)
-    dt_free_align(gd->clut);
-  gd->clut = NULL;
-  gd->level = 0;
   memcpy(self->params, self->default_params, sizeof(dt_iop_lut3d_params_t));
 }
 
