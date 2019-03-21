@@ -1030,14 +1030,14 @@ int dt_ioppr_check_db_integrity()
     fprintf(stderr, "\nThere are unassigned iop_order in the history!!!\n\n");
     
     int count = 0;
-    while(sqlite3_step(stmt) == SQLITE_ROW && count++ < 20)
+    do
     {
       const int imgid = sqlite3_column_int(stmt, 0);
       const char *opname = (const char *)sqlite3_column_text(stmt, 1);
       const int modversion = sqlite3_column_int(stmt, 2);
       
       fprintf(stderr, "image: %i module: %s version: %i\n", imgid, (opname) ? opname: "module is NULL", modversion);
-    }
+    } while(sqlite3_step(stmt) == SQLITE_ROW && count++ < 20);
   }
 
   sqlite3_finalize(stmt);
@@ -1050,13 +1050,13 @@ int dt_ioppr_check_db_integrity()
     fprintf(stderr, "\nThere are unassigned iop_order in the styles!!!\n\n");
     
     int count = 0;
-    while(sqlite3_step(stmt) == SQLITE_ROW && count++ < 20)
+    do
     {
       const int styleid = sqlite3_column_int(stmt, 0);
       const char *opname = (const char *)sqlite3_column_text(stmt, 1);
       
       fprintf(stderr, "style: %i module: %s\n", styleid, (opname) ? opname: "module is NULL");
-    }
+    } while(sqlite3_step(stmt) == SQLITE_ROW && count++ < 20);
   }
 
   sqlite3_finalize(stmt);
