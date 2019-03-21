@@ -1022,12 +1022,41 @@ int dt_ioppr_check_db_integrity()
   int ret = 0;
   sqlite3_stmt *stmt;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT * FROM main.history WHERE iop_order <= 0 OR iop_order IS NULL",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid, operation, module FROM main.history WHERE iop_order <= 0 OR iop_order IS NULL",
                               -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     ret = 1;
     fprintf(stderr, "\nThere are unassigned iop_order in the history!!!\n\n");
+    
+    int count = 0;
+    while(sqlite3_step(stmt) == SQLITE_ROW && count++ < 20)
+    {
+      const int imgid = sqlite3_column_int(stmt, 0);
+      const char *opname = (const char *)sqlite3_column_text(stmt, 1);
+      const int modversion = sqlite3_column_int(stmt, 2);
+      
+      fprintf(stderr, "image: %i module: %s version: %i\n", imgid, (opname) ? opname: "module is NULL", modversion);
+    }
+  }
+
+  sqlite3_finalize(stmt);
+  
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT styleid, operation FROM data.style_items WHERE iop_order <= 0 OR iop_order IS NULL",
+                              -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    ret = 1;
+    fprintf(stderr, "\nThere are unassigned iop_order in the styles!!!\n\n");
+    
+    int count = 0;
+    while(sqlite3_step(stmt) == SQLITE_ROW && count++ < 20)
+    {
+      const int styleid = sqlite3_column_int(stmt, 0);
+      const char *opname = (const char *)sqlite3_column_text(stmt, 1);
+      
+      fprintf(stderr, "style: %i module: %s\n", styleid, (opname) ? opname: "module is NULL");
+    }
   }
 
   sqlite3_finalize(stmt);
