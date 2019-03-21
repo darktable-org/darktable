@@ -21,6 +21,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/imageio_png.h"
+#include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "develop/imageop.h"
 #include "dtgtk/button.h"
@@ -723,11 +724,26 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int log2tolin = p->log2tolin;
   const float *const clut = (float *)gp->clut;
   const uint8_t level = gp->level;
+printf("process colorspace %d ch %d\n", colorspace, ch);
   const dt_interpolation_worker interpolation_worker = (p->interpolation == DT_IOP_TETRAHEDRAL) ? correct_pixel_tetrahedral
                                                           : (p->interpolation == DT_IOP_TRILINEAR) ? correct_pixel_trilinear
                                                           : correct_pixel_pyramid;
+
+  const dt_iop_order_iccprofile_info_t *const dest_profile
+      = colorspace == DT_IOP_REC709 ? dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_REC709, "", INTENT_PERCEPTUAL)
+      : colorspace == DT_IOP_SRGB ? dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_SRGB, "", INTENT_PERCEPTUAL)
+      : colorspace == DT_IOP_LIN_REC709 ? dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_LIN_REC709, "", INTENT_PERCEPTUAL)
+      : NULL;
+  const dt_iop_order_iccprofile_info_t *const rgb_profile = dt_ioppr_get_iop_work_profile_info(self->dev);
+
+  if (colorspace == DT_IOP_REC709 || colorspace == DT_IOP_SRGB || colorspace == DT_IOP_LIN_REC709)
+  {
+    dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, roi_out->width, roi_out->height, rgb_profile, dest_profile, "linrec2020 to specific");
+    return; // for testing
+  }
   if (clut)
   {
+printf("process with clut\n");
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
@@ -750,21 +766,21 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         }
         else if (colorspace == DT_IOP_SRGB) // gamma sRGB
         {
-          dt_Lab_to_sRGB(in, lin);
-          interpolation_worker(lin, lout, clut, level);
-          dt_sRGB_to_Lab(lout, out);
+//          dt_Lab_to_sRGB(in, lin);
+          interpolation_worker(out, out, clut, level);
+//          dt_sRGB_to_Lab(lout, out);
         }
         else if (colorspace == DT_IOP_REC709) // gamma REC.709
         {
-          dt_Lab_to_REC709(in, lin);
-          interpolation_worker(lin, lout, clut, level);
-          dt_REC709_to_Lab(lout, out);
+//          dt_Lab_to_REC709(in, lin);
+          interpolation_worker(out, out, clut, level);
+//          dt_REC709_to_Lab(lout, out);
         }
         else if (colorspace == DT_IOP_LIN_REC709) // linear REC.709
         {
-          dt_Lab_to_linear_sRGB(in, lin);
-          interpolation_worker(lin, lout, clut, level);
-          dt_linear_sRGB_to_Lab(lout, out);
+//          dt_Lab_to_linear_sRGB(in, lin);
+          interpolation_worker(out, out, clut, level);
+//          dt_linear_sRGB_to_Lab(lout, out);
         }
         else if (colorspace == DT_IOP_LIN_PROPHOTORGB)
         {
@@ -780,52 +796,27 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           logFuji_to_lin(lout, out);
 //          dt_prophotorgb_to_Lab(lout, out);
         }
-/*        else if (colorspace == DT_IOP_XYZ) // XYZ
-        {
-          dt_Lab_to_XYZ(in, lin);
-          interpolation_worker(lin, lout, clut, level);
-          dt_XYZ_to_Lab(lout, out);
-        }
-        else if (colorspace == 4) // lab
-        {
-          lin[0] = in[0] / 100.0f;
-          lin[1] = in[1] / 255.0f;
-          lin[2] = in[2] / 255.0f;
-          interpolation_worker(lin, lout, clut, level);
-          out[0] = lout[0] * 100.0f;
-          out[1] = lout[1] * 255.0f;
-          out[2] = lout[2] * 255.0f;
-        } */
-        else for(int c = 0; c < 3; ++c) out[c] = in[c];
         in += ch;
         out += ch;
       }
     }
-    return;
   }
-  // no clut
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
-#endif
-  for(int j = 0; j < roi_out->height; j++)
-  {
-    float *in = ((float *)ibuf) + (size_t)ch * roi_in->width * j;
-    float *out = ((float *)obuf) + (size_t)ch * roi_out->width * j;
-    for(int i = 0; i < roi_out->width; i++)
-    {
-      for(int c = 0; c < 3; ++c) out[c] = in[c];
-      in += ch;
-      out += ch;
-    }
+  else if (!(colorspace == DT_IOP_REC709 || colorspace == DT_IOP_SRGB || colorspace == DT_IOP_LIN_REC709))
+  { // no clut
+    memcpy(obuf, ibuf, roi_in->width * roi_out->height * 4 * sizeof(float));
   }
+  if (colorspace == DT_IOP_REC709 || colorspace == DT_IOP_SRGB || colorspace == DT_IOP_LIN_REC709)
+    dt_ioppr_transform_image_colorspace_rgb(obuf, obuf, roi_out->width, roi_out->height, dest_profile, rgb_profile, "specific to linrec2020");
 }
+
 void reload_defaults(dt_iop_module_t *self)
 {
+printf("reload_defaults\n");
 }
 
 void init(dt_iop_module_t *self)
 {
-//printf("init\n");
+printf("init\n");
   self->data = NULL;
   self->params = calloc(1, sizeof(dt_iop_lut3d_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_lut3d_params_t));
@@ -849,7 +840,7 @@ void init(dt_iop_module_t *self)
 
 void init_global(dt_iop_module_so_t *self)
 {
-//printf("init_global\n");
+printf("init_global\n");
   dt_iop_lut3d_global_data_t *gd
       = (dt_iop_lut3d_global_data_t *)malloc(sizeof(dt_iop_lut3d_global_data_t));
   self->data = gd;
@@ -859,19 +850,19 @@ void init_global(dt_iop_module_so_t *self)
 
 void cleanup(dt_iop_module_t *self)
 {
-//printf("cleanup\n");
+printf("cleanup\n");
   free(self->params);
   self->params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
 {
-//printf("cleanup_global\n");
-  dt_iop_lut3d_global_data_t *gp = (dt_iop_lut3d_global_data_t *)self->data;
-  if (gp->clut)
+printf("cleanup_global\n");
+  dt_iop_lut3d_global_data_t *gd = (dt_iop_lut3d_global_data_t *)self->data;
+  if (gd->clut)
   {
-    dt_free_align(gp->clut);
-    gp->clut = NULL;
+    dt_free_align(gd->clut);
+    gd->clut = NULL;
   }
   free(self->data);
   self->data = NULL;
@@ -880,21 +871,22 @@ void cleanup_global(dt_iop_module_so_t *self)
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-//printf("commit\n");
+printf("commit\n");
     dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
-    dt_iop_lut3d_global_data_t *gp = (dt_iop_lut3d_global_data_t *)self->data;
+    dt_iop_lut3d_global_data_t *gd = (dt_iop_lut3d_global_data_t *)self->data;
     gchar *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
-    if (p->filepath[0] && lutfolder[0] && !gp->clut)
+    if (p->filepath[0] && lutfolder[0] && !gd->clut)
     {
+printf("commit - new clut\n");
       char *fullpath = g_build_filename(lutfolder, p->filepath, NULL);
       if (g_str_has_suffix (p->filepath, ".png") || g_str_has_suffix (p->filepath, ".PNG"))
       {
-        gp->level = calculate_clut_haldclut(fullpath, &gp->clut);
-        gp->level *= gp->level;
+        gd->level = calculate_clut_haldclut(fullpath, &gd->clut);
+        gd->level *= gd->level;
       }
       else if (g_str_has_suffix (p->filepath, ".cube") || g_str_has_suffix (p->filepath, ".CUBE"))
       {
-        gp->level = calculate_clut_cube(fullpath, &gp->clut);
+        gd->level = calculate_clut_cube(fullpath, &gd->clut);
       }
       g_free(fullpath);
     }
@@ -902,35 +894,35 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
-//printf("init_pipe\n");
+printf("init_pipe\n");
   // create part of the pixelpipe
 }
 
 static void filepath_callback(GtkWidget *w, dt_iop_module_t *self)
 {
-//printf("filepath_callback\n");
+printf("filepath_callback\n");
   if(darktable.gui->reset) return;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
-  dt_iop_lut3d_global_data_t *gp = (dt_iop_lut3d_global_data_t *)self->data;
+  dt_iop_lut3d_global_data_t *gd = (dt_iop_lut3d_global_data_t *)self->data;
   snprintf(p->filepath, sizeof(p->filepath), "%s", gtk_entry_get_text(GTK_ENTRY(w)));
 
-  if (gp->clut)
+  if (gd->clut)
   { // the clut is obsolete
-    dt_free_align(gp->clut);
+    dt_free_align(gd->clut);
   }
-  gp->clut = NULL;
-  gp->level = 0;
+  gd->clut = NULL;
+  gd->level = 0;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void colorspace_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
-//printf("colorspace_callback\n");
   if(darktable.gui->reset) return;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   p->colorspace = dt_bauhaus_combobox_get(widget);
+printf("colorspace_callback %d\n", p->colorspace);
   if (p->colorspace == DT_IOP_LOG_RGB)
     gtk_widget_set_visible(g->log_options, TRUE);
   else
@@ -985,7 +977,7 @@ static void log2tolin_callback(GtkWidget *widget, dt_iop_module_t *self)
 static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
 {
   int filetype;
-//printf("button_clicked\n");
+printf("button_clicked\n");
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   gchar* lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
@@ -1063,12 +1055,25 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
   gtk_widget_destroy(filechooser);
 }
 
+void gui_reset(dt_iop_module_t *self)
+{
+printf("gui_reset\n");
+  dt_iop_lut3d_global_data_t *gd = (dt_iop_lut3d_global_data_t *)self->data;
+//  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
+//  dt_iop_lut3d_params_t *dp = (dt_iop_lut3d_params_t *)self->default_params;
+  if (gd->clut)
+    dt_free_align(gd->clut);
+  gd->clut = NULL;
+  gd->level = 0;
+  memcpy(self->params, self->default_params, sizeof(dt_iop_lut3d_params_t));
+}
+
 void gui_update(dt_iop_module_t *self)
 {
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   gchar *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
-//printf("gui_update, lut folder %s\n", lutfolder);
+printf("gui_update, lut folder %s\n", lutfolder);
   gtk_entry_set_text(GTK_ENTRY(g->filepath), p->filepath);
   if (lutfolder[0] == 0)
   {
@@ -1081,6 +1086,7 @@ void gui_update(dt_iop_module_t *self)
   }
   g_free(lutfolder);
   dt_bauhaus_combobox_set(g->colorspace, p->colorspace);
+  dt_bauhaus_combobox_set(g->interpolation, p->interpolation);
   dt_bauhaus_slider_set_soft(g->middle_grey, p->middle_grey);
   dt_bauhaus_slider_set_soft(g->min_exposure, p->min_exposure);
   dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
@@ -1093,7 +1099,7 @@ void gui_update(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
 setvbuf(stdout, NULL, _IONBF, 0);
-//printf("gui_init\n");
+printf("gui_init\n");
   self->gui_data = malloc(sizeof(dt_iop_lut3d_gui_data_t));
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
@@ -1182,7 +1188,7 @@ setvbuf(stdout, NULL, _IONBF, 0);
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-//printf("gui_cleanup\n");
+printf("gui_cleanup\n");
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(g->filepath));
   free(self->gui_data);
