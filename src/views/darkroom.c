@@ -110,6 +110,10 @@ static int display_image_cb(lua_State *L)
     luaA_to(L, dt_lua_image_t, &imgid, 1);
     dt_dev_change_image(dev, imgid);
   }
+  else
+  {
+    return luaL_error(L, "error: dt_lua_image_t expected\n");
+  }
   return 0;
 }
 
