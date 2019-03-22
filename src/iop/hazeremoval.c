@@ -37,6 +37,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
+#include "common/guided_filter.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "gui/gtk.h"
@@ -275,61 +276,6 @@ static inline void pointer_swap_f(float *a, float *b)
   *b = t;
 }
 
-// calculate the one-dimensional moving average over a window of size 2*w+1
-// input array x has stride 1, output array y has stride stride_y
-static inline void box_mean_1d(int N, const float *x, float *y, size_t stride_y, int w)
-{
-  float m = 0, n_box = 0;
-  for(int i = 0, i_end = min_i(w + 1, N); i < i_end; i++)
-  {
-    m += x[i];
-    n_box++;
-  }
-  for(int i = 0; i < N; i++)
-  {
-    y[i * stride_y] = m / n_box;
-    if(i - w >= 0)
-    {
-      m -= x[i - w];
-      n_box--;
-    }
-    if(i + w + 1 < N)
-    {
-      m += x[i + w + 1];
-      n_box++;
-    }
-  }
-}
-
-// calculate the two-dimensional moving average over a box of size (2*w+1) x (2*w+1)
-// does the calculation in-place if input and output images are identical
-// this function is always called from a OpenMP thread, thus no parallelization
-static void box_mean(gray_image img1, gray_image img2, int w)
-{
-  gray_image img2_bak;
-  if(img1.data == img2.data)
-  {
-    img2_bak = new_gray_image(max_i(img2.width, img2.height), 1);
-    for(int i1 = 0; i1 < img2.height; i1++)
-    {
-      memcpy(img2_bak.data, img2.data + (size_t)i1 * img2.width, sizeof(float) * img2.width);
-      box_mean_1d(img2.width, img2_bak.data, img2.data + (size_t)i1 * img2.width, 1, w);
-    }
-  }
-  else
-  {
-    for(int i1 = 0; i1 < img1.height; i1++)
-      box_mean_1d(img1.width, img1.data + (size_t)i1 * img1.width, img2.data + (size_t)i1 * img2.width, 1, w);
-    img2_bak = new_gray_image(1, img2.height);
-  }
-  for(int i0 = 0; i0 < img1.width; i0++)
-  {
-    for(int i1 = 0; i1 < img1.height; i1++) img2_bak.data[i1] = img2.data[i0 + (size_t)i1 * img2.width];
-    box_mean_1d(img1.height, img2_bak.data, img2.data + i0, img1.width, w);
-  }
-  free_gray_image(&img2_bak);
-}
-
 // calculate the one-dimensional moving maximum over a window of size 2*w+1
 // input array x has stride 1, output array y has stride stride_y
 static inline void box_max_1d(int N, const float *x, float *y, size_t stride_y, int w)
@@ -509,176 +455,6 @@ static void transition_map(const const_rgb_image img1, const gray_image img2, co
   box_max(img2, img2, w);
 }
 
-// apply guided filter to single-component image img using the 3-components
-// image imgg as a guide
-static void guided_filter_tiling(const_rgb_image imgg, gray_image img, gray_image img_out, tile target, int w,
-                                 float eps)
-{
-  // to process the current tile also input data from the borders
-  // (of size 2*w) of the neighbouring tiles is required
-  const tile source = { max_i(target.left - 2 * w, 0), min_i(target.right + 2 * w, imgg.width),
-                        max_i(target.lower - 2 * w, 0), min_i(target.upper + 2 * w, imgg.height) };
-  const int width = source.right - source.left;
-  const int height = source.upper - source.lower;
-  const size_t size = (size_t)width * height;
-  gray_image imgg_mean_r = new_gray_image(width, height);
-  gray_image imgg_mean_g = new_gray_image(width, height);
-  gray_image imgg_mean_b = new_gray_image(width, height);
-  gray_image img_mean = new_gray_image(width, height);
-  for(int j_imgg = source.lower; j_imgg < source.upper; j_imgg++)
-  {
-    size_t k = (size_t)(j_imgg - source.lower) * width;
-    size_t l = source.left + (size_t)j_imgg * imgg.width;
-    for(int i_imgg = source.left; i_imgg < source.right; i_imgg++, k++, l++)
-    {
-      const float *pixel = imgg.data + l * imgg.stride;
-      imgg_mean_r.data[k] = pixel[0];
-      imgg_mean_g.data[k] = pixel[1];
-      imgg_mean_b.data[k] = pixel[2];
-      img_mean.data[k] = img.data[l];
-    }
-  }
-  box_mean(imgg_mean_r, imgg_mean_r, w);
-  box_mean(imgg_mean_g, imgg_mean_g, w);
-  box_mean(imgg_mean_b, imgg_mean_b, w);
-  box_mean(img_mean, img_mean, w);
-  gray_image cov_imgg_img_r = new_gray_image(width, height);
-  gray_image cov_imgg_img_g = new_gray_image(width, height);
-  gray_image cov_imgg_img_b = new_gray_image(width, height);
-  gray_image var_imgg_rr = new_gray_image(width, height);
-  gray_image var_imgg_gg = new_gray_image(width, height);
-  gray_image var_imgg_bb = new_gray_image(width, height);
-  gray_image var_imgg_rg = new_gray_image(width, height);
-  gray_image var_imgg_rb = new_gray_image(width, height);
-  gray_image var_imgg_gb = new_gray_image(width, height);
-  for(int j_imgg = source.lower; j_imgg < source.upper; j_imgg++)
-  {
-    size_t k = (size_t)(j_imgg - source.lower) * width;
-    size_t l = source.left + (size_t)j_imgg * imgg.width;
-    for(int i_imgg = source.left; i_imgg < source.right; i_imgg++, k++, l++)
-    {
-      const float *pixel = imgg.data + l * imgg.stride;
-      cov_imgg_img_r.data[k] = pixel[0] * img.data[l];
-      cov_imgg_img_g.data[k] = pixel[1] * img.data[l];
-      cov_imgg_img_b.data[k] = pixel[2] * img.data[l];
-      var_imgg_rr.data[k] = pixel[0] * pixel[0];
-      var_imgg_rg.data[k] = pixel[0] * pixel[1];
-      var_imgg_rb.data[k] = pixel[0] * pixel[2];
-      var_imgg_gg.data[k] = pixel[1] * pixel[1];
-      var_imgg_gb.data[k] = pixel[1] * pixel[2];
-      var_imgg_bb.data[k] = pixel[2] * pixel[2];
-    }
-  }
-  box_mean(cov_imgg_img_r, cov_imgg_img_r, w);
-  box_mean(cov_imgg_img_g, cov_imgg_img_g, w);
-  box_mean(cov_imgg_img_b, cov_imgg_img_b, w);
-  box_mean(var_imgg_rr, var_imgg_rr, w);
-  box_mean(var_imgg_rg, var_imgg_rg, w);
-  box_mean(var_imgg_rb, var_imgg_rb, w);
-  box_mean(var_imgg_gg, var_imgg_gg, w);
-  box_mean(var_imgg_gb, var_imgg_gb, w);
-  box_mean(var_imgg_bb, var_imgg_bb, w);
-  for(size_t i = 0; i < size; i++)
-  {
-    cov_imgg_img_r.data[i] -= imgg_mean_r.data[i] * img_mean.data[i];
-    cov_imgg_img_g.data[i] -= imgg_mean_g.data[i] * img_mean.data[i];
-    cov_imgg_img_b.data[i] -= imgg_mean_b.data[i] * img_mean.data[i];
-    var_imgg_rr.data[i] -= imgg_mean_r.data[i] * imgg_mean_r.data[i] - eps;
-    var_imgg_rg.data[i] -= imgg_mean_r.data[i] * imgg_mean_g.data[i];
-    var_imgg_rb.data[i] -= imgg_mean_r.data[i] * imgg_mean_b.data[i];
-    var_imgg_gg.data[i] -= imgg_mean_g.data[i] * imgg_mean_g.data[i] - eps;
-    var_imgg_gb.data[i] -= imgg_mean_g.data[i] * imgg_mean_b.data[i];
-    var_imgg_bb.data[i] -= imgg_mean_b.data[i] * imgg_mean_b.data[i] - eps;
-  }
-  gray_image a_r = new_gray_image(width, height);
-  gray_image a_g = new_gray_image(width, height);
-  gray_image a_b = new_gray_image(width, height);
-  gray_image b = img_mean;
-  for(int i1 = 0; i1 < height; i1++)
-  {
-    size_t i = (size_t)i1 * width;
-    for(int i0 = 0; i0 < width; i0++)
-    {
-      // solve linear system of equations of size 3x3 via Cramer's rule
-      float Sigma[3][3]; // symmetric coefficient matrix
-      Sigma[0][0] = var_imgg_rr.data[i];
-      Sigma[0][1] = var_imgg_rg.data[i];
-      Sigma[0][2] = var_imgg_rb.data[i];
-      Sigma[1][1] = var_imgg_gg.data[i];
-      Sigma[1][2] = var_imgg_gb.data[i];
-      Sigma[2][2] = var_imgg_bb.data[i];
-      rgb_pixel cov_imgg_img;
-      cov_imgg_img[0] = cov_imgg_img_r.data[i];
-      cov_imgg_img[1] = cov_imgg_img_g.data[i];
-      cov_imgg_img[2] = cov_imgg_img_b.data[i];
-      float det0 = Sigma[0][0] * (Sigma[1][1] * Sigma[2][2] - Sigma[1][2] * Sigma[1][2])
-                   - Sigma[0][1] * (Sigma[0][1] * Sigma[2][2] - Sigma[0][2] * Sigma[1][2])
-                   + Sigma[0][2] * (Sigma[0][1] * Sigma[1][2] - Sigma[0][2] * Sigma[1][1]);
-      if(fabsf(det0) > 4.f * FLT_EPSILON)
-      {
-        float det1 = cov_imgg_img[0] * (Sigma[1][1] * Sigma[2][2] - Sigma[1][2] * Sigma[1][2])
-                     - Sigma[0][1] * (cov_imgg_img[1] * Sigma[2][2] - cov_imgg_img[2] * Sigma[1][2])
-                     + Sigma[0][2] * (cov_imgg_img[1] * Sigma[1][2] - cov_imgg_img[2] * Sigma[1][1]);
-        float det2 = Sigma[0][0] * (cov_imgg_img[1] * Sigma[2][2] - cov_imgg_img[2] * Sigma[1][2])
-                     - cov_imgg_img[0] * (Sigma[0][1] * Sigma[2][2] - Sigma[0][2] * Sigma[1][2])
-                     + Sigma[0][2] * (Sigma[0][1] * cov_imgg_img[2] - Sigma[0][2] * cov_imgg_img[1]);
-        float det3 = Sigma[0][0] * (Sigma[1][1] * cov_imgg_img[2] - Sigma[1][2] * cov_imgg_img[1])
-                     - Sigma[0][1] * (Sigma[0][1] * cov_imgg_img[2] - Sigma[0][2] * cov_imgg_img[1])
-                     + cov_imgg_img[0] * (Sigma[0][1] * Sigma[1][2] - Sigma[0][2] * Sigma[1][1]);
-        a_r.data[i] = det1 / det0;
-        a_g.data[i] = det2 / det0;
-        a_b.data[i] = det3 / det0;
-      }
-      else
-      {
-        // linear system is singular
-        a_r.data[i] = 0;
-        a_g.data[i] = 0;
-        a_b.data[i] = 0;
-      }
-      b.data[i] -= a_r.data[i] * imgg_mean_r.data[i];
-      b.data[i] -= a_g.data[i] * imgg_mean_g.data[i];
-      b.data[i] -= a_b.data[i] * imgg_mean_b.data[i];
-      ++i;
-    }
-  }
-  box_mean(a_r, a_r, w);
-  box_mean(a_g, a_g, w);
-  box_mean(a_b, a_b, w);
-  box_mean(b, b, w);
-  // finally calculate results for the curent tile
-  for(int j_imgg = target.lower; j_imgg < target.upper; j_imgg++)
-  {
-    // index of the left most target pixel in the current row
-    size_t l = target.left + (size_t)j_imgg * imgg.width;
-    // index of the left most source pixel in the curent row of the
-    // smaller auxiliary gray-scale images a_r, a_g, a_b, and b
-    // excluding boundary data from neighboring tiles
-    size_t k = (target.left - source.left) + (size_t)(j_imgg - source.lower) * width;
-    for(int i_imgg = target.left; i_imgg < target.right; i_imgg++, k++, l++)
-    {
-      const float *pixel = imgg.data + l * imgg.stride;
-      img_out.data[l] = a_r.data[k] * pixel[0] + a_g.data[k] * pixel[1] + a_b.data[k] * pixel[2] + b.data[k];
-    }
-  }
-  free_gray_image(&a_r);
-  free_gray_image(&a_g);
-  free_gray_image(&a_b);
-  free_gray_image(&var_imgg_rr);
-  free_gray_image(&var_imgg_rg);
-  free_gray_image(&var_imgg_rb);
-  free_gray_image(&var_imgg_gg);
-  free_gray_image(&var_imgg_gb);
-  free_gray_image(&var_imgg_bb);
-  free_gray_image(&cov_imgg_img_r);
-  free_gray_image(&cov_imgg_img_g);
-  free_gray_image(&cov_imgg_img_b);
-  free_gray_image(&img_mean);
-  free_gray_image(&imgg_mean_r);
-  free_gray_image(&imgg_mean_g);
-  free_gray_image(&imgg_mean_b);
-}
-
 // partition the array [first, last) using the pivot value val, i.e.,
 // reorder the elements in the range [first, last) in such a way that
 // all elements that are less than the pivot precede the elements
@@ -748,7 +524,7 @@ static float ambient_light(const const_rgb_image img, int w1, rgb_pixel *pA0)
   gray_image bright_hazy = new_gray_image(width, height);
   copy_gray_image(dark_ch, bright_hazy);
   // first determine the most hazy pixels
-  size_t p = size * dark_channel_quantil;
+  size_t p = (size_t)(size * dark_channel_quantil);
   quick_select(bright_hazy.data, bright_hazy.data + p, bright_hazy.data + size);
   const float crit_haze_level = bright_hazy.data[p];
   size_t N_most_hazy = 0;
@@ -760,7 +536,7 @@ static float ambient_light(const const_rgb_image img, int w1, rgb_pixel *pA0)
       bright_hazy.data[N_most_hazy] = pixel_in[0] + pixel_in[1] + pixel_in[2];
       N_most_hazy++;
     }
-  p = N_most_hazy * bright_quantil;
+  p = (size_t)(N_most_hazy * bright_quantil);
   quick_select(bright_hazy.data, bright_hazy.data + p, bright_hazy.data + N_most_hazy);
   const float crit_brightness = bright_hazy.data[p];
   free_gray_image(&bright_hazy);
@@ -818,7 +594,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // module parameters
   const float strength = d->strength; // strength of haze removal
   const float distance = d->distance; // maximal distance from camera to remove haze
-  const float eps = 0.025f;           // regularization parameter for guided filter
+  const float eps = sqrtf(0.025f);    // regularization parameter for guided filter
 
   const const_rgb_image img_in = (const_rgb_image){ ivoid, width, height, ch };
   const rgb_image img_out = (rgb_image){ ovoid, width, height, ch };
@@ -881,26 +657,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // refine the transition map
   gray_image trans_map_filtered = new_gray_image(width, height);
   box_min(trans_map, trans_map, w1);
-  const int tile_width = 512 - 4 * w2;
-  const gray_image c_trans_map = trans_map;
-  const gray_image c_trans_map_filtered = trans_map_filtered;
-#ifdef _OPENMP
-// use dynamic load ballancing as tiles may have varying size
-#pragma omp parallel for default(none) schedule(dynamic) collapse(2)
-#endif
-  for(int j = 0; j < height; j += tile_width)
-  {
-    for(int i = 0; i < width; i += tile_width)
-    {
-      tile target = { i, min_i(i + tile_width, width), j, min_i(j + tile_width, height) };
-      guided_filter_tiling(img_in, c_trans_map, c_trans_map_filtered, target, w2, eps);
-    }
-  }
+  // apply guided filter with no clipping
+  guided_filter(img_in.data, trans_map.data, trans_map_filtered.data, width, height, ch, w2, eps,
+                1.0f, -FLT_MAX, FLT_MAX);
 
   // finally, calculate the haze-free image
   const float t_min
       = fmaxf(expf(-distance * distance_max), 1.f / 1024); // minimum allowed value for transition map
   const float *const c_A0 = A0;
+  const gray_image c_trans_map_filtered = trans_map_filtered;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
