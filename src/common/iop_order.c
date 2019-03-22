@@ -1705,7 +1705,6 @@ static void _transform_rgb_to_lab_matrix(const float *const image_in, float *con
                       profile_info->lut_in[2], profile_info->unbounded_coeffs_in[0],
                       profile_info->unbounded_coeffs_in[1], profile_info->unbounded_coeffs_in[2],
                       profile_info->lutsize);
->>>>>>> synchro with master
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)

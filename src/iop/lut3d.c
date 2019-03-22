@@ -739,7 +739,6 @@ printf("process colorspace %d ch %d\n", colorspace, ch);
   if (colorspace == DT_IOP_REC709 || colorspace == DT_IOP_SRGB || colorspace == DT_IOP_LIN_REC709)
   {
     dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, roi_out->width, roi_out->height, rgb_profile, dest_profile, "linrec2020 to specific");
-    return; // for testing
   }
   if (clut)
   {
