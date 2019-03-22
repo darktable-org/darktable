@@ -37,6 +37,7 @@
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "gui/color_picker_proxy.h"
 #include "iop/iop_api.h"
 #include "libs/colorpicker.h"
 
@@ -147,6 +148,7 @@ typedef struct dt_iop_tonecurve_gui_data_t
   GtkWidget *tc_mode;
   GtkNotebook *channel_tabs;
   GtkWidget *colorpicker;
+  dt_iop_color_picker_t color_picker;
   GtkWidget *interpolator;
   GtkWidget *scale;
   tonecurve_channel_t channel;
@@ -246,6 +248,10 @@ static const struct
 
 typedef struct dt_iop_tonecurve_global_data_t
 {
+  float picked_color[3];
+  float picked_color_min[3];
+  float picked_color_max[3];
+  float picked_output_color[3];
   int kernel_tonecurve;
 } dt_iop_tonecurve_global_data_t;
 
@@ -411,7 +417,7 @@ void histogram_Lab(const float *pixel, uint32_t *histogram)
 void histogram_LCh(const float *pixel, uint32_t *histogram)
 {
   float LCh[3] = {0, 0, 0};
-  dt_Lab_to_Lch(pixel, LCh);
+  dt_Lab_2_LCH(pixel, LCh);
 //  histogram[4 * (uint8_t)CLAMP(LCh[0]*2.55f, 0.0f, 255.0f)]++;  // L (use the standard one instead)
   const uint8_t chroma_i = 4 * (uint8_t)CLAMP(LCh[1]*1.40095, 0.0f, 255.0f);
   histogram[chroma_i + 1]++;  // chroma; 255 / 182.019 = 1.40095
@@ -626,15 +632,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         float LCh[3] = {0, 0, 0};
         out[1] = in[1];
         out[2] = out[2];
-        dt_Lab_to_Lch(in, LCh);
+        dt_Lab_2_LCH(in, LCh);
         const float chroma = LCh[1] / 182.019f;
         if (chroma > 0.0f)
         {
           LCh[1] = (chroma < xm[ch_C][0]) ? d->table[ch_C][CLAMP((int)(chroma * 0x10000ul), 0, 0xffff)]
               : dt_iop_eval_exp(d->unbounded_coeffs[ch_C], chroma);  // C(C)
           LCh[1] = (L_in < xm[ch_CL][0]) ? LCh[1] * d->table[ch_CL][CLAMP((int)(L_in * 0x10000ul), 0, 0xffff)] * 2.0f
-              : LCh[1] * dt_iop_eval_exp(d->unbounded_coeffs[ch_CL], l_in) * 2.0f;  // C(L)
-          out[0] = (LCh[1] < xm[ch_LC][0] ? out[0] * d->table[ch_LC][CLAMP((int)(LCh[1] * 0x10000ul), 0, 0xffff)] * 2.0f
+              : LCh[1] * dt_iop_eval_exp(d->unbounded_coeffs[ch_CL], L_in) * 2.0f;  // C(L)
+          out[0] = (LCh[1] < xm[ch_LC][0]) ? out[0] * d->table[ch_LC][CLAMP((int)(LCh[1] * 0x10000ul), 0, 0xffff)] * 2.0f
               : out[0] * dt_iop_eval_exp(d->unbounded_coeffs[ch_LC], LCh[1]) * 2.0f;  // L(C)
 //          LCh[1] = LCh[1] * d->table[ch_Ch][CLAMP((int)(LCh[2] * 0x10000ul), 0, 0xffff)] * 2.0f;  // C(h)
           out[1] = in[1] * (LCh[1] / chroma);
@@ -1564,16 +1570,14 @@ static float to_lin(const float x, const float base, const int log_enabled, cons
 
 static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
-  if(darktable.gui->reset) return;
+  dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->data;
 
-  self->request_color_pick
-      = (gtk_toggle_button_get_active(togglebutton) ? DT_REQUEST_COLORPICK_MODULE : DT_REQUEST_COLORPICK_OFF);
-
-  /* set the area sample size */
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
+  for(int k=0; k<3; k++)
   {
-    dt_lib_colorpicker_set_point(darktable.lib, 0.5, 0.5);
-    dt_dev_reprocess_all(self->dev);
+    gd->picked_color[k] = self->picked_color[k];
+    gd->picked_color_min[k] = self->picked_color_min[k];
+    gd->picked_color_max[k] = self->picked_color_max[k];
+    gd->picked_output_color[k] = self->picked_output_color[k];
   }
   dt_control_queue_redraw_widget(self->widget);
 }
@@ -1849,7 +1853,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "leave-notify-event", G_CALLBACK(dt_iop_tonecurve_leave_notify), self);
   g_signal_connect(G_OBJECT(c->area), "enter-notify-event", G_CALLBACK(dt_iop_tonecurve_enter_notify), self);
   g_signal_connect(G_OBJECT(c->area), "configure-event", G_CALLBACK(area_resized), self);
-  g_signal_connect(G_OBJECT(tb), "button-press-event", G_CALLBACK(dt_iop_color_picker_callback_button_press), &c->color_picker);
+  g_signal_connect(G_OBJECT(tb), "button-press-event", G_CALLBACK(dt_iop_color_picker_callback_button_press), &c->colorpicker);
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(_scrolled), self);
   g_signal_connect(G_OBJECT(c->area), "key-press-event", G_CALLBACK(dt_iop_tonecurve_key_press), self);
 
