@@ -1696,22 +1696,41 @@ static void _transform_rgb_to_lab_matrix(const float *const image_in, float *con
   const int ch = 4;
   const size_t stride = (size_t)(width * height);
 
-  _apply_tonecurves(image_in, image_out, width, height, profile_info->lut_in[0], profile_info->lut_in[1],
-                    profile_info->lut_in[2], profile_info->unbounded_coeffs_in[0],
-                    profile_info->unbounded_coeffs_in[1], profile_info->unbounded_coeffs_in[2],
-                    profile_info->lutsize);
+  if(profile_info->nonlinearlut)
+  {
+    _apply_tonecurves(image_in, image_out, width, height, profile_info->lut_in[0], profile_info->lut_in[1],
+                      profile_info->lut_in[2], profile_info->unbounded_coeffs_in[0],
+                      profile_info->unbounded_coeffs_in[1], profile_info->unbounded_coeffs_in[2],
+                      profile_info->lutsize);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
-  for(size_t y = 0; y < stride; y++)
+    for(size_t y = 0; y < stride; y++)
+    {
+      float *const in = image_out + y * ch;
+
+      float xyz[3] = { 0.0f, 0.0f, 0.0f };
+
+      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, profile_info);
+      dt_XYZ_to_Lab(xyz, in);
+    }
+  }
+  else
   {
-    float *const in = image_out + y * ch;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+    for(size_t y = 0; y < stride; y++)
+    {
+      const float *const in = image_in + y * ch;
+      float *const out = image_out + y * ch;
 
-    float xyz[3] = { 0.0f, 0.0f, 0.0f };
+      float xyz[3] = { 0.0f, 0.0f, 0.0f };
 
-    _ioppr_linear_rgb_matrix_to_xyz(in, xyz, profile_info);
-    dt_XYZ_to_Lab(xyz, in);
+      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, profile_info);
+      dt_XYZ_to_Lab(xyz, out);
+    }
   }
 }
 
@@ -1749,22 +1768,41 @@ static void _transform_matrix_rgb(const float *const image_in, float *const imag
   const int ch = 4;
   const size_t stride = (size_t)(width * height);
 
-  _apply_tonecurves(image_in, image_out, width, height, profile_info_from->lut_in[0], profile_info_from->lut_in[1],
-                    profile_info_from->lut_in[2], profile_info_from->unbounded_coeffs_in[0],
-                    profile_info_from->unbounded_coeffs_in[1], profile_info_from->unbounded_coeffs_in[2],
-                    profile_info_from->lutsize);
+  if(profile_info_from->nonlinearlut)
+  {
+    _apply_tonecurves(image_in, image_out, width, height, profile_info_from->lut_in[0],
+                      profile_info_from->lut_in[1], profile_info_from->lut_in[2],
+                      profile_info_from->unbounded_coeffs_in[0], profile_info_from->unbounded_coeffs_in[1],
+                      profile_info_from->unbounded_coeffs_in[2], profile_info_from->lutsize);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
-  for(size_t y = 0; y < stride; y++)
+    for(size_t y = 0; y < stride; y++)
+    {
+      float *const in = image_out + y * ch;
+
+      float xyz[3] = { 0.0f, 0.0f, 0.0f };
+
+      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, profile_info_from);
+      _ioppr_xyz_to_linear_rgb_matrix(xyz, in, profile_info_to);
+    }
+  }
+  else
   {
-    float *const in = image_out + y * ch;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+    for(size_t y = 0; y < stride; y++)
+    {
+      const float *const in = image_in + y * ch;
+      float *const out = image_out + y * ch;
 
-    float xyz[3] = { 0.0f, 0.0f, 0.0f };
+      float xyz[3] = { 0.0f, 0.0f, 0.0f };
 
-    _ioppr_linear_rgb_matrix_to_xyz(in, xyz, profile_info_from);
-    _ioppr_xyz_to_linear_rgb_matrix(xyz, in, profile_info_to);
+      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, profile_info_from);
+      _ioppr_xyz_to_linear_rgb_matrix(xyz, out, profile_info_to);
+    }
   }
 
   _apply_tonecurves(image_out, image_out, width, height, profile_info_to->lut_out[0], profile_info_to->lut_out[1],
