@@ -489,7 +489,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_jpeg(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb;
+    img->buf_dsc.cst = iop_cs_rgb; // jpeg is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
@@ -501,7 +501,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_tiff(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb;
+    // cst is set by dt_imageio_open_tiff()
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
@@ -513,7 +513,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_png(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb;
+    img->buf_dsc.cst = iop_cs_rgb; // png is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
@@ -526,7 +526,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_j2k(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb;
+    img->buf_dsc.cst = iop_cs_rgb; // j2k is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
@@ -539,7 +539,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_pnm(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb;
+    img->buf_dsc.cst = iop_cs_rgb; // pnm is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
