@@ -734,7 +734,7 @@ printf("process colorspace %d ch %d\n", colorspace, ch);
       : colorspace == DT_IOP_SRGB ? dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_SRGB, "", INTENT_PERCEPTUAL)
       : colorspace == DT_IOP_LIN_REC709 ? dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_LIN_REC709, "", INTENT_PERCEPTUAL)
       : NULL;
-  const dt_iop_order_iccprofile_info_t *const rgb_profile = dt_ioppr_get_iop_work_profile_info(self->dev);
+  const dt_iop_order_iccprofile_info_t *const rgb_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   if (colorspace == DT_IOP_REC709 || colorspace == DT_IOP_SRGB || colorspace == DT_IOP_LIN_REC709)
   {
@@ -850,7 +850,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 printf("commit\n");
     dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)p1;
     dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
-    if (strcmp(p->filepath, d->params.filepath) != 0)
+    if (p->filepath[0] && strcmp(p->filepath, d->params.filepath) != 0)
     {
       if (d->clut)
       {
@@ -863,7 +863,7 @@ printf("commit\n");
     gchar *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
     if (p->filepath[0] && lutfolder[0] && !d->clut)
     {
-printf("commit - new clut\n");
+printf("commit - new clut - file %s\n", p->filepath);
       char *fullpath = g_build_filename(lutfolder, p->filepath, NULL);
       if (g_str_has_suffix (p->filepath, ".png") || g_str_has_suffix (p->filepath, ".PNG"))
       {
