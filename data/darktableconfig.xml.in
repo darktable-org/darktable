@@ -1844,6 +1844,13 @@
     <longdescription>number of images to load in advance in the background when showing full-size preview</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/preview/max_in_memory_images</name>
+    <type>int</type>
+    <default>4</default>
+    <shortdescription>maximum number of full-res images to load in memory</shortdescription>
+    <longdescription>if more images are display in expose mode, zooming will be desactivated</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>codepaths/sse2</name>
     <type>bool</type>
     <default>true</default>
