@@ -168,6 +168,7 @@ typedef struct dt_library_t
   guint audio_player_event_source;
 
   // zoom in image preview (full)
+  int missing_thumbnails;
   float full_zoom;
   float full_x;
   float full_y;
@@ -589,6 +590,7 @@ void init(dt_view_t *self)
   lib->offset_x = 0;
   lib->offset_y = 0;
 
+  lib->missing_thumbnails = 0;
   lib->full_zoom = 1.0f;
   lib->full_x = 0;
   lib->full_y = 0;
@@ -2025,26 +2027,26 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   // Let's show full preview if in that state...
   dt_library_t *lib = (dt_library_t *)self->data;
 
-  int missing_thumbnails = 0;
+  lib->missing_thumbnails = 0;
 
   check_layout(self);
 
   if(lib->full_preview_id != -1)
   {
-    missing_thumbnails = expose_full_preview(self, cr, width, height, pointerx, pointery);
+    lib->missing_thumbnails = expose_full_preview(self, cr, width, height, pointerx, pointery);
   }
   else // we do pass on expose to manager or zoomable
   {
     switch(layout)
     {
       case DT_LIGHTTABLE_LAYOUT_FILEMANAGER:
-        missing_thumbnails = expose_filemanager(self, cr, width, height, pointerx, pointery);
+        lib->missing_thumbnails = expose_filemanager(self, cr, width, height, pointerx, pointery);
         break;
       case DT_LIGHTTABLE_LAYOUT_ZOOMABLE: // zoomable
-        missing_thumbnails = expose_zoomable(self, cr, width, height, pointerx, pointery);
+        lib->missing_thumbnails = expose_zoomable(self, cr, width, height, pointerx, pointery);
         break;
       case DT_LIGHTTABLE_LAYOUT_EXPOSE: // compare
-        missing_thumbnails = expose_expose(self, cr, width, height, pointerx, pointery);
+        lib->missing_thumbnails = expose_expose(self, cr, width, height, pointerx, pointery);
         break;
       case DT_LIGHTTABLE_LAYOUT_FIRST:
       case DT_LIGHTTABLE_LAYOUT_LAST:
@@ -2083,7 +2085,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_LIGHTTABLE, "[lighttable] expose took %0.04f sec\n", end - start);
 
-  if(missing_thumbnails)
+  if(lib->missing_thumbnails)
     g_timeout_add(250, _expose_again, self);
   else
   {
@@ -2506,7 +2508,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
     {
       dt_control_log(_("zooming is limited to %d images"), FULL_PREVIEW_IN_MEMORY_LIMIT);
     }
-    else
+    else if(lib->missing_thumbnails == 0)
     {
       if(up)
         lib->full_zoom = fminf(8.0f, lib->full_zoom + 0.5f);
