@@ -294,6 +294,8 @@ void dt_selection_select_range(dt_selection_t *selection, uint32_t imgid)
   dt_selection_select(selection, imgid);
 
   selection->last_single_id = -1;
+  
+  g_free(fullq);
 }
 
 void dt_selection_select_filmroll(dt_selection_t *selection)
