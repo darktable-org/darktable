@@ -57,7 +57,7 @@
 
 DT_MODULE(1)
 
-#define FULL_PREVIEW_IN_MEMORY_LIMIT 6
+#define FULL_PREVIEW_IN_MEMORY_LIMIT 9
 
 typedef enum dt_lighttable_direction_t
 {
@@ -1787,7 +1787,7 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     params.py = img_pointery;
     params.zoom = 1;
     params.full_preview = TRUE;
-    if(sel_img_count <= FULL_PREVIEW_IN_MEMORY_LIMIT)
+    if(sel_img_count <= dt_conf_get_int("plugins/lighttable/preview/max_in_memory_images"))
     {
       params.full_zoom = &lib->full_zoom;
       params.full_x = &lib->full_x;
@@ -2504,9 +2504,11 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   {
     GList *selected = dt_collection_get_selected(darktable.collection, -1);
     const int sel_img_count = g_list_length(selected);
-    if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE && sel_img_count > FULL_PREVIEW_IN_MEMORY_LIMIT)
+    if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE
+       && sel_img_count > dt_conf_get_int("plugins/lighttable/preview/max_in_memory_images"))
     {
-      dt_control_log(_("zooming is limited to %d images"), FULL_PREVIEW_IN_MEMORY_LIMIT);
+      dt_control_log(_("zooming is limited to %d images"),
+                     dt_conf_get_int("plugins/lighttable/preview/max_in_memory_images"));
     }
     else if(lib->missing_thumbnails == 0)
     {
