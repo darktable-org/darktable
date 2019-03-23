@@ -368,6 +368,7 @@ void init_presets(dt_lib_module_t *self)
   /* the modules that are activated by default in the initial configuration */
   dt_lib_presets_add(_("subset: default modules"), self->plugin_name, self->version(), params, len);
 
+  free(params);
   params = gen_params(1, &len,
                         "|demosaic|exposure|colorin|temperature|clipping"           // raw handling
                         "|filmic|tonecurve|levels"                                  // tones
@@ -377,6 +378,7 @@ void init_presets(dt_lib_module_t *self)
 
   dt_lib_presets_add(_("workspace: all-purpose"), self->plugin_name, self->version(), params, len);
 
+  free(params);
   params = gen_params(1, &len,
                         "|demosaic|exposure|colorin|temperature|clipping"           // raw handling
                         "|filmic|tonecurve|levels"                                  // tones
@@ -388,6 +390,7 @@ void init_presets(dt_lib_module_t *self)
 
   dt_lib_presets_add(_("workspace: landscape & HDR"), self->plugin_name, self->version(), params, len);
 
+  free(params);
   params = gen_params(1, &len,
                         "|demosaic|exposure|colorin|temperature|clipping"           // raw handling
                         "|filmic|tonecurve|levels"                                  // tones
@@ -399,6 +402,7 @@ void init_presets(dt_lib_module_t *self)
 
   dt_lib_presets_add(_("workspace: architecture & streets"), self->plugin_name, self->version(), params, len);
 
+  free(params);
   params = gen_params(1, &len,
                         "|demosaic|exposure|colorin|temperature|clipping"           // raw handling
                         "|filmic|tonecurve|levels"                                  // tones
@@ -409,6 +413,7 @@ void init_presets(dt_lib_module_t *self)
 
   dt_lib_presets_add(_("workspace: portrait & beauty"), self->plugin_name, self->version(), params, len);
 
+  free(params);
   params = gen_params(1, &len,
                         "|demosaic|exposure|colorin|temperature|clipping"           // raw handling
                         "|filmic|tonecurve|levels"                                  // tones
@@ -419,6 +424,7 @@ void init_presets(dt_lib_module_t *self)
 
   dt_lib_presets_add(_("workspace: lowlight & high ISO"), self->plugin_name, self->version(), params, len);
 
+  free(params);
   params = gen_params(1, &len,
                         "|velvia|splittoning|colormapping|colorize|colorcorrection"
                         "|vignette|relight|lowlight|bloom|soften|colisa|monochrome"
@@ -426,6 +432,7 @@ void init_presets(dt_lib_module_t *self)
 
   dt_lib_presets_add(_("subset: creative modules only"), self->plugin_name, self->version(), params, len);
 
+  free(params);
   params = gen_params(1, &len,
                         "|demosaic|exposure|colorin|temperature|colorout|rawprepare"// raw handling
                         "|sharpen|bilat|atrous|highpass|lowpass"                    // sharpness

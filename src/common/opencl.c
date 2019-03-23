@@ -183,6 +183,16 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   cl_uint vendor_id = 0;
   cl_bool little_endian = 0;
 
+  char *dtcache = calloc(PATH_MAX, sizeof(char));
+  char *cachedir = calloc(PATH_MAX, sizeof(char));
+  char *devname = calloc(1024, sizeof(char));
+  char *drvversion = calloc(1024, sizeof(char));
+
+  char *dtpath = calloc(PATH_MAX, sizeof(char));
+  char *filename = calloc(PATH_MAX, sizeof(char));
+  char *confentry = calloc(PATH_MAX, sizeof(char));
+  char *binname = calloc(PATH_MAX, sizeof(char));
+
   // test GPU availability, vendor, memory, image support etc:
   (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_AVAILABLE, sizeof(cl_bool), &device_available, NULL);
 
@@ -349,26 +359,22 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     goto end;
   }
 
-  char dtcache[PATH_MAX] = { 0 };
-  char cachedir[PATH_MAX] = { 0 };
-  char devname[1024];
-  char drvversion[1024];
   double tstart, tend, tdiff;
-  dt_loc_get_user_cache_dir(dtcache, sizeof(dtcache));
+  dt_loc_get_user_cache_dir(dtcache, PATH_MAX * sizeof(char));
 
-  int len = MIN(strlen(infostr),sizeof(devname));;
+  int len = MIN(strlen(infostr),1024 * sizeof(char));;
   int j = 0;
   // remove non-alphanumeric chars from device name
   for(int i = 0; i < len; i++)
     if(isalnum(infostr[i])) devname[j++] = infostr[i];
   devname[j] = 0;
-  len = MIN(strlen(driverversion),sizeof(drvversion));
+  len = MIN(strlen(driverversion), 1024 * sizeof(char));
   j = 0;
   // remove non-alphanumeric chars from driver version
   for(int i = 0; i < len; i++)
     if(isalnum(driverversion[i])) drvversion[j++] = driverversion[i];
   drvversion[j] = 0;
-  snprintf(cachedir, sizeof(cachedir), "%s" G_DIR_SEPARATOR_S "cached_kernels_for_%s_%s", dtcache, devname, drvversion);
+  snprintf(cachedir, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "cached_kernels_for_%s_%s", dtcache, devname, drvversion);
   if(g_mkdir_with_parents(cachedir, 0700) == -1)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] failed to create directory `%s'!\n", cachedir);
@@ -376,12 +382,8 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     goto end;
   }
 
-  char dtpath[PATH_MAX] = { 0 };
-  char filename[PATH_MAX] = { 0 };
-  char confentry[PATH_MAX] = { 0 };
-  char binname[PATH_MAX] = { 0 };
-  dt_loc_get_datadir(dtpath, sizeof(dtpath));
-  snprintf(filename, sizeof(filename), "%s" G_DIR_SEPARATOR_S "kernels" G_DIR_SEPARATOR_S "programs.conf", dtpath);
+  dt_loc_get_datadir(dtpath, PATH_MAX * sizeof(char));
+  snprintf(filename, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "kernels" G_DIR_SEPARATOR_S "programs.conf", dtpath);
   char kerneldir[PATH_MAX] = { 0 };
   snprintf(kerneldir, sizeof(kerneldir), "%s" G_DIR_SEPARATOR_S "kernels", dtpath);
   char *escapedkerneldir = NULL;
@@ -417,7 +419,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     while(!feof(f))
     {
       int prog = -1;
-      gchar *confline_pattern = g_strdup_printf("%%%zu[^\n]\n", sizeof(confentry) - 1);
+      gchar *confline_pattern = g_strdup_printf("%%%zu[^\n]\n", PATH_MAX * sizeof(char) - 1);
       int rd = fscanf(f, confline_pattern, confentry);
       g_free(confline_pattern);
       if(rd != 1) continue;
@@ -455,8 +457,8 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
         continue;
       }
 
-      snprintf(filename, sizeof(filename), "%s" G_DIR_SEPARATOR_S "kernels" G_DIR_SEPARATOR_S "%s", dtpath, programname);
-      snprintf(binname, sizeof(binname), "%s" G_DIR_SEPARATOR_S "%s.bin", cachedir, programname);
+      snprintf(filename, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "kernels" G_DIR_SEPARATOR_S "%s", dtpath, programname);
+      snprintf(binname, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "%s.bin", cachedir, programname);
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
       int loaded_cached;
       char md5sum[33];
@@ -496,6 +498,16 @@ end:
   free(vendor);
   free(driverversion);
   free(deviceversion);
+
+  free(dtcache);
+  free(cachedir);
+  free(devname);
+  free(drvversion);
+
+  free(dtpath);
+  free(filename);
+  free(confentry);
+  free(binname);
 
   return res;
 }
