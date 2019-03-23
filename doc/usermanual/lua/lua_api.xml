@@ -906,6 +906,28 @@
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+
+<section status="final" id="darktable_gui_views_darkroom_display_image">
+<title>darktable.gui.views.darkroom.display_image</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>display_image</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_views_darkroom_display_image_image">image</link></emphasis> : <link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link>
+)</synopsis>
+<para>Display an image in darkroom view.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_views_darkroom_display_image_image"><term>image</term><listitem>
+<synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
+<para>The image to be displayed.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="darktable_gui_views_lighttable">
