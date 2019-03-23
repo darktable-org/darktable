@@ -26,8 +26,8 @@
 #include "develop/imageop.h"
 #include "develop/masks.h"
 #include "develop/tiling.h"
+#include <math.h>
 
-#define CLAMP_RANGE(x, y, z) (CLAMP(x, y, z))
 
 typedef struct _blend_buffer_desc_t
 {
@@ -166,9 +166,9 @@ static inline void _HSV_2_RGB(const float *HSV, float *RGB)
 
 static inline void _CLAMP_XYZ(float *XYZ, const float *min, const float *max)
 {
-  XYZ[0] = CLAMP_RANGE(XYZ[0], min[0], max[0]);
-  XYZ[1] = CLAMP_RANGE(XYZ[1], min[1], max[1]);
-  XYZ[2] = CLAMP_RANGE(XYZ[2], min[2], max[2]);
+  XYZ[0] =clamp_range_f(XYZ[0], min[0], max[0]);
+  XYZ[1] =clamp_range_f(XYZ[1], min[1], max[1]);
+  XYZ[2] =clamp_range_f(XYZ[2], min[2], max[2]);
 }
 
 static inline void _PX_COPY(const float *src, float *dst)
@@ -192,16 +192,16 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst, const float *i
   switch(cst)
   {
     case iop_cs_Lab:
-      scaled[DEVELOP_BLENDIF_L_in] = CLAMP_RANGE(input[0] / 100.0f, 0.0f, 1.0f); // L scaled to 0..1
+      scaled[DEVELOP_BLENDIF_L_in] =clamp_range_f(input[0]/100.0f, 0.0f, 1.0f); // L scaled to 0..1
       scaled[DEVELOP_BLENDIF_A_in]
-          = CLAMP_RANGE((input[1] + 128.0f) / 256.0f, 0.0f, 1.0f); // a scaled to 0..1
+          =clamp_range_f((input[1]+128.0f)/256.0f, 0.0f, 1.0f); // a scaled to 0..1
       scaled[DEVELOP_BLENDIF_B_in]
-          = CLAMP_RANGE((input[2] + 128.0f) / 256.0f, 0.0f, 1.0f);                 // b scaled to 0..1
-      scaled[DEVELOP_BLENDIF_L_out] = CLAMP_RANGE(output[0] / 100.0f, 0.0f, 1.0f); // L scaled to 0..1
+          =clamp_range_f((input[2]+128.0f)/256.0f, 0.0f, 1.0f);                 // b scaled to 0..1
+      scaled[DEVELOP_BLENDIF_L_out] =clamp_range_f(output[0]/100.0f, 0.0f, 1.0f); // L scaled to 0..1
       scaled[DEVELOP_BLENDIF_A_out]
-          = CLAMP_RANGE((output[1] + 128.0f) / 256.0f, 0.0f, 1.0f); // a scaled to 0..1
+          =clamp_range_f((output[1]+128.0f)/256.0f, 0.0f, 1.0f); // a scaled to 0..1
       scaled[DEVELOP_BLENDIF_B_out]
-          = CLAMP_RANGE((output[2] + 128.0f) / 256.0f, 0.0f, 1.0f); // b scaled to 0..1
+          =clamp_range_f((output[2]+128.0f)/256.0f, 0.0f, 1.0f); // b scaled to 0..1
 
       if(blendif & 0x7f00) // do we need to consider LCh ?
       {
@@ -210,13 +210,13 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst, const float *i
         dt_Lab_2_LCH(input, LCH_input);
         dt_Lab_2_LCH(output, LCH_output);
 
-        scaled[DEVELOP_BLENDIF_C_in] = CLAMP_RANGE(LCH_input[1] / (128.0f * sqrtf(2.0f)), 0.0f,
-                                                   1.0f);                     // C scaled to 0..1
-        scaled[DEVELOP_BLENDIF_h_in] = CLAMP_RANGE(LCH_input[2], 0.0f, 1.0f); // h scaled to 0..1
+        scaled[DEVELOP_BLENDIF_C_in] =clamp_range_f(LCH_input[1]/(128.0f*sqrtf(2.0f)), 0.0f,
+                                                    1.0f);                     // C scaled to 0..1
+        scaled[DEVELOP_BLENDIF_h_in] =clamp_range_f(LCH_input[2], 0.0f, 1.0f); // h scaled to 0..1
 
-        scaled[DEVELOP_BLENDIF_C_out] = CLAMP_RANGE(LCH_output[1] / (128.0f * sqrtf(2.0f)), 0.0f,
-                                                    1.0f);                      // C scaled to 0..1
-        scaled[DEVELOP_BLENDIF_h_out] = CLAMP_RANGE(LCH_output[2], 0.0f, 1.0f); // h scaled to 0..1
+        scaled[DEVELOP_BLENDIF_C_out] =clamp_range_f(LCH_output[1]/(128.0f*sqrtf(2.0f)), 0.0f,
+                                                     1.0f);                      // C scaled to 0..1
+        scaled[DEVELOP_BLENDIF_h_out] =clamp_range_f(LCH_output[2], 0.0f, 1.0f); // h scaled to 0..1
       }
 
       channel_mask = DEVELOP_BLENDIF_Lab_MASK;
@@ -224,23 +224,23 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst, const float *i
       break;
     case iop_cs_rgb:
       if(work_profile == NULL)
-        scaled[DEVELOP_BLENDIF_GRAY_in] = CLAMP_RANGE(0.3f * input[0] + 0.59f * input[1] + 0.11f * input[2], 0.0f,
-                                                      1.0f); // Gray scaled to 0..1
+        scaled[DEVELOP_BLENDIF_GRAY_in] =clamp_range_f(0.3f*input[0]+0.59f*input[1]+0.11f*input[2], 0.0f,
+                                                       1.0f); // Gray scaled to 0..1
       else
-        scaled[DEVELOP_BLENDIF_GRAY_in] = CLAMP_RANGE(dt_ioppr_get_rgb_matrix_luminance(input, work_profile), 0.0f,
-                                                      1.0f);                // Gray scaled to 0..1
-      scaled[DEVELOP_BLENDIF_RED_in] = CLAMP_RANGE(input[0], 0.0f, 1.0f);   // Red
-      scaled[DEVELOP_BLENDIF_GREEN_in] = CLAMP_RANGE(input[1], 0.0f, 1.0f); // Green
-      scaled[DEVELOP_BLENDIF_BLUE_in] = CLAMP_RANGE(input[2], 0.0f, 1.0f);  // Blue
+        scaled[DEVELOP_BLENDIF_GRAY_in] =clamp_range_f(dt_ioppr_get_rgb_matrix_luminance(input, work_profile), 0.0f,
+                                                       1.0f);                // Gray scaled to 0..1
+      scaled[DEVELOP_BLENDIF_RED_in] =clamp_range_f(input[0], 0.0f, 1.0f);   // Red
+      scaled[DEVELOP_BLENDIF_GREEN_in] =clamp_range_f(input[1], 0.0f, 1.0f); // Green
+      scaled[DEVELOP_BLENDIF_BLUE_in] =clamp_range_f(input[2], 0.0f, 1.0f);  // Blue
       if(work_profile == NULL)
-        scaled[DEVELOP_BLENDIF_GRAY_out] = CLAMP_RANGE(0.3f * output[0] + 0.59f * output[1] + 0.11f * output[2],
-                                                       0.0f, 1.0f); // Gray scaled to 0..1
+        scaled[DEVELOP_BLENDIF_GRAY_out] =clamp_range_f(0.3f*output[0]+0.59f*output[1]+0.11f*output[2],
+                                                        0.0f, 1.0f); // Gray scaled to 0..1
       else
-        scaled[DEVELOP_BLENDIF_GRAY_out] = CLAMP_RANGE(dt_ioppr_get_rgb_matrix_luminance(output, work_profile),
-                                                       0.0f, 1.0f);           // Gray scaled to 0..1
-      scaled[DEVELOP_BLENDIF_RED_out] = CLAMP_RANGE(output[0], 0.0f, 1.0f);   // Red
-      scaled[DEVELOP_BLENDIF_GREEN_out] = CLAMP_RANGE(output[1], 0.0f, 1.0f); // Green
-      scaled[DEVELOP_BLENDIF_BLUE_out] = CLAMP_RANGE(output[2], 0.0f, 1.0f);  // Blue
+        scaled[DEVELOP_BLENDIF_GRAY_out] =clamp_range_f(dt_ioppr_get_rgb_matrix_luminance(output, work_profile),
+                                                        0.0f, 1.0f);           // Gray scaled to 0..1
+      scaled[DEVELOP_BLENDIF_RED_out] =clamp_range_f(output[0], 0.0f, 1.0f);   // Red
+      scaled[DEVELOP_BLENDIF_GREEN_out] =clamp_range_f(output[1], 0.0f, 1.0f); // Green
+      scaled[DEVELOP_BLENDIF_BLUE_out] =clamp_range_f(output[2], 0.0f, 1.0f);  // Blue
 
       if(blendif & 0x7f00) // do we need to consider HSL ?
       {
@@ -249,13 +249,13 @@ static inline float _blendif_factor(dt_iop_colorspace_type_t cst, const float *i
         dt_RGB_2_HSL(input, HSL_input);
         dt_RGB_2_HSL(output, HSL_output);
 
-        scaled[DEVELOP_BLENDIF_H_in] = CLAMP_RANGE(HSL_input[0], 0.0f, 1.0f); // H scaled to 0..1
-        scaled[DEVELOP_BLENDIF_S_in] = CLAMP_RANGE(HSL_input[1], 0.0f, 1.0f); // S scaled to 0..1
-        scaled[DEVELOP_BLENDIF_l_in] = CLAMP_RANGE(HSL_input[2], 0.0f, 1.0f); // L scaled to 0..1
+        scaled[DEVELOP_BLENDIF_H_in] =clamp_range_f(HSL_input[0], 0.0f, 1.0f); // H scaled to 0..1
+        scaled[DEVELOP_BLENDIF_S_in] =clamp_range_f(HSL_input[1], 0.0f, 1.0f); // S scaled to 0..1
+        scaled[DEVELOP_BLENDIF_l_in] =clamp_range_f(HSL_input[2], 0.0f, 1.0f); // L scaled to 0..1
 
-        scaled[DEVELOP_BLENDIF_H_out] = CLAMP_RANGE(HSL_output[0], 0.0f, 1.0f); // H scaled to 0..1
-        scaled[DEVELOP_BLENDIF_S_out] = CLAMP_RANGE(HSL_output[1], 0.0f, 1.0f); // S scaled to 0..1
-        scaled[DEVELOP_BLENDIF_l_out] = CLAMP_RANGE(HSL_output[2], 0.0f, 1.0f); // L scaled to 0..1
+        scaled[DEVELOP_BLENDIF_H_out] =clamp_range_f(HSL_output[0], 0.0f, 1.0f); // H scaled to 0..1
+        scaled[DEVELOP_BLENDIF_S_out] =clamp_range_f(HSL_output[1], 0.0f, 1.0f); // S scaled to 0..1
+        scaled[DEVELOP_BLENDIF_l_out] =clamp_range_f(HSL_output[2], 0.0f, 1.0f); // L scaled to 0..1
       }
 
       channel_mask = DEVELOP_BLENDIF_RGB_MASK;
@@ -351,7 +351,7 @@ static inline void _blend_noop(const _blend_buffer_desc_t *bd, const float *a, f
 {
   for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
   {
-    for(int k = 0; k < bd->bch; k++) b[j + k] = CLAMP_RANGE(a[j + k], min ? min[k] : -INFINITY, max ? max[k] : INFINITY);
+    for(int k = 0; k < bd->bch; k++) b[j + k] =clamp_range_f(a[j+k], min ? min[k] : -INFINITY, max ? max[k] : INFINITY);
     if(bd->cst != iop_cs_RAW) b[j + 3] = mask[i];
   }
 }
@@ -391,12 +391,12 @@ static void _blend_normal_bounded(const _blend_buffer_desc_t *bd, const float *a
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
 
-      tb[0] = CLAMP_RANGE((ta[0] * (1.0f - local_opacity)) + tb[0] * local_opacity, min[0], max[0]);
+      tb[0] =clamp_range_f(ta[0]*(1.0f-local_opacity)+tb[0]*local_opacity, min[0], max[0]);
 
       if(flag == 0)
       {
-        tb[1] = CLAMP_RANGE((ta[1] * (1.0f - local_opacity)) + tb[1] * local_opacity, min[1], max[1]);
-        tb[2] = CLAMP_RANGE((ta[2] * (1.0f - local_opacity)) + tb[2] * local_opacity, min[2], max[2]);
+        tb[1] =clamp_range_f(ta[1]*(1.0f-local_opacity)+tb[1]*local_opacity, min[1], max[1]);
+        tb[2] =clamp_range_f(ta[2]*(1.0f-local_opacity)+tb[2]*local_opacity, min[2], max[2]);
       }
       else
       {
@@ -415,7 +415,7 @@ static void _blend_normal_bounded(const _blend_buffer_desc_t *bd, const float *a
       float local_opacity = mask[i];
       for(int k = 0; k < bd->bch; k++)
         b[j + k]
-            = CLAMP_RANGE((a[j + k] * (1.0f - local_opacity)) + b[j + k] * local_opacity, min[k], max[k]);
+            =clamp_range_f(a[j+k]*(1.0f-local_opacity)+b[j+k]*local_opacity, min[k], max[k]);
       b[j + 3] = local_opacity;
     }
   }
@@ -426,7 +426,7 @@ static void _blend_normal_bounded(const _blend_buffer_desc_t *bd, const float *a
       float local_opacity = mask[i];
       for(int k = 0; k < bd->bch; k++)
         b[j + k]
-            = CLAMP_RANGE((a[j + k] * (1.0f - local_opacity)) + b[j + k] * local_opacity, min[k], max[k]);
+            =clamp_range_f(a[j+k]*(1.0f-local_opacity)+b[j+k]*local_opacity, min[k], max[k]);
     }
   }
 }
@@ -447,12 +447,12 @@ static void _blend_normal_unbounded(const _blend_buffer_desc_t *bd, const float 
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
 
-      tb[0] = (ta[0] * (1.0f - local_opacity)) + tb[0] * local_opacity;
+      tb[0] = ta[0] * (1.0f - local_opacity) + tb[0] * local_opacity;
 
       if(flag == 0)
       {
-        tb[1] = (ta[1] * (1.0f - local_opacity)) + tb[1] * local_opacity;
-        tb[2] = (ta[2] * (1.0f - local_opacity)) + tb[2] * local_opacity;
+        tb[1] = ta[1] * (1.0f - local_opacity) + tb[1] * local_opacity;
+        tb[2] = ta[2] * (1.0f - local_opacity) + tb[2] * local_opacity;
       }
       else
       {
@@ -470,7 +470,7 @@ static void _blend_normal_unbounded(const _blend_buffer_desc_t *bd, const float 
     {
       float local_opacity = mask[i];
       for(int k = 0; k < bd->bch; k++)
-        b[j + k] = (a[j + k] * (1.0f - local_opacity)) + b[j + k] * local_opacity;
+        b[j + k] = a[j + k] * (1.0f - local_opacity) + b[j + k] * local_opacity;
       b[j + 3] = local_opacity;
     }
   }
@@ -480,7 +480,7 @@ static void _blend_normal_unbounded(const _blend_buffer_desc_t *bd, const float 
     {
       float local_opacity = mask[i];
       for(int k = 0; k < bd->bch; k++)
-        b[j + k] = (a[j + k] * (1.0f - local_opacity)) + b[j + k] * local_opacity;
+        b[j + k] = a[j + k] * (1.0f - local_opacity) + b[j + k] * local_opacity;
     }
   }
 }
@@ -502,15 +502,15 @@ static void _blend_lighten(const _blend_buffer_desc_t *bd, const float *a, float
       _blend_Lab_scale(&b[j], tb);
 
       tbo = tb[0];
-      tb[0] = CLAMP_RANGE(ta[0] * (1.0f - local_opacity) + (ta[0] > tb[0] ? ta[0] : tb[0]) * local_opacity,
-                          min[0], max[0]);
+      tb[0] =clamp_range_f(ta[0]*(1.0f-local_opacity)+(ta[0]>tb[0] ? ta[0] : tb[0])*local_opacity,
+                           min[0], max[0]);
 
       if(flag == 0)
       {
-        tb[1] = CLAMP_RANGE(ta[1] * (1.0f - fabsf(tbo - tb[0])) + 0.5f * (ta[1] + tb[1]) * fabsf(tbo - tb[0]),
-                            min[1], max[1]);
-        tb[2] = CLAMP_RANGE(ta[2] * (1.0f - fabsf(tbo - tb[0])) + 0.5f * (ta[2] + tb[2]) * fabsf(tbo - tb[0]),
-                            min[2], max[2]);
+        tb[1] =clamp_range_f(ta[1]*(1.0f-fabsf(tbo-tb[0]))+0.5f*(ta[1]+tb[1])*fabsf(tbo-tb[0]),
+                             min[1], max[1]);
+        tb[2] =clamp_range_f(ta[2]*(1.0f-fabsf(tbo-tb[0]))+0.5f*(ta[2]+tb[2])*fabsf(tbo-tb[0]),
+                             min[2], max[2]);
       }
       else
       {
@@ -528,8 +528,8 @@ static void _blend_lighten(const _blend_buffer_desc_t *bd, const float *a, float
     {
       float local_opacity = mask[i];
       for(int k = 0; k < bd->bch; k++)
-        b[j + k] = CLAMP_RANGE(a[j + k] * (1.0f - local_opacity) + fmaxf(a[j + k], b[j + k]) * local_opacity,
-                               min[k], max[k]);
+        b[j + k] =clamp_range_f(a[j+k]*(1.0f-local_opacity)+fmaxf(a[j+k], b[j+k])*local_opacity,
+                                min[k], max[k]);
       b[j + 3] = local_opacity;
     }
   }
@@ -539,8 +539,8 @@ static void _blend_lighten(const _blend_buffer_desc_t *bd, const float *a, float
     {
       float local_opacity = mask[i];
       for(int k = 0; k < bd->bch; k++)
-        b[j + k] = CLAMP_RANGE(a[j + k] * (1.0f - local_opacity) + fmaxf(a[j + k], b[j + k]) * local_opacity,
-                               min[k], max[k]);
+        b[j + k] =clamp_range_f(a[j+k]*(1.0f-local_opacity)+fmaxf(a[j+k], b[j+k])*local_opacity,
+                                min[k], max[k]);
     }
   }
 }
@@ -562,15 +562,15 @@ static void _blend_darken(const _blend_buffer_desc_t *bd, const float *a, float 
       _blend_Lab_scale(&b[j], tb);
 
       tbo = tb[0];
-      tb[0] = CLAMP_RANGE(ta[0] * (1.0f - local_opacity) + (ta[0] < tb[0] ? ta[0] : tb[0]) * local_opacity,
-                          min[0], max[0]);
+      tb[0] =clamp_range_f(ta[0]*(1.0f-local_opacity)+(ta[0]<tb[0] ? ta[0] : tb[0])*local_opacity,
+                           min[0], max[0]);
 
       if(flag == 0)
       {
-        tb[1] = CLAMP_RANGE(ta[1] * (1.0f - fabsf(tbo - tb[0])) + 0.5f * (ta[1] + tb[1]) * fabsf(tbo - tb[0]),
-                            min[1], max[1]);
-        tb[2] = CLAMP_RANGE(ta[2] * (1.0f - fabsf(tbo - tb[0])) + 0.5f * (ta[2] + tb[2]) * fabsf(tbo - tb[0]),
-                            min[2], max[2]);
+        tb[1] =clamp_range_f(ta[1]*(1.0f-fabsf(tbo-tb[0]))+0.5f*(ta[1]+tb[1])*fabsf(tbo-tb[0]),
+                             min[1], max[1]);
+        tb[2] =clamp_range_f(ta[2]*(1.0f-fabsf(tbo-tb[0]))+0.5f*(ta[2]+tb[2])*fabsf(tbo-tb[0]),
+                             min[2], max[2]);
       }
       else
       {
@@ -588,8 +588,8 @@ static void _blend_darken(const _blend_buffer_desc_t *bd, const float *a, float 
     {
       float local_opacity = mask[i];
       for(int k = 0; k < bd->bch; k++)
-        b[j + k] = CLAMP_RANGE(a[j + k] * (1.0f - local_opacity) + fminf(a[j + k], b[j + k]) * local_opacity,
-                               min[k], max[k]);
+        b[j + k] =clamp_range_f(a[j+k]*(1.0f-local_opacity)+fminf(a[j+k], b[j+k])*local_opacity,
+                                min[k], max[k]);
       b[j + 3] = local_opacity;
     }
   }
@@ -599,8 +599,8 @@ static void _blend_darken(const _blend_buffer_desc_t *bd, const float *a, float 
     {
       float local_opacity = mask[i];
       for(int k = 0; k < bd->bch; k++)
-        b[j + k] = CLAMP_RANGE(a[j + k] * (1.0f - local_opacity) + fminf(a[j + k], b[j + k]) * local_opacity,
-                               min[k], max[k]);
+        b[j + k] =clamp_range_f(a[j+k]*(1.0f-local_opacity)+fminf(a[j+k], b[j+k])*local_opacity,
+                                min[k], max[k]);
     }
   }
   // return fminf(a,b);
@@ -624,10 +624,10 @@ static void _blend_multiply(const _blend_buffer_desc_t *bd, const float *a, floa
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
       lmax = max[0] + fabsf(min[0]);
-      la = CLAMP_RANGE(ta[0] + fabsf(min[0]), lmin, lmax);
-      lb = CLAMP_RANGE(tb[0] + fabsf(min[0]), lmin, lmax);
+      la =clamp_range_f(ta[0]+fabsf(min[0]), lmin, lmax);
+      lb =clamp_range_f(tb[0]+fabsf(min[0]), lmin, lmax);
 
-      tb[0] = CLAMP_RANGE(((la * (1.0f - local_opacity)) + ((la * lb) * local_opacity)), min[0], max[0])
+      tb[0] =clamp_range_f((la*(1.0f-local_opacity))+((la*lb)*local_opacity), min[0], max[0])
               - fabsf(min[0]);
 
       if(flag == 0)
@@ -635,20 +635,20 @@ static void _blend_multiply(const _blend_buffer_desc_t *bd, const float *a, floa
         if(ta[0] > 0.01f)
         {
           tb[1]
-              = CLAMP_RANGE(ta[1] * (1.0f - local_opacity) + (ta[1] + tb[1]) * tb[0] / ta[0] * local_opacity,
-                            min[1], max[1]);
+              =clamp_range_f(ta[1]*(1.0f-local_opacity)+(ta[1]+tb[1])*tb[0]/ta[0]*local_opacity,
+                             min[1], max[1]);
           tb[2]
-              = CLAMP_RANGE(ta[2] * (1.0f - local_opacity) + (ta[2] + tb[2]) * tb[0] / ta[0] * local_opacity,
-                            min[2], max[2]);
+              =clamp_range_f(ta[2]*(1.0f-local_opacity)+(ta[2]+tb[2])*tb[0]/ta[0]*local_opacity,
+                             min[2], max[2]);
         }
         else
         {
           tb[1]
-              = CLAMP_RANGE(ta[1] * (1.0f - local_opacity) + (ta[1] + tb[1]) * tb[0] / 0.01f * local_opacity,
-                            min[1], max[1]);
+              =clamp_range_f(ta[1]*(1.0f-local_opacity)+(ta[1]+tb[1])*tb[0]/0.01f*local_opacity,
+                             min[1], max[1]);
           tb[2]
-              = CLAMP_RANGE(ta[2] * (1.0f - local_opacity) + (ta[2] + tb[2]) * tb[0] / 0.01f * local_opacity,
-                            min[2], max[2]);
+              =clamp_range_f(ta[2]*(1.0f-local_opacity)+(ta[2]+tb[2])*tb[0]/0.01f*local_opacity,
+                             min[2], max[2]);
         }
       }
       else
@@ -667,8 +667,8 @@ static void _blend_multiply(const _blend_buffer_desc_t *bd, const float *a, floa
     {
       float local_opacity = mask[i];
       for(int k = 0; k < bd->bch; k++)
-        b[j + k] = CLAMP_RANGE(
-            ((a[j + k] * (1.0f - local_opacity)) + ((a[j + k] * b[j + k]) * local_opacity)), min[k], max[k]);
+        b[j + k] =clamp_range_f(
+            a[j+k]*(1.0f-local_opacity)+(a[j+k]*b[j+k])*local_opacity, min[k], max[k]);
       b[j + 3] = local_opacity;
     }
   }
@@ -679,8 +679,8 @@ static void _blend_multiply(const _blend_buffer_desc_t *bd, const float *a, floa
       float local_opacity = mask[i];
       for(int k = 0; k < bd->bch; k++)
 
-        b[j + k] = CLAMP_RANGE(
-            ((a[j + k] * (1.0f - local_opacity)) + ((a[j + k] * b[j + k]) * local_opacity)), min[k], max[k]);
+        b[j + k] =clamp_range_f(
+            a[j+k]*(1.0f-local_opacity)+(a[j+k]*b[j+k])*local_opacity, min[k], max[k]);
     }
   }
   // return (a*b);
@@ -702,15 +702,15 @@ static void _blend_average(const _blend_buffer_desc_t *bd, const float *a, float
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
 
-      tb[0] = CLAMP_RANGE(ta[0] * (1.0f - local_opacity) + (ta[0] + tb[0]) / 2.0f * local_opacity, min[0],
-                          max[0]);
+      tb[0] =clamp_range_f(ta[0]*(1.0f-local_opacity)+(ta[0]+tb[0])/2.0f*local_opacity, min[0],
+                           max[0]);
 
       if(flag == 0)
       {
-        tb[1] = CLAMP_RANGE(ta[1] * (1.0f - local_opacity) + (ta[1] + tb[1]) / 2.0f * local_opacity, min[1],
-                            max[1]);
-        tb[2] = CLAMP_RANGE(ta[2] * (1.0f - local_opacity) + (ta[2] + tb[2]) / 2.0f * local_opacity, min[2],
-                            max[2]);
+        tb[1] =clamp_range_f(ta[1]*(1.0f-local_opacity)+(ta[1]+tb[1])/2.0f*local_opacity, min[1],
+                             max[1]);
+        tb[2] =clamp_range_f(ta[2]*(1.0f-local_opacity)+(ta[2]+tb[2])/2.0f*local_opacity, min[2],
+                             max[2]);
       }
       else
       {
@@ -728,8 +728,8 @@ static void _blend_average(const _blend_buffer_desc_t *bd, const float *a, float
     {
       float local_opacity = mask[i];
       for(int k = 0; k < bd->bch; k++)
-        b[j + k] = CLAMP_RANGE(
-            a[j + k] * (1.0f - local_opacity) + (a[j + k] + b[j + k]) / 2.0f * local_opacity, min[k], max[k]);
+        b[j + k] =clamp_range_f(
+            a[j+k]*(1.0f-local_opacity)+(a[j+k]+b[j+k])/2.0f*local_opacity, min[k], max[k]);
 
       b[j + 3] = local_opacity;
     }
@@ -740,8 +740,8 @@ static void _blend_average(const _blend_buffer_desc_t *bd, const float *a, float
     {
       float local_opacity = mask[i];
       for(int k = 0; k < bd->bch; k++)
-        b[j + k] = CLAMP_RANGE(
-            a[j + k] * (1.0f - local_opacity) + (a[j + k] + b[j + k]) / 2.0f * local_opacity, min[k], max[k]);
+        b[j + k] =clamp_range_f(
+            a[j+k]*(1.0f-local_opacity)+(a[j+k]+b[j+k])/2.0f*local_opacity, min[k], max[k]);
     }
   }
   // return (a+b)/2.0;
@@ -762,15 +762,15 @@ static void _blend_add(const _blend_buffer_desc_t *bd, const float *a, float *b,
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
 
-      tb[0] = CLAMP_RANGE((ta[0] * (1.0f - local_opacity)) + (((ta[0] + tb[0])) * local_opacity), min[0],
-                          max[0]);
+      tb[0] =clamp_range_f(ta[0]*(1.0f-local_opacity)+(ta[0]+tb[0])*local_opacity, min[0],
+                           max[0]);
 
       if(flag == 0)
       {
-        tb[1] = CLAMP_RANGE((ta[1] * (1.0f - local_opacity)) + (((ta[1] + tb[1])) * local_opacity), min[1],
-                            max[1]);
-        tb[2] = CLAMP_RANGE((ta[2] * (1.0f - local_opacity)) + (((ta[2] + tb[2])) * local_opacity), min[2],
-                            max[2]);
+        tb[1] =clamp_range_f(ta[1]*(1.0f-local_opacity)+(ta[1]+tb[1])*local_opacity, min[1],
+                             max[1]);
+        tb[2] =clamp_range_f(ta[2]*(1.0f-local_opacity)+(ta[2]+tb[2])*local_opacity, min[2],
+                             max[2]);
       }
       else
       {
@@ -788,8 +788,8 @@ static void _blend_add(const _blend_buffer_desc_t *bd, const float *a, float *b,
     {
       float local_opacity = mask[i];
       for(int k = 0; k < bd->bch; k++)
-        b[j + k] = CLAMP_RANGE(
-            (a[j + k] * (1.0f - local_opacity)) + (((a[j + k] + b[j + k])) * local_opacity), min[k], max[k]);
+        b[j + k] =clamp_range_f(
+            a[j+k]*(1.0f-local_opacity)+(a[j+k]+b[j+k])*local_opacity, min[k], max[k]);
       b[j + 3] = local_opacity;
     }
   }
@@ -799,14 +799,14 @@ static void _blend_add(const _blend_buffer_desc_t *bd, const float *a, float *b,
     {
       float local_opacity = mask[i];
       for(int k = 0; k < bd->bch; k++)
-        b[j + k] = CLAMP_RANGE(
-            (a[j + k] * (1.0f - local_opacity)) + (((a[j + k] + b[j + k])) * local_opacity), min[k], max[k]);
+        b[j + k] =clamp_range_f(
+            a[j+k]*(1.0f-local_opacity)+(a[j+k]+b[j+k])*local_opacity, min[k], max[k]);
     }
   }
   /*
   float max,min;
   _blend_colorspace_channel_range(cst,channel,&min,&max);
-  return CLAMP_RANGE(a+b,min,max);
+  return clamp_range_f(a+b,min,max);
   */
 }
 
@@ -826,17 +826,17 @@ static void _blend_substract(const _blend_buffer_desc_t *bd, const float *a, flo
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
 
-      tb[0] = CLAMP_RANGE(
-          ((ta[0] * (1.0f - local_opacity)) + (((tb[0] + ta[0]) - (fabsf(min[0] + max[0]))) * local_opacity)),
+      tb[0] =clamp_range_f(
+          ta[0]*(1.0f-local_opacity)+((tb[0]+ta[0])-(fabsf(min[0]+max[0])))*local_opacity,
           min[0], max[0]);
 
       if(flag == 0)
       {
-        tb[1] = CLAMP_RANGE(
-            ((ta[1] * (1.0f - local_opacity)) + (((tb[1] + ta[1]) - (fabsf(min[1] + max[1]))) * local_opacity)),
+        tb[1] =clamp_range_f(
+            ta[1]*(1.0f-local_opacity)+((tb[1]+ta[1])-(fabsf(min[1]+max[1])))*local_opacity,
             min[1], max[1]);
-        tb[2] = CLAMP_RANGE(
-            ((ta[2] * (1.0f - local_opacity)) + (((tb[2] + ta[2]) - (fabsf(min[2] + max[2]))) * local_opacity)),
+        tb[2] =clamp_range_f(
+            ta[2]*(1.0f-local_opacity)+((tb[2]+ta[2])-(fabsf(min[2]+max[2])))*local_opacity,
             min[2], max[2]);
       }
       else
@@ -855,9 +855,9 @@ static void _blend_substract(const _blend_buffer_desc_t *bd, const float *a, flo
     {
       float local_opacity = mask[i];
       for(int k = 0; k < bd->bch; k++)
-        b[j + k] = CLAMP_RANGE(((a[j + k] * (1.0f - local_opacity))
-                                + (((b[j + k] + a[j + k]) - (fabsf(min[k] + max[k]))) * local_opacity)),
-                               min[k], max[k]);
+        b[j + k] =clamp_range_f(a[j+k]*(1.0f-local_opacity)
+                                +((b[j+k]+a[j+k])-(fabsf(min[k]+max[k])))*local_opacity,
+                                min[k], max[k]);
       b[j + 3] = local_opacity;
     }
   }
@@ -867,9 +867,9 @@ static void _blend_substract(const _blend_buffer_desc_t *bd, const float *a, flo
     {
       float local_opacity = mask[i];
       for(int k = 0; k < bd->bch; k++)
-        b[j + k] = CLAMP_RANGE(((a[j + k] * (1.0f - local_opacity))
-                                + (((b[j + k] + a[j + k]) - (fabsf(min[k] + max[k]))) * local_opacity)),
-                               min[k], max[k]);
+        b[j + k] =clamp_range_f(a[j+k]*(1.0f-local_opacity)
+                                +((b[j+k]+a[j+k])-(fabsf(min[k]+max[k])))*local_opacity,
+                                min[k], max[k]);
     }
   }
   /*
@@ -896,23 +896,23 @@ static void _blend_difference(const _blend_buffer_desc_t *bd, const float *a, fl
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
       lmax = max[0] + fabsf(min[0]);
-      la = CLAMP_RANGE(ta[0] + fabsf(min[0]), lmin, lmax);
-      lb = CLAMP_RANGE(tb[0] + fabsf(min[0]), lmin, lmax);
+      la =clamp_range_f(ta[0]+fabsf(min[0]), lmin, lmax);
+      lb =clamp_range_f(tb[0]+fabsf(min[0]), lmin, lmax);
 
-      tb[0] = CLAMP_RANGE((la * (1.0f - local_opacity)) + (fabsf(la - lb) * local_opacity), lmin, lmax)
+      tb[0] =clamp_range_f(la*(1.0f-local_opacity)+fabsf(la-lb)*local_opacity, lmin, lmax)
               - fabsf(min[0]);
 
       if(flag == 0)
       {
         lmax = max[1] + fabsf(min[1]);
-        la = CLAMP_RANGE(ta[1] + fabsf(min[1]), lmin, lmax);
-        lb = CLAMP_RANGE(tb[1] + fabsf(min[1]), lmin, lmax);
-        tb[1] = CLAMP_RANGE((la * (1.0f - local_opacity)) + (fabsf(la - lb) * local_opacity), lmin, lmax)
+        la =clamp_range_f(ta[1]+fabsf(min[1]), lmin, lmax);
+        lb =clamp_range_f(tb[1]+fabsf(min[1]), lmin, lmax);
+        tb[1] =clamp_range_f(la*(1.0f-local_opacity)+fabsf(la-lb)*local_opacity, lmin, lmax)
                 - fabsf(min[1]);
         lmax = max[2] + fabsf(min[2]);
-        la = CLAMP_RANGE(ta[2] + fabsf(min[2]), lmin, lmax);
-        lb = CLAMP_RANGE(tb[2] + fabsf(min[2]), lmin, lmax);
-        tb[2] = CLAMP_RANGE((la * (1.0f - local_opacity)) + (fabsf(la - lb) * local_opacity), lmin, lmax)
+        la =clamp_range_f(ta[2]+fabsf(min[2]), lmin, lmax);
+        lb =clamp_range_f(tb[2]+fabsf(min[2]), lmin, lmax);
+        tb[2] =clamp_range_f(la*(1.0f-local_opacity)+fabsf(la-lb)*local_opacity, lmin, lmax)
                 - fabsf(min[2]);
       }
       else
@@ -937,7 +937,7 @@ static void _blend_difference(const _blend_buffer_desc_t *bd, const float *a, fl
         la = a[j + k] + fabsf(min[k]);
         lb = b[j + k] + fabsf(min[k]);
 
-        b[j + k] = CLAMP_RANGE((la * (1.0f - local_opacity)) + (fabsf(la - lb) * local_opacity), lmin, lmax)
+        b[j + k] =clamp_range_f(la*(1.0f-local_opacity)+fabsf(la-lb)*local_opacity, lmin, lmax)
                    - fabsf(min[k]);
       }
       b[j + 3] = local_opacity;
@@ -955,7 +955,7 @@ static void _blend_difference(const _blend_buffer_desc_t *bd, const float *a, fl
         la = a[j + k] + fabsf(min[k]);
         lb = b[j + k] + fabsf(min[k]);
 
-        b[j + k] = CLAMP_RANGE((la * (1.0f - local_opacity)) + (fabsf(la - lb) * local_opacity), lmin, lmax)
+        b[j + k] =clamp_range_f(la*(1.0f-local_opacity)+fabsf(la-lb)*local_opacity, lmin, lmax)
                    - fabsf(min[k]);
       }
     }
@@ -984,7 +984,7 @@ static void _blend_difference2(const _blend_buffer_desc_t *bd, const float *a, f
       tb[2] = fabsf(ta[2] - tb[2]) / fabsf(max[2] - min[2]);
       tb[0] = fmaxf(tb[0], fmaxf(tb[1], tb[2]));
 
-      tb[0] = CLAMP_RANGE(ta[0] * (1.0f - local_opacity) + tb[0] * local_opacity, min[0], max[0]);
+      tb[0] =clamp_range_f(ta[0]*(1.0f-local_opacity)+tb[0]*local_opacity, min[0], max[0]);
 
       if(flag == 0)
       {
@@ -1013,7 +1013,7 @@ static void _blend_difference2(const _blend_buffer_desc_t *bd, const float *a, f
         la = a[j + k] + fabsf(min[k]);
         lb = b[j + k] + fabsf(min[k]);
 
-        b[j + k] = CLAMP_RANGE((la * (1.0f - local_opacity)) + (fabsf(la - lb) * local_opacity), lmin, lmax)
+        b[j + k] =clamp_range_f(la*(1.0f-local_opacity)+fabsf(la-lb)*local_opacity, lmin, lmax)
                    - fabsf(min[k]);
       }
 
@@ -1032,7 +1032,7 @@ static void _blend_difference2(const _blend_buffer_desc_t *bd, const float *a, f
         la = a[j + k] + fabsf(min[k]);
         lb = b[j + k] + fabsf(min[k]);
 
-        b[j + k] = CLAMP_RANGE((la * (1.0f - local_opacity)) + (fabsf(la - lb) * local_opacity), lmin, lmax)
+        b[j + k] =clamp_range_f(la*(1.0f-local_opacity)+fabsf(la-lb)*local_opacity, lmin, lmax)
                    - fabsf(min[k]);
       }
     }
@@ -1057,32 +1057,32 @@ static void _blend_screen(const _blend_buffer_desc_t *bd, const float *a, float 
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
       lmax = max[0] + fabsf(min[0]);
-      la = CLAMP_RANGE(ta[0] + fabsf(min[0]), lmin, lmax);
-      lb = CLAMP_RANGE(tb[0] + fabsf(min[0]), lmin, lmax);
+      la =clamp_range_f(ta[0]+fabsf(min[0]), lmin, lmax);
+      lb =clamp_range_f(tb[0]+fabsf(min[0]), lmin, lmax);
 
-      tb[0] = CLAMP_RANGE((la * (1.0f - local_opacity)) + (((lmax - (lmax - la) * (lmax - lb))) * local_opacity),
-                          lmin, lmax)
+      tb[0] =clamp_range_f(la*(1.0f-local_opacity)+((lmax-(lmax-la)*(lmax-lb)))*local_opacity,
+                           lmin, lmax)
               - fabsf(min[0]);
 
       if(flag == 0)
       {
         if(ta[0] > 0.01f)
         {
-          tb[1] = CLAMP_RANGE(ta[1] * (1.0f - local_opacity)
-                              + 0.5f * (ta[1] + tb[1]) * tb[0] / ta[0] * local_opacity,
-                              min[1], max[1]);
-          tb[2] = CLAMP_RANGE(ta[2] * (1.0f - local_opacity)
-                              + 0.5f * (ta[2] + tb[2]) * tb[0] / ta[0] * local_opacity,
-                              min[2], max[2]);
+          tb[1] =clamp_range_f(ta[1]*(1.0f-local_opacity)
+                               +0.5f*(ta[1]+tb[1])*tb[0]/ta[0]*local_opacity,
+                               min[1], max[1]);
+          tb[2] =clamp_range_f(ta[2]*(1.0f-local_opacity)
+                               +0.5f*(ta[2]+tb[2])*tb[0]/ta[0]*local_opacity,
+                               min[2], max[2]);
         }
         else
         {
-          tb[1] = CLAMP_RANGE(ta[1] * (1.0f - local_opacity)
-                              + 0.5f * (ta[1] + tb[1]) * tb[0] / 0.01f * local_opacity,
-                              min[1], max[1]);
-          tb[2] = CLAMP_RANGE(ta[2] * (1.0f - local_opacity)
-                              + 0.5f * (ta[2] + tb[2]) * tb[0] / 0.01f * local_opacity,
-                              min[2], max[2]);
+          tb[1] =clamp_range_f(ta[1]*(1.0f-local_opacity)
+                               +0.5f*(ta[1]+tb[1])*tb[0]/0.01f*local_opacity,
+                               min[1], max[1]);
+          tb[2] =clamp_range_f(ta[2]*(1.0f-local_opacity)
+                               +0.5f*(ta[2]+tb[2])*tb[0]/0.01f*local_opacity,
+                               min[2], max[2]);
         }
       }
       else
@@ -1104,12 +1104,12 @@ static void _blend_screen(const _blend_buffer_desc_t *bd, const float *a, float 
       for(int k = 0; k < bd->bch; k++)
       {
         lmax = max[k] + fabsf(min[k]);
-        la = CLAMP_RANGE(a[j + k] + fabsf(min[k]), lmin, lmax);
-        lb = CLAMP_RANGE(b[j + k] + fabsf(min[k]), lmin, lmax);
+        la =clamp_range_f(a[j+k]+fabsf(min[k]), lmin, lmax);
+        lb =clamp_range_f(b[j+k]+fabsf(min[k]), lmin, lmax);
 
         b[j + k]
-            = CLAMP_RANGE((la * (1.0f - local_opacity)) + (((lmax - (lmax - la) * (lmax - lb))) * local_opacity),
-                          lmin, lmax)
+            =clamp_range_f(la*(1.0f-local_opacity)+(lmax-(lmax-la)*(lmax-lb))*local_opacity,
+                           lmin, lmax)
               - fabsf(min[k]);
       }
       b[j + 3] = local_opacity;
@@ -1124,12 +1124,12 @@ static void _blend_screen(const _blend_buffer_desc_t *bd, const float *a, float 
       for(int k = 0; k < bd->bch; k++)
       {
         lmax = max[k] + fabsf(min[k]);
-        la = CLAMP_RANGE(a[j + k] + fabsf(min[k]), lmin, lmax);
-        lb = CLAMP_RANGE(b[j + k] + fabsf(min[k]), lmin, lmax);
+        la =clamp_range_f(a[j+k]+fabsf(min[k]), lmin, lmax);
+        lb =clamp_range_f(b[j+k]+fabsf(min[k]), lmin, lmax);
 
         b[j + k]
-            = CLAMP_RANGE((la * (1.0f - local_opacity)) + (((lmax - (lmax - la) * (lmax - lb))) * local_opacity),
-                          lmin, lmax)
+            =clamp_range_f(la*(1.0f-local_opacity)+(lmax-(lmax-la)*(lmax-lb))*local_opacity,
+                           lmin, lmax)
               - fabsf(min[k]);
       }
     }
@@ -1159,37 +1159,37 @@ static void _blend_overlay(const _blend_buffer_desc_t *bd, const float *a, float
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
       lmax = max[0] + fabsf(min[0]);
-      la = CLAMP_RANGE(ta[0] + fabsf(min[0]), lmin, lmax);
-      lb = CLAMP_RANGE(tb[0] + fabsf(min[0]), lmin, lmax);
+      la =clamp_range_f(ta[0]+fabsf(min[0]), lmin, lmax);
+      lb =clamp_range_f(tb[0]+fabsf(min[0]), lmin, lmax);
       halfmax = lmax / 2.0f;
       doublemax = lmax * 2.0f;
 
-      tb[0] = CLAMP_RANGE(((la * (1.0f - local_opacity2))
-                           + ((la > halfmax) ? (lmax - (lmax - doublemax * (la - halfmax)) * (lmax - lb))
-                                             : ((doublemax * la) * lb))
-                                 * local_opacity2),
-                          lmin, lmax)
+      tb[0] =clamp_range_f(la*(1.0f-local_opacity2)
+                           +(la>halfmax ? lmax-(lmax-doublemax*(la-halfmax))*(lmax-lb)
+                                        : (doublemax*la)*lb)
+                            *local_opacity2,
+                           lmin, lmax)
               - fabsf(min[0]);
 
       if(flag == 0)
       {
         if(ta[0] > 0.01f)
         {
-          tb[1] = CLAMP_RANGE(ta[1] * (1.0f - local_opacity2)
-                              + (ta[1] + tb[1]) * tb[0] / ta[0] * local_opacity2,
-                              min[1], max[1]);
-          tb[2] = CLAMP_RANGE(ta[2] * (1.0f - local_opacity2)
-                              + (ta[2] + tb[2]) * tb[0] / ta[0] * local_opacity2,
-                              min[2], max[2]);
+          tb[1] =clamp_range_f(ta[1]*(1.0f-local_opacity2)
+                               +(ta[1]+tb[1])*tb[0]/ta[0]*local_opacity2,
+                               min[1], max[1]);
+          tb[2] =clamp_range_f(ta[2]*(1.0f-local_opacity2)
+                               +(ta[2]+tb[2])*tb[0]/ta[0]*local_opacity2,
+                               min[2], max[2]);
         }
         else
         {
-          tb[1] = CLAMP_RANGE(ta[1] * (1.0f - local_opacity2)
-                              + (ta[1] + tb[1]) * tb[0] / 0.01f * local_opacity2,
-                              min[1], max[1]);
-          tb[2] = CLAMP_RANGE(ta[2] * (1.0f - local_opacity2)
-                              + (ta[2] + tb[2]) * tb[0] / 0.01f * local_opacity2,
-                              min[2], max[2]);
+          tb[1] =clamp_range_f(ta[1]*(1.0f-local_opacity2)
+                               +(ta[1]+tb[1])*tb[0]/0.01f*local_opacity2,
+                               min[1], max[1]);
+          tb[2] =clamp_range_f(ta[2]*(1.0f-local_opacity2)
+                               +(ta[2]+tb[2])*tb[0]/0.01f*local_opacity2,
+                               min[2], max[2]);
         }
       }
       else
@@ -1212,16 +1212,16 @@ static void _blend_overlay(const _blend_buffer_desc_t *bd, const float *a, float
       for(int k = 0; k < bd->bch; k++)
       {
         lmax = max[k] + fabsf(min[k]);
-        la = CLAMP_RANGE(a[j + k] + fabsf(min[k]), lmin, lmax);
-        lb = CLAMP_RANGE(b[j + k] + fabsf(min[k]), lmin, lmax);
+        la =clamp_range_f(a[j+k]+fabsf(min[k]), lmin, lmax);
+        lb =clamp_range_f(b[j+k]+fabsf(min[k]), lmin, lmax);
         halfmax = lmax / 2.0f;
         doublemax = lmax * 2.0f;
 
-        b[j + k] = CLAMP_RANGE(((la * (1.0f - local_opacity2))
-                                + ((la > halfmax) ? (lmax - (lmax - doublemax * (la - halfmax)) * (lmax - lb))
-                                                  : ((doublemax * la) * lb))
-                                      * local_opacity2),
-                               lmin, lmax)
+        b[j + k] =clamp_range_f(la*(1.0f-local_opacity2)
+                                +(la>halfmax ? lmax-(lmax-doublemax*(la-halfmax))*(lmax-lb)
+                                             : doublemax*la*lb)
+                                 *local_opacity2,
+                                lmin, lmax)
                    - fabsf(min[k]);
       }
       b[j + 3] = local_opacity;
@@ -1237,16 +1237,16 @@ static void _blend_overlay(const _blend_buffer_desc_t *bd, const float *a, float
       for(int k = 0; k < bd->bch; k++)
       {
         lmax = max[k] + fabsf(min[k]);
-        la = CLAMP_RANGE(a[j + k] + fabsf(min[k]), lmin, lmax);
-        lb = CLAMP_RANGE(b[j + k] + fabsf(min[k]), lmin, lmax);
+        la =clamp_range_f(a[j+k]+fabsf(min[k]), lmin, lmax);
+        lb =clamp_range_f(b[j+k]+fabsf(min[k]), lmin, lmax);
         halfmax = lmax / 2.0f;
         doublemax = lmax * 2.0f;
 
-        b[j + k] = CLAMP_RANGE(((la * (1.0f - local_opacity2))
-                                + ((la > halfmax) ? (lmax - (lmax - doublemax * (la - halfmax)) * (lmax - lb))
-                                                  : ((doublemax * la) * lb))
-                                      * local_opacity2),
-                               lmin, lmax)
+        b[j + k] =clamp_range_f(la*(1.0f-local_opacity2)
+                                +(la>halfmax ? lmax-(lmax-doublemax*(la-halfmax))*(lmax-lb)
+                                             : doublemax*la*lb)
+                                 *local_opacity2,
+                                lmin, lmax)
                    - fabsf(min[k]);
       }
     }
@@ -1280,36 +1280,36 @@ static void _blend_softlight(const _blend_buffer_desc_t *bd, const float *a, flo
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
       lmax = max[0] + fabsf(min[0]);
-      la = CLAMP_RANGE(ta[0] + fabsf(min[0]), lmin, lmax);
-      lb = CLAMP_RANGE(tb[0] + fabsf(min[0]), lmin, lmax);
+      la =clamp_range_f(ta[0]+fabsf(min[0]), lmin, lmax);
+      lb =clamp_range_f(tb[0]+fabsf(min[0]), lmin, lmax);
       halfmax = lmax / 2.0f;
 
-      tb[0] = CLAMP_RANGE(
-                  ((la * (1.0f - local_opacity2))
-                   + ((lb > halfmax) ? (lmax - (lmax - la) * (lmax - (lb - halfmax))) : (la * (lb + halfmax)))
-                         * local_opacity2),
-                  lmin, lmax)
+      tb[0] =clamp_range_f(
+          la*(1.0f-local_opacity2)
+          +(lb>halfmax ? lmax-(lmax-la)*(lmax-(lb-halfmax)) : la*(lb+halfmax))
+           *local_opacity2,
+          lmin, lmax)
               - fabsf(min[0]);
 
       if(flag == 0)
       {
         if(ta[0] > 0.01f)
         {
-          tb[1] = CLAMP_RANGE(ta[1] * (1.0f - local_opacity2)
-                              + (ta[1] + tb[1]) * tb[0] / ta[0] * local_opacity2,
-                              min[1], max[1]);
-          tb[2] = CLAMP_RANGE(ta[2] * (1.0f - local_opacity2)
-                              + (ta[2] + tb[2]) * tb[0] / ta[0] * local_opacity2,
-                              min[2], max[2]);
+          tb[1] =clamp_range_f(ta[1]*(1.0f-local_opacity2)
+                               +(ta[1]+tb[1])*tb[0]/ta[0]*local_opacity2,
+                               min[1], max[1]);
+          tb[2] =clamp_range_f(ta[2]*(1.0f-local_opacity2)
+                               +(ta[2]+tb[2])*tb[0]/ta[0]*local_opacity2,
+                               min[2], max[2]);
         }
         else
         {
-          tb[1] = CLAMP_RANGE(ta[1] * (1.0f - local_opacity2)
-                              + (ta[1] + tb[1]) * tb[0] / 0.01f * local_opacity2,
-                              min[1], max[1]);
-          tb[2] = CLAMP_RANGE(ta[2] * (1.0f - local_opacity2)
-                              + (ta[2] + tb[2]) * tb[0] / 0.01f * local_opacity2,
-                              min[2], max[2]);
+          tb[1] =clamp_range_f(ta[1]*(1.0f-local_opacity2)
+                               +(ta[1]+tb[1])*tb[0]/0.01f*local_opacity2,
+                               min[1], max[1]);
+          tb[2] =clamp_range_f(ta[2]*(1.0f-local_opacity2)
+                               +(ta[2]+tb[2])*tb[0]/0.01f*local_opacity2,
+                               min[2], max[2]);
         }
       }
       else
@@ -1332,15 +1332,15 @@ static void _blend_softlight(const _blend_buffer_desc_t *bd, const float *a, flo
       for(int k = 0; k < bd->bch; k++)
       {
         lmax = max[k] + fabsf(min[k]);
-        la = CLAMP_RANGE(a[j + k] + fabsf(min[k]), lmin, lmax);
-        lb = CLAMP_RANGE(b[j + k] + fabsf(min[k]), lmin, lmax);
+        la =clamp_range_f(a[j+k]+fabsf(min[k]), lmin, lmax);
+        lb =clamp_range_f(b[j+k]+fabsf(min[k]), lmin, lmax);
         halfmax = lmax / 2.0f;
 
-        b[j + k] = CLAMP_RANGE(
-                       ((la * (1.0f - local_opacity2))
-                        + ((lb > halfmax) ? (lmax - (lmax - la) * (lmax - (lb - halfmax))) : (la * (lb + halfmax)))
-                              * local_opacity2),
-                       lmin, lmax)
+        b[j + k] =clamp_range_f(
+            la*(1.0f-local_opacity2)
+            +(lb>halfmax ? lmax-(lmax-la)*(lmax-(lb-halfmax)) : la*(lb+halfmax))
+             *local_opacity2,
+            lmin, lmax)
                    - fabsf(min[k]);
 
         b[j + 3] = local_opacity;
@@ -1357,15 +1357,15 @@ static void _blend_softlight(const _blend_buffer_desc_t *bd, const float *a, flo
       for(int k = 0; k < bd->bch; k++)
       {
         lmax = max[k] + fabsf(min[k]);
-        la = CLAMP_RANGE(a[j + k] + fabsf(min[k]), lmin, lmax);
-        lb = CLAMP_RANGE(b[j + k] + fabsf(min[k]), lmin, lmax);
+        la =clamp_range_f(a[j+k]+fabsf(min[k]), lmin, lmax);
+        lb =clamp_range_f(b[j+k]+fabsf(min[k]), lmin, lmax);
         halfmax = lmax / 2.0f;
 
-        b[j + k] = CLAMP_RANGE(
-                       ((la * (1.0f - local_opacity2))
-                        + ((lb > halfmax) ? (lmax - (lmax - la) * (lmax - (lb - halfmax))) : (la * (lb + halfmax)))
-                              * local_opacity2),
-                       lmin, lmax)
+        b[j + k] =clamp_range_f(
+            la*(1.0f-local_opacity2)
+            +(lb>halfmax ? lmax-(lmax-la)*(lmax-(lb-halfmax)) : la*(lb+halfmax))
+             *local_opacity2,
+            lmin, lmax)
                    - fabsf(min[k]);
       }
     }
@@ -1396,37 +1396,37 @@ static void _blend_hardlight(const _blend_buffer_desc_t *bd, const float *a, flo
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
       lmax = max[0] + fabsf(min[0]);
-      la = CLAMP_RANGE(ta[0] + fabsf(min[0]), lmin, lmax);
-      lb = CLAMP_RANGE(tb[0] + fabsf(min[0]), lmin, lmax);
+      la =clamp_range_f(ta[0]+fabsf(min[0]), lmin, lmax);
+      lb =clamp_range_f(tb[0]+fabsf(min[0]), lmin, lmax);
       halfmax = lmax / 2.0f;
       doublemax = lmax * 2.0f;
 
-      tb[0] = CLAMP_RANGE(((la * (1.0f - local_opacity2))
-                           + ((lb > halfmax) ? (lmax - (lmax - doublemax * (la - halfmax)) * (lmax - lb))
-                                             : ((doublemax * la) * lb))
-                                 * local_opacity2),
-                          lmin, lmax)
+      tb[0] =clamp_range_f((la*(1.0f-local_opacity2))
+                           +(lb>halfmax ? lmax-(lmax-doublemax*(la-halfmax))*(lmax-lb)
+                                        : doublemax*la*lb)
+                            *local_opacity2,
+                           lmin, lmax)
               - fabsf(min[0]);
 
       if(flag == 0)
       {
         if(ta[0] > 0.01f)
         {
-          tb[1] = CLAMP_RANGE(ta[1] * (1.0f - local_opacity2)
-                              + (ta[1] + tb[1]) * tb[0] / ta[0] * local_opacity2,
-                              min[1], max[1]);
-          tb[2] = CLAMP_RANGE(ta[2] * (1.0f - local_opacity2)
-                              + (ta[2] + tb[2]) * tb[0] / ta[0] * local_opacity2,
-                              min[2], max[2]);
+          tb[1] =clamp_range_f(ta[1]*(1.0f-local_opacity2)
+                               +(ta[1]+tb[1])*tb[0]/ta[0]*local_opacity2,
+                               min[1], max[1]);
+          tb[2] =clamp_range_f(ta[2]*(1.0f-local_opacity2)
+                               +(ta[2]+tb[2])*tb[0]/ta[0]*local_opacity2,
+                               min[2], max[2]);
         }
         else
         {
-          tb[1] = CLAMP_RANGE(ta[1] * (1.0f - local_opacity2)
-                              + (ta[1] + tb[1]) * tb[0] / 0.01f * local_opacity2,
-                              min[1], max[1]);
-          tb[2] = CLAMP_RANGE(ta[2] * (1.0f - local_opacity2)
-                              + (ta[2] + tb[2]) * tb[0] / 0.01f * local_opacity2,
-                              min[2], max[2]);
+          tb[1] =clamp_range_f(ta[1]*(1.0f-local_opacity2)
+                               +(ta[1]+tb[1])*tb[0]/0.01f*local_opacity2,
+                               min[1], max[1]);
+          tb[2] =clamp_range_f(ta[2]*(1.0f-local_opacity2)
+                               +(ta[2]+tb[2])*tb[0]/0.01f*local_opacity2,
+                               min[2], max[2]);
         }
       }
       else
@@ -1449,16 +1449,16 @@ static void _blend_hardlight(const _blend_buffer_desc_t *bd, const float *a, flo
       for(int k = 0; k < bd->bch; k++)
       {
         lmax = max[k] + fabsf(min[k]);
-        la = CLAMP_RANGE(a[j + k] + fabsf(min[k]), lmin, lmax);
-        lb = CLAMP_RANGE(b[j + k] + fabsf(min[k]), lmin, lmax);
+        la =clamp_range_f(a[j+k]+fabsf(min[k]), lmin, lmax);
+        lb =clamp_range_f(b[j+k]+fabsf(min[k]), lmin, lmax);
         halfmax = lmax / 2.0f;
         doublemax = lmax * 2.0f;
 
-        b[j + k] = CLAMP_RANGE(((la * (1.0f - local_opacity2))
-                                + ((lb > halfmax) ? (lmax - (lmax - doublemax * (la - halfmax)) * (lmax - lb))
-                                                  : ((doublemax * la) * lb))
-                                      * local_opacity2),
-                               lmin, lmax)
+        b[j + k] =clamp_range_f(la*(1.0f-local_opacity2)
+                                +(lb>halfmax ? lmax-(lmax-doublemax*(la-halfmax))*(lmax-lb)
+                                             : doublemax*la*lb)
+                                 *local_opacity2,
+                                lmin, lmax)
                    - fabsf(min[k]);
       }
       b[j + 3] = local_opacity;
@@ -1474,16 +1474,16 @@ static void _blend_hardlight(const _blend_buffer_desc_t *bd, const float *a, flo
       for(int k = 0; k < bd->bch; k++)
       {
         lmax = max[k] + fabsf(min[k]);
-        la = CLAMP_RANGE(a[j + k] + fabsf(min[k]), lmin, lmax);
-        lb = CLAMP_RANGE(b[j + k] + fabsf(min[k]), lmin, lmax);
+        la =clamp_range_f(a[j+k]+fabsf(min[k]), lmin, lmax);
+        lb =clamp_range_f(b[j+k]+fabsf(min[k]), lmin, lmax);
         halfmax = lmax / 2.0f;
         doublemax = lmax * 2.0f;
 
-        b[j + k] = CLAMP_RANGE(((la * (1.0f - local_opacity2))
-                                + ((lb > halfmax) ? (lmax - (lmax - doublemax * (la - halfmax)) * (lmax - lb))
-                                                  : ((doublemax * la) * lb))
-                                      * local_opacity2),
-                               lmin, lmax)
+        b[j + k] =clamp_range_f(la*(1.0f-local_opacity2)
+                                +(lb>halfmax ? lmax-(lmax-doublemax*(la-halfmax))*(lmax-lb)
+                                             : doublemax*la*lb)
+                                 *local_opacity2,
+                                lmin, lmax)
                    - fabsf(min[k]);
       }
     }
@@ -1516,37 +1516,37 @@ static void _blend_vividlight(const _blend_buffer_desc_t *bd, const float *a, fl
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
       lmax = max[0] + fabsf(min[0]);
-      la = CLAMP_RANGE(ta[0] + fabsf(min[0]), lmin, lmax);
-      lb = CLAMP_RANGE(tb[0] + fabsf(min[0]), lmin, lmax);
+      la =clamp_range_f(ta[0]+fabsf(min[0]), lmin, lmax);
+      lb =clamp_range_f(tb[0]+fabsf(min[0]), lmin, lmax);
       halfmax = lmax / 2.0f;
       doublemax = lmax * 2.0f;
 
-      tb[0] = CLAMP_RANGE(((la * (1.0f - local_opacity2))
-                           + ((lb > halfmax) ? (lb >= lmax ? lmax : la / (doublemax * (lmax - lb)))
-                                             : (lb <= lmin ? lmin : lmax - (lmax - la) / (doublemax * lb)))
-                                 * local_opacity2),
-                          lmin, lmax)
+      tb[0] =clamp_range_f(la*(1.0f-local_opacity2)
+                           +(lb>halfmax ? (lb>=lmax ? lmax : la/(doublemax*(lmax-lb)))
+                                        : (lb<=lmin ? lmin : lmax-(lmax-la)/(doublemax*lb)))
+                            *local_opacity2,
+                           lmin, lmax)
               - fabsf(min[0]);
 
       if(flag == 0)
       {
         if(ta[0] > 0.01f)
         {
-          tb[1] = CLAMP_RANGE(ta[1] * (1.0f - local_opacity2)
-                              + (ta[1] + tb[1]) * tb[0] / ta[0] * local_opacity2,
-                              min[1], max[1]);
-          tb[2] = CLAMP_RANGE(ta[2] * (1.0f - local_opacity2)
-                              + (ta[2] + tb[2]) * tb[0] / ta[0] * local_opacity2,
-                              min[2], max[2]);
+          tb[1] =clamp_range_f(ta[1]*(1.0f-local_opacity2)
+                               +(ta[1]+tb[1])*tb[0]/ta[0]*local_opacity2,
+                               min[1], max[1]);
+          tb[2] =clamp_range_f(ta[2]*(1.0f-local_opacity2)
+                               +(ta[2]+tb[2])*tb[0]/ta[0]*local_opacity2,
+                               min[2], max[2]);
         }
         else
         {
-          tb[1] = CLAMP_RANGE(ta[1] * (1.0f - local_opacity2)
-                              + (ta[1] + tb[1]) * tb[0] / 0.01f * local_opacity2,
-                              min[1], max[1]);
-          tb[2] = CLAMP_RANGE(ta[2] * (1.0f - local_opacity2)
-                              + (ta[2] + tb[2]) * tb[0] / 0.01f * local_opacity2,
-                              min[2], max[2]);
+          tb[1] =clamp_range_f(ta[1]*(1.0f-local_opacity2)
+                               +(ta[1]+tb[1])*tb[0]/0.01f*local_opacity2,
+                               min[1], max[1]);
+          tb[2] =clamp_range_f(ta[2]*(1.0f-local_opacity2)
+                               +(ta[2]+tb[2])*tb[0]/0.01f*local_opacity2,
+                               min[2], max[2]);
         }
       }
       else
@@ -1569,16 +1569,16 @@ static void _blend_vividlight(const _blend_buffer_desc_t *bd, const float *a, fl
       for(int k = 0; k < bd->bch; k++)
       {
         lmax = max[k] + fabsf(min[k]);
-        la = CLAMP_RANGE(a[j + k] + fabsf(min[k]), lmin, lmax);
-        lb = CLAMP_RANGE(b[j + k] + fabsf(min[k]), lmin, lmax);
+        la =clamp_range_f(a[j+k]+fabsf(min[k]), lmin, lmax);
+        lb =clamp_range_f(b[j+k]+fabsf(min[k]), lmin, lmax);
         halfmax = lmax / 2.0f;
         doublemax = lmax * 2.0f;
 
-        b[j + k] = CLAMP_RANGE(((la * (1.0f - local_opacity2))
-                                + ((lb > halfmax) ? (lb >= lmax ? lmax : la / (doublemax * (lmax - lb)))
-                                                  : (lb <= lmin ? lmin : lmax - (lmax - la) / (doublemax * lb)))
-                                      * local_opacity2),
-                               lmin, lmax)
+        b[j + k] =clamp_range_f((la*(1.0f-local_opacity2))
+                                +(lb>halfmax ? (lb>=lmax ? lmax : la/(doublemax*(lmax-lb)))
+                                             : (lb<=lmin ? lmin : lmax-(lmax-la)/(doublemax*lb)))
+                                 *local_opacity2,
+                                lmin, lmax)
                    - fabsf(min[k]);
       }
       b[j + 3] = local_opacity;
@@ -1594,16 +1594,16 @@ static void _blend_vividlight(const _blend_buffer_desc_t *bd, const float *a, fl
       for(int k = 0; k < bd->bch; k++)
       {
         lmax = max[k] + fabsf(min[k]);
-        la = CLAMP_RANGE(a[j + k] + fabsf(min[k]), lmin, lmax);
-        lb = CLAMP_RANGE(b[j + k] + fabsf(min[k]), lmin, lmax);
+        la =clamp_range_f(a[j+k]+fabsf(min[k]), lmin, lmax);
+        lb =clamp_range_f(b[j+k]+fabsf(min[k]), lmin, lmax);
         halfmax = lmax / 2.0f;
         doublemax = lmax * 2.0f;
 
-        b[j + k] = CLAMP_RANGE(((la * (1.0f - local_opacity2))
-                                + ((lb > halfmax) ? (lb >= lmax ? lmax : la / (doublemax * (lmax - lb)))
-                                                  : (lb <= lmin ? lmin : lmax - (lmax - la) / (doublemax * lb)))
-                                      * local_opacity2),
-                               lmin, lmax)
+        b[j + k] =clamp_range_f(la*(1.0f-local_opacity2)
+                                +(lb>halfmax ? (lb>=lmax ? lmax : la/(doublemax*(lmax-lb)))
+                                             : (lb<=lmin ? lmin : lmax-(lmax-la)/(doublemax*lb)))
+                                 *local_opacity2,
+                                lmin, lmax)
                    - fabsf(min[k]);
       }
     }
@@ -1635,33 +1635,33 @@ static void _blend_linearlight(const _blend_buffer_desc_t *bd, const float *a, f
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
       lmax = max[0] + fabsf(min[0]);
-      la = CLAMP_RANGE(ta[0] + fabsf(min[0]), lmin, lmax);
-      lb = CLAMP_RANGE(tb[0] + fabsf(min[0]), lmin, lmax);
+      la =clamp_range_f(ta[0]+fabsf(min[0]), lmin, lmax);
+      lb =clamp_range_f(tb[0]+fabsf(min[0]), lmin, lmax);
       doublemax = lmax * 2.0f;
 
-      tb[0] = CLAMP_RANGE(((la * (1.0f - local_opacity2)) + (la + doublemax * lb - lmax) * local_opacity2), lmin,
-                          lmax)
+      tb[0] =clamp_range_f(la*(1.0f-local_opacity2)+(la+doublemax*lb-lmax)*local_opacity2, lmin,
+                           lmax)
               - fabsf(min[0]);
 
       if(flag == 0)
       {
         if(ta[0] > 0.01f)
         {
-          tb[1] = CLAMP_RANGE(ta[1] * (1.0f - local_opacity2)
-                              + (ta[1] + tb[1]) * tb[0] / ta[0] * local_opacity2,
-                              min[1], max[1]);
-          tb[2] = CLAMP_RANGE(ta[2] * (1.0f - local_opacity2)
-                              + (ta[2] + tb[2]) * tb[0] / ta[0] * local_opacity2,
-                              min[2], max[2]);
+          tb[1] =clamp_range_f(ta[1]*(1.0f-local_opacity2)
+                               +(ta[1]+tb[1])*tb[0]/ta[0]*local_opacity2,
+                               min[1], max[1]);
+          tb[2] =clamp_range_f(ta[2]*(1.0f-local_opacity2)
+                               +(ta[2]+tb[2])*tb[0]/ta[0]*local_opacity2,
+                               min[2], max[2]);
         }
         else
         {
-          tb[1] = CLAMP_RANGE(ta[1] * (1.0f - local_opacity2)
-                              + (ta[1] + tb[1]) * tb[0] / 0.01f * local_opacity2,
-                              min[1], max[1]);
-          tb[2] = CLAMP_RANGE(ta[2] * (1.0f - local_opacity2)
-                              + (ta[2] + tb[2]) * tb[0] / 0.01f * local_opacity2,
-                              min[2], max[2]);
+          tb[1] =clamp_range_f(ta[1]*(1.0f-local_opacity2)
+                               +(ta[1]+tb[1])*tb[0]/0.01f*local_opacity2,
+                               min[1], max[1]);
+          tb[2] =clamp_range_f(ta[2]*(1.0f-local_opacity2)
+                               +(ta[2]+tb[2])*tb[0]/0.01f*local_opacity2,
+                               min[2], max[2]);
         }
       }
       else
@@ -1684,12 +1684,12 @@ static void _blend_linearlight(const _blend_buffer_desc_t *bd, const float *a, f
       for(int k = 0; k < bd->bch; k++)
       {
         lmax = max[k] + fabsf(min[k]);
-        la = CLAMP_RANGE(a[j + k] + fabsf(min[k]), lmin, lmax);
-        lb = CLAMP_RANGE(b[j + k] + fabsf(min[k]), lmin, lmax);
+        la =clamp_range_f(a[j+k]+fabsf(min[k]), lmin, lmax);
+        lb =clamp_range_f(b[j+k]+fabsf(min[k]), lmin, lmax);
         doublemax = lmax * 2.0f;
 
-        b[j + k] = CLAMP_RANGE(((la * (1.0f - local_opacity2)) + (la + doublemax * lb - lmax) * local_opacity2),
-                               lmin, lmax)
+        b[j + k] =clamp_range_f(la*(1.0f-local_opacity2)+(la+doublemax*lb-lmax)*local_opacity2,
+                                lmin, lmax)
                    - fabsf(min[k]);
       }
       b[j + 3] = local_opacity;
@@ -1705,12 +1705,12 @@ static void _blend_linearlight(const _blend_buffer_desc_t *bd, const float *a, f
       for(int k = 0; k < bd->bch; k++)
       {
         lmax = max[k] + fabsf(min[k]);
-        la = CLAMP_RANGE(a[j + k] + fabsf(min[k]), lmin, lmax);
-        lb = CLAMP_RANGE(b[j + k] + fabsf(min[k]), lmin, lmax);
+        la =clamp_range_f(a[j+k]+fabsf(min[k]), lmin, lmax);
+        lb =clamp_range_f(b[j+k]+fabsf(min[k]), lmin, lmax);
         doublemax = lmax * 2.0f;
 
-        b[j + k] = CLAMP_RANGE(((la * (1.0f - local_opacity2)) + (la + doublemax * lb - lmax) * local_opacity2),
-                               lmin, lmax)
+        b[j + k] =clamp_range_f(la*(1.0f-local_opacity2)+(la+doublemax*lb-lmax)*local_opacity2,
+                                lmin, lmax)
                    - fabsf(min[k]);
       }
     }
@@ -1742,20 +1742,20 @@ static void _blend_pinlight(const _blend_buffer_desc_t *bd, const float *a, floa
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
       lmax = max[0] + fabsf(min[0]);
-      la = CLAMP_RANGE(ta[0] + fabsf(min[0]), lmin, lmax);
-      lb = CLAMP_RANGE(tb[0] + fabsf(min[0]), lmin, lmax);
+      la =clamp_range_f(ta[0]+fabsf(min[0]), lmin, lmax);
+      lb =clamp_range_f(tb[0]+fabsf(min[0]), lmin, lmax);
       halfmax = lmax / 2.0f;
       doublemax = lmax * 2.0f;
 
       tb[0]
-          = CLAMP_RANGE(((la * (1.0f - local_opacity2))
-                         + ((lb > halfmax) ? (fmaxf(la, doublemax * (lb - halfmax))) : (fminf(la, doublemax * lb)))
-                               * local_opacity2),
-                        lmin, lmax)
+          =clamp_range_f(la*(1.0f-local_opacity2)
+                         +(lb>halfmax ? fmaxf(la, doublemax*(lb-halfmax)) : fminf(la, doublemax*lb))
+                          *local_opacity2,
+                         lmin, lmax)
             - fabsf(min[0]);
 
-      tb[1] = CLAMP_RANGE(ta[1], min[1], max[1]);
-      tb[2] = CLAMP_RANGE(ta[2], min[2], max[2]);
+      tb[1] =clamp_range_f(ta[1], min[1], max[1]);
+      tb[2] =clamp_range_f(ta[2], min[2], max[2]);
 
       _blend_Lab_rescale(tb, &b[j]);
       b[j + 3] = local_opacity;
@@ -1771,16 +1771,16 @@ static void _blend_pinlight(const _blend_buffer_desc_t *bd, const float *a, floa
       for(int k = 0; k < bd->bch; k++)
       {
         lmax = max[k] + fabsf(min[k]);
-        la = CLAMP_RANGE(a[j + k] + fabsf(min[k]), lmin, lmax);
-        lb = CLAMP_RANGE(b[j + k] + fabsf(min[k]), lmin, lmax);
+        la =clamp_range_f(a[j+k]+fabsf(min[k]), lmin, lmax);
+        lb =clamp_range_f(b[j+k]+fabsf(min[k]), lmin, lmax);
         halfmax = lmax / 2.0f;
         doublemax = lmax * 2.0f;
 
-        b[j + k] = CLAMP_RANGE(
-                       ((la * (1.0f - local_opacity2))
-                        + ((lb > halfmax) ? (fmaxf(la, doublemax * (lb - halfmax))) : (fminf(la, doublemax * lb)))
-                              * local_opacity2),
-                       lmin, lmax)
+        b[j + k] =clamp_range_f(
+            (la*(1.0f-local_opacity2))
+            +(lb>halfmax ? fmaxf(la, doublemax*(lb-halfmax)) : fminf(la, doublemax*lb))
+             *local_opacity2,
+            lmin, lmax)
                    - fabsf(min[k]);
       }
       b[j + 3] = local_opacity;
@@ -1796,16 +1796,16 @@ static void _blend_pinlight(const _blend_buffer_desc_t *bd, const float *a, floa
       for(int k = 0; k < bd->bch; k++)
       {
         lmax = max[k] + fabsf(min[k]);
-        la = CLAMP_RANGE(a[j + k] + fabsf(min[k]), lmin, lmax);
-        lb = CLAMP_RANGE(b[j + k] + fabsf(min[k]), lmin, lmax);
+        la =clamp_range_f(a[j+k]+fabsf(min[k]), lmin, lmax);
+        lb =clamp_range_f(b[j+k]+fabsf(min[k]), lmin, lmax);
         halfmax = lmax / 2.0f;
         doublemax = lmax * 2.0f;
 
-        b[j + k] = CLAMP_RANGE(
-                       ((la * (1.0f - local_opacity2))
-                        + ((lb > halfmax) ? (fmaxf(la, doublemax * (lb - halfmax))) : (fminf(la, doublemax * lb)))
-                              * local_opacity2),
-                       lmin, lmax)
+        b[j + k] =clamp_range_f(
+            (la*(1.0f-local_opacity2)
+             +(lb>halfmax ? fmaxf(la, doublemax*(lb-halfmax)) : fminf(la, doublemax*lb))
+              *local_opacity2),
+            lmin, lmax)
                    - fabsf(min[k]);
       }
     }
@@ -1837,9 +1837,9 @@ static void _blend_lightness(const _blend_buffer_desc_t *bd, const float *a, flo
 
       // no need to transfer to LCH as L is the same as in Lab, and C and H
       // remain unchanged
-      tb[0] = CLAMP_RANGE((ta[0] * (1.0f - local_opacity)) + tb[0] * local_opacity, min[0], max[0]);
-      tb[1] = CLAMP_RANGE(ta[1], min[1], max[1]);
-      tb[2] = CLAMP_RANGE(ta[2], min[2], max[2]);
+      tb[0] =clamp_range_f(ta[0]*(1.0f-local_opacity)+tb[0]*local_opacity, min[0], max[0]);
+      tb[1] =clamp_range_f(ta[1], min[1], max[1]);
+      tb[2] =clamp_range_f(ta[2], min[2], max[2]);
 
       _blend_Lab_rescale(tb, &b[j]);
       b[j + 3] = local_opacity;
@@ -2154,12 +2154,12 @@ static void _blend_inverse(const _blend_buffer_desc_t *bd, const float *a, float
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
 
-      tb[0] = CLAMP_RANGE((ta[0] * (1.0f - local_opacity)) + tb[0] * local_opacity, min[0], max[0]);
+      tb[0] =clamp_range_f(ta[0]*(1.0f-local_opacity)+tb[0]*local_opacity, min[0], max[0]);
 
       if(flag == 0)
       {
-        tb[1] = CLAMP_RANGE((ta[1] * (1.0f - local_opacity)) + tb[1] * local_opacity, min[1], max[1]);
-        tb[2] = CLAMP_RANGE((ta[2] * (1.0f - local_opacity)) + tb[2] * local_opacity, min[2], max[2]);
+        tb[1] =clamp_range_f(ta[1]*(1.0f-local_opacity)+tb[1]*local_opacity, min[1], max[1]);
+        tb[2] =clamp_range_f(ta[2]*(1.0f-local_opacity)+tb[2]*local_opacity, min[2], max[2]);
       }
       else
       {
@@ -2178,7 +2178,7 @@ static void _blend_inverse(const _blend_buffer_desc_t *bd, const float *a, float
       float local_opacity = mask[i];
       for(int k = 0; k < bd->bch; k++)
         b[j + k]
-            = CLAMP_RANGE((a[j + k] * (1.0f - local_opacity)) + b[j + k] * local_opacity, min[k], max[k]);
+            =clamp_range_f(a[j+k]*(1.0f-local_opacity)+b[j+k]*local_opacity, min[k], max[k]);
       b[j + 3] = local_opacity;
     }
   }
@@ -2189,7 +2189,7 @@ static void _blend_inverse(const _blend_buffer_desc_t *bd, const float *a, float
       float local_opacity = mask[i];
       for(int k = 0; k < bd->bch; k++)
         b[j + k]
-            = CLAMP_RANGE((a[j + k] * (1.0f - local_opacity)) + b[j + k] * local_opacity, min[k], max[k]);
+            =clamp_range_f(a[j+k]*(1.0f-local_opacity)+b[j+k]*local_opacity, min[k], max[k]);
     }
   }
 }
@@ -2208,7 +2208,7 @@ static void _blend_Lab_lightness(const _blend_buffer_desc_t *bd, const float *a,
       _blend_Lab_scale(&a[j], ta);
       _blend_Lab_scale(&b[j], tb);
 
-      tb[0] = (ta[0] * (1.0f - local_opacity)) + tb[0] * local_opacity;
+      tb[0] = ta[0] * (1.0f - local_opacity) + tb[0] * local_opacity;
       tb[1] = ta[1];
       tb[2] = ta[2];
 
@@ -2235,7 +2235,7 @@ static void _blend_Lab_a(const _blend_buffer_desc_t *bd, const float *a, float *
       _blend_Lab_scale(&b[j], tb);
 
       tb[0] = ta[0];
-      tb[1] = (ta[1] * (1.0f - local_opacity)) + tb[1] * local_opacity;
+      tb[1] = ta[1] * (1.0f - local_opacity) + tb[1] * local_opacity;
       tb[2] = ta[2];
 
       _blend_Lab_rescale(tb, &b[j]);
@@ -2262,7 +2262,7 @@ static void _blend_Lab_b(const _blend_buffer_desc_t *bd, const float *a, float *
 
       tb[0] = ta[0];
       tb[1] = ta[1];
-      tb[2] = (ta[2] * (1.0f - local_opacity)) + tb[2] * local_opacity;
+      tb[2] = ta[2] * (1.0f - local_opacity) + tb[2] * local_opacity;
 
       _blend_Lab_rescale(tb, &b[j]);
       b[j + 3] = local_opacity;
@@ -2288,8 +2288,8 @@ static void _blend_Lab_color(const _blend_buffer_desc_t *bd, const float *a, flo
       _blend_Lab_scale(&b[j], tb);
 
       tb[0] = ta[0];
-      tb[1] = (ta[1] * (1.0f - local_opacity)) + tb[1] * local_opacity;
-      tb[2] = (ta[2] * (1.0f - local_opacity)) + tb[2] * local_opacity;
+      tb[1] = ta[1] * (1.0f - local_opacity) + tb[1] * local_opacity;
+      tb[2] = ta[2] * (1.0f - local_opacity) + tb[2] * local_opacity;
 
       if(flag != 0)
       {
@@ -2384,7 +2384,7 @@ static void _blend_RGB_R(const _blend_buffer_desc_t *bd, const float *a, float *
     {
       float local_opacity = mask[i];
 
-      b[j + 0] = (a[j + 0] * (1.0f - local_opacity)) + b[j + 0] * local_opacity;
+      b[j + 0] = a[j + 0] * (1.0f - local_opacity) + b[j + 0] * local_opacity;
       b[j + 1] = a[j + 1];
       b[j + 2] = a[j + 2];
       b[j + 3] = local_opacity;
@@ -2407,7 +2407,7 @@ static void _blend_RGB_G(const _blend_buffer_desc_t *bd, const float *a, float *
       float local_opacity = mask[i];
 
       b[j + 0] = a[j + 0];
-      b[j + 1] = (a[j + 1] * (1.0f - local_opacity)) + b[j + 1] * local_opacity;
+      b[j + 1] = a[j + 1] * (1.0f - local_opacity) + b[j + 1] * local_opacity;
       b[j + 2] = a[j + 2];
       b[j + 3] = local_opacity;
     }
@@ -2429,7 +2429,7 @@ static void _blend_RGB_B(const _blend_buffer_desc_t *bd, const float *a, float *
 
       b[j + 0] = a[j + 0];
       b[j + 1] = a[j + 1];
-      b[j + 2] = (a[j + 2] * (1.0f - local_opacity)) + b[j + 2] * local_opacity;
+      b[j + 2] = a[j + 2] * (1.0f - local_opacity) + b[j + 2] * local_opacity;
       b[j + 3] = local_opacity;
     }
   }
@@ -2448,84 +2448,84 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
     case DT_DEV_PIXELPIPE_DISPLAY_L:
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
-        const float c = CLAMP_RANGE(a[j] / 100.0f, 0.0f, 1.0f);
+        const float c =clamp_range_f(a[j]/100.0f, 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_L | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
-        const float c = CLAMP_RANGE(b[j] / 100.0f, 0.0f, 1.0f);
+        const float c =clamp_range_f(b[j]/100.0f, 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_a:
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
-        const float c = CLAMP_RANGE((a[j + 1] + 128.0f) / 256.0f, 0.0f, 1.0f);
+        const float c =clamp_range_f((a[j+1]+128.0f)/256.0f, 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_a | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
-        const float c = CLAMP_RANGE((b[j + 1] + 128.0f) / 256.0f, 0.0f, 1.0f);
+        const float c =clamp_range_f((b[j+1]+128.0f)/256.0f, 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_b:
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
-        const float c = CLAMP_RANGE((a[j + 2] + 128.0f) / 256.0f, 0.0f, 1.0f);
+        const float c =clamp_range_f((a[j+2]+128.0f)/256.0f, 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_b | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
-        const float c = CLAMP_RANGE((b[j + 2] + 128.0f) / 256.0f, 0.0f, 1.0f);
+        const float c =clamp_range_f((b[j+2]+128.0f)/256.0f, 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_R:
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
-        const float c = CLAMP_RANGE(a[j], 0.0f, 1.0f);
+        const float c =clamp_range_f(a[j], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_R | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
-        const float c = CLAMP_RANGE(b[j], 0.0f, 1.0f);
+        const float c =clamp_range_f(b[j], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_G:
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
-        const float c = CLAMP_RANGE(a[j + 1], 0.0f, 1.0f);
+        const float c =clamp_range_f(a[j+1], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_G | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
-        const float c = CLAMP_RANGE(b[j + 1], 0.0f, 1.0f);
+        const float c =clamp_range_f(b[j+1], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_B:
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
-        const float c = CLAMP_RANGE(a[j + 2], 0.0f, 1.0f);
+        const float c =clamp_range_f(a[j+2], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_B | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
-        const float c = CLAMP_RANGE(b[j + 2], 0.0f, 1.0f);
+        const float c =clamp_range_f(b[j+2], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
@@ -2533,8 +2533,8 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
         const float c = (work_profile == NULL)
-                            ? CLAMP_RANGE(0.3f * a[j] + 0.59f * a[j + 1] + 0.11f * a[j + 2], 0.0f, 1.0f)
-                            : CLAMP_RANGE(dt_ioppr_get_rgb_matrix_luminance(a + j, work_profile), 0.0f, 1.0f);
+                            ? clamp_range_f(0.3f*a[j]+0.59f*a[j+1]+0.11f*a[j+2], 0.0f, 1.0f)
+                            : clamp_range_f(dt_ioppr_get_rgb_matrix_luminance(a+j, work_profile), 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
@@ -2542,8 +2542,8 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       for(size_t i = 0, j = 0; j < bd->stride; i++, j += bd->ch)
       {
         const float c = (work_profile == NULL)
-                            ? CLAMP_RANGE(0.3f * b[j] + 0.59f * b[j + 1] + 0.11f * b[j + 2], 0.0f, 1.0f)
-                            : CLAMP_RANGE(dt_ioppr_get_rgb_matrix_luminance(b + j, work_profile), 0.0f, 1.0f);
+                            ? clamp_range_f(0.3f*b[j]+0.59f*b[j+1]+0.11f*b[j+2], 0.0f, 1.0f)
+                            : clamp_range_f(dt_ioppr_get_rgb_matrix_luminance(b+j, work_profile), 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
@@ -2552,7 +2552,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       {
         float LCH[3];
         dt_Lab_2_LCH(a + j, LCH);
-        const float c = CLAMP_RANGE(LCH[1] / (128.0f * sqrtf(2.0f)), 0.0f, 1.0f);
+        const float c =clamp_range_f(LCH[1]/(128.0f*sqrtf(2.0f)), 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
@@ -2561,7 +2561,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       {
         float LCH[3];
         dt_Lab_2_LCH(b + j, LCH);
-        const float c = CLAMP_RANGE(LCH[1] / (128.0f * sqrtf(2.0f)), 0.0f, 1.0f);
+        const float c =clamp_range_f(LCH[1]/(128.0f*sqrtf(2.0f)), 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
@@ -2570,7 +2570,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       {
         float LCH[3];
         dt_Lab_2_LCH(a + j, LCH);
-        const float c = CLAMP_RANGE(LCH[2], 0.0f, 1.0f);
+        const float c =clamp_range_f(LCH[2], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
@@ -2579,7 +2579,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       {
         float LCH[3];
         dt_Lab_2_LCH(b + j, LCH);
-        const float c = CLAMP_RANGE(LCH[2], 0.0f, 1.0f);
+        const float c =clamp_range_f(LCH[2], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
@@ -2588,7 +2588,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       {
         float HSL[3];
         dt_RGB_2_HSL(a + j, HSL);
-        const float c = CLAMP_RANGE(HSL[0], 0.0f, 1.0f);
+        const float c =clamp_range_f(HSL[0], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
@@ -2597,7 +2597,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       {
         float HSL[3];
         dt_RGB_2_HSL(b + j, HSL);
-        const float c = CLAMP_RANGE(HSL[0], 0.0f, 1.0f);
+        const float c =clamp_range_f(HSL[0], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
@@ -2606,7 +2606,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       {
         float HSL[3];
         dt_RGB_2_HSL(a + j, HSL);
-        const float c = CLAMP_RANGE(HSL[1], 0.0f, 1.0f);
+        const float c =clamp_range_f(HSL[1], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
@@ -2615,7 +2615,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       {
         float HSL[3];
         dt_RGB_2_HSL(b + j, HSL);
-        const float c = CLAMP_RANGE(HSL[1], 0.0f, 1.0f);
+        const float c =clamp_range_f(HSL[1], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
@@ -2624,7 +2624,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       {
         float HSL[3];
         dt_RGB_2_HSL(a + j, HSL);
-        const float c = CLAMP_RANGE(HSL[2], 0.0f, 1.0f);
+        const float c =clamp_range_f(HSL[2], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
@@ -2633,7 +2633,7 @@ static void display_channel(const _blend_buffer_desc_t *bd, const float *a, floa
       {
         float HSL[3];
         dt_RGB_2_HSL(b + j, HSL);
-        const float c = CLAMP_RANGE(HSL[2], 0.0f, 1.0f);
+        const float c =clamp_range_f(HSL[2], 0.0f, 1.0f);
         for(int k = 0; k < bd->bch; k++) b[j + k] = c;
       }
       break;
