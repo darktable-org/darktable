@@ -1865,6 +1865,63 @@ end</programlisting></para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+
+<section status="final" id="darktable_gui_libs_lighttable_mode_layout">
+<title>darktable.gui.libs.lighttable_mode.layout</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>layout</secondary>
+</indexterm>
+<synopsis>function( 
+	[<emphasis><link linkend="darktable_gui_libs_lighttable_mode_layout_layout">layout</link></emphasis> : <link linkend="types_dt_lighttable_layout_t">types.dt_lighttable_layout_t</link>]
+) : <link linkend="types_dt_lighttable_layout_t">types.dt_lighttable_layout_t</link></synopsis>
+<para>Allows to change the lighttable layout.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_lighttable_mode_layout_layout"><term>[layout]</term><listitem>
+<synopsis><link linkend="types_dt_lighttable_layout_t">types.dt_lighttable_layout_t</link></synopsis>
+<para>The layout to switch to. If empty the current layout is unchanged</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types_dt_lighttable_layout_t">types.dt_lighttable_layout_t</link></synopsis>
+<para>the current layout</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_libs_lighttable_mode_zoom_level">
+<title>darktable.gui.libs.lighttable_mode.zoom_level</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>zoom_level</secondary>
+</indexterm>
+<synopsis>function( 
+	[<emphasis><link linkend="darktable_gui_libs_lighttable_mode_zoom_level_level">level</link></emphasis> : number]
+) : number</synopsis>
+<para>Change the lighttable zoom level.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_lighttable_mode_zoom_level_level"><term>[level]</term><listitem>
+<synopsis>number</synopsis>
+<para>The zoom level to switch to. If empty the current zoom level is unchanged</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>number</synopsis>
+<para>the current zoom level</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="darktable_gui_libs_copy_history">
@@ -7585,6 +7642,35 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <listitem><para>DT_UI_PANEL_RIGHT</para></listitem>
 <listitem><para>DT_UI_PANEL_BOTTOM</para></listitem>
 <listitem><para>DT_UI_PANEL_SIZE</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_lighttable_layout_t">
+<title>types.dt_lighttable_layout_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_lighttable_layout_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>The different lighttable layouts</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>DT_LIGHTTABLE_LAYOUT_FIRST</para></listitem>
+<listitem><para>DT_LIGHTTABLE_LAYOUT_ZOOMABLE</para></listitem>
+<listitem><para>DT_LIGHTTABLE_LAYOUT_FILEMANAGER</para></listitem>
+<listitem><para>DT_LIGHTTABLE_LAYOUT_EXPOSE</para></listitem>
+<listitem><para>DT_LIGHTTABLE_LAYOUT_LAST</para></listitem>
 </itemizedlist>
 </para></listitem>
 </itemizedlist>
