@@ -729,83 +729,131 @@ printf("process colorspace %d ch %d\n", colorspace, ch);
                                                           : (d->params.interpolation == DT_IOP_TRILINEAR) ? correct_pixel_trilinear
                                                           : correct_pixel_pyramid;
 
-  const dt_iop_order_iccprofile_info_t *const dest_profile
-      = colorspace == DT_IOP_REC709 ? dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_REC709, "", INTENT_PERCEPTUAL)
-      : colorspace == DT_IOP_SRGB ? dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_SRGB, "", INTENT_PERCEPTUAL)
-      : colorspace == DT_IOP_LIN_REC709 ? dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_LIN_REC709, "", INTENT_PERCEPTUAL)
-      : NULL;
-  const dt_iop_order_iccprofile_info_t *const rgb_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-
-  if (colorspace == DT_IOP_REC709 || colorspace == DT_IOP_SRGB || colorspace == DT_IOP_LIN_REC709)
-  {
-    dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, roi_out->width, roi_out->height, rgb_profile, dest_profile, "linrec2020 to specific");
-  }
   if (clut)
   {
-printf("process with clut\n");
+    printf("process with clut\n");
+    if (colorspace == DT_IOP_LOG_RGB) // log prophotorgb
+    {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
-    for(int j = 0; j < roi_out->height; j++)
-    {
-      float *in = ((float *)ibuf) + (size_t)ch * roi_in->width * j;
-      float *out = ((float *)obuf) + (size_t)ch * roi_out->width * j;
-      for(int i = 0; i < roi_out->width; i++)
+      for(int j = 0; j < roi_out->height; j++)
       {
-        float lin[3] = {0, 0, 0};
-        float lout[3] = {0, 0, 0};
-        if (colorspace == DT_IOP_LOG_RGB) // log RGB
+        float *in = ((float *)ibuf) + (size_t)ch * roi_in->width * j;
+        float *out = ((float *)obuf) + (size_t)ch * roi_out->width * j;
+        for(int i = 0; i < roi_out->width; i++)
         {
-//          dt_Lab_to_prophotorgb(in, lin);
+          float lin[3] = {0, 0, 0};
+          float lout[3] = {0, 0, 0};
           lin_to_log2(in, lin, middle_grey, min_exposure, dynamic_range);
           interpolation_worker(lin, lout, clut, level);
           if (log2tolin) log2_to_lin(lout, out, middle_grey, min_exposure, dynamic_range);
           else for(int c = 0; c < 3; ++c) out[c] = lout[c];
-//          dt_prophotorgb_to_Lab(lout, out);
+          in += ch;
+          out += ch;
         }
-        else if (colorspace == DT_IOP_SRGB) // gamma sRGB
+      }
+    }
+    
+    else if (colorspace == DT_IOP_LOG_FUJI) // log RGB Fuji
+    {
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+      for(int j = 0; j < roi_out->height; j++)
+      {
+        float *in = ((float *)ibuf) + (size_t)ch * roi_in->width * j;
+        float *out = ((float *)obuf) + (size_t)ch * roi_out->width * j;
+        for(int i = 0; i < roi_out->width; i++)
         {
-//          dt_Lab_to_sRGB(in, lin);
-          interpolation_worker(out, out, clut, level);
-//          dt_sRGB_to_Lab(lout, out);
-        }
-        else if (colorspace == DT_IOP_REC709) // gamma REC.709
-        {
-//          dt_Lab_to_REC709(in, lin);
-          interpolation_worker(out, out, clut, level);
-//          dt_REC709_to_Lab(lout, out);
-        }
-        else if (colorspace == DT_IOP_LIN_REC709) // linear REC.709
-        {
-//          dt_Lab_to_linear_sRGB(in, lin);
-          interpolation_worker(out, out, clut, level);
-//          dt_linear_sRGB_to_Lab(lout, out);
-        }
-        else if (colorspace == DT_IOP_LIN_PROPHOTORGB)
-        {
-//          dt_Lab_to_prophotorgb(in, lin);
-          interpolation_worker(in, out, clut, level);
-//          dt_prophotorgb_to_Lab(lout, out);
-        }
-        else if (colorspace == DT_IOP_LOG_FUJI) // log RGB Fuji
-        {
-//          dt_Lab_to_prophotorgb(in, lin);
+          float lin[3] = {0, 0, 0};
+          float lout[3] = {0, 0, 0};
           lin_to_logFuji(in, lin);
           interpolation_worker(lin, lout, clut, level);
           logFuji_to_lin(lout, out);
-//          dt_prophotorgb_to_Lab(lout, out);
+          in += ch;
+          out += ch;
         }
-        in += ch;
-        out += ch;
+      }
+    }
+    
+    else if (colorspace == DT_IOP_SRGB) // gamma sRGB
+    {
+      const dt_iop_order_iccprofile_info_t *const dest_profile
+        = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_SRGB, "", INTENT_PERCEPTUAL);
+      const dt_iop_order_iccprofile_info_t *const rgb_profile
+        = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+      if (rgb_profile != NULL && dest_profile != NULL)
+        dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, roi_out->width, roi_out->height, rgb_profile, dest_profile, "linrec2020 to sRGB");
+      else 
+        memcpy(obuf, ibuf, roi_in->width * roi_out->height * 4 * sizeof(float));
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+      for(int j = 0; j < roi_out->height; j++)
+      {
+        float *out = ((float *)obuf) + (size_t)ch * roi_out->width * j;
+        for(int i = 0; i < roi_out->width; i++)
+        {
+          interpolation_worker(out, out, clut, level);
+          out += ch;
+        }
+      }
+      if (rgb_profile != NULL && dest_profile != NULL)
+        dt_ioppr_transform_image_colorspace_rgb(obuf, obuf, roi_out->width, roi_out->height, dest_profile, rgb_profile, "sRGB to linrec2020");
+    }
+    
+    else if (colorspace == DT_IOP_REC709) // gamma REC.709
+    {
+      const dt_iop_order_iccprofile_info_t *const dest_profile
+        = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_REC709, "", INTENT_PERCEPTUAL);
+      const dt_iop_order_iccprofile_info_t *const rgb_profile
+        = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+      if (rgb_profile != NULL && dest_profile != NULL)
+        dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, roi_out->width, roi_out->height, rgb_profile, dest_profile, "linrec2020 to REC709");
+      else 
+        memcpy(obuf, ibuf, roi_in->width * roi_out->height * 4 * sizeof(float));
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+      for(int j = 0; j < roi_out->height; j++)
+      {
+        float *out = ((float *)obuf) + (size_t)ch * roi_out->width * j;
+        for(int i = 0; i < roi_out->width; i++)
+        {
+          interpolation_worker(out, out, clut, level);
+          out += ch;
+        }
+      }
+      if (rgb_profile != NULL && dest_profile != NULL)
+        dt_ioppr_transform_image_colorspace_rgb(obuf, obuf, roi_out->width, roi_out->height, dest_profile, rgb_profile, "REC709 to linrec2020");
+    }
+    
+    else  // apply LUT on current colorprofile
+          // between colorin & colorout DT_IOP_LIN_PROPHOTORGB
+          // before colorin iop_cs_RAW
+    {
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+      for(int j = 0; j < roi_out->height; j++)
+      {
+        float *in = ((float *)ibuf) + (size_t)ch * roi_in->width * j;
+        float *out = ((float *)obuf) + (size_t)ch * roi_out->width * j;
+        for(int i = 0; i < roi_out->width; i++)
+        {
+          interpolation_worker(in, out, clut, level);
+          in += ch;
+          out += ch;
+        }
       }
     }
   }
-  else if (!(colorspace == DT_IOP_REC709 || colorspace == DT_IOP_SRGB || colorspace == DT_IOP_LIN_REC709))
+  
+  else
   { // no clut
     memcpy(obuf, ibuf, roi_in->width * roi_out->height * 4 * sizeof(float));
   }
-  if (colorspace == DT_IOP_REC709 || colorspace == DT_IOP_SRGB || colorspace == DT_IOP_LIN_REC709)
-    dt_ioppr_transform_image_colorspace_rgb(obuf, obuf, roi_out->width, roi_out->height, dest_profile, rgb_profile, "specific to linrec2020");
 }
 
 void reload_defaults(dt_iop_module_t *self)
