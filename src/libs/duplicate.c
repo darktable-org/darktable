@@ -222,7 +222,18 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
 
   //we draw the cached image
   dt_view_image_over_t image_over = DT_VIEW_DESERT;
-  dt_view_image_expose(&image_over, d->imgid, cri, nw, nh, 1, px+tb, py+tb, TRUE, TRUE);
+  dt_view_image_expose_t params = { 0 };
+  params.image_over = &image_over;
+  params.imgid = d->imgid;
+  params.cr = cri;
+  params.width = nw;
+  params.height = nh;
+  params.px = px + tb;
+  params.py = py + tb;
+  params.zoom = 1;
+  params.full_preview = TRUE;
+  params.image_only = TRUE;
+  dt_view_image_expose(&params);
 
   //and the nice border line
   cairo_rectangle(cri, tb+px, tb+py, nimgw, nimgh);
@@ -241,9 +252,16 @@ static gboolean _lib_duplicate_thumb_draw_callback (GtkWidget *widget, cairo_t *
 
   int imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),"imgid"));
   dt_view_image_over_t image_over = DT_VIEW_DESERT;
-  dt_view_image_expose(&image_over, imgid, cr, width, height, 5, 0, 0, FALSE, FALSE);
+  dt_view_image_expose_t params = { 0 };
+  params.image_over = &image_over;
+  params.imgid = imgid;
+  params.cr = cr;
+  params.width = width;
+  params.height = height;
+  params.zoom = 5;
+  dt_view_image_expose(&params);
 
- return FALSE;
+  return FALSE;
 }
 
 static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *self)
