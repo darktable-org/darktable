@@ -37,7 +37,7 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
-DT_MODULE(4)
+DT_MODULE(5)
 
 #define EXPORT_MAX_IMAGE_SIZE UINT16_MAX
 
@@ -49,6 +49,7 @@ typedef struct dt_lib_export_t
   GtkWidget *upscale, *profile, *intent, *style, *style_mode;
   GtkButton *export_button;
   GtkWidget *storage_extra_container, *format_extra_container;
+  GtkWidget *high_quality;
 } dt_lib_export_t;
 
 /** Updates the combo box and shows only the supported formats of current selected storage module */
@@ -157,6 +158,7 @@ void gui_reset(dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->storage, storage_index);
 
   dt_bauhaus_combobox_set(d->upscale, dt_conf_get_bool("plugins/lighttable/export/upscale") ? 1 : 0);
+  dt_bauhaus_combobox_set(d->high_quality, dt_conf_get_bool("plugins/lighttable/export/high_quality_processing") ? 1 : 0);
 
   dt_bauhaus_combobox_set(d->intent, dt_conf_get_int("plugins/lighttable/export/iccintent") + 1);
 
@@ -374,6 +376,12 @@ static void upscale_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
   int pos = dt_bauhaus_combobox_get(widget);
   dt_conf_set_bool("plugins/lighttable/export/upscale", pos == 1);
+}
+
+static void high_quality_changed(GtkWidget *widget, dt_lib_export_t *d)
+{
+  int pos = dt_bauhaus_combobox_get(widget);
+  dt_conf_set_bool("plugins/lighttable/export/high_quality_processing", pos == 1);
 }
 
 static void intent_changed(GtkWidget *widget, dt_lib_export_t *d)
@@ -598,6 +606,13 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->upscale, _("yes"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->upscale, FALSE, TRUE, 0);
 
+  d->high_quality = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->high_quality, NULL, _("high quality resampling"));
+  dt_bauhaus_combobox_add(d->high_quality, _("no"));
+  dt_bauhaus_combobox_add(d->high_quality, _("yes"));
+  gtk_widget_set_tooltip_text(d->high_quality, _("do high quality resampling during export"));
+  gtk_box_pack_start(GTK_BOX(self->widget), d->high_quality, FALSE, TRUE, 0);
+
   //  Add profile combo
 
   char datadir[PATH_MAX] = { 0 };
@@ -662,6 +677,7 @@ void gui_init(dt_lib_module_t *self)
   //  Set callback signals
 
   g_signal_connect(G_OBJECT(d->upscale), "value-changed", G_CALLBACK(upscale_changed), (gpointer)d);
+  g_signal_connect(G_OBJECT(d->high_quality), "value-changed", G_CALLBACK(high_quality_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->intent), "value-changed", G_CALLBACK(intent_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->profile), "value-changed", G_CALLBACK(profile_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->style), "value-changed", G_CALLBACK(style_changed), (gpointer)d);
@@ -763,8 +779,8 @@ void init_presets(dt_lib_module_t *self)
       // extract the interesting parts from the blob
       const char *buf = (const char *)op_params;
 
-      // skip 5*int32_t: max_width, max_height, upscale and iccintent, icctype
-      buf += 5 * sizeof(int32_t);
+      // skip 5*int32_t: max_width, max_height, upscale, high_quality and iccintent, icctype
+      buf += 6 * sizeof(int32_t);
       // next skip iccfilename
       buf += strlen(buf) + 1;
 
@@ -994,6 +1010,31 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     *new_version = 4;
     return new_params;
   }
+  else if(old_version == 4)
+  {
+    // add high_quality to params
+    
+    // format of v4:
+    //  - 5 x int32_t (max_width, max_height, upscale, iccintent, icctype)
+    //  - char* (iccfilename)
+    //  - old rest
+    // format of v5:
+    //  - 6 x int32_t (max_width, max_height, upscale, high_quality, iccintent, icctype)
+    //  - char* (iccfilename)
+    //  - old rest
+
+    size_t new_params_size = old_params_size + sizeof(int32_t);
+    void *new_params = calloc(1, new_params_size);
+
+    size_t pos = 0;
+    memcpy(new_params, old_params, 3 * sizeof(int32_t));
+    pos += 4 * sizeof(int32_t);
+    memcpy(new_params + pos, old_params + pos - sizeof(int32_t), old_params_size - 3 * sizeof(int32_t));
+
+    *new_size = new_params_size;
+    *new_version = 5;
+    return new_params;
+  }
 
   return NULL;
 }
@@ -1033,6 +1074,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   int32_t max_width = dt_conf_get_int("plugins/lighttable/export/width");
   int32_t max_height = dt_conf_get_int("plugins/lighttable/export/height");
   int32_t upscale = dt_conf_get_bool("plugins/lighttable/export/upscale") ? 1 : 0;
+  int32_t high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing") ? 1 : 0;
   gchar *iccfilename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
   gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
@@ -1052,7 +1094,7 @@ void *get_params(dt_lib_module_t *self, int *size)
 
   char *fname = mformat->plugin_name, *sname = mstorage->plugin_name;
   int32_t fname_len = strlen(fname), sname_len = strlen(sname);
-  *size = fname_len + sname_len + 2 + 4 * sizeof(int32_t) + fsize + ssize + 5 * sizeof(int32_t)
+  *size = fname_len + sname_len + 2 + 4 * sizeof(int32_t) + fsize + ssize + 6 * sizeof(int32_t)
           + strlen(iccfilename) + 1;
 
   char *params = (char *)calloc(1, *size);
@@ -1062,6 +1104,8 @@ void *get_params(dt_lib_module_t *self, int *size)
   memcpy(params + pos, &max_height, sizeof(int32_t));
   pos += sizeof(int32_t);
   memcpy(params + pos, &upscale, sizeof(int32_t));
+  pos += sizeof(int32_t);
+  memcpy(params + pos, &high_quality, sizeof(int32_t));
   pos += sizeof(int32_t);
   memcpy(params + pos, &iccintent, sizeof(int32_t));
   pos += sizeof(int32_t);
@@ -1113,6 +1157,8 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   buf += sizeof(int32_t);
   const int upscale = *(const int *)buf;
   buf += sizeof(int32_t);
+  const int high_quality = *(const int *)buf;
+  buf += sizeof(int32_t);
   const int iccintent = *(const int *)buf;
   buf += sizeof(int32_t);
   const int icctype = *(const int *)buf;
@@ -1160,7 +1206,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   buf += sizeof(int32_t);
 
   if(size
-     != strlen(fname) + strlen(sname) + 2 + 4 * sizeof(int32_t) + fsize + ssize + 5 * sizeof(int32_t)
+     != strlen(fname) + strlen(sname) + 2 + 4 * sizeof(int32_t) + fsize + ssize + 6 * sizeof(int32_t)
         + strlen(iccfilename) + 1)
     return 1;
   if(fversion != fmod->version() || sversion != smod->version()) return 1;
@@ -1184,6 +1230,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   gtk_spin_button_set_value(d->width, max_width);
   gtk_spin_button_set_value(d->height, max_height);
   dt_bauhaus_combobox_set(d->upscale, upscale ? 1 : 0);
+  dt_bauhaus_combobox_set(d->high_quality, high_quality ? 1 : 0);
 
   // propagate to modules
   int res = 0;
