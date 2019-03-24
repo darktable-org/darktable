@@ -2332,12 +2332,13 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
                              const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_denoiseprofile_data_t *const d = piece->data;
+  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
 
   const int width = roi_in->width, height = roi_in->height;
   size_t npixels = (size_t)width * height;
 
   memcpy(ovoid, ivoid, npixels * 4 * sizeof(float));
-  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if((piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW) || (g == NULL))
   {
     return;
   }
@@ -2391,8 +2392,10 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   for(int c = 0; c < 3; c++)
   {
     var[c] = out[c] / (npixels - 1);
-    printf("%f\n", var[c]);
   }
+  g->variance_R = var[0];
+  g->variance_G = var[1];
+  g->variance_B = var[2];
 
   memcpy(ovoid, ivoid, npixels * 4 * sizeof(float));
 }
@@ -2823,6 +2826,40 @@ static void dt_iop_denoiseprofile_get_params(dt_iop_denoiseprofile_params_t *p, 
   }
 }
 
+static gboolean denoiseprofile_draw_variance(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+{
+  if(darktable.gui->reset) return FALSE;
+
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_denoiseprofile_gui_data_t *c = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+
+  if(!isnan(c->variance_R))
+  {
+    gchar *str = g_strdup_printf("%.2f", c->variance_R);
+    darktable.gui->reset = 1;
+    gtk_label_set_text(c->label_var_R, str);
+    darktable.gui->reset = 0;
+    g_free(str);
+  }
+  if(!isnan(c->variance_G))
+  {
+    gchar *str = g_strdup_printf("%.2f", c->variance_G);
+    darktable.gui->reset = 1;
+    gtk_label_set_text(c->label_var_G, str);
+    darktable.gui->reset = 0;
+    g_free(str);
+  }
+  if(!isnan(c->variance_B))
+  {
+    gchar *str = g_strdup_printf("%.2f", c->variance_B);
+    darktable.gui->reset = 1;
+    gtk_label_set_text(c->label_var_B, str);
+    darktable.gui->reset = 0;
+    g_free(str);
+  }
+  return FALSE;
+}
+
 static gboolean denoiseprofile_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
@@ -3212,6 +3249,8 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_B), _("variance computed on the blue channel"));
   gtk_box_pack_start(GTK_BOX(hboxB), GTK_WIDGET(g->label_var_B), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxB), TRUE, TRUE, 0);
+
+  g_signal_connect(G_OBJECT(g->box_variance), "draw", G_CALLBACK(denoiseprofile_draw_variance), self);
 
   g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
