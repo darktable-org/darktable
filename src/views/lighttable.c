@@ -57,6 +57,8 @@
 
 DT_MODULE(1)
 
+#define FULL_PREVIEW_IN_MEMORY_LIMIT 9
+
 typedef enum dt_lighttable_direction_t
 {
   DIRECTION_NONE = -1,
@@ -98,6 +100,17 @@ static gboolean _is_colorlabels_order_actif(dt_view_t *self);
 static void _redraw_selected_images(dt_view_t *self);
 
 static gboolean _expose_again_full(gpointer user_data);
+
+typedef struct dt_preview_surface_t
+{
+  int mip;
+  int32_t imgid;
+  int32_t width;
+  int32_t height;
+  cairo_surface_t *surface;
+  uint8_t *rgbbuf;
+  int w_lock;
+} dt_preview_surface_t;
 
 /**
  * this organises the whole library:
@@ -153,6 +166,13 @@ typedef struct dt_library_t
   GPid audio_player_pid;   // the pid of the child process
   int32_t audio_player_id; // the imgid of the image the audio is played for
   guint audio_player_event_source;
+
+  // zoom in image preview (full)
+  int missing_thumbnails;
+  float full_zoom;
+  float full_x;
+  float full_y;
+  dt_preview_surface_t fp_surf[FULL_PREVIEW_IN_MEMORY_LIMIT];
 
   /* prepared and reusable statements */
   struct
@@ -258,6 +278,24 @@ static void check_layout(dt_view_t *self)
   }
 }
 
+static void _full_preview_destroy(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  for(int i = 0; i < FULL_PREVIEW_IN_MEMORY_LIMIT; i++)
+  {
+    if(lib->fp_surf[i].surface) cairo_surface_destroy(lib->fp_surf[i].surface);
+    lib->fp_surf[i].surface = NULL;
+    if(lib->fp_surf[i].rgbbuf) free(lib->fp_surf[i].rgbbuf);
+    lib->fp_surf[i].rgbbuf = NULL;
+    lib->fp_surf[i].mip = 0;
+    lib->fp_surf[i].width = 0;
+    lib->fp_surf[i].height = 0;
+    lib->fp_surf[i].imgid = -1;
+    lib->fp_surf[i].w_lock = 0;
+  }
+}
+
 static void move_view(dt_library_t *lib, dt_lighttable_direction_t dir)
 {
   const int iir = get_zoom();
@@ -351,6 +389,11 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
   lib->force_expose_all = TRUE;
   _unregister_custom_image_order_drag_n_drop(self);
   _register_custom_image_order_drag_n_drop(self);
+
+  _full_preview_destroy(self);
+  lib->full_zoom = 1.0f;
+  lib->full_x = 0.0f;
+  lib->full_y = 0.0f;
 
   _update_collected_images(self);
 }
@@ -546,6 +589,22 @@ void init(dt_view_t *self)
   lib->force_expose_all = FALSE;
   lib->offset_x = 0;
   lib->offset_y = 0;
+
+  lib->missing_thumbnails = 0;
+  lib->full_zoom = 1.0f;
+  lib->full_x = 0;
+  lib->full_y = 0;
+
+  for(int i = 0; i < FULL_PREVIEW_IN_MEMORY_LIMIT; i++)
+  {
+    lib->fp_surf[i].mip = 0;
+    lib->fp_surf[i].imgid = -1;
+    lib->fp_surf[i].width = 0;
+    lib->fp_surf[i].height = 0;
+    lib->fp_surf[i].surface = NULL;
+    lib->fp_surf[i].rgbbuf = NULL;
+    lib->fp_surf[i].w_lock = 0;
+  }
 
   lib->thumbs_table = g_hash_table_new(g_int_hash, g_int_equal);
 
@@ -903,10 +962,16 @@ end_query_cache:
             || g_hash_table_contains(lib->thumbs_table, (gpointer)&id))
         {
           if(!lib->force_expose_all && id == mouse_over_id) lib->last_exposed_id = id;
-          const int thumb_missed = dt_view_image_expose(
-            &(lib->image_over), id, cr, wd, iir == 1 ? height : ht, iir,
-            pi == col && pj == row ? img_pointerx : -1,
-            pi == col && pj == row ? img_pointery : -1, FALSE, FALSE);
+          dt_view_image_expose_t params = { 0 };
+          params.image_over = &(lib->image_over);
+          params.imgid = id;
+          params.cr = cr;
+          params.width = wd;
+          params.height = iir == 1 ? height : ht;
+          params.px = pi == col && pj == row ? img_pointerx : -1;
+          params.py = pi == col && pj == row ? img_pointery : -1;
+          params.zoom = iir;
+          const int thumb_missed = dt_view_image_expose(&params);
 
           if(id == mouse_over_id)
           {
@@ -1405,8 +1470,16 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
             || g_hash_table_contains(lib->thumbs_table, (gpointer)&id))
         {
           if(!lib->force_expose_all && id == mouse_over_id) lib->last_exposed_id = id;
-          const int thumb_missed = dt_view_image_expose(&(lib->image_over), id, cr, wd, zoom == 1 ? height : ht, zoom,
-                                                        img_pointerx, img_pointery, FALSE, FALSE);
+          dt_view_image_expose_t params = { 0 };
+          params.image_over = &(lib->image_over);
+          params.imgid = id;
+          params.cr = cr;
+          params.width = wd;
+          params.height = zoom == 1 ? height : ht;
+          params.px = img_pointerx;
+          params.py = img_pointery;
+          params.zoom = zoom;
+          const int thumb_missed = dt_view_image_expose(&params);
 
           if(id == mouse_over_id)
           {
@@ -1704,8 +1777,31 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       ? pointery - images[i].y
       : images[i].height;
 
-    dt_view_image_expose(&(lib->image_over), images[i].imgid, cr, images[i].width, images[i].height, 1,
-                         img_pointerx, img_pointery, TRUE, FALSE);
+    dt_view_image_expose_t params = { 0 };
+    params.image_over = &(lib->image_over);
+    params.imgid = images[i].imgid;
+    params.cr = cr;
+    params.width = images[i].width;
+    params.height = images[i].height;
+    params.px = img_pointerx;
+    params.py = img_pointery;
+    params.zoom = 1;
+    params.full_preview = TRUE;
+    if(sel_img_count <= dt_conf_get_int("plugins/lighttable/preview/max_in_memory_images"))
+    {
+      params.full_zoom = &lib->full_zoom;
+      params.full_x = &lib->full_x;
+      params.full_y = &lib->full_y;
+      params.full_surface = &lib->fp_surf[i].surface;
+      params.full_rgbbuf = &lib->fp_surf[i].rgbbuf;
+      params.full_surface_mip = &lib->fp_surf[i].mip;
+      params.full_surface_id = &lib->fp_surf[i].imgid;
+      params.full_surface_wd = &lib->fp_surf[i].width;
+      params.full_surface_ht = &lib->fp_surf[i].height;
+      params.full_surface_w_lock = &lib->fp_surf[i].w_lock;
+    }
+
+    dt_view_image_expose(&params);
     cairo_restore(cr);
 
     // set mouse over id
@@ -1741,6 +1837,8 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
   if(lib->track < -2) offset = -1;
   lib->track = 0;
 
+  int n_width = width * lib->full_zoom;
+  int n_height = height * lib->full_zoom;
   // only look for images to preload or update the one shown when we moved to another image
   if(offset != 0)
   {
@@ -1813,14 +1911,16 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
 
     if(preload)
     {
-      dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, width, height);
+      dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, n_width, n_height);
       /* Preload these images.
       * The job queue is not a queue, but a stack, so we have to do it backwards.
       * Simply swapping DESC and ASC in the SQL won't help because we rely on the LIMIT clause, and
       * that LIMIT has to work with the "correct" sort order. One could use a subquery, but I don't
       * think that would be terribly elegant, either. */
       while(--count >= 0 && preload_stack[count] != -1)
+      {
         dt_mipmap_cache_get(darktable.mipmap_cache, NULL, preload_stack[count], mip, DT_MIPMAP_PREFETCH, 'r');
+      }
     }
 
     free(preload_stack);
@@ -1857,12 +1957,33 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
       }
     }
   }
-  const int missing = dt_view_image_expose(&(lib->image_over), lib->full_preview_id, cr,
-                                           width, height, 1, pointerx, pointery, TRUE, FALSE);
+
+  dt_view_image_expose_t params = { 0 };
+  params.image_over = &(lib->image_over);
+  params.imgid = lib->full_preview_id;
+  params.cr = cr;
+  params.width = width;
+  params.height = height;
+  params.px = pointerx;
+  params.py = pointery;
+  params.zoom = 1;
+  params.full_preview = TRUE;
+  params.full_zoom = &lib->full_zoom;
+  params.full_x = &lib->full_x;
+  params.full_y = &lib->full_y;
+  params.full_surface = &lib->fp_surf[0].surface;
+  params.full_rgbbuf = &lib->fp_surf[0].rgbbuf;
+  params.full_surface_mip = &lib->fp_surf[0].mip;
+  params.full_surface_id = &lib->fp_surf[0].imgid;
+  params.full_surface_wd = &lib->fp_surf[0].width;
+  params.full_surface_ht = &lib->fp_surf[0].height;
+  params.full_surface_w_lock = &lib->fp_surf[0].w_lock;
+
+  const int missing = dt_view_image_expose(&params);
 
   if(lib->display_focus && (lib->full_res_thumb_id == lib->full_preview_id))
-    dt_focus_draw_clusters(cr, width, height, lib->full_preview_id, lib->full_res_thumb_wd,
-                           lib->full_res_thumb_ht, lib->full_res_focus, frows, fcols);
+    dt_focus_draw_clusters(cr, width, height, lib->full_preview_id, lib->full_res_thumb_wd, lib->full_res_thumb_ht,
+                           lib->full_res_focus, frows, fcols, lib->full_zoom, lib->full_x, lib->full_y);
   return missing;
 }
 
@@ -1906,26 +2027,26 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   // Let's show full preview if in that state...
   dt_library_t *lib = (dt_library_t *)self->data;
 
-  int missing_thumbnails = 0;
+  lib->missing_thumbnails = 0;
 
   check_layout(self);
 
   if(lib->full_preview_id != -1)
   {
-    missing_thumbnails = expose_full_preview(self, cr, width, height, pointerx, pointery);
+    lib->missing_thumbnails = expose_full_preview(self, cr, width, height, pointerx, pointery);
   }
   else // we do pass on expose to manager or zoomable
   {
     switch(layout)
     {
       case DT_LIGHTTABLE_LAYOUT_FILEMANAGER:
-        missing_thumbnails = expose_filemanager(self, cr, width, height, pointerx, pointery);
+        lib->missing_thumbnails = expose_filemanager(self, cr, width, height, pointerx, pointery);
         break;
       case DT_LIGHTTABLE_LAYOUT_ZOOMABLE: // zoomable
-        missing_thumbnails = expose_zoomable(self, cr, width, height, pointerx, pointery);
+        lib->missing_thumbnails = expose_zoomable(self, cr, width, height, pointerx, pointery);
         break;
       case DT_LIGHTTABLE_LAYOUT_EXPOSE: // compare
-        missing_thumbnails = expose_expose(self, cr, width, height, pointerx, pointery);
+        lib->missing_thumbnails = expose_expose(self, cr, width, height, pointerx, pointery);
         break;
       case DT_LIGHTTABLE_LAYOUT_FIRST:
       case DT_LIGHTTABLE_LAYOUT_LAST:
@@ -1964,7 +2085,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_LIGHTTABLE, "[lighttable] expose took %0.04f sec\n", end - start);
 
-  if(missing_thumbnails)
+  if(lib->missing_thumbnails)
     g_timeout_add(250, _expose_again, self);
   else
   {
@@ -2307,6 +2428,9 @@ void leave(dt_view_t *self)
     lib->display_focus = 0;
   }
 
+  // cleanup full preview image if any
+  _full_preview_destroy(self);
+
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 }
 
@@ -2384,7 +2508,27 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   lib->force_expose_all = TRUE;
   const dt_lighttable_layout_t layout = get_layout();
 
-  if(lib->full_preview_id > -1)
+  if((lib->full_preview_id > -1 || get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+     && (state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+  {
+    GList *selected = dt_collection_get_selected(darktable.collection, -1);
+    const int sel_img_count = g_list_length(selected);
+    if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE
+       && sel_img_count > dt_conf_get_int("plugins/lighttable/preview/max_in_memory_images"))
+    {
+      dt_control_log(_("zooming is limited to %d images"),
+                     dt_conf_get_int("plugins/lighttable/preview/max_in_memory_images"));
+    }
+    else if(lib->missing_thumbnails == 0)
+    {
+      if(up)
+        lib->full_zoom = fminf(8.0f, lib->full_zoom + 0.5f);
+      else
+        lib->full_zoom = fmaxf(1.0f, lib->full_zoom - 0.5f);
+      dt_control_queue_redraw_center();
+    }
+  }
+  else if(lib->full_preview_id > -1)
   {
     if(up)
       lib->track = -DT_LIBRARY_MAX_ZOOM;
@@ -2464,6 +2608,15 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   dt_library_t *lib = (dt_library_t *)self->data;
 
   lib->using_arrows = 0;
+
+  if(lib->pan && (lib->full_preview_id > -1 || get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+     && lib->full_zoom > 1.0f)
+  {
+    lib->full_x += x - lib->pan_x;
+    lib->full_y += y - lib->pan_y;
+    lib->pan_x = x;
+    lib->pan_y = y;
+  }
 
   if(lib->pan || lib->pointed_img_over == DT_VIEW_ERR || x < lib->pointed_img_x || y < lib->pointed_img_y
      || x > lib->pointed_img_x + lib->pointed_img_wd || y > lib->pointed_img_y + lib->pointed_img_ht
@@ -2556,7 +2709,9 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         // the pointer to GDK_HAND1 until we can exclude that it is a click,
         // namely until the pointer has moved a little distance. The code taking
         // care of this is in expose(). Pan only makes sense in zoomable lt.
-        if(layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE) begin_pan(lib, x, y);
+        if(layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE || (lib->full_preview_id > -1 && lib->full_zoom > 1.0f)
+           || (get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE && lib->full_zoom > 1.0f))
+          begin_pan(lib, x, y);
 
         if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && lib->using_arrows)
         {
@@ -2699,7 +2854,6 @@ int key_released(dt_view_t *self, guint key, guint state)
       || (key == accels->lighttable_preview_display_focus.accel_key
           && state == accels->lighttable_preview_display_focus.accel_mods)) && lib->full_preview_id != -1)
   {
-
     lib->full_preview_id = -1;
     lib->full_preview_rowid = -1;
     if(!lib->using_arrows)
@@ -2713,6 +2867,10 @@ int key_released(dt_view_t *self, guint key, guint state)
 
     lib->full_preview = 0;
     lib->display_focus = 0;
+    _full_preview_destroy(self);
+    lib->full_zoom = 1.0f;
+    lib->full_x = 0.0f;
+    lib->full_y = 0.0f;
     lib->force_expose_all = TRUE;
   }
 
@@ -2750,6 +2908,10 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
     lib->full_preview = 0;
     lib->display_focus = 0;
+    _full_preview_destroy(self);
+    lib->full_zoom = 1.0f;
+    lib->full_x = 0.0f;
+    lib->full_y = 0.0f;
     lib->force_expose_all = TRUE;
     return 1;
   }
@@ -2813,6 +2975,12 @@ int key_pressed(dt_view_t *self, guint key, guint state)
       {
         lib->display_focus = 1;
       }
+
+      // reset preview values
+      lib->full_zoom = 1.0f;
+      lib->full_x = 0.0f;
+      lib->full_y = 0.0f;
+      _full_preview_destroy(self);
 
       lib->force_expose_all = TRUE;
       return 1;
@@ -3018,6 +3186,10 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
   dt_accel_register_view(self, NC_("accel", "redo"), GDK_KEY_y, GDK_CONTROL_MASK);
 
+  // zoom for full preview
+  dt_accel_register_view(self, NC_("accel", "preview zoom 100%"), 0, 0);
+  dt_accel_register_view(self, NC_("accel", "preview zoom fit"), 0, 0);
+
   // timeline
   dt_accel_register_view(self, NC_("accel", "toggle timeline"), GDK_KEY_f, GDK_CONTROL_MASK);
 }
@@ -3044,6 +3216,40 @@ static gboolean _lighttable_redo_callback(GtkAccelGroup *accel_group, GObject *a
 
   lib->force_expose_all = TRUE;
   return TRUE;
+}
+
+static gboolean _lighttable_preview_zoom_100(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                             GdkModifierType modifier, gpointer data)
+{
+  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  if(lib->full_preview_id > -1)
+  {
+    lib->full_zoom = 100.0f; // this is ugly, but I don't find a way to know image output size at this stage
+    dt_control_queue_redraw_center();
+    return TRUE;
+  }
+
+  return FALSE;
+}
+static gboolean _lighttable_preview_zoom_fit(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                             GdkModifierType modifier, gpointer data)
+{
+  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  printf("fit\n");
+  if(lib->full_preview_id > -1)
+  {
+    lib->full_zoom = 1.0f;
+    lib->full_x = 0;
+    lib->full_y = 0;
+    dt_control_queue_redraw_center();
+    return TRUE;
+  }
+
+  return FALSE;
 }
 
 void connect_key_accels(dt_view_t *self)
@@ -3101,6 +3307,12 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "undo", closure);
   closure = g_cclosure_new(G_CALLBACK(_lighttable_redo_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "redo", closure);
+
+  // full_preview zoom
+  closure = g_cclosure_new(G_CALLBACK(_lighttable_preview_zoom_100), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "preview zoom 100%", closure);
+  closure = g_cclosure_new(G_CALLBACK(_lighttable_preview_zoom_fit), (gpointer)self, NULL);
+  dt_accel_connect_view(self, "preview zoom fit", closure);
 
   // timeline
   closure = g_cclosure_new(G_CALLBACK(timeline_key_accel_callback), (gpointer)self, NULL);
