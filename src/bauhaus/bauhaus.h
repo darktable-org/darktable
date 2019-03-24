@@ -198,6 +198,9 @@ typedef struct dt_bauhaus_t
   float line_space;                        // space between lines of text in e.g. the combo box
   float line_height;                       // height of a line of text
   float marker_size;                     // height of the slider indicator
+  float baseline_size;                   // height of the slider bar
+  float border_width;                    // width of the border of the slider marker
+  float quad_width;                      // width of the quad area to paint icons
   float label_font_size;                 // percent of line height to fill with font for labels
   float value_font_size;                 // percent of line height to fill with font for values
   char label_font[256];                  // font to draw the label with
@@ -305,28 +308,6 @@ void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct)(GtkWidg
 void dt_bauhaus_vimkey_exec(const char *input);
 // give autocomplete suggestions
 GList *dt_bauhaus_vimkey_complete(const char *input);
-
-inline int get_line_space()
-{
-  return darktable.bauhaus->scale * darktable.bauhaus->line_space;
-}
-
-inline int get_line_height()
-{
-  return darktable.bauhaus->scale * darktable.bauhaus->line_height;
-}
-
-inline float get_marker_size()
-{
-  // will be fraction of the height, so doesn't depend on scale itself.
-  return darktable.bauhaus->marker_size;
-}
-
-// TODO: remove / make use of the pango font size / X height
-inline float get_label_font_size()
-{
-  return get_line_height() * darktable.bauhaus->label_font_size;
-}
 
 inline void set_color(cairo_t *cr, GdkRGBA color)
 {
