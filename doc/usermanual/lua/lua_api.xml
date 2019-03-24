@@ -742,6 +742,100 @@
 </variablelist>
 </section>
 
+<section status="final" id="darktable_gui_panel_visible">
+<title>darktable.gui.panel_visible</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>panel_visible</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_panel_visible_panel">panel</link></emphasis> : <link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link>
+) : boolean</synopsis>
+<para>Determines if the specified panel is visible.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_panel_visible_panel"><term>panel</term><listitem>
+<synopsis><link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link></synopsis>
+<para>The panel to check.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis>boolean</synopsis>
+<para>true if the panel is visible, false if not</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_panel_hide">
+<title>darktable.gui.panel_hide</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>panel_hide</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_panel_hide_panel">panel</link></emphasis> : <link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link>
+)</synopsis>
+<para>Hides the specified panel.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_panel_hide_panel"><term>panel</term><listitem>
+<synopsis><link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link></synopsis>
+<para>The panel to hide.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_panel_show">
+<title>darktable.gui.panel_show</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>panel_show</secondary>
+</indexterm>
+<synopsis>function( 
+	<emphasis><link linkend="darktable_gui_panel_show_panel">panel</link></emphasis> : <link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link>
+)</synopsis>
+<para>Shows the specified panel.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_panel_show_panel"><term>panel</term><listitem>
+<synopsis><link linkend="types_dt_ui_panel_t">types.dt_ui_panel_t</link></synopsis>
+<para>The panel to show.</para>
+
+</listitem></varlistentry>
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_panel_hide_all">
+<title>darktable.gui.panel_hide_all</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>panel_hide_all</secondary>
+</indexterm>
+<synopsis>function( 
+)</synopsis>
+<para>Hide all panels.</para>
+
+</section>
+
+<section status="final" id="darktable_gui_panel_show_all">
+<title>darktable.gui.panel_show_all</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>panel_show_all</secondary>
+</indexterm>
+<synopsis>function( 
+)</synopsis>
+<para>Show all panels.</para>
+
+</section>
+
 <section status="final" id="darktable_gui_create_job">
 <title>darktable.gui.create_job</title>
 <indexterm>
@@ -7466,6 +7560,37 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 </variablelist>
 </section>
 
+</section>
+
+<section status="final" id="types_dt_ui_panel_t">
+<title>types.dt_ui_panel_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_ui_panel_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>The different user interface panels</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>DT_UI_PANEL_TOP</para></listitem>
+<listitem><para>DT_UI_PANEL_CENTER_TOP</para></listitem>
+<listitem><para>DT_UI_PANEL_CENTER_BOTTOM</para></listitem>
+<listitem><para>DT_UI_PANEL_LEFT</para></listitem>
+<listitem><para>DT_UI_PANEL_RIGHT</para></listitem>
+<listitem><para>DT_UI_PANEL_BOTTOM</para></listitem>
+<listitem><para>DT_UI_PANEL_SIZE</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
 </section>
 
 <section status="final" id="types_lua_widget">
