@@ -395,6 +395,55 @@ static gboolean _lib_lighttable_key_accel_toggle_expose_mode(GtkAccelGroup *acce
   return TRUE;
 }
 
+#ifdef USE_LUA
+static int layout_cb(lua_State *L)
+{
+  dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
+  const dt_lighttable_layout_t tmp = _lib_lighttable_get_layout(self);
+  if(lua_gettop(L) > 0){
+    dt_lighttable_layout_t value;
+    luaA_to(L,dt_lighttable_layout_t,&value,1);
+    _lib_lighttable_set_layout(self, value);
+  }
+  luaA_push(L, dt_lighttable_layout_t, &tmp);
+  return 1;
+}
+static int zoom_level_cb(lua_State *L)
+{
+  dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
+  const gint tmp = _lib_lighttable_get_zoom(self);
+  if(lua_gettop(L) > 0){
+    int value;
+    luaA_to(L,int,&value,1);
+    _lib_lighttable_set_zoom(self, value);
+  }
+  luaA_push(L, int, &tmp);
+  return 1;
+}
+
+void init(struct dt_lib_module_t *self)
+{
+  lua_State *L = darktable.lua_state.state;
+  int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
+  lua_pushlightuserdata(L, self);
+  lua_pushcclosure(L, layout_cb, 1);
+  dt_lua_gtk_wrap(L);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "layout");
+  lua_pushlightuserdata(L, self);
+  lua_pushcclosure(L, zoom_level_cb,1);
+  dt_lua_gtk_wrap(L);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "zoom_level");
+
+  luaA_enum(L,dt_lighttable_layout_t);
+  luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_FIRST);
+  luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_ZOOMABLE);
+  luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_FILEMANAGER);
+  luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_EXPOSE);
+  luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_LAST);
+}
+#endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
