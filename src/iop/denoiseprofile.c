@@ -3219,10 +3219,8 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->box_nlm), g->central_pixel_weight, TRUE, TRUE, 0);
 
   g->label_var = GTK_LABEL(gtk_label_new(_("use only with a perfectly\n"
-                                           "uniform image if you want\n"
-                                           "variance values to accurately\n"
-                                           "estimate the noise variance.\n"
-                                           "use only at 100% zoom level.")));
+                                           "uniform image if you want to\n"
+                                           "estimate the noise variance.")));
   gtk_widget_set_halign(GTK_WIDGET(g->label_var), GTK_ALIGN_START);
   gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(g->label_var), TRUE, TRUE, 0);
 
