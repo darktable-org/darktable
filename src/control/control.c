@@ -558,6 +558,33 @@ int dt_control_key_pressed_override(guint key, guint state)
 {
   dt_control_accels_t *accels = &darktable.control->accels;
 
+  // ↑ ↑ ↓ ↓ ← → ← → b a
+  static int konami_state = 0;
+  static guint konami_sequence[] = {
+    GDK_KEY_Up,
+    GDK_KEY_Up,
+    GDK_KEY_Down,
+    GDK_KEY_Down,
+    GDK_KEY_Left,
+    GDK_KEY_Right,
+    GDK_KEY_Left,
+    GDK_KEY_Right,
+    GDK_KEY_b,
+    GDK_KEY_a
+  };
+  if(key == konami_sequence[konami_state])
+  {
+    konami_state++;
+    if(konami_state == G_N_ELEMENTS(konami_sequence))
+    {
+      dt_ctl_switch_mode_to("knight");
+      konami_state = 0;
+    }
+  }
+  else
+    konami_state = 0;
+
+
   // TODO: if darkroom mode
   // did a : vim-style command start?
   static GList *autocomplete = NULL;
