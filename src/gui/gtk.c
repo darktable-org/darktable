@@ -161,6 +161,10 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_sticky_exit);
   dt_accel_path_view(path, sizeof(path), "lighttable", "toggle timeline");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_timeline);
+  dt_accel_path_view(path, sizeof(path), "lighttable", "preview zoom 100%");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_zoom_100);
+  dt_accel_path_view(path, sizeof(path), "lighttable", "preview zoom fit");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_zoom_fit);
   // darkroom
   dt_accel_path_view(path, sizeof(path), "darkroom", "full preview");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.darkroom_preview);

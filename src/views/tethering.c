@@ -203,8 +203,16 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
   else if(lib->image_id >= 0) // First of all draw image if available
   {
     cairo_translate(cr, MARGIN, MARGIN);
-    dt_view_image_expose(&(lib->image_over), lib->image_id, cr, width - (MARGIN * 2.0f),
-                         height - (MARGIN * 2.0f), 1, pointerx, pointery, FALSE, FALSE);
+    dt_view_image_expose_t params = { 0 };
+    params.image_over = &(lib->image_over);
+    params.imgid = lib->image_id;
+    params.cr = cr;
+    params.width = width - (MARGIN * 2.0f);
+    params.height = height - (MARGIN * 2.0f);
+    params.px = pointerx;
+    params.py = pointery;
+    params.zoom = 1;
+    dt_view_image_expose(&params);
   }
 }
 
