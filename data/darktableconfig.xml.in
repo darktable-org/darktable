@@ -1237,7 +1237,7 @@
     <shortdescription>do high quality processing for slideshow</shortdescription>
     <longdescription>same option as for export, but applies to slideshow.</longdescription>
   </dtconfig>
-  <dtconfig prefs="core" section="quality">
+  <dtconfig>
     <name>plugins/lighttable/export/high_quality_processing</name>
     <type>bool</type>
     <default>false</default>
