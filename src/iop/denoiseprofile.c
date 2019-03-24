@@ -1648,6 +1648,137 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
 }
 #endif
 
+static void sum_rec(const unsigned npixels, const float *in, float *out)
+{
+  if(npixels <= 3)
+  {
+    for(int c = 0; c < 3; c++)
+    {
+      out[c] = 0.0;
+    }
+    for(int i = 0; i < npixels; i++)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        out[c] += in[i * 4 + c];
+      }
+    }
+    return;
+  }
+
+  unsigned npixels_first_half = npixels >> 1;
+  unsigned npixels_second_half = npixels - npixels_first_half;
+  sum_rec(npixels_first_half, in, out);
+  sum_rec(npixels_second_half, in + 4 * npixels_first_half, out + 4 * npixels_first_half);
+  for(int c = 0; c < 3; c++)
+  {
+    out[c] += out[4 * npixels_first_half + c];
+  }
+}
+
+/* this gives (npixels-1)*V[X] */
+static void variance_rec(const unsigned npixels, const float *in, float *out, const float mean[3])
+{
+  if(npixels <= 3)
+  {
+    for(int c = 0; c < 3; c++)
+    {
+      out[c] = 0.0;
+    }
+    for(int i = 0; i < npixels; i++)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        float diff = in[i * 4 + c] - mean[c];
+        out[c] += diff * diff;
+      }
+    }
+    return;
+  }
+
+  unsigned npixels_first_half = npixels >> 1;
+  unsigned npixels_second_half = npixels - npixels_first_half;
+  variance_rec(npixels_first_half, in, out, mean);
+  variance_rec(npixels_second_half, in + 4 * npixels_first_half, out + 4 * npixels_first_half, mean);
+  for(int c = 0; c < 3; c++)
+  {
+    out[c] += out[4 * npixels_first_half + c];
+  }
+}
+
+static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                             void *const ovoid, const dt_iop_roi_t *const roi_in,
+                             const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_denoiseprofile_data_t *const d = piece->data;
+  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
+
+  const int width = roi_in->width, height = roi_in->height;
+  size_t npixels = (size_t)width * height;
+
+  memcpy(ovoid, ivoid, npixels * 4 * sizeof(float));
+  if((piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW) || (g == NULL))
+  {
+    return;
+  }
+
+  const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
+  float *in = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
+
+  const float wb_mean = (piece->pipe->dsc.temperature.coeffs[0] + piece->pipe->dsc.temperature.coeffs[1]
+                         + piece->pipe->dsc.temperature.coeffs[2])
+                        / 3.0f;
+  // we init wb by the mean of the coeffs, which corresponds to the mean
+  // amplification that is done in addition to the "ISO" related amplification
+  float wb[3] = { wb_mean, wb_mean, wb_mean };
+  if(d->fix_anscombe_and_nlmeans_norm)
+  {
+    if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
+    {
+      for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.temperature.coeffs[i];
+    }
+    else if(wb_mean == 0.0f)
+    {
+      // temperature coeffs are equal to 0 if we open a JPG image.
+      // in this case consider them equal to 1.
+      for(int i = 0; i < 3; i++) wb[i] = 1.0f;
+    }
+    // else, wb_adaptive_anscombe is false and our wb array is
+    // filled with the wb_mean
+  }
+  else
+  {
+    for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
+  }
+  // update the coeffs with strength and scale
+  for(int i = 0; i < 3; i++) wb[i] *= d->strength * (scale * scale);
+
+  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
+  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
+  precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
+
+  float *out = (float *)ovoid;
+  // we use out as a temporary buffer here
+  // compute mean
+  sum_rec(npixels, in, out);
+  float mean[3];
+  for(int c = 0; c < 3; c++)
+  {
+    mean[c] = out[c] / npixels;
+  }
+  variance_rec(npixels, in, out, mean);
+  float var[3];
+  for(int c = 0; c < 3; c++)
+  {
+    var[c] = out[c] / (npixels - 1);
+  }
+  g->variance_R = var[0];
+  g->variance_G = var[1];
+  g->variance_B = var[2];
+
+  memcpy(ovoid, ivoid, npixels * 4 * sizeof(float));
+}
+
 #ifdef HAVE_OPENCL
 static int bucket_next(unsigned int *state, unsigned int max)
 {
@@ -2267,137 +2398,6 @@ error:
   dt_free_align(sumsum);
   dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't enqueue kernel! %d, devid %d\n", err, devid);
   return FALSE;
-}
-
-static void sum_rec(const unsigned npixels, const float *in, float *out)
-{
-  if(npixels <= 3)
-  {
-    for(int c = 0; c < 3; c++)
-    {
-      out[c] = 0.0;
-    }
-    for(int i = 0; i < npixels; i++)
-    {
-      for(int c = 0; c < 3; c++)
-      {
-        out[c] += in[i * 4 + c];
-      }
-    }
-    return;
-  }
-
-  unsigned npixels_first_half = npixels >> 1;
-  unsigned npixels_second_half = npixels - npixels_first_half;
-  sum_rec(npixels_first_half, in, out);
-  sum_rec(npixels_second_half, in + 4 * npixels_first_half, out + 4 * npixels_first_half);
-  for(int c = 0; c < 3; c++)
-  {
-    out[c] += out[4 * npixels_first_half + c];
-  }
-}
-
-/* this gives (npixels-1)*V[X] */
-static void variance_rec(const unsigned npixels, const float *in, float *out, const float mean[3])
-{
-  if(npixels <= 3)
-  {
-    for(int c = 0; c < 3; c++)
-    {
-      out[c] = 0.0;
-    }
-    for(int i = 0; i < npixels; i++)
-    {
-      for(int c = 0; c < 3; c++)
-      {
-        float diff = in[i * 4 + c] - mean[c];
-        out[c] += diff * diff;
-      }
-    }
-    return;
-  }
-
-  unsigned npixels_first_half = npixels >> 1;
-  unsigned npixels_second_half = npixels - npixels_first_half;
-  variance_rec(npixels_first_half, in, out, mean);
-  variance_rec(npixels_second_half, in + 4 * npixels_first_half, out + 4 * npixels_first_half, mean);
-  for(int c = 0; c < 3; c++)
-  {
-    out[c] += out[4 * npixels_first_half + c];
-  }
-}
-
-static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                             void *const ovoid, const dt_iop_roi_t *const roi_in,
-                             const dt_iop_roi_t *const roi_out)
-{
-  const dt_iop_denoiseprofile_data_t *const d = piece->data;
-  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
-
-  const int width = roi_in->width, height = roi_in->height;
-  size_t npixels = (size_t)width * height;
-
-  memcpy(ovoid, ivoid, npixels * 4 * sizeof(float));
-  if((piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW) || (g == NULL))
-  {
-    return;
-  }
-
-  const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
-  float *in = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
-
-  const float wb_mean = (piece->pipe->dsc.temperature.coeffs[0] + piece->pipe->dsc.temperature.coeffs[1]
-                         + piece->pipe->dsc.temperature.coeffs[2])
-                        / 3.0f;
-  // we init wb by the mean of the coeffs, which corresponds to the mean
-  // amplification that is done in addition to the "ISO" related amplification
-  float wb[3] = { wb_mean, wb_mean, wb_mean };
-  if(d->fix_anscombe_and_nlmeans_norm)
-  {
-    if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
-    {
-      for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.temperature.coeffs[i];
-    }
-    else if(wb_mean == 0.0f)
-    {
-      // temperature coeffs are equal to 0 if we open a JPG image.
-      // in this case consider them equal to 1.
-      for(int i = 0; i < 3; i++) wb[i] = 1.0f;
-    }
-    // else, wb_adaptive_anscombe is false and our wb array is
-    // filled with the wb_mean
-  }
-  else
-  {
-    for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
-  }
-  // update the coeffs with strength and scale
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength * (scale * scale);
-
-  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
-  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
-  precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
-
-  float *out = (float *)ovoid;
-  // we use out as a temporary buffer here
-  // compute mean
-  sum_rec(npixels, in, out);
-  float mean[3];
-  for(int c = 0; c < 3; c++)
-  {
-    mean[c] = out[c] / npixels;
-  }
-  variance_rec(npixels, in, out, mean);
-  float var[3];
-  for(int c = 0; c < 3; c++)
-  {
-    var[c] = out[c] / (npixels - 1);
-  }
-  g->variance_R = var[0];
-  g->variance_G = var[1];
-  g->variance_B = var[2];
-
-  memcpy(ovoid, ivoid, npixels * 4 * sizeof(float));
 }
 
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
