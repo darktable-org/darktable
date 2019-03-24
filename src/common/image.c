@@ -1386,7 +1386,7 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
         GFile *cnew = g_file_new_for_path(copydestpath);
 
         if(g_file_move(cold, cnew, 0, NULL, NULL, NULL, NULL) != TRUE)
-          fprintf(stderr, "[dt_image_rename] error moving local copy `%s' -> `%s'\n", copysrcpath, copydestpath);
+          dt_control_log(_("error moving local copy `%s' -> `%s'\n"), copysrcpath, copydestpath);
 
         g_object_unref(cold);
         g_object_unref(cnew);
@@ -1396,7 +1396,7 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
     }
     else
     {
-      fprintf(stderr, "[dt_image_rename] error moving `%s' -> `%s'\n", oldimg, newimg);
+      dt_control_log(_("error moving `%s' -> `%s'\n"), oldimg, newimg);
     }
 
     g_object_unref(old);
