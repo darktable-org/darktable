@@ -84,7 +84,7 @@
 @define-color bauhaus_border shade(@plugin_bg_color, 0.5);
 @define-color bauhaus_indicator_border @grey_20;
 @define-color bauhaus_fill @grey_40;
-@define-color bauhaus_bg alpha(@grey_05, 0.25);
+@define-color bauhaus_bg @grey_15;
 @define-color bauhaus_fg_hover @grey_80;
 @define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5);
 
@@ -813,7 +813,25 @@ notebook tab:focus label
   color: @bauhaus_fg;
 }
 
-#bauhaus-popup:hover
+#bauhaus-combobox,
+#bauhaus-slider
+{
+  min-height: 1em;
+  background-color: transparent;
+  color: @bauhaus_fg;
+}
+
+
+#bauhaus-popup:hover,
+#bauhaus-combobox:hover,
+#bauhaus-slider:hover
+{
+  color: @bauhaus_fg_hover;
+}
+
+#bauhaus-popup:focus,
+#bauhaus-combobox:focus,
+#bauhaus-slider:focus
 {
   color: @bauhaus_fg_hover;
 }
@@ -823,10 +841,6 @@ notebook tab:focus label
   color: @plugin_bg;
 }
 
-#bauhaus-combobox
-{
-  min-height: 1em;
-}
 
 /* separator */
 
@@ -908,13 +922,6 @@ checkbutton check
 #lib-plugin-ui button
 {
   margin: 2pt;
-}
-
-#bauhaus-slider,
-#bauhaus-combobox
-{
-  margin: 5px 0;
-  min-height: 2em;
 }
 
 combobox label
