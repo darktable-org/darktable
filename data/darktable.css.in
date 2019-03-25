@@ -309,7 +309,7 @@ box *
 #lib-plugin-ui-main,
 #blending-box
 {
-  padding: 1em;
+  padding: 0.75em;
 }
 
 #module-header
@@ -495,9 +495,19 @@ entry selection {
 {
 }
 
+#search-box
+{
+  margin: 0.25em 0.5em;
+}
+
+#search-box label
+{
+  margin-right: 0.5em;
+}
+
 #image-info
 {
-  font-size: 1.25em;
+  font-size: 1.2em;
   padding: 0.25em;
 }
 
