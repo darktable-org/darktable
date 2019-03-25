@@ -334,7 +334,9 @@ static int sort_cb(lua_State *L)
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
   const dt_collection_sort_t tmp = dt_collection_get_sort_field(darktable.collection);
-  if(lua_gettop(L) > 0){
+
+  if(lua_gettop(L) > 0)
+  {
     dt_collection_sort_t value;
     luaA_to(L,dt_collection_sort_t,&value,1);
     dt_collection_set_sort(darktable.collection, (uint32_t)value, 0);
@@ -349,7 +351,9 @@ static int sort_order_cb(lua_State *L)
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
   const gboolean tmp = dt_collection_get_sort_descending(darktable.collection);
-   if(lua_gettop(L) > 0){
+
+  if(lua_gettop(L) > 0)
+  {
     dt_collection_sort_order_t value;
     luaA_to(L,dt_collection_sort_order_t,&value,1);
     dt_collection_sort_t sort_value = dt_collection_get_sort_field(darktable.collection);
@@ -367,7 +371,9 @@ static int rating_cb(lua_State *L)
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
   const dt_collection_filter_t tmp = dt_collection_get_rating(darktable.collection);
-  if(lua_gettop(L) > 0){
+
+  if(lua_gettop(L) > 0)
+  {
     dt_collection_filter_t value;
     luaA_to(L,dt_collection_filter_t,&value,1);
     dt_collection_set_rating(darktable.collection, (uint32_t)value);
@@ -382,7 +388,9 @@ static int rating_comparator_cb(lua_State *L)
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
   const dt_collection_rating_comperator_t tmp = dt_collection_get_rating_comparator(darktable.collection);
-  if(lua_gettop(L) > 0){
+
+  if(lua_gettop(L) > 0)
+  {
     dt_collection_rating_comperator_t value;
     luaA_to(L,dt_collection_rating_comperator_t,&value,1);
     dt_collection_set_rating_comparator(darktable.collection, (uint32_t)value);
