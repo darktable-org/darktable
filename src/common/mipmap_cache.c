@@ -315,7 +315,38 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
   // alloc mere minimum for the header + broken image buffer:
   if(!dsc)
   {
-    if(mip <= DT_MIPMAP_F)
+    if(mip == DT_MIPMAP_8)
+    {
+      // we first need to get the final output size of our image
+      // let's create a dummy pipe for that
+      const uint32_t imgid = get_imgid(entry->key);
+      const dt_image_t *img2 = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+      dt_image_t imgtmp = *img2;
+      dt_image_cache_read_release(darktable.image_cache, img2);
+      dt_develop_t dev;
+      dt_dev_init(&dev, 0);
+      dt_dev_load_image(&dev, imgid);
+      dt_dev_pixelpipe_t pipe;
+      int res = dt_dev_pixelpipe_init_dummy(&pipe, imgtmp.width, imgtmp.height);
+      if(res)
+      {
+        // set mem pointer to 0, won't be used.
+        dt_dev_pixelpipe_set_input(&pipe, &dev, NULL, imgtmp.width, imgtmp.height, 1.0f);
+        dt_dev_pixelpipe_create_nodes(&pipe, &dev);
+        dt_dev_pixelpipe_synch_all(&pipe, &dev);
+        dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width,
+                                        &pipe.processed_height);
+        dt_dev_pixelpipe_cleanup(&pipe);
+        entry->data_size = sizeof(struct dt_mipmap_buffer_dsc) + pipe.processed_width * pipe.processed_height * 4;
+      }
+      else
+      {
+        // for some raison pipeline didn't success, let's allocate huge memory
+        entry->data_size = cache->buffer_size[mip];
+      }
+      dt_dev_cleanup(&dev);
+    }
+    else if(mip <= DT_MIPMAP_F)
     {
       // these are fixed-size:
       entry->data_size = cache->buffer_size[mip];
