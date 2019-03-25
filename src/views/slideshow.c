@@ -1,6 +1,7 @@
 /*
     This file is part of darktable,
     copyright (c) 2013 johannes hanika.
+    copyright (c) 2019 pascal obry.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -49,6 +50,14 @@ typedef enum dt_slideshow_state_t
   S_BLENDING
 } dt_slideshow_state_t;
 
+typedef struct _slideshow_buf_t
+{
+  uint32_t *buf;
+  uint32_t width;
+  uint32_t height;
+  int32_t num;
+} dt_slideshow_buf_t;
+
 typedef struct dt_slideshow_t
 {
   uint32_t random_state;
@@ -57,14 +66,8 @@ typedef struct dt_slideshow_t
   int32_t step;
   uint32_t width, height;
 
-
   // double buffer
-  uint32_t *buf1, *buf2;
-  uint32_t *front, *back;
-  // processed sizes might differ from screen size
-  uint32_t front_width, front_height;
-  uint32_t back_width, back_height;
-  int32_t front_num, back_num;
+  dt_slideshow_buf_t front, back;
 
   // state machine stuff for image transitions:
   dt_pthread_mutex_t lock;
@@ -112,11 +115,11 @@ static int write_image(dt_imageio_module_data_t *datai, const char *filename, co
 {
   dt_slideshow_format_t *data = (dt_slideshow_format_t *)datai;
   dt_pthread_mutex_lock(&data->d->lock);
-  if(data->d->back)
+  if(data->d->back.buf)
   { // might have been cleaned up when leaving slide show
-    memcpy(data->d->back, in, sizeof(uint32_t) * datai->width * datai->height);
-    data->d->back_width = datai->width;
-    data->d->back_height = datai->height;
+    memcpy(data->d->back.buf, in, sizeof(uint32_t) * datai->width * datai->height);
+    data->d->back.width = datai->width;
+    data->d->back.height = datai->height;
   }
   dt_pthread_mutex_unlock(&data->d->lock);
   _step_state(data->d, S_IMAGE_LOADED);
@@ -141,11 +144,12 @@ static uint32_t next_random(dt_slideshow_t *d)
 static int process_next_image(dt_slideshow_t *d)
 {
   dt_imageio_module_format_t buf;
-  dt_slideshow_format_t dat;
   buf.mime = mime;
   buf.levels = levels;
   buf.bpp = bpp;
   buf.write_image = write_image;
+
+  dt_slideshow_format_t dat;
   dat.max_width = d->width;
   dat.max_height = d->height;
   dat.style[0] = '\0';
@@ -156,8 +160,8 @@ static int process_next_image(dt_slideshow_t *d)
   const int32_t cnt = dt_collection_get_count(darktable.collection);
   if(!cnt) return 1;
   dt_pthread_mutex_lock(&d->lock);
-  d->back_num = d->front_num + d->step;
-  int32_t ran = d->back_num;
+  d->back.num = d->front.num + d->step;
+  int32_t ran = d->back.num;
   dt_pthread_mutex_unlock(&d->lock);
   // enumerated all images? i.e. prefetching the one two after the limit, when viewing the one past the end.
   if(ran == -2 || ran == cnt + 1)
@@ -216,6 +220,25 @@ static gboolean auto_advance(gpointer user_data)
   return FALSE;
 }
 
+static void exchange_buffer(dt_slideshow_t *d)
+{
+  uint32_t *tmp = d->front.buf;
+  d->front.buf = d->back.buf;
+  d->back.buf = tmp;
+
+  const int32_t num = d->front.num;
+  d->front.num = d->back.num;
+  d->back.num = num;
+
+  const int32_t w = d->front.width;
+  d->front.width = d->back.width;
+  d->back.width = w;
+
+  const int32_t h = d->front.height;
+  d->front.height = d->back.height;
+  d->back.height = h;
+}
+
 // state machine stepping
 static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
 {
@@ -245,27 +268,22 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
       if(d->state_waiting_for_user == 0)
       {
         d->state = S_BLENDING;
-        // swap buffers, start blending cycle
-        if(d->front_num + d->step == d->back_num)
-        {
-          // if step changed, don't just swap but kick off new job
-          dt_control_log_busy_leave();
-          uint32_t *tmp = d->front;
-          d->front = d->back;
-          d->back = tmp;
-          d->front_width = d->back_width;
-          d->front_height = d->back_height;
-          int32_t tn = d->front_num;
-          d->front_num = d->back_num;
-          d->back_num = tn;
-          // start over
-          d->state_waiting_for_user = 1;
 
-          // start new one-off timer from when flipping buffers.
-          // this will show images before processing-heavy shots a little
-          // longer, but at least not result in shorter viewing times just after these
-          if(d->auto_advance) g_timeout_add_seconds(d->delay, auto_advance, d);
+        // swap buffers, start blending cycle
+        if(d->front.num + d->step == d->back.num)
+        {
+          // going back
+          exchange_buffer(d);
+
+          // start over
+          dt_control_log_busy_leave();
+          d->state_waiting_for_user = 1;
         }
+
+        // start new one-off timer from when flipping buffers.
+        // this will show images before processing-heavy shots a little
+        // longer, but at least not result in shorter viewing times just after these
+        if(d->auto_advance) g_timeout_add_seconds(d->delay, auto_advance, d);
         // and execute the next case, too
       }
       else
@@ -275,13 +293,9 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
       // draw new front buf
       dt_control_queue_redraw_center();
 
-      // TODO: wait for that once there are fancy effects:
-      // if(event == s_blended)
-      {
-        // start bgjob
-        dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, process_job_create(d));
-        d->state = S_PREFETCHING;
-      }
+      // start bgjob
+      dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, process_job_create(d));
+      d->state = S_PREFETCHING;
       break;
 
     default:
@@ -369,10 +383,12 @@ void enter(dt_view_t *self)
 
   d->width = rect.width * darktable.gui->ppd;
   d->height = rect.height * darktable.gui->ppd;
-  d->buf1 = dt_alloc_align(64, sizeof(uint32_t) * d->width * d->height);
-  d->buf2 = dt_alloc_align(64, sizeof(uint32_t) * d->width * d->height);
-  d->front = d->buf1;
-  d->back = d->buf2;
+
+  d->front.buf = dt_alloc_align(64, sizeof(uint32_t) * d->width * d->height);
+  d->back.buf = dt_alloc_align(64, sizeof(uint32_t) * d->width * d->height);
+  d->front.width = d->back.width = d->width;
+  d->front.height = d->back.height = d->height;
+  d->front.num = d->back.num = dt_view_lighttable_get_position(darktable.view_manager) - 1;
 
   // start in prefetching phase, do that by initing one state before
   // and stepping through that at the very end of this function
@@ -382,7 +398,6 @@ void enter(dt_view_t *self)
   d->auto_advance = 0;
   d->delay = dt_conf_get_int("slideshow_delay");
   // restart from beginning, will first increment counter by step and then prefetch
-  d->front_num = d->back_num = dt_view_lighttable_get_position(darktable.view_manager) - 1;
   d->step = 1;
   dt_pthread_mutex_unlock(&d->lock);
 
@@ -402,11 +417,11 @@ void leave(dt_view_t *self)
   dt_control_change_cursor(GDK_LEFT_PTR);
   dt_ui_border_show(darktable.gui->ui, TRUE);
   d->auto_advance = 0;
-  dt_view_lighttable_set_position(darktable.view_manager, d->front_num);
+  dt_view_lighttable_set_position(darktable.view_manager, d->front.num);
   dt_pthread_mutex_lock(&d->lock);
-  dt_free_align(d->buf1);
-  dt_free_align(d->buf2);
-  d->buf1 = d->buf2 = d->front = d->back = 0;
+  dt_free_align(d->front.buf);
+  dt_free_align(d->back.buf);
+  d->front.buf = d->back.buf = NULL;
   dt_pthread_mutex_unlock(&d->lock);
 }
 
@@ -422,21 +437,22 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 
   dt_pthread_mutex_lock(&d->lock);
   cairo_paint(cr);
-  if(d->front)
+  if(d->front.buf)
   {
     // undo clip region/border around the image:
     cairo_restore(cr); // pop view manager
     cairo_restore(cr); // pop control
     cairo_reset_clip(cr);
     cairo_save(cr);
-    cairo_translate(cr, (d->width - d->front_width) * .5f / darktable.gui->ppd, (d->height - d->front_height) * .5f / darktable.gui->ppd);
+    cairo_translate(cr, (d->width - d->front.width) * .5f / darktable.gui->ppd,
+                    (d->height - d->front.height) * .5f / darktable.gui->ppd);
     cairo_surface_t *surface = NULL;
-    const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->front_width);
-    surface = dt_cairo_image_surface_create_for_data((uint8_t *)d->front, CAIRO_FORMAT_RGB24, d->front_width,
-                                                     d->front_height, stride);
+    const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->front.width);
+    surface = dt_cairo_image_surface_create_for_data((uint8_t *)d->front.buf, CAIRO_FORMAT_RGB24, d->front.width,
+                                                     d->front.height, stride);
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
-    cairo_rectangle(cr, 0, 0, d->front_width/darktable.gui->ppd, d->front_height/darktable.gui->ppd);
+    cairo_rectangle(cr, 0, 0, d->front.width/darktable.gui->ppd, d->front.height/darktable.gui->ppd);
     cairo_fill(cr);
     cairo_surface_destroy(surface);
     cairo_restore(cr);
@@ -444,6 +460,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     cairo_save(cr);
   }
 
+  // adjust image size to window size
   d->width = width;
   d->height = height;
   dt_pthread_mutex_unlock(&d->lock);
