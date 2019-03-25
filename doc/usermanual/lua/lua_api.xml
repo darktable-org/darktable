@@ -1722,6 +1722,119 @@ end</programlisting></para>
 </entry>
     </row></tbody>
     </tgroup></informaltable>
+
+<section status="final" id="darktable_gui_libs_filter_sort">
+<title>darktable.gui.libs.filter.sort</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>sort</secondary>
+</indexterm>
+<synopsis>function( 
+	[<emphasis><link linkend="darktable_gui_libs_filter_sort_sort">sort</link></emphasis> : <link linkend="types_dt_collection_sort_t">types.dt_collection_sort_t</link>]
+) : <link linkend="types_dt_collection_sort_t">types.dt_collection_sort_t</link></synopsis>
+<para>Change the collection sort field.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_filter_sort_sort"><term>[sort]</term><listitem>
+<synopsis><link linkend="types_dt_collection_sort_t">types.dt_collection_sort_t</link></synopsis>
+<para>The new field to sort by. If empty the current sort field is unchanged</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types_dt_collection_sort_t">types.dt_collection_sort_t</link></synopsis>
+<para>The current sort field.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_libs_filter_sort_order">
+<title>darktable.gui.libs.filter.sort_order</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>sort_order</secondary>
+</indexterm>
+<synopsis>function( 
+	[<emphasis><link linkend="darktable_gui_libs_filter_sort_order_order">order</link></emphasis> : <link linkend="types_dt_collection_sort_order_t">types.dt_collection_sort_order_t</link>]
+) : <link linkend="types_dt_collection_sort_order_t">types.dt_collection_sort_order_t</link></synopsis>
+<para>Change the collection sort order.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_filter_sort_order_order"><term>[order]</term><listitem>
+<synopsis><link linkend="types_dt_collection_sort_order_t">types.dt_collection_sort_order_t</link></synopsis>
+<para>The order to sort by. If empty the current sort order is unchanged.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types_dt_collection_sort_order_t">types.dt_collection_sort_order_t</link></synopsis>
+<para>The current sort order.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_libs_filter_rating">
+<title>darktable.gui.libs.filter.rating</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>rating</secondary>
+</indexterm>
+<synopsis>function( 
+	[<emphasis><link linkend="darktable_gui_libs_filter_rating_rating">rating</link></emphasis> : <link linkend="types_dt_collection_filter_t">types.dt_collection_filter_t</link>]
+) : <link linkend="types_dt_collection_filter_t">types.dt_collection_filter_t</link></synopsis>
+<para>Change the collection rating filter.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_filter_rating_rating"><term>[rating]</term><listitem>
+<synopsis><link linkend="types_dt_collection_filter_t">types.dt_collection_filter_t</link></synopsis>
+<para>The new rating field to filter by. If empty the current rating field is unchanged.</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types_dt_collection_filter_t">types.dt_collection_filter_t</link></synopsis>
+<para>The current rating field.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
+<section status="final" id="darktable_gui_libs_filter_rating_comparator">
+<title>darktable.gui.libs.filter.rating_comparator</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>rating_comparator</secondary>
+</indexterm>
+<synopsis>function( 
+	[<emphasis><link linkend="darktable_gui_libs_filter_rating_comparator_comparator">comparator</link></emphasis> : <link linkend="types_dt_collection_rating_comperator_t">types.dt_collection_rating_comperator_t</link>]
+) : <link linkend="types_dt_collection_rating_comperator_t">types.dt_collection_rating_comperator_t</link></synopsis>
+<para>Change the collection filter comparison field.</para>
+
+<variablelist>
+<varlistentry id="darktable_gui_libs_filter_rating_comparator_comparator"><term>[comparator]</term><listitem>
+<synopsis><link linkend="types_dt_collection_rating_comperator_t">types.dt_collection_rating_comperator_t</link></synopsis>
+<para>The new comparison field to filter the rating by. If empty the current rating comparison field is unchanged</para>
+
+</listitem></varlistentry>
+
+<varlistentry><term><emphasis>return</emphasis></term><listitem>
+<synopsis><link linkend="types_dt_collection_rating_comperator_t">types.dt_collection_rating_comperator_t</link></synopsis>
+<para>The current rating comparison field.</para>
+
+</listitem></varlistentry>
+
+
+</variablelist>
+</section>
+
 </section>
 
 <section status="final" id="darktable_gui_libs_ratings">
@@ -1730,7 +1843,7 @@ end</programlisting></para>
 <primary>Lua API</primary>
 <secondary>ratings</secondary>
 </indexterm>
-<para>The starts to set the rating of an image</para>
+<para>The stars to set the rating of an image</para>
 <informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
     <colspec colwidth="2*"/>
     <colspec colwidth="8*"/>
@@ -7086,6 +7199,133 @@ This function is recursion-safe and can be used to dump _G if needed.</para>
 <listitem><para>DT_COLLECTION_PROP_APERTURE</para></listitem>
 <listitem><para>DT_COLLECTION_PROP_FILENAME</para></listitem>
 <listitem><para>DT_COLLECTION_PROP_GEOTAGGING</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_collection_sort_t">
+<title>types.dt_collection_sort_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_collection_sort_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>The different elements on which a collection can be sorted</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>DT_COLLECTION_SORT_NONE</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_FILENAME</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_DATETIME</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_RATING</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_ID</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_COLOR</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_GROUP</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_PATH</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_CUSTOM_ORDER</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_TITLE</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_DESCRIPTION</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_ASPECT_RATIO</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_SHUFFLE</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_collection_sort_order_t">
+<title>types.dt_collection_sort_order_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_collection_sort_order_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>The different orders that a collection can be sorted in</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>DT_COLLECTION_SORT_ORDER_ASCENDING</para></listitem>
+<listitem><para>DT_COLLECTION_SORT_ORDER_DESCENDING</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_collection_filter_t">
+<title>types.dt_collection_filter_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_collection_filter_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>The different elements on which a collection can be filtered</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>DT_COLLECTION_FILTER_ALL</para></listitem>
+<listitem><para>DT_COLLECTION_FILTER_STAR_NO</para></listitem>
+<listitem><para>DT_COLLECTION_FILTER_STAR_1</para></listitem>
+<listitem><para>DT_COLLECTION_FILTER_STAR_2</para></listitem>
+<listitem><para>DT_COLLECTION_FILTER_STAR_3</para></listitem>
+<listitem><para>DT_COLLECTION_FILTER_STAR_4</para></listitem>
+<listitem><para>DT_COLLECTION_FILTER_STAR_5</para></listitem>
+<listitem><para>DT_COLLECTION_FILTER_REJECT</para></listitem>
+<listitem><para>DT_COLLECTION_FILTER_NOT_REJECT</para></listitem>
+</itemizedlist>
+</para></listitem>
+</itemizedlist>
+</entry>
+    </row></tbody>
+    </tgroup></informaltable>
+</section>
+
+<section status="final" id="types_dt_collection_rating_comperator_t">
+<title>types.dt_collection_rating_comperator_t</title>
+<indexterm>
+<primary>Lua API</primary>
+<secondary>dt_collection_rating_comperator_t</secondary>
+</indexterm>
+<synopsis>enum</synopsis>
+<para>The different ways in which a collection filter can be compared</para>
+<informaltable frame="none" width="80%"><tgroup cols="2" colsep="0" rowsep="0">
+    <colspec colwidth="2*"/>
+    <colspec colwidth="8*"/>
+    <tbody><row>
+    <entry>Attributes:</entry>
+    <entry><itemizedlist>
+<listitem><para><emphasis>values : </emphasis></para>
+<para><itemizedlist>
+<listitem><para>DT_COLLECTION_RATING_COMP_LT</para></listitem>
+<listitem><para>DT_COLLECTION_RATING_COMP_LEQ</para></listitem>
+<listitem><para>DT_COLLECTION_RATING_COMP_EQ</para></listitem>
+<listitem><para>DT_COLLECTION_RATING_COMP_GEQ</para></listitem>
+<listitem><para>DT_COLLECTION_RATING_COMP_GT</para></listitem>
+<listitem><para>DT_COLLECTION_RATING_COMP_NE</para></listitem>
+<listitem><para>DT_COLLECTION_RATING_N_COMPS</para></listitem>
 </itemizedlist>
 </para></listitem>
 </itemizedlist>

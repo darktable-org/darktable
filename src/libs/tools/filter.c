@@ -35,6 +35,14 @@ typedef struct dt_lib_tool_filter_t
   GtkWidget *reverse;
 } dt_lib_tool_filter_t;
 
+#ifdef USE_LUA
+typedef enum dt_collection_sort_order_t
+{
+  DT_COLLECTION_SORT_ORDER_ASCENDING = 0,
+  DT_COLLECTION_SORT_ORDER_DESCENDING
+} dt_collection_sort_order_t;
+#endif
+
 /* proxy function to intelligently reset filter */
 static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter);
 
@@ -319,6 +327,138 @@ static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
     gtk_combo_box_set_active(GTK_COMBO_BOX(dropdowns->filter), 0);
   }
 }
+
+#ifdef USE_LUA
+static int sort_cb(lua_State *L)
+{
+  dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  const dt_collection_sort_t tmp = dt_collection_get_sort_field(darktable.collection);
+  if(lua_gettop(L) > 0){
+    dt_collection_sort_t value;
+    luaA_to(L,dt_collection_sort_t,&value,1);
+    dt_collection_set_sort(darktable.collection, (uint32_t)value, 0);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(d->sort), dt_collection_get_sort_field(darktable.collection));
+    _lib_filter_update_query(self);
+  }
+  luaA_push(L, dt_collection_sort_t, &tmp);
+  return 1;
+}
+static int sort_order_cb(lua_State *L)
+{
+  dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  const gboolean tmp = dt_collection_get_sort_descending(darktable.collection);
+   if(lua_gettop(L) > 0){
+    dt_collection_sort_order_t value;
+    luaA_to(L,dt_collection_sort_order_t,&value,1);
+    dt_collection_sort_t sort_value = dt_collection_get_sort_field(darktable.collection);
+    dt_collection_set_sort(darktable.collection, sort_value, value);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(d->sort), dt_collection_get_sort_field(darktable.collection));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->reverse),
+                               dt_collection_get_sort_descending(darktable.collection));
+    _lib_filter_update_query(self);
+  }
+  luaA_push(L, dt_collection_sort_order_t, &tmp);
+  return 1;
+}
+static int rating_cb(lua_State *L)
+{
+  dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  const dt_collection_filter_t tmp = dt_collection_get_rating(darktable.collection);
+  if(lua_gettop(L) > 0){
+    dt_collection_filter_t value;
+    luaA_to(L,dt_collection_filter_t,&value,1);
+    dt_collection_set_rating(darktable.collection, (uint32_t)value);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(d->filter), dt_collection_get_rating(darktable.collection));
+    _lib_filter_update_query(self);
+  }
+  luaA_push(L, dt_collection_filter_t, &tmp);
+  return 1;
+}
+static int rating_comparator_cb(lua_State *L)
+{
+  dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
+  dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
+  const dt_collection_rating_comperator_t tmp = dt_collection_get_rating_comparator(darktable.collection);
+  if(lua_gettop(L) > 0){
+    dt_collection_rating_comperator_t value;
+    luaA_to(L,dt_collection_rating_comperator_t,&value,1);
+    dt_collection_set_rating_comparator(darktable.collection, (uint32_t)value);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(d->comparator), dt_collection_get_rating_comparator(darktable.collection));
+    _lib_filter_update_query(self);
+  }
+  luaA_push(L, dt_collection_rating_comperator_t, &tmp);
+  return 1;
+}
+
+void init(struct dt_lib_module_t *self)
+{
+  lua_State *L = darktable.lua_state.state;
+  int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
+  lua_pushlightuserdata(L, self);
+  lua_pushcclosure(L, sort_cb, 1);
+  dt_lua_gtk_wrap(L);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "sort");
+  lua_pushlightuserdata(L, self);
+  lua_pushcclosure(L, sort_order_cb,1);
+  dt_lua_gtk_wrap(L);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "sort_order");
+  lua_pushlightuserdata(L, self);
+  lua_pushcclosure(L, rating_cb,1);
+  dt_lua_gtk_wrap(L);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "rating");
+  lua_pushlightuserdata(L, self);
+  lua_pushcclosure(L, rating_comparator_cb,1);
+  dt_lua_gtk_wrap(L);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "rating_comparator");
+
+  luaA_enum(L,dt_collection_sort_t);
+  luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_NONE);
+  luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_FILENAME);
+  luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_DATETIME);
+  luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_RATING);
+  luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_ID);
+  luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_COLOR);
+  luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_GROUP);
+  luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_PATH);
+  luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_CUSTOM_ORDER);
+  luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_TITLE);
+  luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_DESCRIPTION);
+  luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_ASPECT_RATIO);
+  luaA_enum_value(L,dt_collection_sort_t,DT_COLLECTION_SORT_SHUFFLE);
+
+  luaA_enum(L,dt_collection_filter_t);
+  luaA_enum_value(L,dt_collection_filter_t,DT_COLLECTION_FILTER_ALL);
+  luaA_enum_value(L,dt_collection_filter_t,DT_COLLECTION_FILTER_STAR_NO);
+  luaA_enum_value(L,dt_collection_filter_t,DT_COLLECTION_FILTER_STAR_1);
+  luaA_enum_value(L,dt_collection_filter_t,DT_COLLECTION_FILTER_STAR_2);
+  luaA_enum_value(L,dt_collection_filter_t,DT_COLLECTION_FILTER_STAR_3);
+  luaA_enum_value(L,dt_collection_filter_t,DT_COLLECTION_FILTER_STAR_4);
+  luaA_enum_value(L,dt_collection_filter_t,DT_COLLECTION_FILTER_STAR_5);
+  luaA_enum_value(L,dt_collection_filter_t,DT_COLLECTION_FILTER_REJECT);
+  luaA_enum_value(L,dt_collection_filter_t,DT_COLLECTION_FILTER_NOT_REJECT);
+
+  luaA_enum(L,dt_collection_sort_order_t);
+  luaA_enum_value(L,dt_collection_sort_order_t,DT_COLLECTION_SORT_ORDER_ASCENDING);
+  luaA_enum_value(L,dt_collection_sort_order_t,DT_COLLECTION_SORT_ORDER_DESCENDING);
+
+  luaA_enum(L,dt_collection_rating_comperator_t);
+  luaA_enum_value(L,dt_collection_rating_comperator_t,DT_COLLECTION_RATING_COMP_LT);
+  luaA_enum_value(L,dt_collection_rating_comperator_t,DT_COLLECTION_RATING_COMP_LEQ);
+  luaA_enum_value(L,dt_collection_rating_comperator_t,DT_COLLECTION_RATING_COMP_EQ);
+  luaA_enum_value(L,dt_collection_rating_comperator_t,DT_COLLECTION_RATING_COMP_GEQ);
+  luaA_enum_value(L,dt_collection_rating_comperator_t,DT_COLLECTION_RATING_COMP_GT);
+  luaA_enum_value(L,dt_collection_rating_comperator_t,DT_COLLECTION_RATING_COMP_NE);
+  luaA_enum_value(L,dt_collection_rating_comperator_t,DT_COLLECTION_RATING_N_COMPS);
+
+}
+#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
