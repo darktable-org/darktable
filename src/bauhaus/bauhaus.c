@@ -1334,7 +1334,7 @@ static void dt_bauhaus_draw_baseline(dt_bauhaus_widget_t *w, cairo_t *cr)
   cairo_fill(cr);
 
   // get the reference of the slider aka the position of the 0 value
-  const float origin = -(d->hard_min / (d->hard_max - d->hard_min)) * slider_width;
+  const float origin = fmaxf(fminf(-(d->hard_min / (d->hard_max - d->hard_min)) * slider_width, slider_width), 0.0f);
   const float position = d->pos * slider_width;
   const float delta = position - origin;
 
