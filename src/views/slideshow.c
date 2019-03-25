@@ -116,7 +116,8 @@ static int write_image(dt_imageio_module_data_t *datai, const char *filename, co
   dt_slideshow_format_t *data = (dt_slideshow_format_t *)datai;
   dt_pthread_mutex_lock(&data->d->lock);
   if(data->d->back.buf)
-  { // might have been cleaned up when leaving slide show
+  {
+    // might have been cleaned up when leaving slide show
     memcpy(data->d->back.buf, in, sizeof(uint32_t) * datai->width * datai->height);
     data->d->back.width = datai->width;
     data->d->back.height = datai->height;
@@ -150,8 +151,8 @@ static int process_next_image(dt_slideshow_t *d)
   buf.write_image = write_image;
 
   dt_slideshow_format_t dat;
-  dat.max_width = d->width;
-  dat.max_height = d->height;
+  dat.width = dat.max_width = d->width;
+  dat.height = dat.max_height = d->height;
   dat.style[0] = '\0';
   dat.d = d;
 
@@ -159,6 +160,7 @@ static int process_next_image(dt_slideshow_t *d)
   int32_t id = 0;
   const int32_t cnt = dt_collection_get_count(darktable.collection);
   if(!cnt) return 1;
+
   dt_pthread_mutex_lock(&d->lock);
   d->back.num = d->front.num + d->step;
   int32_t ran = d->back.num;
@@ -192,8 +194,9 @@ static int process_next_image(dt_slideshow_t *d)
   const gboolean high_quality = dt_conf_get_bool("plugins/slideshow/high_quality");
   if(id)
     // the flags are: ignore exif, display byteorder, high quality, upscale, thumbnail
-    dt_imageio_export_with_flags(id, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE, high_quality, TRUE,
-                                 FALSE, NULL, FALSE, DT_COLORSPACE_DISPLAY, NULL, DT_INTENT_LAST, NULL, NULL, 1, 1);
+    dt_imageio_export_with_flags(id, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE,
+                                 high_quality, TRUE, FALSE, NULL, FALSE, DT_COLORSPACE_DISPLAY,
+                                 NULL, DT_INTENT_LAST, NULL, NULL, 1, 1);
   return 0;
 }
 
@@ -361,8 +364,10 @@ void enter(dt_view_t *self)
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, FALSE, TRUE);
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, FALSE, TRUE);
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, FALSE, TRUE);
+
   // also hide arrows
   dt_ui_border_show(darktable.gui->ui, FALSE);
+  dt_control_queue_redraw();
 
   // alloc screen-size double buffer
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
@@ -388,12 +393,14 @@ void enter(dt_view_t *self)
   d->back.buf = dt_alloc_align(64, sizeof(uint32_t) * d->width * d->height);
   d->front.width = d->back.width = d->width;
   d->front.height = d->back.height = d->height;
-  d->front.num = d->back.num = dt_view_lighttable_get_position(darktable.view_manager) - 1;
+
+  d->back.num = dt_view_lighttable_get_position(darktable.view_manager) - 1;
+  d->front.num = -1;
 
   // start in prefetching phase, do that by initing one state before
   // and stepping through that at the very end of this function
-  d->state = S_BLENDING;
-  d->state_waiting_for_user = 1;
+  d->state = S_PREFETCHING;
+  d->state_waiting_for_user = 0;
 
   d->auto_advance = 0;
   d->delay = dt_conf_get_int("slideshow_delay");
@@ -404,7 +411,7 @@ void enter(dt_view_t *self)
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 
   // start first job
-  _step_state(d, S_REQUEST_STEP);
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_BG, process_job_create(d));
   dt_control_log(_("waiting to start slideshow"));
 }
 
@@ -425,11 +432,6 @@ void leave(dt_view_t *self)
   dt_pthread_mutex_unlock(&d->lock);
 }
 
-void reset(dt_view_t *self)
-{
-  // dt_slideshow_t *lib = (dt_slideshow_t *)self->data;
-}
-
 void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   // draw front buffer.
@@ -437,15 +439,14 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
 
   dt_pthread_mutex_lock(&d->lock);
   cairo_paint(cr);
-  if(d->front.buf)
+  if(d->front.buf && d->front.num >= 0)
   {
-    // undo clip region/border around the image:
-    cairo_restore(cr); // pop view manager
-    cairo_restore(cr); // pop control
-    cairo_reset_clip(cr);
+    // cope with possible resize of the window
+    const float tr_width = d->width < d->front.width ? 0.f : (d->width - d->front.width) * .5f / darktable.gui->ppd;
+    const float tr_height = d->height < d->front.height ? 0.f : (d->height - d->front.height) * .5f / darktable.gui->ppd;
+
     cairo_save(cr);
-    cairo_translate(cr, (d->width - d->front.width) * .5f / darktable.gui->ppd,
-                    (d->height - d->front.height) * .5f / darktable.gui->ppd);
+    cairo_translate(cr, tr_width, tr_height);
     cairo_surface_t *surface = NULL;
     const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->front.width);
     surface = dt_cairo_image_surface_create_for_data((uint8_t *)d->front.buf, CAIRO_FORMAT_RGB24, d->front.width,
@@ -456,8 +457,6 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
     cairo_fill(cr);
     cairo_surface_destroy(surface);
     cairo_restore(cr);
-    cairo_save(cr); // pretend we didn't already pop the stack
-    cairo_save(cr);
   }
 
   // adjust image size to window size
@@ -495,6 +494,7 @@ int button_released(dt_view_t *self, double x, double y, int which, uint32_t sta
 int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
+
   if(which == 1)
     _step_state(d, S_REQUEST_STEP);
   else if(which == 3)
@@ -529,22 +529,28 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     }
     return 0;
   }
-  else if(key == GDK_KEY_Right || key == GDK_KEY_KP_Add)
+  else if(key == GDK_KEY_Up || key == GDK_KEY_KP_Add)
   {
     d->delay = CLAMP(d->delay + 1, 1, 60);
     dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
     dt_conf_set_int("slideshow_delay", d->delay);
     return 0;
   }
-  else if(key == GDK_KEY_Left || key == GDK_KEY_KP_Subtract)
+  else if(key == GDK_KEY_Down || key == GDK_KEY_KP_Subtract)
   {
     d->delay = CLAMP(d->delay - 1, 1, 60);
     dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
     dt_conf_set_int("slideshow_delay", d->delay);
     return 0;
   }
-  else if(key == GDK_KEY_Shift_L || key == GDK_KEY_Shift_R)
+  else if(key == GDK_KEY_Left || key == GDK_KEY_Shift_L)
   {
+    _step_state(d, S_REQUEST_STEP_BACK);
+    return 0;
+  }
+  else if(key == GDK_KEY_Right || key == GDK_KEY_Shift_R)
+  {
+    _step_state(d, S_REQUEST_STEP);
     return 0;
   }
 
