@@ -1722,7 +1722,6 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     return;
   }
 
-  const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
   float *in = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
 
   const float wb_mean = (piece->pipe->dsc.temperature.coeffs[0] + piece->pipe->dsc.temperature.coeffs[1]
@@ -1750,8 +1749,8 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   {
     for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
   }
-  // update the coeffs with strength and scale
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength * (scale * scale);
+  // update the coeffs with strength
+  for(int i = 0; i < 3; i++) wb[i] *= d->strength;
 
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
