@@ -2766,7 +2766,6 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->strength, p->strength);
   dt_bauhaus_slider_set_soft(g->scattering, p->scattering);
   dt_bauhaus_slider_set_soft(g->central_pixel_weight, p->central_pixel_weight);
-  dt_bauhaus_combobox_set(g->mode, p->mode);
   dt_bauhaus_combobox_set(g->profile, -1);
   if(p->mode == MODE_WAVELETS)
   {
@@ -2780,12 +2779,17 @@ void gui_update(dt_iop_module_t *self)
     gtk_widget_hide(g->box_variance);
     gtk_widget_show_all(g->box_nlm);
   }
-  else
+  else if(p->mode == MODE_VARIANCE)
   {
     gtk_widget_hide(g->box_wavelets);
     gtk_widget_hide(g->box_nlm);
     gtk_widget_show_all(g->box_variance);
+    if(dt_bauhaus_combobox_length(g->mode) == 2)
+    {
+      dt_bauhaus_combobox_add(g->mode, _("compute variance"));
+    }
   }
+  dt_bauhaus_combobox_set(g->mode, p->mode);
   if(p->a[0] == -1.0)
   {
     dt_bauhaus_combobox_set(g->profile, 0);
@@ -3341,7 +3345,11 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means"));
   dt_bauhaus_combobox_add(g->mode, _("wavelets"));
-  dt_bauhaus_combobox_add(g->mode, _("compute variance"));
+  gboolean compute_variance = dt_conf_get_bool("plugins/darkroom/denoiseprofile/show_compute_variance_mode");
+  if(compute_variance)
+  {
+    dt_bauhaus_combobox_add(g->mode, _("compute variance"));
+  }
   gtk_widget_set_tooltip_text(g->profile, _("profile used for variance stabilization"));
   gtk_widget_set_tooltip_text(g->mode, _("method used in the denoising core. "
                                          "non-local means works best for `lightness' blending, "
