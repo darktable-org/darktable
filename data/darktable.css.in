@@ -61,7 +61,7 @@
 
 
 /* General */
-@define-color selected_bg_color @grey_15;
+@define-color selected_bg_color @grey_25;
 @define-color border_color @grey_10;
 @define-color bg_color @grey_15;
 @define-color fg_color @grey_75;
@@ -228,29 +228,6 @@ box *
   color: shade(@fg_color, .33);
 }
 
-/**** General events properties for reference
-
-  *:selected,
-  *:active,
-  *:checked
-  {
-    background-color: @button_checked_bg;
-    color: @button_checked_fg;
-  }
-
-  *:hover
-  {
-    background-color: @button_hover_bg;
-    color: @button_hover_fg;
-  }
-
-  *:focus
-  {
-    background-color: @button_focus_bg;
-    color: @button_focus_fg;
-  }
-
-*****/
 
 /* Side panels */
 
@@ -709,31 +686,6 @@ treeview header
   color: @button_fg;
 }
 
-treeview *:hover
-{
-  background-color: @button_hover_bg;
-  color: @button_hover_fg;
-}
-
-treeview *:focus
-{
-  background-color: @button_focus_bg;
-  color: @button_focus_fg;
-}
-
-treeview *:active,
-treeview *:checked
-{
-  background-color: @button_checked_bg;
-  color: @button_checked_fg;
-}
-
-treeview *:selected
-{
-  background-color: @button_bg;
-  color: @button_fg;
-}
-
 /* Notebooks tabs */
 
 notebook tabs,
@@ -746,10 +698,6 @@ notebook tabs,
   color: @button_fg;
   font-weight: 400;
   font-family: "Roboto", "Segoe UI", "SF Pro Text", "Cantarell", sans-serif;
-}
-
-#blending-tabs
-{
 }
 
 #modules-tabs,
@@ -790,6 +738,7 @@ notebook tab:hover
 {
   border-bottom: 2pt solid @button_hover_fg;
   color: @button_hover_fg;
+  background-color: @button_hover_bg;
 }
 
 notebook tab:hover label
