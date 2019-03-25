@@ -263,17 +263,17 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
       cairo_set_line_width(cr, 1.);
       if(d->red)
       {
-        cairo_set_source_rgba(cr, 1., 0., 0., 0.33);
+        cairo_set_source_rgba(cr, 1., 0., 0., 0.5);
         dt_draw_histogram_8(cr, hist, 4, 0, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
       }
       if(d->green)
       {
-        cairo_set_source_rgba(cr, 0., 1., 0., 0.33);
+        cairo_set_source_rgba(cr, 0., 1., 0., 0.5);
         dt_draw_histogram_8(cr, hist, 4, 1, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
       }
       if(d->blue)
       {
-        cairo_set_source_rgba(cr, 0., 0., 1., 0.33);
+        cairo_set_source_rgba(cr, 0., 0., 1., 0.5);
         dt_draw_histogram_8(cr, hist, 4, 2, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
       }
       cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
