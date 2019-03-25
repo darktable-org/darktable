@@ -39,7 +39,7 @@ typedef struct dt_lib_tool_filter_t
 typedef enum dt_collection_sort_order_t
 {
   DT_COLLECTION_SORT_ORDER_ASCENDING = 0,
-  DT_COLLECTION_SORT_ORDER_DECENDING
+  DT_COLLECTION_SORT_ORDER_DESCENDING
 } dt_collection_sort_order_t;
 #endif
 
