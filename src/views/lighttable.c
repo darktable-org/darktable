@@ -241,13 +241,14 @@ static void check_layout(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   const dt_lighttable_layout_t layout = get_layout();
+  const dt_lighttable_layout_t layout_old = lib->current_layout;
 
   if(lib->current_layout == layout) return;
   lib->current_layout = layout;
 
   if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
   {
-    if(lib->first_visible_zoomable >= 0)
+    if(lib->first_visible_zoomable >= 0 && layout_old == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
     {
       lib->first_visible_filemanager = lib->offset = lib->first_visible_zoomable;
     }
@@ -389,6 +390,15 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
   lib->force_expose_all = TRUE;
   _unregister_custom_image_order_drag_n_drop(self);
   _register_custom_image_order_drag_n_drop(self);
+
+  // in filemanager, we want to reset the offset to the beggining
+  const dt_lighttable_layout_t layout = get_layout();
+  if(layout == lib->current_layout && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && lib->offset > 0
+     && lib->first_visible_filemanager > 0)
+  {
+    lib->offset = lib->first_visible_filemanager = 0;
+    lib->offset_changed = TRUE;
+  }
 
   _full_preview_destroy(self);
   lib->full_zoom = 1.0f;
