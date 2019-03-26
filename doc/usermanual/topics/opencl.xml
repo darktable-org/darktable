@@ -613,12 +613,14 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
           </term>
 
           <listitem><para>
-            This parameter, if set to TRUE, will force darktable to fetch image buffers from
-            your GPU after each module and store them in its pixelpipe cache. This is a very
-            resource consuming operation. It only makes sense if you have a rather slow GPU. In
-            that case darktable might in fact save some time when module parameters have
-            changed, as it can go back to some cached intermediate state and reprocess only part
-            of the pixelpipe. In most cases this parameter should be set to FALSE (default).
+            This parameter, if set to "true", will force darktable to fetch image buffers from
+            your GPU after each module and store them in its pixelpipe cache. This is a
+            resource consuming operation, but makes sense depending on your GPU (including if the
+	    GPU is rather slow). In that case darktable might in fact save some time when module
+	    parameters have changed, as it can go back to some cached intermediate state and
+	    reprocess only part of the pixelpipe. In many cases this parameter should be set to
+	    "active module" (default), which will only cache the input of the currently focused
+	    module.
           </para></listitem>
 
         </varlistentry>

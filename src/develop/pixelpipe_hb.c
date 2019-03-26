@@ -1696,7 +1696,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
              But it is worth copying data back from the GPU which is the input to the currently focused iop,
              as that is the iop which is most likely to change next.
           */
-          if(darktable.opencl->synch_cache || (module == darktable.develop->gui_module))
+          if((darktable.opencl->sync_cache == OPENCL_SYNC_TRUE) ||
+             ((darktable.opencl->sync_cache == OPENCL_SYNC_ACTIVE_MODULE) && (module == darktable.develop->gui_module)))
           {
             /* write back input into cache for faster re-usal (not for export or thumbnails) */
             if(cl_mem_input != NULL && pipe->type != DT_DEV_PIXELPIPE_EXPORT
