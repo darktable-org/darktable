@@ -28,7 +28,6 @@
 #include "develop/imageop_math.h"
 #include "develop/tiling.h"
 #include "dtgtk/drawingarea.h"
-#include "dtgtk/expander.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -48,10 +47,10 @@
 #define DT_IOP_DENOISE_PROFILE_RES 64
 #define DT_IOP_DENOISE_PROFILE_BANDS 5
 
-typedef enum dt_iop_denoiseprofile_mode_t
-{
+typedef enum dt_iop_denoiseprofile_mode_t {
   MODE_NLMEANS = 0,
-  MODE_WAVELETS = 1
+  MODE_WAVELETS = 1,
+  MODE_VARIANCE = 2
 } dt_iop_denoiseprofile_mode_t;
 
 typedef enum dt_iop_denoiseprofile_channel_t
@@ -135,9 +134,9 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   GtkWidget *central_pixel_weight;
   dt_noiseprofile_t interpolated; // don't use name, maker or model, they may point to garbage
   GList *profiles;
-  GtkWidget *stack;
   GtkWidget *box_nlm;
   GtkWidget *box_wavelets;
+  GtkWidget *box_variance;
   dt_draw_curve_t *transition_curve; // curve for gui to draw
   GtkDrawingArea *area;
   GtkNotebook *channel_tabs;
@@ -151,6 +150,13 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   float draw_min_xs[DT_IOP_DENOISE_PROFILE_RES], draw_min_ys[DT_IOP_DENOISE_PROFILE_RES];
   float draw_max_xs[DT_IOP_DENOISE_PROFILE_RES], draw_max_ys[DT_IOP_DENOISE_PROFILE_RES];
   GtkWidget *wb_adaptive_anscombe;
+  GtkLabel *label_var;
+  float variance_R;
+  GtkLabel *label_var_R;
+  float variance_G;
+  GtkLabel *label_var_G;
+  float variance_B;
+  GtkLabel *label_var_B;
   // backward compatibility options
   GtkWidget *fix_anscombe_and_nlmeans_norm;
 } dt_iop_denoiseprofile_gui_data_t;
@@ -1642,6 +1648,136 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
 }
 #endif
 
+static void sum_rec(const unsigned npixels, const float *in, float *out)
+{
+  if(npixels <= 3)
+  {
+    for(int c = 0; c < 3; c++)
+    {
+      out[c] = 0.0;
+    }
+    for(int i = 0; i < npixels; i++)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        out[c] += in[i * 4 + c];
+      }
+    }
+    return;
+  }
+
+  unsigned npixels_first_half = npixels >> 1;
+  unsigned npixels_second_half = npixels - npixels_first_half;
+  sum_rec(npixels_first_half, in, out);
+  sum_rec(npixels_second_half, in + 4 * npixels_first_half, out + 4 * npixels_first_half);
+  for(int c = 0; c < 3; c++)
+  {
+    out[c] += out[4 * npixels_first_half + c];
+  }
+}
+
+/* this gives (npixels-1)*V[X] */
+static void variance_rec(const unsigned npixels, const float *in, float *out, const float mean[3])
+{
+  if(npixels <= 3)
+  {
+    for(int c = 0; c < 3; c++)
+    {
+      out[c] = 0.0;
+    }
+    for(int i = 0; i < npixels; i++)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        float diff = in[i * 4 + c] - mean[c];
+        out[c] += diff * diff;
+      }
+    }
+    return;
+  }
+
+  unsigned npixels_first_half = npixels >> 1;
+  unsigned npixels_second_half = npixels - npixels_first_half;
+  variance_rec(npixels_first_half, in, out, mean);
+  variance_rec(npixels_second_half, in + 4 * npixels_first_half, out + 4 * npixels_first_half, mean);
+  for(int c = 0; c < 3; c++)
+  {
+    out[c] += out[4 * npixels_first_half + c];
+  }
+}
+
+static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+                             void *const ovoid, const dt_iop_roi_t *const roi_in,
+                             const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_denoiseprofile_data_t *const d = piece->data;
+  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
+
+  const int width = roi_in->width, height = roi_in->height;
+  size_t npixels = (size_t)width * height;
+
+  memcpy(ovoid, ivoid, npixels * 4 * sizeof(float));
+  if((piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW) || (g == NULL))
+  {
+    return;
+  }
+
+  float *in = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
+
+  const float wb_mean = (piece->pipe->dsc.temperature.coeffs[0] + piece->pipe->dsc.temperature.coeffs[1]
+                         + piece->pipe->dsc.temperature.coeffs[2])
+                        / 3.0f;
+  // we init wb by the mean of the coeffs, which corresponds to the mean
+  // amplification that is done in addition to the "ISO" related amplification
+  float wb[3] = { wb_mean, wb_mean, wb_mean };
+  if(d->fix_anscombe_and_nlmeans_norm)
+  {
+    if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
+    {
+      for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.temperature.coeffs[i];
+    }
+    else if(wb_mean == 0.0f)
+    {
+      // temperature coeffs are equal to 0 if we open a JPG image.
+      // in this case consider them equal to 1.
+      for(int i = 0; i < 3; i++) wb[i] = 1.0f;
+    }
+    // else, wb_adaptive_anscombe is false and our wb array is
+    // filled with the wb_mean
+  }
+  else
+  {
+    for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
+  }
+  // update the coeffs with strength
+  for(int i = 0; i < 3; i++) wb[i] *= d->strength;
+
+  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
+  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
+  precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
+
+  float *out = (float *)ovoid;
+  // we use out as a temporary buffer here
+  // compute mean
+  sum_rec(npixels, in, out);
+  float mean[3];
+  for(int c = 0; c < 3; c++)
+  {
+    mean[c] = out[c] / npixels;
+  }
+  variance_rec(npixels, in, out, mean);
+  float var[3];
+  for(int c = 0; c < 3; c++)
+  {
+    var[c] = out[c] / (npixels - 1);
+  }
+  g->variance_R = var[0];
+  g->variance_G = var[1];
+  g->variance_B = var[2];
+
+  memcpy(ovoid, ivoid, npixels * 4 * sizeof(float));
+}
+
 #ifdef HAVE_OPENCL
 static int bucket_next(unsigned int *state, unsigned int max)
 {
@@ -2263,7 +2399,6 @@ error:
   return FALSE;
 }
 
-
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -2273,9 +2408,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   {
     return process_nlmeans_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
   }
-  else
+  else if(d->mode == MODE_WAVELETS)
   {
     return process_wavelets_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
+  }
+  else
+  {
+    dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] compute variance not yet supported by opencl code\n");
+    return FALSE;
   }
 }
 #endif // HAVE_OPENCL
@@ -2286,8 +2426,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
   if(d->mode == MODE_NLMEANS)
     process_nlmeans(self, piece, ivoid, ovoid, roi_in, roi_out);
-  else
+  else if(d->mode == MODE_WAVELETS)
     process_wavelets(self, piece, ivoid, ovoid, roi_in, roi_out, eaw_decompose, eaw_synthesize);
+  else
+    process_variance(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
 
 #if defined(__SSE2__)
@@ -2297,8 +2439,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
   if(d->mode == MODE_NLMEANS)
     process_nlmeans_sse(self, piece, ivoid, ovoid, roi_in, roi_out);
-  else
+  else if(d->mode == MODE_WAVELETS)
     process_wavelets(self, piece, ivoid, ovoid, roi_in, roi_out, eaw_decompose_sse, eaw_synthesize_sse2);
+  else
+    process_variance(self, piece, ivoid, ovoid, roi_in, roi_out);
 }
 #endif
 
@@ -2556,9 +2700,23 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   p->mode = dt_bauhaus_combobox_get(w);
   if(p->mode == MODE_WAVELETS)
-    gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "wavelets");
+  {
+    gtk_widget_hide(g->box_nlm);
+    gtk_widget_hide(g->box_variance);
+    gtk_widget_show_all(g->box_wavelets);
+  }
+  else if(p->mode == MODE_NLMEANS)
+  {
+    gtk_widget_hide(g->box_wavelets);
+    gtk_widget_hide(g->box_variance);
+    gtk_widget_show_all(g->box_nlm);
+  }
   else
-    gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "nlm");
+  {
+    gtk_widget_hide(g->box_wavelets);
+    gtk_widget_hide(g->box_nlm);
+    gtk_widget_show_all(g->box_variance);
+  }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2607,12 +2765,30 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->strength, p->strength);
   dt_bauhaus_slider_set_soft(g->scattering, p->scattering);
   dt_bauhaus_slider_set_soft(g->central_pixel_weight, p->central_pixel_weight);
-  dt_bauhaus_combobox_set(g->mode, p->mode);
   dt_bauhaus_combobox_set(g->profile, -1);
   if(p->mode == MODE_WAVELETS)
-    gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "wavelets");
-  else
-    gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "nlm");
+  {
+    gtk_widget_hide(g->box_nlm);
+    gtk_widget_hide(g->box_variance);
+    gtk_widget_show_all(g->box_wavelets);
+  }
+  else if(p->mode == MODE_NLMEANS)
+  {
+    gtk_widget_hide(g->box_wavelets);
+    gtk_widget_hide(g->box_variance);
+    gtk_widget_show_all(g->box_nlm);
+  }
+  else if(p->mode == MODE_VARIANCE)
+  {
+    gtk_widget_hide(g->box_wavelets);
+    gtk_widget_hide(g->box_nlm);
+    gtk_widget_show_all(g->box_variance);
+    if(dt_bauhaus_combobox_length(g->mode) == 2)
+    {
+      dt_bauhaus_combobox_add(g->mode, _("compute variance"));
+    }
+  }
+  dt_bauhaus_combobox_set(g->mode, p->mode);
   if(p->a[0] == -1.0)
   {
     dt_bauhaus_combobox_set(g->profile, 0);
@@ -2651,6 +2827,40 @@ static void dt_iop_denoiseprofile_get_params(dt_iop_denoiseprofile_params_t *p, 
     const float f = expf(-(mouse_x - p->x[ch][k]) * (mouse_x - p->x[ch][k]) / (rad * rad));
     p->y[ch][k] = (1 - f) * p->y[ch][k] + f * mouse_y;
   }
+}
+
+static gboolean denoiseprofile_draw_variance(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+{
+  if(darktable.gui->reset) return FALSE;
+
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_denoiseprofile_gui_data_t *c = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+
+  if(!isnan(c->variance_R))
+  {
+    gchar *str = g_strdup_printf("%.2f", c->variance_R);
+    darktable.gui->reset = 1;
+    gtk_label_set_text(c->label_var_R, str);
+    darktable.gui->reset = 0;
+    g_free(str);
+  }
+  if(!isnan(c->variance_G))
+  {
+    gchar *str = g_strdup_printf("%.2f", c->variance_G);
+    darktable.gui->reset = 1;
+    gtk_label_set_text(c->label_var_G, str);
+    darktable.gui->reset = 0;
+    g_free(str);
+  }
+  if(!isnan(c->variance_B))
+  {
+    gchar *str = g_strdup_printf("%.2f", c->variance_B);
+    darktable.gui->reset = 1;
+    gtk_label_set_text(c->label_var_B, str);
+    darktable.gui->reset = 0;
+    g_free(str);
+  }
+  return FALSE;
 }
 
 static gboolean denoiseprofile_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
@@ -3004,11 +3214,44 @@ void gui_init(dt_iop_module_t *self)
 
   g->box_nlm = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g->box_wavelets = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  g->box_variance = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   gtk_box_pack_start(GTK_BOX(g->box_nlm), g->radius, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_nlm), g->nbhood, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_nlm), g->scattering, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(g->box_nlm), g->central_pixel_weight, TRUE, TRUE, 0);
+
+  g->label_var = GTK_LABEL(gtk_label_new(_("use only with a perfectly\n"
+                                           "uniform image if you want to\n"
+                                           "estimate the noise variance.")));
+  gtk_widget_set_halign(GTK_WIDGET(g->label_var), GTK_ALIGN_START);
+  gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(g->label_var), TRUE, TRUE, 0);
+
+  GtkBox *hboxR = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  GtkLabel *labelR = GTK_LABEL(gtk_label_new(_("variance red: ")));
+  gtk_box_pack_start(GTK_BOX(hboxR), GTK_WIDGET(labelR), FALSE, FALSE, 0);
+  g->label_var_R = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_R), _("variance computed on the red channel"));
+  gtk_box_pack_start(GTK_BOX(hboxR), GTK_WIDGET(g->label_var_R), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxR), TRUE, TRUE, 0);
+
+  GtkBox *hboxG = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  GtkLabel *labelG = GTK_LABEL(gtk_label_new(_("variance green: ")));
+  gtk_box_pack_start(GTK_BOX(hboxG), GTK_WIDGET(labelG), FALSE, FALSE, 0);
+  g->label_var_G = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_G), _("variance computed on the green channel"));
+  gtk_box_pack_start(GTK_BOX(hboxG), GTK_WIDGET(g->label_var_G), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxG), TRUE, TRUE, 0);
+
+  GtkBox *hboxB = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  GtkLabel *labelB = GTK_LABEL(gtk_label_new(_("variance blue: ")));
+  gtk_box_pack_start(GTK_BOX(hboxB), GTK_WIDGET(labelB), FALSE, FALSE, 0);
+  g->label_var_B = GTK_LABEL(gtk_label_new("")); // This gets filled in by process
+  gtk_widget_set_tooltip_text(GTK_WIDGET(g->label_var_B), _("variance computed on the blue channel"));
+  gtk_box_pack_start(GTK_BOX(hboxB), GTK_WIDGET(g->label_var_B), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(g->box_variance), GTK_WIDGET(hboxB), TRUE, TRUE, 0);
+
+  g_signal_connect(G_OBJECT(g->box_variance), "draw", G_CALLBACK(denoiseprofile_draw_variance), self);
 
   g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
@@ -3064,13 +3307,13 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->wb_adaptive_anscombe), "toggled", G_CALLBACK(wb_adaptive_anscombe_callback), self);
 
 
-  g->stack = gtk_stack_new();
-  gtk_stack_set_homogeneous(GTK_STACK(g->stack), FALSE);
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->wb_adaptive_anscombe, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->stack, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->box_nlm, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->box_wavelets, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->box_variance, TRUE, TRUE, 0);
 
   g->fix_anscombe_and_nlmeans_norm = gtk_check_button_new_with_label(_("migrate to fixed algorithm"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_anscombe_and_nlmeans_norm), p->fix_anscombe_and_nlmeans_norm);
@@ -3088,9 +3331,7 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_widget_show_all(g->box_nlm);
   gtk_widget_show_all(g->box_wavelets);
-  gtk_stack_add_named(GTK_STACK(g->stack), g->box_nlm, "nlm");
-  gtk_stack_add_named(GTK_STACK(g->stack), g->box_wavelets, "wavelets");
-  gtk_stack_set_visible_child_name(GTK_STACK(g->stack), "nlm");
+  gtk_widget_show_all(g->box_variance);
 
   dt_bauhaus_widget_set_label(g->profile, NULL, _("profile"));
   dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
@@ -3103,6 +3344,11 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means"));
   dt_bauhaus_combobox_add(g->mode, _("wavelets"));
+  const gboolean compute_variance = dt_conf_get_bool("plugins/darkroom/denoiseprofile/show_compute_variance_mode");
+  if(compute_variance)
+  {
+    dt_bauhaus_combobox_add(g->mode, _("compute variance"));
+  }
   gtk_widget_set_tooltip_text(g->profile, _("profile used for variance stabilization"));
   gtk_widget_set_tooltip_text(g->mode, _("method used in the denoising core. "
                                          "non-local means works best for `lightness' blending, "

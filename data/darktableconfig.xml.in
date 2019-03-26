@@ -1300,6 +1300,13 @@
     <shortdescription>crossover iso for X-Trans fdc demosaicing</shortdescription>
     <longdescription>up to, and including, this iso, X-Trans frequency domain chroma demosaicing uses the hybrid mode for determining chroma; for all higher iso values the pure fdc is used.</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/denoiseprofile/show_compute_variance_mode</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to show the compute variance mode in denoiseprofile</shortdescription>
+    <longdescription>adds a mode in denoiseprofile that allows to compute the variance after the generalized anscombe transform is performed</longdescription>
+  </dtconfig>
   <dtconfig prefs="core" section="quality">
     <name>plugins/darkroom/demosaic/quality</name>
     <type>
