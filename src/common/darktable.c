@@ -1178,24 +1178,35 @@ void dt_free_align(void *mem)
 }
 #endif
 
-void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...)
+void dt_show_times(const dt_times_t *start, const char *prefix)
 {
-  dt_times_t end;
-  char buf[160]; /* Arbitrary size, should be lots big enough for everything used in DT */
-  int i;
-
   /* Skip all the calculations an everything if -d perf isn't on */
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
+    dt_times_t end;
     dt_get_times(&end);
-    i = snprintf(buf, sizeof(buf), "%s took %.3f secs (%.3f CPU)", prefix, end.clock - start->clock,
-                 end.user - start->user);
-    if(suffix != NULL)
+    char buf[64]; /* Arbitrary size, should be lots big enough for everything used in DT */
+    snprintf(buf, sizeof(buf), "%s took %.3f secs (%.3f CPU)", prefix, end.clock - start->clock,
+             end.user - start->user);
+    dt_print(DT_DEBUG_PERF, "%s\n", buf);
+  }
+}
+
+void dt_show_times_f(const dt_times_t *start, const char *prefix, const char *suffix, ...)
+{
+  /* Skip all the calculations an everything if -d perf isn't on */
+  if(darktable.unmuted & DT_DEBUG_PERF)
+  {
+    dt_times_t end;
+    dt_get_times(&end);
+    char buf[160]; /* Arbitrary size, should be lots big enough for everything used in DT */
+    const int n = snprintf(buf, sizeof(buf), "%s took %.3f secs (%.3f CPU) ", prefix, end.clock - start->clock,
+                           end.user - start->user);
+    if(n < sizeof(buf) - 1)
     {
       va_list ap;
       va_start(ap, suffix);
-      buf[i++] = ' ';
-      vsnprintf(buf + i, sizeof buf - i, suffix, ap);
+      vsnprintf(buf + n, sizeof(buf) - n, suffix, ap);
       va_end(ap);
     }
     dt_print(DT_DEBUG_PERF, "%s\n", buf);

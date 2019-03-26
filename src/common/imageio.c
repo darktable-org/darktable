@@ -677,7 +677,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width,
                                   &pipe.processed_height);
 
-  dt_show_times(&start, "[export] creating pixelpipe", NULL);
+  dt_show_times(&start, "[export] creating pixelpipe");
 
   // find output color profile for this image:
   int sRGB = 1;
@@ -769,8 +769,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     if(finalscale) finalscale->enabled = 1;
   }
   dt_show_times(&start, thumbnail_export ? "[dev_process_thumbnail] pixel pipeline processing"
-                                         : "[dev_process_export] pixel pipeline processing",
-                NULL);
+                                         : "[dev_process_export] pixel pipeline processing");
 
   uint8_t *outbuf = pipe.backbuf;
 
