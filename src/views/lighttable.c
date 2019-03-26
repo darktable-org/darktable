@@ -2542,7 +2542,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
     else
       move_view(lib, DIRECTION_DOWN);
   }
-  else
+  else if(layout != DT_LIGHTTABLE_LAYOUT_EXPOSE)
   {
     int zoom = get_zoom();
     if(up)
