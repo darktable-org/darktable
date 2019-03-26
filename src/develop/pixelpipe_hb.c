@@ -1151,7 +1151,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       // else found in cache.
     }
 
-    dt_show_times(&start, "[dev_pixelpipe]", "initing base buffer [%s]", _pipe_type_to_str(pipe->type));
+    dt_show_times_f(&start, "[dev_pixelpipe]", "initing base buffer [%s]", _pipe_type_to_str(pipe->type));
     dt_pthread_mutex_unlock(&pipe->busy_mutex);
   }
   else
@@ -2282,7 +2282,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     }
 
     gchar *module_label = dt_history_item_get_name(module);
-    dt_show_times(
+    dt_show_times_f(
         &start, "[dev_pixelpipe]", "processed `%s' on %s%s%s, blended on %s [%s]", module_label,
         pixelpipe_flow & PIXELPIPE_FLOW_PROCESSED_ON_GPU
             ? "GPU"

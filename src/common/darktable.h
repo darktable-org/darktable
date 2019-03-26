@@ -292,7 +292,9 @@ static inline void dt_get_times(dt_times_t *t)
   t->user = ru.ru_utime.tv_sec + ru.ru_utime.tv_usec * (1.0 / 1000000.0);
 }
 
-void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...) __attribute__((format(printf, 3, 4)));
+void dt_show_times(const dt_times_t *start, const char *prefix);
+
+void dt_show_times_f(const dt_times_t *start, const char *prefix, const char *suffix, ...) __attribute__((format(printf, 3, 4)));
 
 /** \brief check if file is a supported image */
 gboolean dt_supported_image(const gchar *filename);
