@@ -1110,7 +1110,11 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
      && (*(vals->full_surface_id) != imgid || *(vals->full_surface_mip) != mip || !full_preview))
   {
     cairo_surface_destroy(*(vals->full_surface));
-    if(vals->full_rgbbuf && *(vals->full_rgbbuf)) free(*(vals->full_rgbbuf));
+    if(vals->full_rgbbuf && *(vals->full_rgbbuf))
+    {
+      free(*(vals->full_rgbbuf));
+      *(vals->full_rgbbuf) = NULL;
+    }
     *(vals->full_surface) = NULL;
   }
   if(!vals->full_surface || !*(vals->full_surface) || *(vals->full_surface_w_lock))
