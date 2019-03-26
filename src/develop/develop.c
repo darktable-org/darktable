@@ -305,7 +305,7 @@ restart:
 
   dev->preview_status = DT_DEV_PIXELPIPE_VALID;
 
-  dt_show_times(&start, "[dev_process_preview] pixel pipeline processing", NULL);
+  dt_show_times(&start, "[dev_process_preview] pixel pipeline processing");
   dt_dev_average_delay_update(&start, &dev->preview_average_delay);
 
   // redraw the whole thing, to also update color picker values and histograms etc.
@@ -334,7 +334,7 @@ void dt_dev_process_image_job(dt_develop_t *dev)
   dt_get_times(&start);
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, dev->image_storage.id, DT_MIPMAP_FULL,
                            DT_MIPMAP_BLOCKING, 'r');
-  dt_show_times(&start, "[dev]", "to load the image.");
+  dt_show_times_f(&start, "[dev]", "to load the image.");
 
   // failed to load raw?
   if(!buf.buf)
@@ -429,7 +429,7 @@ restart:
     else
       goto restart;
   }
-  dt_show_times(&start, "[dev_process_image] pixel pipeline processing", NULL);
+  dt_show_times(&start, "[dev_process_image] pixel pipeline processing");
   dt_dev_average_delay_update(&start, &dev->average_delay);
 
   // maybe we got zoomed/panned in the meantime?
@@ -455,7 +455,7 @@ static inline void _dt_dev_load_raw(dt_develop_t *dev, const uint32_t imgid)
   dt_get_times(&start);
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-  dt_show_times(&start, "[dev]", "to load the image.");
+  dt_show_times_f(&start, "[dev]", "to load the image.");
 
   const dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   dev->image_storage = *image;
