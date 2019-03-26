@@ -52,7 +52,6 @@ typedef struct dt_lib_duplicate_t
   uint8_t *rgbbuf;
   int buf_mip;
   int buf_timestamp;
-
 } dt_lib_duplicate_t;
 
 const char *name(dt_lib_module_t *self)
@@ -272,6 +271,7 @@ static gboolean _lib_duplicate_thumb_draw_callback (GtkWidget *widget, cairo_t *
   params.zoom = 5;
   params.full_preview = TRUE;
 
+  int lk = 0;
   // if this is the actual thumb, we want to use the preview pipe
   if(imgid == dev->image_storage.id)
   {
@@ -320,7 +320,6 @@ static gboolean _lib_duplicate_thumb_draw_callback (GtkWidget *widget, cairo_t *
     params.full_surface_id = &imgid;
     params.full_surface_wd = &d->buf_width;
     params.full_surface_ht = &d->buf_height;
-    int lk = 0;
     params.full_surface_w_lock = &lk;
   }
 
