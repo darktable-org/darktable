@@ -327,7 +327,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
       dt_dev_init(&dev, 0);
       dt_dev_load_image(&dev, imgid);
       dt_dev_pixelpipe_t pipe;
-      int res = dt_dev_pixelpipe_init_dummy(&pipe, imgtmp.width, imgtmp.height);
+      const int res = dt_dev_pixelpipe_init_dummy(&pipe, imgtmp.width, imgtmp.height);
       if(res)
       {
         // set mem pointer to 0, won't be used.
@@ -341,7 +341,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
       }
       else
       {
-        // for some raison pipeline didn't success, let's allocate huge memory
+        // for some raison pipeline didn't succeed, let's allocate huge memory
         entry->data_size = cache->buffer_size[mip];
       }
       dt_dev_cleanup(&dev);
