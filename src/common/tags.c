@@ -39,7 +39,7 @@ typedef struct dt_undo_tags_t
 static void _attach_tag(guint tagid, gint imgid, gboolean undo_actif);
 static void _detach_tag(guint tagid, gint imgid, gboolean undo_actif);
 
-static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data, dt_undo_action_t action)
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action)
 {
   if(type == DT_UNDO_TAGS)
   {
@@ -344,7 +344,7 @@ static void _attach_tag(guint tagid, gint imgid, gboolean undo_actif)
 
   if(undo_actif)
   {
-    dt_undo_record(darktable.undo, NULL, DT_UNDO_TAGS, (dt_undo_data_t *)undo, &_pop_undo, _tags_undo_data_free);
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_TAGS, (dt_undo_data_t)undo, _pop_undo, _tags_undo_data_free);
     dt_undo_end_group(darktable.undo);
   }
 }
@@ -457,7 +457,7 @@ void _detach_tag(guint tagid, gint imgid, gboolean undo_actif)
 
   if(undo_actif)
   {
-    dt_undo_record(darktable.undo, NULL, DT_UNDO_TAGS, (dt_undo_data_t *)undo, &_pop_undo, _tags_undo_data_free);
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_TAGS, (dt_undo_data_t)undo, _pop_undo, _tags_undo_data_free);
     dt_undo_end_group(darktable.undo);
   }
 

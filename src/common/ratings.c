@@ -34,7 +34,7 @@ typedef struct dt_undo_ratings_t
 
 static void _ratings_apply_to_image(int imgid, int rating, gboolean undo);
 
-static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data, dt_undo_action_t action)
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action)
 {
   if(type == DT_UNDO_RATINGS)
   {
@@ -64,7 +64,7 @@ static void _ratings_apply_to_image(int imgid, int rating, gboolean undo)
       ratings->imgid = imgid;
       ratings->before_rating = 0x7 & image->flags;
       ratings->after_rating = rating;
-      dt_undo_record(darktable.undo, NULL, DT_UNDO_RATINGS, (dt_undo_data_t *)ratings,
+      dt_undo_record(darktable.undo, NULL, DT_UNDO_RATINGS, (dt_undo_data_t)ratings,
                      _pop_undo, _ratings_undo_data_free);
     }
 

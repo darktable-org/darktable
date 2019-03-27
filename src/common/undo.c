@@ -28,10 +28,10 @@ typedef struct dt_undo_item_t
 {
   gpointer user_data;
   dt_undo_type_t type;
-  dt_undo_data_t *data;
+  dt_undo_data_t data;
   double ts;
   gboolean is_group;
-  void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data, dt_undo_action_t action);
+  void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action);
   void (*free_data)(gpointer data);
 } dt_undo_item_t;
 
@@ -72,9 +72,9 @@ static void _free_undo_data(void *p)
   free(item);
 }
 
-static void _undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data,
+static void _undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t data,
                          gboolean is_group,
-                         void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item, dt_undo_action_t action),
+                         void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item, dt_undo_action_t action),
                          void (*free_data)(gpointer data))
 {
   if(!self) return;
@@ -141,8 +141,8 @@ void dt_undo_end_group(dt_undo_t *self)
   }
 }
 
-void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data,
-                    void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item, dt_undo_action_t action),
+void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t data,
+                    void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item, dt_undo_action_t action),
                     void (*free_data)(gpointer data))
 {
   _undo_record(self, user_data, type, data, FALSE, undo, free_data);
@@ -341,7 +341,7 @@ void dt_undo_clear(dt_undo_t *self, uint32_t filter)
 }
 
 static void _undo_iterate(GList *list, uint32_t filter, gpointer user_data,
-                          void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item))
+                          void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item))
 {
   GList *l = g_list_first(list);
 
@@ -359,7 +359,7 @@ static void _undo_iterate(GList *list, uint32_t filter, gpointer user_data,
 }
 
 void dt_undo_iterate_internal(dt_undo_t *self, uint32_t filter, gpointer user_data,
-                              void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item))
+                              void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item))
 {
   if(!self) return;
 
@@ -369,7 +369,7 @@ void dt_undo_iterate_internal(dt_undo_t *self, uint32_t filter, gpointer user_da
 
 
 void dt_undo_iterate(dt_undo_t *self, uint32_t filter, gpointer user_data,
-                     void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item))
+                     void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item))
 {
   if(!self) return;
 
