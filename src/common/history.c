@@ -102,8 +102,8 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
     dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
 
     dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-    dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t *)hist,
-                   &dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
+                   dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
     dt_undo_end_group(darktable.undo);
   }
 }
@@ -132,8 +132,8 @@ void dt_history_delete_on_selection()
     dt_history_delete_on_image_ext(imgid, FALSE);
 
     dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
-    dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t *)hist,
-                   &dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
+                   dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
 
     /* update the aspect ratio if the current sorting is based on aspect ratio, otherwise the aspect ratio will be
        recalculated when the mimpap will be recreated */
@@ -158,8 +158,8 @@ int dt_history_load_and_apply(const int imgid, gchar *filename, int history_only
 
     dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
     dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-    dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t *)hist,
-                   &dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
+                   dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
     dt_undo_end_group(darktable.undo);
 
     /* if current image in develop reload history */
@@ -719,8 +719,8 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
 
   dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-  dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t *)hist,
-                 &dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
+  dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
+                 dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
   dt_undo_end_group(darktable.undo);
 
   /* attach changed tag reflecting actual change */

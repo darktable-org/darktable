@@ -265,14 +265,14 @@ struct _cb_data
   int multi_priority;
 };
 
-static void _undo_items_cb(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data)
+static void _undo_items_cb(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data)
 {
   struct _cb_data *udata = (struct _cb_data *)user_data;
   dt_undo_history_t *hdata = (dt_undo_history_t *)data;
   _reset_module_instance(hdata->snapshot, udata->module, udata->multi_priority);
 }
 
-static void _history_invalidate_cb(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item)
+static void _history_invalidate_cb(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   dt_undo_history_t *hist = (dt_undo_history_t *)item;
@@ -543,7 +543,7 @@ static int _create_deleted_modules(GList **_iop_list, GList *history_list)
   return changed;
 }
 
-static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data, dt_undo_action_t action)
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
 
@@ -657,7 +657,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
     hist->snapshot = _duplicate_history(darktable.develop->history);
     hist->end = darktable.develop->history_end;
 
-    dt_undo_record(darktable.undo, self, DT_UNDO_HISTORY, (dt_undo_data_t *)hist,
+    dt_undo_record(darktable.undo, self, DT_UNDO_HISTORY, (dt_undo_data_t)hist,
                    _pop_undo, _history_undo_data_free);
   }
   else

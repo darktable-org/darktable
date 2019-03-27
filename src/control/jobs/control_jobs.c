@@ -1052,7 +1052,7 @@ delete_next_file:
   return 0;
 }
 
-static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item, dt_undo_action_t action)
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item, dt_undo_action_t action)
 {
   dt_undo_geotag_t *geotags = (dt_undo_geotag_t *)item;
   GList *l;
@@ -1188,7 +1188,7 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
   if(geotags->before)
   {
     dt_undo_start_group(darktable.undo, DT_UNDO_LT_GEOTAG);
-    dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_GEOTAG, (dt_undo_data_t *)geotags, _pop_undo, _geotags_free_undo_data_t);
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_GEOTAG, (dt_undo_data_t)geotags, _pop_undo, _geotags_free_undo_data_t);
     dt_undo_end_group(darktable.undo);
   }
 
