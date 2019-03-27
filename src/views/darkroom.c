@@ -2392,6 +2392,8 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     {
       dev->gui_module->color_picker_point[0] = .5f + zoom_x;
       dev->gui_module->color_picker_point[1] = .5f + zoom_y;
+
+      dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
     }
 
     dt_control_queue_redraw();
