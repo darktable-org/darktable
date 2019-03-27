@@ -460,8 +460,8 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   }
 
   // adjust image size to window size
-  d->width = width;
-  d->height = height;
+  d->width = width * darktable.gui->ppd;
+  d->height = height * darktable.gui->ppd;
   dt_pthread_mutex_unlock(&d->lock);
 }
 
