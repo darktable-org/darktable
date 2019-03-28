@@ -148,18 +148,21 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
     return -1;
   }
 
+  gboolean completeSuccess = TRUE;
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
-    fileop_callback(GPOINTER_TO_INT(t->data), film_id);
+    completeSuccess &= (fileop_callback(GPOINTER_TO_INT(t->data), film_id) != -1);
     t = g_list_delete_link(t, t);
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
   params->index = NULL;
 
-  char collect[1024];
-  snprintf(collect, sizeof(collect), "1:0:0:%s$", new_film.dirname);
-  dt_collection_deserialize(collect);
+  if(completeSuccess){
+    char collect[1024];
+    snprintf(collect, sizeof(collect), "1:0:0:%s$", new_film.dirname);
+    dt_collection_deserialize(collect);
+  }
   dt_film_remove_empty();
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();

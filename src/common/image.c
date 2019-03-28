@@ -1320,7 +1320,9 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
     _image_local_copy_full_path(imgid, copysrcpath, sizeof(copysrcpath));
 
     // move image
-    if(!g_file_test(newimg, G_FILE_TEST_EXISTS) && (g_file_move(old, new, 0, NULL, NULL, NULL, NULL) == TRUE))
+    GError *moveError = NULL;
+    gboolean moveStatus = g_file_move(old, new, 0, NULL, NULL, NULL, &moveError);
+    if(moveStatus)
     {
       // statement for getting ids of the image to be moved and its duplicates
       sqlite3_stmt *duplicates_stmt;
@@ -1347,8 +1349,7 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
         GFile *goldxmp = g_file_new_for_path(oldxmp);
         GFile *gnewxmp = g_file_new_for_path(newxmp);
 
-        if(g_file_test(oldxmp, G_FILE_TEST_EXISTS))
-          (void)g_file_move(goldxmp, gnewxmp, 0, NULL, NULL, NULL, NULL);
+	g_file_move(goldxmp, gnewxmp, 0, NULL, NULL, NULL, NULL);
 
         g_object_unref(goldxmp);
         g_object_unref(gnewxmp);
@@ -1385,8 +1386,26 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
         GFile *cold = g_file_new_for_path(copysrcpath);
         GFile *cnew = g_file_new_for_path(copydestpath);
 
-        if(g_file_move(cold, cnew, 0, NULL, NULL, NULL, NULL) != TRUE)
+        g_clear_error(&moveError);
+	moveStatus = g_file_move(cold, cnew, 0, NULL, NULL, NULL, &moveError);
+        if(!moveStatus) {
           fprintf(stderr, "[dt_image_rename] error moving local copy `%s' -> `%s'\n", copysrcpath, copydestpath);
+	  if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_NOT_FOUND)) {
+	    gchar *oldBasename = g_path_get_basename(copysrcpath);
+	    dt_control_log(_("cannot access local copy `%s'"), oldBasename);
+	    g_free(oldBasename);
+          } else if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_EXISTS) || g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_IS_DIRECTORY)) {
+	    gchar *newBasename = g_path_get_basename(copydestpath);
+	    dt_control_log(_("cannot write local copy `%s'"), newBasename);
+	    g_free(newBasename);
+	  } else {
+	    gchar *oldBasename = g_path_get_basename(copysrcpath);
+	    gchar *newBasename = g_path_get_basename(copydestpath);
+	    dt_control_log(_("error moving local copy `%s' -> `%s'"), oldBasename, newBasename);
+	    g_free(oldBasename);
+	    g_free(newBasename);
+	  }
+	}
 
         g_object_unref(cold);
         g_object_unref(cnew);
@@ -1396,9 +1415,16 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
     }
     else
     {
-      dt_control_log(_("error moving `%s' -> `%s'"), oldimg, newimg);
+      if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_NOT_FOUND)) {
+	dt_control_log(_("error moving `%s': file not found"), oldimg);
+      } else if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_EXISTS) || g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_IS_DIRECTORY)) {
+	dt_control_log(_("error moving `%s' -> `%s': file exists"), oldimg, newimg);
+      } else {
+	dt_control_log(_("error moving `%s' -> `%s'"), oldimg, newimg);
+      }
     }
 
+    g_clear_error(&moveError);
     g_object_unref(old);
     g_object_unref(new);
   }
@@ -1470,9 +1496,9 @@ int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gc
     // copy image to new folder
     // if image file already exists, continue
     GError *gerror = NULL;
-    g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+    gboolean copyStatus = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
 
-    if((gerror == NULL) || (gerror != NULL && gerror->code == G_IO_ERROR_EXISTS))
+    if(copyStatus || g_error_matches(gerror, G_IO_ERROR, G_IO_ERROR_EXISTS))
     {
       const int64_t new_image_position = create_next_image_position();
 
