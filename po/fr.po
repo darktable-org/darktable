@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-27 20:12+0100\n"
-"PO-Revision-Date: 2019-03-27 20:19+0100\n"
+"POT-Creation-Date: 2019-03-28 20:11+0100\n"
+"PO-Revision-Date: 2019-03-28 20:14+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1510,7 +1510,7 @@ msgstr ""
 #: ../src/common/darktable.c:789 ../src/imageio/format/pdf.c:666
 #: ../src/imageio/format/pdf.c:691 ../src/imageio/storage/flickr.c:497
 #: ../src/imageio/storage/piwigo.c:822 ../src/iop/clipping.c:1991
-#: ../src/libs/export.c:605 ../src/libs/export.c:611
+#: ../src/libs/export.c:633 ../src/libs/export.c:639
 #: ../src/libs/metadata_view.c:270
 msgid "no"
 msgstr "non"
@@ -1518,7 +1518,7 @@ msgstr "non"
 #: ../src/common/darktable.c:789 ../src/imageio/format/pdf.c:667
 #: ../src/imageio/format/pdf.c:692 ../src/imageio/storage/flickr.c:496
 #: ../src/imageio/storage/piwigo.c:821 ../src/iop/clipping.c:1992
-#: ../src/libs/export.c:606 ../src/libs/export.c:612
+#: ../src/libs/export.c:634 ../src/libs/export.c:640
 #: ../src/libs/metadata_view.c:270
 msgid "yes"
 msgstr "oui"
@@ -1651,16 +1651,16 @@ msgstr ""
 "il est nécessaire de copier le développement d'une image avant de le coller "
 "sur une autre"
 
-#: ../src/common/history.c:790 ../src/common/history.c:793
-#: ../src/common/history.c:809 ../src/common/styles.c:886
+#: ../src/common/history.c:791 ../src/common/history.c:794
+#: ../src/common/history.c:810 ../src/common/styles.c:886
 #: ../src/common/styles.c:890 ../src/develop/blend_gui.c:2532
 #: ../src/develop/develop.c:1629 ../src/iop/ashift.c:4801
 #: ../src/libs/live_view.c:437
 msgid "on"
 msgstr "activé(e)"
 
-#: ../src/common/history.c:790 ../src/common/history.c:793
-#: ../src/common/history.c:809 ../src/common/styles.c:886
+#: ../src/common/history.c:791 ../src/common/history.c:794
+#: ../src/common/history.c:810 ../src/common/styles.c:886
 #: ../src/common/styles.c:890 ../src/develop/blend_gui.c:2279
 #: ../src/develop/blend_gui.c:2529 ../src/develop/develop.c:1629
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
@@ -2317,12 +2317,12 @@ msgid_plural "importing %d images"
 msgstr[0] "importation de %d image"
 msgstr[1] "importation de %d images"
 
-#: ../src/control/jobs/image_jobs.c:76
+#: ../src/control/jobs/image_jobs.c:75
 #, c-format
 msgid "importing image %s"
 msgstr "importation de l'image %s"
 
-#: ../src/control/jobs/image_jobs.c:110 ../src/libs/import.c:775
+#: ../src/control/jobs/image_jobs.c:109 ../src/libs/import.c:775
 msgid "import image"
 msgstr "importer une image"
 
@@ -3886,7 +3886,7 @@ msgstr "lien"
 
 #. Export button
 #. export button
-#: ../src/gui/preferences.c:637 ../src/libs/export.c:691
+#: ../src/gui/preferences.c:637 ../src/libs/export.c:719
 #: ../src/libs/styles.c:472
 msgid "export"
 msgstr "exporter"
@@ -4230,7 +4230,7 @@ msgstr "taille du papier non valide"
 msgid "invalid border size, using 0"
 msgstr "taille des bords non valide, 0 est utilisé"
 
-#: ../src/imageio/format/pdf.c:256 ../src/imageio/storage/disk.c:335
+#: ../src/imageio/format/pdf.c:256 ../src/imageio/storage/disk.c:331
 #: ../src/imageio/storage/email.c:135 ../src/imageio/storage/facebook.c:1306
 #: ../src/imageio/storage/flickr.c:654 ../src/imageio/storage/gallery.c:345
 #: ../src/imageio/storage/gallery.c:386
@@ -4530,31 +4530,43 @@ msgstr "écraser"
 msgid "skip"
 msgstr "sauter"
 
-#: ../src/imageio/storage/disk.c:284 ../src/imageio/storage/gallery.c:273
+#: ../src/imageio/storage/disk.c:280 ../src/imageio/storage/gallery.c:273
 #: ../src/imageio/storage/latex.c:272
 #, c-format
 msgid "could not create directory `%s'!"
 msgstr "impossible de créer le répertoire « %s » !"
 
-#: ../src/imageio/storage/disk.c:291
+#: ../src/imageio/storage/disk.c:287
 #, c-format
 msgid "could not write to directory `%s'!"
 msgstr "impossible d'écrire dans le répertoire « %s » !"
 
-#: ../src/imageio/storage/disk.c:321
+#: ../src/imageio/storage/disk.c:317
 #, c-format
 msgid "%d/%d skipping `%s'"
 msgid_plural "%d/%d skipping `%s'"
 msgstr[0] "%d/%d, « %s » sauté"
 msgstr[1] "%d/%d, « %s » sauté"
 
-#: ../src/imageio/storage/disk.c:340 ../src/imageio/storage/email.c:142
+#: ../src/imageio/storage/disk.c:336 ../src/imageio/storage/email.c:142
 #: ../src/imageio/storage/gallery.c:394 ../src/imageio/storage/latex.c:361
 #, c-format
 msgid "%d/%d exported to `%s'"
 msgid_plural "%d/%d exported to `%s'"
 msgstr[0] "%d/%d exportée vers « %s »"
 msgstr[1] "%d/%d exportées vers « %s »"
+
+#: ../src/imageio/storage/disk.c:395
+msgid ""
+"you are going to export on overwrite mode, this will overwrite any existing "
+"images\n"
+"\n"
+"do you really want to continue?"
+msgstr ""
+"l'exportation est en mode « écraser », ce mode écrasera toutes\n"
+"les images existantes du même nom.\n"
+"\n"
+"voulez-vous vraiment continuer?"
 
 #: ../src/imageio/storage/email.c:51
 msgid "send as email"
@@ -5478,7 +5490,7 @@ msgstr "fusion d'exposition"
 #: ../src/iop/clipping.c:1677 ../src/iop/clipping.c:1963
 #: ../src/iop/clipping.c:1981 ../src/iop/clipping.c:2121
 #: ../src/iop/clipping.c:2148 ../src/iop/colorreconstruction.c:1372
-#: ../src/iop/lens.c:2154 ../src/iop/retouch.c:582 ../src/libs/export.c:502
+#: ../src/iop/lens.c:2154 ../src/iop/retouch.c:582 ../src/libs/export.c:530
 #: ../src/libs/live_view.c:350 ../src/libs/live_view.c:375
 #: ../src/libs/live_view.c:384 ../src/libs/print_settings.c:1473
 msgid "none"
@@ -5644,7 +5656,7 @@ msgstr "laplacien local: résultat incohérent"
 #: ../src/iop/denoiseprofile.c:3337 ../src/iop/exposure.c:853
 #: ../src/iop/lens.c:2303 ../src/iop/levels.c:669
 #: ../src/iop/profile_gamma.c:840 ../src/libs/copy_history.c:322
-#: ../src/libs/export.c:665 ../src/libs/print_settings.c:1514
+#: ../src/libs/export.c:693 ../src/libs/print_settings.c:1514
 #: ../src/views/darkroom.c:1588
 msgid "mode"
 msgstr "mode"
@@ -6901,26 +6913,26 @@ msgstr "profil de sortie non supporté, remplacé par sRGB !"
 msgid "output intent"
 msgstr "rendu (sortie)"
 
-#: ../src/iop/colorout.c:819 ../src/libs/export.c:648
+#: ../src/iop/colorout.c:819 ../src/libs/export.c:676
 #: ../src/libs/print_settings.c:1243 ../src/libs/print_settings.c:1458
 #: ../src/views/darkroom.c:1741 ../src/views/lighttable.c:3430
 msgid "perceptual"
 msgstr "perceptif"
 
-#: ../src/iop/colorout.c:820 ../src/libs/export.c:649
+#: ../src/iop/colorout.c:820 ../src/libs/export.c:677
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1459
 #: ../src/views/darkroom.c:1742 ../src/views/lighttable.c:3431
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
-#: ../src/iop/colorout.c:821 ../src/libs/export.c:650
+#: ../src/iop/colorout.c:821 ../src/libs/export.c:678
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
 #: ../src/views/darkroom.c:1743 ../src/views/lighttable.c:3432
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
 
-#: ../src/iop/colorout.c:822 ../src/libs/export.c:651
+#: ../src/iop/colorout.c:822 ../src/libs/export.c:679
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
 #: ../src/views/darkroom.c:1744 ../src/views/lighttable.c:3433
 msgid "absolute colorimetric"
@@ -7449,7 +7461,7 @@ msgstr ""
 "en activant cette option le traitement est changé, une fois activé\n"
 "il ne sera plus possible de revenir aux anciens algorithmes."
 
-#: ../src/iop/denoiseprofile.c:3336 ../src/libs/export.c:624
+#: ../src/iop/denoiseprofile.c:3336 ../src/libs/export.c:652
 #: ../src/libs/print_settings.c:1187 ../src/libs/print_settings.c:1407
 msgid "profile"
 msgstr "profil"
@@ -7910,7 +7922,7 @@ msgstr ""
 "plus particulièrement aux luminances extrêmes.\n"
 "diminuer si les ombres et/ou les hautes lumières sont sur-saturés."
 
-#: ../src/iop/filmic.c:1789 ../src/libs/export.c:646
+#: ../src/iop/filmic.c:1789 ../src/libs/export.c:674
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1455
 msgid "intent"
 msgstr "rendu"
@@ -10771,27 +10783,31 @@ msgstr "créer un clone avec le même historique"
 msgid "export selected"
 msgstr "exporter sélection"
 
-#: ../src/libs/export.c:525
+#: ../src/libs/export.c:123
+msgid "export to disk"
+msgstr "exportation sur disque"
+
+#: ../src/libs/export.c:553
 msgid "storage options"
 msgstr "options d'enregistrement"
 
-#: ../src/libs/export.c:530
+#: ../src/libs/export.c:558
 msgid "target storage"
 msgstr "stockage cible"
 
-#: ../src/libs/export.c:553
+#: ../src/libs/export.c:581
 msgid "format options"
 msgstr "options de format"
 
-#: ../src/libs/export.c:559
+#: ../src/libs/export.c:587
 msgid "file format"
 msgstr "format de fichier"
 
-#: ../src/libs/export.c:577
+#: ../src/libs/export.c:605
 msgid "global options"
 msgstr "options globales"
 
-#: ../src/libs/export.c:583
+#: ../src/libs/export.c:611
 msgid ""
 "maximum output width\n"
 "set to 0 for no scaling"
@@ -10800,7 +10816,7 @@ msgstr ""
 "0 pour ne pas changer \n"
 "d'échelle "
 
-#: ../src/libs/export.c:585
+#: ../src/libs/export.c:613
 msgid ""
 "maximum output height\n"
 "set to 0 for no scaling"
@@ -10809,65 +10825,65 @@ msgstr ""
 "0 pour ne pas changer \n"
 "d'échelle "
 
-#: ../src/libs/export.c:592
+#: ../src/libs/export.c:620
 msgid "max size"
 msgstr "taille max"
 
-#: ../src/libs/export.c:598
+#: ../src/libs/export.c:626
 msgid "x"
 msgstr "x"
 
-#: ../src/libs/export.c:604
+#: ../src/libs/export.c:632
 msgid "allow upscaling"
 msgstr "autorise l'agrandissement"
 
-#: ../src/libs/export.c:610
+#: ../src/libs/export.c:638
 msgid "high quality resampling"
 msgstr "échantillonnage haute qualité"
 
-#: ../src/libs/export.c:613
+#: ../src/libs/export.c:641
 msgid "do high quality resampling during export"
 msgstr "ré-échantillonnage de haute qualité lors de l'exportation"
 
-#: ../src/libs/export.c:626 ../src/libs/export.c:647
+#: ../src/libs/export.c:654 ../src/libs/export.c:675
 #: ../src/libs/print_settings.c:1410 ../src/libs/print_settings.c:1457
 msgid "image settings"
 msgstr "paramètres d'image"
 
-#: ../src/libs/export.c:637 ../src/libs/print_settings.c:1446
+#: ../src/libs/export.c:665 ../src/libs/print_settings.c:1446
 #, c-format
 msgid "output ICC profiles in %s or %s"
 msgstr "profils ICC de sortie dans %s ou %s"
 
-#: ../src/libs/export.c:657 ../src/libs/print_settings.c:1471
+#: ../src/libs/export.c:685 ../src/libs/print_settings.c:1471
 msgid "style"
 msgstr "style"
 
-#: ../src/libs/export.c:660
+#: ../src/libs/export.c:688
 msgid "temporary style to use while exporting"
 msgstr "style temporaire à utiliser lors de l'exportation"
 
-#: ../src/libs/export.c:669 ../src/libs/print_settings.c:1516
+#: ../src/libs/export.c:697 ../src/libs/print_settings.c:1516
 msgid "replace history"
 msgstr "remplacer l'historique"
 
-#: ../src/libs/export.c:670 ../src/libs/print_settings.c:1517
+#: ../src/libs/export.c:698 ../src/libs/print_settings.c:1517
 msgid "append history"
 msgstr "ajouter à l'historique"
 
-#: ../src/libs/export.c:675 ../src/libs/print_settings.c:1524
+#: ../src/libs/export.c:703 ../src/libs/print_settings.c:1524
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
 "indique si les éléments du style sont à ajouter à l'historique ou remplace "
 "ce dernier"
 
-#: ../src/libs/export.c:693
+#: ../src/libs/export.c:721
 msgid "export with current settings"
 msgstr "exporte avec les réglages actuels"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:1244 ../src/libs/styles.c:71
+#: ../src/libs/export.c:1272 ../src/libs/styles.c:71
 #: ../src/views/darkroom.c:2843
 msgctxt "accel"
 msgid "export"
