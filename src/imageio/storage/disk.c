@@ -203,7 +203,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_bauhaus_combobox_add(d->onsave_action, _("skip"));
   gtk_box_pack_start(GTK_BOX(self->widget), d->onsave_action, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->onsave_action), "value-changed", G_CALLBACK(onsave_action_toggle_callback), self);
-  dt_bauhaus_combobox_set(d->onsave_action, DT_EXPORT_ONCONFLICT_UNIQUEFILENAME);
+  dt_bauhaus_combobox_set(d->onsave_action, dt_conf_get_int("plugins/imageio/storage/disk/overwrite"));
 
   g_free(tooltip_text);
 }
@@ -221,11 +221,7 @@ void gui_reset(dt_imageio_module_storage_t *self)
   // global default can be annoying:
   // gtk_entry_set_text(GTK_ENTRY(d->entry), "$(FILE_FOLDER)/darktable_exported/$(FILE_NAME)");
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", gtk_entry_get_text(d->entry));
-
-  // this should prevent users from unintentional image overwrite
-  const dt_disk_onconflict_actions_t onsave_action = dt_conf_get_int("plugins/imageio/storage/disk/overwrite");
-  dt_bauhaus_combobox_set(d->onsave_action,
-      (onsave_action == DT_EXPORT_ONCONFLICT_OVERWRITE) ? DT_EXPORT_ONCONFLICT_UNIQUEFILENAME: onsave_action);
+  dt_conf_set_int("plugins/imageio/storage/disk/overwrite", dt_bauhaus_combobox_get(d->onsave_action));
 }
 
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
@@ -387,18 +383,22 @@ int set_params(dt_imageio_module_storage_t *self, const void *params, const int 
   if(size != self->params_size(self)) return 1;
 
   gtk_entry_set_text(GTK_ENTRY(g->entry), d->filename);
-
-  // we really do not want user to unintentionally overwrite image
-  dt_bauhaus_combobox_set(g->onsave_action,
-      (d->onsave_action == DT_EXPORT_ONCONFLICT_OVERWRITE) ? DT_EXPORT_ONCONFLICT_UNIQUEFILENAME: d->onsave_action);
+  dt_bauhaus_combobox_set(g->onsave_action, d->onsave_action);
   return 0;
 }
 
-void export_dispatched(dt_imageio_module_storage_t *self)
+char *ask_user_confirmation(dt_imageio_module_storage_t *self)
 {
   disk_t *g = (disk_t *)self->gui_data;
   if(dt_bauhaus_combobox_get(g->onsave_action) == DT_EXPORT_ONCONFLICT_OVERWRITE)
-    dt_bauhaus_combobox_set(g->onsave_action, DT_EXPORT_ONCONFLICT_UNIQUEFILENAME);
+  {
+    return g_strdup(_("you are going to export on overwrite mode, this will overwrite any already existing image\n"
+        "do you really want to continue?"));
+  }
+  else
+  {
+    return NULL;
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
