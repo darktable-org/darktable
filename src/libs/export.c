@@ -104,6 +104,32 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
     return;
   }
 
+  char *confirm_message = NULL;
+  dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
+  if(mstorage->ask_user_confirmation)
+    confirm_message = mstorage->ask_user_confirmation(mstorage);
+  if(confirm_message)
+  {
+    const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+    GtkWidget *dialog = gtk_message_dialog_new(
+        GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+        "%s", confirm_message);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(dialog);
+#endif
+
+    gtk_window_set_title(GTK_WINDOW(dialog), _("export to disk"));
+    const gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+    g_free(confirm_message);
+    confirm_message = NULL;
+
+    if(res != GTK_RESPONSE_YES)
+    {
+      return;
+    }
+  }
+  
   gboolean upscale = dt_conf_get_bool("plugins/lighttable/export/upscale");
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   char *tmp = dt_conf_get_string("plugins/lighttable/export/style");
