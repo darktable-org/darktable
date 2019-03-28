@@ -83,6 +83,8 @@ int set_params(struct dt_imageio_module_storage_t *self, const void *params, con
 
 void export_dispatched(struct dt_imageio_module_storage_t *self);
 
+char *ask_user_confirmation(struct dt_imageio_module_storage_t *self);
+
 #pragma GCC visibility pop
 
 #ifdef __cplusplus

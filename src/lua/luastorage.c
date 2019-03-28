@@ -311,6 +311,11 @@ static int set_params_wrapper(struct dt_imageio_module_storage_t *self, const vo
   return 0;
 }
 
+static char *ask_user_confirmation_wrapper(struct dt_imageio_module_storage_t *self)
+{
+  return NULL;
+}
+
 static int version_wrapper()
 {
   return 0;
@@ -359,6 +364,7 @@ static dt_imageio_module_storage_t ref_storage = {
   .free_params = free_params_wrapper,
   .set_params = set_params_wrapper,
   .export_dispatched = empty_wrapper,
+  .ask_user_confirmation = ask_user_confirmation_wrapper,
   .parameter_lua_type = LUAA_INVALID_TYPE,
   .version = version_wrapper,
 

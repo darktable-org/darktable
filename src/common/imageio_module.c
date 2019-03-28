@@ -253,6 +253,8 @@ static int dt_imageio_load_module_storage(dt_imageio_module_storage_t *module, c
     module->recommended_dimension = _default_storage_dimension;
   if(!g_module_symbol(module->module, "export_dispatched", (gpointer) & (module->export_dispatched)))
     module->export_dispatched = _default_storage_nop;
+  if(!g_module_symbol(module->module, "ask_user_confirmation", (gpointer) & (module->ask_user_confirmation)))
+    module->ask_user_confirmation = NULL;
 #ifdef USE_LUA
   {
     char pseudo_type_name[1024];
