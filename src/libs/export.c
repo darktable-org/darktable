@@ -95,11 +95,13 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
   g_free(format_name);
   g_free(storage_name);
 
-  if(format_index == -1) {
+  if(format_index == -1)
+  {
     dt_control_log("invalid format for export selected");
     return;
   }
-  if(storage_index == -1) {
+  if(storage_index == -1)
+  {
     dt_control_log("invalid storage for export selected");
     return;
   }
@@ -129,7 +131,7 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
       return;
     }
   }
-  
+
   gboolean upscale = dt_conf_get_bool("plugins/lighttable/export/upscale");
   gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
   char *tmp = dt_conf_get_string("plugins/lighttable/export/style");
@@ -143,7 +145,7 @@ static void export_button_clicked(GtkWidget *widget, gpointer user_data)
   gchar *icc_filename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   dt_iop_color_intent_t icc_intent = dt_conf_get_int("plugins/lighttable/export/iccintent");
 
-  int imgid = dt_view_get_image_to_act_on();
+  const int imgid = dt_view_get_image_to_act_on();
   GList *list = NULL;
 
   if(imgid != -1)
@@ -179,7 +181,7 @@ void gui_reset(dt_lib_module_t *self)
 
   // Set storage
   gchar *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
-  int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
+  const int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
   g_free(storage_name);
   dt_bauhaus_combobox_set(d->storage, storage_index);
 
@@ -400,13 +402,13 @@ static void profile_changed(GtkWidget *widget, dt_lib_export_t *d)
 
 static void upscale_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
-  int pos = dt_bauhaus_combobox_get(widget);
+  const int pos = dt_bauhaus_combobox_get(widget);
   dt_conf_set_bool("plugins/lighttable/export/upscale", pos == 1);
 }
 
 static void high_quality_changed(GtkWidget *widget, dt_lib_export_t *d)
 {
-  int pos = dt_bauhaus_combobox_get(widget);
+  const int pos = dt_bauhaus_combobox_get(widget);
   dt_conf_set_bool("plugins/lighttable/export/high_quality_processing", pos == 1);
 }
 
@@ -1039,7 +1041,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
   else if(old_version == 4)
   {
     // add high_quality to params
-    
+
     // format of v4:
     //  - 5 x int32_t (max_width, max_height, upscale, iccintent, icctype)
     //  - char* (iccfilename)
@@ -1095,15 +1097,15 @@ void *get_params(dt_lib_module_t *self, int *size)
   // TODO: get this stuff from gui and not from conf, so it will be sanity-checked (you can never delete an
   // insane preset)?
   // also store icc profile/intent here.
-  int32_t iccintent = dt_conf_get_int("plugins/lighttable/export/iccintent");
-  int32_t icctype = dt_conf_get_int("plugins/lighttable/export/icctype");
-  int32_t max_width = dt_conf_get_int("plugins/lighttable/export/width");
-  int32_t max_height = dt_conf_get_int("plugins/lighttable/export/height");
-  int32_t upscale = dt_conf_get_bool("plugins/lighttable/export/upscale") ? 1 : 0;
-  int32_t high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing") ? 1 : 0;
+  const int32_t iccintent = dt_conf_get_int("plugins/lighttable/export/iccintent");
+  const int32_t icctype = dt_conf_get_int("plugins/lighttable/export/icctype");
+  const int32_t max_width = dt_conf_get_int("plugins/lighttable/export/width");
+  const int32_t max_height = dt_conf_get_int("plugins/lighttable/export/height");
+  const int32_t upscale = dt_conf_get_bool("plugins/lighttable/export/upscale") ? 1 : 0;
+  const int32_t high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing") ? 1 : 0;
   gchar *iccfilename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
-  gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
+  const gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
 
   if(fdata)
   {
