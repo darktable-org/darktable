@@ -212,26 +212,22 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
   float x, y;
-  int32_t iw, ih;
 
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     if(d->orientation & ORIENTATION_SWAP_XY)
     {
-      ih = piece->buf_in.width;
-      iw = piece->buf_in.height;
       y = points[i];
       x = points[i + 1];
     }
     else
     {
-      iw = piece->buf_in.width;
-      ih = piece->buf_in.height;
       x = points[i];
       y = points[i + 1];
     }
-    if(d->orientation & ORIENTATION_FLIP_X) x = iw - x;
-    if(d->orientation & ORIENTATION_FLIP_Y) y = ih - y;
+    if(d->orientation & ORIENTATION_FLIP_X) x = piece->buf_in.width - x;
+    if(d->orientation & ORIENTATION_FLIP_Y) y = piece->buf_in.height - y;
+
     points[i] = x;
     points[i + 1] = y;
   }
