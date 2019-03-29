@@ -99,7 +99,6 @@ static dt_image_orientation_t merge_two_orientations(dt_image_orientation_t raw_
                                                      dt_image_orientation_t user_orientation)
 {
   dt_image_orientation_t raw_orientation_corrected = raw_orientation;
-
   /*
    * if user-specified orientation has ORIENTATION_SWAP_XY set, then we need
    * to swap ORIENTATION_FLIP_Y and ORIENTATION_FLIP_X bits
@@ -162,7 +161,7 @@ static void backtransform(const int32_t *x, int32_t *o, const dt_image_orientati
   {
     o[1] = x[0];
     o[0] = x[1];
-    int32_t tmp = iw;
+    const int32_t tmp = iw;
     iw = ih;
     ih = tmp;
   }
@@ -173,11 +172,11 @@ static void backtransform(const int32_t *x, int32_t *o, const dt_image_orientati
   }
   if(orientation & ORIENTATION_FLIP_X)
   {
-    o[1] = ih - o[1] - 1;
+    o[0] = iw - o[0] - 1;
   }
   if(orientation & ORIENTATION_FLIP_Y)
   {
-    o[0] = iw - o[0] - 1;
+    o[1] = ih - o[1] - 1;
   }
 }
 
@@ -192,11 +191,11 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   {
     x = points[i];
     y = points[i + 1];
-    if(d->orientation & ORIENTATION_FLIP_X) y = piece->buf_in.height - points[i + 1];
-    if(d->orientation & ORIENTATION_FLIP_Y) x = piece->buf_in.width - points[i];
+    if(d->orientation & ORIENTATION_FLIP_X) x = piece->buf_in.width - points[i];
+    if(d->orientation & ORIENTATION_FLIP_Y) y = piece->buf_in.height - points[i + 1];
     if(d->orientation & ORIENTATION_SWAP_XY)
     {
-      float yy = y;
+      const float yy = y;
       y = x;
       x = yy;
     }
@@ -213,21 +212,26 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   const dt_iop_flip_data_t *d = (dt_iop_flip_data_t *)piece->data;
 
   float x, y;
+  int32_t iw, ih;
 
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     if(d->orientation & ORIENTATION_SWAP_XY)
     {
+      ih = piece->buf_in.width;
+      iw = piece->buf_in.height;
       y = points[i];
       x = points[i + 1];
     }
     else
     {
+      iw = piece->buf_in.width;
+      ih = piece->buf_in.height;
       x = points[i];
       y = points[i + 1];
     }
-    if(d->orientation & ORIENTATION_FLIP_X) y = piece->buf_in.height - y;
-    if(d->orientation & ORIENTATION_FLIP_Y) x = piece->buf_in.width - x;
+    if(d->orientation & ORIENTATION_FLIP_X) x = iw - x;
+    if(d->orientation & ORIENTATION_FLIP_Y) y = ih - y;
     points[i] = x;
     points[i + 1] = y;
   }
@@ -326,7 +330,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const uint32_t orientation = data->orientation;
+  const int orientation = data->orientation;
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPWD(height), 1 };
 
@@ -334,7 +338,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 1, sizeof(cl_mem), (void *)&dev_out);
   dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 2, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 4, sizeof(uint32_t), (void *)&orientation);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_flip, 4, sizeof(int), (void *)&orientation);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_flip, sizes);
 
   if(err != CL_SUCCESS) goto error;
@@ -475,7 +479,7 @@ static void do_rotate(dt_iop_module_t *self, uint32_t cw)
 
   if(orientation == ORIENTATION_NULL) orientation = dt_image_orientation(&self->dev->image_storage);
 
-  if(cw == 1)
+  if(cw == 0)
   {
     if(orientation & ORIENTATION_SWAP_XY)
       orientation ^= ORIENTATION_FLIP_Y;

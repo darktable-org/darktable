@@ -194,12 +194,12 @@ void dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const 
     sj = bpp;
     si = ht * bpp;
   }
-  if(orientation & ORIENTATION_FLIP_X)
+  if(orientation & ORIENTATION_FLIP_Y)
   {
     jj = (int)fht - jj - 1;
     sj = -sj;
   }
-  if(orientation & ORIENTATION_FLIP_Y)
+  if(orientation & ORIENTATION_FLIP_X)
   {
     ii = (int)fwd - ii - 1;
     si = -si;
@@ -244,12 +244,12 @@ void dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const
     sj = 4;
     si = ht * 4;
   }
-  if(orientation & ORIENTATION_FLIP_X)
+  if(orientation & ORIENTATION_FLIP_Y)
   {
     jj = (int)fht - jj - 1;
     sj = -sj;
   }
-  if(orientation & ORIENTATION_FLIP_Y)
+  if(orientation & ORIENTATION_FLIP_X)
   {
     ii = (int)fwd - ii - 1;
     si = -si;
@@ -294,12 +294,12 @@ void dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const f
     sj = 4;
     si = ht * 4;
   }
-  if(orientation & ORIENTATION_FLIP_X)
+  if(orientation & ORIENTATION_FLIP_Y)
   {
     jj = (int)fht - jj - 1;
     sj = -sj;
   }
-  if(orientation & ORIENTATION_FLIP_Y)
+  if(orientation & ORIENTATION_FLIP_X)
   {
     ii = (int)fwd - ii - 1;
     si = -si;
