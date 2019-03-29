@@ -1681,12 +1681,19 @@ flip(read_only image2d_t in, write_only image2d_t out, const int width, const in
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
-  int nx = (orientation & 4) ? y : x;
-  int ny = (orientation & 4) ? x : y;
-  int wd = (orientation & 4) ? height : width;
-  int ht = (orientation & 4) ? width : height;
-  nx = (orientation & 2) ? wd - nx - 1 : nx;
-  ny = (orientation & 1) ? ht - ny - 1 : ny;
+  // ORIENTATION_FLIP_X = 2
+  int  nx = (orientation & 2) ? width - x - 1 : x;
+
+  // ORIENTATION_FLIP_Y = 1
+  int ny = (orientation & 1) ? height - y - 1 : y;
+
+  // ORIENTATION_SWAP_XY = 4
+  if((orientation & 4) == 4)
+  {
+     const int tmp = nx;
+     nx = ny;
+     ny = tmp;
+   }
 
   write_imagef (out, (int2)(nx, ny), pixel);
 }
