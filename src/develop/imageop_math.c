@@ -47,12 +47,12 @@ void dt_iop_flip_and_zoom_8(const uint8_t *in, int32_t iw, int32_t ih, uint8_t *
   const int bpp = 4; // bytes per pixel
   int32_t ii = 0, jj = 0;
   int32_t si = 1, sj = iw;
-  if(orientation & ORIENTATION_FLIP_X)
+  if(orientation & ORIENTATION_FLIP_Y)
   {
     jj = ih - jj - 1;
     sj = -sj;
   }
-  if(orientation & ORIENTATION_FLIP_Y)
+  if(orientation & ORIENTATION_FLIP_X)
   {
     ii = iw - ii - 1;
     si = -si;
