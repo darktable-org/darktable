@@ -38,7 +38,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 18
+#define CURRENT_DATABASE_VERSION_LIBRARY 19
 #define CURRENT_DATABASE_VERSION_DATA 1
 
 typedef struct dt_database_t
@@ -1139,6 +1139,29 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   //     sqlite3_exec(db->handle, "ALTER TABLE film_rolls ADD COLUMN external_drive VARCHAR(1024)", NULL,
   //     NULL, NULL);
   //   }
+  else if(version == 18)
+  {
+    TRY_EXEC("UPDATE images SET orientation=-2 WHERE orientation=1;",
+             "[init] can't update images orientation 1 from database\n");
+
+    TRY_EXEC("UPDATE images SET orientation=1 WHERE orientation=2;",
+             "[init] can't update images orientation 2 from database\n");
+
+    TRY_EXEC("UPDATE images SET orientation=-6 WHERE orientation=5;",
+             "[init] can't update images orientation 5 from database\n");
+
+    TRY_EXEC("UPDATE images SET orientation=5 WHERE orientation=6;",
+             "[init] can't update images orientation 6 from database\n");
+
+    TRY_EXEC("UPDATE images SET orientation=2 WHERE orientation=-2;",
+             "[init] can't update images orientation -1 from database\n");
+
+    TRY_EXEC("UPDATE images SET orientation=6 WHERE orientation=-6;",
+             "[init] can't update images orientation -6 from database\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 19;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
