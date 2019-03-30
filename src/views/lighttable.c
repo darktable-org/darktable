@@ -137,10 +137,12 @@ typedef struct dt_library_t
   int full_preview_sticky;
   int32_t full_preview_id;
   int32_t full_preview_rowid;
+  gboolean full_preview_follow_sel;
   int display_focus;
   gboolean offset_changed;
   int images_in_row;
   int max_rows;
+  int visible_rows;
   int32_t single_img_id;
   dt_lighttable_layout_t current_layout;
 
@@ -241,13 +243,14 @@ static void check_layout(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   const dt_lighttable_layout_t layout = get_layout();
+  const dt_lighttable_layout_t layout_old = lib->current_layout;
 
   if(lib->current_layout == layout) return;
   lib->current_layout = layout;
 
   if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
   {
-    if(lib->first_visible_zoomable >= 0)
+    if(lib->first_visible_zoomable >= 0 && layout_old == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
     {
       lib->first_visible_filemanager = lib->offset = lib->first_visible_zoomable;
     }
@@ -389,6 +392,15 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
   lib->force_expose_all = TRUE;
   _unregister_custom_image_order_drag_n_drop(self);
   _register_custom_image_order_drag_n_drop(self);
+
+  // in filemanager, we want to reset the offset to the beggining
+  const dt_lighttable_layout_t layout = get_layout();
+  if(layout == lib->current_layout && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && lib->offset > 0
+     && lib->first_visible_filemanager > 0)
+  {
+    lib->offset = lib->first_visible_filemanager = 0;
+    lib->offset_changed = TRUE;
+  }
 
   _full_preview_destroy(self);
   lib->full_zoom = 1.0f;
@@ -699,6 +711,7 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
 
   const int max_rows = 1 + (int)((height) / ht + .5);
   lib->max_rows = max_rows;
+  lib->visible_rows = height / ht;
   const int max_cols = iir;
 
   int id;
@@ -2682,6 +2695,32 @@ static void _stop_audio(dt_library_t *lib)
   lib->audio_player_id = -1;
 }
 
+static void _ensure_image_visibility(dt_library_t *lib, uint32_t rowid)
+{
+  if(get_layout() != DT_LIGHTTABLE_LAYOUT_FILEMANAGER) return;
+
+  // if we are before the first visible image, we move back
+  int offset = lib->offset;
+  while(offset > rowid)
+  {
+    offset -= lib->images_in_row;
+  }
+
+  // Are we after the last fully visible image ?
+  while(rowid > offset + lib->images_in_row * lib->visible_rows)
+  {
+    offset += lib->images_in_row;
+  }
+
+  if(offset != lib->offset)
+  {
+    lib->first_visible_filemanager = lib->offset = offset;
+    lib->offset_changed = TRUE;
+    dt_control_queue_redraw_center();
+  }
+}
+
+
 int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -2854,6 +2893,7 @@ int key_released(dt_view_t *self, guint key, guint state)
       || (key == accels->lighttable_preview_display_focus.accel_key
           && state == accels->lighttable_preview_display_focus.accel_mods)) && lib->full_preview_id != -1)
   {
+    if(lib->full_preview_follow_sel) dt_selection_select_single(darktable.selection, lib->full_preview_id);
     lib->full_preview_id = -1;
     lib->full_preview_rowid = -1;
     if(!lib->using_arrows)
@@ -2895,6 +2935,11 @@ int key_pressed(dt_view_t *self, guint key, guint state)
                                     || (key == accels->lighttable_preview_sticky_focus.accel_key
                                         && state == accels->lighttable_preview_sticky_focus.accel_mods)))
   {
+    if(lib->full_preview_follow_sel)
+    {
+      dt_selection_select_single(darktable.selection, lib->full_preview_id);
+      _ensure_image_visibility(lib, lib->full_preview_rowid);
+    }
     lib->full_preview_id = -1;
     lib->full_preview_rowid = -1;
     if(!lib->using_arrows)
@@ -2954,6 +2999,24 @@ int key_pressed(dt_view_t *self, guint key, guint state)
         }
         sqlite3_finalize(stmt);
       }
+
+      // if there's only 1 image selected, and it's the one display
+      sqlite3_stmt *stmt;
+      int nb_sel = 0;
+      uint32_t imgid_sel = -1;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
+                                  &stmt, NULL);
+      while(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        nb_sel++;
+        if(nb_sel > 1) break;
+        imgid_sel = sqlite3_column_int(stmt, 0);
+      }
+      sqlite3_finalize(stmt);
+      if(nb_sel == 1 && imgid_sel == lib->full_preview_id)
+        lib->full_preview_follow_sel = TRUE;
+      else
+        lib->full_preview_follow_sel = FALSE;
 
       // let's hide some gui components
       lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT) & 1) << 0;
