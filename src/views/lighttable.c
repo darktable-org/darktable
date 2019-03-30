@@ -2699,14 +2699,14 @@ static void _ensure_image_visibility(dt_library_t *lib, uint32_t rowid)
 {
   if(get_layout() != DT_LIGHTTABLE_LAYOUT_FILEMANAGER) return;
 
-  // if we are before the firts visible image, we move back
+  // if we are before the first visible image, we move back
   int offset = lib->offset;
   while(offset > rowid)
   {
     offset -= lib->images_in_row;
   }
 
-  // Are we after the last fuly visible image ?
+  // Are we after the last fully visible image ?
   while(rowid > offset + lib->images_in_row * lib->visible_rows)
   {
     offset += lib->images_in_row;
