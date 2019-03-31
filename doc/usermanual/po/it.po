@@ -16421,6 +16421,7 @@ msgstr ""
 "dell'elenco a discesa verrà considerata da darktable quella più idonea."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13648(para)
+#, fuzzy
 msgid ""
 "This module can eliminate noise with two different core algorithms. "
 "<quote>non-local means</quote> can tackle efficiently luma (lightness) noise "
@@ -16459,6 +16460,7 @@ msgid "patch size"
 msgstr "dimensione patch"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13665(para)
+#, fuzzy
 msgid ""
 "This slider is only available if mode <quote>non-local means</quote> is "
 "selected. It controls the size of the patches being matched when deciding "
@@ -16662,6 +16664,7 @@ msgstr ""
 "risorse verranno impegnate."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13871(para)
+#, fuzzy
 msgid ""
 "This module reduces noise in your image but preserves sharp edges. This is "
 "accomplished by averaging pixels with their neighbors, taking into account "
@@ -16781,6 +16784,7 @@ msgid "warps and nodes count"
 msgstr "deformazioni e conteggio dei nodi"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13993(para)
+#, fuzzy
 msgid ""
 "This information field displays the number of warps (individual distortion "
 "object) and nodes currently used."
@@ -17152,6 +17156,7 @@ msgstr ""
 "informaltable>"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14364(para)
+#, fuzzy
 msgid ""
 "Lines marked in red or yellow are regarded as outliers and are not taken "
 "into account for the automatic fitting step. This outlier elimination "
@@ -17249,6 +17254,7 @@ msgstr ""
 "all'immagine che vi aiuteranno a valutare la qualità della correzione."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14426(para)
+#, fuzzy
 msgid ""
 "When activated the automatic cropping feature clips the image to get rid of "
 "any black corners. At your choice you can either clip to the <quote>largest "
@@ -17746,6 +17752,7 @@ msgstr ""
 "\"drawn_mask\"/>."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14872(para)
+#, fuzzy
 msgid ""
 "Select the desired shape by clicking the corresponding icon, then click on "
 "the canvas to choose the area to be healed, i.e. the target area. A cross is "
@@ -17765,6 +17772,14 @@ msgid ""
 "shape, <emphasis>shift+click</emphasis> on the desired position. The current "
 "shape will have the source created at that position and the subsequent ones "
 "will have the source created at the same relative position."
+msgstr ""
+
+#: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14887(para)
+#, fuzzy
+msgid ""
+"After creation source area and target area can be shifted independently "
+"until the result matches your expectations. An arrow helps to tell source "
+"from target area."
 msgstr ""
 "La sorgente ha due modalità: assoluta o relativa. Per impostare la modalità "
 "assoluta, mentre si crea una forma, occorre premere <emphasis>Maiusc+Ctrl"
@@ -18783,6 +18798,7 @@ msgstr ""
 "filigrane disponibili."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15816(para)
+#, fuzzy
 msgid ""
 "Here follows a list of available variable strings that is supported for "
 "substitution within the svg document. <informaltable frame=\"none\" width="
@@ -23935,6 +23951,7 @@ msgid "Presets"
 msgstr "Preset"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21390(para)
+#, fuzzy
 msgid ""
 "This menu gives you an overview of the presets that are defined for "
 "darktable's modules. In this dialog you can select whether a certain user "
@@ -27046,6 +27063,7 @@ msgid "Using <filename moreinfo=\"none\">darktable-chart</filename>"
 msgstr "Utilizzare <filename moreinfo=\"none\">darktable-chart</filename>"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23578(para)
+#, fuzzy
 msgid ""
 "With <filename moreinfo=\"none\">darktable-chart</filename> we provide a "
 "tool for extracting luminance and color values out of images taken from "
@@ -27392,6 +27410,7 @@ msgstr ""
 "\"whitebalance\"/>)."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23824(para)
+#, fuzzy
 msgid ""
 "There is a special situation if your camera automatically applies some lens "
 "corrections, namely vignetting correction, to the resulting JPEG file. In "
