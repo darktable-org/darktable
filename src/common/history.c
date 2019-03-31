@@ -757,7 +757,7 @@ GList *dt_history_get_items(int32_t imgid, gboolean enabled)
                               "SELECT num, operation, enabled, multi_name FROM main.history WHERE imgid=?1 AND "
                               "num IN (SELECT MAX(num) FROM main.history hst2 WHERE hst2.imgid=?1 AND "
                               "hst2.operation=main.history.operation GROUP BY multi_priority) "
-                              "ORDER BY num ASC",
+                              "ORDER BY num DESC",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
