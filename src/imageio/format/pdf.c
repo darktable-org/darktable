@@ -583,7 +583,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_grid_attach(grid, widget, 0, ++line, 1, 1);
 
   d->title = GTK_ENTRY(gtk_entry_new());
-  gtk_entry_set_placeholder_text(d->title, ("untitled"));
+  gtk_entry_set_placeholder_text(d->title, _("untitled"));
   gtk_widget_set_hexpand(GTK_WIDGET(d->title), TRUE);
   gtk_grid_attach(grid, GTK_WIDGET(d->title), 1, line, 1, 1);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->title));
