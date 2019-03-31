@@ -46,7 +46,7 @@
 #define DT_IOP_COLOR_ICC_LEN 512
 #define LUT_SAMPLES 0x10000
 
-DT_MODULE_INTROSPECTION(5, dt_iop_colorout_params_t)
+DT_MODULE_INTROSPECTION(6, dt_iop_colorout_params_t)
 
 typedef struct dt_iop_colorout_data_t
 {
@@ -56,6 +56,7 @@ typedef struct dt_iop_colorout_data_t
   float cmatrix[9];
   cmsHTRANSFORM *xform;
   float unbounded_coeffs[3][3]; // for extrapolation of shaper curves
+  int passthrough;
 } dt_iop_colorout_data_t;
 
 typedef struct dt_iop_colorout_global_data_t
@@ -68,11 +69,12 @@ typedef struct dt_iop_colorout_params_t
   dt_colorspaces_color_profile_type_t type;
   char filename[DT_IOP_COLOR_ICC_LEN];
   dt_iop_color_intent_t intent;
+  int passthrough;
 } dt_iop_colorout_params_t;
 
 typedef struct dt_iop_colorout_gui_data_t
 {
-  GtkWidget *output_intent, *output_profile;
+  GtkWidget *output_intent, *output_profile, *chk_passthrough;
 } dt_iop_colorout_gui_data_t;
 
 
@@ -131,7 +133,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->seq = 0;
     return 0;
     }*/
-  if((old_version == 2 || old_version == 3) && new_version == 5)
+  if((old_version == 2 || old_version == 3) && new_version == 6)
   {
     typedef struct dt_iop_colorout_params_v3_t
     {
@@ -166,10 +168,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     }
 
     n->intent = o->intent;
+    n->passthrough = 0;
 
     return 0;
   }
-  if(old_version == 4 && new_version == 5)
+  if(old_version == 4 && new_version == 6)
   {
     typedef struct dt_iop_colorout_params_v4_t
     {
@@ -186,6 +189,28 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->type = o->type;
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
     n->intent = o->intent;
+    n->passthrough = 0;
+
+    return 0;
+  }
+  if(old_version == 5 && new_version == 6)
+  {
+    typedef struct dt_iop_colorout_params_v5_t
+    {
+      dt_colorspaces_color_profile_type_t type;
+      char filename[DT_IOP_COLOR_ICC_LEN];
+      dt_iop_color_intent_t intent;
+    } dt_iop_colorout_params_v5_t;
+
+
+    dt_iop_colorout_params_v5_t *o = (dt_iop_colorout_params_v5_t *)old_params;
+    dt_iop_colorout_params_t *n = (dt_iop_colorout_params_t *)new_params;
+    memset(n, 0, sizeof(dt_iop_colorout_params_t));
+
+    n->type = o->type;
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    n->intent = o->intent;
+    n->passthrough = 0;
 
     return 0;
   }
@@ -242,6 +267,14 @@ static void output_profile_changed(GtkWidget *widget, gpointer user_data)
   }
 
   fprintf(stderr, "[colorout] color profile %s seems to have disappeared!\n", dt_colorspaces_get_name(p->type, p->filename));
+}
+
+static void passthrough_color_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+  p->passthrough = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void _signal_profile_changed(gpointer instance, gpointer user_data)
@@ -574,6 +607,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
 
   d->type = p->type;
+  d->passthrough = p->passthrough;
 
   const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
@@ -640,6 +674,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->type = out_type;
   if(out_type == DT_COLORSPACE_LAB)
     return;
+
+  if(d->passthrough)
+  {
+    piece->enabled = 0;
+    return;
+  }
+  piece->enabled = 1;
 
   /*
    * Setup transform flags
@@ -794,6 +835,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)module->params;
   dt_bauhaus_combobox_set(g->output_intent, (int)p->intent);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->chk_passthrough), p->passthrough);
 
   for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
   {
@@ -818,7 +860,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
   module->hide_enable_button = 1;
   module->default_enabled = 1;
-  dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t){ DT_COLORSPACE_SRGB, "", DT_INTENT_PERCEPTUAL};
+  dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t){ DT_COLORSPACE_SRGB, "", DT_INTENT_PERCEPTUAL, 0 };
   memcpy(module->params, &tmp, sizeof(dt_iop_colorout_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_colorout_params_t));
 }
@@ -897,6 +939,14 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect(G_OBJECT(g->output_intent), "value-changed", G_CALLBACK(intent_changed), (gpointer)self);
   g_signal_connect(G_OBJECT(g->output_profile), "value-changed", G_CALLBACK(output_profile_changed), (gpointer)self);
+
+  // passthrough
+  g->chk_passthrough = gtk_check_button_new_with_label(_("passthrough"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->chk_passthrough), FALSE);
+  gtk_widget_set_tooltip_text(g->chk_passthrough,
+                              _("when this option is active no profile is applied to the image."));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->chk_passthrough, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->chk_passthrough), "toggled", G_CALLBACK(passthrough_color_callback), self);
 
   // reload the profiles when the display or softproof profile changed!
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED,

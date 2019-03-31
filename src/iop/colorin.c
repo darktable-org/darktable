@@ -56,7 +56,7 @@
 
 #define LUT_SAMPLES 0x10000
 
-DT_MODULE_INTROSPECTION(6, dt_iop_colorin_params_t)
+DT_MODULE_INTROSPECTION(7, dt_iop_colorin_params_t)
 
 static void update_profile_list(dt_iop_module_t *self);
 
@@ -79,11 +79,13 @@ typedef struct dt_iop_colorin_params_t
   // working color profile
   dt_colorspaces_color_profile_type_t type_work;
   char filename_work[DT_IOP_COLOR_ICC_LEN];
+  int passthrough;
 } dt_iop_colorin_params_t;
 
 typedef struct dt_iop_colorin_gui_data_t
 {
   GtkWidget *profile_combobox, *clipping_combobox, *work_combobox;
+  GtkWidget *chk_passthrough;
   GList *image_profiles;
   int n_image_profiles;
 } dt_iop_colorin_gui_data_t;
@@ -112,6 +114,7 @@ typedef struct dt_iop_colorin_data_t
   dt_colorspaces_color_profile_type_t type;
   dt_colorspaces_color_profile_type_t type_work;
   char filename_work[DT_IOP_COLOR_ICC_LEN];
+  int passthrough;
 } dt_iop_colorin_data_t;
 
 
@@ -158,7 +161,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 {
 #define DT_IOP_COLOR_ICC_LEN_V5 100
 
-  if(old_version == 1 && new_version == 6)
+  if(old_version == 1 && new_version == 7)
   {
     typedef struct dt_iop_colorin_params_v1_t
     {
@@ -207,9 +210,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->blue_mapping = 1;
     new->type_work = DT_COLORSPACE_LIN_REC709;
     new->filename_work[0] = '\0';
+    new->passthrough = 0;
     return 0;
   }
-  if(old_version == 2 && new_version == 6)
+  if(old_version == 2 && new_version == 7)
   {
     typedef struct dt_iop_colorin_params_v2_t
     {
@@ -259,9 +263,10 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->blue_mapping = 1;
     new->type_work = DT_COLORSPACE_LIN_REC709;
     new->filename_work[0] = '\0';
+    new->passthrough = 0;
     return 0;
   }
-  if(old_version == 3 && new_version == 6)
+  if(old_version == 3 && new_version == 7)
   {
     typedef struct dt_iop_colorin_params_v3_t
     {
@@ -312,10 +317,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->blue_mapping = old->blue_mapping;
     new->type_work = DT_COLORSPACE_LIN_REC709;
     new->filename_work[0] = '\0';
+    new->passthrough = 0;
 
     return 0;
   }
-  if(old_version == 4 && new_version == 6)
+  if(old_version == 4 && new_version == 7)
   {
     typedef struct dt_iop_colorin_params_v4_t
     {
@@ -337,10 +343,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->blue_mapping = old->blue_mapping;
     new->type_work = DT_COLORSPACE_LIN_REC709;
     new->filename_work[0] = '\0';
+    new->passthrough = 0;
 
     return 0;
   }
-  if(old_version == 5 && new_version == 6)
+  if(old_version == 5 && new_version == 7)
   {
     typedef struct dt_iop_colorin_params_v5_t
     {
@@ -365,6 +372,36 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->blue_mapping = old->blue_mapping;
     new->type_work = old->type_work;
     g_strlcpy(new->filename_work, old->filename_work, sizeof(new->filename_work));
+    new->passthrough = 0;
+
+    return 0;
+  }
+  if(old_version == 6 && new_version == 7)
+  {
+    typedef struct dt_iop_colorin_params_v6_t
+    {
+      dt_colorspaces_color_profile_type_t type;
+      char filename[DT_IOP_COLOR_ICC_LEN];
+      dt_iop_color_intent_t intent;
+      int normalize;
+      int blue_mapping;
+      // working color profile
+      dt_colorspaces_color_profile_type_t type_work;
+      char filename_work[DT_IOP_COLOR_ICC_LEN];
+    } dt_iop_colorin_params_v6_t;
+
+    const dt_iop_colorin_params_v6_t *old = (dt_iop_colorin_params_v6_t *)old_params;
+    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    memset(new_params, 0, sizeof(*new_params));
+
+    new->type = old->type;
+    g_strlcpy(new->filename, old->filename, sizeof(new->filename));
+    new->intent = old->intent;
+    new->normalize = old->normalize;
+    new->blue_mapping = old->blue_mapping;
+    new->type_work = old->type_work;
+    g_strlcpy(new->filename_work, old->filename_work, sizeof(new->filename_work));
+    new->passthrough = 0;
 
     return 0;
   }
@@ -502,6 +539,14 @@ static void normalize_changed(GtkWidget *widget, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
   p->normalize = dt_bauhaus_combobox_get(widget);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void passthrough_color_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)self->params;
+  p->passthrough = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -1458,6 +1503,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->type = p->type;
   d->type_work = p->type_work;
   g_strlcpy(d->filename_work, p->filename_work, sizeof(d->filename_work));
+  d->passthrough = p->passthrough;
 
   const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
@@ -1514,7 +1560,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_loc_get_datadir(datadir, sizeof(datadir));
 
   dt_colorspaces_color_profile_type_t type = p->type;
-  if(type == DT_COLORSPACE_LAB)
+  if(type == DT_COLORSPACE_LAB || d->passthrough)
   {
     piece->enabled = 0;
     return;
@@ -1776,6 +1822,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_colorin_gui_data_t *g = (dt_iop_colorin_gui_data_t *)self->gui_data;
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)module->params;
   dt_bauhaus_combobox_set(g->clipping_combobox, p->normalize);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->chk_passthrough), p->passthrough);
 
   update_profile_list(self);
 
@@ -1839,7 +1886,8 @@ void reload_defaults(dt_iop_module_t *module)
                                                            .normalize = DT_NORMALIZE_OFF,
                                                            .blue_mapping = 0,
                                                            .type_work = DT_COLORSPACE_LIN_REC2020,
-                                                           .filename_work = "" };
+                                                           .filename_work = "",
+                                                           .passthrough = 0 };
 
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev || module->dev->image_storage.id <= 0) goto end;
@@ -2115,6 +2163,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->clipping_combobox, TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(g->clipping_combobox), "value-changed", G_CALLBACK(normalize_changed), (gpointer)self);
+
+  // passthrough
+  g->chk_passthrough = gtk_check_button_new_with_label(_("passthrough"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->chk_passthrough), FALSE);
+  gtk_widget_set_tooltip_text(g->chk_passthrough,
+                              _("when this option is active no profile is applied to the image."));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->chk_passthrough, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->chk_passthrough), "toggled", G_CALLBACK(passthrough_color_callback), self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
