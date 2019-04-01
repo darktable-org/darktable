@@ -18,8 +18,11 @@ if (UNIX AND NOT WIN32)
                 DTApplication)
 
     install(FILES
+		noisy-before-colorin.xmp
+		smooth-before-colorin.xmp
+		noisy-after-colorin.xmp
+		smooth-after-colorin.xmp
                 subr.sh
-                profiling-shot.xmp
             DESTINATION
                ${CMAKE_INSTALL_LIBEXECDIR}/darktable/tools
             COMPONENT

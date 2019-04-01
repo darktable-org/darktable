@@ -118,7 +118,7 @@ fi
 
 profile_image() {
 	local image preset files_list maker model iso xmp		\
-	 noiseprofile pfm dat title fit pdf			\
+	 noiseprofile pfm_noisy pfm_smooth dat title fit pdf			\
 	 flat_dat curves_dat flat_pdf a0 a1 a2 b0 b1 b2
 
 	tool_installed darktable-cli
@@ -132,7 +132,10 @@ profile_image() {
 	model=$(get_image_camera_model "$image")
 	iso=$(get_image_iso "$image")
 
+	echo "$scriptdir"
 	xmp="$scriptdir/profiling-shot.xmp"
+        xmp_noisy="$scriptdir/noisy-before-colorin.xmp"
+        xmp_smooth="$scriptdir/smooth-before-colorin.xmp"
 	noiseprofile="$scriptdir/darktable-noiseprofile"
 	if [ ! -x "$scriptdir/darktable-noiseprofile" ]; then
 		echo "ERROR: Could not find darktable-noiseprofile tool in $scriptdir"
@@ -142,23 +145,26 @@ profile_image() {
 	echo
 	echo "===> Profile image for \"$maker - $model - $iso ISO\""
 
-	pfm="${image%.*}.pfm"
-	if [ ! -f "$pfm" -o "$image" -nt "$pfm" -o "$xmp" -nt "$pfm" -o "$0" -nt "$pfm" ]; then
+	pfm_noisy="${image%.*}_noisy.pfm"
+	pfm_smooth="${image%.*}_smooth.pfm"
+	if [ ! -f "$pfm_noisy" -o "$image" -nt "$pfm_noisy" -o "$xmp_noisy" -nt "$pfm_noisy" -o "$0" -nt "$pfm_noisy" ]; then
 		echo "--> Converting $image (ISO $iso)"
-		rm -f "$pfm"
-		darktable-cli "$image" "$xmp" "$pfm" --core --conf plugins/lighttable/export/iccprofile=image --conf plugins/lighttable/export/style=none
+		rm -f "$pfm_noisy"
+		darktable-cli "$image" "$xmp_noisy" "$pfm_noisy" --core --conf plugins/lighttable/export/iccprofile=image --conf plugins/lighttable/export/style=none
+		rm -f "$pfm_smooth"
+		darktable-cli "$image" "$xmp_smooth" "$pfm_smooth" --core --conf plugins/lighttable/export/iccprofile=image --conf plugins/lighttable/export/style=none
 	else
 		echo "--> Skip $image (ISO $iso); output up-to-date"
 	fi
 
 	echo "--> Run darktable-noiseprofile"
-	dat="${pfm%.pfm}.dat"
-	"$noiseprofile" "$pfm" > "$dat"
+	dat="${pfm_noisy%_noisy.pfm}.dat"
+	"$noiseprofile" "$pfm_noisy" "$pfm_smooth" > "$dat"
 
 	echo "--> Plotting $pfm"
 	title="$maker, $model, $iso ISO ($(basename "${pfm%.pfm}"))"
-	fit="${pfm%.pfm}.fit"
-	pdf="${pfm%.pfm}.pdf"
+	fit="${pfm_noisy%_noisy.pfm}.fit"
+	pdf="${pfm_noisy%_noisy.pfm}.pdf"
 	gnuplot 2>/dev/null <<EOF
 	set term pdf
 	set print "$fit"
@@ -177,59 +183,47 @@ profile_image() {
 	a1=0.1;b1=0.01;
 	a2=0.1;b2=0.01;
 	a3=0.1;b3=0.01;
-	set xrange [0:0.35]
-	fit f1(x) "$dat" u 1:(\$2**2):(1/max(0.01, \$5)) via a1,b1
-	set xrange [0:0.8]
-	fit f2(x) "$dat" u 1:(\$3**2):(1/max(0.01, \$6)) via a2,b2
-	set xrange [0:0.5]
-	fit f3(x) "$dat" u 1:(\$4**2):(1/max(0.01, \$7)) via a3,b3
+	set xrange [0.1:0.35]
+	fit f1(x) "$dat" u 1:(\$2):(1/max(0.01, \$5)) via a1,b1
+	set xrange [0.1:0.8]
+	fit f2(x) "$dat" u 1:(\$3):(1/max(0.01, \$6)) via a2,b2
+	set xrange [0.1:0.35]
+	fit f3(x) "$dat" u 1:(\$4):(1/max(0.01, \$7)) via a3,b3
 
 	set xrange [0:1]
 	set title "Noise levels - $title"
 	set xlabel "brightness"
-	set ylabel "standard deviation"
+	set ylabel "variance"
 	plot "$dat" u 1:2 w l lw 4 title "red",				\
 	  '' u 1:3 w l lw 4 title "green",				\
 	  '' u 1:4 w l lw 4 title" blue",				\
-	  '' u 1:(sqrt(f1(\$1))) w l lw 2 lt 1 title "red (fit)",	\
-	  '' u 1:(sqrt(f2(\$1))) w l lw 2 lt 2 title "green (fit)",	\
-	  '' u 1:(sqrt(f3(\$1))) w l lw 2 lt 3 title "blue (fit)"
+	  '' u 1:((f1(\$1))) w l lw 2 lt 1 title "red (fit)",	\
+	  '' u 1:((f2(\$1))) w l lw 2 lt 2 title "green (fit)",	\
+	  '' u 1:((f3(\$1))) w l lw 2 lt 3 title "blue (fit)"
 
 	print a1, a2, a3, b1, b2, b3
 EOF
 
 	# Fitted parametric curves:
 	echo "--> Fitted parametric curves"
-	flat_dat="${pfm%.pfm}_flat.dat"
-	curves_dat="${pfm%.pfm}_curves.dat"
-	$noiseprofile $pfm -c $(cat $fit) > $flat_dat 2> $curves_dat
+	flat_dat="${pfm_noisy%_noisy.pfm}_flat.dat"
+	curves_dat="${pfm_noisy%_noisy.pfm}_curves.dat"
+	$noiseprofile $pfm_noisy $pfm_smooth -c $(cat $fit) > $flat_dat
 
 	# Data based histogram inversion:
 	# $noiseprofile $pfm -h $dat > $flat_dat 2> $curves_dat
 	echo "--> Flattened $pfm"
-	flat_pdf="${pfm%.pfm}_flat.pdf"
+	flat_pdf="${pfm_noisy%_noisy.pfm}_flat.pdf"
 	gnuplot 2>/dev/null << EOF
 	set term pdf
 	set output "$flat_pdf"
 	set title "Flat noise levels - $title"
 	set xlabel "brightness"
-	set ylabel "standard deviation"
+	set ylabel "variance"
 	plot "$flat_dat" u 1:2 w l lw 4 title "red",			\
 	  '' u 1:3 w l lw 4 title "green",				\
 	  '' u 1:4 w l lw 4 title "blue",				\
 	       1 w l lw 4 title "ideal"
-	set title "Flat histogram - $title"
-	set xlabel "brightness"
-	set ylabel ""
-	plot "$dat" u 1:(log(\$5)) w l lw 4 title "red",		\
-	  '' u 1:(log(\$6)) w l lw 4 title "green",			\
-	  '' u 1:(log(\$7)) w l lw 4 title "blue"
-	set title "Conversion curves - $title"
-	set xlabel ""
-	set ylabel ""
-	plot "$curves_dat" u 0:1 w l lw 4 title "red",			\
-	  '' u 0:2 w l lw 4 title "green",				\
-	  '' u 0:3 w l lw 4 title "blue"
 EOF
 	# Output preset for dt:
 	echo "--> Save generated preset"
@@ -254,7 +248,7 @@ Possible reason:
 If the latter reason applies to you, change it back to "image settings"
 and re-run this script.${color_reset}
 EOF
-		rm -f $dat $flat_dat $curves_dat $fit "$pfm"
+		rm -f $dat $flat_dat $curves_dat $fit "$pfm_noisy" "$pfm_smooth"
 		return 1
 		;;
 	esac
@@ -306,7 +300,7 @@ EOF
 	# Clean unused files.
 	rm -f $dat $flat_dat $curves_dat $fit
 	if [ "$keep_pfms" != "1" ]; then
-		rm -f "$pfm"
+		rm -f "$pfm_noisy" "$pfm_smooth"
 	fi
 
 	echo "$(basename "$pdf")" >> "$files_list"
@@ -322,7 +316,7 @@ txt2json(){
 (
   cat <<EOF
 {
-  "version": 0,
+  "version": 1,
   "noiseprofiles": [
 EOF
 
