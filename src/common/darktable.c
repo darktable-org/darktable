@@ -998,9 +998,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     localtime_r(&now, &lt);
     if(lt.tm_mon == 3 && lt.tm_mday == 1)
     {
-      int current_year = lt.tm_year + 1900;
-      int last_year = dt_conf_get_int("ui_last/april1st");
-      if(last_year < current_year)
+      const int current_year = lt.tm_year + 1900;
+      const int last_year = dt_conf_get_int("ui_last/april1st");
+      const gboolean kill_april1st = dt_conf_get_bool("ui_last/no_april1st");
+      if(!kill_april1st && last_year < current_year)
       {
         dt_conf_set_int("ui_last/april1st", current_year);
         mode = "knight";
