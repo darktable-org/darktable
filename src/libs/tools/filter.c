@@ -136,18 +136,18 @@ void gui_init(dt_lib_module_t *self)
   /* sort combobox */
   d->sort = widget = gtk_combo_box_text_new();
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort by", "filename"));     // DT_COLLECTION_SORT_FILENAME
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort by", "time"));         // DT_COLLECTION_SORT_DATETIME
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort by", "rating"));       // DT_COLLECTION_SORT_RATING
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort by", "id"));           // DT_COLLECTION_SORT_ID
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort by", "color label"));  // DT_COLLECTION_SORT_COLOR
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort by", "group"));        // DT_COLLECTION_SORT_GROUP
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort by", "full path"));    // DT_COLLECTION_SORT_PAT
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort by", "custom sort"));  // DT_COLLECTION_SORT_CUSTOM_ORDER
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort by", "title"));        // DT_COLLECTION_SORT_TITLE
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort by", "description"));  // DT_COLLECTION_SORT_DESCRIPTION
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort by", "aspect ratio")); // DT_COLLECTION_SORT_ASPECT_RATIO
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort by", "shuffle"));      // DT_COLLECTION_SORT_SHUFFLE
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort option", "filename"));     // DT_COLLECTION_SORT_FILENAME
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort option", "time"));         // DT_COLLECTION_SORT_DATETIME
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort option", "rating"));       // DT_COLLECTION_SORT_RATING
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort option", "id"));           // DT_COLLECTION_SORT_ID
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort option", "color label"));  // DT_COLLECTION_SORT_COLOR
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort option", "group"));        // DT_COLLECTION_SORT_GROUP
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort option", "full path"));    // DT_COLLECTION_SORT_PAT
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort option", "custom sort"));  // DT_COLLECTION_SORT_CUSTOM_ORDER
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort option", "title"));        // DT_COLLECTION_SORT_TITLE
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort option", "description"));  // DT_COLLECTION_SORT_DESCRIPTION
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort option", "aspect ratio")); // DT_COLLECTION_SORT_ASPECT_RATIO
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), C_("sort option", "shuffle"));      // DT_COLLECTION_SORT_SHUFFLE
 
   /* select the last selected value */
   gtk_combo_box_set_active(GTK_COMBO_BOX(widget), dt_collection_get_sort_field(darktable.collection));
