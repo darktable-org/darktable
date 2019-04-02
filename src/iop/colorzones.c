@@ -2107,9 +2107,9 @@ void gui_init(struct dt_iop_module_t *self)
   c->select_by = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->select_by, NULL, _("select by"));
   gtk_widget_set_tooltip_text(c->select_by, _("choose selection criterion, will be the abscissa in the graph"));
-  dt_bauhaus_combobox_add(c->select_by, C_("select by", "hue"));
-  dt_bauhaus_combobox_add(c->select_by, C_("select by", "saturation"));
-  dt_bauhaus_combobox_add(c->select_by, C_("select by", "lightness"));
+  dt_bauhaus_combobox_add(c->select_by, C_("colorzones", "hue"));
+  dt_bauhaus_combobox_add(c->select_by, C_("colorzones", "saturation"));
+  dt_bauhaus_combobox_add(c->select_by, C_("colorzones", "lightness"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->select_by, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->select_by), "value-changed", G_CALLBACK(_select_by_callback), (gpointer)self);
 
