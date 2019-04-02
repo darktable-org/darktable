@@ -166,7 +166,7 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_DO_NOT_USE_BORDER, NULL);
   gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
-  gtk_widget_set_tooltip_text(widget, C_("button tooltip", "select directory"));
+  gtk_widget_set_tooltip_text(widget, C_("button", "select directory"));
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 
