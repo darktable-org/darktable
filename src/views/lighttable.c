@@ -110,6 +110,10 @@ typedef struct dt_preview_surface_t
   cairo_surface_t *surface;
   uint8_t *rgbbuf;
   int w_lock;
+
+  float w_fit;
+  float h_fit;
+  float zoom_100;
 } dt_preview_surface_t;
 
 /**
@@ -296,6 +300,10 @@ static void _full_preview_destroy(dt_view_t *self)
     lib->fp_surf[i].height = 0;
     lib->fp_surf[i].imgid = -1;
     lib->fp_surf[i].w_lock = 0;
+
+    lib->fp_surf[i].zoom_100 = 10.0f;
+    lib->fp_surf[i].w_fit = 0.0f;
+    lib->fp_surf[i].h_fit = 0.0f;
   }
 }
 
@@ -616,6 +624,9 @@ void init(dt_view_t *self)
     lib->fp_surf[i].surface = NULL;
     lib->fp_surf[i].rgbbuf = NULL;
     lib->fp_surf[i].w_lock = 0;
+    lib->fp_surf[i].zoom_100 = 10.0f;
+    lib->fp_surf[i].w_fit = 0.0f;
+    lib->fp_surf[i].h_fit = 0.0f;
   }
 
   lib->thumbs_table = g_hash_table_new(g_int_hash, g_int_equal);
@@ -1812,6 +1823,9 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       params.full_surface_wd = &lib->fp_surf[i].width;
       params.full_surface_ht = &lib->fp_surf[i].height;
       params.full_surface_w_lock = &lib->fp_surf[i].w_lock;
+      params.full_zoom100 = &lib->fp_surf[i].zoom_100;
+      params.full_w1 = &lib->fp_surf[i].w_fit;
+      params.full_h1 = &lib->fp_surf[i].h_fit;
     }
 
     dt_view_image_expose(&params);
@@ -1982,6 +1996,9 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
   params.zoom = 1;
   params.full_preview = TRUE;
   params.full_zoom = &lib->full_zoom;
+  params.full_zoom100 = &lib->fp_surf[0].zoom_100;
+  params.full_w1 = &lib->fp_surf[0].w_fit;
+  params.full_h1 = &lib->fp_surf[0].h_fit;
   params.full_x = &lib->full_x;
   params.full_y = &lib->full_y;
   params.full_surface = &lib->fp_surf[0].surface;
@@ -2534,11 +2551,37 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
     }
     else if(lib->missing_thumbnails == 0)
     {
-      if(up)
-        lib->full_zoom = fminf(8.0f, lib->full_zoom + 0.5f);
+      float nz = 10.0f;
+      if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+      {
+        // we stop at the minimum zoom
+        for(int i = 0; i < sel_img_count; i++) nz = fminf(nz, lib->fp_surf[i].zoom_100);
+      }
       else
-        lib->full_zoom = fmaxf(1.0f, lib->full_zoom - 0.5f);
-      dt_control_queue_redraw_center();
+        nz = lib->fp_surf[0].zoom_100;
+
+      if(up)
+        nz = fminf(nz, lib->full_zoom + 0.5f);
+      else
+        nz = fmaxf(1.0f, lib->full_zoom - 0.5f);
+
+      if(lib->full_zoom != nz)
+      {
+        if(get_layout() != DT_LIGHTTABLE_LAYOUT_EXPOSE)
+        {
+          // we want to zoom "around" the pointer
+          float dx = nz / lib->full_zoom
+                         * (x - (self->width - lib->fp_surf[0].w_fit * lib->full_zoom) * 0.5f - lib->full_x)
+                     - x + (self->width - lib->fp_surf[0].w_fit * nz) * 0.5f;
+          float dy = nz / lib->full_zoom
+                         * (y - (self->height - lib->fp_surf[0].h_fit * lib->full_zoom) * 0.5f - lib->full_y)
+                     - y + (self->height - lib->fp_surf[0].h_fit * nz) * 0.5f;
+          lib->full_x = -dx;
+          lib->full_y = -dy;
+        }
+        lib->full_zoom = nz;
+        dt_control_queue_redraw_center();
+      }
     }
   }
   else if(lib->full_preview_id > -1)
@@ -3060,7 +3103,9 @@ int key_pressed(dt_view_t *self, guint key, guint state)
      || (key == accels->lighttable_left.accel_key && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && zoom != 1))
   {
     if(lib->full_preview_id > -1)
+    {
       lib->track = -DT_LIBRARY_MAX_ZOOM;
+    }
     else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
       if (zoom == 1)
@@ -3085,7 +3130,9 @@ int key_pressed(dt_view_t *self, guint key, guint state)
      || (key == accels->lighttable_right.accel_key && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && zoom != 1))
   {
     if(lib->full_preview_id > -1)
+    {
       lib->track = +DT_LIBRARY_MAX_ZOOM;
+    }
     else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
       if (zoom == 1)
@@ -3110,7 +3157,9 @@ int key_pressed(dt_view_t *self, guint key, guint state)
      || (key == accels->lighttable_up.accel_key && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && zoom != 1))
   {
     if(lib->full_preview_id > -1)
+    {
       lib->track = -DT_LIBRARY_MAX_ZOOM;
+    }
     else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
       if (zoom == 1)
@@ -3133,7 +3182,9 @@ int key_pressed(dt_view_t *self, guint key, guint state)
      || (key == accels->lighttable_down.accel_key && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && zoom != 1))
   {
     if(lib->full_preview_id > -1)
+    {
       lib->track = +DT_LIBRARY_MAX_ZOOM;
+    }
     else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
       if (zoom == 1)
@@ -3301,7 +3352,6 @@ static gboolean _lighttable_preview_zoom_fit(GtkAccelGroup *accel_group, GObject
   dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
   dt_library_t *lib = (dt_library_t *)self->data;
 
-  printf("fit\n");
   if(lib->full_preview_id > -1)
   {
     lib->full_zoom = 1.0f;
