@@ -393,6 +393,20 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
   _unregister_custom_image_order_drag_n_drop(self);
   _register_custom_image_order_drag_n_drop(self);
 
+  _full_preview_destroy(self);
+  lib->full_zoom = 1.0f;
+  lib->full_x = 0.0f;
+  lib->full_y = 0.0f;
+
+  _update_collected_images(self);
+}
+static void _view_lighttable_query_listener_callback(gpointer instance, gpointer user_data)
+{
+  // this will always happen in conjonction with the _view_lighttable_collection_listener_callback
+  // so we only need to reset the offset
+  dt_view_t *self = (dt_view_t *)user_data;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
   // in filemanager, we want to reset the offset to the beggining
   const dt_lighttable_layout_t layout = get_layout();
   if(layout == lib->current_layout && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && lib->offset > 0
@@ -401,13 +415,6 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
     lib->offset = lib->first_visible_filemanager = 0;
     lib->offset_changed = TRUE;
   }
-
-  _full_preview_destroy(self);
-  lib->full_zoom = 1.0f;
-  lib->full_x = 0.0f;
-  lib->full_y = 0.0f;
-
-  _update_collected_images(self);
 }
 
 static void _view_lighttable_selection_listener_callback(gpointer instance, gpointer user_data)
@@ -623,6 +630,8 @@ void init(dt_view_t *self)
   /* setup collection listener and initialize main_query statement */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_view_lighttable_collection_listener_callback), (gpointer)self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_QUERY_CHANGED,
+                            G_CALLBACK(_view_lighttable_query_listener_callback), (gpointer)self);
 
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                             G_CALLBACK(_view_lighttable_selection_listener_callback), (gpointer)self);
@@ -641,6 +650,7 @@ void init(dt_view_t *self)
 void cleanup(dt_view_t *self)
 {
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_lighttable_collection_listener_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_lighttable_query_listener_callback), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_lighttable_selection_listener_callback), self);
 
   dt_library_t *lib = (dt_library_t *)self->data;

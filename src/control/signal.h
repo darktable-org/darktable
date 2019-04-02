@@ -25,8 +25,7 @@
     document what it's used for, then add a matching signal string
     name to _strings in signal.c
 */
-typedef enum dt_signal_t
-{
+typedef enum dt_signal_t {
   /** \brief This signal is raised when mouse hovers over image thumbs
       both on lighttable and in the filmstrip.
       no param, no returned value
@@ -56,10 +55,15 @@ typedef enum dt_signal_t
    */
   DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
 
-  /** \brief This signal is raised when collection query is changed
+  /** \brief This signal is raised when collection changed
   no param, no returned value
     */
   DT_SIGNAL_COLLECTION_CHANGED,
+
+  /** \brief This signal is raised when collection query is changed
+  no param, no returned value
+    */
+  DT_SIGNAL_COLLECTION_QUERY_CHANGED,
 
   /** \brief This signal is raised when the selection is changed
   no param, no returned value
