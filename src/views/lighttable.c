@@ -110,6 +110,10 @@ typedef struct dt_preview_surface_t
   cairo_surface_t *surface;
   uint8_t *rgbbuf;
   int w_lock;
+
+  float w_fit;
+  float h_fit;
+  float zoom_100;
 } dt_preview_surface_t;
 
 /**
@@ -296,6 +300,10 @@ static void _full_preview_destroy(dt_view_t *self)
     lib->fp_surf[i].height = 0;
     lib->fp_surf[i].imgid = -1;
     lib->fp_surf[i].w_lock = 0;
+
+    lib->fp_surf[i].zoom_100 = 10.0f;
+    lib->fp_surf[i].w_fit = 0.0f;
+    lib->fp_surf[i].h_fit = 0.0f;
   }
 }
 
@@ -616,6 +624,9 @@ void init(dt_view_t *self)
     lib->fp_surf[i].surface = NULL;
     lib->fp_surf[i].rgbbuf = NULL;
     lib->fp_surf[i].w_lock = 0;
+    lib->fp_surf[i].zoom_100 = 10.0f;
+    lib->fp_surf[i].w_fit = 0.0f;
+    lib->fp_surf[i].h_fit = 0.0f;
   }
 
   lib->thumbs_table = g_hash_table_new(g_int_hash, g_int_equal);
@@ -1812,6 +1823,9 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       params.full_surface_wd = &lib->fp_surf[i].width;
       params.full_surface_ht = &lib->fp_surf[i].height;
       params.full_surface_w_lock = &lib->fp_surf[i].w_lock;
+      params.full_zoom100 = &lib->fp_surf[i].zoom_100;
+      params.full_w1 = &lib->fp_surf[i].w_fit;
+      params.full_h1 = &lib->fp_surf[i].h_fit;
     }
 
     dt_view_image_expose(&params);
@@ -1982,6 +1996,9 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
   params.zoom = 1;
   params.full_preview = TRUE;
   params.full_zoom = &lib->full_zoom;
+  params.full_zoom100 = &lib->fp_surf[0].zoom_100;
+  params.full_w1 = &lib->fp_surf[0].w_fit;
+  params.full_h1 = &lib->fp_surf[0].h_fit;
   params.full_x = &lib->full_x;
   params.full_y = &lib->full_y;
   params.full_surface = &lib->fp_surf[0].surface;
@@ -2534,11 +2551,37 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
     }
     else if(lib->missing_thumbnails == 0)
     {
-      if(up)
-        lib->full_zoom = fminf(8.0f, lib->full_zoom + 0.5f);
+      float nz = 10.0f;
+      if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+      {
+        // we stop at the minimum zoom
+        for(int i = 0; i < sel_img_count; i++) nz = fminf(nz, lib->fp_surf[i].zoom_100);
+      }
       else
-        lib->full_zoom = fmaxf(1.0f, lib->full_zoom - 0.5f);
-      dt_control_queue_redraw_center();
+        nz = lib->fp_surf[0].zoom_100;
+
+      if(up)
+        nz = fminf(nz, lib->full_zoom + 0.5f);
+      else
+        nz = fmaxf(1.0f, lib->full_zoom - 0.5f);
+
+      if(lib->full_zoom != nz)
+      {
+        if(get_layout() != DT_LIGHTTABLE_LAYOUT_EXPOSE)
+        {
+          // we want to zoom "around" the pointer
+          float dx = nz / lib->full_zoom
+                         * (x - (self->width - lib->fp_surf[0].w_fit * lib->full_zoom) * 0.5f - lib->full_x)
+                     - x + (self->width - lib->fp_surf[0].w_fit * nz) * 0.5f;
+          float dy = nz / lib->full_zoom
+                         * (y - (self->height - lib->fp_surf[0].h_fit * lib->full_zoom) * 0.5f - lib->full_y)
+                     - y + (self->height - lib->fp_surf[0].h_fit * nz) * 0.5f;
+          lib->full_x = -dx;
+          lib->full_y = -dy;
+        }
+        lib->full_zoom = nz;
+        dt_control_queue_redraw_center();
+      }
     }
   }
   else if(lib->full_preview_id > -1)
@@ -2720,6 +2763,102 @@ static void _ensure_image_visibility(dt_library_t *lib, uint32_t rowid)
   }
 }
 
+static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int32_t mouse_over_id)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  lib->full_preview_sticky = sticky;
+  // encode panel visibility into full_preview
+  lib->full_preview = 0;
+  lib->full_preview_id = mouse_over_id;
+
+  // set corresponding rowid in the collected images
+  {
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT rowid FROM memory.collected_images WHERE imgid=?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, lib->full_preview_id);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      lib->full_preview_rowid = sqlite3_column_int(stmt, 0);
+    }
+    sqlite3_finalize(stmt);
+  }
+
+  // if there's only 1 image selected, and it's the one display
+  sqlite3_stmt *stmt;
+  int nb_sel = 0;
+  uint32_t imgid_sel = -1;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
+                              NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    nb_sel++;
+    if(nb_sel > 1) break;
+    imgid_sel = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+  if(nb_sel == 1 && imgid_sel == lib->full_preview_id)
+    lib->full_preview_follow_sel = TRUE;
+  else
+    lib->full_preview_follow_sel = FALSE;
+
+  // let's hide some gui components
+  lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT) & 1) << 0;
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE, FALSE);
+  lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_RIGHT) & 1) << 1;
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE, FALSE);
+  lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM) & 1) << 2;
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, FALSE, FALSE);
+  lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP) & 1) << 3;
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, FALSE, FALSE);
+  lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_TOP) & 1) << 4;
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE, FALSE);
+
+  // preview with focus detection
+  lib->display_focus = focus;
+
+  // reset preview values
+  lib->full_zoom = 1.0f;
+  lib->full_x = 0.0f;
+  lib->full_y = 0.0f;
+  _full_preview_destroy(self);
+
+  // we don't want want drag and drop here
+  _unregister_custom_image_order_drag_n_drop(self);
+
+  lib->force_expose_all = TRUE;
+}
+static void _preview_quit(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  if(lib->full_preview_follow_sel)
+  {
+    dt_selection_select_single(darktable.selection, lib->full_preview_id);
+    _ensure_image_visibility(lib, lib->full_preview_rowid);
+  }
+  lib->full_preview_id = -1;
+  lib->full_preview_rowid = -1;
+  if(!lib->using_arrows) dt_control_set_mouse_over_id(-1);
+
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, (lib->full_preview & 1), FALSE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, (lib->full_preview & 2), FALSE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, (lib->full_preview & 4), FALSE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, (lib->full_preview & 8), FALSE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, (lib->full_preview & 16), FALSE);
+
+  lib->full_preview = 0;
+  lib->display_focus = 0;
+  _full_preview_destroy(self);
+  lib->full_zoom = 1.0f;
+  lib->full_x = 0.0f;
+  lib->full_y = 0.0f;
+
+  // restore drag and drop
+  _register_custom_image_order_drag_n_drop(self);
+
+  lib->force_expose_all = TRUE;
+}
 
 int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
 {
@@ -2893,25 +3032,7 @@ int key_released(dt_view_t *self, guint key, guint state)
       || (key == accels->lighttable_preview_display_focus.accel_key
           && state == accels->lighttable_preview_display_focus.accel_mods)) && lib->full_preview_id != -1)
   {
-    if(lib->full_preview_follow_sel) dt_selection_select_single(darktable.selection, lib->full_preview_id);
-    lib->full_preview_id = -1;
-    lib->full_preview_rowid = -1;
-    if(!lib->using_arrows)
-      dt_control_set_mouse_over_id(-1);
-
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, (lib->full_preview & 1), FALSE);
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, (lib->full_preview & 2), FALSE);
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, (lib->full_preview & 4), FALSE);
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, (lib->full_preview & 8), FALSE);
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, (lib->full_preview & 16), FALSE);
-
-    lib->full_preview = 0;
-    lib->display_focus = 0;
-    _full_preview_destroy(self);
-    lib->full_zoom = 1.0f;
-    lib->full_x = 0.0f;
-    lib->full_y = 0.0f;
-    lib->force_expose_all = TRUE;
+    _preview_quit(self);
   }
 
   return 1;
@@ -2935,29 +3056,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
                                     || (key == accels->lighttable_preview_sticky_focus.accel_key
                                         && state == accels->lighttable_preview_sticky_focus.accel_mods)))
   {
-    if(lib->full_preview_follow_sel)
-    {
-      dt_selection_select_single(darktable.selection, lib->full_preview_id);
-      _ensure_image_visibility(lib, lib->full_preview_rowid);
-    }
-    lib->full_preview_id = -1;
-    lib->full_preview_rowid = -1;
-    if(!lib->using_arrows)
-      dt_control_set_mouse_over_id(-1);
-
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, (lib->full_preview & 1), FALSE);
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, (lib->full_preview & 2), FALSE);
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, (lib->full_preview & 4), FALSE);
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, (lib->full_preview & 8), FALSE);
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, (lib->full_preview & 16), FALSE);
-
-    lib->full_preview = 0;
-    lib->display_focus = 0;
-    _full_preview_destroy(self);
-    lib->full_zoom = 1.0f;
-    lib->full_x = 0.0f;
-    lib->full_y = 0.0f;
-    lib->force_expose_all = TRUE;
+    _preview_quit(self);
     return 1;
   }
 
@@ -2972,80 +3071,23 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     const int32_t mouse_over_id = dt_control_get_mouse_over_id();
     if(lib->full_preview_id == -1 && mouse_over_id != -1)
     {
+      gboolean sticky = TRUE;
+      gboolean focus = FALSE;
       if((key == accels->lighttable_preview.accel_key && state == accels->lighttable_preview.accel_mods)
          || (key == accels->lighttable_preview_display_focus.accel_key
              && state == accels->lighttable_preview_display_focus.accel_mods))
       {
-        lib->full_preview_sticky = 0;
+        sticky = FALSE;
       }
-      else
-      {
-        lib->full_preview_sticky = 1;
-      }
-      // encode panel visibility into full_preview
-      lib->full_preview = 0;
-      lib->full_preview_id = mouse_over_id;
-
-      // set corresponding rowid in the collected images
-      {
-        sqlite3_stmt *stmt;
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "SELECT rowid FROM memory.collected_images WHERE imgid=?1", -1, &stmt,
-                                    NULL);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, lib->full_preview_id);
-        if(sqlite3_step(stmt) == SQLITE_ROW)
-        {
-          lib->full_preview_rowid = sqlite3_column_int(stmt, 0);
-        }
-        sqlite3_finalize(stmt);
-      }
-
-      // if there's only 1 image selected, and it's the one display
-      sqlite3_stmt *stmt;
-      int nb_sel = 0;
-      uint32_t imgid_sel = -1;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1,
-                                  &stmt, NULL);
-      while(sqlite3_step(stmt) == SQLITE_ROW)
-      {
-        nb_sel++;
-        if(nb_sel > 1) break;
-        imgid_sel = sqlite3_column_int(stmt, 0);
-      }
-      sqlite3_finalize(stmt);
-      if(nb_sel == 1 && imgid_sel == lib->full_preview_id)
-        lib->full_preview_follow_sel = TRUE;
-      else
-        lib->full_preview_follow_sel = FALSE;
-
-      // let's hide some gui components
-      lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT) & 1) << 0;
-      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE, FALSE);
-      lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_RIGHT) & 1) << 1;
-      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE, FALSE);
-      lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM) & 1) << 2;
-      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, FALSE, FALSE);
-      lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP) & 1) << 3;
-      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, FALSE, FALSE);
-      lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_TOP) & 1) << 4;
-      dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE, FALSE);
-
-      // preview with focus detection
       if((key == accels->lighttable_preview_display_focus.accel_key
           && state == accels->lighttable_preview_display_focus.accel_mods)
          || (key == accels->lighttable_preview_sticky_focus.accel_key
              && state == accels->lighttable_preview_sticky_focus.accel_mods))
       {
-        lib->display_focus = 1;
+        focus = TRUE;
       }
 
-      // reset preview values
-      lib->full_zoom = 1.0f;
-      lib->full_x = 0.0f;
-      lib->full_y = 0.0f;
-      _full_preview_destroy(self);
-
-      lib->force_expose_all = TRUE;
+      _preview_enter(self, sticky, focus, mouse_over_id);
       return 1;
     }
     return 0;
@@ -3061,7 +3103,9 @@ int key_pressed(dt_view_t *self, guint key, guint state)
      || (key == accels->lighttable_left.accel_key && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && zoom != 1))
   {
     if(lib->full_preview_id > -1)
+    {
       lib->track = -DT_LIBRARY_MAX_ZOOM;
+    }
     else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
       if (zoom == 1)
@@ -3086,7 +3130,9 @@ int key_pressed(dt_view_t *self, guint key, guint state)
      || (key == accels->lighttable_right.accel_key && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && zoom != 1))
   {
     if(lib->full_preview_id > -1)
+    {
       lib->track = +DT_LIBRARY_MAX_ZOOM;
+    }
     else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
       if (zoom == 1)
@@ -3111,7 +3157,9 @@ int key_pressed(dt_view_t *self, guint key, guint state)
      || (key == accels->lighttable_up.accel_key && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && zoom != 1))
   {
     if(lib->full_preview_id > -1)
+    {
       lib->track = -DT_LIBRARY_MAX_ZOOM;
+    }
     else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
       if (zoom == 1)
@@ -3134,7 +3182,9 @@ int key_pressed(dt_view_t *self, guint key, guint state)
      || (key == accels->lighttable_down.accel_key && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && zoom != 1))
   {
     if(lib->full_preview_id > -1)
+    {
       lib->track = +DT_LIBRARY_MAX_ZOOM;
+    }
     else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
       if (zoom == 1)
@@ -3302,7 +3352,6 @@ static gboolean _lighttable_preview_zoom_fit(GtkAccelGroup *accel_group, GObject
   dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
   dt_library_t *lib = (dt_library_t *)self->data;
 
-  printf("fit\n");
   if(lib->full_preview_id > -1)
   {
     lib->full_zoom = 1.0f;
@@ -3542,7 +3591,9 @@ static gboolean _is_order_actif(dt_view_t *self, dt_collection_sort_t sort)
         && current_view
         && current_view->view(self) == DT_VIEW_LIGHTTABLE)
     {
-      return TRUE;
+      // not in full_preview mode
+      dt_library_t *lib = (dt_library_t *)self->data;
+      if(lib->full_preview_id == -1) return TRUE;
     }
   }
 

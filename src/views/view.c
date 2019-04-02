@@ -1139,6 +1139,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     {
       float zoom_100 = fmaxf((float)buf_wd / ((float)width * imgwd), (float)buf_ht / ((float)height * imgwd));
       if(zoom_100 < 1.0f) zoom_100 = 1.0f;
+      *(vals->full_zoom100) = zoom_100;
       if(fz > zoom_100)
       {
         *full_zoom = zoom_100;
@@ -1391,6 +1392,18 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
         rectx = 0.5 * buf_wd - fx / scale - 0.5 * rectw;
         recty = 0.5 * buf_ht - fy / scale - 0.5 * recth;
       }
+      else if(full_x && full_y)
+      {
+        *full_x = 0.0f;
+        *full_y = 0.0f;
+      }
+
+      if(buf_ok && fz == 1.0f && vals->full_w1 && vals->full_h1)
+      {
+        *(vals->full_w1) = buf_wd * scale;
+        *(vals->full_h1) = buf_ht * scale;
+      }
+
       if(!image_only) cairo_translate(cr, -0.5 * buf_wd + fx / scale, -0.5 * buf_ht + fy / scale);
       cairo_set_source_surface(cr, surface, 0, 0);
       // set filter no nearest:
