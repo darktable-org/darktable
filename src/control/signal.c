@@ -69,6 +69,8 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
 
   { "dt-collection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
     NULL, NULL, FALSE }, // DT_SIGNAL_COLLECTION_CHANGED
+  { "dt-collection-query-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
+    NULL, NULL, FALSE }, // DT_SIGNAL_COLLECTION_QUERY_CHANGED
   { "dt-selection-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
     NULL, NULL, FALSE }, // DT_SIGNAL_SELECTION_CHANGED
   { "dt-tag-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
@@ -101,7 +103,7 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
   { "dt-control-profile-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
     NULL, NULL, FALSE }, // DT_SIGNAL_CONTROL_PROFILE_CHANGED
   { "dt-control-profile-user-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1,
-      uint_arg, NULL, FALSE }, // DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED    
+      uint_arg, NULL, FALSE }, // DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED
   { "dt-image-import", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__UINT, 1,
     uint_arg, NULL, FALSE }, // DT_SIGNAL_IMAGE_IMPORT
   { "dt-image-export-tmpfile", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 6,
