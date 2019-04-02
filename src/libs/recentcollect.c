@@ -74,6 +74,7 @@ static gboolean _goto_previous(GtkAccelGroup *accel_group, GObject *acceleratabl
   if(line)
   {
     dt_collection_deserialize(line);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_QUERY_CHANGED);
     g_free(line);
   }
   return TRUE;
@@ -165,6 +166,7 @@ static void _button_pressed(GtkButton *button, gpointer user_data)
   if(line)
   {
     dt_collection_deserialize(line);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_QUERY_CHANGED);
     g_free(line);
     // position will be updated when the list of recent collections is.
     // that way it'll also catch cases when this is triggered by a signal,
