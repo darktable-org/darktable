@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-01 18:42+0200\n"
-"PO-Revision-Date: 2019-04-01 18:43+0200\n"
+"POT-Creation-Date: 2019-04-03 09:30+0200\n"
+"PO-Revision-Date: 2019-04-03 09:30+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -124,7 +124,7 @@ msgid "initial star rating for all images when importing a filmroll"
 msgstr "étoile(s) attribuée(s) lors de l'importation"
 
 #: ../build/src/preferences_gen.h:2195 ../src/libs/tools/lighttable.c:74
-#: ../src/views/lighttable.c:223
+#: ../src/views/lighttable.c:227
 msgid "lighttable"
 msgstr "table lumineuse"
 
@@ -5452,7 +5452,7 @@ msgstr "similaire nokia"
 #. clang-format off
 #. smoother cubic spline curve
 #: ../src/iop/basecurve.c:223 ../src/iop/colorzones.c:2243
-#: ../src/iop/tonecurve.c:1279
+#: ../src/iop/rgbcurve.c:1566 ../src/iop/tonecurve.c:1279
 msgid "cubic spline"
 msgstr "spline cubique"
 
@@ -5496,9 +5496,10 @@ msgstr "fusion d'exposition"
 #: ../src/iop/clipping.c:1677 ../src/iop/clipping.c:1963
 #: ../src/iop/clipping.c:1981 ../src/iop/clipping.c:2121
 #: ../src/iop/clipping.c:2148 ../src/iop/colorreconstruction.c:1372
-#: ../src/iop/lens.c:2154 ../src/iop/retouch.c:582 ../src/libs/export.c:530
-#: ../src/libs/live_view.c:350 ../src/libs/live_view.c:375
-#: ../src/libs/live_view.c:384 ../src/libs/print_settings.c:1473
+#: ../src/iop/lens.c:2154 ../src/iop/retouch.c:582 ../src/iop/rgbcurve.c:1587
+#: ../src/libs/export.c:530 ../src/libs/live_view.c:350
+#: ../src/libs/live_view.c:375 ../src/libs/live_view.c:384
+#: ../src/libs/print_settings.c:1473
 msgid "none"
 msgstr "sans"
 
@@ -5581,15 +5582,15 @@ msgstr "contraste"
 msgid "contrast adjustment"
 msgstr "ajustement du contraste"
 
-#: ../src/iop/basicadj.c:705
+#: ../src/iop/basicadj.c:705 ../src/iop/rgbcurve.c:1586
 msgid "preserve colors"
 msgstr "préserver couleur"
 
-#: ../src/iop/basicadj.c:707
+#: ../src/iop/basicadj.c:707 ../src/iop/rgbcurve.c:1588
 msgid "luminance"
 msgstr "luminance"
 
-#: ../src/iop/basicadj.c:709
+#: ../src/iop/basicadj.c:709 ../src/iop/rgbcurve.c:1590
 msgid "method to preserve colors when applying contrast"
 msgstr ""
 "méthode pour préserver les couleurs lorsque de la modification du contraste"
@@ -5661,9 +5662,9 @@ msgstr "laplacien local: résultat incohérent"
 #: ../src/iop/bilat.c:525 ../src/iop/colorbalance.c:2319
 #: ../src/iop/denoiseprofile.c:3337 ../src/iop/exposure.c:853
 #: ../src/iop/lens.c:2303 ../src/iop/levels.c:669
-#: ../src/iop/profile_gamma.c:840 ../src/libs/copy_history.c:322
-#: ../src/libs/export.c:693 ../src/libs/print_settings.c:1514
-#: ../src/views/darkroom.c:1588
+#: ../src/iop/profile_gamma.c:840 ../src/iop/rgbcurve.c:1480
+#: ../src/libs/copy_history.c:322 ../src/libs/export.c:693
+#: ../src/libs/print_settings.c:1514 ../src/views/darkroom.c:1588
 msgid "mode"
 msgstr "mode"
 
@@ -6921,26 +6922,26 @@ msgstr "rendu (sortie)"
 
 #: ../src/iop/colorout.c:819 ../src/libs/export.c:676
 #: ../src/libs/print_settings.c:1243 ../src/libs/print_settings.c:1458
-#: ../src/views/darkroom.c:1741 ../src/views/lighttable.c:3493
+#: ../src/views/darkroom.c:1741 ../src/views/lighttable.c:3552
 msgid "perceptual"
 msgstr "perceptif"
 
 #: ../src/iop/colorout.c:820 ../src/libs/export.c:677
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1459
-#: ../src/views/darkroom.c:1742 ../src/views/lighttable.c:3494
+#: ../src/views/darkroom.c:1742 ../src/views/lighttable.c:3553
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
 #: ../src/iop/colorout.c:821 ../src/libs/export.c:678
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
-#: ../src/views/darkroom.c:1743 ../src/views/lighttable.c:3495
+#: ../src/views/darkroom.c:1743 ../src/views/lighttable.c:3554
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
 
 #: ../src/iop/colorout.c:822 ../src/libs/export.c:679
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
-#: ../src/views/darkroom.c:1744 ../src/views/lighttable.c:3496
+#: ../src/views/darkroom.c:1744 ../src/views/lighttable.c:3555
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
@@ -7090,7 +7091,7 @@ msgstr "tons chair naturels"
 msgid "black & white film"
 msgstr "film noir & blanc"
 
-#: ../src/iop/colorzones.c:2157
+#: ../src/iop/colorzones.c:2157 ../src/iop/rgbcurve.c:1512
 msgid ""
 "create a curve based on an area from the image\n"
 "click to create a flat curve\n"
@@ -7130,19 +7131,23 @@ msgstr "prononcé"
 msgid "choose between a smoother or stronger effect"
 msgstr "choisir entre un effet prononcé ou plus doux"
 
-#: ../src/iop/colorzones.c:2242 ../src/iop/tonecurve.c:1278
+#: ../src/iop/colorzones.c:2242 ../src/iop/rgbcurve.c:1565
+#: ../src/iop/tonecurve.c:1278
 msgid "interpolation method"
 msgstr "méthode d'interpolation"
 
-#: ../src/iop/colorzones.c:2244 ../src/iop/tonecurve.c:1280
+#: ../src/iop/colorzones.c:2244 ../src/iop/rgbcurve.c:1567
+#: ../src/iop/tonecurve.c:1280
 msgid "centripetal spline"
 msgstr "spline centripète"
 
-#: ../src/iop/colorzones.c:2245 ../src/iop/tonecurve.c:1281
+#: ../src/iop/colorzones.c:2245 ../src/iop/rgbcurve.c:1568
+#: ../src/iop/tonecurve.c:1281
 msgid "monotonic spline"
 msgstr "spline monotone"
 
-#: ../src/iop/colorzones.c:2249 ../src/iop/tonecurve.c:1283
+#: ../src/iop/colorzones.c:2249 ../src/iop/rgbcurve.c:1572
+#: ../src/iop/tonecurve.c:1283
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
 "- cubic spline is better to produce smooth curves but oscillates when nodes "
@@ -9453,6 +9458,95 @@ msgstr "ajouter en continu une forme au pinceau"
 msgid "max scale is %i for this image size"
 msgstr "l'échelle maximum est %i pour la taille de cette image"
 
+#: ../src/iop/rgbcurve.c:131
+msgid "rgb curve"
+msgstr "courbe rgb"
+
+#: ../src/iop/rgbcurve.c:213 ../src/iop/tonecurve.c:460
+#: ../src/iop/tonemap.cc:297
+msgid "contrast compression"
+msgstr "contraste"
+
+#: ../src/iop/rgbcurve.c:221 ../src/iop/tonecurve.c:468
+msgid "gamma 1.0 (linear)"
+msgstr "gamma 1.0 (linéaire)"
+
+#: ../src/iop/rgbcurve.c:230 ../src/iop/tonecurve.c:477
+msgid "contrast - med (linear)"
+msgstr "contrasté - moyen (linéaire)"
+
+#: ../src/iop/rgbcurve.c:238 ../src/iop/tonecurve.c:485
+msgid "contrast - high (linear)"
+msgstr "contraste - haut (linéaire)"
+
+#: ../src/iop/rgbcurve.c:251 ../src/iop/tonecurve.c:496
+msgid "contrast - med (gamma 2.2)"
+msgstr "contraste - moyen (gamma 2.2)"
+
+#: ../src/iop/rgbcurve.c:263 ../src/iop/tonecurve.c:506
+msgid "contrast - high (gamma 2.2)"
+msgstr "contraste - haut (gamma 2.2)"
+
+#: ../src/iop/rgbcurve.c:274 ../src/iop/tonecurve.c:517
+msgid "gamma 2.0"
+msgstr "gamma 2.0"
+
+#: ../src/iop/rgbcurve.c:278 ../src/iop/tonecurve.c:521
+msgid "gamma 0.5"
+msgstr "gamma 0.5"
+
+#: ../src/iop/rgbcurve.c:282 ../src/iop/tonecurve.c:525
+msgid "logarithm (base 2)"
+msgstr "logarithmique (base 2)"
+
+#: ../src/iop/rgbcurve.c:286 ../src/iop/tonecurve.c:529
+msgid "exponential (base 2)"
+msgstr "exponentielle (base 2)"
+
+#: ../src/iop/rgbcurve.c:1481 ../src/iop/tonecurve.c:1209
+msgid "RGB, linked channels"
+msgstr "RGB, canaux liés"
+
+#: ../src/iop/rgbcurve.c:1482
+msgid "RGB, independent channels"
+msgstr "RGB, canaux indépendants"
+
+#: ../src/iop/rgbcurve.c:1484
+msgid "choose between linked and independent channels."
+msgstr "choisir entre canaux indépendants ou liés"
+
+#: ../src/iop/rgbcurve.c:1491
+msgid "  R  "
+msgstr "  R  "
+
+#: ../src/iop/rgbcurve.c:1494
+msgid "curve_nodes for r channel"
+msgstr "point de contrôle pour canal R"
+
+#: ../src/iop/rgbcurve.c:1496
+msgid "  G  "
+msgstr "  G  "
+
+#: ../src/iop/rgbcurve.c:1499
+msgid "curve_nodes for g channel"
+msgstr "point de contrôle pour canal G"
+
+#: ../src/iop/rgbcurve.c:1501
+msgid "  B  "
+msgstr "  B  "
+
+#: ../src/iop/rgbcurve.c:1504
+msgid "curve_nodes for b channel"
+msgstr "point de contrôle pour canal B"
+
+#: ../src/iop/rgbcurve.c:1524
+msgid "pick GUI color from image"
+msgstr "choisit une couleur dans l'image"
+
+#: ../src/iop/rgbcurve.c:1578 ../src/iop/rgbcurve.c:1580
+msgid "compensate middle grey"
+msgstr "compenser le gris moyen"
+
 #: ../src/iop/rotatepixels.c:76
 msgctxt "modulename"
 msgid "rotate pixels"
@@ -9816,46 +9910,6 @@ msgstr "balance des blancs désactivée pour le boîtier"
 msgid "tone curve"
 msgstr "courbe des tonalités"
 
-#: ../src/iop/tonecurve.c:460 ../src/iop/tonemap.cc:297
-msgid "contrast compression"
-msgstr "contraste"
-
-#: ../src/iop/tonecurve.c:468
-msgid "gamma 1.0 (linear)"
-msgstr "gamma 1.0 (linéaire)"
-
-#: ../src/iop/tonecurve.c:477
-msgid "contrast - med (linear)"
-msgstr "contrasté - moyen (linéaire)"
-
-#: ../src/iop/tonecurve.c:485
-msgid "contrast - high (linear)"
-msgstr "contraste - haut (linéaire)"
-
-#: ../src/iop/tonecurve.c:496
-msgid "contrast - med (gamma 2.2)"
-msgstr "contraste - moyen (gamma 2.2)"
-
-#: ../src/iop/tonecurve.c:506
-msgid "contrast - high (gamma 2.2)"
-msgstr "contraste - haut (gamma 2.2)"
-
-#: ../src/iop/tonecurve.c:517
-msgid "gamma 2.0"
-msgstr "gamma 2.0"
-
-#: ../src/iop/tonecurve.c:521
-msgid "gamma 0.5"
-msgstr "gamma 0.5"
-
-#: ../src/iop/tonecurve.c:525
-msgid "logarithm (base 2)"
-msgstr "logarithmique (base 2)"
-
-#: ../src/iop/tonecurve.c:529
-msgid "exponential (base 2)"
-msgstr "exponentielle (base 2)"
-
 #: ../src/iop/tonecurve.c:1205
 msgid "color space"
 msgstr "espace de couleur"
@@ -9871,10 +9925,6 @@ msgstr "Lab, canaux indépendants"
 #: ../src/iop/tonecurve.c:1208
 msgid "XYZ, linked channels"
 msgstr "XYZ, canaux liés"
-
-#: ../src/iop/tonecurve.c:1209
-msgid "RGB, linked channels"
-msgstr "RGB, canaux liés"
 
 #: ../src/iop/tonecurve.c:1211
 msgid ""
@@ -10430,7 +10480,7 @@ msgid "group followers"
 msgstr "membres du groupe"
 
 #: ../src/libs/collect.c:1555 ../src/libs/collect.c:1569
-#: ../src/libs/collect.c:1945
+#: ../src/libs/collect.c:1952
 msgid "clear this rule"
 msgstr "supprimer cette condition"
 
@@ -10438,11 +10488,11 @@ msgstr "supprimer cette condition"
 msgid "clear this rule or add new rules"
 msgstr "supprimer cette condition ou en ajouter une nouvelle"
 
-#: ../src/libs/collect.c:1614
+#: ../src/libs/collect.c:1615
 msgid "type your query, use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "entrer la requête, utiliser <, <=, >, >=, <>, =, [;] comme opérateurs"
 
-#: ../src/libs/collect.c:1619
+#: ../src/libs/collect.c:1620
 msgid ""
 "type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
 "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"
@@ -10451,34 +10501,34 @@ msgstr ""
 "entrer les dates sous la forme : AAAA:MM:JJ HH:MM:SS (uniquement l'année est "
 "obligatoire)"
 
-#: ../src/libs/collect.c:1625 ../src/libs/collect.c:2039
+#: ../src/libs/collect.c:1626 ../src/libs/collect.c:2046
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr ""
 "saisissez votre requête,\n"
 "utilisez « % » en caractère joker"
 
-#: ../src/libs/collect.c:1951
+#: ../src/libs/collect.c:1958
 msgid "narrow down search"
 msgstr "affiner la recherche"
 
-#: ../src/libs/collect.c:1956
+#: ../src/libs/collect.c:1963
 msgid "add more images"
 msgstr "inclure des images"
 
-#: ../src/libs/collect.c:1961
+#: ../src/libs/collect.c:1968
 msgid "exclude images"
 msgstr "exclure des images"
 
-#: ../src/libs/collect.c:1968
+#: ../src/libs/collect.c:1975
 msgid "change to: and"
 msgstr "changer en « et »"
 
-#: ../src/libs/collect.c:1973
+#: ../src/libs/collect.c:1980
 msgid "change to: or"
 msgstr "changer en « ou »"
 
-#: ../src/libs/collect.c:1978
+#: ../src/libs/collect.c:1985
 msgid "change to: except"
 msgstr "changer en « sauf »"
 
@@ -12173,21 +12223,21 @@ msgstr "impression"
 msgid "recently used collections"
 msgstr "collections récentes"
 
-#: ../src/libs/recentcollect.c:84
+#: ../src/libs/recentcollect.c:85
 msgctxt "accel"
 msgid "jump back to previous collection"
 msgstr "aller à la collection précédente"
 
-#: ../src/libs/recentcollect.c:117
+#: ../src/libs/recentcollect.c:118
 msgid " and "
 msgstr " et "
 
-#: ../src/libs/recentcollect.c:122
+#: ../src/libs/recentcollect.c:123
 msgid " or "
 msgstr " ou "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
-#: ../src/libs/recentcollect.c:127
+#: ../src/libs/recentcollect.c:128
 msgid " but not "
 msgstr " mais sans "
 
@@ -12614,37 +12664,37 @@ msgstr "bandeau"
 
 #. setup rating key accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:3217
+#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:3277
 msgctxt "accel"
 msgid "rate 0"
 msgstr "0 étoile"
 
-#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:3218
+#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:3278
 msgctxt "accel"
 msgid "rate 1"
 msgstr "1 étoile"
 
-#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:3219
+#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:3279
 msgctxt "accel"
 msgid "rate 2"
 msgstr "2 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:3220
+#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:3280
 msgctxt "accel"
 msgid "rate 3"
 msgstr "3 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:3221
+#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:3281
 msgctxt "accel"
 msgid "rate 4"
 msgstr "4 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:3222
+#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:3282
 msgctxt "accel"
 msgid "rate 5"
 msgstr "5 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:3223
+#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:3283
 msgctxt "accel"
 msgid "rate reject"
 msgstr "rejeter"
@@ -12683,27 +12733,27 @@ msgstr "cloner l'image"
 #. setup color label accelerators
 #. Initializing accelerators
 #. Color labels keys
-#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:3209
+#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:3269
 msgctxt "accel"
 msgid "color red"
 msgstr "couleur rouge"
 
-#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:3210
+#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:3270
 msgctxt "accel"
 msgid "color yellow"
 msgstr "couleur jaune"
 
-#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:3211
+#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:3271
 msgctxt "accel"
 msgid "color green"
 msgstr "couleur verte"
 
-#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:3212
+#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:3272
 msgctxt "accel"
 msgid "color blue"
 msgstr "couleur bleue"
 
-#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:3213
+#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:3273
 msgctxt "accel"
 msgid "color purple"
 msgstr "couleur violette"
@@ -12851,12 +12901,12 @@ msgstr "étoiles"
 msgid "timeline"
 msgstr "chronologie"
 
-#: ../src/libs/tools/timeline.c:1486
+#: ../src/libs/tools/timeline.c:1487
 msgctxt "accel"
 msgid "start selection"
 msgstr "début de sélection"
 
-#: ../src/libs/tools/timeline.c:1487
+#: ../src/libs/tools/timeline.c:1488
 msgctxt "accel"
 msgid "stop selection"
 msgstr "fin de sélection"
@@ -13040,11 +13090,11 @@ msgstr ""
 "activer/désactiver vérification de gamut\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:1739 ../src/views/lighttable.c:3491
+#: ../src/views/darkroom.c:1739 ../src/views/lighttable.c:3550
 msgid "display intent"
 msgstr "rendu (écran)"
 
-#: ../src/views/darkroom.c:1756 ../src/views/lighttable.c:3499
+#: ../src/views/darkroom.c:1756 ../src/views/lighttable.c:3558
 msgid "display profile"
 msgstr "profil (écran)"
 
@@ -13052,7 +13102,7 @@ msgstr "profil (écran)"
 msgid "histogram profile"
 msgstr "profil de l'histogramme"
 
-#: ../src/views/darkroom.c:1800 ../src/views/lighttable.c:3519
+#: ../src/views/darkroom.c:1800 ../src/views/lighttable.c:3578
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage dans %s ou %s"
@@ -13166,13 +13216,13 @@ msgid "full preview"
 msgstr "aperçu complet"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2877 ../src/views/lighttable.c:3249
+#: ../src/views/darkroom.c:2877 ../src/views/lighttable.c:3309
 #: ../src/views/map.c:889
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/darkroom.c:2878 ../src/views/lighttable.c:3250
+#: ../src/views/darkroom.c:2878 ../src/views/lighttable.c:3310
 #: ../src/views/map.c:890
 msgctxt "accel"
 msgid "redo"
@@ -13194,143 +13244,143 @@ msgstr "rechercher module"
 msgid "good knight"
 msgstr "bon chevalier"
 
-#: ../src/views/lighttable.c:737 ../src/views/slideshow.c:349
+#: ../src/views/lighttable.c:758 ../src/views/slideshow.c:349
 msgid "there are no images in this collection"
 msgstr "il n'y a pas d'images dans cette collection"
 
-#: ../src/views/lighttable.c:741
+#: ../src/views/lighttable.c:762
 msgid "if you have not imported any images yet"
 msgstr "si vous n'avez pas encore importé d'images"
 
-#: ../src/views/lighttable.c:745
+#: ../src/views/lighttable.c:766
 msgid "you can do so in the import module"
 msgstr "vous pouvez le faire dans le module « importer »"
 
-#: ../src/views/lighttable.c:753
+#: ../src/views/lighttable.c:774
 msgid "try to relax the filter settings in the top panel"
 msgstr "vous pouvez modifier le filtre de notation dans le panneau supérieur"
 
-#: ../src/views/lighttable.c:762
+#: ../src/views/lighttable.c:783
 msgid "or add images in the collection module in the left panel"
 msgstr ""
 "ou modifier les filtres de collection dans le menu de collection à gauche."
 
-#: ../src/views/lighttable.c:2532
+#: ../src/views/lighttable.c:2559
 #, c-format
 msgid "zooming is limited to %d images"
 msgstr "le zoom est limité à %d images."
 
-#: ../src/views/lighttable.c:3214
+#: ../src/views/lighttable.c:3274
 msgctxt "accel"
 msgid "clear color labels"
 msgstr "aucun label couleur"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:3226
+#: ../src/views/lighttable.c:3286
 msgctxt "accel"
 msgid "navigate up"
 msgstr "aller en haut"
 
-#: ../src/views/lighttable.c:3227
+#: ../src/views/lighttable.c:3287
 msgctxt "accel"
 msgid "navigate down"
 msgstr "aller en bas"
 
-#: ../src/views/lighttable.c:3228
+#: ../src/views/lighttable.c:3288
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "défiler par page vers le haut"
 
-#: ../src/views/lighttable.c:3229
+#: ../src/views/lighttable.c:3289
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "défiler par page vers le bas"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:3232
+#: ../src/views/lighttable.c:3292
 msgctxt "accel"
 msgid "scroll up"
 msgstr "défiler en arrière"
 
-#: ../src/views/lighttable.c:3233
+#: ../src/views/lighttable.c:3293
 msgctxt "accel"
 msgid "scroll down"
 msgstr "défiler en avant"
 
-#: ../src/views/lighttable.c:3234
+#: ../src/views/lighttable.c:3294
 msgctxt "accel"
 msgid "scroll left"
 msgstr "défiler vers la gauche"
 
-#: ../src/views/lighttable.c:3235
+#: ../src/views/lighttable.c:3295
 msgctxt "accel"
 msgid "scroll right"
 msgstr "défiler vers la droite"
 
-#: ../src/views/lighttable.c:3236
+#: ../src/views/lighttable.c:3296
 msgctxt "accel"
 msgid "scroll center"
 msgstr "défiler vers le centre"
 
-#: ../src/views/lighttable.c:3237
+#: ../src/views/lighttable.c:3297
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "aligner les images sur la grille"
 
-#: ../src/views/lighttable.c:3238
+#: ../src/views/lighttable.c:3298
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "inverse sélection de l'image"
 
-#: ../src/views/lighttable.c:3239
+#: ../src/views/lighttable.c:3299
 msgctxt "accel"
 msgid "select single image"
 msgstr "sélectionne image unique"
 
 #. Preview key
-#: ../src/views/lighttable.c:3242
+#: ../src/views/lighttable.c:3302
 msgctxt "accel"
 msgid "preview"
 msgstr "aperçu"
 
-#: ../src/views/lighttable.c:3243
+#: ../src/views/lighttable.c:3303
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "aperçu avec détection de la mise au point"
 
-#: ../src/views/lighttable.c:3244
+#: ../src/views/lighttable.c:3304
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "aperçu persistant"
 
-#: ../src/views/lighttable.c:3245
+#: ../src/views/lighttable.c:3305
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "aperçu persistant avec détection de la mise au point"
 
-#: ../src/views/lighttable.c:3246
+#: ../src/views/lighttable.c:3306
 msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "sortir du mode aperçu persistant"
 
 #. zoom for full preview
-#: ../src/views/lighttable.c:3253
+#: ../src/views/lighttable.c:3313
 msgctxt "accel"
 msgid "preview zoom 100%"
 msgstr "zoom image 100%"
 
-#: ../src/views/lighttable.c:3254
+#: ../src/views/lighttable.c:3314
 msgctxt "accel"
 msgid "preview zoom fit"
 msgstr "zoom image ajustée"
 
 #. timeline
-#: ../src/views/lighttable.c:3257
+#: ../src/views/lighttable.c:3317
 msgctxt "accel"
 msgid "toggle timeline"
 msgstr "activer/désactiver la chronologie"
 
-#: ../src/views/lighttable.c:3463
+#: ../src/views/lighttable.c:3522
 msgid "set display profile"
 msgstr "profil (écran)"
 
@@ -13384,6 +13434,15 @@ msgstr "nouvelle session initiée « %s »"
 #: ../src/views/tethering.c:251
 msgid "no camera with tethering support available for use..."
 msgstr "aucun boîtier disponible pour la capture..."
+
+#~ msgid "  r  "
+#~ msgstr " R "
+
+#~ msgid "  g  "
+#~ msgstr " G "
+
+#~ msgid "(none)"
+#~ msgstr "sans"
 
 #~ msgid ""
 #~ "the image will first be processed in full resolution, and downscaled at "
@@ -13439,9 +13498,6 @@ msgstr "aucun boîtier disponible pour la capture..."
 #~ msgstr ""
 #~ "choisir une couleur dans l'image\n"
 #~ "ctrl+clic pour sélectionner une zone"
-
-#~ msgid "pick GUI color from image"
-#~ msgstr "choisit une couleur dans l'image"
 
 #~ msgid "radius of the patches to match. increase for more sharpness"
 #~ msgstr "rayon des éléments à identifier. augmenter pour plus de netteté."
