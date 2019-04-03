@@ -286,6 +286,9 @@ static void check_layout(dt_view_t *self)
   if(lib->current_layout == layout) return;
   lib->current_layout = layout;
 
+  // layout has changed, let restore panels
+  dt_ui_restore_panels(darktable.gui->ui);
+
   if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
   {
     if(lib->first_visible_zoomable >= 0 && layout_old == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
