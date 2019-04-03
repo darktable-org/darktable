@@ -3059,6 +3059,8 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, FALSE, FALSE);
   lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_TOP) & 1) << 4;
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE, FALSE);
+  lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM) & 1) << 5;
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, FALSE, FALSE);
 
   // preview with focus detection
   lib->display_focus = focus;
@@ -3091,6 +3093,7 @@ static void _preview_quit(dt_view_t *self)
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, (lib->full_preview & 4), FALSE);
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, (lib->full_preview & 8), FALSE);
   dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, (lib->full_preview & 16), FALSE);
+  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, (lib->full_preview & 32), FALSE);
 
   lib->full_preview = 0;
   lib->display_focus = 0;
