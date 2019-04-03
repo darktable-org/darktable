@@ -168,6 +168,8 @@ typedef struct dt_library_t
 
   int32_t collection_count;
 
+  int last_first_selected; // offset of the last selected image inside the current selection
+
   // stuff for the audio player
   GPid audio_player_pid;   // the pid of the child process
   int32_t audio_player_id; // the imgid of the image the audio is played for
@@ -243,6 +245,38 @@ static inline gint get_zoom(void)
   return dt_view_lighttable_get_zoom(darktable.view_manager);
 }
 
+static inline int get_display_num_images(void)
+{
+  return dt_view_lighttable_get_display_num_images(darktable.view_manager);
+}
+
+static inline void filmstrip_set_active_image(dt_library_t *lib, const int imgid)
+{
+  int offset = -1;
+  GList *collected = dt_collection_get_all(darktable.collection, -1);
+  if(collected)
+  {
+    int id = -1;
+    int i = 0;
+    GList *l = collected;
+    while(l)
+    {
+      id = GPOINTER_TO_INT(l->data);
+      if(imgid == id) break;
+      i++;
+
+      l = g_list_next(l);
+    }
+    if(imgid == id && id >= 0) offset = i;
+
+    g_list_free(collected);
+  }
+
+  lib->last_first_selected = offset;
+  dt_selection_select_single(darktable.selection, imgid);
+  dt_view_filmstrip_set_active_image(darktable.view_manager, imgid);
+}
+
 static void check_layout(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -272,7 +306,7 @@ static void check_layout(dt_view_t *self)
   dt_lib_module_t *timeline = darktable.view_manager->proxy.timeline.module;
   gboolean vs = dt_lib_is_visible(timeline);
 
-  if(layout == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+  if(layout == DT_LIGHTTABLE_LAYOUT_EXPOSE || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     gtk_widget_hide(GTK_WIDGET(timeline->widget));
     gtk_widget_show(GTK_WIDGET(m->widget));
@@ -393,10 +427,8 @@ static void zoom_around_image(dt_library_t *lib, double pointerx, double pointer
   lib->offset_changed = TRUE;
 }
 
-static void _view_lighttable_collection_listener_callback(gpointer instance, gpointer user_data)
+static void _view_lighttable_collection_listener_internal(dt_view_t *self, dt_library_t *lib)
 {
-  dt_view_t *self = (dt_view_t *)user_data;
-  dt_library_t *lib = (dt_library_t *)self->data;
   lib->force_expose_all = TRUE;
   _unregister_custom_image_order_drag_n_drop(self);
   _register_custom_image_order_drag_n_drop(self);
@@ -408,6 +440,48 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
 
   _update_collected_images(self);
 }
+
+static void _view_lighttable_selection_listener_internal_culling(dt_view_t *self, dt_library_t *lib)
+{
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    // save the offset of the first selected image
+    GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
+    // we have a selected image
+    if(first_selected)
+    {
+      const int imgid = GPOINTER_TO_INT(first_selected->data);
+      lib->last_first_selected = dt_collection_image_offset(imgid);
+      if(imgid >= 0 && dt_view_filmstrip_get_activated_imgid(darktable.view_manager) != imgid)
+        dt_view_filmstrip_set_active_image(darktable.view_manager, imgid);
+      g_list_free(first_selected);
+    }
+    // we have the previous selected image
+    else if(lib->last_first_selected >= 0)
+    {
+      GList *collected = dt_collection_get_all(darktable.collection, -1);
+      if(collected)
+      {
+        GList *l = g_list_nth(collected, lib->last_first_selected);
+        const int imgid = (l) ? GPOINTER_TO_INT(l->data) : -1;
+        if(imgid >= 0) filmstrip_set_active_image(lib, imgid);
+        g_list_free(collected);
+      }
+    }
+    // this is a new collection, select the first image
+    else
+    {
+      GList *collected = dt_collection_get_all(darktable.collection, 1);
+      if(collected)
+      {
+        const int imgid = GPOINTER_TO_INT(collected->data);
+        if(imgid >= 0) filmstrip_set_active_image(lib, imgid);
+        g_list_free(collected);
+      }
+    }
+  }
+}
+
 static void _view_lighttable_query_listener_callback(gpointer instance, gpointer user_data)
 {
   // this will always happen in conjonction with the _view_lighttable_collection_listener_callback
@@ -423,6 +497,27 @@ static void _view_lighttable_query_listener_callback(gpointer instance, gpointer
     lib->offset = lib->first_visible_filemanager = 0;
     lib->offset_changed = TRUE;
   }
+  // also in culling
+  if(layout == lib->current_layout && layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    lib->last_first_selected = -1;
+    GList *collected = dt_collection_get_all(darktable.collection, 1);
+    if(collected)
+    {
+      const int imgid = GPOINTER_TO_INT(collected->data);
+      if(imgid >= 0) filmstrip_set_active_image(lib, imgid);
+      g_list_free(collected);
+    }
+  }
+}
+
+static void _view_lighttable_collection_listener_callback(gpointer instance, gpointer user_data)
+{
+  dt_view_t *self = (dt_view_t *)user_data;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  _view_lighttable_collection_listener_internal(self, lib);
+  _view_lighttable_selection_listener_internal_culling(self, lib);
 }
 
 static void _view_lighttable_selection_listener_callback(gpointer instance, gpointer user_data)
@@ -434,10 +529,15 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
   lib->force_expose_all = TRUE;
 
   // we handle change of selection only in expose mode. it is needed
-  // here as the selection from the filmstrip is actually was must be
+  // here as the selection from the filmstrip is actually what must be
   // displayed in the expose view.
-  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_EXPOSE)
-    _view_lighttable_collection_listener_callback(instance, user_data);
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_EXPOSE) _view_lighttable_collection_listener_internal(self, lib);
+
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    _view_lighttable_selection_listener_internal_culling(self, lib);
+    dt_control_queue_redraw_center();
+  }
 }
 
 static void _update_collected_images(dt_view_t *self)
@@ -621,6 +721,8 @@ void init(dt_view_t *self)
   lib->full_zoom = 1.0f;
   lib->full_x = 0;
   lib->full_y = 0;
+
+  lib->last_first_selected = -1;
 
   for(int i = 0; i < FULL_PREVIEW_IN_MEMORY_LIMIT; i++)
   {
@@ -1563,7 +1665,7 @@ failure:
 }
 
 static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
-                           int32_t pointery)
+                         int32_t pointery, const dt_lighttable_layout_t layout)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   int32_t mouse_over_id;
@@ -1577,8 +1679,20 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
 
   dt_view_set_scrollbar(self, 0, 0, 1, 1, 0, 0, 1, 1);
 
-  GList *selected = dt_collection_get_selected(darktable.collection, -1);
-  const int sel_img_count = g_list_length(selected);
+  int sel_img_count = 0;
+  GList *selected = NULL;
+
+  if(layout == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+  {
+    selected = dt_collection_get_selected(darktable.collection, -1);
+    sel_img_count = g_list_length(selected);
+  }
+  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    selected = dt_collection_get_all(darktable.collection, -1);
+    sel_img_count = g_list_length(selected);
+  }
+
   if(sel_img_count == 0) return 0;
 
   mouse_over_id = dt_control_get_mouse_over_id();
@@ -1588,17 +1702,65 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   gchar *imgids = NULL;
 
   // build the image ids for the SQL 'in' where clause.
-
-  GList *l = selected;
-  while(l)
+  if(layout == DT_LIGHTTABLE_LAYOUT_EXPOSE)
   {
-    const int imgid = GPOINTER_TO_INT(l->data);
-    if(imgids)
-      imgids = dt_util_dstrcat(imgids, ", %d", imgid);
-    else
-      imgids = dt_util_dstrcat(imgids, "(%d", imgid);
-    l = g_list_next(l);
+    GList *l = selected;
+    while(l)
+    {
+      const int imgid = GPOINTER_TO_INT(l->data);
+      if(imgids)
+        imgids = dt_util_dstrcat(imgids, ", %d", imgid);
+      else
+        imgids = dt_util_dstrcat(imgids, "(%d", imgid);
+      l = g_list_next(l);
+    }
   }
+  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    // number of images to be displayed
+    const int display_num_images = get_display_num_images();
+    // starting with the first selected image
+    GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
+    int display_first_image = (first_selected) ? GPOINTER_TO_INT(first_selected->data) : -1;
+    if(display_first_image < 0 && lib->last_first_selected >= 0)
+    {
+      GList *l = g_list_nth(selected, lib->last_first_selected);
+      if(l) display_first_image = GPOINTER_TO_INT(l->data);
+    }
+
+    // skip images until we reach the first selected
+    // if no selection start with the first image
+    int i = 0;
+    GList *l = selected;
+    if(display_first_image >= 0)
+    {
+      while(l && i + display_num_images < sel_img_count)
+      {
+        const int imgid = GPOINTER_TO_INT(l->data);
+        if(imgid == display_first_image) break;
+
+        l = g_list_next(l);
+        i++;
+      }
+    }
+
+    // now make the sql sentece with the number of images to display
+    i = 0;
+    while(l && i < display_num_images)
+    {
+      const int imgid = GPOINTER_TO_INT(l->data);
+      if(imgids)
+        imgids = dt_util_dstrcat(imgids, ", %d", imgid);
+      else
+        imgids = dt_util_dstrcat(imgids, "(%d", imgid);
+      l = g_list_next(l);
+      i++;
+    }
+    sel_img_count = i;
+
+    if(first_selected) g_list_free(first_selected);
+  }
+
   imgids = dt_util_dstrcat(imgids, ")");
 
   g_list_free(selected);
@@ -1795,6 +1957,8 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     images[i].y = images[i].y * factor + yoff;
   }
 
+  const int max_in_memory_images = dt_conf_get_int("plugins/lighttable/preview/max_in_memory_images");
+
   for(i = 0; i < sel_img_count; i++)
   {
     cairo_save(cr);
@@ -1821,7 +1985,7 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     params.py = img_pointery;
     params.zoom = 1;
     params.full_preview = TRUE;
-    if(sel_img_count <= dt_conf_get_int("plugins/lighttable/preview/max_in_memory_images"))
+    if(sel_img_count <= max_in_memory_images)
     {
       params.full_zoom = &lib->full_zoom;
       params.full_x = &lib->full_x;
@@ -1838,7 +2002,7 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       params.full_h1 = &lib->fp_surf[i].h_fit;
     }
 
-    dt_view_image_expose(&params);
+    missing += dt_view_image_expose(&params);
     cairo_restore(cr);
 
     // set mouse over id
@@ -2086,7 +2250,8 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
         lib->missing_thumbnails = expose_zoomable(self, cr, width, height, pointerx, pointery);
         break;
       case DT_LIGHTTABLE_LAYOUT_EXPOSE: // compare
-        lib->missing_thumbnails = expose_expose(self, cr, width, height, pointerx, pointery);
+      case DT_LIGHTTABLE_LAYOUT_CULLING:
+        lib->missing_thumbnails = expose_expose(self, cr, width, height, pointerx, pointery, layout);
         break;
       case DT_LIGHTTABLE_LAYOUT_FIRST:
       case DT_LIGHTTABLE_LAYOUT_LAST:
@@ -2144,6 +2309,14 @@ static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *ac
 
   if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     move_view(lib, DIRECTION_TOP);
+  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    // go to the first image on the collection
+    GList *collected = dt_collection_get_all(darktable.collection, 1);
+    const int imgid = (collected) ? GPOINTER_TO_INT(collected->data) : -1;
+    if(imgid >= 0) filmstrip_set_active_image(lib, imgid);
+    if(collected) g_list_free(collected);
+  }
   else
     lib->offset = 0;
   dt_control_queue_redraw_center();
@@ -2159,6 +2332,15 @@ static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *
 
   if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     move_view(lib, DIRECTION_BOTTOM);
+  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    // go to the last image on the collection
+    GList *collected = dt_collection_get_all(darktable.collection, -1);
+    GList *l = g_list_last(collected);
+    const int imgid = (l) ? GPOINTER_TO_INT(l->data) : -1;
+    if(imgid >= 0) filmstrip_set_active_image(lib, imgid);
+    if(collected) g_list_free(collected);
+  }
   else
     lib->offset = 0x1fffffff;
   dt_control_queue_redraw_center();
@@ -2298,7 +2480,8 @@ static gboolean rating_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
 
   dt_collection_update_query(darktable.collection); // update the counter
 
-  if(layout != DT_LIGHTTABLE_LAYOUT_EXPOSE && lib->collection_count != dt_collection_get_count(darktable.collection))
+  if(layout != DT_LIGHTTABLE_LAYOUT_EXPOSE && layout != DT_LIGHTTABLE_LAYOUT_CULLING
+     && lib->collection_count != dt_collection_get_count(darktable.collection))
   {
     // some images disappeared from collection. Selection is now invisible.
     // lib->collection_count  --> before the rating
@@ -2372,6 +2555,51 @@ static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, g
   gtk_drag_finish(context, success, FALSE, time);
 }
 
+// shitf the first select image by 1 with up direction
+static void shift_first_selected_image(dt_library_t *lib, const int up)
+{
+  // we're going to shift the selection by 1 if there's still room
+  GList *collected = dt_collection_get_all(darktable.collection, -1);
+  GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
+  int display_first_image = (first_selected) ? GPOINTER_TO_INT(first_selected->data) : -1;
+  if(display_first_image < 0 && lib->last_first_selected >= 0)
+  {
+    GList *l = g_list_nth(collected, lib->last_first_selected);
+    if(l) display_first_image = GPOINTER_TO_INT(l->data);
+  }
+
+  // get the first selected image in the collected list
+  GList *l = collected;
+  if(display_first_image >= 0)
+  {
+    while(l)
+    {
+      const int imgid = GPOINTER_TO_INT(l->data);
+      if(imgid == display_first_image) break;
+
+      l = g_list_next(l);
+    }
+  }
+
+  // move the collected list according the the mouse wheel
+  GList *l_tmp = NULL;
+  if(up)
+    l_tmp = g_list_previous(l);
+  else
+    l_tmp = g_list_next(l);
+  if(l_tmp) l = l_tmp;
+
+  // make the image active
+  if(l)
+  {
+    const int imgid = GPOINTER_TO_INT(l->data);
+    filmstrip_set_active_image(lib, imgid);
+  }
+
+  if(collected) g_list_free(collected);
+  if(first_selected) g_list_free(first_selected);
+}
+
 void enter(dt_view_t *self)
 {
   // clean the undo list
@@ -2382,7 +2610,7 @@ void enter(dt_view_t *self)
   dt_lib_module_t *timeline = darktable.view_manager->proxy.timeline.module;
   gboolean vs = dt_lib_is_visible(timeline);
 
-  if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+  if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     gtk_widget_hide(GTK_WIDGET(timeline->widget));
     gtk_widget_show(GTK_WIDGET(m->widget));
@@ -2548,12 +2776,13 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   lib->force_expose_all = TRUE;
   const dt_lighttable_layout_t layout = get_layout();
 
-  if((lib->full_preview_id > -1 || get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+  if((lib->full_preview_id > -1 || get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE
+      || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
      && (state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
   {
     GList *selected = dt_collection_get_selected(darktable.collection, -1);
     const int sel_img_count = g_list_length(selected);
-    if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE
+    if((get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
        && sel_img_count > dt_conf_get_int("plugins/lighttable/preview/max_in_memory_images"))
     {
       dt_control_log(_("zooming is limited to %d images"),
@@ -2562,7 +2791,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
     else if(lib->missing_thumbnails == 0)
     {
       float nz = 10.0f;
-      if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+      if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
       {
         // we stop at the minimum zoom
         for(int i = 0; i < sel_img_count; i++) nz = fminf(nz, lib->fp_surf[i].zoom_100);
@@ -2577,7 +2806,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
 
       if(lib->full_zoom != nz)
       {
-        if(get_layout() != DT_LIGHTTABLE_LAYOUT_EXPOSE)
+        if(get_layout() != DT_LIGHTTABLE_LAYOUT_EXPOSE && get_layout() != DT_LIGHTTABLE_LAYOUT_CULLING)
         {
           // we want to zoom "around" the pointer
           float dx = nz / lib->full_zoom
@@ -2593,6 +2822,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
         dt_control_queue_redraw_center();
       }
     }
+    if(selected) g_list_free(selected);
   }
   else if(lib->full_preview_id > -1)
   {
@@ -2608,7 +2838,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
     else
       move_view(lib, DIRECTION_DOWN);
   }
-  else if(layout != DT_LIGHTTABLE_LAYOUT_EXPOSE)
+  else if(layout != DT_LIGHTTABLE_LAYOUT_EXPOSE && layout != DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     int zoom = get_zoom();
     if(up)
@@ -2629,6 +2859,10 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
     }
     dt_view_lighttable_set_zoom(darktable.view_manager, zoom);
   }
+  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING && state == 0)
+  {
+    shift_first_selected_image(lib, up);
+  }
 }
 
 void activate_control_element(dt_view_t *self)
@@ -2640,7 +2874,7 @@ void activate_control_element(dt_view_t *self)
   {
     case DT_VIEW_DESERT:
     {
-      if(layout != DT_LIGHTTABLE_LAYOUT_EXPOSE)
+      if(layout != DT_LIGHTTABLE_LAYOUT_EXPOSE && layout != DT_LIGHTTABLE_LAYOUT_CULLING)
       {
         int32_t id = dt_control_get_mouse_over_id();
         if((lib->modifiers & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == 0)
@@ -2675,7 +2909,8 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
 
   lib->using_arrows = 0;
 
-  if(lib->pan && (lib->full_preview_id > -1 || get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+  if(lib->pan && (lib->full_preview_id > -1 || get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE
+                  || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
      && lib->full_zoom > 1.0f)
   {
     lib->full_x += x - lib->pan_x;
@@ -2898,7 +3133,8 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         // namely until the pointer has moved a little distance. The code taking
         // care of this is in expose(). Pan only makes sense in zoomable lt.
         if(layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE || (lib->full_preview_id > -1 && lib->full_zoom > 1.0f)
-           || (get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE && lib->full_zoom > 1.0f))
+           || ((get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+               && lib->full_zoom > 1.0f))
           begin_pan(lib, x, y);
 
         if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && lib->using_arrows)
@@ -3130,6 +3366,11 @@ int key_pressed(dt_view_t *self, guint key, guint state)
         lib->track = -1;
       }
     }
+    else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+    {
+      lib->track = -1;
+      shift_first_selected_image(lib, TRUE);
+    }
     else
       lib->track = -1;
     return 1;
@@ -3157,6 +3398,11 @@ int key_pressed(dt_view_t *self, guint key, guint state)
         lib->track = -1;
       }
     }
+    else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+    {
+      lib->track = 1;
+      shift_first_selected_image(lib, FALSE);
+    }
     else
       lib->track = 1;
     return 1;
@@ -3181,6 +3427,11 @@ int key_pressed(dt_view_t *self, guint key, guint state)
         lib->using_arrows = 1;
         lib->key_jump_offset = zoom*-1;
       }
+    }
+    else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+    {
+      lib->track = -DT_LIBRARY_MAX_ZOOM;
+      shift_first_selected_image(lib, TRUE);
     }
     else
       lib->track = -DT_LIBRARY_MAX_ZOOM;
@@ -3207,6 +3458,11 @@ int key_pressed(dt_view_t *self, guint key, guint state)
         lib->using_arrows = 1;
         lib->key_jump_offset = zoom;
       }
+    }
+    else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+    {
+      lib->track = DT_LIBRARY_MAX_ZOOM;
+      shift_first_selected_image(lib, FALSE);
     }
     else
       lib->track = DT_LIBRARY_MAX_ZOOM;
@@ -3249,7 +3505,7 @@ static gboolean timeline_key_accel_callback(GtkAccelGroup *accel_group, GObject 
                                             GdkModifierType modifier, gpointer data)
 {
   dt_lib_module_t *m = darktable.view_manager->proxy.timeline.module;
-  if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+  if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     gtk_widget_hide(GTK_WIDGET(m->widget)); // to be sure
   }
@@ -3584,6 +3840,32 @@ void gui_init(dt_view_t *self)
 
   g_signal_connect(G_OBJECT(display_intent), "value-changed", G_CALLBACK(display_intent_callback), NULL);
   g_signal_connect(G_OBJECT(display_profile), "value-changed", G_CALLBACK(display_profile_callback), NULL);
+
+  GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
+  GList *collected = dt_collection_get_all(darktable.collection, -1);
+  if(first_selected && collected)
+  {
+    int offset = -1;
+    int i = 0;
+    const int imgid = GPOINTER_TO_INT(first_selected->data);
+    GList *l = collected;
+    while(l)
+    {
+      const int id = GPOINTER_TO_INT(l->data);
+      if(imgid == id)
+      {
+        offset = i;
+        break;
+      }
+      i++;
+
+      l = g_list_next(l);
+    }
+
+    lib->last_first_selected = offset;
+  }
+  if(first_selected) g_list_free(first_selected);
+  if(collected) g_list_free(collected);
 }
 
 static gboolean _is_order_actif(dt_view_t *self, dt_collection_sort_t sort)
