@@ -441,42 +441,8 @@ static void _view_lighttable_collection_listener_internal(dt_view_t *self, dt_li
   _update_collected_images(self);
 }
 
-static void _view_lighttable_query_listener_callback(gpointer instance, gpointer user_data)
+static void _view_lighttable_selection_listener_internal_culling(dt_view_t *self, dt_library_t *lib)
 {
-  // this will always happen in conjonction with the _view_lighttable_collection_listener_callback
-  // so we only need to reset the offset
-  dt_view_t *self = (dt_view_t *)user_data;
-  dt_library_t *lib = (dt_library_t *)self->data;
-
-  // in filemanager, we want to reset the offset to the beggining
-  const dt_lighttable_layout_t layout = get_layout();
-  if(layout == lib->current_layout && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && lib->offset > 0
-     && lib->first_visible_filemanager > 0)
-  {
-    lib->offset = lib->first_visible_filemanager = 0;
-    lib->offset_changed = TRUE;
-  }
-  // also in culling
-  if(layout == lib->current_layout && layout == DT_LIGHTTABLE_LAYOUT_CULLING)
-  {
-    lib->last_first_selected = -1;
-    GList *collected = dt_collection_get_all(darktable.collection, 1);
-    if(collected)
-    {
-      const int imgid = GPOINTER_TO_INT(collected->data);
-      if(imgid >= 0) filmstrip_set_active_image(lib, imgid);
-      g_list_free(collected);
-    }
-  }
-}
-
-static void _view_lighttable_collection_listener_callback(gpointer instance, gpointer user_data)
-{
-  dt_view_t *self = (dt_view_t *)user_data;
-  dt_library_t *lib = (dt_library_t *)self->data;
-
-  _view_lighttable_collection_listener_internal(self, lib);
-
   if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     // save the offset of the first selected image
@@ -516,6 +482,44 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
   }
 }
 
+static void _view_lighttable_query_listener_callback(gpointer instance, gpointer user_data)
+{
+  // this will always happen in conjonction with the _view_lighttable_collection_listener_callback
+  // so we only need to reset the offset
+  dt_view_t *self = (dt_view_t *)user_data;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  // in filemanager, we want to reset the offset to the beggining
+  const dt_lighttable_layout_t layout = get_layout();
+  if(layout == lib->current_layout && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && lib->offset > 0
+     && lib->first_visible_filemanager > 0)
+  {
+    lib->offset = lib->first_visible_filemanager = 0;
+    lib->offset_changed = TRUE;
+  }
+  // also in culling
+  if(layout == lib->current_layout && layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    lib->last_first_selected = -1;
+    GList *collected = dt_collection_get_all(darktable.collection, 1);
+    if(collected)
+    {
+      const int imgid = GPOINTER_TO_INT(collected->data);
+      if(imgid >= 0) filmstrip_set_active_image(lib, imgid);
+      g_list_free(collected);
+    }
+  }
+}
+
+static void _view_lighttable_collection_listener_callback(gpointer instance, gpointer user_data)
+{
+  dt_view_t *self = (dt_view_t *)user_data;
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  _view_lighttable_collection_listener_internal(self, lib);
+  _view_lighttable_selection_listener_internal_culling(self, lib);
+}
+
 static void _view_lighttable_selection_listener_callback(gpointer instance, gpointer user_data)
 {
   dt_view_t *self = (dt_view_t *)user_data;
@@ -529,7 +533,11 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
   // displayed in the expose view.
   if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_EXPOSE) _view_lighttable_collection_listener_internal(self, lib);
 
-  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING) dt_control_queue_redraw_center();
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    _view_lighttable_selection_listener_internal_culling(self, lib);
+    dt_control_queue_redraw_center();
+  }
 }
 
 static void _update_collected_images(dt_view_t *self)
