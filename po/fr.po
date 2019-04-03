@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-03 09:30+0200\n"
-"PO-Revision-Date: 2019-04-03 09:30+0200\n"
+"POT-Creation-Date: 2019-04-03 16:42+0200\n"
+"PO-Revision-Date: 2019-04-03 16:43+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -123,8 +123,8 @@ msgstr "double-cliquer pour réinitialiser à « %d »"
 msgid "initial star rating for all images when importing a filmroll"
 msgstr "étoile(s) attribuée(s) lors de l'importation"
 
-#: ../build/src/preferences_gen.h:2195 ../src/libs/tools/lighttable.c:74
-#: ../src/views/lighttable.c:227
+#: ../build/src/preferences_gen.h:2195 ../src/libs/tools/lighttable.c:91
+#: ../src/views/lighttable.c:229
 msgid "lighttable"
 msgstr "table lumineuse"
 
@@ -3553,12 +3553,12 @@ msgid "switch view"
 msgstr "changer de vue"
 
 #. Global zoom in & zoom out
-#: ../src/gui/gtk.c:1150 ../src/libs/tools/lighttable.c:160
+#: ../src/gui/gtk.c:1150 ../src/libs/tools/lighttable.c:212
 msgctxt "accel"
 msgid "zoom in"
 msgstr "zoom"
 
-#: ../src/gui/gtk.c:1151 ../src/libs/tools/lighttable.c:161
+#: ../src/gui/gtk.c:1151 ../src/libs/tools/lighttable.c:213
 msgctxt "accel"
 msgid "zoom out"
 msgstr "dézoom"
@@ -6922,26 +6922,26 @@ msgstr "rendu (sortie)"
 
 #: ../src/iop/colorout.c:819 ../src/libs/export.c:676
 #: ../src/libs/print_settings.c:1243 ../src/libs/print_settings.c:1458
-#: ../src/views/darkroom.c:1741 ../src/views/lighttable.c:3552
+#: ../src/views/darkroom.c:1741 ../src/views/lighttable.c:3808
 msgid "perceptual"
 msgstr "perceptif"
 
 #: ../src/iop/colorout.c:820 ../src/libs/export.c:677
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1459
-#: ../src/views/darkroom.c:1742 ../src/views/lighttable.c:3553
+#: ../src/views/darkroom.c:1742 ../src/views/lighttable.c:3809
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
 #: ../src/iop/colorout.c:821 ../src/libs/export.c:678
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
-#: ../src/views/darkroom.c:1743 ../src/views/lighttable.c:3554
+#: ../src/views/darkroom.c:1743 ../src/views/lighttable.c:3810
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
 
 #: ../src/iop/colorout.c:822 ../src/libs/export.c:679
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
-#: ../src/views/darkroom.c:1744 ../src/views/lighttable.c:3555
+#: ../src/views/darkroom.c:1744 ../src/views/lighttable.c:3811
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
@@ -12664,37 +12664,37 @@ msgstr "bandeau"
 
 #. setup rating key accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:3277
+#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:3533
 msgctxt "accel"
 msgid "rate 0"
 msgstr "0 étoile"
 
-#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:3278
+#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:3534
 msgctxt "accel"
 msgid "rate 1"
 msgstr "1 étoile"
 
-#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:3279
+#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:3535
 msgctxt "accel"
 msgid "rate 2"
 msgstr "2 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:3280
+#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:3536
 msgctxt "accel"
 msgid "rate 3"
 msgstr "3 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:3281
+#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:3537
 msgctxt "accel"
 msgid "rate 4"
 msgstr "4 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:3282
+#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:3538
 msgctxt "accel"
 msgid "rate 5"
 msgstr "5 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:3283
+#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:3539
 msgctxt "accel"
 msgid "rate reject"
 msgstr "rejeter"
@@ -12733,27 +12733,27 @@ msgstr "cloner l'image"
 #. setup color label accelerators
 #. Initializing accelerators
 #. Color labels keys
-#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:3269
+#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:3525
 msgctxt "accel"
 msgid "color red"
 msgstr "couleur rouge"
 
-#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:3270
+#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:3526
 msgctxt "accel"
 msgid "color yellow"
 msgstr "couleur jaune"
 
-#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:3271
+#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:3527
 msgctxt "accel"
 msgid "color green"
 msgstr "couleur verte"
 
-#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:3272
+#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:3528
 msgctxt "accel"
 msgid "color blue"
 msgstr "couleur bleue"
 
-#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:3273
+#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:3529
 msgctxt "accel"
 msgid "color purple"
 msgstr "couleur violette"
@@ -12861,33 +12861,42 @@ msgstr "affiche les surimpressions"
 msgid "hinter"
 msgstr "rendu"
 
-#: ../src/libs/tools/lighttable.c:111
+#: ../src/libs/tools/lighttable.c:131
 msgid "zoomable light table"
 msgstr "table lumineuse zoomable"
 
-#: ../src/libs/tools/lighttable.c:112
+#: ../src/libs/tools/lighttable.c:132
 msgid "file manager"
 msgstr "navigateur de fichier"
 
-#: ../src/libs/tools/lighttable.c:113
+#: ../src/libs/tools/lighttable.c:133
 msgid "expose"
 msgstr "exposé"
 
+#: ../src/libs/tools/lighttable.c:134
+msgid "culling"
+msgstr "sélection"
+
 #. view accels
-#: ../src/libs/tools/lighttable.c:159
+#: ../src/libs/tools/lighttable.c:211
 msgctxt "accel"
 msgid "zoom max"
 msgstr "zoom maxi"
 
-#: ../src/libs/tools/lighttable.c:162
+#: ../src/libs/tools/lighttable.c:214
 msgctxt "accel"
 msgid "zoom min"
 msgstr "zoom mini"
 
-#: ../src/libs/tools/lighttable.c:164
+#: ../src/libs/tools/lighttable.c:216
 msgctxt "accel"
 msgid "toggle exposé mode"
 msgstr "activer/désactiver le mode exposé"
+
+#: ../src/libs/tools/lighttable.c:217
+msgctxt "accel"
+msgid "toggle culling mode"
+msgstr "activer/désactiver le mode trie/sélection"
 
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
@@ -13090,11 +13099,11 @@ msgstr ""
 "activer/désactiver vérification de gamut\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:1739 ../src/views/lighttable.c:3550
+#: ../src/views/darkroom.c:1739 ../src/views/lighttable.c:3806
 msgid "display intent"
 msgstr "rendu (écran)"
 
-#: ../src/views/darkroom.c:1756 ../src/views/lighttable.c:3558
+#: ../src/views/darkroom.c:1756 ../src/views/lighttable.c:3814
 msgid "display profile"
 msgstr "profil (écran)"
 
@@ -13102,7 +13111,7 @@ msgstr "profil (écran)"
 msgid "histogram profile"
 msgstr "profil de l'histogramme"
 
-#: ../src/views/darkroom.c:1800 ../src/views/lighttable.c:3578
+#: ../src/views/darkroom.c:1800 ../src/views/lighttable.c:3834
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage dans %s ou %s"
@@ -13216,13 +13225,13 @@ msgid "full preview"
 msgstr "aperçu complet"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2877 ../src/views/lighttable.c:3309
+#: ../src/views/darkroom.c:2877 ../src/views/lighttable.c:3565
 #: ../src/views/map.c:889
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/darkroom.c:2878 ../src/views/lighttable.c:3310
+#: ../src/views/darkroom.c:2878 ../src/views/lighttable.c:3566
 #: ../src/views/map.c:890
 msgctxt "accel"
 msgid "redo"
@@ -13244,143 +13253,143 @@ msgstr "rechercher module"
 msgid "good knight"
 msgstr "bon chevalier"
 
-#: ../src/views/lighttable.c:758 ../src/views/slideshow.c:349
+#: ../src/views/lighttable.c:860 ../src/views/slideshow.c:349
 msgid "there are no images in this collection"
 msgstr "il n'y a pas d'images dans cette collection"
 
-#: ../src/views/lighttable.c:762
+#: ../src/views/lighttable.c:864
 msgid "if you have not imported any images yet"
 msgstr "si vous n'avez pas encore importé d'images"
 
-#: ../src/views/lighttable.c:766
+#: ../src/views/lighttable.c:868
 msgid "you can do so in the import module"
 msgstr "vous pouvez le faire dans le module « importer »"
 
-#: ../src/views/lighttable.c:774
+#: ../src/views/lighttable.c:876
 msgid "try to relax the filter settings in the top panel"
 msgstr "vous pouvez modifier le filtre de notation dans le panneau supérieur"
 
-#: ../src/views/lighttable.c:783
+#: ../src/views/lighttable.c:885
 msgid "or add images in the collection module in the left panel"
 msgstr ""
 "ou modifier les filtres de collection dans le menu de collection à gauche."
 
-#: ../src/views/lighttable.c:2559
+#: ../src/views/lighttable.c:2788
 #, c-format
 msgid "zooming is limited to %d images"
 msgstr "le zoom est limité à %d images."
 
-#: ../src/views/lighttable.c:3274
+#: ../src/views/lighttable.c:3530
 msgctxt "accel"
 msgid "clear color labels"
 msgstr "aucun label couleur"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:3286
+#: ../src/views/lighttable.c:3542
 msgctxt "accel"
 msgid "navigate up"
 msgstr "aller en haut"
 
-#: ../src/views/lighttable.c:3287
+#: ../src/views/lighttable.c:3543
 msgctxt "accel"
 msgid "navigate down"
 msgstr "aller en bas"
 
-#: ../src/views/lighttable.c:3288
+#: ../src/views/lighttable.c:3544
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "défiler par page vers le haut"
 
-#: ../src/views/lighttable.c:3289
+#: ../src/views/lighttable.c:3545
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "défiler par page vers le bas"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:3292
+#: ../src/views/lighttable.c:3548
 msgctxt "accel"
 msgid "scroll up"
 msgstr "défiler en arrière"
 
-#: ../src/views/lighttable.c:3293
+#: ../src/views/lighttable.c:3549
 msgctxt "accel"
 msgid "scroll down"
 msgstr "défiler en avant"
 
-#: ../src/views/lighttable.c:3294
+#: ../src/views/lighttable.c:3550
 msgctxt "accel"
 msgid "scroll left"
 msgstr "défiler vers la gauche"
 
-#: ../src/views/lighttable.c:3295
+#: ../src/views/lighttable.c:3551
 msgctxt "accel"
 msgid "scroll right"
 msgstr "défiler vers la droite"
 
-#: ../src/views/lighttable.c:3296
+#: ../src/views/lighttable.c:3552
 msgctxt "accel"
 msgid "scroll center"
 msgstr "défiler vers le centre"
 
-#: ../src/views/lighttable.c:3297
+#: ../src/views/lighttable.c:3553
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "aligner les images sur la grille"
 
-#: ../src/views/lighttable.c:3298
+#: ../src/views/lighttable.c:3554
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "inverse sélection de l'image"
 
-#: ../src/views/lighttable.c:3299
+#: ../src/views/lighttable.c:3555
 msgctxt "accel"
 msgid "select single image"
 msgstr "sélectionne image unique"
 
 #. Preview key
-#: ../src/views/lighttable.c:3302
+#: ../src/views/lighttable.c:3558
 msgctxt "accel"
 msgid "preview"
 msgstr "aperçu"
 
-#: ../src/views/lighttable.c:3303
+#: ../src/views/lighttable.c:3559
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "aperçu avec détection de la mise au point"
 
-#: ../src/views/lighttable.c:3304
+#: ../src/views/lighttable.c:3560
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "aperçu persistant"
 
-#: ../src/views/lighttable.c:3305
+#: ../src/views/lighttable.c:3561
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "aperçu persistant avec détection de la mise au point"
 
-#: ../src/views/lighttable.c:3306
+#: ../src/views/lighttable.c:3562
 msgctxt "accel"
 msgid "exit sticky preview"
 msgstr "sortir du mode aperçu persistant"
 
 #. zoom for full preview
-#: ../src/views/lighttable.c:3313
+#: ../src/views/lighttable.c:3569
 msgctxt "accel"
 msgid "preview zoom 100%"
 msgstr "zoom image 100%"
 
-#: ../src/views/lighttable.c:3314
+#: ../src/views/lighttable.c:3570
 msgctxt "accel"
 msgid "preview zoom fit"
 msgstr "zoom image ajustée"
 
 #. timeline
-#: ../src/views/lighttable.c:3317
+#: ../src/views/lighttable.c:3573
 msgctxt "accel"
 msgid "toggle timeline"
 msgstr "activer/désactiver la chronologie"
 
-#: ../src/views/lighttable.c:3522
+#: ../src/views/lighttable.c:3778
 msgid "set display profile"
 msgstr "profil (écran)"
 
