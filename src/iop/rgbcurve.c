@@ -1488,17 +1488,17 @@ void gui_init(struct dt_iop_module_t *self)
   g->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
   gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("  r  ")));
+                           gtk_label_new(_("  R  ")));
   gtk_widget_set_tooltip_text(
       gtk_notebook_get_tab_label(g->channel_tabs, gtk_notebook_get_nth_page(g->channel_tabs, -1)),
       _("curve_nodes for r channel"));
   gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("  g  ")));
+                           gtk_label_new(_("  G  ")));
   gtk_widget_set_tooltip_text(
       gtk_notebook_get_tab_label(g->channel_tabs, gtk_notebook_get_nth_page(g->channel_tabs, -1)),
       _("curve_nodes for g channel"));
   gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
-                           gtk_label_new(_("  b  ")));
+                           gtk_label_new(_("  B  ")));
   gtk_widget_set_tooltip_text(
       gtk_notebook_get_tab_label(g->channel_tabs, gtk_notebook_get_nth_page(g->channel_tabs, -1)),
       _("curve_nodes for b channel"));
@@ -1584,7 +1584,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->cmb_preserve_colors = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->cmb_preserve_colors, NULL, _("preserve colors"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("(none)"));
+  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("none"));
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("luminance"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->cmb_preserve_colors, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
