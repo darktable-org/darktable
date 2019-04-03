@@ -18,6 +18,7 @@
 
 #include <gdk/gdkkeysyms.h>
 
+#include "common/collection.h"
 #include "common/selection.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -35,6 +36,9 @@ typedef struct dt_lib_tool_lighttable_t
   GtkWidget *layout_combo;
   dt_lighttable_layout_t layout, previous_layout;
   int current_zoom;
+  GtkWidget *display_num_images; // slider & entry for number of images to be displayed in culling mode
+  GtkWidget *display_num_images_entry;
+  int current_display_num_images; // number of images to be displayed in culling mode
 } dt_lib_tool_lighttable_t;
 
 /* set zoom proxy function */
@@ -45,6 +49,9 @@ static gint _lib_lighttable_get_zoom(dt_lib_module_t *self);
 static dt_lighttable_layout_t _lib_lighttable_get_layout(dt_lib_module_t *self);
 static void _lib_lighttable_set_layout(dt_lib_module_t *self, dt_lighttable_layout_t layout);
 
+static void _lib_lighttable_set_display_num_images(dt_lib_module_t *self, const int display_num_images);
+static int _lib_lighttable_get_display_num_images(dt_lib_module_t *self);
+
 /* lightable layout changed */
 static void _lib_lighttable_layout_changed(GtkComboBox *widget, gpointer user_data);
 /* zoom slider change callback */
@@ -52,6 +59,13 @@ static void _lib_lighttable_zoom_slider_changed(GtkRange *range, gpointer user_d
 /* zoom entry change callback */
 static gboolean _lib_lighttable_zoom_entry_changed(GtkWidget *entry, GdkEventKey *event,
                                                    dt_lib_module_t *self);
+
+/* number of displayed images slider change callback */
+static void _lib_lighttable_display_num_images_slider_changed(GtkRange *range, gpointer user_data);
+/* number of displayed images entry change callback */
+static gboolean _lib_lighttable_display_num_images_entry_changed(GtkWidget *entry, GdkEventKey *event,
+                                                                 dt_lib_module_t *self);
+
 /* zoom key accel callback */
 static gboolean _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel_group,
                                                             GObject *acceleratable, guint keyval,
@@ -68,6 +82,9 @@ static gboolean _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel
 static gboolean _lib_lighttable_key_accel_toggle_expose_mode(GtkAccelGroup *accel_group,
                                                              GObject *acceleratable, guint keyval,
                                                              GdkModifierType modifier, gpointer data);
+static gboolean _lib_lighttable_key_accel_toggle_culling_mode(GtkAccelGroup *accel_group, GObject *acceleratable,
+                                                              guint keyval, GdkModifierType modifier,
+                                                              gpointer data);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -103,14 +120,18 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
   d->layout =  dt_conf_get_int("plugins/lighttable/layout");
-  d->previous_layout = d->layout == DT_LIGHTTABLE_LAYOUT_EXPOSE ? DT_LIGHTTABLE_LAYOUT_FILEMANAGER : DT_LIGHTTABLE_LAYOUT_EXPOSE;
+  d->previous_layout = (d->layout == DT_LIGHTTABLE_LAYOUT_EXPOSE || d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+                           ? DT_LIGHTTABLE_LAYOUT_FILEMANAGER
+                           : DT_LIGHTTABLE_LAYOUT_EXPOSE;
   d->current_zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
+  d->current_display_num_images = dt_conf_get_int("plugins/lighttable/display_num_images");
 
   /* create layout selection combobox */
   d->layout_combo = gtk_combo_box_text_new();
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->layout_combo), _("zoomable light table"));
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->layout_combo), _("file manager"));
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->layout_combo), _("expose"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->layout_combo), _("culling"));
 
   gtk_combo_box_set_active(GTK_COMBO_BOX(d->layout_combo), d->layout);
 
@@ -144,6 +165,35 @@ void gui_init(dt_lib_module_t *self)
                                                                  // it to 1 => empty text box
   gtk_widget_set_no_show_all(d->zoom, TRUE);
   gtk_widget_set_no_show_all(d->zoom_entry, TRUE);
+
+  /* create horizontal display number of images slider */
+  d->display_num_images = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 1, 21, 1);
+  gtk_widget_set_size_request(GTK_WIDGET(d->display_num_images), DT_PIXEL_APPLY_DPI(140), -1);
+  gtk_scale_set_draw_value(GTK_SCALE(d->display_num_images), FALSE);
+  gtk_range_set_increments(GTK_RANGE(d->display_num_images), 1, 1);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->display_num_images, TRUE, TRUE, 0);
+
+  /* manual entry of the visible number of images in culling */
+  d->display_num_images_entry = gtk_entry_new();
+  gtk_entry_set_alignment(GTK_ENTRY(d->display_num_images_entry), 1.0);
+  gtk_entry_set_max_length(GTK_ENTRY(d->display_num_images_entry), 2);
+  gtk_entry_set_width_chars(GTK_ENTRY(d->display_num_images_entry), 3);
+  gtk_entry_set_max_width_chars(GTK_ENTRY(d->display_num_images_entry), 3);
+  dt_gui_key_accel_block_on_focus_connect(d->display_num_images_entry);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->display_num_images_entry, TRUE, TRUE, 0);
+
+  g_signal_connect(G_OBJECT(d->display_num_images), "value-changed",
+                   G_CALLBACK(_lib_lighttable_display_num_images_slider_changed), (gpointer)self);
+  g_signal_connect(d->display_num_images_entry, "key-press-event",
+                   G_CALLBACK(_lib_lighttable_display_num_images_entry_changed), self);
+  gtk_range_set_value(GTK_RANGE(d->display_num_images), d->current_display_num_images);
+  _lib_lighttable_display_num_images_slider_changed(GTK_RANGE(d->display_num_images),
+                                                    self); // the slider defaults to 1 and GTK doesn't
+                                                           // fire a value-changed signal when setting
+                                                           // it to 1 => empty text box
+  gtk_widget_set_no_show_all(d->display_num_images, TRUE);
+  gtk_widget_set_no_show_all(d->display_num_images_entry, TRUE);
+
   _lib_lighttable_layout_changed(GTK_COMBO_BOX(d->layout_combo), self);
 
   darktable.view_manager->proxy.lighttable.module = self;
@@ -151,6 +201,8 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.lighttable.get_zoom = _lib_lighttable_get_zoom;
   darktable.view_manager->proxy.lighttable.get_layout = _lib_lighttable_get_layout;
   darktable.view_manager->proxy.lighttable.set_layout = _lib_lighttable_set_layout;
+  darktable.view_manager->proxy.lighttable.get_display_num_images = _lib_lighttable_get_display_num_images;
+  darktable.view_manager->proxy.lighttable.set_display_num_images = _lib_lighttable_set_display_num_images;
 }
 
 void init_key_accels(dt_lib_module_t *self)
@@ -162,6 +214,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "zoom min"), GDK_KEY_4, GDK_MOD1_MASK);
 
   dt_accel_register_lib(self, NC_("accel", "toggle exposé mode"), GDK_KEY_x, 0);
+  dt_accel_register_lib(self, NC_("accel", "toggle culling mode"), GDK_KEY_x, GDK_CONTROL_MASK);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -179,12 +232,15 @@ void connect_key_accels(dt_lib_module_t *self)
                        g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_zoom_min_callback), self, NULL));
   dt_accel_connect_lib(self, "toggle exposé mode",
                        g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_toggle_expose_mode), self, NULL));
+  dt_accel_connect_lib(self, "toggle culling mode",
+                       g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_toggle_culling_mode), self, NULL));
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
   dt_gui_key_accel_block_on_focus_disconnect(d->zoom_entry);
+  dt_gui_key_accel_block_on_focus_disconnect(d->display_num_images_entry);
   g_free(self->data);
   self->data = NULL;
 }
@@ -264,6 +320,82 @@ static gboolean _lib_lighttable_zoom_entry_changed(GtkWidget *entry, GdkEventKey
   }
 }
 
+static void _lib_lighttable_display_num_images_slider_changed(GtkRange *range, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
+
+  const int i = gtk_range_get_value(range);
+  dt_conf_set_int("plugins/lighttable/display_num_images", i);
+  gchar *i_as_str = g_strdup_printf("%d", i);
+  gtk_entry_set_text(GTK_ENTRY(d->display_num_images_entry), i_as_str);
+  d->current_display_num_images = i;
+  g_free(i_as_str);
+  dt_control_queue_redraw_center();
+}
+
+static gboolean _lib_lighttable_display_num_images_entry_changed(GtkWidget *entry, GdkEventKey *event,
+                                                                 dt_lib_module_t *self)
+{
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
+  switch(event->keyval)
+  {
+    case GDK_KEY_Escape:
+    case GDK_KEY_Tab:
+    {
+      // reset
+      int i = dt_conf_get_int("plugins/lighttable/display_num_images");
+      gchar *i_as_str = g_strdup_printf("%d", i);
+      gtk_entry_set_text(GTK_ENTRY(d->display_num_images_entry), i_as_str);
+      g_free(i_as_str);
+      gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
+      return FALSE;
+    }
+
+    case GDK_KEY_Return:
+    case GDK_KEY_KP_Enter:
+    {
+      // apply display number of images
+      const gchar *value = gtk_entry_get_text(GTK_ENTRY(d->display_num_images_entry));
+      int i = atoi(value);
+      gtk_range_set_value(GTK_RANGE(d->display_num_images), i);
+      gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
+      return FALSE;
+    }
+
+    // allow 0 .. 9, left/right movement using arrow keys and del/backspace
+    case GDK_KEY_0:
+    case GDK_KEY_KP_0:
+    case GDK_KEY_1:
+    case GDK_KEY_KP_1:
+    case GDK_KEY_2:
+    case GDK_KEY_KP_2:
+    case GDK_KEY_3:
+    case GDK_KEY_KP_3:
+    case GDK_KEY_4:
+    case GDK_KEY_KP_4:
+    case GDK_KEY_5:
+    case GDK_KEY_KP_5:
+    case GDK_KEY_6:
+    case GDK_KEY_KP_6:
+    case GDK_KEY_7:
+    case GDK_KEY_KP_7:
+    case GDK_KEY_8:
+    case GDK_KEY_KP_8:
+    case GDK_KEY_9:
+    case GDK_KEY_KP_9:
+
+    case GDK_KEY_Left:
+    case GDK_KEY_Right:
+    case GDK_KEY_Delete:
+    case GDK_KEY_BackSpace:
+      return FALSE;
+
+    default: // block everything else
+      return TRUE;
+  }
+}
+
 static void _lib_lighttable_change_layout(dt_lib_module_t *self, dt_lighttable_layout_t layout)
 {
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
@@ -275,11 +407,67 @@ static void _lib_lighttable_change_layout(dt_lib_module_t *self, dt_lighttable_l
   {
     gtk_widget_hide(d->zoom);
     gtk_widget_hide(d->zoom_entry);
+    gtk_widget_hide(d->display_num_images);
+    gtk_widget_hide(d->display_num_images_entry);
+  }
+  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    gtk_widget_hide(d->zoom);
+    gtk_widget_hide(d->zoom_entry);
+    gtk_widget_show(d->display_num_images);
+    gtk_widget_show(d->display_num_images_entry);
+
+    // if we have a selected image activate the filmstrip
+    GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
+    if(first_selected)
+    {
+      const int imgid = GPOINTER_TO_INT(first_selected->data);
+      if(imgid >= 0 && dt_view_filmstrip_get_activated_imgid(darktable.view_manager) != imgid)
+        dt_view_filmstrip_set_active_image(darktable.view_manager, imgid);
+      g_list_free(first_selected);
+    }
   }
   else
   {
     gtk_widget_show(d->zoom);
     gtk_widget_show(d->zoom_entry);
+    gtk_widget_hide(d->display_num_images);
+    gtk_widget_hide(d->display_num_images_entry);
+  }
+
+  // if changing from culling select all displayed images
+  if(current_layout == DT_LIGHTTABLE_LAYOUT_CULLING && current_layout != layout)
+  {
+    GList *first_selected = dt_collection_get_selected(darktable.collection, -1);
+    if(first_selected && g_list_length(first_selected) == 1)
+    {
+      const int sel_imgid = GPOINTER_TO_INT(first_selected->data);
+      GList *collected = dt_collection_get_all(darktable.collection, -1);
+      if(collected)
+      {
+        // search the selected image
+        GList *l = collected;
+        while(l)
+        {
+          const int id = GPOINTER_TO_INT(l->data);
+          if(sel_imgid == id) break;
+
+          l = g_list_next(l);
+        }
+        // now go to the last visible image
+        int i = 1;
+        while(l && i < d->current_display_num_images)
+        {
+          l = g_list_next(l);
+          i++;
+        }
+
+        if(l) dt_selection_select_range(darktable.selection, GPOINTER_TO_INT(l->data));
+      }
+
+      if(collected) g_list_free(collected);
+    }
+    if(first_selected) g_list_free(first_selected);
   }
 
   if(current_layout != layout)
@@ -324,6 +512,19 @@ static gint _lib_lighttable_get_zoom(dt_lib_module_t *self)
 {
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
   return d->current_zoom;
+}
+
+static void _lib_lighttable_set_display_num_images(dt_lib_module_t *self, const int display_num_images)
+{
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
+  gtk_range_set_value(GTK_RANGE(d->display_num_images), display_num_images);
+  d->current_display_num_images = display_num_images;
+}
+
+static int _lib_lighttable_get_display_num_images(dt_lib_module_t *self)
+{
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
+  return d->current_display_num_images;
 }
 
 static gboolean _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel_group,
@@ -395,6 +596,25 @@ static gboolean _lib_lighttable_key_accel_toggle_expose_mode(GtkAccelGroup *acce
   return TRUE;
 }
 
+static gboolean _lib_lighttable_key_accel_toggle_culling_mode(GtkAccelGroup *accel_group, GObject *acceleratable,
+                                                              guint keyval, GdkModifierType modifier,
+                                                              gpointer data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)data;
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
+
+  if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    d->previous_layout = d->layout;
+    _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING);
+  }
+  else
+    _lib_lighttable_set_layout(self, d->previous_layout);
+
+  dt_control_queue_redraw_center();
+  return TRUE;
+}
+
 #ifdef USE_LUA
 static int layout_cb(lua_State *L)
 {
@@ -441,6 +661,7 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_ZOOMABLE);
   luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_FILEMANAGER);
   luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_EXPOSE);
+  luaA_enum_value(L, dt_lighttable_layout_t, DT_LIGHTTABLE_LAYOUT_CULLING);
   luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_LAST);
 }
 #endif

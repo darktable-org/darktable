@@ -158,6 +158,11 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - A new option 'skip' is added to the 'on conflic' setting on the export module
   that skips the export if the file already exists.
 
+- A new lighttable mode 'culling' is added. It displays a fixed number of consecutive images,
+  starting from the first selected image and allows to pan & zoom them.
+  It can be navigated with the mouse wheel and keyboard and the number of
+  displayed images can be set with an entry at the bottom.
+
 ## Bug fixes
 
 - The color picker support has been fixed by a complete rewrite. It

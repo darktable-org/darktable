@@ -785,7 +785,8 @@ int32_t dt_view_get_image_to_act_on()
   const int layout = darktable.view_manager->proxy.lighttable.get_layout(
       darktable.view_manager->proxy.lighttable.module);
 
-  if(zoom == 1 || full_preview_id > 1 || layout == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+  if(zoom == 1 || full_preview_id > 1 || layout == DT_LIGHTTABLE_LAYOUT_EXPOSE
+     || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     return mouse_over_id;
   }
@@ -2041,6 +2042,20 @@ gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm)
     return vm->proxy.lighttable.get_zoom(vm->proxy.lighttable.module);
   else
     return 10;
+}
+
+void dt_view_lighttable_set_display_num_images(dt_view_manager_t *vm, const int display_num_images)
+{
+  if(vm->proxy.lighttable.module)
+    vm->proxy.lighttable.set_display_num_images(vm->proxy.lighttable.module, display_num_images);
+}
+
+int dt_view_lighttable_get_display_num_images(dt_view_manager_t *vm)
+{
+  if(vm->proxy.lighttable.module)
+    return vm->proxy.lighttable.get_display_num_images(vm->proxy.lighttable.module);
+  else
+    return 2;
 }
 
 dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm)
