@@ -708,14 +708,20 @@ int dt_control_key_pressed_override(guint key, guint state)
   {
     char param[512];
     const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+    // in lighttable, we store panels states per layout
+    char lay[32] = "";
+    if(g_strcmp0(cv->module_name, "lighttable") == 0)
+    {
+      g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
+    }
 
     /* do nothing if in collapse panel state
        TODO: reconsider adding this check to ui api */
-    g_snprintf(param, sizeof(param), "%s/ui/panel_collaps_state", cv->module_name);
+    g_snprintf(param, sizeof(param), "%s/ui/%spanel_collaps_state", cv->module_name, lay);
     if(dt_conf_get_int(param)) return 0;
 
     /* toggle the header visibility state */
-    g_snprintf(param, sizeof(param), "%s/ui/show_header", cv->module_name);
+    g_snprintf(param, sizeof(param), "%s/ui/%sshow_header", cv->module_name, lay);
     const gboolean header = !dt_conf_get_bool(param);
     dt_conf_set_bool(param, header);
 
