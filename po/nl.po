@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-04-03 10:51+0200\n"
-"PO-Revision-Date: 2019-04-03 11:19+0200\n"
+"PO-Revision-Date: 2019-04-03 11:47+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -927,10 +927,8 @@ msgstr ""
 "geef commando  , run 'darktable-generate-cache'."
 
 #: ../build/src/preferences_gen.h:3725
-#, fuzzy
-#| msgid "enable disk backend for thumbnail cache"
 msgid "enable disk backend for full preview cache"
-msgstr "inschakelen schijfbackend voor miniaturencache"
+msgstr "inschakelen schijf backend voor volledige preview cache"
 
 #: ../build/src/preferences_gen.h:3737
 #, fuzzy
@@ -1438,10 +1436,8 @@ msgid "softproof profile"
 msgstr "softproofprofiel"
 
 #: ../src/common/colorspaces.c:1151
-#, fuzzy
-#| msgid "export profile"
 msgid "work profile"
-msgstr "export profiel"
+msgstr "werkprofiel"
 
 #: ../src/common/colorspaces.c:1167
 msgid "sRGB (e.g. JPG)"
@@ -1589,10 +1585,8 @@ msgid ""
 msgstr ""
 
 #: ../src/common/database.c:1712
-#, fuzzy
-#| msgid "darktable - run performance configuration?"
 msgid "darktable - schema migration"
-msgstr "darktable -run prestatie configuratie uitvoeren?"
+msgstr "darktable - schema migratie"
 
 #: ../src/common/database.c:1713
 msgid "upgrade database"
@@ -5304,7 +5298,7 @@ msgstr "contrastrijk"
 #: ../src/iop/colorzones.c:2203 ../src/iop/denoiseprofile.c:3039
 #: ../src/iop/rawdenoise.c:802
 msgid "smooth"
-msgstr "effen"
+msgstr "vlak"
 
 #: ../src/iop/atrous.c:1605 ../src/iop/denoiseprofile.c:3044
 #: ../src/iop/rawdenoise.c:807
@@ -5549,16 +5543,12 @@ msgid "adjust the exposure correction"
 msgstr "aanpassen belichtingscorrectie (EV)"
 
 #: ../src/iop/basicadj.c:692
-#, fuzzy
-#| msgid "highlight reconstruction"
 msgid "highlight compression"
-msgstr "hooglichten herstellen"
+msgstr "hooglichten comprimeren"
 
 #: ../src/iop/basicadj.c:693
-#, fuzzy
-#| msgid "highlights color adjustment"
 msgid "highlight compression adjustment"
-msgstr "aanpassen hooglichten"
+msgstr "aanpassen compressie hooglichten"
 
 #: ../src/iop/basicadj.c:699 ../src/iop/bilat.c:546 ../src/iop/colisa.c:370
 #: ../src/iop/colorbalance.c:2373 ../src/iop/colorbalance.c:2375
@@ -5570,33 +5560,26 @@ msgstr "contrast"
 msgid "contrast adjustment"
 msgstr "contrast aanpassen"
 
+# of behoud kleuren
 #: ../src/iop/basicadj.c:705 ../src/iop/rgbcurve.c:1586
-#, fuzzy
-#| msgid "border color"
 msgid "preserve colors"
-msgstr "randkleur"
+msgstr "behoud van kleuren"
 
 #: ../src/iop/basicadj.c:707 ../src/iop/rgbcurve.c:1588
-#, fuzzy
-#| msgid "color dominance"
 msgid "luminance"
-msgstr "kleurdominantie"
+msgstr "luminantie"
 
 #: ../src/iop/basicadj.c:709 ../src/iop/rgbcurve.c:1590
 msgid "method to preserve colors when applying contrast"
 msgstr ""
 
 #: ../src/iop/basicadj.c:713
-#, fuzzy
-#| msgid "middle grey luma"
 msgid "middle grey"
-msgstr "middelste grijze luminantie"
+msgstr "midden grijs"
 
 #: ../src/iop/basicadj.c:715
-#, fuzzy
-#| msgid "middle grey destination"
 msgid "middle grey adjustment"
-msgstr "middengrijs bestemming"
+msgstr "aanpassing middengrijs"
 
 #: ../src/iop/basicadj.c:727 ../src/iop/colisa.c:371 ../src/iop/retouch.c:2881
 #: ../src/iop/soften.c:726 ../src/iop/vignette.c:1154
@@ -5620,10 +5603,8 @@ msgid "saturation"
 msgstr "verzadiging"
 
 #: ../src/iop/basicadj.c:734
-#, fuzzy
-#| msgid "color saturation adjustment"
 msgid "saturation adjustment"
-msgstr "aanpassen kleurverzadiging"
+msgstr "aanpassing verzadiging"
 
 #: ../src/iop/basicadj.c:741
 msgid "apply auto exposure based on the entire image"
@@ -6765,16 +6746,12 @@ msgstr ""
 "niet ondersteund ingegeven profiel is vervangen door lineair Rec709 RGB!"
 
 #: ../src/iop/colorin.c:2002
-#, fuzzy
-#| msgid "input color profile"
 msgid "input profile"
-msgstr "ingaand kleurprofiel"
+msgstr "ingaand profiel"
 
 #: ../src/iop/colorin.c:2006
-#, fuzzy
-#| msgid "export profile"
 msgid "working profile"
-msgstr "export profiel"
+msgstr "werkprofiel"
 
 #: ../src/iop/colorin.c:2016 ../src/iop/colorin.c:2027
 #: ../src/iop/colorout.c:842
@@ -7087,10 +7064,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/colorzones.c:2185
-#, fuzzy
-#| msgid "edit style"
 msgid "edit by area"
-msgstr "bewerk stijl"
+msgstr "bewerk per gebied"
 
 #: ../src/iop/colorzones.c:2187
 msgid "edit the curve nodes by area"
@@ -7105,10 +7080,8 @@ msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "kies selectie criteria, dat is dan de abscis van de grafiek"
 
 #: ../src/iop/colorzones.c:2202
-#, fuzzy
-#| msgid "focus mode"
 msgid "process mode"
-msgstr "focusmodus"
+msgstr "werkwijze"
 
 #: ../src/iop/colorzones.c:2204
 msgid "strong"
@@ -11886,7 +11859,7 @@ msgstr "zoek modules op naam of label"
 
 #: ../src/libs/modulegroups.c:247
 msgid "clear text"
-msgstr "wis teksr"
+msgstr "wis tekst"
 
 #: ../src/libs/modulelist.c:57
 msgid "more modules"
