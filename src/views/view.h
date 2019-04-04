@@ -414,6 +414,8 @@ int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm);
 
 /** get the lighttable current layout */
 dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm);
+/** get the lighttable full preview state */
+gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm);
 /** sets the lighttable image in row zoom */
 void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom);
 /** gets the lighttable image in row zoom */
