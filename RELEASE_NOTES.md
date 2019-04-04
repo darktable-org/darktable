@@ -35,6 +35,12 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 
 - A new exposé lighttable's mode to be used to compare multiple images.
 
+- A new lighttable mode 'culling' is added. It displays a fixed number
+  of consecutive images, starting from the first selected image and
+  allows to pan & zoom them.  It can be navigated with the mouse wheel
+  and keyboard and the number of displayed images can be set with an
+  entry at the bottom.
+
 - A quite extensive rewrite of the lighttable has been made to improve
   drastically the overall performance. This also includes the
   filmstrip which has also received a big rewrite for the same reasons. The
@@ -44,6 +50,22 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   which is stable during the whole pixel-pipe.
 
 - Modules can now be re-ordered with shift+drag.
+
+- The color zones module now display an histogram based on the ‘select
+  by’ channel and displays the selected range if the color picker is
+  in area mode.
+  It acts now like the tone curve (but horizontal),
+  it has two edit modes: edit by area is the former one, if not checked nodes
+  can be edited like in the tone curve, delete only works by right-click
+  when not in edit area mode.
+  A new process mode has been added: smooth is the former one, strong is new.
+  An interpolation method has been added that allows to select different types
+  of curves.
+  The color picker allows to select by area with ctrl+click.
+  A new color picker has been added that creates a curve based on the area
+  selected from the image.
+  When pressing the shortcut 'pan&zoom while editing masks' the draw area
+  can now be zoomed. Double-click on the bottom bar resets the zoom.
 
 ## New Features And Changes
 
@@ -113,22 +135,6 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 
 - Add soft boundaries for denoise profile controls.
 
-- The color zones module now display an histogram based on the ‘select
-  by’ channel and displays the selected range if the color picker is
-  in area mode.
-  It acts now like the tone curve (but horizontal),
-  it has two edit modes: edit by area is the former one, if not checked nodes
-  can be edited like in the tone curve, delete only works by right-click
-  when not in edit area mode.
-  A new process mode has been added: smooth is the former one, strong is new.
-  An interpolation method has been added that allows to select different types
-  of curves.
-  The color picker allows to select by area with ctrl+click.
-  A new color picker has been added that creates a curve based on the area
-  selected from the image.
-  When pressing the shortcut 'pan&zoom while editing masks' the draw area
-  can now be zoomed. Double-click on the bottom bar resets the zoom.
-
 - A new module 'basic adjustments' has been added. It allows to adjust
   the exposure, highlight compression, contrast, brightness and saturation.
   It also has an auto feature based on Rawtherapee's auto levels that can
@@ -157,11 +163,6 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 
 - A new option 'skip' is added to the 'on conflic' setting on the export module
   that skips the export if the file already exists.
-
-- A new lighttable mode 'culling' is added. It displays a fixed number of consecutive images,
-  starting from the first selected image and allows to pan & zoom them.
-  It can be navigated with the mouse wheel and keyboard and the number of
-  displayed images can be set with an entry at the bottom.
 
 ## Bug fixes
 
