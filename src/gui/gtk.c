@@ -281,9 +281,20 @@ static gboolean borders_button_pressed(GtkWidget *w, GdkEventButton *event, gpoi
     {
       g_snprintf(key, sizeof(key), "%s/ui/%s%s_visible", cv->module_name, lay,
                  _ui_panel_config_names[DT_UI_PANEL_CENTER_BOTTOM]);
-      gboolean show = !dt_conf_get_bool(key);
-      dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_BOTTOM, show, TRUE);
-      dt_ui_panel_show(ui, DT_UI_PANEL_BOTTOM, show, TRUE);
+      const gboolean show_cb = dt_conf_get_bool(key);
+      g_snprintf(key, sizeof(key), "%s/ui/%s%s_visible", cv->module_name, lay,
+                 _ui_panel_config_names[DT_UI_PANEL_BOTTOM]);
+      const gboolean show_b = dt_conf_get_bool(key);
+      // all visible => toolbar hidden => all hidden => all visible
+      if(show_cb && show_b)
+        dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_BOTTOM, FALSE, TRUE);
+      else if(!show_cb && show_b)
+        dt_ui_panel_show(ui, DT_UI_PANEL_BOTTOM, FALSE, TRUE);
+      else
+      {
+        dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_BOTTOM, TRUE, TRUE);
+        dt_ui_panel_show(ui, DT_UI_PANEL_BOTTOM, TRUE, TRUE);
+      }
     }
     break;
   }
@@ -563,7 +574,8 @@ static gboolean draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_data
       }
       break;
     default: // bottom
-      if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM))
+      if(dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM)
+         || dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM))
       {
         cairo_move_to(cr, width / 2 - height, 0.0);
         cairo_rel_line_to(cr, 2 * height, 0.0);
