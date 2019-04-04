@@ -337,7 +337,9 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
         dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width,
                                         &pipe.processed_height);
         dt_dev_pixelpipe_cleanup(&pipe);
-        entry->data_size = sizeof(struct dt_mipmap_buffer_dsc) + pipe.processed_width * pipe.processed_height * 4;
+        // we enlarge the output size by 4 to handle rounding errors in mipmap computation
+        entry->data_size
+            = sizeof(struct dt_mipmap_buffer_dsc) + (pipe.processed_width + 4) * (pipe.processed_height + 4) * 4;
       }
       else
       {
@@ -442,6 +444,8 @@ read_error:
   // cost is just flat one for the buffer, as the buffers might have different sizes,
   // to make sure quota is meaningful.
   if(mip >= DT_MIPMAP_F) entry->cost = 1;
+  else if(mip == DT_MIPMAP_8)
+    entry->cost = entry->data_size;
   else entry->cost = cache->buffer_size[mip];
 }
 
