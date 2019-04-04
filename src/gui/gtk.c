@@ -238,7 +238,10 @@ static gboolean borders_button_pressed(GtkWidget *w, GdkEventButton *event, gpoi
   char lay[32] = "";
   if(g_strcmp0(cv->module_name, "lighttable") == 0)
   {
-    g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
+    if(dt_view_lighttable_preview_state(darktable.view_manager))
+      g_snprintf(lay, sizeof(lay), "preview/");
+    else
+      g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
   }
 
   int which = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), "border"));
@@ -1540,7 +1543,10 @@ void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui)
   char lay[32] = "";
   if(g_strcmp0(cv->module_name, "lighttable") == 0)
   {
-    g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
+    if(dt_view_lighttable_preview_state(darktable.view_manager))
+      g_snprintf(lay, sizeof(lay), "preview/");
+    else
+      g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
   }
 
   g_snprintf(key, sizeof(key), "%s/ui/%spanel_collaps_state", cv->module_name, lay);
@@ -1591,7 +1597,10 @@ void dt_ui_restore_panels(dt_ui_t *ui)
   char lay[32] = "";
   if(g_strcmp0(cv->module_name, "lighttable") == 0)
   {
-    g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
+    if(dt_view_lighttable_preview_state(darktable.view_manager))
+      g_snprintf(lay, sizeof(lay), "preview/");
+    else
+      g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
   }
 
   /* restore from a previous collapse all panel state if enabled */
@@ -1608,7 +1617,7 @@ void dt_ui_restore_panels(dt_ui_t *ui)
     for(int k = 0; k < DT_UI_PANEL_SIZE; k++)
     {
       g_snprintf(key, sizeof(key), "%s/ui/%s%s_visible", cv->module_name, lay, _ui_panel_config_names[k]);
-      if(dt_conf_key_exists(key))
+      if(dt_conf_key_exists(key) || g_strcmp0(lay, "preview/") == 0)
         gtk_widget_set_visible(ui->panels[k], dt_conf_get_bool(key));
       else
         gtk_widget_set_visible(ui->panels[k], 1);
@@ -1692,7 +1701,10 @@ void dt_ui_panel_show(dt_ui_t *ui, const dt_ui_panel_t p, gboolean show, gboolea
     char lay[32] = "";
     if(g_strcmp0(cv->module_name, "lighttable") == 0)
     {
-      g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
+      if(dt_view_lighttable_preview_state(darktable.view_manager))
+        g_snprintf(lay, sizeof(lay), "preview/");
+      else
+        g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
     }
     char key[512];
     g_snprintf(key, sizeof(key), "%s/ui/%s%s_visible", cv->module_name, lay, _ui_panel_config_names[p]);
