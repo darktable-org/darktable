@@ -308,7 +308,7 @@ static void check_layout(dt_view_t *self)
   dt_lib_module_t *timeline = darktable.view_manager->proxy.timeline.module;
   gboolean vs = dt_lib_is_visible(timeline);
 
-  if(layout == DT_LIGHTTABLE_LAYOUT_EXPOSE || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  if(layout == DT_LIGHTTABLE_LAYOUT_EXPOSE || layout == DT_LIGHTTABLE_LAYOUT_CULLING || lib->full_preview_id != -1)
   {
     gtk_widget_hide(GTK_WIDGET(timeline->widget));
     gtk_widget_show(GTK_WIDGET(m->widget));
@@ -484,6 +484,25 @@ static void _view_lighttable_selection_listener_internal_culling(dt_view_t *self
   }
 }
 
+static void _view_lighttable_selection_listener_internal_preview(dt_view_t *self, dt_library_t *lib)
+{
+  if(lib->full_preview_id != -1)
+  {
+    GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
+    // we have a selected image
+    if(first_selected)
+    {
+      const int imgid = GPOINTER_TO_INT(first_selected->data);
+      if(lib->full_preview_id != imgid)
+      {
+        lib->full_preview_id = imgid;
+        dt_control_queue_redraw_center();
+      }
+      g_list_free(first_selected);
+    }
+  }
+}
+
 static void _view_lighttable_query_listener_callback(gpointer instance, gpointer user_data)
 {
   // this will always happen in conjonction with the _view_lighttable_collection_listener_callback
@@ -534,11 +553,14 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
   // here as the selection from the filmstrip is actually what must be
   // displayed in the expose view.
   if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_EXPOSE) _view_lighttable_collection_listener_internal(self, lib);
-
-  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  else if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     _view_lighttable_selection_listener_internal_culling(self, lib);
     dt_control_queue_redraw_center();
+  }
+  else if(lib->full_preview_id != -1)
+  {
+    _view_lighttable_selection_listener_internal_preview(self, lib);
   }
 }
 
@@ -2732,6 +2754,11 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
     lib->full_preview_follow_sel = FALSE;
 
   // restore panels
+  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
+  dt_lib_module_t *timeline = darktable.view_manager->proxy.timeline.module;
+  gtk_widget_hide(GTK_WIDGET(timeline->widget));
+  gtk_widget_show(GTK_WIDGET(m->widget));
+  dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->full_preview_id, FALSE);
   dt_ui_restore_panels(darktable.gui->ui);
 
   // preview with focus detection
@@ -2767,6 +2794,21 @@ static void _preview_quit(dt_view_t *self)
   lib->full_y = 0.0f;
 
   // restore panels
+  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
+  dt_lib_module_t *timeline = darktable.view_manager->proxy.timeline.module;
+  gboolean vs = dt_lib_is_visible(timeline);
+
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_EXPOSE || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    gtk_widget_hide(GTK_WIDGET(timeline->widget));
+    gtk_widget_show(GTK_WIDGET(m->widget));
+  }
+  else
+  {
+    gtk_widget_hide(GTK_WIDGET(m->widget));
+    if(vs) gtk_widget_show(GTK_WIDGET(timeline->widget));
+    g_timeout_add(200, _expose_again_full, self);
+  }
   dt_ui_restore_panels(darktable.gui->ui);
   // restore drag and drop
   _register_custom_image_order_drag_n_drop(self);
