@@ -1160,6 +1160,48 @@
     <shortdescription>scroll to lighttable modules when expanded/collapsed</shortdescription>
     <longdescription>when this option is enabled then darktable will try to scroll the module to the top of the visible list</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>lighttable/ui/preview/bottom_visible</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>show bottom panel in preview mode</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>lighttable/ui/preview/left_visible</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>show left panel in preview mode</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>lighttable/ui/preview/right_visible</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>show right panel in preview mode</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>lighttable/ui/preview/header_visible</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>show header panel in preview mode</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>lighttable/ui/preview/toolbar_bottom_visible</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>show toolbar bottom panel in preview mode</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>lighttable/ui/preview/toolbar_top_visible</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>show toolbar top panel in preview mode</shortdescription>
+    <longdescription/>
+  </dtconfig>
   <dtconfig prefs="gui" section="darkroom">
     <name>darkroom/ui/scroll_to_module</name>
     <type>bool</type>

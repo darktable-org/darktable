@@ -2070,6 +2070,14 @@ dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm)
     return DT_LIGHTTABLE_LAYOUT_FILEMANAGER;
 }
 
+gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm)
+{
+  if(vm->proxy.lighttable.module)
+    return (vm->proxy.lighttable.get_full_preview_id(vm->proxy.lighttable.view) != -1);
+  else
+    return FALSE;
+}
+
 void dt_view_lighttable_set_position(dt_view_manager_t *vm, uint32_t pos)
 {
   if(vm->proxy.lighttable.view) vm->proxy.lighttable.set_position(vm->proxy.lighttable.view, pos);
