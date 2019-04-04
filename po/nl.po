@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-04-03 10:51+0200\n"
-"PO-Revision-Date: 2019-04-04 10:02+0200\n"
+"PO-Revision-Date: 2019-04-04 10:58+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -12766,7 +12766,7 @@ msgstr "bestandsmanager"
 
 #: ../src/libs/tools/lighttable.c:113
 msgid "expose"
-msgstr "belichten"
+msgstr "showen"
 
 #. view accels
 #: ../src/libs/tools/lighttable.c:159
