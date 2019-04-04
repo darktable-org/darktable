@@ -114,6 +114,9 @@ typedef struct dt_preview_surface_t
   float w_fit;
   float h_fit;
   float zoom_100;
+
+  float max_dx;
+  float max_dy;
 } dt_preview_surface_t;
 
 /**
@@ -341,6 +344,9 @@ static void _full_preview_destroy(dt_view_t *self)
     lib->fp_surf[i].zoom_100 = 40.0f;
     lib->fp_surf[i].w_fit = 0.0f;
     lib->fp_surf[i].h_fit = 0.0f;
+
+    lib->fp_surf[i].max_dx = 0.0f;
+    lib->fp_surf[i].max_dy = 0.0f;
   }
 }
 
@@ -2012,8 +2018,8 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     if(sel_img_count <= max_in_memory_images)
     {
       params.full_zoom = lib->full_zoom;
-      params.full_x = &lib->full_x;
-      params.full_y = &lib->full_y;
+      params.full_x = lib->full_x;
+      params.full_y = lib->full_y;
       params.full_surface = &lib->fp_surf[i].surface;
       params.full_rgbbuf = &lib->fp_surf[i].rgbbuf;
       params.full_surface_mip = &lib->fp_surf[i].mip;
@@ -2024,6 +2030,8 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       params.full_zoom100 = &lib->fp_surf[i].zoom_100;
       params.full_w1 = &lib->fp_surf[i].w_fit;
       params.full_h1 = &lib->fp_surf[i].h_fit;
+      params.full_maxdx = &lib->fp_surf[i].max_dx;
+      params.full_maxdy = &lib->fp_surf[i].max_dy;
     }
 
     missing += dt_view_image_expose(&params);
@@ -2195,10 +2203,12 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
   params.full_preview = TRUE;
   params.full_zoom = lib->full_zoom;
   params.full_zoom100 = &lib->fp_surf[0].zoom_100;
+  params.full_maxdx = &lib->fp_surf[0].max_dx;
+  params.full_maxdy = &lib->fp_surf[0].max_dy;
   params.full_w1 = &lib->fp_surf[0].w_fit;
   params.full_h1 = &lib->fp_surf[0].h_fit;
-  params.full_x = &lib->full_x;
-  params.full_y = &lib->full_y;
+  params.full_x = lib->full_x;
+  params.full_y = lib->full_y;
   params.full_surface = &lib->fp_surf[0].surface;
   params.full_rgbbuf = &lib->fp_surf[0].rgbbuf;
   params.full_surface_mip = &lib->fp_surf[0].mip;
@@ -3065,8 +3075,36 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
                   || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
      && lib->full_zoom > 1.0f)
   {
+    // we want the images to stay in the screen
     lib->full_x += x - lib->pan_x;
     lib->full_y += y - lib->pan_y;
+    if(lib->full_preview_id != -1)
+    {
+      lib->full_x = fminf(lib->full_x, lib->fp_surf[0].max_dx);
+      lib->full_x = fmaxf(lib->full_x, -lib->fp_surf[0].max_dx);
+      lib->full_y = fminf(lib->full_y, lib->fp_surf[0].max_dy);
+      lib->full_y = fmaxf(lib->full_y, -lib->fp_surf[0].max_dy);
+    }
+    else
+    {
+      float dx = 0.0f;
+      float dy = 0.0f;
+      GList *selected = dt_collection_get_selected(darktable.collection, -1);
+      const int sel_img_count = g_list_length(selected);
+      for(int i = 0; i < sel_img_count; i++)
+      {
+        dx = fminf(dx, -lib->fp_surf[i].max_dx);
+        dx = fmaxf(dx, lib->fp_surf[i].max_dx);
+        dy = fminf(dy, -lib->fp_surf[i].max_dy);
+        dy = fmaxf(dy, lib->fp_surf[i].max_dy);
+      }
+      if(selected) g_list_free(selected);
+      lib->full_x = fminf(lib->full_x, dx);
+      lib->full_x = fmaxf(lib->full_x, -dx);
+      lib->full_y = fminf(lib->full_y, dy);
+      lib->full_y = fmaxf(lib->full_y, -dy);
+    }
+
     lib->pan_x = x;
     lib->pan_y = y;
   }
