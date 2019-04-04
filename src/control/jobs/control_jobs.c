@@ -158,7 +158,8 @@ static int32_t _generic_dt_control_fileop_images_job_run(dt_job_t *job,
   }
   params->index = NULL;
 
-  if(completeSuccess){
+  if(completeSuccess)
+  {
     char collect[1024];
     snprintf(collect, sizeof(collect), "1:0:0:%s$", new_film.dirname);
     dt_collection_deserialize(collect);

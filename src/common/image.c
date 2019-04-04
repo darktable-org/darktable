@@ -1308,7 +1308,7 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
     {
       gchar *imgbname = g_path_get_basename(oldimg);
       g_snprintf(newimg, sizeof(newimg), "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
-      new = g_file_new_for_path(newimg);      
+      new = g_file_new_for_path(newimg);
       g_free(imgbname);
     }
     g_free(newdir);
@@ -1388,17 +1388,24 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
 
         g_clear_error(&moveError);
 	moveStatus = g_file_move(cold, cnew, 0, NULL, NULL, NULL, &moveError);
-        if(!moveStatus) {
+        if(!moveStatus)
+        {
           fprintf(stderr, "[dt_image_rename] error moving local copy `%s' -> `%s'\n", copysrcpath, copydestpath);
-	  if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_NOT_FOUND)) {
+
+	  if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
+          {
 	    gchar *oldBasename = g_path_get_basename(copysrcpath);
 	    dt_control_log(_("cannot access local copy `%s'"), oldBasename);
 	    g_free(oldBasename);
-          } else if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_EXISTS) || g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_IS_DIRECTORY)) {
+          }
+          else if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_EXISTS) || g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_IS_DIRECTORY))
+          {
 	    gchar *newBasename = g_path_get_basename(copydestpath);
 	    dt_control_log(_("cannot write local copy `%s'"), newBasename);
 	    g_free(newBasename);
-	  } else {
+	  }
+          else
+          {
 	    gchar *oldBasename = g_path_get_basename(copysrcpath);
 	    gchar *newBasename = g_path_get_basename(copydestpath);
 	    dt_control_log(_("error moving local copy `%s' -> `%s'"), oldBasename, newBasename);
@@ -1415,11 +1422,16 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
     }
     else
     {
-      if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_NOT_FOUND)) {
+      if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
+      {
 	dt_control_log(_("error moving `%s': file not found"), oldimg);
-      } else if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_EXISTS) || g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_IS_DIRECTORY)) {
+      }
+      else if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_EXISTS) || g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_IS_DIRECTORY))
+      {
 	dt_control_log(_("error moving `%s' -> `%s': file exists"), oldimg, newimg);
-      } else {
+      }
+      else
+      {
 	dt_control_log(_("error moving `%s' -> `%s'"), oldimg, newimg);
       }
     }
