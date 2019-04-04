@@ -178,7 +178,15 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 
 ## Lua
 
-- No changes
+- The displayed image in darkroom view can now be changed
+
+- GUI panel visibility can now be queried and changed
+
+- Lighttable view toolbox (rating filter, rating comparator, sort field, and sort direction) can now be changed
+
+- Lighttable layout and zoom level can now be changed
+
+- All images containing a specific tag can be searched and returned
 
 ## Changed Dependencies
 
