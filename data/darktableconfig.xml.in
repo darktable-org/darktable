@@ -741,6 +741,13 @@
     <longdescription>select a layout for the lighttable: 0 - zoomable lighttable or 1 - file manager.</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/base_layout</name>
+    <type>int</type>
+    <default>1</default>
+    <shortdescription>lighttable basic layout mode</shortdescription>
+    <longdescription>the layout to return to when exiting expose or culling layout</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/images_in_row</name>
     <type>int</type>
     <default>5</default>
