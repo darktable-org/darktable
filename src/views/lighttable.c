@@ -335,7 +335,7 @@ static void _full_preview_destroy(dt_view_t *self)
     lib->fp_surf[i].imgid = -1;
     lib->fp_surf[i].w_lock = 0;
 
-    lib->fp_surf[i].zoom_100 = 10.0f;
+    lib->fp_surf[i].zoom_100 = 40.0f;
     lib->fp_surf[i].w_fit = 0.0f;
     lib->fp_surf[i].h_fit = 0.0f;
   }
@@ -733,7 +733,7 @@ void init(dt_view_t *self)
     lib->fp_surf[i].surface = NULL;
     lib->fp_surf[i].rgbbuf = NULL;
     lib->fp_surf[i].w_lock = 0;
-    lib->fp_surf[i].zoom_100 = 10.0f;
+    lib->fp_surf[i].zoom_100 = 40.0f;
     lib->fp_surf[i].w_fit = 0.0f;
     lib->fp_surf[i].h_fit = 0.0f;
   }
@@ -2790,7 +2790,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
     }
     else if(lib->missing_thumbnails == 0)
     {
-      float nz = 10.0f;
+      float nz = 40.0f;
       if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
       {
         // we stop at the minimum zoom
