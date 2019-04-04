@@ -170,8 +170,10 @@ typedef struct dt_view_image_expose_t
   float *full_zoom100;
   float *full_w1;
   float *full_h1;
-  float *full_x;
-  float *full_y;
+  float full_x;
+  float full_y;
+  float *full_maxdx;
+  float *full_maxdy;
 
   cairo_surface_t **full_surface;
   uint8_t **full_rgbbuf;
