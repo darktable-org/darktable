@@ -275,6 +275,7 @@ static inline void filmstrip_set_active_image(dt_library_t *lib, const int imgid
   lib->last_first_selected = offset;
   dt_selection_select_single(darktable.selection, imgid);
   dt_view_filmstrip_set_active_image(darktable.view_manager, imgid);
+  if(lib->full_preview_id > -1) lib->full_preview_id = imgid;
 }
 
 static void check_layout(dt_view_t *self)
@@ -2830,6 +2831,8 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       lib->track = -DT_LIBRARY_MAX_ZOOM;
     else
       lib->track = +DT_LIBRARY_MAX_ZOOM;
+
+    if(layout == DT_LIGHTTABLE_LAYOUT_CULLING && state == 0) shift_first_selected_image(lib, up);
   }
   else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && state == 0)
   {
@@ -3295,10 +3298,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
   const dt_lighttable_layout_t layout = get_layout();
 
-  if(lib->full_preview_id != -1 && ((key == accels->lighttable_preview_sticky_exit.accel_key
-                                     && state == accels->lighttable_preview_sticky_exit.accel_mods)
-                                    || (key == accels->lighttable_preview_sticky.accel_key
-                                        && state == accels->lighttable_preview_sticky.accel_mods)
+  if(lib->full_preview_id != -1 && ((key == accels->lighttable_preview_sticky.accel_key
+                                     && state == accels->lighttable_preview_sticky.accel_mods)
                                     || (key == accels->lighttable_preview_sticky_focus.accel_key
                                         && state == accels->lighttable_preview_sticky_focus.accel_mods)))
   {
@@ -3351,6 +3352,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     if(lib->full_preview_id > -1)
     {
       lib->track = -DT_LIBRARY_MAX_ZOOM;
+      if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) shift_first_selected_image(lib, TRUE);
     }
     else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
@@ -3383,6 +3385,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     if(lib->full_preview_id > -1)
     {
       lib->track = +DT_LIBRARY_MAX_ZOOM;
+      if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) shift_first_selected_image(lib, FALSE);
     }
     else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
@@ -3415,6 +3418,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     if(lib->full_preview_id > -1)
     {
       lib->track = -DT_LIBRARY_MAX_ZOOM;
+      if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) shift_first_selected_image(lib, TRUE);
     }
     else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
@@ -3445,6 +3449,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     if(lib->full_preview_id > -1)
     {
       lib->track = +DT_LIBRARY_MAX_ZOOM;
+      if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) shift_first_selected_image(lib, FALSE);
     }
     else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
@@ -3559,7 +3564,6 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "preview with focus detection"), GDK_KEY_z, GDK_CONTROL_MASK);
   dt_accel_register_view(self, NC_("accel", "sticky preview"), 0, 0);
   dt_accel_register_view(self, NC_("accel", "sticky preview with focus detection"), 0, 0);
-  dt_accel_register_view(self, NC_("accel", "exit sticky preview"), 0, 0);
 
   // undo/redo
   dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);

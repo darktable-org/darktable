@@ -157,8 +157,6 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_sticky);
   dt_accel_path_view(path, sizeof(path), "lighttable", "sticky preview with focus detection");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_sticky_focus);
-  dt_accel_path_view(path, sizeof(path), "lighttable", "exit sticky preview");
-  gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_preview_sticky_exit);
   dt_accel_path_view(path, sizeof(path), "lighttable", "toggle timeline");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.lighttable_timeline);
   dt_accel_path_view(path, sizeof(path), "lighttable", "preview zoom 100%");
