@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-04-03 10:51+0200\n"
-"PO-Revision-Date: 2019-04-03 11:47+0200\n"
+"PO-Revision-Date: 2019-04-04 10:02+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -2430,12 +2430,12 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:1517 ../src/iop/colorzones.c:2170
 #: ../src/iop/tonecurve.c:1238
-#, fuzzy
-#| msgid "pick GUI color from image"
 msgid ""
 "pick GUI color from image\n"
 "ctrl+click to select an area"
-msgstr "neem GUI kleur van afbeelding"
+msgstr ""
+"neem GUI kleur van afbeelding\n"
+"selecteer een gebied met ctrl+klik"
 
 #: ../src/develop/blend_gui.c:1522
 msgid ""
@@ -5283,7 +5283,7 @@ msgstr "aanscherpen: bescheiden, kracht 1"
 #: ../src/iop/atrous.c:1580 ../src/iop/denoiseprofile.c:3022
 #: ../src/iop/rawdenoise.c:785
 msgid "coarse"
-msgstr "ruw"
+msgstr "grof"
 
 #: ../src/iop/atrous.c:1587 ../src/iop/denoiseprofile.c:3030
 #: ../src/iop/rawdenoise.c:793
@@ -5519,12 +5519,6 @@ msgid "black level correction"
 msgstr "zwart niveau correctie"
 
 #: ../src/iop/basicadj.c:674
-#, fuzzy
-#| msgid ""
-#| "adjust the black level to unclip negative RGB values.\n"
-#| "you should never use it to add more density in blacks!\n"
-#| "if poorly set, it will clip near-black colors out of gamut\n"
-#| "by pushing RGB values into negatives."
 msgid ""
 "adjust the black level to unclip negative RGB values.\n"
 "you should never use it to add more density in blacks!\n"
@@ -5534,7 +5528,7 @@ msgstr ""
 "wijzig het zwart niveau om het clippen van negatieve RGB waarden te "
 "voorkomen\n"
 "gebruik het nooit voor meer dichtheid in de schaduwkleuren\n"
-"indien slecht ingesteld, worden bijna-zwarte kleuren uit het gamma "
+"indien slecht ingesteld, dan worden bijna zwarte kleuren uit het gamma "
 "verwijderd\n"
 "door RGB waarden in het negatieve te drukken"
 
@@ -5571,7 +5565,7 @@ msgstr "luminantie"
 
 #: ../src/iop/basicadj.c:709 ../src/iop/rgbcurve.c:1590
 msgid "method to preserve colors when applying contrast"
-msgstr ""
+msgstr "methode voor behoud van kleuren bij contrast wijziging"
 
 #: ../src/iop/basicadj.c:713
 msgid "middle grey"
@@ -5608,7 +5602,7 @@ msgstr "aanpassing verzadiging"
 
 #: ../src/iop/basicadj.c:741
 msgid "apply auto exposure based on the entire image"
-msgstr ""
+msgstr "toepassen automatische belichting op basis van de volledige afbeelding"
 
 #: ../src/iop/basicadj.c:749
 msgid ""
@@ -5616,14 +5610,18 @@ msgid ""
 "click and drag to draw the area\n"
 "right click to cancel"
 msgstr ""
+"toepassen automatische belichting op basis van een door de gebruiker "
+"gedefinieerd gebied\n"
+"klik en sleep om een gebied te definiëren\n"
+"verwijder met een rechtermuis klik"
 
 #: ../src/iop/basicadj.c:759
 msgid "clip"
-msgstr ""
+msgstr "clippen"
 
 #: ../src/iop/basicadj.c:760
 msgid "adjusts clipping value for auto exposure calculation"
-msgstr ""
+msgstr "aanpassen waarde clippen voor automatische belichtingsberekening"
 
 #: ../src/iop/bilat.c:95 ../src/iop/clahe.c:66
 msgid "local contrast"
@@ -7407,6 +7405,12 @@ msgid ""
 "should be disabled if an earlier instance\n"
 "has been used with a color blending mode."
 msgstr ""
+"ontruisen afstemmen aan de\n"
+"witbalanscoëfficiënten\n"
+"activeer dit als eerste\n"
+"voor betere ontruising\n"
+"maar deactiveer dit als in een eerder exemplaar\n"
+"gebruik is gemaakt van een mode voor kleurmenging"
 
 #: ../src/iop/denoiseprofile.c:3318
 #, fuzzy
@@ -7505,7 +7509,7 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:3367
 msgid "finetune denoising strength"
-msgstr "kracht ruisonderdrukking afstemmen"
+msgstr "afstemmen kracht van ruisonderdrukking "
 
 #: ../src/iop/dither.c:103 ../src/iop/vignette.c:1160
 msgid "dithering"
@@ -12793,18 +12797,14 @@ msgid "timeline"
 msgstr "tijdlijn"
 
 #: ../src/libs/tools/timeline.c:1487
-#, fuzzy
-#| msgid "clear selection"
 msgctxt "accel"
 msgid "start selection"
-msgstr "verwijder selectie"
+msgstr "start selectie"
 
 #: ../src/libs/tools/timeline.c:1488
-#, fuzzy
-#| msgid "invert selection"
 msgctxt "accel"
 msgid "stop selection"
-msgstr "keer selectie om"
+msgstr "stop selectie"
 
 #: ../src/libs/tools/view_toolbox.c:46
 msgid "view toolbox"
@@ -13134,11 +13134,9 @@ msgstr "sta tijdens het bewerken van maskers herschalen en zoomen toe"
 
 #. set focus to the search modules text box
 #: ../src/views/darkroom.c:2884
-#, fuzzy
-#| msgid "search radius"
 msgctxt "accel"
 msgid "search modules"
-msgstr "zoek straal"
+msgstr "zoek modules"
 
 #: ../src/views/knight.c:334
 msgid "good knight"
@@ -13165,11 +13163,11 @@ msgid "or add images in the collection module in the left panel"
 msgstr "of importeer afbeeldingen naar de catalogus in het linkerpaneel"
 
 #: ../src/views/lighttable.c:2559
-#, fuzzy, c-format
+#, c-format
 #| msgid "applying rating %d to %d image"
 #| msgid_plural "applying rating %d to %d images"
 msgid "zooming is limited to %d images"
-msgstr "classificatie %d ster van %d afbeelding"
+msgstr "zoomen is beperkt tot %d afbeeldingen"
 
 #: ../src/views/lighttable.c:3274
 msgctxt "accel"
@@ -13271,12 +13269,9 @@ msgid "preview zoom 100%"
 msgstr ""
 
 #: ../src/views/lighttable.c:3314
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "zoom fit"
 msgctxt "accel"
 msgid "preview zoom fit"
-msgstr "zoom passend"
+msgstr "voorbeeld passende zoom"
 
 #. timeline
 #: ../src/views/lighttable.c:3317
