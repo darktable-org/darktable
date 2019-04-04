@@ -1123,7 +1123,11 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     dt_mipmap_cache_get(cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
     buf_wd = buf.width;
     buf_ht = buf.height;
-    if(!buf.buf) buf_ok = FALSE;
+    if(!buf.buf)
+    {
+      buf_ok = FALSE;
+      buf_sizeok = FALSE;
+    }
     if(mip != buf.size) buf_sizeok = FALSE;
     buf_mipmap = TRUE;
   }
@@ -1136,7 +1140,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   if(fz > 1.0f && buf_sizeok)
   {
     // is the mipmap loaded the full one ?
-    if(cache->max_width[mip] > buf_wd && cache->max_height[mip] > buf_ht)
+    if(cache->max_width[mip] > buf_wd + 4 && cache->max_height[mip] > buf_ht + 4)
     {
       float zoom_100 = fmaxf((float)buf_wd / ((float)width * imgwd), (float)buf_ht / ((float)height * imgwd));
       if(zoom_100 < 1.0f) zoom_100 = 1.0f;
