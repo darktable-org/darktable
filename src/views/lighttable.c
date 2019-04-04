@@ -3295,10 +3295,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 
   const dt_lighttable_layout_t layout = get_layout();
 
-  if(lib->full_preview_id != -1 && ((key == accels->lighttable_preview_sticky_exit.accel_key
-                                     && state == accels->lighttable_preview_sticky_exit.accel_mods)
-                                    || (key == accels->lighttable_preview_sticky.accel_key
-                                        && state == accels->lighttable_preview_sticky.accel_mods)
+  if(lib->full_preview_id != -1 && ((key == accels->lighttable_preview_sticky.accel_key
+                                     && state == accels->lighttable_preview_sticky.accel_mods)
                                     || (key == accels->lighttable_preview_sticky_focus.accel_key
                                         && state == accels->lighttable_preview_sticky_focus.accel_mods)))
   {
@@ -3559,7 +3557,6 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "preview with focus detection"), GDK_KEY_z, GDK_CONTROL_MASK);
   dt_accel_register_view(self, NC_("accel", "sticky preview"), 0, 0);
   dt_accel_register_view(self, NC_("accel", "sticky preview with focus detection"), 0, 0);
-  dt_accel_register_view(self, NC_("accel", "exit sticky preview"), 0, 0);
 
   // undo/redo
   dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
