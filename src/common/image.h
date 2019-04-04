@@ -282,9 +282,16 @@ static inline dt_image_orientation_t dt_image_orientation_to_flip_bits(const int
 /** physically move image with imgid and its duplicates to the film roll
  *  given by filmid. returns -1 on error, 0 on success. */
 int32_t dt_image_move(const int32_t imgid, const int32_t filmid);
-/** physically cope image to the folder of the film roll with filmid and
+/** physically move image with imgid and its duplicates to the film roll
+ *  given by filmid and the name given by newname.
+ *  returns -1 on error, 0 on success. */
+int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *newname);
+/** physically copy image to the folder of the film roll with filmid and
  *  duplicate update database entries. */
 int32_t dt_image_copy(const int32_t imgid, const int32_t filmid);
+/** physically copy image to the folder of the film roll with filmid and
+ *  the name given by newname, and duplicate update database entries. */
+int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gchar *newname);
 int dt_image_local_copy_set(const int32_t imgid);
 int dt_image_local_copy_reset(const int32_t imgid);
 /* check whether it is safe to remove a file */

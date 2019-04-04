@@ -64,7 +64,15 @@ int dt_lua_move_image(lua_State *L)
     luaA_to(L, dt_lua_film_t, &filmid, 1);
     luaA_to(L, dt_lua_image_t, &imgid, 2);
   }
-  dt_image_move(imgid, filmid);
+  const char *newname = lua_tostring(L, 3);
+  if(newname)
+  {
+    dt_image_rename(imgid, filmid, newname);
+  }
+  else
+  {
+    dt_image_move(imgid, filmid);
+  }
   return 0;
 }
 
@@ -82,7 +90,16 @@ int dt_lua_copy_image(lua_State *L)
     luaA_to(L, dt_lua_film_t, &filmid, 1);
     luaA_to(L, dt_lua_image_t, &imgid, 2);
   }
-  dt_lua_image_t new_image = dt_image_copy(imgid, filmid);
+  const char *newname = lua_tostring(L, 3);
+  dt_lua_image_t new_image;
+  if(newname)
+  {
+    new_image = dt_image_copy_rename(imgid, filmid, newname);
+  }
+  else
+  {
+    new_image = dt_image_copy(imgid, filmid);
+  }
   luaA_push(L, dt_lua_image_t, &new_image);
   return 1;
 }
