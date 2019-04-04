@@ -137,7 +137,6 @@ typedef struct dt_library_t
   int32_t track, offset, first_visible_zoomable, first_visible_filemanager;
   float zoom_x, zoom_y;
   dt_view_image_over_t image_over;
-  int full_preview;
   int full_preview_sticky;
   int32_t full_preview_id;
   int32_t full_preview_rowid;
@@ -704,7 +703,6 @@ void init(dt_view_t *self)
   lib->activate_on_release = DT_VIEW_ERR;
   lib->zoom_x = dt_conf_get_float("lighttable/ui/zoom_x");
   lib->zoom_y = dt_conf_get_float("lighttable/ui/zoom_y");
-  lib->full_preview = 0;
   lib->full_preview_id = -1;
   lib->display_focus = 0;
   lib->last_mouse_over_id = -1;
@@ -2670,6 +2668,112 @@ void enter(dt_view_t *self)
   dt_ui_scrollbars_show(darktable.gui->ui, scrollbars_visible);
 }
 
+static void _ensure_image_visibility(dt_library_t *lib, uint32_t rowid)
+{
+  if(get_layout() != DT_LIGHTTABLE_LAYOUT_FILEMANAGER) return;
+
+  // if we are before the first visible image, we move back
+  int offset = lib->offset;
+  while(offset > rowid)
+  {
+    offset -= lib->images_in_row;
+  }
+
+  // Are we after the last fully visible image ?
+  while(rowid > offset + lib->images_in_row * lib->visible_rows)
+  {
+    offset += lib->images_in_row;
+  }
+
+  if(offset != lib->offset)
+  {
+    lib->first_visible_filemanager = lib->offset = offset;
+    lib->offset_changed = TRUE;
+    dt_control_queue_redraw_center();
+  }
+}
+
+static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int32_t mouse_over_id)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  lib->full_preview_sticky = sticky;
+  lib->full_preview_id = mouse_over_id;
+
+  // set corresponding rowid in the collected images
+  {
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT rowid FROM memory.collected_images WHERE imgid=?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, lib->full_preview_id);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      lib->full_preview_rowid = sqlite3_column_int(stmt, 0);
+    }
+    sqlite3_finalize(stmt);
+  }
+
+  // if there's only 1 image selected, and it's the one display
+  sqlite3_stmt *stmt;
+  int nb_sel = 0;
+  uint32_t imgid_sel = -1;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
+                              NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    nb_sel++;
+    if(nb_sel > 1) break;
+    imgid_sel = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+  if(nb_sel == 1 && imgid_sel == lib->full_preview_id)
+    lib->full_preview_follow_sel = TRUE;
+  else
+    lib->full_preview_follow_sel = FALSE;
+
+  // restore panels
+  dt_ui_restore_panels(darktable.gui->ui);
+
+  // preview with focus detection
+  lib->display_focus = focus;
+
+  // reset preview values
+  lib->full_zoom = 1.0f;
+  lib->full_x = 0.0f;
+  lib->full_y = 0.0f;
+  _full_preview_destroy(self);
+
+  // we don't want want drag and drop here
+  _unregister_custom_image_order_drag_n_drop(self);
+
+  lib->force_expose_all = TRUE;
+}
+static void _preview_quit(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  if(lib->full_preview_follow_sel)
+  {
+    dt_selection_select_single(darktable.selection, lib->full_preview_id);
+    _ensure_image_visibility(lib, lib->full_preview_rowid);
+  }
+  lib->full_preview_id = -1;
+  lib->full_preview_rowid = -1;
+  if(!lib->using_arrows) dt_control_set_mouse_over_id(-1);
+
+  lib->display_focus = 0;
+  _full_preview_destroy(self);
+  lib->full_zoom = 1.0f;
+  lib->full_x = 0.0f;
+  lib->full_y = 0.0f;
+
+  // restore panels
+  dt_ui_restore_panels(darktable.gui->ui);
+  // restore drag and drop
+  _register_custom_image_order_drag_n_drop(self);
+
+  lib->force_expose_all = TRUE;
+}
+
 void leave(dt_view_t *self)
 {
   gtk_drag_dest_unset(dt_ui_center(darktable.gui->ui));
@@ -2692,11 +2796,7 @@ void leave(dt_view_t *self)
   // exit preview mode if non-sticky
   if(lib->full_preview_id != -1 && lib->full_preview_sticky == 0)
   {
-    lib->full_preview_id = -1;
-    lib->full_preview_rowid = -1;
-    dt_control_set_mouse_over_id(-1);
-    lib->full_preview = 0;
-    lib->display_focus = 0;
+    _preview_quit(self);
   }
 
   // cleanup full preview image if any
@@ -2984,131 +3084,6 @@ static void _stop_audio(dt_library_t *lib)
 #endif // _WIN32
   g_spawn_close_pid(lib->audio_player_pid);
   lib->audio_player_id = -1;
-}
-
-static void _ensure_image_visibility(dt_library_t *lib, uint32_t rowid)
-{
-  if(get_layout() != DT_LIGHTTABLE_LAYOUT_FILEMANAGER) return;
-
-  // if we are before the first visible image, we move back
-  int offset = lib->offset;
-  while(offset > rowid)
-  {
-    offset -= lib->images_in_row;
-  }
-
-  // Are we after the last fully visible image ?
-  while(rowid > offset + lib->images_in_row * lib->visible_rows)
-  {
-    offset += lib->images_in_row;
-  }
-
-  if(offset != lib->offset)
-  {
-    lib->first_visible_filemanager = lib->offset = offset;
-    lib->offset_changed = TRUE;
-    dt_control_queue_redraw_center();
-  }
-}
-
-static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int32_t mouse_over_id)
-{
-  dt_library_t *lib = (dt_library_t *)self->data;
-
-  lib->full_preview_sticky = sticky;
-  // encode panel visibility into full_preview
-  lib->full_preview = 0;
-  lib->full_preview_id = mouse_over_id;
-
-  // set corresponding rowid in the collected images
-  {
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT rowid FROM memory.collected_images WHERE imgid=?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, lib->full_preview_id);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      lib->full_preview_rowid = sqlite3_column_int(stmt, 0);
-    }
-    sqlite3_finalize(stmt);
-  }
-
-  // if there's only 1 image selected, and it's the one display
-  sqlite3_stmt *stmt;
-  int nb_sel = 0;
-  uint32_t imgid_sel = -1;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
-                              NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    nb_sel++;
-    if(nb_sel > 1) break;
-    imgid_sel = sqlite3_column_int(stmt, 0);
-  }
-  sqlite3_finalize(stmt);
-  if(nb_sel == 1 && imgid_sel == lib->full_preview_id)
-    lib->full_preview_follow_sel = TRUE;
-  else
-    lib->full_preview_follow_sel = FALSE;
-
-  // let's hide some gui components
-  lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_LEFT) & 1) << 0;
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE, FALSE);
-  lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_RIGHT) & 1) << 1;
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE, FALSE);
-  lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM) & 1) << 2;
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, FALSE, FALSE);
-  lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP) & 1) << 3;
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, FALSE, FALSE);
-  lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_TOP) & 1) << 4;
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE, FALSE);
-  lib->full_preview |= (dt_ui_panel_visible(darktable.gui->ui, DT_UI_PANEL_BOTTOM) & 1) << 5;
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, FALSE, FALSE);
-
-  // preview with focus detection
-  lib->display_focus = focus;
-
-  // reset preview values
-  lib->full_zoom = 1.0f;
-  lib->full_x = 0.0f;
-  lib->full_y = 0.0f;
-  _full_preview_destroy(self);
-
-  // we don't want want drag and drop here
-  _unregister_custom_image_order_drag_n_drop(self);
-
-  lib->force_expose_all = TRUE;
-}
-static void _preview_quit(dt_view_t *self)
-{
-  dt_library_t *lib = (dt_library_t *)self->data;
-  if(lib->full_preview_follow_sel)
-  {
-    dt_selection_select_single(darktable.selection, lib->full_preview_id);
-    _ensure_image_visibility(lib, lib->full_preview_rowid);
-  }
-  lib->full_preview_id = -1;
-  lib->full_preview_rowid = -1;
-  if(!lib->using_arrows) dt_control_set_mouse_over_id(-1);
-
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, (lib->full_preview & 1), FALSE);
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, (lib->full_preview & 2), FALSE);
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, (lib->full_preview & 4), FALSE);
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, (lib->full_preview & 8), FALSE);
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, (lib->full_preview & 16), FALSE);
-  dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_BOTTOM, (lib->full_preview & 32), FALSE);
-
-  lib->full_preview = 0;
-  lib->display_focus = 0;
-  _full_preview_destroy(self);
-  lib->full_zoom = 1.0f;
-  lib->full_x = 0.0f;
-  lib->full_y = 0.0f;
-
-  // restore drag and drop
-  _register_custom_image_order_drag_n_drop(self);
-
-  lib->force_expose_all = TRUE;
 }
 
 int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)
