@@ -2011,7 +2011,7 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     params.full_preview = TRUE;
     if(sel_img_count <= max_in_memory_images)
     {
-      params.full_zoom = &lib->full_zoom;
+      params.full_zoom = lib->full_zoom;
       params.full_x = &lib->full_x;
       params.full_y = &lib->full_y;
       params.full_surface = &lib->fp_surf[i].surface;
@@ -2193,7 +2193,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
   params.py = pointery;
   params.zoom = 1;
   params.full_preview = TRUE;
-  params.full_zoom = &lib->full_zoom;
+  params.full_zoom = lib->full_zoom;
   params.full_zoom100 = &lib->fp_surf[0].zoom_100;
   params.full_w1 = &lib->fp_surf[0].w_fit;
   params.full_h1 = &lib->fp_surf[0].h_fit;
@@ -2939,8 +2939,12 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       float nz = 40.0f;
       if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
       {
-        // we stop at the minimum zoom
-        for(int i = 0; i < sel_img_count; i++) nz = fminf(nz, lib->fp_surf[i].zoom_100);
+        // we get the 100% zoom of the largest image
+        nz = 1.0f;
+        for(int i = 0; i < sel_img_count; i++)
+        {
+          if(lib->fp_surf[i].zoom_100 > nz) nz = lib->fp_surf[i].zoom_100;
+        }
       }
       else
         nz = lib->fp_surf[0].zoom_100;
