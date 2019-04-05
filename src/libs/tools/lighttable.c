@@ -34,7 +34,7 @@ typedef struct dt_lib_tool_lighttable_t
   GtkWidget *zoom;
   GtkWidget *zoom_entry;
   GtkWidget *layout_combo;
-  dt_lighttable_layout_t layout, previous_layout;
+  dt_lighttable_layout_t layout, base_layout;
   int current_zoom;
   GtkWidget *display_num_images; // slider & entry for number of images to be displayed in culling mode
   GtkWidget *display_num_images_entry;
@@ -120,9 +120,7 @@ void gui_init(dt_lib_module_t *self)
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
   d->layout =  dt_conf_get_int("plugins/lighttable/layout");
-  d->previous_layout = (d->layout == DT_LIGHTTABLE_LAYOUT_EXPOSE || d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
-                           ? DT_LIGHTTABLE_LAYOUT_FILEMANAGER
-                           : DT_LIGHTTABLE_LAYOUT_EXPOSE;
+  d->base_layout = dt_conf_get_int("plugins/lighttable/base_layout");
   d->current_zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
   d->current_display_num_images = dt_conf_get_int("plugins/lighttable/display_num_images");
 
@@ -473,6 +471,11 @@ static void _lib_lighttable_change_layout(dt_lib_module_t *self, dt_lighttable_l
   if(current_layout != layout)
   {
     dt_conf_set_int("plugins/lighttable/layout", layout);
+    if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+    {
+      d->base_layout = layout;
+      dt_conf_set_int("plugins/lighttable/base_layout", layout);
+    }
     gtk_combo_box_set_active(GTK_COMBO_BOX(d->layout_combo), layout);
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
   }
@@ -586,11 +589,10 @@ static gboolean _lib_lighttable_key_accel_toggle_expose_mode(GtkAccelGroup *acce
 
   if(d->layout != DT_LIGHTTABLE_LAYOUT_EXPOSE)
   {
-    d->previous_layout = d->layout;
     _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_EXPOSE);
   }
   else
-    _lib_lighttable_set_layout(self, d->previous_layout);
+    _lib_lighttable_set_layout(self, d->base_layout);
 
   dt_control_queue_redraw_center();
   return TRUE;
@@ -605,11 +607,10 @@ static gboolean _lib_lighttable_key_accel_toggle_culling_mode(GtkAccelGroup *acc
 
   if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING)
   {
-    d->previous_layout = d->layout;
     _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING);
   }
   else
-    _lib_lighttable_set_layout(self, d->previous_layout);
+    _lib_lighttable_set_layout(self, d->base_layout);
 
   dt_control_queue_redraw_center();
   return TRUE;

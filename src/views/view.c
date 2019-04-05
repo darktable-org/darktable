@@ -1014,9 +1014,9 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   int32_t py = vals->py;
   gboolean full_preview = vals->full_preview;
   gboolean image_only = vals->image_only;
-  float *full_zoom = vals->full_zoom;
-  float *full_x = vals->full_x;
-  float *full_y = vals->full_y;
+  float full_zoom = vals->full_zoom;
+  float full_x = vals->full_x;
+  float full_y = vals->full_y;
 
   // active if zoom>1 or in the proper area
   const gboolean in_metadata_zone = (px < width && py < height / 2) || (zoom > 1);
@@ -1095,8 +1095,11 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
 
 
   dt_mipmap_cache_t *cache = darktable.mipmap_cache;
+  if(vals->full_surface_id && vals->full_zoom100 && *(vals->full_surface_id) != imgid)
+    *(vals->full_zoom100) = 40.0f;
   float fz = 1.0f;
-  if(full_zoom) fz = *full_zoom;
+  if(full_zoom > 0.0f) fz = full_zoom;
+  if(vals->full_zoom100 && *(vals->full_zoom100) > 0.0f) fz = fminf(*(vals->full_zoom100), fz);
   dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(cache, imgwd * width * fz, imgwd * height * fz);
 
 
@@ -1144,10 +1147,9 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     {
       float zoom_100 = fmaxf((float)buf_wd / ((float)width * imgwd), (float)buf_ht / ((float)height * imgwd));
       if(zoom_100 < 1.0f) zoom_100 = 1.0f;
-      *(vals->full_zoom100) = zoom_100;
+      if(vals->full_zoom100) *(vals->full_zoom100) = zoom_100;
       if(fz > zoom_100)
       {
-        *full_zoom = zoom_100;
         fz = zoom_100;
       }
     }
@@ -1367,7 +1369,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
       // we move the full preview
       float fx = 0.0f;
       float fy = 0.0f;
-      if(fz > 1.0f && full_x && full_y)
+      if(fz > 1.0f)
       {
         int w = width;
         int h = height;
@@ -1378,29 +1380,23 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
           h -= 2 * tb;
         }
         // we want to be sure the image stay in the window
-        fx = fminf((buf_wd * scale - w) / 2, fabsf(*full_x));
-        if(*full_x < 0) fx = -fx;
-        if(buf_wd * scale <= w) fx = 0;
-        fy = fminf((buf_ht * scale - h) / 2, fabsf(*full_y));
-        if(*full_y < 0) fy = -fy;
-        if(buf_ht * scale <= h) fy = 0;
-
-        if(buf_sizeok)
+        if(buf_sizeok && vals->full_maxdx && vals->full_maxdy)
         {
-          *full_x = fx;
-          *full_y = fy;
+          *(vals->full_maxdx) = fmaxf(0.0f, (buf_wd * scale - w) / 2);
+          *(vals->full_maxdy) = fmaxf(0.0f, (buf_ht * scale - h) / 2);
         }
+        fx = fminf((buf_wd * scale - w) / 2, fabsf(full_x));
+        if(full_x < 0) fx = -fx;
+        if(buf_wd * scale <= w) fx = 0;
+        fy = fminf((buf_ht * scale - h) / 2, fabsf(full_y));
+        if(full_y < 0) fy = -fy;
+        if(buf_ht * scale <= h) fy = 0;
 
         // and we determine the rectangle where the image is display
         rectw = fminf(w / scale, rectw);
         recth = fminf(h / scale, recth);
         rectx = 0.5 * buf_wd - fx / scale - 0.5 * rectw;
         recty = 0.5 * buf_ht - fy / scale - 0.5 * recth;
-      }
-      else if(full_x && full_y)
-      {
-        *full_x = 0.0f;
-        *full_y = 0.0f;
       }
 
       if(buf_ok && fz == 1.0f && vals->full_w1 && vals->full_h1)
