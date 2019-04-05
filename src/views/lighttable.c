@@ -2953,7 +2953,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       dt_control_log(_("zooming is limited to %d images"),
                      dt_conf_get_int("plugins/lighttable/preview/max_in_memory_images"));
     }
-    else if(lib->missing_thumbnails == 0)
+    else
     {
       float nz = 40.0f;
       if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)

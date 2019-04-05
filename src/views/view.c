@@ -1476,6 +1476,12 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   cairo_restore(cr);
 
   if(buf_mipmap) dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  if(buf_mipmap && !missing && vals->full_surface && !*(vals->full_surface_w_lock))
+  {
+    // we don't need this in the cache anymore, as we already have it in memory for zoom&pan
+    // let's drop it to free space. This reduce the risk of getting out of space...
+    dt_mipmap_cache_remove_at_size(cache, imgid, mip);
+  }
 
   cairo_save(cr);
 
