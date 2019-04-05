@@ -3097,8 +3097,17 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     {
       float dx = 0.0f;
       float dy = 0.0f;
-      GList *selected = dt_collection_get_selected(darktable.collection, -1);
-      const int sel_img_count = g_list_length(selected);
+      int sel_img_count = 1;
+      if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+      {
+        GList *selected = dt_collection_get_selected(darktable.collection, -1);
+        sel_img_count = g_list_length(selected);
+        if(selected) g_list_free(selected);
+      }
+      else if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+      {
+        sel_img_count = get_display_num_images();
+      }
       for(int i = 0; i < sel_img_count; i++)
       {
         dx = fminf(dx, -lib->fp_surf[i].max_dx);
@@ -3106,7 +3115,6 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
         dy = fminf(dy, -lib->fp_surf[i].max_dy);
         dy = fmaxf(dy, lib->fp_surf[i].max_dy);
       }
-      if(selected) g_list_free(selected);
       lib->full_x = fminf(lib->full_x, dx);
       lib->full_x = fmaxf(lib->full_x, -dx);
       lib->full_y = fminf(lib->full_y, dy);
