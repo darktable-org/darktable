@@ -108,6 +108,7 @@ typedef struct dt_gui_gtk_t
   GtkWidget *scroll_to[2]; // one for left, one for right
 
   gint scroll_mask;
+
 } dt_gui_gtk_t;
 
 #if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 13, 1))
@@ -288,6 +289,8 @@ void dt_ui_toggle_panels_visibility(struct dt_ui_t *ui);
 void dt_ui_notify_user();
 /** \brief get visible state of panel */
 gboolean dt_ui_panel_visible(struct dt_ui_t *ui, const dt_ui_panel_t);
+/** \brief get visible state of panel */
+gboolean dt_ui_panel_detached(struct dt_ui_t *ui, const dt_ui_panel_t p);
 /** \brief get the center drawable widget */
 GtkWidget *dt_ui_center(struct dt_ui_t *ui);
 /** \brief get the main window widget */

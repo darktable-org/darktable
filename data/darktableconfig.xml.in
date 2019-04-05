@@ -23,6 +23,20 @@
     <longdescription>(needs a restart)</longdescription>
   </dtconfig>
   <dtconfig prefs="gui">
+    <name>panels/detached_left</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>detach the left panel (needs a restart)</shortdescription>
+    <longdescription>Be carefull : don't trust colors in this panel !</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
+    <name>panels/detached_right</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>detach the right panel (needs a restart)</shortdescription>
+    <longdescription>Be carefull : don't trust colors in this panel !</longdescription>
+  </dtconfig>
+  <dtconfig prefs="gui">
     <name>slideshow_delay</name>
     <type>int</type>
     <default>5</default>

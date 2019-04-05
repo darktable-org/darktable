@@ -86,6 +86,10 @@ typedef struct dt_ui_t
   /* panel widgets */
   GtkWidget *panels[DT_UI_PANEL_SIZE];
 
+  /* detached panel windows */
+  gboolean is_detached[DT_UI_PANEL_SIZE];
+  GtkWidget *detached[DT_UI_PANEL_SIZE];
+
   /* center widget */
   GtkWidget *center;
   /* main widget */
@@ -1304,6 +1308,10 @@ static void init_widgets(dt_gui_gtk_t *gui)
   GtkWidget *container;
   GtkWidget *widget;
 
+  // retrieve panels detcahed states
+  gui->ui->is_detached[DT_UI_PANEL_LEFT] = dt_conf_get_bool("panels/detached_left");
+  gui->ui->is_detached[DT_UI_PANEL_RIGHT] = dt_conf_get_bool("panels/detached_right");
+
   // Creating the main window
   widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_widget_set_name(widget, "main_window");
@@ -1407,25 +1415,31 @@ static void init_main_table(GtkWidget *container)
   widget = gtk_drawing_area_new();
   darktable.gui->widgets.left_border = widget;
 
-  gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(10), -1);
-  gtk_widget_set_app_paintable(widget, TRUE);
-  gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
-                                | GDK_SCROLL_MASK);
-  gtk_grid_attach(GTK_GRID(container), widget, 0, 0, 1, 2);
-  gtk_widget_show(widget);
+  if(!darktable.gui->ui->is_detached[DT_UI_PANEL_LEFT])
+  {
+    gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(10), -1);
+    gtk_widget_set_app_paintable(widget, TRUE);
+    gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                                      | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
+                                      | GDK_SCROLL_MASK);
+    gtk_grid_attach(GTK_GRID(container), widget, 0, 0, 1, 2);
+    gtk_widget_show(widget);
+  }
 
   // Adding the right border
   widget = gtk_drawing_area_new();
   darktable.gui->widgets.right_border = widget;
 
-  gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(10), -1);
-  gtk_widget_set_app_paintable(widget, TRUE);
-  gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
-                                | GDK_SCROLL_MASK);
-  gtk_grid_attach(GTK_GRID(container), widget, 4, 0, 1, 2);
-  gtk_widget_show(widget);
+  if(!darktable.gui->ui->is_detached[DT_UI_PANEL_RIGHT])
+  {
+    gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(10), -1);
+    gtk_widget_set_app_paintable(widget, TRUE);
+    gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                                      | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
+                                      | GDK_SCROLL_MASK);
+    gtk_grid_attach(GTK_GRID(container), widget, 4, 0, 1, 2);
+    gtk_widget_show(widget);
+  }
 
   /* initialize the top container */
   _ui_init_panel_top(darktable.gui->ui, container);
@@ -1733,6 +1747,10 @@ gboolean dt_ui_panel_visible(dt_ui_t *ui, const dt_ui_panel_t p)
   g_return_val_if_fail(GTK_IS_WIDGET(ui->panels[p]), FALSE);
   return gtk_widget_get_visible(ui->panels[p]);
 }
+gboolean dt_ui_panel_detached(struct dt_ui_t *ui, const dt_ui_panel_t p)
+{
+  return (ui->is_detached[p]);
+}
 
 GtkWidget *dt_ui_center(dt_ui_t *ui)
 {
@@ -1834,6 +1852,60 @@ static GtkWidget *_ui_init_panel_container_bottom(GtkWidget *container)
   return w;
 }
 
+static gboolean _ui_panel_window_changed(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  GtkWindow *wd = GTK_WINDOW(widget);
+  const gchar *name = gtk_window_get_title(wd);
+
+  int w, h;
+  gtk_window_get_size(wd, &w, &h);
+  int x, y;
+  gtk_window_get_position(wd, &x, &y);
+
+  char var[1024];
+  snprintf(var, sizeof(var), "panels/%s/width", name);
+  dt_conf_set_int(var, w);
+  snprintf(var, sizeof(var), "panels/%s/height", name);
+  dt_conf_set_int(var, h);
+  snprintf(var, sizeof(var), "panels/%s/posx", name);
+  dt_conf_set_int(var, x);
+  snprintf(var, sizeof(var), "panels/%s/posy", name);
+  dt_conf_set_int(var, y);
+
+  return FALSE;
+}
+static GtkWidget *_ui_init_detachable_panel(GtkWidget *container, gchar *name)
+{
+  GtkWindow *wd = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+  gtk_window_set_transient_for(wd, GTK_WINDOW(gtk_widget_get_toplevel(container)));
+  gtk_window_set_attached_to(wd, container);
+  gtk_window_set_resizable(wd, TRUE);
+  gtk_window_set_destroy_with_parent(wd, TRUE);
+  gtk_window_set_modal(wd, FALSE);
+  gtk_window_set_deletable(wd, FALSE);
+  gtk_window_set_type_hint(wd, GDK_WINDOW_TYPE_HINT_TOOLBAR);
+  gtk_window_set_skip_taskbar_hint(wd, TRUE);
+  gtk_window_set_skip_pager_hint(wd, TRUE);
+  gtk_window_set_title(wd, name);
+
+  // position and size
+  char var[1024];
+  snprintf(var, sizeof(var), "panels/%s/width", name);
+  int w = dt_conf_get_int(var);
+  snprintf(var, sizeof(var), "panels/%s/height", name);
+  int h = dt_conf_get_int(var);
+  snprintf(var, sizeof(var), "panels/%s/posx", name);
+  int x = dt_conf_get_int(var);
+  snprintf(var, sizeof(var), "panels/%s/posy", name);
+  int y = dt_conf_get_int(var);
+
+  gtk_window_set_default_size(wd, w, h);
+  gtk_window_move(wd, x, y);
+
+  g_signal_connect(G_OBJECT(wd), "configure-event", G_CALLBACK(_ui_panel_window_changed), wd);
+  return GTK_WIDGET(wd);
+}
+
 static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
 {
   GtkWidget *widget;
@@ -1841,13 +1913,21 @@ static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
   /* create left panel main widget and add it to ui */
   widget = ui->panels[DT_UI_PANEL_LEFT] = dtgtk_side_panel_new();
   gtk_widget_set_name(widget, "left");
-//   gtk_widget_set_margin_left(widget, DT_PIXEL_APPLY_DPI(5)); // i prefer it with less blank space
-  gtk_grid_attach(GTK_GRID(container), widget, 1, 1, 1, 1);
+
+  if(ui->is_detached[DT_UI_PANEL_LEFT])
+  {
+    ui->detached[DT_UI_PANEL_LEFT] = _ui_init_detachable_panel(container, "left");
+    gtk_container_add(GTK_CONTAINER(ui->detached[DT_UI_PANEL_LEFT]), widget);
+    gtk_widget_show_all(GTK_WIDGET(ui->detached[DT_UI_PANEL_LEFT]));
+  }
+  else
+    gtk_grid_attach(GTK_GRID(container), widget, 1, 1, 1, 1);
 
   /* add top,center,bottom*/
   container = widget;
   ui->containers[DT_UI_CONTAINER_PANEL_LEFT_TOP] = _ui_init_panel_container_top(container);
-  ui->containers[DT_UI_CONTAINER_PANEL_LEFT_CENTER] = _ui_init_panel_container_center(container, FALSE);
+  ui->containers[DT_UI_CONTAINER_PANEL_LEFT_CENTER]
+      = _ui_init_panel_container_center(container, ui->is_detached[DT_UI_PANEL_LEFT]);
   ui->containers[DT_UI_CONTAINER_PANEL_LEFT_BOTTOM] = _ui_init_panel_container_bottom(container);
 
   /* lets show all widgets */
@@ -1861,8 +1941,15 @@ static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
   /* create left panel main widget and add it to ui */
   widget = ui->panels[DT_UI_PANEL_RIGHT] = dtgtk_side_panel_new();
   gtk_widget_set_name(widget, "right");
-//   gtk_widget_set_margin_right(widget, DT_PIXEL_APPLY_DPI(5)); // i prefer it with less blank space
-  gtk_grid_attach(GTK_GRID(container), widget, 3, 1, 1, 1);
+
+  if(ui->is_detached[DT_UI_PANEL_RIGHT])
+  {
+    ui->detached[DT_UI_PANEL_RIGHT] = _ui_init_detachable_panel(container, "right");
+    gtk_container_add(GTK_CONTAINER(ui->detached[DT_UI_PANEL_RIGHT]), widget);
+    gtk_widget_show_all(GTK_WIDGET(ui->detached[DT_UI_PANEL_RIGHT]));
+  }
+  else
+    gtk_grid_attach(GTK_GRID(container), widget, 3, 1, 1, 1);
 
   /* add top,center,bottom*/
   container = widget;

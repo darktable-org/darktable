@@ -225,6 +225,18 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
     cairo_fill(cr);
     cairo_surface_destroy(surface);
 
+    if(dt_ui_panel_detached(darktable.gui->ui, DT_UI_PANEL_LEFT))
+    {
+      GdkRGBA fg_color;
+      gtk_style_context_get_color(gtk_widget_get_style_context(widget), gtk_widget_get_state_flags(widget),
+                                  &fg_color);
+
+      gdk_cairo_set_source_rgba(cr, &fg_color);
+      dtgtk_cairo_paint_gamut_check(cr, 0, 0, DT_PIXEL_APPLY_DPI(25) / scale, DT_PIXEL_APPLY_DPI(25) / scale,
+                                    CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+      gtk_widget_set_tooltip_text(widget, _("don't trust the color displayed here !"));
+    }
+
     // draw box where we are
     dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     int closeup = dt_control_get_dev_closeup();
