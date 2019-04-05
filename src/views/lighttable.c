@@ -2936,8 +2936,17 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
      && (state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
   {
-    GList *selected = dt_collection_get_selected(darktable.collection, -1);
-    const int sel_img_count = g_list_length(selected);
+    int sel_img_count = 1;
+    if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+    {
+      GList *selected = dt_collection_get_selected(darktable.collection, -1);
+      sel_img_count = g_list_length(selected);
+      if(selected) g_list_free(selected);
+    }
+    else if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+    {
+      sel_img_count = get_display_num_images();
+    }
     if((get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
        && sel_img_count > dt_conf_get_int("plugins/lighttable/preview/max_in_memory_images"))
     {
@@ -2982,7 +2991,6 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
         dt_control_queue_redraw_center();
       }
     }
-    if(selected) g_list_free(selected);
   }
   else if(lib->full_preview_id > -1)
   {
