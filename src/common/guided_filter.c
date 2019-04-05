@@ -247,9 +247,11 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
     var_imgg_gb.data[i] -= imgg_mean_g.data[i] * imgg_mean_b.data[i];
     var_imgg_bb.data[i] -= imgg_mean_b.data[i] * imgg_mean_b.data[i] - eps;
   }
-  gray_image a_r = new_gray_image(width, height);
-  gray_image a_g = new_gray_image(width, height);
-  gray_image a_b = new_gray_image(width, height);
+  // we will recycle memory of the arrays imgg_mean_? and img_mean for the new coefficient arrays a_? and b to
+  // reduce memory foot print
+  gray_image a_r = imgg_mean_r;
+  gray_image a_g = imgg_mean_g;
+  gray_image a_b = imgg_mean_b;
   gray_image b = img_mean;
   for(int i1 = 0; i1 < height; i1++)
   {
@@ -269,6 +271,7 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
       float det0 = Sigma_0_0 * (Sigma_1_1 * Sigma_2_2 - Sigma_1_2 * Sigma_1_2)
                    - Sigma_0_1 * (Sigma_0_1 * Sigma_2_2 - Sigma_0_2 * Sigma_1_2)
                    + Sigma_0_2 * (Sigma_0_1 * Sigma_1_2 - Sigma_0_2 * Sigma_1_1);
+      float a_r_, a_g_, a_b_;
       if(fabsf(det0) > 4.f * FLT_EPSILON)
       {
         float det1 = cov_imgg_img[0] * (Sigma_1_1 * Sigma_2_2 - Sigma_1_2 * Sigma_1_2)
@@ -280,20 +283,24 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
         float det3 = Sigma_0_0 * (Sigma_1_1 * cov_imgg_img[2] - Sigma_1_2 * cov_imgg_img[1])
                      - Sigma_0_1 * (Sigma_0_1 * cov_imgg_img[2] - Sigma_0_2 * cov_imgg_img[1])
                      + cov_imgg_img[0] * (Sigma_0_1 * Sigma_1_2 - Sigma_0_2 * Sigma_1_1);
-        a_r.data[i] = det1 / det0;
-        a_g.data[i] = det2 / det0;
-        a_b.data[i] = det3 / det0;
+        a_r_ = det1 / det0;
+        a_g_ = det2 / det0;
+        a_b_ = det3 / det0;
       }
       else
       {
         // linear system is singular
-        a_r.data[i] = 0.f;
-        a_g.data[i] = 0.f;
-        a_b.data[i] = 0.f;
+        a_r_ = 0.f;
+        a_g_ = 0.f;
+        a_b_ = 0.f;
       }
-      b.data[i] -= a_r.data[i] * imgg_mean_r.data[i];
-      b.data[i] -= a_g.data[i] * imgg_mean_g.data[i];
-      b.data[i] -= a_b.data[i] * imgg_mean_b.data[i];
+      b.data[i] -= a_r_ * imgg_mean_r.data[i];
+      b.data[i] -= a_g_ * imgg_mean_g.data[i];
+      b.data[i] -= a_b_ * imgg_mean_b.data[i];
+      // now data of imgg_mean_? is no longer needed, we can safely overwrite aliasing arrays
+      a_r.data[i] = a_r_;
+      a_g.data[i] = a_g_;
+      a_b.data[i] = a_b_;
       ++i;
     }
   }
@@ -305,7 +312,7 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
   {
     // index of the left most target pixel in the current row
     size_t l = target.left + (size_t)j_imgg * imgg.width;
-    // index of the left most source pixel in the curent row of the
+    // index of the left most source pixel in the current row of the
     // smaller auxiliary gray-scale images a_r, a_g, a_b, and b
     // excluding boundary data from neighboring tiles
     size_t k = (target.left - source.left) + (size_t)(j_imgg - source.lower) * width;
@@ -320,9 +327,6 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
       img_out.data[i_imgg + (size_t)j_imgg * imgg.width] = res;
     }
   }
-  free_gray_image(&a_r);
-  free_gray_image(&a_g);
-  free_gray_image(&a_b);
   free_gray_image(&var_imgg_rr);
   free_gray_image(&var_imgg_rg);
   free_gray_image(&var_imgg_rb);
@@ -369,6 +373,7 @@ void guided_filter(const float *const guide, const float *const in, float *const
 }
 
 #ifdef HAVE_OPENCL
+
 void guided_filter_cl(int devid, cl_mem guide, cl_mem in, cl_mem out, const int width, const int height,
                       const int ch,
                       const int w,              // window size
@@ -395,4 +400,5 @@ error:
   dt_free_align(in_host);
   dt_free_align(out_host);
 }
+
 #endif
