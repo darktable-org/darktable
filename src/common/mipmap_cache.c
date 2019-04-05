@@ -1019,6 +1019,27 @@ void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid)
     }
   }
 }
+void dt_mipmap_cache_remove_at_size(dt_mipmap_cache_t *cache, const uint32_t imgid, dt_mipmap_size_t mip)
+{
+  // get rid of the thumbnails:
+  const uint32_t key = get_key(imgid, mip);
+  dt_cache_entry_t *entry = dt_cache_testget(&_get_cache(cache, mip)->cache, key, 'w');
+  if(entry)
+  {
+    ASAN_UNPOISON_MEMORY_REGION(entry->data, dt_mipmap_buffer_dsc_size);
+    struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
+    dsc->flags |= DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE;
+    dt_cache_release(&_get_cache(cache, mip)->cache, entry);
+
+    // due to DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE, removes thumbnail from disc
+    dt_cache_remove(&_get_cache(cache, mip)->cache, key);
+  }
+  else
+  {
+    // ugly, but avoids alloc'ing thumb if it is not there.
+    dt_mipmap_cache_unlink_ondisk_thumbnail((&_get_cache(cache, mip)->cache)->cleanup_data, imgid, mip);
+  }
+}
 
 void dt_mimap_cache_evict(dt_mipmap_cache_t *cache, const uint32_t imgid)
 {
