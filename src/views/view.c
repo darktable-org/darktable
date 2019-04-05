@@ -1095,6 +1095,8 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
 
 
   dt_mipmap_cache_t *cache = darktable.mipmap_cache;
+  if(vals->full_surface_id && vals->full_zoom100 && *(vals->full_surface_id) != imgid)
+    *(vals->full_zoom100) = 40.0f;
   float fz = 1.0f;
   if(full_zoom > 0.0f) fz = full_zoom;
   if(vals->full_zoom100 && *(vals->full_zoom100) > 0.0f) fz = fminf(*(vals->full_zoom100), fz);
