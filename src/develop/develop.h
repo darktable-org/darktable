@@ -133,10 +133,12 @@ typedef struct dt_develop_t
   int32_t focus_hash;   // determines whether to start a new history item or to merge down.
   int32_t image_loading, first_load, image_force_reload;
   int32_t preview_loading, preview_input_changed;
-  dt_dev_pixelpipe_status_t image_status, preview_status;
+  int32_t preview2_loading, preview2_input_changed;
+  dt_dev_pixelpipe_status_t image_status, preview_status, preview2_status;
   uint32_t timestamp;
   uint32_t average_delay;
   uint32_t preview_average_delay;
+  uint32_t preview2_average_delay;
   struct dt_iop_module_t *gui_module; // this module claims gui expose/event callbacks.
   float preview_downsampling;         // < 1.0: optionally downsample preview
 
@@ -144,8 +146,9 @@ typedef struct dt_develop_t
   int32_t width, height;
 
   // image processing pipeline with caching
-  struct dt_dev_pixelpipe_t *pipe, *preview_pipe;
-  dt_pthread_mutex_t pipe_mutex, preview_pipe_mutex; // these are locked while the pipes are still in use
+  struct dt_dev_pixelpipe_t *pipe, *preview_pipe, *preview2_pipe;
+  dt_pthread_mutex_t pipe_mutex, preview_pipe_mutex,
+      preview2_pipe_mutex; // these are locked while the pipes are still in use
 
   // image under consideration, which
   // is copied each time an image is changed. this means we have some information
@@ -274,6 +277,15 @@ typedef struct dt_develop_t
     GtkWidget *floating_window, *softproof_button, *gamut_button;
   } profile;
 
+  // second darkroom window related things
+  struct
+  {
+    GtkWidget *second_wnd;
+    GtkWidget *widget;
+    int width, height;
+    float ppd;
+  } second_window;
+
   int mask_form_selected_id; // select a mask inside an iop
   gboolean darkroom_skip_mouse_events; // skip mouse events for masks
 } dt_develop_t;
@@ -283,9 +295,11 @@ void dt_dev_cleanup(dt_develop_t *dev);
 
 void dt_dev_process_image_job(dt_develop_t *dev);
 void dt_dev_process_preview_job(dt_develop_t *dev);
+void dt_dev_process_preview2_job(dt_develop_t *dev);
 // launch jobs above
 void dt_dev_process_image(dt_develop_t *dev);
 void dt_dev_process_preview(dt_develop_t *dev);
+void dt_dev_process_preview2(dt_develop_t *dev);
 
 void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid);
 void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid);
