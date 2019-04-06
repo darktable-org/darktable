@@ -113,9 +113,9 @@ static void button_clicked(GtkWidget *widget, gpointer user_data)
   else if(i == 3)
     dt_control_duplicate_images();
   else if(i == 4)
-    dt_control_flip_images(0);
-  else if(i == 5)
     dt_control_flip_images(1);
+  else if(i == 5)
+    dt_control_flip_images(0);
   else if(i == 6)
     dt_control_flip_images(2);
   else if(i == 7)
