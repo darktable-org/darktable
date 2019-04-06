@@ -1287,7 +1287,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->interpolator), "value-changed", G_CALLBACK(interpolator_callback), self);
 
   c->scale = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->scale, NULL, _("scale"));
+  dt_bauhaus_widget_set_label(c->scale, NULL, C_("graph", "scale"));
   dt_bauhaus_combobox_add(c->scale, _("linear"));
   dt_bauhaus_combobox_add(c->scale, _("log-log (xy)"));
   dt_bauhaus_combobox_add(c->scale, _("semi-log (x)"));
