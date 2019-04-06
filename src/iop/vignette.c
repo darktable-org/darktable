@@ -171,7 +171,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel, relative size", "scale"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel, vignetting", "scale"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "fall-off strength"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "brightness"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
@@ -1149,7 +1149,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   dt_bauhaus_slider_set_format(g->scale, "%.02f%%");
   dt_bauhaus_slider_set_format(g->falloff_scale, "%.02f%%");
-  dt_bauhaus_widget_set_label(g->scale, NULL, C_("relative size", "scale"));
+  dt_bauhaus_widget_set_label(g->scale, NULL, C_("vignetting", "scale"));
   dt_bauhaus_widget_set_label(g->falloff_scale, NULL, _("fall-off strength"));
   dt_bauhaus_widget_set_label(g->brightness, NULL, _("brightness"));
   dt_bauhaus_widget_set_label(g->saturation, NULL, _("saturation"));
