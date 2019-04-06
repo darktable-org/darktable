@@ -471,7 +471,11 @@ static void _view_lighttable_selection_listener_internal_culling(dt_view_t *self
       GList *collected = dt_collection_get_all(darktable.collection, -1);
       if(collected)
       {
-        GList *l = g_list_nth(collected, lib->last_first_selected);
+        GList *l = NULL;
+        if(g_list_length(collected) > lib->last_first_selected)
+          l = g_list_nth(collected, lib->last_first_selected);
+        else
+          l = g_list_last(collected);
         const int imgid = (l) ? GPOINTER_TO_INT(l->data) : -1;
         if(imgid >= 0) filmstrip_set_active_image(lib, imgid);
         g_list_free(collected);
@@ -544,7 +548,8 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
   dt_view_t *self = (dt_view_t *)user_data;
   dt_library_t *lib = (dt_library_t *)self->data;
 
-  _view_lighttable_collection_listener_internal(self, lib);
+  if(lib->current_layout != DT_LIGHTTABLE_LAYOUT_CULLING)
+    _view_lighttable_collection_listener_internal(self, lib);
   _view_lighttable_selection_listener_internal_culling(self, lib);
 }
 
@@ -559,7 +564,8 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
   // we handle change of selection only in expose mode. it is needed
   // here as the selection from the filmstrip is actually what must be
   // displayed in the expose view.
-  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_EXPOSE) _view_lighttable_collection_listener_internal(self, lib);
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_EXPOSE)
+    _view_lighttable_collection_listener_internal(self, lib);
   else if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     _view_lighttable_selection_listener_internal_culling(self, lib);
