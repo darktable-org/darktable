@@ -260,7 +260,7 @@ void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_iop(self, FALSE, NC_("accel", "refresh"), 0, 0);
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "opacity"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel, relative size", "scale"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "scale"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotation"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "x offset"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "y offset"));
@@ -1433,7 +1433,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->scale = dt_bauhaus_slider_new_with_range(self, 1.0, 100.0, 1.0, p->scale, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->scale, 1.0, 500.0);
   dt_bauhaus_slider_set_format(g->scale, "%.f%%");
-  dt_bauhaus_widget_set_label(g->scale, NULL, C_("relative size", "scale"));
+  dt_bauhaus_widget_set_label(g->scale, NULL, _("scale"));
   g->rotate = dt_bauhaus_slider_new_with_range(self, -180.0, 180.0, 1.0, p->rotate, 2);
   dt_bauhaus_slider_set_format(g->rotate, "%.02f°");
   dt_bauhaus_widget_set_label(g->rotate, NULL, _("rotation"));
