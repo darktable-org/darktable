@@ -2670,10 +2670,12 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   int iop_order_version = 0;
   double longitude = NAN, latitude = NAN, altitude = NAN;
   gchar *filename = NULL;
+  gchar *datetime_taken = NULL;
+
   // get stars and raw params from db
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT filename, flags, raw_parameters, "
-                                                             "longitude, latitude, altitude, history_end, iop_order_version "
+                                                             "longitude, latitude, altitude, history_end, iop_order_version, datetime_taken "
                                                              "FROM main.images WHERE id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -2687,7 +2689,11 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
     if(sqlite3_column_type(stmt, 5) == SQLITE_FLOAT) altitude = sqlite3_column_double(stmt, 5);
     history_end = sqlite3_column_int(stmt, 6);
     iop_order_version = sqlite3_column_int(stmt, 7);
+    datetime_taken = (gchar *)sqlite3_column_text(stmt, 8);
   }
+
+  // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
+  xmpData["Xmp.exif.DateTimeOriginal"] = datetime_taken;
 
   // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
   Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
