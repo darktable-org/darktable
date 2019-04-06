@@ -602,8 +602,10 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
       // we refresh the pipe
       dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
       dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
+      dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
       dev->pipe->cache_obsolete = 1;
       dev->preview_pipe->cache_obsolete = 1;
+      dev->preview2_pipe->cache_obsolete = 1;
 
       // invalidate buffers and force redraw of darkroom
       dt_dev_invalidate_all(dev);
