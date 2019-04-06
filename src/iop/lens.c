@@ -155,7 +155,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel, lens correction", "scale"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "scale"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "TCA R"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "TCA B"));
 
@@ -2292,7 +2292,7 @@ void gui_init(struct dt_iop_module_t *self)
   // scale
   g->scale = dt_bauhaus_slider_new_with_range(self, 0.1, 2.0, 0.005, p->scale, 3);
   gtk_widget_set_tooltip_text(g->scale, _("auto scale"));
-  dt_bauhaus_widget_set_label(g->scale, NULL, C_("lens correction", "scale"));
+  dt_bauhaus_widget_set_label(g->scale, NULL, _("scale"));
   g_signal_connect(G_OBJECT(g->scale), "value-changed", G_CALLBACK(scale_changed), self);
   g_signal_connect(G_OBJECT(g->scale), "quad-pressed", G_CALLBACK(autoscale_pressed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale, TRUE, TRUE, 0);
