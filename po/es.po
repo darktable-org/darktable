@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 2.6.2\n"
+"Project-Id-Version: darktable 2.6.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-04 22:21-0600\n"
-"PO-Revision-Date: 2019-04-04 10:58-0600\n"
+"POT-Creation-Date: 2019-04-05 18:28-0600\n"
+"PO-Revision-Date: 2019-04-06 01:46-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -124,7 +124,7 @@ msgid "initial star rating for all images when importing a filmroll"
 msgstr "Puntuación inicial para todas las imágenes al importar carretes"
 
 #: ../build/src/preferences_gen.h:2195 ../src/libs/tools/lighttable.c:91
-#: ../src/views/lighttable.c:228
+#: ../src/views/lighttable.c:231
 msgid "lighttable"
 msgstr "mesa de luz"
 
@@ -434,7 +434,7 @@ msgstr "VERDADERO"
 #: ../build/src/preferences_gen.h:2703
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr ""
-"esta opción alterna el comportamiento del mayús+clic en el modo de cuarto "
+"esta opción alterna el comportamiento del Mayús+clic en el modo de cuarto "
 "oscuro"
 
 #: ../build/src/preferences_gen.h:2711
@@ -1763,7 +1763,7 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d copia local ha sido sincronizada"
 msgstr[1] "%d copias locales han sido sincronizadas"
 
-#: ../src/common/imageio.c:615 ../src/common/mipmap_cache.c:1076
+#: ../src/common/imageio.c:615 ../src/common/mipmap_cache.c:1097
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "la imagen `%s' no está disponible"
@@ -1870,7 +1870,7 @@ msgstr "oficio"
 #: ../src/common/pwstorage/pwstorage.c:83
 msgid "GNOME Keyring backend is no longer supported. configure a different one"
 msgstr ""
-"El sistema de llaves de GNOME ya no está soportado. configure uno diferente"
+"El sistema de llaves de GNOME ya no tiene soporte. Configure uno diferente"
 
 #: ../src/common/ratings.c:128 ../src/common/ratings.c:149
 #, c-format
@@ -1951,7 +1951,7 @@ msgstr "m"
 
 #: ../src/control/control.c:317
 msgid "working.."
-msgstr "trabajando .."
+msgstr "trabajando.."
 
 #: ../src/control/crawler.c:342 ../src/libs/select.c:40
 msgid "select"
@@ -2215,7 +2215,7 @@ msgstr[1] "¿desea eliminar %d imágenes seleccionadas de la colección?"
 
 #: ../src/control/jobs/control_jobs.c:1504
 msgid "remove images?"
-msgstr "eliminar las imágenes?"
+msgstr "¿eliminar las imágenes?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
 #: ../src/control/jobs/control_jobs.c:1520
@@ -2226,8 +2226,8 @@ msgstr "borrar imágenes"
 #, c-format
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
-msgstr[0] "¿realmente desea enviar %d imagen seleccionada a la papelera?"
-msgstr[1] "¿realmente desea enviar %d imágenes seleccionadas a la papelera?"
+msgstr[0] "¿desea realmente enviar %d imagen seleccionada a la papelera?"
+msgstr[1] "¿desea realmente enviar %d imágenes seleccionadas a la papelera?"
 
 #: ../src/control/jobs/control_jobs.c:1546
 #, c-format
@@ -2243,7 +2243,7 @@ msgstr "¿eliminar imagenes?"
 
 #: ../src/control/jobs/control_jobs.c:1553
 msgid "delete images?"
-msgstr "borrar las imágenes?"
+msgstr "¿borrar las imágenes?"
 
 #: ../src/control/jobs/control_jobs.c:1574
 msgid "move images"
@@ -2281,8 +2281,8 @@ msgstr[1] ""
 #: ../src/control/jobs/control_jobs.c:1609
 msgid "move image?"
 msgid_plural "move images?"
-msgstr[0] "mover las imágenes?"
-msgstr[1] "mover las imágenes?"
+msgstr[0] "¿mover las imágenes?"
+msgstr[1] "¿mover las imágenes?"
 
 #: ../src/control/jobs/control_jobs.c:1634
 msgid "copy images"
@@ -2489,7 +2489,7 @@ msgid ""
 "ctrl+click to select an area"
 msgstr ""
 "seleccionar el color de la interfaz gráfica desde la imagen\n"
-"ctrl+clic para seleccionar un área"
+"Ctrl+clic para seleccionar un área"
 
 #: ../src/develop/blend_gui.c:1522
 msgid ""
@@ -2498,8 +2498,8 @@ msgid ""
 "ctrl+click + drag to use the output image"
 msgstr ""
 "fijar el rango basado en un área de la imagen\n"
-"clic+arratrar para usar la imagen de entrada\n"
-"ctrl+clic + arrastrar para usar la imagen de salida"
+"clic+arrastrar para usar la imagen de entrada\n"
+"Ctrl+clic+arrastrar para usar la imagen de salida"
 
 #: ../src/develop/blend_gui.c:1527
 msgid "reset blend mask settings"
@@ -2900,8 +2900,8 @@ msgid ""
 "to display channel. hover over parametric mask slider to select channel for "
 "display"
 msgstr ""
-"mostrar la máscara y/o el canal de color. ctrl+clic para mostrar la máscara, "
-"mayús+clic para mostrar el canal. pase el puntero por encima del deslizador "
+"Mostrar la máscara y/o el canal de color. Ctrl+clic para mostrar la máscara, "
+"Mayús+clic para mostrar el canal. Pase el puntero por encima del deslizador "
 "para seleccionar el canal a mostrar"
 
 #: ../src/develop/blend_gui.c:2604
@@ -3065,11 +3065,11 @@ msgstr[1] "%s han sido importados"
 
 #: ../src/develop/masks/masks.c:145
 msgid "ctrl+click to add a sharp node"
-msgstr "ctrl+clic para agregar nodo de enfoque"
+msgstr "Ctrl+clic para agregar nodo de enfoque"
 
 #: ../src/develop/masks/masks.c:147
 msgid "ctrl+click to switch between smooth/sharp node"
-msgstr "ctrl+clic para cambiar nodo de suavizado/enfoque"
+msgstr "Ctrl+clic para cambiar nodo de suavizado/enfoque"
 
 #: ../src/develop/masks/masks.c:149
 msgid "right-click to reset curvature"
@@ -3077,20 +3077,20 @@ msgstr "pulsación derecha para reiniciar curvatura"
 
 #: ../src/develop/masks/masks.c:151
 msgid "ctrl+click to add a node"
-msgstr "ctrl+clic para agregar un nodo"
+msgstr "Ctrl+clic para agregar un nodo"
 
 #: ../src/develop/masks/masks.c:153 ../src/develop/masks/masks.c:191
 #, c-format
 msgid ""
 "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"
 msgstr ""
-"mayús+rueda del ratón para ajustar dureza, ctrl+rueda del ratón para ajustar "
+"Mayús+rueda del ratón para ajustar dureza, Ctrl+rueda del ratón para ajustar "
 "la opacidad de la forma (%d%%)"
 
 #: ../src/develop/masks/masks.c:158
 #, c-format
 msgid "ctrl+scroll to set shape opacity (%d%%)"
-msgstr "ctrl+rueda del ratón para ajustar la opacidad de la forma (%d%%)"
+msgstr "Ctrl+rueda del ratón para ajustar la opacidad de la forma (%d%%)"
 
 #: ../src/develop/masks/masks.c:160
 msgid "move to rotate shape"
@@ -3102,13 +3102,13 @@ msgid ""
 "scroll to set size, shift+scroll to set feather size\n"
 "ctrl+scroll to set shape opacity (%d%%)"
 msgstr ""
-"rueda del ratón para ajustar el tamaño, mayús+rueda del ratón para ajustar "
+"rueda del ratón para ajustar el tamaño, Mayús+rueda del ratón para ajustar "
 "la dureza,\n"
-"ctrl+rueda del ratón para ajustar la opacidad (%d%%)"
+"Ctrl+rueda del ratón para ajustar la opacidad (%d%%)"
 
 #: ../src/develop/masks/masks.c:168
 msgid "ctrl+click to rotate"
-msgstr "ctrl+clic para rotar"
+msgstr "Ctrl+clic para rotar"
 
 #: ../src/develop/masks/masks.c:171
 #, c-format
@@ -3116,8 +3116,8 @@ msgid ""
 "shift+click to switch feathering mode, ctrl+click to rotate\n"
 "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%),"
 msgstr ""
-"mayús+clic para cambiar el difuminado, ctrl+clic para rotar\n"
-"mayús+rueda del ratón para establecer el área de difuminado, ctrl+rueda del "
+"Mayús+clic para cambiar el difuminado, Ctrl+clic para rotar\n"
+"Mayús+rueda del ratón para establecer el área de difuminado, Ctrl+rueda del "
 "ratón para establecer la opacidad de la forma (%d%%),"
 
 #: ../src/develop/masks/masks.c:177
@@ -3126,15 +3126,15 @@ msgid ""
 "scroll to set brush size, shift+scroll to set hardness,\n"
 "ctrl+scroll to set opacity (%d%%)"
 msgstr ""
-"rueda del ratón para ajustar el tamaño del pincel, mayús+rueda del ratón "
+"rueda del ratón para ajustar el tamaño del pincel, Mayús+rueda del ratón "
 "para ajustar la dureza,\n"
-"ctrl+rueda del ratón para ajustar la opacidad (%d%%)"
+"Ctrl+rueda del ratón para ajustar la opacidad (%d%%)"
 
 #: ../src/develop/masks/masks.c:180
 #, c-format
 msgid "scroll to set hardness, ctrl+scroll to set shape opacity (%d%%)"
 msgstr ""
-"rueda del ratón para ajustar dureza, ctrl+rueda del ratón para ajustar la "
+"rueda del ratón para ajustar dureza, Ctrl+rueda del ratón para ajustar la "
 "opacidad de la forma (%d%%)"
 
 #: ../src/develop/masks/masks.c:182
@@ -3589,12 +3589,12 @@ msgid "switch view"
 msgstr "cambiar vista"
 
 #. Global zoom in & zoom out
-#: ../src/gui/gtk.c:1168 ../src/libs/tools/lighttable.c:212
+#: ../src/gui/gtk.c:1168 ../src/libs/tools/lighttable.c:210
 msgctxt "accel"
 msgid "zoom in"
 msgstr "acercar"
 
-#: ../src/gui/gtk.c:1169 ../src/libs/tools/lighttable.c:213
+#: ../src/gui/gtk.c:1169 ../src/libs/tools/lighttable.c:211
 msgctxt "accel"
 msgid "zoom out"
 msgstr "alejar"
@@ -5221,8 +5221,8 @@ msgid ""
 "shift-click to only fit lens shift"
 msgstr ""
 "corrección automática para distorsiones verticales de la perspectiva\n"
-"ctrl+clic para corregir solo la rotación\n"
-"mayús+click para corregir la desviación del lente"
+"Ctrl+clic para corregir solo la rotación\n"
+"Mayús+clic para corregir la desviación del lente"
 
 #: ../src/iop/ashift.c:4935
 msgid ""
@@ -5231,8 +5231,8 @@ msgid ""
 "shift-click to only fit lens shift"
 msgstr ""
 "corrección automática para distorsiones horizontales de la perspectiva\n"
-"ctrl+clic para solo corregir la rotación\n"
-"mayús-clic para solo corregir la desviación del lente"
+"Ctrl+clic para solo corregir la rotación\n"
+"Mayús+clic para solo corregir la desviación del lente"
 
 #: ../src/iop/ashift.c:4938
 msgid ""
@@ -5245,9 +5245,9 @@ msgstr ""
 "corrección automática para distorsiones verticales y horizontales de la "
 "perspectiva; corregir rotación, desviación del lente en ambas direcciones, y "
 "corte\n"
-"ctrl+clic para solo corregir la rotación\n"
-"mayús+clic para solo corregir la desviación del lente\n"
-"crtl+mayús+clic para ajustar la rotación y el corte del lente"
+"Ctrl+clic para solo corregir la rotación\n"
+"Mayús+clic para solo corregir la desviación del lente\n"
+"Ctrl+Mayús+clic para ajustar la rotación y el corte del lente"
 
 #: ../src/iop/ashift.c:4944
 msgid ""
@@ -5257,9 +5257,9 @@ msgid ""
 "ctrl-shift-click for a combination of both methods"
 msgstr ""
 "analizar la estructura lineal en la imagen\n"
-"ctrl+clic para mejoras adicionales del borde\n"
-"mayús+clic para mejoras adicionales en el detalle\n"
-"ctrl+mayús+clic para una combinación de ambos métodos"
+"Ctrl+clic para mejoras adicionales del borde\n"
+"Mayús+clic para mejoras adicionales en el detalle\n"
+"Ctrl+Mayús+clic para una combinación de ambos métodos"
 
 #: ../src/iop/ashift.c:4948
 msgid "remove line structure information"
@@ -6667,7 +6667,7 @@ msgstr ""
 "clic para seleccionar\n"
 "doble clic para reiniciar\n"
 "clic derecho para borrar parche\n"
-"mayús+clic mientras seleccione color para reemplazar parche"
+"Mayús+clic mientras seleccione color para reemplazar parche"
 
 #: ../src/iop/colorchecker.c:1350
 msgid "patch"
@@ -6952,26 +6952,26 @@ msgstr "salida"
 
 #: ../src/iop/colorout.c:819 ../src/libs/export.c:676
 #: ../src/libs/print_settings.c:1243 ../src/libs/print_settings.c:1458
-#: ../src/views/darkroom.c:1741 ../src/views/lighttable.c:3835
+#: ../src/views/darkroom.c:1741 ../src/views/lighttable.c:3893
 msgid "perceptual"
 msgstr "perceptual"
 
 #: ../src/iop/colorout.c:820 ../src/libs/export.c:677
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1459
-#: ../src/views/darkroom.c:1742 ../src/views/lighttable.c:3836
+#: ../src/views/darkroom.c:1742 ../src/views/lighttable.c:3894
 msgid "relative colorimetric"
 msgstr "relativo colorimétrico"
 
 #: ../src/iop/colorout.c:821 ../src/libs/export.c:678
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
-#: ../src/views/darkroom.c:1743 ../src/views/lighttable.c:3837
+#: ../src/views/darkroom.c:1743 ../src/views/lighttable.c:3895
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturación"
 
 #: ../src/iop/colorout.c:822 ../src/libs/export.c:679
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
-#: ../src/views/darkroom.c:1744 ../src/views/lighttable.c:3838
+#: ../src/views/darkroom.c:1744 ../src/views/lighttable.c:3896
 msgid "absolute colorimetric"
 msgstr "absoluto colorimétrico"
 
@@ -8721,7 +8721,7 @@ msgid ""
 msgstr ""
 "haga clic y arrastre para agregar el punto\n"
 "desplazamiento para cambiar el tamaño\n"
-"mayús+rueda del ratón para cambiar la fuerza - ctrl+rueda del ratón para "
+"Mayús+rueda del ratón para cambiar la fuerza - Ctrl+rueda del ratón para "
 "cambiar la dirección"
 
 #: ../src/iop/liquify.c:3490
@@ -8732,7 +8732,7 @@ msgid ""
 msgstr ""
 "clic para agregar una línea\n"
 "rueda del ratón para cambiar el tamaño\n"
-"mayús+rueda del ratón para cambiar la fuerza - ctrl+rueda del ratón para "
+"Mayús+rueda del ratón para cambiar la fuerza - Ctrl+rueda del ratón para "
 "cambiar la dirección"
 
 #: ../src/iop/liquify.c:3494
@@ -8743,7 +8743,7 @@ msgid ""
 msgstr ""
 "clic para añadir curva\n"
 "rueda del ratón para cambiar tamaño \n"
-"mayús+rueda del ratón para cambiar intensidad ctrl+rueda del ratón para "
+"Mayús+rueda del ratón para cambiar intensidad Ctrl+rueda del ratón para "
 "cambiar dirección"
 
 #: ../src/iop/liquify.c:3497
@@ -8783,8 +8783,8 @@ msgid ""
 "ctrl-click: add node - right click: remove path\n"
 "ctrl-alt-click: toggle line/curve"
 msgstr ""
-"ctrl+clic: agregar nodo - clic derecho: eliminar ruta\n"
-"ctrl+alt+clic: alternar línea/curva"
+"Ctrl+clic: agregar nodo - clic derecho: eliminar ruta\n"
+"Ctrl+alt+clic: alternar línea/curva"
 
 #: ../src/iop/liquify.c:3607
 msgid ""
@@ -8792,7 +8792,7 @@ msgid ""
 "ctrl-click: autosmooth, cusp, smooth, symmetrical - right click to remove"
 msgstr ""
 "clic y arrastrar para mover - clic: mostrar/ocultar control de difuminado\n"
-"ctrl+clic: suavizado automático, cúspide, suavizado, simétrico - clic "
+"Ctrl+clic: suavizado automático, cúspide, suavizado, simétrico - clic "
 "derecho para eliminar"
 
 #: ../src/iop/liquify.c:3610 ../src/iop/liquify.c:3611
@@ -8817,7 +8817,7 @@ msgid ""
 "ctrl-click: linear, grow, and shrink"
 msgstr ""
 "arrastre para ajustar la fuerza del deformado\n"
-"ctrl+clic : lineal, crecer, y encoger"
+"Ctrl+clic : lineal, crecer, y encoger"
 
 #: ../src/iop/liquify.c:3633
 msgctxt "accel"
@@ -9250,7 +9250,7 @@ msgid ""
 "ctrl+click to select an area"
 msgstr ""
 "seleccionar el centro de la luz de relleno\n"
-"ctrl+clic para seleccionar un área"
+"Ctrl+clic para seleccionar un área"
 
 #: ../src/iop/relight.c:395
 msgid "toggle tool for picking median lightness in image"
@@ -11161,11 +11161,11 @@ msgstr "rotar imágenes seleccionadas 90 grados en sentido horario"
 
 #: ../src/libs/image.c:239
 msgid "reset rotation"
-msgstr "restablecer rotación"
+msgstr "restaurar rotación"
 
 #: ../src/libs/image.c:242
 msgid "reset rotation to EXIF data"
-msgstr "restablecer rotación con los datos Exif"
+msgstr "restaurar rotación según los datos Exif"
 
 #: ../src/libs/image.c:247
 msgid "copy locally"
@@ -12556,7 +12556,7 @@ msgstr "indicador de batería"
 
 #: ../src/libs/tools/colorlabels.c:40
 msgid "colorlabels"
-msgstr "etiquetas de color"
+msgstr "marcas de color"
 
 #. setup list of tooltips
 #: ../src/libs/tools/colorlabels.c:71
@@ -12564,7 +12564,7 @@ msgid ""
 "toggle red label\n"
 "of selected images"
 msgstr ""
-"alternar marca roja\n"
+"poner/quitar marca roja\n"
 "de las imágenes seleccionadas"
 
 #: ../src/libs/tools/colorlabels.c:72
@@ -12572,7 +12572,7 @@ msgid ""
 "toggle yellow label\n"
 "of selected images"
 msgstr ""
-"alternar marca amarilla\n"
+"poner/quitar marca amarilla\n"
 "de las imágenes seleccionadas"
 
 #: ../src/libs/tools/colorlabels.c:73
@@ -12580,7 +12580,7 @@ msgid ""
 "toggle green label\n"
 "of selected images"
 msgstr ""
-"alternar marca verde\n"
+"poner/quitar marca verde\n"
 "de las imágenes seleccionadas"
 
 #: ../src/libs/tools/colorlabels.c:74
@@ -12588,7 +12588,7 @@ msgid ""
 "toggle blue label\n"
 "of selected images"
 msgstr ""
-"alternar marca azul\n"
+"poner/quitar marca azul\n"
 "de las imágenes seleccionadas"
 
 #: ../src/libs/tools/colorlabels.c:75
@@ -12596,12 +12596,12 @@ msgid ""
 "toggle purple label\n"
 "of selected images"
 msgstr ""
-"alternar marca purpura\n"
+"poner/quitar marca púrpura\n"
 "de las imágenes seleccionadas"
 
 #: ../src/libs/tools/colorlabels.c:76
 msgid "clear all labels of selected images"
-msgstr "eliminar todas las marcas de las imágenes seleccionadas"
+msgstr "quitar todas las marcas de las imágenes seleccionadas"
 
 #: ../src/libs/tools/darktable.c:59
 msgid "darktable"
@@ -12633,37 +12633,37 @@ msgstr "tira de imágenes"
 
 #. setup rating key accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:3561
+#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:3619
 msgctxt "accel"
 msgid "rate 0"
 msgstr "0 estrellas"
 
-#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:3562
+#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:3620
 msgctxt "accel"
 msgid "rate 1"
 msgstr "1 estrella"
 
-#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:3563
+#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:3621
 msgctxt "accel"
 msgid "rate 2"
 msgstr "2 estrellas"
 
-#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:3564
+#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:3622
 msgctxt "accel"
 msgid "rate 3"
 msgstr "3 estrellas"
 
-#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:3565
+#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:3623
 msgctxt "accel"
 msgid "rate 4"
 msgstr "4 estrellas"
 
-#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:3566
+#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:3624
 msgctxt "accel"
 msgid "rate 5"
 msgstr "5 estrellas"
 
-#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:3567
+#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:3625
 msgctxt "accel"
 msgid "rate reject"
 msgstr "rechazar"
@@ -12702,27 +12702,27 @@ msgstr "duplicar imagen"
 #. setup color label accelerators
 #. Initializing accelerators
 #. Color labels keys
-#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:3553
+#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:3611
 msgctxt "accel"
 msgid "color red"
 msgstr "etiqueta roja"
 
-#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:3554
+#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:3612
 msgctxt "accel"
 msgid "color yellow"
 msgstr "etiqueta amarilla"
 
-#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:3555
+#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:3613
 msgctxt "accel"
 msgid "color green"
 msgstr "etiqueta verde"
 
-#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:3556
+#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:3614
 msgctxt "accel"
 msgid "color blue"
 msgstr "etiqueta azul"
 
-#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:3557
+#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:3615
 msgctxt "accel"
 msgid "color purple"
 msgstr "etiqueta morada"
@@ -12830,39 +12830,39 @@ msgstr "mostrar info superpuesta"
 msgid "hinter"
 msgstr "tip"
 
-#: ../src/libs/tools/lighttable.c:131
+#: ../src/libs/tools/lighttable.c:129
 msgid "zoomable light table"
 msgstr "mesa de luz con acercamiento"
 
-#: ../src/libs/tools/lighttable.c:132
+#: ../src/libs/tools/lighttable.c:130
 msgid "file manager"
 msgstr "gestor de archivos"
 
-#: ../src/libs/tools/lighttable.c:133
+#: ../src/libs/tools/lighttable.c:131
 msgid "expose"
 msgstr "exposición"
 
-#: ../src/libs/tools/lighttable.c:134
+#: ../src/libs/tools/lighttable.c:132
 msgid "culling"
 msgstr "selección"
 
 #. view accels
-#: ../src/libs/tools/lighttable.c:211
+#: ../src/libs/tools/lighttable.c:209
 msgctxt "accel"
 msgid "zoom max"
 msgstr "zoom máximo"
 
-#: ../src/libs/tools/lighttable.c:214
+#: ../src/libs/tools/lighttable.c:212
 msgctxt "accel"
 msgid "zoom min"
 msgstr "zoom mínimo"
 
-#: ../src/libs/tools/lighttable.c:216
+#: ../src/libs/tools/lighttable.c:214
 msgctxt "accel"
 msgid "toggle exposé mode"
 msgstr "cambiar a modo de exposición"
 
-#: ../src/libs/tools/lighttable.c:217
+#: ../src/libs/tools/lighttable.c:215
 msgctxt "accel"
 msgid "toggle culling mode"
 msgstr "cambiar a modo de selección"
@@ -13068,11 +13068,11 @@ msgstr ""
 "activar la revisión de gama\n"
 "clic derecho para opciones del perfil"
 
-#: ../src/views/darkroom.c:1739 ../src/views/lighttable.c:3833
+#: ../src/views/darkroom.c:1739 ../src/views/lighttable.c:3891
 msgid "display intent"
 msgstr "salida en pantalla"
 
-#: ../src/views/darkroom.c:1756 ../src/views/lighttable.c:3841
+#: ../src/views/darkroom.c:1756 ../src/views/lighttable.c:3899
 msgid "display profile"
 msgstr "perfil (pantalla)"
 
@@ -13080,7 +13080,7 @@ msgstr "perfil (pantalla)"
 msgid "histogram profile"
 msgstr "perfil del histograma"
 
-#: ../src/views/darkroom.c:1800 ../src/views/lighttable.c:3861
+#: ../src/views/darkroom.c:1800 ../src/views/lighttable.c:3919
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "mostrar perfiles ICC en %s o %s"
@@ -13194,13 +13194,13 @@ msgid "full preview"
 msgstr "vista previa completa"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2877 ../src/views/lighttable.c:3592
+#: ../src/views/darkroom.c:2877 ../src/views/lighttable.c:3650
 #: ../src/views/map.c:889
 msgctxt "accel"
 msgid "undo"
 msgstr "deshacer"
 
-#: ../src/views/darkroom.c:2878 ../src/views/lighttable.c:3593
+#: ../src/views/darkroom.c:2878 ../src/views/lighttable.c:3651
 #: ../src/views/map.c:890
 msgctxt "accel"
 msgid "redo"
@@ -13222,137 +13222,137 @@ msgstr "buscar módulos"
 msgid "good knight"
 msgstr "buenas noche"
 
-#: ../src/views/lighttable.c:884 ../src/views/slideshow.c:349
+#: ../src/views/lighttable.c:890 ../src/views/slideshow.c:349
 msgid "there are no images in this collection"
 msgstr "no hay imágenes en esta colección"
 
-#: ../src/views/lighttable.c:888
+#: ../src/views/lighttable.c:894
 msgid "if you have not imported any images yet"
 msgstr "si no ha importado ninguna imagen aún"
 
-#: ../src/views/lighttable.c:892
+#: ../src/views/lighttable.c:898
 msgid "you can do so in the import module"
 msgstr "puede hacerlo en el módulo importar"
 
-#: ../src/views/lighttable.c:900
+#: ../src/views/lighttable.c:906
 msgid "try to relax the filter settings in the top panel"
 msgstr "intente relajar las condiciones del filtro en el panel superior"
 
-#: ../src/views/lighttable.c:909
+#: ../src/views/lighttable.c:915
 msgid "or add images in the collection module in the left panel"
 msgstr "o agregue imágenes en el módulo de colección en el panel izquierdo"
 
-#: ../src/views/lighttable.c:2934
+#: ../src/views/lighttable.c:2953
 #, c-format
 msgid "zooming is limited to %d images"
 msgstr "El zoom está limitado a %d imágenes"
 
-#: ../src/views/lighttable.c:3558
+#: ../src/views/lighttable.c:3616
 msgctxt "accel"
 msgid "clear color labels"
 msgstr "limpiar marcas de color"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:3570
+#: ../src/views/lighttable.c:3628
 msgctxt "accel"
 msgid "navigate up"
 msgstr "subir"
 
-#: ../src/views/lighttable.c:3571
+#: ../src/views/lighttable.c:3629
 msgctxt "accel"
 msgid "navigate down"
 msgstr "bajar"
 
-#: ../src/views/lighttable.c:3572
+#: ../src/views/lighttable.c:3630
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "avanzar página"
 
-#: ../src/views/lighttable.c:3573
+#: ../src/views/lighttable.c:3631
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "retroceder página"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:3576
+#: ../src/views/lighttable.c:3634
 msgctxt "accel"
 msgid "scroll up"
 msgstr "desplazar arriba"
 
-#: ../src/views/lighttable.c:3577
+#: ../src/views/lighttable.c:3635
 msgctxt "accel"
 msgid "scroll down"
 msgstr "desplazar abajo"
 
-#: ../src/views/lighttable.c:3578
+#: ../src/views/lighttable.c:3636
 msgctxt "accel"
 msgid "scroll left"
 msgstr "desplazar izquierda"
 
-#: ../src/views/lighttable.c:3579
+#: ../src/views/lighttable.c:3637
 msgctxt "accel"
 msgid "scroll right"
 msgstr "deplazar derecha"
 
-#: ../src/views/lighttable.c:3580
+#: ../src/views/lighttable.c:3638
 msgctxt "accel"
 msgid "scroll center"
 msgstr "desplazar al centro"
 
-#: ../src/views/lighttable.c:3581
+#: ../src/views/lighttable.c:3639
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "realinear imagenes a la cuadrícula"
 
-#: ../src/views/lighttable.c:3582
+#: ../src/views/lighttable.c:3640
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "seleccionar imagen activa"
 
-#: ../src/views/lighttable.c:3583
+#: ../src/views/lighttable.c:3641
 msgctxt "accel"
 msgid "select single image"
 msgstr "seleccionar imagen única"
 
 #. Preview key
-#: ../src/views/lighttable.c:3586
+#: ../src/views/lighttable.c:3644
 msgctxt "accel"
 msgid "preview"
 msgstr "vista previa rápida"
 
-#: ../src/views/lighttable.c:3587
+#: ../src/views/lighttable.c:3645
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "vista previa rápida con detección de foco"
 
-#: ../src/views/lighttable.c:3588
+#: ../src/views/lighttable.c:3646
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "vista previa"
 
-#: ../src/views/lighttable.c:3589
+#: ../src/views/lighttable.c:3647
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "vista previa con detección de foco"
 
 #. zoom for full preview
-#: ../src/views/lighttable.c:3596
+#: ../src/views/lighttable.c:3654
 msgctxt "accel"
 msgid "preview zoom 100%"
 msgstr "vista previa al 100%"
 
-#: ../src/views/lighttable.c:3597
+#: ../src/views/lighttable.c:3655
 msgctxt "accel"
 msgid "preview zoom fit"
 msgstr "vista previa del ajuste del zoom"
 
 #. timeline
-#: ../src/views/lighttable.c:3600
+#: ../src/views/lighttable.c:3658
 msgctxt "accel"
 msgid "toggle timeline"
 msgstr "alternar línea de tiempo"
 
-#: ../src/views/lighttable.c:3805
+#: ../src/views/lighttable.c:3863
 msgid "set display profile"
 msgstr "ajustar perfil de pantalla"
 
@@ -13467,7 +13467,7 @@ msgstr "No hay ninguna cámara disponible con soporte de captura..."
 
 #~ msgid "ctrl+scroll to set shape opacity, shift+scroll to set feather size"
 #~ msgstr ""
-#~ "ctrl+rueda del ratón para ajustar la opacidad de la forma, mayús+rueda "
+#~ "Ctrl+rueda del ratón para ajustar la opacidad de la forma, Mayús+rueda "
 #~ "del ratón para ajustar dureza"
 
 #~ msgid "adjust the black level"
@@ -13558,7 +13558,7 @@ msgstr "No hay ninguna cámara disponible con soporte de captura..."
 #~ msgstr "aplicar un estilo del menú"
 
 #~ msgid "clear selection (ctrl-shift-a)"
-#~ msgstr "eliminar selección (ctrl-shift-a)"
+#~ msgstr "eliminar selección (Ctrl+Mayús+a)"
 
 #~ msgctxt "preferences"
 #~ msgid "gnome keyring"
@@ -14518,13 +14518,13 @@ msgstr "No hay ninguna cámara disponible con soporte de captura..."
 #~ "press ctrl-x to swap sides"
 #~ msgstr ""
 #~ "fijar el aspecto de la proporción (an:al)\n"
-#~ "presionar ctrl-x para intercambiar las caras"
+#~ "presionar Ctrl+x para intercambiar las caras"
 
 #~ msgid "output channel"
 #~ msgstr "canal de salida"
 
 #~ msgid "swap the aspect ratio (ctrl-x)"
-#~ msgstr "intercambiar el aspecto de la proporción (ctrl-x)"
+#~ msgstr "intercambiar el aspecto de la proporción (Ctrl+x)"
 
 #~ msgid "flip guides horizontally"
 #~ msgstr "girar guías horizontalmente"
