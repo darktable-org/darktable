@@ -1788,7 +1788,7 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       if(imgids)
         imgids = dt_util_dstrcat(imgids, ", %d", imgid);
       else
-        imgids = dt_util_dstrcat(imgids, "(%d", imgid);
+        imgids = dt_util_dstrcat(imgids, "%d", imgid);
       l = g_list_next(l);
       i++;
     }
@@ -1797,11 +1797,10 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     if(first_selected) g_list_free(first_selected);
   }
 
-  imgids = dt_util_dstrcat(imgids, ")");
-
   g_list_free(selected);
 
-  gchar *query =  g_strdup_printf("SELECT id, aspect_ratio, width, height FROM images WHERE id IN %s", imgids);
+  gchar *query =  g_strdup_printf("SELECT id, aspect_ratio, width, height FROM images WHERE id IN (%s) ORDER BY INSTR('%s', id)",
+                                  imgids, imgids);
 
   g_free(imgids);
 
