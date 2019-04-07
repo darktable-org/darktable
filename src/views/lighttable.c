@@ -1819,7 +1819,12 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   {
     const int32_t id = sqlite3_column_int(stmt, 0);
     double aspect_ratio = sqlite3_column_double(stmt, 1);
-    if (!aspect_ratio) aspect_ratio = (double)sqlite3_column_int(stmt, 2) / (double)sqlite3_column_int(stmt, 3);
+    if(!aspect_ratio)
+    {
+      aspect_ratio = (double)sqlite3_column_int(stmt, 2) / (double)sqlite3_column_int(stmt, 3);
+      // record aspect ratio now
+      dt_image_set_aspect_ratio_to(id, aspect_ratio);
+    }
 
     images[i].imgid = id;
     images[i].width = (gint) (sqrt(aspect_ratio) * 100);
