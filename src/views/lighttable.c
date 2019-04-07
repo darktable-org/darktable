@@ -3120,9 +3120,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
       }
       for(int i = 0; i < sel_img_count; i++)
       {
-        dx = fminf(dx, -lib->fp_surf[i].max_dx);
         dx = fmaxf(dx, lib->fp_surf[i].max_dx);
-        dy = fminf(dy, -lib->fp_surf[i].max_dy);
         dy = fmaxf(dy, lib->fp_surf[i].max_dy);
       }
       lib->full_x = fminf(lib->full_x, dx);
