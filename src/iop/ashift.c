@@ -3686,7 +3686,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
 // update the number of selected vertical and horizontal lines
 static void update_lines_count(const dt_iop_ashift_line_t *lines, const int lines_count,
-                        int *vertical_count, int *horizontal_count)
+                               int *vertical_count, int *horizontal_count)
 {
   int vlines = 0;
   int hlines = 0;
