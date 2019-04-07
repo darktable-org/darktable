@@ -7,10 +7,14 @@ msgstr ""
 "Project-Id-Version: darktable 2.4\n"
 "POT-Creation-Date: 2019-03-14 20:49+0100\n"
 <<<<<<< HEAD
+<<<<<<< HEAD
 "PO-Revision-Date: 2019-04-07 15:52+0200\n"
 =======
 "PO-Revision-Date: 2019-04-04 22:53+0200\n"
 >>>>>>> 96df396ac... second revision
+=======
+"PO-Revision-Date: 2019-04-07 15:52+0200\n"
+>>>>>>> e9abf7734... complete italian translation
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <>\n"
 "Language: it\n"
@@ -17960,11 +17964,11 @@ msgstr ""
 "cui la scala dovesse cambiare, le forme verranno visualizzate di conseguenza."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15036(para)
-#, fuzzy
 msgid ""
 "A green line on top of each box indicates that the scale has shapes "
 "associated with it."
 msgstr ""
+<<<<<<< HEAD
 <<<<<<< HEAD
 "Una sottile linea verde sul lato superiore di ogni riquadro significa che la "
 "scala ha delle forme associate."
@@ -17972,6 +17976,10 @@ msgstr ""
 "Una linea verde sul lato superiore di ogni riquadro significa che la scala "
 "ha delle forme associate."
 >>>>>>> 96df396ac... second revision
+=======
+"Una sottile linea verde sul lato superiore di ogni riquadro significa che la "
+"scala ha delle forme associate."
+>>>>>>> e9abf7734... complete italian translation
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15039(para)
 msgid ""
@@ -18075,12 +18083,18 @@ msgid ""
 "simple before/after comparison."
 msgstr ""
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> e9abf7734... complete italian translation
 "Il pulsante disabilita forme ( <inlinegraphic fileref=\"images/"
 "darkroom_module_retouch_switch.png\" scalefit=\"1\" width=\"2%\" align="
 "\"center\"/> ) impedisce temporaneamente di processare le forme per "
 "permettere una rapida comparazione del risultato prima e dopo."
+<<<<<<< HEAD
 =======
 >>>>>>> 96df396ac... second revision
+=======
+>>>>>>> e9abf7734... complete italian translation
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15084(para)
 msgid ""
@@ -18814,7 +18828,6 @@ msgstr ""
 "filigrane disponibili."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15816(para)
-#, fuzzy
 msgid ""
 "Here follows a list of available variable strings that is supported for "
 "substitution within the svg document. <informaltable frame=\"none\" width="
@@ -23967,7 +23980,6 @@ msgid "Presets"
 msgstr "Preset"
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21390(para)
-#, fuzzy
 msgid ""
 "This menu gives you an overview of the presets that are defined for "
 "darktable's modules. In this dialog you can select whether a certain user "
@@ -27425,7 +27437,6 @@ msgstr ""
 "\"whitebalance\"/>)."
 
 #: /home/mau/Sistema/git/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23824(para)
-#, fuzzy
 msgid ""
 "There is a special situation if your camera automatically applies some lens "
 "corrections, namely vignetting correction, to the resulting JPEG file. In "
