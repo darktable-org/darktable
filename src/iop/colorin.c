@@ -49,11 +49,12 @@
 #include <lcms2.h>
 
 // max iccprofile file name length
-#define DT_IOP_COLOR_ICC_LEN 100
+// must be in synch with dt_colorspaces_color_profile_t
+#define DT_IOP_COLOR_ICC_LEN 512
 
 #define LUT_SAMPLES 0x10000
 
-DT_MODULE_INTROSPECTION(5, dt_iop_colorin_params_t)
+DT_MODULE_INTROSPECTION(6, dt_iop_colorin_params_t)
 
 static void update_profile_list(dt_iop_module_t *self);
 
@@ -153,11 +154,13 @@ int output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 5)
+#define DT_IOP_COLOR_ICC_LEN_V5 100
+
+  if(old_version == 1 && new_version == 6)
   {
     typedef struct dt_iop_colorin_params_v1_t
     {
-      char iccprofile[DT_IOP_COLOR_ICC_LEN];
+      char iccprofile[DT_IOP_COLOR_ICC_LEN_V5];
       dt_iop_color_intent_t intent;
     } dt_iop_colorin_params_v1_t;
 
@@ -204,11 +207,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->filename_work[0] = '\0';
     return 0;
   }
-  if(old_version == 2 && new_version == 5)
+  if(old_version == 2 && new_version == 6)
   {
     typedef struct dt_iop_colorin_params_v2_t
     {
-      char iccprofile[DT_IOP_COLOR_ICC_LEN];
+      char iccprofile[DT_IOP_COLOR_ICC_LEN_V5];
       dt_iop_color_intent_t intent;
       int normalize;
     } dt_iop_colorin_params_v2_t;
@@ -256,11 +259,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->filename_work[0] = '\0';
     return 0;
   }
-  if(old_version == 3 && new_version == 5)
+  if(old_version == 3 && new_version == 6)
   {
     typedef struct dt_iop_colorin_params_v3_t
     {
-      char iccprofile[DT_IOP_COLOR_ICC_LEN];
+      char iccprofile[DT_IOP_COLOR_ICC_LEN_V5];
       dt_iop_color_intent_t intent;
       int normalize;
       int blue_mapping;
@@ -310,12 +313,12 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     return 0;
   }
-  if(old_version == 4 && new_version == 5)
+  if(old_version == 4 && new_version == 6)
   {
     typedef struct dt_iop_colorin_params_v4_t
     {
       dt_colorspaces_color_profile_type_t type;
-      char filename[DT_IOP_COLOR_ICC_LEN];
+      char filename[DT_IOP_COLOR_ICC_LEN_V5];
       dt_iop_color_intent_t intent;
       int normalize;
       int blue_mapping;
@@ -335,7 +338,36 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     return 0;
   }
+  if(old_version == 5 && new_version == 6)
+  {
+    typedef struct dt_iop_colorin_params_v5_t
+    {
+      dt_colorspaces_color_profile_type_t type;
+      char filename[DT_IOP_COLOR_ICC_LEN_V5];
+      dt_iop_color_intent_t intent;
+      int normalize;
+      int blue_mapping;
+      // working color profile
+      dt_colorspaces_color_profile_type_t type_work;
+      char filename_work[DT_IOP_COLOR_ICC_LEN_V5];
+    } dt_iop_colorin_params_v5_t;
+
+    const dt_iop_colorin_params_v5_t *old = (dt_iop_colorin_params_v5_t *)old_params;
+    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    memset(new_params, 0, sizeof(*new_params));
+
+    new->type = old->type;
+    g_strlcpy(new->filename, old->filename, sizeof(new->filename));
+    new->intent = old->intent;
+    new->normalize = old->normalize;
+    new->blue_mapping = old->blue_mapping;
+    new->type_work = old->type_work;
+    g_strlcpy(new->filename_work, old->filename_work, sizeof(new->filename_work));
+
+    return 0;
+  }
   return 1;
+#undef DT_IOP_COLOR_ICC_LEN_V5
 }
 
 void init_global(dt_iop_module_so_t *module)
