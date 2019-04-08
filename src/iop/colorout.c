@@ -41,10 +41,11 @@
 #include <string.h>
 
 // max iccprofile file name length
-#define DT_IOP_COLOR_ICC_LEN 100
+// must be in synch with dt_colorspaces_color_profile_t
+#define DT_IOP_COLOR_ICC_LEN 512
 #define LUT_SAMPLES 0x10000
 
-DT_MODULE_INTROSPECTION(4, dt_iop_colorout_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_colorout_params_t)
 
 typedef struct dt_iop_colorout_data_t
 {
@@ -120,6 +121,7 @@ int output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
+#define DT_IOP_COLOR_ICC_LEN_V4 100
   /*  if(old_version == 1 && new_version == 2)
   {
     dt_iop_colorout_params_t *o = (dt_iop_colorout_params_t *)old_params;
@@ -128,16 +130,16 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->seq = 0;
     return 0;
     }*/
-  if((old_version == 2 || old_version == 3) && new_version == 4)
+  if((old_version == 2 || old_version == 3) && new_version == 5)
   {
     typedef struct dt_iop_colorout_params_v3_t
     {
-      char iccprofile[DT_IOP_COLOR_ICC_LEN];
-      char displayprofile[DT_IOP_COLOR_ICC_LEN];
+      char iccprofile[DT_IOP_COLOR_ICC_LEN_V4];
+      char displayprofile[DT_IOP_COLOR_ICC_LEN_V4];
       dt_iop_color_intent_t intent;
       dt_iop_color_intent_t displayintent;
       char softproof_enabled;
-      char softproofprofile[DT_IOP_COLOR_ICC_LEN];
+      char softproofprofile[DT_IOP_COLOR_ICC_LEN_V4];
       dt_iop_color_intent_t softproofintent;
     } dt_iop_colorout_params_v3_t;
 
@@ -166,8 +168,29 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     return 0;
   }
+  if(old_version == 4 && new_version == 5)
+  {
+    typedef struct dt_iop_colorout_params_v4_t
+    {
+      dt_colorspaces_color_profile_type_t type;
+      char filename[DT_IOP_COLOR_ICC_LEN_V4];
+      dt_iop_color_intent_t intent;
+    } dt_iop_colorout_params_v4_t;
+
+
+    dt_iop_colorout_params_v4_t *o = (dt_iop_colorout_params_v4_t *)old_params;
+    dt_iop_colorout_params_t *n = (dt_iop_colorout_params_t *)new_params;
+    memset(n, 0, sizeof(dt_iop_colorout_params_t));
+
+    n->type = o->type;
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    n->intent = o->intent;
+
+    return 0;
+  }
 
   return 1;
+#undef DT_IOP_COLOR_ICC_LEN_V4
 }
 
 void init_global(dt_iop_module_so_t *module)
