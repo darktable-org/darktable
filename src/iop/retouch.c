@@ -2154,7 +2154,16 @@ static void rt_select_algorithm_callback(GtkToggleButton *togglebutton, dt_iop_m
 
   rt_show_hide_controls(self, g, p, g);
 
-  if(darktable.develop->form_gui->creation && (darktable.develop->form_gui->creation_module == self))
+  const int index = rt_get_selected_shape_index(p);
+  if(index >= 0)
+  {
+    if(p->algorithm != p->rt_forms[index].algorithm)
+    {
+      p->rt_forms[index].algorithm = p->algorithm;
+      dt_control_queue_redraw_center();
+    }
+  }
+  else if(darktable.develop->form_gui->creation && (darktable.develop->form_gui->creation_module == self))
   {
     dt_iop_request_focus(self);
 
