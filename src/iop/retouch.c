@@ -2128,9 +2128,10 @@ static gboolean rt_add_shape_callback(GtkWidget *widget, GdkEventButton *e, dt_i
   return rt_add_shape(widget, creation_continuous, self);
 }
 
-static void rt_select_algorithm_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton, GdkEventButton *e,
+                                             dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  if(darktable.gui->reset) return FALSE;
 
   const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
@@ -2138,14 +2139,38 @@ static void rt_select_algorithm_callback(GtkToggleButton *togglebutton, dt_iop_m
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
+  dt_iop_retouch_algo_type_t new_algo = DT_IOP_RETOUCH_HEAL;
+
   if(togglebutton == (GtkToggleButton *)g->bt_blur)
-    p->algorithm = DT_IOP_RETOUCH_BLUR;
+    new_algo = DT_IOP_RETOUCH_BLUR;
   else if(togglebutton == (GtkToggleButton *)g->bt_clone)
-    p->algorithm = DT_IOP_RETOUCH_CLONE;
+    new_algo = DT_IOP_RETOUCH_CLONE;
   else if(togglebutton == (GtkToggleButton *)g->bt_heal)
-    p->algorithm = DT_IOP_RETOUCH_HEAL;
+    new_algo = DT_IOP_RETOUCH_HEAL;
   else if(togglebutton == (GtkToggleButton *)g->bt_fill)
-    p->algorithm = DT_IOP_RETOUCH_FILL;
+    new_algo = DT_IOP_RETOUCH_FILL;
+
+  // check if we have to do something
+  gboolean accept = TRUE;
+
+  const int index = rt_get_selected_shape_index(p);
+  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+  if(index >= 0 && ((e->state & modifiers) == GDK_CONTROL_MASK))
+  {
+    if(new_algo != p->rt_forms[index].algorithm)
+    {
+      // we restrict changes to clone<->heal and blur<->fill
+      if((new_algo == DT_IOP_RETOUCH_CLONE && p->rt_forms[index].algorithm != DT_IOP_RETOUCH_HEAL)
+         || (new_algo == DT_IOP_RETOUCH_HEAL && p->rt_forms[index].algorithm != DT_IOP_RETOUCH_CLONE)
+         || (new_algo == DT_IOP_RETOUCH_BLUR && p->rt_forms[index].algorithm != DT_IOP_RETOUCH_FILL)
+         || (new_algo == DT_IOP_RETOUCH_FILL && p->rt_forms[index].algorithm != DT_IOP_RETOUCH_BLUR))
+      {
+        accept = FALSE;
+      }
+    }
+  }
+
+  if(accept) p->algorithm = new_algo;
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_clone), (p->algorithm == DT_IOP_RETOUCH_CLONE));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_heal), (p->algorithm == DT_IOP_RETOUCH_HEAL));
@@ -2154,7 +2179,21 @@ static void rt_select_algorithm_callback(GtkToggleButton *togglebutton, dt_iop_m
 
   rt_show_hide_controls(self, g, p, g);
 
-  if(darktable.develop->form_gui->creation && (darktable.develop->form_gui->creation_module == self))
+  if(!accept)
+  {
+    darktable.gui->reset = reset;
+    return FALSE;
+  }
+
+  if(index >= 0 && ((e->state & modifiers) == GDK_CONTROL_MASK))
+  {
+    if(p->algorithm != p->rt_forms[index].algorithm)
+    {
+      p->rt_forms[index].algorithm = p->algorithm;
+      dt_control_queue_redraw_center();
+    }
+  }
+  else if(darktable.develop->form_gui->creation && (darktable.develop->form_gui->creation_module == self))
   {
     dt_iop_request_focus(self);
 
@@ -2183,6 +2222,7 @@ static void rt_select_algorithm_callback(GtkToggleButton *togglebutton, dt_iop_m
   darktable.gui->reset = reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  return TRUE;
 }
 
 static void rt_showmask_callback(GtkToggleButton *togglebutton, dt_iop_module_t *module)
@@ -2665,28 +2705,28 @@ void gui_init(dt_iop_module_t *self)
   g->bt_fill
       = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_fill, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_object_set(G_OBJECT(g->bt_fill), "tooltip-text", _("activates fill tool"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->bt_fill), "toggled", G_CALLBACK(rt_select_algorithm_callback), self);
+  g_signal_connect(G_OBJECT(g->bt_fill), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_fill), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_fill), FALSE);
 
   g->bt_blur
       = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_blur, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_object_set(G_OBJECT(g->bt_blur), "tooltip-text", _("activates blur tool"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->bt_blur), "toggled", G_CALLBACK(rt_select_algorithm_callback), self);
+  g_signal_connect(G_OBJECT(g->bt_blur), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_blur), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_blur), FALSE);
 
   g->bt_heal
       = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_heal, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_object_set(G_OBJECT(g->bt_heal), "tooltip-text", _("activates healing tool"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->bt_heal), "toggled", G_CALLBACK(rt_select_algorithm_callback), self);
+  g_signal_connect(G_OBJECT(g->bt_heal), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_heal), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_heal), FALSE);
 
   g->bt_clone
       = dtgtk_togglebutton_new(_retouch_cairo_paint_tool_clone, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_object_set(G_OBJECT(g->bt_clone), "tooltip-text", _("activates cloning tool"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->bt_clone), "toggled", G_CALLBACK(rt_select_algorithm_callback), self);
+  g_signal_connect(G_OBJECT(g->bt_clone), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
   gtk_widget_set_size_request(GTK_WIDGET(g->bt_clone), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_clone), FALSE);
 
