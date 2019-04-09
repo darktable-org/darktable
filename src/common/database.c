@@ -39,7 +39,7 @@
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
 #define CURRENT_DATABASE_VERSION_LIBRARY 19
-#define CURRENT_DATABASE_VERSION_DATA 1
+#define CURRENT_DATABASE_VERSION_DATA 2
 
 typedef struct dt_database_t
 {
@@ -1107,10 +1107,6 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     }
     sqlite3_finalize(sel_stmt);
 
-    // style_items
-    TRY_EXEC("ALTER TABLE data.style_items ADD COLUMN iop_order REAL",
-             "[init] can't add `iop_order' column to style_items table in database\n");
-
     // do the same as for history
     TRY_EXEC("UPDATE data.style_items SET iop_order = ((("
         "SELECT MAX(multi_priority) FROM data.style_items style1 WHERE style1.styleid = data.style_items.styleid AND style1.operation = data.style_items.operation "
@@ -1175,12 +1171,6 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   return new_version;
 }
 
-#undef FINALIZE
-
-#undef TRY_EXEC
-#undef TRY_STEP
-#undef TRY_PREPARE
-
 /* do the real migration steps, returns the version the db was converted to */
 static int _upgrade_data_schema_step(dt_database_t *db, int version)
 {
@@ -1195,6 +1185,13 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
     new_version = 1; // the version we transformed the db to. this way it might be possible to roll back or
     // add fast paths
   }
+  else if(version == 1)
+  {
+    // style_items
+    TRY_EXEC("ALTER TABLE data.style_items ADD COLUMN iop_order REAL",
+             "[init] can't add `iop_order' column to style_items table in database\n");
+    new_version = 2;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -1207,6 +1204,12 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
 
   return new_version;
 }
+
+#undef FINALIZE
+
+#undef TRY_EXEC
+#undef TRY_STEP
+#undef TRY_PREPARE
 
 /* upgrade library db from 'version' to CURRENT_DATABASE_VERSION_LIBRARY. don't touch this function but
  * _upgrade_library_schema_step() instead. */
