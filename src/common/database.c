@@ -1187,9 +1187,11 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
   }
   else if(version == 1)
   {
-    // style_items
-    TRY_EXEC("ALTER TABLE data.style_items ADD COLUMN iop_order REAL",
-             "[init] can't add `iop_order' column to style_items table in database\n");
+    // style_items:
+    //    NO TRY_EXEC has the column could be there before version 1 (master build)
+    //    TRY_EXEC("ALTER TABLE data.style_items ADD COLUMN iop_order REAL",
+    //             "[init] can't add `iop_order' column to style_items table in database\n");
+    sqlite3_exec(db->handle, "ALTER TABLE data.style_items ADD COLUMN iop_order REAL", NULL, NULL, NULL);
     new_version = 2;
   }
   else
