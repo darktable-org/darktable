@@ -325,28 +325,33 @@ static void check_layout(dt_view_t *self)
   }
 }
 
+static inline void _destroy_preview_surface(dt_preview_surface_t *fp_surf)
+{
+  if(fp_surf->surface) cairo_surface_destroy(fp_surf->surface);
+  fp_surf->surface = NULL;
+  if(fp_surf->rgbbuf) free(fp_surf->rgbbuf);
+  fp_surf->rgbbuf = NULL;
+  fp_surf->mip = 0;
+  fp_surf->width = 0;
+  fp_surf->height = 0;
+  fp_surf->imgid = -1;
+  fp_surf->w_lock = 0;
+
+  fp_surf->zoom_100 = 40.0f;
+  fp_surf->w_fit = 0.0f;
+  fp_surf->h_fit = 0.0f;
+
+  fp_surf->max_dx = 0.0f;
+  fp_surf->max_dy = 0.0f;
+}
+
 static void _full_preview_destroy(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
 
   for(int i = 0; i < FULL_PREVIEW_IN_MEMORY_LIMIT; i++)
   {
-    if(lib->fp_surf[i].surface) cairo_surface_destroy(lib->fp_surf[i].surface);
-    lib->fp_surf[i].surface = NULL;
-    if(lib->fp_surf[i].rgbbuf) free(lib->fp_surf[i].rgbbuf);
-    lib->fp_surf[i].rgbbuf = NULL;
-    lib->fp_surf[i].mip = 0;
-    lib->fp_surf[i].width = 0;
-    lib->fp_surf[i].height = 0;
-    lib->fp_surf[i].imgid = -1;
-    lib->fp_surf[i].w_lock = 0;
-
-    lib->fp_surf[i].zoom_100 = 40.0f;
-    lib->fp_surf[i].w_fit = 0.0f;
-    lib->fp_surf[i].h_fit = 0.0f;
-
-    lib->fp_surf[i].max_dx = 0.0f;
-    lib->fp_surf[i].max_dy = 0.0f;
+    _destroy_preview_surface(lib->fp_surf + i);
   }
 }
 
@@ -713,6 +718,75 @@ static int _get_full_preview_id(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   return lib->full_preview_id;
+}
+
+static inline int _get_max_in_memory_images()
+{
+  const int max_in_memory_images = dt_conf_get_int("plugins/lighttable/preview/max_in_memory_images");
+  return MIN(max_in_memory_images, FULL_PREVIEW_IN_MEMORY_LIMIT);
+}
+
+static void _sort_preview_surface(dt_library_t *lib, dt_layout_image_t *images, const int sel_img_count,
+                                  const int max_in_memory_images)
+{
+#define SWAP_PREVIEW_SURFACE(x1, x2)                                                                              \
+  {                                                                                                               \
+    dt_preview_surface_t surf_tmp = lib->fp_surf[x1];                                                             \
+    lib->fp_surf[x1] = lib->fp_surf[x2];                                                                          \
+    lib->fp_surf[x2] = surf_tmp;                                                                                  \
+  }
+
+  const int in_memory_limit = MIN(max_in_memory_images, FULL_PREVIEW_IN_MEMORY_LIMIT);
+
+  for(int i = 0; i < sel_img_count; i++)
+  {
+    // we assume that there's only one cache per image
+    if(images[i].imgid != lib->fp_surf[i].imgid)
+    {
+      int j = 0;
+      // search the image in cache
+      while(j < in_memory_limit && lib->fp_surf[j].imgid != images[i].imgid) j++;
+      // found one, swap it
+      if(j < in_memory_limit)
+        SWAP_PREVIEW_SURFACE(i, j)
+      else if(lib->fp_surf[i].imgid >= 0)
+      {
+        // check if there's an empty entry so we can save this cache
+        j = 0;
+        while(j < in_memory_limit && lib->fp_surf[j].imgid >= 0) j++;
+        // found one, swap it
+        if(j < in_memory_limit)
+          SWAP_PREVIEW_SURFACE(i, j)
+        else
+        {
+          // cache is full, get rid of the farthest one
+          const int offset_current = dt_collection_image_offset(images[i].imgid);
+          int offset_max = -1;
+          int max_i = -1;
+          j = i;
+          while(j < in_memory_limit)
+          {
+            const int offset = dt_collection_image_offset(lib->fp_surf[j].imgid);
+            if(abs(offset_current - offset) > offset_max)
+            {
+              offset_max = abs(offset_current - offset);
+              max_i = j;
+            }
+            j++;
+          }
+          if(max_i >= 0 && max_i != i) SWAP_PREVIEW_SURFACE(i, max_i)
+        }
+      }
+    }
+  }
+
+  // keep only the first max_in_memory_images cache entries
+  for(int i = max_in_memory_images; i < FULL_PREVIEW_IN_MEMORY_LIMIT; i++)
+  {
+    _destroy_preview_surface(lib->fp_surf + i);
+  }
+
+#undef SWAP_PREVIEW_SURFACE
 }
 
 void init(dt_view_t *self)
@@ -1997,7 +2071,11 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     images[i].y = images[i].y * factor + yoff;
   }
 
-  const int max_in_memory_images = dt_conf_get_int("plugins/lighttable/preview/max_in_memory_images");
+  const int max_in_memory_images = _get_max_in_memory_images();
+
+  // sort lib->fp_surf to re-use cached thumbs & surface
+  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+    _sort_preview_surface(lib, images, sel_img_count, max_in_memory_images);
 
   for(i = 0; i < sel_img_count; i++)
   {
@@ -2957,11 +3035,11 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
     {
       sel_img_count = get_display_num_images();
     }
+    const int max_in_memory_images = _get_max_in_memory_images();
     if((get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
-       && sel_img_count > dt_conf_get_int("plugins/lighttable/preview/max_in_memory_images"))
+       && sel_img_count > max_in_memory_images)
     {
-      dt_control_log(_("zooming is limited to %d images"),
-                     dt_conf_get_int("plugins/lighttable/preview/max_in_memory_images"));
+      dt_control_log(_("zooming is limited to %d images"), max_in_memory_images);
     }
     else
     {
