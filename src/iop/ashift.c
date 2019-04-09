@@ -3469,11 +3469,17 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     // if adjusting crop, draw indicator
     if (g->adjust_crop && p->cropmode == ASHIFT_CROP_ASPECT)
     {
-      const double xpos = (C[1][0] + C[2][0]) / 2.0f;
-      const double ypos = (C[0][1] + C[1][1]) / 2.0f;
-      const double size_circle = (C[2][0] - C[1][0]) / 30.0f;
-      const double size_line = (C[2][0] - C[1][0]) / 5.0f;
-      const double size_arrow = (C[2][0] - C[1][0]) / 25.0f;
+      const double x1 = C[0][0];
+      const double x2 = fabs(x1 - C[1][0]) < 0.001f ? C[2][0] : C[1][0];
+      const double y1 = C[0][1];
+      const double y2 = fabs(y1 - C[1][1]) < 0.001f ? C[2][1] : C[1][1];
+
+      const double xpos = (x1 + x2) / 2.0f;
+      const double ypos = (y1 + y2) / 2.0f;
+      const double base_size = fabs(x1 - x2);
+      const double size_circle = base_size / 30.0f;
+      const double size_line = base_size / 5.0f;
+      const double size_arrow = base_size / 25.0f;
 
       cairo_set_line_width(cr, 2.0 / zoom_scale);
       cairo_set_source_rgb(cr, .7, .7, .7);
