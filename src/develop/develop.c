@@ -135,6 +135,11 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->overexposed.colorscheme = dt_conf_get_int("darkroom/ui/overexposed/colorscheme");
   dev->overexposed.lower = dt_conf_get_float("darkroom/ui/overexposed/lower");
   dev->overexposed.upper = dt_conf_get_float("darkroom/ui/overexposed/upper");
+
+  dev->second_window.zoom = DT_ZOOM_FIT;
+  dev->second_window.closeup = 0;
+  dev->second_window.zoom_x = dev->second_window.zoom_y = 0;
+  dev->second_window.zoom_scale = 1.f;
 }
 
 void dt_dev_cleanup(dt_develop_t *dev)
@@ -402,22 +407,35 @@ restart:
     return;
   }
 
+  const dt_dev_pixelpipe_change_t pipe_changed = dev->pipe->changed;
+
   // adjust pipeline according to changed flag set by {add,pop}_history_item.
   // this locks dev->history_mutex.
   dt_times_t start;
   dt_get_times(&start);
   dt_dev_pixelpipe_change(dev->preview2_pipe, dev);
 
-  const float zoom_x = 0.f;
-  const float zoom_y = 0.f;
-  float scale = 1.f;
-  if(dev->preview2_pipe->processed_width > 0 && dev->preview2_pipe->processed_height > 0)
-    scale = fminf((float)dev->second_window.width / (float)dev->preview2_pipe->processed_width,
-                  (float)dev->second_window.height / (float)dev->preview2_pipe->processed_height)
-            * dev->second_window.ppd;
-
-  const int window_width = dev->second_window.width * dev->second_window.ppd;
-  const int window_height = dev->second_window.height * dev->second_window.ppd;
+  const dt_dev_zoom_t zoom = dt_second_window_get_dev_zoom(dev);
+  const int closeup = dt_second_window_get_dev_closeup(dev);
+  float zoom_x = dt_second_window_get_dev_zoom_x(dev);
+  float zoom_y = dt_second_window_get_dev_zoom_y(dev);
+  // if just changed to an image with a different aspect ratio or
+  // altered image orientation, the prior zoom xy could now be beyond
+  // the image boundary
+  if(dev->preview2_loading || (pipe_changed != DT_DEV_PIPE_UNCHANGED))
+  {
+    dt_second_window_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
+    dt_second_window_set_dev_zoom_x(dev, zoom_x);
+    dt_second_window_set_dev_zoom_y(dev, zoom_y);
+  }
+  const float scale = dt_second_window_get_zoom_scale(dev, zoom, 1.0f, 0) * dev->second_window.ppd;
+  int window_width = dev->second_window.width * dev->second_window.ppd;
+  int window_height = dev->second_window.height * dev->second_window.ppd;
+  if(closeup)
+  {
+    window_width /= 1 << closeup;
+    window_height /= 1 << closeup;
+  }
 
   const int wd = MIN(window_width, dev->preview2_pipe->processed_width * scale);
   const int ht = MIN(window_height, dev->preview2_pipe->processed_height * scale);
@@ -1745,14 +1763,6 @@ void dt_dev_get_processed_size(const dt_develop_t *dev, int *procw, int *proch)
     return;
   }
 
-  // fallback on preview2 pipe
-  if(dev->preview2_pipe && dev->preview2_pipe->processed_width)
-  {
-    *procw = dev->preview2_pipe->processed_width;
-    *proch = dev->preview2_pipe->processed_height;
-    return;
-  }
-
   // no processed pipes, lets return 0 size
   *procw = *proch = 0;
   return;
@@ -2464,6 +2474,159 @@ void dt_dev_reorder_gui_module_list(dt_develop_t *dev)
 
     modules = g_list_previous(modules);
   }
+}
+
+//-----------------------------------------------------------
+// second darkroom window
+//-----------------------------------------------------------
+
+dt_dev_zoom_t dt_second_window_get_dev_zoom(dt_develop_t *dev)
+{
+  return dev->second_window.zoom;
+}
+
+void dt_second_window_set_dev_zoom(dt_develop_t *dev, const dt_dev_zoom_t value)
+{
+  dev->second_window.zoom = value;
+}
+
+int dt_second_window_get_dev_closeup(dt_develop_t *dev)
+{
+  return dev->second_window.closeup;
+}
+
+void dt_second_window_set_dev_closeup(dt_develop_t *dev, const int value)
+{
+  dev->second_window.closeup = value;
+}
+
+float dt_second_window_get_dev_zoom_x(dt_develop_t *dev)
+{
+  return dev->second_window.zoom_x;
+}
+
+void dt_second_window_set_dev_zoom_x(dt_develop_t *dev, const float value)
+{
+  dev->second_window.zoom_x = value;
+}
+
+float dt_second_window_get_dev_zoom_y(dt_develop_t *dev)
+{
+  return dev->second_window.zoom_y;
+}
+
+void dt_second_window_set_dev_zoom_y(dt_develop_t *dev, const float value)
+{
+  dev->second_window.zoom_y = value;
+}
+
+float dt_second_window_get_free_zoom_scale(dt_develop_t *dev)
+{
+  return dev->second_window.zoom_scale;
+}
+
+float dt_second_window_get_zoom_scale(dt_develop_t *dev, const dt_dev_zoom_t zoom, const int closeup_factor,
+                                      const int preview)
+{
+  float zoom_scale;
+
+  const float w = preview ? dev->preview_pipe->processed_width : dev->preview2_pipe->processed_width;
+  const float h = preview ? dev->preview_pipe->processed_height : dev->preview2_pipe->processed_height;
+  const float ps = dev->preview2_pipe->backbuf_width
+                       ? dev->preview2_pipe->processed_width / (float)dev->preview_pipe->processed_width
+                       : dev->preview_pipe->iscale / dev->preview_downsampling;
+
+  switch(zoom)
+  {
+    case DT_ZOOM_FIT:
+      zoom_scale = fminf(dev->second_window.width / w, dev->second_window.height / h);
+      break;
+    case DT_ZOOM_FILL:
+      zoom_scale = fmaxf(dev->second_window.width / w, dev->second_window.height / h);
+      break;
+    case DT_ZOOM_1:
+      zoom_scale = closeup_factor;
+      if(preview) zoom_scale *= ps;
+      break;
+    default: // DT_ZOOM_FREE
+      zoom_scale = dt_second_window_get_free_zoom_scale(dev);
+      if(preview) zoom_scale *= ps;
+      break;
+  }
+  return zoom_scale;
+}
+
+void dt_second_window_set_zoom_scale(dt_develop_t *dev, const float value)
+{
+  dev->second_window.zoom_scale = value;
+}
+
+void dt_second_window_get_processed_size(const dt_develop_t *dev, int *procw, int *proch)
+{
+  if(!dev) return;
+
+  // if preview2 is processed, lets return its size
+  if(dev->preview2_pipe && dev->preview2_pipe->processed_width)
+  {
+    *procw = dev->preview2_pipe->processed_width;
+    *proch = dev->preview2_pipe->processed_height;
+    return;
+  }
+
+  // fallback on preview pipe
+  if(dev->preview_pipe && dev->preview_pipe->processed_width)
+  {
+    const float scale = (dev->preview_pipe->iscale / dev->preview_downsampling);
+    *procw = scale * dev->preview_pipe->processed_width;
+    *proch = scale * dev->preview_pipe->processed_height;
+    return;
+  }
+
+  // no processed pipes, lets return 0 size
+  *procw = *proch = 0;
+  return;
+}
+
+void dt_second_window_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, const dt_dev_zoom_t zoom,
+                                        const int closeup, float *boxww, float *boxhh)
+{
+  int procw = 0, proch = 0;
+  dt_second_window_get_processed_size(dev, &procw, &proch);
+  float boxw = 1, boxh = 1; // viewport in normalised space
+                            //   if(zoom == DT_ZOOM_1)
+                            //   {
+                            //     const float imgw = (closeup ? 2 : 1)*procw;
+                            //     const float imgh = (closeup ? 2 : 1)*proch;
+                            //     const float devw = MIN(imgw, dev->width);
+                            //     const float devh = MIN(imgh, dev->height);
+                            //     boxw = fminf(1.0, devw/imgw);
+                            //     boxh = fminf(1.0, devh/imgh);
+                            //   }
+  if(zoom == DT_ZOOM_FIT)
+  {
+    *zoom_x = *zoom_y = 0.0f;
+    boxw = boxh = 1.0f;
+  }
+  else
+  {
+    const float scale = dt_second_window_get_zoom_scale(dev, zoom, 1 << closeup, 0);
+    const float imgw = procw;
+    const float imgh = proch;
+    const float devw = dev->second_window.width;
+    const float devh = dev->second_window.height;
+    boxw = devw / (imgw * scale);
+    boxh = devh / (imgh * scale);
+  }
+
+  if(*zoom_x < boxw / 2 - .5) *zoom_x = boxw / 2 - .5;
+  if(*zoom_x > .5 - boxw / 2) *zoom_x = .5 - boxw / 2;
+  if(*zoom_y < boxh / 2 - .5) *zoom_y = boxh / 2 - .5;
+  if(*zoom_y > .5 - boxh / 2) *zoom_y = .5 - boxh / 2;
+  if(boxw > 1.0) *zoom_x = 0.f;
+  if(boxh > 1.0) *zoom_y = 0.f;
+
+  if(boxww) *boxww = boxw;
+  if(boxhh) *boxhh = boxh;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
