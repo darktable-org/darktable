@@ -3720,8 +3720,14 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   if (g->adjust_crop)
   {
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-    const float newx = g->crop_cx + pzx - g->lastx;
-    const float newy = g->crop_cy + pzy - g->lasty;
+
+    float pts[4] = { pzx, pzy, 1.0f, 1.0f };
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
+                                      DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 2);
+
+    const float newx = g->crop_cx + (pts[0] - pts[2]) - g->lastx;
+    const float newy = g->crop_cy + (pts[1] - pts[3]) - g->lasty;
+
     crop_adjust(self, p, newx, newy);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return TRUE;
@@ -3799,8 +3805,13 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     {
       dt_control_change_cursor(GDK_HAND1);
       g->adjust_crop = TRUE;
-      g->lastx = pzx;
-      g->lasty = pzy;
+
+      float pts[4] = { pzx, pzy, 1.0f, 1.0f };
+      dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
+                                        DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 2);
+
+      g->lastx = pts[0] - pts[2];
+      g->lasty = pts[1] - pts[3];
       g->crop_cx = 0.5f * (p->cl + p->cr);
       g->crop_cy = 0.5f * (p->ct + p->cb);
       return TRUE;
