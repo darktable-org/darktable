@@ -133,6 +133,11 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 
 - The slideshow supports changing the delay between each images.
 
+- The slideshow will now start at the selected pictures if any.
+
+- The slideshow will now be more responsive when changing the picture
+  backward and forward.
+
 - Add soft boundaries for denoise profile controls.
 
 - A new module 'basic adjustments' has been added. It allows to adjust
@@ -142,10 +147,11 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   Both the contrast and the auto feature use the middle grey point, the
   default for this setting is based on the work profile.
 
-- A new module 'rgb curve' has been added. It has linked and independent RGB channels.
+- A new module 'rgb curve' has been added. It has linked and
+  independent RGB channels.
   It works with the rgb colorspace selected on the work profile.
-  The curves and histogram can be displayed using the work profile or can be scaled to
-  be 50% grey.
+  The curves and histogram can be displayed using the work profile or
+  can be scaled to be 50% grey.
   The color picker allows to select by area with ctrl+click.
   The second color picker add 4 nodes to the curve based on the area
   selected from the image: min, average, middle, max.
@@ -164,6 +170,8 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - A new option 'skip' is added to the 'on conflic' setting on the export module
   that skips the export if the file already exists.
 
+- Allow to change algorithm clone/heal and blur/color in retouch module.
+
 ## Bug fixes
 
 - The color picker support has been fixed by a complete rewrite. It
@@ -176,6 +184,18 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - A long standing bug on mask distort in Liquify module has been
   fixed. This was visible when a liquify mask was used together with
   the perspective correction module activated.
+
+- Fix manual crop in perspective correction module when not in default
+  orientation.
+
+- The modification of date/time is now stored into the XMP. This
+  ensure that removing the picture and reloading will keep the change
+  made.
+
+- Fix orientation to support all cases as exposed in these examples:
+  https://github.com/recurser/exif-orientation-examples
+
+- Store the panel states for each lighttable mode.
 
 ## Lua
 
