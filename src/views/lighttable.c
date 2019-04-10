@@ -2254,7 +2254,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
       * Simply swapping DESC and ASC in the SQL won't help because we rely on the LIMIT clause, and
       * that LIMIT has to work with the "correct" sort order. One could use a subquery, but I don't
       * think that would be terribly elegant, either. */
-      while(--count >= 0 && preload_stack[count] != -1)
+      while(--count >= 0 && preload_stack[count] != -1 && mip != DT_MIPMAP_8)
       {
         dt_mipmap_cache_get(darktable.mipmap_cache, NULL, preload_stack[count], mip, DT_MIPMAP_PREFETCH, 'r');
       }
