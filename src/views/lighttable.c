@@ -280,6 +280,20 @@ static inline void filmstrip_set_active_image(dt_library_t *lib, const int imgid
   if(lib->full_preview_id > -1) lib->full_preview_id = imgid;
 }
 
+static void _scrollbars_restore()
+{
+  char *scrollbars_conf = dt_conf_get_string("scrollbars");
+
+  gboolean scrollbars_visible = FALSE;
+  if(scrollbars_conf)
+  {
+    if(strcmp(scrollbars_conf, "no scrollbars")) scrollbars_visible = TRUE;
+    g_free(scrollbars_conf);
+  }
+
+  dt_ui_scrollbars_show(darktable.gui->ui, scrollbars_visible);
+}
+
 static void check_layout(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -316,12 +330,14 @@ static void check_layout(dt_view_t *self)
   {
     gtk_widget_hide(GTK_WIDGET(timeline->widget));
     gtk_widget_show(GTK_WIDGET(m->widget));
+    dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
   }
   else
   {
     gtk_widget_hide(GTK_WIDGET(m->widget));
     if(vs) gtk_widget_show(GTK_WIDGET(timeline->widget));
     g_timeout_add(200, _expose_again_full, self);
+    _scrollbars_restore();
   }
 }
 
@@ -2766,27 +2782,11 @@ void enter(dt_view_t *self)
   lib->activate_on_release = DT_VIEW_ERR;
   dt_collection_hint_message(darktable.collection);
 
-  // hide panel if we are in full preview mode
-  if(lib->full_preview_id != -1)
-  {
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_LEFT, FALSE, FALSE);
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_RIGHT, FALSE, FALSE);
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_BOTTOM, FALSE, FALSE);
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_CENTER_TOP, FALSE, FALSE);
-    dt_ui_panel_show(darktable.gui->ui, DT_UI_PANEL_TOP, FALSE, FALSE);
-  }
+  // restore panels
+  dt_ui_restore_panels(darktable.gui->ui);
 
-  char *scrollbars_conf = dt_conf_get_string("scrollbars");
-
-  gboolean scrollbars_visible = FALSE;
-  if(scrollbars_conf)
-  {
-    if(strcmp(scrollbars_conf, "no scrollbars"))
-      scrollbars_visible = TRUE;
-    g_free(scrollbars_conf);
-  }
-
-  dt_ui_scrollbars_show(darktable.gui->ui, scrollbars_visible);
+  // we show (or not the scrollbars)
+  _scrollbars_restore();
 }
 
 static void _ensure_image_visibility(dt_library_t *lib, uint32_t rowid)
@@ -2860,6 +2860,9 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->full_preview_id, FALSE);
   dt_ui_restore_panels(darktable.gui->ui);
 
+  // we don't need the scrollbars
+  dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
+
   // preview with focus detection
   lib->display_focus = focus;
 
@@ -2909,6 +2912,10 @@ static void _preview_quit(dt_view_t *self)
     g_timeout_add(200, _expose_again_full, self);
   }
   dt_ui_restore_panels(darktable.gui->ui);
+
+  // restore scrollbars
+  _scrollbars_restore();
+
   // restore drag and drop
   _register_custom_image_order_drag_n_drop(self);
 
