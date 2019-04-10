@@ -60,6 +60,13 @@ typedef enum dt_opencl_scheduling_profile_t
   OPENCL_PROFILE_VERYFAST_GPU
 } dt_opencl_scheduling_profile_t;
 
+typedef enum dt_opencl_sync_cache_t
+{
+  OPENCL_SYNC_TRUE,
+  OPENCL_SYNC_ACTIVE_MODULE,
+  OPENCL_SYNC_FALSE
+} dt_opencl_sync_cache_t;
+
 /**
  * Accounting information used for OpenCL events.
  */
@@ -130,7 +137,7 @@ typedef struct dt_opencl_t
   int async_pixelpipe;
   int number_event_handles;
   int print_statistics;
-  int synch_cache;
+  dt_opencl_sync_cache_t sync_cache;
   int micro_nap;
   int enabled;
   int stopped;
