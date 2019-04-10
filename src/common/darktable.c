@@ -1186,7 +1186,7 @@ void dt_show_times(const dt_times_t *start, const char *prefix)
   {
     dt_times_t end;
     dt_get_times(&end);
-    char buf[64]; /* Arbitrary size, should be lots big enough for everything used in DT */
+    char buf[140]; /* Arbitrary size, should be lots big enough for everything used in DT */
     snprintf(buf, sizeof(buf), "%s took %.3f secs (%.3f CPU)", prefix, end.clock - start->clock,
              end.user - start->user);
     dt_print(DT_DEBUG_PERF, "%s\n", buf);
