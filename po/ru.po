@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-06 17:32+0300\n"
+"POT-Creation-Date: 2019-04-10 11:49+0300\n"
 "PO-Revision-Date: 2019-04-06 20:37+0300\n"
 "Last-Translator: Timur Davletshin <timur.davletshin@gmail.com>\n"
 "Language-Team: русский\n"
@@ -987,12 +987,12 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3841 ../build/src/preferences_gen.h:3896
 msgid "not available"
-msgstr "Не доступно"
+msgstr "Не поддерживается"
 
 #: ../build/src/preferences_gen.h:3844 ../build/src/preferences_gen.h:3848
 #: ../build/src/preferences_gen.h:3899 ../build/src/preferences_gen.h:3903
 msgid "not available on this system"
-msgstr "Не доступно на этой системе."
+msgstr "Не поддерживается на данной системе."
 
 #: ../build/src/preferences_gen.h:3856
 msgid "OpenCL scheduling profile"
@@ -1333,23 +1333,23 @@ msgstr[1] "В текущей коллекции выбрано %d снимка �
 msgstr[2] "В текущей коллекции выбрано %d снимков из %d"
 
 #. 0th entry is a dummy for DT_COLORSPACE_FILE and not used
-#: ../src/common/colorspaces.c:935 ../src/iop/colorin.c:2041
+#: ../src/common/colorspaces.c:935 ../src/iop/colorin.c:2073
 msgid "sRGB"
 msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
 #: ../src/common/colorspaces.c:936 ../src/common/colorspaces.c:1177
-#: ../src/iop/colorin.c:2042 ../src/libs/print_settings.c:1038
+#: ../src/iop/colorin.c:2074 ../src/libs/print_settings.c:1038
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (совместимый)"
 
 #: ../src/common/colorspaces.c:937 ../src/common/colorspaces.c:1182
-#: ../src/iop/colorin.c:2043
+#: ../src/iop/colorin.c:2075
 msgid "linear Rec709 RGB"
 msgstr "Линейный RGB по Rec709"
 
 #: ../src/common/colorspaces.c:938 ../src/common/colorspaces.c:1187
-#: ../src/iop/colorin.c:2044
+#: ../src/iop/colorin.c:2076
 msgid "linear Rec2020 RGB"
 msgstr "Линейный RGB по Rec2020"
 
@@ -1399,7 +1399,7 @@ msgid "BRG (experimental)"
 msgstr "BRG (для тестирования)"
 
 #: ../src/common/colorspaces.c:950 ../src/common/colorspaces.c:1154
-#: ../src/iop/colorout.c:831
+#: ../src/iop/colorout.c:854
 msgid "export profile"
 msgstr "Профиль вывода"
 
@@ -1470,7 +1470,7 @@ msgstr "Ошибка при загрузке файла «%s»!"
 
 #: ../src/common/darktable.c:784
 msgid "darktable - run performance configuration?"
-msgstr "Запустить настройку параметров производительности?"
+msgstr "darktable - настройка параметров производительности"
 
 #: ../src/common/darktable.c:785
 msgid ""
@@ -1480,7 +1480,7 @@ msgid ""
 "in case you have manually modified them to custom values.\n"
 "would you like to execute this update of the performance configuration?\n"
 msgstr ""
-"Мы изменили настройку параметров производительности, её запуск может "
+"Мы изменили настройки параметров производительности, её запуск может "
 "улучшить производительность darktable.\n"
 "Однако это может изменить некоторые существующие настройки, особенно, если "
 "они были изменены вручную.\n"
@@ -1502,7 +1502,7 @@ msgstr "Нет"
 msgid "yes"
 msgstr "Да"
 
-#: ../src/common/database.c:1542
+#: ../src/common/database.c:1547
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1511,42 +1511,40 @@ msgid ""
 "\n"
 "%s\n"
 msgstr ""
-"Произошла ошибка открытия базы данных из\n"
+"Произошла ошибка получения монопольного доступа к следующему файлу:\n"
 "\n"
 "<span style=\"italic\">%s</span>\n"
 "\n"
 "%s\n"
 
-#: ../src/common/database.c:1549
+#: ../src/common/database.c:1554
 msgid "darktable - error locking database"
-msgstr "Ошибка получения монопольного доступа к базе данных!"
+msgstr "darktable - ошибка получения монопольного доступа"
 
-#: ../src/common/database.c:1549 ../src/common/database.c:1713
-#: ../src/common/database.c:1899 ../src/common/database.c:1977
+#: ../src/common/database.c:1554 ../src/common/database.c:1718
+#: ../src/common/database.c:1904 ../src/common/database.c:1982
 msgid "close darktable"
-msgstr "Закрыть darktable"
+msgstr "Выйти"
 
-#: ../src/common/database.c:1660
+#: ../src/common/database.c:1665
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
 "%d"
-msgstr ""
-"Файл блокировки базы данных содержит PID, который является активным "
-"процессом в системе: %d"
+msgstr "Файл блокировки базы данных содержит PID активного процесса: %d"
 
-#: ../src/common/database.c:1666
+#: ../src/common/database.c:1671
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "Файл блокировки базы данных пуст"
 
-#: ../src/common/database.c:1674
+#: ../src/common/database.c:1679
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr "Ошибка чтения файла блокировки базы данных: %s!"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:1704
+#: ../src/common/database.c:1709
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -1560,19 +1558,19 @@ msgstr ""
 "\n"
 "<span style=\"italic\">%s</span>\n"
 "\n"
-"Изменить формат или выйти для создания резервной копии?\n"
+"Обновить формат или выйти для создания резервной копии?\n"
 
-#: ../src/common/database.c:1712
+#: ../src/common/database.c:1717
 msgid "darktable - schema migration"
 msgstr "darktable - обновление базы данных"
 
-#: ../src/common/database.c:1713
+#: ../src/common/database.c:1718
 msgid "upgrade database"
-msgstr "Обновить базу данных"
+msgstr "Обновить"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
-#: ../src/common/database.c:1888 ../src/common/database.c:1966
+#: ../src/common/database.c:1893 ../src/common/database.c:1971
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1583,7 +1581,7 @@ msgid ""
 "do you want to close darktable now to manually restore\n"
 "the database from a backup or start with a new one?"
 msgstr ""
-"Произошла ошибка открытия базы данных из\n"
+"Произошла ошибка открытия базы данных из следующего файла:\n"
 "\n"
 "<span style=\"italic\">%s</span>\n"
 "\n"
@@ -1591,11 +1589,11 @@ msgstr ""
 "Хотите ли вы закрыть darktable, чтобы вручную восстановить базу\n"
 "данных из резервной копии или создать новую?"
 
-#: ../src/common/database.c:1898 ../src/common/database.c:1976
+#: ../src/common/database.c:1903 ../src/common/database.c:1981
 msgid "darktable - error opening database"
-msgstr "Ошибка открытия базы данных!"
+msgstr "darktable - ошибка открытия базы данных"
 
-#: ../src/common/database.c:1899 ../src/common/database.c:1977
+#: ../src/common/database.c:1904 ../src/common/database.c:1982
 msgid "delete database"
 msgstr "Удалить базу данных"
 
@@ -1633,7 +1631,7 @@ msgstr ""
 #: ../src/common/history.c:791 ../src/common/history.c:794
 #: ../src/common/history.c:810 ../src/common/styles.c:886
 #: ../src/common/styles.c:890 ../src/develop/blend_gui.c:2532
-#: ../src/develop/develop.c:1629 ../src/iop/ashift.c:4801
+#: ../src/develop/develop.c:1629 ../src/iop/ashift.c:4818
 #: ../src/libs/live_view.c:437
 msgid "on"
 msgstr "Вкл."
@@ -1643,7 +1641,7 @@ msgstr "Вкл."
 #: ../src/common/styles.c:890 ../src/develop/blend_gui.c:2279
 #: ../src/develop/blend_gui.c:2529 ../src/develop/develop.c:1629
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
-#: ../src/iop/ashift.c:4800 ../src/iop/ashift.c:4806 ../src/iop/colorin.c:2040
+#: ../src/iop/ashift.c:4817 ../src/iop/ashift.c:4823 ../src/iop/colorin.c:2072
 #: ../src/iop/demosaic.c:5103 ../src/iop/vignette.c:1146
 #: ../src/libs/history.c:163 ../src/libs/live_view.c:436
 msgid "off"
@@ -2547,25 +2545,25 @@ msgstr "Инвертировать маску"
 msgid "add gradient"
 msgstr "Добавить градиент"
 
-#: ../src/develop/blend_gui.c:1753 ../src/iop/retouch.c:2636
+#: ../src/develop/blend_gui.c:1753 ../src/iop/retouch.c:2676
 #: ../src/iop/spots.c:663 ../src/libs/masks.c:989 ../src/libs/masks.c:1028
 #: ../src/libs/masks.c:1651
 msgid "add path"
 msgstr "Добавить контур"
 
-#: ../src/develop/blend_gui.c:1762 ../src/iop/retouch.c:2644
+#: ../src/develop/blend_gui.c:1762 ../src/iop/retouch.c:2684
 #: ../src/iop/spots.c:671 ../src/libs/masks.c:985 ../src/libs/masks.c:1024
 #: ../src/libs/masks.c:1659
 msgid "add ellipse"
 msgstr "Добавить эллипс"
 
-#: ../src/develop/blend_gui.c:1771 ../src/iop/retouch.c:2652
+#: ../src/develop/blend_gui.c:1771 ../src/iop/retouch.c:2692
 #: ../src/iop/spots.c:679 ../src/libs/masks.c:981 ../src/libs/masks.c:1020
 #: ../src/libs/masks.c:1667
 msgid "add circle"
 msgstr "Добавить окружность"
 
-#: ../src/develop/blend_gui.c:1780 ../src/iop/retouch.c:2629
+#: ../src/develop/blend_gui.c:1780 ../src/iop/retouch.c:2669
 #: ../src/libs/masks.c:1016 ../src/libs/masks.c:1674
 msgid "add brush"
 msgstr "Добавить кисть"
@@ -2846,7 +2844,7 @@ msgstr "Размывание краёв"
 msgid "radius for gaussian blur of blend mask"
 msgstr "Радиус гауссова размывания краёв маски"
 
-#: ../src/develop/blend_gui.c:2576 ../src/iop/retouch.c:2914
+#: ../src/develop/blend_gui.c:2576 ../src/iop/retouch.c:2954
 msgid "mask opacity"
 msgstr "Непрозрачность маски"
 
@@ -3859,7 +3857,7 @@ msgstr "Диафрагма"
 
 #. focal length
 #: ../src/gui/preferences.c:521 ../src/gui/preferences.c:1442
-#: ../src/gui/presets.c:498 ../src/iop/ashift.c:4818 ../src/libs/camera.c:589
+#: ../src/gui/presets.c:498 ../src/iop/ashift.c:4835 ../src/libs/camera.c:589
 #: ../src/libs/collect.h:36 ../src/libs/metadata_view.c:111
 msgid "focal length"
 msgstr "Фокусное расстояние"
@@ -5040,111 +5038,111 @@ msgstr "Недостаточно информации для автоматич�
 msgid "automatic correction failed, please correct manually"
 msgstr "Ошибка автоматической коррекции! Попробуйте сделать это вручную."
 
-#: ../src/iop/ashift.c:4569 ../src/iop/ashift.c:4570 ../src/iop/ashift.c:4673
-#: ../src/iop/ashift.c:4674
+#: ../src/iop/ashift.c:4586 ../src/iop/ashift.c:4587 ../src/iop/ashift.c:4690
+#: ../src/iop/ashift.c:4691
 #, c-format
 msgid "lens shift (%s)"
 msgstr "Сдвиг перспективы (%s)"
 
-#: ../src/iop/ashift.c:4569 ../src/iop/ashift.c:4570 ../src/iop/ashift.c:4673
-#: ../src/iop/ashift.c:4674 ../src/iop/clipping.c:1679
+#: ../src/iop/ashift.c:4586 ../src/iop/ashift.c:4587 ../src/iop/ashift.c:4690
+#: ../src/iop/ashift.c:4691 ../src/iop/clipping.c:1679
 #: ../src/iop/clipping.c:1964 ../src/iop/clipping.c:1983
 msgid "horizontal"
 msgstr "Горизонтально"
 
-#: ../src/iop/ashift.c:4569 ../src/iop/ashift.c:4570 ../src/iop/ashift.c:4673
-#: ../src/iop/ashift.c:4674 ../src/iop/clipping.c:1678
+#: ../src/iop/ashift.c:4586 ../src/iop/ashift.c:4587 ../src/iop/ashift.c:4690
+#: ../src/iop/ashift.c:4691 ../src/iop/clipping.c:1678
 #: ../src/iop/clipping.c:1965 ../src/iop/clipping.c:1982
 msgid "vertical"
 msgstr "Вертикально"
 
-#: ../src/iop/ashift.c:4778 ../src/iop/graduatednd.c:1218
+#: ../src/iop/ashift.c:4795 ../src/iop/graduatednd.c:1218
 #: ../src/iop/watermark.c:1439
 msgid "rotation"
 msgstr "Вращение"
 
-#: ../src/iop/ashift.c:4784
+#: ../src/iop/ashift.c:4801
 msgid "lens shift (vertical)"
 msgstr "Сдвиг по вертикали"
 
-#: ../src/iop/ashift.c:4789
+#: ../src/iop/ashift.c:4806
 msgid "lens shift (horizontal)"
 msgstr "Сдвиг по горизонтали"
 
-#: ../src/iop/ashift.c:4794
+#: ../src/iop/ashift.c:4811
 msgid "shear"
 msgstr "Наклон по диагонали"
 
-#: ../src/iop/ashift.c:4799 ../src/iop/clipping.c:2114
+#: ../src/iop/ashift.c:4816 ../src/iop/clipping.c:2114
 #: ../src/libs/live_view.c:343
 msgid "guides"
 msgstr "Композиция"
 
-#: ../src/iop/ashift.c:4805 ../src/iop/clipping.c:1990
+#: ../src/iop/ashift.c:4822 ../src/iop/clipping.c:1990
 msgid "automatic cropping"
 msgstr "Автокадрирование"
 
-#: ../src/iop/ashift.c:4807
+#: ../src/iop/ashift.c:4824
 msgid "largest area"
 msgstr "Наибольший размер"
 
-#: ../src/iop/ashift.c:4808
+#: ../src/iop/ashift.c:4825
 msgid "original format"
 msgstr "Исходное изображение"
 
-#: ../src/iop/ashift.c:4812
+#: ../src/iop/ashift.c:4829
 msgid "lens model"
 msgstr "Модель объектива"
 
-#: ../src/iop/ashift.c:4813
+#: ../src/iop/ashift.c:4830
 msgid "generic"
 msgstr "Общая"
 
-#: ../src/iop/ashift.c:4814
+#: ../src/iop/ashift.c:4831
 msgid "specific"
 msgstr "Настраиваемая"
 
-#: ../src/iop/ashift.c:4827
+#: ../src/iop/ashift.c:4844
 msgid "crop factor"
 msgstr "Кроп-фактор"
 
-#: ../src/iop/ashift.c:4832
+#: ../src/iop/ashift.c:4849
 msgid "lens dependence"
 msgstr "Зависимость от объектива"
 
-#: ../src/iop/ashift.c:4842
+#: ../src/iop/ashift.c:4859
 msgid "aspect adjust"
 msgstr "Коррекция соотношения сторон"
 
-#: ../src/iop/ashift.c:4852
+#: ../src/iop/ashift.c:4869
 msgid "automatic fit"
 msgstr "Автоподбор"
 
-#: ../src/iop/ashift.c:4871
+#: ../src/iop/ashift.c:4888
 msgid "get structure"
 msgstr "Анализ кадра"
 
-#: ../src/iop/ashift.c:4916
+#: ../src/iop/ashift.c:4933
 msgid "rotate image"
 msgstr "Вращать фотографию"
 
-#: ../src/iop/ashift.c:4917 ../src/iop/ashift.c:4918
+#: ../src/iop/ashift.c:4934 ../src/iop/ashift.c:4935
 msgid "apply lens shift correction in one direction"
 msgstr "Коррекция сдвига перспективы в одном из направлений"
 
-#: ../src/iop/ashift.c:4919
+#: ../src/iop/ashift.c:4936
 msgid "shear the image along one diagonal"
 msgstr "Коррекция наклона плоскости изображения по одной из диагоналей"
 
-#: ../src/iop/ashift.c:4920
+#: ../src/iop/ashift.c:4937
 msgid "display guide lines overlay"
 msgstr "Подсказка по композиции снимка"
 
-#: ../src/iop/ashift.c:4921 ../src/iop/clipping.c:1993
+#: ../src/iop/ashift.c:4938 ../src/iop/clipping.c:1993
 msgid "automatically crop to avoid black edges"
 msgstr "Автоматически кадрировать, чтобы избежать чёрных краёв"
 
-#: ../src/iop/ashift.c:4922
+#: ../src/iop/ashift.c:4939
 msgid ""
 "lens model of the perspective correction: generic or according to the focal "
 "length"
@@ -5152,11 +5150,11 @@ msgstr ""
 "Модель объектива при коррекции: общая или настраиваемая по фокусному "
 "расстоянию"
 
-#: ../src/iop/ashift.c:4924
+#: ../src/iop/ashift.c:4941
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr "Фокусное расстояние объектива, по умолчанию берётся из EXIF"
 
-#: ../src/iop/ashift.c:4926
+#: ../src/iop/ashift.c:4943
 msgid ""
 "crop factor of the camera sensor, default value set from exif data if "
 "available, manual setting is often required"
@@ -5164,19 +5162,19 @@ msgstr ""
 "Кроп-фактор сенсора камеры, по умолчанию берётся из EXIF, но возможна и "
 "настройка вручную"
 
-#: ../src/iop/ashift.c:4929
+#: ../src/iop/ashift.c:4946
 msgid ""
 "the level of lens dependent correction, set to maximum for full lens "
 "dependency, set to zero for the generic case"
 msgstr "Уровень зависимости коррекции от параметров объектива"
 
-#: ../src/iop/ashift.c:4931
+#: ../src/iop/ashift.c:4948
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
 "Скорректировать соотношение сторон масштабированием по горизонтали или "
 "вертикали"
 
-#: ../src/iop/ashift.c:4932
+#: ../src/iop/ashift.c:4949
 msgid ""
 "automatically correct for vertical perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -5186,7 +5184,7 @@ msgstr ""
 "Ctrl+щелчок корректирует только вращение\n"
 "Shift+щелчок корректирует только сдвиг перспективы"
 
-#: ../src/iop/ashift.c:4935
+#: ../src/iop/ashift.c:4952
 msgid ""
 "automatically correct for horizontal perspective distortion\n"
 "ctrl-click to only fit rotation\n"
@@ -5196,7 +5194,7 @@ msgstr ""
 "Ctrl+щелчок корректирует только вращение\n"
 "Shift+щелчок корректирует только сдвиг перспективы"
 
-#: ../src/iop/ashift.c:4938
+#: ../src/iop/ashift.c:4955
 msgid ""
 "automatically correct for vertical and horizontal perspective distortions; "
 "fitting rotation,lens shift in both directions, and shear\n"
@@ -5210,7 +5208,7 @@ msgstr ""
 "Shift+щелчок корректирует только сдвиг перспективы\n"
 "Ctrl+Shift+щелчок корректирует только вращение и сдвиг перспективы"
 
-#: ../src/iop/ashift.c:4944
+#: ../src/iop/ashift.c:4961
 msgid ""
 "analyse line structure in image\n"
 "ctrl-click for an additional edge enhancement\n"
@@ -5222,11 +5220,11 @@ msgstr ""
 "Shift+щелчок дополнительно анализирует с повышением детализации\n"
 "Ctrl+Shift+щелчок комбинирует оба этих подхода"
 
-#: ../src/iop/ashift.c:4948
+#: ../src/iop/ashift.c:4965
 msgid "remove line structure information"
 msgstr "Удалить информацию о структуре линий"
 
-#: ../src/iop/ashift.c:4949
+#: ../src/iop/ashift.c:4966
 msgid "toggle visibility of structure lines"
 msgstr "Переключить видимость структуры линий"
 
@@ -5598,7 +5596,7 @@ msgstr "Серая точка"
 msgid "middle grey adjustment"
 msgstr "Коррекция серой точки"
 
-#: ../src/iop/basicadj.c:727 ../src/iop/colisa.c:371 ../src/iop/retouch.c:2881
+#: ../src/iop/basicadj.c:727 ../src/iop/colisa.c:371 ../src/iop/retouch.c:2921
 #: ../src/iop/soften.c:726 ../src/iop/vignette.c:1154
 msgid "brightness"
 msgstr "Яркость"
@@ -6736,11 +6734,11 @@ msgstr ""
 msgid "set the global saturation"
 msgstr "Общая насыщенность"
 
-#: ../src/iop/colorin.c:117
+#: ../src/iop/colorin.c:118
 msgid "input color profile"
 msgstr "ICC профиль ввода"
 
-#: ../src/iop/colorin.c:439
+#: ../src/iop/colorin.c:471
 #, c-format
 msgid ""
 "can't extract matrix from colorspace `%s', it will be replaced by Rec2020 "
@@ -6748,38 +6746,38 @@ msgid ""
 msgstr ""
 "Ошибка извлечения цветовой матрицы «%s»! Произведена замена на Rec2020 RGB."
 
-#: ../src/iop/colorin.c:1521
+#: ../src/iop/colorin.c:1553
 #, c-format
 msgid "`%s' color matrix not found!"
 msgstr "Цветовая матрица «%s» не найдена!"
 
-#: ../src/iop/colorin.c:1555
+#: ../src/iop/colorin.c:1587
 msgid "input profile could not be generated!"
 msgstr "Ошибка создания профиля ввода!"
 
-#: ../src/iop/colorin.c:1633
+#: ../src/iop/colorin.c:1665
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "Неподдерживаемый профиль ввода заменён на линейный RGB по Rec709!"
 
-#: ../src/iop/colorin.c:2002
+#: ../src/iop/colorin.c:2034
 msgid "input profile"
 msgstr "Профиль ввода"
 
-#: ../src/iop/colorin.c:2006
+#: ../src/iop/colorin.c:2038
 msgid "working profile"
 msgstr "Рабочий профиль"
 
-#: ../src/iop/colorin.c:2016 ../src/iop/colorin.c:2027
-#: ../src/iop/colorout.c:842
+#: ../src/iop/colorin.c:2048 ../src/iop/colorin.c:2059
+#: ../src/iop/colorout.c:865
 #, c-format
 msgid "ICC profiles in %s or %s"
 msgstr "ICC профили из %s или %s"
 
-#: ../src/iop/colorin.c:2038
+#: ../src/iop/colorin.c:2070
 msgid "gamut clipping"
 msgstr "Обрезка цветового охвата"
 
-#: ../src/iop/colorin.c:2046
+#: ../src/iop/colorin.c:2078
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "Ограничить значения Lab цветовым охватом пространства RGB"
 
@@ -6885,52 +6883,52 @@ msgstr "Выравнивание гистограммы"
 msgid "level of histogram equalization"
 msgstr "Уровень выравнивания гистограммы"
 
-#: ../src/iop/colorout.c:79
+#: ../src/iop/colorout.c:80
 msgid "output color profile"
 msgstr "ICC профиль вывода"
 
-#: ../src/iop/colorout.c:620
+#: ../src/iop/colorout.c:643
 msgid "missing output profile has been replaced by sRGB!"
 msgstr "Отсутствующий профиль вывода заменён на sRGB!"
 
-#: ../src/iop/colorout.c:637
+#: ../src/iop/colorout.c:660
 msgid "missing softproof profile has been replaced by sRGB!"
 msgstr "Отсутствующий профиль цветопробы заменён на sRGB!"
 
-#: ../src/iop/colorout.c:680
+#: ../src/iop/colorout.c:703
 msgid "unsupported output profile has been replaced by sRGB!"
 msgstr "Неподдерживаемый профиль вывода заменён на sRGB!"
 
-#: ../src/iop/colorout.c:818
+#: ../src/iop/colorout.c:841
 msgid "output intent"
 msgstr "Цветопередача"
 
-#: ../src/iop/colorout.c:819 ../src/libs/export.c:676
+#: ../src/iop/colorout.c:842 ../src/libs/export.c:676
 #: ../src/libs/print_settings.c:1243 ../src/libs/print_settings.c:1458
-#: ../src/views/darkroom.c:1741 ../src/views/lighttable.c:3893
+#: ../src/views/darkroom.c:1741 ../src/views/lighttable.c:3979
 msgid "perceptual"
 msgstr "Воспринимаемая"
 
-#: ../src/iop/colorout.c:820 ../src/libs/export.c:677
+#: ../src/iop/colorout.c:843 ../src/libs/export.c:677
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1459
-#: ../src/views/darkroom.c:1742 ../src/views/lighttable.c:3894
+#: ../src/views/darkroom.c:1742 ../src/views/lighttable.c:3980
 msgid "relative colorimetric"
 msgstr "Отн. колориметрическая"
 
-#: ../src/iop/colorout.c:821 ../src/libs/export.c:678
+#: ../src/iop/colorout.c:844 ../src/libs/export.c:678
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
-#: ../src/views/darkroom.c:1743 ../src/views/lighttable.c:3895
+#: ../src/views/darkroom.c:1743 ../src/views/lighttable.c:3981
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Насыщенная"
 
-#: ../src/iop/colorout.c:822 ../src/libs/export.c:679
+#: ../src/iop/colorout.c:845 ../src/libs/export.c:679
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
-#: ../src/views/darkroom.c:1744 ../src/views/lighttable.c:3896
+#: ../src/views/darkroom.c:1744 ../src/views/lighttable.c:3982
 msgid "absolute colorimetric"
 msgstr "Абс. колориметрическая"
 
-#: ../src/iop/colorout.c:839
+#: ../src/iop/colorout.c:862
 msgid "rendering intent"
 msgstr "Цветопередача"
 
@@ -8825,7 +8823,7 @@ msgstr "Яркость"
 msgid "soften with"
 msgstr "Способ смягчения"
 
-#: ../src/iop/lowpass.c:682 ../src/iop/retouch.c:2898 ../src/iop/shadhi.c:825
+#: ../src/iop/lowpass.c:682 ../src/iop/retouch.c:2938 ../src/iop/shadhi.c:825
 msgid "gaussian"
 msgstr "По Гауссу"
 
@@ -9147,17 +9145,17 @@ msgstr ""
 "Не возможно отобразить уровни при включенном режиме отображения маски "
 "смешивания"
 
-#: ../src/iop/retouch.c:2197
+#: ../src/iop/retouch.c:2237
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
 "Не возможно отобразить маски при включенном режиме отображения маски "
 "смешивания"
 
-#: ../src/iop/retouch.c:2609
+#: ../src/iop/retouch.c:2649
 msgid "# shapes:"
 msgstr "Фигур:"
 
-#: ../src/iop/retouch.c:2613
+#: ../src/iop/retouch.c:2653
 msgid ""
 "to add a shape select an algorithm and a shape type and click on the image.\n"
 "shapes are added to the current scale"
@@ -9166,43 +9164,43 @@ msgstr ""
 "изображении.\n"
 "Фигуры добавляются в текущий уровень."
 
-#: ../src/iop/retouch.c:2620
+#: ../src/iop/retouch.c:2660
 msgid "show and edit shapes on the current scale"
 msgstr "Показывать и менять фигуры в текущем уровне"
 
-#: ../src/iop/retouch.c:2662
+#: ../src/iop/retouch.c:2702
 msgid "algorithms:"
 msgstr "Инструменты:"
 
-#: ../src/iop/retouch.c:2667
+#: ../src/iop/retouch.c:2707
 msgid "activates fill tool"
 msgstr "Заливка"
 
-#: ../src/iop/retouch.c:2674
+#: ../src/iop/retouch.c:2714
 msgid "activates blur tool"
 msgstr "Размывание"
 
-#: ../src/iop/retouch.c:2681
+#: ../src/iop/retouch.c:2721
 msgid "activates healing tool"
 msgstr "Восстановление"
 
-#: ../src/iop/retouch.c:2688
+#: ../src/iop/retouch.c:2728
 msgid "activates cloning tool"
 msgstr "Клонирование"
 
-#: ../src/iop/retouch.c:2701
+#: ../src/iop/retouch.c:2741
 msgid "# scales:"
 msgstr "Уровней:"
 
-#: ../src/iop/retouch.c:2708
+#: ../src/iop/retouch.c:2748
 msgid "current:"
 msgstr "текущий:"
 
-#: ../src/iop/retouch.c:2715
+#: ../src/iop/retouch.c:2755
 msgid "merge from:"
 msgstr "объединение с:"
 
-#: ../src/iop/retouch.c:2725
+#: ../src/iop/retouch.c:2765
 msgid ""
 "top slider adjusts where the merge scales start\n"
 "bottom slider adjusts the number of scales\n"
@@ -9214,43 +9212,43 @@ msgstr ""
 "Красный индикатор показывает текущий уровень.\n"
 "Зелёный индикатор показывает наличие фигур в уровне."
 
-#: ../src/iop/retouch.c:2747
+#: ../src/iop/retouch.c:2787
 msgid "display masks"
 msgstr "Показать маски"
 
-#: ../src/iop/retouch.c:2754
+#: ../src/iop/retouch.c:2794
 msgid "temporarily switch off shapes"
 msgstr "Временно отключить фигуры"
 
-#: ../src/iop/retouch.c:2762
+#: ../src/iop/retouch.c:2802
 msgid "display wavelet scale"
 msgstr "Показать частотный уровень"
 
-#: ../src/iop/retouch.c:2771
+#: ../src/iop/retouch.c:2811
 msgid "cut shapes from current scale"
 msgstr "Вырезать фигуры из текущего уровня"
 
-#: ../src/iop/retouch.c:2778
+#: ../src/iop/retouch.c:2818
 msgid "paste cut shapes to current scale"
 msgstr "Вставить вырезанные фигуры в текущий уровень"
 
-#: ../src/iop/retouch.c:2803
+#: ../src/iop/retouch.c:2843
 msgid "preview single scale"
 msgstr "Предпросмотр одного уровня"
 
-#: ../src/iop/retouch.c:2810
+#: ../src/iop/retouch.c:2850
 msgid "adjust preview levels"
 msgstr "Уровни предпросмотра"
 
-#: ../src/iop/retouch.c:2829
+#: ../src/iop/retouch.c:2869
 msgid "auto levels"
 msgstr "Автоуровни"
 
-#: ../src/iop/retouch.c:2841
+#: ../src/iop/retouch.c:2881
 msgid "shape selected:"
 msgstr "Выбранная фигура:"
 
-#: ../src/iop/retouch.c:2845
+#: ../src/iop/retouch.c:2885
 msgid ""
 "click on a shape to select it,\n"
 "to unselect click on an empty space"
@@ -9258,118 +9256,118 @@ msgstr ""
 "Щёлкните по фигуре, чтобы её выбрать.\n"
 "Щёлкните по пустому пространству, чтобы снять выделение."
 
-#: ../src/iop/retouch.c:2852
+#: ../src/iop/retouch.c:2892
 msgid "fill mode"
 msgstr "Режим заливки"
 
-#: ../src/iop/retouch.c:2853
+#: ../src/iop/retouch.c:2893
 msgid "erase"
 msgstr "Стирание"
 
-#: ../src/iop/retouch.c:2854 ../src/iop/watermark.c:1381
+#: ../src/iop/retouch.c:2894 ../src/iop/watermark.c:1381
 msgid "color"
 msgstr "Цвет"
 
-#: ../src/iop/retouch.c:2855
+#: ../src/iop/retouch.c:2895
 msgid "erase the detail or fills with chosen color"
 msgstr "Стереть детали или залить их выбранным цветом"
 
-#: ../src/iop/retouch.c:2867 ../src/iop/retouch.c:2868
+#: ../src/iop/retouch.c:2907 ../src/iop/retouch.c:2908
 msgid "select fill color"
 msgstr "Выбрать цвет заливки"
 
-#: ../src/iop/retouch.c:2874
+#: ../src/iop/retouch.c:2914
 msgid "pick fill color from image"
 msgstr "Взять цвет заливки с изображения"
 
-#: ../src/iop/retouch.c:2878
+#: ../src/iop/retouch.c:2918
 msgid "fill color: "
 msgstr "Цвет заливки: "
 
-#: ../src/iop/retouch.c:2883
+#: ../src/iop/retouch.c:2923
 msgid "adjusts color brightness to fine-tune it. works with erase as well"
 msgstr "Меняет яркость цвета, работает в режиме стирания"
 
-#: ../src/iop/retouch.c:2897
+#: ../src/iop/retouch.c:2937
 msgid "blur type"
 msgstr "Тип размывания"
 
-#: ../src/iop/retouch.c:2899
+#: ../src/iop/retouch.c:2939
 msgid "bilateral"
 msgstr "Билатеральное"
 
-#: ../src/iop/retouch.c:2900
+#: ../src/iop/retouch.c:2940
 msgid "type for the blur algorithm"
 msgstr "Алгоритм размывания"
 
-#: ../src/iop/retouch.c:2906
+#: ../src/iop/retouch.c:2946
 msgid "blur radius"
 msgstr "Радиус размывания"
 
-#: ../src/iop/retouch.c:2907
+#: ../src/iop/retouch.c:2947
 msgid "radius of the selected blur type"
 msgstr "Радиус для выбранного вида размывания"
 
-#: ../src/iop/retouch.c:2915
+#: ../src/iop/retouch.c:2955
 msgid "set the opacity on the selected shape"
 msgstr "Непрозрачность выбранной фигуры"
 
 #. add all the controls to the iop
-#: ../src/iop/retouch.c:2919
+#: ../src/iop/retouch.c:2959
 msgid "retouch tools"
 msgstr "Инструменты ретуши"
 
 #. wavelet decompose
-#: ../src/iop/retouch.c:2928
+#: ../src/iop/retouch.c:2968
 msgid "wavelet decompose"
 msgstr "Частотный разбор"
 
 #. shapes
-#: ../src/iop/retouch.c:2942
+#: ../src/iop/retouch.c:2982
 msgid "shapes"
 msgstr "Фигуры"
 
-#: ../src/iop/retouch.c:3296
+#: ../src/iop/retouch.c:3336
 msgctxt "accel"
 msgid "retouch tool circle"
 msgstr "Инструмент ретуши «Круг»"
 
-#: ../src/iop/retouch.c:3297
+#: ../src/iop/retouch.c:3337
 msgctxt "accel"
 msgid "retouch tool ellipse"
 msgstr "Инструмент ретуши «Эллипс»"
 
-#: ../src/iop/retouch.c:3298
+#: ../src/iop/retouch.c:3338
 msgctxt "accel"
 msgid "retouch tool path"
 msgstr "Инструмент ретуши «Контур»"
 
-#: ../src/iop/retouch.c:3299
+#: ../src/iop/retouch.c:3339
 msgctxt "accel"
 msgid "retouch tool brush"
 msgstr "Инструмент ретуши «Кисть»"
 
-#: ../src/iop/retouch.c:3301
+#: ../src/iop/retouch.c:3341
 msgctxt "accel"
 msgid "continuous add circle"
 msgstr "Добавить окружность (непрерывн.)"
 
-#: ../src/iop/retouch.c:3302
+#: ../src/iop/retouch.c:3342
 msgctxt "accel"
 msgid "continuous add ellipse"
 msgstr "Добавить эллипс (непрерывн.)"
 
-#: ../src/iop/retouch.c:3303
+#: ../src/iop/retouch.c:3343
 msgctxt "accel"
 msgid "continuous add path"
 msgstr "Добавить контур (непрерывн.)"
 
-#: ../src/iop/retouch.c:3304
+#: ../src/iop/retouch.c:3344
 msgctxt "accel"
 msgid "continuous add brush"
 msgstr "Добавить кисть (непрерывн.)"
 
-#: ../src/iop/retouch.c:4349 ../src/iop/retouch.c:5203
+#: ../src/iop/retouch.c:4389 ../src/iop/retouch.c:5243
 #, c-format
 msgid "max scale is %i for this image size"
 msgstr "Максимальный масштаб %i"
@@ -12082,7 +12080,7 @@ msgstr "Недавние коллекции"
 #: ../src/libs/recentcollect.c:85
 msgctxt "accel"
 msgid "jump back to previous collection"
-msgstr "Перейти к предыдущей подборке фотографий"
+msgstr "Перейти к предыдущей коллекции"
 
 #: ../src/libs/recentcollect.c:118
 msgid " and "
@@ -12501,37 +12499,37 @@ msgstr "Лента снимков"
 
 #. setup rating key accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:3619
+#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:3705
 msgctxt "accel"
 msgid "rate 0"
 msgstr "Оценка: 0"
 
-#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:3620
+#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:3706
 msgctxt "accel"
 msgid "rate 1"
 msgstr "Оценка: 1"
 
-#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:3621
+#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:3707
 msgctxt "accel"
 msgid "rate 2"
 msgstr "Оценка: 2"
 
-#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:3622
+#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:3708
 msgctxt "accel"
 msgid "rate 3"
 msgstr "Оценка: 3"
 
-#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:3623
+#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:3709
 msgctxt "accel"
 msgid "rate 4"
 msgstr "Оценка: 4"
 
-#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:3624
+#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:3710
 msgctxt "accel"
 msgid "rate 5"
 msgstr "Оценка: 5"
 
-#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:3625
+#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:3711
 msgctxt "accel"
 msgid "rate reject"
 msgstr "Оценка: К удалению"
@@ -12570,27 +12568,27 @@ msgstr "Создать копию снимка"
 #. setup color label accelerators
 #. Initializing accelerators
 #. Color labels keys
-#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:3611
+#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:3697
 msgctxt "accel"
 msgid "color red"
 msgstr "Красная метка"
 
-#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:3612
+#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:3698
 msgctxt "accel"
 msgid "color yellow"
 msgstr "Жёлтая метка"
 
-#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:3613
+#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:3699
 msgctxt "accel"
 msgid "color green"
 msgstr "Зелёная метка"
 
-#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:3614
+#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:3700
 msgctxt "accel"
 msgid "color blue"
 msgstr "Синяя метка"
 
-#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:3615
+#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:3701
 msgctxt "accel"
 msgid "color purple"
 msgstr "Пурпурная метка"
@@ -12677,7 +12675,7 @@ msgstr "Онлайн справка по указанному элементу �
 
 #: ../src/libs/tools/global_toolbox.c:291
 msgid "there is no help available for this element"
-msgstr "Онлайн справка по указанному элементу не доступна"
+msgstr "Онлайн справка по указанному элементу отсутствует"
 
 #: ../src/libs/tools/global_toolbox.c:354
 msgctxt "accel"
@@ -12936,11 +12934,11 @@ msgstr ""
 "Переключить проверку цветового охвата.\n"
 "Профили выбираются по щелчку правой кнопкой мыши."
 
-#: ../src/views/darkroom.c:1739 ../src/views/lighttable.c:3891
+#: ../src/views/darkroom.c:1739 ../src/views/lighttable.c:3977
 msgid "display intent"
 msgstr "Цветопередача"
 
-#: ../src/views/darkroom.c:1756 ../src/views/lighttable.c:3899
+#: ../src/views/darkroom.c:1756 ../src/views/lighttable.c:3985
 msgid "display profile"
 msgstr "Профиль"
 
@@ -12948,7 +12946,7 @@ msgstr "Профиль"
 msgid "histogram profile"
 msgstr "Профиль гистограммы"
 
-#: ../src/views/darkroom.c:1800 ../src/views/lighttable.c:3919
+#: ../src/views/darkroom.c:1800 ../src/views/lighttable.c:4005
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "Профиль монитора из %s или %s"
@@ -13062,13 +13060,13 @@ msgid "full preview"
 msgstr "Полноэкранный предпросмотр"
 
 #. undo/redo
-#: ../src/views/darkroom.c:2877 ../src/views/lighttable.c:3650
+#: ../src/views/darkroom.c:2877 ../src/views/lighttable.c:3736
 #: ../src/views/map.c:889
 msgctxt "accel"
 msgid "undo"
 msgstr "Отменить"
 
-#: ../src/views/darkroom.c:2878 ../src/views/lighttable.c:3651
+#: ../src/views/darkroom.c:2878 ../src/views/lighttable.c:3737
 #: ../src/views/map.c:890
 msgctxt "accel"
 msgid "redo"
@@ -13092,137 +13090,137 @@ msgstr "Поиск модуля"
 msgid "good knight"
 msgstr "Добрый рыцарь"
 
-#: ../src/views/lighttable.c:890 ../src/views/slideshow.c:349
+#: ../src/views/lighttable.c:970 ../src/views/slideshow.c:348
 msgid "there are no images in this collection"
-msgstr "В этой подборке нет снимков"
+msgstr "Снимки в данной коллекции отсутствуют."
 
-#: ../src/views/lighttable.c:894
+#: ../src/views/lighttable.c:974
 msgid "if you have not imported any images yet"
 msgstr "Если вы ещё ничего не импортировали,"
 
-#: ../src/views/lighttable.c:898
+#: ../src/views/lighttable.c:978
 msgid "you can do so in the import module"
 msgstr "вы можете сделать это в модуле импорта слева."
 
-#: ../src/views/lighttable.c:906
+#: ../src/views/lighttable.c:986
 msgid "try to relax the filter settings in the top panel"
-msgstr "Попробуйте изменить фильтр перечисляемых снимков вверху"
+msgstr "Попробуйте изменить настройки фильтра отображаемых снимков вверху"
 
-#: ../src/views/lighttable.c:915
+#: ../src/views/lighttable.c:995
 msgid "or add images in the collection module in the left panel"
 msgstr "или выбрать их через модуль коллекций слева."
 
-#: ../src/views/lighttable.c:2953
+#: ../src/views/lighttable.c:3042
 #, c-format
 msgid "zooming is limited to %d images"
 msgstr "Ограничение масштабирования (максимальное количество снимков) %d"
 
-#: ../src/views/lighttable.c:3616
+#: ../src/views/lighttable.c:3702
 msgctxt "accel"
 msgid "clear color labels"
 msgstr "Удалить цветовые метки"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:3628
+#: ../src/views/lighttable.c:3714
 msgctxt "accel"
 msgid "navigate up"
 msgstr "Перейти выше"
 
-#: ../src/views/lighttable.c:3629
+#: ../src/views/lighttable.c:3715
 msgctxt "accel"
 msgid "navigate down"
 msgstr "Перейти ниже"
 
-#: ../src/views/lighttable.c:3630
+#: ../src/views/lighttable.c:3716
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "Перейти на страницу выше"
 
-#: ../src/views/lighttable.c:3631
+#: ../src/views/lighttable.c:3717
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "Перейти на страницу ниже"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:3634
+#: ../src/views/lighttable.c:3720
 msgctxt "accel"
 msgid "scroll up"
 msgstr "Прокрутить вверх"
 
-#: ../src/views/lighttable.c:3635
+#: ../src/views/lighttable.c:3721
 msgctxt "accel"
 msgid "scroll down"
 msgstr "Прокрутить вниз"
 
-#: ../src/views/lighttable.c:3636
+#: ../src/views/lighttable.c:3722
 msgctxt "accel"
 msgid "scroll left"
 msgstr "Прокрутить влево"
 
-#: ../src/views/lighttable.c:3637
+#: ../src/views/lighttable.c:3723
 msgctxt "accel"
 msgid "scroll right"
 msgstr "Прокрутить вправо"
 
-#: ../src/views/lighttable.c:3638
+#: ../src/views/lighttable.c:3724
 msgctxt "accel"
 msgid "scroll center"
 msgstr "Прокрутить в центр"
 
-#: ../src/views/lighttable.c:3639
+#: ../src/views/lighttable.c:3725
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "Заново выровнять фотографии по сетке"
 
-#: ../src/views/lighttable.c:3640
+#: ../src/views/lighttable.c:3726
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "Инвертировать выбор"
 
-#: ../src/views/lighttable.c:3641
+#: ../src/views/lighttable.c:3727
 msgctxt "accel"
 msgid "select single image"
 msgstr "Выбрать один снимок"
 
 #. Preview key
-#: ../src/views/lighttable.c:3644
+#: ../src/views/lighttable.c:3730
 msgctxt "accel"
 msgid "preview"
 msgstr "Предпросмотр"
 
-#: ../src/views/lighttable.c:3645
+#: ../src/views/lighttable.c:3731
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "Предпросмотр с определением фокуса"
 
-#: ../src/views/lighttable.c:3646
+#: ../src/views/lighttable.c:3732
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "Предпросмотр"
 
-#: ../src/views/lighttable.c:3647
+#: ../src/views/lighttable.c:3733
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "Предпросмотр с определением фокуса"
 
 #. zoom for full preview
-#: ../src/views/lighttable.c:3654
+#: ../src/views/lighttable.c:3740
 msgctxt "accel"
 msgid "preview zoom 100%"
 msgstr "Предпросмотр, масштаб 100%"
 
-#: ../src/views/lighttable.c:3655
+#: ../src/views/lighttable.c:3741
 msgctxt "accel"
 msgid "preview zoom fit"
 msgstr "Предпросмотр, заполнение"
 
 #. timeline
-#: ../src/views/lighttable.c:3658
+#: ../src/views/lighttable.c:3744
 msgctxt "accel"
 msgid "toggle timeline"
 msgstr "Переключить режим хронологии"
 
-#: ../src/views/lighttable.c:3863
+#: ../src/views/lighttable.c:3949
 msgid "set display profile"
 msgstr "Настройки монитора"
 
@@ -13235,24 +13233,24 @@ msgctxt "view"
 msgid "print"
 msgstr "Печать"
 
-#: ../src/views/slideshow.c:171
+#: ../src/views/slideshow.c:286 ../src/views/slideshow.c:302
 msgid "end of images. press any key to return to lighttable mode"
 msgstr ""
 "Снимки закончились. Нажмите любую клавишу для возврата в режим просмотра."
 
-#: ../src/views/slideshow.c:317
+#: ../src/views/slideshow.c:316
 msgid "slideshow"
 msgstr "Слайдшоу"
 
-#: ../src/views/slideshow.c:415
+#: ../src/views/slideshow.c:438
 msgid "waiting to start slideshow"
 msgstr "Ожидание начала слайдшоу"
 
-#: ../src/views/slideshow.c:528
+#: ../src/views/slideshow.c:557
 msgid "slideshow paused"
 msgstr "Режим слайдшоу приостановлен"
 
-#: ../src/views/slideshow.c:535 ../src/views/slideshow.c:542
+#: ../src/views/slideshow.c:564 ../src/views/slideshow.c:571
 #, c-format
 msgid "slideshow delay set to %d second"
 msgid_plural "slideshow delay set to %d seconds"
@@ -13260,7 +13258,7 @@ msgstr[0] "Время показа изменено на %d секунду"
 msgstr[1] "Время показа изменено на %d секунды"
 msgstr[2] "Время показа изменено на %d секунд"
 
-#: ../src/views/slideshow.c:564
+#: ../src/views/slideshow.c:593
 msgctxt "accel"
 msgid "start and stop"
 msgstr "Начать и остановить"
