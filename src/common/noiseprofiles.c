@@ -224,7 +224,7 @@ end:
 }
 #undef _ERROR
 
-GList *dt_noiseprofile_get_matching(const dt_image_t *cimg)
+GList *dt_noiseprofile_get_matching(const dt_image_t *cimg, unsigned *profile_version)
 {
   JsonParser *parser = darktable.noiseprofile_parser;
   JsonReader *reader = NULL;

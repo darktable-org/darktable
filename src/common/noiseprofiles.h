@@ -42,8 +42,11 @@ JsonParser *dt_noiseprofile_init(const char *alternative);
 /*
  * returns the noiseprofiles matching the image's exif data.
  * free with g_list_free_full(..., dt_noiseprofile_free);
+ * tries to find the noiseprofile of profile_version.
+ * if not possible, updates the profile_version variable
+ * to the actually found profile.
  */
-GList *dt_noiseprofile_get_matching(const dt_image_t *cimg);
+GList *dt_noiseprofile_get_matching(const dt_image_t *cimg, unsigned *profile_version);
 
 /** convenience function to free a list of noiseprofiles */
 void dt_noiseprofile_free(gpointer data);

@@ -109,12 +109,12 @@ typedef struct dt_iop_denoiseprofile_params_v6_t
 
 typedef struct dt_iop_denoiseprofile_params_v7_t
 {
-  float radius;     // patch size
-  float nbhood;     // search radius
-  float strength;   // noise level after equalization
-  float scattering; // spread the patch search zone without increasing number of patches
-  float central_pixel_weight; // increase central pixel's weight in patch comparison
-  float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
+  float radius;                      // patch size
+  float nbhood;                      // search radius
+  float strength;                    // noise level after equalization
+  float scattering;                  // spread the patch search zone without increasing number of patches
+  float central_pixel_weight;        // increase central pixel's weight in patch comparison
+  float a[3], b[3];                  // fit for poissonian-gaussian noise per color channel.
   dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
   float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
   float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
@@ -211,7 +211,7 @@ typedef struct dt_iop_denoiseprofile_global_data_t
   int kernel_denoiseprofile_reduce_second;
 } dt_iop_denoiseprofile_global_data_t;
 
-static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self);
+static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self, unsigned *profile_version);
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
@@ -248,7 +248,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       // autodetection was used or not
       return 0;
     }
-    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
+    unsigned profile_version = 1;
+    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self, &profile_version);
     // if the profile in old_version is an autodetected one (this would mean a+b params match the interpolated
     // one, AND
     // the profile is actually the first selected one - however we can only detect the params, but most people
@@ -2545,7 +2546,9 @@ void reload_defaults(dt_iop_module_t *module)
     // get matching profiles:
     char name[512];
     if(g->profiles) g_list_free_full(g->profiles, dt_noiseprofile_free);
-    g->profiles = dt_noiseprofile_get_matching(&module->dev->image_storage);
+    unsigned *profile_version_ptr = &(((dt_iop_denoiseprofile_params_t *)module->default_params)->profile_version);
+    *profile_version_ptr = 2;
+    g->profiles = dt_noiseprofile_get_matching(&module->dev->image_storage, profile_version_ptr);
     g->interpolated = dt_noiseprofile_generic; // default to generic poissonian
     g_strlcpy(name, _(g->interpolated.name), sizeof(name));
 
@@ -2590,7 +2593,6 @@ void reload_defaults(dt_iop_module_t *module)
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->fix_anscombe_and_nlmeans_norm = TRUE;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->profile_version = 2;
     for(int k = 0; k < 3; k++)
     {
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->a[k] = g->interpolated.a[k];
@@ -2670,9 +2672,14 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self)
+/* find the right profile among the known profiles.
+ * the profile_version parameter indicates the wanted profile version,
+ * and is modified to reflect the actually found version.
+ * for instance, we may ask for a profile in version 2, but get a profile
+ * in version 1 if the considered camera does not have v2 profiles yet. */
+static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self, unsigned *profile_version)
 {
-  GList *profiles = dt_noiseprofile_get_matching(&self->dev->image_storage);
+  GList *profiles = dt_noiseprofile_get_matching(&self->dev->image_storage, profile_version);
   dt_noiseprofile_t interpolated = dt_noiseprofile_generic; // default to generic poissonian
 
   const int iso = self->dev->image_storage.exif_iso;
@@ -2722,7 +2729,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     // autodetect matching profile again, the same way as detecting their names,
     // this is partially duplicated code and data because we are not allowed to access
     // gui_data here ..
-    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
+    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self, &(p->profile_version));
     for(int k = 0; k < 3; k++)
     {
       d->a[k] = interpolated.a[k];
