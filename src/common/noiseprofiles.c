@@ -120,99 +120,116 @@ static gboolean dt_noiseprofile_verify(JsonParser *parser)
   if(!json_reader_is_array(reader)) _ERROR("`noiseprofiles' is supposed to be an array");
 
   size_t n_profiles_total = 0;
-
-  // go through all makers
-  const int n_makers = json_reader_count_elements(reader);
-  dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %d makers\n", n_makers);
-  for(int i = 0; i < n_makers; i++)
+  // go through all versions
+  const int n_versions = json_reader_count_elements(reader);
+  dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %d versions\n", n_versions);
+  for(int v = 0; v < n_versions; v++)
   {
-    if(!json_reader_read_element(reader, i)) _ERROR("can't access maker at position %d / %d", i+1, n_makers);
+    if(!json_reader_read_element(reader, v))
+      _ERROR("can't access profile_version at position %d / %d", v + 1, n_versions);
 
-    if(!json_reader_read_member(reader, "maker")) _ERROR("missing `maker`");
-
-    dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found maker `%s'\n", json_reader_get_string_value(reader));
-    // go through all models and check those
+    if(!json_reader_read_member(reader, "profile_version")) _ERROR("missing `profile_version`");
     json_reader_end_member(reader);
 
-    if(!json_reader_read_member(reader, "models")) _ERROR("missing `models`");
+    if(!json_reader_read_member(reader, "noiseprofiles_data")) _ERROR("missing `noiseprofiles_data`");
+    if(!json_reader_is_array(reader)) _ERROR("`noiseprofiles_data' is supposed to be an array");
 
-    const int n_models = json_reader_count_elements(reader);
-    dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %d models\n", n_models);
-    n_profiles_total += n_models;
-    for(int j = 0; j < n_models; j++)
+    // go through all makers
+    const int n_makers = json_reader_count_elements(reader);
+    dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %d makers\n", n_makers);
+    for(int i = 0; i < n_makers; i++)
     {
-      if(!json_reader_read_element(reader, j)) _ERROR("can't access model at position %d / %d", j+1, n_models);
+      if(!json_reader_read_element(reader, i)) _ERROR("can't access maker at position %d / %d", i + 1, n_makers);
 
-      if(!json_reader_read_member(reader, "model")) _ERROR("missing `model`");
+      if(!json_reader_read_member(reader, "maker")) _ERROR("missing `maker`");
 
-      dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %s\n", json_reader_get_string_value(reader));
+      dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found maker `%s'\n", json_reader_get_string_value(reader));
+      // go through all models and check those
       json_reader_end_member(reader);
 
-      if(!json_reader_read_member(reader, "profiles")) _ERROR("missing `profiles`");
+      if(!json_reader_read_member(reader, "models")) _ERROR("missing `models`");
 
-      const int n_profiles = json_reader_count_elements(reader);
-      dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %d profiles\n", n_profiles);
-      for(int k = 0; k < n_profiles; k++)
+      const int n_models = json_reader_count_elements(reader);
+      dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %d models\n", n_models);
+      n_profiles_total += n_models;
+      for(int j = 0; j < n_models; j++)
       {
-        if(!json_reader_read_element(reader, k)) _ERROR("can't access profile at position %d / %d", k+1, n_profiles);
+        if(!json_reader_read_element(reader, j)) _ERROR("can't access model at position %d / %d", j + 1, n_models);
 
-        gchar** member_names = json_reader_list_members(reader);
+        if(!json_reader_read_member(reader, "model")) _ERROR("missing `model`");
 
-        // name
-        if(!is_member(member_names, "name"))
-        {
-          g_strfreev(member_names);
-          _ERROR("missing `name`");
-        }
-
-        // iso
-        if(!is_member(member_names, "iso"))
-        {
-          g_strfreev(member_names);
-          _ERROR("missing `iso`");
-        }
-
-        // a
-        if(!is_member(member_names, "a"))
-        {
-          g_strfreev(member_names);
-          _ERROR("missing `a`");
-        }
-        json_reader_read_member(reader, "a");
-        if(json_reader_count_elements(reader) != 3)
-        {
-          g_strfreev(member_names);
-          _ERROR("`a` with size != 3");
-        }
+        dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %s\n", json_reader_get_string_value(reader));
         json_reader_end_member(reader);
 
-        // b
-        if(!is_member(member_names, "b"))
-        {
-          g_strfreev(member_names);
-          _ERROR("missing `b`");
-        }
-        json_reader_read_member(reader, "b");
-        if(json_reader_count_elements(reader) != 3)
-        {
-          g_strfreev(member_names);
-          _ERROR("`b` with size != 3");
-        }
-        json_reader_end_member(reader);
+        if(!json_reader_read_member(reader, "profiles")) _ERROR("missing `profiles`");
 
+        const int n_profiles = json_reader_count_elements(reader);
+        dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %d profiles\n", n_profiles);
+        for(int k = 0; k < n_profiles; k++)
+        {
+          if(!json_reader_read_element(reader, k))
+            _ERROR("can't access profile at position %d / %d", k + 1, n_profiles);
+
+          gchar **member_names = json_reader_list_members(reader);
+
+          // name
+          if(!is_member(member_names, "name"))
+          {
+            g_strfreev(member_names);
+            _ERROR("missing `name`");
+          }
+
+          // iso
+          if(!is_member(member_names, "iso"))
+          {
+            g_strfreev(member_names);
+            _ERROR("missing `iso`");
+          }
+
+          // a
+          if(!is_member(member_names, "a"))
+          {
+            g_strfreev(member_names);
+            _ERROR("missing `a`");
+          }
+          json_reader_read_member(reader, "a");
+          if(json_reader_count_elements(reader) != 3)
+          {
+            g_strfreev(member_names);
+            _ERROR("`a` with size != 3");
+          }
+          json_reader_end_member(reader);
+
+          // b
+          if(!is_member(member_names, "b"))
+          {
+            g_strfreev(member_names);
+            _ERROR("missing `b`");
+          }
+          json_reader_read_member(reader, "b");
+          if(json_reader_count_elements(reader) != 3)
+          {
+            g_strfreev(member_names);
+            _ERROR("`b` with size != 3");
+          }
+          json_reader_end_member(reader);
+
+          json_reader_end_element(reader);
+
+          g_strfreev(member_names);
+        } // profiles
+
+        json_reader_end_member(reader);
         json_reader_end_element(reader);
-
-        g_strfreev(member_names);
-      } // profiles
+      } // models
 
       json_reader_end_member(reader);
       json_reader_end_element(reader);
-    } // models
+    } // makers
 
     json_reader_end_member(reader);
     json_reader_end_element(reader);
-  } // makers
-
+  } // versions
   json_reader_end_member(reader);
 
   dt_print(DT_DEBUG_CONTROL, "[noiseprofile] verifying noiseprofile completed\n");
@@ -249,7 +266,6 @@ GList *dt_noiseprofile_get_matching(const dt_image_t *cimg, unsigned profile_ver
 
     json_reader_read_member(reader, "profile_version");
     unsigned current_profile_version = json_reader_get_int_value(reader);
-
     if(current_profile_version == profile_version)
     {
       json_reader_end_member(reader);
@@ -371,10 +387,11 @@ GList *dt_noiseprofile_get_matching(const dt_image_t *cimg, unsigned profile_ver
         json_reader_end_member(reader);
         json_reader_end_element(reader);
       } // makers
-
-      json_reader_end_member(reader);
     }
+    json_reader_end_member(reader);
+    json_reader_end_element(reader);
   } // versions
+  json_reader_end_member(reader);
 
 end:
   if(reader) g_object_unref(reader);
