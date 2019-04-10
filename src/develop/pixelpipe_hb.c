@@ -1692,8 +1692,12 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
           /* this is reasonable on slow GPUs only, where it's more expensive to reprocess the whole pixelpipe
              than
-             regularly copying device buffers back to host. This would slow down fast GPUs considerably. */
-          if(darktable.opencl->synch_cache)
+             regularly copying device buffers back to host. This would slow down fast GPUs considerably.
+             But it is worth copying data back from the GPU which is the input to the currently focused iop,
+             as that is the iop which is most likely to change next.
+          */
+          if((darktable.opencl->sync_cache == OPENCL_SYNC_TRUE) ||
+             ((darktable.opencl->sync_cache == OPENCL_SYNC_ACTIVE_MODULE) && (module == darktable.develop->gui_module)))
           {
             /* write back input into cache for faster re-usal (not for export or thumbnails) */
             if(cl_mem_input != NULL && pipe->type != DT_DEV_PIXELPIPE_EXPORT
