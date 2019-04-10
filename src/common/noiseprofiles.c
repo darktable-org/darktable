@@ -224,7 +224,7 @@ end:
 }
 #undef _ERROR
 
-GList *dt_noiseprofile_get_matching(const dt_image_t *cimg, unsigned *profile_version)
+GList *dt_noiseprofile_get_matching(const dt_image_t *cimg, unsigned profile_version)
 {
   JsonParser *parser = darktable.noiseprofile_parser;
   JsonReader *reader = NULL;
@@ -240,122 +240,141 @@ GList *dt_noiseprofile_get_matching(const dt_image_t *cimg, unsigned *profile_ve
 
   json_reader_read_member(reader, "noiseprofiles");
 
-  // go through all makers
-  const int n_makers = json_reader_count_elements(reader);
-  dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %d makers\n", n_makers);
-  for(int i = 0; i < n_makers; i++)
+  // go through all versions
+  const int n_versions = json_reader_count_elements(reader);
+  dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %d versions\n", n_versions);
+  for(int v = 0; v < n_versions; v++)
   {
-    json_reader_read_element(reader, i);
+    json_reader_read_element(reader, v);
 
-    json_reader_read_member(reader, "maker");
+    json_reader_read_member(reader, "profile_version");
+    unsigned current_profile_version = json_reader_get_int_value(reader);
 
-    if(g_strstr_len(cimg->camera_maker, -1, json_reader_get_string_value(reader)))
+    if(current_profile_version == profile_version)
     {
-      dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found `%s' as `%s'\n", cimg->camera_maker, json_reader_get_string_value(reader));
-      // go through all models and check those
       json_reader_end_member(reader);
 
-      json_reader_read_member(reader, "models");
+      json_reader_read_member(reader, "noiseprofiles_data");
 
-      const int n_models = json_reader_count_elements(reader);
-      dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %d models\n", n_models);
-      for(int j = 0; j < n_models; j++)
+      // go through all makers
+      const int n_makers = json_reader_count_elements(reader);
+      dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %d makers\n", n_makers);
+      for(int i = 0; i < n_makers; i++)
       {
-        json_reader_read_element(reader, j);
+        json_reader_read_element(reader, i);
 
-        json_reader_read_member(reader, "model");
+        json_reader_read_member(reader, "maker");
 
-        if(!g_strcmp0(cimg->camera_model, json_reader_get_string_value(reader)))
+        if(g_strstr_len(cimg->camera_maker, -1, json_reader_get_string_value(reader)))
         {
-          dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %s\n", cimg->camera_model);
-          // we got a match, return at most bufsize elements
+          dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found `%s' as `%s'\n", cimg->camera_maker,
+                   json_reader_get_string_value(reader));
+          // go through all models and check those
           json_reader_end_member(reader);
 
-          json_reader_read_member(reader, "profiles");
+          json_reader_read_member(reader, "models");
 
-          const int n_profiles = json_reader_count_elements(reader);
-          dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %d profiles\n", n_profiles);
-          for(int k = 0; k < n_profiles; k++)
+          const int n_models = json_reader_count_elements(reader);
+          dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %d models\n", n_models);
+          for(int j = 0; j < n_models; j++)
           {
-            dt_noiseprofile_t tmp_profile = { 0 };
+            json_reader_read_element(reader, j);
 
-            json_reader_read_element(reader, k);
+            json_reader_read_member(reader, "model");
 
-            gchar** member_names = json_reader_list_members(reader);
-
-            // do we want to skip this entry?
-            if(is_member(member_names, "skip"))
+            if(!g_strcmp0(cimg->camera_model, json_reader_get_string_value(reader)))
             {
-              json_reader_read_member(reader, "skip");
-              gboolean skip = json_reader_get_boolean_value(reader);
+              dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %s\n", cimg->camera_model);
+              // we got a match, return at most bufsize elements
               json_reader_end_member(reader);
-              if(skip)
+
+              json_reader_read_member(reader, "profiles");
+
+              const int n_profiles = json_reader_count_elements(reader);
+              dt_print(DT_DEBUG_CONTROL, "[noiseprofile] found %d profiles\n", n_profiles);
+              for(int k = 0; k < n_profiles; k++)
               {
+                dt_noiseprofile_t tmp_profile = { 0 };
+
+                json_reader_read_element(reader, k);
+
+                gchar **member_names = json_reader_list_members(reader);
+
+                // do we want to skip this entry?
+                if(is_member(member_names, "skip"))
+                {
+                  json_reader_read_member(reader, "skip");
+                  gboolean skip = json_reader_get_boolean_value(reader);
+                  json_reader_end_member(reader);
+                  if(skip)
+                  {
+                    json_reader_end_element(reader);
+                    g_strfreev(member_names);
+                    continue;
+                  }
+                }
+
+                // maker
+                tmp_profile.maker = g_strdup(cimg->camera_maker);
+
+                // model
+                tmp_profile.model = g_strdup(cimg->camera_model);
+
+                // name
+                json_reader_read_member(reader, "name");
+                tmp_profile.name = g_strdup(json_reader_get_string_value(reader));
+                json_reader_end_member(reader);
+
+                // iso
+                json_reader_read_member(reader, "iso");
+                tmp_profile.iso = json_reader_get_double_value(reader);
+                json_reader_end_member(reader);
+
+                // a
+                json_reader_read_member(reader, "a");
+                for(int a = 0; a < 3; a++)
+                {
+                  json_reader_read_element(reader, a);
+                  tmp_profile.a[a] = json_reader_get_double_value(reader);
+                  json_reader_end_element(reader);
+                }
+                json_reader_end_member(reader);
+
+                // b
+                json_reader_read_member(reader, "b");
+                for(int b = 0; b < 3; b++)
+                {
+                  json_reader_read_element(reader, b);
+                  tmp_profile.b[b] = json_reader_get_double_value(reader);
+                  json_reader_end_element(reader);
+                }
+                json_reader_end_member(reader);
+
                 json_reader_end_element(reader);
+
+                // everything worked out, add tmp_profile to result
+                dt_noiseprofile_t *new_profile = (dt_noiseprofile_t *)malloc(sizeof(dt_noiseprofile_t));
+                *new_profile = tmp_profile;
+                result = g_list_append(result, new_profile);
+
                 g_strfreev(member_names);
-                continue;
-              }
+              } // profiles
+
+              goto end;
             }
 
-            // maker
-            tmp_profile.maker = g_strdup(cimg->camera_maker);
-
-            // model
-            tmp_profile.model = g_strdup(cimg->camera_model);
-
-            // name
-            json_reader_read_member(reader, "name");
-            tmp_profile.name = g_strdup(json_reader_get_string_value(reader));
             json_reader_end_member(reader);
-
-            // iso
-            json_reader_read_member(reader, "iso");
-            tmp_profile.iso = json_reader_get_double_value(reader);
-            json_reader_end_member(reader);
-
-            // a
-            json_reader_read_member(reader, "a");
-            for(int a = 0; a < 3; a++)
-            {
-              json_reader_read_element(reader, a);
-              tmp_profile.a[a] = json_reader_get_double_value(reader);
-              json_reader_end_element(reader);
-            }
-            json_reader_end_member(reader);
-
-            // b
-            json_reader_read_member(reader, "b");
-            for(int b = 0; b < 3; b++)
-            {
-              json_reader_read_element(reader, b);
-              tmp_profile.b[b] = json_reader_get_double_value(reader);
-              json_reader_end_element(reader);
-            }
-            json_reader_end_member(reader);
-
             json_reader_end_element(reader);
-
-            // everything worked out, add tmp_profile to result
-            dt_noiseprofile_t *new_profile = (dt_noiseprofile_t *)malloc(sizeof(dt_noiseprofile_t));
-            *new_profile = tmp_profile;
-            result = g_list_append(result, new_profile);
-
-            g_strfreev(member_names);
-          } // profiles
-
-          goto end;
+          } // models
         }
 
         json_reader_end_member(reader);
         json_reader_end_element(reader);
-      } // models
+      } // makers
+
+      json_reader_end_member(reader);
     }
-
-    json_reader_end_member(reader);
-    json_reader_end_element(reader);
-  } // makers
-
-  json_reader_end_member(reader);
+  } // versions
 
 end:
   if(reader) g_object_unref(reader);

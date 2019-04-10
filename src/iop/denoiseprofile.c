@@ -2548,7 +2548,12 @@ void reload_defaults(dt_iop_module_t *module)
     if(g->profiles) g_list_free_full(g->profiles, dt_noiseprofile_free);
     unsigned *profile_version_ptr = &(((dt_iop_denoiseprofile_params_t *)module->default_params)->profile_version);
     *profile_version_ptr = 2;
-    g->profiles = dt_noiseprofile_get_matching(&module->dev->image_storage, profile_version_ptr);
+    g->profiles = NULL;
+    while(g->profiles == NULL && *profile_version_ptr > 0)
+    {
+      g->profiles = dt_noiseprofile_get_matching(&module->dev->image_storage, *profile_version_ptr);
+      if(g->profiles == NULL) (*profile_version_ptr)--;
+    }
     g->interpolated = dt_noiseprofile_generic; // default to generic poissonian
     g_strlcpy(name, _(g->interpolated.name), sizeof(name));
 
@@ -2679,7 +2684,12 @@ void cleanup_global(dt_iop_module_so_t *module)
  * in version 1 if the considered camera does not have v2 profiles yet. */
 static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self, unsigned *profile_version)
 {
-  GList *profiles = dt_noiseprofile_get_matching(&self->dev->image_storage, profile_version);
+  GList *profiles = NULL;
+  while(profiles == NULL && *profile_version > 0)
+  {
+    profiles = dt_noiseprofile_get_matching(&self->dev->image_storage, *profile_version);
+    if(profiles == NULL) (*profile_version)--;
+  }
   dt_noiseprofile_t interpolated = dt_noiseprofile_generic; // default to generic poissonian
 
   const int iso = self->dev->image_storage.exif_iso;

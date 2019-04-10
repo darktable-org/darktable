@@ -1,6 +1,9 @@
 {
   "version": 0,
   "noiseprofiles": [
+  {
+    "profile_version": 1,
+    "noiseprofiles_data": [
     {
       "maker": "Canon",
       "models": [
@@ -7095,5 +7098,14 @@
         }
       ]
     }
+  ]
+  },
+  {
+    "profile_version": 2,
+    "noiseprofiles_data": [
+    {
+    }
+    ]
+  }
   ]
 }
