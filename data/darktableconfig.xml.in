@@ -112,13 +112,6 @@
     <longdescription>if set to TRUE OpenCL pixelpipe will not be synchronized on a per-module basis. this can improve pixelpipe latency. however, potential OpenCL errors would be detected late; in such a case the complete pixelpipe needs to be reprocessed instead of only a single module. export pixelpipe will always be run synchronously.</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>opencl_synch_cache</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>copy back OpenCL buffers into pixelpipe cache after each module</shortdescription>
-    <longdescription>this brings pixelpipe cache and OpenCL buffers in synch after each module. on slow GPUs this might improve speed as it avoids reprocessing the whole pixelpipe on every parameter change. on fast GPUs the additional memory transfer overhead will slow down OpenCL considerably.</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>opencl_micro_nap</name>
     <type>int</type>
     <default>1000</default>
@@ -227,6 +220,19 @@
     <default>default</default>
     <shortdescription>OpenCL scheduling profile</shortdescription>
     <longdescription>defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled systems. default - GPU processes full and CPU processes preview pipe (adaptable by config parameters); multiple GPUs - process both pixelpipes in parallel on two different GPUs; very fast GPU - process both pixelipes sequentially on the GPU.</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>opencl_synch_cache</name>
+    <type>
+      <enum>
+        <option>true</option>
+        <option>active module</option>
+        <option>false</option>
+      </enum>
+    </type>
+    <default>active module</default>
+    <shortdescription>cache intermediate OpenCL output</shortdescription>
+    <longdescription>active module (default) - cache the input to the currently focused module, which allows for faster response time when making multiple adjustments to that module (though the whole pipeline may need to be reprocessed when another module is changed); true - cache the output after each module, which may improve speed, as the whole pixelpipe won't be reprocessed on every parameter change, though will require more memory transfers from the GPU; false - do not sync the pixelpipe cache from OpenCL, which avoids memory transfers from GPUs fast enough to smoothly reprocess the whole pixelpipe.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_library</name>
