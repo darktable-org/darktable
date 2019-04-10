@@ -3662,6 +3662,9 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
 
     _second_window_configure_ppd_dpi(dev);
 
+    gtk_window_set_icon_name(GTK_WINDOW(dev->second_window.second_wnd), "darktable");
+    gtk_window_set_title(GTK_WINDOW(dev->second_window.second_wnd), "darktable");
+
     GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(dev->second_window.second_wnd), container);
 
