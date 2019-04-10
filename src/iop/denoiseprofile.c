@@ -64,7 +64,7 @@ typedef enum dt_iop_denoiseprofile_channel_t
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
-DT_MODULE_INTROSPECTION(7, dt_iop_denoiseprofile_params_t)
+DT_MODULE_INTROSPECTION(8, dt_iop_denoiseprofile_params_t)
 
 typedef struct dt_iop_denoiseprofile_params_v1_t
 {
@@ -107,6 +107,22 @@ typedef struct dt_iop_denoiseprofile_params_v6_t
   float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
 } dt_iop_denoiseprofile_params_v6_t;
 
+typedef struct dt_iop_denoiseprofile_params_v7_t
+{
+  float radius;     // patch size
+  float nbhood;     // search radius
+  float strength;   // noise level after equalization
+  float scattering; // spread the patch search zone without increasing number of patches
+  float central_pixel_weight; // increase central pixel's weight in patch comparison
+  float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
+  dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
+  float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
+  float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
+  gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
+  // backward compatibility options
+  gboolean fix_anscombe_and_nlmeans_norm;
+} dt_iop_denoiseprofile_params_v7_t;
+
 typedef struct dt_iop_denoiseprofile_params_t
 {
   float radius;     // patch size
@@ -121,6 +137,7 @@ typedef struct dt_iop_denoiseprofile_params_t
   gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
   // backward compatibility options
   gboolean fix_anscombe_and_nlmeans_norm;
+  unsigned profile_version; // version of the profile used
 } dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
@@ -319,7 +336,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     }
     else
       memcpy(&v6, old_params, sizeof(v6)); // was v6 already
-    dt_iop_denoiseprofile_params_t *v7 = new_params;
+    dt_iop_denoiseprofile_params_v7_t *v7 = new_params;
     v7->radius = v6.radius;
     v7->strength = v6.strength;
     v7->mode = v6.mode;
@@ -341,6 +358,41 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     v7->central_pixel_weight = 0.0;
     v7->fix_anscombe_and_nlmeans_norm = FALSE; // don't fix anscombe and norm to ensure backward compatibility
     v7->wb_adaptive_anscombe = TRUE;
+    return 0;
+  }
+  else if(new_version == 8)
+  {
+    dt_iop_denoiseprofile_params_v7_t v7;
+    if(old_version < 7)
+    {
+      // first update to v7
+      if(legacy_params(self, old_params, old_version, &v7, 7)) return 1;
+    }
+    else
+      memcpy(&v7, old_params, sizeof(v7)); // was v7 already
+    dt_iop_denoiseprofile_params_t *v8 = new_params;
+    v8->radius = v7.radius;
+    v8->strength = v7.strength;
+    v8->mode = v7.mode;
+    v8->nbhood = v7.nbhood;
+    for(int k = 0; k < 3; k++)
+    {
+      v8->a[k] = v7.a[k];
+      v8->b[k] = v7.b[k];
+    }
+    for(int b = 0; b < DT_IOP_DENOISE_PROFILE_BANDS; b++)
+    {
+      for(int c = 0; c < DT_DENOISE_PROFILE_NONE; c++)
+      {
+        v8->x[c][b] = v7.x[c][b];
+        v8->y[c][b] = v7.y[c][b];
+      }
+    }
+    v8->scattering = v7.scattering;
+    v8->central_pixel_weight = v7.central_pixel_weight;
+    v8->fix_anscombe_and_nlmeans_norm = v7.fix_anscombe_and_nlmeans_norm;
+    v8->wb_adaptive_anscombe = v7.wb_adaptive_anscombe;
+    v8->profile_version = 1;
     return 0;
   }
   return 1;
@@ -2538,6 +2590,7 @@ void reload_defaults(dt_iop_module_t *module)
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->fix_anscombe_and_nlmeans_norm = TRUE;
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->profile_version = 2;
     for(int k = 0; k < 3; k++)
     {
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->a[k] = g->interpolated.a[k];
@@ -2567,6 +2620,7 @@ void init(dt_iop_module_t *module)
   }
   tmp.fix_anscombe_and_nlmeans_norm = TRUE;
   tmp.wb_adaptive_anscombe = TRUE;
+  tmp.profile_version = 2;
   memcpy(module->params, &tmp, sizeof(dt_iop_denoiseprofile_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_denoiseprofile_params_t));
 }
