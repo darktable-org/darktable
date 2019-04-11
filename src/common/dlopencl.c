@@ -200,7 +200,8 @@ dt_dlopencl_t *dt_dlopencl_init(const char *name)
                                            (void (**)(void)) & ocl->symbols->dt_clEnqueueUnmapMemObject);
     success = success && dt_gmodule_symbol(module, "clGetMemObjectInfo",
                                            (void (**)(void)) & ocl->symbols->dt_clGetMemObjectInfo);
-
+    success = success && dt_gmodule_symbol(module, "clGetImageInfo",
+                                           ((void (**)(void)) & ocl->symbols->dt_clGetImageInfo));
 
     ocl->have_opencl = success;
 
