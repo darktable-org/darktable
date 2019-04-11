@@ -2354,6 +2354,43 @@ int dt_opencl_get_mem_context_id(cl_mem mem)
   return -1;
 }
 
+int dt_opencl_get_image_width(cl_mem mem)
+{
+  cl_int err;
+  size_t size;
+  if(mem == NULL) return 0;
+
+  err = (darktable.opencl->dlocl->symbols->dt_clGetImageInfo)(mem, CL_IMAGE_WIDTH, sizeof(size), &size, NULL);
+  if(size > INT_MAX) size = 0;
+
+  return (err == CL_SUCCESS) ? (int)size : 0;
+}
+
+int dt_opencl_get_image_height(cl_mem mem)
+{
+  cl_int err;
+  size_t size;
+  if(mem == NULL) return 0;
+
+  err = (darktable.opencl->dlocl->symbols->dt_clGetImageInfo)(mem, CL_IMAGE_HEIGHT, sizeof(size), &size, NULL);
+  if(size > INT_MAX) size = 0;
+
+  return (err == CL_SUCCESS) ? (int)size : 0;
+}
+
+int dt_opencl_get_image_element_size(cl_mem mem)
+{
+  cl_int err;
+  size_t size;
+  if(mem == NULL) return 0;
+
+  err = (darktable.opencl->dlocl->symbols->dt_clGetImageInfo)(mem, CL_IMAGE_ELEMENT_SIZE, sizeof(size), &size,
+                                                              NULL);
+  if(size > INT_MAX) size = 0;
+
+  return (err == CL_SUCCESS) ? (int)size : 0;
+}
+
 void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t action)
 {
   if(devid < 0)
