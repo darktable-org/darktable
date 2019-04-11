@@ -4085,10 +4085,6 @@ static void retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *c
       else
         image_rgb2lab(img_dest, roi_mask_scaled->width, roi_mask_scaled->height, ch, use_sse);
 
-      dt_ioppr_transform_image_colorspace(self, img_dest, img_dest, roi_mask_scaled->width,
-                                          roi_mask_scaled->height, iop_cs_rgb, iop_cs_Lab, &converted_cst,
-                                          dt_ioppr_get_pipe_work_profile_info(piece->pipe));
-
       dt_bilateral_splat(b, img_dest);
       dt_bilateral_blur(b);
       dt_bilateral_slice(b, img_dest, img_dest, detail);
