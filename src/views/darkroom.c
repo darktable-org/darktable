@@ -48,6 +48,7 @@
 #endif
 
 #include <gdk/gdkkeysyms.h>
+#include <glib.h>
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -55,6 +56,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
+#ifndef G_SOURCE_FUNC // Defined for glib >= 2.58
+#define G_SOURCE_FUNC(f) ((GSourceFunc) (void (*)(void)) (f))
+#endif
 
 DT_MODULE(1)
 
