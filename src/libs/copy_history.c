@@ -172,7 +172,7 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
     // make sure the right history is in there:
     dt_dev_write_history(darktable.develop);
 
-    // compress history and remove disabled modules
+    // compress history and remove disabled modules - adapted from libs/history.c
     sqlite3_stmt *stmt_local;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1 AND num "
                                                                "NOT IN (SELECT MAX(num) FROM main.history WHERE "
@@ -181,6 +181,63 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
     DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
     sqlite3_step(stmt_local);
     sqlite3_finalize(stmt_local);
+
+    // delete all mask_manager entries - copied from libs/history.c
+    int masks_count = 0;
+    char op_mask_manager[20] = {0};
+    g_strlcpy(op_mask_manager, "mask_manager", sizeof(op_mask_manager));
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1 AND operation = ?2", -1, &stmt_local, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt_local, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
+    sqlite3_step(stmt_local);
+    sqlite3_finalize(stmt_local);
+
+    // if there's masks create a mask manage entry
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT COUNT(*) FROM main.masks_history WHERE imgid = ?1",
+                                -1, &stmt_local, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
+    if(sqlite3_step(stmt_local) == SQLITE_ROW) masks_count = sqlite3_column_int(stmt_local, 0);
+    sqlite3_finalize(stmt_local);
+
+    if(masks_count > 0)
+    {
+      // set the masks history as first entry
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.masks_history SET num = 0 WHERE imgid = ?1", -1, &stmt_local, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
+      sqlite3_step(stmt_local);
+      sqlite3_finalize(stmt_local);
+
+      // make room for mask manager history entry
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.history SET num=num+1 WHERE imgid = ?1",
+          -1, &stmt_local, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
+      sqlite3_step(stmt_local);
+      sqlite3_finalize(stmt_local);
+
+      // update history end
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.images SET history_end = history_end+1 WHERE id = ?1",
+          -1, &stmt_local, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
+      sqlite3_step(stmt_local);
+      sqlite3_finalize(stmt_local);
+
+      const double iop_order = dt_ioppr_get_iop_order(darktable.develop->iop_order_list, op_mask_manager);
+
+      // create a mask manager entry in history as first entry
+      DT_DEBUG_SQLITE3_PREPARE_V2(
+          dt_database_get(darktable.db),
+          "INSERT INTO main.history (imgid, num, operation, op_params, module, enabled, "
+               "blendop_params, blendop_version, multi_priority, multi_name, iop_order) "
+          "VALUES(?1, 0, ?2, NULL, 1, 0, NULL, 0, 0, '', ?3)",
+          -1, &stmt_local, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt_local, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt_local, 3, iop_order);
+      sqlite3_step(stmt_local);
+      sqlite3_finalize(stmt_local);
+    }
 
     /* if current image in develop reload history */
     if(dt_dev_is_current_image(darktable.develop, dest_imgid))
