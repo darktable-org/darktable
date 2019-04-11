@@ -488,7 +488,6 @@ check_exposure() {
 	if [ "$over" -a "$over" -lt 80 ]; then
 		# Image not over-exposed.
 		echo "${color_error}\"$orig\" not over-exposed ($over)${color_reset}"
-		ret=1
 	fi
 
 	under=$(convert "$input" -negate $convert_flags -format "%[mean]" info: | cut -f1 -d.)
