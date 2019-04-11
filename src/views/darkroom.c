@@ -1115,9 +1115,18 @@ static void _darkroom_ui_apply_style_popupmenu(GtkWidget *w, gpointer user_data)
     dt_control_log(_("no styles have been created yet"));
 }
 
-static void _darkroom_ui_second_window(GtkWidget *w, dt_develop_t *dev)
+static void _second_window_quickbutton_clicked(GtkWidget *w, dt_develop_t *dev)
 {
-  _darkroom_display_second_window(dev);
+  if(dev->second_window.second_wnd && !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)))
+  {
+    _darkroom_ui_second_window_write_config(dev->second_window.second_wnd);
+
+    gtk_widget_destroy(dev->second_window.second_wnd);
+    dev->second_window.second_wnd = NULL;
+    dev->second_window.widget = NULL;
+  }
+  else if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(w)))
+    _darkroom_display_second_window(dev);
 }
 
 /** toolbar buttons */
@@ -1730,11 +1739,12 @@ void gui_init(dt_view_t *self)
   dt_view_manager_view_toolbox_add(darktable.view_manager, styles, DT_VIEW_DARKROOM);
 
   /* create second window display button */
-  GtkWidget *second_window
-      = dtgtk_button_new(dtgtk_cairo_paint_display2, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  g_signal_connect(G_OBJECT(second_window), "clicked", G_CALLBACK(_darkroom_ui_second_window), dev);
-  gtk_widget_set_tooltip_text(styles, _("display a second darkroom image window"));
-  dt_view_manager_view_toolbox_add(darktable.view_manager, second_window, DT_VIEW_DARKROOM);
+  dev->second_window.button
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_display2, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  g_signal_connect(G_OBJECT(dev->second_window.button), "clicked", G_CALLBACK(_second_window_quickbutton_clicked),
+                   dev);
+  gtk_widget_set_tooltip_text(dev->second_window.button, _("display a second darkroom image window"));
+  dt_view_manager_view_toolbox_add(darktable.view_manager, dev->second_window.button, DT_VIEW_DARKROOM);
 
   const int panel_width = dt_conf_get_int("panel_width");
 
@@ -2443,7 +2453,11 @@ void enter(dt_view_t *self)
 
   _register_modules_drag_n_drop(self);
 
-  if(dt_conf_get_bool("second_window/last_visible")) _darkroom_display_second_window(dev);
+  if(dt_conf_get_bool("second_window/last_visible"))
+  {
+    _darkroom_display_second_window(dev);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->second_window.button), TRUE);
+  }
 }
 
 void leave(dt_view_t *self)
@@ -3778,6 +3792,7 @@ static void _darkroom_ui_second_window_init(GtkWidget *widget, dt_develop_t *dev
 
   const gint x = MAX(0, dt_conf_get_int("second_window/window_x"));
   const gint y = MAX(0, dt_conf_get_int("second_window/window_y"));
+  gtk_window_set_default_size(GTK_WINDOW(widget), width, height);
   gtk_widget_show_all(widget);
   gtk_window_move(GTK_WINDOW(widget), x, y);
   gtk_window_resize(GTK_WINDOW(widget), width, height);
@@ -3817,6 +3832,8 @@ static gboolean _second_window_delete_callback(GtkWidget *widget, GdkEvent *even
 
   dev->second_window.second_wnd = NULL;
   dev->second_window.widget = NULL;
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->second_window.button), FALSE);
 
   return FALSE;
 }

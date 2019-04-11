@@ -285,6 +285,8 @@ typedef struct dt_develop_t
     int width, height;
     float ppd;
 
+    GtkWidget *button;
+
     dt_dev_zoom_t zoom;
     int closeup;
     float zoom_x, zoom_y;
