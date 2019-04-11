@@ -352,6 +352,12 @@ int dt_opencl_unmap_mem_object(const int devid, cl_mem mem_object, void *mapped_
 
 size_t dt_opencl_get_mem_object_size(cl_mem mem);
 
+int dt_opencl_get_image_width(cl_mem mem);
+
+int dt_opencl_get_image_height(cl_mem mem);
+
+int dt_opencl_get_image_element_size(cl_mem mem);
+
 int dt_opencl_get_mem_context_id(cl_mem mem);
 
 void dt_opencl_memory_statistics(int devid, cl_mem mem, dt_opencl_memory_t action);
