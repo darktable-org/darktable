@@ -1648,6 +1648,49 @@ void dtgtk_cairo_paint_display(cairo_t *cr, gint x, gint y, gint w, gint h, gint
   cairo_restore(cr);
 }
 
+void dtgtk_cairo_paint_display2(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  gint s = w < h ? w : h;
+  cairo_save(cr);
+
+  cairo_translate(cr, x + (w / 2.) - (s / 2.), y + (h / 2.) - (s / 2.));
+  cairo_scale(cr, s, s);
+  cairo_scale(cr, 1, -1);
+  cairo_translate(cr, 0, -1);
+
+  double offset = 0.1;
+
+  for(int i = 0; i < 2; i++)
+  {
+    cairo_move_to(cr, 0.0 + offset, 0.98 + offset);
+    cairo_line_to(cr, 1.0 + offset, 0.98 + offset);
+    cairo_line_to(cr, 1.0 + offset, 0.28 + offset);
+    cairo_line_to(cr, 0.58 + offset, 0.28 + offset);
+    cairo_line_to(cr, 0.58 + offset, 0.13 + offset);
+    cairo_line_to(cr, 0.85 + offset, 0.13 + offset);
+    cairo_line_to(cr, 0.85 + offset, 0.03 + offset);
+    cairo_line_to(cr, 0.15 + offset, 0.03 + offset);
+    cairo_line_to(cr, 0.15 + offset, 0.13 + offset);
+    cairo_line_to(cr, 0.42 + offset, 0.13 + offset);
+    cairo_line_to(cr, 0.42 + offset, 0.28 + offset);
+    cairo_line_to(cr, 0.0 + offset, 0.28 + offset);
+    cairo_close_path(cr);
+
+    cairo_move_to(cr, 0.1 + offset, 0.88 + offset);
+    cairo_line_to(cr, 0.9 + offset, 0.88 + offset);
+    cairo_line_to(cr, 0.9 + offset, 0.38 + offset);
+    cairo_line_to(cr, 0.1 + offset, 0.38 + offset);
+    cairo_close_path(cr);
+
+    cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
+    cairo_fill(cr);
+
+    offset = -0.1;
+  }
+
+  cairo_restore(cr);
+}
+
 void dtgtk_cairo_paint_rect_landscape(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   gint s = w < h ? w : h;

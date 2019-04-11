@@ -1465,7 +1465,8 @@ static void _transform_rgb_to_rgb_lcms2(const float *const image_in, float *cons
   cmsHPROFILE *from_rgb_profile = NULL;
   cmsHPROFILE *to_rgb_profile = NULL;
 
-  if(type_from == DT_COLORSPACE_DISPLAY || type_to == DT_COLORSPACE_DISPLAY)
+  if(type_from == DT_COLORSPACE_DISPLAY || type_to == DT_COLORSPACE_DISPLAY || type_from == DT_COLORSPACE_DISPLAY2
+     || type_to == DT_COLORSPACE_DISPLAY2)
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
   if(type_from != DT_COLORSPACE_NONE)
@@ -1526,7 +1527,8 @@ static void _transform_rgb_to_rgb_lcms2(const float *const image_in, float *cons
   if(input_profile && output_profile)
     xform = cmsCreateTransform(input_profile, input_format, output_profile, output_format, intent, 0);
 
-  if(type_from == DT_COLORSPACE_DISPLAY || type_to == DT_COLORSPACE_DISPLAY)
+  if(type_from == DT_COLORSPACE_DISPLAY || type_to == DT_COLORSPACE_DISPLAY || type_from == DT_COLORSPACE_DISPLAY2
+     || type_to == DT_COLORSPACE_DISPLAY2)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
   if(xform)
@@ -1922,13 +1924,15 @@ static int dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profil
   g_strlcpy(profile_info->filename, filename, sizeof(profile_info->filename));
   profile_info->intent = intent;
 
-  if(type == DT_COLORSPACE_DISPLAY) pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+  if(type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2)
+    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
   const dt_colorspaces_color_profile_t *profile
       = dt_colorspaces_get_profile(type, filename, DT_PROFILE_DIRECTION_ANY);
   if(profile) rgb_profile = profile->profile;
 
-  if(type == DT_COLORSPACE_DISPLAY) pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+  if(type == DT_COLORSPACE_DISPLAY || type == DT_COLORSPACE_DISPLAY2)
+    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
   // we only allow rgb profiles
   if(rgb_profile)
