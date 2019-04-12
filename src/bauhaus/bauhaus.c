@@ -141,12 +141,18 @@ static void _stop_cursor()
 
 static void dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos);
 
+static float slider_right_pos(float width)
+{
+  // relative position (in widget) of the right bound of the slider corrected with the inner padding
+  return 1.0f - (darktable.bauhaus->quad_width + INNER_PADDING) / width;
+}
+
 static float slider_coordinate(const float abs_position, const float width)
 {
   // Translates an horizontal position relative to the slider
   // in an horizontal position relative to the widget
   const float left_bound = 0.0f;
-  const float right_bound = 1.0f - (INNER_PADDING + darktable.bauhaus->quad_width) / width; // exclude the quad area on the right
+  const float right_bound = slider_right_pos(width); // exclude the quad area on the right
   return (left_bound + abs_position * (right_bound - left_bound)) * width;
 }
 
@@ -155,7 +161,7 @@ static float get_slider_line_offset(float pos, float scale, float x, float y, fl
 {
   // ht is in [0,1] scale here
   const float l = 0.0f;
-  const float r = 1.0f - (INNER_PADDING + darktable.bauhaus->quad_width) / width;
+  const float r = slider_right_pos(width);
 
   float offset = 0.0f;
   // handle linear startup and rescale y to fit the whole range again
@@ -184,7 +190,7 @@ static void draw_slider_line(cairo_t *cr, float pos, float off, float scale, con
   // pos is normalized position [0,1], offset is on that scale.
   // ht is in pixels here
   const float l = 0.0f;
-  const float r = 1.0f - (INNER_PADDING + darktable.bauhaus->quad_width) / width;
+  const float r = slider_right_pos(width);
 
   const int steps = 64;
   cairo_move_to(cr, width * (l + (pos + off) * (r - l)), ht * .7f);
@@ -680,7 +686,6 @@ void dt_bauhaus_slider_set_hard_max(GtkWidget* widget, float val)
   d->soft_max = MIN(d->soft_max, d->hard_max);
   if(rawval < d->hard_min) dt_bauhaus_slider_set_hard_min(widget,val);
   if(pos > val) {
-
     dt_bauhaus_slider_set_soft(widget,val);
   }
   else
@@ -1819,7 +1824,7 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
       gtk_widget_get_allocation(GTK_WIDGET(w), &allocation_w);
       const int ht = allocation_w.height;
       const int skip = ht + get_line_height();
-      offset = -d->active * skip;
+      offset = -d->active * get_line_height();
       darktable.bauhaus->mouse_x = 0;
       darktable.bauhaus->mouse_y = d->active * skip + ht / 2;
       break;
@@ -2330,7 +2335,7 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
     else
     {
       const float l = 0.0f;
-      const float r = 1.0f - (darktable.bauhaus->quad_width + INNER_PADDING) / tmp.width;
+      const float r = slider_right_pos((float)tmp.width);
       dt_bauhaus_slider_set_normalized(w, (event->x / tmp.width - l) / (r - l));
       dt_bauhaus_slider_data_t *d = &w->data.slider;
       d->is_dragging = 1;
@@ -2361,7 +2366,7 @@ static gboolean dt_bauhaus_slider_button_release(GtkWidget *widget, GdkEventButt
     if(d->timeout_handle) g_source_remove(d->timeout_handle);
     d->timeout_handle = 0;
     const float l = 0.0f;
-    const float r = 1.0f - (darktable.bauhaus->quad_width + INNER_PADDING) / tmp.width;
+    const float r = slider_right_pos((float)tmp.width);
     dt_bauhaus_slider_set_normalized(w, (event->x / tmp.width - l) / (r - l));
 
     return TRUE;
@@ -2380,7 +2385,7 @@ static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotio
     GtkAllocation tmp;
     gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
     const float l = 0.0f;
-    const float r = 1.0f - (darktable.bauhaus->quad_width + INNER_PADDING) / tmp.width;
+    const float r = slider_right_pos((float)tmp.width);
     dt_bauhaus_slider_set_normalized(w, (event->x / tmp.width - l) / (r - l));
   }
   // not sure if needed:
