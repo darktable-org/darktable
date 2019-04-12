@@ -478,8 +478,10 @@ static void workicc_changed(GtkWidget *widget, gpointer user_data)
     // we need to rebuild the pipe so the profile take effect
     self->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
     self->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
+    self->dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
     self->dev->pipe->cache_obsolete = 1;
     self->dev->preview_pipe->cache_obsolete = 1;
+    self->dev->preview2_pipe->cache_obsolete = 1;
 
     // invalidate buffers and force redraw of darkroom
     dt_dev_invalidate_all(self->dev);

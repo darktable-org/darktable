@@ -545,6 +545,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   cl->dlocl = NULL;
   cl->dev_priority_image = NULL;
   cl->dev_priority_preview = NULL;
+  cl->dev_priority_preview2 = NULL;
   cl->dev_priority_export = NULL;
   cl->dev_priority_thumbnail = NULL;
 
@@ -712,12 +713,13 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     memset(cl->mandatory, 0, sizeof(cl->mandatory));
     cl->dev_priority_image = (int *)malloc(sizeof(int) * (dev + 1));
     cl->dev_priority_preview = (int *)malloc(sizeof(int) * (dev + 1));
+    cl->dev_priority_preview2 = (int *)malloc(sizeof(int) * (dev + 1));
     cl->dev_priority_export = (int *)malloc(sizeof(int) * (dev + 1));
     cl->dev_priority_thumbnail = (int *)malloc(sizeof(int) * (dev + 1));
 
     // only check successful malloc in debug mode; darktable will crash anyhow sooner or later if mallocs that
     // small would fail
-    assert(cl->dev_priority_image != NULL && cl->dev_priority_preview != NULL
+    assert(cl->dev_priority_image != NULL && cl->dev_priority_preview != NULL && cl->dev_priority_preview2 != NULL
            && cl->dev_priority_export != NULL && cl->dev_priority_thumbnail != NULL);
 
     dt_print(DT_DEBUG_OPENCL, "[opencl_init] OpenCL successfully initialized.\n");
@@ -900,6 +902,7 @@ void dt_opencl_cleanup(dt_opencl_t *cl)
     }
     free(cl->dev_priority_image);
     free(cl->dev_priority_preview);
+    free(cl->dev_priority_preview2);
     free(cl->dev_priority_export);
     free(cl->dev_priority_thumbnail);
   }
@@ -1348,6 +1351,9 @@ static void dt_opencl_priorities_parse(dt_opencl_t *cl, const char *configstr)
 
   prio = _strsep(&str, "/");
   dt_opencl_priority_parse(cl, prio, cl->dev_priority_thumbnail, &cl->mandatory[3]);
+
+  prio = _strsep(&str, "/");
+  dt_opencl_priority_parse(cl, prio, cl->dev_priority_preview2, &cl->mandatory[4]);
 }
 
 // set device priorities according to config string
@@ -1359,8 +1365,8 @@ static void dt_opencl_update_priorities(const char *configstr)
   dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] these are your device priorities:\n");
   dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] \t\timage\tpreview\texport\tthumbnail\n");
   for(int i = 0; i < cl->num_devs; i++)
-    dt_print(DT_DEBUG_OPENCL, "[opencl_priorities]\t\t%d\t%d\t%d\t%d\n", cl->dev_priority_image[i],
-             cl->dev_priority_preview[i], cl->dev_priority_export[i], cl->dev_priority_thumbnail[i]);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_priorities]\t\t%d\t%d\t%d\t%d\t%d\n", cl->dev_priority_image[i],
+             cl->dev_priority_preview[i], cl->dev_priority_export[i], cl->dev_priority_thumbnail[i], cl->dev_priority_preview2[i]);
   dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] show if opencl use is mandatory for a given pixelpipe:\n");
   dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] \t\timage\tpreview\texport\tthumbnail\n");
   dt_print(DT_DEBUG_OPENCL, "[opencl_priorities]\t\t%d\t%d\t%d\t%d\n", cl->mandatory[0],
@@ -1396,6 +1402,10 @@ int dt_opencl_lock_device(const int pipetype)
     case DT_DEV_PIXELPIPE_THUMBNAIL:
       memcpy(priority, cl->dev_priority_thumbnail, prio_size);
       mandatory = cl->mandatory[3];
+      break;
+    case DT_DEV_PIXELPIPE_PREVIEW2:
+      memcpy(priority, cl->dev_priority_preview2, prio_size);
+      mandatory = cl->mandatory[4];
       break;
     default:
       free(priority);

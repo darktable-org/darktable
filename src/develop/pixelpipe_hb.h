@@ -159,6 +159,7 @@ int dt_dev_pixelpipe_init(dt_dev_pixelpipe_t *pipe);
 // inits the preview pixelpipe with plain passthrough input/output and empty input and default caching
 // settings.
 int dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe);
+int dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe);
 // inits the pixelpipe with settings optimized for full-image export (no history stack cache)
 int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels,
                                  gboolean store_masks);

@@ -146,9 +146,10 @@ typedef struct dt_opencl_t
   int opencl_synchronization_timeout;
   dt_opencl_scheduling_profile_t scheduling_profile;
   uint32_t crc;
-  int mandatory[4];
+  int mandatory[5];
   int *dev_priority_image;
   int *dev_priority_preview;
+  int *dev_priority_preview2;
   int *dev_priority_export;
   int *dev_priority_thumbnail;
   dt_opencl_device_t *dev;

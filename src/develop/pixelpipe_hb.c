@@ -77,6 +77,9 @@ static char *_pipe_type_to_str(int pipe_type)
     case DT_DEV_PIXELPIPE_PREVIEW:
       r = "preview";
       break;
+    case DT_DEV_PIXELPIPE_PREVIEW2:
+      r = "preview2";
+      break;
     case DT_DEV_PIXELPIPE_FULL:
       r = "full";
       break;
@@ -122,6 +125,14 @@ int dt_dev_pixelpipe_init_preview(dt_dev_pixelpipe_t *pipe)
   int res = dt_dev_pixelpipe_init_cached(
       pipe, 0, 5);
   pipe->type = DT_DEV_PIXELPIPE_PREVIEW;
+  return res;
+}
+
+int dt_dev_pixelpipe_init_preview2(dt_dev_pixelpipe_t *pipe)
+{
+  // don't know which buffer size we're going to need, set to 0 (will be alloced on demand)
+  int res = dt_dev_pixelpipe_init_cached(pipe, 0, 5);
+  pipe->type = DT_DEV_PIXELPIPE_PREVIEW2;
   return res;
 }
 
@@ -1094,6 +1105,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   // if image has changed, stop now.
   if(pipe == dev->pipe && dev->image_force_reload) return 1;
   if(pipe == dev->preview_pipe && dev->preview_loading) return 1;
+  if(pipe == dev->preview2_pipe && dev->preview2_loading) return 1;
   if(dev->gui_leaving) return 1;
 
 
@@ -1312,7 +1324,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
       /* try to enter opencl path after checking some module specific pre-requisites */
       if(module->process_cl && piece->process_cl_ready
-         && !((pipe->type == DT_DEV_PIXELPIPE_PREVIEW) && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL))
+         && !((pipe->type == DT_DEV_PIXELPIPE_PREVIEW || pipe->type == DT_DEV_PIXELPIPE_PREVIEW2)
+              && (module->flags() & IOP_FLAGS_PREVIEW_NON_OPENCL))
          && (fits_on_device || piece->process_tiling_ready))
       {
 
@@ -2458,6 +2471,14 @@ post_process_collect_info:
 
       /* raise preview pipe finished signal */
       dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED);
+    }
+    else if(dev->gui_attached && !dev->gui_leaving && pipe == dev->preview2_pipe
+            && (strcmp(module->op, "gamma") == 0))
+    {
+      dt_pthread_mutex_unlock(&pipe->busy_mutex);
+
+      /* raise preview2 pipe finished signal */
+      dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED);
     }
     else
     {

@@ -1279,7 +1279,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
                 fprintf(stderr,
                         "oops, there seems to be a code path not setting the color space of thumbnails!\n");
               }
-              else if(buf.color_space != DT_COLORSPACE_DISPLAY)
+              else if(buf.color_space != DT_COLORSPACE_DISPLAY && buf.color_space != DT_COLORSPACE_DISPLAY2)
               {
                 fprintf(
                     stderr,

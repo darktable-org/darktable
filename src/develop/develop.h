@@ -133,10 +133,12 @@ typedef struct dt_develop_t
   int32_t focus_hash;   // determines whether to start a new history item or to merge down.
   int32_t image_loading, first_load, image_force_reload;
   int32_t preview_loading, preview_input_changed;
-  dt_dev_pixelpipe_status_t image_status, preview_status;
+  int32_t preview2_loading, preview2_input_changed;
+  dt_dev_pixelpipe_status_t image_status, preview_status, preview2_status;
   uint32_t timestamp;
   uint32_t average_delay;
   uint32_t preview_average_delay;
+  uint32_t preview2_average_delay;
   struct dt_iop_module_t *gui_module; // this module claims gui expose/event callbacks.
   float preview_downsampling;         // < 1.0: optionally downsample preview
 
@@ -144,8 +146,9 @@ typedef struct dt_develop_t
   int32_t width, height;
 
   // image processing pipeline with caching
-  struct dt_dev_pixelpipe_t *pipe, *preview_pipe;
-  dt_pthread_mutex_t pipe_mutex, preview_pipe_mutex; // these are locked while the pipes are still in use
+  struct dt_dev_pixelpipe_t *pipe, *preview_pipe, *preview2_pipe;
+  dt_pthread_mutex_t pipe_mutex, preview_pipe_mutex,
+      preview2_pipe_mutex; // these are locked while the pipes are still in use
 
   // image under consideration, which
   // is copied each time an image is changed. this means we have some information
@@ -274,6 +277,25 @@ typedef struct dt_develop_t
     GtkWidget *floating_window, *softproof_button, *gamut_button;
   } profile;
 
+  // second darkroom window related things
+  struct
+  {
+    GtkWidget *second_wnd;
+    GtkWidget *widget;
+    int width, height;
+    float ppd;
+
+    GtkWidget *button;
+
+    dt_dev_zoom_t zoom;
+    int closeup;
+    float zoom_x, zoom_y;
+    float zoom_scale;
+
+    double button_x;
+    double button_y;
+  } second_window;
+
   int mask_form_selected_id; // select a mask inside an iop
   gboolean darkroom_skip_mouse_events; // skip mouse events for masks
 } dt_develop_t;
@@ -283,9 +305,11 @@ void dt_dev_cleanup(dt_develop_t *dev);
 
 void dt_dev_process_image_job(dt_develop_t *dev);
 void dt_dev_process_preview_job(dt_develop_t *dev);
+void dt_dev_process_preview2_job(dt_develop_t *dev);
 // launch jobs above
 void dt_dev_process_image(dt_develop_t *dev);
 void dt_dev_process_preview(dt_develop_t *dev);
+void dt_dev_process_preview2(dt_develop_t *dev);
 
 void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid);
 void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid);
@@ -429,6 +453,25 @@ int dt_dev_wait_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
 /** same as dt_dev_sync_pixelpipe_hash but ony for distorting modules */
 int dt_dev_sync_pixelpipe_hash_distort (dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction, dt_pthread_mutex_t *lock,
                                         const volatile uint64_t *const hash);
+
+/*
+ * second darkroom window zoom heplers
+*/
+dt_dev_zoom_t dt_second_window_get_dev_zoom(dt_develop_t *dev);
+void dt_second_window_set_dev_zoom(dt_develop_t *dev, const dt_dev_zoom_t value);
+int dt_second_window_get_dev_closeup(dt_develop_t *dev);
+void dt_second_window_set_dev_closeup(dt_develop_t *dev, const int value);
+float dt_second_window_get_dev_zoom_x(dt_develop_t *dev);
+void dt_second_window_set_dev_zoom_x(dt_develop_t *dev, const float value);
+float dt_second_window_get_dev_zoom_y(dt_develop_t *dev);
+void dt_second_window_set_dev_zoom_y(dt_develop_t *dev, const float value);
+float dt_second_window_get_free_zoom_scale(dt_develop_t *dev);
+float dt_second_window_get_zoom_scale(dt_develop_t *dev, const dt_dev_zoom_t zoom, const int closeup_factor,
+                                      const int preview);
+void dt_second_window_set_zoom_scale(dt_develop_t *dev, const float value);
+void dt_second_window_get_processed_size(const dt_develop_t *dev, int *procw, int *proch);
+void dt_second_window_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, const dt_dev_zoom_t zoom,
+                                        const int closeup, float *boxww, float *boxhh);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
