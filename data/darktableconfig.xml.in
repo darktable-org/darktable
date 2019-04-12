@@ -1404,6 +1404,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>darkroom/ui/iccprofile_passthrough_visible</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>whether to show the passthrough option in colorin and colorout</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/demosaic/fdc_xover_iso</name>
     <type>int</type>
     <default>1600</default>

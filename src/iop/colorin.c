@@ -1823,6 +1823,13 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_colorin_params_t *p = (dt_iop_colorin_params_t *)module->params;
   dt_bauhaus_combobox_set(g->clipping_combobox, p->normalize);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->chk_passthrough), p->passthrough);
+  
+  // passthrough
+  const gboolean iccprofile_passthrough_visible = dt_conf_get_bool("darkroom/ui/iccprofile_passthrough_visible");
+  if(iccprofile_passthrough_visible || p->passthrough)
+    gtk_widget_show(g->chk_passthrough);
+  else
+    gtk_widget_hide(g->chk_passthrough);
 
   update_profile_list(self);
 
@@ -2171,6 +2178,9 @@ void gui_init(struct dt_iop_module_t *self)
                               _("when this option is active no profile is applied to the image."));
   gtk_box_pack_start(GTK_BOX(self->widget), g->chk_passthrough, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->chk_passthrough), "toggled", G_CALLBACK(passthrough_color_callback), self);
+  
+  gtk_widget_show_all(g->chk_passthrough);
+  gtk_widget_set_no_show_all(g->chk_passthrough, TRUE);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
