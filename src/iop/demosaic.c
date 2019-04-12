@@ -2754,6 +2754,7 @@ static int demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
   switch (piece->pipe->type)
   {
     case DT_DEV_PIXELPIPE_FULL:
+    case DT_DEV_PIXELPIPE_PREVIEW2:
       {
         const int qual = get_quality();
         if (qual > 0) flags |= DEMOSAIC_FULL_SCALE;
