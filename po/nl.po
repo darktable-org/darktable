@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-04-10 11:35+0200\n"
-"PO-Revision-Date: 2019-04-10 12:25+0200\n"
+"PO-Revision-Date: 2019-04-12 15:19+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -2474,6 +2474,9 @@ msgid ""
 "click+drag to use the input image\n"
 "ctrl+click + drag to use the output image"
 msgstr ""
+"bepaal het bereik op basis van de afbeelding\n"
+"klik+sleep voor het gebruik van de ingaande afbeelding\n"
+"ctrl+klik+sleep om gebruik te maken van de uitgaande afbeelding"
 
 #: ../src/develop/blend_gui.c:1527
 msgid "reset blend mask settings"
@@ -4578,6 +4581,10 @@ msgid ""
 "\n"
 "do you really want to continue?"
 msgstr ""
+"je gaat exporteren in de overschrijfmodus, hierdoor worden alle bestaande "
+"bestanden overschreven\n"
+"\n"
+"wilt u hier echt mee doorgaan?"
 
 #: ../src/imageio/storage/email.c:51
 msgid "send as email"
@@ -6759,6 +6766,8 @@ msgid ""
 "can't extract matrix from colorspace `%s', it will be replaced by Rec2020 "
 "RGB!"
 msgstr ""
+"kan matrix niet extraheren uit kleurenruimte `%s', alternatief Rec2020RGB "
+"wordt gebruikt"
 
 #: ../src/iop/colorin.c:1553
 #, c-format
@@ -7091,6 +7100,10 @@ msgid ""
 "ctrl+click to create a positive curve\n"
 "shift+click to create a negative curve"
 msgstr ""
+"creëer een curve gebaseerd op een deel van de afbeelding\n"
+"klik voor een platte curve\n"
+"ctrl+klik voor een positieve curve\n"
+"shift+klik voor een negatieve curve"
 
 #: ../src/iop/colorzones.c:2185
 msgid "edit by area"
@@ -7451,6 +7464,14 @@ msgid ""
 "you get. once enabled, you won't be able to\n"
 "return back to old algorithm."
 msgstr ""
+"repareert fouten in anscombe transformatie\n"
+"waardoor groene kanalen worden afgevlakt\n"
+"in de wavelets mode, gecombineerd met een\n"
+"slechte afhandeling van witbalans coëfficiënten en een fout in\n"
+"non local means normalisatie wat resulterend in \n"
+"afvlakking wanneer de patroon afmeting was verhoogd\n"
+"deze optie beïnvloed het ontruis resultaat\n"
+"en indien ingesteld dan kun je niet terug naar het oude algoritme"
 
 #: ../src/iop/denoiseprofile.c:3336 ../src/libs/export.c:652
 #: ../src/libs/print_settings.c:1187 ../src/libs/print_settings.c:1407
@@ -7471,7 +7492,7 @@ msgstr "verstrooiing (grofkorrelige ruis)"
 
 #: ../src/iop/denoiseprofile.c:3343
 msgid "central pixel weight (details)"
-msgstr "centraal pixel invloed (details)"
+msgstr "centrale pixel invloed (details)"
 
 #: ../src/iop/denoiseprofile.c:3345
 msgid "non-local means"
@@ -7501,6 +7522,11 @@ msgid ""
 "if details are oversmoothed, reduce this value or increase the details "
 "slider."
 msgstr ""
+"straal van overeen te komen patronen\n"
+"verhoog voor meer scherpte bij krachtige randen en verbeterde ontruising van "
+"afgevlakte gebieden\n"
+"indien details te ver zijn afgevlakt verlaag je de waarde of verhoog je de "
+"detail schuifregelaar"
 
 #: ../src/iop/denoiseprofile.c:3359
 msgid ""
@@ -7527,6 +7553,10 @@ msgid ""
 "useful to recover details when patch size\n"
 "is quite big."
 msgstr ""
+"verhoog invloed van centrale pixel\n"
+"bij de vergelijking van het patroon\n"
+"dit is nuttig voor herstel details\n"
+"bij grotere patroon afmetingen "
 
 #: ../src/iop/denoiseprofile.c:3367
 msgid "finetune denoising strength"
@@ -12778,7 +12808,7 @@ msgstr "'hinter' (achter?)"
 
 #: ../src/libs/tools/lighttable.c:129
 msgid "zoomable light table"
-msgstr "inzoombare bibliotheek"
+msgstr "zoombare bibliotheek"
 
 #: ../src/libs/tools/lighttable.c:130
 msgid "file manager"
@@ -12786,7 +12816,7 @@ msgstr "bestandsmanager"
 
 #: ../src/libs/tools/lighttable.c:131
 msgid "expose"
-msgstr "uitstallen"
+msgstr "tentoonstelling"
 
 #: ../src/libs/tools/lighttable.c:132
 msgid "culling"
