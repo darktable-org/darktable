@@ -167,6 +167,9 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   displayed when the search text is empty.  A darkroom shortcut can be
   set to focus on the search box.
 
+- A preview window has been added to the darkroom that displays the edited image
+  on a separate window.
+
 - A new option 'skip' is added to the 'on conflic' setting on the export module
   that skips the export if the file already exists.
 
