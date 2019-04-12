@@ -98,12 +98,10 @@ static void _view_darkroom_filmstrip_activate_callback(gpointer instance, gpoint
 
 static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid);
 
-<<<<<<< HEAD
 static void _darkroom_display_second_window(dt_develop_t *dev);
 static void _darkroom_ui_second_window_write_config(GtkWidget *widget);
-=======
+
 #define DT_DARKROOM_PROCESS_TIMEOUT 500
->>>>>>> reprocess only the central view for over-exposure and gamut alert modes
 
 const char *name(dt_view_t *self)
 {
