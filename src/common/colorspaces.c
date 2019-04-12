@@ -929,29 +929,27 @@ void hsl2rgb(float rgb[3], float h, float s, float l)
   rgb[2] = hue2rgb(m1, m2, h - (1.0 / 3.0));
 }
 
-static const char *_profile_names[] =
-{
-  "", // 0th entry is a dummy for DT_COLORSPACE_FILE and not used
-  N_("sRGB"), // this is only used in error messages, no need for the (...) description
-  N_("Adobe RGB (compatible)"),
-  N_("linear Rec709 RGB"),
-  N_("linear Rec2020 RGB"),
-  N_("linear XYZ"),
-  N_("Lab"),
-  N_("linear infrared BGR"),
-  N_("system display profile"),
-  N_("embedded ICC profile"),
-  N_("embedded matrix"),
-  N_("standard color matrix"),
-  N_("enhanced color matrix"),
-  N_("vendor color matrix"),
-  N_("alternate color matrix"),
-  N_("BRG (experimental)"),
-  N_("export profile"),
-  N_("softproof profile"),
-  N_("work profile"),
-  N_("system display2 profile")
-};
+static const char *_profile_names[]
+    = { "",         // 0th entry is a dummy for DT_COLORSPACE_FILE and not used
+        N_("sRGB"), // this is only used in error messages, no need for the (...) description
+        N_("Adobe RGB (compatible)"),
+        N_("linear Rec709 RGB"),
+        N_("linear Rec2020 RGB"),
+        N_("linear XYZ"),
+        N_("Lab"),
+        N_("linear infrared BGR"),
+        N_("system display profile"),
+        N_("embedded ICC profile"),
+        N_("embedded matrix"),
+        N_("standard color matrix"),
+        N_("enhanced color matrix"),
+        N_("vendor color matrix"),
+        N_("alternate color matrix"),
+        N_("BRG (experimental)"),
+        N_("export profile"),
+        N_("softproof profile"),
+        N_("work profile"),
+        N_("system display profile") };
 
 static dt_colorspaces_color_profile_t *_create_profile(dt_colorspaces_color_profile_type_t type,
                                                        cmsHPROFILE profile, const char *name, int in_pos,
@@ -1222,10 +1220,9 @@ dt_colorspaces_t *dt_colorspaces_init()
   res->profiles = g_list_append(
       res->profiles, _create_profile(DT_COLORSPACE_DISPLAY, dt_colorspaces_create_srgb_profile(),
                                      _("system display profile"), -1, -1, ++display_pos, ++category_pos, -1, -1));
-  res->profiles
-      = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_DISPLAY2, dt_colorspaces_create_srgb_profile(),
-                                                     _("system display2 profile"), -1, -1, -1, ++category_pos, -1,
-                                                     ++display2_pos));
+  res->profiles = g_list_append(
+      res->profiles, _create_profile(DT_COLORSPACE_DISPLAY2, dt_colorspaces_create_srgb_profile(),
+                                     _("system display profile"), -1, -1, -1, ++category_pos, -1, ++display2_pos));
   // we want a v4 with parametric curve for input and a v2 with point trc for output
   // see http://ninedegreesbelow.com/photography/lcms-make-icc-profiles.html#profile-variants-and-versions
   // TODO: what about display?

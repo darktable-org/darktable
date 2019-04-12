@@ -3997,7 +3997,7 @@ static void display2_profile_callback(GtkWidget *combo, gpointer user_data)
   }
 
   // profile not found, fall back to system display2 profile. shouldn't happen
-  fprintf(stderr, "can't find display2 profile `%s', using system display2 profile instead\n",
+  fprintf(stderr, "can't find preview display profile `%s', using system display profile instead\n",
           dt_bauhaus_combobox_get_text(combo));
   profile_changed = darktable.color_profiles->display2_type != DT_COLORSPACE_DISPLAY2;
   darktable.color_profiles->display2_type = DT_COLORSPACE_DISPLAY2;
@@ -4118,7 +4118,7 @@ void gui_init(dt_view_t *self)
   dt_bauhaus_combobox_add(display_intent, _("absolute colorimetric"));
 
   GtkWidget *display2_intent = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(display2_intent, NULL, _("display2 intent"));
+  dt_bauhaus_widget_set_label(display2_intent, NULL, _("preview display intent"));
   gtk_box_pack_start(GTK_BOX(vbox), display2_intent, TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(display2_intent, _("perceptual"));
   dt_bauhaus_combobox_add(display2_intent, _("relative colorimetric"));
@@ -4130,7 +4130,7 @@ void gui_init(dt_view_t *self)
   gtk_box_pack_start(GTK_BOX(vbox), display_profile, TRUE, TRUE, 0);
 
   GtkWidget *display2_profile = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(display2_profile, NULL, _("display2 profile"));
+  dt_bauhaus_widget_set_label(display2_profile, NULL, _("preview display profile"));
   gtk_box_pack_start(GTK_BOX(vbox), display2_profile, TRUE, TRUE, 0);
 
   for(GList *profiles = darktable.color_profiles->profiles; profiles; profiles = g_list_next(profiles))
@@ -4163,7 +4163,7 @@ void gui_init(dt_view_t *self)
   char *tooltip = g_strdup_printf(_("display ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
   gtk_widget_set_tooltip_text(display_profile, tooltip);
   g_free(tooltip);
-  tooltip = g_strdup_printf(_("display2 ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
+  tooltip = g_strdup_printf(_("preview display ICC profiles in %s or %s"), user_profile_dir, system_profile_dir);
   gtk_widget_set_tooltip_text(display2_profile, tooltip);
   g_free(tooltip);
   g_free(system_profile_dir);
