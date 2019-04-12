@@ -1071,7 +1071,6 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     draw_thumb_background = TRUE;
   }
 
-
   dt_mipmap_cache_t *cache = darktable.mipmap_cache;
   if(vals->full_surface_id && vals->full_zoom100 && *(vals->full_surface_id) != imgid)
     *(vals->full_zoom100) = 40.0f;
@@ -1080,14 +1079,13 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   if(vals->full_zoom100 && *(vals->full_zoom100) > 0.0f) fz = fminf(*(vals->full_zoom100), fz);
   dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(cache, imgwd * width * fz, imgwd * height * fz);
 
-
   // if needed, we load the mimap buffer
   dt_mipmap_buffer_t buf;
   gboolean buf_sizeok = TRUE;
   gboolean buf_ok = TRUE;
   gboolean buf_mipmap = FALSE;
-  int buf_wd;
-  int buf_ht;
+  int buf_wd = 0;
+  int buf_ht = 0;
   if(vals->full_surface && *(vals->full_surface) && !*(vals->full_surface_w_lock)
      && (*(vals->full_surface_id) != imgid || *(vals->full_surface_mip) != mip || !full_preview))
   {
@@ -1328,8 +1326,6 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     else
       cairo_translate(cr, width / 2.0, height / 2.0);
 
-
-
     cairo_scale(cr, scale, scale);
 
     float rectw = width;
@@ -1418,6 +1414,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
         cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1. / scale));
         if(zoom == 1)
         {
+          cairo_stroke(cr);
           cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
           float alpha = 1.0f;
           for(int k = 0; k < 16; k++)
