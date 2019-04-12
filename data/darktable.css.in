@@ -600,6 +600,7 @@ combobox *
 
 context-menu,
 menu,
+menuitem > menu, /* sub-menu */
 tooltip,
 popover,
 #background_job_eventbox,
@@ -627,9 +628,9 @@ dialog combobox window
   color: @section_label;
 }
 
-menuitem *,
-popover *,
-tooltip *
+menuitem button,
+popover button,
+tooltip button
 {
   background-color: transparent;
 }
