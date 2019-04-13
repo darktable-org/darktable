@@ -1586,6 +1586,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // should never happen, but catch that case to avoid a crash
   if(!d->input)
   {
+    fprintf(stderr, "[colorin] input profile could not be generated!\n");
     dt_control_log(_("input profile could not be generated!"));
     piece->enabled = 0;
     return;
@@ -1664,6 +1665,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // user selected a non-supported output profile, check that:
   if(!d->xform_cam_Lab && isnan(d->cmatrix[0]))
   {
+    if(p->type == DT_COLORSPACE_FILE)
+      fprintf(stderr, "[colorin] unsupported input profile `%s' has been replaced by linear Rec709 RGB!\n", p->filename);
+    else
+      fprintf(stderr, "[colorin] unsupported input profile has been replaced by linear Rec709 RGB!\n");
     dt_control_log(_("unsupported input profile has been replaced by linear Rec709 RGB!"));
     if(d->input && d->clear_input) dt_colorspaces_cleanup_profile(d->input);
     d->nrgb = NULL;
