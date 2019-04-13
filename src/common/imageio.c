@@ -339,6 +339,8 @@ size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht,
 
 dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf)
 {
+  // if buf is NULL, don't proceed
+  if(!buf) return DT_IMAGEIO_OK;
   // needed to alloc correct buffer size:
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
@@ -484,6 +486,8 @@ int dt_imageio_is_hdr(const char *filename)
 // transparent read method to load ldr image to dt_raw_image_t with exif and so on.
 dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf)
 {
+  // if buf is NULL, don't proceed
+  if(!buf) return DT_IMAGEIO_OK;
   dt_imageio_retval_t ret;
 
   ret = dt_imageio_open_jpeg(img, filename, buf);
@@ -924,6 +928,8 @@ error_early:
 dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename,
                                            dt_mipmap_buffer_t *buf)
 {
+  // if buf is NULL, don't proceed
+  if(!buf) return DT_IMAGEIO_OK;
 #ifdef HAVE_GRAPHICSMAGICK
   dt_imageio_retval_t ret = dt_imageio_open_gm(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
