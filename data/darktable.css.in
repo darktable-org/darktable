@@ -372,6 +372,7 @@ button:disabled,
   min-height: 1em; /* Align toolbox button height on comboboxe's one */
   min-width: 1em;
   border: 0;
+  font-size: .8em;
 }
 
 #module-preset-button * button,
