@@ -1556,8 +1556,9 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
     }
     else if(i == active)
     {
-      button->icon = dtgtk_cairo_paint_dropdown;
       gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule or add new rules"));
+      gint flags = CPF_DIRECTION_DOWN | CPF_BG_TRANSPARENT | CPF_STYLE_FLAT;
+      dtgtk_button_set_paint(button, dtgtk_cairo_paint_solid_arrow, flags, NULL);
     }
     else
     {
@@ -2011,7 +2012,7 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_collect_t *d = (dt_lib_collect_t *)calloc(1, sizeof(dt_lib_collect_t));
 
   self->data = (void *)d;
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   d->active_rule = 0;
@@ -2026,7 +2027,7 @@ void gui_init(dt_lib_module_t *self)
   {
     d->rule[i].num = i;
     d->rule[i].typing = FALSE;
-    box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
+    box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
     d->rule[i].hbox = GTK_WIDGET(box);
     gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
     w = gtk_combo_box_text_new();
@@ -2056,7 +2057,6 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_set_events(w, GDK_BUTTON_PRESS_MASK);
     g_signal_connect(G_OBJECT(w), "button-press-event", G_CALLBACK(popup_button_callback), d->rule + i);
     gtk_box_pack_start(box, w, FALSE, FALSE, 0);
-    gtk_widget_set_size_request(w, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
   }
 
   GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);

@@ -272,17 +272,18 @@ static void hardcoded_gui(GtkWidget *grid, int *line)
 
 void dt_gui_preferences_show()
 {
-  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  _preferences_dialog = gtk_dialog_new_with_buttons(_("darktable preferences"), GTK_WINDOW(win),
+  GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
+  _preferences_dialog = gtk_dialog_new_with_buttons(_("darktable preferences"), win,
                                                     GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
                                                     _("close"), GTK_RESPONSE_ACCEPT, NULL);
+  gtk_window_set_default_size(GTK_WINDOW(_preferences_dialog), DT_PIXEL_APPLY_DPI(800), DT_PIXEL_APPLY_DPI(800));
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(_preferences_dialog);
 #endif
   gtk_window_set_position(GTK_WINDOW(_preferences_dialog), GTK_WIN_POS_CENTER_ON_PARENT);
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(_preferences_dialog));
   GtkWidget *notebook = gtk_notebook_new();
-  gtk_widget_set_size_request(notebook, -1, DT_PIXEL_APPLY_DPI(500));
+  gtk_widget_set_size_request(notebook, DT_PIXEL_APPLY_DPI(500), DT_PIXEL_APPLY_DPI(500));
   gtk_widget_set_name(notebook, "preferences_notebook");
   gtk_box_pack_start(GTK_BOX(content), notebook, TRUE, TRUE, 0);
 
@@ -468,10 +469,6 @@ static void init_tab_presets(GtkWidget *book)
   GtkTreeViewColumn *column;
 
   // Adding the outer container
-  gtk_widget_set_margin_top(scroll, DT_PIXEL_APPLY_DPI(20));
-  gtk_widget_set_margin_bottom(scroll, DT_PIXEL_APPLY_DPI(20));
-  gtk_widget_set_margin_start(scroll, DT_PIXEL_APPLY_DPI(20));
-  gtk_widget_set_margin_end(scroll, DT_PIXEL_APPLY_DPI(20));
   gtk_notebook_append_page(GTK_NOTEBOOK(book), container, gtk_label_new(_("presets")));
 
   tree_insert_presets(model);
@@ -530,7 +527,7 @@ static void init_tab_presets(GtkWidget *book)
   gtk_box_pack_start(GTK_BOX(container), scroll, TRUE, TRUE, 0);
 
   // Adding the import/export buttons
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   GtkWidget *button = gtk_button_new_with_label(C_("preferences", "import"));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
@@ -562,7 +559,7 @@ static void init_tab_presets(GtkWidget *book)
 
 static void init_tab_accels(GtkWidget *book)
 {
-  GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   GtkWidget *tree = gtk_tree_view_new();
   GtkWidget *button;
@@ -572,10 +569,6 @@ static void init_tab_accels(GtkWidget *book)
   GtkTreeViewColumn *column;
 
   // Adding the outer container
-  gtk_widget_set_margin_top(container, DT_PIXEL_APPLY_DPI(20));
-  gtk_widget_set_margin_bottom(container, DT_PIXEL_APPLY_DPI(20));
-  gtk_widget_set_margin_start(container, DT_PIXEL_APPLY_DPI(20));
-  gtk_widget_set_margin_end(container, DT_PIXEL_APPLY_DPI(20));
   gtk_notebook_append_page(GTK_NOTEBOOK(book), container, gtk_label_new(_("shortcuts")));
 
   // Building the accelerator tree
@@ -619,7 +612,7 @@ static void init_tab_accels(GtkWidget *book)
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_box_pack_start(GTK_BOX(container), scroll, TRUE, TRUE, 0);
 
-  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   // Adding the restore defaults button
   button = gtk_button_new_with_label(C_("preferences", "default"));
@@ -1334,11 +1327,7 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   dt_osx_disallow_fullscreen(dialog);
 #endif
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
-  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  gtk_widget_set_margin_top(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(20));
-  gtk_widget_set_margin_bottom(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(20));
-  gtk_widget_set_margin_start(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(20));
-  gtk_widget_set_margin_end(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(20));
+  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_container_add(content_area, GTK_WIDGET(box));
   GtkWidget *label;
 

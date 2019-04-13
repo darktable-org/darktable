@@ -4872,17 +4872,14 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->fit_v = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | 1, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->fit_v), TRUE);
-  gtk_widget_set_size_request(g->fit_v, -1, DT_PIXEL_APPLY_DPI(24));
   gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_v, label1, GTK_POS_RIGHT, 1, 1);
 
   g->fit_h = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | 2, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->fit_h), TRUE);
-  gtk_widget_set_size_request(g->fit_h, -1, DT_PIXEL_APPLY_DPI(24));
   gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_h, g->fit_v, GTK_POS_RIGHT, 1, 1);
 
   g->fit_both = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | 3, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->fit_both), TRUE);
-  gtk_widget_set_size_request(g->fit_both, -1, DT_PIXEL_APPLY_DPI(24));
   gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_both, g->fit_h, GTK_POS_RIGHT, 1, 1);
 
   GtkWidget *label2 = gtk_label_new(_("get structure"));

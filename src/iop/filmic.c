@@ -1653,7 +1653,7 @@ void gui_init(dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_filmic_gui_data_t));
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
-  const int margin_width = (int)dt_conf_get_int("panel_width") / 10.0;
+  const int margin_width = (int)dt_conf_get_int("panel_width") / 8.0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
@@ -1665,7 +1665,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("logarithmic shaper")), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("logarithmic shaper")), FALSE, FALSE, 0);
 
   // grey_point_source slider
   g->grey_point_source = dt_bauhaus_slider_new_with_range(self, 0.1, 36., 0.1, p->grey_point_source, 2);
@@ -1729,7 +1729,7 @@ void gui_init(dt_iop_module_t *self)
                                                 "works better for landscapes and evenly-lit pictures\nbut fails for high-keys and low-keys." ));
   gtk_box_pack_start(GTK_BOX(self->widget), g->auto_button, TRUE, TRUE, 0);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("filmic S curve")), FALSE, FALSE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("filmic S curve")), FALSE, FALSE, 0);
 
   // contrast slider
   g->contrast = dt_bauhaus_slider_new_with_range(self, 1., 2., 0.01, p->contrast, 3);
@@ -1810,7 +1810,6 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
   GtkWidget *destdisp = dt_ui_section_label_new(_("destination/display"));
   g->extra_toggle = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
-  gtk_widget_set_size_request(g->extra_toggle,  DT_PIXEL_APPLY_DPI(15), DT_PIXEL_APPLY_DPI(15));
   GtkWidget *extra_options = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(destdisp_head), destdisp, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(destdisp_head), g->extra_toggle, FALSE, FALSE, 0);

@@ -164,13 +164,14 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)g_malloc0(sizeof(dt_lib_modulegroups_t));
   self->data = (void *)d;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
+  gtk_widget_set_name(self->widget, "modules-tabs");
 
   dtgtk_cairo_paint_flags_t pf = CPF_STYLE_FLAT;
 
-  d->hbox_buttons = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
-  d->hbox_search_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+  d->hbox_buttons = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  d->hbox_search_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   /* active */
   d->buttons[DT_MODULEGROUP_ACTIVE_PIPE] = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_active, pf, NULL);
@@ -215,17 +216,12 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(d->buttons[g_index], "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
   gtk_widget_set_tooltip_text(d->buttons[g_index], _("effects group"));
 
-  /* minimize table height before adding the buttons */
-  gtk_widget_set_size_request(self->widget, -1, -1);
-
   /*
    * layout button row
    */
-  int iconsize = DT_PIXEL_APPLY_DPI(28);
   GtkWidget *br = d->hbox_buttons;
   for(int k = 0; k < DT_MODULEGROUP_SIZE; k++)
   {
-    gtk_widget_set_size_request(d->buttons[k], iconsize, iconsize);
     gtk_box_pack_start(GTK_BOX(br), d->buttons[k], TRUE, TRUE, 0);
   }
 
@@ -245,6 +241,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_set_width_chars(GTK_ENTRY(d->text_entry), 0);
   gtk_entry_set_icon_from_icon_name(GTK_ENTRY(d->text_entry), GTK_ENTRY_ICON_SECONDARY, "edit-clear");
   gtk_entry_set_icon_tooltip_text(GTK_ENTRY(d->text_entry), GTK_ENTRY_ICON_SECONDARY, _("clear text"));
+  gtk_widget_set_name(GTK_WIDGET(d->hbox_search_box), "search-box");
+
 
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_buttons, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_search_box, TRUE, TRUE, 0);
