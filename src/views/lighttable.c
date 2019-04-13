@@ -101,6 +101,8 @@ static void _redraw_selected_images(dt_view_t *self);
 
 static gboolean _expose_again_full(gpointer user_data);
 
+static void _force_expose_all(dt_view_t *self);
+
 typedef struct dt_preview_surface_t
 {
   int mip;
@@ -292,6 +294,13 @@ static void _scrollbars_restore()
   }
 
   dt_ui_scrollbars_show(darktable.gui->ui, scrollbars_visible);
+}
+
+static void _force_expose_all(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  lib->force_expose_all = TRUE;
+  dt_control_queue_redraw_center();
 }
 
 static void check_layout(dt_view_t *self)
@@ -982,7 +991,6 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
     pango_layout_set_font_description(layout, desc);
     cairo_set_font_size(cr, fs);
     cairo_set_source_rgba(cr, .7, .7, .7, 1.0f);
-    cairo_select_font_face(cr, "sans-serif", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     pango_layout_set_text(layout, _("there are no images in this collection"), -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
     cairo_move_to(cr, offx, offy - ink.height - ink.x);
@@ -4087,7 +4095,7 @@ void gui_init(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
 
   // create display profile button
-  GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER,
+  GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT,
                                                      NULL);
   gtk_widget_set_tooltip_text(profile_button, _("set display profile"));
   dt_view_manager_module_toolbox_add(darktable.view_manager, profile_button, DT_VIEW_LIGHTTABLE);
@@ -4102,11 +4110,7 @@ void gui_init(dt_view_t *self)
 #endif
   g_signal_connect_swapped(G_OBJECT(profile_button), "button-press-event", G_CALLBACK(gtk_widget_show_all), lib->profile_floating_window);
 
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  gtk_widget_set_margin_start(vbox, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_end(vbox, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_top(vbox, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_bottom(vbox, DT_PIXEL_APPLY_DPI(8));
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   gtk_container_add(GTK_CONTAINER(lib->profile_floating_window), vbox);
 
@@ -4213,6 +4217,9 @@ void gui_init(dt_view_t *self)
                             G_CALLBACK(_display_profile_changed), (gpointer)display_profile);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             G_CALLBACK(_display2_profile_changed), (gpointer)display2_profile);
+
+  // proxy
+  darktable.view_manager->proxy.lighttable.force_expose_all = _force_expose_all;
 }
 
 static gboolean _is_order_actif(dt_view_t *self, dt_collection_sort_t sort)

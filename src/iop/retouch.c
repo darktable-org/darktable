@@ -2620,7 +2620,7 @@ void gui_init(dt_iop_module_t *self)
 
   dt_pthread_mutex_init(&g->lock, NULL);
   change_image(self);
-/*  
+/*
   g->copied_scale = -1;
   g->mask_display = 0;
   g->suppress_mask = 0;
@@ -2640,11 +2640,11 @@ void gui_init(dt_iop_module_t *self)
   g->lvlbar_mouse_y = -1;
 */
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   // shapes toolbar
-  GtkWidget *hbox_shapes = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *hbox_shapes = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   GtkWidget *label = gtk_label_new(_("# shapes:"));
   gtk_box_pack_start(GTK_BOX(hbox_shapes), label, FALSE, TRUE, 0);
@@ -2660,7 +2660,6 @@ void gui_init(dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->bt_edit_masks), "tooltip-text", _("show and edit shapes on the current scale"),
                (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks), FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_edit_masks), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_edit_masks, FALSE, FALSE, 0);
 
   g->bt_brush
@@ -2668,14 +2667,12 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->bt_brush), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
   g_object_set(G_OBJECT(g->bt_brush), "tooltip-text", _("add brush"), (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_brush), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_brush, FALSE, FALSE, 0);
 
   g->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_signal_connect(G_OBJECT(g->bt_path), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
   g_object_set(G_OBJECT(g->bt_path), "tooltip-text", _("add path"), (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_path), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_path, FALSE, FALSE, 0);
 
   g->bt_ellipse
@@ -2683,7 +2680,6 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->bt_ellipse), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
   g_object_set(G_OBJECT(g->bt_ellipse), "tooltip-text", _("add ellipse"), (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_ellipse), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_ellipse, FALSE, FALSE, 0);
 
   g->bt_circle
@@ -2691,13 +2687,12 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->bt_circle), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
   g_object_set(G_OBJECT(g->bt_circle), "tooltip-text", _("add circle"), (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_circle), bs, bs);
   gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_circle, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(hbox_shapes), GTK_WIDGET(g->label_form), FALSE, TRUE, 0);
 
   // algorithm toolbar
-  GtkWidget *hbox_algo = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *hbox_algo = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   GtkWidget *label2 = gtk_label_new(_("algorithms:"));
   gtk_box_pack_start(GTK_BOX(hbox_algo), label2, FALSE, TRUE, 0);
@@ -2786,14 +2781,12 @@ void gui_init(dt_iop_module_t *self)
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_object_set(G_OBJECT(g->bt_showmask), "tooltip-text", _("display masks"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->bt_showmask), "toggled", G_CALLBACK(rt_showmask_callback), self);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_showmask), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_showmask), FALSE);
 
   g->bt_suppress
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_object_set(G_OBJECT(g->bt_suppress), "tooltip-text", _("temporarily switch off shapes"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->bt_suppress), "toggled", G_CALLBACK(rt_suppress_callback), self);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_suppress), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_suppress), FALSE);
 
   // display final image/current scale
@@ -2802,7 +2795,6 @@ void gui_init(dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->bt_display_wavelet_scale), "tooltip-text", _("display wavelet scale"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->bt_display_wavelet_scale), "toggled", G_CALLBACK(rt_display_wavelet_scale_callback),
                    self);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_display_wavelet_scale), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_display_wavelet_scale), FALSE);
 
   // copy/paste shapes
@@ -2810,7 +2802,6 @@ void gui_init(dt_iop_module_t *self)
       = dtgtk_togglebutton_new(_retouch_cairo_paint_cut_forms, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_object_set(G_OBJECT(g->bt_copy_scale), "tooltip-text", _("cut shapes from current scale"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->bt_copy_scale), "toggled", G_CALLBACK(rt_copypaste_scale_callback), self);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_copy_scale), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_copy_scale), FALSE);
 
   g->bt_paste_scale
@@ -2818,7 +2809,6 @@ void gui_init(dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->bt_paste_scale), "tooltip-text", _("paste cut shapes to current scale"),
                (char *)NULL);
   g_signal_connect(G_OBJECT(g->bt_paste_scale), "toggled", G_CALLBACK(rt_copypaste_scale_callback), self);
-  gtk_widget_set_size_request(GTK_WIDGET(g->bt_paste_scale), bs, bs);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_paste_scale), FALSE);
 
   gtk_box_pack_end(GTK_BOX(hbox_scale), g->bt_showmask, FALSE, FALSE, 0);
@@ -2838,12 +2828,12 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_end(GTK_BOX(hbox_scale), g->bt_display_wavelet_scale, FALSE, FALSE, 0);
 
   // preview single scale
-  g->vbox_preview_scale = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  g->vbox_preview_scale = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   GtkWidget *lbl_psc = dt_ui_section_label_new(_("preview single scale"));
   gtk_box_pack_start(GTK_BOX(g->vbox_preview_scale), lbl_psc, FALSE, TRUE, 0);
 
-  GtkWidget *prev_lvl = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *prev_lvl = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   g->preview_levels_bar = gtk_drawing_area_new();
 
@@ -2877,7 +2867,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(g->vbox_preview_scale), prev_lvl, TRUE, TRUE, 0);
 
   // shapes selected (label)
-  GtkWidget *hbox_shape_sel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *hbox_shape_sel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *label1 = gtk_label_new(_("shape selected:"));
   gtk_box_pack_start(GTK_BOX(hbox_shape_sel), label1, FALSE, TRUE, 0);
   g->label_form_selected = GTK_LABEL(gtk_label_new("-1"));
@@ -2886,7 +2876,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox_shape_sel), GTK_WIDGET(g->label_form_selected), FALSE, TRUE, 0);
 
   // fill properties
-  g->vbox_fill = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  g->vbox_fill = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   g->cmb_fill_mode = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->cmb_fill_mode, NULL, _("fill mode"));
@@ -4471,7 +4461,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
 #ifdef HAVE_OPENCL
 
-cl_int rt_process_stats_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const int devid, cl_mem dev_img, 
+cl_int rt_process_stats_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const int devid, cl_mem dev_img,
                            const int width, const int height, float levels[3])
 {
   cl_int err = CL_SUCCESS;
@@ -4510,7 +4500,7 @@ cleanup:
   return err;
 }
 
-cl_int rt_adjust_levels_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const int devid, cl_mem dev_img, 
+cl_int rt_adjust_levels_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const int devid, cl_mem dev_img,
                            const int width, const int height, const float levels[3])
 {
   cl_int err = CL_SUCCESS;

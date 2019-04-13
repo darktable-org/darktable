@@ -1,612 +1,849 @@
-@define-color bg_color #212121;
-@define-color plugin_bg_color #252525;
-@define-color fg_color #cacaca;
-@define-color base_color #ffffff;
-@define-color text_color #3C3C3C;
-@define-color selected_bg_color #353535;
-@define-color selected_fg_color #e2e2e2;
-@define-color tooltip_bg_color #000000;
-@define-color tooltip_fg_color #ffffff;
-@define-color really_dark_bg_color #111;
-@define-color darkroom_bg_color #333333;
-@define-color darkroom_preview_bg_color shade(@darkroom_bg_color, .5);
-@define-color lighttable_bg_color @darkroom_bg_color;
-@define-color lighttable_preview_bg_color shade(@lighttable_bg_color, .5);
+/*
+    This file is part of darktable,
+    copyright (c) 2019 Aurélien Pierre.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/* This has been tested with GTK 3.24 on Gnome */
+
+/* Perceptually uniform grey gradient */
+
+/* grey_00 = pure black is forbidden for visual assessment */
+@define-color grey_05 #111111;
+@define-color grey_10 #1b1b1b;
+@define-color grey_15 #262626;
+@define-color grey_20 #303030;
+@define-color grey_25 #3b3b3b;
+@define-color grey_30 #474747;
+@define-color grey_35 #525252;
+@define-color grey_40 #5e5e5e;
+@define-color grey_45 #6a6a6a;
+@define-color grey_50 #777777;
+@define-color grey_55 #848484;
+@define-color grey_60 #919191;
+@define-color grey_65 #9e9e9e;
+@define-color grey_70 #ababab;
+@define-color grey_75 #b9b9b9;
+@define-color grey_80 #c6c6c6;
+@define-color grey_85 #d4d4d4;
+@define-color grey_90 #e2e2e2;
+@define-color grey_95 #f1f1f1;
+/* grey_100 = pure white is forbidden for visual assessment */
+
+
+/* General rules :
+
+  * keep just enough contrast in the UI to make text readable, but not
+  too much to avoid distractions from the picture,
+  * avoid sharp and unnecessary details for the same reason (shadows,
+  borders, colors, fancy bits). Use plain shapes and flat design.
+  * keep 50 % distance between background and foreground colors for active controls
+  * keep 30 % distance between background and foreground colors for labels and info
+  * keep 10 % distance between background and foreground colors for insensitive controls
+  * events are ± 20 % from the normal color
+  * borders and accents are ± 5 % from the background
+  * buttons and control follow Google Material Design principles :
+    https://material.io/design/
+  * create optical margins by aligning content properly, not by using borders.
+*/
+
+
+/* General */
+@define-color selected_bg_color @grey_25;
+@define-color border_color @grey_10;
+@define-color bg_color @grey_15;
+@define-color fg_color @grey_75;
+@define-color base_color @fg_color;
+@define-color text_color @grey_05;
+
+/* Scroll bars (sliders) */
+@define-color scroll_bar_inactive @grey_40;
+@define-color scroll_bar_active @grey_50;
+@define-color scroll_bar_focus @grey_45;
+@define-color scroll_bar_bg @grey_10;
+
+/* Modules box */
+@define-color plugin_bg_color @grey_20;
+@define-color plugin_fg_color @grey_80;
+@define-color section_label @grey_55;
+
+/* Modules controls */
+@define-color bauhaus_fg @grey_70;
+@define-color bauhaus_border shade(@plugin_bg_color, 0.5);
+@define-color bauhaus_indicator_border @grey_20;
+@define-color bauhaus_fill @grey_40;
+@define-color bauhaus_bg @grey_15;
+@define-color bauhaus_fg_hover @grey_80;
+@define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5);
+
+@define-color button_bg @grey_25;
+@define-color button_fg @grey_85;
+@define-color button_border @grey_30;
+@define-color button_focus_bg @grey_45;
+@define-color button_focus_fg @grey_95;
+@define-color button_checked_bg @grey_45;
+@define-color button_checked_fg @grey_95;
+@define-color button_hover_bg @grey_65;
+@define-color button_hover_fg @grey_15;
+
+@define-color field_bg @grey_15;
+@define-color field_fg @grey_75;
+@define-color field_active_bg @grey_20;
+@define-color field_active_fg @grey_80;
+@define-color field_hover_bg @grey_25;
+@define-color field_hover_fg @grey_85;
+@define-color field_select_bg @grey_05;
+
+/* Tooltips and contextual helpers */
+@define-color tooltip_bg_color @grey_05;
+@define-color tooltip_fg_color @grey_70;
+@define-color really_dark_bg_color @grey_05;
+
+/* Views */
+@define-color darkroom_bg_color @grey_50;
+@define-color darkroom_preview_bg_color @grey_25;
+@define-color lighttable_bg_color @grey_50;
+@define-color lighttable_preview_bg_color @grey_25;
+
+/* Brushes */
 @define-color brush_cursor alpha(white, .9);
 @define-color brush_trace alpha(black, .8);
 
-@define-color bauhaus_fg #ccc;
-@define-color bauhaus_border #191919;
-@define-color bauhaus_bg alpha(@bauhaus_border, 0.2);
-@define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5);
-
-@define-color thumbnail_bg_color #666666; /* area between border and outline */
-@define-color thumbnail_selected_bg_color #999999;
-@define-color thumbnail_hover_bg_color #cccccc;
-@define-color thumbnail_outline_color #333333; /* square around image+metadata */
-@define-color thumbnail_selected_outline_color #666666;
-@define-color thumbnail_hover_outline_color #999999;
-@define-color thumbnail_font_color #6c6c6c;
-@define-color thumbnail_selected_font_color #7f7f7f;
-@define-color thumbnail_hover_font_color #b2b2b2;
-@define-color thumbnail_border_color #191919; /* rectangle directly around image */
-@define-color thumbnail_selected_border_color #e5e5e5;
-
+/* Lighttable and film-strip */
+@define-color thumbnail_bg_color @grey_45; /* area between border and outline */
+@define-color thumbnail_selected_bg_color @grey_65;
+@define-color thumbnail_hover_bg_color @grey_80;
+@define-color thumbnail_outline_color @grey_20; /* square around image+metadata */
+@define-color thumbnail_selected_outline_color @grey_45;
+@define-color thumbnail_hover_outline_color @grey_65;
+@define-color thumbnail_font_color @grey_45;
+@define-color thumbnail_selected_font_color @grey_50;
+@define-color thumbnail_hover_font_color @grey_75;
+@define-color thumbnail_border_color @grey_15; /* rectangle directly around image */
+@define-color thumbnail_selected_border_color @grey_90;
 @define-color filmstrip_bg_color @lighttable_bg_color;
 
+/* Graphs */
+@define-color graph_bg @grey_10;
+@define-color graph_border @grey_05;
+@define-color graph_fg @grey_75;
+@define-color graph_fg_active @grey_95;
+@define-color graph_grid #000;
+@define-color inset_histogram alpha(@grey_65, 0.50);
+
+/* Reset GTK defaults */
+
 * {
-  font: ${GTK_CSS_FONT};
-  color: @fg_color;
   background-color: @bg_color;
-  border-color: #111111;
+  background-image: none;
+  font-family: "Roboto Light", "Segoe UI Light", "SF Pro Display Light", "Ubuntu Light", "Cantarell", sans-serif;
+  font-size: 1em;
+  color: @fg_color;
   text-shadow:none;
-/*  margin: 0; */ /* this makes scroll bars super wide. */
-  padding: 0;
-  background-image: none;
-}
-
-alignment
-{
-  background-color:transparent;
-}
-
-#main_window *:disabled {
-  color: black;
-}
-
-#iop-plugin-ui box,
-#lib-plugin-ui box
-{
-  background-color:transparent;
-  margin:0;
-  border:0;
-  padding:0;
-}
-#iop-plugin-ui eventbox,
-#lib-plugin-ui eventbox
-{
-  background-color:transparent;
-  margin:0;
-  border:0;
-  padding:0;
-}
-#iop-plugin-ui stack
-{
-  background-color:transparent;
-  margin:0;
-  border:0;
-  padding:0;
-}
-combobox *,
-#lib-plugin-ui treeview,
-#lib-plugin-ui combobox *,
-#lib-plugin-ui combobox togglebutton *
-{
-  background-color: transparent;
-}
-combobox *:hover,
-#lib-plugin-ui combobox *:hover
-{
-  background-color: transparent;
-}
-
-/* bright background */
-#background_job_eventbox,
-#iop-plugin-ui combobox *
-{
-  padding:0;
-  border:0;
-  margin:0;
-  background-color: @plugin_bg_color;
-  outline-style:none;
-}
-#lib-plugin-ui *,
-#iop-plugin-ui *
-{
-  padding:0;
-  border:0;
-  margin:0;
-  background-color: transparent;
-  color: @fg_color;
-  outline-style:none;
-}
-/* buttons in plugins */
-#lib-plugin-ui * button,
-button
-{
-  border-radius: 0;
-  border-style: none;
   box-shadow:none;
-  outline-width:0;
-  border-image:none;
-  padding:1pt;
-  margin:0;
-  border:0;
-  background-color: shade(@selected_bg_color, 1.2);
+  padding: 0;
+  margin: 0;
+  border: 0;
+  outline-style:none;
+  min-width: 0;
+  min-height: 0;
+}
+
+#lib-plugin-ui,
+#iop-plugin-ui,
+#lib-modulelist,
+#modules-tabs,
+#left,
+#right,
+combobox,
+combobox *,
+togglebutton,
+togglebutton *,
+notebook,
+notebook *,
+notebook tab,
+notebook tab *,
+table,
+table *,
+row,
+row *,
+frame,
+frame *,
+alignment,
+entry,
+entry *,
+dialog,
+dialog *,
+colorswatch,
+colorswatch *
+stack,
+stack *,
+scrollbar,
+scrollbar *,
+eventbox,
+eventbox *,
+scale,
+scale *,
+button,
+button *,
+treeview,
+treeview *,
+menu,
+menu *,
+separator,
+eventbox,
+eventbox *,
+box,
+box *
+{
+  font-family: "Roboto Light", "Segoe UI Light", "SF Pro Display Light", "Ubuntu Light", "Cantarell", sans-serif;
+  font-size: 1em;
+  background-color: transparent;
   background-image: none;
-  min-height: 5pt;
-  min-width: 5pt;
+  text-shadow:none;
+  box-shadow:none;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  outline-style:none;
+  min-width: 0;
+  min-height: 0;
 }
 
-#iop-plugin-ui * button
-{
-  padding:1pt;
-  background-color: transparent;
-}
-#lib-plugin-ui * button:hover,
-#iop-plugin-ui * button:hover,
-button:hover
-{
-  background-color: shade(@selected_bg_color, 1.7);
-}
-#lib-plugin-ui * button:checked,
-#iop-plugin-ui * button:checked,
-button:checked
-{
-  background-color: shade(@selected_bg_color, 1.4);
+/* General properties */
+
+*:disabled {
+  color: shade(@fg_color, .33);
 }
 
-#lib-plugin-ui checkbutton *,
-#iop-plugin-ui checkbutton *
+
+/* Side panels */
+
+/* Remember, in gui/gtk.c, outer borders (active areas used to collapse panels)
+*  are defined to 5 px × DPI. We cheat by setting inner borders/spacing here to 5 px as well
+*/
+
+#outer-border
 {
-  margin-right:4pt;
+  background-color: #000;
+  min-width: 20px;
 }
 
-/* frame around plugin boxes */
-#iop-plugin-ui
+#left
 {
-  border: 1pt solid #171717;
-  border-radius: 1.5pt;
-  box-shadow: inset 0 0 1pt #171717;
-  margin: 0pt;
-  padding: 1pt 4pt 1pt 4pt;
-  background-color: @plugin_bg_color;
-}
-#iop-plugin-ui:selected,
-#lib-plugin-ui
-{
-  border: 1pt solid #111111;
-  box-shadow: inset 0 0 1pt #141414;
-  border-radius: 1.5pt;
-  margin: 0pt;
-  padding: 1pt 4pt 1pt 4pt;
-  color: @selected_fg_color;
-  background-color: @selected_bg_color;
-}
-table
-{
-  background-color: transparent;
-  margin:0;
-  border:0;
-  padding:0;
+  /*padding-right: 5px;*/
 }
 
-#header_label,#darktable_label,#view_label,#view_dropdown *
+#right
 {
-  color: shade(@fg_color, 0.7);
-  background-color: @bg_color;
-  font-size: ${GTK_CSS_FONT2_SIZE};
-  margin:0;
-  border:0;
-  padding:0;
+  /*padding-left: 5px;*/
 }
 
-#view_dropdown *
+#header-toolbar,
+#footer-toolbar
 {
-  color: shade(@fg_color, 0.7);
+  padding: 0.20em 0.40em;
+}
+
+#left scrolledwindow,
+#right scrolledwindow
+{
   margin: 0;
   padding: 0;
 }
 
-#view_dropdown *:disabled
+#lib-plugin-ui scrolledwindow,
+#iop-plugin-ui scrolledwindow
 {
-  color: shade(@fg_color, 0.5);
+  margin: 0;
+  padding: 0;
 }
 
-#view_dropdown *:selected,
-#view_label:selected {
-  color: shade(@fg_color, 0.9);
+/* Frame around plugin boxes */
+
+#lib-plugin-ui,
+#iop-plugin-ui
+{
+  margin: 0;
+  border-radius: 0;
+  color: @plugin_fg_color;
+  background-color: @plugin_bg_color;
 }
 
-#view_dropdown menuitem:hover *
+#iop-plugin-ui-main,
+#lib-plugin-ui-main,
+#blending-box
 {
-  color: @fg_color;
+  padding: 0.75em;
 }
 
-#panel_label
+#module-header
 {
-  color: @fg_color;
-  background-color: @bg_color;
+ padding: 0.5em 0.5em 0.25em 0.5em;
+}
+
+
+/* Buttons */
+
+button
+{
+  border-radius: 2px;
+  padding: 1px;
+  margin: 0;
+  border: 1px solid @button_border;
+  background-color: @button_bg;
+  color: @button_fg;
+  font-weight: 600;
+  font-family: "Roboto Medium", "Segoe UI Semibold", "SF Pro Display Medium", "Ubuntu Medium", "Cantarell", sans-serif;
+  min-height: 1em;
+  min-width: 1em;
+}
+
+#recent-collection-button,
+#history-button
+{
+  background-color: transparent;
+  border-color: transparent;
+  border: 0;
+}
+
+button:selected,
+button:active,
+button:checked,
+#recent-collection-button:selected,
+#history-button:selected,
+#recent-collection-button:active,
+#history-button:active,
+#recent-collection-button:checked,
+#history-button:checked {
+  background-color: @button_checked_bg;
+  color: @button_checked_fg;
+}
+
+button:hover,
+#recent-collection-button:hover,
+#history-button:hover
+{
+  background-color: @button_hover_bg;
+  color: @button_hover_fg;
+}
+
+button:focus,
+#recent-collection-button:focus,
+#history-button:focus
+{
+  background-color: @button_focus_bg;
+  color: @button_focus_fg;
+}
+
+button:disabled,
+#recent-collection-button:disabled,
+#history-button:disabled
+{
+  color: @bg_color;
+  background-color: transparent;
+}
+
+#dt-button button,
+#dt-toggle-button button,
+#dt-icon
+{
+  border-radius: 2px;
+}
+
+#header-toolbar #dt-toggle-button,
+#header-toolbar #dt-button,
+#footer-toolbar #dt-toggle-button,
+#footer-toolbar #dt-button
+{
+  padding: 0.5em;
+  min-height: 1em; /* Align toolbox button height on comboboxe's one */
+  min-width: 1em;
+  border: 0;
+  font-size: .8em;
+}
+
+#module-preset-button * button,
+#module-reset-button * button,
+#module-enable-button * button,
+#module-instance-button * button,
+#module-enable-button * button,
+#module-collapse-button * button
+{
+  background-color: transparent;
+  min-height: 1em;
+  min-width: 1em;
+}
+
+/* Checkbox */
+
+#lib-plugin-ui checkbutton check,
+#iop-plugin-ui checkbutton check,
+checkbutton check
+{
+  background-color: @bauhaus_bg;
+  color: @bauhaus_fg;
+  border: 1pt solid @border_color;
+}
+
+/* Text fields and text boxes */
+
+entry {
+  border-radius: 2pt;
+  border: 0.5pt solid @border_color;
+  color: @field_fg;
+  background-color: @field_bg;
+  min-height: 0;
+  min-width: 0;
+}
+
+entry:hover {
+  color: @field_hover_fg;
+  background-color: @field_hover_bg;
+}
+
+entry:checked,
+entry:active,
+entry:focus
+ {
+  color: @field_active_fg;
+  background-color: @field_active_bg;
+}
+
+entry selection {
+  background-color: @field_select_bg;
+}
+
+
+/* Labels */
+
+#header_label,
+#darktable_label,
+#view_label,
+#view_dropdown
+{
+  background-color: transparent;
+  font-size: 1.5em;
   margin:0;
   border:0;
   padding:0;
 }
 
+#iop-panel-label,
+#lib-panel-label
+{
+  background-color: @bg_color;
+  border:0;
+  padding: 0 2pt 2pt 0.5em;
+  font-weight: 400;
+  font-stretch: condensed;
+  font-family: "Roboto Condensed","Segoe UI Condensed", "SF Pro Display", "Ubuntu Condensed", "Cantarell", sans-serif;
+  font-size: 0.9em;
+}
+
 #section_label
 {
-  padding-right: 0.5em;
-  border-bottom: 1pt solid @fg_color;
+  margin: 0 0 6pt 0;
+  padding: 0 0 3pt 0;
+  color: @section_label;
+  border-bottom: 0.5pt solid  @section_label;
+  font-weight: 600;
+  font-family: "Roboto Medium", "Segoe UI Semibold", "SF Pro Display Medium", "Ubuntu Medium", "Cantarell", sans-serif;
 }
 
-#lib-modulelist *
+#iop-plugin-ui #section_label,
+#lib-plugin-ui #section_label
 {
-  background-color: transparent;
+  margin: 12pt 0 6pt 0;
 }
 
-popover {
-  opacity: 0.9;
-  border: 0;
-  border-radius: 0;
-  box-shadow: 0 0 0 2pt #111111;
-  background-color: @selected_bg_color;
-  padding: 1pt;
+#lib-modulelist
+{
 }
 
-frame {
-  border: 1pt solid #111111;
-  background-color: @selected_bg_color;
-  color: @selected_fg_color;
+#search-box
+{
+  margin: 0.25em 0.5em;
 }
 
-popover *,
-frame * {
-  background-color: transparent;
-  color: @selected_fg_color;
+#search-box label
+{
+  margin-right: 0.5em;
 }
 
-/* weird fix for black event boxes in light table lib modules: */
-#lib-plugin-ui eventbox
+#image-info
 {
-  background-color:@selected_bg_color;
-}
-#lib-plugin-ui cell
-{
-  background-color:shade(@selected_bg_color, 0.8);
-}
-#lib-plugin-ui row,
-#iop-plugin-ui row
-{
-  background-color:@selected_bg_color;
-}
-#lib-plugin-ui row:selected,
-#iop-plugin-ui row:selected
-{
-  background-color:@bg_color;
+  font-size: 1.2em;
+  padding: 0.25em;
 }
 
-/* due to css rubbish, we need to be more specific than anything else,
- * so we give the name of the parent widget: */
-#iop-plugin-ui notebook tab,
-#lib-plugin-ui notebook tab {
-  min-height: 1pt;
-  min-width: 1pt;
+#blending-box #section_label
+{
+  margin: 0 0 6pt 0;
 }
 
-#iop-plugin-ui notebook,
-#lib-plugin-ui notebook,
-#iop-plugin-ui notebook tab *,
-#lib-plugin-ui notebook tab * {
-  border:0pt;
-  border-radius:0;
-  border-style:none;
-  box-shadow:none;
-  background-image:none;
-  outline-style:none;
-  outline-width:0;
-  border-image:none;
-  background-color: transparent;
-}
-#iop-plugin-ui notebook tab *,
-#lib-plugin-ui notebook tab * {
-  padding:3pt;
-}
-#iop-plugin-ui notebook tab *:hover,
-#lib-plugin-ui notebook tab *:hover
-{
-  background-color:  shade(@selected_bg_color, 1.7);
-}
-
-#iop-plugin-ui notebook tab:checked *,
-#lib-plugin-ui notebook tab:checked * {
-  background-color: shade(@selected_bg_color, 1.3);
-}
-
-#iop-plugin-ui entry,
-#lib-plugin-ui entry,
-entry {
-  border-radius: 0;
-  border:0;
-  padding-left: 2px; /* align with bauhaus widgets */
-  border-style: none;
-  border-color: alpha(@fg_color, 0.5);
-  border-image:none;
-  color:@fg_color;
-  box-shadow: none;
-  background-image:none;
-  outline-style:none;
-  text-shadow:none;
-  background-color:shade(@selected_bg_color, 0.8);
-  min-height: 0;
-  min-width: 0;
-}
-#iop-plugin-ui entry selection,
-#lib-plugin-ui entry selection,
-entry selection {
-  background-color:shade(@selected_bg_color, 1.7);
-  min-height: 0;
-  min-width: 0;
-}
-/* weird fix for black event boxes in light table lib modules: */
-#lib-plugin-ui eventbox
-{
-  background-color:@selected_bg_color;
-}
-#lib-plugin-ui cell
-{
-  background-color:shade(@selected_bg_color, 0.8);
-}
-#lib-plugin-ui row
-{
-  background-color:@selected_bg_color;
-}
-#lib-plugin-ui row:selected,
-#iop-plugin-ui row:selected
-{
-  background-color:@bg_color;
-}
-
-/* due to css rubbish, we need to be more specific than anything else,
- * so we give the name of the parent widget: */
-#iop-plugin-ui notebook,
-#lib-plugin-ui notebook,
-#iop-plugin-ui notebook tab *,
-#lib-plugin-ui notebook tab * {
-  border:0;
-  border-radius:0;
-  border-style:none;
-  box-shadow:none;
-  background-image:none;
-  outline-style:none;
-  outline-width:0;
-  border-image:none;
-  background-color: transparent;
-}
-#iop-plugin-ui notebook tab:checked *,
-#lib-plugin-ui notebook tab:checked * {
-  background-color: @bg_color;
-}
-
-scale,
-scrollbar
-{
-  margin:0pt;
-}
-
-scale.trough.highlight,
-scrollbar.contents.trough.highlight
-{
-  background-color:@selected_bg_color;
-  background-image:none;
-}
-
-#recent-collection-ui button,
-#history-ui button
-{
-  background-color: transparent;
-}
+/* sliders and scales */
 
 #lib-plugin-ui scrollbar slider,
 #iop-plugin-ui scrollbar slider,
-scrollbar slider
+scrollbar slider,
+dialog scrollbar slider
 {
-    border-color: transparent;
-    background-color: @selected_bg_color;
+  background-color: @scroll_bar_inactive;
+  border: 2pt solid transparent;
+  margin: 0;
+  min-width: 4pt;
+  min-height: 4pt;
 }
 
-context-menu
+scale contents trough
 {
-  background-color: @really_dark_bg_color;
+  background-color: @scroll_bar_bg;
+  border-radius: 2pt;
+  min-width: 0.5em;
+  min-height: 0.5em;
 }
 
-context-menu menuitem *
+scale entry
+{
+  background-color: @field_bg;
+}
+
+scale contents trough highlight
+{
+  min-height: 0;
+  min-width: 0;
+  background-color: @button_bg;
+}
+
+scale contents trough slider
+{
+  border: 0.5pt solid @border_color;
+  font-size: 1em;
+  min-height: 0.5em;
+  min-width: 0.5em;
+  background-color: @scroll_bar_inactive;
+}
+
+scrollbar,
+dialog scrollbar
+scrollbar,
+#iop-plugin-ui scrollbar,
+#lib-plugin-ui scrollbar,
+dialog scrollbar
+{
+  border-color: @scroll_bar_bg;
+  background: @scroll_bar_bg;
+  border-radius: 4pt;
+  min-height: 4pt;
+  min-width: 4pt;
+  margin: 1pt;
+}
+
+scrollbar.horizontal slider:hover,
+scrollbar.vertical slider:hover,
+#iop-plugin-ui scrollbar slider:hover,
+#lib-plugin-ui scrollbar slider:hover,
+dialog scrollbar slider:hover,
+scale contents trough slider:hover
+{
+  background-color: @scroll_bar_active;
+}
+
+scrollbar.horizontal slider:focus,
+scrollbar.vertical slider:focus,
+#iop-plugin-ui scrollbar slider:focus,
+#lib-plugin-ui scrollbar slider:focus,
+dialog scrollbar slider:focus,
+scale contents trough slider:focus
+{
+  background-color: @scroll_bar_focus;
+}
+
+/* Context menu & tooltips & comboboxes */
+/* Basically everything that pops out/over on UI */
+
+combobox,
+combobox button
+{
+  border: 1px solid transparent;
+  padding: 1px;
+  background-color: transparent;
+  border-radius: 2pt;
+  color: @bauhaus_fg;
+  outline-style: none;
+  min-height: 1em;
+  min-width: 1em;
+}
+
+combobox entry
+{
+  margin: 0 0.5em;
+}
+
+combobox *
+{
+  min-height: 1em;
+  min-width: 1em;
+}
+
+context-menu,
+menu,
+menuitem > menu, /* sub-menu */
+tooltip,
+popover,
+#background_job_eventbox,
+combobox window,
+dialog combobox window
+{
+  background-color: @tooltip_bg_color;
+  color: @tooltip_fg_color;
+  outline-style:none;
+  border-radius: 2pt;
+  border: 0;
+  outline-style: none;
+  min-height: 0.5em;
+  min-width: 0.5em;
+  padding: 0.5em;
+}
+
+#view_dropdown,
+#view_label
+{
+  background-color: transparent;
+  outline-style:none;
+  border-radius: 2px;
+  padding: 0.5em;
+  color: @section_label;
+}
+
+menuitem button,
+popover button,
+tooltip button
 {
   background-color: transparent;
 }
 
-#main_window context-menu menuitem *:disabled,
-context-menu menuitem *:disabled
+menuitem:hover,
+#view_dropdown menuitem:hover,
+combobox window *:hover,
+#view_dropdown:hover,
+#view_label:hover
 {
-  color: @selected_bg_color;
-  background-color: transparent;
+  background-color: @button_hover_bg;
+  color: @button_hover_fg;
 }
 
-#lib-plugin-ui menuitem *,
-#iop-plugin-ui menuitem *,
-menuitem *
+menuitem:selected,
+combobox window *:selected,
+menuitem:active,
+combobox window *:active,
+menuitem:focus,
+combobox window *:focus
 {
-  background-color: transparent;
+  background-color: @button_checked_bg;
+  color: @button_checked_fg;
 }
 
-#lib-plugin-ui menuitem,
-#iop-plugin-ui menuitem,
-menuitem
+#view_dropdown *:selected,
+#view_label:selected {
+  color: @plugin_fg_color;
+}
+
+#view_dropdown *:disabled,
+#view_label:disabled
 {
-  padding: 2pt;
-  background-color:@really_dark_bg_color;
+  color: @tooltip_bg_color;
 }
 
-#lib-plugin-ui menuitem:hover,
-#iop-plugin-ui menuitem:hover,
-menuitem:hover
+#header-toolbar combobox,
+#footer-toolbar combobox
 {
-  background-color: shade(@selected_bg_color, 1.7);
+  margin: 0 0.5em;
 }
 
-/* sliders */
+/* Tree view (lists and tables) */
 
-scrollbar.horizontal,
-scrollbar.vertical {
-    border-color: @bg_color;
-    background-color: @selected_bg_color;
+treeview
+{
+  background-color: @field_bg;
+  color: @field_fg;
 }
 
-scrollbar.horizontal:hover,
-scrollbar.vertical:hover {
-    border-color: @bg_color;
-    background-color: shade(@selected_bg_color, 1.3);
+treeview header
+{
+  background-color: @button_bg;
+  color: @button_fg;
 }
 
-#iop-plugin-ui scrollbar.horizontal,
-#iop-plugin-ui scrollbar.vertical,
-#lib-plugin-ui scrollbar.horizontal,
-#lib-plugin-ui scrollbar.vertical {
-    border-color: @selected_bg_color;
-    background-color: @text_color;
+treeview *:hover
+{
+    background-color: @field_hover_bg;
+    color: @field_hover_fg;
 }
 
-#iop-plugin-ui scrollbar.horizontal:hover,
-#iop-plugin-ui scrollbar.vertical:hover,
-#lib-plugin-ui scrollbar.horizontal:hover,
-#lib-plugin-ui scrollbar.vertical:hover {
-    border-color: @selected_bg_color;
-    background-color: shade(@selected_bg_color, 1.3);
+treeview *:selected
+{
+    background-color: @button_bg;
+    color: @button_fg;
 }
 
-/* tooltip */
+/* Notebooks tabs */
 
-tooltip
+notebook tabs,
+#modules-tabs,
+#blending-tabs
+{
+  border: 0;
+  padding: 0;
+  margin: 0;
+  color: @button_fg;
+  font-weight: 400;
+  font-family: "Roboto", "Segoe UI", "SF Pro Text", "Cantarell", sans-serif;
+}
+
+#modules-tabs,
+#blending-tabs
+{
+  background-color: @button_bg;
+}
+
+#modules-tabs #dt-toggle-button
+{
+  min-height: 2em;
+  min-width: 2em;
+  margin: 0;
+  padding: 0.1em;
+}
+
+#blending-tabs *
+{
+  font-size: 8pt;
+  min-height: 1.5em;
+  min-width: 1.5em;
+  padding: 0.2em;
+  margin: 0;
+}
+
+notebook tab
+{
+  border-bottom: 2pt solid transparent;
+  padding: 3pt;
+}
+
+notebook tab label /* disabled tabs */
+{
+  color: shade(@button_checked_fg, 0.75);
+}
+
+notebook tab:hover
+{
+  border-bottom: 2pt solid @button_hover_fg;
+  color: @button_hover_fg;
+  background-color: @button_hover_bg;
+}
+
+notebook tab:hover label
+{
+  color: @button_hover_fg;
+}
+
+notebook tab:checked,
+notebook tab:focus
+{
+  border-bottom: 2pt solid @button_checked_fg;
+  color: @button_checked_fg;
+}
+
+notebook tab:checked label,
+notebook tab:focus label
+{
+  color: @button_checked_fg;
+}
+
+/* Bauhaus controls (sliders and comboboxes) */
+
+#bauhaus-popup
 {
   background-color: @really_dark_bg_color;
+  color: @bauhaus_fg;
 }
-tooltip *
+
+#bauhaus-popup:selected
 {
-  color: @fg_color;
-  background-color: @really_dark_bg_color;
-  border-color: @selected_bg_color;
-  padding: 2pt;
+  color: @bauhaus_fg;
 }
+
+#bauhaus-combobox,
+#bauhaus-slider
+{
+  min-height: 1em;
+  background-color: transparent;
+  color: @bauhaus_fg;
+}
+
+
+#bauhaus-popup:hover,
+#bauhaus-combobox:hover,
+#bauhaus-slider:hover
+{
+  color: @bauhaus_fg_hover;
+}
+
+#bauhaus-popup:focus,
+#bauhaus-combobox:focus,
+#bauhaus-slider:focus
+{
+  color: @bauhaus_fg_hover;
+}
+
+#bauhaus-popup:disabled
+{
+  color: @plugin_bg;
+}
+
 
 /* separator */
+
 separator, separator:hover
 {
-  color: @selected_bg_color;
+  color: transparent;
   border-style: solid;
-  border-width: 2pt;
-  border-color: @selected_bg_color;
-  background-color: @selected_bg_color;
-}
-
-/* dialogs */
-dialog
-{
-  border-radius: 0;
-  border-style: none;
-  box-shadow:none;
-  outline-width:0;
-  border-image:none;
-  padding:0;
-/*  margin: 0; */ /* this makes scroll bars super wide. */
-  border:0;
-  background-color: @selected_bg_color;
-/*  background-image: none; */
-  border-color:  shade(@selected_bg_color, 1.2);
-}
-
-dialog box *
-{
-   margin: 1px;
-}
-
-dialog button *
-{
-  padding: 2pt;
-  background-color: shade(@bg_color, 1.7);
-  border-color:  shade(@bg_color, 1.7);
-}
-
-dialog button:hover *
-{
-  background-color: shade(@selected_bg_color, 1.7);
-  border-color:  shade(@selected_bg_color, 1.7);
-}
-
-dialog button *
-{
+  border-width: 0.25em;
+  border-color: transparent;
   background-color: transparent;
 }
 
-dialog eventbox *
+/* Dialog window */
+
+dialog
 {
-   background-color: transparent;
+  background-color: @bg_color;
 }
 
-#iop-plugin-ui treeview.view *,
-#lib-plugin-ui treeview.view *,
-treeview.view *
+dialog *
 {
-   background-color:shade(@selected_bg_color, 0.8);
-}
-
-#iop-plugin-ui treeview.view *:hover,
-#lib-plugin-ui treeview.view *:hover,
-treeview.view *:hover
-{
-   background-color: shade(@selected_bg_color, 1.7);
-}
-
-#iop-plugin-ui treeview.view *:selected,
-#lib-plugin-ui treeview.view *:selected,
-treeview.view *:selected
-{
-   background-color: shade(@selected_bg_color, 1.2);
+  margin: 1pt;
+  padding:0;
 }
 
 dialog scrolledwindow
 {
-  background-color: transparent;
-}
-
-dialog slider.vertical
-{
-  background-color: shade(@selected_bg_color, 1.7);
-}
-
-colorswatch *
-{
-    background-color: transparent;
-}
-
-/* preferences notebook */
-
-#preferences_notebook stack *
-{
-  padding:0;
-}
-
-notebook tab *
-{
-  padding: 2pt;
-}
-
-notebook tab *:hover
-{
-  background-color:  shade(@selected_bg_color, 1.7);
-}
-
-notebook tab:checked *
-{
-  background-color: shade(@selected_bg_color, 1.3);
-}
-
-notebook menuitem
-{
-  padding: 2pt;
-  background-color:@really_dark_bg_color;
-}
-
-notebook menuitem:hover
-{
-  background-color: shade(@selected_bg_color, 1.7);
+  padding: 0 1pt 0 8pt;
+  margin: 0;
+  background-color: @plugin_bg_color;
 }
 
 /* empty space at top/bottom of sidepanels when scrolled */
@@ -618,11 +855,56 @@ undershoot.right
   background: none;
 }
 
-aboutdialog
+
+/* Rating stars in lighttable */
+#lib-rating-stars
 {
-  background-color: @bg_color;
+  min-height: 1em;
+  min-width: 9em;
+  margin-right: 1em;
 }
 
+/* Special modules */
+#navigation-module
+{
+  background-color: @graph_bg;
+}
+
+
+/* Widget margins */
+
+#lib-plugin-ui combobox,
+#iop-plugin-ui combobox
+{
+  margin: 2pt 0;
+}
+
+entry
+{
+  margin: 2pt 0;
+}
+
+#lib-plugin-ui checkbutton check,
+#iop-plugin-ui checkbutton check,
+checkbutton check
+{
+  margin: 5px 8pt 5px 0;
+}
+
+#iop-plugin-ui button,
+#lib-plugin-ui button
+{
+  margin: 2pt;
+}
+
+combobox label
+{
+  margin: 0 5px 0 0;
+}
+
+/* STUFF TO MERGE WITH ABOVE RULES */
+
+aboutdialog,
 aboutdialog box,
 aboutdialog box *
 {
@@ -661,7 +943,7 @@ filechooserdialog sidebar-row:hover
 
 progressbar
 {
-  background-color: @text_color;
+  background-color: @really_dark_bg_color;
 }
 progressbar progress
 {
@@ -671,31 +953,6 @@ progressbar progress
 cell:selected
 {
   background-color: shade(@selected_bg_color, 1.2);
-}
-
-#bauhaus-popup
-{
-  /* NORMAL */
-  background-color: @selected_bg_color;
-  color: @fg_color;
-}
-
-#bauhaus-popup:selected
-{
-  /* SELECTED */
-  color: shade(@fg_color, 1.5);
-}
-
-#bauhaus-popup:hover
-{
-  /* PRELIGHT */
-  color: shade(@fg_color, 0.7);
-}
-
-#bauhaus-popup:disabled
-{
-  /* insensitive */
-  color: black;
 }
 
 #show_mask_button

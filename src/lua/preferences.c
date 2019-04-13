@@ -793,10 +793,6 @@ GtkGrid* init_tab_lua(GtkWidget *dialog, GtkWidget *tab)
   gtk_widget_set_valign(grid, GTK_ALIGN_START);
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  gtk_widget_set_margin_top(scroll, DT_PIXEL_APPLY_DPI(20));
-  gtk_widget_set_margin_bottom(scroll, DT_PIXEL_APPLY_DPI(20));
-  gtk_widget_set_margin_start(scroll, DT_PIXEL_APPLY_DPI(20));
-  gtk_widget_set_margin_end(scroll, DT_PIXEL_APPLY_DPI(20));
   viewport = gtk_viewport_new(NULL, NULL);
   gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_NONE); // doesn't seem to work from gtkrc
   gtk_container_add(GTK_CONTAINER(scroll), viewport);

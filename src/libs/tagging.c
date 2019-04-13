@@ -477,9 +477,8 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   d->imgsel = -1;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
-  //   gtk_widget_set_size_request(self->widget, DT_PIXEL_APPLY_DPI(100), -1);
 
   GtkBox *box, *hbox;
   GtkWidget *button;
@@ -487,7 +486,7 @@ void gui_init(dt_lib_module_t *self)
   GtkListStore *liststore;
 
   // left side, current
-  box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
+  box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
   w = gtk_scrolled_window_new(NULL, NULL);
@@ -511,7 +510,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->current));
 
   // attach/detach buttons
-  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
   button = gtk_button_new_with_label(_("attach"));
   d->attach_button = button;
@@ -530,8 +529,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
   // right side, related
-  box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 5);
+  box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
 
   // text entry and new button
   w = gtk_entry_new();
@@ -567,7 +566,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->related));
 
   // attach and delete buttons
-  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
   button = gtk_button_new_with_label(_("new"));
   d->new_button = button;

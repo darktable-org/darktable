@@ -2166,7 +2166,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   c->colorpicker
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  gtk_widget_set_size_request(GTK_WIDGET(c->colorpicker), DT_PIXEL_APPLY_DPI(14), DT_PIXEL_APPLY_DPI(14));
   gtk_widget_set_tooltip_text(c->colorpicker, _("pick GUI color from image\nctrl+click to select an area"));
   g_signal_connect(G_OBJECT(c->colorpicker), "button-press-event", G_CALLBACK(_color_picker_callback_button_press),
                    self);
@@ -2177,10 +2176,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
   c->bottom_area = gtk_drawing_area_new();
-  gtk_widget_set_size_request(c->bottom_area, -1, DT_PIXEL_APPLY_DPI(20));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->bottom_area), TRUE, TRUE, 0);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 0);
 
   c->chk_edit_by_area = gtk_check_button_new_with_label(_("edit by area"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(c->chk_edit_by_area), c->edit_by_area);

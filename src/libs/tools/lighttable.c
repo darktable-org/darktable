@@ -118,7 +118,7 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)g_malloc0(sizeof(dt_lib_tool_lighttable_t));
   self->data = (void *)d;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->layout =  dt_conf_get_int("plugins/lighttable/layout");
   d->base_layout = dt_conf_get_int("plugins/lighttable/base_layout");
   d->current_zoom = dt_conf_get_int("plugins/lighttable/images_in_row");

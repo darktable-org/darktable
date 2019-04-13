@@ -194,10 +194,13 @@ typedef struct dt_bauhaus_t
   // appearance relevant stuff:
   // sizes and fonts:
   float scale;                           // gui scale multiplier
-  int widget_space;                      // space between widgets in a module
-  int line_space;                        // space between lines of text in e.g. the combo box
-  int line_height;                       // height of a line of text
+  float widget_space;                      // space between widgets in a module
+  float line_space;                        // space between lines of text in e.g. the combo box
+  float line_height;                       // height of a line of text
   float marker_size;                     // height of the slider indicator
+  float baseline_size;                   // height of the slider bar
+  float border_width;                    // width of the border of the slider marker
+  float quad_width;                      // width of the quad area to paint icons
   float label_font_size;                 // percent of line height to fill with font for labels
   float value_font_size;                 // percent of line height to fill with font for values
   char label_font[256];                  // font to draw the label with
@@ -209,15 +212,14 @@ typedef struct dt_bauhaus_t
   gboolean cursor_visible;
   int cursor_blink_counter;
 
-  // colors:
-  GdkRGBA color_fg, color_fg_insensitive, color_bg, color_border;
+  // colors for sliders and comboboxes
+  GdkRGBA color_fg, color_fg_insensitive, color_bg, color_border, indicator_border, color_fill;
+
+  // colors for graphs
+  GdkRGBA graph_bg, graph_border, graph_fg, graph_grid, graph_fg_active, inset_histogram;
 } dt_bauhaus_t;
 
-static inline int dt_bauhaus_get_widget_space()
-{
-  return darktable.bauhaus->widget_space;
-}
-#define DT_BAUHAUS_SPACE dt_bauhaus_get_widget_space()
+#define DT_BAUHAUS_SPACE 0
 
 
 void dt_bauhaus_init();
@@ -306,6 +308,11 @@ void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct)(GtkWidg
 void dt_bauhaus_vimkey_exec(const char *input);
 // give autocomplete suggestions
 GList *dt_bauhaus_vimkey_complete(const char *input);
+
+inline void set_color(cairo_t *cr, GdkRGBA color)
+{
+  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
