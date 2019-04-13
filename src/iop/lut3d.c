@@ -80,6 +80,11 @@ typedef struct dt_iop_lut3d_data_t
   uint8_t level; // cube_size
 } dt_iop_lut3d_data_t;
 
+typedef struct dt_iop_lut3d_global_data_t
+{
+  int kernel_lut3d;
+} dt_iop_lut3d_global_data_t;
+
 const char *name()
 {
   return _("lut 3D");
@@ -109,13 +114,13 @@ void correct_pixel_trilinear(float *input, float *output, const float *const clu
 
   for(int c = 0; c < 3; ++c) input[c] = input[c] < 0.0f ? 0.0f : (input[c] > 1.0f ? 1.0f : input[c]);
   red = input[0] * (float)(level - 1);
-  if(red > level - 2) red = (float)level - 2;
+  if(red > level - 2) red = level - 2;
   if(red < 0) red = 0;
   green = input[1] * (float)(level - 1);
-  if(green > level - 2) green = (float)level - 2;
+  if(green > level - 2) green = level - 2;
   if(green < 0) green = 0;
   blue = input[2] * (float)(level - 1);
-  if(blue > level - 2) blue = (float)level - 2;
+  if(blue > level - 2) blue = level - 2;
   if(blue < 0) blue = 0;
 
   const float r = input[0] * (float)(level - 1) - red; // delta red
@@ -173,13 +178,13 @@ void correct_pixel_tetrahedral(float *input, float *output, const float *const c
 
   for(int c = 0; c < 3; ++c) input[c] = input[c] < 0.0f ? 0.0f : (input[c] > 1.0f ? 1.0f : input[c]);
   red = input[0] * (float)(level - 1);
-  if(red > level - 2) red = (float)level - 2;
+  if(red > level - 2) red = level - 2;
   if(red < 0) red = 0;
   green = input[1] * (float)(level - 1);
-  if(green > level - 2) green = (float)level - 2;
+  if(green > level - 2) green = level - 2;
   if(green < 0) green = 0;
   blue = input[2] * (float)(level - 1);
-  if(blue > level - 2) blue = (float)level - 2;
+  if(blue > level - 2) blue = level - 2;
   if(blue < 0) blue = 0;
 
   const float r = input[0] * (float)(level - 1) - red; // delta red
@@ -189,13 +194,13 @@ void correct_pixel_tetrahedral(float *input, float *output, const float *const c
 // indexes of P000 to P111 in clut
   const int color = red + green * level + blue * level2;
   const int i000 = color * 3;  // P000
-  const int i100 = (color + 1) * 3;  // P100
+  const int i100 = i000 + 3;  // P100
   const int i010 = (color + level) * 3;  // P010
-  const int i110 = (color + level + 1) * 3;  //P110
+  const int i110 = i010 + 3;  //P110
   const int i001 = (color + level2) * 3;  // P001
-  const int i101 = (color + level2 + 1) * 3;  // P101
+  const int i101 = i001 + 3;  // P101
   const int i011 = (color + level + level2) * 3;  // P011
-  const int i111 = (color + level + level2 + 1) * 3;  // P111
+  const int i111 = i011 + 3;  // P111
 
   if (r > g)
   {
@@ -249,13 +254,13 @@ void correct_pixel_pyramid(float *input, float *output, const float *const clut,
 
   for(int c = 0; c < 3; ++c) input[c] = input[c] < 0.0f ? 0.0f : (input[c] > 1.0f ? 1.0f : input[c]);
   red = input[0] * (float)(level - 1);
-  if(red > level - 2) red = (float)level - 2;
+  if(red > level - 2) red = level - 2;
   if(red < 0) red = 0;
   green = input[1] * (float)(level - 1);
-  if(green > level - 2) green = (float)level - 2;
+  if(green > level - 2) green = level - 2;
   if(green < 0) green = 0;
   blue = input[2] * (float)(level - 1);
-  if(blue > level - 2) blue = (float)level - 2;
+  if(blue > level - 2) blue = level - 2;
   if(blue < 0) blue = 0;
 
   const float r = input[0] * (float)(level - 1) - red; // delta red
@@ -265,13 +270,13 @@ void correct_pixel_pyramid(float *input, float *output, const float *const clut,
 // indexes of P000 to P111 in clut
   const int color = red + green * level + blue * level2;
   const int i000 = color * 3;  // P000
-  const int i100 = (color + 1) * 3;  // P100
+  const int i100 = i000 + 3;  // P100
   const int i010 = (color + level) * 3;  // P010
-  const int i110 = (color + level + 1) * 3;  //P110
+  const int i110 = i010 + 3;  //P110
   const int i001 = (color + level2) * 3;  // P001
-  const int i101 = (color + level2 + 1) * 3;  // P101
+  const int i101 = i001 + 3;  // P101
   const int i011 = (color + level + level2) * 3;  // P011
-  const int i111 = (color + level + level2 + 1) * 3;  // P111
+  const int i111 = i011 + 3;  // P111
 
   if (g > r && b > r)
   {
@@ -600,12 +605,96 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
   return level;
 }
 
+#ifdef HAVE_OPENCL
+int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+printf("start process cl\n");
+  // start timer
+  const double start = dt_get_wtime();
+  dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
+  dt_iop_lut3d_global_data_t *gd = (dt_iop_lut3d_global_data_t *)self->data;
+  cl_int err = CL_SUCCESS;
+  const float *const clut = (float *)d->clut;
+  const uint8_t level = d->level;
+  const int interpolation = d->params.interpolation;
+  const int colorspace
+    = (d->params.colorspace == DT_IOP_SRGB) ? DT_COLORSPACE_SRGB
+    : (d->params.colorspace == DT_IOP_REC709) ? DT_COLORSPACE_REC709
+    : (d->params.colorspace == DT_IOP_LIN_REC709) ? DT_COLORSPACE_LIN_REC709
+    : DT_COLORSPACE_LIN_REC2020;
+  const dt_iop_order_iccprofile_info_t *const lut_profile
+    = (colorspace != DT_COLORSPACE_LIN_REC2020) ? dt_ioppr_add_profile_info_to_list(self->dev, colorspace, "", INTENT_PERCEPTUAL) : NULL;
+  const dt_iop_order_iccprofile_info_t *const work_profile
+    = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  gboolean transform = (work_profile != NULL && lut_profile != NULL) ? TRUE : FALSE;
+  cl_mem clut_cl = NULL;
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;  
+  
+  if (clut)
+  {
+    clut_cl = dt_opencl_copy_host_to_device_constant(devid, level * level * level * 3 * sizeof(float), (void *)clut);
+    if(clut_cl == NULL)
+    {
+      fprintf(stderr, "[lut3d process_cl] error allocating memory\n");
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+      goto cleanup;
+    }
+    if (transform)
+    {
+      const int success = dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_in, dev_in, width, height, work_profile, lut_profile, "linrec2020 to LUT Space");
+      if (!success)
+       transform = FALSE;
+printf("process cl first transform success %s\n", (success) ? "Yes" : "No");
+    }
+    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    dt_opencl_set_kernel_arg(devid, gd->kernel_lut3d, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_lut3d, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_lut3d, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_lut3d, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_lut3d, 4, sizeof(cl_mem), (void *)&clut_cl);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_lut3d, 5, sizeof(int), (void *)&level);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_lut3d, 6, sizeof(int), (void *)&interpolation);
+printf("process cl enqueue\n");
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lut3d, sizes);
+printf("process cl enqueued - err = %i\n", err);
+
+    if (transform)
+    {
+      const int success = dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_out, dev_out, width, height, lut_profile, work_profile, "LUT Space to linrec2020");
+printf("process cl second transform success %s\n", (success) ? "Yes" : "No");
+    }
+  }
+  else  // no clut, do nothing
+  {
+    err = CL_INVALID_VALUE;
+  }
+  if(err != CL_SUCCESS)
+  {
+    fprintf(stderr, "[lut3d process_cl] error %i enqueue kernel\n", err);
+    goto cleanup;
+  }
+
+cleanup:
+  if(clut_cl) dt_opencl_release_mem_object(clut_cl);
+
+  if(err != CL_SUCCESS) dt_print(DT_DEBUG_OPENCL, "[opencl_lut3d] couldn't enqueue kernel! %d\n", err);
+  // end timer
+  double end = dt_get_wtime();
+  printf("process cl duration %f\n", end - start);
+  return (err == CL_SUCCESS) ? TRUE : FALSE;
+}
+#endif
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ibuf, void *const obuf,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  // start timer
+  const double start = dt_get_wtime();
   dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
   const int ch = piece->colors;
-//  const int colorspace = d->params.colorspace;
   const float *const clut = (float *)d->clut;
   const uint8_t level = d->level;
   const dt_interpolation_worker interpolation_worker
@@ -622,27 +711,50 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_order_iccprofile_info_t *const work_profile
     = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   const gboolean transform = (work_profile != NULL && lut_profile != NULL) ? TRUE : FALSE;
-  if (transform)
-    dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, roi_out->width, roi_out->height, work_profile, lut_profile, "linrec2020 to LUT Space");
-  else // anyway use out as temporary buffer
-    memcpy(obuf, ibuf, roi_in->width * roi_out->height * 4 * sizeof(float));
   if (clut)
   {
+    if (transform)
+    {
+      dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, roi_in->width, roi_in->height, work_profile, lut_profile, "linrec2020 to LUT Space");
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
-    for(int j = 0; j < roi_out->height; j++)
-    {
-      float *out = ((float *)obuf) + (size_t)ch * roi_out->width * j;
-      for(int i = 0; i < roi_out->width; i++)
+      for(int j = 0; j < roi_out->height; j++)
       {
-        interpolation_worker(out, out, clut, level);
-        out += ch;
+        float *out = ((float *)obuf) + (size_t)ch * roi_out->width * j;
+        for(int i = 0; i < roi_out->width; i++)
+        {
+          interpolation_worker(out, out, clut, level);
+          out += ch;
+        }
       }
+      dt_ioppr_transform_image_colorspace_rgb(obuf, obuf, roi_in->width, roi_in->height, lut_profile, work_profile, "LUT space to linrec2020");
+    }
+    else
+    {
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static)
+#endif
+      for(int j = 0; j < roi_out->height; j++)
+      {
+        float *in = ((float *)ibuf) + (size_t)ch * roi_out->width * j;
+        float *out = ((float *)obuf) + (size_t)ch * roi_out->width * j;
+        for(int i = 0; i < roi_out->width; i++)
+        {
+          interpolation_worker(in, out, clut, level);
+          in += ch;
+          out += ch;
+        }
+      }      
     }
   }
-  if (transform)
-    dt_ioppr_transform_image_colorspace_rgb(obuf, obuf, roi_out->width, roi_out->height, lut_profile, work_profile, "LUT space to linrec2020");
+  else  // no clut
+  {
+    memcpy(obuf, ibuf, roi_in->width * roi_in->height * 4 * sizeof(float));
+  }
+  // end timer
+  double end = dt_get_wtime();
+  printf("process duration %f\n", end - start);
 }
 
 void reload_defaults(dt_iop_module_t *self)
@@ -652,6 +764,7 @@ void reload_defaults(dt_iop_module_t *self)
 
 void init(dt_iop_module_t *self)
 {
+setvbuf(stdout, NULL, _IONBF, 0); 
   self->data = NULL;
   self->params = calloc(1, sizeof(dt_iop_lut3d_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_lut3d_params_t));
@@ -671,6 +784,24 @@ void cleanup(dt_iop_module_t *self)
 {
   free(self->params);
   self->params = NULL;
+}
+
+void init_global(dt_iop_module_so_t *module)
+{
+  const int program = 26; // rgbcurve.cl, from programs.conf
+  dt_iop_lut3d_global_data_t *gd
+      = (dt_iop_lut3d_global_data_t *)malloc(sizeof(dt_iop_lut3d_global_data_t));
+  module->data = gd;
+
+  gd->kernel_lut3d = dt_opencl_create_kernel(program, "lut3d");
+}
+
+void cleanup_global(dt_iop_module_so_t *module)
+{
+  dt_iop_lut3d_global_data_t *gd = (dt_iop_lut3d_global_data_t *)module->data;
+  dt_opencl_free_kernel(gd->kernel_lut3d);
+  free(module->data);
+  module->data = NULL;
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
