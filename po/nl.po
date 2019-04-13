@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-04-13 12:56+0200\n"
-"PO-Revision-Date: 2019-04-13 13:21+0200\n"
+"PO-Revision-Date: 2019-04-13 13:40+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -130,8 +130,7 @@ msgstr "bibliotheek"
 
 #: ../build/src/preferences_gen.h:2202
 msgid "don't use embedded preview JPEG but half-size raw"
-msgstr ""
-"gebruik i.p.v. het ingesloten JPEG-voorbeeld een gedeelte v.d. raw-afbeelding"
+msgstr "gebruik deel raw afbeelding i.p.v. het ingesloten JPEG-miniatuur"
 
 #: ../build/src/preferences_gen.h:2214
 msgid ""
@@ -515,8 +514,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2883
 msgid "ask before erasing images from disk / discarding history stack"
-msgstr ""
-"voor verwijdering van afbeeldingen/bewerkingsstappen vragen om bevestiging"
+msgstr "vraag om bevestiging voor verwijdering afbeeldingen/bewerkingsstappen"
 
 #: ../build/src/preferences_gen.h:2895
 msgid ""
@@ -12058,7 +12056,7 @@ msgstr "1600%"
 #: ../src/libs/navigation.c:599
 msgctxt "accel"
 msgid "hide navigation thumbnail"
-msgstr ""
+msgstr "verberg miniaturen navigatie"
 
 #. //////////////////////// PRINT SETTINGS
 #: ../src/libs/print_settings.c:45 ../src/libs/print_settings.c:1400
@@ -12963,7 +12961,7 @@ msgstr "snelle toegang om een stijl toe te passen"
 
 #: ../src/views/darkroom.c:1771
 msgid "display a second darkroom image window"
-msgstr ""
+msgstr "toon een tweede scherm module ontwikkelen"
 
 #: ../src/views/darkroom.c:1782
 msgid ""
@@ -13088,20 +13086,16 @@ msgid "display intent"
 msgstr "toon voornemen"
 
 #: ../src/views/darkroom.c:1954 ../src/views/lighttable.c:4132
-#, fuzzy
-#| msgid "display intent"
 msgid "preview display intent"
-msgstr "toon voornemen"
+msgstr "voorbeeldweergave intentie"
 
 #: ../src/views/darkroom.c:1974 ../src/views/lighttable.c:4140
 msgid "display profile"
 msgstr "weergaveprofiel"
 
 #: ../src/views/darkroom.c:1975 ../src/views/lighttable.c:4144
-#, fuzzy
-#| msgid "set display profile"
 msgid "preview display profile"
-msgstr "kies weergaveprofiel"
+msgstr "voorbeeld weergaveprofiel"
 
 #: ../src/views/darkroom.c:1976
 msgid "histogram profile"
@@ -13253,10 +13247,8 @@ msgid "search modules"
 msgstr "zoek modules"
 
 #: ../src/views/darkroom.c:3864
-#, fuzzy
-#| msgid "darktable - error opening database"
 msgid "darktable - darkroom preview"
-msgstr "darktable - fout bij openen database"
+msgstr "darktable - voorbeeldweergave ontwikkelen"
 
 #: ../src/views/knight.c:334
 msgid "good knight"
