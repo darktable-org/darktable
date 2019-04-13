@@ -2035,6 +2035,12 @@ int dt_view_lighttable_get_display_num_images(dt_view_manager_t *vm)
     return 2;
 }
 
+void dt_view_lighttable_force_expose_all(dt_view_manager_t *vm)
+{
+  if(vm->proxy.lighttable.view)
+    vm->proxy.lighttable.force_expose_all(vm->proxy.lighttable.view);
+}
+
 dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm)
 {
   if(vm->proxy.lighttable.module)
