@@ -101,6 +101,8 @@ static void _redraw_selected_images(dt_view_t *self);
 
 static gboolean _expose_again_full(gpointer user_data);
 
+static void _force_expose_all(dt_view_t *self);
+
 typedef struct dt_preview_surface_t
 {
   int mip;
@@ -292,6 +294,13 @@ static void _scrollbars_restore()
   }
 
   dt_ui_scrollbars_show(darktable.gui->ui, scrollbars_visible);
+}
+
+static void _force_expose_all(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  lib->force_expose_all = TRUE;
+  dt_control_queue_redraw_center();
 }
 
 static void check_layout(dt_view_t *self)
@@ -4208,6 +4217,9 @@ void gui_init(dt_view_t *self)
                             G_CALLBACK(_display_profile_changed), (gpointer)display_profile);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             G_CALLBACK(_display2_profile_changed), (gpointer)display2_profile);
+
+  // proxy
+  darktable.view_manager->proxy.lighttable.force_expose_all = _force_expose_all;
 }
 
 static gboolean _is_order_actif(dt_view_t *self, dt_collection_sort_t sort)
