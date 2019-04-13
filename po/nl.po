@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-04-13 12:56+0200\n"
-"PO-Revision-Date: 2019-04-13 13:14+0200\n"
+"PO-Revision-Date: 2019-04-13 13:21+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -505,8 +505,7 @@ msgstr "veiligheid"
 
 #: ../build/src/preferences_gen.h:2863
 msgid "ask before removing images from database"
-msgstr ""
-"vraag om bevestiging voordat afbeeldingen worden verwijderd uit de database"
+msgstr "vraag om bevestiging voor verwijdering afbeeldingen uit database"
 
 #: ../build/src/preferences_gen.h:2875
 msgid "always ask the user before any image is removed from DB."
