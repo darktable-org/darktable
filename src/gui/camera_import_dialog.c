@@ -180,13 +180,11 @@ static _camera_gconf_widget_t *_camera_import_gconf_widget(_camera_import_dialog
 
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_store, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   gtk_widget_set_tooltip_text(button, _("store value as default"));
-  gtk_widget_set_size_request(button, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_gcw_store_callback), gcw);
 
   button = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   gtk_widget_set_tooltip_text(button, _("reset value to default"));
-  gtk_widget_set_size_request(button, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_gcw_reset_callback), gcw);
 
@@ -222,8 +220,7 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
   data->store = gtk_list_store_new(2, GDK_TYPE_PIXBUF, G_TYPE_STRING);
 
   // IMPORT PAGE
-  data->import.page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  gtk_container_set_border_width(GTK_CONTAINER(data->import.page), 5);
+  data->import.page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   // Top info
   data->import.info = gtk_label_new(_("please wait while prefetching thumbnails of images from camera..."));
@@ -266,8 +263,7 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
 
 
   // SETTINGS PAGE
-  data->settings.page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  gtk_container_set_border_width(GTK_CONTAINER(data->settings.page), 5);
+  data->settings.page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   // general settings
   gtk_box_pack_start(GTK_BOX(data->settings.page), gtk_label_new(_("general")), FALSE, FALSE, 0);
@@ -283,7 +279,7 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
   g_signal_connect(G_OBJECT(data->settings.general.ignore_jpeg), "clicked",
                    G_CALLBACK(_check_button_callback), data);
 
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   data->settings.general.date_override = gtk_check_button_new_with_label(_("override today's date"));
   gtk_box_pack_start(GTK_BOX(hbox), data->settings.general.date_override, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(data->settings.general.date_override,

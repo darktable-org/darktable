@@ -74,7 +74,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   /* the toolbar container */
-  d->container = self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+  d->container = self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   /* setup proxy */
   darktable.view_manager->proxy.view_toolbox.module = self;
@@ -97,7 +97,7 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
   while(child_elt)
   {
     child_data_t* child_data = (child_data_t*)child_elt->data;
-    if(child_data->views & nv) 
+    if(child_data->views & nv)
     {
       gtk_widget_show_all(child_data->child);
     }

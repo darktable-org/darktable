@@ -262,7 +262,7 @@ void gui_init(dt_lib_module_t *self)
   d->vertical = TRUE;
 
   /* initialize ui containers */
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, "snapshots.html#snapshots");
   d->snapshots_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 

@@ -347,7 +347,7 @@ void gui_init(dt_imageio_module_format_t *self)
   self->gui_data = malloc(sizeof(dt_imageio_exr_gui_t));
   dt_imageio_exr_gui_t *gui = (dt_imageio_exr_gui_t *)self->gui_data;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   const int compression_last = dt_conf_get_int("plugins/imageio/format/exr/compression");
 

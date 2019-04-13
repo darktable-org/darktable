@@ -142,6 +142,10 @@ typedef struct dt_develop_t
   struct dt_iop_module_t *gui_module; // this module claims gui expose/event callbacks.
   float preview_downsampling;         // < 1.0: optionally downsample preview
 
+  // handle GUI events timeout
+  int preview_timeout_handle;
+  int image_timeout_handle;
+
   // width, height: dimensions of window
   int32_t width, height;
 

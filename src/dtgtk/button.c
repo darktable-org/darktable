@@ -50,7 +50,7 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   int flags = DTGTK_BUTTON(widget)->icon_flags;
 
   /* set inner border */
-  int border = DT_PIXEL_APPLY_DPI((flags & CPF_DO_NOT_USE_BORDER) ? 2 : 6);
+  int border = DT_PIXEL_APPLY_DPI((flags & CPF_DO_NOT_USE_BORDER) ? 4 : 6);
 
   /* prelight */
   if(state & GTK_STATE_FLAG_PRELIGHT)
@@ -140,7 +140,7 @@ GtkWidget *dtgtk_button_new(DTGTKCairoPaintIconFunc paint, gint paintflags, void
   button->icon = paint;
   button->icon_flags = paintflags;
   button->icon_data = paintdata;
-  gtk_widget_set_size_request(GTK_WIDGET(button), DT_PIXEL_APPLY_DPI(17), DT_PIXEL_APPLY_DPI(17));
+  gtk_widget_set_name(GTK_WIDGET(button), "dt-button");
   return (GtkWidget *)button;
 }
 

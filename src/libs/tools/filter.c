@@ -98,14 +98,14 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)g_malloc0(sizeof(dt_lib_tool_filter_t));
   self->data = (void *)d;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+  self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   /**/
   GtkWidget *widget;
 
   /* list label */
   widget = gtk_label_new(_("view"));
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 4);
+  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
 
   d->comparator = widget = gtk_combo_box_text_new();
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
@@ -139,7 +139,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* sort by label */
   widget = gtk_label_new(_("sort by"));
-  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 4);
+  gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
 
   /* sort combobox */
   d->sort = widget = gtk_combo_box_text_new();
@@ -164,10 +164,10 @@ void gui_init(dt_lib_module_t *self)
 
   /* reverse order checkbutton */
   d->reverse = widget
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_UP, NULL);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_UP, NULL);
   if(darktable.collection->params.descending)
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(widget), dtgtk_cairo_paint_solid_arrow,
-                                 CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_DOWN, NULL);
+                                 CPF_DIRECTION_DOWN, NULL);
 
   gtk_box_pack_start(GTK_BOX(self->widget), widget, FALSE, FALSE, 0);
 

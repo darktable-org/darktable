@@ -348,7 +348,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* create the resize handle */
   GtkWidget *size_handle = gtk_event_box_new();
-  gtk_widget_set_size_request(size_handle, -1, DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_size_request(size_handle, -1, DT_PIXEL_APPLY_DPI(5));
   gtk_widget_add_events(size_handle, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                      | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
                                      | GDK_LEAVE_NOTIFY_MASK);

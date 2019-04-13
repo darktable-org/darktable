@@ -79,10 +79,10 @@ static void dt_imageio_jpeg_error_exit(j_common_ptr cinfo)
  * (64K), we need provisions to split it into multiple markers.  The format
  * defined by the ICC specifies one or more APP2 markers containing the
  * following data:
- *	Identifying string	ASCII "ICC_PROFILE\0"  (12 bytes)
- *	Marker sequence number	1 for first APP2, 2 for next, etc (1 byte)
- *	Number of markers	Total number of APP2's used (1 byte)
- *      Profile data		(remainder of APP2 data)
+ *  Identifying string  ASCII "ICC_PROFILE\0"  (12 bytes)
+ *  Marker sequence number  1 for first APP2, 2 for next, etc (1 byte)
+ *  Number of markers Total number of APP2's used (1 byte)
+ *      Profile data    (remainder of APP2 data)
  * Decoders should use the marker sequence numbers to reassemble the profile,
  * rather than assuming that the APP2 markers appear in the correct sequence.
  */
@@ -222,11 +222,11 @@ read_icc_profile (j_decompress_ptr cinfo,
   JOCTET *icc_data;
   unsigned int total_length;
 #define MAX_SEQ_NO 255 /* sufficient since marker numbers are bytes */
-  char marker_present[MAX_SEQ_NO+1];	  /* 1 if marker found */
+  char marker_present[MAX_SEQ_NO+1];    /* 1 if marker found */
   unsigned int data_length[MAX_SEQ_NO+1]; /* size of profile data in marker */
   unsigned int data_offset[MAX_SEQ_NO+1]; /* offset for data in marker */
 
-  *icc_data_ptr = NULL;		/* avoid confusion if FALSE return */
+  *icc_data_ptr = NULL;   /* avoid confusion if FALSE return */
   *icc_data_len = 0;
 
   /* This first pass over the saved markers discovers whether there are
@@ -243,12 +243,12 @@ read_icc_profile (j_decompress_ptr cinfo,
       if (num_markers == 0)
         num_markers = GETJOCTET(marker->data[13]);
       else if (num_markers != GETJOCTET(marker->data[13]))
-        return FALSE;		/* inconsistent num_markers fields */
+        return FALSE;   /* inconsistent num_markers fields */
       seq_no = GETJOCTET(marker->data[12]);
       if (seq_no <= 0 || seq_no > num_markers)
-        return FALSE;		/* bogus sequence number */
+        return FALSE;   /* bogus sequence number */
       if (marker_present[seq_no])
-        return FALSE;		/* duplicate sequence numbers */
+        return FALSE;   /* duplicate sequence numbers */
       marker_present[seq_no] = 1;
       data_length[seq_no] = marker->data_length - ICC_OVERHEAD_LEN;
     }
@@ -265,18 +265,18 @@ read_icc_profile (j_decompress_ptr cinfo,
   for (seq_no = 1; seq_no <= num_markers; seq_no++)
   {
     if (marker_present[seq_no] == 0)
-      return FALSE;		/* missing sequence number */
+      return FALSE;   /* missing sequence number */
     data_offset[seq_no] = total_length;
     total_length += data_length[seq_no];
   }
 
   if (total_length <= 0)
-    return FALSE;		/* found only empty markers? */
+    return FALSE;   /* found only empty markers? */
 
   /* Allocate space for assembled data */
   icc_data = (JOCTET *) calloc(total_length, sizeof(JOCTET));
   if (icc_data == NULL)
-    return FALSE;		/* oops, out of memory */
+    return FALSE;   /* oops, out of memory */
 
   /* and fill it in */
   for (marker = cinfo->marker_list; marker != NULL; marker = marker->next)
@@ -587,7 +587,7 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)malloc(sizeof(dt_imageio_jpeg_gui_data_t));
   self->gui_data = g;
   // construct gui with jpeg specific options:
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 20);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   self->widget = box;
   // quality slider
   g->quality = dt_bauhaus_slider_new_with_range(NULL, 5, 100, 1, 95, 0);

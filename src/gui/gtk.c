@@ -60,7 +60,7 @@
  * NEW UI API
  */
 
-#define DT_UI_PANEL_MODULE_SPACING 3
+#define DT_UI_PANEL_MODULE_SPACING 0
 
 typedef enum dt_gui_view_switch_t
 {
@@ -226,6 +226,113 @@ static gboolean view_switch_key_accel_callback(GtkAccelGroup *accel_group, GObje
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
   return TRUE;
 }
+
+static gboolean _panels_controls_accel_callback(GtkAccelGroup *accel_group,
+                                                GObject *acceleratable, guint keyval,
+                                                GdkModifierType modifier, gpointer data)
+{
+
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+
+  // Set the controls accel visible by default
+  gint visible = TRUE;
+
+  // Get the current parameter if defined
+  char key[512];
+  g_snprintf(key, sizeof(key), "%s/ui/panels_collapse_controls", cv->module_name);
+  if(dt_conf_key_exists(key)) visible = dt_conf_get_bool(key);
+
+  // Inverse the current parameter and save it
+  visible = !visible;
+  dt_conf_set_bool(key, visible);
+
+  // Show/hide the collapsing controls in the borders
+  gtk_widget_set_visible(GTK_WIDGET(darktable.gui->widgets.right_border), visible);
+  gtk_widget_set_visible(GTK_WIDGET(darktable.gui->widgets.left_border), visible);
+  gtk_widget_set_visible(GTK_WIDGET(darktable.gui->widgets.top_border), visible);
+  gtk_widget_set_visible(GTK_WIDGET(darktable.gui->widgets.bottom_border), visible);
+
+  dt_view_lighttable_force_expose_all(darktable.view_manager);
+
+  return TRUE;
+}
+
+static gboolean _toggle_left_panel_accel_callback(GtkAccelGroup *accel_group,
+                                                GObject *acceleratable, guint keyval,
+                                                GdkModifierType modifier, gpointer data)
+{
+  dt_ui_t *ui = (dt_ui_t *)darktable.gui->ui;
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  char key[512];
+
+  g_snprintf(key, sizeof(key), "%s/ui/%s_visible", cv->module_name,
+           _ui_panel_config_names[DT_UI_PANEL_LEFT]);
+  const gboolean state = dt_conf_get_bool(key);
+  dt_ui_panel_show(ui, DT_UI_PANEL_LEFT, !state, TRUE);
+  dt_conf_set_bool(key, !state);
+
+  dt_view_lighttable_force_expose_all(darktable.view_manager);
+
+  return TRUE;
+}
+
+static gboolean _toggle_right_panel_accel_callback(GtkAccelGroup *accel_group,
+                                                GObject *acceleratable, guint keyval,
+                                                GdkModifierType modifier, gpointer data)
+{
+  dt_ui_t *ui = (dt_ui_t *)darktable.gui->ui;
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  char key[512];
+
+  g_snprintf(key, sizeof(key), "%s/ui/%s_visible", cv->module_name,
+             _ui_panel_config_names[DT_UI_PANEL_RIGHT]);
+  const gboolean state = dt_conf_get_bool(key);
+  dt_ui_panel_show(ui, DT_UI_PANEL_RIGHT, !state, TRUE);
+  dt_conf_set_bool(key, !state);
+
+  dt_view_lighttable_force_expose_all(darktable.view_manager);
+
+  return TRUE;
+}
+
+static gboolean _toggle_top_panel_accel_callback(GtkAccelGroup *accel_group,
+                                                GObject *acceleratable, guint keyval,
+                                                GdkModifierType modifier, gpointer data)
+{
+  dt_ui_t *ui = (dt_ui_t *)darktable.gui->ui;
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  char key[512];
+
+  g_snprintf(key, sizeof(key), "%s/ui/%s_visible", cv->module_name,
+             _ui_panel_config_names[DT_UI_PANEL_CENTER_TOP]);
+  const gboolean state = dt_conf_get_bool(key);
+  dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_TOP, !state, TRUE);
+  dt_conf_set_bool(key, !state);
+
+  dt_view_lighttable_force_expose_all(darktable.view_manager);
+
+  return TRUE;
+}
+
+static gboolean _toggle_bottom_panel_accel_callback(GtkAccelGroup *accel_group,
+                                                GObject *acceleratable, guint keyval,
+                                                GdkModifierType modifier, gpointer data)
+{
+  dt_ui_t *ui = (dt_ui_t *)darktable.gui->ui;
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  char key[512];
+
+  g_snprintf(key, sizeof(key), "%s/ui/%s_visible", cv->module_name,
+             _ui_panel_config_names[DT_UI_PANEL_CENTER_BOTTOM]);
+  const gboolean state = dt_conf_get_bool(key);
+  dt_ui_panel_show(ui, DT_UI_PANEL_CENTER_BOTTOM, !state, TRUE);
+  dt_conf_set_bool(key, !state);
+
+  dt_view_lighttable_force_expose_all(darktable.view_manager);
+
+  return TRUE;
+}
+
 
 static gboolean borders_button_pressed(GtkWidget *w, GdkEventButton *event, gpointer user_data)
 {
@@ -450,81 +557,10 @@ static gboolean draw_borders(GtkWidget *widget, cairo_t *crf, gpointer user_data
 
   GdkRGBA color;
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
-  gboolean color_found = gtk_style_context_lookup_color (context, "selected_bg_color", &color);
-  if(!color_found)
-  {
-    color.red = 1.0;
-    color.green = 0.0;
-    color.blue = 0.0;
-    color.alpha = 1.0;
-  }
-  gdk_cairo_set_source_rgba(cr, &color);
-  cairo_paint(cr);
-
-  // draw scrollbar indicators
-  const dt_view_t *view = dt_view_manager_get_current_view(darktable.view_manager);
-  color_found = gtk_style_context_lookup_color (context, "bg_color", &color);
-  if(!color_found)
-  {
-    color.red = 1.0;
-    color.green = 0.0;
-    color.blue = 0.0;
-    color.alpha = 1.0;
-  }
-  gdk_cairo_set_source_rgba(cr, &color);
-  const float border = 0.3;
-  if(!view)
-    cairo_paint(cr);
-  else
-  {
-    switch(which)
-    {
-      case 0:
-      case 1: // left, right: vertical
-        cairo_rectangle(cr, 0.0,
-                        (view->vscroll_pos - view->vscroll_lower) / (view->vscroll_size - view->vscroll_lower) * height,
-                        width,
-                        MAX(DT_PIXEL_APPLY_DPI(5),
-                            view->vscroll_viewport_size / (view->vscroll_size - view->vscroll_lower) * height));
-        break;
-      default: // bottom, top: horizontal
-        cairo_rectangle(cr,
-                        (view->hscroll_pos - view->hscroll_lower) / (view->hscroll_size - view->hscroll_lower) * width,
-                        0.0,
-                        MAX(DT_PIXEL_APPLY_DPI(5),
-                            view->hscroll_viewport_size / (view->hscroll_size - view->hscroll_lower) * width), height);
-        break;
-    }
-    cairo_fill(cr);
-    switch(which)
-    {
-      case 0:
-        cairo_rectangle(cr, (1.0 - border) * width, 0.0, border * width, height);
-        break;
-      case 1:
-        cairo_rectangle(cr, 0.0, 0.0, border * width, height);
-        break;
-      case 2:
-        cairo_rectangle(cr, (1.0 - border) * height, (1.0 - border) * height,
-                        width - 2 * (1.0 - border) * height, border * height);
-        break;
-      default:
-        cairo_rectangle(cr, (1.0 - border) * height, 0.0, width - 2 * (1.0 - border) * height,
-                        border * height);
-        break;
-    }
-    cairo_fill(cr);
-  }
+  gtk_render_background(context, cr, 0, 0, width, height);
+  gtk_style_context_get_color(context, gtk_widget_get_state_flags(widget), &color);
 
   // draw gui arrows.
-  color_found = gtk_style_context_lookup_color (context, "fg_color", &color);
-  if(!color_found)
-  {
-    color.red = 1.0;
-    color.green = 0.0;
-    color.blue = 0.0;
-    color.alpha = 1.0;
-  }
   gdk_cairo_set_source_rgba(cr, &color);
 
   switch(which)
@@ -1157,6 +1193,26 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // Side-border hide/show
   dt_accel_register_global(NC_("accel", "toggle side borders"), GDK_KEY_Tab, 0);
 
+  dt_accel_register_global(NC_("accel", "toggle panels collapsing controls"), GDK_KEY_B, 0);
+  dt_accel_connect_global("toggle panels collapsing controls",
+                          g_cclosure_new(G_CALLBACK(_panels_controls_accel_callback), NULL, NULL));
+
+  dt_accel_register_global(NC_("accel", "toggle left panel"), GDK_KEY_L, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_connect_global("toggle left panel",
+                          g_cclosure_new(G_CALLBACK(_toggle_left_panel_accel_callback), NULL, NULL));
+
+  dt_accel_register_global(NC_("accel", "toggle right panel"), GDK_KEY_R, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_connect_global("toggle right panel",
+                          g_cclosure_new(G_CALLBACK(_toggle_right_panel_accel_callback), NULL, NULL));
+
+  dt_accel_register_global(NC_("accel", "toggle top panel"), GDK_KEY_T, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_connect_global("toggle top panel",
+                          g_cclosure_new(G_CALLBACK(_toggle_top_panel_accel_callback), NULL, NULL));
+
+  dt_accel_register_global(NC_("accel", "toggle bottom panel"), GDK_KEY_B, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_connect_global("toggle bottom panel",
+                          g_cclosure_new(G_CALLBACK(_toggle_bottom_panel_accel_callback), NULL, NULL));
+
   // toggle view of header
   dt_accel_register_global(NC_("accel", "toggle header"), GDK_KEY_h, GDK_CONTROL_MASK);
 
@@ -1355,6 +1411,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
                                 | GDK_SCROLL_MASK);
+  gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
 
   // Initializing the main table
@@ -1369,6 +1426,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
                                 | GDK_SCROLL_MASK);
+  gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
 
   // Showing everything
@@ -1415,6 +1473,7 @@ static void init_main_table(GtkWidget *container)
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
                                 | GDK_SCROLL_MASK);
   gtk_grid_attach(GTK_GRID(container), widget, 0, 0, 1, 2);
+  gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
 
   // Adding the right border
@@ -1427,6 +1486,7 @@ static void init_main_table(GtkWidget *container)
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
                                 | GDK_SCROLL_MASK);
   gtk_grid_attach(GTK_GRID(container), widget, 4, 0, 1, 2);
+  gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
 
   /* initialize the top container */
@@ -1451,10 +1511,6 @@ static void init_main_table(GtkWidget *container)
   gtk_widget_set_size_request(cda, DT_PIXEL_APPLY_DPI(50), DT_PIXEL_APPLY_DPI(200));
   gtk_widget_set_hexpand(cda, TRUE);
   gtk_widget_set_vexpand(cda, TRUE);
-  gtk_widget_set_margin_start(cda, DT_PIXEL_APPLY_DPI(6));
-  gtk_widget_set_margin_end(cda, DT_PIXEL_APPLY_DPI(6));
-  gtk_widget_set_margin_top(cda, DT_PIXEL_APPLY_DPI(6));
-  gtk_widget_set_margin_bottom(cda, DT_PIXEL_APPLY_DPI(6));
   gtk_widget_set_app_paintable(cda, TRUE);
   gtk_widget_set_events(cda, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK
                              | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
@@ -1506,7 +1562,7 @@ void dt_ui_container_add_widget(dt_ui_t *ui, const dt_ui_container_t c, GtkWidge
     case DT_UI_CONTAINER_PANEL_TOP_RIGHT:
     case DT_UI_CONTAINER_PANEL_CENTER_TOP_RIGHT:
     case DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_RIGHT:
-      gtk_box_pack_end(GTK_BOX(ui->containers[c]), w, FALSE, FALSE, 2);
+      gtk_box_pack_end(GTK_BOX(ui->containers[c]), w, FALSE, FALSE, 0);
       break;
 
     /* if box is center we want it to fill as much as it can */
@@ -1514,12 +1570,12 @@ void dt_ui_container_add_widget(dt_ui_t *ui, const dt_ui_container_t c, GtkWidge
     case DT_UI_CONTAINER_PANEL_CENTER_TOP_CENTER:
     case DT_UI_CONTAINER_PANEL_CENTER_BOTTOM_CENTER:
     case DT_UI_CONTAINER_PANEL_BOTTOM:
-      gtk_box_pack_start(GTK_BOX(ui->containers[c]), w, TRUE, TRUE, 2);
+      gtk_box_pack_start(GTK_BOX(ui->containers[c]), w, TRUE, TRUE, 0);
       break;
 
     default:
     {
-      gtk_box_pack_start(GTK_BOX(ui->containers[c]), w, FALSE, FALSE, 2);
+      gtk_box_pack_start(GTK_BOX(ui->containers[c]), w, FALSE, FALSE, 0);
     }
     break;
   }
@@ -1635,6 +1691,17 @@ void dt_ui_restore_panels(dt_ui_t *ui)
         gtk_widget_set_visible(ui->panels[k], 1);
     }
   }
+
+  // restore the visible state of the collapsing controls
+  gint visible = TRUE;
+  g_snprintf(key, sizeof(key), "%s/ui/panels_collapse_controls", cv->module_name);
+  if(dt_conf_key_exists(key)) visible = dt_conf_get_bool(key);
+  dt_conf_set_bool(key, visible);
+
+  gtk_widget_set_visible(GTK_WIDGET(darktable.gui->widgets.right_border), visible);
+  gtk_widget_set_visible(GTK_WIDGET(darktable.gui->widgets.left_border), visible);
+  gtk_widget_set_visible(GTK_WIDGET(darktable.gui->widgets.top_border), visible);
+  gtk_widget_set_visible(GTK_WIDGET(darktable.gui->widgets.bottom_border), visible);
 }
 
 void dt_ui_update_scrollbars(dt_ui_t *ui)
@@ -1648,18 +1715,12 @@ void dt_ui_update_scrollbars(dt_ui_t *ui)
     gtk_adjustment_configure(gtk_range_get_adjustment(GTK_RANGE(darktable.gui->scrollbars.vscrollbar)),
                              cv->vscroll_pos, cv->vscroll_lower, cv->vscroll_size, 0, cv->vscroll_viewport_size,
                              cv->vscroll_viewport_size);
-    gtk_widget_set_margin_end(dt_ui_center(darktable.gui->ui), DT_PIXEL_APPLY_DPI(0));
-  } else {
-	gtk_widget_set_margin_end(dt_ui_center(darktable.gui->ui), DT_PIXEL_APPLY_DPI(6));
   }
 
   if(cv->hscroll_size > cv->hscroll_viewport_size){
     gtk_adjustment_configure(gtk_range_get_adjustment(GTK_RANGE(darktable.gui->scrollbars.hscrollbar)),
                              cv->hscroll_pos, cv->hscroll_lower, cv->hscroll_size, 0, cv->hscroll_viewport_size,
                              cv->hscroll_viewport_size);
-	gtk_widget_set_margin_bottom(dt_ui_center(darktable.gui->ui), DT_PIXEL_APPLY_DPI(0));
-  } else {
-	gtk_widget_set_margin_bottom(dt_ui_center(darktable.gui->ui), DT_PIXEL_APPLY_DPI(6));
   }
 
   gtk_widget_set_visible(darktable.gui->scrollbars.vscrollbar, cv->vscroll_size > cv->vscroll_viewport_size);
@@ -1678,26 +1739,6 @@ void dt_ui_scrollbars_show(dt_ui_t *ui, gboolean show)
   {
     gtk_widget_hide(darktable.gui->scrollbars.vscrollbar);
     gtk_widget_hide(darktable.gui->scrollbars.hscrollbar);
-    gtk_widget_set_margin_end(dt_ui_center(ui), DT_PIXEL_APPLY_DPI(6));
-    gtk_widget_set_margin_bottom(dt_ui_center(ui), DT_PIXEL_APPLY_DPI(6));
-  }
-}
-
-void dt_ui_border_show(dt_ui_t *ui, gboolean show)
-{
-  if(show)
-  {
-    gtk_widget_show(darktable.gui->widgets.left_border);
-    gtk_widget_show(darktable.gui->widgets.right_border);
-    gtk_widget_show(darktable.gui->widgets.top_border);
-    gtk_widget_show(darktable.gui->widgets.bottom_border);
-  }
-  else
-  {
-    gtk_widget_hide(darktable.gui->widgets.left_border);
-    gtk_widget_hide(darktable.gui->widgets.right_border);
-    gtk_widget_hide(darktable.gui->widgets.top_border);
-    gtk_widget_hide(darktable.gui->widgets.bottom_border);
   }
 }
 
@@ -1749,7 +1790,7 @@ GtkWidget *dt_ui_main_window(dt_ui_t *ui)
 static GtkWidget *_ui_init_panel_container_top(GtkWidget *container)
 {
   GtkWidget *w = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_UI_PANEL_MODULE_SPACING);
-  gtk_box_pack_start(GTK_BOX(container), w, FALSE, FALSE, 4);
+  gtk_box_pack_start(GTK_BOX(container), w, FALSE, FALSE, 0);
   return w;
 }
 
@@ -1822,7 +1863,7 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean
 
   /* create the container */
   container = widget;
-  widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_UI_PANEL_MODULE_SPACING);
+  widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(widget, "plugins_vbox_left");
   gtk_container_add(GTK_CONTAINER(container), widget);
 
@@ -1831,8 +1872,8 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean
 
 static GtkWidget *_ui_init_panel_container_bottom(GtkWidget *container)
 {
-  GtkWidget *w = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_UI_PANEL_MODULE_SPACING);
-  gtk_box_pack_start(GTK_BOX(container), w, FALSE, FALSE, DT_UI_PANEL_MODULE_SPACING);
+  GtkWidget *w = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_pack_start(GTK_BOX(container), w, FALSE, FALSE, 0);
   return w;
 }
 
@@ -1843,7 +1884,6 @@ static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
   /* create left panel main widget and add it to ui */
   widget = ui->panels[DT_UI_PANEL_LEFT] = dtgtk_side_panel_new();
   gtk_widget_set_name(widget, "left");
-//   gtk_widget_set_margin_left(widget, DT_PIXEL_APPLY_DPI(5)); // i prefer it with less blank space
   gtk_grid_attach(GTK_GRID(container), widget, 1, 1, 1, 1);
 
   /* add top,center,bottom*/
@@ -1863,7 +1903,6 @@ static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
   /* create left panel main widget and add it to ui */
   widget = ui->panels[DT_UI_PANEL_RIGHT] = dtgtk_side_panel_new();
   gtk_widget_set_name(widget, "right");
-//   gtk_widget_set_margin_right(widget, DT_PIXEL_APPLY_DPI(5)); // i prefer it with less blank space
   gtk_grid_attach(GTK_GRID(container), widget, 3, 1, 1, 1);
 
   /* add top,center,bottom*/
@@ -1923,6 +1962,8 @@ static void _ui_init_panel_center_top(dt_ui_t *ui, GtkWidget *container)
 
   /* create the panel box */
   ui->panels[DT_UI_PANEL_CENTER_TOP] = widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(widget, "header-toolbar");
+
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
 
   /* add container for center top left */
@@ -1947,6 +1988,7 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
 
   /* create the panel box */
   ui->panels[DT_UI_PANEL_CENTER_BOTTOM] = widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(widget, "footer-toolbar");
   gtk_box_pack_start(GTK_BOX(container), widget, FALSE, TRUE, 0);
 
   /* adding the center bottom left toolbox */
@@ -2018,19 +2060,14 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
   gtk_window_set_title(GTK_WINDOW(window), title);
   g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  gtk_widget_set_margin_start(vbox, 10);
-  gtk_widget_set_margin_end(vbox, 10);
-  gtk_widget_set_margin_top(vbox, 7);
-  gtk_widget_set_margin_bottom(vbox, 5);
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add(GTK_CONTAINER(window), vbox);
 
   GtkWidget *label = gtk_label_new(NULL);
   gtk_label_set_markup(GTK_LABEL(label), markup);
   gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
 
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-  gtk_widget_set_margin_top(hbox, 10);
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
   result_t result = {.result = RESULT_NONE, .window = window};

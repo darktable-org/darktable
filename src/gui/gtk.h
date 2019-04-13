@@ -23,7 +23,7 @@
 #include <gtk/gtk.h>
 #include <stdint.h>
 
-#define DT_GUI_IOP_MODULE_CONTROL_SPACING 2
+#define DT_GUI_IOP_MODULE_CONTROL_SPACING 0
 
 /* helper macro that applies the DPI transformation to fixed pixel values. input should be defaulting to 96
  * DPI */
@@ -274,8 +274,6 @@ void dt_ui_container_foreach(struct dt_ui_t *ui, const dt_ui_container_t c, GtkC
 void dt_ui_container_destroy_children(struct dt_ui_t *ui, const dt_ui_container_t c);
 /** \brief shows/hide a panel */
 void dt_ui_panel_show(struct dt_ui_t *ui, const dt_ui_panel_t, gboolean show, gboolean write);
-/** show or hide outermost borders with expand arrows */
-void dt_ui_border_show(struct dt_ui_t *ui, gboolean show);
 /** \brief restore saved state of panel visibility for current view */
 void dt_ui_restore_panels(struct dt_ui_t *ui);
 /** \brief update scrollbars for current view */
@@ -301,9 +299,7 @@ void dt_ellipsize_combo(GtkComboBox *cbox);
 static inline void dt_ui_section_label_set(GtkWidget *label)
 {
   gtk_widget_set_halign(label, GTK_ALIGN_FILL); // make it span the whole available width
-  g_object_set(G_OBJECT(label), "xalign", 1.0, (gchar *)0);    // make the text right aligned
-  gtk_widget_set_margin_bottom(label, DT_PIXEL_APPLY_DPI(10)); // gtk+ css doesn't support margins :(
-  gtk_widget_set_margin_start(label, DT_PIXEL_APPLY_DPI(30)); // gtk+ css doesn't support margins :(
+  g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);    // make the text left aligned
   gtk_widget_set_name(label, "section_label"); // make sure that we can style these easily
 }
 static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
