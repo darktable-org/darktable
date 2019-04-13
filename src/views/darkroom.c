@@ -717,7 +717,8 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
 
   dt_dev_pixelpipe_create_nodes(dev->pipe, dev);
   dt_dev_pixelpipe_create_nodes(dev->preview_pipe, dev);
-  dt_dev_pixelpipe_create_nodes(dev->preview2_pipe, dev);
+  if(dev->second_window.widget && GTK_IS_WIDGET(dev->second_window.widget))
+    dt_dev_pixelpipe_create_nodes(dev->preview2_pipe, dev);
   dt_dev_read_history(dev);
 
   // we have to init all module instances other than "base" instance
