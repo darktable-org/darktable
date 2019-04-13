@@ -1363,14 +1363,14 @@ static void dt_opencl_update_priorities(const char *configstr)
   dt_opencl_priorities_parse(cl, configstr);
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] these are your device priorities:\n");
-  dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] \t\timage\tpreview\texport\tthumbnail\n");
+  dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] \t\timage\tpreview\texport\tthumbnail\tpreview2\n");
   for(int i = 0; i < cl->num_devs; i++)
     dt_print(DT_DEBUG_OPENCL, "[opencl_priorities]\t\t%d\t%d\t%d\t%d\t%d\n", cl->dev_priority_image[i],
              cl->dev_priority_preview[i], cl->dev_priority_export[i], cl->dev_priority_thumbnail[i], cl->dev_priority_preview2[i]);
   dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] show if opencl use is mandatory for a given pixelpipe:\n");
-  dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] \t\timage\tpreview\texport\tthumbnail\n");
-  dt_print(DT_DEBUG_OPENCL, "[opencl_priorities]\t\t%d\t%d\t%d\t%d\n", cl->mandatory[0],
-             cl->mandatory[1], cl->mandatory[2], cl->mandatory[3]);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_priorities] \t\timage\tpreview\texport\tthumbnail\tpreview2\n");
+  dt_print(DT_DEBUG_OPENCL, "[opencl_priorities]\t\t%d\t%d\t%d\t%d\t%d\n", cl->mandatory[0],
+             cl->mandatory[1], cl->mandatory[2], cl->mandatory[3], cl->mandatory[4]);
 }
 
 int dt_opencl_lock_device(const int pipetype)
