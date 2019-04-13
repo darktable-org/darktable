@@ -687,6 +687,18 @@ treeview header
   color: @button_fg;
 }
 
+treeview *:hover
+{
+    background-color: @field_hover_bg;
+    color: @field_hover_fg;
+}
+
+treeview *:selected
+{
+    background-color: @button_bg;
+    color: @button_fg;
+}
+
 /* Notebooks tabs */
 
 notebook tabs,
@@ -957,4 +969,3 @@ cell:selected
     margin-left: 10em;
     margin-right: 10em;
 }
-
