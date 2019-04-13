@@ -312,6 +312,8 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
           }
       }
     }
+    // if buf is NULL, we quit the fct here
+    if(!mbuf) return DT_IMAGEIO_OK;
 
     void *buf = dt_mipmap_cache_alloc(mbuf, img);
     if(!buf) return DT_IMAGEIO_CACHE_FULL;
@@ -370,6 +372,9 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
 
   const uint32_t cpp = r->getCpp();
   if(cpp != 1 && cpp != 3 && cpp != 4) return DT_IMAGEIO_FILE_CORRUPTED;
+
+  // if buf is NULL, we quit the fct here
+  if(!mbuf) return DT_IMAGEIO_OK;
 
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf) return DT_IMAGEIO_CACHE_FULL;
