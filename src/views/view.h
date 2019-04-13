@@ -292,6 +292,7 @@ typedef struct dt_view_manager_t
       int (*get_full_preview_id)(struct dt_view_t *view);
       void (*set_display_num_images)(struct dt_lib_module_t *self, const int display_num_images);
       int (*get_display_num_images)(struct dt_lib_module_t *self);
+      void (*force_expose_all)(struct dt_view_t *view);
     } lighttable;
 
     /* tethering view proxy object */
@@ -430,6 +431,8 @@ int dt_view_lighttable_get_display_num_images(dt_view_manager_t *vm);
 void dt_view_lighttable_set_position(dt_view_manager_t *vm, uint32_t pos);
 /** read first visible image offset */
 uint32_t dt_view_lighttable_get_position(dt_view_manager_t *vm);
+/** force a full redraw of the lighttable */
+void dt_view_lighttable_force_expose_all(dt_view_manager_t *vm);
 
 /** set active image */
 void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm, int iid);
