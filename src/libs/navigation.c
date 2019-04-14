@@ -102,7 +102,7 @@ static gboolean _lib_navigation_collapse_callback(GtkAccelGroup *accel_group,
   dt_lib_module_t *self = (dt_lib_module_t *)data;
 
   // Get the state
-  gint visible = dt_lib_is_visible(self);
+  const gboolean visible = dt_lib_is_visible(self);
 
   // Inverse the visibility
   dt_lib_set_visible(self, !visible);
