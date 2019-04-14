@@ -368,11 +368,11 @@ button:disabled,
 #footer-toolbar #dt-toggle-button,
 #footer-toolbar #dt-button
 {
-  padding: 0.5em;
+  padding: 0.9em;
   min-height: 1em; /* Align toolbox button height on comboboxe's one */
   min-width: 1em;
   border: 0;
-  font-size: .8em;
+  font-size: .7em;
 }
 
 #module-preset-button * button,
