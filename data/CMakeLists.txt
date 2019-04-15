@@ -5,6 +5,7 @@ if(USE_OPENCL)
 endif(USE_OPENCL)
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/darktable.css DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/themes COMPONENT DTApplication)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/darktable-elegant.css DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/themes COMPONENT DTApplication)
 
 #
 # web gallery export support files:
