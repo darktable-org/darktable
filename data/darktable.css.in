@@ -317,6 +317,7 @@ button
   background-color: transparent;
   border-color: transparent;
   border: 0;
+  font-weight: normal;
 }
 
 button:selected,
@@ -711,7 +712,7 @@ notebook tabs,
   margin: 0;
   color: @button_fg;
   font-weight: 400;
-  font-family: "Roboto", "Segoe UI", "SF Pro Text", "Cantarell", sans-serif;
+  font-family: "Roboto", "Segoe UI", "SF Pro Text", "Ubuntu", "Cantarell", sans-serif;
 }
 
 #modules-tabs,
