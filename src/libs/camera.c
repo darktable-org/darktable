@@ -184,15 +184,7 @@ static void _camera_property_value_changed(const dt_camera_t *camera, const char
   if((citem = g_list_find_custom(lib->gui.properties, name, _compare_property_by_name)) != NULL)
   {
     dt_lib_camera_property_t *prop = (dt_lib_camera_property_t *)citem->data;
-    int i = 0;
-    for(const GList *iter = dt_bauhaus_combobox_get_labels(prop->values); iter; iter = g_list_next(iter), i++)
-    {
-      if(!g_strcmp0((gchar*)iter->data, value))
-      {
-        dt_bauhaus_combobox_set(prop->values, i);
-        return;
-      }
-    }
+    dt_bauhaus_combobox_set_from_text(prop->values, value);
   }
 }
 
