@@ -54,7 +54,6 @@ typedef struct dt_lib_export_t
 
 /** Updates the combo box and shows only the supported formats of current selected storage module */
 static void _update_formats_combobox(dt_lib_export_t *d);
-static gboolean _combo_box_set_active_text(GtkWidget *cb, const gchar *text);
 /** Sets the max dimensions based upon what storage and format supports */
 static void _update_dimensions(dt_lib_export_t *d);
 /** get the max output dimension supported by combination of storage and format.. */
@@ -216,7 +215,7 @@ void gui_reset(dt_lib_module_t *self)
   gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
   if(style != NULL)
   {
-    rc = _combo_box_set_active_text(d->style, style);
+    rc = dt_bauhaus_combobox_set_from_text(d->style, style);
     if(rc == FALSE) dt_bauhaus_combobox_set(d->style, 0);
     g_free(style);
   }
@@ -262,7 +261,7 @@ static void set_format_by_name(dt_lib_export_t *d, const char *name)
   // Store the new format
   dt_conf_set_string("plugins/lighttable/export/format_name", module->plugin_name);
 
-  if(_combo_box_set_active_text(d->format, module->name()) == FALSE)
+  if(dt_bauhaus_combobox_set_from_text(d->format, module->name()) == FALSE)
     dt_bauhaus_combobox_set(d->format, 0);
 
   // Let's also update combination of storage/format dimension restrictions
@@ -364,7 +363,7 @@ static void set_storage_by_name(dt_lib_export_t *d, const char *name)
   gchar *format_name = dt_conf_get_string("plugins/lighttable/export/format_name");
   dt_imageio_module_format_t *format = dt_imageio_get_format_by_name(format_name);
   g_free(format_name);
-  if(format == NULL || _combo_box_set_active_text(d->format, format->name()) == FALSE)
+  if(format == NULL || dt_bauhaus_combobox_set_from_text(d->format, format->name()) == FALSE)
     dt_bauhaus_combobox_set(d->format, 0);
 }
 
@@ -444,26 +443,6 @@ static void style_mode_changed(GtkComboBox *widget, dt_lib_export_t *d)
 int position()
 {
   return 0;
-}
-
-static gboolean _combo_box_set_active_text(GtkWidget *cb, const gchar *text)
-{
-  g_assert(text != NULL);
-  g_assert(cb != NULL);
-  const GList *labels = dt_bauhaus_combobox_get_labels(cb);
-  const GList *iter = labels;
-  int i = 0;
-  while(iter)
-  {
-    if(!g_strcmp0((gchar*)iter->data, text))
-    {
-      dt_bauhaus_combobox_set(cb, i);
-      return TRUE;
-    }
-    i++;
-    iter = g_list_next(iter);
-  }
-  return FALSE;
 }
 
 static void _update_formats_combobox(dt_lib_export_t *d)
@@ -1241,7 +1220,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   if(fdata->style[0] == '\0')
     dt_bauhaus_combobox_set(d->style, 0);
   else
-    _combo_box_set_active_text(d->style, fdata->style);
+    dt_bauhaus_combobox_set_from_text(d->style, fdata->style);
 
   dt_bauhaus_combobox_set(d->style_mode, fdata->style_append ? 1 : 0);
 

@@ -72,8 +72,9 @@ static int combobox_numindex(lua_State*L)
     lua_pushnil(L);
     return 1;
   }
-  const GList *labels = dt_bauhaus_combobox_get_labels(combobox->widget);
-  lua_pushstring(L,g_list_nth_data((GList*)labels,key-1));
+  const GList *entries = dt_bauhaus_combobox_get_entries(combobox->widget);
+  dt_bauhaus_combobox_entry_t *entry = (dt_bauhaus_combobox_entry_t *)g_list_nth_data((GList *)entries, key - 1);
+  lua_pushstring(L, entry->label);
   return 1;
 }
 
