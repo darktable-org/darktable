@@ -38,8 +38,6 @@
 
 DT_MODULE(3)
 
-static gboolean _bauhaus_combobox_set_active_text(GtkWidget *cb, const gchar *text);
-
 const char *name(dt_lib_module_t *self)
 {
   return _("print settings");
@@ -1547,26 +1545,6 @@ gui_init (dt_lib_module_t *self)
   dt_printers_discovery(_new_printer_callback, self);
 }
 
-static gboolean _bauhaus_combobox_set_active_text(GtkWidget *cb, const gchar *text)
-{
-  g_assert(text != NULL);
-  g_assert(cb != NULL);
-  const GList *labels = dt_bauhaus_combobox_get_labels(cb);
-  const GList *iter = labels;
-  int i = 0;
-  while(iter)
-  {
-    if(!g_strcmp0((gchar*)iter->data, text))
-    {
-      dt_bauhaus_combobox_set(cb, i);
-      return TRUE;
-    }
-    i++;
-    iter = g_list_next(iter);
-  }
-  return FALSE;
-}
-
 void init_presets(dt_lib_module_t *self)
 {
 }
@@ -1813,13 +1791,13 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   // set the GUI with corresponding values
   if (printer[0] != '\0')
-    _bauhaus_combobox_set_active_text(ps->printers, printer);
+    dt_bauhaus_combobox_set_from_text(ps->printers, printer);
 
   if (paper[0] != '\0')
-    _bauhaus_combobox_set_active_text(ps->papers, paper);
+    dt_bauhaus_combobox_set_from_text(ps->papers, paper);
 
   if (media[0] != '\0')
-    _bauhaus_combobox_set_active_text(ps->media, media);
+    dt_bauhaus_combobox_set_from_text(ps->media, media);
 
   dt_bauhaus_combobox_set (ps->orientation, landscape);
 
@@ -1851,7 +1829,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   ps->prt.printer.intent = pintent;
 
   if (style[0] != '\0')
-    _bauhaus_combobox_set_active_text(ps->style, style);
+    dt_bauhaus_combobox_set_from_text(ps->style, style);
   dt_bauhaus_combobox_set (ps->style_mode, style_mode);
 
   gtk_spin_button_set_value (GTK_SPIN_BUTTON(ps->b_top), b_top * units[ps->unit]);

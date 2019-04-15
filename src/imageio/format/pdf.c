@@ -451,19 +451,20 @@ static void _set_paper_size(dt_imageio_module_format_t *self, const char *text)
 
   g_signal_handlers_block_by_func(d->size, size_toggle_callback, self);
 
-  const GList *labels = dt_bauhaus_combobox_get_labels(d->size);
+  const GList *entries = dt_bauhaus_combobox_get_entries(d->size);
   int pos = 0;
 
-  while(labels)
+  while(entries)
   {
-    const char *l = (char*)labels->data;
-    if((pos < dt_pdf_paper_sizes_n && !strcasecmp(text, dt_pdf_paper_sizes[pos].name)) || !strcasecmp(text, l))
+    const dt_bauhaus_combobox_entry_t *entry = (dt_bauhaus_combobox_entry_t *)entries->data;
+    if((pos < dt_pdf_paper_sizes_n && !strcasecmp(text, dt_pdf_paper_sizes[pos].name))
+        || !strcasecmp(text, entry->label))
       break;
     pos++;
-    labels = g_list_next(labels);
+    entries = g_list_next(entries);
   }
 
-  if(labels)
+  if(entries)
   {
     // we jumped out of the loop -> found it
     dt_bauhaus_combobox_set(d->size, pos);
