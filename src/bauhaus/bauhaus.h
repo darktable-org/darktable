@@ -317,7 +317,7 @@ void dt_bauhaus_vimkey_exec(const char *input);
 // give autocomplete suggestions
 GList *dt_bauhaus_vimkey_complete(const char *input);
 
-inline void set_color(cairo_t *cr, GdkRGBA color)
+static inline void set_color(cairo_t *cr, GdkRGBA color)
 {
   cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha);
 }
