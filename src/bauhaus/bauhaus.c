@@ -1757,10 +1757,10 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
 
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
       gchar *text = d->text;
-      if(d->active >= 0)
+      if(d->active >= 0 && d->active < g_list_length(d->entries))
       {
         const dt_bauhaus_combobox_entry_t *entry = g_list_nth_data(d->entries, d->active);
-        if(entry) text = entry->label;
+        text = entry->label;
       }
       set_color(cr, *text_color);
       show_pango_text(cr, text, width - darktable.bauhaus->quad_width - INNER_PADDING, 0, width - darktable.bauhaus->quad_width - label_width, TRUE);
