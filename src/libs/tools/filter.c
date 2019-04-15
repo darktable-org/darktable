@@ -196,7 +196,7 @@ void gui_cleanup(dt_lib_module_t *self)
 static gboolean _lib_filter_sync_combobox_and_comparator(dt_lib_module_t *self)
 {
   dt_lib_tool_filter_t *d = (dt_lib_tool_filter_t *)self->data;
-  int filter = gtk_combo_box_get_active(GTK_COMBO_BOX(d->filter));
+  const int filter = gtk_combo_box_get_active(GTK_COMBO_BOX(d->filter));
 
   // 0 all
   // 1 unstarred only
@@ -219,7 +219,7 @@ static gboolean _lib_filter_sync_combobox_and_comparator(dt_lib_module_t *self)
 static void _lib_filter_combobox_changed(GtkComboBox *widget, gpointer user_data)
 {
   /* update last settings */
-  int i = gtk_combo_box_get_active(widget);
+  const int i = gtk_combo_box_get_active(widget);
 
   /* update collection star filter flags */
   if(i == 0) // all
@@ -253,7 +253,7 @@ static void _lib_filter_combobox_changed(GtkComboBox *widget, gpointer user_data
 
 static void _lib_filter_reverse_button_changed(GtkDarktableToggleButton *widget, gpointer user_data)
 {
-  gboolean reverse = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  const gboolean reverse = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
   if(reverse)
     dtgtk_togglebutton_set_paint(widget, dtgtk_cairo_paint_solid_arrow, CPF_DO_NOT_USE_BORDER | CPF_STYLE_BOX | CPF_DIRECTION_DOWN, NULL);
@@ -303,20 +303,20 @@ static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
   if(smart_filter == TRUE)
   {
     /* initial import rating setting */
-    int initial_rating = dt_conf_get_int("ui_last/import_initial_rating");
+    const int initial_rating = dt_conf_get_int("ui_last/import_initial_rating");
 
     /* current selection in filter dropdown */
-    int current_filter = gtk_combo_box_get_active(GTK_COMBO_BOX(dropdowns->filter));
+    const int current_filter = gtk_combo_box_get_active(GTK_COMBO_BOX(dropdowns->filter));
 
     /* convert filter dropdown to rating: 2-6 is 1-5 stars, for anything else, assume 0 stars */
-    int current_filter_rating = (current_filter >= 2 && current_filter <= 6) ? current_filter - 1 : 0;
+    const int current_filter_rating = (current_filter >= 2 && current_filter <= 6) ? current_filter - 1 : 0;
 
     /* new filter is the lesser of the initial rating and the current filter rating */
-    int new_filter_rating = MIN(initial_rating, current_filter_rating);
+    const int new_filter_rating = MIN(initial_rating, current_filter_rating);
 
     /* convert new filter rating to filter dropdown selector */
-    int new_filter = (new_filter_rating >= 1 && new_filter_rating <= 5) ? new_filter_rating + 1
-                                                                        : new_filter_rating;
+    const int new_filter = (new_filter_rating >= 1 && new_filter_rating <= 5) ? new_filter_rating + 1
+                                                                              : new_filter_rating;
 
     /* Reset to new filter dropdown item */
     gtk_combo_box_set_active(GTK_COMBO_BOX(dropdowns->filter), new_filter);
