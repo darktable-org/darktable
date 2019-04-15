@@ -145,7 +145,8 @@
 
 /* Reset GTK defaults */
 
-* {
+*
+{
   background-color: @bg_color;
   background-image: none;
   font-family: sans-serif;
@@ -224,7 +225,8 @@ box *
 
 /* General properties */
 
-*:disabled {
+*:disabled
+{
   color: shade(@fg_color, .33);
 }
 
@@ -328,7 +330,8 @@ button:checked,
 #recent-collection-button:active,
 #history-button:active,
 #recent-collection-button:checked,
-#history-button:checked {
+#history-button:checked
+{
   background-color: @button_checked_bg;
   color: @button_checked_fg;
 }
@@ -401,7 +404,8 @@ checkbutton check
 
 /* Text fields and text boxes */
 
-entry {
+entry
+{
   border-radius: 2pt;
   border: 0.5pt solid @border_color;
   color: @field_fg;
@@ -410,7 +414,8 @@ entry {
   min-width: 0;
 }
 
-entry:hover {
+entry:hover
+{
   color: @field_hover_fg;
   background-color: @field_hover_bg;
 }
@@ -418,12 +423,13 @@ entry:hover {
 entry:checked,
 entry:active,
 entry:focus
- {
+{
   color: @field_active_fg;
   background-color: @field_active_bg;
 }
 
-entry selection {
+entry selection
+{
   background-color: @field_select_bg;
 }
 
@@ -659,7 +665,8 @@ combobox window *:focus
 }
 
 #view_dropdown *:selected,
-#view_label:selected {
+#view_label:selected
+{
   color: @plugin_fg_color;
 }
 
