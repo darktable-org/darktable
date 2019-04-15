@@ -148,7 +148,7 @@
 * {
   background-color: @bg_color;
   background-image: none;
-  font-family: "Roboto Light", "Segoe UI Light", "SF Pro Display Light", "Ubuntu Light", "Cantarell", sans-serif;
+  font-family: sans-serif;
   font-size: 1em;
   color: @fg_color;
   text-shadow:none;
@@ -208,7 +208,7 @@ eventbox *,
 box,
 box *
 {
-  font-family: "Roboto Light", "Segoe UI Light", "SF Pro Display Light", "Ubuntu Light", "Cantarell", sans-serif;
+  font-family: sans-serif;
   font-size: 1em;
   background-color: transparent;
   background-image: none;
@@ -306,7 +306,7 @@ button
   background-color: @button_bg;
   color: @button_fg;
   font-weight: 600;
-  font-family: "Roboto Medium", "Segoe UI Semibold", "SF Pro Display Medium", "Ubuntu Medium", "Cantarell", sans-serif;
+  font-family: sans-serif;
   min-height: 1em;
   min-width: 1em;
 }
@@ -450,7 +450,7 @@ entry selection {
   padding: 0 2pt 2pt 0.5em;
   font-weight: 400;
   font-stretch: condensed;
-  font-family: "Roboto Condensed","Segoe UI Condensed", "SF Pro Display", "Ubuntu Condensed", "Cantarell", sans-serif;
+  font-family: sans-serif;
   font-size: 0.9em;
 }
 
@@ -461,7 +461,7 @@ entry selection {
   color: @section_label;
   border-bottom: 0.5pt solid  @section_label;
   font-weight: 600;
-  font-family: "Roboto Medium", "Segoe UI Semibold", "SF Pro Display Medium", "Ubuntu Medium", "Cantarell", sans-serif;
+  font-family: sans-serif;
 }
 
 #iop-plugin-ui #section_label,
@@ -712,7 +712,7 @@ notebook tabs,
   margin: 0;
   color: @button_fg;
   font-weight: 400;
-  font-family: "Roboto", "Segoe UI", "SF Pro Text", "Ubuntu", "Cantarell", sans-serif;
+  font-family: sans-serif;
 }
 
 #modules-tabs,
