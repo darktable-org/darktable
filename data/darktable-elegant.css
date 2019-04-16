@@ -95,7 +95,7 @@
 @define-color button_focus_fg @grey_95;
 @define-color button_checked_bg @grey_45;
 @define-color button_checked_fg @grey_95;
-@define-color button_hover_bg @grey_65;
+@define-color button_hover_bg @grey_55;
 @define-color button_hover_fg @grey_15;
 
 @define-color field_bg @grey_15;
@@ -609,6 +609,7 @@ combobox *
 context-menu,
 menu,
 menuitem > menu, /* sub-menu */
+menuitem arrow,
 tooltip,
 popover,
 #background_job_eventbox,
@@ -644,6 +645,7 @@ tooltip button
 }
 
 menuitem:hover,
+menuitem:hover arrow,
 #view_dropdown menuitem:hover,
 combobox window *:hover,
 #view_dropdown:hover,
