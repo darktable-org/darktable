@@ -40,7 +40,6 @@
 
 
 #define SELECT_QUERY "SELECT DISTINCT * FROM %s"
-#define ORDER_BY_QUERY "ORDER BY" /*changed format for second order sorting!*/
 #define LIMIT_QUERY "LIMIT ?1, ?2"
 
 static const char *comparators[] = {
@@ -555,60 +554,61 @@ gboolean dt_collection_get_sort_descending(const dt_collection_t *collection)
 gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
 {
   gchar *sq = NULL;
-  gchar *second_order = NULL;/*remember previous sorting criteria as second order sorting criteria*/
+  gchar *second_order = NULL;/*string for previous sorting criteria as second order sorting criteria*/
 
   switch(collection->params.sortSecondOrder)/*build ORDER BY string for second order*/
   {
-        case DT_COLLECTION_SORT_DATETIME:
-          second_order = dt_util_dstrcat(NULL, "datetime_taken %s", (collection->params.descending ? "DESC" : ""));
-          break;
+     case DT_COLLECTION_SORT_DATETIME:
+       second_order = dt_util_dstrcat(NULL, "datetime_taken %s", (collection->params.descending ? "DESC" : ""));
+       break;
 
-        case DT_COLLECTION_SORT_RATING:
-          second_order = dt_util_dstrcat(NULL, "flags & 7 %s", (collection->params.descending ? "" : "DESC"));
-          break;
+     case DT_COLLECTION_SORT_RATING:
+       second_order = dt_util_dstrcat(NULL, "flags & 7 %s", (collection->params.descending ? "" : "DESC"));
+       break;
 
-        case DT_COLLECTION_SORT_FILENAME:
-          second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));
-          break;
+     case DT_COLLECTION_SORT_FILENAME:
+       second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));
+       break;
 
-        case DT_COLLECTION_SORT_ID:
-          second_order = dt_util_dstrcat(NULL, "mi.id %s", (collection->params.descending ? "DESC" : ""));
-          break;
+     case DT_COLLECTION_SORT_ID:
+       second_order = dt_util_dstrcat(NULL, "mi.id %s", (collection->params.descending ? "DESC" : ""));
+       break;
 
-        case DT_COLLECTION_SORT_COLOR:
-          second_order = dt_util_dstrcat(NULL, "color %s", (collection->params.descending ? "" : "DESC"));
-          break;
+     case DT_COLLECTION_SORT_COLOR:
+       second_order = dt_util_dstrcat(NULL, "color %s", (collection->params.descending ? "" : "DESC"));
+       break;
 
-        case DT_COLLECTION_SORT_GROUP:
-          second_order = dt_util_dstrcat(NULL, "group_id %s, mi.id-group_id != 0", (collection->params.descending ? "DESC" : ""));
-          break;
+     case DT_COLLECTION_SORT_GROUP:
+       second_order = dt_util_dstrcat(NULL, "group_id %s, mi.id-group_id != 0", (collection->params.descending ? "DESC" : ""));
+       break;
 
-        case DT_COLLECTION_SORT_PATH:
-          second_order = dt_util_dstrcat(NULL, "folder %s, filename %s", (collection->params.descending ? "DESC" : ""), (collection->params.descending ? "DESC" : ""));
-          break;
+     case DT_COLLECTION_SORT_PATH:
+       second_order = dt_util_dstrcat(NULL, "folder %s, filename %s", (collection->params.descending ? "DESC" : ""), (collection->params.descending ? "DESC" : ""));
+       break;
 
-        case DT_COLLECTION_SORT_CUSTOM_ORDER:
-          second_order = dt_util_dstrcat(NULL, "position %s", (collection->params.descending ? "DESC" : ""));
-          break;
+     case DT_COLLECTION_SORT_CUSTOM_ORDER:
+       second_order = dt_util_dstrcat(NULL, "position %s", (collection->params.descending ? "DESC" : ""));
+       break;
 
-        case DT_COLLECTION_SORT_TITLE:
-        case DT_COLLECTION_SORT_DESCRIPTION:/*same sorting for TITLE and DESCRIPTION -> Fall through*/
-          second_order = dt_util_dstrcat(NULL, "m.value %s, caption %s", (collection->params.descending ? "DESC" : ""), (collection->params.descending ? "DESC" : ""));
-          break;
+     case DT_COLLECTION_SORT_TITLE:
+     case DT_COLLECTION_SORT_DESCRIPTION:/*same sorting for TITLE and DESCRIPTION -> Fall through*/
+       second_order = dt_util_dstrcat(NULL, "m.value %s, caption %s", (collection->params.descending ? "DESC" : ""), (collection->params.descending ? "DESC" : ""));
+       break;
 
-        case DT_COLLECTION_SORT_ASPECT_RATIO:
-          second_order = dt_util_dstrcat(NULL, "aspect_ratio %s", (collection->params.descending ? "DESC" : ""));
-          break;
+     case DT_COLLECTION_SORT_ASPECT_RATIO:
+       second_order = dt_util_dstrcat(NULL, "aspect_ratio %s", (collection->params.descending ? "DESC" : ""));
+       break;
 
-        case DT_COLLECTION_SORT_SHUFFLE:
-          /* do not remember shuffle for second order */
-          if( !second_order ) second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));/*only set if not yet initialized*/
-          break;
+     case DT_COLLECTION_SORT_SHUFFLE:
+       /* do not remember shuffle for second order */
+       if(!second_order) second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));/*only set if not yet initialized*/
+       break;
 
-        case DT_COLLECTION_SORT_NONE:
-          // shouldn't happen
-          second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));
-          break;
+     case DT_COLLECTION_SORT_NONE:/*fall through for default*/
+     default:
+       // shouldn't happen
+       second_order = dt_util_dstrcat(NULL, "filename %s", (collection->params.descending ? "DESC" : ""));
+       break;
   }
 
 
@@ -617,57 +617,59 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
     switch(collection->params.sort)
     {
       case DT_COLLECTION_SORT_DATETIME:
-        sq = dt_util_dstrcat(sq, "%s datetime_taken DESC, %s, filename DESC, version DESC", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY datetime_taken DESC, %s, filename DESC, version DESC", second_order);
         break;
 
       case DT_COLLECTION_SORT_RATING:
-        sq = dt_util_dstrcat(sq, "%s flags & 7, %s, filename DESC, version DESC", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY flags & 7, %s, filename DESC, version DESC", second_order);
         break;
 
       case DT_COLLECTION_SORT_FILENAME:
-        sq = dt_util_dstrcat(sq, "%s filename DESC, %s, version DESC", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY filename DESC, %s, version DESC", second_order);
         break;
 
       case DT_COLLECTION_SORT_ID:
-        sq = dt_util_dstrcat(sq, "%s mi.id DESC", ORDER_BY_QUERY); /* makes no sense to consider second order here since ID is unique ;) */
+        sq = dt_util_dstrcat(sq, "ORDER BY mi.id DESC"); /* makes no sense to consider second order here since ID is unique ;) */
         break;
 
       case DT_COLLECTION_SORT_COLOR:
-        sq = dt_util_dstrcat(sq, "%s color, %s, filename DESC, version DESC", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY color, %s, filename DESC, version DESC", second_order);
         break;
 
       case DT_COLLECTION_SORT_GROUP:
-        sq = dt_util_dstrcat(sq, "%s group_id DESC, %s, mi.id-group_id != 0, mi.id DESC", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY group_id DESC, %s, mi.id-group_id != 0, mi.id DESC", second_order);
         break;
 
       case DT_COLLECTION_SORT_PATH:
-        sq = dt_util_dstrcat(sq, "%s folder DESC, filename DESC, %s, version DESC", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY folder DESC, filename DESC, %s, version DESC", second_order);
         break;
 
       case DT_COLLECTION_SORT_CUSTOM_ORDER:
-        sq = dt_util_dstrcat(sq, "%s position DESC, %s, filename DESC, version DESC", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY position DESC, %s, filename DESC, version DESC", second_order);
         break;
 
       case DT_COLLECTION_SORT_TITLE:
-        sq = dt_util_dstrcat(sq, "%s m.value DESC, caption DESC, %s, filename DESC, version DESC", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY m.value DESC, caption DESC, %s, filename DESC, version DESC", second_order);
         break;
 
       case DT_COLLECTION_SORT_DESCRIPTION:
-        sq = dt_util_dstrcat(sq, "%s m.value DESC, description DESC, %s, filename DESC, version DESC", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY m.value DESC, description DESC, %s, filename DESC, version DESC", second_order);
         break;
 
       case DT_COLLECTION_SORT_ASPECT_RATIO:
-        sq = dt_util_dstrcat(sq, "%s aspect_ratio DESC, %s, filename DESC, version DESC", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY aspect_ratio DESC, %s, filename DESC, version DESC", second_order);
         break;
 
 
       case DT_COLLECTION_SORT_SHUFFLE:
-        sq = dt_util_dstrcat(sq, "%s RANDOM()", ORDER_BY_QUERY); /* do not consider second order for shuffle */
+        sq = dt_util_dstrcat(sq, "ORDER BY RANDOM()"); /* do not consider second order for shuffle */
         /* do not remember shuffle for second order */
         break;
 
       case DT_COLLECTION_SORT_NONE:
+      default:/*fall through for default*/
         // shouldn't happen
+        sq = dt_util_dstrcat(sq, "ORDER BY mi.id DESC"); 
         break;
     }
   }
@@ -676,56 +678,58 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
     switch(collection->params.sort)
     {
       case DT_COLLECTION_SORT_DATETIME:
-        sq = dt_util_dstrcat(sq, "%s datetime_taken, %s, filename, version", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY datetime_taken, %s, filename, version", second_order);
         break;
 
       case DT_COLLECTION_SORT_RATING:
-        sq = dt_util_dstrcat(sq, "%s flags & 7 DESC, %s, filename, version", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY flags & 7 DESC, %s, filename, version", second_order);
         break;
 
       case DT_COLLECTION_SORT_FILENAME:
-        sq = dt_util_dstrcat(sq, "%s filename, %s, version", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY filename, %s, version", second_order);
         break;
 
       case DT_COLLECTION_SORT_ID:
-        sq = dt_util_dstrcat(sq, "%s mi.id", ORDER_BY_QUERY); /* makes no sense to consider second order here since ID is unique ;) */
+        sq = dt_util_dstrcat(sq, "ORDER BY mi.id"); /* makes no sense to consider second order here since ID is unique ;) */
         break;
 
       case DT_COLLECTION_SORT_COLOR:
-        sq = dt_util_dstrcat(sq, "%s color DESC, %s, filename, version", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY color DESC, %s, filename, version", second_order);
         break;
 
       case DT_COLLECTION_SORT_GROUP:
-        sq = dt_util_dstrcat(sq, "%s group_id, %s, mi.id-group_id != 0, mi.id", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY group_id, %s, mi.id-group_id != 0, mi.id", second_order);
         break;
 
       case DT_COLLECTION_SORT_PATH:
-        sq = dt_util_dstrcat(sq, "%s folder, filename, %s, version", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY folder, filename, %s, version", second_order);
         break;
 
       case DT_COLLECTION_SORT_CUSTOM_ORDER:
-        sq = dt_util_dstrcat(sq, "%s position, %s, filename, version", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY position, %s, filename, version", second_order);
         break;
 
       case DT_COLLECTION_SORT_TITLE:
-        sq = dt_util_dstrcat(sq, "%s m.value, caption, %s, filename, version", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY m.value, caption, %s, filename, version", second_order);
         break;
 
       case DT_COLLECTION_SORT_DESCRIPTION:
-        sq = dt_util_dstrcat(sq, "%s m.value, description, %s, filename, version", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY m.value, description, %s, filename, version", second_order);
         break;
 
       case DT_COLLECTION_SORT_ASPECT_RATIO:
-        sq = dt_util_dstrcat(sq, "%s aspect_ratio, %s, filename, version", ORDER_BY_QUERY, second_order);
+        sq = dt_util_dstrcat(sq, "ORDER BY aspect_ratio, %s, filename, version", second_order);
         break;
 
       case DT_COLLECTION_SORT_SHUFFLE:
-        sq = dt_util_dstrcat(sq, "%s RANDOM()", ORDER_BY_QUERY); /* do not consider second order for shuffle */
+        sq = dt_util_dstrcat(sq, "ORDER BY RANDOM()"); /* do not consider second order for shuffle */
         /* do not remember shuffle for second order */
         break;
 
       case DT_COLLECTION_SORT_NONE:
+      default:/*fall through for default*/
         // shouldn't happen
+        sq = dt_util_dstrcat(sq, "ORDER BY mi.id"); 
         break;
     }
   }
