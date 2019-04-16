@@ -969,6 +969,7 @@ static void dt_bauhaus_combobox_destroy(dt_bauhaus_widget_t *widget, gpointer us
   g_list_free_full(d->entries, free_combobox_entry);
   d->entries = NULL;
   d->num_labels = 0;
+  d->active = -1;
 }
 
 GtkWidget *dt_bauhaus_combobox_new(dt_iop_module_t *self)
@@ -986,7 +987,7 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *sel
   d->entries = NULL;
   d->num_labels = 0;
   d->defpos = 0;
-  d->active = d->defpos;
+  d->active = -1;
   d->editable = 0;
   memset(d->text, 0, sizeof(d->text));
 
@@ -1118,7 +1119,7 @@ void dt_bauhaus_combobox_clear(GtkWidget *widget)
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
-  d->active = 0;
+  d->active = -1;
   g_list_free_full(d->entries, free_combobox_entry);
   d->entries = NULL;
   d->num_labels = 0;
@@ -1757,7 +1758,7 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
 
       dt_bauhaus_combobox_data_t *d = &w->data.combobox;
       gchar *text = d->text;
-      if(d->active >= 0 && d->active < g_list_length(d->entries))
+      if(d->active >= 0)
       {
         const dt_bauhaus_combobox_entry_t *entry = g_list_nth_data(d->entries, d->active);
         text = entry->label;
