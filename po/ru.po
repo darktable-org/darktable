@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 2.6\n"
+"Project-Id-Version: darktable 2.7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-17 09:11+0300\n"
-"PO-Revision-Date: 2019-04-17 10:20+0300\n"
+"POT-Creation-Date: 2019-04-17 17:54+0300\n"
+"PO-Revision-Date: 2019-04-17 18:00+0300\n"
 "Last-Translator: Timur Davletshin <timur.davletshin@gmail.com>\n"
 "Language-Team: русский\n"
 "Language: ru\n"
@@ -1088,23 +1088,23 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:4034
 msgid "session options"
-msgstr "Настройки именования"
+msgstr "Каталоги и файлы"
 
 #: ../build/src/preferences_gen.h:4037
 msgid "base directory naming pattern"
-msgstr "Шаблон именования основного каталога"
+msgstr "Шаблон имени основного каталога"
 
 #: ../build/src/preferences_gen.h:4053 ../build/src/preferences_gen.h:4077
 msgid "part of full import path for an import session"
-msgstr "Часть полного пути импорта для сеанса импорта"
+msgstr "Шаблон именования каталога, применяемый при импорте"
 
 #: ../build/src/preferences_gen.h:4061
 msgid "sub directory naming pattern"
-msgstr "Шаблон именования подкаталогов"
+msgstr "Шаблон имени подкаталогов"
 
 #: ../build/src/preferences_gen.h:4085
 msgid "file naming pattern"
-msgstr "Шаблон именования файлов"
+msgstr "Шаблон имени файлов"
 
 #: ../build/src/preferences_gen.h:4101
 msgid "file naming pattern used for a import session"
@@ -3892,7 +3892,7 @@ msgstr "Импорт"
 #. Adding the outer container
 #: ../src/gui/preferences.c:572
 msgid "shortcuts"
-msgstr "Клавиатурные комбинации"
+msgstr "Комбинации клавиш"
 
 #: ../src/gui/preferences.c:583
 msgid "shortcut"
@@ -3900,7 +3900,7 @@ msgstr "Действие"
 
 #: ../src/gui/preferences.c:587
 msgid "binding"
-msgstr "Комбинация клавиш"
+msgstr "Комбинация"
 
 #. Export button
 #. export button
@@ -6118,51 +6118,51 @@ msgstr "Усиление цветовых артефактов"
 
 #: ../src/iop/channelmixer.c:519
 msgid "B/W luminance-based"
-msgstr "Ч/б, канал светлоты"
+msgstr "Ч-б, канал светлоты"
 
 #: ../src/iop/channelmixer.c:524
 msgid "B/W artifacts boost"
-msgstr "Ч/б, усиление артефактов"
+msgstr "Ч-б, усиление артефактов"
 
 #: ../src/iop/channelmixer.c:529
 msgid "B/W smooth skin"
-msgstr "Ч/б, сглаживание кожи"
+msgstr "Ч-б, сглаживание кожи"
 
 #: ../src/iop/channelmixer.c:534
 msgid "B/W blue artifacts reduce"
-msgstr "Ч/б, уменьшение синих артефактов"
+msgstr "Ч-б, уменьшение синих артефактов"
 
 #: ../src/iop/channelmixer.c:540
 msgid "B/W Ilford Delta 100-400"
-msgstr "Ч/б Ilford Delta 100-400"
+msgstr "Ч-б Ilford Delta 100-400"
 
 #: ../src/iop/channelmixer.c:546
 msgid "B/W Ilford Delta 3200"
-msgstr "Ч/б Ilford Delta 3200"
+msgstr "Ч-б Ilford Delta 3200"
 
 #: ../src/iop/channelmixer.c:552
 msgid "B/W Ilford FP4"
-msgstr "Ч/б Ilford FP4"
+msgstr "Ч-б Ilford FP4"
 
 #: ../src/iop/channelmixer.c:558
 msgid "B/W Ilford HP5"
-msgstr "Ч/б Ilford HP5"
+msgstr "Ч-б Ilford HP5"
 
 #: ../src/iop/channelmixer.c:564
 msgid "B/W Ilford SFX"
-msgstr "Ч/б Ilford SFX"
+msgstr "Ч-б Ilford SFX"
 
 #: ../src/iop/channelmixer.c:570
 msgid "B/W Kodak T-Max 100"
-msgstr "Ч/б Kodak T-Max 100"
+msgstr "Ч-б Kodak T-Max 100"
 
 #: ../src/iop/channelmixer.c:576
 msgid "B/W Kodak T-max 400"
-msgstr "Ч/б Kodak T-Max 400"
+msgstr "Ч-б Kodak T-Max 400"
 
 #: ../src/iop/channelmixer.c:582
 msgid "B/W Kodak Tri-X 400"
-msgstr "Ч/б Kodak Tri-X 400"
+msgstr "Ч-б Kodak Tri-X 400"
 
 #: ../src/iop/clahe.c:330 ../src/iop/sharpen.c:770
 msgid "amount"
@@ -6597,7 +6597,7 @@ msgstr "Телесные тона по it8"
 
 #: ../src/iop/colorchecker.c:284
 msgid "helmholtz/kohlrausch monochrome"
-msgstr "Ч/б по Helmholtz/Kohlrausch"
+msgstr "Ч-б по Helmholtz/Kohlrausch"
 
 #: ../src/iop/colorchecker.c:299
 msgid "Fuji Astia emulation"
@@ -7070,11 +7070,11 @@ msgstr "Цветовые зоны"
 
 #: ../src/iop/colorzones.c:499
 msgid "red black white"
-msgstr "Ч/б и красный"
+msgstr "Ч-б и красный"
 
 #: ../src/iop/colorzones.c:521
 msgid "black white and skin tones"
-msgstr "Ч/б и телесные тона"
+msgstr "Ч-б и телесные тона"
 
 #: ../src/iop/colorzones.c:543
 msgid "polarizing filter"
@@ -7250,7 +7250,7 @@ msgstr "VNG4"
 
 #: ../src/iop/demosaic.c:5082 ../src/iop/demosaic.c:5091
 msgid "passthrough (monochrome) (experimental)"
-msgstr "Проброс (ч/б)"
+msgstr "Проброс (ч-б)"
 
 #: ../src/iop/demosaic.c:5083 ../src/iop/demosaic.c:5093
 msgid "demosaicing raw data method"
@@ -7560,7 +7560,7 @@ msgstr "Случайный"
 
 #: ../src/iop/dither.c:790
 msgid "floyd-steinberg 1-bit B&W"
-msgstr "Флойда-Штайнберга, 1 бит, ч/б"
+msgstr "Флойда-Штайнберга, 1 бит, ч-б"
 
 #: ../src/iop/dither.c:791
 msgid "floyd-steinberg 4-bit gray"
@@ -8241,7 +8241,7 @@ msgstr ""
 
 #: ../src/iop/highpass.c:76
 msgid "highpass"
-msgstr "В/ч фильтр"
+msgstr "ВЧ фильтр"
 
 #: ../src/iop/highpass.c:97
 msgctxt "accel"
@@ -8326,7 +8326,7 @@ msgstr "Цвет плёнки"
 
 #: ../src/iop/invert.c:588
 msgid "module disabled for monochrome image"
-msgstr "Модуль отключен для ч/б снимков"
+msgstr "Модуль отключен для ч-б снимков"
 
 #: ../src/iop/invert.c:610
 msgid "select color of film material"
@@ -8810,7 +8810,7 @@ msgstr "Синева в тенях"
 
 #: ../src/iop/lowpass.c:128
 msgid "lowpass"
-msgstr "Н/ч фильтр"
+msgstr "НЧ фильтр"
 
 #: ../src/iop/lowpass.c:626
 msgid "local contrast mask"
@@ -8875,7 +8875,7 @@ msgstr "Фильтр для смягчения"
 
 #: ../src/iop/monochrome.c:74
 msgid "monochrome"
-msgstr "Преобразование в ч/б"
+msgstr "Преобразование в ч-б"
 
 #: ../src/iop/monochrome.c:115
 msgid "red filter"
@@ -9725,17 +9725,17 @@ msgstr ""
 #: ../src/iop/spots.c:701
 msgctxt "accel"
 msgid "spot circle tool"
-msgstr "Инструмент для удаления пятен «окружность»"
+msgstr "Инструмент удаления пятен «Круг»"
 
 #: ../src/iop/spots.c:702
 msgctxt "accel"
 msgid "spot ellipse tool"
-msgstr "Инструмент для удаления пятен «эллипс»"
+msgstr "Инструмент удаления пятен «Эллипс»"
 
 #: ../src/iop/spots.c:703
 msgctxt "accel"
 msgid "spot path tool"
-msgstr "Инструмент для удаления пятен «контур»"
+msgstr "Инструмент удаления пятен «Контур»"
 
 #: ../src/iop/spots.c:704
 msgctxt "accel"
@@ -11329,22 +11329,22 @@ msgstr "Отразить по горизонтали"
 #: ../src/libs/live_view.c:171
 msgctxt "accel"
 msgid "move focus point in (big steps)"
-msgstr "Переместить точку фокусировки (большой шаг)"
+msgstr "Переместить точку фокусировки вперёд (большой шаг)"
 
 #: ../src/libs/live_view.c:172
 msgctxt "accel"
 msgid "move focus point in (small steps)"
-msgstr "Переместить точку фокусировки (малый шаг)"
+msgstr "Переместить точку фокусировки вперёд (малый шаг)"
 
 #: ../src/libs/live_view.c:173
 msgctxt "accel"
 msgid "move focus point out (small steps)"
-msgstr "Переместить точку фокусировки обратно (малый шаг)"
+msgstr "Переместить точку фокусировки назад (малый шаг)"
 
 #: ../src/libs/live_view.c:174
 msgctxt "accel"
 msgid "move focus point out (big steps)"
-msgstr "Переместить точку фокусировки обратно (большой шаг)"
+msgstr "Переместить точку фокусировки назад (большой шаг)"
 
 #: ../src/libs/live_view.c:293
 msgid "toggle live view"
@@ -13234,7 +13234,7 @@ msgstr "Прокрутить в центр"
 #: ../src/views/lighttable.c:3740
 msgctxt "accel"
 msgid "realign images to grid"
-msgstr "Заново выровнять фотографии по сетке"
+msgstr "Выровнять фотографии по сетке"
 
 #: ../src/views/lighttable.c:3741
 msgctxt "accel"
