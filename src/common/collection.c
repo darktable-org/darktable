@@ -217,9 +217,9 @@ int dt_collection_update(const dt_collection_t *collection)
   /* build select part includes where */
   /* COLOR and PATH */
   if(((collection->params.sort == DT_COLLECTION_SORT_COLOR
-       && collection->params.sortSecondOrder == DT_COLLECTION_SORT_PATH)
+       && collection->params.sort_second_order == DT_COLLECTION_SORT_PATH)
        ||(collection->params.sort == DT_COLLECTION_SORT_PATH
-       && collection->params.sortSecondOrder == DT_COLLECTION_SORT_COLOR))
+       && collection->params.sort_second_order == DT_COLLECTION_SORT_COLOR))
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
@@ -228,9 +228,9 @@ int dt_collection_update(const dt_collection_t *collection)
   }
   /* COLOR and TITLE */
   else if(((collection->params.sort == DT_COLLECTION_SORT_COLOR
-       && collection->params.sortSecondOrder == DT_COLLECTION_SORT_TITLE)
+       && collection->params.sort_second_order == DT_COLLECTION_SORT_TITLE)
        ||(collection->params.sort == DT_COLLECTION_SORT_TITLE
-       && collection->params.sortSecondOrder == DT_COLLECTION_SORT_COLOR))
+       && collection->params.sort_second_order == DT_COLLECTION_SORT_COLOR))
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
@@ -239,9 +239,9 @@ int dt_collection_update(const dt_collection_t *collection)
   }
   /* COLOR and DESCRIPTION */
   else if(((collection->params.sort == DT_COLLECTION_SORT_COLOR
-       && collection->params.sortSecondOrder == DT_COLLECTION_SORT_DESCRIPTION)
+       && collection->params.sort_second_order == DT_COLLECTION_SORT_DESCRIPTION)
        ||(collection->params.sort == DT_COLLECTION_SORT_DESCRIPTION
-       && collection->params.sortSecondOrder == DT_COLLECTION_SORT_COLOR))
+       && collection->params.sort_second_order == DT_COLLECTION_SORT_COLOR))
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
@@ -250,9 +250,9 @@ int dt_collection_update(const dt_collection_t *collection)
   }
   /* PATH and TITLE */
   else if(((collection->params.sort == DT_COLLECTION_SORT_TITLE
-       && collection->params.sortSecondOrder == DT_COLLECTION_SORT_PATH)
+       && collection->params.sort_second_order == DT_COLLECTION_SORT_PATH)
        ||(collection->params.sort == DT_COLLECTION_SORT_PATH
-       && collection->params.sortSecondOrder == DT_COLLECTION_SORT_TITLE))
+       && collection->params.sort_second_order == DT_COLLECTION_SORT_TITLE))
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
@@ -261,9 +261,9 @@ int dt_collection_update(const dt_collection_t *collection)
   }
   /* PATH and DESCRIPTION */
   else if(((collection->params.sort == DT_COLLECTION_SORT_DESCRIPTION
-       && collection->params.sortSecondOrder == DT_COLLECTION_SORT_PATH)
+       && collection->params.sort_second_order == DT_COLLECTION_SORT_PATH)
        ||(collection->params.sort == DT_COLLECTION_SORT_PATH
-       && collection->params.sortSecondOrder == DT_COLLECTION_SORT_DESCRIPTION))
+       && collection->params.sort_second_order == DT_COLLECTION_SORT_DESCRIPTION))
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
@@ -272,9 +272,9 @@ int dt_collection_update(const dt_collection_t *collection)
   }
   /* TITLE and DESCRIPTION */
   else if(((collection->params.sort == DT_COLLECTION_SORT_DESCRIPTION
-       && collection->params.sortSecondOrder == DT_COLLECTION_SORT_TITLE)
+       && collection->params.sort_second_order == DT_COLLECTION_SORT_TITLE)
        ||(collection->params.sort == DT_COLLECTION_SORT_TITLE
-       && collection->params.sortSecondOrder == DT_COLLECTION_SORT_DESCRIPTION))
+       && collection->params.sort_second_order == DT_COLLECTION_SORT_DESCRIPTION))
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
@@ -282,7 +282,7 @@ int dt_collection_update(const dt_collection_t *collection)
   }
   /* only COLOR */
   else if((collection->params.sort == DT_COLLECTION_SORT_COLOR
-      ||collection->params.sortSecondOrder == DT_COLLECTION_SORT_COLOR)
+      ||collection->params.sort_second_order == DT_COLLECTION_SORT_COLOR)
      && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
@@ -290,7 +290,7 @@ int dt_collection_update(const dt_collection_t *collection)
   }
   /* only PATH */
   else if((collection->params.sort == DT_COLLECTION_SORT_PATH
-          ||collection->params.sortSecondOrder == DT_COLLECTION_SORT_PATH)
+          ||collection->params.sort_second_order == DT_COLLECTION_SORT_PATH)
           && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
@@ -298,7 +298,7 @@ int dt_collection_update(const dt_collection_t *collection)
   }
   /* only TITLE */
   else if((collection->params.sort == DT_COLLECTION_SORT_TITLE
-        ||collection->params.sortSecondOrder == DT_COLLECTION_SORT_TITLE)
+        ||collection->params.sort_second_order == DT_COLLECTION_SORT_TITLE)
           && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
@@ -307,7 +307,7 @@ int dt_collection_update(const dt_collection_t *collection)
   }
   /* only DESCRIPTION */
   else if((collection->params.sort == DT_COLLECTION_SORT_DESCRIPTION
-        ||collection->params.sortSecondOrder == DT_COLLECTION_SORT_DESCRIPTION)
+        ||collection->params.sort_second_order == DT_COLLECTION_SORT_DESCRIPTION)
           && (collection->params.query_flags & COLLECTION_QUERY_USE_SORT))
   {
     selq_pre = dt_util_dstrcat(selq_pre, "SELECT DISTINCT mi.id FROM (SELECT * FROM main.images WHERE ");
@@ -339,7 +339,7 @@ int dt_collection_update(const dt_collection_t *collection)
   result = _dt_collection_store(collection, query, query_no_group);
 
 #ifdef _DEBUG
-  printf("SQL Collection for 1st:%d and 2nd:%d: %s\n\n",collection->params.sort,collection->params.sortSecondOrder,query);/*only for debugging*/
+  printf("SQL Collection for 1st:%d and 2nd:%d: %s\n\n",collection->params.sort,collection->params.sort_second_order,query);/*only for debugging*/
 #endif
   
   
@@ -379,7 +379,7 @@ void dt_collection_reset(const dt_collection_t *collection)
   params->comparator = dt_conf_get_int("plugins/collection/rating_comparator");
   params->filter_flags = dt_conf_get_int("plugins/collection/filter_flags");
   params->sort = dt_conf_get_int("plugins/collection/sort");
-  params->sortSecondOrder = dt_conf_get_int("plugins/collection/sortSecondOrder");
+  params->sort_second_order = dt_conf_get_int("plugins/collection/sort_second_order");
   params->descending = dt_conf_get_bool("plugins/collection/descending");
   dt_collection_update_query(collection);
 }
@@ -533,7 +533,7 @@ void dt_collection_set_sort(const dt_collection_t *collection, dt_collection_sor
 
   if(sort != DT_COLLECTION_SORT_NONE)
   {
-    if( sort != params->sort ) params->sortSecondOrder = params->sort;/*remember previous sorting criteria if new one is selected*/
+    if( sort != params->sort ) params->sort_second_order = params->sort;/*remember previous sorting criteria if new one is selected*/
     params->sort = sort;
   }
   if(reverse != -1) params->descending = reverse;
@@ -556,7 +556,7 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
   gchar *sq = NULL;
   gchar *second_order = NULL;/*string for previous sorting criteria as second order sorting criteria*/
 
-  switch(collection->params.sortSecondOrder)/*build ORDER BY string for second order*/
+  switch(collection->params.sort_second_order)/*build ORDER BY string for second order*/
   {
      case DT_COLLECTION_SORT_DATETIME:
        second_order = dt_util_dstrcat(NULL, "datetime_taken %s", (collection->params.descending ? "DESC" : ""));
@@ -733,6 +733,8 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
         break;
     }
   }
+  
+  g_free(second_order);/*free second order part, it's now part of sq*/
 
   return sq;
 }
@@ -749,7 +751,7 @@ static int _dt_collection_store(const dt_collection_t *collection, gchar *query,
     dt_conf_set_int("plugins/collection/rating", collection->params.rating);
     dt_conf_set_int("plugins/collection/rating_comparator", collection->params.comparator);
     dt_conf_set_int("plugins/collection/sort", collection->params.sort);
-    dt_conf_set_int("plugins/collection/sortSecondOrder", collection->params.sortSecondOrder);
+    dt_conf_set_int("plugins/collection/sort_second_order", collection->params.sort_second_order);
     dt_conf_set_bool("plugins/collection/descending", collection->params.descending);
   }
 
