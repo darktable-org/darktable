@@ -221,7 +221,6 @@ void expose(
   if(dev->image_status == DT_DEV_PIXELPIPE_DIRTY || dev->image_status == DT_DEV_PIXELPIPE_INVALID
      || dev->pipe->input_timestamp < dev->preview_pipe->input_timestamp)
   {
-    dt_control_queue_redraw();
     dev->image_timeout_handle = g_timeout_add(DT_DARKROOM_PROCESS_TIMEOUT, G_SOURCE_FUNC(dt_dev_process_image), dev);
   }
 
