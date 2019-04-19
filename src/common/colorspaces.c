@@ -1259,8 +1259,8 @@ dt_colorspaces_t *dt_colorspaces_init()
                                      ++work_pos, ++display2_pos));
 
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_REC709, dt_colorspaces_create_gamma_rec709_rgb_profile(),
-                                     _("gamma Rec709 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
-                                     ++work_pos, ++display2_pos));
+                                     _("gamma Rec709 RGB"), ++in_pos, ++out_pos, -1, -1,
+                                     ++work_pos, -1));
                                      
   res->profiles = g_list_append(
       res->profiles, _create_profile(DT_COLORSPACE_LIN_REC2020, dt_colorspaces_create_linear_rec2020_rgb_profile(),
