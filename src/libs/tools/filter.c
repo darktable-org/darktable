@@ -165,6 +165,7 @@ void gui_init(dt_lib_module_t *self)
   /* reverse order checkbutton */
   d->reverse = widget
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_UP, NULL);
+  gtk_widget_set_name(GTK_WIDGET(d->reverse), "control-button");
   if(darktable.collection->params.descending)
     dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(widget), dtgtk_cairo_paint_solid_arrow,
                                  CPF_DIRECTION_DOWN, NULL);
