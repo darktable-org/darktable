@@ -599,7 +599,8 @@ static gboolean _open_browser(const char *callback_url)
                                              "&scope=user_photos,publish_actions"
                                              "&response_type=token",
                               callback_url);
-  if(!gtk_show_uri(gdk_screen_get_default(), url, gtk_get_current_event_time(), &error))
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  if(!gtk_show_uri_on_window(GTK_WINDOW(win), url, gtk_get_current_event_time(), &error))
   {
     fprintf(stderr, "[facebook] error opening browser: %s\n", error->message);
     g_error_free(error);

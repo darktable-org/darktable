@@ -749,7 +749,8 @@ static int gphoto_get_user_auth_token(dt_storage_gphoto_gui_data_t *ui)
                            "&response_type=code&access_type=offline",
                            ui->gphoto_api->google_client_id);
 
-  if(!gtk_show_uri(gdk_screen_get_default(), params, gtk_get_current_event_time(), &error))
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  if(!gtk_show_uri_on_window(GTK_WINDOW(win), params, gtk_get_current_event_time(), &error))
   {
     fprintf(stderr, "[gphoto] error opening browser: %s\n", error->message);
     g_error_free(error);
