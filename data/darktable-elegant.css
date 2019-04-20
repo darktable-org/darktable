@@ -413,6 +413,25 @@ button:disabled,
     margin: 0;
 }
 
+#lib-plugin-ui #control-button
+{
+    background-color: transparent;
+    min-height: 1em;
+    padding: 0.6em;
+    margin: 0;
+    border: 0;
+}
+
+#lib-plugin-ui #control-button:hover
+{
+    color: @button_hover_fg;
+    background-color: @button_hover_bg;
+    min-height: 1em;
+    padding: 0.6em;
+    border: 0;
+    margin: 0;
+}
+
 /* Checkbox */
 
 #lib-plugin-ui checkbutton check,
@@ -1005,4 +1024,12 @@ cell:selected
     font-size: 1.3em;
     margin-left: 10em;
     margin-right: 10em;
+}
+
+/* Color picker */
+
+#color-picker-area
+{
+    min-height: 9em;
+    min-width: 9em;
 }
