@@ -128,6 +128,7 @@ typedef struct dt_collection_params_t
 
   /** sorting **/
   dt_collection_sort_t sort; // Has to be changed to a dt_collection_sort struct
+  dt_collection_sort_t sort_second_order;
   gint descending;
 
 } dt_collection_params_t;

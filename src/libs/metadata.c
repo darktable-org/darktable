@@ -380,7 +380,7 @@ void gui_init(dt_lib_module_t *self)
   }
 
   // reset/apply buttons
-  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
   button = gtk_button_new_with_label(_("clear"));
   d->clear_button = button;
@@ -395,7 +395,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(button, _("write metadata for selected images"));
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(apply_button_clicked), (gpointer)self);
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
-  gtk_widget_set_margin_top(GTK_WIDGET(hbox), DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_margin_top(GTK_WIDGET(hbox), 0);
 
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(hbox), 0, line, 2, 1);
 

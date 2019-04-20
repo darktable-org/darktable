@@ -3469,11 +3469,17 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     // if adjusting crop, draw indicator
     if (g->adjust_crop && p->cropmode == ASHIFT_CROP_ASPECT)
     {
-      const double xpos = (C[1][0] + C[2][0]) / 2.0f;
-      const double ypos = (C[0][1] + C[1][1]) / 2.0f;
-      const double size_circle = (C[2][0] - C[1][0]) / 30.0f;
-      const double size_line = (C[2][0] - C[1][0]) / 5.0f;
-      const double size_arrow = (C[2][0] - C[1][0]) / 25.0f;
+      const double x1 = C[0][0];
+      const double x2 = fabs(x1 - C[1][0]) < 0.001f ? C[2][0] : C[1][0];
+      const double y1 = C[0][1];
+      const double y2 = fabs(y1 - C[1][1]) < 0.001f ? C[2][1] : C[1][1];
+
+      const double xpos = (x1 + x2) / 2.0f;
+      const double ypos = (y1 + y2) / 2.0f;
+      const double base_size = fabs(x1 - x2);
+      const double size_circle = base_size / 30.0f;
+      const double size_line = base_size / 5.0f;
+      const double size_arrow = base_size / 25.0f;
 
       cairo_set_line_width(cr, 2.0 / zoom_scale);
       cairo_set_source_rgb(cr, .7, .7, .7);
@@ -3686,7 +3692,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
 // update the number of selected vertical and horizontal lines
 static void update_lines_count(const dt_iop_ashift_line_t *lines, const int lines_count,
-                        int *vertical_count, int *horizontal_count)
+                               int *vertical_count, int *horizontal_count)
 {
   int vlines = 0;
   int hlines = 0;
@@ -3720,8 +3726,14 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   if (g->adjust_crop)
   {
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
-    const float newx = g->crop_cx + pzx - g->lastx;
-    const float newy = g->crop_cy + pzy - g->lasty;
+
+    float pts[4] = { pzx, pzy, 1.0f, 1.0f };
+    dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
+                                      DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 2);
+
+    const float newx = g->crop_cx + (pts[0] - pts[2]) - g->lastx;
+    const float newy = g->crop_cy + (pts[1] - pts[3]) - g->lasty;
+
     crop_adjust(self, p, newx, newy);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
     return TRUE;
@@ -3799,8 +3811,13 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
     {
       dt_control_change_cursor(GDK_HAND1);
       g->adjust_crop = TRUE;
-      g->lastx = pzx;
-      g->lasty = pzy;
+
+      float pts[4] = { pzx, pzy, 1.0f, 1.0f };
+      dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
+                                        DT_DEV_TRANSFORM_DIR_FORW_INCL, pts, 2);
+
+      g->lastx = pts[0] - pts[2];
+      g->lasty = pts[1] - pts[3];
       g->crop_cx = 0.5f * (p->cl + p->cr);
       g->crop_cy = 0.5f * (p->ct + p->cb);
       return TRUE;
@@ -4855,17 +4872,14 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->fit_v = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | 1, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->fit_v), TRUE);
-  gtk_widget_set_size_request(g->fit_v, -1, DT_PIXEL_APPLY_DPI(24));
   gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_v, label1, GTK_POS_RIGHT, 1, 1);
 
   g->fit_h = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | 2, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->fit_h), TRUE);
-  gtk_widget_set_size_request(g->fit_h, -1, DT_PIXEL_APPLY_DPI(24));
   gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_h, g->fit_v, GTK_POS_RIGHT, 1, 1);
 
   g->fit_both = dtgtk_button_new(dtgtk_cairo_paint_perspective, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | 3, NULL);
   gtk_widget_set_hexpand(GTK_WIDGET(g->fit_both), TRUE);
-  gtk_widget_set_size_request(g->fit_both, -1, DT_PIXEL_APPLY_DPI(24));
   gtk_grid_attach_next_to(GTK_GRID(grid), g->fit_both, g->fit_h, GTK_POS_RIGHT, 1, 1);
 
   GtkWidget *label2 = gtk_label_new(_("get structure"));

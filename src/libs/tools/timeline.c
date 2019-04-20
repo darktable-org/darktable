@@ -951,6 +951,7 @@ static void _selection_collect(dt_lib_timeline_t *strip, dt_lib_timeline_mode_t 
     g_free(coll);
 
     dt_collection_update_query(darktable.collection);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_QUERY_CHANGED);
   }
 }
 

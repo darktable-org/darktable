@@ -1264,7 +1264,7 @@ void dt_image_refresh_makermodel(dt_image_t *img)
   g_strlcpy(img->camera_makermodel+len+1, img->camera_model, sizeof(img->camera_makermodel)-len-1);
 }
 
-int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
+int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *newname)
 {
   // TODO: several places where string truncation could occur unnoticed
   int32_t result = -1;
@@ -1281,25 +1281,50 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
   if(sqlite3_step(film_stmt) == SQLITE_ROW) newdir = g_strdup((gchar *)sqlite3_column_text(film_stmt, 0));
   sqlite3_finalize(film_stmt);
 
+  gchar copysrcpath[PATH_MAX] = { 0 };
+  gchar copydestpath[PATH_MAX] = { 0 };
+  GFile *old = NULL, *new = NULL;
   if(newdir)
   {
-    gchar copysrcpath[PATH_MAX] = { 0 };
-    gchar copydestpath[PATH_MAX] = { 0 };
-    gchar *imgbname = g_path_get_basename(oldimg);
-    g_snprintf(newimg, sizeof(newimg), "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
-    g_free(imgbname);
-    g_free(newdir);
+    old = g_file_new_for_path(oldimg);
 
+    if(newname)
+    {
+      g_snprintf(newimg, sizeof(newimg), "%s%c%s", newdir, G_DIR_SEPARATOR, newname);
+      new = g_file_new_for_path(newimg);
+      // 'newname' represents the file's new *basename* -- it must not
+      // refer to a file outside of 'newdir'.
+      gchar *newBasename = g_file_get_basename(new);
+      if(g_strcmp0(newname, newBasename) != 0)
+      {
+        g_object_unref(old);
+        old = NULL;
+        g_object_unref(new);
+        new = NULL;
+      }
+      g_free(newBasename);
+    }
+    else
+    {
+      gchar *imgbname = g_path_get_basename(oldimg);
+      g_snprintf(newimg, sizeof(newimg), "%s%c%s", newdir, G_DIR_SEPARATOR, imgbname);
+      new = g_file_new_for_path(newimg);
+      g_free(imgbname);
+    }
+    g_free(newdir);
+  }
+
+  if(new)
+  {
     // get current local copy if any
     _image_local_copy_full_path(imgid, copysrcpath, sizeof(copysrcpath));
 
     // move image
-    GFile *old, *new;
-    old = g_file_new_for_path(oldimg);
-    new = g_file_new_for_path(newimg);
-    if(!g_file_test(newimg, G_FILE_TEST_EXISTS) && (g_file_move(old, new, 0, NULL, NULL, NULL, NULL) == TRUE))
+    GError *moveError = NULL;
+    gboolean moveStatus = g_file_move(old, new, 0, NULL, NULL, NULL, &moveError);
+    if(moveStatus)
     {
-      // statement for getting ids of the image to be moved and it's duplicates
+      // statement for getting ids of the image to be moved and its duplicates
       sqlite3_stmt *duplicates_stmt;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "SELECT id FROM main.images WHERE filename IN (SELECT filename FROM main.images "
@@ -1324,8 +1349,7 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
         GFile *goldxmp = g_file_new_for_path(oldxmp);
         GFile *gnewxmp = g_file_new_for_path(newxmp);
 
-        if(g_file_test(oldxmp, G_FILE_TEST_EXISTS))
-          (void)g_file_move(goldxmp, gnewxmp, 0, NULL, NULL, NULL, NULL);
+	g_file_move(goldxmp, gnewxmp, 0, NULL, NULL, NULL, NULL);
 
         g_object_unref(goldxmp);
         g_object_unref(gnewxmp);
@@ -1340,9 +1364,16 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
         int id = GPOINTER_TO_INT(dup_list->data);
         dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'w');
         img->film_id = filmid;
+        if(newname)
+        {
+          strncpy(img->filename, newname, DT_MAX_FILENAME_LEN-1);
+          img->filename[DT_MAX_FILENAME_LEN-1] = '\0';
+        }
         // write through to db, but not to xmp
         dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
         dup_list = g_list_delete_link(dup_list, dup_list);
+        // write xmp file
+        dt_image_write_sidecar_file(id);
       }
       g_list_free(dup_list);
 
@@ -1355,8 +1386,33 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
         GFile *cold = g_file_new_for_path(copysrcpath);
         GFile *cnew = g_file_new_for_path(copydestpath);
 
-        if(g_file_move(cold, cnew, 0, NULL, NULL, NULL, NULL) != TRUE)
-          fprintf(stderr, "[dt_image_move] error moving local copy `%s' -> `%s'\n", copysrcpath, copydestpath);
+        g_clear_error(&moveError);
+	moveStatus = g_file_move(cold, cnew, 0, NULL, NULL, NULL, &moveError);
+        if(!moveStatus)
+        {
+          fprintf(stderr, "[dt_image_rename] error moving local copy `%s' -> `%s'\n", copysrcpath, copydestpath);
+
+	  if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
+          {
+	    gchar *oldBasename = g_path_get_basename(copysrcpath);
+	    dt_control_log(_("cannot access local copy `%s'"), oldBasename);
+	    g_free(oldBasename);
+          }
+          else if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_EXISTS) || g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_IS_DIRECTORY))
+          {
+	    gchar *newBasename = g_path_get_basename(copydestpath);
+	    dt_control_log(_("cannot write local copy `%s'"), newBasename);
+	    g_free(newBasename);
+	  }
+          else
+          {
+	    gchar *oldBasename = g_path_get_basename(copysrcpath);
+	    gchar *newBasename = g_path_get_basename(copydestpath);
+	    dt_control_log(_("error moving local copy `%s' -> `%s'"), oldBasename, newBasename);
+	    g_free(oldBasename);
+	    g_free(newBasename);
+	  }
+	}
 
         g_object_unref(cold);
         g_object_unref(cnew);
@@ -1366,9 +1422,21 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
     }
     else
     {
-      fprintf(stderr, "[dt_image_move] error moving `%s' -> `%s'\n", oldimg, newimg);
+      if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_NOT_FOUND))
+      {
+	dt_control_log(_("error moving `%s': file not found"), oldimg);
+      }
+      else if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_EXISTS) || g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_IS_DIRECTORY))
+      {
+	dt_control_log(_("error moving `%s' -> `%s': file exists"), oldimg, newimg);
+      }
+      else
+      {
+	dt_control_log(_("error moving `%s' -> `%s'"), oldimg, newimg);
+      }
     }
 
+    g_clear_error(&moveError);
     g_object_unref(old);
     g_object_unref(new);
   }
@@ -1376,7 +1444,12 @@ int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
   return result;
 }
 
-int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
+int32_t dt_image_move(const int32_t imgid, const int32_t filmid)
+{
+  return dt_image_rename(imgid, filmid, NULL);
+}
+
+int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gchar *newname)
 {
   int32_t newid = -1;
   sqlite3_stmt *stmt;
@@ -1384,6 +1457,8 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
   gchar *newdir = NULL;
   gchar *filename = NULL;
   gboolean from_cache = FALSE;
+  gchar *oldFilename = NULL;
+  gchar *newFilename = NULL;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT folder FROM main.film_rolls WHERE id = ?1",
                               -1, &stmt, NULL);
@@ -1391,26 +1466,51 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
   if(sqlite3_step(stmt) == SQLITE_ROW) newdir = g_strdup((gchar *)sqlite3_column_text(stmt, 0));
   sqlite3_finalize(stmt);
 
+  GFile *src = NULL, *dest = NULL;
   if(newdir)
   {
     dt_image_full_path(imgid, srcpath, sizeof(srcpath), &from_cache);
-    gchar *imgbname = g_path_get_basename(srcpath);
-    gchar *destpath = g_build_filename(newdir, imgbname, NULL);
-    GFile *src = g_file_new_for_path(srcpath);
-    GFile *dest = g_file_new_for_path(destpath);
-    g_free(imgbname);
-    imgbname = NULL;
+    oldFilename = g_path_get_basename(srcpath);
+    gchar *destpath;
+    if(newname)
+    {
+      newFilename = g_strdup(newname);
+      destpath = g_build_filename(newdir, newname, NULL);
+      dest = g_file_new_for_path(destpath);
+      // 'newname' represents the file's new *basename* -- it must not
+      // refer to a file outside of 'newdir'.
+      gchar *destBasename = g_file_get_basename(dest);
+      if(g_strcmp0(newname, destBasename) != 0)
+      {
+        g_object_unref(dest);
+        dest = NULL;
+      }
+      g_free(destBasename);
+    }
+    else
+    {
+      newFilename = g_path_get_basename(srcpath);
+      destpath = g_build_filename(newdir, newFilename, NULL);
+      dest = g_file_new_for_path(destpath);
+    }
+    if(dest)
+    {
+      src = g_file_new_for_path(srcpath);
+    }
     g_free(newdir);
     newdir = NULL;
     g_free(destpath);
     destpath = NULL;
+  }
 
+  if(dest)
+  {
     // copy image to new folder
     // if image file already exists, continue
     GError *gerror = NULL;
-    g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+    gboolean copyStatus = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
 
-    if((gerror == NULL) || (gerror != NULL && gerror->code == G_IO_ERROR_EXISTS))
+    if(copyStatus || g_error_matches(gerror, G_IO_ERROR, G_IO_ERROR_EXISTS))
     {
       const int64_t new_image_position = create_next_image_position();
 
@@ -1425,26 +1525,29 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
           "caption, description, license, sha1sum, orientation, histogram, lightmap, "
           "longitude, latitude, altitude, color_matrix, colorspace, version, max_version, "
           "position, aspect_ratio, iop_order_version) "
-          "SELECT NULL, group_id, ?1 as film_id, width, height, filename, maker, model, lens, "
+          "SELECT NULL, group_id, ?1 as film_id, width, height, ?2 as filename, maker, model, lens, "
           "exposure, aperture, iso, focal_length, focus_distance, datetime_taken, "
           "flags, width, height, crop, raw_parameters, raw_denoise_threshold, "
           "raw_auto_bright_threshold, raw_black, raw_maximum, "
           "caption, description, license, sha1sum, orientation, histogram, lightmap, "
           "longitude, latitude, altitude, color_matrix, colorspace, -1, -1, "
-          "?2, aspect_ratio, iop_order_version "
-          "FROM main.images WHERE id = ?3",
+          "?3, aspect_ratio, iop_order_version "
+          "FROM main.images WHERE id = ?4",
           -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
-      DT_DEBUG_SQLITE3_BIND_INT64(stmt, 2, new_image_position);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, imgid);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, newFilename, -1, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT64(stmt, 3, new_image_position);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, imgid);
       sqlite3_step(stmt);
       sqlite3_finalize(stmt);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "SELECT a.id, a.filename FROM main.images AS a JOIN main.images AS b WHERE "
-                                  "a.film_id = ?1 AND a.filename = b.filename AND b.id = ?2 ORDER BY a.id DESC",
+                                  "a.film_id = ?1 AND a.filename = ?2 AND b.filename = ?3 AND b.id = ?4 ORDER BY a.id DESC",
                                   -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, newFilename, -1, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, oldFilename, -1, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 4, imgid);
 
       if(sqlite3_step(stmt) == SQLITE_ROW)
       {
@@ -1560,8 +1663,15 @@ int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
     g_object_unref(src);
     g_clear_error(&gerror);
   }
+  g_free(oldFilename);
+  g_free(newFilename);
 
   return newid;
+}
+
+int32_t dt_image_copy(const int32_t imgid, const int32_t filmid)
+{
+  return dt_image_copy_rename(imgid, filmid, NULL);
 }
 
 int dt_image_local_copy_set(const int32_t imgid)

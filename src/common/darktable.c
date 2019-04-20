@@ -21,6 +21,8 @@
 #include "config.h"
 #endif
 
+#include "is_supported_platform.h"
+
 #if !defined(__APPLE__) && !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__DragonFly__)
 #include <malloc.h>
 #endif
@@ -77,6 +79,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <locale.h>
+#include <limits.h>
 
 #if defined(__SSE__)
 #include <xmmintrin.h>
@@ -348,8 +351,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   dt_set_signal_handlers();
 
-#include "is_supported_platform.h"
-
   int sse2_supported = 0;
 
 #ifdef HAVE_BUILTIN_CPU_SUPPORTS
@@ -488,7 +489,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                                       STR(LUA_API_VERSION_PATCH);
 #endif
         printf("this is %s\ncopyright (c) 2009-%s johannes hanika\n" PACKAGE_BUGREPORT "\n\ncompile options:\n"
-               "  bit depth is %s\n"
+               "  bit depth is %zu bit\n"
 #ifdef _DEBUG
                "  debug build\n"
 #else
@@ -543,7 +544,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                ,
                darktable_package_string,
                darktable_last_commit_year,
-               (sizeof(void *) == 8 ? "64 bit" : sizeof(void *) == 4 ? "32 bit" : "unknown")
+               CHAR_BIT * sizeof(void *)
 #if USE_LUA
                    ,
                lua_api_version
@@ -838,6 +839,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     return 1;
   }
 
+  dt_ioppr_check_db_integrity();
+  
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
 
@@ -988,6 +991,22 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   if(init_gui)
   {
     const char *mode = "lighttable";
+    // april 1st: you have to earn using dt first! or know that you can switch views with keyboard shortcuts
+    time_t now;
+    time(&now);
+    struct tm lt;
+    localtime_r(&now, &lt);
+    if(lt.tm_mon == 3 && lt.tm_mday == 1)
+    {
+      const int current_year = lt.tm_year + 1900;
+      const int last_year = dt_conf_get_int("ui_last/april1st");
+      const gboolean kill_april1st = dt_conf_get_bool("ui_last/no_april1st");
+      if(!kill_april1st && last_year < current_year)
+      {
+        dt_conf_set_int("ui_last/april1st", current_year);
+        mode = "knight";
+      }
+    }
     // we have to call dt_ctl_switch_mode_to() here already to not run into a lua deadlock.
     // having another call later is ok
     dt_ctl_switch_mode_to(mode);
@@ -1160,24 +1179,35 @@ void dt_free_align(void *mem)
 }
 #endif
 
-void dt_show_times(const dt_times_t *start, const char *prefix, const char *suffix, ...)
+void dt_show_times(const dt_times_t *start, const char *prefix)
 {
-  dt_times_t end;
-  char buf[160]; /* Arbitrary size, should be lots big enough for everything used in DT */
-  int i;
-
   /* Skip all the calculations an everything if -d perf isn't on */
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
+    dt_times_t end;
     dt_get_times(&end);
-    i = snprintf(buf, sizeof(buf), "%s took %.3f secs (%.3f CPU)", prefix, end.clock - start->clock,
-                 end.user - start->user);
-    if(suffix != NULL)
+    char buf[140]; /* Arbitrary size, should be lots big enough for everything used in DT */
+    snprintf(buf, sizeof(buf), "%s took %.3f secs (%.3f CPU)", prefix, end.clock - start->clock,
+             end.user - start->user);
+    dt_print(DT_DEBUG_PERF, "%s\n", buf);
+  }
+}
+
+void dt_show_times_f(const dt_times_t *start, const char *prefix, const char *suffix, ...)
+{
+  /* Skip all the calculations an everything if -d perf isn't on */
+  if(darktable.unmuted & DT_DEBUG_PERF)
+  {
+    dt_times_t end;
+    dt_get_times(&end);
+    char buf[160]; /* Arbitrary size, should be lots big enough for everything used in DT */
+    const int n = snprintf(buf, sizeof(buf), "%s took %.3f secs (%.3f CPU) ", prefix, end.clock - start->clock,
+                           end.user - start->user);
+    if(n < sizeof(buf) - 1)
     {
       va_list ap;
       va_start(ap, suffix);
-      buf[i++] = ' ';
-      vsnprintf(buf + i, sizeof buf - i, suffix, ap);
+      vsnprintf(buf + n, sizeof(buf) - n, suffix, ap);
       va_end(ap);
     }
     dt_print(DT_DEBUG_PERF, "%s\n", buf);
@@ -1189,15 +1219,14 @@ void dt_configure_performance()
   const int atom_cores = dt_get_num_atom_cores();
   const int threads = dt_get_num_threads();
   const size_t mem = dt_get_total_memory();
-  const int bits = (sizeof(void *) == 4) ? 32 : 64;
+  const size_t bits = CHAR_BIT * sizeof(void *);
   gchar *demosaic_quality = dt_conf_get_string("plugins/darkroom/demosaic/quality");
 
-  fprintf(stderr, "[defaults] found a %d-bit system with %zu kb ram and %d cores (%d atom based)\n", bits, mem,
-          threads, atom_cores);
-
-  if(mem >= (8u << 20) && threads > 4 && bits == 64 && atom_cores == 0)
+  fprintf(stderr, "[defaults] found a %zu-bit system with %zu kb ram and %d cores (%d atom based)\n",
+          bits, mem, threads, atom_cores);
+  if(mem >= (8lu << 20) && threads > 4 && atom_cores == 0)
   {
-    // CONFIG 1: at least 8GB RAM, and more than 4 CPU cores, no atom, 64 bit
+    // CONFIG 1: at least 8GB RAM, and more than 4 CPU cores, no atom
     // But respect if user has set higher values manually earlier
     fprintf(stderr, "[defaults] setting very high quality defaults\n");
 
@@ -1209,9 +1238,9 @@ void dt_configure_performance()
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
   }
-  else if(mem > (2u << 20) && threads >= 4 && bits == 64 && atom_cores == 0)
+  else if(mem > (2lu << 20) && threads >= 4 && atom_cores == 0)
   {
-    // CONFIG 2: at least 2GB RAM, and at least 4 CPU cores, no atom, 64 bit
+    // CONFIG 2: at least 2GB RAM, and at least 4 CPU cores, no atom
     // But respect if user has set higher values manually earlier
     fprintf(stderr, "[defaults] setting high quality defaults\n");
 
@@ -1222,9 +1251,9 @@ void dt_configure_performance()
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
   }
-  else if(mem < (1u << 20) || threads <= 2 || bits == 32 || atom_cores > 0)
+  else if(mem < (1lu << 20) || threads <= 2 || atom_cores > 0)
   {
-    // CONFIG 3: For less than 1GB RAM or 2 or less cores, or 32-bit or for atom processors
+    // CONFIG 3: For less than 1GB RAM or 2 or less cores, or for atom processors
     // use very low/conservative settings
     fprintf(stderr, "[defaults] setting very conservative defaults\n");
     dt_conf_set_int("worker_threads", 1);

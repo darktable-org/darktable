@@ -63,7 +63,7 @@ void dt_history_snapshot_undo_create(int32_t imgid, int *snap_id, int *history_e
                               " FROM main.history WHERE imgid=?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, *snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-  all_ok &= (sqlite3_step(stmt) != SQLITE_DONE);
+  all_ok = all_ok && (sqlite3_step(stmt) == SQLITE_DONE);
   sqlite3_finalize(stmt);
 
   // copy current state into undo_masks_history
@@ -73,7 +73,7 @@ void dt_history_snapshot_undo_create(int32_t imgid, int *snap_id, int *history_e
                               "points, points_count, source FROM main.masks_history WHERE imgid=?2", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, *snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-  all_ok &= (sqlite3_step(stmt) != SQLITE_DONE);
+  all_ok = all_ok && (sqlite3_step(stmt) == SQLITE_DONE);
   sqlite3_finalize(stmt);
 
   if(all_ok)
@@ -161,7 +161,7 @@ void dt_history_snapshot_undo_lt_history_data_free(gpointer data)
   g_free(hist);
 }
 
-void dt_history_snapshot_undo_pop(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data, dt_undo_action_t action)
+void dt_history_snapshot_undo_pop(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action)
 {
   if(type == DT_UNDO_LT_HISTORY)
   {

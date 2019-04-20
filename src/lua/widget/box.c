@@ -34,7 +34,6 @@ static void box_init(lua_State* L)
   lua_box box;
   luaA_to(L,lua_box,&box,-1);
   gtk_orientable_set_orientation(GTK_ORIENTABLE(box->widget),GTK_ORIENTATION_VERTICAL);
-  gtk_box_set_spacing(GTK_BOX(box->widget), DT_PIXEL_APPLY_DPI(5));
 }
 
 

@@ -113,9 +113,9 @@ static void button_clicked(GtkWidget *widget, gpointer user_data)
   else if(i == 3)
     dt_control_duplicate_images();
   else if(i == 4)
-    dt_control_flip_images(0);
-  else if(i == 5)
     dt_control_flip_images(1);
+  else if(i == 5)
+    dt_control_flip_images(0);
   else if(i == 6)
     dt_control_flip_images(2);
   else if(i == 7)
@@ -172,8 +172,6 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_grid_new();
   dt_gui_add_help_link(self->widget, "selected_images.html#selected_images_usage");
   GtkGrid *grid = GTK_GRID(self->widget);
-  gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
-  gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_homogeneous(grid, TRUE);
   int line = 0;
 

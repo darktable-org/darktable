@@ -87,20 +87,20 @@ typedef struct dt_image_raw_parameters_t
 
 typedef enum dt_image_orientation_t
 {
-  ORIENTATION_NULL = -1,        //-1, or autodetect
-  ORIENTATION_NONE = 0,         // 0
-  ORIENTATION_FLIP_Y = 1 << 0,  // 1
-  ORIENTATION_FLIP_X = 1 << 1,  // 2
+  ORIENTATION_NULL    = -1,     //-1, or autodetect
+  ORIENTATION_NONE    = 0,      // 0
+  ORIENTATION_FLIP_Y  = 1 << 0, // 1
+  ORIENTATION_FLIP_X  = 1 << 1, // 2
   ORIENTATION_SWAP_XY = 1 << 2, // 4
 
   /* ClockWise rotation == "-"; CounterClockWise rotation == "+" */
-  ORIENTATION_FLIP_HORIZONTALLY = ORIENTATION_FLIP_Y, // 1
-  ORIENTATION_FLIP_VERTICALLY = ORIENTATION_FLIP_X, // 2
-  ORIENTATION_ROTATE_180_DEG = ORIENTATION_FLIP_Y | ORIENTATION_FLIP_X, // 3
-  ORIENTATION_400 /* ??? */ = ORIENTATION_SWAP_XY, // 4
-  ORIENTATION_ROTATE_CCW_90_DEG = ORIENTATION_FLIP_Y | ORIENTATION_SWAP_XY, // 5
-  ORIENTATION_ROTATE_CW_90_DEG = ORIENTATION_FLIP_X | ORIENTATION_SWAP_XY, // 6
-  ORIENTATION_421 /* ??? */ = ORIENTATION_FLIP_Y | ORIENTATION_FLIP_X | ORIENTATION_SWAP_XY // 7
+  ORIENTATION_FLIP_HORIZONTALLY = ORIENTATION_FLIP_X, // 2
+  ORIENTATION_FLIP_VERTICALLY   = ORIENTATION_FLIP_Y, // 1
+  ORIENTATION_ROTATE_180_DEG    = ORIENTATION_FLIP_Y | ORIENTATION_FLIP_X, // 3
+  ORIENTATION_TRANSPOSE         = ORIENTATION_SWAP_XY, // 4
+  ORIENTATION_ROTATE_CCW_90_DEG = ORIENTATION_FLIP_X | ORIENTATION_SWAP_XY, // 6
+  ORIENTATION_ROTATE_CW_90_DEG  = ORIENTATION_FLIP_Y | ORIENTATION_SWAP_XY, // 5
+  ORIENTATION_TRANSVERSE        = ORIENTATION_FLIP_Y | ORIENTATION_FLIP_X | ORIENTATION_SWAP_XY // 7
 } dt_image_orientation_t;
 
 typedef enum dt_image_loader_t
@@ -267,11 +267,11 @@ static inline dt_image_orientation_t dt_image_orientation_to_flip_bits(const int
     case 4:
       return ORIENTATION_FLIP_VERTICALLY;
     case 5:
-      return ORIENTATION_400; // ???
+      return ORIENTATION_TRANSPOSE;
     case 6:
       return ORIENTATION_ROTATE_CW_90_DEG;
     case 7:
-      return ORIENTATION_421; // ???
+      return ORIENTATION_TRANSVERSE;
     case 8:
       return ORIENTATION_ROTATE_CCW_90_DEG;
     default:
@@ -282,9 +282,16 @@ static inline dt_image_orientation_t dt_image_orientation_to_flip_bits(const int
 /** physically move image with imgid and its duplicates to the film roll
  *  given by filmid. returns -1 on error, 0 on success. */
 int32_t dt_image_move(const int32_t imgid, const int32_t filmid);
-/** physically cope image to the folder of the film roll with filmid and
+/** physically move image with imgid and its duplicates to the film roll
+ *  given by filmid and the name given by newname.
+ *  returns -1 on error, 0 on success. */
+int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *newname);
+/** physically copy image to the folder of the film roll with filmid and
  *  duplicate update database entries. */
 int32_t dt_image_copy(const int32_t imgid, const int32_t filmid);
+/** physically copy image to the folder of the film roll with filmid and
+ *  the name given by newname, and duplicate update database entries. */
+int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gchar *newname);
 int dt_image_local_copy_set(const int32_t imgid);
 int dt_image_local_copy_reset(const int32_t imgid);
 /* check whether it is safe to remove a file */

@@ -348,7 +348,7 @@ void gui_init(dt_lib_module_t *self)
 
   /* create the resize handle */
   GtkWidget *size_handle = gtk_event_box_new();
-  gtk_widget_set_size_request(size_handle, -1, DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_size_request(size_handle, -1, DT_PIXEL_APPLY_DPI(5));
   gtk_widget_add_events(size_handle, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                      | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
                                      | GDK_LEAVE_NOTIFY_MASK);
@@ -842,8 +842,16 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
       {
         if(!strip->force_expose_all && id == mouse_over_id) strip->last_exposed_id = id;
 
-        const int thumb_missed = dt_view_image_expose
-          (&(strip->image_over), id, cr, wd, ht, max_cols, img_pointerx, img_pointery, FALSE, FALSE);
+        dt_view_image_expose_t params = { 0 };
+        params.image_over = &(strip->image_over);
+        params.imgid = id;
+        params.cr = cr;
+        params.width = wd;
+        params.height = ht;
+        params.px = img_pointerx;
+        params.py = img_pointery;
+        params.zoom = max_cols;
+        const int thumb_missed = dt_view_image_expose(&params);
 
         // if thumb is missing, record it for expose int next round
         if(thumb_missed)

@@ -60,6 +60,13 @@ typedef enum dt_opencl_scheduling_profile_t
   OPENCL_PROFILE_VERYFAST_GPU
 } dt_opencl_scheduling_profile_t;
 
+typedef enum dt_opencl_sync_cache_t
+{
+  OPENCL_SYNC_TRUE,
+  OPENCL_SYNC_ACTIVE_MODULE,
+  OPENCL_SYNC_FALSE
+} dt_opencl_sync_cache_t;
+
 /**
  * Accounting information used for OpenCL events.
  */
@@ -115,6 +122,7 @@ struct dt_local_laplacian_cl_global_t;
 struct dt_dwt_cl_global_t; // wavelet decompose
 struct dt_heal_cl_global_t; // healing
 struct dt_colorspaces_cl_global_t; // colorspaces transform
+struct dt_guided_filter_cl_global_t;
 
 /**
  * main struct, stored in darktable.opencl.
@@ -129,7 +137,7 @@ typedef struct dt_opencl_t
   int async_pixelpipe;
   int number_event_handles;
   int print_statistics;
-  int synch_cache;
+  dt_opencl_sync_cache_t sync_cache;
   int micro_nap;
   int enabled;
   int stopped;
@@ -138,9 +146,10 @@ typedef struct dt_opencl_t
   int opencl_synchronization_timeout;
   dt_opencl_scheduling_profile_t scheduling_profile;
   uint32_t crc;
-  int mandatory[4];
+  int mandatory[5];
   int *dev_priority_image;
   int *dev_priority_preview;
+  int *dev_priority_preview2;
   int *dev_priority_export;
   int *dev_priority_thumbnail;
   dt_opencl_device_t *dev;
@@ -169,6 +178,9 @@ typedef struct dt_opencl_t
   
   // global kernels for colorspaces filter.
   struct dt_colorspaces_cl_global_t *colorspaces;
+
+  // global kernels for guided filter.
+  struct dt_guided_filter_cl_global_t *guided_filter;
 } dt_opencl_t;
 
 /** description of memory requirements of local buffer
@@ -339,6 +351,12 @@ void *dt_opencl_map_buffer(const int devid, cl_mem buffer, const int blocking, c
 int dt_opencl_unmap_mem_object(const int devid, cl_mem mem_object, void *mapped_ptr);
 
 size_t dt_opencl_get_mem_object_size(cl_mem mem);
+
+int dt_opencl_get_image_width(cl_mem mem);
+
+int dt_opencl_get_image_height(cl_mem mem);
+
+int dt_opencl_get_image_element_size(cl_mem mem);
 
 int dt_opencl_get_mem_context_id(cl_mem mem);
 

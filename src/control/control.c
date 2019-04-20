@@ -189,10 +189,8 @@ void dt_control_cleanup(dt_control_t *s)
 
 gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data)
 {
-  darktable.control->tabborder = 2;
-  const int tb = darktable.control->tabborder;
   // re-configure all components:
-  dt_view_manager_configure(darktable.view_manager, event->width - 2 * tb, event->height - 2 * tb);
+  dt_view_manager_configure(darktable.view_manager, event->width, event->height);
   return TRUE;
 }
 
@@ -227,8 +225,6 @@ void *dt_control_expose(void *voidptr)
 
   // TODO: control_expose: only redraw the part not overlapped by temporary control panel show!
   //
-  float tb = 2; // fmaxf(10, width/100.0);
-  darktable.control->tabborder = tb;
   darktable.control->width = width;
   darktable.control->height = height;
 
@@ -236,28 +232,16 @@ void *dt_control_expose(void *voidptr)
 
   // look up some colors once
   GdkRGBA bg_color = lookup_color(context, "bg_color");
-  GdkRGBA really_dark_bg_color = lookup_color(context, "really_dark_bg_color");
   GdkRGBA selected_bg_color = lookup_color(context, "selected_bg_color");
   GdkRGBA fg_color = lookup_color(context, "fg_color");
 
   gdk_cairo_set_source_rgba(cr, &bg_color);
-
-  cairo_set_line_width(cr, tb);
-  cairo_rectangle(cr, tb / 2., tb / 2., width - tb, height - tb);
-  cairo_stroke(cr);
-  cairo_set_line_width(cr, 1.5);
-  gdk_cairo_set_source_rgba(cr, &really_dark_bg_color);
-  cairo_rectangle(cr, tb, tb, width - 2 * tb, height - 2 * tb);
-  cairo_stroke(cr);
-
   cairo_save(cr);
-  cairo_translate(cr, tb, tb);
-  cairo_rectangle(cr, 0, 0, width - 2 * tb, height - 2 * tb);
+  cairo_rectangle(cr, 0, 0, width, height);
   cairo_clip(cr);
   cairo_new_path(cr);
   // draw view
-  dt_view_manager_expose(darktable.view_manager, cr, width - 2 * tb, height - 2 * tb, pointerx - tb,
-                         pointery - tb);
+  dt_view_manager_expose(darktable.view_manager, cr, width, height, pointerx, pointery);
   cairo_restore(cr);
 
   // draw log message, if any
@@ -368,25 +352,15 @@ void dt_control_mouse_enter()
 
 void dt_control_mouse_moved(double x, double y, double pressure, int which)
 {
-  const float tb = darktable.control->tabborder;
-  const float wd = darktable.control->width;
-  const float ht = darktable.control->height;
-
-  if(x > tb && x < wd - tb && y > tb && y < ht - tb)
-    dt_view_manager_mouse_moved(darktable.view_manager, x - tb, y - tb, pressure, which);
+  dt_view_manager_mouse_moved(darktable.view_manager, x, y, pressure, which);
 }
 
 void dt_control_button_released(double x, double y, int which, uint32_t state)
 {
   darktable.control->button_down = 0;
   darktable.control->button_down_which = 0;
-  const float tb = darktable.control->tabborder;
-  // float wd = darktable.control->width;
-  // float ht = darktable.control->height;
 
-  // always do this, to avoid missing some events.
-  // if(x > tb && x < wd-tb && y > tb && y < ht-tb)
-  dt_view_manager_button_released(darktable.view_manager, x - tb, y - tb, which, state);
+  dt_view_manager_button_released(darktable.view_manager, x, y, which, state);
 }
 
 static void _dt_ctl_switch_mode_prepare()
@@ -449,15 +423,14 @@ static gboolean _dt_ctl_log_message_timeout_callback(gpointer data)
 
 void dt_control_button_pressed(double x, double y, double pressure, int which, int type, uint32_t state)
 {
-  const float tb = darktable.control->tabborder;
   darktable.control->button_down = 1;
   darktable.control->button_down_which = which;
   darktable.control->button_type = type;
-  darktable.control->button_x = x - tb;
-  darktable.control->button_y = y - tb;
+  darktable.control->button_x = x;
+  darktable.control->button_y = y;
   // adding pressure to this data structure is not needed right now. should the need ever arise: here is the
   // place to do it :)
-  const float wd = darktable.control->width;
+  //const float wd = darktable.control->width;
   const float ht = darktable.control->height;
 
   // ack log message:
@@ -477,11 +450,8 @@ void dt_control_button_pressed(double x, double y, double pressure, int which, i
     }
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
 
-  if(x > tb && x < wd - tb && y > tb && y < ht - tb)
-  {
-    if(!dt_view_manager_button_pressed(darktable.view_manager, x - tb, y - tb, pressure, which, type, state))
-      if(type == GDK_2BUTTON_PRESS && which == 1) dt_ctl_switch_mode();
-  }
+  if(!dt_view_manager_button_pressed(darktable.view_manager, x, y, pressure, which, type, state))
+    if(type == GDK_2BUTTON_PRESS && which == 1) dt_ctl_switch_mode();
 }
 
 static gboolean _redraw_center(gpointer user_data)
@@ -557,6 +527,33 @@ void dt_control_queue_redraw_widget(GtkWidget *widget)
 int dt_control_key_pressed_override(guint key, guint state)
 {
   dt_control_accels_t *accels = &darktable.control->accels;
+
+  // ↑ ↑ ↓ ↓ ← → ← → b a
+  static int konami_state = 0;
+  static guint konami_sequence[] = {
+    GDK_KEY_Up,
+    GDK_KEY_Up,
+    GDK_KEY_Down,
+    GDK_KEY_Down,
+    GDK_KEY_Left,
+    GDK_KEY_Right,
+    GDK_KEY_Left,
+    GDK_KEY_Right,
+    GDK_KEY_b,
+    GDK_KEY_a
+  };
+  if(key == konami_sequence[konami_state])
+  {
+    konami_state++;
+    if(konami_state == G_N_ELEMENTS(konami_sequence))
+    {
+      dt_ctl_switch_mode_to("knight");
+      konami_state = 0;
+    }
+  }
+  else
+    konami_state = 0;
+
 
   // TODO: if darkroom mode
   // did a : vim-style command start?
@@ -681,14 +678,20 @@ int dt_control_key_pressed_override(guint key, guint state)
   {
     char param[512];
     const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+    // in lighttable, we store panels states per layout
+    char lay[32] = "";
+    if(g_strcmp0(cv->module_name, "lighttable") == 0)
+    {
+      g_snprintf(lay, sizeof(lay), "%d/", dt_view_lighttable_get_layout(darktable.view_manager));
+    }
 
     /* do nothing if in collapse panel state
        TODO: reconsider adding this check to ui api */
-    g_snprintf(param, sizeof(param), "%s/ui/panel_collaps_state", cv->module_name);
+    g_snprintf(param, sizeof(param), "%s/ui/%spanel_collaps_state", cv->module_name, lay);
     if(dt_conf_get_int(param)) return 0;
 
     /* toggle the header visibility state */
-    g_snprintf(param, sizeof(param), "%s/ui/show_header", cv->module_name);
+    g_snprintf(param, sizeof(param), "%s/ui/%sshow_header", cv->module_name, lay);
     const gboolean header = !dt_conf_get_bool(param);
     dt_conf_set_bool(param, header);
 
@@ -701,6 +704,13 @@ int dt_control_key_pressed_override(guint key, guint state)
   else if(key == accels->darkroom_skip_mouse_events.accel_key && state == accels->darkroom_skip_mouse_events.accel_mods)
   {
     darktable.develop->darkroom_skip_mouse_events = TRUE;
+    return 1;
+  }
+  // set focus to the search module text box
+  else if(key == accels->darkroom_search_modules_focus.accel_key
+          && state == accels->darkroom_search_modules_focus.accel_mods)
+  {
+    dt_dev_modulegroups_search_text_focus(darktable.develop);
     return 1;
   }
   return 0;
