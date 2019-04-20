@@ -180,7 +180,8 @@ static _flickr_api_context_t *_flickr_api_authenticate(dt_storage_flickr_gui_dat
              "https://flickr.com/services/auth/?api_key=%s&perms=write&frob=%s&api_sig=%s", API_KEY, frob,
              sign_md5);
 
-    if(!gtk_show_uri(gdk_screen_get_default(), auth_url, gtk_get_current_event_time(), &error))
+    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+    if(!gtk_show_uri_on_window(GTK_WINDOW(win), auth_url, gtk_get_current_event_time(), &error))
     {
       fprintf(stderr, "[flickr] error opening browser: %s\n", error->message);
       g_error_free(error);
