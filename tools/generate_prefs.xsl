@@ -423,7 +423,6 @@
   <xsl:template match="dtconfig[type='dir']" mode="tab">
 		<xsl:text>    widget = gtk_file_chooser_button_new(_("select directory"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
 		gtk_file_chooser_button_set_width_chars(GTK_FILE_CHOOSER_BUTTON(widget), 20);
-//		g_object_ref_sink(G_OBJECT(widget));
 		gtk_widget_set_hexpand(widget, TRUE);
 		gtk_widget_set_halign(widget, GTK_ALIGN_FILL);
     gchar *setting = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");

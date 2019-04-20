@@ -33,10 +33,8 @@ lut3d_tetrahedral(read_only image2d_t in, write_only image2d_t out, const int wi
   float4 input = read_imagef(in, sampleri, (int2)(x, y));
   float4 output = (float4)(0.0f);
 
-  input.x = (input.x < 0.0f) ? 0.0f : (input.x > 1.0f) ? 1.0f : input.x;
-  input.y = (input.y < 0.0f) ? 0.0f : (input.y > 1.0f) ? 1.0f : input.y;
-  input.z = (input.z < 0.0f) ? 0.0f : (input.z > 1.0f) ? 1.0f : input.z;
-
+  input = clamp(input, (float4)0.0f, (float4)1.0f);
+  
   rgbd = input * (float)(level - 1); 
   rgbi = min( max( convert_int4(rgbd), 0), (int)(level - 2));
 
@@ -115,9 +113,7 @@ lut3d_trilinear(read_only image2d_t in, write_only image2d_t out, const int widt
   float4 input = read_imagef(in, sampleri, (int2)(x, y));
   float4 output = (float4)(0.0f);
 
-  input.x = (input.x < 0.0f) ? 0.0f : (input.x > 1.0f) ? 1.0f : input.x;
-  input.y = (input.y < 0.0f) ? 0.0f : (input.y > 1.0f) ? 1.0f : input.y;
-  input.z = (input.z < 0.0f) ? 0.0f : (input.z > 1.0f) ? 1.0f : input.z;
+  input = clamp(input, (float4)0.0f, (float4)1.0f);
 
   rgbd = input * (float)(level - 1); 
   rgbi = min( max( convert_int4(rgbd), 0), (int)(level - 2));
@@ -173,9 +169,7 @@ lut3d_pyramid(read_only image2d_t in, write_only image2d_t out, const int width,
   float4 input = read_imagef(in, sampleri, (int2)(x, y));
   float4 output = (float4)(0.0f);
 
-  input.x = (input.x < 0.0f) ? 0.0f : (input.x > 1.0f) ? 1.0f : input.x;
-  input.y = (input.y < 0.0f) ? 0.0f : (input.y > 1.0f) ? 1.0f : input.y;
-  input.z = (input.z < 0.0f) ? 0.0f : (input.z > 1.0f) ? 1.0f : input.z;
+  input = clamp(input, (float4)0.0f, (float4)1.0f);
 
   rgbd = input * (float)(level - 1); 
   rgbi = min( max( convert_int4(rgbd), 0), (int)(level - 2));

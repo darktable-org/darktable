@@ -66,7 +66,6 @@ typedef struct dt_iop_lut3d_params_t
 
 typedef struct dt_iop_lut3d_gui_data_t
 {
-//  GtkWidget *lutfolder;
   GtkWidget *hbox;
   GtkWidget *filepath;
   GtkWidget *colorspace;
@@ -97,7 +96,7 @@ int flags()
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
-int groups()
+int default_group()
 {
   return IOP_GROUP_COLOR;
 }
@@ -108,209 +107,204 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 }
 
 // From `HaldCLUT_correct.c' by Eskil Steenberg (http://www.quelsolaar.com) (BSD licensed)
-void correct_pixel_trilinear(float *input, float *output, const float *const clut, const uint8_t level)
+void correct_pixel_trilinear(float *const input, float *const output, const float *const restrict clut, const uint8_t level)
 {
-  int red, green, blue, i, j;
+  int rgbi[3], i, j;
   float tmp[6];
-  const int level2 = level * level;
-
-  for(int c = 0; c < 3; ++c) input[c] = input[c] < 0.0f ? 0.0f : (input[c] > 1.0f ? 1.0f : input[c]);
-  red = input[0] * (float)(level - 1);
-  if(red > level - 2) red = level - 2;
-  if(red < 0) red = 0;
-  green = input[1] * (float)(level - 1);
-  if(green > level - 2) green = level - 2;
-  if(green < 0) green = 0;
-  blue = input[2] * (float)(level - 1);
-  if(blue > level - 2) blue = level - 2;
-  if(blue < 0) blue = 0;
-
-  const float r = input[0] * (float)(level - 1) - red; // delta red
-  const float g = input[1] * (float)(level - 1) - green; // delta green
-  const float b = input[2] * (float)(level - 1) - blue; // delta blue
-
-// indexes of P000 to P111 in clut
-  const int color = red + green * level + blue * level * level;
-  i = color * 3;  // P000
-  j = (color + 1) * 3;  // P100
-
-  tmp[0] = clut[i++] * (1 - r) + clut[j++] * r;
-  tmp[1] = clut[i++] * (1 - r) + clut[j++] * r;
-  tmp[2] = clut[i] * (1 - r) + clut[j] * r;
-
-  i = (color + level) * 3;  // P010
-  j = (color + level + 1) * 3;  //P110
-
-  tmp[3] = clut[i++] * (1 - r) + clut[j++] * r;
-  tmp[4] = clut[i++] * (1 - r) + clut[j++] * r;
-  tmp[5] = clut[i] * (1 - r) + clut[j] * r;
-
-  output[0] = tmp[0] * (1 - g) + tmp[3] * g;
-  output[1] = tmp[1] * (1 - g) + tmp[4] * g;
-  output[2] = tmp[2] * (1 - g) + tmp[5] * g;
-
-  i = (color + level2) * 3;  // P001
-  j = (color + level2 + 1) * 3;  // P101
-
-  tmp[0] = clut[i++] * (1 - r) + clut[j++] * r;
-  tmp[1] = clut[i++] * (1 - r) + clut[j++] * r;
-  tmp[2] = clut[i] * (1 - r) + clut[j] * r;
-
-  i = (color + level + level2) * 3;  // P011
-  j = (color + level + level2 + 1) * 3;  // P111
-
-  tmp[3] = clut[i++] * (1 - r) + clut[j++] * r;
-  tmp[4] = clut[i++] * (1 - r) + clut[j++] * r;
-  tmp[5] = clut[i] * (1 - r) + clut[j] * r;
-
-  tmp[0] = tmp[0] * (1 - g) + tmp[3] * g;
-  tmp[1] = tmp[1] * (1 - g) + tmp[4] * g;
-  tmp[2] = tmp[2] * (1 - g) + tmp[5] * g;
-
-  output[0] = output[0] * (1 - b) + tmp[0] * b;
-  output[1] = output[1] * (1 - b) + tmp[1] * b;
-  output[2] = output[2] * (1 - b) + tmp[2] * b;
-}
-// from OpenColorIO
-// https://github.com/imageworks/OpenColorIO/blob/master/src/OpenColorIO/ops/Lut3D/Lut3DOp.cpp
-void correct_pixel_tetrahedral(float *input, float *output, const float *const clut, const uint8_t level)
-{
-  int red, green, blue;
+  float rgbd[3];
   const int level2 = level * level;
 
   for(int c = 0; c < 3; ++c) input[c] = input[c] < 0.0f ? 0.0f : (input[c] > 1.0f ? 1.0f : input[c]);
   
-  float r = input[0] * (float)(level - 1);
-  float g = input[1] * (float)(level - 1);
-  float b = input[2] * (float)(level - 1);
+  rgbd[0] = input[0] * (float)(level - 1);
+  rgbd[1] = input[1] * (float)(level - 1);
+  rgbd[2] = input[2] * (float)(level - 1);
 
-  red = r;
-  if(red > level - 2) red = level - 2;
-  if(red < 0) red = 0;
-  green = g;
-  if(green > level - 2) green = level - 2;
-  if(green < 0) green = 0;
-  blue = b;
-  if(blue > level - 2) blue = level - 2;
-  if(blue < 0) blue = 0;
+  rgbi[0] = min( max( (int)rgbd[0], 0), level - 2);
+  rgbi[1] = min( max( (int)rgbd[1], 0), level - 2);
+  rgbi[2] = min( max( (int)rgbd[2], 0), level - 2);
 
-  r = r - red; // delta red
-  g = g - green; // delta green
-  b = b - blue; // delta blue
+  rgbd[0] = rgbd[0] - rgbi[0]; // delta red
+  rgbd[1] = rgbd[1] - rgbi[1]; // delta green
+  rgbd[2] = rgbd[2] - rgbi[2]; // delta blue
 
 // indexes of P000 to P111 in clut
-  const int color = red + green * level + blue * level2;
-  const int i000 = color * 3;  // P000
-  const int i100 = i000 + 3;  // P100
-  const int i010 = (color + level) * 3;  // P010
-  const int i110 = i010 + 3;  //P110
-  const int i001 = (color + level2) * 3;  // P001
-  const int i101 = i001 + 3;  // P101
-  const int i011 = (color + level + level2) * 3;  // P011
-  const int i111 = i011 + 3;  // P111
+  const int color = rgbi[0] + rgbi[1] * level + rgbi[2] * level * level;
+  i = color * 3;  // P000
+  j = (color + 1) * 3;  // P100
 
-  if (r > g)
+  tmp[0] = clut[i] * (1 - rgbd[0]) + clut[j] * rgbd[0];
+  tmp[1] = clut[i+1] * (1 - rgbd[0]) + clut[j+1] * rgbd[0];
+  tmp[2] = clut[i+2] * (1 - rgbd[0]) + clut[j+2] * rgbd[0];
+
+  i = (color + level) * 3;  // P010
+  j = (color + level + 1) * 3;  //P110
+
+  tmp[3] = clut[i] * (1 - rgbd[0]) + clut[j] * rgbd[0];
+  tmp[4] = clut[i+1] * (1 - rgbd[0]) + clut[j+1] * rgbd[0];
+  tmp[5] = clut[i+2] * (1 - rgbd[0]) + clut[j+2] * rgbd[0];
+
+  output[0] = tmp[0] * (1 - rgbd[1]) + tmp[3] * rgbd[1];
+  output[1] = tmp[1] * (1 - rgbd[1]) + tmp[4] * rgbd[1];
+  output[2] = tmp[2] * (1 - rgbd[1]) + tmp[5] * rgbd[1];
+
+  i = (color + level2) * 3;  // P001
+  j = (color + level2 + 1) * 3;  // P101
+
+  tmp[0] = clut[i] * (1 - rgbd[0]) + clut[j] * rgbd[0];
+  tmp[1] = clut[i+1] * (1 - rgbd[0]) + clut[j+1] * rgbd[0];
+  tmp[2] = clut[i+2] * (1 - rgbd[0]) + clut[j+2] * rgbd[0];
+
+  i = (color + level + level2) * 3;  // P011
+  j = (color + level + level2 + 1) * 3;  // P111
+
+  tmp[3] = clut[i] * (1 - rgbd[0]) + clut[j] * rgbd[0];
+  tmp[4] = clut[i+1] * (1 - rgbd[0]) + clut[j+1] * rgbd[0];
+  tmp[5] = clut[i+2] * (1 - rgbd[0]) + clut[j+2] * rgbd[0];
+
+  tmp[0] = tmp[0] * (1 - rgbd[1]) + tmp[3] * rgbd[1];
+  tmp[1] = tmp[1] * (1 - rgbd[1]) + tmp[4] * rgbd[1];
+  tmp[2] = tmp[2] * (1 - rgbd[1]) + tmp[5] * rgbd[1];
+
+  output[0] = output[0] * (1 - rgbd[2]) + tmp[0] * rgbd[2];
+  output[1] = output[1] * (1 - rgbd[2]) + tmp[1] * rgbd[2];
+  output[2] = output[2] * (1 - rgbd[2]) + tmp[2] * rgbd[2];
+}
+// from OpenColorIO
+// https://github.com/imageworks/OpenColorIO/blob/master/src/OpenColorIO/ops/Lut3D/Lut3DOp.cpp
+void correct_pixel_tetrahedral(float *const input, float *const output, const float *const restrict clut, const uint8_t level)
+{
+  int rgbi[3];
+  float rgbd[3];
+  const int level2 = level * level;
+
+  for(int c = 0; c < 3; ++c) input[c] = input[c] < 0.0f ? 0.0f : (input[c] > 1.0f ? 1.0f : input[c]);
+  
+  rgbd[0] = input[0] * (float)(level - 1);
+  rgbd[1] = input[1] * (float)(level - 1);
+  rgbd[2] = input[2] * (float)(level - 1);
+
+  rgbi[0] = min( max( (int)rgbd[0], 0), level - 2);
+  rgbi[1] = min( max( (int)rgbd[1], 0), level - 2);
+  rgbi[2] = min( max( (int)rgbd[2], 0), level - 2);
+
+  rgbd[0] = rgbd[0] - rgbi[0]; // delta red
+  rgbd[1] = rgbd[1] - rgbi[1]; // delta green
+  rgbd[2] = rgbd[2] - rgbi[2]; // delta blue
+
+// indexes of P000 to P111 in clut
+  const int color = rgbi[0] + rgbi[1] * level + rgbi[2] * level * level;
+  const int i000 = color * 3;                     // P000
+  const int i100 = i000 + 3;                      // P100
+  const int i010 = (color + level) * 3;           // P010
+  const int i110 = i010 + 3;                      // P110
+  const int i001 = (color + level2) * 3;          // P001
+  const int i101 = i001 + 3;                      // P101
+  const int i011 = (color + level + level2) * 3;  // P011
+  const int i111 = i011 + 3;                      // P111
+
+  if (rgbd[0] > rgbd[1])
   {
-    if (g > b)
+    if (rgbd[1] > rgbd[2])
     {
-      output[0] = (1-r)*clut[i000] + (r-g)*clut[i100] + (g-b)*clut[i110] + b*clut[i111];
-      output[1] = (1-r)*clut[i000+1] + (r-g)*clut[i100+1] + (g-b)*clut[i110+1] + b*clut[i111+1];
-      output[2] = (1-r)*clut[i000+2] + (r-g)*clut[i100+2] + (g-b)*clut[i110+2] + b*clut[i111+2];
+      output[0] = (1-rgbd[0])*clut[i000] + (rgbd[0]-rgbd[1])*clut[i100] + (rgbd[1]-rgbd[2])*clut[i110] + rgbd[2]*clut[i111];
+      output[1] = (1-rgbd[0])*clut[i000+1] + (rgbd[0]-rgbd[1])*clut[i100+1] + (rgbd[1]-rgbd[2])*clut[i110+1] + rgbd[2]*clut[i111+1];
+      output[2] = (1-rgbd[0])*clut[i000+2] + (rgbd[0]-rgbd[1])*clut[i100+2] + (rgbd[1]-rgbd[2])*clut[i110+2] + rgbd[2]*clut[i111+2];
     }
-    else if (r > b)
+    else if (rgbd[0] > rgbd[2])
     {
-      output[0] = (1-r)*clut[i000] + (r-b)*clut[i100] + (b-g)*clut[i101] + g*clut[i111];
-      output[1] = (1-r)*clut[i000+1] + (r-b)*clut[i100+1] + (b-g)*clut[i101+1] + g*clut[i111+1];
-      output[2] = (1-r)*clut[i000+2] + (r-b)*clut[i100+2] + (b-g)*clut[i101+2] + g*clut[i111+2];
+      output[0] = (1-rgbd[0])*clut[i000] + (rgbd[0]-rgbd[2])*clut[i100] + (rgbd[2]-rgbd[1])*clut[i101] + rgbd[1]*clut[i111];
+      output[1] = (1-rgbd[0])*clut[i000+1] + (rgbd[0]-rgbd[2])*clut[i100+1] + (rgbd[2]-rgbd[1])*clut[i101+1] + rgbd[1]*clut[i111+1];
+      output[2] = (1-rgbd[0])*clut[i000+2] + (rgbd[0]-rgbd[2])*clut[i100+2] + (rgbd[2]-rgbd[1])*clut[i101+2] + rgbd[1]*clut[i111+2];
     }
     else
     {
-      output[0] = (1-b)*clut[i000] + (b-r)*clut[i001] + (r-g)*clut[i101] + g*clut[i111];
-      output[1] = (1-b)*clut[i000+1] + (b-r)*clut[i001+1] + (r-g)*clut[i101+1] + g*clut[i111+1];
-      output[2] = (1-b)*clut[i000+2] + (b-r)*clut[i001+2] + (r-g)*clut[i101+2] + g*clut[i111+2];
+      output[0] = (1-rgbd[2])*clut[i000] + (rgbd[2]-rgbd[0])*clut[i001] + (rgbd[0]-rgbd[1])*clut[i101] + rgbd[1]*clut[i111];
+      output[1] = (1-rgbd[2])*clut[i000+1] + (rgbd[2]-rgbd[0])*clut[i001+1] + (rgbd[0]-rgbd[1])*clut[i101+1] + rgbd[1]*clut[i111+1];
+      output[2] = (1-rgbd[2])*clut[i000+2] + (rgbd[2]-rgbd[0])*clut[i001+2] + (rgbd[0]-rgbd[1])*clut[i101+2] + rgbd[1]*clut[i111+2];
     }
   }
   else
   {
-    if (b > g)
+    if (rgbd[2] > rgbd[1])
     {
-      output[0] = (1-b)*clut[i000] + (b-g)*clut[i001] + (g-r)*clut[i011] + r*clut[i111];
-      output[1] = (1-b)*clut[i000+1] + (b-g)*clut[i001+1] + (g-r)*clut[i011+1] + r*clut[i111+1];
-      output[2] = (1-b)*clut[i000+2] + (b-g)*clut[i001+2] + (g-r)*clut[i011+2] + r*clut[i111+2];
+      output[0] = (1-rgbd[2])*clut[i000] + (rgbd[2]-rgbd[1])*clut[i001] + (rgbd[1]-rgbd[0])*clut[i011] + rgbd[0]*clut[i111];
+      output[1] = (1-rgbd[2])*clut[i000+1] + (rgbd[2]-rgbd[1])*clut[i001+1] + (rgbd[1]-rgbd[0])*clut[i011+1] + rgbd[0]*clut[i111+1];
+      output[2] = (1-rgbd[2])*clut[i000+2] + (rgbd[2]-rgbd[1])*clut[i001+2] + (rgbd[1]-rgbd[0])*clut[i011+2] + rgbd[0]*clut[i111+2];
     }
-    else if (b > r)
+    else if (rgbd[2] > rgbd[0])
     {
-      output[0] = (1-g)*clut[i000] + (g-b)*clut[i010] + (b-r)*clut[i011] + r*clut[i111];
-      output[1] = (1-g)*clut[i000+1] + (g-b)*clut[i010+1] + (b-r)*clut[i011+1] + r*clut[i111+1];
-      output[2] = (1-g)*clut[i000+2] + (g-b)*clut[i010+2] + (b-r)*clut[i011+2] + r*clut[i111+2];
+      output[0] = (1-rgbd[1])*clut[i000] + (rgbd[1]-rgbd[2])*clut[i010] + (rgbd[2]-rgbd[0])*clut[i011] + rgbd[0]*clut[i111];
+      output[1] = (1-rgbd[1])*clut[i000+1] + (rgbd[1]-rgbd[2])*clut[i010+1] + (rgbd[2]-rgbd[0])*clut[i011+1] + rgbd[0]*clut[i111+1];
+      output[2] = (1-rgbd[1])*clut[i000+2] + (rgbd[1]-rgbd[2])*clut[i010+2] + (rgbd[2]-rgbd[0])*clut[i011+2] + rgbd[0]*clut[i111+2];
     }
     else
     {
-      output[0] = (1-g)*clut[i000] + (g-r)*clut[i010] + (r-b)*clut[i110] + b*clut[i111];
-      output[1] = (1-g)*clut[i000+1] + (g-r)*clut[i010+1] + (r-b)*clut[i110+1] + b*clut[i111+1];
-      output[2] = (1-g)*clut[i000+2] + (g-r)*clut[i010+2] + (r-b)*clut[i110+2] + b*clut[i111+2];
+      output[0] = (1-rgbd[1])*clut[i000] + (rgbd[1]-rgbd[0])*clut[i010] + (rgbd[0]-rgbd[2])*clut[i110] + rgbd[2]*clut[i111];
+      output[1] = (1-rgbd[1])*clut[i000+1] + (rgbd[1]-rgbd[0])*clut[i010+1] + (rgbd[0]-rgbd[2])*clut[i110+1] + rgbd[2]*clut[i111+1];
+      output[2] = (1-rgbd[1])*clut[i000+2] + (rgbd[1]-rgbd[0])*clut[i010+2] + (rgbd[0]-rgbd[2])*clut[i110+2] + rgbd[2]*clut[i111+2];
     }
   }
 }
 // from Study on the 3D Interpolation Models Used in Color Conversion 
 // http://ijetch.org/papers/318-T860.pdf
-void correct_pixel_pyramid(float *input, float *output, const float *const clut, const uint8_t level)
+void correct_pixel_pyramid(float *const input, float *const output, const float *const restrict clut, const uint8_t level)
 {
-  int red, green, blue;
+  int rgbi[3];
+  float rgbd[3];
   const int level2 = level * level;
 
   for(int c = 0; c < 3; ++c) input[c] = input[c] < 0.0f ? 0.0f : (input[c] > 1.0f ? 1.0f : input[c]);
-  red = input[0] * (float)(level - 1);
-  if(red > level - 2) red = level - 2;
-  if(red < 0) red = 0;
-  green = input[1] * (float)(level - 1);
-  if(green > level - 2) green = level - 2;
-  if(green < 0) green = 0;
-  blue = input[2] * (float)(level - 1);
-  if(blue > level - 2) blue = level - 2;
-  if(blue < 0) blue = 0;
+  
+  rgbd[0] = input[0] * (float)(level - 1);
+  rgbd[1] = input[1] * (float)(level - 1);
+  rgbd[2] = input[2] * (float)(level - 1);
 
-  const float r = input[0] * (float)(level - 1) - red; // delta red
-  const float g = input[1] * (float)(level - 1) - green; // delta green
-  const float b = input[2] * (float)(level - 1) - blue; // delta blue
+  rgbi[0] = min( max( (int)rgbd[0], 0), level - 2);
+  rgbi[1] = min( max( (int)rgbd[1], 0), level - 2);
+  rgbi[2] = min( max( (int)rgbd[2], 0), level - 2);
+
+  rgbd[0] = rgbd[0] - rgbi[0]; // delta red
+  rgbd[1] = rgbd[1] - rgbi[1]; // delta green
+  rgbd[2] = rgbd[2] - rgbi[2]; // delta blue
 
 // indexes of P000 to P111 in clut
-  const int color = red + green * level + blue * level2;
-  const int i000 = color * 3;  // P000
-  const int i100 = i000 + 3;  // P100
-  const int i010 = (color + level) * 3;  // P010
-  const int i110 = i010 + 3;  //P110
-  const int i001 = (color + level2) * 3;  // P001
-  const int i101 = i001 + 3;  // P101
+  const int color = rgbi[0] + rgbi[1] * level + rgbi[2] * level * level;
+  const int i000 = color * 3;                     // P000
+  const int i100 = i000 + 3;                      // P100
+  const int i010 = (color + level) * 3;           // P010
+  const int i110 = i010 + 3;                      // P110
+  const int i001 = (color + level2) * 3;          // P001
+  const int i101 = i001 + 3;                      // P101
   const int i011 = (color + level + level2) * 3;  // P011
-  const int i111 = i011 + 3;  // P111
+  const int i111 = i011 + 3;                      // P111
 
-  if (g > r && b > r)
+  if (rgbd[1] > rgbd[0] && rgbd[2] > rgbd[0])
   {
-    output[0] = clut[i000] + (clut[i111]-clut[i011])*r + (clut[i010]-clut[i000])*g + (clut[i001]-clut[i000])*b
-      + (clut[i011]-clut[i001]-clut[i010]+clut[i000])*g*b;
-    output[1] = clut[i000+1] + (clut[i111+1]-clut[i011+1])*r + (clut[i010+1]-clut[i000+1])*g + (clut[i001+1]-clut[i000+1])*b
-      + (clut[i011+1]-clut[i001+1]-clut[i010+1]+clut[i000+1])*g*b;
-    output[2] = clut[i000+2] + (clut[i111+2]-clut[i011+2])*r + (clut[i010+2]-clut[i000+2])*g + (clut[i001+2]-clut[i000+2])*b
-      + (clut[i011+2]-clut[i001+2]-clut[i010+2]+clut[i000+2])*g*b;
+    output[0] = clut[i000] + (clut[i111]-clut[i011])*rgbd[0] + (clut[i010]-clut[i000])*rgbd[1] + (clut[i001]-clut[i000])*rgbd[2]
+      + (clut[i011]-clut[i001]-clut[i010]+clut[i000])*rgbd[1]*rgbd[2];
+    output[1] = clut[i000+1] + (clut[i111+1]-clut[i011+1])*rgbd[0] + (clut[i010+1]-clut[i000+1])*rgbd[1] + (clut[i001+1]-clut[i000+1])*rgbd[2]
+      + (clut[i011+1]-clut[i001+1]-clut[i010+1]+clut[i000+1])*rgbd[1]*rgbd[2];
+    output[2] = clut[i000+2] + (clut[i111+2]-clut[i011+2])*rgbd[0] + (clut[i010+2]-clut[i000+2])*rgbd[1] + (clut[i001+2]-clut[i000+2])*rgbd[2]
+      + (clut[i011+2]-clut[i001+2]-clut[i010+2]+clut[i000+2])*rgbd[1]*rgbd[2];
   }
-  else if (r > g && b > g)
+  else if (rgbd[0] > rgbd[1] && rgbd[2] > rgbd[1])
   {
-    output[0] = clut[i000] + (clut[i100]-clut[i000])*r + (clut[i111]-clut[i101])*g + (clut[i001]-clut[i000])*b
-      + (clut[i101]-clut[i001]-clut[i100]+clut[i000])*r*b;
-    output[1] = clut[i000+1] + (clut[i100+1]-clut[i000+1])*r + (clut[i111+1]-clut[i101+1])*g + (clut[i001+1]-clut[i000+1])*b
-      + (clut[i101+1]-clut[i001+1]-clut[i100+1]+clut[i000+1])*r*b;
-    output[2] = clut[i000+2] + (clut[i100+2]-clut[i000+2])*r + (clut[i111]-clut[i101+2])*g + (clut[i001+2]-clut[i000+2])*b
-      + (clut[i101+2]-clut[i001+2]-clut[i100+2]+clut[i000+2])*r*b;
+    output[0] = clut[i000] + (clut[i100]-clut[i000])*rgbd[0] + (clut[i111]-clut[i101])*rgbd[1] + (clut[i001]-clut[i000])*rgbd[2]
+      + (clut[i101]-clut[i001]-clut[i100]+clut[i000])*rgbd[0]*rgbd[2];
+    output[1] = clut[i000+1] + (clut[i100+1]-clut[i000+1])*rgbd[0] + (clut[i111+1]-clut[i101+1])*rgbd[1] + (clut[i001+1]-clut[i000+1])*rgbd[2]
+      + (clut[i101+1]-clut[i001+1]-clut[i100+1]+clut[i000+1])*rgbd[0]*rgbd[2];
+    output[2] = clut[i000+2] + (clut[i100+2]-clut[i000+2])*rgbd[0] + (clut[i111]-clut[i101+2])*rgbd[1] + (clut[i001+2]-clut[i000+2])*rgbd[2]
+      + (clut[i101+2]-clut[i001+2]-clut[i100+2]+clut[i000+2])*rgbd[0]*rgbd[2];
   }
   else
   {
-    output[0] = clut[i000] + (clut[i100]-clut[i000])*r + (clut[i010]-clut[i000])*g + (clut[i111]-clut[i110])*b
-      + (clut[i110]-clut[i100]-clut[i010]+clut[i000])*r*g;
-    output[1] = clut[i000+1] + (clut[i100+1]-clut[i000+1])*r + (clut[i010+1]-clut[i000+1])*g + (clut[i111+1]-clut[i110+1])*b
-      + (clut[i110+1]-clut[i100+1]-clut[i010+1]+clut[i000+1])*r*g;
-    output[2] = clut[i000+2] + (clut[i100+2]-clut[i000+2])*r + (clut[i010+2]-clut[i000+2])*g + (clut[i111+2]-clut[i110+2])*b
-      + (clut[i110+2]-clut[i100+2]-clut[i010+2]+clut[i000+2])*r*g;
+    output[0] = clut[i000] + (clut[i100]-clut[i000])*rgbd[0] + (clut[i010]-clut[i000])*rgbd[1] + (clut[i111]-clut[i110])*rgbd[2]
+      + (clut[i110]-clut[i100]-clut[i010]+clut[i000])*rgbd[0]*rgbd[1];
+    output[1] = clut[i000+1] + (clut[i100+1]-clut[i000+1])*rgbd[0] + (clut[i010+1]-clut[i000+1])*rgbd[1] + (clut[i111+1]-clut[i110+1])*rgbd[2]
+      + (clut[i110+1]-clut[i100+1]-clut[i010+1]+clut[i000+1])*rgbd[0]*rgbd[1];
+    output[2] = clut[i000+2] + (clut[i100+2]-clut[i000+2])*rgbd[0] + (clut[i010+2]-clut[i000+2])*rgbd[1] + (clut[i111+2]-clut[i110+2])*rgbd[2]
+      + (clut[i110+2]-clut[i100+2]-clut[i010+2]+clut[i000+2])*rgbd[0]*rgbd[1];
   }
 }
 
@@ -690,6 +684,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
+  const int width = roi_in->width;
+  const int height = roi_in->height;  
   const int ch = piece->colors;
   const float *const clut = (float *)d->clut;
   const uint8_t level = d->level;
@@ -713,40 +709,31 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, roi_in->width, roi_in->height, work_profile, lut_profile, "linrec2020 to LUT Space");
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for simd default(none) schedule(static)
 #endif
-      for(int j = 0; j < roi_out->height; j++)
+      for(int i = 0; i < width * height * ch; i+=ch)
       {
-        float *out = ((float *)obuf) + (size_t)ch * roi_out->width * j;
-        for(int i = 0; i < roi_out->width; i++)
-        {
-          interpolation_worker(out, out, clut, level);
-          out += ch;
-        }
+        float *const out = ((float *const)obuf) + i;
+        interpolation_worker(out, out, clut, level);
       }
       dt_ioppr_transform_image_colorspace_rgb(obuf, obuf, roi_in->width, roi_in->height, lut_profile, work_profile, "LUT space to linrec2020");
     }
     else
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for simd default(none) schedule(static)
 #endif
-      for(int j = 0; j < roi_out->height; j++)
+      for(int i = 0; i < width * height * ch; i+=ch)
       {
-        float *in = ((float *)ibuf) + (size_t)ch * roi_out->width * j;
-        float *out = ((float *)obuf) + (size_t)ch * roi_out->width * j;
-        for(int i = 0; i < roi_out->width; i++)
-        {
-          interpolation_worker(in, out, clut, level);
-          in += ch;
-          out += ch;
-        }
+        float *const in = ((float *const)ibuf) + i;
+        float *const out = ((float *const)obuf) + i;
+        interpolation_worker(in, out, clut, level);
       }      
     }
   }
   else  // no clut
   {
-    memcpy(obuf, ibuf, roi_in->width * roi_in->height * 4 * sizeof(float));
+    memcpy(obuf, ibuf, width * height * 4 * sizeof(float));
   }
 }
 
