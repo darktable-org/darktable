@@ -1207,7 +1207,7 @@ static void fontsel_callback(GtkWidget *button, gpointer user_data)
   if(self->dt->gui->reset) return;
   dt_iop_watermark_params_t *p = (dt_iop_watermark_params_t *)self->params;
 
-  snprintf(p->font, sizeof(p->font), "%s", gtk_font_button_get_font_name(GTK_FONT_BUTTON(button)));
+  snprintf(p->font, sizeof(p->font), "%s", gtk_font_chooser_get_font(GTK_FONT_CHOOSER(button)));
   dt_conf_set_string("plugins/darkroom/watermark/font", p->font);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1316,7 +1316,7 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_entry_set_text(GTK_ENTRY(g->text), p->text);
   GdkRGBA color = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpick), &color);
-  gtk_font_button_set_font_name(GTK_FONT_BUTTON(g->fontsel), p->font);
+  gtk_font_chooser_set_font(GTK_FONT_CHOOSER(g->fontsel), p->font);
 }
 
 void init(dt_iop_module_t *module)
