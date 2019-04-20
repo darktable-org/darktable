@@ -271,11 +271,7 @@ static void _main_do_event(GdkEvent *event, gpointer data)
             if(!is_language_supported) lang = "en";
             char *url = g_build_path("/", base_url, lang, help_url, NULL);
             // TODO: call the web browser directly so that file:// style base for local installs works
-#if GTK_CHECK_VERSION(3, 22, 0)
             gtk_show_uri_on_window(GTK_WINDOW(win), url, gtk_get_current_event_time(), NULL);
-#else
-            gtk_show_uri(gdk_screen_get_default(), url, gtk_get_current_event_time(), NULL);
-#endif
             g_free(base_url);
             g_free(url);
             dt_control_log(_("help url opened in web browser"));
