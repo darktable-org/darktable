@@ -1025,7 +1025,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
       g_list_free(childs);
 
       childs = gtk_container_get_children(GTK_CONTAINER(header));
-      wlabel = g_list_nth(childs, 2)->data;
+      wlabel = g_list_nth(childs, 1)->data;
       g_list_free(childs);
       gchar *label = dt_history_item_get_name_html(module);
       gtk_label_set_markup(GTK_LABEL(wlabel), label);
