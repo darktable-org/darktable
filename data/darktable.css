@@ -905,6 +905,11 @@ checkbutton check
   margin: 2pt;
 }
 
+#iop-bottom-bar
+{
+    min-height: 1.2em;
+}
+
 combobox label
 {
   margin: 0 5px 0 0;
