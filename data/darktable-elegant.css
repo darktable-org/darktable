@@ -805,7 +805,6 @@ notebook tab:focus label
   color: @bauhaus_fg;
 }
 
-
 #bauhaus-popup:hover,
 #bauhaus-combobox:hover,
 #bauhaus-slider:hover
@@ -906,6 +905,11 @@ checkbutton check
 #lib-plugin-ui button
 {
   margin: 2pt;
+}
+
+#iop-bottom-bar
+{
+    min-height: 1.2em;
 }
 
 combobox label

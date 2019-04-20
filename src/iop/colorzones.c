@@ -2175,8 +2175,11 @@ void gui_init(struct dt_iop_module_t *self)
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
+  GtkWidget *dabox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_widget_set_name(GTK_WIDGET(dabox), "iop-bottom-bar");
   c->bottom_area = gtk_drawing_area_new();
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->bottom_area), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(dabox), GTK_WIDGET(c->bottom_area), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(dabox), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 0);
 
   c->chk_edit_by_area = gtk_check_button_new_with_label(_("edit by area"));
