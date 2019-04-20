@@ -120,9 +120,9 @@ void correct_pixel_trilinear(float *const input, float *const output, const floa
   rgbd[1] = input[1] * (float)(level - 1);
   rgbd[2] = input[2] * (float)(level - 1);
 
-  rgbi[0] = min( max( (int)rgbd[0], 0), level - 2);
-  rgbi[1] = min( max( (int)rgbd[1], 0), level - 2);
-  rgbi[2] = min( max( (int)rgbd[2], 0), level - 2);
+  rgbi[0] = CLAMP((int)rgbd[0], 0, level - 2);
+  rgbi[1] = CLAMP((int)rgbd[1], 0, level - 2);
+  rgbi[2] = CLAMP((int)rgbd[2], 0, level - 2);
 
   rgbd[0] = rgbd[0] - rgbi[0]; // delta red
   rgbd[1] = rgbd[1] - rgbi[1]; // delta green
@@ -184,9 +184,9 @@ void correct_pixel_tetrahedral(float *const input, float *const output, const fl
   rgbd[1] = input[1] * (float)(level - 1);
   rgbd[2] = input[2] * (float)(level - 1);
 
-  rgbi[0] = min( max( (int)rgbd[0], 0), level - 2);
-  rgbi[1] = min( max( (int)rgbd[1], 0), level - 2);
-  rgbi[2] = min( max( (int)rgbd[2], 0), level - 2);
+  rgbi[0] = CLAMP((int)rgbd[0], 0, level - 2);
+  rgbi[1] = CLAMP((int)rgbd[1], 0, level - 2);
+  rgbi[2] = CLAMP((int)rgbd[2], 0, level - 2);
 
   rgbd[0] = rgbd[0] - rgbi[0]; // delta red
   rgbd[1] = rgbd[1] - rgbi[1]; // delta green
@@ -260,9 +260,9 @@ void correct_pixel_pyramid(float *const input, float *const output, const float 
   rgbd[1] = input[1] * (float)(level - 1);
   rgbd[2] = input[2] * (float)(level - 1);
 
-  rgbi[0] = min( max( (int)rgbd[0], 0), level - 2);
-  rgbi[1] = min( max( (int)rgbd[1], 0), level - 2);
-  rgbi[2] = min( max( (int)rgbd[2], 0), level - 2);
+  rgbi[0] = CLAMP((int)rgbd[0], 0, level - 2);
+  rgbi[1] = CLAMP((int)rgbd[1], 0, level - 2);
+  rgbi[2] = CLAMP((int)rgbd[2], 0, level - 2);
 
   rgbd[0] = rgbd[0] - rgbi[0]; // delta red
   rgbd[1] = rgbd[1] - rgbi[1]; // delta green
@@ -339,7 +339,7 @@ uint8_t calculate_clut_haldclut(char *filepath, float **clut)
   }
   level *= level;  // to be equivalent to cube level
   const size_t buf_size = (size_t)png.height * png_get_rowbytes(png.png_ptr, png.info_ptr);
-  dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for png file\n", buf_size);
+  dt_print(DT_DEBUG_DEV, "[lut3d] allocating %d bytes for png file\n", buf_size);
   uint8_t *buf = NULL;
   buf = dt_alloc_align(16, buf_size);
   if(!buf)
@@ -358,7 +358,7 @@ uint8_t calculate_clut_haldclut(char *filepath, float **clut)
     return 0;
   }
   const size_t buf_size_lut = (size_t)png.height * png.height * 3;
-  dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu floats for png lut - level %d\n", buf_size_lut, level);
+  dt_print(DT_DEBUG_DEV, "[lut3d] allocating %d floats for png lut - level %d\n", buf_size_lut, level);
   float *lclut = dt_alloc_align(16, buf_size_lut * sizeof(float));
   if(!lclut)
   {
@@ -562,7 +562,7 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
       {
         level = atoll(token[1]);
         buf_size = level * level * level * 3;
-        dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for cube lut - level %d\n", buf_size, level);
+        dt_print(DT_DEBUG_DEV, "[lut3d] allocating %d bytes for cube lut - level %d\n", buf_size, level);
         lclut = dt_alloc_align(16, buf_size * sizeof(float));
         if(!lclut)
         {
@@ -911,8 +911,11 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
 
     if (strcmp(lutfolder, filepath) < 0)
     { // remove root lut folder from file path
-      gchar *c = filepath + strlen(lutfolder) + 1;
-      strcpy(filepath, (gchar *)c);
+      const int j = strlen(lutfolder) + 1;
+      int i;
+      for(i = 0; filepath[i+j] != '\0'; i++)
+        filepath[i] = filepath[i+j];
+      filepath[i] = '\0';
     }
     else // file chosen outside of root folder
     {
