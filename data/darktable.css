@@ -391,6 +391,27 @@ button:disabled,
   min-width: 1em;
 }
 
+#control-button
+{
+    background-color: transparent;
+    min-height: 1em;
+    min-width: 1em;
+    padding: 0.2em;
+    margin: 0;
+    border: 0;
+}
+
+#control-button:hover
+{
+    color: @button_hover_fg;
+    background-color: @button_hover_bg;
+    min-height: 1em;
+    min-width: 1em;
+    padding: 0.2em;
+    border: 0;
+    margin: 0;
+}
+
 /* Checkbox */
 
 #lib-plugin-ui checkbutton check,
