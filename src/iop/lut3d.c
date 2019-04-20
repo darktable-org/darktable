@@ -114,7 +114,7 @@ void correct_pixel_trilinear(float *const input, float *const output, const floa
   float rgbd[3];
   const int level2 = level * level;
 
-  for(int c = 0; c < 3; ++c) input[c] = input[c] < 0.0f ? 0.0f : (input[c] > 1.0f ? 1.0f : input[c]);
+  for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
   
   rgbd[0] = input[0] * (float)(level - 1);
   rgbd[1] = input[1] * (float)(level - 1);
@@ -178,7 +178,7 @@ void correct_pixel_tetrahedral(float *const input, float *const output, const fl
   float rgbd[3];
   const int level2 = level * level;
 
-  for(int c = 0; c < 3; ++c) input[c] = input[c] < 0.0f ? 0.0f : (input[c] > 1.0f ? 1.0f : input[c]);
+  for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
   
   rgbd[0] = input[0] * (float)(level - 1);
   rgbd[1] = input[1] * (float)(level - 1);
@@ -254,7 +254,7 @@ void correct_pixel_pyramid(float *const input, float *const output, const float 
   float rgbd[3];
   const int level2 = level * level;
 
-  for(int c = 0; c < 3; ++c) input[c] = input[c] < 0.0f ? 0.0f : (input[c] > 1.0f ? 1.0f : input[c]);
+  for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
   
   rgbd[0] = input[0] * (float)(level - 1);
   rgbd[1] = input[1] * (float)(level - 1);
@@ -707,7 +707,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     if (transform)
     {
-      dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, roi_in->width, roi_in->height, work_profile, lut_profile, "linrec2020 to LUT Space");
+      dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, width, height, work_profile, lut_profile, "linrec2020 to LUT Space");
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) schedule(static)
 #endif
@@ -716,7 +716,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         float *const out = ((float *const)obuf) + i;
         interpolation_worker(out, out, clut, level);
       }
-      dt_ioppr_transform_image_colorspace_rgb(obuf, obuf, roi_in->width, roi_in->height, lut_profile, work_profile, "LUT space to linrec2020");
+      dt_ioppr_transform_image_colorspace_rgb(obuf, obuf, width, height, lut_profile, work_profile, "LUT space to linrec2020");
     }
     else
     {
