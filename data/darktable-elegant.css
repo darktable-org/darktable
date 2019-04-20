@@ -85,7 +85,7 @@
 @define-color bauhaus_indicator_border @grey_20;
 @define-color bauhaus_fill @grey_40;
 @define-color bauhaus_bg @grey_15;
-@define-color bauhaus_fg_hover @grey_80;
+@define-color bauhaus_fg_hover @grey_90;
 @define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5);
 
 @define-color button_bg @grey_25;
@@ -149,6 +149,7 @@
 {
   background-color: @bg_color;
   background-image: none;
+  font-weight: 200;
   font-family: "Roboto Light", "Segoe UI Light", "SF Pro Display Light", "Ubuntu Light", "Cantarell", sans-serif;
   font-size: 1em;
   color: @fg_color;
@@ -307,7 +308,7 @@ button
   border: 1px solid @button_border;
   background-color: @button_bg;
   color: @button_fg;
-  font-weight: 600;
+  font-weight: 500;
   font-family: "Roboto Medium", "Segoe UI Semibold", "SF Pro Display Medium", "Ubuntu Medium", "Cantarell", sans-serif;
   min-height: 1em;
   min-width: 1em;
@@ -466,7 +467,7 @@ entry selection
   padding: 0 0 3pt 0;
   color: @section_label;
   border-bottom: 0.5pt solid  @section_label;
-  font-weight: 600;
+  font-weight: 500;
   font-family: "Roboto Medium", "Segoe UI Semibold", "SF Pro Display Medium", "Ubuntu Medium", "Cantarell", sans-serif;
 }
 
