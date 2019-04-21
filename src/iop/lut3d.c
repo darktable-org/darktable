@@ -55,7 +55,8 @@ typedef enum dt_iop_lut3d_interpolation_t
   DT_IOP_PYRAMID = 2,
 } dt_iop_lut3d_interpolation_t;
 
-typedef void((*dt_interpolation_worker)(float *input, float *output, const float *const clut, const uint8_t level));
+typedef void((*dt_interpolation_worker)(float *const restrict input, float *const restrict output,
+  const float *const restrict clut, const uint8_t level));
 
 typedef struct dt_iop_lut3d_params_t
 {
@@ -107,7 +108,8 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 }
 
 // From `HaldCLUT_correct.c' by Eskil Steenberg (http://www.quelsolaar.com) (BSD licensed)
-void correct_pixel_trilinear(float *const input, float *const output, const float *const restrict clut, const uint8_t level)
+void correct_pixel_trilinear(float *const restrict input, float *const restrict output,
+  const float *const restrict clut, const uint8_t level)
 {
   int rgbi[3], i, j;
   float tmp[6];
@@ -172,7 +174,8 @@ void correct_pixel_trilinear(float *const input, float *const output, const floa
 }
 // from OpenColorIO
 // https://github.com/imageworks/OpenColorIO/blob/master/src/OpenColorIO/ops/Lut3D/Lut3DOp.cpp
-void correct_pixel_tetrahedral(float *const input, float *const output, const float *const restrict clut, const uint8_t level)
+void correct_pixel_tetrahedral(float *const restrict input, float *const restrict output,
+  const float *const restrict clut, const uint8_t level)
 {
   int rgbi[3];
   float rgbd[3];
@@ -248,7 +251,8 @@ void correct_pixel_tetrahedral(float *const input, float *const output, const fl
 }
 // from Study on the 3D Interpolation Models Used in Color Conversion 
 // http://ijetch.org/papers/318-T860.pdf
-void correct_pixel_pyramid(float *const input, float *const output, const float *const restrict clut, const uint8_t level)
+void correct_pixel_pyramid(float *const restrict input, float *const restrict output, 
+  const float *const restrict clut, const uint8_t level)
 {
   int rgbi[3];
   float rgbd[3];
@@ -624,7 +628,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     : (d->params.colorspace == DT_IOP_LIN_REC709) ? DT_COLORSPACE_LIN_REC709
     : DT_COLORSPACE_LIN_REC2020;
   const dt_iop_order_iccprofile_info_t *const lut_profile
-    = (colorspace != DT_COLORSPACE_LIN_REC2020) ? dt_ioppr_add_profile_info_to_list(self->dev, colorspace, "", INTENT_PERCEPTUAL) : NULL;
+    = dt_ioppr_add_profile_info_to_list(self->dev, colorspace, "", INTENT_PERCEPTUAL);
   const dt_iop_order_iccprofile_info_t *const work_profile
     = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   gboolean transform = (work_profile != NULL && lut_profile != NULL) ? TRUE : FALSE;
@@ -644,7 +648,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     }
     if (transform)
     {
-      const int success = dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_in, dev_out, width, height, work_profile, lut_profile, "linrec2020 to LUT Space");
+      const int success = dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_in, dev_out, width, height,
+        work_profile, lut_profile, "work profile to LUT profile");
       if (!success)
        transform = FALSE;
     }
@@ -660,7 +665,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&level);
     err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if (transform)
-      dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_out, dev_out, width, height, lut_profile, work_profile, "LUT Space to linrec2020");
+      dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_out, dev_out, width, height,
+        lut_profile, work_profile, "LUT profile to work profile");
   }
   else  // no clut, do nothing
   {
@@ -699,7 +705,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     : (d->params.colorspace == DT_IOP_LIN_REC709) ? DT_COLORSPACE_LIN_REC709
     : DT_COLORSPACE_LIN_REC2020;
   const dt_iop_order_iccprofile_info_t *const lut_profile
-    = (colorspace != DT_COLORSPACE_LIN_REC2020) ? dt_ioppr_add_profile_info_to_list(self->dev, colorspace, "", INTENT_PERCEPTUAL) : NULL;
+    = dt_ioppr_add_profile_info_to_list(self->dev, colorspace, "", INTENT_PERCEPTUAL);
   const dt_iop_order_iccprofile_info_t *const work_profile
     = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
   const gboolean transform = (work_profile != NULL && lut_profile != NULL) ? TRUE : FALSE;
@@ -707,16 +713,20 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     if (transform)
     {
-      dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, width, height, work_profile, lut_profile, "linrec2020 to LUT Space");
+      dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, width, height,
+        work_profile, lut_profile, "work profile to LUT profile");
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) schedule(static)
 #endif
       for(int i = 0; i < width * height * ch; i+=ch)
       {
+        float input[4];
         float *const out = ((float *const)obuf) + i;
-        interpolation_worker(out, out, clut, level);
+        for (int j = 0; j < ch; j++) input[j] = out[j];
+        interpolation_worker((float *const)&input, out, clut, level);
       }
-      dt_ioppr_transform_image_colorspace_rgb(obuf, obuf, width, height, lut_profile, work_profile, "LUT space to linrec2020");
+      dt_ioppr_transform_image_colorspace_rgb(obuf, obuf, width, height,
+        lut_profile, work_profile, "LUT profile to work profile");
     }
     else
     {
