@@ -3742,8 +3742,8 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "select single image"), GDK_KEY_Return, 0);
 
   // Preview key
-  dt_accel_register_view(self, NC_("accel", "preview"), GDK_KEY_z, 0);
-  dt_accel_register_view(self, NC_("accel", "preview with focus detection"), GDK_KEY_z, GDK_CONTROL_MASK);
+  dt_accel_register_view(self, NC_("accel", "preview"), GDK_KEY_w, 0);
+  dt_accel_register_view(self, NC_("accel", "preview with focus detection"), GDK_KEY_w, GDK_CONTROL_MASK);
   dt_accel_register_view(self, NC_("accel", "sticky preview"), 0, 0);
   dt_accel_register_view(self, NC_("accel", "sticky preview with focus detection"), 0, 0);
 
