@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-14 14:56+0200\n"
+"POT-Creation-Date: 2019-04-21 17:59+0200\n"
 "PO-Revision-Date: 2019-04-14 15:01+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
@@ -708,7 +708,7 @@ msgstr "fonctionnement"
 
 #: ../build/src/preferences_gen.h:3330 ../src/imageio/format/j2k.c:652
 #: ../src/imageio/format/jpeg.c:594 ../src/imageio/format/webp.c:326
-#: ../src/libs/camera.c:602
+#: ../src/libs/camera.c:594
 msgid "quality"
 msgstr "qualité"
 
@@ -1294,23 +1294,23 @@ msgstr ""
 "impossible d'obtenir les paramètres du module de format, exportation "
 "abandonnée..."
 
-#: ../src/common/collection.c:441
+#: ../src/common/collection.c:521
 msgid "too much time to update aspect ratio for the collection"
 msgstr "trop de temps pour mettre à jour l'aspect pour la collection"
 
-#: ../src/common/collection.c:1090 ../src/develop/lightroom.c:824
+#: ../src/common/collection.c:1241 ../src/develop/lightroom.c:824
 #: ../src/iop/bilateral.cc:367 ../src/iop/channelmixer.c:456
 #: ../src/iop/channelmixer.c:467 ../src/iop/colorbalance.c:2479
 #: ../src/iop/temperature.c:1358 ../src/libs/collect.c:1290
 msgid "red"
 msgstr "rouge"
 
-#: ../src/common/collection.c:1092 ../src/develop/lightroom.c:826
+#: ../src/common/collection.c:1243 ../src/develop/lightroom.c:826
 #: ../src/iop/temperature.c:1349 ../src/libs/collect.c:1290
 msgid "yellow"
 msgstr "jaune"
 
-#: ../src/common/collection.c:1094 ../src/develop/lightroom.c:828
+#: ../src/common/collection.c:1245 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:368 ../src/iop/channelmixer.c:457
 #: ../src/iop/channelmixer.c:473 ../src/iop/colorbalance.c:2486
 #: ../src/iop/temperature.c:1346 ../src/iop/temperature.c:1359
@@ -1318,40 +1318,40 @@ msgstr "jaune"
 msgid "green"
 msgstr "vert"
 
-#: ../src/common/collection.c:1096 ../src/develop/lightroom.c:830
+#: ../src/common/collection.c:1247 ../src/develop/lightroom.c:830
 #: ../src/iop/bilateral.cc:369 ../src/iop/channelmixer.c:458
 #: ../src/iop/channelmixer.c:479 ../src/iop/colorbalance.c:2493
 #: ../src/iop/temperature.c:1360 ../src/libs/collect.c:1290
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/common/collection.c:1098 ../src/libs/collect.c:1290
+#: ../src/common/collection.c:1249 ../src/libs/collect.c:1290
 msgid "purple"
 msgstr "violet"
 
-#: ../src/common/collection.c:1107 ../src/libs/collect.c:1257
+#: ../src/common/collection.c:1258 ../src/libs/collect.c:1257
 msgid "altered"
 msgstr "développées"
 
-#: ../src/common/collection.c:1113 ../src/libs/collect.c:1266
+#: ../src/common/collection.c:1264 ../src/libs/collect.c:1266
 msgid "tagged"
 msgstr "positionnée"
 
-#: ../src/common/collection.c:1119 ../src/libs/collect.c:1275
+#: ../src/common/collection.c:1270 ../src/libs/collect.c:1275
 msgid "not copied locally"
 msgstr "non copiée localement"
 
 #. grouping
-#: ../src/common/collection.c:1332 ../src/libs/collect.c:1379
+#: ../src/common/collection.c:1483 ../src/libs/collect.c:1379
 msgid "group leaders"
 msgstr "tête de groupe"
 
-#: ../src/common/collection.c:1530
+#: ../src/common/collection.c:1681
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
 msgstr "« %d » image sur « %d » (#%d) sélectionnée dans la collection courante"
 
-#: ../src/common/collection.c:1536
+#: ../src/common/collection.c:1687
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
@@ -1365,7 +1365,7 @@ msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
 #: ../src/common/colorspaces.c:935 ../src/common/colorspaces.c:1240
-#: ../src/iop/colorin.c:2081 ../src/libs/print_settings.c:1038
+#: ../src/iop/colorin.c:2081 ../src/libs/print_settings.c:1036
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatible)"
 
@@ -1384,7 +1384,7 @@ msgid "linear XYZ"
 msgstr "linéaire XYZ"
 
 #: ../src/common/colorspaces.c:939 ../src/common/colorspaces.c:1259
-#: ../src/libs/colorpicker.c:570 ../src/libs/colorpicker.c:607
+#: ../src/libs/colorpicker.c:570 ../src/libs/colorpicker.c:606
 msgid "Lab"
 msgstr "Lab"
 
@@ -1431,7 +1431,7 @@ msgid "export profile"
 msgstr "profil d'exportation"
 
 #: ../src/common/colorspaces.c:950 ../src/common/colorspaces.c:1216
-#: ../src/views/darkroom.c:1974
+#: ../src/views/darkroom.c:1973
 msgid "softproof profile"
 msgstr "épreuvage écran"
 
@@ -1444,7 +1444,7 @@ msgstr "profil de travail"
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (ex: JPG)"
 
-#: ../src/common/colorspaces.c:1235 ../src/libs/print_settings.c:1031
+#: ../src/common/colorspaces.c:1235 ../src/libs/print_settings.c:1029
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web)"
 
@@ -1515,18 +1515,18 @@ msgstr ""
 "particulièrement si la configuration a été changée manuellement.\n"
 "voulez-vous exécuter une nouvelle configuration de la performance?\n"
 
-#: ../src/common/darktable.c:789 ../src/imageio/format/pdf.c:666
-#: ../src/imageio/format/pdf.c:691 ../src/imageio/storage/flickr.c:497
+#: ../src/common/darktable.c:789 ../src/imageio/format/pdf.c:667
+#: ../src/imageio/format/pdf.c:692 ../src/imageio/storage/flickr.c:498
 #: ../src/imageio/storage/piwigo.c:822 ../src/iop/clipping.c:1991
-#: ../src/libs/export.c:631 ../src/libs/export.c:637
+#: ../src/libs/export.c:610 ../src/libs/export.c:616
 #: ../src/libs/metadata_view.c:270
 msgid "no"
 msgstr "non"
 
-#: ../src/common/darktable.c:789 ../src/imageio/format/pdf.c:667
-#: ../src/imageio/format/pdf.c:692 ../src/imageio/storage/flickr.c:496
+#: ../src/common/darktable.c:789 ../src/imageio/format/pdf.c:668
+#: ../src/imageio/format/pdf.c:693 ../src/imageio/storage/flickr.c:497
 #: ../src/imageio/storage/piwigo.c:821 ../src/iop/clipping.c:1992
-#: ../src/libs/export.c:632 ../src/libs/export.c:638
+#: ../src/libs/export.c:611 ../src/libs/export.c:617
 #: ../src/libs/metadata_view.c:270
 msgid "yes"
 msgstr "oui"
@@ -1823,15 +1823,15 @@ msgid "opencl scheduling profile set to default."
 msgstr "profil de planification opencl par défaut positionné"
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.c:1814
-#: ../src/libs/print_settings.c:1290
+#: ../src/libs/print_settings.c:1288
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:89 ../src/libs/print_settings.c:1291
+#: ../src/common/pdf.h:89 ../src/libs/print_settings.c:1289
 msgid "cm"
 msgstr "cm"
 
-#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:1292
+#: ../src/common/pdf.h:90 ../src/libs/print_settings.c:1290
 msgid "inch"
 msgstr "pouce"
 
@@ -1899,7 +1899,7 @@ msgstr "le style « %s » a été créé"
 
 #. fail :(
 #: ../src/common/styles.c:500 ../src/common/styles.c:518
-#: ../src/views/darkroom.c:539 ../src/views/print.c:249
+#: ../src/views/darkroom.c:538 ../src/views/print.c:249
 msgid "no image selected!"
 msgstr "aucune image sélectionnée"
 
@@ -2170,7 +2170,7 @@ msgid_plural "exporting %d images to %s"
 msgstr[0] "exportation de %d image vers %s"
 msgstr[1] "exportation de %d images vers %s"
 
-#: ../src/control/jobs/control_jobs.c:1359 ../src/views/darkroom.c:552
+#: ../src/control/jobs/control_jobs.c:1359 ../src/views/darkroom.c:551
 #: ../src/views/print.c:262
 #, c-format
 msgid "image `%s' is currently unavailable"
@@ -3294,7 +3294,7 @@ msgstr "lumière du soir"
 msgid "underwater"
 msgstr "sous l'eau"
 
-#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1871
+#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1870
 msgid "black & white"
 msgstr "noir et blanc"
 
@@ -3745,7 +3745,7 @@ msgstr "sections de spirale d'or"
 msgid "golden spiral"
 msgstr "spirale d'or"
 
-#: ../src/gui/guides.c:374 ../src/imageio/format/pdf.c:678
+#: ../src/gui/guides.c:374 ../src/imageio/format/pdf.c:679
 #: ../src/iop/denoiseprofile.c:3259 ../src/iop/lens.c:2160
 #: ../src/iop/rawdenoise.c:956 ../src/libs/tools/filter.c:125
 msgid "all"
@@ -3886,7 +3886,7 @@ msgstr "objectif"
 
 #. iso
 #: ../src/gui/preferences.c:506 ../src/gui/preferences.c:1388
-#: ../src/gui/presets.c:451 ../src/libs/camera.c:596 ../src/libs/collect.h:37
+#: ../src/gui/presets.c:451 ../src/libs/camera.c:588 ../src/libs/collect.h:37
 #: ../src/libs/metadata_view.c:113
 msgid "ISO"
 msgstr "ISO"
@@ -3894,21 +3894,21 @@ msgstr "ISO"
 #. exposure
 #: ../src/gui/preferences.c:510 ../src/gui/preferences.c:1401
 #: ../src/gui/presets.c:464 ../src/iop/basicadj.c:684 ../src/iop/exposure.c:107
-#: ../src/iop/exposure.c:885 ../src/iop/relight.c:360 ../src/libs/collect.h:37
+#: ../src/iop/exposure.c:875 ../src/iop/relight.c:360 ../src/libs/collect.h:37
 #: ../src/libs/metadata_view.c:110
 msgid "exposure"
 msgstr "exposition"
 
 #. aperture
 #: ../src/gui/preferences.c:514 ../src/gui/preferences.c:1416
-#: ../src/gui/presets.c:479 ../src/libs/camera.c:583 ../src/libs/camera.c:585
+#: ../src/gui/presets.c:479 ../src/libs/camera.c:575 ../src/libs/camera.c:577
 #: ../src/libs/collect.h:37 ../src/libs/metadata_view.c:109
 msgid "aperture"
 msgstr "ouverture"
 
 #. focal length
 #: ../src/gui/preferences.c:518 ../src/gui/preferences.c:1431
-#: ../src/gui/presets.c:494 ../src/iop/ashift.c:4835 ../src/libs/camera.c:588
+#: ../src/gui/presets.c:494 ../src/iop/ashift.c:4835 ../src/libs/camera.c:580
 #: ../src/libs/collect.h:36 ../src/libs/metadata_view.c:111
 msgid "focal length"
 msgstr "focale"
@@ -3939,7 +3939,7 @@ msgstr "lien"
 
 #. Export button
 #. export button
-#: ../src/gui/preferences.c:630 ../src/libs/export.c:717
+#: ../src/gui/preferences.c:630 ../src/libs/export.c:696
 #: ../src/libs/styles.c:472
 msgid "export"
 msgstr "exporter"
@@ -4275,7 +4275,7 @@ msgstr "8 bits"
 msgid "16 bit"
 msgstr "16 bits"
 
-#: ../src/imageio/format/pdf.c:200 ../src/imageio/format/pdf.c:485
+#: ../src/imageio/format/pdf.c:200 ../src/imageio/format/pdf.c:486
 msgid "invalid paper size"
 msgstr "taille du papier non valide"
 
@@ -4284,10 +4284,10 @@ msgid "invalid border size, using 0"
 msgstr "taille des bords non valide, 0 est utilisé"
 
 #: ../src/imageio/format/pdf.c:256 ../src/imageio/storage/disk.c:330
-#: ../src/imageio/storage/email.c:135 ../src/imageio/storage/facebook.c:1306
-#: ../src/imageio/storage/flickr.c:654 ../src/imageio/storage/gallery.c:345
+#: ../src/imageio/storage/email.c:135 ../src/imageio/storage/facebook.c:1307
+#: ../src/imageio/storage/flickr.c:655 ../src/imageio/storage/gallery.c:345
 #: ../src/imageio/storage/gallery.c:386
-#: ../src/imageio/storage/googlephoto.c:1375
+#: ../src/imageio/storage/googlephoto.c:1376
 #: ../src/imageio/storage/piwigo.c:974
 #, c-format
 msgid "could not export to file `%s'!"
@@ -4302,25 +4302,25 @@ msgstr "PDF"
 #. clang-format off
 #. xmp
 #. DT_COLLECTION_SORT_CUSTOM_ORDER
-#: ../src/imageio/format/pdf.c:580 ../src/imageio/storage/facebook.c:1118
-#: ../src/imageio/storage/flickr.c:538 ../src/imageio/storage/gallery.c:184
-#: ../src/imageio/storage/latex.c:184 ../src/imageio/storage/googlephoto.c:1231
+#: ../src/imageio/format/pdf.c:581 ../src/imageio/storage/facebook.c:1119
+#: ../src/imageio/storage/flickr.c:539 ../src/imageio/storage/gallery.c:184
+#: ../src/imageio/storage/latex.c:184 ../src/imageio/storage/googlephoto.c:1232
 #: ../src/imageio/storage/piwigo.c:864 ../src/libs/collect.h:34
 #: ../src/libs/metadata.c:347 ../src/libs/metadata_view.c:122
 #: ../src/libs/tools/filter.c:155
 msgid "title"
 msgstr "titre"
 
-#: ../src/imageio/format/pdf.c:590
+#: ../src/imageio/format/pdf.c:591
 msgid "enter the title of the pdf"
 msgstr "entrer le titre du pdf"
 
 #. // papers
-#: ../src/imageio/format/pdf.c:603 ../src/libs/print_settings.c:1275
+#: ../src/imageio/format/pdf.c:604 ../src/libs/print_settings.c:1273
 msgid "paper size"
 msgstr "taille papier"
 
-#: ../src/imageio/format/pdf.c:608
+#: ../src/imageio/format/pdf.c:609
 msgid ""
 "paper size of the pdf\n"
 "either one from the list or \"<width> [unit] x <height> <unit>\n"
@@ -4330,30 +4330,30 @@ msgstr ""
 "soit une valeur depuis la liste ou  \"<largeur> [unité] x <hauteur> <unité>\n"
 "exemple: 210 mm x 2.97 cm"
 
-#: ../src/imageio/format/pdf.c:618
+#: ../src/imageio/format/pdf.c:619
 msgid "page orientation"
 msgstr "orientation de la page"
 
-#: ../src/imageio/format/pdf.c:619 ../src/iop/borders.c:1022
-#: ../src/libs/print_settings.c:1284
+#: ../src/imageio/format/pdf.c:620 ../src/iop/borders.c:1022
+#: ../src/libs/print_settings.c:1282
 msgid "portrait"
 msgstr "portrait"
 
-#: ../src/imageio/format/pdf.c:620 ../src/iop/borders.c:1023
-#: ../src/libs/print_settings.c:1285
+#: ../src/imageio/format/pdf.c:621 ../src/iop/borders.c:1023
+#: ../src/libs/print_settings.c:1283
 msgid "landscape"
 msgstr "paysage"
 
-#: ../src/imageio/format/pdf.c:623
+#: ../src/imageio/format/pdf.c:624
 msgid "paper orientation of the pdf"
 msgstr "orientation du papier du pdf"
 
 #. border
-#: ../src/imageio/format/pdf.c:628
+#: ../src/imageio/format/pdf.c:629
 msgid "border"
 msgstr "bords"
 
-#: ../src/imageio/format/pdf.c:638
+#: ../src/imageio/format/pdf.c:639
 msgid ""
 "empty space around the pdf\n"
 "format: size + unit\n"
@@ -4364,19 +4364,19 @@ msgstr ""
 "exemples: 10 mm, 1 pouce"
 
 #. dpi
-#: ../src/imageio/format/pdf.c:650
+#: ../src/imageio/format/pdf.c:651
 msgid "dpi"
 msgstr "dpi"
 
-#: ../src/imageio/format/pdf.c:658
+#: ../src/imageio/format/pdf.c:659
 msgid "dpi of the images inside the pdf"
 msgstr "dpi des images embarquées dans le pdf"
 
-#: ../src/imageio/format/pdf.c:665
+#: ../src/imageio/format/pdf.c:666
 msgid "rotate images"
 msgstr "retournement des images"
 
-#: ../src/imageio/format/pdf.c:670
+#: ../src/imageio/format/pdf.c:671
 msgid ""
 "images can be rotated to match the pdf orientation to waste less space when "
 "printing"
@@ -4384,55 +4384,55 @@ msgstr ""
 "les images peuvent être tournées pour correspondre à l'orientation du pdf et "
 "gâcher moins d'espace lors de l'impression"
 
-#: ../src/imageio/format/pdf.c:677
+#: ../src/imageio/format/pdf.c:678
 msgid "TODO: pages"
 msgstr ""
 
-#: ../src/imageio/format/pdf.c:679
+#: ../src/imageio/format/pdf.c:680
 msgid "single images"
 msgstr "image unique"
 
-#: ../src/imageio/format/pdf.c:680
+#: ../src/imageio/format/pdf.c:681
 msgid "contact sheet"
 msgstr "planche contacte"
 
 #. gtk_grid_attach(grid, GTK_WIDGET(d->pages), 0, ++line, 2, 1);
 #. g_signal_connect(G_OBJECT(d->pages), "value-changed", G_CALLBACK(pages_toggle_callback), self);
-#: ../src/imageio/format/pdf.c:683
+#: ../src/imageio/format/pdf.c:684
 msgid "what pages should be added to the pdf"
 msgstr "quelles pages sont à ajouter au pdf"
 
-#: ../src/imageio/format/pdf.c:690
+#: ../src/imageio/format/pdf.c:691
 msgid "embed icc profiles"
 msgstr "profil icc intégré"
 
-#: ../src/imageio/format/pdf.c:695
+#: ../src/imageio/format/pdf.c:696
 msgid "images can be tagged with their icc profile"
 msgstr "le profil icc à embarquer dans les images"
 
-#: ../src/imageio/format/pdf.c:701 ../src/imageio/format/png.c:526
+#: ../src/imageio/format/pdf.c:702 ../src/imageio/format/png.c:526
 #: ../src/imageio/format/tiff.c:466
 msgid "bit depth"
 msgstr "bits"
 
-#: ../src/imageio/format/pdf.c:711
+#: ../src/imageio/format/pdf.c:712
 msgid "bits per channel of the embedded images"
 msgstr "nombre de bit pour les images embarquées"
 
-#: ../src/imageio/format/pdf.c:717 ../src/imageio/format/png.c:540
+#: ../src/imageio/format/pdf.c:718 ../src/imageio/format/png.c:540
 #: ../src/imageio/format/tiff.c:481 ../src/iop/graduatednd.c:1211
 msgid "compression"
 msgstr "dégradé"
 
-#: ../src/imageio/format/pdf.c:718 ../src/imageio/format/tiff.c:482
+#: ../src/imageio/format/pdf.c:719 ../src/imageio/format/tiff.c:482
 msgid "uncompressed"
 msgstr "non compressé"
 
-#: ../src/imageio/format/pdf.c:719 ../src/imageio/format/tiff.c:483
+#: ../src/imageio/format/pdf.c:720 ../src/imageio/format/tiff.c:483
 msgid "deflate"
 msgstr "deflate"
 
-#: ../src/imageio/format/pdf.c:722
+#: ../src/imageio/format/pdf.c:723
 msgid ""
 "method used for image compression\n"
 "uncompressed -- fast but big files\n"
@@ -4442,23 +4442,23 @@ msgstr ""
 "non-compressée -- rapide mais taille importante\n"
 "deflate -- taille réduite mais plus lent "
 
-#: ../src/imageio/format/pdf.c:730
+#: ../src/imageio/format/pdf.c:731
 msgid "image mode"
 msgstr "mode de l'image"
 
-#: ../src/imageio/format/pdf.c:731
+#: ../src/imageio/format/pdf.c:732
 msgid "normal"
 msgstr "normal"
 
-#: ../src/imageio/format/pdf.c:732
+#: ../src/imageio/format/pdf.c:733
 msgid "draft"
 msgstr "épreuve"
 
-#: ../src/imageio/format/pdf.c:733
+#: ../src/imageio/format/pdf.c:734
 msgid "debug"
 msgstr "débogage"
 
-#: ../src/imageio/format/pdf.c:736
+#: ../src/imageio/format/pdf.c:737
 msgid ""
 "normal -- just put the images into the pdf\n"
 "draft -- images are replaced with boxes\n"
@@ -4639,7 +4639,7 @@ msgid "[facebook] unexpected URL format\n"
 msgstr "[facebook] format d'URL inconnu\n"
 
 #. //////////// build & show the validation dialog
-#: ../src/imageio/storage/facebook.c:619
+#: ../src/imageio/storage/facebook.c:620
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your facebook account there and authorize darktable to "
@@ -4649,36 +4649,36 @@ msgstr ""
 "navigateur. connectez-vous à votre compte facebook et autorisez darktable à "
 "charger des fichiers pour continuer."
 
-#: ../src/imageio/storage/facebook.c:622
+#: ../src/imageio/storage/facebook.c:623
 msgid ""
 "step 2: paste your browser URL and click the OK button once you are done."
 msgstr "étape 2 : coller l'URL du navigateur cliquez sur OK"
 
-#: ../src/imageio/storage/facebook.c:628 ../src/imageio/storage/facebook.c:723
+#: ../src/imageio/storage/facebook.c:629 ../src/imageio/storage/facebook.c:724
 msgid "facebook authentication"
 msgstr "authentification facebook"
 
-#: ../src/imageio/storage/facebook.c:636
+#: ../src/imageio/storage/facebook.c:637
 msgid "URL:"
 msgstr "URL:"
 
-#: ../src/imageio/storage/facebook.c:658
+#: ../src/imageio/storage/facebook.c:659
 msgid "please enter the validation URL"
 msgstr "entrer l'URL de validation"
 
-#: ../src/imageio/storage/facebook.c:668
+#: ../src/imageio/storage/facebook.c:669
 msgid "the given URL is not valid, it should look like: "
 msgstr "l'URL donnée n'est pas valide, elle devrait ressembler à :"
 
-#: ../src/imageio/storage/facebook.c:699
+#: ../src/imageio/storage/facebook.c:700
 msgid "authentication successful"
 msgstr "authentification avec succès"
 
-#: ../src/imageio/storage/facebook.c:703
+#: ../src/imageio/storage/facebook.c:704
 msgid "authentication failed"
 msgstr "l'authentification a échoué"
 
-#: ../src/imageio/storage/facebook.c:716
+#: ../src/imageio/storage/facebook.c:717
 msgid ""
 "a new window or tab of your browser should have been loaded. you have to "
 "login into your facebook account there and authorize darktable to upload "
@@ -4688,92 +4688,92 @@ msgstr ""
 "connectez-vous à votre compte facebook et autorisez darktable à charger des "
 "photos pour continuer."
 
-#: ../src/imageio/storage/facebook.c:849
-#: ../src/imageio/storage/googlephoto.c:940
+#: ../src/imageio/storage/facebook.c:850
+#: ../src/imageio/storage/googlephoto.c:941
 msgid "new account"
 msgstr "nouveau compte"
 
-#: ../src/imageio/storage/facebook.c:854
-#: ../src/imageio/storage/googlephoto.c:945
+#: ../src/imageio/storage/facebook.c:855
+#: ../src/imageio/storage/googlephoto.c:946
 msgid "other account"
 msgstr "autre compte"
 
-#: ../src/imageio/storage/facebook.c:883
-#: ../src/imageio/storage/googlephoto.c:973
+#: ../src/imageio/storage/facebook.c:884
+#: ../src/imageio/storage/googlephoto.c:974
 msgid "unable to retrieve the album list"
 msgstr "impossible de rafraîchir la liste d'album"
 
-#: ../src/imageio/storage/facebook.c:891 ../src/imageio/storage/flickr.c:392
-#: ../src/imageio/storage/flickr.c:419 ../src/imageio/storage/googlephoto.c:983
+#: ../src/imageio/storage/facebook.c:892 ../src/imageio/storage/flickr.c:393
+#: ../src/imageio/storage/flickr.c:420 ../src/imageio/storage/googlephoto.c:984
 #: ../src/imageio/storage/piwigo.c:523 ../src/imageio/storage/piwigo.c:587
 msgid "create new album"
 msgstr "créer un nouvel album"
 
-#: ../src/imageio/storage/facebook.c:963
-#: ../src/imageio/storage/googlephoto.c:1036
-#: ../src/imageio/storage/googlephoto.c:1186
+#: ../src/imageio/storage/facebook.c:964
+#: ../src/imageio/storage/googlephoto.c:1037
+#: ../src/imageio/storage/googlephoto.c:1187
 msgid "logout"
 msgstr "se déconnecter"
 
 #. Set default permission to private
 #. login button
-#: ../src/imageio/storage/facebook.c:969 ../src/imageio/storage/facebook.c:989
-#: ../src/imageio/storage/facebook.c:1036
-#: ../src/imageio/storage/facebook.c:1062
-#: ../src/imageio/storage/facebook.c:1181 ../src/imageio/storage/flickr.c:480
-#: ../src/imageio/storage/googlephoto.c:1042
-#: ../src/imageio/storage/googlephoto.c:1190
-#: ../src/imageio/storage/googlephoto.c:1203
-#: ../src/imageio/storage/googlephoto.c:1270
+#: ../src/imageio/storage/facebook.c:970 ../src/imageio/storage/facebook.c:990
+#: ../src/imageio/storage/facebook.c:1037
+#: ../src/imageio/storage/facebook.c:1063
+#: ../src/imageio/storage/facebook.c:1182 ../src/imageio/storage/flickr.c:481
+#: ../src/imageio/storage/googlephoto.c:1043
+#: ../src/imageio/storage/googlephoto.c:1191
+#: ../src/imageio/storage/googlephoto.c:1204
+#: ../src/imageio/storage/googlephoto.c:1271
 #: ../src/imageio/storage/piwigo.c:809
 msgid "login"
 msgstr "connexion"
 
-#: ../src/imageio/storage/facebook.c:1097
+#: ../src/imageio/storage/facebook.c:1098
 msgid "facebook webalbum"
 msgstr "album web facebook"
 
-#: ../src/imageio/storage/facebook.c:1119 ../src/imageio/storage/flickr.c:553
+#: ../src/imageio/storage/facebook.c:1120 ../src/imageio/storage/flickr.c:554
 msgid "summary"
 msgstr "résumé"
 
-#: ../src/imageio/storage/facebook.c:1120
+#: ../src/imageio/storage/facebook.c:1121
 msgid "privacy"
 msgstr "vie privée"
 
-#: ../src/imageio/storage/facebook.c:1166
+#: ../src/imageio/storage/facebook.c:1167
 msgid "only me"
 msgstr "juste moi"
 
-#: ../src/imageio/storage/facebook.c:1169 ../src/imageio/storage/flickr.c:506
+#: ../src/imageio/storage/facebook.c:1170 ../src/imageio/storage/flickr.c:507
 #: ../src/imageio/storage/piwigo.c:835
 msgid "friends"
 msgstr "amis"
 
-#: ../src/imageio/storage/facebook.c:1172
+#: ../src/imageio/storage/facebook.c:1173
 msgid "public"
 msgstr "public"
 
-#: ../src/imageio/storage/facebook.c:1175
+#: ../src/imageio/storage/facebook.c:1176
 msgid "friends of friends"
 msgstr "amis d'amis"
 
-#: ../src/imageio/storage/facebook.c:1315
-#: ../src/imageio/storage/googlephoto.c:1384
+#: ../src/imageio/storage/facebook.c:1316
+#: ../src/imageio/storage/googlephoto.c:1385
 msgid "unable to create album, no title provided"
 msgstr "impossible de créer un album, titre manquant"
 
-#: ../src/imageio/storage/facebook.c:1324
-#: ../src/imageio/storage/googlephoto.c:1391
+#: ../src/imageio/storage/facebook.c:1325
+#: ../src/imageio/storage/googlephoto.c:1392
 msgid "unable to create album"
 msgstr "impossible de créer un nouvel album"
 
-#: ../src/imageio/storage/facebook.c:1334
+#: ../src/imageio/storage/facebook.c:1335
 msgid "unable to export photo to webalbum"
 msgstr "impossible d'exporter les photos vers l'album web"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/facebook.c:1346
+#: ../src/imageio/storage/facebook.c:1347
 #, c-format
 msgid "%d/%d exported to facebook webalbum"
 msgid_plural "%d/%d exported to facebook webalbum"
@@ -4785,7 +4785,7 @@ msgstr[1] "%d/%d exportées vers l'album web facebook"
 msgid "flickr authentication: %s"
 msgstr "authentification flickr: %s"
 
-#: ../src/imageio/storage/flickr.c:196
+#: ../src/imageio/storage/flickr.c:197
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your flickr account there and authorize darktable to "
@@ -4795,94 +4795,94 @@ msgstr ""
 "navigateur. Connectez-vous à votre compte flickr et autorisez darktable à "
 "charger des fichiers pour continuer."
 
-#: ../src/imageio/storage/flickr.c:198
+#: ../src/imageio/storage/flickr.c:199
 msgid "step 2: click the OK button once you are done."
 msgstr "étape 2 : cliquez sur \"OK\""
 
-#: ../src/imageio/storage/flickr.c:203
+#: ../src/imageio/storage/flickr.c:204
 msgid "flickr authentication"
 msgstr "authentification flickr"
 
-#: ../src/imageio/storage/flickr.c:316
+#: ../src/imageio/storage/flickr.c:317
 msgid "flickr webalbum"
 msgstr "album web flickr"
 
-#: ../src/imageio/storage/flickr.c:337 ../src/imageio/storage/flickr.c:377
-#: ../src/imageio/storage/flickr.c:831 ../src/imageio/storage/flickr.c:837
+#: ../src/imageio/storage/flickr.c:338 ../src/imageio/storage/flickr.c:378
+#: ../src/imageio/storage/flickr.c:832 ../src/imageio/storage/flickr.c:838
 #: ../src/imageio/storage/piwigo.c:471 ../src/imageio/storage/piwigo.c:486
 #: ../src/imageio/storage/piwigo.c:498
 msgid "not authenticated"
 msgstr "non authentifié"
 
-#: ../src/imageio/storage/flickr.c:373 ../src/imageio/storage/flickr.c:827
+#: ../src/imageio/storage/flickr.c:374 ../src/imageio/storage/flickr.c:828
 #: ../src/imageio/storage/piwigo.c:463
 msgid "authenticated"
 msgstr "authentifié"
 
 #. Add standard action
-#: ../src/imageio/storage/flickr.c:391
+#: ../src/imageio/storage/flickr.c:392
 msgid "without album"
 msgstr "sans album"
 
-#: ../src/imageio/storage/flickr.c:467
+#: ../src/imageio/storage/flickr.c:468
 msgid "flickr user"
 msgstr "utilisateur"
 
-#: ../src/imageio/storage/flickr.c:481
+#: ../src/imageio/storage/flickr.c:482
 msgid "flickr login"
 msgstr "identifiant flickr"
 
-#: ../src/imageio/storage/flickr.c:495 ../src/imageio/storage/piwigo.c:820
+#: ../src/imageio/storage/flickr.c:496 ../src/imageio/storage/piwigo.c:820
 msgid "export tags"
 msgstr "exporter les mots-clés"
 
-#: ../src/imageio/storage/flickr.c:504 ../src/imageio/storage/piwigo.c:832
+#: ../src/imageio/storage/flickr.c:505 ../src/imageio/storage/piwigo.c:832
 msgid "visible to"
 msgstr "visible par"
 
-#: ../src/imageio/storage/flickr.c:505 ../src/imageio/storage/piwigo.c:837
+#: ../src/imageio/storage/flickr.c:506 ../src/imageio/storage/piwigo.c:837
 msgid "you"
 msgstr "vous"
 
-#: ../src/imageio/storage/flickr.c:507 ../src/imageio/storage/piwigo.c:836
+#: ../src/imageio/storage/flickr.c:508 ../src/imageio/storage/piwigo.c:836
 msgid "family"
 msgstr "famille"
 
-#: ../src/imageio/storage/flickr.c:508
+#: ../src/imageio/storage/flickr.c:509
 msgid "friends + family"
 msgstr "amis + famille"
 
-#: ../src/imageio/storage/flickr.c:509 ../src/imageio/storage/piwigo.c:833
+#: ../src/imageio/storage/flickr.c:510 ../src/imageio/storage/piwigo.c:833
 msgid "everyone"
 msgstr "tout le monde"
 
 #. Available albums
-#: ../src/imageio/storage/flickr.c:517
+#: ../src/imageio/storage/flickr.c:518
 msgid "photosets"
 msgstr "albums"
 
-#: ../src/imageio/storage/flickr.c:523 ../src/imageio/storage/piwigo.c:851
+#: ../src/imageio/storage/flickr.c:524 ../src/imageio/storage/piwigo.c:851
 msgid "refresh album list"
 msgstr "rafraîchir la liste d'album"
 
-#: ../src/imageio/storage/flickr.c:544
+#: ../src/imageio/storage/flickr.c:545
 msgid "my new photoset"
 msgstr "mon nouvel album"
 
-#: ../src/imageio/storage/flickr.c:559
+#: ../src/imageio/storage/flickr.c:560
 msgid "exported from darktable"
 msgstr "exportée depuis darktable"
 
-#: ../src/imageio/storage/flickr.c:566 ../src/imageio/storage/piwigo.c:882
+#: ../src/imageio/storage/flickr.c:567 ../src/imageio/storage/piwigo.c:882
 msgid "click login button to start"
 msgstr "appuyer sur connexion pour commencer"
 
-#: ../src/imageio/storage/flickr.c:674
+#: ../src/imageio/storage/flickr.c:675
 msgid "could not upload to flickr!"
 msgstr "impossible d'exporter sur flickr!"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/flickr.c:725
+#: ../src/imageio/storage/flickr.c:726
 #, c-format
 msgid "%d/%d exported to flickr webalbum"
 msgid_plural "%d/%d exported to flickr webalbum"
@@ -4907,7 +4907,7 @@ msgid "enter the title of the book"
 msgstr "entrer le titre du livre"
 
 #. //////////// build & show the validation dialog
-#: ../src/imageio/storage/googlephoto.c:759
+#: ../src/imageio/storage/googlephoto.c:760
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your google account there and authorize darktable to "
@@ -4917,7 +4917,7 @@ msgstr ""
 "navigateur. connectez-vous à votre compte google et autorisez darktable à "
 "charger des fichiers pour continuer."
 
-#: ../src/imageio/storage/googlephoto.c:762
+#: ../src/imageio/storage/googlephoto.c:763
 msgid ""
 "step 2: paste the verification code shown to you in the browser and click "
 "the OK button once you are done."
@@ -4925,28 +4925,28 @@ msgstr ""
 "étape 2 : coller le code de vérification affiché par le navigateur et "
 "cliquer \"OK\""
 
-#: ../src/imageio/storage/googlephoto.c:768
+#: ../src/imageio/storage/googlephoto.c:769
 msgid "google authentication"
 msgstr "authentification google photos"
 
-#: ../src/imageio/storage/googlephoto.c:776
+#: ../src/imageio/storage/googlephoto.c:777
 msgid "verification code:"
 msgstr "code de vérification"
 
-#: ../src/imageio/storage/googlephoto.c:799
+#: ../src/imageio/storage/googlephoto.c:800
 msgid "please enter the verification code"
 msgstr "merci d'entrer le code de vérification"
 
-#: ../src/imageio/storage/googlephoto.c:1218
+#: ../src/imageio/storage/googlephoto.c:1219
 msgid "google photos"
 msgstr "google photos"
 
-#: ../src/imageio/storage/googlephoto.c:1401
+#: ../src/imageio/storage/googlephoto.c:1402
 msgid "unable to export to google photos album"
 msgstr "impossible d'exporter vers l'album google photos"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/googlephoto.c:1414
+#: ../src/imageio/storage/googlephoto.c:1415
 #, c-format
 msgid "%d/%d exported to google photos album"
 msgid_plural "%d/%d exported to google photos album"
@@ -5372,7 +5372,7 @@ msgid "contrasty"
 msgstr "contrasté"
 
 #: ../src/iop/atrous.c:1600 ../src/iop/atrous.c:1604
-#: ../src/iop/colorzones.c:2200 ../src/iop/denoiseprofile.c:3039
+#: ../src/iop/colorzones.c:2203 ../src/iop/denoiseprofile.c:3039
 #: ../src/iop/rawdenoise.c:802
 msgid "smooth"
 msgstr "flou"
@@ -5419,12 +5419,12 @@ msgstr ""
 "change les halos de contour à chaque niveau de détail\n"
 "change uniquement les résultats des sections luma et chroma"
 
-#: ../src/iop/atrous.c:1859 ../src/iop/colorzones.c:2208
+#: ../src/iop/atrous.c:1859 ../src/iop/colorzones.c:2211
 #: ../src/iop/soften.c:734
 msgid "mix"
 msgstr "fusion"
 
-#: ../src/iop/atrous.c:1860 ../src/iop/colorzones.c:2209
+#: ../src/iop/atrous.c:1860 ../src/iop/colorzones.c:2212
 msgid "make effect stronger or weaker"
 msgstr "rend l'effet plus fort ou plus faible"
 
@@ -5498,7 +5498,7 @@ msgstr "similaire nokia"
 
 #. clang-format off
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:223 ../src/iop/colorzones.c:2240
+#: ../src/iop/basecurve.c:223 ../src/iop/colorzones.c:2243
 #: ../src/iop/rgbcurve.c:1566 ../src/iop/tonecurve.c:1278
 msgid "cubic spline"
 msgstr "spline cubique"
@@ -5544,9 +5544,9 @@ msgstr "fusion d'exposition"
 #: ../src/iop/clipping.c:1981 ../src/iop/clipping.c:2121
 #: ../src/iop/clipping.c:2148 ../src/iop/colorreconstruction.c:1372
 #: ../src/iop/lens.c:2154 ../src/iop/retouch.c:582 ../src/iop/rgbcurve.c:1587
-#: ../src/libs/export.c:530 ../src/libs/live_view.c:350
+#: ../src/libs/export.c:509 ../src/libs/live_view.c:350
 #: ../src/libs/live_view.c:375 ../src/libs/live_view.c:384
-#: ../src/libs/print_settings.c:1473
+#: ../src/libs/print_settings.c:1471
 msgid "none"
 msgstr "sans"
 
@@ -5591,7 +5591,7 @@ msgstr "biais d'exposition"
 msgid "basic adjustments"
 msgstr "ajustement de base"
 
-#: ../src/iop/basicadj.c:672 ../src/iop/exposure.c:872
+#: ../src/iop/basicadj.c:672 ../src/iop/exposure.c:885
 msgid "black level correction"
 msgstr "correction du niveau du noir"
 
@@ -5607,7 +5607,7 @@ msgstr ""
 "si mal ajusté, les couleurs très sombres hors gamut seront tronquées\n"
 "en poussant les valeurs RGB négativement."
 
-#: ../src/iop/basicadj.c:686 ../src/iop/exposure.c:883
+#: ../src/iop/basicadj.c:686 ../src/iop/exposure.c:873
 msgid "adjust the exposure correction"
 msgstr "ajuste la correction d'exposition"
 
@@ -5665,7 +5665,7 @@ msgstr "ajustement de la luminosité"
 #: ../src/iop/colorbalance.c:2521 ../src/iop/colorbalance.c:2570
 #: ../src/iop/colorchecker.c:1381 ../src/iop/colorcorrection.c:292
 #: ../src/iop/colorize.c:428 ../src/iop/colorzones.c:2145
-#: ../src/iop/colorzones.c:2193 ../src/iop/graduatednd.c:1247
+#: ../src/iop/colorzones.c:2196 ../src/iop/graduatednd.c:1247
 #: ../src/iop/lowpass.c:678 ../src/iop/soften.c:719
 #: ../src/iop/splittoning.c:595 ../src/iop/vignette.c:1155
 msgid "saturation"
@@ -5710,8 +5710,8 @@ msgstr "laplacien local: résultat incohérent"
 #: ../src/iop/denoiseprofile.c:3337 ../src/iop/exposure.c:853
 #: ../src/iop/lens.c:2303 ../src/iop/levels.c:669
 #: ../src/iop/profile_gamma.c:840 ../src/iop/rgbcurve.c:1480
-#: ../src/libs/copy_history.c:425 ../src/libs/export.c:691
-#: ../src/libs/print_settings.c:1514 ../src/views/darkroom.c:1806
+#: ../src/libs/copy_history.c:425 ../src/libs/export.c:670
+#: ../src/libs/print_settings.c:1512 ../src/views/darkroom.c:1805
 msgid "mode"
 msgstr "mode"
 
@@ -5854,7 +5854,7 @@ msgctxt "accel"
 msgid "strength"
 msgstr "force"
 
-#: ../src/iop/bloom.c:518 ../src/iop/soften.c:712 ../src/libs/camera.c:605
+#: ../src/iop/bloom.c:518 ../src/iop/soften.c:712 ../src/libs/camera.c:597
 msgid "size"
 msgstr "taille"
 
@@ -6002,7 +6002,7 @@ msgstr ""
 "d'entrer des dimensions personnalisées (l:h)"
 
 #: ../src/iop/borders.c:1020 ../src/iop/flip.c:75
-#: ../src/libs/print_settings.c:1283
+#: ../src/libs/print_settings.c:1281
 msgid "orientation"
 msgstr "orientation"
 
@@ -6116,14 +6116,14 @@ msgstr "canal de destination"
 #: ../src/iop/colorbalance.c:2508 ../src/iop/colorbalance.c:2557
 #: ../src/iop/colorize.c:413 ../src/iop/colorreconstruction.c:1369
 #: ../src/iop/colorreconstruction.c:1374 ../src/iop/colorzones.c:2147
-#: ../src/iop/colorzones.c:2192 ../src/iop/graduatednd.c:1232
+#: ../src/iop/colorzones.c:2195 ../src/iop/graduatednd.c:1232
 #: ../src/iop/splittoning.c:580
 msgid "hue"
 msgstr "teinte"
 
 #: ../src/iop/channelmixer.c:455 ../src/iop/colorchecker.c:1363
 #: ../src/iop/colorize.c:439 ../src/iop/colorzones.c:2142
-#: ../src/iop/colorzones.c:2194
+#: ../src/iop/colorzones.c:2197
 msgid "lightness"
 msgstr "clarté"
 
@@ -6967,31 +6967,31 @@ msgstr "profil de sortie non supporté, remplacé par sRGB !"
 msgid "output intent"
 msgstr "rendu (sortie)"
 
-#: ../src/iop/colorout.c:856 ../src/libs/export.c:674
-#: ../src/libs/print_settings.c:1243 ../src/libs/print_settings.c:1458
-#: ../src/views/darkroom.c:1949 ../src/views/darkroom.c:1957
+#: ../src/iop/colorout.c:856 ../src/libs/export.c:653
+#: ../src/libs/print_settings.c:1241 ../src/libs/print_settings.c:1456
+#: ../src/views/darkroom.c:1948 ../src/views/darkroom.c:1956
 #: ../src/views/lighttable.c:4126 ../src/views/lighttable.c:4134
 msgid "perceptual"
 msgstr "perceptif"
 
-#: ../src/iop/colorout.c:857 ../src/libs/export.c:675
-#: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1459
-#: ../src/views/darkroom.c:1950 ../src/views/darkroom.c:1958
+#: ../src/iop/colorout.c:857 ../src/libs/export.c:654
+#: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1457
+#: ../src/views/darkroom.c:1949 ../src/views/darkroom.c:1957
 #: ../src/views/lighttable.c:4127 ../src/views/lighttable.c:4135
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
-#: ../src/iop/colorout.c:858 ../src/libs/export.c:676
-#: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
-#: ../src/views/darkroom.c:1951 ../src/views/darkroom.c:1959
+#: ../src/iop/colorout.c:858 ../src/libs/export.c:655
+#: ../src/libs/print_settings.c:1243 ../src/libs/print_settings.c:1458
+#: ../src/views/darkroom.c:1950 ../src/views/darkroom.c:1958
 #: ../src/views/lighttable.c:4128 ../src/views/lighttable.c:4136
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
 
-#: ../src/iop/colorout.c:859 ../src/libs/export.c:677
-#: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
-#: ../src/views/darkroom.c:1952 ../src/views/darkroom.c:1960
+#: ../src/iop/colorout.c:859 ../src/libs/export.c:656
+#: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1459
+#: ../src/views/darkroom.c:1951 ../src/views/darkroom.c:1959
 #: ../src/views/lighttable.c:4129 ../src/views/lighttable.c:4137
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
@@ -7155,50 +7155,50 @@ msgstr ""
 "ctrl+clic pour créer une courbe positive\n"
 "shift-clic pour créer une courbe négative"
 
-#: ../src/iop/colorzones.c:2182
+#: ../src/iop/colorzones.c:2185
 msgid "edit by area"
 msgstr "éditer par zone"
 
-#: ../src/iop/colorzones.c:2184
+#: ../src/iop/colorzones.c:2187
 msgid "edit the curve nodes by area"
 msgstr "édition de la courbe par zone"
 
-#: ../src/iop/colorzones.c:2190
+#: ../src/iop/colorzones.c:2193
 msgid "select by"
 msgstr "sélection par"
 
-#: ../src/iop/colorzones.c:2191
+#: ../src/iop/colorzones.c:2194
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "critère de sélection; correspond à l’abscisse du graphique"
 
-#: ../src/iop/colorzones.c:2199
+#: ../src/iop/colorzones.c:2202
 msgid "process mode"
 msgstr "mode"
 
-#: ../src/iop/colorzones.c:2201
+#: ../src/iop/colorzones.c:2204
 msgid "strong"
 msgstr "prononcé"
 
-#: ../src/iop/colorzones.c:2203
+#: ../src/iop/colorzones.c:2206
 msgid "choose between a smoother or stronger effect"
 msgstr "choisir entre un effet prononcé ou plus doux"
 
-#: ../src/iop/colorzones.c:2239 ../src/iop/rgbcurve.c:1565
+#: ../src/iop/colorzones.c:2242 ../src/iop/rgbcurve.c:1565
 #: ../src/iop/tonecurve.c:1277
 msgid "interpolation method"
 msgstr "méthode d'interpolation"
 
-#: ../src/iop/colorzones.c:2241 ../src/iop/rgbcurve.c:1567
+#: ../src/iop/colorzones.c:2244 ../src/iop/rgbcurve.c:1567
 #: ../src/iop/tonecurve.c:1279
 msgid "centripetal spline"
 msgstr "spline centripète"
 
-#: ../src/iop/colorzones.c:2242 ../src/iop/rgbcurve.c:1568
+#: ../src/iop/colorzones.c:2245 ../src/iop/rgbcurve.c:1568
 #: ../src/iop/tonecurve.c:1280
 msgid "monotonic spline"
 msgstr "spline monotone"
 
-#: ../src/iop/colorzones.c:2246 ../src/iop/rgbcurve.c:1572
+#: ../src/iop/colorzones.c:2249 ../src/iop/rgbcurve.c:1572
 #: ../src/iop/tonecurve.c:1282
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
@@ -7524,8 +7524,8 @@ msgstr ""
 "en activant cette option le traitement est changé, une fois activé\n"
 "il ne sera plus possible de revenir aux anciens algorithmes."
 
-#: ../src/iop/denoiseprofile.c:3336 ../src/libs/export.c:650
-#: ../src/libs/print_settings.c:1187 ../src/libs/print_settings.c:1407
+#: ../src/iop/denoiseprofile.c:3336 ../src/libs/export.c:629
+#: ../src/libs/print_settings.c:1185 ../src/libs/print_settings.c:1405
 msgid "profile"
 msgstr "profil"
 
@@ -7741,7 +7741,7 @@ msgstr "manuel"
 msgid "automatic"
 msgstr "automatique"
 
-#: ../src/iop/exposure.c:867
+#: ../src/iop/exposure.c:880
 msgid ""
 "adjust the black level to unclip negative RGB values.\n"
 "you should never use it to add more density in blacks!\n"
@@ -7760,7 +7760,7 @@ msgstr ""
 "pourcentage de valeurs hautes tronquées, utiliser la pipette pour définir"
 
 #: ../src/iop/exposure.c:892 ../src/iop/highlights.c:1063
-#: ../src/views/darkroom.c:1834
+#: ../src/views/darkroom.c:1833
 msgid "clipping threshold"
 msgstr "seuil de troncature"
 
@@ -7985,8 +7985,8 @@ msgstr ""
 "plus particulièrement aux luminances extrêmes.\n"
 "diminuer si les ombres et/ou les hautes lumières sont sur-saturés."
 
-#: ../src/iop/filmic.c:1789 ../src/libs/export.c:672
-#: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1455
+#: ../src/iop/filmic.c:1789 ../src/libs/export.c:651
+#: ../src/libs/print_settings.c:1240 ../src/libs/print_settings.c:1453
 msgid "intent"
 msgstr "rendu"
 
@@ -8029,11 +8029,11 @@ msgstr ""
 msgid "destination/display"
 msgstr "destination/affichage"
 
-#: ../src/iop/filmic.c:1825
+#: ../src/iop/filmic.c:1827
 msgid "target black luminance"
 msgstr "luminance du noir cible"
 
-#: ../src/iop/filmic.c:1828
+#: ../src/iop/filmic.c:1830
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -8041,11 +8041,11 @@ msgstr ""
 "luminance du noir pur de sortie, devrait être 0%\n"
 "sauf pour obtenir des tons fades"
 
-#: ../src/iop/filmic.c:1834
+#: ../src/iop/filmic.c:1836
 msgid "target middle grey"
 msgstr "gris moyen cible"
 
-#: ../src/iop/filmic.c:1837
+#: ../src/iop/filmic.c:1839
 msgid ""
 "midde grey value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -8053,11 +8053,11 @@ msgstr ""
 "valeur du gris moyen de la cible de sortie ou de l'espace de couleur.\n"
 "ne jamais toucher sauf si vous savez ce que vous faites."
 
-#: ../src/iop/filmic.c:1843
+#: ../src/iop/filmic.c:1845
 msgid "target white luminance"
 msgstr "luminance du blanc cible"
 
-#: ../src/iop/filmic.c:1846
+#: ../src/iop/filmic.c:1848
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -8065,11 +8065,11 @@ msgstr ""
 "luminance du blanc pur de sortie, devrait être 100%\n"
 "sauf pour obtenir des tons fades"
 
-#: ../src/iop/filmic.c:1852
+#: ../src/iop/filmic.c:1854
 msgid "target gamma"
 msgstr "gamma cible"
 
-#: ../src/iop/filmic.c:1854
+#: ../src/iop/filmic.c:1856
 msgid ""
 "power or gamma of the transfer function\n"
 "of the display or color space.\n"
@@ -9250,7 +9250,7 @@ msgid "the fill-light in EV"
 msgstr "lumière d'appoint en IL"
 
 #: ../src/iop/relight.c:366 ../src/libs/metadata_view.c:115
-#: ../src/libs/print_settings.c:1308
+#: ../src/libs/print_settings.c:1306
 msgid "width"
 msgstr "largeur"
 
@@ -9653,6 +9653,7 @@ msgid "white point adjustment"
 msgstr "ajustement du point blanc"
 
 #: ../src/iop/shadhi.c:280 ../src/iop/splittoning.c:114
+#: ../src/libs/copy_history.c:471
 msgctxt "accel"
 msgid "compress"
 msgstr "seuil"
@@ -10275,7 +10276,7 @@ msgstr ""
 "$(WATERMARK_FONT_WEIGHT)"
 
 #. Camera settings
-#: ../src/iop/watermark.c:1425 ../src/libs/camera.c:516
+#: ../src/iop/watermark.c:1425 ../src/libs/camera.c:508
 msgid "properties"
 msgstr "paramètres"
 
@@ -10305,7 +10306,7 @@ msgid "position"
 msgstr "position"
 
 #. Create the 3x3 gtk table toggle button table...
-#: ../src/iop/watermark.c:1454 ../src/libs/print_settings.c:1393
+#: ../src/iop/watermark.c:1454 ../src/libs/print_settings.c:1391
 msgid "alignment"
 msgstr "alignement"
 
@@ -10365,64 +10366,64 @@ msgstr ""
 "active/désactive l'affichage des propriétés\n"
 "dans la fenêtre centrale"
 
-#: ../src/libs/camera.c:221
+#: ../src/libs/camera.c:213
 msgid "connection with camera lost, exiting tethering mode"
 msgstr "connexion avec le boîtier interrompue, sortie du mode de capture"
 
-#: ../src/libs/camera.c:366
+#: ../src/libs/camera.c:358
 msgid "battery"
 msgstr "pile"
 
-#: ../src/libs/camera.c:366
+#: ../src/libs/camera.c:358
 msgid "n/a"
 msgstr "n/a"
 
 #. Camera control
-#: ../src/libs/camera.c:439
+#: ../src/libs/camera.c:431
 msgid "camera control"
 msgstr "pilotage du boîtier"
 
-#: ../src/libs/camera.c:443
+#: ../src/libs/camera.c:435
 msgid "modes"
 msgstr "modes"
 
-#: ../src/libs/camera.c:444
+#: ../src/libs/camera.c:436
 msgid "timer (s)"
 msgstr "retardateur (s)"
 
-#: ../src/libs/camera.c:445
+#: ../src/libs/camera.c:437
 msgid "count"
 msgstr "nombre"
 
-#: ../src/libs/camera.c:446
+#: ../src/libs/camera.c:438
 msgid "brackets"
 msgstr "bracketing"
 
-#: ../src/libs/camera.c:447
+#: ../src/libs/camera.c:439
 msgid "bkt. steps"
 msgstr "pas de bkt."
 
-#: ../src/libs/camera.c:483
+#: ../src/libs/camera.c:475
 msgid "capture image(s)"
 msgstr "capturer"
 
-#: ../src/libs/camera.c:486
+#: ../src/libs/camera.c:478
 msgid "toggle delayed capture mode"
 msgstr "active/désactive le mode retardateur"
 
-#: ../src/libs/camera.c:487
+#: ../src/libs/camera.c:479
 msgid "toggle sequenced capture mode"
 msgstr "active/désactive le mode séquence"
 
-#: ../src/libs/camera.c:488
+#: ../src/libs/camera.c:480
 msgid "toggle bracketed capture mode"
 msgstr "active/désactive le mode bracketing d'exposition »"
 
-#: ../src/libs/camera.c:489
+#: ../src/libs/camera.c:481
 msgid "the count of seconds before actually doing a capture"
 msgstr "nombre de secondes avant d'effectuer une capture"
 
-#: ../src/libs/camera.c:491
+#: ../src/libs/camera.c:483
 msgid ""
 "the amount of images to capture in a sequence,\n"
 "you can use this in conjunction with delayed mode to create stop-motion "
@@ -10432,7 +10433,7 @@ msgstr ""
 "vous pouvez utiliser cela avec le mode de retardement pour créer des "
 "séquences de stop-motion."
 
-#: ../src/libs/camera.c:494
+#: ../src/libs/camera.c:486
 msgid ""
 "the amount of brackets on each side of centered shoot, amount of images = "
 "(brackets*2)+1."
@@ -10440,7 +10441,7 @@ msgstr ""
 "nombre d'expositions de chaque côté de l'exposition nominale, nombre "
 "d'images = (nombre d'expositions * 2) + 1"
 
-#: ../src/libs/camera.c:496
+#: ../src/libs/camera.c:488
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usually 3 "
 "steps per stop\n"
@@ -10451,39 +10452,39 @@ msgstr ""
 "autrement dit, 3 pas correspondent à 1 IL entre expositions."
 
 #. user specified properties
-#: ../src/libs/camera.c:525
+#: ../src/libs/camera.c:517
 msgid "additional properties"
 msgstr "paramètres additionnels"
 
-#: ../src/libs/camera.c:529
+#: ../src/libs/camera.c:521
 msgid "label"
 msgstr "nom"
 
-#: ../src/libs/camera.c:538
+#: ../src/libs/camera.c:530
 msgid "property"
 msgstr "paramètres"
 
-#: ../src/libs/camera.c:551
+#: ../src/libs/camera.c:543
 msgid "add user property"
 msgstr "ajouter"
 
-#: ../src/libs/camera.c:575
+#: ../src/libs/camera.c:567
 msgid "program"
 msgstr "programme"
 
-#: ../src/libs/camera.c:578 ../src/libs/camera.c:580
+#: ../src/libs/camera.c:570 ../src/libs/camera.c:572
 msgid "focus mode"
 msgstr "mode focus"
 
-#: ../src/libs/camera.c:591
+#: ../src/libs/camera.c:583
 msgid "shutterspeed2"
 msgstr "vitesse"
 
-#: ../src/libs/camera.c:593
+#: ../src/libs/camera.c:585
 msgid "shutterspeed"
 msgstr "vitesse d'obturation"
 
-#: ../src/libs/camera.c:599
+#: ../src/libs/camera.c:591
 msgid "WB"
 msgstr "BdB"
 
@@ -10665,54 +10666,54 @@ msgctxt "accel"
 msgid "add sample"
 msgstr "ajouter un échantillon"
 
-#: ../src/libs/colorpicker.c:368
+#: ../src/libs/colorpicker.c:367
 msgid "hover to highlight sample on canvas, click to lock sample"
 msgstr ""
 "survoler pour mettre en surbrillance dans l'image, cliquer pour verrouiller "
 "l'échantillon"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/libs/colorpicker.c:383 ../src/libs/image.c:180
+#: ../src/libs/colorpicker.c:382 ../src/libs/image.c:180
 msgid "remove"
 msgstr "enlever"
 
-#: ../src/libs/colorpicker.c:489
+#: ../src/libs/colorpicker.c:488
 msgid "live samples"
 msgstr "échantillons en temps réel"
 
-#: ../src/libs/colorpicker.c:541
+#: ../src/libs/colorpicker.c:542
 msgid "point"
 msgstr "point"
 
-#: ../src/libs/colorpicker.c:542
+#: ../src/libs/colorpicker.c:543
 msgid "area"
 msgstr "zone"
 
-#: ../src/libs/colorpicker.c:558 ../src/libs/colorpicker.c:595
+#: ../src/libs/colorpicker.c:558 ../src/libs/colorpicker.c:594
 msgid "mean"
 msgstr "moyenne"
 
-#: ../src/libs/colorpicker.c:559 ../src/libs/colorpicker.c:596
+#: ../src/libs/colorpicker.c:559 ../src/libs/colorpicker.c:595
 msgid "min"
 msgstr "min"
 
-#: ../src/libs/colorpicker.c:560 ../src/libs/colorpicker.c:597
+#: ../src/libs/colorpicker.c:560 ../src/libs/colorpicker.c:596
 msgid "max"
 msgstr "max"
 
-#: ../src/libs/colorpicker.c:569 ../src/libs/colorpicker.c:606
+#: ../src/libs/colorpicker.c:569 ../src/libs/colorpicker.c:605
 msgid "RGB"
 msgstr "RGB"
 
-#: ../src/libs/colorpicker.c:582
+#: ../src/libs/colorpicker.c:581
 msgid "restrict histogram to selection"
 msgstr "restreindre l'histogramme à la sélection"
 
-#: ../src/libs/colorpicker.c:614
+#: ../src/libs/colorpicker.c:613
 msgid "add"
 msgstr "ajouter"
 
-#: ../src/libs/colorpicker.c:623
+#: ../src/libs/colorpicker.c:622
 msgid "display sample areas on image"
 msgstr "afficher les zones sur l'image"
 
@@ -10798,7 +10799,7 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:412
 msgid "compress history"
-msgstr "compresser l'historique"
+msgstr "compresser"
 
 #: ../src/libs/copy_history.c:414
 msgid ""
@@ -10808,9 +10809,10 @@ msgstr ""
 "compresser l'historique de développement\n"
 "des images sélectionnées"
 
+# lorsque l'action engendre une suppression physique non annulable, on emploie le terme "supprimer"
 #: ../src/libs/copy_history.c:417
-msgid "discard history"
-msgstr "supprimer le développement"
+msgid "discard"
+msgstr "supprimer"
 
 #: ../src/libs/copy_history.c:420
 msgid ""
@@ -10856,15 +10858,11 @@ msgctxt "accel"
 msgid "copy"
 msgstr "copier"
 
-#: ../src/libs/copy_history.c:471
+# lorsque l'action engendre une suppression physique non annulable, on emploie le terme "supprimer"
+#: ../src/libs/copy_history.c:472
 msgctxt "accel"
-msgid "compress history"
-msgstr "compresser l'historique"
-
-#: ../src/libs/copy_history.c:472 ../src/libs/tools/filmstrip.c:194
-msgctxt "accel"
-msgid "discard history"
-msgstr "supprimer le développement"
+msgid "discard"
+msgstr "supprimer"
 
 #: ../src/libs/copy_history.c:473
 msgctxt "accel"
@@ -10902,35 +10900,35 @@ msgstr "créer un clone vierge"
 msgid "create a duplicate of the image with same history stack"
 msgstr "créer un clone avec le même historique"
 
-#: ../src/libs/export.c:65
+#: ../src/libs/export.c:64
 msgid "export selected"
 msgstr "exporter sélection"
 
-#: ../src/libs/export.c:123
+#: ../src/libs/export.c:122
 msgid "export to disk"
 msgstr "exportation sur disque"
 
-#: ../src/libs/export.c:553
+#: ../src/libs/export.c:532
 msgid "storage options"
 msgstr "options d'enregistrement"
 
-#: ../src/libs/export.c:558
+#: ../src/libs/export.c:537
 msgid "target storage"
 msgstr "stockage cible"
 
-#: ../src/libs/export.c:581
+#: ../src/libs/export.c:560
 msgid "format options"
 msgstr "options de format"
 
-#: ../src/libs/export.c:586
+#: ../src/libs/export.c:565
 msgid "file format"
 msgstr "format de fichier"
 
-#: ../src/libs/export.c:604
+#: ../src/libs/export.c:583
 msgid "global options"
 msgstr "options globales"
 
-#: ../src/libs/export.c:609
+#: ../src/libs/export.c:588
 msgid ""
 "maximum output width\n"
 "set to 0 for no scaling"
@@ -10939,7 +10937,7 @@ msgstr ""
 "0 pour ne pas changer \n"
 "d'échelle "
 
-#: ../src/libs/export.c:611
+#: ../src/libs/export.c:590
 msgid ""
 "maximum output height\n"
 "set to 0 for no scaling"
@@ -10948,66 +10946,66 @@ msgstr ""
 "0 pour ne pas changer \n"
 "d'échelle "
 
-#: ../src/libs/export.c:618
+#: ../src/libs/export.c:597
 msgid "max size"
 msgstr "taille max"
 
-#: ../src/libs/export.c:624
+#: ../src/libs/export.c:603
 msgid "x"
 msgstr "x"
 
-#: ../src/libs/export.c:630
+#: ../src/libs/export.c:609
 msgid "allow upscaling"
 msgstr "autorise l'agrandissement"
 
-#: ../src/libs/export.c:636
+#: ../src/libs/export.c:615
 msgid "high quality resampling"
 msgstr "échantillonnage haute qualité"
 
-#: ../src/libs/export.c:639
+#: ../src/libs/export.c:618
 msgid "do high quality resampling during export"
 msgstr "ré-échantillonnage de haute qualité lors de l'exportation"
 
-#: ../src/libs/export.c:652 ../src/libs/export.c:673
-#: ../src/libs/print_settings.c:1410 ../src/libs/print_settings.c:1457
+#: ../src/libs/export.c:631 ../src/libs/export.c:652
+#: ../src/libs/print_settings.c:1408 ../src/libs/print_settings.c:1455
 msgid "image settings"
 msgstr "paramètres d'image"
 
-#: ../src/libs/export.c:663 ../src/libs/print_settings.c:1446
+#: ../src/libs/export.c:642 ../src/libs/print_settings.c:1444
 #, c-format
 msgid "output ICC profiles in %s or %s"
 msgstr "profils ICC de sortie dans %s ou %s"
 
-#: ../src/libs/export.c:683 ../src/libs/print_settings.c:1471
+#: ../src/libs/export.c:662 ../src/libs/print_settings.c:1469
 msgid "style"
 msgstr "style"
 
-#: ../src/libs/export.c:686
+#: ../src/libs/export.c:665
 msgid "temporary style to use while exporting"
 msgstr "style temporaire à utiliser lors de l'exportation"
 
-#: ../src/libs/export.c:695 ../src/libs/print_settings.c:1516
+#: ../src/libs/export.c:674 ../src/libs/print_settings.c:1514
 msgid "replace history"
 msgstr "remplacer l'historique"
 
-#: ../src/libs/export.c:696 ../src/libs/print_settings.c:1517
+#: ../src/libs/export.c:675 ../src/libs/print_settings.c:1515
 msgid "append history"
 msgstr "ajouter à l'historique"
 
-#: ../src/libs/export.c:701 ../src/libs/print_settings.c:1524
+#: ../src/libs/export.c:680 ../src/libs/print_settings.c:1522
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
 "indique si les éléments du style sont à ajouter à l'historique ou remplace "
 "ce dernier"
 
-#: ../src/libs/export.c:719
+#: ../src/libs/export.c:698
 msgid "export with current settings"
 msgstr "exporte avec les réglages actuels"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:1270 ../src/libs/styles.c:71
-#: ../src/views/darkroom.c:3104
+#: ../src/libs/export.c:1249 ../src/libs/styles.c:71
+#: ../src/views/darkroom.c:3103
 msgctxt "accel"
 msgid "export"
 msgstr "exporter"
@@ -11845,7 +11843,7 @@ msgstr "mise au point"
 msgid "datetime"
 msgstr "date/heure"
 
-#: ../src/libs/metadata_view.c:116 ../src/libs/print_settings.c:1312
+#: ../src/libs/metadata_view.c:116 ../src/libs/print_settings.c:1310
 msgid "height"
 msgstr "hauteur"
 
@@ -12141,103 +12139,103 @@ msgid "toggle navigation thumbnail visibility"
 msgstr "activer/désactiver la miniature de navigation"
 
 #. //////////////////////// PRINT SETTINGS
-#: ../src/libs/print_settings.c:45 ../src/libs/print_settings.c:1400
+#: ../src/libs/print_settings.c:43 ../src/libs/print_settings.c:1398
 msgid "print settings"
 msgstr "paramètres d'impression"
 
 #. FIXME: ellipsize title/printer as the export completed message is ellipsized
-#: ../src/libs/print_settings.c:241 ../src/libs/print_settings.c:439
+#: ../src/libs/print_settings.c:239 ../src/libs/print_settings.c:437
 #, c-format
 msgid "processing `%s' for `%s'"
 msgstr "lancement de l'impression de « %s » sur « %s »"
 
-#: ../src/libs/print_settings.c:283
+#: ../src/libs/print_settings.c:281
 #, c-format
 msgid "cannot open printer profile `%s'"
 msgstr "impossible d'ouvrir le profil d'impression « %s »"
 
-#: ../src/libs/print_settings.c:292
+#: ../src/libs/print_settings.c:290
 #, c-format
 msgid "error getting output profile for image %d"
 msgstr "erreur de récupération du profil de sortie pour l'image %d"
 
-#: ../src/libs/print_settings.c:300
+#: ../src/libs/print_settings.c:298
 #, c-format
 msgid "cannot apply printer profile `%s'"
 msgstr "impossible d'appliquer le profil d'impression « %s » !"
 
-#: ../src/libs/print_settings.c:320
+#: ../src/libs/print_settings.c:318
 msgid "failed to create temporary pdf for printing"
 msgstr "échec de la création du pdf temporaire pour l'impression"
 
-#: ../src/libs/print_settings.c:394
+#: ../src/libs/print_settings.c:392
 msgid "cannot print until a picture is selected"
 msgstr "impossible d'imprimer tant qu'une image n'est pas sélectionnée"
 
-#: ../src/libs/print_settings.c:399
+#: ../src/libs/print_settings.c:397
 msgid "cannot print until a printer is selected"
 msgstr "impossible d'imprimer tant qu'une imprimante n'est pas sélectionnée"
 
-#: ../src/libs/print_settings.c:404
+#: ../src/libs/print_settings.c:402
 msgid "cannot print until a paper is selected"
 msgstr "impossible d'imprimer tant qu'un papier n'est pas sélectionné"
 
 #. in this case no need to release from cache what we couldn't get
-#: ../src/libs/print_settings.c:431
+#: ../src/libs/print_settings.c:429
 #, c-format
 msgid "cannot get image %d for printing"
 msgstr "impossible de récupérer l'image %d pour l'impression"
 
-#: ../src/libs/print_settings.c:698
+#: ../src/libs/print_settings.c:696
 #, c-format
 msgid "%3.2f (dpi:%d)"
 msgstr "%3.2f (dpi:%d)"
 
-#: ../src/libs/print_settings.c:1167
+#: ../src/libs/print_settings.c:1165
 msgid "printer"
 msgstr "imprimante"
 
-#: ../src/libs/print_settings.c:1179
+#: ../src/libs/print_settings.c:1177
 msgid "media"
 msgstr "type papier"
 
-#: ../src/libs/print_settings.c:1198
+#: ../src/libs/print_settings.c:1196
 msgid "color management in printer driver"
 msgstr "gestion couleur par l'imprimante"
 
-#: ../src/libs/print_settings.c:1233
+#: ../src/libs/print_settings.c:1231
 #, c-format
 msgid "printer ICC profiles in %s or %s"
 msgstr "profils ICC d'imprimante dans %s ou %s"
 
-#: ../src/libs/print_settings.c:1255
+#: ../src/libs/print_settings.c:1253
 msgid "black point compensation"
 msgstr "compensation du point noir"
 
-#: ../src/libs/print_settings.c:1263
+#: ../src/libs/print_settings.c:1261
 msgid "activate black point compensation when applying the printer profile"
 msgstr ""
 "active la compensation du point noir lors de l'application du profil "
 "d'imprimante"
 
 #. //////////////////////// PAGE SETTINGS
-#: ../src/libs/print_settings.c:1269
+#: ../src/libs/print_settings.c:1267
 msgid "page"
 msgstr "page"
 
-#: ../src/libs/print_settings.c:1306
+#: ../src/libs/print_settings.c:1304
 msgid "image width/height"
 msgstr "largeur/hauteur image"
 
-#: ../src/libs/print_settings.c:1310
+#: ../src/libs/print_settings.c:1308
 msgid " x "
 msgstr " x "
 
-#: ../src/libs/print_settings.c:1318
+#: ../src/libs/print_settings.c:1316
 msgid "scale factor"
 msgstr "facteur d'agrandissement"
 
-#: ../src/libs/print_settings.c:1323
+#: ../src/libs/print_settings.c:1321
 msgid ""
 "image scale factor from native printer DPI:\n"
 " < 1 means that it is downscaled (best quality)\n"
@@ -12251,47 +12249,47 @@ msgstr ""
 "une valeur trop grande peut donner une qualité d'impression médiocre"
 
 #. d->b_top  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1337
+#: ../src/libs/print_settings.c:1335
 msgid "top margin"
 msgstr "marge haute"
 
 #. d->b_left  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1341
+#: ../src/libs/print_settings.c:1339
 msgid "left margin"
 msgstr "marge gauche"
 
-#: ../src/libs/print_settings.c:1344
+#: ../src/libs/print_settings.c:1342
 msgid "lock"
 msgstr "sync"
 
-#: ../src/libs/print_settings.c:1345
+#: ../src/libs/print_settings.c:1343
 msgid "change all margins uniformly"
 msgstr "change toutes les marges uniformément"
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1349
+#: ../src/libs/print_settings.c:1347
 msgid "right margin"
 msgstr "marge droite"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
-#: ../src/libs/print_settings.c:1353
+#: ../src/libs/print_settings.c:1351
 msgid "bottom margin"
 msgstr "marge basse"
 
-#: ../src/libs/print_settings.c:1495
+#: ../src/libs/print_settings.c:1493
 msgid "temporary style to use while printing"
 msgstr "style temporaire à utiliser lors de l'exportation"
 
 #. Print button
-#: ../src/libs/print_settings.c:1532
+#: ../src/libs/print_settings.c:1530
 msgid "print"
 msgstr "impression"
 
-#: ../src/libs/print_settings.c:1534
+#: ../src/libs/print_settings.c:1532
 msgid "print with current settings"
 msgstr "imprime avec les réglages actuels"
 
-#: ../src/libs/print_settings.c:2021
+#: ../src/libs/print_settings.c:1999
 msgctxt "accel"
 msgid "print"
 msgstr "impression"
@@ -12797,6 +12795,11 @@ msgctxt "accel"
 msgid "paste history parts"
 msgstr "coller une partie du développement"
 
+#: ../src/libs/tools/filmstrip.c:194
+msgctxt "accel"
+msgid "discard history"
+msgstr "supprimer le développement"
+
 #: ../src/libs/tools/filmstrip.c:196
 msgctxt "accel"
 msgid "duplicate image"
@@ -12905,25 +12908,25 @@ msgstr "voulez-vous accéder à  https://darktable.gitlab.io/doc/?"
 msgid "access the online usermanual?"
 msgstr "accéder au manuel utilisateur en ligne?"
 
-#: ../src/libs/tools/global_toolbox.c:281
+#: ../src/libs/tools/global_toolbox.c:277
 msgid "help url opened in web browser"
 msgstr "aide ouverte dans le navigateur"
 
-#: ../src/libs/tools/global_toolbox.c:286
+#: ../src/libs/tools/global_toolbox.c:282
 msgid "there is no help available for this element"
 msgstr "aucune aide disponible pour cet élément"
 
-#: ../src/libs/tools/global_toolbox.c:328
+#: ../src/libs/tools/global_toolbox.c:324
 msgctxt "accel"
 msgid "grouping"
 msgstr "grouper"
 
-#: ../src/libs/tools/global_toolbox.c:329
+#: ../src/libs/tools/global_toolbox.c:325
 msgctxt "accel"
 msgid "preferences"
 msgstr "préférences"
 
-#: ../src/libs/tools/global_toolbox.c:330
+#: ../src/libs/tools/global_toolbox.c:326
 msgctxt "accel"
 msgid "show overlays"
 msgstr "affiche les surimpressions"
@@ -13023,40 +13026,40 @@ msgstr "double-cliquer pour réinitialiser à « %f »"
 msgid "lua options"
 msgstr "options lua"
 
-#: ../src/views/darkroom.c:484
+#: ../src/views/darkroom.c:483
 msgid "gamut check"
 msgstr "vérification de gamut"
 
-#: ../src/views/darkroom.c:484
+#: ../src/views/darkroom.c:483
 msgid "soft proof"
 msgstr "épreuvage"
 
-#: ../src/views/darkroom.c:1009
+#: ../src/views/darkroom.c:1008
 msgid "no userdefined presets for favorite modules were found"
 msgstr "aucun pré-réglage trouvé pour les modules favoris"
 
-#: ../src/views/darkroom.c:1014
+#: ../src/views/darkroom.c:1013
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "applique le style « %s » à l'image actuelle"
 
-#: ../src/views/darkroom.c:1126
+#: ../src/views/darkroom.c:1125
 msgid "no styles have been created yet"
 msgstr "aucun style disponible"
 
-#: ../src/views/darkroom.c:1750
+#: ../src/views/darkroom.c:1749
 msgid "quick access to presets of your favorites"
 msgstr "accès rapide aux pré-réglages des favoris"
 
-#: ../src/views/darkroom.c:1759
+#: ../src/views/darkroom.c:1758
 msgid "quick access for applying any of your styles"
 msgstr "accès rapide à vos styles"
 
-#: ../src/views/darkroom.c:1772
+#: ../src/views/darkroom.c:1771
 msgid "display a second darkroom image window"
 msgstr "activer l'affichage secondaire de la chambre noire"
 
-#: ../src/views/darkroom.c:1783
+#: ../src/views/darkroom.c:1782
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -13064,47 +13067,47 @@ msgstr ""
 "activer/désactiver les zones sur-/sous-exposées raw\n"
 "clic-droit pour les options"
 
-#: ../src/views/darkroom.c:1807
+#: ../src/views/darkroom.c:1806
 msgid "mark with CFA color"
 msgstr "marquer les couleurs CFA"
 
-#: ../src/views/darkroom.c:1808
+#: ../src/views/darkroom.c:1807
 msgid "mark with solid color"
 msgstr "marquer avec une couleur unie"
 
-#: ../src/views/darkroom.c:1809
+#: ../src/views/darkroom.c:1808
 msgid "false color"
 msgstr "fausse couleur"
 
-#: ../src/views/darkroom.c:1811
+#: ../src/views/darkroom.c:1810
 msgid "select how to mark the clipped pixels"
 msgstr "sélectionner comment marquer les pixels tronqués"
 
-#: ../src/views/darkroom.c:1818 ../src/views/darkroom.c:1870
+#: ../src/views/darkroom.c:1817 ../src/views/darkroom.c:1869
 msgid "color scheme"
 msgstr "schéma de couleur"
 
-#: ../src/views/darkroom.c:1819
+#: ../src/views/darkroom.c:1818
 msgctxt "solidcolor"
 msgid "red"
 msgstr "rouge"
 
-#: ../src/views/darkroom.c:1820
+#: ../src/views/darkroom.c:1819
 msgctxt "solidcolor"
 msgid "green"
 msgstr "vert"
 
-#: ../src/views/darkroom.c:1821
+#: ../src/views/darkroom.c:1820
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/views/darkroom.c:1822
+#: ../src/views/darkroom.c:1821
 msgctxt "solidcolor"
 msgid "black"
 msgstr "noir"
 
-#: ../src/views/darkroom.c:1826
+#: ../src/views/darkroom.c:1825
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -13112,7 +13115,7 @@ msgstr ""
 "sélectionner la couleur pour marquer les sur-expositions.\n"
 "utiliser uniquement si le mode est « marquer avec une couleur unie »"
 
-#: ../src/views/darkroom.c:1836
+#: ../src/views/darkroom.c:1835
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -13122,7 +13125,7 @@ msgstr ""
 "1.0 - niveau blanc\n"
 "0.0 - niveau noir"
 
-#: ../src/views/darkroom.c:1847
+#: ../src/views/darkroom.c:1846
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -13130,35 +13133,35 @@ msgstr ""
 "activer/désactiver les zones sur-/sous-exposées\n"
 "clic-droit pour les options"
 
-#: ../src/views/darkroom.c:1872
+#: ../src/views/darkroom.c:1871
 msgid "red & blue"
 msgstr "rouge et bleu"
 
-#: ../src/views/darkroom.c:1873
+#: ../src/views/darkroom.c:1872
 msgid "purple & green"
 msgstr "violet et vert"
 
-#: ../src/views/darkroom.c:1875
+#: ../src/views/darkroom.c:1874
 msgid "select colors to indicate over/under exposure"
 msgstr "sélectionne les couleurs indiquant une sur-/sous-exposition"
 
-#: ../src/views/darkroom.c:1884
+#: ../src/views/darkroom.c:1883
 msgid "lower threshold"
 msgstr "seuil bas"
 
-#: ../src/views/darkroom.c:1885
+#: ../src/views/darkroom.c:1884
 msgid "threshold of what shall be considered underexposed"
 msgstr "seuil en-dessous duquel les pixels sont considérés sous-exposés"
 
-#: ../src/views/darkroom.c:1893
+#: ../src/views/darkroom.c:1892
 msgid "upper threshold"
 msgstr "seuil haut"
 
-#: ../src/views/darkroom.c:1894
+#: ../src/views/darkroom.c:1893
 msgid "threshold of what shall be considered overexposed"
 msgstr "seuil au-dessus duquel les pixels sont considérés sur-exposés"
 
-#: ../src/views/darkroom.c:1905
+#: ../src/views/darkroom.c:1904
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -13166,7 +13169,7 @@ msgstr ""
 "activer/désactiver l'épreuvage écran\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:1919
+#: ../src/views/darkroom.c:1918
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -13174,170 +13177,170 @@ msgstr ""
 "activer/désactiver vérification de gamut\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:1947 ../src/views/lighttable.c:4124
+#: ../src/views/darkroom.c:1946 ../src/views/lighttable.c:4124
 msgid "display intent"
 msgstr "rendu (écran)"
 
-#: ../src/views/darkroom.c:1955 ../src/views/lighttable.c:4132
+#: ../src/views/darkroom.c:1954 ../src/views/lighttable.c:4132
 msgid "preview display intent"
 msgstr "rendu (écran secondaire)"
 
-#: ../src/views/darkroom.c:1975 ../src/views/lighttable.c:4140
+#: ../src/views/darkroom.c:1974 ../src/views/lighttable.c:4140
 msgid "display profile"
 msgstr "profil (écran)"
 
-#: ../src/views/darkroom.c:1976 ../src/views/lighttable.c:4144
+#: ../src/views/darkroom.c:1975 ../src/views/lighttable.c:4144
 msgid "preview display profile"
 msgstr "profil (écran secondaire)"
 
-#: ../src/views/darkroom.c:1977
+#: ../src/views/darkroom.c:1976
 msgid "histogram profile"
 msgstr "profil de l'histogramme"
 
-#: ../src/views/darkroom.c:2031 ../src/views/lighttable.c:4174
+#: ../src/views/darkroom.c:2030 ../src/views/lighttable.c:4174
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage dans %s ou %s"
 
-#: ../src/views/darkroom.c:2034 ../src/views/lighttable.c:4177
+#: ../src/views/darkroom.c:2033 ../src/views/lighttable.c:4177
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage secondaire dans « %s » ou « %s »"
 
-#: ../src/views/darkroom.c:2037
+#: ../src/views/darkroom.c:2036
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "profils ICC d'épreuvage dans %s ou %s"
 
-#: ../src/views/darkroom.c:2040
+#: ../src/views/darkroom.c:2039
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr "profils ICC pour l'histogramme et la pipette dans %s ou %s"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:3096 ../src/views/map.c:892 ../src/views/print.c:329
+#: ../src/views/darkroom.c:3095 ../src/views/map.c:892 ../src/views/print.c:329
 #: ../src/views/tethering.c:396
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "activer/désactiver le bandeau"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:3099
+#: ../src/views/darkroom.c:3098
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom en gros plan"
 
-#: ../src/views/darkroom.c:3100
+#: ../src/views/darkroom.c:3099
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoomer"
 
-#: ../src/views/darkroom.c:3101
+#: ../src/views/darkroom.c:3100
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajusté"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:3107
+#: ../src/views/darkroom.c:3106
 msgctxt "accel"
 msgid "image forward"
 msgstr "image suivante"
 
-#: ../src/views/darkroom.c:3108
+#: ../src/views/darkroom.c:3107
 msgctxt "accel"
 msgid "image back"
 msgstr "image précédente"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:3111
+#: ../src/views/darkroom.c:3110
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "raw sur-exposé"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:3114
+#: ../src/views/darkroom.c:3113
 msgctxt "accel"
 msgid "overexposed"
 msgstr "sur-exposition"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:3117
+#: ../src/views/darkroom.c:3116
 msgctxt "accel"
 msgid "softproof"
 msgstr "épreuvage"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:3120
+#: ../src/views/darkroom.c:3119
 msgctxt "accel"
 msgid "gamut check"
 msgstr "vérification de gamut"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:3123
+#: ../src/views/darkroom.c:3122
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "augmenter la taille du pinceau"
 
-#: ../src/views/darkroom.c:3124
+#: ../src/views/darkroom.c:3123
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "diminuer la taille du pinceau"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:3127
+#: ../src/views/darkroom.c:3126
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "augmenter la dureté du pinceau"
 
-#: ../src/views/darkroom.c:3128
+#: ../src/views/darkroom.c:3127
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "diminuer la dureté du pinceau"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:3131
+#: ../src/views/darkroom.c:3130
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "augmenter la luminosité du pinceau"
 
-#: ../src/views/darkroom.c:3132
+#: ../src/views/darkroom.c:3131
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "diminuer la luminosité du pinceau"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:3135
+#: ../src/views/darkroom.c:3134
 msgctxt "accel"
 msgid "full preview"
 msgstr "aperçu complet"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3138 ../src/views/lighttable.c:3751
+#: ../src/views/darkroom.c:3137 ../src/views/lighttable.c:3751
 #: ../src/views/map.c:889
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/darkroom.c:3139 ../src/views/lighttable.c:3752
+#: ../src/views/darkroom.c:3138 ../src/views/lighttable.c:3752
 #: ../src/views/map.c:890
 msgctxt "accel"
 msgid "redo"
 msgstr "refaire"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:3142
+#: ../src/views/darkroom.c:3141
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "permet de recadrer et zoomer pendant l'édition des masques"
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:3145
+#: ../src/views/darkroom.c:3144
 msgctxt "accel"
 msgid "search modules"
 msgstr "rechercher module"
 
-#: ../src/views/darkroom.c:3865
+#: ../src/views/darkroom.c:3864
 msgid "darktable - darkroom preview"
 msgstr "darktable - pré-visualisation chambre noire"
 
@@ -13531,6 +13534,13 @@ msgstr "nouvelle session initiée « %s »"
 msgid "no camera with tethering support available for use..."
 msgstr "aucun boîtier disponible pour la capture..."
 
+#~ msgid "discard history"
+#~ msgstr "supprimer le développement"
+
+#~ msgctxt "accel"
+#~ msgid "compress history"
+#~ msgstr "compresser l'historique"
+
 #~ msgid "blend options"
 #~ msgstr "options de fusion"
 
@@ -13540,15 +13550,6 @@ msgstr "aucun boîtier disponible pour la capture..."
 #~ msgstr ""
 #~ "activer la fusion: uniforme, avec le masque dessiné, avec le masque "
 #~ "paramétrique ou une combinaison des deux"
-
-# lorsque l'action engendre une suppression physique non annulable, on emploie le terme "supprimer"
-#~ msgid "discard"
-#~ msgstr "supprimer"
-
-# lorsque l'action engendre une suppression physique non annulable, on emploie le terme "supprimer"
-#~ msgctxt "accel"
-#~ msgid "discard"
-#~ msgstr "supprimer"
 
 #~ msgctxt "accel"
 #~ msgid "exit sticky preview"
