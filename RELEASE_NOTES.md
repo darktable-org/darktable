@@ -31,6 +31,13 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   metadata, deleted history stack, pasted history stack and applied
   style.
 
+  IMPORTANT:
+  As ctrl-z is commonly used for undo/redo this is what is used
+  on the lighttable. This conflicts with the previous ctrl-z which
+  was assigned to preview with focus point. The preview (previously z)
+  and preview with focus detection (previously ctrl-z) are now assigned
+  respectively to w and ctrl-w.
+
 - A new timeline view has been introduced in the lighttable.
 
 - A new exposé lighttable's mode to be used to compare multiple images.

@@ -208,7 +208,7 @@
     </para>
 
     <para>
-      While holding down the <emphasis>z</emphasis> key a fully zoomed preview of the image
+      While holding down the <emphasis>w</emphasis> key a fully zoomed preview of the image
       under the mouse cursor is displayed. You can use this feature for a quick inspection of
       image quality while rating and selecting images.
     </para>
@@ -218,7 +218,7 @@
     </indexterm>
 
     <para>
-      Holding down the <emphasis>ctlr-z</emphasis> key fully zooms into the image and
+      Holding down the <emphasis>ctlr-w</emphasis> key fully zooms into the image and
       additionally activates an analysis for sharp regions, detecting those parts of the image
       that are in focus. Areas of high sharpness are indicated by a red border&nbsp;&ndash; the
       higher the color intensity the better the sharpness. In case that no area of
@@ -228,7 +228,7 @@
     </para>
 
     <para>
-      Sometimes pressing <emphasis>z</emphasis> or <emphasis>ctrl-z</emphasis> may not reveal an
+      Sometimes pressing <emphasis>w</emphasis> or <emphasis>ctrl-w</emphasis> may not reveal an
       immediate effect&nbsp;&ndash; in that case please click into the center area and press the
       corresponding key again.
     </para>
@@ -240,7 +240,7 @@
         <tbody>
           <row>
             <entry>
-              Fully zoomed-in image view while holding down the <emphasis>ctrl-z</emphasis> key
+              Fully zoomed-in image view while holding down the <emphasis>ctrl-w</emphasis> key
               with indication of the sharp areas in focus. Sharpness detection is based on an
               embedded JPEG thumbnail of the original raw file independent of any processing
               steps within darktable.
