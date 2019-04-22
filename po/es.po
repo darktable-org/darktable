@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-18 16:46-0500\n"
+"POT-Creation-Date: 2019-04-22 13:02-0500\n"
 "PO-Revision-Date: 2019-04-19 00:37-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
@@ -258,7 +258,7 @@ msgstr ""
 "el manual: una imagen puntuada con una sola estrella dos veces anulará el "
 "puntaje."
 
-#: ../build/src/preferences_gen.h:2399 ../src/views/darkroom.c:107
+#: ../build/src/preferences_gen.h:2399 ../src/views/darkroom.c:110
 msgid "darkroom"
 msgstr "cuarto oscuro"
 
@@ -1401,7 +1401,7 @@ msgid "linear XYZ"
 msgstr "lineal XYZ"
 
 #: ../src/common/colorspaces.c:939 ../src/common/colorspaces.c:1259
-#: ../src/libs/colorpicker.c:570 ../src/libs/colorpicker.c:607
+#: ../src/libs/colorpicker.c:570 ../src/libs/colorpicker.c:606
 msgid "Lab"
 msgstr "Lab"
 
@@ -1448,7 +1448,7 @@ msgid "export profile"
 msgstr "perfil de exportación"
 
 #: ../src/common/colorspaces.c:950 ../src/common/colorspaces.c:1216
-#: ../src/views/darkroom.c:1974
+#: ../src/views/darkroom.c:1976
 msgid "softproof profile"
 msgstr "perfil (impresión)"
 
@@ -1533,7 +1533,7 @@ msgstr ""
 "¿Acepta ejecutar la actualización de la configuración de rendimiento?\n"
 
 #: ../src/common/darktable.c:789 ../src/imageio/format/pdf.c:667
-#: ../src/imageio/format/pdf.c:692 ../src/imageio/storage/flickr.c:497
+#: ../src/imageio/format/pdf.c:692 ../src/imageio/storage/flickr.c:498
 #: ../src/imageio/storage/piwigo.c:822 ../src/iop/clipping.c:1991
 #: ../src/libs/export.c:610 ../src/libs/export.c:616
 #: ../src/libs/metadata_view.c:270
@@ -1541,7 +1541,7 @@ msgid "no"
 msgstr "no"
 
 #: ../src/common/darktable.c:789 ../src/imageio/format/pdf.c:668
-#: ../src/imageio/format/pdf.c:693 ../src/imageio/storage/flickr.c:496
+#: ../src/imageio/format/pdf.c:693 ../src/imageio/storage/flickr.c:497
 #: ../src/imageio/storage/piwigo.c:821 ../src/iop/clipping.c:1992
 #: ../src/libs/export.c:611 ../src/libs/export.c:617
 #: ../src/libs/metadata_view.c:270
@@ -1914,7 +1914,7 @@ msgstr "el estilo nombrado '%s' ha sido creado correctamente"
 
 #. fail :(
 #: ../src/common/styles.c:500 ../src/common/styles.c:518
-#: ../src/views/darkroom.c:539 ../src/views/print.c:249
+#: ../src/views/darkroom.c:541 ../src/views/print.c:249
 msgid "no image selected!"
 msgstr "no hay imagen seleccionada"
 
@@ -2184,7 +2184,7 @@ msgid_plural "exporting %d images to %s"
 msgstr[0] "exportando %d imagen a %s"
 msgstr[1] "exportando %d imágenes a %s"
 
-#: ../src/control/jobs/control_jobs.c:1359 ../src/views/darkroom.c:552
+#: ../src/control/jobs/control_jobs.c:1359 ../src/views/darkroom.c:554
 #: ../src/views/print.c:262
 #, c-format
 msgid "image `%s' is currently unavailable"
@@ -3299,7 +3299,7 @@ msgstr "sol de tarde"
 msgid "underwater"
 msgstr "bajo el agua"
 
-#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1871
+#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1873
 msgid "black & white"
 msgstr "blanco y negro"
 
@@ -3899,7 +3899,7 @@ msgstr "ISO"
 #. exposure
 #: ../src/gui/preferences.c:510 ../src/gui/preferences.c:1401
 #: ../src/gui/presets.c:464 ../src/iop/basicadj.c:684 ../src/iop/exposure.c:107
-#: ../src/iop/exposure.c:885 ../src/iop/relight.c:360 ../src/libs/collect.h:37
+#: ../src/iop/exposure.c:875 ../src/iop/relight.c:360 ../src/libs/collect.h:37
 #: ../src/libs/metadata_view.c:110
 msgid "exposure"
 msgstr "exposición"
@@ -4289,10 +4289,10 @@ msgid "invalid border size, using 0"
 msgstr "tamaño de borde inválido, usando 0"
 
 #: ../src/imageio/format/pdf.c:256 ../src/imageio/storage/disk.c:330
-#: ../src/imageio/storage/email.c:135 ../src/imageio/storage/facebook.c:1306
-#: ../src/imageio/storage/flickr.c:654 ../src/imageio/storage/gallery.c:345
+#: ../src/imageio/storage/email.c:135 ../src/imageio/storage/facebook.c:1307
+#: ../src/imageio/storage/flickr.c:655 ../src/imageio/storage/gallery.c:345
 #: ../src/imageio/storage/gallery.c:386
-#: ../src/imageio/storage/googlephoto.c:1375
+#: ../src/imageio/storage/googlephoto.c:1376
 #: ../src/imageio/storage/piwigo.c:974
 #, c-format
 msgid "could not export to file `%s'!"
@@ -4307,9 +4307,9 @@ msgstr "PDF"
 #. clang-format off
 #. xmp
 #. DT_COLLECTION_SORT_CUSTOM_ORDER
-#: ../src/imageio/format/pdf.c:581 ../src/imageio/storage/facebook.c:1118
-#: ../src/imageio/storage/flickr.c:538 ../src/imageio/storage/gallery.c:184
-#: ../src/imageio/storage/latex.c:184 ../src/imageio/storage/googlephoto.c:1231
+#: ../src/imageio/format/pdf.c:581 ../src/imageio/storage/facebook.c:1119
+#: ../src/imageio/storage/flickr.c:539 ../src/imageio/storage/gallery.c:184
+#: ../src/imageio/storage/latex.c:184 ../src/imageio/storage/googlephoto.c:1232
 #: ../src/imageio/storage/piwigo.c:864 ../src/libs/collect.h:34
 #: ../src/libs/metadata.c:347 ../src/libs/metadata_view.c:122
 #: ../src/libs/tools/filter.c:155
@@ -4644,7 +4644,7 @@ msgid "[facebook] unexpected URL format\n"
 msgstr "[facebook] formato de url inesperado\n"
 
 #. //////////// build & show the validation dialog
-#: ../src/imageio/storage/facebook.c:619
+#: ../src/imageio/storage/facebook.c:620
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your facebook account there and authorize darktable to "
@@ -4654,38 +4654,38 @@ msgstr ""
 "entrar en su cuenta de facebook y autorizar a darktable a subir las fotos "
 "antes de continuar."
 
-#: ../src/imageio/storage/facebook.c:622
+#: ../src/imageio/storage/facebook.c:623
 msgid ""
 "step 2: paste your browser URL and click the OK button once you are done."
 msgstr ""
 "paso 2: pegue su url en el navegador y haga clic en el botón ok una vez "
 "listo."
 
-#: ../src/imageio/storage/facebook.c:628 ../src/imageio/storage/facebook.c:723
+#: ../src/imageio/storage/facebook.c:629 ../src/imageio/storage/facebook.c:724
 msgid "facebook authentication"
 msgstr "autenticación Facebook"
 
-#: ../src/imageio/storage/facebook.c:636
+#: ../src/imageio/storage/facebook.c:637
 msgid "URL:"
 msgstr "URL:"
 
-#: ../src/imageio/storage/facebook.c:658
+#: ../src/imageio/storage/facebook.c:659
 msgid "please enter the validation URL"
 msgstr "por favor, ingrese la url de validación"
 
-#: ../src/imageio/storage/facebook.c:668
+#: ../src/imageio/storage/facebook.c:669
 msgid "the given URL is not valid, it should look like: "
 msgstr "la url dada no es válida, debería ser similar a: "
 
-#: ../src/imageio/storage/facebook.c:699
+#: ../src/imageio/storage/facebook.c:700
 msgid "authentication successful"
 msgstr "autenticación exitosa"
 
-#: ../src/imageio/storage/facebook.c:703
+#: ../src/imageio/storage/facebook.c:704
 msgid "authentication failed"
 msgstr "fallo de autenticación"
 
-#: ../src/imageio/storage/facebook.c:716
+#: ../src/imageio/storage/facebook.c:717
 msgid ""
 "a new window or tab of your browser should have been loaded. you have to "
 "login into your facebook account there and authorize darktable to upload "
@@ -4695,92 +4695,92 @@ msgstr ""
 "cuenta de facebook y allí, autorizar a darktable a subir las fotos antes de "
 "continuar."
 
-#: ../src/imageio/storage/facebook.c:849
-#: ../src/imageio/storage/googlephoto.c:940
+#: ../src/imageio/storage/facebook.c:850
+#: ../src/imageio/storage/googlephoto.c:941
 msgid "new account"
 msgstr "nueva cuenta"
 
-#: ../src/imageio/storage/facebook.c:854
-#: ../src/imageio/storage/googlephoto.c:945
+#: ../src/imageio/storage/facebook.c:855
+#: ../src/imageio/storage/googlephoto.c:946
 msgid "other account"
 msgstr "otras cuentas"
 
-#: ../src/imageio/storage/facebook.c:883
-#: ../src/imageio/storage/googlephoto.c:973
+#: ../src/imageio/storage/facebook.c:884
+#: ../src/imageio/storage/googlephoto.c:974
 msgid "unable to retrieve the album list"
 msgstr "no se pudo obtener la lista de albums"
 
-#: ../src/imageio/storage/facebook.c:891 ../src/imageio/storage/flickr.c:392
-#: ../src/imageio/storage/flickr.c:419 ../src/imageio/storage/googlephoto.c:983
+#: ../src/imageio/storage/facebook.c:892 ../src/imageio/storage/flickr.c:393
+#: ../src/imageio/storage/flickr.c:420 ../src/imageio/storage/googlephoto.c:984
 #: ../src/imageio/storage/piwigo.c:523 ../src/imageio/storage/piwigo.c:587
 msgid "create new album"
 msgstr "crear album nuevo"
 
-#: ../src/imageio/storage/facebook.c:963
-#: ../src/imageio/storage/googlephoto.c:1036
-#: ../src/imageio/storage/googlephoto.c:1186
+#: ../src/imageio/storage/facebook.c:964
+#: ../src/imageio/storage/googlephoto.c:1037
+#: ../src/imageio/storage/googlephoto.c:1187
 msgid "logout"
 msgstr "desconectarse"
 
 #. Set default permission to private
 #. login button
-#: ../src/imageio/storage/facebook.c:969 ../src/imageio/storage/facebook.c:989
-#: ../src/imageio/storage/facebook.c:1036
-#: ../src/imageio/storage/facebook.c:1062
-#: ../src/imageio/storage/facebook.c:1181 ../src/imageio/storage/flickr.c:480
-#: ../src/imageio/storage/googlephoto.c:1042
-#: ../src/imageio/storage/googlephoto.c:1190
-#: ../src/imageio/storage/googlephoto.c:1203
-#: ../src/imageio/storage/googlephoto.c:1270
+#: ../src/imageio/storage/facebook.c:970 ../src/imageio/storage/facebook.c:990
+#: ../src/imageio/storage/facebook.c:1037
+#: ../src/imageio/storage/facebook.c:1063
+#: ../src/imageio/storage/facebook.c:1182 ../src/imageio/storage/flickr.c:481
+#: ../src/imageio/storage/googlephoto.c:1043
+#: ../src/imageio/storage/googlephoto.c:1191
+#: ../src/imageio/storage/googlephoto.c:1204
+#: ../src/imageio/storage/googlephoto.c:1271
 #: ../src/imageio/storage/piwigo.c:809
 msgid "login"
 msgstr "acceder"
 
-#: ../src/imageio/storage/facebook.c:1097
+#: ../src/imageio/storage/facebook.c:1098
 msgid "facebook webalbum"
 msgstr "álbum en facebook"
 
-#: ../src/imageio/storage/facebook.c:1119 ../src/imageio/storage/flickr.c:553
+#: ../src/imageio/storage/facebook.c:1120 ../src/imageio/storage/flickr.c:554
 msgid "summary"
 msgstr "sumario"
 
-#: ../src/imageio/storage/facebook.c:1120
+#: ../src/imageio/storage/facebook.c:1121
 msgid "privacy"
 msgstr "privacidad"
 
-#: ../src/imageio/storage/facebook.c:1166
+#: ../src/imageio/storage/facebook.c:1167
 msgid "only me"
 msgstr "solo yo"
 
-#: ../src/imageio/storage/facebook.c:1169 ../src/imageio/storage/flickr.c:506
+#: ../src/imageio/storage/facebook.c:1170 ../src/imageio/storage/flickr.c:507
 #: ../src/imageio/storage/piwigo.c:835
 msgid "friends"
 msgstr "amigos"
 
-#: ../src/imageio/storage/facebook.c:1172
+#: ../src/imageio/storage/facebook.c:1173
 msgid "public"
 msgstr "público"
 
-#: ../src/imageio/storage/facebook.c:1175
+#: ../src/imageio/storage/facebook.c:1176
 msgid "friends of friends"
 msgstr "amigos de amigos"
 
-#: ../src/imageio/storage/facebook.c:1315
-#: ../src/imageio/storage/googlephoto.c:1384
+#: ../src/imageio/storage/facebook.c:1316
+#: ../src/imageio/storage/googlephoto.c:1385
 msgid "unable to create album, no title provided"
 msgstr "no se pudo crear el álbum, no se asignó un título"
 
-#: ../src/imageio/storage/facebook.c:1324
-#: ../src/imageio/storage/googlephoto.c:1391
+#: ../src/imageio/storage/facebook.c:1325
+#: ../src/imageio/storage/googlephoto.c:1392
 msgid "unable to create album"
 msgstr "no se pudo crear el álbum"
 
-#: ../src/imageio/storage/facebook.c:1334
+#: ../src/imageio/storage/facebook.c:1335
 msgid "unable to export photo to webalbum"
 msgstr "no se pudo exportar la foto al album web"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/facebook.c:1346
+#: ../src/imageio/storage/facebook.c:1347
 #, c-format
 msgid "%d/%d exported to facebook webalbum"
 msgid_plural "%d/%d exported to facebook webalbum"
@@ -4792,7 +4792,7 @@ msgstr[1] "%d/%d exportados al álbum web de facebook"
 msgid "flickr authentication: %s"
 msgstr "autenticación flickr: %s"
 
-#: ../src/imageio/storage/flickr.c:196
+#: ../src/imageio/storage/flickr.c:197
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your flickr account there and authorize darktable to "
@@ -4802,94 +4802,94 @@ msgstr ""
 "entrar en su cuenta flickr y autorizar a darktable a subir las fotos antes "
 "de continuar."
 
-#: ../src/imageio/storage/flickr.c:198
+#: ../src/imageio/storage/flickr.c:199
 msgid "step 2: click the OK button once you are done."
 msgstr "paso 2: clic en el botón ok una vez terminado."
 
-#: ../src/imageio/storage/flickr.c:203
+#: ../src/imageio/storage/flickr.c:204
 msgid "flickr authentication"
 msgstr "autenticación flickr"
 
-#: ../src/imageio/storage/flickr.c:316
+#: ../src/imageio/storage/flickr.c:317
 msgid "flickr webalbum"
 msgstr "álbum en flickr"
 
-#: ../src/imageio/storage/flickr.c:337 ../src/imageio/storage/flickr.c:377
-#: ../src/imageio/storage/flickr.c:831 ../src/imageio/storage/flickr.c:837
+#: ../src/imageio/storage/flickr.c:338 ../src/imageio/storage/flickr.c:378
+#: ../src/imageio/storage/flickr.c:832 ../src/imageio/storage/flickr.c:838
 #: ../src/imageio/storage/piwigo.c:471 ../src/imageio/storage/piwigo.c:486
 #: ../src/imageio/storage/piwigo.c:498
 msgid "not authenticated"
 msgstr "no autenticado"
 
-#: ../src/imageio/storage/flickr.c:373 ../src/imageio/storage/flickr.c:827
+#: ../src/imageio/storage/flickr.c:374 ../src/imageio/storage/flickr.c:828
 #: ../src/imageio/storage/piwigo.c:463
 msgid "authenticated"
 msgstr "autenticado"
 
 #. Add standard action
-#: ../src/imageio/storage/flickr.c:391
+#: ../src/imageio/storage/flickr.c:392
 msgid "without album"
 msgstr "sin album"
 
-#: ../src/imageio/storage/flickr.c:467
+#: ../src/imageio/storage/flickr.c:468
 msgid "flickr user"
 msgstr "usuario"
 
-#: ../src/imageio/storage/flickr.c:481
+#: ../src/imageio/storage/flickr.c:482
 msgid "flickr login"
 msgstr "acceso a Flickr"
 
-#: ../src/imageio/storage/flickr.c:495 ../src/imageio/storage/piwigo.c:820
+#: ../src/imageio/storage/flickr.c:496 ../src/imageio/storage/piwigo.c:820
 msgid "export tags"
 msgstr "exportar etiquetas"
 
-#: ../src/imageio/storage/flickr.c:504 ../src/imageio/storage/piwigo.c:832
+#: ../src/imageio/storage/flickr.c:505 ../src/imageio/storage/piwigo.c:832
 msgid "visible to"
 msgstr "visible para"
 
-#: ../src/imageio/storage/flickr.c:505 ../src/imageio/storage/piwigo.c:837
+#: ../src/imageio/storage/flickr.c:506 ../src/imageio/storage/piwigo.c:837
 msgid "you"
 msgstr "usted"
 
-#: ../src/imageio/storage/flickr.c:507 ../src/imageio/storage/piwigo.c:836
+#: ../src/imageio/storage/flickr.c:508 ../src/imageio/storage/piwigo.c:836
 msgid "family"
 msgstr "familia"
 
-#: ../src/imageio/storage/flickr.c:508
+#: ../src/imageio/storage/flickr.c:509
 msgid "friends + family"
 msgstr "amigos + familia"
 
-#: ../src/imageio/storage/flickr.c:509 ../src/imageio/storage/piwigo.c:833
+#: ../src/imageio/storage/flickr.c:510 ../src/imageio/storage/piwigo.c:833
 msgid "everyone"
 msgstr "todos"
 
 #. Available albums
-#: ../src/imageio/storage/flickr.c:517
+#: ../src/imageio/storage/flickr.c:518
 msgid "photosets"
 msgstr "álbumes"
 
-#: ../src/imageio/storage/flickr.c:523 ../src/imageio/storage/piwigo.c:851
+#: ../src/imageio/storage/flickr.c:524 ../src/imageio/storage/piwigo.c:851
 msgid "refresh album list"
 msgstr "refrescar lista de album"
 
-#: ../src/imageio/storage/flickr.c:544
+#: ../src/imageio/storage/flickr.c:545
 msgid "my new photoset"
 msgstr "mi nuevo photoset"
 
-#: ../src/imageio/storage/flickr.c:559
+#: ../src/imageio/storage/flickr.c:560
 msgid "exported from darktable"
 msgstr "exportado desde darktable"
 
-#: ../src/imageio/storage/flickr.c:566 ../src/imageio/storage/piwigo.c:882
+#: ../src/imageio/storage/flickr.c:567 ../src/imageio/storage/piwigo.c:882
 msgid "click login button to start"
 msgstr "pulse el botón acceder para empezar"
 
-#: ../src/imageio/storage/flickr.c:674
+#: ../src/imageio/storage/flickr.c:675
 msgid "could not upload to flickr!"
 msgstr "no se puede subir a flickr!"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/flickr.c:725
+#: ../src/imageio/storage/flickr.c:726
 #, c-format
 msgid "%d/%d exported to flickr webalbum"
 msgid_plural "%d/%d exported to flickr webalbum"
@@ -4914,7 +4914,7 @@ msgid "enter the title of the book"
 msgstr "introduzca el título del libro"
 
 #. //////////// build & show the validation dialog
-#: ../src/imageio/storage/googlephoto.c:759
+#: ../src/imageio/storage/googlephoto.c:760
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your google account there and authorize darktable to "
@@ -4924,7 +4924,7 @@ msgstr ""
 "entrar en su cuenta de google y autorizar a darktable a subir las fotos "
 "antes de continuar."
 
-#: ../src/imageio/storage/googlephoto.c:762
+#: ../src/imageio/storage/googlephoto.c:763
 msgid ""
 "step 2: paste the verification code shown to you in the browser and click "
 "the OK button once you are done."
@@ -4932,28 +4932,28 @@ msgstr ""
 "paso 2: copie el código de verificación mostrado en su navegador y haga clic "
 "en el botón OK una vez listo."
 
-#: ../src/imageio/storage/googlephoto.c:768
+#: ../src/imageio/storage/googlephoto.c:769
 msgid "google authentication"
 msgstr "autenticación google fotos"
 
-#: ../src/imageio/storage/googlephoto.c:776
+#: ../src/imageio/storage/googlephoto.c:777
 msgid "verification code:"
 msgstr "código de verificación:"
 
-#: ../src/imageio/storage/googlephoto.c:799
+#: ../src/imageio/storage/googlephoto.c:800
 msgid "please enter the verification code"
 msgstr "por favor, ingrese el código de verificación"
 
-#: ../src/imageio/storage/googlephoto.c:1218
+#: ../src/imageio/storage/googlephoto.c:1219
 msgid "google photos"
 msgstr "google fotos"
 
-#: ../src/imageio/storage/googlephoto.c:1401
+#: ../src/imageio/storage/googlephoto.c:1402
 msgid "unable to export to google photos album"
 msgstr "no se pudo exportar la foto al álbum google fotos"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/googlephoto.c:1414
+#: ../src/imageio/storage/googlephoto.c:1415
 #, c-format
 msgid "%d/%d exported to google photos album"
 msgid_plural "%d/%d exported to google photos album"
@@ -5379,7 +5379,7 @@ msgid "contrasty"
 msgstr "contrastado"
 
 #: ../src/iop/atrous.c:1600 ../src/iop/atrous.c:1604
-#: ../src/iop/colorzones.c:2200 ../src/iop/denoiseprofile.c:3039
+#: ../src/iop/colorzones.c:2203 ../src/iop/denoiseprofile.c:3039
 #: ../src/iop/rawdenoise.c:802
 msgid "smooth"
 msgstr "suave"
@@ -5426,12 +5426,12 @@ msgstr ""
 "cambia el borde de los halos para cada tamaño\n"
 "solo cambia los resultados de las pestañas de luma y crominancia"
 
-#: ../src/iop/atrous.c:1859 ../src/iop/colorzones.c:2208
+#: ../src/iop/atrous.c:1859 ../src/iop/colorzones.c:2211
 #: ../src/iop/soften.c:734
 msgid "mix"
 msgstr "mezcla"
 
-#: ../src/iop/atrous.c:1860 ../src/iop/colorzones.c:2209
+#: ../src/iop/atrous.c:1860 ../src/iop/colorzones.c:2212
 msgid "make effect stronger or weaker"
 msgstr "hacer mas suave o fuerte el efecto"
 
@@ -5505,7 +5505,7 @@ msgstr "similar a nokia"
 
 #. clang-format off
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:223 ../src/iop/colorzones.c:2240
+#: ../src/iop/basecurve.c:223 ../src/iop/colorzones.c:2243
 #: ../src/iop/rgbcurve.c:1566 ../src/iop/tonecurve.c:1278
 msgid "cubic spline"
 msgstr "curva segmentaria cúbica"
@@ -5598,7 +5598,7 @@ msgstr "desviación de exposición"
 msgid "basic adjustments"
 msgstr "ajustes básicos"
 
-#: ../src/iop/basicadj.c:672 ../src/iop/exposure.c:872
+#: ../src/iop/basicadj.c:672 ../src/iop/exposure.c:885
 msgid "black level correction"
 msgstr "corrección de nivel de negro"
 
@@ -5614,7 +5614,7 @@ msgstr ""
 "Si está mal configurado, recortará los colores casi negros de la gama\n"
 "forzando los valores RGB a los negativos."
 
-#: ../src/iop/basicadj.c:686 ../src/iop/exposure.c:883
+#: ../src/iop/basicadj.c:686 ../src/iop/exposure.c:873
 msgid "adjust the exposure correction"
 msgstr "ajusta la corrección de exposición"
 
@@ -5671,7 +5671,7 @@ msgstr "ajuste de brillo"
 #: ../src/iop/colorbalance.c:2521 ../src/iop/colorbalance.c:2570
 #: ../src/iop/colorchecker.c:1381 ../src/iop/colorcorrection.c:292
 #: ../src/iop/colorize.c:428 ../src/iop/colorzones.c:2145
-#: ../src/iop/colorzones.c:2193 ../src/iop/graduatednd.c:1247
+#: ../src/iop/colorzones.c:2196 ../src/iop/graduatednd.c:1247
 #: ../src/iop/lowpass.c:678 ../src/iop/soften.c:719
 #: ../src/iop/splittoning.c:595 ../src/iop/vignette.c:1155
 msgid "saturation"
@@ -5718,7 +5718,7 @@ msgstr "laplaciano local: salida inconsistente"
 #: ../src/iop/lens.c:2303 ../src/iop/levels.c:669
 #: ../src/iop/profile_gamma.c:840 ../src/iop/rgbcurve.c:1480
 #: ../src/libs/copy_history.c:425 ../src/libs/export.c:670
-#: ../src/libs/print_settings.c:1512 ../src/views/darkroom.c:1806
+#: ../src/libs/print_settings.c:1512 ../src/views/darkroom.c:1808
 msgid "mode"
 msgstr "modo"
 
@@ -6114,14 +6114,14 @@ msgstr "destino"
 #: ../src/iop/colorbalance.c:2508 ../src/iop/colorbalance.c:2557
 #: ../src/iop/colorize.c:413 ../src/iop/colorreconstruction.c:1369
 #: ../src/iop/colorreconstruction.c:1374 ../src/iop/colorzones.c:2147
-#: ../src/iop/colorzones.c:2192 ../src/iop/graduatednd.c:1232
+#: ../src/iop/colorzones.c:2195 ../src/iop/graduatednd.c:1232
 #: ../src/iop/splittoning.c:580
 msgid "hue"
 msgstr "tono"
 
 #: ../src/iop/channelmixer.c:455 ../src/iop/colorchecker.c:1363
 #: ../src/iop/colorize.c:439 ../src/iop/colorzones.c:2142
-#: ../src/iop/colorzones.c:2194
+#: ../src/iop/colorzones.c:2197
 msgid "lightness"
 msgstr "luminosidad"
 
@@ -6968,21 +6968,21 @@ msgstr "salida"
 
 #: ../src/iop/colorout.c:856 ../src/libs/export.c:653
 #: ../src/libs/print_settings.c:1241 ../src/libs/print_settings.c:1456
-#: ../src/views/darkroom.c:1949 ../src/views/darkroom.c:1957
+#: ../src/views/darkroom.c:1951 ../src/views/darkroom.c:1959
 #: ../src/views/lighttable.c:4126 ../src/views/lighttable.c:4134
 msgid "perceptual"
 msgstr "perceptual"
 
 #: ../src/iop/colorout.c:857 ../src/libs/export.c:654
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1457
-#: ../src/views/darkroom.c:1950 ../src/views/darkroom.c:1958
+#: ../src/views/darkroom.c:1952 ../src/views/darkroom.c:1960
 #: ../src/views/lighttable.c:4127 ../src/views/lighttable.c:4135
 msgid "relative colorimetric"
 msgstr "relativo colorimétrico"
 
 #: ../src/iop/colorout.c:858 ../src/libs/export.c:655
 #: ../src/libs/print_settings.c:1243 ../src/libs/print_settings.c:1458
-#: ../src/views/darkroom.c:1951 ../src/views/darkroom.c:1959
+#: ../src/views/darkroom.c:1953 ../src/views/darkroom.c:1961
 #: ../src/views/lighttable.c:4128 ../src/views/lighttable.c:4136
 msgctxt "rendering intent"
 msgid "saturation"
@@ -6990,7 +6990,7 @@ msgstr "saturación"
 
 #: ../src/iop/colorout.c:859 ../src/libs/export.c:656
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1459
-#: ../src/views/darkroom.c:1952 ../src/views/darkroom.c:1960
+#: ../src/views/darkroom.c:1954 ../src/views/darkroom.c:1962
 #: ../src/views/lighttable.c:4129 ../src/views/lighttable.c:4137
 msgid "absolute colorimetric"
 msgstr "absoluto colorimétrico"
@@ -7149,50 +7149,50 @@ msgstr ""
 "Use Ctrl+clic para crear una curva positiva\n"
 "Use Mayús+clic para crear una curva negativa"
 
-#: ../src/iop/colorzones.c:2182
+#: ../src/iop/colorzones.c:2185
 msgid "edit by area"
 msgstr "editar por área"
 
-#: ../src/iop/colorzones.c:2184
+#: ../src/iop/colorzones.c:2187
 msgid "edit the curve nodes by area"
 msgstr "Editar los nodos de la curva por área"
 
-#: ../src/iop/colorzones.c:2190
+#: ../src/iop/colorzones.c:2193
 msgid "select by"
 msgstr "seleccionar por"
 
-#: ../src/iop/colorzones.c:2191
+#: ../src/iop/colorzones.c:2194
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "escoja criterio de selección, será la abscisa en el gráfico"
 
-#: ../src/iop/colorzones.c:2199
+#: ../src/iop/colorzones.c:2202
 msgid "process mode"
 msgstr "modo de proceso"
 
-#: ../src/iop/colorzones.c:2201
+#: ../src/iop/colorzones.c:2204
 msgid "strong"
 msgstr "fuerza"
 
-#: ../src/iop/colorzones.c:2203
+#: ../src/iop/colorzones.c:2206
 msgid "choose between a smoother or stronger effect"
 msgstr "Elija entre un efecto más suave o más marcado."
 
-#: ../src/iop/colorzones.c:2239 ../src/iop/rgbcurve.c:1565
+#: ../src/iop/colorzones.c:2242 ../src/iop/rgbcurve.c:1565
 #: ../src/iop/tonecurve.c:1277
 msgid "interpolation method"
 msgstr "método de interpolación"
 
-#: ../src/iop/colorzones.c:2241 ../src/iop/rgbcurve.c:1567
+#: ../src/iop/colorzones.c:2244 ../src/iop/rgbcurve.c:1567
 #: ../src/iop/tonecurve.c:1279
 msgid "centripetal spline"
 msgstr "curva segmentaria centrípeta"
 
-#: ../src/iop/colorzones.c:2242 ../src/iop/rgbcurve.c:1568
+#: ../src/iop/colorzones.c:2245 ../src/iop/rgbcurve.c:1568
 #: ../src/iop/tonecurve.c:1280
 msgid "monotonic spline"
 msgstr "curva segmentaria monótona"
 
-#: ../src/iop/colorzones.c:2246 ../src/iop/rgbcurve.c:1572
+#: ../src/iop/colorzones.c:2249 ../src/iop/rgbcurve.c:1572
 #: ../src/iop/tonecurve.c:1282
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
@@ -7740,7 +7740,7 @@ msgstr "manual"
 msgid "automatic"
 msgstr "automático"
 
-#: ../src/iop/exposure.c:867
+#: ../src/iop/exposure.c:880
 msgid ""
 "adjust the black level to unclip negative RGB values.\n"
 "you should never use it to add more density in blacks!\n"
@@ -7760,7 +7760,7 @@ msgstr ""
 "activar"
 
 #: ../src/iop/exposure.c:892 ../src/iop/highlights.c:1063
-#: ../src/views/darkroom.c:1834
+#: ../src/views/darkroom.c:1836
 msgid "clipping threshold"
 msgstr "umbral superior"
 
@@ -8033,11 +8033,11 @@ msgstr ""
 msgid "destination/display"
 msgstr "destino/visualización"
 
-#: ../src/iop/filmic.c:1825
+#: ../src/iop/filmic.c:1827
 msgid "target black luminance"
 msgstr "objetivo luminancia negra"
 
-#: ../src/iop/filmic.c:1828
+#: ../src/iop/filmic.c:1830
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -8045,11 +8045,11 @@ msgstr ""
 "La luminancia de salida negro puro, debería ser del 0%\n"
 "excepto si se desea lograr un aspecto difuminado"
 
-#: ../src/iop/filmic.c:1834
+#: ../src/iop/filmic.c:1836
 msgid "target middle grey"
 msgstr "objetivo gris medio"
 
-#: ../src/iop/filmic.c:1837
+#: ../src/iop/filmic.c:1839
 msgid ""
 "midde grey value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -8057,11 +8057,11 @@ msgstr ""
 "Valor gris medio de la pantalla de destino o espacio de color.\n"
 "Evitar moverlo a menos que se sepa lo que se está haciendo."
 
-#: ../src/iop/filmic.c:1843
+#: ../src/iop/filmic.c:1845
 msgid "target white luminance"
 msgstr "objetivo luminancia blanca"
 
-#: ../src/iop/filmic.c:1846
+#: ../src/iop/filmic.c:1848
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -8069,11 +8069,11 @@ msgstr ""
 "La luminancia de salida blanco puro debería ser del 100%\n"
 "excepto si se desea lograr un aspecto difuminado"
 
-#: ../src/iop/filmic.c:1852
+#: ../src/iop/filmic.c:1854
 msgid "target gamma"
 msgstr "objetivo gamma"
 
-#: ../src/iop/filmic.c:1854
+#: ../src/iop/filmic.c:1856
 msgid ""
 "power or gamma of the transfer function\n"
 "of the display or color space.\n"
@@ -9654,6 +9654,7 @@ msgid "white point adjustment"
 msgstr "ajuste de punto blanco"
 
 #: ../src/iop/shadhi.c:280 ../src/iop/splittoning.c:114
+#: ../src/libs/copy_history.c:471
 msgctxt "accel"
 msgid "compress"
 msgstr "comprimir"
@@ -10655,53 +10656,53 @@ msgctxt "accel"
 msgid "add sample"
 msgstr "añadir muestra"
 
-#: ../src/libs/colorpicker.c:368
+#: ../src/libs/colorpicker.c:367
 msgid "hover to highlight sample on canvas, click to lock sample"
 msgstr ""
 "pasar por encima para resaltar la muestra sobre el lienzo, hacer clic para "
 "tomar"
 
-#: ../src/libs/colorpicker.c:383 ../src/libs/image.c:180
+#: ../src/libs/colorpicker.c:382 ../src/libs/image.c:180
 msgid "remove"
 msgstr "eliminar"
 
-#: ../src/libs/colorpicker.c:489
+#: ../src/libs/colorpicker.c:488
 msgid "live samples"
 msgstr "muestras ajustables"
 
-#: ../src/libs/colorpicker.c:541
+#: ../src/libs/colorpicker.c:542
 msgid "point"
 msgstr "punto"
 
-#: ../src/libs/colorpicker.c:542
+#: ../src/libs/colorpicker.c:543
 msgid "area"
 msgstr "área"
 
-#: ../src/libs/colorpicker.c:558 ../src/libs/colorpicker.c:595
+#: ../src/libs/colorpicker.c:558 ../src/libs/colorpicker.c:594
 msgid "mean"
 msgstr "promedio"
 
-#: ../src/libs/colorpicker.c:559 ../src/libs/colorpicker.c:596
+#: ../src/libs/colorpicker.c:559 ../src/libs/colorpicker.c:595
 msgid "min"
 msgstr "min"
 
-#: ../src/libs/colorpicker.c:560 ../src/libs/colorpicker.c:597
+#: ../src/libs/colorpicker.c:560 ../src/libs/colorpicker.c:596
 msgid "max"
 msgstr "max"
 
-#: ../src/libs/colorpicker.c:569 ../src/libs/colorpicker.c:606
+#: ../src/libs/colorpicker.c:569 ../src/libs/colorpicker.c:605
 msgid "RGB"
 msgstr "RGB"
 
-#: ../src/libs/colorpicker.c:582
+#: ../src/libs/colorpicker.c:581
 msgid "restrict histogram to selection"
 msgstr "restringir el histograma a la selección"
 
-#: ../src/libs/colorpicker.c:614
+#: ../src/libs/colorpicker.c:613
 msgid "add"
 msgstr "agregar"
 
-#: ../src/libs/colorpicker.c:623
+#: ../src/libs/colorpicker.c:622
 msgid "display sample areas on image"
 msgstr "mostrar sobre la imagen"
 
@@ -10795,8 +10796,8 @@ msgstr ""
 "todas las imágenes seleccionadas"
 
 #: ../src/libs/copy_history.c:417
-msgid "discard history"
-msgstr "descartar historial de acciones"
+msgid "discard"
+msgstr "descartar"
 
 #: ../src/libs/copy_history.c:420
 msgid ""
@@ -10842,15 +10843,10 @@ msgctxt "accel"
 msgid "copy"
 msgstr "copiar"
 
-#: ../src/libs/copy_history.c:471
+#: ../src/libs/copy_history.c:472
 msgctxt "accel"
-msgid "compress history"
-msgstr "comprimir historial de acciones"
-
-#: ../src/libs/copy_history.c:472 ../src/libs/tools/filmstrip.c:194
-msgctxt "accel"
-msgid "discard history"
-msgstr "descartar historial"
+msgid "discard"
+msgstr "descartar"
 
 #: ../src/libs/copy_history.c:473
 msgctxt "accel"
@@ -10989,7 +10985,7 @@ msgstr "exportar con la configuración actual"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1249 ../src/libs/styles.c:71
-#: ../src/views/darkroom.c:3104
+#: ../src/views/darkroom.c:3106
 msgctxt "accel"
 msgid "export"
 msgstr "exportar"
@@ -12737,6 +12733,11 @@ msgctxt "accel"
 msgid "paste history parts"
 msgstr "pegar partes del historial"
 
+#: ../src/libs/tools/filmstrip.c:194
+msgctxt "accel"
+msgid "discard history"
+msgstr "descartar historial"
+
 #: ../src/libs/tools/filmstrip.c:196
 msgctxt "accel"
 msgid "duplicate image"
@@ -12845,25 +12846,25 @@ msgstr "¿Desea acceder a https://darktable.gitlab.io/doc/?"
 msgid "access the online usermanual?"
 msgstr "¿Desea acceder al manual de usuario en línea?"
 
-#: ../src/libs/tools/global_toolbox.c:281
+#: ../src/libs/tools/global_toolbox.c:277
 msgid "help url opened in web browser"
 msgstr "url de ayuda abierta en el navegador"
 
-#: ../src/libs/tools/global_toolbox.c:286
+#: ../src/libs/tools/global_toolbox.c:282
 msgid "there is no help available for this element"
 msgstr "no hay ayuda disponible para este elemento"
 
-#: ../src/libs/tools/global_toolbox.c:328
+#: ../src/libs/tools/global_toolbox.c:324
 msgctxt "accel"
 msgid "grouping"
 msgstr "agrupar"
 
-#: ../src/libs/tools/global_toolbox.c:329
+#: ../src/libs/tools/global_toolbox.c:325
 msgctxt "accel"
 msgid "preferences"
 msgstr "preferencias"
 
-#: ../src/libs/tools/global_toolbox.c:330
+#: ../src/libs/tools/global_toolbox.c:326
 msgctxt "accel"
 msgid "show overlays"
 msgstr "mostrar info superpuesta"
@@ -12963,40 +12964,40 @@ msgstr "doble clic para restablecer a `%f'"
 msgid "lua options"
 msgstr "opciones lua"
 
-#: ../src/views/darkroom.c:484
+#: ../src/views/darkroom.c:486
 msgid "gamut check"
 msgstr "revisión de gama"
 
-#: ../src/views/darkroom.c:484
+#: ../src/views/darkroom.c:486
 msgid "soft proof"
 msgstr "prueba de impresión"
 
-#: ../src/views/darkroom.c:1009
+#: ../src/views/darkroom.c:1011
 msgid "no userdefined presets for favorite modules were found"
 msgstr "los módulos favoritos no tienen ajustes predefinidos por el usuario"
 
-#: ../src/views/darkroom.c:1014
+#: ../src/views/darkroom.c:1016
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "estilo aplicado '%s' en la imagen actual"
 
-#: ../src/views/darkroom.c:1126
+#: ../src/views/darkroom.c:1128
 msgid "no styles have been created yet"
 msgstr "no se han creado estilos todavia"
 
-#: ../src/views/darkroom.c:1750
+#: ../src/views/darkroom.c:1752
 msgid "quick access to presets of your favorites"
 msgstr "acceso rápido a los preajustes de tus módulos favoritos"
 
-#: ../src/views/darkroom.c:1759
+#: ../src/views/darkroom.c:1761
 msgid "quick access for applying any of your styles"
 msgstr "acceso rápido para aplicar cualquiera de tus estilos"
 
-#: ../src/views/darkroom.c:1772
+#: ../src/views/darkroom.c:1774
 msgid "display a second darkroom image window"
 msgstr "mostrar la imagen en cuarto oscuro en una segunda"
 
-#: ../src/views/darkroom.c:1783
+#: ../src/views/darkroom.c:1785
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -13004,47 +13005,47 @@ msgstr ""
 "activar el indicador de sobre exposición\n"
 "clic derecho para opciones"
 
-#: ../src/views/darkroom.c:1807
+#: ../src/views/darkroom.c:1809
 msgid "mark with CFA color"
 msgstr "marcar con color CFA"
 
-#: ../src/views/darkroom.c:1808
+#: ../src/views/darkroom.c:1810
 msgid "mark with solid color"
 msgstr "marcar con color sólido"
 
-#: ../src/views/darkroom.c:1809
+#: ../src/views/darkroom.c:1811
 msgid "false color"
 msgstr "color falso"
 
-#: ../src/views/darkroom.c:1811
+#: ../src/views/darkroom.c:1813
 msgid "select how to mark the clipped pixels"
 msgstr "seleccione como marcar los pixeles cortados"
 
-#: ../src/views/darkroom.c:1818 ../src/views/darkroom.c:1870
+#: ../src/views/darkroom.c:1820 ../src/views/darkroom.c:1872
 msgid "color scheme"
 msgstr "esquema de color"
 
-#: ../src/views/darkroom.c:1819
+#: ../src/views/darkroom.c:1821
 msgctxt "solidcolor"
 msgid "red"
 msgstr "rojo"
 
-#: ../src/views/darkroom.c:1820
+#: ../src/views/darkroom.c:1822
 msgctxt "solidcolor"
 msgid "green"
 msgstr "verde"
 
-#: ../src/views/darkroom.c:1821
+#: ../src/views/darkroom.c:1823
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "azul"
 
-#: ../src/views/darkroom.c:1822
+#: ../src/views/darkroom.c:1824
 msgctxt "solidcolor"
 msgid "black"
 msgstr "negro"
 
-#: ../src/views/darkroom.c:1826
+#: ../src/views/darkroom.c:1828
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -13052,7 +13053,7 @@ msgstr ""
 "seleccione el color sólido para indicar sobre-exposición.\n"
 "solo será utilizado si el modo = esta marcado con un color sólido"
 
-#: ../src/views/darkroom.c:1836
+#: ../src/views/darkroom.c:1838
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -13062,7 +13063,7 @@ msgstr ""
 "1.0 - nivel blanco\n"
 "0.0 - nivel negro"
 
-#: ../src/views/darkroom.c:1847
+#: ../src/views/darkroom.c:1849
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -13070,35 +13071,35 @@ msgstr ""
 "activar el indicador de exposición\n"
 "clic derecho para opciones"
 
-#: ../src/views/darkroom.c:1872
+#: ../src/views/darkroom.c:1874
 msgid "red & blue"
 msgstr "rojo y azul"
 
-#: ../src/views/darkroom.c:1873
+#: ../src/views/darkroom.c:1875
 msgid "purple & green"
 msgstr "púrpura y verde"
 
-#: ../src/views/darkroom.c:1875
+#: ../src/views/darkroom.c:1877
 msgid "select colors to indicate over/under exposure"
 msgstr "seleccionar los colores para indicar sobreexposición o subexposición"
 
-#: ../src/views/darkroom.c:1884
+#: ../src/views/darkroom.c:1886
 msgid "lower threshold"
 msgstr "umbral inferior"
 
-#: ../src/views/darkroom.c:1885
+#: ../src/views/darkroom.c:1887
 msgid "threshold of what shall be considered underexposed"
 msgstr "umbral bajo el que se considerará subexpuesto"
 
-#: ../src/views/darkroom.c:1893
+#: ../src/views/darkroom.c:1895
 msgid "upper threshold"
 msgstr "umbral superior"
 
-#: ../src/views/darkroom.c:1894
+#: ../src/views/darkroom.c:1896
 msgid "threshold of what shall be considered overexposed"
 msgstr "umbral sobre el que se considerará sobreexpuesto"
 
-#: ../src/views/darkroom.c:1905
+#: ../src/views/darkroom.c:1907
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -13106,7 +13107,7 @@ msgstr ""
 "activar pruebas en pantalla\n"
 "clic derecho para opciones de perfil"
 
-#: ../src/views/darkroom.c:1919
+#: ../src/views/darkroom.c:1921
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -13114,170 +13115,170 @@ msgstr ""
 "activar la revisión de gama\n"
 "clic derecho para opciones del perfil"
 
-#: ../src/views/darkroom.c:1947 ../src/views/lighttable.c:4124
+#: ../src/views/darkroom.c:1949 ../src/views/lighttable.c:4124
 msgid "display intent"
 msgstr "salida en pantalla"
 
-#: ../src/views/darkroom.c:1955 ../src/views/lighttable.c:4132
+#: ../src/views/darkroom.c:1957 ../src/views/lighttable.c:4132
 msgid "preview display intent"
 msgstr "vista previa de salida en pantalla"
 
-#: ../src/views/darkroom.c:1975 ../src/views/lighttable.c:4140
+#: ../src/views/darkroom.c:1977 ../src/views/lighttable.c:4140
 msgid "display profile"
 msgstr "perfil (pantalla)"
 
-#: ../src/views/darkroom.c:1976 ../src/views/lighttable.c:4144
+#: ../src/views/darkroom.c:1978 ../src/views/lighttable.c:4144
 msgid "preview display profile"
 msgstr "vista previa del perfil (pantalla)"
 
-#: ../src/views/darkroom.c:1977
+#: ../src/views/darkroom.c:1979
 msgid "histogram profile"
 msgstr "perfil del histograma"
 
-#: ../src/views/darkroom.c:2031 ../src/views/lighttable.c:4174
+#: ../src/views/darkroom.c:2033 ../src/views/lighttable.c:4174
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "mostrar perfiles ICC en %s o %s"
 
-#: ../src/views/darkroom.c:2034 ../src/views/lighttable.c:4177
+#: ../src/views/darkroom.c:2036 ../src/views/lighttable.c:4177
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "vista previa: mostrar perfiles ICC en %s o %s"
 
-#: ../src/views/darkroom.c:2037
+#: ../src/views/darkroom.c:2039
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "prueba de perfiles ICC en %s o %s"
 
-#: ../src/views/darkroom.c:2040
+#: ../src/views/darkroom.c:2042
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr "histograma y selector de color de perfiles ICC en %s o %s"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:3096 ../src/views/map.c:892 ../src/views/print.c:329
+#: ../src/views/darkroom.c:3098 ../src/views/map.c:892 ../src/views/print.c:329
 #: ../src/views/tethering.c:396
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "activar o desactivar la tira de imágenes"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:3099
+#: ../src/views/darkroom.c:3101
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom acercar"
 
-#: ../src/views/darkroom.c:3100
+#: ../src/views/darkroom.c:3102
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoom rellenar"
 
-#: ../src/views/darkroom.c:3101
+#: ../src/views/darkroom.c:3103
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajustar"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:3107
+#: ../src/views/darkroom.c:3109
 msgctxt "accel"
 msgid "image forward"
 msgstr "imagen siguiente"
 
-#: ../src/views/darkroom.c:3108
+#: ../src/views/darkroom.c:3110
 msgctxt "accel"
 msgid "image back"
 msgstr "imagen anterior"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:3111
+#: ../src/views/darkroom.c:3113
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "raw sobre-expuesto"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:3114
+#: ../src/views/darkroom.c:3116
 msgctxt "accel"
 msgid "overexposed"
 msgstr "sobreexpuesto"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:3117
+#: ../src/views/darkroom.c:3119
 msgctxt "accel"
 msgid "softproof"
 msgstr "prueba en pantalla"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:3120
+#: ../src/views/darkroom.c:3122
 msgctxt "accel"
 msgid "gamut check"
 msgstr "revisión de gama"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:3123
+#: ../src/views/darkroom.c:3125
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "aumentar tamaño del pincel"
 
-#: ../src/views/darkroom.c:3124
+#: ../src/views/darkroom.c:3126
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "reducir tamaño del pincel"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:3127
+#: ../src/views/darkroom.c:3129
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "incrementar dureza del pincel"
 
-#: ../src/views/darkroom.c:3128
+#: ../src/views/darkroom.c:3130
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "reducir dureza del pincel"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:3131
+#: ../src/views/darkroom.c:3133
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "incrementar opacidad del pincel"
 
-#: ../src/views/darkroom.c:3132
+#: ../src/views/darkroom.c:3134
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "reducir opacidad del pincel"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:3135
+#: ../src/views/darkroom.c:3137
 msgctxt "accel"
 msgid "full preview"
 msgstr "vista previa completa"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3138 ../src/views/lighttable.c:3751
+#: ../src/views/darkroom.c:3140 ../src/views/lighttable.c:3751
 #: ../src/views/map.c:889
 msgctxt "accel"
 msgid "undo"
 msgstr "deshacer"
 
-#: ../src/views/darkroom.c:3139 ../src/views/lighttable.c:3752
+#: ../src/views/darkroom.c:3141 ../src/views/lighttable.c:3752
 #: ../src/views/map.c:890
 msgctxt "accel"
 msgid "redo"
 msgstr "rehacer"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:3142
+#: ../src/views/darkroom.c:3144
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "permitir paneo y zoom mientras se editan máscaras"
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:3145
+#: ../src/views/darkroom.c:3147
 msgctxt "accel"
 msgid "search modules"
 msgstr "buscar módulos"
 
-#: ../src/views/darkroom.c:3865
+#: ../src/views/darkroom.c:3867
 msgid "darktable - darkroom preview"
 msgstr "darktable: vista previa del cuarto oscuro"
 
@@ -13471,6 +13472,13 @@ msgstr "Nueva sesión iniciada '%s'"
 msgid "no camera with tethering support available for use..."
 msgstr "No hay ninguna cámara disponible con soporte de captura..."
 
+#~ msgid "discard history"
+#~ msgstr "descartar historial de acciones"
+
+#~ msgctxt "accel"
+#~ msgid "compress history"
+#~ msgstr "comprimir historial de acciones"
+
 #~ msgid "blend options"
 #~ msgstr "opciones de mezcla"
 
@@ -13480,13 +13488,6 @@ msgstr "No hay ninguna cámara disponible con soporte de captura..."
 #~ msgstr ""
 #~ "Activar mezcla: uniforme, con máscara, con máscara paramétrica, o con la "
 #~ "combinación de ambas"
-
-#~ msgid "discard"
-#~ msgstr "descartar"
-
-#~ msgctxt "accel"
-#~ msgid "discard"
-#~ msgstr "descartar"
 
 #~ msgctxt "accel"
 #~ msgid "exit sticky preview"
