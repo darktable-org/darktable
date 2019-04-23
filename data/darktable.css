@@ -452,6 +452,7 @@ entry
   background-color: @field_bg;
   min-height: 0;
   min-width: 0;
+  padding-left: 3pt;
 }
 
 entry:hover
