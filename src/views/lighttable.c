@@ -1200,7 +1200,7 @@ end_query_cache:
 
             // if we have moved the view we need to expose again all pictures as the first row or last one need to
             // be redrawn properly. for this we just record the missing thumbs.
-            if(offset_changed && mouse_over_id != -1)
+            if(lib->offset_changed && mouse_over_id != -1)
             {
               missing += iir;
             }
