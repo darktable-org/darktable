@@ -67,6 +67,7 @@
 @define-color fg_color @grey_75;
 @define-color base_color @fg_color;
 @define-color text_color @grey_05;
+@define-color disabled_fg_color @grey_40;
 
 /* Scroll bars (sliders) */
 @define-color scroll_bar_inactive @grey_40;
@@ -228,7 +229,7 @@ box *
 
 *:disabled
 {
-  color: shade(@fg_color, .33);
+  color: @disabled_fg_color;
 }
 
 
@@ -357,7 +358,7 @@ button:disabled,
 #recent-collection-button:disabled,
 #history-button:disabled
 {
-  color: @bg_color;
+  color: @disabled_fg_color;
   background-color: transparent;
 }
 
