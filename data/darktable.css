@@ -79,6 +79,7 @@
 @define-color plugin_bg_color @grey_20;
 @define-color plugin_fg_color @grey_80;
 @define-color section_label @grey_55;
+@define-color plugin_label_color @grey_55;
 
 /* Modules controls (sliders and comboboxes) */
 @define-color bauhaus_fg @grey_70;
@@ -504,6 +505,7 @@ entry selection
 #lib-panel-label
 {
   background-color: @bg_color;
+  color: @plugin_label_color;
   border:0;
   padding: 0 2pt 2pt 0.5em;
   font-weight: 400;
