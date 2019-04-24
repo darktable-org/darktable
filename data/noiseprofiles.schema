@@ -50,7 +50,7 @@
                   "type": "string",
                   "pattern": "^[a-zA-Z0-9\\- \\*]+$",
                   "minLength": 2,
-                  "maxLength": 23
+                  "maxLength": 25
                 },
                 "profiles": {
                   "type": "array",
