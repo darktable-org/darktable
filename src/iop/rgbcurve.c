@@ -1059,7 +1059,9 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
         cairo_line_to(cr, width * picker_mean[ch], -height);
         cairo_stroke(cr);
 
-        snprintf(text, sizeof(text), "%.1f → %.1f", self->picked_color[ch], self->picked_output_color[ch]);
+        picker_scale(self->picked_color, picker_mean, p, work_profile);
+        picker_scale(self->picked_output_color, picker_min, p, work_profile);
+        snprintf(text, sizeof(text), "%.1f → %.1f", picker_mean[ch] * 255.f, picker_min[ch] * 255.f);
 
         cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
         cairo_set_font_size(cr, DT_PIXEL_APPLY_DPI(0.04) * height);
@@ -1123,7 +1125,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
     pango_layout_set_font_description(layout, desc);
 
     const float min_scale_value = 0.0f;
-    const float max_scale_value = 1.0f;
+    const float max_scale_value = 255.0f;
 
     const float x_node_value = curve_nodes[g->selected].x * (max_scale_value - min_scale_value) + min_scale_value;
     const float y_node_value = curve_nodes[g->selected].y * (max_scale_value - min_scale_value) + min_scale_value;
