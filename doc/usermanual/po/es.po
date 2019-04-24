@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "POT-Creation-Date: 2019-04-22 22:46-0500\n"
-"PO-Revision-Date: 2019-04-23 14:16-0500\n"
+"PO-Revision-Date: 2019-04-24 00:59-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es\n"
@@ -4473,7 +4473,6 @@ msgid "rotation"
 msgstr "rotación"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3630(para)
-
 msgid ""
 "Perform a counter-clockwise or clockwise rotation on selected images. The third "
 "button resets the image rotation to the value in the Exif data. This feature is "
@@ -4741,7 +4740,6 @@ msgstr ""
 "de acciones que podrá ser pegado a otras imágenes."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3857(para)
-
 msgid ""
 "Files that were exported by darktable typically contain the full history stack if "
 "the file format supports embedded metadata (see <xref linkend=\"export_selected\"/"
@@ -4948,7 +4946,6 @@ msgstr ""
 "de <placeholder-1/> (ver <xref linkend=\"map_chapter\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4058(para)
-#, fuzzy
 msgid ""
 "A GPS receiver calculates its current position based on the information it "
 "receives from satellites and records them in a GPX file – together with the "
@@ -4962,7 +4959,7 @@ msgstr ""
 "actuales. Los datos Exif de las imágenes también contienen una marca de tiempo "
 "definida por la configuración de la cámara. darktable toma la marca de tiempo de "
 "la imagen, busca la posición en el archivo GPX en ese momento y almacena las "
-"coordenadas (latitud / longitud / elevación) en su base de datos y en el archivo "
+"coordenadas (latitud/longitud/elevación) en su base de datos y en el archivo "
 "asociado XMP de la imagen."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4067(para)
@@ -5030,18 +5027,17 @@ msgstr ""
 "hora asociada a los datos Exif de la cámara."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4116(para)
-#, fuzzy
 msgid ""
 "Now you can select all the images you want to geotag and click the apply button "
 "(currently represented by a check mark). This will alter the time in darktable's "
 "internal database for these pictures – so you will also see the change in the "
 "image information module on the left."
 msgstr ""
-"Ahora puede seleccionar todas las imágenes que quiere geo-etiquetar y hacer click "
-"en el botón de aplicar (representado actualmente por un visto bueno). Esto "
-"alterará la hora de la base de datos interna de darktable para estas fotografías – "
-"también podrá ver a su izquierda, el cambio en el módulo de información de la "
-"imagen."
+"Ahora puede seleccionar todas las imágenes que desee etiquetar geográficamente y "
+"pulsar en el botón Aplicar (actualmente representado por una marca de "
+"verificación). Al hacerlo, alterará el tiempo en la base de datos interna de "
+"darktable para estas imágenes y entonces verá el cambio en el módulo de "
+"información a la izquierda de la imagen."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4129(para)
 msgid ""
@@ -5133,7 +5129,6 @@ msgid "tags"
 msgstr "etiquetas"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4232(entry)
-#, fuzzy
 msgid ""
 "This panel is for managing tags on images. Tags are stored in both sidecar files (."
 "xmp) and within the darktable database for a faster access. The panel is divided "
@@ -5142,13 +5137,13 @@ msgid ""
 "The lower part contains a list of all available tags in the database, which can be "
 "filtered in the text box above."
 msgstr ""
-"Este panel sirve para manejar las etiquetas de las imágenes. Las etiquetas son "
-"almacenadas en los archivos asociados (.xmp), y en la base de datos de darktable "
-"para un rápido acceso. El panel está dividido en dos partes: la parte superior "
-"contiene la(s) etiqueta(s) que están actualmente asignadas a la imagen bajo el "
-"cursor, o la(s) imagen(es) seleccionada(s) si el puntero del ratón está fuera de "
-"la mesa de luz. La parte inferior contiene una lista de las etiquetas disponibles "
-"en la base de datos, las cuales pueden ser filtradas en la caja de texto superior."
+"Este panel es para la gestión de etiquetas en imágenes. Las etiquetas se almacenan "
+"en los archivos asociados (.xmp) y en la base de datos de darktable para un acceso "
+"más rápido. El panel está dividido en dos partes: la parte superior contiene la(s) "
+"etiqueta(s) actualmente agregadas a la imagen debajo del cursor o a la(s) "
+"imagen(es) seleccionada(s) si el ratón está fuera de la mesa de luz. La parte "
+"inferior contiene una lista de todas las etiquetas disponibles en la base de "
+"datos, que se pueden filtrar en el cuadro de texto de arriba."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4248(para)
 msgid ""
@@ -5990,7 +5985,6 @@ msgid "style"
 msgstr "estilo"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4992(para)
-#, fuzzy
 msgid ""
 "This option lets you choose a style, i.e. a collection of history stack items, "
 "which darktable combines with the existing history stack to generate the output "
@@ -6002,16 +5996,15 @@ msgid ""
 "compensation to all of your output images. Learn more about styles in <xref "
 "linkend=\"styles\"/>, and <xref linkend=\"history\"/>."
 msgstr ""
-"Esta opción le permite escoger un estilo, i.e. una colección de elementos del "
-"historial de acciones, el cual darktable combina con el historial de acciones "
-"actual para generar la imagen de salida. Estos elementos del historial solo son "
-"agregados temporalmente; el historial de acciones original no es sobrescrito. "
-"Puede utilizar esta propiedad para agregar pasos de procesado y parámetros que "
-"quiere que sean aplicados específicamente a las imágenes exportadas, e.g. puede "
-"definir un estilo que agregue un mayor nivel de enfoque cuando produzca JPEG de "
-"menor escala para archivos que se suban a Internet o agregar cierto nivel de "
-"compensación de exposición para que se agregue a todas sus imágenes exportadas. "
-"Aprenda más sobre los estilos en la <xref linkend=\"styles\"/>, y <xref linkend="
+"Esta opción le permite elegir un estilo, es decir, una colección de elementos del "
+"historial de acciones, que darktable combina con la ya existente para generar la "
+"imagen de salida. Estos elementos del historial solo se agregan temporalmente; el "
+"historial de acciones original no se sobrescribe. Puede usar esta función para "
+"agregar pasos del proceso y parámetros específicamente a las imágenes antes de "
+"exportar, por ejemplo. Puede definir un estilo que agregue un mayor nivel de "
+"nitidez cuando produzca archivos JPEG reducidos para Internet o agregue un cierto "
+"nivel de compensación de exposición a todas las imágenes de salida. Obtenga más "
+"información sobre los estilos en <xref linkend=\"styles\"/>, y <xref linkend="
 "\"history\"/>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5009(para)
@@ -6147,31 +6140,28 @@ msgstr ""
 "manipulación de imágenes. En <xref linkend=\"modules\"/> encontrará una "
 "descripción de cada uno de los módulos disponibles."
 
-# pixelpipe - verificar si hay que traducir
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5134(title)
 msgid "Pixelpipe, module order, and history stack"
-msgstr "Pixelpipe, orden de módulos, e historial de acciones"
+msgstr "Tubería del píxel, orden de módulos e historial de acciones"
 
-# pixelpipe - verificar si hay que traducir
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5137(primary)
 msgid "pixelpipe"
-msgstr "pixelpipe"
+msgstr "tubería del píxel (pixelpipe)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5141(primary)
 msgid "module processing order"
 msgstr "módulo de orden de procesamiento"
 
-# pixelpipe - verificar si hay que traducir
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5148(para)
-#, fuzzy
 msgid ""
 "darktable processes images – from input to output – in a so called "
 "<quote>pixelpipe</quote>. Within the pixelpipe image processing consists of "
 "consecutive operations which are implemented as <quote>modules</quote>."
 msgstr ""
-"darktable procesa imágenes – de una entrada a una salida – en los llamados "
-"<quote>pixelpipe</quote>. Con el pixelpipe, el procesado de la imagen consiste en "
-"operaciones consecutivas que son implementadas como <quote>módulos</quote>."
+"darktable procesa las imágenes, desde la entrada hasta la salida, en una llamada "
+"<quote>tubería del píxel</quote> (pixelpipe). El proceso de imágenes dentro de la  "
+"tubería del píxel consiste en operaciones consecutivas que se implementan como "
+"<quote>módulos</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5154(para)
 msgid ""
@@ -6206,7 +6196,7 @@ msgid ""
 "input color profile can be applied."
 msgstr ""
 "Ciertos pasos del procesado de imágenes simplemente no tienen sentido si son "
-"incluidos en el pixelpipe. Para mencionar algunos: reconstrucción de luces "
+"incluidos en la tubería del píxel. Para mencionar algunos: reconstrucción de luces "
 "necesita ser realizado sobre los datos raw antes de la interpolación cromática, y "
 "el paso de interpolación cromática necesita ser realizado antes de que cualquier "
 "perfil de color de entrada sea aplicado."
@@ -6287,8 +6277,8 @@ msgstr ""
 "los cambios en la canalización. Esto le permite volver a una etapa mas temprana "
 "del revelado de su imagen si lo necesita. El historial de acciones representa su "
 "flujo de trabajo personal y no debe ser confundido con la secuencia en la que los "
-"módulos serán aplicados en el pixelpipe (ver arriba). Para mas detalles sobre el "
-"historial de acciones vea la <xref linkend=\"history\"/>."
+"módulos serán aplicados en la tubería del píxel (ver arriba). Para mas detalles "
+"sobre el historial de acciones vea la <xref linkend=\"history\"/>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5223(title)
 msgid "Interacting with modules"
@@ -6484,17 +6474,16 @@ msgstr ""
 "volverá al modo normal de control."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5359(para)
-#, fuzzy
 msgid ""
 "Alternatively you can type in a new value using your keyboard and commit by "
 "hitting the enter key. You may even supply the new value in the form of an "
 "arithmetic expressions which darktable will calculate for you – the old value is "
 "referenced as <quote>x</quote>."
 msgstr ""
-"Alternativamente, puede escribir un nuevo valor utilizando su teclado y aceptarlo "
-"al presionar la tecla enter. Puede incluso proveer un nuevo valor en la forma de "
-"expresiones aritméticas las cuales darktable calcula por usted – los valores "
-"antiguos se referencia como <quote>x</quote>."
+"Alternativamente, puede escribir un nuevo valor usando su teclado y confirmar "
+"presionando la tecla Entrar. Incluso puede proporcionar el nuevo valor en forma de "
+"expresiones aritméticas que calculará darktable: el valor anterior se denomina "
+"<quote>x</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5366(para)
 msgid "Double-click"
@@ -6772,7 +6761,7 @@ msgid ""
 msgstr ""
 "Muchos de los módulos de darktable pueden ser aplicados varias veces. Cada "
 "instancia de un módulo se comporta como cualquier módulo, tomando su entrada desde "
-"el módulo que le precede en el pixelpipe y entregando su salida al módulo "
+"el módulo que le precede en la tubería del píxel y entregando su salida al módulo "
 "siguiente."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5587(title)
@@ -6786,7 +6775,7 @@ msgid ""
 "once in the pixelpipe. Here are a few use cases."
 msgstr ""
 "Hay muchas ocasiones en las que tiene sentido que un operador actúe más de una vez "
-"en el pixelpipe. Aquí tiene algunos casos."
+"en la tubería del píxel. Aquí tiene algunos casos."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5596(para)
 #, fuzzy
@@ -6843,17 +6832,15 @@ msgstr ""
 "linkend=\"parametric_mask\"/>) pueden ser utilizados para seleccionar las partes "
 "de una imagen donde quiere que cada instancia de los módulos sean aplicados."
 
-# pixelpipe - verificar traducción
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5625(para)
-#, fuzzy
 msgid ""
 "Please be aware that of course each instance also adds to the workload of your "
 "pixelpipe. Generating too many instances – especially of the more demanding "
 "modules – will certainly cause some noticeable slow-down."
 msgstr ""
-"Por favor, tome en consideración que una nueva instancia también agrega otra carga "
-"de trabajo a su pixelpipe. Al generar muchas instancias – especialmente de los "
-"módulos mas demandantes – ciertamente causará una lentitud notable."
+"Evidentemente, cada instancia también aumenta la carga de trabajo del proceso "
+"total de imagen. Generar demasiadas instancias, especialmente de los módulos más "
+"exigentes, sin duda causará una notable desaceleración."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5635(title)
 msgid "Managing instances"
@@ -6900,10 +6887,10 @@ msgid ""
 "<quote>move down</quote> to shift the position of the instance among its peers."
 msgstr ""
 "darktable aplica todos los módulos en orden de acuerdo a su tipo, por ende, todas "
-"las instancias de un módulo en particular se darán en simultaneo en el pixelpipe. "
-"Sin embargo, puede decidir el orden relativo en el que diferentes instancias de un "
-"módulo sean aplicadas seleccionando <quote>arriba</quote> o <quote>abajo</quote> "
-"para mover la posición de la instancia entre sus similares."
+"las instancias de un módulo en particular se darán en simultaneo en la tubería del "
+"píxel. Sin embargo, puede decidir el orden relativo en el que diferentes "
+"instancias de un módulo sean aplicadas seleccionando <quote>arriba</quote> o "
+"<quote>abajo</quote> para mover la posición de la instancia entre sus similares."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5675(para)
 msgid ""
@@ -6931,7 +6918,6 @@ msgstr "Mezclado"
 msgid "blending"
 msgstr "mezclado"
 
-# pixelpipe - verificar traduccion
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5703(para)
 msgid ""
 "By default a module takes its input from the preceding module, performs its "
@@ -6942,14 +6928,14 @@ msgid ""
 "different algorithms, called blending operators or blend modes."
 msgstr ""
 "Por defecto, un módulo toma su entrada del módulo precedente, realiza un calculo y "
-"maneja su salida por encima del próximo módulo en el pixelpipe. Si lo requiere, "
-"puede activar pasos adicionales donde la salida de un módulo es re-procesada con "
-"su entrada antes de pasar su resultado al próximo módulo. Este paso adicional de "
-"procesamiento es llamado mezcla. La entrada y salida pueden ser procesadas por dos "
-"algoritmos diferentes, llamados operadores de mezcla o modos de mezcla."
+"maneja su salida por encima del próximo módulo en la secuencia del proceso de "
+"imagen. Si lo requiere, puede activar pasos adicionales donde la salida de un "
+"módulo es reprocesada con su entrada antes de pasar su resultado al próximo "
+"módulo. Este paso adicional de procesamiento es llamado mezcla. La entrada y "
+"salida pueden ser procesadas por dos algoritmos diferentes, llamados operadores de "
+"mezcla o modos de mezcla."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5712(para)
-#, fuzzy
 msgid ""
 "Each blend mode is further controlled by a parameter called opacity, which can "
 "have a value between 0% and 100% and defines how input and output image contribute "
@@ -6958,12 +6944,12 @@ msgid ""
 "opacity value of 100% delivers the maximum effect of the module with the blend "
 "mode chosen."
 msgstr ""
-"Cada modo de mezcla es controlado mayormente por un parámetro llamado opacidad, el "
-"cual puede tener un valor entre 0% y 100%, y define como la imagen de entrada y "
-"salida contribuyen al resultado final. Típicamente, una opacidad del 0% le da como "
-"resultado una imagen que es idéntica a la imagen de entrada – el módulo permanece "
-"sin efecto. Una opacidad del 100% aplica el máximo del efecto del módulo sobre el "
-"modo de mezcla escogido."
+"Cada modo de mezcla se controla mediante un parámetro llamado opacidad, que puede "
+"tener un valor entre 0% y 100% y define cómo la imagen de entrada y salida "
+"contribuye al resultado final. Por lo general, un valor de opacidad del 0% da como "
+"resultado una imagen que es idéntica a la imagen de entrada: el módulo permanece "
+"sin efecto alguno. Un valor de opacidad del 100% proporciona el efecto máximo del "
+"módulo con el modo de fusión elegido."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5720(para)
 msgid ""
@@ -7014,24 +7000,23 @@ msgid ""
 "module's output is passed to the next module in pixelpipe without additional "
 "reprocessing. No further controls are displayed."
 msgstr ""
-"La salida del módulo se transmite al siguiente en el pixelpipe sin ser procesada "
-"adicionalmente. No se muestran mas controles."
+"La salida del módulo se transmite al siguiente en la tubería del píxel sin ser "
+"procesada adicionalmente. No se muestran mas controles."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5770(title)
 msgid "uniformily"
 msgstr "uniformemente"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5771(para)
-#, fuzzy
 msgid ""
 "reprocessing takes place with the chosen blend mode and opacity value – the same "
 "for all pixels. Additional controls to select blend mode and opacity value are "
 "displayed. The default blend mode is <quote>normal</quote> with an opacity of 100%."
 msgstr ""
-"El re-procesado se aplica con el modo de mezcla y opacidad seleccionados – el "
-"mismo para todos los píxeles. Controles adicionales para seleccionar el modo de "
-"mezcla y el valor de opacidad son mostrados. El modo de mezcla por defecto es "
-"<quote>normal</quote> con una opacidad del 100%."
+"El reprocesado se realiza con el modo de fusión y el valor de opacidad elegidos, "
+"el mismo para todos los píxeles. Se muestran controles adicionales para "
+"seleccionar el modo de mezcla y el valor de opacidad. El modo de mezcla "
+"predeterminado es <quote>normal</quote> con una opacidad del 100%."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5779(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6401(title)
@@ -7231,7 +7216,6 @@ msgstr ""
 msgid "normal bounded"
 msgstr "normal limitado"
 
-# pixelpipe - buscar traducción
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5930(para)
 msgid ""
 "This blend mode acts similarly to blend mode <quote>normal</quote>, except that "
@@ -7248,10 +7232,11 @@ msgstr ""
 "quote>, excepto que los datos de entrada y salida son anexados a un rango de valor "
 "min/max en particular. A veces esto ayuda a prevenir artefactos. Sin embargo, en "
 "la mayoría de los casos (e.g. luces extremadamente saturadas de color) es mejor "
-"dejar que valores sin ataduras viajen por el pixelpipe con el fin de lidiar "
-"apropiadamente con todos en el lugar correcto (e.g. en el módulo de <link linkend="
-"\"output_color_profile\"><emphasis>perfil de color de salida</emphasis></link>). "
-"El modo de mezcla <quote>normal</quote> es usualmente la selección preferida."
+"dejar que valores sin ataduras viajen por la tubería del píxel con el fin de "
+"lidiar apropiadamente con todos en el lugar correcto (e.g. en el módulo de <link "
+"linkend=\"output_color_profile\"><emphasis>perfil de color de salida</emphasis></"
+"link>). El modo de mezcla <quote>normal</quote> es usualmente la selección "
+"preferida."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5943(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17507(title)
@@ -8930,6 +8915,9 @@ msgid ""
 "darktable will use LittleCMS 2 to render the colors regardless of that "
 "configuration parameter's value."
 msgstr ""
+"Tenga en cuenta que si el ICC dado está basado en la tabla de búsqueda (LUT) o "
+"contiene ambos, LUT y una matriz, darktable utilizará LittleCMS 2 para representar "
+"los colores independientemente del valor de aquel parámetro de configuración."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7274(title)
 msgid "Rendering intent"
@@ -10159,7 +10147,7 @@ msgstr "esquema de color"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:8455(para)
 msgid "Selects the solid color for the <quote>mark with solid color</quote> mode."
-msgstr ""
+msgstr "Selecciona el color uniforme para la <quote> marca con color sólido</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:8459(bridgehead)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9571(title)
@@ -10172,6 +10160,9 @@ msgid ""
 "This slider sets the threshold of what values are considered to be overexposed. "
 "You can leave it at its default value 1.0 (white level) in most cases."
 msgstr ""
+"Este control deslizante establece el umbral de qué valores se consideran "
+"sobreexpuestos. En la mayoría de los casos, puede dejarlo en su valor "
+"predeterminado 1.0 (nivel de blanco)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:8470(title)
 msgid "Over/underexposed warning"
@@ -10389,6 +10380,10 @@ msgid ""
 "also use space bar to process the next photo and use backspace key to process the "
 "previous photo."
 msgstr ""
+"Puede desplazarse con el mouse para navegar rápidamente a través de las imágenes. "
+"Puede cambiar a otra foto haciéndole doble clic. También puede usar la barra "
+"espaciadora para procesar la siguiente foto o usar la tecla de retroceso para "
+"procesar la foto anterior."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:8666(para)
 msgid ""
@@ -11161,6 +11156,10 @@ msgid ""
 "activated. It allows you to set the exposure difference between the merged images "
 "in ev units (default 1)."
 msgstr ""
+"Este control deslizante solo es visible si la función <emphasis>fusion de "
+"exposición</emphasis> está activada. Le permite establecer la diferencia de "
+"exposición entre las imágenes combinadas en unidades de valor de exposición EV "
+"(Exposure Value). El valor predeterminado 1."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9416(para)
 msgid ""
@@ -14228,6 +14227,10 @@ msgid ""
 "on empty space to add a new patch (with the currently picked color as source "
 "color)."
 msgstr ""
+"Para restablecer un parche, pulse dos veces en él. Haga clic derecho en un parche "
+"para eliminarlo. Con la combinación de la tecla Mayús y un clic en el espacio "
+"vacío, se agrega un nuevo parche (con el color actualmente seleccionado como color "
+"de origen)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12550(title)
 msgid "Monochrome"
@@ -14405,6 +14408,10 @@ msgid ""
 "be used to revert parasite color casts or to enhance the visual atmosphere of a "
 "picture using color grading, a popular technic in the cinema industry."
 msgstr ""
+"Este módulo ofrece una herramienta versátil para ajustar el balance de color de "
+"una imagen. Se puede usar para revertir los moldes de color parásitos o para "
+"mejorar la atmósfera visual de una imagen utilizando el etalonaje o dosificado, "
+"una técnica popular en la industria del cine."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12782(para)
 msgid ""
@@ -14504,6 +14511,8 @@ msgid ""
 "These parameters affect the user interface used for the shadows, mid-tones and "
 "highlights controls."
 msgstr ""
+"Estos parámetros afectan la interfaz de usuario utilizada para los controles de "
+"sombras, tonos medios y altas luces."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12865(para)
 msgid ""
@@ -14530,6 +14539,11 @@ msgid ""
 "50%. The difference is barely noticeable in most cases, especially using the modes "
 "that already correct the RGB parameters internally in XYZ luminance."
 msgstr ""
+"Como consecuencia, la edición en RGB, luego en HSL, nuevamente en RGB no retendrá "
+"los parámetros RGB originales, sino que los normalizará de modo que la luminosidad "
+"de HSL sea del 50%. La diferencia es apenas perceptible en la mayoría de los "
+"casos, especialmente al usar los modos que ya corrigen los parámetros RGB "
+"internamente en la luminancia XYZ."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12887(para)
 #, fuzzy
@@ -14555,6 +14569,13 @@ msgid ""
 "color filters with the color balance settings, like split-toning or sepia effect "
 "(you might want to use blending modes then)."
 msgstr ""
+"La saturación de entrada es una corrección de saturación aplicada antes del "
+"balance de color. Se puede utilizar para atenuar los colores antes de ajustar el "
+"balance, facilitando el proceso de las imágenes difíciles. Cuando se desatura "
+"completamente, se crea una imagen monocromática basada en la luminancia que se "
+"puede usar como una máscara de luminancia que sirve para crear filtros de color "
+"con los ajustes de balance de color; como el efecto de tono dividido o sepia (es "
+"posible que desee utilizar los modos de fusión en ese momento)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12909(title)
 msgid "Output saturation"
@@ -14567,6 +14588,11 @@ msgid ""
 "too heavy, so you can adjust the global saturation at once instead of editing each "
 "channel saturation separately at the expense of possibly messing the colors."
 msgstr ""
+"La saturación de salida es una corrección de saturación aplicada justo después del "
+"balance de color. Es útil cuando se encontró un balance de matiz adecuado pero con "
+"el efecto demasiado intenso, por lo que puede ajustar la saturación global en "
+"lugar de editar la saturación individualmente de cada canal, provocando "
+"posiblemente un conflicto con los colores."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12919(title)
 msgid "Contrast and Contrast fulcrum"
@@ -14584,6 +14610,17 @@ msgid ""
 "resaturated, highlights might be desaturated, and some color shift is to be "
 "expected)."
 msgstr ""
+"El control deslizante del contraste permite aumentar la separación de luminancia. "
+"El valor del punto de referencia define el valor de luminancia que no se verá "
+"afectado por la corrección de contraste, por lo que el contraste pasará sobre el "
+"punto de referencia. Los valores de luminancia por encima del punto de referencia "
+"se amplificarán de forma casi lineal. Los valores de luminancia por debajo del "
+"punto de referencia se comprimirán con una función de potencia (creando una "
+"punta). Esta corrección se produce después de la saturación de salida y se aplica "
+"en todos los canales RGB por separado, por lo que es posible que los tonos y las "
+"saturaciones no se conserven en el caso de ajustes drásticos (las sombras pueden "
+"estar sobresaturadas, las luces altas estar desaturadas y es de esperar algún "
+"cambio de color)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12934(title)
 msgid "Shadows, Mid-tones, Highlights"
@@ -14596,6 +14633,10 @@ msgid ""
 "highlights ones will control either the gain or the slope. Parameters are "
 "transfered as is when you change the mode."
 msgstr ""
+"Dependiendo del modo establecido, la configuración de las sombras controlará la "
+"elevación o el desplazamiento, los tonos medios controlarán la gamma o la "
+"potencia, y las luces altas controlarán la ganancia o la pérdida. Los parámetros "
+"se transfieren tal como están cuando se cambia el modo."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12942(para)
 msgid ""
@@ -14603,6 +14644,10 @@ msgid ""
 "saturation sliders range is limited to [0%; 25%]. Values outside of these bounds "
 "can be defined from keyboard input after right-click on the slider."
 msgstr ""
+"En el modo RGBL, el rango de los deslizadores RGB está limitado a [-0.5; 0,5]. En "
+"el modo HSL, el rango de los controles deslizantes de saturación está limitado a "
+"[0%; 25%]. Los valores fuera de estos rangos se pueden definir con el teclado "
+"después al pulsar el botón derecho en el control deslizante."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12951(title)
 msgid "Optimize luma"
@@ -14635,6 +14680,7 @@ msgid ""
 "session."
 msgstr ""
 
+# It is important no note: Parece un error tipográfico.
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12977(para)
 msgid ""
 "It is important no note that the luminance adjustment performed targets only the "
@@ -14647,6 +14693,15 @@ msgid ""
 "for local correction, in combination with color adjustements, for color-grading "
 "with masks."
 msgstr ""
+"Es importante tener en cuenta que el ajuste realizado de luminancia se centra solo "
+"en la salida del módulo de balance de color y no tiene en cuenta otros ajustes de "
+"luminancia realizados en módulos que vienen después en la tubería del píxel "
+"(película, curva tono, zonas de color, niveles, mapeo tonal global, etc.). No se "
+"recomienda utilizar el balance de color para reasignar la luminancia globalmente "
+"en la imagen porque no conserva los colores originales; además los módulos como "
+"curva tono o película son más adecuados para este propósito. Los ajustes de "
+"luminancia en el balance de color son más adecuados para la corrección local, en "
+"combinación con los ajustes de color, para la graduación del color con máscaras."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12990(title)
 msgid "Neutralize colors"
@@ -14663,6 +14718,15 @@ msgid ""
 "and highlights so all the color casts are reverted, and the average color of the "
 "picture is a neutral grey."
 msgstr ""
+"En una imagen en la que algunas áreas están expuestas a la luz solar directa y "
+"otras áreas están expuestas a la luz reflejada (sombras), o cuando varias fuentes "
+"de luz artificial están presentes simultáneamente, las sombras y las altas luces a "
+"menudo tienen diferentes temperaturas de color. Estas imágenes son particularmente "
+"difíciles de corregir, ya que ningún balance de blancos general coincidirá con "
+"todos los colores a la vez. El optimizador de neutralización de color tiene por "
+"objetivo ayudarlo a encontrar el color complementario para las sombras, los tonos "
+"medios y las altas luces, de modo que el aspecto de los colores se reviertan y el "
+"color promedio de la imagen sea un gris neutro."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13001(para)
 msgid ""
@@ -15301,9 +15365,8 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13747(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15326(title)
-#, fuzzy
 msgid "coarse/fine curves"
-msgstr "curvas gruesas/finas"
+msgstr "curvas para el grosor/finura"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13756(quote)
 msgid "wavelet"
@@ -15441,7 +15504,6 @@ msgstr ""
 "disponibles."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13931(para)
-#, fuzzy
 msgid ""
 "This module reduces noise in your image but preserves sharp edges. This is "
 "accomplished by averaging pixels with their neighbors, taking into account not "
@@ -15452,12 +15514,16 @@ msgid ""
 "noisy than the 2 other channels. In such a case, use the channel mixer module to "
 "see the channels one by one, in order to set the blur intensities accordingly."
 msgstr ""
-"Este módulo reduce el ruido en su imagen pero preserva los bordes nítidos. Esto se "
-"logra al promediar los píxeles con sus vecinos, tomando en cuenta no solo la "
-"distancia geométrica sino también la distancia del rango de escala, i.e. "
-"diferencia entre valores RGB. Ya que la reducción de ruido es un recurso "
-"hambriento de procesamiento, ralentiza el procesamiento del pixelpipe "
-"significativamente; considere activar este módulo al final de su flujo de trabajo."
+"Este módulo reduce el ruido en su imagen pero conserva los bordes nítidos. Se "
+"logra promediando los píxeles con sus vecinos, teniendo en cuenta no solo la "
+"distancia geométrica sino también la distancia en la escala de rango, es decir, "
+"las diferencias en los valores RGB. Debido a que la eliminación de ruido es un "
+"proceso que requiere muchos recursos, ralentiza significativamente el "
+"procesamiento del tubo de píxeles; Considere activar este módulo al final del "
+"flujo de trabajo. El módulo puede ser realmente efectivo si algún canal RGB es más "
+"ruidoso que los otros 2 canales. En tal caso, use el módulo del mezclador de "
+"canales para ver los canales uno por uno, a fin de establecer las intensidades de "
+"desenfoque como corresponda."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13943(para)
 msgid "Set the spatial extent of the gaussian blur."
@@ -15498,25 +15564,23 @@ msgid "liquify"
 msgstr "licuar"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13996(entry)
-#, fuzzy
 msgid ""
 "The liquify module offers a versatile way of moving pixels around by applying free "
 "style distortions to parts of the image. There are three tools to help doing that: "
 "points, lines, and curves."
 msgstr ""
-"El módulo licuar ofrece de manera versátil el desplazamiento de pixeles que "
-"rodean, aplicando distorsiones de estilo libre a ciertas partes de la imagen. Hay "
-"tres herramientas que ayudan a hacer esto: puntos, líneas y curvas."
+"El módulo de licuar ofrece una forma versátil de mover los píxeles aplicando "
+"distorsiones de estilo libre a partes de la imagen. Hay tres herramientas que "
+"ayudan a lograrlo: puntos, líneas y curvas."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14009(para)
-#, fuzzy
 msgid ""
 "Each of liquify's tools is based on nodes. A point is given by a single node, a "
 "line or a curve consist of a set of nodes defining the path."
 msgstr ""
-"Cada herramienta de licuar está basado en nodos. Un punto está dado por un sólo "
-"nodo, una línea o una corve consisten en una serie de nodos que van definiendo el "
-"trazo."
+"Cada una de las herramientas de liquify está basada en nodos. Un punto está dado "
+"por un solo nodo, una línea o una curva consiste en un conjunto de nodos que "
+"definen la ruta."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14014(para)
 msgid ""
@@ -15524,6 +15588,9 @@ msgid ""
 "one can use multiple instances of the liquify module. However, take into account "
 "that the liquify module requires a lot of computing resources."
 msgstr ""
+"Hay un límite de 100 nodos en sola una instancia de licuar. Para más distorsiones "
+"se pueden usar múltiples instancias del módulo de licuar. Sin embargo, tenga en "
+"cuenta que el módulo de licuar requiere una gran cantidad de recursos de cálculo."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14032(entry)
 msgid "The basic elements of all tools in liquify are nodes."
@@ -15538,6 +15605,12 @@ msgid ""
 "strength is depicted by the length of the vector. You change the vector by "
 "dragging its arrowhead."
 msgstr ""
+"Puede arrastrar el punto central de un nodo para moverlo. El radio describe el "
+"área del efecto aplicado: la distorsión se produce solo dentro de este radio. Para "
+"cambiar el radio, arrastre el controlador en la circunferencia. Un vector de "
+"fuerza que comienza en el centro describe la dirección de la distorsión, y su "
+"fuerza está representada por la longitud del vector. Cambie el vector arrastrando "
+"la punta triangular."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14052(title)
 msgid "warps and nodes count"
@@ -15548,21 +15621,22 @@ msgid ""
 "This information field displays the number of warps (individual distortion object) "
 "and nodes currently used."
 msgstr ""
+"Este campo de información muestra el número de deformaciones (objeto de distorsión "
+"individual) y nodos utilizados actualmente."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14060(title)
 msgid "point tool"
 msgstr "herramienta de punto"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14061(para)
-#, fuzzy
 msgid ""
 "Click the <inlinegraphic fileref=\"images/darkroom_module_liquify_point.png\" "
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> icon to activate the point tool and "
 "left-click on the image to place it."
 msgstr ""
-"El icono <inlinegraphic fileref=\"images/darkroom_module_icon_reset.png\" scalefit="
-"\"1\" width=\"2%\" align=\"center\"/> es utilizado para restaurar los parámetros "
-"del módulo a sus valores por defecto."
+"Pulse el icono <inlinegraphic fileref=\"images/darkroom_module_icon_reset.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> para activar la herramienta y clic "
+"izquierdo sobre la imagen para colocarla."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14066(para)
 msgid ""
@@ -15616,7 +15690,6 @@ msgid "line tool"
 msgstr "herramienta de línea"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14163(para)
-#, fuzzy
 msgid ""
 "Click the <inlinegraphic fileref=\"images/darkroom_module_liquify_line.png\" "
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> icon to activate the line tool and "
@@ -15624,10 +15697,11 @@ msgid ""
 "another point and start forming the path. To end the line just right-click "
 "anywhere."
 msgstr ""
-"Al hacer click en el icono de <inlinegraphic fileref=\"images/"
-"darkroom_module_icon_presets.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> "
-"se abre un combobox que le da un rápido acceso a los ajustes de sus módulos "
-"favoritos. Haga click en el nombre del pre-ajuste para aplicarlo a la imagen."
+"Pulse el icono <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> para activar la herramienta de "
+"línea. Con clic izquierdo en la imagen se coloca el primer punto, mueva y dé clic "
+"izquierdo nuevamente para colocar otro punto y seguir generando la ruta. Para "
+"finalizar la línea, sólo haga clic derecho donde sea."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14177(entry)
 msgid ""
@@ -15642,6 +15716,9 @@ msgid ""
 "It is possible to add a control point on a line by ctrl-click on a segment. You "
 "may remove a control point from a line by ctrl-right- click on the node center."
 msgstr ""
+"Es posible agregar un punto de control en una línea haciendo Ctrl+clic en un "
+"segmento. Puede eliminarse un punto de control de la línea con pulsación derecha "
+"en el centro del nodo."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14193(para)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14233(para)
@@ -15771,6 +15848,13 @@ msgid ""
 "lines when photographed at an angle get transformed into converging lines that "
 "meet at some vantage point within or outside the image frame."
 msgstr ""
+"Las distorsiones de perspectiva son un efecto natural cuando se proyecta una "
+"escena tridimensional en un plano bidimensional y hace que los objetos cercanos al "
+"espectador aparezcan más grandes que los objetos más alejados. Las líneas "
+"convergentes son un caso especial de distorsiones de perspectiva que se ven con "
+"frecuencia en las fotografías de arquitectura. Las líneas paralelas cuando se "
+"fotografían en un ángulo se transforman en líneas convergentes que se encuentran "
+"en algún punto de vista dentro o fuera del marco de la imagen."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14352(para)
 msgid ""
@@ -15782,6 +15866,14 @@ msgid ""
 "segments a fitting procedure is started that determines the best values of the "
 "module parameters."
 msgstr ""
+"Este módulo es capaz de corregir líneas convergentes deformando la imagen de "
+"manera que las líneas en cuestión se vuelvan paralelas al marco de la imagen. Las "
+"correcciones se pueden aplicar en dirección vertical y horizontal, ya sea por "
+"separado o en combinación. Para realizar una corrección automática, el módulo "
+"analiza la imagen en busca de características estructurales adecuadas que "
+"consisten en segmentos de línea. Sobre la base de estos segmentos de línea, se "
+"inicia un procedimiento de ajuste que determina los mejores valores de los "
+"parámetros del módulo."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14367(para)
 #, fuzzy
@@ -15846,16 +15938,16 @@ msgid ""
 "This parameter controls a rotation of the image around its center and can correct "
 "for a skewed horizon."
 msgstr ""
+"Este parámetro controla la rotación de la imagen alrededor de su centro y puede "
+"corregir el horizonte sesgado."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14452(title)
-#, fuzzy
 msgid "lens shift (horizontal)"
-msgstr "horizontal"
+msgstr "desplazamiento de lente (horizontal)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14453(para)
-#, fuzzy
 msgid "This parameter corrects converging lines horizontally."
-msgstr "Ajusta el centro del área del viñeteado horizontalmente."
+msgstr "Este parámetro corrige las líneas convergentes horizontalmente."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14459(title)
 msgid "lens shift (vertical)"
@@ -15868,6 +15960,10 @@ msgid ""
 "extent but rather at an 80 to 90% level. If desired just reduce the value after "
 "having performed the automatic correction."
 msgstr ""
+"Este parámetro corrige las líneas verticales convergentes. En algunos casos, se "
+"obtiene una imagen de aspecto más natural si se corrigen las distorsiones "
+"verticales en un nivel de 80 a 90%. Si lo desea, simplemente reduzca el valor "
+"después de haber realizado la corrección automática."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14469(title)
 msgid "shear"
@@ -15878,12 +15974,17 @@ msgid ""
 "This parameter shears the image along one of its diagonals and is needed when "
 "correcting vertical and horizontal perspective distortions simultaneously."
 msgstr ""
+"Este parámetro corta la imagen a lo largo de una de sus diagonales. Es necesario "
+"cuando se corrigen distorsiones de perspectiva verticales y horizontales "
+"simultáneamente."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14478(para)
 msgid ""
 "If activated a number of guide lines is laid over the image to help you judge the "
 "quality of the correction."
 msgstr ""
+"Si está activado, se colocan varias líneas como guía sobre la imagen para ayudarlo "
+"a evaluar la calidad de la corrección."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14486(para)
 msgid ""
@@ -15931,15 +16032,16 @@ msgid ""
 msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14524(title)
-#, fuzzy
 msgid "aspect adjust"
-msgstr "aspecto"
+msgstr "ajuste de aspecto"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14525(para)
 msgid ""
 "If the <quote>specific</quote> lens model has been selected this parameter allows "
 "for a free manual adjustment of the image's aspect ratio."
 msgstr ""
+"Si se ha seleccionado el modelo de lente <quote>específico</quote>, este parámetro "
+"permite un ajuste manual libre de la relación de aspecto de la imagen."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14532(title)
 msgid "automatic fit"
@@ -15984,6 +16086,8 @@ msgid ""
 "An input image with a skewed horizon and converging lines caused by directing the "
 "camera upwards."
 msgstr ""
+"Una imagen de entrada con un horizonte sesgado y líneas convergentes causada por "
+"la dirección de la cámara hacia arriba."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14590(entry)
 msgid ""
@@ -15991,6 +16095,9 @@ msgid ""
 "distortions. Note the framing by the automatic cropping feature and the still "
 "visible overlay of structural lines."
 msgstr ""
+"La imagen después de haber corregido las distorsiones de la perspectiva vertical y "
+"horizontal. Tenga en cuenta el encuadre mediante la función de recorte automático "
+"y la superposición todavía visible de líneas estructurales."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14607(title)
 msgid "Lens correction"
@@ -16007,46 +16114,45 @@ msgid "lensfun"
 msgstr "lensfun"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14628(entry)
-#, fuzzy
 msgid ""
 "This module is able to correct certain lens flaws, namely distortions, transversal "
 "chromatic aberrations (TCA) and vignetting. It relies on the external library "
 "<placeholder-1/>, which comes with correction profiles for many (but not all) "
 "common cameras and lenses."
 msgstr ""
-"Este módulo es capaz de corregir las imperfecciones de ciertos lentes, como "
-"distorsiones, aberraciones cromáticas trasversales (TCA) y viñeteado. Se basa en "
-"la librería externa lensfun, la cual viene con perfiles de corrección para muchas "
-"(pero no todas) cámaras y lentes comunes."
+"Este módulo es capaz de corregir ciertos defectos producidos por los objetivos, a "
+"saber, distorsiones, aberraciones cromáticas transversales (TCA) y viñeteado. Se "
+"basa en la librería externa <placeholder-1/>, que viene con perfiles de corrección "
+"para muchas (pero no todas) las cámaras y lentes comunes."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14648(para)
-#, fuzzy
 msgid ""
 "In order to perform lens corrections the module uses Exif data of your image to "
 "identify the specific camera/lens combination and collects the needed correction "
 "parameters from a profile in lensfun's database."
 msgstr ""
-"Para poder realizar la corrección de lente, el módulo utiliza la información EXIF "
-"de su imagen para identificar la combinación específica de cámara/lente y reúne "
-"los parámetros de corrección necesarios de la base de datos de perfiles de lensfun."
+"Para realizar correcciones de lentes, el módulo utiliza datos Exif de la imagen "
+"para identificar la combinación específica de cámara o lente y recopila los "
+"parámetros de corrección necesarios de un perfil en la base de datos de lensfun."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14655(title)
 msgid "camera"
 msgstr "cámara"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14656(para)
-#, fuzzy
 msgid ""
 "The camera make and model as determined by Exif data. You can override this "
 "manually and select your camera from a hierarchical menu."
 msgstr ""
-"El fabricante y modelo de la cámara son determinados en sus datos EXIF. Puede "
-"sobrescribir esto manualmente y seleccionar su cámara del menú jerárquico."
+"El fabricante y modelo de la cámara se determinan en los datos Exif. Se pueden "
+"sobrescribir manualmente y elegir la cámara del menú jerárquico."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14660(para)
 msgid ""
 "Only lenses with correction profiles matching the selected camera will be shown."
 msgstr ""
+"Solo se mostrarán lentes con perfiles de corrección que coincidan con la cámara "
+"seleccionada."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14666(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21505(bridgehead)
@@ -16054,22 +16160,21 @@ msgid "lens"
 msgstr "lentes"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14667(para)
-#, fuzzy
 msgid ""
 "The lens make and model as determined by Exif data. You can override this manually "
 "and select your lens from a hierarchical menu. This is mainly needed for pure "
 "mechanical lenses, but may also be needed for off-brand / third party lenses."
 msgstr ""
-"El fabricante y modelo del lente son determinados en sus datos EXIF. Puede "
-"sobrescribir esto manualmente y seleccionar su cámara del menú jerárquico. Esto es "
-"principalmente necesario para lentes completamente mecánicos."
+"El fabricante y modelo del lente son determinados en sus datos EXIF. Se pueden "
+"sobrescribir manualmente y elegir el objetivo del menú jerárquico. Esto se "
+"necesita principalmente para lentes puramente mecánicos, pero también puede ser "
+"necesario para lentes que no coinciden con la marca o que sean de terceros."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14675(title)
 msgid "photometric parameters: focal length, aperture, focal distance"
 msgstr "parámetros fotométricos: longitud focal, apertura, distancia focal"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14676(para)
-#, fuzzy
 msgid ""
 "Corrections additionally depend on certain photometric parameters that are read "
 "from Exif data: focal length (needed for distortion, TCA, vignetting), aperture "
@@ -16077,11 +16182,11 @@ msgid ""
 "cameras do not record focal distance in their Exif data; most likely you need to "
 "set this manually."
 msgstr ""
-"Las correcciones dependen adicionalmente de ciertos parámetros fotométricos que "
-"son leídos de sus datos EFIX: la longitud focal (necesaria para la distorsión, "
-"TCA, viñeteado), apertura (necesaria para la TCA, viñeteado) y la distancia focal "
-"(necesaria para el viñeteado). Muchas cámaras no almacenan la distancia focal en "
-"los datos EXIF; en la mayoría de los casos tendrá que ajustarlo manualmente."
+"Las correcciones también dependen de ciertos parámetros fotométricos que se leen "
+"de los datos Exif: distancia focal (necesaria para la distorsión, TCA, viñeteado), "
+"apertura (necesaria para el TCA, viñeteado) y distancia focal (necesaria para el "
+"viñeteado). Muchas cámaras no graban la distancia focal en sus datos Exif; lo más "
+"probable es que necesite configurar esto manualmente."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14682(para)
 msgid ""
@@ -16184,33 +16289,31 @@ msgid "TCA red"
 msgstr "TCA rojo"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14746(para)
-#, fuzzy
 msgid ""
 "This slider allows to override the correction parameter for TCA. You can also use "
 "this slider to manually set the parameter in case the lens profile does not "
 "contain TCA correction. Look out for colored seams at features with high contrast "
 "edges and adjust this parameter and the following one to minimize those seams."
 msgstr ""
-"Este deslizador le permite sobrescribir el parámetro de corrección de TCA. También "
-"puede utilizar este deslizador para ajustar manualmente el parámetro en caso de "
-"que el perfil de su lente no soporte correcciones TCA. Busque grietas de color que "
-"se muestren en bordes con alto contraste, y ajuste este parámetro y el siguiente "
-"para minimizar dichas grietas."
+"Este control deslizante permite anular el parámetro de corrección para TCA. "
+"También puede usar este control deslizante para configurar manualmente el "
+"parámetro en caso de que el perfil del lente no contenga la corrección de TCA. "
+"Busque las juntas de color en los elementos con bordes de alto contraste y ajuste "
+"este y el siguiente parámetro para minimizar esos defectos."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14755(title)
 msgid "TCA blue"
 msgstr "TCA azul"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14756(para)
-#, fuzzy
 msgid ""
 "This slider allows to override the correction parameter for TCA. You can also use "
 "this slider to manually set the parameter in case the lens profile does not "
 "contain TCA correction."
 msgstr ""
-"Este deslizador le permite sobrescribir el parámetro de corrección de TCA. También "
-"puede utilizar este deslizador para ajustar manualmente el parámetro en caso de "
-"que el perfil de su lente no soporte correcciones TCA."
+"Este control deslizante permite anular el parámetro de corrección para TCA. "
+"También puede usar este control deslizante para configurar manualmente el "
+"parámetro en caso de que el perfil de la lente no contenga la corrección de TCA."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14764(title)
 msgid "corrections done"
@@ -16249,15 +16352,14 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14818(para)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14871(para)
-#, fuzzy
 msgid ""
 "darktable detects images that need correction by their Exif data and automatically "
 "activates this module. For other images the module always remains disabled. The "
 "modules has no parameters."
 msgstr ""
-"darktable detecta que imágenes necesitan ser corregidas gracias a sus datos EXIF y "
-"activa de forma automática este módulo. Para otras imágenes, el módulo siempre "
-"permanecerá desactivado. El módulo no tiene parámetros."
+"darktable detecta imágenes que necesitan corrección por sus datos Exif y activa "
+"automáticamente este módulo. Para otras imágenes el módulo siempre queda "
+"deshabilitado. Los módulos no tiene parámetros."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14830(title)
 msgid "Rotate pixels"
@@ -16314,15 +16416,14 @@ msgstr ""
 "\"/>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14932(para)
-#, fuzzy
 msgid ""
 "Select the desired shape by clicking the corresponding icon, then click on the "
 "canvas to choose the area to be healed, i.e. the target area. A cross is displayed "
 "where the source area will be positioned."
 msgstr ""
-"Seleccione la forma deseada haciendo click sobre el icono correspondiente, luego "
-"seleccione sobre el lienzo que área desea corregir, i.e. el <emphasis>área "
-"destino</emphasis>."
+"Seleccione la forma deseada pulsando sobre el icono correspondiente, luego haga "
+"clic en el lienzo para elegir el área objetivo a sanear. Se muestra una cruz donde "
+"se ubicará el área de origen."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14938(para)
 msgid ""
@@ -16336,15 +16437,13 @@ msgid ""
 msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14947(para)
-#, fuzzy
 msgid ""
 "After creation source area and target area can be shifted independently until the "
 "result matches your expectations. An arrow helps to tell source from target area."
 msgstr ""
-"El <emphasis>área fuente</emphasis> se posiciona preliminarmente en una posición "
-"con una distancia base de su objetivo. El área fuente y el área objetivo pueden "
-"ser desplazadas independientemente hasta que e resultado se ajuste a sus "
-"expectativas. Una flecha le ayudará a diferenciar el área fuente del área objetivo."
+"Después de ser creada, el área de origen y el área de destino se pueden cambiar de "
+"forma independiente hasta que el resultado coincida con sus expectativas. Una "
+"flecha ayuda a distinguir la fuente del área objetivo."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14952(para)
 msgid ""
@@ -16398,6 +16497,10 @@ msgid ""
 "scales, from fine to coarse, and apply retouch operations to each wavelet scale "
 "individually."
 msgstr ""
+"Retoque permite curar, clonar, rellenar y difuminar ciertas áreas de la imagen. "
+"Puede realizar una descomposición en ondículas que separa la imagen en diferentes "
+"escalas de frecuencia, de fina a gruesa, y aplicar las operaciones de retoque "
+"individualmente en cada escala de ondículas."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15055(para)
 msgid ""
@@ -16425,6 +16528,10 @@ msgid ""
 "central area divided in boxes and two sliders. The first box, scale zero, "
 "represents the original image, the second is the wavelet scale 1, and so on."
 msgstr ""
+"La barra de herramientas de descomposición en ondículas controla el algoritmo de "
+"descomposición en ondículas. Tiene un área central dividida en cuadros y dos "
+"deslizadores. El primer cuadro, la escala cero, representa la imagen original, el "
+"segundo es la escala 1 de ondículas, y así sucesivamente."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15072(para)
 msgid ""
@@ -16434,6 +16541,12 @@ msgid ""
 "maximum number of scales for this image size is used and the rest of the scales "
 "are ignored."
 msgstr ""
+"El control deslizante inferior ajusta el número de escalas; cero significa que no "
+"se realiza ninguna descomposición de ondículas. El número máximo de escalas "
+"depende del tamaño de la imagen, aunque se puede seleccionar cualquier número. Si "
+"la imagen no es lo suficientemente grande para el número de escalas seleccionado, "
+"se utiliza el número máximo de escalas para ese tamaño y el resto de las escalas "
+"se ignoran."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15078(para)
 msgid ""
@@ -16443,6 +16556,12 @@ msgid ""
 "visual aid, the original image is always represented by a black box, detail scales "
 "are light gray, residual image white and inactive scales dark gray."
 msgstr ""
+"La imagen se descompone en el número seleccionado de escalas, más la imagen "
+"residual. Por lo que si se selecciona 5 como el número de escalas, la escala cero "
+"es la imagen original, las escalas 1 a 5 son las de detalle, y la escala 6 es la "
+"imagen residual. Como ayuda visual, la imagen original siempre está representada "
+"por un recuadro negro, las escalas de detalle son gris claro, la imagen residual "
+"blanca y las inactivas gris oscuro."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15085(para)
 msgid ""
@@ -16452,6 +16571,12 @@ msgid ""
 "is greater than the number of scales. If a shape is added to a scale greater than "
 "the residual image it will be ignored, as the scale is not processed."
 msgstr ""
+"El área central permite seleccionar la escala actual en la que el usuario puede "
+"aplicar herramientas de retoque haciendo clic izquierdo en cualquiera de los "
+"cuadros. La escala seleccionada está señalada con un marco rojo. Se puede "
+"seleccionar cualquier escala como la escala actual, incluso si es mayor que el "
+"número de escalas. Si se agrega una forma a una escala mayor que la imagen "
+"residual, se ignorará, ya que esa no se procesa."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15092(para)
 msgid ""
@@ -16521,19 +16646,18 @@ msgid ""
 msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15138(para)
-#, fuzzy
 msgid ""
 "The switch off shapes button ( <inlinegraphic fileref=\"images/"
 "darkroom_module_retouch_switch.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/"
 "> ) temporarily disables the processing of all shapes for a simple before/after "
 "comparison."
 msgstr ""
-"Con el botón de reiniciar <inlinegraphic fileref=\"images/"
-"darkroom_module_icon_reset.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> "
-"puede colocar todos los ajustes de nuevo en su estado inicial."
+"El botón de apagado de formas ( <inlinegraphic fileref=\"images/"
+"darkroom_module_retouch_switch.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/"
+"> ) desactiva temporalmente el procesamiento de todas las formas para una "
+"comparación simple de antes y después ."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15144(para)
-#, fuzzy
 msgid ""
 "The display masks button ( <inlinegraphic fileref=\"images/"
 "darkroom_module_retouch_mask.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/"
@@ -16541,10 +16665,11 @@ msgid ""
 "shapes on the current scale. This option and display mask on the blend module "
 "cannot be set at the same time."
 msgstr ""
-"El icono <inlinegraphic fileref=\"images/darkroom_module_icon_presets.png\" "
-"scalefit=\"1\" width=\"2%\" align=\"center\"/> accede a los ajustes "
-"predeterminados del módulo o crea un nuevo ajuste basado en su configuración "
-"actual (ver <xref linkend=\"module_presets\"/>)."
+"El botón de visualización máscaras de ( <inlinegraphic fileref=\"images/"
+"darkroom_module_retouch_mask.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/"
+"> ) funciona de manera similar a la del módulo de mezcla, pero solo se mostrará "
+"Las formas en la escala actual. Esta opción y la máscara de visualización en el "
+"módulo de mezcla no se pueden configurar al mismo tiempo."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15154(title)
 msgid "retouch tools section"
@@ -16676,15 +16801,14 @@ msgid "dcraw"
 msgstr "dcraw"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15298(entry)
-#, fuzzy
 msgid ""
 "Raw denoise allows you to perform denoising on the data before it gets demosaiced. "
 "It is ported from <ulink url=\"http://www.cybercom.net/~dcoffin/dcraw/"
 "\"><placeholder-1/></ulink>."
 msgstr ""
-"La reducción de ruido raw le permite realizar una reducción de ruido en los datos "
-"que ya han pasado por el demosaico. Se importa de <ulink url=\"http://www.cybercom."
-"net/~dcoffin/dcraw/\"><placeholder-1/></ulink>."
+"Reducción de ruido RAW permite realizar la eliminación de ruido en los datos antes "
+"de la interpolación cromática. Se porta desde <ulink url=\"http://www.cybercom.net/"
+"~dcoffin/dcraw/\"><placeholder-1/></ulink>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15318(title)
 msgid "noise threshold"
@@ -16978,6 +17102,11 @@ msgid ""
 "In general, this module may be employed to give pictures a color boost "
 "specifically in low-contrast image regions."
 msgstr ""
+"El módulo de eliminación de neblina está diseñado para reducir automáticamente el "
+"efecto del polvo y la neblina en el aire, lo que a menudo reduce el contraste de "
+"color en las fotografías de paisajes. En general, este módulo puede emplearse para "
+"dar a las imágenes un aumento de color específicamente en regiones de bajo "
+"contraste."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15680(para)
 msgid ""
@@ -16989,6 +17118,13 @@ msgid ""
 "first and then removes the diffusive background light according to its local "
 "strength and recovers the original object light."
 msgstr ""
+"Cuanto mayor sea la densidad de la bruma en el aire y cuanto mayor sea la "
+"distancia entre la cámara y el objeto fotografiado, menos colorido aparecerá el "
+"objeto en la imagen. La neblina absorbe la luz que se aproxima desde los objetos "
+"hacia la dirección de la cámara, pero también es una fuente de luz de fondo "
+"difusa. Por lo tanto, el módulo de eliminación de neblina estima para cada región "
+"de la imagen la cantidad de densidad en la escena primero y luego elimina la luz "
+"de fondo difusa según su intensidad local y recupera la luz del objeto original."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15695(para)
 msgid ""
@@ -17000,6 +17136,14 @@ msgid ""
 "typically below unity and these are rather image dependent but also a matter of "
 "personal aesthetic preferences."
 msgstr ""
+"El módulo de eliminación de neblina tiene dos controles que determinan la cantidad "
+"de reducción de lo túrbido y limitan la distancia hasta la cual se elimina lo "
+"nebuloso. Establecer ambos controles en unidad maximiza la cantidad de eliminación "
+"de neblina, pero también es probable que produzca algunos efectos indeseados. La "
+"eliminación por completo de la luz atmosférica puede hacer que la imagen sea plana "
+"y puede dar como resultado un estilo de aspecto antinatural. Los valores óptimos "
+"suelen estar por debajo de la unidad y dependerán de la imagen o de las "
+"preferencias estéticas personales."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15706(para)
 msgid ""
@@ -17008,6 +17152,10 @@ msgid ""
 "the specified distance; see below. Negative values for the strength increase the "
 "amount of haze in the image."
 msgstr ""
+"El parámetro de fuerza controla la cantidad de eliminación de neblina. Al "
+"configurarlo en la unidad, el módulo elimina el 100% de la turbidez detectada "
+"entre la cámara y la distancia especificada (ver abajo). Los valores negativos "
+"para la resistencia aumentan la cantidad de turbidez en la imagen."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15715(title)
 msgid "distance"
@@ -17020,6 +17168,11 @@ msgid ""
 "the foreground to the far background if the distance parameter is set to unity. In "
 "case of a negative strength the distance control has no effect."
 msgstr ""
+"Este parámetro limita la distancia hasta la cual se elimina la neblina. Para "
+"valores pequeños, la eliminación de la turbidez está restringida al primer plano "
+"de la imagen. La turbidez se elimina del primer plano al fondo lejano si el "
+"parámetro de distancia se establece en la unidad. En caso de una fuerza negativa, "
+"el control de distancia no tiene efecto."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15730(title)
 msgid "Defringe"
@@ -17320,15 +17473,14 @@ msgid "text color"
 msgstr "color del texto"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16271(para)
-#, fuzzy
 msgid ""
 "This field shows the text color. Clicking on the colored field will open a color "
 "selector dialog which offers you a choice of commonly used colors, or allows to "
 "define a color in RGB color space."
 msgstr ""
-"Este campo le muestra el color del texto. Al hacer click en el selector de color "
-"se abre un diálogo que le ofrece un listado con los colores más usados comúnmente, "
-"o le deja agregar los colores de su elección en un selector HSV."
+"Este campo muestra el color de texto. Al pulsar en el campo de color, se abrirá un "
+"cuadro de diálogo de selección de color donde se muestran diferentes colores de "
+"uso común, y permite también elegirlo del espacio de color RGB."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16279(title)
 msgid "text font"
@@ -17516,15 +17668,15 @@ msgid "border color"
 msgstr "color del borde"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16450(para)
-#, fuzzy
 msgid ""
 "A color selector which allows to define a color for the border. Clicking on the "
 "colored field will open a color selector dialog which offers you a choice of "
 "commonly used colors, or allows to define a color in RGB color space."
 msgstr ""
-"Este campo le muestra el color del texto. Al hacer click en el selector de color "
-"se abre un diálogo que le ofrece un listado con los colores más usados comúnmente, "
-"o le deja agregar los colores de su elección en un selector HSV."
+"Un selector de color que permite definir el color para el borde. Al pulsar en el "
+"campo de color, se abrirá un cuadro de diálogo de selección de color donde se "
+"muestran diferentes colores de uso común, y permite también elegirlo del espacio "
+"de color RGB."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16455(para)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16471(para)
@@ -17547,15 +17699,15 @@ msgid "frame line color"
 msgstr "color del marco"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16466(para)
-#, fuzzy
 msgid ""
 "A color selector which allows to define a color for the frame. Clicking on the "
 "colored field will open a color selector dialog which offers you a choice of "
 "commonly used colors, or allows to define a color in RGB color space."
 msgstr ""
-"Este campo le muestra el color del texto. Al hacer click en el selector de color "
-"se abre un diálogo que le ofrece un listado con los colores más usados comúnmente, "
-"o le deja agregar los colores de su elección en un selector HSV."
+"Un selector de color que permite definir el color para el marco. Al pulsar en el "
+"campo de color, se abrirá un cuadro de diálogo de selección de color donde se "
+"muestran diferentes colores de uso común, y permite también elegirlo del espacio "
+"de color RGB."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16496(entry)
 msgid "Example image with a user defined frame."
@@ -17620,17 +17772,17 @@ msgid "shadows and highlights color"
 msgstr "color de sombras y luces altas"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16571(para)
-#, fuzzy
 msgid ""
 "These controls are used to set the color of the splittoning effect, you select the "
 "desired color and saturation for both shadows and highlights. Clicking on the "
 "colored squares will open a color selector dialog which offers you a choice of "
 "commonly used colors, or allows to define a color in RGB color space."
 msgstr ""
-"Estos controles se utilizan para ajustar el efecto de color de las variaciones "
-"tonales, puede seleccionar el color y a saturación deseada tanto para las sombras "
-"como para las luces, también puede hacer click sobre la caja de vista previa de "
-"color, el cual le mostrará un diálogo común con el selector de color."
+"Estos controles se utilizan para establecer el color del efecto de división, "
+"seleccionando el color y la saturación deseados para las sombras y las luces "
+"altas. Al pulsar en los cuadrados de color, se abrirá un cuadro de diálogo de "
+"selección de color donde se muestran diferentes colores de uso común, y permite "
+"también elegirlo del espacio de color RGB."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16580(title)
 msgid "balance"
@@ -18165,16 +18317,16 @@ msgid "bloom"
 msgstr "resplandor"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17362(entry)
-#, fuzzy
 msgid ""
 "This module takes highlights, blurs them and then blends (screen blend lightness) "
 "with the original to create a soft blooms over the image, hence the name of the "
 "effect. There are numerous ways to use this module depending on the image's actual "
 "scenery lighting."
 msgstr ""
-"Este módulo mejora las luces y crea un resplandor suave sobre la imagen, de eso el "
-"nombre del efecto. Hay numerosas formas de utilizar este módulo dependiendo del "
-"escenario de luz actual de la imagen."
+"Este módulo toma las altas luces, las difumina y luego las combina (la luminosidad "
+"de mezcla de pantalla) con el original para crear resplandores suaves sobre la "
+"imagen, de ahí el nombre del efecto. Existen numerosas formas para usar este "
+"módulo dependiendo de la iluminación real del escenario de la imagen."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17382(para)
 msgid ""
@@ -19273,7 +19425,6 @@ msgstr ""
 "nueva sesión se creará y las imágenes capturadas irán a esta nueva sesión."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18760(para)
-#, fuzzy
 msgid ""
 "darktable provides some nifty tools to setup a capture in the user interface. You "
 "can setup timelapse captures and brackets for HDR creations. The configuration is "
@@ -19281,11 +19432,12 @@ msgid ""
 "more information read the documentation about the capture panel and the examples "
 "in this chapter."
 msgstr ""
-"darktable provee algunas herramientas elegantes para configurar una captura en la "
-"interfaz de usuario. Puede ajustar capturas en timelapse y soportes para crear "
-"HDR. La configuración es tan dinámica que cuando cree soportes secuenciales de "
-"captura – ya se imaginará... Para mayor información lea la documentación sobre el "
-"panel de captura y los ejemplos de este capítulo."
+"darktable proporciona algunas herramientas ingeniosas para configurar una captura "
+"en la interfaz de usuario. Puede configurar fotografías a intervalo de tiempo y de "
+"ahorquillado para generar imágenes de amplio rango dinámico (HDR). La "
+"configuración es tan dinámica que puede crear capturas secuenciales de "
+"ahorquillados: vaya a la figura ... Para obtener más información, lea la "
+"documentación sobre el panel de captura y los ejemplos de ese capítulo."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:18776(title)
 msgid "Tethering panels"
@@ -20732,6 +20884,9 @@ msgid ""
 "image. When checking this option a second click on a one star rating will keep "
 "that rating (default off)."
 msgstr ""
+"Normalmente, al pulsar dos veces en la puntuación de una estrella cambiará a una "
+"puntuación nula para esa imagen. Al marcar esta opción, un segundo clic en una "
+"puntuación de una estrella mantendrá la misma (por defecto desactivada)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20070(bridgehead)
 msgid "method to use for getting the display profile"
@@ -20977,6 +21132,9 @@ msgid ""
 "darktable will use LittleCMS 2 to render the colors regardless of this "
 "configuration parameter's value."
 msgstr ""
+"Tenga en cuenta que si el ICC dado está basado en la tabla de búsqueda (LUT) o "
+"contiene ambos, LUT y una matriz, darktable utilizará LittleCMS 2 para representar "
+"los colores independientemente del valor de este parámetro de configuración."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20212(bridgehead)
 msgid "do high quality resampling during export"
@@ -21030,13 +21188,13 @@ msgid "password storage backend to use"
 msgstr "respaldo de almacenamiento de contraseñas a utilizar"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20238(para)
-#, fuzzy
 msgid ""
 "The storage backend for password storage. Options: <quote>auto</quote> (default), "
 "<quote>none</quote>, <quote>libsecret</quote>, <quote>kwallet</quote>."
 msgstr ""
-"El respaldo de almacenamiento para guardar contraseñas. Opciones: <quote>ninguna</"
-"quote>, <quote>kwallet</quote>, <quote>gnome keyring</quote> (ninguna por defecto)."
+"El respaldo para el almacenamiento de contraseñas. Opciones: <quote>automático</"
+"quote> (predeterminado), <quote>ninguno</quote>, <quote>libsecret</quote>, "
+"<quote>kwallet</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20243(bridgehead)
 msgid "look for updated xmp files on startup"
@@ -21147,10 +21305,9 @@ msgid "$HOME/Desktop"
 msgstr "$HOME/Desktop"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20327(entry)
-#, fuzzy
 msgid "the desktop folder as defined by the system (usually <placeholder-1/>)"
 msgstr ""
-"la carpeta del escritorio como la define el sistema (usualmente <placeholder-1/>)"
+"la carpeta de escritorio definida por el sistema (generalmente <placeholder-1/>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20335(entry)
 msgid "your user account name on the system"
@@ -21206,34 +21363,28 @@ msgid "second at the time of import"
 msgstr "los segundos en el tiempo de importación"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20431(entry)
-#, fuzzy
 msgid "year the photo was taken (from Exif data)"
-msgstr "el año en que la foto fue tomada (de los datos EXIF)"
+msgstr "el año en que la foto fue tomada (desde los datos Exif)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20439(entry)
-#, fuzzy
 msgid "month the photo was taken (from Exif data)"
-msgstr "el mes en que la foto fue tomada (de los datos EXIF)"
+msgstr "el mes en que la foto fue tomada (desde los datos Exif)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20447(entry)
-#, fuzzy
 msgid "day the photo was taken (from Exif data)"
-msgstr "el día en que la foto fue tomada (de los datos EXIF)"
+msgstr "el día en que la foto fue tomada (desde los datos Exif)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20455(entry)
-#, fuzzy
 msgid "hour the photo was taken (from Exif data)"
-msgstr "la hora en que la foto fue tomada (de los datos EXIF)"
+msgstr "la hora en que la foto fue tomada (desde los datos Exif)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20463(entry)
-#, fuzzy
 msgid "minute the photo was taken (from Exif data)"
-msgstr "los minutos en que la foto fue tomada (de los datos EXIF)"
+msgstr "los minutos en que la foto fue tomada (desde los datos Exif)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20471(entry)
-#, fuzzy
 msgid "seconds the photo was taken (from Exif data)"
-msgstr "los segundos en que la foto fue tomada (de los datos EXIF)"
+msgstr "los segundos en que la foto fue tomada (desde los datos Exif)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20476(entry)
 msgid "$(EXIF_ISO)"
@@ -21427,18 +21578,16 @@ msgid "global/zoom in"
 msgstr "global/acercar"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20648(entry)
-#, fuzzy
 msgid "&lt;Primary&gt;KP_plus"
-msgstr "&lt;Ctrl&gt;s"
+msgstr "&lt;Primary&gt;KP_plus"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20653(entry)
 msgid "global/zoom out"
 msgstr "global/alejar"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20656(entry)
-#, fuzzy
 msgid "&lt;Primary&gt;KP_minus"
-msgstr "&lt;Ctrl&gt;i"
+msgstr "&lt;Primary&gt;KP_minus"
 
 # clipping is wrong, should be crop & rotate
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20661(entry)
@@ -22093,16 +22242,18 @@ msgid "Presets"
 msgstr "Preestablecidos"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21450(para)
-#, fuzzy
 msgid ""
 "This menu gives you an overview of the presets that are defined for darktable's "
 "modules. In this dialog you can select whether a certain user defined preset shall "
 "be auto-applied to matching images. By pressing the <quote>import</quote> button "
 "at the bottom of the window you can import a saved preset."
 msgstr ""
-"Este menú le da una vista general de los valores preestablecidos que son definidos "
-"por los módulos de darktable. En este diálogo puede seleccionar si ciertos ajustes "
-"predefinidos por el usuario serán auto-aplicados a las imágenes correspondientes."
+"Este menú le ofrece una visión general de los ajustes predeterminados que están "
+"definidos para los módulos de darktable. En este cuadro de diálogo puede "
+"seleccionar si un determinado ajuste preestablecido definido por el usuario se "
+"aplicará automáticamente a las imágenes coincidentes. Al presionar el botón "
+"<quote>importar</quote> en la parte inferior de la ventana, puede importar un "
+"ajuste preestablecido guardado."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21457(para)
 msgid ""
@@ -22135,15 +22286,14 @@ msgid "auto apply this preset to matching images"
 msgstr "auto aplicar este preajuste a imágenes coincidentes"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21479(para)
-#, fuzzy
 msgid ""
 "activate this checkbutton to automatically apply the preset on newly imported "
 "images; a set of fields is displayed where you can define patterns to be matched "
 "against Exif data."
 msgstr ""
-"al activar la casilla de esta opción se aplicarán automáticamente los preajustes "
-"de las nuevas imágenes importadas; un juego de campos se mostrará donde puede "
-"definir los patrones para que sean comparados contra los datos EXIF."
+"active este botón de verificación para aplicar automáticamente el ajuste "
+"preestablecido en las imágenes recién importadas; se muestra un conjunto de campos "
+"donde puede definir los patrones que se compararán con los datos Exif."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21484(bridgehead)
 msgid "only show this preset for matching images"
@@ -23376,7 +23526,6 @@ msgid "Memory fragmentation"
 msgstr "Fragmentación de memoria"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22488(para)
-#, fuzzy
 msgid ""
 "Unfortunately this is not the full story yet. There is an effect called memory "
 "fragmentation, which can and will hit software that needs to do extensive memory "
@@ -23390,17 +23539,19 @@ msgid ""
 "several small memory blocks per each thumbnail, so this problem is even bigger. "
 "For this reason, as of darktable 2.0, 32-bit support is soft-deprecated."
 msgstr ""
-"Desafortunadamente, esta no es aún la historia completa. Hay un efecto llamado "
-"fragmentación de memoria, el cual puede y golpeará software que necesita un manejo "
-"extensivo de memoria. Si tal programa asigna 300Mb 5 veces a la vez y luego los "
-"libera nuevamente, esa memoria no debería estar disponible normalmente para una "
-"gran asignación posterior de 1.5GB. Sin embargo, esto no es un caso usual. La "
-"asignación de memoria del sistema quizás ya no vea esta área como un gran bloque "
-"contiguo de 1.5GB sino como una fila de áreas de 300MB. Si no hay otra área libre "
-"disponible de los 1.5GB, la asignación fallará. Durante la ejecución de un "
-"programa, este mecanismo tomará más y más bloques de memoria a favor de los "
-"pequeños. darktable 1.0 introduce un algoritmo para atacar este problema. Este pre-"
-"asigna bloques de memoria y los deja disponibles bajo solicitud."
+"Lamentablemente, esta no es todavía la historia completa. Existe un efecto llamado "
+"fragmentación de memoria, que puede y afectará al software que necesita realizar "
+"una gestión de memoria extensa. Si un programa de este tipo asigna 300 MB por vez "
+"y lo libera nuevamente 5 veces, esa memoria normalmente debería estar disponible "
+"después para una asignación grande de 1.5 GB. Sin embargo, no suele ser el caso. "
+"El asignador de memoria del sistema ya no puede ver esta área como un bloque "
+"contiguo de 1.5 GB sino como una hilera de áreas de 300 MB. Si no hay otra área "
+"libre de 1.5GB disponible, la asignación fallará. Durante la ejecución de un "
+"programa, este mecanismo eliminará cada vez más los bloques de memoria más grandes "
+"en lugar de los más pequeños. La memoria temporal de los mapas MIP en darktable "
+"2.0 asigna varios bloques de memoria pequeños por cada miniatura, por lo que este "
+"problema es aún mayor. Por esta razón, a partir de la versión 2.0 de darktable, el "
+"soporte para 32 bits está en desuso."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22505(title)
 msgid "Further limitations"
@@ -23494,19 +23645,17 @@ msgstr ""
 "y editarlas."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22567(para)
-#, fuzzy
 msgid ""
 "This parameter defines the maximum number of threads that are allowed in parallel "
 "when importing film rolls or doing other background stuff. For obvious reasons on "
 "32-bit systems you can only have one thread eating resources at a time. So you "
 "need set this parameter to 1; anything higher will kill you."
 msgstr ""
-"Este parámetro define el número máximo de hilos que pueden existir en paralelo al "
-"importar carretes o mientras se realizan otras actividades en paralelo. Por "
-"razones obvias, sobre sistemas 32-bit solo podrá tener un hilo a la vez "
-"consumiendo recursos. Así que necesita ajustar este parámetro a 1; cualquier valor "
-"superior matará el proceso. Por la misma razón, deberá ajustar el número de "
-"exportación en paralelo a 1."
+"Este parámetro define el número máximo de subprocesos que se permiten en paralelo "
+"al importar rollos de película o hacer otras cosas de fondo. Por razones obvias en "
+"los sistemas de 32 bits, solo puede tenerse un subproceso que consume recursos a "
+"la vez. Así que solo se puede establecer este parámetro en 1; cualquier valor "
+"superior lo matará."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22580(para)
 msgid ""
@@ -23546,6 +23695,13 @@ msgid ""
 "bit systems. For this reason, as of darktable 2.0, 32-bit support is soft-"
 "deprecated."
 msgstr ""
+"Esto controla la cantidad de miniaturas (o mapas mip) que se pueden almacenar en "
+"la memoria a la vez. Como punto de partida, establézcalo en algo así como 256 MB. "
+"Desde darktable 2.0, la memoria caché asigna algunos búferes pequeños para cada "
+"miniatura en la memoria caché, lo que provoca una fragmentación significativa de "
+"la memoria. Como se explicó anteriormente, esto plantea un problema para los "
+"sistemas de 32 bits. Por esta razón, a partir de la versión 2.0 de darktable, el "
+"soporte de 32 bits está en desuso."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22559(para)
 msgid ""
@@ -23622,7 +23778,6 @@ msgstr ""
 "diálogo de preferencias de darktable."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22664(para)
-#, fuzzy
 msgid ""
 "Typically there is no need to restrict oneself in the number of background threads "
 "on a 64-bit system. On a multi-processor system a number of two to eight threads "
@@ -23630,12 +23785,13 @@ msgid ""
 "is not so much taking maximum advantage of all your CPU cores – darktable's "
 "pixelpipe anyhow uses all of them in parallel – but hiding I/O latency."
 msgstr ""
-"Típicamente no hay necesidad de restringir a uno mismo en el número de hilos en "
-"segundo plano sobre sistemas 64-bit. En un sistema multi-procesador, un número de "
-"dos a ocho hilos pueden acelerar la generación de miniaturas considerablemente "
-"versus un solo hilo. La razón no es tanto sobre tomar la mayor ventaja sobre los "
-"cores de su CPU – el pixelpipe de darktable los utiliza a todos en paralelo – sino "
-"esconder la latencia I/O."
+"Por lo general, no es necesario restringirse en el número de subprocesos de fondo "
+"en un sistema de 64 bits. En un sistema multiprocesador, un rango de dos a ocho "
+"subprocesos puede acelerar la generación de miniaturas considerablemente en "
+"comparación con un solo subproceso. La razón no es aprovechar al máximo todos los "
+"núcleos de la CPU, ya que de todos modos el proceso completo de imagen en "
+"darktable los utiliza en paralelo, pero ocultando la latencia de E/S (entrada-"
+"salida)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22673(primary)
 msgid "panoramas"
@@ -24552,7 +24708,6 @@ msgid "opencl_synch_cache"
 msgstr "opencl_synch_cache"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:23303(para)
-#, fuzzy
 msgid ""
 "This parameter, if set to \"true\", will force darktable to fetch image buffers "
 "from your GPU after each module and store them in its pixelpipe cache. This is a "
@@ -24563,13 +24718,16 @@ msgid ""
 "should be set to \"active module\" (default), which will only cache the input of "
 "the currently focused module."
 msgstr ""
-"Este parámetro, si se configura a VERDADERO, forzará a darktable a buscar buffers "
-"de imágenes desde su GPU luego de cada módulo y los almacene en la caché del "
-"pixelpipe. Esta es una operación que consume muchos recursos. Solo tiene sentido "
-"si tiene un GPU bastante lento. En ese caso, darktable quizás le ahorre algo de "
-"tiempo cuando los parámetros de los módulos sean cambiados, ya que puede regresar "
-"a algún estado intermedio en cache y re-procesar solo parte del pixelpipe. En la "
-"mayoría de los casos, este parámetro deberá ser configurado a FALSO (por defecto)"
+"Este parámetro, si se establece en \"verdadero\", forzará a darktable a recuperar "
+"los búferes de imagen de su GPU después de cada módulo y los almacenará en su "
+"memoria temporal. Es una operación que consume recursos, aunque tiene sentido "
+"según la GPU existente (incluso si la GPU es bastante lenta). En ese caso, "
+"darktable tendría que poder ahorrar algo de tiempo cuando los parámetros del "
+"módulo han cambiado, ya que puede volver a un estado en memoria temporal "
+"intermedio y reprocesar solo una parte del proceso total de imagen. En muchos "
+"casos, este parámetro debe configurarse como \"módulo activo\" (predeterminado), "
+"que solo almacenará en memoria temporal la entrada del módulo en el que se esté "
+"centrado en ese momento."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:23320(computeroutput)
 msgid "opencl_micro_nap"
@@ -24652,6 +24810,12 @@ msgid ""
 "scheduling profile</quote> in the <quote>core options</quote> dialog (<xref "
 "linkend=\"core_options\"/>) which offers the following choices:"
 msgstr ""
+"darktable puede usar la CPU y una o varias GPU compatibles con OpenCL. Dependiendo "
+"del rendimiento relativo, los usuarios pueden elegir entre ciertos perfiles de "
+"programación para optimizar el rendimiento. Esto se logra mediante el parámetro de "
+"configuración <quote>Perfil de programación OpenCL</quote> en el diálogo "
+"<quote>opciones básicas</quote> (<xref linkend=\"core_options\"/>) que ofrece las "
+"siguientes opciones:"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:23394(quote)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:23417(quote)
@@ -24678,6 +24842,9 @@ msgid ""
 "preview window on the GPU sequentially. This is the preferred setting for systems "
 "with a GPU that strongly outperforms the CPU."
 msgstr ""
+"Con este perfil de programación, darktable procesa la vista central de la imagen y "
+"la ventana de vista previa de forma secuencial en la GPU. Esta es la configuración "
+"preferida para sistemas con una GPU que supera ampliamente a la CPU."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:23408(entry)
 msgid "multiple GPUs"
@@ -24751,6 +24918,10 @@ msgid ""
 "thumbnails have a low resolution and can be processed quickly; center image view "
 "is more demanding, let alone the pixelpipe doing a file export."
 msgstr ""
+"La demanda computacional depende mucho del tipo de la tubería del píxel. La imagen "
+"de vista previa y las miniaturas tienen una resolución baja y se pueden procesar "
+"rápidamente; la vista central de la imagen es más exigente, aparte de la tubería "
+"del píxel que realiza una exportación de archivos."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:23465(para)
 msgid ""
@@ -25129,6 +25300,14 @@ msgid ""
 "has been given). Finally, the fifth and sixth columns display how strongly source "
 "and reference values deviate in terms of delta E values."
 msgstr ""
+"En el marco de salida de texto inferior, se ven los valores de color extraídos de "
+"los datos disponibles para cada parche de color individual. La primera columna "
+"proporciona el nombre del parche, la segunda y la tercera columna muestran los "
+"valores de color correspondientes de la imagen de origen en formato RGB y Lab, "
+"respectivamente. La cuarta columna contiene el valor Lab proveniente de la "
+"referencia (o del archivo de gráfico si no se ha proporcionado una imagen de "
+"referencia). Finalmente, las columnas quinta y sexta muestran cómo se desvían "
+"fuertemente los valores de origen y de referencia en términos de valores delta E."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:23778(title)
 msgid "Process"
@@ -25258,6 +25437,8 @@ msgid ""
 "To output your image you go to the <quote>export</quote> module in darktable (see "
 "<xref linkend=\"export_selected\"/>)."
 msgstr ""
+"Para generar la imagen, vaya al módulo de <quote>exportación</quote> en darktable "
+"(consulte <xref linkend=\"export_selected\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:23900(para)
 msgid ""
@@ -25276,6 +25457,8 @@ msgid ""
 "Then select <quote>PFM (float)</quote> as output format and press <quote>export</"
 "quote> to generate the source image file."
 msgstr ""
+"Luego seleccione <quote>PFM (flotante)</quote> como formato de salida y presione "
+"<quote>exportar</quote> para generar el archivo de imagen de origen."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:23917(para)
 msgid ""
