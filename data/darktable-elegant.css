@@ -899,11 +899,16 @@ dialog scrolledwindow
 }
 
 /* empty space at top/bottom of sidepanels when scrolled */
-undershoot,
-undershoot.top,
-undershoot.bottom,
-undershoot.left,
-undershoot.right
+.undershoot,
+.undershoot.top,
+.undershoot.bottom,
+.undershoot.left,
+.undershoot.right,
+.overshoot,
+.overshoot.top,
+.overshoot.bottom,
+.overshoot.left,
+.overshoot.right
 {
   background: transparent;
   border:none;
