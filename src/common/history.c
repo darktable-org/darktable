@@ -92,6 +92,7 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
 
   /* make sure mipmaps are recomputed */
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+  dt_image_reset_final_size(imgid);
 
   /* remove darktable|style|* tags */
   dt_tag_detach_by_string("darktable|style%", imgid);
@@ -167,6 +168,7 @@ int dt_history_load_and_apply(const int imgid, gchar *filename, int history_only
 
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
     dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+    dt_image_reset_final_size(imgid);
   }
   return 0;
 }
@@ -739,6 +741,7 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   dt_image_synch_xmp(dest_imgid);
 
   dt_mipmap_cache_remove(darktable.mipmap_cache, dest_imgid);
+  dt_image_reset_final_size(imgid);
 
   /* update the aspect ratio if the current sorting is based on aspect ratio, otherwise the aspect ratio will be
      recalculated when the mimpap will be recreated */

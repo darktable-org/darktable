@@ -1072,11 +1072,9 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   }
 
   dt_mipmap_cache_t *cache = darktable.mipmap_cache;
-  if(vals->full_surface_id && vals->full_zoom100 && *(vals->full_surface_id) != imgid)
-    *(vals->full_zoom100) = 40.0f;
   float fz = 1.0f;
   if(full_zoom > 0.0f) fz = full_zoom;
-  if(vals->full_zoom100 && *(vals->full_zoom100) > 0.0f) fz = fminf(*(vals->full_zoom100), fz);
+  if(vals->full_zoom100 > 0.0f) fz = fminf(vals->full_zoom100, fz);
   dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(cache, imgwd * width * fz, imgwd * height * fz);
 
   // if needed, we load the mimap buffer
@@ -1114,21 +1112,6 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   {
     buf_wd = *(vals->full_surface_wd);
     buf_ht = *(vals->full_surface_ht);
-  }
-  // we want to sanitize full_zoom value to be sure not to exceed 100%
-  if(fz > 1.0f && buf_sizeok)
-  {
-    // is the mipmap loaded the full one ?
-    if(cache->max_width[mip] > buf_wd + 4 && cache->max_height[mip] > buf_ht + 4)
-    {
-      float zoom_100 = fmaxf((float)buf_wd / ((float)width * imgwd), (float)buf_ht / ((float)height * imgwd));
-      if(zoom_100 < 1.0f) zoom_100 = 1.0f;
-      if(vals->full_zoom100) *(vals->full_zoom100) = zoom_100;
-      if(fz > zoom_100)
-      {
-        fz = zoom_100;
-      }
-    }
   }
 
   if(draw_thumb_background)

@@ -317,47 +317,11 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
   {
     if(mip == DT_MIPMAP_8)
     {
-      const uint32_t imgid = get_imgid(entry->key);
-      if(!dt_image_altered(imgid))
-      {
-        // the image has not been been altered, so output size = input size
-        // and the orientation doesn't matter here
-        const dt_image_t *img2 = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-        entry->data_size = sizeof(struct dt_mipmap_buffer_dsc) + (img2->width + 4) * (img2->height + 4) * 4;
-        dt_image_cache_read_release(darktable.image_cache, img2);
-      }
-      else
-      {
-        // we first need to get the final output size of our image
-        // let's create a dummy pipe for that
-        const dt_image_t *img2 = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-        dt_image_t imgtmp = *img2;
-        dt_image_cache_read_release(darktable.image_cache, img2);
-        dt_develop_t dev;
-        dt_dev_init(&dev, 0);
-        dt_dev_load_image(&dev, imgid);
-        dt_dev_pixelpipe_t pipe;
-        const int res = dt_dev_pixelpipe_init_dummy(&pipe, imgtmp.width, imgtmp.height);
-        if(res)
-        {
-          // set mem pointer to 0, won't be used.
-          dt_dev_pixelpipe_set_input(&pipe, &dev, NULL, imgtmp.width, imgtmp.height, 1.0f);
-          dt_dev_pixelpipe_create_nodes(&pipe, &dev);
-          dt_dev_pixelpipe_synch_all(&pipe, &dev);
-          dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width,
-                                          &pipe.processed_height);
-          dt_dev_pixelpipe_cleanup(&pipe);
-          // we enlarge the output size by 4 to handle rounding errors in mipmap computation
-          entry->data_size
-              = sizeof(struct dt_mipmap_buffer_dsc) + (pipe.processed_width + 4) * (pipe.processed_height + 4) * 4;
-        }
-        else
-        {
-          // for some raison pipeline didn't succeed, let's allocate huge memory
-          entry->data_size = cache->buffer_size[mip];
-        }
-        dt_dev_cleanup(&dev);
-      }
+      int imgfw, imgfh;
+      imgfw = imgfh = 0;
+      // be sure that we have the right size values
+      dt_image_get_final_size(get_imgid(entry->key), &imgfw, &imgfh);
+      entry->data_size = sizeof(struct dt_mipmap_buffer_dsc) + (imgfw + 4) * (imgfh + 4) * 4;
     }
     else if(mip <= DT_MIPMAP_F)
     {
@@ -1228,25 +1192,13 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
     }
     else
     {
-      // we want to be sure to have the real image size.
-      // some raw files need a pass via rawspeed to get it.
-      dt_image_t *img2 = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-      const int verified_size = img2->verified_size;
-      dt_image_cache_read_release(darktable.image_cache, img2);
-      if(!verified_size)
-      {
-        img2 = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-        dt_imageio_open(img2, filename, NULL);
-        img2->verified_size = 1;
-        dt_image_cache_write_release(darktable.image_cache, img2, DT_IMAGE_CACHE_RELAXED);
-      }
       uint8_t *tmp = 0;
       int32_t thumb_width, thumb_height;
       res = dt_imageio_large_thumbnail(filename, &tmp, &thumb_width, &thumb_height, color_space);
       if(!res)
       {
         // if the thumbnail is not large enough, we compute one
-        img2 = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+        const dt_image_t *img2 = dt_image_cache_get(darktable.image_cache, imgid, 'r');
         const int imgwd = img2->width;
         const int imght = img2->height;
         dt_image_cache_read_release(darktable.image_cache, img2);

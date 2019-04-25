@@ -628,6 +628,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // if()
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
+    dt_image_reset_final_size(dev->image_storage.id);
     dt_image_synch_xmp(dev->image_storage.id);
   }
 
@@ -2509,6 +2510,7 @@ void leave(dt_view_t *self)
   // if()
   {
     dt_mipmap_cache_remove(darktable.mipmap_cache, dev->image_storage.id);
+    dt_image_reset_final_size(dev->image_storage.id);
     // dump new xmp data
     dt_image_synch_xmp(dev->image_storage.id);
   }

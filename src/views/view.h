@@ -167,7 +167,7 @@ typedef struct dt_view_image_expose_t
   gboolean full_preview;
   gboolean image_only;
   float full_zoom;
-  float *full_zoom100;
+  float full_zoom100;
   float *full_w1;
   float *full_h1;
   float full_x;
