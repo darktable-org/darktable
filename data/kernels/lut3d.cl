@@ -217,3 +217,16 @@ lut3d_pyramid(read_only image2d_t in, write_only image2d_t out, const int width,
   write_imagef(out, (int2)(x, y), output);
 }
 
+kernel void
+lut3d_none(read_only image2d_t in, write_only image2d_t out, const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 input = read_imagef(in, sampleri, (int2)(x, y));
+  
+  write_imagef(out, (int2)(x, y), input);
+}
+

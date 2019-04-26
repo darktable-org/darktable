@@ -85,6 +85,7 @@ typedef struct dt_iop_lut3d_global_data_t
   int kernel_lut3d_tetrahedral;
   int kernel_lut3d_trilinear;
   int kernel_lut3d_pyramid;
+  int kernel_lut3d_none;
 } dt_iop_lut3d_global_data_t;
 
 const char *name()
@@ -343,7 +344,7 @@ uint8_t calculate_clut_haldclut(char *filepath, float **clut)
   }
   level *= level;  // to be equivalent to cube level
   const size_t buf_size = (size_t)png.height * png_get_rowbytes(png.png_ptr, png.info_ptr);
-  dt_print(DT_DEBUG_DEV, "[lut3d] allocating %d bytes for png file\n", buf_size);
+  dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for png file\n", buf_size);
   uint8_t *buf = NULL;
   buf = dt_alloc_align(16, buf_size);
   if(!buf)
@@ -362,7 +363,7 @@ uint8_t calculate_clut_haldclut(char *filepath, float **clut)
     return 0;
   }
   const size_t buf_size_lut = (size_t)png.height * png.height * 3;
-  dt_print(DT_DEBUG_DEV, "[lut3d] allocating %d floats for png lut - level %d\n", buf_size_lut, level);
+  dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu floats for png lut - level %d\n", buf_size_lut, level);
   float *lclut = dt_alloc_align(16, buf_size_lut * sizeof(float));
   if(!lclut)
   {
@@ -518,7 +519,7 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
   uint8_t level = 0;
   float *lclut = NULL;
   uint32_t i = 0;
-  uint32_t buf_size = 0;
+  size_t buf_size = 0;
 
   if(!(cube_file = g_fopen(filepath, "r")))
   {
@@ -566,7 +567,7 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
       {
         level = atoll(token[1]);
         buf_size = level * level * level * 3;
-        dt_print(DT_DEBUG_DEV, "[lut3d] allocating %d bytes for cube lut - level %d\n", buf_size, level);
+        dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for cube lut - level %d\n", buf_size, level);
         lclut = dt_alloc_align(16, buf_size * sizeof(float));
         if(!lclut)
         {
@@ -636,6 +637,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
   const int height = roi_in->height;  
+  const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
   
   if (clut && level)
   {
@@ -653,7 +655,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       if (!success)
        transform = FALSE;
     }
-    size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
     if (transform)
       dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_out);
     else
@@ -668,9 +669,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_out, dev_out, width, height,
         lut_profile, work_profile, "LUT profile to work profile");
   }
-  else  // no clut, do nothing
-  {
-    err = CL_INVALID_VALUE;
+  else
+  { // no lut: identity kernel
+    dt_opencl_set_kernel_arg(devid, gd->kernel_lut3d_none, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_lut3d_none, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_lut3d_none, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_lut3d_none, 3, sizeof(int), (void *)&height);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_lut3d_none, sizes);
   }
   if(err != CL_SUCCESS)
   {
@@ -779,6 +784,7 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_lut3d_tetrahedral = dt_opencl_create_kernel(program, "lut3d_tetrahedral");
   gd->kernel_lut3d_trilinear = dt_opencl_create_kernel(program, "lut3d_trilinear");
   gd->kernel_lut3d_pyramid = dt_opencl_create_kernel(program, "lut3d_pyramid");
+  gd->kernel_lut3d_none = dt_opencl_create_kernel(program, "lut3d_none");
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -787,6 +793,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_lut3d_tetrahedral);
   dt_opencl_free_kernel(gd->kernel_lut3d_trilinear);
   dt_opencl_free_kernel(gd->kernel_lut3d_pyramid);
+  dt_opencl_free_kernel(gd->kernel_lut3d_none);
   free(module->data);
   module->data = NULL;
 }
@@ -955,7 +962,6 @@ void gui_update(dt_iop_module_t *self)
   gtk_entry_set_text(GTK_ENTRY(g->filepath), p->filepath);
   if (lutfolder[0] == 0)
   {
-    dt_control_log(_("Lut folder not set in preferences (core options)"));
     gtk_widget_set_sensitive(g->hbox, FALSE);
   }
   else
@@ -979,7 +985,8 @@ void gui_init(dt_iop_module_t *self)
   g->filepath = gtk_entry_new();
   gtk_box_pack_start(GTK_BOX(g->hbox), g->filepath, TRUE, TRUE, 0);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(g->filepath));
-  gtk_widget_set_tooltip_text(g->filepath, _("the filepath (relative to lut folder) is saved with image (and not the lut data themselves)"));
+  gtk_widget_set_tooltip_text(g->filepath, _("the file path (relative to lut folder) is saved with image (and not the lut data themselves)\n"
+                                              "CAUTION: lut folder must be set in preferences/core options/miscellaneous before choosing the lut file"));
   g_signal_connect(G_OBJECT(g->filepath), "changed", G_CALLBACK(filepath_callback), self);
 
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_DO_NOT_USE_BORDER, NULL);
