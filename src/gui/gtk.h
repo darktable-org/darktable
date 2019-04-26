@@ -108,6 +108,7 @@ typedef struct dt_gui_gtk_t
   GtkWidget *scroll_to[2]; // one for left, one for right
 
   gint scroll_mask;
+  guint sidebar_scroll_mask;
 } dt_gui_gtk_t;
 
 #if (CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 13, 1))
