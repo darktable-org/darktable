@@ -68,6 +68,7 @@ typedef struct dt_iop_gui_simple_callback_t
 typedef enum dt_module_header_icons_t
 {
   DT_MODULE_SWITCH = 0,
+  DT_MODULE_ICON,
   DT_MODULE_LABEL,
   DT_MODULE_INSTANCE,
   DT_MODULE_RESET,
@@ -1937,6 +1938,12 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
    */
   GtkWidget *hw[DT_MODULE_LAST] = { NULL };
 
+  /* init empty place for icon, this is then set in CSS if needed */
+  char w_name[256] = { 0 };
+  snprintf(w_name, sizeof(w_name), "iop-panel-icon-%s", module->op);
+  hw[DT_MODULE_ICON] = gtk_label_new("");
+  gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_ICON]), w_name);
+
   /* add module label */
   hw[DT_MODULE_LABEL] = gtk_label_new("");
   _iop_panel_label(hw[DT_MODULE_LABEL], module);
@@ -1959,7 +1966,6 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[DT_MODULE_RESET]), _("reset parameters"));
   g_signal_connect(G_OBJECT(hw[DT_MODULE_RESET]), "clicked", G_CALLBACK(dt_iop_gui_reset_callback), module);
   gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_RESET]), "module-reset-button");
-
 
   /* add preset button if module has implementation */
   hw[DT_MODULE_PRESETS] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
