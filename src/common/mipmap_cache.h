@@ -23,8 +23,7 @@
 #include "common/image.h"
 
 // sizes stored in the mipmap cache, set to fixed values in mipmap_cache.c
-typedef enum dt_mipmap_size_t
-{
+typedef enum dt_mipmap_size_t {
   DT_MIPMAP_0 = 0,
   DT_MIPMAP_1,
   DT_MIPMAP_2,
@@ -33,6 +32,7 @@ typedef enum dt_mipmap_size_t
   DT_MIPMAP_5,
   DT_MIPMAP_6,
   DT_MIPMAP_7,
+  DT_MIPMAP_8,
   DT_MIPMAP_F,
   DT_MIPMAP_FULL,
   DT_MIPMAP_NONE
@@ -144,6 +144,7 @@ void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid);
 
 // evict thumbnails from cache. They will be written to disc if not existing
 void dt_mimap_cache_evict(dt_mipmap_cache_t *cache, const uint32_t imgid);
+void dt_mipmap_cache_evict_at_size(dt_mipmap_cache_t *cache, const uint32_t imgid, dt_mipmap_size_t mip);
 
 // return the closest mipmap size
 // for the given window you wish to draw.

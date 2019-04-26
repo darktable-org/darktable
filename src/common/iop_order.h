@@ -45,8 +45,6 @@ GList *dt_ioppr_get_iop_order_list(int *_version);
 dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const char *op_name);
 /** returns the iop_order from iop_order_list list with operation = op_name */
 double dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name);
-/** returns colorin's iop_order */
-double dt_ioppr_get_colorin_iop_order(GList *iop_list);
 
 /** check if there's duplicate iop_order entries in iop_list */
 void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list);
@@ -117,9 +115,10 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_profile_info_from_list(struct dt_de
 dt_iop_order_iccprofile_info_t *dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev, const int profile_type, const char *profile_filename, const int intent);
 
 /** returns a reference to the work profile info as set on colorin iop
- * must not be cleanup()
+ * only if module is between colorin and colorout, otherwise returns NULL
+ * work profile must not be cleanup()
  */
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_develop_t *dev);
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_iop_module_t *module, GList *iop_list);
 
 /** set the work profile (type, filename) on the pipe, should be called on process*()
  * if matrix cannot be generated it defauls to linear rec 2020
@@ -127,6 +126,10 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_dev
  */
 dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, 
     const int type, const char *filename, const int intent);
+/** returns a reference to the histogram profile info
+ * histogram profile must not be cleanup()
+ */
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev);
 
 /** returns the active work profile on the pipe */
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(struct dt_dev_pixelpipe_t *pipe);
@@ -135,6 +138,8 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(struct dt_de
 void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev, int *profile_type, char **profile_filename);
 /** returns the current setting of the export profile on colorout iop */
 void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev, int *profile_type, char **profile_filename);
+/** returns the current setting of the histogram profile */
+void dt_ioppr_get_histogram_profile_type(int *profile_type, char **profile_filename);
 
 /** transforms image from cst_from to cst_to colorspace using profile_info */
 void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const float *const image_in,
@@ -180,6 +185,16 @@ void dt_ioppr_get_profile_info_cl(const dt_iop_order_iccprofile_info_t *const pr
  */
 cl_float *dt_ioppr_get_trc_cl(const dt_iop_order_iccprofile_info_t *const profile_info);
 
+/** build the required parameters for a kernell that uses a profile info */
+cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t *const profile_info,
+                                           const int devid, dt_colorspaces_iccprofile_info_cl_t **_profile_info_cl,
+                                           cl_float **_profile_lut_cl, cl_mem *_dev_profile_info,
+                                           cl_mem *_dev_profile_lut);
+/** free parameters build with the previous function */
+void dt_ioppr_free_iccprofile_params_cl(dt_colorspaces_iccprofile_info_cl_t **_profile_info_cl,
+                                        cl_float **_profile_lut_cl, cl_mem *_dev_profile_info,
+                                        cl_mem *_dev_profile_lut);
+
 /** same as the C version */
 int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const int devid, cl_mem dev_img_in,
                                            cl_mem dev_img_out, const int width, const int height,
@@ -205,6 +220,7 @@ void dt_ioppr_lab_to_rgb_matrix(const float *const lab, float *rgb, const dt_iop
 void dt_ioppr_rgb_matrix_to_lab(const float *const rgb, float *lab, const dt_iop_order_iccprofile_info_t *const profile_info);
 
 // for debug only
+int dt_ioppr_check_db_integrity();
 int dt_ioppr_check_iop_order(struct dt_develop_t *dev, const int imgid, const char *msg);
 void dt_ioppr_print_module_iop_order(GList *iop_list, const char *msg);
 void dt_ioppr_print_history_iop_order(GList *history_list, const char *msg);

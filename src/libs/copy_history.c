@@ -45,6 +45,7 @@ typedef struct dt_lib_copy_history_t
   GtkButton *paste, *paste_parts;
   GtkWidget *copy_button, *delete_button, *load_button, *write_button;
   GtkWidget *copy_parts_button;
+  GtkButton *compress_button;
 
   dt_gui_hist_dialog_t dg;
 } dt_lib_copy_history_t;
@@ -154,6 +155,105 @@ static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
     gtk_widget_set_sensitive(GTK_WIDGET(d->paste), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), TRUE);
   }
+}
+
+static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
+{
+  // Get the list of selected images
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images",
+                              -1, &stmt, NULL);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    // get imgid of selected image
+    int32_t dest_imgid = sqlite3_column_int(stmt, 0);
+
+    // make sure the right history is in there:
+    dt_dev_write_history(darktable.develop);
+
+    // compress history and remove disabled modules - adapted from libs/history.c
+    sqlite3_stmt *stmt_local;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1 AND num "
+                                                               "NOT IN (SELECT MAX(num) FROM main.history WHERE "
+                                                               "imgid = ?1 AND enabled = 1 GROUP BY operation, "
+                                                               "multi_priority)", -1, &stmt_local, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
+    sqlite3_step(stmt_local);
+    sqlite3_finalize(stmt_local);
+
+    // delete all mask_manager entries - copied from libs/history.c
+    int masks_count = 0;
+    char op_mask_manager[20] = {0};
+    g_strlcpy(op_mask_manager, "mask_manager", sizeof(op_mask_manager));
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1 AND operation = ?2", -1, &stmt_local, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt_local, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
+    sqlite3_step(stmt_local);
+    sqlite3_finalize(stmt_local);
+
+    // if there's masks create a mask manage entry
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT COUNT(*) FROM main.masks_history WHERE imgid = ?1",
+                                -1, &stmt_local, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
+    if(sqlite3_step(stmt_local) == SQLITE_ROW) masks_count = sqlite3_column_int(stmt_local, 0);
+    sqlite3_finalize(stmt_local);
+
+    if(masks_count > 0)
+    {
+      // set the masks history as first entry
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.masks_history SET num = 0 WHERE imgid = ?1", -1, &stmt_local, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
+      sqlite3_step(stmt_local);
+      sqlite3_finalize(stmt_local);
+
+      // make room for mask manager history entry
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.history SET num=num+1 WHERE imgid = ?1",
+          -1, &stmt_local, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
+      sqlite3_step(stmt_local);
+      sqlite3_finalize(stmt_local);
+
+      // update history end
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.images SET history_end = history_end+1 WHERE id = ?1",
+          -1, &stmt_local, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
+      sqlite3_step(stmt_local);
+      sqlite3_finalize(stmt_local);
+
+      const double iop_order = dt_ioppr_get_iop_order(darktable.develop->iop_order_list, op_mask_manager);
+
+      // create a mask manager entry in history as first entry
+      DT_DEBUG_SQLITE3_PREPARE_V2(
+          dt_database_get(darktable.db),
+          "INSERT INTO main.history (imgid, num, operation, op_params, module, enabled, "
+               "blendop_params, blendop_version, multi_priority, multi_name, iop_order) "
+          "VALUES(?1, 0, ?2, NULL, 1, 0, NULL, 0, 0, '', ?3)",
+          -1, &stmt_local, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
+      DT_DEBUG_SQLITE3_BIND_TEXT(stmt_local, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
+      DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt_local, 3, iop_order);
+      sqlite3_step(stmt_local);
+      sqlite3_finalize(stmt_local);
+    }
+
+    /* if current image in develop reload history */
+    if(dt_dev_is_current_image(darktable.develop, dest_imgid))
+    {
+      dt_dev_reload_history_items(darktable.develop);
+      dt_dev_write_history(darktable.develop);
+      dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
+    }
+
+    // Update XMP files
+    dt_image_synch_xmp(dest_imgid);
+  }
+
+  sqlite3_finalize(stmt);
+
+  dt_control_queue_redraw_center();
 }
 
 static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
@@ -274,10 +374,9 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_grid_new();
   GtkGrid *grid = GTK_GRID(self->widget);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
-  gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
-  gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_homogeneous(grid, TRUE);
   int line = 0;
+  d->imageid = -1;
   dt_gui_hist_dialog_init(&d->dg);
 
 
@@ -286,28 +385,20 @@ void gui_init(dt_lib_module_t *self)
   d->copy_parts_button = copy_parts;
   gtk_widget_set_tooltip_text(copy_parts, _("copy part history stack of\nfirst selected image"));
   dt_gui_add_help_link(copy_parts, "history_stack.html#history_stack_usage");
-  gtk_grid_attach(grid, copy_parts, 0, line, 2, 1);
+  gtk_grid_attach(grid, copy_parts, 0, line, 3, 1);
 
   GtkWidget *copy = gtk_button_new_with_label(_("copy all"));
   ellipsize_button(copy);
   d->copy_button = copy;
   gtk_widget_set_tooltip_text(copy, _("copy history stack of\nfirst selected image"));
   dt_gui_add_help_link(copy, "history_stack.html#history_stack_usage");
-  gtk_grid_attach(grid, copy, 2, line, 2, 1);
-
-  GtkWidget *delete = gtk_button_new_with_label(_("discard"));
-  ellipsize_button(delete);
-  d->delete_button = delete;
-  gtk_widget_set_tooltip_text(delete, _("discard history stack of\nall selected images"));
-  dt_gui_add_help_link(delete, "history_stack.html#history_stack_usage");
-  gtk_grid_attach(grid, delete, 4, line++, 2, 1);
+  gtk_grid_attach(grid, copy, 3, line++, 3, 1);
 
 
   d->paste_parts = GTK_BUTTON(gtk_button_new_with_label(_("paste")));
   ellipsize_button(d->paste_parts);
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->paste_parts), _("paste part history stack to\nall selected images"));
   dt_gui_add_help_link(GTK_WIDGET(d->paste_parts), "history_stack.html#history_stack_usage");
-  d->imageid = -1;
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), FALSE);
   gtk_grid_attach(grid, GTK_WIDGET(d->paste_parts), 0, line, 3, 1);
 
@@ -317,6 +408,18 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_add_help_link(GTK_WIDGET(d->paste), "history_stack.html#history_stack_usage");
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
   gtk_grid_attach(grid, GTK_WIDGET(d->paste), 3, line++, 3, 1);
+
+  d->compress_button = GTK_BUTTON(gtk_button_new_with_label(_("compress history")));
+  ellipsize_button(d->compress_button);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->compress_button), _("compress history stack of\nall selected images"));
+  gtk_grid_attach(grid, GTK_WIDGET(d->compress_button), 0, line, 3, 1);
+
+  GtkWidget *delete = gtk_button_new_with_label(_("discard"));
+  ellipsize_button(delete);
+  d->delete_button = delete;
+  gtk_widget_set_tooltip_text(delete, _("discard history stack of\nall selected images"));
+  dt_gui_add_help_link(delete, "history_stack.html#history_stack_usage");
+  gtk_grid_attach(grid, delete, 3, line++, 3, 1);
 
   d->pastemode = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->pastemode, NULL, _("mode"));
@@ -346,6 +449,7 @@ void gui_init(dt_lib_module_t *self)
 
   g_signal_connect(G_OBJECT(copy), "clicked", G_CALLBACK(copy_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(copy_parts), "clicked", G_CALLBACK(copy_parts_button_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(d->compress_button), "clicked", G_CALLBACK(compress_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(delete), "clicked", G_CALLBACK(delete_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->paste_parts), "clicked", G_CALLBACK(paste_parts_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->paste), "clicked", G_CALLBACK(paste_button_clicked), (gpointer)self);
@@ -364,6 +468,7 @@ void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "copy all"), GDK_KEY_c, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "copy"), GDK_KEY_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "compress"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "discard"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "paste all"), GDK_KEY_v, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "paste"), GDK_KEY_v, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
@@ -378,6 +483,7 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "copy all", GTK_WIDGET(d->copy_button));
   dt_accel_connect_button_lib(self, "copy", GTK_WIDGET(d->copy_parts_button));
   dt_accel_connect_button_lib(self, "discard", GTK_WIDGET(d->delete_button));
+  dt_accel_connect_button_lib(self, "compress", GTK_WIDGET(d->compress_button));
   dt_accel_connect_button_lib(self, "paste all", GTK_WIDGET(d->paste));
   dt_accel_connect_button_lib(self, "paste", GTK_WIDGET(d->paste_parts));
   dt_accel_connect_button_lib(self, "load sidecar files", GTK_WIDGET(d->load_button));

@@ -369,7 +369,7 @@ void dt_histogram_helper(dt_dev_histogram_collection_params_t *histogram_params,
       break;
 
     case iop_cs_rgb:
-      if(compensate_middle_grey)
+      if(compensate_middle_grey && profile_info)
         dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_rgb_compensated, profile_info);
       else
         dt_histogram_worker(histogram_params, histogram_stats, pixel, histogram, histogram_helper_cs_rgb, profile_info);

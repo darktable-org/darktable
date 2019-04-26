@@ -4,23 +4,8 @@ if(USE_OPENCL)
 	add_subdirectory(kernels)
 endif(USE_OPENCL)
 
-#
-# Generate and install darktable.css
-#
-if ("${GTK3_VERSION}" VERSION_GREATER "3.19.0")
-  if ("${GTK3_VERSION}" VERSION_GREATER "3.21.0")
-    set(GTK_CSS_FONT "8pt Sans") # FIXME: does it really equal the old value?
-    set(GTK_CSS_FONT2_SIZE "15pt") # why is it different all of the sudden?
-  else ()
-    set(GTK_CSS_FONT "Sans 8")
-    set(GTK_CSS_FONT2_SIZE "10pt")
-  endif ()
-
-  configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable.css.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.css )
-else ()
-  configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/darktable-3.18.css.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.css )
-endif()
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/darktable.css DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/themes COMPONENT DTApplication)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/darktable.css DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/themes COMPONENT DTApplication)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/darktable-elegant.css DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/themes COMPONENT DTApplication)
 
 #
 # web gallery export support files:

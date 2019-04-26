@@ -31,19 +31,48 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   metadata, deleted history stack, pasted history stack and applied
   style.
 
+  IMPORTANT:
+  As ctrl-z is commonly used for undo/redo this is what is used
+  on the lighttable. This conflicts with the previous ctrl-z which
+  was assigned to preview with focus point. The preview (previously z)
+  and preview with focus detection (previously ctrl-z) are now assigned
+  respectively to w and ctrl-w.
+
 - A new timeline view has been introduced in the lighttable.
 
 - A new exposé lighttable's mode to be used to compare multiple images.
 
+- A new lighttable mode 'culling' is added. It displays a fixed number
+  of consecutive images, starting from the first selected image and
+  allows to pan & zoom them.  It can be navigated with the mouse wheel
+  and keyboard and the number of displayed images can be set with an
+  entry at the bottom.
+
 - A quite extensive rewrite of the lighttable has been made to improve
   drastically the overall performance. This also includes the
-  filmstrip which has also see a big rewrite for the same reasons. The
+  filmstrip which has also received a big rewrite for the same reasons. The
   lighttable is now usable on 4K and 5K monitors.
 
 - Add new raster mask supports. This is a copy of a parametric mask
   which is stable during the whole pixel-pipe.
 
 - Modules can now be re-ordered with shift+drag.
+
+- The color zones module now display an histogram based on the ‘select
+  by’ channel and displays the selected range if the color picker is
+  in area mode.
+  It acts now like the tone curve (but horizontal),
+  it has two edit modes: edit by area is the former one, if not checked nodes
+  can be edited like in the tone curve, delete only works by right-click
+  when not in edit area mode.
+  A new process mode has been added: smooth is the former one, strong is new.
+  An interpolation method has been added that allows to select different types
+  of curves.
+  The color picker allows to select by area with ctrl+click.
+  A new color picker has been added that creates a curve based on the area
+  selected from the image.
+  When pressing the shortcut 'pan&zoom while editing masks' the draw area
+  can now be zoomed. Double-click on the bottom bar resets the zoom.
 
 ## New Features And Changes
 
@@ -63,12 +92,8 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   area from the image. Click to adjust the input image slider,
   ctrl+click to adjust the out image one.
 
-- The color zones module now display an histogram based on the ‘select
-  by’ channel and displays the selected range if the color picker is
-  in area mode.
-
 - The picasa module has been renamed to googlephoto and completely
-  rewrited to support the new Google Photo API. It is now again
+  rewrote to support the new Google Photo API. It is now again
   possible to create albums directly from the export module.
 
 - New module image information which can be positioned at the bottom
@@ -84,7 +109,7 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 - The collect module supports single click if the corresponding new
   option is activated.
 
-- The collect module supports range selection (for numerics/dates)
+- The collect module supports range selection (for numeric/dates)
   when using single click mode.
 
 - Add option to scatter the search zone in denoise profile non local
@@ -97,7 +122,7 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   preferences.
 
 - The graduatednd module has better accuracy when computing the
-  rotation to avoid the gradiant to flip sporadically.
+  rotation to avoid the gradient to flip sporadically.
 
 - Make sure the OpenCL kernel code are recompiled when the driver
   version is updated.
@@ -115,17 +140,47 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 
 - The slideshow supports changing the delay between each images.
 
+- The slideshow will now start at the selected pictures if any.
+
+- The slideshow will now be more responsive when changing the picture
+  backward and forward.
+
 - Add soft boundaries for denoise profile controls.
 
-- The color zones module curve acts now like the tone curve (but horizontal),
-  it has two edit modes: edit by area is the former one, if not checked nodes
-  can be edited like in the tone curve.
-  A new process mode has been added: smooth is the former one, strong is new.
-  An interpolation method has been added that allows to select different types
-  of curves.
-  The color picker allows to select by area with cntrl+click.
-  A new color picker has benn added that creates a curve based on the area
-  selected from the image.
+- A new module 'basic adjustments' has been added. It allows to adjust
+  the exposure, highlight compression, contrast, brightness and saturation.
+  It also has an auto feature based on Rawtherapee's auto levels that can
+  work on the entire image or a user selected area.
+  Both the contrast and the auto feature use the middle grey point, the
+  default for this setting is based on the work profile.
+
+- A new module 'rgb curve' has been added. It has linked and
+  independent RGB channels.
+  It works with the rgb colorspace selected on the work profile.
+  The curves and histogram can be displayed using the work profile or
+  can be scaled to be 50% grey.
+  The color picker allows to select by area with ctrl+click.
+  The second color picker add 4 nodes to the curve based on the area
+  selected from the image: min, average, middle, max.
+  When pressing the shortcut 'pan&zoom while editing masks' the draw area
+  can be zoomed.
+  Different types of curves can be selected.
+
+- A search text has been added to the module groups in the darkroom. It has a
+  config option to show only the modules groups, only the search text or both.
+  Modules are searched by name (localized).
+
+  If displaying only the search text, the active pipe modules are
+  displayed when the search text is empty.  A darkroom shortcut can be
+  set to focus on the search box.
+
+- A preview window has been added to the darkroom that displays the edited image
+  on a separate window.
+
+- A new option 'skip' is added to the 'on conflic' setting on the export module
+  that skips the export if the file already exists.
+
+- Allow to change algorithm clone/heal and blur/color in retouch module.
 
 ## Bug fixes
 
@@ -136,9 +191,33 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 
 - Do not disable SSL for storage modules.
 
+- A long standing bug on mask distort in Liquify module has been
+  fixed. This was visible when a liquify mask was used together with
+  the perspective correction module activated.
+
+- Fix manual crop in perspective correction module when not in default
+  orientation.
+
+- The modification of date/time is now stored into the XMP. This
+  ensure that removing the picture and reloading will keep the change
+  made.
+
+- Fix orientation to support all cases as exposed in these examples:
+  https://github.com/recurser/exif-orientation-examples
+
+- Store the panel states for each lighttable mode.
+
 ## Lua
 
-- No changes
+- The displayed image in darkroom view can now be changed
+
+- GUI panel visibility can now be queried and changed
+
+- Lighttable view toolbox (rating filter, rating comparator, sort field, and sort direction) can now be changed
+
+- Lighttable layout and zoom level can now be changed
+
+- All images containing a specific tag can be searched and returned
 
 ## Changed Dependencies
 

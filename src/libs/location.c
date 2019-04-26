@@ -130,7 +130,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = calloc(1, sizeof(dt_lib_location_t));
   dt_lib_location_t *lib = self->data;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   /* add search box */
@@ -142,8 +142,8 @@ void gui_init(dt_lib_module_t *self)
                    (gpointer)self);
 
   /* add result vbox */
-  lib->result = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(10));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->result), TRUE, FALSE, DT_PIXEL_APPLY_DPI(2));
+  lib->result = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(lib->result), TRUE, FALSE, 0);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
@@ -158,8 +158,8 @@ static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib, _lib_lo
 {
   GtkWidget *eb, *hb, *vb, *w;
   eb = gtk_event_box_new();
-  hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(2));
-  vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(2));
+  hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   /* add name */
   w = gtk_label_new(place->name);
@@ -185,8 +185,8 @@ static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib, _lib_lo
   gtk_widget_set_size_request(icon, DT_PIXEL_APPLY_DPI(10), -1);
 
   /* setup layout */
-  gtk_box_pack_start(GTK_BOX(hb), icon, FALSE, FALSE, DT_PIXEL_APPLY_DPI(2));
-  gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, FALSE, DT_PIXEL_APPLY_DPI(2));
+  gtk_box_pack_start(GTK_BOX(hb), icon, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, FALSE, 0);
   gtk_container_add(GTK_CONTAINER(eb), hb);
 
   gtk_widget_show_all(eb);

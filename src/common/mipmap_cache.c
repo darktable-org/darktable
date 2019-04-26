@@ -315,7 +315,40 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
   // alloc mere minimum for the header + broken image buffer:
   if(!dsc)
   {
-    if(mip <= DT_MIPMAP_F)
+    if(mip == DT_MIPMAP_8)
+    {
+      // we first need to get the final output size of our image
+      // let's create a dummy pipe for that
+      const uint32_t imgid = get_imgid(entry->key);
+      const dt_image_t *img2 = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+      dt_image_t imgtmp = *img2;
+      dt_image_cache_read_release(darktable.image_cache, img2);
+      dt_develop_t dev;
+      dt_dev_init(&dev, 0);
+      dt_dev_load_image(&dev, imgid);
+      dt_dev_pixelpipe_t pipe;
+      const int res = dt_dev_pixelpipe_init_dummy(&pipe, imgtmp.width, imgtmp.height);
+      if(res)
+      {
+        // set mem pointer to 0, won't be used.
+        dt_dev_pixelpipe_set_input(&pipe, &dev, NULL, imgtmp.width, imgtmp.height, 1.0f);
+        dt_dev_pixelpipe_create_nodes(&pipe, &dev);
+        dt_dev_pixelpipe_synch_all(&pipe, &dev);
+        dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width,
+                                        &pipe.processed_height);
+        dt_dev_pixelpipe_cleanup(&pipe);
+        // we enlarge the output size by 4 to handle rounding errors in mipmap computation
+        entry->data_size
+            = sizeof(struct dt_mipmap_buffer_dsc) + (pipe.processed_width + 4) * (pipe.processed_height + 4) * 4;
+      }
+      else
+      {
+        // for some raison pipeline didn't succeed, let's allocate huge memory
+        entry->data_size = cache->buffer_size[mip];
+      }
+      dt_dev_cleanup(&dev);
+    }
+    else if(mip <= DT_MIPMAP_F)
     {
       // these are fixed-size:
       entry->data_size = cache->buffer_size[mip];
@@ -359,7 +392,8 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
   int loaded_from_disk = 0;
   if(mip < DT_MIPMAP_F)
   {
-    if(cache->cachedir[0] && dt_conf_get_bool("cache_disk_backend"))
+    if(cache->cachedir[0] && ((dt_conf_get_bool("cache_disk_backend") && mip < DT_MIPMAP_8)
+                              || (dt_conf_get_bool("cache_disk_backend_full") && mip == DT_MIPMAP_8)))
     {
       // try and load from disk, if successful set flag
       char filename[PATH_MAX] = {0};
@@ -410,6 +444,8 @@ read_error:
   // cost is just flat one for the buffer, as the buffers might have different sizes,
   // to make sure quota is meaningful.
   if(mip >= DT_MIPMAP_F) entry->cost = 1;
+  else if(mip == DT_MIPMAP_8)
+    entry->cost = entry->data_size;
   else entry->cost = cache->buffer_size[mip];
 }
 
@@ -442,7 +478,8 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
       {
         dt_mipmap_cache_unlink_ondisk_thumbnail(data, get_imgid(entry->key), mip);
       }
-      else if(cache->cachedir[0] && dt_conf_get_bool("cache_disk_backend"))
+      else if(cache->cachedir[0] && ((dt_conf_get_bool("cache_disk_backend") && mip < DT_MIPMAP_8)
+                                     || (dt_conf_get_bool("cache_disk_backend_full") && mip == DT_MIPMAP_8)))
       {
         // serialize to disk
         char filename[PATH_MAX] = {0};
@@ -522,14 +559,15 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 
   // Fixed sizes for the thumbnail mip levels, selected for coverage of most screen sizes
   int32_t mipsizes[DT_MIPMAP_F][2] = {
-    {180,  110},  // mip0 - ~1/2 size previous one
-    {360,  225},  // mip1 - 1/2 size previous one
-    {720,  450},  // mip2 - 1/2 size previous one
-    {1440, 900},  // mip3 - covers 720p and 1366x768
-    {1920, 1200}, // mip4 - covers 1080p and 1600x1200
-    {2560, 1600}, // mip5 - covers 2560x1440
-    {4096, 2560}, // mip6 - covers 4K and UHD
-    {5120, 3200}, // mip7 - covers 5120x2880 panels
+    { 180, 110 },             // mip0 - ~1/2 size previous one
+    { 360, 225 },             // mip1 - 1/2 size previous one
+    { 720, 450 },             // mip2 - 1/2 size previous one
+    { 1440, 900 },            // mip3 - covers 720p and 1366x768
+    { 1920, 1200 },           // mip4 - covers 1080p and 1600x1200
+    { 2560, 1600 },           // mip5 - covers 2560x1440
+    { 4096, 2560 },           // mip6 - covers 4K and UHD
+    { 5120, 3200 },           // mip7 - covers 5120x2880 panels
+    { 999999999, 999999999 }, // mip8 - used for full preview at full size
   };
   // Set mipf to mip2 size as at most the user will be using an 8K screen and
   // have a preview that's ~4x smaller
@@ -981,6 +1019,12 @@ void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid)
     }
   }
 }
+void dt_mipmap_cache_evict_at_size(dt_mipmap_cache_t *cache, const uint32_t imgid, dt_mipmap_size_t mip)
+{
+  const uint32_t key = get_key(imgid, mip);
+  // write thumbnail to disc if not existing there
+  dt_cache_remove(&_get_cache(cache, mip)->cache, key);
+}
 
 void dt_mimap_cache_evict(dt_mipmap_cache_t *cache, const uint32_t imgid)
 {
@@ -1188,7 +1232,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
   if(res)
   {
     //try to generate mip from larger mip
-    for(dt_mipmap_size_t k = size + 1; k <= DT_MIPMAP_7; k++)
+    for(dt_mipmap_size_t k = size + 1; k < DT_MIPMAP_F; k++)
     {
       dt_mipmap_buffer_t tmp;
       dt_mipmap_cache_get(darktable.mipmap_cache, &tmp, imgid, k, DT_MIPMAP_TESTLOCK, 'r');
