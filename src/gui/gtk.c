@@ -1072,6 +1072,9 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   if (GDK_IS_WAYLAND_DISPLAY(gdk_display_get_default())) gui->scroll_mask |= GDK_SMOOTH_SCROLL_MASK;
 #endif
 
+  // key accelerator that enables scrolling of side panels
+  gui->sidebar_scroll_mask = GDK_MOD1_MASK | GDK_CONTROL_MASK;
+
   // Initializing widgets
   init_widgets(gui);
 
@@ -1796,8 +1799,8 @@ static GtkWidget *_ui_init_panel_container_top(GtkWidget *container)
 
 static gboolean _ui_init_panel_container_center_scroll_event(GtkWidget *widget, GdkEventScroll *event)
 {
-  // just make sure nothing happens:
-  return TRUE;
+  // just make sure nothing happens unless ctrl-alt are pressed:
+  return ((event->state & gtk_accelerator_get_default_mod_mask()) != darktable.gui->sidebar_scroll_mask);
 }
 
 // this should work as long as everything happens in the gui thread
