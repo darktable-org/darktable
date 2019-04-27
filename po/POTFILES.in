@@ -69,8 +69,8 @@ src/imageio/storage/email.c
 src/imageio/storage/facebook.c
 src/imageio/storage/flickr.c
 src/imageio/storage/gallery.c
-src/imageio/storage/latex.c
 src/imageio/storage/googlephoto.c
+src/imageio/storage/latex.c
 src/imageio/storage/piwigo.c
 src/iop/amaze_demosaic_RT.cc
 src/iop/ashift.c
@@ -120,6 +120,7 @@ src/iop/levels.c
 src/iop/liquify.c
 src/iop/lowlight.c
 src/iop/lowpass.c
+src/iop/lut3d.c
 src/iop/monochrome.c
 src/iop/nlmeans.c
 src/iop/overexposed.c
