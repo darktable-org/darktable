@@ -120,13 +120,13 @@ void correct_pixel_trilinear(const float *const in, float *const out,
   {
     float *input = ((float *)in) + k;
     float *output = ((float *)out) + k;
-    
+
     int rgbi[3], i, j;
     float tmp[6];
     float rgbd[3];
 
     for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
-    
+
     rgbd[0] = input[0] * (float)(level - 1);
     rgbd[1] = input[1] * (float)(level - 1);
     rgbd[2] = input[2] * (float)(level - 1);
@@ -195,12 +195,12 @@ void correct_pixel_tetrahedral(const float *const in, float *const out,
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
   {
     float *const input = ((float *const)in) + k;
-    float *const output = ((float *const)out) + k; 
+    float *const output = ((float *const)out) + k;
     int rgbi[3];
 
     float rgbd[3];
     for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
-    
+
     rgbd[0] = input[0] * (float)(level - 1);
     rgbd[1] = input[1] * (float)(level - 1);
     rgbd[2] = input[2] * (float)(level - 1);
@@ -269,9 +269,9 @@ void correct_pixel_tetrahedral(const float *const in, float *const out,
   }
 }
 
-// from Study on the 3D Interpolation Models Used in Color Conversion 
+// from Study on the 3D Interpolation Models Used in Color Conversion
 // http://ijetch.org/papers/318-T860.pdf
-void correct_pixel_pyramid(const float *const in, float *const out, 
+void correct_pixel_pyramid(const float *const in, float *const out,
   const size_t pixel_nb, const float *const restrict clut, const uint8_t level)
 {
   const int level2 = level * level;
@@ -282,12 +282,12 @@ void correct_pixel_pyramid(const float *const in, float *const out,
   {
     float *const input = ((float *const)in) + k;
     float *const output = ((float *const)out) + k;
-    
+
     int rgbi[3];
     float rgbd[3];
 
     for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
-    
+
     rgbd[0] = input[0] * (float)(level - 1);
     rgbd[1] = input[1] * (float)(level - 1);
     rgbd[2] = input[2] * (float)(level - 1);
@@ -586,7 +586,7 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
       else if (strcmp("LUT_1D_SIZE", token[0]) == 0)
       {
         fprintf(stderr, "[lut3d] 1D cube lut is not supported\n");
-        dt_control_log(_("[1D cube lut is not supported"));
+        dt_control_log(_("1D cube lut is not supported"));
         free(line);
         fclose(cube_file);
         return 0;
@@ -664,9 +664,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem clut_cl = NULL;
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
-  const int height = roi_in->height;  
+  const int height = roi_in->height;
   const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-  
+
   if (clut && level)
   {
     clut_cl = dt_opencl_copy_host_to_device_constant(devid, level * level * level * 3 * sizeof(float), (void *)clut);
@@ -724,7 +724,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
   const int width = roi_in->width;
-  const int height = roi_in->height;  
+  const int height = roi_in->height;
   const int ch = piece->colors;
   const float *const clut = (float *)d->clut;
   const uint8_t level = d->level;
@@ -778,7 +778,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 //        float *const in = ((float *const)ibuf) + i;
 //        float *const out = ((float *const)obuf) + i;
 //        interpolation_worker(in, out, clut, level);
-//      }      
+//      }
       if (interpolation == DT_IOP_TETRAHEDRAL)
         correct_pixel_tetrahedral(ibuf, obuf, width * height, clut, level);
       else if (interpolation == DT_IOP_TRILINEAR)
@@ -876,7 +876,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   piece->data = malloc(sizeof(dt_iop_lut3d_data_t));
   dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
   d->clut = NULL;
-  d->level = 0;  
+  d->level = 0;
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
@@ -1045,7 +1045,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->colorspace, _("lin sRGB/REC.709"));
   dt_bauhaus_combobox_add(g->colorspace, _("lin prophoto RGB"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->colorspace) , TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->colorspace, _("select the color space in which the LUT has to be applied\n"));
+  gtk_widget_set_tooltip_text(g->colorspace, _("select the color space in which the LUT has to be applied"));
   g_signal_connect(G_OBJECT(g->colorspace), "value-changed", G_CALLBACK(colorspace_callback), self);
 
   g->interpolation = dt_bauhaus_combobox_new(self);
@@ -1054,7 +1054,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->interpolation, _("trilinear"));
   dt_bauhaus_combobox_add(g->interpolation, _("pyramid"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->interpolation) , TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->interpolation, _("select the interpolation method\n"));
+  gtk_widget_set_tooltip_text(g->interpolation, _("select the interpolation method"));
   g_signal_connect(G_OBJECT(g->interpolation), "value-changed", G_CALLBACK(interpolation_callback), self);
 }
 
