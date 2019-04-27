@@ -1909,8 +1909,8 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
 
   g_list_free(selected);
 
-  gchar *query =  g_strdup_printf("SELECT id, aspect_ratio, width, height FROM images WHERE id IN (%s) ORDER BY INSTR('%s', id)",
-                                  imgids, imgids);
+  gchar *query = g_strdup_printf("SELECT id, aspect_ratio FROM images WHERE id IN (%s) ORDER BY INSTR('%s', id)",
+                                 imgids, imgids);
 
   g_free(imgids);
 
@@ -1929,11 +1929,11 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   {
     const int32_t id = sqlite3_column_int(stmt, 0);
     double aspect_ratio = sqlite3_column_double(stmt, 1);
-    if(!aspect_ratio)
+    if(!aspect_ratio || aspect_ratio < 0.0001)
     {
-      aspect_ratio = (double)sqlite3_column_int(stmt, 2) / (double)sqlite3_column_int(stmt, 3);
-      // record aspect ratio now
-      dt_image_set_aspect_ratio_to(id, aspect_ratio);
+      aspect_ratio = dt_image_set_aspect_ratio(id);
+      // if an error occurs, let's use 1:1 value
+      if(aspect_ratio < 0.0001) aspect_ratio = 1.0;
     }
 
     images[i].imgid = id;
