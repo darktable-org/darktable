@@ -607,23 +607,26 @@ void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio)
   }
 }
 
-void dt_image_set_aspect_ratio(const int32_t imgid)
+double dt_image_set_aspect_ratio(const int32_t imgid)
 {
   dt_mipmap_buffer_t buf;
+  double aspect_ratio = 0.0;
 
   // mipmap cache must be initialized, otherwise we'll update next call
   if(darktable.mipmap_cache)
   {
     dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_0, DT_MIPMAP_BLOCKING, 'r');
 
-    if (buf.buf && buf.height && buf.width)
+    if(buf.buf && buf.height && buf.width)
     {
-      const double aspect_ratio = (double)buf.width / (double)buf.height;
+      aspect_ratio = (double)buf.width / (double)buf.height;
       dt_image_set_aspect_ratio_to(imgid, aspect_ratio);
     }
 
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   }
+
+  return aspect_ratio;
 }
 
 int32_t dt_image_duplicate(const int32_t imgid)
