@@ -30,8 +30,12 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   with different theme:
 
      - darktable          : the default theme
+
      - darktable-elegant  : more condensed fonts
+                            best experience if Roboto font installed
+
      - darktable-icons    : as elegant, with IOP icons
+                            best experience if Roboto font installed
 
   Note that this requires Gtk 3.22 or higher to work properly.
 
