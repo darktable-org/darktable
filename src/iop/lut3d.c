@@ -114,12 +114,12 @@ void correct_pixel_trilinear(const float *const in, float *const out,
 {
   const int level2 = level * level;
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static)
+#pragma omp parallel for SIMD() default(none) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
   {
-    float *const input = ((float *const)in) + k;
-    float *const output = ((float *const)out) + k;
+    float *input = ((float *)in) + k;
+    float *output = ((float *)out) + k;
     
     int rgbi[3], i, j;
     float tmp[6];
@@ -190,12 +190,13 @@ void correct_pixel_tetrahedral(const float *const in, float *const out,
 {
   const int level2 = level * level;
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static)
+#pragma omp parallel for SIMD() default(none) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
   {
     float *const input = ((float *const)in) + k;
-    float *const output = ((float *const)out) + k;  int rgbi[3];
+    float *const output = ((float *const)out) + k; 
+    int rgbi[3];
 
     float rgbd[3];
     for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
@@ -275,7 +276,7 @@ void correct_pixel_pyramid(const float *const in, float *const out,
 {
   const int level2 = level * level;
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) schedule(static)
+#pragma omp parallel for SIMD() default(none) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
   {
