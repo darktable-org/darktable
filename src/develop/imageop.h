@@ -46,6 +46,17 @@ struct dt_develop_blend_params_t;
 struct dt_develop_tiling_t;
 struct dt_iop_color_picker_t;
 
+typedef enum dt_iop_module_header_icons_t
+{
+  IOP_MODULE_SWITCH = 0,
+  IOP_MODULE_ICON,
+  IOP_MODULE_LABEL,
+  IOP_MODULE_INSTANCE,
+  IOP_MODULE_RESET,
+  IOP_MODULE_PRESETS,
+  IOP_MODULE_LAST
+} dt_iop_module_header_icons_t;
+
 /** module group */
 typedef enum dt_iop_group_t
 {

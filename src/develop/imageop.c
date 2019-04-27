@@ -65,17 +65,6 @@ typedef struct dt_iop_gui_simple_callback_t
   int index;
 } dt_iop_gui_simple_callback_t;
 
-typedef enum dt_module_header_icons_t
-{
-  DT_MODULE_SWITCH = 0,
-  DT_MODULE_ICON,
-  DT_MODULE_LABEL,
-  DT_MODULE_INSTANCE,
-  DT_MODULE_RESET,
-  DT_MODULE_PRESETS,
-  DT_MODULE_LAST
-} dt_module_header_icons_t;
-
 static dt_develop_blend_params_t _default_blendop_params
     = { DEVELOP_MASK_DISABLED,
         DEVELOP_BLEND_NORMAL2,
@@ -963,7 +952,7 @@ static void _iop_gui_rename_module(dt_iop_module_t *module)
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
 
   GList *childs = gtk_container_get_children(GTK_CONTAINER(module->header));
-  GtkWidget *label = g_list_nth_data(childs, DT_MODULE_LABEL);
+  GtkWidget *label = g_list_nth_data(childs, IOP_MODULE_LABEL);
   gdk_window_get_origin(gtk_widget_get_window(label), &px, &py);
   const gint w = gdk_window_get_width(gtk_widget_get_window(label)) - bs * 8 - bs * 1.7;
   const gint h = gdk_window_get_height(gtk_widget_get_window(label));
@@ -1163,7 +1152,7 @@ static void _iop_gui_update_header(dt_iop_module_t *module)
   GList *childs = gtk_container_get_children(GTK_CONTAINER(module->header));
 
   /* get the enable button and button */
-  GtkWidget *lab = g_list_nth_data(childs, DT_MODULE_LABEL);
+  GtkWidget *lab = g_list_nth_data(childs, IOP_MODULE_LABEL);
 
   g_list_free(childs);
 
@@ -1181,7 +1170,7 @@ static void _iop_gui_update_label(dt_iop_module_t *module)
 {
   if(!module->header) return;
   GList *childs = gtk_container_get_children(GTK_CONTAINER(module->header));
-  GtkWidget *lab = g_list_nth_data(childs, DT_MODULE_LABEL);
+  GtkWidget *lab = g_list_nth_data(childs, IOP_MODULE_LABEL);
   g_list_free(childs);
   _iop_panel_label(lab, module);
 }
@@ -1936,73 +1925,73 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   /*
    * initialize the header widgets
    */
-  GtkWidget *hw[DT_MODULE_LAST] = { NULL };
+  GtkWidget *hw[IOP_MODULE_LAST] = { NULL };
 
   /* init empty place for icon, this is then set in CSS if needed */
   char w_name[256] = { 0 };
   snprintf(w_name, sizeof(w_name), "iop-panel-icon-%s", module->op);
-  hw[DT_MODULE_ICON] = gtk_label_new("");
-  gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_ICON]), w_name);
+  hw[IOP_MODULE_ICON] = gtk_label_new("");
+  gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_ICON]), w_name);
 
   /* add module label */
-  hw[DT_MODULE_LABEL] = gtk_label_new("");
-  _iop_panel_label(hw[DT_MODULE_LABEL], module);
+  hw[IOP_MODULE_LABEL] = gtk_label_new("");
+  _iop_panel_label(hw[IOP_MODULE_LABEL], module);
 
   /* add multi instances menu button */
-  hw[DT_MODULE_INSTANCE] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  module->multimenu_button = GTK_WIDGET(hw[DT_MODULE_INSTANCE]);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[DT_MODULE_INSTANCE]),
+  hw[IOP_MODULE_INSTANCE] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  module->multimenu_button = GTK_WIDGET(hw[IOP_MODULE_INSTANCE]);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_INSTANCE]),
                               _("multiple instances actions\nmiddle-click creates new instance"));
-  g_signal_connect(G_OBJECT(hw[DT_MODULE_INSTANCE]), "button-press-event", G_CALLBACK(dt_iop_gui_multiinstance_callback),
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_INSTANCE]), "button-press-event", G_CALLBACK(dt_iop_gui_multiinstance_callback),
                    module);
 
-  gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_INSTANCE]), "module-instance-button");
+  gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_INSTANCE]), "module-instance-button");
 
   dt_gui_add_help_link(expander, dt_get_help_url(module->op));
 
   /* add reset button */
-  hw[DT_MODULE_RESET] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  module->reset_button = GTK_WIDGET(hw[DT_MODULE_RESET]);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[DT_MODULE_RESET]), _("reset parameters"));
-  g_signal_connect(G_OBJECT(hw[DT_MODULE_RESET]), "clicked", G_CALLBACK(dt_iop_gui_reset_callback), module);
-  gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_RESET]), "module-reset-button");
+  hw[IOP_MODULE_RESET] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  module->reset_button = GTK_WIDGET(hw[IOP_MODULE_RESET]);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_RESET]), _("reset parameters"));
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_RESET]), "clicked", G_CALLBACK(dt_iop_gui_reset_callback), module);
+  gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_RESET]), "module-reset-button");
 
   /* add preset button if module has implementation */
-  hw[DT_MODULE_PRESETS] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  module->presets_button = GTK_WIDGET(hw[DT_MODULE_PRESETS]);
+  hw[IOP_MODULE_PRESETS] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  module->presets_button = GTK_WIDGET(hw[IOP_MODULE_PRESETS]);
   if (module->flags() & IOP_FLAGS_ONE_INSTANCE)
-    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[DT_MODULE_PRESETS]), _("presets"));
+    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), _("presets"));
   else
-    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[DT_MODULE_PRESETS]), _("presets\nmiddle-click to apply on new instance"));
-  g_signal_connect(G_OBJECT(hw[DT_MODULE_PRESETS]), "button-press-event", G_CALLBACK(popup_callback), module);
-  gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_PRESETS]), "module-preset-button");
+    gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), _("presets\nmiddle-click to apply on new instance"));
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_PRESETS]), "button-press-event", G_CALLBACK(popup_callback), module);
+  gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), "module-preset-button");
 
   /* add enabled button */
-  hw[DT_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
+  hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
   gchar *module_label = dt_history_item_get_name(module);
   snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"),
            module_label);
   g_free(module_label);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[DT_MODULE_SWITCH]), tooltip);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[DT_MODULE_SWITCH]), module->enabled);
-  g_signal_connect(G_OBJECT(hw[DT_MODULE_SWITCH]), "toggled", G_CALLBACK(dt_iop_gui_off_callback), module);
-  module->off = DTGTK_TOGGLEBUTTON(hw[DT_MODULE_SWITCH]);
-  if(module->hide_enable_button) gtk_widget_set_sensitive(GTK_WIDGET(hw[DT_MODULE_SWITCH]), FALSE);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), tooltip);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[IOP_MODULE_SWITCH]), module->enabled);
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_SWITCH]), "toggled", G_CALLBACK(dt_iop_gui_off_callback), module);
+  module->off = DTGTK_TOGGLEBUTTON(hw[IOP_MODULE_SWITCH]);
+  if(module->hide_enable_button) gtk_widget_set_sensitive(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), FALSE);
 
-  gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_SWITCH]), "module-enable-button");
+  gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), "module-enable-button");
 
   /* reorder header, for now, iop are always in the right panel */
-  for(int i = 0; i < DT_MODULE_LAST; i++)
+  for(int i = 0; i < IOP_MODULE_LAST; i++)
     if(hw[i]) gtk_box_pack_start( GTK_BOX(header),
                                   hw[i],
-                                  i == DT_MODULE_LABEL ? TRUE : FALSE,
-                                  i == DT_MODULE_LABEL ? TRUE : FALSE,
+                                  i == IOP_MODULE_LABEL ? TRUE : FALSE,
+                                  i == IOP_MODULE_LABEL ? TRUE : FALSE,
                                   0);  // padding
 
   dt_gui_add_help_link(header, "interacting.html");
 
-  gtk_widget_set_halign(hw[DT_MODULE_LABEL], GTK_ALIGN_START);
-  gtk_widget_set_halign(hw[DT_MODULE_INSTANCE], GTK_ALIGN_END);
+  gtk_widget_set_halign(hw[IOP_MODULE_LABEL], GTK_ALIGN_START);
+  gtk_widget_set_halign(hw[IOP_MODULE_INSTANCE], GTK_ALIGN_END);
 
   /* add the blending ui if supported */
   gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
