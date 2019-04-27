@@ -55,9 +55,6 @@ typedef enum dt_iop_lut3d_interpolation_t
   DT_IOP_PYRAMID = 2,
 } dt_iop_lut3d_interpolation_t;
 
-//typedef void((*dt_interpolation_worker)(float *const restrict input, float *const restrict output,
-//  const float *const restrict clut, const uint8_t level));
-
 typedef struct dt_iop_lut3d_params_t
 {
   char filepath[512];
@@ -118,8 +115,8 @@ void correct_pixel_trilinear(const float *const in, float *const out,
 #endif
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
   {
-    float *input = ((float *)in) + k;
-    float *output = ((float *)out) + k;
+    float *const input = ((float *const)in) + k;
+    float *const output = ((float *const)out) + k; 
     
     int rgbi[3], i, j;
     float tmp[6];
@@ -196,8 +193,8 @@ void correct_pixel_tetrahedral(const float *const in, float *const out,
   {
     float *const input = ((float *const)in) + k;
     float *const output = ((float *const)out) + k; 
-    int rgbi[3];
 
+    int rgbi[3];
     float rgbd[3];
     for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
     
@@ -285,7 +282,6 @@ void correct_pixel_pyramid(const float *const in, float *const out,
     
     int rgbi[3];
     float rgbd[3];
-
     for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
     
     rgbd[0] = input[0] * (float)(level - 1);
@@ -749,16 +745,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, width, height,
         work_profile, lut_profile, "work profile to LUT profile");
-//#ifdef _OPENMP
-//#pragma omp parallel for simd default(none) schedule(static)
-//#endif
-//      for(size_t i = 0; i < (size_t)(width * height * ch); i+=ch)
-//      {
-//        float input[4];
-//        float *const out = ((float *const)obuf) + i;
-//        for (int j = 0; j < ch; j++) input[j] = out[j];
-//        interpolation_worker((float *const)&input, out, clut, level);
-//      }
       if (interpolation == DT_IOP_TETRAHEDRAL)
         correct_pixel_tetrahedral(obuf, obuf, width * height, clut, level);
       else if (interpolation == DT_IOP_TRILINEAR)
@@ -770,15 +756,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     else
     {
-//#ifdef _OPENMP
-//#pragma omp parallel for simd default(none) schedule(static)
-//#endif
-//      for(size_t i = 0; i < (size_t)(width * height * ch); i+=ch)
-//      {
-//        float *const in = ((float *const)ibuf) + i;
-//        float *const out = ((float *const)obuf) + i;
-//        interpolation_worker(in, out, clut, level);
-//      }      
       if (interpolation == DT_IOP_TETRAHEDRAL)
         correct_pixel_tetrahedral(ibuf, obuf, width * height, clut, level);
       else if (interpolation == DT_IOP_TRILINEAR)
