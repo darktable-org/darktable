@@ -2068,15 +2068,17 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   total_width -= distance;
   total_height -= distance;
 
-  for (GList *iter = rows; iter != NULL; iter = iter->next)
+  for(GList *iter = g_list_first(rows); iter != NULL; iter = iter->next)
   {
     GList *row = (GList *) iter->data;
     int row_w = 0, xoff;
+    int max_rh = 0;
 
     for (GList *slot_cw_iter = row; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next)
     {
       dt_layout_image_t *cw = (dt_layout_image_t *) slot_cw_iter->data;
       row_w = MAX(row_w, cw->x + cw->width);
+      max_rh = MAX(max_rh, cw->height);
     }
 
     xoff = (total_width - row_w) / 2;
@@ -2085,6 +2087,7 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     {
       dt_layout_image_t *cw = (dt_layout_image_t *) cw_iter->data;
       cw->x += xoff;
+      cw->height = max_rh;
     }
     g_list_free(row);
   }
