@@ -325,6 +325,19 @@ static cmsHPROFILE dt_colorspaces_create_brg_profile()
   return profile;
 }
 
+static cmsHPROFILE dt_colorspaces_create_gamma_rec709_rgb_profile(void)
+{
+  cmsFloat64Number srgb_parameters[5] = { 2.2, 1.0 / 1.099,  0.099 / 1.099, 1.0 / 4.5, 0.081 };
+  cmsToneCurve *transferFunction = cmsBuildParametricToneCurve(NULL, 4, srgb_parameters);
+
+  cmsHPROFILE profile = _create_lcms_profile("Gamma Rec709 RGB", "Gamma Rec709 RGB",
+                                             &rec709_primaries_pre_quantized, transferFunction, TRUE);
+
+  cmsFreeToneCurve(transferFunction);
+
+  return profile;
+}
+
 // Create the ICC virtual profile for adobe rgb space
 static cmsHPROFILE dt_colorspaces_create_adobergb_profile(void)
 {
@@ -1245,6 +1258,10 @@ dt_colorspaces_t *dt_colorspaces_init()
                                      _("linear Rec709 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
                                      ++work_pos, ++display2_pos));
 
+  res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_REC709, dt_colorspaces_create_gamma_rec709_rgb_profile(),
+                                     _("gamma Rec709 RGB"), ++in_pos, ++out_pos, -1, -1,
+                                     ++work_pos, -1));
+                                     
   res->profiles = g_list_append(
       res->profiles, _create_profile(DT_COLORSPACE_LIN_REC2020, dt_colorspaces_create_linear_rec2020_rgb_profile(),
                                      _("linear Rec2020 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,

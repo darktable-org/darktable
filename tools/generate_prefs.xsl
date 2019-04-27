@@ -352,6 +352,15 @@
     </xsl:for-each>
   </xsl:template>
 
+	<xsl:template match="dtconfig[type='dir']" mode="reset">
+		<xsl:text>
+			dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", "</xsl:text><xsl:value-of select="default"/><xsl:text>");
+			gchar *folder = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");
+			gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(widget), folder);
+			g_free(folder);
+		</xsl:text>
+	</xsl:template>
+
 <!-- CALLBACK -->
   <xsl:template match="dtconfig[type='string']" mode="change">
     <xsl:text>  dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", gtk_entry_get_text(GTK_ENTRY(widget)));</xsl:text>
@@ -388,6 +397,14 @@
 </xsl:text>
   </xsl:template>
 
+	<xsl:template match="dtconfig[type='dir']" mode="change">
+		<xsl:text>
+		gchar *folder =	gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(widget));
+		dt_conf_set_string("</xsl:text><xsl:value-of select="name"/><xsl:text>", folder);
+		g_free(folder);
+		</xsl:text>
+	</xsl:template>
+
 <!-- TAB -->
   <xsl:template match="dtconfig[type='string']" mode="tab">
     <xsl:text>    widget = gtk_entry_new();
@@ -402,6 +419,21 @@
     g_object_set(labelev,  "tooltip-text", tooltip, (gchar *)0);
 </xsl:text>
   </xsl:template>
+
+  <xsl:template match="dtconfig[type='dir']" mode="tab">
+		<xsl:text>    widget = gtk_file_chooser_button_new(_("select directory"), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER);
+		gtk_file_chooser_button_set_width_chars(GTK_FILE_CHOOSER_BUTTON(widget), 20);
+		gtk_widget_set_hexpand(widget, TRUE);
+		gtk_widget_set_halign(widget, GTK_ALIGN_FILL);
+    gchar *setting = dt_conf_get_string("</xsl:text><xsl:value-of select="name"/><xsl:text>");
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(widget), setting);
+    g_free(setting);
+    g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(preferences_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), NULL);
+    g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), widget);
+    snprintf(tooltip, 1024, _("double click to reset to `%s'"), "</xsl:text><xsl:value-of select="default"/><xsl:text>");
+    g_object_set(labelev,  "tooltip-text", tooltip, (gchar *)0);
+    </xsl:text>
+	</xsl:template>
 
   <xsl:template match="dtconfig[type='int']" mode="tab">
     <xsl:text>    gint min = 0;&#xA;    gint max = G_MAXINT;&#xA;</xsl:text>

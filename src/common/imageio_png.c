@@ -24,23 +24,12 @@
 
 #include "common/colorspaces.h"
 #include "common/darktable.h"
+#include "imageio_png.h"
 #include "common/exif.h"
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "imageio.h"
 #include "imageio_tiff.h"
-
-typedef struct dt_imageio_png_t
-{
-  int max_width, max_height;
-  int width, height;
-  int color_type, bit_depth;
-  int bpp;
-  FILE *f;
-  png_structp png_ptr;
-  png_infop info_ptr;
-} dt_imageio_png_t;
-
 
 int read_header(const char *filename, dt_imageio_png_t *png)
 {
