@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2016 Chih-Mao Chen
+    copyright (c) 2019 Philippe Weyland
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -55,9 +55,6 @@ typedef enum dt_iop_lut3d_interpolation_t
   DT_IOP_PYRAMID = 2,
 } dt_iop_lut3d_interpolation_t;
 
-//typedef void((*dt_interpolation_worker)(float *const restrict input, float *const restrict output,
-//  const float *const restrict clut, const uint8_t level));
-
 typedef struct dt_iop_lut3d_params_t
 {
   char filepath[512];
@@ -110,7 +107,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 // From `HaldCLUT_correct.c' by Eskil Steenberg (http://www.quelsolaar.com) (BSD licensed)
 void correct_pixel_trilinear(const float *const in, float *const out,
-  const size_t pixel_nb, const float *const restrict clut, const uint8_t level)
+                             const size_t pixel_nb, const float *const restrict clut, const uint8_t level)
 {
   const int level2 = level * level;
 #ifdef _OPENMP
@@ -139,7 +136,8 @@ void correct_pixel_trilinear(const float *const in, float *const out,
     rgbd[1] = rgbd[1] - rgbi[1]; // delta green
     rgbd[2] = rgbd[2] - rgbi[2]; // delta blue
 
-  // indexes of P000 to P111 in clut
+    // indexes of P000 to P111 in clut
+
     const int color = rgbi[0] + rgbi[1] * level + rgbi[2] * level * level;
     i = color * 3;  // P000
     j = (color + 1) * 3;  // P100
@@ -186,7 +184,7 @@ void correct_pixel_trilinear(const float *const in, float *const out,
 // from OpenColorIO
 // https://github.com/imageworks/OpenColorIO/blob/master/src/OpenColorIO/ops/Lut3D/Lut3DOp.cpp
 void correct_pixel_tetrahedral(const float *const in, float *const out,
-  const size_t pixel_nb, const float *const restrict clut, const uint8_t level)
+                               const size_t pixel_nb, const float *const restrict clut, const uint8_t level)
 {
   const int level2 = level * level;
 #ifdef _OPENMP
@@ -213,7 +211,7 @@ void correct_pixel_tetrahedral(const float *const in, float *const out,
     rgbd[1] = rgbd[1] - rgbi[1]; // delta green
     rgbd[2] = rgbd[2] - rgbi[2]; // delta blue
 
-  // indexes of P000 to P111 in clut
+    // indexes of P000 to P111 in clut
     const int color = rgbi[0] + rgbi[1] * level + rgbi[2] * level * level;
     const int i000 = color * 3;                     // P000
     const int i100 = i000 + 3;                      // P100
@@ -272,7 +270,7 @@ void correct_pixel_tetrahedral(const float *const in, float *const out,
 // from Study on the 3D Interpolation Models Used in Color Conversion
 // http://ijetch.org/papers/318-T860.pdf
 void correct_pixel_pyramid(const float *const in, float *const out,
-  const size_t pixel_nb, const float *const restrict clut, const uint8_t level)
+                           const size_t pixel_nb, const float *const restrict clut, const uint8_t level)
 {
   const int level2 = level * level;
 #ifdef _OPENMP
@@ -300,7 +298,7 @@ void correct_pixel_pyramid(const float *const in, float *const out,
     rgbd[1] = rgbd[1] - rgbi[1]; // delta green
     rgbd[2] = rgbd[2] - rgbi[2]; // delta blue
 
-  // indexes of P000 to P111 in clut
+    // indexes of P000 to P111 in clut
     const int color = rgbi[0] + rgbi[1] * level + rgbi[2] * level * level;
     const int i000 = color * 3;                     // P000
     const int i100 = i000 + 3;                      // P100
@@ -360,8 +358,10 @@ uint8_t calculate_clut_haldclut(char *filepath, float **clut)
     png_destroy_read_struct(&png.png_ptr, &png.info_ptr, NULL);
     return 0;
   }
+
   uint8_t level = 2;
   while(level * level * level < png.width) ++level;
+
   if(level * level * level != png.width)
   {
     fprintf(stderr, "[lut3d] invalid level in png file %d %d\n", level, png.width);
@@ -424,38 +424,46 @@ double dt_atof(const char *str)
   double integral_result = 0;
   double fractional_result = 0;
   double sign = 1;
-  if (*str == '+') {
+
+  if (*str == '+')
+  {
     str++;
     sign = +1;
-  } else if (*str == '-') {
+  }
+  else if (*str == '-')
+  {
     str++;
     sign = -1;
   }
   if (strncmp(str, "inf", 3) == 0 || strncmp(str, "INF", 3) == 0)
     return sign * INFINITY;
+
   // search for end of integral part and parse from
   // right to left for numerical stability
-    const char * istr_back = str;
-    while (*str >= '0' && *str <= '9')
-      str++;
-    const char * istr_2 = str;
-    double imultiplier = 1;
-    while (istr_2 != istr_back)
-    {
-      --istr_2;
-      integral_result += (*istr_2 - '0') * imultiplier;
-      imultiplier *= 10;
-    }
-    if (*str == '.')
-    {
-      str++;
-  // search for end of fractional part and parse from
-  // right to left for numerical stability
+  const char * istr_back = str;
+  while (*str >= '0' && *str <= '9')
+    str++;
+  const char * istr_2 = str;
+  double imultiplier = 1;
+
+  while (istr_2 != istr_back)
+  {
+    --istr_2;
+    integral_result += (*istr_2 - '0') * imultiplier;
+    imultiplier *= 10;
+  }
+
+  if (*str == '.')
+  {
+    str++;
+    // search for end of fractional part and parse from
+    // right to left for numerical stability
     const char * fstr_back = str;
     while (*str >= '0' && *str <= '9')
       str++;
     const char * fstr_2 = str;
     double fmultiplier = 1;
+
     while (fstr_2 != fstr_back)
     {
       --fstr_2;
@@ -463,22 +471,25 @@ double dt_atof(const char *str)
       fmultiplier *= 10;
     }
     fractional_result /= fmultiplier;
-    }
+  }
   double result = sign * (integral_result + fractional_result);
   if (*str == 'e' || *str == 'E')
   {
     str++;
     double power_sign = 1;
-    if (*str == '+') {
+    if (*str == '+')
+    {
       str++;
       power_sign = +1;
     }
-    else if (*str == '-') {
+    else if (*str == '-')
+    {
       str++;
       power_sign = -1;
     }
     double power = 0;
-    while (*str >= '0' && *str <= '9') {
+    while (*str >= '0' && *str <= '9')
+    {
       power *= 10;
       power += *str - '0';
       str++;
@@ -555,12 +566,14 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
     dt_control_log(_("error - invalid cube file: %s"), filepath);
     return 0;
   }
+
   while ((read = getline(&line, &len, cube_file)) != -1)
   {
     uint8_t nb_token = parse_cube_line(line, &token[0][0]);
     if (nb_token)
     {
-      if (token[0][0] == 'T') continue;
+      if (token[0][0] == 'T')
+        continue;
       else if (strcmp("DOMAIN_MIN", token[0]) == 0)
       {
         if (strtod(token[1], NULL) != 0.0f)
@@ -624,6 +637,7 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
       }
     }
   }
+
   if (i != buf_size || i == 0)
   {
     fprintf(stderr, "[lut3d] error - cube lut lines number is not correct\n");
@@ -729,10 +743,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float *const clut = (float *)d->clut;
   const uint8_t level = d->level;
   const int interpolation = d->params.interpolation;
-//  const dt_interpolation_worker interpolation_worker
-//    = (d->params.interpolation == DT_IOP_TETRAHEDRAL) ? correct_pixel_tetrahedral
-//    : (d->params.interpolation == DT_IOP_TRILINEAR) ? correct_pixel_trilinear
-//    : correct_pixel_pyramid;
   const int colorspace
     = (d->params.colorspace == DT_IOP_SRGB) ? DT_COLORSPACE_SRGB
     : (d->params.colorspace == DT_IOP_REC709) ? DT_COLORSPACE_REC709
@@ -749,16 +759,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, width, height,
         work_profile, lut_profile, "work profile to LUT profile");
-//#ifdef _OPENMP
-//#pragma omp parallel for simd default(none) schedule(static)
-//#endif
-//      for(size_t i = 0; i < (size_t)(width * height * ch); i+=ch)
-//      {
-//        float input[4];
-//        float *const out = ((float *const)obuf) + i;
-//        for (int j = 0; j < ch; j++) input[j] = out[j];
-//        interpolation_worker((float *const)&input, out, clut, level);
-//      }
       if (interpolation == DT_IOP_TETRAHEDRAL)
         correct_pixel_tetrahedral(obuf, obuf, width * height, clut, level);
       else if (interpolation == DT_IOP_TRILINEAR)
@@ -770,15 +770,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     else
     {
-//#ifdef _OPENMP
-//#pragma omp parallel for simd default(none) schedule(static)
-//#endif
-//      for(size_t i = 0; i < (size_t)(width * height * ch); i+=ch)
-//      {
-//        float *const in = ((float *const)ibuf) + i;
-//        float *const out = ((float *const)obuf) + i;
-//        interpolation_worker(in, out, clut, level);
-//      }
       if (interpolation == DT_IOP_TETRAHEDRAL)
         correct_pixel_tetrahedral(ibuf, obuf, width * height, clut, level);
       else if (interpolation == DT_IOP_TRILINEAR)
@@ -802,10 +793,11 @@ void init(dt_iop_module_t *self)
   self->params_size = sizeof(dt_iop_lut3d_params_t);
   self->gui_data = NULL;
   dt_iop_lut3d_params_t tmp = (dt_iop_lut3d_params_t)
-    { { "" },
-    DT_IOP_SRGB,
-    DT_IOP_TETRAHEDRAL
-  };
+    {
+      { "" },
+      DT_IOP_SRGB,
+      DT_IOP_TETRAHEDRAL
+    };
   memcpy(self->params, &tmp, sizeof(dt_iop_lut3d_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_lut3d_params_t));
 }
@@ -842,33 +834,34 @@ void cleanup_global(dt_iop_module_so_t *module)
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
-    dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)p1;
-    dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
-    if (strcmp(p->filepath, d->params.filepath) != 0)
+  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)p1;
+  dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
+  if (strcmp(p->filepath, d->params.filepath) != 0)
+  {
+    if (d->clut)
     {
-      if (d->clut)
-      {
-        dt_free_align(d->clut);
-        d->clut = NULL;
-        d->level = 0;
-      }
-    }
-    memcpy(&d->params, p, sizeof(dt_iop_lut3d_params_t));
-    gchar *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
-    if (p->filepath[0] && lutfolder[0] && !d->clut)
-    {
-      char *fullpath = g_build_filename(lutfolder, p->filepath, NULL);
-      if (g_str_has_suffix (p->filepath, ".png") || g_str_has_suffix (p->filepath, ".PNG"))
-      {
-        d->level = calculate_clut_haldclut(fullpath, &d->clut);
-      }
-      else if (g_str_has_suffix (p->filepath, ".cube") || g_str_has_suffix (p->filepath, ".CUBE"))
-      {
-        d->level = calculate_clut_cube(fullpath, &d->clut);
-      }
-      g_free(fullpath);
+      dt_free_align(d->clut);
+      d->clut = NULL;
+      d->level = 0;
     }
   }
+  memcpy(&d->params, p, sizeof(dt_iop_lut3d_params_t));
+  const gchar *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
+
+  if (p->filepath[0] && lutfolder[0] && !d->clut)
+  {
+    char *fullpath = g_build_filename(lutfolder, p->filepath, NULL);
+    if (g_str_has_suffix (p->filepath, ".png") || g_str_has_suffix (p->filepath, ".PNG"))
+    {
+      d->level = calculate_clut_haldclut(fullpath, &d->clut);
+    }
+    else if (g_str_has_suffix (p->filepath, ".cube") || g_str_has_suffix (p->filepath, ".CUBE"))
+    {
+      d->level = calculate_clut_cube(fullpath, &d->clut);
+    }
+    g_free(fullpath);
+  }
+}
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -1026,8 +1019,9 @@ void gui_init(dt_iop_module_t *self)
   g->filepath = gtk_entry_new();
   gtk_box_pack_start(GTK_BOX(g->hbox), g->filepath, TRUE, TRUE, 0);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(g->filepath));
-  gtk_widget_set_tooltip_text(g->filepath, _("the file path (relative to lut folder) is saved with image (and not the lut data themselves)\n"
-                                              "CAUTION: lut folder must be set in preferences/core options/miscellaneous before choosing the lut file"));
+  gtk_widget_set_tooltip_text(g->filepath,
+                              _("the file path (relative to lut folder) is saved with image (and not the lut data themselves)\n"
+                                "CAUTION: lut folder must be set in preferences/core options/miscellaneous before choosing the lut file"));
   g_signal_connect(G_OBJECT(g->filepath), "changed", G_CALLBACK(filepath_callback), self);
 
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_DO_NOT_USE_BORDER, NULL);
