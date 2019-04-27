@@ -103,21 +103,51 @@
                                 true
                               ]
                             }
-                          }
+                          },
+                          "required": [
+                            "name",
+                            "iso",
+                            "a",
+                            "b"
+                          ],
+                          "additionalProperties": false
                         },
                         "minItems": 4
                       }
-                    }
+                    },
+                    "required": [
+                      "comment",
+                      "model",
+                      "profiles"
+                    ],
+                    "additionalProperties": false
                   },
                   "minItems": 1
                 }
-              }
+              },
+              "required": [
+                "maker",
+                "models"
+              ],
+              "additionalProperties": false
             },
             "minItems": 1,
             "maxItems": 13
           }
-        }
-      }
+        },
+        "required": [
+          "profile_version",
+          "noiseprofiles_data"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 2,
+      "maxItems": 2
     }
-  }
+  },
+  "required": [
+    "version",
+    "noiseprofiles"
+  ],
+  "additionalProperties": false
 }
