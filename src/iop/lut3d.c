@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2016 Chih-Mao Chen
+    copyright (c) 2019 Philippe Weyland
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -54,9 +54,6 @@ typedef enum dt_iop_lut3d_interpolation_t
   DT_IOP_TRILINEAR = 1,
   DT_IOP_PYRAMID = 2,
 } dt_iop_lut3d_interpolation_t;
-
-//typedef void((*dt_interpolation_worker)(float *const restrict input, float *const restrict output,
-//  const float *const restrict clut, const uint8_t level));
 
 typedef struct dt_iop_lut3d_params_t
 {
@@ -118,15 +115,15 @@ void correct_pixel_trilinear(const float *const in, float *const out,
 #endif
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
   {
-    float *input = ((float *)in) + k;
-    float *output = ((float *)out) + k;
-    
+    float *const input = ((float *const)in) + k;
+    float *const output = ((float *const)out) + k;
+
     int rgbi[3], i, j;
     float tmp[6];
     float rgbd[3];
 
     for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
-    
+
     rgbd[0] = input[0] * (float)(level - 1);
     rgbd[1] = input[1] * (float)(level - 1);
     rgbd[2] = input[2] * (float)(level - 1);
@@ -195,12 +192,12 @@ void correct_pixel_tetrahedral(const float *const in, float *const out,
   for(size_t k = 0; k < (size_t)(pixel_nb * 4); k+=4)
   {
     float *const input = ((float *const)in) + k;
-    float *const output = ((float *const)out) + k; 
-    int rgbi[3];
+    float *const output = ((float *const)out) + k;
 
+    int rgbi[3];
     float rgbd[3];
     for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
-    
+
     rgbd[0] = input[0] * (float)(level - 1);
     rgbd[1] = input[1] * (float)(level - 1);
     rgbd[2] = input[2] * (float)(level - 1);
@@ -269,9 +266,9 @@ void correct_pixel_tetrahedral(const float *const in, float *const out,
   }
 }
 
-// from Study on the 3D Interpolation Models Used in Color Conversion 
+// from Study on the 3D Interpolation Models Used in Color Conversion
 // http://ijetch.org/papers/318-T860.pdf
-void correct_pixel_pyramid(const float *const in, float *const out, 
+void correct_pixel_pyramid(const float *const in, float *const out,
   const size_t pixel_nb, const float *const restrict clut, const uint8_t level)
 {
   const int level2 = level * level;
@@ -282,12 +279,11 @@ void correct_pixel_pyramid(const float *const in, float *const out,
   {
     float *const input = ((float *const)in) + k;
     float *const output = ((float *const)out) + k;
-    
+
     int rgbi[3];
     float rgbd[3];
-
     for(int c = 0; c < 3; ++c) input[c] = fminf(fmaxf(input[c], 0.0f), 1.0f);
-    
+
     rgbd[0] = input[0] * (float)(level - 1);
     rgbd[1] = input[1] * (float)(level - 1);
     rgbd[2] = input[2] * (float)(level - 1);
@@ -664,9 +660,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   cl_mem clut_cl = NULL;
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
-  const int height = roi_in->height;  
+  const int height = roi_in->height;
   const size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-  
+
   if (clut && level)
   {
     clut_cl = dt_opencl_copy_host_to_device_constant(devid, level * level * level * 3 * sizeof(float), (void *)clut);
@@ -724,15 +720,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
   const int width = roi_in->width;
-  const int height = roi_in->height;  
+  const int height = roi_in->height;
   const int ch = piece->colors;
   const float *const clut = (float *)d->clut;
   const uint8_t level = d->level;
   const int interpolation = d->params.interpolation;
-//  const dt_interpolation_worker interpolation_worker
-//    = (d->params.interpolation == DT_IOP_TETRAHEDRAL) ? correct_pixel_tetrahedral
-//    : (d->params.interpolation == DT_IOP_TRILINEAR) ? correct_pixel_trilinear
-//    : correct_pixel_pyramid;
   const int colorspace
     = (d->params.colorspace == DT_IOP_SRGB) ? DT_COLORSPACE_SRGB
     : (d->params.colorspace == DT_IOP_REC709) ? DT_COLORSPACE_REC709
@@ -749,16 +741,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, width, height,
         work_profile, lut_profile, "work profile to LUT profile");
-//#ifdef _OPENMP
-//#pragma omp parallel for simd default(none) schedule(static)
-//#endif
-//      for(size_t i = 0; i < (size_t)(width * height * ch); i+=ch)
-//      {
-//        float input[4];
-//        float *const out = ((float *const)obuf) + i;
-//        for (int j = 0; j < ch; j++) input[j] = out[j];
-//        interpolation_worker((float *const)&input, out, clut, level);
-//      }
       if (interpolation == DT_IOP_TETRAHEDRAL)
         correct_pixel_tetrahedral(obuf, obuf, width * height, clut, level);
       else if (interpolation == DT_IOP_TRILINEAR)
@@ -770,15 +752,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     else
     {
-//#ifdef _OPENMP
-//#pragma omp parallel for simd default(none) schedule(static)
-//#endif
-//      for(size_t i = 0; i < (size_t)(width * height * ch); i+=ch)
-//      {
-//        float *const in = ((float *const)ibuf) + i;
-//        float *const out = ((float *const)obuf) + i;
-//        interpolation_worker(in, out, clut, level);
-//      }      
       if (interpolation == DT_IOP_TETRAHEDRAL)
         correct_pixel_tetrahedral(ibuf, obuf, width * height, clut, level);
       else if (interpolation == DT_IOP_TRILINEAR)
@@ -876,7 +849,7 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   piece->data = malloc(sizeof(dt_iop_lut3d_data_t));
   dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
   d->clut = NULL;
-  d->level = 0;  
+  d->level = 0;
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
