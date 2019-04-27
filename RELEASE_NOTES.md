@@ -91,6 +91,9 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 
 ## New Features And Changes
 
+- A new module for handling 3D Lut transformations (PNG Hald-CLUT and
+  Cube files are supported).
+
 - A new profile ‘histogram profile’ has been added on the same pop-up
   that the softproof one on the darkroom. It controls the color space
   of the histogram, color picker and overexposed check. When gamut or
