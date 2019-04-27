@@ -1909,8 +1909,8 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
 
   g_list_free(selected);
 
-  gchar *query =  g_strdup_printf("SELECT id, aspect_ratio, width, height FROM images WHERE id IN (%s) ORDER BY INSTR('%s', id)",
-                                  imgids, imgids);
+  gchar *query = g_strdup_printf("SELECT id, aspect_ratio FROM images WHERE id IN (%s) ORDER BY INSTR('%s', id)",
+                                 imgids, imgids);
 
   g_free(imgids);
 
@@ -1929,11 +1929,11 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   {
     const int32_t id = sqlite3_column_int(stmt, 0);
     double aspect_ratio = sqlite3_column_double(stmt, 1);
-    if(!aspect_ratio)
+    if(!aspect_ratio || aspect_ratio < 0.0001)
     {
-      aspect_ratio = (double)sqlite3_column_int(stmt, 2) / (double)sqlite3_column_int(stmt, 3);
-      // record aspect ratio now
-      dt_image_set_aspect_ratio_to(id, aspect_ratio);
+      aspect_ratio = dt_image_set_aspect_ratio(id);
+      // if an error occurs, let's use 1:1 value
+      if(aspect_ratio < 0.0001) aspect_ratio = 1.0;
     }
 
     images[i].imgid = id;
@@ -2068,15 +2068,17 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   total_width -= distance;
   total_height -= distance;
 
-  for (GList *iter = rows; iter != NULL; iter = iter->next)
+  for(GList *iter = g_list_first(rows); iter != NULL; iter = iter->next)
   {
     GList *row = (GList *) iter->data;
     int row_w = 0, xoff;
+    int max_rh = 0;
 
     for (GList *slot_cw_iter = row; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next)
     {
       dt_layout_image_t *cw = (dt_layout_image_t *) slot_cw_iter->data;
       row_w = MAX(row_w, cw->x + cw->width);
+      max_rh = MAX(max_rh, cw->height);
     }
 
     xoff = (total_width - row_w) / 2;
@@ -2085,6 +2087,7 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     {
       dt_layout_image_t *cw = (dt_layout_image_t *) cw_iter->data;
       cw->x += xoff;
+      cw->height = max_rh;
     }
     g_list_free(row);
   }
