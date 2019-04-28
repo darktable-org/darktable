@@ -55,7 +55,7 @@ static void usage(const char *progname)
 {
   fprintf(stderr, "usage: %s <input file> [<xmp file>] <output file> [--width <max width>,--height <max "
                   "height>,--bpp <bpp>,--hq <0|1|true|false>,--upscale <0|1|true|false>,--style <style name>,"
-                  "--style-overwrite,--verbose] [--core <darktable options>]\n",
+                  "--style-overwrite,--verbose,--help,-h,--version] [--core <darktable options>]\n",
           progname);
 }
 
@@ -81,7 +81,7 @@ int main(int argc, char *arg[])
   {
     if(arg[k][0] == '-')
     {
-      if(!strcmp(arg[k], "--help"))
+      if(!strcmp(arg[k], "--help") || !strcmp(arg[k], "-h"))
       {
         usage(arg[0]);
         exit(1);
