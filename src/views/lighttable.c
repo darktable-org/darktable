@@ -193,7 +193,7 @@ typedef struct dt_library_t
   dt_preview_surface_t fp_surf[FULL_PREVIEW_IN_MEMORY_LIMIT];
   dt_layout_image_t *slots;
   int slots_count;
-  int last_num_images;
+  int last_num_images, last_width, last_height;
 
   /* prepared and reusable statements */
   struct
@@ -2135,6 +2135,8 @@ static gboolean _expose_compute_slots(dt_view_t *self, int32_t width, int32_t he
     _sort_preview_surface(lib, lib->slots, lib->slots_count, max_in_memory_images);
 
   lib->last_num_images = get_display_num_images();
+  lib->last_width = width;
+  lib->last_height = height;
   return TRUE;
 }
 
@@ -2151,7 +2153,8 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   cairo_paint(cr);
 
   // we recompute images sizes and positions if needed
-  if(!lib->slots || lib->last_num_images != get_display_num_images())
+  if(lib->last_width != width || lib->last_height != height || !lib->slots
+     || lib->last_num_images != get_display_num_images())
   {
     if(!_expose_compute_slots(self, width, height, layout)) return 0;
   }
@@ -2563,8 +2566,6 @@ static gboolean go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *
     move_view(lib, DIRECTION_PGUP);
   else
   {
-    // reset culling layout
-    _expose_destroy_slots(self);
     const int iir = get_zoom();
     const int scroll_by_rows = 4; /* This should be the number of visible rows. */
     const int offset_delta = scroll_by_rows * iir;
@@ -2587,8 +2588,6 @@ static gboolean go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject
   }
   else
   {
-    // reset culling layout
-    _expose_destroy_slots(self);
     const int iir = get_zoom();
     const int scroll_by_rows = 4; /* This should be the number of visible rows. */
     const int offset_delta = scroll_by_rows * iir;
