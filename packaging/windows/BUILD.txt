@@ -6,44 +6,60 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
 
     Install MSYS2 (instructions and prerequisites can be found on official website: https://msys2.github.io/).
     Update the base MSYS2 system until no further updates are available using:
-    $ pacman -Syu
+	$ pacman -Syu
 
-    Install x64 developer tools and x86_64 toolchain and git from the MSYS2 prompt:
-    $ pacman -S base-devel
-    $ pacman -S mingw-w64-x86_64-{toolchain,cmake,nsis}
-    $ pacman -S git
+    From MSYS2 terminal, install x64 developer tools and x86_64 toolchain and git from the MSYS2 prompt:
+	$ pacman -S base-devel
+	$ pacman -S mingw-w64-x86_64-{toolchain,cmake,nsis}
+	$ pacman -S git
 
     Install required libraries and dependencies:
-    $ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes}
+	$ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes,python3-jsonschema,python3-setuptools}
 
     For gphoto2:
     You need to restart the MINGW64 or MSYS terminal to have CAMLIBS and IOLIBS environment variables  properly set for LIBGPHOTO are available. You can check them with:
-    $ echo $CAMLIBS
-    $ echo $IOLIBS
+	$ echo $CAMLIBS
+	$ echo $IOLIBS
 
-    Update your lensfun database:
-    $ lensfun-update-data
+   	NOTE: at the moment, the lensfun version provided by MSYS2 (0.3.95-1) is broken. If you get errors in the build process, manually downgrade lensfun to version 0.3.2-4:
+    Download the file mingw-w64-x86_64-lensfun-0.3.2-4-any.pkg.tar.xz from http://repo.msys2.org/mingw/x86_64/
+    Put the file in your MSYS2 home folder, then from MSYS2 terminal:
+    $ pacman -U mingw-w64-x86_64-lensfun-0.3.2-4-any.pkg.tar.xz
+    Also in order to prevent pacman from updating the lensfun package, open the file /etc/pacman.conf, find the line: 
+	#Pacman won’t upgrade packages listed in IgnorePkg and members of IgnoreGroup
+    and below, add the following line
+	IgnorePkg = mingw-w64-x86_64-lensfun
+    Copy the lensfun folder and the lensfun-0.3.2-py3.6.egg-info file from /mingw64/lib/python3.6/site-packages to /mingw64/lib/python3.7/site-packages.
+	
+	From MINGW64 terminal, update your lensfun database:
+	$ lensfun-update-data
 
     Also use this program to install USB driver on Windows for your camera:
     http://zadig.akeo.ie/
     When you run it, replace current Windows camera driver with WinUSB driver
 
     For usermanual
-    $ pacman -S po4a
-    $ pacman -S gnome-doc-utils
-    $ pacman -S mingw-w64-x86_64-{imagemagick,docbook-xsl}
+	$ pacman -S po4a
+	$ pacman -S gnome-doc-utils
+	$ pacman -S mingw-w64-x86_64-{imagemagick,docbook-xsl}
+	$ pacman -S libxml2-python
 
-    Manually Install JAVA runtime
-    Manually install SAXON: https://sourceforge.net/projects/saxon/files/Saxon-HE/
+    Make sure you have JAVA runtime installed in Windows (https://www.java.com/en/download/)
+    
+	Manually install SAXON: https://sourceforge.net/projects/saxon/files/Saxon-HE/
     Copy files into ~/java/saxon/
 
-    Manually install DocBook Extension to Saxon: https://sourceforge.net/projects/docbook/files/docbook-xsl-saxon/1.00/
-    Copy files to ~/java/docbook-xsl-saxon
+    Manually install DocBook Extension to Saxon: 
+	Download the file docbook-xsl-saxon-1.00.zip from https://sourceforge.net/projects/docbook/files/docbook-xsl-saxon/1.00/
+    Open the file, go in the folder docbook-xsl-saxon-1.00
+	Copy files to ~/java/docbook-xsl-saxon
 
     Manually install FOP: http://www.apache.org/dyn/closer.cgi/xmlgraphics/fop
-    Copy files to ~/java/fop
+    Download the latest binary zip file
+	Open the file, go in the folder fop<x.x>/fop
+	Copy files to ~/java/fop
     Copy fop.xconf to /etc/fop.xml
-    change fop shell script in fop folder:
+    change one line in fop shell script in fop folder:
     from:
     if [ "$OS" = "Windows_NT" ] ; then
     to:
@@ -66,10 +82,10 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
     # Update your PATH for fop
     PATH=$PATH:~/java/fop
 
-    execute the following command to actviate profile changes
-    $ . .bash_profile
+    Execute the following command to actviate profile changes
+	$ . .bash_profile
 
-    Clone darktable git repository (in this example into ~/darktable):
+    From MINGW64 terminal, clone darktable git repository (in this example into ~/darktable):
         $ cd ~
         $ git clone git://github.com/darktable-org/darktable.git
         $ cd darktable
@@ -83,13 +99,16 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
         $ cmake --build .
         $ cmake --build . --target install
 
-        After this darktable will be installed in /opt/darktable directory and can be started by typing /opt/darktable/bin/darktable.exe in MSYS2 MINGW64 terminal.
+    After this darktable will be installed in /opt/darktable directory and can be started by typing /opt/darktable/bin/darktable.exe in MSYS2 MINGW64 terminal.
 
-    For building the usermanual either add -DBUILD_USERMANUAL=ON flag to the cmake command line, or if you want to build only the usermanual (and not the application) use:
+    For building the usermanual either add -DBUILD_USERMANUAL=ON flag to the first cmake command line, or if you want to build only the usermanual (and not the application) use:
         $ cmake --build . --target usermanual
 
     For building the installer image, which will  create darktable-<VERSION>.exe installer in current build directory, use:
         $ cmake --build . --target package
+	NOTE: The package created will be optimized for the machine on which it has been built, but it could not run on other PCs with different hardware or different Windows version. If you want to create a "generic" package, change the first cmake command line as follows:
+		$ cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable -DBINARY_PACKAGE_BUILD=ON ../.
+	
 
 B) Cross compile on Linux
     In order to build darktable for Windows there is a chance to cross compile it
