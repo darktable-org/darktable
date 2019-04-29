@@ -33,8 +33,10 @@ typedef enum dt_undo_type_t
   DT_UNDO_TAGS        = 1 << 5,
   DT_UNDO_METADATA    = 1 << 6,
   DT_UNDO_LT_HISTORY  = 1 << 7,
+  DT_UNDO_LT_GEOTAG   = 1 << 8,
   DT_UNDO_DEVELOP     = DT_UNDO_HISTORY | DT_UNDO_MASK | DT_UNDO_TAGS,
-  DT_UNDO_LIGHTTABLE  = DT_UNDO_RATINGS | DT_UNDO_COLORLABELS | DT_UNDO_TAGS | DT_UNDO_METADATA | DT_UNDO_LT_HISTORY,
+  DT_UNDO_LIGHTTABLE  = DT_UNDO_RATINGS | DT_UNDO_COLORLABELS | DT_UNDO_TAGS | DT_UNDO_METADATA
+                        | DT_UNDO_LT_HISTORY | DT_UNDO_LT_GEOTAG,
   DT_UNDO_ALL         = DT_UNDO_GEOTAG | DT_UNDO_DEVELOP | DT_UNDO_LIGHTTABLE
 } dt_undo_type_t;
 
@@ -64,8 +66,8 @@ void dt_undo_start_group(dt_undo_t *self, dt_undo_type_t type);
 void dt_undo_end_group(dt_undo_t *self);
 
 // record a change that will be insered into the undo list
-void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data,
-                    void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item, dt_undo_action_t action),
+void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt_undo_data_t data,
+                    void (*undo)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item, dt_undo_action_t action),
                     void (*free_data)(gpointer data));
 
 //  undo an element which correspond to filter. filter here is expected to be
@@ -79,10 +81,10 @@ void dt_undo_do_redo(dt_undo_t *self, uint32_t filter);
 void dt_undo_clear(dt_undo_t *self, uint32_t filter);
 
 void dt_undo_iterate_internal(dt_undo_t *self, uint32_t filter, gpointer user_data,
-                              void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item));
+                              void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item));
 
 void dt_undo_iterate(dt_undo_t *self, uint32_t filter, gpointer user_data,
-                     void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item));
+                     void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item));
 
 // disable the next record, this is to avoid recording when reverting a value (in undo callbacks)
 void dt_undo_disable_next(dt_undo_t *self);

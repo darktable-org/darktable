@@ -45,6 +45,13 @@ typedef struct dt_lib_duplicate_t
   GtkWidget *duplicate_box;
   int imgid;
   dt_lib_duplicate_select_t select;
+
+  int32_t buf_width;
+  int32_t buf_height;
+  cairo_surface_t *surface;
+  uint8_t *rgbbuf;
+  int buf_mip;
+  int buf_timestamp;
 } dt_lib_duplicate_t;
 
 const char *name(dt_lib_module_t *self)
@@ -222,7 +229,18 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
 
   //we draw the cached image
   dt_view_image_over_t image_over = DT_VIEW_DESERT;
-  dt_view_image_expose(&image_over, d->imgid, cri, nw, nh, 1, px+tb, py+tb, TRUE, TRUE);
+  dt_view_image_expose_t params = { 0 };
+  params.image_over = &image_over;
+  params.imgid = d->imgid;
+  params.cr = cri;
+  params.width = nw;
+  params.height = nh;
+  params.px = px + tb;
+  params.py = py + tb;
+  params.zoom = 1;
+  params.full_preview = TRUE;
+  params.image_only = TRUE;
+  dt_view_image_expose(&params);
 
   //and the nice border line
   cairo_rectangle(cri, tb+px, tb+py, nimgw, nimgh);
@@ -233,6 +251,9 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
 
 static gboolean _lib_duplicate_thumb_draw_callback (GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self)
 {
+  dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
+  dt_develop_t *dev = darktable.develop;
+
   guint width, height;
   width = gtk_widget_get_allocated_width (widget);
   height = gtk_widget_get_allocated_height (widget);
@@ -241,9 +262,70 @@ static gboolean _lib_duplicate_thumb_draw_callback (GtkWidget *widget, cairo_t *
 
   int imgid = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget),"imgid"));
   dt_view_image_over_t image_over = DT_VIEW_DESERT;
-  dt_view_image_expose(&image_over, imgid, cr, width, height, 5, 0, 0, FALSE, FALSE);
+  dt_view_image_expose_t params = { 0 };
+  params.image_over = &image_over;
+  params.imgid = imgid;
+  params.cr = cr;
+  params.width = width;
+  params.height = height;
+  params.zoom = 5;
+  params.full_preview = TRUE;
 
- return FALSE;
+  int lk = 0;
+  // if this is the actual thumb, we want to use the preview pipe
+  if(imgid == dev->image_storage.id)
+  {
+    // we recreate the surface if needed
+    if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
+    {
+      /* re-allocate in case of changed image dimensions */
+      if(d->rgbbuf == NULL || dev->preview_pipe->backbuf_width != d->buf_width
+         || dev->preview_pipe->backbuf_height != d->buf_height)
+      {
+        if(d->surface)
+        {
+          cairo_surface_destroy(d->surface);
+          d->surface = NULL;
+        }
+        g_free(d->rgbbuf);
+        d->buf_width = dev->preview_pipe->backbuf_width;
+        d->buf_height = dev->preview_pipe->backbuf_height;
+        d->rgbbuf = g_malloc0((size_t)d->buf_width * d->buf_height * 4 * sizeof(unsigned char));
+      }
+
+      /* update buffer if new data is available */
+      if(d->rgbbuf && dev->preview_pipe->input_timestamp > d->buf_timestamp)
+      {
+        if(d->surface)
+        {
+          cairo_surface_destroy(d->surface);
+          d->surface = NULL;
+        }
+
+        dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
+        dt_pthread_mutex_lock(mutex);
+        memcpy(d->rgbbuf, dev->preview_pipe->backbuf,
+               (size_t)d->buf_width * d->buf_height * 4 * sizeof(unsigned char));
+        d->buf_timestamp = dev->preview_pipe->input_timestamp;
+        dt_pthread_mutex_unlock(mutex);
+
+        const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->buf_width);
+        d->surface = cairo_image_surface_create_for_data(d->rgbbuf, CAIRO_FORMAT_RGB24, d->buf_width,
+                                                         d->buf_height, stride);
+      }
+    }
+    params.full_surface = &(d->surface);
+    params.full_rgbbuf = &(d->rgbbuf);
+    params.full_surface_mip = &(d->buf_mip);
+    params.full_surface_id = &imgid;
+    params.full_surface_wd = &d->buf_width;
+    params.full_surface_ht = &d->buf_height;
+    params.full_surface_w_lock = &lk;
+  }
+
+  dt_view_image_expose(&params);
+
+  return FALSE;
 }
 
 static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *self)
@@ -303,11 +385,10 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     GtkWidget *lb = gtk_label_new (g_strdup(chl));
     bt = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
     g_object_set_data(G_OBJECT(bt), "imgid", GINT_TO_POINTER(imgid));
-    gtk_widget_set_size_request(bt, DT_PIXEL_APPLY_DPI(13), DT_PIXEL_APPLY_DPI(13));
     g_signal_connect(G_OBJECT(bt), "clicked", G_CALLBACK(_lib_duplicate_delete), self);
 
     gtk_box_pack_start(GTK_BOX(hb), dr, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(hb), tb, FALSE, FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(hb), tb, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(hb), lb, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(hb), bt, FALSE, FALSE, 0);
 
@@ -354,8 +435,14 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   d->imgid = 0;
+  d->buf_height = 0;
+  d->buf_width = 0;
+  d->rgbbuf = NULL;
+  d->surface = NULL;
+  d->buf_timestamp = 0;
+  d->buf_mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, 100, 100);
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(self->widget, "duplicate-ui");
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
@@ -390,6 +477,8 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_lib_duplicate_init_callback), self);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, G_CALLBACK(_lib_duplicate_mipmap_updated_callback), (gpointer)self);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED, G_CALLBACK(_lib_duplicate_filmrolls_updated), self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                            G_CALLBACK(_lib_duplicate_mipmap_updated_callback), self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)

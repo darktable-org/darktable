@@ -113,9 +113,9 @@ static void button_clicked(GtkWidget *widget, gpointer user_data)
   else if(i == 3)
     dt_control_duplicate_images();
   else if(i == 4)
-    dt_control_flip_images(0);
-  else if(i == 5)
     dt_control_flip_images(1);
+  else if(i == 5)
+    dt_control_flip_images(0);
   else if(i == 6)
     dt_control_flip_images(2);
   else if(i == 7)
@@ -172,8 +172,6 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_grid_new();
   dt_gui_add_help_link(self->widget, "selected_images.html#selected_images_usage");
   GtkGrid *grid = GTK_GRID(self->widget);
-  gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
-  gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_homogeneous(grid, TRUE);
   int line = 0;
 
@@ -294,11 +292,15 @@ void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "remove from collection"), GDK_KEY_Delete, 0);
   dt_accel_register_lib(self, NC_("accel", "delete from disk or send to trash"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "move to other folder"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "copy to other folder"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "rotate selected images 90 degrees CW"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "rotate selected images 90 degrees CCW"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "create HDR"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "duplicate"), GDK_KEY_d, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "reset rotation"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "copy the image locally"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "resync the local copy"), 0, 0);
   // Grouping keys
   dt_accel_register_lib(self, NC_("accel", "group"), GDK_KEY_g, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "ungroup"), GDK_KEY_g, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
@@ -310,11 +312,15 @@ void connect_key_accels(dt_lib_module_t *self)
 
   dt_accel_connect_button_lib(self, "remove from collection", d->remove_button);
   dt_accel_connect_button_lib(self, "delete from disk or send to trash", d->delete_button);
+  dt_accel_connect_button_lib(self, "move to other folder", d->move_button);
+  dt_accel_connect_button_lib(self, "copy to other folder", d->copy_button);
   dt_accel_connect_button_lib(self, "rotate selected images 90 degrees CW", d->rotate_cw_button);
   dt_accel_connect_button_lib(self, "rotate selected images 90 degrees CCW", d->rotate_ccw_button);
   dt_accel_connect_button_lib(self, "create HDR", d->create_hdr_button);
   dt_accel_connect_button_lib(self, "duplicate", d->duplicate_button);
   dt_accel_connect_button_lib(self, "reset rotation", d->reset_button);
+  dt_accel_connect_button_lib(self, "copy the image locally", d->cache_button);
+  dt_accel_connect_button_lib(self, "resync the local copy", d->uncache_button);
   // Grouping keys
   dt_accel_connect_button_lib(self, "group", d->group_button);
   dt_accel_connect_button_lib(self, "ungroup", d->ungroup_button);

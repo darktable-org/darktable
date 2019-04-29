@@ -4156,6 +4156,18 @@ const wb_data wb_preset[] =
   { "Nikon", "Z 6", SodiumVaporFluorescent         , 0, { 1.076171875, 1, 2.33984375, 0 } },
   { "Nikon", "Z 6", Flash                          , 0, { 1.916015625, 1, 1.1640625, 0 } },
 
+  { "Nikon", "Z 7", DirectSunlight                 , 0, { 1.71484375, 1, 1.359375, 0 } },
+  { "Nikon", "Z 7", Shade                          , 0, { 2.1171875, 1, 1.09765625, 0 } },
+  { "Nikon", "Z 7", Cloudy                         , 0, { 1.837890625, 1, 1.228515625, 0 } },
+  { "Nikon", "Z 7", WarmWhiteFluorescent           , 0, { 1.1015625, 1, 1.982421875, 0 } },
+  { "Nikon", "Z 7", CoolWhiteFluorescent           , 0, { 1.599609375, 1, 2.0234375, 0 } },
+  { "Nikon", "Z 7", DayWhiteFluorescent            , 0, { 1.6015625, 1, 1.37890625, 0 } },
+  { "Nikon", "Z 7", DaylightFluorescent            , 0, { 1.828125, 1, 1.11328125, 0 } },
+  { "Nikon", "Z 7", WhiteFluorescent               , 0, { 1.3046875, 1, 2.328125, 0 } },
+  { "Nikon", "Z 7", HighTempMercuryVaporFluorescent, 0, { 2.1484375, 1, 1.349609375, 0 } },
+  { "Nikon", "Z 7", SodiumVaporFluorescent         , 0, { 1.0390625, 1, 2.43359375, 0 } },
+  { "Nikon", "Z 7", Flash                          , 0, { 1.904296875, 1, 1.185546875, 0 } },
+
   { "Olympus", "C5050Z", Shade, -7,		{ 3.887324, 1.201878, 1, 0 } },
   { "Olympus", "C5050Z", Shade, 0,		{ 1.757812, 1, 1.437500, 0 } },
   { "Olympus", "C5050Z", Shade, 7,		{ 1.019531, 1, 2.140625, 0 } },

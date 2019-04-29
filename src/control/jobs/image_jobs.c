@@ -69,14 +69,13 @@ typedef struct dt_image_import_t
 
 static int32_t dt_image_import_job_run(dt_job_t *job)
 {
-  int id;
   char message[512] = { 0 };
   dt_image_import_t *params = dt_control_job_get_params(job);
 
   snprintf(message, sizeof(message), _("importing image %s"), params->filename);
   dt_control_job_set_progress_message(job, message);
 
-  id = dt_image_import(params->film_id, params->filename, TRUE);
+  const int id = dt_image_import(params->film_id, params->filename, TRUE);
   if(id)
   {
     dt_view_filmstrip_set_active_image(darktable.view_manager, id);

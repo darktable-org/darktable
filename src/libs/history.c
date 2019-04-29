@@ -102,12 +102,12 @@ void gui_init(dt_lib_module_t *self)
 
   d->record_undo = TRUE;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
   gtk_widget_set_name(self->widget, "history-ui");
   d->history_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(5));
+  GtkWidget *hhbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   d->compress_button = gtk_button_new_with_label(_("compress history stack"));
   gtk_label_set_xalign (GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->compress_button))), 0.0f);
@@ -116,7 +116,6 @@ void gui_init(dt_lib_module_t *self)
 
   /* add toolbar button for creating style */
   d->create_button = dtgtk_button_new(dtgtk_cairo_paint_styles, CPF_DO_NOT_USE_BORDER, NULL);
-  gtk_widget_set_size_request(d->create_button, DT_PIXEL_APPLY_DPI(24), -1);
   g_signal_connect(G_OBJECT(d->create_button), "clicked",
                    G_CALLBACK(_lib_history_create_style_button_clicked_callback), NULL);
   gtk_widget_set_tooltip_text(d->create_button, _("create a style from the current history stack"));
@@ -166,6 +165,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   /* create toggle button */
   widget = gtk_toggle_button_new_with_label(numlabel);
   gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_START);
+  gtk_widget_set_name(GTK_WIDGET(widget), "history-button");
   g_object_set_data(G_OBJECT(widget), "history_number", GINT_TO_POINTER(num + 1));
   g_object_set_data(G_OBJECT(widget), "label", (gpointer)label);
   if(selected) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
@@ -265,14 +265,14 @@ struct _cb_data
   int multi_priority;
 };
 
-static void _undo_items_cb(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data)
+static void _undo_items_cb(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data)
 {
   struct _cb_data *udata = (struct _cb_data *)user_data;
   dt_undo_history_t *hdata = (dt_undo_history_t *)data;
   _reset_module_instance(hdata->snapshot, udata->module, udata->multi_priority);
 }
 
-static void _history_invalidate_cb(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *item)
+static void _history_invalidate_cb(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   dt_undo_history_t *hist = (dt_undo_history_t *)item;
@@ -543,7 +543,7 @@ static int _create_deleted_modules(GList **_iop_list, GList *history_list)
   return changed;
 }
 
-static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *data, dt_undo_action_t action)
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
 
@@ -602,8 +602,10 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t *d
       // we refresh the pipe
       dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
       dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
+      dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
       dev->pipe->cache_obsolete = 1;
       dev->preview_pipe->cache_obsolete = 1;
+      dev->preview2_pipe->cache_obsolete = 1;
 
       // invalidate buffers and force redraw of darkroom
       dt_dev_invalidate_all(dev);
@@ -657,7 +659,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
     hist->snapshot = _duplicate_history(darktable.develop->history);
     hist->end = darktable.develop->history_end;
 
-    dt_undo_record(darktable.undo, self, DT_UNDO_HISTORY, (dt_undo_data_t *)hist,
+    dt_undo_record(darktable.undo, self, DT_UNDO_HISTORY, (dt_undo_data_t)hist,
                    _pop_undo, _history_undo_data_free);
   }
   else

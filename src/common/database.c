@@ -38,8 +38,8 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 18
-#define CURRENT_DATABASE_VERSION_DATA 1
+#define CURRENT_DATABASE_VERSION_LIBRARY 19
+#define CURRENT_DATABASE_VERSION_DATA 2
 
 typedef struct dt_database_t
 {
@@ -1098,7 +1098,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     // check if there's any entry in history that was not updated
     sqlite3_stmt *sel_stmt;
-    TRY_PREPARE(sel_stmt, "SELECT DISTINCT operation FROM main.history WHERE iop_order <= 0",
+    TRY_PREPARE(sel_stmt, "SELECT DISTINCT operation FROM main.history WHERE iop_order <= 0 OR iop_order IS NULL",
                 "[init] can't prepare selecting history iop_order\n");
     while(sqlite3_step(sel_stmt) == SQLITE_ROW)
     {
@@ -1106,10 +1106,6 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
       printf("operation %s with no iop_order while upgrading database\n", op_name);
     }
     sqlite3_finalize(sel_stmt);
-
-    // style_items
-    TRY_EXEC("ALTER TABLE data.style_items ADD COLUMN iop_order REAL",
-             "[init] can't add `iop_order' column to style_items table in database\n");
 
     // do the same as for history
     TRY_EXEC("UPDATE data.style_items SET iop_order = ((("
@@ -1119,7 +1115,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
              "data.style_items.operation), -999999.) ",
              "[init] can't update iop_order in style_items table\n");
 
-    TRY_PREPARE(sel_stmt, "SELECT DISTINCT operation FROM data.style_items WHERE iop_order <= 0",
+    TRY_PREPARE(sel_stmt, "SELECT DISTINCT operation FROM data.style_items WHERE iop_order <= 0 OR iop_order IS NULL",
                 "[init] can't prepare selecting style_items iop_order\n");
     while(sqlite3_step(sel_stmt) == SQLITE_ROW)
     {
@@ -1139,6 +1135,29 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   //     sqlite3_exec(db->handle, "ALTER TABLE film_rolls ADD COLUMN external_drive VARCHAR(1024)", NULL,
   //     NULL, NULL);
   //   }
+  else if(version == 18)
+  {
+    TRY_EXEC("UPDATE images SET orientation=-2 WHERE orientation=1;",
+             "[init] can't update images orientation 1 from database\n");
+
+    TRY_EXEC("UPDATE images SET orientation=1 WHERE orientation=2;",
+             "[init] can't update images orientation 2 from database\n");
+
+    TRY_EXEC("UPDATE images SET orientation=-6 WHERE orientation=5;",
+             "[init] can't update images orientation 5 from database\n");
+
+    TRY_EXEC("UPDATE images SET orientation=5 WHERE orientation=6;",
+             "[init] can't update images orientation 6 from database\n");
+
+    TRY_EXEC("UPDATE images SET orientation=2 WHERE orientation=-2;",
+             "[init] can't update images orientation -1 from database\n");
+
+    TRY_EXEC("UPDATE images SET orientation=6 WHERE orientation=-6;",
+             "[init] can't update images orientation -6 from database\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 19;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -1151,12 +1170,6 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
   return new_version;
 }
-
-#undef FINALIZE
-
-#undef TRY_EXEC
-#undef TRY_STEP
-#undef TRY_PREPARE
 
 /* do the real migration steps, returns the version the db was converted to */
 static int _upgrade_data_schema_step(dt_database_t *db, int version)
@@ -1172,6 +1185,15 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
     new_version = 1; // the version we transformed the db to. this way it might be possible to roll back or
     // add fast paths
   }
+  else if(version == 1)
+  {
+    // style_items:
+    //    NO TRY_EXEC has the column could be there before version 1 (master build)
+    //    TRY_EXEC("ALTER TABLE data.style_items ADD COLUMN iop_order REAL",
+    //             "[init] can't add `iop_order' column to style_items table in database\n");
+    sqlite3_exec(db->handle, "ALTER TABLE data.style_items ADD COLUMN iop_order REAL", NULL, NULL, NULL);
+    new_version = 2;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -1184,6 +1206,12 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
 
   return new_version;
 }
+
+#undef FINALIZE
+
+#undef TRY_EXEC
+#undef TRY_STEP
+#undef TRY_PREPARE
 
 /* upgrade library db from 'version' to CURRENT_DATABASE_VERSION_LIBRARY. don't touch this function but
  * _upgrade_library_schema_step() instead. */

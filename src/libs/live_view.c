@@ -269,11 +269,11 @@ void gui_init(dt_lib_module_t *self)
   lib->splitline_x = lib->splitline_y = 0.5;
 
   // Setup gui
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   dt_gui_add_help_link(self->widget, "live_view.html#live_view");
   GtkWidget *box;
 
-  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
   lib->live_view = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   lib->live_view_zoom = dtgtk_button_new(
@@ -303,7 +303,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(lib->flip), "clicked", G_CALLBACK(_toggle_flip_clicked), lib);
 
   // focus buttons
-  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
   lib->focus_in_big = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle,
                                        CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_LEFT, NULL);
@@ -388,7 +388,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(lib->overlay), "value-changed", G_CALLBACK(overlay_changed), lib);
   gtk_box_pack_start(GTK_BOX(self->widget), lib->overlay, TRUE, TRUE, 0);
 
-  lib->overlay_id_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  lib->overlay_id_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *label = gtk_label_new(_("image id"));
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   lib->overlay_id = gtk_spin_button_new_with_range(0, 1000000000, 1);

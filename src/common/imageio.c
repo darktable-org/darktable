@@ -194,12 +194,12 @@ void dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const 
     sj = bpp;
     si = ht * bpp;
   }
-  if(orientation & ORIENTATION_FLIP_X)
+  if(orientation & ORIENTATION_FLIP_Y)
   {
     jj = (int)fht - jj - 1;
     sj = -sj;
   }
-  if(orientation & ORIENTATION_FLIP_Y)
+  if(orientation & ORIENTATION_FLIP_X)
   {
     ii = (int)fwd - ii - 1;
     si = -si;
@@ -244,12 +244,12 @@ void dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const
     sj = 4;
     si = ht * 4;
   }
-  if(orientation & ORIENTATION_FLIP_X)
+  if(orientation & ORIENTATION_FLIP_Y)
   {
     jj = (int)fht - jj - 1;
     sj = -sj;
   }
-  if(orientation & ORIENTATION_FLIP_Y)
+  if(orientation & ORIENTATION_FLIP_X)
   {
     ii = (int)fwd - ii - 1;
     si = -si;
@@ -294,12 +294,12 @@ void dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const f
     sj = 4;
     si = ht * 4;
   }
-  if(orientation & ORIENTATION_FLIP_X)
+  if(orientation & ORIENTATION_FLIP_Y)
   {
     jj = (int)fht - jj - 1;
     sj = -sj;
   }
-  if(orientation & ORIENTATION_FLIP_Y)
+  if(orientation & ORIENTATION_FLIP_X)
   {
     ii = (int)fwd - ii - 1;
     si = -si;
@@ -339,6 +339,8 @@ size_t dt_imageio_write_pos(int i, int j, int wd, int ht, float fwd, float fht,
 
 dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf)
 {
+  // if buf is NULL, don't proceed
+  if(!buf) return DT_IMAGEIO_OK;
   // needed to alloc correct buffer size:
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
@@ -484,12 +486,14 @@ int dt_imageio_is_hdr(const char *filename)
 // transparent read method to load ldr image to dt_raw_image_t with exif and so on.
 dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf)
 {
+  // if buf is NULL, don't proceed
+  if(!buf) return DT_IMAGEIO_OK;
   dt_imageio_retval_t ret;
 
   ret = dt_imageio_open_jpeg(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb;
+    img->buf_dsc.cst = iop_cs_rgb; // jpeg is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
@@ -501,7 +505,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_tiff(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb;
+    // cst is set by dt_imageio_open_tiff()
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
@@ -513,7 +517,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_png(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb;
+    img->buf_dsc.cst = iop_cs_rgb; // png is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
@@ -526,7 +530,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_j2k(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb;
+    img->buf_dsc.cst = iop_cs_rgb; // j2k is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
@@ -539,7 +543,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   ret = dt_imageio_open_pnm(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)
   {
-    img->buf_dsc.cst = iop_cs_rgb;
+    img->buf_dsc.cst = iop_cs_rgb; // pnm is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
     img->flags &= ~DT_IMAGE_HDR;
@@ -677,7 +681,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   dt_dev_pixelpipe_get_dimensions(&pipe, &dev, pipe.iwidth, pipe.iheight, &pipe.processed_width,
                                   &pipe.processed_height);
 
-  dt_show_times(&start, "[export] creating pixelpipe", NULL);
+  dt_show_times(&start, "[export] creating pixelpipe");
 
   // find output color profile for this image:
   int sRGB = 1;
@@ -769,8 +773,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
     if(finalscale) finalscale->enabled = 1;
   }
   dt_show_times(&start, thumbnail_export ? "[dev_process_thumbnail] pixel pipeline processing"
-                                         : "[dev_process_export] pixel pipeline processing",
-                NULL);
+                                         : "[dev_process_export] pixel pipeline processing");
 
   uint8_t *outbuf = pipe.backbuf;
 
@@ -925,6 +928,8 @@ error_early:
 dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename,
                                            dt_mipmap_buffer_t *buf)
 {
+  // if buf is NULL, don't proceed
+  if(!buf) return DT_IMAGEIO_OK;
 #ifdef HAVE_GRAPHICSMAGICK
   dt_imageio_retval_t ret = dt_imageio_open_gm(img, filename, buf);
   if(ret == DT_IMAGEIO_OK || ret == DT_IMAGEIO_CACHE_FULL)

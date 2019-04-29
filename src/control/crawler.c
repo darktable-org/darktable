@@ -370,23 +370,19 @@ void dt_control_crawler_show_image_list(GList *images)
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(win));
   GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
-  GtkWidget *content_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-  gtk_widget_set_margin_start(content_box, DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_end(content_box, DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_top(content_box, DT_PIXEL_APPLY_DPI(5));
-  gtk_widget_set_margin_bottom(content_box, DT_PIXEL_APPLY_DPI(0));
+  GtkWidget *content_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_container_add(GTK_CONTAINER(content_area), content_box);
 
   gtk_box_pack_start(GTK_BOX(content_box), scroll, TRUE, TRUE, 0);
 
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 0);
   GtkWidget *select_all = gtk_check_button_new_with_label(_("select all"));
   gtk_box_pack_start(GTK_BOX(box), select_all, FALSE, FALSE, 0);
   gui->select_all_handler_id = g_signal_connect(select_all, "toggled", G_CALLBACK(_select_all_callback), gui);
   gui->select_all = select_all;
 
-  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(content_box), box, FALSE, FALSE, 0);
   GtkWidget *reload_button = gtk_button_new_with_label(_("reload selected xmp files"));
   GtkWidget *overwrite_button = gtk_button_new_with_label(_("overwrite selected xmp files"));

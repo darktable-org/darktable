@@ -92,6 +92,7 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
 
   /* make sure mipmaps are recomputed */
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+  dt_image_reset_final_size(imgid);
 
   /* remove darktable|style|* tags */
   dt_tag_detach_by_string("darktable|style%", imgid);
@@ -102,8 +103,8 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
     dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
 
     dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-    dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t *)hist,
-                   &dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
+                   dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
     dt_undo_end_group(darktable.undo);
   }
 }
@@ -132,8 +133,8 @@ void dt_history_delete_on_selection()
     dt_history_delete_on_image_ext(imgid, FALSE);
 
     dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
-    dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t *)hist,
-                   &dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
+                   dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
 
     /* update the aspect ratio if the current sorting is based on aspect ratio, otherwise the aspect ratio will be
        recalculated when the mimpap will be recreated */
@@ -158,8 +159,8 @@ int dt_history_load_and_apply(const int imgid, gchar *filename, int history_only
 
     dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
     dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-    dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t *)hist,
-                   &dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
+                   dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
     dt_undo_end_group(darktable.undo);
 
     /* if current image in develop reload history */
@@ -167,6 +168,7 @@ int dt_history_load_and_apply(const int imgid, gchar *filename, int history_only
 
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
     dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+    dt_image_reset_final_size(imgid);
   }
   return 0;
 }
@@ -719,8 +721,8 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
 
   dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-  dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t *)hist,
-                 &dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
+  dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
+                 dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
   dt_undo_end_group(darktable.undo);
 
   /* attach changed tag reflecting actual change */
@@ -739,6 +741,7 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   dt_image_synch_xmp(dest_imgid);
 
   dt_mipmap_cache_remove(darktable.mipmap_cache, dest_imgid);
+  dt_image_reset_final_size(imgid);
 
   /* update the aspect ratio if the current sorting is based on aspect ratio, otherwise the aspect ratio will be
      recalculated when the mimpap will be recreated */
@@ -756,7 +759,8 @@ GList *dt_history_get_items(int32_t imgid, gboolean enabled)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT num, operation, enabled, multi_name FROM main.history WHERE imgid=?1 AND "
                               "num IN (SELECT MAX(num) FROM main.history hst2 WHERE hst2.imgid=?1 AND "
-                              "hst2.operation=main.history.operation GROUP BY multi_priority) ORDER BY iop_order DESC",
+                              "hst2.operation=main.history.operation GROUP BY multi_priority) "
+                              "ORDER BY num DESC",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)

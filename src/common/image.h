@@ -87,20 +87,20 @@ typedef struct dt_image_raw_parameters_t
 
 typedef enum dt_image_orientation_t
 {
-  ORIENTATION_NULL = -1,        //-1, or autodetect
-  ORIENTATION_NONE = 0,         // 0
-  ORIENTATION_FLIP_Y = 1 << 0,  // 1
-  ORIENTATION_FLIP_X = 1 << 1,  // 2
+  ORIENTATION_NULL    = -1,     //-1, or autodetect
+  ORIENTATION_NONE    = 0,      // 0
+  ORIENTATION_FLIP_Y  = 1 << 0, // 1
+  ORIENTATION_FLIP_X  = 1 << 1, // 2
   ORIENTATION_SWAP_XY = 1 << 2, // 4
 
   /* ClockWise rotation == "-"; CounterClockWise rotation == "+" */
-  ORIENTATION_FLIP_HORIZONTALLY = ORIENTATION_FLIP_Y, // 1
-  ORIENTATION_FLIP_VERTICALLY = ORIENTATION_FLIP_X, // 2
-  ORIENTATION_ROTATE_180_DEG = ORIENTATION_FLIP_Y | ORIENTATION_FLIP_X, // 3
-  ORIENTATION_400 /* ??? */ = ORIENTATION_SWAP_XY, // 4
-  ORIENTATION_ROTATE_CCW_90_DEG = ORIENTATION_FLIP_Y | ORIENTATION_SWAP_XY, // 5
-  ORIENTATION_ROTATE_CW_90_DEG = ORIENTATION_FLIP_X | ORIENTATION_SWAP_XY, // 6
-  ORIENTATION_421 /* ??? */ = ORIENTATION_FLIP_Y | ORIENTATION_FLIP_X | ORIENTATION_SWAP_XY // 7
+  ORIENTATION_FLIP_HORIZONTALLY = ORIENTATION_FLIP_X, // 2
+  ORIENTATION_FLIP_VERTICALLY   = ORIENTATION_FLIP_Y, // 1
+  ORIENTATION_ROTATE_180_DEG    = ORIENTATION_FLIP_Y | ORIENTATION_FLIP_X, // 3
+  ORIENTATION_TRANSPOSE         = ORIENTATION_SWAP_XY, // 4
+  ORIENTATION_ROTATE_CCW_90_DEG = ORIENTATION_FLIP_X | ORIENTATION_SWAP_XY, // 6
+  ORIENTATION_ROTATE_CW_90_DEG  = ORIENTATION_FLIP_Y | ORIENTATION_SWAP_XY, // 5
+  ORIENTATION_TRANSVERSE        = ORIENTATION_FLIP_Y | ORIENTATION_FLIP_X | ORIENTATION_SWAP_XY // 7
 } dt_image_orientation_t;
 
 typedef enum dt_image_loader_t
@@ -117,6 +117,11 @@ typedef enum dt_image_loader_t
   LOADER_RAWSPEED = 9,
   LOADER_PNM = 10,
 } dt_image_loader_t;
+
+typedef struct dt_image_geoloc_t
+{
+  double longitude, latitude, elevation;
+} dt_image_geoloc_t;
 
 struct dt_cache_entry_t;
 // TODO: add color labels and such as cachable
@@ -148,7 +153,7 @@ typedef struct dt_image_t
   // common stuff
 
   // to understand this, look at comment for dt_histogram_roi_t
-  int32_t width, height;
+  int32_t width, height, verified_size, final_width, final_height;
   int32_t crop_x, crop_y, crop_width, crop_height;
 
   // used by library
@@ -165,9 +170,7 @@ typedef struct dt_image_t
   dt_image_raw_parameters_t legacy_flip; // unfortunately needed to convert old bits to new flip module.
 
   /* gps coords */
-  double longitude;
-  double latitude;
-  double elevation;
+  dt_image_geoloc_t geoloc;
 
   /* needed in exposure iop for Deflicker */
   uint16_t raw_black_level;
@@ -232,14 +235,17 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t user_fl
 dt_image_orientation_t dt_image_get_orientation(const int imgid);
 /** get max width and height of the final processed image with its current hisotry stack */
 gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height);
+void dt_image_reset_final_size(const int32_t imgid);
 /** set image location lon/lat */
-void dt_image_set_location(const int32_t imgid, double lon, double lat);
+void dt_image_set_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
+/** get image location lon/lat */
+void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** set image location lon/lat/ele */
-void dt_image_set_location_and_elevation(const int32_t imgid, double lon, double lat, double ele);
+void dt_image_set_location_and_elevation(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** returns 1 if there is history data found for this image, 0 else. */
 int dt_image_altered(const uint32_t imgid);
 /** set the image final/cropped aspect ratio */
-void dt_image_set_aspect_ratio(const int32_t imgid);
+double dt_image_set_aspect_ratio(const int32_t imgid);
 /** set the image final/cropped aspect ratio */
 void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio);
 /** returns the orientation bits of the image from exif. */
@@ -262,11 +268,11 @@ static inline dt_image_orientation_t dt_image_orientation_to_flip_bits(const int
     case 4:
       return ORIENTATION_FLIP_VERTICALLY;
     case 5:
-      return ORIENTATION_400; // ???
+      return ORIENTATION_TRANSPOSE;
     case 6:
       return ORIENTATION_ROTATE_CW_90_DEG;
     case 7:
-      return ORIENTATION_421; // ???
+      return ORIENTATION_TRANSVERSE;
     case 8:
       return ORIENTATION_ROTATE_CCW_90_DEG;
     default:
@@ -277,9 +283,16 @@ static inline dt_image_orientation_t dt_image_orientation_to_flip_bits(const int
 /** physically move image with imgid and its duplicates to the film roll
  *  given by filmid. returns -1 on error, 0 on success. */
 int32_t dt_image_move(const int32_t imgid, const int32_t filmid);
-/** physically cope image to the folder of the film roll with filmid and
+/** physically move image with imgid and its duplicates to the film roll
+ *  given by filmid and the name given by newname.
+ *  returns -1 on error, 0 on success. */
+int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *newname);
+/** physically copy image to the folder of the film roll with filmid and
  *  duplicate update database entries. */
 int32_t dt_image_copy(const int32_t imgid, const int32_t filmid);
+/** physically copy image to the folder of the film roll with filmid and
+ *  the name given by newname, and duplicate update database entries. */
+int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gchar *newname);
 int dt_image_local_copy_set(const int32_t imgid);
 int dt_image_local_copy_reset(const int32_t imgid);
 /* check whether it is safe to remove a file */

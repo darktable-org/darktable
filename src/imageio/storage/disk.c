@@ -40,20 +40,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-DT_MODULE(2)
+DT_MODULE(3)
+
+typedef enum dt_disk_onconflict_actions_t
+{
+  DT_EXPORT_ONCONFLICT_UNIQUEFILENAME = 0,
+  DT_EXPORT_ONCONFLICT_OVERWRITE = 1,
+  DT_EXPORT_ONCONFLICT_SKIP = 2
+} dt_disk_onconflict_actions_t;
 
 // gui data
 typedef struct disk_t
 {
   GtkEntry *entry;
-  GtkWidget *overwrite;
+  GtkWidget *onsave_action;
 } disk_t;
 
 // saved params
 typedef struct dt_imageio_disk_t
 {
   char filename[DT_MAX_PATH_FOR_PARAMS];
-  gboolean overwrite;
+  dt_disk_onconflict_actions_t onsave_action;
   dt_variables_params_t *vp;
 } dt_imageio_disk_t;
 
@@ -67,7 +74,7 @@ void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_par
                     const size_t old_params_size, const int old_version, const int new_version,
                     size_t *new_size)
 {
-  if(old_version == 1 && new_version == 2)
+  if(old_version == 1 && new_version == 3)
   {
     typedef struct dt_imageio_disk_v1_t
     {
@@ -80,6 +87,25 @@ void *legacy_params(dt_imageio_module_storage_t *self, const void *const old_par
     dt_imageio_disk_v1_t *o = (dt_imageio_disk_v1_t *)old_params;
 
     g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    n->onsave_action = (o->overwrite) ? DT_EXPORT_ONCONFLICT_OVERWRITE: DT_EXPORT_ONCONFLICT_UNIQUEFILENAME;
+
+    *new_size = self->params_size(self);
+    return n;
+  }
+  if(old_version == 2 && new_version == 3)
+  {
+    typedef struct dt_imageio_disk_v2_t
+    {
+      char filename[DT_MAX_PATH_FOR_PARAMS];
+      gboolean overwrite;
+      dt_variables_params_t *vp;
+    } dt_imageio_disk_v2_t;
+
+    dt_imageio_disk_t *n = (dt_imageio_disk_t *)malloc(sizeof(dt_imageio_disk_t));
+    dt_imageio_disk_v2_t *o = (dt_imageio_disk_v2_t *)old_params;
+
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    n->onsave_action = (o->overwrite) ? DT_EXPORT_ONCONFLICT_OVERWRITE: DT_EXPORT_ONCONFLICT_UNIQUEFILENAME;
 
     *new_size = self->params_size(self);
     return n;
@@ -127,19 +153,19 @@ static void entry_changed_callback(GtkEntry *entry, gpointer user_data)
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", gtk_entry_get_text(entry));
 }
 
-static void overwrite_toggle_callback(GtkWidget *widget, gpointer user_data)
+static void onsave_action_toggle_callback(GtkWidget *widget, gpointer user_data)
 {
-  dt_conf_set_bool("plugins/imageio/storage/disk/overwrite", dt_bauhaus_combobox_get(widget) == 1);
+  dt_conf_set_int("plugins/imageio/storage/disk/overwrite", dt_bauhaus_combobox_get(widget));
 }
 
 void gui_init(dt_imageio_module_storage_t *self)
 {
   disk_t *d = (disk_t *)malloc(sizeof(disk_t));
   self->gui_data = (void *)d;
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_PIXEL_APPLY_DPI(5));
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   GtkWidget *widget;
 
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, FALSE, 0);
 
   widget = gtk_entry_new();
@@ -165,18 +191,18 @@ void gui_init(dt_imageio_module_storage_t *self)
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
 
   widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_DO_NOT_USE_BORDER, NULL);
-  gtk_widget_set_size_request(widget, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
   gtk_widget_set_tooltip_text(widget, _("select directory"));
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 
-  d->overwrite = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->overwrite, NULL, _("on conflict"));
-  dt_bauhaus_combobox_add(d->overwrite, _("create unique filename"));
-  dt_bauhaus_combobox_add(d->overwrite, _("overwrite"));
-  gtk_box_pack_start(GTK_BOX(self->widget), d->overwrite, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(d->overwrite), "value-changed", G_CALLBACK(overwrite_toggle_callback), self);
-  dt_bauhaus_combobox_set(d->overwrite, 0);
+  d->onsave_action = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(d->onsave_action, NULL, _("on conflict"));
+  dt_bauhaus_combobox_add(d->onsave_action, _("create unique filename"));
+  dt_bauhaus_combobox_add(d->onsave_action, _("overwrite"));
+  dt_bauhaus_combobox_add(d->onsave_action, _("skip"));
+  gtk_box_pack_start(GTK_BOX(self->widget), d->onsave_action, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(d->onsave_action), "value-changed", G_CALLBACK(onsave_action_toggle_callback), self);
+  dt_bauhaus_combobox_set(d->onsave_action, dt_conf_get_int("plugins/imageio/storage/disk/overwrite"));
 
   g_free(tooltip_text);
 }
@@ -194,9 +220,7 @@ void gui_reset(dt_imageio_module_storage_t *self)
   // global default can be annoying:
   // gtk_entry_set_text(GTK_ENTRY(d->entry), "$(FILE_FOLDER)/darktable_exported/$(FILE_NAME)");
   dt_conf_set_string("plugins/imageio/storage/disk/file_directory", gtk_entry_get_text(d->entry));
-
-  // this should prevent users from unintentional image overwrite
-  dt_bauhaus_combobox_set(d->overwrite, 0);
+  dt_conf_set_int("plugins/imageio/storage/disk/overwrite", dt_bauhaus_combobox_get(d->onsave_action));
 }
 
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
@@ -273,13 +297,25 @@ try_again:
   failed:
     g_free(output_dir);
 
-    if(!fail && !d->overwrite)
+    if(!fail && d->onsave_action == DT_EXPORT_ONCONFLICT_UNIQUEFILENAME)
     {
       int seq = 1;
       while(g_file_test(filename, G_FILE_TEST_EXISTS))
       {
         snprintf(c, filename_free_space, "_%.2d.%s", seq, ext);
         seq++;
+      }
+    }
+
+    if(!fail && d->onsave_action == DT_EXPORT_ONCONFLICT_SKIP)
+    {
+      if(g_file_test(filename, G_FILE_TEST_EXISTS))
+      {
+        dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
+        fprintf(stderr, "[export_job] skipping `%s'\n", filename);
+        dt_control_log(ngettext("%d/%d skipping `%s'", "%d/%d skipping `%s'", num),
+                       num, total, filename);
+        return 0;
       }
     }
   } // end of critical block
@@ -295,7 +331,7 @@ try_again:
     return 1;
   }
 
-  printf("[export_job] exported to `%s'\n", filename);
+  fprintf(stderr, "[export_job] exported to `%s'\n", filename);
   dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
                  num, total, filename);
   return 0;
@@ -322,7 +358,7 @@ void *get_params(dt_imageio_module_storage_t *self)
   g_strlcpy(d->filename, text, sizeof(d->filename));
   g_free(text);
 
-  d->overwrite = dt_conf_get_bool("plugins/imageio/storage/disk/overwrite");
+  d->onsave_action = dt_conf_get_int("plugins/imageio/storage/disk/overwrite");
 
   d->vp = NULL;
   dt_variables_params_init(&d->vp);
@@ -346,16 +382,22 @@ int set_params(dt_imageio_module_storage_t *self, const void *params, const int 
   if(size != self->params_size(self)) return 1;
 
   gtk_entry_set_text(GTK_ENTRY(g->entry), d->filename);
-
-  // we really do not want user to unintentionally overwrite image
-  dt_bauhaus_combobox_set(g->overwrite, 0);
+  dt_bauhaus_combobox_set(g->onsave_action, d->onsave_action);
   return 0;
 }
 
-void export_dispatched(dt_imageio_module_storage_t *self)
+char *ask_user_confirmation(dt_imageio_module_storage_t *self)
 {
   disk_t *g = (disk_t *)self->gui_data;
-  dt_bauhaus_combobox_set(g->overwrite, 0);
+  if(dt_bauhaus_combobox_get(g->onsave_action) == DT_EXPORT_ONCONFLICT_OVERWRITE)
+  {
+    return g_strdup(_("you are going to export on overwrite mode, this will overwrite any existing images\n\n"
+        "do you really want to continue?"));
+  }
+  else
+  {
+    return NULL;
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

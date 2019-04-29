@@ -37,11 +37,13 @@ group_basic=(
     'exposure'
     'highlights'
     'invert'
+    'basicadj'
 )
 
 group_tone=(
     'zonesystem'
     'tonecurve'
+    'rgbcurve'
     'tonemapping'
     'levels'
     'relight'

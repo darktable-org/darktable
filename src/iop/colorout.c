@@ -41,10 +41,11 @@
 #include <string.h>
 
 // max iccprofile file name length
-#define DT_IOP_COLOR_ICC_LEN 100
+// must be in synch with dt_colorspaces_color_profile_t
+#define DT_IOP_COLOR_ICC_LEN 512
 #define LUT_SAMPLES 0x10000
 
-DT_MODULE_INTROSPECTION(4, dt_iop_colorout_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_colorout_params_t)
 
 typedef struct dt_iop_colorout_data_t
 {
@@ -120,6 +121,7 @@ int output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
+#define DT_IOP_COLOR_ICC_LEN_V4 100
   /*  if(old_version == 1 && new_version == 2)
   {
     dt_iop_colorout_params_t *o = (dt_iop_colorout_params_t *)old_params;
@@ -128,16 +130,16 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->seq = 0;
     return 0;
     }*/
-  if((old_version == 2 || old_version == 3) && new_version == 4)
+  if((old_version == 2 || old_version == 3) && new_version == 5)
   {
     typedef struct dt_iop_colorout_params_v3_t
     {
-      char iccprofile[DT_IOP_COLOR_ICC_LEN];
-      char displayprofile[DT_IOP_COLOR_ICC_LEN];
+      char iccprofile[DT_IOP_COLOR_ICC_LEN_V4];
+      char displayprofile[DT_IOP_COLOR_ICC_LEN_V4];
       dt_iop_color_intent_t intent;
       dt_iop_color_intent_t displayintent;
       char softproof_enabled;
-      char softproofprofile[DT_IOP_COLOR_ICC_LEN];
+      char softproofprofile[DT_IOP_COLOR_ICC_LEN_V4];
       dt_iop_color_intent_t softproofintent;
     } dt_iop_colorout_params_v3_t;
 
@@ -166,8 +168,29 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     return 0;
   }
+  if(old_version == 4 && new_version == 5)
+  {
+    typedef struct dt_iop_colorout_params_v4_t
+    {
+      dt_colorspaces_color_profile_type_t type;
+      char filename[DT_IOP_COLOR_ICC_LEN_V4];
+      dt_iop_color_intent_t intent;
+    } dt_iop_colorout_params_v4_t;
+
+
+    dt_iop_colorout_params_v4_t *o = (dt_iop_colorout_params_v4_t *)old_params;
+    dt_iop_colorout_params_t *n = (dt_iop_colorout_params_t *)new_params;
+    memset(n, 0, sizeof(dt_iop_colorout_params_t));
+
+    n->type = o->type;
+    g_strlcpy(n->filename, o->filename, sizeof(n->filename));
+    n->intent = o->intent;
+
+    return 0;
+  }
 
   return 1;
+#undef DT_IOP_COLOR_ICC_LEN_V4
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -584,6 +607,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     out_filename = (out_type == DT_COLORSPACE_DISPLAY ? darktable.color_profiles->display_filename : "");
     out_intent = darktable.color_profiles->display_intent;
   }
+  else if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW2)
+  {
+    /* preview2 is only used in second darkroom window, using display2 profile as output */
+    out_type = darktable.color_profiles->display2_type;
+    out_filename = darktable.color_profiles->display2_filename;
+    out_intent = darktable.color_profiles->display2_intent;
+  }
   else
   {
     /* we are not exporting, using display profile as output */
@@ -604,10 +634,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   uint32_t transformFlags = 0;
 
   /* creating output profile */
-  if(out_type == DT_COLORSPACE_DISPLAY) pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+  if(out_type == DT_COLORSPACE_DISPLAY || out_type == DT_COLORSPACE_DISPLAY2)
+    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
   const dt_colorspaces_color_profile_t *out_profile
-        = dt_colorspaces_get_profile(out_type, out_filename, DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
+      = dt_colorspaces_get_profile(out_type, out_filename, DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY
+                                                               | DT_PROFILE_DIRECTION_DISPLAY2);
   if(out_profile)
   {
     output = out_profile->profile;
@@ -615,8 +647,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
   else
   {
-    output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "",
-                                        DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY)->profile;
+    output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT
+                                                                    | DT_PROFILE_DIRECTION_DISPLAY
+                                                                    | DT_PROFILE_DIRECTION_DISPLAY2)
+                 ->profile;
     dt_control_log(_("missing output profile has been replaced by sRGB!"));
     fprintf(stderr, "missing output profile `%s' has been replaced by sRGB!\n",
             dt_colorspaces_get_name(out_type, out_filename));
@@ -627,13 +661,15 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   {
     const dt_colorspaces_color_profile_t *prof = dt_colorspaces_get_profile(
         darktable.color_profiles->softproof_type, darktable.color_profiles->softproof_filename,
-        DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
+        DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY | DT_PROFILE_DIRECTION_DISPLAY2);
     if(prof)
       softproof = prof->profile;
     else
     {
-      softproof = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "",
-                                             DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY)->profile;
+      softproof = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT
+                                                                         | DT_PROFILE_DIRECTION_DISPLAY
+                                                                         | DT_PROFILE_DIRECTION_DISPLAY2)
+                      ->profile;
       dt_control_log(_("missing softproof profile has been replaced by sRGB!"));
       fprintf(stderr, "missing softproof profile `%s' has been replaced by sRGB!\n",
               dt_colorspaces_get_name(darktable.color_profiles->softproof_type,
@@ -692,7 +728,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     }
   }
 
-  if(out_type == DT_COLORSPACE_DISPLAY) pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+  if(out_type == DT_COLORSPACE_DISPLAY || out_type == DT_COLORSPACE_DISPLAY2)
+    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
   // now try to initialize unbounded mode:
   // we do extrapolation for input values above 1.0f.

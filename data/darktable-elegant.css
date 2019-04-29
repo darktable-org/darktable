@@ -1,0 +1,121 @@
+/*
+    This file is part of darktable,
+    copyright (c) 2019 Aurélien Pierre.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+@import url("darktable.css");
+
+/* This has been tested with GTK 3.24 on Gnome */
+
+*
+{
+    font-weight: 200;
+    font-family: "Roboto Light", "Segoe UI Light",
+                 "SF Pro Display Light", "Ubuntu Light",
+                 "Cantarell", sans-serif;
+}
+
+#lib-plugin-ui,
+#iop-plugin-ui,
+#lib-modulelist,
+#modules-tabs,
+#left,
+#right,
+combobox,
+combobox *,
+togglebutton,
+togglebutton *,
+notebook,
+notebook *,
+notebook tab,
+notebook tab *,
+table,
+table *,
+row,
+row *,
+frame,
+frame *,
+alignment,
+entry,
+entry *,
+dialog,
+dialog *,
+colorswatch,
+colorswatch *
+stack,
+stack *,
+scrollbar,
+scrollbar *,
+eventbox,
+eventbox *,
+scale,
+scale *,
+button,
+button *,
+treeview,
+treeview *,
+menu,
+menu *,
+separator,
+eventbox,
+eventbox *,
+box,
+box *
+{
+    font-family: "Roboto Light", "Segoe UI Light",
+                 "SF Pro Display Light", "Ubuntu Light",
+                 "Cantarell", sans-serif;
+}
+
+button
+{
+    font-weight: 500;
+    font-family: "Roboto Medium", "Segoe UI Semibold",
+                 "SF Pro Display Medium",
+                 "Ubuntu Medium", "Cantarell", sans-serif;
+
+}
+
+#iop-panel-label,
+#lib-panel-label
+{
+    background-color: @bg_color;
+    color: @plugin_label_color;
+    border:0;
+    padding: 0 2pt 2pt 0.5em;
+    font-weight: 400;
+    font-stretch: condensed;
+    font-family: "Roboto Condensed","Segoe UI Condensed",
+                 "SF Pro Display", "Ubuntu Condensed",
+                 "Cantarell", sans-serif;
+    font-size: 0.9em;
+}
+
+#section_label
+{
+    font-weight: 500;
+    font-family: "Roboto Medium", "Segoe UI Semibold",
+                 "SF Pro Display Medium",
+                 "Ubuntu Medium", "Cantarell", sans-serif;
+}
+
+notebook tabs,
+#modules-tabs,
+#blending-tabs
+{
+    font-family: "Roboto", "Segoe UI", "SF Pro Text", "Ubuntu",
+                 "Cantarell", sans-serif;
+}

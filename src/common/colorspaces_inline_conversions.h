@@ -121,7 +121,7 @@ static inline __m128 dt_sRGB_to_XYZ_sse2(__m128 rgb)
   rgb = _mm_or_ps(_mm_and_ps(mask, rgb0), _mm_andnot_ps(mask, rgb1));
 
   __m128 XYZ
-      = srgb_to_xyz_0 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(0, 0, 0, 0)) + 
+      = srgb_to_xyz_0 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(0, 0, 0, 0)) +
         srgb_to_xyz_1 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(1, 1, 1, 1)) +
         srgb_to_xyz_2 * _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(2, 2, 2, 2));
   return XYZ;
@@ -372,6 +372,11 @@ static inline void dt_LCH_2_Lab(const float *LCH, float *Lab)
   Lab[0] = LCH[0];
   Lab[1] = cosf(2.0f * DT_M_PI_F * LCH[2]) * LCH[1];
   Lab[2] = sinf(2.0f * DT_M_PI_F * LCH[2]) * LCH[1];
+}
+
+static inline float dt_camera_rgb_luminance(const float *const rgb)
+{
+  return (rgb[0] * 0.2225045f + rgb[1] * 0.7168786f + rgb[2] * 0.0606169f);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -43,6 +43,7 @@ group_basic=(
     'profile_gamma'
     'temperature'
     'filmic'
+    'basicadj'
 )
 
 group_tone=(
@@ -56,6 +57,7 @@ group_tone=(
     'shadhi'
     'tonecurve'
     'zonesystem'
+    'rgbcurve'
 )
 
 group_color=(
@@ -80,6 +82,7 @@ group_correct=(
     'colorreconstruct'
     'defringe'
     'bilateral'
+    'lut3d'
     'nlmeans'
     'denoiseprofile'
     'dither'

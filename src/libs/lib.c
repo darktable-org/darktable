@@ -53,6 +53,16 @@ typedef struct dt_lib_presets_edit_dialog_t
   gint old_id;
 } dt_lib_presets_edit_dialog_t;
 
+typedef enum dt_module_header_icons_t
+{
+  DT_MODULE_ARROW = 0,
+  DT_MODULE_LABEL,
+  DT_MODULE_RESET,
+  DT_MODULE_PRESETS,
+  DT_MODULE_LAST
+} dt_module_header_icons_t;
+
+
 gboolean dt_lib_is_visible_in_view(dt_lib_module_t *module, const dt_view_t *view)
 {
   if(!module->views)
@@ -220,11 +230,7 @@ static void edit_preset(const char *name_in, dt_lib_module_info_t *minfo)
   dt_osx_disallow_fullscreen(dialog);
 #endif
   GtkContainer *content_area = GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog)));
-  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
-  gtk_widget_set_margin_start(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_end(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_top(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
-  gtk_widget_set_margin_bottom(GTK_WIDGET(box), DT_PIXEL_APPLY_DPI(10));
+  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_container_add(content_area, GTK_WIDGET(box));
 
   dt_lib_presets_edit_dialog_t *g
@@ -526,7 +532,7 @@ gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
 }
 
 /* default expandable implementation */
-static int _lib_default_expandable()
+static int _lib_default_expandable(dt_lib_module_t *self)
 {
   return 1;
 }
@@ -798,21 +804,9 @@ static void popup_callback(GtkButton *button, GdkEventButton *event, dt_lib_modu
   gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
 #if GTK_CHECK_VERSION(3, 22, 0)
-  int c = module->container(module);
-
   GdkGravity widget_gravity, menu_gravity;
-
-  if((c == DT_UI_CONTAINER_PANEL_LEFT_TOP) || (c == DT_UI_CONTAINER_PANEL_LEFT_CENTER)
-     || (c == DT_UI_CONTAINER_PANEL_LEFT_BOTTOM))
-  {
-    widget_gravity = GDK_GRAVITY_SOUTH_EAST;
-    menu_gravity = GDK_GRAVITY_NORTH_EAST;
-  }
-  else
-  {
-    widget_gravity = GDK_GRAVITY_SOUTH_WEST;
-    menu_gravity = GDK_GRAVITY_NORTH_WEST;
-  }
+  widget_gravity = GDK_GRAVITY_SOUTH_EAST;
+  menu_gravity = GDK_GRAVITY_NORTH_EAST;
 
   gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu,
                            dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander)), widget_gravity,
@@ -826,6 +820,7 @@ static void popup_callback(GtkButton *button, GdkEventButton *event, dt_lib_modu
   dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
 }
 
+
 void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
 {
   if(!module->expander) return;
@@ -833,28 +828,15 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
   dtgtk_expander_set_expanded(DTGTK_EXPANDER(module->expander), expanded);
 
   /* update expander arrow state */
-  GtkWidget *icon;
+  GtkDarktableButton *icon;
   GtkWidget *header = dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander));
-  gint flags = CPF_DIRECTION_DOWN;
-  int c = module->container(module);
+  gint flags = CPF_DIRECTION_DOWN | CPF_BG_TRANSPARENT | CPF_STYLE_FLAT;
 
   GList *header_childs = gtk_container_get_children(GTK_CONTAINER(header));
-
-  if((c == DT_UI_CONTAINER_PANEL_LEFT_TOP) || (c == DT_UI_CONTAINER_PANEL_LEFT_CENTER)
-     || (c == DT_UI_CONTAINER_PANEL_LEFT_BOTTOM))
-  {
-    icon = g_list_nth_data(header_childs, 0);
-    if(!expanded) flags = CPF_DIRECTION_RIGHT;
-  }
-  else
-  {
-    icon = g_list_last(header_childs)->data;
-    if(!expanded) flags = CPF_DIRECTION_LEFT;
-  }
-
+  icon = g_list_nth_data(header_childs, DT_MODULE_ARROW);
+  if(!expanded) flags = CPF_DIRECTION_RIGHT | CPF_BG_TRANSPARENT | CPF_STYLE_FLAT;
   g_list_free(header_childs);
-
-  dtgtk_icon_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags, NULL);
+  dtgtk_button_set_paint(icon, dtgtk_cairo_paint_solid_arrow, flags, NULL);
 
   /* show / hide plugin widget */
   if(expanded)
@@ -862,15 +844,15 @@ void dt_lib_gui_set_expanded(dt_lib_module_t *module, gboolean expanded)
     /* register to receive draw events */
     darktable.lib->gui_module = module;
 
-    /* focus the current module */
-    for(int k = 0; k < DT_UI_CONTAINER_SIZE; k++)
-      dt_ui_container_focus_widget(darktable.gui->ui, k, GTK_WIDGET(module->expander));
+    if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
+      darktable.gui->scroll_to[1] = module->expander;
   }
   else
   {
     if(darktable.lib->gui_module == module)
     {
       darktable.lib->gui_module = NULL;
+
       dt_control_queue_redraw();
     }
   }
@@ -966,9 +948,9 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
     return NULL;
   }
 
-  int bs = DT_PIXEL_APPLY_DPI(12);
-
   GtkWidget *header = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(GTK_WIDGET(header), "module-header");
+
   GtkWidget *expander = dtgtk_expander_new(header, module->widget);
   GtkWidget *header_evb = dtgtk_expander_get_header_event_box(DTGTK_EXPANDER(expander));
   GtkWidget *pluginui_frame = dtgtk_expander_get_frame(DTGTK_EXPANDER(expander));
@@ -977,80 +959,56 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   g_signal_connect(G_OBJECT(header_evb), "button-press-event", G_CALLBACK(_lib_plugin_header_button_press),
                    module);
 
-  /* setup plugin content frame */
-  gtk_frame_set_shadow_type(GTK_FRAME(pluginui_frame), GTK_SHADOW_IN);
-
   /*
    * initialize the header widgets
    */
-  int idx = 0;
-  GtkWidget *hw[5] = { NULL, NULL, NULL, NULL, NULL };
+  GtkWidget *hw[DT_MODULE_LAST] = { NULL };
 
   /* add the expand indicator icon */
-  hw[idx] = dtgtk_icon_new(dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT, NULL);
-  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+  hw[DT_MODULE_ARROW] = dtgtk_button_new(dtgtk_cairo_paint_solid_arrow, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_ARROW]), "module-collapse-button");
+  g_signal_connect(G_OBJECT(hw[DT_MODULE_ARROW]), "button-press-event", G_CALLBACK(_lib_plugin_header_button_press),
+                   module);
+
 
   /* add module label */
   char label[128];
+  // TODO: figure out why the span larger size is needed here and CSS styling is uneffective
   g_snprintf(label, sizeof(label), "<span size=\"larger\">%s</span>", module->name(module));
-  hw[idx] = gtk_label_new("");
-  gtk_widget_set_name(hw[idx], "panel_label");
-  gtk_label_set_markup(GTK_LABEL(hw[idx]), label);
-  gtk_widget_set_tooltip_text(hw[idx], module->name(module));
-  gtk_label_set_ellipsize(GTK_LABEL(hw[idx++]), PANGO_ELLIPSIZE_MIDDLE);
+  hw[DT_MODULE_LABEL] = gtk_label_new("");
+  gtk_label_set_markup(GTK_LABEL(hw[DT_MODULE_LABEL]), label);
+  gtk_widget_set_tooltip_text(hw[DT_MODULE_LABEL], module->name(module));
+  gtk_label_set_ellipsize(GTK_LABEL(hw[DT_MODULE_LABEL]), PANGO_ELLIPSIZE_MIDDLE);
+  gtk_widget_set_name(hw[DT_MODULE_LABEL], "lib-panel-label");
 
   /* add reset button if module has implementation */
-  if(module->gui_reset)
-  {
-    hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-    module->reset_button = GTK_WIDGET(hw[idx]);
-    gtk_widget_set_tooltip_text(hw[idx], _("reset parameters"));
-    g_signal_connect(G_OBJECT(hw[idx]), "clicked", G_CALLBACK(dt_lib_gui_reset_callback), module);
-  }
-  else
-    hw[idx] = gtk_fixed_new();
-  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+  hw[DT_MODULE_RESET] = dtgtk_button_new(dtgtk_cairo_paint_reset, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  module->reset_button = GTK_WIDGET(hw[DT_MODULE_RESET]);
+  gtk_widget_set_tooltip_text(hw[DT_MODULE_RESET], _("reset parameters"));
+  g_signal_connect(G_OBJECT(hw[DT_MODULE_RESET]), "clicked", G_CALLBACK(dt_lib_gui_reset_callback), module);
+
+  if(!module->gui_reset) gtk_widget_set_sensitive(GTK_WIDGET(hw[DT_MODULE_RESET]), FALSE);
+  gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_RESET]), "module-reset-button");
 
   /* add preset button if module has implementation */
-  if(module->get_params)
-  {
-    hw[idx] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-    module->presets_button = GTK_WIDGET(hw[idx]);
-    gtk_widget_set_tooltip_text(hw[idx], _("presets"));
-    g_signal_connect(G_OBJECT(hw[idx]), "button-press-event", G_CALLBACK(popup_callback), module);
-  }
-  else
-    hw[idx] = gtk_fixed_new();
-  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+  hw[DT_MODULE_PRESETS] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  module->presets_button = GTK_WIDGET(hw[DT_MODULE_PRESETS]);
+  gtk_widget_set_tooltip_text(hw[DT_MODULE_PRESETS], _("presets"));
+  g_signal_connect(G_OBJECT(hw[DT_MODULE_PRESETS]), "button-press-event", G_CALLBACK(popup_callback), module);
 
-  /* add a spacer to align buttons with iop buttons (enabled button) */
-  hw[idx] = gtk_fixed_new();
-  gtk_widget_set_size_request(GTK_WIDGET(hw[idx++]), bs, bs);
+  if(!module->get_params) gtk_widget_set_sensitive(GTK_WIDGET(hw[DT_MODULE_PRESETS]), FALSE);
+  gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_PRESETS]), "module-preset-button");
 
   /* lets order header elements depending on left/right side panel placement */
-  int c = module->container(module);
-  if((c == DT_UI_CONTAINER_PANEL_LEFT_TOP) || (c == DT_UI_CONTAINER_PANEL_LEFT_CENTER)
-     || (c == DT_UI_CONTAINER_PANEL_LEFT_BOTTOM))
-  {
-    for(int i = 0; i <= 4; i++)
-      if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 1 ? TRUE : FALSE, i == 1 ? TRUE : FALSE, 2);
-    gtk_widget_set_halign(hw[1], GTK_ALIGN_START);
-    dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_RIGHT, NULL);
-  }
-  else
-  {
-    for(int i = 4; i >= 0; i--)
-      if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == 1 ? TRUE : FALSE, i == 1 ? TRUE : FALSE, 2);
-    gtk_widget_set_halign(hw[1], GTK_ALIGN_END);
-    dtgtk_icon_set_paint(hw[0], dtgtk_cairo_paint_solid_arrow, CPF_DIRECTION_LEFT, NULL);
-  }
 
-  /* add empty space around widget */
-  gtk_widget_set_margin_start(module->widget, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_end(module->widget, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_top(module->widget, DT_PIXEL_APPLY_DPI(8));
-  gtk_widget_set_margin_bottom(module->widget, DT_PIXEL_APPLY_DPI(8));
+  for(int i = 0; i < DT_MODULE_LAST; i++)
+    if(hw[i]) gtk_box_pack_start(GTK_BOX(header), hw[i], i == DT_MODULE_LABEL ? TRUE : FALSE, i == DT_MODULE_LABEL ? TRUE : FALSE, 0);
+  gtk_widget_set_halign(hw[DT_MODULE_ARROW], GTK_ALIGN_START);
+  gtk_widget_set_halign(hw[DT_MODULE_LABEL], GTK_ALIGN_START);
+  gtk_widget_set_halign(hw[DT_MODULE_RESET], GTK_ALIGN_END);
+
   gtk_widget_show_all(module->widget);
+  gtk_widget_set_name(module->widget, "lib-plugin-ui-main");
   gtk_widget_set_name(pluginui_frame, "lib-plugin-ui");
   module->expander = expander;
 
@@ -1197,6 +1155,13 @@ void dt_lib_colorpicker_set_area(dt_lib_t *lib, float size)
 {
   if(!lib->proxy.colorpicker.module || !lib->proxy.colorpicker.set_sample_area) return;
   lib->proxy.colorpicker.set_sample_area(lib->proxy.colorpicker.module, size);
+  gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
+}
+
+void dt_lib_colorpicker_set_box_area(dt_lib_t *lib, const float *const box)
+{
+  if(!lib->proxy.colorpicker.module || !lib->proxy.colorpicker.set_sample_box_area) return;
+  lib->proxy.colorpicker.set_sample_box_area(lib->proxy.colorpicker.module, box);
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 }
 
