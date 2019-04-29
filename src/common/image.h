@@ -153,7 +153,7 @@ typedef struct dt_image_t
   // common stuff
 
   // to understand this, look at comment for dt_histogram_roi_t
-  int32_t width, height;
+  int32_t width, height, verified_size, final_width, final_height;
   int32_t crop_x, crop_y, crop_width, crop_height;
 
   // used by library
@@ -235,6 +235,7 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t user_fl
 dt_image_orientation_t dt_image_get_orientation(const int imgid);
 /** get max width and height of the final processed image with its current hisotry stack */
 gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height);
+void dt_image_reset_final_size(const int32_t imgid);
 /** set image location lon/lat */
 void dt_image_set_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** get image location lon/lat */
@@ -244,7 +245,7 @@ void dt_image_set_location_and_elevation(const int32_t imgid, dt_image_geoloc_t 
 /** returns 1 if there is history data found for this image, 0 else. */
 int dt_image_altered(const uint32_t imgid);
 /** set the image final/cropped aspect ratio */
-void dt_image_set_aspect_ratio(const int32_t imgid);
+double dt_image_set_aspect_ratio(const int32_t imgid);
 /** set the image final/cropped aspect ratio */
 void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio);
 /** returns the orientation bits of the image from exif. */

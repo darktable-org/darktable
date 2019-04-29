@@ -82,6 +82,7 @@ group_correct=(
     'colorreconstruct'
     'defringe'
     'bilateral'
+    'lut3d'
     'nlmeans'
     'denoiseprofile'
     'dither'

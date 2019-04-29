@@ -383,16 +383,54 @@ void dt_image_set_location_and_elevation(const int32_t imgid, dt_image_geoloc_t 
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 }
 
+void dt_image_reset_final_size(const int32_t imgid)
+{
+  dt_image_t *imgtmp = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  imgtmp->final_width = imgtmp->final_height = 0;
+  dt_image_cache_write_release(darktable.image_cache, imgtmp, DT_IMAGE_CACHE_RELAXED);
+}
+
 gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height)
 {
-  dt_develop_t dev;
+  // get the img strcut
+  dt_image_t *imgtmp = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  dt_image_t img = *imgtmp;
+  dt_image_cache_read_release(darktable.image_cache, imgtmp);
+  // if we already have computed them
+  if(img.final_height > 0 && img.final_width > 0)
+  {
+    *width = img.final_width;
+    *height = img.final_height;
+    return 0;
+  }
 
+  // special case if we try to load embedded preview of raw file
+
+  // the orientation for this camera is not read correctly from exiv2, so we need
+  // to go the full path (as the thumbnail will be flipped the wrong way round)
+  const int incompatible = !strncmp(img.exif_maker, "Phase One", 9);
+  if(!img.verified_size && !dt_image_altered(imgid) && !dt_conf_get_bool("never_use_embedded_thumb")
+     && !incompatible)
+  {
+    // we want to be sure to have the real image size.
+    // some raw files need a pass via rawspeed to get it.
+    char filename[PATH_MAX] = { 0 };
+    gboolean from_cache = TRUE;
+    dt_image_full_path(imgid, filename, sizeof(filename), &from_cache);
+    imgtmp = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+    dt_imageio_open(imgtmp, filename, NULL);
+    imgtmp->verified_size = 1;
+    img = *imgtmp;
+    dt_image_cache_write_release(darktable.image_cache, imgtmp, DT_IMAGE_CACHE_RELAXED);
+  }
+
+  // and now we can do the pipe stuff to get final image size
+  dt_develop_t dev;
   dt_dev_init(&dev, 0);
   dt_dev_load_image(&dev, imgid);
-  const dt_image_t *img = &dev.image_storage;
 
   dt_dev_pixelpipe_t pipe;
-  int wd = img->width, ht = img->height;
+  int wd = img.width, ht = img.height;
   int res = dt_dev_pixelpipe_init_dummy(&pipe, wd, ht);
   if(res)
   {
@@ -409,8 +447,11 @@ gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height)
   }
   dt_dev_cleanup(&dev);
 
-  *width = wd;
-  *height = ht;
+  imgtmp = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+  imgtmp->final_width = *width = wd;
+  imgtmp->final_height = *height = ht;
+  dt_image_cache_write_release(darktable.image_cache, imgtmp, DT_IMAGE_CACHE_RELAXED);
+
   return res;
 }
 
@@ -461,6 +502,7 @@ void dt_image_set_flip(const int32_t imgid, const dt_image_orientation_t orienta
   sqlite3_finalize(stmt);
 
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
+  dt_image_reset_final_size(imgid);
   // write that through to xmp:
   dt_image_write_sidecar_file(imgid);
   }
@@ -565,23 +607,26 @@ void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio)
   }
 }
 
-void dt_image_set_aspect_ratio(const int32_t imgid)
+double dt_image_set_aspect_ratio(const int32_t imgid)
 {
   dt_mipmap_buffer_t buf;
+  double aspect_ratio = 0.0;
 
   // mipmap cache must be initialized, otherwise we'll update next call
   if(darktable.mipmap_cache)
   {
     dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_0, DT_MIPMAP_BLOCKING, 'r');
 
-    if (buf.buf && buf.height && buf.width)
+    if(buf.buf && buf.height && buf.width)
     {
-      const double aspect_ratio = (double)buf.width / (double)buf.height;
+      aspect_ratio = (double)buf.width / (double)buf.height;
       dt_image_set_aspect_ratio_to(imgid, aspect_ratio);
     }
 
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   }
+
+  return aspect_ratio;
 }
 
 int32_t dt_image_duplicate(const int32_t imgid)
@@ -1194,7 +1239,8 @@ uint32_t dt_image_import_lua(const int32_t film_id, const char *filename, gboole
 
 void dt_image_init(dt_image_t *img)
 {
-  img->width = img->height = 0;
+  img->width = img->height = img->verified_size = 0;
+  img->final_width = img->final_height = 0;
   img->crop_x = img->crop_y = img->crop_width = img->crop_height = 0;
   img->orientation = ORIENTATION_NULL;
   img->legacy_flip.legacy = 0;

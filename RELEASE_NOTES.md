@@ -24,6 +24,21 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
 
 ## The Big Ones
 
+- A full rework of the GUI Gtk/CSS. The whole GUI is now fully
+  controlled by CSS rules. There is no more size, color, position in
+  Gtk C code. This makes the whole GUI themable. This version comes
+  with different theme:
+
+     - darktable          : the default theme
+
+     - darktable-elegant  : more condensed fonts
+                            best experience if Roboto font installed
+
+     - darktable-icons    : as elegant, with IOP icons
+                            best experience if Roboto font installed
+
+  Note that this requires Gtk 3.22 or higher to work properly.
+
 - The color picker on the blend, tone curve, color zones and fill
   light modules now allows to select an area by ctrl+click on it.
 
@@ -75,6 +90,9 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   can now be zoomed. Double-click on the bottom bar resets the zoom.
 
 ## New Features And Changes
+
+- A new module for handling 3D Lut transformations (PNG Hald-CLUT and
+  Cube files are supported).
 
 - A new profile ‘histogram profile’ has been added on the same pop-up
   that the softproof one on the darkroom. It controls the color space
