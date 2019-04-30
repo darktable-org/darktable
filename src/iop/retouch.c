@@ -134,7 +134,7 @@ typedef struct dt_iop_retouch_gui_data_t
   GtkLabel *label_form_selected;                                          // display number of forms selected
   GtkWidget *bt_edit_masks, *bt_path, *bt_circle, *bt_ellipse, *bt_brush; // shapes
   GtkWidget *bt_clone, *bt_heal, *bt_blur, *bt_fill;                      // algorithms
-  GtkWidget *bt_showmask, *bt_suppress;                                   // supress & show masks
+  GtkWidget *bt_showmask, *bt_suppress;                                   // suppress & show masks
 
   GtkWidget *wd_bar; // wavelet decompose bar
   GtkLabel *lbl_num_scales;
@@ -2773,10 +2773,10 @@ void gui_init(dt_iop_module_t *self)
                                                    | GDK_SMOOTH_SCROLL_MASK);
   gtk_widget_set_size_request(g->wd_bar, -1, DT_PIXEL_APPLY_DPI(40));
 
-  // toolbar display current scale / cut&paste / supress&display masks
+  // toolbar display current scale / cut&paste / suppress&display masks
   GtkWidget *hbox_scale = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 
-  // display & supress masks
+  // display & suppress masks
   g->bt_showmask
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_object_set(G_OBJECT(g->bt_showmask), "tooltip-text", _("display masks"), (char *)NULL);
@@ -3270,7 +3270,7 @@ static void rt_extend_roi_in_for_clone(struct dt_iop_module_t *self, struct dt_d
 
         fw_src *= roi_in->scale, fh_src *= roi_in->scale, fl_src *= roi_in->scale, ft_src *= roi_in->scale;
 
-        // we only want to process froms alreay in roi_in
+        // we only want to process forms already in roi_in
         const int intersects
             = !(roib < ft_src || ft_src + fh_src < roiy || roir < fl_src || fl_src + fw_src < roix);
         if(intersects)
@@ -4425,7 +4425,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     rt_adjust_levels(self, piece, in_retouch, roi_rt->width, roi_rt->height, ch, levels, use_sse);
   }
 
-  // copy alpha channel if nedded
+  // copy alpha channel if needed
   if((piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) && g && !g->mask_display)
   {
     dt_iop_alpha_copy(ivoid, in_retouch, roi_rt->width, roi_rt->height);
@@ -5283,7 +5283,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(err != CL_SUCCESS) goto cleanup;
   }
 
-  // copy alpha channel if nedded
+  // copy alpha channel if needed
   if((piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) && g && !g->mask_display)
   {
     const int kernel = gd->kernel_retouch_copy_alpha;

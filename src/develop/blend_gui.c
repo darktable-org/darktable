@@ -1137,7 +1137,7 @@ static gboolean _blendop_blendif_color_picker_callback_button_press(GtkWidget *w
   return dt_iop_color_picker_callback_button_press(widget, e, color_picker);
 }
 
-// magic mode: if mouse curser enters a gradient slider with shift and/or control pressed we
+// magic mode: if mouse cursor enters a gradient slider with shift and/or control pressed we
 // enter channel display and/or mask display mode
 static gboolean _blendop_blendif_enter(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *module)
 {

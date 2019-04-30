@@ -22,7 +22,7 @@
  * 
  * It is always disabled and do not show in module list, only in history
  * 
- * We start at version 2 so previous version od dt can add records in history with NULL params
+ * We start at version 2 so previous version of dt can add records in history with NULL params
  */
 
 #ifdef HAVE_CONFIG_H

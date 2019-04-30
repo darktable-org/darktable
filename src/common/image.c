@@ -1041,7 +1041,7 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
 
   // insert dummy image entry in database
 
-  /* Image Position Calulation
+  /* Image Position Calculation
    *
    * The upper int32_t of the last image position is increased by one
    * while the lower 32 bits are masked out.

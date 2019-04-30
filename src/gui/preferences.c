@@ -698,7 +698,7 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent, const gcha
       translated_path = accel_path;
     }
 
-    /* search the tree if we alread have an sibling with node name */
+    /* search the tree if we already have a sibling with node name */
     int siblings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(model), parent);
     for(i = 0; i < siblings; i++)
     {

@@ -978,7 +978,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("CREATE INDEX main.image_position_index ON images (position)",
              "[init] can't create index for custom image order table\n");
 
-    // Set the initial image sequence. The image id - the sequece images were imported -
+    // Set the initial image sequence. The image id - the sequence images were imported -
     // defines the initial order of images.
     //
     // An int64 is used for the position index. The upper 31 bits define the initial order.
@@ -1032,7 +1032,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
              "imgid, 0, formid, form, name, version, points, points_count, source FROM main.mask",
              "[init] can't insert into masks_history\n");
 
-    // create a mask manager entry for each image that has maks
+    // create a mask manager entry for each image that has masks
     TRY_EXEC("INSERT INTO main.history (imgid, num, operation, op_params, module, enabled, "
              "blendop_params, blendop_version, multi_priority, multi_name) "
              "SELECT DISTINCT imgid, 0, 'mask_manager', NULL, 1, 0, NULL, 0, 0, '' FROM main.mask "

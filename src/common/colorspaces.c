@@ -1218,7 +1218,7 @@ dt_colorspaces_t *dt_colorspaces_init()
       category_pos = -1,
       work_pos = -1;
 
-  // init the category profile with NULL profile, the actual profile must be retrieved dinamically by the caller
+  // init the category profile with NULL profile, the actual profile must be retrieved dynamically by the caller
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_WORK, NULL, _("work profile"), -1, -1,
                                                                -1, ++category_pos, -1, -1));
 

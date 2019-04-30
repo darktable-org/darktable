@@ -61,7 +61,7 @@ typedef PangoEllipsizeMode dt_lua_ellipsize_mode_t;
   the following metamethods are defined for the type
  * __luaA_TypeName : string with the associated C type
  * __luaA_Type : int, the associated luaA_Type
- * __pairs : will retun (__next,obj,nil)
+ * __pairs : will return (__next,obj,nil)
  * __next : will iteratethrough the __get table of obj
  * __index : will look into the __get table to find a callback, then raise an error
  * __newindex : will look into the __set table to find a callback, then raise an error

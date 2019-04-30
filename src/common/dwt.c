@@ -451,7 +451,7 @@ void dwt_decompose(dwt_params_t *p, _dwt_layer_func layer_func)
   // if requested scales is grather than max scales adjust it
   if(p->scales > max_scale)
   {
-    // residual shoud be returned
+    // residual should be returned
     if(p->return_layer > p->scales) p->return_layer = max_scale + 1;
     // a scale should be returned, it cannot be grather than max scales
     else if(p->return_layer > max_scale)
@@ -862,7 +862,7 @@ cl_int dwt_decompose_cl(dwt_params_cl_t *p, _dwt_layer_func_cl layer_func)
   // if requested scales is grather than max scales adjust it
   if(p->scales > max_scale)
   {
-    // residual shoud be returned
+    // residual should be returned
     if(p->return_layer > p->scales) p->return_layer = max_scale + 1;
     // a scale should be returned, it cannot be grather than max scales
     else if(p->return_layer > max_scale)

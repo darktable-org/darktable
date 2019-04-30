@@ -391,7 +391,7 @@ static inline __m128 curve_vec4(
     const __m128 highlights,
     const __m128 clarity)
 {
-  // TODO: pull these non-data depedent constants out of the loop to see
+  // TODO: pull these non-data dependent constants out of the loop to see
   // whether the compiler fail to do so
   const __m128 const0 = _mm_set_ps1(0x3f800000u);
   const __m128 const1 = _mm_set_ps1(0x402DF854u); // for e^x

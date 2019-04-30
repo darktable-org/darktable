@@ -466,7 +466,7 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
   if (ps->prt.printer.is_turboprint)
     dt_bauhaus_combobox_set(ps->pprofile, 0);
 
-  // if there is 0 hardware margins, set the user marging to 15mm
+  // if there is 0 hardware margins, set the user margin to 15mm
 
   if (ps->prt.printer.hw_margin_top == 0)
   {

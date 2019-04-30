@@ -661,7 +661,7 @@ static gboolean _piwigo_api_create_new_album(dt_storage_piwigo_params_t *p)
   else
   {
     JsonObject *result = json_node_get_object(json_object_get_member(p->api->response, "result"));
-    // set new album id in paremeter
+    // set new album id in parameter
     p->album_id = json_object_get_int_member(result, "id");
   }
 

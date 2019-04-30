@@ -503,7 +503,7 @@ static void size_allocate_callback(GtkWidget *widget, GtkAllocation *allocation,
   if(g->image) cairo_surface_destroy(g->image);
   free(g->image_buffer);
 
-  /* load the dt logo as a brackground */
+  /* load the dt logo as a background */
   g->image = dt_util_get_logo(MIN(allocation->width, allocation->height) * 0.75);
   if(g->image)
   {

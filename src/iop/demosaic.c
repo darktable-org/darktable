@@ -614,7 +614,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
     // note that channels come before tiles to allow for a
     // vectorization optimization when building drv[] from yuv[]
     float (*const yuv)[TS][TS] = (float(*)[TS][TS])(buffer + TS * TS * (ndir * 3) * sizeof(float));
-    // drv points to ndir TSxTS tiles, each a single chanel of derivatives
+    // drv points to ndir TSxTS tiles, each a single channel of derivatives
     float (*const drv)[TS][TS] = (float(*)[TS][TS])(buffer + TS * TS * (ndir * 3 + 3) * sizeof(float));
     // gmin and gmax reuse memory which is used later by yuv buffer;
     // each points to a TSxTS tile of single channel data
@@ -974,7 +974,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           }
         }
 
-      /* Average the most homogenous pixels for the final result:       */
+      /* Average the most homogeneous pixels for the final result:       */
       for(int row = pad_tile; row < mrow - pad_tile; row++)
         for(int col = pad_tile; col < mcol - pad_tile; col++)
         {
@@ -1638,7 +1638,7 @@ static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, con
     // note that channels come before tiles to allow for a
     // vectorization optimization when building drv[] from yuv[]
     float (*const yuv)[TS][TS] = (float(*)[TS][TS])(buffer + TS * TS * (ndir * 3) * sizeof(float));
-    // drv points to ndir TSxTS tiles, each a single chanel of derivatives
+    // drv points to ndir TSxTS tiles, each a single channel of derivatives
     float (*const drv)[TS][TS] = (float(*)[TS][TS])(buffer + TS * TS * (ndir * 3 + 3) * sizeof(float));
     // gmin and gmax reuse memory which is used later by yuv buffer;
     // each points to a TSxTS tile of single channel data
@@ -2039,7 +2039,7 @@ static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, con
           for(int c = 0; c < 2; c++) *(fdc_chroma + c * TS * TS + row * TS + col) = uv[c];
         }
 
-      /* Average the most homogenous pixels for the final result:       */
+      /* Average the most homogeneous pixels for the final result:       */
       for(int row = pad_tile; row < mrow - pad_tile; row++)
         for(int col = pad_tile; col < mcol - pad_tile; col++)
         {
@@ -4439,7 +4439,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     dt_opencl_release_mem_object(dev_tmptmp);
     dev_tmptmp = NULL;
 
-    // take care of image borders. the algorihm above leaves an unprocessed border of pad_tile pixels.
+    // take care of image borders. the algorithm above leaves an unprocessed border of pad_tile pixels.
     // strategy: take the four edges and process them each with process_vng_cl(). as VNG produces
     // an image with a border with only linear interpolation we process edges of pad_tile+3px and
     // drop 3px on the inner side if possible

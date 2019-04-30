@@ -107,7 +107,7 @@ int dt_opencl_get_device_info(dt_opencl_t *cl, cl_device_id device, cl_device_in
       goto error;
     }
 
-    // allocation succeeed, update pointer.
+    // allocation succeeded, update pointer.
     *param_value = ptr;
   }
 

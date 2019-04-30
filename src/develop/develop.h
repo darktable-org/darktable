@@ -454,7 +454,7 @@ uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *
 /** same as dt_dev_wait_hash but only for distorting modules */
 int dt_dev_wait_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction, dt_pthread_mutex_t *lock,
                              const volatile uint64_t *const hash);
-/** same as dt_dev_sync_pixelpipe_hash but ony for distorting modules */
+/** same as dt_dev_sync_pixelpipe_hash but only for distorting modules */
 int dt_dev_sync_pixelpipe_hash_distort (dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction, dt_pthread_mutex_t *lock,
                                         const volatile uint64_t *const hash);
 
