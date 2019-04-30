@@ -3442,7 +3442,7 @@ static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *modu
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
 
-  // if currently dragging and a form (line or node) has been started, does nothing (expect reseting the toggle button status).
+  // if currently dragging and a form (line or node) has been started, does nothing (expect resetting the toggle button status).
 
   if (is_dragging(g) && g->temp && node_prev(&g->params, g->temp))
   {

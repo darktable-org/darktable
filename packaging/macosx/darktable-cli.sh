@@ -104,7 +104,7 @@ if test -z "$LANG"; then
     fi
 fi
 
-#Next we need to set LC_MESSAGES. If at all possilbe, we want a full
+#Next we need to set LC_MESSAGES. If at all possible, we want a full
 #5-character locale to avoid the "Locale not supported by C library"
 #warning from Gtk -- even though Gtk will translate with a
 #two-character code.

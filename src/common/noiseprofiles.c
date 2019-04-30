@@ -21,7 +21,7 @@
 #include "common/file_location.h"
 #include "control/control.h"
 
-// bump this when the noiseprofiles are getting a differen layout or meaning (raw-raw data, ...)
+// bump this when the noiseprofiles are getting a different layout or meaning (raw-raw data, ...)
 #define DT_NOISE_PROFILE_VERSION 0
 
 const dt_noiseprofile_t dt_noiseprofile_generic = {N_("generic poissonian"), "", "", 0, {0.0001f, 0.0001f, 0.0001}, {0.0f, 0.0f, 0.0f}};

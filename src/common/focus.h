@@ -184,7 +184,7 @@ static void dt_focus_create_clusters(dt_focus_cluster_t *focus, int frows, int f
 #endif
 #undef CHANNEL
 
-#if 0 // simple high pass filter, doesn't work on slighty unsharp/high iso images
+#if 0 // simple high pass filter, doesn't work on slightly unsharp/high iso images
   memset(focus, 0, sizeof(dt_focus_cluster_t)*fs);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(shared)

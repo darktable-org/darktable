@@ -2693,7 +2693,7 @@ void dt_masks_set_source_pos_initial_value(dt_masks_form_gui_t *gui, const int m
         gui->posy_source = 0.01f * iht;
       }
       else
-        fprintf(stderr, "[dt_masks_set_source_pos_initial_value] unsuported masks type when calculating source position initial value\n");
+        fprintf(stderr, "[dt_masks_set_source_pos_initial_value] unsupported masks type when calculating source position initial value\n");
 
       float pts[2] = { pzx * wd + gui->posx_source, pzy * ht + gui->posy_source };
       dt_dev_distort_backtransform(darktable.develop, pts, 1);
@@ -2781,7 +2781,7 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mas
         y = ypos + 0.01f * iht;
       }
       else
-        fprintf(stderr, "[dt_masks_calculate_source_pos_value] unsuported masks type when calculating source position value\n");
+        fprintf(stderr, "[dt_masks_calculate_source_pos_value] unsupported masks type when calculating source position value\n");
     }
     else
     {
