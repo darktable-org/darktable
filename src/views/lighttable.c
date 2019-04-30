@@ -362,7 +362,7 @@ static inline void _destroy_preview_surface(dt_preview_surface_t *fp_surf)
   fp_surf->imgid = -1;
   fp_surf->w_lock = 0;
 
-  fp_surf->zoom_100 = 1001.0f; // dummy value to say it need recompute
+  fp_surf->zoom_100 = 40.0f;
   fp_surf->w_fit = 0.0f;
   fp_surf->h_fit = 0.0f;
 
@@ -1798,18 +1798,6 @@ failure:
   return missing;
 }
 
-static float _preview_get_zoom100(int32_t width, int32_t height, uint32_t imgid)
-{
-  int w, h;
-  w = h = 0;
-  dt_image_get_final_size(imgid, &w, &h);
-  // 0.97f value come from dt_view_image_expose
-  float zoom_100 = fmaxf((float)w / ((float)width * 0.97f), (float)h / ((float)height * 0.97f));
-  if(zoom_100 < 1.0f) zoom_100 = 1.0f;
-
-  return zoom_100;
-}
-
 static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
                          int32_t pointery, const dt_lighttable_layout_t layout)
 {
@@ -2154,9 +2142,7 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       params.full_surface_wd = &lib->fp_surf[i].width;
       params.full_surface_ht = &lib->fp_surf[i].height;
       params.full_surface_w_lock = &lib->fp_surf[i].w_lock;
-      if(lib->fp_surf[i].zoom_100 >= 1000.0f || lib->fp_surf[i].imgid != images[i].imgid)
-        lib->fp_surf[i].zoom_100 = _preview_get_zoom100(images[i].width, images[i].height, images[i].imgid);
-      params.full_zoom100 = lib->fp_surf[i].zoom_100;
+      params.full_zoom100 = &lib->fp_surf[i].zoom_100;
       params.full_w1 = &lib->fp_surf[i].w_fit;
       params.full_h1 = &lib->fp_surf[i].h_fit;
       params.full_maxdx = &lib->fp_surf[i].max_dx;
@@ -2171,6 +2157,84 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     {
       mouse_over_id = images[i].imgid;
       dt_control_set_mouse_over_id(mouse_over_id);
+    }
+  }
+
+  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    // all images in the collection
+    GList *collection = dt_collection_get_all(darktable.collection, -1);
+    const int collection_count = g_list_length(collection);
+
+    // number of images to be displayed
+    const int display_num_images = get_display_num_images();
+    // get the first selected image
+    GList *collection_selected = dt_collection_get_selected(darktable.collection, 1);
+    int first_image = (collection_selected) ? GPOINTER_TO_INT(collection_selected->data) : -1;
+    if(first_image < 0 && lib->last_first_selected >= 0)
+    {
+      GList *l = g_list_nth(collection, lib->last_first_selected);
+      if(l) first_image = GPOINTER_TO_INT(l->data);
+    }
+
+    if(lib->last_first_selected != first_image)
+    {
+      int imgid_prev = -1;
+      int imgid_next = -1;
+
+      GList *l = collection;
+      if(first_image >= 0)
+      {
+        i = 0;
+        while(l && i + display_num_images < collection_count)
+        {
+          const int imgid = GPOINTER_TO_INT(l->data);
+          if(imgid == first_image) break;
+
+          imgid_prev = imgid;
+
+          l = g_list_next(l);
+          i++;
+        }
+        if(l == NULL) imgid_prev = -1;
+
+        i = 0;
+        while(l && i < display_num_images)
+        {
+          l = g_list_next(l);
+          i++;
+        }
+        if(l) imgid_next = GPOINTER_TO_INT(l->data);
+      }
+
+      if(imgid_next >= 0)
+      {
+        float imgwd = 0.97;
+
+        float fz = 1.0f;
+        if(lib->full_zoom > 0.0f) fz = lib->full_zoom;
+
+        dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, imgwd * images[sel_img_count - 1].width * fz,
+                                                               imgwd * images[sel_img_count - 1].height * fz);
+
+        dt_mipmap_cache_get(darktable.mipmap_cache, NULL, imgid_next, mip, DT_MIPMAP_PREFETCH, 'r');
+      }
+
+      if(imgid_prev >= 0)
+      {
+        float imgwd = 0.97;
+
+        float fz = 1.0f;
+        if(lib->full_zoom > 0.0f) fz = lib->full_zoom;
+
+        dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, imgwd * images[0].width * fz,
+                                                               imgwd * images[0].height * fz);
+
+        dt_mipmap_cache_get(darktable.mipmap_cache, NULL, imgid_prev, mip, DT_MIPMAP_PREFETCH, 'r');
+      }
+
+      if(collection) g_list_free(collection);
+      if(collection_selected) g_list_free(collection_selected);
     }
   }
 
@@ -2331,9 +2395,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
   params.zoom = 1;
   params.full_preview = TRUE;
   params.full_zoom = lib->full_zoom;
-  if(lib->fp_surf[0].zoom_100 >= 1000.0f || lib->fp_surf[0].imgid != lib->full_preview_id)
-    lib->fp_surf[0].zoom_100 = _preview_get_zoom100(width, height, lib->full_preview_id);
-  params.full_zoom100 = lib->fp_surf[0].zoom_100;
+  params.full_zoom100 = &lib->fp_surf[0].zoom_100;
   params.full_maxdx = &lib->fp_surf[0].max_dx;
   params.full_maxdy = &lib->fp_surf[0].max_dy;
   params.full_w1 = &lib->fp_surf[0].w_fit;
