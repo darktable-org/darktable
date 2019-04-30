@@ -173,6 +173,7 @@ typedef struct dt_library_t
   int32_t collection_count;
 
   int last_first_selected; // offset of the last selected image inside the current selection
+  gboolean culling_prefetched; // culling has already prefetch the current displayed images?
 
   // stuff for the audio player
   GPid audio_player_pid;   // the pid of the child process
@@ -277,6 +278,7 @@ static inline void filmstrip_set_active_image(dt_library_t *lib, const int imgid
   }
 
   lib->last_first_selected = offset;
+  lib->culling_prefetched = FALSE;
   dt_selection_select_single(darktable.selection, imgid);
   dt_view_filmstrip_set_active_image(darktable.view_manager, imgid);
   if(lib->full_preview_id > -1) lib->full_preview_id = imgid;
@@ -484,6 +486,8 @@ static void _view_lighttable_selection_listener_internal_culling(dt_view_t *self
 {
   if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
+    // we need to prefetch images again
+    lib->culling_prefetched = FALSE;
     // save the offset of the first selected image
     GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
     // we have a selected image
@@ -563,6 +567,7 @@ static void _view_lighttable_query_listener_callback(gpointer instance, gpointer
   if(layout == lib->current_layout && layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     lib->last_first_selected = -1;
+    lib->culling_prefetched = FALSE;
     GList *collected = dt_collection_get_all(darktable.collection, 1);
     if(collected)
     {
@@ -858,6 +863,7 @@ void init(dt_view_t *self)
   lib->full_y = 0;
 
   lib->last_first_selected = -1;
+  lib->culling_prefetched = FALSE;
 
   for(int i = 0; i < FULL_PREVIEW_IN_MEMORY_LIMIT; i++)
   {
@@ -1895,8 +1901,6 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     if(first_selected) g_list_free(first_selected);
   }
 
-  g_list_free(selected);
-
   gchar *query = g_strdup_printf("SELECT id, aspect_ratio FROM images WHERE id IN (%s) ORDER BY INSTR('%s', id)",
                                  imgids, imgids);
 
@@ -2160,14 +2164,18 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     }
   }
 
-  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  // if in culling prefetch previous and next images
+  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING && !lib->culling_prefetched)
   {
+    lib->culling_prefetched = TRUE;
+
     // all images in the collection
-    GList *collection = dt_collection_get_all(darktable.collection, -1);
+    GList *collection = selected;
     const int collection_count = g_list_length(collection);
 
-    // number of images to be displayed
-    const int display_num_images = get_display_num_images();
+    // number of images currently displayed
+    const int display_num_images = sel_img_count;
+
     // get the first selected image
     GList *collection_selected = dt_collection_get_selected(darktable.collection, 1);
     int first_image = (collection_selected) ? GPOINTER_TO_INT(collection_selected->data) : -1;
@@ -2177,66 +2185,59 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       if(l) first_image = GPOINTER_TO_INT(l->data);
     }
 
-    if(lib->last_first_selected != first_image)
+    // get id's for prev and next images
+    int imgid_prev = -1;
+    int imgid_next = -1;
+
+    GList *l = collection;
+    if(first_image >= 0)
     {
-      int imgid_prev = -1;
-      int imgid_next = -1;
-
-      GList *l = collection;
-      if(first_image >= 0)
+      i = 0;
+      while(l && i + display_num_images < collection_count)
       {
-        i = 0;
-        while(l && i + display_num_images < collection_count)
-        {
-          const int imgid = GPOINTER_TO_INT(l->data);
-          if(imgid == first_image) break;
+        const int imgid = GPOINTER_TO_INT(l->data);
+        if(imgid == first_image) break;
 
-          imgid_prev = imgid;
+        imgid_prev = imgid;
 
-          l = g_list_next(l);
-          i++;
-        }
-        if(l == NULL) imgid_prev = -1;
-
-        i = 0;
-        while(l && i < display_num_images)
-        {
-          l = g_list_next(l);
-          i++;
-        }
-        if(l) imgid_next = GPOINTER_TO_INT(l->data);
+        l = g_list_next(l);
+        i++;
       }
+      if(l == NULL) imgid_prev = -1;
 
-      if(imgid_next >= 0)
+      i = 0;
+      while(l && i < display_num_images)
       {
-        float imgwd = 0.97;
-
-        float fz = 1.0f;
-        if(lib->full_zoom > 0.0f) fz = lib->full_zoom;
-
-        dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, imgwd * images[sel_img_count - 1].width * fz,
-                                                               imgwd * images[sel_img_count - 1].height * fz);
-
-        dt_mipmap_cache_get(darktable.mipmap_cache, NULL, imgid_next, mip, DT_MIPMAP_PREFETCH, 'r');
+        l = g_list_next(l);
+        i++;
       }
-
-      if(imgid_prev >= 0)
-      {
-        float imgwd = 0.97;
-
-        float fz = 1.0f;
-        if(lib->full_zoom > 0.0f) fz = lib->full_zoom;
-
-        dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, imgwd * images[0].width * fz,
-                                                               imgwd * images[0].height * fz);
-
-        dt_mipmap_cache_get(darktable.mipmap_cache, NULL, imgid_prev, mip, DT_MIPMAP_PREFETCH, 'r');
-      }
-
-      if(collection) g_list_free(collection);
-      if(collection_selected) g_list_free(collection_selected);
+      if(l) imgid_next = GPOINTER_TO_INT(l->data);
     }
+
+    const float imgwd = 0.97;
+    const float fz = (lib->full_zoom > 0.0f) ? lib->full_zoom : 1.0f;
+
+    if(imgid_next >= 0)
+    {
+      dt_mipmap_size_t mip
+          = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, imgwd * images[sel_img_count - 1].width * fz,
+                                              imgwd * images[sel_img_count - 1].height * fz);
+
+      dt_mipmap_cache_get(darktable.mipmap_cache, NULL, imgid_next, mip, DT_MIPMAP_PREFETCH, 'r');
+    }
+
+    if(imgid_prev >= 0)
+    {
+      dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(
+          darktable.mipmap_cache, imgwd * images[0].width * fz, imgwd * images[0].height * fz);
+
+      dt_mipmap_cache_get(darktable.mipmap_cache, NULL, imgid_prev, mip, DT_MIPMAP_PREFETCH, 'r');
+    }
+
+    if(collection_selected) g_list_free(collection_selected);
   }
+
+  g_list_free(selected);
 
   free(images);
 
