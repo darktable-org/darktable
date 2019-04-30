@@ -546,12 +546,12 @@ static void _view_lighttable_selection_listener_internal_preview(dt_view_t *self
 
 static void _view_lighttable_query_listener_callback(gpointer instance, gpointer user_data)
 {
-  // this will always happen in conjonction with the _view_lighttable_collection_listener_callback
+  // this will always happen in conjunction with the _view_lighttable_collection_listener_callback
   // so we only need to reset the offset
   dt_view_t *self = (dt_view_t *)user_data;
   dt_library_t *lib = (dt_library_t *)self->data;
 
-  // in filemanager, we want to reset the offset to the beggining
+  // in filemanager, we want to reset the offset to the beginning
   const dt_lighttable_layout_t layout = get_layout();
   if(layout == lib->current_layout && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && lib->offset > 0
      && lib->first_visible_filemanager > 0)
@@ -665,7 +665,7 @@ static void _update_collected_images(dt_view_t *self)
 
   if(lib->full_preview_id != -1)
   {
-    // note that this adjustement is needed as for a memory table the rowid doesn't start to 1 after the DELETE
+    // note that this adjustment is needed as for a memory table the rowid doesn't start to 1 after the DELETE
     // above, but rowid is incremented each time we INSERT.
     lib->full_preview_rowid += (min_after - min_before);
 
@@ -697,7 +697,7 @@ static void _update_collected_images(dt_view_t *self)
     sqlite3_finalize(stmt);
   }
 
-  /* if we have a statment lets clean it */
+  /* if we have a statement lets clean it */
   if(lib->statements.main_query) sqlite3_finalize(lib->statements.main_query);
 
   /* prepare a new main query statement for collection */
@@ -1448,7 +1448,7 @@ after_drawing:
     DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
     DT_DEBUG_SQLITE3_RESET(lib->statements.main_query);
 
-    /* setup offest and row for prefetch */
+    /* setup offset and row for prefetch */
     DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 1, offset + max_rows * iir);
     DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, prefetchrows * iir);
 
@@ -3369,7 +3369,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
       case DT_VIEW_STAR_3:
       case DT_VIEW_STAR_4:
       case DT_VIEW_STAR_5:
-        // In file manager we act immediatley, in zoomable lt we defer action
+        // In file manager we act immediately, in zoomable lt we defer action
         // until either the button is released or the pointer leaves the
         // activated control. In the second case, we cancel the action, and
         // instead we begin to pan. We do this for those users intending to

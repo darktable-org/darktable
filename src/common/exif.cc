@@ -1326,7 +1326,7 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
     //       And shall we add a description of the history stack to Exif.Image.ImageHistory?
     if(imgid >= 0)
     {
-      /* Delete metadata taken from the original file if it's fileds we manage in dt, too */
+      /* Delete metadata taken from the original file if it's fields we manage in dt, too */
       static const char * keys[] = {
         "Exif.Image.Artist",
         "Exif.Image.ImageDescription",

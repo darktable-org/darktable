@@ -222,7 +222,7 @@ dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const 
   return iop_order_entry;
 }
 
-// returns the iop_order asociated with the iop order entry that matches operation == op_name
+// returns the iop_order associated with the iop order entry that matches operation == op_name
 double dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name)
 {
   double iop_order = DBL_MAX;
@@ -465,8 +465,8 @@ GList *dt_ioppr_get_iop_order_list(int *_version)
 }
 
 // sets the iop_order on each module of *_iop_list
-// iop_order is set only for base modules, multi-instances will be flaged as unused with DBL_MAX
-// if a module do not exists on iop_order_list it is flaged as unused with DBL_MAX
+// iop_order is set only for base modules, multi-instances will be flagged as unused with DBL_MAX
+// if a module do not exists on iop_order_list it is flagged as unused with DBL_MAX
 void dt_ioppr_set_default_iop_order(GList **_iop_list, GList *iop_order_list)
 {
   GList *iop_list = *_iop_list;
@@ -1578,7 +1578,7 @@ static void _transform_lcms2(struct dt_iop_module_t *self, const float *const im
   else
   {
     *converted_cst = cst_from;
-    fprintf(stderr, "[_transform_lcms2] invalid convertion from %i to %i\n", cst_from, cst_to);
+    fprintf(stderr, "[_transform_lcms2] invalid conversion from %i to %i\n", cst_from, cst_to);
   }
 }
 
@@ -1863,7 +1863,7 @@ static void _transform_matrix(struct dt_iop_module_t *self, const float *const i
   else
   {
     *converted_cst = cst_from;
-    fprintf(stderr, "[_transform_matrix] invalid convertion from %i to %i\n", cst_from, cst_to);
+    fprintf(stderr, "[_transform_matrix] invalid conversion from %i to %i\n", cst_from, cst_to);
   }
 }
 
@@ -2435,7 +2435,7 @@ static void _transform_matrix_sse(struct dt_iop_module_t *self, float *const ima
   else
   {
     *converted_cst = cst_from;
-    fprintf(stderr, "[_transform_matrix_sse] invalid convertion from %i to %i\n", cst_from, cst_to);
+    fprintf(stderr, "[_transform_matrix_sse] invalid conversion from %i to %i\n", cst_from, cst_to);
   }
 }
 
@@ -2537,7 +2537,7 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const flo
   }
   
   if(*converted_cst == cst_from)
-    fprintf(stderr, "[dt_ioppr_transform_image_colorspace] invalid convertion from %i to %i\n", cst_from, cst_to);
+    fprintf(stderr, "[dt_ioppr_transform_image_colorspace] invalid conversion from %i to %i\n", cst_from, cst_to);
 }
 
 void dt_ioppr_transform_image_colorspace_rgb(const float *const image_in, float *const image_out, const int width,
@@ -2790,7 +2790,7 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
     {
       err = CL_INVALID_KERNEL;
       *converted_cst = cst_from;
-      fprintf(stderr, "[dt_ioppr_transform_image_colorspace_cl] invalid convertion from %i to %i\n", cst_from, cst_to);
+      fprintf(stderr, "[dt_ioppr_transform_image_colorspace_cl] invalid conversion from %i to %i\n", cst_from, cst_to);
       goto cleanup;
     }
     

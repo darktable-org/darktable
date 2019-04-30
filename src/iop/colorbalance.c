@@ -632,7 +632,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           rgb = luma + saturation * (rgb - luma);
         }
 
-        // RGB gamma adjustement
+        // RGB gamma adjustment
         rgb = _mm_pow_ps(_mm_max_ps(rgb, zero), gamma_inv_RGB);
 
         // regular lift gamma gain

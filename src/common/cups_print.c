@@ -531,7 +531,7 @@ void dt_print_file(const int32_t imgid, const char *filename, const char *job_ti
 
     num_options = cupsAddOption("number-up", "1", num_options, &options);
 
-    // if the printer has no hardward margins activate the borderless mode
+    // if the printer has no hardware margins activate the borderless mode
 
     if (pinfo->printer.hw_margin_top == 0 || pinfo->printer.hw_margin_bottom == 0
         || pinfo->printer.hw_margin_left == 0 || pinfo->printer.hw_margin_right == 0)

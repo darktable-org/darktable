@@ -886,7 +886,7 @@ void dtgtk_cairo_paint_filmstrip(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   cairo_curve_to(cr, 1.0, 1.0 - bend, sw, 0.0 + bend, sw, 1.0);
   cairo_stroke(cr);
 
-  /* filmstrip start,stop and devider */
+  /* filmstrip start,stop and divider */
   cairo_set_line_width(cr, 0.05);
   cairo_move_to(cr, 0, 1.0);
   cairo_line_to(cr, sw, 1.0);
