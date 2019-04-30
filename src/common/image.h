@@ -124,7 +124,7 @@ typedef struct dt_image_geoloc_t
 } dt_image_geoloc_t;
 
 struct dt_cache_entry_t;
-// TODO: add color labels and such as cachable
+// TODO: add color labels and such as cacheable
 // __attribute__ ((aligned (128)))
 typedef struct dt_image_t
 {

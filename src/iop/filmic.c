@@ -78,7 +78,7 @@ DT_MODULE_INTROSPECTION(3, dt_iop_filmic_params_t)
  *
  * The combined use of both define a modern way to deal with large
  * dynamic range photographs by remapping the values with a comprehensive
- * interface avoiding many of the back and forth adjustements darktable
+ * interface avoiding many of the back and forth adjustments darktable
  * is prone to enforce.
  *
  * */
@@ -1805,7 +1805,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->preserve_color), "toggled", G_CALLBACK(preserve_color_callback), self);
 
 
-  // add collapsable section for those extra options that are generally not to be used
+  // add collapsible section for those extra options that are generally not to be used
 
   GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
   GtkWidget *destdisp = dt_ui_section_label_new(_("destination/display"));

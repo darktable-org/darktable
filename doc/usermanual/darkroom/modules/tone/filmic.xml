@@ -93,7 +93,7 @@
 
         <listitem><para>
           If you plan using filmic's chrominance preservation mode, avoid using any tone mapping
-          module as well as the base curve module. These may produce unpredictible color shifts
+          module as well as the base curve module. These may produce unpredictable color shifts
           that would make the chrominance preservation useless. Neither of these modules is
           usually needed if you use filmic.
         </para></listitem>
@@ -246,7 +246,7 @@
         The filmic S curve is created from the user parameters, by computing the position of
         virtual nodes and interpolating them, similarly to the tone curve module (but here, the
         nodes cannot be moved manually). While this allow a quicker curve parametrization, not
-        all the combinations of paramater deliver good curves, and the graph display will give a
+        all the combinations of parameter deliver good curves, and the graph display will give a
         diagnostic interface. Good curves are either graceful S with a linear central portion
         and curved extremities, or lines following the diagonal of the graph.
       </para>
@@ -274,7 +274,7 @@
     </sect5>
 
     <sect5>
-      <title>Balance hightlights/shadows</title>
+      <title>Balance highlights/shadows</title>
       <para>
         By default, the latitude is distributed toward middle-grey accordingly to the dynamic
         range: when the dynamic range in centered in 0, it means the latitude is centered in
@@ -370,7 +370,7 @@
         through filmic. The default parameters will work 99% of the times, the remaining 1%
         being when you output in linear RGB space (REC709, REC2020) for media handling
         log-encoded data. These settings are then to be used with caution because darktable does
-        not allow separate pipelines for diplay preview and for file output.
+        not allow separate pipelines for display preview and for file output.
       </para>
       <para>
         The black luminance parameter allows to set the ground-level black of the target medium.
@@ -412,7 +412,7 @@
       </para>
       <para>
         To avoid double ups and washed pictures, filmic applies a <quote>gamma</quote>
-        compression reverting the output ICC gamma correction, so the middle-grey is correctely
+        compression reverting the output ICC gamma correction, so the middle-grey is correctly
         remapped at the end. To remove this compression, set the destination power factor to 1.0
         and the middle-grey destination to 45%.
       </para>

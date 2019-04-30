@@ -727,7 +727,7 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   // just display the default darktable logo
   if(!have_preview || no_preview_fallback)
   {
-    /* load the dt logo as a brackground */
+    /* load the dt logo as a background */
     cairo_surface_t *surface = dt_util_get_logo(128.0);
     if(surface)
     {

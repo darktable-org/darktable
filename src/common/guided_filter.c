@@ -138,7 +138,7 @@ static inline void box_mean_1d(int N, const float *x, float *y, size_t stride_y,
 }
 
 // calculate the two-dimensional moving average over a box of size (2*w+1) x (2*w+1)
-// does the calculation in-place if input and ouput images are identical
+// does the calculation in-place if input and output images are identical
 // this function is always called from a OpenMP thread, thus no parallelization
 static void box_mean(gray_image img1, gray_image img2, int w)
 {
