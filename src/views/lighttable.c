@@ -2197,7 +2197,8 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       params.full_surface_wd = &lib->fp_surf[i].width;
       params.full_surface_ht = &lib->fp_surf[i].height;
       params.full_surface_w_lock = &lib->fp_surf[i].w_lock;
-      if(lib->fp_surf[i].zoom_100 >= 1000.0f || lib->fp_surf[i].imgid != lib->slots[i].imgid)
+      if(lib->full_zoom > 1.0f
+         && (lib->fp_surf[i].zoom_100 >= 1000.0f || lib->fp_surf[i].imgid != lib->slots[i].imgid))
         lib->fp_surf[i].zoom_100
             = _preview_get_zoom100(lib->slots[i].width, lib->slots[i].height, lib->slots[i].imgid);
       params.full_zoom100 = lib->fp_surf[i].zoom_100;
@@ -2359,6 +2360,17 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
     }
   }
 
+  if(!lib->slots || lib->slots_count != 1 || lib->slots[0].imgid != lib->full_preview_id
+     || lib->slots[0].width != width || lib->slots[0].height != height)
+  {
+    _expose_destroy_slots(self);
+    lib->slots_count = 1;
+    lib->slots = calloc(lib->slots_count, sizeof(dt_layout_image_t));
+    lib->slots[0].imgid = lib->full_preview_id;
+    lib->slots[0].width = width;
+    lib->slots[0].height = height;
+  }
+
   dt_view_image_expose_t params = { 0 };
   params.image_over = &(lib->image_over);
   params.imgid = lib->full_preview_id;
@@ -2370,7 +2382,8 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
   params.zoom = 1;
   params.full_preview = TRUE;
   params.full_zoom = lib->full_zoom;
-  if(lib->fp_surf[0].zoom_100 >= 1000.0f || lib->fp_surf[0].imgid != lib->full_preview_id)
+  if(lib->full_zoom > 1.0f
+     && (lib->fp_surf[0].zoom_100 >= 1000.0f || lib->fp_surf[0].imgid != lib->full_preview_id))
     lib->fp_surf[0].zoom_100 = _preview_get_zoom100(width, height, lib->full_preview_id);
   params.full_zoom100 = lib->fp_surf[0].zoom_100;
   params.full_maxdx = &lib->fp_surf[0].max_dx;
@@ -3104,17 +3117,7 @@ static gboolean _lighttable_preview_zoom_add(dt_view_t *self, float val, double 
   if(lib->full_preview_id > -1 || get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE
      || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
-    int sel_img_count = 1;
-    if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE)
-    {
-      GList *selected = dt_collection_get_selected(darktable.collection, -1);
-      sel_img_count = g_list_length(selected);
-      if(selected) g_list_free(selected);
-    }
-    else if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
-    {
-      sel_img_count = get_display_num_images();
-    }
+    int sel_img_count = lib->slots_count;
     const int max_in_memory_images = _get_max_in_memory_images();
     if((get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
        && sel_img_count > max_in_memory_images)
@@ -3123,18 +3126,15 @@ static gboolean _lighttable_preview_zoom_add(dt_view_t *self, float val, double 
     }
     else
     {
-      float nz = 100.0f;
-      if(get_layout() == DT_LIGHTTABLE_LAYOUT_EXPOSE || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+      // we get the 100% zoom of the largest image
+      float nz = 1.0f;
+      for(int i = 0; i < sel_img_count; i++)
       {
-        // we get the 100% zoom of the largest image
-        nz = 1.0f;
-        for(int i = 0; i < sel_img_count; i++)
-        {
-          if(lib->fp_surf[i].zoom_100 > nz) nz = lib->fp_surf[i].zoom_100;
-        }
+        if(lib->fp_surf[i].zoom_100 >= 1000.0f || lib->fp_surf[i].imgid != lib->slots[i].imgid)
+          lib->fp_surf[i].zoom_100
+              = _preview_get_zoom100(lib->slots[i].width, lib->slots[i].height, lib->slots[i].imgid);
+        if(lib->fp_surf[i].zoom_100 > nz) nz = lib->fp_surf[i].zoom_100;
       }
-      else
-        nz = lib->fp_surf[0].zoom_100;
 
       nz = fminf(nz, lib->full_zoom + val);
       nz = fmaxf(nz, 1.0f);
