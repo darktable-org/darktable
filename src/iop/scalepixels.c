@@ -265,6 +265,7 @@ end:
 
 void gui_update(dt_iop_module_t *self)
 {
+  if(!self->widget) return;
   if(self->default_enabled)
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel scaling"));
   else
