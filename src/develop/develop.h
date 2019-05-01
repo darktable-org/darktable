@@ -172,10 +172,10 @@ typedef struct dt_develop_t
   // iop order
   int iop_order_version;
   GList *iop_order_list;
-  
+
   // profiles info
   GList *allprofile_info;
-  
+
   // histogram for display.
   uint32_t *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
   uint32_t histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
@@ -423,9 +423,9 @@ int dt_dev_distort_transform(dt_develop_t *dev, float *points, size_t points_cou
 /** reverse apply all transforms to the specified points (in preview pipe space) */
 int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, size_t points_count);
 /** same fct, but we can specify iop with priority between pmin and pmax */
-int dt_dev_distort_transform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction, 
+int dt_dev_distort_transform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
                                   float *points, size_t points_count);
-int dt_dev_distort_backtransform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction, 
+int dt_dev_distort_backtransform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
                                       float *points, size_t points_count);
 /** get the iop_pixelpipe instance corresponding to the iop in the given pipe */
 struct dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
