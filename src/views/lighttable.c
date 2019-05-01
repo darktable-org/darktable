@@ -2185,7 +2185,7 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
     params.zoom = 1;
     params.full_preview = TRUE;
 
-    if(lib->slots_count <= max_in_memory_images)
+    if(lib->slots_count <= max_in_memory_images && lib->full_zoom > 1.0f)
     {
       params.full_zoom = lib->full_zoom;
       params.full_x = lib->full_x;
@@ -2197,8 +2197,7 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       params.full_surface_wd = &lib->fp_surf[i].width;
       params.full_surface_ht = &lib->fp_surf[i].height;
       params.full_surface_w_lock = &lib->fp_surf[i].w_lock;
-      if(lib->full_zoom > 1.0f
-         && (lib->fp_surf[i].zoom_100 >= 1000.0f || lib->fp_surf[i].imgid != lib->slots[i].imgid))
+      if(lib->fp_surf[i].zoom_100 >= 1000.0f || lib->fp_surf[i].imgid != lib->slots[i].imgid)
         lib->fp_surf[i].zoom_100
             = _preview_get_zoom100(lib->slots[i].width, lib->slots[i].height, lib->slots[i].imgid);
       params.full_zoom100 = lib->fp_surf[i].zoom_100;
@@ -2382,24 +2381,25 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
   params.zoom = 1;
   params.full_preview = TRUE;
   params.full_zoom = lib->full_zoom;
-  if(lib->full_zoom > 1.0f
-     && (lib->fp_surf[0].zoom_100 >= 1000.0f || lib->fp_surf[0].imgid != lib->full_preview_id))
-    lib->fp_surf[0].zoom_100 = _preview_get_zoom100(width, height, lib->full_preview_id);
-  params.full_zoom100 = lib->fp_surf[0].zoom_100;
-  params.full_maxdx = &lib->fp_surf[0].max_dx;
-  params.full_maxdy = &lib->fp_surf[0].max_dy;
-  params.full_w1 = &lib->fp_surf[0].w_fit;
-  params.full_h1 = &lib->fp_surf[0].h_fit;
-  params.full_x = lib->full_x;
-  params.full_y = lib->full_y;
-  params.full_surface = &lib->fp_surf[0].surface;
-  params.full_rgbbuf = &lib->fp_surf[0].rgbbuf;
-  params.full_surface_mip = &lib->fp_surf[0].mip;
-  params.full_surface_id = &lib->fp_surf[0].imgid;
-  params.full_surface_wd = &lib->fp_surf[0].width;
-  params.full_surface_ht = &lib->fp_surf[0].height;
-  params.full_surface_w_lock = &lib->fp_surf[0].w_lock;
-
+  if(lib->full_zoom > 1.0f)
+  {
+    if(lib->fp_surf[0].zoom_100 >= 1000.0f || lib->fp_surf[0].imgid != lib->full_preview_id)
+      lib->fp_surf[0].zoom_100 = _preview_get_zoom100(width, height, lib->full_preview_id);
+    params.full_zoom100 = lib->fp_surf[0].zoom_100;
+    params.full_maxdx = &lib->fp_surf[0].max_dx;
+    params.full_maxdy = &lib->fp_surf[0].max_dy;
+    params.full_w1 = &lib->fp_surf[0].w_fit;
+    params.full_h1 = &lib->fp_surf[0].h_fit;
+    params.full_x = lib->full_x;
+    params.full_y = lib->full_y;
+    params.full_surface = &lib->fp_surf[0].surface;
+    params.full_rgbbuf = &lib->fp_surf[0].rgbbuf;
+    params.full_surface_mip = &lib->fp_surf[0].mip;
+    params.full_surface_id = &lib->fp_surf[0].imgid;
+    params.full_surface_wd = &lib->fp_surf[0].width;
+    params.full_surface_ht = &lib->fp_surf[0].height;
+    params.full_surface_w_lock = &lib->fp_surf[0].w_lock;
+  }
   const int missing = dt_view_image_expose(&params);
 
   if(lib->display_focus && (lib->full_res_thumb_id == lib->full_preview_id))
