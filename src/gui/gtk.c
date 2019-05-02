@@ -974,6 +974,7 @@ static gboolean center_enter(GtkWidget *widget, GdkEventCrossing *event, gpointe
 
 static gboolean _windows_state_changed(GtkWidget *window, GdkEventWindowState *event, GtkWidget *widget)
 {
+  gtk_widget_queue_draw(widget);
   dt_view_lighttable_force_expose_all(darktable.view_manager);
   return TRUE;
 }
