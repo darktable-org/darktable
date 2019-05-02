@@ -1,0 +1,444 @@
+
+####################################################################################################################################################
+#
+# Syntax for custom darktable-GIMC commands
+#
+# { command name }
+# { parameters }
+# { darktable entries }
+# { command header }
+# { GMIC command }
+#
+#
+# #################
+#
+# - command name
+#
+# #@gui { command description } : { command name }
+#
+# - command description: up to 100 charactes description
+# - command name: up to 30 characters, must be unique, no blanks
+#
+# Example:
+# #@gui Sharpen [Texture] : _dt_fx_sharpen_texture
+#
+#
+# #################
+#
+# - parameters
+#
+# #@gui : { id } : { description } = { type }{ values }
+#
+# - id: an integer number, must be unique and it must not change (because of backward compatibility)
+# - description: up to 30 charactes description
+# - type: float | int | bool | color | choice | separator | note
+# - values: depends on each parameter type
+#
+# Example:
+# #@gui : 1 : Strength = float(1,0,4,1,2)
+#
+#
+# #################
+#
+# - darktable entries
+#
+# #@dt : { entry } = { value }
+#
+# - entry: colorspace
+# - value: RGB_3C | RGB_1C | sRGB_3C | sRGB_1C | LAB_3C | LAB_1C
+#
+#   default is RGB_3C
+#
+#   RGB_* uses the work color profile
+#   sRGB_* transforms the image to sRGB
+#   LAB_* transforms the image to Lab
+#
+#   *_3C send the first 3 channels to GMIC
+#   *_1C send the first channel to GMIC
+#
+# Example:
+# #@dt : colorspace = RGB_3C
+#
+# - entry: scale_image
+# - value: true | false
+#
+#   default is false
+#
+# Example:
+# #@dt : scale_image = true
+#
+#
+# #################
+#
+# - command header
+#
+# { command name } :
+#
+# - command name: must be the command name defined on the first entry
+#
+# Example:
+# _dt_fx_sharpen_texture :
+#
+#
+# #################
+#
+# - GMIC command
+#
+# - One or more lines defining a valid GMIC command
+#
+#
+# #################
+#
+# #################
+#
+# Parameter types and values
+#
+# -float: (default value, min value, max value, increment, number of decimals)
+#
+# All values are float, with an optional '.' as decimal separator but number of decimals that is an integer.
+#   increment and number of decimals are optional
+#
+# Example:
+# #@gui : 1 : Strength = float(1,0,4,1,2)
+#
+#
+# -int: (default value, min value, max value, increment)
+#
+# All values are integers, increment is optional
+#
+# Example:
+# #@gui : 1 : Number of Levels = int(4,2,32,1)
+#
+#
+# -bool: (0 | 1)
+#
+# Optional default value
+#
+# Example:
+# #@gui : 5 : Sharpen Shades = bool(1)
+#
+#
+# -color: (red,gree,blue,alpha)
+#
+# All values are float, with an optional '.' as decimal separator in the range [0 .. 255]
+#   alpha is optional
+#
+# Example:
+# #@gui : 5 : Color = color(144,79,21)
+#
+#
+# -choice: (defalt index value, string 1, .., string n)
+#
+# Optional defalt index value start at zero
+# string 1, .., string n list of comma separated double-quoted strings, if it continue on the next line(s) it must begin with #@gui :
+#
+# Example:
+# #@gui : 15 : Color Model = choice(4,"Black on white","White on black","Black on transparent white",
+# #@gui : "White on transparent black","Color on white")
+#
+#
+# -point(X,Y,_removable={ -1 | 0 | 1 },_burst={ 0 | 1 },_R,_G,_B,_[-]A,_radius%)
+#
+# Example:
+# #@gui : 1 : Top-Left Vertex (%) = point(5,5,0,1,255,0,0)
+#
+#
+# -separator: (description)
+#
+#
+# Optional double-quoted string
+#
+# Example:
+# #@gui : 5 : sep = separator("For 'Ellipse painting' only")
+#
+#
+# -note: (description)
+#
+# double-quoted string
+#
+# Example:
+# #@gui : 6 : note = note("For 'Ellipse painting' only:")
+#
+#
+# #################
+#
+# #################
+#
+# Maximum line lenght is 255
+#
+# The command is sent to GMIC as it is, with the following replacements
+#
+# $i, where i is a parameter id is replace by the current parameter vaue
+# $DT_ZOOM_SCALE is replaced by the current image zoom scale
+#
+#
+####################################################################################################################################################
+
+
+#@gui Sharpen [Texture] : _dt_fx_sharpen_texture
+#@gui : 1 : Strength = float(1,0,4,1,2)
+#@gui : 2 : Radius = float(4,0,32,1,2)
+#@gui : 3 : sep = separator()
+#@dt : colorspace = RGB_3C
+_dt_fx_sharpen_texture :
+v -99 fx_custom_code "
+  repeat $! l[$>]
+    +rolling_guidance {$2*$DT_ZOOM_SCALE},5,0.5 -. [0] *. $1 -
+  endl done
+",0,0,0,0,0,50,50
+
+#@gui Sharpen [Texture] Lab : _dt_fx_sharpen_texture_lab
+#@gui : 1 : Strength = float(1,0,4,1,2)
+#@gui : 2 : Radius = float(4,0,32,1,2)
+#@gui : 3 : sep = separator()
+#@dt : colorspace = LAB_1C
+_dt_fx_sharpen_texture_lab :
+v -99 fx_custom_code "
+  repeat $! l[$>]
+    +rolling_guidance {$2*$DT_ZOOM_SCALE},5,0.5 -. [0] *. $1 -
+  endl done
+",0,0,0,0,0,50,50
+
+#@gui Mighty Details : _dt_fx_mighty_details
+#@gui : 1 : Amplitude = float(25,0,100,1,2)
+#@gui : 2 : Details Amount = float(1,0,2,1,2)
+#@gui : 3 : Details Scale = float(25,1,100,1,2)
+#@gui : 4 : Details Smoothness = int(1,0,10,1)
+#@gui : 5 : sep = separator()
+#@gui : 6 : Channel(s) = choice(11,"All","RGBA [All]","RGB [All]","RGB [Red]","RGB [Green]","RGB [Blue]","RGBA [Alpha]",
+#@gui : "Linear RGB [All]","Linear RGB [Red]","Linear RGB [Green]","Linear RGB [Blue]","YCbCr [Luminance]",
+#@gui : "YCbCr [Blue-Red Chrominances]","YCbCr [Blue Chrominance]","YCbCr [Red Chrominance]",
+#@gui : "YCbCr [Green Chrominance]","Lab [Lightness]","Lab [ab-Chrominances]","Lab [a-Chrominance]",
+#@gui : "Lab [b-Chrominance]","Lch [ch-Chrominances]","Lch [c-Chrominance]","Lch [h-Chrominance]","HSV [Hue]",
+#@gui : "HSV [Saturation]","HSV [Value]","HSI [Intensity]","HSL [Lightness]","CMYK [Cyan]","CMYK [Magenta]",
+#@gui : "CMYK [Yellow]","CMYK [Key]","YIQ [Luma]","YIQ [Chromas]","RYB [All]","RYB [Red]","RYB [Yellow]","RYB [Blue]")
+#@dt : colorspace = sRGB_3C
+#@dt : scale_image = true
+_dt_fx_mighty_details :
+v -99 fx_custom_code "
+  -fx_mighty_details $1,{$2*$DT_ZOOM_SCALE},$3,$4,$5,$6
+",0,0,0,0,0,50,50
+
+#@gui Magic Details : _dt_fx_magic_details
+#@gui : 1 : Amplitude = float(6,0,30)
+#@gui : 2 : Spatial Scale = float(3,0,10)
+#@gui : 3 : Value Scale = float(15,0,20)
+#@gui : 4 : Edges = float(-0.5,-3,3)
+#@gui : 5 : Smoothness = float(2,0,20)
+#@gui : 6 : sep = separator()
+#@gui : 7 : Channel(s) = choice(27,"All","RGBA [All]","RGB [All]","RGB [Red]","RGB [Green]","RGB [Blue]","RGBA [Alpha]",
+#@gui : "Linear RGB [All]","Linear RGB [Red]","Linear RGB [Green]","Linear RGB [Blue]","YCbCr [Luminance]",
+#@gui : "YCbCr [Blue-Red Chrominances]","YCbCr [Blue Chrominance]","YCbCr [Red Chrominance]",
+#@gui : "YCbCr [Green Chrominance]","Lab [Lightness]","Lab [ab-Chrominances]","Lab [a-Chrominance]",
+#@gui : "Lab [b-Chrominance]","Lch [ch-Chrominances]","Lch [c-Chrominance]","Lch [h-Chrominance]","HSV [Hue]",
+#@gui : "HSV [Saturation]","HSV [Value]","HSI [Intensity]","HSL [Lightness]","CMYK [Cyan]","CMYK [Magenta]",
+#@gui : "CMYK [Yellow]","CMYK [Key]","YIQ [Luma]","YIQ [Chromas]")
+#@gui : 8 : sep = separator()
+#@gui : 9 : note = note("Author: David Tschumperlé.
+#@gui : Latest Update: 2018/01/10")
+#@dt : colorspace = sRGB_3C
+#@dt : scale_image = true
+_dt_fx_magic_details :
+v -99 fx_custom_code "
+  -fx_magic_details $1,$2,$3,$4,$5,$7
+",0,0,0,0,0,50,50
+
+#@gui Freaky Details : _dt_fx_freaky_details
+#@gui : 1 : Amplitude = int(2,1,5)
+#@gui : 2 : Scale = float(10,0,100)
+#@gui : 3 : Iterations = int(1,1,4)
+#@dt : scale_image = true
+_dt_fx_freaky_details :
+v -99 fx_custom_code "
+  repeat $! l[$>]
+    repeat $3
+      . +-. 255 *. -1
+      repeat $1 bilateral. {$2*$DT_ZOOM_SCALE},{1.5*$2} done
+      blend[-2,-1] vividlight blend overlay
+    done
+  endl done
+",0,0,0,0,0,50,50
+
+#@gui Boost Chromaticity : _dt_fx_boost_chroma
+#@gui : 1 : Amplitude = float(50,0,100)
+#@gui : 2 : Color Space = choice{"YCbCr (Distinct)","YCbCr (Mixed)","Lab (Distinct)","Lab (Mixed)"}
+#@gui : 3 : sep = separator()
+#@gui : 4 : note = note("Author: David Tschumperlé.
+#@gui : Latest Update: 2016/19/07")
+#@dt : colorspace = sRGB_3C
+#@dt : scale_image = true
+_dt_fx_boost_chroma :
+v -99 fx_custom_code "
+  -fx_boost_chroma $1,$2
+",0,0,0,0,0,50,50
+
+#@gui Black & White : _dt_fx_blackandwhite
+#@gui : 1 : Red Level = float(0.299,0,1,1,2)
+#@gui : 2 : Red Smoothness = float(0,0,10,1,2)
+#@gui : 3 : Green Level = float(0.587,0,1,1,2)
+#@gui : 4 : Green Smoothness = float(0,0,10,1,2)
+#@gui : 5 : Blue Level = float(0.114,0,1,1,2)
+#@gui : 6 : Blue Smoothness = float(0,0,10,1,2)
+#@gui : 7 : sep = separator()
+#@gui : 8 : Brightness (%) = float(0,-100,100,1,2)
+#@gui : 9 : Contrast (%) = float(0,-100,100,1,2)
+#@gui : 10 : Gamma (%) = float(0,-100,100,1,2)
+#@gui : 11 : Hue (%) = float(0,-100,100,1,2)
+#@gui : 12 : Saturation (%) = float(0,-100,100,1,2)
+#@gui : 13 : sep = separator()
+#@gui : 14 : Grain (Shadows) = float(0,0,200,1,2)
+#@gui : 15 : Grain (Midtones) = float(0,0,200,1,2)
+#@gui : 16 : Grain (Highlights) = float(0,0,200,1,2)
+#@gui : 17 : Grain Tone Fading = float(2,0,10,1,2)
+#@gui : 18 : Grain Scale = float(0,0,3,1,2)
+#@gui : 19 : Grain Type = choice("Gaussian","Uniform","Salt and Pepper","Poisson")
+#@gui : 20 : sep = separator()
+#@gui : 21 : Local Contrast = float(0,0,60,1,2)
+#@gui : 22 : Radius = int(16,1,512,1)
+#@gui : 23 : Contrast Smoothness = float(4,0,10,1,2)
+#@gui : 24 : sep = separator()
+#@gui : 25 : Pseudo-Gray Dithering = int(0,0,5,1)
+#@gui : 26 : Use Maximum Tones = bool(0)
+#@dt : colorspace = sRGB_3C
+#@dt : scale_image = true
+_dt_fx_blackandwhite :
+v -99 fx_custom_code "
+  -fx_blackandwhite $1,$2,$3,$4,$5,$6,$8,$9,$10,$11,$12,$14,$15,$16,$17,$18,$19,$21,$22,$23,$25,$26
+",0,0,0,0,0,50,50
+
+#@gui Freaky B&W : _dt_fx_freaky_bw
+#@gui : 1 : Strength (%) = float(90, 0, 100, 10, 2)
+#@gui : 2 : Oddness (%) = float(20,0,100,10,2)
+#@gui : 3 : Brightness = float(0,-100,100,10,2)
+#@gui : 4 : Contrast = float(0,-100,100,10,2)
+#@gui : 5 : Gamma = float(0,-100,100,10,2)
+#@gui : 6 : sep = separator()
+#@dt : scale_image = true
+#@dt : colorspace = sRGB_3C
+_dt_fx_freaky_bw :
+v -99 fx_custom_code "
+  -fx_freaky_bw $1,$2,$3,$4,$5
+",0,0,0,0,0,50,50
+
+#@gui Cutout : _dt_fx_cutout
+#@gui : 1 : Number of Levels = int(4,2,32,1)
+#@gui : 2 : Edge Simplicity = float(0.5,0,3,1,2)
+#@gui : 3 : Edge Fidelity = int(4,0,10,1)
+#@gui : 4 : Normalize = bool(1)
+#@gui : 5 : sep = separator()
+#@dt : scale_image = true
+#@dt : colorspace = sRGB_3C
+_dt_fx_cutout :
+v -99 fx_custom_code "
+  -fx_cutout $1,$2,$3,$4
+",0,0,0,0,0,50,50
+
+#@gui Painting : _dt_fx_painting
+#@gui : 1 : Abstraction = int(5,1,10,1)
+#@gui : 2 : Details Scale = float(2.5,0,5,1,2)
+#@gui : 3 : Color = float(1.5,0,4,1,2)
+#@gui : 4 : Smoothness = float(50,0,1000,1,2)
+#@gui : 5 : Sharpen Shades = bool(1)
+#@dt : scale_image = true
+#@dt : colorspace = sRGB_3C
+_dt_fx_painting :
+v -99 fx_custom_code "
+  -fx_painting $1,$2,$3,$4,$5
+",0,0,0,0,0,50,50
+
+#@gui Hough Sketch : _dt_fx_houghsketchbw
+#@gui : 1 : Smoothness = float(1.25,0,10,1,2)
+#@gui : 2 : Density = float(10,0,70,1,2)
+#@gui : 3 : Radius = int(5,0,30,1)
+#@gui : 4 : Threshold = float(80,0,100,1,2)
+#@gui : 5 : Opacity = float(0.1,0,1,1,2)
+#@gui : 6 : Color Model = choice(4,"Black on white","White on black","Black on transparent white",
+#@gui : "White on transparent black","Color on white")
+#@dt : scale_image = true
+#@dt : colorspace = sRGB_3C
+_dt_fx_houghsketchbw :
+v -99 fx_custom_code "
+  -fx_houghsketchbw $1,$2,$3,$4,$5,$6
+",0,0,0,0,0,50,50
+
+#@gui Quadtree Variations : _dt_fx_quadtree
+#@gui : 1 : Mode = choice("Squares","Sierpinksi Design","Ellipse Painting")
+#@gui : 2 : Precision = int(1024,2,4096,1)
+#@gui : 3 : Homogeneity = float(0.5,0,2,1,2)
+#@gui : 4 : Outline = int(0,0,4,1)
+#@gui : 5 : sep = separator("For 'Ellipse painting' only")
+#@gui : 6 : note = note("For 'Ellipse painting' only:")
+#@gui : 7 : Primary Radius = float(3,0,5,1,2)
+#@gui : 8 : Secondary Radius = float(1.5,0,5,1,2)
+#@gui : 9 : Anisotropy = float(1,0,4,1,2)
+#@gui : 10 : Only Leafs = bool(1)
+#@dt : scale_image = true
+#@dt : colorspace = sRGB_3C
+_dt_fx_quadtree :
+v -99 fx_custom_code "
+  -fx_quadtree $1,$2,$3,$4,$7,$8,$9,$10
+",0,0,0,0,0,50,50
+
+#@gui Sketch : _dt_fx_sketchbw
+#@gui : 1 : Number of Orientations = int(3,1,16,1)
+#@gui : 2 : Starting Angle = float(45,0,180,1,2)
+#@gui : 3 : Angle Range = float(180,0,180,1,2)
+#@gui : 4 : Stroke Length = float(30,0,1000,1,2)
+#@gui : 5 : Contour Threshold = float(1.75,0,10,1,2)
+#@gui : 6 : Opacity = float(0.02,0,0.3,1,2)
+#@gui : 7 : Background Intensity = float(0.5,0,2,1,2)
+#@gui : 8 : Density = float(0.75,0,5,1,2)
+#@gui : 9 : Sharpness = float(0.1,0,1,1,2)
+#@gui : 10 : Anisotropy = float(0.7,0,1,1,2)
+#@gui : 11 : Smoothness = float(3,0,10,1,2)
+#@gui : 12 : Coherence = float(6,0,10,1,2)
+#@gui : 13 : Boost Stroke = bool(0)
+#@gui : 14 : Curved Stroke = bool(1)
+#@gui : 15 : Color Model = choice(4,"Black on white","White on black","Black on transparent white",
+#@gui : "White on transparent black","Color on white")
+#@dt : scale_image = true
+#@dt : colorspace = sRGB_3C
+_dt_fx_sketchbw :
+v -99 fx_custom_code "
+  -fx_sketchbw $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15
+",0,0,0,0,0,50,50
+
+#@gui Pencil Portrait : _dt_fx_pencil_portraitbw
+#@gui : 1 : Stroke Length = float(30,0,500,1,2)
+#@gui : 2 : Stroke Angle = float(120,0,180,1,2)
+#@gui : 3 : Contour Threshold = float(1,0,10,1,2)
+#@gui : 4 : Opacity = float(0.5,0,1,1,2)
+#@gui : 5 : Color = color(144,79,21)
+#@dt : scale_image = true
+#@dt : colorspace = sRGB_3C
+_dt_fx_pencil_portraitbw :
+v -99 fx_custom_code "
+  -fx_pencil_portraitbw $1,$2,$3,$4,$5
+",0,0,0,0,0,50,50
+
+#@gui Blur [Angular] : _dt_fx_blur_angular
+#@gui : 1 : Amplitude (%) = float(2,0,20)
+#@gui : 2 : Center (%) = point(50,50,0,1)
+#@gui : 3 : Sharpness = float(0,0,500)
+#@gui : 8 : sep = separator()
+#@gui : 9 : note = note("Author: David Tschumperlé.
+#@gui : Latest Update: 2015/16/01")
+_dt_fx_blur_angular :
+  v -99 fx_custom_code "
+  -fx_blur_angular {$1*$DT_ZOOM_SCALE},$2,$3,0,7,0
+",0,0,0,0,0,50,50
+
+#@gui Quadrangle : _dt_fx_quadrangle
+#@gui : 1 : Top-Left Vertex (%) = point(5,5,0,1,255,0,0)
+#@gui : 2 : Top-Right Vertex (%) = point(95,25,0,1,0,255,0)
+#@gui : 3 : Bottom-Right Vertex (%) = point(60,95,0,1,64,128,255)
+#@gui : 4 : Bottom-Left Vertex (%) = point(40,95,0,1,255,255,0)
+#@gui : 5 : Interpolation = choice(1,"Nearest Neighbor","Linear")
+#@gui : 6 : Boundary = choice(3,"Transparent","Nearest","Periodic","Mirror")
+#@gui : 7 : sep = separator()
+#@gui : 8 : note = note("Author: David Tschumperlé.
+#@gui : Latest Update: 2017/10/11")
+_dt_fx_quadrangle :
+  v -99 fx_custom_code "
+  -fx_quadrangle $1,$2,$3,$4,$5,$6
+",0,0,0,0,0,50,50

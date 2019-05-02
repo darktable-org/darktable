@@ -263,6 +263,7 @@ typedef struct darktable_t
   GList *guides;
   double start_wtime;
   GList *themes;
+  GList *gmic_commands;
 } darktable_t;
 
 typedef struct

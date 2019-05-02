@@ -43,6 +43,9 @@
 #include "bauhaus/bauhaus.h"
 #include "common/cpuid.h"
 #include "common/film.h"
+#ifdef HAVE_GMIC
+#include "common/gmic_dt.h"
+#endif // HAVE_GMIC
 #include "common/grealpath.h"
 #include "common/image.h"
 #include "common/image_cache.h"
@@ -802,6 +805,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // get the list of color profiles
   darktable.color_profiles = dt_colorspaces_init();
 
+  // get the list of gmic commands
+#ifdef HAVE_GMIC
+  darktable.gmic_commands = dt_load_gmic_commands_from_dir("");
+#endif // HAVE_GMIC
+
   // initialize the database
   darktable.db = dt_database_init(dbfilename_from_command, load_data, init_gui);
   if(darktable.db == NULL)
@@ -1095,6 +1103,9 @@ void dt_cleanup()
     dt_undo_cleanup(darktable.undo);
   }
   dt_colorspaces_cleanup(darktable.color_profiles);
+#ifdef HAVE_GMIC
+  dt_gmic_commands_cleanup(darktable.gmic_commands);
+#endif // HAVE_GMIC
   dt_conf_cleanup(darktable.conf);
   free(darktable.conf);
   dt_points_cleanup(darktable.points);
