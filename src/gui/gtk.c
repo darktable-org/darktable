@@ -1082,8 +1082,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   gtk_window_add_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
                              darktable.control->accelerators);
 
-  //  dt_gui_background_jobs_init();
-
   /* Have the delete event (window close) end the program */
   snprintf(path, sizeof(path), "%s/icons", datadir);
   gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), path);
@@ -2013,7 +2011,7 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
 /* this is called as a signal handler, the signal raising logic asserts the gdk lock. */
 static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
 {
-  gtk_widget_queue_draw(widget);
+   gtk_widget_queue_draw(widget);
 }
 
 void dt_ellipsize_combo(GtkComboBox *cbox)
