@@ -1186,7 +1186,9 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     const float sigma = 1.0f;
     const float varf = sqrtf(2.0f + 2.0f * 4.0f * 4.0f + 6.0f * 6.0f) / 16.0f; // about 0.5
     const float sigma_band = powf(varf, scale) * sigma;
-    decompose(buf2, buf1, buf[scale], scale, 1.0f / (sigma_band * sigma_band), width, height);
+    float edge_sharpness = 5.0f;
+    if(d->profile_version == 1) edge_sharpness = 1.0f;
+    decompose(buf2, buf1, buf[scale], scale, edge_sharpness / (sigma_band * sigma_band), width, height);
 // DEBUG: clean out temporary memory:
 // memset(buf1, 0, sizeof(float)*4*width*height);
 #if 0 // DEBUG: print wavelet scales:
@@ -1231,7 +1233,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     const float var_y[3] = { sum_y2[0] / (npixels - 1.0f), sum_y2[1] / (npixels - 1.0f), sum_y2[2] / (npixels - 1.0f) };
     const float std_x[3] = { sqrtf(MAX(1e-6f, var_y[0] - sb2)), sqrtf(MAX(1e-6f, var_y[1] - sb2)),
                              sqrtf(MAX(1e-6f, var_y[2] - sb2)) };
-    float adjt[3] = { 2.0f, 2.0f, 2.0f };
+    float adjt[3] = { 1.0f, 1.0f, 1.0f };
     if(d->profile_version == 1)
     {
       for(int i = 0; i < 3; i++)
@@ -2367,7 +2369,9 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     const float sigma = 1.0f;
     const float varf = sqrtf(2.0f + 2.0f * 4.0f * 4.0f + 6.0f * 6.0f) / 16.0f; // about 0.5
     const float sigma_band = powf(varf, s) * sigma;
-    const float inv_sigma2 = 1.0f / (sigma_band * sigma_band);
+    float edge_sharpness = 5.0f;
+    if(d->profile_version == 1) edge_sharpness = 1.0f;
+    const float edge_sharpness_inv_sigma2 = edge_sharpness / (sigma_band * sigma_band);
 
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 0, sizeof(cl_mem), (void *)&dev_buf1);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 1, sizeof(cl_mem), (void *)&dev_buf2);
@@ -2378,7 +2382,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 5, sizeof(unsigned int),
                              (void *)&s);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 6, sizeof(float),
-                             (void *)&inv_sigma2);
+                             (void *)&edge_sharpness_inv_sigma2);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_decompose, 7, sizeof(cl_mem),
                              (void *)&dev_filter);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_decompose, sizes);
@@ -2458,7 +2462,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     const float var_y[3] = { sum_y2[0] / (npixels - 1.0f), sum_y2[1] / (npixels - 1.0f), sum_y2[2] / (npixels - 1.0f) };
     const float std_x[3] = { sqrtf(MAX(1e-6f, var_y[0] - sb2)), sqrtf(MAX(1e-6f, var_y[1] - sb2)),
                              sqrtf(MAX(1e-6f, var_y[2] - sb2)) };
-    float adjt[3] = { 2.0f, 2.0f, 2.0f };
+    float adjt[3] = { 1.0f, 1.0f, 1.0f };
     if(d->profile_version == 1)
     {
       for(int i = 0; i < 3; i++)
