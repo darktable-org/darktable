@@ -1411,7 +1411,11 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
             // The 0.045 was derived from the old formula, to keep the
             // norm identical when P=1, as the norm for P=1 seemed
             // to work quite well: 0.045 = 0.015 * (2 * P + 1) with P=1.
-            float norm = .045f / ((2 * P + 1) * (2 * P + 1));
+            float norm = 1.0f / ((2 * P + 1) * (2 * P + 1));
+            if(d->profile_version == 1)
+            {
+              norm *= 0.045f;
+            }
             if(!d->fix_anscombe_and_nlmeans_norm)
             {
               // use old formula
@@ -1614,7 +1618,11 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
             // The 0.045 was derived from the old formula, to keep the
             // norm identical when P=1, as the norm for P=1 seemed
             // to work quite well: 0.045 = 0.015 * (2 * P + 1) with P=1.
-            float norm = .045f / ((2 * P + 1) * (2 * P + 1));
+            float norm = 1.0f / ((2 * P + 1) * (2 * P + 1));
+            if(d->profile_version == 1)
+            {
+              norm *= 0.045f;
+            }
             if(!d->fix_anscombe_and_nlmeans_norm)
             {
               // use old formula
@@ -1912,7 +1920,11 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   // The 0.045 was derived from the old formula, to keep the
   // norm identical when P=1, as the norm for P=1 seemed
   // to work quite well: 0.045 = 0.015 * (2 * P + 1) with P=1.
-  float norm = .045f / ((2 * P + 1) * (2 * P + 1));
+  float norm = 1.0f / ((2 * P + 1) * (2 * P + 1));
+  if(d->profile_version == 1)
+  {
+    norm *= 0.045f;
+  }
   if(!d->fix_anscombe_and_nlmeans_norm)
   {
     // use old formula
