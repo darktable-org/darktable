@@ -1231,8 +1231,15 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     const float var_y[3] = { sum_y2[0] / (npixels - 1.0f), sum_y2[1] / (npixels - 1.0f), sum_y2[2] / (npixels - 1.0f) };
     const float std_x[3] = { sqrtf(MAX(1e-6f, var_y[0] - sb2)), sqrtf(MAX(1e-6f, var_y[1] - sb2)),
                              sqrtf(MAX(1e-6f, var_y[2] - sb2)) };
-    // add 8.0 here because it seemed a little weak
-    float adjt[3] = { 8.0f, 8.0f, 8.0f };
+    float adjt[3] = { 2.0f, 2.0f, 2.0f };
+    if(d->profile_version == 1)
+    {
+      for(int i = 0; i < 3; i++)
+      {
+        // add 8.0 here because it seemed a little weak
+        adjt[i] = 8.0f;
+      }
+    }
 
     int offset_scale = DT_IOP_DENOISE_PROFILE_BANDS - max_scale;
     // current scale number is scale+offset_scale
@@ -2451,8 +2458,15 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     const float var_y[3] = { sum_y2[0] / (npixels - 1.0f), sum_y2[1] / (npixels - 1.0f), sum_y2[2] / (npixels - 1.0f) };
     const float std_x[3] = { sqrtf(MAX(1e-6f, var_y[0] - sb2)), sqrtf(MAX(1e-6f, var_y[1] - sb2)),
                              sqrtf(MAX(1e-6f, var_y[2] - sb2)) };
-    // add 8.0 here because it seemed a little weak
-    float adjt[3] = { 8.0f, 8.0f, 8.0f };
+    float adjt[3] = { 2.0f, 2.0f, 2.0f };
+    if(d->profile_version == 1)
+    {
+      for(int i = 0; i < 3; i++)
+      {
+        // add 8.0 here because it seemed a little weak
+        adjt[i] = 8.0f;
+      }
+    }
 
     int offset_scale = DT_IOP_DENOISE_PROFILE_BANDS - max_scale;
     // current scale number is s+offset_scale
