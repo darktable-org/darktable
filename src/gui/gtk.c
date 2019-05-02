@@ -1779,6 +1779,8 @@ void dt_ui_panel_show(dt_ui_t *ui, const dt_ui_panel_t p, gboolean show, gboolea
     gtk_widget_show(ui->panels[p]);
   else
     gtk_widget_hide(ui->panels[p]);
+
+  dt_view_lighttable_force_expose_all(darktable.view_manager);
 }
 
 gboolean dt_ui_panel_visible(dt_ui_t *ui, const dt_ui_panel_t p)
