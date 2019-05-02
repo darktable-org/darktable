@@ -2760,6 +2760,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
   d->wb_adaptive_anscombe = p->wb_adaptive_anscombe;
   d->fix_anscombe_and_nlmeans_norm = p->fix_anscombe_and_nlmeans_norm;
+  d->profile_version = p->profile_version;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
