@@ -908,6 +908,11 @@ dialog *
   padding:0;
 }
 
+dialog headerbar
+{
+  background-color: @border_color;
+}
+
 dialog scrolledwindow
 {
   padding: 0 1pt 0 8pt;
