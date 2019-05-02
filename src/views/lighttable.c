@@ -2140,6 +2140,80 @@ static gboolean _expose_compute_slots(dt_view_t *self, int32_t width, int32_t he
   return TRUE;
 }
 
+static void _culling_prefetch(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  // all images in the collection
+  GList *collection = dt_collection_get_all(darktable.collection, -1);
+  const int collection_count = g_list_length(collection);
+
+  // number of images currently displayed
+  const int display_num_images = lib->slots_count;
+
+  // get the first selected image
+  GList *collection_selected = dt_collection_get_selected(darktable.collection, 1);
+  int first_image = (collection_selected) ? GPOINTER_TO_INT(collection_selected->data) : -1;
+  if(first_image < 0 && lib->last_first_selected >= 0)
+  {
+    GList *l = g_list_nth(collection, lib->last_first_selected);
+    if(l) first_image = GPOINTER_TO_INT(l->data);
+  }
+
+  // get id's for prev and next images
+  int imgid_prev = -1;
+  int imgid_next = -1;
+
+  GList *l = collection;
+  if(first_image >= 0)
+  {
+    int i = 0;
+    while(l && i + display_num_images < collection_count)
+    {
+      const int imgid = GPOINTER_TO_INT(l->data);
+      if(imgid == first_image) break;
+
+      imgid_prev = imgid;
+
+      l = g_list_next(l);
+      i++;
+    }
+    if(l == NULL) imgid_prev = -1;
+
+    i = 0;
+    while(l && i < display_num_images)
+    {
+      l = g_list_next(l);
+      i++;
+    }
+    if(l) imgid_next = GPOINTER_TO_INT(l->data);
+  }
+
+  const float imgwd = 0.97;
+  const float fz = (lib->full_zoom > 1.0f) ? lib->full_zoom : 1.0f;
+
+  if(imgid_next >= 0)
+  {
+    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache,
+                                                             imgwd * lib->slots[lib->slots_count - 1].width * fz,
+                                                             imgwd * lib->slots[lib->slots_count - 1].height * fz);
+
+    if(mip < DT_MIPMAP_8)
+      dt_mipmap_cache_get(darktable.mipmap_cache, NULL, imgid_next, mip, DT_MIPMAP_PREFETCH, 'r');
+  }
+
+  if(imgid_prev >= 0)
+  {
+    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(
+        darktable.mipmap_cache, imgwd * lib->slots[0].width * fz, imgwd * lib->slots[0].height * fz);
+
+    if(mip < DT_MIPMAP_8)
+      dt_mipmap_cache_get(darktable.mipmap_cache, NULL, imgid_prev, mip, DT_MIPMAP_PREFETCH, 'r');
+  }
+
+  if(collection_selected) g_list_free(collection_selected);
+  g_list_free(collection);
+}
+
 static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
                          int32_t pointery, const dt_lighttable_layout_t layout)
 {
@@ -2153,10 +2227,12 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
   cairo_paint(cr);
 
   // we recompute images sizes and positions if needed
+  gboolean prefetch = FALSE;
   if(lib->last_width != width || lib->last_height != height || !lib->slots
      || lib->last_num_images != get_display_num_images())
   {
     if(!_expose_compute_slots(self, width, height, layout)) return 0;
+    if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) prefetch = TRUE;
   }
 
   const int max_in_memory_images = _get_max_in_memory_images();
@@ -2218,6 +2294,10 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
       dt_control_set_mouse_over_id(mouse_over_id);
     }
   }
+
+  // if needed, we prefetch the next and previous images
+  // note that we only guess their sizes so they may be computed anyway
+  if(prefetch) _culling_prefetch(self);
 
   if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print(darktable.mipmap_cache);
   return missing;
