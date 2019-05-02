@@ -911,6 +911,8 @@ dialog *
 dialog headerbar
 {
   background-color: @border_color;
+  margin: 0;
+  padding: 1pt;
 }
 
 dialog scrolledwindow
