@@ -1860,6 +1860,7 @@ static gboolean _expose_compute_slots(dt_view_t *self, int32_t width, int32_t he
   if(img_count == 0) return FALSE;
 
   gchar *imgids = NULL;
+  gchar *sortids = NULL;
 
   // build the image ids for the SQL 'in' where clause.
   if(layout == DT_LIGHTTABLE_LAYOUT_EXPOSE)
@@ -1869,9 +1870,15 @@ static gboolean _expose_compute_slots(dt_view_t *self, int32_t width, int32_t he
     {
       const int imgid = GPOINTER_TO_INT(l->data);
       if(imgids)
+      {
         imgids = dt_util_dstrcat(imgids, ", %d", imgid);
+        sortids = dt_util_dstrcat(sortids, ", id=%d DESC", imgid);
+      }
       else
+      {
         imgids = dt_util_dstrcat(imgids, "%d", imgid);
+        sortids = dt_util_dstrcat(sortids, "id=%d DESC", imgid);
+      }
       l = g_list_next(l);
     }
   }
@@ -1910,9 +1917,15 @@ static gboolean _expose_compute_slots(dt_view_t *self, int32_t width, int32_t he
     {
       const int imgid = GPOINTER_TO_INT(l->data);
       if(imgids)
+      {
         imgids = dt_util_dstrcat(imgids, ", %d", imgid);
+        sortids = dt_util_dstrcat(sortids, ", id=%d DESC", imgid);
+      }
       else
+      {
         imgids = dt_util_dstrcat(imgids, "%d", imgid);
+        sortids = dt_util_dstrcat(sortids, "id=%d DESC", imgid);
+      }
       l = g_list_next(l);
       i++;
     }
@@ -1923,10 +1936,11 @@ static gboolean _expose_compute_slots(dt_view_t *self, int32_t width, int32_t he
 
   g_list_free(selected);
 
-  gchar *query = g_strdup_printf("SELECT id, aspect_ratio FROM images WHERE id IN (%s) ORDER BY INSTR('%s', id)",
-                                 imgids, imgids);
+  gchar *query
+      = g_strdup_printf("SELECT id, aspect_ratio FROM images WHERE id IN (%s) ORDER BY %s", imgids, sortids);
 
   g_free(imgids);
+  g_free(sortids);
 
   /* prepare a new main query statement for collection */
   sqlite3_stmt *stmt;
