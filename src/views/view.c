@@ -983,20 +983,19 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   const int imgsel = dt_control_get_mouse_over_id(); //  darktable.control->global_settings.lib_image_mouse_over_id;
 
   dt_view_image_over_t *image_over = vals->image_over;
-  uint32_t imgid = vals->imgid;
+  const uint32_t imgid = vals->imgid;
   cairo_t *cr = vals->cr;
-  int32_t width = vals->width;
-  int32_t height = vals->height;
-  int32_t zoom = vals->zoom;
-  int32_t px = vals->px;
-  int32_t py = vals->py;
-  gboolean full_preview = vals->full_preview;
-  gboolean image_only = vals->image_only;
-  gboolean no_deco = vals->no_deco;
-  if(image_only) no_deco = TRUE;
-  float full_zoom = vals->full_zoom;
-  float full_x = vals->full_x;
-  float full_y = vals->full_y;
+  const int32_t width = vals->width;
+  const int32_t height = vals->height;
+  const int32_t zoom = vals->zoom;
+  const int32_t px = vals->px;
+  const int32_t py = vals->py;
+  const gboolean full_preview = vals->full_preview;
+  const gboolean image_only = vals->image_only;
+  const gboolean no_deco = image_only ? TRUE : vals->no_deco;
+  const float full_zoom = vals->full_zoom;
+  const float full_x = vals->full_x;
+  const float full_y = vals->full_y;
 
   // active if zoom>1 or in the proper area
   const gboolean in_metadata_zone = (px < width && py < height / 2) || (zoom > 1);
