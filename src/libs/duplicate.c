@@ -165,16 +165,10 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButto
       int fw, fh;
       fw = fh = 0;
       dt_image_get_final_size(imgid, &fw, &fh);
-      if(d->cur_final_width - fw < DUPLICATE_COMPARE_SIZE && d->cur_final_width - fw > -DUPLICATE_COMPARE_SIZE
-         && d->cur_final_height - fh < DUPLICATE_COMPARE_SIZE
-         && d->cur_final_height - fh > -DUPLICATE_COMPARE_SIZE)
-      {
-        d->allow_zoom = TRUE;
-      }
-      else
-      {
-        d->allow_zoom = FALSE;
-      }
+      d->allow_zoom
+          = (d->cur_final_width - fw < DUPLICATE_COMPARE_SIZE && d->cur_final_width - fw > -DUPLICATE_COMPARE_SIZE
+             && d->cur_final_height - fh < DUPLICATE_COMPARE_SIZE
+             && d->cur_final_height - fh > -DUPLICATE_COMPARE_SIZE);
       dt_control_queue_redraw_center();
     }
     else if(event->type == GDK_2BUTTON_PRESS)
@@ -231,7 +225,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
   if(d->allow_zoom)
   {
     dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    int closeup = dt_control_get_dev_closeup();
+    const int closeup = dt_control_get_dev_closeup();
     zoom_x = dt_control_get_dev_zoom_x();
     zoom_y = dt_control_get_dev_zoom_y();
     const float min_scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1 << closeup, 0);
@@ -239,8 +233,8 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     nz = cur_scale / min_scale;
   }
 
-  float zx = zoom_x * nz * (float)(nimgw + 1.0f);
-  float zy = zoom_y * nz * (float)(nimgh + 1.0f);
+  const float zx = zoom_x * nz * (float)(nimgw + 1.0f);
+  const float zy = zoom_y * nz * (float)(nimgh + 1.0f);
 
   // we erase everything
   dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
@@ -262,7 +256,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
   params.full_y = -zy + 1.0f;
 
 
-  int res = dt_view_image_expose(&params);
+  const int res = dt_view_image_expose(&params);
 
   if(res)
   {
