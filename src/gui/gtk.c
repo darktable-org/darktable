@@ -1809,7 +1809,7 @@ static GtkWidget *_ui_init_panel_container_top(GtkWidget *container)
 static gboolean _ui_init_panel_container_center_scroll_event(GtkWidget *widget, GdkEventScroll *event)
 {
   // just make sure nothing happens unless ctrl-alt are pressed:
-  return ((event->state & gtk_accelerator_get_default_mod_mask()) != darktable.gui->sidebar_scroll_mask);
+  return (((event->state & gtk_accelerator_get_default_mod_mask()) != darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default"));
 }
 
 // this should work as long as everything happens in the gui thread
