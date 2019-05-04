@@ -992,6 +992,8 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   int32_t py = vals->py;
   gboolean full_preview = vals->full_preview;
   gboolean image_only = vals->image_only;
+  gboolean no_deco = vals->no_deco;
+  if(image_only) no_deco = TRUE;
   float full_zoom = vals->full_zoom;
   float full_x = vals->full_x;
   float full_y = vals->full_y;
@@ -1000,13 +1002,13 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   const gboolean in_metadata_zone = (px < width && py < height / 2) || (zoom > 1);
 
   const gboolean draw_thumb = TRUE;
-  const gboolean draw_colorlabels = !image_only && (darktable.gui->show_overlays || in_metadata_zone);
-  const gboolean draw_local_copy = !image_only && (darktable.gui->show_overlays || in_metadata_zone);
-  const gboolean draw_grouping = !image_only;
-  const gboolean draw_selected = !image_only;
-  const gboolean draw_history = !image_only;
-  const gboolean draw_metadata = !image_only && (darktable.gui->show_overlays || in_metadata_zone);
-  const gboolean draw_audio = !image_only;
+  const gboolean draw_colorlabels = !no_deco && (darktable.gui->show_overlays || in_metadata_zone);
+  const gboolean draw_local_copy = !no_deco && (darktable.gui->show_overlays || in_metadata_zone);
+  const gboolean draw_grouping = !no_deco;
+  const gboolean draw_selected = !no_deco;
+  const gboolean draw_history = !no_deco;
+  const gboolean draw_metadata = !no_deco && (darktable.gui->show_overlays || in_metadata_zone);
+  const gboolean draw_audio = !no_deco;
 
   cairo_save(cr);
   dt_gui_color_t bgcol = DT_GUI_COLOR_THUMBNAIL_BG;
@@ -1381,7 +1383,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
 
     if(!vals->full_rgbbuf || !*(vals->full_rgbbuf)) free(rgbbuf);
 
-    if (image_only)
+    if(no_deco)
     {
       cairo_restore(cr);
       cairo_save(cr);
