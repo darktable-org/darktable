@@ -31,6 +31,8 @@
 #include "gui/gtk.h"
 #include "gui/styles.h"
 
+#define DUPLICATE_COMPARE_SIZE 40
+
 DT_MODULE(1)
 
 typedef enum _lib_duplicate_select_t
@@ -45,6 +47,10 @@ typedef struct dt_lib_duplicate_t
   GtkWidget *duplicate_box;
   int imgid;
   gboolean busy;
+  int cur_final_width;
+  int cur_final_height;
+  gboolean allow_zoom;
+
   dt_lib_duplicate_select_t select;
 
   int32_t buf_width;
@@ -156,6 +162,19 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButto
       dt_dev_invalidate(darktable.develop);
 
       d->imgid = imgid;
+      int fw, fh;
+      fw = fh = 0;
+      dt_image_get_final_size(imgid, &fw, &fh);
+      if(d->cur_final_width - fw < DUPLICATE_COMPARE_SIZE && d->cur_final_width - fw > -DUPLICATE_COMPARE_SIZE
+         && d->cur_final_height - fh < DUPLICATE_COMPARE_SIZE
+         && d->cur_final_height - fh > -DUPLICATE_COMPARE_SIZE)
+      {
+        d->allow_zoom = TRUE;
+      }
+      else
+      {
+        d->allow_zoom = FALSE;
+      }
       dt_control_queue_redraw_center();
     }
     else if(event->type == GDK_2BUTTON_PRESS)
@@ -205,13 +224,20 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     nimgh = img_ht*nw/img_wd;
   }
 
-  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  int closeup = dt_control_get_dev_closeup();
-  float zoom_x = dt_control_get_dev_zoom_x();
-  float zoom_y = dt_control_get_dev_zoom_y();
-  const float min_scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1 << closeup, 0);
-  const float cur_scale = dt_dev_get_zoom_scale(dev, zoom, 1 << closeup, 0);
-  float nz = cur_scale / min_scale;
+  // if image have too different sizes, we show the full preview not zoomed
+  float zoom_x = 0.0f;
+  float zoom_y = 0.0f;
+  float nz = 1.0f;
+  if(d->allow_zoom)
+  {
+    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    int closeup = dt_control_get_dev_closeup();
+    zoom_x = dt_control_get_dev_zoom_x();
+    zoom_y = dt_control_get_dev_zoom_y();
+    const float min_scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1 << closeup, 0);
+    const float cur_scale = dt_dev_get_zoom_scale(dev, zoom, 1 << closeup, 0);
+    nz = cur_scale / min_scale;
+  }
 
   float zx = zoom_x * nz * (float)(nimgw + 1.0f);
   float zy = zoom_y * nz * (float)(nimgh + 1.0f);
@@ -420,11 +446,19 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gtk_widget_set_sensitive(bt, FALSE);
     gtk_widget_set_visible(bt, FALSE);
   }
+
+  // and we store the final size of the current image
+  if(dev->image_storage.id >= 0)
+    dt_image_get_final_size(dev->image_storage.id, &d->cur_final_width, &d->cur_final_height);
 }
 
 static void _lib_duplicate_mipmap_updated_callback(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
+  // we store the final size of the current image
+  if(darktable.develop->image_storage.id >= 0)
+    dt_image_get_final_size(darktable.develop->image_storage.id, &d->cur_final_width, &d->cur_final_height);
+
   gtk_widget_queue_draw (d->duplicate_box);
   dt_control_queue_redraw_center();
 }
