@@ -110,11 +110,6 @@
   background-color: @grey_20;
 }
 
-separator, separator:hover
-{
-  border-color: @grey_15;
-}
-
 treeview *:selected
 {
     background-color: @field_active_bg;
