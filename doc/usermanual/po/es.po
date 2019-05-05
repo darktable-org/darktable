@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "POT-Creation-Date: 2019-04-22 22:46-0500\n"
-"PO-Revision-Date: 2019-05-04 23:56-0500\n"
+"PO-Revision-Date: 2019-05-05 01:15-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es\n"
@@ -10770,12 +10770,11 @@ msgstr "exposición"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9443(primary)
 msgid "time-lapse photography"
-msgstr "fotografía time-lapse"
+msgstr "fotografía cámara rápida"
 
-# deflicker - traducir
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9447(primary)
 msgid "deflicker"
-msgstr "deflicker"
+msgstr "eliminación del parpadeo"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9460(entry)
 msgid ""
@@ -10789,19 +10788,17 @@ msgstr ""
 "linkend=\"histogram\"/>), activará automáticamente el módulo de exposición. El histograma "
 "actúa simplemente como la vista del módulo de exposición."
 
-# pixelpipe - traducir
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9474(para)
-#, fuzzy
 msgid ""
 "You can activate multiple instances of this module each with different parameters acting "
 "on different parts of the image which you select by a drawn mask (see <xref linkend="
 "\"multiple_instances\"/> and <xref linkend=\"drawn_mask\"/>). The histogram is always "
 "linked to the last instance in pixelpipe."
 msgstr ""
-"Puede activar múltiples instancias de este módulo cada una con diferentes parámetros que "
-"actúan sobre diferentes partes de la imagen que seleccione con la mascara dibujada (ver "
-"<xref linkend=\"multiple_instances\"/> y <xref linkend=\"drawn_mask\"/>). El histograma "
-"siempre es enlazado a la instancia más baja en canalización de píxeles."
+"Puede activar múltiples instancias de este módulo, cada una con diferentes parámetros que "
+"actúan en diferentes partes de la imagen que se seleccionan mediante una máscara dibujada "
+"(consulte <xref linkend=\"multiple_instances\"/> y <xref linkend=\"drawn_mask\"/>). El "
+"histograma siempre está vinculado a la última instancia en la tubería del píxel."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9487(para)
 msgid ""
@@ -10892,9 +10889,7 @@ msgstr ""
 "El modo <quote>automático</quote> tiene un ajuste de nivel de negros que funciona tal como "
 "en el modo manual."
 
-# flickering - traducir
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9541(para)
-#, fuzzy
 msgid ""
 "Automatic adjustment is only available for raw images. A typical use case is deflickering "
 "of <ulink url=\"http://en.wikipedia.org/wiki/Time-lapse_photography\"><emphasis>time-lapse "
@@ -10902,12 +10897,12 @@ msgid ""
 "set of parameters to all images of the series – differences in lighting get compensated so "
 "that the final video sequence does not show any flickering."
 msgstr ""
-"El ajuste automático solo está disponible para las imágenes raw. Un caso de uso típico es "
-"el deflicker de las <ulink url=\"http://en.wikipedia.org/wiki/Time-lapse_photography"
-"\"><emphasis>fotografías time-lapse</emphasis></ulink>. Puede aplicar una corrección de "
-"exposición automática con los mismos parámetros a todas las imágenes de la serie – las "
-"diferencias en la luminosidad se compensarán así que la secuencia final del video no "
-"tendrá bandas."
+"El ajuste automático solo está disponible para imágenes en bruto. Un caso de uso típico es "
+"el titileo en las fotografías para el efecto de<ulink url=\"http://en.wikipedia.org/wiki/"
+"Time-lapse_photography\"><emphasis>cámara rápida</emphasis></ulink>. Se aplica una "
+"corrección de exposición automática con el mismo conjunto de parámetros a todas las "
+"imágenes de la serie: las diferencias en la iluminación se compensan de modo que la "
+"secuencia del video final no muestre ningún parpadeo."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9551(para)
 msgid "Defines the mode of operation. Defaults to <quote>manual</quote>."
@@ -11607,9 +11602,8 @@ msgstr "Ajuste los valores de los canales en una escala de 0 a 8."
 msgid "preset"
 msgstr "predefindo"
 
-# passthrough - traducir
+# ¿6502?
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10186(para)
-#, fuzzy
 msgid ""
 "Select a preset white balance. <informaltable frame=\"none\" width=\"80%\"><tgroup cols="
 "\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"4*\"/><colspec colwidth=\"6*\"/"
@@ -11626,18 +11620,22 @@ msgid ""
 "cloudy, shade and a number of indoor lighting options. </entry></row></tbody></tgroup></"
 "informaltable>"
 msgstr ""
-"Selecciona un balance de blancos predefino. <informaltable frame=\"none\" width=\"80%"
+"Seleccione un balance de blancos preestablecido. <informaltable frame=\"none\" width=\"80%"
 "\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"4*\"/><colspec "
-"colwidth=\"6*\"/><tbody><row><entry><emphasis>balance de blanco de la cámara (por "
-"defecto)</emphasis></entry><entry> Balance de blancos reportado por la cámara. </entry></"
+"colwidth=\"6*\"/><tbody><row><entry><emphasis>balance de blancos de la cámara "
+"(predeterminado)</emphasis></entry><entry> Balance de blancos informado por la cámara. </"
+"entry></row><row><entry><emphasis>cámara neutral</emphasis></entry> <entry> Esencialmente "
+"establece la temperatura en 6502K. La matemática auténtica: calcula dichos multiplicadores "
+"de canales de balance de blancos, de modo que el color blanco puro en el espacio de color "
+"de la cámara se convierte en color blanco puro en sRGB D65. (el color blanco puro aquí "
+"significa que tiene el mismo valor igual para cada canal=1.0) </entry></"
 "row><row><entry><emphasis>balance de blancos por punto</emphasis></entry><entry> "
-"Selecciona un área cuadrada de su imagen que contenga mayormente píxeles grises. El "
-"balance de blancos es calculado basado en el área seleccionada. </entry></"
-"row><row><entry><emphasis>paso alto</emphasis></entry><entry> No muestra ajustes del "
-"balance de blancos. </entry></row><row><entry><emphasis>preajustes de la cámara</"
-"emphasis></entry><entry> Los preajustes específicos de la cámara para el balance de "
-"blancos. Ejemplos: Luz directa, flash, nublado, sombra y un número de opciones de luz en "
-"interiores. </entry></row></tbody></tgroup></informaltable>"
+"Seleccione una área cuadrada en su imagen que contenga principalmente píxeles grises. El "
+"balance de blancos se calcula en función del área seleccionada. </entry></"
+"row><row><entry><emphasis>ajustes preestablecidos de cámara</emphasis></entry><entry> "
+"ajustes preestablecidos de balance de blancos específicos de la cámara. Ejemplos: luz "
+"solar directa, flash, nublado, sombra y varias opciones de luz en interiores. </entry></"
+"row></tbody></tgroup></informaltable>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10237(title)
 msgid "finetune"
@@ -11672,7 +11670,6 @@ msgid "color of film material"
 msgstr "color de la película"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10291(para)
-#, fuzzy
 msgid ""
 "The only control element of this module is a color selector which allows to adjust for "
 "different colors of your film material. Clicking on the colored field will open a color "
@@ -11682,13 +11679,13 @@ msgid ""
 "\"center\"/> and take a color probe from your image – preferably from the unexposed border "
 "of your negative."
 msgstr ""
-"El único elemento de control de este módulo es un selector de color que le permite ajustar "
-"los diferentes colores de su película. Al hacer click sobre el campo coloreado, se abrirá "
-"un dialogo con un selector de color que le permitirá definir un color en el espacio HSL o "
-"RGB. También puede activar el selector de color al presionar <inlinegraphic fileref="
-"\"images/darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> "
-"y tomar una muestra de color de su imagen – preferiblemente del borde sin exposición de su "
-"negativo."
+"El único elemento de control de este módulo es un selector de color que permite ajustar "
+"diferentes colores de su material de película. Al pulsar en el campo de color, se abrirá "
+"un cuadro de diálogo con un selector de color que le ofrece la opción de escoger colores "
+"ordinarios, o le permite definir un color en el espacio de color RGB. También puede "
+"activar un selector de color presionando <inlinegraphic fileref=\"images/"
+"darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> y tomar "
+"una muestra de color de la imagen, preferiblemente del borde sin exposición del negativo."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10308(title)
 msgid "Raw black/white point"
@@ -11866,7 +11863,6 @@ msgstr ""
 "oscura. A esto se refiere usualmente como el cambio en el gamma de la imagen."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10542(para)
-#, fuzzy
 msgid ""
 "There are three color pickers in black, gray, and white, available by pressing the "
 "respectively colored <inlinegraphic fileref=\"images/darkroom_module_icon_picker.png\" "
@@ -11875,10 +11871,12 @@ msgid ""
 "sampling mode from within the global color picker panel (see <xref linkend="
 "\"global_color_picker\"/>)."
 msgstr ""
-"Hay tres selectores de color negro, gris y blanco, disponibles al presionar los iconos de "
-"los colores respectivos <inlinegraphic fileref=\"images/darkroom_module_icon_picker.png\" "
-"scalefit=\"1\" width=\"2%\" align=\"center\"/>. Puede utilizarlos para tomar muestras de "
-"los niveles correspondientes directamente de la imagen."
+"Hay tres selectores de color en negro, gris y blanco, disponibles presionando el "
+"respectivo <inlinegraphic fileref=\"images/darkroom_module_icon_picker.png\" scalefit="
+"\"1\" width=\"2%\" align=\"center\"/> ícono de color . Pueden usarse para muestrear "
+"directamente el nivel correspondiente de la imagen. Puede cambiarse entre el modo de "
+"muestreo de puntos y de áreas desde el panel del selector de color global (consulte <xref "
+"linkend=\"global_color_picker\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10551(para)
 msgid ""
@@ -12139,7 +12137,6 @@ msgid "a/b-channel curves"
 msgstr "curvas de los canales a/b"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10752(para)
-#, fuzzy
 msgid ""
 "The curves in the a and b channels work on color values and are available only in "
 "<quote>Lab, separated channels</quote> color space. The horizontal line represents the "
@@ -12148,13 +12145,13 @@ msgid ""
 "colors; negative a-values correspond to more greenish colors. Positive b-values correspond "
 "to more yellowish colors; negative b-values correspond to more blueish colors."
 msgstr ""
-"Las curvas de los canales a y b trabajan sobre valores de color. Solo se muestran y "
-"activan si el combobox de <emphasis>escalar croma</emphasis> es ajustado a <quote>manual</"
-"quote>. La línea horizontal representa el valor del canal de color de los píxeles de la "
-"imagen de entrada. Las líneas verticales representan el valor del canal de color de los "
-"píxeles de la imagen de salida. Valores a positivos corresponden a colores más magenta; "
-"valores a negativos corresponden a colores más verdosos. Valores b positivos corresponden "
-"a colores más amarillentos; valores b negativos corresponden a colores más azulados."
+"Las curvas en los canales a y b funcionan con valores de color y están disponibles solo en "
+"el espacio de color <quote>Lab, canales separados</quote>. La línea horizontal representa "
+"el valor del canal de color de los píxeles de la imagen de entrada. La línea vertical "
+"representa el valor del canal de color de los píxeles de la imagen de salida. Los valores "
+"positivos corresponden a colores más magenta; los valores negativos corresponden a colores "
+"más verdosos. Los valores b positivos corresponden a colores más amarillentos; los valores "
+"b negativos corresponden a colores más azulados."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10761(para)
 msgid ""
@@ -12422,7 +12419,6 @@ msgstr ""
 "normalizado. Ambos trabajan exclusivamente en el canal L de Lab."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11035(para)
-#, fuzzy
 msgid ""
 "Local contrast boosts details of your image, much like the <emphasis>equalizer</emphasis> "
 "does (see <xref linkend=\"equalizer\"/>). However, it is easier to use as it does not "
@@ -12430,9 +12426,11 @@ msgid ""
 "designed to be very robust against unwanted halo effects and gradient reversals along "
 "edges."
 msgstr ""
-"el contraste local mejora los detalles de su imagen, muy parecido a lo que el "
-"<emphasis>ecualizador</emphasis> hace (ver <xref linkend=\"equalizer\"/>). Sin embargo, es "
-"fácil de utilizar y no requiere que trabaje en diferentes bandas de frecuencia."
+"El contraste local aumenta los detalles de la imagen, al igual que lo hace el "
+"<emphasis>ecualizador</emphasis> (consulte <xref linkend=\"equalizer\"/>). Sin embargo, es "
+"más fácil de usar ya que no requiere que se trabaje en diferentes bandas de frecuencia. El "
+"filtro laplaciano local ha sido diseñado para ser muy robusto contra los efectos de halo "
+"no deseados y las inversiones de gradiente a lo largo de los bordes."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11045(para)
 msgid ""
@@ -13784,16 +13782,15 @@ msgstr ""
 "linkend=\"rendering_intent\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12291(para)
-#, fuzzy
 msgid ""
 "Only rendering with LittleCMS2 gives you a choice of rendering intent. The option is "
 "hidden, if darktable's internal rendering routines are used. Rendering with LittleCMS2 is "
 "activated in the preferences dialog (see <xref linkend=\"core_options\"/>)."
 msgstr ""
-"Solo al procesar con LittelCMS2 tendrá la posibilidad de escoger el representación de "
-"color. La opción está escondida, si las rutinas de procesamiento interno de darktable son "
-"utilizadas. El procesado con LittleCMS2 se activa en el diálogo de preferencias. (ver "
-"<xref linkend=\"core_options\"/>)."
+"Solo al procesar con LittelCMS2 tendrá la posibilidad de escoger la representación de "
+"color. La opción está oculta, si se utilizan las rutinas de representación internas de "
+"darktable. La representación con LittleCMS2 se activa en el cuadro de diálogo de "
+"preferencias (consulte <xref linkend=\"core_options\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12299(title)
 msgid "output profile"
@@ -15667,17 +15664,17 @@ msgid "node edit tool"
 msgstr "herramienta de edición del nodo"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14293(para)
-#, fuzzy
 msgid ""
 "Clicking the <inlinegraphic fileref=\"images/darkroom_module_liquify_edit.png\" scalefit="
 "\"1\" width=\"2%\" align=\"center\"/> icon activates or deactivates the node edit tool "
 "displaying all defined distortion objects and their controls. Alternatively you can at any "
 "time right-click on the image for the same effect."
 msgstr ""
-"Al hacer click en el icono de <inlinegraphic fileref=\"images/darkroom_module_icon_presets."
-"png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> se abre un combobox que le da un "
-"rápido acceso a los ajustes de sus módulos favoritos. Haga click en el nombre del pre-"
-"ajuste para aplicarlo a la imagen."
+"Al pulsar en el icono <inlinegraphic fileref=\"images/darkroom_module_liquify_edit.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> se activa o desactiva la herramienta de "
+"edición del nodo que muestra todos los objetos de distorsión definidos y sus controles. "
+"Alternativamente, puede hacer clic con el botón derecho en la imagen en cualquier momento "
+"para obtener el mismo efecto."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14308(title)
 msgid "Perspective correction"
@@ -16156,7 +16153,6 @@ msgid "geometry"
 msgstr "geometría"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14716(para)
-#, fuzzy
 msgid ""
 "In addition to the correction of lens flaws, this module can change the projection type of "
 "your image. Set this combobox to the aimed projection type, like <quote>rectilinear</"
@@ -16164,10 +16160,12 @@ msgid ""
 "<quote>orthographic</quote>, <quote>stereographic</quote>, <quote>equisolid angle</quote>, "
 "<quote>thoby fish-eye</quote>."
 msgstr ""
-"Adicional a la corrección de las debilidades del lente, este módulo puede cambiar el tipo "
-"de proyección de su imagen. Ajuste este combobox al tipo de proyección deseado, como "
-"<quote>rectilínea</quote>, <quote>ojo de pez</quote>, <quote>panorámica</quote>, "
-"<quote>equirrectangular</quote>."
+"Además de la corrección de fallas en la lente, este módulo puede cambiar el tipo de "
+"proyección de la imagen. Establezca esta lista deplegable en el tipo de proyección "
+"deseada, como <quote>rectilíneo</quote>, <quote>ojo de pez</quote>, <quote>panoramico</"
+"quote>, <quote>equirectangular</quote>, <quote >ortográfico</quote>, "
+"<quote>estereográfico</quote>, <quote>ángulo equisólido</quote>, <quote>ojo de pez Thoby</"
+"quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14728(para)
 msgid ""
@@ -16707,7 +16705,6 @@ msgid "Sets the blur radius."
 msgstr "Establece el radio de desenfoque."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15192(para)
-#, fuzzy
 msgid ""
 "Different properties will be displayed depending on the selected algorithm: <informaltable "
 "frame=\"none\" width=\"80%\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec "
@@ -16716,13 +16713,13 @@ msgid ""
 "entry><placeholder-2/></row></tbody></tgroup></informaltable> The value set on each one of "
 "these properties is used as a default when a new shape is created."
 msgstr ""
-"Las copias locales se almacenan en el directorio $HOME/.cache/darktable y tienen por "
-"nombre <quote>img-&lt;SIGNATURE&gt;.&lt;EXT&gt;</quote>, donde: <informaltable frame=\"none"
-"\" width=\"80%\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec colwidth=\"1*\"/"
-"><colspec colwidth=\"3*\"/><tbody><row><entry><emphasis>SIGNATURE (firma)</emphasis></"
-"entry><entry> es la firma (MD5) de la ruta completa </entry></"
-"row><row><entry><emphasis>EXT</emphasis></entry><entry> es la extensión original del "
-"archivo </entry></row></tbody></tgroup></informaltable>"
+"Se mostrarán diferentes propiedades dependiendo del algoritmo seleccionado: <informaltable "
+"frame=\"none\" width=\"80%\"><tgroup cols=\"2\" colsep=\"0\" rowsep=\"0\"><colspec "
+"colwidth=\"1*\"/><colspec colwidth=\"4*\"/><tbody><row><entry><emphasis>algoritmo de "
+"llenado</emphasis></entry><placeholder-1/></row><row><entry><emphasis>algoritmo de "
+"desenfoque</emphasis></entry><placeholder-2/></row></tbody></tgroup></informaltable> El "
+"valor establecido en cada una de estas propiedades se utiliza como predeterminado cuando "
+"se crea una forma nueva."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:15276(title)
 msgid "Raw denoise"
@@ -17607,7 +17604,6 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16455(para)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16471(para)
-#, fuzzy
 msgid ""
 "You can also activate a color picker by pressing <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> and take "
@@ -17616,8 +17612,9 @@ msgid ""
 msgstr ""
 "Con el botón de selección de color <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_picker.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> puede "
-"seleccionar una muestra de su imagen. Los valores correspondientes para los datos del "
-"canal real y virtual  son mostrados en el deslizador de cada canal de color."
+"seleccionar una muestra de la imagen. Puede alternar entre el modo de muestreo de puntos y "
+"de áreas desde el panel del selector de color global (consulte <xref linkend="
+"\"global_color_picker\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16465(title)
 msgid "frame line color"
@@ -19557,7 +19554,6 @@ msgid "--debug --debug-file gphoto2_debug.log"
 msgstr "--debug --debug-file gphoto2_debug.log"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:19058(para)
-#, fuzzy
 msgid ""
 "If you successfully went through all the tests above, your camera will most likely be "
 "supported by darktable. Even if successful, if you stumble upon a problem in darktable, "
@@ -19565,11 +19561,11 @@ msgid ""
 "Please attach the log outputs from the steps above and the log file output generated after "
 "starting darktable with the following command."
 msgstr ""
-"Su todos los pasos anteriores resultan exitosos, o mas seguro es que su cámara sea "
-"soportada por darktable. Aún si hay éxito, si encuentra algún problema en darktable, por "
-"favor llene un reporte de error en <ulink url=\"http://www.darktable.org/redmine"
-"\">redmine</ulink>. Por favor, adjunte la salida del log de los pasos anteriores y la "
-"salida del log generado luego de iniciar darktable con los siguientes comandos."
+"Si realizó con éxito todas las pruebas anteriores, lo más probable es que su cámara sea "
+"compatible con darktable. Incluso teniendo éxito, si se encuentra con un problema en "
+"darktable, envíe un informe de error a <ulink url=\"https://www.darktable.org/redmine"
+"\">redmine</ulink>. Adjunte las salidas de registro de los pasos anteriores y la salida "
+"del archivo de registro generada después de iniciar darktable con el siguiente comando."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:19067(programlisting)
 msgid "darktable -d camctl 2&gt;1 &gt;camctl.log"
@@ -20578,7 +20574,6 @@ msgid "expand a single lighttable module at a time"
 msgstr "expandir un solo módulo en la mesa de luz a la vez"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20015(para)
-#, fuzzy
 msgid ""
 "Controls how lighttable panels are expanded. If this option is enabled, expanding a panel "
 "by <emphasis>clicking</emphasis> collapses any currently expanded panel. If you want to "
@@ -20586,18 +20581,17 @@ msgid ""
 "emphasis>. Disabling this option reverts the meaning of <emphasis>click</emphasis> and "
 "<emphasis>shift-click</emphasis> (default off)."
 msgstr ""
-"Controla como los paneles de la mesa de luz se expanden. Si esta opción está activada, al "
-"expandir un panel haciendo <emphasis>click</emphasis> los demás paneles se contraerán. Si "
-"quiere expandir un panel sin que los otros se contraigan puede hacerlo con <emphasis>shift"
-"+click</emphasis>. Al desactivar esta opción se revierte el significado del "
-"<emphasis>click</emphasis> y <emphasis>shift+click</emphasis> (apagado por defecto)."
+"Controla cómo se expanden los paneles de la mesa de luz. Si esta opción está habilitada, "
+"desplegar un panel al <emphasis>pulsar</emphasis> pliega cualquier panel expandido "
+"actualmente. Si desea desplegar un panel sin plegar los demás, hágalo con <emphasis>Mayús"
+"+clic</emphasis>. Deshabilitar esta opción revierte el significado de <emphasis>clic</"
+"emphasis> y <emphasis>Mayús+clic</emphasis> (por defecto desactivado)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20023(bridgehead)
 msgid "expand a single darkroom module at a time"
 msgstr "expandir un solo módulo en el cuarto oscuro a la vez"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20025(para)
-#, fuzzy
 msgid ""
 "Controls how darkroom modules are expanded. If this option is enabled, expanding a module "
 "by <emphasis>clicking</emphasis> collapses any currently expanded module. If you want to "
@@ -20605,11 +20599,11 @@ msgid ""
 "emphasis>. Disabling this option reverts the meaning of <emphasis>click</emphasis> and "
 "<emphasis>shift-click</emphasis> (default on)."
 msgstr ""
-"Controla como los módulo del cuarto oscuro se expanden. Si esta opción está activada, al "
-"expandir un módulo haciendo <emphasis>click</emphasis> los demás módulos se contraerán. Si "
-"quiere expandir un módulo sin que los otros se contraigan puede hacerlo con <emphasis>shift"
-"+click</emphasis>. Al desactivar esta opción se revierte el significado del "
-"<emphasis>click</emphasis> y <emphasis>shift+click</emphasis> (encendido por defecto)."
+"Controla cómo se expanden los paneles de la mesa de luz. Si esta opción está habilitada, "
+"desplegar un panel al <emphasis>pulsar</emphasis> pliega cualquier panel expandido "
+"actualmente. Si desea desplegar un panel sin plegar los demás, hágalo con <emphasis>Mayús"
+"+clic</emphasis>. Deshabilitar esta opción revierte el significado de <emphasis>clic</"
+"emphasis> y <emphasis>Mayús+clic</emphasis> (por defecto desactivado)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20033(bridgehead)
 msgid "scroll to lighttable modules when expanded/collapsed"
@@ -22961,7 +22955,6 @@ msgstr ""
 "en el sitio web de darktable necesitan ser GPLv2."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22243(para)
-#, fuzzy
 msgid ""
 "darktable will look for scripts (following the normal lua rules) in the standard "
 "directories plus <code>$CONFIGDIR/lua/?.lua</code> . So our script can be called by simply "
@@ -22970,12 +22963,13 @@ msgid ""
 "your code, you can upload it to our script page <ulink url=\"https://darktable.org/redmine/"
 "projects/darktable/wiki/LuaScripts\">here</ulink>."
 msgstr ""
-"darktable buscará scripts (siguiendo las reglas normales de lua) en los directorios "
-"estándar mas <code>$CONFIGDIR/lua/?.lua</code> . Así que su script puede ser llamado al "
-"agregar simplemente <code>require \"scp-storage\"</code> en el archivo <emphasis>luarc</"
-"emphasis> . Un par de notas adicionales... <placeholder-1/> Una vez haya llenado los "
-"campos, verifique su código, puede subir su script a <ulink url=\"http://darktable.org/"
-"redmine/projects/darktable/wiki/LuaScripts\">esta web</ulink>."
+"darktable buscará los scripts (siguiendo las reglas usuales de lua) en los directorios "
+"estándar más <code>$CONFIGDIR/lua/?.lua</code>. Por lo tanto, se puede llamar a nuestro "
+"script simplemente agregando <code>require \"scp-storage\"</code> en el archivo "
+"<emphasis>luarc</emphasis>. Un par de notas adicionales... <placeholder-1/> Una vez que "
+"haya completado todos los campos y revisado su código, puede cargarlo en nuestra página de "
+"script <ulink url=\"https://darktable.org/redmine/projects/darktable/wiki/LuaScripts"
+"\">here</ulink>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22291(title)
 msgid "Calling Lua from DBus"
@@ -23059,7 +23053,6 @@ msgstr ""
 "\">libdarktable.so</filename>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22354(para)
-#, fuzzy
 msgid ""
 "Also note that the call to <function moreinfo=\"none\">require</function> returns a "
 "function that can be called only once and allows you to set darktable's command line "
@@ -23067,11 +23060,11 @@ msgid ""
 "moreinfo=\"none\">--library</function> is useful here if you don't want to work on your "
 "personal library."
 msgstr ""
-"También note que la llamada a <function moreinfo=\"none\">require</function> devuelve una "
-"función que puede ser llamada una sola vez, y le permite configurar la línea de comandos "
-"de parámetros de darktable. El parámetro <function moreinfo=\"none\">:memory:</function> a "
-"<function moreinfo=\"none\">--library</function> es útil aquí si no quiere trabajar en su "
-"librería personal."
+"También tenga en cuenta que la llamada a <function moreinfo=\"none\">require</function> "
+"devuelve una función que solo se puede llamar una vez y le permite configurar el parámetro "
+"de la línea de comando de darktable. El parámetro <function moreinfo=\"none\">:memory:</"
+"function> para <function moreinfo=\"none\">--library</function> es útil aquí si no desea "
+"trabajar en la librería personal."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22371(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22374(primary)
