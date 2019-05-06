@@ -2547,12 +2547,26 @@ static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *
   {
     // reset culling layout
     _expose_destroy_slots(self);
-    // go to the last image on the collection
-    GList *collected = dt_collection_get_all(darktable.collection, -1);
-    GList *l = g_list_last(collected);
-    const int imgid = (l) ? GPOINTER_TO_INT(l->data) : -1;
+    // go to the last image on the collection minus the number of image to display
+    int imgid = -1;
+    gchar *query = dt_util_dstrcat(NULL,
+                                   "SELECT imgid FROM (SELECT rowid, imgid FROM memory.collected_images ORDER BY "
+                                   "rowid DESC LIMIT %d) ORDER BY rowid ASC LIMIT 1",
+                                   get_display_num_images());
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    if(stmt != NULL)
+    {
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        imgid = sqlite3_column_int(stmt, 0);
+      }
+      sqlite3_finalize(stmt);
+    }
+    g_free(query);
+
+    // select this image
     if(imgid >= 0) filmstrip_set_active_image(lib, imgid);
-    if(collected) g_list_free(collected);
   }
   else
     lib->offset = 0x1fffffff;
