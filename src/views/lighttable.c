@@ -180,6 +180,8 @@ typedef struct dt_library_t
 
   int32_t collection_count;
 
+  gboolean culling_prefetched; // culling has already prefetch the current displayed images?
+
   // stuff for the audio player
   GPid audio_player_pid;   // the pid of the child process
   int32_t audio_player_id; // the imgid of the image the audio is played for
@@ -260,6 +262,8 @@ static inline int get_display_num_images(void)
 
 static inline void filmstrip_set_active_image(dt_library_t *lib, const int imgid)
 {
+  lib->culling_prefetched = FALSE;
+
   dt_selection_select_single(darktable.selection, imgid);
   dt_view_filmstrip_set_active_image(darktable.view_manager, imgid);
   if(lib->full_preview_id > -1) lib->full_preview_id = imgid;
@@ -516,6 +520,7 @@ static void _view_lighttable_query_listener_callback(gpointer instance, gpointer
   // also in culling
   if(layout == lib->current_layout && layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
+    lib->culling_prefetched = FALSE;
     _expose_recreate_slots(self, layout);
   }
 }
@@ -533,6 +538,8 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
 
   if(lib->current_layout != DT_LIGHTTABLE_LAYOUT_CULLING)
     _view_lighttable_collection_listener_internal(self, lib);
+
+  lib->culling_prefetched = FALSE;
 }
 
 static void _view_lighttable_selection_listener_callback(gpointer instance, gpointer user_data)
@@ -814,6 +821,8 @@ void init(dt_view_t *self)
   lib->full_zoom = 1.0f;
   lib->full_x = 0;
   lib->full_y = 0;
+
+  lib->culling_prefetched = FALSE;
 
   for(int i = 0; i < FULL_PREVIEW_IN_MEMORY_LIMIT; i++)
   {
@@ -2119,6 +2128,8 @@ static void _culling_prefetch(dt_view_t *self)
     if(mip < DT_MIPMAP_8)
       dt_mipmap_cache_get(darktable.mipmap_cache, NULL, imgid_prev, mip, DT_MIPMAP_PREFETCH, 'r');
   }
+
+  lib->culling_prefetched = TRUE;
 }
 
 static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
@@ -2209,7 +2220,7 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
 
   // if needed, we prefetch the next and previous images
   // note that we only guess their sizes so they may be computed anyway
-  if(prefetch) _culling_prefetch(self);
+  if(prefetch || !lib->culling_prefetched) _culling_prefetch(self);
 
   if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print(darktable.mipmap_cache);
   return missing;
