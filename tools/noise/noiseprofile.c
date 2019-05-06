@@ -36,6 +36,92 @@ write_pfm(const char *filename, float *buf, int wd, int ht)
 }
 #endif
 
+void mean_filter(const int radius, const float* in, float* out, const int width, const int height)
+{
+  float* h_mean = calloc(width*height, sizeof(float));
+  // horizontal pass
+  for(int i = 0; i < height; i++)
+  {
+    float sliding_mean[3] = { 0.0f, 0.0f, 0.0f };
+    for(int j = 0; j < radius; j++)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        sliding_mean[c] += in[(i*width+j)*3+c];
+      }
+    }
+    for(int j = 0; j < width; j++)
+    {
+      int to_be_added_pixel_index;
+      int to_be_removed_pixel_index;
+      if(j+radius >= width)
+      {
+        int diff = j+radius-width;
+        to_be_added_pixel_index = (i*width+width-diff)*3;
+      }
+      else
+      {
+        to_be_added_pixel_index = (i*width+j+radius)*3;
+      }
+      if(j-radius < 0)
+      {
+        to_be_removed_pixel_index = (i*width-j+radius)*3;
+      }
+      else
+      {
+        to_be_removed_pixel_index = (i*width+j-radius)*3;
+      }
+
+      for(int c = 0; c < 3; c++)
+      {
+        sliding_mean[c] += in[to_be_added_pixel_index+c];
+        h_mean[(i*width+j)*3+c] = sliding_mean[c] / radius;
+        sliding_mean[c] -= in[to_be_removed_pixel_index+c];
+      }
+    }
+  }
+  // vertical pass
+  for(int j = 0; j < width; j++)
+  {
+    float sliding_mean[3] = { 0.0f, 0.0f, 0.0f };
+    for(int i = 0; i < radius; i++)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        sliding_mean[c] += in[(i*width+j)*3+c];
+      }
+    }
+    for(int i = 0; i < height; i++)
+    {
+      int to_be_added_pixel_index;
+      int to_be_removed_pixel_index;
+      if(i+radius >= height)
+      {
+        int diff = i+radius-height;
+        to_be_added_pixel_index = ((i-diff)*width+j)*3;
+      }
+      else
+      {
+        to_be_added_pixel_index = ((i+radius)*width+j)*3;
+      }
+      if(i-radius < 0)
+      {
+        to_be_removed_pixel_index = ((radius-i)*width+j)*3;
+      }
+      else
+      {
+        to_be_removed_pixel_index = ((i-radius)*width+j)*3;
+      }
+
+      for(int c = 0; c < 3; c++)
+      {
+        sliding_mean[c] += h_mean[to_be_added_pixel_index+c];
+        out[(i*width+j)*3+c] = sliding_mean[c] / radius;
+        sliding_mean[c] -= h_mean[to_be_removed_pixel_index+c];
+      }
+    }
+  }
+}
 
 #define MIN(a,b) ((a>b)?b:a)
 #define MAX(a,b) ((a>b)?a:b)
