@@ -121,6 +121,7 @@ void mean_filter(const int radius, const float* in, float* out, const int width,
       }
     }
   }
+  free(h_mean);
 }
 
 #define MIN(a,b) ((a>b)?b:a)
@@ -142,7 +143,8 @@ int main(int argc, char *arg[])
   }
   int wd, ht;
   float *input = read_pfm(arg[1], &wd, &ht);
-  float *inputblurred = read_pfm(arg[2], &wd, &ht);
+  float *inputblurred = calloc(wd*ht, sizeof(float));
+  mean_filter(32, input, inputblurred, wd, ht);
   double var[3][NB_BITS_PRECISION];
   unsigned nb_elts[3][NB_BITS_PRECISION];
   for(int level = 0; level < NB_BITS_PRECISION; level++)
@@ -223,7 +225,7 @@ int main(int argc, char *arg[])
               var[2][level], nb_elts[0][level], nb_elts[1][level], nb_elts[2][level]);
     }
   }
-  free(inputblurred);
-  free(input);
+  //free(inputblurred);
+  //free(input);
   exit(0);
 }
