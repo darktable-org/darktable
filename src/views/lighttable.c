@@ -191,8 +191,8 @@ typedef struct dt_library_t
   float full_x;
   float full_y;
   dt_preview_surface_t fp_surf[FULL_PREVIEW_IN_MEMORY_LIMIT];
-  dt_layout_image_t *slots;
-  int slots_count;
+  dt_layout_image_t *slots, *slots_old;
+  int slots_count, slots_count_old;
   gboolean slots_changed;
   int last_num_images, last_width, last_height;
 
@@ -283,6 +283,7 @@ static void _force_expose_all(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   lib->force_expose_all = TRUE;
+  lib->slots_changed = TRUE;
   dt_control_queue_redraw_center();
 }
 
@@ -2901,6 +2902,15 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
 {
   dt_library_t *lib = (dt_library_t *)self->data;
 
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_EXPOSE || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    // save current slots
+    lib->slots_old = lib->slots;
+    lib->slots_count_old = lib->slots_count;
+    lib->slots = NULL;
+    lib->slots_count = 0;
+  }
+
   lib->full_preview_sticky = sticky;
   lib->full_preview_id = mouse_over_id;
 
@@ -2985,6 +2995,13 @@ static void _preview_quit(dt_view_t *self)
 
   if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_EXPOSE || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
+    // retrieve saved slots
+    _expose_destroy_slots(self);
+    lib->slots = lib->slots_old;
+    lib->slots_count = lib->slots_count_old;
+    lib->slots_old = NULL;
+    lib->slots_count_old = 0;
+
     gtk_widget_hide(GTK_WIDGET(timeline->widget));
     gtk_widget_show(GTK_WIDGET(m->widget));
   }
@@ -3002,6 +3019,7 @@ static void _preview_quit(dt_view_t *self)
   // restore drag and drop
   _register_custom_image_order_drag_n_drop(self);
 
+  lib->slots_changed = TRUE;
   lib->force_expose_all = TRUE;
 }
 
