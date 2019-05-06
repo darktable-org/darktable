@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "POT-Creation-Date: 2019-04-22 22:46-0500\n"
-"PO-Revision-Date: 2019-05-05 19:37-0500\n"
+"PO-Revision-Date: 2019-05-05 21:41-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es\n"
@@ -732,13 +732,12 @@ msgstr ""
 msgid "--luacmd &lt;lua command&gt;"
 msgstr "--luacmd &lt;comandos de lua&gt;"
 
-# necesita mejoras
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:514(para)
 msgid ""
 "A string containing lua commands to execute after lua initialization. These commands will "
 "be run after your <quote>luarc</quote> file."
 msgstr ""
-"Una cadena que contiene los comandos de lua para ser ejecutados luego de ser iniciados. "
+"Una cadena que contiene comandos Lua para ejecutar después de la inicialización de Lua. "
 "Estos comandos se ejecutarán después del archivo <quote>luarc</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:519(para)
@@ -2272,7 +2271,7 @@ msgid ""
 "sharpness with a blue border. For this tool to work the input image needs to hold an "
 "embedded JPEG thumbnail which is the case for most raw files."
 msgstr ""
-"Al mantener presionada la combinación <emphasis>Ctrl+w</emphasis> se amplía completamente "
+"Al mantener presionada la combinación <emphasis>Ctrl+Z</emphasis> se amplía completamente "
 "la imagen y, además, se activa un análisis para las regiones nítidas, detectando las "
 "partes de la imagen que están enfocadas. Las áreas de alta nitidez se indican mediante un "
 "borde rojo: cuanto mayor sea la intensidad del color, mejor será la nitidez. En el caso de "
@@ -2293,7 +2292,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1860(emphasis)
 msgid "ctrl-w"
-msgstr "Ctrl+w"
+msgstr "Ctrl+Z"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1859(entry)
 msgid ""
