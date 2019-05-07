@@ -1827,10 +1827,11 @@ static gboolean _expose_recreate_slots(dt_view_t *self, const dt_lighttable_layo
     else
       rowid_txt = dt_util_dstrcat(NULL, "%d", 0);
 
-    query = dt_util_dstrcat(NULL,
-                            "SELECT m.imgid, b.aspect_ratio FROM memory.collected_images AS m, images AS b WHERE "
-                            "m.imgid = b.id AND m.rowid >= %s ORDER BY m.rowid LIMIT %d",
-                            rowid_txt, img_count);
+    query = dt_util_dstrcat(
+        NULL,
+        "SELECT m.imgid, b.aspect_ratio FROM (SELECT rowid, imgid FROM memory.collected_images WHERE rowid < %s + "
+        "%d ORDER BY rowid DESC LIMIT %d) AS m, images AS b WHERE m.imgid = b.id ORDER BY m.rowid",
+        rowid_txt, img_count, img_count);
     g_free(rowid_txt);
   }
 
@@ -2109,7 +2110,6 @@ static void _culling_prefetch(dt_view_t *self)
       if(mip < DT_MIPMAP_8)
         dt_mipmap_cache_get(darktable.mipmap_cache, NULL, lib->culling_previous.imgid, mip, DT_MIPMAP_PREFETCH,
                             'r');
-      printf("prefetch prev %d at %d\n", lib->culling_previous.imgid, mip);
     }
   }
 
@@ -2152,7 +2152,6 @@ static void _culling_prefetch(dt_view_t *self)
 
       if(mip < DT_MIPMAP_8)
         dt_mipmap_cache_get(darktable.mipmap_cache, NULL, lib->culling_next.imgid, mip, DT_MIPMAP_PREFETCH, 'r');
-      printf("prefetch next %d at %d\n", lib->culling_next.imgid, mip);
     }
   }
 }
