@@ -127,6 +127,7 @@ typedef struct dt_layout_image_t
 {
   gint imgid;
   gint width, height, x, y;
+  double aspect_ratio;
 } dt_layout_image_t;
 
 /**
@@ -195,6 +196,7 @@ typedef struct dt_library_t
   int slots_count, slots_count_old;
   gboolean slots_changed;
   dt_layout_image_t culling_previous, culling_next;
+  gboolean select_desactivate;
   int last_num_images, last_width, last_height;
 
   /* prepared and reusable statements */
@@ -541,6 +543,8 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
   dt_view_t *self = (dt_view_t *)user_data;
   dt_library_t *lib = (dt_library_t *)self->data;
 
+  if(lib->select_desactivate) return;
+
   // we need to redraw all thumbs to display the selected ones, record full redraw here
   lib->force_expose_all = TRUE;
 
@@ -554,9 +558,7 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
   if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_EXPOSE)
     _view_lighttable_collection_listener_internal(self, lib);
   else if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
-  {
     dt_control_queue_redraw_center();
-  }
   else if(lib->full_preview_id != -1)
   {
     _view_lighttable_selection_listener_internal_preview(self, lib);
@@ -1862,8 +1864,7 @@ static gboolean _expose_recreate_slots(dt_view_t *self, const dt_lighttable_layo
     }
 
     lib->slots[i].imgid = id;
-    lib->slots[i].width = (gint)(sqrt(aspect_ratio) * 100);
-    lib->slots[i].height = (gint)(1 / sqrt(aspect_ratio) * 100);
+    lib->slots[i].aspect_ratio = aspect_ratio;
     i++;
   }
   sqlite3_finalize(stmt);
@@ -1884,12 +1885,21 @@ static gboolean _expose_compute_slots(dt_view_t *self, int32_t width, int32_t he
 
   GList *slots = NULL;
 
+  // reinit size and positions
+  int i = 0;
+  for(i = 0; i < lib->slots_count; i++)
+  {
+    const double aspect_ratio = lib->slots[i].aspect_ratio;
+    lib->slots[i].width = (gint)(sqrt(aspect_ratio) * 100);
+    lib->slots[i].height = (gint)(1 / sqrt(aspect_ratio) * 100);
+    lib->slots[i].x = lib->slots[i].y = 0;
+  }
+
   unsigned int total_width = 0, total_height = 0;
   int distance = 1;
   float avg_ratio = 0;
 
   // Get total window width and max window width/height
-  int i = 0;
   for(i = 0; i < lib->slots_count; i++)
   {
     sum_w += lib->slots[i].width;
@@ -2059,6 +2069,25 @@ static gboolean _expose_compute_slots(dt_view_t *self, int32_t width, int32_t he
   lib->last_num_images = get_display_num_images();
   lib->last_width = width;
   lib->last_height = height;
+
+  // we want to be sure the selection stay in synch
+  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING && lib->slots_count > 0)
+  {
+    // desactivate selection_change event
+    lib->select_desactivate = TRUE;
+    // select current images
+    dt_selection_clear(darktable.selection);
+    for(i = 0; i < lib->slots_count; i++)
+    {
+      dt_selection_select(darktable.selection, lib->slots[i].imgid);
+    }
+    // move filmstrip
+    dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->slots[0].imgid, FALSE);
+
+    // reactivate selection_change event
+    lib->select_desactivate = FALSE;
+  }
+
   return TRUE;
 }
 
@@ -2094,8 +2123,7 @@ static void _culling_prefetch(dt_view_t *self)
           // if an error occurs, let's use 1:1 value
           if(aspect_ratio < 0.0001) aspect_ratio = 1.0;
         }
-        lib->culling_previous.width = (gint)(sqrt(aspect_ratio) * 100);
-        lib->culling_previous.height = (gint)(1 / sqrt(aspect_ratio) * 100);
+        lib->culling_previous.aspect_ratio = aspect_ratio;
       }
       sqlite3_finalize(stmt);
     }
@@ -2136,8 +2164,7 @@ static void _culling_prefetch(dt_view_t *self)
           // if an error occurs, let's use 1:1 value
           if(aspect_ratio < 0.0001) aspect_ratio = 1.0;
         }
-        lib->culling_next.width = (gint)(sqrt(aspect_ratio) * 100);
-        lib->culling_next.height = (gint)(1 / sqrt(aspect_ratio) * 100);
+        lib->culling_next.aspect_ratio = aspect_ratio;
       }
       sqlite3_finalize(stmt);
     }
@@ -2833,6 +2860,7 @@ static void shift_first_selected_image(dt_library_t *lib, const int up)
     lib->slots[0] = lib->culling_previous;
     lib->culling_previous.imgid = -1;
     lib->slots_changed = TRUE;
+    dt_control_queue_redraw_center();
   }
   else if(!up && lib->culling_next.imgid >= 0)
   {
@@ -2844,10 +2872,8 @@ static void shift_first_selected_image(dt_library_t *lib, const int up)
     lib->slots[lib->slots_count - 1] = lib->culling_next;
     lib->culling_next.imgid = -1;
     lib->slots_changed = TRUE;
+    dt_control_queue_redraw_center();
   }
-
-  // make the first image active
-  filmstrip_set_active_image(lib, lib->slots[0].imgid);
 }
 
 void enter(dt_view_t *self)
