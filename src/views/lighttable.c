@@ -2950,6 +2950,7 @@ static void _ensure_image_visibility(dt_view_t *self, uint32_t rowid)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   if(get_layout() != DT_LIGHTTABLE_LAYOUT_FILEMANAGER) return;
+  if(lib->images_in_row == 0 || lib->visible_rows == 0) return;
 
   // if we are before the first visible image, we move back
   int offset = lib->offset;
