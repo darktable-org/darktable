@@ -104,6 +104,7 @@ static gboolean _expose_again_full(gpointer user_data);
 static void _force_expose_all(dt_view_t *self);
 
 static gboolean _expose_recreate_slots(dt_view_t *self, const dt_lighttable_layout_t layout);
+static void _ensure_image_visibility(dt_view_t *self, uint32_t rowid);
 
 typedef struct dt_preview_surface_t
 {
@@ -312,9 +313,6 @@ static void check_layout(dt_view_t *self)
   // layout has changed, let restore panels
   dt_ui_restore_panels(darktable.gui->ui);
 
-  // make sure we reset expose layout
-  _expose_destroy_slots(self);
-
   if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
   {
     if(lib->first_visible_zoomable >= 0 && layout_old == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
@@ -329,7 +327,28 @@ static void check_layout(dt_view_t *self)
     lib->offset_changed = TRUE;
     lib->offset_x = 0;
     lib->offset_y = 0;
+
+    // if we arrive from culling, ensure selected images are visible
+    if(layout_old == DT_LIGHTTABLE_LAYOUT_CULLING && lib->slots_count > 0)
+    {
+      gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid = %d",
+                                     lib->slots[0].imgid);
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      if(stmt != NULL)
+      {
+        if(sqlite3_step(stmt) == SQLITE_ROW)
+        {
+          _ensure_image_visibility(self, sqlite3_column_int(stmt, 0));
+        }
+        sqlite3_finalize(stmt);
+      }
+      g_free(query);
+    }
   }
+
+  // make sure we reset expose layout
+  _expose_destroy_slots(self);
 
   dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
   dt_lib_module_t *timeline = darktable.view_manager->proxy.timeline.module;
@@ -2927,8 +2946,9 @@ void enter(dt_view_t *self)
   _scrollbars_restore();
 }
 
-static void _ensure_image_visibility(dt_library_t *lib, uint32_t rowid)
+static void _ensure_image_visibility(dt_view_t *self, uint32_t rowid)
 {
+  dt_library_t *lib = (dt_library_t *)self->data;
   if(get_layout() != DT_LIGHTTABLE_LAYOUT_FILEMANAGER) return;
 
   // if we are before the first visible image, we move back
@@ -3030,7 +3050,7 @@ static void _preview_quit(dt_view_t *self)
   if(lib->full_preview_follow_sel)
   {
     dt_selection_select_single(darktable.selection, lib->full_preview_id);
-    _ensure_image_visibility(lib, lib->full_preview_rowid);
+    _ensure_image_visibility(self, lib->full_preview_rowid);
   }
   lib->full_preview_id = -1;
   lib->full_preview_rowid = -1;
