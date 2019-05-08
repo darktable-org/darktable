@@ -743,6 +743,9 @@ static void _sort_preview_surface(dt_library_t *lib, dt_layout_image_t *images, 
 
   const int in_memory_limit = MIN(max_in_memory_images, FULL_PREVIEW_IN_MEMORY_LIMIT);
 
+  // if nb of images > in_memory_limit, we shouldn't have surfaces created, so nothing to do
+  if(sel_img_count > in_memory_limit) return;
+
   for(int i = 0; i < sel_img_count; i++)
   {
     // we assume that there's only one cache per image
