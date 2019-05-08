@@ -2205,6 +2205,14 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
 
   for(int i = 0; i < lib->slots_count; i++)
   {
+    // set mouse over id
+    if(pointerx > lib->slots[i].x && pointerx < lib->slots[i].x + lib->slots[i].width && pointery > lib->slots[i].y
+       && pointery < lib->slots[i].y + lib->slots[i].height)
+    {
+      mouse_over_id = lib->slots[i].imgid;
+      dt_control_set_mouse_over_id(mouse_over_id);
+    }
+
     cairo_save(cr);
     // if(zoom == 1) dt_image_prefetch(image, DT_IMAGE_MIPF);
     cairo_translate(cr, lib->slots[i].x, lib->slots[i].y);
@@ -2250,14 +2258,6 @@ static int expose_expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t he
 
     missing += dt_view_image_expose(&params);
     cairo_restore(cr);
-
-    // set mouse over id
-    if(pointerx > lib->slots[i].x && pointerx < lib->slots[i].x + lib->slots[i].width && pointery > lib->slots[i].y
-       && pointery < lib->slots[i].y + lib->slots[i].height)
-    {
-      mouse_over_id = lib->slots[i].imgid;
-      dt_control_set_mouse_over_id(mouse_over_id);
-    }
   }
 
   // if needed, we prefetch the next and previous images
