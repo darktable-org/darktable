@@ -1398,6 +1398,8 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
         cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1. / scale));
         if(zoom == 1)
         {
+          const dt_gui_color_t b_col
+              = (imgsel == imgid) ? DT_GUI_COLOR_THUMBNAIL_HOVER_OUTLINE : DT_GUI_COLOR_THUMBNAIL_BORDER;
           cairo_stroke(cr);
           cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
           float alpha = 1.0f;
@@ -1407,7 +1409,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
             cairo_new_sub_path(cr);
             cairo_rectangle(cr, rectx - k / scale, recty - k / scale, rectw + 2. * k / scale,
                             recth + 2. * k / scale);
-            cairo_set_source_rgba(cr, 0, 0, 0, alpha);
+            dt_gui_gtk_set_source_rgba(cr, b_col, alpha);
             alpha *= 0.6f;
             cairo_fill(cr);
           }
