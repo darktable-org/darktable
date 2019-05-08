@@ -547,32 +547,20 @@ void init_presets(dt_iop_module_so_t *self)
   for(int k = 0; k < DT_IOP_COLORZONES_BANDS; k++)
   {
     p.curve[DT_IOP_COLORZONES_L][k].y = .5f;
+    p.curve[DT_IOP_COLORZONES_C][k].y = .5f;
     p.curve[DT_IOP_COLORZONES_h][k].y = .5f;
     p.curve[DT_IOP_COLORZONES_L][k].x = k / (DT_IOP_COLORZONES_BANDS - 1.);
+    p.curve[DT_IOP_COLORZONES_C][k].x = k / (DT_IOP_COLORZONES_BANDS - 1.);
     p.curve[DT_IOP_COLORZONES_h][k].x = k / (DT_IOP_COLORZONES_BANDS - 1.);
   }
-  p.curve[DT_IOP_COLORZONES_C][0].x = 0.000000;
-  p.curve[DT_IOP_COLORZONES_C][0].y = 0.468932;
-  p.curve[DT_IOP_COLORZONES_C][1].x = 0.010000;
-  p.curve[DT_IOP_COLORZONES_C][1].y = 0.468932;
-  p.curve[DT_IOP_COLORZONES_C][2].x = 0.120155;
-  p.curve[DT_IOP_COLORZONES_C][2].y = 0.445975;
-  p.curve[DT_IOP_COLORZONES_C][3].x = 0.248062;
-  p.curve[DT_IOP_COLORZONES_C][3].y = 0.468932;
-  p.curve[DT_IOP_COLORZONES_C][4].x = 0.500000;
-  p.curve[DT_IOP_COLORZONES_C][4].y = 0.499667;
-  p.curve[DT_IOP_COLORZONES_C][5].x = 0.748062;
-  p.curve[DT_IOP_COLORZONES_C][5].y = 0.500000;
-  p.curve[DT_IOP_COLORZONES_C][6].x = 0.990000;
-  p.curve[DT_IOP_COLORZONES_C][6].y = 0.468932;
-  p.curve[DT_IOP_COLORZONES_C][7].x = 1.000000;
-  p.curve[DT_IOP_COLORZONES_C][7].y = 0.468932;
+  p.curve[DT_IOP_COLORZONES_C][1].y = .45f;
+  p.curve[DT_IOP_COLORZONES_h][1].y = .55f;
   for(int c = 0; c < 3; c++)
   {
     p.curve_num_nodes[c] = DT_IOP_COLORZONES_BANDS;
     p.curve_type[c] = CATMULL_ROM;
   }
-  dt_gui_presets_add_generic(_("natural skin tones"), self->op, version, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("natural skin tones"), self->op, 3, &p, sizeof(p), 1);
 
   // black and white film
   p.channel = DT_IOP_COLORZONES_h;
