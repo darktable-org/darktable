@@ -486,26 +486,16 @@ void init_presets(dt_iop_module_so_t *self)
   for(int k = 0; k < DT_IOP_COLORZONES_BANDS; k++)
   {
     p.equalizer_y[DT_IOP_COLORZONES_L][k] = .5f;
+    p.equalizer_y[DT_IOP_COLORZONES_C][k] = .5f;
     p.equalizer_y[DT_IOP_COLORZONES_h][k] = .5f;
     p.equalizer_x[DT_IOP_COLORZONES_L][k] = k / (DT_IOP_COLORZONES_BANDS - 1.);
+    p.equalizer_x[DT_IOP_COLORZONES_C][k] = k / (DT_IOP_COLORZONES_BANDS - 1.);
     p.equalizer_x[DT_IOP_COLORZONES_h][k] = k / (DT_IOP_COLORZONES_BANDS - 1.);
   }
-  p.equalizer_x[DT_IOP_COLORZONES_C][0] = 0.000000;
-  p.equalizer_y[DT_IOP_COLORZONES_C][0] = 0.468932;
-  p.equalizer_x[DT_IOP_COLORZONES_C][1] = 0.010000;
-  p.equalizer_y[DT_IOP_COLORZONES_C][1] = 0.468932;
-  p.equalizer_x[DT_IOP_COLORZONES_C][2] = 0.120155;
-  p.equalizer_y[DT_IOP_COLORZONES_C][2] = 0.445975;
-  p.equalizer_x[DT_IOP_COLORZONES_C][3] = 0.248062;
-  p.equalizer_y[DT_IOP_COLORZONES_C][3] = 0.468932;
-  p.equalizer_x[DT_IOP_COLORZONES_C][4] = 0.500000;
-  p.equalizer_y[DT_IOP_COLORZONES_C][4] = 0.499667;
-  p.equalizer_x[DT_IOP_COLORZONES_C][5] = 0.748062;
-  p.equalizer_y[DT_IOP_COLORZONES_C][5] = 0.500000;
-  p.equalizer_x[DT_IOP_COLORZONES_C][6] = 0.990000;
-  p.equalizer_y[DT_IOP_COLORZONES_C][6] = 0.468932;
-  p.equalizer_x[DT_IOP_COLORZONES_C][7] = 1.000000;
-  p.equalizer_y[DT_IOP_COLORZONES_C][7] = 0.468932;
+
+  p.equalizer_y[DT_IOP_COLORZONES_C][1] = .45f;
+  p.equalizer_y[DT_IOP_COLORZONES_h][1] = .55f;
+
   dt_gui_presets_add_generic(_("natural skin tones"), self->op, 3, &p, sizeof(p), 1);
 
   // black and white film
