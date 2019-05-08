@@ -414,16 +414,6 @@ static void _lib_lighttable_change_layout(dt_lib_module_t *self, dt_lighttable_l
     gtk_widget_hide(d->zoom_entry);
     gtk_widget_show(d->display_num_images);
     gtk_widget_show(d->display_num_images_entry);
-
-    // if we have a selected image activate the filmstrip
-    GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
-    if(first_selected)
-    {
-      const int imgid = GPOINTER_TO_INT(first_selected->data);
-      if(imgid >= 0 && dt_view_filmstrip_get_activated_imgid(darktable.view_manager) != imgid)
-        dt_view_filmstrip_set_active_image(darktable.view_manager, imgid);
-      g_list_free(first_selected);
-    }
   }
   else
   {
@@ -431,41 +421,6 @@ static void _lib_lighttable_change_layout(dt_lib_module_t *self, dt_lighttable_l
     gtk_widget_show(d->zoom_entry);
     gtk_widget_hide(d->display_num_images);
     gtk_widget_hide(d->display_num_images_entry);
-  }
-
-  // if changing from culling select all displayed images
-  if(current_layout == DT_LIGHTTABLE_LAYOUT_CULLING && current_layout != layout)
-  {
-    GList *first_selected = dt_collection_get_selected(darktable.collection, -1);
-    if(first_selected && g_list_length(first_selected) == 1)
-    {
-      const int sel_imgid = GPOINTER_TO_INT(first_selected->data);
-      GList *collected = dt_collection_get_all(darktable.collection, -1);
-      if(collected)
-      {
-        // search the selected image
-        GList *l = collected;
-        while(l)
-        {
-          const int id = GPOINTER_TO_INT(l->data);
-          if(sel_imgid == id) break;
-
-          l = g_list_next(l);
-        }
-        // now go to the last visible image
-        int i = 1;
-        while(l && i < d->current_display_num_images)
-        {
-          l = g_list_next(l);
-          i++;
-        }
-
-        if(l) dt_selection_select_range(darktable.selection, GPOINTER_TO_INT(l->data));
-      }
-
-      if(collected) g_list_free(collected);
-    }
-    if(first_selected) g_list_free(first_selected);
   }
 
   if(current_layout != layout)
