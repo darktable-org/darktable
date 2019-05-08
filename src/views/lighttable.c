@@ -2126,20 +2126,20 @@ static void _culling_prefetch(dt_view_t *self)
   const float fz = (lib->full_zoom > 1.0f) ? lib->full_zoom : 1.0f;
 
   // we get the previous & next images infos
-  dt_layout_image_t imgs[2] = { lib->culling_previous, lib->culling_next };
   for(int i = 0; i < 2; i++)
   {
-    if(imgs[i].imgid == -1)
+    dt_layout_image_t *img = (i == 0) ? &lib->culling_previous : &lib->culling_next;
+    if(img->imgid == -1)
     {
       dt_layout_image_t sl = lib->slots[0];
       if(i == 1) sl = lib->slots[lib->slots_count - 1];
       gchar *query = dt_util_dstrcat(
           NULL,
           "SELECT m.imgid, b.aspect_ratio FROM memory.collected_images AS m, images AS b "
-          "WHERE m.rowid < (SELECT rowid FROM memory.collected_images WHERE imgid = %d) AND m.imgid = b.id "
-          "ORDER BY m.rowid DESC "
+          "WHERE m.rowid %s (SELECT rowid FROM memory.collected_images WHERE imgid = %d) AND m.imgid = b.id "
+          "ORDER BY m.rowid %s "
           "LIMIT 1",
-          sl.imgid);
+          (i == 0) ? "<" : ">", sl.imgid, (i == 0) ? "DESC" : "ASC");
       sqlite3_stmt *stmt;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
@@ -2147,28 +2147,28 @@ static void _culling_prefetch(dt_view_t *self)
       {
         if(sqlite3_step(stmt) == SQLITE_ROW)
         {
-          imgs[i].imgid = sqlite3_column_int(stmt, 0);
+          img->imgid = sqlite3_column_int(stmt, 0);
           double aspect_ratio = sqlite3_column_double(stmt, 1);
           if(!aspect_ratio || aspect_ratio < 0.0001)
           {
-            aspect_ratio = dt_image_set_aspect_ratio(lib->culling_previous.imgid);
+            aspect_ratio = dt_image_set_aspect_ratio(img->imgid);
             // if an error occurs, let's use 1:1 value
             if(aspect_ratio < 0.0001) aspect_ratio = 1.0;
           }
-          imgs[i].aspect_ratio = aspect_ratio;
+          img->aspect_ratio = aspect_ratio;
         }
         sqlite3_finalize(stmt);
       }
       g_free(query);
 
       // and we prefetch the image
-      if(imgs[i].imgid >= 0)
+      if(img->imgid >= 0)
       {
         dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, imgwd * sl.width * fz,
                                                                  imgwd * sl.height * fz);
 
         if(mip < DT_MIPMAP_8)
-          dt_mipmap_cache_get(darktable.mipmap_cache, NULL, imgs[i].imgid, mip, DT_MIPMAP_PREFETCH, 'r');
+          dt_mipmap_cache_get(darktable.mipmap_cache, NULL, img->imgid, mip, DT_MIPMAP_PREFETCH, 'r');
       }
     }
   }
