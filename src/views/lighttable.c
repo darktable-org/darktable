@@ -197,6 +197,7 @@ typedef struct dt_library_t
   int slots_count, slots_count_old;
   gboolean slots_changed;
   dt_layout_image_t culling_previous, culling_next;
+  gboolean culling_use_selection;
   gboolean select_desactivate;
   int last_num_images, last_width, last_height;
 
@@ -345,6 +346,12 @@ static void check_layout(dt_view_t *self)
       }
       g_free(query);
     }
+  }
+  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    // we set the scrolling mode
+    const int sel_count = dt_collection_get_selected_count(darktable.collection);
+    lib->culling_use_selection = (sel_count > 1);
   }
 
   // make sure we reset expose layout
@@ -1852,15 +1859,26 @@ static gboolean _expose_recreate_slots(dt_view_t *self, const dt_lighttable_layo
     else
       rowid_txt = dt_util_dstrcat(NULL, "%d", 0);
 
-    query = dt_util_dstrcat(NULL,
-                            "SELECT m.imgid, b.aspect_ratio FROM "
-                            "(SELECT rowid, imgid FROM memory.collected_images"
-                            " WHERE rowid < %s + %d"
-                            " ORDER BY rowid DESC LIMIT %d) AS m, "
-                            "images AS b "
-                            "WHERE m.imgid = b.id "
-                            "ORDER BY m.rowid",
-                            rowid_txt, img_count, img_count);
+    if(lib->culling_use_selection)
+    {
+      query = dt_util_dstrcat(NULL,
+                              "SELECT m.imgid, b.aspect_ratio FROM memory.collected_images AS m, "
+                              "main.selected_images AS s, images AS b WHERE "
+                              "m.imgid = b.id AND m.imgid = s.imgid AND m.rowid >= %s ORDER BY m.rowid LIMIT %d",
+                              rowid_txt, img_count);
+    }
+    else
+    {
+      query = dt_util_dstrcat(NULL,
+                              "SELECT m.imgid, b.aspect_ratio FROM "
+                              "(SELECT rowid, imgid FROM memory.collected_images"
+                              " WHERE rowid < %s + %d"
+                              " ORDER BY rowid DESC LIMIT %d) AS m, "
+                              "images AS b "
+                              "WHERE m.imgid = b.id "
+                              "ORDER BY m.rowid",
+                              rowid_txt, img_count, img_count);
+    }
     g_free(rowid_txt);
   }
 
@@ -2097,7 +2115,7 @@ static gboolean _expose_compute_slots(dt_view_t *self, int32_t width, int32_t he
   lib->last_height = height;
 
   // we want to be sure the selection stay in synch
-  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING && lib->slots_count > 0)
+  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING && lib->slots_count > 0 && !lib->culling_use_selection)
   {
     // desactivate selection_change event
     lib->select_desactivate = TRUE;
@@ -2133,13 +2151,28 @@ static void _culling_prefetch(dt_view_t *self)
     {
       dt_layout_image_t sl = lib->slots[0];
       if(i == 1) sl = lib->slots[lib->slots_count - 1];
-      gchar *query = dt_util_dstrcat(
-          NULL,
-          "SELECT m.imgid, b.aspect_ratio FROM memory.collected_images AS m, images AS b "
-          "WHERE m.rowid %s (SELECT rowid FROM memory.collected_images WHERE imgid = %d) AND m.imgid = b.id "
-          "ORDER BY m.rowid %s "
-          "LIMIT 1",
-          (i == 0) ? "<" : ">", sl.imgid, (i == 0) ? "DESC" : "ASC");
+      gchar *query = NULL;
+      if(lib->culling_use_selection)
+      {
+        query = dt_util_dstrcat(NULL,
+                                "SELECT m.imgid, b.aspect_ratio FROM memory.collected_images AS m, "
+                                "main.selected_images AS s, images AS b "
+                                "WHERE m.rowid %s (SELECT rowid FROM memory.collected_images WHERE imgid = %d) "
+                                "AND m.imgid = s.imgid AND m.imgid = b.id "
+                                "ORDER BY m.rowid %s "
+                                "LIMIT 1",
+                                (i == 0) ? "<" : ">", sl.imgid, (i == 0) ? "DESC" : "ASC");
+      }
+      else
+      {
+        query = dt_util_dstrcat(
+            NULL,
+            "SELECT m.imgid, b.aspect_ratio FROM memory.collected_images AS m, images AS b "
+            "WHERE m.rowid %s (SELECT rowid FROM memory.collected_images WHERE imgid = %d) AND m.imgid = b.id "
+            "ORDER BY m.rowid %s "
+            "LIMIT 1",
+            (i == 0) ? "<" : ">", sl.imgid, (i == 0) ? "DESC" : "ASC");
+      }
       sqlite3_stmt *stmt;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
