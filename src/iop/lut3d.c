@@ -941,12 +941,14 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
 
   GtkFileFilter* filter = GTK_FILE_FILTER(gtk_file_filter_new());
   gtk_file_filter_add_pattern(filter, "*.png");
+  gtk_file_filter_add_pattern(filter, "*.PNG");
   gtk_file_filter_set_name(filter, _("hald cluts (png)"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
   if (filetype == 1) gtk_file_chooser_set_filter (GTK_FILE_CHOOSER(filechooser), filter);
 
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
   gtk_file_filter_add_pattern(filter, "*.cube");
+  gtk_file_filter_add_pattern(filter, "*.CUBE");
   gtk_file_filter_set_name(filter, _("3D lut (cube)"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
   if (filetype == 2) gtk_file_chooser_set_filter (GTK_FILE_CHOOSER(filechooser), filter);
