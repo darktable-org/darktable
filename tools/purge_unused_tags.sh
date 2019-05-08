@@ -5,7 +5,7 @@
 #        -p  do the purge, otherwise only display unused tags
 #
 
-if [ -z `which sqlite3` ]; then
+if ! which sqlite3 > /dev/null; then
     echo error: please install sqlite3 binary.
     exit 1
 fi
