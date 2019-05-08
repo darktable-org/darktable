@@ -33,7 +33,6 @@ DT_MODULE(1)
 typedef struct dt_lib_imageinfo_t
 {
   GtkWidget *tview;
-  gchar *pattern;
 } dt_lib_imageinfo_t;
 
 const char *name(dt_lib_module_t *self)
@@ -104,7 +103,9 @@ void _lib_imageinfo_update_message(gpointer instance, dt_lib_module_t *self)
   vp->imgid = imgid;
   vp->sequence = 0;
 
-  gchar *msg = dt_variables_expand(vp, d->pattern, TRUE);
+  gchar *pattern = dt_conf_get_string("plugins/darkroom/image_infos_pattern");
+  gchar *msg = dt_variables_expand(vp, pattern, TRUE);
+  g_free(pattern);
 
   dt_variables_params_destroy(vp);
 
@@ -125,8 +126,6 @@ void gui_init(dt_lib_module_t *self)
   /* initialize ui widgets */
   dt_lib_imageinfo_t *d = (dt_lib_imageinfo_t *)g_malloc0(sizeof(dt_lib_imageinfo_t));
   self->data = (void *)d;
-
-  d->pattern = dt_conf_get_string("plugins/darkroom/image_infos_pattern");
 
   self->widget = gtk_event_box_new();
   d->tview = gtk_text_view_new();
@@ -151,8 +150,6 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_imageinfo_update_message), self);
 
-  dt_lib_imageinfo_t *d = (dt_lib_imageinfo_t *)self->data;
-  g_free(d->pattern);
   g_free(self->data);
   self->data = NULL;
 }
