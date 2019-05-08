@@ -1806,9 +1806,10 @@ static gboolean _expose_recreate_slots(dt_view_t *self, const dt_lighttable_layo
   {
     img_count = dt_collection_get_selected_count(darktable.collection);
     if(img_count <= 0) return FALSE;
-    query = dt_util_dstrcat(
-        NULL, "SELECT s.imgid, b.aspect_ratio FROM main.selected_images AS s, images AS b, "
-              "memory.collected_images AS m WHERE s.imgid = b.id AND m.imgid = b.id ORDER BY m.rowid");
+    query = dt_util_dstrcat(NULL, "SELECT s.imgid, b.aspect_ratio "
+                                  "FROM main.selected_images AS s, images AS b, memory.collected_images AS m "
+                                  "WHERE s.imgid = b.id AND m.imgid = b.id "
+                                  "ORDER BY m.rowid");
   }
   else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
@@ -1851,11 +1852,15 @@ static gboolean _expose_recreate_slots(dt_view_t *self, const dt_lighttable_layo
     else
       rowid_txt = dt_util_dstrcat(NULL, "%d", 0);
 
-    query = dt_util_dstrcat(
-        NULL,
-        "SELECT m.imgid, b.aspect_ratio FROM (SELECT rowid, imgid FROM memory.collected_images WHERE rowid < %s + "
-        "%d ORDER BY rowid DESC LIMIT %d) AS m, images AS b WHERE m.imgid = b.id ORDER BY m.rowid",
-        rowid_txt, img_count, img_count);
+    query = dt_util_dstrcat(NULL,
+                            "SELECT m.imgid, b.aspect_ratio FROM "
+                            "(SELECT rowid, imgid FROM memory.collected_images"
+                            " WHERE rowid < %s + %d"
+                            " ORDER BY rowid DESC LIMIT %d) AS m, "
+                            "images AS b "
+                            "WHERE m.imgid = b.id "
+                            "ORDER BY m.rowid",
+                            rowid_txt, img_count, img_count);
     g_free(rowid_txt);
   }
 
@@ -1908,8 +1913,7 @@ static gboolean _expose_compute_slots(dt_view_t *self, int32_t width, int32_t he
   GList *slots = NULL;
 
   // reinit size and positions
-  int i = 0;
-  for(i = 0; i < lib->slots_count; i++)
+  for(int i = 0; i < lib->slots_count; i++)
   {
     const double aspect_ratio = lib->slots[i].aspect_ratio;
     lib->slots[i].width = (gint)(sqrt(aspect_ratio) * 100);
@@ -1922,7 +1926,7 @@ static gboolean _expose_compute_slots(dt_view_t *self, int32_t width, int32_t he
   float avg_ratio = 0;
 
   // Get total window width and max window width/height
-  for(i = 0; i < lib->slots_count; i++)
+  for(int i = 0; i < lib->slots_count; i++)
   {
     sum_w += lib->slots[i].width;
     max_w = MAX(max_w, lib->slots[i].width);
@@ -1965,7 +1969,7 @@ static gboolean _expose_compute_slots(dt_view_t *self, int32_t width, int32_t he
 
 
   // Vertical layout
-  for(i = 0; i < lib->slots_count; i++)
+  for(int i = 0; i < lib->slots_count; i++)
   {
     GList *slot_iter = g_list_first(slots);
     for (; slot_iter; slot_iter = slot_iter->next)
@@ -2074,7 +2078,7 @@ static gboolean _expose_compute_slots(dt_view_t *self, int32_t width, int32_t he
   int xoff = (width - (float) total_width * factor) / 2;
   int yoff = (height - (float) total_height * factor) / 2;
 
-  for(i = 0; i < lib->slots_count; i++)
+  for(int i = 0; i < lib->slots_count; i++)
   {
     lib->slots[i].width = lib->slots[i].width * factor;
     lib->slots[i].height = lib->slots[i].height * factor;
@@ -2099,7 +2103,7 @@ static gboolean _expose_compute_slots(dt_view_t *self, int32_t width, int32_t he
     lib->select_desactivate = TRUE;
     // select current images
     dt_selection_clear(darktable.selection);
-    for(i = 0; i < lib->slots_count; i++)
+    for(int i = 0; i < lib->slots_count; i++)
     {
       dt_selection_select(darktable.selection, lib->slots[i].imgid);
     }
@@ -2121,86 +2125,51 @@ static void _culling_prefetch(dt_view_t *self)
   const float imgwd = 0.97;
   const float fz = (lib->full_zoom > 1.0f) ? lib->full_zoom : 1.0f;
 
-  // we get the previous image infos
-  if(lib->culling_previous.imgid == -1)
+  // we get the previous & next images infos
+  dt_layout_image_t imgs[2] = { lib->culling_previous, lib->culling_next };
+  for(int i = 0; i < 2; i++)
   {
-    gchar *query = dt_util_dstrcat(
-        NULL,
-        "SELECT m.imgid, b.aspect_ratio FROM memory.collected_images AS m, images AS b WHERE m.rowid < (SELECT "
-        "rowid FROM "
-        "memory.collected_images WHERE imgid = %d) AND m.imgid = b.id ORDER BY m.rowid DESC LIMIT 1",
-        lib->slots[0].imgid);
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-
-    if(stmt != NULL)
+    if(imgs[i].imgid == -1)
     {
-      if(sqlite3_step(stmt) == SQLITE_ROW)
+      dt_layout_image_t sl = lib->slots[0];
+      if(i == 1) sl = lib->slots[lib->slots_count - 1];
+      gchar *query = dt_util_dstrcat(
+          NULL,
+          "SELECT m.imgid, b.aspect_ratio FROM memory.collected_images AS m, images AS b "
+          "WHERE m.rowid < (SELECT rowid FROM memory.collected_images WHERE imgid = %d) AND m.imgid = b.id "
+          "ORDER BY m.rowid DESC "
+          "LIMIT 1",
+          sl.imgid);
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+
+      if(stmt != NULL)
       {
-        lib->culling_previous.imgid = sqlite3_column_int(stmt, 0);
-        double aspect_ratio = sqlite3_column_double(stmt, 1);
-        if(!aspect_ratio || aspect_ratio < 0.0001)
+        if(sqlite3_step(stmt) == SQLITE_ROW)
         {
-          aspect_ratio = dt_image_set_aspect_ratio(lib->culling_previous.imgid);
-          // if an error occurs, let's use 1:1 value
-          if(aspect_ratio < 0.0001) aspect_ratio = 1.0;
+          imgs[i].imgid = sqlite3_column_int(stmt, 0);
+          double aspect_ratio = sqlite3_column_double(stmt, 1);
+          if(!aspect_ratio || aspect_ratio < 0.0001)
+          {
+            aspect_ratio = dt_image_set_aspect_ratio(lib->culling_previous.imgid);
+            // if an error occurs, let's use 1:1 value
+            if(aspect_ratio < 0.0001) aspect_ratio = 1.0;
+          }
+          imgs[i].aspect_ratio = aspect_ratio;
         }
-        lib->culling_previous.aspect_ratio = aspect_ratio;
+        sqlite3_finalize(stmt);
       }
-      sqlite3_finalize(stmt);
-    }
-    g_free(query);
+      g_free(query);
 
-    // and we prefetch the image
-    if(lib->culling_previous.imgid >= 0)
-    {
-      dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(
-          darktable.mipmap_cache, imgwd * lib->slots[0].width * fz, imgwd * lib->slots[0].height * fz);
-
-      if(mip < DT_MIPMAP_8)
-        dt_mipmap_cache_get(darktable.mipmap_cache, NULL, lib->culling_previous.imgid, mip, DT_MIPMAP_PREFETCH,
-                            'r');
-    }
-  }
-
-  // we get the next image infos
-  if(lib->culling_next.imgid == -1)
-  {
-    gchar *query
-        = dt_util_dstrcat(NULL,
-                          "SELECT m.imgid, b.aspect_ratio FROM memory.collected_images AS m, images AS b WHERE "
-                          "m.rowid > (SELECT rowid FROM "
-                          "memory.collected_images WHERE imgid = %d) AND m.imgid = b.id ORDER BY m.rowid LIMIT 1",
-                          lib->slots[lib->slots_count - 1].imgid);
-    sqlite3_stmt *stmt;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-    if(stmt != NULL)
-    {
-      if(sqlite3_step(stmt) == SQLITE_ROW)
+      // and we prefetch the image
+      if(imgs[i].imgid >= 0)
       {
-        lib->culling_next.imgid = sqlite3_column_int(stmt, 0);
-        double aspect_ratio = sqlite3_column_double(stmt, 1);
-        if(!aspect_ratio || aspect_ratio < 0.0001)
-        {
-          aspect_ratio = dt_image_set_aspect_ratio(lib->culling_next.imgid);
-          // if an error occurs, let's use 1:1 value
-          if(aspect_ratio < 0.0001) aspect_ratio = 1.0;
-        }
-        lib->culling_next.aspect_ratio = aspect_ratio;
+        dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, imgwd * sl.width * fz,
+                                                                 imgwd * sl.height * fz);
+
+        if(mip < DT_MIPMAP_8)
+          dt_mipmap_cache_get(darktable.mipmap_cache, NULL, imgs[i].imgid, mip, DT_MIPMAP_PREFETCH, 'r');
       }
-      sqlite3_finalize(stmt);
-    }
-    g_free(query);
-
-    // and we prefetch the image
-    if(lib->culling_next.imgid >= 0)
-    {
-      dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(
-          darktable.mipmap_cache, imgwd * lib->slots[lib->slots_count - 1].width * fz,
-          imgwd * lib->slots[lib->slots_count - 1].height * fz);
-
-      if(mip < DT_MIPMAP_8)
-        dt_mipmap_cache_get(darktable.mipmap_cache, NULL, lib->culling_next.imgid, mip, DT_MIPMAP_PREFETCH, 'r');
     }
   }
 }
