@@ -560,7 +560,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.curve_num_nodes[c] = DT_IOP_COLORZONES_BANDS;
     p.curve_type[c] = CATMULL_ROM;
   }
-  dt_gui_presets_add_generic(_("natural skin tones"), self->op, 3, &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("natural skin tones"), self->op, version, &p, sizeof(p), 1);
 
   // black and white film
   p.channel = DT_IOP_COLORZONES_h;
