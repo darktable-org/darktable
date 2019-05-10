@@ -290,8 +290,6 @@ typedef struct dt_view_manager_t
       uint32_t (*get_position)(struct dt_view_t *view);
       int (*get_images_in_row)(struct dt_view_t *view);
       int (*get_full_preview_id)(struct dt_view_t *view);
-      void (*set_display_num_images)(struct dt_lib_module_t *self, const int display_num_images);
-      int (*get_display_num_images)(struct dt_lib_module_t *self);
       void (*force_expose_all)(struct dt_view_t *view);
     } lighttable;
 

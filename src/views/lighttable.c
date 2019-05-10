@@ -2846,7 +2846,7 @@ static void drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, g
 }
 
 // shitf the first select image by 1 with up direction
-static void shift_first_selected_image(dt_library_t *lib, const int up)
+static void _culling_scroll(dt_library_t *lib, const int up)
 {
   if(lib->slots_count <= 0) return;
 
@@ -3253,7 +3253,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
     else
       lib->track = +DT_LIBRARY_MAX_ZOOM;
 
-    if(layout == DT_LIGHTTABLE_LAYOUT_CULLING && state == 0) shift_first_selected_image(lib, up);
+    if(layout == DT_LIGHTTABLE_LAYOUT_CULLING && state == 0) _culling_scroll(lib, up);
   }
   else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && state == 0)
   {
@@ -3285,7 +3285,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   }
   else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING && state == 0)
   {
-    shift_first_selected_image(lib, up);
+    _culling_scroll(lib, up);
   }
 }
 
@@ -3677,7 +3677,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     if(lib->full_preview_id > -1)
     {
       lib->track = -DT_LIBRARY_MAX_ZOOM;
-      if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) shift_first_selected_image(lib, TRUE);
+      if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) _culling_scroll(lib, TRUE);
     }
     else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
@@ -3696,7 +3696,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
     {
       lib->track = -1;
-      shift_first_selected_image(lib, TRUE);
+      _culling_scroll(lib, TRUE);
     }
     else
       lib->track = -1;
@@ -3710,7 +3710,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     if(lib->full_preview_id > -1)
     {
       lib->track = +DT_LIBRARY_MAX_ZOOM;
-      if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) shift_first_selected_image(lib, FALSE);
+      if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) _culling_scroll(lib, FALSE);
     }
     else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
@@ -3729,7 +3729,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
     {
       lib->track = 1;
-      shift_first_selected_image(lib, FALSE);
+      _culling_scroll(lib, FALSE);
     }
     else
       lib->track = 1;
@@ -3743,7 +3743,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     if(lib->full_preview_id > -1)
     {
       lib->track = -DT_LIBRARY_MAX_ZOOM;
-      if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) shift_first_selected_image(lib, TRUE);
+      if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) _culling_scroll(lib, TRUE);
     }
     else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
@@ -3760,7 +3760,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
     {
       lib->track = -DT_LIBRARY_MAX_ZOOM;
-      shift_first_selected_image(lib, TRUE);
+      _culling_scroll(lib, TRUE);
     }
     else
       lib->track = -DT_LIBRARY_MAX_ZOOM;
@@ -3774,7 +3774,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     if(lib->full_preview_id > -1)
     {
       lib->track = +DT_LIBRARY_MAX_ZOOM;
-      if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) shift_first_selected_image(lib, FALSE);
+      if(layout == DT_LIGHTTABLE_LAYOUT_CULLING) _culling_scroll(lib, FALSE);
     }
     else if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     {
@@ -3792,7 +3792,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
     {
       lib->track = DT_LIBRARY_MAX_ZOOM;
-      shift_first_selected_image(lib, FALSE);
+      _culling_scroll(lib, FALSE);
     }
     else
       lib->track = DT_LIBRARY_MAX_ZOOM;
