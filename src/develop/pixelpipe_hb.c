@@ -275,8 +275,10 @@ void dt_dev_pixelpipe_create_nodes(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
     piece->histogram_params.bins_count = 256;
     piece->histogram_stats.bins_count = 0;
     piece->histogram_stats.pixels = 0;
-    piece->colors = ((module->default_colorspace(module, pipe, NULL) == iop_cs_RAW) && 
-          (pipe->image.flags & DT_IMAGE_RAW)) ? 1 : 4;
+    piece->colors
+        = ((module->default_colorspace(module, pipe, NULL) == iop_cs_RAW) && (pipe->image.flags & DT_IMAGE_RAW))
+              ? 1
+              : 4;
     piece->iscale = pipe->iscale;
     piece->iwidth = pipe->iwidth;
     piece->iheight = pipe->iheight;
@@ -663,11 +665,12 @@ error:
 }
 #endif
 
-static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_roi_t *roi_in, 
-    cmsHTRANSFORM xform_rgb2lab, cmsHTRANSFORM xform_rgb2rgb,
-    const float *const  pick_box, const float *const  pick_point, const int pick_size,
-    float *pick_color_rgb_min, float *pick_color_rgb_max, float *pick_color_rgb_mean,
-    float *pick_color_lab_min, float *pick_color_lab_max, float *pick_color_lab_mean)
+static void _pixelpipe_pick_from_image(const float *const pixel, const dt_iop_roi_t *roi_in,
+                                       cmsHTRANSFORM xform_rgb2lab, cmsHTRANSFORM xform_rgb2rgb,
+                                       const float *const pick_box, const float *const pick_point,
+                                       const int pick_size, float *pick_color_rgb_min, float *pick_color_rgb_max,
+                                       float *pick_color_rgb_mean, float *pick_color_lab_min,
+                                       float *pick_color_lab_max, float *pick_color_lab_mean)
 {
   float picked_color_rgb_min[3];
   float picked_color_rgb_max[3];
@@ -783,7 +786,7 @@ static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_
 
   dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
   if(histogram_filename == NULL) histogram_filename = _histogram_filename;
-  
+
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
@@ -792,16 +795,16 @@ static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_
                                                        DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
   if(d_profile) display_profile = d_profile->profile;
 
-  if((histogram_type != darktable.color_profiles->display_type) || 
-      (histogram_type == DT_COLORSPACE_FILE &&
-      strcmp(histogram_filename, darktable.color_profiles->display_filename)))
+  if((histogram_type != darktable.color_profiles->display_type)
+     || (histogram_type == DT_COLORSPACE_FILE
+         && strcmp(histogram_filename, darktable.color_profiles->display_filename)))
   {
     const dt_colorspaces_color_profile_t *d_histogram = dt_colorspaces_get_profile(histogram_type,
                                                          histogram_filename,
                                                          DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
     if(d_histogram) histogram_profile = d_histogram->profile;
   }
-  
+
   lab_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
   // display rgb --> lab
@@ -853,7 +856,7 @@ static void _pixelpipe_pick_primary_colorpicker(dt_develop_t *dev, const float *
 
   dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
   if(histogram_filename == NULL) histogram_filename = _histogram_filename;
-  
+
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
@@ -862,16 +865,16 @@ static void _pixelpipe_pick_primary_colorpicker(dt_develop_t *dev, const float *
                                                        DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
   if(d_profile) display_profile = d_profile->profile;
 
-  if((histogram_type != darktable.color_profiles->display_type) || 
-      (histogram_type == DT_COLORSPACE_FILE &&
-      strcmp(histogram_filename, darktable.color_profiles->display_filename)))
+  if((histogram_type != darktable.color_profiles->display_type)
+     || (histogram_type == DT_COLORSPACE_FILE
+         && strcmp(histogram_filename, darktable.color_profiles->display_filename)))
   {
     const dt_colorspaces_color_profile_t *d_histogram = dt_colorspaces_get_profile(histogram_type,
                                                          histogram_filename,
                                                          DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
     if(d_histogram) histogram_profile = d_histogram->profile;
   }
-  
+
   lab_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
   // display rgb --> lab
@@ -897,7 +900,7 @@ static void _pixelpipe_pick_primary_colorpicker(dt_develop_t *dev, const float *
 static void _pixelpipe_final_histogram(dt_develop_t *dev, const float *const input, const dt_iop_roi_t *roi_in)
 {
   float *img_tmp = NULL;
-  
+
   dt_dev_histogram_collection_params_t histogram_params = { 0 };
   const dt_iop_colorspace_type_t cst = iop_cs_rgb;
   dt_dev_histogram_stats_t histogram_stats = { .bins_count = 256, .ch = 4, .pixels = 0 };
@@ -932,10 +935,10 @@ static void _pixelpipe_final_histogram(dt_develop_t *dev, const float *const inp
 
   dt_ioppr_get_histogram_profile_type(&histogram_type, &histogram_filename);
   if(histogram_filename == NULL) histogram_filename = _histogram_filename;
-  
-  if((histogram_type != darktable.color_profiles->display_type) || 
-      (histogram_type == DT_COLORSPACE_FILE &&
-      strcmp(histogram_filename, darktable.color_profiles->display_filename)))
+
+  if((histogram_type != darktable.color_profiles->display_type)
+     || (histogram_type == DT_COLORSPACE_FILE
+         && strcmp(histogram_filename, darktable.color_profiles->display_filename)))
   {
     img_tmp = dt_alloc_align(64, roi_in->width * roi_in->height * 4 * sizeof(float));
 
@@ -959,7 +962,7 @@ static void _pixelpipe_final_histogram(dt_develop_t *dev, const float *const inp
   dt_histogram_helper(&histogram_params, &histogram_stats, cst, iop_cs_NONE, (img_tmp) ? img_tmp: input, &dev->histogram, FALSE, NULL);
   dt_histogram_max_helper(&histogram_stats, cst, iop_cs_NONE, &dev->histogram, histogram_max);
   dev->histogram_max = MAX(MAX(histogram_max[0], histogram_max[1]), histogram_max[2]);
-  
+
   if(img_tmp) dt_free_align(img_tmp);
 }
 
@@ -1045,7 +1048,7 @@ static int _transform_for_blend(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
       ret = 1;
     }
   }
-  
+
   return ret;
 }
 
@@ -1447,7 +1450,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                 = module->process_cl(module, piece, cl_mem_input, *cl_mem_output, &roi_in, roi_out);
             pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_GPU);
             pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_CPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
-            
+
             // and save the output colorspace
             pipe->dsc.cst = module->output_colorspace(module, pipe, piece);
           }
@@ -1505,7 +1508,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                   dt_ioppr_get_pipe_work_profile_info(pipe));
             }
           }
-          
+
           /* process blending */
           if(success_opencl)
           {
@@ -1615,7 +1618,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                 = module->process_tiling_cl(module, piece, input, *output, &roi_in, roi_out, in_bpp);
             pixelpipe_flow |= (PIXELPIPE_FLOW_PROCESSED_ON_GPU | PIXELPIPE_FLOW_PROCESSED_WITH_TILING);
             pixelpipe_flow &= ~(PIXELPIPE_FLOW_PROCESSED_ON_CPU);
-            
+
             // and save the output colorspace
             pipe->dsc.cst = module->output_colorspace(module, pipe, piece);
           }
@@ -1665,7 +1668,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                                                   &pipe->dsc.cst, dt_ioppr_get_pipe_work_profile_info(pipe));
             }
           }
-          
+
           /* do process blending on cpu (this is anyhow fast enough) */
           if(success_opencl)
           {
@@ -1906,7 +1909,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                                                 pipe->dsc.cst, module->blend_colorspace(module, pipe, piece),
                                                 &pipe->dsc.cst, dt_ioppr_get_pipe_work_profile_info(pipe));
           }
-          
+
           /* process blending on cpu */
           dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
           pixelpipe_flow |= (PIXELPIPE_FLOW_BLENDED_ON_CPU);
@@ -2061,7 +2064,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                                               pipe->dsc.cst, module->blend_colorspace(module, pipe, piece),
                                               &pipe->dsc.cst, dt_ioppr_get_pipe_work_profile_info(pipe));
         }
-        
+
         /* process blending */
         dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
         pixelpipe_flow |= (PIXELPIPE_FLOW_BLENDED_ON_CPU);
@@ -2180,7 +2183,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                                             pipe->dsc.cst, module->blend_colorspace(module, pipe, piece),
                                             &pipe->dsc.cst, dt_ioppr_get_pipe_work_profile_info(pipe));
       }
-      
+
       /* process blending */
       dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
       pixelpipe_flow |= (PIXELPIPE_FLOW_BLENDED_ON_CPU);
@@ -2242,7 +2245,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
     // and save the output colorspace
     pipe->dsc.cst = module->output_colorspace(module, pipe, piece);
-    
+
     if(pipe->shutdown)
     {
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
@@ -2284,7 +2287,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
                                           module->blend_colorspace(module, pipe, piece), &pipe->dsc.cst,
                                           dt_ioppr_get_pipe_work_profile_info(pipe));
     }
-    
+
     /* process blending */
     dt_develop_blend_process(module, piece, input, *output, &roi_in, roi_out);
     pixelpipe_flow |= (PIXELPIPE_FLOW_BLENDED_ON_CPU);
@@ -2453,17 +2456,29 @@ post_process_collect_info:
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
       return 1;
     }
-    if(dev->gui_attached && !dev->gui_leaving && pipe == dev->preview_pipe
-       && (strcmp(module->op, "gamma") == 0) && input)
+    if(dev->gui_attached && !dev->gui_leaving && pipe == dev->preview_pipe && (strcmp(module->op, "gamma") == 0))
     {
-      _pixelpipe_final_histogram(dev, (const float *const )input, &roi_in);
+      // FIXME: input may not be available, so we use the output from gamma
+      // this may lead to some rounding errors
+      if(input == NULL)
+      {
+        float *input_tmp = (float *)dt_alloc_align(64, roi_out->width * roi_out->height * 4 * sizeof(float));
+        uint8_t *pixel = (uint8_t *)*output;
+        for(int i = 0; i < roi_out->width * roi_out->height * 4; i++) input_tmp[i] = ((float)pixel[i]) / 255.f;
+
+        _pixelpipe_final_histogram(dev, (const float *const)input_tmp, roi_out);
+
+        dt_free_align(input_tmp);
+      }
+      else
+        _pixelpipe_final_histogram(dev, (const float *const)input, &roi_in);
 
       // calculate the waveform histogram. since this is drawn pixel by pixel we have to do it in the correct
       // size (thus the weird gui stuff :().
       // this HAS to be done on the float input data, otherwise we get really ugly artifacts due to rounding
       // issues when putting colors into the bins.
       //       dt_pthread_mutex_lock(&dev->histogram_waveform_mutex);
-      if(dev->histogram_waveform_width != 0)
+      if(dev->histogram_waveform_width != 0 && input)
       {
         _pixelpipe_final_histogram_waveform(dev, (const float *const )input, &roi_in);
       }
