@@ -922,7 +922,7 @@ dialog headerbar button
 
 dialog button
 {
-  padding: 3pt;
+  padding: 2pt;
 }
 
 dialog scrolledwindow
@@ -988,7 +988,7 @@ checkbutton check
 #lib-plugin-ui button
 {
   margin: 2pt;
-  padding: 3pt;
+  padding: 2pt;
 }
 
 #iop-bottom-bar
