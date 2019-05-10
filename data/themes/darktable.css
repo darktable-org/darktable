@@ -116,9 +116,9 @@
 @define-color really_dark_bg_color @grey_05;
 
 /* Views */
-@define-color darkroom_bg_color @grey_50;
+@define-color darkroom_bg_color @grey_25;
 @define-color darkroom_preview_bg_color @grey_25;
-@define-color lighttable_bg_color @grey_50;
+@define-color lighttable_bg_color @grey_25;
 @define-color lighttable_preview_bg_color @grey_25;
 
 /* Brushes */
