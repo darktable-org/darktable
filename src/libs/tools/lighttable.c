@@ -79,9 +79,9 @@ static gboolean _lib_lighttable_key_accel_zoom_in_callback(GtkAccelGroup *accel_
 static gboolean _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel_group,
                                                             GObject *acceleratable, guint keyval,
                                                             GdkModifierType modifier, gpointer data);
-static gboolean _lib_lighttable_key_accel_toggle_expose_mode(GtkAccelGroup *accel_group,
-                                                             GObject *acceleratable, guint keyval,
-                                                             GdkModifierType modifier, gpointer data);
+static gboolean _lib_lighttable_key_accel_toggle_culling_dynamic_mode(GtkAccelGroup *accel_group,
+                                                                      GObject *acceleratable, guint keyval,
+                                                                      GdkModifierType modifier, gpointer data);
 static gboolean _lib_lighttable_key_accel_toggle_culling_mode(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                               guint keyval, GdkModifierType modifier,
                                                               gpointer data);
@@ -128,7 +128,6 @@ void gui_init(dt_lib_module_t *self)
   d->layout_combo = gtk_combo_box_text_new();
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->layout_combo), _("zoomable light table"));
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->layout_combo), _("file manager"));
-  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->layout_combo), _("expose"));
   gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->layout_combo), _("culling"));
 
   gtk_combo_box_set_active(GTK_COMBO_BOX(d->layout_combo), d->layout);
@@ -211,8 +210,8 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "zoom out"), GDK_KEY_3, GDK_MOD1_MASK);
   dt_accel_register_lib(self, NC_("accel", "zoom min"), GDK_KEY_4, GDK_MOD1_MASK);
 
-  dt_accel_register_lib(self, NC_("accel", "toggle exposé mode"), GDK_KEY_x, 0);
-  dt_accel_register_lib(self, NC_("accel", "toggle culling mode"), GDK_KEY_x, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "toggle culling mode"), GDK_KEY_x, 0);
+  dt_accel_register_lib(self, NC_("accel", "toggle culling dynamic mode"), GDK_KEY_x, GDK_CONTROL_MASK);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -228,8 +227,9 @@ void connect_key_accels(dt_lib_module_t *self)
                        g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_zoom_out_callback), self, NULL));
   dt_accel_connect_lib(self, "zoom min",
                        g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_zoom_min_callback), self, NULL));
-  dt_accel_connect_lib(self, "toggle exposé mode",
-                       g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_toggle_expose_mode), self, NULL));
+  dt_accel_connect_lib(
+      self, "toggle culling dynamic mode",
+      g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_toggle_culling_dynamic_mode), self, NULL));
   dt_accel_connect_lib(self, "toggle culling mode",
                        g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_toggle_culling_mode), self, NULL));
 }
@@ -401,14 +401,7 @@ static void _lib_lighttable_change_layout(dt_lib_module_t *self, dt_lighttable_l
   const int current_layout = dt_conf_get_int("plugins/lighttable/layout");
   d->layout = layout;
 
-  if(layout == DT_LIGHTTABLE_LAYOUT_EXPOSE)
-  {
-    gtk_widget_hide(d->zoom);
-    gtk_widget_hide(d->zoom_entry);
-    gtk_widget_hide(d->display_num_images);
-    gtk_widget_hide(d->display_num_images_entry);
-  }
-  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     gtk_widget_hide(d->zoom);
     gtk_widget_hide(d->zoom_entry);
@@ -536,18 +529,11 @@ static gboolean _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel
   return TRUE;
 }
 
-static gboolean _lib_lighttable_key_accel_toggle_expose_mode(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                                             GdkModifierType modifier, gpointer data)
+static gboolean _lib_lighttable_key_accel_toggle_culling_dynamic_mode(GtkAccelGroup *accel_group,
+                                                                      GObject *acceleratable, guint keyval,
+                                                                      GdkModifierType modifier, gpointer data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
-
-  if(d->layout != DT_LIGHTTABLE_LAYOUT_EXPOSE)
-  {
-    _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_EXPOSE);
-  }
-  else
-    _lib_lighttable_set_layout(self, d->base_layout);
+  // TODO
 
   dt_control_queue_redraw_center();
   return TRUE;
@@ -616,7 +602,6 @@ void init(struct dt_lib_module_t *self)
   luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_FIRST);
   luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_ZOOMABLE);
   luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_FILEMANAGER);
-  luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_EXPOSE);
   luaA_enum_value(L, dt_lighttable_layout_t, DT_LIGHTTABLE_LAYOUT_CULLING);
   luaA_enum_value(L,dt_lighttable_layout_t,DT_LIGHTTABLE_LAYOUT_LAST);
 }
