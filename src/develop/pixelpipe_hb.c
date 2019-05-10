@@ -2463,8 +2463,14 @@ post_process_collect_info:
       if(input == NULL)
       {
         float *input_tmp = (float *)dt_alloc_align(64, roi_out->width * roi_out->height * 4 * sizeof(float));
-        uint8_t *pixel = (uint8_t *)*output;
-        for(int i = 0; i < roi_out->width * roi_out->height * 4; i++) input_tmp[i] = ((float)pixel[i]) / 255.f;
+        const uint8_t *const pixel = (uint8_t *)*output;
+
+        const int imgsize = roi_out->height * roi_out->width * 4;
+        for(int i = 0; i < imgsize; i += 4)
+        {
+          for(int c = 0; c < 3; c++) input_tmp[i + c] = ((float)pixel[i + (2 - c)]) * (1.f / 255.f);
+          input_tmp[i + 3] = 0.f;
+        }
 
         _pixelpipe_final_histogram(dev, (const float *const)input_tmp, roi_out);
 
