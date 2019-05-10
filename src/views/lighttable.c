@@ -2895,29 +2895,51 @@ static void _culling_scroll(dt_library_t *lib, const int up)
   if(lib->slots_count <= 0) return;
 
   // we move the slots using in-memory previous/next images
-  if(up && lib->culling_previous.imgid >= 0)
+  if(up)
   {
-    lib->culling_next = lib->slots[lib->slots_count - 1];
-    for(int i = lib->slots_count - 1; i > 0; i--)
+    if(lib->culling_previous.imgid >= 0)
     {
-      lib->slots[i] = lib->slots[i - 1];
+      lib->culling_next = lib->slots[lib->slots_count - 1];
+      for(int i = lib->slots_count - 1; i > 0; i--)
+      {
+        lib->slots[i] = lib->slots[i - 1];
+      }
+      lib->slots[0] = lib->culling_previous;
+      lib->culling_previous.imgid = -1;
+      lib->slots_changed = TRUE;
+      dt_control_queue_redraw_center();
     }
-    lib->slots[0] = lib->culling_previous;
-    lib->culling_previous.imgid = -1;
-    lib->slots_changed = TRUE;
-    dt_control_queue_redraw_center();
+    else
+    {
+      if(lib->culling_use_selection)
+        dt_control_log(_("you have reached the start of your selection (%d images)"),
+                       dt_collection_get_selected_count(darktable.collection));
+      else
+        dt_control_log(_("you have reached the start of your collection"));
+    }
   }
-  else if(!up && lib->culling_next.imgid >= 0)
+  else if(!up)
   {
-    lib->culling_previous = lib->slots[0];
-    for(int i = 0; i < lib->slots_count - 1; i++)
+    if(lib->culling_next.imgid >= 0)
     {
-      lib->slots[i] = lib->slots[i + 1];
+      lib->culling_previous = lib->slots[0];
+      for(int i = 0; i < lib->slots_count - 1; i++)
+      {
+        lib->slots[i] = lib->slots[i + 1];
+      }
+      lib->slots[lib->slots_count - 1] = lib->culling_next;
+      lib->culling_next.imgid = -1;
+      lib->slots_changed = TRUE;
+      dt_control_queue_redraw_center();
     }
-    lib->slots[lib->slots_count - 1] = lib->culling_next;
-    lib->culling_next.imgid = -1;
-    lib->slots_changed = TRUE;
-    dt_control_queue_redraw_center();
+    else
+    {
+      if(lib->culling_use_selection)
+        dt_control_log(_("you have reached the end of your selection (%d images)"),
+                       dt_collection_get_selected_count(darktable.collection));
+      else
+        dt_control_log(_("you have reached the end of your collection"));
+    }
   }
 }
 
