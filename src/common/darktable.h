@@ -564,7 +564,7 @@ int dt_load_from_string(const gchar *image_to_load, gboolean open_image_in_dr, g
 
 #define dt_unreachable_codepath_with_desc(D)                                                                 \
   dt_unreachable_codepath_with_caller(D, __FILE__, __LINE__, __FUNCTION__)
-#define dt_unreachable_codepath() dt_unreachable_codepath_with_caller(NULL, __FILE__, __LINE__, __FUNCTION__)
+#define dt_unreachable_codepath() dt_unreachable_codepath_with_caller("unreachable", __FILE__, __LINE__, __FUNCTION__)
 static inline void dt_unreachable_codepath_with_caller(const char *description, const char *file,
                                                        const int line, const char *function)
 {
