@@ -297,6 +297,49 @@ static void _culling_destroy_slots(dt_view_t *self)
   lib->slots_count = 0;
 }
 
+static gboolean _culling_check_scrolling_mode(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  // we set the scrolling mode
+  const int sel_count = dt_collection_get_selected_count(darktable.collection);
+  lib->culling_use_selection = FALSE;
+  if(sel_count > 1)
+  {
+    lib->culling_use_selection = TRUE;
+    // special case to handle exit/reenter culling mode
+    if(sel_count == dt_conf_get_int("plugins/lighttable/culling_num_images"))
+    {
+      // we verify that the selection is contiguous
+      GList *fsel = dt_collection_get_selected(darktable.collection, 1);
+      if(fsel)
+      {
+        int fid = GPOINTER_TO_INT(fsel->data);
+        g_list_free(fsel);
+        gchar *query
+            = dt_util_dstrcat(NULL,
+                              "SELECT count(*) "
+                              "FROM memory.collected_images as m, main.selected_images as s "
+                              "WHERE m.rowid >= (SELECT rowid FROM memory.collected_images WHERE imgid = %d)"
+                              " AND m.rowid < (SELECT rowid FROM memory.collected_images WHERE imgid = %d) + %d"
+                              " AND m.imgid = s.imgid",
+                              fid, fid, sel_count);
+        sqlite3_stmt *stmt;
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+        if(stmt != NULL)
+        {
+          if(sqlite3_step(stmt) == SQLITE_ROW)
+          {
+            if(sqlite3_column_int(stmt, 0) == sel_count) lib->culling_use_selection = FALSE;
+          }
+          sqlite3_finalize(stmt);
+        }
+        g_free(query);
+      }
+    }
+  }
+  return lib->culling_use_selection;
+}
+
 static void check_layout(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -344,9 +387,7 @@ static void check_layout(dt_view_t *self)
   }
   else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
-    // we set the scrolling mode
-    const int sel_count = dt_collection_get_selected_count(darktable.collection);
-    lib->culling_use_selection = (sel_count > 1);
+    _culling_check_scrolling_mode(self);
   }
 
   // make sure we reset culling layout
@@ -571,6 +612,7 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
   // we reset the culling layout
   if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
+    _culling_check_scrolling_mode(self);
     _culling_recreate_slots(self, lib->current_layout);
     dt_control_queue_redraw_center();
   }
@@ -2094,21 +2136,23 @@ static gboolean _culling_compute_slots(dt_view_t *self, int32_t width, int32_t h
   lib->last_height = height;
 
   // we want to be sure the selection stay in synch
-  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING && lib->slots_count > 0 && !lib->culling_use_selection)
+  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING && lib->slots_count > 0)
   {
-    // desactivate selection_change event
-    lib->select_desactivate = TRUE;
-    // select current images
-    dt_selection_clear(darktable.selection);
-    for(int i = 0; i < lib->slots_count; i++)
+    if(!lib->culling_use_selection)
     {
-      dt_selection_select(darktable.selection, lib->slots[i].imgid);
+      // desactivate selection_change event
+      lib->select_desactivate = TRUE;
+      // select current images
+      dt_selection_clear(darktable.selection);
+      for(int i = 0; i < lib->slots_count; i++)
+      {
+        dt_selection_select(darktable.selection, lib->slots[i].imgid);
+      }
+      // reactivate selection_change event
+      lib->select_desactivate = FALSE;
     }
     // move filmstrip
     dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->slots[0].imgid, FALSE);
-
-    // reactivate selection_change event
-    lib->select_desactivate = FALSE;
   }
 
   return TRUE;
