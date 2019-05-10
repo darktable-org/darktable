@@ -224,6 +224,8 @@ typedef struct dt_view_manager_t
     sqlite3_stmt *have_history;
     /* select * from selected_images where imgid = ?1 */
     sqlite3_stmt *is_selected;
+    /* select * from selected_images */
+    sqlite3_stmt *all_selected;
     /* delete from selected_images where imgid = ?1 */
     sqlite3_stmt *delete_from_selected;
     /* insert into selected_images values (?1) */

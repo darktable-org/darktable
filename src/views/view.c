@@ -59,6 +59,8 @@ void dt_view_manager_init(dt_view_manager_t *vm)
   /* prepare statements */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images "
                               "WHERE imgid = ?1", -1, &vm->statements.is_selected, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images ",
+                              -1, &vm->statements.all_selected, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.selected_images WHERE imgid = ?1",
                               -1, &vm->statements.delete_from_selected, NULL);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -765,13 +767,9 @@ int32_t dt_view_get_image_to_act_on()
   else
   {
     /* clear and reset statement */
-    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(darktable.view_manager->statements.is_selected);
-    DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.is_selected);
+    DT_DEBUG_SQLITE3_RESET(darktable.view_manager->statements.all_selected);
 
-    /* setup statement and iterate over rows */
-    DT_DEBUG_SQLITE3_BIND_INT(darktable.view_manager->statements.is_selected, 1, mouse_over_id);
-
-    if(mouse_over_id <= 0 || sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW)
+    if(mouse_over_id <= 0 || sqlite3_step(darktable.view_manager->statements.all_selected) == SQLITE_ROW)
       return -1;
     else
       return mouse_over_id;
