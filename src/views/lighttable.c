@@ -258,11 +258,6 @@ static inline gint get_zoom(void)
   return dt_view_lighttable_get_zoom(darktable.view_manager);
 }
 
-static inline int get_display_num_images(void)
-{
-  return dt_view_lighttable_get_display_num_images(darktable.view_manager);
-}
-
 static inline void filmstrip_set_active_image(dt_library_t *lib, const int imgid)
 {
   dt_selection_select_single(darktable.selection, imgid);
@@ -1805,7 +1800,7 @@ static gboolean _culling_recreate_slots(dt_view_t *self, const dt_lighttable_lay
   if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     // number of images to be displayed
-    img_count = get_display_num_images();
+    img_count = get_zoom();
     // starting with the first selected image
     GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
     int display_first_image = (first_selected) ? GPOINTER_TO_INT(first_selected->data) : -1;
@@ -2094,7 +2089,7 @@ static gboolean _culling_compute_slots(dt_view_t *self, int32_t width, int32_t h
   if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
     _sort_preview_surface(lib, lib->slots, lib->slots_count, max_in_memory_images);
 
-  lib->last_num_images = get_display_num_images();
+  lib->last_num_images = get_zoom();
   lib->last_width = width;
   lib->last_height = height;
 
@@ -2205,8 +2200,7 @@ static int expose_culling(dt_view_t *self, cairo_t *cr, int32_t width, int32_t h
 
   // we recompute images sizes and positions if needed
   gboolean prefetch = FALSE;
-  if(lib->last_width != width || lib->last_height != height || !lib->slots
-     || lib->last_num_images != get_display_num_images())
+  if(lib->last_width != width || lib->last_height != height || !lib->slots || lib->last_num_images != get_zoom())
   {
     if(!_culling_recreate_slots(self, layout)) return 0;
   }
@@ -2621,7 +2615,7 @@ static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *
     gchar *query = dt_util_dstrcat(NULL,
                                    "SELECT imgid FROM (SELECT rowid, imgid FROM memory.collected_images ORDER BY "
                                    "rowid DESC LIMIT %d) ORDER BY rowid ASC LIMIT 1",
-                                   get_display_num_images());
+                                   get_zoom());
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     if(stmt != NULL)
@@ -3359,7 +3353,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
       int sel_img_count = 1;
       if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
       {
-        sel_img_count = get_display_num_images();
+        sel_img_count = get_zoom();
       }
       for(int i = 0; i < sel_img_count; i++)
       {

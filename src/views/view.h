@@ -423,10 +423,6 @@ gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm);
 void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom);
 /** gets the lighttable image in row zoom */
 gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm);
-/** sets the lighttable number of images displayed in culling mode */
-void dt_view_lighttable_set_display_num_images(dt_view_manager_t *vm, const int display_num_images);
-/** gets the lighttable number of images displayed in culling mode */
-int dt_view_lighttable_get_display_num_images(dt_view_manager_t *vm);
 /** set first visible image offset */
 void dt_view_lighttable_set_position(dt_view_manager_t *vm, uint32_t pos);
 /** read first visible image offset */

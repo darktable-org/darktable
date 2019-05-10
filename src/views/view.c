@@ -2006,20 +2006,6 @@ gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm)
     return 10;
 }
 
-void dt_view_lighttable_set_display_num_images(dt_view_manager_t *vm, const int display_num_images)
-{
-  if(vm->proxy.lighttable.module)
-    vm->proxy.lighttable.set_display_num_images(vm->proxy.lighttable.module, display_num_images);
-}
-
-int dt_view_lighttable_get_display_num_images(dt_view_manager_t *vm)
-{
-  if(vm->proxy.lighttable.module)
-    return vm->proxy.lighttable.get_display_num_images(vm->proxy.lighttable.module);
-  else
-    return 2;
-}
-
 void dt_view_lighttable_force_expose_all(dt_view_manager_t *vm)
 {
   if(vm->proxy.lighttable.view)
