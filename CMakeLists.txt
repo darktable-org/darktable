@@ -57,6 +57,8 @@ if (USE_OPENMP)
     find_package(OpenMP 4.0 REQUIRED)
 endif()
 
+include(ConfigureChecks.cmake)
+
 include(CheckCCompilerFlag)
 include(TestBigEndian)
 
