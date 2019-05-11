@@ -103,7 +103,8 @@ static gboolean _expose_again_full(gpointer user_data);
 
 static void _force_expose_all(dt_view_t *self);
 
-static gboolean _culling_recreate_slots(dt_view_t *self, const dt_lighttable_layout_t layout);
+static gboolean _culling_recreate_slots_at(dt_view_t *self, const int display_first_image);
+static gboolean _culling_recreate_slots(dt_view_t *self);
 static void _ensure_image_visibility(dt_view_t *self, uint32_t rowid);
 
 typedef struct dt_preview_surface_t
@@ -581,7 +582,7 @@ static void _view_lighttable_query_listener_callback(gpointer instance, gpointer
   // also in culling
   if(layout == lib->current_layout && layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
-    _culling_recreate_slots(self, layout);
+    _culling_recreate_slots(self);
   }
 }
 
@@ -594,7 +595,7 @@ static void _view_lighttable_collection_listener_callback(gpointer instance, gpo
 
   // we reset the culling layout
   if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
-    _culling_recreate_slots(self, lib->current_layout);
+    _culling_recreate_slots(self);
   else
     _view_lighttable_collection_listener_internal(self, lib);
 }
@@ -612,8 +613,9 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
   // we reset the culling layout
   if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
+    int idover = dt_control_get_mouse_over_id();
     _culling_check_scrolling_mode(self);
-    _culling_recreate_slots(self, lib->current_layout);
+    _culling_recreate_slots_at(self, idover);
     dt_control_queue_redraw_center();
   }
   else if(lib->full_preview_id != -1)
@@ -720,7 +722,7 @@ static void _update_collected_images(dt_view_t *self)
                               "SELECT imgid FROM memory.collected_images ORDER BY rowid LIMIT ?1, ?2", -1,
                               &lib->statements.main_query, NULL);
 
-  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING) _culling_recreate_slots(self, lib->current_layout);
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING) _culling_recreate_slots(self);
 
   dt_control_queue_redraw_center();
 }
@@ -1843,76 +1845,44 @@ static float _preview_get_zoom100(int32_t width, int32_t height, uint32_t imgid)
   return zoom_100;
 }
 
-static gboolean _culling_recreate_slots(dt_view_t *self, const dt_lighttable_layout_t layout)
+static gboolean _culling_recreate_slots_at(dt_view_t *self, const int display_first_image)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
 
   int img_count = 0;
   gchar *query = NULL;
 
-  // build the SQL query
-  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
-  {
-    // number of images to be displayed
-    img_count = get_zoom();
-    // starting with the first selected image
-    GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
-    int display_first_image = (first_selected) ? GPOINTER_TO_INT(first_selected->data) : -1;
-    if(first_selected) g_list_free(first_selected);
-    gchar *rowid_txt = NULL;
-    if(display_first_image < 0 && lib->slots_count > 0)
-    {
-      // we search the first still valid id
-      gchar *imgs = dt_util_dstrcat(NULL, "%d", lib->slots[0].imgid);
-      for(int j = 1; j < lib->slots_count; j++)
-      {
-        imgs = dt_util_dstrcat(imgs, ", %d", lib->slots[j].imgid);
-      }
-      sqlite3_stmt *stmt2;
-      query = dt_util_dstrcat(NULL, "SELECT imgid FROM memory.collected_images WHERE imgid IN (%s) ORDER BY rowid",
-                              imgs);
-      g_free(imgs);
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
-      if(stmt2 != NULL)
-      {
-        while(sqlite3_step(stmt2) == SQLITE_ROW)
-        {
-          display_first_image = sqlite3_column_int(stmt2, 0);
-          break;
-        }
-        sqlite3_finalize(stmt2);
-      }
-      g_free(query);
-    }
-    if(display_first_image >= 0)
-    {
-      rowid_txt = dt_util_dstrcat(NULL, "(SELECT rowid FROM memory.collected_images WHERE imgid = %d)",
-                                  display_first_image);
-    }
-    else
-      rowid_txt = dt_util_dstrcat(NULL, "%d", 0);
+  // number of images to be displayed
+  img_count = get_zoom();
 
-    if(lib->culling_use_selection)
-    {
-      query = dt_util_dstrcat(NULL,
-                              "SELECT m.imgid, b.aspect_ratio FROM memory.collected_images AS m, "
-                              "main.selected_images AS s, images AS b WHERE "
-                              "m.imgid = b.id AND m.imgid = s.imgid AND m.rowid >= %s ORDER BY m.rowid LIMIT %d",
-                              rowid_txt, img_count);
-    }
-    else
-    {
-      query = dt_util_dstrcat(NULL,
-                              "SELECT m.imgid, b.aspect_ratio FROM "
-                              "(SELECT rowid, imgid FROM memory.collected_images"
-                              " WHERE rowid < %s + %d"
-                              " ORDER BY rowid DESC LIMIT %d) AS m, "
-                              "images AS b "
-                              "WHERE m.imgid = b.id "
-                              "ORDER BY m.rowid",
-                              rowid_txt, img_count, img_count);
-    }
-    g_free(rowid_txt);
+  gchar *rowid_txt = NULL;
+  if(display_first_image >= 0)
+  {
+    rowid_txt = dt_util_dstrcat(NULL, "(SELECT rowid FROM memory.collected_images WHERE imgid = %d)",
+                                display_first_image);
+  }
+  else
+    rowid_txt = dt_util_dstrcat(NULL, "%d", 0);
+
+  if(lib->culling_use_selection)
+  {
+    query = dt_util_dstrcat(NULL,
+                            "SELECT m.imgid, b.aspect_ratio FROM memory.collected_images AS m, "
+                            "main.selected_images AS s, images AS b WHERE "
+                            "m.imgid = b.id AND m.imgid = s.imgid AND m.rowid >= %s ORDER BY m.rowid LIMIT %d",
+                            rowid_txt, img_count);
+  }
+  else
+  {
+    query = dt_util_dstrcat(NULL,
+                            "SELECT m.imgid, b.aspect_ratio FROM "
+                            "(SELECT rowid, imgid FROM memory.collected_images"
+                            " WHERE rowid < %s + %d"
+                            " ORDER BY rowid DESC LIMIT %d) AS m, "
+                            "images AS b "
+                            "WHERE m.imgid = b.id "
+                            "ORDER BY m.rowid",
+                            rowid_txt, img_count, img_count);
   }
 
   // be sure we don't have some remaining config
@@ -1949,8 +1919,87 @@ static gboolean _culling_recreate_slots(dt_view_t *self, const dt_lighttable_lay
   g_free(query);
   lib->slots_count = i;
 
+  // in rare cases, we can have less images than wanted
+  // althought there's images before
+  if(lib->culling_use_selection && lib->slots_count < img_count
+     && lib->slots_count < dt_collection_get_selected_count(darktable.collection))
+  {
+    const int nb = img_count - lib->slots_count;
+    query = dt_util_dstrcat(NULL,
+                            "SELECT m.imgid, b.aspect_ratio "
+                            "FROM memory.collected_images AS m, main.selected_images AS s, images AS b "
+                            "WHERE m.imgid = b.id AND m.imgid = s.imgid AND m.rowid < %s "
+                            "ORDER BY m.rowid DESC LIMIT %d",
+                            rowid_txt, nb);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    if(stmt != NULL)
+    {
+      while(sqlite3_step(stmt) == SQLITE_ROW && lib->slots_count <= img_count)
+      {
+        const int32_t id = sqlite3_column_int(stmt, 0);
+        double aspect_ratio = sqlite3_column_double(stmt, 1);
+        if(!aspect_ratio || aspect_ratio < 0.0001)
+        {
+          aspect_ratio = dt_image_set_aspect_ratio(id);
+          // if an error occurs, let's use 1:1 value
+          if(aspect_ratio < 0.0001) aspect_ratio = 1.0;
+        }
+
+        // we shift everything up
+        for(int j = img_count - 1; j > 0; j--)
+        {
+          lib->slots[j] = lib->slots[j - 1];
+        }
+        // we record the new one
+        lib->slots[0].imgid = id;
+        lib->slots[0].aspect_ratio = aspect_ratio;
+        lib->slots_count++;
+      }
+      sqlite3_finalize(stmt);
+    }
+    g_free(query);
+  }
+
+  g_free(rowid_txt);
   lib->slots_changed = TRUE;
   return TRUE;
+}
+
+static gboolean _culling_recreate_slots(dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+
+  // starting with the first selected image
+  GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
+  int display_first_image = (first_selected) ? GPOINTER_TO_INT(first_selected->data) : -1;
+  if(first_selected) g_list_free(first_selected);
+
+  if(display_first_image < 0 && lib->slots_count > 0)
+  {
+    // we search the first still valid id
+    gchar *imgs = dt_util_dstrcat(NULL, "%d", lib->slots[0].imgid);
+    for(int j = 1; j < lib->slots_count; j++)
+    {
+      imgs = dt_util_dstrcat(imgs, ", %d", lib->slots[j].imgid);
+    }
+    sqlite3_stmt *stmt2;
+    gchar *query = dt_util_dstrcat(
+        NULL, "SELECT imgid FROM memory.collected_images WHERE imgid IN (%s) ORDER BY rowid", imgs);
+    g_free(imgs);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
+    if(stmt2 != NULL)
+    {
+      while(sqlite3_step(stmt2) == SQLITE_ROW)
+      {
+        display_first_image = sqlite3_column_int(stmt2, 0);
+        break;
+      }
+      sqlite3_finalize(stmt2);
+    }
+    g_free(query);
+  }
+
+  return _culling_recreate_slots_at(self, display_first_image);
 }
 
 static gboolean _culling_compute_slots(dt_view_t *self, int32_t width, int32_t height,
@@ -2258,7 +2307,7 @@ static int expose_culling(dt_view_t *self, cairo_t *cr, int32_t width, int32_t h
   gboolean prefetch = FALSE;
   if(lib->last_width != width || lib->last_height != height || !lib->slots || lib->last_num_images != get_zoom())
   {
-    if(!_culling_recreate_slots(self, layout)) return 0;
+    if(!_culling_recreate_slots(self)) return 0;
   }
   if(lib->slots_changed)
   {
