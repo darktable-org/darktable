@@ -2831,7 +2831,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
 
           length = (fabsf(xx) > fabsf(yy)) ? xx : yy;
 
-          if((g->prev_clip_w - (length + length)) < 0.1 || (g->prev_clip_h - (length + length)) < 0.1)
+          if((g->prev_clip_w - (length + length)) < 0.1f || (g->prev_clip_h - (length + length)) < 0.1f)
             flag = TRUE;
 
           g->clip_x = flag ? g->clip_x : g->prev_clip_x + length;
@@ -2845,19 +2845,19 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
           if(grab & GRAB_LEFT)
           {
             const float old_clip_x = g->clip_x;
-            g->clip_x = fmaxf(g->clip_max_x, pzx - g->handle_x);
-            g->clip_w = fmaxf(0.1, old_clip_x + g->clip_w - g->clip_x);
+            g->clip_x = fminf(fmaxf(g->clip_max_x, pzx - g->handle_x), g->clip_x + g->clip_w - 0.1f);
+            g->clip_w = old_clip_x + g->clip_w - g->clip_x;
           }
           if(grab & GRAB_TOP)
           {
             const float old_clip_y = g->clip_y;
-            g->clip_y = fmaxf(g->clip_max_y, pzy - g->handle_y);
-            g->clip_h = fmaxf(0.1, old_clip_y + g->clip_h - g->clip_y);
+            g->clip_y = fminf(fmaxf(g->clip_max_y, pzy - g->handle_y), g->clip_y + g->clip_h - 0.1f);
+            g->clip_h = old_clip_y + g->clip_h - g->clip_y;
           }
           if(grab & GRAB_RIGHT)
-            g->clip_w = fmaxf(0.1, fminf(g->clip_max_w + g->clip_max_x, pzx - g->clip_x - g->handle_x));
+            g->clip_w = fmaxf(0.1f, fminf(g->clip_max_w + g->clip_max_x, pzx - g->clip_x - g->handle_x));
           if(grab & GRAB_BOTTOM)
-            g->clip_h = fmaxf(0.1, fminf(g->clip_max_h + g->clip_max_y, pzy - g->clip_y - g->handle_y));
+            g->clip_h = fmaxf(0.1f, fminf(g->clip_max_h + g->clip_max_y, pzy - g->clip_y - g->handle_y));
         }
 
         if(g->clip_x + g->clip_w > g->clip_max_w + g->clip_max_x)
