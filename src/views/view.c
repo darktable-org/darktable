@@ -1403,9 +1403,19 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     {
       // border around image
       dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_BORDER);
-      if(buf_ok && (selected || zoom == 1))
+      if(buf_ok && surrounded && zoom != 1)
       {
         const float border = zoom == 1 ? DT_PIXEL_APPLY_DPI(16 / scale) : DT_PIXEL_APPLY_DPI(2 / scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1. / scale));
+        cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
+        cairo_new_sub_path(cr);
+        cairo_rectangle(cr, rectx - border, recty - border, rectw + 2. * border, recth + 2. * border);
+        cairo_stroke_preserve(cr);
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
+        cairo_fill(cr);
+      }
+      else if(buf_ok && (selected || zoom == 1))
+      {
         cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1. / scale));
         if(zoom == 1)
         {
@@ -1424,15 +1434,6 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
             alpha *= 0.6f;
             cairo_fill(cr);
           }
-        }
-        else if(surrounded)
-        {
-          cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-          cairo_new_sub_path(cr);
-          cairo_rectangle(cr, rectx - border, recty - border, rectw + 2. * border, recth + 2. * border);
-          cairo_stroke_preserve(cr);
-          dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
-          cairo_fill(cr);
         }
         else
         {
