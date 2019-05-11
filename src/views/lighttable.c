@@ -762,6 +762,17 @@ static int _get_full_preview_id(dt_view_t *self)
   return lib->full_preview_id;
 }
 
+static int _culling_is_image_visible(dt_view_t *self, gint imgid)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  if(lib->current_layout != DT_LIGHTTABLE_LAYOUT_CULLING) return FALSE;
+  for(int i = 0; i < lib->slots_count; i++)
+  {
+    if(lib->slots[i].imgid == imgid) return TRUE;
+  }
+  return FALSE;
+}
+
 static inline int _get_max_in_memory_images()
 {
   const int max_in_memory_images = dt_conf_get_int("plugins/lighttable/preview/max_in_memory_images");
@@ -844,6 +855,7 @@ void init(dt_view_t *self)
   darktable.view_manager->proxy.lighttable.get_images_in_row = _get_images_in_row;
   darktable.view_manager->proxy.lighttable.get_full_preview_id = _get_full_preview_id;
   darktable.view_manager->proxy.lighttable.view = self;
+  darktable.view_manager->proxy.lighttable.culling_is_image_visible = _culling_is_image_visible;
 
   lib->select_offset_x = lib->select_offset_y = 0.5f;
   lib->last_selected_idx = -1;

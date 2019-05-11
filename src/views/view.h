@@ -291,6 +291,7 @@ typedef struct dt_view_manager_t
       int (*get_images_in_row)(struct dt_view_t *view);
       int (*get_full_preview_id)(struct dt_view_t *view);
       void (*force_expose_all)(struct dt_view_t *view);
+      gboolean (*culling_is_image_visible)(struct dt_view_t *view, gint imgid);
     } lighttable;
 
     /* tethering view proxy object */
@@ -427,6 +428,8 @@ void dt_view_lighttable_set_position(dt_view_manager_t *vm, uint32_t pos);
 uint32_t dt_view_lighttable_get_position(dt_view_manager_t *vm);
 /** force a full redraw of the lighttable */
 void dt_view_lighttable_force_expose_all(dt_view_manager_t *vm);
+/** is the image visible in culling layout */
+gboolean dt_view_lighttable_culling_is_image_visible(dt_view_manager_t *vm, gint imgid);
 
 /** set active image */
 void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm, int iid);
