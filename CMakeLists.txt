@@ -35,6 +35,13 @@ endif()
 
 include(DefineOptions.cmake)
 
+# Include GNUInstallDirs, which sets sensible defaults for install directories.
+# See https://cmake.org/cmake/help/v3.0/module/GNUInstallDirs.html for further information.
+# These values can be easily overridden if required.
+# Some defaults are set for OpenBSD as well (info and man pages).
+
+include(GNUInstallDirs)
+
 include(CheckCCompilerFlag)
 include(TestBigEndian)
 
@@ -44,13 +51,6 @@ if(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
 else()
   set(SOURCE_PACKAGE 0)
 endif()
-
-# Include GNUInstallDirs, which sets sensible defaults for install directories.
-# See https://cmake.org/cmake/help/v3.0/module/GNUInstallDirs.html for further information.
-# These values can be easily overridden if required.
-# Some defaults are set for OpenBSD as well (info and man pages).
-
-include(GNUInstallDirs)
 
 if(BUILD_SSE2_CODEPATHS)
   CHECK_C_COMPILER_FLAG("-msse2" _MSSE2)
