@@ -1026,6 +1026,15 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW) selected = 1;
   }
 
+  // do we need to surround the image (filmstrip in culling layout)
+  gboolean surrounded = selected;
+  if(!full_preview && darktable.view_manager->proxy.lighttable.view
+     && dt_view_manager_get_current_view(darktable.view_manager) == darktable.view_manager->proxy.lighttable.view
+     && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    surrounded = dt_view_lighttable_culling_is_image_visible(darktable.view_manager, imgid);
+  }
+
   dt_image_t buffered_image;
   const dt_image_t *img;
   // if darktable.gui->show_overlays is set or the user points at this image, we really want it:
@@ -1136,7 +1145,10 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     dt_gui_gtk_set_source_rgb(cr, bgcol);
     cairo_fill_preserve(cr);
     cairo_set_line_width(cr, 0.005 * width);
-    dt_gui_gtk_set_source_rgb(cr, outlinecol);
+    if(surrounded)
+      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
+    else
+      dt_gui_gtk_set_source_rgb(cr, outlinecol);
     cairo_stroke(cr);
 
     if(img)
@@ -1413,7 +1425,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
             cairo_fill(cr);
           }
         }
-        else
+        else if(surrounded)
         {
           cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
           cairo_new_sub_path(cr);
@@ -1421,6 +1433,11 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
           cairo_stroke_preserve(cr);
           dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
           cairo_fill(cr);
+        }
+        else
+        {
+          cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5 / scale));
+          cairo_stroke(cr);
         }
       }
       else if(buf_ok)
@@ -2018,6 +2035,14 @@ dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm)
     return vm->proxy.lighttable.get_layout(vm->proxy.lighttable.module);
   else
     return DT_LIGHTTABLE_LAYOUT_FILEMANAGER;
+}
+
+gboolean dt_view_lighttable_culling_is_image_visible(dt_view_manager_t *vm, gint imgid)
+{
+  if(vm->proxy.lighttable.module)
+    return vm->proxy.lighttable.culling_is_image_visible(vm->proxy.lighttable.view, imgid);
+  else
+    return FALSE;
 }
 
 gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm)
