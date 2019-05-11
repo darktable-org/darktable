@@ -75,11 +75,23 @@ typedef unsigned int u_int;
 #endif
 
 #ifdef _OPENMP
-#include <omp.h>
-#else
-#define omp_get_max_threads() 1
-#define omp_get_thread_num() 0
-#endif
+# include <omp.h>
+
+/* See https://redmine.darktable.org/issues/12568#note-14 */
+# ifdef HAVE_OMP_FIRSTPRIVATE_WITH_CONST
+   /* If the compiler correctly supports firstprivate, use it. */
+#  define dt_omp_firstprivate(...) firstprivate(__VA_ARGS__)
+# else /* HAVE_OMP_FIRSTPRIVATE_WITH_CONST */
+   /* This is needed for clang < 7.0 */
+#  define dt_omp_firstprivate(...)
+# endif/* HAVE_OMP_FIRSTPRIVATE_WITH_CONST */
+
+#else /* _OPENMP */
+
+# define omp_get_max_threads() 1
+# define omp_get_thread_num() 0
+
+#endif /* _OPENMP */
 
 #ifndef _RELEASE
 #include "common/poison.h"
