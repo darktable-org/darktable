@@ -42,6 +42,10 @@ include(DefineOptions.cmake)
 
 include(GNUInstallDirs)
 
+if (USE_OPENMP)
+    find_package(OpenMP 4.0 REQUIRED)
+endif()
+
 include(CheckCCompilerFlag)
 include(TestBigEndian)
 
