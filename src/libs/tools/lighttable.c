@@ -36,13 +36,14 @@ typedef struct dt_lib_tool_lighttable_t
   GtkWidget *layout_combo;
   dt_lighttable_layout_t layout, base_layout;
   int current_zoom;
-  gboolean dynamic_zoom;
+  dt_lighttable_culling_zoom_mode_t zoom_mode;
   gboolean combo_evt_reset;
 } dt_lib_tool_lighttable_t;
 
 /* set zoom proxy function */
 static void _lib_lighttable_set_zoom(dt_lib_module_t *self, gint zoom);
 static gint _lib_lighttable_get_zoom(dt_lib_module_t *self);
+static dt_lighttable_culling_zoom_mode_t _lib_lighttable_get_zoom_mode(dt_lib_module_t *self);
 
 /* get/set layout proxy function */
 static dt_lighttable_layout_t _lib_lighttable_get_layout(dt_lib_module_t *self);
@@ -159,7 +160,9 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.lighttable.module = self;
   darktable.view_manager->proxy.lighttable.set_zoom = _lib_lighttable_set_zoom;
   darktable.view_manager->proxy.lighttable.get_zoom = _lib_lighttable_get_zoom;
+  darktable.view_manager->proxy.lighttable.get_zoom_mode = _lib_lighttable_get_zoom_mode;
   darktable.view_manager->proxy.lighttable.get_layout = _lib_lighttable_get_layout;
+  darktable.view_manager->proxy.lighttable.set_layout = _lib_lighttable_set_layout;
   darktable.view_manager->proxy.lighttable.set_layout = _lib_lighttable_set_layout;
 }
 
@@ -208,7 +211,7 @@ static void _set_zoom(dt_lib_module_t *self, int zoom)
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
   if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
-    if(!d->dynamic_zoom) dt_conf_set_int("plugins/lighttable/culling_num_images", zoom);
+    if(d->zoom_mode == DT_LIGHTTABLE_ZOOM_FIXED) dt_conf_set_int("plugins/lighttable/culling_num_images", zoom);
   }
   else
     dt_conf_set_int("plugins/lighttable/images_in_row", zoom);
@@ -303,7 +306,7 @@ static void _lib_lighttable_change_layout(dt_lib_module_t *self, dt_lighttable_l
   if(current_layout != layout)
   {
     if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
-      if(d->dynamic_zoom)
+      if(d->zoom_mode == DT_LIGHTTABLE_ZOOM_DYNAMIC)
         d->current_zoom = MAX(1, MIN(30, dt_collection_get_selected_count(darktable.collection)));
       else
         d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_num_images");
@@ -334,7 +337,7 @@ static void _lib_lighttable_layout_changed(GtkComboBox *widget, gpointer user_da
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
   if(d->combo_evt_reset) return;
   const int new_layout = gtk_combo_box_get_active(widget);
-  d->dynamic_zoom = FALSE;
+  d->zoom_mode = DT_LIGHTTABLE_ZOOM_FIXED;
   _lib_lighttable_change_layout(self, new_layout);
 }
 
@@ -361,6 +364,12 @@ static gint _lib_lighttable_get_zoom(dt_lib_module_t *self)
 {
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
   return d->current_zoom;
+}
+
+static dt_lighttable_culling_zoom_mode_t _lib_lighttable_get_zoom_mode(dt_lib_module_t *self)
+{
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
+  return d->zoom_mode;
 }
 
 static gboolean _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel_group,
@@ -421,14 +430,16 @@ static gboolean _lib_lighttable_key_accel_toggle_culling_dynamic_mode(GtkAccelGr
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
 
-  d->dynamic_zoom = (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING);
   if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING)
   {
+    d->zoom_mode = DT_LIGHTTABLE_ZOOM_DYNAMIC;
     _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING);
   }
   else
+  {
+    d->zoom_mode = DT_LIGHTTABLE_ZOOM_FIXED;
     _lib_lighttable_set_layout(self, d->base_layout);
-
+  }
 
   dt_control_queue_redraw_center();
   return TRUE;
@@ -441,7 +452,7 @@ static gboolean _lib_lighttable_key_accel_toggle_culling_mode(GtkAccelGroup *acc
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
 
-  d->dynamic_zoom = FALSE;
+  d->zoom_mode = DT_LIGHTTABLE_ZOOM_FIXED;
   if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     _lib_lighttable_set_layout(self, DT_LIGHTTABLE_LAYOUT_CULLING);
