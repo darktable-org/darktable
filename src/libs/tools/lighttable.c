@@ -34,6 +34,7 @@ typedef struct dt_lib_tool_lighttable_t
   GtkWidget *zoom;
   GtkWidget *zoom_entry;
   GtkWidget *layout_combo;
+  GtkWidget *zoom_mode_cb;
   dt_lighttable_layout_t layout, base_layout;
   int current_zoom;
   dt_lighttable_culling_zoom_mode_t zoom_mode;
@@ -51,6 +52,8 @@ static void _lib_lighttable_set_layout(dt_lib_module_t *self, dt_lighttable_layo
 
 /* lightable layout changed */
 static void _lib_lighttable_layout_changed(GtkComboBox *widget, gpointer user_data);
+/* lightable culling zoom mode changed */
+static void _lib_lighttable_zoom_mode_changed(GtkComboBox *widget, gpointer user_data);
 /* zoom slider change callback */
 static void _lib_lighttable_zoom_slider_changed(GtkRange *range, gpointer user_data);
 /* zoom entry change callback */
@@ -151,6 +154,31 @@ void gui_init(dt_lib_module_t *self)
                    (gpointer)self);
   g_signal_connect(d->zoom_entry, "key-press-event", G_CALLBACK(_lib_lighttable_zoom_entry_changed), self);
   gtk_range_set_value(GTK_RANGE(d->zoom), d->current_zoom);
+
+  d->zoom_mode_cb = gtk_combo_box_text_new();
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->zoom_mode_cb), _("fixed zoom"));
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(d->zoom_mode_cb), _("dynamic zoom"));
+  g_signal_connect(G_OBJECT(d->zoom_mode_cb), "changed", G_CALLBACK(_lib_lighttable_zoom_mode_changed),
+                   (gpointer)self);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->zoom_mode_cb, TRUE, TRUE, 0);
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    gtk_widget_show(d->zoom_mode_cb);
+    if(d->zoom_mode == DT_LIGHTTABLE_ZOOM_DYNAMIC)
+    {
+      gtk_combo_box_set_active(GTK_COMBO_BOX(d->zoom_mode_cb), 1);
+    }
+    else
+    {
+      gtk_combo_box_set_active(GTK_COMBO_BOX(d->zoom_mode_cb), 0);
+    }
+  }
+  else
+  {
+    gtk_widget_hide(d->zoom_mode_cb);
+  }
+  gtk_widget_set_no_show_all(d->zoom_mode_cb, TRUE);
+
   _lib_lighttable_zoom_slider_changed(GTK_RANGE(d->zoom), self); // the slider defaults to 1 and GTK doesn't
                                                                  // fire a value-changed signal when setting
                                                                  // it to 1 => empty text box
@@ -306,15 +334,25 @@ static void _lib_lighttable_change_layout(dt_lib_module_t *self, dt_lighttable_l
   if(current_layout != layout)
   {
     if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+    {
+      gtk_widget_show(d->zoom_mode_cb);
       if(d->zoom_mode == DT_LIGHTTABLE_ZOOM_DYNAMIC)
       {
+        gtk_combo_box_set_active(GTK_COMBO_BOX(d->zoom_mode_cb), 1);
         d->current_zoom = MAX(1, MIN(30, dt_collection_get_selected_count(darktable.collection)));
         if(d->current_zoom == 1) d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_num_images");
       }
       else
+      {
+        gtk_combo_box_set_active(GTK_COMBO_BOX(d->zoom_mode_cb), 0);
         d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_num_images");
+      }
+    }
     else
+    {
+      gtk_widget_hide(d->zoom_mode_cb);
       d->current_zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
+    }
     gtk_range_set_value(GTK_RANGE(d->zoom), d->current_zoom);
 
     dt_conf_set_int("plugins/lighttable/layout", layout);
@@ -342,6 +380,28 @@ static void _lib_lighttable_layout_changed(GtkComboBox *widget, gpointer user_da
   const int new_layout = gtk_combo_box_get_active(widget);
   d->zoom_mode = DT_LIGHTTABLE_ZOOM_FIXED;
   _lib_lighttable_change_layout(self, new_layout);
+}
+
+static void _lib_lighttable_zoom_mode_changed(GtkComboBox *widget, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
+
+  dt_lighttable_culling_zoom_mode_t new_mode = DT_LIGHTTABLE_ZOOM_FIXED;
+  if(gtk_combo_box_get_active(GTK_COMBO_BOX(d->zoom_mode_cb)) == 1) new_mode = DT_LIGHTTABLE_ZOOM_DYNAMIC;
+  if(new_mode == d->zoom_mode) return;
+
+  d->zoom_mode = new_mode;
+  if(new_mode == DT_LIGHTTABLE_ZOOM_FIXED)
+  {
+    _lib_lighttable_set_zoom(self, dt_conf_get_int("plugins/lighttable/culling_num_images"));
+  }
+  else
+  {
+    int selnb = dt_collection_get_selected_count(darktable.collection);
+    if(selnb <= 1) selnb = dt_conf_get_int("plugins/lighttable/culling_num_images");
+    _lib_lighttable_set_zoom(self, selnb);
+  }
 }
 
 static void _lib_lighttable_set_layout(dt_lib_module_t *self, dt_lighttable_layout_t layout)
