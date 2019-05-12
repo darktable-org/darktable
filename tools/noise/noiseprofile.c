@@ -38,30 +38,34 @@ write_pfm(const char *filename, float *buf, int wd, int ht)
 
 void mean_filter(const int radius, const float* in, float* out, const int width, const int height)
 {
-  float* h_mean = calloc(width*height, sizeof(float));
+  float* h_mean = calloc(width*height*3, sizeof(float));
   // horizontal pass
   for(int i = 0; i < height; i++)
   {
     float sliding_mean[3] = { 0.0f, 0.0f, 0.0f };
-    for(int j = 0; j < radius; j++)
+    for(int c = 0; c < 3; c++)
+    {
+      sliding_mean[c] += in[(i*width)*3+c];
+    }
+    for(int j = 1; j < radius; j++)
     {
       for(int c = 0; c < 3; c++)
       {
-        sliding_mean[c] += in[(i*width+j)*3+c];
+        sliding_mean[c] += 2*in[(i*width+j)*3+c];
       }
     }
     for(int j = 0; j < width; j++)
     {
       int to_be_added_pixel_index;
       int to_be_removed_pixel_index;
-      if(j+radius >= width)
+      if(j+radius+1 >= width)
       {
-        int diff = j+radius-width;
+        int diff = j+radius+1-width;
         to_be_added_pixel_index = (i*width+width-diff)*3;
       }
       else
       {
-        to_be_added_pixel_index = (i*width+j+radius)*3;
+        to_be_added_pixel_index = (i*width+j+radius+1)*3;
       }
       if(j-radius < 0)
       {
@@ -74,8 +78,8 @@ void mean_filter(const int radius, const float* in, float* out, const int width,
 
       for(int c = 0; c < 3; c++)
       {
+        h_mean[(i*width+j)*3+c] = sliding_mean[c] / (2*radius+1);
         sliding_mean[c] += in[to_be_added_pixel_index+c];
-        h_mean[(i*width+j)*3+c] = sliding_mean[c] / radius;
         sliding_mean[c] -= in[to_be_removed_pixel_index+c];
       }
     }
@@ -84,25 +88,29 @@ void mean_filter(const int radius, const float* in, float* out, const int width,
   for(int j = 0; j < width; j++)
   {
     float sliding_mean[3] = { 0.0f, 0.0f, 0.0f };
-    for(int i = 0; i < radius; i++)
+    for(int c = 0; c < 3; c++)
+    {
+      sliding_mean[c] += h_mean[j*3+c];
+    }
+    for(int i = 1; i < radius; i++)
     {
       for(int c = 0; c < 3; c++)
       {
-        sliding_mean[c] += in[(i*width+j)*3+c];
+        sliding_mean[c] += 2*h_mean[(i*width+j)*3+c];
       }
     }
     for(int i = 0; i < height; i++)
     {
       int to_be_added_pixel_index;
       int to_be_removed_pixel_index;
-      if(i+radius >= height)
+      if(i+radius+1 >= height)
       {
-        int diff = i+radius-height;
+        int diff = i+radius+1-height;
         to_be_added_pixel_index = ((i-diff)*width+j)*3;
       }
       else
       {
-        to_be_added_pixel_index = ((i+radius)*width+j)*3;
+        to_be_added_pixel_index = ((i+radius+1)*width+j)*3;
       }
       if(i-radius < 0)
       {
@@ -112,11 +120,10 @@ void mean_filter(const int radius, const float* in, float* out, const int width,
       {
         to_be_removed_pixel_index = ((i-radius)*width+j)*3;
       }
-
       for(int c = 0; c < 3; c++)
       {
+        out[(i*width+j)*3+c] = sliding_mean[c] / (2*radius+1);
         sliding_mean[c] += h_mean[to_be_added_pixel_index+c];
-        out[(i*width+j)*3+c] = sliding_mean[c] / radius;
         sliding_mean[c] -= h_mean[to_be_removed_pixel_index+c];
       }
     }
@@ -143,7 +150,7 @@ int main(int argc, char *arg[])
   }
   int wd, ht;
   float *input = read_pfm(arg[1], &wd, &ht);
-  float *inputblurred = calloc(wd*ht, sizeof(float));
+  float *inputblurred = calloc(wd*ht*3, sizeof(float));
   mean_filter(32, input, inputblurred, wd, ht);
   double var[3][NB_BITS_PRECISION];
   unsigned nb_elts[3][NB_BITS_PRECISION];
@@ -225,7 +232,7 @@ int main(int argc, char *arg[])
               var[2][level], nb_elts[0][level], nb_elts[1][level], nb_elts[2][level]);
     }
   }
-  //free(inputblurred);
-  //free(input);
+  free(inputblurred);
+  free(input);
   exit(0);
 }
