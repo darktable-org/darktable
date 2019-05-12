@@ -37,10 +37,18 @@ option(USE_GAME "Build 1st April easter egg game" ON)
 option(FORCE_COLORED_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." OFF)
 
 if (USE_OPENCL)
-    option(TESTBUILD_OPENCL_PROGRAMS "Test-compile opencl programs (needs llvm and clang 3.9+)" ON)
-else ()
+    if (APPLE OR WIN32)
+        set(_TESTBUILD_OPENCL_PROGRAMS_DEFAULT OFF)
+    else()
+        set(_TESTBUILD_OPENCL_PROGRAMS_DEFAULT ON)
+    endif()
+
+    option(TESTBUILD_OPENCL_PROGRAMS
+           "Test-compile opencl programs (needs llvm and clang 3.9+)"
+           ${_TESTBUILD_OPENCL_PROGRAMS_DEFAULT})
+else()
     set(TESTBUILD_OPENCL_PROGRAMS OFF)
-endif ()
+endif()
 
 if(APPLE)
     option(USE_MAC_INTEGRATION "Enable OS X integration" ON)

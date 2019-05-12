@@ -147,7 +147,6 @@ if(WIN32)
   set(USE_KWALLET OFF)
   set(BUILD_CMSTEST OFF)
   set(BUILD_PRINT OFF)
-  set(TESTBUILD_OPENCL_PROGRAMS OFF)
   if(BUILD_MSYS2_INSTALL)
     add_definitions(-DMSYS2_INSTALL)
   endif()
@@ -296,8 +295,9 @@ if(VALIDATE_APPDATA_FILE)
 endif(VALIDATE_APPDATA_FILE)
 
 if(TESTBUILD_OPENCL_PROGRAMS)
-  set(TESTBUILD_OPENCL_PROGRAMS OFF)
-
+  # find_package(LLVM 3.9 CONFIG) only looks for the EXACT version, because
+  # major LLVM versions are API incompatible. So we need a macro to start
+  # looking for the latest version.
   macro(find_llvm versions)
     foreach(version ${versions})
       find_package(LLVM ${version} CONFIG)
@@ -310,36 +310,35 @@ if(TESTBUILD_OPENCL_PROGRAMS)
   # 3.9 is the first version with which this works.
   find_llvm("11;10;9;8;7;6.0;5.0;4.0;3.9")
 
-  if (LLVM_FOUND)
-    message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+  if (NOT LLVM_FOUND OR ${LLVM_PACKAGE_VERSION} VERSION_LESS 3.9)
+    message(WARNING "Could not find LLVM >= 3.9")
+    message(SEND_ERROR "Test-compilation of OpenCL programs can not be done.")
+  endif()
 
-    find_program(CLANG_OPENCL_COMPILER
-      NAMES clang-${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR} clang-${LLVM_PACKAGE_VERSION} clang${LLVM_VERSION_MAJOR}${LLVM_VERSION_MINOR} clang-${LLVM_VERSION_MAJOR} clang${LLVM_VERSION_MAJOR}
-    )
-
-    if (NOT ${CLANG_OPENCL_COMPILER} STREQUAL "CLANG_OPENCL_COMPILER-NOTFOUND")
-      message(STATUS "Found clang compiler - ${CLANG_OPENCL_COMPILER}")
-
-      find_path(CLANG_OPENCL_INCLUDE_DIR opencl-c.h
-        HINTS ${LLVM_INSTALL_PREFIX}/lib/clang ${LLVM_INSTALL_PREFIX}/lib64/clang
-        PATH_SUFFIXES include ${LLVM_PACKAGE_VERSION}/include
-        NO_DEFAULT_PATH
-      )
-
-      if (NOT ${CLANG_OPENCL_INCLUDE_DIR} STREQUAL "CLANG_OPENCL_INCLUDE_DIR-NOTFOUND")
-        message(STATUS "Found clang opencl-c.h header in ${CLANG_OPENCL_INCLUDE_DIR}")
-        set(TESTBUILD_OPENCL_PROGRAMS ON)
-      else()
-        message(WARNING "Could not find clang opencl-c.h header include dir")
-        message(WARNING "Test-compilation of OpenCL programs can not be done.")
-      endif()
-    else()
+  find_program(CLANG_OPENCL_COMPILER
+               NAMES
+                 clang-${LLVM_VERSION_MAJOR}.${LLVM_VERSION_MINOR}
+                 clang-${LLVM_PACKAGE_VERSION}
+                 clang${LLVM_VERSION_MAJOR}${LLVM_VERSION_MINOR}
+                 clang-${LLVM_VERSION_MAJOR}
+                 clang${LLVM_VERSION_MAJOR})
+  if (NOT CLANG_OPENCL_COMPILER)
       message(WARNING "Could not find appropriate clang compiler")
-      message(WARNING "Test-compilation of OpenCL programs can not be done.")
-    endif()
-  else()
-    message(WARNING "Could not find LLVM 3.9+")
-    message(WARNING "Test-compilation of OpenCL programs can not be done.")
+      message(SEND_ERROR "Test-compilation of OpenCL programs can not be done.")
+  endif()
+
+  find_path(CLANG_OPENCL_INCLUDE_DIR
+            opencl-c.h
+            HINTS
+              ${LLVM_INSTALL_PREFIX}/lib/clang
+              ${LLVM_INSTALL_PREFIX}/lib64/clang
+            PATH_SUFFIXES
+              include
+              ${LLVM_PACKAGE_VERSION}/include
+            NO_DEFAULT_PATH)
+  if (NOT CLANG_OPENCL_INCLUDE_DIR)
+    message(WARNING "Could not find clang opencl-c.h header include dir")
+    message(SEND_ERROR "Test-compilation of OpenCL programs can not be done.")
   endif()
 endif()
 
