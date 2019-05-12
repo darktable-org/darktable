@@ -2024,6 +2024,14 @@ gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm)
     return 10;
 }
 
+dt_lighttable_culling_zoom_mode_t dt_view_lighttable_get_culling_zoom_mode(dt_view_manager_t *vm)
+{
+  if(vm->proxy.lighttable.module)
+    return vm->proxy.lighttable.get_zoom_mode(vm->proxy.lighttable.module);
+  else
+    return DT_LIGHTTABLE_ZOOM_FIXED;
+}
+
 void dt_view_lighttable_force_expose_all(dt_view_manager_t *vm)
 {
   if(vm->proxy.lighttable.view)

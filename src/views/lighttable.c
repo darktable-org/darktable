@@ -581,6 +581,11 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
   {
     int idover = dt_control_get_mouse_over_id();
     _culling_check_scrolling_mode(self);
+    // on dynamic mode, nb of image follow selection size
+    if(dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC)
+    {
+      dt_view_lighttable_set_zoom(darktable.view_manager, dt_collection_get_selected_count(darktable.collection));
+    }
     _culling_recreate_slots_at(self, idover);
     dt_control_queue_redraw_center();
   }
