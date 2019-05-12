@@ -597,7 +597,9 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
       if(sqlite3_step(stmt) != SQLITE_ROW)
       {
         // we need to add it to the selection
+        lib->select_desactivate = TRUE;
         dt_selection_select(darktable.selection, lib->slots[i].imgid);
+        lib->select_desactivate = FALSE;
       }
       sqlite3_finalize(stmt);
       g_free(query);
