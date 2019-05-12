@@ -586,6 +586,22 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
     {
       dt_view_lighttable_set_zoom(darktable.view_manager, dt_collection_get_selected_count(darktable.collection));
     }
+    // be carrefull, all shown images should be selected (except if the click was on one of them)
+    for(int i = 0; i < lib->slots_count; i++)
+    {
+      if(lib->slots[i].imgid == idover) continue;
+      sqlite3_stmt *stmt;
+      gchar *query
+          = dt_util_dstrcat(NULL, "SELECT rowid FROM main.selected_images WHERE imgid = %d", lib->slots[i].imgid);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      if(sqlite3_step(stmt) != SQLITE_ROW)
+      {
+        // we need to add it to the selection
+        dt_selection_select(darktable.selection, lib->slots[i].imgid);
+      }
+      sqlite3_finalize(stmt);
+      g_free(query);
+    }
     _culling_recreate_slots_at(self, idover);
     dt_control_queue_redraw_center();
   }
