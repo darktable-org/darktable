@@ -584,7 +584,9 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
     // on dynamic mode, nb of image follow selection size
     if(dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC)
     {
-      dt_view_lighttable_set_zoom(darktable.view_manager, dt_collection_get_selected_count(darktable.collection));
+      int nbsel = dt_collection_get_selected_count(darktable.collection);
+      if(nbsel <= 1) nbsel = dt_conf_get_int("plugins/lighttable/culling_num_images");
+      dt_view_lighttable_set_zoom(darktable.view_manager, nbsel);
     }
     // be carrefull, all shown images should be selected (except if the click was on one of them)
     for(int i = 0; i < lib->slots_count; i++)
