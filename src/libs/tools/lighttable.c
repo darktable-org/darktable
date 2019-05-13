@@ -185,6 +185,11 @@ void gui_init(dt_lib_module_t *self)
 
   _lib_lighttable_layout_changed(GTK_COMBO_BOX(d->layout_combo), self);
 
+  gtk_widget_set_sensitive(
+      d->zoom_entry, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING || d->zoom_mode != DT_LIGHTTABLE_ZOOM_DYNAMIC));
+  gtk_widget_set_sensitive(
+      d->zoom, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING || d->zoom_mode != DT_LIGHTTABLE_ZOOM_DYNAMIC));
+
   darktable.view_manager->proxy.lighttable.module = self;
   darktable.view_manager->proxy.lighttable.set_zoom = _lib_lighttable_set_zoom;
   darktable.view_manager->proxy.lighttable.get_zoom = _lib_lighttable_get_zoom;
@@ -353,6 +358,10 @@ static void _lib_lighttable_change_layout(dt_lib_module_t *self, dt_lighttable_l
       gtk_widget_hide(d->zoom_mode_cb);
       d->current_zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
     }
+    gtk_widget_set_sensitive(
+        d->zoom_entry, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING || d->zoom_mode != DT_LIGHTTABLE_ZOOM_DYNAMIC));
+    gtk_widget_set_sensitive(
+        d->zoom, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING || d->zoom_mode != DT_LIGHTTABLE_ZOOM_DYNAMIC));
     gtk_range_set_value(GTK_RANGE(d->zoom), d->current_zoom);
 
     dt_conf_set_int("plugins/lighttable/layout", layout);
