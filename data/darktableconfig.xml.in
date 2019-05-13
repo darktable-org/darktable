@@ -768,6 +768,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/culling_zoom_mode</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>zoom mode in culling layout. 0=fixed ; 1=dynamic</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/recentcollect/num_items</name>
     <type>int</type>
     <default>0</default>
