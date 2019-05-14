@@ -151,7 +151,7 @@ int main(int argc, char *arg[])
   int wd, ht;
   float *input = read_pfm(arg[1], &wd, &ht);
   float *inputblurred = calloc(wd*ht*3, sizeof(float));
-  mean_filter(32, input, inputblurred, wd, ht);
+  mean_filter(75, input, inputblurred, wd, ht);
   double var[3][NB_BITS_PRECISION];
   unsigned nb_elts[3][NB_BITS_PRECISION];
   for(int level = 0; level < NB_BITS_PRECISION; level++)
