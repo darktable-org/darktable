@@ -2222,7 +2222,7 @@ static void _culling_prefetch(dt_view_t *self)
   for(int i = 0; i < 2; i++)
   {
     dt_layout_image_t *img = (i == 0) ? &lib->culling_previous : &lib->culling_next;
-    if(img->imgid == -1)
+    if(img->imgid < 0)
     {
       dt_layout_image_t sl = lib->slots[0];
       if(i == 1) sl = lib->slots[lib->slots_count - 1];
@@ -2278,6 +2278,8 @@ static void _culling_prefetch(dt_view_t *self)
         if(mip < DT_MIPMAP_8)
           dt_mipmap_cache_get(darktable.mipmap_cache, NULL, img->imgid, mip, DT_MIPMAP_PREFETCH, 'r');
       }
+      else
+        img->imgid = -2; // no image available
     }
   }
 }
@@ -2961,7 +2963,7 @@ static void _culling_scroll(dt_library_t *lib, const int up)
       lib->slots_changed = TRUE;
       dt_control_queue_redraw_center();
     }
-    else
+    else if(lib->culling_previous.imgid == -2)
     {
       if(lib->culling_use_selection)
         dt_control_log(_("you have reached the start of your selection (%d images)"),
@@ -2984,7 +2986,7 @@ static void _culling_scroll(dt_library_t *lib, const int up)
       lib->slots_changed = TRUE;
       dt_control_queue_redraw_center();
     }
-    else
+    else if(lib->culling_previous.imgid == -2)
     {
       if(lib->culling_use_selection)
         dt_control_log(_("you have reached the end of your selection (%d images)"),
