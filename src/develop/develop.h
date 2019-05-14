@@ -283,7 +283,7 @@ typedef struct dt_develop_t
     GtkWidget *second_wnd;
     GtkWidget *widget;
     int width, height;
-    float ppd;
+    double dpi, dpi_factor, ppd;
 
     GtkWidget *button;
 
