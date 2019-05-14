@@ -2683,11 +2683,36 @@ static gboolean go_up_key_accel_callback(GtkAccelGroup *accel_group, GObject *ac
   {
     // reset culling layout
     _culling_destroy_slots(self);
-    // go to the first image on the collection
-    GList *collected = dt_collection_get_all(darktable.collection, 1);
-    const int imgid = (collected) ? GPOINTER_TO_INT(collected->data) : -1;
-    if(imgid >= 0) filmstrip_set_active_image(lib, imgid);
-    if(collected) g_list_free(collected);
+    // go to the last image on the collection / selection
+    int imgid = -1;
+    gchar *query = NULL;
+    if(lib->culling_use_selection)
+    {
+      query = dt_util_dstrcat(NULL, "SELECT s.imgid "
+                                    "FROM main.selected_images AS s, memory.collected_images AS m "
+                                    "WHERE s.imgid = m.imgid "
+                                    "ORDER BY m.rowid ASC LIMIT 1");
+    }
+    else
+    {
+      query = dt_util_dstrcat(NULL, "SELECT imgid "
+                                    "FROM memory.collected_images "
+                                    "ORDER BY rowid ASC LIMIT 1");
+    }
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    if(stmt != NULL)
+    {
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        imgid = sqlite3_column_int(stmt, 0);
+      }
+      sqlite3_finalize(stmt);
+    }
+    g_free(query);
+
+    // select this image
+    if(imgid >= 0) _culling_recreate_slots_at(self, imgid);
   }
   else
     lib->offset = 0;
@@ -2708,12 +2733,22 @@ static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *
   {
     // reset culling layout
     _culling_destroy_slots(self);
-    // go to the last image on the collection minus the number of image to display
+    // go to the last image on the collection / selection
     int imgid = -1;
-    gchar *query = dt_util_dstrcat(NULL,
-                                   "SELECT imgid FROM (SELECT rowid, imgid FROM memory.collected_images ORDER BY "
-                                   "rowid DESC LIMIT %d) ORDER BY rowid ASC LIMIT 1",
-                                   get_zoom());
+    gchar *query = NULL;
+    if(lib->culling_use_selection)
+    {
+      query = dt_util_dstrcat(NULL, "SELECT s.imgid "
+                                    "FROM main.selected_images AS s, memory.collected_images AS m "
+                                    "WHERE s.imgid = m.imgid "
+                                    "ORDER BY m.rowid DESC LIMIT 1");
+    }
+    else
+    {
+      query = dt_util_dstrcat(NULL, "SELECT imgid "
+                                    "FROM memory.collected_images "
+                                    "ORDER BY rowid DESC LIMIT 1");
+    }
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     if(stmt != NULL)
@@ -2727,7 +2762,7 @@ static gboolean go_down_key_accel_callback(GtkAccelGroup *accel_group, GObject *
     g_free(query);
 
     // select this image
-    if(imgid >= 0) filmstrip_set_active_image(lib, imgid);
+    if(imgid >= 0) _culling_recreate_slots_at(self, imgid);
   }
   else
     lib->offset = 0x1fffffff;
