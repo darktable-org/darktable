@@ -582,29 +582,32 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
     int idover = dt_control_get_mouse_over_id();
     _culling_check_scrolling_mode(self);
     // on dynamic mode, nb of image follow selection size
+    int nbsel = dt_collection_get_selected_count(darktable.collection);
     if(dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC)
     {
-      int nbsel = dt_collection_get_selected_count(darktable.collection);
-      if(nbsel <= 1) nbsel = dt_conf_get_int("plugins/lighttable/culling_num_images");
-      dt_view_lighttable_set_zoom(darktable.view_manager, nbsel);
+      const int nz = (nbsel <= 1) ? dt_conf_get_int("plugins/lighttable/culling_num_images") : nbsel;
+      dt_view_lighttable_set_zoom(darktable.view_manager, nz);
     }
     // be carrefull, all shown images should be selected (except if the click was on one of them)
-    for(int i = 0; i < lib->slots_count; i++)
+    if(nbsel > 1)
     {
-      if(lib->slots[i].imgid == idover) continue;
-      sqlite3_stmt *stmt;
-      gchar *query
-          = dt_util_dstrcat(NULL, "SELECT rowid FROM main.selected_images WHERE imgid = %d", lib->slots[i].imgid);
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-      if(sqlite3_step(stmt) != SQLITE_ROW)
+      for(int i = 0; i < lib->slots_count; i++)
       {
-        // we need to add it to the selection
-        lib->select_desactivate = TRUE;
-        dt_selection_select(darktable.selection, lib->slots[i].imgid);
-        lib->select_desactivate = FALSE;
+        if(lib->slots[i].imgid == idover) continue;
+        sqlite3_stmt *stmt;
+        gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM main.selected_images WHERE imgid = %d",
+                                       lib->slots[i].imgid);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+        if(sqlite3_step(stmt) != SQLITE_ROW)
+        {
+          // we need to add it to the selection
+          lib->select_desactivate = TRUE;
+          dt_selection_select(darktable.selection, lib->slots[i].imgid);
+          lib->select_desactivate = FALSE;
+        }
+        sqlite3_finalize(stmt);
+        g_free(query);
       }
-      sqlite3_finalize(stmt);
-      g_free(query);
     }
     _culling_recreate_slots_at(self, idover);
     dt_control_queue_redraw_center();
