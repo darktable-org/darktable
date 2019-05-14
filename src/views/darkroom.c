@@ -3254,6 +3254,10 @@ void connect_key_accels(dt_view_t *self)
 // second darkroom window
 //-----------------------------------------------------------
 
+/* helper macro that applies the DPI transformation to fixed pixel values. input should be defaulting to 96
+ * DPI */
+#define DT_PIXEL_APPLY_DPI_2ND_WND(dev, value) ((value) * dev->second_window.dpi_factor)
+
 static void dt_second_window_change_cursor(dt_develop_t *dev, dt_cursor_t curs)
 {
   GtkWidget *widget = dev->second_window.second_wnd;
@@ -3626,7 +3630,8 @@ static void _second_window_configure_ppd_dpi(dt_develop_t *dev)
 #ifndef GDK_WINDOWING_QUARTZ
     dev->second_window.ppd = gtk_widget_get_scale_factor(widget);
 #else
-    dev->second_window.ppd = dt_osx_get_ppd();
+    // this do not depends on the window, so we can use the main window value
+    dev->second_window.ppd = darktable.gui->ppd;
 #endif
     if(dev->second_window.ppd < 0.0)
     {
@@ -3639,6 +3644,32 @@ static void _second_window_configure_ppd_dpi(dt_develop_t *dev)
 #else
   dev->second_window.ppd = 1.0;
 #endif
+  // get the screen resolution
+  float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");
+  if(screen_dpi_overwrite > 0.0)
+  {
+    dev->second_window.dpi = screen_dpi_overwrite;
+    gdk_screen_set_resolution(gtk_widget_get_screen(widget), screen_dpi_overwrite);
+    dt_print(DT_DEBUG_CONTROL, "[screen resolution] setting the screen resolution to %f dpi as specified in "
+                               "the configuration file\n", screen_dpi_overwrite);
+  }
+  else
+  {
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_autoset_dpi(widget);
+#endif
+    dev->second_window.dpi = gdk_screen_get_resolution(gtk_widget_get_screen(widget));
+    if(dev->second_window.dpi < 0.0)
+    {
+      dev->second_window.dpi = 96.0;
+      gdk_screen_set_resolution(gtk_widget_get_screen(widget), 96.0);
+      dt_print(DT_DEBUG_CONTROL, "[screen resolution] setting the screen resolution to the default 96 dpi\n");
+    }
+    else
+      dt_print(DT_DEBUG_CONTROL, "[screen resolution] setting the screen resolution to %f dpi\n", dev->second_window.dpi);
+  }
+  dev->second_window.dpi_factor
+      = dev->second_window.dpi / 96; // according to man xrandr and the docs of gdk_screen_set_resolution 96 is the default
 }
 
 static gboolean _second_window_draw_callback(GtkWidget *widget, cairo_t *crf, dt_develop_t *dev)
@@ -3930,7 +3961,7 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
     gtk_box_pack_start(GTK_BOX(container), widget, TRUE, TRUE, 0);
 
     dev->second_window.widget = gtk_drawing_area_new();
-    gtk_widget_set_size_request(dev->second_window.widget, DT_PIXEL_APPLY_DPI(50), DT_PIXEL_APPLY_DPI(200));
+    gtk_widget_set_size_request(dev->second_window.widget, DT_PIXEL_APPLY_DPI_2ND_WND(dev, 50), DT_PIXEL_APPLY_DPI_2ND_WND(dev, 200));
     gtk_widget_set_hexpand(dev->second_window.widget, TRUE);
     gtk_widget_set_vexpand(dev->second_window.widget, TRUE);
     gtk_widget_set_app_paintable(dev->second_window.widget, TRUE);
