@@ -259,13 +259,6 @@ static inline gint get_zoom(void)
   return dt_view_lighttable_get_zoom(darktable.view_manager);
 }
 
-static inline void filmstrip_set_active_image(dt_library_t *lib, const int imgid)
-{
-  dt_selection_select_single(darktable.selection, imgid);
-  dt_view_filmstrip_set_active_image(darktable.view_manager, imgid);
-  if(lib->full_preview_id > -1) lib->full_preview_id = imgid;
-}
-
 static void _scrollbars_restore()
 {
   char *scrollbars_conf = dt_conf_get_string("scrollbars");
