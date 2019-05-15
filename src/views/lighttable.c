@@ -2277,6 +2277,12 @@ static void _culling_prefetch(dt_view_t *self)
   }
 }
 
+static gboolean _culling_redefine_mouseoverid(gpointer data)
+{
+  dt_control_set_mouse_over_id(GPOINTER_TO_INT(data));
+  return FALSE;
+}
+
 static int expose_culling(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
                           int32_t pointery, const dt_lighttable_layout_t layout)
 {
@@ -2365,6 +2371,9 @@ static int expose_culling(dt_view_t *self, cairo_t *cr, int32_t width, int32_t h
   // if needed, we prefetch the next and previous images
   // note that we only guess their sizes so they may be computed anyway
   if(prefetch) _culling_prefetch(self);
+
+  // filmstrip reset mouse_over_id, so let's redefine it in a moment
+  g_timeout_add(200, _culling_redefine_mouseoverid, GINT_TO_POINTER(mouse_over_id));
 
   if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print(darktable.mipmap_cache);
   return missing;
