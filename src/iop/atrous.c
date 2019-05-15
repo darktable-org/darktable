@@ -1759,6 +1759,7 @@ static gboolean area_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
 
+  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
   gdouble delta_y;
   if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {

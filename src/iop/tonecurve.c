@@ -1115,6 +1115,7 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
 
+  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
   int ch = c->channel;
   int autoscale_ab = p->tonecurve_autoscale_ab;
 

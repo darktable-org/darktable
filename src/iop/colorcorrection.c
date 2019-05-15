@@ -482,6 +482,7 @@ static gboolean dt_iop_colorcorrection_scrolled(GtkWidget *widget, GdkEventScrol
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
   dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
 
+  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
   gdouble delta_y;
   if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {

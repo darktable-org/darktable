@@ -1424,6 +1424,7 @@ static gboolean _area_scrolled_callback(GtkWidget *widget, GdkEventScroll *event
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
 
+  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
   gdouble delta_y;
 
   if(darktable.develop->darkroom_skip_mouse_events)
