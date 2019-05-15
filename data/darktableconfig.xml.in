@@ -775,6 +775,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/culling_last_id</name>
+    <type>int</type>
+    <default>-1</default>
+    <shortdescription>last culling first image id</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/lighttable/recentcollect/num_items</name>
     <type>int</type>
     <default>0</default>
