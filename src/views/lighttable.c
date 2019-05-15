@@ -2772,6 +2772,53 @@ static gboolean go_pgup_key_accel_callback(GtkAccelGroup *accel_group, GObject *
 
   if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
     move_view(lib, DIRECTION_PGUP);
+  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    if(dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_FIXED
+       || !lib->culling_use_selection)
+    {
+      // jump to the previous page
+      int imgid = -1;
+      gchar *query = NULL;
+      if(lib->culling_use_selection)
+      {
+        query = dt_util_dstrcat(NULL,
+                                "SELECT nid FROM"
+                                " (SELECT s.imgid AS nid, m.rowid AS nrowid"
+                                " FROM main.selected_images AS s, memory.collected_images AS m"
+                                " WHERE s.imgid = m.imgid AND m.rowid <"
+                                " (SELECT rowid FROM memory.collected_images WHERE imgid = %d)"
+                                " ORDER BY m.rowid DESC LIMIT %d) "
+                                "ORDER BY nrowid ASC LIMIT 1",
+                                lib->slots[0].imgid, lib->slots_count);
+      }
+      else
+      {
+        query = dt_util_dstrcat(NULL,
+                                "SELECT imgid FROM"
+                                " (SELECT imgid, rowid"
+                                " FROM memory.collected_images"
+                                " WHERE rowid < (SELECT rowid FROM memory.collected_images WHERE imgid = %d)"
+                                " ORDER BY rowid DESC LIMIT %d) "
+                                "ORDER BY rowid LIMIT 1",
+                                lib->slots[0].imgid, lib->slots_count);
+      }
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      if(stmt != NULL)
+      {
+        if(sqlite3_step(stmt) == SQLITE_ROW)
+        {
+          imgid = sqlite3_column_int(stmt, 0);
+        }
+        sqlite3_finalize(stmt);
+      }
+      g_free(query);
+
+      // select this image
+      if(imgid >= 0) _culling_recreate_slots_at(self, imgid);
+    }
+  }
   else
   {
     const int iir = get_zoom();
@@ -2793,6 +2840,49 @@ static gboolean go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject
   if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
   {
     move_view(lib, DIRECTION_PGDOWN);
+  }
+  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    if(dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_FIXED
+       || !lib->culling_use_selection)
+    {
+      // jump to the first "not visible" image
+      int imgid = -1;
+      gchar *query = NULL;
+      if(lib->culling_use_selection)
+      {
+        query = dt_util_dstrcat(NULL,
+                                "SELECT s.imgid "
+                                "FROM main.selected_images AS s, memory.collected_images AS m "
+                                "WHERE s.imgid = m.imgid AND m.rowid >"
+                                " (SELECT rowid FROM memory.collected_images WHERE imgid = %d) "
+                                "ORDER BY m.rowid LIMIT 1",
+                                lib->slots[lib->slots_count - 1].imgid);
+      }
+      else
+      {
+        query = dt_util_dstrcat(NULL,
+                                "SELECT imgid "
+                                "FROM memory.collected_images "
+                                "WHERE rowid > (SELECT rowid FROM memory.collected_images WHERE imgid = %d) "
+                                "ORDER BY rowid LIMIT 1",
+                                lib->slots[lib->slots_count - 1].imgid);
+      }
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      if(stmt != NULL)
+      {
+        if(sqlite3_step(stmt) == SQLITE_ROW)
+        {
+          imgid = sqlite3_column_int(stmt, 0);
+        }
+        sqlite3_finalize(stmt);
+      }
+      g_free(query);
+
+      // select this image
+      if(imgid >= 0) _culling_recreate_slots_at(self, imgid);
+    }
   }
   else
   {
