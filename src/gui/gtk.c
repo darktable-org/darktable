@@ -1078,6 +1078,9 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   if (GDK_IS_WAYLAND_DISPLAY(gdk_display_get_default())) gui->scroll_mask |= GDK_SMOOTH_SCROLL_MASK;
 #endif
 
+  // option to enable smooth scrolling
+  if (dt_conf_get_bool("ui_last/enable_smooth_scrolling")) gui->scroll_mask |= GDK_SMOOTH_SCROLL_MASK;
+
   // key accelerator that enables scrolling of side panels
   gui->sidebar_scroll_mask = GDK_MOD1_MASK | GDK_CONTROL_MASK;
 
@@ -1420,7 +1423,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_set_app_paintable(widget, TRUE);
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
-                                | GDK_SCROLL_MASK);
+                                | darktable.gui->scroll_mask);
   gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
 
@@ -1435,7 +1438,7 @@ static void init_widgets(dt_gui_gtk_t *gui)
   gtk_widget_set_app_paintable(widget, TRUE);
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
-                                | GDK_SCROLL_MASK);
+                                | darktable.gui->scroll_mask);
   gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
 
@@ -1481,7 +1484,7 @@ static void init_main_table(GtkWidget *container)
   gtk_widget_set_app_paintable(widget, TRUE);
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
-                                | GDK_SCROLL_MASK);
+                                | darktable.gui->scroll_mask);
   gtk_grid_attach(GTK_GRID(container), widget, 0, 0, 1, 2);
   gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
@@ -1494,7 +1497,7 @@ static void init_main_table(GtkWidget *container)
   gtk_widget_set_app_paintable(widget, TRUE);
   gtk_widget_set_events(widget, GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_STRUCTURE_MASK
-                                | GDK_SCROLL_MASK);
+                                | darktable.gui->scroll_mask);
   gtk_grid_attach(GTK_GRID(container), widget, 4, 0, 1, 2);
   gtk_widget_set_name(GTK_WIDGET(widget), "outer-border");
   gtk_widget_show(widget);
@@ -1867,8 +1870,7 @@ static GtkWidget *_ui_init_panel_container_center(GtkWidget *container, gboolean
   /* avoid scrolling with wheel, it's distracting (you'll end up over a control, and scroll it's value) */
   container = widget;
   widget = gtk_event_box_new();
-  gtk_widget_add_events(GTK_WIDGET(widget), GDK_SCROLL_MASK);
-  // gtk_widget_add_events(GTK_WIDGET(widget), GDK_SMOOTH_SCROLL_MASK);
+  gtk_widget_add_events(GTK_WIDGET(widget), darktable.gui->scroll_mask);
   g_signal_connect(G_OBJECT(widget), "scroll-event", G_CALLBACK(_ui_init_panel_container_center_scroll_event),
                    NULL);
   gtk_container_add(GTK_CONTAINER(container), widget);
