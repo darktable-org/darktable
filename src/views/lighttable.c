@@ -105,7 +105,7 @@ static void _force_expose_all(dt_view_t *self);
 
 static gboolean _culling_recreate_slots_at(dt_view_t *self, const int display_first_image);
 static gboolean _culling_recreate_slots(dt_view_t *self);
-static void _ensure_image_visibility(dt_view_t *self, uint32_t rowid);
+static gboolean _ensure_image_visibility(dt_view_t *self, uint32_t rowid);
 
 typedef struct dt_preview_surface_t
 {
@@ -339,7 +339,11 @@ static void check_layout(dt_view_t *self)
       {
         if(sqlite3_step(stmt) == SQLITE_ROW)
         {
-          _ensure_image_visibility(self, sqlite3_column_int(stmt, 0));
+          if(!_ensure_image_visibility(self, sqlite3_column_int(stmt, 0)))
+          {
+            // this happens on first filemanager display
+            lib->offset = lib->first_visible_filemanager = sqlite3_column_int(stmt, 0) / get_zoom() * get_zoom();
+          }
         }
         sqlite3_finalize(stmt);
       }
@@ -3205,11 +3209,11 @@ void enter(dt_view_t *self)
   _scrollbars_restore();
 }
 
-static void _ensure_image_visibility(dt_view_t *self, uint32_t rowid)
+static gboolean _ensure_image_visibility(dt_view_t *self, uint32_t rowid)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
-  if(get_layout() != DT_LIGHTTABLE_LAYOUT_FILEMANAGER) return;
-  if(lib->images_in_row == 0 || lib->visible_rows == 0) return;
+  if(get_layout() != DT_LIGHTTABLE_LAYOUT_FILEMANAGER) return FALSE;
+  if(lib->images_in_row == 0 || lib->visible_rows == 0) return FALSE;
 
   // if we are before the first visible image, we move back
   int offset = lib->offset;
@@ -3230,6 +3234,7 @@ static void _ensure_image_visibility(dt_view_t *self, uint32_t rowid)
     lib->offset_changed = TRUE;
     dt_control_queue_redraw_center();
   }
+  return TRUE;
 }
 
 static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int32_t mouse_over_id)
