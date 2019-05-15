@@ -711,6 +711,7 @@ static gboolean _area_scrolled_callback(GtkWidget *widget, GdkEventScroll *event
 
   gdouble delta_y;
 
+  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
   if(darktable.develop->darkroom_skip_mouse_events)
   {
     if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
