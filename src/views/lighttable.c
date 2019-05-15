@@ -199,6 +199,7 @@ typedef struct dt_library_t
   gboolean slots_changed;
   dt_layout_image_t culling_previous, culling_next;
   gboolean culling_use_selection;
+  gboolean already_started;
   gboolean select_desactivate;
   int last_num_images, last_width, last_height;
 
@@ -1956,11 +1957,34 @@ static gboolean _culling_recreate_slots(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
 
+  int display_first_image = -1;
+  // special if we start dt in culling + fxed + selection
+  if(!lib->already_started && lib->culling_use_selection
+     && dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_FIXED)
+  {
+    const int lastid = dt_conf_get_int("plugins/lighttable/culling_last_id");
+    // we want to be sure it's inside the selection
+    sqlite3_stmt *stmt;
+    gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM main.selected_images WHERE imgid =%d", lastid);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      display_first_image = lastid;
+      sqlite3_finalize(stmt);
+    }
+    g_free(query);
+  }
   // starting with the first selected image
-  GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
-  int display_first_image = (first_selected) ? GPOINTER_TO_INT(first_selected->data) : -1;
-  if(first_selected) g_list_free(first_selected);
-
+  if(display_first_image < 0)
+  {
+    GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
+    if(first_selected)
+    {
+      display_first_image = GPOINTER_TO_INT(first_selected->data);
+      g_list_free(first_selected);
+    }
+  }
+  // is there some old config ?
   if(display_first_image < 0 && lib->slots_count > 0)
   {
     // we search the first still valid id
@@ -2199,6 +2223,9 @@ static gboolean _culling_compute_slots(dt_view_t *self, int32_t width, int32_t h
     // move filmstrip
     dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->slots[0].imgid, FALSE);
   }
+
+  // we save the current first id
+  dt_conf_set_int("plugins/lighttable/culling_last_id", lib->slots[0].imgid);
 
   return TRUE;
 }
@@ -2630,6 +2657,9 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
         break;
     }
   }
+
+  // we have started the first expose
+  lib->already_started = TRUE;
 
   if(layout != DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
   {
