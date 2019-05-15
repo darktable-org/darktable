@@ -121,8 +121,16 @@ void gui_init(dt_lib_module_t *self)
   d->base_layout = dt_conf_get_int("plugins/lighttable/base_layout");
   if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
-    d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_num_images");
     d->zoom_mode = dt_conf_get_int("plugins/lighttable/culling_zoom_mode");
+    if(d->zoom_mode == DT_LIGHTTABLE_ZOOM_DYNAMIC && darktable.collection)
+    {
+      d->current_zoom = MAX(1, MIN(30, dt_collection_get_selected_count(darktable.collection)));
+      if(d->current_zoom == 1) d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_num_images");
+    }
+    else
+    {
+      d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_num_images");
+    }
   }
   else
     d->current_zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
