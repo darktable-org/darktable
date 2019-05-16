@@ -12011,7 +12011,7 @@ msgstr "ausgewählten Tag löschen"
 #: ../src/libs/tagging.c:585
 msgctxt "verb"
 msgid "import"
-msgstr "Importieren"
+msgstr "importieren"
 
 #: ../src/libs/tagging.c:587
 msgid "import tags from a Lightroom keyword file"
@@ -12020,7 +12020,7 @@ msgstr "Tags aus einer Lightroom-Stichwortdatei importieren"
 #: ../src/libs/tagging.c:592
 msgctxt "verb"
 msgid "export"
-msgstr "Exportieren"
+msgstr "exportieren"
 
 #: ../src/libs/tagging.c:594
 msgid "export all tags to a Lightroom keyword file"
