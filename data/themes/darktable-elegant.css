@@ -89,6 +89,14 @@ button
 
 }
 
+#recent-collection-button,
+#history-button
+{
+  /* Exception because history and recent collections modules make use of a
+   * list of GTK buttons but we don't want them to look like action buttons */
+    font-weight: normal;
+}
+
 #iop-panel-label,
 #lib-panel-label
 {
@@ -106,10 +114,10 @@ button
 
 #section_label
 {
-    font-weight: 500;
     font-family: "Roboto Medium", "Segoe UI Semibold",
                  "SF Pro Display Medium",
                  "Ubuntu Medium", "Cantarell", sans-serif;
+    font-weight: 600;
 }
 
 notebook tabs,
