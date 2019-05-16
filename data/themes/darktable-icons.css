@@ -24,6 +24,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-soften
@@ -32,6 +33,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-ashift
@@ -40,6 +42,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-atrous
@@ -48,6 +51,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-basecurve
@@ -56,6 +60,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-bilateral
@@ -64,6 +69,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-bloom
@@ -72,6 +78,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-borders
@@ -80,6 +87,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-cacorrect
@@ -88,6 +96,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-channelmixer
@@ -104,6 +113,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-clipping
@@ -112,6 +122,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-colisa
@@ -120,6 +131,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-colorcorrection
@@ -128,6 +140,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-colorin
@@ -136,6 +149,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-colormapping
@@ -144,6 +158,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-colorout
@@ -152,6 +167,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-colorreconstruct
@@ -160,6 +176,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-colortransfer
@@ -168,6 +185,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-colorzones
@@ -176,6 +194,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-demosaic
@@ -184,6 +203,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-dither
@@ -192,6 +212,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-exposure
@@ -200,6 +221,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-flip
@@ -208,6 +230,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-graduatednd
@@ -216,6 +239,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-grain
@@ -224,6 +248,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-hazeremoval
@@ -232,6 +257,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-highlights
@@ -240,6 +266,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-highpass
@@ -248,6 +275,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-hotpixels
@@ -256,6 +284,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-invert
@@ -264,6 +293,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-lens
@@ -272,6 +302,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-levels
@@ -280,6 +311,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-liquify
@@ -288,6 +320,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-lowlight
@@ -296,6 +329,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-lowpass
@@ -304,6 +338,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-monochrome
@@ -312,6 +347,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-nlmeans
@@ -320,6 +356,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-overexposed
@@ -328,6 +365,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-gamma
@@ -336,6 +374,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-rawdenoise
@@ -344,6 +383,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-rawimport
@@ -352,6 +392,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-rawprepare
@@ -360,6 +401,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-relight
@@ -368,6 +410,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-shadhi
@@ -376,6 +419,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-sharpen
@@ -384,6 +428,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-soften
@@ -392,6 +437,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-splittoning
@@ -400,6 +446,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-spots
@@ -408,6 +455,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-temperature
@@ -416,6 +464,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-template
@@ -424,6 +473,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-tonecurve
@@ -432,6 +482,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-tonemap
@@ -440,6 +491,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-velvia
@@ -448,6 +500,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-vignette
@@ -456,6 +509,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-watermark
@@ -464,6 +518,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-zonesystem
@@ -472,6 +527,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
 
 #iop-panel-icon-colorize,
@@ -497,4 +553,5 @@
     background-size: contain;
     background-repeat: no-repeat;
     padding-left: 18px;
+    margin: 1px 0px;
 }
