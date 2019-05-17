@@ -606,8 +606,14 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
         sqlite3_finalize(stmt);
         g_free(query);
       }
+      _culling_recreate_slots_at(self, idover);
     }
-    _culling_recreate_slots_at(self, idover);
+    else
+    {
+      _culling_destroy_slots(self);
+      _culling_recreate_slots(self);
+    }
+
     dt_control_queue_redraw_center();
   }
   else if(lib->full_preview_id != -1)
