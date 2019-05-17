@@ -3124,7 +3124,9 @@ static void _culling_scroll(dt_library_t *lib, const int up)
       lib->slots_changed = TRUE;
       dt_control_queue_redraw_center();
     }
-    else if(lib->culling_previous.imgid == -2)
+    else if(lib->culling_previous.imgid == -2
+            && (dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_FIXED
+                || !lib->culling_use_selection))
     {
       if(lib->culling_use_selection)
         dt_control_log(_("you have reached the start of your selection (%d images)"),
@@ -3147,7 +3149,9 @@ static void _culling_scroll(dt_library_t *lib, const int up)
       lib->slots_changed = TRUE;
       dt_control_queue_redraw_center();
     }
-    else if(lib->culling_previous.imgid == -2)
+    else if(lib->culling_next.imgid == -2
+            && (dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_FIXED
+                || !lib->culling_use_selection))
     {
       if(lib->culling_use_selection)
         dt_control_log(_("you have reached the end of your selection (%d images)"),
