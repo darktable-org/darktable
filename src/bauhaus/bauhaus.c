@@ -681,6 +681,13 @@ void dt_bauhaus_combobox_set_default(GtkWidget *widget, int def)
   d->defpos = def;
 }
 
+int dt_bauhaus_combobox_get_default(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  return d->defpos;
+}
+
 void dt_bauhaus_slider_set_hard_min(GtkWidget* widget, float val)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
