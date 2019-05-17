@@ -1978,16 +1978,7 @@ static gboolean _culling_recreate_slots(dt_view_t *self)
     }
     g_free(query);
   }
-  // starting with the first selected image
-  if(display_first_image < 0)
-  {
-    GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
-    if(first_selected)
-    {
-      display_first_image = GPOINTER_TO_INT(first_selected->data);
-      g_list_free(first_selected);
-    }
-  }
+
   // is there some old config ?
   if(display_first_image < 0 && lib->slots_count > 0)
   {
@@ -2012,6 +2003,17 @@ static gboolean _culling_recreate_slots(dt_view_t *self)
       sqlite3_finalize(stmt2);
     }
     g_free(query);
+  }
+
+  // starting with the first selected image
+  if(display_first_image < 0)
+  {
+    GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
+    if(first_selected)
+    {
+      display_first_image = GPOINTER_TO_INT(first_selected->data);
+      g_list_free(first_selected);
+    }
   }
 
   return _culling_recreate_slots_at(self, display_first_image);
