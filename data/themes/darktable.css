@@ -404,7 +404,7 @@ button:disabled,
 #module-collapse-button * button
 {
   background-color: transparent;
-  min-height: 1.1em;
+  min-height: 1em;
   min-width: 1em;
 }
 
@@ -666,7 +666,7 @@ combobox button
   border: 1px solid transparent;
   padding: 1px;
   background-color: transparent;
-  border-radius: 2pt;
+  border-radius: 2px;
   color: @bauhaus_fg;
   outline-style: none;
   min-height: 1em;
@@ -697,7 +697,7 @@ dialog combobox window
   background-color: @tooltip_bg_color;
   color: @tooltip_fg_color;
   outline-style:none;
-  border-radius: 2pt;
+  border-radius: 2px;
   border: 0;
   outline-style: none;
   min-height: 0.5em;
@@ -818,7 +818,7 @@ notebook tabs,
 
 #blending-tabs *
 {
-  font-size: 8pt;
+  font-size: 8px;
   min-height: 1.5em;
   min-width: 1.5em;
   padding: 0.2em;
@@ -827,8 +827,8 @@ notebook tabs,
 
 notebook tab
 {
-  border-bottom: 2pt solid transparent;
-  padding: 3pt;
+  border-bottom: 2px solid transparent;
+  padding: 3px;
 }
 
 notebook tab label /* disabled tabs */
@@ -838,7 +838,7 @@ notebook tab label /* disabled tabs */
 
 notebook tab:hover
 {
-  border-bottom: 2pt solid @button_hover_fg;
+  border-bottom: 2px solid @button_hover_fg;
   color: @button_hover_fg;
   background-color: @button_hover_bg;
 }
@@ -851,7 +851,7 @@ notebook tab:hover label
 notebook tab:checked,
 notebook tab:focus
 {
-  border-bottom: 2pt solid @button_checked_fg;
+  border-bottom: 2px solid @button_checked_fg;
   color: @button_checked_fg;
 }
 
@@ -956,7 +956,7 @@ dialog scrolledwindow entry,
 dialog scrolledwindow button
 {
   padding: 0px;
-  margin:1px;
+  margin: 1px;
 }
 
 /* empty space at top/bottom of sidepanels when scrolled */
@@ -996,12 +996,12 @@ dialog scrolledwindow button
 #lib-plugin-ui combobox,
 #iop-plugin-ui combobox
 {
-  margin: 2pt 0;
+  margin: 2px 0;
 }
 
 entry
 {
-  margin: 2pt 0;
+  margin: 2px 0;
 }
 
 #left #lib-plugin-ui entry /* This will avoid have too much height on entry item in filter collections modules */
@@ -1020,23 +1020,23 @@ entry
 #iop-plugin-ui checkbutton check,
 checkbutton check
 {
-  margin: 5px 8pt 5px 0;
+  margin: 5px 8px 5px 0;
 }
 
 #left #lib-plugin-ui #dt-button /* arrow size of dropdown button arrow on filter collection */
 {
-  padding: 0pt;
+  padding: 0px;
 }
 
 #iop-plugin-ui #dt-button  /* arrow size of some buttons on darkroom modules */
 {
-  padding: 2pt;
+  padding: 2px;
 }
 
 #left #history-button /* choose here spacing between history items in darkroom */
 {
-  padding: 1px 2pt 2pt 2pt;
-  margin: 0pt 1pt 1pt 1pt;
+  padding: 1px 2px 2px 2px;
+  margin: 0px 1px 1px 1px;
 }
 
 #iop-bottom-bar
@@ -1060,7 +1060,7 @@ aboutdialog box *
 
 aboutdialog headerbar
 {
-  padding: 2pt;
+  padding: 2px;
 }
 
 progressbar *
@@ -1075,12 +1075,12 @@ filechooserdialog eventbox
 
 filechooserdialog sidebar-icon
 {
-  padding: 0pt 5pt 0pt 10pt;
+  padding: 0px 5px 0px 10px;
 }
 
 filechooserdialog sidebar-row
 {
-  padding-top: 3pt;
+  padding-top: 3px;
 }
 
 filechooserdialog sidebar-row:hover
