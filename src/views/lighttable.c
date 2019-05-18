@@ -2227,8 +2227,7 @@ static gboolean _culling_compute_slots(dt_view_t *self, int32_t width, int32_t h
       // desactivate selection_change event
       lib->select_desactivate = TRUE;
       // select current first image
-      dt_selection_clear(darktable.selection);
-      dt_selection_select(darktable.selection, lib->slots[0].imgid);
+      dt_selection_select_single(darktable.selection, lib->slots[0].imgid);
       // reactivate selection_change event
       lib->select_desactivate = FALSE;
     }
