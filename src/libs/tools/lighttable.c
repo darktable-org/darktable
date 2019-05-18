@@ -117,8 +117,8 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  d->layout =  dt_conf_get_int("plugins/lighttable/layout");
-  d->base_layout = dt_conf_get_int("plugins/lighttable/base_layout");
+  d->layout = MIN(DT_LIGHTTABLE_LAYOUT_LAST - 1, dt_conf_get_int("plugins/lighttable/layout"));
+  d->base_layout = MIN(DT_LIGHTTABLE_LAYOUT_LAST - 1, dt_conf_get_int("plugins/lighttable/base_layout"));
   if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     d->zoom_mode = dt_conf_get_int("plugins/lighttable/culling_zoom_mode");
