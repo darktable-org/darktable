@@ -100,6 +100,7 @@
 @define-color thumbnail_bg_color @grey_55; /* area between border and outline */
 @define-color thumbnail_border_color @grey_20;
 @define-color thumbnail_selected_border_color @grey_80;
+@define-color preview_hover_border_color transparent;
 
 /* Graphs : histogram and tone curve */
 @define-color graph_bg @grey_20;
