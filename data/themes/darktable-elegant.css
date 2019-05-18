@@ -127,3 +127,12 @@ notebook tabs,
     font-family: "Roboto", "Segoe UI", "SF Pro Text", "Ubuntu",
                  "Cantarell", sans-serif;
 }
+
+#live-sample-data
+{
+    font-family: "Roboto Condensed","Segoe UI Condensed",
+                 "SF Pro Display", "Ubuntu Condensed",
+                 "Cantarell", sans-serif;
+    font-weight: 400;
+}
+
