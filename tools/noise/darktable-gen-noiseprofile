@@ -124,13 +124,16 @@ profile_image() {
 	tool_installed darktable-cli
 	tool_installed gnuplot
 
-	image="$1"
+	images="$1"
+	arr=($images)
+	image_1=${arr[0]}
+	image_2=${arr[1]}
 	presets="$2"
 	files_list="$3"
 
-	maker=$(get_image_camera_maker "$image")
-	model=$(get_image_camera_model "$image")
-	iso=$(get_image_iso "$image")
+	maker=$(get_image_camera_maker "$image_1")
+	model=$(get_image_camera_model "$image_1")
+	iso=$(get_image_iso "$image_1")
 
 	echo "$scriptdir"
 	xmp="$scriptdir/profiling-shot.xmp"
@@ -145,31 +148,38 @@ profile_image() {
 	echo
 	echo "===> Profile image for \"$maker - $model - $iso ISO\""
 
-	pfm_noisy="${image%.*}_noisy.pfm"
-	pfm_smooth="${image%.*}_smooth.pfm"
-	if [ ! -f "$pfm_noisy" -o "$image" -nt "$pfm_noisy" -o "$xmp_noisy" -nt "$pfm_noisy" -o "$0" -nt "$pfm_noisy" ]; then
-		echo "--> Converting $image (ISO $iso)"
-		rm -f "$pfm_noisy"
-		darktable-cli "$image" "$xmp_noisy" "$pfm_noisy" --core --conf plugins/lighttable/export/iccprofile=image --conf plugins/lighttable/export/style=none
-		rm -f "$pfm_smooth"
-		darktable-cli "$image" "$xmp_smooth" "$pfm_smooth" --core --conf plugins/lighttable/export/iccprofile=image --conf plugins/lighttable/export/style=none
+	pfm_noisy_1="${image_1%.*}_noisy.pfm"
+	pfm_noisy_2="${image_2%.*}_noisy.pfm"
+	if [ ! -f "$pfm_noisy_1" -o "$image_1" -nt "$pfm_noisy_1" -o "$xmp_noisy" -nt "$pfm_noisy_1" -o "$0" -nt "$pfm_noisy_1" ]; then
+		echo "--> Converting $image_1 (ISO $iso)"
+		rm -f "$pfm_noisy_1"
+		darktable-cli "$image_1" "$xmp_noisy" "$pfm_noisy_1" --core --conf plugins/lighttable/export/iccprofile=image --conf plugins/lighttable/export/style=none --configdir ./.config
+	else
+		echo "--> Skip $image_1 (ISO $iso); output up-to-date"
+	fi
+	if [ ! -f "$pfm_noisy_2" -o "$image_2" -nt "$pfm_noisy_2" -o "$xmp_noisy" -nt "$pfm_noisy_2" -o "$0" -nt "$pfm_noisy_2" ]; then
+		echo "--> Converting $image_2 (ISO $iso)"
+		rm -f "$pfm_noisy_2"
+		darktable-cli "$image_2" "$xmp_noisy" "$pfm_noisy_2" --core --conf plugins/lighttable/export/iccprofile=image --conf plugins/lighttable/export/style=none --configdir ./.config
 	else
 		echo "--> Skip $image (ISO $iso); output up-to-date"
 	fi
 
+
 	echo "--> Run darktable-noiseprofile"
 	dat="${pfm_noisy%_noisy.pfm}.dat"
-	"$noiseprofile" "$pfm_noisy" "$pfm_smooth" > "$dat"
+	"$noiseprofile" "$pfm_noisy_1" "$pfm_noisy_2" > "$dat"
 
-	echo "--> Plotting $pfm"
-	title="$maker, $model, $iso ISO ($(basename "${pfm%.pfm}"))"
-	fit="${pfm_noisy%_noisy.pfm}.fit"
-	pdf="${pfm_noisy%_noisy.pfm}.pdf"
+	echo "--> Plotting $pfm_noisy_1 and $pfm_noisy_2"
+	title="$maker, $model, $iso ISO ($(basename "${pfm_noisy_1%.pfm}"))"
+	fit="${pfm_noisy_1%_noisy.pfm}.fit"
+	pdf="${pfm_noisy_1%_noisy.pfm}.pdf"
 	gnuplot 2>/dev/null <<EOF
 	set term pdf
 	set print "$fit"
 	set output "$pdf"
 	set fit logfile "/dev/null"
+        set fit prescale
 	set title "Histogram - $title"
 	plot "$dat" u 1:(log(\$5)) w l lw 4 title "red",		\
 	  '' u 1:(log(\$6)) w l lw 4 title "green",			\
@@ -206,14 +216,14 @@ EOF
 
 	# Fitted parametric curves:
 	echo "--> Fitted parametric curves"
-	flat_dat="${pfm_noisy%_noisy.pfm}_flat.dat"
-	curves_dat="${pfm_noisy%_noisy.pfm}_curves.dat"
-	$noiseprofile $pfm_noisy $pfm_smooth -c $(cat $fit) > $flat_dat
+	flat_dat="${pfm_noisy_1%_noisy.pfm}_flat.dat"
+	curves_dat="${pfm_noisy_1%_noisy.pfm}_curves.dat"
+	$noiseprofile $pfm_noisy_1 $pfm_noisy_2 -c $(cat $fit) > $flat_dat
 
 	# Data based histogram inversion:
 	# $noiseprofile $pfm -h $dat > $flat_dat 2> $curves_dat
-	echo "--> Flattened $pfm"
-	flat_pdf="${pfm_noisy%_noisy.pfm}_flat.pdf"
+	echo "--> Flattened $pfm_noisy_1 and $pfm_noisy_2"
+	flat_pdf="${pfm_noisy_1%_noisy.pfm}_flat.pdf"
 	gnuplot 2>/dev/null << EOF
 	set term pdf
 	set output "$flat_pdf"
@@ -248,7 +258,7 @@ Possible reason:
 If the latter reason applies to you, change it back to "image settings"
 and re-run this script.${color_reset}
 EOF
-		rm -f $dat $flat_dat $curves_dat $fit "$pfm_noisy" "$pfm_smooth"
+		rm -f $dat $flat_dat $curves_dat $fit "$pfm_noisy_1" "$pfm_noisy_2"
 		return 1
 		;;
 	esac
@@ -300,7 +310,7 @@ EOF
 	# Clean unused files.
 	rm -f $dat $flat_dat $curves_dat $fit
 	if [ "$keep_pfms" != "1" ]; then
-		rm -f "$pfm_noisy" "$pfm_smooth"
+		rm -f "$pfm_noisy_1" "$pfm_noisy_2"
 	fi
 
 	echo "$(basename "$pdf")" >> "$files_list"
@@ -487,9 +497,12 @@ EOF
 
 for iso in $iso_settings; do
 	images=$(get_var "images_$iso")
-	for from in $images; do
-		profile_image "$from" "$presets_txt" "$files_list"
-	done
+	if [ `echo $images | wc -w` -ne 2 ];
+	then
+		echo "${color_error}Did not found 2 images for ISO $iso .\n Found images: $images\n Please provide only 2 images (not more, not less).${color_reset}"
+		exit 1
+	fi
+	profile_image "$images" "$presets_txt" "$files_list"
 done
 
 # turn presets.txt into presets.json
@@ -503,12 +516,12 @@ if [ "$pdf_enabled" ]; then
 	echo "===> Prepare final pdf"
 
 	for iso in $iso_settings; do
-	images=$(get_var "images_$iso")
-		for image in $images; do
-			pdf="${image%.*}.pdf"
-			pdfflat="${image%.*}_flat.pdf"
-			flist="$flist $pdf $pdfflat"
-		done
+		images=$(get_var "images_$iso")
+		arr=($images)
+		image=${arr[0]}
+		pdf="${image%.*}.pdf"
+		pdfflat="${image%.*}_flat.pdf"
+		flist="$flist $pdf $pdfflat"
 	done
 	echo Filelist: $flist
 	pdfcat $resultpdf $flist

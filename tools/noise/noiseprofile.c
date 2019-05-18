@@ -151,7 +151,10 @@ int main(int argc, char *arg[])
   int wd, ht;
   float *input = read_pfm(arg[1], &wd, &ht);
   float *inputblurred = calloc(wd*ht*3, sizeof(float));
+  float *input2 = read_pfm(arg[2], &wd, &ht);
+  float *input2blurred = calloc(wd*ht*3, sizeof(float));
   mean_filter(75, input, inputblurred, wd, ht);
+  mean_filter(75, input2, input2blurred, wd, ht);
   double var[3][NB_BITS_PRECISION];
   unsigned nb_elts[3][NB_BITS_PRECISION];
   for(int level = 0; level < NB_BITS_PRECISION; level++)
@@ -172,11 +175,18 @@ int main(int argc, char *arg[])
         {
           int index = (i * wd + j) * 3 + c;
           float pixel_diff = input[index] - inputblurred[index];
+          float pixel_diff2 = input2[index] - input2blurred[index];
           unsigned level = (unsigned)(inputblurred[index] * NB_BITS_PRECISION);
+          unsigned level2 = (unsigned)(input2blurred[index] * NB_BITS_PRECISION);
           if(level < NB_BITS_PRECISION)
           {
             var[c][level] += pixel_diff * pixel_diff;
             nb_elts[c][level]++;
+          }
+          if(level2 < NB_BITS_PRECISION)
+          {
+            var[c][level2] += pixel_diff2 * pixel_diff2;
+            nb_elts[c][level2]++;
           }
         }
       }
@@ -207,15 +217,26 @@ int main(int argc, char *arg[])
           input[index] /= a[c];
           float d = fmaxf(0.0f, input[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
           input[index] = 2.0f * sqrtf(d);
+          input2[index] /= a[c];
+          d = fmaxf(0.0f, input2[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
+          input2[index] = 2.0f * sqrtf(d);
+
 
           unsigned level = (unsigned)(inputblurred[index] * NB_BITS_PRECISION);
+          unsigned level2 = (unsigned)(input2blurred[index] * NB_BITS_PRECISION);
           inputblurred[index] /= a[c];
+          input2blurred[index] /= a[c];
           d = fmaxf(0.0f, inputblurred[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
           inputblurred[index] = 2.0f * sqrtf(d);
+          d = fmaxf(0.0f, input2blurred[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
+          input2blurred[index] = 2.0f * sqrtf(d);
 
           float pixel_diff = input[index] - inputblurred[index];
           var[c][level] += pixel_diff * pixel_diff;
           nb_elts[c][level]++;
+          pixel_diff = input2[index] - input2blurred[index];
+          var[c][level2] += pixel_diff * pixel_diff;
+          nb_elts[c][level2]++;
         }
       }
     }
@@ -234,5 +255,7 @@ int main(int argc, char *arg[])
   }
   free(inputblurred);
   free(input);
+  free(input2blurred);
+  free(input2);
   exit(0);
 }
