@@ -138,6 +138,8 @@
 @define-color thumbnail_border_color @grey_15; /* rectangle directly around image */
 @define-color thumbnail_selected_border_color @grey_90;
 @define-color filmstrip_bg_color @lighttable_bg_color;
+@define-color preview_border_color @grey_15;
+@define-color preview_hover_border_color @grey_90;
 
 /* Graphs : histogram and tone curve */
 @define-color graph_bg @grey_10;
@@ -666,7 +668,7 @@ combobox button
   border: 1px solid transparent;
   padding: 1px;
   background-color: transparent;
-  border-radius: 2px;
+  border-radius: 2pt;
   color: @bauhaus_fg;
   outline-style: none;
   min-height: 1em;
@@ -697,7 +699,7 @@ dialog combobox window
   background-color: @tooltip_bg_color;
   color: @tooltip_fg_color;
   outline-style:none;
-  border-radius: 2px;
+  border-radius: 2pt;
   border: 0;
   outline-style: none;
   min-height: 0.5em;
@@ -1012,8 +1014,8 @@ entry
 
 #left #lib-plugin-ui entry /* This will avoid have too much height on entry item in filter collections modules */
 {
-  padding: 1px;
-  margin: 5px 0px;
+  padding: 0px;
+  margin: 8px 0px;
 }
 
 #right #lib-plugin-ui entry /* This will adjust entry height on right panel */
@@ -1130,4 +1132,16 @@ cell:selected
 {
     min-height: 9em;
     min-width: 9em;
+}
+
+#live-sample
+{
+    padding: 0px;
+    min-height: 1em;
+    min-width: 3em;
+}
+
+#live-sample-data
+{
+   font-family: courier;
 }
