@@ -2182,6 +2182,8 @@ void dt_gui_load_theme(const char *theme)
     [DT_GUI_COLOR_THUMBNAIL_BORDER] = { "thumbnail_border_color", { 0.1, 0.1, 0.1, 1.0 } },
     [DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER] = { "thumbnail_selected_border_color", { 0.9, 0.9, 0.9, 1.0 } },
     [DT_GUI_COLOR_FILMSTRIP_BG] = { "filmstrip_bg_color", { 0.2, 0.2, 0.2, 1.0 } },
+    [DT_GUI_COLOR_PREVIEW_BORDER] = { "preview_border_color", { 0.1, 0.1, 0.1, 1.0 } },
+    [DT_GUI_COLOR_PREVIEW_HOVER_BORDER] = { "preview_hover_border_color", { 0.9, 0.9, 0.9, 1.0 } },
   };
 
   // starting from 1 as DT_GUI_COLOR_BG is not part of this table
