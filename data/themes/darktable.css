@@ -138,6 +138,8 @@
 @define-color thumbnail_border_color @grey_15; /* rectangle directly around image */
 @define-color thumbnail_selected_border_color @grey_90;
 @define-color filmstrip_bg_color @lighttable_bg_color;
+@define-color preview_border_color @grey_15;
+@define-color preview_hover_border_color @grey_90;
 
 /* Graphs : histogram and tone curve */
 @define-color graph_bg @grey_10;
