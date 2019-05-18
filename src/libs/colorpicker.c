@@ -363,6 +363,7 @@ static void _add_sample(GtkButton *widget, gpointer self)
   gtk_box_pack_start(GTK_BOX(data->samples_container), sample->container, TRUE, TRUE, 0);
 
   sample->color_patch = gtk_drawing_area_new();
+  gtk_widget_set_size_request(sample->color_patch, DT_PIXEL_APPLY_DPI(40), -1);
   gtk_widget_set_events(sample->color_patch, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_BUTTON_PRESS_MASK);
   gtk_widget_set_tooltip_text(sample->color_patch, _("hover to highlight sample on canvas, "
                                                        "click to lock sample"));
