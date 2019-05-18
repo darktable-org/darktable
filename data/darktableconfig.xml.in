@@ -744,20 +744,41 @@
     <type>int</type>
     <default>1</default>
     <shortdescription>lighttable layout mode</shortdescription>
-    <longdescription>select a layout for the lighttable: 0 - zoomable lighttable or 1 - file manager.</longdescription>
+    <longdescription>select a layout for the lighttable: 0 - zoomable lighttable or 1 - file manager or 2 - culling layout.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/base_layout</name>
     <type>int</type>
     <default>1</default>
     <shortdescription>lighttable basic layout mode</shortdescription>
-    <longdescription>the layout to return to when exiting expose or culling layout</longdescription>
+    <longdescription>the layout to return to when exiting culling layout</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/images_in_row</name>
     <type>int</type>
     <default>5</default>
     <shortdescription>images per row</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/culling_num_images</name>
+    <type>int</type>
+    <default>2</default>
+    <shortdescription>images to display in culling layout</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/culling_zoom_mode</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>zoom mode in culling layout. 0=fixed ; 1=dynamic</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/culling_last_id</name>
+    <type>int</type>
+    <default>-1</default>
+    <shortdescription>last culling first image id</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>

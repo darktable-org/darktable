@@ -757,8 +757,7 @@ int32_t dt_view_get_image_to_act_on()
   const int layout = darktable.view_manager->proxy.lighttable.get_layout(
       darktable.view_manager->proxy.lighttable.module);
 
-  if(zoom == 1 || full_preview_id > 1 || layout == DT_LIGHTTABLE_LAYOUT_EXPOSE
-     || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  if(zoom == 1 || full_preview_id > 1 || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     return mouse_over_id;
   }
@@ -1027,6 +1026,15 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW) selected = 1;
   }
 
+  // do we need to surround the image (filmstrip in culling layout)
+  gboolean surrounded = selected;
+  if(!full_preview && darktable.view_manager->proxy.lighttable.view
+     && dt_view_manager_get_current_view(darktable.view_manager) == darktable.view_manager->proxy.lighttable.view
+     && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    surrounded = dt_view_lighttable_culling_is_image_visible(darktable.view_manager, imgid);
+  }
+
   dt_image_t buffered_image;
   const dt_image_t *img;
   // if darktable.gui->show_overlays is set or the user points at this image, we really want it:
@@ -1137,7 +1145,10 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     dt_gui_gtk_set_source_rgb(cr, bgcol);
     cairo_fill_preserve(cr);
     cairo_set_line_width(cr, 0.005 * width);
-    dt_gui_gtk_set_source_rgb(cr, outlinecol);
+    if(surrounded)
+      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
+    else
+      dt_gui_gtk_set_source_rgb(cr, outlinecol);
     cairo_stroke(cr);
 
     if(img)
@@ -1392,9 +1403,19 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     {
       // border around image
       dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_BORDER);
-      if(buf_ok && (selected || zoom == 1))
+      if(buf_ok && surrounded && zoom != 1)
       {
         const float border = zoom == 1 ? DT_PIXEL_APPLY_DPI(16 / scale) : DT_PIXEL_APPLY_DPI(2 / scale);
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1. / scale));
+        cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
+        cairo_new_sub_path(cr);
+        cairo_rectangle(cr, rectx - border, recty - border, rectw + 2. * border, recth + 2. * border);
+        cairo_stroke_preserve(cr);
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
+        cairo_fill(cr);
+      }
+      else if(buf_ok && (selected || zoom == 1))
+      {
         cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1. / scale));
         if(zoom == 1)
         {
@@ -1416,12 +1437,8 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
         }
         else
         {
-          cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-          cairo_new_sub_path(cr);
-          cairo_rectangle(cr, rectx - border, recty - border, rectw + 2. * border, recth + 2. * border);
-          cairo_stroke_preserve(cr);
-          dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
-          cairo_fill(cr);
+          cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5 / scale));
+          cairo_stroke(cr);
         }
       }
       else if(buf_ok)
@@ -2007,18 +2024,12 @@ gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm)
     return 10;
 }
 
-void dt_view_lighttable_set_display_num_images(dt_view_manager_t *vm, const int display_num_images)
+dt_lighttable_culling_zoom_mode_t dt_view_lighttable_get_culling_zoom_mode(dt_view_manager_t *vm)
 {
   if(vm->proxy.lighttable.module)
-    vm->proxy.lighttable.set_display_num_images(vm->proxy.lighttable.module, display_num_images);
-}
-
-int dt_view_lighttable_get_display_num_images(dt_view_manager_t *vm)
-{
-  if(vm->proxy.lighttable.module)
-    return vm->proxy.lighttable.get_display_num_images(vm->proxy.lighttable.module);
+    return vm->proxy.lighttable.get_zoom_mode(vm->proxy.lighttable.module);
   else
-    return 2;
+    return DT_LIGHTTABLE_ZOOM_FIXED;
 }
 
 void dt_view_lighttable_force_expose_all(dt_view_manager_t *vm)
@@ -2033,6 +2044,14 @@ dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm)
     return vm->proxy.lighttable.get_layout(vm->proxy.lighttable.module);
   else
     return DT_LIGHTTABLE_LAYOUT_FILEMANAGER;
+}
+
+gboolean dt_view_lighttable_culling_is_image_visible(dt_view_manager_t *vm, gint imgid)
+{
+  if(vm->proxy.lighttable.module)
+    return vm->proxy.lighttable.culling_is_image_visible(vm->proxy.lighttable.view, imgid);
+  else
+    return FALSE;
 }
 
 gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm)
