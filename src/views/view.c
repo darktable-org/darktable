@@ -1419,20 +1419,32 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
         cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1. / scale));
         if(zoom == 1)
         {
-          const dt_gui_color_t b_col
-              = (imgsel == imgid) ? DT_GUI_COLOR_THUMBNAIL_HOVER_OUTLINE : DT_GUI_COLOR_THUMBNAIL_BORDER;
-          cairo_stroke(cr);
-          cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-          float alpha = 1.0f;
-          for(int k = 0; k < 16; k++)
+          // if border color is transparent, don't draw
+          if(darktable.gui->colors[DT_GUI_COLOR_PREVIEW_BORDER].alpha > 0.0)
           {
+            dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_PREVIEW_BORDER);
+            cairo_stroke(cr);
+            cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
+            float alpha = 1.0f;
+            for(int k = 0; k < 16; k++)
+            {
+              cairo_rectangle(cr, rectx, recty, rectw, recth);
+              cairo_new_sub_path(cr);
+              cairo_rectangle(cr, rectx - k / scale, recty - k / scale, rectw + 2. * k / scale,
+                              recth + 2. * k / scale);
+              dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_PREVIEW_BORDER, alpha);
+              alpha *= 0.6f;
+              cairo_fill(cr);
+            }
+          }
+
+          // draw hover border if it's not transparent
+          if(imgsel == imgid && darktable.gui->colors[DT_GUI_COLOR_PREVIEW_HOVER_BORDER].alpha > 0.0)
+          {
+            dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_PREVIEW_HOVER_BORDER);
+            cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5 / scale));
             cairo_rectangle(cr, rectx, recty, rectw, recth);
-            cairo_new_sub_path(cr);
-            cairo_rectangle(cr, rectx - k / scale, recty - k / scale, rectw + 2. * k / scale,
-                            recth + 2. * k / scale);
-            dt_gui_gtk_set_source_rgba(cr, b_col, alpha);
-            alpha *= 0.6f;
-            cairo_fill(cr);
+            cairo_stroke(cr);
           }
         }
         else
@@ -1472,6 +1484,9 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
 
       const gboolean extended_thumb_overlay = dt_conf_get_bool("plugins/lighttable/extended_thumb_overlay");
       const gboolean image_is_rejected = (img && ((img->flags & 0x7) == 6));
+
+      // for preview, no frame except if rejected
+      if(zoom == 1 && !image_is_rejected) cairo_new_path(cr);
 
       if(img)
       {
