@@ -138,6 +138,8 @@
 @define-color thumbnail_border_color @grey_15; /* rectangle directly around image */
 @define-color thumbnail_selected_border_color @grey_90;
 @define-color filmstrip_bg_color @lighttable_bg_color;
+@define-color preview_border_color @grey_15;
+@define-color preview_hover_border_color @grey_90;
 
 /* Graphs : histogram and tone curve */
 @define-color graph_bg @grey_10;
@@ -861,6 +863,21 @@ notebook tab:focus label
   color: @button_checked_fg;
 }
 
+/* This will avoid have too much height on entry item in dialog windows; label and button are needed as they are related */
+
+#preferences_notebook *
+{
+  margin: 0;
+}
+
+#preferences_notebook scrolledwindow label,
+#preferences_notebook scrolledwindow entry,
+#preferences_notebook scrolledwindow button
+{
+  padding: 0px;
+  margin: 5px 0;
+}
+
 /* Bauhaus controls (sliders and comboboxes in modules) */
 
 #bauhaus-popup
@@ -948,15 +965,6 @@ dialog scrolledwindow
   padding: 0 1px 0 8px;
   margin: 0;
   background-color: @plugin_bg_color;
-}
-
-/* This will avoid have too much height on entry item in dialog windows; label and button are needed as they are related */
-dialog scrolledwindow label,
-dialog scrolledwindow entry,
-dialog scrolledwindow button
-{
-  padding: 0px;
-  margin: 1px;
 }
 
 /* empty space at top/bottom of sidepanels when scrolled */
@@ -1124,4 +1132,16 @@ cell:selected
 {
     min-height: 9em;
     min-width: 9em;
+}
+
+#live-sample
+{
+    padding: 0px;
+    min-height: 1em;
+    min-width: 3em;
+}
+
+#live-sample-data
+{
+   font-family: courier;
 }
