@@ -375,6 +375,13 @@ button:disabled,
   border-radius: 2px;
 }
 
+#iop-plugin-ui button,
+#lib-plugin-ui button
+{
+  margin: 2pt;
+  padding: 2pt;
+}
+
 /* Buttons in toolbars in lighttable and darkroom */
 #header-toolbar #dt-toggle-button,
 #header-toolbar #dt-button,
@@ -397,11 +404,11 @@ button:disabled,
 #module-collapse-button * button
 {
   background-color: transparent;
-  min-height: 1em;
+  min-height: 1.1em;
   min-width: 1em;
 }
 
-/* Button to open/close the dropdown section */
+/* Button to open/close the dropdown section, especially header ones */
 #control-button
 {
     background-color: transparent;
@@ -423,23 +430,34 @@ button:disabled,
     margin: 0;
 }
 
+/* Adjust size of button arrow to open/close dropdown on panels */
+#iop-plugin-ui #control-button,
 #lib-plugin-ui #control-button
 {
     background-color: transparent;
     min-height: 1em;
+    min-width: 1em;
     padding: 0.6em;
     margin: 0;
     border: 0;
 }
 
-#lib-plugin-ui #control-button:hover
+#right #iop-plugin-ui #control-button /* especially for display arrow option on module filmic and if necessary other modules */
+{
+    background-color: transparent;
+    min-height: 0.9em;
+    min-width: 0.9em;
+    padding: 0.2em;
+    margin: 0;
+    border: 0;
+}
+
+#iop-plugin-ui #control-button:hover,
+#lib-plugin-ui #control-button:hover,
+#right #iop-plugin-ui #control-button:hover
 {
     color: @button_hover_fg;
     background-color: @button_hover_bg;
-    min-height: 1em;
-    padding: 0.6em;
-    border: 0;
-    margin: 0;
 }
 
 /* Checkbox */
@@ -904,7 +922,7 @@ dialog
 
 dialog *
 {
-  margin: 1pt;
+  margin: 1px;
   padding: 0;
 }
 
@@ -922,14 +940,23 @@ dialog headerbar button
 
 dialog button
 {
-  padding: 2pt;
+  padding: 1px;
 }
 
 dialog scrolledwindow
 {
-  padding: 0 1pt 0 8pt;
+  padding: 0 1px 0 8px;
   margin: 0;
   background-color: @plugin_bg_color;
+}
+
+/* This will avoid have too much height on entry item in dialog windows; label and button are needed as they are related */
+dialog scrolledwindow label,
+dialog scrolledwindow entry,
+dialog scrolledwindow button
+{
+  padding: 0px;
+  margin:1px;
 }
 
 /* empty space at top/bottom of sidepanels when scrolled */
@@ -977,6 +1004,18 @@ entry
   margin: 2pt 0;
 }
 
+#left #lib-plugin-ui entry /* This will avoid have too much height on entry item in filter collections modules */
+{
+  padding: 1px;
+  margin: 5px 0px;
+}
+
+#right #lib-plugin-ui entry /* This will adjust entry height on right panel */
+{
+  padding: 1px;
+  margin: 2px 0px;
+}
+
 #lib-plugin-ui checkbutton check,
 #iop-plugin-ui checkbutton check,
 checkbutton check
@@ -984,11 +1023,20 @@ checkbutton check
   margin: 5px 8pt 5px 0;
 }
 
-#iop-plugin-ui button,
-#lib-plugin-ui button
+#left #lib-plugin-ui #dt-button /* arrow size of dropdown button arrow on filter collection */
 {
-  margin: 2pt;
+  padding: 0pt;
+}
+
+#iop-plugin-ui #dt-button  /* arrow size of some buttons on darkroom modules */
+{
   padding: 2pt;
+}
+
+#left #history-button /* choose here spacing between history items in darkroom */
+{
+  padding: 1px 2pt 2pt 2pt;
+  margin: 0pt 1pt 1pt 1pt;
 }
 
 #iop-bottom-bar
