@@ -169,7 +169,8 @@ static void _update_picker_output(dt_lib_module_t *self)
     switch(input_color)
     {
       case 0: // rgb
-        snprintf(colstring, sizeof(colstring), "(%d, %d, %d)", (int)round(rgb[0] * 255.f), (int)round(rgb[1] * 255.f), (int)round(rgb[2] * 255.f));
+        snprintf(colstring, sizeof(colstring), "(%d, %d, %d)",
+                 (int)round(rgb[0] * 255.f), (int)round(rgb[1] * 255.f), (int)round(rgb[2] * 255.f));
         break;
       case 1: // Lab
         snprintf(colstring, sizeof(colstring), "(%.03f, %.03f, %.03f)", lab[0], lab[1], lab[2]);
@@ -278,12 +279,13 @@ static void _update_samples_output(dt_lib_module_t *self)
     {
       case 0:
         // RGB
-        snprintf(text, sizeof(text), "(%d, %d, %d)", (int)round(rgb[0] * 255.f), (int)round(rgb[1] * 255.f), (int)round(rgb[2] * 255.f));
+        snprintf(text, sizeof(text), "%3d %3d %3d",
+                 (int)round(rgb[0] * 255.f), (int)round(rgb[1] * 255.f), (int)round(rgb[2] * 255.f));
         break;
 
       case 1:
         // Lab
-        snprintf(text, sizeof(text), "(%.03f, %.03f, %.03f)", lab[0], lab[1], lab[2]);
+        snprintf(text, sizeof(text), "%5.02f %5.02f %5.02f", lab[0], lab[1], lab[2]);
         break;
     }
     gtk_label_set_text(GTK_LABEL(sample->output_label), text);
@@ -362,11 +364,14 @@ static void _add_sample(GtkButton *widget, gpointer self)
   sample->container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(data->samples_container), sample->container, TRUE, TRUE, 0);
 
+  GtkWidget *patch_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(patch_box, "live-sample");
   sample->color_patch = gtk_drawing_area_new();
+  gtk_box_pack_start(GTK_BOX(patch_box), sample->color_patch, TRUE, TRUE, 0);
   gtk_widget_set_events(sample->color_patch, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_BUTTON_PRESS_MASK);
   gtk_widget_set_tooltip_text(sample->color_patch, _("hover to highlight sample on canvas, "
                                                        "click to lock sample"));
-  gtk_box_pack_start(GTK_BOX(sample->container), sample->color_patch, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(sample->container), patch_box, TRUE, FALSE, 0);
 
   g_signal_connect(G_OBJECT(sample->color_patch), "enter-notify-event", G_CALLBACK(_live_sample_enter),
                    sample);
@@ -377,6 +382,7 @@ static void _add_sample(GtkButton *widget, gpointer self)
   g_signal_connect(G_OBJECT(sample->color_patch), "draw", G_CALLBACK(sample_draw_callback), sample);
 
   sample->output_label = gtk_label_new("");
+  gtk_widget_set_name(sample->output_label, "live-sample-data");
   gtk_box_pack_start(GTK_BOX(sample->container), sample->output_label, TRUE, TRUE, 0);
 
   sample->delete_button = gtk_button_new_with_label(_("remove"));

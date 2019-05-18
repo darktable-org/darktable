@@ -69,11 +69,16 @@ typedef enum dt_lighttable_layout_t
   DT_LIGHTTABLE_LAYOUT_FIRST = -1,
   DT_LIGHTTABLE_LAYOUT_ZOOMABLE = 0,
   DT_LIGHTTABLE_LAYOUT_FILEMANAGER = 1,
-  DT_LIGHTTABLE_LAYOUT_EXPOSE = 2,
-  DT_LIGHTTABLE_LAYOUT_CULLING = 3,
-  DT_LIGHTTABLE_LAYOUT_LAST = 4
+  DT_LIGHTTABLE_LAYOUT_CULLING = 2,
+  DT_LIGHTTABLE_LAYOUT_LAST = 3
 } dt_lighttable_layout_t;
 
+// flags for culling zoom mode
+typedef enum dt_lighttable_culling_zoom_mode_t
+{
+  DT_LIGHTTABLE_ZOOM_FIXED = 0,
+  DT_LIGHTTABLE_ZOOM_DYNAMIC = 1
+} dt_lighttable_culling_zoom_mode_t;
 
 #define DT_VIEW_ALL                                                                              \
   (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW | \
@@ -287,13 +292,13 @@ typedef struct dt_view_manager_t
       gint (*get_zoom)(struct dt_lib_module_t *module);
       dt_lighttable_layout_t (*get_layout)(struct dt_lib_module_t *module);
       void (*set_layout)(struct dt_lib_module_t *module, dt_lighttable_layout_t layout);
+      dt_lighttable_culling_zoom_mode_t (*get_zoom_mode)(struct dt_lib_module_t *module);
       void (*set_position)(struct dt_view_t *view, uint32_t pos);
       uint32_t (*get_position)(struct dt_view_t *view);
       int (*get_images_in_row)(struct dt_view_t *view);
       int (*get_full_preview_id)(struct dt_view_t *view);
-      void (*set_display_num_images)(struct dt_lib_module_t *self, const int display_num_images);
-      int (*get_display_num_images)(struct dt_lib_module_t *self);
       void (*force_expose_all)(struct dt_view_t *view);
+      gboolean (*culling_is_image_visible)(struct dt_view_t *view, gint imgid);
     } lighttable;
 
     /* tethering view proxy object */
@@ -424,16 +429,16 @@ gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm);
 void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom);
 /** gets the lighttable image in row zoom */
 gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm);
-/** sets the lighttable number of images displayed in culling mode */
-void dt_view_lighttable_set_display_num_images(dt_view_manager_t *vm, const int display_num_images);
-/** gets the lighttable number of images displayed in culling mode */
-int dt_view_lighttable_get_display_num_images(dt_view_manager_t *vm);
+/** gets the culling zoom mode */
+dt_lighttable_culling_zoom_mode_t dt_view_lighttable_get_culling_zoom_mode(dt_view_manager_t *vm);
 /** set first visible image offset */
 void dt_view_lighttable_set_position(dt_view_manager_t *vm, uint32_t pos);
 /** read first visible image offset */
 uint32_t dt_view_lighttable_get_position(dt_view_manager_t *vm);
 /** force a full redraw of the lighttable */
 void dt_view_lighttable_force_expose_all(dt_view_manager_t *vm);
+/** is the image visible in culling layout */
+gboolean dt_view_lighttable_culling_is_image_visible(dt_view_manager_t *vm, gint imgid);
 
 /** set active image */
 void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm, int iid);
