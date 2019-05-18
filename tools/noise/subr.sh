@@ -487,14 +487,12 @@ check_exposure() {
 	over=$(convert "$input" $convert_flags -format "%[mean]" info: | cut -f1 -d.)
 	if [ "$over" -a "$over" -lt 80 ]; then
 		# Image not over-exposed.
-		echo "${color_error}\"$orig\" not over-exposed ($over)${color_reset}"
-	fi
-
-	under=$(convert "$input" -negate $convert_flags -format "%[mean]" info: | cut -f1 -d.)
-	if [ "$under" -a "$under" -lt 80 ]; then
-		# Image not under-exposed.
-		echo "${color_error}\"$orig\" not under-exposed ($under)${color_reset}"
-		ret=1
+		under=$(convert "$input" -negate $convert_flags -format "%[mean]" info: | cut -f1 -d.)
+		if [ "$under" -a "$under" -lt 80 ]; then
+			# Image not under-exposed.
+			echo "${color_error}\"$orig\" not over-exposed nor under-exposed ($under)${color_reset}"
+			ret=1
+		fi
 	fi
 
 	return $ret
