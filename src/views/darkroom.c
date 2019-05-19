@@ -3264,6 +3264,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
   static cairo_surface_t *image_surface = NULL;
   static int image_surface_width = 0, image_surface_height = 0, image_surface_imgid = -1;
   static float roi_hash_old = -1.0f;
+  static int img_id_old = -1;
   // compute patented dreggn hash so we don't need to check all values:
   const float roi_hash = width + 7.0f * height + 23.0f * zoom + 42.0f * zoom_x + 91.0f * zoom_y + 666.0f * zoom;
 
@@ -3284,6 +3285,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
   {
     // draw image
     roi_hash_old = roi_hash;
+    img_id_old = dev->image_storage.id;
     mutex = &dev->preview2_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
     float wd = dev->preview2_pipe->backbuf_width;
@@ -3312,10 +3314,11 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
     dt_pthread_mutex_unlock(mutex);
     image_surface_imgid = dev->image_storage.id;
   }
-  else if((dev->preview_status == DT_DEV_PIXELPIPE_VALID) && (roi_hash != roi_hash_old))
+  else if((dev->preview_status == DT_DEV_PIXELPIPE_VALID) && ((roi_hash != roi_hash_old) || (dev->image_storage.id != img_id_old)))
   {
     // draw preview
     roi_hash_old = roi_hash;
+    img_id_old = dev->image_storage.id;
     mutex = &dev->preview_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
 
