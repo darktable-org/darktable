@@ -141,7 +141,7 @@
 @define-color preview_border_color @grey_15;
 @define-color preview_hover_border_color @grey_90;
 
-/* Graphs : histogram and tone curve */
+/* Graphs : histogram, navigation thumbnail and some items on tone curve */
 @define-color graph_bg @grey_10;
 @define-color graph_border @grey_05;
 @define-color graph_fg @grey_75;
