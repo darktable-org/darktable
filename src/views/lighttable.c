@@ -3155,8 +3155,12 @@ static void _culling_scroll(dt_library_t *lib, const int up)
                 || !lib->culling_use_selection))
     {
       if(lib->culling_use_selection)
-        dt_control_log(_("you have reached the start of your selection (%d images)"),
-                       _culling_get_selection_count());
+      {
+        const int nbsel = _culling_get_selection_count();
+        dt_control_log(ngettext("you have reached the start of your selection (%d image)",
+                                "you have reached the start of your selection (%d images)", nbsel),
+                       nbsel);
+      }
       else
         dt_control_log(_("you have reached the start of your collection"));
     }
@@ -3180,7 +3184,12 @@ static void _culling_scroll(dt_library_t *lib, const int up)
                 || !lib->culling_use_selection))
     {
       if(lib->culling_use_selection)
-        dt_control_log(_("you have reached the end of your selection (%d images)"), _culling_get_selection_count());
+      {
+        const int nbsel = _culling_get_selection_count();
+        dt_control_log(ngettext("you have reached the end of your selection (%d image)",
+                                "you have reached the end of your selection (%d images)", nbsel),
+                       nbsel);
+      }
       else
         dt_control_log(_("you have reached the end of your collection"));
     }
