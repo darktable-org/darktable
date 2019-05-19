@@ -1,0 +1,12 @@
+@import "../darktable.css";
+
+/* Views */
+@define-color darkroom_bg_color @grey_25;
+@define-color darkroom_preview_bg_color @grey_25;
+@define-color lighttable_bg_color @grey_25;
+@define-color lighttable_preview_bg_color @grey_25;
+
+#iop-panel-icon
+{
+  min-width: 20px;
+}
