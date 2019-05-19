@@ -7,6 +7,12 @@ endif(USE_OPENCL)
 FILE(GLOB THEME_FILES "themes/*.css")
 install(FILES ${THEME_FILES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/themes COMPONENT DTApplication)
 
+FILE(GLOB THEME_FILES "themes/dark/*.*")
+install(FILES ${THEME_FILES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/themes/dark COMPONENT DTApplication)
+FILE(GLOB THEME_FILES "themes/dark/img/*.*")
+install(FILES ${THEME_FILES} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/themes/dark/img COMPONENT DTApplication)
+
+
 #
 # web gallery export support files:
 #

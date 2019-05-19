@@ -15,6 +15,13 @@
     <shortdescription>database location</shortdescription>
     <longdescription>filename relative to ~/.config/darktable or starting with a slash (needs a restart).</longdescription>
   </dtconfig>
+  <dtconfig prefs="gui" section="darkroom">
+    <name>darkroom/ui/use_css_for_iop_icons</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>use css for module icons</shortdescription>
+    <longdescription>enable this to show/hide icons by selecting appropriate themes.\ndisable this and icons will always be shown regardless of selected theme.  although themes can have their own icon sets.</longdescription>
+  </dtconfig>
   <dtconfig prefs="gui">
     <name>panel_width</name>
     <type>int</type>

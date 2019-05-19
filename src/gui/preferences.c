@@ -147,9 +147,25 @@ static void load_themes_dir(const char *basedir)
   GDir *dir = g_dir_open(themes_dir, 0, NULL);
   if(dir)
   {
+    char cpDir[PATH_MAX], *ext;
+    strcpy(cpDir, themes_dir);
+    strcat(cpDir, "\\");
+    int nLen = strlen(cpDir);
     const gchar *d_name;
     while((d_name = g_dir_read_name(dir)))
-      darktable.themes = g_list_append(darktable.themes, g_strdup(d_name));
+    {
+      // convert ext to lowercase for comparing later
+      if ((ext = strrchr(d_name, '.')) != NULL) while(*(++ext)) *ext = tolower(*ext);
+      strcpy(&cpDir[nLen], d_name);
+      if (g_file_test(cpDir, G_FILE_TEST_IS_DIR))
+      {
+        sprintf(&cpDir[strlen(cpDir)],"\\%s.css", d_name);
+        if (g_file_test(cpDir, G_FILE_TEST_EXISTS))
+          darktable.themes = g_list_append(darktable.themes, g_strdup(&cpDir[nLen]));
+      }
+      else if (g_str_has_suffix(cpDir, ".css"))
+        darktable.themes = g_list_append(darktable.themes, g_strdup(d_name));
+    }
     g_dir_close(dir);
   }
   g_free(themes_dir);
@@ -253,8 +269,11 @@ static void hardcoded_gui(GtkWidget *grid, int *line)
     // remove extension
     gchar *i = g_strrstr(name, ".");
     if(i) *i = '\0';
+    if(!g_strcmp0(name, theme_name)) selected = k;  // compare before removing path
+    // remove path from themes with own dir
+    if ((i = strrchr(name, '\\')) != NULL || (i = strrchr(name, '/')) != NULL)
+      *i = '\0';
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(widget), name);
-    if(!g_strcmp0(name, theme_name)) selected = k;
     k++;
   }
   g_free(theme_name);

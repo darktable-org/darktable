@@ -1898,6 +1898,88 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
   return FALSE;
 }
 
+static GdkPixbuf *load_image(const char *filename, int size)
+{
+  GError *error = NULL;
+  if(!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) return NULL;
+
+  GdkPixbuf *pixbuf = dt_gdk_pixbuf_new_from_file_at_size(filename, size, size, &error);
+  if(!pixbuf)
+  {
+    fprintf(stderr, "error loading file `%s': %s\n", filename, error->message);
+    g_error_free(error);
+  }
+  return pixbuf;
+}
+
+// load icons for current theme
+static GdkPixbuf* find_image(dt_iop_module_t *module, int bs)
+{
+  char cpPath[PATH_MAX], cpPathname[PATH_MAX];
+  char* cpName, *cpTheme = dt_conf_get_string("ui_last/theme");
+  GdkPixbuf *pixbuf;
+
+  // does theme have it's own dir (ie. name\name)
+  if ((cpName = strrchr(cpTheme, '\\')) == NULL && (cpName = strrchr(cpTheme, '/')) == NULL)
+  {
+    dt_loc_get_datadir(cpPath, PATH_MAX);
+    goto use_default_icons;
+  }
+  cpName++;  // inc past slash
+  
+  // make the icons a little more visible
+  #define ICON_SIZE (bs * 1.7)
+
+  // look in user themes
+  dt_loc_get_user_config_dir(cpPath, PATH_MAX);
+  g_snprintf(cpPathname, PATH_MAX, "%s/themes/%s/img/%s.svg", cpPath, cpName, module->op);
+  if ((pixbuf = load_image(cpPathname, ICON_SIZE))) return pixbuf;
+
+  g_snprintf(cpPathname, PATH_MAX, "%s/themes/%s/img/%s.png", cpPath, cpName, module->op);
+  if ((pixbuf = load_image(cpPathname, ICON_SIZE))) return pixbuf;
+
+  g_snprintf(cpPathname, PATH_MAX, "%s/themes/%s/img/template.svg", cpPath, cpName);
+  if ((pixbuf = load_image(cpPathname, ICON_SIZE))) return pixbuf;
+
+  g_snprintf(cpPathname, PATH_MAX, "%s/themes/%s/img/template.png", cpPath, cpName);
+  if ((pixbuf = load_image(cpPathname, ICON_SIZE))) return pixbuf;
+
+  // look in dt themes
+  dt_loc_get_datadir(cpPath, PATH_MAX);
+  g_snprintf(cpPathname, PATH_MAX, "%s/themes/%s/img/%s.svg", cpPath, cpName, module->op);
+  if ((pixbuf = load_image(cpPathname, ICON_SIZE))) return pixbuf;
+
+  g_snprintf(cpPathname, PATH_MAX, "%s/themes/%s/img/%s.png", cpPath, cpName, module->op);
+  if ((pixbuf = load_image(cpPathname, ICON_SIZE))) return pixbuf;
+
+  g_snprintf(cpPathname, PATH_MAX, "%s/themes/%s/img/template.svg", cpPath, cpName);
+  if ((pixbuf = load_image(cpPathname, ICON_SIZE))) return pixbuf;
+
+  g_snprintf(cpPathname, PATH_MAX, "%s/themes/%s/img/template.png", cpPath, cpName);
+  if ((pixbuf = load_image(cpPathname, ICON_SIZE))) return pixbuf;
+
+use_default_icons:
+  g_snprintf(cpPathname, PATH_MAX, "%s/pixmaps/plugins/darkroom/%s.svg", cpPath, module->op);
+  if ((pixbuf = load_image(cpPathname, ICON_SIZE))) return pixbuf;
+
+  g_snprintf(cpPathname, PATH_MAX, "%s/pixmaps/plugins/darkroom/%s.png", cpPath, module->op);
+  if ((pixbuf = load_image(cpPathname, ICON_SIZE))) return pixbuf;
+
+  g_snprintf(cpPathname, PATH_MAX, "%s/pixmaps/plugins/darkroom/template.svg", cpPath);
+  if ((pixbuf = load_image(cpPathname, ICON_SIZE))) return pixbuf;
+
+  g_snprintf(cpPathname, PATH_MAX, "%s/pixmaps/plugins/darkroom/template.png", cpPath);
+  if ((pixbuf = load_image(cpPathname, ICON_SIZE))) return pixbuf;
+
+  #undef ICON_SIZE
+
+  // no image found so create one. use css 'min-width:' to align
+  static const uint8_t fallback_pixel[4] = { 0, 0, 0, 0 };
+  pixbuf = gdk_pixbuf_new_from_data(fallback_pixel, GDK_COLORSPACE_RGB, TRUE, 8, 1, 1, 4, NULL, NULL);
+  
+  return pixbuf;
+}
+
 GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 {
   char tooltip[512];
@@ -1926,13 +2008,34 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
    * initialize the header widgets
    */
   GtkWidget *hw[IOP_MODULE_LAST] = { NULL };
+  
+  if (dt_conf_get_bool("darkroom/ui/use_css_for_iop_icons"))
+  {
+	// new css icons
+    /* init empty place for icon, this is then set in CSS if needed */
+    char w_name[256] = { 0 };
+    snprintf(w_name, sizeof(w_name), "iop-panel-icon-%s", module->op);
+    hw[IOP_MODULE_ICON] = gtk_label_new("");
+    gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_ICON]), w_name);
+  }
+  else
+  {
+    /* add module icon */
+    int bs = DT_PIXEL_APPLY_DPI(12);
+    GdkPixbuf *pixbuf;
+    cairo_surface_t *surface;
 
-  /* init empty place for icon, this is then set in CSS if needed */
-  char w_name[256] = { 0 };
-  snprintf(w_name, sizeof(w_name), "iop-panel-icon-%s", module->op);
-  hw[IOP_MODULE_ICON] = gtk_label_new("");
-  gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_ICON]), w_name);
-
+    // find and load image data
+    pixbuf = find_image(module, bs);
+    surface = dt_gdk_cairo_surface_create_from_pixbuf(pixbuf, 1, NULL);
+    hw[IOP_MODULE_ICON] = gtk_image_new_from_surface(surface);
+    gtk_widget_set_margin_start(GTK_WIDGET(hw[IOP_MODULE_ICON]), DT_PIXEL_APPLY_DPI(5));
+    gtk_widget_set_size_request(GTK_WIDGET(hw[IOP_MODULE_ICON]), bs, bs);
+    gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_ICON]), "iop-panel-icon");
+    cairo_surface_destroy(surface);
+    g_object_unref(pixbuf);
+  }
+  
   /* add module label */
   hw[IOP_MODULE_LABEL] = gtk_label_new("");
   _iop_panel_label(hw[IOP_MODULE_LABEL], module);
@@ -1940,13 +2043,9 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   /* add multi instances menu button */
   hw[IOP_MODULE_INSTANCE] = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   module->multimenu_button = GTK_WIDGET(hw[IOP_MODULE_INSTANCE]);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_INSTANCE]),
-                              _("multiple instances actions\nmiddle-click creates new instance"));
-  g_signal_connect(G_OBJECT(hw[IOP_MODULE_INSTANCE]), "button-press-event", G_CALLBACK(dt_iop_gui_multiinstance_callback),
-                   module);
-
+  gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_INSTANCE]), _("multiple instances actions\nmiddle-click creates new instance"));
+  g_signal_connect(G_OBJECT(hw[IOP_MODULE_INSTANCE]), "button-press-event", G_CALLBACK(dt_iop_gui_multiinstance_callback), module);
   gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_INSTANCE]), "module-instance-button");
-
   dt_gui_add_help_link(expander, dt_get_help_url(module->op));
 
   /* add reset button */
@@ -1969,8 +2068,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   /* add enabled button */
   hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
   gchar *module_label = dt_history_item_get_name(module);
-  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"),
-           module_label);
+  snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"), module_label);
   g_free(module_label);
   gtk_widget_set_tooltip_text(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), tooltip);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[IOP_MODULE_SWITCH]), module->enabled);
