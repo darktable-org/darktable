@@ -121,6 +121,10 @@ typedef struct dt_preview_surface_t
   float h_fit;
   float zoom_100;
 
+  float zoom_delta;
+  float dx_delta;
+  float dy_delta;
+
   float max_dx;
   float max_dy;
 } dt_preview_surface_t;
@@ -392,6 +396,10 @@ static inline void _destroy_preview_surface(dt_preview_surface_t *fp_surf)
   fp_surf->zoom_100 = 1001.0f; // dummy value to say it need recompute
   fp_surf->w_fit = 0.0f;
   fp_surf->h_fit = 0.0f;
+
+  fp_surf->zoom_delta = 0.0f;
+  fp_surf->dx_delta = 0.0f;
+  fp_surf->dy_delta = 0.0f;
 
   fp_surf->max_dx = 0.0f;
   fp_surf->max_dy = 0.0f;
@@ -2215,6 +2223,16 @@ static gboolean _culling_compute_slots(dt_view_t *self, int32_t width, int32_t h
   if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
     _sort_preview_surface(lib, lib->slots, lib->slots_count, max_in_memory_images);
 
+  // ensure fp_surf are in sync with slots
+  for(int i = 0; i < lib->slots_count; i++)
+  {
+    if(lib->slots[i].imgid != lib->fp_surf[i].imgid)
+    {
+      _destroy_preview_surface(lib->fp_surf + i);
+      lib->fp_surf[i].imgid = lib->slots[i].imgid;
+    }
+  }
+
   lib->last_num_images = get_zoom();
   lib->last_width = width;
   lib->last_height = height;
@@ -2380,11 +2398,24 @@ static int expose_culling(dt_view_t *self, cairo_t *cr, int32_t width, int32_t h
     params.zoom = 1;
     params.full_preview = TRUE;
 
-    if(lib->slots_count <= max_in_memory_images && lib->full_zoom > 1.0f)
+    // we get the real zoom, taking eventual delta in account and sanitize it
+    float fz = lib->full_zoom + lib->fp_surf[i].zoom_delta;
+    if(fz < 1.0f && lib->fp_surf[i].zoom_delta < 0.0f)
     {
-      params.full_zoom = lib->full_zoom;
-      params.full_x = lib->full_x;
-      params.full_y = lib->full_y;
+      lib->fp_surf[i].zoom_delta = 1.0f - lib->full_zoom;
+      fz = 1.0f;
+    }
+    else if(fz > lib->fp_surf[i].zoom_100 && lib->fp_surf[i].zoom_delta > 0.0f)
+    {
+      lib->fp_surf[i].zoom_delta = lib->fp_surf[i].zoom_100 - lib->full_zoom;
+      fz = lib->fp_surf[i].zoom_100;
+    }
+
+    if(lib->slots_count <= max_in_memory_images && fz > 1.0f)
+    {
+      params.full_zoom = fz;
+      params.full_x = lib->full_x + lib->fp_surf[i].dx_delta;
+      params.full_y = lib->full_y + lib->fp_surf[i].dy_delta;
       params.full_surface = &lib->fp_surf[i].surface;
       params.full_rgbbuf = &lib->fp_surf[i].rgbbuf;
       params.full_surface_mip = &lib->fp_surf[i].mip;
@@ -3475,50 +3506,86 @@ void scrollbar_changed(dt_view_t *self, double x, double y)
   }
 }
 
-static gboolean _lighttable_preview_zoom_add(dt_view_t *self, float val, double posx, double posy)
+static gboolean _lighttable_preview_zoom_add(dt_view_t *self, float val, double posx, double posy, int state)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
 
   if(lib->full_preview_id > -1 || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
-    int sel_img_count = lib->slots_count;
     const int max_in_memory_images = _get_max_in_memory_images();
-    if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING && sel_img_count > max_in_memory_images)
+    if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING && lib->slots_count > max_in_memory_images)
     {
       dt_control_log(_("zooming is limited to %d images"), max_in_memory_images);
     }
     else
     {
       // we get the 100% zoom of the largest image
-      float nz = 1.0f;
-      for(int i = 0; i < sel_img_count; i++)
+      float zmax = 1.0f;
+      for(int i = 0; i < lib->slots_count; i++)
       {
         if(lib->fp_surf[i].zoom_100 >= 1000.0f || lib->fp_surf[i].imgid != lib->slots[i].imgid)
           lib->fp_surf[i].zoom_100
               = _preview_get_zoom100(lib->slots[i].width, lib->slots[i].height, lib->slots[i].imgid);
-        if(lib->fp_surf[i].zoom_100 > nz) nz = lib->fp_surf[i].zoom_100;
+        if(lib->fp_surf[i].zoom_100 > zmax) zmax = lib->fp_surf[i].zoom_100;
       }
 
-      nz = fminf(nz, lib->full_zoom + val);
+      float nz = fminf(zmax, lib->full_zoom + val);
       nz = fmaxf(nz, 1.0f);
 
-      if(lib->full_zoom != nz)
+      // if full preview, we center the zoom at mouse position
+      if(lib->full_zoom != nz && get_layout() != DT_LIGHTTABLE_LAYOUT_CULLING && posx >= 0.0f && posy >= 0.0f)
       {
-        if(get_layout() != DT_LIGHTTABLE_LAYOUT_CULLING && posx >= 0.0f && posy >= 0.0f)
-        {
-          // we want to zoom "around" the pointer
-          float dx = nz / lib->full_zoom
-                         * (posx - (self->width - lib->fp_surf[0].w_fit * lib->full_zoom) * 0.5f - lib->full_x)
-                     - posx + (self->width - lib->fp_surf[0].w_fit * nz) * 0.5f;
-          float dy = nz / lib->full_zoom
-                         * (posy - (self->height - lib->fp_surf[0].h_fit * lib->full_zoom) * 0.5f - lib->full_y)
-                     - posy + (self->height - lib->fp_surf[0].h_fit * nz) * 0.5f;
-          lib->full_x = -dx;
-          lib->full_y = -dy;
-        }
-        lib->full_zoom = nz;
-        dt_control_queue_redraw_center();
+        // we want to zoom "around" the pointer
+        float dx = nz / lib->full_zoom
+                       * (posx - (self->width - lib->fp_surf[0].w_fit * lib->full_zoom) * 0.5f - lib->full_x)
+                   - posx + (self->width - lib->fp_surf[0].w_fit * nz) * 0.5f;
+        float dy = nz / lib->full_zoom
+                       * (posy - (self->height - lib->fp_surf[0].h_fit * lib->full_zoom) * 0.5f - lib->full_y)
+                   - posy + (self->height - lib->fp_surf[0].h_fit * nz) * 0.5f;
+        lib->full_x = -dx;
+        lib->full_y = -dy;
       }
+
+      // culling
+      if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+      {
+        // if shift+ctrl, we only change the current image
+        if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+        {
+          int mouseid = dt_control_get_mouse_over_id();
+          for(int i = 0; i < lib->slots_count; i++)
+          {
+            if(lib->fp_surf[i].imgid == mouseid)
+            {
+              lib->fp_surf[i].zoom_delta += val;
+              break;
+            }
+          }
+        }
+        else
+        {
+          // if global zoom doesn't change (we reach bounds) we may have to move individual values
+          if(lib->full_zoom == nz && ((nz == 1.0f && val < 0.0f) || (nz == zmax && val > 0.0f)))
+          {
+            for(int i = 0; i < lib->slots_count; i++)
+            {
+              if(lib->fp_surf[i].zoom_delta != 0.0f) lib->fp_surf[i].zoom_delta += val;
+            }
+          }
+          lib->full_zoom = nz;
+        }
+        // sanitize specific zoomming of individual images
+        for(int i = 0; i < lib->slots_count; i++)
+        {
+          if(lib->full_zoom + lib->fp_surf[i].zoom_delta < 1.0f)
+            lib->fp_surf[i].zoom_delta = 1.0f - lib->full_zoom;
+          if(lib->full_zoom + lib->fp_surf[i].zoom_delta > lib->fp_surf[i].zoom_100)
+            lib->fp_surf[i].zoom_delta = lib->fp_surf[i].zoom_100 - lib->full_zoom;
+        }
+      }
+
+      // redraw
+      dt_control_queue_redraw_center();
     }
     return TRUE;
   }
@@ -3535,9 +3602,9 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
      && (state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
   {
     if(up)
-      _lighttable_preview_zoom_add(self, 0.5f, x, y);
+      _lighttable_preview_zoom_add(self, 0.5f, x, y, state);
     else
-      _lighttable_preview_zoom_add(self, -0.5f, x, y);
+      _lighttable_preview_zoom_add(self, -0.5f, x, y, state);
   }
   else if(lib->full_preview_id > -1)
   {
@@ -3626,37 +3693,90 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
 
   lib->using_arrows = 0;
 
-  if(lib->pan && (lib->full_preview_id > -1 || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
-     && lib->full_zoom > 1.0f)
+  // get the max zoom of all images
+  float fz = lib->full_zoom;
+  if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    for(int i = 0; i < lib->slots_count; i++)
+    {
+      fz = fmaxf(fz, lib->full_zoom + lib->fp_surf[0].zoom_delta);
+    }
+  }
+
+  if(lib->pan && (lib->full_preview_id > -1 || get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING) && fz > 1.0f)
   {
     // we want the images to stay in the screen
-    lib->full_x += x - lib->pan_x;
-    lib->full_y += y - lib->pan_y;
     if(lib->full_preview_id != -1)
     {
+      lib->full_x += x - lib->pan_x;
+      lib->full_y += y - lib->pan_y;
       lib->full_x = fminf(lib->full_x, lib->fp_surf[0].max_dx);
       lib->full_x = fmaxf(lib->full_x, -lib->fp_surf[0].max_dx);
       lib->full_y = fminf(lib->full_y, lib->fp_surf[0].max_dy);
       lib->full_y = fmaxf(lib->full_y, -lib->fp_surf[0].max_dy);
     }
-    else
+    else if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
     {
-      float dx = 0.0f;
-      float dy = 0.0f;
-      int sel_img_count = 1;
-      if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+      const float valx = x - lib->pan_x;
+      const float valy = y - lib->pan_y;
+
+      float xmax = 0.0f;
+      float ymax = 0.0f;
+      for(int i = 0; i < lib->slots_count; i++)
       {
-        sel_img_count = get_zoom();
+        xmax = fmaxf(xmax, lib->fp_surf[i].max_dx);
+        ymax = fmaxf(ymax, lib->fp_surf[i].max_dy);
       }
-      for(int i = 0; i < sel_img_count; i++)
+      float nx = fminf(xmax, lib->full_x + valx);
+      nx = fmaxf(nx, -xmax);
+      float ny = fminf(ymax, lib->full_y + valy);
+      ny = fmaxf(ny, -ymax);
+
+      if((which & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
       {
-        dx = fmaxf(dx, lib->fp_surf[i].max_dx);
-        dy = fmaxf(dy, lib->fp_surf[i].max_dy);
+        int mouseid = dt_control_get_mouse_over_id();
+        for(int i = 0; i < lib->slots_count; i++)
+        {
+          if(lib->fp_surf[i].imgid == mouseid)
+          {
+            lib->fp_surf[i].dx_delta += valx;
+            lib->fp_surf[i].dy_delta += valy;
+            break;
+          }
+        }
       }
-      lib->full_x = fminf(lib->full_x, dx);
-      lib->full_x = fmaxf(lib->full_x, -dx);
-      lib->full_y = fminf(lib->full_y, dy);
-      lib->full_y = fmaxf(lib->full_y, -dy);
+      else
+      {
+        // if global position doesn't change (we reach bounds) we may have to move individual values
+        if(lib->full_x == nx && ((nx == -xmax && valx < 0.0f) || (nx == xmax && valx > 0.0f)))
+        {
+          for(int i = 0; i < lib->slots_count; i++)
+          {
+            if(lib->fp_surf[i].dx_delta != 0.0f) lib->fp_surf[i].dx_delta += valx;
+          }
+        }
+        if(lib->full_y == ny && ((ny == -ymax && valy < 0.0f) || (ny == ymax && valy > 0.0f)))
+        {
+          for(int i = 0; i < lib->slots_count; i++)
+          {
+            if(lib->fp_surf[i].dy_delta != 0.0f) lib->fp_surf[i].dy_delta += valy;
+          }
+        }
+        lib->full_x = nx;
+        lib->full_y = ny;
+      }
+      // sanitize specific positions of individual images
+      for(int i = 0; i < lib->slots_count; i++)
+      {
+        if(lib->full_x + lib->fp_surf[i].dx_delta < -lib->fp_surf[i].max_dx)
+          lib->fp_surf[i].dx_delta = -lib->fp_surf[i].max_dx - lib->full_x;
+        if(lib->full_x + lib->fp_surf[i].dx_delta > lib->fp_surf[i].max_dx)
+          lib->fp_surf[i].dx_delta = lib->fp_surf[i].max_dx - lib->full_x;
+        if(lib->full_y + lib->fp_surf[i].dy_delta < -lib->fp_surf[i].max_dy)
+          lib->fp_surf[i].dy_delta = -lib->fp_surf[i].max_dy - lib->full_y;
+        if(lib->full_y + lib->fp_surf[i].dy_delta > lib->fp_surf[i].max_dy)
+          lib->fp_surf[i].dy_delta = lib->fp_surf[i].max_dy - lib->full_y;
+      }
     }
 
     lib->pan_x = x;
@@ -4222,7 +4342,7 @@ static gboolean _lighttable_redo_callback(GtkAccelGroup *accel_group, GObject *a
 static gboolean _lighttable_preview_zoom_100(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                              GdkModifierType modifier, gpointer data)
 {
-  return _lighttable_preview_zoom_add(darktable.view_manager->proxy.lighttable.view, 100.0f, -1, -1);
+  return _lighttable_preview_zoom_add(darktable.view_manager->proxy.lighttable.view, 100.0f, -1, -1, 0);
 }
 
 static gboolean _lighttable_preview_zoom_fit(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
