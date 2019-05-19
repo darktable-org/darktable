@@ -92,27 +92,12 @@ button
 
 }
 
-#recent-collection-button,
-#history-button
-{
-  /* Exception because history and recent collections modules make use of a
-   * list of GTK buttons but we don't want them to look like action buttons */
-    font-weight: normal;
-}
-
 #iop-panel-label,
 #lib-panel-label
 {
-    background-color: @bg_color;
-    color: @plugin_label_color;
-    border:0;
-    padding: 0 2pt 2pt 0.5em;
-    font-weight: 400;
-    font-stretch: condensed;
     font-family: "Roboto Condensed","Segoe UI Condensed",
                  "SF Pro Display", "Ubuntu Condensed",
                  "Cantarell", sans-serif;
-    font-size: 0.9em;
 }
 
 #section_label
