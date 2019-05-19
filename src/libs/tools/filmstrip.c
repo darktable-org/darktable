@@ -727,7 +727,6 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
 
   if(darktable.gui->center_tooltip == 1) darktable.gui->center_tooltip++;
 
-  int mouse_over_id = -1;
   strip->image_over = DT_VIEW_DESERT;
 
   /* fill background */
@@ -798,6 +797,7 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
   cairo_translate(cr, empty_edge, 0.0f);
   const int before_last_exposed_id = strip->last_exposed_id;
   const int initial_mouse_over_id = strip->mouse_over_id;
+  int mouse_over_id = -1;
   int missing = 0;
 
   for(int col = 0; col < max_cols; col++)
@@ -840,7 +840,7 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
         dt_view_image_expose_t params = { 0 };
         params.image_over = &(strip->image_over);
         params.imgid = id;
-        params.mouse_over = (id == strip->mouse_over_id);
+        params.mouse_over = (id == mouse_over_id);
         params.cr = cr;
         params.width = wd;
         params.height = ht;
