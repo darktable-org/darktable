@@ -137,7 +137,7 @@ typedef struct dt_iop_denoiseprofile_params_t
   gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
   // backward compatibility options
   gboolean fix_anscombe_and_nlmeans_norm;
-  unsigned profile_version; // version of the profile used
+  uint32_t profile_version; // version of the profile used
 } dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
