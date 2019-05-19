@@ -314,7 +314,7 @@ button
   border: 1px solid @button_border;
   background-color: @button_bg;
   color: @button_fg;
-  font-weight: 400;
+  font-weight: normal;
   font-family: sans-serif;
   min-height: 1em;
   min-width: 1em;
@@ -328,7 +328,7 @@ button
   background-color: transparent;
   border-color: transparent;
   border: 0;
-  font-weight: 400;
+  font-weight: normal;
 }
 
 button:selected,
@@ -527,7 +527,7 @@ entry selection
   color: @plugin_label_color;
   border:0;
   padding: 0 2pt 2pt 0.5em;
-  font-weight: 400;
+  font-weight: normal;
   font-stretch: condensed;
   font-family: sans-serif;
   font-size: 0.9em;
@@ -799,7 +799,7 @@ notebook tabs,
   padding: 0;
   margin: 0;
   color: @button_fg;
-  font-weight: 400;
+  font-weight: normal;
   font-family: sans-serif;
 }
 
@@ -874,7 +874,7 @@ notebook tab:focus label
 #preferences_notebook scrolledwindow button
 {
   padding: 0px;
-  margin: 5px 0;
+  margin: 3px 0;
 }
 
 /* Bauhaus controls (sliders and comboboxes in modules) */
@@ -1135,7 +1135,7 @@ cell:selected
 
 #live-sample
 {
-    padding: 0px;
+    padding: 1pt;
     min-height: 1em;
     min-width: 3em;
 }
