@@ -296,11 +296,31 @@ static void _culling_destroy_slots(dt_view_t *self)
   lib->slots_count = 0;
 }
 
+static int _culling_get_selection_count()
+{
+  int nb = 0;
+  gchar *query = dt_util_dstrcat(
+      NULL,
+      "SELECT count(*) FROM main.selected_images AS s, memory.collected_images as m WHERE s.imgid = m.imgid");
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  if(stmt != NULL)
+  {
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      nb = sqlite3_column_int(stmt, 0);
+    }
+    sqlite3_finalize(stmt);
+  }
+  g_free(query);
+
+  return nb;
+}
 static gboolean _culling_check_scrolling_mode(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
   // we set the scrolling mode
-  const int sel_count = dt_collection_get_selected_count(darktable.collection);
+  const int sel_count = _culling_get_selection_count();
   lib->culling_use_selection = (sel_count > 1);
   return lib->culling_use_selection;
 }
@@ -588,7 +608,7 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
     int idover = dt_control_get_mouse_over_id();
     _culling_check_scrolling_mode(self);
     // on dynamic mode, nb of image follow selection size
-    int nbsel = dt_collection_get_selected_count(darktable.collection);
+    int nbsel = _culling_get_selection_count();
     if(dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC)
     {
       const int nz = (nbsel <= 1) ? dt_conf_get_int("plugins/lighttable/culling_num_images") : nbsel;
@@ -1928,7 +1948,7 @@ static gboolean _culling_recreate_slots_at(dt_view_t *self, const int display_fi
   // in rare cases, we can have less images than wanted
   // althought there's images before
   if(lib->culling_use_selection && lib->slots_count < img_count
-     && lib->slots_count < dt_collection_get_selected_count(darktable.collection))
+     && lib->slots_count < _culling_get_selection_count())
   {
     const int nb = img_count - lib->slots_count;
     query = dt_util_dstrcat(NULL,
@@ -3067,8 +3087,7 @@ static gboolean rating_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
 
   dt_collection_update_query(darktable.collection); // update the counter
 
-  if(layout != DT_LIGHTTABLE_LAYOUT_CULLING
-     && lib->collection_count != dt_collection_get_count(darktable.collection))
+  if(layout != DT_LIGHTTABLE_LAYOUT_CULLING && lib->collection_count != _culling_get_selection_count())
   {
     // some images disappeared from collection. Selection is now invisible.
     // lib->collection_count  --> before the rating
@@ -3167,8 +3186,12 @@ static void _culling_scroll(dt_library_t *lib, const int up)
                 || !lib->culling_use_selection))
     {
       if(lib->culling_use_selection)
-        dt_control_log(_("you have reached the start of your selection (%d images)"),
-                       dt_collection_get_selected_count(darktable.collection));
+      {
+        const int nbsel = _culling_get_selection_count();
+        dt_control_log(ngettext("you have reached the start of your selection (%d image)",
+                                "you have reached the start of your selection (%d images)", nbsel),
+                       nbsel);
+      }
       else
         dt_control_log(_("you have reached the start of your collection"));
     }
@@ -3192,8 +3215,12 @@ static void _culling_scroll(dt_library_t *lib, const int up)
                 || !lib->culling_use_selection))
     {
       if(lib->culling_use_selection)
-        dt_control_log(_("you have reached the end of your selection (%d images)"),
-                       dt_collection_get_selected_count(darktable.collection));
+      {
+        const int nbsel = _culling_get_selection_count();
+        dt_control_log(ngettext("you have reached the end of your selection (%d image)",
+                                "you have reached the end of your selection (%d images)", nbsel),
+                       nbsel);
+      }
       else
         dt_control_log(_("you have reached the end of your collection"));
     }
