@@ -387,7 +387,10 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
  */
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(r, img, buf)
+#pragma omp parallel for default(none) \
+    schedule(static) \
+    dt_omp_firstprivate(cpp) \
+    shared(r, img, buf)
 #endif
     for(int j = 0; j < img->height; j++)
     {
@@ -411,7 +414,10 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
  */
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(r, img, buf)
+#pragma omp parallel for default(none) \
+    schedule(static) \
+    dt_omp_firstprivate(cpp) \
+    shared(r, img, buf)
 #endif
     for(int j = 0; j < img->height; j++)
     {
