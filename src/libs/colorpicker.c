@@ -327,6 +327,7 @@ static void _remove_sample(GtkButton *widget, gpointer data)
   dt_colorpicker_sample_t *sample = (dt_colorpicker_sample_t *)data;
   gtk_widget_hide(sample->container);
   gtk_widget_destroy(sample->color_patch);
+  gtk_widget_destroy(sample->patch_box);
   gtk_widget_destroy(sample->output_label);
   gtk_widget_destroy(sample->delete_button);
   gtk_widget_destroy(sample->container);
@@ -364,14 +365,14 @@ static void _add_sample(GtkButton *widget, gpointer self)
   sample->container = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(data->samples_container), sample->container, TRUE, TRUE, 0);
 
-  GtkWidget *patch_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(patch_box, "live-sample");
+  sample->patch_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(sample->patch_box, "live-sample");
   sample->color_patch = gtk_drawing_area_new();
-  gtk_box_pack_start(GTK_BOX(patch_box), sample->color_patch, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(sample->patch_box), sample->color_patch, TRUE, TRUE, 0);
   gtk_widget_set_events(sample->color_patch, GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_BUTTON_PRESS_MASK);
   gtk_widget_set_tooltip_text(sample->color_patch, _("hover to highlight sample on canvas, "
                                                        "click to lock sample"));
-  gtk_box_pack_start(GTK_BOX(sample->container), patch_box, TRUE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(sample->container), sample->patch_box, TRUE, FALSE, 0);
 
   g_signal_connect(G_OBJECT(sample->color_patch), "enter-notify-event", G_CALLBACK(_live_sample_enter),
                    sample);

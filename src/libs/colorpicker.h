@@ -48,6 +48,7 @@ typedef struct dt_colorpicker_sample_t
   GtkWidget *color_patch;
   GtkWidget *output_label;
   GtkWidget *delete_button;
+  GtkWidget *patch_box;
   GdkRGBA rgb;
 } dt_colorpicker_sample_t;
 
