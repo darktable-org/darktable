@@ -83,7 +83,8 @@ typedef struct dt_gmic_parameter_t
   char description[31];
   dt_gmic_params_type_t type;
   gboolean percent;
-  union {
+  union
+  {
     dt_gmic_parameter_float_t _float;
     dt_gmic_parameter_int_t _int;
     dt_gmic_parameter_bool_t _bool;

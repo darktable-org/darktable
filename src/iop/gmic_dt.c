@@ -29,14 +29,29 @@ DT_MODULE_INTROSPECTION(1, dt_iop_gmic_dt_params_t)
 
 #define DT_GMIC_PARAMETERS_LEN 30
 
+typedef struct dt_iop_gmic_parameter_point_t
+{
+  float x, y;
+} dt_iop_gmic_parameter_point_t;
+
+typedef struct dt_iop_gmic_parameter_color_t
+{
+  float r, g, b;
+} dt_iop_gmic_parameter_color_t;
+
 typedef struct dt_iop_gmic_dt_command_parameter_t
 {
   int id;
-  float _float;
-  int _int;
-  gboolean _bool;
-  float _r, _g, _b;
-  float _x, _y;
+  dt_gmic_params_type_t type;
+  union
+  {
+    float _float;
+    int _int;
+    gboolean _bool;
+    int _choice;
+    dt_iop_gmic_parameter_color_t _color;
+    dt_iop_gmic_parameter_point_t _point;
+  } value;
 } dt_iop_gmic_dt_command_parameter_t;
 
 typedef struct dt_iop_gmic_dt_widgets_t
@@ -213,44 +228,41 @@ static gboolean _set_iop_gmic_dt_command_parameter_from_gmic_parameter(dt_iop_gm
 {
   gboolean param_set = TRUE;
 
+  iop_value->id = parameter->id;
+  iop_value->type = parameter->type;
+
   if(parameter->type == DT_GMIC_PARAM_FLOAT)
   {
-    iop_value->id = parameter->id;
-    iop_value->_float = parameter->value._float.default_value;
-    //        if(parameter->percent) iop_value->_float /= 100.f;
+    iop_value->value._float = parameter->value._float.default_value;
   }
   else if(parameter->type == DT_GMIC_PARAM_INT)
   {
-    iop_value->id = parameter->id;
-    iop_value->_int = parameter->value._int.default_value;
-    //        if(parameter->percent) iop_value->_int /= 100;
+    iop_value->value._int = parameter->value._int.default_value;
   }
   else if(parameter->type == DT_GMIC_PARAM_BOOL)
   {
-    iop_value->id = parameter->id;
-    iop_value->_int = parameter->value._bool.default_value;
+    iop_value->value._bool = parameter->value._bool.default_value;
   }
   else if(parameter->type == DT_GMIC_PARAM_CHOICE)
   {
-    iop_value->id = parameter->id;
-    iop_value->_int = parameter->value._choice.default_value;
+    iop_value->value._choice = parameter->value._choice.default_value;
   }
   else if(parameter->type == DT_GMIC_PARAM_COLOR)
   {
-    iop_value->id = parameter->id;
-    iop_value->_r = parameter->value._color.r;
-    iop_value->_g = parameter->value._color.g;
-    iop_value->_b = parameter->value._color.b;
+    iop_value->value._color.r = parameter->value._color.r;
+    iop_value->value._color.g = parameter->value._color.g;
+    iop_value->value._color.b = parameter->value._color.b;
   }
   else if(parameter->type == DT_GMIC_PARAM_POINT)
   {
-    iop_value->id = parameter->id;
-    iop_value->_x = parameter->value._point.x;
-    iop_value->_y = parameter->value._point.y;
+    iop_value->value._point.x = parameter->value._point.x;
+    iop_value->value._point.y = parameter->value._point.y;
   }
   else
   {
     param_set = FALSE;
+    iop_value->id = 0;
+    iop_value->type = DT_GMIC_PARAM_NONE;
   }
 
   return param_set;
@@ -283,9 +295,9 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpi
   const int param_index = _get_param_index_from_id(g->color_picker.current_picker, p);
   if(param_index >= 0)
   {
-    p->gmic_parameters[param_index]._r = self->picked_color[0] * 255.f;
-    p->gmic_parameters[param_index]._g = self->picked_color[1] * 255.f;
-    p->gmic_parameters[param_index]._b = self->picked_color[2] * 255.f;
+    p->gmic_parameters[param_index].value._color.r = self->picked_color[0] * 255.f;
+    p->gmic_parameters[param_index].value._color.g = self->picked_color[1] * 255.f;
+    p->gmic_parameters[param_index].value._color.b = self->picked_color[2] * 255.f;
 
     const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
@@ -370,15 +382,15 @@ static char *dt_gmic_get_command(const dt_iop_gmic_dt_params_t *p, const float z
           char str1[30 * 3];
           if(parameter->type == DT_GMIC_PARAM_FLOAT)
           {
-            dt_ftoa(str1, param_value._float, sizeof(str1));
+            dt_ftoa(str1, param_value.value._float, sizeof(str1));
           }
           else if(parameter->type == DT_GMIC_PARAM_INT)
           {
-            g_snprintf(str1, sizeof(str1), "%i", param_value._int);
+            g_snprintf(str1, sizeof(str1), "%i", param_value.value._int);
           }
           else if(parameter->type == DT_GMIC_PARAM_BOOL)
           {
-            if(param_value._bool)
+            if(param_value.value._bool)
               str1[0] = '1';
             else
               str1[0] = '0';
@@ -386,28 +398,28 @@ static char *dt_gmic_get_command(const dt_iop_gmic_dt_params_t *p, const float z
           }
           else if(parameter->type == DT_GMIC_PARAM_CHOICE)
           {
-            g_snprintf(str1, sizeof(str1), "%i", param_value._int);
+            g_snprintf(str1, sizeof(str1), "%i", param_value.value._choice);
           }
           else if(parameter->type == DT_GMIC_PARAM_COLOR)
           {
             char str2[30];
-            dt_ftoa(str2, param_value._r, sizeof(str2));
+            dt_ftoa(str2, param_value.value._color.r, sizeof(str2));
             strncpy(str1, str2, sizeof(str1));
             str1[sizeof(str1) - 1] = 0;
-            dt_ftoa(str2, param_value._g, sizeof(str2));
+            dt_ftoa(str2, param_value.value._color.g, sizeof(str2));
             g_strlcat(str1, ",", sizeof(str1));
             g_strlcat(str1, str2, sizeof(str1));
-            dt_ftoa(str2, param_value._b, sizeof(str2));
+            dt_ftoa(str2, param_value.value._color.b, sizeof(str2));
             g_strlcat(str1, ",", sizeof(str1));
             g_strlcat(str1, str2, sizeof(str1));
           }
           else if(parameter->type == DT_GMIC_PARAM_POINT)
           {
             char str2[30];
-            dt_ftoa(str2, param_value._x, sizeof(str2));
+            dt_ftoa(str2, param_value.value._point.x, sizeof(str2));
             strncpy(str1, str2, sizeof(str1));
             str1[sizeof(str1) - 1] = 0;
-            dt_ftoa(str2, param_value._y, sizeof(str2));
+            dt_ftoa(str2, param_value.value._point.y, sizeof(str2));
             g_strlcat(str1, ",", sizeof(str1));
             g_strlcat(str1, str2, sizeof(str1));
           }
@@ -480,7 +492,7 @@ static void sl_float_widget_callback(GtkWidget *slider, dt_iop_module_t *self)
     //    const dt_gmic_command_t *gmic_command = _get_gmic_command_by_name(p->gmic_command_name);
     //    const dt_gmic_parameter_t *parameter = _get_parameter_by_id(gmic_command,
     //    p->gmic_parameters[param_index].id);
-    p->gmic_parameters[param_index]._float = dt_bauhaus_slider_get(slider);
+    p->gmic_parameters[param_index].value._float = dt_bauhaus_slider_get(slider);
     //    if(parameter->percent) p->gmic_parameters[param_index]._float /= 100.f;
   }
 
@@ -502,7 +514,7 @@ static void sl_int_widget_callback(GtkWidget *slider, dt_iop_module_t *self)
     //    const dt_gmic_command_t *gmic_command = _get_gmic_command_by_name(p->gmic_command_name);
     //    const dt_gmic_parameter_t *parameter = _get_parameter_by_id(gmic_command,
     //    p->gmic_parameters[param_index].id);
-    p->gmic_parameters[param_index]._int = dt_bauhaus_slider_get(slider);
+    p->gmic_parameters[param_index].value._int = dt_bauhaus_slider_get(slider);
     //    if(parameter->percent) p->gmic_parameters[param_index]._int /= 100;
   }
 
@@ -521,7 +533,7 @@ static void chk_widget_callback(GtkWidget *widget, dt_iop_module_t *self)
   const int param_index = _get_param_index_from_widget(widget, g);
   if(param_index >= 0)
   {
-    p->gmic_parameters[param_index]._bool = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+    p->gmic_parameters[param_index].value._bool = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   }
 
   dt_iop_color_picker_reset(self, TRUE);
@@ -539,7 +551,7 @@ static void cmb_widget_callback(GtkWidget *widget, dt_iop_module_t *self)
   const int param_index = _get_param_index_from_widget(widget, g);
   if(param_index >= 0)
   {
-    p->gmic_parameters[param_index]._int = dt_bauhaus_combobox_get(widget);
+    p->gmic_parameters[param_index].value._choice = dt_bauhaus_combobox_get(widget);
   }
   else
     fprintf(stderr, "[cmb_widget_callback] invalid parameter index %i\n", param_index);
@@ -562,9 +574,9 @@ static void color_widget_callback(GtkColorButton *widget, dt_iop_module_t *self)
     GdkRGBA color;
     gtk_color_chooser_get_rgba(GTK_COLOR_CHOOSER(widget), &color);
 
-    p->gmic_parameters[param_index]._r = color.red * 255.f;
-    p->gmic_parameters[param_index]._g = color.green * 255.f;
-    p->gmic_parameters[param_index]._b = color.blue * 255.f;
+    p->gmic_parameters[param_index].value._color.r = color.red * 255.f;
+    p->gmic_parameters[param_index].value._color.g = color.green * 255.f;
+    p->gmic_parameters[param_index].value._color.b = color.blue * 255.f;
   }
   else
     fprintf(stderr, "[color_widget_callback] invalid parameter index %i\n", param_index);
@@ -587,9 +599,9 @@ static void point_widget_callback(GtkWidget *widget, dt_iop_module_t *self)
     dt_iop_gmic_dt_widgets_t *gmic_dt_widget = _get_param_widget_from_id(p->gmic_parameters[param_index].id, g);
 
     if(gmic_dt_widget->widg == widget)
-      p->gmic_parameters[param_index]._x = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
+      p->gmic_parameters[param_index].value._point.x = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
     else if(gmic_dt_widget->widg2 == widget)
-      p->gmic_parameters[param_index]._y = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
+      p->gmic_parameters[param_index].value._point.y = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
   }
   else
     fprintf(stderr, "[point_widget_callback] invalid parameter index %i\n", param_index);
@@ -624,32 +636,32 @@ static void _update_controls(dt_iop_module_t *self)
 
       if(parameter->type == DT_GMIC_PARAM_FLOAT)
       {
-        dt_bauhaus_slider_set(gmic_dt_widget->widg, p->gmic_parameters[param_index]._float);
+        dt_bauhaus_slider_set(gmic_dt_widget->widg, p->gmic_parameters[param_index].value._float);
       }
       else if(parameter->type == DT_GMIC_PARAM_INT)
       {
-        dt_bauhaus_slider_set(gmic_dt_widget->widg, p->gmic_parameters[param_index]._int);
+        dt_bauhaus_slider_set(gmic_dt_widget->widg, p->gmic_parameters[param_index].value._int);
       }
       else if(parameter->type == DT_GMIC_PARAM_BOOL)
       {
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gmic_dt_widget->widg), p->gmic_parameters[param_index]._bool);
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gmic_dt_widget->widg), p->gmic_parameters[param_index].value._bool);
       }
       else if(parameter->type == DT_GMIC_PARAM_CHOICE)
       {
-        dt_bauhaus_combobox_set(gmic_dt_widget->widg, p->gmic_parameters[param_index]._int);
+        dt_bauhaus_combobox_set(gmic_dt_widget->widg, p->gmic_parameters[param_index].value._choice);
       }
       else if(parameter->type == DT_GMIC_PARAM_COLOR)
       {
-        GdkRGBA color = (GdkRGBA){ .red = p->gmic_parameters[param_index]._r / 255.f,
-                                   .green = p->gmic_parameters[param_index]._g / 255.f,
-                                   .blue = p->gmic_parameters[param_index]._b / 255.f,
+        GdkRGBA color = (GdkRGBA){ .red = p->gmic_parameters[param_index].value._color.r / 255.f,
+                                   .green = p->gmic_parameters[param_index].value._color.g / 255.f,
+                                   .blue = p->gmic_parameters[param_index].value._color.b / 255.f,
                                    .alpha = 1.0 };
         gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(gmic_dt_widget->widg), &color);
       }
       else if(parameter->type == DT_GMIC_PARAM_POINT)
       {
-        gtk_spin_button_set_value(GTK_SPIN_BUTTON(gmic_dt_widget->widg), p->gmic_parameters[param_index]._x);
-        gtk_spin_button_set_value(GTK_SPIN_BUTTON(gmic_dt_widget->widg2), p->gmic_parameters[param_index]._y);
+        gtk_spin_button_set_value(GTK_SPIN_BUTTON(gmic_dt_widget->widg), p->gmic_parameters[param_index].value._point.x);
+        gtk_spin_button_set_value(GTK_SPIN_BUTTON(gmic_dt_widget->widg2), p->gmic_parameters[param_index].value._point.y);
       }
     }
   }
@@ -674,7 +686,7 @@ static void _add_widget_to_list(dt_iop_gmic_dt_widgets_t *gmic_dt_widget, dt_iop
         for(int i = g->widget_count; i < g->widget_count + 10; i++)
         {
           g->widgets[i].param_id = 0;
-          g->widgets[i].type = 0;
+          g->widgets[i].type = DT_GMIC_PARAM_NONE;
           g->widgets[i].widg = g->widgets[i].widg2 = NULL;
         }
 
@@ -1004,8 +1016,8 @@ static int _hit_test(struct dt_iop_module_t *self, const dt_iop_gmic_dt_params_t
         {
           const float radius = DT_IOP_GMIC_POINT_RADIUS;
           const float delta = radius * rad_mult * 1.5f;
-          const float x = wd * p->gmic_parameters[param_index]._x / 100.f;
-          const float y = ht * p->gmic_parameters[param_index]._y / 100.f;
+          const float x = wd * p->gmic_parameters[param_index].value._point.x / 100.f;
+          const float y = ht * p->gmic_parameters[param_index].value._point.y / 100.f;
 
           if(mouse_x < x + delta && mouse_x > x - delta && mouse_y < y + delta && mouse_y > y - delta)
           {
@@ -1037,8 +1049,8 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
 
   if(g->dragging_index >= 0)
   {
-    p->gmic_parameters[g->dragging_index]._x = (gui->posx / wd) * 100.f;
-    p->gmic_parameters[g->dragging_index]._y = (gui->posy / ht) * 100.f;
+    p->gmic_parameters[g->dragging_index].value._point.x = (gui->posx / wd) * 100.f;
+    p->gmic_parameters[g->dragging_index].value._point.y = (gui->posy / ht) * 100.f;
 
     const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
@@ -1046,8 +1058,8 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     dt_iop_gmic_dt_widgets_t *gmic_dt_widget = _get_param_widget_from_id(p->gmic_parameters[g->dragging_index].id, g);
     if(gmic_dt_widget)
     {
-      gtk_spin_button_set_value(GTK_SPIN_BUTTON(gmic_dt_widget->widg), p->gmic_parameters[g->dragging_index]._x);
-      gtk_spin_button_set_value(GTK_SPIN_BUTTON(gmic_dt_widget->widg2), p->gmic_parameters[g->dragging_index]._y);
+      gtk_spin_button_set_value(GTK_SPIN_BUTTON(gmic_dt_widget->widg), p->gmic_parameters[g->dragging_index].value._point.x);
+      gtk_spin_button_set_value(GTK_SPIN_BUTTON(gmic_dt_widget->widg2), p->gmic_parameters[g->dragging_index].value._point.y);
     }
 
     darktable.gui->reset = reset;
@@ -1146,8 +1158,8 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       {
         if(parameter->type == DT_GMIC_PARAM_POINT)
         {
-          const float xpos = wd * (p->gmic_parameters[param_index]._x / 100.f);
-          const float ypos = ht * (p->gmic_parameters[param_index]._y / 100.f);
+          const float xpos = wd * (p->gmic_parameters[param_index].value._point.x / 100.f);
+          const float ypos = ht * (p->gmic_parameters[param_index].value._point.y / 100.f);
           const float radius = DT_IOP_GMIC_POINT_RADIUS * rad_mult;
 
           cairo_set_dash(cr, dashed, 0, 0);
