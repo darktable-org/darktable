@@ -54,7 +54,10 @@ static void dt_heal_sub(const float *const top_buffer, const float *const bottom
   const int i_size = width * height * ch;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(result_buffer) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(top_buffer, bottom_buffer, i_size) \
+  shared(result_buffer) \
+  schedule(static)
 #endif
   for(int i = 0; i < i_size; i++) result_buffer[i] = top_buffer[i] - bottom_buffer[i];
 }
@@ -66,7 +69,10 @@ static void dt_heal_add(const float *const first_buffer, const float *const seco
   const int i_size = width * height * ch;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(result_buffer) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(first_buffer, second_buffer, i_size) \
+  shared(result_buffer) \
+  schedule(static)
 #endif
   for(int i = 0; i < i_size; i++) result_buffer[i] = first_buffer[i] + second_buffer[i];
 }
@@ -78,7 +84,11 @@ static float dt_heal_laplace_iteration_sse(float *pixels, const float *const Adi
   float err = 0.f;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(pixels) schedule(static) reduction(+ : err)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(Adiag, Aidx, w, nmask_from, nmask_to) \
+  shared(pixels) \
+  schedule(static) \
+  reduction(+ : err)
 #endif
   for(int i = nmask_from; i < nmask_to; i++)
   {
@@ -135,7 +145,11 @@ static float dt_heal_laplace_iteration(float *pixels, const float *const Adiag, 
   const int ch1 = (ch == 4) ? ch - 1 : ch;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(pixels) schedule(static) reduction(+ : err)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(Adiag, Aidx, w, nmask_from, nmask_to, ch1) \
+  shared(pixels) \
+  schedule(static) \
+  reduction(+ : err)
 #endif
   for(int i = nmask_from; i < nmask_to; i++)
   {
