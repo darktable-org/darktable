@@ -3264,6 +3264,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
   static cairo_surface_t *image_surface = NULL;
   static int image_surface_width = 0, image_surface_height = 0, image_surface_imgid = -1;
   static float roi_hash_old = -1.0f;
+  static int img_id_old = -1;
   // compute patented dreggn hash so we don't need to check all values:
   const float roi_hash = width + 7.0f * height + 23.0f * zoom + 42.0f * zoom_x + 91.0f * zoom_y + 666.0f * zoom;
 
@@ -3284,6 +3285,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
   {
     // draw image
     roi_hash_old = roi_hash;
+    img_id_old = dev->image_storage.id;
     mutex = &dev->preview2_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
     float wd = dev->preview2_pipe->backbuf_width;
@@ -3307,18 +3309,16 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_FAST);
-    cairo_fill_preserve(cr);
-    cairo_set_line_width(cr, 1.0);
-    cairo_set_source_rgb(cr, .3, .3, .3);
-    cairo_stroke(cr);
+    cairo_fill(cr);
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
     image_surface_imgid = dev->image_storage.id;
   }
-  else if((dev->preview_status == DT_DEV_PIXELPIPE_VALID) && (roi_hash != roi_hash_old))
+  else if((dev->preview_status == DT_DEV_PIXELPIPE_VALID) && ((roi_hash != roi_hash_old) || (dev->image_storage.id != img_id_old)))
   {
     // draw preview
     roi_hash_old = roi_hash;
+    img_id_old = dev->image_storage.id;
     mutex = &dev->preview_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);
 
@@ -3755,7 +3755,7 @@ static gboolean _second_window_mouse_moved_callback(GtkWidget *w, GdkEventMotion
   {
     gdk_event_get_axis((GdkEvent *)event, GDK_AXIS_PRESSURE, &pressure);
   }
-  second_window_mouse_moved(w, dev, event->x, event->y, pressure, event->state /* & 0xf*/);
+  second_window_mouse_moved(w, dev, event->x, event->y, pressure, event->state);
   return FALSE;
 }
 
@@ -3848,6 +3848,44 @@ static gboolean _second_window_delete_callback(GtkWidget *widget, GdkEvent *even
   return FALSE;
 }
 
+static gboolean _second_window_key_pressed_callback(GtkWidget *widget, GdkEventKey *event, dt_develop_t *dev)
+{
+  int fullscreen;
+
+  GtkAccelKey key_on, key_off;
+  char path_on[256];
+  char path_off[256];
+  dt_accel_path_global(path_on, sizeof(path_on), "toggle fullscreen");
+  dt_accel_path_global(path_off, sizeof(path_off), "leave fullscreen");
+  gtk_accel_map_lookup_entry(path_on, &key_on);
+  gtk_accel_map_lookup_entry(path_off, &key_off);
+
+  if(event->keyval == key_on.accel_key && (event->state & KEY_STATE_MASK) == key_on.accel_mods)
+  {
+    fullscreen = gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_FULLSCREEN;
+    if(fullscreen)
+      gtk_window_unfullscreen(GTK_WINDOW(widget));
+    else
+      gtk_window_fullscreen(GTK_WINDOW(widget));
+  }
+  else if(event->keyval == key_off.accel_key && (event->state & KEY_STATE_MASK) == key_off.accel_mods)
+  {
+    gtk_window_unfullscreen(GTK_WINDOW(widget));
+  }
+  else
+  {
+    return FALSE;
+  }
+
+  /* redraw center view */
+  gtk_widget_queue_draw(dev->second_window.widget);
+#ifdef __APPLE__
+  // workaround for GTK Quartz backend bug
+  gtk_window_set_title(GTK_WINDOW(widget), _("darktable - darkroom preview"));
+#endif
+  return TRUE;
+}
+
 static void _darkroom_display_second_window(dt_develop_t *dev)
 {
   if(dev->second_window.second_wnd == NULL)
@@ -3856,6 +3894,7 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
     dev->second_window.height = -1;
 
     dev->second_window.second_wnd = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_widget_set_name(dev->second_window.second_wnd, "second_window");
 
     _second_window_configure_ppd_dpi(dev);
 
@@ -3872,10 +3911,6 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
     gtk_widget_set_size_request(dev->second_window.widget, DT_PIXEL_APPLY_DPI(50), DT_PIXEL_APPLY_DPI(200));
     gtk_widget_set_hexpand(dev->second_window.widget, TRUE);
     gtk_widget_set_vexpand(dev->second_window.widget, TRUE);
-    gtk_widget_set_margin_start(dev->second_window.widget, DT_PIXEL_APPLY_DPI(6));
-    gtk_widget_set_margin_end(dev->second_window.widget, DT_PIXEL_APPLY_DPI(6));
-    gtk_widget_set_margin_top(dev->second_window.widget, DT_PIXEL_APPLY_DPI(6));
-    gtk_widget_set_margin_bottom(dev->second_window.widget, DT_PIXEL_APPLY_DPI(6));
     gtk_widget_set_app_paintable(dev->second_window.widget, TRUE);
 
     gtk_grid_attach(GTK_GRID(widget), dev->second_window.widget, 0, 0, 1, 1);
@@ -3902,6 +3937,8 @@ static void _darkroom_display_second_window(dt_develop_t *dev)
 
     g_signal_connect(G_OBJECT(dev->second_window.second_wnd), "delete-event",
                      G_CALLBACK(_second_window_delete_callback), dev);
+    g_signal_connect(G_OBJECT(dev->second_window.second_wnd), "key-press-event",
+                     G_CALLBACK(_second_window_key_pressed_callback), dev);
 
     _darkroom_ui_second_window_init(dev->second_window.second_wnd, dev);
   }
