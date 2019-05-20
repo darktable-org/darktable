@@ -182,7 +182,10 @@ void dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const 
   if(!orientation)
   {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ht, wd, bpp, stride) \
+    shared(in, out) \
+    schedule(static)
 #endif
     for(int j = 0; j < ht; j++) memcpy(out + (size_t)j * bpp * wd, in + (size_t)j * stride, bpp * wd);
     return;
@@ -205,7 +208,10 @@ void dt_imageio_flip_buffers(char *out, const char *in, const size_t bpp, const 
     si = -si;
   }
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out, jj, ii, sj, si)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(wd, bpp, ht, stride) \
+  shared(in, out, jj, ii, sj, si) \
+  schedule(static)
 #endif
   for(int j = 0; j < ht; j++)
   {
@@ -229,7 +235,10 @@ void dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const
   if(!orientation)
   {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(wd, ch, scale, stride, black, ht) \
+    shared(in, out) \
+    schedule(static)
 #endif
     for(int j = 0; j < ht; j++)
       for(int i = 0; i < wd; i++)
@@ -255,7 +264,10 @@ void dt_imageio_flip_buffers_ui16_to_float(float *out, const uint16_t *in, const
     si = -si;
   }
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out, jj, ii, sj, si)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(wd, ch, black, scale, stride, ht) \
+  shared(in, out, jj, ii, sj, si) \
+  schedule(static)
 #endif
   for(int j = 0; j < ht; j++)
   {
@@ -279,7 +291,10 @@ void dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const f
   if(!orientation)
   {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(wd, scale, black, ht, ch, stride) \
+    shared(in, out) \
+    schedule(static)
 #endif
     for(int j = 0; j < ht; j++)
       for(int i = 0; i < wd; i++)
@@ -305,7 +320,10 @@ void dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const f
     si = -si;
   }
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out, jj, ii, sj, si)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(wd, ch, scale, black, stride, ht) \
+  shared(in, out, jj, ii, sj, si) \
+  schedule(static)
 #endif
   for(int j = 0; j < ht; j++)
   {
@@ -819,7 +837,9 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
       { // !display_byteorder, need to swap:
         uint8_t *const buf8 = pipe.backbuf;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(processed_width, processed_height, buf8) \
+  schedule(static)
 #endif
         // just flip byte order
         for(size_t k = 0; k < (size_t)processed_width * processed_height; k++)
