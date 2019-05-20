@@ -956,6 +956,8 @@ static gboolean _lib_filmstrip_copy_history_key_accel_callback(GtkAccelGroup *ac
                                                                GObject *aceeleratable, guint keyval,
                                                                GdkModifierType modifier, gpointer data)
 {
+  if(_is_on_lighttable()) return FALSE;
+
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
   const int32_t mouse_over_id = dt_control_get_mouse_over_id();
   if(mouse_over_id <= 0) return FALSE;
@@ -963,7 +965,7 @@ static gboolean _lib_filmstrip_copy_history_key_accel_callback(GtkAccelGroup *ac
   strip->dg.selops = NULL;
 
   /* check if images is currently loaded in darkroom */
-  if(!_is_on_lighttable() && dt_dev_is_current_image(darktable.develop, mouse_over_id)) dt_dev_write_history(darktable.develop);
+  if(dt_dev_is_current_image(darktable.develop, mouse_over_id)) dt_dev_write_history(darktable.develop);
   return TRUE;
 }
 
@@ -971,6 +973,8 @@ static gboolean _lib_filmstrip_copy_history_parts_key_accel_callback(GtkAccelGro
                                                                      GObject *aceeleratable, guint keyval,
                                                                      GdkModifierType modifier, gpointer data)
 {
+  if(_is_on_lighttable()) return FALSE;
+
   if(_lib_filmstrip_copy_history_key_accel_callback(accel_group, aceeleratable, keyval, modifier, data))
   {
     dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
@@ -986,6 +990,8 @@ static gboolean _lib_filmstrip_paste_history_key_accel_callback(GtkAccelGroup *a
                                                                 GObject *aceeleratable, guint keyval,
                                                                 GdkModifierType modifier, gpointer data)
 {
+  if(_is_on_lighttable()) return FALSE;
+
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
   const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
 
@@ -1007,6 +1013,8 @@ static gboolean _lib_filmstrip_paste_history_parts_key_accel_callback(GtkAccelGr
                                                                       GObject *aceeleratable, guint keyval,
                                                                       GdkModifierType modifier, gpointer data)
 {
+  if(_is_on_lighttable()) return FALSE;
+
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
   const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
 
@@ -1033,6 +1041,8 @@ static gboolean _lib_filmstrip_discard_history_key_accel_callback(GtkAccelGroup 
                                                                   GObject *aceeleratable, guint keyval,
                                                                   GdkModifierType modifier, gpointer data)
 {
+  if(_is_on_lighttable()) return FALSE;
+
   const int32_t mouse_over_id = dt_control_get_mouse_over_id();
   if(mouse_over_id <= 0) return FALSE;
 
