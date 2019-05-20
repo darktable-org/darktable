@@ -1439,7 +1439,10 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in, float 
   if(xform)
   {
 #ifdef _OPENMP
-#pragma omp parallel for shared(xform) schedule(static) default(none)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(image_in, image_out, width, height) \
+    shared(xform) \
+    schedule(static)
 #endif
     for(int y = 0; y < height; y++)
     {
@@ -1535,7 +1538,10 @@ static void _transform_rgb_to_rgb_lcms2(const float *const image_in, float *cons
   if(xform)
   {
 #ifdef _OPENMP
-#pragma omp parallel for shared(xform) schedule(static) default(none)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(image_in, image_out, width, height) \
+    shared(xform) \
+    schedule(static)
 #endif
     for(int y = 0; y < height; y++)
     {
@@ -1662,7 +1668,9 @@ static void _apply_tonecurves(const float *const image_in, float *const image_ou
   if((lut[0][0] >= 0.0f) && (lut[1][0] >= 0.0f) && (lut[2][0] >= 0.0f))
   {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(stride, image_in, image_out, lut, lutsize, unbounded_coeffs) \
+    schedule(static)
 #endif
     for(size_t k = 0; k < stride; k += ch)
     {
@@ -1676,7 +1684,9 @@ static void _apply_tonecurves(const float *const image_in, float *const image_ou
   else if((lut[0][0] >= 0.0f) || (lut[1][0] >= 0.0f) || (lut[2][0] >= 0.0f))
   {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(stride, image_in, image_out, lut, lutsize, unbounded_coeffs) \
+    schedule(static)
 #endif
     for(size_t k = 0; k < stride; k += ch)
     {
@@ -1707,7 +1717,9 @@ static void _transform_rgb_to_lab_matrix(const float *const image_in, float *con
                       profile_info->lutsize);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(image_out, profile_info, stride) \
+    schedule(static)
 #endif
     for(size_t y = 0; y < stride; y++)
     {
@@ -1722,7 +1734,9 @@ static void _transform_rgb_to_lab_matrix(const float *const image_in, float *con
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(image_in, image_out, profile_info, stride) \
+    schedule(static)
 #endif
     for(size_t y = 0; y < stride; y++)
     {
@@ -1745,7 +1759,9 @@ static void _transform_lab_to_rgb_matrix(const float *const image_in, float *con
   const size_t stride = (size_t)width * height;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(image_in, image_out, stride, profile_info) \
+  schedule(static)
 #endif
   for(size_t y = 0; y < stride; y++)
   {
@@ -1779,7 +1795,9 @@ static void _transform_matrix_rgb(const float *const image_in, float *const imag
                       profile_info_from->unbounded_coeffs_in[2], profile_info_from->lutsize);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(stride, image_out, profile_info_from, profile_info_to) \
+    schedule(static)
 #endif
     for(size_t y = 0; y < stride; y++)
     {
@@ -1794,7 +1812,9 @@ static void _transform_matrix_rgb(const float *const image_in, float *const imag
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(stride, image_in, image_out, profile_info_from, profile_info_to) \
+    schedule(static)
 #endif
     for(size_t y = 0; y < stride; y++)
     {
