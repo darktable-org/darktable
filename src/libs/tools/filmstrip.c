@@ -727,7 +727,6 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
 
   if(darktable.gui->center_tooltip == 1) darktable.gui->center_tooltip++;
 
-  int mouse_over_id = -1;
   strip->image_over = DT_VIEW_DESERT;
 
   /* fill background */
@@ -798,12 +797,8 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
   cairo_translate(cr, empty_edge, 0.0f);
   const int before_last_exposed_id = strip->last_exposed_id;
   const int initial_mouse_over_id = strip->mouse_over_id;
+  int mouse_over_id = -1;
   int missing = 0;
-
-  // invalidate mouse_over_id to ensure the exposed image won't get the over background until set below
-  // when we reach seli.
-
-  dt_control_set_mouse_over_id(-1);
 
   for(int col = 0; col < max_cols; col++)
   {
@@ -845,6 +840,7 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
         dt_view_image_expose_t params = { 0 };
         params.image_over = &(strip->image_over);
         params.imgid = id;
+        params.mouse_over = (id == mouse_over_id);
         params.cr = cr;
         params.width = wd;
         params.height = ht;
@@ -874,10 +870,6 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
 failure:
   cairo_restore(cr);
   sqlite3_finalize(stmt);
-
-  // don't reset the global mouse_over_id when the cursor isn't even over the filmstrip
-  if(pointerx >= 0 && pointery >= 0)
-    dt_control_set_mouse_over_id(mouse_over_id);
 
   if(darktable.gui->center_tooltip == 1) // set in this round
   {

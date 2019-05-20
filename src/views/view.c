@@ -978,9 +978,6 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
 // on my machine with 7 image per row it seems grouping has the largest
 // impact from around 400ms -> 55ms per redraw.
 
-  // this is a gui thread only thing. no mutex required:
-  const int imgsel = dt_control_get_mouse_over_id(); //  darktable.control->global_settings.lib_image_mouse_over_id;
-
   dt_view_image_over_t *image_over = vals->image_over;
   const uint32_t imgid = vals->imgid;
   cairo_t *cr = vals->cr;
@@ -1038,7 +1035,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   dt_image_t buffered_image;
   const dt_image_t *img;
   // if darktable.gui->show_overlays is set or the user points at this image, we really want it:
-  if(darktable.gui->show_overlays || imgsel == imgid || zoom == 1)
+  if(darktable.gui->show_overlays || vals->mouse_over || zoom == 1)
     img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   else
     img = dt_image_cache_testget(darktable.image_cache, imgid, 'r');
@@ -1049,7 +1046,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     bgcol = DT_GUI_COLOR_THUMBNAIL_SELECTED_BG;
     fontcol = DT_GUI_COLOR_THUMBNAIL_SELECTED_FONT;
   }
-  if(imgsel == imgid || zoom == 1)
+  if(vals->mouse_over || zoom == 1)
   {
     // mouse over
     bgcol = DT_GUI_COLOR_THUMBNAIL_HOVER_BG;
@@ -1439,7 +1436,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
           }
 
           // draw hover border if it's not transparent
-          if(imgsel == imgid && darktable.gui->colors[DT_GUI_COLOR_PREVIEW_HOVER_BORDER].alpha > 0.0)
+          if(vals->mouse_over && darktable.gui->colors[DT_GUI_COLOR_PREVIEW_HOVER_BORDER].alpha > 0.0)
           {
             dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_PREVIEW_HOVER_BORDER);
             cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5 / scale));
@@ -1473,7 +1470,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   cairo_save(cr);
 
   const float fscale = DT_PIXEL_APPLY_DPI(fminf(width, height));
-  if(imgsel == imgid || full_preview || darktable.gui->show_overlays || zoom == 1)
+  if(vals->mouse_over || full_preview || darktable.gui->show_overlays || zoom == 1)
   {
     if(draw_metadata && width > DECORATION_SIZE_LIMIT)
     {
@@ -1490,7 +1487,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
 
       if(img)
       {
-        if (zoom != 1 && (!darktable.gui->show_overlays || imgsel == imgid) && extended_thumb_overlay)
+        if(zoom != 1 && (!darktable.gui->show_overlays || vals->mouse_over) && extended_thumb_overlay)
         {
           const double overlay_height = 0.26 * height;
           const int exif_offset = DT_PIXEL_APPLY_DPI(3);
@@ -1556,21 +1553,21 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
           for(int k = 0; k < 5; k++)
           {
             dt_view_image_over_t star = DT_VIEW_STAR_1 + k;
-            if(dt_view_process_image_over(star, imgsel == imgid || zoom == 1, cr, img,
-                                          width, height, zoom, px, py, outlinecol, fontcol))
+            if(dt_view_process_image_over(star, vals->mouse_over || zoom == 1, cr, img, width, height, zoom, px,
+                                          py, outlinecol, fontcol))
               *image_over = star;
           }
         }
       }
 
-      if(dt_view_process_image_over(DT_VIEW_REJECT, imgsel == imgid || zoom == 1, cr, img,
-                                    width, height, zoom, px, py, outlinecol, fontcol))
+      if(dt_view_process_image_over(DT_VIEW_REJECT, vals->mouse_over || zoom == 1, cr, img, width, height, zoom,
+                                    px, py, outlinecol, fontcol))
         *image_over = DT_VIEW_REJECT;
 
       if(draw_audio && img && (img->flags & DT_IMAGE_HAS_WAV))
       {
-        if(dt_view_process_image_over(DT_VIEW_AUDIO, imgsel == imgid || zoom == 1, cr, img,
-                                      width, height, zoom, px, py, outlinecol, fontcol))
+        if(dt_view_process_image_over(DT_VIEW_AUDIO, vals->mouse_over || zoom == 1, cr, img, width, height, zoom,
+                                      px, py, outlinecol, fontcol))
           *image_over = DT_VIEW_AUDIO;
       }
 
@@ -1610,7 +1607,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   // kill all paths, in case img was not loaded yet, or is blocked:
   cairo_new_path(cr);
 
-  if (draw_colorlabels && (darktable.gui->show_overlays || imgsel == imgid || full_preview || zoom == 1))
+  if(draw_colorlabels && (darktable.gui->show_overlays || vals->mouse_over || full_preview || zoom == 1))
   {
     // TODO: cache in image struct!
 
