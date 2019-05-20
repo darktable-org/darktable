@@ -322,9 +322,8 @@ static gboolean _live_sample_leave(GtkWidget *widget, GdkEvent *event, gpointer 
   return FALSE;
 }
 
-static void _remove_sample(GtkButton *widget, gpointer data)
+static void _remove_sample(dt_colorpicker_sample_t *sample)
 {
-  dt_colorpicker_sample_t *sample = (dt_colorpicker_sample_t *)data;
   gtk_widget_hide(sample->container);
   gtk_widget_destroy(sample->color_patch);
   gtk_widget_destroy(sample->patch_box);
@@ -332,11 +331,16 @@ static void _remove_sample(GtkButton *widget, gpointer data)
   gtk_widget_destroy(sample->delete_button);
   gtk_widget_destroy(sample->container);
   darktable.lib->proxy.colorpicker.live_samples
-      = g_slist_remove(darktable.lib->proxy.colorpicker.live_samples, data);
+    = g_slist_remove(darktable.lib->proxy.colorpicker.live_samples, (gpointer)sample);
   free(sample);
-  dt_dev_invalidate_from_gui(darktable.develop);
 }
 
+static void _remove_sample_cb(GtkButton *widget, gpointer data)
+{
+  dt_colorpicker_sample_t *sample = (dt_colorpicker_sample_t *)data;
+  _remove_sample(sample);
+  dt_dev_invalidate_from_gui(darktable.develop);
+}
 
 static gboolean _sample_lock_toggle(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
@@ -389,7 +393,7 @@ static void _add_sample(GtkButton *widget, gpointer self)
   sample->delete_button = gtk_button_new_with_label(_("remove"));
   gtk_box_pack_start(GTK_BOX(sample->container), sample->delete_button, FALSE, FALSE, 0);
 
-  g_signal_connect(G_OBJECT(sample->delete_button), "clicked", G_CALLBACK(_remove_sample), sample);
+  g_signal_connect(G_OBJECT(sample->delete_button), "clicked", G_CALLBACK(_remove_sample_cb), sample);
 
   gtk_widget_show_all(data->samples_container);
 
@@ -660,7 +664,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
 
   while(darktable.lib->proxy.colorpicker.live_samples)
-    _remove_sample(NULL, darktable.lib->proxy.colorpicker.live_samples->data);
+    _remove_sample(darktable.lib->proxy.colorpicker.live_samples->data);
 
   free(self->data);
   self->data = NULL;
@@ -693,7 +697,7 @@ void gui_reset(dt_lib_module_t *self)
 
   // Removing any live samples
   while(darktable.lib->proxy.colorpicker.live_samples)
-    _remove_sample(NULL, darktable.lib->proxy.colorpicker.live_samples->data);
+    _remove_sample(darktable.lib->proxy.colorpicker.live_samples->data);
 
   // Resetting GUI elements
   gtk_combo_box_set_active(GTK_COMBO_BOX(data->size_selector), 0);
