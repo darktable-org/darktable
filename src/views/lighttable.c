@@ -1296,6 +1296,7 @@ end_query_cache:
           dt_view_image_expose_t params = { 0 };
           params.image_over = &(lib->image_over);
           params.imgid = id;
+          params.mouse_over = (id == mouse_over_id);
           params.cr = cr;
           params.width = wd;
           params.height = iir == 1 ? height : ht;
@@ -1804,6 +1805,7 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
           dt_view_image_expose_t params = { 0 };
           params.image_over = &(lib->image_over);
           params.imgid = id;
+          params.mouse_over = (id == mouse_over_id);
           params.cr = cr;
           params.width = wd;
           params.height = zoom == 1 ? height : ht;
@@ -2353,12 +2355,6 @@ static void _culling_prefetch(dt_view_t *self)
   }
 }
 
-static gboolean _culling_redefine_mouseoverid(gpointer data)
-{
-  dt_control_set_mouse_over_id(GPOINTER_TO_INT(data));
-  return FALSE;
-}
-
 static int expose_culling(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
                           int32_t pointery, const dt_lighttable_layout_t layout)
 {
@@ -2385,7 +2381,7 @@ static int expose_culling(dt_view_t *self, cairo_t *cr, int32_t width, int32_t h
   }
 
   const int max_in_memory_images = _get_max_in_memory_images();
-  int32_t mouse_over_id = dt_control_get_mouse_over_id();
+  int mouse_over_id = -1;
 
   for(int i = 0; i < lib->slots_count; i++)
   {
@@ -2410,6 +2406,7 @@ static int expose_culling(dt_view_t *self, cairo_t *cr, int32_t width, int32_t h
     dt_view_image_expose_t params = { 0 };
     params.image_over = &(lib->image_over);
     params.imgid = lib->slots[i].imgid;
+    params.mouse_over = (mouse_over_id == lib->slots[i].imgid);
     params.cr = cr;
     params.width = lib->slots[i].width;
     params.height = lib->slots[i].height;
@@ -2460,9 +2457,6 @@ static int expose_culling(dt_view_t *self, cairo_t *cr, int32_t width, int32_t h
   // if needed, we prefetch the next and previous images
   // note that we only guess their sizes so they may be computed anyway
   if(prefetch) _culling_prefetch(self);
-
-  // filmstrip reset mouse_over_id, so let's redefine it in a moment
-  g_timeout_add(200, _culling_redefine_mouseoverid, GINT_TO_POINTER(mouse_over_id));
 
   if(darktable.unmuted & DT_DEBUG_CACHE) dt_mipmap_cache_print(darktable.mipmap_cache);
   return missing;
