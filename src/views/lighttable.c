@@ -2246,12 +2246,15 @@ static gboolean _culling_compute_slots(dt_view_t *self, int32_t width, int32_t h
     _sort_preview_surface(lib, lib->slots, lib->slots_count, max_in_memory_images);
 
   // ensure fp_surf are in sync with slots
-  for(int i = 0; i < lib->slots_count; i++)
+  if(lib->slots_count <= max_in_memory_images)
   {
-    if(lib->slots[i].imgid != lib->fp_surf[i].imgid)
+    for(int i = 0; i < lib->slots_count; i++)
     {
-      _destroy_preview_surface(lib->fp_surf + i);
-      lib->fp_surf[i].imgid = lib->slots[i].imgid;
+      if(lib->slots[i].imgid != lib->fp_surf[i].imgid)
+      {
+        _destroy_preview_surface(lib->fp_surf + i);
+        lib->fp_surf[i].imgid = lib->slots[i].imgid;
+      }
     }
   }
 
@@ -2415,39 +2418,42 @@ static int expose_culling(dt_view_t *self, cairo_t *cr, int32_t width, int32_t h
     params.zoom = 1;
     params.full_preview = TRUE;
 
-    // we get the real zoom, taking eventual delta in account and sanitize it
-    float fz = lib->full_zoom + lib->fp_surf[i].zoom_delta;
-    if(fz < 1.0f && lib->fp_surf[i].zoom_delta < 0.0f)
+    if(lib->slots_count <= max_in_memory_images)
     {
-      lib->fp_surf[i].zoom_delta = 1.0f - lib->full_zoom;
-      fz = 1.0f;
-    }
-    else if(fz > lib->fp_surf[i].zoom_100 && lib->fp_surf[i].zoom_delta > 0.0f)
-    {
-      lib->fp_surf[i].zoom_delta = lib->fp_surf[i].zoom_100 - lib->full_zoom;
-      fz = lib->fp_surf[i].zoom_100;
-    }
+      // we get the real zoom, taking eventual delta in account and sanitize it
+      float fz = lib->full_zoom + lib->fp_surf[i].zoom_delta;
+      if(fz < 1.0f && lib->fp_surf[i].zoom_delta < 0.0f)
+      {
+        lib->fp_surf[i].zoom_delta = 1.0f - lib->full_zoom;
+        fz = 1.0f;
+      }
+      else if(fz > lib->fp_surf[i].zoom_100 && lib->fp_surf[i].zoom_delta > 0.0f)
+      {
+        lib->fp_surf[i].zoom_delta = lib->fp_surf[i].zoom_100 - lib->full_zoom;
+        fz = lib->fp_surf[i].zoom_100;
+      }
 
-    if(lib->slots_count <= max_in_memory_images && fz > 1.0f)
-    {
-      params.full_zoom = fz;
-      params.full_x = lib->full_x + lib->fp_surf[i].dx_delta;
-      params.full_y = lib->full_y + lib->fp_surf[i].dy_delta;
-      params.full_surface = &lib->fp_surf[i].surface;
-      params.full_rgbbuf = &lib->fp_surf[i].rgbbuf;
-      params.full_surface_mip = &lib->fp_surf[i].mip;
-      params.full_surface_id = &lib->fp_surf[i].imgid;
-      params.full_surface_wd = &lib->fp_surf[i].width;
-      params.full_surface_ht = &lib->fp_surf[i].height;
-      params.full_surface_w_lock = &lib->fp_surf[i].w_lock;
-      if(lib->fp_surf[i].zoom_100 >= 1000.0f || lib->fp_surf[i].imgid != lib->slots[i].imgid)
-        lib->fp_surf[i].zoom_100
-            = _preview_get_zoom100(lib->slots[i].width, lib->slots[i].height, lib->slots[i].imgid);
-      params.full_zoom100 = lib->fp_surf[i].zoom_100;
-      params.full_w1 = &lib->fp_surf[i].w_fit;
-      params.full_h1 = &lib->fp_surf[i].h_fit;
-      params.full_maxdx = &lib->fp_surf[i].max_dx;
-      params.full_maxdy = &lib->fp_surf[i].max_dy;
+      if(fz > 1.0f)
+      {
+        params.full_zoom = fz;
+        params.full_x = lib->full_x + lib->fp_surf[i].dx_delta;
+        params.full_y = lib->full_y + lib->fp_surf[i].dy_delta;
+        params.full_surface = &lib->fp_surf[i].surface;
+        params.full_rgbbuf = &lib->fp_surf[i].rgbbuf;
+        params.full_surface_mip = &lib->fp_surf[i].mip;
+        params.full_surface_id = &lib->fp_surf[i].imgid;
+        params.full_surface_wd = &lib->fp_surf[i].width;
+        params.full_surface_ht = &lib->fp_surf[i].height;
+        params.full_surface_w_lock = &lib->fp_surf[i].w_lock;
+        if(lib->fp_surf[i].zoom_100 >= 1000.0f || lib->fp_surf[i].imgid != lib->slots[i].imgid)
+          lib->fp_surf[i].zoom_100
+              = _preview_get_zoom100(lib->slots[i].width, lib->slots[i].height, lib->slots[i].imgid);
+        params.full_zoom100 = lib->fp_surf[i].zoom_100;
+        params.full_w1 = &lib->fp_surf[i].w_fit;
+        params.full_h1 = &lib->fp_surf[i].h_fit;
+        params.full_maxdx = &lib->fp_surf[i].max_dx;
+        params.full_maxdy = &lib->fp_surf[i].max_dy;
+      }
     }
 
     missing += dt_view_image_expose(&params);
@@ -3715,8 +3721,9 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   lib->using_arrows = 0;
 
   // get the max zoom of all images
+  const int max_in_memory_images = _get_max_in_memory_images();
   float fz = lib->full_zoom;
-  if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+  if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING && lib->slots_count <= max_in_memory_images)
   {
     for(int i = 0; i < lib->slots_count; i++)
     {
@@ -3736,7 +3743,7 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
       lib->full_y = fminf(lib->full_y, lib->fp_surf[0].max_dy);
       lib->full_y = fmaxf(lib->full_y, -lib->fp_surf[0].max_dy);
     }
-    else if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+    else if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING && lib->slots_count <= max_in_memory_images)
     {
       const float valx = x - lib->pan_x;
       const float valy = y - lib->pan_y;
