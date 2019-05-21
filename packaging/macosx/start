@@ -41,8 +41,6 @@ export GSETTINGS_SCHEMA_DIR="$bundle_data"/glib-2.0/schemas
 export IOLIBS="$(echo "$bundle_lib"/libgphoto2_port/*/)"
 export CAMLIBS="$(echo "$bundle_lib"/libgphoto2/*/)"
 
-export CURL_CA_BUNDLE="$bundle_data"/curl/curl-ca-bundle.crt
-
 APP=darktable
 I18NDIR="$bundle_data"/locale
 # Set the locale-related variables appropriately:
