@@ -1074,7 +1074,12 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_lens_distort_lanczos3 = dt_opencl_create_kernel(program, "lens_distort_lanczos3");
   gd->kernel_lens_vignette = dt_opencl_create_kernel(program, "lens_vignette");
 
-  lfDatabase *dt_iop_lensfun_db = lf_db_new();
+  lfDatabase *dt_iop_lensfun_db =
+#if LF_VERSION >= ((0 << 24) | (3 << 16) | (95 << 8) | 0)
+                                  lf_db_create();
+#else
+                                  lf_db_new();
+#endif
   gd->db = (void *)dt_iop_lensfun_db;
 #if defined(__MACH__) || defined(__APPLE__)
 #else
@@ -1088,22 +1093,39 @@ void init_global(dt_iop_module_so_t *module)
     GFile *file = g_file_parse_name(datadir);
     gchar *path = g_file_get_path(g_file_get_parent(file));
     g_object_unref(file);
+#ifdef LF_MAX_DATABASE_VERSION
+    gchar *sysdbpath = g_build_filename(path, "lensfun", "version_" STR(LF_MAX_DATABASE_VERSION), NULL);
+#endif
 
+#if LF_VERSION >= ((0 << 24) | (3 << 16) | (95 << 8) | 0)
+    const long userdbts = lf_db_read_timestamp(lf_db_user_updates_location);
+    const long sysdbts = lf_db_read_timestamp(sysdbpath);
+    const char *dbpath = userdbts > sysdbts ? lf_db_user_updates_location : sysdbpath;
+    if(lf_db_load_path(dt_iop_lensfun_db, dbpath) != LF_NO_ERROR)
+      fprintf(stderr, "[iop_lens]: could not load lensfun database in `%s'!\n", dbpath);
+    else
+      lf_db_load_path(dt_iop_lensfun_db, lf_db_user_location);
+#else
+    // code for older lensfun preserved as-is
 #ifdef LF_MAX_DATABASE_VERSION
     g_free(dt_iop_lensfun_db->HomeDataDir);
-    dt_iop_lensfun_db->HomeDataDir = g_build_filename(path, "lensfun", "version_" STR(LF_MAX_DATABASE_VERSION), NULL);
+    dt_iop_lensfun_db->HomeDataDir = g_strdup(sysdbpath);
     if(lf_db_load(dt_iop_lensfun_db) != LF_NO_ERROR)
     {
-      fprintf(stderr, "[iop_lens]: could not load lensfun database in `%s'!\n", path);
+      fprintf(stderr, "[iop_lens]: could not load lensfun database in `%s'!\n", sysdbpath);
 #endif
       g_free(dt_iop_lensfun_db->HomeDataDir);
       dt_iop_lensfun_db->HomeDataDir = g_build_filename(path, "lensfun", NULL);
       if(lf_db_load(dt_iop_lensfun_db) != LF_NO_ERROR)
-        fprintf(stderr, "[iop_lens]: could not load lensfun database in `%s'!\n", path);
+        fprintf(stderr, "[iop_lens]: could not load lensfun database in `%s'!\n", dt_iop_lensfun_db->HomeDataDir);
 #ifdef LF_MAX_DATABASE_VERSION
     }
 #endif
+#endif
 
+#ifdef LF_MAX_DATABASE_VERSION
+    g_free(sysdbpath);
+#endif
     g_free(path);
   }
 }
