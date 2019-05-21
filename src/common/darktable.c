@@ -1104,7 +1104,7 @@ void dt_cleanup()
   }
   dt_colorspaces_cleanup(darktable.color_profiles);
 #ifdef HAVE_GMIC
-  dt_gmic_commands_cleanup(darktable.gmic_commands);
+  dt_gmic_commands_cleanup();
 #endif // HAVE_GMIC
   dt_conf_cleanup(darktable.conf);
   free(darktable.conf);

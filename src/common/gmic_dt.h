@@ -107,7 +107,7 @@ typedef struct dt_gmic_command_t
 } dt_gmic_command_t;
 
 GList *dt_load_gmic_commands_from_dir(const char *subdir);
-void dt_gmic_commands_cleanup(GList *gmic_commands);
+void dt_gmic_commands_cleanup();
 
 void dt_gmic_run_3c(const float *const in, float *out, const int width, const int height, const char *str,
                     const gboolean scale_image);

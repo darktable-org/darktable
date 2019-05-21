@@ -63,9 +63,10 @@ static void _gmic_command_free(void *_gmic_command)
   }
 }
 
-void dt_gmic_commands_cleanup(GList *gmic_commands)
+void dt_gmic_commands_cleanup()
 {
-  if(gmic_commands) g_list_free_full(gmic_commands, _gmic_command_free);
+  if(darktable.gmic_commands) g_list_free_full(darktable.gmic_commands, _gmic_command_free);
+  if(darktable.gmic_custom_commands) free(darktable.gmic_custom_commands);
 }
 
 // str -->float, with decimal separator == '.'
@@ -1268,15 +1269,19 @@ static GList *_load_gmic_commands_from_file(const char *gmic_file)
   return command_list;
 }
 
-// load commands from all .gmic files in {config dir}/GMIC/
+// load commands from all .gmic and .dtgmic files in {config dir}/GMIC/
 GList *dt_load_gmic_commands_from_dir(const char *subdir)
 {
   GList *temp_commands = NULL;
   const gchar *d_name;
+  long fileSize = 0;
   char datadir[PATH_MAX] = { 0 };
   char confdir[PATH_MAX] = { 0 };
   dt_loc_get_user_config_dir(confdir, sizeof(confdir));
   dt_loc_get_datadir(datadir, sizeof(datadir));
+
+  darktable.gmic_commands = NULL;
+  darktable.gmic_custom_commands = NULL;
 
   char *dirname = g_build_filename(confdir, "GMIC", subdir, NULL);
   if(!g_file_test(dirname, G_FILE_TEST_IS_DIR))
@@ -1293,13 +1298,43 @@ GList *dt_load_gmic_commands_from_dir(const char *subdir)
       const char *cc = filename + strlen(filename);
       for(; *cc != '.' && cc > filename; cc--)
         ;
-      if(!g_ascii_strcasecmp(cc, ".gmic") || !g_ascii_strcasecmp(cc, ".gmic"))
+      if(!g_ascii_strcasecmp(cc, ".dtgmic") || !g_ascii_strcasecmp(cc, ".dtgmic"))
       {
         GList *tmp_command = _load_gmic_commands_from_file(filename);
         if(tmp_command)
         {
           temp_commands = g_list_concat(temp_commands, tmp_command);
         }
+      }
+      else if(!g_ascii_strcasecmp(cc, ".gmic") || !g_ascii_strcasecmp(cc, ".gmic"))
+      {
+        FILE * pFile = fopen(filename, "rb" );
+        if(pFile)
+        {
+          // obtain file size:
+          fseek(pFile , 0 , SEEK_END);
+          const long lSize = ftell(pFile);
+          rewind(pFile);
+
+          // allocate memory to contain the whole file:
+          if(darktable.gmic_custom_commands == NULL)
+            darktable.gmic_custom_commands = (char*)malloc(sizeof(char) * (lSize + 1));
+          else
+            darktable.gmic_custom_commands = (char*)realloc(darktable.gmic_custom_commands, sizeof(char) * (fileSize + lSize + 1));
+          if(darktable.gmic_custom_commands)
+          {
+            // copy the file into the buffer:
+            const size_t result = fread(darktable.gmic_custom_commands + fileSize, 1, lSize, pFile);
+            if (result != (size_t)lSize)
+              fprintf(stderr, "[dt_load_gmic_commands_from_dir] error reading custom commands file '%s'\n", filename);
+            else
+              darktable.gmic_custom_commands[lSize + fileSize] = 0;
+            fileSize += lSize;
+          }
+          fclose(pFile);
+        }
+        else
+          fprintf(stderr, "[dt_load_gmic_commands_from_dir] error opening custom commands file '%s'\n", filename);
       }
       g_free(filename);
     }
@@ -1352,7 +1387,7 @@ void dt_gmic_run_3c(const float *const in, float *out, const int width, const in
 
   try
   {
-    gmic(str, image_list, image_names);
+    gmic(str, image_list, image_names, darktable.gmic_custom_commands);
   }
   catch(gmic_exception &e) // In case something went wrong.
   {
@@ -1447,7 +1482,7 @@ void dt_gmic_run_1c(const float *const in, float *out, const int width, const in
 
   try
   {
-    gmic(str, image_list, image_names);
+    gmic(str, image_list, image_names, darktable.gmic_custom_commands);
   }
   catch(gmic_exception &e) // In case something went wrong.
   {

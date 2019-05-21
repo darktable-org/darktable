@@ -1,0 +1,393 @@
+#@gui Black Crayon Graffiti : fx_crayongraffiti2, fx_crayongraffiti2_preview(0)
+#@gui : Amplitude = float(300,0,4000)
+#@gui : Density = float(50,0,100)
+#@gui : Smoothness = float(1,0,10)
+#@gui : Opacity = float(0.4,0,1)
+#@gui : Edge = float(12,0,50)
+#@gui : Fast Approximation = bool(1)
+#@gui : Color Smoothness =float(2,1,30)
+#@gui : Mixer Style = choice(2,"Lightness","Value","Color Doping")
+#@gui : sep = separator(), Preview type = choice("Full","Forward horizontal","Forward vertical","Backward horizontal","Backward vertical","Duplicate top","Duplicate left","Duplicate bottom","Duplicate right","Duplicate horizontal","Duplicate vertical","Checkered","Checkered inverse")
+#@gui : sep = separator(), note = note("<small>Author: <i>PhotoComiX</i>.      Latest update : <i>2011/07/12</i>.</small>")
+fx_crayongraffiti2 :
+-repeat $! -l[$>] -split_opacity -l[0]
+--blur $3 -hardsketchbw[-1] $1,$2,$4,$5,$6 -to_rgb
+-negate[-1] -blur_xy[-2] $7,$7 -reverse
+-if {$8==0} -compose_lightness
+-elif {$8==1} -compose_value
+-elif {$8==2} -fx_compose_colordoping 1,1 -endif
+-endl -a c -endl -done
+fx_crayongraffiti2_preview :
+-gui_split_preview "-fx_crayongraffiti2 ${1--2}",$-1
+#@gui Dodge and Burn : fx_dodgeburn, fx_dodgeburn_preview(1)
+#@gui : note = note("automatic dodging and burning")
+#@gui : sep = separator()
+#@gui : Highlights Selection = float(15,0,100)
+#@gui : Highlights Abstraction = float(1.5,0,10)
+#@gui : Dodge Strength = float(25,0,256)
+#@gui : Dodge Blur = float(10,0,20)
+#@gui : Shadows Selection = float(40,0,100)
+#@gui : Shadows Abstraction = float(1.5,0,10)
+#@gui : Burn Strength = float(25,0,256)
+#@gui : Burn Blur = float(10,0,20)
+#@gui : sep = separator()
+#@gui : note = note("Advanved: output dodge and burn layer separate")
+#@gui : Keep Layers Separate = bool(0)
+#@gui : Keep Original Layer = bool(0)
+#@gui : Blur Dodge and Burn Layer = float(10,0,20)
+#@gui : sep = separator(), Preview type = choice("Full","Forward horizontal","Forward vertical","Backward horizontal","Backward vertical","Duplicate top","Duplicate left","Duplicate bottom","Duplicate right","Duplicate horizontal","Duplicate vertical","Checkered","Checkered inverse")
+#@gui : sep = separator(), note = note("<small>Author: <i>Tom Keil</i>.      Latest update: <i>2011/15/02</i>.</small>")
+fx_dodgeburn :
+-repeat $! -l[$>] --luminance -if {$9==1} --fc[0] 128,128,128,255 -endif
+-tk_fx_channel_processing[1] 1,1,0,$2,4,0,{100-$1},256,0,1,0,2,0,0
+-tk_fx_channel_processing[1] 1,1,{-{256-$3}},0,0,0,100,256,0,0,0,2,0,0
+-fx_gaussian_blur[1] $4,0,0,1,0,0,0 --luminance[0]
+-if {$9==0} -compose_dodge[0,1] -else -rv[1,2] -compose_dodge[1,2] -endif
+-tk_fx_channel_processing[-1] 1,1,0,$6,4,$5,100,256,0,0,0,2,0,0
+-tk_fx_channel_processing[-1] 1,1,{256-$7},0,0,0,100,256,0,0,0,2,0,0
+-fx_gaussian_blur[-1] $8,0,0,1,0,0,0
+-if {$9==0} -compose_colorburn[0,1] -else -compose_colorburn[-1,-2] -endif
+-if {$9==1} -fx_gaussian_blur[-1] $11,0,0,1,0,0,0 -endif
+-if {$10==0} -if {$9==1} -rm[0] -endif -endif -endl -done
+fx_dodgeburn_preview :
+-gui_split_preview "-fx_dodgeburn ${1--2}",$-1
+fx_split_freq :
+-repeat $!
+--b[-1] $1 --[-2] [-1] -/[-2] 2 -+[-2] 128 -rv[-2,-1]
+-mv[-2,-1] 0 -done
+fx_compose_freq :
+-repeat {int($!/2)}
+--[-1] 128 -*[-1] 2 -+[-2,-1] -c[-1] 0,255
+-mv[-1] 0 -done
+compose_alpha :
+-e[^-1] "Compose image$? two-by-two, using alpha blending."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-r[-1] [-2],[-2],[-2],100%,0,0,0.5,0.5
+-to_colormode[-2] {a1=!({-2,s}%2);a2=!(s%2);max({-2,s}-a1,s-a2)+a1}
+-to_colormode[-1] {a=max({-2,s},s);a+(a%2)}
+-if {-2,s==2" || "s==4}
+-_compose_alpha[-2] -_compose_alpha[-1]
+-sh[-1] {s-1},{s-1} --*[-3,-1] -rm[-2] -+[-3,-2] --[-2,-1]
+-sh[-1] 0,{s-2} -sh[-2] {-2,s-1},{-2,s-1}
+-max[-1] 1e-10 -/[-2] [-1] -*[-1] 255 -rm[-2,-1]
+-else
+-sh[-1] 0,{s-2} -sh[-2] {-2,s-1},{-2,s-1} --[-2] [-4] -*[-2,-1] -/[-1] 255 -rm[-1] -+[-2,-1]
+-endif
+-endl -done -c 0,255 -v +
+_compose_alpha :
+-sh[-1] 0,{s-2} -sh[-2] {-2,s-1},{-2,s-1} -max[-1] 1e-10 -/[-1] 255 -*[-2,-1] -rm[-1]
+fx_compose_alpha :
+-if ${2=0} -_fx_revert_layers -endif
+-repeat {int($!/2)}
+-to_rgba[-1] -sh[-1] 3,3 -*[-1] $1 -rm[-1]
+-blend[-2,-1] alpha
+-mv[-1] 0 -done
+#@gui Color Doping : fx_compose_colordoping , fx_compose_colordoping
+#@gui :  Opacity   = float(1,0,1)
+#@gui :  Revert Layers  = bool(0)
+#@gui :  note  = note ("This filter needs two layers to work properly. Set the <i>Input layers</i> option to handle multiple input layers.")
+#@gui :  sep  = separator(), note = note("<small>Author: <i>PhotoComiX</i>.      Latest update : <i>2011/13/11</i>.</small>")
+fx_compose_colordoping :
+-reverse -fx_compose_lightness 1,$2 [^] -fx_compose_multiply $1,0
+#@gui Metallic Stencils : fx_metallicstencils , fx_metallicstencils_preview
+#@gui :  Set Mode  = choice("Darken","Lighten","Overlay")
+#@gui :  sep  = separator(), Preview type = choice("Full","Forward horizontal","Forward vertical","Backward horizontal","Backward vertical","Duplicate top","Duplicate left","Duplicate bottom","Duplicate right","Duplicate horizontal","Duplicate vertical","Checkered","Checkered inverse")
+#@gui :  sep  = separator(), note = note("<small>Author: <i>PhotoComix,a hack of a Samj filter</i>.      Latest update : <i>2012/03/10</i>.</small>")
+fx_metallicstencils :
+--Couleurs_Metalliques 0,1,22,0,0,1,7.8,9,7.6,16.6,1,0,0,1,2.4,8.2,1,0
+--fx_lylejk_stencil[0] 4,26.7045,2.41477,0
+-rm[0]
+-if {$1==0} -fx_compose_darken 1,0
+-elif {$1==1} -fx_compose_lighten 1,0
+-elif {$1==2} -fx_compose_overlay 1,0 -endif
+fx_metallicstencils_preview :
+-gui_split_preview "-fx_metallicstencils ${1--2}",$-1
+compose_average :
+-e[^-1] "Compose image$? two-by-two, using average mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 -+
+-endl -done -/ 2 -v +
+compose_colorburn :
+-e[^-1] "Compose image$? two-by-two, using colorburn mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 --[-2] 255 -+[-1] 0.1 -/
+-endl -done -* 256 -+ 255 -c 0,255 -v +
+compose_darken :
+-e[^-1] "Compose image$? two-by-two, using darken mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 -min
+-endl -done -v +
+compose_difference :
+-e[^-1] "Compose image$? two-by-two, using difference mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 --
+-endl -done -abs -v +
+compose_divide :
+-e[^-1] "Compose image$? two-by-two, using divide mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 -*[-2] 256 -+[-1] 1 -/
+-endl -done -c 0,255 -v +
+compose_dodge :
+-e[^-1] "Compose image$? two-by-two, using dodge mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 --[-1] 255.1 -/
+-endl -done -* -256 -c 0,255 -v +
+compose_edges : -check {$1>=0}
+-e[^-1] "Compose image$? using edge mode, with smoothness $1."
+-if {$!>1} -v - -to_rgb -r[^0] [0],0,0,0.5,0.5 -repeat $! -l[$>]
+--gradient_norm -+[-1] 1 -b[-1] $1 -n[-1] 1,10 -sqr[-1] -s[-2] c -*[-4--2] [-1] -a[-4--1] c
+-endl -done -r[^0] [0],0,0,0.5,0.5 -+ -s[-1] c -/[-4--2] [-1] -rm[-1] -a[-3--1] c -v + -endif
+compose_exclusion :
+-e[^-1] "Compose image$? two-by-two, using exclusion mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 --*[-2] [-1] -/[-1] -128 -+
+-endl -done -v +
+compose_fade :
+-e[^-1] "Compose image$? using fading mode."
+-v - -r[^0] ${-max_whd},100%,3
+-r[1--2] 100%,100%,100%,${-max_s} -channels[-1] 0
+-repeat {$!-1} ---[-1] $> -abs[-1] --[-1] 1 -*[-1] -1 -max[-1] 0 -*[$>,-1] -done
+-rm[-1] -+ -v +
+compose_freeze :
+-e[^-1] "Compose image$? two-by-two, using freeze mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 --[-2] 255 -sqr[-2] -+[-1] 0.1 -/
+-endl -done -- 255 -* -1 -c 0,255 -v +
+compose_grainextract :
+-e[^-1] "Compose image$? two-by-two, using grain extract mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 --
+-endl -done -+ 128 -c 0,255 -v +
+compose_grainmerge :
+-e[^-1] "Compose image$? two-by-two, using grain merge mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 -+
+-endl -done -- 128 -c 0,255 -v +
+compose_hardlight :
+-e[^-1] "Compose image$? two-by-two, using hard light mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5
+--ge[-1] 128 --*[-3] [-2] -/[-1] 128
+--[-4,-3] 255 -*[-4,-3] -/[-3] 128 --[-3] 255 -*[-3] -1
+-*[-3] [-2] -*[-2] -1 -+[-2] 1 -*[-2,-1] -+
+-endl -done -v +
+compose_hue :
+-e[^-1] "Compose image$? two-by-two, using hue mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 -to_rgba -sh 0,2
+-rgb2hsv[-2,-1] -sh[-2] 0,0 -j[-2] [-1] -rm[-5,-3,-1] -hsv2rgb[-1] -rm[-1]
+-endl -done -v +
+compose_interpolation :
+-e[^-1] "Compose image$? two-by-two, using interpolation mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 -* 0.012271846 -cos -/ -4 -+
+-endl -done -+ 0.5 -* 256 -v +
+compose_lighten :
+-e[^-1] "Compose image$? two-by-two, using lighten mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 -max
+-endl -done -v +
+compose_lightness :
+-e[^-1] "Compose image$? two-by-two, using lightness mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 -to_rgba -sh 0,2
+-rgb2lab[-2,-1] -sh[-2] 0,0 -j[-2] [-1],0,0,0,0 -rm[-5,-3,-1] -lab2rgb[-1] -rm[-1]
+-endl -done -v +
+compose_luminance :
+-e[^-1] "Compose image$? two-by-two, using luminance mode."
+-v - -repeat {int($!/2)}
+-to_colormode[-2,-1] 0 -r[-1] [-2],0,0,0.5,0.5 -to_rgba[-2,-1] -sh[-2,-1] 0,2
+-rgb2ycbcr[-2,-1] -sh[-2] 0,0 -j[-2] [-1],0,0,0,0 -rm[-5,-3,-1] -ycbcr2rgb[-1] -rm[-1]
+-mv[-1] 0 -done -v +
+compose_median :
+-e[^-1] "Compose image$? using median mode."
+-if {$!==1} -return -endif
+-v - -r[^0] [0],0,0,0.5,0.5 -a z -permute zxyc -s y,-64
+-repeat $! -l[$>]
+-r 100%,{w*100}%
+-s z -median {w} w={w} -columns {int(w/2)} -r 1,{h/$w} -a z
+-endl -done -a y -permute yzxc -v +
+compose_multiply :
+-e[^-1] "Compose image$? two-by-two, using multiply mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 -*
+-endl -done -/ 255 -v +
+compose_negation :
+-e[^-1] "Compose image$? two-by-two, using negation mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 -+
+-endl -done -- 255 -abs -- 255 -* -1 -v +
+compose_overlay :
+-e[^-1] "Compose image$? two-by-two, using overlay mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5
+--ge[-2] 128
+--*[-3] [-2] -/[-1] 128
+--[-4,-3] 255 -*[-4,-3] -/[-3] 128 --[-3] 255 -*[-3] -1
+-*[-3] [-2] -*[-2] -1 -+[-2] 1 -*[-2,-1] -+
+-endl -done -v +
+compose_reflect :
+-e[^-1] "Compose image$? two-by-two, using reflect mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 -sqr[-2] --[-1] 255.1 -/
+-endl -done -* -1 -c 0,255 -v +
+compose_rgba :
+-e[^-1] "Compose image$? two-by-two, using alpha blending."
+-v - -to_rgb[0--1:2] -compose_alpha -v +
+compose_saturation :
+-e[^-1] "Compose image$? two-by-two, using saturation mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 -to_rgba -sh 0,2
+-rgb2hsv[-2,-1] -sh[-2] 1,1 -j[-2] [-1],0,0,0,1 -rm[-5,-3,-1] -hsv2rgb[-1] -rm[-1]
+-endl -done -v +
+compose_screen :
+-e[^-1] "Compose image$? two-by-two, using screen mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 -- 255 -*
+-endl -done -/ 256 -- 255 -* -1 -v +
+compose_shapeaverage :
+-e[^-1] "Compose image$? two-by-two, using shape average mode."
+-v - -repeat {int($!/2)} -l[-2,-1] nm={0,n}
+-channels[-1] 0 -ge[-1] 50% -label_fg[-1] 0 nb={iM+1} -*[-1] 256
+-rv[-2,-1] m={im} M={iM} -n[-1] 0,255 -s[-1] c -+[^0] [0]
+-repeat {$!-1}
+-histogram[-1] {$nb*256},0,{$nb*256-1}
+-i[-2] 256,1,1,1,'x' -r[-2] {w},1,1,1,0,2 -*[-2] [-1] -r[-2,-1] $nb,1,1,1,2 -max[-1] 1 -/[-2,-1]
+-mv[-1] 1 -done
+-/[0] 256 -a[^0] c -*[-1] {($M-$m)/256} -+[-1] $m -point[-1] 0,0,0,1,0 -map[0] [-1] -rm[-1]
+-nm $nm,1 -endl -mv[-1] 0 -done -v +
+compose_softlight :
+-e[^-1] "Compose image$? two-by-two, using soft light mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 -/ 256 --*[-2] [-1] -*[-1] 2 -sqr[-3] -*[-2] [-3] -*[-2] -2 -+
+-endl -done -* 256 -v +
+compose_stamp :
+-e[^-1] "Compose image$? two-by-two, using stamp mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 -*[-1] 2 -+
+-endl -done -- 255 -c 0,255 -v +
+compose_value :
+-e[^-1] "Compose image$? two-by-two, using value mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 -to_rgba -sh 0,2
+-rgb2hsv[-2,-1] -sh[-2] 2,2 -j[-2] [-1],0,0,0,2 -rm[-5,-3,-1] -hsv2rgb[-1] -rm[-1]
+-endl -done -v +
+compose_xor :
+-e[^-1] "Compose image$? two-by-two, using xor mode."
+-v - -repeat {int($!/2)} -l[$>,{$>+1}]
+-to_colormode 0 -r[-1] [-2],0,0,0.5,0.5 -xor
+-endl -done -v +
+_fx_compose :
+-repeat {int($!/2)} --compose_$1[-2,-1] -rm[-3] -to_rgba[-1] -sh[-1] 3,3 -*[-1] $2 -rm[-1] -compose_alpha[-2,-1] -mv[-1] 0 -done
+_fx_revert_layers :
+-repeat {int($!/2)} -rv[{2*$>},{2*$>+1}] -done
+fx_compose_average :
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose average,$1
+fx_compose_colorburn :
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose colorburn,$1
+fx_compose_darken :
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose darken,$1
+fx_compose_difference :
+-if ${2=0} -_fx_revert_layers -endif
+-to_rgb -_fx_compose difference,$1
+fx_compose_divide :
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose divide,$1
+fx_compose_dodge :
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose dodge,$1
+fx_compose_edges :
+-if ${3=0} -_fx_revert_layers -endif
+-repeat {int($!/2)} --compose_edges[-2,-1] $2 -rm[-3] -to_rgba[-1] -sh[-1] 3,3 -*[-1] $1 -rm[-1] -compose_alpha[-2,-1] -mv[-1] 0 -done
+fx_compose_exclusion :
+-if ${2=0} -_fx_revert_layers -endif
+-to_rgb -_fx_compose exclusion,$1
+fx_compose_fade :
+-if {$!==1} -return -endif
+-to_colormode 4
+-if {$1==0} [0],[0],1,1,"$10"
+-else -_fx_compose_fade$1 $7,$8,$9 -r[-1] [0],[0],1,1,3
+-endif
+-n[-1] {-($!-2)*$3},{($!-2)*(1+$3)}
+--[-1] {$2*(1+$3)*($!-2)}
+-c[-1] 0,{$!-2}
+-if $6 -rv[^-1] -endif
+-if $5 -round[-1] 1
+-else -roundify[-1] $4
+-endif
+-compose_fade
+-c 0,255
+_fx_compose_fade1 : [0],[0],1,1,"a=$1*pi/2; x*cos(a) + y*sin(a)"
+_fx_compose_fade2 : [0],[0],1,1,0 -=[-1] 1,{($1+1)*50}%,{($2+1)*50}% -distance[-1] 1
+_fx_compose_fade3 : [0],[0],1,1,0 -=[-1] 1,{($1+1)*50}%,{($2+1)*50}% -distance[-1] 1 -*[-1] {0.01+$3/2} -cos[-1]
+_fx_compose_fade4 : [0],[0],1,1,"((x-w*($1+0.5))*(y-h*($2+0.5)))%(0.2*w*h*(1.001+$3))"
+fx_compose_freeze :
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose freeze,$1
+fx_compose_grainextract :
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose grainextract,$1
+fx_compose_grainmerge :
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose grainmerge,$1
+fx_compose_hardlight :
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose hardlight,$1
+fx_compose_hue : -skip ${2=0}
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose hue,$1
+fx_compose_interpolation :
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose interpolation,$1
+fx_compose_lighten :
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose lighten,$1
+fx_compose_lightness : -skip ${2=0}
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose lightness,$1
+fx_compose_luminance : -skip ${2=0}
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose luminance,$1
+fx_compose_multiply :
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose multiply,$1
+fx_compose_negation :
+-if ${2=0} -_fx_revert_layers -endif
+-to_rgb -_fx_compose negation,$1
+fx_compose_overlay :
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose overlay,$1
+fx_compose_reflect :
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose reflect,$1
+fx_compose_saturation : -skip ${2=0}
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose saturation,$1
+fx_compose_screen :
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose screen,$1
+fx_compose_shapeaverage :
+-if ${3=0} -_fx_revert_layers -endif
+-to_rgb
+-repeat {int($!/2)}
+-rv[-2,-1]
+-if $1 -i[0] [-1] -endif
+-compose_shapeaverage[-2,-1]
+-if $1 -*[0,-1] -/[0] 255 -mv[0] $! -endif
+-if $2 -to_rgba[-1] -replace_color[-1] 0,0,0,0,0,255,0,0,0,0 -endif
+-mv[-1] 0 -done
+fx_compose_softlight :
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose softlight,$1
+fx_compose_stamp :
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose stamp,$1
+fx_compose_value : -skip ${2=0}
+-if ${2=0} -_fx_revert_layers -endif
+-_fx_compose value,$1
+fx_compose_xor :
+-if ${2=0} -_fx_revert_layers -endif
+-to_rgb -_fx_compose xor,$1

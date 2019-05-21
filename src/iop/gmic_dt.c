@@ -489,11 +489,7 @@ static void sl_float_widget_callback(GtkWidget *slider, dt_iop_module_t *self)
   const int param_index = _get_param_index_from_widget(slider, g);
   if(param_index >= 0)
   {
-    //    const dt_gmic_command_t *gmic_command = _get_gmic_command_by_name(p->gmic_command_name);
-    //    const dt_gmic_parameter_t *parameter = _get_parameter_by_id(gmic_command,
-    //    p->gmic_parameters[param_index].id);
     p->gmic_parameters[param_index].value._float = dt_bauhaus_slider_get(slider);
-    //    if(parameter->percent) p->gmic_parameters[param_index]._float /= 100.f;
   }
 
   dt_iop_color_picker_reset(self, TRUE);
@@ -511,11 +507,7 @@ static void sl_int_widget_callback(GtkWidget *slider, dt_iop_module_t *self)
   const int param_index = _get_param_index_from_widget(slider, g);
   if(param_index >= 0)
   {
-    //    const dt_gmic_command_t *gmic_command = _get_gmic_command_by_name(p->gmic_command_name);
-    //    const dt_gmic_parameter_t *parameter = _get_parameter_by_id(gmic_command,
-    //    p->gmic_parameters[param_index].id);
     p->gmic_parameters[param_index].value._int = dt_bauhaus_slider_get(slider);
-    //    if(parameter->percent) p->gmic_parameters[param_index]._int /= 100;
   }
 
   dt_iop_color_picker_reset(self, TRUE);
@@ -1277,6 +1269,19 @@ void gui_init(struct dt_iop_module_t *self)
   // all gmic commands
   g->cmb_gmic_commands = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->cmb_gmic_commands, NULL, _("gmic command"));
+  {
+    char datadir[PATH_MAX] = { 0 };
+    char confdir[PATH_MAX] = { 0 };
+    dt_loc_get_datadir(datadir, sizeof(datadir));
+    dt_loc_get_user_config_dir(confdir, sizeof(confdir));
+    char *system_profile_dir = g_build_filename(datadir, "GMIC", "", NULL);
+    char *user_profile_dir = g_build_filename(confdir, "GMIC", "", NULL);
+    char *tooltip = g_strdup_printf(_("darktable GMIC commands (*.dtgmic) and GMIC custom commands (*.gmic) in %s or %s"), user_profile_dir, system_profile_dir);
+    gtk_widget_set_tooltip_text(g->cmb_gmic_commands, tooltip);
+    g_free(system_profile_dir);
+    g_free(user_profile_dir);
+    g_free(tooltip);
+  }
 
   GList *l = g_list_first(darktable.gmic_commands);
   while(l)
@@ -1287,7 +1292,6 @@ void gui_init(struct dt_iop_module_t *self)
     l = g_list_next(l);
   }
 
-  g_object_set(g->cmb_gmic_commands, "tooltip-text", _("select a gmic command"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->cmb_gmic_commands), "value-changed", G_CALLBACK(_gmic_commands_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->cmb_gmic_commands), TRUE, TRUE, 0);
 
@@ -1417,7 +1421,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
   }
   else
+  {
+    memcpy(ovoid, ivoid, roi_in->width * roi_in->height * 4 * sizeof(float));
     fprintf(stderr, "[gmic process]: error generating GMIC command %s\n", p->gmic_command_name);
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
