@@ -3560,7 +3560,7 @@ static gboolean _lighttable_preview_zoom_add(dt_view_t *self, float val, double 
       nz = fmaxf(nz, 1.0f);
 
       // if full preview, we center the zoom at mouse position
-      if(lib->full_zoom != nz && get_layout() != DT_LIGHTTABLE_LAYOUT_CULLING && posx >= 0.0f && posy >= 0.0f)
+      if(lib->full_zoom != nz && lib->full_preview_id > -1 && posx >= 0.0f && posy >= 0.0f)
       {
         // we want to zoom "around" the pointer
         float dx = nz / lib->full_zoom
@@ -3574,7 +3574,7 @@ static gboolean _lighttable_preview_zoom_add(dt_view_t *self, float val, double 
       }
 
       // culling
-      if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+      if(lib->full_preview_id < 0)
       {
         // if shift+ctrl, we only change the current image
         if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
@@ -3609,6 +3609,10 @@ static gboolean _lighttable_preview_zoom_add(dt_view_t *self, float val, double 
           if(lib->full_zoom + lib->fp_surf[i].zoom_delta > lib->fp_surf[i].zoom_100)
             lib->fp_surf[i].zoom_delta = lib->fp_surf[i].zoom_100 - lib->full_zoom;
         }
+      }
+      else // full preview
+      {
+        lib->full_zoom = nz;
       }
 
       // redraw
