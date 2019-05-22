@@ -226,7 +226,7 @@ static void invert_histogram(const int *hist, float *inv_hist)
 }
 
 #pragma GCC diagnostic push
-#pragma GCC diagnostic warning "-Wvla"
+#pragma GCC diagnostic ignored "-Wvla"
 
 static void get_cluster_mapping(const int n, float mi[n][2], const float wi[n], float mo[n][2], const float wo[n],
                                 const float dominance, int mapio[n])
