@@ -485,7 +485,9 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
         {
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(bufs)
+#pragma omp parallel for default(none) \
+          dt_omp_firstprivate(height, width) \
+          shared(bufs)
 #else
 #pragma omp parallel for shared(bufs)
 #endif
@@ -502,7 +504,9 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
         {
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(bufs, buffer)
+#pragma omp parallel for default(none) \
+          dt_omp_firstprivate(height, op, width) \
+          shared(bufs, buffer)
 #else
 #pragma omp parallel for shared(bufs, buffer)
 #endif
@@ -518,7 +522,9 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
         {
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(bufs, buffer)
+#pragma omp parallel for default(none) \
+            dt_omp_firstprivate(height, op, width) \
+            shared(bufs, buffer)
 #else
 #pragma omp parallel for shared(bufs, buffer)
 #endif
@@ -539,7 +545,9 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
         {
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(bufs, buffer)
+#pragma omp parallel for default(none) \
+          dt_omp_firstprivate(height, op, width) \
+          shared(bufs, buffer)
 #else
 #pragma omp parallel for shared(bufs, buffer)
 #endif
@@ -557,7 +565,9 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
         {
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(bufs, buffer)
+#pragma omp parallel for default(none) \
+          dt_omp_firstprivate(height, op, width) \
+          shared(bufs, buffer)
 #else
 #pragma omp parallel for shared(bufs, buffer)
 #endif
@@ -578,7 +588,9 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
         {
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(bufs, buffer)
+#pragma omp parallel for default(none) \
+          dt_omp_firstprivate(height, op, width) \
+          shared(bufs, buffer)
 #else
 #pragma omp parallel for shared(bufs, buffer)
 #endif
