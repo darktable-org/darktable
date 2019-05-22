@@ -180,6 +180,11 @@ void dt_control_cleanup(dt_control_t *s)
   {
     g_slist_free_full(s->accelerator_list, g_free);
   }
+  if(s->dynamic_accelerator_list)
+  {
+    g_slist_free(s->dynamic_accelerator_valid);
+    g_slist_free_full(s->dynamic_accelerator_list, g_free);
+  }
 }
 
 

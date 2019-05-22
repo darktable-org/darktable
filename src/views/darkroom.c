@@ -1621,6 +1621,9 @@ static void _preference_changed(gpointer instance, gpointer user_data)
     gtk_widget_set_no_show_all(display_intent, TRUE);
     gtk_widget_set_visible(display_intent, FALSE);
   }
+
+  // reconstruct dynamic accels list
+  dt_dynamic_accel_get_valid_list();
 }
 
 static void _update_display_profile_cmb(GtkWidget *cmb_display_profile)
@@ -2831,6 +2834,19 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   if(height_i > capht) y += (capht - height_i) * .5f;
 
   int handled = 0;
+  // dynamic accels
+  if(self->dynamic_accel_current && self->dynamic_accel_current->widget)
+  {
+    float value = dt_bauhaus_slider_get(self->dynamic_accel_current->widget);
+    float step = dt_bauhaus_slider_get_step(self->dynamic_accel_current->widget);
+
+    if(up)
+      dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value + step);
+    else
+      dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value - step);
+    g_signal_emit_by_name(G_OBJECT(self->dynamic_accel_current->widget), "value-changed");
+    return;
+  }
   // masks
   if(dev->form_visible) handled = dt_masks_events_mouse_scrolled(dev->gui_module, x, y, up, state);
   if(handled) return;
@@ -2937,6 +2953,10 @@ int key_released(dt_view_t *self, guint key, guint state)
 {
   const dt_control_accels_t *accels = &darktable.control->accels;
   dt_develop_t *lib = (dt_develop_t *)self->data;
+
+  // be sure to reset dynamic accel
+  if(self->dynamic_accel_current) dt_control_hinter_message(darktable.control, "");
+  self->dynamic_accel_current = NULL;
 
   if(!darktable.control->key_accelerators_on)
     return 0;
@@ -3060,6 +3080,22 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     dt_dev_invalidate(dev);
     dt_control_queue_redraw();
 
+    return 1;
+  }
+
+  // search if it's a dynamic accel
+  self->dynamic_accel_current = dt_dynamic_accel_find_by_key(key, state);
+  if(self->dynamic_accel_current)
+  {
+    gchar **vals = g_strsplit_set(self->dynamic_accel_current->path, "/", -1);
+    gchar *txt = "";
+    if(vals[0] && vals[1] && vals[2] && vals[3])
+    {
+      txt = dt_util_dstrcat(NULL, "scroll to change <b>%s</b> of %s module", vals[3], vals[2]);
+    }
+    dt_control_hinter_message(darktable.control, txt);
+    g_free(txt);
+    g_strfreev(vals);
     return 1;
   }
 
@@ -3226,6 +3262,9 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "undo", closure);
   closure = g_cclosure_new(G_CALLBACK(_darkroom_redo_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "redo", closure);
+
+  // dynamics accels
+  dt_dynamic_accel_get_valid_list();
 }
 
 //-----------------------------------------------------------
