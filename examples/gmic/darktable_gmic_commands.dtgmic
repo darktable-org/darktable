@@ -416,6 +416,25 @@ v -99 fx_custom_code "
   -fx_pencil_portraitbw $1,$2,$3,$4,$5
 ",0,0,0,0,0,50,50
 
+#@gui Black Crayon Graffiti : _dt_fx_crayongraffiti2
+#@gui : 1 : Amplitude = float(300,0,4000)
+#@gui : 2 : Density = float(50,0,100)
+#@gui : 3 : Smoothness = float(1,0,10)
+#@gui : 4 : Opacity = float(0.4,0,1)
+#@gui : 5 : Edge = float(12,0,50)
+#@gui : 6 : Fast Approximation = bool(1)
+#@gui : 7 : Color Smoothness =float(2,1,30)
+#@gui : 8 : Mixer Style = choice(2,"Lightness","Value","Color Doping")
+#@gui : 9 : sep = separator()
+#@gui : 10 : note = note("Author: PhotoComiX.
+#@gui : Latest update : 2011/07/12")
+#@dt : scale_image = true
+#@dt : colorspace = sRGB_3C
+_dt_fx_crayongraffiti2 :
+  v -99 fx_custom_code "
+  -fx_crayongraffiti2 $1,$2,$3,$4,$5,$6,$7,$8
+",0,0,0,0,0,50,50
+
 #@gui Blur [Angular] : _dt_fx_blur_angular
 #@gui : 1 : Amplitude (%) = float(2,0,20)
 #@gui : 2 : Center (%) = point(50,50,0,1)
@@ -441,23 +460,4 @@ _dt_fx_blur_angular :
 _dt_fx_quadrangle :
   v -99 fx_custom_code "
   -fx_quadrangle $1,$2,$3,$4,$5,$6
-",0,0,0,0,0,50,50
-
-#@gui Black Crayon Graffiti : _dt_fx_crayongraffiti2
-#@gui : 1 : Amplitude = float(300,0,4000)
-#@gui : 2 : Density = float(50,0,100)
-#@gui : 3 : Smoothness = float(1,0,10)
-#@gui : 4 : Opacity = float(0.4,0,1)
-#@gui : 5 : Edge = float(12,0,50)
-#@gui : 6 : Fast Approximation = bool(1)
-#@gui : 7 : Color Smoothness =float(2,1,30)
-#@gui : 8 : Mixer Style = choice(2,"Lightness","Value","Color Doping")
-#@gui : 9 : sep = separator()
-#@gui : 10 : note = note("Author: PhotoComiX.
-#@gui : Latest update : 2011/07/12")
-#@dt : scale_image = true
-#@dt : colorspace = sRGB_3C
-_dt_fx_crayongraffiti2 :
-  v -99 fx_custom_code "
-  -fx_crayongraffiti2 $1,$2,$3,$4,$5,$6,$7,$8
 ",0,0,0,0,0,50,50

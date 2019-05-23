@@ -93,7 +93,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_EFFECT;
 }
 
 int flags()
@@ -333,7 +333,8 @@ static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
 
 // builds and return the GMIC command ready to execute it
 // returning command must be free()
-static char *dt_gmic_get_command(const dt_iop_gmic_dt_params_t *p, const float zoom_scale)
+static char *dt_gmic_get_command(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const dt_iop_gmic_dt_params_t *p, const float zoom_scale,
+                                  const dt_iop_roi_t *const roi_in)
 {
   const dt_gmic_command_t *gmic_command = _get_gmic_command_by_name(p->gmic_command_name);
   if(gmic_command == NULL) return NULL;
@@ -415,11 +416,17 @@ static char *dt_gmic_get_command(const dt_iop_gmic_dt_params_t *p, const float z
           }
           else if(parameter->type == DT_GMIC_PARAM_POINT)
           {
+            float pts[2] = { (param_value.value._point.x / 100.f) * (float)piece->pipe->iwidth,
+                              (param_value.value._point.y / 100.f) * (float)piece->pipe->iheight };
+            dt_dev_distort_transform_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_EXCL, pts, 1);
+            pts[0] = (((pts[0] * roi_in->scale) - (float)roi_in->x) / (float)roi_in->width) * 100.f;
+            pts[1] = (((pts[1] * roi_in->scale) - (float)roi_in->y) / (float)roi_in->height) * 100.f;
+
             char str2[30];
-            dt_ftoa(str2, param_value.value._point.x, sizeof(str2));
+            dt_ftoa(str2, pts[0], sizeof(str2));
             strncpy(str1, str2, sizeof(str1));
             str1[sizeof(str1) - 1] = 0;
-            dt_ftoa(str2, param_value.value._point.y, sizeof(str2));
+            dt_ftoa(str2, pts[1], sizeof(str2));
             g_strlcat(str1, ",", sizeof(str1));
             g_strlcat(str1, str2, sizeof(str1));
           }
@@ -693,6 +700,25 @@ static void _add_widget_to_list(dt_iop_gmic_dt_widgets_t *gmic_dt_widget, dt_iop
   }
 }
 
+// destroys all currently created widgets
+static void _destroy_command_controls(dt_iop_module_t *self)
+{
+  dt_iop_gmic_dt_gui_data_t *g = (dt_iop_gmic_dt_gui_data_t *)self->gui_data;
+  if(g && g->vbox_gmic_params)
+  {
+    for(int i = 0; i < g->widget_count; i++)
+    {
+      if(g->widgets[i].widg && GTK_IS_SPIN_BUTTON(g->widgets[i].widg))
+        dt_gui_key_accel_block_on_focus_disconnect(g->widgets[i].widg);
+      if(g->widgets[i].widg2 && GTK_IS_SPIN_BUTTON(g->widgets[i].widg2))
+        dt_gui_key_accel_block_on_focus_disconnect(g->widgets[i].widg2);
+    }
+
+    gtk_widget_destroy(g->vbox_gmic_params);
+    g->vbox_gmic_params = NULL;
+  }
+}
+
 // create all widgets for the current GMIC command
 // it destroys all currently created widgets
 static void _create_command_controls(dt_iop_module_t *self)
@@ -707,18 +733,7 @@ static void _create_command_controls(dt_iop_module_t *self)
 
   gboolean colorbutton_created = FALSE;
 
-  if(g->vbox_gmic_params)
-  {
-    for(int i = 0; i < g->widget_count; i++)
-    {
-      if(g->widgets[i].widg2 && GTK_IS_SPIN_BUTTON(g->widgets[i].widg2))
-      {
-        dt_gui_key_accel_block_on_focus_disconnect(g->widgets[i].widg2);
-      }
-    }
-
-    gtk_widget_destroy(g->vbox_gmic_params);
-  }
+  _destroy_command_controls(self);
 
   for(int i = 0; i < g->widget_count; i++)
   {
@@ -975,20 +990,13 @@ static void _gmic_commands_callback(GtkComboBox *combo, dt_iop_module_t *self)
 #define DT_IOP_GMIC_POINT_RADIUS 5.f
 
 // if x, y is over an overlay (a point() for now) it returns the index of the dt_iop_gmic_dt_params_t params
-static int _hit_test(struct dt_iop_module_t *self, const dt_iop_gmic_dt_params_t *p, const dt_iop_gmic_dt_gui_data_t *g, double __x, double __y)
+static int _hit_test(struct dt_iop_module_t *self, const dt_iop_gmic_dt_params_t *p, const dt_iop_gmic_dt_gui_data_t *g, double x, double y)
 {
   int index = -1;
   const dt_gmic_command_t *gmic_command = _get_gmic_command_by_name(p->gmic_command_name);
   if(gmic_command == NULL) return index;
 
   dt_develop_t *dev = self->dev;
-  dt_masks_form_gui_t *gui = darktable.develop->form_gui;
-
-  const float wd = dev->preview_pipe->backbuf_width;
-  const float ht = dev->preview_pipe->backbuf_height;
-
-  const float mouse_x = gui->posx;
-  const float mouse_y = gui->posy;
 
   const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   const int closeup = dt_control_get_dev_closeup();
@@ -1008,10 +1016,21 @@ static int _hit_test(struct dt_iop_module_t *self, const dt_iop_gmic_dt_params_t
         {
           const float radius = DT_IOP_GMIC_POINT_RADIUS;
           const float delta = radius * rad_mult * 1.5f;
-          const float x = wd * p->gmic_parameters[param_index].value._point.x / 100.f;
-          const float y = ht * p->gmic_parameters[param_index].value._point.y / 100.f;
 
-          if(mouse_x < x + delta && mouse_x > x - delta && mouse_y < y + delta && mouse_y > y - delta)
+          float pzx, pzy;
+          dt_dev_get_pointer_zoom_pos(darktable.develop, x, y, &pzx, &pzy);
+          pzx += 0.5f;
+          pzy += 0.5f;
+          float pts[2] = { pzx * darktable.develop->preview_pipe->backbuf_width, pzy * darktable.develop->preview_pipe->backbuf_height };
+          dt_dev_distort_backtransform(darktable.develop, pts, 1);
+
+          const float mouse_x = (pts[0] / darktable.develop->preview_pipe->iwidth);
+          const float mouse_y = (pts[1] / darktable.develop->preview_pipe->iheight);
+
+          const float point_x = p->gmic_parameters[g->dragging_index].value._point.x / 100.f;
+          const float point_y = p->gmic_parameters[g->dragging_index].value._point.y / 100.f;
+
+          if(mouse_x < point_x + delta && mouse_x > point_x - delta && mouse_y < point_y + delta && mouse_y > point_y - delta)
           {
             index = param_index;
             break;
@@ -1031,18 +1050,20 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
 
   int handled = 0;
 
-  dt_develop_t *dev = self->dev;
   dt_iop_gmic_dt_params_t *p = (dt_iop_gmic_dt_params_t *)self->params;
   dt_iop_gmic_dt_gui_data_t *g = (dt_iop_gmic_dt_gui_data_t *)self->gui_data;
-  dt_masks_form_gui_t *gui = darktable.develop->form_gui;
-
-  const float wd = dev->preview_pipe->backbuf_width;
-  const float ht = dev->preview_pipe->backbuf_height;
 
   if(g->dragging_index >= 0)
   {
-    p->gmic_parameters[g->dragging_index].value._point.x = (gui->posx / wd) * 100.f;
-    p->gmic_parameters[g->dragging_index].value._point.y = (gui->posy / ht) * 100.f;
+    float pzx, pzy;
+    dt_dev_get_pointer_zoom_pos(darktable.develop, x, y, &pzx, &pzy);
+    pzx += 0.5f;
+    pzy += 0.5f;
+    float pts[2] = { pzx * darktable.develop->preview_pipe->backbuf_width, pzy * darktable.develop->preview_pipe->backbuf_height };
+    dt_dev_distort_backtransform(darktable.develop, pts, 1);
+
+    p->gmic_parameters[g->dragging_index].value._point.x = (pts[0] / darktable.develop->preview_pipe->iwidth) * 100.f;
+    p->gmic_parameters[g->dragging_index].value._point.y = (pts[1] / darktable.develop->preview_pipe->iheight) * 100.f;
 
     const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
@@ -1150,9 +1171,13 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       {
         if(parameter->type == DT_GMIC_PARAM_POINT)
         {
-          const float xpos = wd * (p->gmic_parameters[param_index].value._point.x / 100.f);
-          const float ypos = ht * (p->gmic_parameters[param_index].value._point.y / 100.f);
           const float radius = DT_IOP_GMIC_POINT_RADIUS * rad_mult;
+
+          float pts[2] = { (p->gmic_parameters[param_index].value._point.x / 100.f) * dev->preview_pipe->iwidth,
+                            (p->gmic_parameters[param_index].value._point.y / 100.f) * dev->preview_pipe->iheight };
+          dt_dev_distort_transform(dev, pts, 1);
+          const float xpos = pts[0];
+          const float ypos = pts[1];
 
           cairo_set_dash(cr, dashed, 0, 0);
           cairo_set_line_width(cr, 3.0 / zoom_scale);
@@ -1171,6 +1196,8 @@ done:
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
+  dt_iop_gmic_dt_gui_data_t *g = (dt_iop_gmic_dt_gui_data_t *)self->gui_data;
+  if(g) g->draw_overlays = in;
   if(!in) dt_iop_color_picker_reset(self, TRUE);
 }
 
@@ -1250,7 +1277,7 @@ void gui_reset(struct dt_iop_module_t *self)
 
   _create_command_controls(self);
 
-  g->draw_overlays = TRUE;
+  g->draw_overlays = FALSE;
   g->dragging_index = -1;
 }
 
@@ -1261,7 +1288,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->widget_count = 0;
   g->widgets = NULL;
-  g->draw_overlays = TRUE;
+  g->draw_overlays = FALSE;
   g->dragging_index = -1;
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
@@ -1302,6 +1329,8 @@ void gui_init(struct dt_iop_module_t *self)
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_gmic_dt_gui_data_t *g = (dt_iop_gmic_dt_gui_data_t *)self->gui_data;
+
+  _destroy_command_controls(self);
 
   if(g->widgets) free(g->widgets);
 
@@ -1348,7 +1377,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     return;
   }
 
-  char *command = dt_gmic_get_command(p, roi_in->scale / piece->iscale);
+  char *command = dt_gmic_get_command(self, piece, p, roi_in->scale / piece->iscale, roi_in);
   if(command)
   {
     printf("\n[gmic process] processing image of with %i and height %i, image scale %f and colorspace=%i %s on pipe %s\n",
