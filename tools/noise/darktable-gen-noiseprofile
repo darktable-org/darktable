@@ -326,8 +326,11 @@ txt2json(){
 (
   cat <<EOF
 {
-  "version": 1,
+  "version": 0,
   "noiseprofiles": [
+	{
+		"profile_version": 2,
+		"noiseprofiles_data": [
 EOF
 
   n_makers=$(cut -f 1 "$txt" | sort -u | wc -l)
@@ -335,9 +338,9 @@ EOF
   do
     n_makers=$((n_makers-1))
     cat <<EOF
-    {
-      "maker": "$maker",
-      "models": [
+    	{
+      	"maker": "$maker",
+      	"models": [
 EOF
     n_models=$(awk -F "\t" "{ if(\$1 == \"$maker\"){ print \$2; } }" "$txt" | sort -u | wc -l)
     awk -F "\t" "{ if(\$1 == \"$maker\"){ print \$2; } }" "$txt" | sort -u | while read model
@@ -345,10 +348,10 @@ EOF
       n_models=$((n_models-1))
       comment=$(echo $model | tr [:upper:] [:lower:])" contributed by "$(whoami)
       cat <<EOF
-        {
-          "comment": "$comment",
-          "model": "$model",
-          "profiles": [
+        	{
+          	"comment": "$comment",
+          	"model": "$model",
+          	"profiles": [
 EOF
       n_profiles=$(awk -F "\t" "{ if(\$1 == \"$maker\" && \$2 == \"$model\"){ print \$1; } }" "$txt" | wc -l)
       awk -F "\t" "{ if(\$1 == \"$maker\" && \$2 == \"$model\"){ printf(\"\\\"name\\\": \\\"%s\\\", \\\"iso\\\": %s, \\\"a\\\": [%s], \\\"b\\\": [%s]\n\", \$3, \$4, \$5, \$6); } }" "$txt" | sort -V | while read profile
@@ -365,8 +368,8 @@ EOF
         end=""
       fi
       cat <<EOF
-          ]
-        }$end
+          	]
+        	}$end
 EOF
     done
     end=","
@@ -374,13 +377,15 @@ EOF
       end=""
     fi
     cat <<EOF
-      ]
-    }$end
+      	]
+    	}$end
 EOF
   done
 
   cat <<EOF
-  ]
+		]
+		}
+	]
 }
 EOF
 ) > "$json"
