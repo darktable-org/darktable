@@ -458,7 +458,7 @@ export_large_jpeg() {
 	tool_installed darktable-cli
 
 	rm -f "$output" "$xmp"
-	darktable-cli "$input" "$output" 1>/dev/null 2>&1
+	darktable-cli "$input" "$output" --core --configdir ./.config 1>/dev/null 2>&1
 	rm -f "$xmp"
 }
 
