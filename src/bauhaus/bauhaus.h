@@ -231,6 +231,9 @@ typedef struct dt_bauhaus_t
 void dt_bauhaus_init();
 void dt_bauhaus_cleanup();
 
+// load theme colors, fonts, etc
+void dt_bauhaus_load_theme();
+
 // common functions:
 // set the label text:
 void dt_bauhaus_widget_set_label(GtkWidget *w, const char *section, const char *label);
