@@ -158,7 +158,10 @@ static inline float dt_iop_eval_exp(const float *const coeff, const float x)
 static inline void dt_iop_alpha_copy(const void *ivoid, void *ovoid, const int width, const int height)
 {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ovoid, ivoid)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, width) \
+  shared(ovoid, ivoid) \
+  schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
