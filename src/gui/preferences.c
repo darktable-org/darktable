@@ -178,6 +178,7 @@ static void theme_callback(GtkWidget *widget, gpointer user_data)
   gchar *i = g_strrstr(theme, ".");
   if(i) *i = '\0';
   dt_gui_load_theme(theme);
+  dt_bauhaus_load_theme();
 }
 
 ///////////// gui language selection
