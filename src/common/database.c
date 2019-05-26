@@ -1704,6 +1704,13 @@ static gboolean _lock_databases(dt_database_t *db)
 
 void ask_for_upgrade(const gchar *dbname)
 {
+  // if there's no gui just leave
+  if(darktable.gui == NULL)
+  {
+    fprintf(stderr, "[init] database `%s' is out-of-date. aborting.\n", dbname);
+    exit(1);
+  }
+
   // the database has to be upgraded, let's ask user
 
   char *label_text = g_markup_printf_escaped(_("the database schema has to be upgraded for\n"
