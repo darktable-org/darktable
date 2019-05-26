@@ -29,6 +29,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "views/view.h"
@@ -669,6 +670,22 @@ int dt_control_key_pressed_override(guint key, guint state)
   /* check if key accelerators are enabled*/
   if(darktable.control->key_accelerators_on != 1) return 0;
 
+  // dynamic accels
+  darktable.view_manager->current_view->dynamic_accel_current = dt_dynamic_accel_find_by_key(key, state);
+  if(darktable.view_manager->current_view->dynamic_accel_current)
+  {
+    gchar **vals = g_strsplit_set(darktable.view_manager->current_view->dynamic_accel_current->path, "/", -1);
+    gchar *txt = "";
+    if(vals[0] && vals[1] && vals[2] && vals[3])
+    {
+      txt = dt_util_dstrcat(NULL, "scroll to change <b>%s</b> of %s module", vals[3], vals[2]);
+    }
+    dt_control_hinter_message(darktable.control, txt);
+    g_free(txt);
+    g_strfreev(vals);
+    return 1;
+  }
+  
   if(key == accels->global_sideborders.accel_key && state == accels->global_sideborders.accel_mods)
   {
     /* toggle panel viewstate */
@@ -733,6 +750,10 @@ int dt_control_key_released(guint key, guint state)
   // this line is here to find the right key code on different platforms (mac).
   // printf("key code pressed: %d\n", which);
 
+  // be sure to reset dynamic accel
+  if(darktable.view_manager->current_view->dynamic_accel_current) dt_control_hinter_message(darktable.control, "");
+  darktable.view_manager->current_view->dynamic_accel_current = NULL;
+  
   int handled = 0;
   switch(key)
   {

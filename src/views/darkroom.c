@@ -2837,6 +2837,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   // dynamic accels
   if(self->dynamic_accel_current && self->dynamic_accel_current->widget)
   {
+    gtk_widget_grab_focus(self->dynamic_accel_current->widget);
     float value = dt_bauhaus_slider_get(self->dynamic_accel_current->widget);
     float step = dt_bauhaus_slider_get_step(self->dynamic_accel_current->widget);
 
@@ -2953,10 +2954,6 @@ int key_released(dt_view_t *self, guint key, guint state)
 {
   const dt_control_accels_t *accels = &darktable.control->accels;
   dt_develop_t *lib = (dt_develop_t *)self->data;
-
-  // be sure to reset dynamic accel
-  if(self->dynamic_accel_current) dt_control_hinter_message(darktable.control, "");
-  self->dynamic_accel_current = NULL;
 
   if(!darktable.control->key_accelerators_on)
     return 0;
@@ -3080,22 +3077,6 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     dt_dev_invalidate(dev);
     dt_control_queue_redraw();
 
-    return 1;
-  }
-
-  // search if it's a dynamic accel
-  self->dynamic_accel_current = dt_dynamic_accel_find_by_key(key, state);
-  if(self->dynamic_accel_current)
-  {
-    gchar **vals = g_strsplit_set(self->dynamic_accel_current->path, "/", -1);
-    gchar *txt = "";
-    if(vals[0] && vals[1] && vals[2] && vals[3])
-    {
-      txt = dt_util_dstrcat(NULL, "scroll to change <b>%s</b> of %s module", vals[3], vals[2]);
-    }
-    dt_control_hinter_message(darktable.control, txt);
-    g_free(txt);
-    g_strfreev(vals);
     return 1;
   }
 
