@@ -1015,7 +1015,7 @@
 <variablelist>
 <varlistentry id="darktable_gui_views_darkroom_display_image_image"><term>[image]</term><listitem>
 <synopsis><link linkend="types_dt_lua_image_t">types.dt_lua_image_t</link></synopsis>
-<para>The image to be displayed. If the image is not givven, nothing will be changed.</para>
+<para>The image to be displayed. If the image is not given, nothing will be changed.</para>
 
 </listitem></varlistentry>
 
