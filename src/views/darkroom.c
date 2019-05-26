@@ -119,9 +119,11 @@ static int display_image_cb(lua_State *L)
   }
   else
   {
-    return luaL_error(L, "error: dt_lua_image_t expected\n");
+    // ensure the image infos in db is up to date
+    dt_dev_write_history(dev);
   }
-  return 0;
+  luaA_push(L, dt_lua_image_t, &dev->image_storage.id);
+  return 1;
 }
 
 #endif
