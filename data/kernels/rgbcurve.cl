@@ -41,19 +41,7 @@ rgbcurve(read_only image2d_t in, write_only image2d_t out, const int width, cons
   }
   else if(autoscale == 0) // DT_S_SCALE_AUTOMATIC_RGB
   {
-    if(preserve_colors == 1) // DT_RGBCURVE_PRESERVE_LUMINANCE
-    {
-      float ratio = 1.f;
-      const float lum = (use_work_profile == 0) ? dt_camera_rgb_luminance(pixel): get_rgb_matrix_luminance(pixel, profile_info, lut);
-      if(lum > 0.f)
-      {
-        const float curve_lum = lookup_unbounded(table_r, lum, coeffs_r);
-        ratio = curve_lum / lum;
-      }
-
-      pixel.xyz *= ratio;
-    }
-    else if (preserve_colors == 0) // DT_RGBCURVE_PRESERVE_NONE
+    if (preserve_colors == 0) // DT_RGBCURVE_PRESERVE_NONE
     {
       pixel.x = lookup_unbounded(table_r, pixel.x, coeffs_r);
       pixel.y = lookup_unbounded(table_r, pixel.y, coeffs_r);
@@ -63,6 +51,10 @@ rgbcurve(read_only image2d_t in, write_only image2d_t out, const int width, cons
     {
       float ratio = 1.f;
       float lum = 0.0f;
+      if(preserve_colors == 1) // DT_RGBCURVE_PRESERVE_LUMINANCE
+      {
+        lum = (use_work_profile == 0) ? dt_camera_rgb_luminance(pixel): get_rgb_matrix_luminance(pixel, profile_info, lut);
+      }
       if (preserve_colors == 2) // DT_RGBCURVE_PRESERVE_LMAX
       {
         lum = max(pixel.x, max(pixel.y, pixel.z));

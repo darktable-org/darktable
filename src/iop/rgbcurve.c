@@ -1976,25 +1976,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
       else if(autoscale == DT_S_SCALE_AUTOMATIC_RGB)
       {
-        if(d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LUMINANCE)
-        {
-          float ratio = 1.f;
-          const float lum
-              = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(in, work_profile) : dt_camera_rgb_luminance(in);
-          if(lum > 0.f)
-          {
-            const float curve_lum = (lum < xm_L)
-                                        ? d->table[DT_IOP_RGBCURVE_R][CLAMP((int)(lum * 0x10000ul), 0, 0xffff)]
-                                        : dt_iop_eval_exp(d->unbounded_coeffs[DT_IOP_RGBCURVE_R], lum);
-            ratio = curve_lum / lum;
-          }
-
-          for(size_t c = 0; c < 3; c++)
-          {
-            out[c] = (ratio * in[c]);
-          }
-        }
-        else if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_NONE)
+        if(d->params.preserve_colors == DT_RGBCURVE_PRESERVE_NONE)
         {
           for(int c = 0; c < 3; c++)
           {
@@ -2006,7 +1988,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         {
           float ratio = 1.f;
           float lum = 0.0f;
-          if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LMAX)
+          if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LUMINANCE)
+          {
+            lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(in, work_profile) : dt_camera_rgb_luminance(in);
+          }
+          else if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LMAX)
           {
             lum = fmaxf(in[0], fmaxf(in[1], in[2]));
           }
@@ -2016,7 +2002,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           }
           else if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LNORM)
           {
-            lum = powf(in[0] * in[0] + in[1] * in[1 ]+ in[2] * in[2], 0.5f);
+            lum = powf(in[0] * in[0] + in[1] * in[1] + in[2] * in[2], 0.5f);
           }
           else if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LBP)
           {
@@ -2033,7 +2019,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                         : dt_iop_eval_exp(d->unbounded_coeffs[DT_IOP_RGBCURVE_R], lum);
             ratio = curve_lum / lum;
           }
-
           for(size_t c = 0; c < 3; c++)
           {
             out[c] = (ratio * in[c]);
