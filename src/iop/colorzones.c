@@ -1349,6 +1349,8 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
 
   dx *= multiplier;
   dy *= multiplier;
+  // do not move the first or last nodes on the x-axis
+  if(c->selected == 0 || c->selected == p->curve_num_nodes[ch] - 1) dx = 0.f;
 
   const float new_x = CLAMP(curve[c->selected].x + dx, 0.0f, 1.0f);
   const float new_y = CLAMP(curve[c->selected].y + dy, 0.0f, 1.0f);
@@ -1736,9 +1738,19 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
   {
     if(c->selected == 0 || c->selected == nodes - 1)
     {
-      const float reset_value = c->selected == 0 ? 0 : 1;
-      curve[c->selected].y = 0.5f;
-      curve[c->selected].x = reset_value;
+      if(p->channel == DT_IOP_COLORZONES_h)
+      {
+        curve[0].y = 0.5f;
+        curve[0].x = 0.f;
+        curve[nodes - 1].y = 0.5f;
+        curve[nodes - 1].x = 1.f;
+      }
+      else
+      {
+        const float reset_value = c->selected == 0 ? 0.f : 1.f;
+        curve[c->selected].y = 0.5f;
+        curve[c->selected].x = reset_value;
+      }
 
       if(c->color_picker.current_picker == DT_IOP_COLORZONES_PICK_SET_VALUES)
         dt_iop_color_picker_reset(self, TRUE);
