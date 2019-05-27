@@ -674,7 +674,7 @@ int dt_control_key_pressed_override(guint key, guint state)
   darktable.view_manager->current_view->dynamic_accel_current = dt_dynamic_accel_find_by_key(key, state);
   if(darktable.view_manager->current_view->dynamic_accel_current)
   {
-    gchar **vals = g_strsplit_set(darktable.view_manager->current_view->dynamic_accel_current->path, "/", -1);
+    gchar **vals = g_strsplit_set(darktable.view_manager->current_view->dynamic_accel_current->translated_path, "/", -1);
     if(vals[0] && vals[1] && vals[2] && vals[3])
     {
       gchar *txt = dt_util_dstrcat(NULL, "scroll to change <b>%s</b> of %s module", vals[3], vals[2]);
