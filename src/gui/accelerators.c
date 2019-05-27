@@ -1024,6 +1024,7 @@ static gint _dynamic_accel_find(gconstpointer a, gconstpointer b)
   // not the right one
   return 1;
 }
+
 dt_accel_dynamic_t *dt_dynamic_accel_find_by_key(guint accel_key, GdkModifierType mods)
 {
   GtkAccelKey ak = { 0 };
@@ -1033,10 +1034,15 @@ dt_accel_dynamic_t *dt_dynamic_accel_find_by_key(guint accel_key, GdkModifierTyp
   if(da && da->data) return (dt_accel_dynamic_t *)da->data;
   return NULL;
 }
+
 void dt_dynamic_accel_get_valid_list()
 {
-  // remove all elements from the valid list (no need to free them, as they are in the norml list anyway
-  g_slist_free(darktable.control->dynamic_accelerator_valid);
+  // remove all elements from the valid list (no need to free them, as they are in the norml list anyway)
+  if (darktable.control->dynamic_accelerator_valid)
+  {
+    g_slist_free(darktable.control->dynamic_accelerator_valid);
+    darktable.control->dynamic_accelerator_valid = NULL;
+  }
 
   GSList *l = darktable.control->dynamic_accelerator_list;
   while(l)

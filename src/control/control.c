@@ -675,13 +675,13 @@ int dt_control_key_pressed_override(guint key, guint state)
   if(darktable.view_manager->current_view->dynamic_accel_current)
   {
     gchar **vals = g_strsplit_set(darktable.view_manager->current_view->dynamic_accel_current->path, "/", -1);
-    gchar *txt = "";
     if(vals[0] && vals[1] && vals[2] && vals[3])
     {
-      txt = dt_util_dstrcat(NULL, "scroll to change <b>%s</b> of %s module", vals[3], vals[2]);
+      gchar *txt = dt_util_dstrcat(NULL, "scroll to change <b>%s</b> of %s module", vals[3], vals[2]);
+      dt_control_hinter_message(darktable.control, txt);
+      g_free(txt);
     }
-    dt_control_hinter_message(darktable.control, txt);
-    g_free(txt);
+    else dt_control_hinter_message(darktable.control, "");
     g_strfreev(vals);
     return 1;
   }
