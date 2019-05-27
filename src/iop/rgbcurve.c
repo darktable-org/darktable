@@ -49,7 +49,12 @@ typedef enum dt_iop_rgbcurve_pickcolor_type_t
 typedef enum dt_iop_rgbcurve_preservecolors_t
 {
   DT_RGBCURVE_PRESERVE_NONE = 0,
-  DT_RGBCURVE_PRESERVE_LUMINANCE = 1
+  DT_RGBCURVE_PRESERVE_LUMINANCE = 1,
+  DT_RGBCURVE_PRESERVE_LMAX = 2,
+  DT_RGBCURVE_PRESERVE_LAVG = 3,
+  DT_RGBCURVE_PRESERVE_LSUM = 4,
+  DT_RGBCURVE_PRESERVE_LNORM = 5,
+  DT_RGBCURVE_PRESERVE_LBP = 6,
 } dt_iop_rgbcurve_preservecolors_t;
 
 typedef enum rgbcurve_channel_t
@@ -1589,6 +1594,11 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->cmb_preserve_colors, NULL, _("preserve colors"));
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("none"));
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("luminance"));
+  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("max rgb"));
+  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("average rgb"));
+  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("sum rgb"));
+  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("norm rgb"));
+  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("basic power"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->cmb_preserve_colors, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
   g_signal_connect(G_OBJECT(g->cmb_preserve_colors), "value-changed", G_CALLBACK(preserve_colors_callback), self);
@@ -1968,25 +1978,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
       else if(autoscale == DT_S_SCALE_AUTOMATIC_RGB)
       {
-        if(d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LUMINANCE)
-        {
-          float ratio = 1.f;
-          const float lum
-              = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(in, work_profile) : dt_camera_rgb_luminance(in);
-          if(lum > 0.f)
-          {
-            const float curve_lum = (lum < xm_L)
-                                        ? d->table[DT_IOP_RGBCURVE_R][CLAMP((int)(lum * 0x10000ul), 0, 0xffff)]
-                                        : dt_iop_eval_exp(d->unbounded_coeffs[DT_IOP_RGBCURVE_R], lum);
-            ratio = curve_lum / lum;
-          }
-
-          for(size_t c = 0; c < 3; c++)
-          {
-            out[c] = (ratio * in[c]);
-          }
-        }
-        else
+        if(d->params.preserve_colors == DT_RGBCURVE_PRESERVE_NONE)
         {
           for(int c = 0; c < 3; c++)
           {
@@ -1994,8 +1986,51 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                     : dt_iop_eval_exp(d->unbounded_coeffs[DT_IOP_RGBCURVE_R], in[c]);
           }
         }
+        else
+        {
+          float ratio = 1.f;
+          float lum = 0.0f;
+          if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LUMINANCE)
+          {
+            lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(in, work_profile) : dt_camera_rgb_luminance(in);
+          }
+          else if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LMAX)
+          {
+            lum = fmaxf(in[0], fmaxf(in[1], in[2]));
+          }
+          else if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LAVG)
+          {
+            lum = (in[0] + in[1] + in[2]) / 3.0f;
+          }
+          else if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LSUM)
+          {
+            lum = in[0] + in[1] + in[2];
+          }
+          else if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LNORM)
+          {
+            lum = powf(in[0] * in[0] + in[1] * in[1] + in[2] * in[2], 0.5f);
+          }
+          else if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LBP)
+          {
+            float R, G, B;
+            R = in[0] * in[0];
+            G = in[1] * in[1];
+            B = in[2] * in[2];
+            lum = (in[0] * R + in[1] * G + in[2] * B) / (R + G + B);
+          }
+          if(lum > 0.f)
+          {
+            const float curve_lum = (lum < xm_L)
+                                        ? d->table[DT_IOP_RGBCURVE_R][CLAMP((int)(lum * 0x10000ul), 0, 0xffff)]
+                                        : dt_iop_eval_exp(d->unbounded_coeffs[DT_IOP_RGBCURVE_R], lum);
+            ratio = curve_lum / lum;
+          }
+          for(size_t c = 0; c < 3; c++)
+          {
+            out[c] = (ratio * in[c]);
+          }
+        }
       }
-
       out[3] = in[3];
     }
   }
