@@ -63,11 +63,15 @@ rgbcurve(read_only image2d_t in, write_only image2d_t out, const int width, cons
       {
         lum = (pixel.x + pixel.y + pixel.z) / 3.0f;
       }
-      else if (preserve_colors == 4) // DT_RGBCURVE_PRESERVE_LNORM
+      else if (preserve_colors == 4) // DT_RGBCURVE_PRESERVE_LSUM
+      {
+        lum = pixel.x + pixel.y + pixel.z;
+      }
+      else if (preserve_colors == 5) // DT_RGBCURVE_PRESERVE_LNORM
       {
         lum = native_powr(pixel.x * pixel.x + pixel.y * pixel.y + pixel.z * pixel.z, 0.5f);
       }
-      else if (preserve_colors == 5) // DT_RGBCURVE_PRESERVE_LBP
+      else if (preserve_colors == 6) // DT_RGBCURVE_PRESERVE_LBP
       {
         float R, G, B;
         R = pixel.x * pixel.x;

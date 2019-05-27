@@ -52,8 +52,9 @@ typedef enum dt_iop_rgbcurve_preservecolors_t
   DT_RGBCURVE_PRESERVE_LUMINANCE = 1,
   DT_RGBCURVE_PRESERVE_LMAX = 2,
   DT_RGBCURVE_PRESERVE_LAVG = 3,
-  DT_RGBCURVE_PRESERVE_LNORM = 4,
-  DT_RGBCURVE_PRESERVE_LBP = 5,
+  DT_RGBCURVE_PRESERVE_LSUM = 4,
+  DT_RGBCURVE_PRESERVE_LNORM = 5,
+  DT_RGBCURVE_PRESERVE_LBP = 6,
 } dt_iop_rgbcurve_preservecolors_t;
 
 typedef enum rgbcurve_channel_t
@@ -1595,6 +1596,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("luminance"));
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("max rgb"));
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("average rgb"));
+  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("sum rgb"));
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("norm rgb"));
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("basic power"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->cmb_preserve_colors, TRUE, TRUE, 0);
@@ -1999,6 +2001,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           else if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LAVG)
           {
             lum = (in[0] + in[1] + in[2]) / 3.0f;
+          }
+          else if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LSUM)
+          {
+            lum = in[0] + in[1] + in[2];
           }
           else if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LNORM)
           {
