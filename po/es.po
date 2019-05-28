@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.8\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-28 10:33-0500\n"
-"PO-Revision-Date: 2019-05-28 10:53-0500\n"
+"POT-Creation-Date: 2019-05-28 14:19-0500\n"
+"PO-Revision-Date: 2019-05-28 14:04-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -2521,7 +2521,7 @@ msgstr ""
 "gradualmente"
 
 #: ../src/develop/blend_gui.c:1516 ../src/iop/colorzones.c:2170
-#: ../src/iop/tonecurve.c:1238
+#: ../src/iop/tonecurve.c:1251
 msgid ""
 "pick GUI color from image\n"
 "ctrl+click to select an area"
@@ -3467,11 +3467,11 @@ msgstr "borrando preajuste de módulo obsoleto"
 
 #: ../src/gui/camera_import_dialog.c:182
 msgid "store value as default"
-msgstr "almacenar como parámetros por defecto"
+msgstr "Guardar como valor por defecto"
 
 #: ../src/gui/camera_import_dialog.c:187
 msgid "reset value to default"
-msgstr "reiniciar a parámetros por defecto"
+msgstr "Restablecer valor a predeterminado"
 
 #: ../src/gui/camera_import_dialog.c:210 ../src/libs/geotagging.c:418
 msgid "cancel"
@@ -3491,7 +3491,7 @@ msgstr ""
 
 #: ../src/gui/camera_import_dialog.c:233 ../src/libs/session.c:100
 msgid "jobcode"
-msgstr "codigo de trabajo"
+msgstr "código de trabajo"
 
 #: ../src/gui/camera_import_dialog.c:247
 msgid "thumbnail"
@@ -3504,24 +3504,24 @@ msgstr "archivo de almacenamiento"
 #. general settings
 #: ../src/gui/camera_import_dialog.c:269
 msgid "general"
-msgstr "general"
+msgstr "General"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
 #: ../src/gui/camera_import_dialog.c:272 ../src/libs/import.c:454
 msgid "ignore JPEG files"
-msgstr "ignorar archivos jpg"
+msgstr "Ignorar archivos JPEG"
 
 #: ../src/gui/camera_import_dialog.c:274 ../src/libs/import.c:455
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
 msgstr ""
-"no cargar archivos con extensión .jpg o .jpeg. esto puede ser útil cuando "
-"hay raw+jpeg en un directorio."
+"No cargar archivos con extensión .JPG o .JPEG. Puede ser útil cuando en un "
+"directorio existen RAW+JPEG."
 
 #: ../src/gui/camera_import_dialog.c:283
 msgid "override today's date"
-msgstr "anular fecha actual"
+msgstr "Anular la fecha de hoy"
 
 #: ../src/gui/camera_import_dialog.c:286
 msgid ""
@@ -3530,30 +3530,30 @@ msgid ""
 "$(YEAR), $(MONTH), $(DAY),\n"
 "$(HOUR), $(MINUTE), $(SECONDS)"
 msgstr ""
-"active esta, si desea anular la fecha y hora usada cuando se expanden las "
+"Activar si se desea anular la marca de tiempo utilizada al expandir las "
 "variables:\n"
 "$(AÑO), $(MES), $(DIA),\n"
 "$(HORA), $(MINUTO), $(SEGUNDOS)"
 
 #: ../src/gui/camera_import_dialog.c:302
 msgid "images"
-msgstr "imágenes"
+msgstr "Imágenes"
 
 #: ../src/gui/camera_import_dialog.c:303
 msgid "settings"
-msgstr "configuración"
+msgstr "Configuración"
 
 #: ../src/gui/camera_import_dialog.c:497
 msgid ""
 "select the images from the list below that you want to import into a new "
 "filmroll"
 msgstr ""
-"seleccione las imágenes de la lista de abajo que quiere importar en una "
-"nueva sesión"
+"Seleccione las imágenes de la siguiente lista que desee importar a una nueva "
+"sesión"
 
 #: ../src/gui/camera_import_dialog.c:548
 msgid "please use YYYY-MM-DD format for date override"
-msgstr "por favor use el formato AAAA-MM-DD para sobreescribir la fecha"
+msgstr "Use el formato AAAA-MM-DD para sobreescribir la fecha"
 
 #. register keys for view switching
 #: ../src/gui/gtk.c:1163
@@ -5549,7 +5549,7 @@ msgstr "similar a nokia"
 #. clang-format off
 #. smoother cubic spline curve
 #: ../src/iop/basecurve.c:223 ../src/iop/colorzones.c:2244
-#: ../src/iop/rgbcurve.c:1574 ../src/iop/tonecurve.c:1279
+#: ../src/iop/rgbcurve.c:1574 ../src/iop/tonecurve.c:1292
 msgid "cubic spline"
 msgstr "curva segmentaria cúbica"
 
@@ -5562,14 +5562,14 @@ msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abcisas: entrada, ordenadas: salida. trabaja en los canales RGB"
 
 #: ../src/iop/basecurve.c:1943 ../src/iop/lens.c:2295
-#: ../src/iop/tonecurve.c:1290 ../src/iop/vignette.c:1152
+#: ../src/iop/tonecurve.c:1303 ../src/iop/vignette.c:1152
 #: ../src/iop/watermark.c:1434
 msgid "scale"
 msgstr "escala"
 
 #. centripetal spline
 #: ../src/iop/basecurve.c:1944 ../src/iop/filmic.c:1792
-#: ../src/iop/profile_gamma.c:857 ../src/iop/tonecurve.c:1291
+#: ../src/iop/profile_gamma.c:857 ../src/iop/tonecurve.c:1304
 msgid "linear"
 msgstr "lineal"
 
@@ -5577,7 +5577,7 @@ msgstr "lineal"
 msgid "logarithmic"
 msgstr "logarítmico"
 
-#: ../src/iop/basecurve.c:1946 ../src/iop/tonecurve.c:1295
+#: ../src/iop/basecurve.c:1946 ../src/iop/tonecurve.c:1308
 msgid ""
 "scale to use in the graph. use logarithmic scale for more precise control "
 "near the blacks"
@@ -7221,22 +7221,22 @@ msgid "choose between a smoother or stronger effect"
 msgstr "Elija entre un efecto más suave o más marcado."
 
 #: ../src/iop/colorzones.c:2243 ../src/iop/rgbcurve.c:1573
-#: ../src/iop/tonecurve.c:1278
+#: ../src/iop/tonecurve.c:1291
 msgid "interpolation method"
 msgstr "método de interpolación"
 
 #: ../src/iop/colorzones.c:2245 ../src/iop/rgbcurve.c:1575
-#: ../src/iop/tonecurve.c:1280
+#: ../src/iop/tonecurve.c:1293
 msgid "centripetal spline"
 msgstr "curva segmentaria centrípeta"
 
 #: ../src/iop/colorzones.c:2246 ../src/iop/rgbcurve.c:1576
-#: ../src/iop/tonecurve.c:1281
+#: ../src/iop/tonecurve.c:1294
 msgid "monotonic spline"
 msgstr "curva segmentaria monótona"
 
 #: ../src/iop/colorzones.c:2250 ../src/iop/rgbcurve.c:1580
-#: ../src/iop/tonecurve.c:1283
+#: ../src/iop/tonecurve.c:1296
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
 "- cubic spline is better to produce smooth curves but oscillates when nodes "
@@ -9742,7 +9742,7 @@ msgstr "logarítmico (base 2)"
 msgid "exponential (base 2)"
 msgstr "exponencial (base 2)"
 
-#: ../src/iop/rgbcurve.c:1489 ../src/iop/tonecurve.c:1210
+#: ../src/iop/rgbcurve.c:1489 ../src/iop/tonecurve.c:1223
 msgid "RGB, linked channels"
 msgstr "RGB  canales enlazados"
 
@@ -10169,23 +10169,23 @@ msgstr "balance de blancos deshabilitado para la cámara"
 msgid "tone curve"
 msgstr "curva de tono"
 
-#: ../src/iop/tonecurve.c:1206
+#: ../src/iop/tonecurve.c:1219
 msgid "color space"
 msgstr "esquema de color"
 
-#: ../src/iop/tonecurve.c:1207
+#: ../src/iop/tonecurve.c:1220
 msgid "Lab, linked channels"
 msgstr "Lab canales enlazados"
 
-#: ../src/iop/tonecurve.c:1208
+#: ../src/iop/tonecurve.c:1221
 msgid "Lab, independent channels"
 msgstr "canales independientes Lab"
 
-#: ../src/iop/tonecurve.c:1209
+#: ../src/iop/tonecurve.c:1222
 msgid "XYZ, linked channels"
 msgstr "XYZ, canales enlazados"
 
-#: ../src/iop/tonecurve.c:1212
+#: ../src/iop/tonecurve.c:1225
 msgid ""
 "if set to auto, a and b curves have no effect and are not displayed. chroma "
 "values (a and b) of each pixel are then adjusted based on L curve data. auto "
@@ -10196,43 +10196,43 @@ msgstr ""
 "curva L. auto XYZ es similar, pero establece los cambios de saturación en el "
 "espacio XYZ."
 
-#: ../src/iop/tonecurve.c:1222
+#: ../src/iop/tonecurve.c:1235
 msgid "  L  "
 msgstr "  L  "
 
-#: ../src/iop/tonecurve.c:1224
+#: ../src/iop/tonecurve.c:1237
 msgid "tonecurve for L channel"
 msgstr "curva para el canal L"
 
-#: ../src/iop/tonecurve.c:1226
+#: ../src/iop/tonecurve.c:1239
 msgid "  a  "
 msgstr "  a  "
 
-#: ../src/iop/tonecurve.c:1228
+#: ../src/iop/tonecurve.c:1241
 msgid "tonecurve for a channel"
 msgstr "curva para el canal a"
 
-#: ../src/iop/tonecurve.c:1230
+#: ../src/iop/tonecurve.c:1243
 msgid "  b  "
 msgstr "  b  "
 
-#: ../src/iop/tonecurve.c:1232
+#: ../src/iop/tonecurve.c:1245
 msgid "tonecurve for b channel"
 msgstr "curva para el canal b"
 
-#: ../src/iop/tonecurve.c:1292
+#: ../src/iop/tonecurve.c:1305
 msgid "log-log (xy)"
 msgstr "log-log (xy)"
 
-#: ../src/iop/tonecurve.c:1293
+#: ../src/iop/tonecurve.c:1306
 msgid "semi-log (x)"
 msgstr "semi-log (x)"
 
-#: ../src/iop/tonecurve.c:1294
+#: ../src/iop/tonecurve.c:1307
 msgid "semi-log (y)"
 msgstr "semi-log (y)"
 
-#: ../src/iop/tonecurve.c:1302
+#: ../src/iop/tonecurve.c:1315
 msgid "base of the logarithm"
 msgstr "base del logaritmo"
 
@@ -13703,7 +13703,7 @@ msgstr "Nueva sesión iniciada '%s'"
 
 #: ../src/views/tethering.c:251
 msgid "no camera with tethering support available for use..."
-msgstr "No hay ninguna cámara disponible con soporte de captura..."
+msgstr "No hay ninguna cámara con soporte de captura disponible para su uso..."
 
 #~ msgid "expose"
 #~ msgstr "exposición"
