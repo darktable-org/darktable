@@ -931,6 +931,19 @@ static void tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, g
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   c->channel = (tonecurve_channel_t)page_num;
+  if (c->channel == ch_L)
+  {
+    gtk_widget_set_visible(c->scale, TRUE);
+    if (c->loglogscale == 0 && c->semilog == 0)
+      gtk_widget_set_visible(c->logbase, FALSE);
+    else
+      gtk_widget_set_visible(c->logbase, TRUE);
+  }
+  else
+  {
+    gtk_widget_set_visible(c->scale, FALSE);
+    gtk_widget_set_visible(c->logbase, FALSE);
+  }
   gtk_widget_queue_draw(self->widget);
 }
 
