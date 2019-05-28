@@ -677,7 +677,7 @@ int dt_control_key_pressed_override(guint key, guint state)
     gchar **vals = g_strsplit_set(darktable.view_manager->current_view->dynamic_accel_current->translated_path, "/", -1);
     if(vals[0] && vals[1] && vals[2] && vals[3])
     {
-      gchar *txt = dt_util_dstrcat(NULL, "scroll to change <b>%s</b> of %s module", vals[3], vals[2]);
+      gchar *txt = dt_util_dstrcat(NULL, _("scroll to change <b>%s</b> of %s module"), vals[3], vals[2]);
       dt_control_hinter_message(darktable.control, txt);
       g_free(txt);
     }
