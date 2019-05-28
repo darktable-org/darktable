@@ -1066,6 +1066,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   darktable.control->accelerators = gtk_accel_group_new();
 
   darktable.control->accelerator_list = NULL;
+  darktable.control->dynamic_accelerator_list = NULL;
 
   // Connecting the callback to update keyboard accels for key_pressed
   g_signal_connect(G_OBJECT(gtk_accel_map_get()), "changed", G_CALLBACK(key_accel_changed), NULL);

@@ -35,6 +35,18 @@ typedef struct dt_accel_t
 
 } dt_accel_t;
 
+typedef struct dt_accel_dynamic_t
+{
+
+  gchar path[256];
+  gchar translated_path[256];
+  gchar module[256];
+  gboolean local;
+  GtkAccelKey accel_key;
+  GtkWidget *widget;
+
+} dt_accel_dynamic_t;
+
 // Accel path string building functions
 void dt_accel_path_global(char *s, size_t n, const char *path);
 void dt_accel_path_view(char *s, size_t n, char *module, const char *path);
@@ -42,13 +54,16 @@ void dt_accel_path_iop(char *s, size_t n, char *module, const char *path);
 void dt_accel_path_lib(char *s, size_t n, char *module, const char *path);
 void dt_accel_path_lua(char *s, size_t n, const char *path);
 /**
-  * Accepts an array of 4 char*, writes the following paths to them
-  * 0 - Slider increase path
-  * 1 - Slider decrease path
-  * 2 - Slider reset path
-  * 3 - Slider edit path
-  */
+ * Accepts an array of 5 char*, writes the following paths to them
+ * 0 - Slider increase path
+ * 1 - Slider decrease path
+ * 2 - Slider reset path
+ * 3 - Slider edit path
+ * 4 - Slider dynamic path
+ */
 void dt_accel_paths_slider_iop(char *s[], size_t n, char *module, const char *path);
+dt_accel_dynamic_t *dt_dynamic_accel_find_by_key(guint accel_key, GdkModifierType mods);
+void dt_dynamic_accel_get_valid_list();
 
 // Accelerator registration functions
 void dt_accel_register_global(const gchar *path, guint accel_key, GdkModifierType mods);
