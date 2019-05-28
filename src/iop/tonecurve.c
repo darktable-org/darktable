@@ -931,6 +931,19 @@ static void tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, g
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   c->channel = (tonecurve_channel_t)page_num;
+  if (c->channel == ch_L)
+  {
+    gtk_widget_set_visible(c->scale, TRUE);
+    if (c->loglogscale == 0 && c->semilog == 0)
+      gtk_widget_set_visible(c->logbase, FALSE);
+    else
+      gtk_widget_set_visible(c->logbase, TRUE);
+  }
+  else
+  {
+    gtk_widget_set_visible(c->scale, FALSE);
+    gtk_widget_set_visible(c->logbase, FALSE);
+  }
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -1314,6 +1327,8 @@ void gui_init(struct dt_iop_module_t *self)
               _iop_color_picker_get_set,
               _iop_color_picker_apply,
               _iop_color_picker_update);
+
+  dt_bauhaus_combobox_set(c->scale, 0); // linear
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
