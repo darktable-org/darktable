@@ -99,6 +99,7 @@ typedef struct dt_iop_exposure_data_t
 typedef struct dt_iop_exposure_global_data_t
 {
   int kernel_exposure;
+  int kernel_exposure_check_negatives;
 } dt_iop_exposure_global_data_t;
 
 
@@ -363,6 +364,31 @@ static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
   d->scale = 1.0 / (white - d->black);
 }
 
+static void check_negatives(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const piece,
+                            const dt_iop_roi_t *const roi_out, void *const out)
+{
+  // Check for negative values in pixels RGB channels since they are not clipped and super
+
+  if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  {
+    gint negatives = FALSE;
+
+  // Note : don't enable SIMD/SSE for this, it's twice as slow
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) shared(negatives)
+#endif
+    for(size_t k = 0; k < (size_t)piece->colors * roi_out->width * roi_out->height; k++)
+    {
+      if(!negatives)
+        if(((float *)out)[k] < 0.0f)
+          negatives = TRUE;
+    }
+
+    if(negatives)
+      dt_control_log(_("exposure: negative RGB values, check black level"));
+  }
+}
+
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -377,15 +403,38 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int width = roi_in->width;
   const int height = roi_in->height;
 
+
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 4, sizeof(float), (void *)&(d->black));
-  dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 5, sizeof(float), (void *)&(d->scale));
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_exposure, sizes);
+  if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  {
+    int negatives = FALSE;
+
+    dt_opencl_set_kernel_arg(devid, gd->kernel_exposure_check_negatives, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_exposure_check_negatives, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_exposure_check_negatives, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_exposure_check_negatives, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_exposure_check_negatives, 4, sizeof(float), (void *)&(d->black));
+    dt_opencl_set_kernel_arg(devid, gd->kernel_exposure_check_negatives, 5, sizeof(float), (void *)&(d->scale));
+    dt_opencl_set_kernel_arg(devid, gd->kernel_exposure_check_negatives, 6, sizeof(int), (void *)&negatives);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_exposure_check_negatives, sizes);
+
+    if(negatives)
+      dt_control_log(_("exposure: negative RGB values, check black level"));
+  }
+  else
+  {
+    dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 4, sizeof(float), (void *)&(d->black));
+    dt_opencl_set_kernel_arg(devid, gd->kernel_exposure, 5, sizeof(float), (void *)&(d->scale));
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_exposure, sizes);
+  }
   if(err != CL_SUCCESS) goto error;
+
+
+
   for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] *= d->scale;
 
   return TRUE;
@@ -412,6 +461,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     ((float *)o)[k] = (((float *)i)[k] - d->black) * d->scale;
   }
+
+  check_negatives(self, piece, roi_out, o);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
 
@@ -440,6 +491,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     for(int j = 0; j < roi_out->width; j++, in += 4, out += 4)
       _mm_store_ps(out, _mm_mul_ps(_mm_sub_ps(_mm_load_ps(in), blackv), scalev));
   }
+
+  check_negatives(self, piece, roi_out, o);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
 
@@ -570,6 +623,7 @@ void init_global(dt_iop_module_so_t *module)
       = (dt_iop_exposure_global_data_t *)malloc(sizeof(dt_iop_exposure_global_data_t));
   module->data = gd;
   gd->kernel_exposure = dt_opencl_create_kernel(program, "exposure");
+  gd->kernel_exposure_check_negatives = dt_opencl_create_kernel(program, "exposure_check_negatives");
 }
 
 void cleanup(dt_iop_module_t *module)
@@ -582,6 +636,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_exposure);
+  dt_opencl_free_kernel(gd->kernel_exposure_check_negatives);
   free(module->data);
   module->data = NULL;
 }

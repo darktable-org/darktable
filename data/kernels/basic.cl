@@ -161,6 +161,22 @@ exposure (read_only image2d_t in, write_only image2d_t out, const int width, con
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+kernel void
+exposure_check_negatives (read_only image2d_t in, write_only image2d_t out, const int width, const int height, const float black, const float scale,
+          global int *negatives)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  pixel.xyz = (pixel.xyz - black)*scale;
+  write_imagef (out, (int2)(x, y), pixel);
+
+  if(any(isless(pixel.xyz, (float3)0.0f)))
+    *negatives = 1;
+}
+
 /* kernel for the highlights plugin. */
 kernel void
 highlights_4f_clip (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
