@@ -681,11 +681,12 @@ int dt_control_key_pressed_override(guint key, guint state)
       dt_control_hinter_message(darktable.control, txt);
       g_free(txt);
     }
-    else dt_control_hinter_message(darktable.control, "");
+    else
+      dt_control_hinter_message(darktable.control, "");
     g_strfreev(vals);
     return 1;
   }
-  
+
   if(key == accels->global_sideborders.accel_key && state == accels->global_sideborders.accel_mods)
   {
     /* toggle panel viewstate */
@@ -753,7 +754,7 @@ int dt_control_key_released(guint key, guint state)
   // be sure to reset dynamic accel
   if(darktable.view_manager->current_view->dynamic_accel_current) dt_control_hinter_message(darktable.control, "");
   darktable.view_manager->current_view->dynamic_accel_current = NULL;
-  
+
   int handled = 0;
   switch(key)
   {
