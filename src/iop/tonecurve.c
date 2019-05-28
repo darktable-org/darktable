@@ -1314,6 +1314,8 @@ void gui_init(struct dt_iop_module_t *self)
               _iop_color_picker_get_set,
               _iop_color_picker_apply,
               _iop_color_picker_update);
+
+  dt_bauhaus_combobox_set(c->scale, 0); // linear
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
