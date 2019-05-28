@@ -36,7 +36,7 @@ lut3d_tetrahedral(read_only image2d_t in, write_only image2d_t out, const int wi
   input = clamp(input, (float4)0.0f, (float4)1.0f);
 
   rgbd = input * (float)(level - 1);
-  rgbi = min( max( convert_int4(rgbd), 0), (int)(level - 2));
+  rgbi = min( max( convert_int4(rgbd), (int4)0), (int4)(level - 2));
 
 // delta r, g, b
   rgbd = rgbd - convert_float4(rgbi);
@@ -116,7 +116,7 @@ lut3d_trilinear(read_only image2d_t in, write_only image2d_t out, const int widt
   input = clamp(input, (float4)0.0f, (float4)1.0f);
 
   rgbd = input * (float)(level - 1);
-  rgbi = min( max( convert_int4(rgbd), 0), (int)(level - 2));
+  rgbi = min( max( convert_int4(rgbd), (int4)0), (int4)(level - 2));
 
   // delta r, g, b
   rgbd = rgbd - convert_float4(rgbi);
@@ -172,7 +172,7 @@ lut3d_pyramid(read_only image2d_t in, write_only image2d_t out, const int width,
   input = clamp(input, (float4)0.0f, (float4)1.0f);
 
   rgbd = input * (float)(level - 1);
-  rgbi = min( max( convert_int4(rgbd), 0), (int)(level - 2));
+  rgbi = min( max( convert_int4(rgbd), (int4)0), (int4)(level - 2));
 
   // delta r, g, b
   rgbd = rgbd - convert_float4(rgbi);
