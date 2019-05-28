@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-05-28 08:59+0200\n"
-"PO-Revision-Date: 2019-05-28 09:09+0200\n"
+"POT-Creation-Date: 2019-05-28 09:14+0200\n"
+"PO-Revision-Date: 2019-05-28 09:15+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1978,6 +1978,11 @@ msgstr "m"
 #: ../src/control/control.c:307
 msgid "working.."
 msgstr "en cours..."
+
+#: ../src/control/control.c:680
+#, c-format
+msgid "scroll to change <b>%s</b> of %s module"
+msgstr "utiliser la molette pour changer <b>%s</b> du module %s"
 
 #: ../src/control/crawler.c:342 ../src/libs/select.c:40
 msgid "select"
