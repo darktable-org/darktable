@@ -1955,7 +1955,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int autoscale = d->params.curve_autoscale;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(autoscale, ch, height, ivoid, ovoid, work_profile, xm_b, \
+                      xm_g, xm_L, width) \
+  shared(d) \
+  schedule(static)
 #endif
   for(int y = 0; y < height; y++)
   {
