@@ -825,6 +825,7 @@ static void scale_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  gtk_widget_set_visible(g->scale, TRUE);
   switch(dt_bauhaus_combobox_get(widget))
   {
     case 0:
@@ -1421,14 +1422,14 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_stroke_preserve(cr);
 
   // Draw the background gradient along the diagonal
-  // ch == 0 : black to white
+  // ch == 0 : grey
   // ch == 1 : green to magenta
   // ch == 2 : blue to yellow
-  const float origin[3][3] = { { 0.0f, 0.0f, 0.0f },                  // L = 0, @ (a, b) = 0
+  const float origin[3][3] = { { 0.45f, 0.45f, 0.45f },                  // L = 0, @ (a, b) = 0
                                { 0.0f, 231.0f/255.0f, 181.0f/255.0f },// a = -128 @ L = 75, b = 0
                                { 0.0f, 30.0f/255.0f, 195.0f/255.0f}}; // b = -128 @ L = 75, a = 0
 
-  const float destin[3][3] = { { 1.0f, 1.0f, 1.0f },                  // L = 100 @ (a, b) = 0
+  const float destin[3][3] = { { 0.45f, 0.45f, 0.45f },                  // L = 100 @ (a, b) = 0
                                { 1.0f, 0.0f, 192.0f/255.0f } ,        // a = 128 @ L = 75, b = 0
                                { 215.0f/255.0f, 182.0f/255.0f, 0.0f}};// b = 128 @ L = 75, a = 0
 
@@ -1509,10 +1510,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_move_to(cr, 0, height);
       set_color(cr, darktable.bauhaus->inset_histogram);
 
-      if (ch == ch_L && c->loglogscale > 0.0f && c->semilog != -1)
+      if (ch == ch_L && c->loglogscale > 0.0f)
       {
-        // not working
-        // dt_draw_histogram_8_log_base(cr, hist, 4, ch, c->loglogscale);
+        dt_draw_histogram_8_log_base(cr, hist, 4, ch, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR, c->loglogscale);
       }
       else
       {
