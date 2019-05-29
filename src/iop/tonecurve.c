@@ -1423,11 +1423,10 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
                                  { 1.0f, 0.0f, 192.0f/255.0f } ,        // a = 128 @ L = 75, b = 0
                                  { 215.0f/255.0f, 182.0f/255.0f, 0.0f}};// b = 128 @ L = 75, a = 0
 
-    // since Cairo paints with sRGB at gamma 2.4, linear gradients are not linear but garbage and, at 50%,
-    // we dont see the neutral grey we would expect in the middle of a linear gradient between
-    // 2 complimentary colors. So we add it artificially, but that will break the smoothness
-    // of the transition. Maybe this will help people understand how broken are Lab and non-linear
-    // spaces for editing, so let it be ugly to teach them a lesson.
+   // since Cairo paints with sRGB at gamma 2.4, linear gradients are not linear and, at 50%,
+   // we dont see the neutral grey we would expect in the middle of a linear gradient between
+   // 2 complimentary colors. So we add it artificially, but that will break the smoothness
+   // of the transition.
 
     // middle step for gradients (50 %)
     const float midgrey = to_log(0.45f, c->loglogscale, ch, c->semilog, 0);
