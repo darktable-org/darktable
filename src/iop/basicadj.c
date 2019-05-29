@@ -1633,7 +1633,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const size_t stride = (size_t)roi_out->height * roi_out->width * ch;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(black_point, ch, contrast, gamma, hlcomp, hlrange, in, \
+                      inv_middle_grey, middle_grey, out, plain_contrast, \
+                      preserve_colors, process_hlcompr, process_gamma, \
+                      process_saturation, saturation, scale, stride, \
+                      work_profile) \
+  shared(d) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < stride; k += ch)
   {
