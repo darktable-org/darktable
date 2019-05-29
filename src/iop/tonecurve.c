@@ -830,7 +830,7 @@ static void scale_callback(GtkWidget *widget, dt_iop_module_t *self)
   {
     case 0:
     {
-      // linear
+      // x: linear
       g->loglogscale = 0;
       g->semilog = 0;
       gtk_widget_set_visible(g->logbase, FALSE);
@@ -838,25 +838,9 @@ static void scale_callback(GtkWidget *widget, dt_iop_module_t *self)
     }
     case 1:
     {
-      // log log
-      g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
-      g->semilog = 0;
-      gtk_widget_set_visible(g->logbase, TRUE);
-      break;
-    }
-    case 2:
-    {
-      // x: log, y: linear
+      // x: log
       g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
       g->semilog = 1;
-      gtk_widget_set_visible(g->logbase, TRUE);
-      break;
-    }
-    case 3:
-    {
-      // x: linear, y: log
-      g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
-      g->semilog = -1;
       gtk_widget_set_visible(g->logbase, TRUE);
       break;
     }
@@ -1303,9 +1287,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->scale = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->scale, NULL, _("scale"));
   dt_bauhaus_combobox_add(c->scale, _("linear"));
-  dt_bauhaus_combobox_add(c->scale, _("log-log (xy)"));
-  dt_bauhaus_combobox_add(c->scale, _("semi-log (x)"));
-  dt_bauhaus_combobox_add(c->scale, _("semi-log (y)"));
+  dt_bauhaus_combobox_add(c->scale, _("log"));
   gtk_widget_set_tooltip_text(c->scale, _("scale to use in the graph. use logarithmic scale for "
                                           "more precise control near the blacks"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->scale, TRUE, TRUE, 0);
@@ -1421,15 +1403,23 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_stroke_preserve(cr);
 
+  if (ch==ch_L)
+  { // remove below black to white transition to improve readability of the graph
+    cairo_set_source_rgb(cr, .3, .3, .3);
+    cairo_rectangle(cr, 0, 0, width, height);
+    cairo_fill(cr);
+  }
+  else
+  {
   // Draw the background gradient along the diagonal
-  // ch == 0 : grey
+  // ch == 0 : black to white
   // ch == 1 : green to magenta
   // ch == 2 : blue to yellow
-  const float origin[3][3] = { { 0.45f, 0.45f, 0.45f },                  // L = 0, @ (a, b) = 0
+  const float origin[3][3] = { { 0.0f, 0.0f, 0.0f },                  // L = 0, @ (a, b) = 0
                                { 0.0f, 231.0f/255.0f, 181.0f/255.0f },// a = -128 @ L = 75, b = 0
                                { 0.0f, 30.0f/255.0f, 195.0f/255.0f}}; // b = -128 @ L = 75, a = 0
 
-  const float destin[3][3] = { { 0.45f, 0.45f, 0.45f },                  // L = 100 @ (a, b) = 0
+  const float destin[3][3] = { { 1.0f, 1.0f, 1.0f },                  // L = 100 @ (a, b) = 0
                                { 1.0f, 0.0f, 192.0f/255.0f } ,        // a = 128 @ L = 75, b = 0
                                { 215.0f/255.0f, 182.0f/255.0f, 0.0f}};// b = 128 @ L = 75, a = 0
 
@@ -1456,7 +1446,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_set_source (cr, pat);
   cairo_fill (cr);
   cairo_pattern_destroy (pat);
-
+  }
 
   // draw grid
   set_color(cr, darktable.bauhaus->graph_border);

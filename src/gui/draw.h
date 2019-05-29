@@ -370,17 +370,6 @@ static inline void dt_draw_histogram_8_log_base(cairo_t *cr, const uint32_t *his
     dt_draw_histogram_8_logxliny(cr, hist, channels, channel, base_log);
   else  // log y
     dt_draw_histogram_8_logxlogy(cr, hist, channels, channel, base_log);
-/*
-  cairo_move_to(cr, 0, 0);
-  for(int k = 0; k < 256; k++)
-  {
-    const float x = (float)k / 255.0f;
-    cairo_line_to(cr, logf(x * (base_log - 1.0f) + 1.0f) / logf(base_log), logf(1.0 + hist[channels * k + channel]));
-  }
-
-  cairo_line_to(cr, 255, 0);
-  cairo_close_path(cr);
-  cairo_fill(cr);*/
 }
 
 // linear x
