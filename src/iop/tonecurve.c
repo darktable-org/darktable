@@ -1411,41 +1411,41 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   }
   else
   {
-  // Draw the background gradient along the diagonal
-  // ch == 0 : black to white
-  // ch == 1 : green to magenta
-  // ch == 2 : blue to yellow
-  const float origin[3][3] = { { 0.0f, 0.0f, 0.0f },                  // L = 0, @ (a, b) = 0
-                               { 0.0f, 231.0f/255.0f, 181.0f/255.0f },// a = -128 @ L = 75, b = 0
-                               { 0.0f, 30.0f/255.0f, 195.0f/255.0f}}; // b = -128 @ L = 75, a = 0
+    // Draw the background gradient along the diagonal
+    // ch == 0 : black to white
+    // ch == 1 : green to magenta
+    // ch == 2 : blue to yellow
+    const float origin[3][3] = { { 0.0f, 0.0f, 0.0f },                  // L = 0, @ (a, b) = 0
+                                 { 0.0f, 231.0f/255.0f, 181.0f/255.0f },// a = -128 @ L = 75, b = 0
+                                 { 0.0f, 30.0f/255.0f, 195.0f/255.0f}}; // b = -128 @ L = 75, a = 0
 
-  const float destin[3][3] = { { 1.0f, 1.0f, 1.0f },                  // L = 100 @ (a, b) = 0
-                               { 1.0f, 0.0f, 192.0f/255.0f } ,        // a = 128 @ L = 75, b = 0
-                               { 215.0f/255.0f, 182.0f/255.0f, 0.0f}};// b = 128 @ L = 75, a = 0
+    const float destin[3][3] = { { 1.0f, 1.0f, 1.0f },                  // L = 100 @ (a, b) = 0
+                                 { 1.0f, 0.0f, 192.0f/255.0f } ,        // a = 128 @ L = 75, b = 0
+                                 { 215.0f/255.0f, 182.0f/255.0f, 0.0f}};// b = 128 @ L = 75, a = 0
 
-  // since Cairo paints with sRGB at gamma 2.4, linear gradients are not linear but garbage and, at 50%,
-  // we dont see the neutral grey we would expect in the middle of a linear gradient between
-  // 2 complimentary colors. So we add it artificially, but that will break the smoothness
-  // of the transition. Maybe this will help people understand how broken are Lab and non-linear
-  // spaces for editing, so let it be ugly to teach them a lesson.
+    // since Cairo paints with sRGB at gamma 2.4, linear gradients are not linear but garbage and, at 50%,
+    // we dont see the neutral grey we would expect in the middle of a linear gradient between
+    // 2 complimentary colors. So we add it artificially, but that will break the smoothness
+    // of the transition. Maybe this will help people understand how broken are Lab and non-linear
+    // spaces for editing, so let it be ugly to teach them a lesson.
 
-  // middle step for gradients (50 %)
-  const float midgrey = to_log(0.45f, c->loglogscale, ch, c->semilog, 0);
+    // middle step for gradients (50 %)
+    const float midgrey = to_log(0.45f, c->loglogscale, ch, c->semilog, 0);
 
-  const float middle[3][3] = { { midgrey, midgrey, midgrey },   // L = 50 @ (a, b) = 0
-                               { 0.67f, 0.67f, 0.67f},          // L = 75 @ (a, b) = 0
-                               { 0.67f, 0.67f, 0.67f}};         // L = 75 @ (a, b) = 0
+    const float middle[3][3] = { { midgrey, midgrey, midgrey },   // L = 50 @ (a, b) = 0
+                                 { 0.67f, 0.67f, 0.67f},          // L = 75 @ (a, b) = 0
+                                 { 0.67f, 0.67f, 0.67f}};         // L = 75 @ (a, b) = 0
 
-  const float opacities[3] = { 0.5f, 0.5f, 0.5f};
+    const float opacities[3] = { 0.5f, 0.5f, 0.5f};
 
-  cairo_pattern_t *pat;
-  pat = cairo_pattern_create_linear (height, 0.0,  0.0, width);
-  cairo_pattern_add_color_stop_rgba (pat, 1, origin[ch][0], origin[ch][1], origin[ch][2], opacities[ch]);
-  cairo_pattern_add_color_stop_rgba (pat, 0.5, middle[ch][0], middle[ch][1], middle[ch][2], opacities[ch]);
-  cairo_pattern_add_color_stop_rgba (pat, 0, destin[ch][0], destin[ch][1], destin[ch][2], opacities[ch]);
-  cairo_set_source (cr, pat);
-  cairo_fill (cr);
-  cairo_pattern_destroy (pat);
+    cairo_pattern_t *pat;
+    pat = cairo_pattern_create_linear (height, 0.0,  0.0, width);
+    cairo_pattern_add_color_stop_rgba (pat, 1, origin[ch][0], origin[ch][1], origin[ch][2], opacities[ch]);
+    cairo_pattern_add_color_stop_rgba (pat, 0.5, middle[ch][0], middle[ch][1], middle[ch][2], opacities[ch]);
+    cairo_pattern_add_color_stop_rgba (pat, 0, destin[ch][0], destin[ch][1], destin[ch][2], opacities[ch]);
+    cairo_set_source (cr, pat);
+    cairo_fill (cr);
+    cairo_pattern_destroy (pat);
   }
 
   // draw grid
