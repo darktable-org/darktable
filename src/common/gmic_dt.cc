@@ -204,8 +204,7 @@ static gboolean _parser_read_one_word(dt_gmic_parser_t *parser)
       const size_t len = parser->index - parser->current_word;
       if(len < sizeof(parser->word))
       {
-        strncpy(parser->word, parser->buffer + parser->current_word, len);
-        parser->word[len] = 0;
+        g_strlcpy(parser->word, parser->buffer + parser->current_word, len + 1);
         parser->word_type = DT_GMIC_PARSER_WORD_ALPHA;
         word_readed = TRUE;
       }
@@ -226,8 +225,7 @@ static gboolean _parser_read_one_word(dt_gmic_parser_t *parser)
     const size_t len = parser->index - parser->current_word;
     if(len < sizeof(parser->word))
     {
-      strncpy(parser->word, parser->buffer + parser->current_word, len);
-      parser->word[len] = 0;
+      g_strlcpy(parser->word, parser->buffer + parser->current_word, len + 1);
       parser->word_type = DT_GMIC_PARSER_WORD_ALPHA;
       word_readed = TRUE;
     }
@@ -258,8 +256,7 @@ static gboolean _parser_read_one_word(dt_gmic_parser_t *parser)
     const size_t len = parser->index - parser->current_word;
     if(len < sizeof(parser->word))
     {
-      strncpy(parser->word, parser->buffer + parser->current_word, len);
-      parser->word[len] = 0;
+      g_strlcpy(parser->word, parser->buffer + parser->current_word, len + 1);
       word_readed = TRUE;
     }
     else
@@ -319,8 +316,7 @@ static char *_parser_read_parameter_string(dt_gmic_parser_t *parser)
         if(text == NULL)
         {
           text = (char *)malloc(len + 1);
-          strncpy(text, parser->buffer + parser->current_word, len);
-          text[len] = 0;
+          g_strlcpy(text, parser->buffer + parser->current_word, len + 1);
           text_len = len;
         }
         else
@@ -1083,8 +1079,7 @@ static void _parser_read_header(dt_gmic_parser_t *parser)
     while(parser->buffer[parser->index] != 0 && parser->buffer[parser->index] != ':') parser->index++;
 
     const int len = MIN(parser->index - parser->current_word, sizeof(parser->gmic_command->description));
-    strncpy(parser->gmic_command->description, parser->buffer + parser->current_word, len);
-    parser->gmic_command->description[sizeof(parser->gmic_command->description) - 1] = 0;
+    g_strlcpy(parser->gmic_command->description, parser->buffer + parser->current_word, len + 1);
 
     _parser_read_word(parser);
   }
@@ -1211,7 +1206,7 @@ static void _parser_read_command(dt_gmic_parser_t *parser)
     {
       len++;
       parser->gmic_command->command = (char *)calloc(1, len);
-      strncpy(parser->gmic_command->command, parser->buffer + parser->index, len);
+      g_strlcpy(parser->gmic_command->command, parser->buffer + parser->index, len);
     }
     command_len += len;
 

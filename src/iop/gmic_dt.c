@@ -342,8 +342,7 @@ static char *dt_gmic_get_command(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   int index = 0;
   size_t command_len = strlen(gmic_command->command);
   char *command = (char *)malloc(command_len + 1);
-  strncpy(command, gmic_command->command, command_len);
-  command[command_len] = 0;
+  g_strlcpy(command, gmic_command->command, command_len + 1);
 
   while(command[index])
   {
@@ -405,8 +404,8 @@ static char *dt_gmic_get_command(struct dt_iop_module_t *self, dt_dev_pixelpipe_
           {
             char str2[30];
             dt_ftoa(str2, param_value.value._color.r, sizeof(str2));
-            strncpy(str1, str2, sizeof(str1));
-            str1[sizeof(str1) - 1] = 0;
+            g_strlcpy(str1, str2, sizeof(str1));
+
             dt_ftoa(str2, param_value.value._color.g, sizeof(str2));
             g_strlcat(str1, ",", sizeof(str1));
             g_strlcat(str1, str2, sizeof(str1));
@@ -424,8 +423,8 @@ static char *dt_gmic_get_command(struct dt_iop_module_t *self, dt_dev_pixelpipe_
 
             char str2[30];
             dt_ftoa(str2, pts[0], sizeof(str2));
-            strncpy(str1, str2, sizeof(str1));
-            str1[sizeof(str1) - 1] = 0;
+            g_strlcpy(str1, str2, sizeof(str1));
+
             dt_ftoa(str2, pts[1], sizeof(str2));
             g_strlcat(str1, ",", sizeof(str1));
             g_strlcat(str1, str2, sizeof(str1));
@@ -435,14 +434,11 @@ static char *dt_gmic_get_command(struct dt_iop_module_t *self, dt_dev_pixelpipe_
           const int len = strlen(str1);
           char *tmp = (char *)malloc(command_len + len + 1);
 
-          strncpy(tmp, command, index);
-          tmp[index] = 0;
+          g_strlcpy(tmp, command, index + 1);
 
-          strncpy(tmp + index, str1, len);
-          tmp[index + len] = 0;
+          g_strlcpy(tmp + index, str1, len + 1);
 
-          strncpy(tmp + index + len, command + index + index2, command_len - index);
-          tmp[index + len + (command_len - index)] = 0;
+          g_strlcpy(tmp + index + len, command + index + index2, command_len - index + 1);
 
           command_len += len;
           free(command);
@@ -463,14 +459,11 @@ static char *dt_gmic_get_command(struct dt_iop_module_t *self, dt_dev_pixelpipe_
         const int len = strlen(str1);
         char *tmp = (char *)malloc(command_len + len + 1);
 
-        strncpy(tmp, command, index);
-        tmp[index] = 0;
+        g_strlcpy(tmp, command, index + 1);
 
-        strncpy(tmp + index, str1, len);
-        tmp[index + len] = 0;
+        g_strlcpy(tmp + index, str1, len + 1);
 
-        strncpy(tmp + index + len, command + index + index2, command_len - index);
-        tmp[index + len + (command_len - index)] = 0;
+        g_strlcpy(tmp + index + len, command + index + index2, command_len - index + 1);
 
         command_len += len;
         free(command);
