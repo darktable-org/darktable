@@ -1066,23 +1066,21 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
   {
     if(gtk_toggle_button_get_active(togglebutton))
     {
-      module->enabled = 1;
-
-      dt_iop_request_focus(module);
-
       if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
         darktable.gui->scroll_to[1] = module->expander;
 
       if(dt_conf_get_bool("darkroom/ui/activate_expand"))
         dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
+
+      module->enabled = 1;
+      dt_iop_request_focus(module);
     }
     else
     {
-      module->enabled = 0;
-
       if(dt_conf_get_bool("darkroom/ui/activate_expand"))
         dt_iop_gui_set_expanded(module, FALSE, FALSE);
 
+      module->enabled = 0;
       dt_iop_request_focus(NULL);
     }
     dt_dev_add_history_item(module->dev, module, FALSE);
@@ -1712,8 +1710,8 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
   if(darktable.develop->gui_module != module) darktable.develop->focus_hash++;
 
-  /* lets lose the focus of previous focus module*/
-  if(darktable.develop->gui_module)
+  /* lets lose the focus of previous focused module only if it was enabled */
+  if(darktable.develop->gui_module && darktable.develop->gui_module->enabled)
   {
     if(darktable.develop->gui_module->gui_focus)
       darktable.develop->gui_module->gui_focus(darktable.develop->gui_module, FALSE);
