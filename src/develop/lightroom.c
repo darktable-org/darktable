@@ -19,7 +19,7 @@
 #include "develop/lightroom.h"
 #include "common/colorlabels.h"
 #include "common/colorspaces.h"
-#include "common/curve_tools.h"
+#include "common/splines.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/iop_order.h"
