@@ -1068,8 +1068,6 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
     {
       module->enabled = 1;
 
-      dt_iop_request_focus(module);
-
       if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
         darktable.gui->scroll_to[1] = module->expander;
 
@@ -1082,8 +1080,6 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
 
       if(dt_conf_get_bool("darkroom/ui/activate_expand"))
         dt_iop_gui_set_expanded(module, FALSE, FALSE);
-
-      dt_iop_request_focus(NULL);
     }
     dt_dev_add_history_item(module->dev, module, FALSE);
   }
