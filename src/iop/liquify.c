@@ -1423,7 +1423,9 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
   // 1. copy the whole image (we'll change only a small part of it)
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, out, roi_in, roi_out) \
+  schedule(static)
 #endif
   for (int i = 0; i < roi_out->height; i++)
   {
@@ -1466,7 +1468,9 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   const int width = MIN(roi_in->width, roi_out->width);
   
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, height, in, out, roi_in, roi_out, width) \
+  schedule(static)
 #endif
   for (int i = 0; i < height; i++)
   {
