@@ -491,7 +491,10 @@ static inline void precondition(const float *const in, float *const buf, const i
           (b[2] / a[2]) * (b[2] / a[2]) + 3.f / 8.f };
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(a)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(buf, ht, in, sigma2_plus_3_8, wd) \
+  shared(a) \
+  schedule(static)
 #endif
   for(int j = 0; j < ht; j++)
   {
@@ -519,7 +522,10 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
           (b[2] / a[2]) * (b[2] / a[2]) + 1.f / 8.f };
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(a)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(buf, ht, sigma2_plus_1_8, wd) \
+  shared(a) \
+  schedule(static)
 #endif
   for(int j = 0; j < ht; j++)
   {
@@ -704,7 +710,9 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
 /* The first "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, out, width) \
+  schedule(static)
 #endif
   for(int j = 0; j < 2 * mult; j++)
   {
@@ -725,7 +733,9 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, out, width) \
+  schedule(static)
 #endif
   for(int j = 2 * mult; j < height - 2 * mult; j++)
   {
@@ -782,7 +792,9 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
 /* The last "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, out, width) \
+  schedule(static)
 #endif
   for(int j = height - 2 * mult; j < height; j++)
   {
@@ -819,7 +831,9 @@ static void eaw_decompose_sse(float *const out, const float *const in, float *co
 /* The first "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, out, width) \
+  schedule(static)
 #endif
   for(int j = 0; j < 2 * mult; j++)
   {
@@ -840,7 +854,9 @@ static void eaw_decompose_sse(float *const out, const float *const in, float *co
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, out, width) \
+  schedule(static)
 #endif
   for(int j = 2 * mult; j < height - 2 * mult; j++)
   {
@@ -897,7 +913,9 @@ static void eaw_decompose_sse(float *const out, const float *const in, float *co
 /* The last "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, out, width) \
+  schedule(static)
 #endif
   for(int j = height - 2 * mult; j < height; j++)
   {
@@ -938,7 +956,10 @@ static void eaw_synthesize(float *const out, const float *const in, const float 
   const float boost[4] = { boostf[0], boostf[1], boostf[2], boostf[3] };
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(boost, detail, height, in, out, threshold, width) \
+  schedule(static) \
+  collapse(2)
 #endif
   for(size_t k = 0; k < (size_t)4 * width * height; k += 4)
   {
@@ -960,7 +981,9 @@ static void eaw_synthesize_sse2(float *const out, const float *const in, const f
   const __m128 boost = _mm_set_ps(boostf[3], boostf[2], boostf[1], boostf[0]);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(boost, detail, height, in, out, threshold, width) \
+  schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -1278,7 +1301,11 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
 // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more
 // memory
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, in, Sa)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(d, ovoid, P, roi_in, roi_out) \
+      firstprivate(inited_slide) \
+      shared(kj, ki, in, Sa) \
+      schedule(static)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {
@@ -1383,7 +1410,9 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
 
 // normalize
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, out, roi_out) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
   {
@@ -1474,7 +1503,11 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
 // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more
 // memory
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide, d) shared(kj, ki, in, Sa)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(ovoid, P, roi_in, roi_out) \
+      firstprivate(inited_slide, d) \
+      shared(kj, ki, in, Sa) \
+      schedule(static)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {
@@ -1626,7 +1659,10 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   }
 // normalize
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(d)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ovoid, roi_out) \
+  shared(d) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
