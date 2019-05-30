@@ -460,7 +460,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(filters == 9u)
   { // xtrans float mosaiced
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) \
+    dt_omp_firstprivate(d, in, out, roi_out, xtrans) \
+    schedule(static) \
+    collapse(2)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -474,7 +477,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else if(filters)
   { // bayer float mosaiced
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) \
+    dt_omp_firstprivate(d, filters, in, out, roi_out) \
+    schedule(static) \
+    collapse(2)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -490,7 +496,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const int ch = piece->colors;
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) \
+    dt_omp_firstprivate(ch, d, in, out, roi_out) \
+    schedule(static) \
+    collapse(2)
 #endif
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
@@ -522,7 +531,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   if(filters == 9u)
   { // xtrans float mosaiced
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ivoid, ovoid, roi_out, xtrans) \
+    shared(d) \
+    schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -563,7 +575,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   else if(filters)
   { // bayer float mosaiced
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(filters, ivoid, ovoid, roi_out) \
+    shared(d) \
+    schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -605,7 +620,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     const __m128 coeffs = _mm_set_ps(1.0f, d->coeffs[2], d->coeffs[1], d->coeffs[0]);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, coeffs, ivoid, ovoid, roi_out) \
+    shared(d) \
+    schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
