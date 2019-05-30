@@ -25,7 +25,7 @@
 #endif
 
 #include "common/darktable.h"
-#include "common/curve_tools.h"
+#include "common/splines.h"
 #include <cairo.h>
 #include <glib.h>
 #include <math.h>
@@ -276,22 +276,37 @@ static inline void dt_draw_curve_calc_values(dt_draw_curve_t *c, const float min
   }
 }
 
+static inline void dt_draw_curve_calc_values_periodic(dt_draw_curve_t *c, const float min, const float max,
+                                                      const int res, float *x, float *y)
+{
+  c->csample.m_samplingRes = res;
+  c->csample.m_outputRes = 0x10000;
+  CurveDataSamplePeriodic(&c->c, &c->csample);
+  if(x)
+  {
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) \
+    dt_omp_firstprivate(res) \
+    shared(x) \
+    schedule(static)
+#endif
+    for(int k = 0; k < res; k++) x[k] = k * (1.0f / res);
+  }
+  if(y)
+  {
+#ifdef _OPENMP
+#pragma omp parallel for SIMD() default(none) \
+    shared(y, c) \
+    dt_omp_firstprivate(min, max, res) \
+    schedule(static)
+#endif
+    for(int k = 0; k < res; k++) y[k] = min + (max - min) * c->csample.m_Samples[k] * (1.0f / 0x10000);
+  }
+}
+
 static inline float dt_draw_curve_calc_value(dt_draw_curve_t *c, const float x)
 {
-  float xa[20], ya[20];
-  float val = 0.f;
-  float *ypp = NULL;
-  for(int i = 0; i < c->c.m_numAnchors; i++)
-  {
-    xa[i] = c->c.m_anchors[i].x;
-    ya[i] = c->c.m_anchors[i].y;
-  }
-  ypp = interpolate_set(c->c.m_numAnchors, xa, ya, c->c.m_spline_type);
-  if(ypp)
-  {
-    val = interpolate_val(c->c.m_numAnchors, xa, x, ya, ypp, c->c.m_spline_type);
-    free(ypp);
-  }
+  float val = interpolate_val(c->c.m_numAnchors, c->c.m_anchors, x, c->c.m_spline_type);
   return MIN(MAX(val, c->c.m_min_y), c->c.m_max_y);
 }
 
