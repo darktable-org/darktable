@@ -614,12 +614,17 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
   write_imagef (out, (int2)(x, y), pixel);
 }
 
+float dt_camera_rgb_luminance(const float4 rgb)
+{
+  return (rgb.x * 0.2225045f + rgb.y * 0.7168786f + rgb.z * 0.0606169f);
+}
+
 /* kernel for the tonecurve plugin. */
 kernel void
 tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
            read_only image2d_t table_L, read_only image2d_t table_a, read_only image2d_t table_b,
            const int autoscale_ab, const int unbound_ab, global float *coeffs_L, global float *coeffs_ab,
-           const float low_approximation)
+           const float low_approximation, const int preserve_colors)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -674,9 +679,52 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
   else if(autoscale_ab == 3)
   {
     float4 rgb = Lab_to_prophotorgb(pixel);
-    rgb.x = lookup_unbounded(table_L, rgb.x, coeffs_L);
-    rgb.y = lookup_unbounded(table_L, rgb.y, coeffs_L);
-    rgb.z = lookup_unbounded(table_L, rgb.z, coeffs_L);
+
+    if (preserve_colors == 0) // DT_TONECURVE_PRESERVE_NONE
+    {
+      rgb.x = lookup_unbounded(table_L, rgb.x, coeffs_L);
+      rgb.y = lookup_unbounded(table_L, rgb.y, coeffs_L);
+      rgb.z = lookup_unbounded(table_L, rgb.z, coeffs_L);
+    }
+    else
+    {
+      float ratio = 1.f;
+      float lum = 0.0f;
+      if(preserve_colors == 1) // DT_TONECURVE_PRESERVE_LUMINANCE
+      {
+        lum = dt_camera_rgb_luminance(rgb);
+      }
+      else if (preserve_colors == 2) // DT_TONECURVE_PRESERVE_LMAX
+      {
+        lum = max(rgb.x, max(rgb.y, rgb.z));
+      }
+      else if (preserve_colors == 3) // DT_TONECURVE_PRESERVE_LAVG
+      {
+        lum = (rgb.x + rgb.y + rgb.z) / 3.0f;
+      }
+      else if (preserve_colors == 4) // DT_TONECURVE_PRESERVE_LSUM
+      {
+        lum = rgb.x + rgb.y + rgb.z;
+      }
+      else if (preserve_colors == 5) // DT_TONECURVE_PRESERVE_LNORM
+      {
+        lum = native_powr(rgb.x * rgb.x + rgb.y * rgb.y + rgb.z * rgb.z, 0.5f);
+      }
+      else if (preserve_colors == 6) // DT_TONECURVE_PRESERVE_LBP
+      {
+        float R, G, B;
+        R = rgb.x * rgb.x;
+        G = rgb.y * rgb.y;
+        B = rgb.z * rgb.z;
+        lum = (rgb.x * R + rgb.y * G + rgb.z * B) / (R + G + B);
+      }
+      if(lum > 0.f)
+      {
+        const float curve_lum = lookup_unbounded(table_L, lum, coeffs_L);
+        ratio = curve_lum / lum;
+      }
+      rgb.xyz *= ratio;
+    }
     pixel.xyz = prophotorgb_to_Lab(rgb).xyz;
   }
 
