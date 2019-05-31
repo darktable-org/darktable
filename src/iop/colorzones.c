@@ -1834,13 +1834,22 @@ static gboolean _area_button_press_callback(GtkWidget *widget, GdkEventButton *e
       return TRUE;
     }
 
-    for(int k = c->selected; k < nodes - 1; k++)
+    // ctrl+right click reset the node to y-zero
+    if((event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
     {
-      curve[k].x = curve[k + 1].x;
-      curve[k].y = curve[k + 1].y;
+      curve[c->selected].y = 0.5f;
+    }
+    // right click deletes the node
+    else
+    {
+      for(int k = c->selected; k < nodes - 1; k++)
+      {
+        curve[k].x = curve[k + 1].x;
+        curve[k].y = curve[k + 1].y;
+      }
+      p->curve_num_nodes[ch]--;
     }
     c->selected = -2; // avoid re-insertion of that point immediately after this
-    p->curve_num_nodes[ch]--;
 
     if(c->color_picker.current_picker == DT_IOP_COLORZONES_PICK_SET_VALUES) dt_iop_color_picker_reset(self, TRUE);
     gtk_widget_queue_draw(self->widget);
