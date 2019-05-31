@@ -223,7 +223,6 @@ B) Cross compile on Linux
 
     cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchain_mingw64.cmake \
         -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
-        -DRUNTIME_INSTALL_PREFIX=${RUNTIME_PREFIX} \
         -DCMAKE_INSTALL_LOCALEDIR=${RUNTIME_PREFIX}/share/locale \
         -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
         -DUSE_OPENCL=Off \
