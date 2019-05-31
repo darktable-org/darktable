@@ -328,7 +328,10 @@ static void pre_median_b(float *out, const float *const in, const dt_iop_roi_t *
   for(int pass = 0; pass < num_passes; pass++)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(filters, in, lim, roi, threshold) \
+    shared(out) \
+    schedule(static)
 #endif
     for(int row = 3; row < roi->height - 3; row++)
     {
@@ -388,7 +391,10 @@ static void color_smoothing(float *out, const dt_iop_roi_t *const roi_out, const
           for(int i = 0; i < roi_out->width; i++, outp += 4) outp[3] = outp[c];
       }
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(out, c)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(roi_out, width4) \
+      shared(out, c) \
+      schedule(static)
 #endif
       for(int j = 1; j < roi_out->height - 1; j++)
       {
@@ -443,7 +449,10 @@ static void green_equilibration_lavg(float *out, const float *const in, const in
   memcpy(out, in, height * width * sizeof(float));
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(out, oi, oj)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, in, thr, width) \
+  shared(out, oi, oj) \
+  schedule(static)
 #endif
   for(size_t j = oj; j < height - 2; j += 2)
   {
@@ -489,7 +498,11 @@ static void green_equilibration_favg(float *out, const float *const in, const in
   const int g2_offset = oi ? -1 : 1;
   memcpy(out, in, (size_t)height * width * sizeof(float));
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) reduction(+ : sum1, sum2) shared(oi, oj)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(g2_offset, height, in, width) \
+  reduction(+ : sum1, sum2) \
+  shared(oi, oj) \
+  schedule(static)
 #endif
   for(size_t j = oj; j < (height - 1); j += 2)
   {
@@ -506,7 +519,10 @@ static void green_equilibration_favg(float *out, const float *const in, const in
     return;
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(out, oi, oj, gr_ratio)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(g2_offset, height, in, width) \
+  shared(out, oi, oj, gr_ratio) \
+  schedule(static)
 #endif
   for(int j = oj; j < (height - 1); j += 2)
   {
@@ -601,7 +617,10 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
   // extra passes propagates out errors at edges, hence need more padding
   const int pad_tile = (passes == 1) ? 12 : 17;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out) schedule(dynamic)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(all_buffers, buffer_size, dir, height, in, ndir, pad_tile, passes, roi_in, width, xtrans) \
+  shared(sgrow, sgcol, allhex, out) \
+  schedule(dynamic)
 #endif
   // step through TSxTS cells of image, each tile overlapping the
   // prior as interpolation needs a substantial border
@@ -1625,7 +1644,11 @@ static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, con
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(sgrow, sgcol, allhex, out, rowoffset, coloffset, hybrid_fdc) schedule(dynamic)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(all_buffers, dir, directionality, harr, height, in, \
+                      Minv, modarr, roi_in, width, xtrans) \
+  shared(sgrow, sgcol, allhex, out, rowoffset, coloffset, hybrid_fdc) \
+  schedule(dynamic)
 #endif
   // step through TSxTS cells of image, each tile overlapping the
   // prior as interpolation needs a substantial border
@@ -2132,7 +2155,10 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
 
 // border interpolate
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(colors, filters, in, roi_in, roi_out, xtrans) \
+  shared(out) \
+  schedule(static)
 #endif
   for(int row = 0; row < roi_out->height; row++)
     for(int col = 0; col < roi_out->width; col++)
@@ -2206,7 +2232,10 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
     }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(colors, in, lookup, roi_in, roi_out, size) \
+  shared(out) \
+  schedule(static)
 #endif
   for(int row = 1; row < roi_out->height - 1; row++)
   {
@@ -2340,7 +2369,11 @@ static void vng_interpolate(float *out, const float *const in,
   for(int row = 2; row < height - 2; row++) /* Do VNG interpolation */
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(row, code, brow, out, filters4) private(ip) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(colors, pcol, prow, roi_in, width, xtrans) \
+    shared(row, code, brow, out, filters4) \
+    private(ip) \
+    schedule(static)
 #endif
     for(int col = 2; col < width - 2; col++)
     {
@@ -2405,7 +2438,10 @@ static void vng_interpolate(float *out, const float *const in,
   if(filters != 9 && !FILTERS_ARE_4BAYER(filters)) // x-trans or CYGM/RGBE
 // for Bayer mix the two greens to make VNG4
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(height, width) \
+    shared(out) \
+    schedule(static)
 #endif
     for(int i = 0; i < height * width; i++) out[i * 4 + 1] = (out[i * 4 + 1] + out[i * 4 + 3]) / 2.0f;
 }
@@ -2419,7 +2455,10 @@ static void passthrough_monochrome(float *out, const float *const in, dt_iop_roi
   assert(roi_in->height >= roi_out->height);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, roi_out, roi_in) \
+  shared(out) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -2488,7 +2527,10 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
   }
 // for all pixels: interpolate green into float array, or copy color.
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(input) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(filters, out, roi_in, roi_out) \
+  shared(input) \
+  schedule(static)
 #endif
   for(int j = offy; j < roi_out->height - offY; j++)
   {
@@ -2568,7 +2610,9 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
 
 // for all pixels: interpolate colors into float array
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(filters, out, roi_out) \
+  schedule(static)
 #endif
   for(int j = 1; j < roi_out->height - 1; j++)
   {
