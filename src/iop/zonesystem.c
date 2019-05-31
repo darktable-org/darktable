@@ -228,7 +228,10 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
     if(gauss && tmp)
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(tmp) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(ch, height, width, ivoid) \
+      shared(tmp) \
+      schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)width * height; k++) tmp[k] = ((float *)ivoid)[ch * k];
 
@@ -237,7 +240,10 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
       /* create zonemap preview for input */
       dt_pthread_mutex_lock(&g->lock);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(tmp, g) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(height, size, width) \
+      shared(tmp, g) \
+      schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)width * height; k++)
       {
@@ -247,7 +253,10 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
 
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(tmp) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(ch, height, ovoid, width) \
+      shared(tmp) \
+      schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)width * height; k++) tmp[k] = ((float *)ovoid)[ch * k];
 
@@ -257,7 +266,10 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
       /* create zonemap preview for output */
       dt_pthread_mutex_lock(&g->lock);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(tmp, g) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(height, size, width) \
+      shared(tmp, g) \
+      schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)width * height; k++)
       {
@@ -285,7 +297,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *const out = (float *const)ovoid;
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(ch, d, in, out, roi_out, size) \
+  schedule(static) \
+  collapse(2)
 #endif
   for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
   {
@@ -315,7 +330,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const int size = d->params.size;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out, size) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
