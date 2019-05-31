@@ -30,6 +30,19 @@ set(CMAKE_REQUIRED_FLAGS)
 set(CMAKE_REQUIRED_LIBRARIES)
 endif()
 
+set(CMAKE_REQUIRED_INCLUDES ${CMAKE_CURRENT_SOURCE_DIR})
+
+check_c_source_compiles("#include <stdio.h>
+int main() {
+  #include \"src/is_supported_platform.h\"
+}" IS_SUPPORTED_PLATFORM)
+if (IS_SUPPORTED_PLATFORM)
+    message(STATUS "Is the target platform supported: ${IS_SUPPORTED_PLATFORM}")
+else()
+    message(FATAL_ERROR "The target platform is not supported!")
+endif()
+
+set(CMAKE_REQUIRED_INCLUDES)
 
 test_big_endian(BIGENDIAN)
 if(${BIGENDIAN})
