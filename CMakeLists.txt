@@ -60,7 +60,6 @@ endif()
 include(ConfigureChecks.cmake)
 
 include(CheckCCompilerFlag)
-include(TestBigEndian)
 
 # Check if this is source package build
 if(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
@@ -78,15 +77,6 @@ if(BUILD_SSE2_CODEPATHS)
 endif()
 
 MESSAGE(STATUS "Building SSE2-optimized codepaths: ${BUILD_SSE2_CODEPATHS}")
-
-test_big_endian(BIGENDIAN)
-if(${BIGENDIAN})
-	# we do not really want those.
-	# besides, no one probably tried darktable on such systems
-	MESSAGE(FATAL_ERROR "Found big endian system. Bad.")
-else()
-	MESSAGE(STATUS "Found little endian system. Good.")
-endif(${BIGENDIAN})
 
 set(CMAKE_REQUIRED_INCLUDES_OLD "${CMAKE_REQUIRED_INCLUDES}")
 list(APPEND CMAKE_REQUIRED_INCLUDES "${CMAKE_SOURCE_DIR}")
