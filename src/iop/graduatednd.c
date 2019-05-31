@@ -752,7 +752,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(data->density > 0)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, cosv, data, filter_compression, hh_inv, hw_inv, \
+                        ivoid, ix, iy, offset, ovoid, roi_out, sinv) \
+    schedule(static)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
@@ -798,7 +801,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, cosv, data, filter_compression, hh_inv, hw_inv, \
+                        ivoid, ix, iy, offset, ovoid, roi_out, sinv) \
+    schedule(static)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
@@ -877,7 +883,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   if(data->density > 0)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, cosv, data, filter_compression, hh_inv, hw_inv, \
+                        ivoid, ix, iy, offset, ovoid, roi_out, sinv) \
+    schedule(static)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
@@ -925,7 +934,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, cosv, data, filter_compression, hh_inv, hw_inv, \
+                        ivoid, ix, iy, offset, ovoid, roi_out, sinv) \
+    schedule(static)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
