@@ -78,22 +78,6 @@ endif()
 
 MESSAGE(STATUS "Building SSE2-optimized codepaths: ${BUILD_SSE2_CODEPATHS}")
 
-set(CMAKE_REQUIRED_INCLUDES_OLD "${CMAKE_REQUIRED_INCLUDES}")
-list(APPEND CMAKE_REQUIRED_INCLUDES "${CMAKE_SOURCE_DIR}")
-
-check_c_source_compiles("
-#include <stdio.h>
-int main() {
-#include \"src/is_supported_platform.h\"
-}" IS_SUPPORTED_PLATFORM)
-if(NOT IS_SUPPORTED_PLATFORM)
-  MESSAGE(FATAL_ERROR "The target platform is not supported!")
-endif(NOT IS_SUPPORTED_PLATFORM)
-MESSAGE(STATUS "Is the target platform supported: ${IS_SUPPORTED_PLATFORM}")
-
-set(CMAKE_REQUIRED_INCLUDES "${CMAKE_REQUIRED_INCLUDES_OLD}")
-unset(CMAKE_REQUIRED_INCLUDES_OLD)
-
 # When cross compiling, CMAKE_INSTALL_PREFIX will point to something like "/opt/darktable", but that's not useful when using the path to load
 # modules on runtime. Then we need something like "C:\Program Files\darktable". Doesn't need to be set when doing regular compiles.
 if(NOT DEFINED RUNTIME_INSTALL_PREFIX)
