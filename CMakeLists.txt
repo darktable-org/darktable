@@ -78,12 +78,6 @@ endif()
 
 MESSAGE(STATUS "Building SSE2-optimized codepaths: ${BUILD_SSE2_CODEPATHS}")
 
-# When cross compiling, CMAKE_INSTALL_PREFIX will point to something like "/opt/darktable", but that's not useful when using the path to load
-# modules on runtime. Then we need something like "C:\Program Files\darktable". Doesn't need to be set when doing regular compiles.
-if(NOT DEFINED RUNTIME_INSTALL_PREFIX)
-  set(RUNTIME_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-endif(NOT DEFINED RUNTIME_INSTALL_PREFIX)
-
 # Generate multi arch triplet
 EXECUTE_PROCESS(COMMAND dpkg-architecture -qDEB_HOST_MULTIARCH OUTPUT_VARIABLE CMAKE_ARCH_TRIPLET OUTPUT_STRIP_TRAILING_WHITESPACE)
 if(CMAKE_ARCH_TRIPLET)
