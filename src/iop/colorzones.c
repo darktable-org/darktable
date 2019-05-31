@@ -91,6 +91,7 @@ typedef struct dt_iop_colorzones_gui_data_t
   GtkWidget *strength;
   GtkWidget *interpolator; // curve type
   GtkWidget *mode;
+  GtkWidget *bt_showmask;
   double mouse_x, mouse_y;
   float mouse_radius;
   int selected;
@@ -108,6 +109,7 @@ typedef struct dt_iop_colorzones_gui_data_t
   float zoom_factor;
   float offset_x, offset_y;
   int edit_by_area;
+  gboolean display_mask;
 } dt_iop_colorzones_gui_data_t;
 
 typedef struct dt_iop_colorzones_data_t
@@ -374,15 +376,62 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
+  dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+
+  const int ch = piece->colors;
+  const float normalize_C = 1.f / (128.0f * sqrtf(2.f));
+
+  // display selection if requested
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL && g && g->display_mask && self->dev->gui_attached
+     && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe))
+  {
+    const dt_iop_colorzones_channel_t display_channel = g->channel;
+
+    memcpy(ovoid, ivoid, roi_out->width * roi_out->height * ch * sizeof(float));
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) schedule(static) shared(d)
+#endif
+    for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+    {
+      float *in = (float *)ivoid + ch * k;
+      float *out = (float *)ovoid + ch * k;
+
+      float LCh[3];
+
+      dt_Lab_2_LCH(in, LCh);
+
+      float select = 0.0f;
+      switch(d->channel)
+      {
+        case DT_IOP_COLORZONES_L:
+          select = LCh[0] * 0.01f;
+          break;
+        case DT_IOP_COLORZONES_C:
+          select = LCh[1] * normalize_C;
+          break;
+        case DT_IOP_COLORZONES_h:
+        default:
+          select = LCh[2];
+          break;
+      }
+      select = CLAMP(select, 0.f, 1.f);
+
+      out[3] = fabs(lookup(d->lut[display_channel], select) - .5f) * 4.f;
+      out[3] = CLAMP(out[3], 0.f, 1.f);
+    }
+
+    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
+    piece->pipe->bypass_blendif = 1;
+
+    return;
+  }
 
   if(d->mode == DT_IOP_COLORZONES_MODE_OLD)
   {
     process_v3(self, piece, ivoid, ovoid, roi_in, roi_out);
     return;
   }
-
-  const int ch = piece->colors;
-  const float normalize_C = 1.f / (128.0f * sqrtf(2.f));
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -601,6 +650,26 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("black & white film"), self->op, version, &p, sizeof(p), 1);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+}
+
+static void _reset_display_selection(dt_iop_module_t *self)
+{
+  dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
+  if(c)
+  {
+    if(c->display_mask)
+    {
+      c->display_mask = FALSE;
+      dt_dev_reprocess_center(self->dev);
+    }
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->bt_showmask)))
+    {
+      const int reset = darktable.gui->reset;
+      darktable.gui->reset = 1;
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(c->bt_showmask), FALSE);
+      darktable.gui->reset = reset;
+    }
+  }
 }
 
 static int _select_base_display_color(dt_iop_module_t *self, float *picked_color, float *picker_min,
@@ -1882,6 +1951,7 @@ static void _channel_tabs_switch_callback(GtkNotebook *notebook, GtkWidget *page
   self->dt->gui->reset = reset;
 
   if(c->color_picker.current_picker == DT_IOP_COLORZONES_PICK_SET_VALUES) dt_iop_color_picker_reset(self, TRUE);
+  if(c->display_mask) dt_dev_reprocess_center(self->dev);
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -1918,6 +1988,7 @@ static void _select_by_callback(GtkWidget *widget, dt_iop_module_t *self)
   p->channel = 2 - (dt_iop_colorzones_channel_t)dt_bauhaus_combobox_get(widget);
 
   if(g->color_picker.current_picker == DT_IOP_COLORZONES_PICK_SET_VALUES) dt_iop_color_picker_reset(self, TRUE);
+  if(g->display_mask) _reset_display_selection(self);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
 }
@@ -1975,6 +2046,32 @@ static void _mode_callback(GtkWidget *widget, dt_iop_module_t *self)
   if(g->color_picker.current_picker == DT_IOP_COLORZONES_PICK_SET_VALUES) dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
+}
+
+static void _display_mask_callback(GtkToggleButton *togglebutton, dt_iop_module_t *module)
+{
+  if(darktable.gui->reset) return;
+
+  dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)module->gui_data;
+
+  // if blend module is displaying mask do not display it here
+  if(module->request_mask_display && !g->display_mask)
+  {
+    dt_control_log(_("cannot display masks when the blending mask is displayed"));
+
+    const int reset = darktable.gui->reset;
+    darktable.gui->reset = 1;
+    gtk_toggle_button_set_active(togglebutton, FALSE);
+    darktable.gui->reset = reset;
+    return;
+  }
+
+  g->display_mask = gtk_toggle_button_get_active(togglebutton);
+
+  if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
+  dt_iop_request_focus(module);
+
+  dt_dev_reprocess_center(module->dev);
 }
 
 static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
@@ -2095,11 +2192,16 @@ void gui_reset(struct dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 
   c->zoom_factor = 1.f;
+  _reset_display_selection(self);
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
-  if(!in) dt_iop_color_picker_reset(self, TRUE);
+  if(!in)
+  {
+    dt_iop_color_picker_reset(self, TRUE);
+    _reset_display_selection(self);
+  }
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -2133,6 +2235,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->mouse_radius = 1.0 / DT_IOP_COLORZONES_BANDS;
   c->dragging = 0;
   c->edit_by_area = 0;
+  c->display_mask = FALSE;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
@@ -2196,14 +2299,26 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->chk_edit_by_area), "toggled", G_CALLBACK(_edit_by_area_callback), self);
 
   // select by which dimension
+  GtkWidget *hbox_select_by = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
   c->select_by = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->select_by, NULL, _("select by"));
   gtk_widget_set_tooltip_text(c->select_by, _("choose selection criterion, will be the abscissa in the graph"));
   dt_bauhaus_combobox_add(c->select_by, _("hue"));
   dt_bauhaus_combobox_add(c->select_by, _("saturation"));
   dt_bauhaus_combobox_add(c->select_by, _("lightness"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->select_by, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox_select_by), c->select_by, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->select_by), "value-changed", G_CALLBACK(_select_by_callback), (gpointer)self);
+
+  // display selection
+  c->bt_showmask
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  g_object_set(G_OBJECT(c->bt_showmask), "tooltip-text", _("display selection"), (char *)NULL);
+  g_signal_connect(G_OBJECT(c->bt_showmask), "toggled", G_CALLBACK(_display_mask_callback), self);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(c->bt_showmask), FALSE);
+  gtk_box_pack_end(GTK_BOX(hbox_select_by), c->bt_showmask, FALSE, FALSE, 0);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox_select_by, TRUE, TRUE, 0);
 
   c->mode = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->mode, NULL, _("process mode"));
@@ -2315,6 +2430,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // pull in new params to pipe
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)p1;
+  dt_iop_colorzones_gui_data_t *g = (dt_iop_colorzones_gui_data_t *)self->gui_data;
 
   if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
     piece->request_histogram |= (DT_REQUEST_ON);
@@ -2330,6 +2446,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     }
 #endif
 
+  // display selection don't work with opencl
+  piece->process_cl_ready = (g && g->display_mask) ? 0: 1;
   d->channel = (dt_iop_colorzones_channel_t)p->channel;
   d->mode = p->mode;
   for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++)
