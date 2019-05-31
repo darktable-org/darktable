@@ -3579,7 +3579,10 @@ static void image_rgb2lab(float *img_src, const int width, const int height, con
   if(ch == 4 && use_sse)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img_src) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, stride) \
+    shared(img_src) \
+    schedule(static)
 #endif
     for(int i = 0; i < stride; i += ch)
     {
@@ -3595,7 +3598,10 @@ static void image_rgb2lab(float *img_src, const int width, const int height, con
 #endif
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img_src) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, stride) \
+  shared(img_src) \
+  schedule(static)
 #endif
   for(int i = 0; i < stride; i += ch)
   {
@@ -3614,7 +3620,10 @@ static void image_lab2rgb(float *img_src, const int width, const int height, con
   if(ch == 4 && use_sse)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img_src) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, stride) \
+  shared(img_src) \
+  schedule(static)
 #endif
     for(int i = 0; i < stride; i += ch)
     {
@@ -3630,7 +3639,10 @@ static void image_lab2rgb(float *img_src, const int width, const int height, con
 #endif
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img_src) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, stride) \
+  shared(img_src) \
+  schedule(static)
 #endif
   for(int i = 0; i < stride; i += ch)
   {
@@ -3652,8 +3664,12 @@ static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) reduction(+ : count, l_sum) reduction(max : l_max)        \
-                                                                      reduction(min : l_min)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, img_src, size, work_profile) \
+  schedule(static) \
+  reduction(+ : count, l_sum) \
+  reduction(max : l_max) \
+  reduction(min : l_min)
 #endif
   for(int i = 0; i < size; i += ch)
   {
@@ -3699,7 +3715,10 @@ static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   const float in_inv_gamma = pow(10, tmp);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img_src) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, in_inv_gamma, left, right, size, work_profile) \
+  shared(img_src) \
+  schedule(static)
 #endif
   for(int i = 0; i < size; i += ch)
   {
@@ -3780,7 +3799,10 @@ static void rt_copy_in_to_out(const float *const in, const struct dt_iop_roi_t *
   const int y_to = MIN(roi_out->height, roi_in->height);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, in, out, roi_in, roi_out, rowsize, xoffs,  yoffs, \
+                      y_to) \
+  schedule(static)
 #endif
   for(int y = 0; y < y_to; y++)
   {
@@ -3823,7 +3845,10 @@ static void rt_build_scaled_mask(float *const mask, dt_iop_roi_t *const roi_mask
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(mask_tmp, roi_mask_scaled) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(mask, roi_in, roi_mask, x_to, y_to) \
+  shared(mask_tmp, roi_mask_scaled) \
+  schedule(static)
 #endif
   for(int yy = roi_mask_scaled->y; yy < y_to; yy++)
   {
@@ -3857,7 +3882,10 @@ static void rt_copy_image_masked(float *const img_src, float *img_dest, dt_iop_r
   if(ch == 4 && use_sse)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img_dest) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, img_src, mask_scaled, opacity, roi_dest, roi_mask_scaled) \
+    shared(img_dest) \
+    schedule(static)
 #endif
     for(int yy = 0; yy < roi_mask_scaled->height; yy++)
     {
@@ -3888,7 +3916,10 @@ static void rt_copy_image_masked(float *const img_src, float *img_dest, dt_iop_r
     const int ch1 = (ch == 4) ? ch - 1 : ch;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img_dest) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, ch1, img_src, mask_scaled, opacity, roi_dest, roi_mask_scaled) \
+    shared(img_dest) \
+    schedule(static)
 #endif
     for(int yy = 0; yy < roi_mask_scaled->height; yy++)
     {
@@ -3920,7 +3951,9 @@ static void rt_copy_mask_to_alpha(float *const img, dt_iop_roi_t *const roi_img,
                                   const float opacity)
 {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, img, mask_scaled, opacity, roi_img, roi_mask_scaled) \
+  schedule(static)
 #endif
   for(int yy = 0; yy < roi_mask_scaled->height; yy++)
   {
@@ -3950,7 +3983,9 @@ static void retouch_fill_sse(float *const in, dt_iop_roi_t *const roi_in, float 
   const __m128 val_fill = _mm_load_ps(valf4_fill);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, in, mask_scaled, opacity, roi_in, roi_mask_scaled, val_fill) \
+  schedule(static)
 #endif
   for(int yy = 0; yy < roi_mask_scaled->height; yy++)
   {
@@ -3988,7 +4023,9 @@ static void retouch_fill(float *const in, dt_iop_roi_t *const roi_in, const int 
   const int ch1 = (ch == 4) ? ch - 1 : ch;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, ch1, fill_color, in, mask_scaled, opacity, roi_in, roi_mask_scaled) \
+  schedule(static)
 #endif
   for(int yy = 0; yy < roi_mask_scaled->height; yy++)
   {
