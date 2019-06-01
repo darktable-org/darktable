@@ -862,7 +862,7 @@ notebook tab:focus label
   color: @button_checked_fg;
 }
 
-/* This will avoid have too much height on entry item in dialog windows; label and button are needed as they are related */
+/* This will avoid have too much height on entry items in dialog windows; label and button are needed as they are related */
 
 #preferences_notebook *
 {
@@ -1017,7 +1017,7 @@ entry
   margin: 8px 0px;
 }
 
-#left #lib-plugin-ui scrolledwindow entry /* This will avoid having too much height on entry item in clone manager without touching other parts of the UI */
+#left #lib-plugin-ui scrolledwindow entry /* This will avoid having too much height on entry items in clone manager without touching other parts of the UI */
 {
   padding: 0px;
   margin: 40px 3px;
