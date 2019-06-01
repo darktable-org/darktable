@@ -1017,10 +1017,16 @@ entry
   margin: 8px 0px;
 }
 
+#left #lib-plugin-ui scrolledwindow entry /* This will avoid have too much height on entry item in clone manager without touching other parts of the UI */
+{
+  padding: 0px;
+  margin: 40px 3px;
+  min-width: 150px;
+}
+
 #right #lib-plugin-ui entry /* This will adjust entry height on right panel */
 {
   padding: 1px;
-  margin: 2px 0px;
 }
 
 #lib-plugin-ui checkbutton check,
