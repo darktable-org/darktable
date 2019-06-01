@@ -1011,13 +1011,13 @@ entry
   margin: 2px 0;
 }
 
-#left #lib-plugin-ui entry /* This will avoid have too much height on entry item in filter collections modules */
+#left #lib-plugin-ui entry /* This will avoid have too much height on entry items in filter collections modules */
 {
   padding: 0px;
   margin: 8px 0px;
 }
 
-#left #lib-plugin-ui scrolledwindow entry /* This will avoid have too much height on entry item in clone manager without touching other parts of the UI */
+#left #lib-plugin-ui scrolledwindow entry /* This will avoid having too much height on entry item in clone manager without touching other parts of the UI */
 {
   padding: 0px;
   margin: 40px 3px;
