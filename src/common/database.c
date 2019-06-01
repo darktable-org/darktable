@@ -1702,10 +1702,10 @@ static gboolean _lock_databases(dt_database_t *db)
   return TRUE;
 }
 
-void ask_for_upgrade(const gchar *dbname)
+void ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
 {
   // if there's no gui just leave
-  if(darktable.gui == NULL)
+  if(!has_gui)
   {
     fprintf(stderr, "[init] database `%s' is out-of-date. aborting.\n", dbname);
     exit(1);
@@ -1730,7 +1730,7 @@ void ask_for_upgrade(const gchar *dbname)
   if(!shall_we_update_the_db) exit(1);
 }
 
-dt_database_t *dt_database_init(const char *alternative, const gboolean load_data)
+dt_database_t *dt_database_init(const char *alternative, const gboolean load_data, const gboolean has_gui)
 {
   /*  set the threading mode to Serialized */
   sqlite3_config(SQLITE_CONFIG_SERIALIZED);
@@ -1868,7 +1868,7 @@ start:
       sqlite3_finalize(stmt);
       if(db_version < CURRENT_DATABASE_VERSION_DATA)
       {
-        ask_for_upgrade(dbfilename_data);
+        ask_for_upgrade(dbfilename_data, has_gui);
 
         // older: upgrade
         if(!_upgrade_data_schema(db, db_version))
@@ -1946,7 +1946,7 @@ start:
     sqlite3_finalize(stmt);
     if(db_version < CURRENT_DATABASE_VERSION_LIBRARY)
     {
-      ask_for_upgrade(dbfilename_library);
+      ask_for_upgrade(dbfilename_library, has_gui);
 
       // older: upgrade
       if(!_upgrade_library_schema(db, db_version))
