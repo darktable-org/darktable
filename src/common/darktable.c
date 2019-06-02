@@ -803,7 +803,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.color_profiles = dt_colorspaces_init();
 
   // initialize the database
-  darktable.db = dt_database_init(dbfilename_from_command, load_data);
+  darktable.db = dt_database_init(dbfilename_from_command, load_data, init_gui);
   if(darktable.db == NULL)
   {
     printf("ERROR : cannot open database\n");
@@ -840,7 +840,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   }
 
   dt_ioppr_check_db_integrity();
-  
+
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
 
@@ -1279,7 +1279,7 @@ void dt_configure_performance()
   // store the current performance configure version as the last completed
   // that would prevent further execution of previous performance configuration run
   // at subsequent startups
-  dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);  
+  dt_conf_set_int("performance_configuration_version_completed", DT_CURRENT_PERFORMANCE_CONFIGURE_VERSION);
 }
 
 
