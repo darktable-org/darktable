@@ -59,7 +59,7 @@
 @define-color plugin_label_color @grey_80;
 
 /* Modules controls (sliders and comboboxes) */
-@define-color bauhaus_fg @grey_80;
+@define-color bauhaus_fg @grey_85;
 @define-color bauhaus_indicator_border @grey_45;
 @define-color bauhaus_fill @grey_60;
 @define-color bauhaus_bg @grey_55;
