@@ -23,7 +23,7 @@
 struct dt_database_t;
 
 /** allocates and initializes database */
-struct dt_database_t *dt_database_init(const char *alternative, const gboolean load_data);
+struct dt_database_t *dt_database_init(const char *alternative, const gboolean load_data, const gboolean has_gui);
 /** closes down database and frees memory */
 void dt_database_destroy(const struct dt_database_t *);
 /** get handle */
