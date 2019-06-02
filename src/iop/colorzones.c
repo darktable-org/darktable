@@ -2301,23 +2301,14 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(dabox), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(vbox), TRUE, TRUE, 0);
 
+  GtkWidget *hbox_select_by = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+
+  // edit by area
   c->chk_edit_by_area = gtk_check_button_new_with_label(_("edit by area"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(c->chk_edit_by_area), c->edit_by_area);
   gtk_widget_set_tooltip_text(c->chk_edit_by_area, _("edit the curve nodes by area"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->chk_edit_by_area, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox_select_by), c->chk_edit_by_area, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->chk_edit_by_area), "toggled", G_CALLBACK(_edit_by_area_callback), self);
-
-  // select by which dimension
-  GtkWidget *hbox_select_by = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-
-  c->select_by = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->select_by, NULL, _("select by"));
-  gtk_widget_set_tooltip_text(c->select_by, _("choose selection criterion, will be the abscissa in the graph"));
-  dt_bauhaus_combobox_add(c->select_by, _("hue"));
-  dt_bauhaus_combobox_add(c->select_by, _("saturation"));
-  dt_bauhaus_combobox_add(c->select_by, _("lightness"));
-  gtk_box_pack_start(GTK_BOX(hbox_select_by), c->select_by, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(c->select_by), "value-changed", G_CALLBACK(_select_by_callback), (gpointer)self);
 
   // display selection
   c->bt_showmask
@@ -2328,6 +2319,16 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_end(GTK_BOX(hbox_select_by), c->bt_showmask, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), hbox_select_by, TRUE, TRUE, 0);
+
+  // select by which dimension
+  c->select_by = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(c->select_by, NULL, _("select by"));
+  gtk_widget_set_tooltip_text(c->select_by, _("choose selection criterion, will be the abscissa in the graph"));
+  dt_bauhaus_combobox_add(c->select_by, _("hue"));
+  dt_bauhaus_combobox_add(c->select_by, _("saturation"));
+  dt_bauhaus_combobox_add(c->select_by, _("lightness"));
+  gtk_box_pack_start(GTK_BOX(self->widget), c->select_by, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(c->select_by), "value-changed", G_CALLBACK(_select_by_callback), (gpointer)self);
 
   c->mode = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->mode, NULL, _("process mode"));
