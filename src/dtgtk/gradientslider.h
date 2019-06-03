@@ -84,14 +84,13 @@ typedef struct _GtkDarktableGradientSlider
   GtkWidget widget;
   GList *colors;
   gint selected;
-  gdouble min, max;
+  gint active;
   gint positions;
   gdouble position[GRADIENT_SLIDER_MAX_POSITIONS];
   gdouble resetvalue[GRADIENT_SLIDER_MAX_POSITIONS];
   gint marker[GRADIENT_SLIDER_MAX_POSITIONS];
   gdouble increment;
   gdouble picker[3];
-  gint prev_x_root;
   gint margins;
   gboolean is_dragging;
   gboolean is_changed;
