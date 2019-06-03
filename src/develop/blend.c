@@ -2771,7 +2771,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
                               const void *const ivoid, void *const ovoid, const struct dt_iop_roi_t *const roi_in,
                               const struct dt_iop_roi_t *const roi_out)
 {
-  if(self->bypass_blendif && self->dev->gui_attached && (self == self->dev->gui_module)) return;
+  if(piece->pipe->bypass_blendif && self->dev->gui_attached && (self == self->dev->gui_module)) return;
 
   const dt_develop_blend_params_t *const d = (const dt_develop_blend_params_t *const)piece->blendop_data;
   if(!d) return;
@@ -3088,7 +3088,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
                                 cl_mem dev_in, cl_mem dev_out, const struct dt_iop_roi_t *roi_in,
                                 const struct dt_iop_roi_t *roi_out)
 {
-  if(self->bypass_blendif && self->dev->gui_attached && (self == self->dev->gui_module)) return TRUE;
+  if(piece->pipe->bypass_blendif && self->dev->gui_attached && (self == self->dev->gui_module)) return TRUE;
 
   dt_develop_blend_params_t *const d = (dt_develop_blend_params_t *const)piece->blendop_data;
   if(!d) return TRUE;
