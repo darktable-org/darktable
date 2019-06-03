@@ -36,54 +36,11 @@ write_pfm(const char *filename, float *buf, int wd, int ht)
 }
 #endif
 
+// filter only vertically, as the gradient is evolving on the x axis, all the values
+// for a same x are supposed to be the same
 void mean_filter(const int radius, const float* in, float* out, const int width, const int height)
 {
-  float* h_mean = calloc(width*height*3, sizeof(float));
-  // horizontal pass
-  for(int i = 0; i < height; i++)
-  {
-    float sliding_mean[3] = { 0.0f, 0.0f, 0.0f };
-    for(int c = 0; c < 3; c++)
-    {
-      sliding_mean[c] += in[(i*width)*3+c];
-    }
-    for(int j = 1; j < radius; j++)
-    {
-      for(int c = 0; c < 3; c++)
-      {
-        sliding_mean[c] += 2*in[(i*width+j)*3+c];
-      }
-    }
-    for(int j = 0; j < width; j++)
-    {
-      int to_be_added_pixel_index;
-      int to_be_removed_pixel_index;
-      if(j+radius+1 >= width)
-      {
-        int diff = j+radius+1-width;
-        to_be_added_pixel_index = (i*width+width-diff)*3;
-      }
-      else
-      {
-        to_be_added_pixel_index = (i*width+j+radius+1)*3;
-      }
-      if(j-radius < 0)
-      {
-        to_be_removed_pixel_index = (i*width-j+radius)*3;
-      }
-      else
-      {
-        to_be_removed_pixel_index = (i*width+j-radius)*3;
-      }
-
-      for(int c = 0; c < 3; c++)
-      {
-        h_mean[(i*width+j)*3+c] = sliding_mean[c] / (2*radius+1);
-        sliding_mean[c] += in[to_be_added_pixel_index+c];
-        sliding_mean[c] -= in[to_be_removed_pixel_index+c];
-      }
-    }
-  }
+  float* h_mean = in;
   // vertical pass
   for(int j = 0; j < width; j++)
   {
@@ -128,7 +85,6 @@ void mean_filter(const int radius, const float* in, float* out, const int width,
       }
     }
   }
-  free(h_mean);
 }
 
 #define MIN(a,b) ((a>b)?b:a)
@@ -140,7 +96,7 @@ clamp(float f, float m, float M)
   return MAX(MIN(f, M), m);
 }
 
-#define NB_BITS_PRECISION 1000
+#define NB_BITS_PRECISION 500
 int main(int argc, char *arg[])
 {
   if(argc < 3)
@@ -153,8 +109,9 @@ int main(int argc, char *arg[])
   float *inputblurred = calloc(wd*ht*3, sizeof(float));
   float *input2 = read_pfm(arg[2], &wd, &ht);
   float *input2blurred = calloc(wd*ht*3, sizeof(float));
-  mean_filter(100, input, inputblurred, wd, ht);
-  mean_filter(100, input2, input2blurred, wd, ht);
+  const float radius = 75;
+  mean_filter(radius, input, inputblurred, wd, ht);
+  mean_filter(radius, input2, input2blurred, wd, ht);
   double var[3][NB_BITS_PRECISION];
   unsigned nb_elts[3][NB_BITS_PRECISION];
   for(int level = 0; level < NB_BITS_PRECISION; level++)
@@ -167,7 +124,7 @@ int main(int argc, char *arg[])
   }
   if(argc < 10)
   {
-    for(int i = 0; i < ht; i++)
+    for(int i = radius; i < ht-radius; i++)
     {
       for(int j = 0; j < wd; j++)
       {
@@ -198,7 +155,7 @@ int main(int argc, char *arg[])
         if(nb_elts[c][level] > 0) var[c][level] /= nb_elts[c][level];
       }
       if(nb_elts[0][level] > 100 && nb_elts[1][level] > 100 && nb_elts[2][level] > 100)
-        fprintf(stdout, "%f %f %f %f %d %d %d\n", sqrt(level)/* / (float)NB_BITS_PRECISION*/, var[0][level], var[1][level],
+        fprintf(stdout, "%f %f %f %f %d %d %d\n", sqrt(level * 1000.0 / NB_BITS_PRECISION)/* / (float)NB_BITS_PRECISION*/, var[0][level], var[1][level],
               var[2][level], nb_elts[0][level], nb_elts[1][level], nb_elts[2][level]);
     }
   }
@@ -209,7 +166,7 @@ int main(int argc, char *arg[])
                 d[3] = { atof(arg[10]), atof(arg[11]), atof(arg[12]) };
 
     // perform anscombe transform
-    for(int i = 0; i < ht; i++)
+    for(int i = radius; i < ht-radius; i++)
     {
       for(int j = 0; j < wd; j++)
       {
