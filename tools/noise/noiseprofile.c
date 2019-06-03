@@ -140,7 +140,7 @@ clamp(float f, float m, float M)
   return MAX(MIN(f, M), m);
 }
 
-#define NB_BITS_PRECISION 256
+#define NB_BITS_PRECISION 1000
 int main(int argc, char *arg[])
 {
   if(argc < 3)
@@ -153,8 +153,8 @@ int main(int argc, char *arg[])
   float *inputblurred = calloc(wd*ht*3, sizeof(float));
   float *input2 = read_pfm(arg[2], &wd, &ht);
   float *input2blurred = calloc(wd*ht*3, sizeof(float));
-  mean_filter(75, input, inputblurred, wd, ht);
-  mean_filter(75, input2, input2blurred, wd, ht);
+  mean_filter(100, input, inputblurred, wd, ht);
+  mean_filter(100, input2, input2blurred, wd, ht);
   double var[3][NB_BITS_PRECISION];
   unsigned nb_elts[3][NB_BITS_PRECISION];
   for(int level = 0; level < NB_BITS_PRECISION; level++)
@@ -197,14 +197,16 @@ int main(int argc, char *arg[])
       {
         if(nb_elts[c][level] > 0) var[c][level] /= nb_elts[c][level];
       }
-      fprintf(stdout, "%f %f %f %f %d %d %d\n", level / (float)NB_BITS_PRECISION, var[0][level], var[1][level],
+      if(nb_elts[0][level] > 100 && nb_elts[1][level] > 100 && nb_elts[2][level] > 100)
+        fprintf(stdout, "%f %f %f %f %d %d %d\n", sqrt(level)/* / (float)NB_BITS_PRECISION*/, var[0][level], var[1][level],
               var[2][level], nb_elts[0][level], nb_elts[1][level], nb_elts[2][level]);
     }
   }
   if(argc >= 10 && !strcmp(arg[3], "-c"))
   {
     const float a[3] = { atof(arg[4]), atof(arg[5]), atof(arg[6]) },
-                b[3] = { atof(arg[7]), atof(arg[8]), atof(arg[9]) };
+                b[3] = { atof(arg[7]), atof(arg[8]), atof(arg[9]) },
+                d[3] = { atof(arg[10]), atof(arg[11]), atof(arg[12]) };
 
     // perform anscombe transform
     for(int i = 0; i < ht; i++)
@@ -214,22 +216,22 @@ int main(int argc, char *arg[])
         for(int c = 0; c < 3; c++)
         {
           int index = (i * wd + j) * 3 + c;
-          input[index] /= a[c];
-          float d = fmaxf(0.0f, input[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
-          input[index] = 2.0f * sqrtf(d);
-          input2[index] /= a[c];
-          d = fmaxf(0.0f, input2[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
-          input2[index] = 2.0f * sqrtf(d);
+          input[index] = 2 * powf(input[index]+d[c], -b[c]/2+1) / ((-b[c]+2) * sqrt(a[c]));
+          // float d = fmaxf(0.0f, input[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
+          // input[index] = 2.0f * sqrtf(d);
+          input2[index] = 2 * powf(input2[index]+d[c], -b[c]/2+1) / ((-b[c]+2) * sqrt(a[c]));
+          // d = fmaxf(0.0f, input2[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
+          // input2[index] = 2.0f * sqrtf(d);
 
 
           unsigned level = (unsigned)(inputblurred[index] * NB_BITS_PRECISION);
           unsigned level2 = (unsigned)(input2blurred[index] * NB_BITS_PRECISION);
-          inputblurred[index] /= a[c];
-          input2blurred[index] /= a[c];
-          d = fmaxf(0.0f, inputblurred[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
-          inputblurred[index] = 2.0f * sqrtf(d);
-          d = fmaxf(0.0f, input2blurred[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
-          input2blurred[index] = 2.0f * sqrtf(d);
+          inputblurred[index] = 2 * powf(inputblurred[index]+d[c], -b[c]/2+1) / ((-b[c]+2) * sqrt(a[c]));
+          input2blurred[index] = 2 * powf(input2blurred[index]+d[c], -b[c]/2+1) / ((-b[c]+2) * sqrt(a[c]));
+          // d = fmaxf(0.0f, inputblurred[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
+          // inputblurred[index] = 2.0f * sqrtf(d);
+          // d = fmaxf(0.0f, input2blurred[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
+          // input2blurred[index] = 2.0f * sqrtf(d);
 
           float pixel_diff = input[index] - inputblurred[index];
           var[c][level] += pixel_diff * pixel_diff;
@@ -249,7 +251,8 @@ int main(int argc, char *arg[])
           var[c][level] /= nb_elts[c][level];
         }
       }
-      fprintf(stdout, "%f %f %f %f %d %d %d\n", level / (float)NB_BITS_PRECISION, var[0][level], var[1][level],
+      if(nb_elts[0][level] > 100 && nb_elts[1][level] > 100 && nb_elts[2][level] > 100)
+        fprintf(stdout, "%f %f %f %f %d %d %d\n", level / (float)NB_BITS_PRECISION, var[0][level], var[1][level],
               var[2][level], nb_elts[0][level], nb_elts[1][level], nb_elts[2][level]);
     }
   }
