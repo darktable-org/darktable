@@ -161,6 +161,7 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   pipe->opencl_error = 0;
   pipe->tiling = 0;
   pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
+  pipe->bypass_blendif = 0;
   pipe->input_timestamp = 0;
   pipe->levels = IMAGEIO_RGB | IMAGEIO_INT8;
   dt_pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
@@ -2661,6 +2662,8 @@ restart:
 
   // mask display off as a starting point
   pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
+  // and blendif active
+  pipe->bypass_blendif = 0;
 
   void *buf = NULL;
   void *cl_mem_out = NULL;
