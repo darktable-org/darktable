@@ -1941,7 +1941,6 @@ static void rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton, dt_
   dt_iop_request_focus(self);
 
   g->display_wavelet_scale = gtk_toggle_button_get_active(togglebutton);
-  self->bypass_blendif = (g->mask_display || g->display_wavelet_scale);
 
   rt_show_hide_controls(self, g, p, g);
 
@@ -2245,7 +2244,6 @@ static void rt_showmask_callback(GtkToggleButton *togglebutton, dt_iop_module_t 
   }
 
   g->mask_display = gtk_toggle_button_get_active(togglebutton);
-  module->bypass_blendif = (g->mask_display || g->display_wavelet_scale);
 
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
   dt_iop_request_focus(module);
@@ -4392,7 +4390,8 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
   // init the decompose routine
   dwt_p = dt_dwt_init(in_retouch, roi_rt->width, roi_rt->height, ch, p->num_scales,
-                      (!display_wavelet_scale) ? 0 : p->curr_scale, p->merge_from_scale, &usr_data,
+                      (!display_wavelet_scale || piece->pipe->type != DT_DEV_PIXELPIPE_FULL) ? 0 : p->curr_scale,
+                      p->merge_from_scale, &usr_data,
                       roi_in->scale / piece->iscale, use_sse);
   if(dwt_p == NULL) goto cleanup;
 
@@ -4403,6 +4402,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     for(size_t j = 0; j < roi_rt->width * roi_rt->height * ch; j += ch) in_retouch[j + 3] = 0.f;
 
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
+    piece->pipe->bypass_blendif = 1;
     usr_data.mask_display = 1;
   }
 
@@ -5234,7 +5234,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   // init the decompose routine
   dwt_p = dt_dwt_init_cl(devid, in_retouch, roi_rt->width, roi_rt->height, p->num_scales,
-                         (!display_wavelet_scale) ? 0 : p->curr_scale, p->merge_from_scale, &usr_data,
+                         (!display_wavelet_scale || piece->pipe->type != DT_DEV_PIXELPIPE_FULL) ? 0 : p->curr_scale,
+                         p->merge_from_scale, &usr_data,
                          roi_in->scale / piece->iscale);
   if(dwt_p == NULL)
   {
@@ -5257,6 +5258,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(err != CL_SUCCESS) goto cleanup;
 
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
+    piece->pipe->bypass_blendif = 1;
     usr_data.mask_display = 1;
   }
 
