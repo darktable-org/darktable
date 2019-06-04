@@ -119,7 +119,7 @@ fi
 profile_image() {
 	local image preset files_list maker model iso xmp		\
 	 noiseprofile pfm_noisy pfm_smooth dat title fit pdf			\
-	 flat_dat curves_dat flat_pdf a0 a1 a2 b0 b1 b2
+	 flat_dat curves_dat flat_pdf a0 a1 a2 p0 p1 p2 b0 b1 b2
 
 	tool_installed darktable-cli
 	tool_installed gnuplot
@@ -187,33 +187,33 @@ profile_image() {
 	min(x,y) = (x < y) ? x : y
 	max(x,y) = (x > y) ? x : y
 	C(x) = 1/pi*(atan(x)+pi/2)
-	f1(x) = a1*((x+C(c1))**b1)
-	f2(x) = a2*((x+C(c2))**b2)
-	f3(x) = a3*((x+C(c3))**b3)
-	a1=0.01;b1=1;c1=-10000;
-	a2=0.01;b2=1;c2=-10000;
-	a3=0.01;b3=1;c3=-10000;
+	f1(x) = a1*((x+C(b1))**p1)
+	f2(x) = a2*((x+C(b2))**p2)
+	f3(x) = a3*((x+C(b3))**p3)
+	a1=0.01;p1=1;b1=-10000;
+	a2=0.01;p2=1;b2=-10000;
+	a3=0.01;p3=1;b3=-10000;
 	set xrange [0.01:0.35]
-	fit f1(x) "$dat" u 1:(\$2):(log(\$5+0.00001)) via a1,b1
-	c1=-100
+	fit f1(x) "$dat" u 1:(\$2):(log(\$5+0.00001)) via a1,p1
+	b1=-100
 	set xrange [0.01:0.1]
-	fit f1(x) "$dat" u 1:(\$2):(\$5) via c1
+	fit f1(x) "$dat" u 1:(\$2):(\$5) via b1
 	set xrange [0.05:0.2]
-	fit f1(x) "$dat" u 1:(\$2):(\$5) via a1,b1
+	fit f1(x) "$dat" u 1:(\$2):(\$5) via a1,p1
 	set xrange [0.01:0.8]
-	fit f2(x) "$dat" u 1:(\$3):(log(\$6+0.00001)) via a2,b2
-	c2=-100
+	fit f2(x) "$dat" u 1:(\$3):(log(\$6+0.00001)) via a2,p2
+	b2=-100
 	set xrange [0.01:0.1]
-	fit f2(x) "$dat" u 1:(\$3):(\$6) via c2
+	fit f2(x) "$dat" u 1:(\$3):(\$6) via b2
 	set xrange [0.05:0.2]
-	fit f2(x) "$dat" u 1:(\$3):(\$6) via a2,b2
+	fit f2(x) "$dat" u 1:(\$3):(\$6) via a2,p2
 	set xrange [0.01:0.35]
-	fit f3(x) "$dat" u 1:(\$4):(log(\$7+0.00001)) via a3,b3
-	c3=-100
+	fit f3(x) "$dat" u 1:(\$4):(log(\$7+0.00001)) via a3,p3
+	b3=-100
 	set xrange [0.01:0.1]
-	fit f3(x) "$dat" u 1:(\$4):(\$7) via c3
+	fit f3(x) "$dat" u 1:(\$4):(\$7) via b3
 	set xrange [0.05:0.2]
-	fit f3(x) "$dat" u 1:(\$4):(\$7) via a3,b3
+	fit f3(x) "$dat" u 1:(\$4):(\$7) via a3,p3
 
 	set xrange [0:1]
 	set title "Noise levels - $title"
@@ -226,7 +226,7 @@ profile_image() {
 	  '' u 1:((f2(\$1))) w l lw 2 lt 2 title "green (fit)",	\
 	  '' u 1:((f3(\$1))) w l lw 2 lt 3 title "blue (fit)"
 
-	print a1, a2, a3, b1, b2, b3, C(c1), C(c2), C(c3)
+	print a1, a2, a3, p1, p2, p3, C(b1), C(b2), C(b3)
 EOF
 
 	# Fitted parametric curves:
@@ -256,12 +256,12 @@ EOF
 	a0=$(cat $fit | cut -f1 -d' ')
 	a1=$(cat $fit | cut -f2 -d' ')
 	a2=$(cat $fit | cut -f3 -d' ')
-	b0=$(cat $fit | cut -f4 -d' ')
-	b1=$(cat $fit | cut -f5 -d' ')
-	b2=$(cat $fit | cut -f6 -d' ')
-	c0=$(cat $fit | cut -f7 -d' ')
-	c1=$(cat $fit | cut -f8 -d' ')
-	c2=$(cat $fit | cut -f9 -d' ')
+	p0=$(cat $fit | cut -f4 -d' ')
+	p1=$(cat $fit | cut -f5 -d' ')
+	p2=$(cat $fit | cut -f6 -d' ')
+	b0=$(cat $fit | cut -f7 -d' ')
+	b1=$(cat $fit | cut -f8 -d' ')
+	b2=$(cat $fit | cut -f9 -d' ')
 
 	case "$a1" in
 	-*)
@@ -299,7 +299,7 @@ and re-run this script.
 Meanwhile, this channel will be ignored.${color_reset}
 EOF
 		a0="0.0"
-		b0="0.0"
+		p0="0.0"
 		;;
 	esac
 
@@ -320,11 +320,11 @@ and re-run this script.
 Meanwhile, this channel will be ignored.${color_reset}
 EOF
 		a2="0.0"
-		b2="0.0"
+		p2="0.0"
 		;;
 	esac
 
-	printf "$maker\t$model\t$model iso $iso\t$iso\t$a0, $a1, $a2\t$b0, $b1, $b2\t$c0, $c1, $c2\n" >> "$presets"
+	printf "$maker\t$model\t$model iso $iso\t$iso\t$a0, $a1, $a2\t$p0, $p1, $p2\t$c0, $b1, $b2\n" >> "$presets"
 
 	# Clean unused files.
 	rm -f $dat $flat_dat $curves_dat $fit
