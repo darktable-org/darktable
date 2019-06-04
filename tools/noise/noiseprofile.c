@@ -154,16 +154,20 @@ int main(int argc, char *arg[])
       {
         if(nb_elts[c][level] > 0) var[c][level] /= nb_elts[c][level];
       }
-      if(nb_elts[0][level] > 50 && nb_elts[1][level] > 50 && nb_elts[2][level] > 50)
-        fprintf(stdout, "%f %f %f %f %d %d %d\n", log2f(1+level * 1000.0 / NB_BITS_PRECISION)/* / (float)NB_BITS_PRECISION*/, var[0][level], var[1][level],
+      if(nb_elts[0][level] > 0 && nb_elts[1][level] > 0 && nb_elts[2][level] > 0)
+        fprintf(stdout, "%f %f %f %f %d %d %d\n", level / (float)NB_BITS_PRECISION/* / (float)NB_BITS_PRECISION*/, var[0][level], var[1][level],
               var[2][level], nb_elts[0][level], nb_elts[1][level], nb_elts[2][level]);
     }
   }
   if(argc >= 10 && !strcmp(arg[3], "-c"))
   {
-    const float a[3] = { atof(arg[4]), atof(arg[5]), atof(arg[6]) },
+    float a[3] = { atof(arg[4]), atof(arg[5]), atof(arg[6]) },
                 b[3] = { atof(arg[7]), atof(arg[8]), atof(arg[9]) },
                 d[3] = { atof(arg[10]), atof(arg[11]), atof(arg[12]) };
+
+    if(d[0] < 0.0) d[0] = 0.0;
+    if(d[1] < 0.0) d[1] = 0.0;
+    if(d[2] < 0.0) d[2] = 0.0;
 
     // perform anscombe transform
     for(int i = radius; i < ht-radius; i++)
@@ -208,7 +212,7 @@ int main(int argc, char *arg[])
           var[c][level] /= nb_elts[c][level];
         }
       }
-      if(nb_elts[0][level] > 50 && nb_elts[1][level] > 50 && nb_elts[2][level] > 50)
+      if(nb_elts[0][level] > 0 && nb_elts[1][level] > 0 && nb_elts[2][level] > 0)
         fprintf(stdout, "%f %f %f %f %d %d %d\n", level / (float)NB_BITS_PRECISION, var[0][level], var[1][level],
               var[2][level], nb_elts[0][level], nb_elts[1][level], nb_elts[2][level]);
     }
