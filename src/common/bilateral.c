@@ -136,7 +136,7 @@ void dt_bilateral_splat(dt_bilateral_t *b, const float *const in)
 // splat into downsampled grid
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, oy, oz, sigma_s) \
+  dt_omp_firstprivate(in, oy, oz, ox, sigma_s) \
   shared(b, buf) \
   collapse(2)
 #endif
@@ -186,7 +186,7 @@ static void blur_line_z(float *buf, const int offset1, const int offset2, const 
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(size1, size2, size3, offset1, offset2, offset3) \
+    dt_omp_firstprivate(size1, size2, size3, offset1, offset2, offset3, w1, w2) \
     shared(buf) collapse(2)
 #endif
   for(int k = 0; k < size1; k++)
@@ -233,7 +233,7 @@ static void blur_line(float *buf, const int offset1, const int offset2, const in
   const float w2 = 1.f / 16.f;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(size1, size2, size3, offset1, offset2, offset3) \
+    dt_omp_firstprivate(size1, size2, size3, offset1, offset2, offset3, w0, w1, w2) \
     shared(buf) collapse(2)
 #endif
   for(int k = 0; k < size1; k++)
@@ -296,7 +296,7 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(b, in, norm, oy, oz) \
+    dt_omp_firstprivate(b, in, norm, oy, oz, ox) \
     shared(out, buf) collapse(2) aligned(in, out, buf:64)
 #endif
   for(int j = 0; j < b->height; j++)
@@ -350,7 +350,7 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *co
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(b, in, norm, oy, oz) \
+    dt_omp_firstprivate(b, in, norm, oy, oz, ox) \
     shared(out, buf) collapse(2) \
     aligned(out, in, buf:64)
 #endif
