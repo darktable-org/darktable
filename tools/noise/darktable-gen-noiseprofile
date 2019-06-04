@@ -193,6 +193,7 @@ profile_image() {
 	a1=0.01;p1=1;b1=-318;e1=1;
 	a2=0.01;p2=1;b2=-318;e2=1;
 	a3=0.01;p3=1;b3=-318;e3=1;
+	FIT_LIMIT = 1e-7
 	set xrange [0.0001:0.35]
 	fit f1(x) "$dat" u 1:(\$2):(log(\$5+0.00001)) via a1,p1,e1
 	set xrange [0.0001:0.05]
@@ -453,10 +454,10 @@ for iso in $iso_settings; do
 		# file and a copy of the Exif metadata.
 		jpeg_export="${image%.*}-large.jpg"
 		jpeg_thumb="${image%.*}-thumb.jpg"
-		# if [ ! -f "$jpeg_export" -o "$image" -nt "$jpeg_export" -o "$0" -nt "$jpeg_export" ]; then
-		# 	export_large_jpeg "$image" "$jpeg_export"
-		# 	export_thumbnail "$jpeg_export" "$jpeg_thumb"
-		# fi
+		if [ ! -f "$jpeg_export" -o "$image" -nt "$jpeg_export" -o "$0" -nt "$jpeg_export" ]; then
+			export_large_jpeg "$image" "$jpeg_export"
+			export_thumbnail "$jpeg_export" "$jpeg_thumb"
+		fi
 		echo "$(basename "$jpeg_thumb")" >> $files_list
 
 		if [ "$skip_correctness_check" != "1" ]; then
