@@ -243,7 +243,7 @@ void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType m
 }
 
 
-static dt_accel_t *_lookup_accel(gchar *path)
+static dt_accel_t *_lookup_accel(const gchar *path)
 {
   GSList *l = darktable.control->accelerator_list;
   while(l)
@@ -1067,6 +1067,10 @@ void dt_dynamic_accel_get_valid_list()
   }
 }
 
+dt_accel_t *dt_accel_find_by_path(const gchar *path)
+{
+  return _lookup_accel(path);
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
