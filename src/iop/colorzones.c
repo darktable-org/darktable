@@ -390,7 +390,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     memcpy(ovoid, ivoid, roi_out->width * roi_out->height * ch * sizeof(float));
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(d)
+#pragma omp parallel for default(none) schedule(static) \
+  dt_omp_firstprivate(ch, ivoid, ovoid, roi_out, display_channel) \
+  shared(d)
 #endif
     for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
     {
