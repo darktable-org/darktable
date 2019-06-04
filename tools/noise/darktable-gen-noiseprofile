@@ -186,20 +186,20 @@ profile_image() {
 
 	min(x,y) = (x < y) ? x : y
 	max(x,y) = (x > y) ? x : y
-	f1(x) = a1*(((x**2)/1000+c1)**b1)
-	f2(x) = a2*(((x**2)/1000+c2)**b2)
-	f3(x) = a3*(((x**2)/1000+c3)**b3)
-	a1=0.01;b1=1;c1=0.5;
-	a2=0.01;b2=1;c2=0.5;
-	a3=0.01;b3=1;c3=0.5;
-	set xrange [1:21]
-	fit f1(x) "$dat" u 1:(\$2):(1/max(0.01, \$5)) via a1,b1,c1
-	set xrange [1:28.3]
-	fit f2(x) "$dat" u 1:(\$3):(1/max(0.01, \$6)) via a2,b2,c2
-	set xrange [1:21]
-	fit f3(x) "$dat" u 1:(\$4):(1/max(0.01, \$7)) via a3,b3,c3
+	f1(x) = a1*(((2**x-1)/1000+c1)**b1)
+	f2(x) = a2*(((2**x-1)/1000+c2)**b2)
+	f3(x) = a3*(((2**x-1)/1000+c3)**b3)
+	a1=0.01;b1=1;c1=0.00005;
+	a2=0.01;b2=1;c2=0.00005;
+	a3=0.01;b3=1;c3=0.00005;
+	set xrange [1:8.4]
+	fit f1(x) "$dat" u 1:(\$2):(1/(\$5+10)) via a1,b1,c1
+	set xrange [1:9.5]
+	fit f2(x) "$dat" u 1:(\$3):(1/(\$6+10)) via a2,b2,c2
+	set xrange [1:8.4]
+	fit f3(x) "$dat" u 1:(\$4):(1/(\$7+10)) via a3,b3,c3
 
-	set xrange [0:31.63]
+	set xrange [0:10]
 	set title "Noise levels - $title"
 	set xlabel "brightness"
 	set ylabel "variance"
@@ -243,6 +243,9 @@ EOF
 	b0=$(cat $fit | cut -f4 -d' ')
 	b1=$(cat $fit | cut -f5 -d' ')
 	b2=$(cat $fit | cut -f6 -d' ')
+	c0=$(cat $fit | cut -f7 -d' ')
+	c1=$(cat $fit | cut -f8 -d' ')
+	c2=$(cat $fit | cut -f9 -d' ')
 
 	case "$a1" in
 	-*)
@@ -305,7 +308,7 @@ EOF
 		;;
 	esac
 
-	printf "$maker\t$model\t$model iso $iso\t$iso\t$a0, $a1, $a2\t$b0, $b1, $b2\n" >> "$presets"
+	printf "$maker\t$model\t$model iso $iso\t$iso\t$a0, $a1, $a2\t$b0, $b1, $b2\t$c0, $c1, $c2\n" >> "$presets"
 
 	# Clean unused files.
 	rm -f $dat $flat_dat $curves_dat $fit

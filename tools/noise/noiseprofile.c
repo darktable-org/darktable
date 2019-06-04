@@ -96,7 +96,7 @@ clamp(float f, float m, float M)
   return MAX(MIN(f, M), m);
 }
 
-#define NB_BITS_PRECISION 500
+#define NB_BITS_PRECISION 250
 int main(int argc, char *arg[])
 {
   if(argc < 3)
@@ -154,8 +154,8 @@ int main(int argc, char *arg[])
       {
         if(nb_elts[c][level] > 0) var[c][level] /= nb_elts[c][level];
       }
-      if(nb_elts[0][level] > 100 && nb_elts[1][level] > 100 && nb_elts[2][level] > 100)
-        fprintf(stdout, "%f %f %f %f %d %d %d\n", sqrt(level * 1000.0 / NB_BITS_PRECISION)/* / (float)NB_BITS_PRECISION*/, var[0][level], var[1][level],
+      if(nb_elts[0][level] > 50 && nb_elts[1][level] > 50 && nb_elts[2][level] > 50)
+        fprintf(stdout, "%f %f %f %f %d %d %d\n", log2f(1+level * 1000.0 / NB_BITS_PRECISION)/* / (float)NB_BITS_PRECISION*/, var[0][level], var[1][level],
               var[2][level], nb_elts[0][level], nb_elts[1][level], nb_elts[2][level]);
     }
   }
@@ -208,7 +208,7 @@ int main(int argc, char *arg[])
           var[c][level] /= nb_elts[c][level];
         }
       }
-      if(nb_elts[0][level] > 100 && nb_elts[1][level] > 100 && nb_elts[2][level] > 100)
+      if(nb_elts[0][level] > 50 && nb_elts[1][level] > 50 && nb_elts[2][level] > 50)
         fprintf(stdout, "%f %f %f %f %d %d %d\n", level / (float)NB_BITS_PRECISION, var[0][level], var[1][level],
               var[2][level], nb_elts[0][level], nb_elts[1][level], nb_elts[2][level]);
     }
