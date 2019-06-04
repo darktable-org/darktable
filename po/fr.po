@@ -436,7 +436,7 @@ msgstr "cette option échange le comportement du shift-clic de la chambre noire"
 #: ../build/src/preferences_gen.h:2770
 msgid "expand the module when it is activated, and collapse it when disabled"
 msgstr ""
-"développer le module lorsque qu'activé, et réduire lorsque que désactivé"
+"développer le module lorsqu'activé, et réduire lorsque désactivé"
 
 #: ../build/src/preferences_gen.h:2782
 msgid ""
