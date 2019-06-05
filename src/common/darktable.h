@@ -75,8 +75,12 @@ typedef unsigned int u_int;
 #endif
 
 /* Create clone architectures for various CPU SSE generations */
-#if defined(__GNUC__)
-#define __DT_CLONE_TARGETS__ __attribute__((target_clones("default", "sse2", "sse3", "sse4.1", "sse4.2", "popcnt", "avx", "avx2", "fma4")))
+/* See for instructions https://hannes.hauswedell.net/post/2017/12/09/fmv/ */
+/* TL;DR : use only on SIMD functions containing low-level paralellized/vectorized loops */
+#if __has_attribute(target_clones)
+#define __DT_CLONE_TARGETS__ __attribute__((target_clones("default", "sse2", "sse3", "sse4.1", "sse4.2", "popcnt", "avx", "avx2", "avx512f", "fma4")))
+#else
+#define __DT_CLONE_TARGETS__
 #endif
 
 #ifdef _OPENMP
@@ -147,7 +151,7 @@ static inline int dt_version()
 }
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846F
 #endif
 
 // Golden number (1+sqrt(5))/2
