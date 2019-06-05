@@ -25,8 +25,8 @@ typedef struct dt_bilateral_t
   size_t size_x, size_y, size_z;
   int width, height;
   float sigma_s, sigma_r;
-  float *buf;
-} dt_bilateral_t;
+  float *buf __attribute__((aligned(64)));
+} __attribute__((packed)) dt_bilateral_t;
 
 size_t dt_bilateral_memory_use(const int width,      // width of input image
                                const int height,     // height of input image

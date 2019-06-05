@@ -142,7 +142,7 @@ static inline int dt_version()
 }
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846F
 #endif
 
 // Golden number (1+sqrt(5))/2
