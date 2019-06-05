@@ -396,6 +396,7 @@ error:
 }
 #endif
 
+__DT_CLONE_TARGETS__
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const restrict i, void *const restrict o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -427,6 +428,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #if defined(__SSE__)
+__DT_CLONE_TARGETS__
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const restrict i,
                   void *const restrict o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
