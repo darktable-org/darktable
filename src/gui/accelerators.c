@@ -123,6 +123,7 @@ void dt_accel_register_global(const gchar *path, guint accel_key, GdkModifierTyp
 
   *(accel->module) = '\0';
   accel->local = FALSE;
+  accel->views = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW;
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
@@ -140,6 +141,7 @@ void dt_accel_register_view(dt_view_t *self, const gchar *path, guint accel_key,
 
   g_strlcpy(accel->module, self->module_name, sizeof(accel->module));
   accel->local = FALSE;
+  accel->views = self->view(self);
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
@@ -158,6 +160,7 @@ void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *
 
   g_strlcpy(accel->module, so->op, sizeof(accel->module));
   accel->local = local;
+  accel->views = DT_VIEW_DARKROOM;
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
@@ -174,6 +177,20 @@ void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel
 
   g_strlcpy(accel->module, self->plugin_name, sizeof(accel->module));
   accel->local = FALSE;
+  // we get the views in which the lib will be displayed
+  accel->views = 0;
+  int i=0;
+  const gchar **views = self->views(self);
+  while (views[i])
+  {
+    if (strcmp(views[i], "lighttable") == 0) accel->views |= DT_VIEW_LIGHTTABLE;
+    else if (strcmp(views[i], "darkroom") == 0) accel->views |= DT_VIEW_DARKROOM;
+    else if (strcmp(views[i], "print") == 0) accel->views |= DT_VIEW_PRINT;
+    else if (strcmp(views[i], "slideshow") == 0) accel->views |= DT_VIEW_SLIDESHOW;
+    else if (strcmp(views[i], "map") == 0) accel->views |= DT_VIEW_MAP;
+    else if (strcmp(views[i], "tethering") == 0) accel->views |= DT_VIEW_TETHERING;
+    i++;  
+  }
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
@@ -209,6 +226,7 @@ void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local, const 
     g_strlcpy(accel->translated_path, paths_trans[i], sizeof(accel->translated_path));
     g_strlcpy(accel->module, so->op, sizeof(accel->module));
     accel->local = local;
+    accel->views = DT_VIEW_DARKROOM;
 
     darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
   }
@@ -220,7 +238,8 @@ void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local, const 
   g_strlcpy(daccel->translated_path, paths_trans[4], sizeof(daccel->translated_path));
   g_strlcpy(daccel->module, so->op, sizeof(daccel->module));
   daccel->local = local;
-
+  daccel->views = DT_VIEW_DARKROOM;
+  
   darktable.control->dynamic_accelerator_list
       = g_slist_prepend(darktable.control->dynamic_accelerator_list, daccel);
 }
@@ -239,6 +258,7 @@ void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType m
 
   *(accel->module) = '\0';
   accel->local = FALSE;
+  accel->views = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW;
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
