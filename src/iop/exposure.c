@@ -396,7 +396,7 @@ error:
 }
 #endif
 
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const restrict i, void *const restrict o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_exposure_data_t *const d = (const dt_iop_exposure_data_t *const)piece->data;
@@ -404,15 +404,21 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   process_common_setup(self, piece);
 
   const int ch = piece->colors;
+  const float scale = d->scale;
+  const float black = -d->black * scale;
+  const size_t size = (size_t)ch * roi_out->width * roi_out->height;
+
+  const float *const restrict in = (const float *const)i;
+  float *const restrict out = (float *const)o;
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(ch, d, i, o, roi_out) \
-  schedule(static)
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in, out, black, scale, size) \
+  schedule(static) aligned(out, in:64) simdlen(64)
 #endif
-  for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k++)
+  for(size_t k = 0; k < size; k++)
   {
-    ((float *)o)[k] = (((float *)i)[k] - d->black) * d->scale;
+    out[k] = fmaf(in[k], scale, black); // in * scale + black
   }
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
@@ -421,28 +427,29 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i,
-                  void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const restrict i,
+                  void *const restrict o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_exposure_data_t *const d = (const dt_iop_exposure_data_t *const)piece->data;
 
   process_common_setup(self, piece);
 
   const int ch = piece->colors;
-  const __m128 blackv = _mm_set1_ps(d->black);
+  const __m128 blackv = _mm_set1_ps(- d->black * d->scale);
   const __m128 scalev = _mm_set1_ps(d->scale);
+
+  const size_t size = ch * roi_out->width * roi_out->height;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(blackv, ch, i, o, roi_out, scalev) \
+  dt_omp_firstprivate(blackv, ch, i, o, size, scalev) \
   schedule(static)
 #endif
-  for(int k = 0; k < roi_out->height; k++)
+  for(int k = 0; k < size; k+=ch)
   {
-    const float *in = ((float *)i) + (size_t)ch * k * roi_out->width;
-    float *out = ((float *)o) + (size_t)ch * k * roi_out->width;
-    for(int j = 0; j < roi_out->width; j++, in += 4, out += 4)
-      _mm_store_ps(out, _mm_mul_ps(_mm_sub_ps(_mm_load_ps(in), blackv), scalev));
+    const float *in = ((float *)i) + k;
+    float *out = ((float *)o) + k;
+    _mm_stream_ps(out, _mm_load_ps(in) * scalev + blackv);
   }
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
@@ -450,6 +457,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] *= d->scale;
 }
 #endif
+
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
