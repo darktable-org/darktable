@@ -123,7 +123,6 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
 #ifdef _OPENMP
 #pragma omp declare simd aligned(in:64)
 #endif
-__DT_CLONE_TARGETS__
 void dt_bilateral_splat(dt_bilateral_t *b, const float *const in)
 {
   const int ox = 1;
@@ -177,7 +176,6 @@ void dt_bilateral_splat(dt_bilateral_t *b, const float *const in)
 #ifdef _OPENMP
 #pragma omp declare simd aligned(buf:64)
 #endif
-__DT_CLONE_TARGETS__
 static void blur_line_z(float *buf, const int offset1, const int offset2, const int offset3, const int size1,
                         const int size2, const int size3)
 {
@@ -224,7 +222,6 @@ static void blur_line_z(float *buf, const int offset1, const int offset2, const 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(buf:64)
 #endif
-__DT_CLONE_TARGETS__
 static void blur_line(float *buf, const int offset1, const int offset2, const int offset3, const int size1,
                       const int size2, const int size3)
 {
@@ -283,7 +280,6 @@ void dt_bilateral_blur(dt_bilateral_t *b)
 #ifdef _OPENMP
 #pragma omp declare simd aligned(out, in :64)
 #endif
-__DT_CLONE_TARGETS__
 void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, float *out, const float detail)
 {
   // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
@@ -341,7 +337,6 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
 #ifdef _OPENMP
 #pragma omp declare simd aligned(out, in :64)
 #endif
-__DT_CLONE_TARGETS__
 void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *const in, float *out,
                                   const float detail)
 {
