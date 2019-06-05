@@ -65,8 +65,6 @@ typedef struct dt_iop_gmic_dt_widgets_t
 typedef struct dt_iop_gmic_dt_params_t
 {
   char gmic_command_name[31];
-  dt_gmic_colorspaces_t colorspace;
-  gboolean scale_image;
   dt_iop_gmic_dt_command_parameter_t gmic_parameters[DT_GMIC_PARAMETERS_LEN];
 } dt_iop_gmic_dt_params_t;
 
@@ -101,40 +99,6 @@ int flags()
   return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
-int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
-{
-  dt_iop_colorspace_type_t colorspace = iop_cs_rgb;
-
-  if(piece)
-  {
-    const dt_iop_gmic_dt_data_t *p = (dt_iop_gmic_dt_data_t *)piece->data;
-    if(p->colorspace == DT_GMIC_LAB_3C || p->colorspace == DT_GMIC_LAB_1C) colorspace = iop_cs_Lab;
-  }
-  else if(self)
-  {
-    const dt_iop_gmic_dt_data_t *p = (dt_iop_gmic_dt_data_t *)self->params;
-    if(p->colorspace == DT_GMIC_LAB_3C || p->colorspace == DT_GMIC_LAB_1C) colorspace = iop_cs_Lab;
-  }
-
-  return colorspace;
-}
-
-// float --> str, with decimal separator == '.'
-static void dt_ftoa(char *str_dest, const float value, const size_t dest_size)
-{
-  g_snprintf(str_dest, dest_size, "%f", value);
-  int i = 0;
-  while(str_dest[i])
-  {
-    if(str_dest[i] == ',')
-    {
-      str_dest[i] = '.';
-      break;
-    }
-    i++;
-  }
-}
-
 // returns the first dt_gmic_command_t with name == gmic_command_name
 static dt_gmic_command_t *_get_gmic_command_by_name(const char *gmic_command_name)
 {
@@ -154,6 +118,48 @@ static dt_gmic_command_t *_get_gmic_command_by_name(const char *gmic_command_nam
   }
 
   return gmic_command;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  dt_iop_colorspace_type_t colorspace = iop_cs_rgb;
+
+  if(piece)
+  {
+    const dt_iop_gmic_dt_data_t *p = (dt_iop_gmic_dt_data_t *)piece->data;
+    const dt_gmic_command_t *gmic_command = _get_gmic_command_by_name(p->gmic_command_name);
+    if(gmic_command)
+    {
+      if(gmic_command->colorspace == DT_GMIC_LAB_3C || gmic_command->colorspace == DT_GMIC_LAB_1C) colorspace = iop_cs_Lab;
+    }
+  }
+  else if(self)
+  {
+    const dt_iop_gmic_dt_data_t *p = (dt_iop_gmic_dt_data_t *)self->params;
+    const dt_gmic_command_t *gmic_command = _get_gmic_command_by_name(p->gmic_command_name);
+    if(gmic_command)
+    {
+      if(gmic_command->colorspace == DT_GMIC_LAB_3C || gmic_command->colorspace == DT_GMIC_LAB_1C) colorspace = iop_cs_Lab;
+    }
+  }
+
+  return colorspace;
+}
+
+// float --> str, with decimal separator == '.'
+static void dt_ftoa(char *str_dest, const float value, const size_t dest_size)
+{
+  g_snprintf(str_dest, dest_size, "%f", value);
+  int i = 0;
+  while(str_dest[i])
+  {
+    if(str_dest[i] == ',')
+    {
+      str_dest[i] = '.';
+      break;
+    }
+    i++;
+  }
 }
 
 // returns the index of widget in g->widgets[]
@@ -967,8 +973,6 @@ static void _gmic_commands_callback(GtkComboBox *combo, dt_iop_module_t *self)
     if(command)
     {
       g_strlcpy(p->gmic_command_name, command->name, sizeof(p->gmic_command_name));
-      p->colorspace = command->colorspace;
-      p->scale_image = command->scale_image;
     }
   }
 
@@ -1370,15 +1374,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     return;
   }
 
+  const dt_gmic_command_t *gmic_command = _get_gmic_command_by_name(p->gmic_command_name);
   char *command = dt_gmic_get_command(self, piece, p, roi_in->scale / piece->iscale, roi_in);
-  if(command)
+  if(gmic_command && command)
   {
-    printf("\n[gmic process] processing image of with %i and height %i, image scale %f and colorspace=%i %s on pipe %s\n",
-        roi_in->width, roi_in->height, roi_in->scale / piece->iscale, p->colorspace,
-        (p->scale_image) ? "(scaled)": "", _pipe_type_to_str(piece->pipe->type));
-    printf("\n[gmic process] command '%s'\n'%s'\n\n", p->gmic_command_name, command);
+    const dt_gmic_colorspaces_t colorspace = gmic_command->colorspace;
+    const gboolean scale_image = gmic_command->scale_image;
 
-    if(p->colorspace == DT_GMIC_sRGB_3C)
+    fprintf(stderr, "\n[gmic process] processing image of with %i and height %i, image scale %f and colorspace=%i %s on pipe %s\n",
+        roi_in->width, roi_in->height, roi_in->scale / piece->iscale, colorspace,
+        (scale_image) ? "(scaled)": "", _pipe_type_to_str(piece->pipe->type));
+    fprintf(stderr, "\n[gmic process] command '%s'\n'%s'\n\n", p->gmic_command_name, command);
+
+    if(colorspace == DT_GMIC_sRGB_3C)
     {
       const dt_iop_order_iccprofile_info_t *const srgb_profile
           = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_SRGB, "", INTENT_PERCEPTUAL);
@@ -1390,7 +1398,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
         dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
 
-        dt_gmic_run_3c(ovoid, ovoid, roi_in->width, roi_in->height, command, p->scale_image);
+        dt_gmic_run_3c(ovoid, ovoid, roi_in->width, roi_in->height, command, scale_image);
 
         dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
@@ -1398,7 +1406,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                                 work_profile, "GMIC process");
       }
     }
-    else if(p->colorspace == DT_GMIC_sRGB_1C)
+    else if(colorspace == DT_GMIC_sRGB_1C)
     {
       const dt_iop_order_iccprofile_info_t *const srgb_profile
           = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_SRGB, "", INTENT_PERCEPTUAL);
@@ -1410,7 +1418,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
         dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
 
-        dt_gmic_run_1c(ovoid, ovoid, roi_in->width, roi_in->height, command, p->scale_image);
+        dt_gmic_run_1c(ovoid, ovoid, roi_in->width, roi_in->height, command, scale_image);
 
         dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
@@ -1418,21 +1426,21 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                                 work_profile, "GMIC process");
       }
     }
-    else if(p->colorspace == DT_GMIC_RGB_3C || p->colorspace == DT_GMIC_LAB_3C)
+    else if(colorspace == DT_GMIC_RGB_3C || colorspace == DT_GMIC_LAB_3C)
     {
       dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
 
-      dt_gmic_run_3c(ivoid, ovoid, roi_in->width, roi_in->height, command, p->scale_image);
+      dt_gmic_run_3c(ivoid, ovoid, roi_in->width, roi_in->height, command, scale_image);
 
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     }
-    else if(p->colorspace == DT_GMIC_RGB_1C || p->colorspace == DT_GMIC_LAB_1C)
+    else if(colorspace == DT_GMIC_RGB_1C || colorspace == DT_GMIC_LAB_1C)
     {
       memcpy(ovoid, ivoid, roi_in->width * roi_in->height * 4 * sizeof(float));
 
       dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
 
-      dt_gmic_run_1c(ovoid, ovoid, roi_in->width, roi_in->height, command, p->scale_image);
+      dt_gmic_run_1c(ovoid, ovoid, roi_in->width, roi_in->height, command, scale_image);
 
       dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     }

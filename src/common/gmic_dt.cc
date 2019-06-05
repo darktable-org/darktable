@@ -1386,7 +1386,7 @@ void dt_gmic_run_3c(const float *const in, float *out, const int width, const in
   }
   catch(gmic_exception &e) // In case something went wrong.
   {
-    printf("[dt_gmic_run_3c] error: %s\n", e.what());
+    fprintf(stderr, "[dt_gmic_run_3c] error: %s\n", e.what());
     return;
   }
 
@@ -1395,7 +1395,7 @@ void dt_gmic_run_3c(const float *const in, float *out, const int width, const in
     const float *const ptr = image_list[0]._data;
     const float scale = ((scale_image) ? (1.f / 255.f) : 1.f);
 
-    printf("[dt_gmic_run_3c] GMIC returned an image of width %i, height %i spectrum=%i of %i images\n",
+    fprintf(stderr, "[dt_gmic_run_3c] GMIC returned an image of width %i, height %i spectrum=%i of %i images\n",
         img._width, img._height, img._spectrum, image_list._width);
 
     const int _c = MIN(3, img._spectrum);
@@ -1481,7 +1481,7 @@ void dt_gmic_run_1c(const float *const in, float *out, const int width, const in
   }
   catch(gmic_exception &e) // In case something went wrong.
   {
-    printf("[dt_gmic_run_1c] error: %s\n", e.what());
+    fprintf(stderr, "[dt_gmic_run_1c] error: %s\n", e.what());
     return;
   }
 
@@ -1490,7 +1490,7 @@ void dt_gmic_run_1c(const float *const in, float *out, const int width, const in
     const float *const ptr = image_list[0]._data;
     const float scale = ((scale_image) ? (1.f / 255.f) : 1.f);
 
-    printf("[dt_gmic_run_1c] GMIC returned an image of width %i, height %i spectrum=%i of %i images\n",
+    fprintf(stderr, "[dt_gmic_run_1c] GMIC returned an image of width %i, height %i spectrum=%i of %i images\n",
         img._width, img._height, img._spectrum, image_list._width);
 
     const int _width = MIN(width, img._width);
