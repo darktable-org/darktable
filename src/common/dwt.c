@@ -268,7 +268,7 @@ static void dwt_subtract_layer(float *bl, float *bh, dwt_params_t *const p)
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(size) \
+  dt_omp_firstprivate(size, lpass_mult) \
   shared(bl, bh) \
   schedule(static)
 #endif

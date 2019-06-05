@@ -434,7 +434,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(ch, data, desaturate, ivoid, ovoid, preserve_color, roi_out, saturation) \
+  dt_omp_firstprivate(ch, data, desaturate, ivoid, ovoid, preserve_color, roi_out, saturation, EPS) \
   schedule(static)
 #endif
   for(size_t k = 0; k < roi_out->height * roi_out->width * ch; k += ch)
@@ -564,7 +564,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   dt_omp_firstprivate(black, black_sse, ch, data, desaturate, dynamic_range, \
                       dynamic_range_sse, EPS, grey, grey_sse, ivoid, one, \
                       ovoid, power, preserve_color, roi_out, saturation_sse, \
-                      zero) \
+                      zero, eps) \
   schedule(static)
 #endif
   for(size_t k = 0; k < roi_out->height * roi_out->width * ch; k += ch)
