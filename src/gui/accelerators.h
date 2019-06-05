@@ -31,6 +31,7 @@ typedef struct dt_accel_t
   gchar translated_path[256];
   gchar module[256];
   gboolean local;
+  dt_view_type_flags_t views;
   GClosure *closure;
 
 } dt_accel_t;
@@ -42,6 +43,7 @@ typedef struct dt_accel_dynamic_t
   gchar translated_path[256];
   gchar module[256];
   gboolean local;
+  dt_view_type_flags_t views;
   GtkAccelKey accel_key;
   GtkWidget *widget;
 
