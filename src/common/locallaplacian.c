@@ -262,7 +262,7 @@ static inline float *ll_pad_input(
   { // pad by preview buffer
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ht, input, max_supp, out, wd) \
+    dt_omp_firstprivate(ht, input, max_supp, out, wd, stride) \
     shared(wd2, ht2) \
     schedule(dynamic) \
     collapse(2)
@@ -291,7 +291,7 @@ static inline float *ll_pad_input(
     } } while(0)
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(input, max_supp, out, wd) \
+    dt_omp_firstprivate(input, max_supp, out, wd, stride) \
     shared(wd2, ht2, b) \
     schedule(dynamic) \
     collapse(2)
@@ -331,7 +331,7 @@ static inline float *ll_pad_input(
   { // pad by replication:
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(input, ht, max_supp, out, wd) \
+    dt_omp_firstprivate(input, ht, max_supp, out, wd, stride) \
     shared(wd2, ht2) \
     schedule(dynamic)
 #endif
