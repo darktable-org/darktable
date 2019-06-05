@@ -293,28 +293,33 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
   const int oz = b->size_y * b->size_x;
 
   float *const buf = b->buf;
+  const int size_x = b->size_x;
+  const int size_y = b->size_y;
+  const int size_z = b->size_z;
+  const int width = b->width;
+  const int height = b->height;
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(b, in, norm, oy, oz, ox) \
-    shared(out, buf) collapse(2) aligned(in, out, buf:64)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(b, in, norm, oy, oz, ox, size_x, size_y, size_z, height, width) \
+    shared(out, buf) collapse(2)
 #endif
-  for(int j = 0; j < b->height; j++)
+  for(int j = 0; j < height; j++)
   {
-    for(int i = 0; i < b->width; i++)
+    for(int i = 0; i < width; i++)
     {
-      size_t index = 4 * (j * b->width + i);
+      size_t index = 4 * (j * width + i);
       float x, y, z;
       const float L = in[index];
       image_to_grid(b, i, j, L, &x, &y, &z);
       // trilinear lookup:
-      const int xi = MIN((int)x, b->size_x - 2);
-      const int yi = MIN((int)y, b->size_y - 2);
-      const int zi = MIN((int)z, b->size_z - 2);
+      const int xi = MIN((int)x, size_x - 2);
+      const int yi = MIN((int)y, size_y - 2);
+      const int zi = MIN((int)z, size_z - 2);
       const float xf = x - xi;
       const float yf = y - yi;
       const float zf = z - zi;
-      const size_t gi = xi + b->size_x * (yi + b->size_y * zi);
+      const size_t gi = xi + size_x * (yi + size_y * zi);
       const float Lout = L
                          + norm * (buf[gi] * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
                                    + buf[gi + ox] * (xf) * (1.0f - yf) * (1.0f - zf)
@@ -349,10 +354,9 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *co
   float *const buf = b->buf;
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
     dt_omp_firstprivate(b, in, norm, oy, oz, ox) \
-    shared(out, buf) collapse(2) \
-    aligned(out, in, buf:64)
+    shared(out, buf) collapse(2)
 #endif
   for(int j = 0; j < b->height; j++)
   {
