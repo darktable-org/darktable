@@ -337,7 +337,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-      dt_omp_firstprivate(ch, grey, ivoid, ovoid, roi_out) \
+      dt_omp_firstprivate(ch, grey, ivoid, ovoid, roi_out, noise) \
       shared(data) \
       schedule(static)
 #endif
