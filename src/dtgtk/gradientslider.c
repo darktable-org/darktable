@@ -261,8 +261,7 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
   }
   else if((event->button == 1 || event->button == 3) && event->type == GDK_BUTTON_PRESS)
   {
-    gint lselected = _get_active_marker(gslider);
-    if(lselected < 0) lselected = _get_active_marker_from_screen(widget, event->x, event->y);
+    const gint lselected = _get_active_marker_from_screen(widget, event->x, event->y);
 
     assert(lselected >= 0);
     assert(lselected <= gslider->positions - 1);
