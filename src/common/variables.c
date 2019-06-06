@@ -23,6 +23,7 @@
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/metadata.h"
+#include "common/opencl.h"
 #include "common/utility.h"
 #include "control/conf.h"
 
@@ -353,6 +354,13 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
       result = g_strdup((char *)res->data);
     }
     g_list_free_full(res, &g_free);
+  }
+  else if(has_prefix(variable, "OPENCL_ACTIVATED"))
+  {
+    if(dt_opencl_is_enabled())
+      result = g_strdup(_("yes"));
+    else
+      result = g_strdup(_("no"));
   }
   else
   {
