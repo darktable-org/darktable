@@ -128,7 +128,7 @@ static gboolean _view_map_center_on_image_list(dt_view_t *self, const GList *sel
 /* center map on the given image */
 static void _view_map_center_on_image(dt_view_t *self, const int32_t imgid);
 
-const char *name(dt_view_t *self)
+const char *name(const dt_view_t *self)
 {
   return _("map");
 }

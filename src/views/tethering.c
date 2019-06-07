@@ -88,7 +88,7 @@ static void _capture_view_set_jobcode(const dt_view_t *view, const char *name);
 static const char *_capture_view_get_jobcode(const dt_view_t *view);
 static uint32_t _capture_view_get_selected_imgid(const dt_view_t *view);
 
-const char *name(dt_view_t *self)
+const char *name(const dt_view_t *self)
 {
   return _("tethering");
 }

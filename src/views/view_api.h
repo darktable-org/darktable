@@ -34,7 +34,7 @@ struct dt_view_t;
 
 #pragma GCC visibility push(default)
 
-const char *name(struct dt_view_t *self);    // get translatable name
+const char *name(const struct dt_view_t *self); // get translatable name
 uint32_t view(const struct dt_view_t *self); // get the view type
 uint32_t flags();                            // get flags of the view
 void init(struct dt_view_t *self);           // init *data

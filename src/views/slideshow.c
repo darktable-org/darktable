@@ -311,7 +311,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
 
 // callbacks for a view module:
 
-const char *name(dt_view_t *self)
+const char *name(const dt_view_t *self)
 {
   return _("slideshow");
 }

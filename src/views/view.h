@@ -102,7 +102,7 @@ typedef struct dt_view_t
   // scroll bar control
   float vscroll_size, vscroll_lower, vscroll_viewport_size, vscroll_pos;
   float hscroll_size, hscroll_lower, hscroll_viewport_size, hscroll_pos;
-  const char *(*name)(struct dt_view_t *self);    // get translatable name
+  const char *(*name)(const struct dt_view_t *self); // get translatable name
   uint32_t (*view)(const struct dt_view_t *self); // get the view type
   uint32_t (*flags)();                            // get the view flags
   void (*init)(struct dt_view_t *self);           // init *data
@@ -220,6 +220,8 @@ typedef struct dt_view_manager_t
 {
   GList *views;
   dt_view_t *current_view;
+
+  GtkWidget *accels_window;
 
   /* reusable db statements
    * TODO: reconsider creating a common/database helper API
@@ -448,6 +450,10 @@ void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm, int iid);
     TODO: move to control ?
 */
 void dt_view_filmstrip_prefetch();
+
+/* accel window */
+void dt_view_accels_show(dt_view_manager_t *vm);
+void dt_view_accels_hide(dt_view_manager_t *vm);
 
 /*
  * Map View Proxy
