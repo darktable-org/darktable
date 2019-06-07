@@ -219,8 +219,8 @@ static gint sort_pos(pair_t *a, pair_t *b)
 
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
-          const gboolean high_quality, const gboolean upscale, dt_colorspaces_color_profile_type_t icc_type,
-          const gchar *icc_filename, dt_iop_color_intent_t icc_intent)
+          const int max_width, const int max_height, const gboolean high_quality, const gboolean upscale,
+          dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename, dt_iop_color_intent_t icc_intent)
 {
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)sdata;
 
@@ -368,8 +368,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
   /* also export thumbnail: */
   // write with reduced resolution:
-  const int max_width = fdata->max_width;
-  const int max_height = fdata->max_height;
+  const int save_max_width = fdata->max_width;
+  const int save_max_height = fdata->max_height;
   fdata->max_width = 200;
   fdata->max_height = 200;
   // alter filename with -thumb:
@@ -387,8 +387,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     return 1;
   }
   // restore for next image:
-  fdata->max_width = max_width;
-  fdata->max_height = max_height;
+  fdata->max_width = save_max_width;
+  fdata->max_height = save_max_height;
 
   printf("[export_job] exported to `%s'\n", filename);
   dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
