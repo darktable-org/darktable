@@ -790,6 +790,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
+void filepath_set_OS_separator(char *filepath)
+{
+  const int len = strlen(filepath);
+#if defined(_WIN32)
+  for(int i=0; i<len; ++i)
+    if (filepath[i]=='/') filepath[i] = '\\';
+#else
+  for(int i=0; i<len; ++i)
+    if (filepath[i]=='\\') filepath[i] = '/';
+#endif
+}
+
 void init(dt_iop_module_t *self)
 {
   self->data = NULL;
@@ -876,6 +888,8 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   dt_iop_lut3d_data_t *d = (dt_iop_lut3d_data_t *)piece->data;
   d->clut = NULL;
   d->level = 0;
+  dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
+  filepath_set_OS_separator(p->filepath);
   self->commit_params(self, self->default_params, pipe, piece);
 }
 
