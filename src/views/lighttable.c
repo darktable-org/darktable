@@ -243,7 +243,7 @@ static void _unregister_custom_image_order_drag_n_drop(dt_view_t *self);
 
 static void _stop_audio(dt_library_t *lib);
 
-const char *name(dt_view_t *self)
+const char *name(const dt_view_t *self)
 {
   return _("lighttable");
 }

@@ -101,7 +101,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid);
 static void _darkroom_display_second_window(dt_develop_t *dev);
 static void _darkroom_ui_second_window_write_config(GtkWidget *widget);
 
-const char *name(dt_view_t *self)
+const char *name(const dt_view_t *self)
 {
   return _("darkroom");
 }
