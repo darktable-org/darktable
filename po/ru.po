@@ -3624,98 +3624,106 @@ msgid "$(SEQUENCE) - sequence number"
 msgstr "$(SEQUENCE) — номер последовательности"
 
 #: ../src/gui/gtkentry.c:192
+msgid "$(MAX_WIDTH) - maximum image export width"
+msgstr "$(MAX_WIDTH) - максимальная ширина снимка"
+
+#: ../src/gui/gtkentry.c:193
+msgid "$(MAX_HEIGHT) - maximum image export height"
+msgstr "$(MAX_HEIGHT) - максимальная высота снимка"
+
+#: ../src/gui/gtkentry.c:194
 msgid "$(YEAR) - year"
 msgstr "$(YEAR) — год"
 
-#: ../src/gui/gtkentry.c:193
+#: ../src/gui/gtkentry.c:195
 msgid "$(MONTH) - month"
 msgstr "$(MONTH) — месяц"
 
-#: ../src/gui/gtkentry.c:194
+#: ../src/gui/gtkentry.c:196
 msgid "$(DAY) - day"
 msgstr "$(DAY) — день"
 
-#: ../src/gui/gtkentry.c:195
+#: ../src/gui/gtkentry.c:197
 msgid "$(HOUR) - hour"
 msgstr "$(HOUR) — час"
 
-#: ../src/gui/gtkentry.c:196
+#: ../src/gui/gtkentry.c:198
 msgid "$(MINUTE) - minute"
 msgstr "$(MINUTE) — минута"
 
-#: ../src/gui/gtkentry.c:197
+#: ../src/gui/gtkentry.c:199
 msgid "$(SECOND) - second"
 msgstr "$(SECOND) — секунда"
 
-#: ../src/gui/gtkentry.c:198
+#: ../src/gui/gtkentry.c:200
 msgid "$(EXIF_YEAR) - EXIF year"
 msgstr "$(EXIF_YEAR) — год по EXIF"
 
-#: ../src/gui/gtkentry.c:199
+#: ../src/gui/gtkentry.c:201
 msgid "$(EXIF_MONTH) - EXIF month"
 msgstr "$(EXIF_MONTH) — месяц по EXIF"
 
-#: ../src/gui/gtkentry.c:200
+#: ../src/gui/gtkentry.c:202
 msgid "$(EXIF_DAY) - EXIF day"
 msgstr "$(EXIF_DAY) — день по EXIF"
 
-#: ../src/gui/gtkentry.c:201
+#: ../src/gui/gtkentry.c:203
 msgid "$(EXIF_HOUR) - EXIF hour"
 msgstr "$(EXIF_HOUR) — час по EXIF"
 
-#: ../src/gui/gtkentry.c:202
+#: ../src/gui/gtkentry.c:204
 msgid "$(EXIF_MINUTE) - EXIF minute"
 msgstr "$(EXIF_MINUTE) — минута по EXIF"
 
-#: ../src/gui/gtkentry.c:203
+#: ../src/gui/gtkentry.c:205
 msgid "$(EXIF_SECOND) - EXIF second"
 msgstr "$(EXIF_SECOND) — секунда по EXIF"
 
-#: ../src/gui/gtkentry.c:204
+#: ../src/gui/gtkentry.c:206
 msgid "$(EXIF_ISO) - ISO value"
 msgstr "$(EXIF_ISO) — значение ISO"
 
-#: ../src/gui/gtkentry.c:205
+#: ../src/gui/gtkentry.c:207
 msgid "$(MAKER) - camera maker"
 msgstr "$(MAKER) — изготовитель камеры"
 
-#: ../src/gui/gtkentry.c:206
+#: ../src/gui/gtkentry.c:208
 msgid "$(MODEL) - camera model"
 msgstr "$(MODEL) — модель камеры"
 
-#: ../src/gui/gtkentry.c:207
+#: ../src/gui/gtkentry.c:209
 msgid "$(STARS) - star rating"
 msgstr "$(STARS) — оценка"
 
-#: ../src/gui/gtkentry.c:208
+#: ../src/gui/gtkentry.c:210
 msgid "$(LABELS) - colorlabels"
 msgstr "$(LABELS) — цветовые метки"
 
-#: ../src/gui/gtkentry.c:209
+#: ../src/gui/gtkentry.c:211
 msgid "$(PICTURES_FOLDER) - pictures folder"
 msgstr "$(PICTURES_FOLDER) — каталог со снимками"
 
-#: ../src/gui/gtkentry.c:210
+#: ../src/gui/gtkentry.c:212
 msgid "$(HOME) - home folder"
 msgstr "$(HOME) — домашний каталог"
 
-#: ../src/gui/gtkentry.c:211
+#: ../src/gui/gtkentry.c:213
 msgid "$(DESKTOP) - desktop folder"
 msgstr "$(DESKTOP) — каталог рабочего стола"
 
-#: ../src/gui/gtkentry.c:212
+#: ../src/gui/gtkentry.c:214
 msgid "$(TITLE) - title from metadata"
 msgstr "$(TITLE) — заголовок из метаданных"
 
-#: ../src/gui/gtkentry.c:213
+#: ../src/gui/gtkentry.c:215
 msgid "$(CREATOR) - creator from metadata"
 msgstr "$(TITLE) — создатель из метаданных"
 
-#: ../src/gui/gtkentry.c:214
+#: ../src/gui/gtkentry.c:216
 msgid "$(PUBLISHER) - publisher from metadata"
 msgstr "$(TITLE) — публикующий из метаданных"
 
-#: ../src/gui/gtkentry.c:215
+#: ../src/gui/gtkentry.c:217
 msgid "$(RIGHTS) - rights from metadata"
 msgstr "$(TITLE) — авторские права из метаданных"
 
