@@ -329,7 +329,7 @@ typedef struct dt_knight_t
   uint8_t *bunker_buf[4];
 } dt_knight_t;
 
-const char *name(dt_view_t *self)
+const char *name(const dt_view_t *self)
 {
   return _("good knight");
 }
