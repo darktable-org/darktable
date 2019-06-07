@@ -334,8 +334,7 @@ restart:
   dt_show_times(&start, "[dev_process_preview] pixel pipeline processing");
   dt_dev_average_delay_update(&start, &dev->preview_average_delay);
 
-  // redraw the whole thing, to also update color picker values and histograms etc.
-  if(dev->gui_attached) dt_control_queue_redraw();
+  // if a widget needs to be redraw there's the DT_SIGNAL_*_PIPE_FINISHED signals
   dt_control_log_busy_leave();
   dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
@@ -594,8 +593,7 @@ restart:
   dev->image_loading = 0;
 
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-  // redraw the whole thing, to also update color picker values and histograms etc.
-  if(dev->gui_attached) dt_control_queue_redraw();
+  // if a widget needs to be redraw there's the DT_SIGNAL_*_PIPE_FINISHED signals
   dt_control_log_busy_leave();
   dt_pthread_mutex_unlock(&dev->pipe_mutex);
 }

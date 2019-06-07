@@ -979,7 +979,7 @@ static gboolean skip_b_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
 
 static void _darkroom_ui_pipe_finish_signal_callback(gpointer instance, gpointer data)
 {
-  dt_control_queue_redraw();
+  dt_control_queue_redraw_center();
 }
 
 static void _darkroom_ui_preview2_pipe_finish_signal_callback(gpointer instance, gpointer user_data)
