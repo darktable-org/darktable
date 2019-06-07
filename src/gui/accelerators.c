@@ -239,7 +239,8 @@ void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local, const 
   g_strlcpy(daccel->module, so->op, sizeof(daccel->module));
   daccel->local = local;
   daccel->views = DT_VIEW_DARKROOM;
-  
+  daccel->mod_so = so;
+
   darktable.control->dynamic_accelerator_list
       = g_slist_prepend(darktable.control->dynamic_accelerator_list, daccel);
 }
@@ -541,6 +542,8 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path, Gtk
     }
     l = g_slist_next(l);
   }
+  accel = _lookup_accel(dynamic_path);
+  module->accel_closures = g_slist_prepend(module->accel_closures, accel);
 }
 
 void dt_accel_connect_locals_iop(dt_iop_module_t *module)
@@ -1068,7 +1071,7 @@ void dt_dynamic_accel_get_valid_list()
   while(l)
   {
     dt_accel_dynamic_t *da = (dt_accel_dynamic_t *)l->data;
-    if(da)
+    if(da && da->mod_so->state != dt_iop_state_HIDDEN)
     {
       GtkAccelKey ak;
       if(gtk_accel_map_lookup_entry(da->path, &ak))
