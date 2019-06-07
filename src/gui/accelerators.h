@@ -46,6 +46,7 @@ typedef struct dt_accel_dynamic_t
   dt_view_type_flags_t views;
   GtkAccelKey accel_key;
   GtkWidget *widget;
+  dt_iop_module_so_t *mod_so;
 
 } dt_accel_dynamic_t;
 

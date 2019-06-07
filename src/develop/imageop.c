@@ -2148,6 +2148,7 @@ gchar *dt_iop_get_localized_name(const gchar *op)
 
 void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t state)
 {
+  const dt_iop_module_state_t old_state = module->state;
   module->state = state;
 
   char option[1024];
@@ -2211,6 +2212,41 @@ void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t s
     dt_conf_set_bool(option, TRUE);
     snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool(option, TRUE);
+  }
+
+  // (dis)connect key accels
+  if(old_state == dt_iop_state_HIDDEN && state != dt_iop_state_HIDDEN)
+  {
+    // connect
+    mods = g_list_first(darktable.develop->iop);
+    while(mods)
+    {
+      dt_iop_module_t *mod = (dt_iop_module_t *)mods->data;
+      if(mod->so == module)
+      {
+        if(mod->connect_key_accels) mod->connect_key_accels(mod);
+        dt_iop_connect_common_accels(mod);
+      }
+      mods = g_list_next(mods);
+    }
+    dt_dynamic_accel_get_valid_list();
+  }
+  else if(state == dt_iop_state_HIDDEN && old_state != dt_iop_state_HIDDEN)
+  {
+    // disconnect
+    mods = g_list_first(darktable.develop->iop);
+    while(mods)
+    {
+      dt_iop_module_t *mod = (dt_iop_module_t *)mods->data;
+      if(mod->so == module)
+      {
+        dt_accel_disconnect_list(mod->accel_closures);
+        dt_accel_cleanup_locals_iop(mod);
+        mod->accel_closures = NULL;
+      }
+      mods = g_list_next(mods);
+    }
+    dt_dynamic_accel_get_valid_list();
   }
 
   dt_view_manager_t *vm = darktable.view_manager;
