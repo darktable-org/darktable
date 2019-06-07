@@ -77,7 +77,8 @@ static int default_dimension_wrapper(struct dt_imageio_module_storage_t *self, d
 
 static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *self_data,
                          const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
-                         const int num, const int total, const gboolean high_quality, const gboolean upscale,
+                         const int num, const int total, const int max_width, const int max_height,
+                         const gboolean high_quality, const gboolean upscale,
                          dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
                          dt_iop_color_intent_t icc_intent)
 {
@@ -138,6 +139,8 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_ima
   lua_pushstring(L, complete_name);
   lua_pushinteger(L, num);
   lua_pushinteger(L, total);
+//  lua_pushinteger(L, max_width);
+//  lua_pushinteger(L, max_height);
   lua_pushboolean(L, high_quality);
   push_lua_data(L,d);
   dt_lua_goto_subtable(L,"extra");
