@@ -31,6 +31,7 @@ typedef struct dt_accel_t
   gchar translated_path[256];
   gchar module[256];
   gboolean local;
+  dt_view_type_flags_t views;
   GClosure *closure;
 
 } dt_accel_t;
@@ -42,8 +43,10 @@ typedef struct dt_accel_dynamic_t
   gchar translated_path[256];
   gchar module[256];
   gboolean local;
+  dt_view_type_flags_t views;
   GtkAccelKey accel_key;
   GtkWidget *widget;
+  dt_iop_module_so_t *mod_so;
 
 } dt_accel_dynamic_t;
 
@@ -62,8 +65,11 @@ void dt_accel_path_lua(char *s, size_t n, const char *path);
  * 4 - Slider dynamic path
  */
 void dt_accel_paths_slider_iop(char *s[], size_t n, char *module, const char *path);
+
+// Accelerator search functions
 dt_accel_dynamic_t *dt_dynamic_accel_find_by_key(guint accel_key, GdkModifierType mods);
 void dt_dynamic_accel_get_valid_list();
+dt_accel_t *dt_accel_find_by_path(const gchar *path);
 
 // Accelerator registration functions
 void dt_accel_register_global(const gchar *path, guint accel_key, GdkModifierType mods);
