@@ -217,14 +217,6 @@ void dt_import_session_set_filename(struct dt_import_session_t *self, const char
 }
 
 
-/*
-void dt_import_session_set_max_width_height(struct dt_import_session_t *self, int max_width, max_height)
-{
-  dt_variables_set_max_width_height(self->vp, max_width, max_height);
-}
-*/
-
-
 int32_t dt_import_session_film_id(struct dt_import_session_t *self)
 {
   if(self->film) return self->film->id;
