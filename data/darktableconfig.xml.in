@@ -213,7 +213,7 @@
     </type>
     <default>default</default>
     <shortdescription>OpenCL scheduling profile</shortdescription>
-    <longdescription>defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled systems. default - GPU processes full and CPU processes preview pipe (adaptable by config parameters); multiple GPUs - process both pixelpipes in parallel on two different GPUs; very fast GPU - process both pixelipes sequentially on the GPU.</longdescription>
+    <longdescription>defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled systems. default - GPU processes full and CPU processes preview pipe (adaptable by config parameters); multiple GPUs - process both pixelpipes in parallel on two different GPUs; very fast GPU - process both pixelpipes sequentially on the GPU.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_library</name>

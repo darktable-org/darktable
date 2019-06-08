@@ -113,7 +113,7 @@
     Defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled systems.
     <quote>default</quote>: the GPU processes the center view pixelpipe and the CPU processes
     the preview pipe; <quote>multiple GPUs</quote>: both pixelpipes are processed in parallel on
-    two different GPUs; <quote>very fast GPU</quote>: both pixelipes are processed sequentially
+    two different GPUs; <quote>very fast GPU</quote>: both pixelpipes are processed sequentially
     on the GPU.
   </para>
 
