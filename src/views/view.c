@@ -203,6 +203,8 @@ static int dt_view_load_module(void *v, const char *libname, const char *module_
     view->init_key_accels = NULL;
   if(!g_module_symbol(view->module, "connect_key_accels", (gpointer) & (view->connect_key_accels)))
     view->connect_key_accels = NULL;
+  if(!g_module_symbol(view->module, "mouse_actions", (gpointer) & (view->mouse_actions)))
+    view->mouse_actions = NULL;
 
   view->accel_closures = NULL;
 
@@ -2154,6 +2156,36 @@ void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo)
 }
 #endif
 
+
+gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
+{
+  gchar *atxt = dt_util_dstrcat(NULL, "%s", gtk_accelerator_get_label(ma->key.accel_key, ma->key.accel_mods));
+  if(strcmp(atxt, "")) atxt = dt_util_dstrcat(atxt, "+");
+  switch(ma->action)
+  {
+    case DT_MOUSE_ACTION_LEFT:
+      atxt = dt_util_dstrcat(atxt, _("Left click"));
+      break;
+    case DT_MOUSE_ACTION_RIGHT:
+      atxt = dt_util_dstrcat(atxt, _("Right click"));
+      break;
+    case DT_MOUSE_ACTION_MIDDLE:
+      atxt = dt_util_dstrcat(atxt, _("Middle click"));
+      break;
+    case DT_MOUSE_ACTION_SCROLL:
+      atxt = dt_util_dstrcat(atxt, _("Scroll"));
+      break;
+    case DT_MOUSE_ACTION_DOUBLE_LEFT:
+      atxt = dt_util_dstrcat(atxt, _("Left double-click"));
+      break;
+    case DT_MOUSE_ACTION_DOUBLE_RIGHT:
+      atxt = dt_util_dstrcat(atxt, _("Right double-click"));
+      break;
+  }
+
+  return atxt;
+}
+
 void dt_view_accels_show(dt_view_manager_t *vm)
 {
   if(vm->accels_window) return; // dt_view_accels_hide(vm);
@@ -2239,6 +2271,33 @@ void dt_view_accels_show(dt_view_manager_t *vm)
     l = g_slist_next(l);
   }
 
+  // we add the mouse actions too
+  if(cv->mouse_actions)
+  {
+    printf("coucou\n");
+    _bloc_t *bm = (_bloc_t *)calloc(1, sizeof(_bloc_t));
+    bm->base = NULL;
+    bm->title = dt_util_dstrcat(NULL, _("mouse actions"));
+    bm->list_store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+    blocs = g_list_prepend(blocs, bm);
+
+    GSList *lm = cv->mouse_actions(cv);
+    while(lm)
+    {
+      dt_mouse_action_t *ma = (dt_mouse_action_t *)lm->data;
+      if(ma)
+      {
+        GtkTreeIter iter;
+        gtk_list_store_append(bm->list_store, &iter);
+        gchar *atxt = _mouse_action_get_string(ma);
+        gtk_list_store_set(bm->list_store, &iter, 0, atxt, 1, ma->name, -1);
+        g_free(atxt);
+      }
+      lm = g_slist_next(lm);
+    }
+    g_slist_free_full(lm, free);
+  }
+
   // now we create and insert the widget to display all accels by categories
   bl = blocs;
   while(bl)
@@ -2279,6 +2338,7 @@ void dt_view_accels_show(dt_view_manager_t *vm)
   gtk_window_set_position(GTK_WINDOW(vm->accels_window), GTK_WIN_POS_CENTER_ON_PARENT);
   gtk_widget_show_all(vm->accels_window);
 }
+
 void dt_view_accels_hide(dt_view_manager_t *vm)
 {
   gtk_widget_destroy(vm->accels_window);

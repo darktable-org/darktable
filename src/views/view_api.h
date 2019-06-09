@@ -65,6 +65,9 @@ void scrollbar_changed(struct dt_view_t *self, double x, double y); // scrollbar
 void init_key_accels(struct dt_view_t *self);
 void connect_key_accels(struct dt_view_t *self);
 
+// list of mouse actions
+GSList *mouse_actions(const struct dt_view_t *self);
+
 #pragma GCC visibility pop
 
 #ifdef __cplusplus
