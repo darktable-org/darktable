@@ -88,7 +88,9 @@ typedef enum dt_mouse_action_type_t
   DT_MOUSE_ACTION_MIDDLE,
   DT_MOUSE_ACTION_SCROLL,
   DT_MOUSE_ACTION_DOUBLE_LEFT,
-  DT_MOUSE_ACTION_DOUBLE_RIGHT
+  DT_MOUSE_ACTION_DOUBLE_RIGHT,
+  DT_MOUSE_ACTION_DRAG_DROP,
+  DT_MOUSE_ACTION_PAN
 } dt_mouse_action_type_t;
 
 typedef struct dt_mouse_action_t

@@ -91,7 +91,7 @@ static gboolean go_pgdown_key_accel_callback(GtkAccelGroup *accel_group, GObject
 static void _update_collected_images(dt_view_t *self);
 
 /* returns TRUE if lighttable is using the custom order filter */
-static gboolean _is_custom_image_order_actif(dt_view_t *self);
+static gboolean _is_custom_image_order_actif(const dt_view_t *self);
 /* returns TRUE if lighttable is using the custom order filter */
 static gboolean _is_rating_order_actif(dt_view_t *self);
 /* returns TRUE if lighttable is using the custom order filter */
@@ -4462,6 +4462,98 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "toggle timeline", closure);
 }
 
+GSList *mouse_actions(const dt_view_t *self)
+{
+  dt_library_t *lib = (dt_library_t *)self->data;
+  GSList *lm = NULL;
+  dt_mouse_action_t *a = NULL;
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = DT_MOUSE_ACTION_DOUBLE_LEFT;
+  g_strlcpy(a->name, _("open image in darkroom"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+
+  if(lib->full_preview_id >= 0)
+  {
+    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+    a->action = DT_MOUSE_ACTION_SCROLL;
+    g_strlcpy(a->name, _("switch to next/previous image"), sizeof(a->name));
+    lm = g_slist_append(lm, a);
+
+    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+    a->key.accel_mods = GDK_CONTROL_MASK;
+    a->action = DT_MOUSE_ACTION_SCROLL;
+    g_strlcpy(a->name, _("zoom in the image"), sizeof(a->name));
+    lm = g_slist_append(lm, a);
+  }
+  else if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER)
+  {
+    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+    a->action = DT_MOUSE_ACTION_SCROLL;
+    g_strlcpy(a->name, _("scroll the collection"), sizeof(a->name));
+    lm = g_slist_append(lm, a);
+
+    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+    a->key.accel_mods = GDK_CONTROL_MASK;
+    a->action = DT_MOUSE_ACTION_SCROLL;
+    g_strlcpy(a->name, _("change number of images per row"), sizeof(a->name));
+    lm = g_slist_append(lm, a);
+
+    if(_is_custom_image_order_actif(self))
+    {
+      a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+      a->key.accel_mods = GDK_BUTTON1_MASK;
+      a->action = DT_MOUSE_ACTION_DRAG_DROP;
+      g_strlcpy(a->name, _("change image order"), sizeof(a->name));
+      lm = g_slist_append(lm, a);
+    }
+  }
+  else if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+    a->action = DT_MOUSE_ACTION_SCROLL;
+    g_strlcpy(a->name, _("scroll the collection"), sizeof(a->name));
+    lm = g_slist_append(lm, a);
+
+    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+    a->key.accel_mods = GDK_CONTROL_MASK;
+    a->action = DT_MOUSE_ACTION_SCROLL;
+    g_strlcpy(a->name, _("zoom all the images"), sizeof(a->name));
+    lm = g_slist_append(lm, a);
+
+    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+    a->action = DT_MOUSE_ACTION_PAN;
+    g_strlcpy(a->name, _("pan inside all the images"), sizeof(a->name));
+    lm = g_slist_append(lm, a);
+
+    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+    a->key.accel_mods = GDK_CONTROL_MASK | GDK_SHIFT_MASK;
+    a->action = DT_MOUSE_ACTION_SCROLL;
+    g_strlcpy(a->name, _("zoom current image"), sizeof(a->name));
+    lm = g_slist_append(lm, a);
+
+    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+    a->key.accel_mods = GDK_SHIFT_MASK;
+    a->action = DT_MOUSE_ACTION_PAN;
+    g_strlcpy(a->name, _("pan inside current image"), sizeof(a->name));
+    lm = g_slist_append(lm, a);
+  }
+  else if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+  {
+    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+    a->action = DT_MOUSE_ACTION_SCROLL;
+    g_strlcpy(a->name, _("zoom the main view"), sizeof(a->name));
+    lm = g_slist_append(lm, a);
+
+    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+    a->action = DT_MOUSE_ACTION_PAN;
+    g_strlcpy(a->name, _("pan inside the main view"), sizeof(a->name));
+    lm = g_slist_append(lm, a);
+  }
+
+  return lm;
+}
+
 static void display_intent_callback(GtkWidget *combo, gpointer user_data)
 {
   const int pos = dt_bauhaus_combobox_get(combo);
@@ -4775,7 +4867,7 @@ void gui_init(dt_view_t *self)
   darktable.view_manager->proxy.lighttable.force_expose_all = _force_expose_all;
 }
 
-static gboolean _is_order_actif(dt_view_t *self, dt_collection_sort_t sort)
+static gboolean _is_order_actif(const dt_view_t *self, dt_collection_sort_t sort)
 {
   if (darktable.gui)
   {
@@ -4799,7 +4891,7 @@ static gboolean _is_order_actif(dt_view_t *self, dt_collection_sort_t sort)
   return FALSE;
 }
 
-static gboolean _is_custom_image_order_actif(dt_view_t *self)
+static gboolean _is_custom_image_order_actif(const dt_view_t *self)
 {
   return _is_order_actif(self, DT_COLLECTION_SORT_CUSTOM_ORDER);
 }
