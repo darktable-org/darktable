@@ -80,6 +80,24 @@ typedef enum dt_lighttable_culling_zoom_mode_t
   DT_LIGHTTABLE_ZOOM_DYNAMIC = 1
 } dt_lighttable_culling_zoom_mode_t;
 
+// mouse actions struct
+typedef enum dt_mouse_action_type_t
+{
+  DT_MOUSE_ACTION_LEFT = 0,
+  DT_MOUSE_ACTION_RIGHT,
+  DT_MOUSE_ACTION_MIDDLE,
+  DT_MOUSE_ACTION_SCROLL,
+  DT_MOUSE_ACTION_DOUBLE_LEFT,
+  DT_MOUSE_ACTION_DOUBLE_RIGHT
+} dt_mouse_action_type_t;
+
+typedef struct dt_mouse_action_t
+{
+  GtkAccelKey key;
+  dt_mouse_action_type_t action;
+  gchar name[256];
+} dt_mouse_action_t;
+
 #define DT_VIEW_ALL                                                                              \
   (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW | \
    DT_VIEW_PRINT | DT_VIEW_KNIGHT)
@@ -132,6 +150,9 @@ typedef struct dt_view_t
   // keyboard accel callbacks
   void (*init_key_accels)(struct dt_view_t *self);
   void (*connect_key_accels)(struct dt_view_t *self);
+
+  // list of mouse actions
+  GSList *(*mouse_actions)(const struct dt_view_t *self);
 
   GSList *accel_closures;
   struct dt_accel_dynamic_t *dynamic_accel_current;
