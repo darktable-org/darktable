@@ -2196,12 +2196,21 @@ void dt_view_accels_show(dt_view_manager_t *vm)
 {
   if(vm->accels_window) return; // dt_view_accels_hide(vm);
 
+  GtkStyleContext *context;
   vm->accels_window = gtk_window_new(GTK_WINDOW_POPUP);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(darktable.bauhaus->popup_window);
 #endif
+  context = gtk_widget_get_style_context(vm->accels_window);
+  gtk_style_context_add_class(context, "accels_window");
+
+  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+  context = gtk_widget_get_style_context(sw);
+  gtk_style_context_add_class(context, "accels_window_scroll");
 
   GtkWidget *fb = gtk_flow_box_new();
+  context = gtk_widget_get_style_context(fb);
+  gtk_style_context_add_class(context, "accels_window_box");
   gtk_orientable_set_orientation(GTK_ORIENTABLE(fb), GTK_ORIENTATION_HORIZONTAL);
   // get the list of valid accel for this view
   const dt_view_t *cv = dt_view_manager_get_current_view(vm);
@@ -2280,7 +2289,6 @@ void dt_view_accels_show(dt_view_manager_t *vm)
   // we add the mouse actions too
   if(cv->mouse_actions)
   {
-    printf("coucou\n");
     _bloc_t *bm = (_bloc_t *)calloc(1, sizeof(_bloc_t));
     bm->base = NULL;
     bm->title = dt_util_dstrcat(NULL, _("mouse actions"));
@@ -2311,10 +2319,15 @@ void dt_view_accels_show(dt_view_manager_t *vm)
     _bloc_t *bb = (_bloc_t *)bl->data;
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     // the title
-    gtk_box_pack_start(GTK_BOX(box), gtk_label_new(bb->title), FALSE, FALSE, 0);
+    GtkWidget *lb = gtk_label_new(bb->title);
+    context = gtk_widget_get_style_context(lb);
+    gtk_style_context_add_class(context, "accels_window_cat_title");
+    gtk_box_pack_start(GTK_BOX(box), lb, FALSE, FALSE, 0);
 
     // the list of accels
     GtkWidget *list = gtk_tree_view_new_with_model(GTK_TREE_MODEL(bb->list_store));
+    context = gtk_widget_get_style_context(list);
+    gtk_style_context_add_class(context, "accels_window_list");
     GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
     GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("Accel"), renderer, "text", 0, NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
@@ -2333,12 +2346,15 @@ void dt_view_accels_show(dt_view_manager_t *vm)
 
   GtkAllocation alloc;
   gtk_widget_get_allocation(dt_ui_main_window(darktable.gui->ui), &alloc);
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw), alloc.height);
+  gtk_scrolled_window_set_max_content_height(GTK_SCROLLED_WINDOW(sw), alloc.height);
+  gtk_scrolled_window_set_max_content_width(GTK_SCROLLED_WINDOW(sw), alloc.width);
+  gtk_container_add(GTK_CONTAINER(sw), fb);
+  gtk_container_add(GTK_CONTAINER(vm->accels_window), sw);
 
-  gtk_widget_set_size_request(fb, alloc.width, alloc.height);
   gtk_window_set_resizable(GTK_WINDOW(vm->accels_window), FALSE);
   gtk_window_set_default_size(GTK_WINDOW(vm->accels_window), alloc.width, alloc.height);
   gtk_window_set_transient_for(GTK_WINDOW(vm->accels_window), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
-  gtk_container_add(GTK_CONTAINER(vm->accels_window), fb);
   gtk_window_set_keep_above(GTK_WINDOW(vm->accels_window), TRUE);
   gtk_window_set_gravity(GTK_WINDOW(vm->accels_window), GDK_GRAVITY_STATIC);
   gtk_window_set_position(GTK_WINDOW(vm->accels_window), GTK_WIN_POS_CENTER_ON_PARENT);
