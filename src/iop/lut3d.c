@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <dirent.h>
 #if defined (_WIN32)
 #include "win/getdelim.h"
 #endif // defined (_WIN32)
@@ -790,6 +791,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
+void filepath_set_unix_separator(char *filepath)
+{ // use the unix separator as it works also on windows
+  const int len = strlen(filepath);
+  for(int i=0; i<len; ++i)
+    if (filepath[i]=='\\') filepath[i] = '/';
+}
+
 void init(dt_iop_module_t *self)
 {
   self->data = NULL;
@@ -891,11 +899,12 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-static void filepath_callback(GtkWidget *w, dt_iop_module_t *self)
+static void filepath_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
-  snprintf(p->filepath, sizeof(p->filepath), "%s", gtk_entry_get_text(GTK_ENTRY(w)));
+  snprintf(p->filepath, sizeof(p->filepath), "%s", dt_bauhaus_combobox_get_text(widget));
+  filepath_set_unix_separator(p->filepath);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -913,6 +922,67 @@ static void interpolation_callback(GtkWidget *widget, dt_iop_module_t *self)
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   p->interpolation = dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+// remove root lut folder from path
+static void remove_root_from_path(const char *const lutfolder, char *const filepath)
+{
+  const int j = strlen(lutfolder) + 1;
+  int i;
+  for(i = 0; filepath[i+j] != '\0'; i++)
+    filepath[i] = filepath[i+j];
+  filepath[i] = '\0';
+}
+
+gboolean check_same_extension(char *filename, char *ext)
+{
+  gboolean res = FALSE;
+  if (strlen(filename) < strlen(ext)) return res;  // crash Pascal
+  char *p = g_strrstr(filename,".");
+  if (!p) return res;
+  char *fext = g_ascii_strdown(g_strdup(p), -1);
+  if (!g_strcmp0(fext, ext)) res = TRUE;
+  g_free(fext);
+  return res;
+}
+// update filepath combobox with all files in the current folder
+static void update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, char *filepath, char *lutfolder)
+{
+  if (!filepath[0])
+    dt_bauhaus_combobox_clear(g->filepath);
+  else if (!dt_bauhaus_combobox_set_from_text(g->filepath, filepath))
+  { // new folder -> update the files list
+    char *relativepath = g_path_get_dirname(filepath);
+    char *folder = g_build_filename(lutfolder, relativepath, NULL);
+    struct dirent *dir;
+    DIR *d = opendir(folder);
+    if (d)
+    {
+      dt_bauhaus_combobox_clear(g->filepath);
+      char *ext = g_ascii_strdown(g_strdup(g_strrstr(filepath,".")), -1);
+      if (ext[0])
+      {
+        while ((dir = readdir(d)) != NULL)
+        {
+          char *file = dir->d_name;
+          if (check_same_extension(file, ext))
+          {
+            char *ofilepath = (strcmp(relativepath, ".") != 0)
+                  ? g_build_filename(relativepath, file, NULL)
+                  : g_strdup(file);
+            filepath_set_unix_separator(ofilepath);
+            dt_bauhaus_combobox_add(g->filepath, ofilepath);
+            g_free(ofilepath);
+          }
+        }
+      }
+      g_free(ext);
+      closedir(d);
+    }
+    dt_bauhaus_combobox_set_from_text(g->filepath, filepath);
+    g_free(relativepath);
+    g_free(folder);
+  }
 }
 
 static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
@@ -967,24 +1037,17 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *filepath = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-
     if (strcmp(lutfolder, filepath) < 0)
-    { // remove root lut folder from file path
-      const int j = strlen(lutfolder) + 1;
-      int i;
-      for(i = 0; filepath[i+j] != '\0'; i++)
-        filepath[i] = filepath[i+j];
-      filepath[i] = '\0';
+    {
+      remove_root_from_path(lutfolder, filepath);
+      filepath_set_unix_separator(filepath);
+      update_filepath_combobox(g, filepath, lutfolder);
     }
-    else // file chosen outside of root folder
+    else if (!filepath[0])// file chosen outside of root folder
     {
       fprintf(stderr, "[lut3d] Select file outside Lut root folder is not allowed\n");
       dt_control_log(_("Select file outside Lut root folder is not allowed"));
-      g_free(lutfolder);
-      gtk_widget_destroy(filechooser);
-      return;
     }
-    gtk_entry_set_text(GTK_ENTRY(g->filepath), filepath);
     g_free(filepath);
   }
   g_free(lutfolder);
@@ -1001,18 +1064,19 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   gchar *lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
-  gtk_entry_set_text(GTK_ENTRY(g->filepath), p->filepath);
-  if (lutfolder[0] == 0)
+  if (!lutfolder[0])
   {
     gtk_widget_set_sensitive(g->hbox, FALSE);
+    dt_bauhaus_combobox_clear(g->filepath);
   }
   else
   {
     gtk_widget_set_sensitive(g->hbox, TRUE);
+    update_filepath_combobox(g, p->filepath, lutfolder);
   }
-  g_free(lutfolder);
   dt_bauhaus_combobox_set(g->colorspace, p->colorspace);
   dt_bauhaus_combobox_set(g->interpolation, p->interpolation);
+  g_free(lutfolder);
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -1024,19 +1088,18 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   g->hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(8));
-  g->filepath = gtk_entry_new();
-  gtk_box_pack_start(GTK_BOX(g->hbox), g->filepath, TRUE, TRUE, 0);
-  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(g->filepath));
-  gtk_widget_set_tooltip_text(g->filepath,
-                              _("the file path (relative to lut folder) is saved with image (and not the lut data themselves)\n"
-                                "CAUTION: lut folder must be set in preferences/core options/miscellaneous before choosing the lut file"));
-  g_signal_connect(G_OBJECT(g->filepath), "changed", G_CALLBACK(filepath_callback), self);
-
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_DO_NOT_USE_BORDER, NULL);
   gtk_widget_set_size_request(button, DT_PIXEL_APPLY_DPI(18), DT_PIXEL_APPLY_DPI(18));
   gtk_widget_set_tooltip_text(button, _("select a png (haldclut) or a cube file"));
   gtk_box_pack_start(GTK_BOX(g->hbox), button, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), self);
+
+  g->filepath = dt_bauhaus_combobox_new(self);
+  gtk_box_pack_start(GTK_BOX(g->hbox), g->filepath, TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(g->filepath,
+                              _("the file path (relative to lut folder) is saved with image (and not the lut data themselves)\n"
+                                "CAUTION: lut folder must be set in preferences/core options/miscellaneous before choosing the lut file"));
+  g_signal_connect(G_OBJECT(g->filepath), "value-changed", G_CALLBACK(filepath_callback), self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hbox), TRUE, TRUE, 0);
 
@@ -1062,8 +1125,6 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
-  dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(g->filepath));
   free(self->gui_data);
   self->gui_data = NULL;
 }
