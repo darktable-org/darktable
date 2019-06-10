@@ -217,7 +217,7 @@ GSList *dt_masks_mouse_actions(dt_masks_form_t *form)
   if((formtype & DT_MASKS_GRADIENT) == DT_MASKS_GRADIENT)
   {
     a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-    a->action = DT_MOUSE_ACTION_PAN;
+    a->action = DT_MOUSE_ACTION_LEFT_DRAG;
     g_strlcpy(a->name, _("[GRADIENT on pivot] rotate shape"), sizeof(a->name));
     lm = g_slist_append(lm, a);
 
@@ -248,7 +248,7 @@ GSList *dt_masks_mouse_actions(dt_masks_form_t *form)
 
     a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
     a->key.accel_mods = GDK_CONTROL_MASK;
-    a->action = DT_MOUSE_ACTION_PAN;
+    a->action = DT_MOUSE_ACTION_LEFT_DRAG;
     g_strlcpy(a->name, _("[ELLIPSE] rotate shape"), sizeof(a->name));
     lm = g_slist_append(lm, a);
   }
