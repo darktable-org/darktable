@@ -38,6 +38,10 @@ typedef struct dt_variables_data_t
   time_t exif_time;
   guint sequence;
 
+  /* export settings for image maximum width and height taken from GUI */
+  int max_width;
+  int max_height;
+
   char *homedir;
   char *pictures_folder;
   const char *file_ext;
@@ -362,6 +366,10 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     else
       result = g_strdup(_("no"));
   }
+  else if(has_prefix(variable, "MAX_WIDTH"))
+    result = g_strdup_printf("%d", params->data->max_width);
+  else if(has_prefix(variable, "MAX_HEIGHT"))
+    result = g_strdup_printf("%d", params->data->max_height);
   else
   {
     // go past what looks like an invalid variable. we only expect to see [a-zA-Z]* in a variable name.
@@ -732,6 +740,12 @@ void dt_variables_params_destroy(dt_variables_params_t *params)
 {
   g_free(params->data);
   g_free(params);
+}
+
+void dt_variables_set_max_width_height(dt_variables_params_t *params, int max_width, int max_height)
+{
+  params->data->max_width = max_width;
+  params->data->max_height = max_height;
 }
 
 void dt_variables_set_time(dt_variables_params_t *params, time_t time)
