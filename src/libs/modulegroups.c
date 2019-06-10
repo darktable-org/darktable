@@ -107,7 +107,7 @@ int position()
   return 999;
 }
 
-int _iop_get_group_order(const int group_id, const int default_order)
+static int _iop_get_group_order(const int group_id, const int default_order)
 {
   if (group_id < DT_MODULEGROUP_BASIC)
     return group_id;
@@ -606,7 +606,7 @@ static uint32_t _lib_modulegroups_get(dt_lib_module_t *self)
     if (d->current == _iop_get_group_order(k, k))
       return k;
   }
-  return DT_MODULEGROUP_FAVORITES;
+  return DT_MODULEGROUP_NONE;
 }
 
 #undef PADDING
