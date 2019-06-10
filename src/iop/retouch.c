@@ -2648,6 +2648,7 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *label = gtk_label_new(_("# shapes:"));
   gtk_box_pack_start(GTK_BOX(hbox_shapes), label, FALSE, TRUE, 0);
   g->label_form = GTK_LABEL(gtk_label_new("-1"));
+  gtk_box_pack_start(GTK_BOX(hbox_shapes), GTK_WIDGET(g->label_form), FALSE, TRUE, DT_PIXEL_APPLY_DPI(5));
   g_object_set(G_OBJECT(hbox_shapes), "tooltip-text",
                _("to add a shape select an algorithm and a shape type and click on the image.\n"
                  "shapes are added to the current scale"),
@@ -2687,8 +2688,6 @@ void gui_init(dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->bt_circle), "tooltip-text", _("add circle"), (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_circle, FALSE, FALSE, 0);
-
-  gtk_box_pack_start(GTK_BOX(hbox_shapes), GTK_WIDGET(g->label_form), FALSE, TRUE, 0);
 
   // algorithm toolbar
   GtkWidget *hbox_algo = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2730,28 +2729,36 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_end(GTK_BOX(hbox_algo), g->bt_heal, FALSE, FALSE, 0);
 
   // wavelet decompose bar labels
-  GtkWidget *hbox_wd_labels = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *grid_wd_labels = gtk_grid_new();
+  gtk_grid_set_column_homogeneous(GTK_GRID(grid_wd_labels), FALSE);
 
   GtkWidget *lbl_num_scales = gtk_label_new(_("# scales:"));
-  gtk_box_pack_start(GTK_BOX(hbox_wd_labels), GTK_WIDGET(lbl_num_scales), FALSE, FALSE, 0);
+  gtk_widget_set_halign(lbl_num_scales, GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid_wd_labels), lbl_num_scales, 0, 0, 1, 1);
 
   g->lbl_num_scales = GTK_LABEL(gtk_label_new(NULL));
+  gtk_widget_set_halign(GTK_WIDGET(g->lbl_num_scales), GTK_ALIGN_START);
   gtk_label_set_width_chars(g->lbl_num_scales, 2);
-  gtk_box_pack_start(GTK_BOX(hbox_wd_labels), GTK_WIDGET(g->lbl_num_scales), FALSE, FALSE, 0);
+  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), GTK_WIDGET(g->lbl_num_scales), lbl_num_scales, GTK_POS_RIGHT, 1, 1);
 
   GtkWidget *lbl_curr_scale = gtk_label_new(_("current:"));
-  gtk_box_pack_start(GTK_BOX(hbox_wd_labels), GTK_WIDGET(lbl_curr_scale), FALSE, FALSE, 0);
+  gtk_widget_set_halign(lbl_curr_scale, GTK_ALIGN_START);
+  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), lbl_curr_scale, lbl_num_scales, GTK_POS_BOTTOM, 1, 1);
 
   g->lbl_curr_scale = GTK_LABEL(gtk_label_new(NULL));
+  gtk_widget_set_halign(GTK_WIDGET(g->lbl_curr_scale), GTK_ALIGN_START);
   gtk_label_set_width_chars(g->lbl_curr_scale, 2);
-  gtk_box_pack_start(GTK_BOX(hbox_wd_labels), GTK_WIDGET(g->lbl_curr_scale), FALSE, FALSE, 0);
+  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), GTK_WIDGET(g->lbl_curr_scale), lbl_curr_scale, GTK_POS_RIGHT, 1, 1);
 
   GtkWidget *lbl_merge_from_scale = gtk_label_new(_("merge from:"));
-  gtk_box_pack_start(GTK_BOX(hbox_wd_labels), GTK_WIDGET(lbl_merge_from_scale), FALSE, FALSE, 0);
+  gtk_widget_set_halign(lbl_merge_from_scale, GTK_ALIGN_START);
+  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), lbl_merge_from_scale, lbl_curr_scale, GTK_POS_BOTTOM, 1, 1);
 
   g->lbl_merge_from_scale = GTK_LABEL(gtk_label_new(NULL));
+  gtk_widget_set_halign(GTK_WIDGET(g->lbl_merge_from_scale), GTK_ALIGN_START);
   gtk_label_set_width_chars(g->lbl_merge_from_scale, 2);
-  gtk_box_pack_start(GTK_BOX(hbox_wd_labels), GTK_WIDGET(g->lbl_merge_from_scale), FALSE, FALSE, 0);
+  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), GTK_WIDGET(g->lbl_merge_from_scale), lbl_merge_from_scale,
+                          GTK_POS_RIGHT, 1, 1);
 
   // wavelet decompose bar
   g->wd_bar = gtk_drawing_area_new();
@@ -2958,7 +2965,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), lbl_wd, FALSE, TRUE, 0);
 
   // wavelet decompose bar & labels
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox_wd_labels, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), grid_wd_labels, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->wd_bar, TRUE, TRUE, 0);
 
   // preview scale & cut/paste scale
