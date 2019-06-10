@@ -790,8 +790,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
-void filepath_set_OS_separator(char *filepath)
-{
+void filepath_set_all_OS_separator(char *filepath)
+{ // use the unix separator as it works also on windows
   const int len = strlen(filepath);
   for(int i=0; i<len; ++i)
     if (filepath[i]=='\\') filepath[i] = '/';
@@ -903,7 +903,7 @@ static void filepath_callback(GtkWidget *w, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   snprintf(p->filepath, sizeof(p->filepath), "%s", gtk_entry_get_text(GTK_ENTRY(w)));
-  filepath_set_OS_separator(p->filepath);
+  filepath_set_all_OS_separator(p->filepath);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
