@@ -28,6 +28,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/rgb_norms.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -64,7 +65,7 @@ typedef enum tonecurve_channel_t
   ch_b = 2,
   ch_max = 3
 } tonecurve_channel_t;
-
+/*
 typedef enum dt_iop_tonecurve_preservecolors_t
 {
   DT_TONECURVE_PRESERVE_NONE = 0,
@@ -75,7 +76,7 @@ typedef enum dt_iop_tonecurve_preservecolors_t
   DT_TONECURVE_PRESERVE_LNORM = 5,
   DT_TONECURVE_PRESERVE_LBP = 6,
 } dt_iop_tonecurve_preservecolors_t;
-
+*/
 typedef struct dt_iop_tonecurve_node_t
 {
   float x;
@@ -283,6 +284,18 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float low_approximation = d->table[0][(int)(0.01f * 0x10000ul)];
   const int preserve_colors = d->preserve_colors;
 
+  const dt_iop_order_iccprofile_info_t *const work_profile
+    = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_PROPHOTO_RGB, "", INTENT_PERCEPTUAL);
+
+  cl_mem dev_profile_info = NULL;
+  cl_mem dev_profile_lut = NULL;
+  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl;
+  cl_float *profile_lut_cl = NULL;
+
+  err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &profile_info_cl, &profile_lut_cl,
+                                            &dev_profile_info, &dev_profile_lut);
+  if(err != CL_SUCCESS) goto error;
+
   dev_L = dt_opencl_copy_host_to_device(devid, d->table[ch_L], 256, 256, sizeof(float));
   if(dev_L == NULL) goto error;
 
@@ -312,6 +325,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 10, sizeof(cl_mem), (void *)&dev_coeffs_ab);
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 11, sizeof(float), (void *)&low_approximation);
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 12, sizeof(int), (void *)&preserve_colors);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 13, sizeof(cl_mem), (void *)&dev_profile_info);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 14, sizeof(cl_mem), (void *)&dev_profile_lut);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_tonecurve, sizes);
 
   if(err != CL_SUCCESS) goto error;
@@ -332,18 +347,19 @@ error:
   return FALSE;
 }
 #endif
-
+/*
 static inline float dt_prophoto_rgb_luminance(const float *const rgb)
 {
   return (rgb[0] * 0.2880402f + rgb[1] * 0.7118741f + rgb[2] * 0.0000857f);
 }
-
+*/
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const int ch = piece->colors;
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
-
+  const dt_iop_order_iccprofile_info_t *const work_profile
+    = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_PROPHOTO_RGB, "", INTENT_PERCEPTUAL);
   const float xm_L = 1.0f / d->unbounded_coeffs_L[0];
   const float xm_ar = 1.0f / d->unbounded_coeffs_ab[0];
   const float xm_al = 1.0f - 1.0f / d->unbounded_coeffs_ab[3];
@@ -427,7 +443,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       {
         float rgb[3] = {0, 0, 0};
         dt_Lab_to_prophotorgb(in, rgb);
-        if(d->preserve_colors == DT_TONECURVE_PRESERVE_NONE)
+        if(d->preserve_colors == DT_RGB_NORM_NONE)
         {
           for(int c = 0; c < 3; c++)
           {
@@ -438,35 +454,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         else
         {
           float ratio = 1.f;
-          float lum = 0.0f;
-          if (d->preserve_colors == DT_TONECURVE_PRESERVE_LUMINANCE)
-          {
-            lum = dt_prophoto_rgb_luminance(rgb);
-          }
-          else if (d->preserve_colors == DT_TONECURVE_PRESERVE_LMAX)
-          {
-            lum = fmaxf(rgb[0], fmaxf(rgb[1], rgb[2]));
-          }
-          else if (d->preserve_colors == DT_TONECURVE_PRESERVE_LAVG)
-          {
-            lum = (rgb[0] + rgb[1] + rgb[2]) / 3.0f;
-          }
-          else if (d->preserve_colors == DT_TONECURVE_PRESERVE_LSUM)
-          {
-            lum = rgb[0] + rgb[1] + rgb[2];
-          }
-          else if (d->preserve_colors == DT_TONECURVE_PRESERVE_LNORM)
-          {
-            lum = powf(rgb[0] * rgb[0] + rgb[1] * rgb[1] + rgb[2] * rgb[2], 0.5f);
-          }
-          else if (d->preserve_colors == DT_TONECURVE_PRESERVE_LBP)
-          {
-            float R, G, B;
-            R = rgb[0] * rgb[0];
-            G = rgb[1] * rgb[1];
-            B = rgb[2] * rgb[2];
-            lum = (rgb[0] * R + rgb[1] * G + rgb[2] * B) / (R + G + B);
-          }
+          float lum = dt_rgb_norm(rgb, d->preserve_colors, work_profile);
           if(lum > 0.f)
           {
             const float curve_lum = (lum < xm_L)
@@ -887,7 +875,7 @@ void init(dt_iop_module_t *module)
     DT_S_SCALE_AUTOMATIC_RGB, // autoscale_ab
     0,
     1, // unbound_ab
-    DT_TONECURVE_PRESERVE_LAVG  // preserve color = Average rgb
+    DT_RGB_NORM_AVERAGE  // preserve color = Average rgb
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_tonecurve_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_tonecurve_params_t));
