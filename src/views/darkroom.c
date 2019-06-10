@@ -3256,7 +3256,13 @@ void connect_key_accels(dt_view_t *self)
 GSList *mouse_actions(const dt_view_t *self)
 {
   GSList *lm = NULL;
+  GSList *lm2 = NULL;
   dt_mouse_action_t *a = NULL;
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = DT_MOUSE_ACTION_DOUBLE_LEFT;
+  g_strlcpy(a->name, _("switch to lighttable"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
 
   a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
   a->action = DT_MOUSE_ACTION_SCROLL;
@@ -3273,6 +3279,27 @@ GSList *mouse_actions(const dt_view_t *self)
   a->action = DT_MOUSE_ACTION_MIDDLE;
   g_strlcpy(a->name, _("zoom to 100% 200% and back"), sizeof(a->name));
   lm = g_slist_append(lm, a);
+
+  dt_develop_t *dev = (dt_develop_t *)self->data;
+  if(dev->form_visible)
+  {
+    // masks
+    lm2 = dt_masks_mouse_actions(dev->form_visible);
+  }
+  else if(dev->gui_module)
+  {
+    // modules with on canvas actions
+  }
+
+  // we concatenate the 2 lists
+  GSList *l = lm2;
+  while(l)
+  {
+    a = (dt_mouse_action_t *)l->data;
+    if(a) lm = g_slist_append(lm, a);
+    l = g_slist_next(l);
+  }
+  g_slist_free(lm2);
 
   return lm;
 }
