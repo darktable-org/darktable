@@ -1367,9 +1367,8 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
       else
       {
         dt_image_cache_read_release(darktable.image_cache, image);
-        if(mstorage->store(mstorage, sdata, imgid, mformat, fdata, num, total, settings->max_width, settings->max_height,
-                           settings->high_quality, settings->upscale, settings->icc_type, settings->icc_filename,
-                           settings->icc_intent) != 0)
+        if(mstorage->store(mstorage, sdata, imgid, mformat, fdata, num, total, settings->high_quality, settings->upscale,
+                           settings->icc_type, settings->icc_filename, settings->icc_intent) != 0)
           dt_control_job_cancel(job);
       }
     }

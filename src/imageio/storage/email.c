@@ -97,8 +97,8 @@ void gui_reset(dt_imageio_module_storage_t *self)
 
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
-          const int max_width, const int max_height, const gboolean high_quality, const gboolean upscale,
-          dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename, dt_iop_color_intent_t icc_intent)
+          const gboolean high_quality, const gboolean upscale, dt_colorspaces_color_profile_type_t icc_type,
+          const gchar *icc_filename, dt_iop_color_intent_t icc_intent)
 {
   dt_imageio_email_t *d = (dt_imageio_email_t *)sdata;
 
