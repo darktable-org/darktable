@@ -791,9 +791,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
+void filepath_set_unix_separator(char *filepath)
+{ // use the unix separator as it works also on windows
+  const int len = strlen(filepath);
+  for(int i=0; i<len; ++i)
+    if (filepath[i]=='\\') filepath[i] = '/';
+}
+
 void init(dt_iop_module_t *self)
 {
-  setvbuf(stdout, NULL, _IONBF, 0);
   self->data = NULL;
   self->params = calloc(1, sizeof(dt_iop_lut3d_params_t));
   self->default_params = calloc(1, sizeof(dt_iop_lut3d_params_t));
@@ -898,6 +904,7 @@ static void filepath_callback(GtkWidget *widget, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   snprintf(p->filepath, sizeof(p->filepath), "%s", dt_bauhaus_combobox_get_text(widget));
+  filepath_set_unix_separator(p->filepath);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -930,7 +937,7 @@ static void remove_root_from_path(const char *const lutfolder, char *const filep
 gboolean check_same_extension(char *filename, char *ext)
 {
   gboolean res = FALSE;
-  if (strlen(filename) < strlen(ext)) return res;
+  if (strlen(filename) < strlen(ext)) return res;  // crash Pascal
   char *p = g_strrstr(filename,".");
   if (!p) return res;
   char *fext = g_ascii_strdown(g_strdup(p), -1);
@@ -941,7 +948,9 @@ gboolean check_same_extension(char *filename, char *ext)
 // update filepath combobox with all files in the current folder
 static void update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, char *filepath, char *lutfolder)
 {
-  if (!dt_bauhaus_combobox_set_from_text(g->filepath, filepath))
+  if (!filepath[0])
+    dt_bauhaus_combobox_clear(g->filepath);
+  else if (!dt_bauhaus_combobox_set_from_text(g->filepath, filepath))
   { // new folder -> update the files list
     char *relativepath = g_path_get_dirname(filepath);
     char *folder = g_build_filename(lutfolder, relativepath, NULL);
@@ -951,15 +960,21 @@ static void update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, char *filepath,
     {
       dt_bauhaus_combobox_clear(g->filepath);
       char *ext = g_ascii_strdown(g_strdup(g_strrstr(filepath,".")), -1);
-      while ((dir = readdir(d)) != NULL)
+      if (ext[0])
       {
-        char *file = dir->d_name;
-        char *ofilepath = g_build_filename(relativepath, file, NULL);
-        if (check_same_extension(file, ext))
+        while ((dir = readdir(d)) != NULL)
         {
-          dt_bauhaus_combobox_add(g->filepath, ofilepath);
+          char *file = dir->d_name;
+          if (check_same_extension(file, ext))
+          {
+            char *ofilepath = (strcmp(relativepath, ".") != 0)
+                  ? g_build_filename(relativepath, file, NULL)
+                  : g_strdup(file);
+            filepath_set_unix_separator(ofilepath);
+            dt_bauhaus_combobox_add(g->filepath, ofilepath);
+            g_free(ofilepath);
+          }
         }
-        g_free(ofilepath);
       }
       g_free(ext);
       closedir(d);
@@ -1025,6 +1040,7 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
     if (strcmp(lutfolder, filepath) < 0)
     {
       remove_root_from_path(lutfolder, filepath);
+      filepath_set_unix_separator(filepath);
       update_filepath_combobox(g, filepath, lutfolder);
     }
     else if (!filepath[0])// file chosen outside of root folder
