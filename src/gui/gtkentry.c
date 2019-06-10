@@ -213,6 +213,7 @@ const dt_gtkentry_completion_spec *dt_gtkentry_get_default_path_compl_list()
           { "CREATOR", N_("$(CREATOR) - creator from metadata") },
           { "PUBLISHER", N_("$(PUBLISHER) - publisher from metadata") },
           { "RIGHTS", N_("$(RIGHTS) - rights from metadata") },
+          { "OPENCL", N_("$(OPENCL_ACTIVATED) - whether OpenCL is activated") },
           { NULL, NULL } };
 
   return default_path_compl_list;
