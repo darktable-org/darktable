@@ -614,9 +614,9 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
   write_imagef (out, (int2)(x, y), pixel);
 }
 
-float dt_camera_rgb_luminance(const float4 rgb)
+float dt_prophoto_rgb_luminance(const float4 rgb)
 {
-  return (rgb.x * 0.2225045f + rgb.y * 0.7168786f + rgb.z * 0.0606169f);
+  return (rgb.x * 0.2880402f + rgb.y * 0.7118741f + rgb.z * 0.0000857f);
 }
 
 /* kernel for the tonecurve plugin. */
@@ -692,7 +692,7 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
       float lum = 0.0f;
       if(preserve_colors == 1) // DT_TONECURVE_PRESERVE_LUMINANCE
       {
-        lum = dt_camera_rgb_luminance(rgb);
+        lum = dt_prophoto_rgb_luminance(rgb);
       }
       else if (preserve_colors == 2) // DT_TONECURVE_PRESERVE_LMAX
       {

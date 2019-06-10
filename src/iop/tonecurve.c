@@ -333,6 +333,11 @@ error:
 }
 #endif
 
+static inline float dt_prophoto_rgb_luminance(const float *const rgb)
+{
+  return (rgb[0] * 0.2880402f + rgb[1] * 0.7118741f + rgb[2] * 0.0000857f);
+}
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -436,7 +441,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           float lum = 0.0f;
           if (d->preserve_colors == DT_TONECURVE_PRESERVE_LUMINANCE)
           {
-            lum = dt_camera_rgb_luminance(rgb);
+            lum = dt_prophoto_rgb_luminance(rgb);
           }
           else if (d->preserve_colors == DT_TONECURVE_PRESERVE_LMAX)
           {
