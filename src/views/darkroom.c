@@ -3280,6 +3280,18 @@ GSList *mouse_actions(const dt_view_t *self)
   g_strlcpy(a->name, _("zoom to 100% 200% and back"), sizeof(a->name));
   lm = g_slist_append(lm, a);
 
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->key.accel_mods = GDK_SHIFT_MASK;
+  a->action = DT_MOUSE_ACTION_SCROLL;
+  g_strlcpy(a->name, _("[modules] expand module without closing others"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->key.accel_mods = GDK_SHIFT_MASK | GDK_CONTROL_MASK;
+  a->action = DT_MOUSE_ACTION_DRAG_DROP;
+  g_strlcpy(a->name, _("[modules] change module position in pipe"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+
   dt_develop_t *dev = (dt_develop_t *)self->data;
   if(dev->form_visible)
   {
