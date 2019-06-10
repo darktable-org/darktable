@@ -158,7 +158,6 @@ static gint _get_active_marker_from_screen(GtkWidget *widget, const gdouble x, c
   if(lselected < 0) lselected = _get_active_marker_internal(widget, x, !up);
 
   assert(lselected >= 0);
-  assert(lselected <= gslider->positions - 1);
 
   return lselected;
 }
