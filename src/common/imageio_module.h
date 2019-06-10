@@ -175,7 +175,8 @@ typedef struct dt_imageio_module_storage_t
   /* this actually does the work */
   int (*store)(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *self_data,
                const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
-               const int num, const int total, const gboolean high_quality, const gboolean upscale,
+               const int num, const int total, const int max_width, const int max_height,
+               const gboolean high_quality, const gboolean upscale,
                dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
                dt_iop_color_intent_t icc_intent);
   /* called once at the end (after exporting all images), if implemented. */

@@ -225,8 +225,8 @@ void gui_reset(dt_imageio_module_storage_t *self)
 
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
-          const gboolean high_quality, const gboolean upscale, dt_colorspaces_color_profile_type_t icc_type,
-          const gchar *icc_filename, dt_iop_color_intent_t icc_intent)
+          const int max_width, const int max_height, const gboolean high_quality, const gboolean upscale,
+          dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename, dt_iop_color_intent_t icc_intent)
 {
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
 
@@ -236,6 +236,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   g_strlcpy(pattern, d->filename, sizeof(pattern));
   gboolean from_cache = FALSE;
   dt_image_full_path(imgid, input_dir, sizeof(input_dir), &from_cache);
+  // set max_width and max_height values to expand them afterwards in darktable variables
+  dt_variables_set_max_width_height(d->vp, max_width, max_height);
   int fail = 0;
   // we're potentially called in parallel. have sequence number synchronized:
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
