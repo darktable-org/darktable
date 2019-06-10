@@ -1859,7 +1859,7 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
 
   if(e->button == 1)
   {
-    if((e->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+    if((e->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == (GDK_SHIFT_MASK | GDK_CONTROL_MASK))
     {
       GtkBox *container = dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
       g_object_set_data(G_OBJECT(container), "source_data", user_data);
