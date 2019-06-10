@@ -590,6 +590,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(output_options), data->output_label, FALSE, FALSE, 0);
 
   restrict_button = gtk_check_button_new_with_label(_("restrict histogram to selection"));
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(restrict_button))), PANGO_ELLIPSIZE_MIDDLE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(restrict_button),
                                dt_conf_get_int("ui_last/colorpicker_restrict_histogram"));
   darktable.lib->proxy.colorpicker.restrict_histogram
@@ -631,6 +632,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(container), data->samples_container, TRUE, TRUE, 0);
 
   data->display_samples_check_box = gtk_check_button_new_with_label(_("display sample areas on image"));
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(data->display_samples_check_box))),
+                          PANGO_ELLIPSIZE_MIDDLE);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->display_samples_check_box),
                                dt_conf_get_int("ui_last/colorpicker_display_samples"));
   gtk_box_pack_start(GTK_BOX(container), data->display_samples_check_box, TRUE, TRUE, 0);
