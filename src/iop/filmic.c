@@ -1663,16 +1663,14 @@ void gui_init(dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_filmic_gui_data_t));
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
-  const int margin_width = (int)dt_conf_get_int("panel_width") / 8.0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
+  // don't make the area square to safe some vertical space -- it's not interactive anyway
+  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.618));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("read-only graph, use the parameters below to set the nodes"));
-  gtk_widget_set_margin_start(GTK_WIDGET(g->area), margin_width);
-  gtk_widget_set_margin_end(GTK_WIDGET(g->area), margin_width);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("logarithmic shaper")), FALSE, FALSE, 0);
