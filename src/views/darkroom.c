@@ -3286,9 +3286,10 @@ GSList *mouse_actions(const dt_view_t *self)
     // masks
     lm2 = dt_masks_mouse_actions(dev->form_visible);
   }
-  else if(dev->gui_module)
+  else if(dev->gui_module && dev->gui_module->mouse_actions)
   {
     // modules with on canvas actions
+    lm2 = dev->gui_module->mouse_actions(dev->gui_module);
   }
 
   // we concatenate the 2 lists

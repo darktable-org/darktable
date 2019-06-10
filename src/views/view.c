@@ -2184,8 +2184,11 @@ gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
     case DT_MOUSE_ACTION_DRAG_DROP:
       atxt = dt_util_dstrcat(atxt, _("Drag and drop"));
       break;
-    case DT_MOUSE_ACTION_PAN:
-      atxt = dt_util_dstrcat(atxt, _("Pan"));
+    case DT_MOUSE_ACTION_LEFT_DRAG:
+      atxt = dt_util_dstrcat(atxt, _("Left click+Drag"));
+      break;
+    case DT_MOUSE_ACTION_RIGHT_DRAG:
+      atxt = dt_util_dstrcat(atxt, _("Right click+Drag"));
       break;
   }
 
