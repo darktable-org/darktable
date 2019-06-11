@@ -1,7 +1,7 @@
 #
 # install opencl kernel source files
 #
-FILE(GLOB DT_OPENCL_KERNELS "*.cl" "common.h" "rgb_norms.h")
+FILE(GLOB DT_OPENCL_KERNELS "*.cl" "common.h")
 FILE(GLOB DT_OPENCL_EXTRA "programs.conf")
 
 add_custom_target(testcompile_opencl_kernels ALL)
