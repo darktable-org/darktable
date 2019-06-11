@@ -945,6 +945,12 @@ gboolean check_same_extension(char *filename, char *ext)
   g_free(fext);
   return res;
 }
+
+static gint list_str_cmp(gconstpointer a, gconstpointer b)
+{
+  return g_strcmp0(((dt_bauhaus_combobox_entry_t *)a)->label, ((dt_bauhaus_combobox_entry_t *)b)->label);
+}
+
 // update filepath combobox with all files in the current folder
 static void update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, char *filepath, char *lutfolder)
 {
@@ -975,6 +981,9 @@ static void update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, char *filepath,
             g_free(ofilepath);
           }
         }
+        dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(g->filepath);
+        dt_bauhaus_combobox_data_t *combo_data = &w->data.combobox;
+        combo_data->entries = g_list_sort(combo_data->entries, list_str_cmp);
       }
       g_free(ext);
       closedir(d);
