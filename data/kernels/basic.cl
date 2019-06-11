@@ -20,7 +20,7 @@
 
 #include "colorspace.cl"
 #include "color_conversion.cl"
-#include "rgb_norms.cl"
+#include "rgb_norms.h"
 
 int
 BL(const int row, const int col)
@@ -658,7 +658,7 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
   {
     float4 rgb = Lab_to_prophotorgb(pixel);
 
-    if (preserve_colors == 0) // DT_TONECURVE_PRESERVE_NONE
+    if (preserve_colors == DT_RGB_NORM_NONE)
     {
       rgb.x = lookup_unbounded(table_L, rgb.x, coeffs_L);
       rgb.y = lookup_unbounded(table_L, rgb.y, coeffs_L);
