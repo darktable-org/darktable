@@ -2319,7 +2319,7 @@ void dt_view_accels_show(dt_view_manager_t *vm)
   bl = blocs;
   while(bl)
   {
-    _bloc_t *bb = (_bloc_t *)bl->data;
+    const _bloc_t *bb = (_bloc_t *)bl->data;
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     // the title
     GtkWidget *lb = gtk_label_new(bb->title);
