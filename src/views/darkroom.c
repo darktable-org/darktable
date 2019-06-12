@@ -3292,7 +3292,7 @@ GSList *mouse_actions(const dt_view_t *self)
   g_strlcpy(a->name, _("[modules] change module position in pipe"), sizeof(a->name));
   lm = g_slist_append(lm, a);
 
-  dt_develop_t *dev = (dt_develop_t *)self->data;
+  const dt_develop_t *dev = (dt_develop_t *)self->data;
   if(dev->form_visible)
   {
     // masks
