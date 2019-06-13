@@ -1286,12 +1286,12 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
     {
       // This formula is made for:
       // - ensuring that kj = kj_index and ki = ki_index when d->scattering is 0
-      // - ensuring that no patch can appear twice (provided that d->nbhood is in 0,1 range)
+      // - ensuring that no patch can appear twice (provided that d->scattering is in 0,1 range)
       // - avoiding grid artifacts by trying to take patches on various lines and columns
-      int kj = (kj_index * kj_index + abs(ki_index) * sqrt(abs(kj_index))) * sign(kj_index) * d->scattering
-               + kj_index;
-      int ki = (ki_index * ki_index + abs(kj_index) * sqrt(abs(ki_index))) * sign(ki_index) * d->scattering
-               + ki_index;
+      int abs_kj = abs(kj_index);
+      int abs_ki = abs(ki_index);
+      int kj = (abs_kj * abs_kj * abs_kj + 7.0 * abs_kj * sqrt(abs_ki)) * sign(kj_index) * d->scattering / 6.0 + kj_index;
+      int ki = (abs_ki * abs_ki * abs_ki + 7.0 * abs_ki * sqrt(abs_kj)) * sign(ki_index) * d->scattering / 6.0 + ki_index;
       // TODO: adaptive K tests here!
       // TODO: expf eval for real bilateral experience :)
 
@@ -1491,12 +1491,13 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
     {
       // This formula is made for:
       // - ensuring that kj = kj_index and ki = ki_index when d->scattering is 0
-      // - ensuring that no patch can appear twice (provided that d->nbhood is in 0,1 range)
+      // - ensuring that no patch can appear twice (provided that d->scattering is in 0,1 range)
       // - avoiding grid artifacts by trying to take patches on various lines and columns
-      int kj = (kj_index * kj_index + abs(ki_index) * sqrt(abs(kj_index))) * sign(kj_index) * d->scattering
-               + kj_index;
-      int ki = (ki_index * ki_index + abs(kj_index) * sqrt(abs(ki_index))) * sign(ki_index) * d->scattering
-               + ki_index;
+      int abs_kj = abs(kj_index);
+      int abs_ki = abs(ki_index);
+      int kj = (abs_kj * abs_kj * abs_kj + 7.0 * abs_kj * sqrt(abs_ki)) * sign(kj_index) * d->scattering / 6.0 + kj_index;
+      int ki = (abs_ki * abs_ki * abs_ki + 7.0 * abs_ki * sqrt(abs_kj)) * sign(ki_index) * d->scattering / 6.0 + ki_index; 
+
       int inited_slide = 0;
 // don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else
 // we will add up errors)
@@ -1963,12 +1964,12 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     {
       // This formula is made for:
       // - ensuring that j = kj_index and i = ki_index when d->scattering is 0
-      // - ensuring that no patch can appear twice (provided that d->nbhood is in 0,1 range)
+      // - ensuring that no patch can appear twice (provided that d->scattering is in 0,1 range)
       // - avoiding grid artifacts by trying to take patches on various lines and columns
-      int j = (kj_index * kj_index + abs(ki_index) * sqrt(abs(kj_index))) * sign(kj_index) * d->scattering
-              + kj_index;
-      int i = (ki_index * ki_index + abs(kj_index) * sqrt(abs(ki_index))) * sign(ki_index) * d->scattering
-              + ki_index;
+      int abs_kj = abs(kj_index);
+      int abs_ki = abs(ki_index);
+      int j = (abs_kj * abs_kj * abs_kj + 7.0 * abs_kj * sqrt(abs_ki)) * sign(kj_index) * d->scattering / 6.0 + kj_index;
+      int i = (abs_ki * abs_ki * abs_ki + 7.0 * abs_ki * sqrt(abs_kj)) * sign(ki_index) * d->scattering / 6.0 + ki_index;
       int q[2] = { i, j };
 
       dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
@@ -3240,8 +3241,8 @@ void gui_init(dt_iop_module_t *self)
   g->radius = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1.f, 1.f, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->radius, 0.0, 10.0);
   g->nbhood = dt_bauhaus_slider_new_with_range(self, 1.0f, 30.0f, 1.f, 7.f, 0);
-  g->scattering = dt_bauhaus_slider_new_with_range(self, 0.0f, 0.5f, 0.01, 0.0f, 2);
-  dt_bauhaus_slider_enable_soft_boundaries(g->scattering, 0.0, 2.0);
+  g->scattering = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01, 0.0f, 2);
+  dt_bauhaus_slider_enable_soft_boundaries(g->scattering, 0.0, 20.0);
   g->central_pixel_weight = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01, 0.0f, 2);
   dt_bauhaus_slider_enable_soft_boundaries(g->central_pixel_weight, 0.0, 10.0);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
