@@ -1235,7 +1235,7 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
   bright = 0.25f * MAX(0.f, bright);
 
   // compute contrast that spreads the average spacing of octiles
-  contr = 50.0f * (1.1f - ospread);
+  contr = (midgray * 100.f) * (1.1f - ospread);
   contr = MAX(0.f, MIN(100.f, contr));
   // take gamma into account
   double whiteclipg = gamma2(whiteclip * corr);
