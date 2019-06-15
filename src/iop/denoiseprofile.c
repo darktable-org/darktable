@@ -1288,8 +1288,8 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
       // - ensuring that kj = kj_index and ki = ki_index when d->scattering is 0
       // - ensuring that no patch can appear twice (provided that d->scattering is in 0,1 range)
       // - avoiding grid artifacts by trying to take patches on various lines and columns
-      int abs_kj = abs(kj_index);
-      int abs_ki = abs(ki_index);
+      const int abs_kj = abs(kj_index);
+      const int abs_ki = abs(ki_index);
       int kj = (abs_kj * abs_kj * abs_kj + 7.0 * abs_kj * sqrt(abs_ki)) * sign(kj_index) * d->scattering / 6.0 + kj_index;
       int ki = (abs_ki * abs_ki * abs_ki + 7.0 * abs_ki * sqrt(abs_kj)) * sign(ki_index) * d->scattering / 6.0 + ki_index;
       // TODO: adaptive K tests here!
@@ -1493,10 +1493,10 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
       // - ensuring that kj = kj_index and ki = ki_index when d->scattering is 0
       // - ensuring that no patch can appear twice (provided that d->scattering is in 0,1 range)
       // - avoiding grid artifacts by trying to take patches on various lines and columns
-      int abs_kj = abs(kj_index);
-      int abs_ki = abs(ki_index);
+      const int abs_kj = abs(kj_index);
+      const int abs_ki = abs(ki_index);
       int kj = (abs_kj * abs_kj * abs_kj + 7.0 * abs_kj * sqrt(abs_ki)) * sign(kj_index) * d->scattering / 6.0 + kj_index;
-      int ki = (abs_ki * abs_ki * abs_ki + 7.0 * abs_ki * sqrt(abs_kj)) * sign(ki_index) * d->scattering / 6.0 + ki_index; 
+      int ki = (abs_ki * abs_ki * abs_ki + 7.0 * abs_ki * sqrt(abs_kj)) * sign(ki_index) * d->scattering / 6.0 + ki_index;
 
       int inited_slide = 0;
 // don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else
@@ -1950,13 +1950,11 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_precondition, sizes);
   if(err != CL_SUCCESS) goto error;
 
-
   dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_init, 0, sizeof(cl_mem), (void *)&dev_U2);
   dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_init, 1, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_init, 2, sizeof(int), (void *)&height);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_init, sizes);
   if(err != CL_SUCCESS) goto error;
-
 
   for(int kj_index = -K; kj_index <= 0; kj_index++)
   {
@@ -1966,10 +1964,10 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       // - ensuring that j = kj_index and i = ki_index when d->scattering is 0
       // - ensuring that no patch can appear twice (provided that d->scattering is in 0,1 range)
       // - avoiding grid artifacts by trying to take patches on various lines and columns
-      int abs_kj = abs(kj_index);
-      int abs_ki = abs(ki_index);
-      int j = (abs_kj * abs_kj * abs_kj + 7.0 * abs_kj * sqrt(abs_ki)) * sign(kj_index) * d->scattering / 6.0 + kj_index;
-      int i = (abs_ki * abs_ki * abs_ki + 7.0 * abs_ki * sqrt(abs_kj)) * sign(ki_index) * d->scattering / 6.0 + ki_index;
+      const int abs_kj = abs(kj_index);
+      const int abs_ki = abs(ki_index);
+      const int j = (abs_kj * abs_kj * abs_kj + 7.0 * abs_kj * sqrt(abs_ki)) * sign(kj_index) * d->scattering / 6.0 + kj_index;
+      const int i = (abs_ki * abs_ki * abs_ki + 7.0 * abs_ki * sqrt(abs_kj)) * sign(ki_index) * d->scattering / 6.0 + ki_index;
       int q[2] = { i, j };
 
       dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
@@ -1998,7 +1996,6 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
                                NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_denoiseprofile_horiz, sizesl, local);
       if(err != CL_SUCCESS) goto error;
-
 
       sizesl[0] = ROUNDUPWD(width);
       sizesl[1] = bheight;
