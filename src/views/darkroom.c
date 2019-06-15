@@ -101,7 +101,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid);
 static void _darkroom_display_second_window(dt_develop_t *dev);
 static void _darkroom_ui_second_window_write_config(GtkWidget *widget);
 
-const char *name(dt_view_t *self)
+const char *name(const dt_view_t *self)
 {
   return _("darkroom");
 }
@@ -3251,6 +3251,70 @@ void connect_key_accels(dt_view_t *self)
 
   // dynamics accels
   dt_dynamic_accel_get_valid_list();
+}
+
+GSList *mouse_actions(const dt_view_t *self)
+{
+  GSList *lm = NULL;
+  GSList *lm2 = NULL;
+  dt_mouse_action_t *a = NULL;
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = DT_MOUSE_ACTION_DOUBLE_LEFT;
+  g_strlcpy(a->name, _("switch to lighttable"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = DT_MOUSE_ACTION_SCROLL;
+  g_strlcpy(a->name, _("zoom in the image"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->key.accel_mods = GDK_CONTROL_MASK;
+  a->action = DT_MOUSE_ACTION_SCROLL;
+  g_strlcpy(a->name, _("unbounded zoom in the image"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = DT_MOUSE_ACTION_MIDDLE;
+  g_strlcpy(a->name, _("zoom to 100% 200% and back"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->key.accel_mods = GDK_SHIFT_MASK;
+  a->action = DT_MOUSE_ACTION_SCROLL;
+  g_strlcpy(a->name, _("[modules] expand module without closing others"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->key.accel_mods = GDK_SHIFT_MASK | GDK_CONTROL_MASK;
+  a->action = DT_MOUSE_ACTION_DRAG_DROP;
+  g_strlcpy(a->name, _("[modules] change module position in pipe"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+
+  const dt_develop_t *dev = (dt_develop_t *)self->data;
+  if(dev->form_visible)
+  {
+    // masks
+    lm2 = dt_masks_mouse_actions(dev->form_visible);
+  }
+  else if(dev->gui_module && dev->gui_module->mouse_actions)
+  {
+    // modules with on canvas actions
+    lm2 = dev->gui_module->mouse_actions(dev->gui_module);
+  }
+
+  // we concatenate the 2 lists
+  GSList *l = lm2;
+  while(l)
+  {
+    a = (dt_mouse_action_t *)l->data;
+    if(a) lm = g_slist_append(lm, a);
+    l = g_slist_next(l);
+  }
+  g_slist_free(lm2);
+
+  return lm;
 }
 
 //-----------------------------------------------------------

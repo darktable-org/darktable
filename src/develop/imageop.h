@@ -218,6 +218,7 @@ typedef struct dt_iop_module_so_t
   void (*connect_key_accels)(struct dt_iop_module_t *self);
   void (*original_connect_key_accels)(struct dt_iop_module_t *self);
   void (*disconnect_key_accels)(struct dt_iop_module_t *self);
+  GSList *(*mouse_actions)(struct dt_iop_module_t *self);
 
   int (*mouse_leave)(struct dt_iop_module_t *self);
   int (*mouse_moved)(struct dt_iop_module_t *self, double x, double y, double pressure, int which);
@@ -532,6 +533,7 @@ typedef struct dt_iop_module_t
   void (*connect_key_accels)(struct dt_iop_module_t *self);
   void (*original_connect_key_accels)(struct dt_iop_module_t *self);
   void (*disconnect_key_accels)(struct dt_iop_module_t *self);
+  GSList *(*mouse_actions)(struct dt_iop_module_t *self);
 
   // introspection related data
   gboolean have_introspection;
