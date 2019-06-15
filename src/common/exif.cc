@@ -2035,11 +2035,11 @@ static GHashTable *read_masks(Exiv2::XmpData &xmpData, const char *filename, con
     && (mask_id = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_id"))) != xmpData.end()
     && (mask_nb = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_nb"))) != xmpData.end())
   {
-    const int cnt = mask->count();
+    const size_t cnt = mask->count();
     if(cnt == mask_src->count() && cnt == mask_name->count() && cnt == mask_type->count()
       && cnt == mask_version->count() && cnt == mask_id->count() && cnt == mask_nb->count())
     {
-      for(int i = 0; i < cnt; i++)
+      for(size_t i = 0; i < cnt; i++)
       {
         mask_entry_t *entry = (mask_entry_t *)calloc(1, sizeof(mask_entry_t));
 
