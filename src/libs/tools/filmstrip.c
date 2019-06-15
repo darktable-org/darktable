@@ -994,15 +994,13 @@ static gboolean _lib_filmstrip_paste_history_key_accel_callback(GtkAccelGroup *a
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
   const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
 
-  if(dt_history_copy_and_paste_on_selection(strip->history_copy_imgid, (mode == 0) ? TRUE : FALSE,
-                                            strip->dg.selops) != 0)
-  {
-    const int32_t mouse_over_id = dt_control_get_mouse_over_id();
-    if(mouse_over_id <= 0) return FALSE;
+  const int img = dt_view_get_image_to_act_on();
 
-    dt_history_copy_and_paste_on_image(strip->history_copy_imgid, mouse_over_id, (mode == 0) ? TRUE : FALSE,
+  if(img < 0)
+    dt_history_copy_and_paste_on_selection(strip->history_copy_imgid, (mode == 0) ? TRUE : FALSE, strip->dg.selops);
+  else
+    dt_history_copy_and_paste_on_image(strip->history_copy_imgid, img, (mode == 0) ? TRUE : FALSE,
                                        strip->dg.selops);
-  }
 
   dt_control_queue_redraw_center();
   return TRUE;
@@ -1017,20 +1015,17 @@ static gboolean _lib_filmstrip_paste_history_parts_key_accel_callback(GtkAccelGr
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)data;
   const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
 
-  // get mouse over before launching the dialog
-  const int32_t mouse_over_id = dt_control_get_mouse_over_id();
+  // get image id before launching the dialog
+  const int img = dt_view_get_image_to_act_on();
 
   const int res = dt_gui_hist_dialog_new(&(strip->dg), strip->history_copy_imgid, FALSE);
   if(res == GTK_RESPONSE_CANCEL) return FALSE;
 
-  if(dt_history_copy_and_paste_on_selection(strip->history_copy_imgid, (mode == 0) ? TRUE : FALSE,
-                                            strip->dg.selops) != 0)
-  {
-    if(mouse_over_id <= 0) return FALSE;
-
-    dt_history_copy_and_paste_on_image(strip->history_copy_imgid, mouse_over_id, (mode == 0) ? TRUE : FALSE,
+  if(img < 0)
+    dt_history_copy_and_paste_on_selection(strip->history_copy_imgid, (mode == 0) ? TRUE : FALSE, strip->dg.selops);
+  else
+    dt_history_copy_and_paste_on_image(strip->history_copy_imgid, img, (mode == 0) ? TRUE : FALSE,
                                        strip->dg.selops);
-  }
 
   dt_control_queue_redraw_center();
   return TRUE;
