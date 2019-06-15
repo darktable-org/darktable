@@ -698,19 +698,17 @@ static void menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
   gtk_widget_queue_draw(module->widget);
 }
 
-static gboolean menuitem_button_pressed_preset(GtkMenuItem *menuitem, GdkEventButton *event, dt_iop_module_t *module)
+static gboolean menuitem_button_released_preset(GtkMenuItem *menuitem, GdkEventButton *event, dt_iop_module_t *module)
 {
   if (event->button == 1 || (module->flags() & IOP_FLAGS_ONE_INSTANCE))
   {
     menuitem_pick_preset(menuitem, module);
-    return TRUE;
   }
   else if (event->button == 2)
   {
     dt_iop_module_t *new_module = dt_iop_gui_duplicate(module, FALSE);
     if (new_module)
       menuitem_pick_preset(menuitem, new_module);
-    return TRUE;
   }
   return FALSE;
 }
@@ -908,7 +906,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
       g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(name), g_free);
       if(module)
       {
-        g_signal_connect(G_OBJECT(mi), "button-press-event", G_CALLBACK(menuitem_button_pressed_preset), module);
+        g_signal_connect(G_OBJECT(mi), "button-release-event", G_CALLBACK(menuitem_button_released_preset), module);
       }
       else if(pick_callback)
         g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(pick_callback), callback_data);
