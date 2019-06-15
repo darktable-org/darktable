@@ -203,6 +203,8 @@ static int dt_view_load_module(void *v, const char *libname, const char *module_
     view->init_key_accels = NULL;
   if(!g_module_symbol(view->module, "connect_key_accels", (gpointer) & (view->connect_key_accels)))
     view->connect_key_accels = NULL;
+  if(!g_module_symbol(view->module, "mouse_actions", (gpointer) & (view->mouse_actions)))
+    view->mouse_actions = NULL;
 
   view->accel_closures = NULL;
 
@@ -2154,6 +2156,219 @@ void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo)
 }
 #endif
 
+
+static gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
+{
+  gchar *atxt = dt_util_dstrcat(NULL, "%s", gtk_accelerator_get_label(ma->key.accel_key, ma->key.accel_mods));
+  if(strcmp(atxt, "")) atxt = dt_util_dstrcat(atxt, "+");
+  switch(ma->action)
+  {
+    case DT_MOUSE_ACTION_LEFT:
+      atxt = dt_util_dstrcat(atxt, _("Left click"));
+      break;
+    case DT_MOUSE_ACTION_RIGHT:
+      atxt = dt_util_dstrcat(atxt, _("Right click"));
+      break;
+    case DT_MOUSE_ACTION_MIDDLE:
+      atxt = dt_util_dstrcat(atxt, _("Middle click"));
+      break;
+    case DT_MOUSE_ACTION_SCROLL:
+      atxt = dt_util_dstrcat(atxt, _("Scroll"));
+      break;
+    case DT_MOUSE_ACTION_DOUBLE_LEFT:
+      atxt = dt_util_dstrcat(atxt, _("Left double-click"));
+      break;
+    case DT_MOUSE_ACTION_DOUBLE_RIGHT:
+      atxt = dt_util_dstrcat(atxt, _("Right double-click"));
+      break;
+    case DT_MOUSE_ACTION_DRAG_DROP:
+      atxt = dt_util_dstrcat(atxt, _("Drag and drop"));
+      break;
+    case DT_MOUSE_ACTION_LEFT_DRAG:
+      atxt = dt_util_dstrcat(atxt, _("Left click+Drag"));
+      break;
+    case DT_MOUSE_ACTION_RIGHT_DRAG:
+      atxt = dt_util_dstrcat(atxt, _("Right click+Drag"));
+      break;
+  }
+
+  return atxt;
+}
+
+void dt_view_accels_show(dt_view_manager_t *vm)
+{
+  if(vm->accels_window) return; // dt_view_accels_hide(vm);
+
+  GtkStyleContext *context;
+  vm->accels_window = gtk_window_new(GTK_WINDOW_POPUP);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(darktable.bauhaus->popup_window);
+#endif
+  context = gtk_widget_get_style_context(vm->accels_window);
+  gtk_style_context_add_class(context, "accels_window");
+
+  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+  context = gtk_widget_get_style_context(sw);
+  gtk_style_context_add_class(context, "accels_window_scroll");
+
+  GtkWidget *fb = gtk_flow_box_new();
+  context = gtk_widget_get_style_context(fb);
+  gtk_style_context_add_class(context, "accels_window_box");
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(fb), GTK_ORIENTATION_HORIZONTAL);
+  // get the list of valid accel for this view
+  const dt_view_t *cv = dt_view_manager_get_current_view(vm);
+  const dt_view_type_flags_t v = cv->view(cv);
+
+  typedef struct _bloc_t
+  {
+    gchar *base;
+    gchar *title;
+    GtkListStore *list_store;
+  } _bloc_t;
+
+  // go throught all accels to populate categories with valid ones
+  GList *blocs = NULL;
+  GList *bl = NULL;
+  GSList *l = darktable.control->accelerator_list;
+  while(l)
+  {
+    dt_accel_t *da = (dt_accel_t *)l->data;
+    if(da && (da->views & v) == v)
+    {
+      GtkAccelKey ak;
+      if(gtk_accel_map_lookup_entry(da->path, &ak) && ak.accel_key > 0)
+      {
+        // we want the base path
+        gchar **elems = g_strsplit(da->translated_path, "/", -1);
+        if(elems[0] && elems[1] && elems[2])
+        {
+          // do we already have a categorie ?
+          bl = blocs;
+          _bloc_t *b = NULL;
+          while(bl)
+          {
+            _bloc_t *bb = (_bloc_t *)bl->data;
+            if(strcmp(elems[1], bb->base) == 0)
+            {
+              b = bb;
+              break;
+            }
+            bl = g_list_next(bl);
+          }
+          // if not found, we create it
+          if(!b)
+          {
+            b = (_bloc_t *)calloc(1, sizeof(_bloc_t));
+            b->base = dt_util_dstrcat(NULL, "%s", elems[1]);
+            if(g_str_has_prefix(da->path, "<Darktable>/views/"))
+              b->title = dt_util_dstrcat(NULL, "%s", cv->name(cv));
+            else
+              b->title = dt_util_dstrcat(NULL, "%s", elems[1]);
+            b->list_store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+            blocs = g_list_prepend(blocs, b);
+          }
+          // we add the new line
+          GtkTreeIter iter;
+          gtk_list_store_prepend(b->list_store, &iter);
+          gchar *txt;
+          // for views accels, no need to specify the view name, it's in the category title
+          if(g_str_has_prefix(da->path, "<Darktable>/views/"))
+            txt = da->translated_path + strlen(elems[0]) + strlen(elems[1]) + strlen(elems[2]) + 3;
+          else
+            txt = da->translated_path + strlen(elems[0]) + strlen(elems[1]) + 2;
+          // for dynamic accel, we need to add the "+scroll"
+          gchar *atxt = dt_util_dstrcat(NULL, "%s", gtk_accelerator_get_label(ak.accel_key, ak.accel_mods));
+          if(g_str_has_prefix(da->path, "<Darktable>/image operations/") && g_str_has_suffix(da->path, "/dynamic"))
+            atxt = dt_util_dstrcat(atxt, _("+Scroll"));
+          gtk_list_store_set(b->list_store, &iter, 0, atxt, 1, txt, -1);
+          g_free(atxt);
+          g_strfreev(elems);
+        }
+      }
+    }
+    l = g_slist_next(l);
+  }
+
+  // we add the mouse actions too
+  if(cv->mouse_actions)
+  {
+    _bloc_t *bm = (_bloc_t *)calloc(1, sizeof(_bloc_t));
+    bm->base = NULL;
+    bm->title = dt_util_dstrcat(NULL, _("mouse actions"));
+    bm->list_store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+    blocs = g_list_prepend(blocs, bm);
+
+    GSList *lm = cv->mouse_actions(cv);
+    while(lm)
+    {
+      dt_mouse_action_t *ma = (dt_mouse_action_t *)lm->data;
+      if(ma)
+      {
+        GtkTreeIter iter;
+        gtk_list_store_append(bm->list_store, &iter);
+        gchar *atxt = _mouse_action_get_string(ma);
+        gtk_list_store_set(bm->list_store, &iter, 0, atxt, 1, ma->name, -1);
+        g_free(atxt);
+      }
+      lm = g_slist_next(lm);
+    }
+    g_slist_free_full(lm, free);
+  }
+
+  // now we create and insert the widget to display all accels by categories
+  bl = blocs;
+  while(bl)
+  {
+    const _bloc_t *bb = (_bloc_t *)bl->data;
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    // the title
+    GtkWidget *lb = gtk_label_new(bb->title);
+    context = gtk_widget_get_style_context(lb);
+    gtk_style_context_add_class(context, "accels_window_cat_title");
+    gtk_box_pack_start(GTK_BOX(box), lb, FALSE, FALSE, 0);
+
+    // the list of accels
+    GtkWidget *list = gtk_tree_view_new_with_model(GTK_TREE_MODEL(bb->list_store));
+    context = gtk_widget_get_style_context(list);
+    gtk_style_context_add_class(context, "accels_window_list");
+    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+    GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("Accel"), renderer, "text", 0, NULL);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+    column = gtk_tree_view_column_new_with_attributes(_("Action"), renderer, "text", 1, NULL);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+
+    gtk_box_pack_start(GTK_BOX(box), list, FALSE, FALSE, 0);
+
+    gtk_flow_box_insert(GTK_FLOW_BOX(fb), box, -1);
+    g_free(bb->base);
+    g_free(bb->title);
+
+    bl = g_list_next(bl);
+  }
+  g_list_free_full(blocs, free);
+
+  GtkAllocation alloc;
+  gtk_widget_get_allocation(dt_ui_main_window(darktable.gui->ui), &alloc);
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw), alloc.height);
+  gtk_scrolled_window_set_max_content_height(GTK_SCROLLED_WINDOW(sw), alloc.height);
+  gtk_scrolled_window_set_max_content_width(GTK_SCROLLED_WINDOW(sw), alloc.width);
+  gtk_container_add(GTK_CONTAINER(sw), fb);
+  gtk_container_add(GTK_CONTAINER(vm->accels_window), sw);
+
+  gtk_window_set_resizable(GTK_WINDOW(vm->accels_window), FALSE);
+  gtk_window_set_default_size(GTK_WINDOW(vm->accels_window), alloc.width, alloc.height);
+  gtk_window_set_transient_for(GTK_WINDOW(vm->accels_window), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+  gtk_window_set_keep_above(GTK_WINDOW(vm->accels_window), TRUE);
+  gtk_window_set_gravity(GTK_WINDOW(vm->accels_window), GDK_GRAVITY_STATIC);
+  gtk_window_set_position(GTK_WINDOW(vm->accels_window), GTK_WIN_POS_CENTER_ON_PARENT);
+  gtk_widget_show_all(vm->accels_window);
+}
+
+void dt_view_accels_hide(dt_view_manager_t *vm)
+{
+  gtk_widget_destroy(vm->accels_window);
+  vm->accels_window = NULL;
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

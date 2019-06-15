@@ -358,6 +358,9 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mas
                                          const float initial_ypos, const float xpos, const float ypos, float *px,
                                          float *py, const int adding);
 
+/** return the list of possible mouse actions */
+GSList *dt_masks_mouse_actions(dt_masks_form_t *form);
+
 /** code for dynamic handling of intermediate buffers */
 static inline
 dt_masks_dynbuf_t *dt_masks_dynbuf_init(size_t size, const char *tag)

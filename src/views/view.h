@@ -80,6 +80,27 @@ typedef enum dt_lighttable_culling_zoom_mode_t
   DT_LIGHTTABLE_ZOOM_DYNAMIC = 1
 } dt_lighttable_culling_zoom_mode_t;
 
+// mouse actions struct
+typedef enum dt_mouse_action_type_t
+{
+  DT_MOUSE_ACTION_LEFT = 0,
+  DT_MOUSE_ACTION_RIGHT,
+  DT_MOUSE_ACTION_MIDDLE,
+  DT_MOUSE_ACTION_SCROLL,
+  DT_MOUSE_ACTION_DOUBLE_LEFT,
+  DT_MOUSE_ACTION_DOUBLE_RIGHT,
+  DT_MOUSE_ACTION_DRAG_DROP,
+  DT_MOUSE_ACTION_LEFT_DRAG,
+  DT_MOUSE_ACTION_RIGHT_DRAG
+} dt_mouse_action_type_t;
+
+typedef struct dt_mouse_action_t
+{
+  GtkAccelKey key;
+  dt_mouse_action_type_t action;
+  gchar name[256];
+} dt_mouse_action_t;
+
 #define DT_VIEW_ALL                                                                              \
   (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW | \
    DT_VIEW_PRINT | DT_VIEW_KNIGHT)
@@ -102,7 +123,7 @@ typedef struct dt_view_t
   // scroll bar control
   float vscroll_size, vscroll_lower, vscroll_viewport_size, vscroll_pos;
   float hscroll_size, hscroll_lower, hscroll_viewport_size, hscroll_pos;
-  const char *(*name)(struct dt_view_t *self);    // get translatable name
+  const char *(*name)(const struct dt_view_t *self); // get translatable name
   uint32_t (*view)(const struct dt_view_t *self); // get the view type
   uint32_t (*flags)();                            // get the view flags
   void (*init)(struct dt_view_t *self);           // init *data
@@ -132,6 +153,9 @@ typedef struct dt_view_t
   // keyboard accel callbacks
   void (*init_key_accels)(struct dt_view_t *self);
   void (*connect_key_accels)(struct dt_view_t *self);
+
+  // list of mouse actions
+  GSList *(*mouse_actions)(const struct dt_view_t *self);
 
   GSList *accel_closures;
   struct dt_accel_dynamic_t *dynamic_accel_current;
@@ -220,6 +244,8 @@ typedef struct dt_view_manager_t
 {
   GList *views;
   dt_view_t *current_view;
+
+  GtkWidget *accels_window;
 
   /* reusable db statements
    * TODO: reconsider creating a common/database helper API
@@ -448,6 +474,10 @@ void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm, int iid);
     TODO: move to control ?
 */
 void dt_view_filmstrip_prefetch();
+
+/* accel window */
+void dt_view_accels_show(dt_view_manager_t *vm);
+void dt_view_accels_hide(dt_view_manager_t *vm);
 
 /*
  * Map View Proxy

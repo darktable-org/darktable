@@ -272,6 +272,8 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
 
   if(!g_module_symbol(module->module, "disconnect_key_accels", (gpointer) & (module->disconnect_key_accels)))
     module->disconnect_key_accels = NULL;
+  if(!g_module_symbol(module->module, "mouse_actions", (gpointer) & (module->mouse_actions)))
+    module->mouse_actions = NULL;
   if(!g_module_symbol(module->module, "mouse_leave", (gpointer) & (module->mouse_leave)))
     module->mouse_leave = NULL;
   if(!g_module_symbol(module->module, "mouse_moved", (gpointer) & (module->mouse_moved)))
@@ -461,6 +463,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
 
   module->connect_key_accels = so->connect_key_accels;
   module->disconnect_key_accels = so->disconnect_key_accels;
+  module->mouse_actions = so->mouse_actions;
 
   module->have_introspection = so->have_introspection;
   module->get_introspection = so->get_introspection;

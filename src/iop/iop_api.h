@@ -123,6 +123,7 @@ void original_init_key_accels(struct dt_iop_module_so_t *so);
 void connect_key_accels(struct dt_iop_module_t *self);
 void original_connect_key_accels(struct dt_iop_module_t *self);
 void disconnect_key_accels(struct dt_iop_module_t *self);
+GSList *mouse_actions(struct dt_iop_module_t *self);
 
 /** optional event callbacks */
 int mouse_leave(struct dt_iop_module_t *self);

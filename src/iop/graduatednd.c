@@ -1282,6 +1282,35 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+GSList *mouse_actions(struct dt_iop_module_t *self)
+{
+  GSList *lm = NULL;
+  dt_mouse_action_t *a = NULL;
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = DT_MOUSE_ACTION_LEFT_DRAG;
+  g_snprintf(a->name, sizeof(a->name), _("[%s on nodes] change line rotation"), self->name(self));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = DT_MOUSE_ACTION_LEFT_DRAG;
+  g_snprintf(a->name, sizeof(a->name), _("[%s on line] move line"), self->name(self));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->key.accel_mods = GDK_CONTROL_MASK;
+  a->action = DT_MOUSE_ACTION_SCROLL;
+  g_snprintf(a->name, sizeof(a->name), _("[%s on line] change density"), self->name(self));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->key.accel_mods = GDK_SHIFT_MASK;
+  a->action = DT_MOUSE_ACTION_SCROLL;
+  g_snprintf(a->name, sizeof(a->name), _("[%s on line] change compression"), self->name(self));
+  lm = g_slist_append(lm, a);
+
+  return lm;
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
