@@ -736,6 +736,12 @@ int dt_control_key_pressed_override(guint key, guint state)
     dt_dev_modulegroups_search_text_focus(darktable.develop);
     return 1;
   }
+  // show/hide the accels window
+  else if(key == accels->global_accels_window.accel_key && state == accels->global_accels_window.accel_mods)
+  {
+    dt_view_accels_show(darktable.view_manager);
+    return 1;
+  }
   return 0;
 }
 
@@ -751,9 +757,16 @@ int dt_control_key_released(guint key, guint state)
   // this line is here to find the right key code on different platforms (mac).
   // printf("key code pressed: %d\n", which);
 
+  const dt_control_accels_t *accels = &darktable.control->accels;
+
   // be sure to reset dynamic accel
   if(darktable.view_manager->current_view->dynamic_accel_current) dt_control_hinter_message(darktable.control, "");
   darktable.view_manager->current_view->dynamic_accel_current = NULL;
+
+  if(key == accels->global_accels_window.accel_key && state == accels->global_accels_window.accel_mods)
+  {
+    dt_view_accels_hide(darktable.view_manager);
+  }
 
   int handled = 0;
   switch(key)
