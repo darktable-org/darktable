@@ -116,26 +116,19 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
-static int get_selected_image(void)
+static int _get_source_image(void)
 {
-  int imgid;
+  // if the mouse is over an image, always choose this one
+  // otherwise, choose the first image selected
+  int imgid = dt_control_get_mouse_over_id();
+  if(imgid != -1) return imgid;
 
-  /* get imageid for source if history past */
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images",
-                              -1, &stmt, NULL);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
+  GList *l = dt_collection_get_selected(darktable.collection, 1);
+  if(l)
   {
-    /* copy history of first image in selection */
-    imgid = sqlite3_column_int(stmt, 0);
-    // dt_control_log(_("history of first image in selection copied"));
+    imgid = GPOINTER_TO_INT(l->data);
+    g_list_free(l);
   }
-  else
-  {
-    /* no selection is used, use mouse over id */
-    imgid = dt_control_get_mouse_over_id();
-  }
-  sqlite3_finalize(stmt);
 
   return imgid;
 }
@@ -145,7 +138,7 @@ static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
-  d->imageid = get_selected_image();
+  d->imageid = _get_source_image();
 
   if(d->imageid > 0)
   {
@@ -159,99 +152,12 @@ static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
 
 static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  // Get the list of selected images
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images",
-                              -1, &stmt, NULL);
+  const int img = dt_view_get_image_to_act_on();
 
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    // get imgid of selected image
-    int32_t dest_imgid = sqlite3_column_int(stmt, 0);
-
-    // make sure the right history is in there:
-    dt_dev_write_history(darktable.develop);
-
-    // compress history and remove disabled modules - adapted from libs/history.c
-    sqlite3_stmt *stmt_local;
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1 AND num "
-                                                               "NOT IN (SELECT MAX(num) FROM main.history WHERE "
-                                                               "imgid = ?1 AND enabled = 1 GROUP BY operation, "
-                                                               "multi_priority)", -1, &stmt_local, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
-    sqlite3_step(stmt_local);
-    sqlite3_finalize(stmt_local);
-
-    // delete all mask_manager entries - copied from libs/history.c
-    int masks_count = 0;
-    char op_mask_manager[20] = {0};
-    g_strlcpy(op_mask_manager, "mask_manager", sizeof(op_mask_manager));
-
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1 AND operation = ?2", -1, &stmt_local, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt_local, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
-    sqlite3_step(stmt_local);
-    sqlite3_finalize(stmt_local);
-
-    // if there's masks create a mask manage entry
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "SELECT COUNT(*) FROM main.masks_history WHERE imgid = ?1",
-                                -1, &stmt_local, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
-    if(sqlite3_step(stmt_local) == SQLITE_ROW) masks_count = sqlite3_column_int(stmt_local, 0);
-    sqlite3_finalize(stmt_local);
-
-    if(masks_count > 0)
-    {
-      // set the masks history as first entry
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.masks_history SET num = 0 WHERE imgid = ?1", -1, &stmt_local, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
-      sqlite3_step(stmt_local);
-      sqlite3_finalize(stmt_local);
-
-      // make room for mask manager history entry
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.history SET num=num+1 WHERE imgid = ?1",
-          -1, &stmt_local, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
-      sqlite3_step(stmt_local);
-      sqlite3_finalize(stmt_local);
-
-      // update history end
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.images SET history_end = history_end+1 WHERE id = ?1",
-          -1, &stmt_local, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
-      sqlite3_step(stmt_local);
-      sqlite3_finalize(stmt_local);
-
-      const double iop_order = dt_ioppr_get_iop_order(darktable.develop->iop_order_list, op_mask_manager);
-
-      // create a mask manager entry in history as first entry
-      DT_DEBUG_SQLITE3_PREPARE_V2(
-          dt_database_get(darktable.db),
-          "INSERT INTO main.history (imgid, num, operation, op_params, module, enabled, "
-               "blendop_params, blendop_version, multi_priority, multi_name, iop_order) "
-          "VALUES(?1, 0, ?2, NULL, 1, 0, NULL, 0, 0, '', ?3)",
-          -1, &stmt_local, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, dest_imgid);
-      DT_DEBUG_SQLITE3_BIND_TEXT(stmt_local, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
-      DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt_local, 3, iop_order);
-      sqlite3_step(stmt_local);
-      sqlite3_finalize(stmt_local);
-    }
-
-    /* if current image in develop reload history */
-    if(dt_dev_is_current_image(darktable.develop, dest_imgid))
-    {
-      dt_dev_reload_history_items(darktable.develop);
-      dt_dev_write_history(darktable.develop);
-      dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
-    }
-
-    // Update XMP files
-    dt_image_synch_xmp(dest_imgid);
-  }
-
-  sqlite3_finalize(stmt);
+  if(img < 0)
+    dt_history_compress_on_selection();
+  else
+    dt_history_compress_on_image(img);
 
   dt_control_queue_redraw_center();
 }
@@ -261,7 +167,7 @@ static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
-  d->imageid = get_selected_image();
+  d->imageid = _get_source_image();
 
   if(d->imageid > 0)
   {
@@ -282,12 +188,14 @@ static void delete_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   gint res = GTK_RESPONSE_YES;
 
+  const int img = dt_view_get_image_to_act_on();
+
   if(dt_conf_get_bool("ask_before_delete"))
   {
     const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
     int number;
-    if (dt_view_get_image_to_act_on() != -1)
+    if(img != -1)
       number = 1;
     else
       number = dt_collection_get_selected_count(darktable.collection);
@@ -309,7 +217,11 @@ static void delete_button_clicked(GtkWidget *widget, gpointer user_data)
 
   if(res == GTK_RESPONSE_YES)
   {
-    dt_history_delete_on_selection();
+    if(img < 0)
+      dt_history_delete_on_selection();
+    else
+      dt_history_delete_on_image(img);
+
     dt_control_queue_redraw_center();
   }
 }
@@ -321,18 +233,16 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
   /* get past mode and store, overwrite / merge */
-  int mode = dt_bauhaus_combobox_get(d->pastemode);
+  const int mode = dt_bauhaus_combobox_get(d->pastemode);
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
 
   /* copy history from d->imageid and past onto selection */
-  if(dt_history_copy_and_paste_on_selection(d->imageid, (mode == 0) ? TRUE : FALSE, d->dg.selops) != 0)
-  {
-    /* no selection is used, use mouse over id */
-    int32_t mouse_over_id = dt_control_get_mouse_over_id();
-    if(mouse_over_id <= 0) return;
+  const int img = dt_view_get_image_to_act_on();
 
-    dt_history_copy_and_paste_on_image(d->imageid, mouse_over_id, (mode == 0) ? TRUE : FALSE, d->dg.selops);
-  }
+  if(img < 0)
+    dt_history_copy_and_paste_on_selection(d->imageid, (mode == 0) ? TRUE : FALSE, d->dg.selops);
+  else
+    dt_history_copy_and_paste_on_image(d->imageid, img, (mode == 0) ? TRUE : FALSE, d->dg.selops);
 
   /* redraw */
   dt_control_queue_redraw_center();

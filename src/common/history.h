@@ -52,6 +52,10 @@ int dt_history_load_and_apply(int imgid, gchar *filename, int history_only);
 /** delete historystack of selected images */
 void dt_history_delete_on_selection();
 
+/** compress history stack */
+void dt_history_compress_on_selection();
+void dt_history_compress_on_image(int32_t imgid);
+
 typedef struct dt_history_item_t
 {
   guint num;
