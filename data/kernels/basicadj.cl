@@ -17,6 +17,7 @@
 */
 
 #include "color_conversion.cl"
+#include "rgb_norms.h"
 
 float get_gamma(const float x, const float gamma)
 {
@@ -137,10 +138,10 @@ basicadj(read_only image2d_t in, write_only image2d_t out, const int width, cons
   }
 
   // contrast (with preserve colors)
-  if(preserve_colors == 1) // DT_BASICADJ_PRESERVE_LUMINANCE
+  if(preserve_colors != DT_RGB_NORM_NONE)
   {
     float ratio = 1.f;
-    const float lum = (use_work_profile == 0) ? dt_camera_rgb_luminance(pixel): get_rgb_matrix_luminance(pixel, profile_info, lut);
+    const float lum = dt_rgb_norm(pixel, preserve_colors, use_work_profile, profile_info, lut);
     if(lum > 0.f)
     {
       const float contrast_lum = native_powr(lum / middle_grey, contrast) * middle_grey;

@@ -73,7 +73,8 @@ typedef enum dt_colorspaces_color_profile_type_t
   DT_COLORSPACE_WORK = 18,
   DT_COLORSPACE_DISPLAY2 = 19,
   DT_COLORSPACE_REC709 = 20,
-  DT_COLORSPACE_LAST = 21
+  DT_COLORSPACE_PROPHOTO_RGB = 21,
+  DT_COLORSPACE_LAST = 22
 } dt_colorspaces_color_profile_type_t;
 
 typedef enum dt_colorspaces_color_mode_t
