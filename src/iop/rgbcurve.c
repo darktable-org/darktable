@@ -22,6 +22,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/rgb_norms.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "dtgtk/drawingarea.h"
@@ -45,17 +46,6 @@ typedef enum dt_iop_rgbcurve_pickcolor_type_t
   DT_IOP_RGBCURVE_PICK_COLORPICK = 1,
   DT_IOP_RGBCURVE_PICK_SET_VALUES = 2
 } dt_iop_rgbcurve_pickcolor_type_t;
-
-typedef enum dt_iop_rgbcurve_preservecolors_t
-{
-  DT_RGBCURVE_PRESERVE_NONE = 0,
-  DT_RGBCURVE_PRESERVE_LUMINANCE = 1,
-  DT_RGBCURVE_PRESERVE_LMAX = 2,
-  DT_RGBCURVE_PRESERVE_LAVG = 3,
-  DT_RGBCURVE_PRESERVE_LSUM = 4,
-  DT_RGBCURVE_PRESERVE_LNORM = 5,
-  DT_RGBCURVE_PRESERVE_LBP = 6,
-} dt_iop_rgbcurve_preservecolors_t;
 
 typedef enum rgbcurve_channel_t
 {
@@ -1691,7 +1681,7 @@ void init(dt_iop_module_t *module)
     // .curve_type = { CUBIC_SPLINE, CUBIC_SPLINE, CUBIC_SPLINE},
     .curve_autoscale = DT_S_SCALE_AUTOMATIC_RGB, // autoscale
     .compensate_middle_grey = 1,
-    .preserve_colors = DT_RGBCURVE_PRESERVE_LUMINANCE
+    .preserve_colors = DT_RGB_NORM_LUMINANCE
   };
 
   module->histogram_middle_grey = tmp.compensate_middle_grey;
@@ -1982,7 +1972,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
       else if(autoscale == DT_S_SCALE_AUTOMATIC_RGB)
       {
-        if(d->params.preserve_colors == DT_RGBCURVE_PRESERVE_NONE)
+        if(d->params.preserve_colors == DT_RGB_NORM_NONE)
         {
           for(int c = 0; c < 3; c++)
           {
@@ -1993,35 +1983,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         else
         {
           float ratio = 1.f;
-          float lum = 0.0f;
-          if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LUMINANCE)
-          {
-            lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(in, work_profile) : dt_camera_rgb_luminance(in);
-          }
-          else if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LMAX)
-          {
-            lum = fmaxf(in[0], fmaxf(in[1], in[2]));
-          }
-          else if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LAVG)
-          {
-            lum = (in[0] + in[1] + in[2]) / 3.0f;
-          }
-          else if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LSUM)
-          {
-            lum = in[0] + in[1] + in[2];
-          }
-          else if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LNORM)
-          {
-            lum = powf(in[0] * in[0] + in[1] * in[1] + in[2] * in[2], 0.5f);
-          }
-          else if (d->params.preserve_colors == DT_RGBCURVE_PRESERVE_LBP)
-          {
-            float R, G, B;
-            R = in[0] * in[0];
-            G = in[1] * in[1];
-            B = in[2] * in[2];
-            lum = (in[0] * R + in[1] * G + in[2] * B) / (R + G + B);
-          }
+          const float lum = dt_rgb_norm(in, d->params.preserve_colors, work_profile);
           if(lum > 0.f)
           {
             const float curve_lum = (lum < xm_L)

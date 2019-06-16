@@ -48,6 +48,12 @@ static const cmsCIEXYZTRIPLE rec2020_primaries_prequantized = {
   {0.16566467, 0.67535400, 0.02998352},
   {0.12504578, 0.04560852, 0.79685974}
 };
+static const cmsCIEXYZTRIPLE prophoto_primaries_prequantized = {
+  {0.7976749f, 0.1351917f, 0.0313534f},
+  {0.2880402f, 0.7118741f, 0.0000857f},
+  {0.0000000f, 0.0000000f, 0.8252100f}
+};
+
 static const cmsCIEXYZTRIPLE adobe_primaries_prequantized = {
   {0.60974121, 0.31111145, 0.01947021},
   {0.20527649, 0.62567139, 0.06086731},
@@ -626,6 +632,18 @@ static cmsHPROFILE dt_colorspaces_create_linear_rec2020_rgb_profile(void)
 
   cmsHPROFILE profile = _create_lcms_profile("Linear Rec2020 RGB", "Linear Rec2020 RGB",
                                              &rec2020_primaries_prequantized, transferFunction, TRUE);
+
+  cmsFreeToneCurve(transferFunction);
+
+  return profile;
+}
+
+static cmsHPROFILE dt_colorspaces_create_linear_prophoto_rgb_profile(void)
+{
+  cmsToneCurve *transferFunction = build_linear_gamma();
+
+  cmsHPROFILE profile = _create_lcms_profile("Linear prophoto RGB", "Linear prophoto RGB",
+                                             &prophoto_primaries_prequantized, transferFunction, TRUE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -1261,11 +1279,16 @@ dt_colorspaces_t *dt_colorspaces_init()
   res->profiles = g_list_append(res->profiles, _create_profile(DT_COLORSPACE_REC709, dt_colorspaces_create_gamma_rec709_rgb_profile(),
                                      _("gamma Rec709 RGB"), ++in_pos, ++out_pos, -1, -1,
                                      ++work_pos, -1));
-                                     
+
   res->profiles = g_list_append(
       res->profiles, _create_profile(DT_COLORSPACE_LIN_REC2020, dt_colorspaces_create_linear_rec2020_rgb_profile(),
                                      _("linear Rec2020 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
                                      ++work_pos, ++display2_pos));
+
+  res->profiles = g_list_append(
+     res->profiles, _create_profile(DT_COLORSPACE_PROPHOTO_RGB, dt_colorspaces_create_linear_prophoto_rgb_profile(),
+                                    _("linear prophoto RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
+                                    ++work_pos, ++display2_pos));
 
   res->profiles = g_list_append(
       res->profiles,
