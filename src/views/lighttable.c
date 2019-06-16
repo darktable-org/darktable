@@ -1118,18 +1118,6 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
   DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 1, offset);
   DT_DEBUG_SQLITE3_BIND_INT(lib->statements.main_query, 2, max_rows * iir);
 
-  if(mouse_over_id != -1)
-  {
-    const dt_image_t *mouse_over_image = dt_image_cache_get(darktable.image_cache, mouse_over_id, 'r');
-    mouse_over_group = mouse_over_image->group_id;
-    dt_image_cache_read_release(darktable.image_cache, mouse_over_image);
-    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.is_grouped);
-    DT_DEBUG_SQLITE3_RESET(lib->statements.is_grouped);
-    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.is_grouped, 1, mouse_over_group);
-    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.is_grouped, 2, mouse_over_id);
-    if(sqlite3_step(lib->statements.is_grouped) != SQLITE_ROW) mouse_over_group = -1;
-  }
-
   // prefetch the ids so that we can peek into the future to see if there are adjacent images in the same
   // group.
   int *query_ids = (int *)calloc(max_rows * max_cols, sizeof(int));
@@ -1364,6 +1352,19 @@ escape_image_loop:
     cairo_set_line_width(cr, 0.011 * wd);
     cairo_stroke(cr);
     cairo_restore(cr);
+  }
+
+  // retrieve mouse_over group
+  if(mouse_over_id != -1)
+  {
+    const dt_image_t *mouse_over_image = dt_image_cache_get(darktable.image_cache, mouse_over_id, 'r');
+    mouse_over_group = mouse_over_image->group_id;
+    dt_image_cache_read_release(darktable.image_cache, mouse_over_image);
+    DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.is_grouped);
+    DT_DEBUG_SQLITE3_RESET(lib->statements.is_grouped);
+    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.is_grouped, 1, mouse_over_group);
+    DT_DEBUG_SQLITE3_BIND_INT(lib->statements.is_grouped, 2, mouse_over_id);
+    if(sqlite3_step(lib->statements.is_grouped) != SQLITE_ROW) mouse_over_group = -1;
   }
 
   for(int row = 0; row < max_rows; row++)
