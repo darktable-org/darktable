@@ -915,11 +915,12 @@ static void scale_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  gtk_widget_set_visible(g->scale, TRUE);
   switch(dt_bauhaus_combobox_get(widget))
   {
     case 0:
     {
-      // linear
+      // x: linear
       g->loglogscale = 0;
       g->semilog = 0;
       gtk_widget_set_visible(g->logbase, FALSE);
@@ -927,25 +928,9 @@ static void scale_callback(GtkWidget *widget, dt_iop_module_t *self)
     }
     case 1:
     {
-      // log log
-      g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
-      g->semilog = 0;
-      gtk_widget_set_visible(g->logbase, TRUE);
-      break;
-    }
-    case 2:
-    {
-      // x: log, y: linear
+      // x: log
       g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
       g->semilog = 1;
-      gtk_widget_set_visible(g->logbase, TRUE);
-      break;
-    }
-    case 3:
-    {
-      // x: linear, y: log
-      g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
-      g->semilog = -1;
       gtk_widget_set_visible(g->logbase, TRUE);
       break;
     }
@@ -1417,9 +1402,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->scale = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->scale, NULL, _("scale"));
   dt_bauhaus_combobox_add(c->scale, _("linear"));
-  dt_bauhaus_combobox_add(c->scale, _("log-log (xy)"));
-  dt_bauhaus_combobox_add(c->scale, _("semi-log (x)"));
-  dt_bauhaus_combobox_add(c->scale, _("semi-log (y)"));
+  dt_bauhaus_combobox_add(c->scale, _("log"));
   gtk_widget_set_tooltip_text(c->scale, _("scale to use in the graph. use logarithmic scale for "
                                           "more precise control near the blacks"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->scale, TRUE, TRUE, 0);
@@ -1535,42 +1518,49 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_stroke_preserve(cr);
 
-  // Draw the background gradient along the diagonal
-  // ch == 0 : black to white
-  // ch == 1 : green to magenta
-  // ch == 2 : blue to yellow
-  const float origin[3][3] = { { 0.0f, 0.0f, 0.0f },                  // L = 0, @ (a, b) = 0
-                               { 0.0f, 231.0f/255.0f, 181.0f/255.0f },// a = -128 @ L = 75, b = 0
-                               { 0.0f, 30.0f/255.0f, 195.0f/255.0f}}; // b = -128 @ L = 75, a = 0
+  if (ch==ch_L)
+  { // remove below black to white transition to improve readability of the graph
+    cairo_set_source_rgb(cr, .3, .3, .3);
+    cairo_rectangle(cr, 0, 0, width, height);
+    cairo_fill(cr);
+  }
+  else
+  {
+    // Draw the background gradient along the diagonal
+    // ch == 0 : black to white
+    // ch == 1 : green to magenta
+    // ch == 2 : blue to yellow
+    const float origin[3][3] = { { 0.0f, 0.0f, 0.0f },                  // L = 0, @ (a, b) = 0
+                                 { 0.0f, 231.0f/255.0f, 181.0f/255.0f },// a = -128 @ L = 75, b = 0
+                                 { 0.0f, 30.0f/255.0f, 195.0f/255.0f}}; // b = -128 @ L = 75, a = 0
 
-  const float destin[3][3] = { { 1.0f, 1.0f, 1.0f },                  // L = 100 @ (a, b) = 0
-                               { 1.0f, 0.0f, 192.0f/255.0f } ,        // a = 128 @ L = 75, b = 0
-                               { 215.0f/255.0f, 182.0f/255.0f, 0.0f}};// b = 128 @ L = 75, a = 0
+    const float destin[3][3] = { { 1.0f, 1.0f, 1.0f },                  // L = 100 @ (a, b) = 0
+                                 { 1.0f, 0.0f, 192.0f/255.0f } ,        // a = 128 @ L = 75, b = 0
+                                 { 215.0f/255.0f, 182.0f/255.0f, 0.0f}};// b = 128 @ L = 75, a = 0
 
-  // since Cairo paints with sRGB at gamma 2.4, linear gradients are not linear but garbage and, at 50%,
-  // we dont see the neutral grey we would expect in the middle of a linear gradient between
-  // 2 complimentary colors. So we add it artificially, but that will break the smoothness
-  // of the transition. Maybe this will help people understand how broken are Lab and non-linear
-  // spaces for editing, so let it be ugly to teach them a lesson.
+   // since Cairo paints with sRGB at gamma 2.4, linear gradients are not linear and, at 50%,
+   // we dont see the neutral grey we would expect in the middle of a linear gradient between
+   // 2 complimentary colors. So we add it artificially, but that will break the smoothness
+   // of the transition.
 
-  // middle step for gradients (50 %)
-  const float midgrey = to_log(0.45f, c->loglogscale, ch, c->semilog, 0);
+    // middle step for gradients (50 %)
+    const float midgrey = to_log(0.45f, c->loglogscale, ch, c->semilog, 0);
 
-  const float middle[3][3] = { { midgrey, midgrey, midgrey },   // L = 50 @ (a, b) = 0
-                               { 0.67f, 0.67f, 0.67f},          // L = 75 @ (a, b) = 0
-                               { 0.67f, 0.67f, 0.67f}};         // L = 75 @ (a, b) = 0
+    const float middle[3][3] = { { midgrey, midgrey, midgrey },   // L = 50 @ (a, b) = 0
+                                 { 0.67f, 0.67f, 0.67f},          // L = 75 @ (a, b) = 0
+                                 { 0.67f, 0.67f, 0.67f}};         // L = 75 @ (a, b) = 0
 
-  const float opacities[3] = { 0.5f, 0.5f, 0.5f};
+    const float opacities[3] = { 0.5f, 0.5f, 0.5f};
 
-  cairo_pattern_t *pat;
-  pat = cairo_pattern_create_linear (height, 0.0,  0.0, width);
-  cairo_pattern_add_color_stop_rgba (pat, 1, origin[ch][0], origin[ch][1], origin[ch][2], opacities[ch]);
-  cairo_pattern_add_color_stop_rgba (pat, 0.5, middle[ch][0], middle[ch][1], middle[ch][2], opacities[ch]);
-  cairo_pattern_add_color_stop_rgba (pat, 0, destin[ch][0], destin[ch][1], destin[ch][2], opacities[ch]);
-  cairo_set_source (cr, pat);
-  cairo_fill (cr);
-  cairo_pattern_destroy (pat);
-
+    cairo_pattern_t *pat;
+    pat = cairo_pattern_create_linear (height, 0.0,  0.0, width);
+    cairo_pattern_add_color_stop_rgba (pat, 1, origin[ch][0], origin[ch][1], origin[ch][2], opacities[ch]);
+    cairo_pattern_add_color_stop_rgba (pat, 0.5, middle[ch][0], middle[ch][1], middle[ch][2], opacities[ch]);
+    cairo_pattern_add_color_stop_rgba (pat, 0, destin[ch][0], destin[ch][1], destin[ch][2], opacities[ch]);
+    cairo_set_source (cr, pat);
+    cairo_fill (cr);
+    cairo_pattern_destroy (pat);
+  }
 
   // draw grid
   set_color(cr, darktable.bauhaus->graph_border);
@@ -1624,10 +1614,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_move_to(cr, 0, height);
       set_color(cr, darktable.bauhaus->inset_histogram);
 
-      if (ch == ch_L && c->loglogscale > 0.0f && c->semilog != -1)
+      if (ch == ch_L && c->loglogscale > 0.0f)
       {
-        // not working
-        // dt_draw_histogram_8_log_base(cr, hist, 4, ch, c->loglogscale);
+        dt_draw_histogram_8_log_base(cr, hist, 4, ch, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR, c->loglogscale);
       }
       else
       {
