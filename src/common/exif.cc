@@ -2035,11 +2035,18 @@ static GHashTable *read_masks(Exiv2::XmpData &xmpData, const char *filename, con
     && (mask_id = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_id"))) != xmpData.end()
     && (mask_nb = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.mask_nb"))) != xmpData.end())
   {
-    const int cnt = mask->count();
-    if(cnt == mask_src->count() && cnt == mask_name->count() && cnt == mask_type->count()
-      && cnt == mask_version->count() && cnt == mask_id->count() && cnt == mask_nb->count())
+    // fixes API change happened after exiv2 v0.27.2.1
+    const size_t cnt = (size_t)mask->count();
+    const size_t mask_src_cnt = (size_t)mask_src->count();
+    const size_t mask_name_cnt = (size_t)mask_name->count();
+    const size_t mask_type_cnt = (size_t)mask_type->count();
+    const size_t mask_version_cnt = (size_t)mask_version->count();
+    const size_t mask_id_cnt = (size_t)mask_id->count();
+    const size_t mask_nb_cnt = (size_t)mask_nb->count();
+    if(cnt == mask_src_cnt && cnt == mask_name_cnt && cnt == mask_type_cnt
+       && cnt == mask_version_cnt && cnt == mask_id_cnt && cnt == mask_nb_cnt)
     {
-      for(int i = 0; i < cnt; i++)
+      for(size_t i = 0; i < cnt; i++)
       {
         mask_entry_t *entry = (mask_entry_t *)calloc(1, sizeof(mask_entry_t));
 
