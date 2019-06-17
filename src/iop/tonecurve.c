@@ -375,7 +375,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(autoscale_ab, ch, height, i, low_approximation, o, \
-                      xm_al, xm_ar, xm_bl, xm_br, xm_L, unbound_ab, width) \
+                      xm_al, xm_ar, xm_bl, xm_br, xm_L, unbound_ab, width, work_profile) \
   shared(d) \
   schedule(static)
 #endif
