@@ -37,25 +37,95 @@ static void dt_guides_q_rect(dt_QRect_t *R1, float left, float top, float width,
   R1->height = height;
 }
 
+typedef struct _grid_t
+{
+  unsigned horizontal;
+  unsigned vertical;
+  unsigned subdiv;
+} _grid_t;
 
-static void dt_guides_draw_simple_grid(cairo_t *cr, const float x, const float y, const float w,
-                                       const float h, float zoom_scale)
+static void dt_guides_draw_grid(cairo_t *cr, const float x, const float y, const float w,
+                                       const float h, float zoom_scale, _grid_t *data)
 {
   float right = x + w;
   float bottom = y + h;
-  // cairo_set_operator(cr, CAIRO_OPERATOR_XOR);
-  cairo_set_line_width(cr, 1.0 / zoom_scale);
-  cairo_set_source_rgb(cr, .2, .2, .2);
-  dt_draw_grid(cr, 3, x, y, right, bottom);
-  cairo_translate(cr, 1.0 / zoom_scale, 1.0 / zoom_scale);
-  cairo_set_source_rgb(cr, .8, .8, .8);
-  dt_draw_grid(cr, 3, x, y, right, bottom);
-  cairo_set_source_rgba(cr, .8, .8, .8, 0.5);
   double dashes = 5.0 / zoom_scale;
+
+  cairo_set_line_width(cr, 1.0 / zoom_scale);
+
   cairo_set_dash(cr, &dashes, 1, 0);
-  dt_draw_grid(cr, 9, x, y, right, bottom);
+  cairo_set_source_rgba(cr, .2, .2, .2, .3);
+  dt_draw_horizontal_lines(cr, (1+data->horizontal) * (1+data->subdiv), x, y, right, bottom);
+  dt_draw_vertical_lines(cr, (1+data->vertical) * (1+data->subdiv), x, y, right, bottom);
+  cairo_set_dash(cr, &dashes, 1, dashes);
+  cairo_set_source_rgba(cr, .8, .8, .8, .3);
+  dt_draw_horizontal_lines(cr, (1+data->horizontal) * (1+data->subdiv), x, y, right, bottom);
+  dt_draw_vertical_lines(cr, (1+data->vertical) * (1+data->subdiv), x, y, right, bottom);
+
+  cairo_set_dash(cr, &dashes, 1, 0);
+  cairo_set_source_rgba(cr, .2, .2, .2, .5);
+  dt_draw_horizontal_lines(cr, 1+data->horizontal, x, y, right, bottom);
+  dt_draw_vertical_lines(cr, 1+data->vertical, x, y, right, bottom);
+
+  cairo_set_dash(cr, &dashes, 1, dashes);
+  cairo_set_source_rgba(cr, .8, .8, .8, .5);
+  dt_draw_horizontal_lines(cr, 1+data->horizontal, x, y, right, bottom);
+  dt_draw_vertical_lines(cr, 1+data->vertical, x, y, right, bottom);
 }
 
+static void _grid_horizontal_changed(GtkWidget *w, _grid_t *data)
+{
+  int horizontal = dt_bauhaus_slider_get(w);
+  data->horizontal = horizontal;
+  dt_conf_set_int("plugins/darkroom/clipping/grid_horizontal", horizontal);
+  dt_control_queue_redraw_center();
+}
+
+static void _grid_vertical_changed(GtkWidget *w, _grid_t *data)
+{
+  int vertical = dt_bauhaus_slider_get(w);
+  data->vertical = vertical;
+  dt_conf_set_int("plugins/darkroom/clipping/grid_vertical", vertical);
+  dt_control_queue_redraw_center();
+}
+
+static void _grid_subdiv_changed(GtkWidget *w, _grid_t *data)
+{
+  int subdiv = dt_bauhaus_slider_get(w);
+  data->subdiv = subdiv;
+  dt_conf_set_int("plugins/darkroom/clipping/grid_subdiv", subdiv);
+  dt_control_queue_redraw_center();
+}
+
+static GtkWidget *_guides_gui_grid(dt_iop_module_t *self, void *user_data)
+{
+  _grid_t *data = (_grid_t *)user_data;
+
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
+  GtkWidget *grid_horizontal = dt_bauhaus_slider_new_with_range(self, 0, 12, 1, data->horizontal, 0);
+  dt_bauhaus_slider_set_hard_max(grid_horizontal, 36);
+  dt_bauhaus_widget_set_label(grid_horizontal, NULL, _("horizontal lines"));
+  gtk_widget_set_tooltip_text(grid_horizontal, _("number of horizontal guide lines"));
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(grid_horizontal), TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(grid_horizontal), "value-changed", G_CALLBACK(_grid_horizontal_changed), user_data);
+
+  GtkWidget *grid_vertical = dt_bauhaus_slider_new_with_range(self, 0, 12, 1, data->vertical, 0);
+  dt_bauhaus_slider_set_hard_max(grid_vertical, 36);
+  dt_bauhaus_widget_set_label(grid_vertical, NULL, _("vertical lines"));
+  gtk_widget_set_tooltip_text(grid_vertical, _("number of vertical guide lines"));
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(grid_vertical), TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(grid_vertical), "value-changed", G_CALLBACK(_grid_vertical_changed), user_data);
+
+  GtkWidget *grid_subdiv = dt_bauhaus_slider_new_with_range(self, 0, 10, 1, data->subdiv, 0);
+  dt_bauhaus_slider_set_hard_max(grid_subdiv, 30);
+  dt_bauhaus_widget_set_label(grid_subdiv, NULL, _("subdivisions"));
+  gtk_widget_set_tooltip_text(grid_subdiv, _("number of subdivisions per grid rectangle"));
+  gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(grid_subdiv), TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(grid_subdiv), "value-changed", G_CALLBACK(_grid_subdiv_changed), user_data);
+
+  return box;
+}
 
 static void dt_guides_draw_diagonal_method(cairo_t *cr, const float x, const float y, const float w, const float h)
 {
@@ -284,7 +354,7 @@ static void _guides_draw_grid(cairo_t *cr, const float x, const float y,
                               const float w, const float h,
                               const float zoom_scale, void *user_data)
 {
-  dt_guides_draw_simple_grid(cr, x, y, w, h, zoom_scale);
+  dt_guides_draw_grid(cr, x, y, w, h, zoom_scale, user_data);
 }
 static void _guides_draw_rules_of_thirds(cairo_t *cr, const float x, const float y,
                                          const float w, const float h,
@@ -403,8 +473,13 @@ GList *dt_guides_init()
 {
   GList *guides = NULL;
 
-
-  _guides_add_guide(&guides, _("grid"), _guides_draw_grid, NULL, NULL, NULL); // TODO: make the number of lines configurable with a slider?
+  {
+    _grid_t *user_data = (_grid_t *)malloc(sizeof(_grid_t));
+    user_data->horizontal = dt_conf_key_exists("plugins/darkroom/clipping/grid_horizontal") ? dt_conf_get_int("plugins/darkroom/clipping/grid_horizontal") : 3;
+    user_data->vertical = dt_conf_key_exists("plugins/darkroom/clipping/grid_vertical") ? dt_conf_get_int("plugins/darkroom/clipping/grid_vertical") : 3;
+    user_data->subdiv = dt_conf_key_exists("plugins/darkroom/clipping/grid_subdiv") ? dt_conf_get_int("plugins/darkroom/clipping/grid_subdiv") : 3;
+    _guides_add_guide(&guides, _("grid"), _guides_draw_grid, _guides_gui_grid, user_data, free);
+  }
   _guides_add_guide(&guides, _("rules of thirds"), _guides_draw_rules_of_thirds, NULL, NULL, NULL);
   _guides_add_guide(&guides, _("metering"), _guides_draw_metering, NULL, NULL, NULL);
   _guides_add_guide(&guides, _("perspective"), _guides_draw_perspective, NULL, NULL, NULL); // TODO: make the number of lines configurable with a slider?
