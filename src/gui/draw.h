@@ -198,6 +198,19 @@ static inline void dt_draw_vertical_lines(cairo_t *cr, const int num, const int 
   }
 }
 
+static inline void dt_draw_horizontal_lines(cairo_t *cr, const int num, const int left, const int top,
+                                            const int right, const int bottom)
+{
+  float height = bottom - top;
+
+  for(int k = 1; k < num; k++)
+  {
+    cairo_move_to(cr, left, top + k / (float)num * height);
+    cairo_line_to(cr, right, top + k / (float)num * height);
+    cairo_stroke(cr);
+  }
+}
+
 static inline void dt_draw_endmarker(cairo_t *cr, const int width, const int height, const int left)
 {
   // fibonacci spiral:
