@@ -3883,32 +3883,30 @@ msgid "$(OPENCL_ACTIVATED) - whether OpenCL is activated"
 msgstr ""
 
 #: ../src/gui/guides.c:108
-#, fuzzy
 msgid "horizontal lines"
-msgstr "środek w poziomie"
+msgstr "linie poziome"
 
 #: ../src/gui/guides.c:109
 msgid "number of horizontal guide lines"
-msgstr ""
+msgstr "liczba poziomych linii siatki"
 
 #: ../src/gui/guides.c:115
-#, fuzzy
 msgid "vertical lines"
-msgstr "środek w pionie"
+msgstr "linie pionowe"
 
 #: ../src/gui/guides.c:116
 #, fuzzy
 msgid "number of vertical guide lines"
-msgstr "liczba skupisk"
+msgstr "liczba pionowych linii siatki"
 
 #: ../src/gui/guides.c:122
 #, fuzzy
 msgid "subdivisions"
-msgstr "dzienne widzenie"
+msgstr "linie pomocnicze"
 
 #: ../src/gui/guides.c:123
 msgid "number of subdivisions per grid rectangle"
-msgstr ""
+msgstr "liczba pomocniczych linii siatki"
 
 #: ../src/gui/guides.c:440
 msgid "extra"
@@ -3942,7 +3940,7 @@ msgstr "siatka"
 
 #: ../src/gui/guides.c:483
 msgid "rules of thirds"
-msgstr "jedna trzecia"
+msgstr "trójpodział"
 
 #: ../src/gui/guides.c:484
 msgid "metering"
