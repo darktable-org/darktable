@@ -225,7 +225,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
 
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_BEST);
+    cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_GOOD);
     cairo_fill(cr);
 
     // draw box where we are
