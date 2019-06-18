@@ -4091,7 +4091,7 @@ msgstr "przysłona"
 #: ../src/gui/presets.c:494 ../src/iop/ashift.c:4868 ../src/libs/camera.c:580
 #: ../src/libs/collect.h:36 ../src/libs/metadata_view.c:111
 msgid "focal length"
-msgstr "długość ogniskowej"
+msgstr "ogniskowa"
 
 #: ../src/gui/preferences.c:524 ../src/iop/basicadj.c:740
 #: ../src/iop/borders.c:1021 ../src/iop/levels.c:704
@@ -4251,11 +4251,11 @@ msgstr "największa wartość przysłony"
 
 #: ../src/gui/preferences.c:1489 ../src/gui/presets.c:500
 msgid "minimum focal length"
-msgstr "najmniejsza długość ogniskowej"
+msgstr "najkrótsza ogniskowa"
 
 #: ../src/gui/preferences.c:1490 ../src/gui/presets.c:501
 msgid "maximum focal length"
-msgstr "największa długość ogniskowej"
+msgstr "najdłuższa ogniskowa"
 
 #. raw/hdr/ldr
 #: ../src/gui/preferences.c:1499 ../src/gui/presets.c:507
@@ -8786,7 +8786,7 @@ msgstr ""
 
 #: ../src/iop/lens.c:1846
 msgid "focal length (mm)"
-msgstr "długość ogniskowej (mm)"
+msgstr "ogniskowa (mm)"
 
 #: ../src/iop/lens.c:1870
 msgid "f/"
