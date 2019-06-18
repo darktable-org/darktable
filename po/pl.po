@@ -1112,9 +1112,8 @@ msgstr ""
 "niektóre aparaty nagrywają, aby przechowywać notatki do zdjęć"
 
 #: ../build/src/preferences_gen.h:4095
-#, fuzzy
 msgid "3D lut root folder"
-msgstr "przenosi do innego katalogu"
+msgstr "główny katalog z plikami LUT"
 
 #: ../build/src/preferences_gen.h:4100 ../src/control/jobs/control_jobs.c:1581
 #: ../src/control/jobs/control_jobs.c:1641 ../src/gui/preferences.c:1605
@@ -1127,7 +1126,7 @@ msgstr "wybierz katalog"
 
 #: ../build/src/preferences_gen.h:4112
 msgid "this folder (and sub-folders) contains Lut files used but lut3d modules"
-msgstr ""
+msgstr "ten katalog (oraz podkatalogi) zawiera pliki używane przez moduł lut3d"
 
 #: ../build/src/preferences_gen.h:4142
 msgid "session options"
@@ -9236,81 +9235,77 @@ msgid "lut 3D"
 msgstr ""
 
 #: ../src/iop/lut3d.c:355
-#, fuzzy, c-format
+#, c-format
 msgid "invalid png header from %s"
-msgstr "niepoprawny rozmiar papieru"
+msgstr "niepoprawny nagłówek png w pliku %s"
 
 #: ../src/iop/lut3d.c:363
 #, c-format
 msgid "png bit-depth %d not supported"
-msgstr ""
+msgstr "png o głębi %d bitów nie jest obsługiwany"
 
 #: ../src/iop/lut3d.c:375
 #, c-format
 msgid "invalid level in png file %d %d"
-msgstr ""
+msgstr "niewłaściwy poziom w pliku png %d %d"
 
 #: ../src/iop/lut3d.c:390 ../src/iop/lut3d.c:407
-#, fuzzy
 msgid "error - allocating buffer for png lut"
-msgstr "alokacja bufora dla mieszania nie powiodła się"
+msgstr "alokacja bufora dla png lut nie powiodła się"
 
 #: ../src/iop/lut3d.c:397
-#, fuzzy, c-format
+#, c-format
 msgid "error - could not read png image %s"
-msgstr "błąd przy wczytywaniu pliku „%s”"
+msgstr "błąd przy wczytywaniu obrazu png „%s”"
 
 #: ../src/iop/lut3d.c:573
-#, fuzzy, c-format
+#, c-format
 msgid "error - invalid cube file: %s"
-msgstr "błąd: nie można otworzyć pliku %s"
+msgstr "błąd: niewłaściwy plik cube: %s"
 
 #: ../src/iop/lut3d.c:589
 msgid "DOMAIN MIN <> 0.0 is not supported"
-msgstr ""
+msgstr "DOMAIN MIN <> 0.0 nie jest obsługiwany"
 
 #: ../src/iop/lut3d.c:600
 msgid "DOMAIN MAX <> 1.0 is not supported"
-msgstr ""
+msgstr "DOMAIN MAX <> 1.0 nie jest obsługiwany"
 
 #: ../src/iop/lut3d.c:609
 msgid "1D cube lut is not supported"
-msgstr ""
+msgstr "jednowymiarowy cube lut nie jest obsługiwany"
 
 #: ../src/iop/lut3d.c:623
-#, fuzzy
 msgid "error - allocating buffer for cube lut"
-msgstr "alokacja bufora dla mieszania nie powiodła się"
+msgstr "błąd: alokacja bufora dla cube lut nie powiodła się"
 
 #: ../src/iop/lut3d.c:634
 msgid "error - cube lut size is not defined"
-msgstr ""
+msgstr "błąd: rozmiar cube lut jest niezdefiniowany"
 
 #: ../src/iop/lut3d.c:651
 msgid "error - cube lut lines number is not correct"
-msgstr ""
+msgstr "błąd: liczba linii cube lut jest niewłaściwa"
 
 #: ../src/iop/lut3d.c:1006
 msgid "Lut root folder not defined"
-msgstr ""
+msgstr "główny katalog z plikami lut nie został wybrany"
 
 #: ../src/iop/lut3d.c:1012
-#, fuzzy
 msgid "select lut file"
-msgstr "wybór pliku"
+msgstr "wybór pliku lut"
 
 #: ../src/iop/lut3d.c:1013
-#, fuzzy
 msgid "_select"
-msgstr "wybór"
+msgstr "_wybierz"
 
 #: ../src/iop/lut3d.c:1030
 msgid "hald cluts (png)"
-msgstr ""
+msgstr "pliki hald clut (png)"
 
 #: ../src/iop/lut3d.c:1037
 msgid "3D lut (cube)"
-msgstr ""
+msgstr "pliki 3D lut (cube)"
 
 #: ../src/iop/lut3d.c:1043 ../src/libs/copy_history.c:93
 #: ../src/libs/geotagging.c:494 ../src/libs/import.c:789
@@ -9320,11 +9315,11 @@ msgstr "wszystkie pliki"
 
 #: ../src/iop/lut3d.c:1058
 msgid "Select file outside Lut root folder is not allowed"
-msgstr ""
+msgstr "Wybieranie pliku spoza głównego katalogu lut jest niedozwolone"
 
 #: ../src/iop/lut3d.c:1102
 msgid "select a png (haldclut) or a cube file"
-msgstr ""
+msgstr "wybierz plik png (hald clut) lub cube (3D lut)"
 
 #: ../src/iop/lut3d.c:1109
 msgid ""
@@ -9335,49 +9330,44 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/lut3d.c:1116
-#, fuzzy
 msgid "application color space"
 msgstr "przestrzeń kolorów"
 
 #: ../src/iop/lut3d.c:1118
 msgid "REC.709"
-msgstr ""
+msgstr "REC.709"
 
 #: ../src/iop/lut3d.c:1119
 msgid "lin sRGB/REC.709"
-msgstr ""
+msgstr "liniowy sRGB/REC.709"
 
 #: ../src/iop/lut3d.c:1120
 msgid "lin prophoto RGB"
-msgstr ""
+msgstr "liniowy prophoto RGB"
 
 #: ../src/iop/lut3d.c:1122
 msgid "select the color space in which the LUT has to be applied"
-msgstr ""
+msgstr "wybierz przestrzeń kolorów w której LUT zostanie zaaplikowany"
 
 #: ../src/iop/lut3d.c:1126
-#, fuzzy
 msgid "interpolation"
 msgstr "metoda interpolacji"
 
 #: ../src/iop/lut3d.c:1127
 msgid "tetrahedral"
-msgstr ""
+msgstr "czworościenna"
 
 #: ../src/iop/lut3d.c:1128
-#, fuzzy
 msgid "trilinear"
-msgstr "dwuliniowa"
+msgstr "trójliniowa"
 
 #: ../src/iop/lut3d.c:1129
-#, fuzzy
 msgid "pyramid"
-msgstr "panoramiczna"
+msgstr "piramidalna"
 
 #: ../src/iop/lut3d.c:1131
-#, fuzzy
 msgid "select the interpolation method"
-msgstr "metoda interpolacji"
+msgstr "wybierz metodę interpolacji"
 
 #: ../src/iop/monochrome.c:74
 msgid "monochrome"
@@ -9992,10 +9982,8 @@ msgid "automatic pixel rotation"
 msgstr "automatyczne obracanie pikseli"
 
 #: ../src/iop/rotatepixels.c:358
-#, fuzzy
 msgid "automatic pixel rotation only works for the sensors that need it."
-msgstr ""
-"automatyczne obracanie pikseli\n"
+msgstr "automatyczne obracanie pikseli\n"
 "działa tylko dla sensorów, które tego wymagają."
 
 #: ../src/iop/scalepixels.c:56
@@ -10008,10 +9996,8 @@ msgid "automatic pixel scaling"
 msgstr "automatyczne skalowanie pikseli"
 
 #: ../src/iop/scalepixels.c:275
-#, fuzzy
 msgid "automatic pixel scaling only works for the sensors that need it."
-msgstr ""
-"automatyczne skalowanie pikseli\n"
+msgstr "automatyczne skalowanie pikseli\n"
 "działa tylko dla sensorów, które tego wymagają."
 
 #: ../src/iop/shadhi.c:177
@@ -10394,9 +10380,8 @@ msgid "tonecurve for b channel"
 msgstr "krzywa tonalna kanału b"
 
 #: ../src/iop/tonecurve.c:1405
-#, fuzzy
 msgid "log"
-msgstr "zaloguj"
+msgstr "logarytmiczna"
 
 #: ../src/iop/tonecurve.c:1413
 msgid "base of the logarithm"
@@ -11166,12 +11151,10 @@ msgstr ""
 "wszystkich wybranych zdjeć"
 
 #: ../src/libs/copy_history.c:322
-#, fuzzy
 msgid "compress history"
 msgstr "skompresuj historię"
 
 #: ../src/libs/copy_history.c:324
-#, fuzzy
 msgid ""
 "compress history stack of\n"
 "all selected images"
@@ -13669,7 +13652,7 @@ msgstr "znajdź moduły"
 #: ../src/views/darkroom.c:3264
 #, fuzzy
 msgid "switch to lighttable"
-msgstr "stół podświetlany"
+msgstr "przełącz na widok stołu podświetlanego"
 
 #: ../src/views/darkroom.c:3269 ../src/views/lighttable.c:4487
 #, fuzzy
@@ -13732,7 +13715,7 @@ msgstr[2] ""
 
 #: ../src/views/lighttable.c:3197
 msgid "you have reached the start of your collection"
-msgstr ""
+msgstr "dotarłeś do początku kolekcji"
 
 #: ../src/views/lighttable.c:3221
 #, c-format
@@ -13744,7 +13727,7 @@ msgstr[2] ""
 
 #: ../src/views/lighttable.c:3226
 msgid "you have reached the end of your collection"
-msgstr ""
+msgstr "dotarłeś do końca kolekcji"
 
 #: ../src/views/lighttable.c:3546
 #, c-format
@@ -13857,9 +13840,8 @@ msgid "toggle timeline"
 msgstr "przełącz oś czasu"
 
 #: ../src/views/lighttable.c:4474
-#, fuzzy
 msgid "open image in darkroom"
-msgstr "ramka wokół zdjęcia w trybie ciemni"
+msgstr "otwórz obraz w trybie ciemni"
 
 #: ../src/views/lighttable.c:4481
 #, fuzzy
