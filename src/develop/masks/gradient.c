@@ -350,6 +350,12 @@ static int dt_gradient_events_mouse_moved(struct dt_iop_module_t *module, float 
     if(gui->edit_mode != DT_MASKS_EDIT_FULL) return 0;
     return 1;
   }
+  // add a preview when creating a gradient
+  else if(gui->creation)
+  {
+    dt_control_queue_redraw_center();
+    return 1;
+  }
 
   return 0;
 }
@@ -360,6 +366,113 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
   dashed[0] /= zoom_scale;
   dashed[1] /= zoom_scale;
   const int len = sizeof(dashed) / sizeof(dashed[0]);
+
+  // preview gradient creation
+  if(gui->creation)
+  {
+    float wd = darktable.develop->preview_pipe->iwidth;
+    float ht = darktable.develop->preview_pipe->iheight;
+    const float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
+    const float distance = 0.1f * fminf(wd, ht);
+    const float scale = sqrtf(wd * wd + ht * ht);
+
+    float xpos, ypos;
+    const float zoom_x = dt_control_get_dev_zoom_x();
+    const float zoom_y = dt_control_get_dev_zoom_y();
+    if((gui->posx == -1.f && gui->posy == -1.f) || gui->mouse_leaved_center)
+    {
+      xpos = (.5f + zoom_x) * darktable.develop->preview_pipe->backbuf_width;
+      ypos = (.5f + zoom_y) * darktable.develop->preview_pipe->backbuf_height;
+    }
+    else
+    {
+      xpos = gui->posx;
+      ypos = gui->posy;
+    }
+
+    cairo_save(cr);
+
+    // draw main line
+    cairo_set_line_width(cr, 5.0 / zoom_scale);
+    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+
+    cairo_move_to(cr, 0.0f, ypos);
+    cairo_line_to(cr, darktable.develop->preview_pipe->backbuf_width, ypos);
+    cairo_stroke_preserve(cr);
+    cairo_set_line_width(cr, 2.0 / zoom_scale);
+    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    cairo_stroke(cr);
+
+    // draw the arrow
+    float anchor_x, anchor_y;
+    float pivot_start_x, pivot_start_y;
+    float pivot_end_x, pivot_end_y;
+    anchor_x = xpos;
+    anchor_y = ypos;
+    pivot_start_x = xpos;
+    pivot_end_x = xpos;
+    pivot_start_y = ypos - distance;
+    pivot_end_y = ypos + distance;
+    cairo_set_dash(cr, dashed, 0, 0);
+    cairo_set_line_width(cr, 2.0 / zoom_scale);
+    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+
+    // from start to end
+    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    cairo_line_to(cr, pivot_start_x, pivot_start_y);
+    cairo_line_to(cr, pivot_end_x, pivot_end_y);
+    cairo_stroke(cr);
+
+    // start side of the gradient
+    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    cairo_arc(cr, pivot_start_x, pivot_start_y, 3.0f / zoom_scale, 0, 2.0f * M_PI);
+    cairo_fill_preserve(cr);
+    cairo_stroke(cr);
+
+    // end side of the gradient
+    cairo_arc(cr, pivot_end_x, pivot_end_y, 1.0f / zoom_scale, 0, 2.0f * M_PI);
+    cairo_fill_preserve(cr);
+    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    cairo_stroke(cr);
+
+    // draw arrow on the end of the gradient to clearly display the direction
+
+    // size & width of the arrow
+    const float arrow_angle = 0.25;
+    const float arrow_length = 15.0 / zoom_scale;
+
+    const float a_dx = anchor_x - pivot_end_x;
+    const float a_dy = pivot_end_y - anchor_y;
+    const float angle = atan2(a_dx, a_dy) - M_PI / 2.0;
+
+    const float arrow_x1 = pivot_end_x + (arrow_length * cos(angle + arrow_angle));
+    const float arrow_x2 = pivot_end_x + (arrow_length * cos(angle - arrow_angle));
+    const float arrow_y1 = pivot_end_y + (arrow_length * sin(angle + arrow_angle));
+    const float arrow_y2 = pivot_end_y + (arrow_length * sin(angle - arrow_angle));
+
+    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    cairo_move_to(cr, pivot_end_x, pivot_end_y);
+    cairo_line_to(cr, arrow_x1, arrow_y1);
+    cairo_line_to(cr, arrow_x2, arrow_y2);
+    cairo_line_to(cr, pivot_end_x, pivot_end_y);
+    cairo_close_path(cr);
+    cairo_fill_preserve(cr);
+    cairo_stroke(cr);
+
+    // and the border
+    cairo_set_dash(cr, dashed, len, 0);
+    cairo_set_line_width(cr, 2.0 / zoom_scale);
+    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    cairo_move_to(cr, 0.0f, ypos - compression * scale);
+    cairo_line_to(cr, darktable.develop->preview_pipe->backbuf_width, ypos - compression * scale);
+    cairo_stroke_preserve(cr);
+    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    cairo_set_dash(cr, dashed, len, 4);
+    cairo_stroke(cr);
+
+    cairo_restore(cr);
+    return;
+  }
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
   float dx = 0.0f, dy = 0.0f, sinv = 0.0f, cosv = 1.0f;
