@@ -152,50 +152,9 @@ static int dt_gradient_events_button_pressed(struct dt_iop_module_t *module, flo
   }
   else if(gui->creation)
   {
-    dt_iop_module_t *crea_module = gui->creation_module;
-    // we create the circle
-    dt_masks_point_gradient_t *gradient
-        = (dt_masks_point_gradient_t *)(malloc(sizeof(dt_masks_point_gradient_t)));
-
-    // we change the offset value
-    const float wd = darktable.develop->preview_pipe->backbuf_width;
-    const float ht = darktable.develop->preview_pipe->backbuf_height;
-    float pts[2] = { pzx * wd, pzy * ht };
-    dt_dev_distort_backtransform(darktable.develop, pts, 1);
-    gradient->anchor[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
-    gradient->anchor[1] = pts[1] / darktable.develop->preview_pipe->iheight;
-
-    const float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
-    const float steepness = 0.0f; // MIN(1.0f,dt_conf_get_float("plugins/darkroom/masks/gradient/steepness"));
-                                  // // currently not used
-    const float rotation = dt_conf_get_float("plugins/darkroom/masks/gradient/rotation");
-
-    gradient->rotation = rotation;
-    gradient->compression = MAX(0.0f, compression);
-    gradient->steepness = MAX(0.0f, steepness);
-    // not used for masks
-    form->source[0] = form->source[1] = 0.0f;
-
-
-    form->points = g_list_append(form->points, gradient);
-    dt_masks_gui_form_save_creation(darktable.develop, crea_module, form, gui);
-
-    if(crea_module)
-    {
-      // we save the move
-      dt_dev_add_history_item(darktable.develop, crea_module, TRUE);
-      // and we switch in edit mode to show all the forms
-      dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
-      dt_masks_iop_update(crea_module);
-      gui->creation_module = NULL;
-    }
-    else
-    {
-      // we select the new form
-      dt_dev_masks_selection_change(darktable.develop, form->formid, TRUE);
-    }
-
-    return 1;
+    gui->posx_source = gui->posx;
+    gui->posy_source = gui->posy;
+    gui->form_dragging = TRUE;
   }
   return 0;
 }
@@ -296,6 +255,79 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
 
     return 1;
   }
+  else if(gui->creation)
+  {
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
+
+    // get the rotation angle only if we are not too close from starting point
+    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    int closeup = dt_control_get_dev_closeup();
+    const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1 << closeup, 1);
+    const float diff = 5.0f * zoom_scale;
+    float rotation;
+    float x0, y0;
+    if(!gui->form_dragging
+       || (gui->posx_source - gui->posx > -diff && gui->posx_source - gui->posx < diff
+           && gui->posy_source - gui->posy > -diff && gui->posy_source - gui->posy < diff))
+    {
+      rotation = 0.0f;
+      x0 = pzx * wd;
+      y0 = pzy * ht;
+    }
+    else
+    {
+      rotation = 99.0f; // dummy value, we need to recompute after distort_backtransform
+      x0 = gui->posx_source;
+      y0 = gui->posy_source;
+    }
+
+    gui->form_dragging = FALSE;
+    dt_iop_module_t *crea_module = gui->creation_module;
+    // we create the circle
+    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(malloc(sizeof(dt_masks_point_gradient_t)));
+
+    // we change the offset value
+    float pts[4] = { pzx * wd, pzy * ht, x0, y0 };
+    dt_dev_distort_backtransform(darktable.develop, pts, 2);
+    gradient->anchor[0] = pts[2] / darktable.develop->preview_pipe->iwidth;
+    gradient->anchor[1] = pts[3] / darktable.develop->preview_pipe->iheight;
+
+    if(rotation > 0.0f)
+    {
+      rotation = atan2f(pts[1] - pts[3], pts[0] - pts[2]);
+    }
+
+    const float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
+    const float steepness = 0.0f; // MIN(1.0f,dt_conf_get_float("plugins/darkroom/masks/gradient/steepness"));
+                                  // // currently not used
+
+    gradient->rotation = -rotation / M_PI * 180.0f;
+    gradient->compression = MAX(0.0f, compression);
+    gradient->steepness = MAX(0.0f, steepness);
+    // not used for masks
+    form->source[0] = form->source[1] = 0.0f;
+
+    form->points = g_list_append(form->points, gradient);
+    dt_masks_gui_form_save_creation(darktable.develop, crea_module, form, gui);
+
+    if(crea_module)
+    {
+      // we save the move
+      dt_dev_add_history_item(darktable.develop, crea_module, TRUE);
+      // and we switch in edit mode to show all the forms
+      dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
+      dt_masks_iop_update(crea_module);
+      gui->creation_module = NULL;
+    }
+    else
+    {
+      // we select the new form
+      dt_dev_masks_selection_change(darktable.develop, form->formid, TRUE);
+    }
+
+    return 1;
+  }
 
   return 0;
 }
@@ -387,7 +419,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     const float distance = 0.1f * fminf(wd, ht);
     const float scale = sqrtf(wd * wd + ht * ht);
 
-    float xpos, ypos;
+    float xpos, ypos, xpos0, ypos0;
     const float zoom_x = dt_control_get_dev_zoom_x();
     const float zoom_y = dt_control_get_dev_zoom_y();
     if((gui->posx == -1.f && gui->posy == -1.f) || gui->mouse_leaved_center)
@@ -401,14 +433,34 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
       ypos = gui->posy;
     }
 
+    // get the rotation angle only if we are not too close from starting point
+    const float diff = 5.0f * zoom_scale;
+    float rotation;
+    if(!gui->form_dragging
+       || (gui->posx_source - gui->posx > -diff && gui->posx_source - gui->posx < diff
+           && gui->posy_source - gui->posy > -diff && gui->posy_source - gui->posy < diff))
+    {
+      rotation = 0.0f;
+      xpos0 = xpos;
+      ypos0 = ypos;
+    }
+    else
+    {
+      rotation = atan2f(gui->posy - gui->posy_source, gui->posx - gui->posx_source);
+      xpos0 = gui->posx_source;
+      ypos0 = gui->posy_source;
+    }
+    const float trotation = tanf(rotation);
+
     cairo_save(cr);
 
     // draw main line
     cairo_set_line_width(cr, 5.0 / zoom_scale);
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
 
-    cairo_move_to(cr, 0.0f, ypos);
-    cairo_line_to(cr, darktable.develop->preview_pipe->backbuf_width, ypos);
+    cairo_move_to(cr, 0.0f, ypos - xpos * trotation);
+    cairo_line_to(cr, darktable.develop->preview_pipe->backbuf_width,
+                  ypos + (darktable.develop->preview_pipe->backbuf_width - xpos) * trotation);
     cairo_stroke_preserve(cr);
     cairo_set_line_width(cr, 2.0 / zoom_scale);
     cairo_set_source_rgba(cr, .8, .8, .8, .8);
@@ -418,12 +470,12 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     float anchor_x, anchor_y;
     float pivot_start_x, pivot_start_y;
     float pivot_end_x, pivot_end_y;
-    anchor_x = xpos;
-    anchor_y = ypos;
-    pivot_start_x = xpos;
-    pivot_end_x = xpos;
-    pivot_start_y = ypos - distance;
-    pivot_end_y = ypos + distance;
+    anchor_x = xpos0;
+    anchor_y = ypos0;
+    pivot_start_x = xpos0 + sinf(rotation) * distance;
+    pivot_end_x = xpos0 - sinf(rotation) * distance;
+    pivot_start_y = ypos0 - cosf(rotation) * distance;
+    pivot_end_y = ypos0 + cosf(rotation) * distance;
     cairo_set_dash(cr, dashed, 0, 0);
     cairo_set_line_width(cr, 2.0 / zoom_scale);
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
@@ -471,18 +523,24 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     cairo_stroke(cr);
 
     // and the border
+    pivot_start_x = xpos0 + sinf(rotation) * compression * scale;
+    pivot_end_x = xpos0 - sinf(rotation) * compression * scale;
+    pivot_start_y = ypos0 - cosf(rotation) * compression * scale;
+    pivot_end_y = ypos0 + cosf(rotation) * compression * scale;
     cairo_set_dash(cr, dashed, len, 0);
     cairo_set_line_width(cr, 2.0 / zoom_scale);
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
-    cairo_move_to(cr, 0.0f, ypos - compression * scale);
-    cairo_line_to(cr, darktable.develop->preview_pipe->backbuf_width, ypos - compression * scale);
+    cairo_move_to(cr, 0.0f, pivot_start_y - pivot_start_x * trotation);
+    cairo_line_to(cr, darktable.develop->preview_pipe->backbuf_width,
+                  pivot_start_y + (darktable.develop->preview_pipe->backbuf_width - pivot_start_x) * trotation);
     cairo_stroke_preserve(cr);
     cairo_set_source_rgba(cr, .8, .8, .8, .8);
     cairo_set_dash(cr, dashed, len, 4);
     cairo_stroke(cr);
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
-    cairo_move_to(cr, 0.0f, ypos + compression * scale);
-    cairo_line_to(cr, darktable.develop->preview_pipe->backbuf_width, ypos + compression * scale);
+    cairo_move_to(cr, 0.0f, pivot_end_y - pivot_end_x * trotation);
+    cairo_line_to(cr, darktable.develop->preview_pipe->backbuf_width,
+                  pivot_end_y + (darktable.develop->preview_pipe->backbuf_width - pivot_end_x) * trotation);
     cairo_stroke_preserve(cr);
     cairo_set_source_rgba(cr, .8, .8, .8, .8);
     cairo_set_dash(cr, dashed, len, 4);
