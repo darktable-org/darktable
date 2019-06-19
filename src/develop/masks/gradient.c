@@ -82,6 +82,17 @@ static int dt_gradient_events_mouse_scrolled(struct dt_iop_module_t *module, flo
                                              uint32_t state, dt_masks_form_t *form, int parentid,
                                              dt_masks_form_gui_t *gui, int index)
 {
+  if(gui->creation)
+  {
+    float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
+    if(up)
+      compression = fmaxf(compression, 0.001f) * 0.8f;
+    else
+      compression = fminf(fmaxf(compression, 0.001f) * 1.0f / 0.8f, 1.0f);
+    dt_conf_set_float("plugins/darkroom/masks/gradient/compression", compression);
+    return 1;
+  }
+
   if(gui->form_selected)
   {
     // we register the current position
@@ -465,6 +476,13 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     cairo_set_source_rgba(cr, .3, .3, .3, .8);
     cairo_move_to(cr, 0.0f, ypos - compression * scale);
     cairo_line_to(cr, darktable.develop->preview_pipe->backbuf_width, ypos - compression * scale);
+    cairo_stroke_preserve(cr);
+    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    cairo_set_dash(cr, dashed, len, 4);
+    cairo_stroke(cr);
+    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    cairo_move_to(cr, 0.0f, ypos + compression * scale);
+    cairo_line_to(cr, darktable.develop->preview_pipe->backbuf_width, ypos + compression * scale);
     cairo_stroke_preserve(cr);
     cairo_set_source_rgba(cr, .8, .8, .8, .8);
     cairo_set_dash(cr, dashed, len, 4);
