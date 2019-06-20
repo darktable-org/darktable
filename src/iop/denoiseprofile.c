@@ -1305,7 +1305,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
       dt_omp_firstprivate(d, ovoid, P, roi_in, roi_out) \
       firstprivate(inited_slide) \
       shared(kj, ki, in, Sa) \
-      schedule(static)
+      schedule(dynamic)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {
@@ -1508,7 +1508,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
       dt_omp_firstprivate(ovoid, P, roi_in, roi_out) \
       firstprivate(inited_slide, d) \
       shared(kj, ki, in, Sa) \
-      schedule(static)
+      schedule(dynamic)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {
