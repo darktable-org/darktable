@@ -222,6 +222,16 @@ GSList *dt_masks_mouse_actions(dt_masks_form_t *form)
     lm = g_slist_append(lm, a);
 
     a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+    a->action = DT_MOUSE_ACTION_LEFT_DRAG;
+    g_strlcpy(a->name, _("[GRADIENT creation] set rotation"), sizeof(a->name));
+    lm = g_slist_append(lm, a);
+
+    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+    a->action = DT_MOUSE_ACTION_SCROLL;
+    g_strlcpy(a->name, _("[GRADIENT] change compression"), sizeof(a->name));
+    lm = g_slist_append(lm, a);
+
+    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
     a->key.accel_mods = GDK_CONTROL_MASK;
     a->action = DT_MOUSE_ACTION_SCROLL;
     g_strlcpy(a->name, _("[GRADIENT] change opacity"), sizeof(a->name));
@@ -1633,10 +1643,6 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, in
   dt_masks_form_gui_t *gui = dev->form_gui;
   if(!gui) return;
   if(!form) return;
-  // if it's a spot in creation, nothing to draw
-  // add preview when creating a circle or ellipse
-  if((form->type & DT_MASKS_GRADIENT) && gui->creation)
-    return;
 
   float wd = dev->preview_pipe->backbuf_width;
   float ht = dev->preview_pipe->backbuf_height;
@@ -1661,8 +1667,9 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, in
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
   // we update the form if needed
-  // add preview when creating a circle or ellipse
-  if(!(((form->type & DT_MASKS_CIRCLE) || (form->type & DT_MASKS_ELLIPSE)) && gui->creation))
+  // add preview when creating a circle, ellipse and gradient
+  if(!(((form->type & DT_MASKS_CIRCLE) || (form->type & DT_MASKS_ELLIPSE) || (form->type & DT_MASKS_GRADIENT))
+       && gui->creation))
     dt_masks_gui_form_test_create(form, gui);
 
   // draw form
