@@ -42,90 +42,87 @@ typedef struct dt_conf_dreggn_t
 /** return slot for this variable or newly allocated slot. */
 static inline char *dt_conf_get_var(const char *name)
 {
-  char *str = (char *)g_hash_table_lookup(darktable.conf->override_entries, name);
-  if(str) return str;
+  char *str;
+
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
+
+  str = (char *)g_hash_table_lookup(darktable.conf->override_entries, name);
+  if(str) goto fin;
 
   str = (char *)g_hash_table_lookup(darktable.conf->table, name);
-  if(str) return str;
+  if(str) goto fin;
 
   // not found, try defaults
   str = (char *)g_hash_table_lookup(darktable.conf->defaults, name);
   if(str)
   {
-    g_hash_table_insert(darktable.conf->table, g_strdup(name), g_strdup(str));
-    // and try again:
-    return dt_conf_get_var(name);
+    char *str_new = g_strdup(str);
+    g_hash_table_insert(darktable.conf->table, g_strdup(name), str_new);
+    str = str_new;
+    goto fin;
   }
 
+  // FIXME: why insert garbage?
   // still no luck? insert garbage:
-  char *garbage = (char *)g_malloc0(sizeof(int32_t));
-  g_hash_table_insert(darktable.conf->table, g_strdup(name), garbage);
-  return garbage;
+  str = (char *)g_malloc0(sizeof(int32_t));
+  g_hash_table_insert(darktable.conf->table, g_strdup(name), str);
+
+fin:
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
+  return str;
 }
 
-/** return if key/value is still the one passed on commandline. */
-int dt_conf_is_still_overridden(const char *name, const char *value)
+/* set the value only if it hasn't been overridden from commandline
+ * return 1 if key/value is still the one passed on commandline. */
+static int dt_conf_set_if_not_overridden(const char *name, char *str)
 {
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
+
   char *over = (char *)g_hash_table_lookup(darktable.conf->override_entries, name);
-  return (over && !strcmp(value, over));
+  const int is_overridden = (over && !strcmp(str, over));
+  if(!is_overridden)
+  {
+    g_hash_table_insert(darktable.conf->table, g_strdup(name), str);
+  }
+
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
+
+  return is_overridden;
 }
 
 void dt_conf_set_int(const char *name, int val)
 {
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
   char *str = g_strdup_printf("%d", val);
-  if(!dt_conf_is_still_overridden(name, str))
-    g_hash_table_insert(darktable.conf->table, g_strdup(name), str);
-  else
-    g_free(str);
-  dt_pthread_mutex_unlock(&darktable.conf->mutex);
+  if(dt_conf_set_if_not_overridden(name, str)) g_free(str);
 }
 
 void dt_conf_set_int64(const char *name, int64_t val)
 {
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
   char *str = g_strdup_printf("%" PRId64, val);
-  if(!dt_conf_is_still_overridden(name, str))
-    g_hash_table_insert(darktable.conf->table, g_strdup(name), str);
-  else
-    g_free(str);
-  dt_pthread_mutex_unlock(&darktable.conf->mutex);
+  if(dt_conf_set_if_not_overridden(name, str)) g_free(str);
 }
 
 void dt_conf_set_float(const char *name, float val)
 {
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
   char *str = (char *)g_malloc(G_ASCII_DTOSTR_BUF_SIZE);
   g_ascii_dtostr(str, G_ASCII_DTOSTR_BUF_SIZE, val);
-  if(!dt_conf_is_still_overridden(name, str))
-    g_hash_table_insert(darktable.conf->table, g_strdup(name), str);
-  else
-    g_free(str);
-  dt_pthread_mutex_unlock(&darktable.conf->mutex);
+  if(dt_conf_set_if_not_overridden(name, str)) g_free(str);
 }
 
 void dt_conf_set_bool(const char *name, int val)
 {
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
   char *str = g_strdup_printf("%s", val ? "TRUE" : "FALSE");
-  if(!dt_conf_is_still_overridden(name, str))
-    g_hash_table_insert(darktable.conf->table, g_strdup(name), str);
-  else
-    g_free(str);
-  dt_pthread_mutex_unlock(&darktable.conf->mutex);
+  if(dt_conf_set_if_not_overridden(name, str)) g_free(str);
 }
 
 void dt_conf_set_string(const char *name, const char *val)
 {
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
-  if(!dt_conf_is_still_overridden(name, val))
-    g_hash_table_insert(darktable.conf->table, g_strdup(name), g_strdup(val));
-  dt_pthread_mutex_unlock(&darktable.conf->mutex);
+  char *str = g_strdup(val);
+  if(dt_conf_set_if_not_overridden(name, str)) g_free(str);
 }
 
 int dt_conf_get_int(const char *name)
 {
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
   const char *str = dt_conf_get_var(name);
   float new_value = dt_calculator_solve(1, str);
   if(isnan(new_value)) new_value = 0.0;
@@ -134,13 +131,11 @@ int dt_conf_get_int(const char *name)
     val = new_value + 0.5;
   else
     val = new_value - 0.5;
-  dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return val;
 }
 
 int64_t dt_conf_get_int64(const char *name)
 {
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
   const char *str = dt_conf_get_var(name);
   float new_value = dt_calculator_solve(1, str);
   if(isnan(new_value)) new_value = 0.0;
@@ -149,34 +144,27 @@ int64_t dt_conf_get_int64(const char *name)
     val = new_value + 0.5;
   else
     val = new_value - 0.5;
-  dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return val;
 }
 
 float dt_conf_get_float(const char *name)
 {
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
   const char *str = dt_conf_get_var(name);
   float val = dt_calculator_solve(1, str);
   if(isnan(val)) val = 0.0;
-  dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return val;
 }
 
 int dt_conf_get_bool(const char *name)
 {
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
   const char *str = dt_conf_get_var(name);
   const int val = (str[0] == 'T') || (str[0] == 't');
-  dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return val;
 }
 
 gchar *dt_conf_get_string(const char *name)
 {
-  dt_pthread_mutex_lock(&darktable.conf->mutex);
   const char *str = dt_conf_get_var(name);
-  dt_pthread_mutex_unlock(&darktable.conf->mutex);
   return g_strdup(str);
 }
 
