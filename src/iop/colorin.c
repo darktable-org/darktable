@@ -23,6 +23,7 @@
 #include "common/colormatrices.c"
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/file_location.h"
 #include "common/image_cache.h"
 #include "common/opencl.h"
 #include "control/control.h"
@@ -45,6 +46,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #include <lcms2.h>
 

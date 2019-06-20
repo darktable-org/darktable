@@ -21,6 +21,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
+#include "common/file_location.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"

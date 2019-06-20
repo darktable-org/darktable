@@ -22,6 +22,7 @@
 #include "common/collection.h"
 #include "common/colorspaces.h"
 #include "common/cups_print.h"
+#include "common/file_location.h"
 #include "common/image_cache.h"
 #include "common/metadata.h"
 #include "common/pdf.h"

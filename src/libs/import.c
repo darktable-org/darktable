@@ -43,6 +43,7 @@
 #include "osx/osx.h"
 #endif
 
+#include <strings.h>
 #include <librsvg/rsvg.h>
 // ugh, ugly hack. why do people break stuff all the time?
 #ifndef RSVG_CAIRO_H
