@@ -245,7 +245,13 @@ typedef struct dt_view_manager_t
   GList *views;
   dt_view_t *current_view;
 
-  GtkWidget *accels_window;
+  struct
+  {
+    GtkWidget *window;
+    GtkWidget *sticky_btn;
+    GtkWidget *flow_box;
+    gboolean sticky;
+  } accels_window;
 
   /* reusable db statements
    * TODO: reconsider creating a common/database helper API
