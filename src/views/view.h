@@ -484,6 +484,7 @@ void dt_view_filmstrip_prefetch();
 /* accel window */
 void dt_view_accels_show(dt_view_manager_t *vm);
 void dt_view_accels_hide(dt_view_manager_t *vm);
+void dt_view_accels_refresh(dt_view_manager_t *vm);
 
 /*
  * Map View Proxy
