@@ -188,6 +188,9 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   can be zoomed.
   Different types of curves can be selected.
 
+- A new module 'rgb levels' has been added. It has linked and independent channels,
+  preserve colors option and is native RGB.
+
 - A search text has been added to the module groups in the darkroom. It has a
   config option to show only the modules groups, only the search text or both.
   Modules are searched by name (localized).
