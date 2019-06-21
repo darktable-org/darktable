@@ -453,6 +453,9 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
   /* update the scrollbars */
   dt_ui_update_scrollbars(darktable.gui->ui);
 
+  /* update sticky accels window */
+  if(vm->accels_window.window && vm->accels_window.sticky) dt_view_accels_refresh(vm);
+
   /* raise view changed signal */
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, old_view, new_view);
 
@@ -2199,6 +2202,12 @@ static gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
   return atxt;
 }
 
+static void _accels_window_destroy(GtkWidget *widget, dt_view_manager_t *vm)
+{
+  // set to NULL so we can rely on it after
+  vm->accels_window.window = NULL;
+}
+
 static void _accels_window_sticky(GtkWidget *widget, GdkEventButton *event, dt_view_manager_t *vm)
 {
   if(!vm->accels_window.window) return;
@@ -2207,13 +2216,14 @@ static void _accels_window_sticky(GtkWidget *widget, GdkEventButton *event, dt_v
   GtkWindow *win = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(win));
   gtk_style_context_add_class(context, "accels_window");
-  gtk_window_set_title(win, _("darktable accels window"));
+  gtk_window_set_title(win, _("darktable - accels window"));
   GtkAllocation alloc;
   gtk_widget_get_allocation(dt_ui_main_window(darktable.gui->ui), &alloc);
 
   gtk_window_set_resizable(win, TRUE);
-  gtk_window_set_skip_taskbar_hint(win, TRUE);
+  gtk_window_set_icon_name(win, "darktable");
   gtk_window_set_default_size(win, alloc.width * 0.7, alloc.height * 0.7);
+  g_signal_connect(win, "destroy", G_CALLBACK(_accels_window_destroy), vm);
 
   GtkWidget *sw
       = (GtkWidget *)g_list_first(gtk_container_get_children(GTK_CONTAINER(vm->accels_window.window)))->data;
@@ -2269,9 +2279,50 @@ void dt_view_accels_show(dt_view_manager_t *vm)
   gtk_box_pack_start(GTK_BOX(vb), vm->accels_window.sticky_btn, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, FALSE, 0);
 
+  dt_view_accels_refresh(vm);
+
+  GtkAllocation alloc;
+  gtk_widget_get_allocation(dt_ui_main_window(darktable.gui->ui), &alloc);
+  // gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw), alloc.height);
+  gtk_scrolled_window_set_max_content_height(GTK_SCROLLED_WINDOW(sw), alloc.height);
+  gtk_scrolled_window_set_max_content_width(GTK_SCROLLED_WINDOW(sw), alloc.width);
+  gtk_container_add(GTK_CONTAINER(sw), hb);
+  gtk_container_add(GTK_CONTAINER(vm->accels_window.window), sw);
+
+  gtk_window_set_resizable(GTK_WINDOW(vm->accels_window.window), FALSE);
+  gtk_window_set_default_size(GTK_WINDOW(vm->accels_window.window), alloc.width, alloc.height);
+  gtk_window_set_transient_for(GTK_WINDOW(vm->accels_window.window),
+                               GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+  gtk_window_set_keep_above(GTK_WINDOW(vm->accels_window.window), TRUE);
+  gtk_window_set_gravity(GTK_WINDOW(vm->accels_window.window), GDK_GRAVITY_STATIC);
+  gtk_window_set_position(GTK_WINDOW(vm->accels_window.window), GTK_WIN_POS_CENTER_ON_PARENT);
+  gtk_widget_show_all(vm->accels_window.window);
+}
+
+void dt_view_accels_hide(dt_view_manager_t *vm)
+{
+  if(vm->accels_window.window && vm->accels_window.sticky) return;
+  gtk_widget_destroy(vm->accels_window.window);
+  vm->accels_window.window = NULL;
+}
+
+void dt_view_accels_refresh(dt_view_manager_t *vm)
+{
+  if(!vm->accels_window.window) return;
+
+  // drop all existing tables
+  GList *lw = gtk_container_get_children(GTK_CONTAINER(vm->accels_window.flow_box));
+  while(lw)
+  {
+    GtkWidget *w = (GtkWidget *)lw->data;
+    gtk_widget_destroy(w);
+    lw = g_list_next(lw);
+  }
+
   // get the list of valid accel for this view
   const dt_view_t *cv = dt_view_manager_get_current_view(vm);
   const dt_view_type_flags_t v = cv->view(cv);
+  GtkStyleContext *context;
 
   typedef struct _bloc_t
   {
@@ -2401,29 +2452,7 @@ void dt_view_accels_show(dt_view_manager_t *vm)
   }
   g_list_free_full(blocs, free);
 
-  GtkAllocation alloc;
-  gtk_widget_get_allocation(dt_ui_main_window(darktable.gui->ui), &alloc);
-  // gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw), alloc.height);
-  gtk_scrolled_window_set_max_content_height(GTK_SCROLLED_WINDOW(sw), alloc.height);
-  gtk_scrolled_window_set_max_content_width(GTK_SCROLLED_WINDOW(sw), alloc.width);
-  gtk_container_add(GTK_CONTAINER(sw), hb);
-  gtk_container_add(GTK_CONTAINER(vm->accels_window.window), sw);
-
-  gtk_window_set_resizable(GTK_WINDOW(vm->accels_window.window), FALSE);
-  gtk_window_set_default_size(GTK_WINDOW(vm->accels_window.window), alloc.width, alloc.height);
-  gtk_window_set_transient_for(GTK_WINDOW(vm->accels_window.window),
-                               GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
-  gtk_window_set_keep_above(GTK_WINDOW(vm->accels_window.window), TRUE);
-  gtk_window_set_gravity(GTK_WINDOW(vm->accels_window.window), GDK_GRAVITY_STATIC);
-  gtk_window_set_position(GTK_WINDOW(vm->accels_window.window), GTK_WIN_POS_CENTER_ON_PARENT);
-  gtk_widget_show_all(vm->accels_window.window);
-}
-
-void dt_view_accels_hide(dt_view_manager_t *vm)
-{
-  if(vm->accels_window.window && vm->accels_window.sticky) return;
-  gtk_widget_destroy(vm->accels_window.window);
-  vm->accels_window.window = NULL;
+  gtk_widget_show_all(vm->accels_window.flow_box);
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
