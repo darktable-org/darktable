@@ -476,14 +476,6 @@ lerp_lookup_unbounded0(read_only image2d_t lut, const float x, global const floa
   else return x;
 }
 
-float
-lookup(read_only image2d_t lut, const float x)
-{
-  int xi = clamp((int)(x * 0x10000ul), 0, 0xffff);
-  int2 p = (int2)((xi & 0xff), (xi >> 8));
-  return read_imagef(lut, sampleri, p).x;
-}
-
 
 /* kernel for the plugin colorin: unbound processing */
 kernel void
@@ -1861,7 +1853,6 @@ levels (read_only image2d_t in, write_only image2d_t out, const int width, const
 
   write_imagef (out, (int2)(x, y), pixel);
 }
-
 
 /* kernel for the colorzones plugin */
 enum

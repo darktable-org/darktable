@@ -63,6 +63,13 @@ float lerp_lookup_unbounded(const float x, read_only image2d_t lut, global const
   else return x;
 }
 
+float lookup(read_only image2d_t lut, const float x)
+{
+  int xi = clamp((int)(x * 0x10000ul), 0, 0xffff);
+  int2 p = (int2)((xi & 0xff), (xi >> 8));
+  return read_imagef(lut, sampleri, p).x;
+}
+
 float lookup_unbounded(read_only image2d_t lut, const float x, global const float *a)
 {
   // in case the tone curve is marked as linear, return the fast
@@ -83,24 +90,24 @@ float lookup_unbounded(read_only image2d_t lut, const float x, global const floa
 float4 apply_trc_in(const float4 rgb_in, global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
 {
   float4 rgb_out;
-  
+
   rgb_out.x = lerp_lookup_unbounded(rgb_in.x, lut, profile_info->unbounded_coeffs_in[0], 0, profile_info->lutsize);
   rgb_out.y = lerp_lookup_unbounded(rgb_in.y, lut, profile_info->unbounded_coeffs_in[1], 1, profile_info->lutsize);
   rgb_out.z = lerp_lookup_unbounded(rgb_in.z, lut, profile_info->unbounded_coeffs_in[2], 2, profile_info->lutsize);
   rgb_out.w = rgb_in.w;
-  
+
   return rgb_out;
 }
 
 float4 apply_trc_out(const float4 rgb_in, global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
 {
   float4 rgb_out;
-  
+
   rgb_out.x = lerp_lookup_unbounded(rgb_in.x, lut, profile_info->unbounded_coeffs_out[0], 3, profile_info->lutsize);
   rgb_out.y = lerp_lookup_unbounded(rgb_in.y, lut, profile_info->unbounded_coeffs_out[1], 4, profile_info->lutsize);
   rgb_out.z = lerp_lookup_unbounded(rgb_in.z, lut, profile_info->unbounded_coeffs_out[2], 5, profile_info->lutsize);
   rgb_out.w = rgb_in.w;
-  
+
   return rgb_out;
 }
 
@@ -110,7 +117,7 @@ float4 linear_rgb_matrix_to_xyz(const float4 rgb, global const dt_colorspaces_ic
   RGB[0] = rgb.x;
   RGB[1] = rgb.y;
   RGB[2] = rgb.z;
-  
+
   for(int c = 0; c < 3; c++)
   {
     XYZ[c] = 0.0f;
@@ -129,7 +136,7 @@ float4 xyz_to_linear_rgb_matrix(const float4 xyz, global const dt_colorspaces_ic
   XYZ[0] = xyz.x;
   XYZ[1] = xyz.y;
   XYZ[2] = xyz.z;
-  
+
   for(int c = 0; c < 3; c++)
   {
     RGB[c] = 0.0f;
@@ -145,7 +152,7 @@ float4 xyz_to_linear_rgb_matrix(const float4 xyz, global const dt_colorspaces_ic
 float get_rgb_matrix_luminance(const float4 rgb, global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
 {
   float luminance = 0.f;
-  
+
   if(profile_info->nonlinearlut)
   {
     float4 linear_rgb;
@@ -155,7 +162,7 @@ float get_rgb_matrix_luminance(const float4 rgb, global const dt_colorspaces_icc
   }
   else
     luminance = profile_info->matrix_in[3] * rgb.x + profile_info->matrix_in[4] * rgb.y + profile_info->matrix_in[5] * rgb.z;
-  
+
   return luminance;
 }
 
