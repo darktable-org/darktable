@@ -1741,6 +1741,10 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     if(module->gui_focus) module->gui_focus(module, TRUE);
   }
 
+  /* update sticky accels window */
+  if(darktable.view_manager->accels_window.window && darktable.view_manager->accels_window.sticky)
+    dt_view_accels_refresh(darktable.view_manager);
+
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
 
