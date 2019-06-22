@@ -156,6 +156,15 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   if(!dt_dev_pixelpipe_cache_init(&(pipe->cache), entries, pipe->backbuf_size)) return 0;
   pipe->cache_obsolete = 0;
   pipe->backbuf = NULL;
+  pipe->backbuf_scale = 0.f;
+  pipe->backbuf_zoom_x = 0.f;
+  pipe->backbuf_zoom_y = 0.f;
+
+  pipe->output_backbuf = NULL;
+  pipe->output_backbuf_width = 0;
+  pipe->output_backbuf_height = 0;
+  pipe->output_imgid = 0;
+
   pipe->processing = 0;
   pipe->shutdown = 0;
   pipe->opencl_error = 0;
@@ -211,6 +220,12 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   pipe->icc_type = DT_COLORSPACE_NONE;
   g_free(pipe->icc_filename);
   pipe->icc_filename = NULL;
+
+  g_free(pipe->output_backbuf);
+  pipe->output_backbuf = NULL;
+  pipe->output_backbuf_width = 0;
+  pipe->output_backbuf_height = 0;
+  pipe->output_imgid = 0;
 
   if(pipe->forms)
   {
@@ -2533,25 +2548,10 @@ post_process_collect_info:
       //       dt_pthread_mutex_unlock(&dev->histogram_waveform_mutex);
 
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
-
-      /* raise preview pipe finished signal */
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED);
-    }
-    else if(dev->gui_attached && !dev->gui_leaving && pipe == dev->preview2_pipe
-            && (strcmp(module->op, "gamma") == 0))
-    {
-      dt_pthread_mutex_unlock(&pipe->busy_mutex);
-
-      /* raise preview2 pipe finished signal */
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED);
     }
     else
     {
       dt_pthread_mutex_unlock(&pipe->busy_mutex);
-
-      /* if gui attached, lets raise pipe finish signal */
-      if(dev->gui_attached && !dev->gui_leaving && strcmp(module->op, "gamma") == 0)
-        dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED);
     }
   }
 
@@ -2769,6 +2769,23 @@ restart:
   pipe->backbuf = buf;
   pipe->backbuf_width = width;
   pipe->backbuf_height = height;
+
+  if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW ||
+    pipe->type == DT_DEV_PIXELPIPE_FULL ||
+    pipe->type == DT_DEV_PIXELPIPE_PREVIEW2)
+  {
+    if(pipe->output_backbuf == NULL || pipe->output_backbuf_width != pipe->backbuf_width || pipe->output_backbuf_height != pipe->backbuf_height)
+    {
+      g_free(pipe->output_backbuf);
+      pipe->output_backbuf_width = pipe->backbuf_width;
+      pipe->output_backbuf_height = pipe->backbuf_height;
+      pipe->output_backbuf = g_malloc0((size_t)pipe->output_backbuf_width * pipe->output_backbuf_height * 4 * sizeof(uint8_t));
+    }
+
+    if(pipe->output_backbuf)
+      memcpy(pipe->output_backbuf, pipe->backbuf, (size_t)pipe->output_backbuf_width * pipe->output_backbuf_height * 4 * sizeof(uint8_t));
+    pipe->output_imgid = pipe->image.id;
+  }
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
 
   // printf("pixelpipe homebrew process end\n");
