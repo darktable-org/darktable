@@ -87,6 +87,11 @@ void dt_control_queue_redraw_center();
 */
 void dt_control_queue_redraw_widget(GtkWidget *widget);
 
+/** \brief request redraw of the navigation widget.
+    This redraws the wiget of the navigation module.
+ */
+void dt_control_navigation_redraw();
+
 void dt_ctl_switch_mode();
 void dt_ctl_switch_mode_to(const char *mode);
 void dt_ctl_switch_mode_to_by_view(const dt_view_t *view);

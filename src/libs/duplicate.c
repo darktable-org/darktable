@@ -157,7 +157,7 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButto
       if(!dev) return;
 
       dt_dev_invalidate(dev);
-      dt_control_queue_redraw();
+      dt_control_queue_redraw_center();
 
       dt_dev_invalidate(darktable.develop);
 
@@ -294,14 +294,14 @@ static gboolean _lib_duplicate_thumb_draw_callback (GtkWidget *widget, cairo_t *
 
   int lk = 0;
   // if this is the actual thumb, we want to use the preview pipe
-  if(imgid == dev->image_storage.id)
+  if(imgid == dev->preview_pipe->output_imgid)
   {
     // we recreate the surface if needed
-    if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
+    if(dev->preview_pipe->output_backbuf)
     {
       /* re-allocate in case of changed image dimensions */
-      if(d->rgbbuf == NULL || dev->preview_pipe->backbuf_width != d->buf_width
-         || dev->preview_pipe->backbuf_height != d->buf_height)
+      if(d->rgbbuf == NULL || dev->preview_pipe->output_backbuf_width != d->buf_width
+         || dev->preview_pipe->output_backbuf_height != d->buf_height)
       {
         if(d->surface)
         {
@@ -309,8 +309,8 @@ static gboolean _lib_duplicate_thumb_draw_callback (GtkWidget *widget, cairo_t *
           d->surface = NULL;
         }
         g_free(d->rgbbuf);
-        d->buf_width = dev->preview_pipe->backbuf_width;
-        d->buf_height = dev->preview_pipe->backbuf_height;
+        d->buf_width = dev->preview_pipe->output_backbuf_width;
+        d->buf_height = dev->preview_pipe->output_backbuf_height;
         d->rgbbuf = g_malloc0((size_t)d->buf_width * d->buf_height * 4 * sizeof(unsigned char));
       }
 
@@ -325,7 +325,7 @@ static gboolean _lib_duplicate_thumb_draw_callback (GtkWidget *widget, cairo_t *
 
         dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
         dt_pthread_mutex_lock(mutex);
-        memcpy(d->rgbbuf, dev->preview_pipe->backbuf,
+        memcpy(d->rgbbuf, dev->preview_pipe->output_backbuf,
                (size_t)d->buf_width * d->buf_height * 4 * sizeof(unsigned char));
         d->buf_timestamp = dev->preview_pipe->input_timestamp;
         dt_pthread_mutex_unlock(mutex);

@@ -517,6 +517,11 @@ void dt_control_queue_redraw_center()
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_CENTER);
 }
 
+void dt_control_navigation_redraw()
+{
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_NAVIGATION_REDRAW);
+}
+
 static gboolean _gtk_widget_queue_draw(gpointer user_data)
 {
   gtk_widget_queue_draw(GTK_WIDGET(user_data));
