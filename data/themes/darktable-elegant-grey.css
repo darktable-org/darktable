@@ -71,11 +71,10 @@
 @define-color button_hover_bg @grey_65;
 
 /* text fields */
-@define-color field_bg @grey_25;
+@define-color field_bg @grey_30;
 @define-color field_fg @grey_85;
-@define-color field_active_bg @grey_40;
+@define-color field_active_bg @grey_50;
 @define-color field_active_fg @grey_90;
-@define-color field_hover_bg @grey_40;
 
 /* Tooltips and contextual helpers */
 @define-color tooltip_bg_color @grey_15;
