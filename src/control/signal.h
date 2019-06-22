@@ -181,6 +181,11 @@ typedef enum dt_signal_t
    * */
   DT_SIGNAL_CAMERA_DETECTED,
 
+  /** \brief This signal is raised when dt_control_navigation_redraw() is called.
+    no param, no returned value
+  */
+  DT_SIGNAL_CONTROL_NAVIGATION_REDRAW,
+
   /* do not touch !*/
   DT_SIGNAL_COUNT
 } dt_signal_t;
