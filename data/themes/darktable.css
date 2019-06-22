@@ -1151,3 +1151,9 @@ cell:selected
    font-family: courier;
    font-weight: bold;
 }
+
+.accels_window_stick
+{
+  min-width: 2em;
+  min-height : 2em;
+}
