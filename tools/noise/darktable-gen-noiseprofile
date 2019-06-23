@@ -119,7 +119,7 @@ fi
 profile_image() {
 	local image preset files_list maker model iso xmp		\
 	 noiseprofile pfm_noisy pfm_smooth dat title fit pdf			\
-	 flat_dat curves_dat flat_pdf a0 a1 a2 p0 p1 p2 b0 b1 b2
+	 flat_dat curves_dat flat_pdf a0 a1 a2 p0 p1 p2 b0 b1 b2 e0 e1 e2
 
 	tool_installed darktable-cli
 	tool_installed gnuplot
@@ -187,31 +187,20 @@ profile_image() {
 	min(x,y) = (x < y) ? x : y
 	max(x,y) = (x > y) ? x : y
 	C(x) = 1/pi*(atan(x)+pi/2)
-	f1(x) = a1*(x**(2*(1-e1)))*((x**e1+C(b1))**p1)
-	f2(x) = a2*(x**(2*(1-e2)))*((x**e2+C(b2))**p2)
-	f3(x) = a3*(x**(2*(1-e3)))*((x**e3+C(b3))**p3)
-	a1=0.01;p1=1;b1=-318;e1=1;
-	a2=0.01;p2=1;b2=-318;e2=1;
-	a3=0.01;p3=1;b3=-318;e3=1;
-	FIT_LIMIT = 1e-7
-	set xrange [0.0001:0.35]
-	fit f1(x) "$dat" u 1:(\$2):(log(\$5+0.00001)) via a1,p1,e1
-	set xrange [0.0001:0.05]
-	fit f1(x) "$dat" u 1:(\$2):(\$5) via b1
-	set xrange [0.0001:0.35]
-	fit f1(x) "$dat" u 1:(\$2):(log(\$5+0.00001)) via a1,p1,e1,b1
-	set xrange [0.0001:0.8]
-	fit f2(x) "$dat" u 1:(\$3):(log(\$6+0.00001)) via a2,p2,e2
-	set xrange [0.0001:0.05]
-	fit f2(x) "$dat" u 1:(\$3):(\$6) via b2
-	set xrange [0.0001:0.6]
-	fit f2(x) "$dat" u 1:(\$3):(log(\$6+0.00001)) via a2,p2,e2,b2
-	set xrange [0.0001:0.35]
-	fit f3(x) "$dat" u 1:(\$4):(log(\$7+0.00001)) via a3,p3,e3
-	set xrange [0.0001:0.05]
-	fit f3(x) "$dat" u 1:(\$4):(\$7) via b3
-	set xrange [0.0001:0.35]
-	fit f3(x) "$dat" u 1:(\$4):(log(\$7+0.00001)) via a3,p3,e3,b3
+	f1(x) = 1/(x+0.0005) * a1*((x+C(f1))**(2*(1-d1)))*(((x+C(f1))**d1+C(b1))**c1)
+	f2(x) = 1/(x+0.0005) * a2*((x+C(f2))**(2*(1-d2)))*(((x+C(f2))**d2+C(b2))**c2)
+	f3(x) = 1/(x+0.0005) * a3*((x+C(f3))**(2*(1-d3)))*(((x+C(f3))**d3+C(b3))**c3)
+	a1=0.01;c1=1;b1=-318;d1=1;f1=-318;
+	a2=0.01;c2=1;b2=-318;d2=1;f2=-318;
+	a3=0.01;c3=1;b3=-318;d3=1;f3=-318;
+	FIT_LIMIT = 1e-5
+	set xrange [0.0:0.3]
+	fit f1(x) "$dat" u 1:(\$2):(\$5) via a1,b1,d1,c1,f1
+	set xrange [0.0:0.6]
+	fit f2(x) "$dat" u 1:(\$3):(\$6) via a2,b2,d2,c2,f2
+	set xrange [0.0:0.3]
+	fit f3(x) "$dat" u 1:(\$4):(\$7) via a3,b3,d3,c3,f3
+
 
 	set xrange [0:1]
 	set title "Noise levels - $title"
@@ -224,7 +213,7 @@ profile_image() {
 	  '' u 1:((f2(\$1))) w l lw 2 lt 2 title "green (fit)",	\
 	  '' u 1:((f3(\$1))) w l lw 2 lt 3 title "blue (fit)"
 
-	print a1, a2, a3, p1, p2, p3, C(b1), C(b2), C(b3), e1, e2, e3
+	print a1, a2, a3, c1, c2, c3, C(b1), C(b2), C(b3), d1, d2, d3, C(f1), C(f2), C(f3)
 EOF
 
 	# Fitted parametric curves:
@@ -260,69 +249,11 @@ EOF
 	b0=$(cat $fit | cut -f7 -d' ')
 	b1=$(cat $fit | cut -f8 -d' ')
 	b2=$(cat $fit | cut -f9 -d' ')
+	e0=$(cat $fit | cut -f10 -d' ')
+	e1=$(cat $fit | cut -f11 -d' ')
+	e2=$(cat $fit | cut -f12 -d' ')
 
-	case "$a1" in
-	-*)
-		cat <<EOF
-
-${color_error}ERROR: Incorrect green channel.
-
-Possible reason:
-    o  The input RAW image is bad regarding lighting or exposure.
-    o  You may have set a default output profile in darktable which is
-       unsuitable for noise profiling.
-
-If the latter reason applies to you, change it back to "image settings"
-and re-run this script.${color_reset}
-EOF
-		rm -f $dat $flat_dat $curves_dat $fit "$pfm_noisy_1" "$pfm_noisy_2"
-		return 1
-		;;
-	esac
-
-	case "$a0" in
-	-*)
-		cat <<EOF
-
-${color_warning}WARNING: Incorrect red channel.
-
-Possible reason:
-    o  The input RAW image is bad regarding lighting or exposure.
-    o  You may have set a default output profile in darktable which is
-       unsuitable for noise profiling.
-
-If the latter reason applies to you, change it back to "image settings"
-and re-run this script.
-
-Meanwhile, this channel will be ignored.${color_reset}
-EOF
-		a0="0.0"
-		p0="0.0"
-		;;
-	esac
-
-	case "$a2" in
-	-*)
-		cat <<EOF
-
-${color_warning}WARNING: Incorrect blue channel.
-
-Possible reason:
-    o  The input RAW image is bad regarding lighting or exposure.
-    o  You may have set a default output profile in darktable which is
-       unsuitable for noise profiling.
-
-If the latter reason applies to you, change it back to "image settings"
-and re-run this script.
-
-Meanwhile, this channel will be ignored.${color_reset}
-EOF
-		a2="0.0"
-		p2="0.0"
-		;;
-	esac
-
-	printf "$maker\t$model\t$model iso $iso\t$iso\t$a0, $a1, $a2\t$p0, $p1, $p2\t$c0, $b1, $b2\n" >> "$presets"
+	printf "$maker\t$model\t$model iso $iso\t$iso\t$a0, $a1, $a2\t$p0, $p1, $p2\t$b0, $b1, $b2\t$e0, $e1, $e2\n" >> "$presets"
 
 	# Clean unused files.
 	rm -f $dat $flat_dat $curves_dat $fit
@@ -371,7 +302,7 @@ EOF
           	"profiles": [
 EOF
       n_profiles=$(awk -F "\t" "{ if(\$1 == \"$maker\" && \$2 == \"$model\"){ print \$1; } }" "$txt" | wc -l)
-      awk -F "\t" "{ if(\$1 == \"$maker\" && \$2 == \"$model\"){ printf(\"\\\"name\\\": \\\"%s\\\", \\\"iso\\\": %s, \\\"a\\\": [%s], \\\"b\\\": [%s]\n\", \$3, \$4, \$5, \$6); } }" "$txt" | sort -V | while read profile
+      awk -F "\t" "{ if(\$1 == \"$maker\" && \$2 == \"$model\"){ printf(\"\\\"name\\\": \\\"%s\\\", \\\"iso\\\": %s, \\\"a\\\": [%s], \\\"p\\\": [%s], \\\"b\\\": [%s], \\\"e\\\": [%s]\n\", \$3, \$4, \$5, \$6, \$7, \$8); } }" "$txt" | sort -V | while read profile
       do
         n_profiles=$((n_profiles-1))
         end=","
@@ -454,10 +385,10 @@ for iso in $iso_settings; do
 		# file and a copy of the Exif metadata.
 		jpeg_export="${image%.*}-large.jpg"
 		jpeg_thumb="${image%.*}-thumb.jpg"
-		if [ ! -f "$jpeg_export" -o "$image" -nt "$jpeg_export" -o "$0" -nt "$jpeg_export" ]; then
-			export_large_jpeg "$image" "$jpeg_export"
-			export_thumbnail "$jpeg_export" "$jpeg_thumb"
-		fi
+		# if [ ! -f "$jpeg_export" -o "$image" -nt "$jpeg_export" -o "$0" -nt "$jpeg_export" ]; then
+		# 	export_large_jpeg "$image" "$jpeg_export"
+		# 	export_thumbnail "$jpeg_export" "$jpeg_thumb"
+		# fi
 		echo "$(basename "$jpeg_thumb")" >> $files_list
 
 		if [ "$skip_correctness_check" != "1" ]; then

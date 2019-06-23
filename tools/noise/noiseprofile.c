@@ -87,6 +87,28 @@ void mean_filter(const int radius, const float* in, float* out, const int width,
   }
 }
 
+float median(float array[3])
+{
+  float min = array[0];
+  int min_index = 0;
+  if(array[1] < min)
+  {
+    min = array[1];
+    min_index = 1;
+  }
+  if(array[2] < min)
+  {
+    min = array[2];
+    min_index = 2;
+  }
+  int index1 = (min_index + 1) % 3;
+  int index2 = (min_index + 2) % 3;
+  if(array[index1] < array[index2])
+    return array[index1];
+  else
+    return array[index2];
+}
+
 #define MIN(a,b) ((a>b)?b:a)
 #define MAX(a,b) ((a>b)?a:b)
 
@@ -96,7 +118,7 @@ clamp(float f, float m, float M)
   return MAX(MIN(f, M), m);
 }
 
-#define NB_BITS_PRECISION 250
+#define NB_CLASSES 2000
 int main(int argc, char *arg[])
 {
   if(argc < 3)
@@ -112,9 +134,9 @@ int main(int argc, char *arg[])
   const float radius = 75;
   mean_filter(radius, input, inputblurred, wd, ht);
   mean_filter(radius, input2, input2blurred, wd, ht);
-  double var[3][NB_BITS_PRECISION];
-  unsigned nb_elts[3][NB_BITS_PRECISION];
-  for(int level = 0; level < NB_BITS_PRECISION; level++)
+  double var[3][NB_CLASSES];
+  unsigned nb_elts[3][NB_CLASSES];
+  for(int level = 0; level < NB_CLASSES; level++)
   {
     for(int c = 0; c < 3; c++)
     {
@@ -133,14 +155,14 @@ int main(int argc, char *arg[])
           int index = (i * wd + j) * 3 + c;
           float pixel_diff = input[index] - inputblurred[index];
           float pixel_diff2 = input2[index] - input2blurred[index];
-          unsigned level = (unsigned)(inputblurred[index] * NB_BITS_PRECISION);
-          unsigned level2 = (unsigned)(input2blurred[index] * NB_BITS_PRECISION);
-          if(level < NB_BITS_PRECISION)
+          unsigned level = (unsigned)(inputblurred[index] * NB_CLASSES);
+          unsigned level2 = (unsigned)(input2blurred[index] * NB_CLASSES);
+          if(level < NB_CLASSES)
           {
             var[c][level] += pixel_diff * pixel_diff;
             nb_elts[c][level]++;
           }
-          if(level2 < NB_BITS_PRECISION)
+          if(level2 < NB_CLASSES)
           {
             var[c][level2] += pixel_diff2 * pixel_diff2;
             nb_elts[c][level2]++;
@@ -148,15 +170,33 @@ int main(int argc, char *arg[])
         }
       }
     }
-    for(int level = 0; level < NB_BITS_PRECISION; level++)
+    for(int level = 0; level < NB_CLASSES; level++)
     {
       for(int c = 0; c < 3; c++)
       {
         if(nb_elts[c][level] > 0) var[c][level] /= nb_elts[c][level];
       }
-      if(nb_elts[0][level] > 0 && nb_elts[1][level] > 0 && nb_elts[2][level] > 0)
-        fprintf(stdout, "%f %f %f %f %d %d %d\n", level / (float)NB_BITS_PRECISION/* / (float)NB_BITS_PRECISION*/, var[0][level], var[1][level],
-              var[2][level], nb_elts[0][level], nb_elts[1][level], nb_elts[2][level]);
+    }
+    float array_for_median[3][3] = {{0.0}};
+    for(int c = 0; c < 3; c++)
+    {
+      array_for_median[c][0] = var[c][0];
+    }
+    for(int level = 0; level < NB_CLASSES-1; level++)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        array_for_median[c][(level+1)%3] = var[c][level+1];
+        var[c][level] = median(array_for_median[c]);
+      }
+
+      if(nb_elts[0][level] > 100 && nb_elts[1][level] > 100 && nb_elts[2][level] > 100 && level > 0)
+      {
+        float level_normalized = level / (float)NB_CLASSES ;
+        float level2 = level_normalized + 0.001;
+        fprintf(stdout, "%f %f %f %f %d %d %d\n", level_normalized, var[0][level] / level2, var[1][level] / level2,
+              var[2][level] / level2, nb_elts[0][level], nb_elts[1][level], nb_elts[2][level]);
+      }
     }
   }
   if(argc >= 10 && !strcmp(arg[3], "-c"))
@@ -164,7 +204,8 @@ int main(int argc, char *arg[])
     const float a[3] = { atof(arg[4]), atof(arg[5]), atof(arg[6]) },
                 p[3] = { atof(arg[7]), atof(arg[8]), atof(arg[9]) },
                 b[3] = { atof(arg[10]), atof(arg[11]), atof(arg[12])},
-                e[3] = { atof(arg[13]), atof(arg[14]), atof(arg[15]) };
+                e[3] = { atof(arg[13]), atof(arg[14]), atof(arg[15])},
+                f[3] = { atof(arg[16]), atof(arg[17]), atof(arg[18]) };
 
     // perform anscombe transform
     for(int i = radius; i < ht-radius; i++)
@@ -174,22 +215,31 @@ int main(int argc, char *arg[])
         for(int c = 0; c < 3; c++)
         {
           int index = (i * wd + j) * 3 + c;
-          input[index] = 2 * powf(powf(input[index],e[c])+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]) * e[c]);
-          // float d = fmaxf(0.0f, input[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
-          // input[index] = 2.0f * sqrtf(d);
-          input2[index] = 2 * powf(powf(input2[index],e[c])+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]) * e[c]);
-          // d = fmaxf(0.0f, input2[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
-          // input2[index] = 2.0f * sqrtf(d);
 
+// input[index] /= a[c];
+// float d = fmaxf(0.0f, input[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
+// input[index] = 2.0f * sqrtf(d);
+// input2[index] /= a[c];
+// d = fmaxf(0.0f, input2[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
+// input2[index] = 2.0f * sqrtf(d);
+//
+//
+// unsigned level = (unsigned)(inputblurred[index] * NB_CLASSES);
+// unsigned level2 = (unsigned)(input2blurred[index] * NB_CLASSES);
+// inputblurred[index] /= a[c];
+// input2blurred[index] /= a[c];
+// d = fmaxf(0.0f, inputblurred[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
+// inputblurred[index] = 2.0f * sqrtf(d);
+// d = fmaxf(0.0f, input2blurred[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
+// input2blurred[index] = 2.0f * sqrtf(d);
 
-          unsigned level = (unsigned)(inputblurred[index] * NB_BITS_PRECISION);
-          unsigned level2 = (unsigned)(input2blurred[index] * NB_BITS_PRECISION);
-          inputblurred[index] = 2 * powf(powf(inputblurred[index],e[c])+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]) * e[c]);
-          input2blurred[index] = 2 * powf(powf(input2blurred[index],e[c])+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]) * e[c]);
-          // d = fmaxf(0.0f, inputblurred[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
-          // inputblurred[index] = 2.0f * sqrtf(d);
-          // d = fmaxf(0.0f, input2blurred[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
-          // input2blurred[index] = 2.0f * sqrtf(d);
+          input[index] = 2 * powf(powf(input[index]+f[c],e[c])+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]) * e[c]);
+          input2[index] = 2 * powf(powf(input2[index]+f[c],e[c])+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]) * e[c]);
+
+          unsigned level = (unsigned)(inputblurred[index] * NB_CLASSES);
+          unsigned level2 = (unsigned)(input2blurred[index] * NB_CLASSES);
+          inputblurred[index] = 2 * powf(powf(inputblurred[index]+f[c],e[c])+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]) * e[c]);
+          input2blurred[index] = 2 * powf(powf(input2blurred[index]+f[c],e[c])+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]) * e[c]);
 
           float pixel_diff = input[index] - inputblurred[index];
           var[c][level] += pixel_diff * pixel_diff;
@@ -200,7 +250,7 @@ int main(int argc, char *arg[])
         }
       }
     }
-    for(int level = 0; level < NB_BITS_PRECISION; level++)
+    for(int level = 0; level < NB_CLASSES; level++)
     {
       for(int c = 0; c < 3; c++)
       {
@@ -209,8 +259,21 @@ int main(int argc, char *arg[])
           var[c][level] /= nb_elts[c][level];
         }
       }
-      if(nb_elts[0][level] > 0 && nb_elts[1][level] > 0 && nb_elts[2][level] > 0)
-        fprintf(stdout, "%f %f %f %f %d %d %d\n", level / (float)NB_BITS_PRECISION, var[0][level], var[1][level],
+    }
+    float array_for_median[3][3] = {{0.0}};
+    for(int c = 0; c < 3; c++)
+    {
+      array_for_median[c][0] = var[c][0];
+    }
+    for(int level = 0; level < NB_CLASSES-1; level++)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        array_for_median[c][(level+1)%3] = var[c][level+1];
+        var[c][level] = median(array_for_median[c]);
+      }
+      if(nb_elts[0][level] > 100 && nb_elts[1][level] > 100 && nb_elts[2][level] > 100)
+        fprintf(stdout, "%f %f %f %f %d %d %d\n", level / (float)NB_CLASSES, var[0][level], var[1][level],
               var[2][level], nb_elts[0][level], nb_elts[1][level], nb_elts[2][level]);
     }
   }
