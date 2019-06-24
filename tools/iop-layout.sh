@@ -53,6 +53,7 @@ group_tone=(
     'relight'
     'globaltonemap'
     'levels'
+    'rgblevels'
     'bilat'
     'shadhi'
     'tonecurve'
