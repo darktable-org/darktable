@@ -46,6 +46,7 @@ group_tone=(
     'rgbcurve'
     'tonemapping'
     'levels'
+    'rgblevels'
     'relight'
     'bilat'
     'globaltonemap'
