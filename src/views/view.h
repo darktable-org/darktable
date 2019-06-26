@@ -251,6 +251,7 @@ typedef struct dt_view_manager_t
     GtkWidget *sticky_btn;
     GtkWidget *flow_box;
     gboolean sticky;
+    gboolean prevent_refresh;
   } accels_window;
 
   /* reusable db statements
