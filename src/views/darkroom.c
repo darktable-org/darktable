@@ -2507,6 +2507,18 @@ void leave(dt_view_t *self)
   // commit image ops to db
   dt_dev_write_history(dev);
 
+  // update aspect ratio
+  if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
+  {
+    double aspect_ratio = (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
+    printf("aspect_ratio updated to %f\n", aspect_ratio);
+    dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio);
+  }
+  else
+  {
+    dt_image_set_aspect_ratio(dev->image_storage.id);
+  }
+  
   // be sure light table will regenerate the thumbnail:
   // TODO: only if changed!
   // if()
@@ -2516,9 +2528,6 @@ void leave(dt_view_t *self)
     // dump new xmp data
     dt_image_synch_xmp(dev->image_storage.id);
   }
-
-  // update possibly changed aspect ratio
-  dt_image_set_aspect_ratio(dev->image_storage.id);
 
   // clear gui.
 
