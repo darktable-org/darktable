@@ -186,21 +186,21 @@ profile_image() {
 
 	min(x,y) = (x < y) ? x : y
 	max(x,y) = (x > y) ? x : y
-	C(x) = 1/pi*(atan(x)+pi/2)
-	f1(x) = 1/(x+0.0005) * a1*((x+C(f1))**(2*(1-d1)))*(((x+C(f1))**d1+C(b1))**c1)
-	f2(x) = 1/(x+0.0005) * a2*((x+C(f2))**(2*(1-d2)))*(((x+C(f2))**d2+C(b2))**c2)
-	f3(x) = 1/(x+0.0005) * a3*((x+C(f3))**(2*(1-d3)))*(((x+C(f3))**d3+C(b3))**c3)
-	a1=0.01;c1=1;b1=-318;d1=1;f1=-318;
-	a2=0.01;c2=1;b2=-318;d2=1;f2=-318;
-	a3=0.01;c3=1;b3=-318;d3=1;f3=-318;
+	D(x) = 3.75/pi*(atan(x)+pi/2)-2
+	E(x) = 1/pi*(atan(x)+pi/2)
+	f1(x) = 1/(x+a1/2+0.0002) * a1*(x**(2*(1-E(d1))))*((x**E(d1)+E(b1))**D(c1))
+	f2(x) = 1/(x+a2/2+0.0002) * a2*(x**(2*(1-E(d2))))*((x**E(d2)+E(b2))**D(c2))
+	f3(x) = 1/(x+a3/2+0.0002) * a3*(x**(2*(1-E(d3))))*((x**E(d3)+E(b3))**D(c3))
+	a1=0.01;c1=3.1;b1=-318;d1=100000000;
+	a2=0.01;c2=3.1;b2=-318;d2=100000000;
+	a3=0.01;c3=3.1;b3=-318;d3=100000000;
 	FIT_LIMIT = 1e-5
-	set xrange [0.0:0.3]
-	fit f1(x) "$dat" u 1:(\$2):(\$5) via a1,b1,d1,c1,f1
-	set xrange [0.0:0.6]
-	fit f2(x) "$dat" u 1:(\$3):(\$6) via a2,b2,d2,c2,f2
-	set xrange [0.0:0.3]
-	fit f3(x) "$dat" u 1:(\$4):(\$7) via a3,b3,d3,c3,f3
-
+	set xrange [0.0001:0.3]
+	fit f1(x) "$dat" u 1:(\$2):(\$5) via a1,b1,d1,c1
+	set xrange [0.0001:0.6]
+	fit f2(x) "$dat" u 1:(\$3):(\$6) via a2,b2,d2,c2
+	set xrange [0.0001:0.3]
+	fit f3(x) "$dat" u 1:(\$4):(\$7) via a3,b3,d3,c3
 
 	set xrange [0:1]
 	set title "Noise levels - $title"
@@ -213,7 +213,7 @@ profile_image() {
 	  '' u 1:((f2(\$1))) w l lw 2 lt 2 title "green (fit)",	\
 	  '' u 1:((f3(\$1))) w l lw 2 lt 3 title "blue (fit)"
 
-	print a1, a2, a3, c1, c2, c3, C(b1), C(b2), C(b3), d1, d2, d3, C(f1), C(f2), C(f3)
+	print a1, a2, a3, D(c1), D(c2), D(c3), E(b1), E(b2), E(b3), E(d1), E(d2), E(d3)
 EOF
 
 	# Fitted parametric curves:

@@ -17,7 +17,7 @@ read_pfm(const char *filename, int *wd, int*ht)
   fscanf(f, "PF\n%d %d\n%*[^\n]", wd, ht);
   fgetc(f); // eat only one newline
 
-  float *p = (float *)malloc(sizeof(float)*3*(*wd)*(*ht));
+  float *p = (float *)calloc(sizeof(float),3*(*wd)*(*ht));
   fread(p, sizeof(float)*3, (*wd)*(*ht), f);
   for(int k=0;k<3*(*wd)*(*ht);k++) p[k] = fmaxf(0.0f, p[k]);
   fclose(f);
@@ -44,7 +44,7 @@ void mean_filter(const int radius, const float* in, float* out, const int width,
   // vertical pass
   for(int j = 0; j < width; j++)
   {
-    float sliding_mean[3] = { 0.0f, 0.0f, 0.0f };
+    double sliding_mean[3] = { 0.0f, 0.0f, 0.0f };
     for(int c = 0; c < 3; c++)
     {
       sliding_mean[c] += h_mean[j*3+c];
@@ -82,6 +82,7 @@ void mean_filter(const int radius, const float* in, float* out, const int width,
         out[(i*width+j)*3+c] = sliding_mean[c] / (2*radius+1);
         sliding_mean[c] += h_mean[to_be_added_pixel_index+c];
         sliding_mean[c] -= h_mean[to_be_removed_pixel_index+c];
+        if(sliding_mean[c] < 0.0f) sliding_mean[c] = 0.0f;
       }
     }
   }
@@ -126,10 +127,12 @@ int main(int argc, char *arg[])
     fprintf(stderr, "usage: %s input_noisy.pfm input_smooth.pfm\n", arg[0]);
     exit(1);
   }
-  int wd, ht;
+  int wd, ht, wd2, ht2;
   float *input = read_pfm(arg[1], &wd, &ht);
   float *inputblurred = calloc(wd*ht*3, sizeof(float));
-  float *input2 = read_pfm(arg[2], &wd, &ht);
+  float *input2 = read_pfm(arg[2], &wd2, &ht2);
+  assert(wd == wd2);
+  assert(ht == ht2);
   float *input2blurred = calloc(wd*ht*3, sizeof(float));
   const float radius = 75;
   mean_filter(radius, input, inputblurred, wd, ht);
@@ -193,7 +196,7 @@ int main(int argc, char *arg[])
       if(nb_elts[0][level] > 100 && nb_elts[1][level] > 100 && nb_elts[2][level] > 100 && level > 0)
       {
         float level_normalized = level / (float)NB_CLASSES ;
-        float level2 = level_normalized + 0.001;
+        float level2 = level_normalized + 0.0001;
         fprintf(stdout, "%f %f %f %f %d %d %d\n", level_normalized, var[0][level] / level2, var[1][level] / level2,
               var[2][level] / level2, nb_elts[0][level], nb_elts[1][level], nb_elts[2][level]);
       }
@@ -204,8 +207,7 @@ int main(int argc, char *arg[])
     const float a[3] = { atof(arg[4]), atof(arg[5]), atof(arg[6]) },
                 p[3] = { atof(arg[7]), atof(arg[8]), atof(arg[9]) },
                 b[3] = { atof(arg[10]), atof(arg[11]), atof(arg[12])},
-                e[3] = { atof(arg[13]), atof(arg[14]), atof(arg[15])},
-                f[3] = { atof(arg[16]), atof(arg[17]), atof(arg[18]) };
+                e[3] = { atof(arg[13]), atof(arg[14]), atof(arg[15])};
 
     // perform anscombe transform
     for(int i = radius; i < ht-radius; i++)
@@ -233,13 +235,13 @@ int main(int argc, char *arg[])
 // d = fmaxf(0.0f, input2blurred[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
 // input2blurred[index] = 2.0f * sqrtf(d);
 
-          input[index] = 2 * powf(powf(input[index]+f[c],e[c])+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]) * e[c]);
-          input2[index] = 2 * powf(powf(input2[index]+f[c],e[c])+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]) * e[c]);
+          input[index] = 2 * powf(powf(input[index],e[c])+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]) * e[c]);
+          input2[index] = 2 * powf(powf(input2[index],e[c])+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]) * e[c]);
 
           unsigned level = (unsigned)(inputblurred[index] * NB_CLASSES);
           unsigned level2 = (unsigned)(input2blurred[index] * NB_CLASSES);
-          inputblurred[index] = 2 * powf(powf(inputblurred[index]+f[c],e[c])+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]) * e[c]);
-          input2blurred[index] = 2 * powf(powf(input2blurred[index]+f[c],e[c])+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]) * e[c]);
+          inputblurred[index] = 2 * powf(powf(inputblurred[index],e[c])+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]) * e[c]);
+          input2blurred[index] = 2 * powf(powf(input2blurred[index],e[c])+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]) * e[c]);
 
           float pixel_diff = input[index] - inputblurred[index];
           var[c][level] += pixel_diff * pixel_diff;
@@ -270,7 +272,7 @@ int main(int argc, char *arg[])
       for(int c = 0; c < 3; c++)
       {
         array_for_median[c][(level+1)%3] = var[c][level+1];
-        var[c][level] = median(array_for_median[c]);
+        //var[c][level] = median(array_for_median[c]);
       }
       if(nb_elts[0][level] > 100 && nb_elts[1][level] > 100 && nb_elts[2][level] > 100)
         fprintf(stdout, "%f %f %f %f %d %d %d\n", level / (float)NB_CLASSES, var[0][level], var[1][level],
