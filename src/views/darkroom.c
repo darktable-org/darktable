@@ -584,6 +584,17 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // stop crazy users from sleeping on key-repeat spacebar:
   if(dev->image_loading) return;
 
+  // update aspect ratio
+  if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
+  {
+    double aspect_ratio = (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
+    dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio);
+  }
+  else
+  {
+    dt_image_set_aspect_ratio(dev->image_storage.id);
+  }
+
   // make sure we can destroy and re-setup the pixel pipes.
   // we acquire the pipe locks, which will block the processing threads
   // in darkroom mode before they touch the pipes (init buffers etc).
@@ -2511,7 +2522,6 @@ void leave(dt_view_t *self)
   if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
   {
     double aspect_ratio = (double)dev->preview_pipe->backbuf_width / (double)dev->preview_pipe->backbuf_height;
-    printf("aspect_ratio updated to %f\n", aspect_ratio);
     dt_image_set_aspect_ratio_to(dev->preview_pipe->image.id, aspect_ratio);
   }
   else
