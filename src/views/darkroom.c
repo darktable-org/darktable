@@ -584,6 +584,9 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // stop crazy users from sleeping on key-repeat spacebar:
   if(dev->image_loading) return;
 
+  // prevent accels_window to refresh
+  darktable.view_manager->accels_window.prevent_refresh = TRUE;
+
   // make sure we can destroy and re-setup the pixel pipes.
   // we acquire the pipe locks, which will block the processing threads
   // in darkroom mode before they touch the pipes (init buffers etc).
@@ -801,6 +804,11 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
 
   // update hint message
   dt_collection_hint_message(darktable.collection);
+
+  // update accels_window
+  darktable.view_manager->accels_window.prevent_refresh = FALSE;
+  if(darktable.view_manager->accels_window.window && darktable.view_manager->accels_window.sticky)
+    dt_view_accels_refresh(darktable.view_manager);
 }
 
 static void film_strip_activated(const int imgid, void *data)
@@ -2340,6 +2348,9 @@ static void _unregister_modules_drag_n_drop(dt_view_t *self)
 
 void enter(dt_view_t *self)
 {
+  // prevent accels_window to refresh
+  darktable.view_manager->accels_window.prevent_refresh = TRUE;
+
   // clean the undo list
   dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
 
@@ -2476,6 +2487,9 @@ void enter(dt_view_t *self)
     _darkroom_display_second_window(dev);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->second_window.button), TRUE);
   }
+
+  // update accels_window
+  darktable.view_manager->accels_window.prevent_refresh = FALSE;
 }
 
 void leave(dt_view_t *self)

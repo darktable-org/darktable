@@ -2248,6 +2248,7 @@ void dt_view_accels_show(dt_view_manager_t *vm)
   if(vm->accels_window.window) return;
 
   vm->accels_window.sticky = FALSE;
+  vm->accels_window.prevent_refresh = FALSE;
 
   GtkStyleContext *context;
   vm->accels_window.window = gtk_window_new(GTK_WINDOW_POPUP);
@@ -2311,7 +2312,7 @@ void dt_view_accels_hide(dt_view_manager_t *vm)
 
 void dt_view_accels_refresh(dt_view_manager_t *vm)
 {
-  if(!vm->accels_window.window) return;
+  if(!vm->accels_window.window || vm->accels_window.prevent_refresh) return;
 
   // drop all existing tables
   GList *lw = gtk_container_get_children(GTK_CONTAINER(vm->accels_window.flow_box));
