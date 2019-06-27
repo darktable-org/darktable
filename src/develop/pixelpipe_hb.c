@@ -162,6 +162,7 @@ int dt_dev_pixelpipe_init_cached(dt_dev_pixelpipe_t *pipe, size_t size, int32_t 
   pipe->tiling = 0;
   pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
   pipe->bypass_blendif = 0;
+  pipe->skip_next_modules = FALSE;
   pipe->input_timestamp = 0;
   pipe->levels = IMAGEIO_RGB | IMAGEIO_INT8;
   dt_pthread_mutex_init(&(pipe->backbuf_mutex), NULL);
@@ -211,6 +212,7 @@ void dt_dev_pixelpipe_cleanup(dt_dev_pixelpipe_t *pipe)
   pipe->icc_type = DT_COLORSPACE_NONE;
   g_free(pipe->icc_filename);
   pipe->icc_filename = NULL;
+  pipe->skip_next_modules = FALSE;
 
   if(pipe->forms)
   {
@@ -1073,6 +1075,27 @@ static int _transform_for_blend(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
   return ret;
 }
 
+static inline gboolean _pixelpipe_skip_next_modules(dt_dev_pixelpipe_t *pipe, GList *modules, dt_iop_module_t *module)
+{
+  gboolean skip = FALSE;
+  if(pipe->skip_next_modules)
+  {
+    GList *l = g_list_first(modules);
+    while(l)
+    {
+      dt_iop_module_t *mod = (dt_iop_module_t*)l->data;
+      if(module == mod) break;
+      if(mod->enabled && mod->skip_next_modules && !module->default_enabled && !(module->flags() & IOP_FLAGS_HIDDEN))
+      {
+        skip = TRUE;
+        break;
+      }
+      l = g_list_next(l);
+    }
+  }
+  return skip;
+}
+
 // recursive helper for process:
 static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, void **output,
                                         void **cl_mem_output, dt_iop_buffer_dsc_t **out_format,
@@ -1092,7 +1115,8 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     piece = (dt_dev_pixelpipe_iop_t *)pieces->data;
     // skip this module?
     if(!piece->enabled
-       || (dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
+       || (dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags())
+       || _pixelpipe_skip_next_modules(pipe, modules, module))
       return dt_dev_pixelpipe_process_rec(pipe, dev, output, cl_mem_output, out_format, &roi_in,
                                           g_list_previous(modules), g_list_previous(pieces), pos - 1);
   }
@@ -2798,7 +2822,8 @@ void dt_dev_pixelpipe_get_dimensions(dt_dev_pixelpipe_t *pipe, struct dt_develop
 
     // skip this module?
     if(piece->enabled
-       && !(dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags()))
+       && !(dev->gui_module && dev->gui_module->operation_tags_filter() & module->operation_tags())
+       && !_pixelpipe_skip_next_modules(pipe, modules, module))
     {
       module->modify_roi_out(module, piece, &roi_out, &roi_in);
     }

@@ -305,6 +305,8 @@ typedef struct dt_iop_module_t
   int request_mask_display;
   /** set to 1 if you want the blendif mask to be suppressed in the module in focus. gui mode only. */
   int32_t suppress_mask;
+  /** set to TRUE if modules after this one should be skipped when the pipe is processed, must be used with skip_next_modules in dt_dev_pixelpipe_t */
+  gboolean skip_next_modules;
   /** color picker proxys */
   struct dt_iop_color_picker_t *picker;
   struct dt_iop_color_picker_t *blend_picker;

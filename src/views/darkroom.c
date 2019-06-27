@@ -669,6 +669,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   darktable.gui->reset = 1;
 
   const guint nb_iop = g_list_length(dev->iop);
+  dev->pipe->skip_next_modules = dev->preview_pipe->skip_next_modules = dev->preview2_pipe->skip_next_modules = FALSE;
   dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview2_pipe);
@@ -769,6 +770,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
         dt_iop_gui_update_header(module);
       }
     }
+    module->skip_next_modules = FALSE;
 
     modules = g_list_previous(modules);
   }
@@ -2561,6 +2563,7 @@ void leave(dt_view_t *self)
 
   dev->gui_leaving = 1;
 
+  dev->pipe->skip_next_modules = dev->preview_pipe->skip_next_modules = dev->preview2_pipe->skip_next_modules = FALSE;
   dt_dev_pixelpipe_cleanup_nodes(dev->pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview2_pipe);
   dt_dev_pixelpipe_cleanup_nodes(dev->preview_pipe);

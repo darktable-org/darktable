@@ -399,6 +399,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->histogram_middle_grey = FALSE;
   module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
   module->suppress_mask = 0;
+  module->skip_next_modules = FALSE;
   module->enabled = module->default_enabled = 0; // all modules disabled by default.
   g_strlcpy(module->op, so->op, 20);
   module->raster_mask.source.users = g_hash_table_new(NULL, NULL);
@@ -996,6 +997,23 @@ static void dt_iop_gui_rename_callback(GtkButton *button, dt_iop_module_t *modul
   _iop_gui_rename_module(module);
 }
 
+static void dt_iop_gui_skip_next_callback(GtkWidget *widget, dt_iop_module_t *module)
+{
+  dt_develop_t *dev = module->dev;
+  const gboolean skip_next_modules = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget));
+  GList *l = g_list_first(dev->iop);
+  while(l)
+  {
+    dt_iop_module_t *mod = (dt_iop_module_t*)l->data;
+    mod->skip_next_modules = FALSE;
+    l = g_list_next(l);
+  }
+  module->skip_next_modules = skip_next_modules;
+  dev->pipe->skip_next_modules = dev->preview_pipe->skip_next_modules = dev->preview2_pipe->skip_next_modules = skip_next_modules;
+
+  dt_dev_reprocess_all(module->dev);
+}
+
 static void dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton *event, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
@@ -1048,6 +1066,12 @@ static void dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton 
   g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(dt_iop_gui_rename_callback), module);
   gtk_menu_shell_append(menu, item);
 
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+  item = gtk_check_menu_item_new_with_label(_("skip next"));
+  gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), module->skip_next_modules);
+  g_signal_connect(G_OBJECT(item), "toggled", G_CALLBACK(dt_iop_gui_skip_next_callback), module);
+  gtk_menu_shell_append(menu, item);
+
   gtk_widget_show_all(GTK_WIDGET(menu));
 
   // popup
@@ -1084,6 +1108,7 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
         dt_iop_gui_set_expanded(module, FALSE, FALSE);
     }
     dt_dev_add_history_item(module->dev, module, FALSE);
+    if(module->skip_next_modules) dt_dev_reprocess_all(module->dev);
   }
   char tooltip[512];
   gchar *module_label = dt_history_item_get_name(module);

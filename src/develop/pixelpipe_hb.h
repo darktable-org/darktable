@@ -131,6 +131,8 @@ typedef struct dt_dev_pixelpipe_t
   int mask_display;
   // should this pixelpipe completely suppressed the blendif module?
   int bypass_blendif;
+  // set to TRUE if modules after the one with skip_next_modules=TRUE in dt_iop_module_t should be skipped when the pipe is processed
+  gboolean skip_next_modules;
   // input data based on this timestamp:
   int input_timestamp;
   dt_dev_pixelpipe_type_t type;
