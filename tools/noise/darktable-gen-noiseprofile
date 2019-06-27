@@ -238,6 +238,25 @@ EOF
 	  '' u 1:4 w l lw 4 title "blue",				\
 	       1 w l lw 4 title "ideal"
 EOF
+
+echo "--> Fitting unbiased backtransform"
+$noiseprofile $pfm_noisy_1 $pfm_noisy_2 -b $(cat $fit) > $flat_dat
+
+bias_pdf="${pfm_noisy_1%_noisy.pfm}_bias.pdf"
+gnuplot 2>/dev/null << EOF
+set term pdf
+set output "$bias_pdf"
+set title "brightness after algebraic backtransform - $title"
+set xlabel "brightness"
+set ylabel "normalized brightness of backtransformed data"
+ideal(x) = 1
+set yrange [0:1.5]
+plot "$flat_dat" u 1:2 w l lw 4 title "red",			\
+	'' u 1:3 w l lw 4 title "green",				\
+	'' u 1:4 w l lw 4 title "blue",				\
+	ideal(x) w l lw 4 title "ideal"
+EOF
+
 	# Output preset for dt:
 	echo "--> Save generated preset"
 	a0=$(cat $fit | cut -f1 -d' ')

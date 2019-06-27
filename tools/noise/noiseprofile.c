@@ -208,7 +208,7 @@ int main(int argc, char *arg[])
                 p[3] = { atof(arg[7]), atof(arg[8]), atof(arg[9]) },
                 b[3] = { atof(arg[10]), atof(arg[11]), atof(arg[12])};
 
-    // perform anscombe transform
+    // perform VST
     for(int i = radius; i < ht-radius; i++)
     {
       for(int j = 0; j < wd; j++)
@@ -216,24 +216,6 @@ int main(int argc, char *arg[])
         for(int c = 0; c < 3; c++)
         {
           int index = (i * wd + j) * 3 + c;
-
-// input[index] /= a[c];
-// float d = fmaxf(0.0f, input[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
-// input[index] = 2.0f * sqrtf(d);
-// input2[index] /= a[c];
-// d = fmaxf(0.0f, input2[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
-// input2[index] = 2.0f * sqrtf(d);
-//
-//
-// unsigned level = (unsigned)(inputblurred[index] * NB_CLASSES);
-// unsigned level2 = (unsigned)(input2blurred[index] * NB_CLASSES);
-// inputblurred[index] /= a[c];
-// input2blurred[index] /= a[c];
-// d = fmaxf(0.0f, inputblurred[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
-// inputblurred[index] = 2.0f * sqrtf(d);
-// d = fmaxf(0.0f, input2blurred[index] + 3.0 / 8.0 + (b[c] / a[c]) * (b[c] / a[c]));
-// input2blurred[index] = 2.0f * sqrtf(d);
-
           input[index] = 2 * powf(input[index]+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]));
           input2[index] = 2 * powf(input2[index]+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]));
 
@@ -271,12 +253,98 @@ int main(int argc, char *arg[])
       for(int c = 0; c < 3; c++)
       {
         array_for_median[c][(level+1)%3] = var[c][level+1];
-        //var[c][level] = median(array_for_median[c]);
+        var[c][level] = median(array_for_median[c]);
       }
       if(nb_elts[0][level] > 100 && nb_elts[1][level] > 100 && nb_elts[2][level] > 100)
         fprintf(stdout, "%f %f %f %f %d %d %d\n", level / (float)NB_CLASSES, var[0][level], var[1][level],
               var[2][level], nb_elts[0][level], nb_elts[1][level], nb_elts[2][level]);
     }
+  }
+  if(argc >= 10 && !strcmp(arg[3], "-b"))
+  {
+    const float a[3] = { atof(arg[4]), atof(arg[5]), atof(arg[6]) },
+                p[3] = { atof(arg[7]), atof(arg[8]), atof(arg[9]) },
+                b[3] = { atof(arg[10]), atof(arg[11]), atof(arg[12])};
+
+    // perform VST
+    for(int i = radius; i < ht-radius; i++)
+    {
+      for(int j = 0; j < wd; j++)
+      {
+        for(int c = 0; c < 3; c++)
+        {
+          int index = (i * wd + j) * 3 + c;
+          input[index] = 2 * powf(input[index]+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]));
+          input2[index] = 2 * powf(input2[index]+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]));
+        }
+      }
+    }
+    // blur after VST
+    float *outputblurred = calloc(wd*ht*3, sizeof(float));
+    float *output2blurred = calloc(wd*ht*3, sizeof(float));
+    mean_filter(radius, input, outputblurred, wd, ht);
+    mean_filter(radius, input2, output2blurred, wd, ht);
+    // algebraic backtransform + print difference to real mean
+    for(int i = radius; i < ht-radius; i++)
+    {
+      for(int j = 0; j < wd; j++)
+      {
+        for(int c = 0; c < 3; c++)
+        {
+          int index = (i * wd + j) * 3 + c;
+          outputblurred[index] = MAX(powf(outputblurred[index]*sqrt(a[c])*(2-p[c])/2, 2/(2-p[c]))-b[c],0.0f);
+          output2blurred[index] = MAX(powf(output2blurred[index]*sqrt(a[c])*(2-p[c])/2, 2/(2-p[c]))-b[c],0.0f);
+        }
+      }
+    }
+    double bias[3][NB_CLASSES] = {{0.0}};
+    for(int i = radius; i < ht-radius; i++)
+    {
+      for(int j = 0; j < wd; j++)
+      {
+        for(int c = 0; c < 3; c++)
+        {
+          int index = (i * wd + j) * 3 + c;
+          unsigned level = (unsigned)(inputblurred[index] * NB_CLASSES);
+          unsigned level2 = (unsigned)(input2blurred[index] * NB_CLASSES);
+
+          float diff = outputblurred[index];
+          float diff2 = output2blurred[index];
+
+          bias[c][level] += diff;
+          nb_elts[c][level]++;
+          bias[c][level2] += diff2;
+          nb_elts[c][level2]++;
+        }
+      }
+    }
+    for(int level = 0; level < NB_CLASSES; level++)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        if(nb_elts[c][level] > 0) bias[c][level] /= nb_elts[c][level];
+      }
+    }
+    float array_for_median[3][3] = {{0.0}};
+    for(int c = 0; c < 3; c++)
+    {
+      array_for_median[c][0] = bias[c][0];
+    }
+    for(int level = 0; level < NB_CLASSES-1; level++)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        array_for_median[c][(level+1)%3] = bias[c][level+1];
+        bias[c][level] = median(array_for_median[c]);
+      }
+      float level_normalized = level / (float)NB_CLASSES ;
+      float level2 = level_normalized + 0.0001;
+      if(nb_elts[0][level] > 100 && nb_elts[1][level] > 100 && nb_elts[2][level] > 100)
+        fprintf(stdout, "%f %f %f %f %d %d %d\n", level_normalized, bias[0][level] / level2, bias[1][level] / level2,
+              bias[2][level] / level2, nb_elts[0][level], nb_elts[1][level], nb_elts[2][level]);
+    }
+    free(outputblurred);
+    free(output2blurred);
   }
   free(inputblurred);
   free(input);
