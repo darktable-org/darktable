@@ -213,7 +213,7 @@ profile_image() {
 	  '' u 1:((f2(\$1))) w l lw 2 lt 2 title "green (fit)",	\
 	  '' u 1:((f3(\$1))) w l lw 2 lt 3 title "blue (fit)"
 
-	print a1, a2, a3, D(c1), D(c2), D(c3), E(b1), E(b2), E(b3), d1, d2, d3
+	print a1, a2, a3, D(c1), D(c2), D(c3), E(b1), E(b2), E(b3)
 EOF
 
 	# Fitted parametric curves:
@@ -239,59 +239,6 @@ EOF
 	       1 w l lw 4 title "ideal"
 EOF
 
-echo "--> Fitting unbiased backtransform"
-$noiseprofile $pfm_noisy_1 $pfm_noisy_2 -b $(cat $fit) > $dat
-
-bias_pdf="${pfm_noisy_1%_noisy.pfm}_bias.pdf"
-gnuplot 2>> "$fit_accuracy" << EOF
-set fit logfile "/dev/null"
-set fit prescale
-set term pdf
-set output "$bias_pdf"
-f1(x) = 1/(x+0.0001) * a1*((x+b1)**c1)
-f2(x) = 1/(x+0.0001) * a2*((x+b2)**c2)
-f3(x) = 1/(x+0.0001) * a3*((x+b3)**c3)
-a1=1;c1=1;b1=0.000001;
-a2=1;c2=1;b2=0.000001;
-a3=1;c3=1;b3=0.000001;
-FIT_LIMIT = 1e-8
-set xrange [0.01:0.3]
-fit f1(x) "$dat" u 1:(\$2):(\$5) via a1,b1,c1
-set xrange [0.01:0.6]
-fit f2(x) "$dat" u 1:(\$3):(\$6) via a2,b2,c2
-set xrange [0.01:0.3]
-fit f3(x) "$dat" u 1:(\$4):(\$7) via a3,b3,c3
-
-set xrange [0:1]
-set title "algebraic backtransform - $title"
-set xlabel "brightness"
-set ylabel "normalized brightness of output"
-set yrange [0:2]
-plot "$dat" u 1:2 w l lw 4 title "red",			\
-	'' u 1:3 w l lw 4 title "green",				\
-	'' u 1:4 w l lw 4 title "blue",				\
-	'' u 1:((f1(\$1))) w l lw 2 lt 1 title "red (fit)",	\
-	'' u 1:((f2(\$1))) w l lw 2 lt 2 title "green (fit)",	\
-	'' u 1:((f3(\$1))) w l lw 2 lt 3 title "blue (fit)", \
-	1 w l lw 4 title "ideal"
-
-set yrange [0.5:1.5]
-g1(x,y) = (((x+0.0001) * y/a1)**(1/c1)-b1) / (x+0.0001)
-g2(x,y) = (((x+0.0001) * y/a2)**(1/c2)-b2) / (x+0.0001)
-g3(x,y) = (((x+0.0001) * y/a3)**(1/c3)-b3) / (x+0.0001)
-set title "unbiased backtransform - $title"
-set xlabel "brightness"
-set ylabel "normalized brightness of output"
-plot "$dat" u 1:((g1(\$1,\$2))) w l lw 2 lt 1 title "red (fit)",	\
-	'' u 1:((g2(\$1,\$3))) w l lw 2 lt 2 title "green (fit)",	\
-	'' u 1:((g3(\$1,\$4))) w l lw 2 lt 3 title "blue (fit)", \
-	1 w l lw 4 title "ideal"
-
-EOF
-	echo "--> Fitted unbiased backtransform"
-
-	# Output preset for dt:
-	echo "--> Save generated preset"
 	a0=$(cat $fit | cut -f1 -d' ')
 	a1=$(cat $fit | cut -f2 -d' ')
 	a2=$(cat $fit | cut -f3 -d' ')
@@ -301,11 +248,74 @@ EOF
 	b0=$(cat $fit | cut -f7 -d' ')
 	b1=$(cat $fit | cut -f8 -d' ')
 	b2=$(cat $fit | cut -f9 -d' ')
-	e0=$(cat $fit | cut -f10 -d' ')
-	e1=$(cat $fit | cut -f11 -d' ')
-	e2=$(cat $fit | cut -f12 -d' ')
 
-	printf "$maker\t$model\t$model iso $iso\t$iso\t$a0, $a1, $a2\t$p0, $p1, $p2\t$b0, $b1, $b2\t$e0, $e1, $e2\n" >> "$presets"
+echo "--> Fitting unbiased backtransform"
+$noiseprofile $pfm_noisy_1 $pfm_noisy_2 -b $(cat $fit) > $dat
+rm $fit
+
+bias_pdf="${pfm_noisy_1%_noisy.pfm}_bias.pdf"
+gnuplot 2>> "$fit_accuracy" << EOF
+	set term pdf
+	set print "$fit"
+	set output "$bias_pdf"
+	set fit logfile "/dev/null"
+	set fit prescale
+	f1(x) = 1/(x+0.0001) * a1*((x+b1)**c1)
+	f2(x) = 1/(x+0.0001) * a2*((x+b2)**c2)
+	f3(x) = 1/(x+0.0001) * a3*((x+b3)**c3)
+	a1=1;c1=1;b1=0.000001;
+	a2=1;c2=1;b2=0.000001;
+	a3=1;c3=1;b3=0.000001;
+	FIT_LIMIT = 1e-8
+	set xrange [0.01:0.3]
+	fit f1(x) "$dat" u 1:(\$2):(\$5) via a1,b1,c1
+	set xrange [0.01:0.6]
+	fit f2(x) "$dat" u 1:(\$3):(\$6) via a2,b2,c2
+	set xrange [0.01:0.3]
+	fit f3(x) "$dat" u 1:(\$4):(\$7) via a3,b3,c3
+	print a1, a2, a3, b1, b2, b3, c1, c2, c3
+
+	set xrange [0:1]
+	set title "algebraic backtransform - $title"
+	set xlabel "brightness"
+	set ylabel "normalized brightness of output"
+	set yrange [0:2]
+	plot "$dat" u 1:2 w l lw 4 title "red",			\
+		'' u 1:3 w l lw 4 title "green",				\
+		'' u 1:4 w l lw 4 title "blue",				\
+		'' u 1:((f1(\$1))) w l lw 2 lt 1 title "red (fit)",	\
+		'' u 1:((f2(\$1))) w l lw 2 lt 2 title "green (fit)",	\
+		'' u 1:((f3(\$1))) w l lw 2 lt 3 title "blue (fit)", \
+		1 w l lw 4 title "ideal"
+
+	set yrange [0.5:1.5]
+	g1(x,y) = (((x+0.0001) * y/a1)**(1/c1)-b1) / (x+0.0001)
+	g2(x,y) = (((x+0.0001) * y/a2)**(1/c2)-b2) / (x+0.0001)
+	g3(x,y) = (((x+0.0001) * y/a3)**(1/c3)-b3) / (x+0.0001)
+	set title "unbiased backtransform - $title"
+	set xlabel "brightness"
+	set ylabel "normalized brightness of output"
+	plot "$dat" u 1:((g1(\$1,\$2))) w l lw 2 lt 1 title "red (fit)",	\
+		'' u 1:((g2(\$1,\$3))) w l lw 2 lt 2 title "green (fit)",	\
+		'' u 1:((g3(\$1,\$4))) w l lw 2 lt 3 title "blue (fit)", \
+		1 w l lw 4 title "ideal"
+EOF
+	echo "--> Fitted unbiased backtransform"
+
+	# Output preset for dt:
+	echo "--> Save generated preset"
+	a0_bt=$(cat $fit | cut -f1 -d' ')
+	a1_bt=$(cat $fit | cut -f2 -d' ')
+	a2_bt=$(cat $fit | cut -f3 -d' ')
+	b0_bt=$(cat $fit | cut -f4 -d' ')
+	b1_bt=$(cat $fit | cut -f5 -d' ')
+	b2_bt=$(cat $fit | cut -f6 -d' ')
+	p0_bt=$(cat $fit | cut -f7 -d' ')
+	p1_bt=$(cat $fit | cut -f8 -d' ')
+	p2_bt=$(cat $fit | cut -f9 -d' ')
+
+
+	printf "$maker\t$model\t$model iso $iso\t$iso\t$a0, $a1, $a2\t$p0, $p1, $p2\t$b0, $b1, $b2\t$a0_bt, $a1_bt, $a2_bt\t$p0_bt, $p1_bt, $p2_bt\t$b0_bt, $b1_bt, $b2_bt\n" >> "$presets"
 
 	# Clean unused files.
 	rm -f $dat $flat_dat $curves_dat $fit
@@ -354,7 +364,7 @@ EOF
           	"profiles": [
 EOF
       n_profiles=$(awk -F "\t" "{ if(\$1 == \"$maker\" && \$2 == \"$model\"){ print \$1; } }" "$txt" | wc -l)
-      awk -F "\t" "{ if(\$1 == \"$maker\" && \$2 == \"$model\"){ printf(\"\\\"name\\\": \\\"%s\\\", \\\"iso\\\": %s, \\\"a\\\": [%s], \\\"p\\\": [%s], \\\"b\\\": [%s], \\\"e\\\": [%s]\n\", \$3, \$4, \$5, \$6, \$7, \$8); } }" "$txt" | sort -V | while read profile
+      awk -F "\t" "{ if(\$1 == \"$maker\" && \$2 == \"$model\"){ printf(\"\\\"name\\\": \\\"%s\\\", \\\"iso\\\": %s, \\\"a\\\": [%s], \\\"p\\\": [%s], \\\"b\\\": [%s], \\\"a_bt\\\": [%s], \\\"b_bt\\\": [%s], \\\"p_bt\\\": [%s]\n\", \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10); } }" "$txt" | sort -V | while read profile
       do
         n_profiles=$((n_profiles-1))
         end=","
