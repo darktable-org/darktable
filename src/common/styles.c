@@ -17,15 +17,16 @@
 */
 
 #include "common/styles.h"
+#include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/file_location.h"
 #include "common/history.h"
+#include "common/history_snapshot.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/tags.h"
-#include "common/history_snapshot.h"
 #include "control/control.h"
 #include "develop/develop.h"
 
@@ -757,6 +758,12 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
     /* remove old obsolete thumbnails */
     dt_mipmap_cache_remove(darktable.mipmap_cache, newimgid);
     dt_image_reset_final_size(newimgid);
+
+    /* update the aspect ratio. recompute only if really needed for performance reasons */
+    if(darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+      dt_image_set_aspect_ratio(newimgid);
+    else
+      dt_image_reset_aspect_ratio(newimgid);
 
     /* if we have created a duplicate, reset collected images */
     if(duplicate) dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
