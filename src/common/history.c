@@ -629,9 +629,10 @@ static int _history_copy_and_paste_on_image_overwrite(int32_t imgid, int32_t des
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE main.images SET history_end = 0, iop_order_version = 0 WHERE id = ?1",
-                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "UPDATE main.images SET history_end = 0, iop_order_version = 0, aspect_ratio = 0.0 WHERE id = ?1", -1, &stmt,
+      NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dest_imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
@@ -745,10 +746,11 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   dt_mipmap_cache_remove(darktable.mipmap_cache, dest_imgid);
   dt_image_reset_final_size(imgid);
 
-  /* update the aspect ratio if the current sorting is based on aspect ratio, otherwise the aspect ratio will be
-     recalculated when the mimpap will be recreated */
-  if (darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+  /* update the aspect ratio. recompute only if really needed for performance reasons */
+  if(darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
     dt_image_set_aspect_ratio(dest_imgid);
+  else
+    dt_image_reset_aspect_ratio(dest_imgid);
 
   return ret_val;
 }
