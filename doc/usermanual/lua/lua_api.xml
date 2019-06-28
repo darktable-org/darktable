@@ -348,13 +348,13 @@
 <secondary>register_lib</secondary>
 </indexterm>
 <synopsis>function( 
-	<emphasis><link linkend="darktable_register_lib_plugin_name">plugin_name</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_register_lib_name">name</link></emphasis> : string, 
-	<emphasis><link linkend="darktable_register_lib_expandable">expandable</link></emphasis> : boolean, 
-	<emphasis><link linkend="darktable_register_lib_resetable">resetable</link></emphasis> : boolean, 
-	<emphasis><link linkend="darktable_register_lib_containers">containers</link></emphasis> : table of <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link> => [ <link linkend="types_dt_ui_container_t">types.dt_ui_container_t</link>, int ], 
-	<emphasis><link linkend="darktable_register_lib_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>, 
-	<emphasis><link linkend="darktable_register_lib_view_enter">view_enter</link></emphasis> : function, 
+	<emphasis><link linkend="darktable_register_lib_plugin_name">plugin_name</link></emphasis> : string,
+	<emphasis><link linkend="darktable_register_lib_name">name</link></emphasis> : string,
+	<emphasis><link linkend="darktable_register_lib_expandable">expandable</link></emphasis> : boolean,
+	<emphasis><link linkend="darktable_register_lib_resettable">resettable</link></emphasis> : boolean,
+	<emphasis><link linkend="darktable_register_lib_containers">containers</link></emphasis> : table of <link linkend="types_dt_lua_view_t">types.dt_lua_view_t</link> => [ <link linkend="types_dt_ui_container_t">types.dt_ui_container_t</link>, int ],
+	<emphasis><link linkend="darktable_register_lib_widget">widget</link></emphasis> : <link linkend="types_lua_widget">types.lua_widget</link>,
+	<emphasis><link linkend="darktable_register_lib_view_enter">view_enter</link></emphasis> : function,
 	<emphasis><link linkend="darktable_register_lib_view_leave">view_leave</link></emphasis> : function
 )</synopsis>
 <para>Register a new lib object. A lib is a graphical element of darktable's user interface</para>
@@ -378,7 +378,7 @@
 
 </listitem></varlistentry>
 
-<varlistentry id="darktable_register_lib_resetable"><term>resetable</term><listitem>
+<varlistentry id="darktable_register_lib_resettable"><term>resettable</term><listitem>
 <synopsis>boolean</synopsis>
 <para>whether this lib has a reset button or not</para>
 
