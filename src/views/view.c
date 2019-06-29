@@ -2334,7 +2334,7 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
     GtkListStore *list_store;
   } _bloc_t;
 
-  // go throught all accels to populate categories with valid ones
+  // go through all accels to populate categories with valid ones
   GList *blocs = NULL;
   GList *bl = NULL;
   GSList *l = darktable.control->accelerator_list;
