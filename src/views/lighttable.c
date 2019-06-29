@@ -204,7 +204,7 @@ typedef struct dt_library_t
   dt_layout_image_t culling_previous, culling_next;
   gboolean culling_use_selection;
   gboolean already_started;
-  gboolean select_desactivate;
+  gboolean select_deactivate;
   int last_num_images, last_width, last_height;
 
   /* prepared and reusable statements */
@@ -597,7 +597,7 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
   dt_view_t *self = (dt_view_t *)user_data;
   dt_library_t *lib = (dt_library_t *)self->data;
 
-  if(lib->select_desactivate) return;
+  if(lib->select_deactivate) return;
 
   // we need to redraw all thumbs to display the selected ones, record full redraw here
   lib->force_expose_all = TRUE;
@@ -627,9 +627,9 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
         if(sqlite3_step(stmt) != SQLITE_ROW)
         {
           // we need to add it to the selection
-          lib->select_desactivate = TRUE;
+          lib->select_deactivate = TRUE;
           dt_selection_select(darktable.selection, lib->slots[i].imgid);
-          lib->select_desactivate = FALSE;
+          lib->select_deactivate = FALSE;
         }
         sqlite3_finalize(stmt);
         g_free(query);
@@ -1950,7 +1950,7 @@ static gboolean _culling_recreate_slots_at(dt_view_t *self, const int display_fi
   lib->slots_count = i;
 
   // in rare cases, we can have less images than wanted
-  // althought there's images before
+  // although there's images before
   if(lib->culling_use_selection && lib->slots_count < img_count
      && lib->slots_count < _culling_get_selection_count())
   {
@@ -2269,12 +2269,12 @@ static gboolean _culling_compute_slots(dt_view_t *self, int32_t width, int32_t h
   {
     if(!lib->culling_use_selection)
     {
-      // desactivate selection_change event
-      lib->select_desactivate = TRUE;
+      // deactivate selection_change event
+      lib->select_deactivate = TRUE;
       // select current first image
       dt_selection_select_single(darktable.selection, lib->slots[0].imgid);
       // reactivate selection_change event
-      lib->select_desactivate = FALSE;
+      lib->select_deactivate = FALSE;
     }
     // move filmstrip
     dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->slots[0].imgid, FALSE);
