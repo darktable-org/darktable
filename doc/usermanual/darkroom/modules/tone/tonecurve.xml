@@ -83,7 +83,7 @@
         Lab is a perceptual color space that is designed to approximate the way human beings
         perceive colors and lightness, and representing the color information independently
         of the the lightness information.
-        In <quote>Lab, separated channels</quote>, you get a fullly independent control
+        In <quote>Lab, separated channels</quote>, you get a fully independent control
         over the chrominance (a/b-channels) and the luminance (L-channel).
         In <quote>Lab, linked channels</quote>, only the luminance (L-channel) control is
         available. The color saturation correction will be automatically computed, for each pixel,
