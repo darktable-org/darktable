@@ -79,10 +79,7 @@ typedef struct dt_slideshow_t
 
 typedef struct dt_slideshow_format_t
 {
-  int max_width, max_height;
-  int width, height;
-  char style[128];
-  gboolean style_append;
+  dt_imageio_module_data_t head;
   dt_slideshow_t *d;
   dt_slideshow_slot_t slot;
   int32_t rank;
@@ -176,9 +173,9 @@ static int process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   buf.write_image = write_image;
 
   dt_slideshow_format_t dat;
-  dat.width = dat.max_width = d->width;
-  dat.height = dat.max_height = d->height;
-  dat.style[0] = '\0';
+  dat.head.width = dat.head.max_width = d->width;
+  dat.head.height = dat.head.max_height = d->height;
+  dat.head.style[0] = '\0';
   dat.d = d;
   dat.slot = slot;
   dat.rank = d->buf[slot].rank;
