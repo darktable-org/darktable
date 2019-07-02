@@ -296,6 +296,24 @@ static void tag_name_changed(GtkEntry *entry, gpointer user_data)
   set_keyword(self, d);
 }
 
+static void set_selected_entry(GtkTreeView *view, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+
+  GtkTreeIter iter;
+  GtkTreeModel *model = NULL;
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
+  if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
+
+  char *tag;
+  gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_TAG, &tag, -1);
+  if (!tag) return;
+  gtk_entry_set_text(d->entry, tag);
+  g_free(tag);
+  set_keyword(self, d);
+}
+
 static void delete_button_clicked(GtkButton *button, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -563,6 +581,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->related), _("related tags,\ndoubleclick to attach"));
   dt_gui_add_help_link(GTK_WIDGET(d->related), "tagging.html#tagging_usage");
   g_signal_connect(G_OBJECT(d->related), "row-activated", G_CALLBACK(attach_activated), (gpointer)self);
+  g_signal_connect(G_OBJECT(d->related), "cursor-changed", G_CALLBACK(set_selected_entry), (gpointer)self);
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->related));
 
   // attach and delete buttons
