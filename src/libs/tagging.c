@@ -490,7 +490,6 @@ static void _lib_tagging_tags_changed_callback(gpointer instance, gpointer user_
 
 void gui_init(dt_lib_module_t *self)
 {
-  setvbuf(stdout, NULL, _IONBF, 0);
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)malloc(sizeof(dt_lib_tagging_t));
   self->data = (void *)d;
   d->imgsel = -1;
