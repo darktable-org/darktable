@@ -131,6 +131,7 @@ src/iop/rawprepare.c
 src/iop/relight.c
 src/iop/retouch.c
 src/iop/rgbcurve.c
+src/iop/rgblevels.c
 src/iop/rotatepixels.c
 src/iop/scalepixels.c
 src/iop/shadhi.c
