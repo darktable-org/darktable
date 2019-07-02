@@ -311,7 +311,6 @@ static void set_selected_entry(GtkTreeView *view, gpointer user_data)
   if (!tag) return;
   gtk_entry_set_text(d->entry, tag);
   g_free(tag);
-  set_keyword(self, d);
 }
 
 static void delete_button_clicked(GtkButton *button, gpointer user_data)
@@ -491,6 +490,7 @@ static void _lib_tagging_tags_changed_callback(gpointer instance, gpointer user_
 
 void gui_init(dt_lib_module_t *self)
 {
+  setvbuf(stdout, NULL, _IONBF, 0);
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)malloc(sizeof(dt_lib_tagging_t));
   self->data = (void *)d;
   d->imgsel = -1;
