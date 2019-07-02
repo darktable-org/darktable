@@ -48,7 +48,7 @@ typedef struct dt_lib_tagging_t
   GtkTreeView *current, *related;
   int imgsel;
 
-  GtkWidget *attach_button, *detach_button, *new_button, *delete_button, *import_button, *export_button;
+  GtkWidget *attach_button, *detach_button, *copy_button, *new_button, *delete_button, *import_button, *export_button;
 
   GtkWidget *floating_tag_window;
   int floating_tag_imgid;
@@ -90,6 +90,7 @@ void init_key_accels(dt_lib_module_t *self)
 {
   dt_accel_register_lib(self, NC_("accel", "attach"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "detach"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "copy"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "new"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "delete"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "tag"), GDK_KEY_t, GDK_CONTROL_MASK);
@@ -101,6 +102,7 @@ void connect_key_accels(dt_lib_module_t *self)
 
   dt_accel_connect_button_lib(self, "attach", d->attach_button);
   dt_accel_connect_button_lib(self, "detach", d->detach_button);
+  dt_accel_connect_button_lib(self, "copy", d->copy_button);
   dt_accel_connect_button_lib(self, "new", d->new_button);
   dt_accel_connect_button_lib(self, "delete", d->delete_button);
   dt_accel_connect_lib(self, "tag", g_cclosure_new(G_CALLBACK(_lib_tagging_tag_show), self, NULL));
@@ -587,7 +589,7 @@ void gui_init(dt_lib_module_t *self)
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
   button = gtk_button_new_with_label(_("copy"));
-  d->new_button = button;
+  d->copy_button = button;
   gtk_widget_set_tooltip_text(button, _("copy selected tag into entry field for edition"));
   dt_gui_add_help_link(button, "tagging.html#tagging_usage");
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
