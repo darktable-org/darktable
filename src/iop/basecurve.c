@@ -47,7 +47,7 @@
 #define MAXNODES 20
 
 
-DT_MODULE_INTROSPECTION(6, dt_iop_basecurve_params_t)
+DT_MODULE_INTROSPECTION(7, dt_iop_basecurve_params_t)
 
 typedef struct dt_iop_basecurve_node_t
 {
@@ -66,7 +66,22 @@ typedef struct dt_iop_basecurve_params_t
   float exposure_stops;   // number of stops between fusion images
   float exposure_bias;    // whether to do exposure-fusion with over or under-exposure
   int preserve_colors;
+  float exposure_optimum; // Optimum brightness for exposure fusion
+  float exposure_width; // Exposure weight function variance
 } dt_iop_basecurve_params_t;
+
+typedef struct dt_iop_basecurve_params6_t
+{
+  // three curves (c, ., .) with max number of nodes
+  // the other two are reserved, maybe we'll have cam rgb at some point.
+  dt_iop_basecurve_node_t basecurve[3][MAXNODES];
+  int basecurve_nodes[3];
+  int basecurve_type[3];
+  int exposure_fusion;    // number of exposure fusion steps
+  float exposure_stops;   // number of stops between fusion images
+  float exposure_width; // Exposure weight function variance
+  int preserve_colors;
+} dt_iop_basecurve_params6_t;
 
 typedef struct dt_iop_basecurve_params5_t
 {
@@ -112,7 +127,7 @@ typedef struct dt_iop_basecurve_params1_t
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 6)
+  if(old_version == 1 && new_version == 7)
   {
     dt_iop_basecurve_params1_t *o = (dt_iop_basecurve_params1_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
@@ -131,10 +146,12 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->exposure_fusion = 0;
     n->exposure_stops = 1;
     n->exposure_bias = 1.0;
+    n->exposure_optimum = 0.5;
+    n->exposure_width = 0.2;
     n->preserve_colors = DT_RGB_NORM_NONE;
     return 0;
   }
-  if(old_version == 2 && new_version == 6)
+  if(old_version == 2 && new_version == 7)
   {
     dt_iop_basecurve_params2_t *o = (dt_iop_basecurve_params2_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
@@ -143,32 +160,51 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->exposure_stops = 1;
     n->exposure_bias = 1.0;
     n->preserve_colors = DT_RGB_NORM_NONE;
+    n->exposure_optimum = 0.5;
+    n->exposure_width = 0.2;
+    n->preserve_colors = DT_RGB_NORM_NONE;
     return 0;
   }
-  if(old_version == 3 && new_version == 6)
+  if(old_version == 3 && new_version == 7)
   {
     dt_iop_basecurve_params3_t *o = (dt_iop_basecurve_params3_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
     memcpy(n, o, sizeof(dt_iop_basecurve_params3_t));
     n->exposure_stops = (o->exposure_fusion == 0 && o->exposure_stops == 0) ? 1.0f : o->exposure_stops;
     n->exposure_bias = 1.0;
+    n->exposure_optimum = 0.5;
+    n->exposure_width = 0.2;
     n->preserve_colors = DT_RGB_NORM_NONE;
     return 0;
   }
-  if(old_version == 4 && new_version == 6)
+  if(old_version == 4 && new_version == 7)
   {
     dt_iop_basecurve_params4_t *o = (dt_iop_basecurve_params4_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
     memcpy(n, o, sizeof(dt_iop_basecurve_params4_t));
     n->exposure_bias = 1.0;
+    n->exposure_optimum = 0.5;
+    n->exposure_width = 0.2;
     n->preserve_colors = DT_RGB_NORM_NONE;
     return 0;
   }
-  if(old_version == 5 && new_version == 6)
+  if(old_version == 5 && new_version == 7)
   {
     dt_iop_basecurve_params5_t *o = (dt_iop_basecurve_params5_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
-    memcpy(n, o, sizeof(dt_iop_basecurve_params4_t));
+    memcpy(n, o, sizeof(dt_iop_basecurve_params5_t));
+    n->exposure_optimum = 0.5;
+    n->exposure_width = 0.2;
+    n->preserve_colors = DT_RGB_NORM_NONE;
+    return 0;
+  }
+  if(old_version == 6 && new_version == 7)
+  {
+    dt_iop_basecurve_params5_t *o = (dt_iop_basecurve_params5_t *)old_params;
+    dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
+    memcpy(n, o, sizeof(dt_iop_basecurve_params6_t));
+    n->exposure_optimum = 0.5;
+    n->exposure_width = 0.2;
     n->preserve_colors = DT_RGB_NORM_NONE;
     return 0;
   }
@@ -212,34 +248,35 @@ static const basecurve_preset_t basecurve_camera_presets[] = {
   // clang-format off
 
   // nikon d750 by Edouard Gomez
-  {"Nikon D750", "NIKON CORPORATION", "NIKON D750", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.018124, 0.026126}, {0.143357, 0.370145}, {0.330116, 0.730507}, {0.457952, 0.853462}, {0.734950, 0.965061}, {0.904758, 0.985699}, {1.000000, 1.000000}}}, {8}, {m}, 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1},
+
+  {"Nikon D750", "NIKON CORPORATION", "NIKON D750", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.018124, 0.026126}, {0.143357, 0.370145}, {0.330116, 0.730507}, {0.457952, 0.853462}, {0.734950, 0.965061}, {0.904758, 0.985699}, {1.000000, 1.000000}}}, {8}, {m}, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0}, 0, 1},
   // contributed by Stefan Kauerauf
-  {"Nikon D5100", "NIKON CORPORATION", "NIKON D5100", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.001113, 0.000506}, {0.002842, 0.001338}, {0.005461, 0.002470}, {0.011381, 0.006099}, {0.013303, 0.007758}, {0.034638, 0.041119}, {0.044441, 0.063882}, {0.070338, 0.139639}, {0.096068, 0.210915}, {0.137693, 0.310295}, {0.206041, 0.432674}, {0.255508, 0.504447}, {0.302770, 0.569576}, {0.425625, 0.726755}, {0.554526, 0.839541}, {0.621216, 0.882839}, {0.702662, 0.927072}, {0.897426, 0.990984}, {1.000000, 1.000000}}}, {20}, {m}, 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1},
+  {"Nikon D5100", "NIKON CORPORATION", "NIKON D5100", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.001113, 0.000506}, {0.002842, 0.001338}, {0.005461, 0.002470}, {0.011381, 0.006099}, {0.013303, 0.007758}, {0.034638, 0.041119}, {0.044441, 0.063882}, {0.070338, 0.139639}, {0.096068, 0.210915}, {0.137693, 0.310295}, {0.206041, 0.432674}, {0.255508, 0.504447}, {0.302770, 0.569576}, {0.425625, 0.726755}, {0.554526, 0.839541}, {0.621216, 0.882839}, {0.702662, 0.927072}, {0.897426, 0.990984}, {1.000000, 1.000000}}}, {20}, {m}, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0}, 0, 1},
   // nikon d7000 by Edouard Gomez
-  {"Nikon D7000", "NIKON CORPORATION", "NIKON D7000", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.001943, 0.003040}, {0.019814, 0.028810}, {0.080784, 0.210476}, {0.145700, 0.383873}, {0.295961, 0.654041}, {0.651915, 0.952819}, {1.000000, 1.000000}}}, {8}, {m}, 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1},
+  {"Nikon D7000", "NIKON CORPORATION", "NIKON D7000", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.001943, 0.003040}, {0.019814, 0.028810}, {0.080784, 0.210476}, {0.145700, 0.383873}, {0.295961, 0.654041}, {0.651915, 0.952819}, {1.000000, 1.000000}}}, {8}, {m}, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0}, 0, 1},
   // nikon d7200 standard by Ralf Brown (firmware 1.00)
-  {"Nikon D7200", "NIKON CORPORATION", "NIKON D7200", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.001604, 0.001334}, {0.007401, 0.005237}, {0.009474, 0.006890}, {0.017348, 0.017176}, {0.032782, 0.044336}, {0.048033, 0.086548}, {0.075803, 0.168331}, {0.109539, 0.273539}, {0.137373, 0.364645}, {0.231651, 0.597511}, {0.323797, 0.736475}, {0.383796, 0.805797}, {0.462284, 0.872247}, {0.549844, 0.918328}, {0.678855, 0.962361}, {0.817445, 0.990406}, {1.000000, 1.000000}}}, {18}, {m}, 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1},
+  {"Nikon D7200", "NIKON CORPORATION", "NIKON D7200", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.001604, 0.001334}, {0.007401, 0.005237}, {0.009474, 0.006890}, {0.017348, 0.017176}, {0.032782, 0.044336}, {0.048033, 0.086548}, {0.075803, 0.168331}, {0.109539, 0.273539}, {0.137373, 0.364645}, {0.231651, 0.597511}, {0.323797, 0.736475}, {0.383796, 0.805797}, {0.462284, 0.872247}, {0.549844, 0.918328}, {0.678855, 0.962361}, {0.817445, 0.990406}, {1.000000, 1.000000}}}, {18}, {m}, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0}, 0, 1},
   // nikon d7500 by Anders Bennehag (firmware C 1.00, LD 2.016)
-  {"NIKON D7500", "NIKON CORPORATION", "NIKON D7500", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.000892, 0.001062}, {0.002280, 0.001768}, {0.013983, 0.011368}, {0.032597, 0.044700}, {0.050065, 0.097131}, {0.084129, 0.219954}, {0.120975, 0.336806}, {0.170730, 0.473752}, {0.258677, 0.647113}, {0.409997, 0.827417}, {0.499979, 0.889468}, {0.615564, 0.941960}, {0.665272, 0.957736}, {0.832126, 0.991968}, {1.000000, 1.000000}}}, {16}, {m}, 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1},
+  {"NIKON D7500", "NIKON CORPORATION", "NIKON D7500", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.000892, 0.001062}, {0.002280, 0.001768}, {0.013983, 0.011368}, {0.032597, 0.044700}, {0.050065, 0.097131}, {0.084129, 0.219954}, {0.120975, 0.336806}, {0.170730, 0.473752}, {0.258677, 0.647113}, {0.409997, 0.827417}, {0.499979, 0.889468}, {0.615564, 0.941960}, {0.665272, 0.957736}, {0.832126, 0.991968}, {1.000000, 1.000000}}}, {16}, {m}, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0}, 0, 1},
   // sony rx100m2 by Günther R.
-  { "Sony DSC-RX100M2", "SONY", "DSC-RX100M2", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.015106, 0.008116 }, { 0.070077, 0.093725 }, { 0.107484, 0.170723 }, { 0.191528, 0.341093 }, { 0.257996, 0.458453 }, { 0.305381, 0.537267 }, { 0.326367, 0.569257 }, { 0.448067, 0.723742 }, { 0.509627, 0.777966 }, { 0.676751, 0.898797 }, { 1.000000, 1.000000 } } }, { 12 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1 },
+  { "Sony DSC-RX100M2", "SONY", "DSC-RX100M2", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.015106, 0.008116 }, { 0.070077, 0.093725 }, { 0.107484, 0.170723 }, { 0.191528, 0.341093 }, { 0.257996, 0.458453 }, { 0.305381, 0.537267 }, { 0.326367, 0.569257 }, { 0.448067, 0.723742 }, { 0.509627, 0.777966 }, { 0.676751, 0.898797 }, { 1.000000, 1.000000 } } }, { 12 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0}, 0, 1 },
   // contributed by matthias bodenbinder
-  { "Canon EOS 6D", "Canon", "Canon EOS 6D", 0, FLT_MAX, { { { { 0.000000, 0.002917 }, { 0.000751, 0.001716 }, { 0.006011, 0.004438 }, { 0.020286, 0.021725 }, { 0.048084, 0.085918 }, { 0.093914, 0.233804 }, { 0.162284, 0.431375 }, { 0.257701, 0.629218 }, { 0.384673, 0.800332 }, { 0.547709, 0.917761 }, { 0.751315, 0.988132 }, { 1.000000, 0.999943 } } }, { 12 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1 },
+  { "Canon EOS 6D", "Canon", "Canon EOS 6D", 0, FLT_MAX, { { { { 0.000000, 0.002917 }, { 0.000751, 0.001716 }, { 0.006011, 0.004438 }, { 0.020286, 0.021725 }, { 0.048084, 0.085918 }, { 0.093914, 0.233804 }, { 0.162284, 0.431375 }, { 0.257701, 0.629218 }, { 0.384673, 0.800332 }, { 0.547709, 0.917761 }, { 0.751315, 0.988132 }, { 1.000000, 0.999943 } } }, { 12 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0}, 0, 1 },
   // contributed by Dan Torop
-  { "Fujifilm X100S", "Fujifilm", "X100S", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.009145, 0.007905 }, { 0.026570, 0.032201 }, { 0.131526, 0.289717 }, { 0.175858, 0.395263 }, { 0.350981, 0.696899 }, { 0.614997, 0.959451 }, { 1.000000, 1.000000 } } }, { 8 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1 },
-  { "Fujifilm X100T", "Fujifilm", "X100T", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.009145, 0.007905 }, { 0.026570, 0.032201 }, { 0.131526, 0.289717 }, { 0.175858, 0.395263 }, { 0.350981, 0.696899 }, { 0.614997, 0.959451 }, { 1.000000, 1.000000 } } }, { 8 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1 },
+  { "Fujifilm X100S", "Fujifilm", "X100S", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.009145, 0.007905 }, { 0.026570, 0.032201 }, { 0.131526, 0.289717 }, { 0.175858, 0.395263 }, { 0.350981, 0.696899 }, { 0.614997, 0.959451 }, { 1.000000, 1.000000 } } }, { 8 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0}, 0, 1 },
+  { "Fujifilm X100T", "Fujifilm", "X100T", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.009145, 0.007905 }, { 0.026570, 0.032201 }, { 0.131526, 0.289717 }, { 0.175858, 0.395263 }, { 0.350981, 0.696899 }, { 0.614997, 0.959451 }, { 1.000000, 1.000000 } } }, { 8 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0}, 0, 1 },
   // contributed by Johannes Hanika
-  { "Canon EOS 5D Mark II", "Canon", "Canon EOS 5D Mark II", 0, FLT_MAX, { { { { 0.000000, 0.000366 }, { 0.006560, 0.003504 }, { 0.027310, 0.029834 }, { 0.045915, 0.070230 }, { 0.206554, 0.539895 }, { 0.442337, 0.872409 }, { 0.673263, 0.971703 }, { 1.000000, 0.999832 } } }, { 8 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1 },
+  { "Canon EOS 5D Mark II", "Canon", "Canon EOS 5D Mark II", 0, FLT_MAX, { { { { 0.000000, 0.000366 }, { 0.006560, 0.003504 }, { 0.027310, 0.029834 }, { 0.045915, 0.070230 }, { 0.206554, 0.539895 }, { 0.442337, 0.872409 }, { 0.673263, 0.971703 }, { 1.000000, 0.999832 } } }, { 8 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0}, 0, 1 },
   // contributed by chrik5
-  { "Pentax K-5", "Pentax", "Pentax K-5", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.004754, 0.002208 }, { 0.009529, 0.004214 }, { 0.023713, 0.013508 }, { 0.031866, 0.020352 }, { 0.046734, 0.034063 }, { 0.059989, 0.052413 }, { 0.088415, 0.096030 }, { 0.136610, 0.190629 }, { 0.174480, 0.256484 }, { 0.205192, 0.307430 }, { 0.228896, 0.348447 }, { 0.286411, 0.428680 }, { 0.355314, 0.513527 }, { 0.440014, 0.607651 }, { 0.567096, 0.732791 }, { 0.620597, 0.775968 }, { 0.760355, 0.881828 }, { 0.875139, 0.960682 }, { 1.000000, 1.000000 } } }, { 20 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1 },
+  { "Pentax K-5", "Pentax", "Pentax K-5", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.004754, 0.002208 }, { 0.009529, 0.004214 }, { 0.023713, 0.013508 }, { 0.031866, 0.020352 }, { 0.046734, 0.034063 }, { 0.059989, 0.052413 }, { 0.088415, 0.096030 }, { 0.136610, 0.190629 }, { 0.174480, 0.256484 }, { 0.205192, 0.307430 }, { 0.228896, 0.348447 }, { 0.286411, 0.428680 }, { 0.355314, 0.513527 }, { 0.440014, 0.607651 }, { 0.567096, 0.732791 }, { 0.620597, 0.775968 }, { 0.760355, 0.881828 }, { 0.875139, 0.960682 }, { 1.000000, 1.000000 } } }, { 20 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0}, 0, 1 },
   // contributed by Togan Muftuoglu - ed: slope is too aggressive on shadows
   //{ "Nikon D90", "NIKON", "D90", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.015520, 0.012248 }, { 0.097950, 0.251013 }, { 0.301515, 0.621951 }, { 0.415513, 0.771384 }, { 0.547326, 0.843079 }, { 0.819769, 0.956678 }, { 1.000000, 1.000000 } } }, { 8 }, { m } }, 0, 1 },
   // contributed by Edouard Gomez
-  {"Nikon D90", "NIKON CORPORATION", "NIKON D90", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.011702, 0.012659}, {0.122918, 0.289973}, {0.153642, 0.342731}, {0.246855, 0.510114}, {0.448958, 0.733820}, {0.666759, 0.894290}, {1.000000, 1.000000}}}, {8}, {m}, 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1},
+  {"Nikon D90", "NIKON CORPORATION", "NIKON D90", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.011702, 0.012659}, {0.122918, 0.289973}, {0.153642, 0.342731}, {0.246855, 0.510114}, {0.448958, 0.733820}, {0.666759, 0.894290}, {1.000000, 1.000000}}}, {8}, {m}, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0}, 0, 1},
   // contributed by Pascal Obry
-  { "Nikon D800", "NIKON", "D800", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.001773, 0.001936 }, { 0.009671, 0.009693 }, { 0.016754, 0.020617 }, { 0.024884, 0.037309 }, { 0.048174, 0.107768 }, { 0.056932, 0.139532 }, { 0.085504, 0.233303 }, { 0.130378, 0.349747 }, { 0.155476, 0.405445 }, { 0.175245, 0.445918 }, { 0.217657, 0.516873 }, { 0.308475, 0.668608 }, { 0.375381, 0.754058 }, { 0.459858, 0.839909 }, { 0.509567, 0.881543 }, { 0.654394, 0.960877 }, { 0.783380, 0.999161 }, { 0.859310, 1.000000 }, { 1.000000, 1.000000 } } }, { 20 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1 },
+  { "Nikon D800", "NIKON", "D800", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.001773, 0.001936 }, { 0.009671, 0.009693 }, { 0.016754, 0.020617 }, { 0.024884, 0.037309 }, { 0.048174, 0.107768 }, { 0.056932, 0.139532 }, { 0.085504, 0.233303 }, { 0.130378, 0.349747 }, { 0.155476, 0.405445 }, { 0.175245, 0.445918 }, { 0.217657, 0.516873 }, { 0.308475, 0.668608 }, { 0.375381, 0.754058 }, { 0.459858, 0.839909 }, { 0.509567, 0.881543 }, { 0.654394, 0.960877 }, { 0.783380, 0.999161 }, { 0.859310, 1.000000 }, { 1.000000, 1.000000 } } }, { 20 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0}, 0, 1 },
   // contributed by Lukas Schrangl
-  {"Olympus OM-D E-M10 II", "OLYMPUS CORPORATION    ", "E-M10MarkII     ", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.005707, 0.004764}, {0.018944, 0.024456}, {0.054501, 0.129992}, {0.075665, 0.211873}, {0.119641, 0.365771}, {0.173148, 0.532024}, {0.247979, 0.668989}, {0.357597, 0.780138}, {0.459003, 0.839829}, {0.626844, 0.904426}, {0.769425, 0.948541}, {0.820429, 0.964715}, {1.000000, 1.000000}}}, {14}, {m}, 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1},
+  {"Olympus OM-D E-M10 II", "OLYMPUS CORPORATION    ", "E-M10MarkII     ", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.005707, 0.004764}, {0.018944, 0.024456}, {0.054501, 0.129992}, {0.075665, 0.211873}, {0.119641, 0.365771}, {0.173148, 0.532024}, {0.247979, 0.668989}, {0.357597, 0.780138}, {0.459003, 0.839829}, {0.626844, 0.904426}, {0.769425, 0.948541}, {0.820429, 0.964715}, {1.000000, 1.000000}}}, {14}, {m}, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0}, 0, 1},
   // clang-format on
 };
 static const int basecurve_camera_presets_cnt = sizeof(basecurve_camera_presets) / sizeof(basecurve_preset_t);
@@ -248,23 +285,23 @@ static const basecurve_preset_t basecurve_presets[] = {
   // clang-format off
   // smoother cubic spline curve
   { N_("cubic spline"), "", "", 0, FLT_MAX, { { { { 0.0, 0.0}, { 1.0, 1.0 }, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.} } }, { 2 }, { CUBIC_SPLINE }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { neutral,         "", "",                      0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.005000, 0.002500 }, { 0.150000, 0.300000 }, { 0.400000, 0.700000 }, { 0.750000, 0.950000 }, { 1.000000, 1.000000 } } }, { 6 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1 },
-  { canon_eos,       "Canon", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.028226, 0.029677 }, { 0.120968, 0.232258 }, { 0.459677, 0.747581 }, { 0.858871, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { canon_eos_alt,   "Canon", "EOS 5D Mark",      0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.026210, 0.029677 }, { 0.108871, 0.232258 }, { 0.350806, 0.747581 }, { 0.669355, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { nikon,           "NIKON", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.036290, 0.036532 }, { 0.120968, 0.228226 }, { 0.459677, 0.759678 }, { 0.858871, 0.983468 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { nikon_alt,       "NIKON", "D____",            0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.012097, 0.007322 }, { 0.072581, 0.130742 }, { 0.310484, 0.729291 }, { 0.611321, 0.951613 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { sony_alpha,      "SONY", "",                  0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.031949, 0.036532 }, { 0.105431, 0.228226 }, { 0.434505, 0.759678 }, { 0.855738, 0.983468 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { pentax,          "PENTAX", "",                0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.032258, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { ricoh,           "RICOH", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.032259, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { olympus,         "OLYMPUS", "",               0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.033962, 0.028226 }, { 0.249057, 0.439516 }, { 0.501887, 0.798387 }, { 0.750943, 0.955645 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { olympus_alt,     "OLYMPUS", "E-M",            0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.012097, 0.010322 }, { 0.072581, 0.167742 }, { 0.310484, 0.711291 }, { 0.645161, 0.956855 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { panasonic,       "Panasonic", "",             0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.036290, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { leica,           "Leica", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.036291, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { kodak_easyshare, "EASTMAN KODAK COMPANY", "", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.044355, 0.020967 }, { 0.133065, 0.154322 }, { 0.209677, 0.300301 }, { 0.572581, 0.753477 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { konica_minolta,  "MINOLTA", "",               0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.020161, 0.010322 }, { 0.112903, 0.167742 }, { 0.500000, 0.711291 }, { 0.899194, 0.956855 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { samsung,         "SAMSUNG", "",               0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.040323, 0.029677 }, { 0.133065, 0.232258 }, { 0.447581, 0.747581 }, { 0.842742, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { fujifilm,        "FUJIFILM", "",              0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.028226, 0.029677 }, { 0.104839, 0.232258 }, { 0.387097, 0.747581 }, { 0.754032, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { nokia,           "Nokia", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.041825, 0.020161 }, { 0.117871, 0.153226 }, { 0.319392, 0.500000 }, { 0.638783, 0.842742 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
+  { neutral,         "", "",                      0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.005000, 0.002500 }, { 0.150000, 0.300000 }, { 0.400000, 0.700000 }, { 0.750000, 0.950000 }, { 1.000000, 1.000000 } } }, { 6 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0 }, 0, 1 },
+  { canon_eos,       "Canon", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.028226, 0.029677 }, { 0.120968, 0.232258 }, { 0.459677, 0.747581 }, { 0.858871, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0 }, 0, 0 },
+  { canon_eos_alt,   "Canon", "EOS 5D Mark",      0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.026210, 0.029677 }, { 0.108871, 0.232258 }, { 0.350806, 0.747581 }, { 0.669355, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0 }, 0, 0 },
+  { nikon,           "NIKON", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.036290, 0.036532 }, { 0.120968, 0.228226 }, { 0.459677, 0.759678 }, { 0.858871, 0.983468 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0 }, 0, 0 },
+  { nikon_alt,       "NIKON", "D____",            0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.012097, 0.007322 }, { 0.072581, 0.130742 }, { 0.310484, 0.729291 }, { 0.611321, 0.951613 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0 }, 0, 0 },
+  { sony_alpha,      "SONY", "",                  0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.031949, 0.036532 }, { 0.105431, 0.228226 }, { 0.434505, 0.759678 }, { 0.855738, 0.983468 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0 }, 0, 0 },
+  { pentax,          "PENTAX", "",                0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.032258, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0 }, 0, 0 },
+  { ricoh,           "RICOH", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.032259, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0 }, 0, 0 },
+  { olympus,         "OLYMPUS", "",               0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.033962, 0.028226 }, { 0.249057, 0.439516 }, { 0.501887, 0.798387 }, { 0.750943, 0.955645 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0 }, 0, 0 },
+  { olympus_alt,     "OLYMPUS", "E-M",            0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.012097, 0.010322 }, { 0.072581, 0.167742 }, { 0.310484, 0.711291 }, { 0.645161, 0.956855 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0 }, 0, 0 },
+  { panasonic,       "Panasonic", "",             0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.036290, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0 }, 0, 0 },
+  { leica,           "Leica", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.036291, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0 }, 0, 0 },
+  { kodak_easyshare, "EASTMAN KODAK COMPANY", "", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.044355, 0.020967 }, { 0.133065, 0.154322 }, { 0.209677, 0.300301 }, { 0.572581, 0.753477 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0 }, 0, 0 },
+  { konica_minolta,  "MINOLTA", "",               0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.020161, 0.010322 }, { 0.112903, 0.167742 }, { 0.500000, 0.711291 }, { 0.899194, 0.956855 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0 }, 0, 0 },
+  { samsung,         "SAMSUNG", "",               0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.040323, 0.029677 }, { 0.133065, 0.232258 }, { 0.447581, 0.747581 }, { 0.842742, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0 }, 0, 0 },
+  { fujifilm,        "FUJIFILM", "",              0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.028226, 0.029677 }, { 0.104839, 0.232258 }, { 0.387097, 0.747581 }, { 0.754032, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0 }, 0, 0 },
+  { nokia,           "Nokia", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.041825, 0.020161 }, { 0.117871, 0.153226 }, { 0.319392, 0.500000 }, { 0.638783, 0.842742 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE, 0, 0 }, 0, 0 },
   // clang-format on
 };
 #undef m
@@ -276,7 +313,7 @@ typedef struct dt_iop_basecurve_gui_data_t
   int minmax_curve_type, minmax_curve_nodes;
   GtkBox *hbox;
   GtkDrawingArea *area;
-  GtkWidget *scale, *fusion, *exposure_step, *exposure_bias;
+  GtkWidget *scale, *fusion, *exposure_step, *exposure_bias, *exposure_optimum, *exposure_width;
   GtkWidget *cmb_preserve_colors;
   double mouse_x, mouse_y;
   int selected;
@@ -297,6 +334,8 @@ typedef struct dt_iop_basecurve_data_t
   int exposure_fusion;
   float exposure_stops;
   float exposure_bias;
+  float exposure_optimum; // Optimum brightness for exposure fusion
+  float exposure_width; // Exposure weight function variance
   int preserve_colors;
 } dt_iop_basecurve_data_t;
 
@@ -305,6 +344,7 @@ typedef struct dt_iop_basecurve_global_data_t
   int kernel_basecurve_lut;
   int kernel_basecurve_zero;
   int kernel_basecurve_legacy_lut;
+  int kernel_basecurve_apply_pow;
   int kernel_basecurve_compute_features;
   int kernel_basecurve_blur_h;
   int kernel_basecurve_blur_v;
@@ -358,6 +398,8 @@ static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *pres
       tmp.exposure_fusion = 0;
       tmp.exposure_stops = 1.0f;
       tmp.exposure_bias = 1.0f;
+      tmp.exposure_optimum = 0.5f;
+      tmp.exposure_width = 0.2f;
     }
     // add the preset.
     dt_gui_presets_add_generic(_(presets[k].name), self->op, self->version(),
@@ -577,6 +619,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
     // for every exposure fusion image: push by some ev, apply base curve and compute features
     {
       const float mul = exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias);
+      const float apply_pow = 1.0/2.4;
 
       size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
       if(d->preserve_colors == DT_RGB_NORM_NONE)
@@ -607,10 +650,20 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
         err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_lut, sizes);
       }
 
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_compute_features, 0, sizeof(cl_mem), (void *)&dev_tmp1);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_apply_pow, 0, sizeof(cl_mem), (void *)&dev_tmp1);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_apply_pow, 1, sizeof(cl_mem), (void *)&dev_tmp2);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_apply_pow, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_apply_pow, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_apply_pow, 4, sizeof(float), (void *)&apply_pow);
+       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_apply_pow, sizes);
+      if(err != CL_SUCCESS) goto error;
+
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_compute_features, 0, sizeof(cl_mem), (void *)&dev_tmp2);
       dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_compute_features, 1, sizeof(cl_mem), (void *)&dev_col[0]);
       dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_compute_features, 2, sizeof(int), (void *)&width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_compute_features, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_compute_features, 4, sizeof(float), (void *)&d->exposure_optimum);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_compute_features, 5, sizeof(float), (void *)&d->exposure_width);
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_compute_features, sizes);
       if(err != CL_SUCCESS) goto error;
     }
@@ -619,6 +672,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
     if(!gauss_reduce_cl(self, piece, dev_col[0], dev_col[1], dev_out, dev_tmp1, dev_tmp2, width, height))
       goto error;
 
+#if 0 //Disable saturation weight for now, determine if there are any use cases where it is of any benefit
     // adjust features
     {
       size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
@@ -635,6 +689,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
       err = dt_opencl_enqueue_copy_image(devid, dev_tmp1, dev_col[0], origin, origin, region);
       if(err != CL_SUCCESS) goto error;
     }
+#endif
 
     for(int k = 1, w = width, h = height; k < num_levels; k++)
     {
@@ -756,11 +811,22 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
     }
   }
 
+
   // copy output buffer
   {
     size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+    const float apply_pow = 2.4;
+
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_apply_pow, 0, sizeof(cl_mem), (void *)&dev_comb[0]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_apply_pow, 1, sizeof(cl_mem), (void *)&dev_tmp1);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_apply_pow, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_apply_pow, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_apply_pow, 4, sizeof(float), (void *)&apply_pow);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_apply_pow, sizes);
+    if(err != CL_SUCCESS) goto error;
+
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 0, sizeof(cl_mem), (void *)&dev_in);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 1, sizeof(cl_mem), (void *)&dev_comb[0]);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 1, sizeof(cl_mem), (void *)&dev_tmp1);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 2, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 3, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_finalize, 4, sizeof(int), (void *)&height);
@@ -995,10 +1061,41 @@ static inline void apply_curve(
   }
 }
 
+/*
+  Move our pixels into and out of a gamma-encoded space which is more perceptually even.  Greatly improves
+  blending for exposure fusion.  Any attempt to get decent results from blending in linear space has
+  resulted in severe haloing so far.
+
+  TODO:  Use darktable built-in colorspace code instead?  Need to take a look at the new lut3d module for
+  inspiration.
+*/
+static inline void apply_pow(
+    float *const col,
+    const int wd,
+    const int ht,
+    const float power)
+{
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(col, ht, wd) \
+  schedule(static) \
+  collapse(2)
+#endif
+  for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
+  {
+    const size_t x = 4*((size_t)wd*j+i);
+    col[x] = col[x] > 0.0f ? powf(col[x], power) : 0.0f;
+    col[x+1] = col[x+1] > 0.0f ? powf(col[x+1], power) : 0.0f;
+    col[x+2] = col[x+2] > 0.0f ? powf(col[x+2], power) : 0.0f;
+  }
+}
+
 static inline void compute_features(
     float *const col,
     const int wd,
-    const int ht)
+    const int ht,
+    const float opt,
+    const float w)
 {
   // features are product of
   // 1) well exposedness
@@ -1013,18 +1110,23 @@ static inline void compute_features(
   for(int j=0;j<ht;j++) for(int i=0;i<wd;i++)
   {
     const size_t x = 4*((size_t)wd*j+i);
+    /* 
+       Disable saturation weighting for now.  See comments in basecurve.cl
+    */
+#if 0
     const float max = MAX(col[x], MAX(col[x+1], col[x+2]));
     const float min = MIN(col[x], MIN(col[x+1], col[x+2]));
-    const float sat = .1f + .1f*(max-min)/MAX(1e-4f, max);
+    const float sat = .2f*(max-min)/MAX(1e-4f, max);
     col[x+3] = sat;
+#endif
+    /*
+      FIXME:  Use the RGB norms API instead of hardcoding.
+    */
+    float lum = (col[x] + col[x+1] + col[x+2])/3.0;
 
-    const float c = 0.54f;
-    float v = fabsf(col[x]-c);
-    v = MAX(fabsf(col[x+1]-c), v);
-    v = MAX(fabsf(col[x+2]-c), v);
-    const float var = 0.5;
-    const float exp = .2f + dt_fast_expf(-v*v/(var*var));
-    col[x+3] *= exp;
+    float v = fabsf(lum-opt);
+    const float exp = dt_fast_expf(-v*v/(2.0*w*w));
+    col[x+3] = exp;
   }
 }
 
@@ -1177,13 +1279,41 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       apply_curve(in, col[0], wd, ht, d->preserve_colors, exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias),
                   d->table, d->unbounded_coeffs, work_profile);
 
-    // compute features
-    compute_features(col[0], wd, ht);
+    /*
+      convert into an sRGB-ish gamma curve.
+
+      TODO:  There's probably existing colorspace code for this that is more suitable.
+      However most sRGB code has that linear region near 0 which might be non-ideal for
+      this use case - on the other hand it clearly hasn't caused serious issues for the
+      typical enfuse use case?
+
+      TODO:  We probably shouldn't hardcode the gamma either, but we need to be careful
+      about a nasty case of slider-itis...
+    */
+    apply_pow(col[0], wd, ht, 1.0f/2.4f);
+
+    // compute features - only luminance/"well-exposedness" weighting for now
+    compute_features(col[0], wd, ht, d->exposure_optimum, d->exposure_width);
 
     // create gaussian pyramid of colour buffer
     w = wd;
     h = ht;
     gauss_reduce(col[0], col[1], out, w, h);
+
+    /*
+      Disable contrast weighting, it's very broken.  It has a potential use case where a user has a nonlinear
+      basecurve, however:
+      1.  It's severely broken in its current state and will weight each image by its exposure multiplier
+          if the basecurve is linear - e.g. automatically weighting the brighter images even when they
+          shouldn't be weighted highly.
+      2.  See comments regarding the saturation weights and the current implementation's weighting approach
+          being VASTLY different from enfuse or the original Mertens paper.
+
+      Reread through the enfuse source code to figure out how they're doing contrast weighting,
+      given that they can't normalize for global exposure since they're not generating the multiple images
+      for fusion.
+    */
+#if 0
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(ht, out, wd) \
@@ -1192,6 +1322,7 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 #endif
     for(size_t k = 0; k < 4ul * wd * ht; k += 4)
       col[0][k + 3] *= .1f + sqrtf(out[k] * out[k] + out[k + 1] * out[k + 1] + out[k + 2] * out[k + 2]);
+#endif
 
 // #define DEBUG_VIS2
 #ifdef DEBUG_VIS2 // transform weights in channels
@@ -1285,6 +1416,11 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     }
   }
 #endif
+  /*
+    Move our pixels back into linear space before we send them on their merry way.
+  */
+  apply_pow(comb[0], wd, ht, 2.4f);
+
   // copy output buffer
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -1297,7 +1433,7 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     out[k + 0] = comb[0][k + 0];
     out[k + 1] = comb[0][k + 1];
     out[k + 2] = comb[0][k + 2];
-    out[k + 3] = in[k + 3]; // pass on 4th channel
+    out[k + 3] = in[k + 3]; // pass on original 4th channel
   }
 
   // free temp buffers
@@ -1353,6 +1489,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->exposure_fusion = p->exposure_fusion;
   d->exposure_stops = p->exposure_stops;
   d->exposure_bias = p->exposure_bias;
+  d->exposure_optimum = p->exposure_optimum;
+  d->exposure_width = p->exposure_width;
   d->preserve_colors = p->preserve_colors;
 
   const int ch = 0;
@@ -1414,15 +1552,21 @@ void gui_update(struct dt_iop_module_t *self)
   {
     gtk_widget_set_visible(g->exposure_step, TRUE);
     gtk_widget_set_visible(g->exposure_bias, TRUE);
+    gtk_widget_set_visible(g->exposure_optimum, TRUE);
+    gtk_widget_set_visible(g->exposure_width, TRUE);
   }
   if(p->exposure_fusion == 0)
   {
     gtk_widget_set_visible(g->exposure_step, FALSE);
     gtk_widget_set_visible(g->exposure_bias, FALSE);
+    gtk_widget_set_visible(g->exposure_optimum, FALSE);
+    gtk_widget_set_visible(g->exposure_width, FALSE);
   }
 
   dt_bauhaus_slider_set(g->exposure_step, p->exposure_stops);
   dt_bauhaus_slider_set(g->exposure_bias, p->exposure_bias);
+  dt_bauhaus_slider_set(g->exposure_optimum, p->exposure_optimum);
+  dt_bauhaus_slider_set(g->exposure_width, p->exposure_width);
   // gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
 }
@@ -1443,8 +1587,8 @@ void init(dt_iop_module_t *module)
     },
     { 2, 0, 0 }, // number of nodes per curve
     { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
-    0, 1.0f, 1.0f, // no exposure fusion, but if we would, add one stop
-    DT_RGB_NORM_LUMINANCE
+    0, 1.0f, 1.0f, DT_RGB_NORM_LUMINANCE,
+    0.5f, 0.2f// no exposure fusion, but if we would, add one stop
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_basecurve_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_basecurve_params_t));
@@ -1465,6 +1609,7 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_basecurve_lut = dt_opencl_create_kernel(program, "basecurve_lut");
   gd->kernel_basecurve_zero = dt_opencl_create_kernel(program, "basecurve_zero");
   gd->kernel_basecurve_legacy_lut = dt_opencl_create_kernel(program, "basecurve_legacy_lut");
+  gd->kernel_basecurve_apply_pow = dt_opencl_create_kernel(program, "basecurve_apply_pow");
   gd->kernel_basecurve_compute_features = dt_opencl_create_kernel(program, "basecurve_compute_features");
   gd->kernel_basecurve_blur_h = dt_opencl_create_kernel(program, "basecurve_blur_h");
   gd->kernel_basecurve_blur_v = dt_opencl_create_kernel(program, "basecurve_blur_v");
@@ -1485,6 +1630,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_basecurve_lut);
   dt_opencl_free_kernel(gd->kernel_basecurve_zero);
   dt_opencl_free_kernel(gd->kernel_basecurve_legacy_lut);
+  dt_opencl_free_kernel(gd->kernel_basecurve_apply_pow);
   dt_opencl_free_kernel(gd->kernel_basecurve_compute_features);
   dt_opencl_free_kernel(gd->kernel_basecurve_blur_h);
   dt_opencl_free_kernel(gd->kernel_basecurve_blur_v);
@@ -2055,11 +2201,15 @@ static void fusion_callback(GtkWidget *widget, gpointer user_data)
   {
     gtk_widget_set_visible(g->exposure_step, TRUE);
     gtk_widget_set_visible(g->exposure_bias, TRUE);
+    gtk_widget_set_visible(g->exposure_optimum, TRUE);
+    gtk_widget_set_visible(g->exposure_width, TRUE);
   }
   if(p->exposure_fusion != 0 && fuse == 0)
   {
     gtk_widget_set_visible(g->exposure_step, FALSE);
     gtk_widget_set_visible(g->exposure_bias, FALSE);
+    gtk_widget_set_visible(g->exposure_optimum, FALSE);
+    gtk_widget_set_visible(g->exposure_width, FALSE);
   }
   p->exposure_fusion = fuse;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -2080,6 +2230,24 @@ static void exposure_bias_callback(GtkWidget *widget, gpointer user_data)
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
   float bias = dt_bauhaus_slider_get(widget);
   p->exposure_bias = bias;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void exposure_optimum_callback(GtkWidget *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
+  float optimum = dt_bauhaus_slider_get(widget);
+  p->exposure_optimum = optimum;
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void exposure_width_callback(GtkWidget *widget, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
+  float width = dt_bauhaus_slider_get(widget);
+  p->exposure_width = width;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -2153,11 +2321,19 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(c->fusion, _("none"));
   dt_bauhaus_combobox_add(c->fusion, _("two exposures"));
   dt_bauhaus_combobox_add(c->fusion, _("three exposures"));
+  /*
+    FIXME:  In some cases we may want more than three exposures.  Perhaps this should be converted from
+    a dropdown to a slider?
+  */
   gtk_widget_set_tooltip_text(c->fusion, _("fuse this image stopped up/down a couple of times with itself, to "
                                            "compress high dynamic range. expose for the highlights before use."));
   gtk_box_pack_start(GTK_BOX(self->widget), c->fusion, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->fusion), "value-changed", G_CALLBACK(fusion_callback), self);
 
+  /*
+    Ideally this should be limited to +2.0EV or so, anything more greatly increases risk of haloing.
+    If you need to bring up shadows that much, we need to consider increasing the number of exposures
+  */
   c->exposure_step = dt_bauhaus_slider_new_with_range(self, 0.01f, 4.0f, 0.100f, 1.0f, 3);
   gtk_widget_set_tooltip_text(c->exposure_step, _("how many stops to shift the individual exposures apart"));
   dt_bauhaus_widget_set_label(c->exposure_step, NULL, _("exposure shift"));
@@ -2167,17 +2343,40 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_no_show_all(c->exposure_step, TRUE);
   gtk_widget_set_visible(c->exposure_step, p->exposure_fusion != 0 ? TRUE : FALSE);
 
-  // initially set to 1 (consistency with previous versions), but double-click resets to 0
-  // to get a quick way to reach 0 with the mouse.
-  c->exposure_bias = dt_bauhaus_slider_new_with_range(self, -1.0f, 1.0f, 0.100f, 0.0f, 3);
-  gtk_widget_set_tooltip_text(c->exposure_bias, _("whether to shift exposure up or down "
-                                                  "(-1: reduce highlight, +1: reduce shadows)"));
+  /*
+    Set to 1, default changed to 1, really shouldn't ever be anything but 1, only here to preserve
+    consistency with existing edits.  Users should tune highlights with the exposure and
+    highlight reconstruction modules instead.
+  */
+  c->exposure_bias = dt_bauhaus_slider_new_with_range(self, -1.0f, 1.0f, 0.100f, 1.0f, 3);
+  gtk_widget_set_tooltip_text(c->exposure_bias, _("You should leave this at 1, tune your highlights with "
+                                                   "the exposure and highlight reconstruction modules instead, "
+                                                   "-EV may be required to compensate for white balance "
+                                                   "multipliers."));
   dt_bauhaus_widget_set_label(c->exposure_bias, NULL, _("exposure bias"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->exposure_bias, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->exposure_bias), "value-changed", G_CALLBACK(exposure_bias_callback), self);
   gtk_widget_show_all(c->exposure_bias);
   gtk_widget_set_no_show_all(c->exposure_bias, TRUE);
   gtk_widget_set_visible(c->exposure_bias, p->exposure_fusion != 0 ? TRUE : FALSE);
+
+  c->exposure_optimum = dt_bauhaus_slider_new_with_range(self, 0.01f, 1.0f, 0.100f, 0.5f, 3);
+  gtk_widget_set_tooltip_text(c->exposure_optimum, _("optimum exposure value"));
+  dt_bauhaus_widget_set_label(c->exposure_optimum, NULL, _("exposure optimum"));
+  gtk_box_pack_start(GTK_BOX(self->widget), c->exposure_optimum, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(c->exposure_optimum), "value-changed", G_CALLBACK(exposure_optimum_callback), self);
+  gtk_widget_show_all(c->exposure_optimum);
+  gtk_widget_set_no_show_all(c->exposure_optimum, TRUE);
+  gtk_widget_set_visible(c->exposure_optimum, p->exposure_fusion != 0 ? TRUE : FALSE);
+
+  c->exposure_width = dt_bauhaus_slider_new_with_range(self, 0.01f, 1.0f, 0.100f, 0.2f, 3);
+  gtk_widget_set_tooltip_text(c->exposure_width, _("exposure variance"));
+  dt_bauhaus_widget_set_label(c->exposure_width, NULL, _("exposure variance"));
+  gtk_box_pack_start(GTK_BOX(self->widget), c->exposure_width, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(c->exposure_width), "value-changed", G_CALLBACK(exposure_width_callback), self);
+  gtk_widget_show_all(c->exposure_width);
+  gtk_widget_set_no_show_all(c->exposure_width, TRUE);
+  gtk_widget_set_visible(c->exposure_width, p->exposure_fusion != 0 ? TRUE : FALSE);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK

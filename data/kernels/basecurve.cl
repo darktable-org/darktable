@@ -113,7 +113,7 @@ basecurve_legacy_lut(read_only image2d_t in, write_only image2d_t out, const int
 }
 
 kernel void
-basecurve_compute_features(read_only image2d_t in, write_only image2d_t out, const int width, const int height)
+basecurve_apply_pow(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const float adjust_pow)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -121,23 +121,46 @@ basecurve_compute_features(read_only image2d_t in, write_only image2d_t out, con
   if(x >= width || y >= height) return;
 
   float4 value = read_imagef(in, sampleri, (int2)(x, y));
-  
+  value.x = native_powr(clamp(value.x, 0.0f, 999.0f),adjust_pow);
+  value.y = native_powr(clamp(value.y, 0.0f, 999.0f),adjust_pow);
+  value.z = native_powr(clamp(value.z, 0.0f, 999.0f),adjust_pow);
+
+  write_imagef (out, (int2)(x, y), value);
+}
+
+kernel void
+basecurve_compute_features(read_only image2d_t in, write_only image2d_t out, const int width, const int height, const float opt, const float w)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 value = read_imagef(in, sampleri, (int2)(x, y));
+/*
+  Disable saturation weighting for now, it will only be useful when "preserve colors" is turned off since we don't clip.
+
+  Enfuse also defaults to turning this off now.
+
+  TODO:  Figure out how to preserve legacy compatibility, even though it's questionable whether anyone got visually acceptable results
+  from the old configuration.  I never could...  Unfortunately the method of combining weights here is completely different
+  from the Mertens paper AND enfuse, so it would be difficult to preserve compatibility without keeping a pile of hardcoded constants we
+  don't want to exist in the future around.
+*/
+/*
   const float ma = max(value.x, max(value.y, value.z));
   const float mi = min(value.x, min(value.y, value.z));
   
-  const float sat = 0.1f + 0.1f * (ma - mi) / max(1.0e-4f, ma);
+  const float sat = 0.2f * (ma - mi) / max(1.0e-4f, ma);
   value.w = sat;
-
-  const float c = 0.54f;
+*/
   
-  float v = fabs(value.x - c);
-  v = max(fabs(value.y - c), v);
-  v = max(fabs(value.z - c), v);
+  float v = fabs((value.x + value.y + value.z)/3.0f - opt);
 
-  const float var = 0.5f;
-  const float e = 0.2f + fast_expf(-v * v / (var * var));
+  const float var = w * 1.4142135f;
+  const float e = fast_expf(-v * v / (var * var));
 
-  value.w *= e;
+  value.w = e;
   
   write_imagef (out, (int2)(x, y), value);
 }
