@@ -198,7 +198,7 @@ int main(int argc, char *arg[])
       if(nb_elts[0][level] > 100 && nb_elts[1][level] > 100 && nb_elts[2][level] > 100 && level > 0)
       {
         double level_normalized = level / (double)NB_CLASSES ;
-        double level2 = level_normalized + 0.0001;
+        double level2 = level_normalized*level_normalized + 0.0001;
         fprintf(stdout, "%f %f %f %f %d %d %d\n", level_normalized, var[0][level] / level2, var[1][level] / level2,
               var[2][level] / level2, nb_elts[0][level], nb_elts[1][level], nb_elts[2][level]);
       }
@@ -352,8 +352,8 @@ int main(int argc, char *arg[])
           double delta = var*var + 4.0*a0*a1;
           double z1 = (var + sqrt(delta))/(2.0*a0);
           bias[c][level] = pow(z1, 1.0/beta) - b[c];
-          double z2 = var / a0;
-          bias[c][level] = pow(z2, 1.0/beta) - b[c];
+          // double z2 = var / a0;
+          // bias[c][level] = pow(z2, 1.0/beta) - b[c];
         }
       }
     }
