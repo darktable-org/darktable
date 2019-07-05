@@ -412,6 +412,8 @@ if(USE_GRAPHICSMAGICK)
   endif(GraphicsMagick_FOUND)
 endif(USE_GRAPHICSMAGICK)
 
+list(APPEND LIBS cgmic)
+
 #
 # Add HAVE_xxx defines used by darktable
 #
