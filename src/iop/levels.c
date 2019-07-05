@@ -453,7 +453,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_levels_data_t *d = (dt_iop_levels_data_t *)piece->data;
-  dt_iop_levels_global_data_t *gd = (dt_iop_levels_global_data_t *)self->data;
+  dt_iop_levels_global_data_t *gd = (dt_iop_levels_global_data_t *)self->global_data;
 
   if(d->mode == LEVELS_MODE_AUTOMATIC)
   {

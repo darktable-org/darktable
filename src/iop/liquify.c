@@ -1546,7 +1546,7 @@ static cl_int_t apply_global_distortion_map_cl (struct dt_iop_module_t *module,
 {
   cl_int_t err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
 
-  dt_iop_liquify_global_data_t *gd = (dt_iop_liquify_global_data_t *) module->data;
+  dt_iop_liquify_global_data_t *gd = (dt_iop_liquify_global_data_t *) module->global_data;
   const int devid = piece->pipe->devid;
 
   const struct dt_interpolation* interpolation = dt_interpolation_new (DT_INTERPOLATION_USERPREF);
