@@ -169,7 +169,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_nlmeans_params_t *d = (dt_iop_nlmeans_params_t *)piece->data;
-  dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)self->data;
+  dt_iop_nlmeans_global_data_t *gd = (dt_iop_nlmeans_global_data_t *)self->global_data;
 
 
   const int devid = piece->pipe->devid;
@@ -718,7 +718,7 @@ void init(dt_iop_module_t *module)
   // about the first thing to do in Lab space:
   module->params_size = sizeof(dt_iop_nlmeans_params_t);
   module->gui_data = NULL;
-  module->data = NULL;
+  module->global_data = NULL;
 }
 
 void cleanup(dt_iop_module_t *module)

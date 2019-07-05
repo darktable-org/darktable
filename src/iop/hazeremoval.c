@@ -795,7 +795,7 @@ error:
 
 static int box_min_cl(struct dt_iop_module_t *self, int devid, cl_mem in, cl_mem out, const int w)
 {
-  dt_iop_hazeremoval_global_data_t *gd = self->data;
+  dt_iop_hazeremoval_global_data_t *gd = self->global_data;
   const int width = dt_opencl_get_image_width(in);
   const int height = dt_opencl_get_image_height(in);
   void *temp = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
@@ -828,7 +828,7 @@ error:
 
 static int box_max_cl(struct dt_iop_module_t *self, int devid, cl_mem in, cl_mem out, const int w)
 {
-  dt_iop_hazeremoval_global_data_t *gd = self->data;
+  dt_iop_hazeremoval_global_data_t *gd = self->global_data;
   const int width = dt_opencl_get_image_width(in);
   const int height = dt_opencl_get_image_height(in);
   void *temp = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
@@ -862,7 +862,7 @@ error:
 static int transition_map_cl(struct dt_iop_module_t *self, int devid, cl_mem img1, cl_mem img2, const int w1,
                              const float strength, const float *const A0)
 {
-  dt_iop_hazeremoval_global_data_t *gd = self->data;
+  dt_iop_hazeremoval_global_data_t *gd = self->global_data;
   const int width = dt_opencl_get_image_width(img1);
   const int height = dt_opencl_get_image_height(img1);
 
@@ -891,7 +891,7 @@ static int transition_map_cl(struct dt_iop_module_t *self, int devid, cl_mem img
 static int dehaze_cl(struct dt_iop_module_t *self, int devid, cl_mem img_in, cl_mem trans_map, cl_mem img_out,
                      const float t_min, const float *const A0)
 {
-  dt_iop_hazeremoval_global_data_t *gd = self->data;
+  dt_iop_hazeremoval_global_data_t *gd = self->global_data;
   const int width = dt_opencl_get_image_width(img_in);
   const int height = dt_opencl_get_image_height(img_in);
 

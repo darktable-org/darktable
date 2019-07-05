@@ -1518,7 +1518,7 @@ end:
 void init(dt_iop_module_t *module)
 {
   // we don't need global data:
-  module->data = NULL; // malloc(sizeof(dt_iop_cacorrect_global_data_t));
+  module->global_data = NULL; // malloc(sizeof(dt_iop_cacorrect_global_data_t));
   module->params = calloc(1, sizeof(dt_iop_cacorrect_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_cacorrect_params_t));
   // our module is disabled by default
@@ -1534,8 +1534,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
-  free(module->data); // just to be sure
-  module->data = NULL;
+  free(module->global_data); // just to be sure
+  module->global_data = NULL;
 }
 
 /** commit is the synch point between core and gui, so it copies params to pipe data. */

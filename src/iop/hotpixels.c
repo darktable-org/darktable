@@ -328,7 +328,7 @@ end:
 
 void init(dt_iop_module_t *module)
 {
-  module->data = NULL;
+  module->global_data = NULL;
   module->params = calloc(1, sizeof(dt_iop_hotpixels_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_hotpixels_params_t));
   module->default_enabled = 0;
@@ -340,8 +340,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
-  free(module->data);
-  module->data = NULL;
+  free(module->global_data);
+  module->global_data = NULL;
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,

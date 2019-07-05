@@ -342,7 +342,7 @@ typedef struct dt_iop_module_t
   /** parameters needed if a gui is attached. will be NULL if in export/batch mode. */
   dt_iop_gui_data_t *gui_data;
   /** other stuff that may be needed by the module, not only in gui mode. */
-  dt_iop_global_data_t *data;
+  dt_iop_global_data_t *global_data;
   /** blending params */
   struct dt_develop_blend_params_t *blend_params, *default_blendop_params;
   /** holder for blending ui control */
