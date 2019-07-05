@@ -1831,7 +1831,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
                               const dt_iop_roi_t *const roi_out)
 {
   dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;
-  dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)self->data;
+  dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -2072,7 +2072,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
                                const dt_iop_roi_t *const roi_out)
 {
   dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;
-  dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)self->data;
+  dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)self->global_data;
 
   const int max_max_scale = DT_IOP_DENOISE_PROFILE_BANDS; // hard limit
   int max_scale = 0;
@@ -2554,7 +2554,7 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_denoiseprofile_params_t));
   module->params_size = sizeof(dt_iop_denoiseprofile_params_t);
   module->gui_data = NULL;
-  module->data = NULL;
+  module->global_data = NULL;
   dt_iop_denoiseprofile_params_t tmp;
   memset(&tmp, 0, sizeof(dt_iop_denoiseprofile_params_t));
   for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)

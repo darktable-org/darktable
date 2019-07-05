@@ -408,7 +408,7 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_defringe_params_t));
   module->params_size = sizeof(dt_iop_defringe_params_t);
   module->gui_data = NULL;
-  module->data = NULL;
+  module->global_data = NULL;
 }
 
 void cleanup(dt_iop_module_t *module)
