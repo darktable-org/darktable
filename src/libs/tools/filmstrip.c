@@ -820,16 +820,18 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
       {
         if(!strip->force_expose_all && id == mouse_over_id) strip->last_exposed_id = id;
 
-        dt_view_image_expose_t params = { 0 };
-        params.image_over = &(strip->image_over);
-        params.imgid = id;
-        params.mouse_over = (id == mouse_over_id);
-        params.cr = cr;
-        params.width = wd;
-        params.height = ht;
-        params.px = img_pointerx;
-        params.py = img_pointery;
-        params.zoom = max_cols;
+        dt_view_image_expose_t params = {
+          .image_over = &(strip->image_over),
+          .imgid      = id,
+          .mouse_over = (id == mouse_over_id),
+          .cr         = cr,
+          .width      = wd,
+          .height     = ht,
+          .px         = img_pointerx,
+          .py         = img_pointery,
+          .zoom       = max_cols
+        };
+
         const int thumb_missed = dt_view_image_expose(&params);
 
         // if thumb is missing, record it for expose int next round
