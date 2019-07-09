@@ -625,7 +625,9 @@ static gboolean _lib_filmstrip_button_press_callback(GtkWidget *w, GdkEventButto
             if(_lib_filmstrip_imgid_in_collection(darktable.collection, mouse_over_id) == 0)
               dt_view_filmstrip_scroll_relative(0, offset);
 
-          //  gtk_widget_queue_draw(darktable.view_manager->proxy.filmstrip.module->widget);
+          dt_collection_update_query(darktable.collection); // update the counter and selection
+          dt_collection_hint_message(darktable.collection); // More than this, we need to redraw all
+
           gtk_widget_queue_draw(strip->filmstrip);
           return TRUE;
         }
