@@ -907,7 +907,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   const int imgid = dev->image_storage.id;
   guint tagid = 0;
   dt_tag_new("darktable|changed", &tagid);
-  dt_tag_attach(tagid, imgid);
+  dt_tag_attach_from_gui(tagid, imgid);
 
   // invalidate buffers and force redraw of darkroom
   dt_dev_invalidate_all(dev);

@@ -1711,6 +1711,8 @@ int32_t dt_image_copy_rename(const int32_t imgid, const int32_t filmid, const gc
 
         // write xmp file
         dt_image_write_sidecar_file(newid);
+
+        dt_collection_update_query(darktable.collection);
       }
 
       g_free(filename);

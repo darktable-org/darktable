@@ -852,7 +852,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
         guint tagid = 0;
         if(!dt_tag_exists((char *)cvalue, &tagid)) dt_tag_new((char *)cvalue, &tagid);
 
-        dt_tag_attach(tagid, imgid);
+        dt_tag_attach_from_gui(tagid, imgid);
         data->has_tags = TRUE;
         xmlFree(cvalue);
       }

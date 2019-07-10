@@ -181,7 +181,7 @@ static void attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
 
   imgsel = dt_view_get_image_to_act_on();
 
-  dt_tag_attach(tagid, imgsel);
+  dt_tag_attach_from_gui(tagid, imgsel);
   dt_image_synch_xmp(imgsel);
 
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
