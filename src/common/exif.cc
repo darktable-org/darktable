@@ -436,7 +436,7 @@ static bool dt_exif_read_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
         char *tag = dt_util_foo_to_utf8(str.c_str());
         guint tagid = 0;
         dt_tag_new(tag, &tagid);
-        dt_tag_attach(tagid, img->id);
+        dt_tag_attach_from_gui(tagid, img->id);
         g_free(tag);
         ++pos;
       }
@@ -932,7 +932,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       {
        // If no supported Illuminant is found it's better NOT to use the found matrix.
        // The colorin module will write an error message and use a fallback matrix
-       // instead of showing wrong colors. 
+       // instead of showing wrong colors.
        switch(illu)
         {
           case 21:

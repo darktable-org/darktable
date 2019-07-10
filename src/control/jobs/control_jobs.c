@@ -538,7 +538,11 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   {
     imgid = GPOINTER_TO_INT(t->data);
     newimgid = dt_image_duplicate(imgid);
-    if(newimgid != -1) dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL);
+    if(newimgid != -1)
+    {
+      dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL);
+      dt_collection_update_query(darktable.collection);
+    }
     t = g_list_delete_link(t, t);
     fraction = 1.0 / total;
     dt_control_job_set_progress(job, fraction);
@@ -1253,7 +1257,7 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
     if(is_copy)
     {
       if (dt_image_local_copy_set(imgid) == 0)
-        dt_tag_attach(tagid, imgid);
+        dt_tag_attach_from_gui(tagid, imgid);
     }
     else
     {
@@ -1349,7 +1353,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     // remove 'changed' tag from image
     dt_tag_detach(tagid, imgid);
     // make sure the 'exported' tag is set on the image
-    dt_tag_attach(etagid, imgid);
+    dt_tag_attach_from_gui(etagid, imgid);
     // check if image still exists:
     char imgfilename[PATH_MAX] = { 0 };
     const dt_image_t *image = dt_image_cache_get(darktable.image_cache, (int32_t)imgid, 'r');

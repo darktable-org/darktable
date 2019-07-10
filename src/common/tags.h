@@ -59,7 +59,9 @@ gboolean dt_tag_exists(const char *name, guint *tagid);
 
 /** attach a list of tags on selected images. \param[in] tagid id of tag to attach. \param[in] imgid the image
  * id to attach tag to, if < 0 selected images are used. */
-void dt_tag_attach(guint tagid, gint imgid);
+gboolean dt_tag_attach(guint tagid, gint imgid);
+/** same as above but raises a dt_collection_update_query() */
+void dt_tag_attach_from_gui(guint tagid, gint imgid);
 
 /** attach a list of tags on selected images. \param[in] tags a list of ids of tags. \param[in] imgid the
  * image id to attach tag to, if < 0 selected images are used. \note If tag not exists it's created.*/
