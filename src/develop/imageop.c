@@ -160,8 +160,8 @@ static void default_cleanup(dt_iop_module_t *module)
   module->gui_data = NULL; // just to be sure
   g_free(module->params);
   module->params = NULL;
-  g_free(module->data); // just to be sure
-  module->data = NULL;
+  g_free(module->global_data); // just to be sure
+  module->global_data = NULL;
 }
 
 
@@ -272,6 +272,8 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
 
   if(!g_module_symbol(module->module, "disconnect_key_accels", (gpointer) & (module->disconnect_key_accels)))
     module->disconnect_key_accels = NULL;
+  if(!g_module_symbol(module->module, "mouse_actions", (gpointer) & (module->mouse_actions)))
+    module->mouse_actions = NULL;
   if(!g_module_symbol(module->module, "mouse_leave", (gpointer) & (module->mouse_leave)))
     module->mouse_leave = NULL;
   if(!g_module_symbol(module->module, "mouse_moved", (gpointer) & (module->mouse_moved)))
@@ -397,7 +399,6 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->histogram_middle_grey = FALSE;
   module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
   module->suppress_mask = 0;
-  module->bypass_blendif = 0;
   module->enabled = module->default_enabled = 0; // all modules disabled by default.
   g_strlcpy(module->op, so->op, 20);
   module->raster_mask.source.users = g_hash_table_new(NULL, NULL);
@@ -462,6 +463,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
 
   module->connect_key_accels = so->connect_key_accels;
   module->disconnect_key_accels = so->disconnect_key_accels;
+  module->mouse_actions = so->mouse_actions;
 
   module->have_introspection = so->have_introspection;
   module->get_introspection = so->get_introspection;
@@ -491,7 +493,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
     dt_iop_gui_set_state(module, state);
   }
 
-  module->data = so->data;
+  module->global_data = so->data;
 
   // now init the instance:
   module->init(module);
@@ -1068,22 +1070,18 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
     {
       module->enabled = 1;
 
-      dt_iop_request_focus(module);
-
       if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
         darktable.gui->scroll_to[1] = module->expander;
 
-      if(dt_conf_get_bool("darkroom/ui/activate_expand"))
+      if(dt_conf_get_bool("darkroom/ui/activate_expand") && !module->expanded)
         dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
     }
     else
     {
       module->enabled = 0;
 
-      if(dt_conf_get_bool("darkroom/ui/activate_expand"))
+      if(dt_conf_get_bool("darkroom/ui/activate_expand") && module->expanded)
         dt_iop_gui_set_expanded(module, FALSE, FALSE);
-
-      dt_iop_request_focus(NULL);
     }
     dt_dev_add_history_item(module->dev, module, FALSE);
   }
@@ -1448,7 +1446,7 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, d
     free(module);
     return 1;
   }
-  module->data = module_so->data;
+  module->global_data = module_so->data;
   module->so = module_so;
   dt_iop_reload_defaults(module);
   return 0;
@@ -1471,7 +1469,7 @@ GList *dt_iop_load_modules_ext(dt_develop_t *dev, gboolean no_image)
       continue;
     }
     res = g_list_insert_sorted(res, module, dt_sort_iop_by_order);
-    module->data = module_so->data;
+    module->global_data = module_so->data;
     module->so = module_so;
     if(!no_image) dt_iop_reload_defaults(module);
     iop = g_list_next(iop);
@@ -1743,6 +1741,10 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     if(module->gui_focus) module->gui_focus(module, TRUE);
   }
 
+  /* update sticky accels window */
+  if(darktable.view_manager->accels_window.window && darktable.view_manager->accels_window.sticky)
+    dt_view_accels_refresh(darktable.view_manager);
+
   dt_control_change_cursor(GDK_LEFT_PTR);
 }
 
@@ -1864,7 +1866,7 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
 
   if(e->button == 1)
   {
-    if((e->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+    if((e->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == (GDK_SHIFT_MASK | GDK_CONTROL_MASK))
     {
       GtkBox *container = dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
       g_object_set_data(G_OBJECT(container), "source_data", user_data);
@@ -2153,6 +2155,7 @@ gchar *dt_iop_get_localized_name(const gchar *op)
 
 void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t state)
 {
+  const dt_iop_module_state_t old_state = module->state;
   module->state = state;
 
   char option[1024];
@@ -2216,6 +2219,41 @@ void dt_iop_so_gui_set_state(dt_iop_module_so_t *module, dt_iop_module_state_t s
     dt_conf_set_bool(option, TRUE);
     snprintf(option, sizeof(option), "plugins/darkroom/%s/favorite", module->op);
     dt_conf_set_bool(option, TRUE);
+  }
+
+  // (dis)connect key accels
+  if(old_state == dt_iop_state_HIDDEN && state != dt_iop_state_HIDDEN)
+  {
+    // connect
+    mods = g_list_first(darktable.develop->iop);
+    while(mods)
+    {
+      dt_iop_module_t *mod = (dt_iop_module_t *)mods->data;
+      if(mod->so == module)
+      {
+        if(mod->connect_key_accels) mod->connect_key_accels(mod);
+        dt_iop_connect_common_accels(mod);
+      }
+      mods = g_list_next(mods);
+    }
+    dt_dynamic_accel_get_valid_list();
+  }
+  else if(state == dt_iop_state_HIDDEN && old_state != dt_iop_state_HIDDEN)
+  {
+    // disconnect
+    mods = g_list_first(darktable.develop->iop);
+    while(mods)
+    {
+      dt_iop_module_t *mod = (dt_iop_module_t *)mods->data;
+      if(mod->so == module)
+      {
+        dt_accel_disconnect_list(mod->accel_closures);
+        dt_accel_cleanup_locals_iop(mod);
+        mod->accel_closures = NULL;
+      }
+      mods = g_list_next(mods);
+    }
+    dt_dynamic_accel_get_valid_list();
   }
 
   dt_view_manager_t *vm = darktable.view_manager;

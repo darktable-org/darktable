@@ -34,7 +34,7 @@ struct dt_view_t;
 
 #pragma GCC visibility push(default)
 
-const char *name(struct dt_view_t *self);    // get translatable name
+const char *name(const struct dt_view_t *self); // get translatable name
 uint32_t view(const struct dt_view_t *self); // get the view type
 uint32_t flags();                            // get flags of the view
 void init(struct dt_view_t *self);           // init *data
@@ -64,6 +64,9 @@ void scrollbar_changed(struct dt_view_t *self, double x, double y); // scrollbar
 // keyboard accel callbacks
 void init_key_accels(struct dt_view_t *self);
 void connect_key_accels(struct dt_view_t *self);
+
+// list of mouse actions
+GSList *mouse_actions(const struct dt_view_t *self);
 
 #pragma GCC visibility pop
 

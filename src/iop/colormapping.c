@@ -226,7 +226,7 @@ static void invert_histogram(const int *hist, float *inv_hist)
 }
 
 #pragma GCC diagnostic push
-#pragma GCC diagnostic warning "-Wvla"
+#pragma GCC diagnostic ignored "-Wvla"
 
 static void get_cluster_mapping(const int n, float mi[n][2], const float wi[n], float mo[n][2], const float wo[n],
                                 const float dominance, int mapio[n])
@@ -337,7 +337,10 @@ static void kmeans(const float *col, const int width, const int height, const in
     for(int k = 0; k < n; k++) cnt[k] = 0;
 // randomly sample col positions inside roi
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(col, mean_out)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(cnt, height, mean, n, samples, var, width) \
+    shared(col, mean_out) \
+    schedule(static)
 #endif
     for(int s = 0; s < samples; s++)
     {
@@ -497,7 +500,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 // first get delta L of equalized L minus original image L, scaled to fit into [0 .. 100]
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(data, in, out, equalization)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, height, width) \
+    shared(data, in, out, equalization) \
+    schedule(static)
 #endif
     for(int k = 0; k < height; k++)
     {
@@ -532,7 +538,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float *const weight_buf = malloc(data->n * dt_get_num_threads() * sizeof(float));
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(data, in, out, equalization)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, height, mapio, var_ratio, weight_buf, width) \
+    shared(data, in, out, equalization) \
+    schedule(static)
 #endif
     for(int k = 0; k < height; k++)
     {
@@ -578,7 +587,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colormapping_data_t *data = (dt_iop_colormapping_data_t *)piece->data;
-  dt_iop_colormapping_global_data_t *gd = (dt_iop_colormapping_global_data_t *)self->data;
+  dt_iop_colormapping_global_data_t *gd = (dt_iop_colormapping_global_data_t *)self->global_data;
   dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
 
   cl_int err = -999;

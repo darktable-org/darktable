@@ -185,6 +185,9 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
 
   dt_accel_path_global(path, sizeof(path), "zoom out");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_zoom_out);
+
+  dt_accel_path_global(path, sizeof(path), "show accels window");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_accels_window);
 }
 
 static gboolean fullscreen_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
@@ -972,6 +975,12 @@ static gboolean center_enter(GtkWidget *widget, GdkEventCrossing *event, gpointe
   return TRUE;
 }
 
+static gboolean _windows_state_changed(GtkWidget *window, GdkEventWindowState *event, GtkWidget *widget)
+{
+  dt_view_lighttable_force_expose_all(darktable.view_manager);
+  return TRUE;
+}
+
 static const char* get_source_name(int pos)
 {
   static const gchar *SOURCE_NAMES[]
@@ -1060,6 +1069,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   darktable.control->accelerators = gtk_accel_group_new();
 
   darktable.control->accelerator_list = NULL;
+  darktable.control->dynamic_accelerator_list = NULL;
 
   // Connecting the callback to update keyboard accels for key_pressed
   g_signal_connect(G_OBJECT(gtk_accel_map_get()), "changed", G_CALLBACK(key_accel_changed), NULL);
@@ -1081,8 +1091,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // Adding the global shortcut group to the main window
   gtk_window_add_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
                              darktable.control->accelerators);
-
-  //  dt_gui_background_jobs_init();
 
   /* Have the delete event (window close) end the program */
   snprintf(path, sizeof(path), "%s/icons", datadir);
@@ -1139,6 +1147,9 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   widget = dt_ui_center(darktable.gui->ui);
   gtk_widget_set_app_paintable(widget, TRUE);
+
+  g_signal_connect(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), "window-state-event",
+                   G_CALLBACK(_windows_state_changed), widget);
 
   // TODO: make this work as: libgnomeui testgnome.c
   /*  GtkContainer *box = GTK_CONTAINER(darktable.gui->widgets.plugins_vbox);
@@ -1228,6 +1239,9 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // Global zoom in & zoom out
   dt_accel_register_global(NC_("accel", "zoom in"), GDK_KEY_plus, GDK_CONTROL_MASK);
   dt_accel_register_global(NC_("accel", "zoom out"), GDK_KEY_minus, GDK_CONTROL_MASK);
+
+  // accels window
+  dt_accel_register_global(NC_("accel", "show accels window"), 0, 0);
 
   darktable.gui->reset = 0;
 
@@ -1771,6 +1785,8 @@ void dt_ui_panel_show(dt_ui_t *ui, const dt_ui_panel_t p, gboolean show, gboolea
     gtk_widget_show(ui->panels[p]);
   else
     gtk_widget_hide(ui->panels[p]);
+
+  dt_view_lighttable_force_expose_all(darktable.view_manager);
 }
 
 gboolean dt_ui_panel_visible(dt_ui_t *ui, const dt_ui_panel_t p)
@@ -1800,7 +1816,7 @@ static GtkWidget *_ui_init_panel_container_top(GtkWidget *container)
 static gboolean _ui_init_panel_container_center_scroll_event(GtkWidget *widget, GdkEventScroll *event)
 {
   // just make sure nothing happens unless ctrl-alt are pressed:
-  return ((event->state & gtk_accelerator_get_default_mod_mask()) != darktable.gui->sidebar_scroll_mask);
+  return (((event->state & gtk_accelerator_get_default_mod_mask()) != darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default"));
 }
 
 // this should work as long as everything happens in the gui thread
@@ -2013,7 +2029,7 @@ static void _ui_init_panel_center_bottom(dt_ui_t *ui, GtkWidget *container)
 /* this is called as a signal handler, the signal raising logic asserts the gdk lock. */
 static void _ui_widget_redraw_callback(gpointer instance, GtkWidget *widget)
 {
-  gtk_widget_queue_draw(widget);
+   gtk_widget_queue_draw(widget);
 }
 
 void dt_ellipsize_combo(GtkComboBox *cbox)
@@ -2173,6 +2189,8 @@ void dt_gui_load_theme(const char *theme)
     [DT_GUI_COLOR_THUMBNAIL_BORDER] = { "thumbnail_border_color", { 0.1, 0.1, 0.1, 1.0 } },
     [DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER] = { "thumbnail_selected_border_color", { 0.9, 0.9, 0.9, 1.0 } },
     [DT_GUI_COLOR_FILMSTRIP_BG] = { "filmstrip_bg_color", { 0.2, 0.2, 0.2, 1.0 } },
+    [DT_GUI_COLOR_PREVIEW_BORDER] = { "preview_border_color", { 0.1, 0.1, 0.1, 1.0 } },
+    [DT_GUI_COLOR_PREVIEW_HOVER_BORDER] = { "preview_hover_border_color", { 0.9, 0.9, 0.9, 1.0 } },
   };
 
   // starting from 1 as DT_GUI_COLOR_BG is not part of this table

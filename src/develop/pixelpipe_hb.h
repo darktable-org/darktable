@@ -115,8 +115,14 @@ typedef struct dt_dev_pixelpipe_t
   uint8_t *backbuf;
   size_t backbuf_size;
   int backbuf_width, backbuf_height;
+  float backbuf_scale;
+  float backbuf_zoom_x, backbuf_zoom_y;
   uint64_t backbuf_hash;
   dt_pthread_mutex_t backbuf_mutex, busy_mutex;
+  // output buffer (for display)
+  uint8_t *output_backbuf;
+  int output_backbuf_width, output_backbuf_height;
+  int output_imgid;
   // working?
   int processing;
   // shutting down?
@@ -129,6 +135,8 @@ typedef struct dt_dev_pixelpipe_t
   int tiling;
   // should this pixelpipe display a mask in the end?
   int mask_display;
+  // should this pixelpipe completely suppressed the blendif module?
+  int bypass_blendif;
   // input data based on this timestamp:
   int input_timestamp;
   dt_dev_pixelpipe_type_t type;

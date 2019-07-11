@@ -374,7 +374,11 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       void *buf = dt_alloc_align(64, bufsize * dt_get_num_threads() * sizeof(float));
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf, modifier) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(bufsize, ch, ch_width, d, interpolation, ivoid, \
+                          mask_display, ovoid, roi_in, roi_out) \
+      shared(buf, modifier) \
+      schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
       {
@@ -428,7 +432,10 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     if(modflags & LF_MODIFY_VIGNETTING)
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(modifier) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(ch, pixelformat, roi_out, ovoid) \
+      shared(modifier) \
+      schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
       {
@@ -450,7 +457,10 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     if(modflags & LF_MODIFY_VIGNETTING)
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf, modifier) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(ch, pixelformat, roi_in) \
+      shared(buf, modifier) \
+      schedule(static)
 #endif
       for(int y = 0; y < roi_in->height; y++)
       {
@@ -469,7 +479,10 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       void *buf2 = dt_alloc_align(64, buf2size * sizeof(float) * dt_get_num_threads());
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf2, buf, modifier) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(buf2size, ch, ch_width, d, interpolation, mask_display, ovoid, roi_in, roi_out) \
+      shared(buf2, buf, modifier) \
+      schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
       {
@@ -535,7 +548,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
 
   cl_mem dev_tmpbuf = NULL;
@@ -620,7 +633,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(tmpbuf, d, modifier) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(tmpbufwidth, roi_out) \
+      shared(tmpbuf, d, modifier) \
+      schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
       {
@@ -656,7 +672,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(modflags & LF_MODIFY_VIGNETTING)
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(tmpbuf, modifier, d) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(ch, pixelformat, roi_out) \
+      shared(tmpbuf, modifier, d) \
+      schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
       {
@@ -695,7 +714,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(modflags & LF_MODIFY_VIGNETTING)
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(tmpbuf, modifier, d) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(ch, pixelformat, roi_in) \
+      shared(tmpbuf, modifier, d) \
+      schedule(static)
 #endif
       for(int y = 0; y < roi_in->height; y++)
       {
@@ -729,7 +751,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
     {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(tmpbuf, d, modifier) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(tmpbufwidth, roi_out) \
+      shared(tmpbuf, d, modifier) \
+      schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
       {
@@ -889,7 +914,10 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
   float *buf = dt_alloc_align(64, bufsize * sizeof(float) * dt_get_num_threads());
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf, modifier) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(bufsize, d, in, interpolation, out, roi_in, roi_out) \
+  shared(buf, modifier) \
+  schedule(static)
 #endif
   for(int y = 0; y < roi_out->height; y++)
   {
@@ -956,7 +984,10 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     float *const buf = dt_alloc_align(64, nbpoints * 2 * 3 * sizeof(float));
 
 #ifdef _OPENMP
-#pragma omp parallel default(none) shared(modifier) reduction(min : xm, ym) reduction(max : xM, yM)
+#pragma omp parallel default(none) \
+    dt_omp_firstprivate(aheight, awidth, buf, height, nbpoints, width, xoff, \
+                        xstep, yoff, ystep) \
+    shared(modifier) reduction(min : xm, ym) reduction(max : xM, yM)
 #endif
     {
 #ifdef _OPENMP
@@ -1040,7 +1071,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
 
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   const lfCamera *camera = NULL;
   const lfCamera **cam = NULL;
@@ -1218,7 +1249,7 @@ void reload_defaults(dt_iop_module_t *module)
       if(++cnt == 2) *c = '\0';
   if(img->exif_maker[0] || model[0])
   {
-    dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)module->data;
+    dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)module->global_data;
 
     // just to be sure
     if(!gd || !gd->db) goto end;
@@ -1592,7 +1623,7 @@ static void parse_maker_model(const char *txt, char *make, size_t sz_make, char 
 static void camera_menusearch_clicked(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
 
@@ -1615,7 +1646,7 @@ static void camera_menusearch_clicked(GtkWidget *button, gpointer user_data)
 static void camera_autosearch_clicked(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   char make[200], model[200];
@@ -1940,7 +1971,7 @@ static void lens_menu_fill(dt_iop_module_t *self, const lfLens *const *lenslist)
 static void lens_menusearch_clicked(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   const lfLens **lenslist;
@@ -1964,7 +1995,7 @@ static void lens_menusearch_clicked(GtkWidget *button, gpointer user_data)
 static void lens_autosearch_clicked(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   const lfLens **lenslist;
@@ -2059,7 +2090,7 @@ static void scale_changed(GtkWidget *slider, gpointer user_data)
 
 static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, const lfCamera *camera)
 {
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   float scale = 1.0;
   if(p->lens[0] != '\0')
@@ -2131,7 +2162,7 @@ static void corrections_done(gpointer instance, gpointer user_data)
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_lensfun_gui_data_t));
-  // dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
+  // dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   // lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
@@ -2351,7 +2382,7 @@ void gui_update(struct dt_iop_module_t *self)
     memcpy(self->params, self->default_params, sizeof(dt_iop_lensfun_params_t));
   }
 
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   // these are the wrong (untranslated) strings in general but that's ok, they will be overwritten further
   // down

@@ -311,7 +311,7 @@ static void _step_state(dt_slideshow_t *d, dt_slideshow_event_t event)
 
 // callbacks for a view module:
 
-const char *name(dt_view_t *self)
+const char *name(const dt_view_t *self)
 {
   return _("slideshow");
 }
@@ -596,6 +596,23 @@ void connect_key_accels(dt_view_t *self)
 {
 }
 
+GSList *mouse_actions(const dt_view_t *self)
+{
+  GSList *lm = NULL;
+  dt_mouse_action_t *a = NULL;
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = DT_MOUSE_ACTION_LEFT;
+  g_strlcpy(a->name, _("go to next image"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = DT_MOUSE_ACTION_RIGHT;
+  g_strlcpy(a->name, _("go to previous image"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+
+  return lm;
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

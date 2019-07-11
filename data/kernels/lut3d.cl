@@ -34,12 +34,12 @@ lut3d_tetrahedral(read_only image2d_t in, write_only image2d_t out, const int wi
   float4 output = (float4)(0.0f);
 
   input = clamp(input, (float4)0.0f, (float4)1.0f);
-  
-  rgbd = input * (float)(level - 1); 
-  rgbi = min( max( convert_int4(rgbd), 0), (int)(level - 2));
+
+  rgbd = input * (float)(level - 1);
+  rgbi = min( max( convert_int4(rgbd), (int4)0), (int4)(level - 2));
 
 // delta r, g, b
-  rgbd = rgbd - convert_float4(rgbi); 
+  rgbd = rgbd - convert_float4(rgbi);
 
 // indexes of P000 to P111 in clut
   const int color = rgbi.x + rgbi.y * level + rgbi.z * level2;
@@ -107,7 +107,7 @@ lut3d_trilinear(read_only image2d_t in, write_only image2d_t out, const int widt
   const int y = get_global_id(1);
   float4 tmp1;
   float4 tmp2;
-  
+
   if(x >= width || y >= height) return;
 
   float4 input = read_imagef(in, sampleri, (int2)(x, y));
@@ -115,11 +115,11 @@ lut3d_trilinear(read_only image2d_t in, write_only image2d_t out, const int widt
 
   input = clamp(input, (float4)0.0f, (float4)1.0f);
 
-  rgbd = input * (float)(level - 1); 
-  rgbi = min( max( convert_int4(rgbd), 0), (int)(level - 2));
+  rgbd = input * (float)(level - 1);
+  rgbi = min( max( convert_int4(rgbd), (int4)0), (int4)(level - 2));
 
   // delta r, g, b
-  rgbd = rgbd - convert_float4(rgbi); 
+  rgbd = rgbd - convert_float4(rgbi);
 
   // indexes of P000 to P111 in clut
   const int color = rgbi.x + rgbi.y * level + rgbi.z * level2;
@@ -141,7 +141,7 @@ lut3d_trilinear(read_only image2d_t in, write_only image2d_t out, const int widt
   const float4 clut101 = (float4)(clut[i101], clut[i101+1], clut[i101+2], 0.0f);
   const float4 clut011 = (float4)(clut[i011], clut[i011+1], clut[i011+2], 0.0f);
   const float4 clut111 = (float4)(clut[i111], clut[i111+1], clut[i111+2], 0.0f);
-  
+
   tmp1 = clut000*(1.0f-rgbd.x) + clut100*rgbd.x;
   tmp2 = clut010*(1.0f-rgbd.x) + clut110*rgbd.x;
   output = tmp1*(1.0f-rgbd.y) + tmp2*rgbd.y;
@@ -171,11 +171,11 @@ lut3d_pyramid(read_only image2d_t in, write_only image2d_t out, const int width,
 
   input = clamp(input, (float4)0.0f, (float4)1.0f);
 
-  rgbd = input * (float)(level - 1); 
-  rgbi = min( max( convert_int4(rgbd), 0), (int)(level - 2));
+  rgbd = input * (float)(level - 1);
+  rgbi = min( max( convert_int4(rgbd), (int4)0), (int4)(level - 2));
 
   // delta r, g, b
-  rgbd = rgbd - convert_float4(rgbi); 
+  rgbd = rgbd - convert_float4(rgbi);
 
   // indexes of P000 to P111 in clut
   const int color = rgbi.x + rgbi.y * level + rgbi.z * level2;
@@ -226,7 +226,6 @@ lut3d_none(read_only image2d_t in, write_only image2d_t out, const int width, co
   if(x >= width || y >= height) return;
 
   float4 input = read_imagef(in, sampleri, (int2)(x, y));
-  
+
   write_imagef(out, (int2)(x, y), input);
 }
-

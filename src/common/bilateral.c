@@ -120,20 +120,30 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
   return b;
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in:64)
+#endif
 void dt_bilateral_splat(dt_bilateral_t *b, const float *const in)
 {
   const int ox = 1;
   const int oy = b->size_x;
   const int oz = b->size_y * b->size_x;
+
+  const float sigma_s = b->sigma_s * b->sigma_s;
+  float *const buf = b->buf;
+
 // splat into downsampled grid
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(b)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, oy, oz, ox, sigma_s, buf) \
+  shared(b) \
+  collapse(2)
 #endif
   for(int j = 0; j < b->height; j++)
   {
-    size_t index = 4 * j * b->width;
     for(int i = 0; i < b->width; i++)
     {
+      size_t index = 4 * (j * b->width + i);
       float x, y, z;
       const float L = in[index];
       image_to_grid(b, i, j, L, &x, &y, &z);
@@ -149,58 +159,69 @@ void dt_bilateral_splat(dt_bilateral_t *b, const float *const in)
       // for cross bilateral applications.
       // also note that this is not clipped (as L->z is), so potentially hdr/out of gamut
       // should not cause clipping here.
+#ifdef _OPENMP
+#pragma omp simd aligned(buf:64)
+#endif
       for(int k = 0; k < 8; k++)
       {
         const size_t ii = grid_index + ((k & 1) ? ox : 0) + ((k & 2) ? oy : 0) + ((k & 4) ? oz : 0);
         const float contrib = ((k & 1) ? xf : (1.0f - xf)) * ((k & 2) ? yf : (1.0f - yf))
-                              * ((k & 4) ? zf : (1.0f - zf)) * 100.0f / (b->sigma_s * b->sigma_s);
-#ifdef _OPENMP
-#pragma omp atomic
-#endif
-        b->buf[ii] += contrib;
+                              * ((k & 4) ? zf : (1.0f - zf)) * 100.0f / (sigma_s);
+        buf[ii] += contrib;
       }
-      index += 4;
     }
   }
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(buf:64)
+#endif
 static void blur_line_z(float *buf, const int offset1, const int offset2, const int offset3, const int size1,
                         const int size2, const int size3)
 {
   const float w1 = 4.f / 16.f;
   const float w2 = 2.f / 16.f;
+
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(size1, size2, size3, offset1, offset2, offset3, w1, w2, buf) \
+    collapse(2)
 #endif
   for(int k = 0; k < size1; k++)
   {
-    size_t index = (size_t)k * offset1;
     for(int j = 0; j < size2; j++)
     {
+      size_t index = (size_t)k * offset1 + j * offset2;
       float tmp1 = buf[index];
       buf[index] = w1 * buf[index + offset3] + w2 * buf[index + 2 * offset3];
-      index += offset3;
-      float tmp2 = buf[index];
-      buf[index] = w1 * (buf[index + offset3] - tmp1) + w2 * buf[index + 2 * offset3];
-      index += offset3;
+
+      /** index += offset3; **/
+
+      float tmp2 = buf[index + offset3];
+      buf[index + offset3] = w1 * (buf[index + 2 * offset3] - tmp1) + w2 * buf[index + 3 * offset3];
+
+      /** index += offset3; **/
+
       for(int i = 2; i < size3 - 2; i++)
       {
-        const float tmp3 = buf[index];
-        buf[index] = +w1 * (buf[index + offset3] - tmp2) + w2 * (buf[index + 2 * offset3] - tmp1);
-        index += offset3;
+        const float tmp3 = buf[index + i * offset3];
+        buf[index + i * offset3] = +w1 * (buf[index + (i + 1) * offset3] - tmp2) + w2 * (buf[index + (i + 2) * offset3] - tmp1);
         tmp1 = tmp2;
         tmp2 = tmp3;
       }
+
+      index += (size3 - 2) * offset3;
       const float tmp3 = buf[index];
       buf[index] = w1 * (buf[index + offset3] - tmp2) - w2 * tmp1;
       index += offset3;
       buf[index] = -w1 * tmp3 - w2 * tmp2;
-      index += offset3;
-      index += offset2 - offset3 * size3;
     }
   }
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(buf:64)
+#endif
 static void blur_line(float *buf, const int offset1, const int offset2, const int offset3, const int size1,
                       const int size2, const int size3)
 {
@@ -208,34 +229,38 @@ static void blur_line(float *buf, const int offset1, const int offset2, const in
   const float w1 = 4.f / 16.f;
   const float w2 = 1.f / 16.f;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(size1, size2, size3, offset1, offset2, offset3, w0, w1, w2, buf) \
+    collapse(2)
 #endif
   for(int k = 0; k < size1; k++)
   {
-    size_t index = (size_t)k * offset1;
     for(int j = 0; j < size2; j++)
     {
+      size_t index = (size_t)k * offset1 + j * offset2;
       float tmp1 = buf[index];
       buf[index] = buf[index] * w0 + w1 * buf[index + offset3] + w2 * buf[index + 2 * offset3];
-      index += offset3;
-      float tmp2 = buf[index];
-      buf[index] = buf[index] * w0 + w1 * (buf[index + offset3] + tmp1) + w2 * buf[index + 2 * offset3];
-      index += offset3;
+
+      /** index += offset3; **/
+
+      float tmp2 = buf[index + offset3];
+      buf[index + offset3] = buf[index + offset3] * w0 + w1 * (buf[index + 2 * offset3] + tmp1) + w2 * buf[index + 3 * offset3];
+
+      /** index += offset3; **/
+
       for(int i = 2; i < size3 - 2; i++)
       {
-        const float tmp3 = buf[index];
-        buf[index]
-            = buf[index] * w0 + w1 * (buf[index + offset3] + tmp2) + w2 * (buf[index + 2 * offset3] + tmp1);
-        index += offset3;
+        const float tmp3 = buf[index + i * offset3];
+        buf[index + i * offset3]
+            = buf[index + i * offset3] * w0 + w1 * (buf[+ (i + 1) * offset3] + tmp2) + w2 * (buf[index + (i + 2) * offset3] + tmp1);
         tmp1 = tmp2;
         tmp2 = tmp3;
       }
+      index += (size3 - 2) * offset3;
       const float tmp3 = buf[index];
       buf[index] = buf[index] * w0 + w1 * (buf[index + offset3] + tmp2) + w2 * tmp1;
       index += offset3;
       buf[index] = buf[index] * w0 + w1 * tmp3 + w2 * tmp2;
-      index += offset3;
-      index += offset2 - offset3 * size3;
     }
   }
 }
@@ -252,6 +277,9 @@ void dt_bilateral_blur(dt_bilateral_t *b)
 }
 
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(out, in :64)
+#endif
 void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, float *out, const float detail)
 {
   // detail: 0 is leave as is, -1 is bilateral filtered, +1 is contrast boost
@@ -259,44 +287,56 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
   const int ox = 1;
   const int oy = b->size_x;
   const int oz = b->size_y * b->size_x;
+
+  float *const buf = b->buf;
+  const int size_x = b->size_x;
+  const int size_y = b->size_y;
+  const int size_z = b->size_z;
+  const int width = b->width;
+  const int height = b->height;
+
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(b, in, norm, oy, oz, ox, size_x, size_y, size_z, height, width, buf) \
+    shared(out) collapse(2)
 #endif
-  for(int j = 0; j < b->height; j++)
+  for(int j = 0; j < height; j++)
   {
-    size_t index = 4 * j * b->width;
-    for(int i = 0; i < b->width; i++)
+    for(int i = 0; i < width; i++)
     {
+      size_t index = 4 * (j * width + i);
       float x, y, z;
       const float L = in[index];
       image_to_grid(b, i, j, L, &x, &y, &z);
       // trilinear lookup:
-      const int xi = MIN((int)x, b->size_x - 2);
-      const int yi = MIN((int)y, b->size_y - 2);
-      const int zi = MIN((int)z, b->size_z - 2);
+      const int xi = MIN((int)x, size_x - 2);
+      const int yi = MIN((int)y, size_y - 2);
+      const int zi = MIN((int)z, size_z - 2);
       const float xf = x - xi;
       const float yf = y - yi;
       const float zf = z - zi;
-      const size_t gi = xi + b->size_x * (yi + b->size_y * zi);
+      const size_t gi = xi + size_x * (yi + size_y * zi);
       const float Lout = L
-                         + norm * (b->buf[gi] * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
-                                   + b->buf[gi + ox] * (xf) * (1.0f - yf) * (1.0f - zf)
-                                   + b->buf[gi + oy] * (1.0f - xf) * (yf) * (1.0f - zf)
-                                   + b->buf[gi + ox + oy] * (xf) * (yf) * (1.0f - zf)
-                                   + b->buf[gi + oz] * (1.0f - xf) * (1.0f - yf) * (zf)
-                                   + b->buf[gi + ox + oz] * (xf) * (1.0f - yf) * (zf)
-                                   + b->buf[gi + oy + oz] * (1.0f - xf) * (yf) * (zf)
-                                   + b->buf[gi + ox + oy + oz] * (xf) * (yf) * (zf));
+                         + norm * (buf[gi] * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
+                                   + buf[gi + ox] * (xf) * (1.0f - yf) * (1.0f - zf)
+                                   + buf[gi + oy] * (1.0f - xf) * (yf) * (1.0f - zf)
+                                   + buf[gi + ox + oy] * (xf) * (yf) * (1.0f - zf)
+                                   + buf[gi + oz] * (1.0f - xf) * (1.0f - yf) * (zf)
+                                   + buf[gi + ox + oz] * (xf) * (1.0f - yf) * (zf)
+                                   + buf[gi + oy + oz] * (1.0f - xf) * (yf) * (zf)
+                                   + buf[gi + ox + oy + oz] * (xf) * (yf) * (zf));
       out[index] = Lout;
       // and copy color and mask
       out[index + 1] = in[index + 1];
       out[index + 2] = in[index + 2];
       out[index + 3] = in[index + 3];
-      index += 4;
     }
   }
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(out, in :64)
+#endif
 void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *const in, float *out,
                                   const float detail)
 {
@@ -305,14 +345,19 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *co
   const int ox = 1;
   const int oy = b->size_x;
   const int oz = b->size_y * b->size_x;
+
+  float *const buf = b->buf;
+
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(b, in, norm, oy, oz, ox, buf) \
+    shared(out) collapse(2)
 #endif
   for(int j = 0; j < b->height; j++)
   {
-    size_t index = 4 * j * b->width;
     for(int i = 0; i < b->width; i++)
     {
+      size_t index = 4 * (j * b->width + i);
       float x, y, z;
       const float L = in[index];
       image_to_grid(b, i, j, L, &x, &y, &z);
@@ -324,16 +369,15 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *co
       const float yf = y - yi;
       const float zf = z - zi;
       const size_t gi = xi + b->size_x * (yi + b->size_y * zi);
-      const float Lout = norm * (b->buf[gi] * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
-                                 + b->buf[gi + ox] * (xf) * (1.0f - yf) * (1.0f - zf)
-                                 + b->buf[gi + oy] * (1.0f - xf) * (yf) * (1.0f - zf)
-                                 + b->buf[gi + ox + oy] * (xf) * (yf) * (1.0f - zf)
-                                 + b->buf[gi + oz] * (1.0f - xf) * (1.0f - yf) * (zf)
-                                 + b->buf[gi + ox + oz] * (xf) * (1.0f - yf) * (zf)
-                                 + b->buf[gi + oy + oz] * (1.0f - xf) * (yf) * (zf)
-                                 + b->buf[gi + ox + oy + oz] * (xf) * (yf) * (zf));
-      out[index] = MAX(0.0f, out[index] + Lout);
-      index += 4;
+      const float Lout = norm * (buf[gi] * (1.0f - xf) * (1.0f - yf) * (1.0f - zf)
+                                 + buf[gi + ox] * (xf) * (1.0f - yf) * (1.0f - zf)
+                                 + buf[gi + oy] * (1.0f - xf) * (yf) * (1.0f - zf)
+                                 + buf[gi + ox + oy] * (xf) * (yf) * (1.0f - zf)
+                                 + buf[gi + oz] * (1.0f - xf) * (1.0f - yf) * (zf)
+                                 + buf[gi + ox + oz] * (xf) * (1.0f - yf) * (zf)
+                                 + buf[gi + oy + oz] * (1.0f - xf) * (yf) * (zf)
+                                 + buf[gi + ox + oy + oz] * (xf) * (yf) * (zf));
+      out[index] = fmaxf(0.0f, out[index] + Lout);
     }
   }
 }

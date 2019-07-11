@@ -328,7 +328,9 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
 /* The first "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, mult, out, sharpen, width) \
+  schedule(static)
 #endif
   for(int j = 0; j < 2 * mult; j++)
   {
@@ -349,7 +351,9 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, mult, out, sharpen, width) \
+  schedule(static)
 #endif
   for(int j = 2 * mult; j < height - 2 * mult; j++)
   {
@@ -406,7 +410,9 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
 /* The last "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, mult, out, sharpen, width) \
+  schedule(static)
 #endif
   for(int j = height - 2 * mult; j < height; j++)
   {
@@ -443,7 +449,9 @@ static void eaw_decompose_sse2(float *const out, const float *const in, float *c
 /* The first "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, mult, out, sharpen, width) \
+  schedule(static)
 #endif
   for(int j = 0; j < 2 * mult; j++)
   {
@@ -464,7 +472,9 @@ static void eaw_decompose_sse2(float *const out, const float *const in, float *c
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, mult, out, sharpen, width) \
+  schedule(static)
 #endif
   for(int j = 2 * mult; j < height - 2 * mult; j++)
   {
@@ -521,7 +531,9 @@ static void eaw_decompose_sse2(float *const out, const float *const in, float *c
 /* The last "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, mult, out, sharpen, width) \
+  schedule(static)
 #endif
   for(int j = height - 2 * mult; j < height; j++)
   {
@@ -562,7 +574,10 @@ static void eaw_synthesize(float *const out, const float *const in, const float 
   const float boost[4] = { boostf[0], boostf[1], boostf[2], boostf[3] };
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(boost, detail, height, in, out, width, threshold) \
+  schedule(static) \
+  collapse(2)
 #endif
   for(size_t k = 0; k < (size_t)4 * width * height; k += 4)
   {
@@ -584,7 +599,9 @@ static void eaw_synthesize_sse2(float *const out, const float *const in, const f
   const __m128 boost = _mm_set_ps(boostf[3], boostf[2], boostf[1], boostf[0]);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(boost, detail, height, in, out, threshold, width) \
+  schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -791,7 +808,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     // dt_control_queue_draw(GTK_WIDGET(g->area));
   }
 
-  dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)self->data;
+  dt_iop_atrous_global_data_t *gd = (dt_iop_atrous_global_data_t *)self->global_data;
 
   const int devid = piece->pipe->devid;
   cl_int err = -999;
@@ -1759,6 +1776,7 @@ static gboolean area_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
 
+  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
   gdouble delta_y;
   if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {

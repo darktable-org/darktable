@@ -18,6 +18,9 @@
 
 @import url("darktable.css");
 
+/* hide frames in lighttable preview and culling */
+@define-color preview_border_color transparent;
+
 /* This has been tested with GTK 3.24 on Gnome */
 
 *
@@ -92,24 +95,17 @@ button
 #iop-panel-label,
 #lib-panel-label
 {
-    background-color: @bg_color;
-    color: @plugin_label_color;
-    border:0;
-    padding: 0 2pt 2pt 0.5em;
-    font-weight: 400;
-    font-stretch: condensed;
     font-family: "Roboto Condensed","Segoe UI Condensed",
                  "SF Pro Display", "Ubuntu Condensed",
                  "Cantarell", sans-serif;
-    font-size: 0.9em;
 }
 
 #section_label
 {
-    font-weight: 500;
     font-family: "Roboto Medium", "Segoe UI Semibold",
                  "SF Pro Display Medium",
                  "Ubuntu Medium", "Cantarell", sans-serif;
+    font-weight: 600;
 }
 
 notebook tabs,

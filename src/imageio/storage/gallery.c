@@ -368,8 +368,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
   /* also export thumbnail: */
   // write with reduced resolution:
-  const int max_width = fdata->max_width;
-  const int max_height = fdata->max_height;
+  const int save_max_width = fdata->max_width;
+  const int save_max_height = fdata->max_height;
   fdata->max_width = 200;
   fdata->max_height = 200;
   // alter filename with -thumb:
@@ -387,8 +387,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     return 1;
   }
   // restore for next image:
-  fdata->max_width = max_width;
-  fdata->max_height = max_height;
+  fdata->max_width = save_max_width;
+  fdata->max_height = save_max_height;
 
   printf("[export_job] exported to `%s'\n", filename);
   dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),

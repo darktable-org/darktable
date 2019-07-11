@@ -268,7 +268,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
-  dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)self->data;
+  dt_iop_colorout_global_data_t *gd = (dt_iop_colorout_global_data_t *)self->global_data;
   cl_mem dev_m = NULL, dev_r = NULL, dev_g = NULL, dev_b = NULL, dev_coeffs = NULL;
 
   cl_int err = -999;
@@ -348,7 +348,9 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self, dt_d
     { // apply profile
       float *const out = (float *const)ovoid;
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(ch, d, out, roi_out) \
+      schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
       {
@@ -363,7 +365,9 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self, dt_d
     { // apply profile
       float *const out = (float *const)ovoid;
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(ch, d, out, roi_out) \
+      schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
       {
@@ -396,7 +400,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 // fprintf(stderr,"Using cmatrix codepath\n");
 // convert to rgb using matrix
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(d, ch, ivoid, ovoid, roi_out) \
+    schedule(static)
 #endif
     for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
     {
@@ -422,7 +428,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
 // fprintf(stderr,"Using xform codepath\n");
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, d, gamutcheck, ivoid, ovoid, roi_out) \
+    schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {
@@ -469,7 +477,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 // fprintf(stderr,"Using cmatrix codepath\n");
 // convert to rgb using matrix
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_in, roi_out) \
+    schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -500,7 +510,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     // fprintf(stderr,"Using xform codepath\n");
     const __m128 outofgamutpixel = _mm_set_ps(0.0f, 1.0f, 1.0f, 0.0f);
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, d, ivoid, gamutcheck, outofgamutpixel, ovoid, roi_out) \
+    schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
     {

@@ -29,13 +29,17 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   Gtk C code. This makes the whole GUI themable. This version comes
   with different theme:
 
-     - darktable          : the default theme
+     - darktable              : the default theme
 
-     - darktable-elegant  : more condensed fonts
-                            best experience if Roboto font installed
+     - darktable-elegant      : more condensed fonts
+                                best experience if Roboto font installed
 
-     - darktable-icons    : as elegant, with IOP icons
-                            best experience if Roboto font installed
+     - darktable-icons        : as elegant, with IOP icons
+                                best experience if Roboto font installed
+
+     - darktable-elegant-grey : as above but grey instead of dark
+
+     - darktable-icons-grey   : as above but grey instead of dark
 
   Note that this requires Gtk 3.22 or higher to work properly.
 
@@ -183,6 +187,9 @@ when updating from the currently stable 2.4.x series, please bear in mind that y
   When pressing the shortcut 'pan&zoom while editing masks' the draw area
   can be zoomed.
   Different types of curves can be selected.
+
+- A new module 'rgb levels' has been added. It has linked and independent channels,
+  preserve colors option and is native RGB.
 
 - A search text has been added to the module groups in the darkroom. It has a
   config option to show only the modules groups, only the search text or both.

@@ -16,7 +16,7 @@
  *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "chart/cairo.h"
+#include "chart/dtcairo.h"
 #include "chart/common.h"
 
 void draw_no_image(cairo_t *cr, GtkWidget *widget)
@@ -187,7 +187,10 @@ cairo_surface_t *cairo_surface_create_from_xyz_data(const float *const image, co
   unsigned char *rgbbuf = (unsigned char *)malloc(sizeof(unsigned char) * height * width * 4);
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(rgbbuf)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, image, width) \
+  shared(rgbbuf) \
+  schedule(static)
 #endif
   for(int y = 0; y < height; y++)
   {

@@ -439,7 +439,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   {
     const int P = ceilf(d->radius * fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f)); // pixel filter size
     const int K = ceilf(d->nbhood * fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f)); // nbhood
-    const int K_scattered = ceilf(d->scattering * (K * K + K * sqrt(K))) + K;
+    const int K_scattered = ceilf(d->scattering * (K * K * K + 7.0 * K * sqrt(K)) / 6.0) + K;
 
     tiling->factor = 4.0f + 0.25f * NUM_BUCKETS; // in + out + (2 + NUM_BUCKETS * 0.25) tmp
     tiling->maxbuf = 1.0f;
@@ -491,7 +491,10 @@ static inline void precondition(const float *const in, float *const buf, const i
           (b[2] / a[2]) * (b[2] / a[2]) + 3.f / 8.f };
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(a)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(buf, ht, in, sigma2_plus_3_8, wd) \
+  shared(a) \
+  schedule(static)
 #endif
   for(int j = 0; j < ht; j++)
   {
@@ -519,7 +522,10 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
           (b[2] / a[2]) * (b[2] / a[2]) + 1.f / 8.f };
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(a)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(buf, ht, sigma2_plus_1_8, wd) \
+  shared(a) \
+  schedule(static)
 #endif
   for(int j = 0; j < ht; j++)
   {
@@ -704,7 +710,9 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
 /* The first "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, out, width) \
+  schedule(static)
 #endif
   for(int j = 0; j < 2 * mult; j++)
   {
@@ -725,7 +733,9 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, out, width) \
+  schedule(static)
 #endif
   for(int j = 2 * mult; j < height - 2 * mult; j++)
   {
@@ -782,7 +792,9 @@ static void eaw_decompose(float *const out, const float *const in, float *const 
 /* The last "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, out, width) \
+  schedule(static)
 #endif
   for(int j = height - 2 * mult; j < height; j++)
   {
@@ -819,7 +831,9 @@ static void eaw_decompose_sse(float *const out, const float *const in, float *co
 /* The first "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, out, width) \
+  schedule(static)
 #endif
   for(int j = 0; j < 2 * mult; j++)
   {
@@ -840,7 +854,9 @@ static void eaw_decompose_sse(float *const out, const float *const in, float *co
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, out, width) \
+  schedule(static)
 #endif
   for(int j = 2 * mult; j < height - 2 * mult; j++)
   {
@@ -897,7 +913,9 @@ static void eaw_decompose_sse(float *const out, const float *const in, float *co
 /* The last "2*mult" lines use the macro with tests because the 5x5 kernel
  * requires nearest pixel interpolation for at least a pixel in the sum */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, out, width) \
+  schedule(static)
 #endif
   for(int j = height - 2 * mult; j < height; j++)
   {
@@ -938,7 +956,10 @@ static void eaw_synthesize(float *const out, const float *const in, const float 
   const float boost[4] = { boostf[0], boostf[1], boostf[2], boostf[3] };
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(boost, detail, height, in, out, threshold, width) \
+  schedule(static) \
+  collapse(2)
 #endif
   for(size_t k = 0; k < (size_t)4 * width * height; k += 4)
   {
@@ -960,7 +981,9 @@ static void eaw_synthesize_sse2(float *const out, const float *const in, const f
   const __m128 boost = _mm_set_ps(boostf[3], boostf[2], boostf[1], boostf[0]);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(boost, detail, height, in, out, threshold, width) \
+  schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -1065,7 +1088,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     wb[2] = 2.0f * piece->pipe->dsc.processed_maximum[2];
   }
   // update the coeffs with strength and scale
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength * (in_scale * in_scale);
+  for(int i = 0; i < 3; i++) wb[i] *= d->strength * in_scale;
   // only use green channel + wb for now:
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
@@ -1250,7 +1273,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
     for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
   }
   // update the coeffs with strength and scale
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength * (scale * scale);
+  for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
 
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
@@ -1263,12 +1286,12 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
     {
       // This formula is made for:
       // - ensuring that kj = kj_index and ki = ki_index when d->scattering is 0
-      // - ensuring that no patch can appear twice (provided that d->nbhood is in 0,1 range)
+      // - ensuring that no patch can appear twice (provided that d->scattering is in 0,1 range)
       // - avoiding grid artifacts by trying to take patches on various lines and columns
-      int kj = (kj_index * kj_index + abs(ki_index) * sqrt(abs(kj_index))) * sign(kj_index) * d->scattering
-               + kj_index;
-      int ki = (ki_index * ki_index + abs(kj_index) * sqrt(abs(ki_index))) * sign(ki_index) * d->scattering
-               + ki_index;
+      const int abs_kj = abs(kj_index);
+      const int abs_ki = abs(ki_index);
+      int kj = (abs_kj * abs_kj * abs_kj + 7.0 * abs_kj * sqrt(abs_ki)) * sign(kj_index) * d->scattering / 6.0 + kj_index;
+      int ki = (abs_ki * abs_ki * abs_ki + 7.0 * abs_ki * sqrt(abs_kj)) * sign(ki_index) * d->scattering / 6.0 + ki_index;
       // TODO: adaptive K tests here!
       // TODO: expf eval for real bilateral experience :)
 
@@ -1278,7 +1301,11 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
 // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more
 // memory
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, in, Sa)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(d, ovoid, P, roi_in, roi_out) \
+      firstprivate(inited_slide) \
+      shared(kj, ki, in, Sa) \
+      schedule(static)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {
@@ -1383,7 +1410,9 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
 
 // normalize
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, out, roi_out) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
   {
@@ -1449,7 +1478,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
     for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
   }
   // update the coeffs with strength and scale
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength * (scale * scale);
+  for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
 
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
@@ -1462,19 +1491,24 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
     {
       // This formula is made for:
       // - ensuring that kj = kj_index and ki = ki_index when d->scattering is 0
-      // - ensuring that no patch can appear twice (provided that d->nbhood is in 0,1 range)
+      // - ensuring that no patch can appear twice (provided that d->scattering is in 0,1 range)
       // - avoiding grid artifacts by trying to take patches on various lines and columns
-      int kj = (kj_index * kj_index + abs(ki_index) * sqrt(abs(kj_index))) * sign(kj_index) * d->scattering
-               + kj_index;
-      int ki = (ki_index * ki_index + abs(kj_index) * sqrt(abs(ki_index))) * sign(ki_index) * d->scattering
-               + ki_index;
+      const int abs_kj = abs(kj_index);
+      const int abs_ki = abs(ki_index);
+      int kj = (abs_kj * abs_kj * abs_kj + 7.0 * abs_kj * sqrt(abs_ki)) * sign(kj_index) * d->scattering / 6.0 + kj_index;
+      int ki = (abs_ki * abs_ki * abs_ki + 7.0 * abs_ki * sqrt(abs_kj)) * sign(ki_index) * d->scattering / 6.0 + ki_index;
+
       int inited_slide = 0;
 // don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else
 // we will add up errors)
 // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more
 // memory
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide, d) shared(kj, ki, in, Sa)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(ovoid, P, roi_in, roi_out) \
+      firstprivate(inited_slide, d) \
+      shared(kj, ki, in, Sa) \
+      schedule(static)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {
@@ -1626,7 +1660,10 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   }
 // normalize
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(d)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ovoid, roi_out) \
+  shared(d) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -1794,7 +1831,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
                               const dt_iop_roi_t *const roi_out)
 {
   dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;
-  dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)self->data;
+  dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_in->width;
@@ -1854,7 +1891,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
   }
   // update the coeffs with strength and scale
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength * (scale * scale);
+  for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
 
   const float aa[4] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2], 1.0f };
   const float bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 1.0f };
@@ -1913,13 +1950,11 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_precondition, sizes);
   if(err != CL_SUCCESS) goto error;
 
-
   dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_init, 0, sizeof(cl_mem), (void *)&dev_U2);
   dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_init, 1, sizeof(int), (void *)&width);
   dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_init, 2, sizeof(int), (void *)&height);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_init, sizes);
   if(err != CL_SUCCESS) goto error;
-
 
   for(int kj_index = -K; kj_index <= 0; kj_index++)
   {
@@ -1927,12 +1962,12 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     {
       // This formula is made for:
       // - ensuring that j = kj_index and i = ki_index when d->scattering is 0
-      // - ensuring that no patch can appear twice (provided that d->nbhood is in 0,1 range)
+      // - ensuring that no patch can appear twice (provided that d->scattering is in 0,1 range)
       // - avoiding grid artifacts by trying to take patches on various lines and columns
-      int j = (kj_index * kj_index + abs(ki_index) * sqrt(abs(kj_index))) * sign(kj_index) * d->scattering
-              + kj_index;
-      int i = (ki_index * ki_index + abs(kj_index) * sqrt(abs(ki_index))) * sign(ki_index) * d->scattering
-              + ki_index;
+      const int abs_kj = abs(kj_index);
+      const int abs_ki = abs(ki_index);
+      const int j = (abs_kj * abs_kj * abs_kj + 7.0 * abs_kj * sqrt(abs_ki)) * sign(kj_index) * d->scattering / 6.0 + kj_index;
+      const int i = (abs_ki * abs_ki * abs_ki + 7.0 * abs_ki * sqrt(abs_kj)) * sign(ki_index) * d->scattering / 6.0 + ki_index;
       int q[2] = { i, j };
 
       dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
@@ -1961,7 +1996,6 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
                                NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_denoiseprofile_horiz, sizesl, local);
       if(err != CL_SUCCESS) goto error;
-
 
       sizesl[0] = ROUNDUPWD(width);
       sizesl[1] = bheight;
@@ -2038,7 +2072,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
                                const dt_iop_roi_t *const roi_out)
 {
   dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;
-  dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)self->data;
+  dt_iop_denoiseprofile_global_data_t *gd = (dt_iop_denoiseprofile_global_data_t *)self->global_data;
 
   const int max_max_scale = DT_IOP_DENOISE_PROFILE_BANDS; // hard limit
   int max_scale = 0;
@@ -2165,7 +2199,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     wb[2] = 2.0f * piece->pipe->dsc.processed_maximum[2];
   }
   // update the coeffs with strength and scale
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength * (scale * scale);
+  for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
 
   const float aa[4] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2], 1.0f };
   const float bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 1.0f };
@@ -2520,7 +2554,7 @@ void init(dt_iop_module_t *module)
   module->default_params = calloc(1, sizeof(dt_iop_denoiseprofile_params_t));
   module->params_size = sizeof(dt_iop_denoiseprofile_params_t);
   module->gui_data = NULL;
-  module->data = NULL;
+  module->global_data = NULL;
   dt_iop_denoiseprofile_params_t tmp;
   memset(&tmp, 0, sizeof(dt_iop_denoiseprofile_params_t));
   for(int k = 0; k < DT_IOP_DENOISE_PROFILE_BANDS; k++)
@@ -3204,8 +3238,8 @@ void gui_init(dt_iop_module_t *self)
   g->radius = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1.f, 1.f, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->radius, 0.0, 10.0);
   g->nbhood = dt_bauhaus_slider_new_with_range(self, 1.0f, 30.0f, 1.f, 7.f, 0);
-  g->scattering = dt_bauhaus_slider_new_with_range(self, 0.0f, 0.5f, 0.01, 0.0f, 2);
-  dt_bauhaus_slider_enable_soft_boundaries(g->scattering, 0.0, 2.0);
+  g->scattering = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01, 0.0f, 2);
+  dt_bauhaus_slider_enable_soft_boundaries(g->scattering, 0.0, 20.0);
   g->central_pixel_weight = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01, 0.0f, 2);
   dt_bauhaus_slider_enable_soft_boundaries(g->central_pixel_weight, 0.0, 10.0);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);

@@ -634,7 +634,7 @@ static gboolean _jump_to_accel(GtkAccelGroup *accel_group, GObject *acceleratabl
   return TRUE;
 }
 
-/* calback for the mouse over image change signal */
+/* callback for the mouse over image change signal */
 static void _mouse_over_image_callback(gpointer instance, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;

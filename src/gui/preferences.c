@@ -178,6 +178,7 @@ static void theme_callback(GtkWidget *widget, gpointer user_data)
   gchar *i = g_strrstr(theme, ".");
   if(i) *i = '\0';
   dt_gui_load_theme(theme);
+  dt_bauhaus_load_theme();
 }
 
 ///////////// gui language selection
@@ -698,7 +699,7 @@ static void tree_insert_rec(GtkTreeStore *model, GtkTreeIter *parent, const gcha
       translated_path = accel_path;
     }
 
-    /* search the tree if we alread have an sibling with node name */
+    /* search the tree if we already have a sibling with node name */
     int siblings = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(model), parent);
     for(i = 0; i < siblings; i++)
     {
@@ -831,7 +832,8 @@ static void delete_matching_accels(gpointer current, gpointer mapped)
   if(current_key.accel_key == mapped_key.accel_key                 // Key code matches
      && current_key.accel_mods == mapped_key.accel_mods            // Key state matches
      && !(current_accel->local && mapped_accel->local              // Not both local to
-          && strcmp(current_accel->module, mapped_accel->module))) // diff mods
+          && strcmp(current_accel->module, mapped_accel->module))
+     && (current_accel->views & mapped_accel->views) != 0) // diff mods
     gtk_accel_map_change_entry(current_accel->path, 0, 0, TRUE);
 }
 
@@ -959,20 +961,71 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event, gpointer d
   // Otherwise, determine whether we're in remap mode or not
   if(darktable.control->accel_remap_str)
   {
-    // Change the accel map entry
-    if(gtk_accel_map_change_entry(darktable.control->accel_remap_str, gdk_keyval_to_lower(event->keyval),
-                                  event->state & KEY_STATE_MASK, TRUE))
-    {
-      // If it succeeded delete any conflicting accelerators
-      // First locate the accel list entry
-      g_strlcpy(query.path, darktable.control->accel_remap_str, sizeof(query.path));
-      remapped = g_slist_find_custom(darktable.control->accelerator_list, (gpointer)&query, _accelcmp);
+    // First locate the accel list entry
+    g_strlcpy(query.path, darktable.control->accel_remap_str, sizeof(query.path));
+    remapped = g_slist_find_custom(darktable.control->accelerator_list, (gpointer)&query, _accelcmp);
+    const dt_accel_t *accel_current = (dt_accel_t *)remapped->data;
 
-      // Then remove conflicts
-      g_slist_foreach(darktable.control->accelerator_list, delete_matching_accels, (gpointer)(remapped->data));
+    // let's search for conflicts
+    dt_accel_t *accel_conflict = NULL;
+    GSList *l = darktable.control->accelerator_list;
+    while (l)
+    {
+      dt_accel_t *a = (dt_accel_t *)l->data;
+      GtkAccelKey key;
+      if (a != accel_current && gtk_accel_map_lookup_entry(a->path, &key))
+      {
+        if (key.accel_key == gdk_keyval_to_lower(event->keyval) &&
+            key.accel_mods == (event->state & KEY_STATE_MASK) &&
+            !(a->local && accel_current->local && strcmp(a->module, accel_current->module)) &&
+            (a->views & accel_current->views) != 0)
+        {
+          accel_conflict = a;
+          break;
+        }
+      }
+      l = g_slist_next(l);
     }
 
+    if(!accel_conflict)
+    {
+      // no conflict
+      gtk_accel_map_change_entry(darktable.control->accel_remap_str, gdk_keyval_to_lower(event->keyval),
+                                 event->state & KEY_STATE_MASK, TRUE);
+    }
+    else
+    {
+      // we ask for confirmation
+      GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+      gchar *accel_txt
+          = gtk_accelerator_get_label(gdk_keyval_to_lower(event->keyval), event->state & KEY_STATE_MASK);
+      gchar txt[512] = { 0 };
+      if(g_str_has_prefix(accel_conflict->translated_path, "<Darktable>/"))
+        g_strlcpy(txt, accel_conflict->translated_path + 12, sizeof(txt));
+      else
+        g_strlcpy(txt, accel_conflict->translated_path, sizeof(txt));
+      GtkWidget *dialog = gtk_message_dialog_new(
+          GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+          _("%s accel is already mapped to\n%s.\ndo you want to replace it ?"), accel_txt, txt);
+      g_free(accel_txt);
+#ifdef GDK_WINDOWING_QUARTZ
+      dt_osx_disallow_fullscreen(dialog);
+#endif
 
+      gtk_window_set_title(GTK_WINDOW(dialog), _("accel conflict"));
+      gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+      gtk_widget_destroy(dialog);
+      if(res == GTK_RESPONSE_YES)
+      {
+        // Change the accel map entry
+        if(gtk_accel_map_change_entry(darktable.control->accel_remap_str, gdk_keyval_to_lower(event->keyval),
+                                      event->state & KEY_STATE_MASK, TRUE))
+        {
+          // Then remove conflicts
+          g_slist_foreach(darktable.control->accelerator_list, delete_matching_accels, (gpointer)(accel_current));
+        }
+      }
+    }
 
     // Then update the text in the A_BINDING_COLUMN of each row
     update_accels_model(NULL, model);

@@ -133,6 +133,22 @@
             </row>
             <row>
               <entry>
+                <code>$(MAX_WIDTH)</code>
+              </entry>
+              <entry>
+                maximum image width to limit within export session
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(MAX_HEIGHT)</code>
+              </entry>
+              <entry>
+                maximum image height to limit within export session
+              </entry>
+            </row>
+            <row>
+              <entry>
                 <code>$(YEAR)</code>
               </entry>
               <entry>

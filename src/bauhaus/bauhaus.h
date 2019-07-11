@@ -231,6 +231,9 @@ typedef struct dt_bauhaus_t
 void dt_bauhaus_init();
 void dt_bauhaus_cleanup();
 
+// load theme colors, fonts, etc
+void dt_bauhaus_load_theme();
+
 // common functions:
 // set the label text:
 void dt_bauhaus_widget_set_label(GtkWidget *w, const char *section, const char *label);
@@ -308,6 +311,7 @@ const GList *dt_bauhaus_combobox_get_entries(GtkWidget *w);
 gpointer dt_bauhaus_combobox_get_data(GtkWidget *widget);
 void dt_bauhaus_combobox_clear(GtkWidget *w);
 void dt_bauhaus_combobox_set_default(GtkWidget *widget, int def);
+int dt_bauhaus_combobox_get_default(GtkWidget *widget);
 void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct)(GtkWidget *w, struct dt_iop_module_t **module));
 void dt_bauhaus_combobox_entry_set_sensitive(GtkWidget *widget, int pos, gboolean sensitive);
 

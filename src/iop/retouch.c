@@ -134,7 +134,7 @@ typedef struct dt_iop_retouch_gui_data_t
   GtkLabel *label_form_selected;                                          // display number of forms selected
   GtkWidget *bt_edit_masks, *bt_path, *bt_circle, *bt_ellipse, *bt_brush; // shapes
   GtkWidget *bt_clone, *bt_heal, *bt_blur, *bt_fill;                      // algorithms
-  GtkWidget *bt_showmask, *bt_suppress;                                   // supress & show masks
+  GtkWidget *bt_showmask, *bt_suppress;                                   // suppress & show masks
 
   GtkWidget *wd_bar; // wavelet decompose bar
   GtkLabel *lbl_num_scales;
@@ -1321,7 +1321,8 @@ static gboolean rt_wdbar_button_release(GtkWidget *widget, GdkEventButton *event
 
 static gboolean rt_wdbar_scrolled(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return TRUE;
+   if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
+ if(darktable.gui->reset) return TRUE;
 
   dt_iop_request_focus(self);
 
@@ -1940,7 +1941,6 @@ static void rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton, dt_
   dt_iop_request_focus(self);
 
   g->display_wavelet_scale = gtk_toggle_button_get_active(togglebutton);
-  self->bypass_blendif = (g->mask_display || g->display_wavelet_scale);
 
   rt_show_hide_controls(self, g, p, g);
 
@@ -2244,7 +2244,6 @@ static void rt_showmask_callback(GtkToggleButton *togglebutton, dt_iop_module_t 
   }
 
   g->mask_display = gtk_toggle_button_get_active(togglebutton);
-  module->bypass_blendif = (g->mask_display || g->display_wavelet_scale);
 
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
   dt_iop_request_focus(module);
@@ -2649,6 +2648,7 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *label = gtk_label_new(_("# shapes:"));
   gtk_box_pack_start(GTK_BOX(hbox_shapes), label, FALSE, TRUE, 0);
   g->label_form = GTK_LABEL(gtk_label_new("-1"));
+  gtk_box_pack_start(GTK_BOX(hbox_shapes), GTK_WIDGET(g->label_form), FALSE, TRUE, DT_PIXEL_APPLY_DPI(5));
   g_object_set(G_OBJECT(hbox_shapes), "tooltip-text",
                _("to add a shape select an algorithm and a shape type and click on the image.\n"
                  "shapes are added to the current scale"),
@@ -2688,8 +2688,6 @@ void gui_init(dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->bt_circle), "tooltip-text", _("add circle"), (char *)NULL);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_circle, FALSE, FALSE, 0);
-
-  gtk_box_pack_start(GTK_BOX(hbox_shapes), GTK_WIDGET(g->label_form), FALSE, TRUE, 0);
 
   // algorithm toolbar
   GtkWidget *hbox_algo = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -2731,28 +2729,36 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_end(GTK_BOX(hbox_algo), g->bt_heal, FALSE, FALSE, 0);
 
   // wavelet decompose bar labels
-  GtkWidget *hbox_wd_labels = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  GtkWidget *grid_wd_labels = gtk_grid_new();
+  gtk_grid_set_column_homogeneous(GTK_GRID(grid_wd_labels), FALSE);
 
   GtkWidget *lbl_num_scales = gtk_label_new(_("# scales:"));
-  gtk_box_pack_start(GTK_BOX(hbox_wd_labels), GTK_WIDGET(lbl_num_scales), FALSE, FALSE, 0);
+  gtk_widget_set_halign(lbl_num_scales, GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid_wd_labels), lbl_num_scales, 0, 0, 1, 1);
 
   g->lbl_num_scales = GTK_LABEL(gtk_label_new(NULL));
+  gtk_widget_set_halign(GTK_WIDGET(g->lbl_num_scales), GTK_ALIGN_START);
   gtk_label_set_width_chars(g->lbl_num_scales, 2);
-  gtk_box_pack_start(GTK_BOX(hbox_wd_labels), GTK_WIDGET(g->lbl_num_scales), FALSE, FALSE, 0);
+  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), GTK_WIDGET(g->lbl_num_scales), lbl_num_scales, GTK_POS_RIGHT, 1, 1);
 
   GtkWidget *lbl_curr_scale = gtk_label_new(_("current:"));
-  gtk_box_pack_start(GTK_BOX(hbox_wd_labels), GTK_WIDGET(lbl_curr_scale), FALSE, FALSE, 0);
+  gtk_widget_set_halign(lbl_curr_scale, GTK_ALIGN_START);
+  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), lbl_curr_scale, lbl_num_scales, GTK_POS_BOTTOM, 1, 1);
 
   g->lbl_curr_scale = GTK_LABEL(gtk_label_new(NULL));
+  gtk_widget_set_halign(GTK_WIDGET(g->lbl_curr_scale), GTK_ALIGN_START);
   gtk_label_set_width_chars(g->lbl_curr_scale, 2);
-  gtk_box_pack_start(GTK_BOX(hbox_wd_labels), GTK_WIDGET(g->lbl_curr_scale), FALSE, FALSE, 0);
+  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), GTK_WIDGET(g->lbl_curr_scale), lbl_curr_scale, GTK_POS_RIGHT, 1, 1);
 
   GtkWidget *lbl_merge_from_scale = gtk_label_new(_("merge from:"));
-  gtk_box_pack_start(GTK_BOX(hbox_wd_labels), GTK_WIDGET(lbl_merge_from_scale), FALSE, FALSE, 0);
+  gtk_widget_set_halign(lbl_merge_from_scale, GTK_ALIGN_START);
+  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), lbl_merge_from_scale, lbl_curr_scale, GTK_POS_BOTTOM, 1, 1);
 
   g->lbl_merge_from_scale = GTK_LABEL(gtk_label_new(NULL));
+  gtk_widget_set_halign(GTK_WIDGET(g->lbl_merge_from_scale), GTK_ALIGN_START);
   gtk_label_set_width_chars(g->lbl_merge_from_scale, 2);
-  gtk_box_pack_start(GTK_BOX(hbox_wd_labels), GTK_WIDGET(g->lbl_merge_from_scale), FALSE, FALSE, 0);
+  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), GTK_WIDGET(g->lbl_merge_from_scale), lbl_merge_from_scale,
+                          GTK_POS_RIGHT, 1, 1);
 
   // wavelet decompose bar
   g->wd_bar = gtk_drawing_area_new();
@@ -2773,10 +2779,10 @@ void gui_init(dt_iop_module_t *self)
                                                    | GDK_SMOOTH_SCROLL_MASK);
   gtk_widget_set_size_request(g->wd_bar, -1, DT_PIXEL_APPLY_DPI(40));
 
-  // toolbar display current scale / cut&paste / supress&display masks
+  // toolbar display current scale / cut&paste / suppress&display masks
   GtkWidget *hbox_scale = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 
-  // display & supress masks
+  // display & suppress masks
   g->bt_showmask
       = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   g_object_set(G_OBJECT(g->bt_showmask), "tooltip-text", _("display masks"), (char *)NULL);
@@ -2959,7 +2965,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), lbl_wd, FALSE, TRUE, 0);
 
   // wavelet decompose bar & labels
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox_wd_labels, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), grid_wd_labels, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->wd_bar, TRUE, TRUE, 0);
 
   // preview scale & cut/paste scale
@@ -3270,7 +3276,7 @@ static void rt_extend_roi_in_for_clone(struct dt_iop_module_t *self, struct dt_d
 
         fw_src *= roi_in->scale, fh_src *= roi_in->scale, fl_src *= roi_in->scale, ft_src *= roi_in->scale;
 
-        // we only want to process froms alreay in roi_in
+        // we only want to process forms already in roi_in
         const int intersects
             = !(roib < ft_src || ft_src + fh_src < roiy || roir < fl_src || fl_src + fw_src < roix);
         if(intersects)
@@ -3578,7 +3584,10 @@ static void image_rgb2lab(float *img_src, const int width, const int height, con
   if(ch == 4 && use_sse)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img_src) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, stride) \
+    shared(img_src) \
+    schedule(static)
 #endif
     for(int i = 0; i < stride; i += ch)
     {
@@ -3594,7 +3603,10 @@ static void image_rgb2lab(float *img_src, const int width, const int height, con
 #endif
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img_src) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, stride) \
+  shared(img_src) \
+  schedule(static)
 #endif
   for(int i = 0; i < stride; i += ch)
   {
@@ -3613,7 +3625,10 @@ static void image_lab2rgb(float *img_src, const int width, const int height, con
   if(ch == 4 && use_sse)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img_src) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, stride) \
+  shared(img_src) \
+  schedule(static)
 #endif
     for(int i = 0; i < stride; i += ch)
     {
@@ -3629,7 +3644,10 @@ static void image_lab2rgb(float *img_src, const int width, const int height, con
 #endif
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img_src) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, stride) \
+  shared(img_src) \
+  schedule(static)
 #endif
   for(int i = 0; i < stride; i += ch)
   {
@@ -3651,8 +3669,12 @@ static void rt_process_stats(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) reduction(+ : count, l_sum) reduction(max : l_max)        \
-                                                                      reduction(min : l_min)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, img_src, size, work_profile) \
+  schedule(static) \
+  reduction(+ : count, l_sum) \
+  reduction(max : l_max) \
+  reduction(min : l_min)
 #endif
   for(int i = 0; i < size; i += ch)
   {
@@ -3698,7 +3720,10 @@ static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   const float in_inv_gamma = pow(10, tmp);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img_src) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, in_inv_gamma, left, right, size, work_profile) \
+  shared(img_src) \
+  schedule(static)
 #endif
   for(int i = 0; i < size; i += ch)
   {
@@ -3779,7 +3804,10 @@ static void rt_copy_in_to_out(const float *const in, const struct dt_iop_roi_t *
   const int y_to = MIN(roi_out->height, roi_in->height);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, in, out, roi_in, roi_out, rowsize, xoffs,  yoffs, \
+                      y_to) \
+  schedule(static)
 #endif
   for(int y = 0; y < y_to; y++)
   {
@@ -3822,7 +3850,10 @@ static void rt_build_scaled_mask(float *const mask, dt_iop_roi_t *const roi_mask
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(mask_tmp, roi_mask_scaled) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(mask, roi_in, roi_mask, x_to, y_to) \
+  shared(mask_tmp, roi_mask_scaled) \
+  schedule(static)
 #endif
   for(int yy = roi_mask_scaled->y; yy < y_to; yy++)
   {
@@ -3856,7 +3887,10 @@ static void rt_copy_image_masked(float *const img_src, float *img_dest, dt_iop_r
   if(ch == 4 && use_sse)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img_dest) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, img_src, mask_scaled, opacity, roi_dest, roi_mask_scaled) \
+    shared(img_dest) \
+    schedule(static)
 #endif
     for(int yy = 0; yy < roi_mask_scaled->height; yy++)
     {
@@ -3887,7 +3921,10 @@ static void rt_copy_image_masked(float *const img_src, float *img_dest, dt_iop_r
     const int ch1 = (ch == 4) ? ch - 1 : ch;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(img_dest) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, ch1, img_src, mask_scaled, opacity, roi_dest, roi_mask_scaled) \
+    shared(img_dest) \
+    schedule(static)
 #endif
     for(int yy = 0; yy < roi_mask_scaled->height; yy++)
     {
@@ -3919,7 +3956,9 @@ static void rt_copy_mask_to_alpha(float *const img, dt_iop_roi_t *const roi_img,
                                   const float opacity)
 {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, img, mask_scaled, opacity, roi_img, roi_mask_scaled) \
+  schedule(static)
 #endif
   for(int yy = 0; yy < roi_mask_scaled->height; yy++)
   {
@@ -3949,7 +3988,9 @@ static void retouch_fill_sse(float *const in, dt_iop_roi_t *const roi_in, float 
   const __m128 val_fill = _mm_load_ps(valf4_fill);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, in, mask_scaled, opacity, roi_in, roi_mask_scaled, val_fill) \
+  schedule(static)
 #endif
   for(int yy = 0; yy < roi_mask_scaled->height; yy++)
   {
@@ -3987,7 +4028,9 @@ static void retouch_fill(float *const in, dt_iop_roi_t *const roi_in, const int 
   const int ch1 = (ch == 4) ? ch - 1 : ch;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, ch1, fill_color, in, mask_scaled, opacity, roi_in, roi_mask_scaled) \
+  schedule(static)
 #endif
   for(int yy = 0; yy < roi_mask_scaled->height; yy++)
   {
@@ -4354,7 +4397,8 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
   // init the decompose routine
   dwt_p = dt_dwt_init(in_retouch, roi_rt->width, roi_rt->height, ch, p->num_scales,
-                      (!display_wavelet_scale) ? 0 : p->curr_scale, p->merge_from_scale, &usr_data,
+                      (!display_wavelet_scale || piece->pipe->type != DT_DEV_PIXELPIPE_FULL) ? 0 : p->curr_scale,
+                      p->merge_from_scale, &usr_data,
                       roi_in->scale / piece->iscale, use_sse);
   if(dwt_p == NULL) goto cleanup;
 
@@ -4365,6 +4409,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     for(size_t j = 0; j < roi_rt->width * roi_rt->height * ch; j += ch) in_retouch[j + 3] = 0.f;
 
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
+    piece->pipe->bypass_blendif = 1;
     usr_data.mask_display = 1;
   }
 
@@ -4425,7 +4470,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     rt_adjust_levels(self, piece, in_retouch, roi_rt->width, roi_rt->height, ch, levels, use_sse);
   }
 
-  // copy alpha channel if nedded
+  // copy alpha channel if needed
   if((piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) && g && !g->mask_display)
   {
     dt_iop_alpha_copy(ivoid, in_retouch, roi_rt->width, roi_rt->height);
@@ -4962,7 +5007,7 @@ static cl_int rt_process_forms_cl(cl_mem dev_layer, dwt_params_cl_t *const wt_p,
 
   dt_develop_blend_params_t *bp = (dt_develop_blend_params_t *)piece->blendop_data;
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)piece->data;
-  dt_iop_retouch_global_data_t *gd = (dt_iop_retouch_global_data_t *)self->data;
+  dt_iop_retouch_global_data_t *gd = (dt_iop_retouch_global_data_t *)self->global_data;
   const int devid = piece->pipe->devid;
   dt_iop_roi_t *roi_layer = &usr_d->roi;
   const int mask_display = usr_d->mask_display && (scale == usr_d->display_scale);
@@ -5151,7 +5196,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)piece->data;
-  dt_iop_retouch_global_data_t *gd = (dt_iop_retouch_global_data_t *)self->data;
+  dt_iop_retouch_global_data_t *gd = (dt_iop_retouch_global_data_t *)self->global_data;
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
   cl_int err = CL_SUCCESS;
@@ -5196,7 +5241,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   // init the decompose routine
   dwt_p = dt_dwt_init_cl(devid, in_retouch, roi_rt->width, roi_rt->height, p->num_scales,
-                         (!display_wavelet_scale) ? 0 : p->curr_scale, p->merge_from_scale, &usr_data,
+                         (!display_wavelet_scale || piece->pipe->type != DT_DEV_PIXELPIPE_FULL) ? 0 : p->curr_scale,
+                         p->merge_from_scale, &usr_data,
                          roi_in->scale / piece->iscale);
   if(dwt_p == NULL)
   {
@@ -5219,6 +5265,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(err != CL_SUCCESS) goto cleanup;
 
     piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
+    piece->pipe->bypass_blendif = 1;
     usr_data.mask_display = 1;
   }
 
@@ -5283,7 +5330,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(err != CL_SUCCESS) goto cleanup;
   }
 
-  // copy alpha channel if nedded
+  // copy alpha channel if needed
   if((piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) && g && !g->mask_display)
   {
     const int kernel = gd->kernel_retouch_copy_alpha;

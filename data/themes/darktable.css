@@ -106,8 +106,8 @@
 @define-color field_fg @grey_75;
 @define-color field_active_bg @grey_20;
 @define-color field_active_fg @grey_80;
-@define-color field_hover_bg @grey_25;
-@define-color field_hover_fg @grey_85;
+@define-color field_hover_bg @grey_45;
+@define-color field_hover_fg @grey_90;
 @define-color field_select_bg @grey_05;
 
 /* Tooltips and contextual helpers */
@@ -138,8 +138,10 @@
 @define-color thumbnail_border_color @grey_15; /* rectangle directly around image */
 @define-color thumbnail_selected_border_color @grey_90;
 @define-color filmstrip_bg_color @lighttable_bg_color;
+@define-color preview_border_color @grey_15;
+@define-color preview_hover_border_color @grey_90;
 
-/* Graphs : histogram and tone curve */
+/* Graphs : histogram, navigation thumbnail and some items on tone curve */
 @define-color graph_bg @grey_10;
 @define-color graph_border @grey_05;
 @define-color graph_fg @grey_75;
@@ -234,7 +236,6 @@ box *
   color: @disabled_fg_color;
 }
 
-
 /* Side panels */
 
 /* Remember, in gui/gtk.c, outer borders (active areas used to collapse panels)
@@ -313,7 +314,7 @@ button
   border: 1px solid @button_border;
   background-color: @button_bg;
   color: @button_fg;
-  font-weight: 600;
+  font-weight: normal;
   font-family: sans-serif;
   min-height: 1em;
   min-width: 1em;
@@ -375,6 +376,13 @@ button:disabled,
   border-radius: 2px;
 }
 
+#iop-plugin-ui button,
+#lib-plugin-ui button
+{
+  margin: 2pt;
+  padding: 2pt;
+}
+
 /* Buttons in toolbars in lighttable and darkroom */
 #header-toolbar #dt-toggle-button,
 #header-toolbar #dt-button,
@@ -401,7 +409,7 @@ button:disabled,
   min-width: 1em;
 }
 
-/* Button to open/close the dropdown section */
+/* Button to open/close the dropdown section, especially header ones */
 #control-button
 {
     background-color: transparent;
@@ -423,23 +431,34 @@ button:disabled,
     margin: 0;
 }
 
+/* Adjust size of button arrow to open/close dropdown on panels */
+#iop-plugin-ui #control-button,
 #lib-plugin-ui #control-button
 {
     background-color: transparent;
     min-height: 1em;
+    min-width: 1em;
     padding: 0.6em;
     margin: 0;
     border: 0;
 }
 
-#lib-plugin-ui #control-button:hover
+#right #iop-plugin-ui #control-button /* especially for display arrow option on module filmic and if necessary other modules */
+{
+    background-color: transparent;
+    min-height: 0.9em;
+    min-width: 0.9em;
+    padding: 0.2em;
+    margin: 0;
+    border: 0;
+}
+
+#iop-plugin-ui #control-button:hover,
+#lib-plugin-ui #control-button:hover,
+#right #iop-plugin-ui #control-button:hover
 {
     color: @button_hover_fg;
     background-color: @button_hover_bg;
-    min-height: 1em;
-    padding: 0.6em;
-    border: 0;
-    margin: 0;
 }
 
 /* Checkbox */
@@ -508,7 +527,7 @@ entry selection
   color: @plugin_label_color;
   border:0;
   padding: 0 2pt 2pt 0.5em;
-  font-weight: 400;
+  font-weight: normal;
   font-stretch: condensed;
   font-family: sans-serif;
   font-size: 0.9em;
@@ -521,7 +540,7 @@ entry selection
   padding: 0 0 3pt 0;
   color: @section_label;
   border-bottom: 0.5pt solid  @section_label;
-  font-weight: 600;
+  font-weight: 500;
   font-family: sans-serif;
 }
 
@@ -780,7 +799,7 @@ notebook tabs,
   padding: 0;
   margin: 0;
   color: @button_fg;
-  font-weight: 400;
+  font-weight: normal;
   font-family: sans-serif;
 }
 
@@ -800,7 +819,7 @@ notebook tabs,
 
 #blending-tabs *
 {
-  font-size: 8pt;
+  font-size: 0.8em;
   min-height: 1.5em;
   min-width: 1.5em;
   padding: 0.2em;
@@ -809,8 +828,8 @@ notebook tabs,
 
 notebook tab
 {
-  border-bottom: 2pt solid transparent;
-  padding: 3pt;
+  border-bottom: 2px solid transparent;
+  padding: 3px;
 }
 
 notebook tab label /* disabled tabs */
@@ -820,7 +839,7 @@ notebook tab label /* disabled tabs */
 
 notebook tab:hover
 {
-  border-bottom: 2pt solid @button_hover_fg;
+  border-bottom: 2px solid @button_hover_fg;
   color: @button_hover_fg;
   background-color: @button_hover_bg;
 }
@@ -833,7 +852,7 @@ notebook tab:hover label
 notebook tab:checked,
 notebook tab:focus
 {
-  border-bottom: 2pt solid @button_checked_fg;
+  border-bottom: 2px solid @button_checked_fg;
   color: @button_checked_fg;
 }
 
@@ -841,6 +860,21 @@ notebook tab:checked label,
 notebook tab:focus label
 {
   color: @button_checked_fg;
+}
+
+/* This will avoid have too much height on entry items in dialog windows; label and button are needed as they are related */
+
+#preferences_notebook *
+{
+  margin: 0;
+}
+
+#preferences_notebook scrolledwindow label,
+#preferences_notebook scrolledwindow entry,
+#preferences_notebook scrolledwindow button
+{
+  padding: 0px;
+  margin: 3px 0;
 }
 
 /* Bauhaus controls (sliders and comboboxes in modules) */
@@ -904,28 +938,50 @@ dialog
 
 dialog *
 {
-  margin: 1pt;
-  padding:0;
+  margin: 1px;
+  padding: 0;
+}
+
+dialog headerbar
+{
+  background-color: @border_color;
+  margin: 0;
+  padding: 0.1em 0.6em;
+}
+
+dialog headerbar button
+{
+  padding: 1px 2px;
+}
+
+dialog button
+{
+  padding: 1px;
 }
 
 dialog scrolledwindow
 {
-  padding: 0 1pt 0 8pt;
+  padding: 0 1px 0 8px;
   margin: 0;
   background-color: @plugin_bg_color;
 }
 
+.dialog-vbox treeview
+{
+  background-color: @button_bg;
+}
+
 /* empty space at top/bottom of sidepanels when scrolled */
-.undershoot,
-.undershoot.top,
-.undershoot.bottom,
-.undershoot.left,
-.undershoot.right,
-.overshoot,
-.overshoot.top,
-.overshoot.bottom,
-.overshoot.left,
-.overshoot.right
+undershoot,
+undershoot.top,
+undershoot.bottom,
+undershoot.left,
+undershoot.right,
+overshoot,
+overshoot.top,
+overshoot.bottom,
+overshoot.left,
+overshoot.right
 {
   background: transparent;
   border:none;
@@ -952,25 +1008,53 @@ dialog scrolledwindow
 #lib-plugin-ui combobox,
 #iop-plugin-ui combobox
 {
-  margin: 2pt 0;
+  margin: 2px 0;
 }
 
 entry
 {
-  margin: 2pt 0;
+  margin: 2px 0;
+}
+
+#left #lib-plugin-ui entry /* This will avoid have too much height on entry items in filter collections modules */
+{
+  padding: 0px;
+  margin: 8px 0px;
+}
+
+#left #lib-plugin-ui scrolledwindow entry /* This will avoid having too much height on entry items in clone manager without touching other parts of the UI */
+{
+  padding: 0px;
+  margin: 40px 3px;
+  min-width: 150px;
+}
+
+#right #lib-plugin-ui entry /* This will adjust entry height on right panel */
+{
+  padding: 1px;
 }
 
 #lib-plugin-ui checkbutton check,
 #iop-plugin-ui checkbutton check,
 checkbutton check
 {
-  margin: 5px 8pt 5px 0;
+  margin: 5px 8px 5px 0;
 }
 
-#iop-plugin-ui button,
-#lib-plugin-ui button
+#left #lib-plugin-ui #dt-button /* arrow size of dropdown button arrow on filter collection */
 {
-  margin: 2pt;
+  padding: 0px;
+}
+
+#iop-plugin-ui #dt-button  /* arrow size of some buttons on darkroom modules */
+{
+  padding: 2px;
+}
+
+#left #history-button /* choose here spacing between history items in darkroom */
+{
+  padding: 1px 2px 2px 2px;
+  margin: 0px 1px 1px 1px;
 }
 
 #iop-bottom-bar
@@ -994,7 +1078,7 @@ aboutdialog box *
 
 aboutdialog headerbar
 {
-  padding: 2pt;
+  padding: 2px;
 }
 
 progressbar *
@@ -1009,12 +1093,12 @@ filechooserdialog eventbox
 
 filechooserdialog sidebar-icon
 {
-  padding: 0pt 5pt 0pt 10pt;
+  padding: 0px 5px 0px 10px;
 }
 
 filechooserdialog sidebar-row
 {
-  padding-top: 3pt;
+  padding-top: 3px;
 }
 
 filechooserdialog sidebar-row:hover
@@ -1058,4 +1142,52 @@ cell:selected
 {
     min-height: 9em;
     min-width: 9em;
+}
+
+#live-sample
+{
+    padding: 1pt;
+    min-height: 1em;
+    min-width: 3em;
+}
+
+#live-sample-data
+{
+   font-family: courier;
+   font-weight: bold;
+}
+
+/* Accels window reminder */
+
+.accels_window_cat_title
+{
+   background-color: transparent;
+   font-weight: bold;
+   font-size: 1.1em;
+   padding: 10px 0px;
+}
+
+.accels_window_list button
+{
+   background-color: @button_bg;
+   border: 0px;
+}
+
+.accels_window_list label
+{
+   font-weight: bold;
+   font-size: 0.9em;
+   padding-top: 1px;
+   padding-right: 10px;
+}
+
+.accels_window_box treeview
+{
+   background-color: transparent;
+}
+
+.accels_window_stick
+{
+  min-width: 1.8em;
+  min-height : 1.8em;
 }

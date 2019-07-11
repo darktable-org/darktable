@@ -148,7 +148,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float *const weights_buf = (float *)malloc(weights_size * dt_get_num_threads() * sizeof(float));
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(m, mat, isig2col) private(in, out)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, ivoid, ovoid, rad, roi_in, roi_out, wd, weights_buf) \
+    shared(m, mat, isig2col) \
+    private(in, out) \
+    schedule(static)
 #endif
     for(int j = rad; j < roi_out->height - rad; j++)
     {

@@ -230,7 +230,7 @@ void dt_dev_process_preview2(dt_develop_t *dev)
   if(!dev->gui_attached) return;
   if(!(dev->second_window.widget && GTK_IS_WIDGET(dev->second_window.widget))) return;
   int err = dt_control_add_job_res(darktable.control, dt_dev_process_preview2_job_create(dev),
-                                   DT_CTL_WORKER_ZOOM_FILL);
+                                   DT_CTL_WORKER_ZOOM_2);
   if(err) fprintf(stderr, "[dev_process_preview2] job queue exceeded!\n");
 }
 
@@ -334,11 +334,12 @@ restart:
   dt_show_times(&start, "[dev_process_preview] pixel pipeline processing");
   dt_dev_average_delay_update(&start, &dev->preview_average_delay);
 
-  // redraw the whole thing, to also update color picker values and histograms etc.
-  if(dev->gui_attached) dt_control_queue_redraw();
+  // if a widget needs to be redraw there's the DT_SIGNAL_*_PIPE_FINISHED signals
   dt_control_log_busy_leave();
   dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED);
 }
 
 void dt_dev_process_preview2_job(dt_develop_t *dev)
@@ -456,6 +457,10 @@ restart:
       goto restart;
   }
 
+  dev->preview2_pipe->backbuf_scale = scale;
+  dev->preview2_pipe->backbuf_zoom_x = zoom_x;
+  dev->preview2_pipe->backbuf_zoom_y = zoom_y;
+
   dev->preview2_status = DT_DEV_PIXELPIPE_VALID;
 
   dt_show_times(&start, "[dev_process_preview2] pixel pipeline processing");
@@ -464,6 +469,8 @@ restart:
   dt_control_log_busy_leave();
   dt_pthread_mutex_unlock(&dev->preview2_pipe_mutex);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED);
 }
 
 void dt_dev_process_image_job(dt_develop_t *dev)
@@ -590,14 +597,20 @@ restart:
   if(dev->pipe->changed != DT_DEV_PIPE_UNCHANGED) goto restart;
 
   // cool, we got a new image!
+  dev->pipe->backbuf_scale = scale;
+  dev->pipe->backbuf_zoom_x = zoom_x;
+  dev->pipe->backbuf_zoom_y = zoom_y;
+
   dev->image_status = DT_DEV_PIXELPIPE_VALID;
   dev->image_loading = 0;
 
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-  // redraw the whole thing, to also update color picker values and histograms etc.
-  if(dev->gui_attached) dt_control_queue_redraw();
+  // if a widget needs to be redraw there's the DT_SIGNAL_*_PIPE_FINISHED signals
   dt_control_log_busy_leave();
   dt_pthread_mutex_unlock(&dev->pipe_mutex);
+
+  if(dev->gui_attached && !dev->gui_leaving)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED);
 }
 
 // load the raw and get the new image struct, blocking in gui thread
@@ -1185,7 +1198,7 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid = ?1", -1,
                               &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->image_storage.id);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   GList *history = dev->history;

@@ -46,7 +46,10 @@ static inline void _dt_focus_cdf22_wtf(uint8_t *buf, const int l, const int widt
   const int st = step / 2;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, st, step, width, ch) \
+  shared(buf) \
+  schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -66,7 +69,10 @@ static inline void _dt_focus_cdf22_wtf(uint8_t *buf, const int l, const int widt
       gbuf(buf, i, j) += _from_uint8(gbuf(buf, i - st, j)) / 2;
   }
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, st, step, width, ch) \
+  shared(buf) \
+  schedule(static)
 #endif
   for(int i = 0; i < width; i++)
   {
@@ -184,7 +190,7 @@ static void dt_focus_create_clusters(dt_focus_cluster_t *focus, int frows, int f
 #endif
 #undef CHANNEL
 
-#if 0 // simple high pass filter, doesn't work on slighty unsharp/high iso images
+#if 0 // simple high pass filter, doesn't work on slightly unsharp/high iso images
   memset(focus, 0, sizeof(dt_focus_cluster_t)*fs);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(shared)

@@ -53,8 +53,8 @@
 
 #define ROTATION_RANGE 10                   // allowed min/max default range for rotation parameter
 #define ROTATION_RANGE_SOFT 20              // allowed min/max range for rotation parameter with manual adjustment
-#define LENSSHIFT_RANGE 0.5                 // allowed min/max default range for lensshift parameters
-#define LENSSHIFT_RANGE_SOFT 1              // allowed min/max range for lensshift parameters with manual adjustment
+#define LENSSHIFT_RANGE 1.0                 // allowed min/max default range for lensshift parameters
+#define LENSSHIFT_RANGE_SOFT 2.0            // allowed min/max range for lensshift parameters with manual adjustment
 #define SHEAR_RANGE 0.2                     // allowed min/max range for shear parameter
 #define SHEAR_RANGE_SOFT 0.5                // allowed min/max range for shear parameter with manual adjustment
 #define MIN_LINE_LENGTH 5                   // the minimum length of a line in pixels to be regarded as relevant
@@ -883,7 +883,10 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   const float cy = fullheight * data->ct;
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(points, points_count, homograph)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(cx, cy) \
+  shared(points, points_count, homograph) \
+  schedule(static)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
@@ -917,7 +920,10 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   const float cy = fullheight * data->ct;
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(points, points_count, ihomograph)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(cx, cy) \
+  shared(points, points_count, ihomograph) \
+  schedule(static)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
@@ -957,7 +963,10 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ihomograph, interpolation)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(cx, cy, in, out, roi_in, roi_out) \
+  shared(ihomograph, interpolation) \
+  schedule(static)
 #endif
   // go over all pixels of output image
   for(int j = 0; j < roi_out->height; j++)
@@ -1128,7 +1137,10 @@ static void rgb2grey256(const float *in, double *out, const int width, const int
   const int ch = 4;
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, width, ch) \
+  shared(in, out) \
+  schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -1155,7 +1167,10 @@ static void edge_enhance_1d(const double *in, double *out, const int width, cons
   const double *kernel = (dir == ASHIFT_ENHANCE_HORIZONTAL) ? (const double *)hkernel : (const double *)vkernel;
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out, kernel)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, width, khwidth, kwidth) \
+  shared(in, out, kernel) \
+  schedule(static)
 #endif
   // loop over image pixels and perform sobel convolution
   for(int j = khwidth; j < height - khwidth; j++)
@@ -1179,7 +1194,10 @@ static void edge_enhance_1d(const double *in, double *out, const int width, cons
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(out)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, width, khwidth) \
+  shared(out) \
+  schedule(static)
 #endif
   // border fill in output buffer, so we don't get pseudo lines at image frame
   for(int j = 0; j < height; j++)
@@ -1221,7 +1239,10 @@ static int edge_enhance(const double *in, double *out, const int width, const in
 
 // calculate absolute values
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(Gx, Gy, out)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, width) \
+  shared(Gx, Gy, out) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)width * height; k++)
   {
@@ -1268,7 +1289,10 @@ static int detail_enhance(const float *in, float *out, const int width, const in
 
   // convert RGB input to Lab, use output buffer for intermediate storage
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, width) \
+  shared(in, out) \
+  schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -1297,7 +1321,10 @@ static int detail_enhance(const float *in, float *out, const int width, const in
 
   // convert resulting Lab to RGB output
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(out)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, width) \
+  shared(out) \
+  schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -1317,7 +1344,10 @@ static int detail_enhance(const float *in, float *out, const int width, const in
 static void gamma_correct(const float *in, float *out, const int width, const int height)
 {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(in, out)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, width) \
+  shared(in, out) \
+  schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -2901,7 +2931,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(ihomograph, interpolation)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, ch_width, cx, cy, ivoid, ovoid, roi_in, roi_out) \
+  shared(ihomograph, interpolation) \
+  schedule(static)
 #endif
   // go over all pixels of output image
   for(int j = 0; j < roi_out->height; j++)
@@ -2941,7 +2974,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_ashift_data_t *d = (dt_iop_ashift_data_t *)piece->data;
-  dt_iop_ashift_global_data_t *gd = (dt_iop_ashift_global_data_t *)self->data;
+  dt_iop_ashift_global_data_t *gd = (dt_iop_ashift_global_data_t *)self->global_data;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
   const int devid = piece->pipe->devid;
@@ -5001,6 +5034,35 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
+GSList *mouse_actions(struct dt_iop_module_t *self)
+{
+  GSList *lm = NULL;
+  dt_mouse_action_t *a = NULL;
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = DT_MOUSE_ACTION_LEFT;
+  g_snprintf(a->name, sizeof(a->name), _("[%s on segment] select segment"), self->name(self));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = DT_MOUSE_ACTION_RIGHT;
+  g_snprintf(a->name, sizeof(a->name), _("[%s on segment] unselect segment"), self->name(self));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->key.accel_mods = GDK_SHIFT_MASK;
+  a->action = DT_MOUSE_ACTION_LEFT_DRAG;
+  g_snprintf(a->name, sizeof(a->name), _("[%s] select all segments from zone"), self->name(self));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->key.accel_mods = GDK_SHIFT_MASK;
+  a->action = DT_MOUSE_ACTION_RIGHT_DRAG;
+  g_snprintf(a->name, sizeof(a->name), _("[%s] unselect all segments from zone"), self->name(self));
+  lm = g_slist_append(lm, a);
+
+  return lm;
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

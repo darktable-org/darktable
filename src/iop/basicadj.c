@@ -26,18 +26,13 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/rgb_norms.h"
 #include "develop/imageop.h"
 #include "gui/color_picker_proxy.h"
 
 DT_MODULE_INTROSPECTION(1, dt_iop_basicadj_params_t)
 
 #define exposure2white(x) exp2f(-(x))
-
-typedef enum dt_iop_basicadj_preservecolors_t
-{
-  DT_BASICADJ_PRESERVE_NONE = 0,
-  DT_BASICADJ_PRESERVE_LUMINANCE = 1
-} dt_iop_basicadj_preservecolors_t;
 
 typedef struct dt_iop_basicadj_params_t
 {
@@ -627,7 +622,7 @@ void init(dt_iop_module_t *module)
   module->gui_data = NULL;
 
   dt_iop_basicadj_params_t tmp = { 0 };
-  tmp.preserve_colors = DT_BASICADJ_PRESERVE_LUMINANCE;
+  tmp.preserve_colors = DT_RGB_NORM_LUMINANCE;
   tmp.middle_grey = 18.42f;
 
   memcpy(module->params, &tmp, sizeof(dt_iop_basicadj_params_t));
@@ -705,6 +700,11 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->cmb_preserve_colors, NULL, _("preserve colors"));
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("none"));
   dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("luminance"));
+  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("max rgb"));
+  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("average rgb"));
+  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("sum rgb"));
+  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("norm rgb"));
+  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("basic power"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->cmb_preserve_colors, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
   g_signal_connect(G_OBJECT(g->cmb_preserve_colors), "value-changed", G_CALLBACK(preserve_colors_callback), self);
@@ -1235,7 +1235,7 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
   bright = 0.25f * MAX(0.f, bright);
 
   // compute contrast that spreads the average spacing of octiles
-  contr = 50.0f * (1.1f - ospread);
+  contr = (midgray * 100.f) * (1.1f - ospread);
   contr = MAX(0.f, MIN(100.f, contr));
   // take gamma into account
   double whiteclipg = gamma2(whiteclip * corr);
@@ -1402,7 +1402,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_iop_basicadj_data_t *d = (dt_iop_basicadj_data_t *)piece->data;
   dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)&d->params;
   dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
-  dt_iop_basicadj_global_data_t *gd = (dt_iop_basicadj_global_data_t *)self->data;
+  dt_iop_basicadj_global_data_t *gd = (dt_iop_basicadj_global_data_t *)self->global_data;
 
   cl_int err = CL_SUCCESS;
 
@@ -1633,7 +1633,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const size_t stride = (size_t)roi_out->height * roi_out->width * ch;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(black_point, ch, contrast, gamma, hlcomp, hlrange, in, \
+                      inv_middle_grey, middle_grey, out, plain_contrast, \
+                      preserve_colors, process_hlcompr, process_gamma, \
+                      process_saturation, saturation, scale, stride, \
+                      work_profile) \
+  shared(d) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < stride; k += ch)
   {
@@ -1670,11 +1677,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 
     // contrast (with preserve colors)
-    if(preserve_colors == DT_BASICADJ_PRESERVE_LUMINANCE)
+    if(preserve_colors != DT_RGB_NORM_NONE)
     {
       float ratio = 1.f;
-      const float lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(out + k, work_profile)
-                                       : dt_camera_rgb_luminance(out + k);
+      const float lum = dt_rgb_norm(out + k, preserve_colors, work_profile);
       if(lum > 0.f)
       {
         const float contrast_lum = powf(lum * inv_middle_grey, contrast) * middle_grey;

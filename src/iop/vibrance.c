@@ -105,7 +105,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float amount = (d->amount * 0.01);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(amount, ch, roi_out) \
+  shared(in, out) \
+  schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -130,7 +133,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_vibrance_data_t *data = (dt_iop_vibrance_data_t *)piece->data;
-  dt_iop_vibrance_global_data_t *gd = (dt_iop_vibrance_global_data_t *)self->data;
+  dt_iop_vibrance_global_data_t *gd = (dt_iop_vibrance_global_data_t *)self->global_data;
   cl_int err = -999;
 
   const int devid = piece->pipe->devid;

@@ -29,6 +29,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "views/view.h"
@@ -179,6 +180,11 @@ void dt_control_cleanup(dt_control_t *s)
   if(s->accelerator_list)
   {
     g_slist_free_full(s->accelerator_list, g_free);
+  }
+  if(s->dynamic_accelerator_list)
+  {
+    g_slist_free(s->dynamic_accelerator_valid);
+    g_slist_free_full(s->dynamic_accelerator_list, g_free);
   }
 }
 
@@ -511,6 +517,11 @@ void dt_control_queue_redraw_center()
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_CENTER);
 }
 
+void dt_control_navigation_redraw()
+{
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_NAVIGATION_REDRAW);
+}
+
 static gboolean _gtk_widget_queue_draw(gpointer user_data)
 {
   gtk_widget_queue_draw(GTK_WIDGET(user_data));
@@ -664,6 +675,23 @@ int dt_control_key_pressed_override(guint key, guint state)
   /* check if key accelerators are enabled*/
   if(darktable.control->key_accelerators_on != 1) return 0;
 
+  // dynamic accels
+  darktable.view_manager->current_view->dynamic_accel_current = dt_dynamic_accel_find_by_key(key, state);
+  if(darktable.view_manager->current_view->dynamic_accel_current)
+  {
+    gchar **vals = g_strsplit_set(darktable.view_manager->current_view->dynamic_accel_current->translated_path, "/", -1);
+    if(vals[0] && vals[1] && vals[2] && vals[3])
+    {
+      gchar *txt = dt_util_dstrcat(NULL, _("scroll to change <b>%s</b> of %s module"), vals[3], vals[2]);
+      dt_control_hinter_message(darktable.control, txt);
+      g_free(txt);
+    }
+    else
+      dt_control_hinter_message(darktable.control, "");
+    g_strfreev(vals);
+    return 1;
+  }
+
   if(key == accels->global_sideborders.accel_key && state == accels->global_sideborders.accel_mods)
   {
     /* toggle panel viewstate */
@@ -713,6 +741,12 @@ int dt_control_key_pressed_override(guint key, guint state)
     dt_dev_modulegroups_search_text_focus(darktable.develop);
     return 1;
   }
+  // show/hide the accels window
+  else if(key == accels->global_accels_window.accel_key && state == accels->global_accels_window.accel_mods)
+  {
+    dt_view_accels_show(darktable.view_manager);
+    return 1;
+  }
   return 0;
 }
 
@@ -727,6 +761,17 @@ int dt_control_key_released(guint key, guint state)
 {
   // this line is here to find the right key code on different platforms (mac).
   // printf("key code pressed: %d\n", which);
+
+  const dt_control_accels_t *accels = &darktable.control->accels;
+
+  // be sure to reset dynamic accel
+  if(darktable.view_manager->current_view->dynamic_accel_current) dt_control_hinter_message(darktable.control, "");
+  darktable.view_manager->current_view->dynamic_accel_current = NULL;
+
+  if(key == accels->global_accels_window.accel_key && state == accels->global_accels_window.accel_mods)
+  {
+    dt_view_accels_hide(darktable.view_manager);
+  }
 
   int handled = 0;
   switch(key)

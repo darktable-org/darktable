@@ -33,15 +33,7 @@ IF(DEFINED DT_FORCE_CXX_COMPILER)
   set(CMAKE_CXX_COMPILER ${DT_FORCE_CXX_COMPILER})
 endif()
 
-include(CheckCCompilerFlag)
-include(TestBigEndian)
-
-# Check if this is source package build
-if(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
-  set(SOURCE_PACKAGE 1)
-else()
-  set(SOURCE_PACKAGE 0)
-endif()
+include(DefineOptions.cmake)
 
 # Include GNUInstallDirs, which sets sensible defaults for install directories.
 # See https://cmake.org/cmake/help/v3.0/module/GNUInstallDirs.html for further information.
@@ -50,43 +42,30 @@ endif()
 
 include(GNUInstallDirs)
 
-option(USE_CAMERA_SUPPORT "Detect and use camera support if available." ON)
-option(USE_NLS "Build Native Language Support (using gettext)" ON)
-option(USE_COLORD "Enable colord support" ON)
-option(USE_MAP "Build Map View parts" ON)
-option(USE_LUA "Build lua scripting support" ON)
-option(DONT_USE_INTERNAL_LUA "Never fall back to the intree copy of lua" ON)
-option(USE_FLICKR "Enable Flickr support" ON)
-option(USE_KWALLET "Build kwallet password storage back-end" ON)
-option(USE_LIBSECRET "Build libsecret password storage back-end" ON)
-option(USE_UNITY "Use libunity to report progress in the launcher" OFF)
-option(USE_OPENMP "Use openmp threading support." ON)
-option(USE_OPENCL "Use OpenCL support." ON)
-option(USE_GRAPHICSMAGICK "Use GraphicsMagick library for image import." ON)
-option(USE_DARKTABLE_PROFILING OFF)
-option(CUSTOM_CFLAGS "Don't override compiler optimization flags." OFF)
-option(BUILD_USERMANUAL "Build all the versions of the usermanual." OFF)
-option(BINARY_PACKAGE_BUILD "Sets march optimization to generic" OFF)
-option(USE_XMLLINT "Run xmllint to test if darktableconfig.xml is valid" ON)
-option(USE_OPENJPEG "Enable JPEG 2000 support" ON)
-option(USE_WEBP "Enable WebP export support" ON)
-option(BUILD_CMSTEST "Build a test program to check your system's color management setup" ON)
-option(USE_OPENEXR "Enable OpenEXR support" ON)
-option(BUILD_PRINT "Build the print module" ON)
-option(BUILD_RS_IDENTIFY "Build the darktable-rs-identify debug aid" ON)
-option(BUILD_SSE2_CODEPATHS "(EXPERIMENTAL OPTION, DO NOT DISABLE) Building SSE2-optimized codepaths" ON)
-option(VALIDATE_APPDATA_FILE "Use appstream-util (if found) to validate the .appdata file" OFF)
-option(BUILD_TESTS "Build tests in src/tests/, runnable from the build/ directory" OFF)
-option(BUILD_BATTERY_INDICATOR "Add an icon to the top toolbar showing the state of a laptop battery" OFF)
-option(BUILD_MSYS2_INSTALL "Build an MSYS2 version of the install, aka for Windows platform, but without dependency installs" OFF)
-option(BUILD_NOISE_TOOLS "Build tools for generating noise proifles" OFF)
-option(BUILD_CURVE_TOOLS "Build tools for generating base and tone curves" OFF)
-option(USE_LENSFUN "Enable LensFun support" ON)
+if (USE_OPENMP)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR
+        CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
 
-if(USE_OPENCL)
-  option(TESTBUILD_OPENCL_PROGRAMS "Test-compile opencl programs (needs llvm and clang 3.9+)" ON)
+        # Clang has an option to specify the OpenMP standard to use. Specify it.
+        # FIXME: Implement this in FindOpenMP.cmake
+        set(OPENMP_VERSION_SPECIFIER "-fopenmp-version=40")
+
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OPENMP_VERSION_SPECIFIER}")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPENMP_VERSION_SPECIFIER}")
+    endif()
+
+    find_package(OpenMP 4.0 REQUIRED)
+endif()
+
+include(ConfigureChecks.cmake)
+
+include(CheckCCompilerFlag)
+
+# Check if this is source package build
+if(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/.git)
+  set(SOURCE_PACKAGE 1)
 else()
-  set(TESTBUILD_OPENCL_PROGRAMS OFF)
+  set(SOURCE_PACKAGE 0)
 endif()
 
 if(BUILD_SSE2_CODEPATHS)
@@ -98,51 +77,6 @@ if(BUILD_SSE2_CODEPATHS)
 endif()
 
 MESSAGE(STATUS "Building SSE2-optimized codepaths: ${BUILD_SSE2_CODEPATHS}")
-
-test_big_endian(BIGENDIAN)
-if(${BIGENDIAN})
-	# we do not really want those.
-	# besides, no one probably tried darktable on such systems
-	MESSAGE(FATAL_ERROR "Found big endian system. Bad.")
-else()
-	MESSAGE(STATUS "Found little endian system. Good.")
-endif(${BIGENDIAN})
-
-set(CMAKE_REQUIRED_INCLUDES_OLD "${CMAKE_REQUIRED_INCLUDES}")
-list(APPEND CMAKE_REQUIRED_INCLUDES "${CMAKE_SOURCE_DIR}")
-
-check_c_source_compiles("
-#include <stdio.h>
-int main() {
-#include \"src/is_supported_platform.h\"
-}" IS_SUPPORTED_PLATFORM)
-if(NOT IS_SUPPORTED_PLATFORM)
-  MESSAGE(FATAL_ERROR "The target platform is not supported!")
-endif(NOT IS_SUPPORTED_PLATFORM)
-MESSAGE(STATUS "Is the target platform supported: ${IS_SUPPORTED_PLATFORM}")
-
-set(CMAKE_REQUIRED_INCLUDES "${CMAKE_REQUIRED_INCLUDES_OLD}")
-unset(CMAKE_REQUIRED_INCLUDES_OLD)
-
-if(APPLE)
-	option(USE_MAC_INTEGRATION "Enable OS X integration" ON)
-else(APPLE)
-	set(USE_MAC_INTEGRATION OFF)
-endif(APPLE)
-
-# When cross compiling, CMAKE_INSTALL_PREFIX will point to something like "/opt/darktable", but that's not useful when using the path to load
-# modules on runtime. Then we need something like "C:\Program Files\darktable". Doesn't need to be set when doing regular compiles.
-if(NOT DEFINED RUNTIME_INSTALL_PREFIX)
-  set(RUNTIME_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
-endif(NOT DEFINED RUNTIME_INSTALL_PREFIX)
-
-# Generate multi arch triplet
-EXECUTE_PROCESS(COMMAND dpkg-architecture -qDEB_HOST_MULTIARCH OUTPUT_VARIABLE CMAKE_ARCH_TRIPLET OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(CMAKE_ARCH_TRIPLET)
-	message("-- multiarch triplet detected: " ${CMAKE_ARCH_TRIPLET})
-	LIST(INSERT CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES 0 /lib/${CMAKE_ARCH_TRIPLET}
-		/usr/lib/${CMAKE_ARCH_TRIPLET})
-endif()
 
 #
 # Set platform defaults...

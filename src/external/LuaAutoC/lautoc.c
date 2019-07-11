@@ -684,9 +684,9 @@ luaA_Type luaA_struct_typeof_member_name_type(lua_State* L, luaA_Type type,  con
     
     if (!lua_isnil(L, -1)) {
       lua_getfield(L, -1, "type");
-      luaA_Type type = lua_tointeger(L, -1);
+      luaA_Type t = lua_tointeger(L, -1);
       lua_pop(L, 4);
-      return type;
+      return t;
     }
     
     lua_pop(L, 3);

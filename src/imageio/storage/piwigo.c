@@ -446,8 +446,8 @@ static void _piwigo_authenticate(dt_storage_piwigo_gui_data_t *ui)
   if(!ui->api) ui->api = _piwigo_ctx_init();
 
   ui->api->server = g_strdup(gtk_entry_get_text(ui->server_entry));
-  ui->api->username = g_strdup(gtk_entry_get_text(ui->user_entry));
-  ui->api->password = g_strdup(gtk_entry_get_text(ui->pwd_entry));
+  ui->api->username = g_uri_escape_string(gtk_entry_get_text(ui->user_entry), NULL, FALSE);
+  ui->api->password = g_uri_escape_string(gtk_entry_get_text(ui->pwd_entry), NULL, FALSE);
 
   _piwigo_api_authenticate(ui->api);
 
@@ -661,7 +661,7 @@ static gboolean _piwigo_api_create_new_album(dt_storage_piwigo_params_t *p)
   else
   {
     JsonObject *result = json_node_get_object(json_object_get_member(p->api->response, "result"));
-    // set new album id in paremeter
+    // set new album id in parameter
     p->album_id = json_object_get_int_member(result, "id");
   }
 

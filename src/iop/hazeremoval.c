@@ -354,7 +354,9 @@ static void box_max(const gray_image img1, const gray_image img2, const int w)
   if(img1.data == img2.data)
   {
 #ifdef _OPENMP
-#pragma omp parallel default(none) private(img2_bak)
+#pragma omp parallel default(none) \
+    dt_omp_firstprivate(img1, img2, w) \
+    private(img2_bak)
 #endif
     {
       img2_bak = new_gray_image(img2.width, 1);
@@ -372,7 +374,9 @@ static void box_max(const gray_image img1, const gray_image img2, const int w)
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel default(none) private(img2_bak)
+#pragma omp parallel default(none) \
+    dt_omp_firstprivate(img1, img2, w) \
+    private(img2_bak)
 #endif
     {
 #ifdef _OPENMP
@@ -383,7 +387,9 @@ static void box_max(const gray_image img1, const gray_image img2, const int w)
     }
   }
 #ifdef _OPENMP
-#pragma omp parallel default(none) private(img2_bak)
+#pragma omp parallel default(none) \
+  dt_omp_firstprivate(img1, img2, w) \
+  private(img2_bak)
 #endif
   {
     img2_bak = new_gray_image(1, img2.height);
@@ -427,7 +433,9 @@ static void box_min(const gray_image img1, const gray_image img2, const int w)
   if(img1.data == img2.data)
   {
 #ifdef _OPENMP
-#pragma omp parallel default(none) private(img2_bak)
+#pragma omp parallel default(none) \
+    dt_omp_firstprivate(img1, img2, w) \
+    private(img2_bak)
 #endif
     {
       img2_bak = new_gray_image(img2.width, 1);
@@ -445,7 +453,9 @@ static void box_min(const gray_image img1, const gray_image img2, const int w)
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel default(none) private(img2_bak)
+#pragma omp parallel default(none) \
+    dt_omp_firstprivate(img1, img2, w) \
+    private(img2_bak)
 #endif
     {
 #ifdef _OPENMP
@@ -456,7 +466,9 @@ static void box_min(const gray_image img1, const gray_image img2, const int w)
     }
   }
 #ifdef _OPENMP
-#pragma omp parallel default(none) private(img2_bak)
+#pragma omp parallel default(none) \
+  dt_omp_firstprivate(img1, img2, w) \
+  private(img2_bak)
 #endif
   {
     img2_bak = new_gray_image(1, img2.height);
@@ -478,7 +490,9 @@ static void dark_channel(const const_rgb_image img1, const gray_image img2, cons
 {
   const size_t size = (size_t)img1.height * img1.width;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img1, img2, size) \
+  schedule(static)
 #endif
   for(size_t i = 0; i < size; i++)
   {
@@ -498,7 +512,9 @@ static void transition_map(const const_rgb_image img1, const gray_image img2, co
 {
   const size_t size = (size_t)img1.height * img1.width;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(A0, img1, img2, size, strength) \
+  schedule(static)
 #endif
   for(size_t i = 0; i < size; i++)
   {
@@ -605,7 +621,10 @@ static float ambient_light(const const_rgb_image img, int w1, rgb_pixel *pA0)
   size_t N_bright_hazy = 0;
   const float *const data = dark_ch.data;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) reduction(+ : N_bright_hazy, A0_r, A0_g, A0_b)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(crit_brightness, crit_haze_level, data, img, size) \
+  schedule(static) \
+  reduction(+ : N_bright_hazy, A0_r, A0_g, A0_b)
 #endif
   for(size_t i = 0; i < size; i++)
   {
@@ -726,7 +745,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float *const c_A0 = A0;
   const gray_image c_trans_map_filtered = trans_map_filtered;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(c_A0, c_trans_map_filtered, img_in, img_out, size, t_min) \
+  schedule(static)
 #endif
   for(size_t i = 0; i < size; i++)
   {
@@ -774,7 +795,7 @@ error:
 
 static int box_min_cl(struct dt_iop_module_t *self, int devid, cl_mem in, cl_mem out, const int w)
 {
-  dt_iop_hazeremoval_global_data_t *gd = self->data;
+  dt_iop_hazeremoval_global_data_t *gd = self->global_data;
   const int width = dt_opencl_get_image_width(in);
   const int height = dt_opencl_get_image_height(in);
   void *temp = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
@@ -807,7 +828,7 @@ error:
 
 static int box_max_cl(struct dt_iop_module_t *self, int devid, cl_mem in, cl_mem out, const int w)
 {
-  dt_iop_hazeremoval_global_data_t *gd = self->data;
+  dt_iop_hazeremoval_global_data_t *gd = self->global_data;
   const int width = dt_opencl_get_image_width(in);
   const int height = dt_opencl_get_image_height(in);
   void *temp = dt_opencl_alloc_device(devid, width, height, (int)sizeof(float));
@@ -841,7 +862,7 @@ error:
 static int transition_map_cl(struct dt_iop_module_t *self, int devid, cl_mem img1, cl_mem img2, const int w1,
                              const float strength, const float *const A0)
 {
-  dt_iop_hazeremoval_global_data_t *gd = self->data;
+  dt_iop_hazeremoval_global_data_t *gd = self->global_data;
   const int width = dt_opencl_get_image_width(img1);
   const int height = dt_opencl_get_image_height(img1);
 
@@ -870,7 +891,7 @@ static int transition_map_cl(struct dt_iop_module_t *self, int devid, cl_mem img
 static int dehaze_cl(struct dt_iop_module_t *self, int devid, cl_mem img_in, cl_mem trans_map, cl_mem img_out,
                      const float t_min, const float *const A0)
 {
-  dt_iop_hazeremoval_global_data_t *gd = self->data;
+  dt_iop_hazeremoval_global_data_t *gd = self->global_data;
   const int width = dt_opencl_get_image_width(img_in);
   const int height = dt_opencl_get_image_height(img_in);
 

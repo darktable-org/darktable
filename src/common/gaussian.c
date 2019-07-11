@@ -173,8 +173,10 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
 
 // vertical blur column by column
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp,           \
-                                              coefn) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, width, height, ch) \
+  shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp, coefn) \
+  schedule(static)
 #endif
   for(int i = 0; i < width; i++)
   {
@@ -245,8 +247,10 @@ void dt_gaussian_blur(dt_gaussian_t *g, const float *const in, float *const out)
 
 // horizontal blur line by line
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp,           \
-                                              coefn) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(out, ch, width, height) \
+  shared(temp, Labmin, Labmax, a0, a1, a2, a3, b1, b2, coefp, coefn) \
+  schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
@@ -340,7 +344,10 @@ static void dt_gaussian_blur_4c_sse(dt_gaussian_t *g, const float *const in, flo
 
 // vertical blur column by column
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(temp, a0, a1, a2, a3, b1, b2, coefp, coefn) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, Labmin, Labmax, width, height, ch) \
+  shared(temp, a0, a1, a2, a3, b1, b2, coefp, coefn) \
+  schedule(static)
 #endif
   for(int i = 0; i < width; i++)
   {
@@ -408,7 +415,10 @@ static void dt_gaussian_blur_4c_sse(dt_gaussian_t *g, const float *const in, flo
 
 // horizontal blur line by line
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(temp, a0, a1, a2, a3, b1, b2, coefp, coefn) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(out, Labmin, Labmax, width, height, ch) \
+  shared(temp, a0, a1, a2, a3, b1, b2, coefp, coefn) \
+  schedule(static)
 #endif
   for(size_t j = 0; j < height; j++)
   {

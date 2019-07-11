@@ -54,7 +54,7 @@ void dt_ioppr_set_default_iop_order(GList **_iop_list, GList *iop_order_list);
 /** adjusts iop_list and iop_order_list to the current version of iop order */
 void dt_ioppr_legacy_iop_order(GList **_iop_list, GList **_iop_order_list, GList *history_list, const int old_version);
 
-/** returns 1 if there's a module_so whithout a iop_order defined */
+/** returns 1 if there's a module_so without a iop_order defined */
 int dt_ioppr_check_so_iop_order(GList *iop_list, GList *iop_order_list);
 
 /* returns a list of dt_iop_order_rule_t with the current iop order rules */
@@ -121,7 +121,7 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_add_profile_info_to_list(struct dt_deve
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_iop_module_t *module, GList *iop_list);
 
 /** set the work profile (type, filename) on the pipe, should be called on process*()
- * if matrix cannot be generated it defauls to linear rec 2020
+ * if matrix cannot be generated it default to linear rec 2020
  * returns the actual profile that has been set
  */
 dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, 
@@ -208,7 +208,7 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
                                                const char *message);
 #endif
 
-/** the folowing must have the matrix_in and matrix out generated */
+/** the following must have the matrix_in and matrix out generated */
 float dt_ioppr_get_rgb_matrix_luminance(const float *const rgb, const dt_iop_order_iccprofile_info_t *const profile_info);
 float dt_ioppr_get_profile_info_middle_grey(const dt_iop_order_iccprofile_info_t *const profile_info);
 

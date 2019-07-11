@@ -122,7 +122,7 @@ const dt_collection_params_t *dt_collection_params(const dt_collection_t *collec
 
 // Return a pointer to a static string for an "AND" operator if the
 // number of terms processed so far requires it.  The variable used
-// for term should be an int intiailized to and_operator_initial()
+// for term should be an int initialized to and_operator_initial()
 // before use.
 #define and_operator_initial() (0)
 static char * and_operator(int *term)
@@ -1853,7 +1853,7 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
     sqlite3_stmt *stmt = NULL;
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
 
-    // move images to their intended positons
+    // move images to their intended positions
     int64_t new_image_pos = target_image_pos;
 
     gchar *insert_image_pos_query = "UPDATE main.images SET position = ?1 WHERE id = ?2";

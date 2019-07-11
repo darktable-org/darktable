@@ -135,7 +135,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_highpass_data_t *d = (dt_iop_highpass_data_t *)piece->data;
-  dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)self->data;
+  dt_iop_highpass_global_data_t *gd = (dt_iop_highpass_global_data_t *)self->global_data;
 
   cl_int err = -999;
   cl_mem dev_tmp = NULL;
@@ -292,7 +292,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 /* create inverted image and then blur */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, roi_out) \
+  shared(in, out) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
     out[ch * k] = 100.0f - LCLIP(in[ch * k]); // only L in Lab space
@@ -369,7 +372,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float contrast_scale = ((data->contrast / 100.0) * 7.5);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, data) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, contrast_scale, roi_out) \
+  shared(in, out, data) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {

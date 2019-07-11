@@ -466,26 +466,26 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
   if (ps->prt.printer.is_turboprint)
     dt_bauhaus_combobox_set(ps->pprofile, 0);
 
-  // if there is 0 hardware margins, set the user marging to 15mm
+  // if there is 0 hardware margins, set the user margin to 17mm
 
   if (ps->prt.printer.hw_margin_top == 0)
   {
-    ps->prt.page.margin_top = 15;
+    ps->prt.page.margin_top = 17;
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_top), ps->prt.page.margin_top * units[ps->unit]);
   }
   if (ps->prt.printer.hw_margin_bottom == 0)
   {
-    ps->prt.page.margin_bottom = 15;
+    ps->prt.page.margin_bottom = 17;
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_bottom), ps->prt.page.margin_bottom * units[ps->unit]);
   }
   if (ps->prt.printer.hw_margin_left == 0)
   {
-    ps->prt.page.margin_left = 15;
+    ps->prt.page.margin_left = 17;
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left), ps->prt.page.margin_left * units[ps->unit]);
   }
   if (ps->prt.printer.hw_margin_right == 0)
   {
-    ps->prt.page.margin_right = 15;
+    ps->prt.page.margin_right = 17;
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right), ps->prt.page.margin_right * units[ps->unit]);
   }
 
@@ -1972,10 +1972,10 @@ gui_reset (dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_top), 15 * units[ps->unit]);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_bottom), 15 * units[ps->unit]);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left), 15 * units[ps->unit]);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right), 15 * units[ps->unit]);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_top), 17 * units[ps->unit]);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_bottom), 17 * units[ps->unit]);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_left), 17 * units[ps->unit]);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(ps->b_right), 17 * units[ps->unit]);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ps->dtba[ALIGNMENT_CENTER]), TRUE);
   ps->prt.page.alignment = ALIGNMENT_CENTER;
   ps->prt.printer.intent = DT_INTENT_PERCEPTUAL;

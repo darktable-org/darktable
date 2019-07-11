@@ -37,7 +37,7 @@ grep -r "id=\"" | sed 's/.*id="\([^"]*\)".*/\1/' | sort | uniq -c | grep -v "^[ 
 Building the usermanual
 ---------------------------------------------------------
 To generate the usermanual you need the tools xsltproc,poxml and fop this document will include
-draft sections and is used fo reviewing...
+draft sections and is used for reviewing...
 
 make darktable-usermanual
 

@@ -368,7 +368,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_exposure_data_t *d = (dt_iop_exposure_data_t *)piece->data;
-  dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)self->data;
+  dt_iop_exposure_global_data_t *gd = (dt_iop_exposure_global_data_t *)self->global_data;
 
   process_common_setup(self, piece);
 
@@ -406,7 +406,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch = piece->colors;
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(ch, d, i, o, roi_out) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k++)
   {
@@ -431,7 +433,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const __m128 scalev = _mm_set1_ps(d->scale);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(blackv, ch, i, o, roi_out, scalev) \
+  schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -596,7 +600,7 @@ static void mode_callback(GtkWidget *combo, gpointer user_data)
   dt_iop_exposure_params_t *p = (dt_iop_exposure_params_t *)self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
-  
+
   const dt_iop_exposure_mode_t new_mode
       = GPOINTER_TO_UINT(g_list_nth_data(g->modes, dt_bauhaus_combobox_get(combo)));
 
@@ -754,7 +758,7 @@ static void deflicker_params_callback(GtkWidget *slider, gpointer user_data)
   if(p->mode != EXPOSURE_MODE_DEFLICKER) return;
 
   dt_iop_color_picker_reset(self, TRUE);
-  
+
   p->deflicker_percentile = dt_bauhaus_slider_get(g->deflicker_percentile);
   p->deflicker_target_level = dt_bauhaus_slider_get(g->deflicker_target_level);
 
@@ -779,7 +783,7 @@ static void black_callback(GtkWidget *slider, gpointer user_data)
   if(self->dt->gui->reset) return;
 
   dt_iop_color_picker_reset(self, TRUE);
-  
+
   const float black = dt_bauhaus_slider_get(slider);
   dt_iop_exposure_set_black(self, black);
 }
@@ -875,7 +879,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->exposure, NULL, _("exposure"));
   dt_bauhaus_slider_enable_soft_boundaries(g->exposure, -18.0, 18.0);
   gtk_box_pack_start(GTK_BOX(vbox_manual), GTK_WIDGET(g->exposure), TRUE, TRUE, 0);
-    
+
   g->black = dt_bauhaus_slider_new_with_range(self, -0.1, 0.1, .001, p->black, 4);
   gtk_widget_set_tooltip_text(g->black, _("adjust the black level to unclip negative RGB values.\n"
                                           "you should never use it to add more density in blacks!\n"

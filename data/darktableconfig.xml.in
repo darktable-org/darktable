@@ -31,7 +31,7 @@
   <dtconfig prefs="gui">
     <name>ui_last/no_april1st</name>
     <type>bool</type>
-    <default>false</default>
+    <default>true</default>
     <shortdescription>do not show april 1st game</shortdescription>
   </dtconfig>
   <dtconfig prefs="core" section="cpugpu">
@@ -88,7 +88,7 @@
     <type>int</type>
     <default>300</default>
     <shortdescription>amount of OpenCL memory (in MB) which we assume as being reserved for the driver</shortdescription>
-    <longdescription>this amount of memory (in MB) will be substracted from total GPU memory in order to calculate the available OpenCL memory. too low values will lead to out-of-memory situations in OpenCL processing. too high values will lead to unnecessary tiling (needs a restart).</longdescription>
+    <longdescription>this amount of memory (in MB) will be subtracted from total GPU memory in order to calculate the available OpenCL memory. too low values will lead to out-of-memory situations in OpenCL processing. too high values will lead to unnecessary tiling (needs a restart).</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_avoid_atomics</name>
@@ -219,7 +219,7 @@
     </type>
     <default>default</default>
     <shortdescription>OpenCL scheduling profile</shortdescription>
-    <longdescription>defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled systems. default - GPU processes full and CPU processes preview pipe (adaptable by config parameters); multiple GPUs - process both pixelpipes in parallel on two different GPUs; very fast GPU - process both pixelipes sequentially on the GPU.</longdescription>
+    <longdescription>defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled systems. default - GPU processes full and CPU processes preview pipe (adaptable by config parameters); multiple GPUs - process both pixelpipes in parallel on two different GPUs; very fast GPU - process both pixelpipes sequentially on the GPU.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>opencl_synch_cache</name>
@@ -744,20 +744,41 @@
     <type>int</type>
     <default>1</default>
     <shortdescription>lighttable layout mode</shortdescription>
-    <longdescription>select a layout for the lighttable: 0 - zoomable lighttable or 1 - file manager.</longdescription>
+    <longdescription>select a layout for the lighttable: 0 - zoomable lighttable or 1 - file manager or 2 - culling layout.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/base_layout</name>
     <type>int</type>
     <default>1</default>
     <shortdescription>lighttable basic layout mode</shortdescription>
-    <longdescription>the layout to return to when exiting expose or culling layout</longdescription>
+    <longdescription>the layout to return to when exiting culling layout</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/images_in_row</name>
     <type>int</type>
     <default>5</default>
     <shortdescription>images per row</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/culling_num_images</name>
+    <type>int</type>
+    <default>2</default>
+    <shortdescription>images to display in culling layout</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/culling_zoom_mode</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>zoom mode in culling layout. 0=fixed ; 1=dynamic</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/culling_last_id</name>
+    <type>int</type>
+    <default>-1</default>
+    <shortdescription>last culling first image id</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
@@ -1222,10 +1243,17 @@
     <shortdescription>scroll to darkroom modules when expanded/collapsed</shortdescription>
     <longdescription>when this option is enabled then darktable will try to scroll the module to the top of the visible list</longdescription>
   </dtconfig>
+  <dtconfig prefs="gui">
+    <name>darkroom/ui/sidebar_scroll_default</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>mouse wheel scrolls modules side panel by default</shortdescription>
+    <longdescription>when enabled, use mouse wheel to scroll modules side panel.  use ctrl+alt to use mouse wheel for data entry.  when disabled, this behavior is reversed</longdescription>
+  </dtconfig>
   <dtconfig prefs="gui" section="darkroom">
     <name>plugins/darkroom/ui/border_size</name>
     <type>int</type>
-    <default>20</default>
+    <default>10</default>
     <shortdescription>border around image in darkroom mode</shortdescription>
     <longdescription>process the image in darkroom mode with a small border. set to 0 if you don't want any border.</longdescription>
   </dtconfig>
@@ -1923,7 +1951,7 @@
     <type>int</type>
     <default>4</default>
     <shortdescription>maximum number of full-res images to load in memory</shortdescription>
-    <longdescription>if more images are display in expose mode, zooming will be desactivated</longdescription>
+    <longdescription>if more images are display in expose mode, zooming will be deactivated</longdescription>
   </dtconfig>
   <dtconfig>
     <name>codepaths/sse2</name>

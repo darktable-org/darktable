@@ -107,7 +107,7 @@ int position()
   return 999;
 }
 
-int _iop_get_group_order(const int group_id, const int default_order)
+static int _iop_get_group_order(const int group_id, const int default_order)
 {
   if (group_id < DT_MODULEGROUP_BASIC)
     return group_id;
@@ -501,6 +501,14 @@ static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
     g_signal_handlers_unblock_matched(d->buttons[k], G_SIGNAL_MATCH_FUNC, 0, 0, NULL,
                                       _lib_modulegroups_toggle, NULL);
 
+  /* clear search text */
+  if(gtk_widget_is_visible(GTK_WIDGET(d->hbox_search_box)))
+  {
+    g_signal_handlers_block_matched(d->text_entry, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _text_entry_changed_callback, NULL);
+    gtk_entry_set_text(GTK_ENTRY(d->text_entry), "");
+    g_signal_handlers_unblock_matched(d->text_entry, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _text_entry_changed_callback, NULL);
+  }
+
   /* update visibility */
   _lib_modulegroups_update_iop_visibility(self);
 }
@@ -598,7 +606,7 @@ static uint32_t _lib_modulegroups_get(dt_lib_module_t *self)
     if (d->current == _iop_get_group_order(k, k))
       return k;
   }
-  return DT_MODULEGROUP_FAVORITES;
+  return DT_MODULEGROUP_NONE;
 }
 
 #undef PADDING

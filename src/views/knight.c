@@ -329,7 +329,7 @@ typedef struct dt_knight_t
   uint8_t *bunker_buf[4];
 } dt_knight_t;
 
-const char *name(dt_view_t *self)
+const char *name(const dt_view_t *self)
 {
   return _("good knight");
 }
@@ -524,7 +524,7 @@ static dt_knight_explosion_t *_new_explosion(float x, float y, int ttl, cairo_pa
   return explosion;
 }
 
-// change the bunker graphics by substracting an explosion sprite
+// change the bunker graphics by subtracting an explosion sprite
 static void _destroy_bunker(dt_knight_t *d, int bunker, int hit_x, int hit_y)
 {
   uint8_t *buf = d->bunker_buf[bunker];

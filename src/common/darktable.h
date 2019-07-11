@@ -75,10 +75,31 @@ typedef unsigned int u_int;
 #endif
 
 #ifdef _OPENMP
-#include <omp.h>
+# include <omp.h>
+
+/* See https://redmine.darktable.org/issues/12568#note-14 */
+# ifdef HAVE_OMP_FIRSTPRIVATE_WITH_CONST
+   /* If the compiler correctly supports firstprivate, use it. */
+#  define dt_omp_firstprivate(...) firstprivate(__VA_ARGS__)
+# else /* HAVE_OMP_FIRSTPRIVATE_WITH_CONST */
+   /* This is needed for clang < 7.0 */
+#  define dt_omp_firstprivate(...)
+# endif/* HAVE_OMP_FIRSTPRIVATE_WITH_CONST */
+
+#else /* _OPENMP */
+
+# define omp_get_max_threads() 1
+# define omp_get_thread_num() 0
+
+#endif /* _OPENMP */
+
+/* Create cloned functions for various CPU SSE generations */
+/* See for instructions https://hannes.hauswedell.net/post/2017/12/09/fmv/ */
+/* TL;DR : use only on SIMD functions containing low-level paralellized/vectorized loops */
+#if __has_attribute(target_clones)
+#define __DT_CLONE_TARGETS__ __attribute__((target_clones("default", "sse2", "sse3", "sse4.1", "sse4.2", "popcnt", "avx", "avx2", "avx512f", "fma4")))
 #else
-#define omp_get_max_threads() 1
-#define omp_get_thread_num() 0
+#define __DT_CLONE_TARGETS__
 #endif
 
 #ifndef _RELEASE
@@ -87,7 +108,7 @@ typedef unsigned int u_int;
 
 #include "common/usermanual_url.h"
 
-#define DT_MODULE_VERSION 19 // version of dt's module interface
+#define DT_MODULE_VERSION 20 // version of dt's module interface
 
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
@@ -130,7 +151,7 @@ static inline int dt_version()
 }
 
 #ifndef M_PI
-#define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846F
 #endif
 
 // Golden number (1+sqrt(5))/2
@@ -552,7 +573,7 @@ int dt_load_from_string(const gchar *image_to_load, gboolean open_image_in_dr, g
 
 #define dt_unreachable_codepath_with_desc(D)                                                                 \
   dt_unreachable_codepath_with_caller(D, __FILE__, __LINE__, __FUNCTION__)
-#define dt_unreachable_codepath() dt_unreachable_codepath_with_caller(NULL, __FILE__, __LINE__, __FUNCTION__)
+#define dt_unreachable_codepath() dt_unreachable_codepath_with_caller("unreachable", __FILE__, __LINE__, __FUNCTION__)
 static inline void dt_unreachable_codepath_with_caller(const char *description, const char *file,
                                                        const int line, const char *function)
 {

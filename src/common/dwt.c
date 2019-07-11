@@ -194,7 +194,10 @@ static void dwt_add_layer_sse(float *const img, float *layers, dwt_params_t *con
   const int i_size = p->width * p->height * 4;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(layers) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img, i_size) \
+  shared(layers) \
+  schedule(static)
 #endif
   for(int i = 0; i < i_size; i += 4)
   {
@@ -216,7 +219,10 @@ static void dwt_add_layer(float *const img, float *layers, dwt_params_t *const p
   const int i_size = p->width * p->height * p->ch;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(layers) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img, i_size) \
+  shared(layers) \
+  schedule(static)
 #endif
   for(int i = 0; i < i_size; i++) layers[i] += img[i];
 }
@@ -233,7 +239,10 @@ static void dwt_subtract_layer_sse(float *bl, float *bh, dwt_params_t *const p)
   const int size = p->width * p->height * 4;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(bl, bh) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(v4_lpass_mult, size) \
+  shared(bl, bh) \
+  schedule(static)
 #endif
   for(int i = 0; i < size; i += 4)
   {
@@ -258,7 +267,10 @@ static void dwt_subtract_layer(float *bl, float *bh, dwt_params_t *const p)
   const int size = p->width * p->height * p->ch;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(bl, bh) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(size, lpass_mult) \
+  shared(bl, bh) \
+  schedule(static)
 #endif
   for(int i = 0; i < size; i++)
   {
@@ -451,7 +463,7 @@ void dwt_decompose(dwt_params_t *p, _dwt_layer_func layer_func)
   // if requested scales is grather than max scales adjust it
   if(p->scales > max_scale)
   {
-    // residual shoud be returned
+    // residual should be returned
     if(p->return_layer > p->scales) p->return_layer = max_scale + 1;
     // a scale should be returned, it cannot be grather than max scales
     else if(p->return_layer > max_scale)
@@ -862,7 +874,7 @@ cl_int dwt_decompose_cl(dwt_params_cl_t *p, _dwt_layer_func_cl layer_func)
   // if requested scales is grather than max scales adjust it
   if(p->scales > max_scale)
   {
-    // residual shoud be returned
+    // residual should be returned
     if(p->return_layer > p->scales) p->return_layer = max_scale + 1;
     // a scale should be returned, it cannot be grather than max scales
     else if(p->return_layer > max_scale)

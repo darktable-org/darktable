@@ -142,10 +142,6 @@ typedef struct dt_develop_t
   struct dt_iop_module_t *gui_module; // this module claims gui expose/event callbacks.
   float preview_downsampling;         // < 1.0: optionally downsample preview
 
-  // handle GUI events timeout
-  int preview_timeout_handle;
-  int image_timeout_handle;
-
   // width, height: dimensions of window
   int32_t width, height;
 
@@ -176,10 +172,10 @@ typedef struct dt_develop_t
   // iop order
   int iop_order_version;
   GList *iop_order_list;
-  
+
   // profiles info
   GList *allprofile_info;
-  
+
   // histogram for display.
   uint32_t *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
   uint32_t histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
@@ -287,7 +283,7 @@ typedef struct dt_develop_t
     GtkWidget *second_wnd;
     GtkWidget *widget;
     int width, height;
-    float ppd;
+    double dpi, dpi_factor, ppd;
 
     GtkWidget *button;
 
@@ -427,9 +423,9 @@ int dt_dev_distort_transform(dt_develop_t *dev, float *points, size_t points_cou
 /** reverse apply all transforms to the specified points (in preview pipe space) */
 int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, size_t points_count);
 /** same fct, but we can specify iop with priority between pmin and pmax */
-int dt_dev_distort_transform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction, 
+int dt_dev_distort_transform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
                                   float *points, size_t points_count);
-int dt_dev_distort_backtransform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction, 
+int dt_dev_distort_backtransform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
                                       float *points, size_t points_count);
 /** get the iop_pixelpipe instance corresponding to the iop in the given pipe */
 struct dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
@@ -454,7 +450,7 @@ uint64_t dt_dev_hash_distort_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *
 /** same as dt_dev_wait_hash but only for distorting modules */
 int dt_dev_wait_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction, dt_pthread_mutex_t *lock,
                              const volatile uint64_t *const hash);
-/** same as dt_dev_sync_pixelpipe_hash but ony for distorting modules */
+/** same as dt_dev_sync_pixelpipe_hash but only for distorting modules */
 int dt_dev_sync_pixelpipe_hash_distort (dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction, dt_pthread_mutex_t *lock,
                                         const volatile uint64_t *const hash);
 

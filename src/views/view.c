@@ -32,6 +32,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "dtgtk/button.h"
 #include "dtgtk/expander.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
@@ -203,6 +204,8 @@ static int dt_view_load_module(void *v, const char *libname, const char *module_
     view->init_key_accels = NULL;
   if(!g_module_symbol(view->module, "connect_key_accels", (gpointer) & (view->connect_key_accels)))
     view->connect_key_accels = NULL;
+  if(!g_module_symbol(view->module, "mouse_actions", (gpointer) & (view->mouse_actions)))
+    view->mouse_actions = NULL;
 
   view->accel_closures = NULL;
 
@@ -238,7 +241,7 @@ void dt_vm_remove_child(GtkWidget *widget, gpointer data)
 }
 
 /*
-   When expanders get destoyed, they destroy the child
+   When expanders get destroyed, they destroy the child
    so remove the child before that
    */
 static void _remove_child(GtkWidget *child,GtkContainer *container)
@@ -329,6 +332,9 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
     for(int l = 0; l < DT_UI_CONTAINER_SIZE; l++)
       dt_ui_container_destroy_children(darktable.gui->ui, l);
     vm->current_view = NULL;
+
+    /* remove sticky accels window */
+    if(vm->accels_window.window) dt_view_accels_hide(vm);
     return 0;
   }
 
@@ -446,6 +452,9 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 
   /* update the scrollbars */
   dt_ui_update_scrollbars(darktable.gui->ui);
+
+  /* update sticky accels window */
+  if(vm->accels_window.window && vm->accels_window.sticky) dt_view_accels_refresh(vm);
 
   /* raise view changed signal */
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, old_view, new_view);
@@ -757,8 +766,7 @@ int32_t dt_view_get_image_to_act_on()
   const int layout = darktable.view_manager->proxy.lighttable.get_layout(
       darktable.view_manager->proxy.lighttable.module);
 
-  if(zoom == 1 || full_preview_id > 1 || layout == DT_LIGHTTABLE_LAYOUT_EXPOSE
-     || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  if(zoom == 1 || full_preview_id > 1 || layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     return mouse_over_id;
   }
@@ -979,34 +987,32 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
 // on my machine with 7 image per row it seems grouping has the largest
 // impact from around 400ms -> 55ms per redraw.
 
-  // this is a gui thread only thing. no mutex required:
-  const int imgsel = dt_control_get_mouse_over_id(); //  darktable.control->global_settings.lib_image_mouse_over_id;
-
   dt_view_image_over_t *image_over = vals->image_over;
-  uint32_t imgid = vals->imgid;
+  const uint32_t imgid = vals->imgid;
   cairo_t *cr = vals->cr;
-  int32_t width = vals->width;
-  int32_t height = vals->height;
-  int32_t zoom = vals->zoom;
-  int32_t px = vals->px;
-  int32_t py = vals->py;
-  gboolean full_preview = vals->full_preview;
-  gboolean image_only = vals->image_only;
-  float full_zoom = vals->full_zoom;
-  float full_x = vals->full_x;
-  float full_y = vals->full_y;
+  const int32_t width = vals->width;
+  const int32_t height = vals->height;
+  const int32_t zoom = vals->zoom;
+  const int32_t px = vals->px;
+  const int32_t py = vals->py;
+  const gboolean full_preview = vals->full_preview;
+  const gboolean image_only = vals->image_only;
+  const gboolean no_deco = image_only ? TRUE : vals->no_deco;
+  const float full_zoom = vals->full_zoom;
+  const float full_x = vals->full_x;
+  const float full_y = vals->full_y;
 
   // active if zoom>1 or in the proper area
   const gboolean in_metadata_zone = (px < width && py < height / 2) || (zoom > 1);
 
   const gboolean draw_thumb = TRUE;
-  const gboolean draw_colorlabels = !image_only && (darktable.gui->show_overlays || in_metadata_zone);
-  const gboolean draw_local_copy = !image_only && (darktable.gui->show_overlays || in_metadata_zone);
-  const gboolean draw_grouping = !image_only;
-  const gboolean draw_selected = !image_only;
-  const gboolean draw_history = !image_only;
-  const gboolean draw_metadata = !image_only && (darktable.gui->show_overlays || in_metadata_zone);
-  const gboolean draw_audio = !image_only;
+  const gboolean draw_colorlabels = !no_deco && (darktable.gui->show_overlays || in_metadata_zone);
+  const gboolean draw_local_copy = !no_deco && (darktable.gui->show_overlays || in_metadata_zone);
+  const gboolean draw_grouping = !no_deco;
+  const gboolean draw_selected = !no_deco;
+  const gboolean draw_history = !no_deco;
+  const gboolean draw_metadata = !no_deco && (darktable.gui->show_overlays || in_metadata_zone);
+  const gboolean draw_audio = !no_deco;
 
   cairo_save(cr);
   dt_gui_color_t bgcol = DT_GUI_COLOR_THUMBNAIL_BG;
@@ -1026,10 +1032,19 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW) selected = 1;
   }
 
+  // do we need to surround the image (filmstrip in culling layout)
+  gboolean surrounded = selected;
+  if(!full_preview && darktable.view_manager->proxy.lighttable.view
+     && dt_view_manager_get_current_view(darktable.view_manager) == darktable.view_manager->proxy.lighttable.view
+     && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
+  {
+    surrounded = dt_view_lighttable_culling_is_image_visible(darktable.view_manager, imgid);
+  }
+
   dt_image_t buffered_image;
   const dt_image_t *img;
   // if darktable.gui->show_overlays is set or the user points at this image, we really want it:
-  if(darktable.gui->show_overlays || imgsel == imgid || zoom == 1)
+  if(darktable.gui->show_overlays || vals->mouse_over || zoom == 1)
     img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   else
     img = dt_image_cache_testget(darktable.image_cache, imgid, 'r');
@@ -1040,7 +1055,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     bgcol = DT_GUI_COLOR_THUMBNAIL_SELECTED_BG;
     fontcol = DT_GUI_COLOR_THUMBNAIL_SELECTED_FONT;
   }
-  if(imgsel == imgid || zoom == 1)
+  if(vals->mouse_over || zoom == 1)
   {
     // mouse over
     bgcol = DT_GUI_COLOR_THUMBNAIL_HOVER_BG;
@@ -1136,7 +1151,10 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     dt_gui_gtk_set_source_rgb(cr, bgcol);
     cairo_fill_preserve(cr);
     cairo_set_line_width(cr, 0.005 * width);
-    dt_gui_gtk_set_source_rgb(cr, outlinecol);
+    if(surrounded)
+      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
+    else
+      dt_gui_gtk_set_source_rgb(cr, outlinecol);
     cairo_stroke(cr);
 
     if(img)
@@ -1381,7 +1399,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
 
     if(!vals->full_rgbbuf || !*(vals->full_rgbbuf)) free(rgbbuf);
 
-    if (image_only)
+    if(no_deco)
     {
       cairo_restore(cr);
       cairo_save(cr);
@@ -1391,34 +1409,54 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     {
       // border around image
       dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_BORDER);
-      if(buf_ok && (selected || zoom == 1))
+      if(buf_ok && surrounded && zoom != 1)
       {
         const float border = zoom == 1 ? DT_PIXEL_APPLY_DPI(16 / scale) : DT_PIXEL_APPLY_DPI(2 / scale);
         cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1. / scale));
+        cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
+        cairo_new_sub_path(cr);
+        cairo_rectangle(cr, rectx - border, recty - border, rectw + 2. * border, recth + 2. * border);
+        cairo_stroke_preserve(cr);
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
+        cairo_fill(cr);
+      }
+      else if(buf_ok && (selected || zoom == 1))
+      {
+        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1. / scale));
         if(zoom == 1)
         {
-          cairo_stroke(cr);
-          cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-          float alpha = 1.0f;
-          for(int k = 0; k < 16; k++)
+          // if border color is transparent, don't draw
+          if(darktable.gui->colors[DT_GUI_COLOR_PREVIEW_BORDER].alpha > 0.0)
           {
+            dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_PREVIEW_BORDER);
+            cairo_stroke(cr);
+            cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
+            float alpha = 1.0f;
+            for(int k = 0; k < 16; k++)
+            {
+              cairo_rectangle(cr, rectx, recty, rectw, recth);
+              cairo_new_sub_path(cr);
+              cairo_rectangle(cr, rectx - k / scale, recty - k / scale, rectw + 2. * k / scale,
+                              recth + 2. * k / scale);
+              dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_PREVIEW_BORDER, alpha);
+              alpha *= 0.6f;
+              cairo_fill(cr);
+            }
+          }
+
+          // draw hover border if it's not transparent
+          if(vals->mouse_over && darktable.gui->colors[DT_GUI_COLOR_PREVIEW_HOVER_BORDER].alpha > 0.0)
+          {
+            dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_PREVIEW_HOVER_BORDER);
+            cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5 / scale));
             cairo_rectangle(cr, rectx, recty, rectw, recth);
-            cairo_new_sub_path(cr);
-            cairo_rectangle(cr, rectx - k / scale, recty - k / scale, rectw + 2. * k / scale,
-                            recth + 2. * k / scale);
-            cairo_set_source_rgba(cr, 0, 0, 0, alpha);
-            alpha *= 0.6f;
-            cairo_fill(cr);
+            cairo_stroke(cr);
           }
         }
         else
         {
-          cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-          cairo_new_sub_path(cr);
-          cairo_rectangle(cr, rectx - border, recty - border, rectw + 2. * border, recth + 2. * border);
-          cairo_stroke_preserve(cr);
-          dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
-          cairo_fill(cr);
+          cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5 / scale));
+          cairo_stroke(cr);
         }
       }
       else if(buf_ok)
@@ -1431,7 +1469,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   cairo_restore(cr);
 
   if(buf_mipmap) dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-  if(buf_mipmap && !missing && vals->full_surface && !*(vals->full_surface_w_lock))
+  if(buf_mipmap && !missing && vals->full_surface && !*(vals->full_surface_w_lock) && mip >= DT_MIPMAP_7)
   {
     // we don't need this in the cache anymore, as we already have it in memory for zoom&pan
     // let's drop it to free space. This reduce the risk of getting out of space...
@@ -1441,7 +1479,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   cairo_save(cr);
 
   const float fscale = DT_PIXEL_APPLY_DPI(fminf(width, height));
-  if(imgsel == imgid || full_preview || darktable.gui->show_overlays || zoom == 1)
+  if(vals->mouse_over || full_preview || darktable.gui->show_overlays || zoom == 1)
   {
     if(draw_metadata && width > DECORATION_SIZE_LIMIT)
     {
@@ -1453,9 +1491,12 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
       const gboolean extended_thumb_overlay = dt_conf_get_bool("plugins/lighttable/extended_thumb_overlay");
       const gboolean image_is_rejected = (img && ((img->flags & 0x7) == 6));
 
+      // for preview, no frame except if rejected
+      if(zoom == 1 && !image_is_rejected) cairo_new_path(cr);
+
       if(img)
       {
-        if (zoom != 1 && (!darktable.gui->show_overlays || imgsel == imgid) && extended_thumb_overlay)
+        if(zoom != 1 && (!darktable.gui->show_overlays || vals->mouse_over) && extended_thumb_overlay)
         {
           const double overlay_height = 0.26 * height;
           const int exif_offset = DT_PIXEL_APPLY_DPI(3);
@@ -1521,21 +1562,21 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
           for(int k = 0; k < 5; k++)
           {
             dt_view_image_over_t star = DT_VIEW_STAR_1 + k;
-            if(dt_view_process_image_over(star, imgsel == imgid || zoom == 1, cr, img,
-                                          width, height, zoom, px, py, outlinecol, fontcol))
+            if(dt_view_process_image_over(star, vals->mouse_over || zoom == 1, cr, img, width, height, zoom, px,
+                                          py, outlinecol, fontcol))
               *image_over = star;
           }
         }
       }
 
-      if(dt_view_process_image_over(DT_VIEW_REJECT, imgsel == imgid || zoom == 1, cr, img,
-                                    width, height, zoom, px, py, outlinecol, fontcol))
+      if(dt_view_process_image_over(DT_VIEW_REJECT, vals->mouse_over || zoom == 1, cr, img, width, height, zoom,
+                                    px, py, outlinecol, fontcol))
         *image_over = DT_VIEW_REJECT;
 
       if(draw_audio && img && (img->flags & DT_IMAGE_HAS_WAV))
       {
-        if(dt_view_process_image_over(DT_VIEW_AUDIO, imgsel == imgid || zoom == 1, cr, img,
-                                      width, height, zoom, px, py, outlinecol, fontcol))
+        if(dt_view_process_image_over(DT_VIEW_AUDIO, vals->mouse_over || zoom == 1, cr, img, width, height, zoom,
+                                      px, py, outlinecol, fontcol))
           *image_over = DT_VIEW_AUDIO;
       }
 
@@ -1575,7 +1616,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   // kill all paths, in case img was not loaded yet, or is blocked:
   cairo_new_path(cr);
 
-  if (draw_colorlabels && (darktable.gui->show_overlays || imgsel == imgid || full_preview || zoom == 1))
+  if(draw_colorlabels && (darktable.gui->show_overlays || vals->mouse_over || full_preview || zoom == 1))
   {
     // TODO: cache in image struct!
 
@@ -2004,18 +2045,12 @@ gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm)
     return 10;
 }
 
-void dt_view_lighttable_set_display_num_images(dt_view_manager_t *vm, const int display_num_images)
+dt_lighttable_culling_zoom_mode_t dt_view_lighttable_get_culling_zoom_mode(dt_view_manager_t *vm)
 {
   if(vm->proxy.lighttable.module)
-    vm->proxy.lighttable.set_display_num_images(vm->proxy.lighttable.module, display_num_images);
-}
-
-int dt_view_lighttable_get_display_num_images(dt_view_manager_t *vm)
-{
-  if(vm->proxy.lighttable.module)
-    return vm->proxy.lighttable.get_display_num_images(vm->proxy.lighttable.module);
+    return vm->proxy.lighttable.get_zoom_mode(vm->proxy.lighttable.module);
   else
-    return 2;
+    return DT_LIGHTTABLE_ZOOM_FIXED;
 }
 
 void dt_view_lighttable_force_expose_all(dt_view_manager_t *vm)
@@ -2030,6 +2065,14 @@ dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm)
     return vm->proxy.lighttable.get_layout(vm->proxy.lighttable.module);
   else
     return DT_LIGHTTABLE_LAYOUT_FILEMANAGER;
+}
+
+gboolean dt_view_lighttable_culling_is_image_visible(dt_view_manager_t *vm, gint imgid)
+{
+  if(vm->proxy.lighttable.module)
+    return vm->proxy.lighttable.culling_is_image_visible(vm->proxy.lighttable.view, imgid);
+  else
+    return FALSE;
 }
 
 gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm)
@@ -2120,6 +2163,301 @@ void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo)
 }
 #endif
 
+
+static gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
+{
+  gchar *atxt = dt_util_dstrcat(NULL, "%s", gtk_accelerator_get_label(ma->key.accel_key, ma->key.accel_mods));
+  if(strcmp(atxt, "")) atxt = dt_util_dstrcat(atxt, "+");
+  switch(ma->action)
+  {
+    case DT_MOUSE_ACTION_LEFT:
+      atxt = dt_util_dstrcat(atxt, _("Left click"));
+      break;
+    case DT_MOUSE_ACTION_RIGHT:
+      atxt = dt_util_dstrcat(atxt, _("Right click"));
+      break;
+    case DT_MOUSE_ACTION_MIDDLE:
+      atxt = dt_util_dstrcat(atxt, _("Middle click"));
+      break;
+    case DT_MOUSE_ACTION_SCROLL:
+      atxt = dt_util_dstrcat(atxt, _("Scroll"));
+      break;
+    case DT_MOUSE_ACTION_DOUBLE_LEFT:
+      atxt = dt_util_dstrcat(atxt, _("Left double-click"));
+      break;
+    case DT_MOUSE_ACTION_DOUBLE_RIGHT:
+      atxt = dt_util_dstrcat(atxt, _("Right double-click"));
+      break;
+    case DT_MOUSE_ACTION_DRAG_DROP:
+      atxt = dt_util_dstrcat(atxt, _("Drag and drop"));
+      break;
+    case DT_MOUSE_ACTION_LEFT_DRAG:
+      atxt = dt_util_dstrcat(atxt, _("Left click+Drag"));
+      break;
+    case DT_MOUSE_ACTION_RIGHT_DRAG:
+      atxt = dt_util_dstrcat(atxt, _("Right click+Drag"));
+      break;
+  }
+
+  return atxt;
+}
+
+static void _accels_window_destroy(GtkWidget *widget, dt_view_manager_t *vm)
+{
+  // set to NULL so we can rely on it after
+  vm->accels_window.window = NULL;
+}
+
+static void _accels_window_sticky(GtkWidget *widget, GdkEventButton *event, dt_view_manager_t *vm)
+{
+  if(!vm->accels_window.window) return;
+
+  // creating new window
+  GtkWindow *win = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(win);
+#endif
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(win));
+  gtk_style_context_add_class(context, "accels_window");
+  gtk_window_set_title(win, _("darktable - accels window"));
+  GtkAllocation alloc;
+  gtk_widget_get_allocation(dt_ui_main_window(darktable.gui->ui), &alloc);
+
+  gtk_window_set_resizable(win, TRUE);
+  gtk_window_set_icon_name(win, "darktable");
+  gtk_window_set_default_size(win, alloc.width * 0.7, alloc.height * 0.7);
+  g_signal_connect(win, "destroy", G_CALLBACK(_accels_window_destroy), vm);
+
+  GtkWidget *sw
+      = (GtkWidget *)g_list_first(gtk_container_get_children(GTK_CONTAINER(vm->accels_window.window)))->data;
+  g_object_ref(sw);
+
+  gtk_container_remove(GTK_CONTAINER(vm->accels_window.window), sw);
+  gtk_container_add(GTK_CONTAINER(win), sw);
+  g_object_unref(sw);
+  gtk_widget_destroy(vm->accels_window.window);
+  vm->accels_window.window = GTK_WIDGET(win);
+  gtk_widget_show_all(vm->accels_window.window);
+  gtk_widget_hide(vm->accels_window.sticky_btn);
+
+  vm->accels_window.sticky = TRUE;
+}
+
+void dt_view_accels_show(dt_view_manager_t *vm)
+{
+  if(vm->accels_window.window) return;
+
+  vm->accels_window.sticky = FALSE;
+  vm->accels_window.prevent_refresh = FALSE;
+
+  GtkStyleContext *context;
+  vm->accels_window.window = gtk_window_new(GTK_WINDOW_POPUP);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(vm->accels_window.window);
+#endif
+  context = gtk_widget_get_style_context(vm->accels_window.window);
+  gtk_style_context_add_class(context, "accels_window");
+
+  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
+  context = gtk_widget_get_style_context(sw);
+  gtk_style_context_add_class(context, "accels_window_scroll");
+
+  GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+
+  vm->accels_window.flow_box = gtk_flow_box_new();
+  context = gtk_widget_get_style_context(vm->accels_window.flow_box);
+  gtk_style_context_add_class(context, "accels_window_box");
+  gtk_orientable_set_orientation(GTK_ORIENTABLE(vm->accels_window.flow_box), GTK_ORIENTATION_HORIZONTAL);
+
+  gtk_box_pack_start(GTK_BOX(hb), vm->accels_window.flow_box, TRUE, TRUE, 0);
+
+  GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  vm->accels_window.sticky_btn
+      = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  g_object_set(G_OBJECT(vm->accels_window.sticky_btn), "tooltip-text",
+               _("switch to a classic window which will stay open after key release."), (char *)NULL);
+  g_signal_connect(G_OBJECT(vm->accels_window.sticky_btn), "button-press-event", G_CALLBACK(_accels_window_sticky),
+                   vm);
+  context = gtk_widget_get_style_context(vm->accels_window.sticky_btn);
+  gtk_style_context_add_class(context, "accels_window_stick");
+  gtk_box_pack_start(GTK_BOX(vb), vm->accels_window.sticky_btn, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, FALSE, 0);
+
+  dt_view_accels_refresh(vm);
+
+  GtkAllocation alloc;
+  gtk_widget_get_allocation(dt_ui_main_window(darktable.gui->ui), &alloc);
+  // gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw), alloc.height);
+  gtk_scrolled_window_set_max_content_height(GTK_SCROLLED_WINDOW(sw), alloc.height);
+  gtk_scrolled_window_set_max_content_width(GTK_SCROLLED_WINDOW(sw), alloc.width);
+  gtk_container_add(GTK_CONTAINER(sw), hb);
+  gtk_container_add(GTK_CONTAINER(vm->accels_window.window), sw);
+
+  gtk_window_set_resizable(GTK_WINDOW(vm->accels_window.window), FALSE);
+  gtk_window_set_default_size(GTK_WINDOW(vm->accels_window.window), alloc.width, alloc.height);
+  gtk_window_set_transient_for(GTK_WINDOW(vm->accels_window.window),
+                               GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
+  gtk_window_set_keep_above(GTK_WINDOW(vm->accels_window.window), TRUE);
+  gtk_window_set_gravity(GTK_WINDOW(vm->accels_window.window), GDK_GRAVITY_STATIC);
+  gtk_window_set_position(GTK_WINDOW(vm->accels_window.window), GTK_WIN_POS_CENTER_ON_PARENT);
+  gtk_widget_show_all(vm->accels_window.window);
+}
+
+void dt_view_accels_hide(dt_view_manager_t *vm)
+{
+  if(vm->accels_window.window && vm->accels_window.sticky) return;
+  gtk_widget_destroy(vm->accels_window.window);
+  vm->accels_window.window = NULL;
+}
+
+void dt_view_accels_refresh(dt_view_manager_t *vm)
+{
+  if(!vm->accels_window.window || vm->accels_window.prevent_refresh) return;
+
+  // drop all existing tables
+  GList *lw = gtk_container_get_children(GTK_CONTAINER(vm->accels_window.flow_box));
+  while(lw)
+  {
+    GtkWidget *w = (GtkWidget *)lw->data;
+    gtk_widget_destroy(w);
+    lw = g_list_next(lw);
+  }
+
+  // get the list of valid accel for this view
+  const dt_view_t *cv = dt_view_manager_get_current_view(vm);
+  const dt_view_type_flags_t v = cv->view(cv);
+  GtkStyleContext *context;
+
+  typedef struct _bloc_t
+  {
+    gchar *base;
+    gchar *title;
+    GtkListStore *list_store;
+  } _bloc_t;
+
+  // go through all accels to populate categories with valid ones
+  GList *blocs = NULL;
+  GList *bl = NULL;
+  GSList *l = darktable.control->accelerator_list;
+  while(l)
+  {
+    dt_accel_t *da = (dt_accel_t *)l->data;
+    if(da && (da->views & v) == v)
+    {
+      GtkAccelKey ak;
+      if(gtk_accel_map_lookup_entry(da->path, &ak) && ak.accel_key > 0)
+      {
+        // we want the base path
+        gchar **elems = g_strsplit(da->translated_path, "/", -1);
+        if(elems[0] && elems[1] && elems[2])
+        {
+          // do we already have a categorie ?
+          bl = blocs;
+          _bloc_t *b = NULL;
+          while(bl)
+          {
+            _bloc_t *bb = (_bloc_t *)bl->data;
+            if(strcmp(elems[1], bb->base) == 0)
+            {
+              b = bb;
+              break;
+            }
+            bl = g_list_next(bl);
+          }
+          // if not found, we create it
+          if(!b)
+          {
+            b = (_bloc_t *)calloc(1, sizeof(_bloc_t));
+            b->base = dt_util_dstrcat(NULL, "%s", elems[1]);
+            if(g_str_has_prefix(da->path, "<Darktable>/views/"))
+              b->title = dt_util_dstrcat(NULL, "%s", cv->name(cv));
+            else
+              b->title = dt_util_dstrcat(NULL, "%s", elems[1]);
+            b->list_store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+            blocs = g_list_prepend(blocs, b);
+          }
+          // we add the new line
+          GtkTreeIter iter;
+          gtk_list_store_prepend(b->list_store, &iter);
+          gchar *txt;
+          // for views accels, no need to specify the view name, it's in the category title
+          if(g_str_has_prefix(da->path, "<Darktable>/views/"))
+            txt = da->translated_path + strlen(elems[0]) + strlen(elems[1]) + strlen(elems[2]) + 3;
+          else
+            txt = da->translated_path + strlen(elems[0]) + strlen(elems[1]) + 2;
+          // for dynamic accel, we need to add the "+scroll"
+          gchar *atxt = dt_util_dstrcat(NULL, "%s", gtk_accelerator_get_label(ak.accel_key, ak.accel_mods));
+          if(g_str_has_prefix(da->path, "<Darktable>/image operations/") && g_str_has_suffix(da->path, "/dynamic"))
+            atxt = dt_util_dstrcat(atxt, _("+Scroll"));
+          gtk_list_store_set(b->list_store, &iter, 0, atxt, 1, txt, -1);
+          g_free(atxt);
+          g_strfreev(elems);
+        }
+      }
+    }
+    l = g_slist_next(l);
+  }
+
+  // we add the mouse actions too
+  if(cv->mouse_actions)
+  {
+    _bloc_t *bm = (_bloc_t *)calloc(1, sizeof(_bloc_t));
+    bm->base = NULL;
+    bm->title = dt_util_dstrcat(NULL, _("mouse actions"));
+    bm->list_store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+    blocs = g_list_prepend(blocs, bm);
+
+    GSList *lm = cv->mouse_actions(cv);
+    while(lm)
+    {
+      dt_mouse_action_t *ma = (dt_mouse_action_t *)lm->data;
+      if(ma)
+      {
+        GtkTreeIter iter;
+        gtk_list_store_append(bm->list_store, &iter);
+        gchar *atxt = _mouse_action_get_string(ma);
+        gtk_list_store_set(bm->list_store, &iter, 0, atxt, 1, ma->name, -1);
+        g_free(atxt);
+      }
+      lm = g_slist_next(lm);
+    }
+    g_slist_free_full(lm, free);
+  }
+
+  // now we create and insert the widget to display all accels by categories
+  bl = blocs;
+  while(bl)
+  {
+    const _bloc_t *bb = (_bloc_t *)bl->data;
+    GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    // the title
+    GtkWidget *lb = gtk_label_new(bb->title);
+    context = gtk_widget_get_style_context(lb);
+    gtk_style_context_add_class(context, "accels_window_cat_title");
+    gtk_box_pack_start(GTK_BOX(box), lb, FALSE, FALSE, 0);
+
+    // the list of accels
+    GtkWidget *list = gtk_tree_view_new_with_model(GTK_TREE_MODEL(bb->list_store));
+    context = gtk_widget_get_style_context(list);
+    gtk_style_context_add_class(context, "accels_window_list");
+    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+    GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("Accel"), renderer, "text", 0, NULL);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+    column = gtk_tree_view_column_new_with_attributes(_("Action"), renderer, "text", 1, NULL);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(list), column);
+
+    gtk_box_pack_start(GTK_BOX(box), list, FALSE, FALSE, 0);
+
+    gtk_flow_box_insert(GTK_FLOW_BOX(vm->accels_window.flow_box), box, -1);
+    g_free(bb->base);
+    g_free(bb->title);
+
+    bl = g_list_next(bl);
+  }
+  g_list_free_full(blocs, free);
+
+  gtk_widget_show_all(vm->accels_window.flow_box);
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

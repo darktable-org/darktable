@@ -48,11 +48,6 @@ static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_curre
 static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_list, const int old_version, const int dont_move)
 {
   int new_version = -1;
-  
-  if(0) // I left this for now so I don't get the unused error, we'll add some modules soon and we'll remove it
-  {
-    _ioppr_insert_iop_before(_iop_order_list, history_list, "dummy1", "colorin", dont_move);
-  }
 
   // version 1 --> 2
   if(old_version == 1)
@@ -62,13 +57,14 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     _ioppr_insert_iop_after(_iop_order_list, history_list, "basicadj", "colorin", dont_move);
     _ioppr_insert_iop_after(_iop_order_list, history_list, "rgbcurve", "levels", dont_move);
     _ioppr_insert_iop_after(_iop_order_list, history_list, "lut3d", "grain", dont_move);
-    
+    _ioppr_insert_iop_before(_iop_order_list, history_list, "rgblevels", "rgbcurve", dont_move);
+
     new_version = 2;
   }
 
   if(new_version <= 0)
     fprintf(stderr, "[_ioppr_legacy_iop_order_step] missing step migrating from version %i\n", old_version);
-  
+
   return new_version;
 }
 
@@ -204,7 +200,7 @@ static GList *_ioppr_get_iop_order_v1()
 dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const char *op_name)
 {
   dt_iop_order_entry_t *iop_order_entry = NULL;
-  
+
   GList *iops_order = g_list_first(iop_order_list);
   while(iops_order)
   {
@@ -222,12 +218,12 @@ dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const 
   return iop_order_entry;
 }
 
-// returns the iop_order asociated with the iop order entry that matches operation == op_name
+// returns the iop_order associated with the iop order entry that matches operation == op_name
 double dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name)
 {
   double iop_order = DBL_MAX;
   dt_iop_order_entry_t *order_entry = dt_ioppr_get_iop_order_entry(iop_order_list, op_name);
-  
+
   if(order_entry)
     iop_order = order_entry->iop_order;
 
@@ -240,14 +236,14 @@ double dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name)
 static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_next, const int check_history)
 {
   GList *iop_order_list = *_iop_order_list;
-  
+
   // check that the new operation don't exists on the list
   if(dt_ioppr_get_iop_order_entry(iop_order_list, op_new) == NULL)
   {
     // create a new iop order entry
     dt_iop_order_entry_t *iop_order_new = (dt_iop_order_entry_t*)calloc(1, sizeof(dt_iop_order_entry_t));
     snprintf(iop_order_new->operation, sizeof(iop_order_new->operation), "%s", op_new);
-    
+
     // search for the previous one
     int position = 0;
     int found = 0;
@@ -265,10 +261,10 @@ static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_lis
       }
       iop_order_prev = order_entry->iop_order;
       position++;
-      
+
       iops_order = g_list_next(iops_order);
     }
-    
+
     // now we have to check if there's a module with iop_order between iop_order_prev and iop_order_next
     if(found)
     {
@@ -278,22 +274,22 @@ static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_lis
         while(history)
         {
           dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-          
+
           if(hist->iop_order >= iop_order_prev && hist->iop_order <= iop_order_next)
             iop_order_prev = hist->iop_order;
-          
+
           history = g_list_next(history);
         }
       }
     }
     else
       fprintf(stderr, "[_ioppr_insert_iop_before] module %s don't exists on iop order list\n", op_next);
-    
+
     if(found)
     {
       // set the iop_order
       iop_order_new->iop_order = iop_order_prev + (iop_order_next - iop_order_prev) / 2.0;
-      
+
       // insert it on the proper order
       iop_order_list = g_list_insert(iop_order_list, iop_order_new, position);
     }
@@ -310,7 +306,7 @@ static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_lis
 static void _ioppr_insert_iop_after(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_prev, const int check_history)
 {
   GList *iop_order_list = *_iop_order_list;
-  
+
   // inserting after op_prev is the same as moving before the very next one after op_prev
   dt_iop_order_entry_t *prior_next = NULL;
   GList *iops_order = g_list_last(iop_order_list);
@@ -340,16 +336,16 @@ static void _ioppr_insert_iop_after(GList **_iop_order_list, GList *history_list
 static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_current, const char *op_next, const int dont_move)
 {
   if(dont_move) return;
-  
+
   GList *iop_order_list = *_iop_order_list;
-  
+
   int position = 0;
   int found = 0;
   dt_iop_order_entry_t *iop_order_prev = NULL;
   dt_iop_order_entry_t *iop_order_next = NULL;
   dt_iop_order_entry_t *iop_order_current = NULL;
   GList *iops_order_current = NULL;
-  
+
   // search for the current one
   GList *iops_order = g_list_first(iop_order_list);
   while(iops_order)
@@ -362,7 +358,7 @@ static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_curre
       found = 1;
       break;
     }
-    
+
     iops_order = g_list_next(iops_order);
   }
 
@@ -390,16 +386,16 @@ static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_curre
       }
       iop_order_prev = order_entry;
       position++;
-      
+
       iops_order = g_list_next(iops_order);
     }
   }
-  
+
   if(found)
   {
     // set the iop_order
     iop_order_current->iop_order = iop_order_prev->iop_order + (iop_order_next->iop_order - iop_order_prev->iop_order) / 2.0;
-    
+
     // insert it on the proper order
     iop_order_list = g_list_insert(iop_order_list, iop_order_current, position);
   }
@@ -414,9 +410,9 @@ static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_curre
 static void _ioppr_move_iop_after(GList **_iop_order_list, const char *op_current, const char *op_prev, const int dont_move)
 {
   if(dont_move) return;
-  
+
   GList *iop_order_list = *_iop_order_list;
-  
+
   // moving after op_prev is the same as moving before the very next one after op_prev
   dt_iop_order_entry_t *prior_next = NULL;
   GList *iops_order = g_list_last(iop_order_list);
@@ -448,29 +444,29 @@ GList *dt_ioppr_get_iop_order_list(int *_version)
   GList *iop_order_list = _ioppr_get_iop_order_v1();
   int old_version = 1;
   const int version = ((_version == NULL) || (*_version == 0)) ? DT_IOP_ORDER_VERSION: *_version;
-  
+
   while(old_version < version && old_version > 0)
   {
     old_version = _ioppr_legacy_iop_order_step(&iop_order_list, NULL, old_version, FALSE);
   }
-  
+
   if(old_version != version)
   {
     fprintf(stderr, "[dt_ioppr_get_iop_order_list] error building iop_order_list to version %i\n", version);
   }
-  
+
   if(_version && *_version == 0 && old_version > 0) *_version = old_version;
-  
+
   return iop_order_list;
 }
 
 // sets the iop_order on each module of *_iop_list
-// iop_order is set only for base modules, multi-instances will be flaged as unused with DBL_MAX
-// if a module do not exists on iop_order_list it is flaged as unused with DBL_MAX
+// iop_order is set only for base modules, multi-instances will be flagged as unused with DBL_MAX
+// if a module do not exists on iop_order_list it is flagged as unused with DBL_MAX
 void dt_ioppr_set_default_iop_order(GList **_iop_list, GList *iop_order_list)
 {
   GList *iop_list = *_iop_list;
-  
+
   GList *modules = g_list_first(iop_list);
   while(modules)
   {
@@ -485,7 +481,7 @@ void dt_ioppr_set_default_iop_order(GList **_iop_list, GList *iop_order_list)
     {
       mod->iop_order = DBL_MAX;
     }
-    
+
     modules = g_list_next(modules);
   }
   // we need to set the right order
@@ -498,18 +494,18 @@ void dt_ioppr_set_default_iop_order(GList **_iop_list, GList *iop_order_list)
 static dt_dev_history_item_t *_ioppr_search_history_by_module(GList *history_list, dt_iop_module_t *mod)
 {
   dt_dev_history_item_t *hist_entry = NULL;
-  
+
   GList *history = g_list_first(history_list);
   while(history)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-    
+
     if(hist->module == mod)
     {
       hist_entry = hist;
       break;
     }
-    
+
     history = g_list_next(history);
   }
 
@@ -522,7 +518,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
 {
   GList *iop_list = *_iop_list;
   dt_iop_module_t *mod_prev = NULL;
-  
+
   // get the first module
   GList *modules = g_list_first(iop_list);
   if(modules)
@@ -540,11 +536,11 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
     if(mod->iop_order == mod_prev->iop_order && mod->iop_order != DBL_MAX)
     {
       int can_move = 0;
-      
+
       if(!mod->enabled && _ioppr_search_history_by_module(history_list, mod) == NULL)
       {
         can_move = 1;
-        
+
         GList *modules1 = g_list_next(modules);
         if(modules1)
         {
@@ -567,7 +563,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
       else if(!mod_prev->enabled && _ioppr_search_history_by_module(history_list, mod_prev) == NULL)
       {
         can_move = 1;
-        
+
         GList *modules1 = g_list_previous(modules);
         if(modules1) modules1 = g_list_previous(modules1);
         if(modules1)
@@ -580,7 +576,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
           else
           {
             can_move = 0;
-            fprintf(stderr, "[dt_ioppr_check_duplicate_iop_order 1] modules %s %s(%f) and %s %s(%f) has the same iop_order\n", 
+            fprintf(stderr, "[dt_ioppr_check_duplicate_iop_order 1] modules %s %s(%f) and %s %s(%f) has the same iop_order\n",
                 mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
           }
         }
@@ -592,11 +588,11 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
 
       if(!can_move)
       {
-        fprintf(stderr, "[dt_ioppr_check_duplicate_iop_order] modules %s %s(%f) and %s %s(%f) has the same iop_order\n", 
+        fprintf(stderr, "[dt_ioppr_check_duplicate_iop_order] modules %s %s(%f) and %s %s(%f) has the same iop_order\n",
             mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
       }
     }
-    
+
     if(reset_list)
     {
       modules = g_list_first(iop_list);
@@ -612,7 +608,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
       modules = g_list_next(modules);
     }
   }
-  
+
   *_iop_list = iop_list;
 }
 
@@ -623,14 +619,14 @@ void dt_ioppr_legacy_iop_order(GList **_iop_list, GList **_iop_order_list, GList
   GList *iop_order_list = *_iop_order_list;
   int dt_version = DT_IOP_ORDER_VERSION;
   int old_version = _old_version;
-  
+
   // we want to add any module created after this version of iop_order
   // but we won't move existing modules so only add methods will be executed
   while(old_version < dt_version && old_version > 0)
   {
     old_version = _ioppr_legacy_iop_order_step(&iop_order_list, history_list, old_version, TRUE);
   }
-  
+
   // now that we have a list of iop_order for version new_version but with all new modules
   // we take care of the iop_order of new modules on iop list
   GList *modules = g_list_first(iop_list);
@@ -644,12 +640,12 @@ void dt_ioppr_legacy_iop_order(GList **_iop_list, GList **_iop_order_list, GList
       if(mod->iop_order == DBL_MAX)
         fprintf(stderr, "[dt_ioppr_legacy_iop_order] can't find iop_order for module %s\n", mod->op);
     }
-    
+
     modules = g_list_next(modules);
   }
   // we need to set the right order
   iop_list = g_list_sort(iop_list, dt_sort_iop_by_order);
-  
+
   // and check for duplicates
   dt_ioppr_check_duplicate_iop_order(&iop_list, history_list);
 
@@ -667,7 +663,7 @@ int dt_ioppr_check_so_iop_order(GList *iop_list, GList *iop_order_list)
   while(modules)
   {
     dt_iop_module_so_t *mod = (dt_iop_module_so_t *)(modules->data);
-    
+
     dt_iop_order_entry_t *entry = dt_ioppr_get_iop_order_entry(iop_order_list, mod->op);
     if(entry == NULL)
     {
@@ -714,13 +710,13 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
   if((module->flags() & IOP_FLAGS_FENCE) && validate_order)
   {
     if(log_error)
-      fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] module %s(%f) is a fence, can't move it before %s %s(%f)\n", 
+      fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] module %s(%f) is a fence, can't move it before %s %s(%f)\n",
           module->op, module->iop_order, module_next->op, module_next->multi_name, module_next->iop_order);
     return -1.0;
   }
-  
+
   double iop_order = -1.0;
-  
+
   // module is before on the pipe
   // move it up
   if(module->iop_order < module_next->iop_order)
@@ -746,14 +742,14 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
       while(modules)
       {
         dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-        
+
         // if we reach module_next everithing is OK
         if(mod == module_next)
         {
           mod2 = mod;
           break;
         }
-        
+
         // check for rules
         if(validate_order)
         {
@@ -761,11 +757,11 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
           if(mod->flags() & IOP_FLAGS_FENCE)
           {
             if(log_error)
-              fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] can't move %s %s(%f) pass %s %s(%f)\n", 
+              fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] can't move %s %s(%f) pass %s %s(%f)\n",
                   module->op, module->multi_name, module->iop_order, mod->op, mod->multi_name, mod->iop_order);
             break;
           }
-          
+
           // is there a rule about swapping this two?
           int rule_found = 0;
           GList *rules = g_list_first(darktable.iop_order_rules);
@@ -786,11 +782,11 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
           }
           if(rule_found) break;
         }
-        
+
         mod1 = mod;
         modules = g_list_next(modules);
       }
-      
+
       // we reach the module_next module
       if(mod2)
       {
@@ -798,12 +794,12 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
         if(module == mod1)
         {
           if(log_error)
-            fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) is already previous to %s %s(%f)\n", 
+            fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) is already previous to %s %s(%f)\n",
                 module->op, module->multi_name, module->iop_order, module_next->op, module_next->multi_name, module_next->iop_order);
         }
         else if(mod1->iop_order == mod2->iop_order)
         {
-          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) and %s %s(%f) has the same iop_order\n", 
+          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) and %s %s(%f) has the same iop_order\n",
               mod1->op, mod1->multi_name, mod1->iop_order, mod2->op, mod2->multi_name, mod2->iop_order);
         }
         else
@@ -843,7 +839,7 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
       while(modules)
       {
         dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-        
+
         // we reach the module next to module_next, everithing is OK
         if(mod2 != NULL)
         {
@@ -858,11 +854,11 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
           if(mod->flags() & IOP_FLAGS_FENCE)
           {
             if(log_error)
-              fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] can't move %s %s(%f) pass %s %s(%f)\n", 
+              fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] can't move %s %s(%f) pass %s %s(%f)\n",
                   module->op, module->multi_name, module->iop_order, mod->op, mod->multi_name, mod->iop_order);
             break;
           }
-          
+
           // is there a rule about swapping this two?
           int rule_found = 0;
           GList *rules = g_list_first(darktable.iop_order_rules);
@@ -883,11 +879,11 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
           }
           if(rule_found) break;
         }
-        
+
         if(mod == module_next) mod2 = mod;
         modules = g_list_previous(modules);
       }
-      
+
       // we reach the module_next module
       if(mod1)
       {
@@ -895,12 +891,12 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
         if(module == mod2)
         {
           if(log_error)
-            fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) is already previous to %s %s(%f)\n", 
+            fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) is already previous to %s %s(%f)\n",
                 module->op, module->multi_name, module->iop_order, module_next->op, module_next->multi_name, module_next->iop_order);
         }
         else if(mod1->iop_order == mod2->iop_order)
         {
-          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) and %s %s(%f) has the same iop_order\n", 
+          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) and %s %s(%f) has the same iop_order\n",
               mod1->op, mod1->multi_name, mod1->iop_order, mod2->op, mod2->multi_name, mod2->iop_order);
         }
         else
@@ -917,10 +913,10 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
   }
   else
   {
-    fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] modules %s %s(%f) and %s %s(%f) has the same iop_order\n", 
+    fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] modules %s %s(%f) and %s %s(%f) has the same iop_order\n",
         module->op, module->multi_name, module->iop_order, module_next->op, module_next->multi_name, module_next->iop_order);
   }
-  
+
   return iop_order;
 }
 
@@ -983,7 +979,7 @@ int dt_ioppr_move_iop_before(GList **_iop_list, dt_iop_module_t *module, dt_iop_
   // dt_ioppr_check_iop_order(dev, "dt_ioppr_move_iop_before end");
 
   *_iop_list = iop_list;
-  
+
   return moved;
 }
 
@@ -1011,7 +1007,7 @@ int dt_ioppr_move_iop_after(GList **_iop_list, dt_iop_module_t *module, dt_iop_m
   // dt_ioppr_check_iop_order(dev, "dt_ioppr_move_iop_after end");
 
   *_iop_list = iop_list;
-  
+
   return moved;
 }
 
@@ -1029,39 +1025,39 @@ int dt_ioppr_check_db_integrity()
   {
     ret = 1;
     fprintf(stderr, "\nThere are unassigned iop_order in the history!!!\n\n");
-    
+
     int count = 0;
     do
     {
       const int imgid = sqlite3_column_int(stmt, 0);
       const char *opname = (const char *)sqlite3_column_text(stmt, 1);
       const int modversion = sqlite3_column_int(stmt, 2);
-      
+
       fprintf(stderr, "image: %i module: %s version: %i\n", imgid, (opname) ? opname: "module is NULL", modversion);
     } while(sqlite3_step(stmt) == SQLITE_ROW && count++ < 20);
   }
 
   sqlite3_finalize(stmt);
-  
+
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT styleid, operation FROM data.style_items WHERE iop_order <= 0 OR iop_order IS NULL",
                               -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
     ret = 1;
     fprintf(stderr, "\nThere are unassigned iop_order in the styles!!!\n\n");
-    
+
     int count = 0;
     do
     {
       const int styleid = sqlite3_column_int(stmt, 0);
       const char *opname = (const char *)sqlite3_column_text(stmt, 1);
-      
+
       fprintf(stderr, "style: %i module: %s\n", styleid, (opname) ? opname: "module is NULL");
     } while(sqlite3_step(stmt) == SQLITE_ROW && count++ < 20);
   }
 
   sqlite3_finalize(stmt);
-  
+
   return ret;
 }
 
@@ -1071,7 +1067,7 @@ void dt_ioppr_print_module_iop_order(GList *iop_list, const char *msg)
   while(modules)
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
-    
+
     fprintf(stderr, "[%s] module %s %s multi_priority=%i, iop_order=%f\n", msg, mod->op, mod->multi_name, mod->multi_priority, mod->iop_order);
 
     modules = g_list_next(modules);
@@ -1084,7 +1080,7 @@ void dt_ioppr_print_history_iop_order(GList *history_list, const char *msg)
   while(history)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-    
+
     fprintf(stderr, "[%s] module %s %s multi_priority=%i, iop_order=%f\n", msg, hist->op_name, hist->multi_name, hist->multi_priority, hist->iop_order);
 
     history = g_list_next(history);
@@ -1097,7 +1093,7 @@ void dt_ioppr_print_iop_order(GList *iop_order_list, const char *msg)
   while(iops_order)
   {
     dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)(iops_order->data);
-    
+
     fprintf(stderr, "[%s] operation %s iop_order=%f\n", msg, order_entry->operation, order_entry->iop_order);
 
     iops_order = g_list_next(iops_order);
@@ -1264,7 +1260,7 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
       dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
       if(mod->iop_order != DBL_MAX)
         break;
-      
+
       modules = g_list_previous(dev->iop);
     }
     if(modules)
@@ -1305,7 +1301,7 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
                   mod->op, mod->multi_name, mod->iop_order,imgid, msg);
         }
       }
-      
+
       modules = g_list_previous(dev->iop);
     }
   }
@@ -1335,7 +1331,7 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
             fprintf(
                 stderr,
                 "[dt_ioppr_check_iop_order] module %s %s(%i)(%f) and %s %s(%i)(%f) has the same order image %i (%s)\n",
-                mod->op, mod->multi_name, mod->multi_priority, mod->iop_order, mod_prev->op, 
+                mod->op, mod->multi_name, mod->multi_priority, mod->iop_order, mod_prev->op,
                 mod_prev->multi_name, mod_prev->multi_priority, mod_prev->iop_order, imgid, msg);
           }
         }
@@ -1351,7 +1347,7 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
   while(history)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-    
+
     if(hist->iop_order == DBL_MAX)
     {
       if(hist->enabled)
@@ -1386,7 +1382,7 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in, float 
   cmsHTRANSFORM *xform = NULL;
   cmsHPROFILE *rgb_profile = NULL;
   cmsHPROFILE *lab_profile = NULL;
-  
+
   if(type != DT_COLORSPACE_NONE)
   {
     const dt_colorspaces_color_profile_t *profile = dt_colorspaces_get_profile(type, filename, DT_PROFILE_DIRECTION_WORK);
@@ -1412,14 +1408,14 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in, float 
     rgb_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "", DT_PROFILE_DIRECTION_WORK)->profile;
     fprintf(stderr, _("unsupported working profile %s has been replaced by Rec2020 RGB!\n"), filename);
   }
-  
+
   lab_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
 
   cmsHPROFILE *input_profile = NULL;
   cmsHPROFILE *output_profile = NULL;
   cmsUInt32Number input_format = TYPE_RGBA_FLT;
   cmsUInt32Number output_format = TYPE_LabA_FLT;
-  
+
   if(direction == 1) // rgb --> lab
   {
     input_profile = rgb_profile;
@@ -1439,7 +1435,10 @@ static void _transform_from_to_rgb_lab_lcms2(const float *const image_in, float 
   if(xform)
   {
 #ifdef _OPENMP
-#pragma omp parallel for shared(xform) schedule(static) default(none)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(image_in, image_out, width, height, ch) \
+    shared(xform) \
+    schedule(static)
 #endif
     for(int y = 0; y < height; y++)
     {
@@ -1535,7 +1534,10 @@ static void _transform_rgb_to_rgb_lcms2(const float *const image_in, float *cons
   if(xform)
   {
 #ifdef _OPENMP
-#pragma omp parallel for shared(xform) schedule(static) default(none)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(image_in, image_out, width, height, ch) \
+    shared(xform) \
+    schedule(static)
 #endif
     for(int y = 0; y < height; y++)
     {
@@ -1560,7 +1562,7 @@ static void _transform_lcms2(struct dt_iop_module_t *self, const float *const im
     *converted_cst = cst_to;
     return;
   }
-  
+
   *converted_cst = cst_to;
 
   if(cst_from == iop_cs_rgb && cst_to == iop_cs_Lab)
@@ -1578,7 +1580,7 @@ static void _transform_lcms2(struct dt_iop_module_t *self, const float *const im
   else
   {
     *converted_cst = cst_from;
-    fprintf(stderr, "[_transform_lcms2] invalid convertion from %i to %i\n", cst_from, cst_to);
+    fprintf(stderr, "[_transform_lcms2] invalid conversion from %i to %i\n", cst_from, cst_to);
   }
 }
 
@@ -1657,12 +1659,14 @@ static void _apply_tonecurves(const float *const image_in, float *const image_ou
   const float *const lut[3] = { lutr, lutg, lutb };
   const float *const unbounded_coeffs[3] = { unbounded_coeffsr, unbounded_coeffsg, unbounded_coeffsb };
   const size_t stride = (size_t)ch * width * height;
-  
+
   // do we have any lut to apply, or is this a linear profile?
   if((lut[0][0] >= 0.0f) && (lut[1][0] >= 0.0f) && (lut[2][0] >= 0.0f))
   {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(stride, image_in, image_out, lut, lutsize, unbounded_coeffs, ch) \
+    schedule(static)
 #endif
     for(size_t k = 0; k < stride; k += ch)
     {
@@ -1676,7 +1680,9 @@ static void _apply_tonecurves(const float *const image_in, float *const image_ou
   else if((lut[0][0] >= 0.0f) || (lut[1][0] >= 0.0f) || (lut[2][0] >= 0.0f))
   {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(stride, image_in, image_out, lut, lutsize, unbounded_coeffs, ch) \
+    schedule(static)
 #endif
     for(size_t k = 0; k < stride; k += ch)
     {
@@ -1707,7 +1713,9 @@ static void _transform_rgb_to_lab_matrix(const float *const image_in, float *con
                       profile_info->lutsize);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(image_out, profile_info, stride, ch) \
+    schedule(static)
 #endif
     for(size_t y = 0; y < stride; y++)
     {
@@ -1722,7 +1730,9 @@ static void _transform_rgb_to_lab_matrix(const float *const image_in, float *con
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(image_in, image_out, profile_info, stride, ch) \
+    schedule(static)
 #endif
     for(size_t y = 0; y < stride; y++)
     {
@@ -1745,7 +1755,9 @@ static void _transform_lab_to_rgb_matrix(const float *const image_in, float *con
   const size_t stride = (size_t)width * height;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(image_in, image_out, stride, profile_info, ch) \
+  schedule(static)
 #endif
   for(size_t y = 0; y < stride; y++)
   {
@@ -1753,7 +1765,7 @@ static void _transform_lab_to_rgb_matrix(const float *const image_in, float *con
     float *const out = image_out + y * ch;
 
     float xyz[3] = { 0.0f, 0.0f, 0.0f };
-    
+
     dt_Lab_to_XYZ(in, xyz);
     _ioppr_xyz_to_linear_rgb_matrix(xyz, out, profile_info);
   }
@@ -1779,7 +1791,9 @@ static void _transform_matrix_rgb(const float *const image_in, float *const imag
                       profile_info_from->unbounded_coeffs_in[2], profile_info_from->lutsize);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(stride, image_out, profile_info_from, profile_info_to, ch) \
+    schedule(static)
 #endif
     for(size_t y = 0; y < stride; y++)
     {
@@ -1794,7 +1808,9 @@ static void _transform_matrix_rgb(const float *const image_in, float *const imag
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(stride, image_in, image_out, profile_info_from, profile_info_to, ch) \
+    schedule(static)
 #endif
     for(size_t y = 0; y < stride; y++)
     {
@@ -1814,13 +1830,13 @@ static void _transform_matrix_rgb(const float *const image_in, float *const imag
                     profile_info_to->lutsize);
 }
 
-static int _init_unbounded_coeffs(float *lutr, float *lutg, float *lutb, 
+static int _init_unbounded_coeffs(float *lutr, float *lutg, float *lutb,
     float *unbounded_coeffsr, float *unbounded_coeffsg, float *unbounded_coeffsb, const int lutsize)
 {
   int nonlinearlut = 0;
   float *lut[3] = { lutr, lutg, lutb };
   float *unbounded_coeffs[3] = { unbounded_coeffsr, unbounded_coeffsg, unbounded_coeffsb };
-  
+
   for(int k = 0; k < 3; k++)
   {
     // omit luts marked as linear (negative as marker)
@@ -1830,13 +1846,13 @@ static int _init_unbounded_coeffs(float *lutr, float *lutg, float *lutb,
       const float y[4] = { lerp_lut(lut[k], x[0], lutsize), lerp_lut(lut[k], x[1], lutsize), lerp_lut(lut[k], x[2], lutsize),
                            lerp_lut(lut[k], x[3], lutsize) };
       dt_iop_estimate_exp(x, y, 4, unbounded_coeffs[k]);
-      
+
       nonlinearlut++;
     }
     else
       unbounded_coeffs[k][0] = -1.0f;
   }
-  
+
   return nonlinearlut;
 }
 
@@ -1849,7 +1865,7 @@ static void _transform_matrix(struct dt_iop_module_t *self, const float *const i
     *converted_cst = cst_to;
     return;
   }
-  
+
   *converted_cst = cst_to;
 
   if(cst_from == iop_cs_rgb && cst_to == iop_cs_Lab)
@@ -1863,7 +1879,7 @@ static void _transform_matrix(struct dt_iop_module_t *self, const float *const i
   else
   {
     *converted_cst = cst_from;
-    fprintf(stderr, "[_transform_matrix] invalid convertion from %i to %i\n", cst_from, cst_to);
+    fprintf(stderr, "[_transform_matrix] invalid conversion from %i to %i\n", cst_from, cst_to);
   }
 }
 
@@ -1920,7 +1936,7 @@ static int dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profil
 
   profile_info->nonlinearlut = 0;
   profile_info->grey = 0.1842f;
-  
+
   profile_info->type = type;
   g_strlcpy(profile_info->filename, filename, sizeof(profile_info->filename));
   profile_info->intent = intent;
@@ -1949,14 +1965,14 @@ static int dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profil
       rgb_profile = NULL;
     }
   }
-  
+
   // get the matrix
   if(rgb_profile)
   {
-    if(dt_colorspaces_get_matrix_from_input_profile(rgb_profile, profile_info->matrix_in, 
+    if(dt_colorspaces_get_matrix_from_input_profile(rgb_profile, profile_info->matrix_in,
         profile_info->lut_in[0], profile_info->lut_in[1], profile_info->lut_in[2],
         profile_info->lutsize, profile_info->intent) ||
-        dt_colorspaces_get_matrix_from_output_profile(rgb_profile, profile_info->matrix_out, 
+        dt_colorspaces_get_matrix_from_output_profile(rgb_profile, profile_info->matrix_out,
             profile_info->lut_out[0], profile_info->lut_out[1], profile_info->lut_out[2],
             profile_info->lutsize, profile_info->intent))
     {
@@ -1986,25 +2002,25 @@ static int dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profil
   // in our hands, i.e. for the fast builtin-dt-matrix-profile path.
   if(!isnan(profile_info->matrix_in[0]) && !isnan(profile_info->matrix_out[0]))
   {
-    profile_info->nonlinearlut = _init_unbounded_coeffs(profile_info->lut_in[0], profile_info->lut_in[1], profile_info->lut_in[2], 
+    profile_info->nonlinearlut = _init_unbounded_coeffs(profile_info->lut_in[0], profile_info->lut_in[1], profile_info->lut_in[2],
         profile_info->unbounded_coeffs_in[0], profile_info->unbounded_coeffs_in[1], profile_info->unbounded_coeffs_in[2], profile_info->lutsize);
-    _init_unbounded_coeffs(profile_info->lut_out[0], profile_info->lut_out[1], profile_info->lut_out[2], 
+    _init_unbounded_coeffs(profile_info->lut_out[0], profile_info->lut_out[1], profile_info->lut_out[2],
         profile_info->unbounded_coeffs_out[0], profile_info->unbounded_coeffs_out[1], profile_info->unbounded_coeffs_out[2], profile_info->lutsize);
   }
-  
+
   if(!isnan(profile_info->matrix_in[0]) && !isnan(profile_info->matrix_out[0]) && profile_info->nonlinearlut)
   {
     float rgb[3] = { 0.1842f, 0.1842f, 0.1842f };
     profile_info->grey = dt_ioppr_get_rgb_matrix_luminance(rgb, profile_info);
   }
-  
+
   return err_code;
 }
 
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev, const int profile_type, const char *profile_filename)
 {
   dt_iop_order_iccprofile_info_t *profile_info = NULL;
-  
+
   GList *profiles = g_list_first(dev->allprofile_info);
   while(profiles)
   {
@@ -2016,7 +2032,7 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_profile_info_from_list(struct dt_de
     }
     profiles = g_list_next(profiles);
   }
-  
+
   return profile_info;
 }
 
@@ -2090,14 +2106,14 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_work_profile_info(struct dt_de
     const int type, const char *filename, const int intent)
 {
   dt_iop_order_iccprofile_info_t *profile_info = dt_ioppr_add_profile_info_to_list(dev, type, filename, intent);
-  
+
   if(profile_info == NULL || isnan(profile_info->matrix_in[0]) || isnan(profile_info->matrix_out[0]))
   {
     fprintf(stderr, "[dt_ioppr_set_pipe_work_profile_info] unsupported working profile %i %s, it will be replaced with linear rec2020\n", type, filename);
     profile_info = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", intent);
   }
   pipe->dsc.work_profile_info = profile_info;
-  
+
   return profile_info;
 }
 
@@ -2121,7 +2137,7 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev, int *profile_type,
 {
   *profile_type = DT_COLORSPACE_NONE;
   *profile_filename = NULL;
-  
+
   // use introspection to get the params values
   dt_iop_module_so_t *colorin_so = NULL;
   dt_iop_module_t *colorin = NULL;
@@ -2170,7 +2186,7 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev, int *profile_typ
 {
   *profile_type = DT_COLORSPACE_NONE;
   *profile_filename = NULL;
-  
+
   // use introspection to get the params values
   dt_iop_module_so_t *colorout_so = NULL;
   dt_iop_module_t *colorout = NULL;
@@ -2243,7 +2259,7 @@ void dt_ioppr_get_histogram_profile_type(int *profile_type, char **profile_filen
 float dt_ioppr_get_rgb_matrix_luminance(const float *const rgb, const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   float luminance = 0.f;
-  
+
   if(profile_info->nonlinearlut)
   {
     float linear_rgb[3] = { 0.f };
@@ -2253,7 +2269,7 @@ float dt_ioppr_get_rgb_matrix_luminance(const float *const rgb, const dt_iop_ord
   }
   else
     luminance = profile_info->matrix_in[3] * rgb[0] + profile_info->matrix_in[4] * rgb[1] + profile_info->matrix_in[5] * rgb[2];
-  
+
   return luminance;
 }
 
@@ -2272,11 +2288,11 @@ void dt_ioppr_rgb_matrix_to_xyz(const float *const rgb, float *xyz, const dt_iop
 void dt_ioppr_lab_to_rgb_matrix(const float *const lab, float *rgb, const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   float xyz[3] = { 0.0f, 0.0f, 0.0f };
-  
+
   dt_Lab_to_XYZ(lab, xyz);
-  
+
   _ioppr_xyz_to_linear_rgb_matrix(xyz, rgb, profile_info);
-  
+
   if(profile_info->nonlinearlut) _apply_trc_out(rgb, rgb, profile_info);
 }
 
@@ -2366,7 +2382,7 @@ static void _transform_rgb_to_lab_matrix_sse(float *const image, const int width
 
   _apply_tonecurves(image, width, height, profile_info->lut_in[0], profile_info->lut_in[1], profile_info->lut_in[2],
       profile_info->unbounded_coeffs_in[0], profile_info->unbounded_coeffs_in[1], profile_info->unbounded_coeffs_in[2], profile_info->lutsize);
-    
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)
 #endif
@@ -2407,7 +2423,7 @@ static void _transform_lab_to_rgb_matrix_sse(float *const image, const int width
     _mm_stream_ps(in, lab);
     in[3] = a;
   }
-  
+
   _apply_tonecurves(image, width, height, profile_info->lut_out[0], profile_info->lut_out[1], profile_info->lut_out[2],
       profile_info->unbounded_coeffs_out[0], profile_info->unbounded_coeffs_out[1], profile_info->unbounded_coeffs_out[2], profile_info->lutsize);
 }
@@ -2435,7 +2451,7 @@ static void _transform_matrix_sse(struct dt_iop_module_t *self, float *const ima
   else
   {
     *converted_cst = cst_from;
-    fprintf(stderr, "[_transform_matrix_sse] invalid convertion from %i to %i\n", cst_from, cst_to);
+    fprintf(stderr, "[_transform_matrix_sse] invalid conversion from %i to %i\n", cst_from, cst_to);
   }
 }
 
@@ -2500,7 +2516,7 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const flo
 
   dt_times_t start_time = { 0 }, end_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
-  
+
   // matrix should be never NAN, this is only to test it against lcms2!
   if(!isnan(profile_info->matrix_in[0]) && !isnan(profile_info->matrix_out[0]))
   {
@@ -2518,8 +2534,8 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const flo
     if(darktable.unmuted & DT_DEBUG_PERF)
     {
       dt_get_times(&end_time);
-      fprintf(stderr, "image colorspace transform %s-->%s took %.3f secs (%.3f CPU) [%s %s]\n", 
-          (cst_from == iop_cs_rgb) ? "RGB": "Lab", (cst_to == iop_cs_rgb) ? "RGB": "Lab", 
+      fprintf(stderr, "image colorspace transform %s-->%s took %.3f secs (%.3f CPU) [%s %s]\n",
+          (cst_from == iop_cs_rgb) ? "RGB": "Lab", (cst_to == iop_cs_rgb) ? "RGB": "Lab",
           end_time.clock - start_time.clock, end_time.user - start_time.user, self->op, self->multi_name);
     }
   }
@@ -2530,14 +2546,14 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const flo
     if(darktable.unmuted & DT_DEBUG_PERF)
     {
       dt_get_times(&end_time);
-      fprintf(stderr, "image colorspace transform %s-->%s took %.3f secs (%.3f lcms2) [%s %s]\n", 
-          (cst_from == iop_cs_rgb) ? "RGB": "Lab", (cst_to == iop_cs_rgb) ? "RGB": "Lab", 
+      fprintf(stderr, "image colorspace transform %s-->%s took %.3f secs (%.3f lcms2) [%s %s]\n",
+          (cst_from == iop_cs_rgb) ? "RGB": "Lab", (cst_to == iop_cs_rgb) ? "RGB": "Lab",
           end_time.clock - start_time.clock, end_time.user - start_time.user, self->op, self->multi_name);
     }
   }
-  
+
   if(*converted_cst == cst_from)
-    fprintf(stderr, "[dt_ioppr_transform_image_colorspace] invalid convertion from %i to %i\n", cst_from, cst_to);
+    fprintf(stderr, "[dt_ioppr_transform_image_colorspace] invalid conversion from %i to %i\n", cst_from, cst_to);
 }
 
 void dt_ioppr_transform_image_colorspace_rgb(const float *const image_in, float *const image_out, const int width,
@@ -2738,7 +2754,7 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
                                            const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   cl_int err = CL_SUCCESS;
-  
+
   if(cst_from == cst_to)
   {
     *converted_cst = cst_to;
@@ -2755,7 +2771,7 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
     *converted_cst = cst_from;
     return FALSE;
   }
-  
+
   const int ch = 4;
   float *src_buffer = NULL;
   int in_place = (dev_img_in == dev_img_out);
@@ -2766,7 +2782,7 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
   cl_mem dev_lut = NULL;
   dt_colorspaces_iccprofile_info_cl_t profile_info_cl;
   cl_float *lut_cl = NULL;
-  
+
   *converted_cst = cst_from;
 
   // if we have a matrix use opencl
@@ -2774,10 +2790,10 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
   {
     dt_times_t start_time = { 0 }, end_time = { 0 };
     if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
-    
+
     size_t origin[] = { 0, 0, 0 };
     size_t region[] = { width, height, 1 };
-    
+
     if(cst_from == iop_cs_rgb && cst_to == iop_cs_Lab)
     {
       kernel_transform = darktable.opencl->colorspaces->kernel_colorspaces_transform_rgb_matrix_to_lab;
@@ -2790,10 +2806,10 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
     {
       err = CL_INVALID_KERNEL;
       *converted_cst = cst_from;
-      fprintf(stderr, "[dt_ioppr_transform_image_colorspace_cl] invalid convertion from %i to %i\n", cst_from, cst_to);
+      fprintf(stderr, "[dt_ioppr_transform_image_colorspace_cl] invalid conversion from %i to %i\n", cst_from, cst_to);
       goto cleanup;
     }
-    
+
     dt_ioppr_get_profile_info_cl(profile_info, &profile_info_cl);
     lut_cl = dt_ioppr_get_trc_cl(profile_info);
 
@@ -2834,9 +2850,9 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       goto cleanup;
     }
-    
+
     size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-    
+
     dt_opencl_set_kernel_arg(devid, kernel_transform, 0, sizeof(cl_mem), (void *)&dev_tmp);
     dt_opencl_set_kernel_arg(devid, kernel_transform, 1, sizeof(cl_mem), (void *)&dev_img_out);
     dt_opencl_set_kernel_arg(devid, kernel_transform, 2, sizeof(int), (void *)&width);
@@ -2855,8 +2871,8 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
     if(darktable.unmuted & DT_DEBUG_PERF)
     {
       dt_get_times(&end_time);
-      fprintf(stderr, "image colorspace transform %s-->%s took %.3f secs (%.3f GPU) [%s %s]\n", 
-          (cst_from == iop_cs_rgb) ? "RGB": "Lab", (cst_to == iop_cs_rgb) ? "RGB": "Lab", 
+      fprintf(stderr, "image colorspace transform %s-->%s took %.3f secs (%.3f GPU) [%s %s]\n",
+          (cst_from == iop_cs_rgb) ? "RGB": "Lab", (cst_to == iop_cs_rgb) ? "RGB": "Lab",
           end_time.clock - start_time.clock, end_time.user - start_time.user, self->op, self->multi_name);
     }
   }
@@ -2877,7 +2893,7 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
       fprintf(stderr, "[dt_ioppr_transform_image_colorspace_cl] error allocating memory for color transformation 2\n");
       goto cleanup;
     }
-  
+
     // just call the CPU version for now
     dt_ioppr_transform_image_colorspace(self, src_buffer, src_buffer, width, height, cst_from, cst_to,
                                         converted_cst, profile_info);
@@ -2889,7 +2905,7 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
       goto cleanup;
     }
   }
-  
+
 cleanup:
   if(src_buffer) dt_free_align(src_buffer);
   if(dev_tmp && in_place) dt_opencl_release_mem_object(dev_tmp);
@@ -2919,7 +2935,7 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
     {
       size_t origin[] = { 0, 0, 0 };
       size_t region[] = { width, height, 1 };
-      
+
       err = dt_opencl_enqueue_copy_image(devid, dev_img_in, dev_img_out, origin, origin, region);
       if(err != CL_SUCCESS)
       {
@@ -2928,7 +2944,7 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
         return FALSE;
       }
     }
-    
+
     return TRUE;
   }
 

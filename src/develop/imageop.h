@@ -218,6 +218,7 @@ typedef struct dt_iop_module_so_t
   void (*connect_key_accels)(struct dt_iop_module_t *self);
   void (*original_connect_key_accels)(struct dt_iop_module_t *self);
   void (*disconnect_key_accels)(struct dt_iop_module_t *self);
+  GSList *(*mouse_actions)(struct dt_iop_module_t *self);
 
   int (*mouse_leave)(struct dt_iop_module_t *self);
   int (*mouse_moved)(struct dt_iop_module_t *self, double x, double y, double pressure, int which);
@@ -304,9 +305,6 @@ typedef struct dt_iop_module_t
   int request_mask_display;
   /** set to 1 if you want the blendif mask to be suppressed in the module in focus. gui mode only. */
   int32_t suppress_mask;
-  /** set to 1 if you want the blendif to be completely suppressed in the module in focus. only when the module has
-   * the focus. */
-  int32_t bypass_blendif;
   /** color picker proxys */
   struct dt_iop_color_picker_t *picker;
   struct dt_iop_color_picker_t *blend_picker;
@@ -344,7 +342,7 @@ typedef struct dt_iop_module_t
   /** parameters needed if a gui is attached. will be NULL if in export/batch mode. */
   dt_iop_gui_data_t *gui_data;
   /** other stuff that may be needed by the module, not only in gui mode. */
-  dt_iop_global_data_t *data;
+  dt_iop_global_data_t *global_data;
   /** blending params */
   struct dt_develop_blend_params_t *blend_params, *default_blendop_params;
   /** holder for blending ui control */
@@ -535,6 +533,7 @@ typedef struct dt_iop_module_t
   void (*connect_key_accels)(struct dt_iop_module_t *self);
   void (*original_connect_key_accels)(struct dt_iop_module_t *self);
   void (*disconnect_key_accels)(struct dt_iop_module_t *self);
+  GSList *(*mouse_actions)(struct dt_iop_module_t *self);
 
   // introspection related data
   gboolean have_introspection;

@@ -818,7 +818,7 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   dt_lib_history_t *d = (dt_lib_history_t *)self->data;
   reset = 1;
 
-  /* inactivate all toggle buttons */
+  /* deactivate all toggle buttons */
   GList *children = gtk_container_get_children(GTK_CONTAINER(d->history_box));
   for(GList *l = children; l != NULL; l = g_list_next(l))
   {

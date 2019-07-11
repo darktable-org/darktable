@@ -78,7 +78,7 @@ DT_MODULE_INTROSPECTION(3, dt_iop_filmic_params_t)
  *
  * The combined use of both define a modern way to deal with large
  * dynamic range photographs by remapping the values with a comprehensive
- * interface avoiding many of the back and forth adjustements darktable
+ * interface avoiding many of the back and forth adjustments darktable
  * is prone to enforce.
  *
  * */
@@ -433,7 +433,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const float saturation = data->global_saturation / 100.0f;
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(ch, data, desaturate, ivoid, ovoid, preserve_color, roi_out, saturation, EPS) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < roi_out->height * roi_out->width * ch; k += ch)
   {
@@ -558,7 +560,12 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const __m128 one = _mm_set1_ps(1.0f);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(black, black_sse, ch, data, desaturate, dynamic_range, \
+                      dynamic_range_sse, EPS, grey, grey_sse, ivoid, one, \
+                      ovoid, power, preserve_color, roi_out, saturation_sse, \
+                      zero, eps) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < roi_out->height * roi_out->width * ch; k += ch)
   {
@@ -655,7 +662,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_filmic_data_t *d = (dt_iop_filmic_data_t *)piece->data;
-  dt_iop_filmic_global_data_t *gd = (dt_iop_filmic_global_data_t *)self->data;
+  dt_iop_filmic_global_data_t *gd = (dt_iop_filmic_global_data_t *)self->global_data;
 
   cl_int err = -999;
   const int devid = piece->pipe->devid;
@@ -1407,7 +1414,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   const float sigma = saturation * saturation * latitude * latitude;
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) shared(d) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(center, sigma) \
+  shared(d) \
+  schedule(static)
 #endif
   for(int k = 0; k < 65536; k++)
   {
@@ -1653,16 +1663,14 @@ void gui_init(dt_iop_module_t *self)
   self->gui_data = malloc(sizeof(dt_iop_filmic_gui_data_t));
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
-  const int margin_width = (int)dt_conf_get_int("panel_width") / 8.0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
-  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
+  // don't make the area square to safe some vertical space -- it's not interactive anyway
+  g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.618));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->area), _("read-only graph, use the parameters below to set the nodes"));
-  gtk_widget_set_margin_start(GTK_WIDGET(g->area), margin_width);
-  gtk_widget_set_margin_end(GTK_WIDGET(g->area), margin_width);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->area), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(dt_iop_tonecurve_draw), self);
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("logarithmic shaper")), FALSE, FALSE, 0);
@@ -1805,7 +1813,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->preserve_color), "toggled", G_CALLBACK(preserve_color_callback), self);
 
 
-  // add collapsable section for those extra options that are generally not to be used
+  // add collapsible section for those extra options that are generally not to be used
 
   GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
   GtkWidget *destdisp = dt_ui_section_label_new(_("destination/display"));

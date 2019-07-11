@@ -29,7 +29,7 @@
             <entry>
               This module offers a versatile tool for adjusting an image's color balance.
               It can be used to revert parasite color casts or to enhance the visual
-              atmosphere of a picture using color grading, a popular technic in the cinema
+              atmosphere of a picture using color grading, a popular technique in the cinema
               industry.
             </entry>
             <entry>
@@ -48,7 +48,7 @@
 
     <para>
       The color balance allows you to shift colors selectively by luminance range: shadows,
-      mid-tones, and highlights. It does so using two differents methods:
+      mid-tones, and highlights. It does so using two different methods:
 
       <itemizedlist>
 
@@ -208,7 +208,7 @@
       <para>
         Depending on the mode set, the shadows settings will control either the lift or the offset,
         the mid-tones ones will control either the gamma or the power, and the highlights
-        ones will control either the gain or the slope. Parameters are transfered as is
+        ones will control either the gain or the slope. Parameters are transferred as is
         when you change the mode.
       </para>
 
@@ -236,7 +236,7 @@
         In case you want more control, you can define three control patches using the color-pickers
         in front of each factor slider, to sample luminance in selected areas. The shadows
         color-picker samples the minimum luminance, the mid-tones one samples the average,
-        and the higlights one samples the maximum luminance.
+        and the highlights one samples the maximum luminance.
         The most sensitive parameter is the mid-tones factor,
         since selecting a slightly different area can lead to dramatic parameter changes.
         Using the factors color-pickers alone, without triggering the luma optimization,
@@ -255,7 +255,7 @@
         globally on the image is not recommended because it does not preserve the original colors,
         and modules such as tone curves or filmic are better suited for this purpose.
         Luminance adjustments in color balance are better suited for local correction,
-        in combination with color adjustements, for color-grading with masks.
+        in combination with color adjustments, for color-grading with masks.
       </para>
     </sect5>
 

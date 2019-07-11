@@ -372,7 +372,9 @@ void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
 
 // we don't modify most of the image:
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, in, out, roi_in, roi_out) \
+  schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -548,7 +550,7 @@ void distort_mask(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 void init(dt_iop_module_t *module)
 {
   // we don't need global data:
-  module->data = NULL; // malloc(sizeof(dt_iop_spots_global_data_t));
+  module->global_data = NULL; // malloc(sizeof(dt_iop_spots_global_data_t));
   module->params = calloc(1, sizeof(dt_iop_spots_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_spots_params_t));
   // our module is disabled by default
@@ -567,8 +569,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
-  free(module->data); // just to be sure
-  module->data = NULL;
+  free(module->global_data); // just to be sure
+  module->global_data = NULL;
 }
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)

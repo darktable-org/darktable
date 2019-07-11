@@ -87,6 +87,11 @@ void dt_control_queue_redraw_center();
 */
 void dt_control_queue_redraw_widget(GtkWidget *widget);
 
+/** \brief request redraw of the navigation widget.
+    This redraws the wiget of the navigation module.
+ */
+void dt_control_navigation_redraw();
+
 void dt_ctl_switch_mode();
 void dt_ctl_switch_mode_to(const char *mode);
 void dt_ctl_switch_mode_to_by_view(const dt_view_t *view);
@@ -109,8 +114,8 @@ typedef struct dt_control_accels_t
   GtkAccelKey filmstrip_forward, filmstrip_back, lighttable_up, lighttable_down, lighttable_right, lighttable_left,
       lighttable_center, lighttable_preview, lighttable_preview_display_focus, lighttable_preview_sticky,
       lighttable_preview_sticky_focus, lighttable_timeline, lighttable_preview_zoom_100,
-      lighttable_preview_zoom_fit, global_sideborders, global_header, darkroom_preview, slideshow_start,
-      global_zoom_in, global_zoom_out, darkroom_skip_mouse_events, darkroom_search_modules_focus;
+      lighttable_preview_zoom_fit, global_sideborders, global_header, global_accels_window, darkroom_preview,
+      slideshow_start, global_zoom_in, global_zoom_out, darkroom_skip_mouse_events, darkroom_search_modules_focus;
 } dt_control_accels_t;
 
 #define DT_CTL_LOG_SIZE 10
@@ -128,6 +133,8 @@ typedef struct dt_control_t
 
   // Accelerator group path lists
   GSList *accelerator_list;
+  GSList *dynamic_accelerator_list;
+  GSList *dynamic_accelerator_valid;
 
   // Cached accelerator keys for key_pressed shortcuts
   dt_control_accels_t accels;

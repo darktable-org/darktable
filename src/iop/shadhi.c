@@ -377,7 +377,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 // invert and desaturate
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(roi_out) \
+  shared(out) \
+  schedule(static)
 #endif
   for(size_t j = 0; j < (size_t)roi_out->width * roi_out->height * 4; j += 4)
   {
@@ -395,7 +398,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, compress, doublemax, flags, halfmax, height, \
+                      highlights, highlights_ccorrect, lmax, lmin, \
+                      low_approximation, max, min,  shadows, \
+                      shadows_ccorrect, unbound_mask, whitepoint, width) \
+  shared(in, out) \
+  schedule(static)
 #endif
   for(size_t j = 0; j < (size_t)width * height * ch; j += ch)
   {
@@ -492,7 +501,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_shadhi_data_t *d = (dt_iop_shadhi_data_t *)piece->data;
-  dt_iop_shadhi_global_data_t *gd = (dt_iop_shadhi_global_data_t *)self->data;
+  dt_iop_shadhi_global_data_t *gd = (dt_iop_shadhi_global_data_t *)self->global_data;
 
   cl_int err = -999;
   const int devid = piece->pipe->devid;

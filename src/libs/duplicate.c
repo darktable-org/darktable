@@ -31,6 +31,8 @@
 #include "gui/gtk.h"
 #include "gui/styles.h"
 
+#define DUPLICATE_COMPARE_SIZE 40
+
 DT_MODULE(1)
 
 typedef enum _lib_duplicate_select_t
@@ -44,6 +46,11 @@ typedef struct dt_lib_duplicate_t
 {
   GtkWidget *duplicate_box;
   int imgid;
+  gboolean busy;
+  int cur_final_width;
+  int cur_final_height;
+  gboolean allow_zoom;
+
   dt_lib_duplicate_select_t select;
 
   int32_t buf_width;
@@ -148,27 +155,20 @@ static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButto
     {
       dt_develop_t *dev = darktable.develop;
       if(!dev) return;
-      dt_dev_zoom_t zoom;
-      int closeup;
-      float zoom_x, zoom_y;
-      closeup = dt_control_get_dev_closeup();
-      float scale = 0;
 
-      zoom = DT_ZOOM_FIT;
-      scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1.0, 0);
-
-      dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, zoom, closeup, NULL, NULL);
-      dt_control_set_dev_zoom_scale(scale);
-      dt_control_set_dev_zoom(zoom);
-      dt_control_set_dev_closeup(closeup);
-      dt_control_set_dev_zoom_x(zoom_x);
-      dt_control_set_dev_zoom_y(zoom_y);
       dt_dev_invalidate(dev);
-      dt_control_queue_redraw();
+      dt_control_queue_redraw_center();
 
       dt_dev_invalidate(darktable.develop);
 
       d->imgid = imgid;
+      int fw, fh;
+      fw = fh = 0;
+      dt_image_get_final_size(imgid, &fw, &fh);
+      d->allow_zoom
+          = (d->cur_final_width - fw < DUPLICATE_COMPARE_SIZE && d->cur_final_width - fw > -DUPLICATE_COMPARE_SIZE
+             && d->cur_final_height - fh < DUPLICATE_COMPARE_SIZE
+             && d->cur_final_height - fh > -DUPLICATE_COMPARE_SIZE);
       dt_control_queue_redraw_center();
     }
     else if(event->type == GDK_2BUTTON_PRESS)
@@ -184,6 +184,8 @@ static void _lib_duplicate_thumb_release_callback(GtkWidget *widget, GdkEventBut
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
 
   d->imgid = 0;
+  if(d->busy) dt_control_log_busy_leave();
+  d->busy = FALSE;
   dt_control_queue_redraw_center();
 }
 
@@ -197,31 +199,42 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
   int nw = width-2*tb;
   int nh = height-2*tb;
 
-  dt_mipmap_buffer_t buf;
-  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, nw, nh);
-  dt_mipmap_cache_get(darktable.mipmap_cache, &buf, d->imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
+  dt_develop_t *dev = darktable.develop;
+  if(!dev->preview_pipe->backbuf || dev->preview_status != DT_DEV_PIXELPIPE_VALID) return;
 
-  int img_wd = buf.width;
-  int img_ht = buf.height;
-
-  dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  int img_wd = dev->preview_pipe->backbuf_width;
+  int img_ht = dev->preview_pipe->backbuf_height;
 
   // and now we get the values to "fit the screen"
-  int px,py,nimgw,nimgh;
+  int nimgw, nimgh;
   if (img_ht*nw > img_wd*nh)
   {
     nimgh = nh;
     nimgw = img_wd*nh/img_ht;
-    py=0;
-    px=(nw-nimgw)/2;
   }
   else
   {
     nimgw = nw;
     nimgh = img_ht*nw/img_wd;
-    px=0;
-    py=(nh-nimgh)/2;
   }
+
+  // if image have too different sizes, we show the full preview not zoomed
+  float zoom_x = 0.0f;
+  float zoom_y = 0.0f;
+  float nz = 1.0f;
+  if(d->allow_zoom)
+  {
+    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    const int closeup = dt_control_get_dev_closeup();
+    zoom_x = dt_control_get_dev_zoom_x();
+    zoom_y = dt_control_get_dev_zoom_y();
+    const float min_scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1 << closeup, 0);
+    const float cur_scale = dt_dev_get_zoom_scale(dev, zoom, 1 << closeup, 0);
+    nz = cur_scale / min_scale;
+  }
+
+  const float zx = zoom_x * nz * (float)(nimgw + 1.0f);
+  const float zy = zoom_y * nz * (float)(nimgh + 1.0f);
 
   // we erase everything
   dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_DARKROOM_BG);
@@ -233,20 +246,28 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
   params.image_over = &image_over;
   params.imgid = d->imgid;
   params.cr = cri;
-  params.width = nw;
-  params.height = nh;
-  params.px = px + tb;
-  params.py = py + tb;
+  params.width = width;
+  params.height = height;
   params.zoom = 1;
   params.full_preview = TRUE;
-  params.image_only = TRUE;
-  dt_view_image_expose(&params);
+  params.no_deco = TRUE;
+  params.full_zoom = nz;
+  params.full_x = -zx + 1.0f;
+  params.full_y = -zy + 1.0f;
 
-  //and the nice border line
-  cairo_rectangle(cri, tb+px, tb+py, nimgw, nimgh);
-  cairo_set_line_width(cri, 1.0);
-  cairo_set_source_rgb(cri, .3, .3, .3);
-  cairo_stroke(cri);
+
+  const int res = dt_view_image_expose(&params);
+
+  if(res)
+  {
+    if(!d->busy) dt_control_log_busy_enter();
+    d->busy = TRUE;
+  }
+  else
+  {
+    if(d->busy) dt_control_log_busy_leave();
+    d->busy = FALSE;
+  }
 }
 
 static gboolean _lib_duplicate_thumb_draw_callback (GtkWidget *widget, cairo_t *cr, dt_lib_module_t *self)
@@ -273,14 +294,14 @@ static gboolean _lib_duplicate_thumb_draw_callback (GtkWidget *widget, cairo_t *
 
   int lk = 0;
   // if this is the actual thumb, we want to use the preview pipe
-  if(imgid == dev->image_storage.id)
+  if(imgid == dev->preview_pipe->output_imgid)
   {
     // we recreate the surface if needed
-    if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
+    if(dev->preview_pipe->output_backbuf)
     {
       /* re-allocate in case of changed image dimensions */
-      if(d->rgbbuf == NULL || dev->preview_pipe->backbuf_width != d->buf_width
-         || dev->preview_pipe->backbuf_height != d->buf_height)
+      if(d->rgbbuf == NULL || dev->preview_pipe->output_backbuf_width != d->buf_width
+         || dev->preview_pipe->output_backbuf_height != d->buf_height)
       {
         if(d->surface)
         {
@@ -288,8 +309,8 @@ static gboolean _lib_duplicate_thumb_draw_callback (GtkWidget *widget, cairo_t *
           d->surface = NULL;
         }
         g_free(d->rgbbuf);
-        d->buf_width = dev->preview_pipe->backbuf_width;
-        d->buf_height = dev->preview_pipe->backbuf_height;
+        d->buf_width = dev->preview_pipe->output_backbuf_width;
+        d->buf_height = dev->preview_pipe->output_backbuf_height;
         d->rgbbuf = g_malloc0((size_t)d->buf_width * d->buf_height * 4 * sizeof(unsigned char));
       }
 
@@ -304,7 +325,7 @@ static gboolean _lib_duplicate_thumb_draw_callback (GtkWidget *widget, cairo_t *
 
         dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
         dt_pthread_mutex_lock(mutex);
-        memcpy(d->rgbbuf, dev->preview_pipe->backbuf,
+        memcpy(d->rgbbuf, dev->preview_pipe->output_backbuf,
                (size_t)d->buf_width * d->buf_height * 4 * sizeof(unsigned char));
         d->buf_timestamp = dev->preview_pipe->input_timestamp;
         dt_pthread_mutex_unlock(mutex);
@@ -419,11 +440,19 @@ static void _lib_duplicate_init_callback(gpointer instance, dt_lib_module_t *sel
     gtk_widget_set_sensitive(bt, FALSE);
     gtk_widget_set_visible(bt, FALSE);
   }
+
+  // and we store the final size of the current image
+  if(dev->image_storage.id >= 0)
+    dt_image_get_final_size(dev->image_storage.id, &d->cur_final_width, &d->cur_final_height);
 }
 
 static void _lib_duplicate_mipmap_updated_callback(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_duplicate_t *d = (dt_lib_duplicate_t *)self->data;
+  // we store the final size of the current image
+  if(darktable.develop->image_storage.id >= 0)
+    dt_image_get_final_size(darktable.develop->image_storage.id, &d->cur_final_width, &d->cur_final_height);
+
   gtk_widget_queue_draw (d->duplicate_box);
   dt_control_queue_redraw_center();
 }

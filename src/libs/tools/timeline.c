@@ -1305,7 +1305,7 @@ static gboolean _lib_timeline_motion_notify_callback(GtkWidget *w, GdkEventMotio
   // auto-scroll if cursor is at one end of the panel
   if((e->x < 10 || e->x > strip->panel_width - 10) && !strip->autoscroll)
   {
-    // first scroll immediatly and then every 400ms until cursor quit the "auto-zone"
+    // first scroll immediately and then every 400ms until cursor quit the "auto-zone"
     if(_block_autoscroll(user_data))
     {
       strip->autoscroll = TRUE;
@@ -1323,7 +1323,7 @@ static gboolean _lib_timeline_motion_notify_callback(GtkWidget *w, GdkEventMotio
   }
   else
   {
-    // we change the cursor if we are close enought of a selection limit
+    // we change the cursor if we are close enough of a selection limit
     if(e->x - strip->start_x < 2 && e->x - strip->start_x > -2)
     {
       dt_control_change_cursor(GDK_LEFT_SIDE);

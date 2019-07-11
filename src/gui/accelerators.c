@@ -57,6 +57,8 @@ void dt_accel_paths_slider_iop(char *s[], size_t n, char *module, const char *pa
            NC_("accel", "reset"));
   snprintf(s[3], n, "<Darktable>/%s/%s/%s/%s", NC_("accel", "image operations"), module, path,
            NC_("accel", "edit"));
+  snprintf(s[4], n, "<Darktable>/%s/%s/%s/%s", NC_("accel", "image operations"), module, path,
+           NC_("accel", "dynamic"));
 }
 
 void dt_accel_path_lua(char *s, size_t n, const char *path)
@@ -98,6 +100,8 @@ static void dt_accel_paths_slider_iop_translated(char *s[], size_t n, dt_iop_mod
            g_dpgettext2(NULL, "accel", path), C_("accel", "reset"));
   snprintf(s[3], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module->name(),
            g_dpgettext2(NULL, "accel", path), C_("accel", "edit"));
+  snprintf(s[4], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module->name(),
+           g_dpgettext2(NULL, "accel", path), C_("accel", "dynamic"));
 }
 
 static void dt_accel_path_lua_translated(char *s, size_t n, const char *path)
@@ -119,6 +123,7 @@ void dt_accel_register_global(const gchar *path, guint accel_key, GdkModifierTyp
 
   *(accel->module) = '\0';
   accel->local = FALSE;
+  accel->views = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW;
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
@@ -136,6 +141,7 @@ void dt_accel_register_view(dt_view_t *self, const gchar *path, guint accel_key,
 
   g_strlcpy(accel->module, self->module_name, sizeof(accel->module));
   accel->local = FALSE;
+  accel->views = self->view(self);
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
@@ -154,6 +160,7 @@ void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *
 
   g_strlcpy(accel->module, so->op, sizeof(accel->module));
   accel->local = local;
+  accel->views = DT_VIEW_DARKROOM;
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
@@ -170,6 +177,23 @@ void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel
 
   g_strlcpy(accel->module, self->plugin_name, sizeof(accel->module));
   accel->local = FALSE;
+  // we get the views in which the lib will be displayed
+  accel->views = 0;
+  int i=0;
+  const gchar **views = self->views(self);
+  while (views[i])
+  {
+    if (strcmp(views[i], "lighttable") == 0) accel->views |= DT_VIEW_LIGHTTABLE;
+    else if (strcmp(views[i], "darkroom") == 0) accel->views |= DT_VIEW_DARKROOM;
+    else if (strcmp(views[i], "print") == 0) accel->views |= DT_VIEW_PRINT;
+    else if (strcmp(views[i], "slideshow") == 0) accel->views |= DT_VIEW_SLIDESHOW;
+    else if (strcmp(views[i], "map") == 0) accel->views |= DT_VIEW_MAP;
+    else if (strcmp(views[i], "tethering") == 0) accel->views |= DT_VIEW_TETHERING;
+    else if(strcmp(views[i], "*") == 0)
+      accel->views |= DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT
+                      | DT_VIEW_SLIDESHOW;
+    i++;  
+  }
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
@@ -179,13 +203,16 @@ void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local, const 
   gchar decrease_path[256];
   gchar reset_path[256];
   gchar edit_path[256];
+  gchar dynamic_path[256];
   gchar increase_path_trans[256];
   gchar decrease_path_trans[256];
   gchar reset_path_trans[256];
   gchar edit_path_trans[256];
+  gchar dynamic_path_trans[256];
 
-  char *paths[] = { increase_path, decrease_path, reset_path, edit_path };
-  char *paths_trans[] = { increase_path_trans, decrease_path_trans, reset_path_trans, edit_path_trans };
+  char *paths[] = { increase_path, decrease_path, reset_path, edit_path, dynamic_path };
+  char *paths_trans[]
+      = { increase_path_trans, decrease_path_trans, reset_path_trans, edit_path_trans, dynamic_path_trans };
 
   int i = 0;
   dt_accel_t *accel = NULL;
@@ -193,7 +220,7 @@ void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local, const 
   dt_accel_paths_slider_iop(paths, 256, so->op, path);
   dt_accel_paths_slider_iop_translated(paths_trans, 256, so, path);
 
-  for(i = 0; i < 4; i++)
+  for(i = 0; i < 5; i++)
   {
     gtk_accel_map_add_entry(paths[i], 0, 0);
     accel = (dt_accel_t *)g_malloc(sizeof(dt_accel_t));
@@ -202,9 +229,23 @@ void dt_accel_register_slider_iop(dt_iop_module_so_t *so, gboolean local, const 
     g_strlcpy(accel->translated_path, paths_trans[i], sizeof(accel->translated_path));
     g_strlcpy(accel->module, so->op, sizeof(accel->module));
     accel->local = local;
+    accel->views = DT_VIEW_DARKROOM;
 
     darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
   }
+
+  // dynamic accel
+  dt_accel_dynamic_t *daccel = (dt_accel_dynamic_t *)g_malloc0(sizeof(dt_accel_dynamic_t));
+
+  g_strlcpy(daccel->path, paths[4], sizeof(daccel->path));
+  g_strlcpy(daccel->translated_path, paths_trans[4], sizeof(daccel->translated_path));
+  g_strlcpy(daccel->module, so->op, sizeof(daccel->module));
+  daccel->local = local;
+  daccel->views = DT_VIEW_DARKROOM;
+  daccel->mod_so = so;
+
+  darktable.control->dynamic_accelerator_list
+      = g_slist_prepend(darktable.control->dynamic_accelerator_list, daccel);
 }
 
 void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType mods)
@@ -221,11 +262,12 @@ void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType m
 
   *(accel->module) = '\0';
   accel->local = FALSE;
+  accel->views = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW;
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
 
-static dt_accel_t *_lookup_accel(gchar *path)
+static dt_accel_t *_lookup_accel(const gchar *path)
 {
   GSList *l = darktable.control->accelerator_list;
   while(l)
@@ -419,9 +461,10 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path, Gtk
   gchar decrease_path[256];
   gchar reset_path[256];
   gchar edit_path[256];
+  gchar dynamic_path[256];
   dt_accel_t *accel = NULL;
   GClosure *closure;
-  char *paths[] = { increase_path, decrease_path, reset_path, edit_path };
+  char *paths[] = { increase_path, decrease_path, reset_path, edit_path, dynamic_path };
   dt_accel_paths_slider_iop(paths, 256, module->op, path);
 
   assert(DT_IS_BAUHAUS_WIDGET(slider));
@@ -489,6 +532,21 @@ void dt_accel_connect_slider_iop(dt_iop_module_t *module, const gchar *path, Gtk
     gtk_accel_group_connect_by_path(darktable.control->accelerators, edit_path, closure);
     module->accel_closures = g_slist_prepend(module->accel_closures, accel);
   }
+
+  // dynamic accel : no closure, as we'll use key_press/release/scroll
+  GSList *l = darktable.control->dynamic_accelerator_list;
+  while(l)
+  {
+    dt_accel_dynamic_t *da = (dt_accel_dynamic_t *)l->data;
+    if(da && !strcmp(da->path, dynamic_path))
+    {
+      da->widget = slider;
+      break;
+    }
+    l = g_slist_next(l);
+  }
+  accel = _lookup_accel(dynamic_path);
+  module->accel_closures = g_slist_prepend(module->accel_closures, accel);
 }
 
 void dt_accel_connect_locals_iop(dt_iop_module_t *module)
@@ -770,6 +828,23 @@ void dt_accel_deregister_iop(dt_iop_module_t *module, const gchar *path)
       l = g_slist_next(l);
     }
   }
+  l = darktable.control->dynamic_accelerator_list;
+  while(l)
+  {
+    dt_accel_t *accel = (dt_accel_t *)l->data;
+    if(accel && !strncmp(accel->path, build_path, 1024))
+    {
+      darktable.control->dynamic_accelerator_list
+          = g_slist_delete_link(darktable.control->dynamic_accelerator_list, l);
+      l = NULL;
+      g_free(accel);
+    }
+    else
+    {
+      l = g_slist_next(l);
+    }
+  }
+  dt_dynamic_accel_get_valid_list();
 }
 
 void dt_accel_deregister_lib(dt_lib_module_t *module, const gchar *path)
@@ -967,6 +1042,61 @@ void dt_accel_rename_lua(const gchar *path, const gchar *new_path)
   }
 }
 
+static gint _dynamic_accel_find(gconstpointer a, gconstpointer b)
+{
+  dt_accel_dynamic_t *da = (dt_accel_dynamic_t *)a;
+  GtkAccelKey *ak = (GtkAccelKey *)b;
+  if(da->accel_key.accel_key == ak->accel_key && da->accel_key.accel_mods == ak->accel_mods) return 0;
+  // not the right one
+  return 1;
+}
+
+dt_accel_dynamic_t *dt_dynamic_accel_find_by_key(guint accel_key, GdkModifierType mods)
+{
+  GtkAccelKey ak = { 0 };
+  ak.accel_key = accel_key;
+  ak.accel_mods = mods;
+  GSList *da = g_slist_find_custom(darktable.control->dynamic_accelerator_valid, &ak, _dynamic_accel_find);
+  if(da && da->data) return (dt_accel_dynamic_t *)da->data;
+  return NULL;
+}
+
+void dt_dynamic_accel_get_valid_list()
+{
+  // remove all elements from the valid list (no need to free them, as they are in the norml list anyway)
+  if (darktable.control->dynamic_accelerator_valid)
+  {
+    g_slist_free(darktable.control->dynamic_accelerator_valid);
+    darktable.control->dynamic_accelerator_valid = NULL;
+  }
+
+  GSList *l = darktable.control->dynamic_accelerator_list;
+  while(l)
+  {
+    dt_accel_dynamic_t *da = (dt_accel_dynamic_t *)l->data;
+    if(da && da->mod_so->state != dt_iop_state_HIDDEN)
+    {
+      GtkAccelKey ak;
+      if(gtk_accel_map_lookup_entry(da->path, &ak))
+      {
+        if(ak.accel_key > 0)
+        {
+          da->accel_key.accel_key = ak.accel_key;
+          da->accel_key.accel_mods = ak.accel_mods;
+          da->accel_key.accel_flags = ak.accel_flags;
+          darktable.control->dynamic_accelerator_valid
+              = g_slist_append(darktable.control->dynamic_accelerator_valid, da);
+        }
+      }
+    }
+    l = g_slist_next(l);
+  }
+}
+
+dt_accel_t *dt_accel_find_by_path(const gchar *path)
+{
+  return _lookup_accel(path);
+}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

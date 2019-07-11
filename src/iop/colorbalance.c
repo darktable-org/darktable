@@ -353,7 +353,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                               (gamma[2] != 0.0) ? 1.0 / gamma[2] : 1000000.0 };
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) shared(d) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+      dt_omp_firstprivate(ch, gain, gamma_inv, lift, ivoid, ovoid, roi_in, \
+                          roi_out) \
+      shared(d) \
+      schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)ch * roi_in->width * roi_out->height; k += ch)
       {
@@ -400,7 +404,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                               (gamma[2] != 0.0) ? 1.0 / gamma[2] : 1000000.0 };
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) shared(d) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+      dt_omp_firstprivate(ch, contrast, gain, gamma_inv, grey, ivoid, lift, \
+                          ovoid, roi_in, roi_out, run_contrast, \
+                          run_saturation, run_saturation_out) \
+      shared(d) \
+      schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)ch * roi_in->width * roi_out->height; k += ch)
       {
@@ -464,7 +473,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                               (2.0f - d->gamma[CHANNEL_BLUE]) * (2.0f - d->gamma[CHANNEL_FACTOR])};
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) shared(d) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+      dt_omp_firstprivate(ch, contrast, gain, gamma, grey, ivoid, lift, ovoid, \
+                          roi_in, roi_out, run_contrast, run_saturation, \
+                          run_saturation_out) \
+      shared(d) \
+      schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)ch * roi_in->width * roi_out->height; k += ch)
       {
@@ -562,7 +576,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                                        0.0f);
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+      dt_omp_firstprivate(ch, gain, gamma_inv, ivoid, lift, one, ovoid, roi_in, roi_out, zero) \
+      schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)ch * roi_in->width * roi_out->height; k += ch)
       {
@@ -610,7 +626,13 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
       const __m128 gamma_inv_RGB = _mm_set1_ps(1.0f/2.2f);
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD()default(none) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+      dt_omp_firstprivate(ch, contrast, gain, gamma_inv, gamma_inv_RGB, \
+                          gamma_RGB, grey, ivoid, lift, one, ovoid, roi_in, \
+                          roi_out, run_contrast, run_saturation, \
+                          run_saturation_out, saturation, saturation_out, \
+                          zero) \
+      schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)ch * roi_in->width * roi_out->height; k += ch)
       {
@@ -632,7 +654,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
           rgb = luma + saturation * (rgb - luma);
         }
 
-        // RGB gamma adjustement
+        // RGB gamma adjustment
         rgb = _mm_pow_ps(_mm_max_ps(rgb, zero), gamma_inv_RGB);
 
         // regular lift gamma gain
@@ -678,7 +700,12 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                                       0.0f);
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+      dt_omp_firstprivate(ch, contrast, gain, gamma, grey, ivoid, lift, ovoid, \
+                          roi_in, roi_out, run_contrast, run_saturation, \
+                          run_saturation_out, saturation, saturation_out, \
+                          zero) \
+      schedule(static)
 #endif
       for(size_t k = 0; k < (size_t)ch * roi_in->width * roi_out->height; k += ch)
       {
@@ -740,7 +767,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorbalance_data_t *d = (dt_iop_colorbalance_data_t *)piece->data;
-  dt_iop_colorbalance_global_data_t *gd = (dt_iop_colorbalance_global_data_t *)self->data;
+  dt_iop_colorbalance_global_data_t *gd = (dt_iop_colorbalance_global_data_t *)self->global_data;
 
   cl_int err = -999;
   const int devid = piece->pipe->devid;

@@ -368,7 +368,10 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
   float saturation = 1.0f;
   d->whitelevel = fmaxf(d->whitelevel, saturation * cal);
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(d, saturation)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ivoid, cal, photoncnt) \
+  shared(d, saturation) \
+  schedule(static)
 #endif
   for(int y = 0; y < d->ht; y++)
     for(int x = 0; x < d->wd; x++)
@@ -1364,8 +1367,8 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
       else
       {
         dt_image_cache_read_release(darktable.image_cache, image);
-        if(mstorage->store(mstorage, sdata, imgid, mformat, fdata, num, total, settings->high_quality,
-                           settings->upscale, settings->icc_type, settings->icc_filename, settings->icc_intent) != 0)
+        if(mstorage->store(mstorage, sdata, imgid, mformat, fdata, num, total, settings->high_quality, settings->upscale,
+                           settings->icc_type, settings->icc_filename, settings->icc_intent) != 0)
           dt_control_job_cancel(job);
       }
     }

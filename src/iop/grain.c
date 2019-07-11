@@ -481,7 +481,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float fib1div2 = fib1 / fib2;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(data, hash)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, filter, filtermul, ivoid, ovoid, roi_out, strength, \
+                      wd, zoom, octaves, fib2, fib1div2) \
+  shared(data, hash)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {

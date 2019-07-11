@@ -940,11 +940,9 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
   if(points == NULL) return 0;
 
 #ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(points)
-#else
-#pragma omp parallel for shared(points)
-#endif
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(iscale, mh, mw, px, py, mesh) \
+  shared(points)
 #endif
   for(int j = 0; j < mh; j++)
     for(int i = 0; i < mw; i++)
@@ -959,7 +957,7 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
   start2 = dt_get_wtime();
 
   // we back transform all these points
-  if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, 
+  if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points,
                                         (size_t)mw * mh))
   {
     free(points);
@@ -980,7 +978,9 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
 
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(points)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(center, mh, mw, radius2, total2) \
+  shared(points)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -1006,11 +1006,9 @@ static int dt_circle_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
 
 // we fill the output buffer by interpolation
 #ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(points, buffer)
-#else
-#pragma omp parallel for shared(points, buffer)
-#endif
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(h, mw, w, mesh) \
+  shared(points, buffer)
 #endif
   for(int j = 0; j < h; j++)
   {

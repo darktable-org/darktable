@@ -17,6 +17,7 @@
 */
 
 #include "color_conversion.cl"
+#include "rgb_norms.h"
 
 kernel void
 rgbcurve(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
@@ -41,23 +42,22 @@ rgbcurve(read_only image2d_t in, write_only image2d_t out, const int width, cons
   }
   else if(autoscale == 0) // DT_S_SCALE_AUTOMATIC_RGB
   {
-    if(preserve_colors == 1) // DT_RGBCURVE_PRESERVE_LUMINANCE
+    if (preserve_colors == DT_RGB_NORM_NONE)
+    {
+      pixel.x = lookup_unbounded(table_r, pixel.x, coeffs_r);
+      pixel.y = lookup_unbounded(table_r, pixel.y, coeffs_r);
+      pixel.z = lookup_unbounded(table_r, pixel.z, coeffs_r);
+    }
+    else
     {
       float ratio = 1.f;
-      const float lum = (use_work_profile == 0) ? dt_camera_rgb_luminance(pixel): get_rgb_matrix_luminance(pixel, profile_info, lut);
+      const float lum = dt_rgb_norm(pixel, preserve_colors, use_work_profile, profile_info, lut);
       if(lum > 0.f)
       {
         const float curve_lum = lookup_unbounded(table_r, lum, coeffs_r);
         ratio = curve_lum / lum;
       }
-
       pixel.xyz *= ratio;
-    }
-    else
-    {
-      pixel.x = lookup_unbounded(table_r, pixel.x, coeffs_r);
-      pixel.y = lookup_unbounded(table_r, pixel.y, coeffs_r);
-      pixel.z = lookup_unbounded(table_r, pixel.z, coeffs_r);
     }
   }
 

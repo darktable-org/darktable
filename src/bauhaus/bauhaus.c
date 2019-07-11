@@ -472,14 +472,8 @@ static void dt_bh_class_init(DtBauhausWidgetClass *class)
   // widget_class->draw = dt_bauhaus_draw;
 }
 
-void dt_bauhaus_init()
+void dt_bauhaus_load_theme()
 {
-  darktable.bauhaus = (dt_bauhaus_t *)calloc(1, sizeof(dt_bauhaus_t));
-  darktable.bauhaus->keys_cnt = 0;
-  darktable.bauhaus->current = NULL;
-  darktable.bauhaus->popup_area = gtk_drawing_area_new();
-  gtk_widget_set_name(darktable.bauhaus->popup_area, "bauhaus-popup");
-
   darktable.bauhaus->line_space = 1.5;
   darktable.bauhaus->line_height = 10;
   darktable.bauhaus->marker_size = 0.25f;
@@ -536,6 +530,17 @@ void dt_bauhaus_init()
   darktable.bauhaus->baseline_size = darktable.bauhaus->line_height / 2.0f; // absolute size in Cairo unit
   darktable.bauhaus->border_width = 3.0f; // absolute size in Cairo unit
   darktable.bauhaus->marker_size = (darktable.bauhaus->baseline_size + darktable.bauhaus->border_width) * 0.75f;
+}
+
+void dt_bauhaus_init()
+{
+  darktable.bauhaus = (dt_bauhaus_t *)calloc(1, sizeof(dt_bauhaus_t));
+  darktable.bauhaus->keys_cnt = 0;
+  darktable.bauhaus->current = NULL;
+  darktable.bauhaus->popup_area = gtk_drawing_area_new();
+  gtk_widget_set_name(darktable.bauhaus->popup_area, "bauhaus-popup");
+
+  dt_bauhaus_load_theme();
 
   // keys are freed with g_free, values are ptrs to the widgets, these don't need to be cleaned up.
   darktable.bauhaus->keymap = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
@@ -679,6 +684,13 @@ void dt_bauhaus_combobox_set_default(GtkWidget *widget, int def)
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->defpos = def;
+}
+
+int dt_bauhaus_combobox_get_default(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  return d->defpos;
 }
 
 void dt_bauhaus_slider_set_hard_min(GtkWidget* widget, float val)
@@ -1929,7 +1941,7 @@ static gboolean dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *even
   gdouble delta_y;
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   if(w->type != DT_BAUHAUS_SLIDER) return FALSE;
-  if((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) return FALSE;
+  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
   gtk_widget_grab_focus(widget);
 
   gtk_widget_set_state_flags(GTK_WIDGET(w), GTK_STATE_FLAG_FOCUSED, TRUE);
@@ -1975,7 +1987,7 @@ static gboolean dt_bauhaus_combobox_scroll(GtkWidget *widget, GdkEventScroll *ev
   int delta_y;
   dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
   if(w->type != DT_BAUHAUS_COMBOBOX) return FALSE;
-  if((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) return FALSE;
+  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   gtk_widget_grab_focus(widget);
 

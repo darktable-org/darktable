@@ -18,9 +18,9 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "common.h"
-
 #include "colorspace.cl"
+#include "color_conversion.cl"
+#include "rgb_norms.h"
 
 int
 BL(const int row, const int col)
@@ -427,24 +427,6 @@ highlights_1f_lch_xtrans (read_only image2d_t in, write_only image2d_t out, cons
 #undef SQRT12
 
 float
-lookup_unbounded(read_only image2d_t lut, const float x, global const float *a)
-{
-  // in case the tone curve is marked as linear, return the fast
-  // path to linear unbounded (does not clip x at 1)
-  if(a[0] >= 0.0f)
-  {
-    if(x < 1.0f)
-    {
-      const int xi = clamp((int)(x * 0x10000ul), 0, 0xffff);
-      const int2 p = (int2)((xi & 0xff), (xi >> 8));
-      return read_imagef(lut, sampleri, p).x;
-    }
-    else return a[1] * native_powr(x*a[0], a[2]);
-  }
-  else return x;
-}
-
-float
 lookup_unbounded_twosided(read_only image2d_t lut, const float x, global const float *a)
 {
   // in case the tone curve is marked as linear, return the fast
@@ -472,7 +454,7 @@ lookup_unbounded_twosided(read_only image2d_t lut, const float x, global const f
 }
 
 float
-lerp_lookup_unbounded(read_only image2d_t lut, const float x, global const float *a)
+lerp_lookup_unbounded0(read_only image2d_t lut, const float x, global const float *a)
 {
   // in case the tone curve is marked as linear, return the fast
   // path to linear unbounded (does not clip x at 1)
@@ -494,14 +476,6 @@ lerp_lookup_unbounded(read_only image2d_t lut, const float x, global const float
   else return x;
 }
 
-float
-lookup(read_only image2d_t lut, const float x)
-{
-  int xi = clamp((int)(x * 0x10000ul), 0, 0xffff);
-  int2 p = (int2)((xi & 0xff), (xi >> 8));
-  return read_imagef(lut, sampleri, p).x;
-}
-
 
 /* kernel for the plugin colorin: unbound processing */
 kernel void
@@ -518,9 +492,9 @@ colorin_unbound (read_only image2d_t in, write_only image2d_t out, const int wid
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
   float cam[3], XYZ[3];
-  cam[0] = lerp_lookup_unbounded(lutr, pixel.x, a[0]);
-  cam[1] = lerp_lookup_unbounded(lutg, pixel.y, a[1]);
-  cam[2] = lerp_lookup_unbounded(lutb, pixel.z, a[2]);
+  cam[0] = lerp_lookup_unbounded0(lutr, pixel.x, a[0]);
+  cam[1] = lerp_lookup_unbounded0(lutg, pixel.y, a[1]);
+  cam[2] = lerp_lookup_unbounded0(lutb, pixel.z, a[2]);
 
   if(blue_mapping)
   {
@@ -568,9 +542,9 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
   float cam[3], RGB[3], XYZ[3];
-  cam[0] = lerp_lookup_unbounded(lutr, pixel.x, a[0]);
-  cam[1] = lerp_lookup_unbounded(lutg, pixel.y, a[1]);
-  cam[2] = lerp_lookup_unbounded(lutb, pixel.z, a[2]);
+  cam[0] = lerp_lookup_unbounded0(lutr, pixel.x, a[0]);
+  cam[1] = lerp_lookup_unbounded0(lutg, pixel.y, a[1]);
+  cam[2] = lerp_lookup_unbounded0(lutb, pixel.z, a[2]);
 
   if(blue_mapping)
   {
@@ -619,7 +593,8 @@ kernel void
 tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
            read_only image2d_t table_L, read_only image2d_t table_a, read_only image2d_t table_b,
            const int autoscale_ab, const int unbound_ab, global float *coeffs_L, global float *coeffs_ab,
-           const float low_approximation)
+           const float low_approximation, const int preserve_colors,
+           global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -674,9 +649,24 @@ tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, co
   else if(autoscale_ab == 3)
   {
     float4 rgb = Lab_to_prophotorgb(pixel);
-    rgb.x = lookup_unbounded(table_L, rgb.x, coeffs_L);
-    rgb.y = lookup_unbounded(table_L, rgb.y, coeffs_L);
-    rgb.z = lookup_unbounded(table_L, rgb.z, coeffs_L);
+
+    if (preserve_colors == DT_RGB_NORM_NONE)
+    {
+      rgb.x = lookup_unbounded(table_L, rgb.x, coeffs_L);
+      rgb.y = lookup_unbounded(table_L, rgb.y, coeffs_L);
+      rgb.z = lookup_unbounded(table_L, rgb.z, coeffs_L);
+    }
+    else
+    {
+      float ratio = 1.f;
+      float lum = dt_rgb_norm(rgb, preserve_colors, 1, profile_info, lut);
+      if(lum > 0.f)
+      {
+        const float curve_lum = lookup_unbounded(table_L, lum, coeffs_L);
+        ratio = curve_lum / lum;
+      }
+      rgb.xyz *= ratio;
+    }
     pixel.xyz = prophotorgb_to_Lab(rgb).xyz;
   }
 
@@ -1814,9 +1804,9 @@ colorout (read_only image2d_t in, write_only image2d_t out, const int width, con
     rgb[i] = 0.0f;
     for(int j=0;j<3;j++) rgb[i] += mat[3*i+j]*XYZ[j];
   }
-  pixel.x = lerp_lookup_unbounded(lutr, rgb[0], a[0]);
-  pixel.y = lerp_lookup_unbounded(lutg, rgb[1], a[1]);
-  pixel.z = lerp_lookup_unbounded(lutb, rgb[2], a[2]);
+  pixel.x = lerp_lookup_unbounded0(lutr, rgb[0], a[0]);
+  pixel.y = lerp_lookup_unbounded0(lutg, rgb[1], a[1]);
+  pixel.z = lerp_lookup_unbounded0(lutb, rgb[2], a[2]);
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -1863,7 +1853,6 @@ levels (read_only image2d_t in, write_only image2d_t out, const int width, const
 
   write_imagef (out, (int2)(x, y), pixel);
 }
-
 
 /* kernel for the colorzones plugin */
 enum

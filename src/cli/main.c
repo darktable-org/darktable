@@ -396,8 +396,8 @@ int main(int argc, char *arg[])
   for(GList *iter = id_list; iter; iter = g_list_next(iter), num++)
   {
     int id = GPOINTER_TO_INT(iter->data);
-    storage->store(storage, sdata, id, format, fdata, num, total, high_quality, upscale, icc_type, icc_filename,
-                   icc_intent);
+    storage->store(storage, sdata, id, format, fdata, num, total, high_quality, upscale,
+                   icc_type, icc_filename, icc_intent);
   }
 
   // cleanup time

@@ -449,7 +449,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_colorchecker_data_t *const data = (dt_iop_colorchecker_data_t *)piece->data;
   const int ch = piece->colors;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) collapse(2)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, data, ivoid, ovoid, roi_in, roi_out) \
+  schedule(static) \
+  collapse(2)
 #endif
   for(int j=0;j<roi_out->height;j++)
   {
@@ -541,7 +544,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_colorchecker_data_t *d = (dt_iop_colorchecker_data_t *)piece->data;
-  dt_iop_colorchecker_global_data_t *gd = (dt_iop_colorchecker_global_data_t *)self->data;
+  dt_iop_colorchecker_global_data_t *gd = (dt_iop_colorchecker_global_data_t *)self->global_data;
 
   const int devid = piece->pipe->devid;
   const int width = roi_out->width;

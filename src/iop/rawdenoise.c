@@ -239,7 +239,10 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
     const int halfheight = roi->height / 2 + (roi->height & (~c) & 1);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(c) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(in, fimg, roi, size, halfwidth) \
+    shared(c) \
+    schedule(static)
 #endif
     for(int row = c & 1; row < roi->height; row += 2)
     {
@@ -259,7 +262,10 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
 
 // filter horizontally and transpose
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(lev) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(fimg, halfheight, halfwidth, pass1, pass2) \
+      shared(lev) \
+      schedule(static)
 #endif
       for(int col = 0; col < halfwidth; col++)
       {
@@ -268,7 +274,10 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
       }
 // filter vertically and transpose back
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(lev) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(fimg, halfheight, halfwidth, pass2, pass3) \
+      shared(lev) \
+      schedule(static)
 #endif
       for(int row = 0; row < halfheight; row++)
       {
@@ -278,7 +287,9 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
 
       const float thold = threshold * noise[lev];
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(lev)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(fimg, halfheight, halfwidth, pass1, pass3, thold) \
+      shared(lev)
 #endif
       for(size_t i = 0; i < (size_t)halfwidth * halfheight; i++)
       {
@@ -290,7 +301,10 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
       lastpass = pass3;
     }
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(c, lastpass) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(fimg, halfwidth, out, roi) \
+    shared(c, lastpass) \
+    schedule(static)
 #endif
     for(int row = c & 1; row < roi->height; row += 2)
     {
@@ -394,7 +408,10 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
     memset(fimg, 0, size * sizeof(float));
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(c) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(fimg, height, in, roi, size, width, xtrans) \
+    shared(c) \
+    schedule(static)
 #endif
     for(int row = (c != 1); row < height - 1; row++)
     {
@@ -427,20 +444,28 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
 
 // filter horizontally and transpose
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(lev) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(fimg, height, pass1, pass2, width) \
+      shared(lev) \
+      schedule(static)
 #endif
       for(int col = 0; col < width; col++)
         hat_transform(fimg + pass2 + (size_t)col * height, fimg + pass1 + col, width, height, 1 << lev);
 // filter vertically and transpose back
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(lev) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(fimg, height, pass2, pass3, width) \
+      shared(lev) \
+      schedule(static)
 #endif
       for(int row = 0; row < height; row++)
         hat_transform(fimg + pass3 + (size_t)row * width, fimg + pass2 + row, height, width, 1 << lev);
 
       const float thold = threshold * noise[lev];
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(lev)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(fimg, pass1, pass3, size, thold) \
+      shared(lev)
 #endif
       for(size_t i = 0; i < size; i++)
       {
@@ -453,7 +478,10 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
     }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(c, lastpass, out) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(height, fimg, roi, width, xtrans) \
+    shared(c, lastpass, out) \
+    schedule(static)
 #endif
     for(int row = 0; row < height; row++)
     {
@@ -524,7 +552,7 @@ end:
 
 void init(dt_iop_module_t *module)
 {
-  module->data = NULL;
+  module->global_data = NULL;
   module->params = calloc(1, sizeof(dt_iop_rawdenoise_params_t));
   module->default_params = calloc(1, sizeof(dt_iop_rawdenoise_params_t));
   module->default_enabled = 0;
@@ -550,8 +578,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
-  free(module->data);
-  module->data = NULL;
+  free(module->global_data);
+  module->global_data = NULL;
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
@@ -918,6 +946,7 @@ static gboolean rawdenoise_scrolled(GtkWidget *widget, GdkEventScroll *event, gp
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_rawdenoise_gui_data_t *c = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
 
+  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
   gdouble delta_y;
   if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
   {

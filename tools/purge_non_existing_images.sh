@@ -6,9 +6,20 @@ if [ "$1" = "-p" ]; then
     DRYRUN=no
 fi
 
-DBFILE=~/.config/darktable/library.db
+DBFILE=$HOME/.config/darktable/library.db
 TMPFILE=$(mktemp -t tmp.XXXXXXXXXX)
 QUERY="select A.id,B.folder,A.filename from images as A join film_rolls as B on A.film_id = B.id"
+
+if ! which sqlite3 > /dev/null; then
+    echo error: please install sqlite3 binary.
+    exit 1
+fi
+
+if [ ! -f "$DBFILE" ]; then
+    echo error: library.db not found \($DBFILE\).
+    exit 1
+fi
+
 sqlite3 $DBFILE "$QUERY" > "$TMPFILE"
 
 echo "Removing the following non existent file(s):"

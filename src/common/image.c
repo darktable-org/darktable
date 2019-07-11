@@ -607,6 +607,20 @@ void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio)
   }
 }
 
+void dt_image_reset_aspect_ratio(const int32_t imgid)
+{
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE images SET aspect_ratio=0.0 WHERE id=?1", -1,
+                              &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  if(darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+}
+
 double dt_image_set_aspect_ratio(const int32_t imgid)
 {
   dt_mipmap_buffer_t buf;
@@ -1041,7 +1055,7 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
 
   // insert dummy image entry in database
 
-  /* Image Position Calulation
+  /* Image Position Calculation
    *
    * The upper int32_t of the last image position is increased by one
    * while the lower 32 bits are masked out.

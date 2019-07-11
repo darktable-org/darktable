@@ -269,7 +269,10 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(piece, interpolation)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, ch_width, ivoid, ovoid, roi_in, roi_out, scale) \
+  shared(piece, interpolation) \
+  schedule(static)
 #endif
   // (slow) point-by-point transformation.
   // TODO: optimize with scanlines and linear steps between?
@@ -348,11 +351,11 @@ end:
 
 void gui_update(dt_iop_module_t *self)
 {
+  if(!self->widget) return;
   if(self->default_enabled)
     gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation"));
   else
-    gtk_label_set_text(GTK_LABEL(self->widget),
-                       _("automatic pixel rotation\nonly works for the sensors that need it."));
+    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation only works for the sensors that need it."));
 }
 
 void init(dt_iop_module_t *self)
@@ -372,6 +375,7 @@ void cleanup(dt_iop_module_t *self)
 void gui_init(dt_iop_module_t *self)
 {
   self->widget = gtk_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(self->widget), TRUE);
   gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 }

@@ -17,6 +17,7 @@
 */
 
 #include <exiv2/exif.hpp>
+#include <exiv2/error.hpp>
 #include <exiv2/image.hpp>
 
 #include <cstdio>

@@ -28,6 +28,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/opencl.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/rgb_norms.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -47,7 +48,7 @@
 #define DT_IOP_TONECURVE_RES 256
 #define DT_IOP_TONECURVE_MAXNODES 20
 
-DT_MODULE_INTROSPECTION(4, dt_iop_tonecurve_params_t)
+DT_MODULE_INTROSPECTION(5, dt_iop_tonecurve_params_t)
 
 static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data);
 static gboolean dt_iop_tonecurve_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data);
@@ -64,7 +65,18 @@ typedef enum tonecurve_channel_t
   ch_b = 2,
   ch_max = 3
 } tonecurve_channel_t;
-
+/*
+typedef enum dt_iop_tonecurve_preservecolors_t
+{
+  DT_TONECURVE_PRESERVE_NONE = 0,
+  DT_TONECURVE_PRESERVE_LUMINANCE = 1,
+  DT_TONECURVE_PRESERVE_LMAX = 2,
+  DT_TONECURVE_PRESERVE_LAVG = 3,
+  DT_TONECURVE_PRESERVE_LSUM = 4,
+  DT_TONECURVE_PRESERVE_LNORM = 5,
+  DT_TONECURVE_PRESERVE_LBP = 6,
+} dt_iop_tonecurve_preservecolors_t;
+*/
 typedef struct dt_iop_tonecurve_node_t
 {
   float x;
@@ -100,6 +112,17 @@ typedef struct dt_iop_tonecurve_params3_t
   int tonecurve_preset;
 } dt_iop_tonecurve_params3_t;
 
+typedef struct dt_iop_tonecurve_params4_t
+{
+  dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES]; // three curves (L, a, b) with max number
+                                                                   // of nodes
+  int tonecurve_nodes[3];
+  int tonecurve_type[3];
+  int tonecurve_autoscale_ab;
+  int tonecurve_preset;
+  int tonecurve_unbound_ab;
+} dt_iop_tonecurve_params4_t;
+
 typedef struct dt_iop_tonecurve_params_t
 {
   dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES]; // three curves (L, a, b) with max number
@@ -109,8 +132,8 @@ typedef struct dt_iop_tonecurve_params_t
   int tonecurve_autoscale_ab;
   int tonecurve_preset;
   int tonecurve_unbound_ab;
+  int preserve_colors;
 } dt_iop_tonecurve_params_t;
-
 
 typedef struct dt_iop_tonecurve_gui_data_t
 {
@@ -135,6 +158,7 @@ typedef struct dt_iop_tonecurve_gui_data_t
   float loglogscale;
   int semilog;
   GtkWidget *logbase;
+  GtkWidget *preserve_colors;
 } dt_iop_tonecurve_gui_data_t;
 
 typedef struct dt_iop_tonecurve_data_t
@@ -147,6 +171,7 @@ typedef struct dt_iop_tonecurve_data_t
   float unbounded_coeffs_ab[12]; // approximation for extrapolation of ab (left and right)
   int autoscale_ab;
   int unbound_ab;
+  int preserve_colors;
 } dt_iop_tonecurve_data_t;
 
 typedef struct dt_iop_tonecurve_global_data_t
@@ -182,7 +207,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
-  if(old_version == 1 && new_version == 4)
+  if(old_version == 1 && new_version == 5)
   {
     dt_iop_tonecurve_params1_t *o = (dt_iop_tonecurve_params1_t *)old_params;
     dt_iop_tonecurve_params_t *n = (dt_iop_tonecurve_params_t *)new_params;
@@ -204,14 +229,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->tonecurve_autoscale_ab = 1;
     n->tonecurve_preset = o->tonecurve_preset;
     n->tonecurve_unbound_ab = 0;
+    n->preserve_colors = 0;
     return 0;
   }
-  else if(old_version == 2 && new_version == 4)
+  else if(old_version == 2 && new_version == 5)
   {
     // version 2 never really materialized so there should be no legacy history stacks of that version around
     return 1;
   }
-  else if(old_version == 3 && new_version == 4)
+  else if(old_version == 3 && new_version == 5)
   {
     dt_iop_tonecurve_params3_t *o = (dt_iop_tonecurve_params3_t *)old_params;
     dt_iop_tonecurve_params_t *n = (dt_iop_tonecurve_params_t *)new_params;
@@ -222,9 +248,18 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->tonecurve_autoscale_ab = o->tonecurve_autoscale_ab;
     n->tonecurve_preset = o->tonecurve_preset;
     n->tonecurve_unbound_ab = 0;
+    n->preserve_colors = 0;
     return 0;
   }
+  else if(old_version == 4 && new_version == 5)
+  {
+    dt_iop_tonecurve_params4_t *o = (dt_iop_tonecurve_params4_t *)old_params;
+    dt_iop_tonecurve_params_t *n = (dt_iop_tonecurve_params_t *)new_params;
 
+    memcpy(n->tonecurve, o->tonecurve, sizeof(dt_iop_tonecurve_params4_t));
+    n->preserve_colors = 0;
+    return 0;
+  }
   return 1;
 }
 
@@ -233,7 +268,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)piece->data;
-  dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->data;
+  dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->global_data;
   cl_mem dev_L = NULL;
   cl_mem dev_a = NULL;
   cl_mem dev_b = NULL;
@@ -247,6 +282,19 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int autoscale_ab = d->autoscale_ab;
   const int unbound_ab = d->unbound_ab;
   const float low_approximation = d->table[0][(int)(0.01f * 0x10000ul)];
+  const int preserve_colors = d->preserve_colors;
+
+  const dt_iop_order_iccprofile_info_t *const work_profile
+    = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_PROPHOTO_RGB, "", INTENT_PERCEPTUAL);
+
+  cl_mem dev_profile_info = NULL;
+  cl_mem dev_profile_lut = NULL;
+  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl;
+  cl_float *profile_lut_cl = NULL;
+
+  err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &profile_info_cl, &profile_lut_cl,
+                                            &dev_profile_info, &dev_profile_lut);
+  if(err != CL_SUCCESS) goto error;
 
   dev_L = dt_opencl_copy_host_to_device(devid, d->table[ch_L], 256, 256, sizeof(float));
   if(dev_L == NULL) goto error;
@@ -276,6 +324,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 9, sizeof(cl_mem), (void *)&dev_coeffs_L);
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 10, sizeof(cl_mem), (void *)&dev_coeffs_ab);
   dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 11, sizeof(float), (void *)&low_approximation);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 12, sizeof(int), (void *)&preserve_colors);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 13, sizeof(cl_mem), (void *)&dev_profile_info);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_tonecurve, 14, sizeof(cl_mem), (void *)&dev_profile_lut);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_tonecurve, sizes);
 
   if(err != CL_SUCCESS) goto error;
@@ -284,6 +335,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_release_mem_object(dev_b);
   dt_opencl_release_mem_object(dev_coeffs_L);
   dt_opencl_release_mem_object(dev_coeffs_ab);
+  dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   return TRUE;
 
 error:
@@ -292,17 +344,24 @@ error:
   dt_opencl_release_mem_object(dev_b);
   dt_opencl_release_mem_object(dev_coeffs_L);
   dt_opencl_release_mem_object(dev_coeffs_ab);
+  dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   dt_print(DT_DEBUG_OPENCL, "[opencl_tonecurve] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }
 #endif
-
+/*
+static inline float dt_prophoto_rgb_luminance(const float *const rgb)
+{
+  return (rgb[0] * 0.2880402f + rgb[1] * 0.7118741f + rgb[2] * 0.0000857f);
+}
+*/
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const int ch = piece->colors;
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
-
+  const dt_iop_order_iccprofile_info_t *const work_profile
+    = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_PROPHOTO_RGB, "", INTENT_PERCEPTUAL);
   const float xm_L = 1.0f / d->unbounded_coeffs_L[0];
   const float xm_ar = 1.0f / d->unbounded_coeffs_ab[0];
   const float xm_al = 1.0f - 1.0f / d->unbounded_coeffs_ab[3];
@@ -316,7 +375,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int unbound_ab = d->unbound_ab;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(autoscale_ab, ch, height, i, low_approximation, o, \
+                      xm_al, xm_ar, xm_bl, xm_br, xm_L, unbound_ab, width, work_profile) \
+  shared(d) \
+  schedule(static)
 #endif
   for(int k = 0; k < height; k++)
   {
@@ -382,9 +445,30 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       {
         float rgb[3] = {0, 0, 0};
         dt_Lab_to_prophotorgb(in, rgb);
-        for(int c=0;c<3;c++)
-          rgb[c] = (rgb[c] < xm_L) ? d->table[ch_L][CLAMP((int)(rgb[c] * 0x10000ul), 0, 0xffff)]
-                                   : dt_iop_eval_exp(d->unbounded_coeffs_L, rgb[c]);
+        if(d->preserve_colors == DT_RGB_NORM_NONE)
+        {
+          for(int c = 0; c < 3; c++)
+          {
+            rgb[c] = (rgb[c] < xm_L) ? d->table[ch_L][CLAMP((int)(rgb[c] * 0x10000ul), 0, 0xffff)]
+                                     : dt_iop_eval_exp(d->unbounded_coeffs_L, rgb[c]);
+          }
+        }
+        else
+        {
+          float ratio = 1.f;
+          const float lum = dt_rgb_norm(rgb, d->preserve_colors, work_profile);
+          if(lum > 0.f)
+          {
+            const float curve_lum = (lum < xm_L)
+                                        ? d->table[ch_L][CLAMP((int)(lum * 0x10000ul), 0, 0xffff)]
+                                        : dt_iop_eval_exp(d->unbounded_coeffs_L, lum);
+            ratio = curve_lum / lum;
+          }
+          for(size_t c = 0; c < 3; c++)
+          {
+            rgb[c] = (ratio * rgb[c]);
+          }
+        }
         dt_prophotorgb_to_Lab(rgb, out);
       }
 
@@ -614,6 +698,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   d->autoscale_ab = p->tonecurve_autoscale_ab;
   d->unbound_ab = p->tonecurve_unbound_ab;
+  d->preserve_colors = p->preserve_colors;
 
   // extrapolation for L-curve (right hand side only):
   const float xm_L = p->tonecurve[ch_L][p->tonecurve_nodes[ch_L] - 1].x;
@@ -703,6 +788,7 @@ void gui_reset(struct dt_iop_module_t *self)
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   dt_bauhaus_combobox_set(g->interpolator, p->tonecurve_type[ch_L]);
+  dt_bauhaus_combobox_set(g->preserve_colors, p->preserve_colors);
 
   dt_bauhaus_combobox_set(g->scale, 0); // linear
   g->loglogscale = 0;
@@ -723,6 +809,7 @@ void gui_update(struct dt_iop_module_t *self)
     {
       dt_bauhaus_combobox_set(g->autoscale_ab, 1);
       gtk_notebook_set_show_tabs(g->channel_tabs, TRUE);
+      gtk_widget_set_visible(g->preserve_colors, FALSE);
       break;
     }
     case DT_S_SCALE_AUTOMATIC:
@@ -730,6 +817,7 @@ void gui_update(struct dt_iop_module_t *self)
       dt_bauhaus_combobox_set(g->autoscale_ab, 0);
       g->channel = (tonecurve_channel_t)ch_L;
       gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+      gtk_widget_set_visible(g->preserve_colors, FALSE);
       break;
     }
     case DT_S_SCALE_AUTOMATIC_XYZ:
@@ -737,6 +825,7 @@ void gui_update(struct dt_iop_module_t *self)
       dt_bauhaus_combobox_set(g->autoscale_ab, 2);
       g->channel = (tonecurve_channel_t)ch_L;
       gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+      gtk_widget_set_visible(g->preserve_colors, FALSE);
       break;
     }
     case DT_S_SCALE_AUTOMATIC_RGB:
@@ -744,11 +833,13 @@ void gui_update(struct dt_iop_module_t *self)
       dt_bauhaus_combobox_set(g->autoscale_ab, 3);
       g->channel = (tonecurve_channel_t)ch_L;
       gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+      gtk_widget_set_visible(g->preserve_colors, TRUE);
       break;
     }
   }
 
   dt_bauhaus_combobox_set(g->interpolator, p->tonecurve_type[ch_L]);
+  dt_bauhaus_combobox_set(g->preserve_colors, p->preserve_colors);
 
   if (dt_bauhaus_combobox_get(g->scale) != 0)
   {
@@ -785,7 +876,8 @@ void init(dt_iop_module_t *module)
     // { CUBIC_SPLINE, CUBIC_SPLINE, CUBIC_SPLINE},
     DT_S_SCALE_AUTOMATIC_RGB, // autoscale_ab
     0,
-    1 // unbound_ab
+    1, // unbound_ab
+    DT_RGB_NORM_AVERAGE  // preserve color = Average rgb
   };
   memcpy(module->params, &tmp, sizeof(dt_iop_tonecurve_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_tonecurve_params_t));
@@ -825,11 +917,12 @@ static void scale_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
+  gtk_widget_set_visible(g->scale, TRUE);
   switch(dt_bauhaus_combobox_get(widget))
   {
     case 0:
     {
-      // linear
+      // x: linear
       g->loglogscale = 0;
       g->semilog = 0;
       gtk_widget_set_visible(g->logbase, FALSE);
@@ -837,25 +930,9 @@ static void scale_callback(GtkWidget *widget, dt_iop_module_t *self)
     }
     case 1:
     {
-      // log log
-      g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
-      g->semilog = 0;
-      gtk_widget_set_visible(g->logbase, TRUE);
-      break;
-    }
-    case 2:
-    {
-      // x: log, y: linear
+      // x: log
       g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
       g->semilog = 1;
-      gtk_widget_set_visible(g->logbase, TRUE);
-      break;
-    }
-    case 3:
-    {
-      // x: linear, y: log
-      g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
-      g->semilog = -1;
       gtk_widget_set_visible(g->logbase, TRUE);
       break;
     }
@@ -890,21 +967,25 @@ static void autoscale_ab_callback(GtkWidget *widget, dt_iop_module_t *self)
     case 0:
       p->tonecurve_autoscale_ab = DT_S_SCALE_AUTOMATIC;
       gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+      gtk_widget_set_visible(g->preserve_colors, FALSE);
       break;
 
     case 1:
       p->tonecurve_autoscale_ab = DT_S_SCALE_MANUAL;
       gtk_notebook_set_show_tabs(g->channel_tabs, TRUE);
+      gtk_widget_set_visible(g->preserve_colors, FALSE);
       break;
 
     case 2:
       p->tonecurve_autoscale_ab = DT_S_SCALE_AUTOMATIC_XYZ;
       gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+      gtk_widget_set_visible(g->preserve_colors, FALSE);
       break;
 
     case 3:
       p->tonecurve_autoscale_ab = DT_S_SCALE_AUTOMATIC_RGB;
       gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
+      gtk_widget_set_visible(g->preserve_colors, TRUE);
       break;
   }
 
@@ -925,12 +1006,33 @@ static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
+static void preserve_colors_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+  p->preserve_colors = dt_bauhaus_combobox_get(widget);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 static void tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   if(self->dt->gui->reset) return;
   c->channel = (tonecurve_channel_t)page_num;
+  if (c->channel == ch_L)
+  {
+    gtk_widget_set_visible(c->scale, TRUE);
+    if (c->loglogscale == 0 && c->semilog == 0)
+      gtk_widget_set_visible(c->logbase, FALSE);
+    else
+      gtk_widget_set_visible(c->logbase, TRUE);
+  }
+  else
+  {
+    gtk_widget_set_visible(c->scale, FALSE);
+    gtk_widget_set_visible(c->logbase, FALSE);
+  }
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -999,7 +1101,7 @@ static float to_lin(const float x, const float base, const int ch, const int sem
 
 static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->data;
+  dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->global_data;
 
   for(int k=0; k<3; k++)
   {
@@ -1115,6 +1217,7 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
 
+  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
   int ch = c->channel;
   int autoscale_ab = p->tonecurve_autoscale_ab;
 
@@ -1285,12 +1388,23 @@ void gui_init(struct dt_iop_module_t *self)
                                                  "- monotonic is better for accuracy of pure analytical functions (log, gamma, exp)\n"));
   g_signal_connect(G_OBJECT(c->interpolator), "value-changed", G_CALLBACK(interpolator_callback), self);
 
+  c->preserve_colors = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(c->preserve_colors, NULL, _("preserve colors"));
+  dt_bauhaus_combobox_add(c->preserve_colors, _("none"));
+  dt_bauhaus_combobox_add(c->preserve_colors, _("luminance"));
+  dt_bauhaus_combobox_add(c->preserve_colors, _("max rgb"));
+  dt_bauhaus_combobox_add(c->preserve_colors, _("average rgb"));
+  dt_bauhaus_combobox_add(c->preserve_colors, _("sum rgb"));
+  dt_bauhaus_combobox_add(c->preserve_colors, _("norm rgb"));
+  dt_bauhaus_combobox_add(c->preserve_colors, _("basic power"));
+  gtk_box_pack_start(GTK_BOX(self->widget), c->preserve_colors, TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(c->preserve_colors, _("method to preserve colors when applying contrast"));
+  g_signal_connect(G_OBJECT(c->preserve_colors), "value-changed", G_CALLBACK(preserve_colors_callback), self);
+
   c->scale = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->scale, NULL, _("scale"));
   dt_bauhaus_combobox_add(c->scale, _("linear"));
-  dt_bauhaus_combobox_add(c->scale, _("log-log (xy)"));
-  dt_bauhaus_combobox_add(c->scale, _("semi-log (x)"));
-  dt_bauhaus_combobox_add(c->scale, _("semi-log (y)"));
+  dt_bauhaus_combobox_add(c->scale, _("log"));
   gtk_widget_set_tooltip_text(c->scale, _("scale to use in the graph. use logarithmic scale for "
                                           "more precise control near the blacks"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->scale, TRUE, TRUE, 0);
@@ -1313,6 +1427,8 @@ void gui_init(struct dt_iop_module_t *self)
               _iop_color_picker_get_set,
               _iop_color_picker_apply,
               _iop_color_picker_update);
+
+  dt_bauhaus_combobox_set(c->scale, 0); // linear
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -1352,7 +1468,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   dt_develop_t *dev = darktable.develop;
-  dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->data;
+  dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->global_data;
 
   int ch = c->channel;
   int nodes = p->tonecurve_nodes[ch];
@@ -1404,42 +1520,49 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_stroke_preserve(cr);
 
-  // Draw the background gradient along the diagonal
-  // ch == 0 : black to white
-  // ch == 1 : green to magenta
-  // ch == 2 : blue to yellow
-  const float origin[3][3] = { { 0.0f, 0.0f, 0.0f },                  // L = 0, @ (a, b) = 0
-                               { 0.0f, 231.0f/255.0f, 181.0f/255.0f },// a = -128 @ L = 75, b = 0
-                               { 0.0f, 30.0f/255.0f, 195.0f/255.0f}}; // b = -128 @ L = 75, a = 0
+  if (ch==ch_L)
+  { // remove below black to white transition to improve readability of the graph
+    cairo_set_source_rgb(cr, .3, .3, .3);
+    cairo_rectangle(cr, 0, 0, width, height);
+    cairo_fill(cr);
+  }
+  else
+  {
+    // Draw the background gradient along the diagonal
+    // ch == 0 : black to white
+    // ch == 1 : green to magenta
+    // ch == 2 : blue to yellow
+    const float origin[3][3] = { { 0.0f, 0.0f, 0.0f },                  // L = 0, @ (a, b) = 0
+                                 { 0.0f, 231.0f/255.0f, 181.0f/255.0f },// a = -128 @ L = 75, b = 0
+                                 { 0.0f, 30.0f/255.0f, 195.0f/255.0f}}; // b = -128 @ L = 75, a = 0
 
-  const float destin[3][3] = { { 1.0f, 1.0f, 1.0f },                  // L = 100 @ (a, b) = 0
-                               { 1.0f, 0.0f, 192.0f/255.0f } ,        // a = 128 @ L = 75, b = 0
-                               { 215.0f/255.0f, 182.0f/255.0f, 0.0f}};// b = 128 @ L = 75, a = 0
+    const float destin[3][3] = { { 1.0f, 1.0f, 1.0f },                  // L = 100 @ (a, b) = 0
+                                 { 1.0f, 0.0f, 192.0f/255.0f } ,        // a = 128 @ L = 75, b = 0
+                                 { 215.0f/255.0f, 182.0f/255.0f, 0.0f}};// b = 128 @ L = 75, a = 0
 
-  // since Cairo paints with sRGB at gamma 2.4, linear gradients are not linear but garbage and, at 50%,
-  // we dont see the neutral grey we would expect in the middle of a linear gradient between
-  // 2 complimentary colors. So we add it artifically, but that will break the smoothness
-  // of the transition. Maybe this will help people understand how broken are Lab and non-linear
-  // spaces for editing, so let it be ugly to teach them a lesson.
+   // since Cairo paints with sRGB at gamma 2.4, linear gradients are not linear and, at 50%,
+   // we dont see the neutral grey we would expect in the middle of a linear gradient between
+   // 2 complimentary colors. So we add it artificially, but that will break the smoothness
+   // of the transition.
 
-  // middle step for gradients (50 %)
-  const float midgrey = to_log(0.45f, c->loglogscale, ch, c->semilog, 0);
+    // middle step for gradients (50 %)
+    const float midgrey = to_log(0.45f, c->loglogscale, ch, c->semilog, 0);
 
-  const float middle[3][3] = { { midgrey, midgrey, midgrey },   // L = 50 @ (a, b) = 0
-                               { 0.67f, 0.67f, 0.67f},          // L = 75 @ (a, b) = 0
-                               { 0.67f, 0.67f, 0.67f}};         // L = 75 @ (a, b) = 0
+    const float middle[3][3] = { { midgrey, midgrey, midgrey },   // L = 50 @ (a, b) = 0
+                                 { 0.67f, 0.67f, 0.67f},          // L = 75 @ (a, b) = 0
+                                 { 0.67f, 0.67f, 0.67f}};         // L = 75 @ (a, b) = 0
 
-  const float opacities[3] = { 0.5f, 0.5f, 0.5f};
+    const float opacities[3] = { 0.5f, 0.5f, 0.5f};
 
-  cairo_pattern_t *pat;
-  pat = cairo_pattern_create_linear (height, 0.0,  0.0, width);
-  cairo_pattern_add_color_stop_rgba (pat, 1, origin[ch][0], origin[ch][1], origin[ch][2], opacities[ch]);
-  cairo_pattern_add_color_stop_rgba (pat, 0.5, middle[ch][0], middle[ch][1], middle[ch][2], opacities[ch]);
-  cairo_pattern_add_color_stop_rgba (pat, 0, destin[ch][0], destin[ch][1], destin[ch][2], opacities[ch]);
-  cairo_set_source (cr, pat);
-  cairo_fill (cr);
-  cairo_pattern_destroy (pat);
-
+    cairo_pattern_t *pat;
+    pat = cairo_pattern_create_linear (height, 0.0,  0.0, width);
+    cairo_pattern_add_color_stop_rgba (pat, 1, origin[ch][0], origin[ch][1], origin[ch][2], opacities[ch]);
+    cairo_pattern_add_color_stop_rgba (pat, 0.5, middle[ch][0], middle[ch][1], middle[ch][2], opacities[ch]);
+    cairo_pattern_add_color_stop_rgba (pat, 0, destin[ch][0], destin[ch][1], destin[ch][2], opacities[ch]);
+    cairo_set_source (cr, pat);
+    cairo_fill (cr);
+    cairo_pattern_destroy (pat);
+  }
 
   // draw grid
   set_color(cr, darktable.bauhaus->graph_border);
@@ -1493,10 +1616,9 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_move_to(cr, 0, height);
       set_color(cr, darktable.bauhaus->inset_histogram);
 
-      if (ch == ch_L && c->loglogscale > 0.0f && c->semilog != -1)
+      if (ch == ch_L && c->loglogscale > 0.0f)
       {
-        // not working
-        // dt_draw_histogram_8_log_base(cr, hist, 4, ch, c->loglogscale);
+        dt_draw_histogram_8_log_base(cr, hist, 4, ch, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR, c->loglogscale);
       }
       else
       {

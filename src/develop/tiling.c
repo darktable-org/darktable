@@ -753,7 +753,10 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
 
 /* prepare input tile buffer */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(input, width, ioffs) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(ht, in_bpp, ipitch, ivoid, wd) \
+      shared(input, width, ioffs) \
+      schedule(static)
 #endif
       for(size_t j = 0; j < ht; j++)
         memcpy((char *)input + j * wd * in_bpp, (char *)ivoid + ioffs + j * ipitch, (size_t)wd * in_bpp);
@@ -794,7 +797,10 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
 
 /* copy "good" part of tile to output buffer */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ooffs, output, width, origin, region) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(opitch, out_bpp, ovoid, wd) \
+      shared(ooffs, output, width, origin, region) \
+      schedule(static)
 #endif
       for(size_t j = 0; j < region[1]; j++)
         memcpy((char *)ovoid + ooffs + j * opitch,
@@ -1096,7 +1102,10 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
       }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(input, ioffs, iroi_full) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(in_bpp, ipitch, ivoid) \
+      shared(input, ioffs, iroi_full) \
+      schedule(static)
 #endif
       for(size_t j = 0; j < iroi_full.height; j++)
         memcpy((char *)input + j * iroi_full.width * in_bpp, (char *)ivoid + ioffs + j * ipitch,
@@ -1125,7 +1134,10 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
       const int origin_x = oroi_good.x - oroi_full.x;
       const int origin_y = oroi_good.y - oroi_full.y;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ooffs, output, oroi_good, oroi_full) schedule(static)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(opitch, origin_x, origin_y, out_bpp, ovoid) \
+      shared(ooffs, output, oroi_good, oroi_full) \
+      schedule(static)
 #endif
       for(size_t j = 0; j < oroi_good.height; j++)
         memcpy((char *)ovoid + ooffs + j * opitch,
@@ -1408,7 +1420,10 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
       {
 /* prepare pinned input tile buffer: copy part of input image */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(input_buffer, width, ioffs, wd, ht) schedule(static)
+#pragma omp parallel for default(none) \
+        dt_omp_firstprivate(in_bpp, ipitch, ivoid) \
+        shared(input_buffer, width, ioffs, wd, ht) \
+        schedule(static)
 #endif
         for(size_t j = 0; j < ht; j++)
           memcpy((char *)input_buffer + j * wd * in_bpp, (char *)ivoid + ioffs + j * ipitch,
@@ -1863,7 +1878,9 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       {
 /* prepare pinned input tile buffer: copy part of input image */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(input_buffer, width, ioffs, iroi_full) schedule(static)
+#pragma omp parallel for default(none) \
+        dt_omp_firstprivate(in_bpp, ipitch, ivoid) \
+        shared(input_buffer, width, ioffs, iroi_full) schedule(static)
 #endif
         for(size_t j = 0; j < iroi_full.height; j++)
           memcpy((char *)input_buffer + j * iroi_full.width * in_bpp, (char *)ivoid + ioffs + j * ipitch,
@@ -1910,8 +1927,10 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
 
 /* copy "good" part of tile from pinned output buffer to output image */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(ooffs, output_buffer, oroi_full, oorigin,                      \
-                                              oregion) schedule(static)
+#pragma omp parallel for default(none) \
+        dt_omp_firstprivate(ipitch, opitch, ovoid, out_bpp) \
+        shared(ooffs, output_buffer, oroi_full, oorigin, oregion) \
+        schedule(static)
 #endif
         for(size_t j = 0; j < oregion[1]; j++)
           memcpy((char *)ovoid + ooffs + j * opitch,
