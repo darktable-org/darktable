@@ -58,6 +58,7 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     _ioppr_insert_iop_after(_iop_order_list, history_list, "rgbcurve", "levels", dont_move);
     _ioppr_insert_iop_after(_iop_order_list, history_list, "lut3d", "grain", dont_move);
     _ioppr_insert_iop_before(_iop_order_list, history_list, "rgblevels", "rgbcurve", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "dither", "borders", dont_move);
 
     new_version = 2;
   }
@@ -174,9 +175,9 @@ static GList *_ioppr_get_iop_order_v1()
                                                   { 0.0, "finalscale" },
                                                   { 0.0, "overexposed" },
                                                   { 0.0, "rawoverexposed" },
-                                                  { 0.0, "dither" },
                                                   { 0.0, "borders" },
                                                   { 0.0, "watermark" },
+                                                  { 0.0, "dither" },
                                                   { 0.0, "gamma" },
                                                   { 0.0, "\0" }
   };
