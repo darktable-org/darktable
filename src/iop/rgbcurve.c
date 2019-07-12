@@ -1489,17 +1489,17 @@ void gui_init(struct dt_iop_module_t *self)
                            gtk_label_new(_("  R  ")));
   gtk_widget_set_tooltip_text(
       gtk_notebook_get_tab_label(g->channel_tabs, gtk_notebook_get_nth_page(g->channel_tabs, -1)),
-      _("curve_nodes for r channel"));
+      _("curve nodes for r channel"));
   gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
                            gtk_label_new(_("  G  ")));
   gtk_widget_set_tooltip_text(
       gtk_notebook_get_tab_label(g->channel_tabs, gtk_notebook_get_nth_page(g->channel_tabs, -1)),
-      _("curve_nodes for g channel"));
+      _("curve nodes for g channel"));
   gtk_notebook_append_page(GTK_NOTEBOOK(g->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
                            gtk_label_new(_("  B  ")));
   gtk_widget_set_tooltip_text(
       gtk_notebook_get_tab_label(g->channel_tabs, gtk_notebook_get_nth_page(g->channel_tabs, -1)),
-      _("curve_nodes for b channel"));
+      _("curve nodes for b channel"));
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->channel_tabs, g->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), g->channel);
@@ -1810,7 +1810,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   dt_iop_rgbcurve_data_t *d = (dt_iop_rgbcurve_data_t *)piece->data;
-  dt_iop_rgbcurve_global_data_t *gd = (dt_iop_rgbcurve_global_data_t *)self->data;
+  dt_iop_rgbcurve_global_data_t *gd = (dt_iop_rgbcurve_global_data_t *)self->global_data;
 
   _generate_curve_lut(piece->pipe, d);
 

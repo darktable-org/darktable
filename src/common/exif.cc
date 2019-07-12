@@ -70,6 +70,8 @@ extern "C" {
 #include "develop/masks.h"
 }
 
+#include "external/adobe_coeff.c"
+
 // exiv2's readMetadata is not thread safe in 0.26. so we lock it. since readMetadata might throw an exception we
 // wrap it into some c++ magic to make sure we unlock in all cases. well, actually not magic but basic raii.
 // FIXME: check again once we rely on 0.27
@@ -502,6 +504,19 @@ static void _find_datetime_taken(Exiv2::ExifData &exifData, Exiv2::ExifData::con
   }
 }
 
+static void mat3mul(float *dst, const float *const m1, const float *const m2)
+{
+  for(int k = 0; k < 3; k++)
+  {
+    for(int i = 0; i < 3; i++)
+    {
+      float x = 0.0f;
+      for(int j = 0; j < 3; j++) x += m1[3 * k + j] * m2[3 * j + i];
+      dst[3 * k + i] = x;
+    }
+  }
+}
+
 static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 {
   try
@@ -617,6 +632,9 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->exif_crop = 1.0f;
     }
 
+    /*
+     * Get the focus distance in meters.
+     */
     if(FIND_EXIF_TAG("Exif.NikonLd2.FocusDistance"))
     {
       float value = pos->toFloat();
@@ -677,7 +695,21 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     {
       img->exif_focus_distance = pos->toFloat();
     }
-    /** read image orientation */
+    else if(Exiv2::testVersion(0,27,2) && FIND_EXIF_TAG("Exif.Sony2Fp.FocusPosition2"))
+    {
+      const float focus_position = pos->toFloat();
+
+      if (FIND_EXIF_TAG("Exif.Photo.FocalLengthIn35mmFilm")) {
+          const float focal_length_35mm = pos->toFloat();
+
+          /* http://u88.n24.queensu.ca/exiftool/forum/index.php/topic,3688.msg29653.html#msg29653 */
+          img->exif_focus_distance = (pow(2, focus_position / 16 - 5) + 1) * focal_length_35mm / 1000;
+      }
+    }
+
+    /*
+     * Read image orientation
+     */
     if(FIND_EXIF_TAG("Exif.Image.Orientation"))
     {
       img->orientation = dt_image_orientation_to_flip_bits(pos->toLong());
@@ -850,28 +882,90 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
 
     // read embedded color matrix as used in DNGs
     {
-      int is_1_65 = -1, is_2_65 = -1; // -1: not found, 0: some random type, 1: D65
-      if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant1"))
-      {
-        is_1_65 = (pos->toLong() == 21) ? 1 : 0;
-      }
-      if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant2"))
-      {
-        is_2_65 = (pos->toLong() == 21) ? 1 : 0;
-      }
+      int illu1 = -1, illu2 = -1, illu = -1; // -1: not found, otherwise the detected CalibrationIlluminant
+      float colmatrix[12];
+      img->d65_color_matrix[0] = NAN; // make sure for later testing
+      // The correction matrices are taken from
+      // http://www.brucelindbloom.com - chromatic Adaption.
+      // using Bradford method: found Illuminant -> D65
+      const float correctmat[6][9] = {
+        { 0.9555766, -0.0230393, 0.0631636, -0.0282895, 1.0099416, 0.0210077, 0.0122982, -0.0204830,
+          1.3299098 }, // 23 = D50
+        { 0.9726856, -0.0135482, 0.0361731, -0.0167463, 1.0049102, 0.0120598, 0.0070026, -0.0116372,
+          1.1869548 }, // 20 = D55
+        { 1.0206905, 0.0091588, -0.0228796, 0.0115005, 0.9984917, -0.0076762, -0.0043619, 0.0072053,
+          0.8853432 }, // 22 = D75
+        { 0.8446965, -0.1179225, 0.3948108, -0.1366303, 1.1041226, 0.1291718, 0.0798489, -0.1348999,
+          3.1924009 }, // 17 = Standard light A
+        { 0.9415037, -0.0321240, 0.0584672, -0.0428238, 1.0250998, 0.0203309, 0.0101511, -0.0161170,
+          1.2847354 }, // 18 = Standard light B
+        { 0.9904476, -0.0071683, -0.0116156, -0.0123712, 1.0155950, -0.0029282, -0.0035635, 0.0067697,
+          0.9181569 } // 19 = Standard light C
+      };
 
-      // use the d65 (type == 21) matrix if we found it, otherwise use whatever we got
+      if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant1")) illu1 = pos->toLong();
+      if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant2")) illu2 = pos->toLong();
       Exiv2::ExifData::const_iterator cm1_pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix1"));
       Exiv2::ExifData::const_iterator cm2_pos = exifData.findKey(Exiv2::ExifKey("Exif.Image.ColorMatrix2"));
-      if(is_1_65 == 1 && cm1_pos != exifData.end() && cm1_pos->count() == 9 && cm1_pos->size())
-        for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = cm1_pos->toFloat(i);
-      else if(is_2_65 == 1 && cm2_pos != exifData.end() && cm2_pos->count() == 9 && cm2_pos->size())
-        for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = cm2_pos->toFloat(i);
-      else if(cm1_pos != exifData.end() && cm1_pos->count() == 9 && cm1_pos->size())
-        for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = cm1_pos->toFloat(i);
-      else if(cm2_pos != exifData.end() && cm2_pos->count() == 9 && cm2_pos->size())
-        for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = cm2_pos->toFloat(i);
+
+      // Which is the wanted colormatrix?
+      // If we have D65 in Illuminant1 we use it; otherwise we prefer Illuminant2 because it's the higher
+      // color temperature and thus closer to D65
+      if(illu1 == 21 && cm1_pos != exifData.end() && cm1_pos->count() == 9 && cm1_pos->size())
+      {
+        for(int i = 0; i < 9; i++) colmatrix[i] = cm1_pos->toFloat(i);
+        illu = illu1;
+      }
+      else if(illu2 != -1 && cm2_pos != exifData.end() && cm2_pos->count() == 9 && cm2_pos->size())
+      {
+        for(int i = 0; i < 9; i++) colmatrix[i] = cm2_pos->toFloat(i);
+        illu = illu2;
+      }
+      else if(illu1 != -1 && cm1_pos != exifData.end() && cm1_pos->count() == 9 && cm1_pos->size())
+      {
+        for(int i = 0; i < 9; i++) colmatrix[i] = cm1_pos->toFloat(i);
+        illu = illu1;
     }
+      // Take the found CalibrationIlluminant / ColorMatrix pair.
+      // If it is D65: just copy otherwise multiply by the specific correction matrix.
+      if(illu != -1)
+      {
+       // If no supported Illuminant is found it's better NOT to use the found matrix.
+       // The colorin module will write an error message and use a fallback matrix
+       // instead of showing wrong colors. 
+       switch(illu)
+        {
+          case 21:
+            for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = colmatrix[i];
+            break;
+          case 23:
+            mat3mul(img->d65_color_matrix, correctmat[0], colmatrix);
+            break;
+          case 20:
+            mat3mul(img->d65_color_matrix, correctmat[1], colmatrix);
+            break;
+          case 22:
+            mat3mul(img->d65_color_matrix, correctmat[2], colmatrix);
+            break;
+          case 17:
+            mat3mul(img->d65_color_matrix, correctmat[3], colmatrix);
+            break;
+          case 18:
+            mat3mul(img->d65_color_matrix, correctmat[4], colmatrix);
+            break;
+          case 19:
+            mat3mul(img->d65_color_matrix, correctmat[5], colmatrix);
+            break;
+        }
+        // Maybe there is a predefined camera matrix in adobe_coeff?
+        // This is tested to possibly override the matrix.
+        colmatrix[0] = NAN;
+        dt_dcraw_adobe_coeff(img->camera_model, (float(*)[12])colmatrix);
+        if(!isnan(colmatrix[0]))
+          for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = colmatrix[i];
+      }
+    }
+
 
     // some files have the colorspace explicitly set. try to read that.
     // is_ldr -> none

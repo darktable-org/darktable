@@ -1724,8 +1724,14 @@ void dt_masks_clear_form_gui(dt_develop_t *dev)
 
 void dt_masks_change_form_gui(dt_masks_form_t *newform)
 {
+  dt_masks_form_t *old = darktable.develop->form_visible;
+
   dt_masks_clear_form_gui(darktable.develop);
   darktable.develop->form_visible = newform;
+
+  /* update sticky accels window */
+  if(newform != old && darktable.view_manager->accels_window.window && darktable.view_manager->accels_window.sticky)
+    dt_view_accels_refresh(darktable.view_manager);
 }
 
 void dt_masks_reset_form_gui(void)

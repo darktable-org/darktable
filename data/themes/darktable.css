@@ -106,8 +106,8 @@
 @define-color field_fg @grey_75;
 @define-color field_active_bg @grey_20;
 @define-color field_active_fg @grey_80;
-@define-color field_hover_bg @grey_25;
-@define-color field_hover_fg @grey_85;
+@define-color field_hover_bg @grey_45;
+@define-color field_hover_fg @grey_90;
 @define-color field_select_bg @grey_05;
 
 /* Tooltips and contextual helpers */
@@ -966,6 +966,11 @@ dialog scrolledwindow
   background-color: @plugin_bg_color;
 }
 
+.dialog-vbox treeview
+{
+  background-color: @button_bg;
+}
+
 /* empty space at top/bottom of sidepanels when scrolled */
 undershoot,
 undershoot.top,
@@ -1150,4 +1155,39 @@ cell:selected
 {
    font-family: courier;
    font-weight: bold;
+}
+
+/* Accels window reminder */
+
+.accels_window_cat_title
+{
+   background-color: transparent;
+   font-weight: bold;
+   font-size: 1.1em;
+   padding: 10px 0px;
+}
+
+.accels_window_list button
+{
+   background-color: @button_bg;
+   border: 0px;
+}
+
+.accels_window_list label
+{
+   font-weight: bold;
+   font-size: 0.9em;
+   padding-top: 1px;
+   padding-right: 10px;
+}
+
+.accels_window_box treeview
+{
+   background-color: transparent;
+}
+
+.accels_window_stick
+{
+  min-width: 1.8em;
+  min-height : 1.8em;
 }

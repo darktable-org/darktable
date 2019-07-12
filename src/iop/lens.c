@@ -549,7 +549,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
 
   cl_mem dev_tmpbuf = NULL;
@@ -1072,7 +1072,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
 
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   const lfCamera *camera = NULL;
   const lfCamera **cam = NULL;
@@ -1250,7 +1250,7 @@ void reload_defaults(dt_iop_module_t *module)
       if(++cnt == 2) *c = '\0';
   if(img->exif_maker[0] || model[0])
   {
-    dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)module->data;
+    dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)module->global_data;
 
     // just to be sure
     if(!gd || !gd->db) goto end;
@@ -1624,7 +1624,7 @@ static void parse_maker_model(const char *txt, char *make, size_t sz_make, char 
 static void camera_menusearch_clicked(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
 
@@ -1647,7 +1647,7 @@ static void camera_menusearch_clicked(GtkWidget *button, gpointer user_data)
 static void camera_autosearch_clicked(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   char make[200], model[200];
@@ -1972,7 +1972,7 @@ static void lens_menu_fill(dt_iop_module_t *self, const lfLens *const *lenslist)
 static void lens_menusearch_clicked(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   const lfLens **lenslist;
@@ -1996,7 +1996,7 @@ static void lens_menusearch_clicked(GtkWidget *button, gpointer user_data)
 static void lens_autosearch_clicked(GtkWidget *button, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   const lfLens **lenslist;
@@ -2091,7 +2091,7 @@ static void scale_changed(GtkWidget *slider, gpointer user_data)
 
 static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, const lfCamera *camera)
 {
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   float scale = 1.0;
   if(p->lens[0] != '\0')
@@ -2163,7 +2163,7 @@ static void corrections_done(gpointer instance, gpointer user_data)
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_lensfun_gui_data_t));
-  // dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
+  // dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   // lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
@@ -2383,7 +2383,7 @@ void gui_update(struct dt_iop_module_t *self)
     memcpy(self->params, self->default_params, sizeof(dt_iop_lensfun_params_t));
   }
 
-  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->data;
+  dt_iop_lensfun_global_data_t *gd = (dt_iop_lensfun_global_data_t *)self->global_data;
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   // these are the wrong (untranslated) strings in general but that's ok, they will be overwritten further
   // down

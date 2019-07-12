@@ -245,7 +245,14 @@ typedef struct dt_view_manager_t
   GList *views;
   dt_view_t *current_view;
 
-  GtkWidget *accels_window;
+  struct
+  {
+    GtkWidget *window;
+    GtkWidget *sticky_btn;
+    GtkWidget *flow_box;
+    gboolean sticky;
+    gboolean prevent_refresh;
+  } accels_window;
 
   /* reusable db statements
    * TODO: reconsider creating a common/database helper API
@@ -478,6 +485,7 @@ void dt_view_filmstrip_prefetch();
 /* accel window */
 void dt_view_accels_show(dt_view_manager_t *vm);
 void dt_view_accels_hide(dt_view_manager_t *vm);
+void dt_view_accels_refresh(dt_view_manager_t *vm);
 
 /*
  * Map View Proxy

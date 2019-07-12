@@ -205,7 +205,7 @@ typedef struct dt_library_t
   dt_layout_image_t culling_previous, culling_next;
   gboolean culling_use_selection;
   gboolean already_started;
-  gboolean select_desactivate;
+  gboolean select_deactivate;
   int last_num_images, last_width, last_height;
 
   /* prepared and reusable statements */
@@ -598,7 +598,7 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
   dt_view_t *self = (dt_view_t *)user_data;
   dt_library_t *lib = (dt_library_t *)self->data;
 
-  if(lib->select_desactivate) return;
+  if(lib->select_deactivate) return;
 
   // we need to redraw all thumbs to display the selected ones, record full redraw here
   lib->force_expose_all = TRUE;
@@ -628,9 +628,9 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
         if(sqlite3_step(stmt) != SQLITE_ROW)
         {
           // we need to add it to the selection
-          lib->select_desactivate = TRUE;
+          lib->select_deactivate = TRUE;
           dt_selection_select(darktable.selection, lib->slots[i].imgid);
-          lib->select_desactivate = FALSE;
+          lib->select_deactivate = FALSE;
         }
         sqlite3_finalize(stmt);
         g_free(query);
@@ -1261,7 +1261,8 @@ end_query_cache:
           mouse_over_id = id;
         }
 
-        if(!lib->pan && (iir != 1 || mouse_over_id != -1)) dt_control_set_mouse_over_id(mouse_over_id);
+        if((!lib->pan || _is_custom_image_order_actif(self)) && (iir != 1 || mouse_over_id != -1))
+          dt_control_set_mouse_over_id(mouse_over_id);
 
         cairo_save(cr);
 
@@ -1950,7 +1951,7 @@ static gboolean _culling_recreate_slots_at(dt_view_t *self, const int display_fi
   lib->slots_count = i;
 
   // in rare cases, we can have less images than wanted
-  // althought there's images before
+  // although there's images before
   if(lib->culling_use_selection && lib->slots_count < img_count
      && lib->slots_count < _culling_get_selection_count())
   {
@@ -2269,12 +2270,12 @@ static gboolean _culling_compute_slots(dt_view_t *self, int32_t width, int32_t h
   {
     if(!lib->culling_use_selection)
     {
-      // desactivate selection_change event
-      lib->select_desactivate = TRUE;
+      // deactivate selection_change event
+      lib->select_deactivate = TRUE;
       // select current first image
       dt_selection_select_single(darktable.selection, lib->slots[0].imgid);
       // reactivate selection_change event
-      lib->select_desactivate = FALSE;
+      lib->select_deactivate = FALSE;
     }
     // move filmstrip
     dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->slots[0].imgid, FALSE);
@@ -2725,7 +2726,7 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
   // we have started the first expose
   lib->already_started = TRUE;
 
-  if(layout != DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+  if(layout != DT_LIGHTTABLE_LAYOUT_ZOOMABLE && !_is_custom_image_order_actif(self))
   {
     // file manager
     lib->activate_on_release = DT_VIEW_ERR;
@@ -3908,7 +3909,8 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         // the pointer to GDK_HAND1 until we can exclude that it is a click,
         // namely until the pointer has moved a little distance. The code taking
         // care of this is in expose(). Pan only makes sense in zoomable lt.
-        if(layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE || (lib->full_preview_id > -1 && lib->full_zoom > 1.0f)
+        if(_is_custom_image_order_actif(self) || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE
+           || (lib->full_preview_id > -1 && lib->full_zoom > 1.0f)
            || (get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING && lib->full_zoom > 1.0f))
           begin_pan(lib, x, y);
 
@@ -3930,7 +3932,7 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         // activated control. In the second case, we cancel the action, and
         // instead we begin to pan. We do this for those users intending to
         // pan that accidentally hit a control element.
-        if(layout != DT_LIGHTTABLE_LAYOUT_ZOOMABLE) // filemanager/expose
+        if(layout != DT_LIGHTTABLE_LAYOUT_ZOOMABLE && !_is_custom_image_order_actif(self)) // filemanager/expose
           activate_control_element(self);
         else // zoomable lighttable --> defer action to check for pan
           lib->activate_on_release = lib->image_over;
@@ -4975,6 +4977,18 @@ static void _dnd_get_picture_reorder(GtkWidget *widget, GdkDragContext *context,
 static void _dnd_begin_picture_reorder(GtkWidget *widget, GdkDragContext *context, gpointer user_data)
 {
   const int ts = DT_PIXEL_APPLY_DPI(64);
+
+  // we need to check that we are over a selection. If not we need to update the selection
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT imgid FROM main.selected_images WHERE imgid=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dt_control_get_mouse_over_id());
+  if(sqlite3_step(stmt) != SQLITE_ROW)
+  {
+    // we apply selection changes
+    activate_control_element(darktable.view_manager->proxy.lighttable.view);
+  }
+  sqlite3_finalize(stmt);
 
   GList *selected_images = dt_collection_get_selected(darktable.collection, 1);
 

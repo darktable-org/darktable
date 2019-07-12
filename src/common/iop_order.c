@@ -49,11 +49,6 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
 {
   int new_version = -1;
 
-  if(0) // I left this for now so I don't get the unused error, we'll add some modules soon and we'll remove it
-  {
-    _ioppr_insert_iop_before(_iop_order_list, history_list, "dummy1", "colorin", dont_move);
-  }
-
   // version 1 --> 2
   if(old_version == 1)
   {
@@ -62,6 +57,7 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     _ioppr_insert_iop_after(_iop_order_list, history_list, "basicadj", "colorin", dont_move);
     _ioppr_insert_iop_after(_iop_order_list, history_list, "rgbcurve", "levels", dont_move);
     _ioppr_insert_iop_after(_iop_order_list, history_list, "lut3d", "grain", dont_move);
+    _ioppr_insert_iop_before(_iop_order_list, history_list, "rgblevels", "rgbcurve", dont_move);
 
     new_version = 2;
   }
