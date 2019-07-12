@@ -174,9 +174,9 @@ static GList *_ioppr_get_iop_order_v1()
                                                   { 0.0, "finalscale" },
                                                   { 0.0, "overexposed" },
                                                   { 0.0, "rawoverexposed" },
+                                                  { 0.0, "dither" },
                                                   { 0.0, "borders" },
                                                   { 0.0, "watermark" },
-                                                  { 0.0, "dither" },
                                                   { 0.0, "gamma" },
                                                   { 0.0, "\0" }
   };
