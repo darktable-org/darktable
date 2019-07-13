@@ -148,7 +148,7 @@ static int tag_delete(lua_State *L)
 {
   dt_lua_tag_t tagid;
   luaA_to(L, dt_lua_tag_t, &tagid, -1);
-  
+
   GList *tagged_images = NULL;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.tagged_images WHERE tagid=?1",
@@ -190,7 +190,7 @@ int dt_lua_tag_attach(lua_State *L)
     luaA_to(L, dt_lua_tag_t, &tagid, 1);
     luaA_to(L, dt_lua_image_t, &imgid, 2);
   }
-  dt_tag_attach(tagid, imgid);
+  dt_tag_attach_from_gui(tagid, imgid);
   dt_image_synch_xmp(imgid);
   return 0;
 }

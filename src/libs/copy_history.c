@@ -222,6 +222,7 @@ static void delete_button_clicked(GtkWidget *widget, gpointer user_data)
     else
       dt_history_delete_on_image(img);
 
+    dt_collection_update_query(darktable.collection);
     dt_control_queue_redraw_center();
   }
 }
@@ -244,6 +245,7 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
   else
     dt_history_copy_and_paste_on_image(d->imageid, img, (mode == 0) ? TRUE : FALSE, d->dg.selops);
 
+  dt_collection_update_query(darktable.collection);
   /* redraw */
   dt_control_queue_redraw_center();
 }

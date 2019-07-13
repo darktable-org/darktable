@@ -435,6 +435,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.capabilities_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.exiv2_threadsafe), NULL);
+  dt_pthread_mutex_init(&(darktable.readFile_mutex), NULL);
   darktable.control = (dt_control_t *)calloc(1, sizeof(dt_control_t));
 
   // database
@@ -1130,6 +1131,7 @@ void dt_cleanup()
   dt_pthread_mutex_destroy(&(darktable.plugin_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.capabilities_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.exiv2_threadsafe));
+  dt_pthread_mutex_destroy(&(darktable.readFile_mutex));
 
   dt_exif_cleanup();
 }

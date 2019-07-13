@@ -367,16 +367,24 @@ gboolean _tag_is_attached(guint tagid, gint imgid)
   return result;
 }
 
-void dt_tag_attach(guint tagid, gint imgid)
+gboolean dt_tag_attach(guint tagid, gint imgid)
 {
+  gboolean attached = FALSE;
   if(!_tag_is_attached(tagid, imgid))
   {
     _attach_tag(tagid, imgid, TRUE);
 
     dt_tag_update_used_tags();
 
-    dt_collection_update_query(darktable.collection);
+    attached = TRUE;
   }
+  return attached;
+}
+
+void dt_tag_attach_from_gui(guint tagid, gint imgid)
+{
+  if(dt_tag_attach(tagid, imgid))
+    dt_collection_update_query(darktable.collection);
 }
 
 void dt_tag_attach_list(GList *tags, gint imgid)
@@ -485,8 +493,6 @@ void dt_tag_detach_by_string(const char *name, gint imgid)
   sqlite3_finalize(stmt);
 
   dt_tag_update_used_tags();
-
-  dt_collection_update_query(darktable.collection);
 }
 
 

@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/collection.h"
 #include "common/metadata.h"
 #include "common/mipmap_cache.h"
 #include "common/history.h"
@@ -111,6 +112,7 @@ static void _lib_duplicate_new_clicked_callback(GtkWidget *widget, GdkEventButto
   const int newid = dt_image_duplicate(imgid);
   if (newid <= 0) return;
   dt_history_delete_on_image(newid);
+  dt_collection_update_query(darktable.collection);
   // to select the duplicate, we reuse the filmstrip proxy
   dt_view_filmstrip_scroll_to_image(darktable.view_manager,newid,TRUE);
 }
@@ -122,6 +124,7 @@ static void _lib_duplicate_duplicate_clicked_callback(GtkWidget *widget, GdkEven
   const int newid = dt_image_duplicate(imgid);
   if (newid <= 0) return;
   dt_history_copy_and_paste_on_image(imgid,newid,FALSE,NULL);
+  dt_collection_update_query(darktable.collection);
   // to select the duplicate, we reuse the filmstrip proxy
   dt_view_filmstrip_scroll_to_image(darktable.view_manager,newid,TRUE);
 }
