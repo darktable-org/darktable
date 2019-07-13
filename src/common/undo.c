@@ -17,6 +17,7 @@
 */
 
 #include "common/darktable.h"
+#include "common/collection.h"
 #include "common/undo.h"
 #include <glib.h>    // for GList, gpointer, g_list_first, g_list_prepend
 #include <stdlib.h>  // for NULL, malloc, free
@@ -225,6 +226,8 @@ void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
     l = g_list_next(l);
   }
   UNLOCK;
+
+  dt_collection_update_query(darktable.collection);
 }
 
 void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
@@ -305,6 +308,8 @@ void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
   }
 
   UNLOCK;
+
+  dt_collection_update_query(darktable.collection);
 }
 
 static void _undo_clear_list(GList **list, uint32_t filter)

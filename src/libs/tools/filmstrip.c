@@ -988,6 +988,7 @@ static gboolean _lib_filmstrip_paste_history_key_accel_callback(GtkAccelGroup *a
     dt_history_copy_and_paste_on_image(strip->history_copy_imgid, img, (mode == 0) ? TRUE : FALSE,
                                        strip->dg.selops);
 
+  dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
   return TRUE;
 }
@@ -1013,6 +1014,7 @@ static gboolean _lib_filmstrip_paste_history_parts_key_accel_callback(GtkAccelGr
     dt_history_copy_and_paste_on_image(strip->history_copy_imgid, img, (mode == 0) ? TRUE : FALSE,
                                        strip->dg.selops);
 
+  dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
   return TRUE;
 }
@@ -1027,6 +1029,7 @@ static gboolean _lib_filmstrip_discard_history_key_accel_callback(GtkAccelGroup 
   if(mouse_over_id <= 0) return FALSE;
 
   dt_history_delete_on_image(mouse_over_id);
+  dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
   return TRUE;
 }
@@ -1048,7 +1051,11 @@ static gboolean _lib_filmstrip_duplicate_image_key_accel_callback(GtkAccelGroup 
   if(!_is_on_lighttable() && dt_dev_is_current_image(darktable.develop, mouse_over_id)) dt_dev_write_history(darktable.develop);
 
   const int32_t newimgid = dt_image_duplicate(mouse_over_id);
-  if(newimgid != -1) dt_history_copy_and_paste_on_image(mouse_over_id, newimgid, FALSE, NULL);
+  if(newimgid != -1)
+  {
+    dt_history_copy_and_paste_on_image(mouse_over_id, newimgid, FALSE, NULL);
+    dt_collection_update_query(darktable.collection);
+  }
 
   dt_control_queue_redraw_center();
   return TRUE;

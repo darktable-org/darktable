@@ -125,7 +125,9 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
   {
     dt_rawspeed_load_meta();
 
+    dt_pthread_mutex_lock(&darktable.readFile_mutex);
     m = f.readFile();
+    dt_pthread_mutex_unlock(&darktable.readFile_mutex);
 
     RawParser t(m.get());
     d = t.getDecoder(meta);
