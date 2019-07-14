@@ -18,6 +18,7 @@
 */
 
 #include "color_conversion.cl"
+#include "rgb_norms.h"
 
 /* we use this exp approximation to maintain full identity with cpu path */
 float
@@ -51,7 +52,7 @@ basecurve_lut(read_only image2d_t in, write_only image2d_t out, const int width,
   if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  if (preserve_colors == 0) // DT_BASECURVE_PRESERVE_NONE
+  if(preserve_colors == DT_RGB_NORM_NONE)
   {
     // use lut or extrapolation:
     pixel.x = lookup_unbounded(table, pixel.x, a);
@@ -61,11 +62,7 @@ basecurve_lut(read_only image2d_t in, write_only image2d_t out, const int width,
   else
   {
     float ratio = 1.f;
-    float lum = 0.0f;
-    if(preserve_colors == 1) // DT_BASECURVE_PRESERVE_LUMINANCE
-    {
-      lum = (use_work_profile == 0) ? dt_camera_rgb_luminance(pixel): get_rgb_matrix_luminance(pixel, profile_info, lut);
-    }
+    const float lum = dt_rgb_norm(pixel, preserve_colors, use_work_profile, profile_info, lut);
     if(lum > 0.f)
     {
       const float curve_lum = lookup_unbounded(table, lum, a);
