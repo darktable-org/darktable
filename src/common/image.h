@@ -70,6 +70,8 @@ typedef enum
   DT_IMAGE_HAS_WAV = 8192,
   // image is a bayer pattern with 4 colors (e.g., CYGM or RGBE)
   DT_IMAGE_4BAYER = 16384,
+  // image was detected as monochrome
+  DT_IMAGE_MONOCHROME = 32768, 
 } dt_image_flags_t;
 
 typedef enum dt_image_colorspace_t
