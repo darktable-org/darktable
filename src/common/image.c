@@ -134,14 +134,7 @@ int dt_image_is_raw(const dt_image_t *img)
 
 int dt_image_is_monochrome(const dt_image_t *img)
 {
-  if(strncmp(img->exif_maker, "Leica Camera AG", 15) != 0) return 0;
-
-  gchar *tmp_model = g_ascii_strdown(img->exif_model, -1);
-
-  const int res = strstr(tmp_model, "monochrom") != NULL;
-  g_free(tmp_model);
-
-  return res;
+   return (img->flags & DT_IMAGE_MONOCHROME);
 }
 
 const char *dt_image_film_roll_name(const char *path)
