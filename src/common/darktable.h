@@ -75,11 +75,23 @@ typedef unsigned int u_int;
 #endif
 
 #ifdef _OPENMP
-#include <omp.h>
-#else
-#define omp_get_max_threads() 1
-#define omp_get_thread_num() 0
-#endif
+# include <omp.h>
+
+/* See https://redmine.darktable.org/issues/12568#note-14 */
+# ifdef HAVE_OMP_FIRSTPRIVATE_WITH_CONST
+   /* If the compiler correctly supports firstprivate, use it. */
+#  define dt_omp_firstprivate(...) firstprivate(__VA_ARGS__)
+# else /* HAVE_OMP_FIRSTPRIVATE_WITH_CONST */
+   /* This is needed for clang < 7.0 */
+#  define dt_omp_firstprivate(...)
+# endif/* HAVE_OMP_FIRSTPRIVATE_WITH_CONST */
+
+#else /* _OPENMP */
+
+# define omp_get_max_threads() 1
+# define omp_get_thread_num() 0
+
+#endif /* _OPENMP */
 
 #ifndef _RELEASE
 #include "common/poison.h"
@@ -542,7 +554,7 @@ int dt_load_from_string(const gchar *image_to_load, gboolean open_image_in_dr, g
 
 #define dt_unreachable_codepath_with_desc(D)                                                                 \
   dt_unreachable_codepath_with_caller(D, __FILE__, __LINE__, __FUNCTION__)
-#define dt_unreachable_codepath() dt_unreachable_codepath_with_caller(NULL, __FILE__, __LINE__, __FUNCTION__)
+#define dt_unreachable_codepath() dt_unreachable_codepath_with_caller("unreachable", __FILE__, __LINE__, __FUNCTION__)
 static inline void dt_unreachable_codepath_with_caller(const char *description, const char *file,
                                                        const int line, const char *function)
 {

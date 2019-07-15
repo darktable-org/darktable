@@ -165,7 +165,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float compress = (data->compress / 110.0) / 2.0; // Don't allow 100% compression..
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(data) private(in, out) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, compress, ivoid, ovoid, roi_out) \
+  shared(data) \
+  private(in, out) \
+  schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {

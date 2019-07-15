@@ -132,7 +132,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_Lab_to_XYZ(Lab_sw, XYZ_sw);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(d, XYZ_sw)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, i, o, roi_out) \
+  shared(d, XYZ_sw) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {

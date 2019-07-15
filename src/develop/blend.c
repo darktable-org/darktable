@@ -2901,7 +2901,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
     // blend uniformly (no drawn or parametric mask)
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(buffsize, mask, opacity)
 #endif
     for(size_t i = 0; i < buffsize; i++) mask[i] = opacity;
   }
@@ -2920,7 +2921,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       {
         // if we have a mask and this flag is set -> invert the mask
 #ifdef _OPENMP
-#pragma omp parallel for default(none)
+  #pragma omp parallel for default(none) \
+        dt_omp_firstprivate(buffsize, mask)
 #endif
         for(size_t i = 0; i < buffsize; i++) mask[i] = 1.0f - mask[i];
       }
@@ -2931,7 +2933,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
       const float fill = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS) ? 0.0f : 1.0f;
 #ifdef _OPENMP
-#pragma omp parallel for default(none)
+  #pragma omp parallel for default(none) \
+      dt_omp_firstprivate(buffsize, mask, fill)
 #endif
       for(size_t i = 0; i < buffsize; i++) mask[i] = fill;
     }
@@ -2940,14 +2943,17 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
       const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
 #ifdef _OPENMP
-#pragma omp parallel for default(none)
+  #pragma omp parallel for default(none) \
+      dt_omp_firstprivate(buffsize, mask, fill)
 #endif
       for(size_t i = 0; i < buffsize; i++) mask[i] = fill;
     }
 
     // get parametric mask (if any) and apply global opacity
 #ifdef _OPENMP
-#pragma omp parallel for default(none)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(bch, ch, cst, d, oheight, opacity, ivoid, iwidth, \
+                        mask, owidth, ovoid, xoffs, yoffs)
 #endif
     for(size_t y = 0; y < oheight; y++)
     {
@@ -2985,7 +2991,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       {
         float *const guide_tmp = dt_alloc_align(64, sizeof(*guide_tmp) * buffsize * ch);
 #ifdef _OPENMP
-#pragma omp parallel for default(none)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, guide_tmp, ivoid, iwidth, oheight, owidth, xoffs, yoffs)
 #endif
         for(size_t y = 0; y < oheight; y++)
         {
@@ -3018,7 +3025,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       const float e = expf(3.f * d->contrast);
       const float brightness = d->brightness;
 #ifdef _OPENMP
-#pragma omp parallel for default(none)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(brightness, buffsize, e, mask, opacity)
 #endif
       for(size_t k = 0; k < buffsize; k++)
       {
@@ -3047,7 +3055,10 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   // select the blend operator
   _blend_row_func *const blend = dt_develop_choose_blend_func(d->blend_mode);
 #ifdef _OPENMP
-#pragma omp parallel for default(none)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(bch, blend, blendflag, ch, cst, ivoid, iwidth, mask, \
+                      mask_display, oheight, ovoid, owidth, \
+                      request_mask_display, xoffs, yoffs)
 #endif
   for(size_t y = 0; y < oheight; y++)
   {
@@ -3224,7 +3235,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       {
         // if we have a mask and this flag is set -> invert the mask
 #ifdef _OPENMP
-#pragma omp parallel for default(none)
+  #pragma omp parallel for default(none) \
+      dt_omp_firstprivate(buffsize, mask)
 #endif
         for(size_t i = 0; i < buffsize; i++) mask[i] = 1.0f - mask[i];
       }
@@ -3235,7 +3247,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
       const float fill = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS) ? 0.0f : 1.0f;
 #ifdef _OPENMP
-#pragma omp parallel for default(none)
+  #pragma omp parallel for default(none) \
+      dt_omp_firstprivate(buffsize, mask, fill)
 #endif
       for(size_t i = 0; i < buffsize; i++) mask[i] = fill;
     }
@@ -3244,7 +3257,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
       const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
 #ifdef _OPENMP
-#pragma omp parallel for default(none)
+  #pragma omp parallel for default(none) \
+      dt_omp_firstprivate(buffsize, mask, fill)
 #endif
       for(size_t i = 0; i < buffsize; i++) mask[i] = fill;
     }

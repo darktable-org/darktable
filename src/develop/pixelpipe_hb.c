@@ -689,7 +689,10 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           const int cp_height = MIN(roi_out->height, pipe->iheight - in_y);
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(pipe, roi_out, roi_in, output)
+#pragma omp parallel for default(none) \
+          dt_omp_firstprivate(bpp, cp_height, cp_width, in_x, in_y) \
+          shared(pipe, roi_out, roi_in, output) \
+          schedule(static)
 #endif
           for(int j = 0; j < cp_height; j++)
             memcpy(((char *)*output) + (size_t)bpp * j * roi_out->width,
@@ -791,7 +794,10 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       else
       {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(roi_out, roi_in, output, input)
+#pragma omp parallel for default(none) \
+        dt_omp_firstprivate(in_bpp, out_bpp) \
+        shared(roi_out, roi_in, output, input) \
+        schedule(static)
 #endif
         for(int j = 0; j < roi_out->height; j++)
             memcpy(((char *)*output) + (size_t)out_bpp * j * roi_out->width,
@@ -800,7 +806,10 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       }
 #else // don't HAVE_OPENCL
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(roi_out, roi_in, output, input)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(in_bpp, out_bpp) \
+      shared(roi_out, roi_in, output, input) \
+      schedule(static)
 #endif
       for(int j = 0; j < roi_out->height; j++)
             memcpy(((char *)*output) + (size_t)out_bpp * j * roi_out->width,

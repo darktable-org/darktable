@@ -129,7 +129,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 /* create overexpose image and then blur */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(brightness, ch, in, out, roi_out, saturation) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
   {
@@ -154,7 +156,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, radius, out, roi_out, scanline_buf, scanline_size) \
+    schedule(static)
 #endif
     /* horizontal blur out into out */
     for(int y = 0; y < roi_out->height; y++)
@@ -206,7 +210,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const int opoffs = -(radius + 1) * roi_out->width;
     const int npoffs = (radius)*roi_out->width;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, npoffs, opoffs, radius, out, roi_out, \
+                        scanline_buf, scanline_size) \
+    schedule(static)
 #endif
     for(int x = 0; x < roi_out->width; x++)
     {
@@ -262,7 +269,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float amount_1 = (1 - (d->amount) / 100.0);
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(amount, amount_1, ch, in, out, roi_out) \
+  schedule(static) \
+  collapse(2)
 #endif
   for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
   {
@@ -286,7 +296,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const float saturation = data->saturation / 100.0;
 /* create overexpose image and then blur */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, brightness, roi_out, saturation) \
+  shared(in, out) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -311,7 +324,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, radius, roi_out, scanline_buf, size) \
+    shared(out) \
+    schedule(static)
 #endif
     /* horizontal blur out into out */
     for(int y = 0; y < roi_out->height; y++)
@@ -344,7 +360,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     const int opoffs = -(radius + 1) * roi_out->width;
     const int npoffs = (radius)*roi_out->width;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, npoffs, opoffs, radius, roi_out, scanline_buf, size) \
+    shared(out) \
+    schedule(static)
 #endif
     for(int x = 0; x < roi_out->width; x++)
     {
@@ -381,7 +400,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const __m128 amount = _mm_set1_ps(data->amount / 100.0);
   const __m128 amount_1 = _mm_set1_ps(1 - (data->amount) / 100.0);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, data) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, amount, amount_1, roi_out) \
+  shared(in, out, data) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {

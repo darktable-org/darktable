@@ -140,7 +140,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+    dt_omp_firstprivate(ch, data, ivoid, ovoid, roi_out, strength) \
+    schedule(static)
 #endif
     for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
     {
@@ -186,7 +188,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, data) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, roi_out, strength) \
+    shared(in, out, data) \
+    schedule(static)
 #endif
     for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
     {

@@ -188,7 +188,12 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   void *coordbuf = dt_alloc_align(16, coordbufsize * sizeof(float) * dt_get_num_threads());
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) shared(self, coordbuf, buf) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(ch, color, coordbufsize, d, \
+                      dt_iop_rawoverexposed_colors, filters, priority, mode, \
+                      out, raw, roi_in, roi_out, xtrans) \
+  shared(self, coordbuf, buf) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -311,7 +316,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(coordbuf == NULL) goto error;
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) shared(self, coordbuf, buf) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(height, roi_in, roi_out, width) \
+  shared(self, coordbuf, buf) \
+  schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {

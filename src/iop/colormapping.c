@@ -333,7 +333,10 @@ static void kmeans(const float *col, const int width, const int height, const in
     for(int k = 0; k < n; k++) cnt[k] = 0;
 // randomly sample col positions inside roi
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(col, mean_out)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(cnt, height, mean, n, samples, var, width) \
+    shared(col, mean_out) \
+    schedule(static)
 #endif
     for(int s = 0; s < samples; s++)
     {
@@ -493,7 +496,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 // first get delta L of equalized L minus original image L, scaled to fit into [0 .. 100]
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(data, in, out, equalization)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, height, width) \
+    shared(data, in, out, equalization) \
+    schedule(static)
 #endif
     for(int k = 0; k < height; k++)
     {
@@ -528,7 +534,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float *const weight_buf = malloc(data->n * dt_get_num_threads() * sizeof(float));
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(data, in, out, equalization)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, height, mapio, var_ratio, weight_buf, width) \
+    shared(data, in, out, equalization) \
+    schedule(static)
 #endif
     for(int k = 0; k < height; k++)
     {
