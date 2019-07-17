@@ -966,7 +966,7 @@ static void update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, char *filepath,
     {
       dt_bauhaus_combobox_clear(g->filepath);
       char *ext = g_ascii_strdown(g_strdup(g_strrstr(filepath,".")), -1);
-      if (ext[0])
+      if (ext && ext[0])
       {
         while ((dir = readdir(d)) != NULL)
         {
