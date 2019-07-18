@@ -51,6 +51,10 @@ extern "C" {
 #define LF_SEARCH_SORT_AND_UNIQUIFY 2
 #endif
 
+#if LF_VERSION >= ((0 << 24) | (3 << 16) | (95 << 8) | 0)
+#define LF_0395
+#endif
+
 DT_MODULE_INTROSPECTION(5, dt_iop_lensfun_params_t)
 
 typedef enum dt_iop_lensfun_modflag_t
@@ -341,6 +345,25 @@ static char *_lens_sanitize(const char *orig_lens)
   }
 }
 
+static lfModifier * get_modifier(int *modflags, const lfLens *lens, float crop, int w, int h, lfPixelFormat pxformat, float focal, float aperture, float distance, float scale, lfLensType targeom, int flags, bool reverse)
+{
+  lfModifier *mod;
+  int tmodflags = 0;
+#ifdef LF_0395
+  mod = new lfModifier(crop, w, h, pxformat, reverse);
+  if(flags & LF_MODIFY_DISTORTION) tmodflags |= mod->EnableDistortionCorrection(lens, focal);
+  if(flags & LF_MODIFY_GEOMETRY) tmodflags |= mod->EnableProjectionTransform(lens, focal, targeom);
+  if(flags & LF_MODIFY_SCALE) tmodflags |= mod->EnableScaling(scale);
+  if(flags & LF_MODIFY_TCA) tmodflags |= mod->EnableTCACorrection(lens, focal);
+  if(flags & LF_MODIFY_VIGNETTING) tmodflags |= mod->EnableVignettingCorrection(lens, focal, aperture, distance);
+#else
+  mod = new lfModifier(lens, crop, w, h);
+  tmodflags = mod->Initialize(lens, pxformat, focal, aperture, distance, scale, targeom, flags, reverse);
+#endif
+  if(modflags) *modflags = tmodflags;
+  return mod;
+}
+
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -360,12 +383,13 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
 
   const float orig_w = roi_in->scale * piece->buf_in.width, orig_h = roi_in->scale * piece->buf_in.height;
-  dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
-  lfModifier *modifier = new lfModifier(d->lens, d->crop, orig_w, orig_h);
 
-  const int modflags
-      = modifier->Initialize(d->lens, LF_PF_F32, d->focal, d->aperture, d->distance, d->scale,
-                             d->target_geom, d->modify_flags, d->inverse);
+  dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
+
+  int modflags;
+  lfModifier *modifier = get_modifier(&modflags, d->lens, d->crop, orig_w, orig_h, LF_PF_F32, d->focal,
+                                      d->aperture, d->distance, d->scale, d->target_geom, d->modify_flags, d->inverse);
+
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   const struct dt_interpolation *const interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
@@ -626,10 +650,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(dev_tmpbuf == NULL) goto error;
 
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
-  modifier = new lfModifier(d->lens, d->crop, orig_w, orig_h);
-
-  modflags = modifier->Initialize(d->lens, LF_PF_F32, d->focal, d->aperture, d->distance,
-                                  d->scale, d->target_geom, d->modify_flags, d->inverse);
+  modifier = get_modifier(&modflags, d->lens, d->crop, orig_w, orig_h, LF_PF_F32, d->focal, 
+                          d->aperture, d->distance, d->scale, d->target_geom, d->modify_flags, d->inverse);
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   if(d->inverse)
@@ -834,10 +856,9 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f) return 0;
 
   const float orig_w = piece->buf_in.width, orig_h = piece->buf_in.height;
-  lfModifier *modifier = new lfModifier(d->lens, d->crop, orig_w, orig_h);
-
-  int modflags = modifier->Initialize(d->lens, LF_PF_F32, d->focal, d->aperture, d->distance,
-                                      d->scale, d->target_geom, d->modify_flags, !d->inverse);
+  int modflags;
+  lfModifier *modifier = get_modifier(&modflags, d->lens, d->crop, orig_w, orig_h, LF_PF_F32, d->focal,
+                                      d->aperture, d->distance, d->scale, d->target_geom, d->modify_flags, d->inverse);
   float *buf = (float *)malloc(2 * 3 * sizeof(float));
 
   for(size_t i = 0; i < points_count * 2; i += 2)
@@ -862,10 +883,9 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f) return 0;
 
   const float orig_w = piece->buf_in.width, orig_h = piece->buf_in.height;
-  lfModifier *modifier = new lfModifier(d->lens, d->crop, orig_w, orig_h);
-
-  int modflags = modifier->Initialize(d->lens, LF_PF_F32, d->focal, d->aperture, d->distance,
-                                      d->scale, d->target_geom, d->modify_flags, d->inverse);
+  int modflags;
+  lfModifier *modifier = get_modifier(&modflags, d->lens, d->crop, orig_w, orig_h, LF_PF_F32, d->focal,
+                                      d->aperture, d->distance, d->scale, d->target_geom, d->modify_flags, d->inverse);
   float *buf = (float *)malloc(2 * 3 * sizeof(float));
 
   for(size_t i = 0; i < points_count * 2; i += 2)
@@ -896,11 +916,10 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
   const float orig_w = roi_in->scale * piece->buf_in.width, orig_h = roi_in->scale * piece->buf_in.height;
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
-  lfModifier *modifier = new lfModifier(d->lens, d->crop, orig_w, orig_h);
+  int modflags = d->modify_flags & (/*LF_MODIFY_TCA |*/ LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE);
+  lfModifier *modifier = get_modifier(&modflags, d->lens, d->crop, orig_w, orig_h, LF_PF_F32, d->focal,
+                                      d->aperture, d->distance, d->scale, d->target_geom, modflags, d->inverse);
 
-  int modify_flags = d->modify_flags & (/*LF_MODIFY_TCA |*/ LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE);
-  const int modflags = modifier->Initialize(d->lens, LF_PF_F32, d->focal, d->aperture, d->distance,
-                                            d->scale, d->target_geom, modify_flags, d->inverse);
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   if(!(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE)))
@@ -964,11 +983,9 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f) return;
 
   const float orig_w = roi_in->scale * piece->buf_in.width, orig_h = roi_in->scale * piece->buf_in.height;
-
-  lfModifier *modifier = new lfModifier(d->lens, d->crop, orig_w, orig_h);
-
-  int modflags = modifier->Initialize(d->lens, LF_PF_F32, d->focal, d->aperture, d->distance,
-                                      d->scale, d->target_geom, d->modify_flags, d->inverse);
+  int modflags;
+  lfModifier *modifier = get_modifier(&modflags, d->lens, d->crop, orig_w, orig_h, LF_PF_F32, d->focal,
+                                      d->aperture, d->distance, d->scale, d->target_geom, d->modify_flags, d->inverse);
 
   if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
   {
@@ -1106,6 +1123,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     if(lens)
     {
       *d->lens = *lens[0];
+#ifndef LF_0395
       if(p->tca_override)
       {
         // add manual d->lens stuff:
@@ -1118,6 +1136,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
           while(d->lens->CalibTCA[0]) d->lens->RemoveCalibTCA(0);
         d->lens->AddCalibTCA(&tca);
       }
+#endif
       lf_free(lens);
     }
   }
@@ -1178,6 +1197,13 @@ void init_global(dt_iop_module_so_t *module)
 
   lfDatabase *dt_iop_lensfun_db = new lfDatabase;
   gd->db = (lfDatabase *)dt_iop_lensfun_db;
+
+#ifdef LF_0395
+  if(dt_iop_lensfun_db->Load() != LF_NO_ERROR)
+  {
+    fprintf(stderr, "[iop_lens]: could not load lensfun database\n");
+  }
+#else
 #if defined(__MACH__) || defined(__APPLE__)
 #else
   if(dt_iop_lensfun_db->Load() != LF_NO_ERROR)
@@ -1208,6 +1234,7 @@ void init_global(dt_iop_module_so_t *module)
 
     g_free(path);
   }
+#endif
 }
 
 static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, const lfCamera *camera);
@@ -1800,22 +1827,38 @@ static void lens_set(dt_iop_module_t *self, const lfLens *lens)
     snprintf(aperture, sizeof(aperture), "%g", lens->MinAperture);
 
   mounts[0] = 0;
+#ifdef LF_0395
+  const char* const* mount_names = lens->GetMountNames();
+  i = 0;
+  while (mount_names && *mount_names) {
+    if(i > 0) g_strlcat(mounts, ", ", sizeof(mounts));
+    g_strlcat(mounts, *mount_names, sizeof(mounts));
+    i++;
+    mount_names++;
+  }
+#else
   if(lens->Mounts)
     for(i = 0; lens->Mounts[i]; i++)
     {
       if(i > 0) g_strlcat(mounts, ", ", sizeof(mounts));
       g_strlcat(mounts, lens->Mounts[i], sizeof(mounts));
     }
-
+#endif
   fm = g_strdup_printf(_("maker:\t\t%s\n"
                          "model:\t\t%s\n"
                          "focal range:\t%s\n"
                          "aperture:\t\t%s\n"
+#ifndef LF_0395
                          "crop factor:\t%.1f\n"
+#endif
                          "type:\t\t%s\n"
                          "mounts:\t\t%s"),
-                       maker ? maker : "?", model ? model : "?", focal, aperture, lens->CropFactor,
+                       maker ? maker : "?", model ? model : "?", focal, aperture,
+#ifndef LF_0395
+                       lens->CropFactor,
+#endif
                        lfLens::GetLensTypeDesc(lens->Type, NULL), mounts);
+
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->lens_model), fm);
   g_free(fm);
 
@@ -2111,9 +2154,8 @@ static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, co
                 iht = img->height - img->crop_y - img->crop_height;
 
       // create dummy modifier
-      lfModifier *modifier = new lfModifier(lenslist[0], p->crop, iwd, iht);
-      modifier->Initialize(lenslist[0], LF_PF_F32, p->focal, p->aperture, p->distance, 1.0f,
-                           p->target_geom, p->modify_flags, p->inverse);
+      lfModifier *modifier = get_modifier(NULL, lenslist[0], p->crop, iwd, iht, LF_PF_F32, p->focal,
+                                          p->aperture, p->distance, 1.0f, p->target_geom, p->modify_flags, p->inverse);
       scale = modifier->GetAutoScale(p->inverse);
       delete modifier;
     }
