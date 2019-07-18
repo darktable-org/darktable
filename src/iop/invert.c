@@ -509,7 +509,7 @@ void reload_defaults(dt_iop_module_t *self)
   if(!self->dev) return;
 
   if(dt_image_is_monochrome(&self->dev->image_storage))
-    self->hide_enable_button = 1;
+    self->hide_enable_button = 0;
   else if(self->dev->image_storage.flags & DT_IMAGE_4BAYER && self->gui_data)
   {
     dt_iop_invert_gui_data_t *g = self->gui_data;
@@ -600,8 +600,10 @@ void gui_update(dt_iop_module_t *self)
   }
   else
   {
-    gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), FALSE);
-    dtgtk_reset_label_set_text(g->label, _("module disabled for monochrome image"));
+    gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), TRUE);
+    dtgtk_reset_label_set_text(g->label, _("Problems for monochrome image"));
+    gui_update_from_coeffs(self);
+
   }
 }
 
