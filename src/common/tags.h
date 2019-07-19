@@ -26,6 +26,8 @@ typedef struct dt_tag_t
 {
   guint id;
   gchar *tag;
+  guint count;
+  guint select;
 } dt_tag_t;
 
 /** creates a new tag, returns tagid \param[in] name the tag name. \param[in] tagid a pointer to tagid of new
@@ -98,6 +100,11 @@ GList *dt_tag_get_images_from_selection(gint imgid, gint tagid);
  * result a pointer to list populated with result. \return the count \note the limit of result is decided by
  * conf value "xxx" */
 uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result);
+
+/** retrieves the list of tags matching keyword. \param[in] keyword the keyword to search \param[out]
+ * result a pointer to list populated with result. \return the count \note the limit of result is decided by
+ * conf value "xxx" */
+uint32_t dt_tag_get_with_usage(const gchar *keyword, GList **result);
 
 /** retrieves a list of recent tags used. \param[out] result a pointer to list populated with result. \return
  * the count \note the limit of result is decided by conf value "xxx" */

@@ -531,7 +531,7 @@ uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags
   uint32_t count = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    dt_tag_t *t = g_malloc(sizeof(dt_tag_t));
+    dt_tag_t *t = g_malloc0(sizeof(dt_tag_t));
     t->id = sqlite3_column_int(stmt, 0);
     t->tag = g_strdup((char *)sqlite3_column_text(stmt, 1));
     *result = g_list_append(*result, t);
@@ -712,7 +712,7 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
   dt_tag_t *t;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    t = g_malloc(sizeof(dt_tag_t));
+    t = g_malloc0(sizeof(dt_tag_t));
     t->tag = g_strdup((char *)sqlite3_column_text(stmt, 0));
     t->id = sqlite3_column_int(stmt, 1);
     *result = g_list_append((*result), t);
@@ -722,6 +722,76 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
   sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.taglist", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.tagq", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.similar_tags", NULL, NULL, NULL);
+
+  return count;
+}
+
+uint32_t dt_tag_get_with_usage(const gchar *keyword, GList **result)
+{
+  sqlite3_stmt *stmt;
+
+  /* Quick sanity check - is keyword empty? If so .. return 0 */
+  if(!keyword) return 0;
+
+  gchar *keyword_expr = g_strdup_printf("%%%s%%", keyword);
+
+  /* Only select tags that are similar to the one we are looking for once. */
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "INSERT INTO memory.similar_tags (tagid) SELECT id FROM data.tags WHERE name LIKE ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, keyword_expr, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  g_free(keyword_expr);
+
+  /* Select tags that are similar to the keyword and are actually used to tag images*/
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "INSERT INTO memory.taglist (id, count) SELECT tagid, COUNT(*) "
+                              "FROM main.tagged_images "
+                              "WHERE tagid IN memory.similar_tags GROUP BY tagid",
+                              -1, &stmt, NULL);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT count(*) FROM main.selected_images",
+                              -1, &stmt, NULL);
+
+  sqlite3_step(stmt);
+  uint32_t nb_selected = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  /* Now put all the bits together */
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT T.name, ST.tagid, MT.count, CT.tagnb FROM memory.similar_tags ST "
+                              "JOIN memory.taglist MT ON MT.id = ST.tagid "
+                              "JOIN data.tags T ON T.id = ST.tagid "
+                              "LEFT JOIN (SELECT tagid, COUNT(*) AS tagnb FROM tagged_images AS i "
+                                "WHERE imgid IN (SELECT imgid FROM main.selected_images) GROUP BY tagid ) AS CT "
+                                "ON CT.tagid = ST.tagid "
+                              "WHERE T.name NOT LIKE 'darktable|%%' "
+                              "ORDER BY T.name ",
+                              -1, &stmt, NULL);
+
+  /* ... and create the result list to send upwards */
+  uint32_t count = 0;
+  dt_tag_t *t;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    t = g_malloc0(sizeof(dt_tag_t));
+    t->tag = g_strdup((char *)sqlite3_column_text(stmt, 0));
+    t->id = sqlite3_column_int(stmt, 1);
+    t->count = sqlite3_column_int(stmt, 2);
+    uint32_t tagnb = sqlite3_column_int(stmt, 3);
+    t->select = (tagnb == nb_selected) ? 2 : (tagnb == 0) ? 0 : 1;
+    *result = g_list_append((*result), t);
+    count++;
+  }
+
+  sqlite3_finalize(stmt);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.taglist", NULL, NULL, NULL);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.similar_tags", NULL, NULL, NULL);
 
   return count;
