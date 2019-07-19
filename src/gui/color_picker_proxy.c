@@ -85,7 +85,7 @@ static int _internal_iop_color_picker_get_set(dt_iop_color_picker_t *picker, Gtk
 
 static void _internal_iop_color_picker_update(dt_iop_color_picker_t *picker)
 {
-  const int old_reset = darktable.gui->reset;
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
 
   if(DTGTK_IS_TOGGLEBUTTON(picker->colorpick))
@@ -93,7 +93,7 @@ static void _internal_iop_color_picker_update(dt_iop_color_picker_t *picker)
   else
     dt_bauhaus_widget_set_quad_active(picker->colorpick, picker->current_picker == PICKER_STATUS_SELECTED);
 
-  darktable.gui->reset = old_reset;
+  darktable.gui->reset = reset;
 }
 
 void dt_iop_color_picker_apply_module(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece)
