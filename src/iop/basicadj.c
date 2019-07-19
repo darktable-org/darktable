@@ -521,9 +521,10 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpi
   p->middle_grey = (work_profile) ? (dt_ioppr_get_rgb_matrix_luminance(self->picked_color, work_profile) * 100.f)
                                   : dt_camera_rgb_luminance(self->picked_color);
 
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set(g->sl_middle_grey, p->middle_grey);
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 
   // avoid recursion
   self->picker->skip_apply = TRUE;
