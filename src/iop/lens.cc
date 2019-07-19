@@ -1852,18 +1852,17 @@ static void lens_set(dt_iop_module_t *self, const lfLens *lens)
       g_strlcat(mounts, lens->Mounts[i], sizeof(mounts));
     }
 #endif
-// TODO: crop factor is somewhere else in lf >=0.3.95
   fm = g_strdup_printf(_("maker:\t\t%s\n"
                          "model:\t\t%s\n"
                          "focal range:\t%s\n"
                          "aperture:\t\t%s\n"
-#ifndef LF_0395
                          "crop factor:\t%.1f\n"
-#endif
                          "type:\t\t%s\n"
                          "mounts:\t\t%s"),
                        maker ? maker : "?", model ? model : "?", focal, aperture,
-#ifndef LF_0395
+#ifdef LF_0395
+                       g->camera->CropFactor,
+#else
                        lens->CropFactor,
 #endif
                        lfLens::GetLensTypeDesc(lens->Type, NULL), mounts);
