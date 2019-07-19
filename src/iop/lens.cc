@@ -346,24 +346,30 @@ static char *_lens_sanitize(const char *orig_lens)
   }
 }
 
-static lfModifier * get_modifier(int *modflags, const lfLens *lens, float crop, int w, int h, lfPixelFormat pxformat, float focal, float aperture, float distance, float scale, lfLensType targeom, int flags, bool reverse)
+static lfModifier * get_modifier(int *mods_done, int w, int h, const dt_iop_lensfun_data_t *d, int mods_filter)
 {
   lfModifier *mod;
-  int tmodflags = 0;
+  int mods_todo = d->modify_flags & mods_filter;
+  int mods_done_tmp = 0;
 
 #ifdef LF_0395
-  mod = new lfModifier(crop, w, h, pxformat, reverse);
-  if(flags & LF_MODIFY_DISTORTION) tmodflags |= mod->EnableDistortionCorrection(lens, focal);
-  if(flags & LF_MODIFY_GEOMETRY) tmodflags |= mod->EnableProjectionTransform(lens, focal, targeom);
-  if(flags & LF_MODIFY_SCALE) tmodflags |= mod->EnableScaling(scale);
-  if(flags & LF_MODIFY_TCA) tmodflags |= mod->EnableTCACorrection(lens, focal);
-  if(flags & LF_MODIFY_VIGNETTING) tmodflags |= mod->EnableVignettingCorrection(lens, focal, aperture, distance);
+  mod = new lfModifier(d->crop, w, h, LF_PF_F32, d->inverse);
+  if(mods_todo & LF_MODIFY_DISTORTION)
+    mods_done_tmp |= mod->EnableDistortionCorrection(d->lens, d->focal);
+  if(mods_todo & LF_MODIFY_GEOMETRY)
+    mods_done_tmp |= mod->EnableProjectionTransform(d->lens, d->focal, d->target_geom);
+  if(mods_todo & LF_MODIFY_SCALE)
+    mods_done_tmp |= mod->EnableScaling(d->scale);
+  if(mods_todo & LF_MODIFY_TCA)
+    mods_done_tmp |= mod->EnableTCACorrection(d->lens, d->focal);
+  if(mods_todo & LF_MODIFY_VIGNETTING)
+    mods_done_tmp |= mod->EnableVignettingCorrection(d->lens, d->focal, d->aperture, d->distance);
 #else
-  mod = new lfModifier(lens, crop, w, h);
-  tmodflags = mod->Initialize(lens, pxformat, focal, aperture, distance, scale, targeom, flags, reverse);
+  mod = new lfModifier(d->lens, d->crop, w, h);
+  mods_done_tmp = mod->Initialize(d->lens, LF_PF_F32, d->focal, d->aperture, d->distance, d->scale, d->target_geom, mods_todo, d->inverse);
 #endif
 
-  if(modflags) *modflags = tmodflags;
+  if(mods_done) *mods_done = mods_done_tmp;
   return mod;
 }
 
@@ -390,8 +396,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
 
   int modflags;
-  lfModifier *modifier = get_modifier(&modflags, d->lens, d->crop, orig_w, orig_h, LF_PF_F32, d->focal,
-                                      d->aperture, d->distance, d->scale, d->target_geom, d->modify_flags, d->inverse);
+  lfModifier *modifier = get_modifier(&modflags, orig_w, orig_h, d, LF_MODIFY_ALL);
 
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
@@ -653,8 +658,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(dev_tmpbuf == NULL) goto error;
 
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
-  modifier = get_modifier(&modflags, d->lens, d->crop, orig_w, orig_h, LF_PF_F32, d->focal, 
-                          d->aperture, d->distance, d->scale, d->target_geom, d->modify_flags, d->inverse);
+  modifier = get_modifier(&modflags, orig_w, orig_h, d, LF_MODIFY_ALL);
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   if(d->inverse)
@@ -860,8 +864,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
   const float orig_w = piece->buf_in.width, orig_h = piece->buf_in.height;
   int modflags;
-  lfModifier *modifier = get_modifier(&modflags, d->lens, d->crop, orig_w, orig_h, LF_PF_F32, d->focal,
-                                      d->aperture, d->distance, d->scale, d->target_geom, d->modify_flags, d->inverse);
+  lfModifier *modifier = get_modifier(&modflags, orig_w, orig_h, d, LF_MODIFY_ALL);
   float *buf = (float *)malloc(2 * 3 * sizeof(float));
 
   for(size_t i = 0; i < points_count * 2; i += 2)
@@ -887,8 +890,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 
   const float orig_w = piece->buf_in.width, orig_h = piece->buf_in.height;
   int modflags;
-  lfModifier *modifier = get_modifier(&modflags, d->lens, d->crop, orig_w, orig_h, LF_PF_F32, d->focal,
-                                      d->aperture, d->distance, d->scale, d->target_geom, d->modify_flags, d->inverse);
+  lfModifier *modifier = get_modifier(&modflags, orig_w, orig_h, d, LF_MODIFY_ALL);
   float *buf = (float *)malloc(2 * 3 * sizeof(float));
 
   for(size_t i = 0; i < points_count * 2; i += 2)
@@ -920,9 +922,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
   const float orig_w = roi_in->scale * piece->buf_in.width, orig_h = roi_in->scale * piece->buf_in.height;
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   int modflags;
-  const int tmp_modflags = d->modify_flags & (/*LF_MODIFY_TCA |*/ LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE);
-  lfModifier *modifier = get_modifier(&modflags, d->lens, d->crop, orig_w, orig_h, LF_PF_F32, d->focal,
-                                      d->aperture, d->distance, d->scale, d->target_geom, tmp_modflags, d->inverse);
+  lfModifier *modifier = get_modifier(&modflags, orig_w, orig_h, d, /*LF_MODIFY_TCA |*/ LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE);
 
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
@@ -988,8 +988,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
   const float orig_w = roi_in->scale * piece->buf_in.width, orig_h = roi_in->scale * piece->buf_in.height;
   int modflags;
-  lfModifier *modifier = get_modifier(&modflags, d->lens, d->crop, orig_w, orig_h, LF_PF_F32, d->focal,
-                                      d->aperture, d->distance, d->scale, d->target_geom, d->modify_flags, d->inverse);
+  lfModifier *modifier = get_modifier(&modflags, orig_w, orig_h, d, LF_MODIFY_ALL);
 
   if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
   {
@@ -2162,8 +2161,20 @@ static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, co
                 iht = img->height - img->crop_y - img->crop_height;
 
       // create dummy modifier
-      lfModifier *modifier = get_modifier(NULL, lenslist[0], p->crop, iwd, iht, LF_PF_F32, p->focal,
-                                          p->aperture, p->distance, 1.0f, p->target_geom, p->modify_flags, p->inverse);
+      const dt_iop_lensfun_data_t d = {
+        .lens = (lfLens *)lenslist[0],
+        .modify_flags = p->modify_flags,
+        .inverse = p->inverse,
+        .scale = 1.0f,
+        .crop = p->crop,
+        .focal = p->focal,
+        .aperture = p->aperture,
+        .distance = p->distance,
+        .target_geom = p->target_geom,
+      };
+
+      lfModifier *modifier = get_modifier(NULL, iwd, iht, &d, LF_MODIFY_ALL);
+
       scale = modifier->GetAutoScale(p->inverse);
       delete modifier;
     }
