@@ -1855,10 +1855,10 @@ static void lens_set(dt_iop_module_t *self, const lfLens *lens)
   fm = g_strdup_printf(_("maker:\t\t%s\n"
                          "model:\t\t%s\n"
                          "focal range:\t%s\n"
-                         "aperture:\t\t%s\n"
+                         "aperture:\t%s\n"
                          "crop factor:\t%.1f\n"
                          "type:\t\t%s\n"
-                         "mounts:\t\t%s"),
+                         "mounts:\t%s"),
                        maker ? maker : "?", model ? model : "?", focal, aperture,
 #ifdef LF_0395
                        g->camera->CropFactor,
