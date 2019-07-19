@@ -1180,7 +1180,7 @@ dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
 dt_masks_form_t *dt_masks_create_ext(dt_masks_type_t type)
 {
   dt_masks_form_t *form = dt_masks_create(type);
-  
+
   // all forms created here are registered in darktable.develop->allforms for later cleanup
   if(form)
   darktable.develop->allforms = g_list_append(darktable.develop->allforms, form);
@@ -1191,7 +1191,7 @@ dt_masks_form_t *dt_masks_create_ext(dt_masks_type_t type)
 void dt_masks_replace_current_forms(dt_develop_t *dev, GList *forms)
 {
   GList *forms_tmp = dt_masks_dup_forms_deep(forms, NULL);
-  
+
   while(dev->forms)
   {
     darktable.develop->allforms = g_list_append(darktable.develop->allforms, dev->forms->data);
@@ -1222,7 +1222,7 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid)
   dt_dev_history_item_t *hist_item = NULL;
   dt_dev_history_item_t *hist_item_last = NULL;
   int num_prev = -1;
-  
+
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
@@ -1349,7 +1349,7 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid)
     if(num < dev->history_end) hist_item_last = hist_item;
   }
   sqlite3_finalize(stmt);
-  
+
   // and we update the current forms snapshot
   dt_masks_replace_current_forms(dev, (hist_item_last)?hist_item_last->forms:NULL);
 }
@@ -2097,9 +2097,10 @@ void dt_masks_iop_value_changed_callback(GtkWidget *widget, struct dt_iop_module
   if(sel == 0) return;
   if(sel == 1)
   {
+    const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
     dt_bauhaus_combobox_set(bd->masks_combo, 0);
-    darktable.gui->reset = 0;
+    darktable.gui->reset = reset;
     return;
   }
   if(sel > 0)
@@ -2580,7 +2581,7 @@ int _masks_cleanup_unused(GList **_forms, GList *history_list, const int history
 {
   int masks_removed = 0;
   GList *forms = *_forms;
-  
+
   // we create a table to store the ids of used forms
   guint nbf = g_list_length(forms);
   int *used = calloc(nbf, sizeof(int));
@@ -2628,9 +2629,9 @@ int _masks_cleanup_unused(GList **_forms, GList *history_list, const int history
   }
 
   free(used);
-  
+
   *_forms = forms;
-  
+
   return masks_removed;
 }
 
@@ -2661,10 +2662,10 @@ void dt_masks_cleanup_unused_from_list(GList *history_list)
 void dt_masks_cleanup_unused(dt_develop_t *dev)
 {
   dt_masks_change_form_gui(NULL);
-  
+
   // we remove the forms from history
   dt_masks_cleanup_unused_from_list(dev->history);
-  
+
   // and we save all that
   GList *forms = NULL;
   dt_iop_module_t *module = NULL;
@@ -2673,16 +2674,16 @@ void dt_masks_cleanup_unused(dt_develop_t *dev)
   while(history && num < dev->history_end)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
-    
+
     if(hist->forms) forms = hist->forms;
     if(hist->module && strcmp(hist->op_name, "mask_manager") != 0) module = hist->module;
-    
+
     num++;
     history = g_list_next(history);
   }
-  
+
   dt_masks_replace_current_forms(dev, forms);
-  
+
   if(module)
     dt_dev_add_history_item(dev, module, module->enabled);
   else

@@ -571,6 +571,7 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   dt_iop_gui_set_expanded(next, TRUE, FALSE);
   gtk_widget_grab_focus(next->expander);
 
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
 
   // we remove the plugin effectively
@@ -656,7 +657,7 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
   /* redraw */
   dt_control_queue_redraw_center();
 
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 }
 
 dt_iop_module_t *dt_iop_gui_get_previous_visible_module(dt_iop_module_t *module)

@@ -207,6 +207,7 @@ void expose(
   if(dev->gui_synch && !dev->image_loading)
   {
     // synch module guis from gtk thread:
+    const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
     GList *modules = dev->iop;
     while(modules)
@@ -215,7 +216,7 @@ void expose(
       dt_iop_gui_update(module);
       modules = g_list_next(modules);
     }
-    darktable.gui->reset = 0;
+    darktable.gui->reset = reset;
     dev->gui_synch = 0;
   }
 
@@ -664,6 +665,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_dev_reload_image(dev, imgid);
 
   // make sure no signals propagate here:
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
 
   const guint nb_iop = g_list_length(dev->iop);
@@ -798,7 +800,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
 
   // make signals work again, but only after focus event,
   // to avoid crop/rotate for example to add another history item.
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 
   // Signal develop initialize
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
@@ -2399,6 +2401,7 @@ void enter(dt_view_t *self)
    * add IOP modules to plugin list
    */
   // avoid triggering of events before plugin is ready:
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   char option[1024];
   GList *modules = g_list_last(dev->iop);
@@ -2430,7 +2433,8 @@ void enter(dt_view_t *self)
 
     modules = g_list_previous(modules);
   }
-  darktable.gui->reset = 0;
+  // make signals work again:
+  darktable.gui->reset = reset;
 
   /* signal that darktable.develop is initialized and ready to be used */
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE);
@@ -2444,9 +2448,6 @@ void enter(dt_view_t *self)
 
   // switch on groups as they were last time:
   dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
-
-  // make signals work again:
-  darktable.gui->reset = 0;
 
   // get last active plugin:
   gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");

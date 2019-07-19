@@ -439,9 +439,10 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
   char *str = g_strdup_printf(ngettext("fixed %d pixel", "fixed %d pixels", g->pixels_fixed), g->pixels_fixed);
   g->pixels_fixed = -1;
 
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   gtk_label_set_text(g->message, str);
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 
   g_free(str);
 
