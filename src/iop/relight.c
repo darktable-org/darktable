@@ -335,12 +335,12 @@ static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
 static void _iop_color_picker_update(dt_iop_module_t *self)
 {
   dt_iop_relight_gui_data_t *g = (dt_iop_relight_gui_data_t *)self->gui_data;
-  const int old_reset = darktable.gui->reset;
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->tbutton1), g->color_picker.current_picker == 1);
 
-  darktable.gui->reset = old_reset;
+  darktable.gui->reset = reset;
 
   if(g->color_picker.current_picker != 1)
     dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(g->gslider1), NAN);

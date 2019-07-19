@@ -1011,6 +1011,7 @@ static void process_clusters(gpointer instance, gpointer user_data)
   if(!g || !g->buffer) return;
   if(!(p->flag & ACQUIRE)) return;
 
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
 
   dt_pthread_mutex_lock(&g->lock);
@@ -1077,7 +1078,7 @@ static void process_clusters(gpointer instance, gpointer user_data)
   }
 
   p->flag &= ~(GET_TARGET | GET_SOURCE | ACQUIRE);
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 
   if(p->flag & HAS_SOURCE) dt_dev_add_history_item(darktable.develop, self, TRUE);
 
