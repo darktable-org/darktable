@@ -40,9 +40,19 @@ fast_expf(const float x)
   return u.f;
 }
 
+/*
+  Primary LUT lookup.  Measures the luminance of a given pixel using a selectable function, looks up that
+  luminance in the configured basecurve, and then scales each channel by the result.
+
+  Doing it this way avoids the color shifts documented as being possible in the legacy basecurve approach.
+
+  Also applies a multiplier prior to lookup in order to support fusion.  The idea of doing this here is to
+  emulate the original use case of enfuse, which was to fuse multiple JPEGs from a camera that was set up
+  for exposure bracketing, and which may have had a camera-specific base curve applied.
+*/
 kernel void
 basecurve_lut(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-              read_only image2d_t table, global float *a, const int preserve_colors,
+              const float mul, read_only image2d_t table, global float *a, const int preserve_colors,
               global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut,
               const int use_work_profile)
 {
@@ -52,24 +62,16 @@ basecurve_lut(read_only image2d_t in, write_only image2d_t out, const int width,
   if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  if(preserve_colors == DT_RGB_NORM_NONE)
+
+  float ratio = 1.f;
+  const float lum = mul * dt_rgb_norm(pixel, preserve_colors, use_work_profile, profile_info, lut);
+  if(lum > 0.f)
   {
-    // use lut or extrapolation:
-    pixel.x = lookup_unbounded(table, pixel.x, a);
-    pixel.y = lookup_unbounded(table, pixel.y, a);
-    pixel.z = lookup_unbounded(table, pixel.z, a);
+    const float curve_lum = lookup_unbounded(table, lum, a);
+    ratio = mul * curve_lum / lum;
   }
-  else
-  {
-    float ratio = 1.f;
-    const float lum = dt_rgb_norm(pixel, preserve_colors, use_work_profile, profile_info, lut);
-    if(lum > 0.f)
-    {
-      const float curve_lum = lookup_unbounded(table, lum, a);
-      ratio = curve_lum / lum;
-    }
-    pixel.xyz *= ratio;
-  }
+  pixel.xyz *= ratio;
+
   write_imagef (out, (int2)(x, y), pixel);
 }
 
@@ -85,9 +87,16 @@ basecurve_zero(write_only image2d_t out, const int width, const int height)
   write_imagef (out, (int2)(x, y), (float4)0.0f);
 }
 
+/*
+  Original basecurve implementation.  Applies a LUT on a per-channel basis which can cause color shifts.
+
+  These can be undesirable (skin tone shifts), or sometimes may be desired (fiery sunset).  Continue to allow
+  the "old" method but don't make it the default, both for backwards compatibility and for those who are willing
+  to take the risks of "artistic" impacts on their image.
+*/
 kernel void
-basecurve_ev_lut(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                   const float ev, read_only image2d_t table, global float *a)
+basecurve_legacy_lut(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                   const float mul, read_only image2d_t table, global float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -97,9 +106,9 @@ basecurve_ev_lut(read_only image2d_t in, write_only image2d_t out, const int wid
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   
   // apply ev multiplier and use lut or extrapolation:
-  pixel.x = lookup_unbounded(table, ev * pixel.x, a);
-  pixel.y = lookup_unbounded(table, ev * pixel.y, a);
-  pixel.z = lookup_unbounded(table, ev * pixel.z, a);
+  pixel.x = lookup_unbounded(table, mul * pixel.x, a);
+  pixel.y = lookup_unbounded(table, mul * pixel.y, a);
+  pixel.z = lookup_unbounded(table, mul * pixel.z, a);
   write_imagef (out, (int2)(x, y), pixel);
 }
 

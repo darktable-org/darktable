@@ -304,7 +304,7 @@ typedef struct dt_iop_basecurve_global_data_t
 {
   int kernel_basecurve_lut;
   int kernel_basecurve_zero;
-  int kernel_basecurve_ev_lut;
+  int kernel_basecurve_legacy_lut;
   int kernel_basecurve_compute_features;
   int kernel_basecurve_blur_h;
   int kernel_basecurve_blur_v;
@@ -499,6 +499,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
 {
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   cl_int err = -999;
 
@@ -508,6 +509,11 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   const int height = roi_in->height;
   const int rad = MIN(width, (int)ceilf(256 * roi_in->scale / piece->iscale));
 
+  cl_mem dev_profile_info = NULL;
+  cl_mem dev_profile_lut = NULL;
+  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl;
+  cl_float *profile_lut_cl = NULL;
+
   cl_mem *dev_col = calloc(num_levels_max, sizeof(cl_mem));
   cl_mem *dev_comb = calloc(num_levels_max, sizeof(cl_mem));
 
@@ -515,6 +521,13 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   cl_mem dev_tmp2 = NULL;
   cl_mem dev_m = NULL;
   cl_mem dev_coeffs = NULL;
+
+  const int use_work_profile = (work_profile == NULL) ? 0 : 1;
+  const int preserve_colors = d->preserve_colors;
+
+  err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &profile_info_cl, &profile_lut_cl,
+                                            &dev_profile_info, &dev_profile_lut);
+  if(err != CL_SUCCESS) goto error;
 
   int num_levels = num_levels_max;
 
@@ -563,18 +576,36 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   {
     // for every exposure fusion image: push by some ev, apply base curve and compute features
     {
-      const float ev = exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias);
+      const float mul = exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias);
 
       size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_ev_lut, 0, sizeof(cl_mem), (void *)&dev_in);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_ev_lut, 1, sizeof(cl_mem), (void *)&dev_tmp1);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_ev_lut, 2, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_ev_lut, 3, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_ev_lut, 4, sizeof(float), (void *)&ev);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_ev_lut, 5, sizeof(cl_mem), (void *)&dev_m);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_ev_lut, 6, sizeof(cl_mem), (void *)&dev_coeffs);
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_ev_lut, sizes);
-      if(err != CL_SUCCESS) goto error;
+      if(d->preserve_colors == DT_RGB_NORM_NONE)
+      {
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 0, sizeof(cl_mem), (void *)&dev_in);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 1, sizeof(cl_mem), (void *)&dev_tmp1);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 2, sizeof(int), (void *)&width);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 3, sizeof(int), (void *)&height);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 4, sizeof(float), (void *)&mul);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 5, sizeof(cl_mem), (void *)&dev_m);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 6, sizeof(cl_mem), (void *)&dev_coeffs);
+        err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_legacy_lut, sizes);
+        if(err != CL_SUCCESS) goto error;
+      }
+      else
+      {
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 0, sizeof(cl_mem), (void *)&dev_in);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 1, sizeof(cl_mem), (void *)&dev_tmp1);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 2, sizeof(int), (void *)&width);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 3, sizeof(int), (void *)&height);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 4, sizeof(float), (void *)&mul);       
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 5, sizeof(cl_mem), (void *)&dev_m);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 6, sizeof(cl_mem), (void *)&dev_coeffs);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 7, sizeof(int), (void *)&preserve_colors);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 8, sizeof(cl_mem), (void *)&dev_profile_info);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 9, sizeof(cl_mem), (void *)&dev_profile_lut);
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 10, sizeof(int), (void *)&use_work_profile);
+        err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_lut, sizes);
+      }
 
       dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_compute_features, 0, sizeof(cl_mem), (void *)&dev_tmp1);
       dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_compute_features, 1, sizeof(cl_mem), (void *)&dev_col[0]);
@@ -742,6 +773,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
     dt_opencl_release_mem_object(dev_col[k]);
     dt_opencl_release_mem_object(dev_comb[k]);
   }
+  dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_coeffs);
   dt_opencl_release_mem_object(dev_tmp1);
@@ -756,6 +788,7 @@ error:
     dt_opencl_release_mem_object(dev_col[k]);
     dt_opencl_release_mem_object(dev_comb[k]);
   }
+  dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_coeffs);
   dt_opencl_release_mem_object(dev_tmp1);
@@ -789,6 +822,8 @@ int process_cl_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   const int height = roi_in->height;
   const int preserve_colors = d->preserve_colors;
 
+  const float mul = 1.0f;
+
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
   dev_m = dt_opencl_copy_host_to_device(devid, d->table, 256, 256, sizeof(float));
   if(dev_m == NULL) goto error;
@@ -798,20 +833,41 @@ int process_cl_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   if(err != CL_SUCCESS) goto error;
 
   dev_coeffs = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3, d->unbounded_coeffs);
-  if(dev_coeffs == NULL) goto error;
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 0, sizeof(cl_mem), (void *)&dev_in);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 1, sizeof(cl_mem), (void *)&dev_out);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 2, sizeof(int), (void *)&width);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 3, sizeof(int), (void *)&height);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 4, sizeof(cl_mem), (void *)&dev_m);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 5, sizeof(cl_mem), (void *)&dev_coeffs);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 6, sizeof(int), (void *)&preserve_colors);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 7, sizeof(cl_mem), (void *)&dev_profile_info);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 8, sizeof(cl_mem), (void *)&dev_profile_lut);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 9, sizeof(int), (void *)&use_work_profile);
-  err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_lut, sizes);
 
-  if(err != CL_SUCCESS) goto error;
+  if(dev_coeffs == NULL) goto error;
+
+  // read data/kernels/basecurve.cl for a description of "legacy" vs current
+  // Conditional is moved outside of the OpenCL operations for performance.
+  if(d->preserve_colors == DT_RGB_NORM_NONE)
+  {
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 4, sizeof(float), (void *)&mul);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 5, sizeof(cl_mem), (void *)&dev_m);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_legacy_lut, 6, sizeof(cl_mem), (void *)&dev_coeffs);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_legacy_lut, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+  else
+  {
+    //FIXME:  There are still conditionals on d->preserve_colors within this flow that could impact performance
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 4, sizeof(float), (void *)&mul); 
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 5, sizeof(cl_mem), (void *)&dev_m);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 6, sizeof(cl_mem), (void *)&dev_coeffs);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 7, sizeof(int), (void *)&preserve_colors);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 8, sizeof(cl_mem), (void *)&dev_profile_info);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 9, sizeof(cl_mem), (void *)&dev_profile_lut);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 10, sizeof(int), (void *)&use_work_profile);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basecurve_lut, sizes);
+    if(err != CL_SUCCESS) goto error;
+  }
+
   dt_opencl_release_mem_object(dev_m);
   dt_opencl_release_mem_object(dev_coeffs);
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
@@ -867,7 +923,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 }
 
 
-static inline void apply_ev_and_curve(
+// See comments of opencl version in data/kernels/basecurve.cl for description of the meaning of "legacy"
+static inline void apply_legacy_curve(
     const float *const in,
     float *const out,
     const int width,
@@ -878,7 +935,7 @@ static inline void apply_ev_and_curve(
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, in, mul, out, table, unbounded_coeffs, width) \
+  dt_omp_firstprivate(height, width, in, out, mul, table, unbounded_coeffs) \
   schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)width * height; k++)
@@ -891,10 +948,50 @@ static inline void apply_ev_and_curve(
       // use base curve for values < 1, else use extrapolation.
       if(f < 1.0f)
         outp[i] = table[CLAMP((int)(f * 0x10000ul), 0, 0xffff)];
-      else if(unbounded_coeffs)
+      else
         outp[i] = dt_iop_eval_exp(unbounded_coeffs, f);
-      else outp[i] = 1.0f;
     }
+    outp[3] = inp[3];
+  }
+}
+
+// See description of the equivalent OpenCL function in data/kernels/basecurve.cl
+static inline void apply_curve(
+    const float *const in,
+    float *const out,
+    const int width,
+    const int height,
+    const int preserve_colors,
+    const float mul,
+    const float *const table,
+    const float *const unbounded_coeffs,
+    const dt_iop_order_iccprofile_info_t *const work_profile)
+{
+#ifdef _OPENMP
+#pragma omp parallel for default(none)                            \
+  dt_omp_firstprivate(in, out, width, height, mul, table, unbounded_coeffs, work_profile) \
+  schedule(static)
+#endif
+  for(size_t k = 0; k < (size_t)width * height; k++)
+  {
+    const float *inp = in + 4 * k;
+    float *outp = out + 4 * k;
+    float ratio = 1.f;
+    // FIXME: Determine if we can get rid of the conditionals within this function in some way to improve performance.
+    // However, solving this one is much harder than the conditional for legacy vs. current
+    const float lum = mul * dt_rgb_norm(inp, preserve_colors, work_profile);
+    if(lum > 0.f)
+    {
+      const float curve_lum = (lum < 1.0f)
+        ? table[CLAMP((int)(lum * 0x10000ul), 0, 0xffff)]
+        : dt_iop_eval_exp(unbounded_coeffs, lum);
+      ratio = mul * curve_lum / lum;
+    }
+    for(size_t c = 0; c < 3; c++)
+    {
+      outp[c] = (ratio * inp[c]);
+    }
+    outp[3] = inp[3];
   }
 }
 
@@ -1043,6 +1140,7 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
   dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   // allocate temporary buffer for wavelet transform + blending
   const int wd = roi_in->width, ht = roi_in->height;
@@ -1069,11 +1167,15 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   }
 
   for(int e = 0; e < d->exposure_fusion + 1; e++)
-  { // for every exposure fusion image:
+  {
+    // for every exposure fusion image:
     // push by some ev, apply base curve:
-    apply_ev_and_curve(in, col[0], wd, ht,
-                       exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias), d->table,
-                       d->unbounded_coeffs);
+    if(d->preserve_colors == DT_RGB_NORM_NONE)
+      apply_legacy_curve(in, col[0], wd, ht, exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias),
+                         d->table, d->unbounded_coeffs);
+    else
+      apply_curve(in, col[0], wd, ht, d->preserve_colors, exposure_increment(d->exposure_stops, e, d->exposure_fusion, d->exposure_bias),
+                  d->table, d->unbounded_coeffs, work_profile);
 
     // compute features
     compute_features(col[0], wd, ht);
@@ -1213,54 +1315,28 @@ void process_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, co
 {
   const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
-  const int ch = piece->colors;
+  //const int ch = piece->colors; <-- it appears someone was trying to make this handle monochrome data,
+  //however the for loops only handled RGBA - FIXME, determine what possible data formats and channel
+  //configurations we might encounter here and handle those too
   dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, d, in, out, roi_out, work_profile) \
-  schedule(static)
-#endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
-  {
-    const float *inp = in + ch * k;
-    float *outp = out + ch * k;
-    if(d->preserve_colors == DT_RGB_NORM_NONE)
-    {
-      for(int i = 0; i < 3; i++)
-      {
-        // use base curve for values < 1, else use extrapolation.
-        if(inp[i] < 1.0f)
-          outp[i] = d->table[CLAMP((int)(inp[i] * 0x10000ul), 0, 0xffff)];
-        else
-          outp[i] = dt_iop_eval_exp(d->unbounded_coeffs, inp[i]);
-      }
-    }
-    else
-    {
-      float ratio = 1.f;
-      const float lum = dt_rgb_norm(inp, d->preserve_colors, work_profile);
-      if(lum > 0.f)
-      {
-        const float curve_lum = (lum < 1.0f)
-                                    ? d->table[CLAMP((int)(lum * 0x10000ul), 0, 0xffff)]
-                                    : dt_iop_eval_exp(d->unbounded_coeffs, lum);
-        ratio = curve_lum / lum;
-      }
-      for(size_t c = 0; c < 3; c++)
-      {
-        outp[c] = (ratio * inp[c]);
-      }
-    }
-    outp[3] = inp[3];
-  }
+  const int wd = roi_in->width, ht = roi_in->height;
+
+  // Compared to previous implementation, we've at least moved this conditional outside of the image processing loops
+  // so that it is evaluated only once.  See FIXME comments in apply_curve for more potential performance improvements
+  if(d->preserve_colors == DT_RGB_NORM_NONE)
+    apply_legacy_curve(in, out, wd, ht, 1.0, d->table, d->unbounded_coeffs);
+  else
+    apply_curve(in, out, wd, ht, d->preserve_colors, 1.0, d->table, d->unbounded_coeffs, work_profile);
 }
+
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
+
   // are we doing exposure fusion?
   if(d->exposure_fusion)
     process_fusion(self, piece, ivoid, ovoid, roi_in, roi_out);
@@ -1338,13 +1414,11 @@ void gui_update(struct dt_iop_module_t *self)
   {
     gtk_widget_set_visible(g->exposure_step, TRUE);
     gtk_widget_set_visible(g->exposure_bias, TRUE);
-    gtk_widget_set_visible(g->cmb_preserve_colors, FALSE);
   }
   if(p->exposure_fusion == 0)
   {
     gtk_widget_set_visible(g->exposure_step, FALSE);
     gtk_widget_set_visible(g->exposure_bias, FALSE);
-    gtk_widget_set_visible(g->cmb_preserve_colors, TRUE);
   }
 
   dt_bauhaus_slider_set(g->exposure_step, p->exposure_stops);
@@ -1390,7 +1464,7 @@ void init_global(dt_iop_module_so_t *module)
   module->data = gd;
   gd->kernel_basecurve_lut = dt_opencl_create_kernel(program, "basecurve_lut");
   gd->kernel_basecurve_zero = dt_opencl_create_kernel(program, "basecurve_zero");
-  gd->kernel_basecurve_ev_lut = dt_opencl_create_kernel(program, "basecurve_ev_lut");
+  gd->kernel_basecurve_legacy_lut = dt_opencl_create_kernel(program, "basecurve_legacy_lut");
   gd->kernel_basecurve_compute_features = dt_opencl_create_kernel(program, "basecurve_compute_features");
   gd->kernel_basecurve_blur_h = dt_opencl_create_kernel(program, "basecurve_blur_h");
   gd->kernel_basecurve_blur_v = dt_opencl_create_kernel(program, "basecurve_blur_v");
@@ -1410,7 +1484,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)module->data;
   dt_opencl_free_kernel(gd->kernel_basecurve_lut);
   dt_opencl_free_kernel(gd->kernel_basecurve_zero);
-  dt_opencl_free_kernel(gd->kernel_basecurve_ev_lut);
+  dt_opencl_free_kernel(gd->kernel_basecurve_legacy_lut);
   dt_opencl_free_kernel(gd->kernel_basecurve_compute_features);
   dt_opencl_free_kernel(gd->kernel_basecurve_blur_h);
   dt_opencl_free_kernel(gd->kernel_basecurve_blur_v);
@@ -1981,19 +2055,11 @@ static void fusion_callback(GtkWidget *widget, gpointer user_data)
   {
     gtk_widget_set_visible(g->exposure_step, TRUE);
     gtk_widget_set_visible(g->exposure_bias, TRUE);
-    // do not preserve color on fusion for now
-    p->preserve_colors = DT_RGB_NORM_NONE;
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
-    dt_bauhaus_combobox_set(g->cmb_preserve_colors, p->preserve_colors);
-    darktable.gui->reset = reset;
-    gtk_widget_set_visible(g->cmb_preserve_colors, FALSE);
   }
   if(p->exposure_fusion != 0 && fuse == 0)
   {
     gtk_widget_set_visible(g->exposure_step, FALSE);
     gtk_widget_set_visible(g->exposure_bias, FALSE);
-    gtk_widget_set_visible(g->cmb_preserve_colors, TRUE);
   }
   p->exposure_fusion = fuse;
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -2033,8 +2099,7 @@ static void preserve_colors_callback(GtkWidget *widget, dt_iop_module_t *self)
   if(darktable.gui->reset) return;
   dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
 
-  if(p->exposure_fusion == 0) // do not preserve color on fusion for now
-    p->preserve_colors = dt_bauhaus_combobox_get(widget);
+  p->preserve_colors = dt_bauhaus_combobox_get(widget);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -2082,9 +2147,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), c->cmb_preserve_colors, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(c->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
   g_signal_connect(G_OBJECT(c->cmb_preserve_colors), "value-changed", G_CALLBACK(preserve_colors_callback), self);
-  gtk_widget_show_all(c->cmb_preserve_colors);
-  gtk_widget_set_no_show_all(c->cmb_preserve_colors, TRUE);
-  gtk_widget_set_visible(c->cmb_preserve_colors, p->exposure_fusion == 0 ? TRUE : FALSE);
 
   c->fusion = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(c->fusion, NULL, _("fusion"));
