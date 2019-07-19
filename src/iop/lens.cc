@@ -47,6 +47,7 @@ extern "C" {
 #include <lensfun.h>
 
 extern "C" {
+
 #if LF_VERSION < ((0 << 24) | (2 << 16) | (9 << 8) | 0)
 #define LF_SEARCH_SORT_AND_UNIQUIFY 2
 #endif
@@ -314,8 +315,8 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 static char *_lens_sanitize(const char *orig_lens)
 {
-  char *found_or = strstr((char *)orig_lens, " or ");
-  char *found_parenthesis = strstr((char *)orig_lens, " (");
+  const char *found_or = strstr(orig_lens, " or ");
+  const char *found_parenthesis = strstr(orig_lens, " (");
 
   if(found_or || found_parenthesis)
   {
@@ -349,6 +350,7 @@ static lfModifier * get_modifier(int *modflags, const lfLens *lens, float crop, 
 {
   lfModifier *mod;
   int tmodflags = 0;
+
 #ifdef LF_0395
   mod = new lfModifier(crop, w, h, pxformat, reverse);
   if(flags & LF_MODIFY_DISTORTION) tmodflags |= mod->EnableDistortionCorrection(lens, focal);
@@ -360,6 +362,7 @@ static lfModifier * get_modifier(int *modflags, const lfLens *lens, float crop, 
   mod = new lfModifier(lens, crop, w, h);
   tmodflags = mod->Initialize(lens, pxformat, focal, aperture, distance, scale, targeom, flags, reverse);
 #endif
+
   if(modflags) *modflags = tmodflags;
   return mod;
 }
@@ -643,10 +646,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   tmpbuf = (float *)dt_alloc_align(64, tmpbuflen);
   if(tmpbuf == NULL) goto error;
 
-  dev_tmp = (cl_mem) dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp = (cl_mem)dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
   if(dev_tmp == NULL) goto error;
 
-  dev_tmpbuf = (cl_mem) dt_opencl_alloc_device_buffer(devid, tmpbuflen);
+  dev_tmpbuf = (cl_mem)dt_opencl_alloc_device_buffer(devid, tmpbuflen);
   if(dev_tmpbuf == NULL) goto error;
 
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
@@ -916,9 +919,10 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
   const float orig_w = roi_in->scale * piece->buf_in.width, orig_h = roi_in->scale * piece->buf_in.height;
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
-  int modflags = d->modify_flags & (/*LF_MODIFY_TCA |*/ LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE);
+  int modflags;
+  const int tmp_modflags = d->modify_flags & (/*LF_MODIFY_TCA |*/ LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE);
   lfModifier *modifier = get_modifier(&modflags, d->lens, d->crop, orig_w, orig_h, LF_PF_F32, d->focal,
-                                      d->aperture, d->distance, d->scale, d->target_geom, modflags, d->inverse);
+                                      d->aperture, d->distance, d->scale, d->target_geom, tmp_modflags, d->inverse);
 
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
@@ -1124,10 +1128,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     {
       *d->lens = *lens[0];
 #ifndef LF_0395
+      // TODO: Disabled temporarily, it won't work like this with lf >=0.3.95
       if(p->tca_override)
       {
         // add manual d->lens stuff:
-        lfLensCalibTCA tca = { (lfTCAModel)0 };
+        lfLensCalibTCA tca = { LF_TCA_MODEL_NONE };
         tca.Focal = 0;
         tca.Model = LF_TCA_MODEL_LINEAR;
         tca.Terms[0] = p->tca_r;
@@ -1199,6 +1204,9 @@ void init_global(dt_iop_module_so_t *module)
   gd->db = (lfDatabase *)dt_iop_lensfun_db;
 
 #ifdef LF_0395
+  // simple Load() should work fine now?
+  // quote lf 0.3.95 Changelog: "HomeDataDir and UserUpdatesDir variables are deprecated [...]
+  // lfDatabase::Load() got all necessary overloads to load database files [...]"
   if(dt_iop_lensfun_db->Load() != LF_NO_ERROR)
   {
     fprintf(stderr, "[iop_lens]: could not load lensfun database\n");
@@ -1611,7 +1619,7 @@ static void camera_menu_fill(dt_iop_module_t *self, const lfCamera *const *camli
   g->camera_menu = GTK_MENU(gtk_menu_new());
   for(i = 0; i < makers->len; i++)
   {
-    GtkWidget *item = (GtkWidget *)gtk_menu_item_new_with_label((const gchar*)g_ptr_array_index(makers, i));
+    GtkWidget *item = (GtkWidget *)gtk_menu_item_new_with_label((const gchar *)g_ptr_array_index(makers, i));
     gtk_widget_show(item);
     gtk_menu_shell_append(GTK_MENU_SHELL(g->camera_menu), item);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), (GtkWidget *)g_ptr_array_index(submenus, i));
@@ -1844,6 +1852,7 @@ static void lens_set(dt_iop_module_t *self, const lfLens *lens)
       g_strlcat(mounts, lens->Mounts[i], sizeof(mounts));
     }
 #endif
+// TODO: crop factor is somewhere else in lf >=0.3.95
   fm = g_strdup_printf(_("maker:\t\t%s\n"
                          "model:\t\t%s\n"
                          "focal range:\t%s\n"
@@ -2005,7 +2014,7 @@ static void lens_menu_fill(dt_iop_module_t *self, const lfLens *const *lenslist)
   g->lens_menu = GTK_MENU(gtk_menu_new());
   for(i = 0; i < makers->len; i++)
   {
-    GtkWidget *item = gtk_menu_item_new_with_label((const gchar*)g_ptr_array_index(makers, i));
+    GtkWidget *item = gtk_menu_item_new_with_label((const gchar *)g_ptr_array_index(makers, i));
     gtk_widget_show(item);
     gtk_menu_shell_append(GTK_MENU_SHELL(g->lens_menu), item);
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), (GtkWidget *)g_ptr_array_index(submenus, i));
@@ -2185,7 +2194,7 @@ static void corrections_done(gpointer instance, gpointer user_data)
   const int corrections_done = g->corrections_done;
   dt_pthread_mutex_unlock(&g->lock);
 
-  const char *empty_message = "";
+  const char empty_message[] = "";
   char *message = (char *)empty_message;
   GList *modifiers = g->modifiers;
   while(modifiers && self->enabled)
