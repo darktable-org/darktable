@@ -136,6 +136,8 @@ typedef struct dt_iop_lensfun_data_t
   float distance;
   lfLensType target_geom;
   gboolean do_nan_checks;
+  gboolean tca_override;
+  lfLensCalibTCA custom_tca;
 } dt_iop_lensfun_data_t;
 
 
@@ -361,7 +363,10 @@ static lfModifier * get_modifier(int *mods_done, int w, int h, const dt_iop_lens
   if((mods_todo & LF_MODIFY_SCALE) && (d->scale != 1.0))
     mods_done_tmp |= mod->EnableScaling(d->scale);
   if(mods_todo & LF_MODIFY_TCA)
-    mods_done_tmp |= mod->EnableTCACorrection(d->lens, d->focal);
+  {
+    if(d->tca_override) mods_done_tmp |= mod->EnableTCACorrection(d->custom_tca);
+    else mods_done_tmp |= mod->EnableTCACorrection(d->lens, d->focal);
+  }
   if(mods_todo & LF_MODIFY_VIGNETTING)
     mods_done_tmp |= mod->EnableVignettingCorrection(d->lens, d->focal, d->aperture, d->distance);
 #else
@@ -1126,10 +1131,23 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     if(lens)
     {
       *d->lens = *lens[0];
-#ifndef LF_0395
-      // TODO: Disabled temporarily, it won't work like this with lf >=0.3.95
       if(p->tca_override)
       {
+#ifdef LF_0395
+        const dt_image_t *img = &(self->dev->image_storage);
+
+        d->custom_tca = {
+          .Model = LF_TCA_MODEL_LINEAR,
+          .Focal = p->focal,
+          .Terms = { p->tca_r, p->tca_b },
+          .CalibAttr = {
+            .CenterX = 0.0f,
+            .CenterY = 0.0f,
+            .CropFactor = d->crop,
+            .AspectRatio = (float)img->width / (float)img->height,
+          },
+        };
+#else
         // add manual d->lens stuff:
         lfLensCalibTCA tca = { LF_TCA_MODEL_NONE };
         tca.Focal = 0;
@@ -1139,8 +1157,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
         if(d->lens->CalibTCA)
           while(d->lens->CalibTCA[0]) d->lens->RemoveCalibTCA(0);
         d->lens->AddCalibTCA(&tca);
-      }
 #endif
+      }
       lf_free(lens);
     }
   }
@@ -1153,6 +1171,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->distance = p->distance;
   d->target_geom = p->target_geom;
   d->do_nan_checks = TRUE;
+  d->tca_override = p->tca_override;
 
   /*
    * there are certain situations when LensFun can return NAN coordinated.
@@ -2171,6 +2190,9 @@ static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, co
         .aperture = p->aperture,
         .distance = p->distance,
         .target_geom = p->target_geom,
+        .custom_tca = {
+          .Model = LF_TCA_MODEL_NONE,
+        }
       };
 
       lfModifier *modifier = get_modifier(NULL, iwd, iht, &d, LF_MODIFY_ALL);
