@@ -18,6 +18,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
+#include "common/file_location.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
