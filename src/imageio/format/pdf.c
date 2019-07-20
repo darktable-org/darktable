@@ -28,6 +28,8 @@
 #include "gui/gtkentry.h"
 #include "imageio/format/imageio_format_api.h"
 
+#include <strings.h>
+
 DT_MODULE(1)
 
 // clang-format off

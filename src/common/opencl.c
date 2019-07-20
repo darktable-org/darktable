@@ -24,6 +24,7 @@
 #include "common/darktable.h"
 #include "common/dlopencl.h"
 #include "common/dwt.h"
+#include "common/file_location.h"
 #include "common/gaussian.h"
 #include "common/guided_filter.h"
 #include "common/heal.h"
@@ -40,6 +41,7 @@
 #include <locale.h>
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 
 #include <ctype.h>
 #include <errno.h>

@@ -21,6 +21,7 @@
 #include <glib.h>
 #include <stdio.h>
 
+#include "common/file_location.h"
 #include "common/image.h"
 #include "common/image_cache.h"
 #include "common/mipmap_cache.h"
