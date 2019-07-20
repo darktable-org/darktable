@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "common/file_location.h"
 
 #ifdef USE_LUA
 #include "lua/call.h"
