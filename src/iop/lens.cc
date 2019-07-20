@@ -356,9 +356,9 @@ static lfModifier * get_modifier(int *mods_done, int w, int h, const dt_iop_lens
   mod = new lfModifier(d->crop, w, h, LF_PF_F32, d->inverse);
   if(mods_todo & LF_MODIFY_DISTORTION)
     mods_done_tmp |= mod->EnableDistortionCorrection(d->lens, d->focal);
-  if(mods_todo & LF_MODIFY_GEOMETRY)
+  if((mods_todo & LF_MODIFY_GEOMETRY) && (d->lens->Type != d->target_geom))
     mods_done_tmp |= mod->EnableProjectionTransform(d->lens, d->focal, d->target_geom);
-  if(mods_todo & LF_MODIFY_SCALE)
+  if((mods_todo & LF_MODIFY_SCALE) && (d->scale != 1.0))
     mods_done_tmp |= mod->EnableScaling(d->scale);
   if(mods_todo & LF_MODIFY_TCA)
     mods_done_tmp |= mod->EnableTCACorrection(d->lens, d->focal);
