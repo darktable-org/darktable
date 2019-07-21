@@ -21,6 +21,7 @@
 #include "common/colorlabels.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/file_location.h"
 #include "common/focus.h"
 #include "common/grouping.h"
 #include "common/history.h"

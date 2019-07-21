@@ -17,10 +17,12 @@
 */
 
 #include <gdk/gdkkeysyms.h>
+#include <strings.h>
 
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/file_location.h"
 #include "common/l10n.h"
 #include "common/presets.h"
 #include "control/control.h"

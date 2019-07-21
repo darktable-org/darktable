@@ -21,11 +21,14 @@
 #include "common/colormatrices.c"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/file_location.h"
 #include "common/srgb_tone_curve_values.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "external/adobe_coeff.c"
+
+#include <strings.h>
 
 #ifdef USE_COLORDGTK
 #include "colord-gtk.h"

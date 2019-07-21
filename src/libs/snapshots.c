@@ -18,6 +18,7 @@
 
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/file_location.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"

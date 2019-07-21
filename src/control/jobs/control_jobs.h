@@ -47,6 +47,7 @@ void dt_control_merge_hdr();
 
 void dt_control_seed_denoise();
 void dt_control_denoise();
+void dt_control_refresh_exif();
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -21,6 +21,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
+#include "common/file_location.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -2153,10 +2154,11 @@ static void corrections_done(gpointer instance, gpointer user_data)
     modifiers = g_list_next(modifiers);
   }
 
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   gtk_label_set_text(g->message, message);
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->message), message);
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 }
 
 void gui_init(struct dt_iop_module_t *self)
