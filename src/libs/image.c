@@ -43,7 +43,7 @@ typedef struct dt_lib_image_t
 {
   GtkWidget *rotate_cw_button, *rotate_ccw_button, *remove_button, *delete_button, *create_hdr_button,
       *duplicate_button, *reset_button, *move_button, *copy_button, *group_button, *ungroup_button,
-      *cache_button, *uncache_button;
+      *cache_button, *uncache_button, *refresh_button;
 } dt_lib_image_t;
 
 const char *name(dt_lib_module_t *self)
@@ -132,6 +132,8 @@ static void button_clicked(GtkWidget *widget, gpointer user_data)
     dt_control_set_local_copy_images();
   else if(i == 13)
     dt_control_reset_local_copy_images();
+  else if(i == 14)
+    dt_control_refresh_exif();
 }
 
 static const char* _image_get_delete_button_label()
@@ -268,8 +270,15 @@ void gui_init(dt_lib_module_t *self)
   ellipsize_button(button);
   d->ungroup_button = button;
   gtk_widget_set_tooltip_text(button, _("remove selected images from the group"));
-  gtk_grid_attach(grid, button, 2, line, 2, 1);
+  gtk_grid_attach(grid, button, 2, line++, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(11));
+
+  button = gtk_button_new_with_label(_("refresh exif"));
+  ellipsize_button(button);
+  d->refresh_button = button;
+  gtk_widget_set_tooltip_text(button, _("update image information to match changes to file"));
+  gtk_grid_attach(grid, button, 0, line, 4, 1);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(14));
 
   /* connect preference changed signal */
   dt_control_signal_connect(
@@ -301,6 +310,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "reset rotation"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "copy the image locally"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "resync the local copy"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "refresh exif"), 0, 0);
   // Grouping keys
   dt_accel_register_lib(self, NC_("accel", "group"), GDK_KEY_g, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "ungroup"), GDK_KEY_g, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
@@ -321,6 +331,7 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "reset rotation", d->reset_button);
   dt_accel_connect_button_lib(self, "copy the image locally", d->cache_button);
   dt_accel_connect_button_lib(self, "resync the local copy", d->uncache_button);
+  dt_accel_connect_button_lib(self, "refresh exif", d->refresh_button);
   // Grouping keys
   dt_accel_connect_button_lib(self, "group", d->group_button);
   dt_accel_connect_button_lib(self, "ungroup", d->ungroup_button);

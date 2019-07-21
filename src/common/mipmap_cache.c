@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/exif.h"
+#include "common/file_location.h"
 #include "common/grealpath.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
@@ -38,6 +39,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <unistd.h>
 #if defined(__SSE__)
 #include <xmmintrin.h>

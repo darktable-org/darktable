@@ -1178,11 +1178,12 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
     // freshly picked, also select it in gui:
     int pick = self->request_color_pick;
     g->drawn_patch = cells_x * bestj + besti;
+    const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
     dt_bauhaus_combobox_set(g->combobox_patch, g->drawn_patch);
     g->patch = g->drawn_patch;
     self->gui_update(self);
-    darktable.gui->reset = 0;
+    darktable.gui->reset = reset;
     self->request_color_pick = pick; // restore, the combobox will kill it
   }
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.));
