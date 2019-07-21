@@ -1983,9 +1983,10 @@ static void fusion_callback(GtkWidget *widget, gpointer user_data)
     gtk_widget_set_visible(g->exposure_bias, TRUE);
     // do not preserve color on fusion for now
     p->preserve_colors = DT_RGB_NORM_NONE;
+    const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
     dt_bauhaus_combobox_set(g->cmb_preserve_colors, p->preserve_colors);
-    darktable.gui->reset = 0;
+    darktable.gui->reset = reset;
     gtk_widget_set_visible(g->cmb_preserve_colors, FALSE);
   }
   if(p->exposure_fusion != 0 && fuse == 0)

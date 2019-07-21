@@ -28,6 +28,8 @@
 #endif
 
 #include <math.h>
+#include <strings.h>
+
 #include <pango/pangocairo.h>
 
 G_DEFINE_TYPE(DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA)

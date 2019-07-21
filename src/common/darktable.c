@@ -42,6 +42,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/cpuid.h"
+#include "common/file_location.h"
 #include "common/film.h"
 #include "common/grealpath.h"
 #include "common/image.h"

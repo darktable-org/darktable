@@ -220,14 +220,6 @@ static void detach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
-static void attach_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
-  attach_selected_tag(self, d);
-  update(self, 0);
-}
-
 static void detach_activated(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -294,6 +286,42 @@ static void tag_name_changed(GtkEntry *entry, gpointer user_data)
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
   set_keyword(self, d);
+}
+
+static void view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  if((event->type == GDK_BUTTON_PRESS && event->button == 3) || (event->type == GDK_2BUTTON_PRESS && event->button == 1))
+  {
+    GtkTreeView *view = d->related;
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
+    GtkTreePath *path = NULL;
+    // Get tree path for row that was clicked
+    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), (gint)event->x, (gint)event->y, &path, NULL, NULL, NULL))
+    {
+      gtk_tree_selection_select_path(selection, path);
+      if(event->type == GDK_BUTTON_PRESS && event->button == 3)
+      {
+        GtkTreeIter iter;
+        GtkTreeModel *model = NULL;
+        if(gtk_tree_selection_get_selected(selection, &model, &iter))
+        {
+          char *tag;
+          gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_TAG, &tag, -1);
+          gtk_entry_set_text(d->entry, tag);
+          g_free(tag);
+          gtk_entry_grab_focus_without_selecting(d->entry);
+        }
+      }
+      else if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
+      {
+        attach_selected_tag(self, d);
+        update(self, 0);
+      }
+    }
+    gtk_tree_path_free(path);
+  }
 }
 
 static void delete_button_clicked(GtkButton *button, gpointer user_data)
@@ -560,9 +588,9 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(d->related), GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(d->related, GTK_TREE_MODEL(liststore));
   g_object_unref(liststore);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->related), _("related tags,\ndoubleclick to attach"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->related), _("related tags,\ndoubleclick to attach,\nright-click to copy into entry"));
   dt_gui_add_help_link(GTK_WIDGET(d->related), "tagging.html#tagging_usage");
-  g_signal_connect(G_OBJECT(d->related), "row-activated", G_CALLBACK(attach_activated), (gpointer)self);
+  g_signal_connect(G_OBJECT(d->related), "button-press-event", G_CALLBACK(view_onButtonPressed), (gpointer)self);
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->related));
 
   // attach and delete buttons

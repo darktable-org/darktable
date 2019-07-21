@@ -1511,7 +1511,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
   // we check if something as change since last call
   if(d->view_rule != -1) return;
 
-  const int old = darktable.gui->reset;
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   const int _a = dt_conf_get_int("plugins/lighttable/collect/num_rules") - 1;
   const int active = CLAMP(_a, 0, (MAX_RULES - 1));
@@ -1573,7 +1573,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
 
   // update list of proposals
   update_view(d->rule + d->active_rule);
-  darktable.gui->reset = old;
+  darktable.gui->reset = reset;
 }
 
 void gui_reset(dt_lib_module_t *self)

@@ -2041,9 +2041,10 @@ void gui_post_expose (struct dt_iop_module_t *self,
 
   if(rt_get_selected_shape_id() > 0)
   {
+    const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
     dt_bauhaus_slider_set(g->sl_mask_opacity, rt_masks_form_get_opacity(self, rt_get_selected_shape_id()));
-    darktable.gui->reset = 0;
+    darktable.gui->reset = reset;
   }
 }
 

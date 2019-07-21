@@ -20,6 +20,7 @@
 #include "common/database.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/file_location.h"
 #include "common/iop_order.h"
 #include "control/conf.h"
 #include "control/control.h"

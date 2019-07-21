@@ -1129,12 +1129,12 @@ static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
 static void _iop_color_picker_update(dt_iop_module_t *self)
 {
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  const int old_reset = darktable.gui->reset;
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), g->color_picker.current_picker == 1);
 
-  darktable.gui->reset = old_reset;
+  darktable.gui->reset = reset;
   dt_control_queue_redraw_widget(self->widget);
 }
 

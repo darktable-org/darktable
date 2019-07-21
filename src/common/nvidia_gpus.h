@@ -18,6 +18,8 @@
 
 #pragma once
 
+#include <strings.h>
+
 #ifndef __APPLE__
 // strings and compute model versions vim-macro converted from http://developer.nvidia.com/cuda/cuda-gpus
 // 2012/09/18.
