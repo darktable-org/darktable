@@ -401,9 +401,10 @@ static void apply_auto_grey(dt_iop_module_t *self)
   float grey = fmax(fmax(self->picked_color[0], self->picked_color[1]), self->picked_color[2]);
   p->grey_point = 100.f * grey;
 
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set(g->grey_point, p->grey_point);
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -423,9 +424,10 @@ static void apply_auto_black(dt_iop_module_t *self)
 
   p->shadows_range = EVmin;
 
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set(g->shadows_range, p->shadows_range);
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -448,9 +450,10 @@ static void apply_auto_dynamic_range(dt_iop_module_t *self)
 
   p->dynamic_range = EVmax - EVmin;
 
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set(g->dynamic_range, p->dynamic_range);
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -495,10 +498,11 @@ static void security_threshold_callback(GtkWidget *slider, gpointer user_data)
   p->dynamic_range = EVmax - EVmin;
   p->shadows_range = EVmin;
 
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->dynamic_range, p->dynamic_range);
   dt_bauhaus_slider_set_soft(g->shadows_range, p->shadows_range);
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -527,11 +531,12 @@ static void apply_autotune(dt_iop_module_t *self)
   p->shadows_range = EVmin;
   p->dynamic_range = EVmax - EVmin;
 
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set(g->grey_point, p->grey_point);
   dt_bauhaus_slider_set(g->shadows_range, p->shadows_range);
   dt_bauhaus_slider_set(g->dynamic_range, p->dynamic_range);
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
