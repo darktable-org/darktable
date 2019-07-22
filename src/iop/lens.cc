@@ -53,7 +53,7 @@ extern "C" {
 #define LF_SEARCH_SORT_AND_UNIQUIFY 2
 #endif
 
-#if LF_VERSION >= ((0 << 24) | (3 << 16) | (95 << 8) | 0)
+#if LF_VERSION == ((0 << 24) | (3 << 16) | (95 << 8) | 0)
 #define LF_0395
 #endif
 
