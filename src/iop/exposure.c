@@ -542,7 +542,10 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   // switch off auto exposure when we lose focus (switching images etc)
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
+  const int reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
   dt_bauhaus_slider_set(g->autoexpp, 0.01);
+  darktable.gui->reset = reset;
 }
 
 void init(dt_iop_module_t *module)
