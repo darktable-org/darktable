@@ -558,9 +558,9 @@ static void rename_button_clicked(GtkButton *button, gpointer user_data)
   char *subtag = g_strrstr(tagname, "|");
 
   gint tag_count;
-  if (tag_count == 0) return;
   gint img_count;
   dt_tag_count_tags_images(tagname, &tag_count, &img_count);
+  if (tag_count == 0) return;
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons("Rename tag?", GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
