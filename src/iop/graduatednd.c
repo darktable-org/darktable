@@ -672,10 +672,11 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
       r = p->rotation;
       set_points_from_grad(self, &g->xa, &g->ya, &g->xb, &g->yb, r, o);
     }
-    self->dt->gui->reset = 1;
+    const int reset = darktable.gui->reset;
+    darktable.gui->reset = 1;
     dt_bauhaus_slider_set(g->scale3, r);
     // dt_bauhaus_slider_set(g->scale4,o);
-    self->dt->gui->reset = 0;
+    darktable.gui->reset = reset;
     p->rotation = r;
     p->offset = o;
     g->dragging = 0;

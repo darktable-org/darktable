@@ -22,6 +22,7 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/file_location.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
@@ -3624,8 +3625,8 @@ static int second_window_button_pressed(GtkWidget *widget, dt_develop_t *dev, do
     dt_second_window_get_processed_size(dev, &procw, &proch);
     const float scale = dt_second_window_get_zoom_scale(dev, zoom, 1 << closeup, 0);
 
-    zoom_x += (1.0 / scale) * (x - .5f * dev->width) / procw;
-    zoom_y += (1.0 / scale) * (y - .5f * dev->height) / proch;
+    zoom_x += (1.0 / scale) * (x - .5f * dev->second_window.width) / procw;
+    zoom_y += (1.0 / scale) * (y - .5f * dev->second_window.height) / proch;
 
     if(zoom == DT_ZOOM_1)
     {

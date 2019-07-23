@@ -146,7 +146,7 @@ if(RSVG2_FOUND)
 endif(RSVG2_FOUND)
 
 if(LENSFUN_FOUND)
-  add_iop(lens "lens.c" DEFAULT_VISIBLE)
+  add_iop(lens "lens.cc" DEFAULT_VISIBLE)
 endif(LENSFUN_FOUND)
 
 # fix for Mac when OpenMP is only available in C compiler

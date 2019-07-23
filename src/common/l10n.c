@@ -17,8 +17,10 @@
  */
 
 #include "common/l10n.h"
+#include "common/file_location.h"
 #include "control/conf.h"
 
+#include <libintl.h>
 #include <locale.h>
 #include <gtk/gtk.h>
 #include <json-glib/json-glib.h>

@@ -18,6 +18,7 @@
 
 #include "common/imageio_module.h"
 #include "common/darktable.h"
+#include "common/file_location.h"
 #include "common/imageio.h"
 #include "control/conf.h"
 #include "control/control.h"
