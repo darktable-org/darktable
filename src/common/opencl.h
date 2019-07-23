@@ -31,9 +31,10 @@
 #define DT_OPENCL_MAX_ERRORS 5
 #define DT_OPENCL_MAX_INCLUDES 5
 
+#include "common/darktable.h"
+
 #ifdef HAVE_OPENCL
 
-#include "common/darktable.h"
 #include "common/dlopencl.h"
 #include "common/dtpthread.h"
 #include "control/conf.h"

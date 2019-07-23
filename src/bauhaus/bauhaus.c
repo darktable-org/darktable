@@ -28,6 +28,8 @@
 #endif
 
 #include <math.h>
+#include <strings.h>
+
 #include <pango/pangocairo.h>
 
 G_DEFINE_TYPE(DtBauhausWidget, dt_bh, GTK_TYPE_DRAWING_AREA)
@@ -2219,6 +2221,19 @@ static void dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
   {
     g_signal_emit_by_name(G_OBJECT(w), "value-changed");
     d->is_changed = 0;
+
+    if(!gtk_widget_is_visible(GTK_WIDGET(w)) && *w->label)
+    {
+      char text[256];
+      const float f = d->min + d->pos * (d->max - d->min);
+      const float fc = d->callback(GTK_WIDGET(w), f, DT_BAUHAUS_GET);
+      snprintf(text, sizeof(text), d->format, fc);
+
+      if(w->module && !strstr(w->module->name(), w->label))
+        dt_control_log(_("%s/%s: %s"), w->module->name(), w->label, text);
+      else
+        dt_control_log(_("%s: %s"), w->label, text);
+    }
   }
 }
 

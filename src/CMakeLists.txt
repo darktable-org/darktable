@@ -76,6 +76,7 @@ FILE(GLOB SOURCE_FILES
   "common/usermanual_url.c"
   "common/iop_group.c"
   "common/iop_order.c"
+  "control/conf.c"
   "control/control.c"
   "control/crawler.c"
   "control/jobs.c"
