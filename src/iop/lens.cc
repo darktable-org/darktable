@@ -1137,17 +1137,18 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 #ifdef LF_0395
         const dt_image_t *img = &(self->dev->image_storage);
 
-        d->custom_tca = {
-          .Model = LF_TCA_MODEL_LINEAR,
-          .Focal = p->focal,
-          .Terms = { p->tca_r, p->tca_b },
-          .CalibAttr = {
-            .CenterX = 0.0f,
-            .CenterY = 0.0f,
-            .CropFactor = d->crop,
-            .AspectRatio = (float)img->width / (float)img->height,
-          },
-        };
+        d->custom_tca =
+          {
+           .Model     = LF_TCA_MODEL_LINEAR,
+           .Focal     = p->focal,
+           .Terms     = { p->tca_r, p->tca_b },
+           .CalibAttr = {
+                         .CenterX = 0.0f,
+                         .CenterY = 0.0f,
+                         .CropFactor = d->crop,
+                         .AspectRatio = (float)img->width / (float)img->height
+                         }
+          };
 #else
         // add manual d->lens stuff:
         lfLensCalibTCA tca = { LF_TCA_MODEL_NONE };
