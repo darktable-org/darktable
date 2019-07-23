@@ -53,7 +53,7 @@ extern "C" {
 #define LF_SEARCH_SORT_AND_UNIQUIFY 2
 #endif
 
-#if LF_VERSION >= ((0 << 24) | (3 << 16) | (95 << 8) | 0)
+#if LF_VERSION == ((0 << 24) | (3 << 16) | (95 << 8) | 0)
 #define LF_0395
 #endif
 
@@ -1222,15 +1222,6 @@ void init_global(dt_iop_module_so_t *module)
   lfDatabase *dt_iop_lensfun_db = new lfDatabase;
   gd->db = (lfDatabase *)dt_iop_lensfun_db;
 
-#ifdef LF_0395
-  // simple Load() should work fine now?
-  // quote lf 0.3.95 Changelog: "HomeDataDir and UserUpdatesDir variables are deprecated [...]
-  // lfDatabase::Load() got all necessary overloads to load database files [...]"
-  if(dt_iop_lensfun_db->Load() != LF_NO_ERROR)
-  {
-    fprintf(stderr, "[iop_lens]: could not load lensfun database\n");
-  }
-#else
 #if defined(__MACH__) || defined(__APPLE__)
 #else
   if(dt_iop_lensfun_db->Load() != LF_NO_ERROR)
@@ -1243,25 +1234,41 @@ void init_global(dt_iop_module_so_t *module)
     GFile *file = g_file_parse_name(datadir);
     gchar *path = g_file_get_path(g_file_get_parent(file));
     g_object_unref(file);
+#ifdef LF_MAX_DATABASE_VERSION
+    gchar *sysdbpath = g_build_filename(path, "lensfun", "version_" STR(LF_MAX_DATABASE_VERSION), NULL);
+#endif
 
+#ifdef LF_0395
+    const long userdbts = dt_iop_lensfun_db->ReadTimestamp(dt_iop_lensfun_db->UserUpdatesLocation);
+    const long sysdbts = dt_iop_lensfun_db->ReadTimestamp(sysdbpath);
+    const char *dbpath = userdbts > sysdbts ? dt_iop_lensfun_db->UserUpdatesLocation : sysdbpath;
+    if(dt_iop_lensfun_db->Load(dbpath) != LF_NO_ERROR)
+      fprintf(stderr, "[iop_lens]: could not load lensfun database in `%s'!\n", dbpath);
+    else
+      dt_iop_lensfun_db->Load(dt_iop_lensfun_db->UserLocation);
+#else
+    // code for older lensfun preserved as-is
 #ifdef LF_MAX_DATABASE_VERSION
     g_free(dt_iop_lensfun_db->HomeDataDir);
-    dt_iop_lensfun_db->HomeDataDir = g_build_filename(path, "lensfun", "version_" STR(LF_MAX_DATABASE_VERSION), NULL);
+    dt_iop_lensfun_db->HomeDataDir = g_strdup(sysdbpath);
     if(dt_iop_lensfun_db->Load() != LF_NO_ERROR)
     {
-      fprintf(stderr, "[iop_lens]: could not load lensfun database in `%s'!\n", path);
+      fprintf(stderr, "[iop_lens]: could not load lensfun database in `%s'!\n", sysdbpath);
 #endif
       g_free(dt_iop_lensfun_db->HomeDataDir);
       dt_iop_lensfun_db->HomeDataDir = g_build_filename(path, "lensfun", NULL);
       if(dt_iop_lensfun_db->Load() != LF_NO_ERROR)
-        fprintf(stderr, "[iop_lens]: could not load lensfun database in `%s'!\n", path);
+        fprintf(stderr, "[iop_lens]: could not load lensfun database in `%s'!\n", dt_iop_lensfun_db->HomeDataDir);
 #ifdef LF_MAX_DATABASE_VERSION
     }
 #endif
+#endif
 
+#ifdef LF_MAX_DATABASE_VERSION
+    g_free(sysdbpath);
+#endif
     g_free(path);
   }
-#endif
 }
 
 static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, const lfCamera *camera);
