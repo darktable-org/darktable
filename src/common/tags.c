@@ -287,6 +287,27 @@ void dt_tag_reorganize(const gchar *source, const gchar *dest)
   // dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
+void dt_tag_rename(const guint tagid, const gchar *new_tagname)
+{
+  sqlite3_stmt *stmt;
+
+  if(!new_tagname || !new_tagname[0]) return;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE data.tags SET name = ?2 WHERE id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, new_tagname, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.used_tags SET name = ?2 WHERE id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, new_tagname, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
 gboolean dt_tag_exists(const char *name, guint *tagid)
 {
   int rt;
@@ -727,6 +748,93 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
   return count;
 }
 
+void dt_tag_count_tags_images(const gchar *keyword, int *tag_count, int *img_count)
+{
+  sqlite3_stmt *stmt;
+  *tag_count = 0;
+  *img_count = 0;
+
+  if(!keyword) return;
+  gchar *keyword_expr = g_strdup_printf("%s|", keyword);
+
+  /* Only select tags that are equal or child to the one we are looking for once. */
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "INSERT INTO memory.similar_tags (tagid) SELECT id FROM data.tags "
+                              "WHERE name = ?1 OR SUBSTR(name, 1, LENGTH(?2)) = ?2 ",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, keyword, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, keyword_expr, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  g_free(keyword_expr);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(DISTINCT tagid) FROM memory.similar_tags",
+                              -1, &stmt, NULL);
+  sqlite3_step(stmt);
+  *tag_count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(DISTINCT ti.imgid) FROM main.tagged_images AS ti "
+                              "JOIN memory.similar_tags AS st ON st.tagid = ti.tagid",
+                              -1, &stmt, NULL);
+
+  sqlite3_step(stmt);
+  *img_count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.similar_tags", NULL, NULL, NULL);
+
+  }
+
+void dt_tag_get_tags_images(const gchar *keyword, GList **tag_list, GList **img_list)
+{
+  sqlite3_stmt *stmt;
+
+  if(!keyword) return;
+  gchar *keyword_expr = g_strdup_printf("%s|", keyword);
+
+/* Only select tags that are equal or child to the one we are looking for once. */
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "INSERT INTO memory.similar_tags (tagid) SELECT id FROM data.tags "
+                              "WHERE name = ?1 OR SUBSTR(name, 1, LENGTH(?2)) = ?2 ",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, keyword, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, keyword_expr, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  g_free(keyword_expr);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT ST.tagid, T.name FROM memory.similar_tags ST "
+                              "JOIN data.tags T ON T.id = ST.tagid ",
+                              -1, &stmt, NULL);
+  dt_tag_t *t;
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    t = g_malloc0(sizeof(dt_tag_t));
+    t->id = sqlite3_column_int(stmt, 0);
+    t->tag = g_strdup((char *)sqlite3_column_text(stmt, 1));
+    *tag_list = g_list_append((*tag_list), t);
+  }
+  sqlite3_finalize(stmt);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT DISTINCT ti.imgid FROM main.tagged_images AS ti "
+                              "JOIN memory.similar_tags AS st ON st.tagid = ti.tagid",
+                              -1, &stmt, NULL);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    *img_list = g_list_append((*img_list), GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+  }
+  sqlite3_finalize(stmt);
+
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.similar_tags", NULL, NULL, NULL);
+}
+
 uint32_t dt_tag_get_with_usage(const gchar *keyword, GList **result)
 {
   sqlite3_stmt *stmt;
@@ -766,7 +874,7 @@ uint32_t dt_tag_get_with_usage(const gchar *keyword, GList **result)
   /* Now put all the bits together */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT T.name, ST.tagid, MT.count, CT.tagnb FROM memory.similar_tags ST "
-                              "JOIN memory.taglist MT ON MT.id = ST.tagid "
+                              "LEFT JOIN memory.taglist MT ON MT.id = ST.tagid "
                               "JOIN data.tags T ON T.id = ST.tagid "
                               "LEFT JOIN (SELECT tagid, COUNT(*) AS tagnb FROM tagged_images AS i "
                                 "WHERE imgid IN (SELECT imgid FROM main.selected_images) GROUP BY tagid ) AS CT "
@@ -785,7 +893,10 @@ uint32_t dt_tag_get_with_usage(const gchar *keyword, GList **result)
     t->id = sqlite3_column_int(stmt, 1);
     t->count = sqlite3_column_int(stmt, 2);
     uint32_t tagnb = sqlite3_column_int(stmt, 3);
-    t->select = (tagnb == nb_selected) ? 2 : (tagnb == 0) ? 0 : 1;
+    // 0: no selection or no tag not attached
+    // 1: tag attached on some selected images
+    // 2: tag attached on all selected images
+    t->select = (nb_selected == 0) ? 0 : (tagnb == nb_selected) ? 2 : (tagnb == 0) ? 0 : 1;
     *result = g_list_append((*result), t);
     count++;
   }
