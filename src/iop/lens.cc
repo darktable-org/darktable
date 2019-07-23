@@ -2188,20 +2188,37 @@ static float get_autoscale(dt_iop_module_t *self, dt_iop_lensfun_params_t *p, co
                 iht = img->height - img->crop_y - img->crop_height;
 
       // create dummy modifier
-      const dt_iop_lensfun_data_t d = {
-        .lens = (lfLens *)lenslist[0],
-        .modify_flags = p->modify_flags,
-        .inverse = p->inverse,
-        .scale = 1.0f,
-        .crop = p->crop,
-        .focal = p->focal,
-        .aperture = p->aperture,
-        .distance = p->distance,
-        .target_geom = p->target_geom,
-        .custom_tca = {
-          .Model = LF_TCA_MODEL_NONE,
-        }
-      };
+#if defined(__GNUC__) && (__GNUC__ > 7)
+      const dt_iop_lensfun_data_t d =
+        {
+         .lens         = (lfLens *)lenslist[0],
+         .modify_flags = p->modify_flags,
+         .inverse      = p->inverse,
+         .scale        = 1.0f,
+         .crop         = p->crop,
+         .focal        = p->focal,
+         .aperture     = p->aperture,
+         .distance     = p->distance,
+         .target_geom  = p->target_geom,
+         .custom_tca   = { .Model = LF_TCA_MODEL_NONE }
+        };
+#else
+      // prior to GCC 8.x the / .custom_tca   = { .Model = ??? } / was not supported:
+      //    sorry, unimplemented: non-trivial designated initializers not supported
+      // ?? This code can be removed when GCC-7 is not used anymore.
+
+      dt_iop_lensfun_data_t d;
+      d.lens             = (lfLens *)lenslist[0];
+      d.modify_flags     = p->modify_flags;
+      d.inverse          = p->inverse;
+      d.scale            = 1.0f;
+      d.crop             = p->crop;
+      d.focal            = p->focal;
+      d.aperture         = p->aperture;
+      d.distance         = p->distance;
+      d.target_geom      = p->target_geom;
+      d.custom_tca.Model = LF_TCA_MODEL_NONE;
+#endif
 
       lfModifier *modifier = get_modifier(NULL, iwd, iht, &d, LF_MODIFY_ALL);
 
