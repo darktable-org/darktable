@@ -1275,6 +1275,38 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
   return 0;
 }
 
+static int32_t dt_control_refresh_exif_run(dt_job_t *job)
+{
+  int imgid = -1;
+  dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
+  GList *t = params->index;
+  guint total = g_list_length(t);
+  double fraction = 0;
+  char message[512] = { 0 };
+  snprintf(message, sizeof(message), ngettext("refreshing info for %d image", "refreshing info for %d images", total), total);
+  dt_control_job_set_progress_message(job, message);
+  while(t)
+  {
+    imgid = GPOINTER_TO_INT(t->data);
+    gboolean from_cache = TRUE;
+    char sourcefile[PATH_MAX];
+    dt_image_full_path(imgid, sourcefile, sizeof(sourcefile), &from_cache);
+
+    dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+    dt_exif_read(img, sourcefile);
+    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
+
+    t = g_list_delete_link(t, t);
+    fraction = 1.0 / total;
+    dt_control_job_set_progress(job, fraction);
+  }
+  params->index = NULL;
+  return 0;
+}
+
+
 static int32_t dt_control_export_job_run(dt_job_t *job)
 {
   int imgid = -1;
@@ -1698,6 +1730,13 @@ void dt_control_reset_local_copy_images()
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_generic_images_job_create(&dt_control_local_copy_images_job_run,
                                                           N_("local copy images"), 0, NULL, PROGRESS_CANCELLABLE));
+}
+
+void dt_control_refresh_exif()
+{
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+                     dt_control_generic_images_job_create(&dt_control_refresh_exif_run,
+                                                          N_("refresh exif"), 0, NULL, PROGRESS_CANCELLABLE));
 }
 
 static dt_control_image_enumerator_t *dt_control_export_alloc()
