@@ -205,7 +205,10 @@ static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
   {
     dt_colorspaces_rgb_to_cygm(p->color, 1, g->RGB_to_CAM);
   }
-
+  else if(dt_image_is_monochrome(img))
+  { // Just to make sure the monochrome stays monochrome we take the luminosity of the chosen color on all channels
+    p->color[0] = p->color[1] = p->color[2] = 0.21f*c.red + 0.72f*c.green + 0.07f*c.blue ;
+  }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
