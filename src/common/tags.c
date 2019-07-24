@@ -292,6 +292,7 @@ void dt_tag_rename(const guint tagid, const gchar *new_tagname)
   sqlite3_stmt *stmt;
 
   if(!new_tagname || !new_tagname[0]) return;
+  if(dt_tag_exists(new_tagname, NULL)) return;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE data.tags SET name = ?2 WHERE id = ?1", -1, &stmt, NULL);
