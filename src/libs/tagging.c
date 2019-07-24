@@ -311,7 +311,7 @@ void tree_count_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeM
   gtk_tree_model_get(model, iter, DT_LIB_TAGGING_COL_ID, &id, DT_LIB_TAGGING_COL_TAG, &name, DT_LIB_TAGGING_TREE_COL_COUNT, &count, -1);
   if (!count)
   {
-    coltext = g_strdup_printf(id ? "%s" : "<i>%s</i>", name, count);
+    coltext = g_strdup_printf(id ? "%s" : "<i>%s</i>", name);
   }
   else
   {
