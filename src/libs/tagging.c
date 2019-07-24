@@ -303,20 +303,22 @@ static void update(dt_lib_module_t *self, int which)
 void tree_count_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTreeModel *model, GtkTreeIter *iter,
                      gpointer data)
 {
+  guint id;
   gchar *name;
   guint count;
+  gchar *coltext;
 
-  gtk_tree_model_get(model, iter, DT_LIB_TAGGING_COL_TAG, &name, DT_LIB_TAGGING_TREE_COL_COUNT, &count, -1);
+  gtk_tree_model_get(model, iter, DT_LIB_TAGGING_COL_ID, &id, DT_LIB_TAGGING_COL_TAG, &name, DT_LIB_TAGGING_TREE_COL_COUNT, &count, -1);
   if (!count)
   {
-    g_object_set(renderer, "text", name, NULL);
+    coltext = g_strdup_printf(id ? "%s" : "<i>%s</i>", name, count);
   }
   else
   {
-    gchar *coltext = g_strdup_printf("%s (%d)", name, count);
-    g_object_set(renderer, "text", coltext, NULL);
-    g_free(coltext);
+    coltext = g_strdup_printf("%s (%d)", name, count);
   }
+  g_object_set(renderer, id ? "text" : "markup", coltext, NULL);
+  g_free(coltext);
   g_free(name);
 }
 
@@ -613,19 +615,39 @@ static void rename_button_clicked(GtkButton *button, gpointer user_data)
     else
       new_prefix_tag = (char *)newtag;
 
-    for (GList *taglist = tag_family; taglist; taglist = g_list_next(taglist))
+    // check if one of the new tagnames already exists.
+    gboolean tagname_exists = FALSE;
+    for (GList *taglist = tag_family; taglist && !tagname_exists; taglist = g_list_next(taglist))
     {
       char *new_tagname = g_strconcat(new_prefix_tag, &((dt_tag_t *)taglist->data)->tag[tagname_len], NULL);
-      dt_tag_rename(((dt_tag_t *)taglist->data)->id, new_tagname);
+      tagname_exists = dt_tag_exists(new_tagname, NULL);
+      if (tagname_exists)
+      {
+        GtkWidget *warning_dialog = gtk_message_dialog_new(GTK_WINDOW(dialog), GTK_DIALOG_MODAL,
+                        GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE,
+                        _("At least one new tagname (%s) already exists. Aborting."), new_tagname);
+        gtk_dialog_run(GTK_DIALOG(warning_dialog));
+        gtk_widget_destroy(warning_dialog);
+      };
       g_free(new_tagname);
     }
-    if (subtag) g_free(new_prefix_tag);
 
-    if(dt_conf_get_bool("write_sidecar_files"))
+    if (!tagname_exists)
     {
-      for (GList *imagelist = tagged_images; imagelist; imagelist = g_list_next(imagelist))
+      for (GList *taglist = tag_family; taglist; taglist = g_list_next(taglist))
       {
-        dt_image_synch_xmp(GPOINTER_TO_INT(imagelist->data));
+        char *new_tagname = g_strconcat(new_prefix_tag, &((dt_tag_t *)taglist->data)->tag[tagname_len], NULL);
+        dt_tag_rename(((dt_tag_t *)taglist->data)->id, new_tagname);
+        g_free(new_tagname);
+      }
+      if (subtag) g_free(new_prefix_tag);
+
+      if(dt_conf_get_bool("write_sidecar_files"))
+      {
+        for (GList *imagelist = tagged_images; imagelist; imagelist = g_list_next(imagelist))
+        {
+          dt_image_synch_xmp(GPOINTER_TO_INT(imagelist->data));
+        }
       }
     }
     dt_tag_free_result(&tag_family);

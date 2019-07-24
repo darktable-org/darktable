@@ -324,7 +324,7 @@ gboolean dt_tag_exists(const char *name, guint *tagid)
     return TRUE;
   }
 
-  *tagid = -1;
+  if(tagid != NULL) *tagid = -1;
   sqlite3_finalize(stmt);
   return FALSE;
 }
