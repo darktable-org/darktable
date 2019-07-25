@@ -115,7 +115,7 @@ src/iop/highlights.c
 src/iop/highpass.c
 src/iop/hotpixels.c
 src/iop/invert.c
-src/iop/lens.c
+src/iop/lens.cc
 src/iop/levels.c
 src/iop/liquify.c
 src/iop/lowlight.c
