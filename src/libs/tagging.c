@@ -142,14 +142,14 @@ static void update(dt_lib_module_t *self, int which)
 
   if(which == 0) // tags of selected images
   {
-    int imgsel = dt_control_get_mouse_over_id();
+    const int imgsel = dt_control_get_mouse_over_id();
     d->imgsel = imgsel;
     count = dt_tag_get_attached(imgsel, &tags, FALSE);
     view_type = 2;
   }
   else // related tags of typed text
   {
-    gboolean suggestion = dt_conf_get_bool("plugins/darkroom/tagging/suggestions");
+    const gboolean suggestion = dt_conf_get_bool("plugins/darkroom/tagging/suggestions");
     view_type = dt_conf_get_bool("plugins/darkroom/tagging/treeview") ? 1 : 0;
     if (view_type || !suggestion)
       count = dt_tag_get_with_usage(d->keyword, &tags);
@@ -181,10 +181,10 @@ static void update(dt_lib_module_t *self, int which)
       tags = g_list_sort(tags, sort_tag);
       for(GList *taglist = tags; taglist; taglist = g_list_next(taglist))
       {
-        gchar *tag = ((dt_tag_t *)taglist->data)->tag;
-        guint id = ((dt_tag_t *)taglist->data)->id;
-        guint tagc = ((dt_tag_t *)taglist->data)->count;
-        guint sel = ((dt_tag_t *)taglist->data)->select;
+        const gchar *tag = ((dt_tag_t *)taglist->data)->tag;
+        const guint id = ((dt_tag_t *)taglist->data)->id;
+        const guint tagc = ((dt_tag_t *)taglist->data)->count;
+        const guint sel = ((dt_tag_t *)taglist->data)->select;
         if(tag == NULL) continue;
         char **tokens;
         tokens = g_strsplit(tag, "\1", -1);
@@ -192,7 +192,7 @@ static void update(dt_lib_module_t *self, int which)
         {
           // find the number of common parts at the beginning of tokens and last_tokens
           GtkTreeIter parent = last_parent;
-          int tokens_length = string_array_length(tokens);
+          const int tokens_length = string_array_length(tokens);
           int common_length = 0;
           if(last_tokens)
           {
@@ -565,8 +565,8 @@ static void rename_button_clicked(GtkButton *button, gpointer user_data)
   if (tag_count == 0) return;
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons("Rename tag?", GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                       _("_Rename"), GTK_RESPONSE_YES, _("_Cancel"), GTK_RESPONSE_NONE, NULL);
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("rename tag?"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
+                                       _("rename"), GTK_RESPONSE_YES, _("cancel"), GTK_RESPONSE_NONE, NULL);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
   text = g_strdup_printf("selected tag: %s", tagname);
@@ -847,9 +847,9 @@ static void update_layout(dt_lib_module_t *self)
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->related));
 
   if (dt_conf_get_bool("plugins/darkroom/tagging/suggestions"))
-    gtk_button_set_label(GTK_BUTTON(d->toggle_suggestion_button), _("no sugg"));
+    gtk_button_set_label(GTK_BUTTON(d->toggle_suggestion_button), _("no suggestion"));
   else
-    gtk_button_set_label(GTK_BUTTON(d->toggle_suggestion_button), _("sugg"));
+    gtk_button_set_label(GTK_BUTTON(d->toggle_suggestion_button), _("suggestion"));
   if (dt_conf_get_bool("plugins/darkroom/tagging/treeview"))
   {
     if (model != GTK_TREE_MODEL(d->treestore))
@@ -1062,27 +1062,6 @@ void gui_init(dt_lib_module_t *self)
   // attach and delete buttons
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
-  button = gtk_button_new_with_label(_("new"));
-  d->new_button = button;
-  gtk_widget_set_tooltip_text(button, _("create a new tag with the\nname you entered"));
-  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
-  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(new_button_clicked), (gpointer)self);
-
-  button = gtk_button_new_with_label(_("rename"));
-  d->delete_button = button;
-  gtk_widget_set_tooltip_text(button, _("rename selected tag"));
-  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
-  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rename_button_clicked), (gpointer)self);
-
-  button = gtk_button_new_with_label(_("delete"));
-  d->delete_button = button;
-  gtk_widget_set_tooltip_text(button, _("delete selected tag"));
-  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
-  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(delete_button_clicked), (gpointer)self);
-
   button = gtk_button_new_with_label(C_("verb", "import"));
   d->import_button = button;
   gtk_widget_set_tooltip_text(button, _("import tags from a Lightroom keyword file"));
@@ -1104,12 +1083,36 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_end(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(toggle_tree_button_callback), (gpointer)self);
 
-  button = gtk_button_new_with_label(_("sugg"));
+  button = gtk_button_new_with_label(_("suggestion"));
   d->toggle_suggestion_button = button;
   gtk_widget_set_tooltip_text(button, _("toggle with / without suggestion"));
   dt_gui_add_help_link(button, "tagging.html#tagging_usage");
   gtk_box_pack_end(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(toggle_suggestion_button_callback), (gpointer)self);
+
+  gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
+  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+
+  button = gtk_button_new_with_label(_("new"));
+  d->new_button = button;
+  gtk_widget_set_tooltip_text(button, _("create a new tag with the\nname you entered"));
+  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
+  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(new_button_clicked), (gpointer)self);
+
+  button = gtk_button_new_with_label(_("rename"));
+  d->delete_button = button;
+  gtk_widget_set_tooltip_text(button, _("rename selected tag"));
+  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
+  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rename_button_clicked), (gpointer)self);
+
+  button = gtk_button_new_with_label(_("delete"));
+  d->delete_button = button;
+  gtk_widget_set_tooltip_text(button, _("delete selected tag"));
+  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
+  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(delete_button_clicked), (gpointer)self);
 
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
