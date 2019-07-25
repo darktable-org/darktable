@@ -969,7 +969,7 @@ static inline void apply_curve(
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none)                            \
-  dt_omp_firstprivate(in, out, width, height, mul, table, unbounded_coeffs, work_profile) \
+  dt_omp_firstprivate(in, out, width, height, mul, table, unbounded_coeffs, preserve_colors, work_profile) \
   schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)width * height; k++)
