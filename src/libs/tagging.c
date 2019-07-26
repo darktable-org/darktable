@@ -2,6 +2,7 @@
     This file is part of darktable,
     copyright (c) 2009--2010 johannes hanika.
     copyright (c) 2011 henrik andersson.
+    copyright (c) 2019 philippe weyland.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,7 +49,7 @@ typedef struct dt_lib_tagging_t
   GtkTreeView *current, *related;
   int imgsel;
 
-  GtkWidget *attach_button, *detach_button, *new_button, *rename_button, *delete_button, *import_button, *export_button, *scrolledwindow;
+  GtkWidget *attach_button, *detach_button, *new_button, *import_button, *export_button, *scrolledwindow;
   GtkWidget *toggle_tree_button, *toggle_suggestion_button;
   gulong tree_button_handler, suggestion_button_handler;
   GtkListStore *liststore;
@@ -104,7 +105,6 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "attach"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "detach"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "new"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "delete"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "tag"), GDK_KEY_t, GDK_CONTROL_MASK);
 }
 
@@ -115,15 +115,7 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "attach", d->attach_button);
   dt_accel_connect_button_lib(self, "detach", d->detach_button);
   dt_accel_connect_button_lib(self, "new", d->new_button);
-  dt_accel_connect_button_lib(self, "delete", d->delete_button);
   dt_accel_connect_lib(self, "tag", g_cclosure_new(G_CALLBACK(_lib_tagging_tag_show), self, NULL));
-}
-
-static int string_array_length(char **list)
-{
-  int length = 0;
-  for(; *list; list++) length++;
-  return length;
 }
 
 static gint sort_tag(gconstpointer a, gconstpointer b)
@@ -189,11 +181,11 @@ static void update(dt_lib_module_t *self, int which)
         if(tag == NULL) continue;
         char **tokens;
         tokens = g_strsplit(tag, "\1", -1);
-        if(tokens != NULL)
+        if(tokens)
         {
           // find the number of common parts at the beginning of tokens and last_tokens
           GtkTreeIter parent = last_parent;
-          const int tokens_length = string_array_length(tokens);
+          const int tokens_length = g_strv_length(tokens);
           int common_length = 0;
           if(last_tokens)
           {
@@ -1081,20 +1073,6 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_add_help_link(button, "tagging.html#tagging_usage");
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(new_button_clicked), (gpointer)self);
-
-  button = gtk_button_new_with_label(_("rename"));
-  d->delete_button = button;
-  gtk_widget_set_tooltip_text(button, _("rename selected tag"));
-  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
-  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rename_button_clicked), (gpointer)self);
-
-  button = gtk_button_new_with_label(_("delete"));
-  d->delete_button = button;
-  gtk_widget_set_tooltip_text(button, _("delete selected tag"));
-  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
-  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(delete_button_clicked), (gpointer)self);
 
   button = gtk_button_new_with_label(C_("verb", "import"));
   d->import_button = button;

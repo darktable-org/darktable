@@ -731,10 +731,9 @@ uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result)
 
   /* ... and create the result list to send upwards */
   uint32_t count = 0;
-  dt_tag_t *t;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    t = g_malloc0(sizeof(dt_tag_t));
+    dt_tag_t *t = g_malloc0(sizeof(dt_tag_t));
     t->tag = g_strdup((char *)sqlite3_column_text(stmt, 0));
     t->id = sqlite3_column_int(stmt, 1);
     *result = g_list_append((*result), t);
@@ -787,7 +786,6 @@ void dt_tag_count_tags_images(const gchar *keyword, int *tag_count, int *img_cou
   sqlite3_finalize(stmt);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.similar_tags", NULL, NULL, NULL);
-
   }
 
 void dt_tag_get_tags_images(const gchar *keyword, GList **tag_list, GList **img_list)
@@ -813,10 +811,10 @@ void dt_tag_get_tags_images(const gchar *keyword, GList **tag_list, GList **img_
                               "SELECT ST.tagid, T.name FROM memory.similar_tags ST "
                               "JOIN data.tags T ON T.id = ST.tagid ",
                               -1, &stmt, NULL);
-  dt_tag_t *t;
+
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    t = g_malloc0(sizeof(dt_tag_t));
+    dt_tag_t *t = g_malloc0(sizeof(dt_tag_t));
     t->id = sqlite3_column_int(stmt, 0);
     t->tag = g_strdup((char *)sqlite3_column_text(stmt, 1));
     *tag_list = g_list_append((*tag_list), t);
@@ -874,11 +872,11 @@ uint32_t dt_tag_get_with_usage(const gchar *keyword, GList **result)
 
   /* Now put all the bits together */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT T.name, ST.tagid, MT.count, CT.tagnb FROM memory.similar_tags ST "
+                              "SELECT T.name, ST.tagid, MT.count, CT.imgnb FROM memory.similar_tags ST "
                               "LEFT JOIN memory.taglist MT ON MT.id = ST.tagid "
                               "JOIN data.tags T ON T.id = ST.tagid "
-                              "LEFT JOIN (SELECT tagid, COUNT(*) AS tagnb FROM tagged_images AS i "
-                                "WHERE imgid IN (SELECT imgid FROM main.selected_images) GROUP BY tagid ) AS CT "
+                              "LEFT JOIN (SELECT tagid, COUNT(*) AS imgnb FROM tagged_images "
+                                "WHERE imgid IN (SELECT imgid FROM main.selected_images) GROUP BY tagid) AS CT "
                                 "ON CT.tagid = ST.tagid "
                               "WHERE T.name NOT LIKE 'darktable|%%' "
                               "ORDER BY T.name ",
@@ -886,18 +884,17 @@ uint32_t dt_tag_get_with_usage(const gchar *keyword, GList **result)
 
   /* ... and create the result list to send upwards */
   uint32_t count = 0;
-  dt_tag_t *t;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    t = g_malloc0(sizeof(dt_tag_t));
+    dt_tag_t *t = g_malloc0(sizeof(dt_tag_t));
     t->tag = g_strdup((char *)sqlite3_column_text(stmt, 0));
     t->id = sqlite3_column_int(stmt, 1);
     t->count = sqlite3_column_int(stmt, 2);
-    uint32_t tagnb = sqlite3_column_int(stmt, 3);
+    uint32_t imgnb = sqlite3_column_int(stmt, 3);
     // 0: no selection or no tag not attached
     // 1: tag attached on some selected images
     // 2: tag attached on all selected images
-    t->select = (nb_selected == 0) ? 0 : (tagnb == nb_selected) ? 2 : (tagnb == 0) ? 0 : 1;
+    t->select = (nb_selected == 0) ? 0 : (imgnb == nb_selected) ? 2 : (imgnb == 0) ? 0 : 1;
     *result = g_list_append((*result), t);
     count++;
   }
