@@ -123,7 +123,8 @@ void dt_accel_register_global(const gchar *path, guint accel_key, GdkModifierTyp
 
   *(accel->module) = '\0';
   accel->local = FALSE;
-  accel->views = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW;
+  accel->views = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW
+                 | DT_VIEW_METADATA;
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 
@@ -189,9 +190,10 @@ void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel
     else if (strcmp(views[i], "slideshow") == 0) accel->views |= DT_VIEW_SLIDESHOW;
     else if (strcmp(views[i], "map") == 0) accel->views |= DT_VIEW_MAP;
     else if (strcmp(views[i], "tethering") == 0) accel->views |= DT_VIEW_TETHERING;
+    else if (strcmp(views[i], "metadata") == 0) accel->views |= DT_VIEW_METADATA;
     else if(strcmp(views[i], "*") == 0)
       accel->views |= DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT
-                      | DT_VIEW_SLIDESHOW;
+                      | DT_VIEW_SLIDESHOW | DT_VIEW_METADATA;
     i++;  
   }
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
@@ -262,7 +264,8 @@ void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType m
 
   *(accel->module) = '\0';
   accel->local = FALSE;
-  accel->views = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW;
+  accel->views = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW
+                 | DT_VIEW_METADATA;
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
 

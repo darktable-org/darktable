@@ -54,7 +54,8 @@ typedef enum
   DT_VIEW_MAP = 8,
   DT_VIEW_SLIDESHOW = 16,
   DT_VIEW_PRINT = 32,
-  DT_VIEW_KNIGHT = 64
+  DT_VIEW_KNIGHT = 64,
+  DT_VIEW_METADATA = 128
 } dt_view_type_flags_t;
 
 // flags that a view can set in flags()
@@ -103,7 +104,7 @@ typedef struct dt_mouse_action_t
 
 #define DT_VIEW_ALL                                                                              \
   (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW | \
-   DT_VIEW_PRINT | DT_VIEW_KNIGHT)
+   DT_VIEW_PRINT | DT_VIEW_KNIGHT | DT_VIEW_METADATA)
 
 /**
  * main dt view module (as lighttable or darkroom)
