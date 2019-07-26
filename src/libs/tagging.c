@@ -50,6 +50,7 @@ typedef struct dt_lib_tagging_t
 
   GtkWidget *attach_button, *detach_button, *new_button, *rename_button, *delete_button, *import_button, *export_button, *scrolledwindow;
   GtkWidget *toggle_tree_button, *toggle_suggestion_button;
+  gulong tree_button_handler, suggestion_button_handler;
   GtkListStore *liststore;
   GtkTreeStore *treestore;
   GtkTreeViewColumn *treesel;
@@ -149,9 +150,9 @@ static void update(dt_lib_module_t *self, int which)
   }
   else // related tags of typed text
   {
-    const gboolean suggestion = dt_conf_get_bool("plugins/darkroom/tagging/suggestions");
+    const gboolean nosuggestion = dt_conf_get_bool("plugins/darkroom/tagging/nosuggestion");
     view_type = dt_conf_get_bool("plugins/darkroom/tagging/treeview") ? 1 : 0;
-    if (view_type || !suggestion)
+    if (view_type || nosuggestion)
       count = dt_tag_get_with_usage(d->keyword, &tags);
     else
       count = dt_tag_get_suggestions(d->keyword, &tags);
@@ -846,13 +847,27 @@ static void update_layout(dt_lib_module_t *self)
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->related));
 
-  if (dt_conf_get_bool("plugins/darkroom/tagging/suggestions"))
-    gtk_button_set_label(GTK_BUTTON(d->toggle_suggestion_button), _("no suggestion"));
-  else
-    gtk_button_set_label(GTK_BUTTON(d->toggle_suggestion_button), _("suggestion"));
-  if (dt_conf_get_bool("plugins/darkroom/tagging/treeview"))
+  const gboolean active_s = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->toggle_suggestion_button));
+  const gboolean setting_s = dt_conf_get_bool("plugins/darkroom/tagging/nosuggestion");
+  if (active_s == setting_s)
   {
-    if (model != GTK_TREE_MODEL(d->treestore))
+    g_signal_handler_block (d->toggle_suggestion_button, d->suggestion_button_handler);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->toggle_suggestion_button), !setting_s);
+    g_signal_handler_unblock (d->toggle_suggestion_button, d->suggestion_button_handler);
+  }
+
+  const gboolean active_t = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->toggle_tree_button));
+  const gboolean setting_t = dt_conf_get_bool("plugins/darkroom/tagging/treeview");
+  if (active_t != setting_t)
+  {
+    g_signal_handler_block (d->toggle_tree_button, d->tree_button_handler);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->toggle_tree_button), setting_t);
+    g_signal_handler_unblock (d->toggle_tree_button, d->tree_button_handler);
+  }
+
+  if (setting_t)
+  {
+    if (model == GTK_TREE_MODEL(d->liststore))
     {
       g_object_ref(model);
       gtk_tree_view_set_model(GTK_TREE_VIEW(d->related), NULL);
@@ -861,13 +876,12 @@ static void update_layout(dt_lib_module_t *self)
       g_object_unref(d->treestore);
     }
     gtk_widget_set_size_request(d->scrolledwindow, -1, DT_PIXEL_APPLY_DPI(300));
-    gtk_button_set_label(GTK_BUTTON(d->toggle_tree_button), _("list"));
     gtk_tree_view_column_set_visible(d->treesel, TRUE);
     gtk_widget_set_visible(d->toggle_suggestion_button, FALSE);
   }
   else
   {
-    if (model != GTK_TREE_MODEL(d->liststore))
+    if (model == GTK_TREE_MODEL(d->treestore))
     {
       g_object_ref(model);
       gtk_tree_view_set_model(GTK_TREE_VIEW(d->related), NULL);
@@ -876,11 +890,10 @@ static void update_layout(dt_lib_module_t *self)
       g_object_unref(d->liststore);
     }
     gtk_widget_set_size_request(d->scrolledwindow, -1, DT_PIXEL_APPLY_DPI(100));
-    gtk_button_set_label(GTK_BUTTON(d->toggle_tree_button), _("tree"));
-    if (dt_conf_get_bool("plugins/darkroom/tagging/suggestions"))
-      gtk_tree_view_column_set_visible(d->treesel, FALSE);
-    else
+    if (setting_s)
       gtk_tree_view_column_set_visible(d->treesel, TRUE);
+    else
+      gtk_tree_view_column_set_visible(d->treesel, FALSE);
     gtk_widget_set_visible(d->toggle_suggestion_button, TRUE);
   }
 }
@@ -889,13 +902,13 @@ static void toggle_suggestion_button_callback(GtkToggleButton *source, gpointer 
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
-  if (dt_conf_get_bool("plugins/darkroom/tagging/suggestions"))
+  if (dt_conf_get_bool("plugins/darkroom/tagging/nosuggestion"))
   {
-    dt_conf_set_bool("plugins/darkroom/tagging/suggestions", FALSE);
+    dt_conf_set_bool("plugins/darkroom/tagging/nosuggestion", FALSE);
   }
   else
   {
-    dt_conf_set_bool("plugins/darkroom/tagging/suggestions", TRUE);
+    dt_conf_set_bool("plugins/darkroom/tagging/nosuggestion", TRUE);
   }
   update_layout(self);
   set_keyword(self, d);
@@ -1040,7 +1053,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_cell_renderer_toggle_set_activatable(GTK_CELL_RENDERER_TOGGLE(renderer), TRUE);
   gtk_tree_view_column_set_cell_data_func(col, renderer, tree_select_show, NULL, NULL);
-  g_object_set(renderer, "indicator-size", 10, NULL);
+  g_object_set(renderer, "indicator-size", 10, NULL);  // too big by default
   d->treesel = col;
 
   col = gtk_tree_view_column_new();
@@ -1059,38 +1072,7 @@ void gui_init(dt_lib_module_t *self)
   g_object_unref(liststore);
   gtk_widget_set_size_request(d->scrolledwindow, -1, DT_PIXEL_APPLY_DPI(100));
 
-  // attach and delete buttons
-  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-
-  button = gtk_button_new_with_label(C_("verb", "import"));
-  d->import_button = button;
-  gtk_widget_set_tooltip_text(button, _("import tags from a Lightroom keyword file"));
-  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
-  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_button_clicked), (gpointer)self);
-
-  button = gtk_button_new_with_label(C_("verb", "export"));
-  d->export_button = button;
-  gtk_widget_set_tooltip_text(button, _("export all tags to a Lightroom keyword file"));
-  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
-  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)self);
-
-  button = gtk_button_new_with_label(_("tree"));
-  d->toggle_tree_button = button;
-  gtk_widget_set_tooltip_text(button, _("toggle list / tree view"));
-  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
-  gtk_box_pack_end(hbox, button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(toggle_tree_button_callback), (gpointer)self);
-
-  button = gtk_button_new_with_label(_("suggestion"));
-  d->toggle_suggestion_button = button;
-  gtk_widget_set_tooltip_text(button, _("toggle with / without suggestion"));
-  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
-  gtk_box_pack_end(hbox, button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(toggle_suggestion_button_callback), (gpointer)self);
-
-  gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
+  // buttons
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
   button = gtk_button_new_with_label(_("new"));
@@ -1113,6 +1095,37 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_add_help_link(button, "tagging.html#tagging_usage");
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(delete_button_clicked), (gpointer)self);
+
+  button = gtk_button_new_with_label(C_("verb", "import"));
+  d->import_button = button;
+  gtk_widget_set_tooltip_text(button, _("import tags from a Lightroom keyword file"));
+  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
+  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_button_clicked), (gpointer)self);
+
+  button = gtk_button_new_with_label(C_("verb", "export"));
+  d->export_button = button;
+  gtk_widget_set_tooltip_text(button, _("export all tags to a Lightroom keyword file"));
+  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
+  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_button_clicked), (gpointer)self);
+
+  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_treelist, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  d->toggle_tree_button = button;
+  gtk_widget_set_tooltip_text(button, _("toggle list / tree view"));
+  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
+  gtk_box_pack_end(hbox, button, FALSE, TRUE, 0);
+  d->tree_button_handler = g_signal_connect(G_OBJECT(button), "clicked",
+                                            G_CALLBACK(toggle_tree_button_callback), (gpointer)self);
+
+  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_plus_simple, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  d->toggle_suggestion_button = button;
+  gtk_widget_set_tooltip_text(button, _("toggle with / without suggestion"));
+  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
+  gtk_box_pack_end(hbox, button, FALSE, TRUE, 0);
+  d->suggestion_button_handler = g_signal_connect(G_OBJECT(button), "clicked",
+                                            G_CALLBACK(toggle_suggestion_button_callback), (gpointer)self);
+  gtk_widget_set_no_show_all(GTK_WIDGET(button), TRUE);
 
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
