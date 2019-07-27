@@ -26,6 +26,8 @@ typedef struct dt_tag_t
 {
   guint id;
   gchar *tag;
+  guint count;
+  guint select;
 } dt_tag_t;
 
 /** creates a new tag, returns tagid \param[in] name the tag name. \param[in] tagid a pointer to tagid of new
@@ -53,6 +55,9 @@ gchar *dt_tag_get_name(const guint tagid);
 /** removes a tag from db and from assigned images. \param final TRUE actually performs the remove  \return
  * the amount of images affected. */
 guint dt_tag_remove(const guint tagid, gboolean final);
+
+/** set the name of specified id */
+void dt_tag_rename(const guint tagid, const gchar *new_tagname);
 
 /** checks if tag exists. \param[in] name of tag to check. \return the id of found tag or -1 i not found. */
 gboolean dt_tag_exists(const char *name, guint *tagid);
@@ -98,6 +103,19 @@ GList *dt_tag_get_images_from_selection(gint imgid, gint tagid);
  * result a pointer to list populated with result. \return the count \note the limit of result is decided by
  * conf value "xxx" */
 uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result);
+
+/** retrieves count of tagged images. \param[in] keyword the keyword to search \return
+ * the count \note the limit of result is decided by conf value "xxx" */
+void dt_tag_count_tags_images(const gchar *keyword, int *tag_count, int *img_count);
+
+/** retrieves list of tags and tagged images. \param[in] keyword the keyword to search. \param[out] result pointers to list
+ * populated with result. \note the limit of result is decided by conf value "xxx" */
+void dt_tag_get_tags_images(const gchar *keyword, GList **tag_list, GList **img_list);
+
+/** retrieves the list of tags matching keyword. \param[in] keyword the keyword to search \param[out]
+ * result a pointer to list populated with result. \return the count \note the limit of result is decided by
+ * conf value "xxx" */
+uint32_t dt_tag_get_with_usage(const gchar *keyword, GList **result);
 
 /** retrieves a list of recent tags used. \param[out] result a pointer to list populated with result. \return
  * the count \note the limit of result is decided by conf value "xxx" */
