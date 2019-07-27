@@ -1043,6 +1043,7 @@ void dt_bauhaus_combobox_add_full(GtkWidget *widget, const char *text, dt_bauhau
   d->num_labels++;
   dt_bauhaus_combobox_entry_t *entry = new_combobox_entry(text, align, TRUE, data, free_func);
   d->entries = g_list_append(d->entries, entry);
+  if(d->active < 0) d->active = 0;
 }
 
 void dt_bauhaus_combobox_set_editable(GtkWidget *widget, int editable)
@@ -1069,6 +1070,13 @@ void dt_bauhaus_combobox_remove_at(GtkWidget *widget, int pos)
 
   if(pos < 0 || pos >= d->num_labels) return;
 
+  // move active position up if removing anything before it
+  // or when removing last position that is currently active.
+  // this also sets active to -1 when removing the last remaining entry in a combobox.
+  if(d->active > pos) d->active--;
+  else if((d->active == pos) && (d->active >= d->num_labels-1))
+    d->active = d->num_labels-2;
+
   GList *rm = g_list_nth(d->entries, pos);
   free_combobox_entry(rm->data);
   d->entries = g_list_delete_link(d->entries, rm);
@@ -1089,6 +1097,7 @@ void dt_bauhaus_combobox_insert_full(GtkWidget *widget, const char *text, dt_bau
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->num_labels++;
   d->entries = g_list_insert(d->entries, new_combobox_entry(text, align, TRUE, data, free_func), pos);
+  if(d->active < 0) d->active = 0;
 }
 
 int dt_bauhaus_combobox_length(GtkWidget *widget)
