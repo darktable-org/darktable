@@ -472,7 +472,9 @@ static bool dt_exif_read_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
   }
 }
 
-// Support DefaultUserCrop -- how is this done?
+// Support DefaultUserCrop, what is the safe exif tag?
+// Magic-nr taken from dng specs, the specs also say it has 4 floats (top,left,bottom,right
+// We only take them if a) we find a value != the default *and* b) data are plausible
 static bool dt_check_usercrop(Exiv2::ExifData &exifData, dt_image_t *img)
 {
   Exiv2::ExifData::const_iterator pos = exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.0xc7b5"));
