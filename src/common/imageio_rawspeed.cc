@@ -226,6 +226,10 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     // Grab the WB
     for(int i = 0; i < 4; i++) img->wb_coeffs[i] = r->metadata.wbCoeffs[i];
 
+    // Get DefaultUserCrop
+    if (img->flags & DT_IMAGE_HAS_USERCROP)
+      dt_img_check_usercrop(img, filename);
+
     img->buf_dsc.filters = 0u;
     if(!r->isCFA)
     {
