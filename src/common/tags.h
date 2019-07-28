@@ -127,6 +127,12 @@ void dt_tag_free_result(GList **result);
 /** reorganize tags */
 void dt_tag_reorganize(const gchar *source, const gchar *dest);
 
+/** get number of seleted images */
+uint32_t dt_selected_images_count();
+
+/** get number of images affected with that tag */
+uint32_t dt_tag_images_count(gint tagid);
+
 /** make sure that main.used_tags has everything. to be used after changes to main.tagged_images */
 void dt_tag_update_used_tags();
 
