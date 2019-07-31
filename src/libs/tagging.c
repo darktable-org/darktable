@@ -915,7 +915,7 @@ static void view_popup_menu_rename_tag(GtkWidget *menuitem, dt_lib_module_t *sel
       {
         GtkWidget *warning_dialog = gtk_message_dialog_new(GTK_WINDOW(dialog), GTK_DIALOG_MODAL,
                         GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE,
-                        _("at least one new tagname (%s) already exists, aborting."), new_tagname);
+                        _("at least one new tag name (%s) already exists, aborting"), new_tagname);
         gtk_dialog_run(GTK_DIALOG(warning_dialog));
         gtk_widget_destroy(warning_dialog);
       };
@@ -1013,7 +1013,7 @@ static void view_popup_menu_rename_path(GtkWidget *menuitem, dt_lib_module_t *se
   gtk_widget_set_tooltip_text(label, _("insert a '|' to create a new level, remove a '|' to delete a level"));
   g_free(text);
 
-  text = g_strdup_printf(ngettext("<u>%d</u> image will be updated", "<u>%d</u> images will be updated\n ", img_count), img_count);
+  text = g_strdup_printf(ngettext("<u>%d</u> image will be updated", "<u>%d</u> images will be updated", img_count), img_count);
   label = gtk_label_new(NULL);
   gtk_label_set_markup(GTK_LABEL(label), text);
   gtk_container_add(GTK_CONTAINER(area), label);
@@ -1450,7 +1450,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(d->current), GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(d->current, GTK_TREE_MODEL(liststore));
   g_object_unref(liststore);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->current), _("attached tags,\ndoubleclick to detach"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->current), _("attached tags,\ndouble-click to detach"));
   dt_gui_add_help_link(GTK_WIDGET(d->current), "tagging.html#tagging_usage");
   g_signal_connect(G_OBJECT(d->current), "row-activated", G_CALLBACK(detach_activated), (gpointer)self);
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->current));
@@ -1522,7 +1522,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_set_expander_column (d->related, col);
 
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(d->related), GTK_SELECTION_SINGLE);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->related), _("related tags,\ndoubleclick to attach,\nright-click for other actions on selected tag"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(d->related), _("related tags,\ndouble-click to attach,\nright-click for other actions on selected tag"));
   dt_gui_add_help_link(GTK_WIDGET(d->related), "tagging.html#tagging_usage");
   g_signal_connect(G_OBJECT(d->related), "button-press-event", G_CALLBACK(view_onButtonPressed), (gpointer)self);
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(d->related));
