@@ -62,12 +62,12 @@ typedef struct dt_lib_tagging_t
 
 typedef struct dt_tag_op_t
 {
-    gint tagid;
-    guint count;
-    int view_type;
-    char *newtagname;
-    char *oldtagname;
-    int select;
+  gint tagid;
+  guint count;
+  int view_type;
+  char *newtagname;
+  char *oldtagname;
+  int select;
 } dt_tag_op_t;
 
 typedef enum dt_lib_tagging_view_t
