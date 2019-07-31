@@ -674,8 +674,8 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       {
         img->flags |= DT_IMAGE_HAS_USERCROP;
         guint tagid = 0;
-        char tagname[512];
-        snprintf(tagname, sizeof(tagname), "darktable|mode|usercrop");
+        char tagname[64];
+        snprintf(tagname, sizeof(tagname), "darktable|mode|exif-crop");
         dt_tag_new(tagname, &tagid);
         dt_tag_attach(tagid, img->id);
       }
