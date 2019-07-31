@@ -745,7 +745,7 @@ static void view_popup_menu_delete_tag(GtkWidget *menuitem, dt_lib_module_t *sel
   gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_ID, &tagid, -1);
 
   // First check how many images are affected by the remove
-  int count = dt_tag_remove(tagid, FALSE);
+  const int count = dt_tag_remove(tagid, FALSE);
   if(count > 0 && dt_conf_get_bool("plugins/lighttable/tagging/ask_before_delete_tag"))
   {
     GtkWidget *dialog;
@@ -893,11 +893,11 @@ static void view_popup_menu_rename_tag(GtkWidget *menuitem, dt_lib_module_t *sel
     GList *tagged_images = NULL;
     dt_tag_get_tags_images(tagname, &tag_family, &tagged_images);
 
-    int tagname_len = strlen(tagname);
+    const int tagname_len = strlen(tagname);
     char *new_prefix_tag;
     if (subtag)
     {
-      char letter = tagname[tagname_len - strlen(subtag) + 1];
+      const char letter = tagname[tagname_len - strlen(subtag) + 1];
       tagname[tagname_len - strlen(subtag) + 1] = '\0';
       new_prefix_tag = g_strconcat(tagname, newtag, NULL);
       tagname[tagname_len - strlen(subtag) + 1] = letter;
@@ -1052,7 +1052,7 @@ static void view_popup_menu_rename_path(GtkWidget *menuitem, dt_lib_module_t *se
     dt_tag_get_tags_images(tagname, &tag_family, &tagged_images);
 
     // check if one of the new tagnames already exists.
-    int tagname_len = strlen(tagname);
+    const int tagname_len = strlen(tagname);
     gboolean tagname_exists = FALSE;
     for (GList *taglist = tag_family; taglist && !tagname_exists; taglist = g_list_next(taglist))
     {
@@ -1297,7 +1297,7 @@ static void export_button_clicked(GtkButton *button, dt_lib_module_t *self)
     char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
     char *dirname = g_path_get_dirname(filename);
     dt_conf_set_string("plugins/lighttable/tagging/last_import_export_location", dirname);
-    ssize_t count = dt_tag_export(filename);
+    const ssize_t count = dt_tag_export(filename);
     if(count < 0)
       dt_control_log(_("error exporting tags"));
     else
@@ -1734,8 +1734,8 @@ static gboolean _completion_match_func(GtkEntryCompletion *completion, const gch
 static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                       GdkModifierType modifier, dt_lib_module_t *self)
 {
+  const int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
   int mouse_over_id = -1;
-  int zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
 
   // the order is:
   // if(zoom == 1) => currently shown image
