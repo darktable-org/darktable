@@ -306,9 +306,11 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   gtk_container_add(GTK_CONTAINER(scroll), GTK_WIDGET(sbox));
 
   sd->name = gtk_entry_new();
+  gtk_entry_set_placeholder_text(GTK_ENTRY(sd->name), _("name"));
   gtk_widget_set_tooltip_text(sd->name, _("enter a name for the new style"));
 
   sd->description = gtk_entry_new();
+  gtk_entry_set_placeholder_text(GTK_ENTRY(sd->description), _("description"));
   gtk_widget_set_tooltip_text(sd->description,
                               _("enter a description for the new style, this description is searchable"));
 
