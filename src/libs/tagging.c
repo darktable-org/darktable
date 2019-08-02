@@ -1179,45 +1179,25 @@ static void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, dt_lib_m
 #endif
 }
 
-static void view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event, dt_lib_module_t *self)
+static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
   if((event->type == GDK_BUTTON_PRESS && event->button == 3)
-    || (event->type == GDK_BUTTON_PRESS && event->button == 1)
     || (event->type == GDK_2BUTTON_PRESS && event->button == 1))
   {
-    GtkTreeView *view = d->related;
-    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
-    GtkTreePath *path = NULL;
-    // Get tree path for row that was clicked
-    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), (gint)event->x, (gint)event->y, &path, NULL, NULL, NULL))
+    if(event->type == GDK_BUTTON_PRESS && event->button == 3)
     {
-      gtk_tree_selection_select_path(selection, path);
-      if(event->type == GDK_BUTTON_PRESS && event->button == 3)
-      {
-        view_popup_menu(treeview, event, self);
-      }
-      else if(event->type == GDK_BUTTON_PRESS && event->button == 1)
-      {
-        GtkTreeIter iter;
-        GtkTreeModel *model = gtk_tree_view_get_model(d->related);
-        gtk_tree_model_get_iter(model, &iter, path);
-        if(gtk_tree_model_iter_has_child(model, &iter))
-        {
-          if(gtk_tree_view_row_expanded(d->related, path))
-            gtk_tree_view_collapse_row(d->related, path);
-          else
-            gtk_tree_view_expand_row(d->related, path, FALSE);
-        }
-      }
-      else if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
-      {
-        attach_selected_tag(self, d);
-        init_treeview(self, 0);
-      }
+      view_popup_menu(treeview, event, self);
+      return TRUE;
     }
-    gtk_tree_path_free(path);
+    else if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
+    {
+      attach_selected_tag(self, d);
+      init_treeview(self, 0);
+      return TRUE;
+    }
   }
+  return FALSE;
 }
 
 static void import_button_clicked(GtkButton *button, dt_lib_module_t *self)
