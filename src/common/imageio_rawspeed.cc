@@ -33,6 +33,7 @@ extern "C" {
 #include "common/file_location.h"
 #include "common/imageio_rawspeed.h"
 #include "imageio.h"
+#include "common/tags.h"
 #include <stdint.h>
 }
 
@@ -226,6 +227,10 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
     // Grab the WB
     for(int i = 0; i < 4; i++) img->wb_coeffs[i] = r->metadata.wbCoeffs[i];
 
+    // Get DefaultUserCrop
+    if (img->flags & DT_IMAGE_HAS_USERCROP)
+      dt_img_check_usercrop(img, filename);
+
     img->buf_dsc.filters = 0u;
     if(!r->isCFA)
     {
@@ -379,8 +384,16 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   if(!mbuf) return DT_IMAGEIO_OK;
 
   // We test for monochrome before allocating the mipmap cache 
-  if(cpp == 1) img->flags |= DT_IMAGE_MONOCHROME;
-
+  // We set the flag and add the tag only once. 
+  if((cpp == 1) && !(img->flags & DT_IMAGE_MONOCHROME))
+    {
+      guint tagid = 0;
+      char tagname[64];
+      snprintf(tagname, sizeof(tagname), "darktable|mode|monochrome");
+      dt_tag_new(tagname, &tagid);
+      dt_tag_attach(tagid, img->id);
+      img->flags |= DT_IMAGE_MONOCHROME;
+    }
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf) return DT_IMAGEIO_CACHE_FULL;
 
