@@ -472,6 +472,44 @@ static bool dt_exif_read_iptc_data(dt_image_t *img, Exiv2::IptcData &iptcData)
   }
 }
 
+// Support DefaultUserCrop, what is the safe exif tag?
+// Magic-nr taken from dng specs, the specs also say it has 4 floats (top,left,bottom,right
+// We only take them if a) we find a value != the default *and* b) data are plausible
+static bool dt_check_usercrop(Exiv2::ExifData &exifData, dt_image_t *img)
+{
+  Exiv2::ExifData::const_iterator pos = exifData.findKey(Exiv2::ExifKey("Exif.SubImage1.0xc7b5"));
+  if(pos != exifData.end() && pos->count() == 4 && pos->size())
+  {
+    float crop[4];
+    for(int i = 0; i < 4; i++) crop[i] = pos->toFloat(i);
+    if (((crop[0]>0)||(crop[1]>0)||(crop[2]<1)||(crop[3]<1))&&(crop[2]-crop[0]>0.05f)&&(crop[3]-crop[1]>0.05f))
+    {
+      for (int i=0; i<4; i++) img->usercrop[i] = crop[i];
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+void dt_img_check_usercrop(dt_image_t *img, const char *filename)
+{
+  try
+  {
+    std::unique_ptr<Exiv2::Image> image(Exiv2::ImageFactory::open(WIDEN(filename)));
+    assert(image.get() != 0);
+    read_metadata_threadsafe(image);
+    Exiv2::ExifData &exifData = image->exifData();
+    if(!exifData.empty()) dt_check_usercrop(exifData, img);
+    return;
+  }
+  catch(Exiv2::AnyError &e)
+  {
+    std::string s(e.what());
+    std::cerr << "[exiv2] reading DefaultUserCrop" << filename << ": " << s << std::endl;
+    return;
+  }
+}
+
 static bool dt_exif_read_exif_tag(Exiv2::ExifData &exifData, Exiv2::ExifData::const_iterator *pos, string key)
 {
   try
@@ -632,6 +670,15 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->exif_crop = 1.0f;
     }
 
+    if (dt_check_usercrop(exifData, img)) 
+      {
+        img->flags |= DT_IMAGE_HAS_USERCROP;
+        guint tagid = 0;
+        char tagname[64];
+        snprintf(tagname, sizeof(tagname), "darktable|mode|exif-crop");
+        dt_tag_new(tagname, &tagid);
+        dt_tag_attach(tagid, img->id);
+      }
     /*
      * Get the focus distance in meters.
      */

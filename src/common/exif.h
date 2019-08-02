@@ -38,6 +38,9 @@ int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size);
 int dt_exif_read_blob(uint8_t **blob, const char *path, const int imgid, const int sRGB, const int out_width,
                       const int out_height, const int dng_mode);
 
+/** Reads exif DefaultUserCrop */
+void dt_img_check_usercrop(dt_image_t *img, const char *filename);
+
 /** write blob to file exif. merges with existing exif information.*/
 int dt_exif_write_blob(uint8_t *blob, uint32_t size, const char *path, const int compressed);
 
