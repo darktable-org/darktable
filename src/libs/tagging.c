@@ -211,8 +211,8 @@ static void init_treeview(dt_lib_module_t *self, int which)
         for(char *letter = tag; *letter; letter++)
           if(*letter == '|') *letter = '\1';
       }
-      tags = g_list_sort(tags, sort_tag);
-      for(GList *taglist = tags; taglist; taglist = g_list_next(taglist))
+      GList *sorted_tags = g_list_sort(tags, sort_tag);
+      for(GList *taglist = sorted_tags; taglist; taglist = g_list_next(taglist))
       {
         const gchar *tag = ((dt_tag_t *)taglist->data)->tag;
         const guint id = ((dt_tag_t *)taglist->data)->id;
@@ -517,9 +517,10 @@ static void _lib_selection_changed_callback(gpointer instance, dt_lib_module_t *
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
   init_treeview(self, 0);
-  if (get_treeview_type(self) == DT_LIB_TAGGING_VIEW_SIMPLE)
+  const int view_type = get_treeview_type(self);
+  if (view_type == DT_LIB_TAGGING_VIEW_SIMPLE)
     init_treeview(self, 1);
-  else if (get_treeview_type(self) == DT_LIB_TAGGING_VIEW_TREE)
+  else if (view_type == DT_LIB_TAGGING_VIEW_TREE)
     update_sel_on_tree(GTK_TREE_MODEL(d->treestore));
 }
 
@@ -1161,21 +1162,9 @@ static void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, dt_lib_m
 
   if (view_type == DT_LIB_TAGGING_VIEW_TREE)
   {
-    GtkTreeIter iter;
-    GtkTreeModel *model = NULL;
-    GtkTreeView *view = d->related;
-    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
-    if(gtk_tree_selection_get_selected(selection, &model, &iter))
-    {
-      GtkTreeIter parent;
-      if (gtk_tree_model_iter_has_child (model, &iter) // path (has leaves)
-        || !gtk_tree_model_iter_parent(model, &parent, &iter )) // at the root
-      {
-        menuitem = gtk_menu_item_new_with_label(_("rename path..."));
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-        g_signal_connect(menuitem, "activate", (GCallback)view_popup_menu_rename_path, self);
-      }
-    }
+    menuitem = gtk_menu_item_new_with_label(_("rename path..."));
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+    g_signal_connect(menuitem, "activate", (GCallback)view_popup_menu_rename_path, self);
   }
 
   gtk_widget_show_all(GTK_WIDGET(menu));
