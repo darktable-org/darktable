@@ -211,8 +211,8 @@ static void init_treeview(dt_lib_module_t *self, int which)
         for(char *letter = tag; *letter; letter++)
           if(*letter == '|') *letter = '\1';
       }
-      tags = g_list_sort(tags, sort_tag);
-      for(GList *taglist = tags; taglist; taglist = g_list_next(taglist))
+      GList *sorted_tags = g_list_sort(tags, sort_tag);
+      for(GList *taglist = sorted_tags; taglist; taglist = g_list_next(taglist))
       {
         const gchar *tag = ((dt_tag_t *)taglist->data)->tag;
         const guint id = ((dt_tag_t *)taglist->data)->id;
@@ -517,9 +517,10 @@ static void _lib_selection_changed_callback(gpointer instance, dt_lib_module_t *
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
   init_treeview(self, 0);
-  if (get_treeview_type(self) == DT_LIB_TAGGING_VIEW_SIMPLE)
+  const int view_type = get_treeview_type(self);
+  if (view_type == DT_LIB_TAGGING_VIEW_SIMPLE)
     init_treeview(self, 1);
-  else if (get_treeview_type(self) == DT_LIB_TAGGING_VIEW_TREE)
+  else if (view_type == DT_LIB_TAGGING_VIEW_TREE)
     update_sel_on_tree(GTK_TREE_MODEL(d->treestore));
 }
 
@@ -1161,21 +1162,9 @@ static void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, dt_lib_m
 
   if (view_type == DT_LIB_TAGGING_VIEW_TREE)
   {
-    GtkTreeIter iter;
-    GtkTreeModel *model = NULL;
-    GtkTreeView *view = d->related;
-    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
-    if(gtk_tree_selection_get_selected(selection, &model, &iter))
-    {
-      GtkTreeIter parent;
-      if (gtk_tree_model_iter_has_child (model, &iter) // path (has leaves)
-        || !gtk_tree_model_iter_parent(model, &parent, &iter )) // at the root
-      {
-        menuitem = gtk_menu_item_new_with_label(_("rename path..."));
-        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-        g_signal_connect(menuitem, "activate", (GCallback)view_popup_menu_rename_path, self);
-      }
-    }
+    menuitem = gtk_menu_item_new_with_label(_("rename path..."));
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+    g_signal_connect(menuitem, "activate", (GCallback)view_popup_menu_rename_path, self);
   }
 
   gtk_widget_show_all(GTK_WIDGET(menu));
@@ -1190,45 +1179,25 @@ static void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, dt_lib_m
 #endif
 }
 
-static void view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event, dt_lib_module_t *self)
+static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
   if((event->type == GDK_BUTTON_PRESS && event->button == 3)
-    || (event->type == GDK_BUTTON_PRESS && event->button == 1)
     || (event->type == GDK_2BUTTON_PRESS && event->button == 1))
   {
-    GtkTreeView *view = d->related;
-    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
-    GtkTreePath *path = NULL;
-    // Get tree path for row that was clicked
-    if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), (gint)event->x, (gint)event->y, &path, NULL, NULL, NULL))
+    if(event->type == GDK_BUTTON_PRESS && event->button == 3)
     {
-      gtk_tree_selection_select_path(selection, path);
-      if(event->type == GDK_BUTTON_PRESS && event->button == 3)
-      {
-        view_popup_menu(treeview, event, self);
-      }
-      else if(event->type == GDK_BUTTON_PRESS && event->button == 1)
-      {
-        GtkTreeIter iter;
-        GtkTreeModel *model = gtk_tree_view_get_model(d->related);
-        gtk_tree_model_get_iter(model, &iter, path);
-        if(gtk_tree_model_iter_has_child(model, &iter))
-        {
-          if(gtk_tree_view_row_expanded(d->related, path))
-            gtk_tree_view_collapse_row(d->related, path);
-          else
-            gtk_tree_view_expand_row(d->related, path, FALSE);
-        }
-      }
-      else if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
-      {
-        attach_selected_tag(self, d);
-        init_treeview(self, 0);
-      }
+      view_popup_menu(treeview, event, self);
+      return TRUE;
     }
-    gtk_tree_path_free(path);
+    else if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
+    {
+      attach_selected_tag(self, d);
+      init_treeview(self, 0);
+      return TRUE;
+    }
   }
+  return FALSE;
 }
 
 static void import_button_clicked(GtkButton *button, dt_lib_module_t *self)
