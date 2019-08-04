@@ -770,7 +770,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if(FIND_EXIF_TAG("Exif.GPSInfo.GPSLatitude"))
     {
       Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLatitudeRef"));
-      if(ref != exifData.end() && ref->size())
+      if(ref != exifData.end() && ref->size() && pos->count() == 3)
       {
         std::string sign_str = ref->toString();
         const char *sign = sign_str.c_str();
@@ -785,7 +785,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if(FIND_EXIF_TAG("Exif.GPSInfo.GPSLongitude"))
     {
       Exiv2::ExifData::const_iterator ref = exifData.findKey(Exiv2::ExifKey("Exif.GPSInfo.GPSLongitudeRef"));
-      if(ref != exifData.end() && ref->size())
+      if(ref != exifData.end() && ref->size() && pos->count() == 3)
       {
         std::string sign_str = ref->toString();
         const char *sign = sign_str.c_str();
