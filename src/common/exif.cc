@@ -670,7 +670,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         img->exif_crop = 1.0f;
     }
 
-    if (dt_check_usercrop(exifData, img)) 
+    if (dt_check_usercrop(exifData, img))
       {
         img->flags |= DT_IMAGE_HAS_USERCROP;
         guint tagid = 0;
@@ -2932,7 +2932,7 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 
   std::unique_ptr<Exiv2::Value> v2(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
 
-  GList *tags = dt_tag_get_list(imgid);
+  GList *tags = dt_tag_get_list_export(imgid);
   while(tags)
   {
     v1->read((char *)tags->data);
