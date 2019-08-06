@@ -28,7 +28,17 @@ typedef struct dt_tag_t
   gchar *tag;
   guint count;
   guint select;
+  gint flags;
 } dt_tag_t;
+
+typedef enum dt_tag_flags_t
+{
+  DT_TF_NONE = 0,
+  DT_TF_HELPER = 1 << 0,  // this tag (or path) is not a keyword to be exported
+  DT_TF_PRIVATE = 1 << 1, // this tag is private. Will be exported only on demand
+  DT_TF_PATH = 1 << 2, // this tag is on the path of others in the list
+} dt_tag_flags_t;
+
 
 /** creates a new tag, returns tagid \param[in] name the tag name. \param[in] tagid a pointer to tagid of new
  * tag, this can be NULL \return false if failed to create a tag and indicates that tagid is invalid to use.
@@ -87,12 +97,18 @@ void dt_tag_detach_by_string(const char *name, gint imgid);
 /** retrieves a list of tags of specified imgid \param[out] result a list of dt_tag_t, sorted by tag. */
 uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags);
 
-/** get a list of tags, call dt_util_glist_to_str() to make it into a string.
+/** sort tags per name (including '|') or per count (desc) */
+GList *dt_sort_tag(GList *tags, gboolean byname);
+
+/** get the list of tag for export */
+GList *dt_tag_get_list_export(gint imgid);
+
+/** get a list of tags,
  *  the difference to dt_tag_get_attached() is that this one splits at '|' and filters out the "darktable|"
  * tags. */
 GList *dt_tag_get_list(gint imgid);
 
-/** get a flat list of only hierarchical tags, call dt_util_glist_to_str() to make it into a string.
+/** get a flat list of only hierarchical tags,
  *  the difference to dt_tag_get_attached() is that this one filters out the "darktable|" tags. */
 GList *dt_tag_get_hierarchical(gint imgid);
 
@@ -116,6 +132,18 @@ void dt_tag_get_tags_images(const gchar *keyword, GList **tag_list, GList **img_
  * result a pointer to list populated with result. \return the count \note the limit of result is decided by
  * conf value "xxx" */
 uint32_t dt_tag_get_with_usage(const gchar *keyword, GList **result);
+
+/** retrieves synonyms of the tag */
+gchar *dt_tag_get_synonyms(gint tagid);
+
+/** sets synonyms of the tag */
+void dt_tag_set_synonyms(gint tagid, gchar *synonyms);
+
+/** retrieves flags of the tag */
+gint dt_tag_get_flags(gint tagid);
+
+/** sets flags of the tag */
+void dt_tag_set_flags(gint tagid, gint flags);
 
 /** retrieves a list of recent tags used. \param[out] result a pointer to list populated with result. \return
  * the count \note the limit of result is decided by conf value "xxx" */
