@@ -26,6 +26,7 @@ typedef struct dt_tag_t
 {
   guint id;
   gchar *tag;
+  gchar *leave;
   guint count;
   guint select;
   gint flags;
@@ -34,7 +35,7 @@ typedef struct dt_tag_t
 typedef enum dt_tag_flags_t
 {
   DT_TF_NONE = 0,
-  DT_TF_HELPER = 1 << 0,  // this tag (or path) is not a keyword to be exported
+  DT_TF_CATEGORY = 1 << 0,  // this tag (or path) is not a keyword to be exported
   DT_TF_PRIVATE = 1 << 1, // this tag is private. Will be exported only on demand
   DT_TF_PATH = 1 << 2, // this tag is on the path of others in the list
 } dt_tag_flags_t;
