@@ -1410,7 +1410,8 @@ static void _create_memory_schema(dt_database_t *db)
                            "(tmpid INTEGER PRIMARY KEY, id INTEGER UNIQUE ON CONFLICT IGNORE, count INTEGER)",
                NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE memory.similar_tags (tagid INTEGER)", NULL, NULL, NULL);
-  sqlite3_exec(
+  sqlite3_exec(db->handle, "CREATE TABLE memory.darktable_tags (tagid INTEGER)", NULL, NULL, NULL);
+    sqlite3_exec(
       db->handle,
       "CREATE TABLE memory.history (imgid INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256) UNIQUE ON CONFLICT REPLACE, op_params BLOB, enabled INTEGER, "
