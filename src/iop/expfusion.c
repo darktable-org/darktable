@@ -1,0 +1,1268 @@
+/*
+    This file is part of darktable,
+    copyright (c) 2019 edgardo hoszowski.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/*
+  Exposure fusion algorithm based on Tom Mertens, Jan Kautz and Frank van Reeth, “Exposure Fusion”:
+  https://mericam.github.io/papers/exposure_fusion_reduced.pdf
+
+  Exposure weight modes are based on Enfuse options:
+  http://enblend.sourceforge.net/enfuse.doc/enfuse_4.2.xhtml/enfuse.html
+*/
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include "bauhaus/bauhaus.h"
+#include "common/colorspaces_inline_conversions.h"
+
+DT_MODULE_INTROSPECTION(1, dt_iop_fusion_params_t)
+
+typedef enum dt_iop_fusion_colorspace_t
+{
+  DT_FUSION_COLORSPACE_LAB = 0,
+  DT_FUSION_COLORSPACE_RGB = 1,
+  DT_FUSION_COLORSPACE_RGB_GREY = 2
+} dt_iop_fusion_colorspace_t;
+
+typedef enum dt_iop_weight_modes_t
+{
+  DT_WEIGHT_MODE_GAUSSIAN = 0,
+  DT_WEIGHT_MODE_LORENTZIAN = 1,
+  DT_WEIGHT_MODE_HALF_SIZE = 2,
+  DT_WEIGHT_MODE_FULLSINE = 3,
+  DT_WEIGHT_MODE_BISQUARE = 4
+} dt_iop_weight_modes_t;
+
+typedef enum dt_iop_grey_projectors_t
+{
+  DT_PROJECTOR_NONE = 0,
+  DT_PROJECTOR_AVERAGE = 1,
+  DT_PROJECTOR_MIN = 2,
+  DT_PROJECTOR_MAX = 3,
+  DT_PROJECTOR_RGB_LUMINANCE = 4,
+  DT_PROJECTOR_HSL_LIGHTNESS = 5,
+  DT_PROJECTOR_LAB_LIGHTNESS = 6
+} dt_iop_grey_projectors_t;
+
+typedef struct dt_iop_fusion_params_t
+{
+  int num_exposures;         // number of exposure fusion steps
+  float exposure_stops;      // number of stops between fusion images
+  float exposure_optimum;    // Optimum brightness for exposure fusion
+  float exposure_width;      // exposure weight function variance
+  int weight_mode;           // algorithm used to build the weight map
+  int grey_projector;        // rgb --> grey
+  int fusion_colorspace;     // colorspace used to blend images
+  int fusion_grey_projector; // rgb --> grey if fusion_colorspace == rgb grey
+  float exposure_left_cutoff;
+  float exposure_right_cutoff;
+} dt_iop_fusion_params_t;
+
+typedef struct dt_iop_fusion_params_t dt_iop_fusion_data_t;
+
+typedef struct dt_iop_fusion_gui_data_t
+{
+  GtkWidget *sl_num_exposures;
+  GtkWidget *sl_exposure_stops;
+  GtkWidget *sl_exposure_optimum;
+  GtkWidget *sl_exposure_width;
+  GtkWidget *cmb_weight_mode;
+  GtkWidget *cmb_grey_projector;
+  GtkWidget *cmb_fusion_colorspace;
+  GtkWidget *cmb_fusion_grey_projector;
+  GtkWidget *sl_exposure_left_cutoff;
+  GtkWidget *sl_exposure_right_cutoff;
+} dt_iop_fusion_gui_data_t;
+
+const char *name()
+{
+  return _("exposure fusion");
+}
+
+int default_group()
+{
+  return IOP_GROUP_BASIC;
+}
+
+int flags()
+{
+  return IOP_FLAGS_SUPPORTS_BLENDING;
+}
+
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_rgb;
+}
+
+static void _show_hide_controls(dt_iop_fusion_params_t *p, dt_iop_fusion_gui_data_t *g)
+{
+  gtk_widget_set_visible(g->cmb_fusion_grey_projector, p->fusion_colorspace == DT_FUSION_COLORSPACE_RGB_GREY);
+}
+
+void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
+                   dt_dev_pixelpipe_iop_t *piece)
+{
+  memcpy(piece->data, params, sizeof(dt_iop_fusion_params_t));
+}
+
+void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  piece->data = calloc(1, sizeof(dt_iop_fusion_data_t));
+  self->commit_params(self, self->default_params, pipe, piece);
+}
+
+void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  free(piece->data);
+  piece->data = NULL;
+}
+
+void gui_update(struct dt_iop_module_t *self)
+{
+  dt_iop_fusion_params_t *p = (dt_iop_fusion_params_t *)self->params;
+  dt_iop_fusion_gui_data_t *g = (dt_iop_fusion_gui_data_t *)self->gui_data;
+
+  dt_bauhaus_slider_set(g->sl_num_exposures, p->num_exposures);
+  dt_bauhaus_slider_set(g->sl_exposure_stops, p->exposure_stops);
+  dt_bauhaus_slider_set(g->sl_exposure_optimum, p->exposure_optimum);
+  dt_bauhaus_slider_set(g->sl_exposure_width, p->exposure_width);
+  dt_bauhaus_combobox_set(g->cmb_weight_mode, p->weight_mode);
+  dt_bauhaus_combobox_set(g->cmb_grey_projector, p->grey_projector);
+  dt_bauhaus_combobox_set(g->cmb_fusion_colorspace, p->fusion_colorspace);
+  dt_bauhaus_combobox_set(g->cmb_fusion_grey_projector, p->fusion_grey_projector - 1);
+  dt_bauhaus_slider_set(g->sl_exposure_left_cutoff, p->exposure_left_cutoff * 100.f);
+  dt_bauhaus_slider_set(g->sl_exposure_right_cutoff, p->exposure_right_cutoff * 100.f);
+
+  _show_hide_controls(p, g);
+}
+
+void init(dt_iop_module_t *module)
+{
+  module->params = calloc(1, sizeof(dt_iop_fusion_params_t));
+  module->default_params = calloc(1, sizeof(dt_iop_fusion_params_t));
+  module->default_enabled = 0;
+  module->params_size = sizeof(dt_iop_fusion_params_t);
+  module->gui_data = NULL;
+  dt_iop_fusion_params_t tmp = { 0 };
+
+  tmp.num_exposures = 3;
+  tmp.exposure_stops = 1.f;
+  tmp.exposure_optimum = .5f;
+  tmp.exposure_width = .2f;
+  tmp.weight_mode = DT_WEIGHT_MODE_GAUSSIAN;
+  tmp.grey_projector = DT_PROJECTOR_AVERAGE;
+  tmp.fusion_colorspace = DT_FUSION_COLORSPACE_LAB;
+  tmp.fusion_grey_projector = DT_PROJECTOR_RGB_LUMINANCE;
+  tmp.exposure_left_cutoff = 0.f;
+  tmp.exposure_right_cutoff = 1.f;
+
+  memcpy(module->params, &tmp, sizeof(dt_iop_fusion_params_t));
+  memcpy(module->default_params, &tmp, sizeof(dt_iop_fusion_params_t));
+}
+
+void cleanup(dt_iop_module_t *module)
+{
+  free(module->params);
+  module->params = NULL;
+}
+
+static void _num_exposures_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_fusion_params_t *p = (dt_iop_fusion_params_t *)self->params;
+
+  p->num_exposures = dt_bauhaus_slider_get(widget);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void _exposure_stops_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_fusion_params_t *p = (dt_iop_fusion_params_t *)self->params;
+
+  p->exposure_stops = dt_bauhaus_slider_get(widget);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void _exposure_optimum_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_fusion_params_t *p = (dt_iop_fusion_params_t *)self->params;
+
+  p->exposure_optimum = dt_bauhaus_slider_get(widget);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void _exposure_width_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_fusion_params_t *p = (dt_iop_fusion_params_t *)self->params;
+
+  p->exposure_width = dt_bauhaus_slider_get(widget);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void _weight_mode_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_fusion_params_t *p = (dt_iop_fusion_params_t *)self->params;
+
+  p->weight_mode = dt_bauhaus_combobox_get(widget);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void _grey_projector_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_fusion_params_t *p = (dt_iop_fusion_params_t *)self->params;
+
+  p->grey_projector = dt_bauhaus_combobox_get(widget);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void _fusion_colorspace_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_fusion_params_t *p = (dt_iop_fusion_params_t *)self->params;
+  dt_iop_fusion_gui_data_t *g = (dt_iop_fusion_gui_data_t *)self->gui_data;
+
+  p->fusion_colorspace = dt_bauhaus_combobox_get(widget);
+
+  _show_hide_controls(p, g);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void _fusion_grey_projector_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_fusion_params_t *p = (dt_iop_fusion_params_t *)self->params;
+
+  p->fusion_grey_projector = dt_bauhaus_combobox_get(widget) + 1;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void _exposure_left_cutoff_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_fusion_params_t *p = (dt_iop_fusion_params_t *)self->params;
+
+  p->exposure_left_cutoff = dt_bauhaus_slider_get(widget) / 100.f;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void _exposure_right_cutoff_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_fusion_params_t *p = (dt_iop_fusion_params_t *)self->params;
+
+  p->exposure_right_cutoff = dt_bauhaus_slider_get(widget) / 100.f;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+void gui_init(struct dt_iop_module_t *self)
+{
+  self->gui_data = malloc(sizeof(dt_iop_fusion_gui_data_t));
+  dt_iop_fusion_gui_data_t *g = (dt_iop_fusion_gui_data_t *)self->gui_data;
+  dt_iop_fusion_params_t *p = (dt_iop_fusion_params_t *)self->params;
+
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
+
+  g->sl_num_exposures = dt_bauhaus_slider_new_with_range(self, 2, 5, 1, p->num_exposures, 0);
+  gtk_widget_set_tooltip_text(g->sl_num_exposures, _("number of different exposures to fuse"));
+  dt_bauhaus_slider_set_format(g->sl_num_exposures, "%.2fEV");
+  dt_bauhaus_widget_set_label(g->sl_num_exposures, NULL, _("number of exposures"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_num_exposures, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->sl_num_exposures), "value-changed", G_CALLBACK(_num_exposures_callback), self);
+
+  g->sl_exposure_stops = dt_bauhaus_slider_new_with_range(self, 0.01f, 4.0f, 0.100f, p->exposure_stops, 3);
+  gtk_widget_set_tooltip_text(g->sl_exposure_stops, _("how many stops to shift the individual exposures apart"));
+  dt_bauhaus_slider_set_format(g->sl_exposure_stops, "%.2fEV");
+  dt_bauhaus_widget_set_label(g->sl_exposure_stops, NULL, _("exposure shift"));
+  dt_bauhaus_slider_enable_soft_boundaries(g->sl_exposure_stops, -18.0, 18.0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_exposure_stops, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->sl_exposure_stops), "value-changed", G_CALLBACK(_exposure_stops_callback), self);
+
+  g->sl_exposure_optimum = dt_bauhaus_slider_new_with_range(self, 0.01f, 1.0f, 0.100f, p->exposure_optimum, 4);
+  gtk_widget_set_tooltip_text(g->sl_exposure_optimum, _("optimum exposure value"));
+  dt_bauhaus_widget_set_label(g->sl_exposure_optimum, NULL, _("exposure optimum"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_exposure_optimum, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->sl_exposure_optimum), "value-changed", G_CALLBACK(_exposure_optimum_callback), self);
+
+  g->sl_exposure_width = dt_bauhaus_slider_new_with_range(self, 0.01f, 1.0f, 0.100f, p->exposure_width, 3);
+  gtk_widget_set_tooltip_text(g->sl_exposure_width, _("exposure width"));
+  dt_bauhaus_widget_set_label(g->sl_exposure_width, NULL, _("exposure width"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_exposure_width, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->sl_exposure_width), "value-changed", G_CALLBACK(_exposure_width_callback), self);
+
+  g->cmb_grey_projector = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->cmb_grey_projector, NULL, _("grey projector"));
+  dt_bauhaus_combobox_add(g->cmb_grey_projector, _("(none)"));
+  dt_bauhaus_combobox_add(g->cmb_grey_projector, _("average rgb"));
+  dt_bauhaus_combobox_add(g->cmb_grey_projector, _("min rgb"));
+  dt_bauhaus_combobox_add(g->cmb_grey_projector, _("max rgb"));
+  dt_bauhaus_combobox_add(g->cmb_grey_projector, _("rgb luminance"));
+  dt_bauhaus_combobox_add(g->cmb_grey_projector, _("hsl lightness"));
+  dt_bauhaus_combobox_add(g->cmb_grey_projector, _("lab lightness"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->cmb_grey_projector, TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(g->cmb_grey_projector, _("method to convert from rgb to grey scale when calculating pixels weights"));
+  g_signal_connect(G_OBJECT(g->cmb_grey_projector), "value-changed", G_CALLBACK(_grey_projector_callback), self);
+
+  g->cmb_weight_mode = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->cmb_weight_mode, NULL, _("exposure weight mode"));
+  dt_bauhaus_combobox_add(g->cmb_weight_mode, _("gaussian"));
+  dt_bauhaus_combobox_add(g->cmb_weight_mode, _("lorentzian"));
+  dt_bauhaus_combobox_add(g->cmb_weight_mode, _("half sine"));
+  dt_bauhaus_combobox_add(g->cmb_weight_mode, _("full sine"));
+  dt_bauhaus_combobox_add(g->cmb_weight_mode, _("bi-square"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->cmb_weight_mode, TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text( g->cmb_weight_mode, _("algorithm used to determine the importance\n of each pixel's luminance when fusing images"));
+  g_signal_connect(G_OBJECT(g->cmb_weight_mode), "value-changed", G_CALLBACK(_weight_mode_callback), self);
+
+  g->cmb_fusion_colorspace = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->cmb_fusion_colorspace, NULL, _("fusion colorspace"));
+  dt_bauhaus_combobox_add(g->cmb_fusion_colorspace, _("lab"));
+  dt_bauhaus_combobox_add(g->cmb_fusion_colorspace, _("rgb"));
+  dt_bauhaus_combobox_add(g->cmb_fusion_colorspace, _("grey rgb"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->cmb_fusion_colorspace, TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(g->cmb_fusion_colorspace, _("colorspace used to merge images"));
+  g_signal_connect(G_OBJECT(g->cmb_fusion_colorspace), "value-changed", G_CALLBACK(_fusion_colorspace_callback), self);
+
+  g->sl_exposure_left_cutoff = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 0.01f, p->exposure_left_cutoff * 100.f, 3);
+  gtk_widget_set_tooltip_text(g->sl_exposure_left_cutoff, _("excludes from merging pixels that don't fall in range"));
+  dt_bauhaus_slider_set_format(g->sl_exposure_left_cutoff, "%.3f%%");
+  dt_bauhaus_widget_set_label(g->sl_exposure_left_cutoff, NULL, _("exposure cutoff - left"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_exposure_left_cutoff, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->sl_exposure_left_cutoff), "value-changed", G_CALLBACK(_exposure_left_cutoff_callback), self);
+
+  g->sl_exposure_right_cutoff = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 0.01f, p->exposure_right_cutoff * 100.f, 3);
+  gtk_widget_set_tooltip_text(g->sl_exposure_right_cutoff, _("excludes from merging pixels that don't fall in range"));
+  dt_bauhaus_slider_set_format(g->sl_exposure_right_cutoff, "%.3f%%");
+  dt_bauhaus_widget_set_label(g->sl_exposure_right_cutoff, NULL, _("exposure cutoff - right"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_exposure_right_cutoff, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->sl_exposure_right_cutoff), "value-changed", G_CALLBACK(_exposure_right_cutoff_callback), self);
+
+  g->cmb_fusion_grey_projector = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->cmb_fusion_grey_projector, NULL, _("fusion grey projector"));
+  dt_bauhaus_combobox_add(g->cmb_fusion_grey_projector, _("average rgb"));
+  dt_bauhaus_combobox_add(g->cmb_fusion_grey_projector, _("min rgb"));
+  dt_bauhaus_combobox_add(g->cmb_fusion_grey_projector, _("max rgb"));
+  dt_bauhaus_combobox_add(g->cmb_fusion_grey_projector, _("rgb luminance"));
+  dt_bauhaus_combobox_add(g->cmb_fusion_grey_projector, _("hsl lightness"));
+  dt_bauhaus_combobox_add(g->cmb_fusion_grey_projector, _("lab lightness"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->cmb_fusion_grey_projector, TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(g->cmb_fusion_grey_projector, _("method to convert from rgb to grey scale when merging images in grey rgb colorspace"));
+  g_signal_connect(G_OBJECT(g->cmb_fusion_grey_projector), "value-changed", G_CALLBACK(_fusion_grey_projector_callback), self);
+  gtk_widget_show_all(g->cmb_fusion_grey_projector);
+  gtk_widget_set_no_show_all(g->cmb_fusion_grey_projector, TRUE);
+  gtk_widget_set_visible(g->cmb_fusion_grey_projector, p->fusion_colorspace  == DT_FUSION_COLORSPACE_RGB_GREY);
+}
+
+void gui_cleanup(struct dt_iop_module_t *self)
+{
+  free(self->gui_data);
+  self->gui_data = NULL;
+}
+
+//////////////////////////////////////
+// fusion
+//////////////////////////////////////
+
+typedef struct dt_image_pyramid_t
+{
+  float *img;
+  size_t w, h;
+  int ch;
+} dt_image_pyramid_t;
+
+typedef struct dt_pyramid_t
+{
+  dt_image_pyramid_t *images;
+  int num_levels;
+} dt_pyramid_t;
+
+static inline void _apply_exposure(const float *const img_src, const size_t wd, const size_t ht, const int ch, const float exp,
+                                   float *const img_dest)
+{
+  const size_t size = wd * ht * ch;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(size, exp, img_src, img_dest) \
+  schedule(static)
+#endif
+  for(int i = 0; i < size; i++)
+  {
+    img_dest[i] = img_src[i] * exp;
+    img_dest[i] = CLAMP(img_dest[i], 0.f, 1.f);
+  }
+}
+
+static inline void _image_copy(const float *const img_src, const size_t wd, const size_t ht, const int ch,
+                               float *const img_dest)
+{
+  const size_t size = wd * ht * ch;
+  memcpy(img_dest, img_src, size * sizeof(float));
+}
+
+static inline void _images_div(const float *const img_src1, const size_t wd, const size_t ht, const int ch,
+                               const float *const img_src2, float *const img_dest)
+{
+  const size_t size = wd * ht * ch;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(size, img_src1, img_src2, img_dest) \
+  schedule(static)
+#endif
+  for(int i = 0; i < size; i++)
+  {
+    if(img_src2[i] != 0.f) img_dest[i] = img_src1[i] / img_src2[i];
+  }
+}
+
+static inline void _images_add(const float *const img_src1, const size_t wd, const size_t ht, const int ch,
+                               const float *const img_src2, float *const img_dest)
+{
+  const size_t size = wd * ht * ch;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(size, img_src1, img_src2, img_dest) \
+  schedule(static)
+#endif
+  for(int i = 0; i < size; i++)
+    img_dest[i] = img_src1[i] + img_src2[i];
+}
+
+static inline void _images_sub(const float *const img_src1, const size_t wd, const size_t ht, const int ch,
+                                   const float *const img_src2, float *const img_dest)
+{
+  const size_t size = wd * ht * ch;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(size, img_src1, img_src2, img_dest) \
+  schedule(static)
+#endif
+  for(int i = 0; i < size; i++)
+    img_dest[i] = img_src1[i] - img_src2[i];
+}
+
+static inline void _image_add(const float *const img_src, const size_t wd, const size_t ht, const int ch,
+                              const float val, float *const img_dest)
+{
+  const size_t size = wd * ht * ch;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(size, val, img_src, img_dest) \
+  schedule(static)
+#endif
+  for(int i = 0; i < size; i++)
+    img_dest[i] = img_src[i] + val;
+}
+
+static void _convolve_symmetric(const float *const img_src, const size_t wd, const size_t ht, const int ch,
+                                const float *const fx, const float *const fy, float *const img_tmp,
+                                float *const img_dest)
+{
+  // horizontal filter
+  for(int i = 0; i < ht; i++) // all lines
+  {
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_src, img_tmp, fx, wd, ch, i) \
+  schedule(static)
+#endif
+    for(int j = 2; j < wd - 2; j++)
+      for(int k = 0; k < ch; k++)
+        img_tmp[(i * wd + j) * ch + k]
+            = img_src[((i)*wd + (j - 2)) * ch + k] * fx[0] + img_src[((i)*wd + (j - 1)) * ch + k] * fx[1]
+              + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j + 1)) * ch + k] * fx[3]
+              + img_src[((i)*wd + (j + 2)) * ch + k] * fx[4];
+
+    // left edge
+    int j = 0; // 1 0 [0 1 2 ... ]
+    for(int k = 0; k < ch; k++)
+      img_tmp[(i * wd + j) * ch + k]
+          = img_src[((i)*wd + (j + 1)) * ch + k] * fx[0] + img_src[((i)*wd + (j)) * ch + k] * fx[1]
+            + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j + 1)) * ch + k] * fx[3]
+            + img_src[((i)*wd + (j + 2)) * ch + k] * fx[4];
+
+    j = 1; // -1 [-1 0 1 2 ... ]
+    for(int k = 0; k < ch; k++)
+      img_tmp[(i * wd + j) * ch + k]
+          = img_src[((i)*wd + (j - 1)) * ch + k] * fx[0] + img_src[((i)*wd + (j - 1)) * ch + k] * fx[1]
+            + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j + 1)) * ch + k] * fx[3]
+            + img_src[((i)*wd + (j + 2)) * ch + k] * fx[4];
+
+    // right edge
+    j = wd - 2; // [ ... -2 -1 0 1] 1
+    for(int k = 0; k < ch; k++)
+      img_tmp[(i * wd + j) * ch + k]
+          = img_src[((i)*wd + (j - 2)) * ch + k] * fx[0] + img_src[((i)*wd + (j - 1)) * ch + k] * fx[1]
+            + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j + 1)) * ch + k] * fx[3]
+            + img_src[((i)*wd + (j + 1)) * ch + k] * fx[4];
+
+    j = wd - 1; // [ ... -2 -1 0] 0 -1
+    for(int k = 0; k < ch; k++)
+      img_tmp[(i * wd + j) * ch + k]
+          = img_src[((i)*wd + (j - 2)) * ch + k] * fx[0] + img_src[((i)*wd + (j - 1)) * ch + k] * fx[1]
+            + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j)) * ch + k] * fx[3]
+            + img_src[((i)*wd + (j - 1)) * ch + k] * fx[4];
+  }
+
+  // vertical filter
+  for(int j = 0; j < wd; j++) // all columns
+  {
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_dest, img_tmp, fy, wd, ht, ch, j) \
+  schedule(static)
+#endif
+    for(int i = 2; i < ht - 2; i++)
+      for(int k = 0; k < ch; k++)
+        img_dest[(i * wd + j) * ch + k]
+            = img_tmp[((i - 2) * wd + (j)) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[1]
+              + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[3]
+              + img_tmp[((i + 2) * wd + (j)) * ch + k] * fy[4];
+
+    // top edge
+    int i = 0; // 1 0 [0 1 2 ... ]
+    for(int k = 0; k < ch; k++)
+      img_dest[(i * wd + j) * ch + k]
+          = img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[0] + img_tmp[((i)*wd + (j)) * ch + k] * fy[1]
+            + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[3]
+            + img_tmp[((i + 2) * wd + (j)) * ch + k] * fy[4];
+
+    i = 1; // -1 [-1 0 1 2 ... ]
+    for(int k = 0; k < ch; k++)
+      img_dest[(i * wd + j) * ch + k]
+          = img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[1]
+            + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[3]
+            + img_tmp[((i + 2) * wd + (j)) * ch + k] * fy[4];
+
+    // bottom edge
+    i = ht - 2; // [ ... -2 -1 0 1] 1
+    for(int k = 0; k < ch; k++)
+      img_dest[(i * wd + j) * ch + k]
+          = img_tmp[((i - 2) * wd + (j)) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[1]
+            + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[3]
+            + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[4];
+
+    i = ht - 1; // [ ... -2 -1 0] 0 -1
+    for(int k = 0; k < ch; k++)
+      img_dest[(i * wd + j) * ch + k]
+          = img_tmp[((i - 2) * wd + (j)) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[1]
+            + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i)*wd + (j)) * ch + k] * fy[3]
+            + img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[4];
+  }
+}
+
+static void _convolve_replicate(const float *const img_src, const size_t wd, const size_t ht, const int ch,
+                                const float *const fx, const float *const fy, float *const img_tmp,
+                                float *const img_dest)
+{
+  // horizontal filter
+  for(int i = 0; i < ht; i++) // all lines
+  {
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_src, img_tmp, fx, wd, ch, i) \
+  schedule(static)
+#endif
+    for(int j = 2; j < wd - 2; j++)
+      for(int k = 0; k < ch; k++)
+        img_tmp[(i * wd + j) * ch + k]
+            = img_src[((i)*wd + (j - 2)) * ch + k] * fx[0] + img_src[((i)*wd + (j - 1)) * ch + k] * fx[1]
+              + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j + 1)) * ch + k] * fx[3]
+              + img_src[((i)*wd + (j + 2)) * ch + k] * fx[4];
+
+    // left edge
+    int j = 0; // 0 0 [0 1 2 ... ]
+    for(int k = 0; k < ch; k++)
+      img_tmp[(i * wd + j) * ch + k]
+          = img_src[((i)*wd + (j)) * ch + k] * fx[0] + img_src[((i)*wd + (j)) * ch + k] * fx[1]
+            + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j + 1)) * ch + k] * fx[3]
+            + img_src[((i)*wd + (j + 2)) * ch + k] * fx[4];
+
+    j = 1; // -1 [-1 0 1 2 ... ]
+    for(int k = 0; k < ch; k++)
+      img_tmp[(i * wd + j) * ch + k]
+          = img_src[((i)*wd + (j - 1)) * ch + k] * fx[0] + img_src[((i)*wd + (j - 1)) * ch + k] * fx[1]
+            + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j + 1)) * ch + k] * fx[3]
+            + img_src[((i)*wd + (j + 2)) * ch + k] * fx[4];
+
+    // right edge
+    j = wd - 2; // [ ... -2 -1 0 1] 1
+    for(int k = 0; k < ch; k++)
+      img_tmp[(i * wd + j) * ch + k]
+          = img_src[((i)*wd + (j - 2)) * ch + k] * fx[0] + img_src[((i)*wd + (j - 1)) * ch + k] * fx[1]
+            + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j + 1)) * ch + k] * fx[3]
+            + img_src[((i)*wd + (j + 1)) * ch + k] * fx[4];
+
+    j = wd - 1; // [ ... -2 -1 0] 0 0
+    for(int k = 0; k < ch; k++)
+      img_tmp[(i * wd + j) * ch + k]
+          = img_src[((i)*wd + (j - 2)) * ch + k] * fx[0] + img_src[((i)*wd + (j - 1)) * ch + k] * fx[1]
+            + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j)) * ch + k] * fx[3]
+            + img_src[((i)*wd + (j)) * ch + k] * fx[4];
+  }
+
+  // vertical filter
+  for(int j = 0; j < wd; j++) // all columns
+  {
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_dest, img_tmp, fy, wd, ht, ch, j) \
+  schedule(static)
+#endif
+    for(int i = 2; i < ht - 2; i++)
+      for(int k = 0; k < ch; k++)
+        img_dest[(i * wd + j) * ch + k]
+            = img_tmp[((i - 2) * wd + (j)) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[1]
+              + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[3]
+              + img_tmp[((i + 2) * wd + (j)) * ch + k] * fy[4];
+
+    // top edge
+    int i = 0; // 0 0 [0 1 2 ... ]
+    for(int k = 0; k < ch; k++)
+      img_dest[(i * wd + j) * ch + k]
+          = img_tmp[((i)*wd + (j)) * ch + k] * fy[0] + img_tmp[((i)*wd + (j)) * ch + k] * fy[1]
+            + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[3]
+            + img_tmp[((i + 2) * wd + (j)) * ch + k] * fy[4];
+
+    i = 1; // -1 [-1 0 1 2 ... ]
+    for(int k = 0; k < ch; k++)
+      img_dest[(i * wd + j) * ch + k]
+          = img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[1]
+            + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[3]
+            + img_tmp[((i + 2) * wd + (j)) * ch + k] * fy[4];
+
+    // bottom edge
+    i = ht - 2; // [ ... -2 -1 0 1] 1
+    for(int k = 0; k < ch; k++)
+      img_dest[(i * wd + j) * ch + k]
+          = img_tmp[((i - 2) * wd + (j)) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[1]
+            + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[3]
+            + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[4];
+
+    i = ht - 1; // [ ... -2 -1 0] 0 0
+    for(int k = 0; k < ch; k++)
+      img_dest[(i * wd + j) * ch + k]
+          = img_tmp[((i - 2) * wd + (j)) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[1]
+            + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i)*wd + (j)) * ch + k] * fy[3]
+            + img_tmp[((i)*wd + (j)) * ch + k] * fy[4];
+  }
+}
+
+static void _alloc_image(dt_image_pyramid_t *img, const size_t wd, const size_t ht, const int ch)
+{
+  img->w = wd;
+  img->h = ht;
+  img->ch = ch;
+  img->img = dt_alloc_align(64, img->w * img->h * img->ch * sizeof(float));
+  memset(img->img, 0, img->w * img->h * img->ch * sizeof(float));
+}
+
+static void _free_image(dt_image_pyramid_t *img)
+{
+  dt_free_align(img->img);
+  img->img = NULL;
+}
+
+static void _alloc_pyramid(dt_pyramid_t *pyramid, const size_t wd, const size_t ht, const int ch,
+                           const int num_levels)
+{
+  pyramid->images = (dt_image_pyramid_t *)malloc(num_levels * sizeof(dt_image_pyramid_t));
+  pyramid->num_levels = num_levels;
+
+  size_t w = wd;
+  size_t h = ht;
+
+  for(int i = 0; i < num_levels; i++)
+  {
+    _alloc_image(pyramid->images + i, w, h, ch);
+
+    h = h / 2 + (h % 2);
+    w = w / 2 + (w % 2);
+  }
+}
+
+static void _free_pyramid(dt_pyramid_t *pyramid)
+{
+  for(int i = 0; i < pyramid->num_levels; i++) _free_image(pyramid->images + i);
+  free(pyramid->images);
+  pyramid->images = NULL;
+}
+
+static void _downsample_image(const float *const img_src, const size_t wd, const size_t ht, const int ch,
+                              const float *const filter, float *const img_tmp1, float *const img_tmp2,
+                              const size_t down_wd, const size_t down_ht, float *const img_dest)
+{
+  // [1] -> [1]
+  // [1 2] -> [1]
+  // [1 2 3] -> [1 3]
+  // [1 2 3 4] -> [1 3]
+  // width: W/2 + W%2
+
+  // low pass filter
+  _convolve_symmetric(img_src, wd, ht, ch, filter, filter, img_tmp1, img_tmp2);
+
+  // decimate, using every second entry
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_dest, img_tmp2, down_ht, down_wd, ch) \
+  schedule(static) \
+  collapse(2)
+#endif
+  for(int i = 0; i < down_ht; i++)
+    for(int j = 0; j < down_wd; j++)
+      for(int k = 0; k < ch; k++)
+        img_dest[(i * down_wd + j) * ch + k] = img_tmp2[((i * 2) * wd + (j * 2)) * ch + k];
+}
+
+static void _upsample_image(const float *const img_src, const size_t wd, const size_t ht, const int ch,
+                            const float *const filter, float *const img_tmp1, float *const img_tmp2,
+                            const size_t up_wd, const size_t up_ht, float *const img_dest)
+{
+  const size_t padding = 1;
+
+  // sizes with added 1 px border and size increase of 2x
+  const size_t wd_upsampled = (wd + 2 * padding) * 2;
+  const size_t ht_upsampled = (ht + 2 * padding) * 2;
+
+  memset(img_tmp2, 0, wd_upsampled * ht_upsampled * ch * sizeof(float));
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_src, img_tmp2, ht, wd, ch, padding, wd_upsampled) \
+  schedule(static) \
+  collapse(2)
+#endif
+  for(int i = 0; i < ht; i++)
+    for(int j = 0; j < wd; j++)
+      for(int k = 0; k < ch; k++)
+        img_tmp2[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
+            = 4.f * img_src[(i * wd + j) * ch + k];
+
+  // top row
+  int i = -1;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_src, img_tmp2, wd, ch, padding, wd_upsampled, i) \
+  schedule(static)
+#endif
+  for(int j = 0; j < wd; j++)
+    for(int k = 0; k < ch; k++)
+      img_tmp2[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
+          = 4.f * img_src[((i + 1) * wd + (j)) * ch + k];
+
+  // bottom row
+  i = ht;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_src, img_tmp2, wd, ch, padding, wd_upsampled, i) \
+  schedule(static)
+#endif
+  for(int j = 0; j < wd; j++)
+    for(int k = 0; k < ch; k++)
+      img_tmp2[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
+          = 4.f * img_src[((i - 1) * wd + (j)) * ch + k];
+
+  // left edge
+  int j = -1;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_src, img_tmp2, ht, wd, ch, padding, wd_upsampled, j) \
+  schedule(static)
+#endif
+  for(int ii = 0; ii < ht; ii++)
+    for(int k = 0; k < ch; k++)
+      img_tmp2[((2 * (ii + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
+          = 4.f * img_src[((ii)*wd + (j + 1)) * ch + k];
+
+  // right edge
+  j = wd;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_src, img_tmp2, ht, wd, ch, padding, wd_upsampled, j) \
+  schedule(static)
+#endif
+  for(int ii = 0; ii < ht; ii++)
+    for(int k = 0; k < ch; k++)
+      img_tmp2[((2 * (ii + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
+          = 4.f * img_src[((ii)*wd + (j - 1)) * ch + k];
+
+  // corners
+  for(int k = 0; k < ch; k++)
+  {
+    i = -1;
+    j = -1;
+    img_tmp2[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
+        = 4.f * img_src[((i + 1) * wd + (j + 1)) * ch + k];
+    j = wd;
+    img_tmp2[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
+        = 4.f * img_src[((i + 1) * wd + (j - 1)) * ch + k];
+    i = ht;
+    j = -1;
+    img_tmp2[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
+        = 4.f * img_src[((i - 1) * wd + (j + 1)) * ch + k];
+    j = wd;
+    img_tmp2[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
+        = 4.f * img_src[((i - 1) * wd + (j - 1)) * ch + k];
+  }
+
+  // blur
+  _convolve_replicate(img_tmp2, wd_upsampled, ht_upsampled, ch, filter, filter, img_tmp1, img_tmp2);
+
+  // remove the border and copy result
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_dest, img_tmp2, up_ht, up_wd, ch, wd_upsampled) \
+  schedule(static) \
+  collapse(2)
+#endif
+  for(int ii = 0; ii < up_ht; ii++)
+    for(int jj = 0; jj < up_wd; jj++)
+      for(int k = 0; k < ch; k++)
+        img_dest[(ii * up_wd + jj) * ch + k] = img_tmp2[((ii + 2) * wd_upsampled + (jj + 2)) * ch + k];
+}
+
+static void _build_gaussian_pyramid(const float *const img_src, const size_t wd, const size_t ht, const int ch,
+                                    dt_image_pyramid_t *const img_tmp1, dt_image_pyramid_t *const img_tmp2,
+                                    dt_pyramid_t *const pyramid_dest)
+{
+  // copy image to the finest level
+  _image_copy(img_src, wd, ht, ch, pyramid_dest->images[0].img);
+
+  const float a = 0.4;
+  const float pyramid_filter[] = { 1. / 4. - a / 2., 1. / 4., a, 1. / 4., 1. / 4. - a / 2. };
+
+  for(int v = 1; v < pyramid_dest->num_levels; v++)
+  {
+    // downsample image and store into level
+    _downsample_image(pyramid_dest->images[v - 1].img, pyramid_dest->images[v - 1].w, pyramid_dest->images[v - 1].h,
+                      pyramid_dest->images[v - 1].ch, pyramid_filter, img_tmp1->img, img_tmp2->img,
+                      pyramid_dest->images[v].w, pyramid_dest->images[v].h, pyramid_dest->images[v].img);
+  }
+}
+
+static void _build_laplacian_pyramid(const float *const img_src, const size_t wd, const size_t ht, const int ch,
+                                     dt_image_pyramid_t *const img_tmp1, dt_image_pyramid_t *const img_tmp2,
+                                     dt_image_pyramid_t *const img_tmp3, dt_image_pyramid_t *const img_tmp4,
+                                     dt_pyramid_t *const pyramid_dest)
+{
+  // copy image to the finest level
+  _image_copy(img_src, wd, ht, ch, pyramid_dest->images[0].img);
+
+  const float a = 0.4;
+  const float pyramid_filter[] = { 1. / 4. - a / 2., 1. / 4., a, 1. / 4., 1. / 4. - a / 2. };
+
+   _image_copy(img_src, wd, ht, ch, img_tmp3->img);
+
+  size_t tmp2_wd = wd;
+  size_t tmp2_ht = ht;
+  size_t tmp3_wd = wd;
+  size_t tmp3_ht = ht;
+
+  for(int v = 0; v < pyramid_dest->num_levels - 1; v++)
+  {
+    // downsample image img_tmp3 further, store in img_tmp2
+    tmp2_wd = pyramid_dest->images[v + 1].w;
+    tmp2_ht = pyramid_dest->images[v + 1].h;
+    _downsample_image(img_tmp3->img, tmp3_wd, tmp3_ht, ch, pyramid_filter, img_tmp2->img, img_tmp1->img, tmp2_wd,
+                      tmp2_ht, img_tmp2->img);
+
+    // upsample image img_tmp2, store temporarily in pyramid_dest
+    _upsample_image(img_tmp2->img, tmp2_wd, tmp2_ht, ch, pyramid_filter, img_tmp4->img, img_tmp1->img,
+                    pyramid_dest->images[v].w, pyramid_dest->images[v].h, pyramid_dest->images[v].img);
+
+    // subtract pyramid_dest from img_tmp3, store difference (img_tmp3 - upsampled image) in pyramid_dest
+    _images_sub(img_tmp3->img, tmp3_ht, tmp3_wd, ch, pyramid_dest->images[v].img, pyramid_dest->images[v].img);
+
+    tmp3_wd = tmp2_wd;
+    tmp3_ht = tmp2_ht;
+
+    // continue with downsampled image remainder
+    _image_copy(img_tmp2->img, tmp2_ht, tmp2_wd, ch, img_tmp3->img);
+  }
+
+  // coarsest level, residual low pass image
+  _image_copy(img_tmp3->img, tmp3_ht, tmp3_wd, ch, pyramid_dest->images[pyramid_dest->num_levels - 1].img);
+}
+
+static void _reconstruct_laplacian(const dt_pyramid_t *const pyramid, const int ch,
+                                           dt_image_pyramid_t *const img_tmp1, dt_image_pyramid_t *const img_tmp2,
+                                           dt_image_pyramid_t *const img_tmp3, dt_image_pyramid_t *const img_dest)
+{
+  const float pyramid_filter[] = { .0625, .25, .375, .25, .0625 };
+
+  _image_copy(pyramid->images[pyramid->num_levels - 1].img, pyramid->images[pyramid->num_levels - 1].w,
+                               pyramid->images[pyramid->num_levels - 1].h, ch, img_dest->img);
+
+  for(int v = pyramid->num_levels - 2; v >= 0; v--)
+  {
+    // upsample to img_tmp1
+    _upsample_image(img_dest->img, pyramid->images[v + 1].w, pyramid->images[v + 1].h, ch, pyramid_filter, img_tmp2->img,
+                    img_tmp3->img, pyramid->images[v].w, pyramid->images[v].h, img_tmp1->img);
+
+    // add current level to img_tmp1, store in img_dest
+    _images_add(pyramid->images[v].img, pyramid->images[v].w, pyramid->images[v].h, pyramid->images[v].ch, img_tmp1->img, img_dest->img);
+  }
+}
+
+static inline void _rgb_to_lab(const float *const rgb, float *const lab,
+                               const dt_iop_order_iccprofile_info_t *const work_profile)
+{
+  dt_ioppr_rgb_matrix_to_lab(rgb, lab, work_profile);
+}
+
+static inline float _grey_projector(const float *const rgb, const dt_iop_grey_projectors_t grey_projector,
+                                    const dt_iop_order_iccprofile_info_t *const work_profile)
+{
+  float lum = 0.f;
+
+  switch(grey_projector)
+  {
+    case DT_PROJECTOR_AVERAGE:
+      lum = (rgb[0] + rgb[1] + rgb[2]) / 3.f;
+      break;
+    case DT_PROJECTOR_MIN:
+      lum = fmin(fmin(rgb[0], rgb[1]), rgb[2]);
+      break;
+    case DT_PROJECTOR_MAX:
+      lum = fmax(fmax(rgb[0], rgb[1]), rgb[2]);
+      break;
+    case DT_PROJECTOR_RGB_LUMINANCE:
+      lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(rgb, work_profile) : dt_camera_rgb_luminance(rgb);
+      break;
+    case DT_PROJECTOR_HSL_LIGHTNESS:
+      lum = (fmax(fmax(rgb[0], rgb[1]), rgb[2]) + fmin(fmin(rgb[0], rgb[1]), rgb[2])) * .5f;
+      break;
+    case DT_PROJECTOR_LAB_LIGHTNESS:
+    {
+      float lab[4] = { 0.f };
+      _rgb_to_lab(rgb, lab, work_profile);
+      lum = lab[0] * (1.f / 100.f);
+    }
+    break;
+    case DT_PROJECTOR_NONE:
+      break;
+  }
+
+  return lum;
+}
+
+static inline float _well_exposedness(const float lum, const dt_iop_weight_modes_t weight_mode,
+                                      const float exposure_optimum, const float exposure_width,
+                                      const float exposure_left_cutoff, const float exposure_right_cutoff)
+{
+  if((exposure_left_cutoff > 0.f && lum < exposure_left_cutoff) || (exposure_right_cutoff < 1.f && lum > exposure_right_cutoff))
+    return 0.f;
+
+  float exp = 1.f;
+
+  const float v = (lum - exposure_optimum) / exposure_width;
+
+  if(weight_mode == DT_WEIGHT_MODE_GAUSSIAN)
+  {
+    exp = dt_fast_expf(-(v * v) * .5f);
+  }
+  else if(weight_mode == DT_WEIGHT_MODE_LORENTZIAN)
+  {
+    exp = 1.f / (1.f + ((v * v) * .5f));
+  }
+  else if(weight_mode == DT_WEIGHT_MODE_HALF_SIZE)
+  {
+    if(fabs(v) <= (float)M_PI * .5f)
+      exp = cos(v);
+    else
+      exp = 0.f;
+  }
+  else if(weight_mode == DT_WEIGHT_MODE_FULLSINE)
+  {
+    if(fabs(v) <= (float)M_PI)
+      exp = (1.f + cos(v)) * .5f;
+    else
+      exp = 0.f;
+  }
+  else if(weight_mode == DT_WEIGHT_MODE_BISQUARE)
+  {
+    if(fabs(v) <= 1.f)
+      exp = (1.f - powf(v, 4.f));
+    else
+      exp = 0.f;
+  }
+
+  return exp;
+}
+
+static void _buil_weight_map(const float *const img_src, const size_t wd, const size_t ht, const int ch,
+                             float *const img_map, const dt_iop_grey_projectors_t grey_projector, const dt_iop_weight_modes_t weight_mode,
+                             const float exposure_optimum, const float exposure_width,
+                             const float exposure_left_cutoff, const float exposure_right_cutoff,
+                             const dt_iop_order_iccprofile_info_t *const work_profile)
+{
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_src, img_map, ht, wd, ch, grey_projector, work_profile, weight_mode, \
+  exposure_optimum, exposure_width) \
+  schedule(static) \
+  collapse(2)
+#endif
+  for(size_t y = 0; y < ht; y++)
+  {
+    for(size_t x = 0; x < wd; x++)
+    {
+      const float *const rgb = img_src + (y * wd * ch) + x * ch;
+
+      float E = 1.f;
+      if(grey_projector != DT_PROJECTOR_NONE)
+      {
+        const float lum = _grey_projector(rgb, grey_projector, work_profile);
+        E = _well_exposedness(lum, weight_mode, exposure_optimum, exposure_width, exposure_left_cutoff, exposure_right_cutoff);
+      }
+      else
+      {
+        E = _well_exposedness(rgb[0], weight_mode, exposure_optimum, exposure_width, exposure_left_cutoff, exposure_right_cutoff) *
+              _well_exposedness(rgb[1], weight_mode, exposure_optimum, exposure_width, exposure_left_cutoff, exposure_right_cutoff) *
+              _well_exposedness(rgb[2], weight_mode, exposure_optimum, exposure_width, exposure_left_cutoff, exposure_right_cutoff);
+      }
+
+      img_map[y * wd + x] = E;
+    }
+  }
+}
+
+static float exposure_increment(const float stops, const int e)
+{
+  const float white = exp2f(-stops * (float)e);
+  const float scale = 1.0f / white;
+  return scale;
+}
+
+static void _image_rgb_to_grey(const float *const img_src, const size_t wd, const size_t ht, const int ch, float *const img_dest,
+                                const dt_iop_grey_projectors_t grey_projector, const dt_iop_order_iccprofile_info_t *const work_profile)
+{
+  const size_t size = wd * ht * ch;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_src, img_dest, size, ch, grey_projector, work_profile) \
+  schedule(static)
+#endif
+  for(size_t i = 0; i < size; i += ch)
+    img_dest[i] = img_dest[i + 1] = img_dest[i + 2] = _grey_projector(img_src + i, grey_projector, work_profile);
+}
+
+static void _exposure_fusion(const float *const img_src, const size_t wd, const size_t ht, const int ch,
+                             const int num_exposures, float *const img_dest, struct dt_iop_module_t *self,
+                             const dt_iop_order_iccprofile_info_t *const work_profile,
+                             dt_iop_fusion_data_t *const d)
+{
+  const int num_levels = floor(log2(MIN(wd, ht)));
+
+  // array of images with the weight map for each different exposure image
+  dt_image_pyramid_t *img_wmaps = malloc(num_exposures * sizeof(dt_image_pyramid_t));
+  for(int i = 0; i < num_exposures; i++) _alloc_image(img_wmaps + i, wd, ht, 1);
+
+  // pyramid with the sum of all weight pyramids
+  // used to normalize each weight map
+  dt_pyramid_t pyramid_blend = { 0 };
+  _alloc_pyramid(&pyramid_blend, wd, ht, ch, num_levels);
+
+  // pyramid for each weight map
+  dt_pyramid_t pyramid_wmap = { 0 };
+  _alloc_pyramid(&pyramid_wmap, wd, ht, 1, num_levels);
+
+  // pyramid for each exposure image
+  dt_pyramid_t pyramid_image = { 0 };
+  _alloc_pyramid(&pyramid_image, wd, ht, ch, num_levels);
+
+  // calculate the maximum size needed for the temp images
+  const size_t max_upsample_wd = (((wd / 2) + (wd % 2)) + 2) * 2;
+  const size_t max_upsample_ht = (((ht / 2) + (ht % 2)) + 2) * 2;
+
+  const size_t max_wd = MAX(max_upsample_wd, wd);
+  const size_t max_ht = MAX(max_upsample_ht, ht);
+
+  // temp images so we don't need to allocate it each time
+  // must be large enought for upsample images
+  dt_image_pyramid_t img_tmp1 = { 0 };
+  _alloc_image(&img_tmp1, max_wd, max_ht, ch);
+
+  dt_image_pyramid_t img_tmp2 = { 0 };
+  _alloc_image(&img_tmp2, max_wd, max_ht, ch);
+
+  dt_image_pyramid_t img_tmp3 = { 0 };
+  _alloc_image(&img_tmp3, max_wd, max_ht, ch);
+
+  dt_image_pyramid_t img_tmp4 = { 0 };
+  _alloc_image(&img_tmp4, max_wd, max_ht, ch);
+
+  dt_image_pyramid_t img_tmp5 = { 0 };
+  _alloc_image(&img_tmp5, max_wd, max_ht, ch);
+
+  // build the weight map for each exposure
+  for(int n = 0; n < num_exposures; n++)
+  {
+    _apply_exposure(img_src, wd, ht, ch, exposure_increment(d->exposure_stops, n), img_tmp1.img);
+
+    _buil_weight_map(img_tmp1.img, wd, ht, ch, img_wmaps[n].img, d->grey_projector, d->weight_mode,
+                      d->exposure_optimum, d->exposure_width, d->exposure_left_cutoff, d->exposure_right_cutoff, work_profile);
+  }
+
+  // normalize the weight maps so the sum for each pixel == 1
+  // start with the first one, the sum is stored in img_tmp1
+  _image_copy(img_wmaps[0].img, img_wmaps[0].w, img_wmaps[0].h, img_wmaps[0].ch, img_tmp1.img);
+  // add all the rest
+  for(int n = 1; n < num_exposures; n++)
+    _images_add(img_tmp1.img, img_wmaps[n].w, img_wmaps[n].h, img_wmaps[n].ch, img_wmaps[n].img, img_tmp1.img);
+  // avoid division by zero
+  _image_add(img_tmp1.img, img_wmaps[0].w, img_wmaps[0].h, img_wmaps[0].ch, 1.0E-12, img_tmp1.img);
+  // normalize all the maps
+  for(int n = 0; n < num_exposures; n++)
+    _images_div(img_wmaps[n].img, img_wmaps[n].w, img_wmaps[n].h, img_wmaps[n].ch, img_tmp1.img, img_wmaps[n].img);
+
+  // now create a laplacian pyramid with the weighted sum of the laplacian of each image
+  // weighted with the gaussian of the weight maps
+  for(int n = 0; n < num_exposures; n++)
+  {
+    // apply the exposure compensation to the source image (not to the first one)
+    if(n > 0)
+      _apply_exposure(img_src, wd, ht, ch, exposure_increment(d->exposure_stops, n), img_tmp1.img);
+    else
+      _image_copy(img_src, wd, ht, ch, img_tmp1.img);
+
+    // transform to the blend colorspace as requested by the user
+    if(d->fusion_colorspace == DT_FUSION_COLORSPACE_LAB)
+    {
+      int converted_cst = 0;
+      dt_ioppr_transform_image_colorspace(self, img_tmp1.img, img_tmp1.img, wd, ht, iop_cs_rgb, iop_cs_Lab,
+                                          &converted_cst, work_profile);
+    }
+    else if(d->fusion_colorspace == DT_FUSION_COLORSPACE_RGB_GREY)
+    {
+      _image_rgb_to_grey(img_tmp1.img, wd, ht, ch, img_tmp1.img, d->fusion_grey_projector, work_profile);
+    }
+
+    // build a gaussian pyramid for the weight map
+    _build_gaussian_pyramid(img_wmaps[n].img, wd, ht, 1, &img_tmp2, &img_tmp3, &pyramid_wmap);
+
+    // build a laplacian pyramid for the image
+    _build_laplacian_pyramid(img_tmp1.img, wd, ht, ch, &img_tmp2, &img_tmp3, &img_tmp4, &img_tmp5, &pyramid_image);
+
+    // add the laplacian to the blend pyramid, weighted with the gaussian pyramid
+    for(int v = 0; v < num_levels; v++)
+    {
+      const size_t w = pyramid_image.images[v].w;
+      const size_t h = pyramid_image.images[v].h;
+      const size_t blend_w = pyramid_blend.images[v].w;
+      const size_t wmap_w = pyramid_wmap.images[v].w;
+
+      float *const img_blend = pyramid_blend.images[v].img;
+      const float *const img_wmap = pyramid_wmap.images[v].img;
+      const float *const img_image = pyramid_image.images[v].img;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_blend, img_wmap, img_image, w, h, blend_w, wmap_w, ch) \
+  schedule(static) \
+  collapse(2)
+#endif
+      for(int i = 0; i < h; i++)
+        for(int j = 0; j < w; j++)
+          for(int k = 0; k < ch; k++)
+            img_blend[(i * blend_w + j) * ch + k] += img_wmap[i * wmap_w + j] * img_image[(i * w + j) * ch + k];
+    }
+  }
+
+  // reconstruct the blended laplacian pyramid
+  _reconstruct_laplacian(&pyramid_blend, ch, &img_tmp1, &img_tmp3, &img_tmp4, &img_tmp2);
+
+  // transforn the final image to rgb if needed
+  if(d->fusion_colorspace == DT_FUSION_COLORSPACE_LAB)
+  {
+    // just transform back to rgb
+    int converted_cst = 0;
+    dt_ioppr_transform_image_colorspace(self, img_tmp2.img, img_dest, wd, ht, iop_cs_Lab, iop_cs_rgb,
+                                        &converted_cst, work_profile);
+  }
+  else
+  {
+    // just return it
+    _image_copy(img_tmp2.img, wd, ht, ch, img_dest);
+  }
+
+  // return the alpha channel
+  const size_t size = wd * ht;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_dest, img_src, size, ch) \
+  schedule(static)
+#endif
+  for(size_t i = 0; i < size; i++)
+    img_dest[i * ch + 3] = img_src[i * ch + 3];
+
+    // free resources
+  _free_image(&img_tmp1);
+  _free_image(&img_tmp2);
+  _free_image(&img_tmp3);
+  _free_image(&img_tmp4);
+  _free_image(&img_tmp5);
+
+  _free_pyramid(&pyramid_blend);
+  _free_pyramid(&pyramid_image);
+  _free_pyramid(&pyramid_wmap);
+
+  for(int i = 0; i < num_exposures; i++) _free_image(img_wmaps + i);
+  free(img_wmaps);
+}
+
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
+             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  dt_iop_fusion_data_t *const d = (dt_iop_fusion_data_t *)(piece->data);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+
+  const int ch = 4;
+  const int num_exposures = d->num_exposures;
+  const size_t width = roi_in->width, height = roi_in->height;
+
+  const float *const in = (const float *const)ivoid;
+  float *const out = (float *const)ovoid;
+
+  _exposure_fusion(in, width, height, ch, num_exposures, out, self, work_profile, d);
+}
+
+// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
+// vim: shiftwidth=2 expandtab tabstop=2 cindent
+// kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
