@@ -739,7 +739,7 @@ static void _downsample_image(const float *const img_src, const size_t wd, const
   // decimate, using every second entry
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_dest, img_tmp2, down_ht, down_wd, ch) \
+  dt_omp_firstprivate(img_dest, img_tmp2, wd, down_ht, down_wd, ch) \
   schedule(static) \
   collapse(2)
 #endif
@@ -1034,7 +1034,7 @@ static void _buil_weight_map(const float *const img_src, const size_t wd, const 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(img_src, img_map, ht, wd, ch, grey_projector, work_profile, weight_mode, \
-  exposure_optimum, exposure_width) \
+  exposure_optimum, exposure_width, exposure_left_cutoff, exposure_right_cutoff) \
   schedule(static) \
   collapse(2)
 #endif
