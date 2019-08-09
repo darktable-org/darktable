@@ -461,6 +461,23 @@ static inline void _images_add(const float *const img_src1, const size_t wd, con
     img_dest[i] = img_src1[i] + img_src2[i];
 }
 
+static inline void _images_add_weighted(const float *const img_src1, const size_t wd, const size_t ht, const int ch,
+                               const float *const img_src2, const float *const img_weight, float *const img_dest)
+{
+  const size_t size = wd * ht;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(size, img_src1, img_src2, img_dest) \
+  schedule(static)
+#endif
+  for(int i = 0; i < size; i++)
+  {
+    for(int c = 0; c < ch; c++)
+      img_dest[i*ch + c] = img_src1[i*ch + c] + img_src2[i*ch + c] * img_weight[i];
+  }
+}
+
 static inline void _images_sub(const float *const img_src1, const size_t wd, const size_t ht, const int ch,
                                    const float *const img_src2, float *const img_dest)
 {
@@ -490,9 +507,10 @@ static inline void _image_add(const float *const img_src, const size_t wd, const
 }
 
 static void _convolve_symmetric(const float *const img_src, const size_t wd, const size_t ht, const int ch,
-                                const float *const fx, const float *const fy, float *const img_tmp,
-                                float *const img_dest)
+                                const float *const fx, const float *const fy, float *const img_dest)
 {
+  float *img_tmp = dt_alloc_align(64, wd * ht * ch * sizeof(float));
+
   // horizontal filter
   for(int i = 0; i < ht; i++) // all lines
   {
@@ -504,39 +522,39 @@ static void _convolve_symmetric(const float *const img_src, const size_t wd, con
     for(int j = 2; j < wd - 2; j++)
       for(int k = 0; k < ch; k++)
         img_tmp[(i * wd + j) * ch + k]
-            = img_src[((i)*wd + (j - 2)) * ch + k] * fx[0] + img_src[((i)*wd + (j - 1)) * ch + k] * fx[1]
-              + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j + 1)) * ch + k] * fx[3]
-              + img_src[((i)*wd + (j + 2)) * ch + k] * fx[4];
+            = img_src[(i*wd + (j - 2)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
+              + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
+              + img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
 
     // left edge
     int j = 0; // 1 0 [0 1 2 ... ]
     for(int k = 0; k < ch; k++)
       img_tmp[(i * wd + j) * ch + k]
-          = img_src[((i)*wd + (j + 1)) * ch + k] * fx[0] + img_src[((i)*wd + (j)) * ch + k] * fx[1]
-            + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j + 1)) * ch + k] * fx[3]
-            + img_src[((i)*wd + (j + 2)) * ch + k] * fx[4];
+          = img_src[(i*wd + (j + 1)) * ch + k] * fx[0] + img_src[(i*wd + j) * ch + k] * fx[1]
+            + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
+            + img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
 
     j = 1; // -1 [-1 0 1 2 ... ]
     for(int k = 0; k < ch; k++)
       img_tmp[(i * wd + j) * ch + k]
-          = img_src[((i)*wd + (j - 1)) * ch + k] * fx[0] + img_src[((i)*wd + (j - 1)) * ch + k] * fx[1]
-            + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j + 1)) * ch + k] * fx[3]
-            + img_src[((i)*wd + (j + 2)) * ch + k] * fx[4];
+          = img_src[(i*wd + (j - 1)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
+            + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
+            + img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
 
     // right edge
     j = wd - 2; // [ ... -2 -1 0 1] 1
     for(int k = 0; k < ch; k++)
       img_tmp[(i * wd + j) * ch + k]
-          = img_src[((i)*wd + (j - 2)) * ch + k] * fx[0] + img_src[((i)*wd + (j - 1)) * ch + k] * fx[1]
-            + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j + 1)) * ch + k] * fx[3]
-            + img_src[((i)*wd + (j + 1)) * ch + k] * fx[4];
+          = img_src[(i*wd + (j - 2)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
+            + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
+            + img_src[(i*wd + (j + 1)) * ch + k] * fx[4];
 
     j = wd - 1; // [ ... -2 -1 0] 0 -1
     for(int k = 0; k < ch; k++)
       img_tmp[(i * wd + j) * ch + k]
-          = img_src[((i)*wd + (j - 2)) * ch + k] * fx[0] + img_src[((i)*wd + (j - 1)) * ch + k] * fx[1]
-            + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j)) * ch + k] * fx[3]
-            + img_src[((i)*wd + (j - 1)) * ch + k] * fx[4];
+          = img_src[(i*wd + (j - 2)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
+            + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + j) * ch + k] * fx[3]
+            + img_src[(i*wd + (j - 1)) * ch + k] * fx[4];
   }
 
   // vertical filter
@@ -550,46 +568,49 @@ static void _convolve_symmetric(const float *const img_src, const size_t wd, con
     for(int i = 2; i < ht - 2; i++)
       for(int k = 0; k < ch; k++)
         img_dest[(i * wd + j) * ch + k]
-            = img_tmp[((i - 2) * wd + (j)) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[1]
-              + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[3]
-              + img_tmp[((i + 2) * wd + (j)) * ch + k] * fy[4];
+            = img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
+              + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
+              + img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
 
     // top edge
     int i = 0; // 1 0 [0 1 2 ... ]
     for(int k = 0; k < ch; k++)
       img_dest[(i * wd + j) * ch + k]
-          = img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[0] + img_tmp[((i)*wd + (j)) * ch + k] * fy[1]
-            + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[3]
-            + img_tmp[((i + 2) * wd + (j)) * ch + k] * fy[4];
+          = img_tmp[((i + 1) * wd + j) * ch + k] * fy[0] + img_tmp[(i*wd + j) * ch + k] * fy[1]
+            + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
+            + img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
 
     i = 1; // -1 [-1 0 1 2 ... ]
     for(int k = 0; k < ch; k++)
       img_dest[(i * wd + j) * ch + k]
-          = img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[1]
-            + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[3]
-            + img_tmp[((i + 2) * wd + (j)) * ch + k] * fy[4];
+          = img_tmp[((i - 1) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
+            + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
+            + img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
 
     // bottom edge
     i = ht - 2; // [ ... -2 -1 0 1] 1
     for(int k = 0; k < ch; k++)
       img_dest[(i * wd + j) * ch + k]
-          = img_tmp[((i - 2) * wd + (j)) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[1]
-            + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[3]
-            + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[4];
+          = img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
+            + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
+            + img_tmp[((i + 1) * wd + j) * ch + k] * fy[4];
 
     i = ht - 1; // [ ... -2 -1 0] 0 -1
     for(int k = 0; k < ch; k++)
       img_dest[(i * wd + j) * ch + k]
-          = img_tmp[((i - 2) * wd + (j)) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[1]
-            + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i)*wd + (j)) * ch + k] * fy[3]
-            + img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[4];
+          = img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
+            + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[(i*wd + j) * ch + k] * fy[3]
+            + img_tmp[((i - 1) * wd + j) * ch + k] * fy[4];
   }
+
+  dt_free_align(img_tmp);
 }
 
 static void _convolve_replicate(const float *const img_src, const size_t wd, const size_t ht, const int ch,
-                                const float *const fx, const float *const fy, float *const img_tmp,
-                                float *const img_dest)
+                                const float *const fx, const float *const fy, float *const img_dest)
 {
+  float *img_tmp = dt_alloc_align(64, wd * ht * ch * sizeof(float));
+
   // horizontal filter
   for(int i = 0; i < ht; i++) // all lines
   {
@@ -601,39 +622,39 @@ static void _convolve_replicate(const float *const img_src, const size_t wd, con
     for(int j = 2; j < wd - 2; j++)
       for(int k = 0; k < ch; k++)
         img_tmp[(i * wd + j) * ch + k]
-            = img_src[((i)*wd + (j - 2)) * ch + k] * fx[0] + img_src[((i)*wd + (j - 1)) * ch + k] * fx[1]
-              + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j + 1)) * ch + k] * fx[3]
-              + img_src[((i)*wd + (j + 2)) * ch + k] * fx[4];
+            = img_src[(i*wd + (j - 2)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
+              + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
+              + img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
 
     // left edge
     int j = 0; // 0 0 [0 1 2 ... ]
     for(int k = 0; k < ch; k++)
       img_tmp[(i * wd + j) * ch + k]
-          = img_src[((i)*wd + (j)) * ch + k] * fx[0] + img_src[((i)*wd + (j)) * ch + k] * fx[1]
-            + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j + 1)) * ch + k] * fx[3]
-            + img_src[((i)*wd + (j + 2)) * ch + k] * fx[4];
+          = img_src[(i*wd + j) * ch + k] * fx[0] + img_src[(i*wd + j) * ch + k] * fx[1]
+            + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
+            + img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
 
     j = 1; // -1 [-1 0 1 2 ... ]
     for(int k = 0; k < ch; k++)
       img_tmp[(i * wd + j) * ch + k]
-          = img_src[((i)*wd + (j - 1)) * ch + k] * fx[0] + img_src[((i)*wd + (j - 1)) * ch + k] * fx[1]
-            + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j + 1)) * ch + k] * fx[3]
-            + img_src[((i)*wd + (j + 2)) * ch + k] * fx[4];
+          = img_src[(i*wd + (j - 1)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
+            + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
+            + img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
 
     // right edge
     j = wd - 2; // [ ... -2 -1 0 1] 1
     for(int k = 0; k < ch; k++)
       img_tmp[(i * wd + j) * ch + k]
-          = img_src[((i)*wd + (j - 2)) * ch + k] * fx[0] + img_src[((i)*wd + (j - 1)) * ch + k] * fx[1]
-            + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j + 1)) * ch + k] * fx[3]
-            + img_src[((i)*wd + (j + 1)) * ch + k] * fx[4];
+          = img_src[(i*wd + (j - 2)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
+            + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
+            + img_src[(i*wd + (j + 1)) * ch + k] * fx[4];
 
     j = wd - 1; // [ ... -2 -1 0] 0 0
     for(int k = 0; k < ch; k++)
       img_tmp[(i * wd + j) * ch + k]
-          = img_src[((i)*wd + (j - 2)) * ch + k] * fx[0] + img_src[((i)*wd + (j - 1)) * ch + k] * fx[1]
-            + img_src[((i)*wd + (j)) * ch + k] * fx[2] + img_src[((i)*wd + (j)) * ch + k] * fx[3]
-            + img_src[((i)*wd + (j)) * ch + k] * fx[4];
+          = img_src[(i*wd + (j - 2)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
+            + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + j) * ch + k] * fx[3]
+            + img_src[(i*wd + j) * ch + k] * fx[4];
   }
 
   // vertical filter
@@ -647,40 +668,42 @@ static void _convolve_replicate(const float *const img_src, const size_t wd, con
     for(int i = 2; i < ht - 2; i++)
       for(int k = 0; k < ch; k++)
         img_dest[(i * wd + j) * ch + k]
-            = img_tmp[((i - 2) * wd + (j)) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[1]
-              + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[3]
-              + img_tmp[((i + 2) * wd + (j)) * ch + k] * fy[4];
+            = img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
+              + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
+              + img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
 
     // top edge
     int i = 0; // 0 0 [0 1 2 ... ]
     for(int k = 0; k < ch; k++)
       img_dest[(i * wd + j) * ch + k]
-          = img_tmp[((i)*wd + (j)) * ch + k] * fy[0] + img_tmp[((i)*wd + (j)) * ch + k] * fy[1]
-            + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[3]
-            + img_tmp[((i + 2) * wd + (j)) * ch + k] * fy[4];
+          = img_tmp[(i*wd + j) * ch + k] * fy[0] + img_tmp[(i*wd + j) * ch + k] * fy[1]
+            + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
+            + img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
 
     i = 1; // -1 [-1 0 1 2 ... ]
     for(int k = 0; k < ch; k++)
       img_dest[(i * wd + j) * ch + k]
-          = img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[1]
-            + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[3]
-            + img_tmp[((i + 2) * wd + (j)) * ch + k] * fy[4];
+          = img_tmp[((i - 1) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
+            + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
+            + img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
 
     // bottom edge
     i = ht - 2; // [ ... -2 -1 0 1] 1
     for(int k = 0; k < ch; k++)
       img_dest[(i * wd + j) * ch + k]
-          = img_tmp[((i - 2) * wd + (j)) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[1]
-            + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[3]
-            + img_tmp[((i + 1) * wd + (j)) * ch + k] * fy[4];
+          = img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
+            + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
+            + img_tmp[((i + 1) * wd + j) * ch + k] * fy[4];
 
     i = ht - 1; // [ ... -2 -1 0] 0 0
     for(int k = 0; k < ch; k++)
       img_dest[(i * wd + j) * ch + k]
-          = img_tmp[((i - 2) * wd + (j)) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + (j)) * ch + k] * fy[1]
-            + img_tmp[((i)*wd + (j)) * ch + k] * fy[2] + img_tmp[((i)*wd + (j)) * ch + k] * fy[3]
-            + img_tmp[((i)*wd + (j)) * ch + k] * fy[4];
+          = img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
+            + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[(i*wd + j) * ch + k] * fy[3]
+            + img_tmp[(i*wd + j) * ch + k] * fy[4];
   }
+
+  dt_free_align(img_tmp);
 }
 
 static void _alloc_image(dt_image_pyramid_t *img, const size_t wd, const size_t ht, const int ch)
@@ -724,9 +747,10 @@ static void _free_pyramid(dt_pyramid_t *pyramid)
 }
 
 static void _downsample_image(const float *const img_src, const size_t wd, const size_t ht, const int ch,
-                              const float *const filter, float *const img_tmp1, float *const img_tmp2,
-                              const size_t down_wd, const size_t down_ht, float *const img_dest)
+                              const float *const filter, const size_t down_wd, const size_t down_ht, float *const img_dest)
 {
+  float *img_tmp = dt_alloc_align(64, wd * ht * ch * sizeof(float));
+
   // [1] -> [1]
   // [1 2] -> [1]
   // [1 2 3] -> [1 3]
@@ -734,24 +758,26 @@ static void _downsample_image(const float *const img_src, const size_t wd, const
   // width: W/2 + W%2
 
   // low pass filter
-  _convolve_symmetric(img_src, wd, ht, ch, filter, filter, img_tmp1, img_tmp2);
+  _convolve_symmetric(img_src, wd, ht, ch, filter, filter, img_tmp);
 
   // decimate, using every second entry
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_dest, img_tmp2, wd, down_ht, down_wd, ch) \
+  dt_omp_firstprivate(img_dest, img_tmp, wd, down_ht, down_wd, ch) \
   schedule(static) \
   collapse(2)
 #endif
   for(int i = 0; i < down_ht; i++)
     for(int j = 0; j < down_wd; j++)
       for(int k = 0; k < ch; k++)
-        img_dest[(i * down_wd + j) * ch + k] = img_tmp2[((i * 2) * wd + (j * 2)) * ch + k];
+        img_dest[(i * down_wd + j) * ch + k] = img_tmp[((i * 2) * wd + (j * 2)) * ch + k];
+
+  dt_free_align(img_tmp);
 }
 
 static void _upsample_image(const float *const img_src, const size_t wd, const size_t ht, const int ch,
-                            const float *const filter, float *const img_tmp1, float *const img_tmp2,
-                            const size_t up_wd, const size_t up_ht, float *const img_dest)
+                            const float *const filter, const size_t up_wd, const size_t up_ht,
+                            float *const img_add_sub, float *const img_dest, const gboolean add_to_image, float *const img_wmap)
 {
   const size_t padding = 1;
 
@@ -759,66 +785,67 @@ static void _upsample_image(const float *const img_src, const size_t wd, const s
   const size_t wd_upsampled = (wd + 2 * padding) * 2;
   const size_t ht_upsampled = (ht + 2 * padding) * 2;
 
-  memset(img_tmp2, 0, wd_upsampled * ht_upsampled * ch * sizeof(float));
+  float *img_tmp = dt_alloc_align(64, wd_upsampled * ht_upsampled * ch * sizeof(float));
+  memset(img_tmp, 0, wd_upsampled * ht_upsampled * ch * sizeof(float));
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_tmp2, ht, wd, ch, padding, wd_upsampled) \
+  dt_omp_firstprivate(img_src, img_tmp, ht, wd, ch, padding, wd_upsampled) \
   schedule(static) \
   collapse(2)
 #endif
   for(int i = 0; i < ht; i++)
     for(int j = 0; j < wd; j++)
       for(int k = 0; k < ch; k++)
-        img_tmp2[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
+        img_tmp[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
             = 4.f * img_src[(i * wd + j) * ch + k];
 
   // top row
   int i = -1;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_tmp2, wd, ch, padding, wd_upsampled, i) \
+  dt_omp_firstprivate(img_src, img_tmp, wd, ch, padding, wd_upsampled, i) \
   schedule(static)
 #endif
   for(int j = 0; j < wd; j++)
     for(int k = 0; k < ch; k++)
-      img_tmp2[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
-          = 4.f * img_src[((i + 1) * wd + (j)) * ch + k];
+      img_tmp[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
+          = 4.f * img_src[((i + 1) * wd + j) * ch + k];
 
   // bottom row
   i = ht;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_tmp2, wd, ch, padding, wd_upsampled, i) \
+  dt_omp_firstprivate(img_src, img_tmp, wd, ch, padding, wd_upsampled, i) \
   schedule(static)
 #endif
   for(int j = 0; j < wd; j++)
     for(int k = 0; k < ch; k++)
-      img_tmp2[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
-          = 4.f * img_src[((i - 1) * wd + (j)) * ch + k];
+      img_tmp[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
+          = 4.f * img_src[((i - 1) * wd + j) * ch + k];
 
   // left edge
   int j = -1;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_tmp2, ht, wd, ch, padding, wd_upsampled, j) \
+  dt_omp_firstprivate(img_src, img_tmp, ht, wd, ch, padding, wd_upsampled, j) \
   schedule(static)
 #endif
   for(int ii = 0; ii < ht; ii++)
     for(int k = 0; k < ch; k++)
-      img_tmp2[((2 * (ii + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
+      img_tmp[((2 * (ii + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
           = 4.f * img_src[((ii)*wd + (j + 1)) * ch + k];
 
   // right edge
   j = wd;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_tmp2, ht, wd, ch, padding, wd_upsampled, j) \
+  dt_omp_firstprivate(img_src, img_tmp, ht, wd, ch, padding, wd_upsampled, j) \
   schedule(static)
 #endif
   for(int ii = 0; ii < ht; ii++)
     for(int k = 0; k < ch; k++)
-      img_tmp2[((2 * (ii + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
+      img_tmp[((2 * (ii + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
           = 4.f * img_src[((ii)*wd + (j - 1)) * ch + k];
 
   // corners
@@ -826,38 +853,56 @@ static void _upsample_image(const float *const img_src, const size_t wd, const s
   {
     i = -1;
     j = -1;
-    img_tmp2[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
+    img_tmp[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
         = 4.f * img_src[((i + 1) * wd + (j + 1)) * ch + k];
     j = wd;
-    img_tmp2[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
+    img_tmp[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
         = 4.f * img_src[((i + 1) * wd + (j - 1)) * ch + k];
     i = ht;
     j = -1;
-    img_tmp2[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
+    img_tmp[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
         = 4.f * img_src[((i - 1) * wd + (j + 1)) * ch + k];
     j = wd;
-    img_tmp2[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
+    img_tmp[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
         = 4.f * img_src[((i - 1) * wd + (j - 1)) * ch + k];
   }
 
   // blur
-  _convolve_replicate(img_tmp2, wd_upsampled, ht_upsampled, ch, filter, filter, img_tmp1, img_tmp2);
+  _convolve_replicate(img_tmp, wd_upsampled, ht_upsampled, ch, filter, filter, img_tmp);
 
   // remove the border and copy result
+  if(add_to_image)
+  {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_dest, img_tmp2, up_ht, up_wd, ch, wd_upsampled) \
+  dt_omp_firstprivate(img_dest, img_tmp, up_ht, up_wd, ch, wd_upsampled) \
   schedule(static) \
   collapse(2)
 #endif
-  for(int ii = 0; ii < up_ht; ii++)
-    for(int jj = 0; jj < up_wd; jj++)
-      for(int k = 0; k < ch; k++)
-        img_dest[(ii * up_wd + jj) * ch + k] = img_tmp2[((ii + 2) * wd_upsampled + (jj + 2)) * ch + k];
+    for(int ii = 0; ii < up_ht; ii++)
+      for(int jj = 0; jj < up_wd; jj++)
+        for(int k = 0; k < ch; k++)
+          img_dest[(ii * up_wd + jj) * ch + k] = img_add_sub[(ii * up_wd + jj) * ch + k] + img_tmp[((ii + 2) * wd_upsampled + (jj + 2)) * ch + k];
+  }
+  else
+  {
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_dest, img_tmp, up_ht, up_wd, ch, wd_upsampled) \
+  schedule(static) \
+  collapse(2)
+#endif
+    for(int ii = 0; ii < up_ht; ii++)
+      for(int jj = 0; jj < up_wd; jj++)
+        for(int k = 0; k < ch; k++)
+          img_dest[(ii * up_wd + jj) * ch + k] += (img_add_sub[(ii * up_wd + jj) * ch + k] - img_tmp[((ii + 2) * wd_upsampled + (jj + 2)) * ch + k]) *
+                                                    img_wmap[(ii * up_wd + jj)];
+  }
+
+  dt_free_align(img_tmp);
 }
 
 static void _build_gaussian_pyramid(const float *const img_src, const size_t wd, const size_t ht, const int ch,
-                                    dt_image_pyramid_t *const img_tmp1, dt_image_pyramid_t *const img_tmp2,
                                     dt_pyramid_t *const pyramid_dest)
 {
   // copy image to the finest level
@@ -870,23 +915,21 @@ static void _build_gaussian_pyramid(const float *const img_src, const size_t wd,
   {
     // downsample image and store into level
     _downsample_image(pyramid_dest->images[v - 1].img, pyramid_dest->images[v - 1].w, pyramid_dest->images[v - 1].h,
-                      pyramid_dest->images[v - 1].ch, pyramid_filter, img_tmp1->img, img_tmp2->img,
-                      pyramid_dest->images[v].w, pyramid_dest->images[v].h, pyramid_dest->images[v].img);
+                      pyramid_dest->images[v - 1].ch, pyramid_filter, pyramid_dest->images[v].w, pyramid_dest->images[v].h,
+                      pyramid_dest->images[v].img);
   }
 }
 
 static void _build_laplacian_pyramid(const float *const img_src, const size_t wd, const size_t ht, const int ch,
-                                     dt_image_pyramid_t *const img_tmp1, dt_image_pyramid_t *const img_tmp2,
-                                     dt_image_pyramid_t *const img_tmp3, dt_image_pyramid_t *const img_tmp4,
-                                     dt_pyramid_t *const pyramid_dest)
+                                     dt_pyramid_t *const pyramid_wmap, dt_pyramid_t *const pyramid_dest)
 {
-  // copy image to the finest level
-  _image_copy(img_src, wd, ht, ch, pyramid_dest->images[0].img);
+  float *img_tmp2 = dt_alloc_align(64, wd * ht * ch * sizeof(float));
+  float *img_tmp3 = dt_alloc_align(64, wd * ht * ch * sizeof(float));
 
   const float a = 0.4;
   const float pyramid_filter[] = { 1. / 4. - a / 2., 1. / 4., a, 1. / 4., 1. / 4. - a / 2. };
 
-   _image_copy(img_src, wd, ht, ch, img_tmp3->img);
+   _image_copy(img_src, wd, ht, ch, img_tmp3);
 
   size_t tmp2_wd = wd;
   size_t tmp2_ht = ht;
@@ -898,44 +941,40 @@ static void _build_laplacian_pyramid(const float *const img_src, const size_t wd
     // downsample image img_tmp3 further, store in img_tmp2
     tmp2_wd = pyramid_dest->images[v + 1].w;
     tmp2_ht = pyramid_dest->images[v + 1].h;
-    _downsample_image(img_tmp3->img, tmp3_wd, tmp3_ht, ch, pyramid_filter, img_tmp2->img, img_tmp1->img, tmp2_wd,
-                      tmp2_ht, img_tmp2->img);
 
-    // upsample image img_tmp2, store temporarily in pyramid_dest
-    _upsample_image(img_tmp2->img, tmp2_wd, tmp2_ht, ch, pyramid_filter, img_tmp4->img, img_tmp1->img,
-                    pyramid_dest->images[v].w, pyramid_dest->images[v].h, pyramid_dest->images[v].img);
+    _downsample_image(img_tmp3, tmp3_wd, tmp3_ht, ch, pyramid_filter, tmp2_wd, tmp2_ht, img_tmp2);
 
-    // subtract pyramid_dest from img_tmp3, store difference (img_tmp3 - upsampled image) in pyramid_dest
-    _images_sub(img_tmp3->img, tmp3_ht, tmp3_wd, ch, pyramid_dest->images[v].img, pyramid_dest->images[v].img);
+    // upsample image img_tmp2 and subtract from img_tmp3
+    _upsample_image(img_tmp2, tmp2_wd, tmp2_ht, ch, pyramid_filter, pyramid_dest->images[v].w, pyramid_dest->images[v].h,
+                    img_tmp3, pyramid_dest->images[v].img, FALSE, pyramid_wmap->images[v].img);
 
     tmp3_wd = tmp2_wd;
     tmp3_ht = tmp2_ht;
 
     // continue with downsampled image remainder
-    _image_copy(img_tmp2->img, tmp2_ht, tmp2_wd, ch, img_tmp3->img);
+    _image_copy(img_tmp2, tmp2_ht, tmp2_wd, ch, img_tmp3);
   }
 
   // coarsest level, residual low pass image
-  _image_copy(img_tmp3->img, tmp3_ht, tmp3_wd, ch, pyramid_dest->images[pyramid_dest->num_levels - 1].img);
+  _images_add_weighted(pyramid_dest->images[pyramid_dest->num_levels - 1].img, tmp3_ht, tmp3_wd, ch, img_tmp3,
+                        pyramid_wmap->images[pyramid_dest->num_levels - 1].img, pyramid_dest->images[pyramid_dest->num_levels - 1].img);
+
+  dt_free_align(img_tmp2);
+  dt_free_align(img_tmp3);
 }
 
-static void _reconstruct_laplacian(const dt_pyramid_t *const pyramid, const int ch,
-                                           dt_image_pyramid_t *const img_tmp1, dt_image_pyramid_t *const img_tmp2,
-                                           dt_image_pyramid_t *const img_tmp3, dt_image_pyramid_t *const img_dest)
+static void _reconstruct_laplacian(const dt_pyramid_t *const pyramid, const int ch, float *const img_dest)
 {
   const float pyramid_filter[] = { .0625, .25, .375, .25, .0625 };
 
   _image_copy(pyramid->images[pyramid->num_levels - 1].img, pyramid->images[pyramid->num_levels - 1].w,
-                               pyramid->images[pyramid->num_levels - 1].h, ch, img_dest->img);
+                               pyramid->images[pyramid->num_levels - 1].h, ch, img_dest);
 
   for(int v = pyramid->num_levels - 2; v >= 0; v--)
   {
-    // upsample to img_tmp1
-    _upsample_image(img_dest->img, pyramid->images[v + 1].w, pyramid->images[v + 1].h, ch, pyramid_filter, img_tmp2->img,
-                    img_tmp3->img, pyramid->images[v].w, pyramid->images[v].h, img_tmp1->img);
-
-    // add current level to img_tmp1, store in img_dest
-    _images_add(pyramid->images[v].img, pyramid->images[v].w, pyramid->images[v].h, pyramid->images[v].ch, img_tmp1->img, img_dest->img);
+    // upsample and add to current level
+    _upsample_image(img_dest, pyramid->images[v + 1].w, pyramid->images[v + 1].h, ch, pyramid_filter,
+                    pyramid->images[v].w, pyramid->images[v].h, pyramid->images[v].img, img_dest, TRUE, NULL);
   }
 }
 
@@ -1084,10 +1123,11 @@ static void _image_rgb_to_grey(const float *const img_src, const size_t wd, cons
 }
 
 static void _exposure_fusion(const float *const img_src, const size_t wd, const size_t ht, const int ch,
-                             const int num_exposures, float *const img_dest, struct dt_iop_module_t *self,
+                             float *const img_dest, struct dt_iop_module_t *self,
                              const dt_iop_order_iccprofile_info_t *const work_profile,
                              dt_iop_fusion_data_t *const d)
 {
+  const int num_exposures = d->num_exposures;
   const int num_levels = floor(log2(MIN(wd, ht)));
 
   // array of images with the weight map for each different exposure image
@@ -1103,54 +1143,26 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
   dt_pyramid_t pyramid_wmap = { 0 };
   _alloc_pyramid(&pyramid_wmap, wd, ht, 1, num_levels);
 
-  // pyramid for each exposure image
-  dt_pyramid_t pyramid_image = { 0 };
-  _alloc_pyramid(&pyramid_image, wd, ht, ch, num_levels);
-
-  // calculate the maximum size needed for the temp images
-  const size_t max_upsample_wd = (((wd / 2) + (wd % 2)) + 2) * 2;
-  const size_t max_upsample_ht = (((ht / 2) + (ht % 2)) + 2) * 2;
-
-  const size_t max_wd = MAX(max_upsample_wd, wd);
-  const size_t max_ht = MAX(max_upsample_ht, ht);
-
-  // temp images so we don't need to allocate it each time
-  // must be large enought for upsample images
-  dt_image_pyramid_t img_tmp1 = { 0 };
-  _alloc_image(&img_tmp1, max_wd, max_ht, ch);
-
-  dt_image_pyramid_t img_tmp2 = { 0 };
-  _alloc_image(&img_tmp2, max_wd, max_ht, ch);
-
-  dt_image_pyramid_t img_tmp3 = { 0 };
-  _alloc_image(&img_tmp3, max_wd, max_ht, ch);
-
-  dt_image_pyramid_t img_tmp4 = { 0 };
-  _alloc_image(&img_tmp4, max_wd, max_ht, ch);
-
-  dt_image_pyramid_t img_tmp5 = { 0 };
-  _alloc_image(&img_tmp5, max_wd, max_ht, ch);
-
   // build the weight map for each exposure
   for(int n = 0; n < num_exposures; n++)
   {
-    _apply_exposure(img_src, wd, ht, ch, exposure_increment(d->exposure_stops, n), img_tmp1.img);
+    _apply_exposure(img_src, wd, ht, ch, exposure_increment(d->exposure_stops, n), img_dest);
 
-    _buil_weight_map(img_tmp1.img, wd, ht, ch, img_wmaps[n].img, d->grey_projector, d->weight_mode,
+    _buil_weight_map(img_dest, wd, ht, ch, img_wmaps[n].img, d->grey_projector, d->weight_mode,
                       d->exposure_optimum, d->exposure_width, d->exposure_left_cutoff, d->exposure_right_cutoff, work_profile);
   }
 
   // normalize the weight maps so the sum for each pixel == 1
   // start with the first one, the sum is stored in img_tmp1
-  _image_copy(img_wmaps[0].img, img_wmaps[0].w, img_wmaps[0].h, img_wmaps[0].ch, img_tmp1.img);
+  _image_copy(img_wmaps[0].img, img_wmaps[0].w, img_wmaps[0].h, img_wmaps[0].ch, img_dest);
   // add all the rest
   for(int n = 1; n < num_exposures; n++)
-    _images_add(img_tmp1.img, img_wmaps[n].w, img_wmaps[n].h, img_wmaps[n].ch, img_wmaps[n].img, img_tmp1.img);
+    _images_add(img_dest, img_wmaps[n].w, img_wmaps[n].h, img_wmaps[n].ch, img_wmaps[n].img, img_dest);
   // avoid division by zero
-  _image_add(img_tmp1.img, img_wmaps[0].w, img_wmaps[0].h, img_wmaps[0].ch, 1.0E-12, img_tmp1.img);
+  _image_add(img_dest, img_wmaps[0].w, img_wmaps[0].h, img_wmaps[0].ch, 1.0E-12, img_dest);
   // normalize all the maps
   for(int n = 0; n < num_exposures; n++)
-    _images_div(img_wmaps[n].img, img_wmaps[n].w, img_wmaps[n].h, img_wmaps[n].ch, img_tmp1.img, img_wmaps[n].img);
+    _images_div(img_wmaps[n].img, img_wmaps[n].w, img_wmaps[n].h, img_wmaps[n].ch, img_dest, img_wmaps[n].img);
 
   // now create a laplacian pyramid with the weighted sum of the laplacian of each image
   // weighted with the gaussian of the weight maps
@@ -1158,68 +1170,44 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
   {
     // apply the exposure compensation to the source image (not to the first one)
     if(n > 0)
-      _apply_exposure(img_src, wd, ht, ch, exposure_increment(d->exposure_stops, n), img_tmp1.img);
+      _apply_exposure(img_src, wd, ht, ch, exposure_increment(d->exposure_stops, n), img_dest);
     else
-      _image_copy(img_src, wd, ht, ch, img_tmp1.img);
+      _image_copy(img_src, wd, ht, ch, img_dest);
 
     // transform to the blend colorspace as requested by the user
     if(d->fusion_colorspace == DT_FUSION_COLORSPACE_LAB)
     {
       int converted_cst = 0;
-      dt_ioppr_transform_image_colorspace(self, img_tmp1.img, img_tmp1.img, wd, ht, iop_cs_rgb, iop_cs_Lab,
+      dt_ioppr_transform_image_colorspace(self, img_dest, img_dest, wd, ht, iop_cs_rgb, iop_cs_Lab,
                                           &converted_cst, work_profile);
     }
     else if(d->fusion_colorspace == DT_FUSION_COLORSPACE_RGB_GREY)
     {
-      _image_rgb_to_grey(img_tmp1.img, wd, ht, ch, img_tmp1.img, d->fusion_grey_projector, work_profile);
+      _image_rgb_to_grey(img_dest, wd, ht, ch, img_dest, d->fusion_grey_projector, work_profile);
     }
 
     // build a gaussian pyramid for the weight map
-    _build_gaussian_pyramid(img_wmaps[n].img, wd, ht, 1, &img_tmp2, &img_tmp3, &pyramid_wmap);
+    _build_gaussian_pyramid(img_wmaps[n].img, wd, ht, 1, &pyramid_wmap);
 
     // build a laplacian pyramid for the image
-    _build_laplacian_pyramid(img_tmp1.img, wd, ht, ch, &img_tmp2, &img_tmp3, &img_tmp4, &img_tmp5, &pyramid_image);
-
-    // add the laplacian to the blend pyramid, weighted with the gaussian pyramid
-    for(int v = 0; v < num_levels; v++)
-    {
-      const size_t w = pyramid_image.images[v].w;
-      const size_t h = pyramid_image.images[v].h;
-      const size_t blend_w = pyramid_blend.images[v].w;
-      const size_t wmap_w = pyramid_wmap.images[v].w;
-
-      float *const img_blend = pyramid_blend.images[v].img;
-      const float *const img_wmap = pyramid_wmap.images[v].img;
-      const float *const img_image = pyramid_image.images[v].img;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_blend, img_wmap, img_image, w, h, blend_w, wmap_w, ch) \
-  schedule(static) \
-  collapse(2)
-#endif
-      for(int i = 0; i < h; i++)
-        for(int j = 0; j < w; j++)
-          for(int k = 0; k < ch; k++)
-            img_blend[(i * blend_w + j) * ch + k] += img_wmap[i * wmap_w + j] * img_image[(i * w + j) * ch + k];
-    }
+    _build_laplacian_pyramid(img_dest, wd, ht, ch, &pyramid_wmap, &pyramid_blend);
   }
 
   // reconstruct the blended laplacian pyramid
-  _reconstruct_laplacian(&pyramid_blend, ch, &img_tmp1, &img_tmp3, &img_tmp4, &img_tmp2);
+  _reconstruct_laplacian(&pyramid_blend, ch, img_dest);
 
   // transforn the final image to rgb if needed
   if(d->fusion_colorspace == DT_FUSION_COLORSPACE_LAB)
   {
     // just transform back to rgb
     int converted_cst = 0;
-    dt_ioppr_transform_image_colorspace(self, img_tmp2.img, img_dest, wd, ht, iop_cs_Lab, iop_cs_rgb,
+    dt_ioppr_transform_image_colorspace(self, img_dest, img_dest, wd, ht, iop_cs_Lab, iop_cs_rgb,
                                         &converted_cst, work_profile);
   }
   else
   {
     // just return it
-    _image_copy(img_tmp2.img, wd, ht, ch, img_dest);
+    _image_copy(img_dest, wd, ht, ch, img_dest);
   }
 
   // return the alpha channel
@@ -1233,14 +1221,7 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
     img_dest[i * ch + 3] = img_src[i * ch + 3];
 
     // free resources
-  _free_image(&img_tmp1);
-  _free_image(&img_tmp2);
-  _free_image(&img_tmp3);
-  _free_image(&img_tmp4);
-  _free_image(&img_tmp5);
-
   _free_pyramid(&pyramid_blend);
-  _free_pyramid(&pyramid_image);
   _free_pyramid(&pyramid_wmap);
 
   for(int i = 0; i < num_exposures; i++) _free_image(img_wmaps + i);
@@ -1254,13 +1235,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
   const int ch = 4;
-  const int num_exposures = d->num_exposures;
   const size_t width = roi_in->width, height = roi_in->height;
 
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
-  _exposure_fusion(in, width, height, ch, num_exposures, out, self, work_profile, d);
+  _exposure_fusion(in, width, height, ch, out, self, work_profile, d);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
