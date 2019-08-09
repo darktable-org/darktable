@@ -76,6 +76,7 @@ src/iop/amaze_demosaic_RT.cc
 src/iop/ashift.c
 src/iop/atrous.c
 src/iop/basecurve.c
+src/iop/expfusion.c
 src/iop/basicadj.c
 src/iop/bilat.c
 src/iop/bilateral.cc
