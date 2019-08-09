@@ -37,7 +37,8 @@ typedef enum dt_iop_fusion_colorspace_t
 {
   DT_FUSION_COLORSPACE_LAB = 0,
   DT_FUSION_COLORSPACE_RGB = 1,
-  DT_FUSION_COLORSPACE_RGB_GREY = 2
+  DT_FUSION_COLORSPACE_RGB_GREY = 2,
+  DT_FUSION_COLORSPACE_LOG = 3
 } dt_iop_fusion_colorspace_t;
 
 typedef enum dt_iop_weight_modes_t
@@ -350,6 +351,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->cmb_fusion_colorspace, _("lab"));
   dt_bauhaus_combobox_add(g->cmb_fusion_colorspace, _("rgb"));
   dt_bauhaus_combobox_add(g->cmb_fusion_colorspace, _("grey rgb"));
+  dt_bauhaus_combobox_add(g->cmb_fusion_colorspace, _("log"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->cmb_fusion_colorspace, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->cmb_fusion_colorspace, _("colorspace used to merge images"));
   g_signal_connect(G_OBJECT(g->cmb_fusion_colorspace), "value-changed", G_CALLBACK(_fusion_colorspace_callback), self);
@@ -421,7 +423,7 @@ static inline void _apply_exposure(const float *const img_src, const size_t wd, 
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(size, img_src, img_dest, exp4, zero, one) \
+  dt_omp_firstprivate(size, ch, img_src, img_dest, exp4, zero, one) \
   schedule(static)
 #endif
     for(int i = 0; i < size; i += ch)
@@ -461,7 +463,7 @@ static inline void _images_div(const float *const img_src1, const size_t wd, con
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(size, img_src1, img_src2, img_dest) \
+  dt_omp_firstprivate(size, ch, img_src1, img_src2, img_dest) \
   schedule(static)
 #endif
     for(int i = 0; i < size; i += ch)
@@ -492,7 +494,7 @@ static inline void _images_add(const float *const img_src1, const size_t wd, con
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(size, img_src1, img_src2, img_dest) \
+  dt_omp_firstprivate(size, ch, img_src1, img_src2, img_dest) \
   schedule(static)
 #endif
     for(int i = 0; i < size; i += ch)
@@ -521,7 +523,7 @@ static inline void _images_add_weighted(const float *const img_src1, const size_
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(size, img_src1, img_src2, img_dest) \
+  dt_omp_firstprivate(size, ch, img_src1, img_src2, img_weight, img_dest) \
   schedule(static)
 #endif
     for(int i = 0; i < size; i++)
@@ -536,7 +538,7 @@ static inline void _images_add_weighted(const float *const img_src1, const size_
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(size, img_src1, img_src2, img_dest) \
+  dt_omp_firstprivate(size, ch, img_src1, img_src2, img_weight, img_dest) \
   schedule(static)
 #endif
   for(int i = 0; i < size; i++)
@@ -545,36 +547,7 @@ static inline void _images_add_weighted(const float *const img_src1, const size_
       img_dest[i*ch + c] = img_src1[i*ch + c] + img_src2[i*ch + c] * img_weight[i];
   }
 }
-/*
-static inline void _images_sub(const float *const img_src1, const size_t wd, const size_t ht, const int ch,
-                                   const float *const img_src2, float *const img_dest, const gboolean use_sse)
-{
-  const size_t size = wd * ht * ch;
 
-#if defined(__SSE__)
-  if(use_sse && ch == 4)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(size, img_src1, img_src2, img_dest) \
-  schedule(static)
-#endif
-    for(int i = 0; i < size; i++)
-      _mm_store_ps(img_dest + i, _mm_sub_ps(_mm_load_ps(img_src1 + i), _mm_load_ps(img_src2 + i)));
-
-    return;
-  }
-#endif
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(size, img_src1, img_src2, img_dest) \
-  schedule(static)
-#endif
-  for(int i = 0; i < size; i++)
-    img_dest[i] = img_src1[i] - img_src2[i];
-}
-*/
 static inline void _image_add(const float *const img_src, const size_t wd, const size_t ht, const int ch,
                               const float val, float *const img_dest, const gboolean use_sse)
 {
@@ -587,7 +560,7 @@ static inline void _image_add(const float *const img_src, const size_t wd, const
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(size, img_src, img_dest, val4) \
+  dt_omp_firstprivate(size, ch, img_src, img_dest, val4) \
   schedule(static)
 #endif
     for(int i = 0; i < size; i += ch)
@@ -975,7 +948,7 @@ static void _upsample_image(const float *const img_src, const size_t wd, const s
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_dest, img_tmp, up_ht, up_wd, ch, wd_upsampled) \
+  dt_omp_firstprivate(img_dest, img_tmp, up_ht, up_wd, ch, img_add_sub, wd_upsampled) \
   schedule(static) \
   collapse(2)
 #endif
@@ -988,7 +961,7 @@ static void _upsample_image(const float *const img_src, const size_t wd, const s
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_dest, img_tmp, up_ht, up_wd, ch, wd_upsampled) \
+  dt_omp_firstprivate(img_dest, img_tmp, up_ht, up_wd, ch, img_add_sub, wd_upsampled, img_wmap) \
   schedule(static) \
   collapse(2)
 #endif
@@ -1223,6 +1196,42 @@ static void _image_rgb_to_grey(const float *const img_src, const size_t wd, cons
     img_dest[i] = img_dest[i + 1] = img_dest[i + 2] = _grey_projector(img_src + i, grey_projector, work_profile);
 }
 
+static void _image_rgb_to_log(const float *const img_src, const size_t wd, const size_t ht, const int ch, float *const img_dest,
+                                const dt_iop_grey_projectors_t grey_projector, const dt_iop_order_iccprofile_info_t *const work_profile)
+{
+  const size_t size = wd * ht;
+  const int ch1 = (ch == 4) ? 3: 1;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_src, img_dest, size, ch, ch1, grey_projector, work_profile) \
+  schedule(static)
+#endif
+  for(size_t i = 0; i < size; i++)
+  {
+    for(int c = 0; c < ch1; c++)
+      img_dest[i * ch + c] = img_src[i * ch + c] >= 0.0f ? 1.0f + log1p(img_src[i * ch + c]) : 1.0f / (1.0f - img_src[i * ch + c]);
+  }
+}
+
+static void _image_rgb_from_log(const float *const img_src, const size_t wd, const size_t ht, const int ch, float *const img_dest,
+                                const dt_iop_grey_projectors_t grey_projector, const dt_iop_order_iccprofile_info_t *const work_profile)
+{
+  const size_t size = wd * ht;
+  const int ch1 = (ch == 4) ? 3: 1;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_src, img_dest, size, ch, ch1, grey_projector, work_profile) \
+  schedule(static)
+#endif
+  for(size_t i = 0; i < size; i++)
+  {
+    for(int c = 0; c < ch1; c++)
+      img_dest[i * ch + c] = img_src[i * ch + c] >= 1.0f ? expm1(img_src[i * ch + c] - 1.0f) : 1.0f - 1.0f / img_src[i * ch + c];
+  }
+}
+
 static void _exposure_fusion(const float *const img_src, const size_t wd, const size_t ht, const int ch,
                              float *const img_dest, struct dt_iop_module_t *self,
                              const dt_iop_order_iccprofile_info_t *const work_profile,
@@ -1289,6 +1298,10 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
     {
       _image_rgb_to_grey(img_dest, wd, ht, ch, img_dest, d->fusion_grey_projector, work_profile);
     }
+    else if(d->fusion_colorspace == DT_FUSION_COLORSPACE_LOG)
+    {
+      _image_rgb_to_log(img_dest, wd, ht, ch, img_dest, d->fusion_grey_projector, work_profile);
+    }
 
     // build a gaussian pyramid for the weight map
     _build_gaussian_pyramid(img_wmaps[n].img, wd, ht, 1, &pyramid_wmap);
@@ -1308,10 +1321,9 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
     dt_ioppr_transform_image_colorspace(self, img_dest, img_dest, wd, ht, iop_cs_Lab, iop_cs_rgb,
                                         &converted_cst, work_profile);
   }
-  else
+  else if(d->fusion_colorspace == DT_FUSION_COLORSPACE_LOG)
   {
-    // just return it
-    _image_copy(img_dest, wd, ht, ch, img_dest);
+    _image_rgb_from_log(img_dest, wd, ht, ch, img_dest, d->fusion_grey_projector, work_profile);
   }
 
   // return the alpha channel
