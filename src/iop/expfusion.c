@@ -396,6 +396,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
 // fusion
 //////////////////////////////////////
 
+//#define EXPFUSION_PRINT_TIMES
+
 typedef struct dt_image_pyramid_t
 {
   float *img;
@@ -582,33 +584,49 @@ static inline void _image_add(const float *const img_src, const size_t wd, const
 static void _convolve_symmetric(const float *const img_src, const size_t wd, const size_t ht, const int ch,
                                 const float *const fx, const float *const fy, float *const img_dest)
 {
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_times_t start_time = {0}, end_time = {0};
+  fprintf(stderr, "[_convolve_symmetric] begin %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+  dt_get_times(&start_time);
+#endif // EXPFUSION_PRINT_TIMES
+
+  const int ch1 = (ch == 4) ? 3: ch;
   float *img_tmp = dt_alloc_align(64, wd * ht * ch * sizeof(float));
 
   // horizontal filter
-  for(int i = 0; i < ht; i++) // all lines
-  {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_tmp, fx, wd, ch, i) \
-  schedule(static)
+  dt_omp_firstprivate(img_src, img_tmp, fx, ht, wd, ch, ch1) \
+  schedule(static) \
+  collapse(2)
 #endif
+  for(int i = 0; i < ht; i++) // all lines
+  {
     for(int j = 2; j < wd - 2; j++)
-      for(int k = 0; k < ch; k++)
+      for(int k = 0; k < ch1; k++)
         img_tmp[(i * wd + j) * ch + k]
             = img_src[(i*wd + (j - 2)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
               + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
               + img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
+  }
 
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_src, img_tmp, fx, ht, wd, ch, ch1) \
+  schedule(static)
+#endif
+  for(int i = 0; i < ht; i++)
+  {
     // left edge
     int j = 0; // 1 0 [0 1 2 ... ]
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_tmp[(i * wd + j) * ch + k]
           = img_src[(i*wd + (j + 1)) * ch + k] * fx[0] + img_src[(i*wd + j) * ch + k] * fx[1]
             + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
             + img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
 
     j = 1; // -1 [-1 0 1 2 ... ]
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_tmp[(i * wd + j) * ch + k]
           = img_src[(i*wd + (j - 1)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
             + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
@@ -616,14 +634,14 @@ static void _convolve_symmetric(const float *const img_src, const size_t wd, con
 
     // right edge
     j = wd - 2; // [ ... -2 -1 0 1] 1
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_tmp[(i * wd + j) * ch + k]
           = img_src[(i*wd + (j - 2)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
             + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
             + img_src[(i*wd + (j + 1)) * ch + k] * fx[4];
 
     j = wd - 1; // [ ... -2 -1 0] 0 -1
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_tmp[(i * wd + j) * ch + k]
           = img_src[(i*wd + (j - 2)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
             + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + j) * ch + k] * fx[3]
@@ -631,30 +649,39 @@ static void _convolve_symmetric(const float *const img_src, const size_t wd, con
   }
 
   // vertical filter
-  for(int j = 0; j < wd; j++) // all columns
-  {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_dest, img_tmp, fy, wd, ht, ch, j) \
-  schedule(static)
+  dt_omp_firstprivate(img_dest, img_tmp, fy, wd, ht, ch, ch1) \
+  schedule(static) \
+  collapse(2)
 #endif
+  for(int j = 0; j < wd; j++) // all columns
+  {
     for(int i = 2; i < ht - 2; i++)
-      for(int k = 0; k < ch; k++)
+      for(int k = 0; k < ch1; k++)
         img_dest[(i * wd + j) * ch + k]
             = img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
               + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
               + img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
+  }
 
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_dest, img_tmp, fy, wd, ht, ch, ch1) \
+  schedule(static)
+#endif
+  for(int j = 0; j < wd; j++)
+  {
     // top edge
     int i = 0; // 1 0 [0 1 2 ... ]
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_dest[(i * wd + j) * ch + k]
           = img_tmp[((i + 1) * wd + j) * ch + k] * fy[0] + img_tmp[(i*wd + j) * ch + k] * fy[1]
             + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
             + img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
 
     i = 1; // -1 [-1 0 1 2 ... ]
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_dest[(i * wd + j) * ch + k]
           = img_tmp[((i - 1) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
             + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
@@ -662,14 +689,14 @@ static void _convolve_symmetric(const float *const img_src, const size_t wd, con
 
     // bottom edge
     i = ht - 2; // [ ... -2 -1 0 1] 1
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_dest[(i * wd + j) * ch + k]
           = img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
             + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
             + img_tmp[((i + 1) * wd + j) * ch + k] * fy[4];
 
     i = ht - 1; // [ ... -2 -1 0] 0 -1
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_dest[(i * wd + j) * ch + k]
           = img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
             + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[(i*wd + j) * ch + k] * fy[3]
@@ -677,38 +704,58 @@ static void _convolve_symmetric(const float *const img_src, const size_t wd, con
   }
 
   dt_free_align(img_tmp);
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_get_times(&end_time);
+  fprintf(stderr, "[_convolve_symmetric] took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+#endif
 }
 
 static void _convolve_replicate(const float *const img_src, const size_t wd, const size_t ht, const int ch,
                                 const float *const fx, const float *const fy, float *const img_dest)
 {
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_times_t start_time = {0}, end_time = {0};
+  fprintf(stderr, "[_convolve_replicate] begin %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+  dt_get_times(&start_time);
+#endif // EXPFUSION_PRINT_TIMES
+
+  const int ch1 = (ch == 4) ? 3: ch;
   float *img_tmp = dt_alloc_align(64, wd * ht * ch * sizeof(float));
 
   // horizontal filter
-  for(int i = 0; i < ht; i++) // all lines
-  {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_tmp, fx, wd, ch, i) \
-  schedule(static)
+  dt_omp_firstprivate(img_src, img_tmp, fx, ht, wd, ch, ch1) \
+  schedule(static) \
+  collapse(2)
 #endif
+  for(int i = 0; i < ht; i++) // all lines
+  {
     for(int j = 2; j < wd - 2; j++)
-      for(int k = 0; k < ch; k++)
+      for(int k = 0; k < ch1; k++)
         img_tmp[(i * wd + j) * ch + k]
             = img_src[(i*wd + (j - 2)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
               + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
               + img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
+  }
 
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_src, img_tmp, fx, ht, wd, ch, ch1) \
+  schedule(static)
+#endif
+  for(int i = 0; i < ht; i++)
+  {
     // left edge
     int j = 0; // 0 0 [0 1 2 ... ]
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_tmp[(i * wd + j) * ch + k]
           = img_src[(i*wd + j) * ch + k] * fx[0] + img_src[(i*wd + j) * ch + k] * fx[1]
             + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
             + img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
 
     j = 1; // -1 [-1 0 1 2 ... ]
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_tmp[(i * wd + j) * ch + k]
           = img_src[(i*wd + (j - 1)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
             + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
@@ -716,14 +763,14 @@ static void _convolve_replicate(const float *const img_src, const size_t wd, con
 
     // right edge
     j = wd - 2; // [ ... -2 -1 0 1] 1
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_tmp[(i * wd + j) * ch + k]
           = img_src[(i*wd + (j - 2)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
             + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
             + img_src[(i*wd + (j + 1)) * ch + k] * fx[4];
 
     j = wd - 1; // [ ... -2 -1 0] 0 0
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_tmp[(i * wd + j) * ch + k]
           = img_src[(i*wd + (j - 2)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
             + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + j) * ch + k] * fx[3]
@@ -731,30 +778,39 @@ static void _convolve_replicate(const float *const img_src, const size_t wd, con
   }
 
   // vertical filter
-  for(int j = 0; j < wd; j++) // all columns
-  {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_dest, img_tmp, fy, wd, ht, ch, j) \
-  schedule(static)
+  dt_omp_firstprivate(img_dest, img_tmp, fy, wd, ht, ch, ch1) \
+  schedule(static) \
+  collapse(2)
 #endif
+  for(int j = 0; j < wd; j++) // all columns
+  {
     for(int i = 2; i < ht - 2; i++)
-      for(int k = 0; k < ch; k++)
+      for(int k = 0; k < ch1; k++)
         img_dest[(i * wd + j) * ch + k]
             = img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
               + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
               + img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
+  }
 
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img_dest, img_tmp, fy, wd, ht, ch, ch1) \
+  schedule(static)
+#endif
+  for(int j = 0; j < wd; j++)
+  {
     // top edge
     int i = 0; // 0 0 [0 1 2 ... ]
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_dest[(i * wd + j) * ch + k]
           = img_tmp[(i*wd + j) * ch + k] * fy[0] + img_tmp[(i*wd + j) * ch + k] * fy[1]
             + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
             + img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
 
     i = 1; // -1 [-1 0 1 2 ... ]
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_dest[(i * wd + j) * ch + k]
           = img_tmp[((i - 1) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
             + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
@@ -762,14 +818,14 @@ static void _convolve_replicate(const float *const img_src, const size_t wd, con
 
     // bottom edge
     i = ht - 2; // [ ... -2 -1 0 1] 1
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_dest[(i * wd + j) * ch + k]
           = img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
             + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
             + img_tmp[((i + 1) * wd + j) * ch + k] * fy[4];
 
     i = ht - 1; // [ ... -2 -1 0] 0 0
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_dest[(i * wd + j) * ch + k]
           = img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
             + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[(i*wd + j) * ch + k] * fy[3]
@@ -777,6 +833,10 @@ static void _convolve_replicate(const float *const img_src, const size_t wd, con
   }
 
   dt_free_align(img_tmp);
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_get_times(&end_time);
+  fprintf(stderr, "[_convolve_replicate] took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+#endif
 }
 
 static void _alloc_image(dt_image_pyramid_t *img, const size_t wd, const size_t ht, const int ch)
@@ -822,6 +882,13 @@ static void _free_pyramid(dt_pyramid_t *pyramid)
 static void _downsample_image(const float *const img_src, const size_t wd, const size_t ht, const int ch,
                               const float *const filter, const size_t down_wd, const size_t down_ht, float *const img_dest)
 {
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_times_t start_time = {0}, end_time = {0};
+  fprintf(stderr, "[_downsample_image] begin %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+  dt_get_times(&start_time);
+#endif
+
+  const int ch1 = (ch == 4) ? 3: ch;
   float *img_tmp = dt_alloc_align(64, wd * ht * ch * sizeof(float));
 
   // [1] -> [1]
@@ -836,22 +903,33 @@ static void _downsample_image(const float *const img_src, const size_t wd, const
   // decimate, using every second entry
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_dest, img_tmp, wd, down_ht, down_wd, ch) \
+  dt_omp_firstprivate(img_dest, img_tmp, wd, down_ht, down_wd, ch, ch1) \
   schedule(static) \
   collapse(2)
 #endif
   for(int i = 0; i < down_ht; i++)
     for(int j = 0; j < down_wd; j++)
-      for(int k = 0; k < ch; k++)
+      for(int k = 0; k < ch1; k++)
         img_dest[(i * down_wd + j) * ch + k] = img_tmp[((i * 2) * wd + (j * 2)) * ch + k];
 
   dt_free_align(img_tmp);
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_get_times(&end_time);
+  fprintf(stderr, "[_downsample_image] took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+#endif
 }
 
 static void _upsample_image(const float *const img_src, const size_t wd, const size_t ht, const int ch,
                             const float *const filter, const size_t up_wd, const size_t up_ht,
                             float *const img_add_sub, float *const img_dest, const gboolean add_to_image, float *const img_wmap)
 {
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_times_t start_time = {0}, end_time = {0};
+  fprintf(stderr, "[_upsample_image] begin %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+  dt_get_times(&start_time);
+#endif
+
+  const int ch1 = (ch == 4) ? 3: ch;
   const size_t padding = 1;
 
   // sizes with added 1 px border and size increase of 2x
@@ -863,13 +941,13 @@ static void _upsample_image(const float *const img_src, const size_t wd, const s
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_tmp, ht, wd, ch, padding, wd_upsampled) \
+  dt_omp_firstprivate(img_src, img_tmp, ht, wd, ch, ch1, padding, wd_upsampled) \
   schedule(static) \
   collapse(2)
 #endif
   for(int i = 0; i < ht; i++)
     for(int j = 0; j < wd; j++)
-      for(int k = 0; k < ch; k++)
+      for(int k = 0; k < ch1; k++)
         img_tmp[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
             = 4.f * img_src[(i * wd + j) * ch + k];
 
@@ -877,11 +955,11 @@ static void _upsample_image(const float *const img_src, const size_t wd, const s
   int i = -1;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_tmp, wd, ch, padding, wd_upsampled, i) \
+  dt_omp_firstprivate(img_src, img_tmp, wd, ch, ch1, padding, wd_upsampled, i) \
   schedule(static)
 #endif
   for(int j = 0; j < wd; j++)
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_tmp[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
           = 4.f * img_src[((i + 1) * wd + j) * ch + k];
 
@@ -889,11 +967,11 @@ static void _upsample_image(const float *const img_src, const size_t wd, const s
   i = ht;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_tmp, wd, ch, padding, wd_upsampled, i) \
+  dt_omp_firstprivate(img_src, img_tmp, wd, ch, ch1, padding, wd_upsampled, i) \
   schedule(static)
 #endif
   for(int j = 0; j < wd; j++)
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_tmp[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
           = 4.f * img_src[((i - 1) * wd + j) * ch + k];
 
@@ -901,11 +979,11 @@ static void _upsample_image(const float *const img_src, const size_t wd, const s
   int j = -1;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_tmp, ht, wd, ch, padding, wd_upsampled, j) \
+  dt_omp_firstprivate(img_src, img_tmp, ht, wd, ch, ch1, padding, wd_upsampled, j) \
   schedule(static)
 #endif
   for(int ii = 0; ii < ht; ii++)
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_tmp[((2 * (ii + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
           = 4.f * img_src[((ii)*wd + (j + 1)) * ch + k];
 
@@ -913,16 +991,16 @@ static void _upsample_image(const float *const img_src, const size_t wd, const s
   j = wd;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_tmp, ht, wd, ch, padding, wd_upsampled, j) \
+  dt_omp_firstprivate(img_src, img_tmp, ht, wd, ch, ch1, padding, wd_upsampled, j) \
   schedule(static)
 #endif
   for(int ii = 0; ii < ht; ii++)
-    for(int k = 0; k < ch; k++)
+    for(int k = 0; k < ch1; k++)
       img_tmp[((2 * (ii + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
           = 4.f * img_src[((ii)*wd + (j - 1)) * ch + k];
 
   // corners
-  for(int k = 0; k < ch; k++)
+  for(int k = 0; k < ch1; k++)
   {
     i = -1;
     j = -1;
@@ -948,31 +1026,35 @@ static void _upsample_image(const float *const img_src, const size_t wd, const s
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_dest, img_tmp, up_ht, up_wd, ch, img_add_sub, wd_upsampled) \
+  dt_omp_firstprivate(img_dest, img_tmp, up_ht, up_wd, ch, ch1, img_add_sub, wd_upsampled) \
   schedule(static) \
   collapse(2)
 #endif
     for(int ii = 0; ii < up_ht; ii++)
       for(int jj = 0; jj < up_wd; jj++)
-        for(int k = 0; k < ch; k++)
+        for(int k = 0; k < ch1; k++)
           img_dest[(ii * up_wd + jj) * ch + k] = img_add_sub[(ii * up_wd + jj) * ch + k] + img_tmp[((ii + 2) * wd_upsampled + (jj + 2)) * ch + k];
   }
   else
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_dest, img_tmp, up_ht, up_wd, ch, img_add_sub, wd_upsampled, img_wmap) \
+  dt_omp_firstprivate(img_dest, img_tmp, up_ht, up_wd, ch, ch1, img_add_sub, wd_upsampled, img_wmap) \
   schedule(static) \
   collapse(2)
 #endif
     for(int ii = 0; ii < up_ht; ii++)
       for(int jj = 0; jj < up_wd; jj++)
-        for(int k = 0; k < ch; k++)
+        for(int k = 0; k < ch1; k++)
           img_dest[(ii * up_wd + jj) * ch + k] += (img_add_sub[(ii * up_wd + jj) * ch + k] - img_tmp[((ii + 2) * wd_upsampled + (jj + 2)) * ch + k]) *
                                                     img_wmap[(ii * up_wd + jj)];
   }
 
   dt_free_align(img_tmp);
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_get_times(&end_time);
+  fprintf(stderr, "[_upsample_image] took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+#endif
 }
 
 #define EXPFUSION_PYRAMID_FILTER { .0625, .25, .375, .25, .0625 }
@@ -982,6 +1064,12 @@ static void _upsample_image(const float *const img_src, const size_t wd, const s
 static void _build_gaussian_pyramid(const float *const img_src, const size_t wd, const size_t ht, const int ch,
                                     dt_pyramid_t *const pyramid_dest)
 {
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_times_t start_time = {0}, end_time = {0};
+  fprintf(stderr, "[_build_gaussian_pyramid] begin %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+  dt_get_times(&start_time);
+#endif
+
   // copy image to the finest level
   _image_copy(img_src, wd, ht, ch, pyramid_dest->images[0].img);
 
@@ -994,11 +1082,22 @@ static void _build_gaussian_pyramid(const float *const img_src, const size_t wd,
                       pyramid_dest->images[v - 1].ch, pyramid_filter, pyramid_dest->images[v].w, pyramid_dest->images[v].h,
                       pyramid_dest->images[v].img);
   }
+
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_get_times(&end_time);
+  fprintf(stderr, "[_build_gaussian_pyramid] took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+#endif
 }
 
 static void _build_laplacian_pyramid(const float *const img_src, const size_t wd, const size_t ht, const int ch,
                                      dt_pyramid_t *const pyramid_wmap, dt_pyramid_t *const pyramid_dest, const gboolean use_sse)
 {
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_times_t start_time = {0}, end_time = {0};
+  fprintf(stderr, "[_build_laplacian_pyramid] begin %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+  dt_get_times(&start_time);
+#endif
+
   float *img_tmp2 = dt_alloc_align(64, wd * ht * ch * sizeof(float));
   float *img_tmp3 = dt_alloc_align(64, wd * ht * ch * sizeof(float));
 
@@ -1037,6 +1136,11 @@ static void _build_laplacian_pyramid(const float *const img_src, const size_t wd
 
   dt_free_align(img_tmp2);
   dt_free_align(img_tmp3);
+
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_get_times(&end_time);
+  fprintf(stderr, "[_build_laplacian_pyramid] took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+#endif
 }
 
 static void _reconstruct_laplacian(const dt_pyramid_t *const pyramid, const int ch, float *const img_dest)
@@ -1258,6 +1362,10 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
   _alloc_pyramid(&pyramid_wmap, wd, ht, 1, num_levels);
 
   // build the weight map for each exposure
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_times_t start_time = {0}, end_time = {0};
+  dt_get_times(&start_time);
+#endif
   for(int n = 0; n < num_exposures; n++)
   {
     if(n > 0)
@@ -1268,8 +1376,15 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
     _buil_weight_map(img_dest, wd, ht, ch, img_wmaps[n].img, d->grey_projector, d->weight_mode, d->fusion_colorspace,
                       d->exposure_optimum, d->exposure_width, d->exposure_left_cutoff, d->exposure_right_cutoff, work_profile);
   }
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_get_times(&end_time);
+  fprintf(stderr, "[_exposure_fusion] build weight map took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+#endif
 
   // normalize the weight maps so the sum for each pixel == 1
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_get_times(&start_time);
+#endif
   // start with the first one, the sum is stored in img_tmp1
   _image_copy(img_wmaps[0].img, img_wmaps[0].w, img_wmaps[0].h, img_wmaps[0].ch, img_dest);
   // add all the rest
@@ -1281,8 +1396,15 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
   for(int n = 0; n < num_exposures; n++)
     _images_div(img_wmaps[n].img, img_wmaps[n].w, img_wmaps[n].h, img_wmaps[n].ch, img_dest, img_wmaps[n].img, use_sse);
 
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_get_times(&end_time);
+  fprintf(stderr, "[_exposure_fusion] normalize weight maps took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+#endif
   // now create a laplacian pyramid with the weighted sum of the laplacian of each image
   // weighted with the gaussian of the weight maps
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_get_times(&start_time);
+#endif
   for(int n = 0; n < num_exposures; n++)
   {
     // apply the exposure compensation to the source image (not to the first one)
@@ -1313,10 +1435,21 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
     // build a laplacian pyramid for the image
     _build_laplacian_pyramid(img_dest, wd, ht, ch, &pyramid_wmap, &pyramid_blend, use_sse);
   }
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_get_times(&end_time);
+  fprintf(stderr, "[_exposure_fusion] build pyramids took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+#endif
 
   // reconstruct the blended laplacian pyramid
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_get_times(&start_time);
+#endif
   _reconstruct_laplacian(&pyramid_blend, ch, img_dest);
 
+#ifdef EXPFUSION_PRINT_TIMES
+  dt_get_times(&end_time);
+  fprintf(stderr, "[_exposure_fusion] reconstruct pyramids took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+#endif
   // transforn the final image to rgb if needed
   if(d->fusion_colorspace == DT_FUSION_COLORSPACE_LAB)
   {
