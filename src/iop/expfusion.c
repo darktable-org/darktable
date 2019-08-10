@@ -975,14 +975,17 @@ static void _upsample_image(const float *const img_src, const size_t wd, const s
   dt_free_align(img_tmp);
 }
 
+#define EXPFUSION_PYRAMID_FILTER { .0625, .25, .375, .25, .0625 }
+//  const float a = 0.4;
+//  const float pyramid_filter[] = { 1. / 4. - a / 2., 1. / 4., a, 1. / 4., 1. / 4. - a / 2. };
+
 static void _build_gaussian_pyramid(const float *const img_src, const size_t wd, const size_t ht, const int ch,
                                     dt_pyramid_t *const pyramid_dest)
 {
   // copy image to the finest level
   _image_copy(img_src, wd, ht, ch, pyramid_dest->images[0].img);
 
-  const float a = 0.4;
-  const float pyramid_filter[] = { 1. / 4. - a / 2., 1. / 4., a, 1. / 4., 1. / 4. - a / 2. };
+  const float pyramid_filter[] = EXPFUSION_PYRAMID_FILTER;
 
   for(int v = 1; v < pyramid_dest->num_levels; v++)
   {
@@ -999,9 +1002,7 @@ static void _build_laplacian_pyramid(const float *const img_src, const size_t wd
   float *img_tmp2 = dt_alloc_align(64, wd * ht * ch * sizeof(float));
   float *img_tmp3 = dt_alloc_align(64, wd * ht * ch * sizeof(float));
 
-//  const float pyramid_filter[] = { .0625, .25, .375, .25, .0625 };
-  const float a = 0.4;
-  const float pyramid_filter[] = { 1. / 4. - a / 2., 1. / 4., a, 1. / 4., 1. / 4. - a / 2. };
+  const float pyramid_filter[] = EXPFUSION_PYRAMID_FILTER;
 
    _image_copy(img_src, wd, ht, ch, img_tmp3);
 
@@ -1040,9 +1041,7 @@ static void _build_laplacian_pyramid(const float *const img_src, const size_t wd
 
 static void _reconstruct_laplacian(const dt_pyramid_t *const pyramid, const int ch, float *const img_dest)
 {
-//  const float pyramid_filter[] = { .0625, .25, .375, .25, .0625 };
-  const float a = 0.4;
-  const float pyramid_filter[] = { 1. / 4. - a / 2., 1. / 4., a, 1. / 4., 1. / 4. - a / 2. };
+  const float pyramid_filter[] = EXPFUSION_PYRAMID_FILTER;
 
   _image_copy(pyramid->images[pyramid->num_levels - 1].img, pyramid->images[pyramid->num_levels - 1].w,
                                pyramid->images[pyramid->num_levels - 1].h, ch, img_dest);
@@ -1143,6 +1142,7 @@ static inline float _well_exposedness(const float lum, const dt_iop_weight_modes
 
 static void _buil_weight_map(const float *const img_src, const size_t wd, const size_t ht, const int ch,
                              float *const img_map, const dt_iop_grey_projectors_t grey_projector, const dt_iop_weight_modes_t weight_mode,
+                             const dt_iop_fusion_colorspace_t fusion_colorspace,
                              const float exposure_optimum, const float exposure_width,
                              const float exposure_left_cutoff, const float exposure_right_cutoff,
                              const dt_iop_order_iccprofile_info_t *const work_profile)
@@ -1150,7 +1150,7 @@ static void _buil_weight_map(const float *const img_src, const size_t wd, const 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(img_src, img_map, ht, wd, ch, grey_projector, work_profile, weight_mode, \
-  exposure_optimum, exposure_width, exposure_left_cutoff, exposure_right_cutoff) \
+  exposure_optimum, exposure_width, exposure_left_cutoff, exposure_right_cutoff, fusion_colorspace) \
   schedule(static) \
   collapse(2)
 #endif
@@ -1163,7 +1163,8 @@ static void _buil_weight_map(const float *const img_src, const size_t wd, const 
       float E = 1.f;
       if(grey_projector != DT_PROJECTOR_NONE)
       {
-        const float lum = _grey_projector(rgb, grey_projector, work_profile);
+        float lum = _grey_projector(rgb, grey_projector, work_profile);
+        if(fusion_colorspace == DT_FUSION_COLORSPACE_LAB) lum = powf(lum, exposure_optimum);
         E = _well_exposedness(lum, weight_mode, exposure_optimum, exposure_width, exposure_left_cutoff, exposure_right_cutoff);
       }
       else
@@ -1264,7 +1265,7 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
     else
       _image_copy(img_src, wd, ht, ch, img_dest);
 
-    _buil_weight_map(img_dest, wd, ht, ch, img_wmaps[n].img, d->grey_projector, d->weight_mode,
+    _buil_weight_map(img_dest, wd, ht, ch, img_wmaps[n].img, d->grey_projector, d->weight_mode, d->fusion_colorspace,
                       d->exposure_optimum, d->exposure_width, d->exposure_left_cutoff, d->exposure_right_cutoff, work_profile);
   }
 
