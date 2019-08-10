@@ -999,6 +999,7 @@ static void _build_laplacian_pyramid(const float *const img_src, const size_t wd
   float *img_tmp2 = dt_alloc_align(64, wd * ht * ch * sizeof(float));
   float *img_tmp3 = dt_alloc_align(64, wd * ht * ch * sizeof(float));
 
+//  const float pyramid_filter[] = { .0625, .25, .375, .25, .0625 };
   const float a = 0.4;
   const float pyramid_filter[] = { 1. / 4. - a / 2., 1. / 4., a, 1. / 4., 1. / 4. - a / 2. };
 
@@ -1039,7 +1040,9 @@ static void _build_laplacian_pyramid(const float *const img_src, const size_t wd
 
 static void _reconstruct_laplacian(const dt_pyramid_t *const pyramid, const int ch, float *const img_dest)
 {
-  const float pyramid_filter[] = { .0625, .25, .375, .25, .0625 };
+//  const float pyramid_filter[] = { .0625, .25, .375, .25, .0625 };
+  const float a = 0.4;
+  const float pyramid_filter[] = { 1. / 4. - a / 2., 1. / 4., a, 1. / 4., 1. / 4. - a / 2. };
 
   _image_copy(pyramid->images[pyramid->num_levels - 1].img, pyramid->images[pyramid->num_levels - 1].w,
                                pyramid->images[pyramid->num_levels - 1].h, ch, img_dest);
