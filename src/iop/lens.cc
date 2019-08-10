@@ -862,10 +862,15 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
+// lensfun does not provide a back-transform routine. So we do it iteratively by assuming that
+// a back-transform at one point is just moving the same distance in the opposite direction. This
+// is of course not fully correct so we do adjust iteratively the transformation by checking that
+// the back transformed points are when transformed very close to the original point.
+//
+// Again, not perfect but better than having back-transform be equivalent to the transform routine above.
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
-
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f) return 0;
 
   const float orig_w = piece->buf_in.width, orig_h = piece->buf_in.height;
@@ -877,14 +882,27 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
     float *buf = (float *)malloc(2 * 3 * sizeof(float));
     for(size_t i = 0; i < points_count * 2; i += 2)
     {
-      modifier->ApplySubpixelGeometryDistortion(points[i], points[i + 1], 1, 1, buf);
-      points[i] = buf[0];
-      points[i + 1] = buf[3];
+      float p1 = points[i];
+      float p2 = points[i + 1];
+      // just loop 10 times max to find the best position. checking that the convergence is
+      // often after 2 or 3 loops.
+      for(int k=0; k<10; k++)
+      {
+        modifier->ApplySubpixelGeometryDistortion(p1, p2, 1, 1, buf);
+        const float dist1 = points[i]     - buf[0];
+        const float dist2 = points[i + 1] - buf[3];
+        if(fabs(dist1) < .5f && fabs(dist2) < .5f) break; // we have converged
+        p1 += dist1;
+        p2 += dist2;
+      }
+
+      points[i]     = p1;
+      points[i + 1] = p2;
     }
     free(buf);
   }
-  delete modifier;
 
+  delete modifier;
   return 1;
 }
 
@@ -892,6 +910,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
                           size_t points_count)
 {
   dt_iop_lensfun_data_t *d = (dt_iop_lensfun_data_t *)piece->data;
+
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f) return 0;
 
   const float orig_w = piece->buf_in.width, orig_h = piece->buf_in.height;
@@ -909,6 +928,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
     }
     free(buf);
   }
+
   delete modifier;
   return 1;
 }
