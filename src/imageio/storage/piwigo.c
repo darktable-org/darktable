@@ -836,7 +836,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_bauhaus_combobox_add(ui->permission_list, _("friends"));
   dt_bauhaus_combobox_add(ui->permission_list, _("family"));
   dt_bauhaus_combobox_add(ui->permission_list, _("you"));
-  dt_bauhaus_combobox_set(ui->permission_list, 0); // Set default permission to private
+  dt_bauhaus_combobox_set(ui->permission_list, 0); // Set default permission to everyone
   gtk_box_pack_start(GTK_BOX(self->widget), ui->permission_list, FALSE, FALSE, 0);
 
   // album list
