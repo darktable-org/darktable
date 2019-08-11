@@ -46,6 +46,7 @@ typedef struct dt_lib_tagging_t
 {
   char keyword[1024];
   GtkEntry *entry;
+  GtkEntryCompletion *completion;
   GtkTreeView *current, *related;
   int imgsel;
 
@@ -717,7 +718,9 @@ static void new_button_clicked(GtkButton *button, dt_lib_module_t *self)
   dt_image_synch_xmp(-1);
 
   /** clear input box */
+  gtk_entry_set_completion(GTK_ENTRY(d->entry), NULL);
   gtk_entry_set_text(d->entry, "");
+  gtk_entry_set_completion(GTK_ENTRY(d->entry), d->completion);
 
   init_treeview(self, 0);
   init_treeview(self, 1);
@@ -1769,6 +1772,7 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
   g_signal_connect(G_OBJECT(completion), "match-selected", G_CALLBACK(_match_selected_func), self);
   gtk_entry_completion_set_match_func(completion, _completion_match_func, NULL, NULL);
   gtk_entry_set_completion(GTK_ENTRY(entry), completion);
+  d->completion = completion;
 
   gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
   gtk_container_add(GTK_CONTAINER(d->floating_tag_window), entry);
