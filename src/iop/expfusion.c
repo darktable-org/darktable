@@ -229,6 +229,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->sl_num_exposures, _("number of different exposures to fuse"));
   dt_bauhaus_slider_set_format(g->sl_num_exposures, "%.2fEV");
   dt_bauhaus_widget_set_label(g->sl_num_exposures, NULL, _("number of exposures"));
+  dt_bauhaus_slider_enable_soft_boundaries(g->sl_num_exposures, 2, 7);
   gtk_box_pack_start(GTK_BOX(self->widget), g->sl_num_exposures, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->sl_num_exposures), "value-changed", G_CALLBACK(_num_exposures_callback), self);
 
@@ -303,29 +304,9 @@ typedef struct dt_pyramid_t
 } dt_pyramid_t;
 
 static inline void _apply_exposure(const float *const img_src, const size_t wd, const size_t ht, const int ch, const float exp,
-                                   float *const img_dest, const gboolean use_sse)
+                                   float *const img_dest)
 {
   const size_t size = wd * ht * ch;
-
-#if defined(__SSE__)
-  if(use_sse && ch == 4)
-  {
-    const __m128 exp4 = _mm_set1_ps(exp);
-    const __m128 zero = _mm_set1_ps(0.f);
-    const __m128 one = _mm_set1_ps(1.f);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(size, ch, img_src, img_dest, exp4, zero, one) \
-  schedule(static)
-#endif
-    for(int i = 0; i < size; i += ch)
-      _mm_store_ps(img_dest + i, _mm_min_ps(_mm_max_ps(_mm_mul_ps(_mm_load_ps(img_src + i), exp4), zero), one));
-
-    return;
-  }
-#endif
-
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -347,24 +328,9 @@ static inline void _image_copy(const float *const img_src, const size_t wd, cons
 }
 
 static inline void _images_div(const float *const img_src1, const size_t wd, const size_t ht, const int ch,
-                               const float *const img_src2, float *const img_dest, const gboolean use_sse)
+                               const float *const img_src2, float *const img_dest)
 {
   const size_t size = wd * ht * ch;
-
-#if defined(__SSE__)
-  if(use_sse && ch == 4)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(size, ch, img_src1, img_src2, img_dest) \
-  schedule(static)
-#endif
-    for(int i = 0; i < size; i += ch)
-      _mm_store_ps(img_dest + i, _mm_div_ps(_mm_load_ps(img_src1 + i), _mm_load_ps(img_src2 + i)));
-
-    return;
-  }
-#endif
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -378,24 +344,9 @@ static inline void _images_div(const float *const img_src1, const size_t wd, con
 }
 
 static inline void _images_add(const float *const img_src1, const size_t wd, const size_t ht, const int ch,
-                               const float *const img_src2, float *const img_dest, const gboolean use_sse)
+                               const float *const img_src2, float *const img_dest)
 {
   const size_t size = wd * ht * ch;
-
-#if defined(__SSE__)
-  if(use_sse && ch == 4)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(size, ch, img_src1, img_src2, img_dest) \
-  schedule(static)
-#endif
-    for(int i = 0; i < size; i += ch)
-      _mm_store_ps(img_dest + i, _mm_add_ps(_mm_load_ps(img_src1 + i), _mm_load_ps(img_src2 + i)));
-
-    return;
-  }
-#endif
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -407,27 +358,9 @@ static inline void _images_add(const float *const img_src1, const size_t wd, con
 }
 
 static inline void _images_add_weighted(const float *const img_src1, const size_t wd, const size_t ht, const int ch,
-                               const float *const img_src2, const float *const img_weight, float *const img_dest, const gboolean use_sse)
+                               const float *const img_src2, const float *const img_weight, float *const img_dest)
 {
   const size_t size = wd * ht;
-
-#if defined(__SSE__)
-  if(use_sse && ch == 4)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(size, ch, img_src1, img_src2, img_weight, img_dest) \
-  schedule(static)
-#endif
-    for(int i = 0; i < size; i++)
-    {
-      const __m128 weight = _mm_set1_ps(img_weight[i]);
-      _mm_store_ps(img_dest + (i*ch), _mm_add_ps(_mm_load_ps(img_src1 + (i*ch)), _mm_mul_ps(_mm_load_ps(img_src2 + (i*ch)), weight)));
-    }
-
-    return;
-  }
-#endif
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -442,26 +375,9 @@ static inline void _images_add_weighted(const float *const img_src1, const size_
 }
 
 static inline void _image_add(const float *const img_src, const size_t wd, const size_t ht, const int ch,
-                              const float val, float *const img_dest, const gboolean use_sse)
+                              const float val, float *const img_dest)
 {
   const size_t size = wd * ht * ch;
-
-#if defined(__SSE__)
-  if(use_sse && ch == 4)
-  {
-    const __m128 val4 = _mm_set1_ps(val);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(size, ch, img_src, img_dest, val4) \
-  schedule(static)
-#endif
-    for(int i = 0; i < size; i += ch)
-      _mm_store_ps(img_dest + i, _mm_add_ps(_mm_load_ps(img_src + i), val4));
-
-    return;
-  }
-#endif
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -958,7 +874,7 @@ static void _build_gaussian_pyramid(const float *const img_src, const size_t wd,
 }
 
 static void _build_laplacian_pyramid(const float *const img_src, const size_t wd, const size_t ht, const int ch,
-                                     dt_pyramid_t *const pyramid_wmap, dt_pyramid_t *const pyramid_dest, const gboolean use_sse)
+                                     dt_pyramid_t *const pyramid_wmap, dt_pyramid_t *const pyramid_dest)
 {
   float *img_tmp2 = dt_alloc_align(64, wd * ht * ch * sizeof(float));
   float *img_tmp3 = dt_alloc_align(64, wd * ht * ch * sizeof(float));
@@ -993,8 +909,7 @@ static void _build_laplacian_pyramid(const float *const img_src, const size_t wd
 
   // coarsest level, residual low pass image
   _images_add_weighted(pyramid_dest->images[pyramid_dest->num_levels - 1].img, tmp3_ht, tmp3_wd, ch, img_tmp3,
-                        pyramid_wmap->images[pyramid_dest->num_levels - 1].img, pyramid_dest->images[pyramid_dest->num_levels - 1].img,
-                        use_sse);
+                        pyramid_wmap->images[pyramid_dest->num_levels - 1].img, pyramid_dest->images[pyramid_dest->num_levels - 1].img);
 
   dt_free_align(img_tmp2);
   dt_free_align(img_tmp3);
@@ -1102,7 +1017,7 @@ static float exposure_increment(const float stops, const int e)
 static void _exposure_fusion(const float *const img_src, const size_t wd, const size_t ht, const int ch,
                              float *const img_dest, struct dt_iop_module_t *self,
                              const dt_iop_order_iccprofile_info_t *const work_profile,
-                             dt_iop_fusion_data_t *const d, const gboolean use_sse)
+                             dt_iop_fusion_data_t *const d)
 {
   const int num_exposures = d->num_exposures;
   const int num_levels = floor(log2(MIN(wd, ht)));
@@ -1124,7 +1039,7 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
   for(int n = 0; n < num_exposures; n++)
   {
     if(n > 0)
-      _apply_exposure(img_src, wd, ht, ch, exposure_increment(d->exposure_stops, n), img_dest, use_sse);
+      _apply_exposure(img_src, wd, ht, ch, exposure_increment(d->exposure_stops, n), img_dest);
     else
       _image_copy(img_src, wd, ht, ch, img_dest);
 
@@ -1137,12 +1052,12 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
   _image_copy(img_wmaps[0].img, img_wmaps[0].w, img_wmaps[0].h, img_wmaps[0].ch, img_dest);
   // add all the rest
   for(int n = 1; n < num_exposures; n++)
-    _images_add(img_dest, img_wmaps[n].w, img_wmaps[n].h, img_wmaps[n].ch, img_wmaps[n].img, img_dest, use_sse);
+    _images_add(img_dest, img_wmaps[n].w, img_wmaps[n].h, img_wmaps[n].ch, img_wmaps[n].img, img_dest);
   // avoid division by zero
-  _image_add(img_dest, img_wmaps[0].w, img_wmaps[0].h, img_wmaps[0].ch, 1.0E-12, img_dest, use_sse);
+  _image_add(img_dest, img_wmaps[0].w, img_wmaps[0].h, img_wmaps[0].ch, 1.0E-12, img_dest);
   // normalize all the maps
   for(int n = 0; n < num_exposures; n++)
-    _images_div(img_wmaps[n].img, img_wmaps[n].w, img_wmaps[n].h, img_wmaps[n].ch, img_dest, img_wmaps[n].img, use_sse);
+    _images_div(img_wmaps[n].img, img_wmaps[n].w, img_wmaps[n].h, img_wmaps[n].ch, img_dest, img_wmaps[n].img);
 
   // now create a laplacian pyramid with the weighted sum of the laplacian of each image
   // weighted with the gaussian of the weight maps
@@ -1150,7 +1065,7 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
   {
     // apply the exposure compensation to the source image (not to the first one)
     if(n > 0)
-      _apply_exposure(img_src, wd, ht, ch, exposure_increment(d->exposure_stops, n), img_dest, use_sse);
+      _apply_exposure(img_src, wd, ht, ch, exposure_increment(d->exposure_stops, n), img_dest);
     else
       _image_copy(img_src, wd, ht, ch, img_dest);
 
@@ -1164,7 +1079,7 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
     _build_gaussian_pyramid(img_wmaps[n].img, wd, ht, 1, &pyramid_wmap);
 
     // build a laplacian pyramid for the image
-    _build_laplacian_pyramid(img_dest, wd, ht, ch, &pyramid_wmap, &pyramid_blend, use_sse);
+    _build_laplacian_pyramid(img_dest, wd, ht, ch, &pyramid_wmap, &pyramid_blend);
   }
 
   // reconstruct the blended laplacian pyramid
@@ -1207,25 +1122,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
 
-  _exposure_fusion(in, width, height, ch, out, self, work_profile, d, FALSE);
+  _exposure_fusion(in, width, height, ch, out, self, work_profile, d);
 }
-
-#if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  dt_iop_fusion_data_t *const d = (dt_iop_fusion_data_t *)(piece->data);
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-
-  const int ch = 4;
-  const size_t width = roi_in->width, height = roi_in->height;
-
-  const float *const in = (const float *const)ivoid;
-  float *const out = (float *const)ovoid;
-
-  _exposure_fusion(in, width, height, ch, out, self, work_profile, d, TRUE);
-}
-#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
