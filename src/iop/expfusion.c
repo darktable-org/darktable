@@ -604,10 +604,12 @@ static void _convolve_symmetric(const float *const img_src, const size_t wd, con
   {
     for(int j = 2; j < wd - 2; j++)
       for(int k = 0; k < ch1; k++)
-        img_tmp[(i * wd + j) * ch + k]
-            = img_src[(i*wd + (j - 2)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
-              + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
-              + img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
+        img_tmp[(i * wd + j) * ch + k] =
+            img_src[(i*wd + (j - 2)) * ch + k] * fx[0] +
+            img_src[(i*wd + (j - 1)) * ch + k] * fx[1] +
+            img_src[(i*wd +  j     ) * ch + k] * fx[2] +
+            img_src[(i*wd + (j + 1)) * ch + k] * fx[3] +
+            img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
   }
 
 #ifdef _OPENMP
@@ -620,32 +622,40 @@ static void _convolve_symmetric(const float *const img_src, const size_t wd, con
     // left edge
     int j = 0; // 1 0 [0 1 2 ... ]
     for(int k = 0; k < ch1; k++)
-      img_tmp[(i * wd + j) * ch + k]
-          = img_src[(i*wd + (j + 1)) * ch + k] * fx[0] + img_src[(i*wd + j) * ch + k] * fx[1]
-            + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
-            + img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
+      img_tmp[(i * wd + j) * ch + k] =
+          img_src[(i*wd + (j + 1)) * ch + k] * fx[0] +
+          img_src[(i*wd +  j     ) * ch + k] * fx[1] +
+          img_src[(i*wd +  j     ) * ch + k] * fx[2] +
+          img_src[(i*wd + (j + 1)) * ch + k] * fx[3] +
+          img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
 
     j = 1; // -1 [-1 0 1 2 ... ]
     for(int k = 0; k < ch1; k++)
-      img_tmp[(i * wd + j) * ch + k]
-          = img_src[(i*wd + (j - 1)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
-            + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
-            + img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
+      img_tmp[(i * wd + j) * ch + k] =
+          img_src[(i*wd + (j - 1)) * ch + k] * fx[0] +
+          img_src[(i*wd + (j - 1)) * ch + k] * fx[1] +
+          img_src[(i*wd +  j     ) * ch + k] * fx[2] +
+          img_src[(i*wd + (j + 1)) * ch + k] * fx[3] +
+          img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
 
     // right edge
     j = wd - 2; // [ ... -2 -1 0 1] 1
     for(int k = 0; k < ch1; k++)
-      img_tmp[(i * wd + j) * ch + k]
-          = img_src[(i*wd + (j - 2)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
-            + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
-            + img_src[(i*wd + (j + 1)) * ch + k] * fx[4];
+      img_tmp[(i * wd + j) * ch + k] =
+          img_src[(i*wd + (j - 2)) * ch + k] * fx[0] +
+          img_src[(i*wd + (j - 1)) * ch + k] * fx[1] +
+          img_src[(i*wd +  j     ) * ch + k] * fx[2] +
+          img_src[(i*wd + (j + 1)) * ch + k] * fx[3] +
+          img_src[(i*wd + (j + 1)) * ch + k] * fx[4];
 
     j = wd - 1; // [ ... -2 -1 0] 0 -1
     for(int k = 0; k < ch1; k++)
-      img_tmp[(i * wd + j) * ch + k]
-          = img_src[(i*wd + (j - 2)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
-            + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + j) * ch + k] * fx[3]
-            + img_src[(i*wd + (j - 1)) * ch + k] * fx[4];
+      img_tmp[(i * wd + j) * ch + k] =
+          img_src[(i*wd + (j - 2)) * ch + k] * fx[0] +
+          img_src[(i*wd + (j - 1)) * ch + k] * fx[1] +
+          img_src[(i*wd +  j     ) * ch + k] * fx[2] +
+          img_src[(i*wd +  j     ) * ch + k] * fx[3] +
+          img_src[(i*wd + (j - 1)) * ch + k] * fx[4];
   }
 
   // vertical filter
@@ -659,10 +669,12 @@ static void _convolve_symmetric(const float *const img_src, const size_t wd, con
   {
     for(int i = 2; i < ht - 2; i++)
       for(int k = 0; k < ch1; k++)
-        img_dest[(i * wd + j) * ch + k]
-            = img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
-              + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
-              + img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
+        img_dest[(i * wd + j) * ch + k] =
+            img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] +
+            img_tmp[((i - 1) * wd + j) * ch + k] * fy[1] +
+            img_tmp[( i      * wd + j) * ch + k] * fy[2] +
+            img_tmp[((i + 1) * wd + j) * ch + k] * fy[3] +
+            img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
   }
 
 #ifdef _OPENMP
@@ -675,32 +687,40 @@ static void _convolve_symmetric(const float *const img_src, const size_t wd, con
     // top edge
     int i = 0; // 1 0 [0 1 2 ... ]
     for(int k = 0; k < ch1; k++)
-      img_dest[(i * wd + j) * ch + k]
-          = img_tmp[((i + 1) * wd + j) * ch + k] * fy[0] + img_tmp[(i*wd + j) * ch + k] * fy[1]
-            + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
-            + img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
+      img_dest[(i * wd + j) * ch + k] =
+          img_tmp[((i + 1) * wd + j) * ch + k] * fy[0] +
+          img_tmp[( i      * wd + j) * ch + k] * fy[1] +
+          img_tmp[( i      * wd + j) * ch + k] * fy[2] +
+          img_tmp[((i + 1) * wd + j) * ch + k] * fy[3] +
+          img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
 
     i = 1; // -1 [-1 0 1 2 ... ]
     for(int k = 0; k < ch1; k++)
-      img_dest[(i * wd + j) * ch + k]
-          = img_tmp[((i - 1) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
-            + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
-            + img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
+      img_dest[(i * wd + j) * ch + k] =
+          img_tmp[((i - 1) * wd + j) * ch + k] * fy[0] +
+          img_tmp[((i - 1) * wd + j) * ch + k] * fy[1] +
+          img_tmp[( i      * wd + j) * ch + k] * fy[2] +
+          img_tmp[((i + 1) * wd + j) * ch + k] * fy[3] +
+          img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
 
     // bottom edge
     i = ht - 2; // [ ... -2 -1 0 1] 1
     for(int k = 0; k < ch1; k++)
-      img_dest[(i * wd + j) * ch + k]
-          = img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
-            + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
-            + img_tmp[((i + 1) * wd + j) * ch + k] * fy[4];
+      img_dest[(i * wd + j) * ch + k] =
+          img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] +
+          img_tmp[((i - 1) * wd + j) * ch + k] * fy[1] +
+          img_tmp[( i      * wd + j) * ch + k] * fy[2] +
+          img_tmp[((i + 1) * wd + j) * ch + k] * fy[3] +
+          img_tmp[((i + 1) * wd + j) * ch + k] * fy[4];
 
     i = ht - 1; // [ ... -2 -1 0] 0 -1
     for(int k = 0; k < ch1; k++)
-      img_dest[(i * wd + j) * ch + k]
-          = img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
-            + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[(i*wd + j) * ch + k] * fy[3]
-            + img_tmp[((i - 1) * wd + j) * ch + k] * fy[4];
+      img_dest[(i * wd + j) * ch + k] =
+          img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] +
+          img_tmp[((i - 1) * wd + j) * ch + k] * fy[1] +
+          img_tmp[( i      * wd + j) * ch + k] * fy[2] +
+          img_tmp[( i      * wd + j) * ch + k] * fy[3] +
+          img_tmp[((i - 1) * wd + j) * ch + k] * fy[4];
   }
 
   dt_free_align(img_tmp);
@@ -729,14 +749,16 @@ static void _convolve_replicate(const float *const img_src, const size_t wd, con
   schedule(static) \
   collapse(2)
 #endif
-  for(int i = 0; i < ht; i++) // all lines
+  for(int i = 0; i < ht; i++) // all rows
   {
     for(int j = 2; j < wd - 2; j++)
       for(int k = 0; k < ch1; k++)
-        img_tmp[(i * wd + j) * ch + k]
-            = img_src[(i*wd + (j - 2)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
-              + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
-              + img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
+        img_tmp[(i * wd + j) * ch + k] =
+            img_src[(i*wd + (j - 2)) * ch + k] * fx[0] +
+            img_src[(i*wd + (j - 1)) * ch + k] * fx[1] +
+            img_src[(i*wd +  j     ) * ch + k] * fx[2] +
+            img_src[(i*wd + (j + 1)) * ch + k] * fx[3] +
+            img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
   }
 
 #ifdef _OPENMP
@@ -749,32 +771,40 @@ static void _convolve_replicate(const float *const img_src, const size_t wd, con
     // left edge
     int j = 0; // 0 0 [0 1 2 ... ]
     for(int k = 0; k < ch1; k++)
-      img_tmp[(i * wd + j) * ch + k]
-          = img_src[(i*wd + j) * ch + k] * fx[0] + img_src[(i*wd + j) * ch + k] * fx[1]
-            + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
-            + img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
+      img_tmp[(i * wd + j) * ch + k] =
+          img_src[(i*wd +  j     ) * ch + k] * fx[0] +
+          img_src[(i*wd +  j     ) * ch + k] * fx[1] +
+          img_src[(i*wd +  j     ) * ch + k] * fx[2] +
+          img_src[(i*wd + (j + 1)) * ch + k] * fx[3] +
+          img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
 
     j = 1; // -1 [-1 0 1 2 ... ]
     for(int k = 0; k < ch1; k++)
-      img_tmp[(i * wd + j) * ch + k]
-          = img_src[(i*wd + (j - 1)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
-            + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
-            + img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
+      img_tmp[(i * wd + j) * ch + k] =
+          img_src[(i*wd + (j - 1)) * ch + k] * fx[0] +
+          img_src[(i*wd + (j - 1)) * ch + k] * fx[1] +
+          img_src[(i*wd +  j     ) * ch + k] * fx[2] +
+          img_src[(i*wd + (j + 1)) * ch + k] * fx[3] +
+          img_src[(i*wd + (j + 2)) * ch + k] * fx[4];
 
     // right edge
     j = wd - 2; // [ ... -2 -1 0 1] 1
     for(int k = 0; k < ch1; k++)
-      img_tmp[(i * wd + j) * ch + k]
-          = img_src[(i*wd + (j - 2)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
-            + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + (j + 1)) * ch + k] * fx[3]
-            + img_src[(i*wd + (j + 1)) * ch + k] * fx[4];
+      img_tmp[(i * wd + j) * ch + k] =
+          img_src[(i*wd + (j - 2)) * ch + k] * fx[0] +
+          img_src[(i*wd + (j - 1)) * ch + k] * fx[1] +
+          img_src[(i*wd +  j     ) * ch + k] * fx[2] +
+          img_src[(i*wd + (j + 1)) * ch + k] * fx[3] +
+          img_src[(i*wd + (j + 1)) * ch + k] * fx[4];
 
     j = wd - 1; // [ ... -2 -1 0] 0 0
     for(int k = 0; k < ch1; k++)
-      img_tmp[(i * wd + j) * ch + k]
-          = img_src[(i*wd + (j - 2)) * ch + k] * fx[0] + img_src[(i*wd + (j - 1)) * ch + k] * fx[1]
-            + img_src[(i*wd + j) * ch + k] * fx[2] + img_src[(i*wd + j) * ch + k] * fx[3]
-            + img_src[(i*wd + j) * ch + k] * fx[4];
+      img_tmp[(i * wd + j) * ch + k] =
+          img_src[(i*wd + (j - 2)) * ch + k] * fx[0] +
+          img_src[(i*wd + (j - 1)) * ch + k] * fx[1] +
+          img_src[(i*wd +  j     ) * ch + k] * fx[2] +
+          img_src[(i*wd +  j     ) * ch + k] * fx[3] +
+          img_src[(i*wd +  j     ) * ch + k] * fx[4];
   }
 
   // vertical filter
@@ -788,10 +818,12 @@ static void _convolve_replicate(const float *const img_src, const size_t wd, con
   {
     for(int i = 2; i < ht - 2; i++)
       for(int k = 0; k < ch1; k++)
-        img_dest[(i * wd + j) * ch + k]
-            = img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
-              + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
-              + img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
+        img_dest[(i * wd + j) * ch + k] =
+            img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] +
+            img_tmp[((i - 1) * wd + j) * ch + k] * fy[1] +
+            img_tmp[( i      * wd + j) * ch + k] * fy[2] +
+            img_tmp[((i + 1) * wd + j) * ch + k] * fy[3] +
+            img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
   }
 
 #ifdef _OPENMP
@@ -804,32 +836,40 @@ static void _convolve_replicate(const float *const img_src, const size_t wd, con
     // top edge
     int i = 0; // 0 0 [0 1 2 ... ]
     for(int k = 0; k < ch1; k++)
-      img_dest[(i * wd + j) * ch + k]
-          = img_tmp[(i*wd + j) * ch + k] * fy[0] + img_tmp[(i*wd + j) * ch + k] * fy[1]
-            + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
-            + img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
+      img_dest[(i * wd + j) * ch + k] =
+          img_tmp[( i      * wd + j) * ch + k] * fy[0] +
+          img_tmp[( i      * wd + j) * ch + k] * fy[1] +
+          img_tmp[( i      * wd + j) * ch + k] * fy[2] +
+          img_tmp[((i + 1) * wd + j) * ch + k] * fy[3] +
+          img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
 
     i = 1; // -1 [-1 0 1 2 ... ]
     for(int k = 0; k < ch1; k++)
-      img_dest[(i * wd + j) * ch + k]
-          = img_tmp[((i - 1) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
-            + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
-            + img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
+      img_dest[(i * wd + j) * ch + k] =
+          img_tmp[((i - 1) * wd + j) * ch + k] * fy[0] +
+          img_tmp[((i - 1) * wd + j) * ch + k] * fy[1] +
+          img_tmp[( i      * wd + j) * ch + k] * fy[2] +
+          img_tmp[((i + 1) * wd + j) * ch + k] * fy[3] +
+          img_tmp[((i + 2) * wd + j) * ch + k] * fy[4];
 
     // bottom edge
     i = ht - 2; // [ ... -2 -1 0 1] 1
     for(int k = 0; k < ch1; k++)
-      img_dest[(i * wd + j) * ch + k]
-          = img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
-            + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[((i + 1) * wd + j) * ch + k] * fy[3]
-            + img_tmp[((i + 1) * wd + j) * ch + k] * fy[4];
+      img_dest[(i * wd + j) * ch + k] =
+          img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] +
+          img_tmp[((i - 1) * wd + j) * ch + k] * fy[1] +
+          img_tmp[( i      * wd + j) * ch + k] * fy[2] +
+          img_tmp[((i + 1) * wd + j) * ch + k] * fy[3] +
+          img_tmp[((i + 1) * wd + j) * ch + k] * fy[4];
 
     i = ht - 1; // [ ... -2 -1 0] 0 0
     for(int k = 0; k < ch1; k++)
-      img_dest[(i * wd + j) * ch + k]
-          = img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] + img_tmp[((i - 1) * wd + j) * ch + k] * fy[1]
-            + img_tmp[(i*wd + j) * ch + k] * fy[2] + img_tmp[(i*wd + j) * ch + k] * fy[3]
-            + img_tmp[(i*wd + j) * ch + k] * fy[4];
+      img_dest[(i * wd + j) * ch + k] =
+          img_tmp[((i - 2) * wd + j) * ch + k] * fy[0] +
+          img_tmp[((i - 1) * wd + j) * ch + k] * fy[1] +
+          img_tmp[( i      * wd + j) * ch + k] * fy[2] +
+          img_tmp[( i      * wd + j) * ch + k] * fy[3] +
+          img_tmp[( i      * wd + j) * ch + k] * fy[4];
   }
 
   dt_free_align(img_tmp);
@@ -891,12 +931,6 @@ static void _downsample_image(const float *const img_src, const size_t wd, const
   const int ch1 = (ch == 4) ? 3: ch;
   float *img_tmp = dt_alloc_align(64, wd * ht * ch * sizeof(float));
 
-  // [1] -> [1]
-  // [1 2] -> [1]
-  // [1 2 3] -> [1 3]
-  // [1 2 3 4] -> [1 3]
-  // width: W/2 + W%2
-
   // low pass filter
   _convolve_symmetric(img_src, wd, ht, ch, filter, filter, img_tmp);
 
@@ -930,123 +964,117 @@ static void _upsample_image(const float *const img_src, const size_t wd, const s
 #endif
 
   const int ch1 = (ch == 4) ? 3: ch;
-  const size_t padding = 1;
+  const size_t pad = 1;
 
-  // sizes with added 1 px border and size increase of 2x
-  const size_t wd_upsampled = (wd + 2 * padding) * 2;
-  const size_t ht_upsampled = (ht + 2 * padding) * 2;
+  // upsampled sizes = 1 pixel padding and duplicate size
+  const size_t wd_upsd = (wd + 2 * pad) * 2;
+  const size_t ht_upsd = (ht + 2 * pad) * 2;
 
-  float *img_tmp = dt_alloc_align(64, wd_upsampled * ht_upsampled * ch * sizeof(float));
-  memset(img_tmp, 0, wd_upsampled * ht_upsampled * ch * sizeof(float));
+  float *img_tmp = dt_alloc_align(64, wd_upsd * ht_upsd * ch * sizeof(float));
+  memset(img_tmp, 0, wd_upsd * ht_upsd * ch * sizeof(float));
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_tmp, ht, wd, ch, ch1, padding, wd_upsampled) \
+  dt_omp_firstprivate(img_src, img_tmp, ht, wd, ch, ch1, pad, wd_upsd) \
   schedule(static) \
   collapse(2)
 #endif
   for(int i = 0; i < ht; i++)
     for(int j = 0; j < wd; j++)
       for(int k = 0; k < ch1; k++)
-        img_tmp[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
-            = 4.f * img_src[(i * wd + j) * ch + k];
+        img_tmp[((2 * (i + pad)) * wd_upsd + (2 * (j + pad))) * ch + k] = 4.f * img_src[(i * wd + j) * ch + k];
 
   // top row
   int i = -1;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_tmp, wd, ch, ch1, padding, wd_upsampled, i) \
+  dt_omp_firstprivate(img_src, img_tmp, wd, ch, ch1, pad, wd_upsd, i) \
   schedule(static)
 #endif
   for(int j = 0; j < wd; j++)
     for(int k = 0; k < ch1; k++)
-      img_tmp[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
-          = 4.f * img_src[((i + 1) * wd + j) * ch + k];
+      img_tmp[((2 * (i + pad)) * wd_upsd + (2 * (j + pad))) * ch + k] = 4.f * img_src[((i + 1) * wd + j) * ch + k];
 
   // bottom row
   i = ht;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_tmp, wd, ch, ch1, padding, wd_upsampled, i) \
+  dt_omp_firstprivate(img_src, img_tmp, wd, ch, ch1, pad, wd_upsd, i) \
   schedule(static)
 #endif
   for(int j = 0; j < wd; j++)
     for(int k = 0; k < ch1; k++)
-      img_tmp[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
-          = 4.f * img_src[((i - 1) * wd + j) * ch + k];
+      img_tmp[((2 * (i + pad)) * wd_upsd + (2 * (j + pad))) * ch + k] = 4.f * img_src[((i - 1) * wd + j) * ch + k];
 
   // left edge
   int j = -1;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_tmp, ht, wd, ch, ch1, padding, wd_upsampled, j) \
+  dt_omp_firstprivate(img_src, img_tmp, ht, wd, ch, ch1, pad, wd_upsd, j) \
   schedule(static)
 #endif
   for(int ii = 0; ii < ht; ii++)
     for(int k = 0; k < ch1; k++)
-      img_tmp[((2 * (ii + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
-          = 4.f * img_src[((ii)*wd + (j + 1)) * ch + k];
+      img_tmp[((2 * (ii + pad)) * wd_upsd + (2 * (j + pad))) * ch + k] = 4.f * img_src[((ii)*wd + (j + 1)) * ch + k];
 
   // right edge
   j = wd;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_tmp, ht, wd, ch, ch1, padding, wd_upsampled, j) \
+  dt_omp_firstprivate(img_src, img_tmp, ht, wd, ch, ch1, pad, wd_upsd, j) \
   schedule(static)
 #endif
   for(int ii = 0; ii < ht; ii++)
     for(int k = 0; k < ch1; k++)
-      img_tmp[((2 * (ii + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
-          = 4.f * img_src[((ii)*wd + (j - 1)) * ch + k];
+      img_tmp[((2 * (ii + pad)) * wd_upsd + (2 * (j + pad))) * ch + k] = 4.f * img_src[((ii)*wd + (j - 1)) * ch + k];
 
   // corners
   for(int k = 0; k < ch1; k++)
   {
     i = -1;
     j = -1;
-    img_tmp[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
-        = 4.f * img_src[((i + 1) * wd + (j + 1)) * ch + k];
+    img_tmp[((2 * (i + pad)) * wd_upsd + (2 * (j + pad))) * ch + k] = 4.f * img_src[((i + 1) * wd + (j + 1)) * ch + k];
+
     j = wd;
-    img_tmp[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
-        = 4.f * img_src[((i + 1) * wd + (j - 1)) * ch + k];
+    img_tmp[((2 * (i + pad)) * wd_upsd + (2 * (j + pad))) * ch + k] = 4.f * img_src[((i + 1) * wd + (j - 1)) * ch + k];
+
     i = ht;
     j = -1;
-    img_tmp[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
-        = 4.f * img_src[((i - 1) * wd + (j + 1)) * ch + k];
+    img_tmp[((2 * (i + pad)) * wd_upsd + (2 * (j + pad))) * ch + k] = 4.f * img_src[((i - 1) * wd + (j + 1)) * ch + k];
+
     j = wd;
-    img_tmp[((2 * (i + padding)) * wd_upsampled + (2 * (j + padding))) * ch + k]
-        = 4.f * img_src[((i - 1) * wd + (j - 1)) * ch + k];
+    img_tmp[((2 * (i + pad)) * wd_upsd + (2 * (j + pad))) * ch + k] = 4.f * img_src[((i - 1) * wd + (j - 1)) * ch + k];
   }
 
   // blur
-  _convolve_replicate(img_tmp, wd_upsampled, ht_upsampled, ch, filter, filter, img_tmp);
+  _convolve_replicate(img_tmp, wd_upsd, ht_upsd, ch, filter, filter, img_tmp);
 
   // remove the border and copy result
   if(add_to_image)
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_dest, img_tmp, up_ht, up_wd, ch, ch1, img_add_sub, wd_upsampled) \
+  dt_omp_firstprivate(img_dest, img_tmp, up_ht, up_wd, ch, ch1, img_add_sub, wd_upsd) \
   schedule(static) \
   collapse(2)
 #endif
     for(int ii = 0; ii < up_ht; ii++)
       for(int jj = 0; jj < up_wd; jj++)
         for(int k = 0; k < ch1; k++)
-          img_dest[(ii * up_wd + jj) * ch + k] = img_add_sub[(ii * up_wd + jj) * ch + k] + img_tmp[((ii + 2) * wd_upsampled + (jj + 2)) * ch + k];
+          img_dest[(ii * up_wd + jj) * ch + k] = img_add_sub[(ii * up_wd + jj) * ch + k] + img_tmp[((ii + 2) * wd_upsd + (jj + 2)) * ch + k];
   }
   else
   {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_dest, img_tmp, up_ht, up_wd, ch, ch1, img_add_sub, wd_upsampled, img_wmap) \
+  dt_omp_firstprivate(img_dest, img_tmp, up_ht, up_wd, ch, ch1, img_add_sub, wd_upsd, img_wmap) \
   schedule(static) \
   collapse(2)
 #endif
     for(int ii = 0; ii < up_ht; ii++)
       for(int jj = 0; jj < up_wd; jj++)
         for(int k = 0; k < ch1; k++)
-          img_dest[(ii * up_wd + jj) * ch + k] += (img_add_sub[(ii * up_wd + jj) * ch + k] - img_tmp[((ii + 2) * wd_upsampled + (jj + 2)) * ch + k]) *
+          img_dest[(ii * up_wd + jj) * ch + k] += (img_add_sub[(ii * up_wd + jj) * ch + k] - img_tmp[((ii + 2) * wd_upsd + (jj + 2)) * ch + k]) *
                                                     img_wmap[(ii * up_wd + jj)];
   }
 
@@ -1112,7 +1140,7 @@ static void _build_laplacian_pyramid(const float *const img_src, const size_t wd
 
   for(int v = 0; v < pyramid_dest->num_levels - 1; v++)
   {
-    // downsample image img_tmp3 further, store in img_tmp2
+    // downsample image img_tmp3 and store in img_tmp2
     tmp2_wd = pyramid_dest->images[v + 1].w;
     tmp2_ht = pyramid_dest->images[v + 1].h;
 
@@ -1125,7 +1153,7 @@ static void _build_laplacian_pyramid(const float *const img_src, const size_t wd
     tmp3_wd = tmp2_wd;
     tmp3_ht = tmp2_ht;
 
-    // continue with downsampled image remainder
+    // continue with downsampled image
     _image_copy(img_tmp2, tmp2_ht, tmp2_wd, ch, img_tmp3);
   }
 
