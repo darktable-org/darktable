@@ -27,6 +27,7 @@ typedef struct dt_tag_t
   guint id;
   gchar *tag;
   gchar *leave;
+  gchar *synonym;
   guint count;
   guint select;
   gint flags;
@@ -119,7 +120,7 @@ GList *dt_tag_get_images_from_selection(gint imgid, gint tagid);
 /** retrieves a list of suggested tags matching keyword. \param[in] keyword the keyword to search \param[out]
  * result a pointer to list populated with result. \return the count \note the limit of result is decided by
  * conf value "xxx" */
-uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result);
+uint32_t dt_tag_get_suggestions(GList **result);
 
 /** retrieves count of tagged images. \param[in] keyword the keyword to search \return
  * the count \note the limit of result is decided by conf value "xxx" */
@@ -132,7 +133,7 @@ void dt_tag_get_tags_images(const gchar *keyword, GList **tag_list, GList **img_
 /** retrieves the list of tags matching keyword. \param[in] keyword the keyword to search \param[out]
  * result a pointer to list populated with result. \return the count \note the limit of result is decided by
  * conf value "xxx" */
-uint32_t dt_tag_get_with_usage(const gchar *keyword, GList **result);
+uint32_t dt_tag_get_with_usage(GList **result);
 
 /** retrieves synonyms of the tag */
 gchar *dt_tag_get_synonyms(gint tagid);
