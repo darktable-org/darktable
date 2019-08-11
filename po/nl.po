@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-08 09:20+0200\n"
-"PO-Revision-Date: 2019-08-08 09:45+0200\n"
+"POT-Creation-Date: 2019-08-11 10:59+0200\n"
+"PO-Revision-Date: 2019-08-11 11:36+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -1975,7 +1975,7 @@ msgstr "bezig..."
 #: ../src/control/control.c:685
 #, c-format
 msgid "scroll to change <b>%s</b> of %s module"
-msgstr ""
+msgstr "scroll voor verandering <b>%s</b> van %s module"
 
 #: ../src/control/crawler.c:342 ../src/libs/select.c:40
 msgid "select"
@@ -2334,11 +2334,8 @@ msgid "local copy images"
 msgstr "lokale kopie afbeeldingen"
 
 #: ../src/control/jobs/control_jobs.c:1739 ../src/libs/image.c:276
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "refresh"
 msgid "refresh exif"
-msgstr "ververs"
+msgstr "ververs exif"
 
 #: ../src/control/jobs/control_jobs.c:1801
 #, c-format
@@ -3081,21 +3078,20 @@ msgstr[1] "%s zijn geïmporteerd"
 
 #: ../src/develop/masks/masks.c:157
 msgid "[SHAPE] remove shape"
-msgstr ""
+msgstr "[SHAPE] verwijder vorm"
 
 #: ../src/develop/masks/masks.c:164
 msgid "[PATH creation] add a smooth node"
-msgstr ""
+msgstr "[PATH creation] toevoegen effen knooppunt"
 
 #: ../src/develop/masks/masks.c:170
-#, fuzzy
 #| msgid "ctrl+click to add a sharp node"
 msgid "[PATH creation] add a sharp node"
-msgstr "ctrl+klik: toevoegen scherp knooppunt"
+msgstr "[PATH creation] toevoegen scherp knooppunt"
 
 #: ../src/develop/masks/masks.c:175
 msgid "[PATH creation] terminate path creation"
-msgstr ""
+msgstr "[PATH creation] beëindigen pad creatie"
 
 #: ../src/develop/masks/masks.c:181
 #, fuzzy
@@ -3105,27 +3101,27 @@ msgstr "ctrl+klik schakelt tussen gladde/scherpe knooppunten"
 
 #: ../src/develop/masks/masks.c:186
 msgid "[PATH on node] remove the node"
-msgstr ""
+msgstr "[PATH on node] verwijder knooppunt"
 
 #: ../src/develop/masks/masks.c:191
 msgid "[PATH on feather] reset curvature"
-msgstr ""
+msgstr "[PATH on feather] reset kromming"
 
 #: ../src/develop/masks/masks.c:197
 msgid "[PATH on segment] add node"
-msgstr ""
+msgstr "[PATH on segment] voeg knooppunt toe"
 
 #: ../src/develop/masks/masks.c:202
 msgid "[PATH] change size"
-msgstr ""
+msgstr "[PATH] wijzig afmeting"
 
 #: ../src/develop/masks/masks.c:208
 msgid "[PATH] change opacity"
-msgstr ""
+msgstr "[PATH] wijzig dekking"
 
 #: ../src/develop/masks/masks.c:214
 msgid "[PATH] change feather size"
-msgstr ""
+msgstr "[PATH] wijzig afmeting doezelaar"
 
 #: ../src/develop/masks/masks.c:221
 #, fuzzy
@@ -3141,57 +3137,56 @@ msgstr "reset draaiing"
 
 #: ../src/develop/masks/masks.c:231
 msgid "[GRADIENT] change compression"
-msgstr ""
+msgstr "[GRADIENT] wijzig compressie"
 
 #: ../src/develop/masks/masks.c:237
 msgid "[GRADIENT] change opacity"
-msgstr ""
+msgstr "[GRADIENT] wijzig dekking"
 
 #: ../src/develop/masks/masks.c:244
 msgid "[ELLIPSE] change size"
-msgstr ""
+msgstr "[ELLIPSE] wijzig afmeting"
 
 #: ../src/develop/masks/masks.c:250
 msgid "[ELLIPSE] change opacity"
-msgstr ""
+msgstr "[ELLIPSE] wijzig dekking"
 
 #: ../src/develop/masks/masks.c:256
 msgid "[ELLIPSE] switch feathering mode"
-msgstr ""
+msgstr "[ELLIPSE]  schakel doezelaar modus"
 
 #: ../src/develop/masks/masks.c:262
-#, fuzzy
 #| msgid "move to rotate shape"
 msgid "[ELLIPSE] rotate shape"
-msgstr "verplaats om de vorm te draaien"
+msgstr "[ELLIPSE] draai vorm"
 
 #: ../src/develop/masks/masks.c:269
 msgid "[BRUSH creation] change size"
-msgstr ""
+msgstr "[BRUSH creation] wijzig afmeting"
 
 #: ../src/develop/masks/masks.c:275
 msgid "[BRUSH creation] change hardness"
-msgstr ""
+msgstr "[BRUSH creation] wijzig hardheid"
 
 #: ../src/develop/masks/masks.c:281
 msgid "[BRUSH] change opacity"
-msgstr ""
+msgstr "[BRUSH] wijzig dekking"
 
 #: ../src/develop/masks/masks.c:286
 msgid "[BRUSH] change hardness"
-msgstr ""
+msgstr "[BRUSH] wijzig hardheid"
 
 #: ../src/develop/masks/masks.c:293
 msgid "[CIRCLE] change size"
-msgstr ""
+msgstr "[CIRCLE] wijzig afmeting"
 
 #: ../src/develop/masks/masks.c:299
 msgid "[CIRCLE] change opacity"
-msgstr ""
+msgstr "[CIRCLE] wijzig dekking"
 
 #: ../src/develop/masks/masks.c:305
 msgid "[CIRCLE] change feather size"
-msgstr ""
+msgstr "[CIRCLE] wijzig afmeting doezelaar"
 
 #: ../src/develop/masks/masks.c:331
 msgid "ctrl+click to add a sharp node"
@@ -3199,7 +3194,7 @@ msgstr "ctrl+klik: toevoegen scherp knooppunt"
 
 #: ../src/develop/masks/masks.c:333
 msgid "ctrl+click to switch between smooth/sharp node"
-msgstr "ctrl+klik schakelt tussen gladde/scherpe knooppunten"
+msgstr "ctrl+klik schakelt tussen gladder/scherper knooppunt"
 
 #: ../src/develop/masks/masks.c:335
 msgid "right-click to reset curvature"
@@ -5604,7 +5599,7 @@ msgstr "contrastrijk"
 #: ../src/iop/colorzones.c:2334 ../src/iop/denoiseprofile.c:3076
 #: ../src/iop/rawdenoise.c:830
 msgid "smooth"
-msgstr "vlak"
+msgstr "glad"
 
 #: ../src/iop/atrous.c:1622 ../src/iop/denoiseprofile.c:3081
 #: ../src/iop/rawdenoise.c:835
@@ -6438,7 +6433,7 @@ msgstr "B/W artefacten versterken"
 
 #: ../src/iop/channelmixer.c:532
 msgid "B/W smooth skin"
-msgstr "B/W gladde huid"
+msgstr "B/W gladdere huid"
 
 #: ../src/iop/channelmixer.c:537
 msgid "B/W blue artifacts reduce"
@@ -7468,7 +7463,7 @@ msgstr "krachtig"
 
 #: ../src/iop/colorzones.c:2337
 msgid "choose between a smoother or stronger effect"
-msgstr "kies tussen een vloeiender of sterker effectct"
+msgstr "kies tussen een gladder of sterker effect"
 
 #: ../src/iop/colorzones.c:2373 ../src/iop/rgbcurve.c:1563
 #: ../src/iop/tonecurve.c:1380
@@ -7498,8 +7493,8 @@ msgid ""
 msgstr ""
 "wijzig deze methode wanneer oscillaties of knobbels in de curve worden "
 "waargenomen\n"
-"- kubusvormig geeft een meer effen curve maar oscilleert wanneer de knopen "
-"te dicht bij elkaar zitten\n"
+"- kubusvormig geeft een meer gladdere curve maar oscilleert wanneer de "
+"knopen te dicht bij elkaar zitten\n"
 "- middelpuntzoekende is beter ter vermijding van knobbels en oscillaties "
 "maar minder glad bij naast elkaar zittende knopen\n"
 "- monotoon werkt beter voor de nauwkeurigheid van pure analytische functies "
@@ -13021,12 +13016,11 @@ msgid "rename path?"
 msgstr "hernoem pad?"
 
 #: ../src/libs/tagging.c:1005
-#, fuzzy, c-format
-#| msgid "select parts"
+#, c-format
 msgid ""
 "selected path: %s\n"
 " "
-msgstr "selecteer delen"
+msgstr "geselecteerd pad: %s"
 
 #: ../src/libs/tagging.c:1014 ../src/libs/tagging.c:1021
 msgid "insert a '|' to create a new level, remove a '|' to delete a level"
@@ -13037,17 +13031,13 @@ msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr ""
 
 #: ../src/libs/tagging.c:1066
-#, fuzzy, c-format
-#| msgid "style with name '%s' already exists"
+#, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
-msgstr "naam stijl '%s' bestaat al"
+msgstr "ten minste één nieuw tagname (%s) bestaat al, annuleren"
 
 #: ../src/libs/tagging.c:1127
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "copy history"
 msgid "copy to entry"
-msgstr "kopieer geschiedenis"
+msgstr "kopieer naar invoer"
 
 #: ../src/libs/tagging.c:1143 ../src/libs/tagging.c:1151
 msgid "delete tag"
@@ -13870,10 +13860,8 @@ msgid "search modules"
 msgstr "zoek modules"
 
 #: ../src/views/darkroom.c:3304
-#, fuzzy
-#| msgid "lighttable"
 msgid "switch to lighttable"
-msgstr "bibliotheek"
+msgstr "schakel naar bibliotheek"
 
 #: ../src/views/darkroom.c:3309 ../src/views/lighttable.c:4490
 #, fuzzy
@@ -14129,13 +14117,12 @@ msgid "map"
 msgstr "kaart"
 
 #: ../src/views/map.c:1405
-#| msgid "border around image in darkroom mode"
 msgid "[on image] open in darkroom"
 msgstr "[op afbeelding] open in ontwikkelen"
 
 #: ../src/views/map.c:1410
 msgid "[on map] zoom map"
-msgstr ""
+msgstr "[on map] kaart inzoomen"
 
 #: ../src/views/map.c:1415
 msgid "move image location"
@@ -14233,7 +14220,6 @@ msgid "Right click+Drag"
 msgstr "klik rechts + sleep"
 
 #: ../src/views/view.c:2222
-#| msgid "darktable - schema migration"
 msgid "darktable - accels window"
 msgstr "darktable - accels window"
 
