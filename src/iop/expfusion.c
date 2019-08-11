@@ -33,32 +33,14 @@
 
 DT_MODULE_INTROSPECTION(1, dt_iop_fusion_params_t)
 
-typedef enum dt_iop_fusion_colorspace_t
-{
-  DT_FUSION_COLORSPACE_LAB = 0,
-  DT_FUSION_COLORSPACE_RGB = 1,
-  DT_FUSION_COLORSPACE_RGB_GREY = 2,
-  DT_FUSION_COLORSPACE_LOG = 3
-} dt_iop_fusion_colorspace_t;
-
-typedef enum dt_iop_weight_modes_t
-{
-  DT_WEIGHT_MODE_GAUSSIAN = 0,
-  DT_WEIGHT_MODE_LORENTZIAN = 1,
-  DT_WEIGHT_MODE_HALF_SIZE = 2,
-  DT_WEIGHT_MODE_FULLSINE = 3,
-  DT_WEIGHT_MODE_BISQUARE = 4
-} dt_iop_weight_modes_t;
-
 typedef enum dt_iop_grey_projectors_t
 {
-  DT_PROJECTOR_NONE = 0,
-  DT_PROJECTOR_AVERAGE = 1,
-  DT_PROJECTOR_MIN = 2,
-  DT_PROJECTOR_MAX = 3,
-  DT_PROJECTOR_RGB_LUMINANCE = 4,
-  DT_PROJECTOR_HSL_LIGHTNESS = 5,
-  DT_PROJECTOR_LAB_LIGHTNESS = 6
+  DT_PROJECTOR_AVERAGE = 0,
+  DT_PROJECTOR_MIN = 1,
+  DT_PROJECTOR_MAX = 2,
+  DT_PROJECTOR_RGB_LUMINANCE = 3,
+  DT_PROJECTOR_HSL_LIGHTNESS = 4,
+  DT_PROJECTOR_LAB_LIGHTNESS = 5
 } dt_iop_grey_projectors_t;
 
 typedef struct dt_iop_fusion_params_t
@@ -67,10 +49,7 @@ typedef struct dt_iop_fusion_params_t
   float exposure_stops;      // number of stops between fusion images
   float exposure_optimum;    // Optimum brightness for exposure fusion
   float exposure_width;      // exposure weight function variance
-  int weight_mode;           // algorithm used to build the weight map
   int grey_projector;        // rgb --> grey
-  int fusion_colorspace;     // colorspace used to blend images
-  int fusion_grey_projector; // rgb --> grey if fusion_colorspace == rgb grey
   float exposure_left_cutoff;
   float exposure_right_cutoff;
 } dt_iop_fusion_params_t;
@@ -83,10 +62,7 @@ typedef struct dt_iop_fusion_gui_data_t
   GtkWidget *sl_exposure_stops;
   GtkWidget *sl_exposure_optimum;
   GtkWidget *sl_exposure_width;
-  GtkWidget *cmb_weight_mode;
   GtkWidget *cmb_grey_projector;
-  GtkWidget *cmb_fusion_colorspace;
-  GtkWidget *cmb_fusion_grey_projector;
   GtkWidget *sl_exposure_left_cutoff;
   GtkWidget *sl_exposure_right_cutoff;
 } dt_iop_fusion_gui_data_t;
@@ -109,11 +85,6 @@ int flags()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_rgb;
-}
-
-static void _show_hide_controls(dt_iop_fusion_params_t *p, dt_iop_fusion_gui_data_t *g)
-{
-  gtk_widget_set_visible(g->cmb_fusion_grey_projector, p->fusion_colorspace == DT_FUSION_COLORSPACE_RGB_GREY);
 }
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
@@ -143,14 +114,9 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->sl_exposure_stops, p->exposure_stops);
   dt_bauhaus_slider_set(g->sl_exposure_optimum, p->exposure_optimum);
   dt_bauhaus_slider_set(g->sl_exposure_width, p->exposure_width);
-  dt_bauhaus_combobox_set(g->cmb_weight_mode, p->weight_mode);
   dt_bauhaus_combobox_set(g->cmb_grey_projector, p->grey_projector);
-  dt_bauhaus_combobox_set(g->cmb_fusion_colorspace, p->fusion_colorspace);
-  dt_bauhaus_combobox_set(g->cmb_fusion_grey_projector, p->fusion_grey_projector - 1);
   dt_bauhaus_slider_set(g->sl_exposure_left_cutoff, p->exposure_left_cutoff * 100.f);
   dt_bauhaus_slider_set(g->sl_exposure_right_cutoff, p->exposure_right_cutoff * 100.f);
-
-  _show_hide_controls(p, g);
 }
 
 void init(dt_iop_module_t *module)
@@ -166,10 +132,7 @@ void init(dt_iop_module_t *module)
   tmp.exposure_stops = 1.f;
   tmp.exposure_optimum = .5f;
   tmp.exposure_width = .2f;
-  tmp.weight_mode = DT_WEIGHT_MODE_GAUSSIAN;
   tmp.grey_projector = DT_PROJECTOR_AVERAGE;
-  tmp.fusion_colorspace = DT_FUSION_COLORSPACE_LAB;
-  tmp.fusion_grey_projector = DT_PROJECTOR_RGB_LUMINANCE;
   tmp.exposure_left_cutoff = 0.f;
   tmp.exposure_right_cutoff = 1.f;
 
@@ -223,45 +186,12 @@ static void _exposure_width_callback(GtkWidget *widget, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void _weight_mode_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_fusion_params_t *p = (dt_iop_fusion_params_t *)self->params;
-
-  p->weight_mode = dt_bauhaus_combobox_get(widget);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 static void _grey_projector_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_fusion_params_t *p = (dt_iop_fusion_params_t *)self->params;
 
   p->grey_projector = dt_bauhaus_combobox_get(widget);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _fusion_colorspace_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_fusion_params_t *p = (dt_iop_fusion_params_t *)self->params;
-  dt_iop_fusion_gui_data_t *g = (dt_iop_fusion_gui_data_t *)self->gui_data;
-
-  p->fusion_colorspace = dt_bauhaus_combobox_get(widget);
-
-  _show_hide_controls(p, g);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _fusion_grey_projector_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_fusion_params_t *p = (dt_iop_fusion_params_t *)self->params;
-
-  p->fusion_grey_projector = dt_bauhaus_combobox_get(widget) + 1;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -302,11 +232,11 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->sl_num_exposures, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->sl_num_exposures), "value-changed", G_CALLBACK(_num_exposures_callback), self);
 
-  g->sl_exposure_stops = dt_bauhaus_slider_new_with_range(self, 0.01f, 4.0f, 0.100f, p->exposure_stops, 3);
+  g->sl_exposure_stops = dt_bauhaus_slider_new_with_range(self, 0.0f, 3.0f, 0.100f, p->exposure_stops, 3);
   gtk_widget_set_tooltip_text(g->sl_exposure_stops, _("how many stops to shift the individual exposures apart"));
   dt_bauhaus_slider_set_format(g->sl_exposure_stops, "%.2fEV");
   dt_bauhaus_widget_set_label(g->sl_exposure_stops, NULL, _("exposure shift"));
-  dt_bauhaus_slider_enable_soft_boundaries(g->sl_exposure_stops, -18.0, 18.0);
+  dt_bauhaus_slider_enable_soft_boundaries(g->sl_exposure_stops, 0.0, 5.0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->sl_exposure_stops, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->sl_exposure_stops), "value-changed", G_CALLBACK(_exposure_stops_callback), self);
 
@@ -324,7 +254,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->cmb_grey_projector = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->cmb_grey_projector, NULL, _("grey projector"));
-  dt_bauhaus_combobox_add(g->cmb_grey_projector, _("(none)"));
   dt_bauhaus_combobox_add(g->cmb_grey_projector, _("average rgb"));
   dt_bauhaus_combobox_add(g->cmb_grey_projector, _("min rgb"));
   dt_bauhaus_combobox_add(g->cmb_grey_projector, _("max rgb"));
@@ -334,27 +263,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->cmb_grey_projector, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->cmb_grey_projector, _("method to convert from rgb to grey scale when calculating pixels weights"));
   g_signal_connect(G_OBJECT(g->cmb_grey_projector), "value-changed", G_CALLBACK(_grey_projector_callback), self);
-
-  g->cmb_weight_mode = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->cmb_weight_mode, NULL, _("exposure weight mode"));
-  dt_bauhaus_combobox_add(g->cmb_weight_mode, _("gaussian"));
-  dt_bauhaus_combobox_add(g->cmb_weight_mode, _("lorentzian"));
-  dt_bauhaus_combobox_add(g->cmb_weight_mode, _("half sine"));
-  dt_bauhaus_combobox_add(g->cmb_weight_mode, _("full sine"));
-  dt_bauhaus_combobox_add(g->cmb_weight_mode, _("bi-square"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->cmb_weight_mode, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text( g->cmb_weight_mode, _("algorithm used to determine the importance\n of each pixel's luminance when fusing images"));
-  g_signal_connect(G_OBJECT(g->cmb_weight_mode), "value-changed", G_CALLBACK(_weight_mode_callback), self);
-
-  g->cmb_fusion_colorspace = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->cmb_fusion_colorspace, NULL, _("fusion colorspace"));
-  dt_bauhaus_combobox_add(g->cmb_fusion_colorspace, _("lab"));
-  dt_bauhaus_combobox_add(g->cmb_fusion_colorspace, _("rgb"));
-  dt_bauhaus_combobox_add(g->cmb_fusion_colorspace, _("grey rgb"));
-  dt_bauhaus_combobox_add(g->cmb_fusion_colorspace, _("log"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->cmb_fusion_colorspace, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->cmb_fusion_colorspace, _("colorspace used to merge images"));
-  g_signal_connect(G_OBJECT(g->cmb_fusion_colorspace), "value-changed", G_CALLBACK(_fusion_colorspace_callback), self);
 
   g->sl_exposure_left_cutoff = dt_bauhaus_slider_new_with_range(self, 0.0f, 100.0f, 0.01f, p->exposure_left_cutoff * 100.f, 3);
   gtk_widget_set_tooltip_text(g->sl_exposure_left_cutoff, _("excludes from merging pixels that don't fall in range"));
@@ -369,21 +277,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->sl_exposure_right_cutoff, NULL, _("exposure cutoff - right"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->sl_exposure_right_cutoff, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->sl_exposure_right_cutoff), "value-changed", G_CALLBACK(_exposure_right_cutoff_callback), self);
-
-  g->cmb_fusion_grey_projector = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->cmb_fusion_grey_projector, NULL, _("fusion grey projector"));
-  dt_bauhaus_combobox_add(g->cmb_fusion_grey_projector, _("average rgb"));
-  dt_bauhaus_combobox_add(g->cmb_fusion_grey_projector, _("min rgb"));
-  dt_bauhaus_combobox_add(g->cmb_fusion_grey_projector, _("max rgb"));
-  dt_bauhaus_combobox_add(g->cmb_fusion_grey_projector, _("rgb luminance"));
-  dt_bauhaus_combobox_add(g->cmb_fusion_grey_projector, _("hsl lightness"));
-  dt_bauhaus_combobox_add(g->cmb_fusion_grey_projector, _("lab lightness"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->cmb_fusion_grey_projector, TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->cmb_fusion_grey_projector, _("method to convert from rgb to grey scale when merging images in grey rgb colorspace"));
-  g_signal_connect(G_OBJECT(g->cmb_fusion_grey_projector), "value-changed", G_CALLBACK(_fusion_grey_projector_callback), self);
-  gtk_widget_show_all(g->cmb_fusion_grey_projector);
-  gtk_widget_set_no_show_all(g->cmb_fusion_grey_projector, TRUE);
-  gtk_widget_set_visible(g->cmb_fusion_grey_projector, p->fusion_colorspace  == DT_FUSION_COLORSPACE_RGB_GREY);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -395,8 +288,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
 //////////////////////////////////////
 // fusion
 //////////////////////////////////////
-
-//#define EXPFUSION_PRINT_TIMES
 
 typedef struct dt_image_pyramid_t
 {
@@ -584,12 +475,6 @@ static inline void _image_add(const float *const img_src, const size_t wd, const
 static void _convolve_symmetric(const float *const img_src, const size_t wd, const size_t ht, const int ch,
                                 const float *const fx, const float *const fy, float *const img_dest)
 {
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_times_t start_time = {0}, end_time = {0};
-  fprintf(stderr, "[_convolve_symmetric] begin %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-  dt_get_times(&start_time);
-#endif // EXPFUSION_PRINT_TIMES
-
   const int ch1 = (ch == 4) ? 3: ch;
   float *img_tmp = dt_alloc_align(64, wd * ht * ch * sizeof(float));
 
@@ -724,21 +609,11 @@ static void _convolve_symmetric(const float *const img_src, const size_t wd, con
   }
 
   dt_free_align(img_tmp);
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_get_times(&end_time);
-  fprintf(stderr, "[_convolve_symmetric] took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-#endif
 }
 
 static void _convolve_replicate(const float *const img_src, const size_t wd, const size_t ht, const int ch,
                                 const float *const fx, const float *const fy, float *const img_dest)
 {
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_times_t start_time = {0}, end_time = {0};
-  fprintf(stderr, "[_convolve_replicate] begin %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-  dt_get_times(&start_time);
-#endif // EXPFUSION_PRINT_TIMES
-
   const int ch1 = (ch == 4) ? 3: ch;
   float *img_tmp = dt_alloc_align(64, wd * ht * ch * sizeof(float));
 
@@ -873,10 +748,6 @@ static void _convolve_replicate(const float *const img_src, const size_t wd, con
   }
 
   dt_free_align(img_tmp);
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_get_times(&end_time);
-  fprintf(stderr, "[_convolve_replicate] took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-#endif
 }
 
 static void _alloc_image(dt_image_pyramid_t *img, const size_t wd, const size_t ht, const int ch)
@@ -922,12 +793,6 @@ static void _free_pyramid(dt_pyramid_t *pyramid)
 static void _downsample_image(const float *const img_src, const size_t wd, const size_t ht, const int ch,
                               const float *const filter, const size_t down_wd, const size_t down_ht, float *const img_dest)
 {
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_times_t start_time = {0}, end_time = {0};
-  fprintf(stderr, "[_downsample_image] begin %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-  dt_get_times(&start_time);
-#endif
-
   const int ch1 = (ch == 4) ? 3: ch;
   float *img_tmp = dt_alloc_align(64, wd * ht * ch * sizeof(float));
 
@@ -947,22 +812,12 @@ static void _downsample_image(const float *const img_src, const size_t wd, const
         img_dest[(i * down_wd + j) * ch + k] = img_tmp[((i * 2) * wd + (j * 2)) * ch + k];
 
   dt_free_align(img_tmp);
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_get_times(&end_time);
-  fprintf(stderr, "[_downsample_image] took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-#endif
 }
 
 static void _upsample_image(const float *const img_src, const size_t wd, const size_t ht, const int ch,
                             const float *const filter, const size_t up_wd, const size_t up_ht,
                             float *const img_add_sub, float *const img_dest, const gboolean add_to_image, float *const img_wmap)
 {
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_times_t start_time = {0}, end_time = {0};
-  fprintf(stderr, "[_upsample_image] begin %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-  dt_get_times(&start_time);
-#endif
-
   const int ch1 = (ch == 4) ? 3: ch;
   const size_t pad = 1;
 
@@ -1079,10 +934,6 @@ static void _upsample_image(const float *const img_src, const size_t wd, const s
   }
 
   dt_free_align(img_tmp);
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_get_times(&end_time);
-  fprintf(stderr, "[_upsample_image] took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-#endif
 }
 
 #define EXPFUSION_PYRAMID_FILTER { .0625, .25, .375, .25, .0625 }
@@ -1092,12 +943,6 @@ static void _upsample_image(const float *const img_src, const size_t wd, const s
 static void _build_gaussian_pyramid(const float *const img_src, const size_t wd, const size_t ht, const int ch,
                                     dt_pyramid_t *const pyramid_dest)
 {
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_times_t start_time = {0}, end_time = {0};
-  fprintf(stderr, "[_build_gaussian_pyramid] begin %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-  dt_get_times(&start_time);
-#endif
-
   // copy image to the finest level
   _image_copy(img_src, wd, ht, ch, pyramid_dest->images[0].img);
 
@@ -1110,22 +955,11 @@ static void _build_gaussian_pyramid(const float *const img_src, const size_t wd,
                       pyramid_dest->images[v - 1].ch, pyramid_filter, pyramid_dest->images[v].w, pyramid_dest->images[v].h,
                       pyramid_dest->images[v].img);
   }
-
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_get_times(&end_time);
-  fprintf(stderr, "[_build_gaussian_pyramid] took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-#endif
 }
 
 static void _build_laplacian_pyramid(const float *const img_src, const size_t wd, const size_t ht, const int ch,
                                      dt_pyramid_t *const pyramid_wmap, dt_pyramid_t *const pyramid_dest, const gboolean use_sse)
 {
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_times_t start_time = {0}, end_time = {0};
-  fprintf(stderr, "[_build_laplacian_pyramid] begin %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-  dt_get_times(&start_time);
-#endif
-
   float *img_tmp2 = dt_alloc_align(64, wd * ht * ch * sizeof(float));
   float *img_tmp3 = dt_alloc_align(64, wd * ht * ch * sizeof(float));
 
@@ -1164,11 +998,6 @@ static void _build_laplacian_pyramid(const float *const img_src, const size_t wd
 
   dt_free_align(img_tmp2);
   dt_free_align(img_tmp3);
-
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_get_times(&end_time);
-  fprintf(stderr, "[_build_laplacian_pyramid] took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-#endif
 }
 
 static void _reconstruct_laplacian(const dt_pyramid_t *const pyramid, const int ch, float *const img_dest)
@@ -1221,68 +1050,33 @@ static inline float _grey_projector(const float *const rgb, const dt_iop_grey_pr
       lum = lab[0] * (1.f / 100.f);
     }
     break;
-    case DT_PROJECTOR_NONE:
-      break;
   }
 
   return lum;
 }
 
-static inline float _well_exposedness(const float lum, const dt_iop_weight_modes_t weight_mode,
-                                      const float exposure_optimum, const float exposure_width,
+static inline float _well_exposedness(const float lum, const float exposure_optimum, const float exposure_width,
                                       const float exposure_left_cutoff, const float exposure_right_cutoff)
 {
   if((exposure_left_cutoff > 0.f && lum < exposure_left_cutoff) || (exposure_right_cutoff < 1.f && lum > exposure_right_cutoff))
     return 0.f;
 
-  float exp = 1.f;
-
   const float v = (lum - exposure_optimum) / exposure_width;
-
-  if(weight_mode == DT_WEIGHT_MODE_GAUSSIAN)
-  {
-    exp = dt_fast_expf(-(v * v) * .5f);
-  }
-  else if(weight_mode == DT_WEIGHT_MODE_LORENTZIAN)
-  {
-    exp = 1.f / (1.f + ((v * v) * .5f));
-  }
-  else if(weight_mode == DT_WEIGHT_MODE_HALF_SIZE)
-  {
-    if(fabs(v) <= (float)M_PI * .5f)
-      exp = cos(v);
-    else
-      exp = 0.f;
-  }
-  else if(weight_mode == DT_WEIGHT_MODE_FULLSINE)
-  {
-    if(fabs(v) <= (float)M_PI)
-      exp = (1.f + cos(v)) * .5f;
-    else
-      exp = 0.f;
-  }
-  else if(weight_mode == DT_WEIGHT_MODE_BISQUARE)
-  {
-    if(fabs(v) <= 1.f)
-      exp = (1.f - powf(v, 4.f));
-    else
-      exp = 0.f;
-  }
+  const float exp = dt_fast_expf(-(v * v) * .5f);
 
   return exp;
 }
 
 static void _buil_weight_map(const float *const img_src, const size_t wd, const size_t ht, const int ch,
-                             float *const img_map, const dt_iop_grey_projectors_t grey_projector, const dt_iop_weight_modes_t weight_mode,
-                             const dt_iop_fusion_colorspace_t fusion_colorspace,
+                             float *const img_map, const dt_iop_grey_projectors_t grey_projector,
                              const float exposure_optimum, const float exposure_width,
                              const float exposure_left_cutoff, const float exposure_right_cutoff,
                              const dt_iop_order_iccprofile_info_t *const work_profile)
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_map, ht, wd, ch, grey_projector, work_profile, weight_mode, \
-  exposure_optimum, exposure_width, exposure_left_cutoff, exposure_right_cutoff, fusion_colorspace) \
+  dt_omp_firstprivate(img_src, img_map, ht, wd, ch, grey_projector, work_profile, \
+  exposure_optimum, exposure_width, exposure_left_cutoff, exposure_right_cutoff) \
   schedule(static) \
   collapse(2)
 #endif
@@ -1292,21 +1086,8 @@ static void _buil_weight_map(const float *const img_src, const size_t wd, const 
     {
       const float *const rgb = img_src + (y * wd * ch) + x * ch;
 
-      float E = 1.f;
-      if(grey_projector != DT_PROJECTOR_NONE)
-      {
-        float lum = _grey_projector(rgb, grey_projector, work_profile);
-        if(fusion_colorspace == DT_FUSION_COLORSPACE_LAB) lum = powf(lum, exposure_optimum);
-        E = _well_exposedness(lum, weight_mode, exposure_optimum, exposure_width, exposure_left_cutoff, exposure_right_cutoff);
-      }
-      else
-      {
-        E = _well_exposedness(rgb[0], weight_mode, exposure_optimum, exposure_width, exposure_left_cutoff, exposure_right_cutoff) *
-              _well_exposedness(rgb[1], weight_mode, exposure_optimum, exposure_width, exposure_left_cutoff, exposure_right_cutoff) *
-              _well_exposedness(rgb[2], weight_mode, exposure_optimum, exposure_width, exposure_left_cutoff, exposure_right_cutoff);
-      }
-
-      img_map[y * wd + x] = E;
+      const float lum = powf(_grey_projector(rgb, grey_projector, work_profile), exposure_optimum);
+      img_map[y * wd + x] = _well_exposedness(lum, exposure_optimum, exposure_width, exposure_left_cutoff, exposure_right_cutoff);
     }
   }
 }
@@ -1316,56 +1097,6 @@ static float exposure_increment(const float stops, const int e)
   const float white = exp2f(-stops * (float)e);
   const float scale = 1.0f / white;
   return scale;
-}
-
-static void _image_rgb_to_grey(const float *const img_src, const size_t wd, const size_t ht, const int ch, float *const img_dest,
-                                const dt_iop_grey_projectors_t grey_projector, const dt_iop_order_iccprofile_info_t *const work_profile)
-{
-  const size_t size = wd * ht * ch;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_dest, size, ch, grey_projector, work_profile) \
-  schedule(static)
-#endif
-  for(size_t i = 0; i < size; i += ch)
-    img_dest[i] = img_dest[i + 1] = img_dest[i + 2] = _grey_projector(img_src + i, grey_projector, work_profile);
-}
-
-static void _image_rgb_to_log(const float *const img_src, const size_t wd, const size_t ht, const int ch, float *const img_dest,
-                                const dt_iop_grey_projectors_t grey_projector, const dt_iop_order_iccprofile_info_t *const work_profile)
-{
-  const size_t size = wd * ht;
-  const int ch1 = (ch == 4) ? 3: 1;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_dest, size, ch, ch1, grey_projector, work_profile) \
-  schedule(static)
-#endif
-  for(size_t i = 0; i < size; i++)
-  {
-    for(int c = 0; c < ch1; c++)
-      img_dest[i * ch + c] = img_src[i * ch + c] >= 0.0f ? 1.0f + log1p(img_src[i * ch + c]) : 1.0f / (1.0f - img_src[i * ch + c]);
-  }
-}
-
-static void _image_rgb_from_log(const float *const img_src, const size_t wd, const size_t ht, const int ch, float *const img_dest,
-                                const dt_iop_grey_projectors_t grey_projector, const dt_iop_order_iccprofile_info_t *const work_profile)
-{
-  const size_t size = wd * ht;
-  const int ch1 = (ch == 4) ? 3: 1;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(img_src, img_dest, size, ch, ch1, grey_projector, work_profile) \
-  schedule(static)
-#endif
-  for(size_t i = 0; i < size; i++)
-  {
-    for(int c = 0; c < ch1; c++)
-      img_dest[i * ch + c] = img_src[i * ch + c] >= 1.0f ? expm1(img_src[i * ch + c] - 1.0f) : 1.0f - 1.0f / img_src[i * ch + c];
-  }
 }
 
 static void _exposure_fusion(const float *const img_src, const size_t wd, const size_t ht, const int ch,
@@ -1390,10 +1121,6 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
   _alloc_pyramid(&pyramid_wmap, wd, ht, 1, num_levels);
 
   // build the weight map for each exposure
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_times_t start_time = {0}, end_time = {0};
-  dt_get_times(&start_time);
-#endif
   for(int n = 0; n < num_exposures; n++)
   {
     if(n > 0)
@@ -1401,18 +1128,11 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
     else
       _image_copy(img_src, wd, ht, ch, img_dest);
 
-    _buil_weight_map(img_dest, wd, ht, ch, img_wmaps[n].img, d->grey_projector, d->weight_mode, d->fusion_colorspace,
-                      d->exposure_optimum, d->exposure_width, d->exposure_left_cutoff, d->exposure_right_cutoff, work_profile);
+    _buil_weight_map(img_dest, wd, ht, ch, img_wmaps[n].img, d->grey_projector, d->exposure_optimum, d->exposure_width,
+                      d->exposure_left_cutoff, d->exposure_right_cutoff, work_profile);
   }
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_get_times(&end_time);
-  fprintf(stderr, "[_exposure_fusion] build weight map took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-#endif
 
   // normalize the weight maps so the sum for each pixel == 1
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_get_times(&start_time);
-#endif
   // start with the first one, the sum is stored in img_tmp1
   _image_copy(img_wmaps[0].img, img_wmaps[0].w, img_wmaps[0].h, img_wmaps[0].ch, img_dest);
   // add all the rest
@@ -1424,15 +1144,8 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
   for(int n = 0; n < num_exposures; n++)
     _images_div(img_wmaps[n].img, img_wmaps[n].w, img_wmaps[n].h, img_wmaps[n].ch, img_dest, img_wmaps[n].img, use_sse);
 
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_get_times(&end_time);
-  fprintf(stderr, "[_exposure_fusion] normalize weight maps took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-#endif
   // now create a laplacian pyramid with the weighted sum of the laplacian of each image
   // weighted with the gaussian of the weight maps
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_get_times(&start_time);
-#endif
   for(int n = 0; n < num_exposures; n++)
   {
     // apply the exposure compensation to the source image (not to the first one)
@@ -1442,19 +1155,9 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
       _image_copy(img_src, wd, ht, ch, img_dest);
 
     // transform to the blend colorspace as requested by the user
-    if(d->fusion_colorspace == DT_FUSION_COLORSPACE_LAB)
     {
       int converted_cst = 0;
-      dt_ioppr_transform_image_colorspace(self, img_dest, img_dest, wd, ht, iop_cs_rgb, iop_cs_Lab,
-                                          &converted_cst, work_profile);
-    }
-    else if(d->fusion_colorspace == DT_FUSION_COLORSPACE_RGB_GREY)
-    {
-      _image_rgb_to_grey(img_dest, wd, ht, ch, img_dest, d->fusion_grey_projector, work_profile);
-    }
-    else if(d->fusion_colorspace == DT_FUSION_COLORSPACE_LOG)
-    {
-      _image_rgb_to_log(img_dest, wd, ht, ch, img_dest, d->fusion_grey_projector, work_profile);
+      dt_ioppr_transform_image_colorspace(self, img_dest, img_dest, wd, ht, iop_cs_rgb, iop_cs_Lab, &converted_cst, work_profile);
     }
 
     // build a gaussian pyramid for the weight map
@@ -1463,32 +1166,15 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
     // build a laplacian pyramid for the image
     _build_laplacian_pyramid(img_dest, wd, ht, ch, &pyramid_wmap, &pyramid_blend, use_sse);
   }
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_get_times(&end_time);
-  fprintf(stderr, "[_exposure_fusion] build pyramids took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-#endif
 
   // reconstruct the blended laplacian pyramid
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_get_times(&start_time);
-#endif
   _reconstruct_laplacian(&pyramid_blend, ch, img_dest);
 
-#ifdef EXPFUSION_PRINT_TIMES
-  dt_get_times(&end_time);
-  fprintf(stderr, "[_exposure_fusion] reconstruct pyramids took %.3f secs (%.3f GPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
-#endif
   // transforn the final image to rgb if needed
-  if(d->fusion_colorspace == DT_FUSION_COLORSPACE_LAB)
   {
     // just transform back to rgb
     int converted_cst = 0;
-    dt_ioppr_transform_image_colorspace(self, img_dest, img_dest, wd, ht, iop_cs_Lab, iop_cs_rgb,
-                                        &converted_cst, work_profile);
-  }
-  else if(d->fusion_colorspace == DT_FUSION_COLORSPACE_LOG)
-  {
-    _image_rgb_from_log(img_dest, wd, ht, ch, img_dest, d->fusion_grey_projector, work_profile);
+    dt_ioppr_transform_image_colorspace(self, img_dest, img_dest, wd, ht, iop_cs_Lab, iop_cs_rgb, &converted_cst, work_profile);
   }
 
   // return the alpha channel
