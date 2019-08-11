@@ -21,6 +21,7 @@
 #include "common/debug.h"
 #include "common/image_cache.h"
 #include "common/metadata.h"
+#include "common/tags.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -81,6 +82,9 @@ enum
   md_geotagging_lon,
   md_geotagging_ele,
 
+  /* tags */
+  md_tag_names,
+
   /* entries, do not touch! */
   md_size
 };
@@ -127,6 +131,9 @@ static void _lib_metatdata_view_init_labels()
   _md_labels[md_geotagging_lat] = _("latitude");
   _md_labels[md_geotagging_lon] = _("longitude");
   _md_labels[md_geotagging_ele] = _("elevation");
+
+  /* tags */
+  _md_labels[md_tag_names] = _("tags");
 }
 
 
@@ -570,6 +577,20 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         _metadata_update_value(d->metadata[md_geotagging_ele], value);
       }
     }
+
+    /* tags */
+    GList *tags = NULL;
+    if (dt_tag_get_attached(mouse_over_id, &tags, TRUE))
+    {
+      char *tagname = NULL;
+      for(GList *taglist = tags; taglist; taglist = g_list_next(taglist))
+      {
+        tagname = dt_util_dstrcat(tagname, "%s, ", ((dt_tag_t *)taglist->data)->leave);
+      }
+      if (strlen(tagname) > 2) tagname[strlen(tagname)-2] = '\0';
+      _metadata_update_value(d->metadata[md_tag_names], tagname);
+    }
+    dt_tag_free_result(&tags);
 
     /* release img */
     dt_image_cache_read_release(darktable.image_cache, img);
