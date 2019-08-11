@@ -206,7 +206,8 @@ static void init_treeview(dt_lib_module_t *self, int which)
       int last_tokens_length = 0;
       GtkTreeIter last_parent = { 0 };
       for(GList *taglist = tags; taglist; taglist = g_list_next(taglist))
-      { // order such that sub tags are coming directly behind their parent
+      {
+        // order such that sub tags are coming directly behind their parent
         gchar *tag = ((dt_tag_t *)taglist->data)->tag;
         for(char *letter = tag; *letter; letter++)
           if(*letter == '|') *letter = '\1';
@@ -380,7 +381,8 @@ static void _lib_tagging_tags_changed_callback(gpointer instance, dt_lib_module_
 }
 
 static void raise_signal_tag_changed(dt_lib_module_t *self)
-{ // raises change only for other modules
+{
+  // raises change only for other modules
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
@@ -518,6 +520,7 @@ static void _lib_selection_changed_callback(gpointer instance, dt_lib_module_t *
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
   init_treeview(self, 0);
   const int view_type = get_treeview_type(self);
+
   if (view_type == DT_LIB_TAGGING_VIEW_SIMPLE)
     init_treeview(self, 1);
   else if (view_type == DT_LIB_TAGGING_VIEW_TREE)
@@ -527,6 +530,7 @@ static void _lib_selection_changed_callback(gpointer instance, dt_lib_module_t *
 static void set_keyword(dt_lib_module_t *self, dt_lib_tagging_t *d)
 {
   const gchar *beg = g_strrstr(gtk_entry_get_text(d->entry), ",");
+
   if(!beg)
     beg = gtk_entry_get_text(d->entry);
   else
@@ -1182,6 +1186,7 @@ static void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, dt_lib_m
 static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+
   if((event->type == GDK_BUTTON_PRESS && event->button == 3)
     || (event->type == GDK_2BUTTON_PRESS && event->button == 1))
   {
@@ -1606,8 +1611,8 @@ static gboolean _lib_tagging_tag_destroy(GtkWidget *widget, GdkEvent *event, gpo
 
 static gboolean _match_selected_func(GtkEntryCompletion *completion, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data)
 {
+  const int column = gtk_entry_completion_get_text_column(completion);
   char *tag = NULL;
-  int column = gtk_entry_completion_get_text_column(completion);
 
   if(gtk_tree_model_get_column_type(model, column) != G_TYPE_STRING) return TRUE;
 
@@ -1652,16 +1657,16 @@ static gboolean _completion_match_func(GtkEntryCompletion *completion, const gch
     return FALSE;
   }
 
-  gint cur_pos = gtk_editable_get_position(e);
-  gboolean onLastTag = (g_strstr_len(&key[cur_pos], -1, ",") == NULL);
+  const gint cur_pos = gtk_editable_get_position(e);
+  const gboolean onLastTag = (g_strstr_len(&key[cur_pos], -1, ",") == NULL);
   if(!onLastTag)
   {
     return FALSE;
   }
 
-  char *tag = NULL;
   GtkTreeModel *model = gtk_entry_completion_get_model(completion);
-  int column = gtk_entry_completion_get_text_column(completion);
+  const int column = gtk_entry_completion_get_text_column(completion);
+  char *tag = NULL;
 
   if(gtk_tree_model_get_column_type(model, column) != G_TYPE_STRING) return FALSE;
 
@@ -1751,7 +1756,6 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
   gtk_window_set_transient_for(GTK_WINDOW(d->floating_tag_window), GTK_WINDOW(window));
   gtk_widget_set_opacity(d->floating_tag_window, 0.8);
   gtk_window_move(GTK_WINDOW(d->floating_tag_window), x, y);
-
 
   GtkWidget *entry = gtk_entry_new();
   gtk_widget_set_size_request(entry, FLOATING_ENTRY_WIDTH, -1);
