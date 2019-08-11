@@ -1069,7 +1069,7 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
     else
       _image_copy(img_src, wd, ht, ch, img_dest);
 
-    // transform to the blend colorspace as requested by the user
+    // we will do the blend in Lab
     {
       int converted_cst = 0;
       dt_ioppr_transform_image_colorspace(self, img_dest, img_dest, wd, ht, iop_cs_rgb, iop_cs_Lab, &converted_cst, work_profile);
@@ -1085,9 +1085,8 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
   // reconstruct the blended laplacian pyramid
   _reconstruct_laplacian(&pyramid_blend, ch, img_dest);
 
-  // transforn the final image to rgb if needed
+  // transforn the final image to rgb
   {
-    // just transform back to rgb
     int converted_cst = 0;
     dt_ioppr_transform_image_colorspace(self, img_dest, img_dest, wd, ht, iop_cs_Lab, iop_cs_rgb, &converted_cst, work_profile);
   }
@@ -1115,9 +1114,17 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   dt_iop_fusion_data_t *const d = (dt_iop_fusion_data_t *)(piece->data);
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-
   const int ch = 4;
   const size_t width = roi_in->width, height = roi_in->height;
+
+  // to tranform to Lab we need a work profile
+  if(work_profile == NULL)
+  {
+    fprintf(stderr, "module exposure fusion must be between input color profile and output color profile\n");
+    dt_control_log(_("module exposure fusion must be between input color profile and output color profile"));
+    memcpy(ovoid, ivoid, width * height * ch * sizeof(float));
+    return;
+  }
 
   const float *const in = (const float *const)ivoid;
   float *const out = (float *const)ovoid;
