@@ -374,6 +374,7 @@ static void init_treeview(dt_lib_module_t *self, int which)
     else
       sort_attached_list(self, FALSE);
   }
+  // Free result...
   dt_tag_free_result(&tags);
 }
 

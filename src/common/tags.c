@@ -714,7 +714,6 @@ static gint sort_tag_by_path(gconstpointer a, gconstpointer b)
   const dt_tag_t *tuple_b = (const dt_tag_t *)b;
 
   return g_ascii_strcasecmp(tuple_a->tag, tuple_b->tag);
-//  return g_strcmp0(tuple_a->tag, tuple_b->tag);
 }
 
 static gint sort_tag_by_leave(gconstpointer a, gconstpointer b)
@@ -723,7 +722,6 @@ static gint sort_tag_by_leave(gconstpointer a, gconstpointer b)
   const dt_tag_t *tuple_b = (const dt_tag_t *)b;
 
   return g_ascii_strcasecmp(tuple_a->leave, tuple_b->leave);
-//  return g_strcmp0(tuple_a->leave, tuple_b->leave);
 }
 
 static gint sort_tag_by_count(gconstpointer a, gconstpointer b)
@@ -740,7 +738,8 @@ GList *dt_sort_tag(GList *tags, gint sort_type)
   if (sort_type <= 1)
   {
     for(GList *taglist = tags; taglist; taglist = g_list_next(taglist))
-    { // order such that sub tags are coming directly behind their parent
+    {
+      // order such that sub tags are coming directly behind their parent
       gchar *tag = ((dt_tag_t *)taglist->data)->tag;
       for(char *letter = tag; *letter; letter++)
         if(*letter == '|') *letter = '\1';
@@ -1123,7 +1122,6 @@ uint32_t dt_tag_get_with_usage(GList **result)
 
   sqlite3_finalize(stmt);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.taglist", NULL, NULL, NULL);
-//  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.similar_tags", NULL, NULL, NULL);
 
   return count;
 }
@@ -1331,7 +1329,8 @@ ssize_t dt_tag_import(const char *filename)
     }
 
     if (synonym)
-    { // associate the synonym to last tag
+    {
+      // associate the synonym to last tag
       if (tagid)
       {
         char *tagname = g_strdup(start);
@@ -1360,13 +1359,15 @@ ssize_t dt_tag_import(const char *filename)
       {
         char *tag = dt_util_glist_to_str("|", hierarchy);
         if (previous_category && (depth > previous_category_depth + 1))
-        { // reuse previous tag
+        {
+          // reuse previous tag
           dt_tag_rename(tagid, tag);
           if (!category)
             dt_tag_set_flags(tagid, 0);
         }
         else
-        { // create a new tag
+        {
+          // create a new tag
           count++;
           dt_tag_new(tag, &tagid);
           if (category)
