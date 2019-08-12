@@ -228,6 +228,66 @@ guint dt_tag_remove(const guint tagid, gboolean final)
   return count;
 }
 
+void dt_tag_delete_tag_batch(const char *flatlist)
+{
+  sqlite3_stmt *stmt;
+
+  char *query = NULL;
+  query = dt_util_dstrcat(query, "DELETE FROM data.tags WHERE id IN (%s)", flatlist);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  g_free(query);
+
+  query = NULL;
+  query = dt_util_dstrcat(query, "DELETE FROM main.used_tags WHERE id IN (%s)", flatlist);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  g_free(query);
+
+  query = NULL;
+  query = dt_util_dstrcat(query, "DELETE FROM main.tagged_images WHERE tagid IN (%s)", flatlist);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  g_free(query);
+}
+
+guint dt_tag_remove_list(GList *tag_list)
+{
+  if (!tag_list) return 0;
+
+  char *flatlist = NULL;
+  guint count = 0;
+  guint tcount = 0;
+  for (GList *taglist = tag_list; taglist ; taglist = g_list_next(taglist))
+  {
+    const guint tagid = ((dt_tag_t *)taglist->data)->id;
+    flatlist = dt_util_dstrcat(flatlist, "%u,", tagid);
+    count++;
+    if(strlen(flatlist) > 1 && count > 1000)
+    {
+      flatlist[strlen(flatlist)-1] = '\0';
+      dt_tag_delete_tag_batch(flatlist);
+      g_free(flatlist);
+      flatlist = NULL;
+      tcount = tcount + count;
+      count = 0;
+    }
+  }
+  if(flatlist && strlen(flatlist) > 1)
+  {
+    flatlist[strlen(flatlist)-1] = '\0';
+    dt_tag_delete_tag_batch(flatlist);
+    g_free(flatlist);
+    tcount = tcount + count;
+  }
+  /* raise signal of tags change to refresh keywords module */
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  return tcount;
+}
+
 gchar *dt_tag_get_name(const guint tagid)
 {
   int rt;
@@ -1369,6 +1429,7 @@ ssize_t dt_tag_import(const char *filename)
         {
           // create a new tag
           count++;
+          tagid = 1;  // if 0, dt_tag_new creates a new one even if  the tag already exists
           dt_tag_new(tag, &tagid);
           if (category)
             dt_tag_set_flags(tagid, DT_TF_CATEGORY);
