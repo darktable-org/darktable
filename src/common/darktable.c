@@ -1177,6 +1177,11 @@ void *dt_alloc_align(size_t alignment, size_t size)
 #endif
 }
 
+void *dt_alloc_sse_ps(size_t pixels)
+{
+  return __builtin_assume_aligned(dt_alloc_align(64, pixels * sizeof(float)), 64);
+}
+
 #ifdef _WIN32
 void dt_free_align(void *mem)
 {
