@@ -583,9 +583,17 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     if (dt_tag_get_attached(mouse_over_id, &tags, TRUE))
     {
       char *tagname = NULL;
+      gint length = 0;
       for(GList *taglist = tags; taglist; taglist = g_list_next(taglist))
       {
-        tagname = dt_util_dstrcat(tagname, "%s, ", ((dt_tag_t *)taglist->data)->leave);
+        if (tagname) length =+ strlen(tagname);
+        if(length < 30)
+          tagname = dt_util_dstrcat(tagname, "%s, ", ((dt_tag_t *)taglist->data)->leave);
+        else
+        {
+          tagname = dt_util_dstrcat(tagname, "\n%s, ", ((dt_tag_t *)taglist->data)->leave);
+          length = 0;
+        }
       }
       if (strlen(tagname) > 2) tagname[strlen(tagname)-2] = '\0';
       _metadata_update_value(d->metadata[md_tag_names], tagname);
