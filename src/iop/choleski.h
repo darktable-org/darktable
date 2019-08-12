@@ -23,6 +23,7 @@
 #include <time.h>
 
 #include "common/darktable.h"
+#include "common/sse.h"
 
 /** Note :
  * we use finite-math-only and fast-math because divisions by zero are manually avoided in the code
@@ -79,6 +80,9 @@
  * because it's already fast enough (2 to 45 ms for 16×16 matrix on Xeon) and used for properly
  * conditionned matrices.
  *
+ * Vectorization leads to slow-downs here since we access matrices row-wise and column-wise,
+ * in a non-contiguous fashion.
+ *
  * References :
  *  "Analyse numérique pour ingénieurs", 4e edition, André Fortin,
  *  Presses Internationales de Polytechnique Montréal, 2011.
@@ -92,9 +96,10 @@
 
 
 __DT_CLONE_TARGETS__
-static inline int choleski_decompose_fast(float *const restrict A, size_t n)
+static inline int choleski_decompose_fast(const float *const restrict A,
+                                          float *const restrict L, size_t n)
 {
-  // A is input n×n matrix, decompose it into L such that A = L × L' and store L in-place in A
+  // A is input n×n matrix, decompose it into L such that A = L × L'
   // fast variant : we don't check values for negatives in sqrt,
   // ensure you know the properties of your matrix.
 
@@ -105,10 +110,10 @@ static inline int choleski_decompose_fast(float *const restrict A, size_t n)
     {
       float sum = 0.0f;
 
-      for(size_t k = 0; k < j; k++) sum += A[i * n + k] * A[j * n + k];
-      A[i * n + j] = (i == j) ?
+      for(size_t k = 0; k < j; k++) sum += L[i * n + k] * L[j * n + k];
+      L[i * n + j] = (i == j) ?
                         sqrtf(A[i * n + i] - sum) :
-                        (A[i * n + j] - sum) / A[j * n + j];
+                        (A[i * n + j] - sum) / L[j * n + j];
     }
 
   return 1; // success
@@ -116,9 +121,10 @@ static inline int choleski_decompose_fast(float *const restrict A, size_t n)
 
 
 __DT_CLONE_TARGETS__
-static inline int choleski_decompose_safe(float *const restrict A, size_t n)
+static inline int choleski_decompose_safe(const float *const restrict A,
+                                          float *const restrict L, size_t n)
 {
-  // A is input n×n matrix, decompose it into L such that A = L × L' and store L in-place in A
+  // A is input n×n matrix, decompose it into L such that A = L × L'
   // slow and safe variant : we check values for negatives in sqrt and divisions by 0.
 
   if(A[0] <= 0.0f) return 0; // failure : non positive definite matrice
@@ -130,7 +136,7 @@ static inline int choleski_decompose_safe(float *const restrict A, size_t n)
     {
       float sum = 0.0f;
 
-      for(size_t k = 0; k < j; k++) sum += A[i * n + k] * A[j * n + k];
+      for(size_t k = 0; k < j; k++) sum += L[i * n + k] * L[j * n + k];
 
       if(i == j)
       {
@@ -139,22 +145,22 @@ static inline int choleski_decompose_safe(float *const restrict A, size_t n)
         if(temp < 0.0f)
         {
           valid = 0;
-          A[i * n + j] = NAN;
+          L[i * n + j] = NAN;
         }
         else
-          A[i * n + j] = sqrtf(A[i * n + i] - sum);
+          L[i * n + j] = sqrtf(A[i * n + i] - sum);
       }
       else
       {
-        const float temp = A[j * n + j];
+        const float temp = L[j * n + j];
 
         if(temp == 0.0f)
         {
           valid = 0;
-          A[i * n + j] = NAN;
+          L[i * n + j] = NAN;
         }
         else
-          A[i * n + j] = (A[i * n + j] - sum) / temp;
+          L[i * n + j] = (A[i * n + j] - sum) / temp;
       }
     }
 
@@ -259,15 +265,15 @@ static inline int triangular_ascent_safe(const float *const restrict L,
 
 
 __DT_CLONE_TARGETS__
-static inline int solve_hermitian(float *const restrict A,
-                    float *const restrict y,
-                    const size_t n, const int checks)
+static inline int solve_hermitian(const float *const restrict A,
+                                  float *const restrict y,
+                                  const size_t n, const int checks)
 {
   // Solve A x = y where A an hermitian positive definite matrix n × n
   // x and y are n vectors. Output the result in y
 
   // A and y need to be 64-bits aligned, which is darktable's default memory alignement
-  // if you used DT_ALIGNED_ARRAY and dt_alloc_align(64, ...) to declare arrays and pointers
+  // if you used DT_ALIGNED_ARRAY and dt_alloc_sse_ps(...) to declare arrays and pointers
 
   // If you are sure about the properties of the matrix A (symmetrical square definite positive)
   // because you built it yourself, set checks == FALSE to branch to the fast track that
@@ -279,34 +285,124 @@ static inline int solve_hermitian(float *const restrict A,
   // clock_t start = clock();
 
   int valid = 0;
-  float *const restrict x DT_ALIGNED_ARRAY = dt_alloc_align(64, n * sizeof(float));
+  float *const restrict x DT_ALIGNED_ARRAY = dt_alloc_sse_ps(n);
+  float *const restrict L DT_ALIGNED_ARRAY = dt_alloc_sse_ps(n * n);
 
   // LU decomposition
-  valid = (checks) ? choleski_decompose_safe(__builtin_assume_aligned(A, 64), n) :
-                     choleski_decompose_fast(__builtin_assume_aligned(A, 64), n);
+  valid = (checks) ? choleski_decompose_safe(__builtin_assume_aligned(A, 64),
+                                             __builtin_assume_aligned(L, 64), n) :
+                     choleski_decompose_fast(__builtin_assume_aligned(A, 64),
+                                             __builtin_assume_aligned(L, 64), n);
   if(!valid) fprintf(stdout, "Cholesky decomposition returned NaNs\n");
 
   // Triangular descent
   if(valid)
-    valid = (checks) ? triangular_descent_safe(__builtin_assume_aligned(A, 64),
+    valid = (checks) ? triangular_descent_safe(__builtin_assume_aligned(L, 64),
                                                __builtin_assume_aligned(y, 64),
                                                __builtin_assume_aligned(x, 64), n) :
-                       triangular_descent_fast(__builtin_assume_aligned(A, 64),
+                       triangular_descent_fast(__builtin_assume_aligned(L, 64),
                                                __builtin_assume_aligned(y, 64),
                                                __builtin_assume_aligned(x, 64), n);
   if(!valid) fprintf(stdout, "Cholesky LU triangular descent returned NaNs\n");
 
   // Triangular ascent
   if(valid)
-    valid = (checks) ? triangular_ascent_safe(__builtin_assume_aligned(A, 64),
+    valid = (checks) ? triangular_ascent_safe(__builtin_assume_aligned(L, 64),
                                               __builtin_assume_aligned(x, 64),
                                               __builtin_assume_aligned(y, 64), n) :
-                       triangular_ascent_fast(__builtin_assume_aligned(A, 64),
+                       triangular_ascent_fast(__builtin_assume_aligned(L, 64),
                                               __builtin_assume_aligned(x, 64),
                                               __builtin_assume_aligned(y, 64), n);
   if(!valid) fprintf(stdout, "Cholesky LU triangular ascent returned NaNs\n");
 
   dt_free_align(x);
+  dt_free_align(L);
+
+  //clock_t end = clock();
+  //fprintf(stdout, "hermitian matrix solving took : %f s\n", ((float) (end - start)) / CLOCKS_PER_SEC);
+
+  return valid;
+}
+
+
+__DT_CLONE_TARGETS__
+static inline int transpose_dot_matrix(float *const restrict A, // input
+                                       float *const restrict A_square, // output
+                                       const size_t m, const size_t n)
+{
+  // Construct the square symmetrical definite positive matrix A' A,
+  // BUT only compute the lower triangle part for performance
+
+  for(size_t i = 0; i < n; ++i)
+    for(size_t j = 0; j < (i + 1); ++j)
+    {
+      float sum = 0.0f;
+      for(size_t k = 0; k < m; ++k) sum += A[k * n + i] * A[k * n + j];
+      A_square[i * n + j] = sum;
+    }
+
+  return 1;
+}
+
+
+__DT_CLONE_TARGETS__
+static inline int transpose_dot_vector(float *const restrict A, // input
+                                       float *const restrict y, // input
+                                       float *const restrict y_square, // output
+                                       const size_t m, const size_t n)
+{
+  // Construct the vector A' y
+
+  for(size_t i = 0; i < n; ++i)
+  {
+    float sum = 0.0f;
+    for(size_t k = 0; k < m; ++k) sum += A[k * n + i] * y[k];
+    y_square[i] = sum;
+  }
+
+  return 1;
+}
+
+
+__DT_CLONE_TARGETS__
+static inline int pseudo_solve(float *const restrict A,
+                               float *const restrict y,
+                               const size_t m, const size_t n, const int checks)
+{
+  // Solve the linear problem A x = y with the over-constrained rectanguler matrice A
+  // of dimension m × n (m >= n) by the least squares method
+
+  //clock_t start = clock();
+
+  int valid = 1;
+  if(m < n)
+  {
+    valid = 0;
+    fprintf(stdout, "Pseudo solve: cannot cast %li × %li matrice\n", m, n);
+    return valid;
+  }
+
+  float *const restrict A_square DT_ALIGNED_ARRAY = dt_alloc_sse_ps(n * n);
+  float *const restrict y_square DT_ALIGNED_ARRAY = dt_alloc_sse_ps(n);
+
+  // Prepare the least squares matrix = A' A
+  valid = transpose_dot_matrix(__builtin_assume_aligned(A, 64),
+                               __builtin_assume_aligned(A_square, 64),
+                               m, n);
+
+  // Prepare the y square vector = A' y
+  valid = transpose_dot_vector(__builtin_assume_aligned(A, 64),
+                               __builtin_assume_aligned(y, 64),
+                               __builtin_assume_aligned(y_square, 64),
+                               m, n);
+
+
+  // Solve A' A x = A' y for x
+  valid = solve_hermitian(A_square, y_square, n, checks);
+  dt_simd_memcpy(y_square, y, n);
+
+  dt_free_align(y_square);
+  dt_free_align(A_square);
 
   //clock_t end = clock();
   //fprintf(stdout, "hermitian matrix solving took : %f s\n", ((float) (end - start)) / CLOCKS_PER_SEC);

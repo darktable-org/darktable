@@ -76,10 +76,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
+#include "common/fast_guided_filter.h"
 #include "common/interpolation.h"
+#include "common/luminance_mask.h"
 #include "common/opencl.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -92,6 +95,7 @@
 #include "gui/presets.h"
 #include "gui/color_picker_proxy.h"
 #include "iop/iop_api.h"
+#include "iop/choleski.h"
 #include "iop/gaussian_elimination.h"
 #include "libs/colorpicker.h"
 #include "common/iop_group.h"
@@ -136,19 +140,6 @@ const float centers[PIXEL_CHAN] DT_ALIGNED_ARRAY = {-22.0f, -20.0f, -18.0f, -16.
 DT_MODULE_INTROSPECTION(2, dt_iop_toneequalizer_params_t)
 
 
-typedef enum dt_iop_toneequalizer_method_t
-{
-  DT_TONEEQ_MEAN = 0,
-  DT_TONEEQ_LIGHTNESS,
-  DT_TONEEQ_VALUE,
-  DT_TONEEQ_NORM_1,
-  DT_TONEEQ_NORM_2,
-  DT_TONEEQ_NORM_POWER,
-  DT_TONEEQ_GEOMEAN,
-  DT_TONEEQ_LAST
-} dt_iop_toneequalizer_method_t;
-
-
 typedef enum dt_iop_toneequalizer_filter_t
 {
   DT_TONEEQ_NONE = 0,
@@ -162,7 +153,7 @@ typedef struct dt_iop_toneequalizer_params_t
   float noise, ultra_deep_blacks, deep_blacks, blacks, shadows, midtones, highlights, whites, speculars;
   float blending, smoothing, feathering, quantization, contrast_boost, exposure_boost;
   dt_iop_toneequalizer_filter_t details;
-  dt_iop_toneequalizer_method_t method;
+  dt_iop_luminance_mask_method_t method;
   int iterations;
 } dt_iop_toneequalizer_params_t;
 
@@ -174,7 +165,7 @@ typedef struct dt_iop_toneequalizer_data_t
   float scale;
   int radius;
   int iterations;
-  dt_iop_toneequalizer_method_t method;
+  dt_iop_luminance_mask_method_t method;
   dt_iop_toneequalizer_filter_t details;
 } dt_iop_toneequalizer_data_t;
 
@@ -190,6 +181,7 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   // Mem arrays 64-bits aligned - contiguous memory
   float factors[PIXEL_CHAN] DT_ALIGNED_ARRAY;
   float gui_lut[UI_SAMPLES] DT_ALIGNED_ARRAY; // LUT for the UI graph
+  float interpolation_matrix[(PIXEL_CHAN + 1) * PIXEL_CHAN] DT_ALIGNED_ARRAY;
   int histogram[UI_SAMPLES] DT_ALIGNED_ARRAY; // histogram for the UI graph
 
   // 8 int to pack - contiguous memory
@@ -201,6 +193,7 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   int cursor_pos_y;
   int valid_image_cursor; // TRUE if mouse is over the image
   int pipe_order;
+  int interpolation_set;
 
   // 9 uint64 to pack - contiguous-ish memory
   uint64_t hash;
@@ -264,7 +257,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float blending, feathering, contrast_boost, exposure_boost;
       dt_iop_toneequalizer_filter_t details;
       int iterations;
-      dt_iop_toneequalizer_method_t method;
+      dt_iop_luminance_mask_method_t method;
     } dt_iop_toneequalizer_params_v1_t;
 
     dt_iop_toneequalizer_params_v1_t *o = (dt_iop_toneequalizer_params_v1_t *)old_params;
@@ -439,257 +432,6 @@ static float get_luminance_from_buffer(const float *const buffer,
 }
 
 
-__DT_CLONE_TARGETS__
-static inline void simd_memcpy(const float *const restrict in,
-                            float *const restrict out,
-                            const size_t num_elem)
-{
-  // Perform a parallel vectorized memcpy on 64-bits aligned
-  // contiguous buffers. This is several times faster than the original memcpy
-
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(in, out, num_elem) \
-schedule(static) aligned(in, out:64)
-#endif
-  for(size_t k = 0; k < num_elem; k++)
-    out[k] = in[k];
-}
-
-
-/**
- *
- * Lightness map computation
- *
- * These functions are all written to be vectorizable, using the base image pointer and
- * the explicit index of the current pixel. They perform exposure and contrast compensation
- * as well, for better cache handling.
- *
- * The outputs are clipped to avoid negative and close-to-zero results that could
- * backfire in the exposure computations.
- **/
-
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-__DT_CLONE_TARGETS__
-static float linear_contrast(const float pixel, const float fulcrum, const float contrast)
-{
-  return fmaxf((pixel - fulcrum) * contrast + fulcrum, MIN_FLOAT);
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(image, luminance:64) uniform(image, luminance)
-#endif
-__DT_CLONE_TARGETS__
-static void pixel_rgb_mean(const float *const restrict image,
-                           float *const restrict luminance,
-                           const size_t k, const size_t ch,
-                           const float exposure_boost,
-                           const float fulcrum, const float contrast_boost)
-{
-  float lum = 0.0f;
-
-#ifdef _OPENMP
-#pragma omp simd reduction(+:lum) aligned(image:64)
-#endif
-  for(int c = 0; c < 3; ++c)
-    lum += image[k + c];
-
-  luminance[k / ch] = linear_contrast(exposure_boost * lum / 3.0f, fulcrum, contrast_boost);
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(image, luminance:64) uniform(image, luminance)
-#endif
-__DT_CLONE_TARGETS__
-static void pixel_rgb_value(const float *const restrict image,
-                            float *const restrict luminance,
-                            const size_t k, const size_t ch,
-                            const float exposure_boost,
-                            const float fulcrum, const float contrast_boost)
-{
-  float lum = exposure_boost * fmaxf(fmaxf(image[k], image[k + 1]), image[k + 2]);
-  luminance[k / ch] = linear_contrast(lum, fulcrum, contrast_boost);
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(image, luminance:64) uniform(image, luminance)
-#endif
-__DT_CLONE_TARGETS__
-static void pixel_rgb_lightness(const float *const restrict image,
-                                float *const restrict luminance,
-                                const size_t k, const size_t ch,
-                                const float exposure_boost,
-                                const float fulcrum, const float contrast_boost)
-{
-  const float max_rgb = fmaxf(fmaxf(image[k], image[k + 1]), image[k + 2]);
-  const float min_rgb = fminf(fminf(image[k], image[k + 1]), image[k + 2]);
-  luminance[k / ch] = linear_contrast(exposure_boost * (max_rgb + min_rgb) / 2.0f, fulcrum, contrast_boost);
-}
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(image, luminance:64) uniform(image, luminance)
-#endif
-__DT_CLONE_TARGETS__
-static void pixel_rgb_norm_1(const float *const restrict image,
-                             float *const restrict luminance,
-                             const size_t k, const size_t ch,
-                             const float exposure_boost,
-                             const float fulcrum, const float contrast_boost)
-{
-  float lum = 0.0f;
-
-  #ifdef _OPENMP
-  #pragma omp simd reduction(+:lum) aligned(image:64)
-  #endif
-    for(int c = 0; c < 3; ++c)
-      lum += fabsf(image[k + c]);
-
-  luminance[k / ch] = linear_contrast(exposure_boost * lum, fulcrum, contrast_boost);
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(image, luminance:64) uniform(image, luminance)
-#endif
-__DT_CLONE_TARGETS__
-static void pixel_rgb_norm_2(const float *const restrict image,
-                             float *const restrict luminance,
-                             const size_t k, const size_t ch,
-                             const float exposure_boost,
-                             const float fulcrum, const float contrast_boost)
-{
-  float result = 0.0f;
-
-#ifdef _OPENMP
-#pragma omp simd aligned(image:64) reduction(+: result)
-#endif
-  for(int c = 0; c < 3; ++c) result += image[k + c] * image[k + c];
-
-  luminance[k / ch] = linear_contrast(exposure_boost * sqrtf(result), fulcrum, contrast_boost);
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(image, luminance:64) uniform(image, luminance)
-#endif
-__DT_CLONE_TARGETS__
-static void pixel_rgb_norm_power(const float *const restrict image,
-                                 float *const restrict luminance,
-                                 const size_t k, const size_t ch,
-                                 const float exposure_boost,
-                                 const float fulcrum, const float contrast_boost)
-{
-  float numerator = 0.0f;
-  float denominator = 0.0f;
-
-#ifdef _OPENMP
-#pragma omp simd aligned(image:64) reduction(+:numerator, denominator)
-#endif
-  for(int c = 0; c < 3; ++c)
-  {
-    const float value = image[k + c];
-    const float RGB_square = value * value;
-    const float RGB_cubic = RGB_square * value;
-    numerator += RGB_cubic;
-    denominator += RGB_square;
-  }
-
-  luminance[k / ch] = linear_contrast(exposure_boost * numerator / denominator, fulcrum, contrast_boost);
-}
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(image, luminance:64) uniform(image, luminance)
-#endif
-__DT_CLONE_TARGETS__
-static void pixel_rgb_geomean(const float *const restrict image,
-                              float *const restrict luminance,
-                              const size_t k, const size_t ch,
-                              const float exposure_boost,
-                              const float fulcrum, const float contrast_boost)
-{
-  float lum = 0.0f;
-
-#ifdef _OPENMP
-#pragma omp simd aligned(image:64) reduction(*:lum)
-#endif
-  for(int c = 0; c < 3; ++c)
-  {
-    lum *= image[k + c];
-  }
-
-  luminance[k / ch] = linear_contrast(exposure_boost * powf(lum, 1.0f / 3.0f), fulcrum, contrast_boost);
-}
-
-
-// Overkill trick to explicitely unswitch loops
-// GCC should to it automatically with "funswitch-loops" flag,
-// but not sure about Clang
-#ifdef _OPENMP
-  #define LOOP(fn)                                                        \
-    {                                                                     \
-      _Pragma ("omp parallel for simd default(none) schedule(static)      \
-      dt_omp_firstprivate(num_elem, ch, in, out, exposure_boost, fulcrum, contrast_boost)\
-      aligned(in, out:64)" )                                              \
-      for(size_t k = 0; k < num_elem; k += ch)                            \
-      {                                                                   \
-        fn(in, out, k, ch, exposure_boost, fulcrum, contrast_boost);      \
-      }                                                                   \
-      break;                                                              \
-    }
-#else
-  #define LOOP(fn)                                                        \
-    {                                                                     \
-      for(size_t k = 0; k < num_elem; k += ch)                            \
-      {                                                                   \
-        fn(in, out, k, ch, exposure_boost, fulcrum, contrast_boost);      \
-      }                                                                   \
-      break;                                                              \
-    }
-#endif
-
-
-__DT_CLONE_TARGETS__
-static void luminance_mask(const float *const restrict in, float *const restrict out,
-                           const size_t width, const size_t height, const size_t ch,
-                           const dt_iop_toneequalizer_method_t method,
-                           const float exposure_boost,
-                           const float fulcrum, const float contrast_boost)
-{
-  const size_t num_elem = width * height * ch;
-  switch(method)
-  {
-    case DT_TONEEQ_MEAN:
-      LOOP(pixel_rgb_mean);
-
-    case DT_TONEEQ_LIGHTNESS:
-      LOOP(pixel_rgb_lightness);
-
-    case DT_TONEEQ_VALUE:
-      LOOP(pixel_rgb_value);
-
-    case DT_TONEEQ_NORM_1:
-      LOOP(pixel_rgb_norm_1);
-
-    case DT_TONEEQ_NORM_2:
-      LOOP(pixel_rgb_norm_2);
-
-    case DT_TONEEQ_NORM_POWER:
-      LOOP(pixel_rgb_norm_power);
-
-    case DT_TONEEQ_GEOMEAN:
-      LOOP(pixel_rgb_geomean);
-
-    default:
-      break;
-  }
-}
-
-
 /***
  * Exposure compensation computation
  *
@@ -776,14 +518,22 @@ static float pixel_correction(const float exposure,
 
 
 __DT_CLONE_TARGETS__
-static void compute_lut_correction(float *const restrict LUT,
-                                   const float *const restrict factors,
-                                   const float sigma,
+static void compute_lut_correction(struct dt_iop_module_t *self,
                                    const float offset,
                                    const float scaling)
 {
   // Compute the LUT of the exposure corrections in EV,
-  // offset and scale it for display in GUI wuidget
+  // offset and scale it for display in GUI widget graph
+
+  if(self->dt->gui->reset) return;
+  self->dt->gui->reset = 1;
+
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+
+  float *const restrict LUT = g->gui_lut;
+  const float *const restrict factors = g->factors;
+  const float sigma = g->sigma;
+
 #ifdef _OPENMP
 #pragma omp parallel for simd schedule(static) default(none) \
   dt_omp_firstprivate(factors, sigma, offset, scaling) \
@@ -796,413 +546,9 @@ static void compute_lut_correction(float *const restrict LUT,
     const float x = (16.0f * (((float)k) / ((float)(UI_SAMPLES - 1)))) - 14.0f;
     LUT[k] = offset - log2f(pixel_correction(x, factors, sigma)) / scaling;
   }
-}
 
-
-/***
- * Fast Guided filter computation
- *
- * Since the guided filter is a linear application, we can safely downscale
- * the guiding and the guided image by a factor of 4, using a bilinear interpolation,
- * compute the guidance at this scale, then upscale back to the original size
- * and get a "free" 10× speed-up.
- *
- * Reference : 
- * Kaiming He, Jian Sun, Microsoft : https://arxiv.org/abs/1505.00996
- **/
-
-__DT_CLONE_TARGETS__
-static inline void interpolate_bilinear(const float *const restrict in, const size_t width_in, const size_t height_in,
-                         float *const restrict out, const size_t width_out, const size_t height_out,
-                         const size_t ch)
-{
-#ifdef _OPENMP
-#pragma omp parallel for simd collapse(2) default(none) schedule(static) aligned(in, out:64) \
-  dt_omp_firstprivate(in, out, width_out, height_out, width_in, height_in, ch)
-#endif
-  for(size_t i = 0; i < height_out; i++)
-  {
-    for(size_t j = 0; j < width_out; j++)
-    {
-      // Relative coordinates of the pixel in output space
-      const float x_out = (float)j /(float)width_out;
-      const float y_out = (float)i /(float)height_out;
-
-      // Corresponding absolute coordinates of the pixel in input space
-      const float x_in = x_out * (float)width_in;
-      const float y_in = y_out * (float)height_in;
-
-      // Nearest neighbours coordinates in input space
-      size_t x_prev = (size_t)floorf(x_in);
-      size_t x_next = x_prev + 1;
-      size_t y_prev = (size_t)floorf(y_in);
-      size_t y_next = y_prev + 1;
-
-      x_prev = (x_prev < width_in) ? x_prev : width_in - 1;
-      x_next = (x_next < width_in) ? x_next : width_in - 1;
-      y_prev = (y_prev < height_in) ? y_prev : height_in - 1;
-      y_next = (y_next < height_in) ? y_next : height_in - 1;
-
-      // Nearest pixels in input array (nodes in grid)
-      const size_t Y_prev = y_prev * width_in;
-      const size_t Y_next =  y_next * width_in;
-      const float *const Q_NW = (float *)in + (Y_prev + x_prev) * ch;
-      const float *const Q_NE = (float *)in + (Y_prev + x_next) * ch;
-      const float *const Q_SE = (float *)in + (Y_next + x_next) * ch;
-      const float *const Q_SW = (float *)in + (Y_next + x_prev) * ch;
-
-      // Spatial differences between nodes
-      const float Dy_next = (float)y_next - y_in;
-      const float Dy_prev = 1.f - Dy_next; // because next - prev = 1
-      const float Dx_next = (float)x_next - x_in;
-      const float Dx_prev = 1.f - Dx_next; // because next - prev = 1
-
-      // Interpolate over ch layers
-      float *const pixel_out = (float *)out + (i * width_out + j) * ch;
-      for(size_t c = 0; c < ch; c++)
-      {
-        pixel_out[c] = Dy_prev * (Q_SW[c] * Dx_next + Q_SE[c] * Dx_prev) +
-                       Dy_next * (Q_NW[c] * Dx_next + Q_NE[c] * Dx_prev);
-      }
-    }
-  }
-}
-
-
-__DT_CLONE_TARGETS__
-static inline void variance_analyse(const float *const restrict guide, // I
-                                    const float *const restrict mask, //p
-                                    float *const restrict a, float *const restrict b,
-                                    const size_t width, const size_t height,
-                                    const int radius, const float feathering)
-{
-  // Compute a box average (filter) on a grey image over a window of size 2*radius + 1
-  // then get the variance of the guide and covariance with its mask
-  // output a and b, the linear blending params
-  // p, the mask is the quantised guide I
-
-  float *const mean_I = dt_alloc_align(64, width * height * sizeof(float));
-  float *const mean_p = dt_alloc_align(64, width * height * sizeof(float));
-  float *const corr_I = dt_alloc_align(64, width * height * sizeof(float));
-  float *const corr_Ip = dt_alloc_align(64, width * height * sizeof(float));
-
-  // Convolve box average along columns
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(guide, mask, mean_I, mean_p, corr_I, corr_Ip, width, height, radius) \
-  schedule(static) collapse(2)
-#endif
-  for(size_t i = 0; i < height; i++)
-  {
-    for(size_t j = 0; j < width; j++)
-    {
-      const size_t begin_convol = (i < radius) ? 0 : i - radius;
-      size_t end_convol = i + radius;
-      end_convol = (end_convol < height) ? end_convol : height - 1;
-      const float num_elem = (float)end_convol - (float)begin_convol + 1.0f;
-
-      float w_mean_I = 0.0f;
-      float w_mean_p = 0.0f;
-      float w_corr_I = 0.0f;
-      float w_corr_Ip = 0.0f;
-
-#ifdef _OPENMP
-#pragma omp simd aligned(guide, mask, mean_I, mean_p, corr_I, corr_Ip:64) reduction(+:w_mean_I, w_mean_p, w_corr_I, w_corr_Ip)
-#endif
-      for(size_t c = begin_convol; c <= end_convol; c++)
-      {
-        w_mean_I += guide[c * width + j];
-        w_mean_p += mask[c * width + j];
-        w_corr_I += guide[c * width + j] * guide[c * width + j];
-        w_corr_Ip += mask[c * width + j] * guide[c * width + j];
-      }
-
-      mean_I[i * width + j] = w_mean_I / num_elem;
-      mean_p[i * width + j] = w_mean_p / num_elem;
-      corr_I[i * width + j] = w_corr_I / num_elem;
-      corr_Ip[i * width + j] = w_corr_Ip / num_elem;
-    }
-  }
-
-  // Convolve box average along rows and output result
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(a, b, mean_I, mean_p, corr_I, corr_Ip, width, height, radius, feathering) \
-  schedule(static) collapse(2)
-#endif
-  for(size_t i = 0; i < height; i++)
-  {
-    for(size_t j = 0; j < width; j++)
-    {
-      const size_t begin_convol = (j < radius) ? 0 : j - radius;
-      size_t end_convol = j + radius;
-      end_convol = (end_convol < width) ? end_convol : width - 1;
-      const float num_elem = (float)end_convol - (float)begin_convol + 1.0f;
-
-      float w_mean_I = 0.0f;
-      float w_mean_p = 0.0f;
-      float w_corr_I = 0.0f;
-      float w_corr_Ip = 0.0f;
-
-#ifdef _OPENMP
-#pragma omp simd aligned(a, b, mean_I, mean_p, corr_I, corr_Ip:64) reduction(+:w_mean_I, w_mean_p, w_corr_I, w_corr_Ip)
-#endif
-      for(size_t c = begin_convol; c <= end_convol; c++)
-      {
-        w_mean_I += mean_I[i * width + c];
-        w_mean_p += mean_p[i * width + c];
-        w_corr_I += corr_I[i * width + c];
-        w_corr_Ip += corr_Ip[i * width + c];
-      }
-
-      w_mean_I /= num_elem;
-      w_mean_p /= num_elem;
-      w_corr_I /= num_elem;
-      w_corr_Ip /= num_elem;
-
-      float var_I = w_corr_I - w_mean_I * w_mean_I;
-      float cov_Ip = w_corr_Ip - w_mean_I * w_mean_p;
-
-      a[i * width + j] = cov_Ip / (var_I + feathering);
-      b[i * width + j] = w_mean_p - a[i * width + j] * w_mean_I;
-    }
-  }
-
-  dt_free_align(mean_I);
-  dt_free_align(mean_p);
-  dt_free_align(corr_I);
-  dt_free_align(corr_Ip);
-}
-
-
-__DT_CLONE_TARGETS__
-static inline void box_average(float *const restrict in,
-                               const size_t width, const size_t height,
-                               const int radius)
-{
-  // Compute in-place a box average (filter) on a grey image over a window of size 2*radius + 1
-  // We make use of the separable nature of the filter kernel to speed-up the computation
-  // by convolving along columns and rows separately (complexity O(2 × radius) instead of O(radius²)).
-
-  float *const temp = dt_alloc_align(64, width * height * sizeof(float));
-
-  // Convolve box average along columns
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, temp, width, height, radius) \
-  schedule(static) collapse(2)
-#endif
-  for(size_t i = 0; i < height; i++)
-  {
-    for(size_t j = 0; j < width; j++)
-    {
-      const size_t begin_convol = (i < radius) ? 0 : i - radius;
-      size_t end_convol = i + radius;
-      end_convol = (end_convol < height) ? end_convol : height - 1;
-      const float num_elem = (float)end_convol - (float)begin_convol + 1.0f;
-
-      float w = 0.0f;
-
-#ifdef _OPENMP
-#pragma omp simd aligned(in, temp:64) reduction(+:w)
-#endif
-      for(size_t c = begin_convol; c <= end_convol; c++)
-      {
-        w += in[c * width + j];
-      }
-
-      temp[i * width + j] = w / num_elem;
-    }
-  }
-
-  // Convolve box average along rows and output result
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, temp, width, height, radius) \
-  schedule(static) collapse(2)
-#endif
-  for(size_t i = 0; i < height; i++)
-  {
-    for(size_t j = 0; j < width; j++)
-    {
-      const size_t begin_convol = (j < radius) ? 0 : j - radius;
-      size_t end_convol = j + radius;
-      end_convol = (end_convol < width) ? end_convol : width - 1;
-      const float num_elem = (float)end_convol - (float)begin_convol + 1.0f;
-
-      float w = 0.0f;
-
-#ifdef _OPENMP
-#pragma omp simd aligned(in, temp:64) reduction(+:w)
-#endif
-      for(size_t c = begin_convol; c <= end_convol; c++)
-      {
-        w += temp[i * width + c];
-      }
-
-      in[i * width + j] = w / num_elem;
-    }
-  }
-
-  dt_free_align(temp);
-}
-
-
-__DT_CLONE_TARGETS__
-static inline void apply_linear_blending(float *const restrict image,
-                                    const float *const restrict a,
-                                    const float *const restrict b,
-                                    const size_t num_elem)
-{
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(image, a, b, num_elem) \
-schedule(static) aligned(image, a, b:64)
-#endif
-  for(size_t k = 0; k < num_elem; k++)
-  {
-    // Note : image[k] is positive at the outside of the luminance mask
-    image[k] = fmaxf(image[k] * a[k] + b[k], MIN_FLOAT);
-  }
-}
-
-
-__DT_CLONE_TARGETS__
-static inline void apply_linear_blending_w_geomean(float *const restrict image,
-                                                   const float *const restrict a,
-                                                   const float *const restrict b,
-                                                   const size_t num_elem)
-{
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(image, a, b, num_elem) \
-schedule(static) aligned(image, a, b:64)
-#endif
-  for(size_t k = 0; k < num_elem; k++)
-  {
-    // Note : image[k] is positive at the outside of the luminance mask
-    image[k] = sqrtf(image[k] * fmaxf(image[k] * a[k] + b[k], MIN_FLOAT));
-  }
-}
-
-
-__DT_CLONE_TARGETS__
-static inline void quantize(const float *const restrict image,
-                            float *const restrict out,
-                            const size_t num_elem,
-                            const float sampling)
-{
-  // Quantize in exposure levels evenly spaced in log by sampling
-
-  if(sampling == 0.0f)
-  {
-    // No-op
-    simd_memcpy(image, out, num_elem);
-  }
-
-  else if(sampling == 1.0f)
-  {
-    // fast track
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(image, out, num_elem, sampling) \
-schedule(static) aligned(image, out:64)
-#endif
-    for(size_t k = 0; k < num_elem; k++)
-    {
-      out[k] = exp2f(floorf(log2f(image[k])));
-    }
-  }
-
-  else
-  {
-    // slow track
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(image, out, num_elem, sampling) \
-schedule(static) aligned(image, out:64)
-#endif
-    for(size_t k = 0; k < num_elem; k++)
-    {
-      out[k] = exp2f(floorf(log2f(image[k]) / sampling) * sampling);
-    }
-  }
-}
-
-
-__DT_CLONE_TARGETS__
-static inline void guided_filter(float *const restrict image,
-                                 const size_t width, const size_t height,
-                                 const int radius, float feathering, const int iterations,
-                                 const dt_iop_toneequalizer_filter_t filter, const float scale,
-                                 const float quantization)
-{
-  // Works in-place on a grey image
-
-  // A down-scaling of 4 seems empirically safe and consistent no matter the image zoom level
-  const float scaling = 4.0f;
-  const size_t ds_height = height / scaling;
-  const size_t ds_width = width / scaling;
-  int ds_radius = (radius < 4) ? 1 : radius / scaling;
-
-  // Downsample the image for speed-up
-  float *ds_image = dt_alloc_align(64, ds_width * ds_height * sizeof(float));
-  interpolate_bilinear(image, width, height, ds_image, ds_width, ds_height, 1);
-
-  float *ds_mask = dt_alloc_align(64, ds_width * ds_height * sizeof(float));
-  float *ds_a = dt_alloc_align(64, ds_width * ds_height * sizeof(float));
-  float *ds_b = dt_alloc_align(64, ds_width * ds_height * sizeof(float));
-
-  // Iterations of filter model diffusion, sort of
-  for(int i = 0; i < iterations; ++i)
-  {
-    // (Re)build the mask from the quantized image to help guiding
-    quantize(ds_image, ds_mask, ds_width * ds_height, quantization);
-
-    // Perform the patch-wise variance analyse to get
-    // the a and b parameters for the linear blending s.t. mask = a * I + b
-    variance_analyse(ds_image, ds_mask, ds_a, ds_b, ds_width, ds_height, ds_radius, feathering);
-
-    // Compute the patch-wise average of parameters a and b
-    box_average(ds_a, ds_width, ds_height, ds_radius);
-    box_average(ds_b, ds_width, ds_height, ds_radius);
-
-    if(i != iterations - 1)
-    {
-      // Process the intermediate filtered image
-      apply_linear_blending(ds_image, ds_a, ds_b, ds_width * ds_height);
-    }
-    else
-    {
-      // Increase the radius for the next iteration
-      ds_radius *= sqrtf(2.0f);
-      //feathering *= sqrtf(2.0f);
-    }
-  }
-  dt_free_align(ds_mask);
-  dt_free_align(ds_image);
-
-  // Upsample the blending parameters a and b
-  const size_t num_elem_2 = width * height;
-  float *a = dt_alloc_align(64, num_elem_2 * sizeof(float));
-  float *b = dt_alloc_align(64, num_elem_2 * sizeof(float));
-  interpolate_bilinear(ds_a, ds_width, ds_height, a, width, height, 1);
-  interpolate_bilinear(ds_b, ds_width, ds_height, b, width, height, 1);
-  dt_free_align(ds_a);
-  dt_free_align(ds_b);
-
-  // Finally, blend the guided image and boost contrast
-  if(filter == DT_TONEEQ_GUIDED)
-  {
-    apply_linear_blending(image, a, b, num_elem_2);
-  }
-  else if(filter == DT_TONEEQ_AVG_GUIDED)
-  {
-    apply_linear_blending_w_geomean(image, a, b, num_elem_2);
-  }
-
-  dt_free_align(a);
-  dt_free_align(b);
+  self->dt->gui->reset = 0;
+  gtk_widget_queue_draw(self->widget);
 }
 
 
@@ -1224,8 +570,8 @@ static inline void compute_luminance_mask(const float *const restrict in, float 
     {
       // Still no contrast boost
       luminance_mask(in, luminance, width, height, ch, d->method, d->exposure_boost, 0.0f, 1.0f);
-      guided_filter(luminance, width, height, d->radius, d->feathering, d->iterations,
-                    d->details, d->scale, d->quantization);
+      fast_guided_filter(luminance, width, height, d->radius, d->feathering, d->iterations,
+                    DT_GF_BLENDING_GEOMEAN, d->scale, d->quantization);
       break;
     }
 
@@ -1240,8 +586,8 @@ static inline void compute_luminance_mask(const float *const restrict in, float 
       // the exposure boost should be used to make this assumption true
       luminance_mask(in, luminance, width, height, ch, d->method, d->exposure_boost,
                       CONTRAST_FULCRUM, d->contrast_boost);
-      guided_filter(luminance, width, height, d->radius, d->feathering, d->iterations,
-                    d->details, d->scale, d->quantization);
+      fast_guided_filter(luminance, width, height, d->radius, d->feathering, d->iterations,
+                    DT_GF_BLENDING_LINEAR, d->scale, d->quantization);
       break;
     }
 
@@ -1434,7 +780,7 @@ static inline void apply_toneequalizer(const float *const restrict in,
                                        const dt_iop_toneequalizer_data_t *const d)
 {
   size_t num_elem = roi_in->width * roi_in->height;
-  float *correction = dt_alloc_align(64, num_elem * sizeof(float));
+  float *correction DT_ALIGNED_ARRAY = dt_alloc_sse_ps(num_elem);
   compute_correction(luminance, correction, d->factors, d->smoothing, num_elem);
   apply_exposure(in, out, roi_in, roi_out, ch, correction);
   dt_free_align(correction);
@@ -1448,9 +794,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_toneequalizer_data_t *const d = (const dt_iop_toneequalizer_data_t *const)piece->data;
   dt_iop_toneequalizer_gui_data_t *const g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
-  const float *const in  = (float *const)ivoid;
-  float *const out  = (float *const)ovoid;
-  float *luminance;
+  const float *const in DT_ALIGNED_ARRAY = __builtin_assume_aligned((float *const)ivoid, 64);
+  float *const out DT_ALIGNED_ARRAY = __builtin_assume_aligned((float *const)ovoid, 64);
+  float *luminance DT_ALIGNED_ARRAY;
 
   const size_t width = roi_in->width;
   const size_t height = roi_in->height;
@@ -1490,7 +836,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       if(g->full_preview_buf_width != width || g->full_preview_buf_height != height)
       {
         if(g->full_preview_buf) dt_free_align(g->full_preview_buf);
-        g->full_preview_buf = dt_alloc_align(64, num_elem * sizeof(float));
+        g->full_preview_buf = dt_alloc_sse_ps(num_elem);
         g->full_preview_buf_width = width;
         g->full_preview_buf_height = height;
       }
@@ -1510,7 +856,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       if(g->thumb_preview_buf_width != width || g->thumb_preview_buf_height != height)
       {
         if(g->thumb_preview_buf) dt_free_align(g->thumb_preview_buf);
-        g->thumb_preview_buf = dt_alloc_align(64, num_elem * sizeof(float));
+        g->thumb_preview_buf = dt_alloc_sse_ps(num_elem);
         g->thumb_preview_buf_width = width;
         g->thumb_preview_buf_height = height;
       }
@@ -1522,14 +868,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     else // just to please GCC
     {
-      luminance = dt_alloc_align(64, num_elem * sizeof(float));
+      luminance = dt_alloc_sse_ps(num_elem);
     }
 
   }
   else
   {
     // no interactive editing/caching : just allocate a local temp buffer
-    luminance = dt_alloc_align(64, num_elem * sizeof(float));
+    luminance = dt_alloc_sse_ps(num_elem);
   }
 
   // Compute the luminance mask
@@ -1560,11 +906,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         /* compute only if upstream pipe state has changed */
         dt_pthread_mutex_lock(&g->lock);
         compute_luminance_mask(in, luminance, width, height, ch, d);
-        compute_log_histogram(luminance, g->histogram, num_elem, &g->max_histogram);
-        g->histogram_num_elem = num_elem;
-        g->histogram_hash = hash;
+
+        if(!self->dt->gui->reset)
+        {
+          self->dt->gui->reset = 1;
+          compute_log_histogram(luminance, g->histogram, num_elem, &g->max_histogram);
+          g->histogram_num_elem = num_elem;
+          g->histogram_hash = hash;
+          gtk_widget_queue_draw(self->widget);
+          self->dt->gui->reset = 0;
+        }
+
         dt_pthread_mutex_unlock(&g->lock);
-        gtk_widget_queue_draw(self->widget);
       }
     }
 
@@ -1627,6 +980,143 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 }
 
 
+
+/***
+ * Setters and Getters for parameters
+ ***/
+
+static void get_channels_factors(float factors[PIXEL_CHAN], const dt_iop_toneequalizer_params_t *p)
+{
+  assert(PIXEL_CHAN == 16);
+
+  // Get user-set channels gains in EV (log2)
+  factors[0] = factors[1] = factors[2] = factors[3] = factors[4] = p->noise; // padding & -14 EV
+  factors[5] = p->ultra_deep_blacks; // -12 EV
+  factors[6] = p->deep_blacks;       // -10 EV
+  factors[7] = p->blacks;            //  -8 EV
+  factors[8] = p->shadows;           //  -6 EV
+  factors[9] = p->midtones;          //  -4 EV
+  factors[10] = p->highlights;       //  -2 EV
+  factors[11] = p->whites;           //   0 EV
+  factors[12] = factors[13] = factors[14] = factors[15] = p->speculars; //  +2 EV & padding
+
+  // Convert from EV offsets to linear factors
+#ifdef _OPENMP
+#pragma omp simd aligned(factors:64)
+#endif
+  for(int c = 0; c < PIXEL_CHAN; ++c)
+    factors[c] = exp2f(factors[c]);
+}
+
+
+static void set_channels_factors(const float factors[PIXEL_CHAN], const float sigma,
+                                  dt_iop_toneequalizer_params_t *p)
+{
+  assert(PIXEL_CHAN == 16);
+
+  // Set the new channels gains
+  // we split them on 8 threads because each param evaluation requires at least
+  // 1 log and 16 exp evaluations, so heavy stuff
+  #ifdef _OPENMP
+  #pragma omp parallel sections
+  #endif
+  {
+    #ifdef _OPENMP
+    #pragma omp section
+    #endif
+    {
+      p->noise = log2f(pixel_correction(-14.0f, factors, sigma));
+      p->ultra_deep_blacks = log2f(pixel_correction(-12.0f, factors, sigma));
+    }
+
+    #ifdef _OPENMP
+    #pragma omp section
+    #endif
+    {
+      p->deep_blacks = log2f(pixel_correction(-10.0f, factors, sigma));
+      p->blacks = log2f(pixel_correction(-8.0f, factors, sigma));
+    }
+
+    #ifdef _OPENMP
+    #pragma omp section
+    #endif
+    {
+      p->blacks = log2f(pixel_correction(-8.0f, factors, sigma));
+      p->shadows = log2f(pixel_correction(-6.0f, factors, sigma));
+    }
+
+    #ifdef _OPENMP
+    #pragma omp section
+    #endif
+    {
+      p->midtones = log2f(pixel_correction(-4.0f, factors, sigma));
+      p->highlights = log2f(pixel_correction(-2.0f, factors, sigma));
+    }
+
+    #ifdef _OPENMP
+    #pragma omp section
+    #endif
+    {
+      p->whites = log2f(pixel_correction(0.0f, factors, sigma));
+      p->speculars = log2f(pixel_correction(+2.0f, factors, sigma));
+    }
+  }
+}
+
+
+static inline void build_interpolation_matrix(float A[(PIXEL_CHAN + 1) * PIXEL_CHAN],
+                                              const float sigma)
+{
+  // Build the symmetrical definite positive part of the augmented matrix
+  // of the radial-based interpolation weights
+
+  const float gauss_denom = gaussian_denom(sigma);
+
+#ifdef _OPENMP
+#pragma omp simd aligned(A, centers:64) collapse(2)
+#endif
+  for(int i = 0; i < PIXEL_CHAN; ++i)
+    for(int j = 0; j < PIXEL_CHAN; ++j)
+      A[i * PIXEL_CHAN + j] = gaussian_func(centers[i] - centers[j], gauss_denom);
+
+  // Remember there is one free row at the end of A for the radial approximation below
+}
+
+
+__DT_CLONE_TARGETS__
+static inline void radial_approximation(float A[(PIXEL_CHAN + 1) * PIXEL_CHAN],
+                                        const float sigma,
+                                        const float exposure_in, const float exposure_correction,
+                                        dt_iop_toneequalizer_params_t *p)
+{
+  // Perform a radial-based approximated interpolation of already set user parameters
+  // plus one new value to set using a series gaussian functions
+  // returns in-place the coefficients of each gaussian to fit the input data in factors
+
+  float factors[PIXEL_CHAN + 1]  DT_ALIGNED_ARRAY;
+  const float gauss_denom = gaussian_denom(sigma);
+
+  // Append the current pixel exposures weights to the interpolation matrix
+#ifdef _OPENMP
+#pragma omp simd aligned(A, centers:64)
+#endif
+  for(int j = 0; j < PIXEL_CHAN; ++j)
+      A[PIXEL_CHAN * PIXEL_CHAN + j] = gaussian_func(exposure_in - centers[j], gauss_denom);
+
+  // Build the y augmented vector
+  get_channels_factors(factors, p);
+
+  // append the desired exposure out for current pixel to y
+  factors[PIXEL_CHAN] = exp2f(exposure_correction);
+
+  // Solve the linear system for interpolation gaussian coefficients by least-squares
+  pseudo_solve(A, factors, PIXEL_CHAN + 1, PIXEL_CHAN, 0);
+
+  // Save new params
+  set_channels_factors(factors, sigma, p);
+}
+
+
 void init_global(dt_iop_module_so_t *module)
 {
   dt_iop_toneequalizer_global_data_t *gd
@@ -1658,7 +1148,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->iterations = p->iterations;
   d->smoothing = p->smoothing;
   d->quantization = p->quantization;
-  const float sigma = d->smoothing;
 
   // UI blending param is set in % of the largest image dimension
   d->blending = p->blending / 100.0f;
@@ -1671,57 +1160,37 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->contrast_boost = exp2f(p->contrast_boost);
   d->exposure_boost = exp2f(p->exposure_boost);
 
-  // BIG stuff : gains for channels
-  float factors[PIXEL_CHAN]  DT_ALIGNED_ARRAY = {
-                                0.0, p->noise, p->noise, p->noise, // padding
-                                p->noise,             // -14 EV
-                                p->ultra_deep_blacks, // -12 EV
-                                p->deep_blacks,       // -10 EV
-                                p->blacks,            //  -8 EV
-                                p->shadows,           //  -6 EV
-                                p->midtones,          //  -4 EV
-                                p->highlights,        //  -2 EV
-                                p->whites,            //   0 EV
-                                p->speculars,         //  +2 EV
-                                p->speculars, p->speculars, p->speculars}; // padding
+  // Get the gains for channels parameters
+  float factors[PIXEL_CHAN] DT_ALIGNED_ARRAY;
+  get_channels_factors(factors, p);
 
-  // Convert the user-set channels gains from log offsets (EV) to linear coefficients
-#ifdef _OPENMP
-#pragma omp simd aligned(factors:64)
-#endif
-  for(int c = 0; c < PIXEL_CHAN; ++c)
-    factors[c] = exp2f(factors[c]);
-
-  // Get the actual interpolation factors to match exactly the user params
-  float A[PIXEL_CHAN * PIXEL_CHAN] DT_ALIGNED_ARRAY;
-  const float gauss_denom = gaussian_denom(sigma);
-
-  // Build the symmetrical definite positive matrix of the radial-based interpolation weights
-#ifdef _OPENMP
-#pragma omp parallel for simd schedule(static) default(none) \
-  dt_omp_firstprivate(centers, gauss_denom) shared(A) aligned(A, centers:64) collapse(2)
-#endif
-  for(int i = 0; i < PIXEL_CHAN; ++i)
-    for(int j = 0; j < PIXEL_CHAN; ++j)
-      A[i * PIXEL_CHAN + j] = gaussian_func(centers[i] - centers[j], gauss_denom);
-
-  // Solve the linear system
-  // TODO: this is by design a sparse with 1 on the diagonal, so faster methods than Gauss-Jordan are available
-  gauss_solve_f(A, factors, PIXEL_CHAN);
-  simd_memcpy(factors, d->factors, PIXEL_CHAN);
-
-  // Build the GUI elements
-  if(self->dev->gui_attached && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  // Perform a radial-based interpolation using a series gaussian functions
+  if(self->dev->gui_attached && g)
   {
     dt_pthread_mutex_lock(&g->lock);
-    g->sigma = sigma;
-    simd_memcpy(factors, g->factors, PIXEL_CHAN);
-    compute_lut_correction(g->gui_lut, g->factors, g->sigma, 0.5f, 4.0f);
-    dt_pthread_mutex_unlock(&g->lock);
-    gtk_widget_queue_draw(self->widget);
-  }
 
-  fprintf(stdout, "pipe type %i\n", piece->pipe->type);
+    // Only if smoothing has changed, recompute the interpolation matrice
+    if(!g->interpolation_set || g->sigma != p->smoothing)
+    {
+      build_interpolation_matrix(g->interpolation_matrix, p->smoothing);
+      g->interpolation_set = 1;
+      g->sigma = p->smoothing;
+    }
+
+    solve_hermitian(g->interpolation_matrix, factors, PIXEL_CHAN, 0);
+    dt_simd_memcpy(factors, g->factors, PIXEL_CHAN);
+    dt_simd_memcpy(factors, d->factors, PIXEL_CHAN);
+
+    dt_pthread_mutex_unlock(&g->lock);
+  }
+  else
+  {
+    // Build / Solve interpolation matrix
+    float A[(PIXEL_CHAN + 1) * PIXEL_CHAN] DT_ALIGNED_ARRAY;
+    build_interpolation_matrix(A, p->smoothing);
+    solve_hermitian(A, factors, PIXEL_CHAN, 0);
+    dt_simd_memcpy(factors, d->factors, PIXEL_CHAN);
+  }
 }
 
 
@@ -1841,6 +1310,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->exposure_boost, p->exposure_boost);
 
   show_guiding_controls(self);
+  compute_lut_correction(self, 0.5f, 4.0f);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->show_luminance_mask), FALSE);
 }
@@ -1852,6 +1322,7 @@ static void noise_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
   p->noise = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  compute_lut_correction(self, 0.5f, 4.0f);
 }
 
 
@@ -1862,6 +1333,7 @@ static void ultra_deep_blacks_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
   p->ultra_deep_blacks = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  compute_lut_correction(self, 0.5f, 4.0f);
 }
 
 
@@ -1872,6 +1344,7 @@ static void deep_blacks_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
   p->deep_blacks = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  compute_lut_correction(self, 0.5f, 4.0f);
 }
 
 
@@ -1882,6 +1355,7 @@ static void blacks_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
   p->blacks = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  compute_lut_correction(self, 0.5f, 4.0f);
 }
 
 
@@ -1892,6 +1366,7 @@ static void shadows_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
   p->shadows = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  compute_lut_correction(self, 0.5f, 4.0f);
 }
 
 
@@ -1902,6 +1377,7 @@ static void midtones_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
   p->midtones = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  compute_lut_correction(self, 0.5f, 4.0f);
 }
 
 
@@ -1912,6 +1388,7 @@ static void highlights_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
   p->highlights = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  compute_lut_correction(self, 0.5f, 4.0f);
 }
 
 
@@ -1922,6 +1399,7 @@ static void whites_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
   p->whites = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  compute_lut_correction(self, 0.5f, 4.0f);
 }
 
 
@@ -1932,6 +1410,7 @@ static void speculars_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
   p->speculars = dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  compute_lut_correction(self, 0.5f, 4.0f);
 }
 
 
@@ -1991,6 +1470,7 @@ static void smoothing_callback(GtkWidget *slider, gpointer user_data)
   p->smoothing= dt_bauhaus_slider_get(slider);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
+  compute_lut_correction(self, 0.5f, 4.0f);
 }
 
 static void iterations_callback(GtkWidget *slider, gpointer user_data)
@@ -2228,55 +1708,55 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
 }
 
 
-/*
 int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t state)
 {
   dt_develop_t *dev = self->dev;
-  dt_iop_toneequalizer_global_data_t *gd = (dt_iop_toneequalizer_global_data_t *)self->global_data;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+  dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
 
-  if(!dev->preview_pipe) return 1;
-  if(self->dt->gui->reset) return 1;
+  if(!dev->preview_pipe) return 0;
+  if(self->dt->gui->reset) return 0;
+  if(!dev->preview_pipe) return 0;
+  if(!g->thumb_preview_buf) return 0;
 
   dt_pthread_mutex_lock(&g->lock);
   int valid_cursor = g->valid_image_cursor;
   dt_pthread_mutex_unlock(&g->lock);
 
-  if(gd->full_preview_buf && valid_cursor)
-  {
-    // If we have an exposure mask and pointer is inside the image borders
-    size_t bufferx, buffery;
-    dt_pthread_mutex_lock(&g->lock);
-    bufferx = g->cursor_pos_x;
-    buffery = g->cursor_pos_y;
-    dt_pthread_mutex_unlock(&g->lock);
+  if(!valid_cursor) return 0;
 
-    // Get the corresponding exposure
-    dt_pthread_mutex_lock(&gd->lock);
-    const float luminance_in = get_luminance_from_buffer(gd->full_preview_buf,
-                                                    gd->full_preview_buf_width,
-                                                    gd->full_preview_buf_height,
-                                                    bufferx, buffery);
-    const float exposure_in = log2f(luminance_in);
-    dt_pthread_mutex_unlock(&gd->lock);
+  self->dt->gui->reset = 1;
+  dt_pthread_mutex_lock(&g->lock);
 
-    // Get the corresponding correction and compute resulting exposure
-    dt_pthread_mutex_lock(&g->lock);
-    float correction = log2f(pixel_correction(exposure_in, g->factors));
-    float exposure_out = exposure_in + correction;
-    float luminance_out = exp2f(exposure_out);
-    dt_pthread_mutex_unlock(&g->lock);
+    // Get cursor coordinates
+  float x_pointer = g->cursor_pos_x;
+  float y_pointer = g->cursor_pos_y;
 
-    // Apply the correction
-    // TODO: set the step in preferences
-    correction = up ? correction + 0.1f : correction - 0.1f;
 
-    dt_control_queue_redraw_center();
-  }
+  // Get the corresponding exposure
+  const float luminance_in = get_luminance_from_buffer(g->thumb_preview_buf,
+                                                       g->thumb_preview_buf_width,
+                                                       g->thumb_preview_buf_height,
+                                                       (size_t)x_pointer, (size_t)y_pointer);
+  const float exposure_in = log2f(luminance_in);
 
-  return FALSE;
+  // Get the corresponding correction and compute resulting exposure
+  const float step = up ? +0.1f : -0.1f;
+  float correction = log2f(pixel_correction(exposure_in, g->factors, g->sigma));
+
+  // Get the new params
+  if(g->interpolation_set)
+    radial_approximation(g->interpolation_matrix, g->sigma, exposure_in, correction + step, p);
+
+  dt_pthread_mutex_unlock(&g->lock);
+  self->dt->gui->reset = 0;
+
+  // Update params
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  gui_update(self);
+
+  return 1;
 }
-*/
 
 
 /***
@@ -2732,6 +2212,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->histogram_hash = 0;
   g->max_histogram = 1;
   g->scale = 0.0f;
+  g->sigma = 0.0f;
+  g->interpolation_set = 0;
 
   g->full_preview_buf = NULL;
   g->full_preview_buf_width = 0;

@@ -289,6 +289,8 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...) __attribute__((for
 void dt_gettime_t(char *datetime, size_t datetime_len, time_t t);
 void dt_gettime(char *datetime, size_t datetime_len);
 void *dt_alloc_align(size_t alignment, size_t size);
+void *dt_alloc_sse_ps(size_t pixels);
+
 #ifdef _WIN32
 void dt_free_align(void *mem);
 #define dt_free_align_ptr dt_free_align
