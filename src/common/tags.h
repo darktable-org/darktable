@@ -68,6 +68,9 @@ gchar *dt_tag_get_name(const guint tagid);
  * the amount of images affected. */
 guint dt_tag_remove(const guint tagid, gboolean final);
 
+/** removes a list of tags from db and from assigned images. \return the number of tags deleted */
+guint dt_tag_remove_list(GList *tag_list);
+
 /** set the name of specified id */
 void dt_tag_rename(const guint tagid, const gchar *new_tagname);
 

@@ -1076,16 +1076,10 @@ static void view_popup_menu_delete_path(GtkWidget *menuitem, dt_lib_module_t *se
   GList *tagged_images = NULL;
   dt_tag_get_tags_images(tagname, &tag_family, &tagged_images);
 
-  // dt_tag_remove raises DT_SIGNAL_TAG_CHANGED. We don't want to reintialize the tree
-  for (GList *taglist = tag_family; taglist ; taglist = g_list_next(taglist))
-  {
-    dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
-    dt_tag_remove(((dt_tag_t *)taglist->data)->id, TRUE);
-    dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
-//    dt_control_log(_("tag %s removed"), ((dt_tag_t *)taglist->data)->tag); // doesn't appear ...
-  }
-
-  g_free(tagname);
+  dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
+  tag_count = dt_tag_remove_list(tag_family);
+  dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
+  dt_control_log(_("%d tags removed"), tag_count);
 
   GtkTreeIter store_iter;
   GtkTreeModel *store = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model));
@@ -1105,6 +1099,7 @@ static void view_popup_menu_delete_path(GtkWidget *menuitem, dt_lib_module_t *se
   dt_tag_free_result(&tag_family);
   g_list_free(tagged_images);
   raise_signal_tag_changed(self);
+  g_free(tagname);
 }
 
 // edit tag allows the user to rename a single tag, which can be an element of the hierarchy and change other parameters
