@@ -552,7 +552,7 @@ uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags
   if(imgid > 0)
   {
     char query[1024] = { 0 };
-    snprintf(query, sizeof(query), "SELECT DISTINCT T.id, T.name, T.flags, 1 AS inb "
+    snprintf(query, sizeof(query), "SELECT DISTINCT T.id, T.name, T.flags, T.description, 1 AS inb "
                                    "FROM main.tagged_images AS I "
                                    "JOIN data.tags T on T.id = I.tagid "
                                    "WHERE I.imgid = %d %s ORDER BY T.name",
@@ -563,7 +563,7 @@ uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags
   {
     if(ignore_dt_tags)
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-              "SELECT DISTINCT I.tagid, T.name, T.flags, COUNT(DISTINCT S.imgid) AS inb "
+              "SELECT DISTINCT I.tagid, T.name, T.flags, T.description, COUNT(DISTINCT S.imgid) AS inb "
               "FROM main.selected_images AS S "
               "LEFT JOIN main.tagged_images AS I ON I.imgid = S.imgid "
               "LEFT JOIN data.tags AS T ON T.id = I.tagid "
@@ -573,7 +573,7 @@ uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags
               -1, &stmt, NULL);
     else
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-              "SELECT DISTINCT I.tagid, T.name, T.flags, COUNT(DISTINCT S.imgid) AS inb "
+              "SELECT DISTINCT I.tagid, T.name, T.flags, T.description, COUNT(DISTINCT S.imgid) AS inb "
               "FROM main.selected_images AS S "
               "LEFT JOIN main.tagged_images AS I ON I.imgid = S.imgid "
               "LEFT JOIN data.tags AS T ON T.id = I.tagid "
@@ -594,7 +594,8 @@ uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags
     t->leave = g_strrstr(t->tag, "|");
     t->leave = t->leave ? t->leave + 1 : t->tag;
     t->flags = sqlite3_column_int(stmt, 2);
-    uint32_t imgnb = sqlite3_column_int(stmt, 3);
+    t->synonym = g_strdup((char *)sqlite3_column_text(stmt, 3));
+    uint32_t imgnb = sqlite3_column_int(stmt, 4);
     t->count = imgnb;
     // 0: no selection or no tag not attached
     // 1: tag attached on some selected images
@@ -636,7 +637,7 @@ uint32_t dt_tag_get_attached_export(gint imgid, GList **result)
               "LEFT JOIN data.tags AS T ON T.id = I.tagid "
               "WHERE T.id NOT IN memory.darktable_tags "
               "ORDER by T.name) AS T1 ON T.name = SUBSTR(T1.name, 1, LENGTH(T.name)) "
-            "LEFT JOIN (SELECT DISTINCT I.tagid, 1 as selected "
+            "LEFT JOIN (SELECT DISTINCT I.tagid, 1 as attached "
               "FROM main.selected_images AS S "
               "LEFT JOIN main.tagged_images AS I ON I.imgid = S.imgid "
               ") AS S ON S.tagid = T.id ",
@@ -650,6 +651,8 @@ uint32_t dt_tag_get_attached_export(gint imgid, GList **result)
     dt_tag_t *t = g_malloc0(sizeof(dt_tag_t));
     t->id = sqlite3_column_int(stmt, 0);
     t->tag = g_strdup((char *)sqlite3_column_text(stmt, 1));
+    t->leave = g_strrstr(t->tag, "|");
+    t->leave = t->leave ? t->leave + 1 : t->tag;
     t->flags = sqlite3_column_int(stmt, 2);
     t->synonym = g_strdup((char *)sqlite3_column_text(stmt, 3));
     if (sqlite3_column_int(stmt, 4) != 1)
@@ -769,7 +772,7 @@ GList *dt_tag_get_list_export(gint imgid)
   uint32_t count = dt_tag_get_attached_export(imgid, &taglist);
 
   if(count < 1) return NULL;
-  GList *sorted_tags = dt_sort_tag(taglist, true);
+  GList *sorted_tags = dt_sort_tag(taglist, 0);
 
   for(; sorted_tags; sorted_tags = g_list_next(sorted_tags))
   {
@@ -778,9 +781,8 @@ GList *dt_tag_get_list_export(gint imgid)
         && !(t->flags & DT_TF_CATEGORY)
         && !(omit_tag_hierarchy && (t->flags & DT_TF_PATH)))
     {
-      gchar *tagname = t->tag;
-      char *subtag = g_strrstr(tagname, "|");
-      tags = g_list_prepend(tags, g_strdup(subtag ? subtag + 1 : tagname));
+      gchar *tagname = t->leave;
+      tags = g_list_prepend(tags, g_strdup(tagname));
       if (export_tag_synomyms)
       {
         gchar *synonyms = t->synonym;
@@ -1288,7 +1290,8 @@ ssize_t dt_tag_import(const char *filename)
   ssize_t count = 0;
   guint tagid = 0;
   guint previous_category_depth = 0;
-  gboolean previous_category = 0;
+  gboolean previous_category = FALSE;
+  gboolean previous_synonym = FALSE;
 
   while(getline(&line, &len, fd) != -1)
   {
@@ -1332,6 +1335,8 @@ ssize_t dt_tag_import(const char *filename)
       if (tagid)
       {
         char *tagname = g_strdup(start);
+        // clear synonyms before importing the new ones => allows export, modification and back import
+        if (!previous_synonym) dt_tag_set_synonyms(tagid, "");
         dt_tag_add_synonym(tagid, tagname);
         g_free(tagname);
       }
@@ -1372,6 +1377,7 @@ ssize_t dt_tag_import(const char *filename)
     }
     previous_category_depth = category ? depth : 0;
     previous_category = category;
+    previous_synonym = synonym;
   }
 
   free(line);
@@ -1409,23 +1415,17 @@ ssize_t dt_tag_export(const char *filename)
 
   if(!fd) return -1;
 
-  sqlite3_stmt *stmt;
-  dt_set_darktable_tags();
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, description, flags FROM data.tags "
-                              "WHERE id NOT IN memory.darktable_tags "
-                              "ORDER BY name COLLATE NOCASE ASC", -1, &stmt, NULL);
+  GList *tags = NULL;
+  gint count = 0;
+  dt_tag_get_with_usage(&tags);
+  GList *sorted_tags = dt_sort_tag(tags, 0);
 
-
-  ssize_t count = 0;
   gchar **hierarchy = NULL;
-
-  while(sqlite3_step(stmt) == SQLITE_ROW)
+  for(GList *tag_elt = sorted_tags; tag_elt; tag_elt = g_list_next(tag_elt))
   {
-    const char *tag = (char *)sqlite3_column_text(stmt, 0);
-    const char *synonyms = (char *)sqlite3_column_text(stmt, 1);
-    const guint flags = sqlite3_column_int(stmt, 2);
-
+    const gchar *tag = ((dt_tag_t *)tag_elt->data)->tag;
+    const char *synonyms = ((dt_tag_t *)tag_elt->data)->synonym;
+    const guint flags = ((dt_tag_t *)tag_elt->data)->flags;
     gchar **tokens = g_strsplit(tag, "|", -1);
 
     // find how many common levels are shared with the last tag
@@ -1474,7 +1474,7 @@ ssize_t dt_tag_export(const char *filename)
 
   g_strfreev(hierarchy);
 
-  sqlite3_finalize(stmt);
+  dt_tag_free_result(&tags);
 
   fclose(fd);
 

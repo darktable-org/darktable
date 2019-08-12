@@ -580,23 +580,24 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
     /* tags */
     GList *tags = NULL;
-    if (dt_tag_get_attached(mouse_over_id, &tags, TRUE))
+    if(dt_tag_get_attached(mouse_over_id, &tags, TRUE))
     {
-      char *tagname = NULL;
+      char *tagstring = NULL;
       gint length = 0;
       for(GList *taglist = tags; taglist; taglist = g_list_next(taglist))
       {
-        if (tagname) length =+ strlen(tagname);
-        if(length < 30)
-          tagname = dt_util_dstrcat(tagname, "%s, ", ((dt_tag_t *)taglist->data)->leave);
+        const char *tagname = ((dt_tag_t *)taglist->data)->leave;
+        length = length + strlen(tagname) + 2;
+        if(length < 40)
+          tagstring = dt_util_dstrcat(tagstring, "%s, ", tagname);
         else
         {
-          tagname = dt_util_dstrcat(tagname, "\n%s, ", ((dt_tag_t *)taglist->data)->leave);
-          length = 0;
+          tagstring = dt_util_dstrcat(tagstring, "\n%s, ", tagname);
+          length = strlen(tagname) + 2;
         }
       }
-      if (strlen(tagname) > 2) tagname[strlen(tagname)-2] = '\0';
-      _metadata_update_value(d->metadata[md_tag_names], tagname);
+      if(strlen(tagstring) > 2) tagstring[strlen(tagstring)-2] = '\0';
+      _metadata_update_value(d->metadata[md_tag_names], tagstring);
     }
     dt_tag_free_result(&tags);
 
