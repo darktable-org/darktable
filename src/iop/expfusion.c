@@ -303,6 +303,46 @@ typedef struct dt_pyramid_t
   int num_levels;
 } dt_pyramid_t;
 
+static void _alloc_image(dt_image_pyramid_t *img, const size_t wd, const size_t ht, const int ch)
+{
+  img->w = wd;
+  img->h = ht;
+  img->ch = ch;
+  img->img = dt_alloc_align(64, img->w * img->h * img->ch * sizeof(float));
+  memset(img->img, 0, img->w * img->h * img->ch * sizeof(float));
+}
+
+static void _free_image(dt_image_pyramid_t *img)
+{
+  dt_free_align(img->img);
+  img->img = NULL;
+}
+
+static void _alloc_pyramid(dt_pyramid_t *pyramid, const size_t wd, const size_t ht, const int ch,
+                           const int num_levels)
+{
+  pyramid->images = (dt_image_pyramid_t *)malloc(num_levels * sizeof(dt_image_pyramid_t));
+  pyramid->num_levels = num_levels;
+
+  size_t w = wd;
+  size_t h = ht;
+
+  for(int n = 0; n < num_levels; n++)
+  {
+    _alloc_image(pyramid->images + n, w, h, ch);
+
+    h = h / 2 + (h % 2);
+    w = w / 2 + (w % 2);
+  }
+}
+
+static void _free_pyramid(dt_pyramid_t *pyramid)
+{
+  for(int n = 0; n < pyramid->num_levels; n++) _free_image(pyramid->images + n);
+  free(pyramid->images);
+  pyramid->images = NULL;
+}
+
 static inline void _apply_exposure(const float *const img_src, const size_t wd, const size_t ht, const int ch, const float exp,
                                    float *const img_dest)
 {
@@ -666,46 +706,6 @@ static void _convolve_replicate(const float *const img_src, const size_t wd, con
   dt_free_align(img_tmp);
 }
 
-static void _alloc_image(dt_image_pyramid_t *img, const size_t wd, const size_t ht, const int ch)
-{
-  img->w = wd;
-  img->h = ht;
-  img->ch = ch;
-  img->img = dt_alloc_align(64, img->w * img->h * img->ch * sizeof(float));
-  memset(img->img, 0, img->w * img->h * img->ch * sizeof(float));
-}
-
-static void _free_image(dt_image_pyramid_t *img)
-{
-  dt_free_align(img->img);
-  img->img = NULL;
-}
-
-static void _alloc_pyramid(dt_pyramid_t *pyramid, const size_t wd, const size_t ht, const int ch,
-                           const int num_levels)
-{
-  pyramid->images = (dt_image_pyramid_t *)malloc(num_levels * sizeof(dt_image_pyramid_t));
-  pyramid->num_levels = num_levels;
-
-  size_t w = wd;
-  size_t h = ht;
-
-  for(int i = 0; i < num_levels; i++)
-  {
-    _alloc_image(pyramid->images + i, w, h, ch);
-
-    h = h / 2 + (h % 2);
-    w = w / 2 + (w % 2);
-  }
-}
-
-static void _free_pyramid(dt_pyramid_t *pyramid)
-{
-  for(int i = 0; i < pyramid->num_levels; i++) _free_image(pyramid->images + i);
-  free(pyramid->images);
-  pyramid->images = NULL;
-}
-
 static void _downsample_image(const float *const img_src, const size_t wd, const size_t ht, const int ch,
                               const float *const filter, const size_t down_wd, const size_t down_ht, float *const img_dest)
 {
@@ -864,12 +864,12 @@ static void _build_gaussian_pyramid(const float *const img_src, const size_t wd,
 
   const float pyramid_filter[] = EXPFUSION_PYRAMID_FILTER;
 
-  for(int v = 1; v < pyramid_dest->num_levels; v++)
+  for(int n = 1; n < pyramid_dest->num_levels; n++)
   {
     // downsample image and store into level
-    _downsample_image(pyramid_dest->images[v - 1].img, pyramid_dest->images[v - 1].w, pyramid_dest->images[v - 1].h,
-                      pyramid_dest->images[v - 1].ch, pyramid_filter, pyramid_dest->images[v].w, pyramid_dest->images[v].h,
-                      pyramid_dest->images[v].img);
+    _downsample_image(pyramid_dest->images[n - 1].img, pyramid_dest->images[n - 1].w, pyramid_dest->images[n - 1].h,
+                      pyramid_dest->images[n - 1].ch, pyramid_filter, pyramid_dest->images[n].w, pyramid_dest->images[n].h,
+                      pyramid_dest->images[n].img);
   }
 }
 
@@ -888,17 +888,17 @@ static void _build_laplacian_pyramid(const float *const img_src, const size_t wd
   size_t tmp3_wd = wd;
   size_t tmp3_ht = ht;
 
-  for(int v = 0; v < pyramid_dest->num_levels - 1; v++)
+  for(int n = 0; n < pyramid_dest->num_levels - 1; n++)
   {
     // downsample image img_tmp3 and store in img_tmp2
-    tmp2_wd = pyramid_dest->images[v + 1].w;
-    tmp2_ht = pyramid_dest->images[v + 1].h;
+    tmp2_wd = pyramid_dest->images[n + 1].w;
+    tmp2_ht = pyramid_dest->images[n + 1].h;
 
     _downsample_image(img_tmp3, tmp3_wd, tmp3_ht, ch, pyramid_filter, tmp2_wd, tmp2_ht, img_tmp2);
 
     // upsample image img_tmp2 and subtract from img_tmp3
-    _upsample_image(img_tmp2, tmp2_wd, tmp2_ht, ch, pyramid_filter, pyramid_dest->images[v].w, pyramid_dest->images[v].h,
-                    img_tmp3, pyramid_dest->images[v].img, FALSE, pyramid_wmap->images[v].img);
+    _upsample_image(img_tmp2, tmp2_wd, tmp2_ht, ch, pyramid_filter, pyramid_dest->images[n].w, pyramid_dest->images[n].h,
+                    img_tmp3, pyramid_dest->images[n].img, FALSE, pyramid_wmap->images[n].img);
 
     tmp3_wd = tmp2_wd;
     tmp3_ht = tmp2_ht;
@@ -922,11 +922,11 @@ static void _reconstruct_laplacian(const dt_pyramid_t *const pyramid, const int 
   _image_copy(pyramid->images[pyramid->num_levels - 1].img, pyramid->images[pyramid->num_levels - 1].w,
                                pyramid->images[pyramid->num_levels - 1].h, ch, img_dest);
 
-  for(int v = pyramid->num_levels - 2; v >= 0; v--)
+  for(int n = pyramid->num_levels - 2; n >= 0; n--)
   {
     // upsample and add to current level
-    _upsample_image(img_dest, pyramid->images[v + 1].w, pyramid->images[v + 1].h, ch, pyramid_filter,
-                    pyramid->images[v].w, pyramid->images[v].h, pyramid->images[v].img, img_dest, TRUE, NULL);
+    _upsample_image(img_dest, pyramid->images[n + 1].w, pyramid->images[n + 1].h, ch, pyramid_filter,
+                    pyramid->images[n].w, pyramid->images[n].h, pyramid->images[n].img, img_dest, TRUE, NULL);
   }
 }
 
@@ -1024,7 +1024,7 @@ static void _exposure_fusion(const float *const img_src, const size_t wd, const 
 
   // array of images with the weight map for each different exposure image
   dt_image_pyramid_t *img_wmaps = malloc(num_exposures * sizeof(dt_image_pyramid_t));
-  for(int i = 0; i < num_exposures; i++) _alloc_image(img_wmaps + i, wd, ht, 1);
+  for(int n = 0; n < num_exposures; n++) _alloc_image(img_wmaps + n, wd, ht, 1);
 
   // pyramid with the sum of all weight pyramids
   // used to normalize each weight map
