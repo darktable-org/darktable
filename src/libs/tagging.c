@@ -46,6 +46,7 @@ typedef struct dt_lib_tagging_t
 {
   char keyword[1024];
   GtkEntry *entry;
+  GtkEntryCompletion *completion;
   GtkTreeView *attached_view, *dictionary_view;
   int imgsel;
   GtkWidget *attach_button, *detach_button, *new_button, *import_button, *export_button, *attached_window, *dictionary_window;
@@ -261,7 +262,7 @@ static void init_treeview(dt_lib_module_t *self, int which)
       char **last_tokens = NULL;
       int last_tokens_length = 0;
       GtkTreeIter last_parent = { 0 };
-      GList *sorted_tags = dt_sort_tag(tags, 0);
+      GList *sorted_tags = dt_sort_tag(tags, 0);  // ordered by full tag name
       tags = sorted_tags;
       for(GList *taglist = tags; taglist; taglist = g_list_next(taglist))
       {
@@ -455,7 +456,8 @@ static void _lib_tagging_tags_changed_callback(gpointer instance, dt_lib_module_
 }
 
 static void raise_signal_tag_changed(dt_lib_module_t *self)
-{ // raises change only for other modules
+{
+  // raises change only for other modules
   dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
@@ -693,6 +695,7 @@ static void set_keyword(dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
   const gchar *beg = g_strrstr(gtk_entry_get_text(d->entry), ",");
+
   if(!beg)
     beg = gtk_entry_get_text(d->entry);
   else
@@ -880,7 +883,9 @@ static void new_button_clicked(GtkButton *button, dt_lib_module_t *self)
   dt_image_synch_xmp(-1);
 
   /** clear input box */
+  gtk_entry_set_completion(GTK_ENTRY(d->entry), NULL);
   gtk_entry_set_text(d->entry, "");
+  gtk_entry_set_completion(GTK_ENTRY(d->entry), d->completion);
 
   init_treeview(self, 0);
   init_treeview(self, 1);
@@ -1520,6 +1525,7 @@ static void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, dt_lib_m
 static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+
   if((event->type == GDK_BUTTON_PRESS && event->button == 3)
     || (event->type == GDK_2BUTTON_PRESS && event->button == 1))
   {
@@ -2182,8 +2188,8 @@ static gboolean _lib_tagging_tag_destroy(GtkWidget *widget, GdkEvent *event, gpo
 
 static gboolean _match_selected_func(GtkEntryCompletion *completion, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data)
 {
+  const int column = gtk_entry_completion_get_text_column(completion);
   char *tag = NULL;
-  int column = gtk_entry_completion_get_text_column(completion);
 
   if(gtk_tree_model_get_column_type(model, column) != G_TYPE_STRING) return TRUE;
 
@@ -2228,16 +2234,16 @@ static gboolean _completion_match_func(GtkEntryCompletion *completion, const gch
     return FALSE;
   }
 
-  gint cur_pos = gtk_editable_get_position(e);
-  gboolean onLastTag = (g_strstr_len(&key[cur_pos], -1, ",") == NULL);
+  const gint cur_pos = gtk_editable_get_position(e);
+  const gboolean onLastTag = (g_strstr_len(&key[cur_pos], -1, ",") == NULL);
   if(!onLastTag)
   {
     return FALSE;
   }
 
-  char *tag = NULL;
   GtkTreeModel *model = gtk_entry_completion_get_model(completion);
-  int column = gtk_entry_completion_get_text_column(completion);
+  const int column = gtk_entry_completion_get_text_column(completion);
+  char *tag = NULL;
 
   if(gtk_tree_model_get_column_type(model, column) != G_TYPE_STRING) return FALSE;
 
@@ -2328,7 +2334,6 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
   gtk_widget_set_opacity(d->floating_tag_window, 0.8);
   gtk_window_move(GTK_WINDOW(d->floating_tag_window), x, y);
 
-
   GtkWidget *entry = gtk_entry_new();
   gtk_widget_set_size_request(entry, FLOATING_ENTRY_WIDTH, -1);
   gtk_widget_add_events(entry, GDK_FOCUS_CHANGE_MASK);
@@ -2341,6 +2346,7 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
   g_signal_connect(G_OBJECT(completion), "match-selected", G_CALLBACK(_match_selected_func), self);
   gtk_entry_completion_set_match_func(completion, _completion_match_func, NULL, NULL);
   gtk_entry_set_completion(GTK_ENTRY(entry), completion);
+  d->completion = completion;
 
   gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
   gtk_container_add(GTK_CONTAINER(d->floating_tag_window), entry);
