@@ -552,7 +552,7 @@ uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags
   if(imgid > 0)
   {
     char query[1024] = { 0 };
-    snprintf(query, sizeof(query), "SELECT DISTINCT T.id, T.name, T.flags, 1 AS inb, T.description "
+    snprintf(query, sizeof(query), "SELECT DISTINCT T.id, T.name, T.flags, 1 AS inb "
                                    "FROM main.tagged_images AS I "
                                    "JOIN data.tags T on T.id = I.tagid "
                                    "WHERE I.imgid = %d %s ORDER BY T.name",
@@ -563,7 +563,7 @@ uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags
   {
     if(ignore_dt_tags)
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-              "SELECT DISTINCT I.tagid, T.name, T.flags, COUNT(DISTINCT S.imgid) AS inb, T.description "
+              "SELECT DISTINCT I.tagid, T.name, T.flags, COUNT(DISTINCT S.imgid) AS inb "
               "FROM main.selected_images AS S "
               "LEFT JOIN main.tagged_images AS I ON I.imgid = S.imgid "
               "LEFT JOIN data.tags AS T ON T.id = I.tagid "
@@ -573,7 +573,7 @@ uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags
               -1, &stmt, NULL);
     else
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-              "SELECT DISTINCT I.tagid, T.name, T.flags, COUNT(DISTINCT S.imgid) AS inb, T.description "
+              "SELECT DISTINCT I.tagid, T.name, T.flags, COUNT(DISTINCT S.imgid) AS inb "
               "FROM main.selected_images AS S "
               "LEFT JOIN main.tagged_images AS I ON I.imgid = S.imgid "
               "LEFT JOIN data.tags AS T ON T.id = I.tagid "
@@ -592,7 +592,7 @@ uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags
     t->id = sqlite3_column_int(stmt, 0);
     t->tag = g_strdup((char *)sqlite3_column_text(stmt, 1));
     t->leave = g_strrstr(t->tag, "|");
-    if (!t->leave) t->leave = t->tag;
+    t->leave = t->leave ? t->leave + 1 : t->tag;
     t->flags = sqlite3_column_int(stmt, 2);
     uint32_t imgnb = sqlite3_column_int(stmt, 3);
     t->count = imgnb;
@@ -600,7 +600,6 @@ uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags
     // 1: tag attached on some selected images
     // 2: tag attached on all selected images
     t->select = (nb_selected == 0) ? 0 : (imgnb == nb_selected) ? 2 : (imgnb == 0) ? 0 : 1;
-    t->synonym = g_strdup((char *)sqlite3_column_text(stmt, 4));
     *result = g_list_append(*result, t);
     count++;
   }
@@ -934,7 +933,7 @@ uint32_t dt_tag_get_suggestions(GList **result)
     dt_tag_t *t = g_malloc0(sizeof(dt_tag_t));
     t->tag = g_strdup((char *)sqlite3_column_text(stmt, 0));
     t->leave = g_strrstr(t->tag, "|");
-    if (!t->leave) t->leave = t->tag;
+    t->leave = t->leave ? t->leave + 1 : t->tag;
     t->id = sqlite3_column_int(stmt, 1);
     t->count = sqlite3_column_int(stmt, 2);
     uint32_t imgnb = sqlite3_column_int(stmt, 3);
@@ -1106,7 +1105,7 @@ uint32_t dt_tag_get_with_usage(GList **result)
     dt_tag_t *t = g_malloc0(sizeof(dt_tag_t));
     t->tag = g_strdup((char *)sqlite3_column_text(stmt, 0));
     t->leave = g_strrstr(t->tag, "|");
-    if (!t->leave) t->leave = t->tag;
+    t->leave = t->leave ? t->leave + 1 : t->tag;
     t->id = sqlite3_column_int(stmt, 1);
     t->count = sqlite3_column_int(stmt, 2);
     uint32_t imgnb = sqlite3_column_int(stmt, 3);
