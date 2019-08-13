@@ -266,7 +266,7 @@ guint dt_tag_remove_list(GList *tag_list)
     const guint tagid = ((dt_tag_t *)taglist->data)->id;
     flatlist = dt_util_dstrcat(flatlist, "%u,", tagid);
     count++;
-    if(strlen(flatlist) > 1 && count > 1000)
+    if(flatlist && count > 1000)
     {
       flatlist[strlen(flatlist)-1] = '\0';
       dt_tag_delete_tag_batch(flatlist);
@@ -276,7 +276,7 @@ guint dt_tag_remove_list(GList *tag_list)
       count = 0;
     }
   }
-  if(flatlist && strlen(flatlist) > 1)
+  if(flatlist)
   {
     flatlist[strlen(flatlist)-1] = '\0';
     dt_tag_delete_tag_batch(flatlist);
@@ -589,7 +589,7 @@ static void dt_set_darktable_tags()
                               "SELECT COUNT(*) FROM memory.darktable_tags",
                               -1, &stmt, NULL);
   sqlite3_step(stmt);
-  guint count = sqlite3_column_int(stmt, 0);
+  const guint count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
   if (!count)
@@ -612,7 +612,7 @@ uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags
   if(imgid > 0)
   {
     char query[1024] = { 0 };
-    snprintf(query, sizeof(query), "SELECT DISTINCT T.id, T.name, T.flags, T.description, 1 AS inb "
+    snprintf(query, sizeof(query), "SELECT DISTINCT T.id, T.name, T.flags, T.synonyms, 1 AS inb "
                                    "FROM main.tagged_images AS I "
                                    "JOIN data.tags T on T.id = I.tagid "
                                    "WHERE I.imgid = %d %s ORDER BY T.name",
@@ -623,7 +623,7 @@ uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags
   {
     if(ignore_dt_tags)
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-              "SELECT DISTINCT I.tagid, T.name, T.flags, T.description, COUNT(DISTINCT S.imgid) AS inb "
+              "SELECT DISTINCT I.tagid, T.name, T.flags, T.synonyms, COUNT(DISTINCT S.imgid) AS inb "
               "FROM main.selected_images AS S "
               "LEFT JOIN main.tagged_images AS I ON I.imgid = S.imgid "
               "LEFT JOIN data.tags AS T ON T.id = I.tagid "
@@ -633,7 +633,7 @@ uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags
               -1, &stmt, NULL);
     else
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-              "SELECT DISTINCT I.tagid, T.name, T.flags, T.description, COUNT(DISTINCT S.imgid) AS inb "
+              "SELECT DISTINCT I.tagid, T.name, T.flags, T.synonyms, COUNT(DISTINCT S.imgid) AS inb "
               "FROM main.selected_images AS S "
               "LEFT JOIN main.tagged_images AS I ON I.imgid = S.imgid "
               "LEFT JOIN data.tags AS T ON T.id = I.tagid "
@@ -668,14 +668,14 @@ uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags
   return count;
 }
 
-uint32_t dt_tag_get_attached_export(gint imgid, GList **result)
+uint32_t dt_tag_get_attached_export(const gint imgid, GList **result)
 {
   sqlite3_stmt *stmt;
   dt_set_darktable_tags();
   if(imgid > 0)
   {
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-            "SELECT DISTINCT T.id, T.name, T.flags, T.description, S.selected FROM data.tags AS T "
+            "SELECT DISTINCT T.id, T.name, T.flags, T.synonyms, S.selected FROM data.tags AS T "
             "JOIN (SELECT DISTINCT I.tagid, T.name "
               "FROM main.tagged_images AS I  "
               "LEFT JOIN data.tags AS T ON T.id = I.tagid "
@@ -690,7 +690,7 @@ uint32_t dt_tag_get_attached_export(gint imgid, GList **result)
   else
   {
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-            "SELECT DISTINCT T.id, T.name, T.flags, T.description, S.selected FROM data.tags AS T "
+            "SELECT DISTINCT T.id, T.name, T.flags, T.synonyms, S.selected FROM data.tags AS T "
             "JOIN (SELECT DISTINCT I.tagid, T.name "
               "FROM main.selected_images AS S "
               "LEFT JOIN main.tagged_images AS I ON I.imgid = S.imgid "
@@ -830,10 +830,10 @@ GList *dt_tag_get_hierarchical(gint imgid)
   GList *taglist = NULL;
   GList *tags = NULL;
 
-  int count = dt_tag_get_attached(imgid, &taglist, TRUE);
+  const int count = dt_tag_get_attached(imgid, &taglist, TRUE);
 
   if(count < 1) return NULL;
-  gboolean export_private_tags = dt_conf_get_bool("plugins/lighttable/export/export_private_tags");
+  const gboolean export_private_tags = dt_conf_get_bool("plugins/lighttable/export/export_private_tags");
 
   while(taglist)
   {
@@ -925,7 +925,7 @@ uint32_t dt_tag_get_suggestions(GList **result)
   const uint32_t nb_selected = dt_selected_images_count();
   /* Now put all the bits together */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT T.name, T.id, MT.count, CT.imgnb, T.flags, T.description "
+                              "SELECT T.name, T.id, MT.count, CT.imgnb, T.flags, T.synonyms "
                               "FROM memory.taglist MT "
                               "JOIN data.tags T ON MT.id = T.id "
                               "LEFT JOIN (SELECT tagid, COUNT(DISTINCT imgid) AS imgnb FROM main.tagged_images "
@@ -1105,7 +1105,7 @@ uint32_t dt_tag_get_with_usage(GList **result)
 
   /* Now put all the bits together */
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT T.name, T.id, MT.count, CT.imgnb, T.flags, T.description "
+                              "SELECT T.name, T.id, MT.count, CT.imgnb, T.flags, T.synonyms "
                               "FROM data.tags T "
                               "LEFT JOIN memory.taglist MT ON MT.id = T.id "
                               "LEFT JOIN (SELECT tagid, COUNT(DISTINCT imgid) AS imgnb FROM main.tagged_images "
@@ -1184,7 +1184,7 @@ gchar *dt_tag_get_synonyms(gint tagid)
   gchar *synonyms = NULL;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT description FROM data.tags WHERE id = ?1 ",
+                              "SELECT synonyms FROM data.tags WHERE id = ?1 ",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
 
@@ -1203,7 +1203,7 @@ void dt_tag_set_synonyms(gint tagid, gchar *synonyms_entry)
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE data.tags SET description = ?2 WHERE id = ?1 ",
+                              "UPDATE data.tags SET synonyms = ?2 WHERE id = ?1 ",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, synonyms, -1, SQLITE_TRANSIENT);
@@ -1256,7 +1256,7 @@ void dt_tag_add_synonym(gint tagid, gchar *synonym)
   }
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "UPDATE data.tags SET description = ?2 WHERE id = ?1 ",
+                              "UPDATE data.tags SET synonyms = ?2 WHERE id = ?1 ",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, synonyms, -1, SQLITE_TRANSIENT);
