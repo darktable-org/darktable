@@ -1705,15 +1705,13 @@ static gboolean row_tooltip_setup(GtkWidget *treeview, gint x, gint y, gboolean 
       GtkTooltip* tooltip, dt_lib_module_t *self)
 {
   gboolean res = FALSE;
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
   GtkTreePath *path = NULL;
   // Get tree path mouse position
   if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), x, y, &path, NULL, NULL, NULL))
   {
-    GtkTreeModel *model;
+    GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
     GtkTreeIter iter;
-    gtk_tree_selection_select_path(selection, path);
-    if (gtk_tree_selection_get_selected(selection, &model, &iter))
+    if (gtk_tree_model_get_iter(model, &iter, path))
     {
       char *tagname;
       guint tagid;
@@ -1728,7 +1726,7 @@ static gboolean row_tooltip_setup(GtkWidget *treeview, gint x, gint y, gboolean 
           char *text = dt_util_dstrcat(NULL, _("%s"), tagname);
           text = dt_util_dstrcat(text, " %s\n", (flags & DT_TF_PRIVATE) ? _("(private)") : "");
           text = dt_util_dstrcat(text, "synonyms: %s", (synonyms && synonyms[0]) ? synonyms : " - ");
-          gtk_tooltip_set_text (tooltip, text);
+          gtk_tooltip_set_text(tooltip, text);
           g_free(text);
           res = TRUE;
         }
@@ -2076,7 +2074,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(liststore));
   g_object_unref(liststore);
   gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("attached tags,\ndouble-click to detach"
-                                                        "\nCtrl-wheel scroll to resize the window"));
+                                                  "\nright-click for other actions on attached tag,"
+                                                  "\nCtrl-wheel scroll to resize the window"));
   dt_gui_add_help_link(GTK_WIDGET(view), "tagging.html#tagging_usage");
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(click_on_view_attached), (gpointer)self);
   g_signal_connect(G_OBJECT(view), "scroll-event", G_CALLBACK(mouse_scroll_attached), (gpointer)self);

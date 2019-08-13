@@ -105,9 +105,6 @@ uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags
 /** sort tags per name (including '|') or per count (desc) */
 GList *dt_sort_tag(GList *tags, gboolean byname);
 
-/** get the list of tag for export */
-GList *dt_tag_get_list_export(gint imgid);
-
 /** get a list of tags,
  *  the difference to dt_tag_get_attached() is that this one splits at '|' and filters out the "darktable|"
  * tags. */
