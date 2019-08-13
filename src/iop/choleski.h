@@ -288,6 +288,12 @@ static inline int solve_hermitian(const float *const restrict A,
   float *const restrict x DT_ALIGNED_ARRAY = dt_alloc_sse_ps(n);
   float *const restrict L DT_ALIGNED_ARRAY = dt_alloc_sse_ps(n * n);
 
+  if(!x || !L)
+  {
+    dt_control_log(_("Choleski decomposition failed to allocate memory, check your RAM settings"));
+    return 0;
+  }
+
   // LU decomposition
   valid = (checks) ? choleski_decompose_safe(__builtin_assume_aligned(A, 64),
                                              __builtin_assume_aligned(L, 64), n) :
@@ -385,16 +391,37 @@ static inline int pseudo_solve(float *const restrict A,
   float *const restrict A_square DT_ALIGNED_ARRAY = dt_alloc_sse_ps(n * n);
   float *const restrict y_square DT_ALIGNED_ARRAY = dt_alloc_sse_ps(n);
 
-  // Prepare the least squares matrix = A' A
-  valid = transpose_dot_matrix(__builtin_assume_aligned(A, 64),
-                               __builtin_assume_aligned(A_square, 64),
-                               m, n);
+  if(!A_square || !y_square)
+  {
+    dt_control_log(_("Choleski decomposition failed to allocate memory, check your RAM settings"));
+    return 0;
+  }
 
-  // Prepare the y square vector = A' y
-  valid = transpose_dot_vector(__builtin_assume_aligned(A, 64),
-                               __builtin_assume_aligned(y, 64),
-                               __builtin_assume_aligned(y_square, 64),
-                               m, n);
+  #ifdef _OPENMP
+  #pragma omp parallel sections
+  #endif
+  {
+    #ifdef _OPENMP
+    #pragma omp section
+    #endif
+    {
+      // Prepare the least squares matrix = A' A
+      valid = transpose_dot_matrix(__builtin_assume_aligned(A, 64),
+                                   __builtin_assume_aligned(A_square, 64),
+                                   m, n);
+    }
+
+    #ifdef _OPENMP
+    #pragma omp section
+    #endif
+    {
+      // Prepare the y square vector = A' y
+      valid = transpose_dot_vector(__builtin_assume_aligned(A, 64),
+                                   __builtin_assume_aligned(y, 64),
+                                   __builtin_assume_aligned(y_square, 64),
+                                   m, n);
+    }
+  }
 
 
   // Solve A' A x = A' y for x

@@ -213,7 +213,7 @@ static void pixel_rgb_norm_power(const float *const restrict image,
 #endif
   for(int c = 0; c < 3; ++c)
   {
-    const float value = image[k + c];
+    const float value = fabsf(image[k + c]);
     const float RGB_square = value * value;
     const float RGB_cubic = RGB_square * value;
     numerator += RGB_cubic;
@@ -235,14 +235,14 @@ static void pixel_rgb_geomean(const float *const restrict image,
 {
   // geometric_mean(RGB). Kind of interesting for saturated colours (maps them to shadows)
 
-  float lum = 0.0f;
+  float lum = 1.0f;
 
 #ifdef _OPENMP
 #pragma omp simd aligned(image:64) reduction(*:lum)
 #endif
   for(int c = 0; c < 3; ++c)
   {
-    lum *= image[k + c];
+    lum *= fabsf(image[k + c]);
   }
 
   luminance[k / ch] = linear_contrast(exposure_boost * powf(lum, 1.0f / 3.0f), fulcrum, contrast_boost);
