@@ -368,26 +368,31 @@ __DT_CLONE_TARGETS__
 static inline void quantize(const float *const restrict image,
                             float *const restrict out,
                             const size_t num_elem,
-                            const float sampling)
+                            const float sampling, const float clip_min, const float clip_max)
 {
   // Quantize in exposure levels evenly spaced in log by sampling
 
   if(sampling == 0.0f)
   {
     // No-op
-    dt_simd_memcpy(image, out, num_elem);
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+dt_omp_firstprivate(image, out, num_elem, sampling, clip_min, clip_max) \
+schedule(static) aligned(image, out:64)
+#endif
+    for(size_t k = 0; k < num_elem; k++)
+      out[k] = CLAMP(image[k], clip_min, clip_max);
   }
-
   else if(sampling == 1.0f)
   {
     // fast track
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(image, out, num_elem, sampling) \
+dt_omp_firstprivate(image, out, num_elem, sampling, clip_min, clip_max) \
 schedule(static) aligned(image, out:64)
 #endif
     for(size_t k = 0; k < num_elem; k++)
-      out[k] = exp2f(floorf(log2f(image[k])));
+      out[k] = CLAMP(exp2f(floorf(log2f(image[k]))), clip_min, clip_max);
   }
 
   else
@@ -395,11 +400,11 @@ schedule(static) aligned(image, out:64)
     // slow track
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(image, out, num_elem, sampling) \
+dt_omp_firstprivate(image, out, num_elem, sampling, clip_min, clip_max) \
 schedule(static) aligned(image, out:64)
 #endif
     for(size_t k = 0; k < num_elem; k++)
-      out[k] = exp2f(floorf(log2f(image[k]) / sampling) * sampling);
+      out[k] = CLAMP(exp2f(floorf(log2f(image[k]) / sampling) * sampling), clip_min, clip_max);
   }
 }
 
@@ -409,7 +414,7 @@ static inline void fast_guided_filter(float *const restrict image,
                                  const size_t width, const size_t height,
                                  const int radius, float feathering, const int iterations,
                                  const dt_iop_guided_filter_blending_t filter, const float scale,
-                                 const float quantization)
+                                 const float quantization, const float quantize_min, const float quantize_max)
 {
   // Works in-place on a grey image
 
@@ -419,20 +424,30 @@ static inline void fast_guided_filter(float *const restrict image,
   const size_t ds_height = height / scaling;
   const size_t ds_width = width / scaling;
   int ds_radius = (radius < 4) ? 1 : radius / scaling;
+  const size_t num_elem_ds = ds_width * ds_height;
+  const size_t num_elem = width * height;
+
+  float *const restrict ds_image DT_ALIGNED_ARRAY = dt_alloc_sse_ps(num_elem_ds);
+  float *const restrict ds_mask DT_ALIGNED_ARRAY = dt_alloc_sse_ps(num_elem_ds);
+  float *const restrict ds_a DT_ALIGNED_ARRAY = dt_alloc_sse_ps(num_elem_ds);
+  float *const restrict ds_b DT_ALIGNED_ARRAY = dt_alloc_sse_ps(num_elem_ds);
+  float *const restrict a DT_ALIGNED_ARRAY = dt_alloc_sse_ps(num_elem);
+  float *const restrict b DT_ALIGNED_ARRAY = dt_alloc_sse_ps(num_elem);
+
+  if(!ds_image || !ds_mask || !ds_a || !ds_b || !a || !b)
+  {
+    dt_control_log(_("fast guided filter failed to allocate memory, check your RAM settings"));
+    goto clean;
+  }
 
   // Downsample the image for speed-up
-  float *ds_image DT_ALIGNED_ARRAY = dt_alloc_sse_ps(ds_width * ds_height);
   interpolate_bilinear(image, width, height, ds_image, ds_width, ds_height, 1);
-
-  float *ds_mask DT_ALIGNED_ARRAY = dt_alloc_sse_ps(ds_width * ds_height);
-  float *ds_a DT_ALIGNED_ARRAY = dt_alloc_sse_ps(ds_width * ds_height);
-  float *ds_b DT_ALIGNED_ARRAY = dt_alloc_sse_ps(ds_width * ds_height);
 
   // Iterations of filter models the diffusion, sort of
   for(int i = 0; i < iterations; ++i)
   {
     // (Re)build the mask from the quantized image to help guiding
-    quantize(ds_image, ds_mask, ds_width * ds_height, quantization);
+    quantize(ds_image, ds_mask, ds_width * ds_height, quantization, quantize_min, quantize_max);
 
     // Perform the patch-wise variance analyse to get
     // the a and b parameters for the linear blending s.t. mask = a * I + b
@@ -445,7 +460,7 @@ static inline void fast_guided_filter(float *const restrict image,
     if(i != iterations - 1)
     {
       // Process the intermediate filtered image
-      apply_linear_blending(ds_image, ds_a, ds_b, ds_width * ds_height);
+      apply_linear_blending(ds_image, ds_a, ds_b, num_elem_ds);
     }
     else
     {
@@ -453,24 +468,22 @@ static inline void fast_guided_filter(float *const restrict image,
       ds_radius *= sqrtf(2.0f);
     }
   }
-  dt_free_align(ds_mask);
-  dt_free_align(ds_image);
 
   // Upsample the blending parameters a and b
-  const size_t num_elem_2 = width * height;
-  float *a DT_ALIGNED_ARRAY = dt_alloc_sse_ps(num_elem_2);
-  float *b DT_ALIGNED_ARRAY = dt_alloc_sse_ps(num_elem_2);
   interpolate_bilinear(ds_a, ds_width, ds_height, a, width, height, 1);
   interpolate_bilinear(ds_b, ds_width, ds_height, b, width, height, 1);
-  dt_free_align(ds_a);
-  dt_free_align(ds_b);
 
   // Finally, blend the guided image
   if(filter == DT_GF_BLENDING_LINEAR)
-    apply_linear_blending(image, a, b, num_elem_2);
+    apply_linear_blending(image, a, b, num_elem);
   else if(filter == DT_GF_BLENDING_GEOMEAN)
-    apply_linear_blending_w_geomean(image, a, b, num_elem_2);
+    apply_linear_blending_w_geomean(image, a, b, num_elem);
 
-  dt_free_align(a);
-  dt_free_align(b);
+clean:
+  if(a) dt_free_align(a);
+  if(b) dt_free_align(b);
+  if(ds_a) dt_free_align(ds_a);
+  if(ds_b) dt_free_align(ds_b);
+  if(ds_mask) dt_free_align(ds_mask);
+  if(ds_image) dt_free_align(ds_image);
 }
