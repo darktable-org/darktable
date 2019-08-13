@@ -2932,7 +2932,7 @@ static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
 
   std::unique_ptr<Exiv2::Value> v2(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
 
-  GList *tags = dt_tag_get_list_export(imgid);
+  GList *tags = dt_tag_get_list(imgid);
   while(tags)
   {
     v1->read((char *)tags->data);

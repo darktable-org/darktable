@@ -724,50 +724,6 @@ uint32_t dt_tag_get_attached_export(gint imgid, GList **result)
   return count;
 }
 
-GList *dt_tag_get_list(gint imgid)
-{
-  GList *taglist = NULL;
-  GList *tags = NULL;
-
-  gboolean omit_tag_hierarchy = dt_conf_get_bool("omit_tag_hierarchy");
-
-  uint32_t count = dt_tag_get_attached(imgid, &taglist, TRUE);
-
-  if(count < 1) return NULL;
-
-  for(; taglist; taglist = g_list_next(taglist))
-  {
-    dt_tag_t *t = (dt_tag_t *)taglist->data;
-    gchar *value = t->tag;
-
-    size_t j = 0;
-    gchar **pch = g_strsplit(value, "|", -1);
-
-    if(pch != NULL)
-    {
-      if(omit_tag_hierarchy)
-      {
-        char **iter = pch;
-        for(; *iter && *(iter + 1); iter++);
-        if(*iter) tags = g_list_prepend(tags, g_strdup(*iter));
-      }
-      else
-      {
-        while(pch[j] != NULL)
-        {
-          tags = g_list_prepend(tags, g_strdup(pch[j]));
-          j++;
-        }
-      }
-      g_strfreev(pch);
-    }
-  }
-
-  dt_tag_free_result(&taglist);
-
-  return dt_util_glist_uniq(tags);
-}
-
 static gint sort_tag_by_path(gconstpointer a, gconstpointer b)
 {
   const dt_tag_t *tuple_a = (const dt_tag_t *)a;
@@ -819,7 +775,7 @@ GList *dt_sort_tag(GList *tags, gint sort_type)
   return sorted_tags;
 }
 
-GList *dt_tag_get_list_export(gint imgid)
+GList *dt_tag_get_list(gint imgid)
 {
   GList *taglist = NULL;
   GList *tags = NULL;
