@@ -48,6 +48,11 @@
     </screenshot>
   </screenshots>
   <content_rating type="oars-1.1" />
+  <releases>
+    <release date="2019-03-21" version="2.6.2"/>
+    <release date="2019-03-07" version="2.6.1"/>
+    <release date="2018-12-24" version="2.6.0"/>
+  </releases>
   <url type="homepage">https://www.darktable.org/</url>
   <url type="bugtracker">https://redmine.darktable.org/projects/darktable/issues</url>
   <url type="help">https://www.darktable.org/usermanual/</url>
