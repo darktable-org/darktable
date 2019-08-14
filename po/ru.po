@@ -4182,13 +4182,13 @@ msgstr "Описание профиля"
 #: ../src/gui/preferences.c:1401 ../src/gui/presets.c:411
 msgid "auto apply this preset to matching images"
 msgstr ""
-"Автоматически применять к фотографиям,\n"
+"Автоматически применять к снимкам,\n"
 "соответствующим указанным критериям"
 
 #: ../src/gui/preferences.c:1404 ../src/gui/presets.c:414
 msgid "only show this preset for matching images"
 msgstr ""
-"Показывать этот профиль только для фотографий, \n"
+"Показывать профиль только для снимков, \n"
 "соответствующих указанным критериям"
 
 #: ../src/gui/preferences.c:1406 ../src/gui/presets.c:415
@@ -4364,7 +4364,7 @@ msgstr "Обновить"
 
 #: ../src/gui/styles_dialog.c:465
 msgid "can't create style out of unaltered image"
-msgstr "Невозможно создать стиль из фотографии без изменений"
+msgstr "Невозможно создать стиль из снимка без изменений"
 
 #: ../src/imageio/format/copy.c:124 ../src/libs/copy_history.c:295
 #: ../src/libs/image.c:204
@@ -5360,7 +5360,7 @@ msgstr "Анализ кадра"
 
 #: ../src/iop/ashift.c:4968
 msgid "rotate image"
-msgstr "Вращать фотографию"
+msgstr "Вращать снимок"
 
 #: ../src/iop/ashift.c:4969 ../src/iop/ashift.c:4970
 msgid "apply lens shift correction in one direction"
@@ -6129,7 +6129,7 @@ msgstr "Размер рамки"
 #: ../src/iop/borders.c:195
 msgctxt "accel"
 msgid "pick border color from image"
-msgstr "Взять цвет рамки с фотографии"
+msgstr "Взять цвет рамки со снимка"
 
 #: ../src/iop/borders.c:196
 msgctxt "accel"
@@ -6139,7 +6139,7 @@ msgstr "Размер линии рамки"
 #: ../src/iop/borders.c:197
 msgctxt "accel"
 msgid "pick frame line color from image"
-msgstr "Взять цвет линии рамки с фотографии"
+msgstr "Взять цвет линии рамки со снимка"
 
 #: ../src/iop/borders.c:591
 msgid "15:10 postcard white"
@@ -6281,7 +6281,7 @@ msgstr "Смещение линии рамки"
 
 #: ../src/iop/borders.c:1056
 msgid "offset of the frame line beginning on picture side"
-msgstr "Смещение линии рамки от стороны фотографии"
+msgstr "Смещение линии рамки от стороны снимка"
 
 #: ../src/iop/borders.c:1064
 msgid "select border color"
@@ -6293,7 +6293,7 @@ msgstr "Цвет рамки"
 
 #: ../src/iop/borders.c:1069
 msgid "pick border color from image"
-msgstr "Взять цвет рамки с фотографии"
+msgstr "Взять цвет рамки со снимка"
 
 #: ../src/iop/borders.c:1080
 msgid "select frame line color"
@@ -6305,7 +6305,7 @@ msgstr "Цвет линии рамки"
 
 #: ../src/iop/borders.c:1085
 msgid "pick frame line color from image"
-msgstr "Взять цвет линии рамки с фотографии"
+msgstr "Взять цвет линии рамки со снимка"
 
 #. make sure you put all your translatable strings into _() !
 #: ../src/iop/cacorrect.c:55
@@ -7347,7 +7347,7 @@ msgstr "Получить"
 
 #: ../src/iop/colortransfer.c:692
 msgid "analyze this image"
-msgstr "Проанализировать эту фотографию"
+msgstr "Проанализировать этот снимок"
 
 #: ../src/iop/colortransfer.c:696 ../src/libs/metadata.c:392
 msgid "apply"
@@ -7355,7 +7355,7 @@ msgstr "Применить"
 
 #: ../src/iop/colortransfer.c:697
 msgid "apply previously analyzed image look to this image"
-msgstr "Применить характеристики проанализированной фотографии"
+msgstr "Применить характеристики проанализированного ранее снимка"
 
 #: ../src/iop/colorzones.c:134
 msgid "color zones"
@@ -11546,11 +11546,11 @@ msgstr "Создать дубликат в текущей коллекции в�
 
 #: ../src/libs/image.c:229
 msgid "rotate selected images 90 degrees CCW"
-msgstr "Повернуть выбранные фотографии на 90° против часовой стрелки"
+msgstr "Повернуть выбранные снимки на 90° против часовой стрелки"
 
 #: ../src/libs/image.c:235
 msgid "rotate selected images 90 degrees CW"
-msgstr "Повернуть выбранные фотографии на 90° по часовой стрелке"
+msgstr "Повернуть выбранные снимки на 90° по часовой стрелке"
 
 #: ../src/libs/image.c:239
 msgid "reset rotation"
@@ -11734,7 +11734,7 @@ msgstr "Применить метаданные при импорте"
 
 #: ../src/libs/import.c:469
 msgid "apply some metadata to all newly imported images."
-msgstr "Применить некоторые метаданные ко всем импортированным фотографиям"
+msgstr "Применить некоторые метаданные ко всем импортированным снимкам"
 
 #: ../src/libs/import.c:510
 msgid "comma separated list of tags"
@@ -13613,7 +13613,7 @@ msgstr "Профиль гистограммы из %s или %s"
 #: ../src/views/tethering.c:396
 msgctxt "accel"
 msgid "toggle film strip"
-msgstr "Переключить ленту фотографий"
+msgstr "Переключить ленту снимков"
 
 #. Zoom shortcuts
 #: ../src/views/darkroom.c:3159
@@ -13635,12 +13635,12 @@ msgstr "Заполнение по ширине"
 #: ../src/views/darkroom.c:3167
 msgctxt "accel"
 msgid "image forward"
-msgstr "Следующая фотография"
+msgstr "Следующий снимок"
 
 #: ../src/views/darkroom.c:3168
 msgctxt "accel"
 msgid "image back"
-msgstr "Предыдущая фотография"
+msgstr "Предыдущий снимок"
 
 #. toggle raw overexposure indication
 #: ../src/views/darkroom.c:3171
@@ -13869,7 +13869,7 @@ msgstr "Прокрутить в центр"
 #: ../src/views/lighttable.c:4332
 msgctxt "accel"
 msgid "realign images to grid"
-msgstr "Выровнять фотографии по сетке"
+msgstr "Выровнять снимки по сетке"
 
 #: ../src/views/lighttable.c:4333
 msgctxt "accel"
