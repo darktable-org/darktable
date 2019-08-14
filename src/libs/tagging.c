@@ -1830,7 +1830,7 @@ static void pop_menu_dictionary(GtkWidget *treeview, GdkEventButton *event, dt_l
   {
     guint count;
     gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_COUNT, &count, -1);
-    if (count)
+    if (count || d->collection[0])
     {
       menuitem = gtk_separator_menu_item_new();
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);

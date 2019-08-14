@@ -1228,8 +1228,24 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
   }
   else if(version == 2)
   {
-    TRY_EXEC("ALTER TABLE data.tags RENAME COLUMN description TO synonyms;",
-             "[init] can't change tags column name from description to synonyms\n");
+    //    With sqlite above or equal to 3.25.0 RENAME COLUMN can be used instead of the following code
+    //    TRY_EXEC("ALTER TABLE data.tags RENAME COLUMN description TO synonyms;",
+    //             "[init] can't change tags column name from description to synonyms\n");
+
+    TRY_EXEC("ALTER TABLE data.tags RENAME TO tmp_tags",  "[init] can't rename table tags\n");
+
+    TRY_EXEC("CREATE TABLE data.tags (id INTEGER PRIMARY KEY, name VARCHAR, "
+             "synonyms VARCHAR, flags INTEGER)",
+             "[init] can't create new tags table\n");
+
+    TRY_EXEC("INSERT INTO data.tags (id, name, synonyms, flags) SELECT id, name, description, flags "
+             "FROM tmp_tags",
+             "[init] can't populate tags table from tmp_tags\n");
+
+    TRY_EXEC("DROP TABLE tmp_tags", "[init] can't delete table tmp_tags\n");
+
+    TRY_EXEC("CREATE UNIQUE INDEX data.tags_name_idx ON tags (name)",
+             "[init] can't create tags_name_idx on tags table\n");
 
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
 
@@ -1376,7 +1392,7 @@ static void _create_data_schema(dt_database_t *db)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   ////////////////////////////// tags
-  sqlite3_exec(db->handle, "CREATE TABLE data.tags (id INTEGER PRIMARY KEY, name VARCHAR, icon BLOB, "
+  sqlite3_exec(db->handle, "CREATE TABLE data.tags (id INTEGER PRIMARY KEY, name VARCHAR, "
                            "synonyms VARCHAR, flags INTEGER)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE UNIQUE INDEX data.tags_name_idx ON tags (name)", NULL, NULL, NULL);
   ////////////////////////////// styles
