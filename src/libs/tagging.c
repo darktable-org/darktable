@@ -698,6 +698,12 @@ static void _lib_selection_changed_callback(gpointer instance, dt_lib_module_t *
     update_sel_on_tree(GTK_TREE_MODEL(d->dictionary_treestore));
 }
 
+static void collection_updated_callback(gpointer instance, dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  d->collection[0] = '\0';
+}
+
 static void set_keyword(dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
@@ -1722,34 +1728,40 @@ static void pop_menu_dictionary_rename_path(GtkWidget *menuitem, dt_lib_module_t
   g_free(tagname);
 }
 
-static void pop_menu_dictionary_goto_collection(GtkWidget *menuitem, dt_lib_module_t *self)
+static void pop_menu_dictionary_goto_tag_collection(GtkWidget *menuitem, dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
-  if (d->collection[0]) // that's a back to work
+  GtkTreeIter iter;
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->dictionary_view));
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->dictionary_view));
+  if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
-    dt_collection_deserialize(d->collection);
-    d->collection[0] = '\0';
-  }
-  else  // go to tag collection
-  {
-    GtkTreeIter iter;
-    GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->dictionary_view));
-    GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->dictionary_view));
-    if(gtk_tree_selection_get_selected(selection, &model, &iter))
+    char *path;
+    guint count;
+    gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_PATH, &path, DT_LIB_TAGGING_COL_COUNT, &count, -1);
+    if (count)
     {
-      char *path;
-      guint count;
-      gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_PATH, &path, DT_LIB_TAGGING_COL_COUNT, &count, -1);
-      if (count)
-      {
-        dt_collection_serialize(d->collection, 4096);
-        char *tag_collection = NULL;
-        tag_collection = dt_util_dstrcat(tag_collection, "1:0:3:%s$", path);
-        dt_collection_deserialize(tag_collection);
-        g_free(tag_collection);
-      }
-      g_free(path);
+      if (!d->collection[0]) dt_collection_serialize(d->collection, 4096);
+      char *tag_collection = NULL;
+      tag_collection = dt_util_dstrcat(tag_collection, "1:0:3:%s$", path);
+      dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated_callback), self);
+      dt_collection_deserialize(tag_collection);
+      dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated_callback), self);
+      g_free(tag_collection);
     }
+    g_free(path);
+  }
+}
+
+static void pop_menu_dictionary_goto_collection_back(GtkWidget *menuitem, dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  if (d->collection[0])
+  {
+    dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated_callback), self);
+    dt_collection_deserialize(d->collection);
+    dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated_callback), self);
+    d->collection[0] = '\0';
   }
 }
 
@@ -1828,15 +1840,31 @@ static void pop_menu_dictionary(GtkWidget *treeview, GdkEventButton *event, dt_l
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(d->dictionary_view));
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
+    if (d->collection[0])
+    {
+      char *collection = g_malloc(4096);
+      dt_collection_serialize(collection, 4096);
+      if (g_strcmp0(d->collection, collection) == 0) d->collection[0] = '\0';
+      g_free(collection);
+    }
     guint count;
     gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_COUNT, &count, -1);
     if (count || d->collection[0])
     {
       menuitem = gtk_separator_menu_item_new();
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-      menuitem = gtk_menu_item_new_with_label(d->collection[0] ? _("back to work") : _("go to tag collection"));
-      g_signal_connect(menuitem, "activate", (GCallback)pop_menu_dictionary_goto_collection, self);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+      if (count)
+      {
+        menuitem = gtk_menu_item_new_with_label(_("go to tag collection"));
+        g_signal_connect(menuitem, "activate", (GCallback)pop_menu_dictionary_goto_tag_collection, self);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+      }
+      if (d->collection[0])
+      {
+        menuitem = gtk_menu_item_new_with_label(_("go back to work"));
+        g_signal_connect(menuitem, "activate", (GCallback)pop_menu_dictionary_goto_collection_back, self);
+        gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+      }
     }
   }
 
@@ -1857,6 +1885,7 @@ static gboolean click_on_view_dictionary(GtkWidget *view, GdkEventButton *event,
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
 
   if((event->type == GDK_BUTTON_PRESS && event->button == 3)
+    || (d->tree_flag && event->type == GDK_BUTTON_PRESS && event->button == 1 && event->state & GDK_SHIFT_MASK)
     || (event->type == GDK_2BUTTON_PRESS && event->button == 1))
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
@@ -1869,6 +1898,11 @@ static gboolean click_on_view_dictionary(GtkWidget *view, GdkEventButton *event,
       {
         pop_menu_dictionary(view, event, self);
         gtk_tree_path_free(path);
+        return TRUE;
+      }
+      else if(d->tree_flag && event->type == GDK_BUTTON_PRESS && event->button == 1 && event->state & GDK_SHIFT_MASK)
+      {
+        gtk_tree_view_expand_row(GTK_TREE_VIEW(view), path, TRUE);
         return TRUE;
       }
       else if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
@@ -2223,8 +2257,6 @@ int position()
 
 void gui_init(dt_lib_module_t *self)
 {
-  setvbuf(stdout, NULL, _IONBF, 0);
-  printf("init\n");
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)malloc(sizeof(dt_lib_tagging_t));
   self->data = (void *)d;
   d->imgsel = -1;
@@ -2273,7 +2305,7 @@ void gui_init(dt_lib_module_t *self)
   renderer = gtk_cell_renderer_toggle_new();
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_set_cell_data_func(col, renderer, tree_select_show, NULL, NULL);
-  g_object_set(renderer, "indicator-size", 10, NULL);  // too big by default
+  g_object_set(renderer, "indicator-size", 8, NULL);  // too big by default
 
   col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
@@ -2389,7 +2421,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_cell_renderer_toggle_set_activatable(GTK_CELL_RENDERER_TOGGLE(renderer), TRUE);
   gtk_tree_view_column_set_cell_data_func(col, renderer, tree_select_show, NULL, NULL);
-  g_object_set(renderer, "indicator-size", 10, NULL);  // too big by default
+  g_object_set(renderer, "indicator-size", 8, NULL);  // too big by default
 
   col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
@@ -2461,6 +2493,8 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_lib_tagging_tags_changed_callback), self);
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                             G_CALLBACK(_lib_selection_changed_callback), self);
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+                            G_CALLBACK(collection_updated_callback), self);
 
   d->collection = g_malloc(4096);
   update_layout(self);
@@ -2475,6 +2509,8 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->entry));
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_tagging_redraw_callback), self);
   dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_tagging_tags_changed_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_selection_changed_callback), self);
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(collection_updated_callback), self);
   g_free(d->collection);
   free(self->data);
   self->data = NULL;
