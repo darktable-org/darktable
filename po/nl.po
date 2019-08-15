@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-08-11 10:59+0200\n"
-"PO-Revision-Date: 2019-08-11 11:36+0200\n"
+"PO-Revision-Date: 2019-08-15 13:46+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -1041,13 +1041,6 @@ msgid "very fast GPU"
 msgstr "zeer snelle GPU"
 
 #: ../build/src/preferences_gen.h:3970
-#, fuzzy
-#| msgid ""
-#| "defines how preview and full pixelpipe tasks are scheduled on OpenCL "
-#| "enabled systems. default - GPU processes full and CPU processes preview "
-#| "pipe (adaptable by config parameters); multiple GPUs - process both "
-#| "pixelpipes in parallel on two different GPUs; very fast GPU - process "
-#| "both pixelipes sequentially on the GPU."
 msgid ""
 "defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled "
 "systems. default - GPU processes full and CPU processes preview pipe "
@@ -1055,9 +1048,9 @@ msgid ""
 "parallel on two different GPUs; very fast GPU - process both pixelpipes "
 "sequentially on the GPU."
 msgstr ""
-"bepaalt hoe voorbeelden en volledige pixelpipe taken worden gepland op "
-"OpenCL systemen - GPU verwerkt volledig en CPU verwerkt preview pipe "
-"(aanpasbaar door instelbare parameters); meerdere GPU's - verwerkt beide "
+"bepaalt hoe voorbeeld en volledige pixelpipe taken worden gepland op OpenCL "
+"systemen, standaard - GPU verwerkt volledig en CPU verwerkt preview pipe "
+"(aanpasbaar met instelbare parameters); meerdere GPU's - verwerkt beide "
 "pixelpipes parallel op twee verschillende GPU's; zeer snelle GPU -verwerkt "
 "beide pixelpipes sequentieel op the GPU"
 
@@ -1480,10 +1473,8 @@ msgid "gamma Rec709 RGB"
 msgstr "gamma Rec709 RGB"
 
 #: ../src/common/colorspaces.c:1293
-#, fuzzy
-#| msgid "lin prophoto RGB"
 msgid "linear prophoto RGB"
-msgstr "lin prophoto RGB"
+msgstr "lineair prophoto RGB"
 
 #: ../src/common/colorspaces.c:1311
 msgid "BRG (for testing)"
@@ -2193,13 +2184,11 @@ msgstr[0] "lokale kopie van een afbeelding verwijderen"
 msgstr[1] "lokale kopieën van %d afbeeldingen verwijderen"
 
 #: ../src/control/jobs/control_jobs.c:1286
-#, fuzzy, c-format
-#| msgid "trashing %d image"
-#| msgid_plural "trashing %d images"
+#, c-format
 msgid "refreshing info for %d image"
 msgid_plural "refreshing info for %d images"
-msgstr[0] "stuur %d afbeelding naar de prullenbak"
-msgstr[1] "stuur %d afbeeldingen naar de prullenbak"
+msgstr[0] "ververst info voor %d afbeelding"
+msgstr[1] "ververst info voor %d afbeeldingen"
 
 #: ../src/control/jobs/control_jobs.c:1353
 #, c-format
@@ -3905,10 +3894,8 @@ msgid "vertical lines"
 msgstr "verticale lijnen"
 
 #: ../src/gui/guides.c:116
-#, fuzzy
-#| msgid "number of clusters"
 msgid "number of vertical guide lines"
-msgstr "aantal clusters"
+msgstr "aantal verticale hulplijnen"
 
 #: ../src/gui/guides.c:122
 msgid "subdivisions"
@@ -13155,10 +13142,8 @@ msgid "export all tags to a Lightroom keyword file"
 msgstr "exporteer alle labels naar een Lightroom trefwoorden bestand"
 
 #: ../src/libs/tagging.c:1528
-#, fuzzy
-#| msgid "toggle live view"
 msgid "toggle list / tree view"
-msgstr "live-view aan/uit"
+msgstr "wisselt lijst/boom weergave"
 
 #: ../src/libs/tagging.c:1536
 msgid "toggle with / without suggestion"
@@ -13864,10 +13849,8 @@ msgid "switch to lighttable"
 msgstr "schakel naar bibliotheek"
 
 #: ../src/views/darkroom.c:3309 ../src/views/lighttable.c:4490
-#, fuzzy
-#| msgid "zoom live view"
 msgid "zoom in the image"
-msgstr "zoom live-view"
+msgstr "inzoomen op de afbeelding"
 
 #: ../src/views/darkroom.c:3315
 msgid "unbounded zoom in the image"
@@ -14053,56 +14036,40 @@ msgid "open image in darkroom"
 msgstr "open afbeelding in ontwikkelen"
 
 #: ../src/views/lighttable.c:4484
-#, fuzzy
-#| msgid "switch to %s mode"
 msgid "switch to next/previous image"
-msgstr "schakel over op %s wijze"
+msgstr "overschakelen naar volgende/voorgaande afbeelding"
 
 #: ../src/views/lighttable.c:4497 ../src/views/lighttable.c:4519
 msgid "scroll the collection"
 msgstr "scroll door collectie"
 
 #: ../src/views/lighttable.c:4503
-#, fuzzy
-#| msgid "maximum number of images drawn on map"
 msgid "change number of images per row"
-msgstr "maximaal aantal op de kaart weer te geven afbeeldingen"
+msgstr "wijzig aantal afbeeldingen per rij"
 
 #: ../src/views/lighttable.c:4511
-#, fuzzy
-#| msgid "hide image overlays"
 msgid "change image order"
-msgstr "beeldoverlays verbergen"
+msgstr "afbeeldings volgorde wijzigen"
 
 #: ../src/views/lighttable.c:4525
-#, fuzzy
-#| msgid "rotate images"
 msgid "zoom all the images"
-msgstr "draai pixels"
+msgstr "inzoomen in op alle afbeeldingen"
 
 #: ../src/views/lighttable.c:4530
-#, fuzzy
-#| msgid "delete images"
 msgid "pan inside all the images"
-msgstr "verwijder afbeeldingen"
+msgstr "uitzoomen op alle afbeeldingen"
 
 #: ../src/views/lighttable.c:4536
-#, fuzzy
-#| msgid "capture images"
 msgid "zoom current image"
-msgstr "maak foto"
+msgstr "inzoomen op huidige afbeelding"
 
 #: ../src/views/lighttable.c:4542
-#, fuzzy
-#| msgid "applied style `%s' on current image"
 msgid "pan inside current image"
-msgstr "stijl '%s\" is toegepast op de huidige afbeelding"
+msgstr "uitzoomen op huidige afbeelding"
 
 #: ../src/views/lighttable.c:4549
-#, fuzzy
-#| msgid "zoom live view"
 msgid "zoom the main view"
-msgstr "zoom live-view"
+msgstr "zoom in op hoofdaanzicht"
 
 #: ../src/views/lighttable.c:4554
 msgid "pan inside the main view"
