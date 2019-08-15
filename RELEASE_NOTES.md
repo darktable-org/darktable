@@ -13,7 +13,7 @@ $ sha256sum darktable-2.8.0.exe
 ??? darktable-2.8.0.exe
 ```
 
-when updating from the currently stable 2.4.x series, please bear in mind that your edits will be preserved during this process, but it will not be possible to downgrade from 2.8 to 2.6.x any more.
+when updating from the currently stable 2.6.x series, please bear in mind that your edits will be preserved during this process, but it will not be possible to downgrade from 2.8 to 2.6.x any more.
 
 #### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
