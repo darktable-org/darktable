@@ -23,15 +23,59 @@
       <tbody>
         <row>
           <entry>
-            This panel is for managing tags on images. Tags are stored in both sidecar files
-            (.xmp) and within the darktable database for a faster access. The panel is divided
-            into two parts: the upper part contains the tag(s) currently attached to the image
-            under the cursor or the selected image(s) if the mouse is outside the lighttable.
-            The lower part contains a list of all available tags in the database, which can be
-            filtered in the text box above.
+            <para>
+              This panel is for managing tags on images. Tags are stored in both sidecar files
+              (.xmp) and within the darktable database for a faster access. The panel is divided
+              into two parts: the upper part contains the tag(s) currently attached to the image
+              under the cursor or the selected image(s) if the mouse is outside the lighttable.
+              The lower part contains a list of all available tags in the database, the dictionary, which can be
+              filtered in the text box above.
+            </para>
+            <para>
+              The list of available tags can be displayed in three different manners:
+              <itemizedlist>
+
+                <listitem><para>
+                  A flat list of tags
+                </para></listitem>
+
+                <listitem><para>
+                  A tree view useful for hierarchical tags
+                </para></listitem>
+
+                <listitem><para>
+                  A list of suggestions based on already attached tags on selected images.
+                </para></listitem>
+
+              </itemizedlist>
+            </para>
+            <para>
+              All views have the following characteristics;
+              <itemizedlist>
+
+                <listitem><para>
+                  On the left there is an indicator giving a status of the tag in relation with the selected images.
+                  A <quote>check-mark</quote> means that the tag is attached on all selected images.
+                  A <quote>minus</quote> means that the tag is attached at least on one selected image.
+                  On tree view, on the parent node, it means that at least one child tag is attached one
+                  a selected image.
+                </para></listitem>
+
+                <listitem><para>
+                  On the right the count of images attached to the tag in the database (dictionary view) or
+                  of selected images (attached view)
+                </para></listitem>
+
+                <listitem><para>
+                  A tag <italic>italic</italic> is considered as a category. A category is a tag which helps
+                  to organize the tags but doesn't bring information to the image. A category is not exported.
+                </para></listitem>
+
+              </itemizedlist>
+            </para>
           </entry>
           <entry>
-            <graphic fileref="lighttable/images/panel_tagging.png" scalefit="1" width="80%" align="center" />
+            <graphic fileref="lighttable/images/panel_tagging-1.png" scalefit="1" width="80%" align="center" />
           </entry>
         </row>
       </tbody>
@@ -39,14 +83,50 @@
   </informaltable>
 
   <para>
-    New tags get added to the list either by typing into the text box and pressing the
-    <quote>new</quote> button, or if an automatically generated tag gets attached to an image,
-    or on import of already tagged images. darktable sorts the list of tags by relevance and
-    frequency of usage.
+    New tags get added to the list in different ways.
+    <itemizedlist>
+
+      <listitem><para>
+        on import of a text file (lightroom compatible format)
+      </para></listitem>
+
+      <listitem><para>
+        on import of already tagged images
+      </para></listitem>
+
+      <listitem><para>
+        in sub menu <quote>create tag</quote>
+      </para></listitem>
+
+      <listitem><para>
+        if an automatically generated tag gets attached to an image (see dartable tags)
+      </para></listitem>
+
+      <listitem><para>
+        by typing into the text box and pressing the <quote>new</quote> button. Hierarchical
+        tags are created using the pipe symbol <quote>|</quote>.
+      </para></listitem>
+
+    </itemizedlist>
+
   </para>
 
   <para>
-    Hierarchical tags are supported and can be created using the pipe symbol <quote>|</quote>.
+    The goal of tags is to add information to the images within a given keywordset.
+    But when the number of tags becomes large it is interesting to organize them as a tree.
+    The parent tags may not add information to the image. For example the tag <quote>color</quote>
+    in <quote>color|white</quote>. In this case <quote>color</quote> will automatically
+    seen as <quote>category</quote> when it is not in the dictionary itself, or otherwize, it can be set
+    explicitly as a <quote>category</quote> (see create or edit command).
+  </para>
+
+  <para>
+    A tag can also be set as <quote>private</quote> when it be not always exported.
+  </para>
+
+  <para>
+    Synonyms can be added to a tag. For example <quote>juvenile</quote>, <quote>kid</quote> or <quote>youth</quote>
+    can be set as synonyms of <quote>child</quote>.
   </para>
 
   <para>
@@ -66,6 +146,11 @@
     <title>Usage</title>
 
     <sect4 id="tagging_usage_attach">
+
+      <para>
+        <graphic fileref="lighttable/images/panel_tagging_attached-1.png" scalefit="1" width="60%" align="center"></graphic>
+      </para>
+
 
       <title>attach</title>
 
