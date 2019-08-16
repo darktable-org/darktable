@@ -58,6 +58,7 @@ typedef struct dt_lib_tagging_t
   int floating_tag_imgid;
   gboolean tree_flag, suggestion_flag, sort_count_flag, hide_path_flag, dttags_flag;
   char *collection;
+  GtkEntryCompletion *completion;
 } dt_lib_tagging_t;
 
 typedef struct dt_tag_op_t
@@ -2103,8 +2104,9 @@ static void update_layout(dt_lib_module_t *self)
       gtk_list_store_clear(GTK_LIST_STORE(store));
       gtk_tree_view_set_model(GTK_TREE_VIEW(d->dictionary_view), GTK_TREE_MODEL(d->dictionary_treefilter));
       g_object_unref(d->dictionary_treefilter);
+      if (d->completion) gtk_entry_completion_set_model(d->completion, NULL);
     }
-    gtk_widget_set_visible(d->toggle_suggestion_button, FALSE);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->toggle_suggestion_button), FALSE);
   }
   else
   {
@@ -2116,8 +2118,9 @@ static void update_layout(dt_lib_module_t *self)
       gtk_tree_store_clear(GTK_TREE_STORE(store));
       gtk_tree_view_set_model(GTK_TREE_VIEW(d->dictionary_view), GTK_TREE_MODEL(d->dictionary_listfilter));
       g_object_unref(d->dictionary_listfilter);
+      if (d->completion) gtk_entry_completion_set_model(d->completion, GTK_TREE_MODEL(d->dictionary_listfilter));
     }
-    gtk_widget_set_visible(d->toggle_suggestion_button, TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(d->toggle_suggestion_button), TRUE);
   }
 
   const gboolean active_c = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->toggle_sort_button));
@@ -2255,6 +2258,105 @@ int position()
   return 500;
 }
 
+static gboolean _match_selected_func(GtkEntryCompletion *completion, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data)
+{
+  const int column = gtk_entry_completion_get_text_column(completion);
+  char *tag = NULL;
+
+  if(gtk_tree_model_get_column_type(model, column) != G_TYPE_STRING) return TRUE;
+
+  GtkEditable *e = (GtkEditable *)gtk_entry_completion_get_entry(completion);
+  if(!GTK_IS_EDITABLE(e))
+  {
+    return FALSE;
+  }
+
+  gtk_tree_model_get(model, iter, column, &tag, -1);
+
+  gint cut_off, cur_pos = gtk_editable_get_position(e);
+
+  gchar *currentText = gtk_editable_get_chars(e, 0, -1);
+  const gchar *lastTag = g_strrstr(currentText, ",");
+  if(lastTag == NULL)
+  {
+    cut_off = 0;
+  }
+  else
+  {
+    cut_off = (int)(g_utf8_strlen(currentText, -1) - g_utf8_strlen(lastTag, -1))+1;
+  }
+  free(currentText);
+
+  gtk_editable_delete_text(e, cut_off, cur_pos);
+  cur_pos = cut_off;
+  gtk_editable_insert_text(e, tag, -1, &cur_pos);
+  gtk_editable_set_position(e, cur_pos);
+  return TRUE;
+}
+
+static gboolean _completion_match_func(GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter,
+                                       gpointer user_data)
+{
+  gboolean res = FALSE;
+
+  GtkEditable *e = (GtkEditable *)gtk_entry_completion_get_entry(completion);
+
+  if(!GTK_IS_EDITABLE(e))
+  {
+    return FALSE;
+  }
+
+  const gint cur_pos = gtk_editable_get_position(e);
+  const gboolean onLastTag = (g_strstr_len(&key[cur_pos], -1, ",") == NULL);
+  if(!onLastTag)
+  {
+    return FALSE;
+  }
+
+  GtkTreeModel *model = gtk_entry_completion_get_model(completion);
+  const int column = gtk_entry_completion_get_text_column(completion);
+  char *tag = NULL;
+
+  if(gtk_tree_model_get_column_type(model, column) != G_TYPE_STRING)
+  {
+    return FALSE;
+  }
+
+  gtk_tree_model_get(model, iter, column, &tag, -1);
+
+  const gchar *lastTag = g_strrstr(key, ",");
+  if(lastTag != NULL)
+  {
+    lastTag++;
+  }
+  else
+  {
+    lastTag = key;
+  }
+  if(lastTag[0] == '\0' && key[0] != '\0')
+  {
+    return FALSE;
+  }
+
+  if(tag)
+  {
+    char *normalized = g_utf8_normalize(tag, -1, G_NORMALIZE_ALL);
+    if(normalized)
+    {
+      char *casefold = g_utf8_casefold(normalized, -1);
+      if(casefold)
+      {
+        res = g_strstr_len(casefold, -1, lastTag) != NULL;
+      }
+      g_free(casefold);
+    }
+    g_free(normalized);
+    g_free(tag);
+  }
+
+  return res;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)malloc(sizeof(dt_lib_tagging_t));
@@ -2329,6 +2431,7 @@ void gui_init(dt_lib_module_t *self)
 
   button = gtk_button_new_with_label(_("attach"));
   d->attach_button = button;
+  gtk_widget_set_hexpand(button, TRUE);
   gtk_widget_set_tooltip_text(button, _("attach tag to all selected images"));
   dt_gui_add_help_link(button, "tagging.html#tagging_usage");
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
@@ -2336,6 +2439,7 @@ void gui_init(dt_lib_module_t *self)
 
   button = gtk_button_new_with_label(_("detach"));
   d->detach_button = button;
+  gtk_widget_set_hexpand(button, TRUE);
   gtk_widget_set_tooltip_text(button, _("detach tag from all selected images"));
   dt_gui_add_help_link(button, "tagging.html#tagging_usage");
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(detach_button_clicked), (gpointer)self);
@@ -2448,6 +2552,7 @@ void gui_init(dt_lib_module_t *self)
 
   button = gtk_button_new_with_label(_("new"));
   d->new_button = button;
+  gtk_widget_set_hexpand(button, TRUE);
   gtk_widget_set_tooltip_text(button, _("create a new tag with the\nname you entered"));
   dt_gui_add_help_link(button, "tagging.html#tagging_usage");
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
@@ -2455,6 +2560,7 @@ void gui_init(dt_lib_module_t *self)
 
   button = gtk_button_new_with_label(C_("verb", "import"));
   d->import_button = button;
+  gtk_widget_set_hexpand(button, TRUE);
   gtk_widget_set_tooltip_text(button, _("import tags from a Lightroom keyword file"));
   dt_gui_add_help_link(button, "tagging.html#tagging_usage");
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
@@ -2462,6 +2568,7 @@ void gui_init(dt_lib_module_t *self)
 
   button = gtk_button_new_with_label(C_("verb", "export"));
   d->export_button = button;
+  gtk_widget_set_hexpand(button, TRUE);
   gtk_widget_set_tooltip_text(button, _("export all tags to a Lightroom keyword file"));
   dt_gui_add_help_link(button, "tagging.html#tagging_usage");
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
@@ -2482,9 +2589,21 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_end(hbox, button, FALSE, TRUE, 0);
   d->suggestion_button_handler = g_signal_connect(G_OBJECT(button), "clicked",
                                             G_CALLBACK(toggle_suggestion_button_callback), (gpointer)self);
-  gtk_widget_set_no_show_all(GTK_WIDGET(button), TRUE);
 
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
+
+  if (!dt_conf_get_bool("plugins/lighttable/tagging/no_entry_completion"))
+  {
+    // add entry completion
+    GtkEntryCompletion *completion = gtk_entry_completion_new();
+    gtk_entry_completion_set_model(completion, gtk_tree_view_get_model(GTK_TREE_VIEW(d->dictionary_view)));
+    gtk_entry_completion_set_text_column(completion, DT_LIB_TAGGING_COL_PATH);
+    gtk_entry_completion_set_inline_completion(completion, TRUE);
+    gtk_entry_completion_set_match_func(completion, _completion_match_func, NULL, NULL);
+    gtk_entry_set_completion(d->entry, completion);
+    d->completion = completion;
+  }
+  else d->completion = NULL;
 
   /* connect to mouse over id */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
@@ -2548,102 +2667,6 @@ static gboolean _lib_tagging_tag_destroy(GtkWidget *widget, GdkEvent *event, gpo
   return FALSE;
 }
 
-static gboolean _match_selected_func(GtkEntryCompletion *completion, GtkTreeModel *model, GtkTreeIter *iter, gpointer user_data)
-{
-  const int column = gtk_entry_completion_get_text_column(completion);
-  char *tag = NULL;
-
-  if(gtk_tree_model_get_column_type(model, column) != G_TYPE_STRING) return TRUE;
-
-  GtkEditable *e = (GtkEditable *)gtk_entry_completion_get_entry(completion);
-  if(!GTK_IS_EDITABLE(e))
-  {
-    return FALSE;
-  }
-
-  gtk_tree_model_get(model, iter, column, &tag, -1);
-
-  gint cut_off, cur_pos = gtk_editable_get_position(e);
-
-  gchar *currentText = gtk_editable_get_chars(e, 0, -1);
-  const gchar *lastTag = g_strrstr(currentText, ",");
-  if(lastTag == NULL)
-  {
-    cut_off = 0;
-  }
-  else
-  {
-    cut_off = (int)(g_utf8_strlen(currentText, -1) - g_utf8_strlen(lastTag, -1))+1;
-  }
-  free(currentText);
-
-  gtk_editable_delete_text(e, cut_off, cur_pos);
-  cur_pos = cut_off;
-  gtk_editable_insert_text(e, tag, -1, &cur_pos);
-  gtk_editable_set_position(e, cur_pos);
-  return TRUE;
-}
-
-static gboolean _completion_match_func(GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter,
-                                       gpointer user_data)
-{
-  gboolean res = FALSE;
-
-  GtkEditable *e = (GtkEditable *)gtk_entry_completion_get_entry(completion);
-
-  if(!GTK_IS_EDITABLE(e))
-  {
-    return FALSE;
-  }
-
-  const gint cur_pos = gtk_editable_get_position(e);
-  const gboolean onLastTag = (g_strstr_len(&key[cur_pos], -1, ",") == NULL);
-  if(!onLastTag)
-  {
-    return FALSE;
-  }
-
-  GtkTreeModel *model = gtk_entry_completion_get_model(completion);
-  const int column = gtk_entry_completion_get_text_column(completion);
-  char *tag = NULL;
-
-  if(gtk_tree_model_get_column_type(model, column) != G_TYPE_STRING) return FALSE;
-
-  gtk_tree_model_get(model, iter, column, &tag, -1);
-
-  const gchar *lastTag = g_strrstr(key, ",");
-  if(lastTag != NULL)
-  {
-    lastTag++;
-  }
-  else
-  {
-    lastTag = key;
-  }
-  if(lastTag[0] == '\0' && key[0] != '\0')
-  {
-    return FALSE;
-  }
-
-  if(tag)
-  {
-    char *normalized = g_utf8_normalize(tag, -1, G_NORMALIZE_ALL);
-    if(normalized)
-    {
-      char *casefold = g_utf8_casefold(normalized, -1);
-      if(casefold)
-      {
-        res = g_strstr_len(casefold, -1, lastTag) != NULL;
-      }
-      g_free(casefold);
-    }
-    g_free(normalized);
-    g_free(tag);
-  }
-
-  return res;
-}
-
 static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                       GdkModifierType modifier, dt_lib_module_t *self)
 {
@@ -2662,6 +2685,7 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
   }
 
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  if (d->tree_flag) return TRUE;  // doesn't work properly with tree treeview
   d->floating_tag_imgid = mouse_over_id;
 
   gint x, y;
@@ -2702,7 +2726,7 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
 
   GtkEntryCompletion *completion = gtk_entry_completion_new();
   gtk_entry_completion_set_model(completion, gtk_tree_view_get_model(GTK_TREE_VIEW(d->dictionary_view)));
-  gtk_entry_completion_set_text_column(completion, 0);
+  gtk_entry_completion_set_text_column(completion, DT_LIB_TAGGING_COL_PATH);
   gtk_entry_completion_set_inline_completion(completion, TRUE);
   gtk_entry_completion_set_popup_set_width(completion, FALSE);
   g_signal_connect(G_OBJECT(completion), "match-selected", G_CALLBACK(_match_selected_func), self);
