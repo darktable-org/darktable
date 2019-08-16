@@ -40,7 +40,7 @@
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
 #define CURRENT_DATABASE_VERSION_LIBRARY 19
-#define CURRENT_DATABASE_VERSION_DATA 2
+#define CURRENT_DATABASE_VERSION_DATA 3
 
 typedef struct dt_database_t
 {
@@ -1226,6 +1226,31 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
 
     new_version = 2;
   }
+  else if(version == 2)
+  {
+    //    With sqlite above or equal to 3.25.0 RENAME COLUMN can be used instead of the following code
+    //    TRY_EXEC("ALTER TABLE data.tags RENAME COLUMN description TO synonyms;",
+    //             "[init] can't change tags column name from description to synonyms\n");
+
+    TRY_EXEC("ALTER TABLE data.tags RENAME TO tmp_tags",  "[init] can't rename table tags\n");
+
+    TRY_EXEC("CREATE TABLE data.tags (id INTEGER PRIMARY KEY, name VARCHAR, "
+             "synonyms VARCHAR, flags INTEGER)",
+             "[init] can't create new tags table\n");
+
+    TRY_EXEC("INSERT INTO data.tags (id, name, synonyms, flags) SELECT id, name, description, flags "
+             "FROM tmp_tags",
+             "[init] can't populate tags table from tmp_tags\n");
+
+    TRY_EXEC("DROP TABLE tmp_tags", "[init] can't delete table tmp_tags\n");
+
+    TRY_EXEC("CREATE UNIQUE INDEX data.tags_name_idx ON tags (name)",
+             "[init] can't create tags_name_idx on tags table\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+
+    new_version = 3;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -1367,8 +1392,8 @@ static void _create_data_schema(dt_database_t *db)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   ////////////////////////////// tags
-  sqlite3_exec(db->handle, "CREATE TABLE data.tags (id INTEGER PRIMARY KEY, name VARCHAR, icon BLOB, "
-                           "description VARCHAR, flags INTEGER)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE data.tags (id INTEGER PRIMARY KEY, name VARCHAR, "
+                           "synonyms VARCHAR, flags INTEGER)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE UNIQUE INDEX data.tags_name_idx ON tags (name)", NULL, NULL, NULL);
   ////////////////////////////// styles
   sqlite3_exec(db->handle, "CREATE TABLE data.styles (id INTEGER, name VARCHAR, description VARCHAR)",
@@ -1410,6 +1435,7 @@ static void _create_memory_schema(dt_database_t *db)
                            "(tmpid INTEGER PRIMARY KEY, id INTEGER UNIQUE ON CONFLICT IGNORE, count INTEGER)",
                NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE memory.similar_tags (tagid INTEGER)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE memory.darktable_tags (tagid INTEGER)", NULL, NULL, NULL);
   sqlite3_exec(
       db->handle,
       "CREATE TABLE memory.history (imgid INTEGER, num INTEGER, module INTEGER, "
