@@ -201,6 +201,27 @@
     <shortdescription>omit hierarchy in simple tag lists</shortdescription>
     <longdescription>when exporting images the hierarchical tags are also added as a simple list of non-hierarchical ones to make them visible to some other programs. when this option is checked darktable will only include their last part and ignore the rest. so 'foo|bar|baz' will only add 'baz'.</longdescription>
   </dtconfig>
+  <dtconfig prefs="core">
+    <name>plugins/lighttable/export/export_private_tags</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>force exportation of private tags</shortdescription>
+    <longdescription>darktable doesn't export private tags per default. this option allows to export them to XMP-dc Subject and XMP-lr Hierarchical Subject.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="core">
+    <name>plugins/lighttable/export/export_tag_synonyms</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>request exportation of synonyms</shortdescription>
+    <longdescription>darktable doesn't export the synonyms per default. this option allows to export them along with tags to XMP-dc Subject.</longdescription>
+  </dtconfig>
+  <dtconfig prefs="core">
+    <name>plugins/lighttable/tagging/no_entry_completion</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>disable the entry completion</shortdescription>
+    <longdescription>the entry completion is useful for those who enter tags from keybord only. for others the entry completion can be embarassing. need to restart darktable.</longdescription>
+  </dtconfig>
   <dtconfig prefs="core" capability="opencl" section="cpugpu">
     <name>opencl</name>
     <type>bool</type>
@@ -1902,7 +1923,7 @@
     <type>dir</type>
     <default></default>
     <shortdescription>3D lut root folder</shortdescription>
-    <longdescription>this folder (and sub-folders) contains Lut files used but lut3d modules</longdescription>
+    <longdescription>this folder (and sub-folders) contains Lut files used but lut3d modules. need to restart darktable.</longdescription>
   </dtconfig>
   <dtconfig prefs="core" section="quality">
     <name>plugins/darkroom/basecurve/auto_apply</name>
