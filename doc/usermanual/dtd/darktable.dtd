@@ -61,6 +61,11 @@
 <!ENTITY icon_retouch_paste "images/darkroom_module_retouch_paste.png">
 <!ENTITY icon_retouch_switch "images/darkroom_module_retouch_switch.png">
 <!ENTITY icon_retouch_mask "images/darkroom_module_retouch_mask.png">
+<!ENTITY icon_tagging_sort "images/tagging_icon_sort.png">
+<!ENTITY icon_tagging_dt_tag "images/tagging_icon_dt_tag.png">
+<!ENTITY icon_tagging_short_name "images/tagging_icon_short_name.png">
+<!ENTITY icon_tagging_suggestion "images/tagging_icon_suggestion.png">
+<!ENTITY icon_tagging_tree "images/tagging_icon_tree.png">
 <!ENTITY shape_brush "images/shape_brush.png">
 <!ENTITY shape_circle "images/shape_circle.png">
 <!ENTITY shape_ellipse "images/shape_ellipse.png">
@@ -73,8 +78,3 @@
 <!ENTITY masks_intersection "images/masks_intersection.png">
 <!ENTITY masks_difference "images/masks_difference.png">
 <!ENTITY masks_exclusion "images/masks_exclusion.png">
-
-
-
-
-
