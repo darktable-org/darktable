@@ -588,7 +588,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       {
         const char *tagname = ((dt_tag_t *)taglist->data)->leave;
         length = length + strlen(tagname) + 2;
-        if(length < 40)
+        if(length < 50)
           tagstring = dt_util_dstrcat(tagstring, "%s, ", tagname);
         else
         {
@@ -596,9 +596,11 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
           length = strlen(tagname) + 2;
         }
       }
-      if(strlen(tagstring) > 2) tagstring[strlen(tagstring)-2] = '\0';
+      if(tagstring) tagstring[strlen(tagstring)-2] = '\0';
       _metadata_update_value(d->metadata[md_tag_names], tagstring);
     }
+    else _metadata_update_value(d->metadata[md_tag_names], NODATA_STRING);
+
     dt_tag_free_result(&tags);
 
     /* release img */
