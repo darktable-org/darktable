@@ -95,6 +95,8 @@ void dt_tag_attach_string_list(const gchar *tags, gint imgid);
 /** detach tag from images. \param[in] tagid if of tag to deattach. \param[in] imgid the image id to attach
  * tag from, if < 0 selected images are used. */
 void dt_tag_detach(guint tagid, gint imgid);
+/** same as above but raises a dt_collection_update_query() */
+void dt_tag_detach_from_gui(guint tagid, gint imgid);
 
 /** detach tags from images that matches name, it is valid to use % to match tag */
 void dt_tag_detach_by_string(const char *name, gint imgid);
