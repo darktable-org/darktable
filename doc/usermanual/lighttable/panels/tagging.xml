@@ -71,6 +71,41 @@
       explicitly as a <quote>category</quote> (see create or edit command).
     </para>
 
+    <sect4 id="tagging_tag_properties">
+
+      <title>tag properties</title>
+
+      <para>
+        Besides its name the tag can set as private or as a category.
+        It can also be attached synonyms.
+        These attributes help to control the information you join to exported images.
+        These information are related to <quote>XMP-dc Subject</quote> and
+        <quote>XMP-lr Hierarchical Subject</quote> metadata.
+      </para>
+
+      <para>
+        A tag set as <quote>private</quote> is by default not exported. The configuration point
+        "force exportation of private tags" allows you to keep private tags on exported images.
+        Both <quote>XMP-dc Subject</quote> and <quote>XMP-lr Hierarchical Subject</quote> are affected.
+      </para>
+
+      <para>
+        A tag set as <quote>category</quote> is not exported in <quote>XMP-dc Subject</quote>.
+        However it is exported in <quote>XMP-lr Hierarchical Subject</quote> as this XMP metadata
+        holds the organization of your tags.
+      </para>
+
+      <para>
+        <quote>synonyms</quote> enriches the tag information and is mainly destined to search engines.
+        For example <quote>juvenile</quote>, <quote>kid</quote> or <quote>youth</quote>
+        can be set as synonyms of <quote>child</quote>.
+        An other usage is to translate the tag in other languages.
+        The configuration point "request exportation of synonyms", when set, makes the image exportation
+        add synonyms to <quote>XMP-dc Subject</quote> metadata.
+      </para>
+
+    </sect4>
+
     <sect4 id="tagging_displayed_information">
 
       <title>displayed information</title>
@@ -212,37 +247,42 @@
 
     </sect4>
 
-    <sect4 id="tagging_tag_properties">
+    <sect4 id="tagging_text_entry">
 
-      <title>tag properties</title>
+      <title>text entry</title>
 
       <para>
-        Besides its name the tag can set as private or as a category.
-        It can also be attached synonyms.
-        These attributes help to control the information you join to exported images.
-        These information are related to <quote>XMP-dc Subject</quote> and
-        <quote>XMP-lr Hierarchical Subject</quote> metadata.
+        The text entry box, between the two lists, has multiple purposes.
       </para>
 
       <para>
-        A tag set as <quote>private</quote> is by default not exported. The configuration point
-        "force exportation of private tags" allows you to keep private tags on exported images.
-        Both <quote>XMP-dc Subject</quote> and <quote>XMP-lr Hierarchical Subject</quote> are affected.
+        First, for those who like not to leave the keyboard, when the dictionary view is in list mode,
+        as soon as you start to enter a keyword, it opens a list of corresponding tags.
+        When you see the one you look for, use the <quote>down</quote> arrow
+        to highlight it, press twice <quote>enter</quote> to get the tag attached !
       </para>
 
       <para>
-        A tag set as <quote>category</quote> is not exported in <quote>XMP-dc Subject</quote>.
-        However it is exported in <quote>XMP-lr Hierarchical Subject</quote> as this XMP metadata
-        holds the organization of your tags.
+        Those for who this procedure is not convenient can deactivate this function using
+        the configuration "disable the entry completion".
       </para>
 
       <para>
-        <quote>synonyms</quote> enriches the tag information and is mainly destined to search engines.
-        For example <quote>juvenile</quote>, <quote>kid</quote> or <quote>youth</quote>
-        can be set as synonyms of <quote>child</quote>.
-        An other usage is to translate the tag in other languages.
-        The configuration point "request exportation of synonyms", when set, makes the image exportation
-        add synonyms to <quote>XMP-dc Subject</quote> metadata.
+        Besides this, the entry box lets you filter the dictionary (list and tree) just below searching
+        amongst the tag names but also the synonyms.
+      </para>
+
+      <para>
+        Pressing enter, either the tag just written does not exist in the dictionary.
+        In such a case the new tag is added to the dictionary and attached to the selected images.
+        Or it is already in the dictionary and it's only attached.
+      </para>
+
+      <para>
+        You can use the submenu <quote>copy to entry</quote> to copy an existing tag
+        from the dictionary into the entry box.
+        Then you can modify it to create a new tag without having
+        to type it in completely.
       </para>
 
     </sect4>
@@ -298,9 +338,9 @@
 
     </sect4>
 
-    <sect4 id="tagging_usage_maintenance">
+    <sect4 id="tagging_usage_edit_rename">
 
-      <title>maintenance</title>
+      <title>edit, rename</title>
 
       <para>
         The maintenance of the dictionary can be done through <quote>edit tag...</quote>
