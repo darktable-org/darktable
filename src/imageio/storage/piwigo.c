@@ -984,7 +984,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
     if(p->export_tags)
     {
-      GList *tags_list = dt_tag_get_list(imgid);
+      GList *tags_list = dt_tag_get_list_export(imgid);
       if(p->tags) g_free(p->tags);
       p->tags = dt_util_glist_to_str(",", tags_list);
       g_list_free_full(tags_list, g_free);
