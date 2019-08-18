@@ -278,7 +278,7 @@ static flickcurl_upload_status *_flickr_api_upload_photo(dt_storage_flickr_param
 
   if(imgid)
   {
-    GList *tags_list = dt_tag_get_list(imgid);
+    GList *tags_list = dt_tag_get_list_export(imgid);
     params->tags = dt_util_glist_to_str(",", tags_list);
     g_list_free_full(tags_list, g_free);
   }
