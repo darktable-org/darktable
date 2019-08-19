@@ -88,6 +88,14 @@
                               "minItems": 3,
                               "maxItems": 3
                             },
+                            "p": {
+                              "type": "array",
+                              "items": {
+                                "type": "number"
+                              },
+                              "minItems": 3,
+                              "maxItems": 3
+                            },
                             "b": {
                               "type": "array",
                               "items": {
