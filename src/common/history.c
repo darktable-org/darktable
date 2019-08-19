@@ -875,15 +875,16 @@ void dt_history_compress_on_image(int32_t imgid)
   // make sure the right history is in there:
   dt_dev_write_history(darktable.develop);
 
-  // compress history and remove disabled modules - adapted from libs/history.c
+  // compress history, keep disabled modules as in darkroom mode - adapted from libs/history.c
   sqlite3_stmt *stmt_local;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "DELETE FROM main.history WHERE imgid = ?1 AND num "
                               "NOT IN (SELECT MAX(num) FROM main.history WHERE "
-                              "imgid = ?1 AND enabled = 1 GROUP BY operation, "
+                              "imgid = ?1 AND num < ?2 GROUP BY operation, "
                               "multi_priority)",
                               -1, &stmt_local, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 2, darktable.develop->history_end);
   sqlite3_step(stmt_local);
   sqlite3_finalize(stmt_local);
 
@@ -897,6 +898,15 @@ void dt_history_compress_on_image(int32_t imgid)
                               NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt_local, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
+  sqlite3_step(stmt_local);
+  sqlite3_finalize(stmt_local);
+
+  // compress masks history --> took this from libs/history.c
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid = ?1 AND num "
+                                                             "NOT IN (SELECT MAX(num) FROM main.masks_history WHERE "
+                                                             "imgid = ?1 AND num < ?2)", -1, &stmt_local, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt_local, 2, darktable.develop->history_end);
   sqlite3_step(stmt_local);
   sqlite3_finalize(stmt_local);
 
