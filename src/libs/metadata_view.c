@@ -588,7 +588,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       {
         const char *tagname = ((dt_tag_t *)taglist->data)->leave;
         length = length + strlen(tagname) + 2;
-        if(length < 50)
+        if(length < 45)
           tagstring = dt_util_dstrcat(tagstring, "%s, ", tagname);
         else
         {

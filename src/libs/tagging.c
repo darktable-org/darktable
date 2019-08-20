@@ -543,9 +543,16 @@ static void reset_sel_on_path_full(GtkTreeModel *model, GtkTreeIter *iter, gbool
   GtkTreeIter child, parent = *iter;
   do
   {
-    gtk_tree_store_set(GTK_TREE_STORE(model), &parent, DT_LIB_TAGGING_COL_SEL, 0, -1);
-    if (gtk_tree_model_iter_children(model, &child, &parent))
-      reset_sel_on_path_full(model, &child, FALSE);
+    if(GTK_IS_TREE_STORE(model))
+    {
+      gtk_tree_store_set(GTK_TREE_STORE(model), &parent, DT_LIB_TAGGING_COL_SEL, 0, -1);
+      if (gtk_tree_model_iter_children(model, &child, &parent))
+        reset_sel_on_path_full(model, &child, FALSE);
+    }
+    else
+    {
+      gtk_list_store_set(GTK_LIST_STORE(model), &parent, DT_LIB_TAGGING_COL_SEL, 0, -1);
+    }
   } while (!root && gtk_tree_model_iter_next(model, &parent));
 }
 
@@ -607,8 +614,15 @@ static void update_sel_on_tree(GtkTreeModel *model)
       GtkTreeIter iter = parent;
       if (find_tag_iter_tagid(model, &iter, ((dt_tag_t *)tag->data)->id))
       {
-        gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_TAGGING_COL_SEL, ((dt_tag_t *)tag->data)->select, -1);
-        propagate_sel_to_parents(model, &iter);
+        if(GTK_IS_TREE_STORE(model))
+        {
+          gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_TAGGING_COL_SEL, ((dt_tag_t *)tag->data)->select, -1);
+          propagate_sel_to_parents(model, &iter);
+        }
+        else
+        {
+          gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_LIB_TAGGING_COL_SEL, ((dt_tag_t *)tag->data)->select, -1);
+        }
       }
     }
   }
@@ -705,8 +719,9 @@ static void _lib_selection_changed_callback(gpointer instance, dt_lib_module_t *
   {
     init_treeview(self, 1);
   }
-  else if (d->tree_flag)
-    update_sel_on_tree(GTK_TREE_MODEL(d->dictionary_treestore));
+  else
+    update_sel_on_tree(d->tree_flag ? GTK_TREE_MODEL(d->dictionary_treestore)
+                                    : GTK_TREE_MODEL(d->dictionary_liststore));
 }
 
 static void set_keyword(dt_lib_module_t *self)
