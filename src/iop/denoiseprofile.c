@@ -569,11 +569,11 @@ static inline void precondition(const float *const in, float *const buf, const i
 }
 
 static inline void precondition_v2(const float *const in, float *const buf, const int wd, const int ht,
-                                const float a[3], const float p[3], const float b[3])
+                                const float a[3], const float p[3], const float b[3], const float wb[3])
 {
   #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(buf, ht, in, wd, a, p, b) \
+    dt_omp_firstprivate(buf, ht, in, wd, a, p, b, wb) \
     schedule(static)
   #endif
     for(int j = 0; j < ht; j++)
@@ -584,7 +584,7 @@ static inline void precondition_v2(const float *const in, float *const buf, cons
       {
         for(int c = 0; c < 3; c++)
         {
-          buf2[c] = 2.0f * powf(MAX(in2[c],0.0f)+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]));
+          buf2[c] = 2.0f * powf(MAX(in2[c]/wb[c],0.0f)+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]));
         }
         buf2 += 4;
         in2 += 4;
@@ -630,11 +630,11 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
 }
 
 static inline void backtransform_v2(float *const buf, const int wd, const int ht, const float a[3],
-                                 const float p[3], const float b[3])
+                                 const float p[3], const float b[3], const float wb[3])
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, ht, wd, a, p, b) \
+  dt_omp_firstprivate(buf, ht, wd, a, p, b, wb) \
   schedule(static)
 #endif
   for(int j = 0; j < ht; j++)
@@ -652,6 +652,7 @@ static inline void backtransform_v2(float *const buf, const int wd, const int ht
         float delta = x*x + 4.0*a0*a1;
         float z1 = (x + sqrt(delta))/(2.0*a0);
         buf2[c] = powf(z1, 1.0/beta) - b[c];
+        buf2[c] *= wb[c];
       }
       buf2 += 4;
     }
@@ -1207,18 +1208,12 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
       aa[i] *= d->a[1];
       bb[i] *= d->b[1];
     }
+    precondition((float *)ivoid, (float *)ovoid, width, height, aa, bb);
   }
   else if(d->profile_version == 2)
   {
-    for(int i = 0; i < 3; i++)
-    {
-      aa[i] *= d->a[i];
-      bb[i] *= d->b[i];
-    }
+    precondition_v2((float *)ivoid, (float *)ovoid, width, height, d->a, d->p, d->b, wb);
   }
-
-
-  precondition((float *)ivoid, (float *)ovoid, width, height, aa, bb);
 
 #if 0 // DEBUG: see what variance we have after transform
   if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
@@ -1244,8 +1239,8 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     // a preview as faithfull as possible.
     // the formula is completely empirical, these numbers have shown to
     // produce good results
-    float edge_sharpness = 5.0f * 1.3 / (in_scale*in_scale+0.3);
-    if(d->profile_version == 1) edge_sharpness = 1.0f;
+    float edge_sharpness = 30.0f * (1.3f / (in_scale*in_scale+0.3));
+    if(d->profile_version == 1) edge_sharpness = 1.3f / (in_scale*in_scale+0.3);
     decompose(buf2, buf1, buf[scale], scale, edge_sharpness / (sigma_band * sigma_band), width, height);
 // DEBUG: clean out temporary memory:
 // memset(buf1, 0, sizeof(float)*4*width*height);
@@ -1298,6 +1293,14 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
       {
         // add 8.0 here because it seemed a little weak
         adjt[i] = 8.0f;
+      }
+    }
+    else if(d->profile_version == 2)
+    {
+      for(int i = 0; i < 3; i++)
+      {
+        // add 0.002 here because it seemed way too strong
+        adjt[i] = 0.002f;
       }
     }
 
@@ -1382,7 +1385,14 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     buf1 = buf3;
   }
 
-  backtransform((float *)ovoid, width, height, aa, bb);
+  if(d->profile_version == 1)
+  {
+    backtransform((float *)ovoid, width, height, aa, bb);
+  }
+  else
+  {
+    backtransform_v2((float *)ovoid, width, height, d->a, d->p, d->b, wb);
+  }
 
   for(int k = 0; k < max_scale; k++) dt_free_align(buf[k]);
   dt_free_align(tmp);
@@ -1458,16 +1468,12 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
       aa[i] *= d->a[1];
       bb[i] *= d->b[1];
     }
+    precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
   }
   else if(d->profile_version == 2)
   {
-    for(int i = 0; i < 3; i++)
-    {
-      aa[i] *= d->a[i];
-      bb[i] *= d->b[i];
-    }
+    precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, d->a, d->p, d->b, wb);
   }
-  precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
 
   // for each shift vector
   for(int kj_index = -K; kj_index <= K; kj_index++)
@@ -1552,6 +1558,10 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
             {
               norm *= 0.045f;
             }
+            if(d->profile_version == 2)
+            {
+              norm *= 1.5f;
+            }
             if(!d->fix_anscombe_and_nlmeans_norm)
             {
               // use old formula
@@ -1620,7 +1630,14 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   // free shared tmp memory:
   dt_free_align(Sa);
   dt_free_align(in);
-  backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, bb);
+  if(d->profile_version == 1)
+  {
+    backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, bb);
+  }
+  else
+  {
+    backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, d->a, d->p, d->b, wb);
+  }
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
@@ -1688,12 +1705,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   }
   else if(d->profile_version == 2)
   {
-    for(int i = 0; i < 3; i++)
-    {
-      aa[i] *= d->a[i];
-      bb[i] *= d->b[i];
-    }
-    precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, aa, d->p, bb);
+    precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, d->a, d->p, d->b, wb);
   }
 
   // for each shift vector
@@ -1776,6 +1788,10 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
             if(d->profile_version == 1)
             {
               norm *= 0.045f;
+            }
+            if(d->profile_version == 2)
+            {
+              norm *= 1.5f;
             }
             if(!d->fix_anscombe_and_nlmeans_norm)
             {
@@ -1905,7 +1921,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   }
   else
   {
-    backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, aa, d->p, bb);
+    backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, d->a, d->p, d->b, wb);
   }
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
