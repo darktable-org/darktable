@@ -130,7 +130,7 @@ typedef struct dt_iop_denoiseprofile_params_t
   float strength;   // noise level after equalization
   float scattering; // spread the patch search zone without increasing number of patches
   float central_pixel_weight; // increase central pixel's weight in patch comparison
-  float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
+  float a[3], p[3], b[3]; // fit for poissonian-gaussian noise per color channel.
   dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
   float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
   float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
@@ -185,7 +185,7 @@ typedef struct dt_iop_denoiseprofile_data_t
   float strength;                    // noise level after equalization
   float scattering;                  // spread the search zone without changing number of patches
   float central_pixel_weight;        // increase central pixel's weight in patch comparison
-  float a[3], b[3];                  // fit for poissonian-gaussian noise per color channel.
+  float a[3], p[3], b[3];            // fit for poissonian-gaussian noise per color channel.
   dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
   dt_draw_curve_t *curve[DT_DENOISE_PROFILE_NONE];
   dt_iop_denoiseprofile_channel_t channel;
@@ -381,6 +381,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     {
       v8->a[k] = v7.a[k];
       v8->b[k] = v7.b[k];
+      v8->p[k] = 1.0f;
     }
     for(int b = 0; b < DT_IOP_DENOISE_PROFILE_BANDS; b++)
     {
@@ -567,6 +568,30 @@ static inline void precondition(const float *const in, float *const buf, const i
   }
 }
 
+static inline void precondition_v2(const float *const in, float *const buf, const int wd, const int ht,
+                                const float a[3], const float p[3], const float b[3])
+{
+  #ifdef _OPENMP
+  #pragma omp parallel for default(none) \
+    dt_omp_firstprivate(buf, ht, in, wd, a, p, b) \
+    schedule(static)
+  #endif
+    for(int j = 0; j < ht; j++)
+    {
+      float *buf2 = buf + (size_t)4 * j * wd;
+      const float *in2 = in + (size_t)4 * j * wd;
+      for(int i = 0; i < wd; i++)
+      {
+        for(int c = 0; c < 3; c++)
+        {
+          buf2[c] = 2.0f * powf(MAX(in2[c],0.0f)+b[c], -p[c]/2+1) / ((-p[c]+2) * sqrt(a[c]));
+        }
+        buf2 += 4;
+        in2 += 4;
+      }
+    }
+}
+
 static inline void backtransform(float *const buf, const int wd, const int ht, const float a[3],
                                  const float b[3])
 {
@@ -598,6 +623,35 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
         // asymptotic form:
         // buf2[c] = fmaxf(0.0f, 1./4.*x*x - 1./8. - sigma2[c]);
         buf2[c] *= a[c];
+      }
+      buf2 += 4;
+    }
+  }
+}
+
+static inline void backtransform_v2(float *const buf, const int wd, const int ht, const float a[3],
+                                 const float p[3], const float b[3])
+{
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(buf, ht, wd, a, p, b) \
+  schedule(static)
+#endif
+  for(int j = 0; j < ht; j++)
+  {
+    float *buf2 = buf + (size_t)4 * j * wd;
+    for(int i = 0; i < wd; i++)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        const float x = buf2[c];
+        float alpha = 2.0/(sqrt(a[c])*(2.0-p[c]));
+        float beta = 1.0-p[c]/2.0;
+        float a0 = alpha;
+        float a1 = (1.0-beta)/(2.0*alpha*beta*alpha/a[c]);
+        float delta = x*x + 4.0*a0*a1;
+        float z1 = (x + sqrt(delta))/(2.0*a0);
+        buf2[c] = powf(z1, 1.0/beta) - b[c];
       }
       buf2 += 4;
     }
@@ -1630,6 +1684,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
       aa[i] *= d->a[1];
       bb[i] *= d->b[1];
     }
+    precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
   }
   else if(d->profile_version == 2)
   {
@@ -1638,8 +1693,8 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
       aa[i] *= d->a[i];
       bb[i] *= d->b[i];
     }
+    precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, aa, d->p, bb);
   }
-  precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
 
   // for each shift vector
   for(int kj_index = -K; kj_index <= K; kj_index++)
@@ -1844,7 +1899,14 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   // free shared tmp memory:
   dt_free_align(Sa);
   dt_free_align(in);
-  backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, bb);
+  if(d->profile_version == 1)
+  {
+    backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, bb);
+  }
+  else
+  {
+    backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, aa, d->p, bb);
+  }
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
@@ -2872,6 +2934,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   {
     d->a[i] = p->a[i];
     d->b[i] = p->b[i];
+    d->p[i] = p->p[i];
   }
   d->mode = p->mode;
 
@@ -2886,6 +2949,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     {
       d->a[k] = interpolated.a[k];
       d->b[k] = interpolated.b[k];
+      d->p[k] = interpolated.p[k];
     }
   }
 

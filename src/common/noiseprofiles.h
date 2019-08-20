@@ -30,6 +30,7 @@ typedef struct dt_noiseprofile_t
   char *model;
   int iso;
   float a[3]; // poissonian part
+  float p[3]; // power/exponent part
   float b[3]; // gaussian part
 }
 dt_noiseprofile_t;

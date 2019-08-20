@@ -24,7 +24,7 @@
 // bump this when the noiseprofiles are getting a different layout or meaning (raw-raw data, ...)
 #define DT_NOISE_PROFILE_VERSION 0
 
-const dt_noiseprofile_t dt_noiseprofile_generic = {N_("generic poissonian"), "", "", 0, {0.0001f, 0.0001f, 0.0001}, {0.0f, 0.0f, 0.0f}};
+const dt_noiseprofile_t dt_noiseprofile_generic = {N_("generic poissonian"), "", "", 0, {0.0001f, 0.0001f, 0.0001f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}};
 
 static gboolean dt_noiseprofile_verify(JsonParser *parser);
 
@@ -200,6 +200,18 @@ static gboolean dt_noiseprofile_verify(JsonParser *parser)
           }
           json_reader_end_member(reader);
 
+          // p
+          if(is_member(member_names, "p"))
+          {
+            json_reader_read_member(reader, "p");
+            if(json_reader_count_elements(reader) != 3)
+            {
+              g_strfreev(member_names);
+              _ERROR("`p` with size != 3");
+            }
+            json_reader_end_member(reader);
+          }
+
           // b
           if(!is_member(member_names, "b"))
           {
@@ -355,6 +367,19 @@ GList *dt_noiseprofile_get_matching(const dt_image_t *cimg, unsigned profile_ver
                   json_reader_end_element(reader);
                 }
                 json_reader_end_member(reader);
+
+                // p
+                if(is_member(member_names, "p"))
+                {
+                  json_reader_read_member(reader, "p");
+                  for(int p = 0; p < 3; p++)
+                  {
+                    json_reader_read_element(reader, p);
+                    tmp_profile.p[p] = json_reader_get_double_value(reader);
+                    json_reader_end_element(reader);
+                  }
+                  json_reader_end_member(reader);
+                }
 
                 // b
                 json_reader_read_member(reader, "b");
