@@ -3148,10 +3148,10 @@ static void dt_exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgi
     longitude = fabs(longitude);
     latitude = fabs(latitude);
 
-    int long_deg = (int)floor(longitude);
-    int lat_deg = (int)floor(latitude);
-    double long_min = (longitude - (double)long_deg) * 60.0;
-    double lat_min = (latitude - (double)lat_deg) * 60.0;
+    const int long_deg = (int)floor(longitude);
+    const int lat_deg = (int)floor(latitude);
+    const double long_min = (longitude - (double)long_deg) * 60.0;
+    const double lat_min = (latitude - (double)lat_deg) * 60.0;
 
     char *str = (char *)g_malloc(G_ASCII_DTOSTR_BUF_SIZE);
 
@@ -3272,14 +3272,14 @@ static void dt_exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgi
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int32_t mask_num = sqlite3_column_int(stmt, 8);
-    int32_t mask_id = sqlite3_column_int(stmt, 1);
-    int32_t mask_type = sqlite3_column_int(stmt, 2);
+    const int32_t mask_num = sqlite3_column_int(stmt, 8);
+    const int32_t mask_id = sqlite3_column_int(stmt, 1);
+    const int32_t mask_type = sqlite3_column_int(stmt, 2);
     const char *mask_name = (const char *)sqlite3_column_text(stmt, 3);
-    int32_t mask_version = sqlite3_column_int(stmt, 4);
+    const int32_t mask_version = sqlite3_column_int(stmt, 4);
     int32_t len = sqlite3_column_bytes(stmt, 5);
     char *mask_d = dt_exif_xmp_encode((const unsigned char *)sqlite3_column_blob(stmt, 5), len, NULL);
-    int32_t mask_nb = sqlite3_column_int(stmt, 6);
+    const int32_t mask_nb = sqlite3_column_int(stmt, 6);
     len = sqlite3_column_bytes(stmt, 7);
     char *mask_src = dt_exif_xmp_encode((const unsigned char *)sqlite3_column_blob(stmt, 7), len, NULL);
 
@@ -3512,8 +3512,6 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename)
 
     // last but not least attach what we have in DB to the XMP. in theory that should be
     // the same as what we just copied over from the sidecar file, but you never know ...
-    // the previous comment is not ok. First for exportation tags (and metadata) can be different
-    // second we could save time not reading the xmp file, just using the database data
     dt_exif_xmp_read_data_export(xmpData, imgid);
 
     img->writeMetadata();
