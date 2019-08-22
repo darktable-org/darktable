@@ -55,6 +55,7 @@ void dt_history_delete_on_selection();
 /** compress history stack */
 void dt_history_compress_on_selection();
 void dt_history_compress_on_image(int32_t imgid);
+void basic_dt_history_compress_on_image(int32_t imgid);
 
 typedef struct dt_history_item_t
 {
