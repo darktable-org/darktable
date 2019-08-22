@@ -1555,8 +1555,10 @@ static void apply_box_aspect(dt_iop_module_t *self, _grab_region_t grab)
 
 void reload_defaults(dt_iop_module_t *self)
 {
+  const dt_image_t *img = &self->dev->image_storage;
   dt_iop_clipping_params_t tmp
-      = (dt_iop_clipping_params_t){ 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,  0.2f, 0.2f, 0.8f, 0.2f,
+      = (dt_iop_clipping_params_t){ 0.0f, img->usercrop[1], img->usercrop[0], img->usercrop[3], img->usercrop[2],
+                                    0.0f, 0.0f, 0.2f, 0.2f, 0.8f, 0.2f,
                                     0.8f, 0.8f, 0.2f, 0.8f, 0,    0,    FALSE, TRUE, -1,   -1 };
   memcpy(self->params, &tmp, sizeof(dt_iop_clipping_params_t));
   memcpy(self->default_params, &tmp, sizeof(dt_iop_clipping_params_t));

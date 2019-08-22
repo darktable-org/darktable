@@ -21,6 +21,7 @@
 #include "common/colorlabels.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/file_location.h"
 #include "common/focus.h"
 #include "common/grouping.h"
 #include "common/history.h"
@@ -3729,11 +3730,11 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
   // get the max zoom of all images
   const int max_in_memory_images = _get_max_in_memory_images();
   float fz = lib->full_zoom;
-  if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING && lib->slots_count <= max_in_memory_images)
+  if(lib->pan && get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING && lib->slots_count <= max_in_memory_images)
   {
     for(int i = 0; i < lib->slots_count; i++)
     {
-      fz = fmaxf(fz, lib->full_zoom + lib->fp_surf[0].zoom_delta);
+      fz = fmaxf(fz, lib->full_zoom + lib->fp_surf[i].zoom_delta);
     }
   }
 
@@ -3909,9 +3910,24 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
         // namely until the pointer has moved a little distance. The code taking
         // care of this is in expose(). Pan only makes sense in zoomable lt.
         if(_is_custom_image_order_actif(self) || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE
-           || (lib->full_preview_id > -1 && lib->full_zoom > 1.0f)
-           || (get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING && lib->full_zoom > 1.0f))
+           || (lib->full_preview_id > -1 && lib->full_zoom > 1.0f))
           begin_pan(lib, x, y);
+
+        // in culling mode, we allow to pan only if one image is zoomed
+        if(get_layout() == DT_LIGHTTABLE_LAYOUT_CULLING)
+        {
+          if(lib->slots_count <= _get_max_in_memory_images())
+          {
+            for(int i = 0; i < lib->slots_count; i++)
+            {
+              if(lib->full_zoom + lib->fp_surf[i].zoom_delta > 1.0f)
+              {
+                begin_pan(lib, x, y);
+                break;
+              }
+            }
+          }
+        }
 
         if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && lib->using_arrows)
         {

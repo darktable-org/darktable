@@ -26,7 +26,21 @@ typedef struct dt_tag_t
 {
   guint id;
   gchar *tag;
+  gchar *leave;
+  gchar *synonym;
+  guint count;
+  guint select;
+  gint flags;
 } dt_tag_t;
+
+typedef enum dt_tag_flags_t
+{
+  DT_TF_NONE = 0,
+  DT_TF_CATEGORY = 1 << 0,  // this tag (or path) is not a keyword to be exported
+  DT_TF_PRIVATE = 1 << 1, // this tag is private. Will be exported only on demand
+  DT_TF_PATH = 1 << 2, // this tag is on the path of others in the list
+} dt_tag_flags_t;
+
 
 /** creates a new tag, returns tagid \param[in] name the tag name. \param[in] tagid a pointer to tagid of new
  * tag, this can be NULL \return false if failed to create a tag and indicates that tagid is invalid to use.
@@ -54,12 +68,20 @@ gchar *dt_tag_get_name(const guint tagid);
  * the amount of images affected. */
 guint dt_tag_remove(const guint tagid, gboolean final);
 
+/** removes a list of tags from db and from assigned images. \return the number of tags deleted */
+guint dt_tag_remove_list(GList *tag_list);
+
+/** set the name of specified id */
+void dt_tag_rename(const guint tagid, const gchar *new_tagname);
+
 /** checks if tag exists. \param[in] name of tag to check. \return the id of found tag or -1 i not found. */
 gboolean dt_tag_exists(const char *name, guint *tagid);
 
 /** attach a list of tags on selected images. \param[in] tagid id of tag to attach. \param[in] imgid the image
  * id to attach tag to, if < 0 selected images are used. */
-void dt_tag_attach(guint tagid, gint imgid);
+gboolean dt_tag_attach(guint tagid, gint imgid);
+/** same as above but raises a dt_collection_update_query() */
+void dt_tag_attach_from_gui(guint tagid, gint imgid);
 
 /** attach a list of tags on selected images. \param[in] tags a list of ids of tags. \param[in] imgid the
  * image id to attach tag to, if < 0 selected images are used. \note If tag not exists it's created.*/
@@ -80,12 +102,15 @@ void dt_tag_detach_by_string(const char *name, gint imgid);
 /** retrieves a list of tags of specified imgid \param[out] result a list of dt_tag_t, sorted by tag. */
 uint32_t dt_tag_get_attached(gint imgid, GList **result, gboolean ignore_dt_tags);
 
-/** get a list of tags, call dt_util_glist_to_str() to make it into a string.
+/** sort tags per name (including '|') or per count (desc) */
+GList *dt_sort_tag(GList *tags, gboolean byname);
+
+/** get a list of tags,
  *  the difference to dt_tag_get_attached() is that this one splits at '|' and filters out the "darktable|"
  * tags. */
 GList *dt_tag_get_list(gint imgid);
 
-/** get a flat list of only hierarchical tags, call dt_util_glist_to_str() to make it into a string.
+/** get a flat list of only hierarchical tags,
  *  the difference to dt_tag_get_attached() is that this one filters out the "darktable|" tags. */
 GList *dt_tag_get_hierarchical(gint imgid);
 
@@ -95,7 +120,32 @@ GList *dt_tag_get_images_from_selection(gint imgid, gint tagid);
 /** retrieves a list of suggested tags matching keyword. \param[in] keyword the keyword to search \param[out]
  * result a pointer to list populated with result. \return the count \note the limit of result is decided by
  * conf value "xxx" */
-uint32_t dt_tag_get_suggestions(const gchar *keyword, GList **result);
+uint32_t dt_tag_get_suggestions(GList **result);
+
+/** retrieves count of tagged images. \param[in] keyword the keyword to search \return
+ * the count \note the limit of result is decided by conf value "xxx" */
+void dt_tag_count_tags_images(const gchar *keyword, int *tag_count, int *img_count);
+
+/** retrieves list of tags and tagged images. \param[in] keyword the keyword to search. \param[out] result pointers to list
+ * populated with result. \note the limit of result is decided by conf value "xxx" */
+void dt_tag_get_tags_images(const gchar *keyword, GList **tag_list, GList **img_list);
+
+/** retrieves the list of tags matching keyword. \param[in] keyword the keyword to search \param[out]
+ * result a pointer to list populated with result. \return the count \note the limit of result is decided by
+ * conf value "xxx" */
+uint32_t dt_tag_get_with_usage(GList **result);
+
+/** retrieves synonyms of the tag */
+gchar *dt_tag_get_synonyms(gint tagid);
+
+/** sets synonyms of the tag */
+void dt_tag_set_synonyms(gint tagid, gchar *synonyms);
+
+/** retrieves flags of the tag */
+gint dt_tag_get_flags(gint tagid);
+
+/** sets flags of the tag */
+void dt_tag_set_flags(gint tagid, gint flags);
 
 /** retrieves a list of recent tags used. \param[out] result a pointer to list populated with result. \return
  * the count \note the limit of result is decided by conf value "xxx" */
@@ -106,6 +156,12 @@ void dt_tag_free_result(GList **result);
 
 /** reorganize tags */
 void dt_tag_reorganize(const gchar *source, const gchar *dest);
+
+/** get number of seleted images */
+uint32_t dt_selected_images_count();
+
+/** get number of images affected with that tag */
+uint32_t dt_tag_images_count(gint tagid);
 
 /** make sure that main.used_tags has everything. to be used after changes to main.tagged_images */
 void dt_tag_update_used_tags();

@@ -538,7 +538,11 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   {
     imgid = GPOINTER_TO_INT(t->data);
     newimgid = dt_image_duplicate(imgid);
-    if(newimgid != -1) dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL);
+    if(newimgid != -1)
+    {
+      dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL);
+      dt_collection_update_query(darktable.collection);
+    }
     t = g_list_delete_link(t, t);
     fraction = 1.0 / total;
     dt_control_job_set_progress(job, fraction);
@@ -1253,7 +1257,7 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
     if(is_copy)
     {
       if (dt_image_local_copy_set(imgid) == 0)
-        dt_tag_attach(tagid, imgid);
+        dt_tag_attach_from_gui(tagid, imgid);
     }
     else
     {
@@ -1270,6 +1274,38 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   return 0;
 }
+
+static int32_t dt_control_refresh_exif_run(dt_job_t *job)
+{
+  int imgid = -1;
+  dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
+  GList *t = params->index;
+  guint total = g_list_length(t);
+  double fraction = 0;
+  char message[512] = { 0 };
+  snprintf(message, sizeof(message), ngettext("refreshing info for %d image", "refreshing info for %d images", total), total);
+  dt_control_job_set_progress_message(job, message);
+  while(t)
+  {
+    imgid = GPOINTER_TO_INT(t->data);
+    gboolean from_cache = TRUE;
+    char sourcefile[PATH_MAX];
+    dt_image_full_path(imgid, sourcefile, sizeof(sourcefile), &from_cache);
+
+    dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+    dt_exif_read(img, sourcefile);
+    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
+
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
+
+    t = g_list_delete_link(t, t);
+    fraction = 1.0 / total;
+    dt_control_job_set_progress(job, fraction);
+  }
+  params->index = NULL;
+  return 0;
+}
+
 
 static int32_t dt_control_export_job_run(dt_job_t *job)
 {
@@ -1349,7 +1385,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
     // remove 'changed' tag from image
     dt_tag_detach(tagid, imgid);
     // make sure the 'exported' tag is set on the image
-    dt_tag_attach(etagid, imgid);
+    dt_tag_attach_from_gui(etagid, imgid);
     // check if image still exists:
     char imgfilename[PATH_MAX] = { 0 };
     const dt_image_t *image = dt_image_cache_get(darktable.image_cache, (int32_t)imgid, 'r');
@@ -1694,6 +1730,13 @@ void dt_control_reset_local_copy_images()
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
                      dt_control_generic_images_job_create(&dt_control_local_copy_images_job_run,
                                                           N_("local copy images"), 0, NULL, PROGRESS_CANCELLABLE));
+}
+
+void dt_control_refresh_exif()
+{
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+                     dt_control_generic_images_job_create(&dt_control_refresh_exif_run,
+                                                          N_("refresh exif"), 0, NULL, PROGRESS_CANCELLABLE));
 }
 
 static dt_control_image_enumerator_t *dt_control_export_alloc()

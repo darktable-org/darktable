@@ -22,6 +22,7 @@
 #include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/file_location.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
@@ -207,6 +208,7 @@ void expose(
   if(dev->gui_synch && !dev->image_loading)
   {
     // synch module guis from gtk thread:
+    const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
     GList *modules = dev->iop;
     while(modules)
@@ -215,7 +217,7 @@ void expose(
       dt_iop_gui_update(module);
       modules = g_list_next(modules);
     }
-    darktable.gui->reset = 0;
+    darktable.gui->reset = reset;
     dev->gui_synch = 0;
   }
 
@@ -664,6 +666,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_dev_reload_image(dev, imgid);
 
   // make sure no signals propagate here:
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
 
   const guint nb_iop = g_list_length(dev->iop);
@@ -798,7 +801,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
 
   // make signals work again, but only after focus event,
   // to avoid crop/rotate for example to add another history item.
-  darktable.gui->reset = 0;
+  darktable.gui->reset = reset;
 
   // Signal develop initialize
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
@@ -913,7 +916,6 @@ static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratabl
       dt_control_set_dev_zoom_x(zoom_x);
       dt_control_set_dev_zoom_y(zoom_y);
       dt_control_set_dev_closeup(closeup);
-      dt_dev_invalidate(dev);
       break;
     case 2:
       zoom_x = zoom_y = 0.0f;
@@ -922,18 +924,19 @@ static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratabl
       dt_control_set_dev_zoom_x(zoom_x);
       dt_control_set_dev_zoom_y(zoom_y);
       dt_control_set_dev_closeup(0);
-      dt_dev_invalidate(dev);
       break;
     case 3:
       dt_control_set_dev_zoom(DT_ZOOM_FIT);
       dt_control_set_dev_zoom_x(0);
       dt_control_set_dev_zoom_y(0);
       dt_control_set_dev_closeup(0);
-      dt_dev_invalidate(dev);
       break;
     default:
       break;
   }
+  dt_dev_invalidate(dev);
+  dt_control_queue_redraw_center();
+  dt_control_navigation_redraw();
   return TRUE;
 }
 
@@ -2399,6 +2402,7 @@ void enter(dt_view_t *self)
    * add IOP modules to plugin list
    */
   // avoid triggering of events before plugin is ready:
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   char option[1024];
   GList *modules = g_list_last(dev->iop);
@@ -2430,7 +2434,8 @@ void enter(dt_view_t *self)
 
     modules = g_list_previous(modules);
   }
-  darktable.gui->reset = 0;
+  // make signals work again:
+  darktable.gui->reset = reset;
 
   /* signal that darktable.develop is initialized and ready to be used */
   dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE);
@@ -2444,9 +2449,6 @@ void enter(dt_view_t *self)
 
   // switch on groups as they were last time:
   dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
-
-  // make signals work again:
-  darktable.gui->reset = 0;
 
   // get last active plugin:
   gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
@@ -2844,6 +2846,8 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
     dt_control_set_dev_zoom_x(zoom_x);
     dt_control_set_dev_zoom_y(zoom_y);
     dt_dev_invalidate(dev);
+    dt_control_queue_redraw_center();
+    dt_control_navigation_redraw();
     return 1;
   }
   return 0;
@@ -3623,8 +3627,8 @@ static int second_window_button_pressed(GtkWidget *widget, dt_develop_t *dev, do
     dt_second_window_get_processed_size(dev, &procw, &proch);
     const float scale = dt_second_window_get_zoom_scale(dev, zoom, 1 << closeup, 0);
 
-    zoom_x += (1.0 / scale) * (x - .5f * dev->width) / procw;
-    zoom_y += (1.0 / scale) * (y - .5f * dev->height) / proch;
+    zoom_x += (1.0 / scale) * (x - .5f * dev->second_window.width) / procw;
+    zoom_y += (1.0 / scale) * (y - .5f * dev->second_window.height) / proch;
 
     if(zoom == DT_ZOOM_1)
     {

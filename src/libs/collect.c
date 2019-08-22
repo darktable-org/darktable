@@ -927,7 +927,6 @@ static void tree_view(dt_lib_collect_rule_t *dr)
   const gboolean times = (property == DT_COLLECTION_PROP_TIME);
   const char *format_separator = folders ? "%s" G_DIR_SEPARATOR_S :
   days || times ? "%s:" : "%s|";
-  int insert_position = tags ? 0 : -1;
 
   set_properties(dr);
 
@@ -1001,10 +1000,6 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
     if(folders || tags)
       sorted_names = g_list_sort(sorted_names, sort_folder_tag);
-    // we have to know about children in the hierarchy to not add single tags twice when they are
-    // also a top level hierarchy
-    if(tags)
-      sorted_names = g_list_reverse(sorted_names);
 
     for(GList *names = sorted_names; names; names = g_list_next(names))
     {
@@ -1022,11 +1017,10 @@ static void tree_view(dt_lib_collect_rule_t *dr)
           gtk_tree_store_set(GTK_TREE_STORE(model), &uncategorized, DT_LIB_COLLECT_COL_TEXT,
                              _(UNCATEGORIZED_TAG), DT_LIB_COLLECT_COL_PATH, "", DT_LIB_COLLECT_COL_VISIBLE,
                              TRUE, -1);
-          insert_position++; // we want to have this at the very top!
         }
 
         /* adding an uncategorized tag */
-        gtk_tree_store_insert(GTK_TREE_STORE(model), &temp, &uncategorized, 0);
+        gtk_tree_store_insert(GTK_TREE_STORE(model), &temp, &uncategorized, -1);
         gtk_tree_store_set(GTK_TREE_STORE(model), &temp, DT_LIB_COLLECT_COL_TEXT, name,
                            DT_LIB_COLLECT_COL_PATH, name, DT_LIB_COLLECT_COL_VISIBLE, TRUE,
                            DT_LIB_COLLECT_COL_COUNT, count, -1);
@@ -1083,7 +1077,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
 
             gchar *pth2 = g_strdup(pth);
             pth2[strlen(pth2) - 1] = '\0';
-            gtk_tree_store_insert(GTK_TREE_STORE(model), &iter, common_length > 0 ? &parent : NULL, insert_position);
+            gtk_tree_store_insert(GTK_TREE_STORE(model), &iter, common_length > 0 ? &parent : NULL, -1);
             gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, *token,
                                DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_VISIBLE, TRUE,
                                DT_LIB_COLLECT_COL_COUNT, (*(token + 1)?0:count), -1);
@@ -1511,7 +1505,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
   // we check if something as change since last call
   if(d->view_rule != -1) return;
 
-  const int old = darktable.gui->reset;
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   const int _a = dt_conf_get_int("plugins/lighttable/collect/num_rules") - 1;
   const int active = CLAMP(_a, 0, (MAX_RULES - 1));
@@ -1573,7 +1567,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
 
   // update list of proposals
   update_view(d->rule + d->active_rule);
-  darktable.gui->reset = old;
+  darktable.gui->reset = reset;
 }
 
 void gui_reset(dt_lib_module_t *self)

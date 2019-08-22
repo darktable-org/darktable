@@ -22,6 +22,7 @@
 #include "common/collection.h"
 #include "common/colorspaces.h"
 #include "common/cups_print.h"
+#include "common/file_location.h"
 #include "common/image_cache.h"
 #include "common/metadata.h"
 #include "common/pdf.h"
@@ -360,7 +361,7 @@ static int _print_job_run(dt_job_t *job)
   guint tagid = 0;
   snprintf (tag, sizeof(tag), "darktable|printed|%s", params->prt.printer.name);
   dt_tag_new(tag, &tagid);
-  dt_tag_attach(tagid, params->imgid);
+  dt_tag_attach_from_gui(tagid, params->imgid);
 
   return 0;
 }
