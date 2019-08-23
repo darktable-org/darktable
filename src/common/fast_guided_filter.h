@@ -88,10 +88,22 @@ typedef enum dt_iop_guided_filter_blending_t
  *  Kaiming He, Jian Sun, Microsoft : https://arxiv.org/abs/1505.00996
  **/
 
+
+ #ifdef _OPENMP
+#pragma omp declare simd
+#endif
+__DT_CLONE_TARGETS__
+static float fast_clamp(const float value, const float bottom, const float top)
+{
+  // vectorizable clamping between bottom and top values
+  return fmax(fmin(value, top), bottom);
+}
+
+
 __DT_CLONE_TARGETS__
 static inline void interpolate_bilinear(const float *const restrict in, const size_t width_in, const size_t height_in,
-                         float *const restrict out, const size_t width_out, const size_t height_out,
-                         const size_t ch)
+                                        float *const restrict out, const size_t width_out, const size_t height_out,
+                                        const size_t ch)
 {
   // Fast vectorized bilinear interpolation on ch channels
 #ifdef _OPENMP
@@ -150,7 +162,7 @@ static inline void interpolate_bilinear(const float *const restrict in, const si
 __DT_CLONE_TARGETS__
 static inline void variance_analyse(const float *const restrict guide, // I
                                     const float *const restrict mask, //p
-                                    float *const restrict a, float *const restrict b,
+                                    float *const restrict ab,
                                     const size_t width, const size_t height,
                                     const int radius, const float feathering)
 {
@@ -159,15 +171,12 @@ static inline void variance_analyse(const float *const restrict guide, // I
   // output a and b, the linear blending params
   // p, the mask is the quantised guide I
 
-  float *const mean_I DT_ALIGNED_ARRAY = dt_alloc_sse_ps(width * height);
-  float *const mean_p DT_ALIGNED_ARRAY = dt_alloc_sse_ps(width * height);
-  float *const corr_I DT_ALIGNED_ARRAY = dt_alloc_sse_ps(width * height);
-  float *const corr_Ip DT_ALIGNED_ARRAY = dt_alloc_sse_ps(width * height);
+  float *const restrict temp = dt_alloc_sse_ps(dt_round_size_sse(4 * width * height)); // array of structs { { mean_I, mean_p, corr_I, corr_Ip } }
 
   // Convolve box average along columns
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(guide, mask, mean_I, mean_p, corr_I, corr_Ip, width, height, radius) \
+  dt_omp_firstprivate(guide, mask, temp, width, height, radius) \
   schedule(static) collapse(2)
 #endif
   for(size_t i = 0; i < height; i++)
@@ -177,35 +186,37 @@ static inline void variance_analyse(const float *const restrict guide, // I
       const size_t begin_convol = (i < radius) ? 0 : i - radius;
       size_t end_convol = i + radius;
       end_convol = (end_convol < height) ? end_convol : height - 1;
-      const float num_elem = (float)end_convol - (float)begin_convol + 1.0f;
-
-      float w_mean_I = 0.0f;
-      float w_mean_p = 0.0f;
-      float w_corr_I = 0.0f;
-      float w_corr_Ip = 0.0f;
+      const float num_elem = 1.0f / ((float)end_convol - (float)begin_convol + 1.0f);
+      float tmp[4] DT_ALIGNED_PIXEL = { 0.0f }; // = { w_mean_I, w_mean_p, w_corr_I, w_corr_Ip }
 
 #ifdef _OPENMP
-#pragma omp simd aligned(guide, mask, mean_I, mean_p, corr_I, corr_Ip:64) reduction(+:w_mean_I, w_mean_p, w_corr_I, w_corr_Ip)
+#pragma omp simd aligned(guide, mask:64) aligned(tmp:16) reduction(+:tmp)
 #endif
       for(size_t c = begin_convol; c <= end_convol; c++)
       {
-        w_mean_I += guide[c * width + j];
-        w_mean_p += mask[c * width + j];
-        w_corr_I += guide[c * width + j] * guide[c * width + j];
-        w_corr_Ip += mask[c * width + j] * guide[c * width + j];
+        const size_t index = c * width + j;
+        const float g = guide[index];
+        const float m = mask[index];
+        tmp[0] += g;
+        tmp[1] += m;
+        tmp[2] += g * g;
+        tmp[3] += g * m;
       }
 
-      mean_I[i * width + j] = w_mean_I / num_elem;
-      mean_p[i * width + j] = w_mean_p / num_elem;
-      corr_I[i * width + j] = w_corr_I / num_elem;
-      corr_Ip[i * width + j] = w_corr_Ip / num_elem;
+      const size_t index = (i * width + j) * 4;
+
+#ifdef _OPENMP
+#pragma omp simd aligned(tmp:16) aligned(temp:64)
+#endif
+      for(size_t c = 0; c < 4; c++)
+        temp[index + c] = tmp[c] * num_elem;
     }
   }
 
   // Convolve box average along rows and output result
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(a, b, mean_I, mean_p, corr_I, corr_Ip, width, height, radius, feathering) \
+  dt_omp_firstprivate(ab, temp, width, height, radius, feathering) \
   schedule(static) collapse(2)
 #endif
   for(size_t i = 0; i < height; i++)
@@ -215,110 +226,34 @@ static inline void variance_analyse(const float *const restrict guide, // I
       const size_t begin_convol = (j < radius) ? 0 : j - radius;
       size_t end_convol = j + radius;
       end_convol = (end_convol < width) ? end_convol : width - 1;
-      const float num_elem = (float)end_convol - (float)begin_convol + 1.0f;
-
-      float w_mean_I = 0.0f;
-      float w_mean_p = 0.0f;
-      float w_corr_I = 0.0f;
-      float w_corr_Ip = 0.0f;
+      const float num_elem = 1.0f / ((float)end_convol - (float)begin_convol + 1.0f);
+      float tmp[4] DT_ALIGNED_PIXEL = { 0.0f }; // = { w_mean_I, w_mean_p, w_corr_I, w_corr_Ip }
 
 #ifdef _OPENMP
-#pragma omp simd aligned(a, b, mean_I, mean_p, corr_I, corr_Ip:64) reduction(+:w_mean_I, w_mean_p, w_corr_I, w_corr_Ip)
+#pragma omp simd aligned(temp:64) aligned(tmp:16) reduction(+:tmp)
 #endif
       for(size_t c = begin_convol; c <= end_convol; c++)
       {
-        w_mean_I += mean_I[i * width + c];
-        w_mean_p += mean_p[i * width + c];
-        w_corr_I += corr_I[i * width + c];
-        w_corr_Ip += corr_Ip[i * width + c];
+        const float *pix = temp + (i * width + c) * 4;
+        // for some reason, using temp[(i * width + c) * 4 + 1] fails with segfault on the
+        // heap vector tmp. Then, just do pointer increments as in 1980
+        tmp[0] += *pix++;
+        tmp[1] += *pix++;
+        tmp[2] += *pix++;
+        tmp[3] += *pix++;
       }
 
-      w_mean_I /= num_elem;
-      w_mean_p /= num_elem;
-      w_corr_I /= num_elem;
-      w_corr_Ip /= num_elem;
-
-      float var_I = w_corr_I - w_mean_I * w_mean_I;
-      float cov_Ip = w_corr_Ip - w_mean_I * w_mean_p;
-
-      a[i * width + j] = cov_Ip / (var_I + feathering);
-      b[i * width + j] = w_mean_p - a[i * width + j] * w_mean_I;
-    }
-  }
-
-  dt_free_align(mean_I);
-  dt_free_align(mean_p);
-  dt_free_align(corr_I);
-  dt_free_align(corr_Ip);
-}
-
-
-__DT_CLONE_TARGETS__
-static inline void box_average(float *const restrict in,
-                               const size_t width, const size_t height,
-                               const int radius)
-{
-  // Compute in-place a box average (filter) on a grey image over a window of size 2*radius + 1
-  // We make use of the separable nature of the filter kernel to speed-up the computation
-  // by convolving along columns and rows separately (complexity O(2 × radius) instead of O(radius²)).
-
-  float *const temp DT_ALIGNED_ARRAY = dt_alloc_sse_ps(width * height);
-
-  // Convolve box average along columns
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, temp, width, height, radius) \
-  schedule(static) collapse(2)
+#pragma omp simd aligned(tmp:16) reduction(*:tmp)
 #endif
-  for(size_t i = 0; i < height; i++)
-  {
-    for(size_t j = 0; j < width; j++)
-    {
-      const size_t begin_convol = (i < radius) ? 0 : i - radius;
-      size_t end_convol = i + radius;
-      end_convol = (end_convol < height) ? end_convol : height - 1;
-      const float num_elem = (float)end_convol - (float)begin_convol + 1.0f;
+      for(size_t c = 0; c < 4; c++)
+        tmp[c] *= num_elem;
 
-      float w = 0.0f;
+      const size_t index = (i * width + j) * 2;
+      const float a = (tmp[3] - tmp[0] * tmp[1]) / ((tmp[2] - tmp[0] * tmp[0]) + feathering);
 
-#ifdef _OPENMP
-#pragma omp simd aligned(in, temp:64) reduction(+:w)
-#endif
-      for(size_t c = begin_convol; c <= end_convol; c++)
-      {
-        w += in[c * width + j];
-      }
-
-      temp[i * width + j] = w / num_elem;
-    }
-  }
-
-  // Convolve box average along rows and output result
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, temp, width, height, radius) \
-  schedule(static) collapse(2)
-#endif
-  for(size_t i = 0; i < height; i++)
-  {
-    for(size_t j = 0; j < width; j++)
-    {
-      const size_t begin_convol = (j < radius) ? 0 : j - radius;
-      size_t end_convol = j + radius;
-      end_convol = (end_convol < width) ? end_convol : width - 1;
-      const float num_elem = (float)end_convol - (float)begin_convol + 1.0f;
-
-      float w = 0.0f;
-
-#ifdef _OPENMP
-#pragma omp simd aligned(in, temp:64) reduction(+:w)
-#endif
-      for(size_t c = begin_convol; c <= end_convol; c++)
-      {
-        w += temp[i * width + c];
-      }
-
-      in[i * width + j] = w / num_elem;
+      ab[index] = a;
+      ab[index + 1] = tmp[1] - a * tmp[0]; // = b
     }
   }
 
@@ -327,39 +262,123 @@ static inline void box_average(float *const restrict in,
 
 
 __DT_CLONE_TARGETS__
+static inline void box_average(float *const restrict in,
+                               const size_t width, const size_t height, const size_t ch,
+                               const int radius)
+{
+  // Compute in-place a box average (filter) on a multi-channel image over a window of size 2*radius + 1
+  // We make use of the separable nature of the filter kernel to speed-up the computation
+  // by convolving along columns and rows separately (complexity O(2 × radius) instead of O(radius²)).
+
+  assert(ch <= 4);
+
+  float *const restrict temp = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
+
+  // Convolve box average along columns
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, temp, width, height, ch, radius) \
+  schedule(static) collapse(2)
+#endif
+  for(size_t i = 0; i < height; i++)
+  {
+    for(size_t j = 0; j < width; j++)
+    {
+      const size_t begin_convol = (i < radius) ? 0 : i - radius;
+      size_t end_convol = i + radius;
+      end_convol = (end_convol < height) ? end_convol : height - 1;
+      const float num_elem = (float)end_convol - (float)begin_convol + 1.0f;
+
+      float w[4] DT_ALIGNED_PIXEL = { 0.0f };
+
+      // Convolve
+#ifdef _OPENMP
+#pragma omp simd aligned(in:64) aligned(w:16) reduction(+:w) collapse(2)
+#endif
+      for(size_t c = begin_convol; c <= end_convol; c++)
+        for(size_t k = 0; k < ch; ++k)
+          w[k] += in[(c * width + j) * ch + k];
+
+    // Normalize and Save
+#ifdef _OPENMP
+#pragma omp simd aligned(temp:64) aligned(w:16)
+#endif
+      for(size_t k = 0; k < ch; ++k)
+        temp[(i * width + j) * ch + k] = w[k] / num_elem;
+    }
+  }
+
+  // Convolve box average along rows and output result
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, temp, width, height, ch, radius) \
+  schedule(static) collapse(2)
+#endif
+  for(size_t i = 0; i < height; i++)
+  {
+    for(size_t j = 0; j < width; j++)
+    {
+      const size_t begin_convol = (j < radius) ? 0 : j - radius;
+      size_t end_convol = j + radius;
+      end_convol = (end_convol < width) ? end_convol : width - 1;
+      const float num_elem = (float)end_convol - (float)begin_convol + 1.0f;
+      const size_t stride = i * width;
+      const size_t index = (stride + j) * ch;
+
+      float w[4] DT_ALIGNED_PIXEL = { 0.0f };
+
+      // Convolve
+#ifdef _OPENMP
+#pragma omp simd aligned(temp:64) aligned(w:16) reduction(+:w) collapse(2)
+#endif
+      for(size_t c = begin_convol; c <= end_convol; c++)
+        for(size_t k = 0; k < ch; ++k)
+          w[k] += temp[(stride + c) * ch + k];
+
+      // Normalize and Save
+#ifdef _OPENMP
+#pragma omp simd aligned(w:16) aligned(in:64)
+#endif
+      for(size_t k = 0; k < ch; ++k)
+        in[index + k] = w[k] / num_elem;
+    }
+  }
+  dt_free_align(temp);
+}
+
+
+__DT_CLONE_TARGETS__
 static inline void apply_linear_blending(float *const restrict image,
-                                    const float *const restrict a,
-                                    const float *const restrict b,
-                                    const size_t num_elem)
+                                         const float *const restrict ab,
+                                         const size_t num_elem)
 {
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(image, a, b, num_elem) \
-schedule(static) aligned(image, a, b:64)
+dt_omp_firstprivate(image, ab, num_elem) \
+schedule(static) aligned(image, ab:64)
 #endif
   for(size_t k = 0; k < num_elem; k++)
   {
     // Note : image[k] is positive at the outside of the luminance mask
-    image[k] = fmaxf(image[k] * a[k] + b[k], MIN_FLOAT);
+    image[k] = fmaxf(image[k] * ab[k * 2] + ab[k * 2 + 1], MIN_FLOAT);
   }
 }
 
 
 __DT_CLONE_TARGETS__
 static inline void apply_linear_blending_w_geomean(float *const restrict image,
-                                                   const float *const restrict a,
-                                                   const float *const restrict b,
+                                                   const float *const restrict ab,
                                                    const size_t num_elem)
 {
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(image, a, b, num_elem) \
-schedule(static) aligned(image, a, b:64)
+dt_omp_firstprivate(image, ab, num_elem) \
+schedule(static) aligned(image, ab:64)
 #endif
   for(size_t k = 0; k < num_elem; k++)
   {
     // Note : image[k] is positive at the outside of the luminance mask
-    image[k] = sqrtf(image[k] * fmaxf(image[k] * a[k] + b[k], MIN_FLOAT));
+    image[k] = sqrtf(image[k] * fmaxf(image[k] * ab[k * 2] + ab[k * 2 + 1], MIN_FLOAT));
   }
 }
 
@@ -381,7 +400,7 @@ dt_omp_firstprivate(image, out, num_elem, sampling, clip_min, clip_max) \
 schedule(static) aligned(image, out:64)
 #endif
     for(size_t k = 0; k < num_elem; k++)
-      out[k] = CLAMP(image[k], clip_min, clip_max);
+      out[k] = fast_clamp(image[k], clip_min, clip_max);
   }
   else if(sampling == 1.0f)
   {
@@ -392,7 +411,7 @@ dt_omp_firstprivate(image, out, num_elem, sampling, clip_min, clip_max) \
 schedule(static) aligned(image, out:64)
 #endif
     for(size_t k = 0; k < num_elem; k++)
-      out[k] = CLAMP(exp2f(floorf(log2f(image[k]))), clip_min, clip_max);
+      out[k] = fast_clamp(exp2f(floorf(log2f(image[k]))), clip_min, clip_max);
   }
 
   else
@@ -404,17 +423,17 @@ dt_omp_firstprivate(image, out, num_elem, sampling, clip_min, clip_max) \
 schedule(static) aligned(image, out:64)
 #endif
     for(size_t k = 0; k < num_elem; k++)
-      out[k] = CLAMP(exp2f(floorf(log2f(image[k]) / sampling) * sampling), clip_min, clip_max);
+      out[k] = fast_clamp(exp2f(floorf(log2f(image[k]) / sampling) * sampling), clip_min, clip_max);
   }
 }
 
 
 __DT_CLONE_TARGETS__
 static inline void fast_guided_filter(float *const restrict image,
-                                 const size_t width, const size_t height,
-                                 const int radius, float feathering, const int iterations,
-                                 const dt_iop_guided_filter_blending_t filter, const float scale,
-                                 const float quantization, const float quantize_min, const float quantize_max)
+                                      const size_t width, const size_t height,
+                                      const int radius, float feathering, const int iterations,
+                                      const dt_iop_guided_filter_blending_t filter, const float scale,
+                                      const float quantization, const float quantize_min, const float quantize_max)
 {
   // Works in-place on a grey image
 
@@ -427,14 +446,12 @@ static inline void fast_guided_filter(float *const restrict image,
   const size_t num_elem_ds = ds_width * ds_height;
   const size_t num_elem = width * height;
 
-  float *const restrict ds_image DT_ALIGNED_ARRAY = dt_alloc_sse_ps(num_elem_ds);
-  float *const restrict ds_mask DT_ALIGNED_ARRAY = dt_alloc_sse_ps(num_elem_ds);
-  float *const restrict ds_a DT_ALIGNED_ARRAY = dt_alloc_sse_ps(num_elem_ds);
-  float *const restrict ds_b DT_ALIGNED_ARRAY = dt_alloc_sse_ps(num_elem_ds);
-  float *const restrict a DT_ALIGNED_ARRAY = dt_alloc_sse_ps(num_elem);
-  float *const restrict b DT_ALIGNED_ARRAY = dt_alloc_sse_ps(num_elem);
+  float *const restrict ds_image = dt_alloc_sse_ps(dt_round_size_sse(num_elem_ds));
+  float *const restrict ds_mask = dt_alloc_sse_ps(dt_round_size_sse(num_elem_ds));
+  float *const restrict ds_ab = dt_alloc_sse_ps(dt_round_size_sse(num_elem_ds * 2));
+  float *const restrict ab = dt_alloc_sse_ps(dt_round_size_sse(num_elem * 2));
 
-  if(!ds_image || !ds_mask || !ds_a || !ds_b || !a || !b)
+  if(!ds_image || !ds_mask || !ds_ab || !ab)
   {
     dt_control_log(_("fast guided filter failed to allocate memory, check your RAM settings"));
     goto clean;
@@ -451,16 +468,15 @@ static inline void fast_guided_filter(float *const restrict image,
 
     // Perform the patch-wise variance analyse to get
     // the a and b parameters for the linear blending s.t. mask = a * I + b
-    variance_analyse(ds_image, ds_mask, ds_a, ds_b, ds_width, ds_height, ds_radius, feathering);
+    variance_analyse(ds_image, ds_mask, ds_ab, ds_width, ds_height, ds_radius, feathering);
 
     // Compute the patch-wise average of parameters a and b
-    box_average(ds_a, ds_width, ds_height, ds_radius);
-    box_average(ds_b, ds_width, ds_height, ds_radius);
+    box_average(ds_ab, ds_width, ds_height, 2, ds_radius);
 
     if(i != iterations - 1)
     {
       // Process the intermediate filtered image
-      apply_linear_blending(ds_image, ds_a, ds_b, num_elem_ds);
+      apply_linear_blending(ds_image, ds_ab, num_elem_ds);
     }
     else
     {
@@ -470,20 +486,17 @@ static inline void fast_guided_filter(float *const restrict image,
   }
 
   // Upsample the blending parameters a and b
-  interpolate_bilinear(ds_a, ds_width, ds_height, a, width, height, 1);
-  interpolate_bilinear(ds_b, ds_width, ds_height, b, width, height, 1);
+  interpolate_bilinear(ds_ab, ds_width, ds_height, ab, width, height, 2);
 
   // Finally, blend the guided image
   if(filter == DT_GF_BLENDING_LINEAR)
-    apply_linear_blending(image, a, b, num_elem);
+    apply_linear_blending(image, ab, num_elem);
   else if(filter == DT_GF_BLENDING_GEOMEAN)
-    apply_linear_blending_w_geomean(image, a, b, num_elem);
+    apply_linear_blending_w_geomean(image, ab, num_elem);
 
 clean:
-  if(a) dt_free_align(a);
-  if(b) dt_free_align(b);
-  if(ds_a) dt_free_align(ds_a);
-  if(ds_b) dt_free_align(ds_b);
+  if(ab) dt_free_align(ab);
+  if(ds_ab) dt_free_align(ds_ab);
   if(ds_mask) dt_free_align(ds_mask);
   if(ds_image) dt_free_align(ds_image);
 }
