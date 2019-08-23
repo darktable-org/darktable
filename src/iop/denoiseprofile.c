@@ -1316,42 +1316,6 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     // That is why we have this "scale+offset_scale"
     float band_force_exp_2
         = d->force[DT_DENOISE_PROFILE_ALL][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
-    // try to adapt threshold to preview scale so that the preview
-    // corresponds as much as possible to what the user will get.
-    // we do this by doing a mean of the thresholds of different scales
-    // when we are not exactly on one scale.
-    // the mean is a mix of geometric and arithmetic means
-    // all constants are completely empirical, found by trying to get
-    // the best result.
-    if((DT_IOP_DENOISE_PROFILE_BANDS > (scale + offset_scale + 1))
-       && (0 < (scale + offset_scale + 1)))
-    {
-      float dist_to_log2 = dt_log2f(1.0/(in_scale));
-      dist_to_log2 = dist_to_log2 - (unsigned)(dist_to_log2+0.5);
-      float arith_mean = band_force_exp_2 * (1-fabs(dist_to_log2));
-      float regularization_factor = 0.000001f;
-      if(dist_to_log2 > 0)
-      {
-        band_force_exp_2 = pow(band_force_exp_2 + regularization_factor, (1-dist_to_log2));
-        float force_other_scale = d->force[DT_DENOISE_PROFILE_ALL][DT_IOP_DENOISE_PROFILE_BANDS - (scale + 1 + offset_scale + 1)];
-        band_force_exp_2 *= pow(force_other_scale + regularization_factor, dist_to_log2);
-        arith_mean += force_other_scale * dist_to_log2;
-      }
-      else
-      {
-        band_force_exp_2 = pow(band_force_exp_2 + regularization_factor, (1+dist_to_log2));
-        float force_other_scale = d->force[DT_DENOISE_PROFILE_ALL][DT_IOP_DENOISE_PROFILE_BANDS - (scale - 1 + offset_scale + 1)];
-        band_force_exp_2 *= pow(force_other_scale + regularization_factor, -dist_to_log2);
-        arith_mean += force_other_scale * (-dist_to_log2);
-      }
-      arith_mean /= 2;
-      band_force_exp_2 -= regularization_factor;
-      if(band_force_exp_2 < 0.0f)
-        band_force_exp_2 = 0.0f;
-      band_force_exp_2 += 0.1f * arith_mean;
-      band_force_exp_2 /= 1.1f;
-      //band_force_exp_2 = sqrt(band_force_exp_2);
-    }
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4; // scale to [0,4]. 1 is the neutral curve point
     for(int ch = 0; ch < 3; ch++)
