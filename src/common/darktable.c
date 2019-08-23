@@ -1166,21 +1166,30 @@ void dt_gettime(char *datetime, size_t datetime_len)
 
 void *dt_alloc_align(size_t alignment, size_t size)
 {
+  const size_t aligned_size = dt_round_size(size, alignment);
 #if defined(__FreeBSD_version) && __FreeBSD_version < 700013
-  return malloc(size);
+  return malloc(aligned_size);
 #elif defined(_WIN32)
-  return _aligned_malloc(size, alignment);
+  return _aligned_malloc(aligned_size, alignment);
 #else
   void *ptr = NULL;
-  if(posix_memalign(&ptr, alignment, size)) return NULL;
+  if(posix_memalign(&ptr, alignment, aligned_size)) return NULL;
   return ptr;
 #endif
 }
 
-void *dt_alloc_sse_ps(size_t pixels)
+size_t dt_round_size(const size_t size, const size_t alignment)
 {
-  return __builtin_assume_aligned(dt_alloc_align(64, pixels * sizeof(float)), 64);
+  // Round the size of a buffer to the closest higher multiple
+  return (size & alignment) ? size : ((size / alignment) + 1) * alignment;
 }
+
+size_t dt_round_size_sse(const size_t size)
+{
+  // Round the size of a buffer to the closest 64 higher multiple
+  return dt_round_size(size, 64);
+}
+
 
 #ifdef _WIN32
 void dt_free_align(void *mem)
