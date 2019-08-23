@@ -2871,14 +2871,30 @@ void reload_defaults(dt_iop_module_t *module)
       dt_bauhaus_combobox_add(g->profile, profile->name);
     }
 
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->wb_adaptive_anscombe = TRUE;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius = 1.0f;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->nbhood = 7.0f;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->scattering = 0.0f;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->central_pixel_weight = 0.0f;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->fix_anscombe_and_nlmeans_norm = TRUE;
+    if(*profile_version_ptr == 1)
+    {
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->wb_adaptive_anscombe = TRUE;
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius = 1.0f;
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->nbhood = 7.0f;
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->scattering = 0.0f;
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->central_pixel_weight = 0.0f;
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->fix_anscombe_and_nlmeans_norm = TRUE;
+    }
+    else
+    {
+      const float a = g->interpolated.a[1];
+      // empirical formulas to get good default values
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->wb_adaptive_anscombe = TRUE;
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius = (unsigned)(1.0f + a * 1000.0f + a * a * 20000.0f);
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->nbhood = 7.0f;
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->scattering = 200.0f * a;
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->central_pixel_weight = 0.1f;
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->fix_anscombe_and_nlmeans_norm = TRUE;
+    }
     for(int k = 0; k < 3; k++)
     {
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->a[k] = g->interpolated.a[k];
