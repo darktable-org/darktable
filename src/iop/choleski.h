@@ -170,8 +170,8 @@ static inline int choleski_decompose_safe(const float *const restrict A,
 
 __DT_CLONE_TARGETS__
 static inline int triangular_descent_fast(const float *const restrict L,
-                              const float *const restrict y, float *const restrict b,
-                              const size_t n)
+                                          const float *const restrict y, float *const restrict b,
+                                          const size_t n)
 {
   // solve L × b = y for b
   // use the lower triangular part of L from top to bottom
@@ -189,8 +189,8 @@ static inline int triangular_descent_fast(const float *const restrict L,
 
 __DT_CLONE_TARGETS__
 static inline int triangular_descent_safe(const float *const restrict L,
-                              const float *const restrict y, float *const restrict b,
-                              const size_t n)
+                                          const float *const restrict y, float *const restrict b,
+                                          const size_t n)
 {
   // solve L × b = y for b
   // use the lower triangular part of L from top to bottom
@@ -285,40 +285,31 @@ static inline int solve_hermitian(const float *const restrict A,
   // clock_t start = clock();
 
   int valid = 0;
-  float *const restrict x DT_ALIGNED_ARRAY = dt_alloc_sse_ps(n);
-  float *const restrict L DT_ALIGNED_ARRAY = dt_alloc_sse_ps(n * n);
+  float *const restrict x = dt_alloc_sse_ps(n);
+  float *const restrict L = dt_alloc_sse_ps(n * n);
 
   if(!x || !L)
   {
     dt_control_log(_("Choleski decomposition failed to allocate memory, check your RAM settings"));
+    fprintf(stdout, "Choleski decomposition failed to allocate memory, check your RAM settings\n");
     return 0;
   }
 
   // LU decomposition
-  valid = (checks) ? choleski_decompose_safe(__builtin_assume_aligned(A, 64),
-                                             __builtin_assume_aligned(L, 64), n) :
-                     choleski_decompose_fast(__builtin_assume_aligned(A, 64),
-                                             __builtin_assume_aligned(L, 64), n);
+  valid = (checks) ? choleski_decompose_safe(A, L, n) :
+                     choleski_decompose_fast(A, L, n) ;
   if(!valid) fprintf(stdout, "Cholesky decomposition returned NaNs\n");
 
   // Triangular descent
   if(valid)
-    valid = (checks) ? triangular_descent_safe(__builtin_assume_aligned(L, 64),
-                                               __builtin_assume_aligned(y, 64),
-                                               __builtin_assume_aligned(x, 64), n) :
-                       triangular_descent_fast(__builtin_assume_aligned(L, 64),
-                                               __builtin_assume_aligned(y, 64),
-                                               __builtin_assume_aligned(x, 64), n);
+    valid = (checks) ? triangular_descent_safe(L, y, x, n) :
+                       triangular_descent_fast(L, y, x, n) ;
   if(!valid) fprintf(stdout, "Cholesky LU triangular descent returned NaNs\n");
 
   // Triangular ascent
   if(valid)
-    valid = (checks) ? triangular_ascent_safe(__builtin_assume_aligned(L, 64),
-                                              __builtin_assume_aligned(x, 64),
-                                              __builtin_assume_aligned(y, 64), n) :
-                       triangular_ascent_fast(__builtin_assume_aligned(L, 64),
-                                              __builtin_assume_aligned(x, 64),
-                                              __builtin_assume_aligned(y, 64), n);
+    valid = (checks) ? triangular_ascent_safe(L, x, y, n) :
+                       triangular_ascent_fast(L, x, y, n);
   if(!valid) fprintf(stdout, "Cholesky LU triangular ascent returned NaNs\n");
 
   dt_free_align(x);
@@ -406,9 +397,7 @@ static inline int pseudo_solve(float *const restrict A,
     #endif
     {
       // Prepare the least squares matrix = A' A
-      valid = transpose_dot_matrix(__builtin_assume_aligned(A, 64),
-                                   __builtin_assume_aligned(A_square, 64),
-                                   m, n);
+      valid = transpose_dot_matrix(A, A_square, m, n);
     }
 
     #ifdef _OPENMP
@@ -416,10 +405,7 @@ static inline int pseudo_solve(float *const restrict A,
     #endif
     {
       // Prepare the y square vector = A' y
-      valid = transpose_dot_vector(__builtin_assume_aligned(A, 64),
-                                   __builtin_assume_aligned(y, 64),
-                                   __builtin_assume_aligned(y_square, 64),
-                                   m, n);
+      valid = transpose_dot_vector(A, y, y_square, m, n);
     }
   }
 

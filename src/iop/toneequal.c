@@ -122,7 +122,8 @@ DT_MODULE_INTROSPECTION(2, dt_iop_toneequalizer_params_t)
                       "split-ivs-in-unroller", "variable-expansion-in-unroller", \
                       "split-loops", "ivopts", "predictive-commoning",\
                       "tree-loop-linear", "loop-block", "loop-strip-mine", \
-                      "finite-math-only", "fp-contract=fast", "fast-math")
+                      "finite-math-only", "fp-contract=fast", "fast-math", \
+                      "tree-vectorize")
 #endif
 
 #define UI_SAMPLES 256 // 128 is a bit small for 4K resolution
@@ -232,8 +233,8 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   dt_pthread_mutex_t lock;
 
   // Heap arrays, 64 bits-aligned, unknown length
-  float *thumb_preview_buf DT_ALIGNED_ARRAY;
-  float *full_preview_buf DT_ALIGNED_ARRAY;
+  float *thumb_preview_buf;
+  float *full_preview_buf;
 
   // GTK garbage, nobody cares, no SIMD here
   GtkWidget *noise, *ultra_deep_blacks, *deep_blacks, *blacks, *shadows, *midtones, *highlights, *whites, *speculars;
@@ -630,8 +631,8 @@ static void compute_lut_correction(struct dt_iop_toneequalizer_gui_data_t *g,
 
 __DT_CLONE_TARGETS__
 static inline void compute_luminance_mask(const float *const restrict in, float *const restrict luminance,
-                               const size_t width, const size_t height, const size_t ch,
-                               const dt_iop_toneequalizer_data_t *const d)
+                                          const size_t width, const size_t height, const size_t ch,
+                                          const dt_iop_toneequalizer_data_t *const d)
 {
   switch(d->details)
   {
@@ -902,7 +903,7 @@ static inline void apply_toneequalizer(const float *const restrict in,
                                        const dt_iop_toneequalizer_data_t *const d)
 {
   size_t num_elem = roi_in->width * roi_in->height;
-  float *correction DT_ALIGNED_ARRAY = dt_alloc_sse_ps(num_elem);
+  float *const restrict correction = dt_alloc_sse_ps(dt_round_size_sse(num_elem));
 
   if(correction)
   {
@@ -919,23 +920,24 @@ static inline void apply_toneequalizer(const float *const restrict in,
 
 
 __DT_CLONE_TARGETS__
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-             void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+             const void *const restrict ivoid, void *const restrict ovoid,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_toneequalizer_data_t *const d = (const dt_iop_toneequalizer_data_t *const)piece->data;
   dt_iop_toneequalizer_gui_data_t *const g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
-  if(!((size_t)ivoid & 64) || !((size_t)ovoid & 64))
+  const float *const restrict in = __builtin_assume_aligned(dt_check_sse_aligned((float *const)ivoid), 64);
+  float *const restrict out = __builtin_assume_aligned(dt_check_sse_aligned((float *const)ovoid), 64);
+  float *restrict luminance = NULL;
+
+  if(in == NULL || out == NULL)
   {
     // Pointers are not 64-bits aligned, and SSE code will segfault
-    dt_control_log(_("tone equalizer buffers are ill-aligned, please report the bug to the developpers"));
+    dt_control_log(_("tone equalizer in/out buffer are ill-aligned, please report the bug to the developpers"));
+    fprintf(stdout, "tone equalizer in/out buffer are ill-aligned, please report the bug to the developpers\n");
+    return;
   }
-
-  const float *const in DT_ALIGNED_ARRAY = __builtin_assume_aligned((float *const)ivoid, 64);
-  float *const out DT_ALIGNED_ARRAY = __builtin_assume_aligned((float *const)ovoid, 64);
-  float *luminance DT_ALIGNED_ARRAY = NULL;
-
-  fprintf(stdout, "process started \n");
 
   const size_t width = roi_in->width;
   const size_t height = roi_in->height;
@@ -980,7 +982,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       if(g->full_preview_buf_width != width || g->full_preview_buf_height != height)
       {
         if(g->full_preview_buf) dt_free_align(g->full_preview_buf);
-        g->full_preview_buf = dt_alloc_sse_ps(num_elem);
+        g->full_preview_buf = dt_alloc_sse_ps(num_elem_aligned);
         g->full_preview_buf_width = width;
         g->full_preview_buf_height = height;
       }
@@ -1000,7 +1002,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       if(g->thumb_preview_buf_width != width || g->thumb_preview_buf_height != height)
       {
         if(g->thumb_preview_buf) dt_free_align(g->thumb_preview_buf);
-        g->thumb_preview_buf = dt_alloc_sse_ps(num_elem);
+        g->thumb_preview_buf = dt_alloc_sse_ps(num_elem_aligned);
         g->thumb_preview_buf_width = width;
         g->thumb_preview_buf_height = height;
         g->luminance_valid = 0;
@@ -1013,20 +1015,27 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     else // just to please GCC
     {
-      luminance = dt_alloc_sse_ps(num_elem);
+      luminance = dt_alloc_sse_ps(num_elem_aligned);
     }
 
   }
   else
   {
     // no interactive editing/caching : just allocate a local temp buffer
-    luminance = dt_alloc_sse_ps(num_elem);
+    luminance = dt_alloc_sse_ps(num_elem_aligned);
   }
 
   // Check if the luminance buffer exists
   if(!luminance)
   {
     dt_control_log(_("tone equalizer failed to allocate memory, check your RAM settings"));
+    return;
+  }
+
+  if(!((size_t)luminance & 64))
+  {
+    // Pointers are not 64-bits aligned, and SSE code will segfault
+    dt_control_log(_("tone equalizer luminance buffer is ill-aligned, please report the bug to the developpers"));
     return;
   }
 
@@ -1101,9 +1110,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(!cached) dt_free_align(luminance);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(in, out, roi_out->width, roi_out->height);
-
-  fprintf(stdout, "process finished \n");
-
 }
 
 
@@ -1412,8 +1418,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     dt_simd_memcpy(fallback_factors, d->factors, PIXEL_CHAN);
     dt_control_log(_("tone equalizer : the interpolation is unstable, check the smoothing parameter"));
   }
-
-  fprintf(stdout, "commit_params finished \n");
 }
 
 
@@ -1965,8 +1969,6 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   dt_develop_t *dev = self->dev;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
-  fprintf(stdout, "mouse_moved started \n");
-
   int const wd = dev->preview_pipe->backbuf_width;
   int const ht = dev->preview_pipe->backbuf_height;
 
@@ -2006,7 +2008,6 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
 
 
   switch_cursors(self);
-  fprintf(stdout, "mouse_moved finished with success \n");
   return 1;
 
 }
@@ -2016,7 +2017,6 @@ int mouse_leave(struct dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
-  fprintf(stdout, "mouse_leave started \n");
   if(g == NULL) return 0;
 
   dt_pthread_mutex_lock(&g->lock);
@@ -2030,8 +2030,6 @@ int mouse_leave(struct dt_iop_module_t *self)
   g_object_unref(cursor);
   dt_control_queue_redraw_center();
 
-  fprintf(stdout, "mouse_leave finished \n");
-
   return 1;
 }
 
@@ -2041,8 +2039,6 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
   dt_develop_t *dev = self->dev;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
-
-  fprintf(stdout, "scrolled started \n");
 
   if(self->dt->gui->reset) return 1;
   if(g == NULL) return 0;
@@ -2131,8 +2127,6 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 
   }
-
-  fprintf(stdout, "scrolled finished \n");
 
   return 1;
 }
@@ -2298,8 +2292,6 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   dt_develop_t *dev = self->dev;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
-  fprintf(stdout, "gui_post_expose started \n");
-
   if(!g->cursor_valid || !g->interpolation_valid || !g->luminance_valid || dev->pipe->processing) return;
 
   float x_pointer = g->cursor_pos_x;
@@ -2388,8 +2380,6 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
                     y_pointer - ink.y - ink.height / 2.);
   pango_cairo_show_layout(cr, layout);
   cairo_stroke(cr);
-
-  fprintf(stdout, "gui_post_expose finished \n");
 }
 
 
@@ -2531,8 +2521,6 @@ static gboolean dt_iop_toneequalizer_draw(GtkWidget *widget, cairo_t *cr, gpoint
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
-  fprintf(stdout, "draw started \n");
-
   // Init or refresh the drawing cache
   //if(!g->graph_valid)
   if(!_init_drawing(self->widget, g)) return FALSE;
@@ -2627,8 +2615,6 @@ static gboolean dt_iop_toneequalizer_draw(GtkWidget *widget, cairo_t *cr, gpoint
   cairo_set_source_surface(cr, g->cst, 0, 0);
   cairo_paint(cr);
 
-  fprintf(stdout, "draw finished \n");
-
   return TRUE;
 }
 
@@ -2666,7 +2652,6 @@ static gboolean dt_iop_toneequalizer_bar_draw(GtkWidget *widget, cairo_t *crf, g
     set_color(cr, darktable.bauhaus->graph_fg);
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(3));
     const float average = (g->histogram_average + 8.0f) / 8.0f;
-    fprintf(stdout, "average: %f\n", average * allocation.width);
     cairo_move_to(cr, average * allocation.width, 0.0);
     cairo_line_to(cr, average * allocation.width, allocation.height);
     cairo_stroke(cr);
