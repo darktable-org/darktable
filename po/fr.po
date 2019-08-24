@@ -2,83 +2,85 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-07-31 18:43+0200\n"
-"PO-Revision-Date: 2019-07-31 18:42+0200\n"
-"Last-Translator: Pascal Obry <pascal@obry.net>\n"
+"POT-Creation-Date: 2019-08-24 10:48+0200\n"
+"PO-Revision-Date: 2019-08-24 11:05+0200\n"
+"Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2.3\n"
+"X-Generator: Poedit 2.2.1\n"
 
-#: ../build/src/preferences_gen.h:2080
+#: ../build/src/preferences_gen.h:2155
 msgid "GUI options"
 msgstr "options d'interface"
 
-#: ../build/src/preferences_gen.h:2083 ../src/libs/import.c:107
+#: ../build/src/preferences_gen.h:2158 ../src/libs/import.c:107
 msgid "import"
 msgstr "importer"
 
-#: ../build/src/preferences_gen.h:2094
+#: ../build/src/preferences_gen.h:2169
 msgid "ignore JPEG images when importing film rolls"
 msgstr "ignorer les fichiers JPEG lors de l'importation d'un dossier"
 
-#: ../build/src/preferences_gen.h:2103 ../build/src/preferences_gen.h:2123
-#: ../build/src/preferences_gen.h:2146 ../build/src/preferences_gen.h:2169
-#: ../build/src/preferences_gen.h:2192 ../build/src/preferences_gen.h:2215
-#: ../build/src/preferences_gen.h:2274 ../build/src/preferences_gen.h:2351
-#: ../build/src/preferences_gen.h:2371 ../build/src/preferences_gen.h:2391
-#: ../build/src/preferences_gen.h:2411 ../build/src/preferences_gen.h:2431
-#: ../build/src/preferences_gen.h:2451 ../build/src/preferences_gen.h:2524
-#: ../build/src/preferences_gen.h:2571 ../build/src/preferences_gen.h:2613
-#: ../build/src/preferences_gen.h:2637 ../build/src/preferences_gen.h:2694
-#: ../build/src/preferences_gen.h:2740 ../build/src/preferences_gen.h:2759
-#: ../build/src/preferences_gen.h:2779 ../build/src/preferences_gen.h:2799
-#: ../build/src/preferences_gen.h:2857 ../build/src/preferences_gen.h:2904
-#: ../build/src/preferences_gen.h:2935 ../build/src/preferences_gen.h:2955
-#: ../build/src/preferences_gen.h:2975 ../build/src/preferences_gen.h:2995
-#: ../build/src/preferences_gen.h:3015 ../build/src/preferences_gen.h:3035
-#: ../build/src/preferences_gen.h:3055 ../build/src/preferences_gen.h:3074
-#: ../build/src/preferences_gen.h:3157 ../build/src/preferences_gen.h:3203
-#: ../build/src/preferences_gen.h:3223 ../build/src/preferences_gen.h:3243
-#: ../build/src/preferences_gen.h:3263 ../build/src/preferences_gen.h:3310
-#: ../build/src/preferences_gen.h:3330 ../build/src/preferences_gen.h:3377
-#: ../build/src/preferences_gen.h:3433 ../build/src/preferences_gen.h:3453
-#: ../build/src/preferences_gen.h:3473 ../build/src/preferences_gen.h:3520
-#: ../build/src/preferences_gen.h:3572 ../build/src/preferences_gen.h:3592
-#: ../build/src/preferences_gen.h:3612 ../build/src/preferences_gen.h:3632
-#: ../build/src/preferences_gen.h:3663 ../build/src/preferences_gen.h:3710
-#: ../build/src/preferences_gen.h:3730 ../build/src/preferences_gen.h:3769
-#: ../build/src/preferences_gen.h:3789 ../build/src/preferences_gen.h:3809
-#: ../build/src/preferences_gen.h:3912 ../build/src/preferences_gen.h:3967
-#: ../build/src/preferences_gen.h:4006 ../build/src/preferences_gen.h:4060
-#: ../build/src/preferences_gen.h:4084 ../build/src/preferences_gen.h:4109
-#: ../build/src/preferences_gen.h:4158 ../build/src/preferences_gen.h:4182
-#: ../build/src/preferences_gen.h:4206 ../src/lua/preferences.c:619
-#: ../src/lua/preferences.c:634 ../src/lua/preferences.c:646
-#: ../src/lua/preferences.c:658 ../src/lua/preferences.c:674
-#: ../src/lua/preferences.c:738
+#: ../build/src/preferences_gen.h:2178 ../build/src/preferences_gen.h:2198
+#: ../build/src/preferences_gen.h:2221 ../build/src/preferences_gen.h:2244
+#: ../build/src/preferences_gen.h:2267 ../build/src/preferences_gen.h:2290
+#: ../build/src/preferences_gen.h:2349 ../build/src/preferences_gen.h:2426
+#: ../build/src/preferences_gen.h:2446 ../build/src/preferences_gen.h:2466
+#: ../build/src/preferences_gen.h:2486 ../build/src/preferences_gen.h:2506
+#: ../build/src/preferences_gen.h:2526 ../build/src/preferences_gen.h:2599
+#: ../build/src/preferences_gen.h:2646 ../build/src/preferences_gen.h:2688
+#: ../build/src/preferences_gen.h:2712 ../build/src/preferences_gen.h:2769
+#: ../build/src/preferences_gen.h:2815 ../build/src/preferences_gen.h:2834
+#: ../build/src/preferences_gen.h:2854 ../build/src/preferences_gen.h:2874
+#: ../build/src/preferences_gen.h:2932 ../build/src/preferences_gen.h:2979
+#: ../build/src/preferences_gen.h:3010 ../build/src/preferences_gen.h:3030
+#: ../build/src/preferences_gen.h:3050 ../build/src/preferences_gen.h:3070
+#: ../build/src/preferences_gen.h:3090 ../build/src/preferences_gen.h:3110
+#: ../build/src/preferences_gen.h:3130 ../build/src/preferences_gen.h:3149
+#: ../build/src/preferences_gen.h:3232 ../build/src/preferences_gen.h:3278
+#: ../build/src/preferences_gen.h:3298 ../build/src/preferences_gen.h:3318
+#: ../build/src/preferences_gen.h:3338 ../build/src/preferences_gen.h:3385
+#: ../build/src/preferences_gen.h:3405 ../build/src/preferences_gen.h:3452
+#: ../build/src/preferences_gen.h:3508 ../build/src/preferences_gen.h:3528
+#: ../build/src/preferences_gen.h:3548 ../build/src/preferences_gen.h:3595
+#: ../build/src/preferences_gen.h:3647 ../build/src/preferences_gen.h:3667
+#: ../build/src/preferences_gen.h:3687 ../build/src/preferences_gen.h:3707
+#: ../build/src/preferences_gen.h:3738 ../build/src/preferences_gen.h:3785
+#: ../build/src/preferences_gen.h:3805 ../build/src/preferences_gen.h:3844
+#: ../build/src/preferences_gen.h:3864 ../build/src/preferences_gen.h:3884
+#: ../build/src/preferences_gen.h:3987 ../build/src/preferences_gen.h:4042
+#: ../build/src/preferences_gen.h:4081 ../build/src/preferences_gen.h:4101
+#: ../build/src/preferences_gen.h:4121 ../build/src/preferences_gen.h:4141
+#: ../build/src/preferences_gen.h:4195 ../build/src/preferences_gen.h:4219
+#: ../build/src/preferences_gen.h:4244 ../build/src/preferences_gen.h:4293
+#: ../build/src/preferences_gen.h:4317 ../build/src/preferences_gen.h:4341
+#: ../src/lua/preferences.c:619 ../src/lua/preferences.c:634
+#: ../src/lua/preferences.c:646 ../src/lua/preferences.c:658
+#: ../src/lua/preferences.c:674 ../src/lua/preferences.c:738
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "double-cliquer pour réinitialiser à « %s »"
 
-#: ../build/src/preferences_gen.h:2103 ../build/src/preferences_gen.h:2123
-#: ../build/src/preferences_gen.h:2274 ../build/src/preferences_gen.h:2371
-#: ../build/src/preferences_gen.h:2391 ../build/src/preferences_gen.h:2411
-#: ../build/src/preferences_gen.h:2431 ../build/src/preferences_gen.h:2451
-#: ../build/src/preferences_gen.h:2779 ../build/src/preferences_gen.h:2857
-#: ../build/src/preferences_gen.h:3035 ../build/src/preferences_gen.h:3243
-#: ../build/src/preferences_gen.h:3263 ../build/src/preferences_gen.h:3453
-#: ../build/src/preferences_gen.h:3612 ../build/src/preferences_gen.h:3632
-#: ../build/src/preferences_gen.h:3730 ../build/src/preferences_gen.h:3809
-#: ../build/src/preferences_gen.h:4006
+#: ../build/src/preferences_gen.h:2178 ../build/src/preferences_gen.h:2198
+#: ../build/src/preferences_gen.h:2349 ../build/src/preferences_gen.h:2446
+#: ../build/src/preferences_gen.h:2466 ../build/src/preferences_gen.h:2486
+#: ../build/src/preferences_gen.h:2506 ../build/src/preferences_gen.h:2526
+#: ../build/src/preferences_gen.h:2854 ../build/src/preferences_gen.h:2932
+#: ../build/src/preferences_gen.h:3110 ../build/src/preferences_gen.h:3318
+#: ../build/src/preferences_gen.h:3338 ../build/src/preferences_gen.h:3528
+#: ../build/src/preferences_gen.h:3687 ../build/src/preferences_gen.h:3707
+#: ../build/src/preferences_gen.h:3805 ../build/src/preferences_gen.h:3884
+#: ../build/src/preferences_gen.h:4081 ../build/src/preferences_gen.h:4101
+#: ../build/src/preferences_gen.h:4121 ../build/src/preferences_gen.h:4141
 msgctxt "preferences"
 msgid "FALSE"
 msgstr "FAUX"
 
-#: ../build/src/preferences_gen.h:2106
+#: ../build/src/preferences_gen.h:2181
 msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
@@ -87,53 +89,53 @@ msgstr ""
 "n'a pas de sens d'importer les deux. en activant cette option les fichiers "
 "JPEG sont ignorés."
 
-#: ../build/src/preferences_gen.h:2114
+#: ../build/src/preferences_gen.h:2189
 msgid "recursive directory traversal when importing filmrolls"
 msgstr "importer les dossiers de manière récursive"
 
-#: ../build/src/preferences_gen.h:2133
+#: ../build/src/preferences_gen.h:2208
 msgid "creator to be applied when importing"
 msgstr "auteur par défaut lors de l'importation"
 
-#: ../build/src/preferences_gen.h:2156
+#: ../build/src/preferences_gen.h:2231
 msgid "publisher to be applied when importing"
 msgstr "diffuseur par défaut lors de l'importation"
 
-#: ../build/src/preferences_gen.h:2179
+#: ../build/src/preferences_gen.h:2254
 msgid "rights to be applied when importing"
 msgstr "droits par défaut lors de l'importation"
 
-#: ../build/src/preferences_gen.h:2202
+#: ../build/src/preferences_gen.h:2277
 msgid "comma separated tags to be applied when importing"
 msgstr "mots-clés séparés par des virgules à appliquer à l'importation"
 
-#: ../build/src/preferences_gen.h:2225
+#: ../build/src/preferences_gen.h:2300
 msgid "initial import rating"
 msgstr "étoile(s) à l'importation"
 
-#: ../build/src/preferences_gen.h:2243 ../build/src/preferences_gen.h:2826
-#: ../build/src/preferences_gen.h:2884 ../build/src/preferences_gen.h:3111
-#: ../build/src/preferences_gen.h:3138 ../build/src/preferences_gen.h:3183
-#: ../build/src/preferences_gen.h:3836 ../build/src/preferences_gen.h:3863
-#: ../build/src/preferences_gen.h:3892 ../src/lua/preferences.c:697
+#: ../build/src/preferences_gen.h:2318 ../build/src/preferences_gen.h:2901
+#: ../build/src/preferences_gen.h:2959 ../build/src/preferences_gen.h:3186
+#: ../build/src/preferences_gen.h:3213 ../build/src/preferences_gen.h:3258
+#: ../build/src/preferences_gen.h:3911 ../build/src/preferences_gen.h:3938
+#: ../build/src/preferences_gen.h:3967 ../src/lua/preferences.c:697
 #, c-format
 msgid "double click to reset to `%d'"
 msgstr "double-cliquer pour réinitialiser à « %d »"
 
-#: ../build/src/preferences_gen.h:2246
+#: ../build/src/preferences_gen.h:2321
 msgid "initial star rating for all images when importing a filmroll"
 msgstr "étoile(s) attribuée(s) lors de l'importation"
 
-#: ../build/src/preferences_gen.h:2254 ../src/libs/tools/lighttable.c:89
+#: ../build/src/preferences_gen.h:2329 ../src/libs/tools/lighttable.c:89
 #: ../src/views/lighttable.c:249
 msgid "lighttable"
 msgstr "table lumineuse"
 
-#: ../build/src/preferences_gen.h:2265
+#: ../build/src/preferences_gen.h:2340
 msgid "don't use embedded preview JPEG but half-size raw"
 msgstr "ne pas utiliser les miniatures JPEG, toujours utiliser les raw réduits"
 
-#: ../build/src/preferences_gen.h:2277
+#: ../build/src/preferences_gen.h:2352
 msgid ""
 "check this option to not use the embedded JPEG from the raw file but process "
 "the raw data. this is slower but gives you color managed thumbnails."
@@ -142,56 +144,56 @@ msgstr ""
 "l'image à afficher à partir du raw. cela ralentit le logiciel mais affiche "
 "des miniatures plus exactes."
 
-#: ../build/src/preferences_gen.h:2285
+#: ../build/src/preferences_gen.h:2360
 msgid "high quality thumb processing from size"
 msgstr "miniature de haute qualité à partir de la taille"
 
-#: ../build/src/preferences_gen.h:2296 ../build/src/preferences_gen.h:3690
+#: ../build/src/preferences_gen.h:2371 ../build/src/preferences_gen.h:3765
 msgctxt "preferences"
 msgid "always"
 msgstr "toujours"
 
-#: ../build/src/preferences_gen.h:2301
+#: ../build/src/preferences_gen.h:2376
 msgctxt "preferences"
 msgid "small"
 msgstr "petit"
 
-#: ../build/src/preferences_gen.h:2306
+#: ../build/src/preferences_gen.h:2381
 msgctxt "preferences"
 msgid "VGA"
 msgstr "VGA"
 
-#: ../build/src/preferences_gen.h:2311 ../build/src/preferences_gen.h:2351
+#: ../build/src/preferences_gen.h:2386 ../build/src/preferences_gen.h:2426
 msgctxt "preferences"
 msgid "720p"
 msgstr "720p"
 
-#: ../build/src/preferences_gen.h:2316
+#: ../build/src/preferences_gen.h:2391
 msgctxt "preferences"
 msgid "1080p"
 msgstr "1080p"
 
-#: ../build/src/preferences_gen.h:2321
+#: ../build/src/preferences_gen.h:2396
 msgctxt "preferences"
 msgid "WQXGA"
 msgstr "WQXGA"
 
-#: ../build/src/preferences_gen.h:2326
+#: ../build/src/preferences_gen.h:2401
 msgctxt "preferences"
 msgid "4K"
 msgstr "4K"
 
-#: ../build/src/preferences_gen.h:2331
+#: ../build/src/preferences_gen.h:2406
 msgctxt "preferences"
 msgid "5K"
 msgstr "5K"
 
-#: ../build/src/preferences_gen.h:2336 ../build/src/preferences_gen.h:3685
+#: ../build/src/preferences_gen.h:2411 ../build/src/preferences_gen.h:3760
 msgctxt "preferences"
 msgid "never"
 msgstr "jamais"
 
-#: ../build/src/preferences_gen.h:2354
+#: ../build/src/preferences_gen.h:2429
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "the full quality rendering path (better but slower)."
@@ -200,21 +202,21 @@ msgstr ""
 "créée en utilisant le développement de haute qualité (meilleur mais plus "
 "lent)."
 
-#: ../build/src/preferences_gen.h:2362
+#: ../build/src/preferences_gen.h:2437
 msgid "enable extended thumb overlay"
 msgstr "active la superposition étendue des miniatures"
 
-#: ../build/src/preferences_gen.h:2374
+#: ../build/src/preferences_gen.h:2449
 msgid "if set to true, thumb overlay shows filename and some exif data."
 msgstr ""
 "si activé, la superposition des miniatures affiche le nom du fichier et "
-"quelques données exif"
+"quelques données exif."
 
-#: ../build/src/preferences_gen.h:2382
+#: ../build/src/preferences_gen.h:2457
 msgid "use single-click in the collect panel"
 msgstr "utiliser un seul clic pour les collections"
 
-#: ../build/src/preferences_gen.h:2394
+#: ../build/src/preferences_gen.h:2469
 msgid ""
 "check this option to use single-click to select items in the collect panel. "
 "this will allow you to do range selections for date-time and numeric values."
@@ -223,22 +225,22 @@ msgstr ""
 "élément du module de collection. cela permet aussi de pouvoir sélectionner "
 "des étendues de dates et de valeurs numériques."
 
-#: ../build/src/preferences_gen.h:2402
+#: ../build/src/preferences_gen.h:2477
 msgid "expand a single lighttable module at a time"
 msgstr "déplier un seul module de la table lumineuse à la fois"
 
-#: ../build/src/preferences_gen.h:2414
+#: ../build/src/preferences_gen.h:2489
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr ""
 "cette option échange le comportement du shift-clic de la table lumineuse"
 
-#: ../build/src/preferences_gen.h:2422
+#: ../build/src/preferences_gen.h:2497
 msgid "scroll to lighttable modules when expanded/collapsed"
 msgstr ""
 "positionne les modules de la table lumineuse lorsque qu'ils sont déplier/"
 "repliés"
 
-#: ../build/src/preferences_gen.h:2434 ../build/src/preferences_gen.h:2802
+#: ../build/src/preferences_gen.h:2509 ../build/src/preferences_gen.h:2877
 msgid ""
 "when this option is enabled then darktable will try to scroll the module to "
 "the top of the visible list"
@@ -246,11 +248,11 @@ msgstr ""
 "lorsque cette option est activée darktable essaiera de positionner le module "
 "pour qu'il soit entièrement visible"
 
-#: ../build/src/preferences_gen.h:2442
+#: ../build/src/preferences_gen.h:2517
 msgid "rating an image one star twice will not zero out the rating"
 msgstr "appliquer une étoile deux fois à une image ne supprimera pas l'étoile"
 
-#: ../build/src/preferences_gen.h:2454
+#: ../build/src/preferences_gen.h:2529
 msgid ""
 "do not have the rating of one star behave as documented in the manual--an "
 "image rated one star twice will result in a zero star rating."
@@ -258,45 +260,45 @@ msgstr ""
 "ne pas se conformer à la documentation pour les étoiles -- appliquer une "
 "étoile deux fois à une image positionnera aucune étoile."
 
-#: ../build/src/preferences_gen.h:2462 ../src/views/darkroom.c:107
+#: ../build/src/preferences_gen.h:2537 ../src/views/darkroom.c:107
 msgid "darkroom"
 msgstr "chambre noire"
 
-#: ../build/src/preferences_gen.h:2473
+#: ../build/src/preferences_gen.h:2548
 msgid "pen pressure control for brush masks"
 msgstr "contrôle de la pression du pinceau du masque"
 
-#: ../build/src/preferences_gen.h:2484 ../build/src/preferences_gen.h:2524
+#: ../build/src/preferences_gen.h:2559 ../build/src/preferences_gen.h:2599
 msgctxt "preferences"
 msgid "off"
 msgstr "désactivé(e)"
 
-#: ../build/src/preferences_gen.h:2489
+#: ../build/src/preferences_gen.h:2564
 msgctxt "preferences"
 msgid "hardness (relative)"
 msgstr "dureté (relative)"
 
-#: ../build/src/preferences_gen.h:2494
+#: ../build/src/preferences_gen.h:2569
 msgctxt "preferences"
 msgid "hardness (absolute)"
 msgstr "dureté (absolue)"
 
-#: ../build/src/preferences_gen.h:2499
+#: ../build/src/preferences_gen.h:2574
 msgctxt "preferences"
 msgid "opacity (relative)"
 msgstr "opacité (relative)"
 
-#: ../build/src/preferences_gen.h:2504
+#: ../build/src/preferences_gen.h:2579
 msgctxt "preferences"
 msgid "opacity (absolute)"
 msgstr "opacité (absolue)"
 
-#: ../build/src/preferences_gen.h:2509
+#: ../build/src/preferences_gen.h:2584
 msgctxt "preferences"
 msgid "brush size (relative)"
 msgstr "taille du pinceau (relative)"
 
-#: ../build/src/preferences_gen.h:2527
+#: ../build/src/preferences_gen.h:2602
 msgid ""
 "off - pressure reading ignored, hardness/opacity/brush size - pressure "
 "reading controls specified attribute, absolute/relative - pressure reading "
@@ -306,26 +308,26 @@ msgstr ""
 "contrôle l'attribut spécifié, absolue/relative - la pression est directement "
 "utilisée comme valeur de l'attribut ou multipliée avec la valeur pré-définie."
 
-#: ../build/src/preferences_gen.h:2535
+#: ../build/src/preferences_gen.h:2610
 msgid "smoothing of brush strokes"
 msgstr "lissage du pinceau"
 
-#: ../build/src/preferences_gen.h:2546
+#: ../build/src/preferences_gen.h:2621
 msgctxt "preferences"
 msgid "low"
 msgstr "bas"
 
-#: ../build/src/preferences_gen.h:2551 ../build/src/preferences_gen.h:2571
+#: ../build/src/preferences_gen.h:2626 ../build/src/preferences_gen.h:2646
 msgctxt "preferences"
 msgid "medium"
 msgstr "moyen"
 
-#: ../build/src/preferences_gen.h:2556
+#: ../build/src/preferences_gen.h:2631
 msgctxt "preferences"
 msgid "high"
 msgstr "haut"
 
-#: ../build/src/preferences_gen.h:2574
+#: ../build/src/preferences_gen.h:2649
 msgid ""
 "sets level for smoothing of brush strokes. stronger smoothing leads to less "
 "nodes and easier editing but with lower control of accuracy."
@@ -333,21 +335,21 @@ msgstr ""
 "indique le niveau de lissage du pinceau. un lissage haut crée moins de nœud "
 "de contrôle et sera plus facile à éditer mais sera moins précis."
 
-#: ../build/src/preferences_gen.h:2582
+#: ../build/src/preferences_gen.h:2657
 msgid "display of individual color channels"
 msgstr "affiche les différents canaux de couleur"
 
-#: ../build/src/preferences_gen.h:2593 ../build/src/preferences_gen.h:2613
+#: ../build/src/preferences_gen.h:2668 ../build/src/preferences_gen.h:2688
 msgctxt "preferences"
 msgid "false color"
 msgstr "fausse couleur"
 
-#: ../build/src/preferences_gen.h:2598
+#: ../build/src/preferences_gen.h:2673
 msgctxt "preferences"
 msgid "grey scale"
 msgstr "échelle de gris"
 
-#: ../build/src/preferences_gen.h:2616
+#: ../build/src/preferences_gen.h:2691
 msgid ""
 "defines how color channels are displayed when activated in the parametric "
 "masks feature."
@@ -355,107 +357,107 @@ msgstr ""
 "défini comment les canaux de couleur sont affichés lorsque activés dans les "
 "masques paramétriques."
 
-#: ../build/src/preferences_gen.h:2624
+#: ../build/src/preferences_gen.h:2699
 msgid "pattern for the image infos line"
 msgstr "format de la ligne d'information sur l'image"
 
-#: ../build/src/preferences_gen.h:2640
+#: ../build/src/preferences_gen.h:2715
 msgid "see manual to know all the tags you can use."
-msgstr "voir le manuel pour connaître toutes les étiquettes utilisables"
+msgstr "voir le manuel pour connaître toutes les étiquettes utilisables."
 
-#: ../build/src/preferences_gen.h:2648
+#: ../build/src/preferences_gen.h:2723
 msgid "position of the image infos line"
 msgstr "position de la ligne d'information sur l'image"
 
-#: ../build/src/preferences_gen.h:2659
+#: ../build/src/preferences_gen.h:2734
 msgctxt "preferences"
 msgid "top left"
 msgstr "haut / gauche"
 
-#: ../build/src/preferences_gen.h:2664
+#: ../build/src/preferences_gen.h:2739
 msgctxt "preferences"
 msgid "top right"
 msgstr "haut / droite"
 
-#: ../build/src/preferences_gen.h:2669
+#: ../build/src/preferences_gen.h:2744
 msgctxt "preferences"
 msgid "top center"
 msgstr "haut / centre"
 
-#: ../build/src/preferences_gen.h:2674 ../build/src/preferences_gen.h:2694
+#: ../build/src/preferences_gen.h:2749 ../build/src/preferences_gen.h:2769
 msgctxt "preferences"
 msgid "bottom"
 msgstr "bas"
 
-#: ../build/src/preferences_gen.h:2679
+#: ../build/src/preferences_gen.h:2754
 msgctxt "preferences"
 msgid "hidden"
 msgstr "caché"
 
-#: ../build/src/preferences_gen.h:2704
+#: ../build/src/preferences_gen.h:2779
 msgid "show search module text entry"
 msgstr "montrer la zone de saisie du module de recherche"
 
-#: ../build/src/preferences_gen.h:2715
+#: ../build/src/preferences_gen.h:2790
 msgctxt "preferences"
 msgid "show search text"
 msgstr "montrer texte de recherche"
 
-#: ../build/src/preferences_gen.h:2720
+#: ../build/src/preferences_gen.h:2795
 msgctxt "preferences"
 msgid "show groups"
 msgstr "montrer les groupes"
 
-#: ../build/src/preferences_gen.h:2725 ../build/src/preferences_gen.h:2740
+#: ../build/src/preferences_gen.h:2800 ../build/src/preferences_gen.h:2815
 msgctxt "preferences"
 msgid "show both"
 msgstr "montrer les deux"
 
-#: ../build/src/preferences_gen.h:2750
+#: ../build/src/preferences_gen.h:2825
 msgid "expand a single darkroom module at a time"
 msgstr "déplier un seul module de la chambre noire à la fois"
 
-#: ../build/src/preferences_gen.h:2759 ../build/src/preferences_gen.h:2799
-#: ../build/src/preferences_gen.h:2904 ../build/src/preferences_gen.h:2935
-#: ../build/src/preferences_gen.h:2955 ../build/src/preferences_gen.h:2975
-#: ../build/src/preferences_gen.h:2995 ../build/src/preferences_gen.h:3015
-#: ../build/src/preferences_gen.h:3055 ../build/src/preferences_gen.h:3074
-#: ../build/src/preferences_gen.h:3157 ../build/src/preferences_gen.h:3203
-#: ../build/src/preferences_gen.h:3223 ../build/src/preferences_gen.h:3330
-#: ../build/src/preferences_gen.h:3433 ../build/src/preferences_gen.h:3473
-#: ../build/src/preferences_gen.h:3592 ../build/src/preferences_gen.h:3663
-#: ../build/src/preferences_gen.h:3789 ../build/src/preferences_gen.h:3912
+#: ../build/src/preferences_gen.h:2834 ../build/src/preferences_gen.h:2874
+#: ../build/src/preferences_gen.h:2979 ../build/src/preferences_gen.h:3010
+#: ../build/src/preferences_gen.h:3030 ../build/src/preferences_gen.h:3050
+#: ../build/src/preferences_gen.h:3070 ../build/src/preferences_gen.h:3090
+#: ../build/src/preferences_gen.h:3130 ../build/src/preferences_gen.h:3149
+#: ../build/src/preferences_gen.h:3232 ../build/src/preferences_gen.h:3278
+#: ../build/src/preferences_gen.h:3298 ../build/src/preferences_gen.h:3405
+#: ../build/src/preferences_gen.h:3508 ../build/src/preferences_gen.h:3548
+#: ../build/src/preferences_gen.h:3667 ../build/src/preferences_gen.h:3738
+#: ../build/src/preferences_gen.h:3864 ../build/src/preferences_gen.h:3987
 msgctxt "preferences"
 msgid "TRUE"
 msgstr "VRAI"
 
-#: ../build/src/preferences_gen.h:2762
+#: ../build/src/preferences_gen.h:2837
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr "cette option échange le comportement du shift-clic de la chambre noire"
 
-#: ../build/src/preferences_gen.h:2770
+#: ../build/src/preferences_gen.h:2845
 msgid "expand the module when it is activated, and collapse it when disabled"
 msgstr "développer le module lorsqu'activé, et réduire lorsque désactivé"
 
-#: ../build/src/preferences_gen.h:2782
+#: ../build/src/preferences_gen.h:2857
 msgid ""
 "this option allows to expand or collapse automatically the module when it is "
 "enabled or disabled."
 msgstr ""
 "permet de développer ou réduire automatiquement un module lorsqu'il est "
-"activé ou désactivé"
+"activé ou désactivé."
 
-#: ../build/src/preferences_gen.h:2790
+#: ../build/src/preferences_gen.h:2865
 msgid "scroll to darkroom modules when expanded/collapsed"
 msgstr ""
 "positionne les modules de la chambre noire lorsque qu'ils sont dépliés/"
 "repliés"
 
-#: ../build/src/preferences_gen.h:2810
+#: ../build/src/preferences_gen.h:2885
 msgid "border around image in darkroom mode"
 msgstr "bordure autour de l'image dans la chambre noire"
 
-#: ../build/src/preferences_gen.h:2829
+#: ../build/src/preferences_gen.h:2904
 msgid ""
 "process the image in darkroom mode with a small border. set to 0 if you "
 "don't want any border."
@@ -463,15 +465,15 @@ msgstr ""
 "affiche l'image dans la chambre noire avec une petite bordure. positionner à "
 "0 pour supprimer la bordure."
 
-#: ../build/src/preferences_gen.h:2837
+#: ../build/src/preferences_gen.h:2912
 msgid "map / geolocalisation"
 msgstr "carte / géolocalisation"
 
-#: ../build/src/preferences_gen.h:2848
+#: ../build/src/preferences_gen.h:2923
 msgid "only draw images on map that are currently collected and filtered"
 msgstr "affiche sur la carte uniquement les images filtrées de la collection"
 
-#: ../build/src/preferences_gen.h:2860
+#: ../build/src/preferences_gen.h:2935
 msgid ""
 "use the current filter settings to select the geotagged images drawn on the "
 "map, i.e. limit the images drawn to the current filmstrip. this limits the "
@@ -481,11 +483,11 @@ msgstr ""
 "carte. i.e. limite le nombre d'images affichées au bandeau courant. cela "
 "donne de meilleurs performances en limitant le images affichées sur la carte."
 
-#: ../build/src/preferences_gen.h:2868
+#: ../build/src/preferences_gen.h:2943
 msgid "maximum number of images drawn on map"
 msgstr "nombre maximum d'images affichées sur la carte"
 
-#: ../build/src/preferences_gen.h:2887
+#: ../build/src/preferences_gen.h:2962
 msgid ""
 "the maximum number of geotagged images drawn on the map. increasing this "
 "number can slow drawing of the map down."
@@ -493,11 +495,11 @@ msgstr ""
 "nombre maximum d'images géolocalisées affichées sur la carte. augmenter ce "
 "nombre peut ralentir l'affichage de la carte."
 
-#: ../build/src/preferences_gen.h:2895
+#: ../build/src/preferences_gen.h:2970
 msgid "pretty print the image location"
 msgstr "affichage plus clair de la localisation d'image"
 
-#: ../build/src/preferences_gen.h:2907
+#: ../build/src/preferences_gen.h:2982
 msgid ""
 "show a more readable representation of the location in the image information "
 "module"
@@ -505,35 +507,35 @@ msgstr ""
 "affiche une représentation plus lisible de la localisation dans le module "
 "'informations de l'image'"
 
-#: ../build/src/preferences_gen.h:2915
+#: ../build/src/preferences_gen.h:2990
 msgid "security"
 msgstr "sécurité"
 
-#: ../build/src/preferences_gen.h:2926
+#: ../build/src/preferences_gen.h:3001
 msgid "ask before removing images from database"
 msgstr "demander avant d'enlever des images"
 
-#: ../build/src/preferences_gen.h:2938
+#: ../build/src/preferences_gen.h:3013
 msgid "always ask the user before any image is removed from DB."
-msgstr "toujours demander avant d'enlever une image de la base de données"
+msgstr "toujours demander avant d'enlever une image de la base de données."
 
-#: ../build/src/preferences_gen.h:2946
+#: ../build/src/preferences_gen.h:3021
 msgid "ask before erasing images from disk / discarding history stack"
 msgstr "demander avant de supprimer des images / supprimer l'historique"
 
-#: ../build/src/preferences_gen.h:2958
+#: ../build/src/preferences_gen.h:3033
 msgid ""
 "always ask the user before any image file is deleted / history stack is "
 "discarded."
 msgstr ""
 "toujours demander avant de supprimer un fichier image / supprimer "
-"l'historique"
+"l'historique."
 
-#: ../build/src/preferences_gen.h:2966
+#: ../build/src/preferences_gen.h:3041
 msgid "send files to trash when erasing images"
 msgstr "déplace les fichiers vers la poubelle lors de l'effacement"
 
-#: ../build/src/preferences_gen.h:2978
+#: ../build/src/preferences_gen.h:3053
 msgid ""
 "send files to trash instead of permanently deleting files on system that "
 "supports it"
@@ -541,27 +543,27 @@ msgstr ""
 "déplace les fichiers vers la poubelle au lieu de définitivement les "
 "supprimer sur les système qui le supporte"
 
-#: ../build/src/preferences_gen.h:2986
+#: ../build/src/preferences_gen.h:3061
 msgid "ask before moving images from film roll folder"
 msgstr "demander avant de déplacer des images vers un autre dossier"
 
-#: ../build/src/preferences_gen.h:2998
+#: ../build/src/preferences_gen.h:3073
 msgid "always ask the user before any image file is moved."
-msgstr "toujours demander avant de déplacer une image"
+msgstr "toujours demander avant de déplacer une image."
 
-#: ../build/src/preferences_gen.h:3006
+#: ../build/src/preferences_gen.h:3081
 msgid "ask before copying images to new film roll folder"
 msgstr "demander avant de copier des images vers un nouveau dossier"
 
-#: ../build/src/preferences_gen.h:3018
+#: ../build/src/preferences_gen.h:3093
 msgid "always ask the user before any image file is copied."
-msgstr "toujours demander avant de copier une image"
+msgstr "toujours demander avant de copier une image."
 
-#: ../build/src/preferences_gen.h:3026
+#: ../build/src/preferences_gen.h:3101
 msgid "ask before removing empty folders"
 msgstr "demander avant d'enlever les répertoires vides"
 
-#: ../build/src/preferences_gen.h:3038
+#: ../build/src/preferences_gen.h:3113
 msgid ""
 "always ask the user before removing any empty folder. this can happen after "
 "moving or deleting images."
@@ -569,39 +571,39 @@ msgstr ""
 "toujours demander à l'utilisateur avant de supprimer un répertoire vide. "
 "ceci peut arriver lors du déplacement ou de la suppression d'image."
 
-#: ../build/src/preferences_gen.h:3046
+#: ../build/src/preferences_gen.h:3121
 msgid "ask before deleting a tag"
 msgstr "demander avant de supprimer un mot-clé"
 
-#: ../build/src/preferences_gen.h:3065
+#: ../build/src/preferences_gen.h:3140
 msgid "ask before deleting a style"
 msgstr "demander avant de supprimer un style"
 
-#: ../build/src/preferences_gen.h:3084 ../build/src/preferences_gen.h:3986
+#: ../build/src/preferences_gen.h:3159 ../build/src/preferences_gen.h:4061
 msgid "miscellaneous"
 msgstr "divers"
 
-#: ../build/src/preferences_gen.h:3095
+#: ../build/src/preferences_gen.h:3170
 msgid "width of the side panels in pixels"
 msgstr "taille des panneaux latéraux en pixels"
 
-#: ../build/src/preferences_gen.h:3114
+#: ../build/src/preferences_gen.h:3189
 msgid "(needs a restart)"
 msgstr "(nécessite un redémarrage)"
 
-#: ../build/src/preferences_gen.h:3122
+#: ../build/src/preferences_gen.h:3197
 msgid "waiting time between each picture in slideshow"
 msgstr "temporisation entre chaque image du diaporama"
 
-#: ../build/src/preferences_gen.h:3148
+#: ../build/src/preferences_gen.h:3223
 msgid "do not show april 1st game"
 msgstr "ne jamais afficher le jeu du 1er avril"
 
-#: ../build/src/preferences_gen.h:3167
+#: ../build/src/preferences_gen.h:3242
 msgid "number of folder levels to show in lists"
 msgstr "nombre de niveaux de dossiers à afficher"
 
-#: ../build/src/preferences_gen.h:3186
+#: ../build/src/preferences_gen.h:3261
 msgid ""
 "the number of folder levels to show in film roll names, starting from the "
 "right"
@@ -609,27 +611,27 @@ msgstr ""
 "nombre de niveaux de dossier à afficher dans les noms, en partant de la "
 "droite"
 
-#: ../build/src/preferences_gen.h:3194
+#: ../build/src/preferences_gen.h:3269
 msgid "enable filmstrip"
 msgstr "activer le bandeau"
 
-#: ../build/src/preferences_gen.h:3206
+#: ../build/src/preferences_gen.h:3281
 msgid "enable the filmstrip in darkroom, tethering and map modes."
 msgstr "activer le bandeau en mode chambre noire, capture et carte."
 
-#: ../build/src/preferences_gen.h:3214
+#: ../build/src/preferences_gen.h:3289
 msgid "enable timeline"
 msgstr "activer la chronologie"
 
-#: ../build/src/preferences_gen.h:3226
+#: ../build/src/preferences_gen.h:3301
 msgid "enable the timeline in lighttable mode."
 msgstr "active la chronologie de la table lumineuse."
 
-#: ../build/src/preferences_gen.h:3234
+#: ../build/src/preferences_gen.h:3309
 msgid "overlay txt sidecar over zoomed images"
 msgstr "superpose le txt aux images agrandies"
 
-#: ../build/src/preferences_gen.h:3246
+#: ../build/src/preferences_gen.h:3321
 msgid ""
 "when there is a txt file next to an image it can be shown as an overlay over "
 "zoomed images on the lighttable. the txt file either has to be there at "
@@ -639,11 +641,11 @@ msgstr ""
 "images agrandies dans la table lumineuse. le fichier txt doit être présent "
 "lors de l'import ou la recherche doit être activée."
 
-#: ../build/src/preferences_gen.h:3254
+#: ../build/src/preferences_gen.h:3329
 msgid "mouse wheel scrolls modules side panel by default"
 msgstr "déplacement des panneaux latéraux avec la molette"
 
-#: ../build/src/preferences_gen.h:3266
+#: ../build/src/preferences_gen.h:3341
 msgid ""
 "when enabled, use mouse wheel to scroll modules side panel.  use ctrl+alt to "
 "use mouse wheel for data entry.  when disabled, this behavior is reversed"
@@ -652,34 +654,34 @@ msgstr ""
 "utiliser ctrl-alt + molette pour changer les réglettes. lorsque désactivé le "
 "comportement est inversé"
 
-#: ../build/src/preferences_gen.h:3274
+#: ../build/src/preferences_gen.h:3349
 msgid "show scrollbars for center view"
 msgstr "affiche les barres de défilement pour la vue centrale"
 
-#: ../build/src/preferences_gen.h:3285
+#: ../build/src/preferences_gen.h:3360
 msgctxt "preferences"
 msgid "no scrollbars"
 msgstr "pas de barre de défilement"
 
-#: ../build/src/preferences_gen.h:3290 ../build/src/preferences_gen.h:3310
+#: ../build/src/preferences_gen.h:3365 ../build/src/preferences_gen.h:3385
 msgctxt "preferences"
 msgid "lighttable"
 msgstr "table lumineuse"
 
-#: ../build/src/preferences_gen.h:3295
+#: ../build/src/preferences_gen.h:3370
 msgctxt "preferences"
 msgid "lighttable + darkroom"
 msgstr "table lumineuse et chambre noire"
 
-#: ../build/src/preferences_gen.h:3313
+#: ../build/src/preferences_gen.h:3388
 msgid "defines where scrollbars should be displayed"
 msgstr "défini dans quelles vues les barres de défilement doivent apparaître"
 
-#: ../build/src/preferences_gen.h:3321
+#: ../build/src/preferences_gen.h:3396
 msgid "always show panels' scrollbars"
 msgstr "toujours montrer les ascenseurs des panneaux"
 
-#: ../build/src/preferences_gen.h:3333
+#: ../build/src/preferences_gen.h:3408
 msgid ""
 "defines whether the panel scrollbars should be always visible or activated "
 "only depending on the content.  (need a restart)"
@@ -687,26 +689,26 @@ msgstr ""
 "indique si les ascenseurs des panneaux latéraux sont toujours visibles ou "
 "seulement lorsque nécessaire. (nécessite un redémarrage)"
 
-#: ../build/src/preferences_gen.h:3341
+#: ../build/src/preferences_gen.h:3416
 msgid "method to use for getting the display profile"
 msgstr "méthode à utiliser pour récupérer le profil d'affichage"
 
-#: ../build/src/preferences_gen.h:3352 ../build/src/preferences_gen.h:3377
+#: ../build/src/preferences_gen.h:3427 ../build/src/preferences_gen.h:3452
 msgctxt "preferences"
 msgid "all"
 msgstr "tout"
 
-#: ../build/src/preferences_gen.h:3357
+#: ../build/src/preferences_gen.h:3432
 msgctxt "preferences"
 msgid "xatom"
 msgstr "xatom"
 
-#: ../build/src/preferences_gen.h:3362
+#: ../build/src/preferences_gen.h:3437
 msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/src/preferences_gen.h:3380
+#: ../build/src/preferences_gen.h:3455
 msgid ""
 "this option allows to force a specific means of getting the current display "
 "profile. this is useful when one alternative gives wrong results"
@@ -715,21 +717,21 @@ msgstr ""
 "d'affichage, ceci est utile lorsque l'une des solutions donne de mauvais "
 "résultats"
 
-#: ../build/src/preferences_gen.h:3410
+#: ../build/src/preferences_gen.h:3485
 msgid "core options"
 msgstr "fonctionnement"
 
-#: ../build/src/preferences_gen.h:3413 ../src/imageio/format/j2k.c:652
+#: ../build/src/preferences_gen.h:3488 ../src/imageio/format/j2k.c:652
 #: ../src/imageio/format/jpeg.c:594 ../src/imageio/format/webp.c:329
 #: ../src/libs/camera.c:594
 msgid "quality"
 msgstr "qualité"
 
-#: ../build/src/preferences_gen.h:3424
+#: ../build/src/preferences_gen.h:3499
 msgid "color manage cached thumbnails"
 msgstr "miniatures avec gestion de la couleur"
 
-#: ../build/src/preferences_gen.h:3436
+#: ../build/src/preferences_gen.h:3511
 msgid ""
 "if enabled, cached thumbnails will be color managed so that lighttable and "
 "filmstrip can show correct colors. otherwise the results may look wrong once "
@@ -739,42 +741,42 @@ msgstr ""
 "gestion de la couleur pour un rendu parfait des couleurs. sinon l'affichage "
 "peut être faux lorsque le profil d'affichage est changé."
 
-#: ../build/src/preferences_gen.h:3444
+#: ../build/src/preferences_gen.h:3519
 msgid "always use LittleCMS 2 to apply output color profile"
 msgstr "toujours utiliser LittleCMS 2 pour le profil couleur de sortie"
 
-#: ../build/src/preferences_gen.h:3456
+#: ../build/src/preferences_gen.h:3531
 msgid "this is slower than the default."
 msgstr "plus lent que l'option par défaut."
 
-#: ../build/src/preferences_gen.h:3464
+#: ../build/src/preferences_gen.h:3539
 msgid "do high quality processing for slideshow"
 msgstr "développement de haute qualité lors du diaporama"
 
-#: ../build/src/preferences_gen.h:3476
+#: ../build/src/preferences_gen.h:3551
 msgid "same option as for export, but applies to slideshow."
 msgstr "même option que pour l'exportation, mais pour le diaporama"
 
-#: ../build/src/preferences_gen.h:3484
+#: ../build/src/preferences_gen.h:3559
 msgid "demosaicing for zoomed out darkroom mode"
 msgstr "méthode de dématriçage pour la vue en chambre noire"
 
-#: ../build/src/preferences_gen.h:3495
+#: ../build/src/preferences_gen.h:3570
 msgctxt "preferences"
 msgid "always bilinear (fast)"
 msgstr "toujours bilinéaire (rapide)"
 
-#: ../build/src/preferences_gen.h:3500 ../build/src/preferences_gen.h:3520
+#: ../build/src/preferences_gen.h:3575 ../build/src/preferences_gen.h:3595
 msgctxt "preferences"
 msgid "at most PPG (reasonable)"
 msgstr "au mieux PPG (raisonnable)"
 
-#: ../build/src/preferences_gen.h:3505
+#: ../build/src/preferences_gen.h:3580
 msgctxt "preferences"
 msgid "full (possibly slow)"
 msgstr "complète (peut être lent)"
 
-#: ../build/src/preferences_gen.h:3523
+#: ../build/src/preferences_gen.h:3598
 msgid ""
 "interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, "
 "but not as sharp. middle ground is using PPG + interpolation modes specified "
@@ -787,31 +789,31 @@ msgstr ""
 "l'exportation. Les capteurs X-Trans utilisent VNG plutôt que PPG en réglage "
 "moyen"
 
-#: ../build/src/preferences_gen.h:3531
+#: ../build/src/preferences_gen.h:3606
 msgid "pixel interpolator"
 msgstr "algorithme d'interpolation"
 
-#: ../build/src/preferences_gen.h:3542
+#: ../build/src/preferences_gen.h:3617
 msgctxt "preferences"
 msgid "bilinear"
 msgstr "bilinéaire"
 
-#: ../build/src/preferences_gen.h:3547
+#: ../build/src/preferences_gen.h:3622
 msgctxt "preferences"
 msgid "bicubic"
 msgstr "bicubique"
 
-#: ../build/src/preferences_gen.h:3552
+#: ../build/src/preferences_gen.h:3627
 msgctxt "preferences"
 msgid "lanczos2"
 msgstr "lanczos2"
 
-#: ../build/src/preferences_gen.h:3557 ../build/src/preferences_gen.h:3572
+#: ../build/src/preferences_gen.h:3632 ../build/src/preferences_gen.h:3647
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "lanczos3"
 
-#: ../build/src/preferences_gen.h:3575
+#: ../build/src/preferences_gen.h:3650
 msgid ""
 "pixel interpolator used in rotation and lens correction (bilinear, bicubic, "
 "lanczos2, lanczos3)."
@@ -819,19 +821,19 @@ msgstr ""
 "algorithme d'interpolation utilisé pour la rotation et la correction des "
 "objectifs (bilinéaire, bicubique, lanczos2, lanczos3)"
 
-#: ../build/src/preferences_gen.h:3583
+#: ../build/src/preferences_gen.h:3658
 msgid "auto-apply basecurve"
 msgstr "applique automatiquement une courbe de base"
 
-#: ../build/src/preferences_gen.h:3595
+#: ../build/src/preferences_gen.h:3670
 msgid "use a basecurve by default (needs a restart)"
 msgstr "utiliser une courbe de base par défaut (nécessite un redémarrage)"
 
-#: ../build/src/preferences_gen.h:3603
+#: ../build/src/preferences_gen.h:3678
 msgid "auto-apply per camera basecurve presets"
 msgstr "applique le pré-réglage de la courbe de base pour le boîtier"
 
-#: ../build/src/preferences_gen.h:3615
+#: ../build/src/preferences_gen.h:3690
 msgid ""
 "use the per-camera basecurve by default instead of the generic manufacturer "
 "one if there is one available (needs a restart)"
@@ -839,11 +841,11 @@ msgstr ""
 "par défaut utilise la courbe de base pour le boîtier à la place de celle "
 "générique du fabricant si une est disponible (nécessite un redémarrage)"
 
-#: ../build/src/preferences_gen.h:3623
+#: ../build/src/preferences_gen.h:3698
 msgid "auto-apply sharpen"
 msgstr "applique automatiquement de la netteté"
 
-#: ../build/src/preferences_gen.h:3635
+#: ../build/src/preferences_gen.h:3710
 msgid ""
 "this added sharpen is not recommended on cameras without a low-pass filter. "
 "the default is to not add any sharpening automatically as most recent "
@@ -854,15 +856,15 @@ msgstr ""
 "majorité des appareils photos n'ont plus de filtre pass-bas. (nécessite un "
 "redémarrage)"
 
-#: ../build/src/preferences_gen.h:3643
+#: ../build/src/preferences_gen.h:3718
 msgid "xmp"
 msgstr "xmp"
 
-#: ../build/src/preferences_gen.h:3654
+#: ../build/src/preferences_gen.h:3729
 msgid "write sidecar file for each image"
 msgstr "écrire un fichier xmp redondant pour chaque image"
 
-#: ../build/src/preferences_gen.h:3666
+#: ../build/src/preferences_gen.h:3741
 msgid ""
 "these redundant files can later be re-imported into a different database, "
 "preserving your changes to the image."
@@ -870,16 +872,16 @@ msgstr ""
 "ces fichiers pourront être réimportés dans une base de données différente "
 "par la suite, tout en préservant les modifications apportées aux images."
 
-#: ../build/src/preferences_gen.h:3674
+#: ../build/src/preferences_gen.h:3749
 msgid "store xmp tags in compressed format"
 msgstr "enregistre les tags xmp avec un format compressé"
 
-#: ../build/src/preferences_gen.h:3695 ../build/src/preferences_gen.h:3710
+#: ../build/src/preferences_gen.h:3770 ../build/src/preferences_gen.h:3785
 msgctxt "preferences"
 msgid "only large entries"
 msgstr "seulement les grands"
 
-#: ../build/src/preferences_gen.h:3713
+#: ../build/src/preferences_gen.h:3788
 msgid ""
 "entries in xmp tags can get rather large and may exceed the available space "
 "to store the history stack in output files. this option allows xmp tags to "
@@ -889,11 +891,11 @@ msgstr ""
 "pour enregistrer les données de développement dans le fichier. cette option "
 "permet de compresser les tags xmp pour gagner de la place."
 
-#: ../build/src/preferences_gen.h:3721
+#: ../build/src/preferences_gen.h:3796
 msgid "look for updated xmp files on startup"
 msgstr "vérifie les fichiers xmp modifiés au démarrage"
 
-#: ../build/src/preferences_gen.h:3733
+#: ../build/src/preferences_gen.h:3808
 msgid ""
 "check file modification times of all xmp files on startup to check if any "
 "got updated in the meantime"
@@ -901,15 +903,15 @@ msgstr ""
 "récupère la date de modification de tous les fichiers xmp au démarrage pour "
 "vérifier ceux modifiés depuis la dernière session"
 
-#: ../build/src/preferences_gen.h:3741
+#: ../build/src/preferences_gen.h:3816
 msgid "cpu / gpu / memory"
 msgstr "cpu / gpu / mémoire"
 
-#: ../build/src/preferences_gen.h:3752
+#: ../build/src/preferences_gen.h:3827
 msgid "memory in megabytes to use for thumbnail cache"
 msgstr "mémoire en mégaoctets à utiliser pour le cache des miniatures"
 
-#: ../build/src/preferences_gen.h:3772
+#: ../build/src/preferences_gen.h:3847
 msgid ""
 "this controls how much memory is going to be used for thumbnails and other "
 "buffers (needs a restart)."
@@ -917,11 +919,11 @@ msgstr ""
 "contrôle la mémoire maximale qui sera utilisée pour les miniatures et autres "
 "caches (nécessite un redémarrage)."
 
-#: ../build/src/preferences_gen.h:3780
+#: ../build/src/preferences_gen.h:3855
 msgid "enable disk backend for thumbnail cache"
 msgstr "utilisation du disque pour le cache des miniatures"
 
-#: ../build/src/preferences_gen.h:3792
+#: ../build/src/preferences_gen.h:3867
 msgid ""
 "if enabled, write thumbnails to disk (.cache/darktable/) when evicted from "
 "the memory cache. note that this can take a lot of memory (several gigabytes "
@@ -938,11 +940,11 @@ msgstr ""
 "importante. pour générer toutes les miniatures de toutes les collections "
 "hors-ligne exécuter 'darktable-generate-cache'."
 
-#: ../build/src/preferences_gen.h:3800
+#: ../build/src/preferences_gen.h:3875
 msgid "enable disk backend for full preview cache"
 msgstr "utilisation du disque pour le cache des images 100%"
 
-#: ../build/src/preferences_gen.h:3812
+#: ../build/src/preferences_gen.h:3887
 msgid ""
 "if enabled, write full preview to disk (.cache/darktable/) when evicted from "
 "the memory cache. note that this can take a lot of memory (several gigabytes "
@@ -957,11 +959,11 @@ msgstr ""
 "si désiré. la table lumineuse serra beaucoup plus fluide lors du zoom 100% "
 "sur les images."
 
-#: ../build/src/preferences_gen.h:3820
+#: ../build/src/preferences_gen.h:3895
 msgid "number of background threads"
 msgstr "nombre de fils d’exécution"
 
-#: ../build/src/preferences_gen.h:3839
+#: ../build/src/preferences_gen.h:3914
 msgid ""
 "this controls for example how many threads are used to create thumbnails "
 "during import. the cache will grow to a maximum of twice this number of full "
@@ -971,11 +973,11 @@ msgstr ""
 "la création des aperçus pendant l'importation. le cache augmentera jusqu'à "
 "deux fois ce chiffre (nécessite un redémarrage)."
 
-#: ../build/src/preferences_gen.h:3847
+#: ../build/src/preferences_gen.h:3922
 msgid "host memory limit (in MB) for tiling"
 msgstr "mémoire limite (en Mo) pour le tuilage"
 
-#: ../build/src/preferences_gen.h:3866
+#: ../build/src/preferences_gen.h:3941
 msgid ""
 "this variable controls the maximum amount of memory (in MB) a module may use "
 "during image processing. lower values will force memory hungry modules to "
@@ -988,12 +990,12 @@ msgstr ""
 "valeurs inférieures à 500 sont considérées égales à 500. nécessite un "
 "redémarrage."
 
-#: ../build/src/preferences_gen.h:3874
+#: ../build/src/preferences_gen.h:3949
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
 msgstr ""
 "quantité minimale de mémoire (en Mo) pour la mémoire-tampon d'une tuile"
 
-#: ../build/src/preferences_gen.h:3895
+#: ../build/src/preferences_gen.h:3970
 msgid ""
 "if set to a positive, non-zero value this variable defines the minimum "
 "amount of memory (in MB) that tiling should take for a single image buffer. "
@@ -1003,11 +1005,11 @@ msgstr ""
 "quantité de mémoire minimale (en Mo) que le tuilage doit utiliser pour la "
 "mémoire-tampon. surcharge « host_memory_limit ». nécessite un redémarrage."
 
-#: ../build/src/preferences_gen.h:3903
+#: ../build/src/preferences_gen.h:3978
 msgid "activate OpenCL support"
 msgstr "activer le support d'OpenCL"
 
-#: ../build/src/preferences_gen.h:3915
+#: ../build/src/preferences_gen.h:3990
 msgid ""
 "if found, use OpenCL runtime on your system for improved processing speed. "
 "can be switched on and off at any time."
@@ -1015,37 +1017,37 @@ msgstr ""
 "si OpenCL est présent sur votre système, darktable l'utilise pour améliorer "
 "les performances. peut être désactivé à tout moment."
 
-#: ../build/src/preferences_gen.h:3916 ../build/src/preferences_gen.h:3971
+#: ../build/src/preferences_gen.h:3991 ../build/src/preferences_gen.h:4046
 msgid "not available"
 msgstr "non disponible"
 
-#: ../build/src/preferences_gen.h:3919 ../build/src/preferences_gen.h:3923
-#: ../build/src/preferences_gen.h:3974 ../build/src/preferences_gen.h:3978
+#: ../build/src/preferences_gen.h:3994 ../build/src/preferences_gen.h:3998
+#: ../build/src/preferences_gen.h:4049 ../build/src/preferences_gen.h:4053
 msgid "not available on this system"
 msgstr "non disponible sur cette plateforme"
 
-#: ../build/src/preferences_gen.h:3931
+#: ../build/src/preferences_gen.h:4006
 msgid "OpenCL scheduling profile"
 msgstr "profil de planification OpenCL"
 
 #. Adding the restore defaults button
-#: ../build/src/preferences_gen.h:3942 ../build/src/preferences_gen.h:3967
+#: ../build/src/preferences_gen.h:4017 ../build/src/preferences_gen.h:4042
 #: ../src/gui/preferences.c:621
 msgctxt "preferences"
 msgid "default"
 msgstr "défaut"
 
-#: ../build/src/preferences_gen.h:3947
+#: ../build/src/preferences_gen.h:4022
 msgctxt "preferences"
 msgid "multiple GPUs"
 msgstr "GPU multiples"
 
-#: ../build/src/preferences_gen.h:3952
+#: ../build/src/preferences_gen.h:4027
 msgctxt "preferences"
 msgid "very fast GPU"
 msgstr "GPU très rapide"
 
-#: ../build/src/preferences_gen.h:3970
+#: ../build/src/preferences_gen.h:4045
 msgid ""
 "defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled "
 "systems. default - GPU processes full and CPU processes preview pipe "
@@ -1060,11 +1062,11 @@ msgstr ""
 "prévisualisation en parallèle sur des GPUs différents.; GPU très rapide - "
 "utilise le GPU séquentiellement pour l'image et la prévisualisation."
 
-#: ../build/src/preferences_gen.h:3997
+#: ../build/src/preferences_gen.h:4072
 msgid "omit hierarchy in simple tag lists"
 msgstr "ignore la hiérarchie des mots-clés"
 
-#: ../build/src/preferences_gen.h:4009
+#: ../build/src/preferences_gen.h:4084
 msgid ""
 "when exporting images the hierarchical tags are also added as a simple list "
 "of non-hierarchical ones to make them visible to some other programs. when "
@@ -1077,42 +1079,80 @@ msgstr ""
 "seulement leur dernière partie et ignorera le reste: ainsi 'faune|insecte|"
 "syrphe' ajoutera uniquement 'syrphe'."
 
-#: ../build/src/preferences_gen.h:4017
+#: ../build/src/preferences_gen.h:4092
+msgid "force exportation of private tags"
+msgstr "forcer l'exportation de mots-clés cachés"
+
+#: ../build/src/preferences_gen.h:4104
+msgid ""
+"darktable doesn't export private tags per default. this option allows to "
+"export them to XMP-dc Subject and XMP-lr Hierarchical Subject."
+msgstr ""
+"darktable n'exporte pas les mots-clés privés par défaut. cette option permet "
+"de les exporter vers  XMP-dc Subject et XMP-lr Hierarchical Subject."
+
+#: ../build/src/preferences_gen.h:4112
+msgid "request exportation of synonyms"
+msgstr "demander l'exportation des synonymes"
+
+#: ../build/src/preferences_gen.h:4124
+msgid ""
+"darktable doesn't export the synonyms per default. this option allows to "
+"export them along with tags to XMP-dc Subject."
+msgstr ""
+"darktable n'exporte pas les synonymes par défaut. cette option permet de les "
+"exporter avec les tags vers XMP-dc Subject."
+
+#: ../build/src/preferences_gen.h:4132
+msgid "disable the entry completion"
+msgstr "désactiver l'auto-complétion"
+
+#: ../build/src/preferences_gen.h:4144
+msgid ""
+"the entry completion is useful for those who enter tags from keybord only. "
+"for others the entry completion can be embarassing. need to restart "
+"darktable."
+msgstr ""
+"l'auto-complétion est utile pour ceux activant les mots-clés depuis le "
+"clavier seulement. pour les autres, l'auto-complétion peut être gênante. "
+"nécessite un redémarrage de darktable."
+
+#: ../build/src/preferences_gen.h:4152
 msgid "password storage backend to use"
 msgstr "stockage à utiliser pour les mots de passe"
 
-#: ../build/src/preferences_gen.h:4028 ../build/src/preferences_gen.h:4060
+#: ../build/src/preferences_gen.h:4163 ../build/src/preferences_gen.h:4195
 msgctxt "preferences"
 msgid "auto"
 msgstr "auto"
 
-#: ../build/src/preferences_gen.h:4033
+#: ../build/src/preferences_gen.h:4168
 msgctxt "preferences"
 msgid "none"
 msgstr "aucun"
 
-#: ../build/src/preferences_gen.h:4038
+#: ../build/src/preferences_gen.h:4173
 msgctxt "preferences"
 msgid "libsecret"
 msgstr "libsecret"
 
-#: ../build/src/preferences_gen.h:4044
+#: ../build/src/preferences_gen.h:4179
 msgctxt "preferences"
 msgid "kwallet"
 msgstr "kwallet"
 
-#: ../build/src/preferences_gen.h:4063
+#: ../build/src/preferences_gen.h:4198
 msgid ""
 "the storage backend for password storage: auto, none, libsecret, kwallet"
 msgstr ""
 "interface pour trousseau de mots de passe : automatique, aucun, libsecret, "
 "kwallet"
 
-#: ../build/src/preferences_gen.h:4071
+#: ../build/src/preferences_gen.h:4206
 msgid "executable for playing audio files"
 msgstr "exécutable pour jouer les fichiers audio"
 
-#: ../build/src/preferences_gen.h:4087
+#: ../build/src/preferences_gen.h:4222
 msgid ""
 "this external program is used to play audio files some cameras record to "
 "keep notes for images"
@@ -1120,11 +1160,11 @@ msgstr ""
 "cette application externe est utilisée pour jouer les annotations audio "
 "enregistrées par certains appareils photo"
 
-#: ../build/src/preferences_gen.h:4095
+#: ../build/src/preferences_gen.h:4230
 msgid "3D lut root folder"
 msgstr "répertoire 3D lut racine"
 
-#: ../build/src/preferences_gen.h:4100 ../src/control/jobs/control_jobs.c:1617
+#: ../build/src/preferences_gen.h:4235 ../src/control/jobs/control_jobs.c:1617
 #: ../src/control/jobs/control_jobs.c:1677 ../src/gui/preferences.c:1607
 #: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/disk.c:194
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/gallery.c:179
@@ -1133,33 +1173,35 @@ msgstr "répertoire 3D lut racine"
 msgid "select directory"
 msgstr "sélectionner répertoire"
 
-#: ../build/src/preferences_gen.h:4112
-msgid "this folder (and sub-folders) contains Lut files used but lut3d modules"
+#: ../build/src/preferences_gen.h:4247
+msgid ""
+"this folder (and sub-folders) contains Lut files used but lut3d modules. "
+"need to restart darktable."
 msgstr ""
 "ce répertoire (et sous répertoires) comportent les fichiers Lut utilisés par "
-"le module 3D lut"
+"le module 3D lut. nécessite un redémarrage de darktable."
 
-#: ../build/src/preferences_gen.h:4142
+#: ../build/src/preferences_gen.h:4277
 msgid "session options"
 msgstr "options de session"
 
-#: ../build/src/preferences_gen.h:4145
+#: ../build/src/preferences_gen.h:4280
 msgid "base directory naming pattern"
 msgstr "nommage du répertoire de base"
 
-#: ../build/src/preferences_gen.h:4161 ../build/src/preferences_gen.h:4185
+#: ../build/src/preferences_gen.h:4296 ../build/src/preferences_gen.h:4320
 msgid "part of full import path for an import session"
 msgstr "partie du chemin complet pour la session d'importation"
 
-#: ../build/src/preferences_gen.h:4169
+#: ../build/src/preferences_gen.h:4304
 msgid "sub directory naming pattern"
 msgstr "nommage du sous répertoire"
 
-#: ../build/src/preferences_gen.h:4193
+#: ../build/src/preferences_gen.h:4328
 msgid "file naming pattern"
 msgstr "nommage des fichiers"
 
-#: ../build/src/preferences_gen.h:4209
+#: ../build/src/preferences_gen.h:4344
 msgid "file naming pattern used for a import session"
 msgstr "nommage des fichiers pour la session d'importation"
 
@@ -1232,8 +1274,8 @@ msgstr "graphisme;photographie;raw;"
 #: ../src/iop/lut3d.c:1012 ../src/libs/collect.c:242
 #: ../src/libs/copy_history.c:78 ../src/libs/geotagging.c:473
 #: ../src/libs/import.c:759 ../src/libs/import.c:866 ../src/libs/lib.c:228
-#: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:1246
-#: ../src/libs/tagging.c:1286
+#: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2107
+#: ../src/libs/tagging.c:2148
 msgid "_cancel"
 msgstr "_annuler"
 
@@ -1561,20 +1603,20 @@ msgstr ""
 #: ../src/common/darktable.c:791 ../src/common/variables.c:367
 #: ../src/imageio/format/pdf.c:669 ../src/imageio/format/pdf.c:694
 #: ../src/imageio/storage/flickr.c:499 ../src/imageio/storage/piwigo.c:823
-#: ../src/iop/clipping.c:2003 ../src/libs/export.c:611 ../src/libs/export.c:617
-#: ../src/libs/metadata_view.c:270
+#: ../src/iop/clipping.c:2005 ../src/libs/export.c:611 ../src/libs/export.c:617
+#: ../src/libs/metadata_view.c:277
 msgid "no"
 msgstr "non"
 
 #: ../src/common/darktable.c:791 ../src/common/variables.c:365
 #: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
 #: ../src/imageio/storage/flickr.c:498 ../src/imageio/storage/piwigo.c:822
-#: ../src/iop/clipping.c:2004 ../src/libs/export.c:612 ../src/libs/export.c:618
-#: ../src/libs/metadata_view.c:270
+#: ../src/iop/clipping.c:2006 ../src/libs/export.c:612 ../src/libs/export.c:618
+#: ../src/libs/metadata_view.c:277
 msgid "yes"
 msgstr "oui"
 
-#: ../src/common/database.c:1579
+#: ../src/common/database.c:1605
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1589,16 +1631,16 @@ msgstr ""
 "\n"
 "« %s »\n"
 
-#: ../src/common/database.c:1586
+#: ../src/common/database.c:1612
 msgid "darktable - error locking database"
 msgstr "darktable - erreur du verrouillage de la base de données"
 
-#: ../src/common/database.c:1586 ../src/common/database.c:1757
-#: ../src/common/database.c:1943 ../src/common/database.c:2021
+#: ../src/common/database.c:1612 ../src/common/database.c:1783
+#: ../src/common/database.c:1969 ../src/common/database.c:2047
 msgid "close darktable"
 msgstr "quitter darktable"
 
-#: ../src/common/database.c:1697
+#: ../src/common/database.c:1723
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -1607,12 +1649,12 @@ msgstr ""
 "le fichier de verrouillage de la base contient un numéro de process actif "
 "sur votre système : « %d »"
 
-#: ../src/common/database.c:1703
+#: ../src/common/database.c:1729
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "le fichier de verrouillage de la base de données semble être vide"
 
-#: ../src/common/database.c:1711
+#: ../src/common/database.c:1737
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr ""
@@ -1620,7 +1662,7 @@ msgstr ""
 "de données: %s"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:1748
+#: ../src/common/database.c:1774
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -1635,17 +1677,17 @@ msgstr ""
 "\n"
 "voulez-vous continuer ou quitter pour effectuer une sauvegarde\n"
 
-#: ../src/common/database.c:1756
+#: ../src/common/database.c:1782
 msgid "darktable - schema migration"
 msgstr "darktable - migration de la base"
 
-#: ../src/common/database.c:1757
+#: ../src/common/database.c:1783
 msgid "upgrade database"
 msgstr "mise à jour de base de données"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
-#: ../src/common/database.c:1932 ../src/common/database.c:2010
+#: ../src/common/database.c:1958 ../src/common/database.c:2036
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1665,11 +1707,11 @@ msgstr ""
 "la base de données depuis une sauvegarde ou re-démarrer avec une nouvelle "
 "base de données?"
 
-#: ../src/common/database.c:1942 ../src/common/database.c:2020
+#: ../src/common/database.c:1968 ../src/common/database.c:2046
 msgid "darktable - error opening database"
 msgstr "darktable - erreur lors de l'ouverture de la base de données"
 
-#: ../src/common/database.c:1943 ../src/common/database.c:2021
+#: ../src/common/database.c:1969 ../src/common/database.c:2047
 msgid "delete database"
 msgstr "effacer la base de données"
 
@@ -1686,6 +1728,7 @@ msgstr[0] "supprimer le répertoire vide?"
 msgstr[1] "supprimer les répertoires vides?"
 
 #: ../src/common/film.c:339 ../src/gui/preferences.c:493
+#: ../src/gui/styles_dialog.c:309
 msgid "name"
 msgstr "nom"
 
@@ -1743,52 +1786,52 @@ msgstr ""
 msgid "orphaned image"
 msgstr "image orpheline"
 
-#: ../src/common/image.c:1452
+#: ../src/common/image.c:1454
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "accès à la copie locale « %s » impossible."
 
-#: ../src/common/image.c:1458
+#: ../src/common/image.c:1460
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "création de la copie locale « %s » impossible."
 
-#: ../src/common/image.c:1465
+#: ../src/common/image.c:1467
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "erreur lors du déplacement de la copie locale de « %s » → « %s »"
 
-#: ../src/common/image.c:1481
+#: ../src/common/image.c:1483
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "erreur de déplacement « %s », le fichier n'existe pas"
 
-#: ../src/common/image.c:1485
+#: ../src/common/image.c:1487
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "erreur de déplacement « %s » → « %s », le fichier existe"
 
-#: ../src/common/image.c:1489
+#: ../src/common/image.c:1491
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "erreur lors du déplacement « %s » → « %s »"
 
-#: ../src/common/image.c:1746
+#: ../src/common/image.c:1748
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "impossible de créer la copie locale lorsque l'original n'est pas accessible."
 
-#: ../src/common/image.c:1760
+#: ../src/common/image.c:1762
 msgid "cannot create local copy."
 msgstr "copie locale impossible."
 
-#: ../src/common/image.c:1826 ../src/control/jobs/control_jobs.c:664
+#: ../src/common/image.c:1828 ../src/control/jobs/control_jobs.c:664
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "impossible de supprimer la copie locale lorsque l'original n'est pas "
 "accessible"
 
-#: ../src/common/image.c:1995
+#: ../src/common/image.c:1997
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1975,7 +2018,7 @@ msgid "below sea level"
 msgstr "sous le niveau de la mer"
 
 #: ../src/common/utility.c:508 ../src/iop/watermark.c:775
-#: ../src/libs/metadata_view.c:569
+#: ../src/libs/metadata_view.c:576
 msgid "m"
 msgstr "m"
 
@@ -2057,7 +2100,7 @@ msgid_plural "importing %d images from camera"
 msgstr[0] "importation de %d image depuis l'appareil photo"
 msgstr[1] "importation de %d images depuis l'appareil photo"
 
-#: ../src/control/jobs/camera_jobs.c:391 ../src/gui/camera_import_dialog.c:209
+#: ../src/control/jobs/camera_jobs.c:391 ../src/gui/camera_import_dialog.c:287
 msgid "import images from camera"
 msgstr "importer des images depuis le boîtier"
 
@@ -2980,12 +3023,12 @@ msgstr "descendre"
 
 #. delete
 #: ../src/develop/imageop.c:1041 ../src/libs/image.c:144
-#: ../src/libs/styles.c:458
+#: ../src/libs/styles.c:458 ../src/libs/tagging.c:1166
+#: ../src/libs/tagging.c:1263
 msgid "delete"
 msgstr "supprimer"
 
-#: ../src/develop/imageop.c:1048 ../src/libs/tagging.c:844
-#: ../src/libs/tagging.c:1001
+#: ../src/develop/imageop.c:1048 ../src/libs/tagging.c:1732
 msgid "rename"
 msgstr "renommer"
 
@@ -3001,8 +3044,8 @@ msgstr "%s est désactivé"
 
 #: ../src/develop/imageop.c:1402 ../src/gui/accelerators.c:686
 #: ../src/gui/accelerators.c:771 ../src/gui/accelerators.c:953
-#: ../src/gui/accelerators.c:979 ../src/gui/presets.c:190
-#: ../src/gui/presets.c:303 ../src/gui/presets.c:644
+#: ../src/gui/accelerators.c:979 ../src/gui/camera_import_dialog.c:445
+#: ../src/gui/presets.c:190 ../src/gui/presets.c:303 ../src/gui/presets.c:644
 #: ../src/iop/temperature.c:1459 ../src/libs/import.c:560 ../src/libs/lib.c:320
 #: ../src/libs/lib.c:348 ../src/libs/lib.c:1125
 msgid "preset"
@@ -3070,7 +3113,9 @@ msgstr "impossible de trouver un XMP venant de Lightroom !"
 msgid "`%s' not a lightroom XMP!"
 msgstr "« %s » n'est pas un XMP de Lightroom !"
 
-#: ../src/develop/lightroom.c:1568 ../src/libs/import.c:580
+#. tags
+#: ../src/develop/lightroom.c:1568 ../src/gui/camera_import_dialog.c:465
+#: ../src/libs/import.c:580 ../src/libs/metadata_view.c:136
 msgid "tags"
 msgstr "mots-clés"
 
@@ -3575,53 +3620,55 @@ msgstr "lua"
 msgid "deleting preset for obsolete module"
 msgstr "suppression du pré-réglages pour le module obsolète"
 
-#: ../src/gui/camera_import_dialog.c:182
+#: ../src/gui/camera_import_dialog.c:262
 msgid "store value as default"
 msgstr "enregistrer la valeur en tant que défaut"
 
-#: ../src/gui/camera_import_dialog.c:187
+#: ../src/gui/camera_import_dialog.c:267
 msgid "reset value to default"
 msgstr "réinitialiser à la valeur par défaut"
 
-#: ../src/gui/camera_import_dialog.c:210 ../src/libs/geotagging.c:419
-#: ../src/libs/tagging.c:844 ../src/libs/tagging.c:1001
+#: ../src/gui/camera_import_dialog.c:288 ../src/libs/geotagging.c:419
+#: ../src/libs/tagging.c:1166 ../src/libs/tagging.c:1263
+#: ../src/libs/tagging.c:1351 ../src/libs/tagging.c:1512
+#: ../src/libs/tagging.c:1732
 msgid "cancel"
 msgstr "annuler"
 
-#: ../src/gui/camera_import_dialog.c:210
+#: ../src/gui/camera_import_dialog.c:288
 msgctxt "camera import"
 msgid "import"
 msgstr "importation"
 
 #. Top info
-#: ../src/gui/camera_import_dialog.c:226
+#: ../src/gui/camera_import_dialog.c:304
 msgid "please wait while prefetching thumbnails of images from camera..."
 msgstr ""
 "merci de patienter pendant la récupération des miniatures de votre boîtier..."
 
-#: ../src/gui/camera_import_dialog.c:233 ../src/libs/session.c:100
+#: ../src/gui/camera_import_dialog.c:311 ../src/libs/session.c:100
 msgid "jobcode"
 msgstr "code projet"
 
-#: ../src/gui/camera_import_dialog.c:247
+#: ../src/gui/camera_import_dialog.c:325
 msgid "thumbnail"
 msgstr "aperçu"
 
-#: ../src/gui/camera_import_dialog.c:251
+#: ../src/gui/camera_import_dialog.c:329
 msgid "storage file"
 msgstr "fichier de stockage"
 
 #. general settings
-#: ../src/gui/camera_import_dialog.c:269
+#: ../src/gui/camera_import_dialog.c:347
 msgid "general"
 msgstr "général"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:272 ../src/libs/import.c:455
+#: ../src/gui/camera_import_dialog.c:350 ../src/libs/import.c:455
 msgid "ignore JPEG files"
 msgstr "ignorer les fichiers JPEG"
 
-#: ../src/gui/camera_import_dialog.c:274 ../src/libs/import.c:456
+#: ../src/gui/camera_import_dialog.c:352 ../src/libs/import.c:456
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -3629,11 +3676,42 @@ msgstr ""
 "les fichiers possédant une extension .jpg ou .jpeg ne sont pas importés. "
 "cela peut être utile lorsqu'un dossier possède des fichiers raw+JPEG."
 
-#: ../src/gui/camera_import_dialog.c:283
+#. default metadata
+#: ../src/gui/camera_import_dialog.c:361 ../src/libs/import.c:468
+msgid "apply metadata on import"
+msgstr "appliquer des métadonnées lors de l'importation"
+
+#: ../src/gui/camera_import_dialog.c:362 ../src/libs/import.c:469
+msgid "apply some metadata to all newly imported images."
+msgstr ""
+"appliquer des métadonnées\n"
+"à toutes les images nouvellement importées"
+
+#: ../src/gui/camera_import_dialog.c:396 ../src/libs/import.c:510
+msgid "comma separated list of tags"
+msgstr "liste de mots-clés séparés par une virgule"
+
+#: ../src/gui/camera_import_dialog.c:450 ../src/libs/collect.h:35
+#: ../src/libs/import.c:565 ../src/libs/metadata.c:349
+#: ../src/libs/metadata_view.c:127
+msgid "creator"
+msgstr "auteur"
+
+#: ../src/gui/camera_import_dialog.c:455 ../src/libs/collect.h:35
+#: ../src/libs/import.c:570 ../src/libs/metadata.c:350
+msgid "publisher"
+msgstr "diffuseur"
+
+#: ../src/gui/camera_import_dialog.c:460 ../src/libs/collect.h:36
+#: ../src/libs/import.c:575 ../src/libs/metadata.c:351
+msgid "rights"
+msgstr "droits"
+
+#: ../src/gui/camera_import_dialog.c:489
 msgid "override today's date"
 msgstr "surcharger la date actuelle"
 
-#: ../src/gui/camera_import_dialog.c:286
+#: ../src/gui/camera_import_dialog.c:492
 msgid ""
 "check this, if you want to override the timestamp used when expanding "
 "variables:\n"
@@ -3645,15 +3723,15 @@ msgstr ""
 "$(YEAR), $(MONTH), $(DAY),\n"
 "$(HOUR), $(MINUTE), $(SECONDS)"
 
-#: ../src/gui/camera_import_dialog.c:302
+#: ../src/gui/camera_import_dialog.c:508
 msgid "images"
 msgstr "images"
 
-#: ../src/gui/camera_import_dialog.c:303
+#: ../src/gui/camera_import_dialog.c:509
 msgid "settings"
 msgstr "paramètres"
 
-#: ../src/gui/camera_import_dialog.c:497
+#: ../src/gui/camera_import_dialog.c:703
 msgid ""
 "select the images from the list below that you want to import into a new "
 "filmroll"
@@ -3661,7 +3739,7 @@ msgstr ""
 "sélectionner les images de la liste ci-dessous que vous souhaitez importer "
 "dans une nouvelle pellicule"
 
-#: ../src/gui/camera_import_dialog.c:548
+#: ../src/gui/camera_import_dialog.c:754
 msgid "please use YYYY-MM-DD format for date override"
 msgstr "utiliser AAAA-MM-JJ pour la surcharge de date"
 
@@ -4001,13 +4079,13 @@ msgstr "aucu_ne"
 msgid "_ok"
 msgstr "_ok"
 
-#: ../src/gui/hist_dialog.c:167 ../src/gui/styles_dialog.c:347
-#: ../src/gui/styles_dialog.c:356
+#: ../src/gui/hist_dialog.c:167 ../src/gui/styles_dialog.c:349
+#: ../src/gui/styles_dialog.c:358
 msgid "include"
 msgstr "inclure"
 
-#: ../src/gui/hist_dialog.c:174 ../src/gui/styles_dialog.c:376
-#: ../src/gui/styles_dialog.c:379
+#: ../src/gui/hist_dialog.c:174 ../src/gui/styles_dialog.c:378
+#: ../src/gui/styles_dialog.c:381
 msgid "item"
 msgstr "élément"
 
@@ -4021,7 +4099,7 @@ msgid "normal images"
 msgstr "images normales"
 
 #: ../src/gui/preferences.c:82 ../src/gui/presets.c:57
-#: ../src/libs/metadata_view.c:286
+#: ../src/libs/metadata_view.c:293
 msgid "raw"
 msgstr "raw"
 
@@ -4068,25 +4146,25 @@ msgstr "module"
 
 #. exif
 #: ../src/gui/preferences.c:497 ../src/gui/preferences.c:1421
-#: ../src/gui/presets.c:431 ../src/libs/metadata_view.c:106
+#: ../src/gui/presets.c:431 ../src/libs/metadata_view.c:110
 msgid "model"
 msgstr "modèle"
 
 #: ../src/gui/preferences.c:501 ../src/gui/preferences.c:1429
-#: ../src/gui/presets.c:438 ../src/libs/metadata_view.c:107
+#: ../src/gui/presets.c:438 ../src/libs/metadata_view.c:111
 msgid "maker"
 msgstr "fabricant"
 
 #: ../src/gui/preferences.c:505 ../src/gui/preferences.c:1437
 #: ../src/gui/presets.c:445 ../src/libs/collect.h:36
-#: ../src/libs/metadata_view.c:108
+#: ../src/libs/metadata_view.c:112
 msgid "lens"
 msgstr "objectif"
 
 #. iso
 #: ../src/gui/preferences.c:509 ../src/gui/preferences.c:1443
 #: ../src/gui/presets.c:451 ../src/libs/camera.c:588 ../src/libs/collect.h:37
-#: ../src/libs/metadata_view.c:113
+#: ../src/libs/metadata_view.c:117
 msgid "ISO"
 msgstr "ISO"
 
@@ -4094,21 +4172,21 @@ msgstr "ISO"
 #: ../src/gui/preferences.c:513 ../src/gui/preferences.c:1456
 #: ../src/gui/presets.c:464 ../src/iop/basicadj.c:680 ../src/iop/exposure.c:107
 #: ../src/iop/exposure.c:886 ../src/iop/relight.c:361 ../src/libs/collect.h:37
-#: ../src/libs/metadata_view.c:110
+#: ../src/libs/metadata_view.c:114
 msgid "exposure"
 msgstr "exposition"
 
 #. aperture
 #: ../src/gui/preferences.c:517 ../src/gui/preferences.c:1471
 #: ../src/gui/presets.c:479 ../src/libs/camera.c:575 ../src/libs/camera.c:577
-#: ../src/libs/collect.h:37 ../src/libs/metadata_view.c:109
+#: ../src/libs/collect.h:37 ../src/libs/metadata_view.c:113
 msgid "aperture"
 msgstr "ouverture"
 
 #. focal length
 #: ../src/gui/preferences.c:521 ../src/gui/preferences.c:1486
 #: ../src/gui/presets.c:494 ../src/iop/ashift.c:4873 ../src/libs/camera.c:580
-#: ../src/libs/collect.h:36 ../src/libs/metadata_view.c:111
+#: ../src/libs/collect.h:36 ../src/libs/metadata_view.c:115
 msgid "focal length"
 msgstr "focale"
 
@@ -4379,19 +4457,25 @@ msgstr "duplique le style avant d'appliquer les changements"
 msgid "create new style"
 msgstr "nouveau style"
 
-#: ../src/gui/styles_dialog.c:309
+#: ../src/gui/styles_dialog.c:310
 msgid "enter a name for the new style"
 msgstr "entrer un nom pour le style"
 
-#: ../src/gui/styles_dialog.c:313
+#. DT_COLLECTION_SORT_TITLE
+#: ../src/gui/styles_dialog.c:313 ../src/libs/collect.h:35
+#: ../src/libs/metadata.c:348 ../src/libs/tools/filter.c:156
+msgid "description"
+msgstr "description"
+
+#: ../src/gui/styles_dialog.c:315
 msgid "enter a description for the new style, this description is searchable"
 msgstr "entrer une description pour le nouveau style (recherche)"
 
-#: ../src/gui/styles_dialog.c:368
+#: ../src/gui/styles_dialog.c:370
 msgid "update"
 msgstr "modifier"
 
-#: ../src/gui/styles_dialog.c:463
+#: ../src/gui/styles_dialog.c:465
 msgid "can't create style out of unaltered image"
 msgstr "impossible de créer un style depuis une image non développée"
 
@@ -4521,7 +4605,7 @@ msgstr "PDF"
 #: ../src/imageio/storage/flickr.c:540 ../src/imageio/storage/gallery.c:185
 #: ../src/imageio/storage/googlephoto.c:1233 ../src/imageio/storage/latex.c:185
 #: ../src/imageio/storage/piwigo.c:865 ../src/libs/collect.h:34
-#: ../src/libs/metadata.c:347 ../src/libs/metadata_view.c:122
+#: ../src/libs/metadata.c:347 ../src/libs/metadata_view.c:126
 #: ../src/libs/tools/filter.c:155
 msgid "title"
 msgstr "titre"
@@ -5304,14 +5388,14 @@ msgid "lens shift (%s)"
 msgstr "correction d'objectif (%s)"
 
 #: ../src/iop/ashift.c:4623 ../src/iop/ashift.c:4624 ../src/iop/ashift.c:4727
-#: ../src/iop/ashift.c:4728 ../src/iop/clipping.c:1691
-#: ../src/iop/clipping.c:1976 ../src/iop/clipping.c:1995
+#: ../src/iop/ashift.c:4728 ../src/iop/clipping.c:1693
+#: ../src/iop/clipping.c:1978 ../src/iop/clipping.c:1997
 msgid "horizontal"
 msgstr "horizontale"
 
 #: ../src/iop/ashift.c:4623 ../src/iop/ashift.c:4624 ../src/iop/ashift.c:4727
-#: ../src/iop/ashift.c:4728 ../src/iop/clipping.c:1690
-#: ../src/iop/clipping.c:1977 ../src/iop/clipping.c:1994
+#: ../src/iop/ashift.c:4728 ../src/iop/clipping.c:1692
+#: ../src/iop/clipping.c:1979 ../src/iop/clipping.c:1996
 msgid "vertical"
 msgstr "verticale"
 
@@ -5332,12 +5416,12 @@ msgstr "correction d'objectif (horizontale)"
 msgid "shear"
 msgstr "cisaillement"
 
-#: ../src/iop/ashift.c:4854 ../src/iop/clipping.c:2126
+#: ../src/iop/ashift.c:4854 ../src/iop/clipping.c:2128
 #: ../src/libs/live_view.c:343
 msgid "guides"
 msgstr "guides"
 
-#: ../src/iop/ashift.c:4860 ../src/iop/clipping.c:2002
+#: ../src/iop/ashift.c:4860 ../src/iop/clipping.c:2004
 msgid "automatic cropping"
 msgstr "recadrage"
 
@@ -5397,7 +5481,7 @@ msgstr "cisaillement de l'image selon une diagonale"
 msgid "display guide lines overlay"
 msgstr "superpose des lignes guides"
 
-#: ../src/iop/ashift.c:4973 ../src/iop/clipping.c:2005
+#: ../src/iop/ashift.c:4973 ../src/iop/clipping.c:2007
 msgid "automatically crop to avoid black edges"
 msgstr "recadre automatique pour éviter les bords noirs"
 
@@ -5777,9 +5861,9 @@ msgid "preserve colors"
 msgstr "préserver couleur"
 
 #: ../src/iop/basecurve.c:2140 ../src/iop/basecurve.c:2153
-#: ../src/iop/basicadj.c:702 ../src/iop/clipping.c:1689
-#: ../src/iop/clipping.c:1975 ../src/iop/clipping.c:1993
-#: ../src/iop/clipping.c:2133 ../src/iop/clipping.c:2160
+#: ../src/iop/basicadj.c:702 ../src/iop/clipping.c:1691
+#: ../src/iop/clipping.c:1977 ../src/iop/clipping.c:1995
+#: ../src/iop/clipping.c:2135 ../src/iop/clipping.c:2162
 #: ../src/iop/colorreconstruction.c:1377 ../src/iop/lens.cc:2300
 #: ../src/iop/retouch.c:582 ../src/iop/rgbcurve.c:1585
 #: ../src/iop/rgblevels.c:1117 ../src/iop/tonecurve.c:1393
@@ -6209,7 +6293,7 @@ msgstr "2:1"
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:944 ../src/iop/clipping.c:2021
+#: ../src/iop/borders.c:944 ../src/iop/clipping.c:2023
 msgid "golden cut"
 msgstr "rapport d'or"
 
@@ -6229,7 +6313,7 @@ msgstr "DIN"
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:949 ../src/iop/clipping.c:2011
+#: ../src/iop/borders.c:949 ../src/iop/clipping.c:2013
 msgid "square"
 msgstr "carré"
 
@@ -6265,7 +6349,7 @@ msgstr "taille du cadre"
 msgid "size of the border in percent of the full image"
 msgstr "taille du cadre en pourcentage de l'image"
 
-#: ../src/iop/borders.c:1014 ../src/iop/clipping.c:2108
+#: ../src/iop/borders.c:1014 ../src/iop/clipping.c:2110
 msgid "aspect"
 msgstr "aspect"
 
@@ -6502,130 +6586,130 @@ msgstr "force de l'effet"
 msgid "crop and rotate"
 msgstr "recadrer et pivoter"
 
-#: ../src/iop/clipping.c:1588
+#: ../src/iop/clipping.c:1590
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "format de dimension non reconnu. il devrait être  \"nombre:nombre\""
 
-#: ../src/iop/clipping.c:1692 ../src/iop/clipping.c:1996
+#: ../src/iop/clipping.c:1694 ../src/iop/clipping.c:1998
 msgid "full"
 msgstr "les deux"
 
-#: ../src/iop/clipping.c:1693
+#: ../src/iop/clipping.c:1695
 msgid "old system"
 msgstr "système précédent"
 
-#: ../src/iop/clipping.c:1694
+#: ../src/iop/clipping.c:1696
 msgid "correction applied"
 msgstr "correction appliquée"
 
-#: ../src/iop/clipping.c:1974 ../src/libs/live_view.c:374
+#: ../src/iop/clipping.c:1976 ../src/libs/live_view.c:374
 msgid "flip"
 msgstr "symétrie miroir"
 
-#: ../src/iop/clipping.c:1978 ../src/iop/clipping.c:2163
+#: ../src/iop/clipping.c:1980 ../src/iop/clipping.c:2165
 #: ../src/iop/colorbalance.c:2378 ../src/libs/live_view.c:378
 msgid "both"
 msgstr "les deux"
 
-#: ../src/iop/clipping.c:1980
+#: ../src/iop/clipping.c:1982
 msgid "mirror image horizontally and/or vertically"
 msgstr "retourne l'image horizontalement et/ou horizontalement"
 
-#: ../src/iop/clipping.c:1985
+#: ../src/iop/clipping.c:1987
 msgid "angle"
 msgstr "rotation"
 
-#: ../src/iop/clipping.c:1988
+#: ../src/iop/clipping.c:1990
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr "clic-droit et tracer une ligne pour indiquer l'horizontale"
 
-#: ../src/iop/clipping.c:1992
+#: ../src/iop/clipping.c:1994
 msgid "keystone"
 msgstr "perspective"
 
-#: ../src/iop/clipping.c:1997
+#: ../src/iop/clipping.c:1999
 msgid "set perspective correction for your image"
 msgstr "règle la correction de perspective"
 
-#: ../src/iop/clipping.c:2009
+#: ../src/iop/clipping.c:2011
 msgid "freehand"
 msgstr "libre"
 
-#: ../src/iop/clipping.c:2010
+#: ../src/iop/clipping.c:2012
 msgid "original image"
 msgstr "image"
 
-#: ../src/iop/clipping.c:2012
+#: ../src/iop/clipping.c:2014
 msgid "10:8 in print"
 msgstr "10:8 in print"
 
-#: ../src/iop/clipping.c:2013
+#: ../src/iop/clipping.c:2015
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:2014
+#: ../src/iop/clipping.c:2016
 msgid "11x14"
 msgstr "11x14"
 
-#: ../src/iop/clipping.c:2015
+#: ../src/iop/clipping.c:2017
 msgid "8.5x11, letter"
 msgstr "8.5x11, letter"
 
-#: ../src/iop/clipping.c:2016
+#: ../src/iop/clipping.c:2018
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:2017
+#: ../src/iop/clipping.c:2019
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:2018
+#: ../src/iop/clipping.c:2020
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:2019
+#: ../src/iop/clipping.c:2021
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:2020
+#: ../src/iop/clipping.c:2022
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:2022
+#: ../src/iop/clipping.c:2024
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:2023
+#: ../src/iop/clipping.c:2025
 msgid "widescreen"
 msgstr "panoramique"
 
-#: ../src/iop/clipping.c:2024
+#: ../src/iop/clipping.c:2026
 msgid "2:1, univisium"
 msgstr "2:1, univisium"
 
-#: ../src/iop/clipping.c:2025
+#: ../src/iop/clipping.c:2027
 msgid "cinemascope"
 msgstr "cinemascope"
 
-#: ../src/iop/clipping.c:2026
+#: ../src/iop/clipping.c:2028
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:2027
+#: ../src/iop/clipping.c:2029
 msgid "anamorphic"
 msgstr "anamorphique"
 
-#: ../src/iop/clipping.c:2028
+#: ../src/iop/clipping.c:2030
 msgid "3:1, panorama"
 msgstr "3:1, panorama"
 
-#: ../src/iop/clipping.c:2060 ../src/iop/clipping.c:2072
+#: ../src/iop/clipping.c:2062 ../src/iop/clipping.c:2074
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr ""
 "format de dimension non reconnu « %s ». il devrait être  \"nombre:nombre\""
 
-#: ../src/iop/clipping.c:2119
+#: ../src/iop/clipping.c:2121
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square"
@@ -6633,44 +6717,44 @@ msgstr ""
 "sélectionne les dimensions\n"
 "la liste est triée de la moins à la plus carrée"
 
-#: ../src/iop/clipping.c:2155 ../src/libs/live_view.c:370
+#: ../src/iop/clipping.c:2157 ../src/libs/live_view.c:370
 msgid "display guide lines to help compose your photograph"
 msgstr "affiche des guides pour vous aider à composer votre photo"
 
-#: ../src/iop/clipping.c:2159 ../src/iop/clipping.c:2164
+#: ../src/iop/clipping.c:2161 ../src/iop/clipping.c:2166
 #: ../src/libs/live_view.c:379
 msgid "flip guides"
 msgstr "retourne les guides"
 
-#: ../src/iop/clipping.c:2161 ../src/libs/live_view.c:376
+#: ../src/iop/clipping.c:2163 ../src/libs/live_view.c:376
 msgid "horizontally"
 msgstr "horizontale"
 
-#: ../src/iop/clipping.c:2162 ../src/libs/live_view.c:377
+#: ../src/iop/clipping.c:2164 ../src/libs/live_view.c:377
 msgid "vertically"
 msgstr "verticale"
 
-#: ../src/iop/clipping.c:3215
+#: ../src/iop/clipping.c:3217
 msgctxt "accel"
 msgid "commit"
 msgstr "valider"
 
-#: ../src/iop/clipping.c:3216
+#: ../src/iop/clipping.c:3218
 msgctxt "accel"
 msgid "angle"
 msgstr "rotation"
 
-#: ../src/iop/clipping.c:3237
+#: ../src/iop/clipping.c:3239
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s sur bords] recadrer"
 
-#: ../src/iop/clipping.c:3243
+#: ../src/iop/clipping.c:3245
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s sur bords] recadrer avec ratio"
 
-#: ../src/iop/clipping.c:3248
+#: ../src/iop/clipping.c:3250
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] définir/orienter l'horizon"
@@ -7259,21 +7343,21 @@ msgstr "rendu (sortie)"
 #: ../src/iop/colorout.c:869 ../src/libs/export.c:654
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1457
 #: ../src/views/darkroom.c:1973 ../src/views/darkroom.c:1981
-#: ../src/views/lighttable.c:4801 ../src/views/lighttable.c:4809
+#: ../src/views/lighttable.c:4816 ../src/views/lighttable.c:4824
 msgid "perceptual"
 msgstr "perceptif"
 
 #: ../src/iop/colorout.c:870 ../src/libs/export.c:655
 #: ../src/libs/print_settings.c:1243 ../src/libs/print_settings.c:1458
 #: ../src/views/darkroom.c:1974 ../src/views/darkroom.c:1982
-#: ../src/views/lighttable.c:4802 ../src/views/lighttable.c:4810
+#: ../src/views/lighttable.c:4817 ../src/views/lighttable.c:4825
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
 #: ../src/iop/colorout.c:871 ../src/libs/export.c:656
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1459
 #: ../src/views/darkroom.c:1975 ../src/views/darkroom.c:1983
-#: ../src/views/lighttable.c:4803 ../src/views/lighttable.c:4811
+#: ../src/views/lighttable.c:4818 ../src/views/lighttable.c:4826
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
@@ -7281,7 +7365,7 @@ msgstr "saturation"
 #: ../src/iop/colorout.c:872 ../src/libs/export.c:657
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
 #: ../src/views/darkroom.c:1976 ../src/views/darkroom.c:1984
-#: ../src/views/lighttable.c:4804 ../src/views/lighttable.c:4812
+#: ../src/views/lighttable.c:4819 ../src/views/lighttable.c:4827
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
@@ -8226,7 +8310,7 @@ msgstr ""
 "touche principalement les tons moyens."
 
 #. geotagging
-#: ../src/iop/filmic.c:1761 ../src/libs/metadata_view.c:127
+#: ../src/iop/filmic.c:1761 ../src/libs/metadata_view.c:131
 msgid "latitude"
 msgstr "latitude"
 
@@ -9711,7 +9795,7 @@ msgstr "largeur"
 msgid "the fill-light in EV"
 msgstr "lumière d'appoint en IL"
 
-#: ../src/iop/relight.c:367 ../src/libs/metadata_view.c:115
+#: ../src/iop/relight.c:367 ../src/libs/metadata_view.c:119
 #: ../src/libs/print_settings.c:1307
 msgid "width"
 msgstr "largeur"
@@ -11089,31 +11173,12 @@ msgstr "date/heure"
 msgid "history"
 msgstr "historique"
 
-#. DT_COLLECTION_SORT_TITLE
-#: ../src/libs/collect.h:35 ../src/libs/metadata.c:348
-#: ../src/libs/tools/filter.c:156
-msgid "description"
-msgstr "description"
-
-#: ../src/libs/collect.h:35 ../src/libs/import.c:565 ../src/libs/metadata.c:349
-#: ../src/libs/metadata_view.c:123
-msgid "creator"
-msgstr "auteur"
-
-#: ../src/libs/collect.h:35 ../src/libs/import.c:570 ../src/libs/metadata.c:350
-msgid "publisher"
-msgstr "diffuseur"
-
-#: ../src/libs/collect.h:36 ../src/libs/import.c:575 ../src/libs/metadata.c:351
-msgid "rights"
-msgstr "droits"
-
 #. DT_COLLECTION_SORT_DESCRIPTION
 #: ../src/libs/collect.h:38 ../src/libs/tools/filter.c:157
 msgid "aspect ratio"
 msgstr "aspect"
 
-#: ../src/libs/collect.h:38 ../src/libs/metadata_view.c:97
+#: ../src/libs/collect.h:38 ../src/libs/metadata_view.c:101
 #: ../src/libs/tools/filter.c:147
 msgid "filename"
 msgstr "nom de fichier"
@@ -11122,8 +11187,8 @@ msgstr "nom de fichier"
 msgid "grouping"
 msgstr "groupe"
 
-#: ../src/libs/collect.h:39 ../src/libs/metadata_view.c:100
-#: ../src/libs/metadata_view.c:291
+#: ../src/libs/collect.h:39 ../src/libs/metadata_view.c:104
+#: ../src/libs/metadata_view.c:298
 msgid "local copy"
 msgstr "copie locale"
 
@@ -11874,20 +11939,6 @@ msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr "importe les dossiers de manière récursive"
 
-#: ../src/libs/import.c:468
-msgid "apply metadata on import"
-msgstr "appliquer des métadonnées lors de l'importation"
-
-#: ../src/libs/import.c:469
-msgid "apply some metadata to all newly imported images."
-msgstr ""
-"appliquer des métadonnées\n"
-"à toutes les images nouvellement importées"
-
-#: ../src/libs/import.c:510
-msgid "comma separated list of tags"
-msgstr "liste de mots-clés séparés par une virgule"
-
 #: ../src/libs/import.c:785
 msgid "supported images"
 msgstr "images supportées"
@@ -12027,7 +12078,7 @@ msgstr "numéro"
 msgid "overlay another image over the live view"
 msgstr "superpose une autre image au-dessus de la visée directe"
 
-#: ../src/libs/live_view.c:392 ../src/libs/metadata_view.c:95
+#: ../src/libs/live_view.c:392 ../src/libs/metadata_view.c:99
 msgid "image id"
 msgstr "numéro"
 
@@ -12293,64 +12344,64 @@ msgid "all rights reserved."
 msgstr "tous droits réservés"
 
 #. internal
-#: ../src/libs/metadata_view.c:94
+#: ../src/libs/metadata_view.c:98
 msgid "filmroll"
 msgstr "pellicule"
 
-#: ../src/libs/metadata_view.c:96
+#: ../src/libs/metadata_view.c:100
 msgid "group id"
 msgstr "numéro groupe"
 
-#: ../src/libs/metadata_view.c:98
+#: ../src/libs/metadata_view.c:102
 msgid "version"
 msgstr "version"
 
 #. DT_COLLECTION_SORT_GROUP
-#: ../src/libs/metadata_view.c:99 ../src/libs/tools/filter.c:153
+#: ../src/libs/metadata_view.c:103 ../src/libs/tools/filter.c:153
 msgid "full path"
 msgstr "chemin complet"
 
-#: ../src/libs/metadata_view.c:102
+#: ../src/libs/metadata_view.c:106
 msgid "flags"
 msgstr "états"
 
-#: ../src/libs/metadata_view.c:112
+#: ../src/libs/metadata_view.c:116
 msgid "focus distance"
 msgstr "mise au point"
 
-#: ../src/libs/metadata_view.c:114
+#: ../src/libs/metadata_view.c:118
 msgid "datetime"
 msgstr "date/heure"
 
-#: ../src/libs/metadata_view.c:116 ../src/libs/print_settings.c:1311
+#: ../src/libs/metadata_view.c:120 ../src/libs/print_settings.c:1311
 msgid "height"
 msgstr "hauteur"
 
-#: ../src/libs/metadata_view.c:118
+#: ../src/libs/metadata_view.c:122
 msgid "export width"
 msgstr "largeur exporté"
 
-#: ../src/libs/metadata_view.c:119
+#: ../src/libs/metadata_view.c:123
 msgid "export height"
 msgstr "hauteur exporté"
 
-#: ../src/libs/metadata_view.c:124
+#: ../src/libs/metadata_view.c:128
 msgid "copyright"
 msgstr "droits"
 
-#: ../src/libs/metadata_view.c:128
+#: ../src/libs/metadata_view.c:132
 msgid "longitude"
 msgstr "longitude"
 
-#: ../src/libs/metadata_view.c:129
+#: ../src/libs/metadata_view.c:133
 msgid "elevation"
 msgstr "élévation"
 
-#: ../src/libs/metadata_view.c:140
+#: ../src/libs/metadata_view.c:147
 msgid "image information"
 msgstr "informations de l'image"
 
-#: ../src/libs/metadata_view.c:252
+#: ../src/libs/metadata_view.c:259
 #, c-format
 msgid ""
 "double click to jump to film roll\n"
@@ -12359,103 +12410,103 @@ msgstr ""
 "double-cliquer pour aller à la pellicule\n"
 "%s"
 
-#: ../src/libs/metadata_view.c:283
+#: ../src/libs/metadata_view.c:290
 msgid "unused"
 msgstr "non utilisé"
 
-#: ../src/libs/metadata_view.c:284
+#: ../src/libs/metadata_view.c:291
 msgid "unused/deprecated"
 msgstr "non utilisé/déprécié"
 
-#: ../src/libs/metadata_view.c:285
+#: ../src/libs/metadata_view.c:292
 msgid "ldr"
 msgstr "ldr"
 
-#: ../src/libs/metadata_view.c:287
+#: ../src/libs/metadata_view.c:294
 msgid "hdr"
 msgstr "hdr"
 
-#: ../src/libs/metadata_view.c:288
+#: ../src/libs/metadata_view.c:295
 msgid "marked for deletion"
 msgstr "marqué pour suppression"
 
-#: ../src/libs/metadata_view.c:289
+#: ../src/libs/metadata_view.c:296
 msgid "auto-applying presets applied"
 msgstr "pré-réglage automatique appliqué"
 
-#: ../src/libs/metadata_view.c:290
+#: ../src/libs/metadata_view.c:297
 msgid "legacy flag. set for all new images"
 msgstr "ancien état. positionné pour toutes nouvelles images"
 
-#: ../src/libs/metadata_view.c:292
+#: ../src/libs/metadata_view.c:299
 msgid "has .txt"
 msgstr "a .txt"
 
-#: ../src/libs/metadata_view.c:293
+#: ../src/libs/metadata_view.c:300
 msgid "has .wav"
 msgstr "a .wav"
 
-#: ../src/libs/metadata_view.c:305
+#: ../src/libs/metadata_view.c:312
 msgid "image rejected"
 msgstr "image rejetée"
 
-#: ../src/libs/metadata_view.c:310
+#: ../src/libs/metadata_view.c:317
 #, c-format
 msgid "image has %d star"
 msgid_plural "image has %d stars"
 msgstr[0] "l'image a %d étoile"
 msgstr[1] "l'image a %d étoiles"
 
-#: ../src/libs/metadata_view.c:390 ../src/libs/snapshots.c:354
+#: ../src/libs/metadata_view.c:397 ../src/libs/snapshots.c:354
 msgid "unknown"
 msgstr "inconnu"
 
-#: ../src/libs/metadata_view.c:391
+#: ../src/libs/metadata_view.c:398
 msgid "tiff"
 msgstr "tiff"
 
-#: ../src/libs/metadata_view.c:392
+#: ../src/libs/metadata_view.c:399
 msgid "png"
 msgstr "png"
 
-#: ../src/libs/metadata_view.c:393
+#: ../src/libs/metadata_view.c:400
 msgid "j2k"
 msgstr "j2k"
 
-#: ../src/libs/metadata_view.c:394
+#: ../src/libs/metadata_view.c:401
 msgid "jpeg"
 msgstr "jpeg"
 
-#: ../src/libs/metadata_view.c:395
+#: ../src/libs/metadata_view.c:402
 msgid "exr"
 msgstr "exr"
 
-#: ../src/libs/metadata_view.c:396
+#: ../src/libs/metadata_view.c:403
 msgid "rgbe"
 msgstr "rgbe"
 
-#: ../src/libs/metadata_view.c:397
+#: ../src/libs/metadata_view.c:404
 msgid "pfm"
 msgstr "pfm"
 
-#: ../src/libs/metadata_view.c:398
+#: ../src/libs/metadata_view.c:405
 msgid "GraphicsMagick"
 msgstr "GraphicsMagick"
 
-#: ../src/libs/metadata_view.c:399
+#: ../src/libs/metadata_view.c:406
 msgid "rawspeed"
 msgstr "rawspeed"
 
-#: ../src/libs/metadata_view.c:400
+#: ../src/libs/metadata_view.c:407
 msgid "netpnm"
 msgstr "netpnm"
 
-#: ../src/libs/metadata_view.c:405
+#: ../src/libs/metadata_view.c:412
 #, c-format
 msgid "loader: %s"
 msgstr "chargement: %s"
 
-#: ../src/libs/metadata_view.c:646
+#: ../src/libs/metadata_view.c:678
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "aller à la pellicule"
@@ -12982,31 +13033,51 @@ msgstr "importe un style depuis un fichier"
 msgid "export the selected style into a style file"
 msgstr "exporte le style sélectionné dans un fichier"
 
-#: ../src/libs/tagging.c:97
+#: ../src/libs/tagging.c:96
 msgid "tagging"
 msgstr "mots-clés"
 
-#: ../src/libs/tagging.c:122
+#: ../src/libs/tagging.c:121
 msgctxt "accel"
 msgid "attach"
 msgstr "attacher"
 
-#: ../src/libs/tagging.c:123
+#: ../src/libs/tagging.c:122
 msgctxt "accel"
 msgid "detach"
 msgstr "détacher"
 
-#: ../src/libs/tagging.c:124
+#: ../src/libs/tagging.c:123
 msgctxt "accel"
 msgid "new"
 msgstr "nouveau"
 
-#: ../src/libs/tagging.c:125
+#: ../src/libs/tagging.c:124
 msgctxt "accel"
 msgid "tag"
 msgstr "mot-clé"
 
-#: ../src/libs/tagging.c:756
+#: ../src/libs/tagging.c:1042
+msgid "attach tag to all"
+msgstr ""
+"attache le mot-clé\n"
+"à toutes les images sélectionnées"
+
+#: ../src/libs/tagging.c:1050
+msgid "detach tag"
+msgstr "détacher le mot-clé"
+
+#: ../src/libs/tagging.c:1165
+msgid "delete tag?"
+msgstr "supprimer le mot-clé ?"
+
+#: ../src/libs/tagging.c:1172 ../src/libs/tagging.c:1269
+#: ../src/libs/tagging.c:1518
+#, c-format
+msgid "tag: %s "
+msgstr "mot-clé sélectionné : « %s »"
+
+#: ../src/libs/tagging.c:1179
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -13021,42 +13092,92 @@ msgstr[1] ""
 "voulez-vous réellement supprimer le mot-clé « %s »?\n"
 "ce mot-clé est assigné à %d images"
 
-#: ../src/libs/tagging.c:762
-msgid "delete tag?"
-msgstr "supprimer le mot-clé ?"
-
-#: ../src/libs/tagging.c:843
-msgid "rename tag?"
-msgstr "renommer un mot-clé?"
-
-#: ../src/libs/tagging.c:847
+# lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
+#: ../src/libs/tagging.c:1215
 #, c-format
-msgid ""
-"selected tag: %s\n"
-" "
-msgstr "mot-clé sélectionné: « %s »"
+msgid "tag %s removed"
+msgstr "mot-clé %s supprimé"
 
-#: ../src/libs/tagging.c:852 ../src/libs/tagging.c:1009
+#: ../src/libs/tagging.c:1262 ../src/libs/tagging.c:1912
+msgid "delete branch"
+msgstr "supprimer la branche"
+
+#: ../src/libs/tagging.c:1276
+#, c-format
+msgid "<u>%d</u> tag will be deleted."
+msgid_plural "<u>%d</u> tags will be deleted."
+msgstr[0] "<u>%d</u> mot-clé sera supprimé."
+msgstr[1] "<u>%d</u> mot-clé seront supprimés."
+
+#: ../src/libs/tagging.c:1281 ../src/libs/tagging.c:1530
+#: ../src/libs/tagging.c:1750
+#, c-format
+msgid "<u>%d</u> image will be updated"
+msgid_plural "<u>%d</u> images will be updated "
+msgstr[0] "<u>%d</u> image sera mise à jour."
+msgstr[1] "<u>%d</u> images seront mises à jour."
+
+#: ../src/libs/tagging.c:1307
+#, c-format
+msgid "%d tags removed"
+msgstr "%d mots-clés supprimés"
+
+#: ../src/libs/tagging.c:1350
+msgid "create tag"
+msgstr "créer un mot-clé"
+
+#: ../src/libs/tagging.c:1351 ../src/libs/tagging.c:1512
+msgid "save"
+msgstr "enregistrer"
+
+#: ../src/libs/tagging.c:1360 ../src/libs/tagging.c:1538
+msgid "name: "
+msgstr "nom"
+
+#: ../src/libs/tagging.c:1373
+#, c-format
+msgid "add to: \"%s\" "
+msgstr "ajouter à : \"%s\" "
+
+#: ../src/libs/tagging.c:1379 ../src/libs/tagging.c:1553
+msgid "category"
+msgstr "sans catégorie"
+
+#: ../src/libs/tagging.c:1382 ../src/libs/tagging.c:1556
+msgid "private"
+msgstr "privé"
+
+#: ../src/libs/tagging.c:1388 ../src/libs/tagging.c:1562
+msgid "synonyms: "
+msgstr "synonymes :"
+
+#: ../src/libs/tagging.c:1405 ../src/libs/tagging.c:1583
+#: ../src/libs/tagging.c:1772
+msgid "empty tag is not allowed, aborting"
+msgstr "mot-clé vide interdit, annulation"
+
+#: ../src/libs/tagging.c:1407
+msgid "'|' character is not allowed to create a tag. aborting."
+msgstr ""
+"'|' est interdit dans le nom d'un mot-clé\n"
+"pour modifier une hiérarchie utiliser l'action renommer un chemin, annulation"
+
+#: ../src/libs/tagging.c:1417
+msgid "tag name already exists. aborting."
+msgstr "au moins un nouveau mot-clé (%s) existe déjà, annulation"
+
+#: ../src/libs/tagging.c:1511
+msgid "edit tag"
+msgstr "éditer le mot-clé"
+
+#: ../src/libs/tagging.c:1525 ../src/libs/tagging.c:1745
 #, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
 msgstr[0] "<u>%d</u> mot-clé sera mis à jour"
 msgstr[1] "<u>%d</u> mot-clé seront mis à jour"
 
-#: ../src/libs/tagging.c:858 ../src/libs/tagging.c:1016
-#, c-format
-msgid "<u>%d</u> image will be updated"
-msgid_plural ""
-"<u>%d</u> images will be updated\n"
-" "
-msgstr[0] "<u>%d</u> image sera mise à jour"
-msgstr[1] "<u>%d</u> images seront mise à jour"
-
-#: ../src/libs/tagging.c:878 ../src/libs/tagging.c:1037
-msgid "empty tag is not allowed, aborting"
-msgstr "mot-clé vide interdit, annulation"
-
-#: ../src/libs/tagging.c:880
+#: ../src/libs/tagging.c:1585
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierachy use rename path instead. Aborting."
@@ -13064,134 +13185,173 @@ msgstr ""
 "'|' est interdit dans le nom d'un mot-clé\n"
 "pour modifier une hiérarchie utiliser l'action renommer un chemin, annulation"
 
-#: ../src/libs/tagging.c:918
+#: ../src/libs/tagging.c:1623
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
 msgstr "au moins un nouveau mot-clé (%s) existe déjà, annulation"
 
-#: ../src/libs/tagging.c:1000
+#: ../src/libs/tagging.c:1731
 msgid "rename path?"
 msgstr "renommer un chemin?"
 
-#: ../src/libs/tagging.c:1004
+#: ../src/libs/tagging.c:1738
 #, c-format
-msgid ""
-"selected path: %s\n"
-" "
-msgstr "chemin sélectionné: « %s »"
+msgid "selected path: %s "
+msgstr "chemin sélectionné : « %s »"
 
-#: ../src/libs/tagging.c:1013 ../src/libs/tagging.c:1020
-msgid "insert a '|' to create a new level, remove a '|' to delete a level"
-msgstr ""
-"ajouter un '|' pour créer une hiérarchie, supprimer un '|' pour en supprimer "
-"une"
-
-#: ../src/libs/tagging.c:1039
+#: ../src/libs/tagging.c:1774
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr "'|' mal placé, un mot-clé vide est interdit, annulation"
 
-#: ../src/libs/tagging.c:1065
+#: ../src/libs/tagging.c:1800
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
 msgstr "au moins un nouveau mot-clé (%s) existe déjà, annulation"
 
-#: ../src/libs/tagging.c:1126
-msgid "copy to entry"
-msgstr "copier l'entrée"
+#: ../src/libs/tagging.c:1900
+msgid "attach tag"
+msgstr "attacher le mot-clé"
 
-#: ../src/libs/tagging.c:1142 ../src/libs/tagging.c:1150
+#: ../src/libs/tagging.c:1908
 msgid "delete tag"
 msgstr "supprimer un mot-clé"
 
-#: ../src/libs/tagging.c:1157
-msgid "rename tag..."
-msgstr "renommer un mot-clé..."
+#: ../src/libs/tagging.c:1918
+msgid "create tag..."
+msgstr "créer un mot-clé..."
 
-#: ../src/libs/tagging.c:1174
+#: ../src/libs/tagging.c:1922
+msgid "edit tag..."
+msgstr "éditer le mot-clé..."
+
+#: ../src/libs/tagging.c:1931
 msgid "rename path..."
 msgstr "renommer un chemin..."
 
-#: ../src/libs/tagging.c:1244
+#: ../src/libs/tagging.c:1938
+msgid "copy to entry"
+msgstr "copier l'entrée"
+
+#: ../src/libs/tagging.c:1962
+msgid "go to tag collection"
+msgstr "aller à la collection liée au mot-clé"
+
+#: ../src/libs/tagging.c:1968
+msgid "go back to work"
+msgstr "retourner au module de mots-clés"
+
+#: ../src/libs/tagging.c:2078
+#, c-format
+msgid "%s"
+msgstr "%s"
+
+#: ../src/libs/tagging.c:2079
+msgid "(private)"
+msgstr "privé"
+
+#: ../src/libs/tagging.c:2105
 msgid "Select a keyword file"
 msgstr "sélectionner un fichier de mot-clé"
 
-#: ../src/libs/tagging.c:1247
+#: ../src/libs/tagging.c:2108
 msgid "_import"
 msgstr "_importer"
 
-#: ../src/libs/tagging.c:1261
+#: ../src/libs/tagging.c:2122
 msgid "error importing tags"
 msgstr "erreur lors de l'import de mot-clé"
 
-#: ../src/libs/tagging.c:1263
+#: ../src/libs/tagging.c:2124
 #, c-format
 msgid "%zd tags imported"
 msgstr "« %zd » mots-clés importés"
 
-#: ../src/libs/tagging.c:1284
+#: ../src/libs/tagging.c:2146
 msgid "Select file to export to"
 msgstr "sélectionne le fichier pour l'export"
 
-#: ../src/libs/tagging.c:1287
+#: ../src/libs/tagging.c:2149
 msgid "_export"
 msgstr "_exporter"
 
-#: ../src/libs/tagging.c:1302
+#: ../src/libs/tagging.c:2164
 msgid "error exporting tags"
 msgstr "erreur lors de l'export de mot-clé"
 
-#: ../src/libs/tagging.c:1304
+#: ../src/libs/tagging.c:2166
 #, c-format
 msgid "%zd tags exported"
 msgstr "« %zd » mots-clés exportés"
 
-#: ../src/libs/tagging.c:1453
+#: ../src/libs/tagging.c:2524
 msgid ""
 "attached tags,\n"
-"double-click to detach"
+"double-click to detach\n"
+"right-click for other actions on attached tag,\n"
+"Ctrl-wheel scroll to resize the window"
 msgstr ""
-"mots-clés attachés,\n"
-"double-clic pour détacher"
+"mots-clés liés,\n"
+"double-clic pour attacher\n"
+"clic-droit pour afficher le menu des actions du mot-clé sélectionné\n"
+"Ctrl+molette souris pour redimensionner la fenêtre"
 
-#: ../src/libs/tagging.c:1461
+#: ../src/libs/tagging.c:2535
 msgid "attach"
 msgstr "attacher"
 
-#: ../src/libs/tagging.c:1463
+#: ../src/libs/tagging.c:2538
 msgid "attach tag to all selected images"
 msgstr ""
 "attache le mot-clé\n"
 "à toutes les images sélectionnées"
 
-#: ../src/libs/tagging.c:1468
+#: ../src/libs/tagging.c:2543
 msgid "detach"
 msgstr "détacher"
 
-#: ../src/libs/tagging.c:1470
+#: ../src/libs/tagging.c:2546
 msgid "detach tag from all selected images"
 msgstr ""
 "détache le mot-clé\n"
 "de toutes les images sélectionnées"
 
-#: ../src/libs/tagging.c:1483
+#: ../src/libs/tagging.c:2553
+msgid "toggle list with / without hierarchy"
+msgstr "active/désactive la liste hiérarchique"
+
+#: ../src/libs/tagging.c:2561
+msgid "toggle sort by name or by count"
+msgstr "activer le classement par nom ou par nombre"
+
+#: ../src/libs/tagging.c:2571
+msgid "toggle show or not darktable tags"
+msgstr "activer/désactiver l'affichage des mots-clés spécifiques à darktable"
+
+#: ../src/libs/tagging.c:2587
 msgid "enter tag name"
 msgstr "entrez un mot-clé"
 
-#: ../src/libs/tagging.c:1525
+#: ../src/libs/tagging.c:2597
+msgid "clear entry"
+msgstr "effacer texte"
+
+#: ../src/libs/tagging.c:2649
 msgid ""
-"related tags,\n"
+"tag dictionary,\n"
 "double-click to attach,\n"
-"right-click for other actions on selected tag"
+"right-click for other actions on selected tag,\n"
+"Ctrl-wheel scroll to resize the window"
 msgstr ""
 "mots-clés liés,\n"
 "double-clic pour attacher\n"
-"clic-droit pour copier l'entrée"
+"clic-droit pour afficher le menu des actions du mot-clé sélectionné\n"
+"Ctrl+molette souris pour redimensionner la fenêtre"
 
-#: ../src/libs/tagging.c:1536
+#: ../src/libs/tagging.c:2664
 msgid "new"
 msgstr "nouveau"
 
-#: ../src/libs/tagging.c:1538
+#: ../src/libs/tagging.c:2667
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -13199,30 +13359,30 @@ msgstr ""
 "crée un nouveau mot-clé à\n"
 "partir de la saisie"
 
-#: ../src/libs/tagging.c:1543
+#: ../src/libs/tagging.c:2672
 msgctxt "verb"
 msgid "import"
 msgstr "importer"
 
-#: ../src/libs/tagging.c:1545
+#: ../src/libs/tagging.c:2675
 msgid "import tags from a Lightroom keyword file"
 msgstr "importer des mots-clés depuis un fichier Lightroom"
 
-#: ../src/libs/tagging.c:1550
+#: ../src/libs/tagging.c:2680
 msgctxt "verb"
 msgid "export"
 msgstr "exporter"
 
-#: ../src/libs/tagging.c:1552
+#: ../src/libs/tagging.c:2683
 msgid "export all tags to a Lightroom keyword file"
 msgstr "exporte tous les tags dans un fichier de mot-clé Lightroom"
 
-#: ../src/libs/tagging.c:1559
+#: ../src/libs/tagging.c:2690
 msgid "toggle list / tree view"
 msgstr "passe de la vue liste / arbre"
 
-#: ../src/libs/tagging.c:1567
-msgid "toggle with / without suggestion"
+#: ../src/libs/tagging.c:2698
+msgid "toggle list with / without suggestion"
 msgstr "active/désactive les suggestions"
 
 #: ../src/libs/tools/battery_indicator.c:38
@@ -13310,37 +13470,37 @@ msgstr "bandeau"
 
 #. setup rating key accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:4312
+#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:4327
 msgctxt "accel"
 msgid "rate 0"
 msgstr "0 étoile"
 
-#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:4313
+#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:4328
 msgctxt "accel"
 msgid "rate 1"
 msgstr "1 étoile"
 
-#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:4314
+#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:4329
 msgctxt "accel"
 msgid "rate 2"
 msgstr "2 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:4315
+#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:4330
 msgctxt "accel"
 msgid "rate 3"
 msgstr "3 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:4316
+#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:4331
 msgctxt "accel"
 msgid "rate 4"
 msgstr "4 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:4317
+#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:4332
 msgctxt "accel"
 msgid "rate 5"
 msgstr "5 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:4318
+#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:4333
 msgctxt "accel"
 msgid "rate reject"
 msgstr "rejeter"
@@ -13379,27 +13539,27 @@ msgstr "cloner l'image"
 #. setup color label accelerators
 #. Initializing accelerators
 #. Color labels keys
-#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:4304
+#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:4319
 msgctxt "accel"
 msgid "color red"
 msgstr "couleur rouge"
 
-#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:4305
+#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:4320
 msgctxt "accel"
 msgid "color yellow"
 msgstr "couleur jaune"
 
-#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:4306
+#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:4321
 msgctxt "accel"
 msgid "color green"
 msgstr "couleur verte"
 
-#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:4307
+#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:4322
 msgctxt "accel"
 msgid "color blue"
 msgstr "couleur bleue"
 
-#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:4308
+#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:4323
 msgctxt "accel"
 msgid "color purple"
 msgstr "couleur violette"
@@ -13757,19 +13917,19 @@ msgstr ""
 "activer/désactiver vérification de gamut\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:1971 ../src/views/lighttable.c:4799
+#: ../src/views/darkroom.c:1971 ../src/views/lighttable.c:4814
 msgid "display intent"
 msgstr "rendu (écran)"
 
-#: ../src/views/darkroom.c:1979 ../src/views/lighttable.c:4807
+#: ../src/views/darkroom.c:1979 ../src/views/lighttable.c:4822
 msgid "preview display intent"
 msgstr "rendu (écran secondaire)"
 
-#: ../src/views/darkroom.c:1999 ../src/views/lighttable.c:4815
+#: ../src/views/darkroom.c:1999 ../src/views/lighttable.c:4830
 msgid "display profile"
 msgstr "profil (écran)"
 
-#: ../src/views/darkroom.c:2000 ../src/views/lighttable.c:4819
+#: ../src/views/darkroom.c:2000 ../src/views/lighttable.c:4834
 msgid "preview display profile"
 msgstr "profil (écran secondaire)"
 
@@ -13777,12 +13937,12 @@ msgstr "profil (écran secondaire)"
 msgid "histogram profile"
 msgstr "profil de l'histogramme"
 
-#: ../src/views/darkroom.c:2055 ../src/views/lighttable.c:4849
+#: ../src/views/darkroom.c:2055 ../src/views/lighttable.c:4864
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage dans %s ou %s"
 
-#: ../src/views/darkroom.c:2058 ../src/views/lighttable.c:4852
+#: ../src/views/darkroom.c:2058 ../src/views/lighttable.c:4867
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage secondaire dans « %s » ou « %s »"
@@ -13896,13 +14056,13 @@ msgid "full preview"
 msgstr "aperçu complet"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3198 ../src/views/lighttable.c:4343
+#: ../src/views/darkroom.c:3198 ../src/views/lighttable.c:4358
 #: ../src/views/map.c:889
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/darkroom.c:3199 ../src/views/lighttable.c:4344
+#: ../src/views/darkroom.c:3199 ../src/views/lighttable.c:4359
 #: ../src/views/map.c:890
 msgctxt "accel"
 msgid "redo"
@@ -13924,7 +14084,7 @@ msgstr "rechercher module"
 msgid "switch to lighttable"
 msgstr "passer à la table lumineuse"
 
-#: ../src/views/darkroom.c:3309 ../src/views/lighttable.c:4490
+#: ../src/views/darkroom.c:3309 ../src/views/lighttable.c:4505
 msgid "zoom in the image"
 msgstr "zoom dans l'image"
 
@@ -14001,156 +14161,156 @@ msgstr " fin de la collection atteinte"
 msgid "zooming is limited to %d images"
 msgstr "le zoom est limité à %d images."
 
-#: ../src/views/lighttable.c:4309
+#: ../src/views/lighttable.c:4324
 msgctxt "accel"
 msgid "clear color labels"
 msgstr "aucun label couleur"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:4321
+#: ../src/views/lighttable.c:4336
 msgctxt "accel"
 msgid "navigate up"
 msgstr "aller en haut"
 
-#: ../src/views/lighttable.c:4322
+#: ../src/views/lighttable.c:4337
 msgctxt "accel"
 msgid "navigate down"
 msgstr "aller en bas"
 
-#: ../src/views/lighttable.c:4323
+#: ../src/views/lighttable.c:4338
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "défiler par page vers le haut"
 
-#: ../src/views/lighttable.c:4324
+#: ../src/views/lighttable.c:4339
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "défiler par page vers le bas"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:4327
+#: ../src/views/lighttable.c:4342
 msgctxt "accel"
 msgid "scroll up"
 msgstr "défiler en arrière"
 
-#: ../src/views/lighttable.c:4328
+#: ../src/views/lighttable.c:4343
 msgctxt "accel"
 msgid "scroll down"
 msgstr "défiler en avant"
 
-#: ../src/views/lighttable.c:4329
+#: ../src/views/lighttable.c:4344
 msgctxt "accel"
 msgid "scroll left"
 msgstr "défiler vers la gauche"
 
-#: ../src/views/lighttable.c:4330
+#: ../src/views/lighttable.c:4345
 msgctxt "accel"
 msgid "scroll right"
 msgstr "défiler vers la droite"
 
-#: ../src/views/lighttable.c:4331
+#: ../src/views/lighttable.c:4346
 msgctxt "accel"
 msgid "scroll center"
 msgstr "défiler vers le centre"
 
-#: ../src/views/lighttable.c:4332
+#: ../src/views/lighttable.c:4347
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "aligner les images sur la grille"
 
-#: ../src/views/lighttable.c:4333
+#: ../src/views/lighttable.c:4348
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "inverse sélection de l'image"
 
-#: ../src/views/lighttable.c:4334
+#: ../src/views/lighttable.c:4349
 msgctxt "accel"
 msgid "select single image"
 msgstr "sélectionne image unique"
 
 #. Preview key
-#: ../src/views/lighttable.c:4337
+#: ../src/views/lighttable.c:4352
 msgctxt "accel"
 msgid "preview"
 msgstr "aperçu"
 
-#: ../src/views/lighttable.c:4338
+#: ../src/views/lighttable.c:4353
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "aperçu avec détection de la mise au point"
 
-#: ../src/views/lighttable.c:4339
+#: ../src/views/lighttable.c:4354
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "aperçu persistant"
 
-#: ../src/views/lighttable.c:4340
+#: ../src/views/lighttable.c:4355
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "aperçu persistant avec détection de la mise au point"
 
 #. zoom for full preview
-#: ../src/views/lighttable.c:4347
+#: ../src/views/lighttable.c:4362
 msgctxt "accel"
 msgid "preview zoom 100%"
 msgstr "zoom image 100%"
 
-#: ../src/views/lighttable.c:4348
+#: ../src/views/lighttable.c:4363
 msgctxt "accel"
 msgid "preview zoom fit"
 msgstr "zoom image ajustée"
 
 #. timeline
-#: ../src/views/lighttable.c:4351
+#: ../src/views/lighttable.c:4366
 msgctxt "accel"
 msgid "toggle timeline"
 msgstr "activer/désactiver la chronologie"
 
-#: ../src/views/lighttable.c:4477
+#: ../src/views/lighttable.c:4492
 msgid "open image in darkroom"
 msgstr "ouvrir l'image dans la chambre noire"
 
-#: ../src/views/lighttable.c:4484
+#: ../src/views/lighttable.c:4499
 msgid "switch to next/previous image"
 msgstr "passer à l'image suivante/précédente"
 
-#: ../src/views/lighttable.c:4497 ../src/views/lighttable.c:4519
+#: ../src/views/lighttable.c:4512 ../src/views/lighttable.c:4534
 msgid "scroll the collection"
 msgstr "défiler la collection"
 
-#: ../src/views/lighttable.c:4503
+#: ../src/views/lighttable.c:4518
 msgid "change number of images per row"
 msgstr "changer le nombre d'image par ligne"
 
-#: ../src/views/lighttable.c:4511
+#: ../src/views/lighttable.c:4526
 msgid "change image order"
 msgstr "changer l'ordre des images"
 
-#: ../src/views/lighttable.c:4525
+#: ../src/views/lighttable.c:4540
 msgid "zoom all the images"
 msgstr "zoom toutes les images"
 
-#: ../src/views/lighttable.c:4530
+#: ../src/views/lighttable.c:4545
 msgid "pan inside all the images"
 msgstr "déplacer toutes les images"
 
-#: ../src/views/lighttable.c:4536
+#: ../src/views/lighttable.c:4551
 msgid "zoom current image"
 msgstr "zoom image"
 
-#: ../src/views/lighttable.c:4542
+#: ../src/views/lighttable.c:4557
 msgid "pan inside current image"
 msgstr "déplacer l'image"
 
-#: ../src/views/lighttable.c:4549
+#: ../src/views/lighttable.c:4564
 msgid "zoom the main view"
 msgstr "zoom vue principale"
 
-#: ../src/views/lighttable.c:4554
+#: ../src/views/lighttable.c:4569
 msgid "pan inside the main view"
 msgstr "déplacer la vue principale"
 
-#: ../src/views/lighttable.c:4775
+#: ../src/views/lighttable.c:4790
 msgid "set display profile"
 msgstr "profil (écran)"
 
@@ -14284,6 +14444,18 @@ msgstr "raccourcis"
 #: ../src/views/view.c:2446
 msgid "Action"
 msgstr "action"
+
+#~ msgid "insert a '|' to create a new level, remove a '|' to delete a level"
+#~ msgstr ""
+#~ "ajouter un '|' pour créer une hiérarchie, supprimer un '|' pour en "
+#~ "supprimer une"
+
+#~ msgid ""
+#~ "attached tags,\n"
+#~ "double-click to detach"
+#~ msgstr ""
+#~ "mots-clés attachés,\n"
+#~ "double-clic pour détacher"
 
 #~ msgid "module disabled for monochrome image"
 #~ msgstr "module désactivé pour les images monochrome"
@@ -15227,9 +15399,6 @@ msgstr "action"
 
 #~ msgid "picasa webalbum"
 #~ msgstr "album web picasa"
-
-#~ msgid "private"
-#~ msgstr "privé"
 
 #~ msgid ""
 #~ "center view will be dithered if this option is on and module dithering is "
