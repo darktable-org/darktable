@@ -2,16 +2,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-24 10:48+0200\n"
-"PO-Revision-Date: 2019-08-24 20:42+0200\n"
-"Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
+"POT-Creation-Date: 2019-08-24 21:52+0200\n"
+"PO-Revision-Date: 2019-08-24 21:52+0200\n"
+"Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2.1\n"
+"X-Generator: Poedit 2.2.3\n"
 
 #: ../build/src/preferences_gen.h:2155
 msgid "GUI options"
@@ -1760,7 +1760,7 @@ msgstr "activé(e)"
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
 #: ../src/iop/ashift.c:4855 ../src/iop/ashift.c:4861 ../src/iop/colorin.c:2107
 #: ../src/iop/demosaic.c:5147 ../src/iop/vignette.c:1150
-#: ../src/libs/history.c:162 ../src/libs/live_view.c:436
+#: ../src/libs/history.c:163 ../src/libs/live_view.c:436
 msgid "off"
 msgstr "désactivé(e)"
 
@@ -11169,7 +11169,7 @@ msgstr "date"
 msgid "time"
 msgstr "date/heure"
 
-#: ../src/libs/collect.h:34 ../src/libs/history.c:62
+#: ../src/libs/collect.h:34 ../src/libs/history.c:63
 msgid "history"
 msgstr "historique"
 
@@ -11666,30 +11666,30 @@ msgctxt "accel"
 msgid "hide histogram"
 msgstr "cacher histogramme"
 
-#: ../src/libs/history.c:83
+#: ../src/libs/history.c:84
 msgctxt "accel"
 msgid "create style from history"
 msgstr "crée un style depuis l'historique actuel"
 
 #. dt_accel_register_lib(self, NC_("accel", "apply style from popup menu"), 0, 0);
-#: ../src/libs/history.c:85
+#: ../src/libs/history.c:86
 msgctxt "accel"
 msgid "compress history stack"
 msgstr "compresser l'historique"
 
-#: ../src/libs/history.c:112
+#: ../src/libs/history.c:113
 msgid "compress history stack"
 msgstr "compresser l'historique"
 
-#: ../src/libs/history.c:114
+#: ../src/libs/history.c:115
 msgid "create a minimal history stack which produces the same image"
 msgstr "génère l'historique minimum qui produit la même image"
 
-#: ../src/libs/history.c:121
+#: ../src/libs/history.c:122
 msgid "create a style from the current history stack"
 msgstr "crée un style depuis l'historique actuel"
 
-#: ../src/libs/history.c:651 ../src/libs/snapshots.c:346
+#: ../src/libs/history.c:652 ../src/libs/snapshots.c:346
 msgid "original"
 msgstr "original"
 
@@ -13288,7 +13288,7 @@ msgid ""
 "attached tags,\n"
 "double-click to detach\n"
 "right-click for other actions on attached tag,\n"
-"Ctrl-wheel scroll to resize the window"
+"ctrl-wheel scroll to resize the window"
 msgstr ""
 "mots-clés liés,\n"
 "double-clic pour attacher\n"
@@ -13340,7 +13340,7 @@ msgid ""
 "tag dictionary,\n"
 "double-click to attach,\n"
 "right-click for other actions on selected tag,\n"
-"Ctrl-wheel scroll to resize the window"
+"ctrl-wheel scroll to resize the window"
 msgstr ""
 "mots-clés liés,\n"
 "double-clic pour attacher\n"
