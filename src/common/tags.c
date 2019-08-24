@@ -2,6 +2,7 @@
     This file is part of darktable,
     copyright (c) 2010--2011 henrik andersson.
     copyright (c) 2012 James C. McPherson
+    copyright (c) 2019 Philippe Weyland
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -563,6 +564,14 @@ void dt_tag_detach(guint tagid, gint imgid)
 
   dt_tag_update_used_tags();
 
+}
+
+void dt_tag_detach_from_gui(guint tagid, gint imgid)
+{
+  _detach_tag(tagid, imgid, TRUE);
+
+  dt_tag_update_used_tags();
+
   dt_collection_update_query(darktable.collection);
 }
 
@@ -781,6 +790,74 @@ GList *dt_tag_get_list(gint imgid)
   GList *tags = NULL;
 
   gboolean omit_tag_hierarchy = dt_conf_get_bool("omit_tag_hierarchy");
+
+  uint32_t count = dt_tag_get_attached(imgid, &taglist, TRUE);
+
+  if(count < 1) return NULL;
+
+  for(; taglist; taglist = g_list_next(taglist))
+  {
+    dt_tag_t *t = (dt_tag_t *)taglist->data;
+    gchar *value = t->tag;
+
+    size_t j = 0;
+    gchar **pch = g_strsplit(value, "|", -1);
+
+    if(pch != NULL)
+    {
+      if(omit_tag_hierarchy)
+      {
+        char **iter = pch;
+        for(; *iter && *(iter + 1); iter++);
+        if(*iter) tags = g_list_prepend(tags, g_strdup(*iter));
+      }
+      else
+      {
+        while(pch[j] != NULL)
+        {
+          tags = g_list_prepend(tags, g_strdup(pch[j]));
+          j++;
+        }
+      }
+      g_strfreev(pch);
+    }
+  }
+
+  g_list_free_full(taglist, g_free);
+
+  return dt_util_glist_uniq(tags);
+}
+
+GList *dt_tag_get_hierarchical(gint imgid)
+{
+  GList *taglist = NULL;
+  GList *tags = NULL;
+
+  int count = dt_tag_get_attached(imgid, &taglist, TRUE);
+
+  if(count < 1) return NULL;
+
+  while(taglist)
+  {
+    dt_tag_t *t = (dt_tag_t *)taglist->data;
+
+    tags = g_list_prepend(tags, t->tag);
+
+    taglist = g_list_next(taglist);
+  }
+
+  g_list_free_full(taglist, g_free);
+
+  tags = g_list_reverse(tags);
+  return tags;
+}
+
+GList *dt_tag_get_list_export(gint imgid)
+{
+  GList *taglist = NULL;
+  GList *tags = NULL;
+
+  gboolean omit_tag_hierarchy = dt_conf_get_bool("omit_tag_hierarchy");
   gboolean export_private_tags = dt_conf_get_bool("plugins/lighttable/export/export_private_tags");
   gboolean export_tag_synomyms = dt_conf_get_bool("plugins/lighttable/export/export_tag_synonyms");
 
@@ -825,7 +902,7 @@ GList *dt_tag_get_list(gint imgid)
   return dt_util_glist_uniq(tags);
 }
 
-GList *dt_tag_get_hierarchical(gint imgid)
+GList *dt_tag_get_hierarchical_export(gint imgid)
 {
   GList *taglist = NULL;
   GList *tags = NULL;
