@@ -386,6 +386,26 @@ void dtgtk_cairo_paint_minus_simple(cairo_t *cr, gint x, gint y, gint w, gint h,
   cairo_restore(cr);
 }
 
+void dtgtk_cairo_paint_multiply_small(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  cairo_save(cr);
+  const gint s = w < h ? w : h;
+  cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
+  cairo_scale(cr, s, s);
+
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+
+  cairo_set_line_width(cr, 0.1);
+  cairo_move_to(cr, 0.3, 0.3);
+  cairo_line_to(cr, 0.7, 0.7);
+  cairo_move_to(cr, 0.7, 0.3);
+  cairo_line_to(cr, 0.3, 0.7);
+  cairo_stroke(cr);
+
+  cairo_identity_matrix(cr);
+  cairo_restore(cr);
+}
+
 void dtgtk_cairo_paint_treelist(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   cairo_save(cr);

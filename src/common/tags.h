@@ -95,6 +95,8 @@ void dt_tag_attach_string_list(const gchar *tags, gint imgid);
 /** detach tag from images. \param[in] tagid if of tag to deattach. \param[in] imgid the image id to attach
  * tag from, if < 0 selected images are used. */
 void dt_tag_detach(guint tagid, gint imgid);
+/** same as above but raises a dt_collection_update_query() */
+void dt_tag_detach_from_gui(guint tagid, gint imgid);
 
 /** detach tags from images that matches name, it is valid to use % to match tag */
 void dt_tag_detach_by_string(const char *name, gint imgid);
@@ -110,9 +112,17 @@ GList *dt_sort_tag(GList *tags, gboolean byname);
  * tags. */
 GList *dt_tag_get_list(gint imgid);
 
+/** get a list of tags,
+ *  the difference to dt_tag_get_list() is that this one checks option for exportation */
+GList *dt_tag_get_list_export(gint imgid);
+
 /** get a flat list of only hierarchical tags,
  *  the difference to dt_tag_get_attached() is that this one filters out the "darktable|" tags. */
 GList *dt_tag_get_hierarchical(gint imgid);
+
+/** get a flat list of only hierarchical tags,
+ *  the difference to dt_tag_get_hierarchical() is that this one checks option for exportation */
+GList *dt_tag_get_hierarchical_export(gint imgid);
 
 /** get the subset of images from the selected ones that have a given tag attached */
 GList *dt_tag_get_images_from_selection(gint imgid, gint tagid);

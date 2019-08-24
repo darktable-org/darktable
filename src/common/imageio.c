@@ -899,7 +899,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   /* now write xmp into that container, if possible */
   if(copy_metadata && (format->flags(format_params) & FORMAT_FLAGS_SUPPORT_XMP))
   {
-    dt_exif_xmp_attach(imgid, filename);
+    dt_exif_xmp_attach_export(imgid, filename);
     // no need to cancel the export if this fail
   }
 
