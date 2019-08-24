@@ -1262,7 +1262,7 @@ static int32_t dt_control_local_copy_images_job_run(dt_job_t *job)
     else
     {
       if (dt_image_local_copy_reset(imgid) == 0)
-        dt_tag_detach(tagid, imgid);
+        dt_tag_detach_from_gui(tagid, imgid);
     }
     t = g_list_delete_link(t, t);
 
