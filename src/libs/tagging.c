@@ -2764,6 +2764,8 @@ static gboolean _lib_tagging_tag_key_press(GtkWidget *entry, GdkEventKey *event,
       // both these functions can deal with -1 for all selected images. no need for extra code in here!
       dt_tag_attach_string_list(tag, d->floating_tag_imgid);
       dt_image_synch_xmp(d->floating_tag_imgid);
+      init_treeview(self, 0);
+      init_treeview(self, 1);
       gtk_widget_destroy(d->floating_tag_window);
       dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
       return TRUE;
@@ -2796,7 +2798,11 @@ static gboolean _lib_tagging_tag_show(GtkAccelGroup *accel_group, GObject *accel
   }
 
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
-  if (d->tree_flag) return TRUE;  // doesn't work properly with tree treeview
+  if (d->tree_flag)
+  {
+    dt_control_log(_("tag shortcut is not active with tag tree view. please switch to list view"));
+    return TRUE;  // doesn't work properly with tree treeview
+  }
   d->floating_tag_imgid = mouse_over_id;
 
   gint x, y;
