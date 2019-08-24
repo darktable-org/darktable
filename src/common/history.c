@@ -870,12 +870,12 @@ int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge, GList 
   return res;
 }
 
-void basic_dt_history_compress_on_image(int32_t imgid)
+void dt_history_compress_on_image(int32_t imgid)
 {
   // make sure the right history is in there:
   dt_dev_write_history(darktable.develop);
 
-  // compress history, keep disabled modules as in darkroom mode - adapted from libs/history.c
+  // compress history, keep disabled modules as documented
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "DELETE FROM main.history WHERE imgid = ?1 AND num "
@@ -955,11 +955,14 @@ void basic_dt_history_compress_on_image(int32_t imgid)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
+
+  // Update XMP files
+  dt_image_synch_xmp(imgid);
 }
 
-void dt_history_compress_on_image(int32_t imgid)
+void dt_history_compress_on_image_and_reload(int32_t imgid)
 {
-  basic_dt_history_compress_on_image(imgid);
+  dt_history_compress_on_image(imgid);
 
   /* if current image in develop reload history */
   if(dt_dev_is_current_image(darktable.develop, imgid))
@@ -968,9 +971,6 @@ void dt_history_compress_on_image(int32_t imgid)
     dt_dev_write_history(darktable.develop);
     dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
   }
-
-  // Update XMP files
-  dt_image_synch_xmp(imgid);
 }
 
 void dt_history_compress_on_selection()
@@ -982,7 +982,7 @@ void dt_history_compress_on_selection()
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    dt_history_compress_on_image(sqlite3_column_int(stmt, 0));
+    dt_history_compress_on_image_and_reload(sqlite3_column_int(stmt, 0));
   }
   sqlite3_finalize(stmt);
 }
