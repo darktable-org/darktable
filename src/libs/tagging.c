@@ -2523,7 +2523,7 @@ void gui_init(dt_lib_module_t *self)
   g_object_unref(liststore);
   gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("attached tags,\ndouble-click to detach"
                                                   "\nright-click for other actions on attached tag,"
-                                                  "\nCtrl-wheel scroll to resize the window"));
+                                                  "\nctrl-wheel scroll to resize the window"));
   dt_gui_add_help_link(GTK_WIDGET(view), "tagging.html#tagging_usage");
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(click_on_view_attached), (gpointer)self);
   g_signal_connect(G_OBJECT(view), "scroll-event", G_CALLBACK(mouse_scroll_attached), (gpointer)self);
@@ -2648,7 +2648,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
   gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("tag dictionary,\ndouble-click to attach,"
                                                       "\nright-click for other actions on selected tag,"
-                                                      "\nCtrl-wheel scroll to resize the window"));
+                                                      "\nctrl-wheel scroll to resize the window"));
   dt_gui_add_help_link(GTK_WIDGET(view), "tagging.html#tagging_usage");
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(click_on_view_dictionary), (gpointer)self);
   g_signal_connect(G_OBJECT(view), "scroll-event", G_CALLBACK(mouse_scroll_dictionary), (gpointer)self);
