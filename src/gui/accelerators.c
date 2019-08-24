@@ -192,7 +192,7 @@ void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel
     else if(strcmp(views[i], "*") == 0)
       accel->views |= DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT
                       | DT_VIEW_SLIDESHOW;
-    i++;  
+    i++;
   }
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
@@ -750,6 +750,7 @@ static gboolean preset_lib_module_callback(GtkAccelGroup *accel_group, GObject *
   sqlite3_finalize(stmt);
   if(res)
   {
+    printf("accelerators delete preset %s %s\n", module->plugin_name, pn);
     dt_control_log(_("deleting preset for obsolete module"));
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "DELETE FROM data.presets WHERE operation = ?1 AND op_version = ?2 AND name = ?3",
