@@ -20,7 +20,7 @@ add_custom_target(
 )
 
 # The modules
-set(MODULES import export copy_history styles tagging image select collect recentcollect metadata metadata_view navigation histogram history snapshots modulelist modulegroups backgroundjobs colorpicker masks session duplicate)
+set(MODULES import metadata_export export copy_history styles tagging image select collect recentcollect metadata metadata_view navigation histogram history snapshots modulelist modulegroups backgroundjobs colorpicker masks session duplicate)
 
 # The tools
 set(MODULES ${MODULES} viewswitcher)
@@ -43,6 +43,7 @@ endif()
 
 # modules
 add_library(import MODULE "import.c")
+add_library(metadata_export MODULE "metadata_export.c")
 add_library(export MODULE "export.c")
 add_library(copy_history MODULE "copy_history.c")
 add_library(styles MODULE "styles.c")
