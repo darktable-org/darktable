@@ -135,14 +135,7 @@ int dt_image_is_raw(const dt_image_t *img)
 
 int dt_image_is_monochrome(const dt_image_t *img)
 {
-  if(strncmp(img->exif_maker, "Leica Camera AG", 15) != 0) return 0;
-
-  gchar *tmp_model = g_ascii_strdown(img->exif_model, -1);
-
-  const int res = strstr(tmp_model, "monochrom") != NULL;
-  g_free(tmp_model);
-
-  return res;
+   return (img->flags & DT_IMAGE_MONOCHROME);
 }
 
 const char *dt_image_film_roll_name(const char *path)
@@ -1304,6 +1297,8 @@ void dt_image_init(dt_image_t *img)
   img->wb_coeffs[1] = NAN;
   img->wb_coeffs[2] = NAN;
   img->wb_coeffs[3] = NAN;
+  img->usercrop[0] = img->usercrop[1] = 0;
+  img->usercrop[2] = img->usercrop[3] = 1;
   img->cache_entry = 0;
 }
 

@@ -69,6 +69,16 @@ void dtgtk_cairo_paint_plusminus(cairo_t *cr, gint x, gint y, gint w, gint h, gi
 /** Same as dtgtk_cairo_paint_plusminus, but render as a plus even
  * when CFP_ACTIVE is disabled. */
 void dtgtk_cairo_paint_plus(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint a double arrow up/down */
+void dtgtk_cairo_paint_sorting(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint a simple plus icon */
+void dtgtk_cairo_paint_plus_simple(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint a simple minus icon */
+void dtgtk_cairo_paint_minus_simple(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint a simple multiply icon */
+void dtgtk_cairo_paint_multiply_small(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** Paint a treelist icon */
+void dtgtk_cairo_paint_treelist(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a invert icon */
 void dtgtk_cairo_paint_invert(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** Paint a color rect icon */

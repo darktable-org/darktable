@@ -70,6 +70,10 @@ typedef enum
   DT_IMAGE_HAS_WAV = 8192,
   // image is a bayer pattern with 4 colors (e.g., CYGM or RGBE)
   DT_IMAGE_4BAYER = 16384,
+  // image was detected as monochrome
+  DT_IMAGE_MONOCHROME = 32768, 
+  // image has usercrop information
+  DT_IMAGE_HAS_USERCROP = 65536,
 } dt_image_flags_t;
 
 typedef enum dt_image_colorspace_t
@@ -183,6 +187,9 @@ typedef struct dt_image_t
 
   /* White balance coeffs from the raw */
   float wb_coeffs[4];
+
+  /* DefaultUserCrop */
+  float usercrop[4];
   /* convenience pointer back into the image cache, so we can return dt_image_t* there directly. */
   struct dt_cache_entry_t *cache_entry;
 } dt_image_t;

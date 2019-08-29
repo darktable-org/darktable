@@ -1032,13 +1032,20 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     if(sqlite3_step(darktable.view_manager->statements.is_selected) == SQLITE_ROW) selected = 1;
   }
 
-  // do we need to surround the image (filmstrip in culling layout)
+  // do we need to surround the image ?
   gboolean surrounded = selected;
+  const dt_view_t *cur_view = dt_view_manager_get_current_view(darktable.view_manager);
   if(!full_preview && darktable.view_manager->proxy.lighttable.view
-     && dt_view_manager_get_current_view(darktable.view_manager) == darktable.view_manager->proxy.lighttable.view
+     && cur_view == darktable.view_manager->proxy.lighttable.view
      && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
+    // in culling surrounded images are the ones shown in main view
     surrounded = dt_view_lighttable_culling_is_image_visible(darktable.view_manager, imgid);
+  }
+  else if(!full_preview && cur_view->view(cur_view) == DT_VIEW_DARKROOM)
+  {
+    // in darkroom, surrounded image is the one shown in main view
+    surrounded = (darktable.develop->image_storage.id == imgid);
   }
 
   dt_image_t buffered_image;

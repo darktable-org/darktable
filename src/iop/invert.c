@@ -205,7 +205,10 @@ static void colorpicker_callback(GtkColorButton *widget, dt_iop_module_t *self)
   {
     dt_colorspaces_rgb_to_cygm(p->color, 1, g->RGB_to_CAM);
   }
-
+  else if(dt_image_is_monochrome(img))
+  { // Just to make sure the monochrome stays monochrome we take the luminosity of the chosen color on all channels
+    p->color[0] = p->color[1] = p->color[2] = 0.21f*c.red + 0.72f*c.green + 0.07f*c.blue ;
+  }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -509,7 +512,11 @@ void reload_defaults(dt_iop_module_t *self)
   if(!self->dev) return;
 
   if(dt_image_is_monochrome(&self->dev->image_storage))
-    self->hide_enable_button = 1;
+  {
+    self->hide_enable_button = 0;
+    // Here we could provide more for monochrome special cases. As no monochrome camera
+    // has a bayer sensor we don't need g->RGB_to_CAM and g->CAM_to_RGB corrections
+  }
   else if(self->dev->image_storage.flags & DT_IMAGE_4BAYER && self->gui_data)
   {
     dt_iop_invert_gui_data_t *g = self->gui_data;
@@ -600,8 +607,10 @@ void gui_update(dt_iop_module_t *self)
   }
   else
   {
-    gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), FALSE);
-    dtgtk_reset_label_set_text(g->label, _("module disabled for monochrome image"));
+    gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), TRUE);
+    dtgtk_reset_label_set_text(g->label, _("brightness of film material"));
+    gui_update_from_coeffs(self);
+
   }
 }
 

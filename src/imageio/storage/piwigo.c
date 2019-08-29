@@ -836,7 +836,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   dt_bauhaus_combobox_add(ui->permission_list, _("friends"));
   dt_bauhaus_combobox_add(ui->permission_list, _("family"));
   dt_bauhaus_combobox_add(ui->permission_list, _("you"));
-  dt_bauhaus_combobox_set(ui->permission_list, 0); // Set default permission to private
+  dt_bauhaus_combobox_set(ui->permission_list, 0); // Set default permission to everyone
   gtk_box_pack_start(GTK_BOX(self->widget), ui->permission_list, FALSE, FALSE, 0);
 
   // album list
@@ -984,7 +984,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
     if(p->export_tags)
     {
-      GList *tags_list = dt_tag_get_list(imgid);
+      GList *tags_list = dt_tag_get_list_export(imgid);
       if(p->tags) g_free(p->tags);
       p->tags = dt_util_glist_to_str(",", tags_list);
       g_list_free_full(tags_list, g_free);
