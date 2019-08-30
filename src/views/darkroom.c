@@ -355,7 +355,7 @@ void expose(
     /* Store current image surface to snapshot file.
        FIXME: add checks so that we dont make snapshots of preview pipe image surface.
     */
-    int fd = g_open(darktable.develop->proxy.snapshot.filename, O_CREAT | O_WRONLY, 0600);
+    int fd = g_open(darktable.develop->proxy.snapshot.filename, O_CREAT | O_WRONLY | O_BINARY, 0600);
     cairo_surface_write_to_png_stream(image_surface, write_snapshot_data, GINT_TO_POINTER(fd));
     close(fd);
   }
