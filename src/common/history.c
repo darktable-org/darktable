@@ -872,9 +872,15 @@ int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge, GList 
 
 void dt_history_compress_on_image(int32_t imgid)
 {
-  // make sure the right history is in there:
+  // ok, just make sure the current history is written!
   dt_dev_write_history(darktable.develop);
 
+  // We use the global darktable.develop so when we want to use a specific image
+  // for history and masks in the database we have to load it in case it's not there
+  if(!dt_dev_is_current_image(darktable.develop, imgid))
+  {
+    dt_dev_load_image(darktable.develop, imgid); 
+  }
   // compress history, keep disabled modules as documented
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -975,7 +981,8 @@ void dt_history_compress_on_image_and_reload(int32_t imgid)
 
 void dt_history_compress_on_selection()
 {
-  // Get the list of selected images
+
+// Get the list of selected images
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
                               NULL);
@@ -985,6 +992,7 @@ void dt_history_compress_on_selection()
     dt_history_compress_on_image_and_reload(sqlite3_column_int(stmt, 0));
   }
   sqlite3_finalize(stmt);
+
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
