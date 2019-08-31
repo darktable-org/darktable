@@ -16,6 +16,18 @@
     These options control the look and feel of darktable.
   </para>
 
+  <bridgehead renderas="sect5">interface language</bridgehead>
+
+  <para>
+    set the language of the user interface. the system default is marked with an * (needs a restart)
+  </para>
+
+  <bridgehead renderas="sect5">theme</bridgehead>
+
+  <para>
+    set the theme for the user interface
+  </para>
+
   <sect2 id="gui_options_import">
 
     <title>Import</title>
@@ -95,6 +107,12 @@
       exposure time, aperture, focal length, ISO value (default off).
     </para>
 
+    <bridgehead renderas="sect5">use single-click in the collect panel</bridgehead>
+
+    <para>
+      (default off). In single-click mode, you can select range of value directly with the mouse.
+    </para>
+
     <bridgehead renderas="sect5">expand a single lighttable module at a time</bridgehead>
 
     <para>
@@ -152,6 +170,26 @@
       (default false color).
     </para>
 
+    <bridgehead renderas="sect5">pattern for the image infos line</bridgehead>
+
+    <para>
+      See <!-- TODO <xref linkend="drawn_mask"/>--> for available values.
+    </para>
+
+    <bridgehead renderas="sect5">position of the image info line</bridgehead>
+
+    <para>
+      Controls in which panel we display the image info line. You can choose between
+      <quote>top left</quote> <quote>top right</quote> <quote>top center</quote> <quote>bottom</quote>
+      and <quote>hidden</quote> (default bottom).
+    </para>
+
+    <bridgehead renderas="sect5">show search module text entry</bridgehead>
+
+    <para>
+      <!-- TODO -->
+    </para>
+
     <bridgehead renderas="sect5">expand a single darkroom module at a time</bridgehead>
 
     <para>
@@ -162,6 +200,12 @@
       <emphasis>shift-click</emphasis> (default on).
     </para>
 
+    <bridgehead renderas="sect5">expand the module when it is activated, and collapse it when disabled</bridgehead>
+
+    <para>
+      This option allows to expand or collapse automatically modules when they are enabled or disabled.
+      (default off)
+    </para>
 
     <bridgehead renderas="sect5">scroll to darkroom modules when expanded/collapsed</bridgehead>
 
@@ -242,10 +286,22 @@
       Always ask the user before any image file is copied (default on).
     </para>
 
+    <bridgehead renderas="sect5">ask before removing empty folders</bridgehead>
+
+    <para>
+      Always ask the user before removing any empty folder. This can happen after moving or deleting images (default off).
+    </para>
+
     <bridgehead renderas="sect5">ask before deleting a tag</bridgehead>
 
     <para>
       Always ask user before deleting a tag from an image (default on).
+    </para>
+
+    <bridgehead renderas="sect5">ask before deleting a style</bridgehead>
+
+    <para>
+      Always ask user before deleting a style (default on).
     </para>
 
   </sect2>
@@ -261,6 +317,18 @@
       center view (default 350).
     </para>
 
+    <bridgehead renderas="sect5">waiting time before each picture in slideshow</bridgehead>
+
+    <para>
+      The number of seconds before displaying the next image (default 5).
+    </para>
+
+    <bridgehead renderas="sect5">do not show april 1st game</bridgehead>
+
+    <para>
+      (default on).
+    </para>
+
     <bridgehead renderas="sect5">number of folder levels to show in lists</bridgehead>
 
     <para>
@@ -270,7 +338,13 @@
     <bridgehead renderas="sect5">enable filmstrip</bridgehead>
 
     <para>
-      Enable the filmstrip in darkroom, tethering and geomapping modes (default on).
+      Enable the filmstrip in darkroom, tethering, geomapping and lighttable culling modes (default on).
+    </para>
+
+    <bridgehead renderas="sect5">enable timeline</bridgehead>
+
+    <para>
+      Enable the timeline lighttable mode (default on).
     </para>
 
     <bridgehead renderas="sect5">overlay txt sidecar over zoomed images</bridgehead>
@@ -281,6 +355,26 @@
       extension <quote>.txt</quote>. It either has to be there at import time or the crawler has
       to be enabled&nbsp;&ndash; see option <quote>look for updated xmp files on startup</quote>
       in <xref linkend="core_options"/> (default off).
+    </para>
+
+    <bridgehead renderas="sect5">mouse wheel scrolls modules side panel by default</bridgehead>
+
+    <para>
+      When enabled, mouse wheel scroll modules side panel, and ctrl+alt+mouse wheel scroll data entry.
+      When disabled, this behavior is reversed (default off).
+    </para>
+
+    <bridgehead renderas="sect5">show scrollbars for center view</bridgehead>
+
+    <para>
+      Defines in which modes scrollbars should be displayed (default lighttable).
+    </para>
+
+    <bridgehead renderas="sect5">always show panels scrollbars</bridgehead>
+
+    <para>
+      Defines whether the panel scrollbars should be always visible or activated only depending on the content (default on).
+      (need a restart)
     </para>
 
     <bridgehead renderas="sect5">method to use for getting the display profile</bridgehead>
