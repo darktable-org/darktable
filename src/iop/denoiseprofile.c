@@ -1525,10 +1525,6 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
             {
               norm *= 0.045f;
             }
-            if(d->profile_version == 2)
-            {
-              norm *= 1.5f;
-            }
             if(!d->fix_anscombe_and_nlmeans_norm)
             {
               // use old formula
@@ -1755,10 +1751,6 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
             if(d->profile_version == 1)
             {
               norm *= 0.045f;
-            }
-            if(d->profile_version == 2)
-            {
-              norm *= 1.5f;
             }
             if(!d->fix_anscombe_and_nlmeans_norm)
             {
@@ -2089,10 +2081,6 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   if(d->profile_version == 1)
   {
     norm *= 0.045f;
-  }
-  if(d->profile_version == 2)
-  {
-    norm *= 1.5f;
   }
   if(!d->fix_anscombe_and_nlmeans_norm)
   {
