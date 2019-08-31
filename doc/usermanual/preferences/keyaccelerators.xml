@@ -25,6 +25,11 @@
   </para>
 
   <para>
+    In addition to classic shortcuts, you can set dynamic shortcuts to some darkroom module sliders.
+    This allow you to change the value of the mapped slider with <emphasis>key + mouse scroll</emphasis>.
+  </para>
+
+  <para>
     You can export your mappings to a file or import mappings from a file. Press
     <quote>default</quote> to reset all keyaccelerators to their default state.
   </para>
