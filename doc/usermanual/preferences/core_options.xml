@@ -68,11 +68,24 @@
       <quote>lanczos3</quote> (default).
     </para>
 
+    <bridgehead renderas="sect5">auto-apply basecurve</bridgehead>
+
+    <para>
+      Use a basecurve by default. For more details see <xref linkend="base_curve"/> (default on). (need a restart)
+    </para>
+
     <bridgehead renderas="sect5">auto-apply per camera basecurve presets</bridgehead>
 
     <para>
       Use the per-camera basecurve by default instead of the generic manufacturer one if there is
       one available. For more details see <xref linkend="base_curve"/> (default off).
+    </para>
+
+    <bridgehead renderas="sect5">auto-apply sharpen</bridgehead>
+
+    <para>
+     This added sharpen is not recommended on cameras without a low-pass filter.
+     The default is to not add any sharpening automatically as most recent cameras have no low-pass filter. (need a restart)
     </para>
 
   </sect2>
@@ -133,6 +146,15 @@
       keeping thumbnails accessible in case they get dropped from the primary cache. This needs
       more disk space but speeds up lighttable view as it avoids reprocessing of thumbnails
       (default on).
+    </para>
+
+    <bridgehead renderas="sect5">enable disk backend for full preview cache</bridgehead>
+
+    <para>
+      If enabled, darktable write full preview to disk (.cache/darktable/) when evicted from the memory cache.
+      Note that this can take a lot of memory (several gigabytes for 20k images) and darktable will never delete cached images.
+      It's safe though to delete these manually, if you want.
+      Lighttable performance will be increased greatly when zooming image in full preview mode (default off).
     </para>
 
     <bridgehead renderas="sect5">number of background threads</bridgehead>
@@ -197,6 +219,25 @@
       <quote>foo|bar|baz</quote> will only add <quote>baz</quote>.
     </para>
 
+    <bridgehead renderas="sect5">force exportation of private tags</bridgehead>
+
+    <para>
+      This option force darktable to export private tags to XMP-dc Subject and XMP-lr Hierarchical Subject (default off).
+    </para>
+
+    <bridgehead renderas="sect5">request exportation of synonyms</bridgehead>
+
+    <para>
+      This option force darktable to export synonyms along with tags to XMP-dc Subject (default off).
+    </para>
+
+    <bridgehead renderas="sect5">disable the entry completion</bridgehead>
+
+    <para>
+      The entry completion is useful for those who enter tags from keybord only.
+      For others the entry completion can be embarassing (default off). (need a restart)
+    </para>
+
     <bridgehead renderas="sect5">password storage backend to use</bridgehead>
 
     <para>
@@ -209,6 +250,12 @@
     <para>
       Defines an external program which is used in the lighttable view to play audio files that
       some cameras record to keep notes for images (default <quote>aplay</quote>).
+    </para>
+
+    <bridgehead renderas="sect5">3D lut root folder</bridgehead>
+
+    <para>
+      This folder (and sub-folders) contains Lut files used but lut3d modules. (need a restart)
     </para>
 
   </sect2>
