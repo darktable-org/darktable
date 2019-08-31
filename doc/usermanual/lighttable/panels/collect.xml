@@ -296,7 +296,13 @@
       <para>
         The box below the search rule will list all matching database entries of the query you
         are currently working on. This list gets updated continuously as you type. You may also
-        choose sorting criteria by scrolling through the list and double-clicking.
+        choose sorting criteria by scrolling through the list and double-clicking (or single-click
+        if you have set the option in preferences. See <xref linkend="gui_options_lighttable"/>).
+      </para>
+
+      <para>
+        If you have set single-click mode, you'll be able to select range of values with mouse.
+        This only works for numerical and date-time attributes.
       </para>
 
       <para>
