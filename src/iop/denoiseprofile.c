@@ -2886,6 +2886,7 @@ void reload_defaults(dt_iop_module_t *module)
     for(int k = 0; k < 3; k++)
     {
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->a[k] = g->interpolated.a[k];
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->p[k] = g->interpolated.p[k];
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->b[k] = g->interpolated.b[k];
     }
     memcpy(module->params, module->default_params, sizeof(dt_iop_denoiseprofile_params_t));
@@ -3088,6 +3089,7 @@ static void profile_callback(GtkWidget *w, dt_iop_module_t *self)
   for(int k = 0; k < 3; k++)
   {
     p->a[k] = profile->a[k];
+    p->p[k] = profile->p[k];
     p->b[k] = profile->b[k];
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);

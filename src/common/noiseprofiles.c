@@ -446,6 +446,7 @@ void dt_noiseprofile_interpolate(
   for(int k=0; k<3; k++)
   {
     out->a[k] = (1.0f-t)*p1->a[k] + t*p2->a[k];
+    out->p[k] = (1.0f-t)*p1->p[k] + t*p2->p[k];
     out->b[k] = (1.0f-t)*p1->b[k] + t*p2->b[k];
   }
 }
