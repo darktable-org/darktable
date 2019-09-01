@@ -187,7 +187,9 @@
     <bridgehead renderas="sect5">show search module text entry</bridgehead>
 
     <para>
-      <!-- TODO -->
+      Controls how to determine which modules are shown at the same time in the right panel.
+      You can choose between
+      <quote>groups icons</quote> <quote>search entry</quote> <quote>both</quote> (default both). (need a restart)
     </para>
 
     <bridgehead renderas="sect5">expand a single darkroom module at a time</bridgehead>
