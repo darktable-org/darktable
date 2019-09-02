@@ -245,6 +245,62 @@
             </row>
             <row>
               <entry>
+                <code>$(EXIF_EXPOSURE)</code>
+              </entry>
+              <entry>
+                Exif exposure
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(EXIF_APERTURE)</code>
+              </entry>
+              <entry>
+                Exif aperture
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(EXIF_FOCAL_LENGTH)</code>
+              </entry>
+              <entry>
+                Exif focal length
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(EXIF_FOCUS_DISTANCE)</code>
+              </entry>
+              <entry>
+                Exif focus distance
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(LONGITUDE)</code>
+              </entry>
+              <entry>
+                Longitude
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(LATITUDE)</code>
+              </entry>
+              <entry>
+                Latitude
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(ELEVATION)</code>
+              </entry>
+              <entry>
+                Elevation
+              </entry>
+            </row>
+            <row>
+              <entry>
                 <code>$(STARS)</code>
               </entry>
               <entry>
