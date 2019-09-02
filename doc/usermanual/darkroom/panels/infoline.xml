@@ -35,7 +35,8 @@
 
   <para>
     The content of this line can be set in preferences (see <xref linkend="gui_options"/>).
-    Available variables are exactly the same as for the export module (see <xref linkend="export_selected_usage_filename"/>).
+    Available variables are the same as for the export module (see <xref linkend="export_selected_usage_filename"/>).
+    You can also add new lines by using <code>$(NL)</code> variable.
   </para>
 
   <para>
