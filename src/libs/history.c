@@ -707,10 +707,6 @@ static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer u
 
   sqlite3_stmt *stmt;
 
-  // load new history and write it back to ensure that all history are properly numbered without a gap
-  dt_dev_reload_history_items(darktable.develop);
-  dt_dev_write_history(darktable.develop);
-
   // then we can get the item to select in the new clean-up history retrieve the position of the module
   // corresponding to the history end.
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT IFNULL(MAX(num)+1, 0) FROM main.history "

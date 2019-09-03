@@ -874,7 +874,7 @@ void dt_history_compress_on_image(int32_t imgid)
 {
   // ok, just make sure the current history is written!
   dt_dev_write_history(darktable.develop);
-
+  if (imgid <0) return;
   // We use the global darktable.develop so when we want to use a specific image
   // for history and masks in the database we have to load it in case it's not there
   if(!dt_dev_is_current_image(darktable.develop, imgid))
@@ -962,36 +962,59 @@ void dt_history_compress_on_image(int32_t imgid)
     sqlite3_finalize(stmt);
   }
 
+  // load new history and write it back to ensure that all history are properly numbered without a gap
+  dt_dev_reload_history_items(darktable.develop);
+  dt_dev_write_history(darktable.develop);
+
   // Update XMP files
   dt_image_synch_xmp(imgid);
 }
 
 void dt_history_compress_on_image_and_reload(int32_t imgid)
 {
-  dt_history_compress_on_image(imgid);
+  if(!imgid) return;
 
-  /* if current image in develop reload history */
-  if(dt_dev_is_current_image(darktable.develop, imgid))
-  {
-    dt_dev_reload_history_items(darktable.develop);
-    dt_dev_write_history(darktable.develop);
-    dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
-  }
+  dt_history_compress_on_image(imgid);
+  if(imgid !=  darktable.develop->image_storage.id) return;
+  // The next stuff is from src/libs/history.c
+  sqlite3_stmt *stmt;
+
+  // then we can get the item to select in the new clean-up history retrieve the position of the module
+  // corresponding to the history end.
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT IFNULL(MAX(num)+1, 0) FROM main.history "
+                                                             "WHERE imgid=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  if (sqlite3_step(stmt) == SQLITE_ROW)
+    darktable.develop->history_end = sqlite3_column_int(stmt, 0);
+
+  sqlite3_finalize(stmt);
+
+  // select the new history end corresponding to the one before the history compression
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.images SET history_end=?2 WHERE id=?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, darktable.develop->history_end);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  // FIXME here we probably want darktable.develop, the history and modules in a state that will not
+  // be used by the next opended image
+
 }
 
 void dt_history_compress_on_selection()
 {
-
-// Get the list of selected images
+  // Get the list of selected images
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
                               NULL);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
     dt_history_compress_on_image_and_reload(sqlite3_column_int(stmt, 0));
-  }
+
   sqlite3_finalize(stmt);
+
 
 }
 
