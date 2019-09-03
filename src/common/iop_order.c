@@ -104,13 +104,13 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     _ioppr_move_iop_after(_iop_order_list, "colorbalance", "colorchecker", dont_move);
 
     _ioppr_insert_iop_after(_iop_order_list, history_list, "lut3d", "colorchecker", dont_move);
-    _ioppr_insert_iop_after(_iop_order_list, history_list, "basicadj", "colorzones", dont_move);
+    _ioppr_insert_iop_after(_iop_order_list, history_list, "basicadj", "colorbalance", dont_move);
     _ioppr_insert_iop_after(_iop_order_list, history_list, "rgbcurve", "basicadj", dont_move);
     _ioppr_insert_iop_after(_iop_order_list, history_list, "rgblevels", "rgbcurve", dont_move);
 
     // scene-linear to display-referred encoding
     // !!! WALL OF THE NON-LINEARITY !!! There is no coming back for colour ratios
-    _ioppr_move_iop_after(_iop_order_list, "basecurve", "colorzones", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "basecurve", "colorbalance", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "filmic", "basecurve", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colisa", "filmic", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "tonecurve", "colisa", dont_move);
