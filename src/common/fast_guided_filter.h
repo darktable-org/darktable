@@ -429,7 +429,7 @@ schedule(static) aligned(image, out:64)
 
 
 __DT_CLONE_TARGETS__
-static inline void fast_guided_filter(float *const restrict image,
+static inline void fast_surface_blur(float *const restrict image,
                                       const size_t width, const size_t height,
                                       const int radius, float feathering, const int iterations,
                                       const dt_iop_guided_filter_blending_t filter, const float scale,
@@ -440,9 +440,11 @@ static inline void fast_guided_filter(float *const restrict image,
   // A down-scaling of 4 seems empirically safe and consistent no matter the image zoom level
   // see reference paper above for proof.
   const float scaling = 4.0f;
+  int ds_radius = (radius < 4) ? 1 : radius / scaling;
+
   const size_t ds_height = height / scaling;
   const size_t ds_width = width / scaling;
-  int ds_radius = (radius < 4) ? 1 : radius / scaling;
+
   const size_t num_elem_ds = ds_width * ds_height;
   const size_t num_elem = width * height;
 
@@ -481,7 +483,7 @@ static inline void fast_guided_filter(float *const restrict image,
     else
     {
       // Increase the radius for the next iteration
-      ds_radius *= sqrtf(2.0f);
+      ds_radius *= 2.0f;
     }
   }
 
