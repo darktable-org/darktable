@@ -409,8 +409,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float black = -d->black * scale;
   const size_t size = (size_t)ch * roi_out->width * roi_out->height;
 
-  const float *const restrict in = (const float *const)i;
-  float *const restrict out = (float *const)o;
+  const float *const restrict in = __builtin_assume_aligned((const float *const)i, 64);
+  float *const restrict out = __builtin_assume_aligned((float *const)o, 64);
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
@@ -418,9 +418,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   schedule(static) aligned(out, in:64) simdlen(64)
 #endif
   for(size_t k = 0; k < size; k++)
-  {
-    out[k] = fmaf(in[k], scale, black); // in * scale + black
-  }
+    out[k] = in[k] *  scale + black;
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
 
@@ -434,6 +432,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 {
   const dt_iop_exposure_data_t *const d = (const dt_iop_exposure_data_t *const)piece->data;
 
+  const float *const restrict in = __builtin_assume_aligned((const float *const)i, 64);
+  float *const restrict out = __builtin_assume_aligned((float *const)o, 64);
+
   process_common_setup(self, piece);
 
   const int ch = piece->colors;
@@ -444,14 +445,14 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(blackv, ch, i, o, size, scalev) \
+  dt_omp_firstprivate(blackv, ch, in, out, size, scalev) \
   schedule(static)
 #endif
   for(int k = 0; k < size; k+=ch)
   {
-    const float *in = ((float *)i) + k;
-    float *out = ((float *)o) + k;
-    _mm_stream_ps(out, _mm_load_ps(in) * scalev + blackv);
+    const float *pix_in = ((float *)in) + k;
+    float *pix_out = ((float *)out) + k;
+    _mm_stream_ps(pix_out, _mm_load_ps(pix_in) * scalev + blackv);
   }
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
