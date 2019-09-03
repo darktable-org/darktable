@@ -2049,21 +2049,19 @@ void dt_ellipsize_combo(GtkComboBox *cbox)
 typedef struct result_t
 {
   enum {RESULT_NONE, RESULT_NO, RESULT_YES} result;
-  GtkWidget *window;
+  char *entry_text;
+  GtkWidget *window, *entry, *button_yes, *button_no;
 } result_t;
 
-static void _yes_no_button_handler_no(GtkButton *button, gpointer data)
+static void _yes_no_button_handler(GtkButton *button, gpointer data)
 {
   result_t *result = (result_t *)data;
-  result->result = RESULT_NO;
-  gtk_widget_destroy(result->window);
-  gtk_main_quit();
-}
-
-static void _yes_no_button_handler_yes(GtkButton *button, gpointer data)
-{
-  result_t *result = (result_t *)data;
-  result->result = RESULT_YES;
+  if((void *)button == (void *)result->button_yes)
+    result->result = RESULT_YES;
+  else if((void *)button == (void *)result->button_no)
+    result->result = RESULT_NO;
+  if(result->entry)
+    result->entry_text = g_strdup(gtk_entry_get_text(GTK_ENTRY(result->entry)));
   gtk_widget_destroy(result->window);
   gtk_main_quit();
 }
@@ -2097,14 +2095,16 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
   if(no_text)
   {
     button = gtk_button_new_with_label(no_text);
-    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler_no), &result);
+    result.button_no = button;
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler), &result);
     gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
   }
 
   if(yes_text)
   {
     button = gtk_button_new_with_label(yes_text);
-    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler_yes), &result);
+    result.button_yes = button;
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler), &result);
     gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
   }
 
@@ -2112,6 +2112,69 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
   gtk_main();
 
   return result.result == RESULT_YES;
+}
+
+char *dt_gui_show_standalone_string_dialog(const char *title, const char *markup, const char *placeholder,
+                                           const char *no_text, const char *yes_text)
+{
+  GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(window);
+#endif
+
+  gtk_window_set_icon_name(GTK_WINDOW(window), "darktable");
+  gtk_window_set_title(GTK_WINDOW(window), title);
+  g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
+  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  gtk_widget_set_margin_start(vbox, 10);
+  gtk_widget_set_margin_end(vbox, 10);
+  gtk_widget_set_margin_top(vbox, 7);
+  gtk_widget_set_margin_bottom(vbox, 5);
+  gtk_container_add(GTK_CONTAINER(window), vbox);
+
+  GtkWidget *label = gtk_label_new(NULL);
+  gtk_label_set_markup(GTK_LABEL(label), markup);
+  gtk_box_pack_start(GTK_BOX(vbox), label, TRUE, TRUE, 0);
+
+  GtkWidget *entry = gtk_entry_new();
+  g_object_ref(entry);
+  if(placeholder)
+    gtk_entry_set_placeholder_text(GTK_ENTRY(entry), placeholder);
+  gtk_box_pack_start(GTK_BOX(vbox), entry, TRUE, TRUE, 0);
+
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  gtk_widget_set_margin_top(hbox, 10);
+  gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+
+  result_t result = {.result = RESULT_NONE, .window = window, .entry = entry};
+
+  GtkWidget *button;
+
+  if(no_text)
+  {
+    button = gtk_button_new_with_label(no_text);
+    result.button_no = button;
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler), &result);
+    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+  }
+
+  if(yes_text)
+  {
+    button = gtk_button_new_with_label(yes_text);
+    result.button_yes = button;
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_yes_no_button_handler), &result);
+    gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 0);
+  }
+
+  gtk_widget_show_all(window);
+  gtk_main();
+
+  if(result.result == RESULT_YES)
+    return result.entry_text;
+
+  g_free(result.entry_text);
+  return NULL;
 }
 
 // TODO: should that go to another place than gtk.c?
