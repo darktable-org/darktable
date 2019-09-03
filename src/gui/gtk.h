@@ -317,6 +317,10 @@ static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
 gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *markup, const char *no_text,
                                               const char *yes_text);
 
+// similar to the one above. this one asks the user for some string. the hint is shown in the empty entry box
+char *dt_gui_show_standalone_string_dialog(const char *title, const char *markup, const char *placeholder,
+                                           const char *no_text, const char *yes_text);
+
 void *dt_gui_show_splashscreen();
 void dt_gui_close_splashscreen(void *splashscreen);
 
