@@ -243,7 +243,11 @@
 
       <para>
         Culling layout allow to display images side by side to easily compare them. There's 2 different modes
-        to define the number of images to show at the same time :
+        to define the number of images to show at the same time : <quote>Fixed mode</quote> and <quote>Dynamic mode</quote>.
+      </para>
+
+      <para>
+        Once in culling mode, you can switch between those 2 mode with <emphasis>&#60;</emphasis> key accel.
       </para>
 
       <sect3 status="final" id="lighttable_culling_fixed">
