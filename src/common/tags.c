@@ -852,14 +852,14 @@ GList *dt_tag_get_hierarchical(gint imgid)
   return tags;
 }
 
-GList *dt_tag_get_list_export(gint imgid)
+GList *dt_tag_get_list_export(gint imgid, int32_t flags)
 {
   GList *taglist = NULL;
   GList *tags = NULL;
 
   gboolean omit_tag_hierarchy = dt_conf_get_bool("omit_tag_hierarchy");
-  gboolean export_private_tags = dt_conf_get_bool("plugins/lighttable/export/export_private_tags");
-  gboolean export_tag_synomyms = dt_conf_get_bool("plugins/lighttable/export/export_tag_synonyms");
+  gboolean export_private_tags = flags & DT_META_PRIVATE_TAG;
+  gboolean export_tag_synomyms = flags & DT_META_SYNONYMS_TAG;
 
   uint32_t count = dt_tag_get_attached_export(imgid, &taglist);
 
@@ -902,7 +902,7 @@ GList *dt_tag_get_list_export(gint imgid)
   return dt_util_glist_uniq(tags);
 }
 
-GList *dt_tag_get_hierarchical_export(gint imgid)
+GList *dt_tag_get_hierarchical_export(gint imgid, int32_t flags)
 {
   GList *taglist = NULL;
   GList *tags = NULL;
@@ -910,7 +910,7 @@ GList *dt_tag_get_hierarchical_export(gint imgid)
   const int count = dt_tag_get_attached(imgid, &taglist, TRUE);
 
   if(count < 1) return NULL;
-  const gboolean export_private_tags = dt_conf_get_bool("plugins/lighttable/export/export_private_tags");
+  const gboolean export_private_tags = flags & DT_META_PRIVATE_TAG;
 
   while(taglist)
   {

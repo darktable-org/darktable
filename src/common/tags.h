@@ -114,7 +114,7 @@ GList *dt_tag_get_list(gint imgid);
 
 /** get a list of tags,
  *  the difference to dt_tag_get_list() is that this one checks option for exportation */
-GList *dt_tag_get_list_export(gint imgid);
+GList *dt_tag_get_list_export(gint imgid, int32_t flags);
 
 /** get a flat list of only hierarchical tags,
  *  the difference to dt_tag_get_attached() is that this one filters out the "darktable|" tags. */
@@ -122,7 +122,7 @@ GList *dt_tag_get_hierarchical(gint imgid);
 
 /** get a flat list of only hierarchical tags,
  *  the difference to dt_tag_get_hierarchical() is that this one checks option for exportation */
-GList *dt_tag_get_hierarchical_export(gint imgid);
+GList *dt_tag_get_hierarchical_export(gint imgid, int32_t flags);
 
 /** get the subset of images from the selected ones that have a given tag attached */
 GList *dt_tag_get_images_from_selection(gint imgid, gint tagid);

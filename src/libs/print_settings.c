@@ -247,7 +247,7 @@ static int _print_job_run(dt_job_t *job)
 
   dt_imageio_export_with_flags(params->imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, FALSE,
                                high_quality, upscale, FALSE, NULL, FALSE, params->buf_icc_type, params->buf_icc_profile,
-                               params->buf_icc_intent,  NULL, NULL, 1, 1);
+                               params->buf_icc_intent,  NULL, NULL, 1, 1, NULL);
 
   // after exporting we know the real size of the image, compute the layout
 

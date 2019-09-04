@@ -57,9 +57,9 @@ extern "C" {
 #include "common/colorlabels.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "common/exif.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
+#include "common/exif.h"
 #include "common/imageio_jpeg.h"
 #include "common/metadata.h"
 #include "common/tags.h"
@@ -2810,448 +2810,10 @@ end:
   return 0;
 }
 
-// helper to create an xmp data thing. throws exiv2 exceptions if stuff goes wrong.
-static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
+// add history metadata to XmpData
+static void dt_set_xmp_dt_history(Exiv2::XmpData &xmpData, const int imgid, int history_end)
 {
-  const int xmp_version = 3;
-  int stars = 1, raw_params = 0, history_end = -1;
-  int iop_order_version = 0;
-  double longitude = NAN, latitude = NAN, altitude = NAN;
-  gchar *filename = NULL;
-  gchar *datetime_taken = NULL;
-
-  // get stars and raw params from db
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT filename, flags, raw_parameters, "
-                                                             "longitude, latitude, altitude, history_end, iop_order_version, datetime_taken "
-                                                             "FROM main.images WHERE id = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    filename = (gchar *)sqlite3_column_text(stmt, 0);
-    stars = sqlite3_column_int(stmt, 1);
-    raw_params = sqlite3_column_int(stmt, 2);
-    if(sqlite3_column_type(stmt, 3) == SQLITE_FLOAT) longitude = sqlite3_column_double(stmt, 3);
-    if(sqlite3_column_type(stmt, 4) == SQLITE_FLOAT) latitude = sqlite3_column_double(stmt, 4);
-    if(sqlite3_column_type(stmt, 5) == SQLITE_FLOAT) altitude = sqlite3_column_double(stmt, 5);
-    history_end = sqlite3_column_int(stmt, 6);
-    iop_order_version = sqlite3_column_int(stmt, 7);
-    datetime_taken = (gchar *)sqlite3_column_text(stmt, 8);
-  }
-
-  // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
-  xmpData["Xmp.exif.DateTimeOriginal"] = datetime_taken;
-
-  // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
-  Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
-  if(pos != xmpData.end()) xmpData.erase(pos);
-  xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); // rejected image = -1, others = 0..5
-
-  // The original file name
-  if(filename) xmpData["Xmp.xmpMM.DerivedFrom"] = filename;
-
-  // GPS data
-  if(!std::isnan(longitude) && !std::isnan(latitude))
-  {
-    char long_dir = 'E', lat_dir = 'N';
-    if(longitude < 0) long_dir = 'W';
-    if(latitude < 0) lat_dir = 'S';
-
-    longitude = fabs(longitude);
-    latitude = fabs(latitude);
-
-    int long_deg = (int)floor(longitude);
-    int lat_deg = (int)floor(latitude);
-    double long_min = (longitude - (double)long_deg) * 60.0;
-    double lat_min = (latitude - (double)lat_deg) * 60.0;
-
-    char *str = (char *)g_malloc(G_ASCII_DTOSTR_BUF_SIZE);
-
-    g_ascii_formatd(str, G_ASCII_DTOSTR_BUF_SIZE, "%08f", long_min);
-    gchar *long_str = g_strdup_printf("%d,%s%c", long_deg, str, long_dir);
-    g_ascii_formatd(str, G_ASCII_DTOSTR_BUF_SIZE, "%08f", lat_min);
-    gchar *lat_str = g_strdup_printf("%d,%s%c", lat_deg, str, lat_dir);
-
-    xmpData["Xmp.exif.GPSVersionID"] = "2.2.0.0";
-    xmpData["Xmp.exif.GPSLongitude"] = long_str;
-    xmpData["Xmp.exif.GPSLatitude"] = lat_str;
-    g_free(long_str);
-    g_free(lat_str);
-    g_free(str);
-  }
-  if(!std::isnan(altitude))
-  {
-    xmpData["Xmp.exif.GPSAltitudeRef"] = (altitude < 0) ? "1" : "0";
-
-    long ele_dm = (int)floor(fabs(10.0 * altitude));
-    gchar *ele_str = g_strdup_printf("%ld/10", ele_dm);
-    xmpData["Xmp.exif.GPSAltitude"] = ele_str;
-    g_free(ele_str);
-  }
-  sqlite3_finalize(stmt);
-
-  // the meta data
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT key, value FROM main.meta_data WHERE id = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    int key = sqlite3_column_int(stmt, 0);
-    switch(key)
-    {
-      case DT_METADATA_XMP_DC_CREATOR:
-        xmpData["Xmp.dc.creator"] = sqlite3_column_text(stmt, 1);
-        break;
-      case DT_METADATA_XMP_DC_PUBLISHER:
-        xmpData["Xmp.dc.publisher"] = sqlite3_column_text(stmt, 1);
-        break;
-      case DT_METADATA_XMP_DC_TITLE:
-        xmpData["Xmp.dc.title"] = sqlite3_column_text(stmt, 1);
-        break;
-      case DT_METADATA_XMP_DC_DESCRIPTION:
-        xmpData["Xmp.dc.description"] = sqlite3_column_text(stmt, 1);
-        break;
-      case DT_METADATA_XMP_DC_RIGHTS:
-        xmpData["Xmp.dc.rights"] = sqlite3_column_text(stmt, 1);
-        break;
-    }
-  }
-  sqlite3_finalize(stmt);
-
-  xmpData["Xmp.darktable.xmp_version"] = xmp_version;
-  xmpData["Xmp.darktable.raw_params"] = raw_params;
-
-  if(stars & DT_IMAGE_AUTO_PRESETS_APPLIED)
-    xmpData["Xmp.darktable.auto_presets_applied"] = 1;
-  else
-    xmpData["Xmp.darktable.auto_presets_applied"] = 0;
-
-  // get tags from db, store in dublin core
-  std::unique_ptr<Exiv2::Value> v1(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
-
-  std::unique_ptr<Exiv2::Value> v2(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
-
-  GList *tags = dt_tag_get_list(imgid);
-  while(tags)
-  {
-    v1->read((char *)tags->data);
-    tags = g_list_next(tags);
-  }
-
-  GList *hierarchical = dt_tag_get_hierarchical(imgid);
-  while(hierarchical)
-  {
-    v2->read((char *)hierarchical->data);
-    hierarchical = g_list_next(hierarchical);
-  }
-
-  if(v1->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.dc.subject"), v1.get());
-  if(v2->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"), v2.get());
-  /* TODO: Add tags to IPTC namespace as well */
-
-  // color labels
-  char val[2048];
-  std::unique_ptr<Exiv2::Value> v(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
-
-  /* Already initialized v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.*/
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT color FROM main.color_labels WHERE imgid=?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    snprintf(val, sizeof(val), "%d", sqlite3_column_int(stmt, 0));
-    v->read(val);
-  }
-  sqlite3_finalize(stmt);
-  if(v->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.darktable.colorlabels"), v.get());
-
-  // masks:
-  char key[1024];
-  int num = 1;
-
-  // masks history:
-  num = 1;
-
-  // create an array:
-  Exiv2::XmpTextValue tvm("");
-  tvm.setXmpArrayType(Exiv2::XmpValue::xaSeq);
-  xmpData.add(Exiv2::XmpKey("Xmp.darktable.masks_history"), &tvm);
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "SELECT imgid, formid, form, name, version, points, points_count, source, num FROM main.masks_history WHERE imgid = ?1 ORDER BY num",
-      -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    int32_t mask_num = sqlite3_column_int(stmt, 8);
-    int32_t mask_id = sqlite3_column_int(stmt, 1);
-    int32_t mask_type = sqlite3_column_int(stmt, 2);
-    const char *mask_name = (const char *)sqlite3_column_text(stmt, 3);
-    int32_t mask_version = sqlite3_column_int(stmt, 4);
-    int32_t len = sqlite3_column_bytes(stmt, 5);
-    char *mask_d = dt_exif_xmp_encode((const unsigned char *)sqlite3_column_blob(stmt, 5), len, NULL);
-    int32_t mask_nb = sqlite3_column_int(stmt, 6);
-    len = sqlite3_column_bytes(stmt, 7);
-    char *mask_src = dt_exif_xmp_encode((const unsigned char *)sqlite3_column_blob(stmt, 7), len, NULL);
-
-    snprintf(key, sizeof(key), "Xmp.darktable.masks_history[%d]/darktable:mask_num", num);
-    xmpData[key] = mask_num;
-    snprintf(key, sizeof(key), "Xmp.darktable.masks_history[%d]/darktable:mask_id", num);
-    xmpData[key] = mask_id;
-    snprintf(key, sizeof(key), "Xmp.darktable.masks_history[%d]/darktable:mask_type", num);
-    xmpData[key] = mask_type;
-    snprintf(key, sizeof(key), "Xmp.darktable.masks_history[%d]/darktable:mask_name", num);
-    xmpData[key] = mask_name;
-    snprintf(key, sizeof(key), "Xmp.darktable.masks_history[%d]/darktable:mask_version", num);
-    xmpData[key] = mask_version;
-    snprintf(key, sizeof(key), "Xmp.darktable.masks_history[%d]/darktable:mask_points", num);
-    xmpData[key] = mask_d;
-    snprintf(key, sizeof(key), "Xmp.darktable.masks_history[%d]/darktable:mask_nb", num);
-    xmpData[key] = mask_nb;
-    snprintf(key, sizeof(key), "Xmp.darktable.masks_history[%d]/darktable:mask_src", num);
-    xmpData[key] = mask_src;
-
-    free(mask_d);
-    free(mask_src);
-
-    num++;
-  }
-  sqlite3_finalize(stmt);
-
-
-  // history stack:
-  num = 1;
-
-  // create an array:
-  Exiv2::XmpTextValue tv("");
-  tv.setXmpArrayType(Exiv2::XmpValue::xaSeq);
-  xmpData.add(Exiv2::XmpKey("Xmp.darktable.history"), &tv);
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(
-      dt_database_get(darktable.db),
-      "SELECT module, operation, op_params, enabled, blendop_params, "
-      "blendop_version, multi_priority, multi_name, num, iop_order FROM main.history WHERE imgid = ?1 ORDER BY num",
-      -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    int32_t modversion = sqlite3_column_int(stmt, 0);
-    const char *operation = (const char *)sqlite3_column_text(stmt, 1);
-    int32_t params_len = sqlite3_column_bytes(stmt, 2);
-    const void *params_blob = sqlite3_column_blob(stmt, 2);
-    int32_t enabled = sqlite3_column_int(stmt, 3);
-    const void *blendop_blob = sqlite3_column_blob(stmt, 4);
-    int32_t blendop_params_len = sqlite3_column_bytes(stmt, 4);
-    int32_t blendop_version = sqlite3_column_int(stmt, 5);
-    int32_t multi_priority = sqlite3_column_int(stmt, 6);
-    const char *multi_name = (const char *)sqlite3_column_text(stmt, 7);
-    int32_t hist_num = sqlite3_column_int(stmt, 8);
-    double iop_order = sqlite3_column_double(stmt, 9);
-
-    if(!operation) continue; // no op is fatal.
-
-    char *params = dt_exif_xmp_encode((const unsigned char *)params_blob, params_len, NULL);
-
-    snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:num", num);
-    xmpData[key] = hist_num;
-    snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:operation", num);
-    xmpData[key] = operation;
-    snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:enabled", num);
-    xmpData[key] = enabled;
-    snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:modversion", num);
-    xmpData[key] = modversion;
-    snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:params", num);
-    xmpData[key] = params;
-    snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:multi_name", num);
-    xmpData[key] = multi_name ? multi_name : "";
-    snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:multi_priority", num);
-    xmpData[key] = multi_priority;
-    snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:iop_order", num);
-    xmpData[key] = iop_order;
-    if(blendop_blob)
-    {
-      // this shouldn't fail in general, but reading is robust enough to allow it,
-      // and flipping images from LT will result in this being left out
-      char *blendop_params = dt_exif_xmp_encode((const unsigned char *)blendop_blob, blendop_params_len, NULL);
-      snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:blendop_version", num);
-      xmpData[key] = blendop_version;
-      snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:blendop_params", num);
-      xmpData[key] = blendop_params;
-      free(blendop_params);
-    }
-
-    free(params);
-
-    num++;
-  }
-
-  if(history_end == -1) history_end = num - 1;
-  else history_end = MIN(history_end, num - 1); // safeguard for some old buggy libraries
-  xmpData["Xmp.darktable.history_end"] = history_end;
-  xmpData["Xmp.darktable.iop_order_version"] = iop_order_version;
-
-  sqlite3_finalize(stmt);
-  g_list_free_full(tags, g_free);
-  g_list_free_full(hierarchical, g_free);
-}
-
-// helper to create an xmp data thing. throws exiv2 exceptions if stuff goes wrong.
-static void dt_exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgid)
-{
-  const int xmp_version = 3;
-  int stars = 1, raw_params = 0, history_end = -1;
-  int iop_order_version = 0;
-  double longitude = NAN, latitude = NAN, altitude = NAN;
-  gchar *filename = NULL;
-  gchar *datetime_taken = NULL;
-
-  // get stars and raw params from db
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT filename, flags, raw_parameters, "
-                                                             "longitude, latitude, altitude, history_end, iop_order_version, datetime_taken "
-                                                             "FROM main.images WHERE id = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    filename = (gchar *)sqlite3_column_text(stmt, 0);
-    stars = sqlite3_column_int(stmt, 1);
-    raw_params = sqlite3_column_int(stmt, 2);
-    if(sqlite3_column_type(stmt, 3) == SQLITE_FLOAT) longitude = sqlite3_column_double(stmt, 3);
-    if(sqlite3_column_type(stmt, 4) == SQLITE_FLOAT) latitude = sqlite3_column_double(stmt, 4);
-    if(sqlite3_column_type(stmt, 5) == SQLITE_FLOAT) altitude = sqlite3_column_double(stmt, 5);
-    history_end = sqlite3_column_int(stmt, 6);
-    iop_order_version = sqlite3_column_int(stmt, 7);
-    datetime_taken = (gchar *)sqlite3_column_text(stmt, 8);
-  }
-
-  // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
-  xmpData["Xmp.exif.DateTimeOriginal"] = datetime_taken;
-
-  // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
-  Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
-  if(pos != xmpData.end()) xmpData.erase(pos);
-  xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); // rejected image = -1, others = 0..5
-
-  // The original file name
-  if(filename) xmpData["Xmp.xmpMM.DerivedFrom"] = filename;
-
-  // GPS data
-  if(!std::isnan(longitude) && !std::isnan(latitude))
-  {
-    char long_dir = 'E', lat_dir = 'N';
-    if(longitude < 0) long_dir = 'W';
-    if(latitude < 0) lat_dir = 'S';
-
-    longitude = fabs(longitude);
-    latitude = fabs(latitude);
-
-    const int long_deg = (int)floor(longitude);
-    const int lat_deg = (int)floor(latitude);
-    const double long_min = (longitude - (double)long_deg) * 60.0;
-    const double lat_min = (latitude - (double)lat_deg) * 60.0;
-
-    char *str = (char *)g_malloc(G_ASCII_DTOSTR_BUF_SIZE);
-
-    g_ascii_formatd(str, G_ASCII_DTOSTR_BUF_SIZE, "%08f", long_min);
-    gchar *long_str = g_strdup_printf("%d,%s%c", long_deg, str, long_dir);
-    g_ascii_formatd(str, G_ASCII_DTOSTR_BUF_SIZE, "%08f", lat_min);
-    gchar *lat_str = g_strdup_printf("%d,%s%c", lat_deg, str, lat_dir);
-
-    xmpData["Xmp.exif.GPSVersionID"] = "2.2.0.0";
-    xmpData["Xmp.exif.GPSLongitude"] = long_str;
-    xmpData["Xmp.exif.GPSLatitude"] = lat_str;
-    g_free(long_str);
-    g_free(lat_str);
-    g_free(str);
-  }
-  if(!std::isnan(altitude))
-  {
-    xmpData["Xmp.exif.GPSAltitudeRef"] = (altitude < 0) ? "1" : "0";
-
-    long ele_dm = (int)floor(fabs(10.0 * altitude));
-    gchar *ele_str = g_strdup_printf("%ld/10", ele_dm);
-    xmpData["Xmp.exif.GPSAltitude"] = ele_str;
-    g_free(ele_str);
-  }
-  sqlite3_finalize(stmt);
-
-  // the meta data
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT key, value FROM main.meta_data WHERE id = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    int key = sqlite3_column_int(stmt, 0);
-    switch(key)
-    {
-      case DT_METADATA_XMP_DC_CREATOR:
-        xmpData["Xmp.dc.creator"] = sqlite3_column_text(stmt, 1);
-        break;
-      case DT_METADATA_XMP_DC_PUBLISHER:
-        xmpData["Xmp.dc.publisher"] = sqlite3_column_text(stmt, 1);
-        break;
-      case DT_METADATA_XMP_DC_TITLE:
-        xmpData["Xmp.dc.title"] = sqlite3_column_text(stmt, 1);
-        break;
-      case DT_METADATA_XMP_DC_DESCRIPTION:
-        xmpData["Xmp.dc.description"] = sqlite3_column_text(stmt, 1);
-        break;
-      case DT_METADATA_XMP_DC_RIGHTS:
-        xmpData["Xmp.dc.rights"] = sqlite3_column_text(stmt, 1);
-        break;
-    }
-  }
-  sqlite3_finalize(stmt);
-
-  xmpData["Xmp.darktable.xmp_version"] = xmp_version;
-  xmpData["Xmp.darktable.raw_params"] = raw_params;
-
-  if(stars & DT_IMAGE_AUTO_PRESETS_APPLIED)
-    xmpData["Xmp.darktable.auto_presets_applied"] = 1;
-  else
-    xmpData["Xmp.darktable.auto_presets_applied"] = 0;
-
-  // get tags from db, store in dublin core
-  std::unique_ptr<Exiv2::Value> v1(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
-
-  std::unique_ptr<Exiv2::Value> v2(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
-
-  GList *tags = dt_tag_get_list_export(imgid);
-  while(tags)
-  {
-    v1->read((char *)tags->data);
-    tags = g_list_next(tags);
-  }
-
-  GList *hierarchical = dt_tag_get_hierarchical_export(imgid);
-  while(hierarchical)
-  {
-    v2->read((char *)hierarchical->data);
-    hierarchical = g_list_next(hierarchical);
-  }
-
-  if(v1->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.dc.subject"), v1.get());
-  if(v2->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"), v2.get());
-  /* TODO: Add tags to IPTC namespace as well */
-
-  // color labels
-  char val[2048];
-  std::unique_ptr<Exiv2::Value> v(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
-
-  /* Already initialized v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.*/
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT color FROM main.color_labels WHERE imgid=?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  while(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    snprintf(val, sizeof(val), "%d", sqlite3_column_int(stmt, 0));
-    v->read(val);
-  }
-  sqlite3_finalize(stmt);
-  if(v->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.darktable.colorlabels"), v.get());
 
   // masks:
   char key[1024];
@@ -3307,7 +2869,6 @@ static void dt_exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgi
   }
   sqlite3_finalize(stmt);
 
-
   // history stack:
   num = 1;
 
@@ -3374,14 +2935,275 @@ static void dt_exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgi
     num++;
   }
 
+  sqlite3_finalize(stmt);
   if(history_end == -1) history_end = num - 1;
   else history_end = MIN(history_end, num - 1); // safeguard for some old buggy libraries
   xmpData["Xmp.darktable.history_end"] = history_end;
+}
+
+static void dt_set_xmp_exif_geotag(Exiv2::XmpData &xmpData, double longitude, double latitude, double altitude)
+{
+  if(!std::isnan(longitude) && !std::isnan(latitude))
+  {
+    char long_dir = 'E', lat_dir = 'N';
+    if(longitude < 0) long_dir = 'W';
+    if(latitude < 0) lat_dir = 'S';
+
+    longitude = fabs(longitude);
+    latitude = fabs(latitude);
+
+    int long_deg = (int)floor(longitude);
+    int lat_deg = (int)floor(latitude);
+    double long_min = (longitude - (double)long_deg) * 60.0;
+    double lat_min = (latitude - (double)lat_deg) * 60.0;
+
+    char *str = (char *)g_malloc(G_ASCII_DTOSTR_BUF_SIZE);
+
+    g_ascii_formatd(str, G_ASCII_DTOSTR_BUF_SIZE, "%08f", long_min);
+    gchar *long_str = g_strdup_printf("%d,%s%c", long_deg, str, long_dir);
+    g_ascii_formatd(str, G_ASCII_DTOSTR_BUF_SIZE, "%08f", lat_min);
+    gchar *lat_str = g_strdup_printf("%d,%s%c", lat_deg, str, lat_dir);
+
+    xmpData["Xmp.exif.GPSVersionID"] = "2.2.0.0";
+    xmpData["Xmp.exif.GPSLongitude"] = long_str;
+    xmpData["Xmp.exif.GPSLatitude"] = lat_str;
+    g_free(long_str);
+    g_free(lat_str);
+    g_free(str);
+  }
+  if(!std::isnan(altitude))
+  {
+    xmpData["Xmp.exif.GPSAltitudeRef"] = (altitude < 0) ? "1" : "0";
+
+    long ele_dm = (int)floor(fabs(10.0 * altitude));
+    gchar *ele_str = g_strdup_printf("%ld/10", ele_dm);
+    xmpData["Xmp.exif.GPSAltitude"] = ele_str;
+    g_free(ele_str);
+  }
+}
+
+static void dt_set_xmp_dt_metadata(Exiv2::XmpData &xmpData, const int imgid)
+{
+  sqlite3_stmt *stmt;
+  // metadata
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT key, value FROM main.meta_data WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int key = sqlite3_column_int(stmt, 0);
+    switch(key)
+    {
+      case DT_METADATA_XMP_DC_CREATOR:
+        xmpData["Xmp.dc.creator"] = sqlite3_column_text(stmt, 1);
+        break;
+      case DT_METADATA_XMP_DC_PUBLISHER:
+        xmpData["Xmp.dc.publisher"] = sqlite3_column_text(stmt, 1);
+        break;
+      case DT_METADATA_XMP_DC_TITLE:
+        xmpData["Xmp.dc.title"] = sqlite3_column_text(stmt, 1);
+        break;
+      case DT_METADATA_XMP_DC_DESCRIPTION:
+        xmpData["Xmp.dc.description"] = sqlite3_column_text(stmt, 1);
+        break;
+      case DT_METADATA_XMP_DC_RIGHTS:
+        xmpData["Xmp.dc.rights"] = sqlite3_column_text(stmt, 1);
+        break;
+    }
+  }
+  sqlite3_finalize(stmt);
+
+  // color labels
+  char val[2048];
+  std::unique_ptr<Exiv2::Value> v(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
+
+  /* Already initialized v = Exiv2::Value::create(Exiv2::xmpSeq); // or xmpBag or xmpAlt.*/
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT color FROM main.color_labels WHERE imgid=?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    snprintf(val, sizeof(val), "%d", sqlite3_column_int(stmt, 0));
+    v->read(val);
+  }
+  sqlite3_finalize(stmt);
+  if(v->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.darktable.colorlabels"), v.get());
+}
+
+// helper to create an xmp data thing. throws exiv2 exceptions if stuff goes wrong.
+static void dt_exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
+{
+  const int xmp_version = 3;
+  int stars = 1, raw_params = 0, history_end = -1;
+  int iop_order_version = 0;
+  double longitude = NAN, latitude = NAN, altitude = NAN;
+  gchar *filename = NULL;
+  gchar *datetime_taken = NULL;
+
+  // get stars and raw params from db
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT filename, flags, raw_parameters, "
+                                                             "longitude, latitude, altitude, history_end, iop_order_version, datetime_taken "
+                                                             "FROM main.images WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    filename = (gchar *)sqlite3_column_text(stmt, 0);
+    stars = sqlite3_column_int(stmt, 1);
+    raw_params = sqlite3_column_int(stmt, 2);
+    if(sqlite3_column_type(stmt, 3) == SQLITE_FLOAT) longitude = sqlite3_column_double(stmt, 3);
+    if(sqlite3_column_type(stmt, 4) == SQLITE_FLOAT) latitude = sqlite3_column_double(stmt, 4);
+    if(sqlite3_column_type(stmt, 5) == SQLITE_FLOAT) altitude = sqlite3_column_double(stmt, 5);
+    history_end = sqlite3_column_int(stmt, 6);
+    iop_order_version = sqlite3_column_int(stmt, 7);
+    datetime_taken = (gchar *)sqlite3_column_text(stmt, 8);
+  }
+
+  // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
+  xmpData["Xmp.exif.DateTimeOriginal"] = datetime_taken;
+
+  // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
+  Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
+  if(pos != xmpData.end()) xmpData.erase(pos);
+  xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); // rejected image = -1, others = 0..5
+
+  // The original file name
+  if(filename) xmpData["Xmp.xmpMM.DerivedFrom"] = filename;
+
+  // GPS data
+  dt_set_xmp_exif_geotag(xmpData, longitude, latitude, altitude);
+  sqlite3_finalize(stmt);
+
+  // the meta data
+  dt_set_xmp_dt_metadata(xmpData, imgid);
+
+  // get tags from db, store in dublin core
+  std::unique_ptr<Exiv2::Value> v1(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
+
+  std::unique_ptr<Exiv2::Value> v2(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
+
+  GList *tags = dt_tag_get_list(imgid);
+  while(tags)
+  {
+    v1->read((char *)tags->data);
+    tags = g_list_next(tags);
+  }
+  if(v1->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.dc.subject"), v1.get());
+  g_list_free_full(tags, g_free);
+
+  GList *hierarchical = dt_tag_get_hierarchical(imgid);
+  while(hierarchical)
+  {
+    v2->read((char *)hierarchical->data);
+    hierarchical = g_list_next(hierarchical);
+  }
+  if(v2->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"), v2.get());
+  g_list_free_full(hierarchical, g_free);
+  /* TODO: Add tags to IPTC namespace as well */
+
+  xmpData["Xmp.darktable.xmp_version"] = xmp_version;
+  xmpData["Xmp.darktable.raw_params"] = raw_params;
+  if(stars & DT_IMAGE_AUTO_PRESETS_APPLIED)
+    xmpData["Xmp.darktable.auto_presets_applied"] = 1;
+  else
+    xmpData["Xmp.darktable.auto_presets_applied"] = 0;
+  dt_set_xmp_dt_history(xmpData, imgid, history_end);
   xmpData["Xmp.darktable.iop_order_version"] = iop_order_version;
+}
+
+// helper to create an xmp data thing. throws exiv2 exceptions if stuff goes wrong.
+static void dt_exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgid, dt_export_metadata_t *metadata)
+{
+  const int xmp_version = 3;
+  int stars = 1, raw_params = 0, history_end = -1;
+  int iop_order_version = 0;
+  double longitude = NAN, latitude = NAN, altitude = NAN;
+  gchar *filename = NULL;
+  gchar *datetime_taken = NULL;
+
+  // get stars and raw params from db
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT filename, flags, raw_parameters, "
+                                                             "longitude, latitude, altitude, history_end, iop_order_version, datetime_taken "
+                                                             "FROM main.images WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    filename = (gchar *)sqlite3_column_text(stmt, 0);
+    stars = sqlite3_column_int(stmt, 1);
+    raw_params = sqlite3_column_int(stmt, 2);
+    if(sqlite3_column_type(stmt, 3) == SQLITE_FLOAT) longitude = sqlite3_column_double(stmt, 3);
+    if(sqlite3_column_type(stmt, 4) == SQLITE_FLOAT) latitude = sqlite3_column_double(stmt, 4);
+    if(sqlite3_column_type(stmt, 5) == SQLITE_FLOAT) altitude = sqlite3_column_double(stmt, 5);
+    history_end = sqlite3_column_int(stmt, 6);
+    iop_order_version = sqlite3_column_int(stmt, 7);
+    datetime_taken = (gchar *)sqlite3_column_text(stmt, 8);
+  }
+
+  // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
+  if (!metadata || (metadata && !(metadata->flags & DT_META_EXIF)))
+    xmpData["Xmp.exif.DateTimeOriginal"] = datetime_taken;
+
+  // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
+  Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
+  if(pos != xmpData.end()) xmpData.erase(pos);
+  xmpData["Xmp.xmp.Rating"] = ((stars & 0x7) == 6) ? -1 : (stars & 0x7); // rejected image = -1, others = 0..5
+
+  // The original file name
+  if(filename) xmpData["Xmp.xmpMM.DerivedFrom"] = filename;
+
+  // GPS data
+  if (!metadata || (metadata && (metadata->flags & DT_META_GEOTAG)))
+    dt_set_xmp_exif_geotag(xmpData, longitude, latitude, altitude);
 
   sqlite3_finalize(stmt);
-  g_list_free_full(tags, g_free);
-  g_list_free_full(hierarchical, g_free);
+
+  // the meta data
+  if (!metadata || (metadata && (metadata->flags & DT_META_METADATA)))
+    dt_set_xmp_dt_metadata(xmpData, imgid);
+
+  // tags
+  if (!metadata || (metadata && (metadata->flags & DT_META_TAG)))
+  {
+    // get tags from db, store in dublin core
+    std::unique_ptr<Exiv2::Value> v1(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
+    GList *tags = dt_tag_get_list_export(imgid, metadata ? metadata->flags : 0);
+    while(tags)
+    {
+      v1->read((char *)tags->data);
+      tags = g_list_next(tags);
+    }
+    if(v1->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.dc.subject"), v1.get());
+    g_list_free_full(tags, g_free);
+
+    if (metadata && (metadata->flags & DT_META_HIERARCHICAL_TAG))
+    {
+      std::unique_ptr<Exiv2::Value> v2(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
+      GList *hierarchical = dt_tag_get_hierarchical_export(imgid, metadata->flags);
+      while(hierarchical)
+      {
+        v2->read((char *)hierarchical->data);
+        hierarchical = g_list_next(hierarchical);
+      }
+      if(v2->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"), v2.get());
+      g_list_free_full(hierarchical, g_free);
+    }
+  }
+  /* TODO: Add tags to IPTC namespace as well */
+
+  if (!metadata || (metadata && (metadata->flags & DT_META_DT_HISTORY)))
+  {
+    xmpData["Xmp.darktable.xmp_version"] = xmp_version;
+    xmpData["Xmp.darktable.raw_params"] = raw_params;
+    if(stars & DT_IMAGE_AUTO_PRESETS_APPLIED)
+      xmpData["Xmp.darktable.auto_presets_applied"] = 1;
+    else
+      xmpData["Xmp.darktable.auto_presets_applied"] = 0;
+    dt_set_xmp_dt_history(xmpData, imgid, history_end);
+    xmpData["Xmp.darktable.iop_order_version"] = iop_order_version;
+  }
 }
 
 #if EXIV2_VERSION >= EXIV2_MAKE_VERSION(0,27,0)
@@ -3450,8 +3272,9 @@ char *dt_exif_xmp_read_string(const int imgid)
   }
 }
 
-int dt_exif_xmp_attach_export(const int imgid, const char *filename)
+int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metadata)
 {
+  dt_export_metadata_t *m = (dt_export_metadata_t *)metadata;
   try
   {
     char input_filename[PATH_MAX] = { 0 };
@@ -3510,9 +3333,12 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename)
       dt_remove_xmp_keys(xmpData, keys, n_keys);
     }
 
+    if (m && !(m->flags & DT_META_EXIF))
+      img->clearExifData();
+
     // last but not least attach what we have in DB to the XMP. in theory that should be
     // the same as what we just copied over from the sidecar file, but you never know ...
-    dt_exif_xmp_read_data_export(xmpData, imgid);
+    dt_exif_xmp_read_data_export(xmpData, imgid, m);
 
     img->writeMetadata();
     return 0;
