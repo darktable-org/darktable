@@ -563,7 +563,8 @@ static gboolean _lib_lighttable_key_accel_toggle_culling_zoom_mode(GtkAccelGroup
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
 
-  gtk_combo_box_set_active(GTK_COMBO_BOX(d->zoom_mode_cb), d->zoom_mode == DT_LIGHTTABLE_ZOOM_FIXED);
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+    gtk_combo_box_set_active(GTK_COMBO_BOX(d->zoom_mode_cb), d->zoom_mode == DT_LIGHTTABLE_ZOOM_FIXED);
   return TRUE;
 }
 
