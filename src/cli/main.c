@@ -368,7 +368,7 @@ int main(int argc, char *arg[])
   fdata->style[0] = '\0';
   fdata->style_append = 1; // make append the default and override with --style-overwrite
 
-  if(style) 
+  if(style)
   {
     g_strlcpy((char *)fdata->style, style, DT_MAX_STYLE_NAME_LENGTH);
     fdata->style[127] = '\0';
@@ -397,7 +397,7 @@ int main(int argc, char *arg[])
   {
     int id = GPOINTER_TO_INT(iter->data);
     storage->store(storage, sdata, id, format, fdata, num, total, high_quality, upscale,
-                   icc_type, icc_filename, icc_intent);
+                   icc_type, icc_filename, icc_intent, NULL);
   }
 
   // cleanup time
