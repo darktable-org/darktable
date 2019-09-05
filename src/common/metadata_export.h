@@ -38,6 +38,8 @@ typedef struct dt_export_metadata_t
 /** open dialog to configure metadata exportation */
 // char *dt_lib_export_metadata_configuration_dialog(const char *name);
 
+/** get list of metadata which can be calculated or removed from exported file */
+const char **dt_lib_export_metadata_get_export_keys(guint *dt_export_xmp_keys_n);
 /** get  metadata presets */
 GList *dt_lib_export_metadata_get_presets(const char *name, int32_t *flags);
 /** delete metadata presets */

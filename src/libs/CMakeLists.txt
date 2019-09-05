@@ -44,7 +44,7 @@ endif()
 # modules
 add_library(import MODULE "import.c")
 add_library(metadata_export MODULE "metadata_export.c")
-add_library(export MODULE "export.c")
+add_library(export MODULE "export.c" "export_metadata.c")
 add_library(copy_history MODULE "copy_history.c")
 add_library(styles MODULE "styles.c")
 add_library(image MODULE "image.c")

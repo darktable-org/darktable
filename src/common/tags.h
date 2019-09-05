@@ -176,6 +176,9 @@ uint32_t dt_tag_images_count(gint tagid);
 /** make sure that main.used_tags has everything. to be used after changes to main.tagged_images */
 void dt_tag_update_used_tags();
 
+/** retrieves the subtag of requested level for the requested category */
+char *dt_tag_get_subtag(const gint imgid, const char *category, const int level);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
