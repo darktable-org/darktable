@@ -64,6 +64,7 @@ extern "C" {
 #include "common/metadata.h"
 #include "common/tags.h"
 #include "common/iop_order.h"
+#include "common/variables.h"
 #include "control/conf.h"
 #include "develop/imageop.h"
 #include "develop/blend.h"
@@ -3272,6 +3273,32 @@ char *dt_exif_xmp_read_string(const int imgid)
   }
 }
 
+static void dt_remove_xmp_key(Exiv2::XmpData &xmp, const char *key)
+{
+  try
+  {
+    Exiv2::XmpData::iterator pos = xmp.findKey(Exiv2::XmpKey(key));
+    if (pos != xmp.end())
+      xmp.erase(pos);
+  }
+  catch(Exiv2::AnyError &e)
+  {
+  }
+}
+
+static void dt_remove_exif_key(Exiv2::ExifData &exif, const char *key)
+{
+  try
+  {
+    Exiv2::ExifData::iterator pos = exif.findKey(Exiv2::ExifKey(key));
+    if (pos != exif.end())
+      exif.erase(pos);
+  }
+  catch(Exiv2::AnyError &e)
+  {
+  }
+}
+
 int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metadata)
 {
   dt_export_metadata_t *m = (dt_export_metadata_t *)metadata;
@@ -3339,6 +3366,49 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
     // last but not least attach what we have in DB to the XMP. in theory that should be
     // the same as what we just copied over from the sidecar file, but you never know ...
     dt_exif_xmp_read_data_export(xmpData, imgid, m);
+
+    // calculated metadata
+    if (m)
+    {
+      Exiv2::IptcData &iptcData = img->iptcData();
+      Exiv2::ExifData &exifData = img->exifData();
+      dt_variables_params_t *params;
+      dt_variables_params_init(&params);
+      params->filename = input_filename;
+      params->jobcode = "export";
+      params->sequence = 0;
+      for (GList *tags = m->list; tags; tags = g_list_next(tags))
+      {
+        gchar *pair = (gchar *)tags->data;
+        gchar *tagname = pair;
+        pair += strlen(tagname) + 1;
+        gchar *formula = pair;
+        if (formula[0])
+        {
+          gchar *result = dt_variables_expand(params, formula, FALSE);
+          printf("calculated metadata %s %s\n", tagname, result);
+          if (result && result[0])
+          {
+            if (g_str_has_prefix(tagname, "Xmp."))
+              xmpData[tagname] = result;
+            else if (g_str_has_prefix(tagname, "Iptc."))
+              iptcData[tagname] = result;
+            else if (g_str_has_prefix(tagname, "Exif."))
+              exifData[tagname] = result;
+          }
+          g_free(result);
+        }
+        else
+        {
+          printf("delete metadata %s\n", tagname);
+          if (g_str_has_prefix(tagname, "Xmp."))
+            dt_remove_xmp_key(xmpData, tagname);
+          else if (g_str_has_prefix(tagname, "Exif."))
+            dt_remove_exif_key(exifData, tagname);
+        }
+      }
+      dt_variables_params_destroy(params);
+    }
 
     img->writeMetadata();
     return 0;
