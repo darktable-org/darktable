@@ -25,6 +25,7 @@
 #include "common/metadata.h"
 #include "common/opencl.h"
 #include "common/utility.h"
+#include "common/tags.h"
 #include "control/conf.h"
 
 #include <stdio.h>
@@ -370,6 +371,28 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup_printf("%d", params->data->max_width);
   else if(has_prefix(variable, "MAX_HEIGHT"))
     result = g_strdup_printf("%d", params->data->max_height);
+  else if (has_prefix(variable, "TAG"))
+  {
+    if (*variable[0] == '0' || *variable[0] == '1' || *variable[0] == '2' || *variable[0] == '3')
+    {
+      const uint8_t level = (uint8_t)*variable[0] & 0b11;
+      char *category = g_strdup(*variable + 1);
+      char *end = g_strrstr(category, ")");
+      if (end)
+      {
+        end[0] = '|';
+        end[1] = '\0';
+        (*variable) += strlen(category);
+        char *tag = dt_tag_get_subtag(params->imgid, category, (int)level);
+        if (tag)
+        {
+          result = g_strdup(tag);
+          g_free(tag);
+        }
+      }
+      g_free(category);
+    }
+  }
   else
   {
     // go past what looks like an invalid variable. we only expect to see [a-zA-Z]* in a variable name.

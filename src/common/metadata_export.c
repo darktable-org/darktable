@@ -31,6 +31,45 @@
 #include <gdk/gdkkeysyms.h>
 #include <math.h>
 
+const char *dt_export_xmp_keys[]
+    = { "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights",
+        "Xmp.dc.subject",
+
+        "Xmp.exif.GPSLatitude", "Xmp.exif.GPSLongitude", "Xmp.exif.GPSAltitude",
+        "Xmp.exif.DateTimeOriginal",
+        "Xmp.exifEX.LensModel",
+
+        "Exif.Image.DateTimeOriginal", "Exif.Image.Make", "Exif.Image.Model", "Exif.Image.Orientation",
+        "Exif.Image.Artist", "Exif.Image.Copyright", "Exif.Image.Rating",
+
+        "Exif.GPSInfo.GPSLatitude", "Exif.GPSInfo.GPSLongitude", "Exif.GPSInfo.GPSAltitude",
+        "Exif.GPSInfo.GPSLatitudeRef", "Exif.GPSInfo.GPSLongitudeRef", "Exif.GPSInfo.GPSAltitudeRef",
+        "Exif.GPSInfo.GPSVersionID",
+
+        "Exif.Photo.DateTimeOriginal", "Exif.Photo.ExposureTime", "Exif.Photo.ShutterSpeedValue",
+        "Exif.Photo.FNumber", "Exif.Photo.ApertureValue", "Exif.Photo.ISOSpeedRatings",
+        "Exif.Photo.FocalLengthIn35mmFilm", "Exif.Photo.LensModel", "Exif.Photo.Flash",
+        "Exif.Photo.WhiteBalance", "Exif.Photo.UserComment", "Exif.Photo.ColorSpace",
+
+        "Xmp.xmp.CreateDate", "Xmp.xmp.CreatorTool", "Xmp.xmp.Identifier", "Xmp.xmp.Label", "Xmp.xmp.ModifyDate",
+        "Xmp.xmp.Nickname","Xmp.xmp.Rating",
+
+        "Iptc.Application2.Subject", "Iptc.Application2.Keywords", "Iptc.Application2.LocationName",
+        "Iptc.Application2.City", "Iptc.Application2.SubLocation", "Iptc.Application2.ProvinceState",
+        "Iptc.Application2.CountryName", "Iptc.Application2.Copyright", "Iptc.Application2.Caption",
+
+        "Xmp.tiff.ImageWidth","Xmp.tiff.ImageLength","Xmp.tiff.Artist", "Xmp.tiff.Copyright"
+       };
+const guint dt_export_xmp_keys_n = G_N_ELEMENTS(dt_export_xmp_keys);
+
+// TODO replace the following list by a dynamic exiv2 list able to provide info type
+// Here are listed only string or XmpText. Can be added as needed.
+const char **dt_lib_export_metadata_get_export_keys(guint *dt_export_keys_n)
+{
+  *dt_export_keys_n = dt_export_xmp_keys_n;
+  return dt_export_xmp_keys;
+}
+
 GList *dt_lib_export_metadata_get_presets(const char *name, int32_t *flags)
 {
   sqlite3_stmt *stmt;
@@ -86,7 +125,6 @@ void dt_lib_export_metadata_presets_add(const char *name, const char *plugin_nam
                         const int32_t params_size)
 {
   sqlite3_stmt *stmt;
-  printf("lib1056 delete preset %s %s\n", plugin_name, name);
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "DELETE FROM data.presets WHERE name=?1 AND operation=?2 AND op_version=?3", -1,
                               &stmt, NULL);
