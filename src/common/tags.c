@@ -1589,6 +1589,37 @@ void dt_tag_update_used_tags()
                         NULL, NULL, NULL);
 }
 
+char *dt_tag_get_subtag(const gint imgid, const char *category, const int level)
+{
+  if (!category) return NULL;
+  char *result = NULL;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+          "SELECT DISTINCT T.name FROM main.tagged_images AS I "
+          "INNER JOIN data.tags AS T "
+          "ON T.id = I.tagid AND SUBSTR(T.name, 1, LENGTH(?2)) = ?2 "
+          "WHERE I.imgid = ?1",
+          -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, category, -1, SQLITE_TRANSIENT);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    char *tag = (char *)sqlite3_column_text(stmt, 0);
+    gchar **pch = g_strsplit(tag, "|", -1);
+    guint len = g_strv_length(pch);
+    if (len >= level + 2)
+    {
+      result = g_strdup(pch[level + 1]);
+      g_strfreev(pch);
+      break;
+    }
+    g_strfreev(pch);
+  }
+  sqlite3_finalize(stmt);
+  return result;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
