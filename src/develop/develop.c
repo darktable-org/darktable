@@ -1544,7 +1544,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     }
 
     hist->num = sqlite3_column_int(stmt, 1);
-    int modversion = sqlite3_column_int(stmt, 2);
+    const int modversion = sqlite3_column_int(stmt, 2);
     assert(strcmp((char *)sqlite3_column_text(stmt, 3), hist->module->op) == 0);
     hist->params = malloc(hist->module->params_size);
     hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
@@ -1556,8 +1556,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     if(history_end_current > dev->history_end) hist->module->iop_order = hist->iop_order;
 
     const void *blendop_params = sqlite3_column_blob(stmt, 6);
-    int bl_length = sqlite3_column_bytes(stmt, 6);
-    int blendop_version = sqlite3_column_int(stmt, 7);
+    const int bl_length = sqlite3_column_bytes(stmt, 6);
+    const int blendop_version = sqlite3_column_int(stmt, 7);
 
     if(blendop_params && (blendop_version == dt_develop_blend_version())
        && (bl_length == sizeof(dt_develop_blend_params_t)))
