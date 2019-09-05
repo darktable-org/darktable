@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-09-02 21:13+0200\n"
-"PO-Revision-Date: 2019-09-02 21:54+0200\n"
+"POT-Creation-Date: 2019-09-05 18:55+0200\n"
+"PO-Revision-Date: 2019-09-05 19:43+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -1074,10 +1074,8 @@ msgstr ""
 "wordt 'naam'."
 
 #: ../build/src/preferences_gen.h:4092
-#, fuzzy
-#| msgid "error exporting tags"
 msgid "force exportation of private tags"
-msgstr "fout bij het exporteren van labels"
+msgstr "dwing exporteren van privé labels"
 
 #: ../build/src/preferences_gen.h:4104
 msgid ""
@@ -1096,12 +1094,12 @@ msgid ""
 "darktable doesn't export the synonyms per default. this option allows to "
 "export them along with tags to XMP-dc Subject."
 msgstr ""
+"darktable exporteert standaard geen synoniemen, met deze optie worden ze "
+"geëxporteerd samen met tags als XMP-dc Subject."
 
 #: ../build/src/preferences_gen.h:4132
-#, fuzzy
-#| msgid "scroll the collection"
 msgid "disable the entry completion"
-msgstr "scroll door collectie"
+msgstr "het voltooien van de invoer uitschakelen"
 
 #: ../build/src/preferences_gen.h:4144
 msgid ""
@@ -1323,7 +1321,7 @@ msgstr "fout: openen bestand %s lukt niet"
 #: ../src/cli/main.c:259
 #, c-format
 msgid "no images to export, aborting\n"
-msgstr "niets te exporteren, stopt nu\n"
+msgstr "niets te exporteren, afbreken\n"
 
 #: ../src/cli/main.c:273
 #, c-format
@@ -3129,10 +3127,9 @@ msgid "[PATH creation] terminate path creation"
 msgstr "[PATH creation] beëindigen pad creatie"
 
 #: ../src/develop/masks/masks.c:181
-#, fuzzy
 #| msgid "ctrl+click to switch between smooth/sharp node"
 msgid "[PATH on node] switch between smooth/sharp node"
-msgstr "ctrl+klik schakelt tussen gladde/scherpe knooppunten"
+msgstr "[PATH on node] schakel tussen zacht/scherpe knooppunten"
 
 #: ../src/develop/masks/masks.c:186
 msgid "[PATH on node] remove the node"
@@ -3140,7 +3137,7 @@ msgstr "[PATH on node] verwijder knooppunt"
 
 #: ../src/develop/masks/masks.c:191
 msgid "[PATH on feather] reset curvature"
-msgstr "[PATH on feather] reset kromming"
+msgstr "[PATH on doezelaar] reset kromming"
 
 #: ../src/develop/masks/masks.c:197
 msgid "[PATH on segment] add node"
@@ -3159,16 +3156,14 @@ msgid "[PATH] change feather size"
 msgstr "[PATH] wijzig afmeting doezelaar"
 
 #: ../src/develop/masks/masks.c:221
-#, fuzzy
 #| msgid "move to rotate shape"
 msgid "[GRADIENT on pivot] rotate shape"
-msgstr "verplaats om de vorm te draaien"
+msgstr "[GRADIENT on pivot] roteer vorm"
 
 #: ../src/develop/masks/masks.c:226
-#, fuzzy
 #| msgid "reset rotation"
 msgid "[GRADIENT creation] set rotation"
-msgstr "reset draaiing"
+msgstr "[GRADIENT creation] rotatie instellen"
 
 #: ../src/develop/masks/masks.c:231
 msgid "[GRADIENT] change compression"
@@ -3963,7 +3958,7 @@ msgstr "horizontale lijnen"
 
 #: ../src/gui/guides.c:109
 msgid "number of horizontal guide lines"
-msgstr ""
+msgstr "aantal horizontale hulplijnen"
 
 #: ../src/gui/guides.c:115
 msgid "vertical lines"
@@ -3979,7 +3974,7 @@ msgstr "onderverdelingen"
 
 #: ../src/gui/guides.c:123
 msgid "number of subdivisions per grid rectangle"
-msgstr ""
+msgstr "aantal onderverdelingen per raster rechthoek"
 
 #: ../src/gui/guides.c:440
 msgid "extra"
@@ -4202,7 +4197,7 @@ msgid "press key combination to remap..."
 msgstr "geef nieuwe toets combinatie"
 
 #: ../src/gui/preferences.c:1011
-#, fuzzy, c-format
+#, c-format
 #| msgid ""
 #| "preset `%s' already exists.\n"
 #| "do you want to overwrite?"
@@ -4211,8 +4206,9 @@ msgid ""
 "%s.\n"
 "do you want to replace it ?"
 msgstr ""
-"voorkeur `%s' bestaat al\n"
-"moet die worden overschreven?"
+"%s accel is al toegewezen aan\n"
+"%s.\n"
+"toch vervangen?"
 
 #: ../src/gui/preferences.c:1017
 msgid "accel conflict"
@@ -5564,12 +5560,12 @@ msgstr "[%s op segment] deselecteer segment"
 #: ../src/iop/ashift.c:5060
 #, c-format
 msgid "[%s] select all segments from zone"
-msgstr ""
+msgstr "[%s] selecteer alle segmenten in zone"
 
 #: ../src/iop/ashift.c:5066
 #, c-format
 msgid "[%s] unselect all segments from zone"
-msgstr ""
+msgstr "[%s] deselecteer alle segmenten in zone"
 
 #: ../src/iop/atrous.c:117
 msgid "equalizer"
@@ -6718,12 +6714,12 @@ msgstr "hoek"
 #: ../src/iop/clipping.c:3239
 #, c-format
 msgid "[%s on borders] crop"
-msgstr ""
+msgstr "[%s on borders] uitsnijden"
 
 #: ../src/iop/clipping.c:3245
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
-msgstr ""
+msgstr "[%s on borders] uitsnijden behoud verhouding"
 
 #: ../src/iop/clipping.c:3250
 #, c-format
@@ -8623,22 +8619,22 @@ msgstr "verzadiging van het filter"
 #: ../src/iop/graduatednd.c:1293
 #, c-format
 msgid "[%s on nodes] change line rotation"
-msgstr ""
+msgstr "[%s on nodes] verander lijnrotatie"
 
 #: ../src/iop/graduatednd.c:1298
 #, c-format
 msgid "[%s on line] move line"
-msgstr ""
+msgstr "[%s on line] verander lijn"
 
 #: ../src/iop/graduatednd.c:1304
 #, c-format
 msgid "[%s on line] change density"
-msgstr ""
+msgstr "[%s on line] verander dichtheid"
 
 #: ../src/iop/graduatednd.c:1310
 #, c-format
 msgid "[%s on line] change compression"
-msgstr ""
+msgstr "[%s on line] verander compressie"
 
 #: ../src/iop/grain.c:418
 msgid "grain"
@@ -10713,17 +10709,17 @@ msgstr ""
 #: ../src/iop/vignette.c:1220
 #, c-format
 msgid "[%s on node] change vignette/feather size"
-msgstr ""
+msgstr "[%s op knooppunt] wijzig vignette/doezel afmeting"
 
 #: ../src/iop/vignette.c:1226
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
-msgstr ""
+msgstr "[%s op knooppunt] wijzig vignette/doezel afmeting behoud verhouding"
 
 #: ../src/iop/vignette.c:1232
 #, c-format
 msgid "[%s on center] move vignette"
-msgstr ""
+msgstr "[%s in het midden] verplaats vignet"
 
 #: ../src/iop/watermark.c:236
 msgid "watermark"
@@ -11760,6 +11756,7 @@ msgstr "verwijder geselecteerde afbeelding(en) uit groep"
 #: ../src/libs/image.c:279
 msgid "update image information to match changes to file"
 msgstr ""
+"afbeeldingsinformatie bijwerken om te laten overeenkomen met het bestand"
 
 #: ../src/libs/image.c:302
 msgctxt "accel"
@@ -13033,16 +13030,16 @@ msgstr "verwijder branch"
 #, c-format
 msgid "<u>%d</u> tag will be deleted."
 msgid_plural "<u>%d</u> tags will be deleted."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "<u>%d</u> label wordt verwijderd"
+msgstr[1] "<u>%d</u> labels worden verwijderd"
 
 #: ../src/libs/tagging.c:1281 ../src/libs/tagging.c:1530
 #: ../src/libs/tagging.c:1750
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated "
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "<u>%d</u> afbeelding wordt bijgewerkt"
+msgstr[1] "<u>%d</u> afbeeldingen worden bijgewerkt"
 
 #: ../src/libs/tagging.c:1307
 #, c-format
@@ -13085,7 +13082,7 @@ msgstr "leeg label is niet toegestaan, afbreken"
 
 #: ../src/libs/tagging.c:1407
 msgid "'|' character is not allowed to create a tag. aborting."
-msgstr ""
+msgstr "'|' karakter is niet toegestaan bij aanmaak label, abreken"
 
 #: ../src/libs/tagging.c:1417
 msgid "tag name already exists. aborting."
@@ -13099,8 +13096,8 @@ msgstr "bewerk label"
 #, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "<u>%d</u> label wordt bijgewerkt"
+msgstr[1] "<u>%d</u> labels worden bijgewerkt"
 
 #: ../src/libs/tagging.c:1585
 msgid ""
@@ -13124,7 +13121,7 @@ msgstr "geselecteerd pad: %s"
 
 #: ../src/libs/tagging.c:1774
 msgid "'|' misplaced, empty tag is not allowed, aborting"
-msgstr ""
+msgstr "'|' misplaatst, lege label is niet toegestaan, afbreken"
 
 #: ../src/libs/tagging.c:1800
 #, c-format
@@ -14006,19 +14003,19 @@ msgstr "inzoomen op de afbeelding"
 
 #: ../src/views/darkroom.c:3315
 msgid "unbounded zoom in the image"
-msgstr ""
+msgstr "onbegrensde zoom in de afbeelding"
 
 #: ../src/views/darkroom.c:3320
 msgid "zoom to 100% 200% and back"
-msgstr ""
+msgstr "zoom naar 100%, 200% en weer terug"
 
 #: ../src/views/darkroom.c:3326
 msgid "[modules] expand module without closing others"
-msgstr ""
+msgstr "[modules] module uitbreiden zonder anderen te sluiten"
 
 #: ../src/views/darkroom.c:3332
 msgid "[modules] change module position in pipe"
-msgstr ""
+msgstr "[modules] wijzig modulepositie in pijplijn"
 
 #. workaround for GTK Quartz backend bug
 #: ../src/views/darkroom.c:4034 ../src/views/darkroom.c:4052
