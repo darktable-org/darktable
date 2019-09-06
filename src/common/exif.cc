@@ -2983,6 +2983,36 @@ static void dt_set_xmp_exif_geotag(Exiv2::XmpData &xmpData, double longitude, do
   }
 }
 
+static void dt_remove_xmp_exif_geotag(Exiv2::XmpData &xmpData)
+{
+  static const char *keys[] =
+  {
+    "Xmp.exif.GPSVersionID",
+    "Xmp.exif.GPSLongitude",
+    "Xmp.exif.GPSLatitude",
+    "Xmp.exif.GPSAltitudeRef",
+    "Xmp.exif.GPSAltitude"
+  };
+  static const guint n_keys = G_N_ELEMENTS(keys);
+  dt_remove_xmp_keys(xmpData, keys, n_keys);
+}
+
+static void dt_remove_exif_geotag(Exiv2::ExifData &exifData)
+{
+  static const char *keys[] =
+  {
+    "Exif.GPSInfo.GPSLatitude",
+    "Exif.GPSInfo.GPSLongitude",
+    "Exif.GPSInfo.GPSAltitude",
+    "Exif.GPSInfo.GPSLatitudeRef",
+    "Exif.GPSInfo.GPSLongitudeRef",
+    "Exif.GPSInfo.GPSAltitudeRef",
+    "Exif.GPSInfo.GPSVersionID"
+  };
+  static const guint n_keys = G_N_ELEMENTS(keys);
+  dt_remove_exif_keys(exifData, keys, n_keys);
+}
+
 static void dt_set_xmp_dt_metadata(Exiv2::XmpData &xmpData, const int imgid)
 {
   sqlite3_stmt *stmt;
@@ -3158,6 +3188,8 @@ static void dt_exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgi
   // GPS data
   if (!metadata || (metadata && (metadata->flags & DT_META_GEOTAG)))
     dt_set_xmp_exif_geotag(xmpData, longitude, latitude, altitude);
+  else
+    dt_remove_xmp_exif_geotag(xmpData);
 
   sqlite3_finalize(stmt);
 
@@ -3178,20 +3210,21 @@ static void dt_exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgi
     }
     if(v1->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.dc.subject"), v1.get());
     g_list_free_full(tags, g_free);
-
-    if (metadata && (metadata->flags & DT_META_HIERARCHICAL_TAG))
-    {
-      std::unique_ptr<Exiv2::Value> v2(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
-      GList *hierarchical = dt_tag_get_hierarchical_export(imgid, metadata->flags);
-      while(hierarchical)
-      {
-        v2->read((char *)hierarchical->data);
-        hierarchical = g_list_next(hierarchical);
-      }
-      if(v2->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"), v2.get());
-      g_list_free_full(hierarchical, g_free);
-    }
   }
+
+  if (metadata && (metadata->flags & DT_META_HIERARCHICAL_TAG))
+  {
+    std::unique_ptr<Exiv2::Value> v2(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
+    GList *hierarchical = dt_tag_get_hierarchical_export(imgid, metadata->flags);
+    while(hierarchical)
+    {
+      v2->read((char *)hierarchical->data);
+      hierarchical = g_list_next(hierarchical);
+    }
+    if(v2->count() > 0) xmpData.add(Exiv2::XmpKey("Xmp.lr.hierarchicalSubject"), v2.get());
+    g_list_free_full(hierarchical, g_free);
+  }
+
   /* TODO: Add tags to IPTC namespace as well */
 
   if (!metadata || (metadata && (metadata->flags & DT_META_DT_HISTORY)))
@@ -3363,20 +3396,27 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
     if (m && !(m->flags & DT_META_EXIF))
       img->clearExifData();
 
+
+
     // last but not least attach what we have in DB to the XMP. in theory that should be
     // the same as what we just copied over from the sidecar file, but you never know ...
     dt_exif_xmp_read_data_export(xmpData, imgid, m);
 
-    // calculated metadata
     if (m)
     {
       Exiv2::IptcData &iptcData = img->iptcData();
       Exiv2::ExifData &exifData = img->exifData();
+      // make sure to remove all geotags if necessary
+      if (!(m->flags & DT_META_GEOTAG))
+        dt_remove_exif_geotag(exifData);
+      // calculated metadata
       dt_variables_params_t *params;
       dt_variables_params_init(&params);
       params->filename = input_filename;
       params->jobcode = "export";
       params->sequence = 0;
+      params->imgid = imgid;
+      dt_variables_set_tags_flags(params, m->flags);
       for (GList *tags = m->list; tags; tags = g_list_next(tags))
       {
         gchar *pair = (gchar *)tags->data;
@@ -3386,7 +3426,6 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
         if (formula[0])
         {
           gchar *result = dt_variables_expand(params, formula, FALSE);
-          printf("calculated metadata %s %s\n", tagname, result);
           if (result && result[0])
           {
             if (g_str_has_prefix(tagname, "Xmp."))
@@ -3400,7 +3439,6 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
         }
         else
         {
-          printf("delete metadata %s\n", tagname);
           if (g_str_has_prefix(tagname, "Xmp."))
             dt_remove_xmp_key(xmpData, tagname);
           else if (g_str_has_prefix(tagname, "Exif."))

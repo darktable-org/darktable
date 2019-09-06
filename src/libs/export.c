@@ -38,7 +38,7 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
-DT_MODULE(5)
+DT_MODULE(6)
 
 #define EXPORT_MAX_IMAGE_SIZE UINT16_MAX
 
@@ -51,7 +51,7 @@ typedef struct dt_lib_export_t
   GtkButton *export_button;
   GtkWidget *storage_extra_container, *format_extra_container;
   GtkWidget *high_quality;
-  GtkWidget *metadata, *metadata_button;
+  GtkWidget *metadata_box, *metadata, *metadata_button;
 } dt_lib_export_t;
 
 char *dt_lib_export_metadata_configuration_dialog(const char *name);
@@ -378,6 +378,10 @@ static void storage_changed(GtkWidget *widget, dt_lib_export_t *d)
   g_signal_handlers_block_by_func(widget, storage_changed, d);
   if(name) set_storage_by_name(d, name);
   g_signal_handlers_unblock_by_func(widget, storage_changed, d);
+  if (name && !g_strcmp0(name, _("file on disk")))
+    gtk_widget_show(d->metadata_box);
+  else
+    gtk_widget_hide(d->metadata_box);
 }
 
 static void profile_changed(GtkWidget *widget, dt_lib_export_t *d)
@@ -530,28 +534,12 @@ static void set_metadata_presets_combobox(dt_lib_export_t *d, const char *name)
   dt_bauhaus_combobox_clear(d->metadata);
   GList *presets_metadata_list = dt_lib_export_metadata_get_presets_list();
 
+  dt_bauhaus_combobox_add(d->metadata, "");
   for (GList *presets = presets_metadata_list; presets; presets = g_list_next(presets))
   {
     dt_bauhaus_combobox_add(d->metadata, presets->data);
   }
-  if(presets_metadata_list)
-  {
-    if (name)
-    {
-      dt_bauhaus_combobox_set_from_text(d->metadata, name);
-    }
-    else
-    {
-      dt_bauhaus_combobox_set(d->metadata, 0);
-    }
-    g_list_free_full(presets_metadata_list, g_free);
-  }
-  else
-  {
-    dt_bauhaus_combobox_add(d->metadata, _("none"));
-    dt_bauhaus_combobox_set(d->metadata, 0);
-  }
-
+  dt_bauhaus_combobox_set_from_text(d->metadata, name ? name : "");
 }
 
 static void metadata_changed(GtkComboBox *widget, dt_lib_export_t *d)
@@ -570,7 +558,6 @@ static void metadata_export_clicked(GtkComboBox *widget, dt_lib_export_t *d)
 
 void gui_init(dt_lib_module_t *self)
 {
-  setvbuf(stdout, NULL, _IONBF, 0); printf("init\n");
   dt_lib_export_t *d = (dt_lib_export_t *)malloc(sizeof(dt_lib_export_t));
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -730,6 +717,7 @@ void gui_init(dt_lib_module_t *self)
 
   //  Add metadata exportation control
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  d->metadata_box = GTK_WIDGET(hbox);
 
   d->metadata = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->metadata, NULL, _("metadata template"));
@@ -853,6 +841,8 @@ void init_presets(dt_lib_module_t *self)
 
       // skip 5*int32_t: max_width, max_height, upscale, high_quality and iccintent, icctype
       buf += 6 * sizeof(int32_t);
+      // next skip metadata preset name
+      buf += strlen(buf) + 1;
       // next skip iccfilename
       buf += strlen(buf) + 1;
 
@@ -1107,12 +1097,28 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     *new_version = 5;
     return new_params;
   }
+  else if(old_version == 5)
+  {
+    // add metadata preset name (before iccfilename)
+    size_t new_params_size = old_params_size + 1;
+    void *new_params = calloc(1, new_params_size);
+
+    size_t pos = 0;
+    memcpy(new_params, old_params, 6 * sizeof(int32_t));
+    pos += 6 * sizeof(int32_t) + 1;
+    memcpy(new_params + pos, old_params + pos - 1, old_params_size - 6 * sizeof(int32_t));
+
+    *new_size = new_params_size;
+    *new_version = 6;
+    return new_params;
+  }
 
   return NULL;
 }
 
 void *get_params(dt_lib_module_t *self, int *size)
 {
+  dt_lib_export_t *d = (dt_lib_export_t *)self->data;
   // concat storage and format, size is max + header
   dt_imageio_module_format_t *mformat = dt_imageio_get_format();
   dt_imageio_module_storage_t *mstorage = dt_imageio_get_storage();
@@ -1150,6 +1156,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   gchar *iccfilename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   gchar *style = dt_conf_get_string("plugins/lighttable/export/style");
   const gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
+  const char *metadata = dt_bauhaus_combobox_get_text(d->metadata) ? dt_bauhaus_combobox_get_text(d->metadata) : "";
 
   if(fdata)
   {
@@ -1167,7 +1174,7 @@ void *get_params(dt_lib_module_t *self, int *size)
   char *fname = mformat->plugin_name, *sname = mstorage->plugin_name;
   int32_t fname_len = strlen(fname), sname_len = strlen(sname);
   *size = fname_len + sname_len + 2 + 4 * sizeof(int32_t) + fsize + ssize + 6 * sizeof(int32_t)
-          + strlen(iccfilename) + 1;
+          + strlen(iccfilename) + 1 + strlen(metadata) + 1;
 
   char *params = (char *)calloc(1, *size);
   int pos = 0;
@@ -1183,6 +1190,8 @@ void *get_params(dt_lib_module_t *self, int *size)
   pos += sizeof(int32_t);
   memcpy(params + pos, &icctype, sizeof(int32_t));
   pos += sizeof(int32_t);
+  memcpy(params + pos, metadata, strlen(metadata) + 1);
+  pos += strlen(metadata) + 1;
   memcpy(params + pos, iccfilename, strlen(iccfilename) + 1);
   pos += strlen(iccfilename) + 1;
   memcpy(params + pos, fname, fname_len + 1);
@@ -1235,6 +1244,15 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   buf += sizeof(int32_t);
   const int icctype = *(const int *)buf;
   buf += sizeof(int32_t);
+  const char *metadata = buf;
+  buf += strlen(metadata) + 1;
+  if(metadata[0] == '\0')
+    dt_bauhaus_combobox_set(d->metadata, 0);
+  else if (dt_bauhaus_combobox_set_from_text(d->metadata, metadata) == FALSE)
+  {
+    dt_bauhaus_combobox_set(d->metadata, 0);
+    dt_control_log(_("error - metadata presets %s not found"), metadata);
+  }
   const char *iccfilename = buf;
   buf += strlen(iccfilename) + 1;
 
@@ -1279,7 +1297,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   if(size
      != strlen(fname) + strlen(sname) + 2 + 4 * sizeof(int32_t) + fsize + ssize + 6 * sizeof(int32_t)
-        + strlen(iccfilename) + 1)
+        + strlen(iccfilename) + 1 + + strlen(metadata) + 1)
     return 1;
   if(fversion != fmod->version() || sversion != smod->version()) return 1;
 

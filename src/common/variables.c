@@ -63,6 +63,8 @@ typedef struct dt_variables_data_t
   double latitude;
   double elevation;
 
+  uint32_t tags_flags;
+
 } dt_variables_data_t;
 
 static char *expand(dt_variables_params_t *params, char **source, char extra_stop);
@@ -371,34 +373,46 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup_printf("%d", params->data->max_width);
   else if(has_prefix(variable, "MAX_HEIGHT"))
     result = g_strdup_printf("%d", params->data->max_height);
-  else if (has_prefix(variable, "TAG"))
+  else if (has_prefix(variable, "CATEGORY"))
   {
+    // TAG should be followed by n [0,3] and "(category)". category can contain 0 or more '|'
     if (*variable[0] == '0' || *variable[0] == '1' || *variable[0] == '2' || *variable[0] == '3')
     {
       const uint8_t level = (uint8_t)*variable[0] & 0b11;
-      char *category = g_strdup(*variable + 1);
-      char *end = g_strrstr(category, ")");
-      if (end)
+      (*variable) ++;
+      if (*variable[0] == '(')
       {
-        end[0] = '|';
-        end[1] = '\0';
-        (*variable) += strlen(category);
-        char *tag = dt_tag_get_subtag(params->imgid, category, (int)level);
-        if (tag)
+        char *category = g_strdup(*variable + 1);
+        char *end = g_strstr_len(category, -1, ")");
+        if (end)
         {
-          result = g_strdup(tag);
-          g_free(tag);
+          end[0] = '|';
+          end[1] = '\0';
+          (*variable) += strlen(category) + 1;
+          char *tag = dt_tag_get_subtag(params->imgid, category, (int)level);
+          if (tag)
+          {
+            result = g_strdup(tag);
+            g_free(tag);
+          }
         }
+        g_free(category);
       }
-      g_free(category);
     }
+  }
+  else if (has_prefix(variable, "TAGS"))
+  {
+    GList *tags_list = dt_tag_get_list_export(params->imgid, params->data->tags_flags);
+    char *tags = dt_util_glist_to_str(",", tags_list);
+    g_list_free_full(tags_list, g_free);
+    result = g_strdup(tags);
+    g_free(tags);
   }
   else
   {
     // go past what looks like an invalid variable. we only expect to see [a-zA-Z]* in a variable name.
     while(g_ascii_isalpha(**variable)) (*variable)++;
   }
-
   if(!result) result = g_strdup("");
 
   return result;
@@ -784,6 +798,11 @@ void dt_variables_set_exif_time(dt_variables_params_t *params, time_t exif_time)
 void dt_variables_reset_sequence(dt_variables_params_t *params)
 {
   params->data->sequence = 0;
+}
+
+void dt_variables_set_tags_flags(dt_variables_params_t *params, uint32_t flags)
+{
+  params->data->tags_flags = flags;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
