@@ -1236,9 +1236,9 @@ static void auto_apply_presets(dt_develop_t *dev)
   // be extra sure that we don't mess up history in separate threads:
   dt_pthread_mutex_lock(&darktable.db_insert);
 
-  int run = 0;
+  gboolean run = FALSE;
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-  if(!(image->flags & DT_IMAGE_AUTO_PRESETS_APPLIED)) run = 1;
+  if(!(image->flags & DT_IMAGE_AUTO_PRESETS_APPLIED)) run = TRUE;
 
   // flag was already set? only apply presets once in the lifetime of a history stack.
   // (the flag will be cleared when removing it)
