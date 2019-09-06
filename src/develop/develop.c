@@ -1624,11 +1624,6 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
       hist->enabled = 1;
     }
 
-    // memcpy(hist->module->params, hist->params, hist->module->params_size);
-    // hist->module->enabled = hist->enabled;
-    // printf("[dev read history] img %d number %d for operation %d - %s params %f %f\n",
-    // sqlite3_column_int(stmt, 0), sqlite3_column_int(stmt, 1), instance, hist->module->op, *(float
-    // *)hist->params, *(((float*)hist->params)+1));
     dev->history = g_list_append(dev->history, hist);
     dev->history_end++;
   }
