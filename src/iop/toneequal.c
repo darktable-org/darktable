@@ -1027,13 +1027,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     return;
   }
 
-  if(!((size_t)luminance & 64))
-  {
-    // Pointers are not 64-bits aligned, and SSE code will segfault
-    dt_control_log(_("tone equalizer luminance buffer is ill-aligned, please report the bug to the developpers"));
-    return;
-  }
-
   // Compute the luminance mask
   if(cached)
   {

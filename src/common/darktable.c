@@ -1181,7 +1181,7 @@ void *dt_alloc_align(size_t alignment, size_t size)
 size_t dt_round_size(const size_t size, const size_t alignment)
 {
   // Round the size of a buffer to the closest higher multiple
-  return (size & alignment) ? size : ((size / alignment) + 1) * alignment;
+  return ((size % alignment) != 0) ? size : ((size / alignment) + 1) * alignment;
 }
 
 size_t dt_round_size_sse(const size_t size)
