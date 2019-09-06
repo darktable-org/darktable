@@ -1589,9 +1589,21 @@ void dt_tag_update_used_tags()
                         NULL, NULL, NULL);
 }
 
+static guint dt_get_nb_tag_element(const char *name)
+{
+  guint count = 0;
+  while(name[0])
+  {
+    if (name[0] == '|') count ++;
+    name ++;
+  }
+  return count;
+}
+
 char *dt_tag_get_subtag(const gint imgid, const char *category, const int level)
 {
   if (!category) return NULL;
+  const guint rootnb = dt_get_nb_tag_element(category);
   char *result = NULL;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -1602,19 +1614,17 @@ char *dt_tag_get_subtag(const gint imgid, const char *category, const int level)
           -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, category, -1, SQLITE_TRANSIENT);
-
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     char *tag = (char *)sqlite3_column_text(stmt, 0);
-    gchar **pch = g_strsplit(tag, "|", -1);
-    guint len = g_strv_length(pch);
-    if (len >= level + 2)
+    const guint tagnb = dt_get_nb_tag_element(tag);
+    if (tagnb >= rootnb + level)
     {
-      result = g_strdup(pch[level + 1]);
+      gchar **pch = g_strsplit(tag, "|", -1);
+      result = g_strdup(pch[rootnb + level]);
       g_strfreev(pch);
       break;
     }
-    g_strfreev(pch);
   }
   sqlite3_finalize(stmt);
   return result;
