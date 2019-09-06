@@ -484,6 +484,7 @@ static inline void fast_surface_blur(float *const restrict image,
     {
       // Increase the radius for the next iteration
       ds_radius *= 2.0f;
+      feathering /= 2.0f;
     }
   }
 

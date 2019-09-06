@@ -72,42 +72,6 @@ static int gauss_make_triangular(double *A, int *p, int n)
   return 1;
 }
 
-
-static int gauss_make_triangular_f(float *A, int *p, int n)
-{
-  p[n - 1] = n - 1; // we never swap from the last row
-  for(int k = 0; k < n; ++k)
-  {
-    // find pivot element for row swap
-    int m = k;
-    for(int i = k + 1; i < n; ++i)
-      if(fabs(A[k + n * i]) > fabs(A[k + n * m])) m = i;
-    p[k] = m; // rows k and m are swapped
-    // eliminate elements and swap rows
-    float t1 = A[k + n * m];
-    A[k + n * m] = A[k + n * k];
-    A[k + n * k] = t1; // new diagonal elements are (implicitly) one, store scaling factors on diagonal
-    if(t1 != 0)
-    {
-      for(int i = k + 1; i < n; ++i) A[k + n * i] /= -t1;
-      // swap rows
-      if(k != m)
-        for(int i = k + 1; i < n; ++i)
-        {
-          float t2 = A[i + n * m];
-          A[i + n * m] = A[i + n * k];
-          A[i + n * k] = t2;
-        }
-      for(int j = k + 1; j < n; ++j)
-        for(int i = k + 1; i < n; ++i) A[i + n * j] += A[k + j * n] * A[i + k * n];
-    }
-    else
-      // the matrix is singular
-      return 0;
-  }
-  return 1;
-}
-
 // backward substritution after Gaussian elimination
 static void gauss_solve_triangular(const double *A, const int *p, double *b, int n)
 {
@@ -130,41 +94,11 @@ static void gauss_solve_triangular(const double *A, const int *p, double *b, int
   b[0] /= A[0 + 0 * n];
 }
 
-static void gauss_solve_triangular_f(const float *A, const int *p, float *b, int n)
-{
-  // permute and rescale elements of right-hand-side
-  for(int k = 0; k < n - 1; ++k)
-  {
-    int m = p[k];
-    float t = b[m];
-    b[m] = b[k];
-    b[k] = t;
-    for(int i = k + 1; i < n; ++i) b[i] += A[k + n * i] * t;
-  }
-  // perform backward substritution
-  for(int k = n - 1; k > 0; --k)
-  {
-    b[k] /= A[k + n * k];
-    float t = b[k];
-    for(int i = 0; i < k; ++i) b[i] -= A[k + n * i] * t;
-  }
-  b[0] /= A[0 + 0 * n];
-}
-
-int gauss_solve(double *A, double *b, int n)
+static int gauss_solve(double *A, double *b, int n)
 {
   int *p = malloc(n * sizeof(*p));
   int err_code = 1;
   if((err_code = gauss_make_triangular(A, p, n))) gauss_solve_triangular(A, p, b, n);
-  free(p);
-  return err_code;
-}
-
-int gauss_solve_f(float *A, float *b, int n)
-{
-  int *p = malloc(n * sizeof(*p));
-  int err_code = 1;
-  if((err_code = gauss_make_triangular_f(A, p, n))) gauss_solve_triangular_f(A, p, b, n);
   free(p);
   return err_code;
 }
