@@ -577,7 +577,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
           else
           {
             can_move = 0;
-            fprintf(stderr, "[dt_ioppr_check_duplicate_iop_order 1] modules %s %s(%f) and %s %s(%f) has the same iop_order\n",
+            fprintf(stderr, "[dt_ioppr_check_duplicate_iop_order 1] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
                 mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
           }
         }
@@ -589,7 +589,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
 
       if(!can_move)
       {
-        fprintf(stderr, "[dt_ioppr_check_duplicate_iop_order] modules %s %s(%f) and %s %s(%f) has the same iop_order\n",
+        fprintf(stderr, "[dt_ioppr_check_duplicate_iop_order] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
             mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
       }
     }
@@ -800,7 +800,7 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
         }
         else if(mod1->iop_order == mod2->iop_order)
         {
-          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) and %s %s(%f) has the same iop_order\n",
+          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) and %s %s(%f) have the same iop_order\n",
               mod1->op, mod1->multi_name, mod1->iop_order, mod2->op, mod2->multi_name, mod2->iop_order);
         }
         else
@@ -897,7 +897,7 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
         }
         else if(mod1->iop_order == mod2->iop_order)
         {
-          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) and %s %s(%f) has the same iop_order\n",
+          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) and %s %s(%f) have the same iop_order\n",
               mod1->op, mod1->multi_name, mod1->iop_order, mod2->op, mod2->multi_name, mod2->iop_order);
         }
         else
@@ -914,7 +914,7 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
   }
   else
   {
-    fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] modules %s %s(%f) and %s %s(%f) has the same iop_order\n",
+    fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
         module->op, module->multi_name, module->iop_order, module_next->op, module_next->multi_name, module_next->iop_order);
   }
 
@@ -1331,7 +1331,7 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
             iop_order_ok = 0;
             fprintf(
                 stderr,
-                "[dt_ioppr_check_iop_order] module %s %s(%i)(%f) and %s %s(%i)(%f) has the same order image %i (%s)\n",
+                "[dt_ioppr_check_iop_order] module %s %s(%i)(%f) and %s %s(%i)(%f) have the same order image %i (%s)\n",
                 mod->op, mod->multi_name, mod->multi_priority, mod->iop_order, mod_prev->op,
                 mod_prev->multi_name, mod_prev->multi_priority, mod_prev->iop_order, imgid, msg);
           }
