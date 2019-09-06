@@ -26,6 +26,7 @@
 #include <unistd.h>
 
 #include "common/debug.h"
+#include "common/history.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/mipmap_cache.h"
@@ -1227,11 +1228,13 @@ void dt_dev_write_history(dt_develop_t *dev)
   dt_dev_write_history_ext(dev, dev->image_storage.id);
 }
 
-static void auto_apply_presets(dt_develop_t *dev)
+static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 {
+  // NOTE: the presets/default iops will be *prepended* into the history.
+
   const int imgid = dev->image_storage.id;
 
-  if(imgid <= 0) return;
+  if(imgid <= 0) return FALSE;
 
   // be extra sure that we don't mess up history in separate threads:
   dt_pthread_mutex_lock(&darktable.db_insert);
@@ -1246,11 +1249,11 @@ static void auto_apply_presets(dt_develop_t *dev)
   {
     dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
     dt_pthread_mutex_unlock(&darktable.db_insert);
-    return;
+    return FALSE;
   }
 
-  // cleanup
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.history", NULL, NULL, NULL);
+  // select all presets from one of the following table and add them into memory.history. Note that
+  // this is appended to possibly already present default modules.
   const char *preset_table[2] = { "data.presets", "main.legacy_presets" };
   const int legacy = (image->flags & DT_IMAGE_NO_LEGACY_PRESETS) ? 0 : 1;
   char query[1024];
@@ -1281,135 +1284,169 @@ static void auto_apply_presets(dt_develop_t *dev)
   // 0: dontcare, 1: ldr, 2: raw
   DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 11,
                                dt_image_is_ldr(image) ? FOR_LDR : (dt_image_is_raw(image) ? FOR_RAW : FOR_HDR));
-
-  if(sqlite3_step(stmt) == SQLITE_DONE)
-  {
-    sqlite3_finalize(stmt);
-    // count what we found:
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM memory.history", -1,
-                                &stmt, NULL);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      // if there is anything..
-      const int cnt = sqlite3_column_int(stmt, 0);
-      sqlite3_finalize(stmt);
-
-      // workaround a sqlite3 "feature". The above statement to insert items into memory.history is complex and in
-      // this case sqlite does not give rowid a linear increment. But the following code really expect that the rowid in
-      // this table starts from 0 and increment one by one. So in the following code we rewrite the num values.
-
-      if(cnt > 0)
-      {
-        // get all rowids
-        GList *rowids = NULL;
-
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "SELECT rowid FROM memory.history ORDER BY rowid ASC", -1, &stmt, NULL);
-        while(sqlite3_step(stmt) == SQLITE_ROW)
-          rowids = g_list_append(rowids, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
-        sqlite3_finalize(stmt);
-
-        // update num accordingly
-        int v = 0;
-
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "UPDATE memory.history SET num=?1 WHERE rowid=?2", -1, &stmt, NULL);
-
-        // let's wrap this into a transaction, it might make it a little faster.
-        sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
-        for(GList *r = rowids; r; r = g_list_next(r))
-        {
-          DT_DEBUG_SQLITE3_CLEAR_BINDINGS(stmt);
-          DT_DEBUG_SQLITE3_RESET(stmt);
-          DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, v);
-          DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, GPOINTER_TO_INT(r->data));
-
-          if(sqlite3_step(stmt) != SQLITE_DONE) break;
-
-          v++;
-        }
-
-        sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
-
-        g_list_free(rowids);
-        sqlite3_finalize(stmt);
-
-        // while we are here update the iop order
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT num, operation FROM memory.history", -1,
-                                    &stmt, NULL);
-        while(sqlite3_step(stmt) == SQLITE_ROW)
-        {
-          const int num = sqlite3_column_int(stmt, 0);
-          const char *op_name = (char *)sqlite3_column_text(stmt, 1);
-
-          double iop_order = -1.0;
-
-          GList *modules = g_list_first(dev->iop);
-          while(modules)
-          {
-            dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
-            if(strcmp(mod->op, op_name) == 0)
-            {
-              iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, mod->op);
-              break;
-            }
-            modules = g_list_next(modules);
-          }
-
-          if(iop_order != DBL_MAX)
-          {
-            sqlite3_stmt *stmt2;
-            DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                        "UPDATE memory.history SET iop_order=?1 WHERE num=?2", -1, &stmt2, NULL);
-            DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt2, 1, iop_order);
-            DT_DEBUG_SQLITE3_BIND_INT(stmt2, 2, num);
-            sqlite3_step(stmt2);
-            sqlite3_finalize(stmt2);
-          }
-        }
-        sqlite3_finalize(stmt);
-      }
-
-      // fprintf(stderr, "[auto_apply_presets] imageid %d found %d matching presets (legacy %d)\n", imgid,
-      // cnt, legacy);
-      // advance the current history by that amount:
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "UPDATE main.history SET num=num+?1 WHERE imgid=?2", -1, &stmt, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-
-      if(sqlite3_step(stmt) == SQLITE_DONE)
-      {
-        sqlite3_finalize(stmt);
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "UPDATE main.images SET history_end=history_end+?1 WHERE id=?2",
-                                    -1, &stmt, NULL);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
-        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-        if(sqlite3_step(stmt) == SQLITE_DONE)
-        {
-          // and finally prepend the rest with increasing numbers (starting at 0)
-          sqlite3_finalize(stmt);
-          DT_DEBUG_SQLITE3_PREPARE_V2(
-              dt_database_get(darktable.db),
-              "INSERT INTO main.history SELECT imgid, num, module, operation, op_params, enabled, "
-              "blendop_params, blendop_version, multi_priority, multi_name, iop_order FROM memory.history",
-              -1, &stmt, NULL);
-          sqlite3_step(stmt);
-        }
-      }
-    }
-  }
+  sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-
-  //  first time we are loading the image, try to import lightroom .xmp if any
-  if(dev->image_loading) dt_lightroom_import(dev->image_storage.id, dev, TRUE);
 
   image->flags |= DT_IMAGE_AUTO_PRESETS_APPLIED | DT_IMAGE_NO_LEGACY_PRESETS;
   dt_pthread_mutex_unlock(&darktable.db_insert);
 
   // make sure these end up in the image_cache + xmp (sync through here if we set the flag)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+
+  return TRUE;
+}
+
+void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const int imgid)
+{
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+    dt_database_get(darktable.db),
+    "INSERT INTO memory.history VALUES (?1, 0, ?2, ?3, ?4, 1, NULL, 0, 0, '', ?5)",
+    -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, module->op, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, module->default_params, module->params_size, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 5,  dt_ioppr_get_iop_order(dev->iop_order_list, module->op));
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
+static void _dev_add_default_modules(dt_develop_t *dev, const int imgid)
+{
+  for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
+    if(!dt_history_check_module_exists(imgid, module->op)
+       && module->enabled == 1
+       && module->hide_enable_button == 1
+       && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
+    {
+      _dev_insert_module(dev, module, imgid);
+    }
+  }
+}
+
+static void _dev_merge_history(dt_develop_t *dev, const int imgid)
+{
+  sqlite3_stmt *stmt;
+
+  // count what we found:
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM memory.history", -1,
+                              &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    // if there is anything..
+    const int cnt = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+
+    // workaround a sqlite3 "feature". The above statement to insert items into memory.history is complex and in
+    // this case sqlite does not give rowid a linear increment. But the following code really expect that the rowid in
+    // this table starts from 0 and increment one by one. So in the following code we rewrite the num values.
+
+    if(cnt > 0)
+    {
+      // get all rowids
+      GList *rowids = NULL;
+
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT rowid FROM memory.history ORDER BY rowid ASC", -1, &stmt, NULL);
+      while(sqlite3_step(stmt) == SQLITE_ROW)
+        rowids = g_list_append(rowids, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+      sqlite3_finalize(stmt);
+
+      // update num accordingly
+      int v = 0;
+
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "UPDATE memory.history SET num=?1 WHERE rowid=?2", -1, &stmt, NULL);
+
+      // let's wrap this into a transaction, it might make it a little faster.
+      sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
+      for(GList *r = rowids; r; r = g_list_next(r))
+      {
+        DT_DEBUG_SQLITE3_CLEAR_BINDINGS(stmt);
+        DT_DEBUG_SQLITE3_RESET(stmt);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, v);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, GPOINTER_TO_INT(r->data));
+
+        if(sqlite3_step(stmt) != SQLITE_DONE) break;
+
+        v++;
+      }
+
+      sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+
+      g_list_free(rowids);
+      sqlite3_finalize(stmt);
+
+      // while we are here update the iop order
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT num, operation FROM memory.history", -1,
+                                  &stmt, NULL);
+      while(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        const int num = sqlite3_column_int(stmt, 0);
+        const char *op_name = (char *)sqlite3_column_text(stmt, 1);
+
+        double iop_order = -1.0;
+
+        GList *modules = g_list_first(dev->iop);
+        while(modules)
+        {
+          dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+          if(strcmp(mod->op, op_name) == 0)
+          {
+            iop_order = dt_ioppr_get_iop_order(dev->iop_order_list, mod->op);
+            break;
+          }
+          modules = g_list_next(modules);
+        }
+
+        if(iop_order != DBL_MAX)
+        {
+          sqlite3_stmt *stmt2;
+          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                      "UPDATE memory.history SET iop_order=?1 WHERE num=?2", -1, &stmt2, NULL);
+          DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt2, 1, iop_order);
+          DT_DEBUG_SQLITE3_BIND_INT(stmt2, 2, num);
+          sqlite3_step(stmt2);
+          sqlite3_finalize(stmt2);
+        }
+      }
+      sqlite3_finalize(stmt);
+    }
+
+    // advance the current history by cnt amount, that is, make space for the preset/default iops that will be
+    // *prepended* into the history.
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "UPDATE main.history SET num=num+?1 WHERE imgid=?2", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+
+    if(sqlite3_step(stmt) == SQLITE_DONE)
+    {
+      sqlite3_finalize(stmt);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "UPDATE main.images SET history_end=history_end+?1 WHERE id=?2",
+                                  -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+
+      if(sqlite3_step(stmt) == SQLITE_DONE)
+      {
+        // and finally prepend the rest with increasing numbers (starting at 0)
+        sqlite3_finalize(stmt);
+        DT_DEBUG_SQLITE3_PREPARE_V2(
+          dt_database_get(darktable.db),
+          "INSERT INTO main.history SELECT imgid, num, module, operation, op_params, enabled, "
+          "blendop_params, blendop_version, multi_priority, multi_name, iop_order FROM memory.history",
+          -1, &stmt, NULL);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+      }
+    }
+  }
 }
 
 void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_image)
@@ -1443,8 +1480,20 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 
   if(!no_image)
   {
-    // maybe prepend auto-presets to history before loading it:
-    auto_apply_presets(dev);
+    // cleanup
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.history", NULL, NULL, NULL);
+
+    // prepend all default modules to memory.history
+    _dev_add_default_modules(dev, imgid);
+
+    // maybe add auto-presets to memory.history and commit everything into main.history
+    gboolean first_run = _dev_auto_apply_presets(dev);
+
+    // now merge memory.histroy into main.history
+    _dev_merge_history(dev, imgid);
+
+    //  first time we are loading the image, try to import lightroom .xmp if any
+    if(dev->image_loading && first_run) dt_lightroom_import(dev->image_storage.id, dev, TRUE);
   }
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT history_end FROM main.images WHERE id = ?1",
