@@ -673,7 +673,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   GList *history = g_list_first(darktable.develop->history);
   while(history)
   {
-    dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
+    const dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
 
     gchar *label;
     if(!hitem->multi_name[0] || strcmp(hitem->multi_name, "0") == 0)
@@ -756,7 +756,7 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   if(darktable.gui->reset) return;
 
   /* revert to given history item. */
-  int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history-number"));
+  const int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history-number"));
   dt_dev_pop_history_items(darktable.develop, num);
   // set the module list order
   dt_dev_reorder_gui_module_list(darktable.develop);
