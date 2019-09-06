@@ -1285,14 +1285,13 @@ static void auto_apply_presets(dt_develop_t *dev)
   if(sqlite3_step(stmt) == SQLITE_DONE)
   {
     sqlite3_finalize(stmt);
-    int cnt = 0;
     // count what we found:
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM memory.history", -1,
                                 &stmt, NULL);
     if(sqlite3_step(stmt) == SQLITE_ROW)
     {
       // if there is anything..
-      cnt = sqlite3_column_int(stmt, 0);
+      const int cnt = sqlite3_column_int(stmt, 0);
       sqlite3_finalize(stmt);
 
       // workaround a sqlite3 "feature". The above statement to insert items into memory.history is complex and in
