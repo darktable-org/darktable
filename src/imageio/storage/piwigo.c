@@ -634,6 +634,7 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui, const gchar
   gtk_widget_set_sensitive(GTK_WIDGET(ui->album_list), TRUE);
   gtk_widget_set_sensitive(GTK_WIDGET(ui->parent_album_list), TRUE);
   dt_bauhaus_combobox_set(ui->album_list, index);
+  dt_bauhaus_combobox_set(ui->parent_album_list, 0);
 }
 
 
@@ -843,7 +844,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   ui->album_list = dt_bauhaus_combobox_new(NULL); // Available albums
-  dt_bauhaus_widget_set_label(ui->album_list, NULL, _("albums"));
+  dt_bauhaus_widget_set_label(ui->album_list, NULL, _("album"));
   g_signal_connect(G_OBJECT(ui->album_list), "value-changed", G_CALLBACK(_piwigo_album_changed), (gpointer)ui);
   gtk_widget_set_sensitive(ui->album_list, FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), ui->album_list, TRUE, TRUE, 0);
