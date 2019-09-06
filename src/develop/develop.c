@@ -1167,9 +1167,9 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 
   if(!dev_iop_changed)
   {
-  dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
-  dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
-  dev->preview2_pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
+    dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
+    dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
+    dev->preview2_pipe->changed |= DT_DEV_PIPE_SYNCH; // again, fixed topology for now.
   }
   else
   {
