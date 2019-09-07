@@ -3174,7 +3174,7 @@ static void dt_exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgi
   }
 
   // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
-  if (!metadata || (metadata && !(metadata->flags & DT_META_EXIF)))
+  if (!(metadata->flags & DT_META_EXIF))
     xmpData["Xmp.exif.DateTimeOriginal"] = datetime_taken;
 
   // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
@@ -3186,7 +3186,7 @@ static void dt_exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgi
   if(filename) xmpData["Xmp.xmpMM.DerivedFrom"] = filename;
 
   // GPS data
-  if (!metadata || (metadata && (metadata->flags & DT_META_GEOTAG)))
+  if (metadata->flags & DT_META_GEOTAG)
     dt_set_xmp_exif_geotag(xmpData, longitude, latitude, altitude);
   else
     dt_remove_xmp_exif_geotag(xmpData);
@@ -3194,15 +3194,15 @@ static void dt_exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgi
   sqlite3_finalize(stmt);
 
   // the meta data
-  if (!metadata || (metadata && (metadata->flags & DT_META_METADATA)))
+  if (metadata->flags & DT_META_METADATA)
     dt_set_xmp_dt_metadata(xmpData, imgid);
 
   // tags
-  if (!metadata || (metadata && (metadata->flags & DT_META_TAG)))
+  if (metadata->flags & DT_META_TAG)
   {
     // get tags from db, store in dublin core
     std::unique_ptr<Exiv2::Value> v1(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
-    GList *tags = dt_tag_get_list_export(imgid, metadata ? metadata->flags : 0);
+    GList *tags = dt_tag_get_list_export(imgid, metadata->flags);
     while(tags)
     {
       v1->read((char *)tags->data);
@@ -3212,7 +3212,7 @@ static void dt_exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgi
     g_list_free_full(tags, g_free);
   }
 
-  if (metadata && (metadata->flags & DT_META_HIERARCHICAL_TAG))
+  if (metadata->flags & DT_META_HIERARCHICAL_TAG)
   {
     std::unique_ptr<Exiv2::Value> v2(Exiv2::Value::create(Exiv2::xmpSeq)); // or xmpBag or xmpAlt.
     GList *hierarchical = dt_tag_get_hierarchical_export(imgid, metadata->flags);
@@ -3227,7 +3227,7 @@ static void dt_exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgi
 
   /* TODO: Add tags to IPTC namespace as well */
 
-  if (!metadata || (metadata && (metadata->flags & DT_META_DT_HISTORY)))
+  if (metadata->flags & DT_META_DT_HISTORY)
   {
     xmpData["Xmp.darktable.xmp_version"] = xmp_version;
     xmpData["Xmp.darktable.raw_params"] = raw_params;
@@ -3393,7 +3393,7 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
       dt_remove_xmp_keys(xmpData, keys, n_keys);
     }
 
-    if (m && !(m->flags & DT_META_EXIF))
+    if (!(m->flags & DT_META_EXIF))
       img->clearExifData();
 
 
@@ -3402,51 +3402,49 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
     // the same as what we just copied over from the sidecar file, but you never know ...
     dt_exif_xmp_read_data_export(xmpData, imgid, m);
 
-    if (m)
+    Exiv2::IptcData &iptcData = img->iptcData();
+    Exiv2::ExifData &exifData = img->exifData();
+    // make sure to remove all geotags if necessary
+    if (!(m->flags & DT_META_GEOTAG))
+      dt_remove_exif_geotag(exifData);
+    // calculated metadata
+    dt_variables_params_t *params;
+    dt_variables_params_init(&params);
+    params->filename = input_filename;
+    params->jobcode = "export";
+    params->sequence = 0;
+    params->imgid = imgid;
+    dt_variables_set_tags_flags(params, m->flags);
+    for (GList *tags = m->list; tags; tags = g_list_next(tags))
     {
-      Exiv2::IptcData &iptcData = img->iptcData();
-      Exiv2::ExifData &exifData = img->exifData();
-      // make sure to remove all geotags if necessary
-      if (!(m->flags & DT_META_GEOTAG))
-        dt_remove_exif_geotag(exifData);
-      // calculated metadata
-      dt_variables_params_t *params;
-      dt_variables_params_init(&params);
-      params->filename = input_filename;
-      params->jobcode = "export";
-      params->sequence = 0;
-      params->imgid = imgid;
-      dt_variables_set_tags_flags(params, m->flags);
-      for (GList *tags = m->list; tags; tags = g_list_next(tags))
+      gchar *tagname = (gchar *)tags->data;
+      tags = g_list_next(tags);
+      if (!tags) break;
+      gchar *formula = (gchar *)tags->data;
+      if (formula[0])
       {
-        gchar *tagname = (gchar *)tags->data;
-        tags = g_list_next(tags);
-        if (!tags) break;
-        gchar *formula = (gchar *)tags->data;
-        if (formula[0])
-        {
-          gchar *result = dt_variables_expand(params, formula, FALSE);
-          if (result && result[0])
-          {
-            if (g_str_has_prefix(tagname, "Xmp."))
-              xmpData[tagname] = result;
-            else if (g_str_has_prefix(tagname, "Iptc."))
-              iptcData[tagname] = result;
-            else if (g_str_has_prefix(tagname, "Exif."))
-              exifData[tagname] = result;
-          }
-          g_free(result);
-        }
-        else
+        gchar *result = dt_variables_expand(params, formula, FALSE);
+        if (result && result[0])
         {
           if (g_str_has_prefix(tagname, "Xmp."))
-            dt_remove_xmp_key(xmpData, tagname);
+            xmpData[tagname] = result;
+          else if (g_str_has_prefix(tagname, "Iptc."))
+            iptcData[tagname] = result;
           else if (g_str_has_prefix(tagname, "Exif."))
-            dt_remove_exif_key(exifData, tagname);
+            exifData[tagname] = result;
         }
+        g_free(result);
       }
-      dt_variables_params_destroy(params);
+      else
+      {
+        if (g_str_has_prefix(tagname, "Xmp."))
+          dt_remove_xmp_key(xmpData, tagname);
+        else if (g_str_has_prefix(tagname, "Exif."))
+          dt_remove_exif_key(exifData, tagname);
+      }
     }
+    dt_variables_params_destroy(params);
+
 
     img->writeMetadata();
     return 0;

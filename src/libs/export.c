@@ -55,6 +55,7 @@ typedef struct dt_lib_export_t
   char *metadata_export;
 } dt_lib_export_t;
 
+char *dt_lib_export_metadata_default_flags();
 char *dt_lib_export_metadata_configuration_dialog(char *list);
 /** Updates the combo box and shows only the supported formats of current selected storage module */
 static void _update_formats_combobox(dt_lib_export_t *d);
@@ -233,7 +234,7 @@ void gui_reset(dt_lib_module_t *self)
 
   // export metadata presets
   if (d->metadata_export) g_free(d->metadata_export);
-  d->metadata_export = g_strdup("");
+  d->metadata_export = dt_lib_export_metadata_default_flags();
 
   dt_imageio_module_format_t *mformat = dt_imageio_get_format();
   if(mformat) mformat->gui_reset(mformat);
@@ -1074,14 +1075,18 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
   else if(old_version == 5)
   {
     // add metadata preset string
-    size_t new_params_size = old_params_size + sizeof(char);
+    char *flags = dt_lib_export_metadata_default_flags();
+    const int flags_size = strlen(flags) + 1;
+    size_t new_params_size = old_params_size + flags_size;
     void *new_params = calloc(1, new_params_size);
-
     size_t pos = 0;
     memcpy(new_params, old_params, 6 * sizeof(int32_t));
-    pos += 6 * sizeof(int32_t) + sizeof(char);
-    memcpy(new_params + pos, old_params + pos - sizeof(char), old_params_size - 6 * sizeof(int32_t));
+    pos += 6 * sizeof(int32_t);
+    memcpy(new_params + pos, flags, flags_size);
+    pos += flags_size;
+    memcpy(new_params + pos, old_params + pos - flags_size, old_params_size - 6 * sizeof(int32_t));
 
+    g_free(flags);
     *new_size = new_params_size;
     *new_version = 6;
     return new_params;
@@ -1221,6 +1226,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   buf += sizeof(int32_t);
   const char *metadata_export = buf;
   buf += strlen(metadata_export) + 1;
+  if (d->metadata_export) g_free(d->metadata_export);
   d->metadata_export = g_strdup(metadata_export);
   const char *iccfilename = buf;
   buf += strlen(iccfilename) + 1;

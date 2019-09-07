@@ -750,7 +750,6 @@ static gboolean preset_lib_module_callback(GtkAccelGroup *accel_group, GObject *
   sqlite3_finalize(stmt);
   if(res)
   {
-    printf("accelerators delete preset %s %s\n", module->plugin_name, pn);
     dt_control_log(_("deleting preset for obsolete module"));
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                 "DELETE FROM data.presets WHERE operation = ?1 AND op_version = ?2 AND name = ?3",

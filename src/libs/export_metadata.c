@@ -192,6 +192,12 @@ static void formula_edited(GtkCellRenderer *renderer, gchar *path, gchar *new_te
     gtk_list_store_set(d->liststore, &iter, DT_LIB_EXPORT_METADATA_COL_FORMULA, new_text, -1);
 }
 
+char *dt_lib_export_metadata_default_flags()
+{
+  const uint32_t flags = DT_META_EXIF | DT_META_METADATA | DT_META_GEOTAG | DT_META_TAG;
+  return dt_util_dstrcat(NULL, "%04x", flags);
+}
+
 char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets)
 {
   dt_lib_export_metadata_t *d = calloc(1, sizeof(dt_lib_export_metadata_t));
@@ -273,6 +279,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets)
                         "click on formula cell to edit. recognized variables:"),
                         dt_gtkentry_get_default_path_compl_list());
   gtk_widget_set_tooltip_text(GTK_WIDGET(view), tooltip_text);
+  g_free(tooltip_text);
   g_signal_connect(G_OBJECT(view), "key_press_event", G_CALLBACK(key_press_on_list), (gpointer)d);
 
   GtkListStore *liststore = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
