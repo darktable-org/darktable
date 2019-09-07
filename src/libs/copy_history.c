@@ -182,7 +182,7 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
     if(img < 0)
       dt_history_compress_on_selection();
     else
-      dt_history_compress_on_image_and_reload(img);
+      dt_history_compress_on_image(img);
 
     dt_collection_update_query(darktable.collection);
     dt_control_queue_redraw_center();

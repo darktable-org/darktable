@@ -701,11 +701,11 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer user_data)
 {
   const int32_t imgid = darktable.develop->image_storage.id;
-  if(!imgid) return;
+  if(imgid<0) return;
 
   dt_history_compress_on_image(imgid);
 
-  sqlite3_stmt *stmt;
+/*  sqlite3_stmt *stmt;
 
   // then we can get the item to select in the new clean-up history retrieve the position of the module
   // corresponding to the history end.
@@ -726,6 +726,7 @@ static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer u
   sqlite3_finalize(stmt);
 
   dt_dev_reload_history_items(darktable.develop);
+*/
   dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
 }
 

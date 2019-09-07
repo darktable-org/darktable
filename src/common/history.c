@@ -872,15 +872,21 @@ int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge, GList 
 
 void dt_history_compress_on_image(int32_t imgid)
 {
-  // ok, just make sure the current history is written!
+  if (imgid < 0) return;
+
+  // make sure the current history is written
   dt_dev_write_history(darktable.develop);
-  if (imgid <0) return;
+
   // We use the global darktable.develop so when we want to use a specific image
   // for history and masks in the database we have to load it in case it's not there
   if(!dt_dev_is_current_image(darktable.develop, imgid))
-  {
     dt_dev_load_image(darktable.develop, imgid); 
+  if(!dt_dev_is_current_image(darktable.develop, imgid))
+  {
+     fprintf(stderr,"\nCould not load image# %i while trying to compress history",imgid);
+     return;
   }
+
   // compress history, keep disabled modules as documented
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -964,20 +970,6 @@ void dt_history_compress_on_image(int32_t imgid)
 
   // load new history and write it back to ensure that all history are properly numbered without a gap
   dt_dev_reload_history_items(darktable.develop);
-  dt_dev_write_history(darktable.develop);
-
-  // Update XMP files
-  dt_image_synch_xmp(imgid);
-}
-
-void dt_history_compress_on_image_and_reload(int32_t imgid)
-{
-  if(!imgid) return;
-
-  dt_history_compress_on_image(imgid);
-  if(imgid !=  darktable.develop->image_storage.id) return;
-  // The next stuff is from src/libs/history.c
-  sqlite3_stmt *stmt;
 
   // then we can get the item to select in the new clean-up history retrieve the position of the module
   // corresponding to the history end.
@@ -998,9 +990,9 @@ void dt_history_compress_on_image_and_reload(int32_t imgid)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  // FIXME here we probably want darktable.develop, the history and modules in a state that will not
-  // be used by the next opended image
-
+  dt_dev_reload_history_items(darktable.develop);
+  dt_dev_write_history(darktable.develop);
+  dt_image_synch_xmp(imgid);
 }
 
 void dt_history_compress_on_selection()
@@ -1011,11 +1003,17 @@ void dt_history_compress_on_selection()
                               NULL);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
-    dt_history_compress_on_image_and_reload(sqlite3_column_int(stmt, 0));
+    dt_history_compress_on_image(sqlite3_column_int(stmt, 0));
 
   sqlite3_finalize(stmt);
 
-
+  // Unfortunately we have some residuals in the history now that need to be removed
+  while(darktable.develop->history)
+  {
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(darktable.develop->history->data);
+    dt_dev_free_history_item(hist);
+    darktable.develop->history = g_list_delete_link(darktable.develop->history, darktable.develop->history);
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
