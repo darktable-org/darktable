@@ -26,6 +26,7 @@
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/gtkentry.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #include <gdk/gdkkeysyms.h>
@@ -41,11 +42,44 @@ typedef enum dt_lib_tagging_cols_t
 
 typedef struct dt_lib_export_metadata_t
 {
-  GtkEntry *entry;
   GtkTreeView *view;
   GtkListStore *liststore;
   GtkWidget *dialog;
 } dt_lib_export_metadata_t;
+
+// TODO replace the following list by a dynamic exiv2 list able to provide info type
+// Here are listed only string or XmpText. Can be added as needed.
+const char *dt_export_xmp_keys[]
+    = { "Xmp.dc.creator", "Xmp.dc.publisher", "Xmp.dc.title", "Xmp.dc.description", "Xmp.dc.rights",
+        "Xmp.dc.subject",
+
+        "Xmp.exif.GPSLatitude", "Xmp.exif.GPSLongitude", "Xmp.exif.GPSAltitude",
+        "Xmp.exif.DateTimeOriginal",
+        "Xmp.exifEX.LensModel",
+
+        "Exif.Image.DateTimeOriginal", "Exif.Image.Make", "Exif.Image.Model", "Exif.Image.Orientation",
+        "Exif.Image.Artist", "Exif.Image.Copyright", "Exif.Image.Rating",
+
+        "Exif.GPSInfo.GPSLatitude", "Exif.GPSInfo.GPSLongitude", "Exif.GPSInfo.GPSAltitude",
+        "Exif.GPSInfo.GPSLatitudeRef", "Exif.GPSInfo.GPSLongitudeRef", "Exif.GPSInfo.GPSAltitudeRef",
+        "Exif.GPSInfo.GPSVersionID",
+
+        "Exif.Photo.DateTimeOriginal", "Exif.Photo.ExposureTime", "Exif.Photo.ShutterSpeedValue",
+        "Exif.Photo.FNumber", "Exif.Photo.ApertureValue", "Exif.Photo.ISOSpeedRatings",
+        "Exif.Photo.FocalLengthIn35mmFilm", "Exif.Photo.LensModel", "Exif.Photo.Flash",
+        "Exif.Photo.WhiteBalance", "Exif.Photo.UserComment", "Exif.Photo.ColorSpace",
+
+        "Xmp.xmp.CreateDate", "Xmp.xmp.CreatorTool", "Xmp.xmp.Identifier", "Xmp.xmp.Label", "Xmp.xmp.ModifyDate",
+        "Xmp.xmp.Nickname", "Xmp.xmp.Rating",
+
+        "Iptc.Application2.Subject", "Iptc.Application2.Keywords", "Iptc.Application2.LocationName",
+        "Iptc.Application2.City", "Iptc.Application2.SubLocation", "Iptc.Application2.ProvinceState",
+        "Iptc.Application2.CountryName", "Iptc.Application2.Copyright", "Iptc.Application2.Caption",
+        "Iptc.Application2.Byline", "Iptc.Application2.ObjectName",
+
+        "Xmp.tiff.ImageWidth","Xmp.tiff.ImageLength","Xmp.tiff.Artist", "Xmp.tiff.Copyright"
+       };
+const guint dt_export_xmp_keys_n = G_N_ELEMENTS(dt_export_xmp_keys);
 
 // find a string on the list
 static gboolean find_metadata_iter_per_text(GtkTreeModel *model, GtkTreeIter *iter, gint col, const char *text)
@@ -69,10 +103,6 @@ static gboolean find_metadata_iter_per_text(GtkTreeModel *model, GtkTreeIter *it
 
 static void add_tag_button_clicked(GtkButton *button, dt_lib_export_metadata_t *d)
 {
-  // TODO replace the following list by a dynamic exiv2 list able to provide info type
-  // Here are listed only string or XmpText. Can be added as needed.
-
-//  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("select tag"), GTK_WINDOW(d->dialog), GTK_DIALOG_DESTROY_WITH_PARENT,
                                        _("add"), GTK_RESPONSE_YES, _("done"), GTK_RESPONSE_NONE, NULL);
   gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
@@ -93,8 +123,6 @@ static void add_tag_button_clicked(GtkButton *button, dt_lib_export_metadata_t *
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes("List", renderer, "text", 0, NULL);
   gtk_tree_view_append_column(view, col);
-  guint dt_export_xmp_keys_n;
-  const char **dt_export_xmp_keys = dt_lib_export_metadata_get_export_keys(&dt_export_xmp_keys_n);
   GtkListStore *liststore = gtk_list_store_new(1, G_TYPE_STRING);
   for(int i=0; i<dt_export_xmp_keys_n; i++)
   {
@@ -132,7 +160,7 @@ static void add_tag_button_clicked(GtkButton *button, dt_lib_export_metadata_t *
   gtk_widget_destroy(dialog);
 }
 
-static void delete_tag_button_clicked(GtkButton *button, dt_lib_export_metadata_t *d)
+static void remove_tag_from_list(dt_lib_export_metadata_t *d)
 {
   GtkTreeIter iter;
   GtkTreeModel *model = GTK_TREE_MODEL(d->liststore);
@@ -140,47 +168,28 @@ static void delete_tag_button_clicked(GtkButton *button, dt_lib_export_metadata_
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
     gtk_list_store_remove(d->liststore, &iter);
-    gtk_entry_set_text(d->entry, "");
   }
 }
+static void delete_tag_button_clicked(GtkButton *button, dt_lib_export_metadata_t *d)
+{
+  remove_tag_from_list(d);
+}
 
-static void change_on_tag_list(GtkTreeView *view, dt_lib_export_metadata_t *d)
+static gboolean key_press_on_list(GtkWidget *widget, GdkEventKey *event, dt_lib_export_metadata_t *d)
+{
+  if(event->type == GDK_KEY_PRESS && event->keyval == GDK_KEY_Delete && !event->state)
+  {
+    remove_tag_from_list(d);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+static void formula_edited(GtkCellRenderer *renderer, gchar *path, gchar *new_text, dt_lib_export_metadata_t *d)
 {
   GtkTreeIter iter;
-  GtkTreeModel *model = gtk_tree_view_get_model(view);
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
-  if(gtk_tree_selection_get_selected(selection, &model, &iter))
-  {
-    char *tagname;
-    char *formula;
-    gtk_tree_model_get(model, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, &tagname, DT_LIB_EXPORT_METADATA_COL_FORMULA, &formula, -1);
-    if (formula)
-      gtk_entry_set_text(d->entry, formula);
-    g_free(formula);
-    g_free(tagname);
-  }
-}
-
-static void formula_edited(GtkCellRenderer *renderer, dt_lib_export_metadata_t *d)
-{
-  setvbuf(stdout, NULL, _IONBF, 0); printf("renderer\n");
-}
-
-static void entry_activated(GtkEntry *entry, dt_lib_export_metadata_t *d)
-{
-  GtkTreeIter iter;
-  GtkTreeModel *model = GTK_TREE_MODEL(d->liststore);
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(d->view);
-  if(gtk_tree_selection_get_selected(selection, &model, &iter))
-  {
-    const char *formula = gtk_entry_get_text(d->entry);
-
-    char *tagname;
-    gtk_tree_model_get(model, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, &tagname, -1);
-    g_free(tagname);
-
-    gtk_list_store_set(GTK_LIST_STORE(model), &iter, 1, formula, -1);
-  }
+  if (gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(d->liststore), &iter, path))
+    gtk_list_store_set(d->liststore, &iter, DT_LIB_EXPORT_METADATA_COL_FORMULA, new_text, -1);
 }
 
 char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets)
@@ -257,10 +266,14 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets)
   g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(formula_edited), (gpointer)d);
   col = gtk_tree_view_column_new_with_attributes("formula", renderer, "text", 1, NULL);
   gtk_tree_view_append_column(view, col);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("list of calculated metadata\n"
-                      "the corresponding entry is removed if formula is null"));
-
-  g_signal_connect(G_OBJECT(view), "cursor-changed", G_CALLBACK(change_on_tag_list), (gpointer)d);
+  char *tooltip_text = dt_gtkentry_build_completion_tooltip_text(
+                        _("list of calculated metadata\n"
+                        "if formula is empty, the corresponding metadata is removed from exported file\n"
+                        "otherwise the corresponding metadata is calculated and added to exported file\n"
+                        "click on formula cell to edit. recognized variables:"),
+                        dt_gtkentry_get_default_path_compl_list());
+  gtk_widget_set_tooltip_text(GTK_WIDGET(view), tooltip_text);
+  g_signal_connect(G_OBJECT(view), "key_press_event", G_CALLBACK(key_press_on_list), (gpointer)d);
 
   GtkListStore *liststore = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
   d->liststore = liststore;
@@ -314,27 +327,6 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets)
   gtk_box_pack_end(GTK_BOX(box), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(delete_tag_button_clicked), (gpointer)d);
 
-  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), box, FALSE, TRUE, 0);
-
-  w = gtk_entry_new();
-  d->entry = GTK_ENTRY(w);
-  gtk_entry_set_text(GTK_ENTRY(w), "");
-  gtk_widget_set_tooltip_text(w, _("enter formula\n"
-                                "if empty, the metadata will be exported if exists\n"
-                                "if valid formula, the metadata will be exported whatever the global metadata settings\n"
-                                "click on enter or validation button to validate"));
-  gtk_box_pack_start(GTK_BOX(box), w, TRUE, TRUE, 0);
-  gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_RELEASE_MASK);
-//  g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(tag_name_changed), (gpointer)self);
-  g_signal_connect(G_OBJECT(w), "activate", G_CALLBACK(entry_activated), (gpointer)d);
-  dt_gui_key_accel_block_on_focus_connect(w);
-
-  button = dtgtk_button_new(dtgtk_cairo_paint_check_mark, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  gtk_widget_set_tooltip_text(button, _("validate the formula"));
-  gtk_box_pack_end(GTK_BOX(box), button, FALSE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(entry_activated), (gpointer)d);
-
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -343,7 +335,6 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets)
   char *newlist = metadata_presets;
   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
   {
-    entry_activated(d->entry, d);
     const gint newflags = (
                     (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(exiftag)) ? DT_META_EXIF : 0) |
                     (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dtmetadata)) ? DT_META_METADATA : 0) |
