@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-24 21:52+0200\n"
-"PO-Revision-Date: 2019-08-24 21:52+0200\n"
+"POT-Creation-Date: 2019-09-07 19:19+0200\n"
+"PO-Revision-Date: 2019-09-07 19:23+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1748,7 +1748,7 @@ msgstr ""
 #: ../src/common/history.c:798 ../src/common/history.c:801
 #: ../src/common/history.c:817 ../src/common/styles.c:894
 #: ../src/common/styles.c:898 ../src/develop/blend_gui.c:2501
-#: ../src/develop/develop.c:1808 ../src/iop/ashift.c:4856
+#: ../src/develop/develop.c:1851 ../src/iop/ashift.c:4856
 #: ../src/libs/live_view.c:437
 msgid "on"
 msgstr "activé(e)"
@@ -1756,11 +1756,11 @@ msgstr "activé(e)"
 #: ../src/common/history.c:798 ../src/common/history.c:801
 #: ../src/common/history.c:817 ../src/common/styles.c:894
 #: ../src/common/styles.c:898 ../src/develop/blend_gui.c:2248
-#: ../src/develop/blend_gui.c:2498 ../src/develop/develop.c:1808
+#: ../src/develop/blend_gui.c:2498 ../src/develop/develop.c:1851
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
 #: ../src/iop/ashift.c:4855 ../src/iop/ashift.c:4861 ../src/iop/colorin.c:2107
 #: ../src/iop/demosaic.c:5147 ../src/iop/vignette.c:1150
-#: ../src/libs/history.c:163 ../src/libs/live_view.c:436
+#: ../src/libs/history.c:167 ../src/libs/live_view.c:436
 msgid "off"
 msgstr "désactivé(e)"
 
@@ -1908,7 +1908,7 @@ msgstr ""
 msgid "opencl scheduling profile set to default."
 msgstr "profil de planification opencl par défaut positionné"
 
-#: ../src/common/pdf.h:88 ../src/iop/lens.cc:1927
+#: ../src/common/pdf.h:88 ../src/iop/lens.cc:1947
 #: ../src/libs/print_settings.c:1289
 msgid "mm"
 msgstr "mm"
@@ -2998,7 +2998,7 @@ msgstr ""
 msgid "mask refinement"
 msgstr "amélioration du masque"
 
-#: ../src/develop/develop.c:1590
+#: ../src/develop/develop.c:1638
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module « %s » version non cohérente: %d != %d"
@@ -4024,7 +4024,7 @@ msgid "golden spiral"
 msgstr "spirale d'or"
 
 #: ../src/gui/guides.c:444 ../src/imageio/format/pdf.c:681
-#: ../src/iop/denoiseprofile.c:3296 ../src/iop/lens.cc:2306
+#: ../src/iop/denoiseprofile.c:3296 ../src/iop/lens.cc:2326
 #: ../src/iop/rawdenoise.c:985 ../src/libs/tools/filter.c:125
 msgid "all"
 msgstr "tout"
@@ -5830,7 +5830,7 @@ msgstr "courbe de base"
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RGB"
 
-#: ../src/iop/basecurve.c:2130 ../src/iop/lens.cc:2441
+#: ../src/iop/basecurve.c:2130 ../src/iop/lens.cc:2461
 #: ../src/iop/tonecurve.c:1405 ../src/iop/vignette.c:1156
 #: ../src/iop/watermark.c:1434
 msgid "scale"
@@ -5864,7 +5864,7 @@ msgstr "préserver couleur"
 #: ../src/iop/basicadj.c:702 ../src/iop/clipping.c:1691
 #: ../src/iop/clipping.c:1977 ../src/iop/clipping.c:1995
 #: ../src/iop/clipping.c:2135 ../src/iop/clipping.c:2162
-#: ../src/iop/colorreconstruction.c:1377 ../src/iop/lens.cc:2300
+#: ../src/iop/colorreconstruction.c:1377 ../src/iop/lens.cc:2320
 #: ../src/iop/retouch.c:582 ../src/iop/rgbcurve.c:1585
 #: ../src/iop/rgblevels.c:1117 ../src/iop/tonecurve.c:1393
 #: ../src/libs/export.c:510 ../src/libs/live_view.c:350
@@ -6065,7 +6065,7 @@ msgstr "laplacien local: résultat incohérent"
 
 #: ../src/iop/bilat.c:525 ../src/iop/colorbalance.c:2365
 #: ../src/iop/denoiseprofile.c:3374 ../src/iop/exposure.c:864
-#: ../src/iop/lens.cc:2449 ../src/iop/levels.c:672
+#: ../src/iop/lens.cc:2469 ../src/iop/levels.c:672
 #: ../src/iop/profile_gamma.c:857 ../src/iop/rgbcurve.c:1478
 #: ../src/iop/rgblevels.c:1010 ../src/libs/copy_history.c:337
 #: ../src/libs/export.c:671 ../src/libs/print_settings.c:1513
@@ -7266,45 +7266,45 @@ msgctxt "accel"
 msgid "acquire as target"
 msgstr "acquérir cible"
 
-#: ../src/iop/colormapping.c:1108
+#: ../src/iop/colormapping.c:1113
 msgid "source clusters:"
 msgstr "groupes sources:"
 
-#: ../src/iop/colormapping.c:1117
+#: ../src/iop/colormapping.c:1122
 msgid "target clusters:"
 msgstr "groupes cibles:"
 
-#: ../src/iop/colormapping.c:1130
+#: ../src/iop/colormapping.c:1135
 msgid "acquire as source"
 msgstr "acquérir source"
 
-#: ../src/iop/colormapping.c:1132
+#: ../src/iop/colormapping.c:1137
 msgid "analyze this image as a source image"
 msgstr "analyser cette image comme source"
 
-#: ../src/iop/colormapping.c:1136
+#: ../src/iop/colormapping.c:1141
 msgid "acquire as target"
 msgstr "acquérir cible"
 
-#: ../src/iop/colormapping.c:1138
+#: ../src/iop/colormapping.c:1143
 msgid "analyze this image as a target image"
 msgstr "analyser cette image comme cible"
 
-#: ../src/iop/colormapping.c:1143
+#: ../src/iop/colormapping.c:1148
 msgid "number of clusters"
 msgstr "nombre de groupes"
 
-#: ../src/iop/colormapping.c:1145
+#: ../src/iop/colormapping.c:1150
 msgid "number of clusters to find in image. value change resets all clusters"
 msgstr ""
 "nombre de groupes à trouver dans cette image.\n"
 "réinitialise tous les groupes lors de changement de valeur"
 
-#: ../src/iop/colormapping.c:1150
+#: ../src/iop/colormapping.c:1155
 msgid "color dominance"
 msgstr "dominante couleur"
 
-#: ../src/iop/colormapping.c:1151
+#: ../src/iop/colormapping.c:1156
 msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
@@ -7312,11 +7312,11 @@ msgstr ""
 "mappage des groupes. faible valeur: fonction de la proximité des couleurs, "
 "haute valeur: fonction de la dominante des couleurs"
 
-#: ../src/iop/colormapping.c:1158
+#: ../src/iop/colormapping.c:1163
 msgid "histogram equalization"
 msgstr "égalisation d'histogramme"
 
-#: ../src/iop/colormapping.c:1159
+#: ../src/iop/colormapping.c:1164
 msgid "level of histogram equalization"
 msgstr "niveau d'égalisation de l'histogramme"
 
@@ -7569,7 +7569,7 @@ msgstr "choisir entre un effet prononcé ou plus doux"
 #: ../src/iop/colorzones.c:2373 ../src/iop/rgbcurve.c:1563
 #: ../src/iop/tonecurve.c:1380
 msgid "interpolation method"
-msgstr "méthode d'interpolation"
+msgstr "interpolation"
 
 #: ../src/iop/colorzones.c:2375 ../src/iop/rgbcurve.c:1565
 #: ../src/iop/tonecurve.c:1382
@@ -8897,7 +8897,7 @@ msgctxt "accel"
 msgid "select corrections"
 msgstr "sélectionne les corrections"
 
-#: ../src/iop/lens.cc:1581
+#: ../src/iop/lens.cc:1601
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -8910,15 +8910,15 @@ msgstr ""
 "monture :\t\t%s\n"
 "conv. focale:\t%.1f"
 
-#: ../src/iop/lens.cc:1815
+#: ../src/iop/lens.cc:1835
 msgid "camera/lens not found - please select manually"
 msgstr "boîtier/objectif introuvable  > sélection manuelle"
 
-#: ../src/iop/lens.cc:1818
+#: ../src/iop/lens.cc:1838
 msgid "try to locate your camera/lens in the above two menus"
 msgstr "trouver votre boîtier/objectif dans les menus ci-dessus"
 
-#: ../src/iop/lens.cc:1882
+#: ../src/iop/lens.cc:1902
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -8937,143 +8937,143 @@ msgstr ""
 "type:\t\t\t%s\n"
 "montures:\t\t%s"
 
-#: ../src/iop/lens.cc:1928
+#: ../src/iop/lens.cc:1948
 msgid "focal length (mm)"
 msgstr "longeur focale (mm)"
 
-#: ../src/iop/lens.cc:1952
+#: ../src/iop/lens.cc:1972
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.cc:1953
+#: ../src/iop/lens.cc:1973
 msgid "f-number (aperture)"
 msgstr "ouverture"
 
-#: ../src/iop/lens.cc:1967
+#: ../src/iop/lens.cc:1987
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.cc:1968
+#: ../src/iop/lens.cc:1988
 msgid "distance to subject"
 msgstr "distance au sujet"
 
-#: ../src/iop/lens.cc:2312
+#: ../src/iop/lens.cc:2332
 msgid "distortion & TCA"
 msgstr "distorsion et chromatisme"
 
-#: ../src/iop/lens.cc:2318
+#: ../src/iop/lens.cc:2338
 msgid "distortion & vignetting"
 msgstr "distorsion et vignettage"
 
-#: ../src/iop/lens.cc:2324
+#: ../src/iop/lens.cc:2344
 msgid "TCA & vignetting"
 msgstr "chromatisme et vignettage"
 
-#: ../src/iop/lens.cc:2330
+#: ../src/iop/lens.cc:2350
 msgid "only distortion"
 msgstr "distorsion seulement"
 
-#: ../src/iop/lens.cc:2336
+#: ../src/iop/lens.cc:2356
 msgid "only TCA"
 msgstr "chromatisme seulement"
 
-#: ../src/iop/lens.cc:2342
+#: ../src/iop/lens.cc:2362
 msgid "only vignetting"
 msgstr "vignettage seulement"
 
-#: ../src/iop/lens.cc:2362
+#: ../src/iop/lens.cc:2382
 msgid "find camera"
 msgstr "boîtier"
 
-#: ../src/iop/lens.cc:2376
+#: ../src/iop/lens.cc:2396
 msgid "find lens"
 msgstr "objectif"
 
-#: ../src/iop/lens.cc:2407
+#: ../src/iop/lens.cc:2427
 msgid "corrections"
 msgstr "corrections"
 
-#: ../src/iop/lens.cc:2409
+#: ../src/iop/lens.cc:2429
 msgid "which corrections to apply"
 msgstr "sélectionne les types de correction à effectuer"
 
-#: ../src/iop/lens.cc:2422
+#: ../src/iop/lens.cc:2442
 msgid "geometry"
 msgstr "géométrie"
 
-#: ../src/iop/lens.cc:2424
+#: ../src/iop/lens.cc:2444
 msgid "target geometry"
 msgstr "géométrie des images (distorsion)"
 
-#: ../src/iop/lens.cc:2425
+#: ../src/iop/lens.cc:2445
 msgid "rectilinear"
 msgstr "rectilinéaire"
 
-#: ../src/iop/lens.cc:2426
+#: ../src/iop/lens.cc:2446
 msgid "fish-eye"
 msgstr "fisheye"
 
-#: ../src/iop/lens.cc:2427
+#: ../src/iop/lens.cc:2447
 msgid "panoramic"
 msgstr "panoramique"
 
-#: ../src/iop/lens.cc:2428
+#: ../src/iop/lens.cc:2448
 msgid "equirectangular"
 msgstr "equi-rectangulaire"
 
-#: ../src/iop/lens.cc:2430
+#: ../src/iop/lens.cc:2450
 msgid "orthographic"
 msgstr "orthographique"
 
-#: ../src/iop/lens.cc:2431
+#: ../src/iop/lens.cc:2451
 msgid "stereographic"
 msgstr "stéréographique"
 
-#: ../src/iop/lens.cc:2432
+#: ../src/iop/lens.cc:2452
 msgid "equisolid angle"
 msgstr "angle solide constant"
 
-#: ../src/iop/lens.cc:2433
+#: ../src/iop/lens.cc:2453
 msgid "thoby fish-eye"
 msgstr "fisheye"
 
-#: ../src/iop/lens.cc:2440
+#: ../src/iop/lens.cc:2460
 msgid "auto scale"
 msgstr "échelle auto"
 
-#: ../src/iop/lens.cc:2451
+#: ../src/iop/lens.cc:2471
 msgid "correct distortions or apply them"
 msgstr "corrige ou applique des distorsions"
 
-#: ../src/iop/lens.cc:2452
+#: ../src/iop/lens.cc:2472
 msgid "correct"
 msgstr "retouche"
 
-#: ../src/iop/lens.cc:2453
+#: ../src/iop/lens.cc:2473
 msgid "distort"
 msgstr "déforme"
 
-#: ../src/iop/lens.cc:2458
+#: ../src/iop/lens.cc:2478
 msgid "Transversal Chromatic Aberration red"
 msgstr "Aberrations Chromatiques Transversales rouge"
 
-#: ../src/iop/lens.cc:2459
+#: ../src/iop/lens.cc:2479
 msgid "TCA red"
 msgstr "AC rouge"
 
-#: ../src/iop/lens.cc:2464
+#: ../src/iop/lens.cc:2484
 msgid "Transversal Chromatic Aberration blue"
 msgstr "Aberrations Chromatiques Transversales bleu"
 
-#: ../src/iop/lens.cc:2465
+#: ../src/iop/lens.cc:2485
 msgid "TCA blue"
 msgstr "bleu"
 
-#: ../src/iop/lens.cc:2472
+#: ../src/iop/lens.cc:2492
 msgid "corrections done: "
 msgstr "corrections effectuées :"
 
-#: ../src/iop/lens.cc:2473
+#: ../src/iop/lens.cc:2493
 msgid "which corrections have actually been done"
 msgstr "corrections réellement effectuées"
 
@@ -9491,7 +9491,7 @@ msgstr ""
 
 #: ../src/iop/lut3d.c:1116
 msgid "application color space"
-msgstr "espace de couleur"
+msgstr "espace couleur"
 
 #: ../src/iop/lut3d.c:1118
 msgid "REC.709"
@@ -9511,7 +9511,7 @@ msgstr "sélectionner l'espace couleur pour l'application lut"
 
 #: ../src/iop/lut3d.c:1126
 msgid "interpolation"
-msgstr "méthode d'interpolation"
+msgstr "interpolation"
 
 #: ../src/iop/lut3d.c:1127
 msgid "tetrahedral"
@@ -10517,7 +10517,7 @@ msgstr "courbe des tonalités"
 
 #: ../src/iop/tonecurve.c:1308
 msgid "color space"
-msgstr "espace de couleur"
+msgstr "espace couleur"
 
 #: ../src/iop/tonecurve.c:1309
 msgid "Lab, linked channels"
@@ -11169,7 +11169,7 @@ msgstr "date"
 msgid "time"
 msgstr "date/heure"
 
-#: ../src/libs/collect.h:34 ../src/libs/history.c:63
+#: ../src/libs/collect.h:34 ../src/libs/history.c:64
 msgid "history"
 msgstr "historique"
 
@@ -11666,30 +11666,30 @@ msgctxt "accel"
 msgid "hide histogram"
 msgstr "cacher histogramme"
 
-#: ../src/libs/history.c:84
+#: ../src/libs/history.c:85
 msgctxt "accel"
 msgid "create style from history"
 msgstr "crée un style depuis l'historique actuel"
 
 #. dt_accel_register_lib(self, NC_("accel", "apply style from popup menu"), 0, 0);
-#: ../src/libs/history.c:86
+#: ../src/libs/history.c:87
 msgctxt "accel"
 msgid "compress history stack"
 msgstr "compresser l'historique"
 
-#: ../src/libs/history.c:113
+#: ../src/libs/history.c:115
 msgid "compress history stack"
 msgstr "compresser l'historique"
 
-#: ../src/libs/history.c:115
+#: ../src/libs/history.c:117
 msgid "create a minimal history stack which produces the same image"
 msgstr "génère l'historique minimum qui produit la même image"
 
-#: ../src/libs/history.c:122
+#: ../src/libs/history.c:124
 msgid "create a style from the current history stack"
 msgstr "crée un style depuis l'historique actuel"
 
-#: ../src/libs/history.c:652 ../src/libs/snapshots.c:346
+#: ../src/libs/history.c:656 ../src/libs/snapshots.c:346
 msgid "original"
 msgstr "original"
 
@@ -13385,6 +13385,13 @@ msgstr "passe de la vue liste / arbre"
 msgid "toggle list with / without suggestion"
 msgstr "active/désactive les suggestions"
 
+#: ../src/libs/tagging.c:2803
+msgid ""
+"tag shortcut is not active with tag tree view. please switch to list view"
+msgstr ""
+"le raccourci de tag n'est pas actif lorsque la vue est arborescente, changer "
+"pour la vue en liste"
+
 #: ../src/libs/tools/battery_indicator.c:38
 #: ../src/libs/tools/battery_indicator.c:71
 msgid "battery indicator"
@@ -14385,63 +14392,63 @@ msgstr "nouvelle session initiée « %s »"
 msgid "no camera with tethering support available for use..."
 msgstr "aucun boîtier disponible pour la capture..."
 
-#: ../src/views/view.c:2174
+#: ../src/views/view.c:2181
 msgid "Left click"
 msgstr "clic gauche"
 
-#: ../src/views/view.c:2177
+#: ../src/views/view.c:2184
 msgid "Right click"
 msgstr "clic-droit"
 
-#: ../src/views/view.c:2180
+#: ../src/views/view.c:2187
 msgid "Middle click"
 msgstr "clic-milieu"
 
-#: ../src/views/view.c:2183
+#: ../src/views/view.c:2190
 msgid "Scroll"
 msgstr "molette"
 
-#: ../src/views/view.c:2186
+#: ../src/views/view.c:2193
 msgid "Left double-click"
 msgstr "double-clic gauche"
 
-#: ../src/views/view.c:2189
+#: ../src/views/view.c:2196
 msgid "Right double-click"
 msgstr "double-clic droit"
 
-#: ../src/views/view.c:2192
+#: ../src/views/view.c:2199
 msgid "Drag and drop"
 msgstr "déplacer & déposer"
 
-#: ../src/views/view.c:2195
+#: ../src/views/view.c:2202
 msgid "Left click+Drag"
 msgstr "clic-gauche + déplacer"
 
-#: ../src/views/view.c:2198
+#: ../src/views/view.c:2205
 msgid "Right click+Drag"
 msgstr "clic-droit + déplacer"
 
-#: ../src/views/view.c:2222
+#: ../src/views/view.c:2229
 msgid "darktable - accels window"
 msgstr "darktable - fenêtre des raccourcis"
 
-#: ../src/views/view.c:2278
+#: ../src/views/view.c:2285
 msgid "switch to a classic window which will stay open after key release."
 msgstr "créer un fenêtre flottante persistante"
 
-#: ../src/views/view.c:2391
+#: ../src/views/view.c:2398
 msgid "+Scroll"
 msgstr "+molette"
 
-#: ../src/views/view.c:2406
+#: ../src/views/view.c:2413
 msgid "mouse actions"
 msgstr "actions souris"
 
-#: ../src/views/view.c:2444
+#: ../src/views/view.c:2451
 msgid "Accel"
 msgstr "raccourcis"
 
-#: ../src/views/view.c:2446
+#: ../src/views/view.c:2453
 msgid "Action"
 msgstr "action"
 
