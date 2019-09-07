@@ -23,10 +23,10 @@ typedef enum dt_metadata_id
   DT_META_METADATA = 1 << 1,
   DT_META_GEOTAG = 1 << 2,
   DT_META_TAG = 1 << 3,
-  DT_META_DT_HISTORY= 1 << 4,
+  DT_META_HIERARCHICAL_TAG = 1 << 4,
+  DT_META_DT_HISTORY= 1 << 5,
   DT_META_PRIVATE_TAG = 1 << 16,
   DT_META_SYNONYMS_TAG = 1 << 17,
-  DT_META_HIERARCHICAL_TAG = 1 << 18,
 } dt_metadata_id;
 
 typedef struct dt_export_metadata_t
