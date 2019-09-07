@@ -35,21 +35,6 @@ typedef struct dt_export_metadata_t
   GList *list;
 } dt_export_metadata_t;
 
-/** open dialog to configure metadata exportation */
-// char *dt_lib_export_metadata_configuration_dialog(const char *name);
-
-/** get list of metadata which can be calculated or removed from exported file */
-const char **dt_lib_export_metadata_get_export_keys(guint *dt_export_xmp_keys_n);
-/** get  metadata presets */
-GList *dt_lib_export_metadata_get_presets(const char *name, int32_t *flags);
-/** delete metadata presets */
-void dt_lib_export_metadata_delete_presets(const char *name);
-/** get the list of export metadata presets */
-GList *dt_lib_export_metadata_get_presets_list();
-// only difference with dt_lib_presets_add is writeprotect = 0
-void dt_lib_export_metadata_presets_add(const char *name, const char *plugin_name, const int32_t version, const void *params,
-                        const int32_t params_size);
-
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
