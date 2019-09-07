@@ -3419,10 +3419,10 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
       dt_variables_set_tags_flags(params, m->flags);
       for (GList *tags = m->list; tags; tags = g_list_next(tags))
       {
-        gchar *pair = (gchar *)tags->data;
-        gchar *tagname = pair;
-        pair += strlen(tagname) + 1;
-        gchar *formula = pair;
+        gchar *tagname = (gchar *)tags->data;
+        tags = g_list_next(tags);
+        if (!tags) break;
+        gchar *formula = (gchar *)tags->data;
         if (formula[0])
         {
           gchar *result = dt_variables_expand(params, formula, FALSE);

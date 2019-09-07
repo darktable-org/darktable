@@ -1374,7 +1374,12 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
   dt_export_metadata_t metadata;
   metadata.flags = 0;
-  metadata.list = dt_lib_export_metadata_get_presets(settings->metadata_export, &metadata.flags);
+  metadata.list = dt_util_str_to_glist(";", settings->metadata_export);
+  if (metadata.list)
+  {
+    metadata.flags = strtol(metadata.list->data, NULL, 16);
+    metadata.list = g_list_remove(metadata.list, metadata.list->data);
+  }
 
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
