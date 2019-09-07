@@ -161,6 +161,11 @@ static void change_on_tag_list(GtkTreeView *view, dt_lib_export_metadata_t *d)
   }
 }
 
+static void formula_edited(GtkCellRenderer *renderer, dt_lib_export_metadata_t *d)
+{
+  setvbuf(stdout, NULL, _IONBF, 0); printf("renderer\n");
+}
+
 static void entry_activated(GtkEntry *entry, dt_lib_export_metadata_t *d)
 {
   GtkTreeIter iter;
@@ -178,7 +183,7 @@ static void entry_activated(GtkEntry *entry, dt_lib_export_metadata_t *d)
   }
 }
 
-char *dt_lib_export_metadata_configuration_dialog(const char *name)
+char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets)
 {
   dt_lib_export_metadata_t *d = calloc(1, sizeof(dt_lib_export_metadata_t));
 
@@ -196,18 +201,6 @@ char *dt_lib_export_metadata_configuration_dialog(const char *name)
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
   gtk_container_set_border_width(GTK_CONTAINER(vbox), 8);
   gtk_container_add(GTK_CONTAINER(hbox), vbox);
-
-  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), box, FALSE, TRUE, 0);
-  GtkWidget *label = gtk_label_new(_("name: "));
-  gtk_box_pack_start(GTK_BOX(box), label, FALSE, TRUE, 0);
-  GtkWidget *entry = gtk_entry_new();
-  gtk_widget_set_tooltip_text(entry, _("if name is not changed the preset is updated\n "
-                            "if changed a new preset is created\n"
-                            "if wiped the preset is deleted"));
-  gtk_entry_set_text(GTK_ENTRY(entry), name ? name : "");
-  gtk_box_pack_end(GTK_BOX(box), entry, TRUE, TRUE, 0);
-
   GtkWidget *vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(vbox), vbox2, FALSE, TRUE, 0);
 
@@ -224,7 +217,7 @@ char *dt_lib_export_metadata_configuration_dialog(const char *name)
   gtk_widget_set_tooltip_text(dttag, _("export or not tags (to Xmp.dc.Subject)"));
   gtk_box_pack_start(GTK_BOX(vbox2), dttag, FALSE, TRUE, 0);
 
-  box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(vbox2), box, FALSE, TRUE, 0);
   GtkWidget *vbox3 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(box), vbox3, FALSE, TRUE, 10);
@@ -260,6 +253,8 @@ char *dt_lib_export_metadata_configuration_dialog(const char *name)
   GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes("redefined tag", renderer, "text", 0, NULL);
   gtk_tree_view_append_column(view, col);
   renderer = gtk_cell_renderer_text_new();
+  g_object_set(renderer, "editable", TRUE, NULL);
+  g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(formula_edited), (gpointer)d);
   col = gtk_tree_view_column_new_with_attributes("formula", renderer, "text", 1, NULL);
   gtk_tree_view_append_column(view, col);
   gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("list of calculated metadata\n"
@@ -272,22 +267,30 @@ char *dt_lib_export_metadata_configuration_dialog(const char *name)
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore), DT_LIB_EXPORT_METADATA_COL_XMP, GTK_SORT_ASCENDING);
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(liststore));
   g_object_unref(liststore);
+  GList *list = dt_util_str_to_glist(";", metadata_presets);
   int32_t flags = 0;
-  if (name)
+  if (list)
   {
-    GList *list = dt_lib_export_metadata_get_presets(name, &flags);
-    for (GList *tags = list; tags; tags = g_list_next(tags))
+    char *flags_hexa = list->data;
+    flags = strtol(flags_hexa, NULL, 16);
+    list = g_list_remove(list, flags_hexa);
+    if (list)
     {
-      GtkTreeIter iter;
-      char *params = (char *)tags->data;
-      const char *tagname = params;
-      params += strlen(tagname) + 1;
-      const char *formula = params;
-      gtk_list_store_append(d->liststore, &iter);
-      gtk_list_store_set(d->liststore, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, tagname,
-        DT_LIB_EXPORT_METADATA_COL_FORMULA, formula, -1);
+      g_free(flags_hexa);
+      for (GList *tags = list; tags; tags = g_list_next(tags))
+      {
+        GtkTreeIter iter;
+        const char *tagname = (char *)tags->data;
+        tags = g_list_next(tags);
+        if (!tags) break;
+        const char *formula = (char *)tags->data;
+        gtk_list_store_append(d->liststore, &iter);
+        gtk_list_store_set(d->liststore, &iter, DT_LIB_EXPORT_METADATA_COL_XMP, tagname,
+          DT_LIB_EXPORT_METADATA_COL_FORMULA, formula, -1);
+      }
     }
   }
+  g_list_free_full(list, g_free);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(exiftag), flags & DT_META_EXIF);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dtmetadata), flags & DT_META_METADATA);
@@ -337,11 +340,10 @@ char *dt_lib_export_metadata_configuration_dialog(const char *name)
 #endif
   gtk_widget_show_all(dialog);
 
-  const char *newname = name;
+  char *newlist = metadata_presets;
   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
   {
     entry_activated(d->entry, d);
-    newname = gtk_entry_get_text(GTK_ENTRY(entry));
     const gint newflags = (
                     (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(exiftag)) ? DT_META_EXIF : 0) |
                     (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dtmetadata)) ? DT_META_METADATA : 0) |
@@ -353,41 +355,24 @@ char *dt_lib_export_metadata_configuration_dialog(const char *name)
                     (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dthistory)) ? DT_META_DT_HISTORY : 0)
                     );
 
-    if (newname[0])
+    newlist = dt_util_dstrcat(NULL,"%04x", newflags);
+    GtkTreeIter iter;
+    gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(d->liststore), &iter);
+    while(valid)
     {
-      char *params = (char *)calloc(1, sizeof(int32_t));
-      int pos = 0;
-      memcpy(params + pos, &newflags, sizeof(int32_t));
-      pos += sizeof(int32_t);
-      GtkTreeIter iter;
-      gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(d->liststore), &iter);
-      while(valid)
-      {
-        char *tagname, *formula;
-        gtk_tree_model_get(GTK_TREE_MODEL(d->liststore), &iter, DT_LIB_EXPORT_METADATA_COL_XMP, &tagname,
-            DT_LIB_EXPORT_METADATA_COL_FORMULA, &formula, -1);
-
-        params = realloc(params, pos + strlen(tagname) + strlen(formula) + 2);
-        memcpy(params + pos, tagname, strlen(tagname) + 1);
-        pos += strlen(tagname) + 1;
-        memcpy(params + pos, formula, strlen(formula) + 1);
-        pos += strlen(formula) + 1;
-        g_free(tagname);
-        g_free(formula);
-        valid = gtk_tree_model_iter_next (GTK_TREE_MODEL(d->liststore), &iter);
-      }
-      dt_lib_export_metadata_presets_add(newname, "export_metadata", 1, params, pos);
-      free(params);
+      char *tagname, *formula;
+      gtk_tree_model_get(GTK_TREE_MODEL(d->liststore), &iter, DT_LIB_EXPORT_METADATA_COL_XMP, &tagname,
+          DT_LIB_EXPORT_METADATA_COL_FORMULA, &formula, -1);
+      newlist = dt_util_dstrcat(newlist,";%s;%s", tagname, formula);
+      g_free(tagname);
+      g_free(formula);
+      valid = gtk_tree_model_iter_next (GTK_TREE_MODEL(d->liststore), &iter);
     }
-    else if (name)  // delete the preset if new name is NULL
-    {
-      dt_lib_export_metadata_delete_presets(name);
-    }
+    g_free(metadata_presets);
   }
-  char *res = g_strdup(newname);
   gtk_widget_destroy(dialog);
   free(d);
-  return res;
+  return newlist;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
