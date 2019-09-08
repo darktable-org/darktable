@@ -1374,7 +1374,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
   dt_export_metadata_t metadata;
   metadata.flags = 0;
-  metadata.list = dt_util_str_to_glist(";", settings->metadata_export);
+  metadata.list = dt_util_str_to_glist("\1", settings->metadata_export);
   if (metadata.list)
   {
     metadata.flags = strtol(metadata.list->data, NULL, 16);
