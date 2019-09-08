@@ -77,7 +77,7 @@ const char *dt_export_xmp_keys[]
         "Iptc.Application2.CountryName", "Iptc.Application2.Copyright", "Iptc.Application2.Caption",
         "Iptc.Application2.Byline", "Iptc.Application2.ObjectName",
 
-        "Xmp.tiff.ImageWidth","Xmp.tiff.ImageLength","Xmp.tiff.Artist", "Xmp.tiff.Copyright"
+        "Xmp.tiff.ImageWidth", "Xmp.tiff.ImageLength", "Xmp.tiff.Artist", "Xmp.tiff.Copyright"
        };
 const guint dt_export_xmp_keys_n = G_N_ELEMENTS(dt_export_xmp_keys);
 
@@ -287,7 +287,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets)
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(liststore), DT_LIB_EXPORT_METADATA_COL_XMP, GTK_SORT_ASCENDING);
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(liststore));
   g_object_unref(liststore);
-  GList *list = dt_util_str_to_glist(";", metadata_presets);
+  GList *list = dt_util_str_to_glist("\1", metadata_presets);
   int32_t flags = 0;
   if (list)
   {
@@ -361,7 +361,8 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets)
       char *tagname, *formula;
       gtk_tree_model_get(GTK_TREE_MODEL(d->liststore), &iter, DT_LIB_EXPORT_METADATA_COL_XMP, &tagname,
           DT_LIB_EXPORT_METADATA_COL_FORMULA, &formula, -1);
-      newlist = dt_util_dstrcat(newlist,";%s;%s", tagname, formula);
+      // metadata presets are stored into a single string with '\1' as a separator
+      newlist = dt_util_dstrcat(newlist,"\1%s\1%s", tagname, formula);
       g_free(tagname);
       g_free(formula);
       valid = gtk_tree_model_iter_next (GTK_TREE_MODEL(d->liststore), &iter);
