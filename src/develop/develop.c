@@ -764,6 +764,8 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
 static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable, gboolean no_image, gboolean include_masks)
 {
     GList *history = g_list_nth(dev->history, dev->history_end);
+    // This is the central point where we add some history information
+    // First step: dev->history_end might still point to now invalid history data, so we remove that
     while(history)
     {
       GList *next = g_list_next(history);
@@ -772,6 +774,12 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
       dt_dev_free_history_item(hist);
       dev->history = g_list_delete_link(dev->history, history);
       history = next;
+    }
+    // Second step: There might be a leak; dev->history_end - 1 might point to NIL so we remove that too!
+    while ((dev->history_end>0) && (! g_list_nth(dev->history, dev->history_end - 1)))
+    {
+      fprintf(stderr,"\n Leak detected in _dev_add_history_item_ext for %i",dev->history_end - 1);
+      dev->history_end--;
     }
     history = g_list_nth(dev->history, dev->history_end - 1);
     dt_dev_history_item_t *hist = history ? (dt_dev_history_item_t *)(history->data) : 0;
