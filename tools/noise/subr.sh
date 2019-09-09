@@ -275,7 +275,7 @@ get_image_iso() {
 
 	tool_installed exiv2
 
-	iso=$(get_exif_key "$file" Exif.Photo.ISOSpeedRatings)
+	iso=$(get_exif_key "$file" Exif.Photo.ISOSpeedRatings | grep -o '[[:digit:]]*')
 
 	if [ -z "$iso" -o "$iso" = "65535" ]; then
 		iso=$(get_exif_key "$file" Exif.Photo.RecommendedExposureIndex)
