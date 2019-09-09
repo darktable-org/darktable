@@ -2464,6 +2464,9 @@ void enter(dt_view_t *self)
     g_free(active_plugin);
   }
 
+  // update module multishow state now modules are loaded
+  dt_dev_modules_update_multishow(dev);
+
   // image should be there now.
   float zoom_x, zoom_y;
   dt_dev_check_zoom_bounds(dev, &zoom_x, &zoom_y, DT_ZOOM_FIT, 0, NULL, NULL);
