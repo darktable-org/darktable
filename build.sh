@@ -12,7 +12,7 @@ DT_SRC_DIR=$(cd "$DT_SRC_DIR" && pwd -P)
 # Set default values to option vars
 # ---------------------------------------------------------------------------
 
-INSTALL_PREFIX_DEFAULT="/opt/darktable"
+INSTALL_PREFIX_DEFAULT="./binaries"
 INSTALL_PREFIX="$INSTALL_PREFIX_DEFAULT"
 BUILD_TYPE_DEFAULT="RelWithDebInfo"
 BUILD_TYPE="$BUILD_TYPE_DEFAULT"

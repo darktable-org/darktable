@@ -127,10 +127,10 @@ typedef struct dt_iop_denoiseprofile_params_t
 {
   float radius;     // patch size
   float nbhood;     // search radius
-  float strength;   // noise level after equalization
   float scattering; // spread the patch search zone without increasing number of patches
   float central_pixel_weight; // increase central pixel's weight in patch comparison
   float a[3], p[3], b[3]; // fit for poissonian-gaussian noise per color channel.
+  float a_modifier, p_modifier, b_modifier; // modifiers for controling a, b and p
   dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
   float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
   float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
@@ -146,7 +146,9 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   GtkWidget *mode;
   GtkWidget *radius;
   GtkWidget *nbhood;
-  GtkWidget *strength;
+  GtkWidget *a_modifier;
+  GtkWidget *p_modifier;
+  GtkWidget *b_modifier;
   GtkWidget *scattering;
   GtkWidget *central_pixel_weight;
   dt_noiseprofile_t interpolated; // don't use name, maker or model, they may point to garbage
@@ -182,10 +184,10 @@ typedef struct dt_iop_denoiseprofile_data_t
 {
   float radius;                      // search radius
   float nbhood;                      // search radius
-  float strength;                    // noise level after equalization
   float scattering;                  // spread the search zone without changing number of patches
   float central_pixel_weight;        // increase central pixel's weight in patch comparison
   float a[3], p[3], b[3];            // fit for poissonian-gaussian noise per color channel.
+  float a_modifier, p_modifier, b_modifier; // allow to change the fit parameters
   dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
   dt_draw_curve_t *curve[DT_DENOISE_PROFILE_NONE];
   dt_iop_denoiseprofile_channel_t channel;
@@ -377,7 +379,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       memcpy(&v7, old_params, sizeof(v7)); // was v7 already
     dt_iop_denoiseprofile_params_t *v8 = new_params;
     v8->radius = v7.radius;
-    v8->strength = v7.strength;
+    v8->a_modifier = v7.strength;
+    v8->p_modifier = 1.0f;
+    v8->b_modifier = 1.0f;
     v8->mode = v7.mode;
     v8->nbhood = v7.nbhood;
     for(int k = 0; k < 3; k++)
@@ -1199,23 +1203,37 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     wb[1] = piece->pipe->dsc.processed_maximum[1];
     wb[2] = 2.0f * piece->pipe->dsc.processed_maximum[2];
   }
-  // update the coeffs with strength and scale
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength * in_scale;
-  float aa[3] = { wb[0], wb[1], wb[2] };
-  float bb[3] = { wb[0], wb[1], wb[2] };
   if(d->profile_version == 1)
   {
-    // only use the profile of green channel
-    for(int i = 0; i < 3; i++)
-    {
-      aa[i] *= d->a[1];
-      bb[i] *= d->b[1];
-    }
+    // update the coeffs with strength and scale
+    for(int i = 0; i < 3; i++) wb[i] *= d->a_modifier * in_scale;
+  }
+  else
+  {
+    // update the coeffs with scale
+    for(int i = 0; i < 3; i++) wb[i] *= in_scale;
+  }
+
+  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
+  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
+
+  const float a[3] = { d->a[0] * d->a_modifier, d->a[1] * d->a_modifier, d->a[2] * d->a_modifier };
+  const float b_bound = (d->b_modifier > 0.0f) ? 0.05f : 0.0f;
+  const float b[3] = { (b_bound - d->b[0]) * fabs(d->b_modifier) + d->b[0],
+                       (b_bound - d->b[1]) * fabs(d->b_modifier) + d->b[1],
+                       (b_bound - d->b[2]) * fabs(d->b_modifier) + d->b[2] };
+  const float p_bound = (d->p_modifier > 0.0f) ? 0.4f : 1.6f;
+  const float p[3] = { (p_bound - d->p[0]) * fabs(d->p_modifier) + d->p[0],
+                       (p_bound - d->p[1]) * fabs(d->p_modifier) + d->p[1],
+                       (p_bound - d->p[2]) * fabs(d->p_modifier) + d->p[2] };
+
+  if(d->profile_version == 1)
+  {
     precondition((float *)ivoid, (float *)ovoid, width, height, aa, bb);
   }
   else if(d->profile_version == 2)
   {
-    precondition_v2((float *)ivoid, (float *)ovoid, width, height, d->a, d->p, d->b, wb);
+    precondition_v2((float *)ivoid, (float *)ovoid, width, height, a, p, b, wb);
   }
 
 #if 0 // DEBUG: see what variance we have after transform
@@ -1358,7 +1376,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   }
   else
   {
-    backtransform_v2((float *)ovoid, width, height, d->a, d->p, d->b, wb);
+    backtransform_v2((float *)ovoid, width, height, a, p, b, wb);
   }
 
   for(int k = 0; k < max_scale; k++) dt_free_align(buf[k]);
@@ -1422,24 +1440,36 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   {
     for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
   }
-  // update the coeffs with strength and scale
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
-
-  float aa[3] = { wb[0], wb[1], wb[2] };
-  float bb[3] = { wb[0], wb[1], wb[2] };
   if(d->profile_version == 1)
   {
-    // only use the profile of green channel
-    for(int i = 0; i < 3; i++)
-    {
-      aa[i] *= d->a[1];
-      bb[i] *= d->b[1];
-    }
+    // update the coeffs with strength and scale
+    for(int i = 0; i < 3; i++) wb[i] *= d->a_modifier * scale;
+  }
+  else
+  {
+    // update the coeffs with scale
+    for(int i = 0; i < 3; i++) wb[i] *= scale;
+  }
+
+  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
+  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
+
+  const float a[3] = { d->a[0] * d->a_modifier, d->a[1] * d->a_modifier, d->a[2] * d->a_modifier };
+  const float b_bound = (d->b_modifier > 0.0f) ? 0.05f : 0.0f;
+  const float b[3] = { (b_bound - d->b[0]) * fabs(d->b_modifier) + d->b[0],
+                       (b_bound - d->b[1]) * fabs(d->b_modifier) + d->b[1],
+                       (b_bound - d->b[2]) * fabs(d->b_modifier) + d->b[2] };
+  const float p_bound = (d->p_modifier > 0.0f) ? 0.4f : 1.6f;
+  const float p[3] = { (p_bound - d->p[0]) * fabs(d->p_modifier) + d->p[0],
+                       (p_bound - d->p[1]) * fabs(d->p_modifier) + d->p[1],
+                       (p_bound - d->p[2]) * fabs(d->p_modifier) + d->p[2] };
+  if(d->profile_version == 1)
+  {
     precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
   }
   else if(d->profile_version == 2)
   {
-    precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, d->a, d->p, d->b, wb);
+    precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, a, p, b, wb);
   }
 
   // for each shift vector
@@ -1599,7 +1629,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   }
   else
   {
-    backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, d->a, d->p, d->b, wb);
+    backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, a, p, b, wb);
   }
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
@@ -1651,24 +1681,38 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   {
     for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
   }
-  // update the coeffs with strength and scale
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
-
-  float aa[3] = { wb[0], wb[1], wb[2] };
-  float bb[3] = { wb[0], wb[1], wb[2] };
   if(d->profile_version == 1)
   {
-    // only use the profile of green channel
-    for(int i = 0; i < 3; i++)
-    {
-      aa[i] *= d->a[1];
-      bb[i] *= d->b[1];
-    }
+    // update the coeffs with strength and scale
+    for(int i = 0; i < 3; i++) wb[i] *= d->a_modifier * scale;
+  }
+  else
+  {
+    // update the coeffs with scale
+    for(int i = 0; i < 3; i++) wb[i] *= scale;
+  }
+
+  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
+  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
+
+  const float a[3] = { d->a[0] * d->a_modifier, d->a[1] * d->a_modifier, d->a[2] * d->a_modifier };
+  const float b_bound = (d->b_modifier > 0.0f) ? 0.05f : 0.0f;
+  const float b[3] = { (b_bound - d->b[0]) * fabs(d->b_modifier) + d->b[0],
+                       (b_bound - d->b[1]) * fabs(d->b_modifier) + d->b[1],
+                       (b_bound - d->b[2]) * fabs(d->b_modifier) + d->b[2] };
+  const float p_bound = (d->p_modifier > 0.0f) ? 0.4f : 1.6f;
+  const float p[3] = { (p_bound - d->p[0]) * fabs(d->p_modifier) + d->p[0],
+                       (p_bound - d->p[1]) * fabs(d->p_modifier) + d->p[1],
+                       (p_bound - d->p[2]) * fabs(d->p_modifier) + d->p[2] };
+
+
+  if(d->profile_version == 1)
+  {
     precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
   }
   else if(d->profile_version == 2)
   {
-    precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, d->a, d->p, d->b, wb);
+    precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, a, p, b, wb);
   }
 
   // for each shift vector
@@ -1880,7 +1924,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   }
   else
   {
-    backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, d->a, d->p, d->b, wb);
+    backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, a, p, b, wb);
   }
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
@@ -1988,24 +2032,32 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   {
     for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
   }
-  // update the coeffs with strength
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength;
-
-  float aa[3] = { wb[0], wb[1], wb[2] };
-  float bb[3] = { wb[0], wb[1], wb[2] };
   if(d->profile_version == 1)
   {
-    // only use the profile of green channel
-    for(int i = 0; i < 3; i++)
-    {
-      aa[i] *= d->a[1];
-      bb[i] *= d->b[1];
-    }
+    // update the coeffs with strength
+    for(int i = 0; i < 3; i++) wb[i] *= d->a_modifier;
+  }
+
+  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
+  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
+
+  const float a[3] = { d->a[0] * d->a_modifier, d->a[1] * d->a_modifier, d->a[2] * d->a_modifier };
+  const float b_bound = (d->b_modifier > 0.0f) ? 0.05f : 0.0f;
+  const float b[3] = { (b_bound - d->b[0]) * fabs(d->b_modifier) + d->b[0],
+                       (b_bound - d->b[1]) * fabs(d->b_modifier) + d->b[1],
+                       (b_bound - d->b[2]) * fabs(d->b_modifier) + d->b[2] };
+  const float p_bound = (d->p_modifier > 0.0f) ? 0.4f : 1.6f;
+  const float p[3] = { (p_bound - d->p[0]) * fabs(d->p_modifier) + d->p[0],
+                       (p_bound - d->p[1]) * fabs(d->p_modifier) + d->p[1],
+                       (p_bound - d->p[2]) * fabs(d->p_modifier) + d->p[2] };
+
+  if(d->profile_version == 1)
+  {
     precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
   }
   else if(d->profile_version == 2)
   {
-    precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, d->a, d->p, d->b, wb);
+    precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, a, p, b, wb);
   }
 
   float *out = (float *)ovoid;
@@ -2109,18 +2161,33 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   {
     for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
   }
-  // update the coeffs with strength and scale
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
+
+  if(d->profile_version == 1)
+  {
+    // update the coeffs with strength and scale
+    for(int i = 0; i < 3; i++) wb[i] *= d->a_modifier * scale;
+  }
+  else
+  {
+    // update the coeffs with scale
+    for(int i = 0; i < 3; i++) wb[i] *= scale;
+  }
 
   const float aa[4] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2], 1.0f };
   const float bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 1.0f };
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
                             (bb[2] / aa[2]) * (bb[2] / aa[2]), 0.0f };
 
-  const float a[4] = { d->a[0], d->a[1], d->a[2], 1.0f };
-  const float sqrta[4] = { sqrt(d->a[0]), sqrt(d->a[1]), sqrt(d->a[2]), 1.0f };
-  const float b[4] = { d->b[0], d->b[1], d->b[2], 1.0f };
-  const float p[4] = { d->p[0], d->p[1], d->p[2], 1.0f };
+  const float a[4] = { d->a[0] * d->a_modifier, d->a[1] * d->a_modifier, d->a[2] * d->a_modifier, 1.0f };
+  const float sqrta[4] = { sqrt(a[0]), sqrt(a[1]), sqrt(a[2]), 1.0f };
+  const float b_bound = (d->b_modifier > 0.0f) ? 0.05f : 0.0f;
+  const float b[4] = { (b_bound - d->b[0]) * fabs(d->b_modifier) + d->b[0],
+                       (b_bound - d->b[1]) * fabs(d->b_modifier) + d->b[1],
+                       (b_bound - d->b[2]) * fabs(d->b_modifier) + d->b[2], 1.0f };
+  const float p_bound = (d->p_modifier > 0.0f) ? 0.4f : 1.6f;
+  const float p[4] = { (p_bound - d->p[0]) * fabs(d->p_modifier) + d->p[0],
+                       (p_bound - d->p[1]) * fabs(d->p_modifier) + d->p[1],
+                       (p_bound - d->p[2]) * fabs(d->p_modifier) + d->p[2], 1.0f };
 
 
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
@@ -2456,18 +2523,32 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     wb[1] = piece->pipe->dsc.processed_maximum[1];
     wb[2] = 2.0f * piece->pipe->dsc.processed_maximum[2];
   }
-  // update the coeffs with strength and scale
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
+  if(d->profile_version == 1)
+  {
+    // update the coeffs with strength and scale
+    for(int i = 0; i < 3; i++) wb[i] *= d->a_modifier * scale;
+  }
+  else
+  {
+    // update the coeffs with scale
+    for(int i = 0; i < 3; i++) wb[i] *= scale;
+  }
 
   const float aa[4] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2], 1.0f };
   const float bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 1.0f };
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
                             (bb[2] / aa[2]) * (bb[2] / aa[2]), 0.0f };
 
-  const float a[4] = { d->a[0], d->a[1], d->a[2], 1.0f };
-  const float sqrta[4] = { sqrt(d->a[0]), sqrt(d->a[1]), sqrt(d->a[2]), 1.0f };
-  const float b[4] = { d->b[0], d->b[1], d->b[2], 1.0f };
-  const float p[4] = { d->p[0], d->p[1], d->p[2], 1.0f };
+  const float a[4] = { d->a[0] * d->a_modifier, d->a[1] * d->a_modifier, d->a[2] * d->a_modifier, 1.0f };
+  const float sqrta[4] = { sqrt(a[0]), sqrt(a[1]), sqrt(a[2]), 1.0f };
+  const float b_bound = (d->b_modifier > 0.0f) ? 0.05f : 0.0f;
+  const float b[4] = { (b_bound - d->b[0]) * fabs(d->b_modifier) + d->b[0],
+                       (b_bound - d->b[1]) * fabs(d->b_modifier) + d->b[1],
+                       (b_bound - d->b[2]) * fabs(d->b_modifier) + d->b[2], 1.0f };
+  const float p_bound = (d->p_modifier > 0.0f) ? 0.4f : 1.6f;
+  const float p[4] = { (p_bound - d->p[0]) * fabs(d->p_modifier) + d->p[0],
+                       (p_bound - d->p[1]) * fabs(d->p_modifier) + d->p[1],
+                       (p_bound - d->p[2]) * fabs(d->p_modifier) + d->p[2], 1.0f };
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
 
@@ -2862,7 +2943,9 @@ void reload_defaults(dt_iop_module_t *module)
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->nbhood = 7.0f;
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->scattering = 0.0f;
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->central_pixel_weight = 0.0f;
-      ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->a_modifier = 1.0f;
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->b_modifier = 0.0f;
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->p_modifier = 0.0f;
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->fix_anscombe_and_nlmeans_norm = TRUE;
     }
@@ -2875,7 +2958,9 @@ void reload_defaults(dt_iop_module_t *module)
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->nbhood = 7.0f;
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->scattering = 200.0f * a;
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->central_pixel_weight = 0.1f;
-      ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->a_modifier = 1.0f;
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->b_modifier = 0.0f;
+      ((dt_iop_denoiseprofile_params_t *)module->default_params)->p_modifier = 0.0f;
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->fix_anscombe_and_nlmeans_norm = TRUE;
     }
@@ -3013,7 +3098,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   d->nbhood = p->nbhood;
   d->scattering = p->scattering;
   d->central_pixel_weight = p->central_pixel_weight;
-  d->strength = p->strength;
+  d->a_modifier = p->a_modifier;
+  d->b_modifier = p->b_modifier;
+  d->p_modifier = p->p_modifier;
   for(int i = 0; i < 3; i++)
   {
     d->a[i] = p->a[i];
@@ -3145,10 +3232,24 @@ static void central_pixel_weight_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void strength_callback(GtkWidget *w, dt_iop_module_t *self)
+static void a_modifier_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
-  p->strength = dt_bauhaus_slider_get(w);
+  p->a_modifier = dt_bauhaus_slider_get(w);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void b_modifier_callback(GtkWidget *w, dt_iop_module_t *self)
+{
+  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  p->b_modifier = dt_bauhaus_slider_get(w);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void p_modifier_callback(GtkWidget *w, dt_iop_module_t *self)
+{
+  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  p->p_modifier = dt_bauhaus_slider_get(w);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -3159,7 +3260,9 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   dt_bauhaus_slider_set_soft(g->radius, p->radius);
   dt_bauhaus_slider_set(g->nbhood, p->nbhood);
-  dt_bauhaus_slider_set_soft(g->strength, p->strength);
+  dt_bauhaus_slider_set_soft(g->a_modifier, p->a_modifier);
+  dt_bauhaus_slider_set(g->b_modifier, p->b_modifier);
+  dt_bauhaus_slider_set(g->p_modifier, p->p_modifier);
   dt_bauhaus_slider_set_soft(g->scattering, p->scattering);
   dt_bauhaus_slider_set_soft(g->central_pixel_weight, p->central_pixel_weight);
   dt_bauhaus_combobox_set(g->profile, -1);
@@ -3600,6 +3703,10 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
   g->profiles = NULL;
   g->profile = dt_bauhaus_combobox_new(self);
+  g->a_modifier = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
+  dt_bauhaus_slider_enable_soft_boundaries(g->a_modifier, 0.001f, 1000.0f);
+  g->p_modifier = dt_bauhaus_slider_new_with_range(self, -1.0f, 1.0f, .05, 0.f, 3);
+  g->b_modifier = dt_bauhaus_slider_new_with_range(self, -1.0f, 1.0f, .05, 0.f, 3);
   g->mode = dt_bauhaus_combobox_new(self);
   g->radius = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1.f, 1.f, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->radius, 0.0, 10.0);
@@ -3608,8 +3715,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->scattering, 0.0, 20.0);
   g->central_pixel_weight = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01, 0.0f, 2);
   dt_bauhaus_slider_enable_soft_boundaries(g->central_pixel_weight, 0.0, 10.0);
-  g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
-  dt_bauhaus_slider_enable_soft_boundaries(g->strength, 0.001f, 1000.0f);
   g->channel = dt_conf_get_int("plugins/darkroom/denoiseprofile/gui_channel");
 
   g->box_nlm = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -3709,10 +3814,12 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->wb_adaptive_anscombe, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->a_modifier, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->p_modifier, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->b_modifier, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_nlm, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_wavelets, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_variance, TRUE, TRUE, 0);
 
   g->fix_anscombe_and_nlmeans_norm = gtk_check_button_new_with_label(_("migrate to fixed algorithm"));
@@ -3741,7 +3848,9 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->nbhood, "%.0f");
   dt_bauhaus_widget_set_label(g->scattering, NULL, _("scattering (coarse-grain noise)"));
   dt_bauhaus_widget_set_label(g->central_pixel_weight, NULL, _("central pixel weight (details)"));
-  dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
+  dt_bauhaus_widget_set_label(g->a_modifier, NULL, _("global strength"));
+  dt_bauhaus_widget_set_label(g->p_modifier, NULL, _("shadows strength"));
+  dt_bauhaus_widget_set_label(g->b_modifier, NULL, _("dark shadows strength"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means"));
   dt_bauhaus_combobox_add(g->mode, _("wavelets"));
   const gboolean compute_variance = dt_conf_get_bool("plugins/darkroom/denoiseprofile/show_compute_variance_mode");
@@ -3764,7 +3873,9 @@ void gui_init(dt_iop_module_t *self)
                                                          "of the patch in the patch comparison.\n"
                                                          "useful to recover details when patch size\n"
                                                          "is quite big."));
-  gtk_widget_set_tooltip_text(g->strength, _("finetune denoising strength"));
+  gtk_widget_set_tooltip_text(g->a_modifier, _("finetune denoising strength"));
+  gtk_widget_set_tooltip_text(g->p_modifier, _("shadows denoising strength"));
+  gtk_widget_set_tooltip_text(g->b_modifier, _("dark shadows denoising strength"));
   g_signal_connect(G_OBJECT(g->profile), "value-changed", G_CALLBACK(profile_callback), self);
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
   g_signal_connect(G_OBJECT(g->radius), "value-changed", G_CALLBACK(radius_callback), self);
@@ -3772,7 +3883,9 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->scattering), "value-changed", G_CALLBACK(scattering_callback), self);
   g_signal_connect(G_OBJECT(g->central_pixel_weight), "value-changed", G_CALLBACK(central_pixel_weight_callback),
                    self);
-  g_signal_connect(G_OBJECT(g->strength), "value-changed", G_CALLBACK(strength_callback), self);
+  g_signal_connect(G_OBJECT(g->a_modifier), "value-changed", G_CALLBACK(a_modifier_callback), self);
+  g_signal_connect(G_OBJECT(g->p_modifier), "value-changed", G_CALLBACK(p_modifier_callback), self);
+  g_signal_connect(G_OBJECT(g->b_modifier), "value-changed", G_CALLBACK(b_modifier_callback), self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
