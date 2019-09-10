@@ -2001,16 +2001,12 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
       aa[i] *= d->a[1];
       bb[i] *= d->b[1];
     }
+    precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
   }
   else if(d->profile_version == 2)
   {
-    for(int i = 0; i < 3; i++)
-    {
-      aa[i] *= d->a[i];
-      bb[i] *= d->b[i];
-    }
+    precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, d->a, d->p, d->b, wb);
   }
-  precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
 
   float *out = (float *)ovoid;
   // we use out as a temporary buffer here
