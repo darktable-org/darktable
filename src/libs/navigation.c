@@ -571,7 +571,7 @@ void init_key_accels(dt_lib_module_t *self)
 
 void connect_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_connect_lib(self, "hide navigation thumbnail",
+  dt_accel_connect_lib(self, "toggle navigation thumbnail visibility",
                      g_cclosure_new(G_CALLBACK(_lib_navigation_collapse_callback), self, NULL));
 }
 
