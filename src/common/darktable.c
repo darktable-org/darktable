@@ -836,7 +836,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     if(connection) g_object_unref(connection);
 #endif
 
-    if(!image_loaded_elsewhere) dt_database_show_error(darktable.db);
+    if(init_gui && !image_loaded_elsewhere) dt_database_show_error(darktable.db);
 
     return 1;
   }
