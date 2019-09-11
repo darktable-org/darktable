@@ -3307,6 +3307,8 @@ void gui_update(dt_iop_module_t *self)
       dt_bauhaus_combobox_add(g->mode, _("compute variance"));
     }
   }
+  gtk_widget_set_visible(g->p_modifier, (p->profile_version != 1));
+  gtk_widget_set_visible(g->b_modifier, (p->profile_version != 1));
   dt_bauhaus_combobox_set(g->mode, p->mode);
   if(p->a[0] == -1.0)
   {
@@ -3336,6 +3338,8 @@ void gui_reset(dt_iop_module_t *self)
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   gtk_widget_set_visible(g->fix_anscombe_and_nlmeans_norm, !p->fix_anscombe_and_nlmeans_norm);
+  gtk_widget_set_visible(g->p_modifier, (p->profile_version != 1));
+  gtk_widget_set_visible(g->b_modifier, (p->profile_version != 1));
 }
 
 static void dt_iop_denoiseprofile_get_params(dt_iop_denoiseprofile_params_t *p, const int ch, const double mouse_x,
