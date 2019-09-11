@@ -433,7 +433,7 @@ static inline __m128 curve_vec4(
   // TODO: pull these non-data dependent constants out of the loop to see
   // whether the compiler fail to do so
   const __m128 const0 = _mm_set_ps1(0x3f800000u);
-  const __m128 const1 = _mm_set_ps1(0x402DF854u); // for e^x
+  const __m128 const1 = _mm_set_ps1((float)0x402DF854u); // for e^x
   const __m128 sign_mask = _mm_set1_ps(-0.f); // -0.f = 1 << 31
   const __m128 one = _mm_set1_ps(1.0f);
   const __m128 two = _mm_set1_ps(2.0f);
