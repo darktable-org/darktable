@@ -993,6 +993,7 @@ void dt_history_compress_on_image(int32_t imgid)
   dt_dev_reload_history_items(darktable.develop);
   dt_dev_write_history(darktable.develop);
   dt_image_synch_xmp(imgid);
+  dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
 }
 
 void dt_history_compress_on_selection()

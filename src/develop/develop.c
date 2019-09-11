@@ -761,16 +761,17 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
   return 0;
 }
 
-static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable, gboolean no_image, gboolean include_masks)
+// Fix leaks at the too of the history
+static void _dev_history_rm_topleaks(dt_develop_t *dev)
 {
+    // fprintf(stderr,"\n  Fixing history items: ");
     GList *history = g_list_nth(dev->history, dev->history_end);
-    // This is the central point where we add some history information
     // First step: dev->history_end might still point to now invalid history data, so we remove that
     while(history)
     {
       GList *next = g_list_next(history);
       dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-      // printf("removing obsoleted history item: %s\n", hist->module->op);
+      // fprintf(stderr,"removing obsolete: %s , ", hist->module->op);
       dt_dev_free_history_item(hist);
       dev->history = g_list_delete_link(dev->history, history);
       history = next;
@@ -778,10 +779,17 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
     // Second step: There might be a leak; dev->history_end - 1 might point to NIL so we remove that too!
     while ((dev->history_end>0) && (! g_list_nth(dev->history, dev->history_end - 1)))
     {
-      fprintf(stderr,"\n Leak detected in _dev_add_history_item_ext for %i",dev->history_end - 1);
+      // fprintf(stderr,"removing NIL %i , ",dev->history_end - 1);
       dev->history_end--;
     }
-    history = g_list_nth(dev->history, dev->history_end - 1);
+    // fprintf(stderr,"done");
+}
+
+static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable, gboolean no_image, gboolean include_masks)
+{
+    _dev_history_rm_topleaks(dev);
+
+    GList *history = g_list_nth(dev->history, dev->history_end - 1);
     dt_dev_history_item_t *hist = history ? (dt_dev_history_item_t *)(history->data) : 0;
     if(!history // if no history yet, push new item for sure.
        || module != hist->module
@@ -1002,18 +1010,9 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
 {
   dev->focus_hash = 0;
   dt_dev_pop_history_items(dev, 0);
-
   // remove unused history items:
-  GList *history = g_list_nth(dev->history, dev->history_end);
-  while(history)
-  {
-    GList *next = g_list_next(history);
-    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-    dt_dev_free_history_item(hist);
-    dev->history = g_list_delete_link(dev->history, history);
-    history = next;
-  }
-  dt_dev_read_history(dev);
+  _dev_history_rm_topleaks(dev);
+   dt_dev_read_history(dev);
 
   // we have to add new module instances first
   GList *modules = dev->iop;
@@ -1056,6 +1055,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
     }
     modules = g_list_next(modules);
   }
+  _dev_history_rm_topleaks(dev);
 
   dt_dev_pop_history_items(dev, dev->history_end);
 
