@@ -566,7 +566,7 @@ static gboolean _lib_navigation_leave_notify_callback(GtkWidget *widget, GdkEven
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "toggle navigation thumbnail visibility"), GDK_KEY_N, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "hide navigation thumbnail"), GDK_KEY_N, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
