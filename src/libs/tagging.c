@@ -1406,13 +1406,17 @@ static void pop_menu_dictionary_create_tag(GtkWidget *menuitem, dt_lib_module_t 
     if(strchr(newtag, '|') != 0)
       message = _("'|' character is not allowed to create a tag. aborting.");
     char *new_tagname = g_strdup(newtag);
-    const gboolean root = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(parent));
+    gboolean root = TRUE;
+    if (tagid)
+    {
+      root = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(parent));
+    }
     if (!root)
     {
       new_tagname = g_strdup(path);
       new_tagname = dt_util_dstrcat(new_tagname, "|%s", newtag);
     }
-    else new_tagname = g_strdup(newtag);
+
     if (dt_tag_exists(new_tagname, NULL))
       message = _("tag name already exists. aborting.");
     if (message)
