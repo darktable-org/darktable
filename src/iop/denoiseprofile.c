@@ -1217,7 +1217,6 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
 
-  const float a[3] = { d->a[0] * d->a_modifier, d->a[1] * d->a_modifier, d->a[2] * d->a_modifier };
   const float b_bound = (d->b_modifier > 0.0f) ? 0.05f : 0.0f;
   const float b[3] = { (b_bound - d->b[0]) * fabs(d->b_modifier) + d->b[0],
                        (b_bound - d->b[1]) * fabs(d->b_modifier) + d->b[1],
@@ -1226,6 +1225,10 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   const float p[3] = { (p_bound - d->p[0]) * fabs(d->p_modifier) + d->p[0],
                        (p_bound - d->p[1]) * fabs(d->p_modifier) + d->p[1],
                        (p_bound - d->p[2]) * fabs(d->p_modifier) + d->p[2] };
+  const float compensate_p = powf(0.05f, d->p[1]) / powf(0.05f, p[1]);
+  const float a[3] = { d->a[0] * d->a_modifier * compensate_p,
+                      d->a[1] * d->a_modifier * compensate_p,
+                      d->a[2] * d->a_modifier * compensate_p };
 
   if(d->profile_version == 1)
   {
@@ -1454,7 +1457,6 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
 
-  const float a[3] = { d->a[0] * d->a_modifier, d->a[1] * d->a_modifier, d->a[2] * d->a_modifier };
   const float b_bound = (d->b_modifier > 0.0f) ? 0.05f : 0.0f;
   const float b[3] = { (b_bound - d->b[0]) * fabs(d->b_modifier) + d->b[0],
                        (b_bound - d->b[1]) * fabs(d->b_modifier) + d->b[1],
@@ -1463,6 +1465,12 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   const float p[3] = { (p_bound - d->p[0]) * fabs(d->p_modifier) + d->p[0],
                        (p_bound - d->p[1]) * fabs(d->p_modifier) + d->p[1],
                        (p_bound - d->p[2]) * fabs(d->p_modifier) + d->p[2] };
+  const float compensate_p = powf(0.05f, d->p[1]) / powf(0.05f, p[1]);
+  const float a[3] = { d->a[0] * d->a_modifier * compensate_p,
+                       d->a[1] * d->a_modifier * compensate_p,
+                       d->a[2] * d->a_modifier * compensate_p };
+
+
   if(d->profile_version == 1)
   {
     precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
@@ -1695,7 +1703,6 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
 
-  const float a[3] = { d->a[0] * d->a_modifier, d->a[1] * d->a_modifier, d->a[2] * d->a_modifier };
   const float b_bound = (d->b_modifier > 0.0f) ? 0.05f : 0.0f;
   const float b[3] = { (b_bound - d->b[0]) * fabs(d->b_modifier) + d->b[0],
                        (b_bound - d->b[1]) * fabs(d->b_modifier) + d->b[1],
@@ -1704,7 +1711,10 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   const float p[3] = { (p_bound - d->p[0]) * fabs(d->p_modifier) + d->p[0],
                        (p_bound - d->p[1]) * fabs(d->p_modifier) + d->p[1],
                        (p_bound - d->p[2]) * fabs(d->p_modifier) + d->p[2] };
-
+  const float compensate_p = powf(0.05f, d->p[1]) / powf(0.05f, p[1]);
+  const float a[3] = { d->a[0] * d->a_modifier * compensate_p,
+                       d->a[1] * d->a_modifier * compensate_p,
+                       d->a[2] * d->a_modifier * compensate_p };
 
   if(d->profile_version == 1)
   {
@@ -2041,7 +2051,6 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
 
-  const float a[3] = { d->a[0] * d->a_modifier, d->a[1] * d->a_modifier, d->a[2] * d->a_modifier };
   const float b_bound = (d->b_modifier > 0.0f) ? 0.05f : 0.0f;
   const float b[3] = { (b_bound - d->b[0]) * fabs(d->b_modifier) + d->b[0],
                        (b_bound - d->b[1]) * fabs(d->b_modifier) + d->b[1],
@@ -2050,6 +2059,10 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   const float p[3] = { (p_bound - d->p[0]) * fabs(d->p_modifier) + d->p[0],
                        (p_bound - d->p[1]) * fabs(d->p_modifier) + d->p[1],
                        (p_bound - d->p[2]) * fabs(d->p_modifier) + d->p[2] };
+  const float compensate_p = powf(0.05f, d->p[1]) / powf(0.05f, p[1]);
+  const float a[3] = { d->a[0] * d->a_modifier * compensate_p,
+                       d->a[1] * d->a_modifier * compensate_p,
+                       d->a[2] * d->a_modifier * compensate_p };
 
   if(d->profile_version == 1)
   {
@@ -2178,8 +2191,6 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
                             (bb[2] / aa[2]) * (bb[2] / aa[2]), 0.0f };
 
-  const float a[4] = { d->a[0] * d->a_modifier, d->a[1] * d->a_modifier, d->a[2] * d->a_modifier, 1.0f };
-  const float sqrta[4] = { sqrt(a[0]), sqrt(a[1]), sqrt(a[2]), 1.0f };
   const float b_bound = (d->b_modifier > 0.0f) ? 0.05f : 0.0f;
   const float b[4] = { (b_bound - d->b[0]) * fabs(d->b_modifier) + d->b[0],
                        (b_bound - d->b[1]) * fabs(d->b_modifier) + d->b[1],
@@ -2188,6 +2199,11 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   const float p[4] = { (p_bound - d->p[0]) * fabs(d->p_modifier) + d->p[0],
                        (p_bound - d->p[1]) * fabs(d->p_modifier) + d->p[1],
                        (p_bound - d->p[2]) * fabs(d->p_modifier) + d->p[2], 1.0f };
+  const float compensate_p = powf(0.05f, d->p[1]) / powf(0.05f, p[1]);
+  const float a[4] = { d->a[0] * d->a_modifier * compensate_p,
+                       d->a[1] * d->a_modifier * compensate_p,
+                       d->a[2] * d->a_modifier * compensate_p, 1.0f };
+  const float sqrta[4] = { sqrt(a[0]), sqrt(a[1]), sqrt(a[2]), 1.0f };
 
 
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
@@ -2539,8 +2555,6 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
                             (bb[2] / aa[2]) * (bb[2] / aa[2]), 0.0f };
 
-  const float a[4] = { d->a[0] * d->a_modifier, d->a[1] * d->a_modifier, d->a[2] * d->a_modifier, 1.0f };
-  const float sqrta[4] = { sqrt(a[0]), sqrt(a[1]), sqrt(a[2]), 1.0f };
   const float b_bound = (d->b_modifier > 0.0f) ? 0.05f : 0.0f;
   const float b[4] = { (b_bound - d->b[0]) * fabs(d->b_modifier) + d->b[0],
                        (b_bound - d->b[1]) * fabs(d->b_modifier) + d->b[1],
@@ -2549,6 +2563,11 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   const float p[4] = { (p_bound - d->p[0]) * fabs(d->p_modifier) + d->p[0],
                        (p_bound - d->p[1]) * fabs(d->p_modifier) + d->p[1],
                        (p_bound - d->p[2]) * fabs(d->p_modifier) + d->p[2], 1.0f };
+  const float compensate_p = powf(0.05f, d->p[1]) / powf(0.05f, p[1]);
+  const float a[4] = { d->a[0] * d->a_modifier * compensate_p,
+                       d->a[1] * d->a_modifier * compensate_p,
+                       d->a[2] * d->a_modifier * compensate_p, 1.0f };
+  const float sqrta[4] = { sqrt(a[0]), sqrt(a[1]), sqrt(a[2]), 1.0f };
 
   size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
 
