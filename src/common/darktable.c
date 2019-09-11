@@ -813,31 +813,33 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   }
   else if(!dt_database_get_lock_acquired(darktable.db))
   {
-    gboolean image_loaded_elsewhere = FALSE;
-#ifndef MAC_INTEGRATION
-    // send the images to the other instance via dbus
-    fprintf(stderr, "trying to open the images in the running instance\n");
-
-    GDBusConnection *connection = NULL;
-    for(int i = 1; i < argc; i++)
+    if (init_gui)
     {
-      // make the filename absolute ...
-      if(argv[i] == NULL || *argv[i] == '\0') continue;
-      gchar *filename = dt_util_normalize_path(argv[i]);
-      if(filename == NULL) continue;
-      if(!connection) connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
-      // ... and send it to the running instance of darktable
-      image_loaded_elsewhere = g_dbus_connection_call_sync(connection, "org.darktable.service", "/darktable",
-                                                           "org.darktable.service.Remote", "Open",
-                                                           g_variant_new("(s)", filename), NULL,
-                                                           G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL) != NULL;
-      g_free(filename);
-    }
-    if(connection) g_object_unref(connection);
+      gboolean image_loaded_elsewhere = FALSE;
+#ifndef MAC_INTEGRATION
+      // send the images to the other instance via dbus
+      fprintf(stderr, "trying to open the images in the running instance\n");
+
+      GDBusConnection *connection = NULL;
+      for(int i = 1; i < argc; i++)
+      {
+        // make the filename absolute ...
+        if(argv[i] == NULL || *argv[i] == '\0') continue;
+        gchar *filename = dt_util_normalize_path(argv[i]);
+        if(filename == NULL) continue;
+        if(!connection) connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
+        // ... and send it to the running instance of darktable
+        image_loaded_elsewhere = g_dbus_connection_call_sync(connection, "org.darktable.service", "/darktable",
+                                                             "org.darktable.service.Remote", "Open",
+                                                             g_variant_new("(s)", filename), NULL,
+                                                             G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL) != NULL;
+        g_free(filename);
+      }
+      if(connection) g_object_unref(connection);
 #endif
 
-    if(!image_loaded_elsewhere) dt_database_show_error(darktable.db);
-
+      if(!image_loaded_elsewhere) dt_database_show_error(darktable.db);
+    }
     return 1;
   }
 
