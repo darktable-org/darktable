@@ -175,83 +175,201 @@
     </para>
 
     <para>
-      In the center of the bottom panel you have an option to choose between zoomable lighttable
-      view or filemanager view of the thumbnails. In zoomable lighttable view, scroll with your
-      mouse wheel to zoom in and out. Moving the mouse while <emphasis>pressing the left mouse
-      button</emphasis> allows you to navigate through your collection. In filemanager view, you
-      can can change the number of images in each row, using the slider next to the filemanager
-      option, or by using <emphasis>ctrl-(mouse wheel)</emphasis>. Use your mouse wheel to
-      navigate through your collection.
+      In the center of the bottom panel you have an option to choose between different layouts.
     </para>
 
-    <para>
-      In both modes you can navigate left/right/up/down through your collection using
-      &larr;/&rarr;/&uarr;/&darr;. Pressing <emphasis>g</emphasis> in filemanager mode goes to
-      the top, <emphasis>shift-g</emphasis> to the bottom, <emphasis>PageUp</emphasis> brings
-      you one page up and <emphasis>PageDown</emphasis> one page down.
-    </para>
+    <sect2 status="final" id="lighttable_filemanager">
 
-    <para>
-      You can select the image under the pointer by <emphasis>left-clicking</emphasis> on its
-      thumbnail or by pressing <emphasis>return</emphasis>. A range of images is selected by
-      <emphasis>clicking</emphasis> on the first one and then
-      <emphasis>shift-clicking</emphasis> on the last one. Images are added or removed from your
-      selection by <emphasis>ctrl-clicking</emphasis> on their thumbnails or pressing
-      <emphasis>space</emphasis>.
-    </para>
+      <title>Filemanager</title>
 
-    <para>
-      To locate where you are in a collection, there are indicators at the extreme borders of
-      the window: left/right for your position when you are in filemanager mode, left/right and
-      top/bottom for your vertical and your horizontal position, respectively, when you are in
-      the zoomable lighttable view.
-    </para>
+      <para>
+        This is the default mode to view thumbnails of the images.
+      </para>
 
-    <para>
-      While holding down the <emphasis>w</emphasis> key a fully zoomed preview of the image
-      under the mouse cursor is displayed. You can use this feature for a quick inspection of
-      image quality while rating and selecting images.
-    </para>
+      <para>
+        In this layout, you
+        can can change the number of images in each row, using the slider next to the layouts
+        option, or by using <emphasis>ctrl-(mouse wheel)</emphasis>. Use your mouse wheel to
+        navigate through your collection.
+      </para>
 
-    <indexterm>
-      <primary>focus detection</primary>
-    </indexterm>
+      <para>
+        You can navigate left/right/up/down through your collection using
+        &larr;/&rarr;/&uarr;/&darr;. Pressing <emphasis>g</emphasis> goes to
+        the top, <emphasis>shift-g</emphasis> to the bottom, <emphasis>PageUp</emphasis> brings
+        you one page up and <emphasis>PageDown</emphasis> one page down.
+      </para>
 
-    <para>
-      Holding down the <emphasis>ctlr-w</emphasis> key fully zooms into the image and
-      additionally activates an analysis for sharp regions, detecting those parts of the image
-      that are in focus. Areas of high sharpness are indicated by a red border&nbsp;&ndash; the
-      higher the color intensity the better the sharpness. In case that no area of
-      <emphasis>high</emphasis> sharpness is detected darktable indicates areas of
-      <emphasis>moderate</emphasis> sharpness with a blue border. For this tool to work the
-      input image needs to hold an embedded JPEG thumbnail which is the case for most raw files.
-    </para>
+      <para>
+        You can select the image under the pointer by <emphasis>left-clicking</emphasis> on its
+        thumbnail or by pressing <emphasis>return</emphasis>. A range of images is selected by
+        <emphasis>clicking</emphasis> on the first one and then
+        <emphasis>shift-clicking</emphasis> on the last one. Images are added or removed from your
+        selection by <emphasis>ctrl-clicking</emphasis> on their thumbnails or pressing
+        <emphasis>space</emphasis>.
+      </para>
 
-    <para>
-      Sometimes pressing <emphasis>w</emphasis> or <emphasis>ctrl-w</emphasis> may not reveal an
-      immediate effect&nbsp;&ndash; in that case please click into the center area and press the
-      corresponding key again.
-    </para>
+      <para>
+        To locate where you are in a collection, there are indicators at the extreme borders of
+        the window: left/right for your position.
+      </para>
 
-    <informaltable frame="none">
-      <tgroup cols="2" colsep="0" rowsep="0">
-        <colspec colwidth="6*"/>
-        <colspec colwidth="4*"/>
-        <tbody>
-          <row>
-            <entry>
-              Fully zoomed-in image view while holding down the <emphasis>ctrl-w</emphasis> key
-              with indication of the sharp areas in focus. Sharpness detection is based on an
-              embedded JPEG thumbnail of the original raw file independent of any processing
-              steps within darktable.
-            </entry>
-            <entry>
-              <graphic fileref="images/lighttable_focus_detection.png" scalefit="1" width="80%" align="center" />
-            </entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </informaltable>
+    </sect2>
+
+    <sect2 status="final" id="lighttable_zoomable">
+
+      <title>Zoomable lighttable</title>
+
+      <para>
+        Zoomable lighttable layout inherits from most the filemanager features, with some noticeable
+        changes :
+      </para>
+
+      <para>
+        Scroll with your mouse wheel to zoom in and out. Moving the mouse while <emphasis>pressing the left mouse
+        button</emphasis> allows you to navigate through your collection.
+      </para>
+
+      <para>
+        To locate where you are in a collection, there are indicators at the extreme borders of
+        the window: left/right and top/bottom for your vertical and your horizontal position, respectively.
+      </para>
+
+    </sect2>
+
+    <sect2 status="final" id="lighttable_culling">
+
+      <title>Culling</title>
+
+      <para>
+        Culling layout allow to display images side by side to easily compare them. There's 2 different modes
+        to define the number of images to show at the same time : <quote>Fixed mode</quote> and <quote>Dynamic mode</quote>.
+      </para>
+
+      <para>
+        Once in culling mode, you can switch between those 2 mode with <emphasis>&#60;</emphasis> key accel.
+      </para>
+
+      <sect3 status="final" id="lighttable_culling_fixed">
+
+        <title>Fixed mode</title>
+
+        <para>
+          In fixed mode, the number of image to display is always the same, independently of the selection length.
+          This number can be set with the slider in the bottom panel, near the modes option.
+        </para>
+
+        <para>
+          In this mode, you'll navigate throught all selected images. If no selection is set
+          (or if only 1 image is selected), you'll navigate throught all images.
+        </para>
+
+        <para>
+          Default shortcut for entering culling in fixed mode is <emphasis>X</emphasis>.
+        </para>
+
+      </sect3>
+
+      <sect3 status="final" id="lighttable_culling_dynamic">
+
+        <title>Dynamic mode</title>
+
+        <para>
+          In dynamic mode, all the selected images are shown. If no selection is set (or if only 1 image is selected)
+          last value from fixed mode is used.
+        </para>
+
+        <para>
+          Default shortcut for entering culling in fixed mode is <emphasis>ctrl+X</emphasis>.
+        </para>
+
+      </sect3>
+
+      <sect3 status="final" id="lighttable_culling_zoom">
+
+        <title>Zoom and pan</title>
+
+        <para>
+          In culling mode, you can zoom and pan in the images to see details. Images can be zoomed until 100%.
+        </para>
+
+        <para>
+          <emphasis>ctrl+scroll</emphasis> to zoom in/out images. <emphasis>left click + drag</emphasis> to pan in zoomed images.
+        </para>
+
+        <para>
+          By default, zooming and panning are synchronized between all visible images. If you want to zoom or pan only a specific image,
+          add <emphasis>shift</emphasis> key to above actions.
+        </para>
+
+        <para>
+          To enhance performance in zoomed images loading, you can enable the disk backend for full preview cache in preferences
+          (see <xref linkend="core_options"/>). Keep in mind that this could take a lot of disk space...
+        </para>
+
+      </sect3>
+
+    </sect2>
+
+    <sect2 status="final" id="lighttable_fullpreview">
+
+      <title>Full preview</title>
+
+      <para>
+        While holding down the <emphasis>z</emphasis> key a fully zoomed preview of the image
+        under the mouse cursor is displayed. You can use this feature for a quick inspection of
+        image quality while rating and selecting images.
+      </para>
+
+      <indexterm>
+        <primary>focus detection</primary>
+      </indexterm>
+
+      <para>
+        Holding down the <emphasis>ctlr-z</emphasis> key fully zooms into the image and
+        additionally activates an analysis for sharp regions, detecting those parts of the image
+        that are in focus. Areas of high sharpness are indicated by a red border&nbsp;&ndash; the
+        higher the color intensity the better the sharpness. In case that no area of
+        <emphasis>high</emphasis> sharpness is detected darktable indicates areas of
+        <emphasis>moderate</emphasis> sharpness with a blue border. For this tool to work the
+        input image needs to hold an embedded JPEG thumbnail which is the case for most raw files.
+      </para>
+
+      <para>
+        Sometimes pressing <emphasis>z</emphasis> or <emphasis>ctrl-z</emphasis> may not reveal an
+        immediate effect&nbsp;&ndash; in that case please click into the center area and press the
+        corresponding key again.
+      </para>
+
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="6*"/>
+          <colspec colwidth="4*"/>
+          <tbody>
+            <row>
+              <entry>
+                Fully zoomed-in image view while holding down the <emphasis>ctrl-z</emphasis> key
+                with indication of the sharp areas in focus. Sharpness detection is based on an
+                embedded JPEG thumbnail of the original raw file independent of any processing
+                steps within darktable.
+              </entry>
+              <entry>
+                <graphic fileref="images/lighttable_focus_detection.png" scalefit="1" width="80%" align="center" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+      <para>
+        If you want the full preview to stay, without having to hold <emphasis>z</emphasis> key,
+        you will have to assign a shortcut for <quote>view/lighttable/sticky preview</quote>
+        (see <xref linkend="shortcuts"/>).
+        In sticky preview mode, you can zoom and pan in the image, exactly like in culling layout
+        (see <xref linkend="lighttable_culling_zoom"/>).
+      </para>
+
+    </sect2>
 
   </sect1>
 
