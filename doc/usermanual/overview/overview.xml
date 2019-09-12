@@ -1106,6 +1106,23 @@
 
     </sect2>
 
+    <sect2 status="final" id="shortcut_window">
+
+      <title>Shortcuts window</title>
+
+      <para>
+        You can display all the available shortcuts in the current context by pressing
+        <emphasis>H</emphasis>.
+      </para>
+
+      <para>
+        If you want the shortcut window to stay opened, there is a button
+        <inlinegraphic fileref="&icon_module_instances;" scalefit="1" width="2%" align="center" />
+        located at the top right of the window.
+      </para>
+
+    </sect2>
+
   </sect1>
 
   <sect1 status="final" id="darktable_basic_workflow">

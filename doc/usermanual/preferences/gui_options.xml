@@ -16,280 +16,380 @@
     These options control the look and feel of darktable.
   </para>
 
-  <bridgehead renderas="sect4">width of the side panels in pixels</bridgehead>
+  <bridgehead renderas="sect5">interface language</bridgehead>
 
   <para>
-    This controls the size of side panels in pixels. Side panels are found left and right to the
-    center view (default 350).
+    set the language of the user interface. the system default is marked with an * (needs a restart)
   </para>
 
-  <bridgehead renderas="sect4">don't use embedded preview JPEG but half-size raw</bridgehead>
+  <bridgehead renderas="sect5">theme</bridgehead>
 
   <para>
-    Check this option to not use the embedded JPEG from the raw file but process the raw data.
-    This is slower. (default off).
-<!-- but prevents you from getting false impressions from camera-processed thumbnail -->
+    set the theme for the user interface
   </para>
 
-  <bridgehead renderas="sect4">ask before removing images from database</bridgehead>
+  <sect2 id="gui_options_import">
 
-  <para>
-    Always ask the user before any image is removed from the database (default on).
-  </para>
+    <title>Import</title>
 
-  <bridgehead renderas="sect4">ask before erasing images from disk</bridgehead>
+    <bridgehead renderas="sect5">ignore JPEG images when importing film rolls</bridgehead>
 
-  <para>
-    Always ask the user before any image file is deleted (default on).
-  </para>
+    <para>
+      When having RAW+JPEG images together in one directory it makes no sense to import both. With
+      this flag one can ignore all JPEGs found (default off).
+    </para>
 
-  <bridgehead renderas="sect4">send files to trash when erasing images</bridgehead>
+    <bridgehead renderas="sect5">recursive directory traversal when importing film rolls</bridgehead>
 
-  <para>
-    Instead of physically deleting images from disk put them into the system's trash bin
-    (default on).
-  </para>
+    <para>
+      Not only import images from the directory selected but recursively go through all
+      subdirectories as well (default off).
+    </para>
 
-  <bridgehead renderas="sect4">ask before moving images from film roll folder</bridgehead>
+    <bridgehead renderas="sect5">creator to be applied when importing</bridgehead>
 
-  <para>
-    Always ask the user before any image file is moved (default on).
-  </para>
+    <para>
+      If provided, automatically add this string as a creator tag when importing images (default
+      none).
+    </para>
 
-  <bridgehead renderas="sect4">ask before copying images to new film roll folder</bridgehead>
+    <bridgehead renderas="sect5">publisher to be applied when importing</bridgehead>
 
-  <para>
-    Always ask the user before any image file is copied (default on).
-  </para>
+    <para>
+      If provided, automatically add this string as a publisher tag when importing images (default
+      none).
+    </para>
 
-  <bridgehead renderas="sect4">number of folder levels to show in lists</bridgehead>
+    <bridgehead renderas="sect5">rights to be applied when importing</bridgehead>
 
-  <para>
-    The number of folder levels to show in film roll names, starting from the right (default 1).
-  </para>
+    <para>
+      If provided, automatically add this string as a copyrights tag when importing images
+      (default none).
+    </para>
 
-  <bridgehead renderas="sect4">ignore JPEG images when importing film rolls</bridgehead>
+    <bridgehead renderas="sect5">comma separated tags to be applied when importing</bridgehead>
 
-  <para>
-    When having RAW+JPEG images together in one directory it makes no sense to import both. With
-    this flag one can ignore all JPEGs found (default off).
-  </para>
+    <para>
+      If you want to add further tags when importing images, you can give them as a comma
+      separated list (default none).
+    </para>
 
-  <bridgehead renderas="sect4">recursive directory traversal when importing film rolls</bridgehead>
+    <bridgehead renderas="sect5">initial import rating</bridgehead>
 
-  <para>
-    Not only import images from the directory selected but recursively go through all
-    subdirectories as well (default off).
-  </para>
+    <para>
+      Initial star rating (from 0 to 5) for all images when importing a film roll (default 1).
+    </para>
 
-  <bridgehead renderas="sect4">creator to be applied when importing</bridgehead>
+  </sect2>
 
-  <para>
-    If provided, automatically add this string as a creator tag when importing images (default
-    none).
-  </para>
+  <sect2 id="gui_options_lighttable">
 
-  <bridgehead renderas="sect4">publisher to be applied when importing</bridgehead>
+    <title>Lighttable</title>
 
-  <para>
-    If provided, automatically add this string as a publisher tag when importing images (default
-    none).
-  </para>
+    <bridgehead renderas="sect5">don't use embedded preview JPEG but half-size raw</bridgehead>
 
-  <bridgehead renderas="sect4">rights to be applied when importing</bridgehead>
+    <para>
+      Check this option to not use the embedded JPEG from the raw file but process the raw data.
+      This is slower. (default off).
+    </para>
 
-  <para>
-    If provided, automatically add this string as a copyrights tag when importing images
-    (default none).
-  </para>
+    <bridgehead renderas="sect5">high quality thumb processing from size</bridgehead>
 
-  <bridgehead renderas="sect4">comma separated tags to be applied when importing</bridgehead>
+    <para>
+      If the thumbnails size is greater than this value, it will be processed using the full
+      quality rendering path which is better but slower (default 720p).
+    </para>
 
-  <para>
-    If you want to add further tags when importing images, you can give them as a comma
-    separated list (default none).
-  </para>
+    <bridgehead renderas="sect5">enable extended thumb overlay</bridgehead>
 
-  <bridgehead renderas="sect4">initial import rating</bridgehead>
+    <para>
+      If enabled adds additional information to the thumbnail under the mouse cursor: image name,
+      exposure time, aperture, focal length, ISO value (default off).
+    </para>
 
-  <para>
-    Initial star rating (from 0 to 5) for all images when importing a film roll (default 1).
-  </para>
+    <bridgehead renderas="sect5">use single-click in the collect panel</bridgehead>
 
-  <bridgehead renderas="sect4">enable filmstrip</bridgehead>
+    <para>
+      (default off). In single-click mode, you can select range of value directly with the mouse.
+    </para>
 
-  <para>
-    Enable the filmstrip in darkroom, tethering and geomapping modes (default on).
-  </para>
+    <bridgehead renderas="sect5">expand a single lighttable module at a time</bridgehead>
 
-  <bridgehead renderas="sect4">high quality thumb processing from size</bridgehead>
+    <para>
+      Controls how lighttable panels are expanded. If this option is enabled, expanding a panel by
+      <emphasis>clicking</emphasis> collapses any currently expanded panel. If you want to expand
+      a panel without collapsing the others you do so with <emphasis>shift-click</emphasis>.
+      Disabling this option reverts the meaning of <emphasis>click</emphasis> and
+      <emphasis>shift-click</emphasis> (default off).
+    </para>
 
-  <para>
-    If the thumbnails size is greater than this value, it will be processed using the full
-    quality rendering path which is better but slower (default 720p).
-  </para>
+    <bridgehead renderas="sect5">scroll to lighttable modules when expanded/collapsed</bridgehead>
 
-  <bridgehead renderas="sect4">enable extended thumb overlay</bridgehead>
+    <para>
+      With this option enabled the lighttable side panels will scroll a module to the top when it
+      is expanded or collapsed (default off).
+    </para>
 
-  <para>
-    If enabled adds additional information to the thumbnail under the mouse cursor: image name,
-    exposure time, aperture, focal length, ISO value (default off).
-  </para>
-
-<!--  
-  <bridgehead renderas="sect4">maximum width of image drawing area</bridgehead>
-
-  <para>
-    Maximum width of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your screen.
-    Needs a restart and will invalidate current thumbnail caches (default 1300).
-  </para>
-
-  <bridgehead renderas="sect4">maximum height of image drawing area</bridgehead>
-
-  <para>
-    Maximum height of the image drawing area in darkroom mode&nbsp;&ndash; adjust to your
-    screen. Needs a restart and will invalidate current thumbnail caches (default 1000).
-  </para>
-  
-  <bridgehead renderas="sect4">compression of thumbnail images</bridgehead>
-
-  <para>
-    Controls the compression of thumbnail images in memory and on disk. Options:
-    <quote>off</quote>, <quote>low quality (fast)</quote>, <quote>high quality (slow)</quote>;
-    (default off).
-  </para>
--->
-
-  <bridgehead renderas="sect4">pen pressure control for brush masks</bridgehead>
-
-  <para>
-    Controls how the pressure reading of a graphics tablet impacts newly generated brush strokes
-    (see <xref linkend="drawn_mask"/>). You can control the brush width, its hardness and its
-    opacity. <quote>Absolute</quote> control means that the pressure reading directly defines
-    the attribute with a value between 0% and 100%. <quote>Relative</quote> means that the
-    pressure reading adjusts the attribute between zero and the pre-defined default value
-    (default off).
-  </para>
-
-  <bridgehead renderas="sect4">smoothing of brush strokes</bridgehead>
-
-  <para>
-    Sets the level for smoothing of brush strokes. Stronger smoothing leads to less nodes and
-    easier editing at the expense of lower accuracy.
-  </para>
-
-  <bridgehead renderas="sect4">display of individual color channels</bridgehead>
-
-  <para>
-    Controls how individual color channels are displayed when activated in the parametric masks
-    feature. You can choose between <quote>false color</quote> and <quote>grey scale</quote>
-    (default false color).
-  </para>
-
-  <bridgehead renderas="sect4">ask before deleting a tag</bridgehead>
-
-  <para>
-    Always ask user before deleting a tag from an image (default on).
-  </para>
-
-  <bridgehead renderas="sect4">only draw images on map that are currently collected and filtered</bridgehead>
-
-  <para>
-    Use the current filter settings to select the geotagged images drawn in the map view. This
-    limits the images drawn to those currently shown in the filmstrip and thus reduces the time
-    needed (default off).
-  </para>
-
-  <bridgehead renderas="sect4">maximum number of images drawn on map</bridgehead>
-
-  <para>
-    The maximum number of geotagged images drawn on the map. Increasing this number can slow
-    down the drawing of the map. Needs a restart if changed (default 100).
-  </para>
-
-  <bridgehead renderas="sect4">pretty print the image location</bridgehead>
-
-  <para>
-    Show a more readable representation of the geo location in the image information module
-    (default on).
-  </para>
-
-  <bridgehead renderas="sect4">overlay txt sidecar over zoomed images</bridgehead>
-
-  <para>
-    When there is a text file next to an image it can be shown as an overlay over zoomed images
-    on the lighttable. The text file has the same base name as the image file with file
-    extension <quote>.txt</quote>. It either has to be there at import time or the crawler has
-    to be enabled&nbsp;&ndash; see option <quote>look for updated xmp files on startup</quote>
-    in <xref linkend="core_options"/> (default off).
-  </para>
-
-  <bridgehead renderas="sect4">expand a single lighttable module at a time</bridgehead>
-
-  <para>
-    Controls how lighttable panels are expanded. If this option is enabled, expanding a panel by
-    <emphasis>clicking</emphasis> collapses any currently expanded panel. If you want to expand
-    a panel without collapsing the others you do so with <emphasis>shift-click</emphasis>.
-    Disabling this option reverts the meaning of <emphasis>click</emphasis> and
-    <emphasis>shift-click</emphasis> (default off).
-  </para>
-
-  <bridgehead renderas="sect4">expand a single darkroom module at a time</bridgehead>
-
-  <para>
-    Controls how darkroom modules are expanded. If this option is enabled, expanding a module by
-    <emphasis>clicking</emphasis> collapses any currently expanded module. If you want to expand
-    a module without collapsing the others you do so with <emphasis>shift-click</emphasis>.
-    Disabling this option reverts the meaning of <emphasis>click</emphasis> and
-    <emphasis>shift-click</emphasis> (default on).
-  </para>
-
-  <bridgehead renderas="sect4">scroll to lighttable modules when expanded/collapsed</bridgehead>
-
-  <para>
-    With this option enabled the lighttable side panels will scroll a module to the top when it
-    is expanded or collapsed (default off).
-  </para>
-
-  <bridgehead renderas="sect4">scroll to darkroom modules when expanded/collapsed</bridgehead>
-
-  <para>
-    With this option enabled the darkroom side panel will scroll a module to the top when it is
-    expanded or collapsed (default on).
-  </para>
-
-  <bridgehead renderas="sect4">border around image in darkroom mode</bridgehead>
-
-  <para>
-    Process the image in darkroom mode with a small border of the given number of pixels
-    (default 20).
-  </para>
-
-  <bridgehead renderas="sect4">do high quality processing for slideshow</bridgehead>
-
-  <para>
-    Controls how images are processed for the slideshow view. It this option is enabled, the
-    image will first be processed in full resolution, and downscaled at the very end. This can
-    result in better quality sometimes, but will always be slower (default on).
-  </para>
-
-  <bridgehead renderas="sect4">rating an image one star twice will not zero out the rating</bridgehead>
-
-  <para>
-    Normally clicking a one star rating twice will set a zero star rating to that image. When
-    checking this option a second click on a one star rating will keep that rating (default
-    off).
-  </para>
-
-  <bridgehead renderas="sect4">method to use for getting the display profile</bridgehead>
-
-  <para>
-    This option allows to force a specific way of getting the current display profile for color
-    management (see <xref linkend="rendering_method"/>). In the default setting
-    <quote>all</quote> darktable will either query the X display server's xatom or the
-    <emphasis>colord</emphasis> system service. You can set this option to <quote>xatom</quote>
-    or <quote>colord</quote> to enforce a specific method if the alternative gives wrong
-    results.
-  </para>
+    <bridgehead renderas="sect5">rating an image one star twice will not zero out the rating</bridgehead>
+
+    <para>
+      Normally clicking a one star rating twice will set a zero star rating to that image. When
+      checking this option a second click on a one star rating will keep that rating (default
+      off).
+    </para>
+
+  </sect2>
+
+  <sect2 id="gui_options_darkroom">
+
+    <title>Darkroom</title>
+
+    <bridgehead renderas="sect5">pen pressure control for brush masks</bridgehead>
+
+    <para>
+      Controls how the pressure reading of a graphics tablet impacts newly generated brush strokes
+      (see <xref linkend="drawn_mask"/>). You can control the brush width, its hardness and its
+      opacity. <quote>Absolute</quote> control means that the pressure reading directly defines
+      the attribute with a value between 0% and 100%. <quote>Relative</quote> means that the
+      pressure reading adjusts the attribute between zero and the pre-defined default value
+      (default off).
+    </para>
+
+    <bridgehead renderas="sect5">smoothing of brush strokes</bridgehead>
+
+    <para>
+      Sets the level for smoothing of brush strokes. Stronger smoothing leads to less nodes and
+      easier editing at the expense of lower accuracy.
+    </para>
+
+    <bridgehead renderas="sect5">display of individual color channels</bridgehead>
+
+    <para>
+      Controls how individual color channels are displayed when activated in the parametric masks
+      feature. You can choose between <quote>false color</quote> and <quote>grey scale</quote>
+      (default false color).
+    </para>
+
+    <bridgehead renderas="sect5">pattern for the image infos line</bridgehead>
+
+    <para>
+      See <!-- TODO <xref linkend="drawn_mask"/>--> for available values.
+    </para>
+
+    <bridgehead renderas="sect5">position of the image info line</bridgehead>
+
+    <para>
+      Controls in which panel we display the image info line. You can choose between
+      <quote>top left</quote> <quote>top right</quote> <quote>top center</quote> <quote>bottom</quote>
+      and <quote>hidden</quote> (default bottom).
+    </para>
+
+    <bridgehead renderas="sect5">show search module text entry</bridgehead>
+
+    <para>
+      Controls how to determine which modules are shown at the same time in the right panel.
+      You can choose between
+      <quote>groups icons</quote> <quote>search entry</quote> <quote>both</quote> (default both). (need a restart)
+    </para>
+
+    <bridgehead renderas="sect5">expand a single darkroom module at a time</bridgehead>
+
+    <para>
+      Controls how darkroom modules are expanded. If this option is enabled, expanding a module by
+      <emphasis>clicking</emphasis> collapses any currently expanded module. If you want to expand
+      a module without collapsing the others you do so with <emphasis>shift-click</emphasis>.
+      Disabling this option reverts the meaning of <emphasis>click</emphasis> and
+      <emphasis>shift-click</emphasis> (default on).
+    </para>
+
+    <bridgehead renderas="sect5">expand the module when it is activated, and collapse it when disabled</bridgehead>
+
+    <para>
+      This option allows to expand or collapse automatically modules when they are enabled or disabled.
+      (default off)
+    </para>
+
+    <bridgehead renderas="sect5">scroll to darkroom modules when expanded/collapsed</bridgehead>
+
+    <para>
+      With this option enabled the darkroom side panel will scroll a module to the top when it is
+      expanded or collapsed (default on).
+    </para>
+
+    <bridgehead renderas="sect5">border around image in darkroom mode</bridgehead>
+
+    <para>
+      Process the image in darkroom mode with a small border of the given number of pixels
+      (default 20).
+    </para>
+
+  </sect2>
+
+  <sect2 id="gui_options_map">
+
+    <title>Map/geolocalisation</title>
+
+    <bridgehead renderas="sect5">only draw images on map that are currently collected and filtered</bridgehead>
+
+    <para>
+      Use the current filter settings to select the geotagged images drawn in the map view. This
+      limits the images drawn to those currently shown in the filmstrip and thus reduces the time
+      needed (default off).
+    </para>
+
+    <bridgehead renderas="sect5">maximum number of images drawn on map</bridgehead>
+
+    <para>
+      The maximum number of geotagged images drawn on the map. Increasing this number can slow
+      down the drawing of the map. Needs a restart if changed (default 100).
+    </para>
+
+    <bridgehead renderas="sect5">pretty print the image location</bridgehead>
+
+    <para>
+      Show a more readable representation of the geo location in the image information module
+      (default on).
+    </para>
+
+  </sect2>
+
+  <sect2 id="gui_options_security">
+
+    <title>Security</title>
+
+    <bridgehead renderas="sect5">ask before removing images from database</bridgehead>
+
+    <para>
+      Always ask the user before any image is removed from the database (default on).
+    </para>
+
+    <bridgehead renderas="sect5">ask before erasing images from disk</bridgehead>
+
+    <para>
+      Always ask the user before any image file is deleted (default on).
+    </para>
+
+    <bridgehead renderas="sect5">send files to trash when erasing images</bridgehead>
+
+    <para>
+      Instead of physically deleting images from disk put them into the system's trash bin
+      (default on).
+    </para>
+
+    <bridgehead renderas="sect5">ask before moving images from film roll folder</bridgehead>
+
+    <para>
+      Always ask the user before any image file is moved (default on).
+    </para>
+
+    <bridgehead renderas="sect5">ask before copying images to new film roll folder</bridgehead>
+
+    <para>
+      Always ask the user before any image file is copied (default on).
+    </para>
+
+    <bridgehead renderas="sect5">ask before removing empty folders</bridgehead>
+
+    <para>
+      Always ask the user before removing any empty folder. This can happen after moving or deleting images (default off).
+    </para>
+
+    <bridgehead renderas="sect5">ask before deleting a tag</bridgehead>
+
+    <para>
+      Always ask user before deleting a tag from an image (default on).
+    </para>
+
+    <bridgehead renderas="sect5">ask before deleting a style</bridgehead>
+
+    <para>
+      Always ask user before deleting a style (default on).
+    </para>
+
+  </sect2>
+
+  <sect2 id="gui_options_misc">
+
+    <title>Miscellaneous</title>
+
+    <bridgehead renderas="sect5">width of the side panels in pixels</bridgehead>
+
+    <para>
+      This controls the size of side panels in pixels. Side panels are found left and right to the
+      center view (default 350).
+    </para>
+
+    <bridgehead renderas="sect5">waiting time before each picture in slideshow</bridgehead>
+
+    <para>
+      The number of seconds before displaying the next image (default 5).
+    </para>
+
+    <bridgehead renderas="sect5">do not show april 1st game</bridgehead>
+
+    <para>
+      (default on).
+    </para>
+
+    <bridgehead renderas="sect5">number of folder levels to show in lists</bridgehead>
+
+    <para>
+      The number of folder levels to show in film roll names, starting from the right (default 1).
+    </para>
+
+    <bridgehead renderas="sect5">enable filmstrip</bridgehead>
+
+    <para>
+      Enable the filmstrip in darkroom, tethering, geomapping and lighttable culling modes (default on).
+    </para>
+
+    <bridgehead renderas="sect5">enable timeline</bridgehead>
+
+    <para>
+      Enable the timeline lighttable mode (default on).
+    </para>
+
+    <bridgehead renderas="sect5">overlay txt sidecar over zoomed images</bridgehead>
+
+    <para>
+      When there is a text file next to an image it can be shown as an overlay over zoomed images
+      on the lighttable. The text file has the same base name as the image file with file
+      extension <quote>.txt</quote>. It either has to be there at import time or the crawler has
+      to be enabled&nbsp;&ndash; see option <quote>look for updated xmp files on startup</quote>
+      in <xref linkend="core_options"/> (default off).
+    </para>
+
+    <bridgehead renderas="sect5">mouse wheel scrolls modules side panel by default</bridgehead>
+
+    <para>
+      When enabled, mouse wheel scroll modules side panel, and ctrl+alt+mouse wheel scroll data entry.
+      When disabled, this behavior is reversed (default off).
+    </para>
+
+    <bridgehead renderas="sect5">show scrollbars for center view</bridgehead>
+
+    <para>
+      Defines in which modes scrollbars should be displayed (default lighttable).
+    </para>
+
+    <bridgehead renderas="sect5">always show panels scrollbars</bridgehead>
+
+    <para>
+      Defines whether the panel scrollbars should be always visible or activated only depending on the content (default on).
+      (need a restart)
+    </para>
+
+    <bridgehead renderas="sect5">method to use for getting the display profile</bridgehead>
+
+    <para>
+      This option allows to force a specific way of getting the current display profile for color
+      management (see <xref linkend="rendering_method"/>). In the default setting
+      <quote>all</quote> darktable will either query the X display server's xatom or the
+      <emphasis>colord</emphasis> system service. You can set this option to <quote>xatom</quote>
+      or <quote>colord</quote> to enforce a specific method if the alternative gives wrong
+      results.
+    </para>
+
+  </sect2>
 
 </sect1>
