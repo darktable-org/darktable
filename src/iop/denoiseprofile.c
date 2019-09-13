@@ -3026,6 +3026,8 @@ void gui_update(dt_iop_module_t *self)
   gtk_widget_set_visible(g->fix_anscombe_and_nlmeans_norm, !p->fix_anscombe_and_nlmeans_norm);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->upgrade_vst), p->upgrade_vst);
   gtk_widget_set_visible(g->upgrade_vst, !p->upgrade_vst);
+  gtk_widget_set_visible(g->shadows, p->upgrade_vst);
+  gtk_widget_set_visible(g->bias, p->upgrade_vst);
 }
 
 void gui_reset(dt_iop_module_t *self)
