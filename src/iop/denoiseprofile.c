@@ -139,6 +139,7 @@ typedef struct dt_iop_denoiseprofile_params_t
   gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
   // backward compatibility options
   gboolean fix_anscombe_and_nlmeans_norm;
+  gboolean upgrade_vst;
 } dt_iop_denoiseprofile_params_t;
 
 typedef struct dt_iop_denoiseprofile_gui_data_t
@@ -179,6 +180,7 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   GtkLabel *label_var_B;
   // backward compatibility options
   GtkWidget *fix_anscombe_and_nlmeans_norm;
+  GtkWidget *upgrade_vst;
 } dt_iop_denoiseprofile_gui_data_t;
 
 typedef struct dt_iop_denoiseprofile_data_t
@@ -198,6 +200,7 @@ typedef struct dt_iop_denoiseprofile_data_t
   gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
   // backward compatibility options
   gboolean fix_anscombe_and_nlmeans_norm;
+  gboolean upgrade_vst;
 } dt_iop_denoiseprofile_data_t;
 
 typedef struct dt_iop_denoiseprofile_global_data_t
@@ -378,6 +381,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     dt_iop_denoiseprofile_params_t *v8 = new_params;
     v8->shadows = 1.0f;
     v8->bias = 15.0f;
+    v8->upgrade_vst = FALSE;
     return 0;
   }
   return 1;
@@ -1180,8 +1184,19 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   }
   // update the coeffs with strength and scale
   for(int i = 0; i < 3; i++) wb[i] *= d->strength * in_scale;
+  // only use green channel + wb for now:
+  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
+  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
+
   const float compensate_p = 0.05f / powf(0.05f, d->shadows);
-  precondition_v2((float *)ivoid, (float *)ovoid, width, height, d->a[1] * compensate_p, d->shadows, d->b[1], wb);
+  if(!d->upgrade_vst)
+  {
+    precondition((float *)ivoid, (float *)ovoid, width, height, aa, bb);
+  }
+  else
+  {
+    precondition_v2((float *)ivoid, (float *)ovoid, width, height, d->a[1] * compensate_p, d->shadows, d->b[1], wb);
+  }
 
 #if 0 // DEBUG: see what variance we have after transform
   if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
@@ -1296,7 +1311,14 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     buf1 = buf3;
   }
 
-  backtransform_v2((float *)ovoid, width, height, d->a[1] * compensate_p, d->shadows, d->b[1], d->bias, wb);
+  if(!d->upgrade_vst)
+  {
+    backtransform((float *)ovoid, width, height, aa, bb);
+  }
+  else
+  {
+    backtransform_v2((float *)ovoid, width, height, d->a[1] * compensate_p, d->shadows, d->b[1], d->bias, wb);
+  }
 
   for(int k = 0; k < max_scale; k++) dt_free_align(buf[k]);
   dt_free_align(tmp);
@@ -1361,10 +1383,17 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   }
   // update the coeffs with strength and scale
   for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
-
+  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
+  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
   const float compensate_p = 0.05f / powf(0.05f, d->shadows);
-  precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, d->a[1] * compensate_p, d->shadows, d->b[1], wb);
-
+  if(!d->upgrade_vst)
+  {
+    precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
+  }
+  else
+  {
+    precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, d->a[1] * compensate_p, d->shadows, d->b[1], wb);
+  }
   // for each shift vector
   for(int kj_index = -K; kj_index <= K; kj_index++)
   {
@@ -1512,7 +1541,14 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   // free shared tmp memory:
   dt_free_align(Sa);
   dt_free_align(in);
-  backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, d->a[1] * compensate_p, d->shadows, d->b[1], d->bias, wb);
+  if(!d->upgrade_vst)
+  {
+    backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, bb);
+  }
+  else
+  {
+    backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, d->a[1] * compensate_p, d->shadows, d->b[1], d->bias, wb);
+  }
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
@@ -1566,8 +1602,17 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   // update the coeffs with strength and scale
   for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
 
+  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
+  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
   const float compensate_p = 0.05f / powf(0.05f, d->shadows);
-  precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, d->a[1] * compensate_p, d->shadows, d->b[1], wb);
+  if(!d->upgrade_vst)
+  {
+    precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
+  }
+  else
+  {
+    precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, d->a[1] * compensate_p, d->shadows, d->b[1], wb);
+  }
 
   // for each shift vector
   for(int kj_index = -K; kj_index <= K; kj_index++)
@@ -1764,7 +1809,14 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   // free shared tmp memory:
   dt_free_align(Sa);
   dt_free_align(in);
-  backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, d->a[1] * compensate_p, d->shadows, d->b[1], d->bias, wb);
+  if(!d->upgrade_vst)
+  {
+    backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, bb);
+  }
+  else
+  {
+    backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, d->a[1] * compensate_p, d->shadows, d->b[1], d->bias, wb);
+  }
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
@@ -2624,6 +2676,7 @@ void reload_defaults(dt_iop_module_t *module)
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->bias = 0.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->fix_anscombe_and_nlmeans_norm = TRUE;
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->upgrade_vst = TRUE;
     for(int k = 0; k < 3; k++)
     {
       ((dt_iop_denoiseprofile_params_t *)module->default_params)->a[k] = g->interpolated.a[k];
@@ -2776,6 +2829,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 
   d->wb_adaptive_anscombe = p->wb_adaptive_anscombe;
   d->fix_anscombe_and_nlmeans_norm = p->fix_anscombe_and_nlmeans_norm;
+  d->upgrade_vst = p->upgrade_vst;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -2949,6 +3003,8 @@ void gui_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->wb_adaptive_anscombe), p->wb_adaptive_anscombe);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->fix_anscombe_and_nlmeans_norm), p->fix_anscombe_and_nlmeans_norm);
   gtk_widget_set_visible(g->fix_anscombe_and_nlmeans_norm, !p->fix_anscombe_and_nlmeans_norm);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->upgrade_vst), p->upgrade_vst);
+  gtk_widget_set_visible(g->upgrade_vst, !p->upgrade_vst);
 }
 
 void gui_reset(dt_iop_module_t *self)
@@ -2956,6 +3012,7 @@ void gui_reset(dt_iop_module_t *self)
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   gtk_widget_set_visible(g->fix_anscombe_and_nlmeans_norm, !p->fix_anscombe_and_nlmeans_norm);
+  gtk_widget_set_visible(g->upgrade_vst, !p->upgrade_vst);
 }
 
 static void dt_iop_denoiseprofile_get_params(dt_iop_denoiseprofile_params_t *p, const int ch, const double mouse_x,
@@ -3332,6 +3389,17 @@ static void fix_anscombe_and_nlmeans_norm_callback(GtkWidget *widget, dt_iop_mod
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void upgrade_vst_callback(GtkWidget *widget, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+  p->upgrade_vst = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  gtk_widget_set_visible(g->shadows, p->upgrade_vst);
+  gtk_widget_set_visible(g->bias, p->upgrade_vst);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 void gui_init(dt_iop_module_t *self)
 {
   // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
@@ -3474,6 +3542,15 @@ void gui_init(dt_iop_module_t *self)
                                                  "return back to old algorithm."));
   gtk_box_pack_start(GTK_BOX(self->widget), g->fix_anscombe_and_nlmeans_norm, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->fix_anscombe_and_nlmeans_norm), "toggled", G_CALLBACK(fix_anscombe_and_nlmeans_norm_callback), self);
+  g->upgrade_vst = gtk_check_button_new_with_label(_("upgrade algorithm"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->upgrade_vst), p->upgrade_vst);
+  gtk_widget_set_tooltip_text(g->upgrade_vst, _("upgrade the variance stabilizing algorithm.\n"
+                                                 "new algorithm extends the current one.\n"
+                                                 "it is more flexible but could give small\n"
+                                                 "differences in the images already processed."));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->upgrade_vst, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(g->upgrade_vst), "toggled", G_CALLBACK(upgrade_vst_callback), self);
+
 
   gtk_widget_show_all(g->box_nlm);
   gtk_widget_show_all(g->box_wavelets);
