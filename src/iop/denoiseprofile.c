@@ -64,7 +64,7 @@ typedef enum dt_iop_denoiseprofile_channel_t
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
-DT_MODULE_INTROSPECTION(7, dt_iop_denoiseprofile_params_t)
+DT_MODULE_INTROSPECTION(8, dt_iop_denoiseprofile_params_t)
 
 typedef struct dt_iop_denoiseprofile_params_v1_t
 {
@@ -107,11 +107,29 @@ typedef struct dt_iop_denoiseprofile_params_v6_t
   float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
 } dt_iop_denoiseprofile_params_v6_t;
 
+typedef struct dt_iop_denoiseprofile_params_v7_t
+{
+  float radius;                      // patch size
+  float nbhood;                      // search radius
+  float strength;                    // noise level after equalization
+  float scattering;                  // spread the patch search zone without increasing number of patches
+  float central_pixel_weight;        // increase central pixel's weight in patch comparison
+  float a[3], b[3];                  // fit for poissonian-gaussian noise per color channel.
+  dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
+  float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
+  float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
+  gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
+  // backward compatibility options
+  gboolean fix_anscombe_and_nlmeans_norm;
+} dt_iop_denoiseprofile_params_v7_t;
+
 typedef struct dt_iop_denoiseprofile_params_t
 {
   float radius;     // patch size
   float nbhood;     // search radius
   float strength;   // noise level after equalization
+  float shadows;    // control the impact on shadows
+  float bias;       // allows to reduce backtransform bias
   float scattering; // spread the patch search zone without increasing number of patches
   float central_pixel_weight; // increase central pixel's weight in patch comparison
   float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
@@ -130,6 +148,8 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   GtkWidget *radius;
   GtkWidget *nbhood;
   GtkWidget *strength;
+  GtkWidget *shadows;
+  GtkWidget *bias;
   GtkWidget *scattering;
   GtkWidget *central_pixel_weight;
   dt_noiseprofile_t interpolated; // don't use name, maker or model, they may point to garbage
@@ -163,9 +183,11 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
 
 typedef struct dt_iop_denoiseprofile_data_t
 {
-  float radius;                      // search radius
+  float radius;                      // patch radius
   float nbhood;                      // search radius
   float strength;                    // noise level after equalization
+  float shadows;                     // controls noise reduction in shadows
+  float bias;                        // controls bias in backtransform
   float scattering;                  // spread the search zone without changing number of patches
   float central_pixel_weight;        // increase central pixel's weight in patch comparison
   float a[3], b[3];                  // fit for poissonian-gaussian noise per color channel.
@@ -319,7 +341,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     }
     else
       memcpy(&v6, old_params, sizeof(v6)); // was v6 already
-    dt_iop_denoiseprofile_params_t *v7 = new_params;
+    dt_iop_denoiseprofile_params_v7_t *v7 = new_params;
     v7->radius = v6.radius;
     v7->strength = v6.strength;
     v7->mode = v6.mode;
@@ -341,6 +363,21 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     v7->central_pixel_weight = 0.0;
     v7->fix_anscombe_and_nlmeans_norm = FALSE; // don't fix anscombe and norm to ensure backward compatibility
     v7->wb_adaptive_anscombe = TRUE;
+    return 0;
+  }
+  else if(new_version == 8)
+  {
+    dt_iop_denoiseprofile_params_v7_t v7;
+    if(old_version < 7)
+    {
+      // first update to v6
+      if(legacy_params(self, old_params, old_version, &v7, 7)) return 1;
+    }
+    else
+      memcpy(&v7, old_params, sizeof(v7)); // was v6 already
+    dt_iop_denoiseprofile_params_t *v8 = new_params;
+    v8->shadows = 1.0f;
+    v8->bias = 15.0f;
     return 0;
   }
   return 1;
@@ -513,6 +550,30 @@ static inline void precondition(const float *const in, float *const buf, const i
   }
 }
 
+static inline void precondition_v2(const float *const in, float *const buf, const int wd, const int ht,
+                                const float a, const float p, const float b, const float wb[3])
+{
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(buf, ht, in, wd, a, p, b, wb) \
+  schedule(static)
+#endif
+  for(int j = 0; j < ht; j++)
+  {
+    float *buf2 = buf + (size_t)4 * j * wd;
+    const float *in2 = in + (size_t)4 * j * wd;
+    for(int i = 0; i < wd; i++)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        buf2[c] = 2.0f * powf(MAX(in2[c]/wb[c],0.0f)+b, -p/2+1) / ((-p+2) * sqrt(a));
+      }
+      buf2 += 4;
+      in2 += 4;
+    }
+  }
+}
+
 static inline void backtransform(float *const buf, const int wd, const int ht, const float a[3],
                                  const float b[3])
 {
@@ -544,6 +605,36 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
         // asymptotic form:
         // buf2[c] = fmaxf(0.0f, 1./4.*x*x - 1./8. - sigma2[c]);
         buf2[c] *= a[c];
+      }
+      buf2 += 4;
+    }
+  }
+}
+
+static inline void backtransform_v2(float *const buf, const int wd, const int ht, const float a,
+                                 const float p, const float b, const float bias, const float wb[3])
+{
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(buf, ht, wd, a, p, b, bias, wb) \
+  schedule(static)
+#endif
+  for(int j = 0; j < ht; j++)
+  {
+    float *buf2 = buf + (size_t)4 * j * wd;
+    for(int i = 0; i < wd; i++)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        const float x = buf2[c];
+        float alpha = 2.0/(sqrt(a)*(2.0-p));
+        float beta = 1.0-p/2.0;
+        float a0 = alpha;
+        float a1 = (1.0-beta)/(2.0*alpha*beta*alpha/a);
+        float delta = MAX(x*x + a * 2000.0f * bias + 15.0f * 4.0*a0*a1, 0.0f);
+        float z1 = (x + sqrt(delta))/(2.0*a0);
+        buf2[c] = powf(z1, 1.0/beta) - b;
+        buf2[c] *= wb[c];
       }
       buf2 += 4;
     }
@@ -1089,12 +1180,8 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   }
   // update the coeffs with strength and scale
   for(int i = 0; i < 3; i++) wb[i] *= d->strength * in_scale;
-  // only use green channel + wb for now:
-  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
-  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
-
-
-  precondition((float *)ivoid, (float *)ovoid, width, height, aa, bb);
+  const float compensate_p = 0.05f / powf(0.05f, d->shadows);
+  precondition_v2((float *)ivoid, (float *)ovoid, width, height, d->a[1] * compensate_p, d->shadows, d->b[1], wb);
 
 #if 0 // DEBUG: see what variance we have after transform
   if(piece->pipe->type != DT_DEV_PIXELPIPE_PREVIEW)
@@ -1209,7 +1296,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     buf1 = buf3;
   }
 
-  backtransform((float *)ovoid, width, height, aa, bb);
+  backtransform_v2((float *)ovoid, width, height, d->a[1] * compensate_p, d->shadows, d->b[1], d->bias, wb);
 
   for(int k = 0; k < max_scale; k++) dt_free_align(buf[k]);
   dt_free_align(tmp);
@@ -1275,9 +1362,8 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   // update the coeffs with strength and scale
   for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
 
-  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
-  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
-  precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
+  const float compensate_p = 0.05f / powf(0.05f, d->shadows);
+  precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, d->a[1] * compensate_p, d->shadows, d->b[1], wb);
 
   // for each shift vector
   for(int kj_index = -K; kj_index <= K; kj_index++)
@@ -1426,7 +1512,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   // free shared tmp memory:
   dt_free_align(Sa);
   dt_free_align(in);
-  backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, bb);
+  backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, d->a[1] * compensate_p, d->shadows, d->b[1], d->bias, wb);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
@@ -1480,9 +1566,8 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   // update the coeffs with strength and scale
   for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
 
-  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
-  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
-  precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
+  const float compensate_p = 0.05f / powf(0.05f, d->shadows);
+  precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, d->a[1] * compensate_p, d->shadows, d->b[1], wb);
 
   // for each shift vector
   for(int kj_index = -K; kj_index <= K; kj_index++)
@@ -1679,7 +1764,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   // free shared tmp memory:
   dt_free_align(Sa);
   dt_free_align(in);
-  backtransform((float *)ovoid, roi_in->width, roi_in->height, aa, bb);
+  backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, d->a[1] * compensate_p, d->shadows, d->b[1], d->bias, wb);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
@@ -1789,9 +1874,8 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   // update the coeffs with strength
   for(int i = 0; i < 3; i++) wb[i] *= d->strength;
 
-  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
-  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
-  precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
+  const float compensate_p = 0.05f / powf(0.05f, d->shadows);
+  precondition_v2((float *)ivoid, (float *)ovoid, roi_in->width, roi_in->height, d->a[1] * compensate_p, d->shadows, d->b[1], wb);
 
   float *out = (float *)ovoid;
   // we use out as a temporary buffer here
@@ -2536,6 +2620,8 @@ void reload_defaults(dt_iop_module_t *module)
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->scattering = 0.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->central_pixel_weight = 0.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->shadows = 1.0f;
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->bias = 0.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->fix_anscombe_and_nlmeans_norm = TRUE;
     for(int k = 0; k < 3; k++)
@@ -2655,6 +2741,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   d->scattering = p->scattering;
   d->central_pixel_weight = p->central_pixel_weight;
   d->strength = p->strength;
+  d->shadows = p->shadows;
+  d->bias = p->bias;
   for(int i = 0; i < 3; i++)
   {
     d->a[i] = p->a[i];
@@ -2789,6 +2877,21 @@ static void strength_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void shadows_callback(GtkWidget *w, dt_iop_module_t *self)
+{
+  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  p->shadows = dt_bauhaus_slider_get(w);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void bias_callback(GtkWidget *w, dt_iop_module_t *self)
+{
+  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  p->bias = dt_bauhaus_slider_get(w);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+
 void gui_update(dt_iop_module_t *self)
 {
   // let gui slider match current parameters:
@@ -2797,6 +2900,8 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->radius, p->radius);
   dt_bauhaus_slider_set(g->nbhood, p->nbhood);
   dt_bauhaus_slider_set_soft(g->strength, p->strength);
+  dt_bauhaus_slider_set(g->shadows, p->shadows);
+  dt_bauhaus_slider_set(g->bias, p->bias);
   dt_bauhaus_slider_set_soft(g->scattering, p->scattering);
   dt_bauhaus_slider_set_soft(g->central_pixel_weight, p->central_pixel_weight);
   dt_bauhaus_combobox_set(g->profile, -1);
@@ -3237,6 +3342,10 @@ void gui_init(dt_iop_module_t *self)
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
   g->profiles = NULL;
   g->profile = dt_bauhaus_combobox_new(self);
+  g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
+  dt_bauhaus_slider_enable_soft_boundaries(g->strength, 0.001f, 1000.0f);
+  g->shadows = dt_bauhaus_slider_new_with_range(self, 0.4f, 1.6f, .05, 1.f, 3);
+  g->bias = dt_bauhaus_slider_new_with_range(self, -10.0f, 10.0f, .1, 0.f, 1);
   g->mode = dt_bauhaus_combobox_new(self);
   g->radius = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1.f, 1.f, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->radius, 0.0, 10.0);
@@ -3245,8 +3354,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->scattering, 0.0, 20.0);
   g->central_pixel_weight = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01, 0.0f, 2);
   dt_bauhaus_slider_enable_soft_boundaries(g->central_pixel_weight, 0.0, 10.0);
-  g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
-  dt_bauhaus_slider_enable_soft_boundaries(g->strength, 0.001f, 1000.0f);
   g->channel = dt_conf_get_int("plugins/darkroom/denoiseprofile/gui_channel");
 
   g->box_nlm = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
@@ -3350,6 +3457,8 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_nlm, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_wavelets, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->shadows, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->bias, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_variance, TRUE, TRUE, 0);
 
   g->fix_anscombe_and_nlmeans_norm = gtk_check_button_new_with_label(_("migrate to fixed algorithm"));
@@ -3379,6 +3488,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->scattering, NULL, _("scattering (coarse-grain noise)"));
   dt_bauhaus_widget_set_label(g->central_pixel_weight, NULL, _("central pixel weight (details)"));
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
+  dt_bauhaus_widget_set_label(g->shadows, NULL, _("shadows"));
+  dt_bauhaus_widget_set_label(g->bias, NULL, _("bias"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means"));
   dt_bauhaus_combobox_add(g->mode, _("wavelets"));
   const gboolean compute_variance = dt_conf_get_bool("plugins/darkroom/denoiseprofile/show_compute_variance_mode");
@@ -3402,6 +3513,10 @@ void gui_init(dt_iop_module_t *self)
                                                          "useful to recover details when patch size\n"
                                                          "is quite big."));
   gtk_widget_set_tooltip_text(g->strength, _("finetune denoising strength"));
+  gtk_widget_set_tooltip_text(g->shadows, _("finetune shadows denoising"));
+  gtk_widget_set_tooltip_text(g->bias, _("correct color cast in shadows.\n"
+                                         "decrease if shadows are too purple.\n"
+                                         "increase if shadows are too green."));
   g_signal_connect(G_OBJECT(g->profile), "value-changed", G_CALLBACK(profile_callback), self);
   g_signal_connect(G_OBJECT(g->mode), "value-changed", G_CALLBACK(mode_callback), self);
   g_signal_connect(G_OBJECT(g->radius), "value-changed", G_CALLBACK(radius_callback), self);
@@ -3410,6 +3525,8 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->central_pixel_weight), "value-changed", G_CALLBACK(central_pixel_weight_callback),
                    self);
   g_signal_connect(G_OBJECT(g->strength), "value-changed", G_CALLBACK(strength_callback), self);
+  g_signal_connect(G_OBJECT(g->shadows), "value-changed", G_CALLBACK(shadows_callback), self);
+  g_signal_connect(G_OBJECT(g->bias), "value-changed", G_CALLBACK(bias_callback), self);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
