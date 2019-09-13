@@ -373,14 +373,35 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     dt_iop_denoiseprofile_params_v7_t v7;
     if(old_version < 7)
     {
-      // first update to v6
+      // first update to v7
       if(legacy_params(self, old_params, old_version, &v7, 7)) return 1;
     }
     else
-      memcpy(&v7, old_params, sizeof(v7)); // was v6 already
+      memcpy(&v7, old_params, sizeof(v7)); // was v7 already
     dt_iop_denoiseprofile_params_t *v8 = new_params;
+    v8->radius = v7.radius;
+    v8->strength = v7.strength;
+    v8->mode = v7.mode;
+    v8->nbhood = v7.nbhood;
+    for(int k = 0; k < 3; k++)
+    {
+      v8->a[k] = v7.a[k];
+      v8->b[k] = v7.b[k];
+    }
+    for(int b = 0; b < DT_IOP_DENOISE_PROFILE_BANDS; b++)
+    {
+      for(int c = 0; c < DT_DENOISE_PROFILE_NONE; c++)
+      {
+        v8->x[c][b] = v7.x[c][b];
+        v8->y[c][b] = v7.y[c][b];
+      }
+    }
+    v8->scattering = v7.scattering;
+    v8->central_pixel_weight = v7.central_pixel_weight;
+    v8->fix_anscombe_and_nlmeans_norm = v7.fix_anscombe_and_nlmeans_norm;
+    v8->wb_adaptive_anscombe = v7.wb_adaptive_anscombe;
     v8->shadows = 1.0f;
-    v8->bias = 15.0f;
+    v8->bias = 0.0f;
     v8->upgrade_vst = FALSE;
     return 0;
   }
