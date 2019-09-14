@@ -2976,7 +2976,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->nbhood, p->nbhood);
   dt_bauhaus_slider_set_soft(g->strength, p->strength);
   dt_bauhaus_slider_set(g->shadows, p->shadows);
-  dt_bauhaus_slider_set(g->bias, p->bias);
+  dt_bauhaus_slider_set_soft(g->bias, p->bias);
   dt_bauhaus_slider_set_soft(g->scattering, p->scattering);
   dt_bauhaus_slider_set_soft(g->central_pixel_weight, p->central_pixel_weight);
   dt_bauhaus_combobox_set(g->profile, -1);
@@ -3435,8 +3435,9 @@ void gui_init(dt_iop_module_t *self)
   g->profile = dt_bauhaus_combobox_new(self);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
   dt_bauhaus_slider_enable_soft_boundaries(g->strength, 0.001f, 1000.0f);
-  g->shadows = dt_bauhaus_slider_new_with_range(self, 0.4f, 1.6f, .05, 1.f, 3);
-  g->bias = dt_bauhaus_slider_new_with_range(self, -10.0f, 10.0f, .1, 0.f, 1);
+  g->shadows = dt_bauhaus_slider_new_with_range(self, 0.4f, 1.6f, .01, 1.f, 3);
+  g->bias = dt_bauhaus_slider_new_with_range(self, -10.0f, 10.0f, 1.0f, 0.f, 1);
+  dt_bauhaus_slider_enable_soft_boundaries(g->bias, -1000.0f, 1000.0f);
   g->mode = dt_bauhaus_combobox_new(self);
   g->radius = dt_bauhaus_slider_new_with_range(self, 0.0f, 4.0f, 1.f, 1.f, 0);
   dt_bauhaus_slider_enable_soft_boundaries(g->radius, 0.0, 10.0);
