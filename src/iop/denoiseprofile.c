@@ -591,7 +591,7 @@ static inline void precondition_v2(const float *const in, float *const buf, cons
     {
       for(int c = 0; c < 3; c++)
       {
-        buf2[c] = 2.0f * powf(MAX(in2[c]/wb[c],0.0f)+b, -p/2+1) / ((-p+2) * sqrt(a));
+        buf2[c] = 2.0f * powf(MAX(in2[c]/wb[c]+b,0.0f), -p/2+1) / ((-p+2) * sqrt(a));
       }
       buf2 += 4;
       in2 += 4;
