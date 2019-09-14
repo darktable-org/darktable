@@ -760,7 +760,8 @@ static void _set_position(dt_view_t *self, uint32_t pos)
   // only reset position when not already with a changed offset, this is because if the offset is
   // already changed it means that we are about to change the display (zoom in or out for example).
   // And in this case a new offset is already positioned and we don't want to reset it.
-  if(!lib->offset_changed)
+  if(!lib->offset_changed
+     || dt_view_manager_get_current_view(darktable.view_manager) != darktable.view_manager->proxy.lighttable.view)
   {
     lib->first_visible_filemanager = lib->first_visible_zoomable = lib->offset = pos;
     lib->offset_changed = TRUE;
