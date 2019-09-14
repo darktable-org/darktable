@@ -311,7 +311,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   {
     if(d->params.bpp == 8)
     {
-      image_data = malloc(data->width * data->height * 3);
+      image_data = dt_alloc_align(64, data->width * data->height * 3);
       const uint8_t *in_ptr = (const uint8_t *)in;
       uint8_t *out_ptr = (uint8_t *)image_data;
       for(int y = 0; y < data->height; y++)
@@ -322,7 +322,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     }
     else
     {
-      image_data = malloc(data->width * data->height * 3 * sizeof(uint16_t));
+      image_data = dt_alloc_align(64, data->width * data->height * 3 * sizeof(uint16_t));
       const uint16_t *in_ptr = (const uint16_t *)in;
       uint16_t *out_ptr = (uint16_t *)image_data;
       for(int y = 0; y < data->height; y++)

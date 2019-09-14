@@ -379,7 +379,7 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
     }
   }
 
-  uint8_t *row = malloc((size_t)3 * jpg->global.width * sizeof(uint8_t));
+  uint8_t *row = dt_alloc_align(64, (size_t)3 * jpg->global.width * sizeof(uint8_t));
   const uint8_t *buf;
   while(jpg->cinfo.next_scanline < jpg->cinfo.image_height)
   {
@@ -437,7 +437,7 @@ int read_image(dt_imageio_module_data_t *jpg_tmp, uint8_t *out)
   }
   (void)jpeg_start_decompress(&(jpg->dinfo));
   JSAMPROW row_pointer[1];
-  row_pointer[0] = (uint8_t *)malloc((size_t)jpg->dinfo.output_width * jpg->dinfo.num_components);
+  row_pointer[0] = (uint8_t *)dt_alloc_align(64, (size_t)jpg->dinfo.output_width * jpg->dinfo.num_components);
   uint8_t *tmp = out;
   while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
   {

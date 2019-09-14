@@ -126,6 +126,10 @@ DT_MODULE_INTROSPECTION(2, dt_iop_toneequalizer_params_t)
                       "tree-vectorize")
 #endif
 
+#if defined(__clang__)
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
+#endif
+
 #define UI_SAMPLES 256 // 128 is a bit small for 4K resolution
 #define CONTRAST_FULCRUM exp2f(-4.0f)
 #define MIN_FLOAT exp2f(-16.0f)
@@ -547,7 +551,7 @@ static int sanity_check(dt_iop_module_t *self)
   if(position_self < position_min && self->enabled)
   {
     dt_control_log(_("tone equalizer needs to be after distorsion modules in the pipeline – disabled"));
-    fprintf(stdout, _("tone equalizer needs to be after distorsion modules in the pipeline – disabled"));
+    fprintf(stdout, _("tone equalizer needs to be after distorsion modules in the pipeline – disabled\n"));
     self->enabled = 0;
     dt_dev_add_history_item(darktable.develop, self, FALSE);
 
@@ -2627,7 +2631,7 @@ static inline void init_nodes_x(dt_iop_toneequalizer_gui_data_t *g)
   if(g == NULL) return;
 
   dt_pthread_mutex_lock(&g->lock);
-  if(!g->valid_nodes_x && g->nodes_x && g->graph_height)
+  if(!g->valid_nodes_x && g->graph_height)
   {
     for(int i = 0; i < CHANNELS; ++i)
       g->nodes_x[i] = (((float)i) / ((float)(CHANNELS - 1))) * g->graph_width;
@@ -2642,7 +2646,7 @@ static inline void init_nodes_y(dt_iop_toneequalizer_gui_data_t *g)
   if(g == NULL) return;
 
   dt_pthread_mutex_lock(&g->lock);
-  if(g->user_param_valid && g->nodes_y && g->graph_height)
+  if(g->user_param_valid && g->graph_height)
   {
     for(int i = 0; i < CHANNELS; ++i)
       g->nodes_y[i] =  (0.5 - log2f(g->temp_user_params[i]) / 4.0) * g->graph_height; // assumes factors in [-2 ; 2] EV
@@ -3180,6 +3184,7 @@ void gui_init(struct dt_iop_module_t *self)
   // Advanced view
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
   gtk_box_pack_start(GTK_BOX(page2), GTK_WIDGET(g->area), FALSE, FALSE, 0);
+  _init_drawing(self->widget, g);
 
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK

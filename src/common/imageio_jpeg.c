@@ -82,10 +82,10 @@ static void dt_imageio_jpeg_term_source(j_decompress_ptr cinfo)
  * (64K), we need provisions to split it into multiple markers.  The format
  * defined by the ICC specifies one or more APP2 markers containing the
  * following data:
- *	Identifying string	ASCII "ICC_PROFILE\0"  (12 bytes)
- *	Marker sequence number	1 for first APP2, 2 for next, etc (1 byte)
- *	Number of markers	Total number of APP2's used (1 byte)
- *      Profile data		(remainder of APP2 data)
+ *  Identifying string  ASCII "ICC_PROFILE\0"  (12 bytes)
+ *  Marker sequence number  1 for first APP2, 2 for next, etc (1 byte)
+ *  Number of markers Total number of APP2's used (1 byte)
+ *      Profile data    (remainder of APP2 data)
  * Decoders should use the marker sequence numbers to reassemble the profile,
  * rather than assuming that the APP2 markers appear in the correct sequence.
  */
@@ -174,7 +174,7 @@ static int decompress_jsc(dt_imageio_jpeg_t *jpg, uint8_t *out)
 static int decompress_plain(dt_imageio_jpeg_t *jpg, uint8_t *out)
 {
   JSAMPROW row_pointer[1];
-  row_pointer[0] = (uint8_t *)malloc(jpg->dinfo.output_width * jpg->dinfo.num_components);
+  row_pointer[0] = (uint8_t *)dt_alloc_align(64, jpg->dinfo.output_width * jpg->dinfo.num_components);
   uint8_t *tmp = out;
   while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
   {
@@ -290,7 +290,7 @@ int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, c
   if(quality > 90) jpg.cinfo.comp_info[0].v_samp_factor = 1;
   if(quality > 92) jpg.cinfo.comp_info[0].h_samp_factor = 1;
   jpeg_start_compress(&(jpg.cinfo), TRUE);
-  uint8_t *row = malloc((size_t)3 * width * sizeof(uint8_t));
+  uint8_t *row = dt_alloc_align(64, (size_t)3 * width * sizeof(uint8_t));
   const uint8_t *buf;
   while(jpg.cinfo.next_scanline < jpg.cinfo.image_height)
   {
@@ -540,7 +540,7 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
 
   if(exif && exif_len > 0 && exif_len < 65534) jpeg_write_marker(&(jpg.cinfo), JPEG_APP0 + 1, exif, exif_len);
 
-  uint8_t *row = malloc((size_t)3 * width * sizeof(uint8_t));
+  uint8_t *row = dt_alloc_align(64, (size_t)3 * width * sizeof(uint8_t));
   const uint8_t *buf;
   while(jpg.cinfo.next_scanline < jpg.cinfo.image_height)
   {
@@ -615,7 +615,7 @@ static int read_jsc(dt_imageio_jpeg_t *jpg, uint8_t *out)
 static int read_plain(dt_imageio_jpeg_t *jpg, uint8_t *out)
 {
   JSAMPROW row_pointer[1];
-  row_pointer[0] = (uint8_t *)malloc(jpg->dinfo.output_width * jpg->dinfo.num_components);
+  row_pointer[0] = (uint8_t *)dt_alloc_align(64, jpg->dinfo.output_width * jpg->dinfo.num_components);
   uint8_t *tmp = out;
   while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
   {
@@ -739,7 +739,7 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, 
   img->width = jpg.width;
   img->height = jpg.height;
 
-  uint8_t *tmp = (uint8_t *)malloc(sizeof(uint8_t) * jpg.width * jpg.height * 4);
+  uint8_t *tmp = (uint8_t *)dt_alloc_align(64, sizeof(uint8_t) * jpg.width * jpg.height * 4);
   if(dt_imageio_jpeg_read(&jpg, tmp))
   {
     free(tmp);
