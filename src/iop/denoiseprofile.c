@@ -2686,12 +2686,12 @@ void reload_defaults(dt_iop_module_t *module)
       dt_noiseprofile_t *profile = (dt_noiseprofile_t *)iter->data;
       dt_bauhaus_combobox_add(g->profile, profile->name);
     }
-
+    const float a = g->interpolated.a[1];
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->wb_adaptive_anscombe = TRUE;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius = 1.0f;
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius = MIN((unsigned)(1.0f + a * 15000.0f + a * a * 300000.0f), 10);
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->nbhood = 7.0f;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->scattering = 0.0f;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->central_pixel_weight = 0.0f;
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->scattering = MIN(3000.0f * a, 1.5f);
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->central_pixel_weight = 0.1f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->shadows = 1.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->bias = 0.0f;
