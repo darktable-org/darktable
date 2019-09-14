@@ -152,14 +152,41 @@ static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
 
 static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
 {
+  gint res = GTK_RESPONSE_YES;
   const int img = dt_view_get_image_to_act_on();
 
+  const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+
+  int number;
+  if(img != -1)
+    number = 1;
+  else
+    number = dt_collection_get_selected_count(darktable.collection);
+
+  if (number == 0) return;
+
+  GtkWidget *dialog = gtk_message_dialog_new(
+  GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+    ngettext("do you really want to compress history of %d selected image?",
+             "do you really want to compress history of %d selected images?", number), number);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog);
+#endif
+
+  gtk_window_set_title(GTK_WINDOW(dialog), _("compress images' history?"));
+  res = gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_destroy(dialog);
+
+  if(res == GTK_RESPONSE_YES)
+  {
   if(img < 0)
     dt_history_compress_on_selection();
   else
     dt_history_compress_on_image(img);
 
+  dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
+  }
 }
 
 static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
