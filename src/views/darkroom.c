@@ -584,6 +584,12 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   // stop crazy users from sleeping on key-repeat spacebar:
   if(dev->image_loading) return;
 
+  // disable color picker when changing image
+  if(dev->gui_module)
+  {
+    dev->gui_module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  }
+
   // update aspect ratio
   if(dev->preview_pipe->backbuf && dev->preview_status == DT_DEV_PIXELPIPE_VALID)
   {
@@ -594,6 +600,9 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   {
     dt_image_set_aspect_ratio(dev->image_storage.id);
   }
+
+  // clean the undo list
+  dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
 
   // prevent accels_window to refresh
   darktable.view_manager->accels_window.prevent_refresh = TRUE;
@@ -829,17 +838,6 @@ static void film_strip_activated(const int imgid, void *data)
   const dt_view_t *self = (dt_view_t *)data;
   dt_develop_t *dev = (dt_develop_t *)self->data;
 
-  // disable color picker when changing image
-  if(dev->gui_module)
-  {
-    dev->gui_module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  }
-
-  // first compute/update possibly new aspect ratio of current picture
-  dt_image_set_aspect_ratio(dev->image_storage.id);
-
-  // clean the undo list
-  dt_undo_clear(darktable.undo, DT_UNDO_DEVELOP);
   dt_dev_change_image(dev, imgid);
   dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
   // record the imgid to display when going back to lighttable
@@ -887,10 +885,10 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff)
 
       if(!dev->image_loading)
       {
+        dt_dev_change_image(dev, imgid);
         dt_view_filmstrip_scroll_to_image(darktable.view_manager, imgid, FALSE);
         // record the imgid to display when going back to lighttable
         dt_view_lighttable_set_position(darktable.view_manager, dt_collection_image_offset(imgid));
-        dt_dev_change_image(dev, imgid);
       }
     }
     sqlite3_finalize(stmt);
