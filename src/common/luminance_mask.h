@@ -43,6 +43,9 @@
                       "finite-math-only", "fp-contract=fast", "fast-math")
 #endif
 
+#if defined(__clang__)
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
+#endif
 
 #define MIN_FLOAT exp2f(-16.0f)
 

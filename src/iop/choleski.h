@@ -41,6 +41,10 @@
                       "finite-math-only", "fp-contract=fast", "fast-math")
 #endif
 
+#if defined(__clang__)
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
+#endif
+
 
 /* DOCUMENTATION
  *
