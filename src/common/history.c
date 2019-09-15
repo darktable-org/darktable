@@ -880,8 +880,6 @@ void dt_history_compress_on_image(int32_t imgid)
   {
     darktable.develop->iop = dt_iop_load_modules(darktable.develop);
     dt_dev_read_history_ext(darktable.develop, imgid, FALSE);
-    // This is a necessary trick to enable reloading the history!
-    darktable.develop->image_storage.id = imgid;
   }
   else
   {
@@ -970,7 +968,8 @@ void dt_history_compress_on_image(int32_t imgid)
   }
 
   // load new history and write it back to ensure that all history are properly numbered without a gap
-  dt_dev_reload_history_items(darktable.develop);
+  if(dt_dev_is_current_image(darktable.develop, imgid))
+    dt_dev_reload_history_items(darktable.develop);
 
   // then we can get the item to select in the new clean-up history retrieve the position of the module
   // corresponding to the history end.
@@ -991,6 +990,7 @@ void dt_history_compress_on_image(int32_t imgid)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
+  if(dt_dev_is_current_image(darktable.develop, imgid))
     dt_dev_reload_history_items(darktable.develop);
 
   dt_dev_write_history_ext(darktable.develop,imgid);
@@ -1001,9 +1001,6 @@ void dt_history_compress_on_image(int32_t imgid)
 
 void dt_history_compress_on_selection()
 {
-  uint32_t imgid = -1;
-  bool first = TRUE;
- 
   // Get the list of selected images
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
@@ -1011,12 +1008,7 @@ void dt_history_compress_on_selection()
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    imgid = sqlite3_column_int(stmt, 0);
-    if (first)   // the first image to do --> load it to make sure darktable.develop is working
-    { 
-      first = FALSE;
-      dt_dev_load_image(darktable.develop, imgid);
-    }
+    int imgid = sqlite3_column_int(stmt, 0);
     dt_history_compress_on_image(imgid);
   }
   sqlite3_finalize(stmt);
@@ -1028,7 +1020,6 @@ void dt_history_compress_on_selection()
     dt_dev_free_history_item(hist);
     darktable.develop->history = g_list_delete_link(darktable.develop->history, darktable.develop->history);
   }
-  darktable.develop->image_storage.id = -1;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
