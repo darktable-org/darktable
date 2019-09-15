@@ -3435,7 +3435,7 @@ void gui_init(dt_iop_module_t *self)
   g->profile = dt_bauhaus_combobox_new(self);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
   dt_bauhaus_slider_enable_soft_boundaries(g->strength, 0.001f, 1000.0f);
-  g->shadows = dt_bauhaus_slider_new_with_range(self, 0.4f, 1.6f, .01, 1.f, 3);
+  g->shadows = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.8f, .01, 1.f, 3);
   g->bias = dt_bauhaus_slider_new_with_range(self, -10.0f, 10.0f, 1.0f, 0.f, 1);
   dt_bauhaus_slider_enable_soft_boundaries(g->bias, -1000.0f, 1000.0f);
   g->mode = dt_bauhaus_combobox_new(self);
@@ -3589,8 +3589,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->scattering, NULL, _("scattering (coarse-grain noise)"));
   dt_bauhaus_widget_set_label(g->central_pixel_weight, NULL, _("central pixel weight (details)"));
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
-  dt_bauhaus_widget_set_label(g->shadows, NULL, _("shadows"));
-  dt_bauhaus_widget_set_label(g->bias, NULL, _("bias"));
+  dt_bauhaus_widget_set_label(g->shadows, NULL, _("preserve shadows"));
+  dt_bauhaus_widget_set_label(g->bias, NULL, _("bias correction"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means"));
   dt_bauhaus_combobox_add(g->mode, _("wavelets"));
   const gboolean compute_variance = dt_conf_get_bool("plugins/darkroom/denoiseprofile/show_compute_variance_mode");
