@@ -534,6 +534,24 @@ static void _view_lighttable_collection_listener_internal(dt_view_t *self, dt_li
   lib->full_y = 0.0f;
 
   _update_collected_images(self);
+
+  // we ensure selection visibility if any
+  GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
+  // we have at least 1 selected image
+  if(first_selected)
+  {
+    gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid = %d",
+                                   GPOINTER_TO_INT(first_selected->data));
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      _ensure_image_visibility(self, sqlite3_column_int(stmt, 0));
+    }
+    if(stmt) sqlite3_finalize(stmt);
+    g_free(query);
+    g_list_free(first_selected);
+  }
 }
 
 static void _view_lighttable_selection_listener_internal_preview(dt_view_t *self, dt_library_t *lib)
@@ -760,7 +778,8 @@ static void _set_position(dt_view_t *self, uint32_t pos)
   // only reset position when not already with a changed offset, this is because if the offset is
   // already changed it means that we are about to change the display (zoom in or out for example).
   // And in this case a new offset is already positioned and we don't want to reset it.
-  if(!lib->offset_changed)
+  if(!lib->offset_changed
+     || dt_view_manager_get_current_view(darktable.view_manager) != darktable.view_manager->proxy.lighttable.view)
   {
     lib->first_visible_filemanager = lib->first_visible_zoomable = lib->offset = pos;
     lib->offset_changed = TRUE;
