@@ -874,9 +874,12 @@ void dt_history_compress_on_image(int32_t imgid)
 {
   if (imgid < 0) return;
 
+  // As darktable.develop->image_storage.id changes while processing the history we have to remember now
+  const bool in_darkroom = (dt_dev_is_current_image(darktable.develop, imgid));
+
   // We use the global darktable.develop so if we want to use a specific images
   // history and masks in the database we have to load it.
-  if(!dt_dev_is_current_image(darktable.develop, imgid))
+  if(!in_darkroom)
   {
     darktable.develop->iop = dt_iop_load_modules(darktable.develop);
     dt_dev_read_history_ext(darktable.develop, imgid, FALSE);
@@ -968,7 +971,7 @@ void dt_history_compress_on_image(int32_t imgid)
   }
 
   // load new history and write it back to ensure that all history are properly numbered without a gap
-  if(dt_dev_is_current_image(darktable.develop, imgid))
+  if(in_darkroom)
     dt_dev_reload_history_items(darktable.develop);
 
   // then we can get the item to select in the new clean-up history retrieve the position of the module
@@ -990,11 +993,12 @@ void dt_history_compress_on_image(int32_t imgid)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  if(dt_dev_is_current_image(darktable.develop, imgid))
+  if(in_darkroom)
     dt_dev_reload_history_items(darktable.develop);
 
   dt_dev_write_history_ext(darktable.develop,imgid);
   dt_image_synch_xmp(imgid);
+
   // We don't have to do this here; it's done in darkroom mode only.
   // dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
 }
