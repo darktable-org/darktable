@@ -579,12 +579,10 @@ static inline void precondition(const float *const in, float *const buf, const i
 }
 
 static inline void precondition_v2(const float *const in, float *const buf, const int wd, const int ht,
-                                const float a, const float p[3], const float b, const float wb[3])
+                                   const float a, const float p[3], const float b, const float wb[3])
 {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, ht, in, wd, a, p, b, wb) \
-  schedule(static)
+#pragma omp parallel for default(none) dt_omp_firstprivate(buf, ht, in, wd, a, p, b, wb) schedule(static)
 #endif
   for(int j = 0; j < ht; j++)
   {
@@ -594,7 +592,7 @@ static inline void precondition_v2(const float *const in, float *const buf, cons
     {
       for(int c = 0; c < 3; c++)
       {
-        buf2[c] = 2.0f * powf(MAX(in2[c]/wb[c]+b,0.0f), -p[c]/2+1) / ((-p[c]+2) * sqrt(a));
+        buf2[c] = 2.0f * powf(MAX(in2[c] / wb[c] + b, 0.0f), -p[c] / 2 + 1) / ((-p[c] + 2) * sqrt(a));
       }
       buf2 += 4;
       in2 += 4;
@@ -639,8 +637,8 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
   }
 }
 
-static inline void backtransform_v2(float *const buf, const int wd, const int ht, const float a,
-                                 const float p[3], const float b, const float bias, const float wb[3])
+static inline void backtransform_v2(float *const buf, const int wd, const int ht, const float a, const float p[3],
+                                    const float b, const float bias, const float wb[3])
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -655,13 +653,13 @@ static inline void backtransform_v2(float *const buf, const int wd, const int ht
       for(int c = 0; c < 3; c++)
       {
         const float x = buf2[c];
-        float alpha = 2.0/(sqrt(a)*(2.0-p[c]));
-        float beta = 1.0-p[c]/2.0;
+        float alpha = 2.0 / (sqrt(a) * (2.0 - p[c]));
+        float beta = 1.0 - p[c] / 2.0;
         float a0 = alpha;
-        float a1 = (1.0-beta)/(2.0*alpha*beta*alpha/a);
-        float delta = MAX(x*x + a * 2000.0f * bias + 15.0f * 4.0*a0*a1, 0.0f);
-        float z1 = (x + sqrt(delta))/(2.0*a0);
-        buf2[c] = powf(z1, 1.0/beta) - b;
+        float a1 = (1.0 - beta) / (2.0 * alpha * beta * alpha / a);
+        float delta = MAX(x * x + a * 2000.0f * bias + 15.0f * 4.0 * a0 * a1, 0.0f);
+        float z1 = (x + sqrt(delta)) / (2.0 * a0);
+        buf2[c] = powf(z1, 1.0 / beta) - b;
         buf2[c] *= wb[c];
       }
       buf2 += 4;
@@ -2140,8 +2138,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 2, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 3, sizeof(int), (void *)&height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 4, 4 * sizeof(float), (void *)&aa);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 5, 4 * sizeof(float),
-                             (void *)&sigma2);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 5, 4 * sizeof(float), (void *)&sigma2);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_precondition, sizes);
     if(err != CL_SUCCESS) goto error;
   }
@@ -2455,8 +2452,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 2, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 3, sizeof(int), (void *)&height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 4, 4 * sizeof(float), (void *)&aa);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 5, 4 * sizeof(float),
-                             (void *)&sigma2);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_precondition, 5, 4 * sizeof(float), (void *)&sigma2);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_precondition, sizes);
     if(err != CL_SUCCESS) goto error;
   }
@@ -2652,15 +2648,12 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 
   if(!d->upgrade_vst)
   {
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 0, sizeof(cl_mem),
-                             (void *)&dev_tmp);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 1, sizeof(cl_mem),
-                             (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 0, sizeof(cl_mem), (void *)&dev_tmp);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 1, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 2, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 3, sizeof(int), (void *)&height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 4, 4 * sizeof(float), (void *)&aa);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 5, 4 * sizeof(float),
-                             (void *)&sigma2);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_backtransform, 5, 4 * sizeof(float), (void *)&sigma2);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_denoiseprofile_backtransform, sizes);
     if(err != CL_SUCCESS) goto error;
   }
@@ -2804,7 +2797,8 @@ void reload_defaults(dt_iop_module_t *module)
     }
     const float a = g->interpolated.a[1];
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->wb_adaptive_anscombe = TRUE;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius = MIN((unsigned)(1.0f + a * 15000.0f + a * a * 300000.0f), 8);
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius
+        = MIN((unsigned)(1.0f + a * 15000.0f + a * a * 300000.0f), 8);
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->nbhood = 7.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->scattering = MIN(3000.0f * a, 1.0f);
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->central_pixel_weight = 0.1f;
@@ -3691,9 +3685,9 @@ void gui_init(dt_iop_module_t *self)
   g->upgrade_vst = gtk_check_button_new_with_label(_("upgrade algorithm"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->upgrade_vst), p->upgrade_vst);
   gtk_widget_set_tooltip_text(g->upgrade_vst, _("upgrade the variance stabilizing algorithm.\n"
-                                                 "new algorithm extends the current one.\n"
-                                                 "it is more flexible but could give small\n"
-                                                 "differences in the images already processed."));
+                                                "new algorithm extends the current one.\n"
+                                                "it is more flexible but could give small\n"
+                                                "differences in the images already processed."));
   gtk_box_pack_start(GTK_BOX(self->widget), g->upgrade_vst, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->upgrade_vst), "toggled", G_CALLBACK(upgrade_vst_callback), self);
 
