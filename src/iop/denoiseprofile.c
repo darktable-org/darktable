@@ -2693,7 +2693,7 @@ void reload_defaults(dt_iop_module_t *module)
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->scattering = MIN(3000.0f * a, 1.5f);
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->central_pixel_weight = 0.1f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->shadows = 1.0f;
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->shadows = MAX(0.1f - 0.1 * logf(a), 0.7f);
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->bias = 0.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->fix_anscombe_and_nlmeans_norm = TRUE;
