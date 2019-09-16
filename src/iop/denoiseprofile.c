@@ -2707,9 +2707,9 @@ void reload_defaults(dt_iop_module_t *module)
     }
     const float a = g->interpolated.a[1];
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->wb_adaptive_anscombe = TRUE;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius = MIN((unsigned)(1.0f + a * 15000.0f + a * a * 300000.0f), 10);
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius = MIN((unsigned)(1.0f + a * 15000.0f + a * a * 300000.0f), 8);
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->nbhood = 7.0f;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->scattering = MIN(3000.0f * a, 1.5f);
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->scattering = MIN(3000.0f * a, 1.0f);
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->central_pixel_weight = 0.1f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->shadows = MAX(0.1f - 0.1 * logf(a), 0.7f);
@@ -3454,7 +3454,7 @@ void gui_init(dt_iop_module_t *self)
   g->profile = dt_bauhaus_combobox_new(self);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
   dt_bauhaus_slider_enable_soft_boundaries(g->strength, 0.001f, 1000.0f);
-  g->shadows = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.8f, .01, 1.f, 3);
+  g->shadows = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.8f, .05, 1.f, 2);
   g->bias = dt_bauhaus_slider_new_with_range(self, -10.0f, 10.0f, 1.0f, 0.f, 1);
   dt_bauhaus_slider_enable_soft_boundaries(g->bias, -1000.0f, 1000.0f);
   g->mode = dt_bauhaus_combobox_new(self);
@@ -3633,7 +3633,9 @@ void gui_init(dt_iop_module_t *self)
                                                          "useful to recover details when patch size\n"
                                                          "is quite big."));
   gtk_widget_set_tooltip_text(g->strength, _("finetune denoising strength"));
-  gtk_widget_set_tooltip_text(g->shadows, _("finetune shadows denoising"));
+  gtk_widget_set_tooltip_text(g->shadows, _("finetune shadows denoising.\n"
+                                            "decrease to denoise more aggressively\n"
+                                            "dark areas of the image.\n"));
   gtk_widget_set_tooltip_text(g->bias, _("correct color cast in shadows.\n"
                                          "decrease if shadows are too purple.\n"
                                          "increase if shadows are too green."));
