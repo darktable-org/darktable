@@ -559,28 +559,32 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     d->delay = CLAMP(d->delay + 1, 1, 60);
     dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
     dt_conf_set_int("slideshow_delay", d->delay);
-    return 0;
   }
   else if(key == GDK_KEY_Down || key == GDK_KEY_KP_Subtract)
   {
     d->delay = CLAMP(d->delay - 1, 1, 60);
     dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
     dt_conf_set_int("slideshow_delay", d->delay);
-    return 0;
   }
   else if(key == GDK_KEY_Left || key == GDK_KEY_Shift_L)
   {
+    if (d->auto_advance) dt_control_log(_("slideshow paused"));
+    d->auto_advance = 0;
     _step_state(d, S_REQUEST_STEP_BACK);
-    return 0;
   }
   else if(key == GDK_KEY_Right || key == GDK_KEY_Shift_R)
   {
+    if (d->auto_advance) dt_control_log(_("slideshow paused"));
+    d->auto_advance = 0;
     _step_state(d, S_REQUEST_STEP);
-    return 0;
+  }
+  else
+  {
+    // go back to lt mode
+    d->auto_advance = 0;
+    dt_ctl_switch_mode_to("lighttable");
   }
 
-  // go back to lt mode
-  dt_ctl_switch_mode_to("lighttable");
   return 0;
 }
 
