@@ -765,6 +765,8 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
 static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable, gboolean no_image, gboolean include_masks)
 {
     GList *history = g_list_nth(dev->history, dev->history_end);
+    // look for leaks on top of history in two steps
+    // first remove obsolete items above history_end
     while(history)
     {
       GList *next = g_list_next(history);
@@ -774,6 +776,10 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
       dev->history = g_list_delete_link(dev->history, history);
       history = next;
     }
+    // then remove NIL items there
+    while ((dev->history_end>0) && (! g_list_nth(dev->history, dev->history_end - 1)))
+      dev->history_end--;
+
     history = g_list_nth(dev->history, dev->history_end - 1);
     dt_dev_history_item_t *hist = history ? (dt_dev_history_item_t *)(history->data) : 0;
     if(!history // if no history yet, push new item for sure.
@@ -1206,17 +1212,20 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   GList *history = dev->history;
+  // the history size is NOT defined by current history_end but by the number actually written
+  int hist_size = 0;
   for(int i = 0; history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     (void)dt_dev_write_history_item(imgid, hist, i);
     history = g_list_next(history);
+    hist_size++;
   }
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE main.images SET history_end = ?1, iop_order_version = ?3 WHERE id = ?2", -1,
                               &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->history_end);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, hist_size);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, dev->iop_order_version);
   sqlite3_step(stmt);

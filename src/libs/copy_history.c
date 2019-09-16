@@ -157,8 +157,24 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
   if(img < 0)
     dt_history_compress_on_selection();
   else
+  { 
     dt_history_compress_on_image(img);
-
+    // Now read the history again into the stack
+    while(darktable.develop->history)
+    {
+      dt_dev_free_history_item(((dt_dev_history_item_t *)darktable.develop->history->data));
+      darktable.develop->history = g_list_delete_link(darktable.develop->history, darktable.develop->history);
+    }
+    dt_dev_read_history_ext(darktable.develop, img, FALSE);
+    // writing ensures we have no gaps
+    dt_dev_write_history_ext(darktable.develop, img);
+    dt_image_synch_xmp(img);
+    while(darktable.develop->history)
+    {
+      dt_dev_free_history_item(((dt_dev_history_item_t *)darktable.develop->history->data));
+      darktable.develop->history = g_list_delete_link(darktable.develop->history, darktable.develop->history);
+    }
+  }
   dt_control_queue_redraw_center();
 }
 
