@@ -634,8 +634,8 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
 // Usually, we take constant = 1
 // If we have V(X) = a * (E[X] + b) ^ p
 // then: f'(X) = 1 / sqrt(a) * (E[X] + b) ^ (-p / 2)
-// then: f(X) = 1 / (sqrt(a) * (1 - p / 2)) * (E[X] + b) ^ (1 - p / 2)
-//            = 2 * (E[X] + b) ^ (1 - p / 2) / (sqrt(a) * (2 - p))
+// then: f(x) = 1 / (sqrt(a) * (1 - p / 2)) * (x + b) ^ (1 - p / 2)
+//            = 2 * (x + b) ^ (1 - p / 2) / (sqrt(a) * (2 - p))
 // is a suitable function.
 // This is the function we use here.
 static inline void precondition_v2(const float *const in, float *const buf, const int wd, const int ht,
@@ -662,6 +662,57 @@ static inline void precondition_v2(const float *const in, float *const buf, cons
   }
 }
 
+// this backtransform aims at being a low bias backtransform
+// you can see that it is not equal to f-1
+// this is because E[X] != f-1(E[f(X)])
+// so let's try to find a better backtransform than f-1:
+// we want to find E[X] knowing E[f(X)]
+// let's apply Taylor expansion to E[f(X)] to see if we can get something better:
+// E[f(X)] ~= E[f(E[X]) + f'(E[X])(X-E[X])]
+//          = E[f(E[X]) + f'(E[X]) * X - f'(E[X]) * E[X]]
+//          = f(E[X]) + f'(E[X]) * E[X] - f'(E[X]) * E[X]
+//          = f(E[X])
+// so first order Taylor expansion is not useful.
+// going to the second order:
+// E[f(X)] ~= E[f(E[X]) + f'(E[X])(X-E[X]) + f"(E[X])/2 * (X-E[X])^2]
+//          = f(E[X]) + f"(E[X])/2 * E[(X-E[X])^2]
+//          = f(E[X]) + f"(E[X])/2 * V(X)
+// and we know that V(X) = constant / f'(X)^2
+// the constant here is not 1, due to problems in noise profiling tool
+// so in fact constant is approximately equal to 15 (depends on the image)
+// so:
+// E[f(X)] ~= f(E[X]) + f"(E[X])/2 * constant / f'(E[X])^2
+// we have:
+// f(x) = 2 * (x + b) ^ (1 - p / 2) / (sqrt(a) * (2 - p))
+// f'(x) = 1 / sqrt(a) * (x + b) ^ (-p / 2)
+// 1/f'(x)^2 = a * (x + b) ^ p
+// f"(x) = 1 / sqrt(a) * (-p / 2) * (x + b) ^ (- p / 2 - 1)
+// let's replace f, f', and f" by their analytical expressions in our equation:
+// let x = E[X]
+// E[f(X)] ~= 2 * (x + b) ^ (1 - p / 2) / (sqrt(a) * (2 - p))
+//            + constant / 2 * (1 / sqrt(a) * (-p / 2) * (x + b) ^ (- p / 2 - 1)) * (a * (x + b) ^ p)
+//          = 2 * (x + b) ^ (1 - p / 2) / (sqrt(a) * (2 - p))
+//            + constant / 2 * 1 / sqrt(a) * (-p / 2) * a * (x + b) ^ (p / 2 - 1)
+//          = 2 * (x + b) ^ (1 - p / 2) / (sqrt(a) * (2 - p))
+//            - constant / 4 * sqrt(a) * p * (x + b) ^ (p / 2 - 1)
+// let z = (x + b) ^ (1 - p / 2)
+// E[f(X)] ~= 2 / (sqrt(a) * (2 - p)) * z
+//            - constant / 4 * sqrt(a) * p * z^(-1)
+// let y = E[f(X)]
+// y ~= 2 / (sqrt(a) * (2 - p)) * z - constant / 4 * sqrt(a) * p * z^(-1)
+// y * z = 2 / (sqrt(a) * (2 - p)) * z^2 - constant / 4 * sqrt(a) * p
+// 0 = 2 / (sqrt(a) * (2 - p)) * z^2 - y * z - constant / 4 * sqrt(a) * p
+// let's solve this equation:
+// delta = y ^ 2 - 4 * 2 / (sqrt(a) * (2 - p)) * (- constant / 4 * sqrt(a))
+//       = y ^ 2 + 2 * p * c / (2 - p)
+// delta >= 0
+// the 2 solutions are:
+// z0 = (y - sqrt(delta)) / (2 * 2 / (sqrt(a) * (2 - p)))
+// z1 = (y + sqrt(delta)) / (2 * 2 / (sqrt(a) * (2 - p)))
+// as delta > y^2, sqrt(delta) > y, so z0 is negative
+// so z1 is the only possible solution.
+// Then, to find E[X], we only have to do:
+// z = (x + b) ^ (1 - p / 2) <=> x = z ^ (1 / (1 - p / 2)) - b
 static inline void backtransform_v2(float *const buf, const int wd, const int ht, const float a, const float p[3],
                                     const float b, const float bias, const float wb[3])
 {
