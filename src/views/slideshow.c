@@ -371,7 +371,6 @@ void enter(dt_view_t *self)
   // also hide arrows
   dt_control_queue_redraw();
 
-
   // alloc screen-size double buffer
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
   GdkRectangle rect;
