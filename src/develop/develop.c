@@ -1487,7 +1487,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     _dev_add_default_modules(dev, imgid);
 
     // maybe add auto-presets to memory.history and commit everything into main.history
-    gboolean first_run = _dev_auto_apply_presets(dev);
+    const gboolean first_run = _dev_auto_apply_presets(dev);
 
     // now merge memory.histroy into main.history
     _dev_merge_history(dev, imgid);
