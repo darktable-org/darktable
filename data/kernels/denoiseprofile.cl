@@ -63,6 +63,26 @@ denoiseprofile_precondition(read_only image2d_t in, write_only image2d_t out, co
 
   write_imagef (out, (int2)(x, y), s);
 }
+
+
+kernel void
+denoiseprofile_precondition_v2(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                             const float4 a, const float4 p, const float4 b, const float4 wb)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float alpha = pixel.w;
+
+  float4 t = 2.0f * native_powr(fmax((float4)0.0f, pixel / wb + b), 1.0f - p / 2.0f) / ((-p + 2.0f) * sqrt(a));
+
+  t.w = alpha;
+
+  write_imagef (out, (int2)(x, y), t);
+}
              
 
 kernel void
@@ -290,6 +310,35 @@ denoiseprofile_finish(read_only image2d_t in, global float4* U2, write_only imag
 
 
 kernel void
+denoiseprofile_finish_v2(read_only image2d_t in, global float4* U2, write_only image2d_t out, const int width, const int height,
+                             const float4 a, const float4 p, const float4 b, const float bias, const float4 wb)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const int gidx = mad24(y, width, x);
+
+  if(x >= width || y >= height) return;
+
+  float4 u2   = U2[gidx];
+  float alpha = read_imagef(in, sampleri, (int2)(x, y)).w;
+
+  float4 px = ((float4)u2.w > (float4)0.0f ? u2/u2.w : (float4)0.0f);
+
+  float4 a0 = 2.0f / (sqrt(a) * (2.0f - p));
+  float4 a1 = (1.0f + p / 2.0f) / (2.0f * a0 * a0 * (1.0f - p / 2.0f) / a);
+  float4 delta = px * px + a * 2000.0f * (float4)bias + 15.0f * 4.0f * a0 * a1;
+  float4 positive_delta = delta > 0.0f ? delta : (float4)0.0f;
+  float4 z = (px + sqrt(positive_delta)) / (2.0f * a0);
+  px = native_powr(z, 1.0f / (1.0f - p / 2.0f)) - b;
+  px = px * wb;
+  px.w = alpha;
+
+  write_imagef (out, (int2)(x, y), px);
+}
+
+
+
+kernel void
 denoiseprofile_backtransform(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
                              const float4 a, const float4 sigma2)
 {
@@ -306,6 +355,32 @@ denoiseprofile_backtransform(read_only image2d_t in, write_only image2d_t out, c
     0.25f*px*px + 0.25f*sqrt(1.5f)/px - 1.375f/(px*px) + 0.625f*sqrt(1.5f)/(px*px*px) - 0.125f - sigma2);
 
   px *= a;
+  px.w = alpha;
+
+  write_imagef (out, (int2)(x, y), px);
+}
+
+
+kernel void
+denoiseprofile_backtransform_v2(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
+                             const float4 a, const float4 p, const float4 b, const float bias, const float4 wb)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  const int gidx = mad24(y, width, x);
+
+  if(x >= width || y >= height) return;
+
+  float4 px = read_imagef(in, sampleri, (int2)(x, y));
+  float alpha = px.w;
+
+  float4 a0 = 2.0f / (sqrt(a) * (2.0f - p));
+  float4 a1 = (1.0f + p / 2.0f) / (2.0f * a0 * a0 * (1.0f - p / 2.0f) / a);
+  float4 delta = px * px + a * 2000.0f * (float4)bias + 15.0f * 4.0f * a0 * a1;
+  float4 positive_delta = delta > 0.0f ? delta : (float4)0.0f;
+  float4 z = (px + sqrt(positive_delta)) / (2.0f * a0);
+  px = native_powr(z, 1.0f / (1.0f - p / 2.0f)) - b;
+  px = px * wb;
   px.w = alpha;
 
   write_imagef (out, (int2)(x, y), px);
