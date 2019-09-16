@@ -576,7 +576,7 @@ static inline void precondition(const float *const in, float *const buf, const i
 }
 
 static inline void precondition_v2(const float *const in, float *const buf, const int wd, const int ht,
-                                const float a, const float p, const float b, const float wb[3])
+                                const float a, const float p[3], const float b, const float wb[3])
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -591,7 +591,7 @@ static inline void precondition_v2(const float *const in, float *const buf, cons
     {
       for(int c = 0; c < 3; c++)
       {
-        buf2[c] = 2.0f * powf(MAX(in2[c]/wb[c]+b,0.0f), -p/2+1) / ((-p+2) * sqrt(a));
+        buf2[c] = 2.0f * powf(MAX(in2[c]/wb[c]+b,0.0f), -p[c]/2+1) / ((-p[c]+2) * sqrt(a));
       }
       buf2 += 4;
       in2 += 4;
@@ -637,7 +637,7 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
 }
 
 static inline void backtransform_v2(float *const buf, const int wd, const int ht, const float a,
-                                 const float p, const float b, const float bias, const float wb[3])
+                                 const float p[3], const float b, const float bias, const float wb[3])
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -652,8 +652,8 @@ static inline void backtransform_v2(float *const buf, const int wd, const int ht
       for(int c = 0; c < 3; c++)
       {
         const float x = buf2[c];
-        float alpha = 2.0/(sqrt(a)*(2.0-p));
-        float beta = 1.0-p/2.0;
+        float alpha = 2.0/(sqrt(a)*(2.0-p[c]));
+        float beta = 1.0-p[c]/2.0;
         float a0 = alpha;
         float a1 = (1.0-beta)/(2.0*alpha*beta*alpha/a);
         float delta = MAX(x*x + a * 2000.0f * bias + 15.0f * 4.0*a0*a1, 0.0f);
@@ -1203,6 +1203,11 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     wb[1] = piece->pipe->dsc.processed_maximum[1];
     wb[2] = 2.0f * piece->pipe->dsc.processed_maximum[2];
   }
+  // adaptive p depending on white balance
+  const float p[3] = { d->shadows - 0.1 * logf(wb[0]),
+                       d->shadows - 0.1 * logf(wb[1]),
+                       d->shadows - 0.1 * logf(wb[2])};
+
   // update the coeffs with strength and scale
   for(int i = 0; i < 3; i++) wb[i] *= d->strength * in_scale;
   // only use green channel + wb for now:
@@ -1216,7 +1221,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   }
   else
   {
-    precondition_v2((float *)ivoid, (float *)ovoid, width, height, d->a[1] * compensate_p, d->shadows, d->b[1], wb);
+    precondition_v2((float *)ivoid, (float *)ovoid, width, height, d->a[1] * compensate_p, p, d->b[1], wb);
   }
 
 #if 0 // DEBUG: see what variance we have after transform
@@ -1338,7 +1343,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   }
   else
   {
-    backtransform_v2((float *)ovoid, width, height, d->a[1] * compensate_p, d->shadows, d->b[1], d->bias, wb);
+    backtransform_v2((float *)ovoid, width, height, d->a[1] * compensate_p, p, d->b[1], d->bias, wb);
   }
 
   for(int k = 0; k < max_scale; k++) dt_free_align(buf[k]);
@@ -1402,6 +1407,11 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   {
     for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
   }
+  // adaptive p depending on white balance
+  const float p[3] = { d->shadows - 0.1 * logf(wb[0]),
+                       d->shadows - 0.1 * logf(wb[1]),
+                       d->shadows - 0.1 * logf(wb[2])};
+
   // update the coeffs with strength and scale
   for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
@@ -1413,7 +1423,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   }
   else
   {
-    precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, d->a[1] * compensate_p, d->shadows, d->b[1], wb);
+    precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, d->a[1] * compensate_p, p, d->b[1], wb);
   }
   // for each shift vector
   for(int kj_index = -K; kj_index <= K; kj_index++)
@@ -1568,7 +1578,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   }
   else
   {
-    backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, d->a[1] * compensate_p, d->shadows, d->b[1], d->bias, wb);
+    backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, d->a[1] * compensate_p, p, d->b[1], d->bias, wb);
   }
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
@@ -1620,6 +1630,10 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   {
     for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
   }
+  // adaptive p depending on white balance
+  const float p[3] = { d->shadows - 0.1 * logf(wb[0]),
+                       d->shadows - 0.1 * logf(wb[1]),
+                       d->shadows - 0.1 * logf(wb[2])};
   // update the coeffs with strength and scale
   for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
 
@@ -1632,7 +1646,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   }
   else
   {
-    precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, d->a[1] * compensate_p, d->shadows, d->b[1], wb);
+    precondition_v2((float *)ivoid, in, roi_in->width, roi_in->height, d->a[1] * compensate_p, p, d->b[1], wb);
   }
 
   // for each shift vector
@@ -1836,7 +1850,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   }
   else
   {
-    backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, d->a[1] * compensate_p, d->shadows, d->b[1], d->bias, wb);
+    backtransform_v2((float *)ovoid, roi_in->width, roi_in->height, d->a[1] * compensate_p, p, d->b[1], d->bias, wb);
   }
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
@@ -1944,11 +1958,16 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   {
     for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
   }
+  // adaptive p depending on white balance
+  const float p[3] = { d->shadows - 0.1 * logf(wb[0]),
+                       d->shadows - 0.1 * logf(wb[1]),
+                       d->shadows - 0.1 * logf(wb[2])};
+
   // update the coeffs with strength
   for(int i = 0; i < 3; i++) wb[i] *= d->strength;
 
   const float compensate_p = 0.05f / powf(0.05f, d->shadows);
-  precondition_v2((float *)ivoid, (float *)ovoid, roi_in->width, roi_in->height, d->a[1] * compensate_p, d->shadows, d->b[1], wb);
+  precondition_v2((float *)ivoid, (float *)ovoid, roi_in->width, roi_in->height, d->a[1] * compensate_p, p, d->b[1], wb);
 
   float *out = (float *)ovoid;
   // we use out as a temporary buffer here
