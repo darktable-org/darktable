@@ -578,28 +578,6 @@ static inline void precondition(const float *const in, float *const buf, const i
   }
 }
 
-static inline void precondition_v2(const float *const in, float *const buf, const int wd, const int ht,
-                                   const float a, const float p[3], const float b, const float wb[3])
-{
-#ifdef _OPENMP
-#pragma omp parallel for default(none) dt_omp_firstprivate(buf, ht, in, wd, a, p, b, wb) schedule(static)
-#endif
-  for(int j = 0; j < ht; j++)
-  {
-    float *buf2 = buf + (size_t)4 * j * wd;
-    const float *in2 = in + (size_t)4 * j * wd;
-    for(int i = 0; i < wd; i++)
-    {
-      for(int c = 0; c < 3; c++)
-      {
-        buf2[c] = 2.0f * powf(MAX(in2[c] / wb[c] + b, 0.0f), -p[c] / 2 + 1) / ((-p[c] + 2) * sqrt(a));
-      }
-      buf2 += 4;
-      in2 += 4;
-    }
-  }
-}
-
 static inline void backtransform(float *const buf, const int wd, const int ht, const float a[3],
                                  const float b[3])
 {
@@ -633,6 +611,53 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
         buf2[c] *= a[c];
       }
       buf2 += 4;
+    }
+  }
+}
+
+// the "v2" variance stabilizing transform is an extension of the generalized
+// anscombe transform.
+// In the generalized anscombe transform, the profiles gives a and b such as:
+// V(X) = a * E[X] + b
+// In this new transform, we have an additionnal parameter, p, such as:
+// V(X) = a * (E[X] + b) ^ p
+// When p == 1, we get back the equation of generalized anscombe transform.
+// Now, let's see how we derive the precondition.
+// The goal of a VST f is to make variance constant: V(f(X)) = constant
+// Using a Taylor expansion, we have:
+// V(f(X)) ~= V(f(E[X])+f'(X)(X-E[X]))
+//          = V(f'(X)(X-E[X]))
+//          = f'(X)^2 * V(X-E[X])
+//          = f'(X)^2 * V(X)
+// So the condition V(f(X)) = constant gives us the following condition:
+// V(X) = contant / f'(X)^2
+// Usually, we take constant = 1
+// If we have V(X) = a * (E[X] + b) ^ p
+// then: f'(X) = 1 / sqrt(a) * (E[X] + b) ^ (-p / 2)
+// then: f(X) = 1 / (sqrt(a) * (1 - p / 2)) * (E[X] + b) ^ (1 - p / 2)
+//            = 2 * (E[X] + b) ^ (1 - p / 2) / (sqrt(a) * (2 - p))
+// is a suitable function.
+// This is the function we use here.
+static inline void precondition_v2(const float *const in, float *const buf, const int wd, const int ht,
+                                   const float a, const float p[3], const float b, const float wb[3])
+{
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(buf, ht, in, wd, a, p, b, wb) \
+  schedule(static)
+#endif
+  for(int j = 0; j < ht; j++)
+  {
+    float *buf2 = buf + (size_t)4 * j * wd;
+    const float *in2 = in + (size_t)4 * j * wd;
+    for(int i = 0; i < wd; i++)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        buf2[c] = 2.0f * powf(MAX(in2[c] / wb[c] + b, 0.0f), -p[c] / 2 + 1) / ((-p[c] + 2) * sqrt(a));
+      }
+      buf2 += 4;
+      in2 += 4;
     }
   }
 }
