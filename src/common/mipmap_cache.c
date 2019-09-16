@@ -96,7 +96,7 @@ struct dt_mipmap_buffer_dsc
 #endif
 
   /* NB: sizeof must be a multiple of 4*sizeof(float) */
-} __attribute__((packed, aligned(16)));
+} __attribute__((packed, aligned(64)));
 
 #if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
 static const size_t dt_mipmap_buffer_dsc_size __attribute__((unused))
@@ -108,7 +108,7 @@ static const size_t dt_mipmap_buffer_dsc_size __attribute__((unused)) = sizeof(s
 // last resort mem alloc for dead images. sizeof(dt_mipmap_buffer_dsc) + dead image pixels (8x8)
 // Must be alignment to 4 * sizeof(float).
 static float dt_mipmap_cache_static_dead_image[sizeof(struct dt_mipmap_buffer_dsc) / sizeof(float) + 64 * 4]
-    __attribute__((aligned(16)));
+    __attribute__((aligned(64)));
 
 static inline void dead_image_8(dt_mipmap_buffer_t *buf)
 {
@@ -383,10 +383,10 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
         fseek(f, 0, SEEK_END);
         len = ftell(f);
         if(len <= 0) goto read_error; // coverity madness
-        blob = (uint8_t *)malloc(len);
+        blob = (uint8_t *)dt_alloc_align(64, len);
         if(!blob) goto read_error;
         fseek(f, 0, SEEK_SET);
-        int rd = fread(blob, sizeof(uint8_t), len, f);
+        const int rd = fread(blob, sizeof(uint8_t), len, f);
         if(rd != len) goto read_error;
         dt_colorspaces_color_profile_type_t color_space;
         dt_imageio_jpeg_t jpg;
