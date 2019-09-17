@@ -59,7 +59,9 @@
 typedef enum dt_iop_denoiseprofile_mode_t {
   MODE_NLMEANS = 0,
   MODE_WAVELETS = 1,
-  MODE_VARIANCE = 2
+  MODE_VARIANCE = 2,
+  MODE_NLMEANS_AUTO = 3,
+  MODE_WAVELETS_AUTO = 4
 } dt_iop_denoiseprofile_mode_t;
 
 typedef enum dt_iop_denoiseprofile_channel_t
@@ -509,7 +511,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 {
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
 
-  if(d->mode == MODE_NLMEANS)
+  if(d->mode == MODE_NLMEANS || d->mode == MODE_NLMEANS_AUTO)
   {
     const int P = ceilf(d->radius * fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f)); // pixel filter size
     const int K = ceilf(d->nbhood * fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f)); // nbhood
@@ -2794,11 +2796,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 {
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
 
-  if(d->mode == MODE_NLMEANS)
+  if(d->mode == MODE_NLMEANS || d->mode == MODE_NLMEANS_AUTO)
   {
     return process_nlmeans_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
   }
-  else if(d->mode == MODE_WAVELETS)
+  else if(d->mode == MODE_WAVELETS || d->mode == MODE_WAVELETS_AUTO)
   {
     return process_wavelets_cl(self, piece, dev_in, dev_out, roi_in, roi_out);
   }
@@ -2814,9 +2816,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
-  if(d->mode == MODE_NLMEANS)
+  if(d->mode == MODE_NLMEANS || d->mode == MODE_NLMEANS_AUTO)
     process_nlmeans(self, piece, ivoid, ovoid, roi_in, roi_out);
-  else if(d->mode == MODE_WAVELETS)
+  else if(d->mode == MODE_WAVELETS || d->mode == MODE_WAVELETS_AUTO)
     process_wavelets(self, piece, ivoid, ovoid, roi_in, roi_out, eaw_decompose, eaw_synthesize);
   else
     process_variance(self, piece, ivoid, ovoid, roi_in, roi_out);
@@ -2827,9 +2829,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_denoiseprofile_params_t *d = (dt_iop_denoiseprofile_params_t *)piece->data;
-  if(d->mode == MODE_NLMEANS)
+  if(d->mode == MODE_NLMEANS || d->mode == MODE_NLMEANS_AUTO)
     process_nlmeans_sse(self, piece, ivoid, ovoid, roi_in, roi_out);
-  else if(d->mode == MODE_WAVELETS)
+  else if(d->mode == MODE_WAVELETS || d->mode == MODE_WAVELETS_AUTO)
     process_wavelets(self, piece, ivoid, ovoid, roi_in, roi_out, eaw_decompose_sse, eaw_synthesize_sse2);
   else
     process_variance(self, piece, ivoid, ovoid, roi_in, roi_out);
@@ -3123,24 +3125,39 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
-  p->mode = dt_bauhaus_combobox_get(w);
-  if(p->mode == MODE_WAVELETS)
+  const unsigned mode = dt_bauhaus_combobox_get(w);
+  switch(mode)
   {
-    gtk_widget_hide(g->box_nlm);
-    gtk_widget_hide(g->box_variance);
-    gtk_widget_show_all(g->box_wavelets);
-  }
-  else if(p->mode == MODE_NLMEANS)
-  {
-    gtk_widget_hide(g->box_wavelets);
-    gtk_widget_hide(g->box_variance);
-    gtk_widget_show_all(g->box_nlm);
-  }
-  else
-  {
-    gtk_widget_hide(g->box_wavelets);
-    gtk_widget_hide(g->box_nlm);
-    gtk_widget_show_all(g->box_variance);
+    case 0:
+      p->mode = MODE_NLMEANS;
+      gtk_widget_hide(g->box_wavelets);
+      gtk_widget_hide(g->box_variance);
+      gtk_widget_show_all(g->box_nlm);
+      break;
+    case 1:
+      p->mode = MODE_NLMEANS_AUTO;
+      gtk_widget_hide(g->box_wavelets);
+      gtk_widget_hide(g->box_variance);
+      gtk_widget_show_all(g->box_nlm);
+      break;
+    case 2:
+      p->mode = MODE_WAVELETS;
+      gtk_widget_hide(g->box_nlm);
+      gtk_widget_hide(g->box_variance);
+      gtk_widget_show_all(g->box_wavelets);
+      break;
+    case 3:
+      p->mode = MODE_WAVELETS_AUTO;
+      gtk_widget_hide(g->box_nlm);
+      gtk_widget_hide(g->box_variance);
+      gtk_widget_show_all(g->box_wavelets);
+      break;
+    case 4:
+      p->mode = MODE_VARIANCE;
+      gtk_widget_hide(g->box_wavelets);
+      gtk_widget_hide(g->box_nlm);
+      gtk_widget_show_all(g->box_variance);
+      break;
   }
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -3208,29 +3225,45 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->scattering, p->scattering);
   dt_bauhaus_slider_set_soft(g->central_pixel_weight, p->central_pixel_weight);
   dt_bauhaus_combobox_set(g->profile, -1);
-  if(p->mode == MODE_WAVELETS)
+  unsigned combobox_index = 0;
+  switch (p->mode)
   {
-    gtk_widget_hide(g->box_nlm);
-    gtk_widget_hide(g->box_variance);
-    gtk_widget_show_all(g->box_wavelets);
+    case MODE_NLMEANS:
+      combobox_index = 0;
+      gtk_widget_hide(g->box_wavelets);
+      gtk_widget_hide(g->box_variance);
+      gtk_widget_show_all(g->box_nlm);
+      break;
+    case MODE_NLMEANS_AUTO:
+      combobox_index = 1;
+      gtk_widget_hide(g->box_wavelets);
+      gtk_widget_hide(g->box_variance);
+      gtk_widget_show_all(g->box_nlm);
+      break;
+    case MODE_WAVELETS:
+      combobox_index = 2;
+      gtk_widget_hide(g->box_nlm);
+      gtk_widget_hide(g->box_variance);
+      gtk_widget_show_all(g->box_wavelets);
+      break;
+    case MODE_WAVELETS_AUTO:
+      combobox_index = 3;
+      gtk_widget_hide(g->box_nlm);
+      gtk_widget_hide(g->box_variance);
+      gtk_widget_show_all(g->box_wavelets);
+      break;
+    case MODE_VARIANCE:
+      combobox_index = 4;
+      gtk_widget_hide(g->box_wavelets);
+      gtk_widget_hide(g->box_nlm);
+      gtk_widget_show_all(g->box_variance);
+      if(dt_bauhaus_combobox_length(g->mode) == 4)
+      {
+        dt_bauhaus_combobox_add(g->mode, _("compute variance"));
+      }
+      break;
   }
-  else if(p->mode == MODE_NLMEANS)
-  {
-    gtk_widget_hide(g->box_wavelets);
-    gtk_widget_hide(g->box_variance);
-    gtk_widget_show_all(g->box_nlm);
-  }
-  else if(p->mode == MODE_VARIANCE)
-  {
-    gtk_widget_hide(g->box_wavelets);
-    gtk_widget_hide(g->box_nlm);
-    gtk_widget_show_all(g->box_variance);
-    if(dt_bauhaus_combobox_length(g->mode) == 2)
-    {
-      dt_bauhaus_combobox_add(g->mode, _("compute variance"));
-    }
-  }
-  dt_bauhaus_combobox_set(g->mode, p->mode);
+  dt_bauhaus_combobox_set(g->mode, combobox_index);
   if(p->a[0] == -1.0)
   {
     dt_bauhaus_combobox_set(g->profile, 0);
@@ -3820,7 +3853,9 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->shadows, NULL, _("preserve shadows"));
   dt_bauhaus_widget_set_label(g->bias, NULL, _("bias correction"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means"));
+  dt_bauhaus_combobox_add(g->mode, _("non-local means auto"));
   dt_bauhaus_combobox_add(g->mode, _("wavelets"));
+  dt_bauhaus_combobox_add(g->mode, _("wavelets auto"));
   const gboolean compute_variance = dt_conf_get_bool("plugins/darkroom/denoiseprofile/show_compute_variance_mode");
   if(compute_variance)
   {
