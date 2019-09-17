@@ -3948,8 +3948,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->overshooting, _("controls the way parameters are autoset\n"
                                                  "increase if shadows are not denoised enough\n"
                                                  "or if chroma noise remains.\n"
-                                                 "this can happen if your picture is underexposed.\n"
-                                                 "decreasing to get back some local contrast."));
+                                                 "this can happen if your picture is underexposed."));
   gtk_widget_set_tooltip_text(g->shadows, _("finetune shadows denoising.\n"
                                             "decrease to denoise more aggressively\n"
                                             "dark areas of the image.\n"));
