@@ -289,20 +289,23 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   pair_t *pair = malloc(sizeof(pair_t));
 
   char *title = NULL, *description = NULL;
-  GList *res_title, *res_desc;
+  GList *res_title = NULL, *res_desc = NULL;
 
-  res_title = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
-  if(res_title)
+  if ((metadata->flags & DT_META_METADATA) && !(metadata->flags & DT_META_CALCULATED))
   {
-    title = res_title->data;
-  }
+    res_title = dt_metadata_get(imgid, "Xmp.dc.title", NULL);
+    if(res_title)
+    {
+      title = res_title->data;
+    }
 
-  res_desc = dt_metadata_get(imgid, "Xmp.dc.description", NULL);
-  if(res_desc)
-  {
-    description = res_desc->data;
+    res_desc = dt_metadata_get(imgid, "Xmp.dc.description", NULL);
+    if(res_desc)
+    {
+      description = res_desc->data;
+    }
   }
-
+  
   char relfilename[PATH_MAX] = { 0 }, relthumbfilename[PATH_MAX] = { 0 };
   c = filename + strlen(filename);
   for(; c > filename && *c != '/'; c--)
@@ -339,8 +342,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
   // export image to file. need this to be able to access meaningful
   // fdata->width and height below.
-  if(dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, FALSE, icc_type, icc_filename,
-                       icc_intent, self, sdata, num, total, NULL) != 0)
+  if(dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, TRUE, icc_type, icc_filename,
+                       icc_intent, self, sdata, num, total, metadata) != 0)
   {
     fprintf(stderr, "[imageio_storage_gallery] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
