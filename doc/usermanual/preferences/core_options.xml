@@ -255,7 +255,7 @@
     <bridgehead renderas="sect5">3D lut root folder</bridgehead>
 
     <para>
-      This folder (and sub-folders) contains Lut files used but lut3d modules. (need a restart)
+      This folder (and sub-folders) contains Lut files used by lut3d modules. (need a restart)
     </para>
 
   </sect2>

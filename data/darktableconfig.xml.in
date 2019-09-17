@@ -1923,7 +1923,7 @@
     <type>dir</type>
     <default></default>
     <shortdescription>3D lut root folder</shortdescription>
-    <longdescription>this folder (and sub-folders) contains Lut files used but lut3d modules. need to restart darktable.</longdescription>
+    <longdescription>this folder (and sub-folders) contains Lut files used by lut3d modules. need to restart darktable.</longdescription>
   </dtconfig>
   <dtconfig prefs="core" section="quality">
     <name>plugins/darkroom/basecurve/auto_apply</name>

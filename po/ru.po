@@ -1150,7 +1150,7 @@ msgstr "Выбор каталога"
 
 #: ../build/src/preferences_gen.h:4247
 msgid ""
-"this folder (and sub-folders) contains Lut files used but lut3d modules. "
+"this folder (and sub-folders) contains Lut files used by lut3d modules. "
 "need to restart darktable."
 msgstr "Каталог с файлами таблиц поиска цветов (требуется перезапуск)."
 
