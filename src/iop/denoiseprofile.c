@@ -679,7 +679,7 @@ static inline void precondition_v2(const float *const in, float *const buf, cons
 //          = f(E[X]) + f"(E[X])/2 * V(X)
 // and we know that V(X) = constant / f'(X)^2
 // the constant here is not 1, due to problems in noise profiling tool
-// so in fact constant is approximately equal to 15 (depends on the image)
+// so in fact constant depends on the image (and is approximately in [10;15])
 // so:
 // E[f(X)] ~= f(E[X]) + f"(E[X])/2 * constant / f'(E[X])^2
 // we have:
@@ -704,7 +704,7 @@ static inline void precondition_v2(const float *const in, float *const buf, cons
 // 0 = 2 / (sqrt(a) * (2 - p)) * z^2 - y * z - constant / 4 * sqrt(a) * p
 // let's solve this equation:
 // delta = y ^ 2 - 4 * 2 / (sqrt(a) * (2 - p)) * (- constant / 4 * sqrt(a))
-//       = y ^ 2 + 2 * p * c / (2 - p)
+//       = y ^ 2 + 2 * p * constant / (2 - p)
 // delta >= 0
 // the 2 solutions are:
 // z0 = (y - sqrt(delta)) / (2 * 2 / (sqrt(a) * (2 - p)))
@@ -713,6 +713,14 @@ static inline void precondition_v2(const float *const in, float *const buf, cons
 // so z1 is the only possible solution.
 // Then, to find E[X], we only have to do:
 // z = (x + b) ^ (1 - p / 2) <=> x = z ^ (1 / (1 - p / 2)) - b
+//
+// What we see here is that a bias compensation term is in delta:
+// the term: 2 * p * constant / (2 - p)
+// But we are not sure at all what the value of the constant is
+// That's why we introduce a user-controled bias parameter to be able to
+// control the bias:
+// we replace the 2 * p * constant / (2 - p) part of delta by user
+// defined bias controler.
 static inline void backtransform_v2(float *const buf, const int wd, const int ht, const float a, const float p[3],
                                     const float b, const float bias, const float wb[3])
 {
@@ -729,13 +737,10 @@ static inline void backtransform_v2(float *const buf, const int wd, const int ht
       for(int c = 0; c < 3; c++)
       {
         const float x = buf2[c];
-        float alpha = 2.0 / (sqrt(a) * (2.0 - p[c]));
-        float beta = 1.0 - p[c] / 2.0;
-        float a0 = alpha;
-        float a1 = (1.0 - beta) / (2.0 * alpha * beta * alpha / a);
-        float delta = MAX(x * x + a * 2000.0f * bias + 15.0f * 4.0 * a0 * a1, 0.0f);
-        float z1 = (x + sqrt(delta)) / (2.0 * a0);
-        buf2[c] = powf(z1, 1.0 / beta) - b;
+        const float delta = x * x + bias;
+        const float denominator = 4.0f / (sqrt(a) * (2.0f - p[c]));
+        const float z1 = (x + sqrt(MAX(delta, 0.0f))) / denominator;
+        buf2[c] = powf(z1, 1.0f / (1.0f - p[c] / 2.0f)) - b;
         buf2[c] *= wb[c];
       }
       buf2 += 4;
