@@ -319,8 +319,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
   {
     if(mip == DT_MIPMAP_8)
     {
-      int imgfw, imgfh;
-      imgfw = imgfh = 0;
+      int imgfw= 0, imgfh= 0;
       // be sure that we have the right size values
       dt_image_get_final_size(get_imgid(entry->key), &imgfw, &imgfh);
       entry->data_size = sizeof(struct dt_mipmap_buffer_dsc) + (imgfw + 4) * (imgfh + 4) * 4;
@@ -378,10 +377,9 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
       FILE *f = g_fopen(filename, "rb");
       if(f)
       {
-        long len = 0;
         uint8_t *blob = 0;
         fseek(f, 0, SEEK_END);
-        len = ftell(f);
+        const long len = ftell(f);
         if(len <= 0) goto read_error; // coverity madness
         blob = (uint8_t *)dt_alloc_align(64, len);
         if(!blob) goto read_error;
@@ -420,10 +418,12 @@ read_error:
 
   // cost is just flat one for the buffer, as the buffers might have different sizes,
   // to make sure quota is meaningful.
-  if(mip >= DT_MIPMAP_F) entry->cost = 1;
+  if(mip >= DT_MIPMAP_F)
+    entry->cost = 1;
   else if(mip == DT_MIPMAP_8)
     entry->cost = entry->data_size;
-  else entry->cost = cache->buffer_size[mip];
+  else
+    entry->cost = cache->buffer_size[mip];
 }
 
 static void dt_mipmap_cache_unlink_ondisk_thumbnail(void *data, uint32_t imgid, dt_mipmap_size_t mip)
@@ -461,7 +461,7 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
         // serialize to disk
         char filename[PATH_MAX] = {0};
         snprintf(filename, sizeof(filename), "%s.d/%d", cache->cachedir, mip);
-        int mkd = g_mkdir_with_parents(filename, 0750);
+        const int mkd = g_mkdir_with_parents(filename, 0750);
         if(!mkd)
         {
           snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, get_imgid(entry->key));
@@ -473,7 +473,7 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
             struct statvfs vfsbuf;
             if (!statvfs(filename, &vfsbuf))
             {
-              int64_t free_mb = ((vfsbuf.f_frsize * vfsbuf.f_bavail) >> 20);
+              const int64_t free_mb = ((vfsbuf.f_frsize * vfsbuf.f_bavail) >> 20);
               if (free_mb < 100)
               {
                 fprintf(stderr, "Aborting image write as only %" PRId64 " MB free to write %s\n", free_mb, filename);
@@ -529,9 +529,9 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 
   // adjust numbers to be large enough to hold what mem limit suggests.
   // we want at least 100MB, and consider 8G just still reasonable.
-  int64_t cache_memory = dt_conf_get_int64("cache_memory");
-  int worker_threads = dt_conf_get_int("worker_threads");
-  size_t max_mem = CLAMPS(cache_memory, 100u << 20, ((size_t)8) << 30);
+  const int64_t cache_memory = dt_conf_get_int64("cache_memory");
+  const int worker_threads = dt_conf_get_int("worker_threads");
+  const size_t max_mem = CLAMPS(cache_memory, 100u << 20, ((size_t)8) << 30);
   const uint32_t parallel = CLAMP(worker_threads, 1, 8);
 
   // Fixed sizes for the thumbnail mip levels, selected for coverage of most screen sizes
@@ -583,7 +583,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
 
   const int full_entries
       = MAX(2, parallel); // even with one thread you want two buffers. one for dr one for thumbs.
-  int32_t max_mem_bufs = nearest_power_of_two(full_entries);
+  const int32_t max_mem_bufs = nearest_power_of_two(full_entries);
 
   // for this buffer, because it can be very busy during import
   dt_cache_init(&cache->mip_full.cache, 0, max_mem_bufs);
