@@ -3311,20 +3311,24 @@ void gui_update(dt_iop_module_t *self)
       }
       break;
   }
+  float a = p->a[1];
+  if(p->a[0] == -1.0)
+  {
+    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
+    a = interpolated.a[1];
+  }
   if((p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO))
   {
     const float gain = p->overshooting;
-    float a = p->a[1];
-    if(p->a[0] == -1.0)
-    {
-      dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
-      a = interpolated.a[1];
-    }
     dt_bauhaus_slider_set_soft(g->radius, infer_radius_from_profile(a * gain));
     dt_bauhaus_slider_set_soft(g->scattering, infer_scattering_from_profile(a * gain));
     dt_bauhaus_slider_set(g->shadows, infer_shadows_from_profile(a * gain));
     dt_bauhaus_slider_set(g->bias, infer_bias_from_profile(a * gain));
   }
+  dt_bauhaus_slider_set_default(g->radius, infer_radius_from_profile(a));
+  dt_bauhaus_slider_set_default(g->scattering, infer_scattering_from_profile(a));
+  dt_bauhaus_slider_set_default(g->shadows, infer_shadows_from_profile(a));
+  dt_bauhaus_slider_set_default(g->bias, infer_bias_from_profile(a));
   dt_bauhaus_combobox_set(g->mode, combobox_index);
   if(p->a[0] == -1.0)
   {
@@ -3772,7 +3776,7 @@ void gui_init(dt_iop_module_t *self)
   g->nbhood = dt_bauhaus_slider_new_with_range(self, 1.0f, 30.0f, 1.f, 7.f, 0);
   g->scattering = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01, 0.0f, 2);
   dt_bauhaus_slider_enable_soft_boundaries(g->scattering, 0.0, 20.0);
-  g->central_pixel_weight = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01, 0.0f, 2);
+  g->central_pixel_weight = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.0f, 0.01, 0.1f, 2);
   dt_bauhaus_slider_enable_soft_boundaries(g->central_pixel_weight, 0.0, 10.0);
   g->channel = dt_conf_get_int("plugins/darkroom/denoiseprofile/gui_channel");
 
