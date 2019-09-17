@@ -47,6 +47,15 @@
 #define DT_IOP_DENOISE_PROFILE_RES 64
 #define DT_IOP_DENOISE_PROFILE_BANDS 5
 
+// the following fulcrum is used to help user to set shadows and strength
+// parameters.
+// applying precondition on this value will give the same value even
+// if shadows slider is changed, as strength will be adjusted to
+// guarantee that.
+// from a user point of view, it separates "shadows" area from the rest
+// of the image.
+#define DT_IOP_DENOISE_PROFILE_P_FULCRUM 0.05f
+
 typedef enum dt_iop_denoiseprofile_mode_t {
   MODE_NLMEANS = 0,
   MODE_WAVELETS = 1,
@@ -1296,7 +1305,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
 
-  const float compensate_p = 0.05f / powf(0.05f, d->shadows);
+  const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
   if(!d->upgrade_vst)
   {
     precondition((float *)ivoid, (float *)ovoid, width, height, aa, bb);
@@ -1498,7 +1507,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
-  const float compensate_p = 0.05f / powf(0.05f, d->shadows);
+  const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
   if(!d->upgrade_vst)
   {
     precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
@@ -1721,7 +1730,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
 
   const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
   const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
-  const float compensate_p = 0.05f / powf(0.05f, d->shadows);
+  const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
   if(!d->upgrade_vst)
   {
     precondition((float *)ivoid, in, roi_in->width, roi_in->height, aa, bb);
@@ -2048,7 +2057,7 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   // update the coeffs with strength
   for(int i = 0; i < 3; i++) wb[i] *= d->strength;
 
-  const float compensate_p = 0.05f / powf(0.05f, d->shadows);
+  const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
   precondition_v2((float *)ivoid, (float *)ovoid, roi_in->width, roi_in->height, d->a[1] * compensate_p, p, d->b[1], wb);
 
   float *out = (float *)ovoid;
@@ -2160,7 +2169,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   float bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 1.0f };
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
                             (bb[2] / aa[2]) * (bb[2] / aa[2]), 0.0f };
-  const float compensate_p = 0.05f / powf(0.05f, d->shadows);
+  const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
   if(d->upgrade_vst)
   {
     for(int c = 0; c < 3; c++)
@@ -2514,7 +2523,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   float bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 1.0f };
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
                             (bb[2] / aa[2]) * (bb[2] / aa[2]), 0.0f };
-  const float compensate_p = 0.05f / powf(0.05f, d->shadows);
+  const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
   if(d->upgrade_vst)
   {
     for(int c = 0; c < 3; c++)
@@ -2876,6 +2885,9 @@ void reload_defaults(dt_iop_module_t *module)
       dt_noiseprofile_t *profile = (dt_noiseprofile_t *)iter->data;
       dt_bauhaus_combobox_add(g->profile, profile->name);
     }
+
+    // set defaults depending on the profile
+    // all these formulas were "guessed" and are completely empirical
     const float a = g->interpolated.a[1];
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->wb_adaptive_anscombe = TRUE;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius
