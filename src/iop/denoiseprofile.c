@@ -2836,6 +2836,26 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 }
 #endif
 
+static inline unsigned infer_radius_from_profile(const float a)
+{
+  return MIN((unsigned)(1.0f + a * 15000.0f + a * a * 300000.0f), 8);
+}
+
+static inline float infer_scattering_from_profile(const float a)
+{
+  return MIN(3000.0f * a, 1.0f);
+}
+
+static inline float infer_shadows_from_profile(const float a)
+{
+  return MIN(MAX(0.1f - 0.1 * logf(a), 0.7f), 1.8f);
+}
+
+static inline float infer_bias_from_profile(const float a)
+{
+  return -MAX(5 + 0.5 * logf(a), 0.0);
+}
+
 /** this will be called to init new defaults if a new image is loaded from film strip mode. */
 void reload_defaults(dt_iop_module_t *module)
 {
@@ -2890,14 +2910,13 @@ void reload_defaults(dt_iop_module_t *module)
     // all these formulas were "guessed" and are completely empirical
     const float a = g->interpolated.a[1];
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->wb_adaptive_anscombe = TRUE;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius
-        = MIN((unsigned)(1.0f + a * 15000.0f + a * a * 300000.0f), 8);
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->radius = infer_radius_from_profile(a);
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->nbhood = 7.0f;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->scattering = MIN(3000.0f * a, 1.0f);
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->scattering = infer_scattering_from_profile(a);
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->central_pixel_weight = 0.1f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->shadows = MAX(0.1f - 0.1 * logf(a), 0.7f);
-    ((dt_iop_denoiseprofile_params_t *)module->default_params)->bias = 0.0f;
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->shadows = infer_shadows_from_profile(a);
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->bias = infer_bias_from_profile(a);
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->fix_anscombe_and_nlmeans_norm = TRUE;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->upgrade_vst = TRUE;
