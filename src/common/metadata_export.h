@@ -27,6 +27,8 @@ typedef enum dt_metadata_id
   DT_META_DT_HISTORY= 1 << 5,
   DT_META_PRIVATE_TAG = 1 << 16,
   DT_META_SYNONYMS_TAG = 1 << 17,
+  DT_META_OMIT_HIERARCHY = 1 << 18,
+  DT_META_CALCULATED = 1 << 19
 } dt_metadata_id;
 
 typedef struct dt_export_metadata_t
