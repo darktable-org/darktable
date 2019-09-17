@@ -3046,14 +3046,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)params;
   dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;
 
-  d->radius = p->radius;
   d->nbhood = p->nbhood;
-  d->scattering = p->scattering;
   d->central_pixel_weight = p->central_pixel_weight;
   d->strength = p->strength;
   d->overshooting = p->overshooting;
-  d->shadows = p->shadows;
-  d->bias = p->bias;
   for(int i = 0; i < 3; i++)
   {
     d->a[i] = p->a[i];
@@ -3073,6 +3069,22 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
       d->a[k] = interpolated.a[k];
       d->b[k] = interpolated.b[k];
     }
+  }
+
+  if((p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO))
+  {
+    const float gain = p->overshooting;
+    d->radius = infer_radius_from_profile(d->a[1] * gain);
+    d->scattering = infer_scattering_from_profile(d->a[1] * gain);
+    d->shadows = infer_shadows_from_profile(d->a[1] * gain);
+    d->bias = infer_bias_from_profile(d->a[1] * gain);
+  }
+  else
+  {
+    d->radius = p->radius;
+    d->scattering = p->scattering;
+    d->shadows = p->shadows;
+    d->bias = p->bias;
   }
 
   for(int ch = 0; ch < DT_DENOISE_PROFILE_NONE; ch++)
@@ -3214,7 +3226,19 @@ static void strength_callback(GtkWidget *w, dt_iop_module_t *self)
 static void overshooting_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   p->overshooting = dt_bauhaus_slider_get(w);
+  const float gain = p->overshooting;
+  float a = p->a[1];
+  if(p->a[0] == -1.0)
+  {
+    dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
+    a = interpolated.a[1];
+  }
+  dt_bauhaus_slider_set_soft(g->radius, infer_radius_from_profile(a * gain));
+  dt_bauhaus_slider_set_soft(g->scattering, infer_scattering_from_profile(a * gain));
+  dt_bauhaus_slider_set(g->shadows, infer_shadows_from_profile(a * gain));
+  dt_bauhaus_slider_set(g->bias, infer_bias_from_profile(a * gain));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -3286,6 +3310,20 @@ void gui_update(dt_iop_module_t *self)
         dt_bauhaus_combobox_add(g->mode, _("compute variance"));
       }
       break;
+  }
+  if((p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO))
+  {
+    const float gain = p->overshooting;
+    float a = p->a[1];
+    if(p->a[0] == -1.0)
+    {
+      dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
+      a = interpolated.a[1];
+    }
+    dt_bauhaus_slider_set_soft(g->radius, infer_radius_from_profile(a * gain));
+    dt_bauhaus_slider_set_soft(g->scattering, infer_scattering_from_profile(a * gain));
+    dt_bauhaus_slider_set(g->shadows, infer_shadows_from_profile(a * gain));
+    dt_bauhaus_slider_set(g->bias, infer_bias_from_profile(a * gain));
   }
   dt_bauhaus_combobox_set(g->mode, combobox_index);
   gboolean auto_mode = (p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO);
