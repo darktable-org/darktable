@@ -143,6 +143,7 @@ typedef struct dt_iop_denoiseprofile_params_t
   float bias;       // allows to reduce backtransform bias
   float scattering; // spread the patch search zone without increasing number of patches
   float central_pixel_weight; // increase central pixel's weight in patch comparison
+  float overshooting; // adjusts the way parameters are autoset
   float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
   dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
   float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
@@ -164,6 +165,7 @@ typedef struct dt_iop_denoiseprofile_gui_data_t
   GtkWidget *bias;
   GtkWidget *scattering;
   GtkWidget *central_pixel_weight;
+  GtkWidget *overshooting;
   dt_noiseprofile_t interpolated; // don't use name, maker or model, they may point to garbage
   GList *profiles;
   GtkWidget *box_nlm;
@@ -203,6 +205,7 @@ typedef struct dt_iop_denoiseprofile_data_t
   float bias;                        // controls bias in backtransform
   float scattering;                  // spread the search zone without changing number of patches
   float central_pixel_weight;        // increase central pixel's weight in patch comparison
+  float overshooting;                // adjusts the way parameters are autoset
   float a[3], b[3];                  // fit for poissonian-gaussian noise per color channel.
   dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
   dt_draw_curve_t *curve[DT_DENOISE_PROFILE_NONE];
@@ -417,6 +420,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     v8->shadows = 1.0f;
     v8->bias = 0.0f;
     v8->upgrade_vst = FALSE;
+    v8->overshooting = 1.0f;
     return 0;
   }
   return 1;
@@ -2917,6 +2921,7 @@ void reload_defaults(dt_iop_module_t *module)
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->scattering = infer_scattering_from_profile(a);
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->central_pixel_weight = 0.1f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->strength = 1.0f;
+    ((dt_iop_denoiseprofile_params_t *)module->default_params)->overshooting = 1.0f;
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->shadows = infer_shadows_from_profile(a);
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->bias = infer_bias_from_profile(a);
     ((dt_iop_denoiseprofile_params_t *)module->default_params)->mode = MODE_NLMEANS;
@@ -3045,6 +3050,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   d->scattering = p->scattering;
   d->central_pixel_weight = p->central_pixel_weight;
   d->strength = p->strength;
+  d->overshooting = p->overshooting;
   d->shadows = p->shadows;
   d->bias = p->bias;
   for(int i = 0; i < 3; i++)
@@ -3159,6 +3165,7 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
       gtk_widget_show_all(g->box_variance);
       break;
   }
+  gtk_widget_set_visible(g->overshooting, (p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO));
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -3197,6 +3204,13 @@ static void strength_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void overshooting_callback(GtkWidget *w, dt_iop_module_t *self)
+{
+  dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+  p->overshooting = dt_bauhaus_slider_get(w);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
 static void shadows_callback(GtkWidget *w, dt_iop_module_t *self)
 {
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
@@ -3211,7 +3225,6 @@ static void bias_callback(GtkWidget *w, dt_iop_module_t *self)
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-
 void gui_update(dt_iop_module_t *self)
 {
   // let gui slider match current parameters:
@@ -3220,6 +3233,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->radius, p->radius);
   dt_bauhaus_slider_set(g->nbhood, p->nbhood);
   dt_bauhaus_slider_set_soft(g->strength, p->strength);
+  dt_bauhaus_slider_set(g->overshooting, p->overshooting);
   dt_bauhaus_slider_set(g->shadows, p->shadows);
   dt_bauhaus_slider_set_soft(g->bias, p->bias);
   dt_bauhaus_slider_set_soft(g->scattering, p->scattering);
@@ -3264,6 +3278,7 @@ void gui_update(dt_iop_module_t *self)
       break;
   }
   dt_bauhaus_combobox_set(g->mode, combobox_index);
+  gtk_widget_set_visible(g->overshooting, (p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO));
   if(p->a[0] == -1.0)
   {
     dt_bauhaus_combobox_set(g->profile, 0);
@@ -3696,6 +3711,7 @@ void gui_init(dt_iop_module_t *self)
   g->profile = dt_bauhaus_combobox_new(self);
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
   dt_bauhaus_slider_enable_soft_boundaries(g->strength, 0.001f, 1000.0f);
+  g->overshooting = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 2);
   g->shadows = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.8f, .05, 1.f, 2);
   g->bias = dt_bauhaus_slider_new_with_range(self, -10.0f, 10.0f, 1.0f, 0.f, 1);
   dt_bauhaus_slider_enable_soft_boundaries(g->bias, -1000.0f, 1000.0f);
@@ -3809,6 +3825,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->mode, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_nlm, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->box_wavelets, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->overshooting, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->strength, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->shadows, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->bias, TRUE, TRUE, 0);
@@ -3850,6 +3867,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->scattering, NULL, _("scattering (coarse-grain noise)"));
   dt_bauhaus_widget_set_label(g->central_pixel_weight, NULL, _("central pixel weight (details)"));
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
+  dt_bauhaus_widget_set_label(g->overshooting, NULL, _("adjustment of autoset parameters"));
   dt_bauhaus_widget_set_label(g->shadows, NULL, _("preserve shadows"));
   dt_bauhaus_widget_set_label(g->bias, NULL, _("bias correction"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means"));
@@ -3877,6 +3895,11 @@ void gui_init(dt_iop_module_t *self)
                                                          "useful to recover details when patch size\n"
                                                          "is quite big."));
   gtk_widget_set_tooltip_text(g->strength, _("finetune denoising strength"));
+  gtk_widget_set_tooltip_text(g->overshooting, _("controls the way parameters are autoset\n"
+                                                 "increase if shadows are not denoised enough\n"
+                                                 "or if chroma noise remains.\n"
+                                                 "this can happen if your picture is underexposed.\n"
+                                                 "decreasing to get back some local contrast."));
   gtk_widget_set_tooltip_text(g->shadows, _("finetune shadows denoising.\n"
                                             "decrease to denoise more aggressively\n"
                                             "dark areas of the image.\n"));
@@ -3891,6 +3914,7 @@ void gui_init(dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->central_pixel_weight), "value-changed", G_CALLBACK(central_pixel_weight_callback),
                    self);
   g_signal_connect(G_OBJECT(g->strength), "value-changed", G_CALLBACK(strength_callback), self);
+  g_signal_connect(G_OBJECT(g->overshooting), "value-changed", G_CALLBACK(overshooting_callback), self);
   g_signal_connect(G_OBJECT(g->shadows), "value-changed", G_CALLBACK(shadows_callback), self);
   g_signal_connect(G_OBJECT(g->bias), "value-changed", G_CALLBACK(bias_callback), self);
 }
