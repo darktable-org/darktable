@@ -199,7 +199,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>omit hierarchy in simple tag lists</shortdescription>
-    <longdescription>when exporting images the hierarchical tags are also added as a simple list of non-hierarchical ones to make them visible to some other programs. when this option is checked darktable will only include their last part and ignore the rest. so 'foo|bar|baz' will only add 'baz'.</longdescription>
+    <longdescription>when creating XMP file the hierarchical tags are also added as a simple list of non-hierarchical ones to make them visible to some other programs. when this option is checked darktable will only include their last part and ignore the rest. so 'foo|bar|baz' will only add 'baz'.</longdescription>
   </dtconfig>
   <dtconfig prefs="core">
     <name>plugins/lighttable/tagging/no_entry_completion</name>

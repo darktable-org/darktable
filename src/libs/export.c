@@ -55,8 +55,8 @@ typedef struct dt_lib_export_t
   char *metadata_export;
 } dt_lib_export_t;
 
-char *dt_lib_export_metadata_default_flags();
-char *dt_lib_export_metadata_configuration_dialog(char *list);
+uint32_t dt_lib_export_metadata_default_flags();
+char *dt_lib_export_metadata_configuration_dialog(char *list, const gboolean ondisk);
 /** Updates the combo box and shows only the supported formats of current selected storage module */
 static void _update_formats_combobox(dt_lib_export_t *d);
 /** Sets the max dimensions based upon what storage and format supports */
@@ -234,7 +234,7 @@ void gui_reset(dt_lib_module_t *self)
 
   // export metadata presets
   if (d->metadata_export) g_free(d->metadata_export);
-  d->metadata_export = dt_lib_export_metadata_default_flags();
+  d->metadata_export = dt_util_dstrcat(NULL, "%x", dt_lib_export_metadata_default_flags());
 
   dt_imageio_module_format_t *mformat = dt_imageio_get_format();
   if(mformat) mformat->gui_reset(mformat);
@@ -382,10 +382,6 @@ static void storage_changed(GtkWidget *widget, dt_lib_export_t *d)
   g_signal_handlers_block_by_func(widget, storage_changed, d);
   if(name) set_storage_by_name(d, name);
   g_signal_handlers_unblock_by_func(widget, storage_changed, d);
-  if (name && !g_strcmp0(name, _("file on disk")))
-    gtk_widget_set_sensitive(d->metadata_button, TRUE);
-  else
-    gtk_widget_set_sensitive(d->metadata_button, FALSE);
 }
 
 static void profile_changed(GtkWidget *widget, dt_lib_export_t *d)
@@ -535,7 +531,9 @@ static void _lib_export_styles_changed_callback(gpointer instance, gpointer user
 
 static void metadata_export_clicked(GtkComboBox *widget, dt_lib_export_t *d)
 {
-  d->metadata_export = dt_lib_export_metadata_configuration_dialog(d->metadata_export);
+  const gchar *name = dt_bauhaus_combobox_get_text(d->storage);
+  const gboolean ondisk = name && !g_strcmp0(name, _("file on disk"));
+  d->metadata_export = dt_lib_export_metadata_configuration_dialog(d->metadata_export, ondisk);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -1075,7 +1073,8 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
   else if(old_version == 5)
   {
     // add metadata preset string
-    char *flags = dt_lib_export_metadata_default_flags();
+    const gboolean omit = dt_conf_get_bool("omit_tag_hierarchy");
+    char *flags = dt_util_dstrcat(NULL, "%x", dt_lib_export_metadata_default_flags() | (omit ? DT_META_OMIT_HIERARCHY : 0));
     const int flags_size = strlen(flags) + 1;
     size_t new_params_size = old_params_size + flags_size;
     void *new_params = calloc(1, new_params_size);

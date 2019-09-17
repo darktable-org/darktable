@@ -332,6 +332,16 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     }
     g_list_free_full(res, &g_free);
   }
+  else if(has_prefix(variable, "DESCRIPTION"))
+  {
+    GList *res = dt_metadata_get(params->imgid, "Xmp.dc.description", NULL);
+    res = g_list_first(res);
+    if(res != NULL)
+    {
+      result = g_strdup((char *)res->data);
+    }
+    g_list_free_full(res, &g_free);
+  }
   else if(has_prefix(variable, "CREATOR"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.creator", NULL);
