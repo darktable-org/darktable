@@ -66,7 +66,23 @@
           <tbody>
             <row>
               <entry>
-                <emphasis>left-click</emphasis>
+                <emphasis>+</emphasis> or <emphasis>up</emphasis>
+              </entry>
+              <entry>
+                increase delay between each image
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>-</emphasis> or <emphasis>down</emphasis>
+              </entry>
+              <entry>
+                decrease delay between each image
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>left-click</emphasis> or <emphasis>right</emphasis> or <emphasis>shift-right</emphasis>
               </entry>
               <entry>
                 switch to the next image of the collection
@@ -74,7 +90,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>right-click</emphasis>
+                <emphasis>right-click</emphasis> or <emphasis>left</emphasis> or <emphasis>shift-left</emphasis>
               </entry>
               <entry>
                 switch to the previous image of the collection
@@ -86,7 +102,7 @@
               </entry>
               <entry>
                 start and stop auto-advance mode which automatically switches to the next images
-                every five seconds and after the last image loops back to the beginning
+                every five seconds by default.
               </entry>
             </row>
             <row>
