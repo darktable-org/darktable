@@ -2956,6 +2956,7 @@ void init(dt_iop_module_t *module)
   }
   tmp.fix_anscombe_and_nlmeans_norm = TRUE;
   tmp.wb_adaptive_anscombe = TRUE;
+  tmp.upgrade_vst = TRUE;
   memcpy(module->params, &tmp, sizeof(dt_iop_denoiseprofile_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_denoiseprofile_params_t));
 }
@@ -3145,6 +3146,9 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
       gtk_widget_hide(g->box_wavelets);
       gtk_widget_hide(g->box_variance);
       gtk_widget_show_all(g->box_nlm);
+      gtk_widget_set_visible(g->radius, FALSE);
+      gtk_widget_set_visible(g->nbhood, FALSE);
+      gtk_widget_set_visible(g->scattering, FALSE);
       break;
     case 2:
       p->mode = MODE_WAVELETS;
@@ -3165,7 +3169,10 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
       gtk_widget_show_all(g->box_variance);
       break;
   }
-  gtk_widget_set_visible(g->overshooting, (p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO));
+  gboolean auto_mode = (p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO);
+  gtk_widget_set_visible(g->shadows, !auto_mode);
+  gtk_widget_set_visible(g->bias, !auto_mode);
+  gtk_widget_set_visible(g->overshooting, auto_mode);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -3253,6 +3260,9 @@ void gui_update(dt_iop_module_t *self)
       gtk_widget_hide(g->box_wavelets);
       gtk_widget_hide(g->box_variance);
       gtk_widget_show_all(g->box_nlm);
+      gtk_widget_set_visible(g->radius, FALSE);
+      gtk_widget_set_visible(g->nbhood, FALSE);
+      gtk_widget_set_visible(g->scattering, FALSE);
       break;
     case MODE_WAVELETS:
       combobox_index = 2;
@@ -3278,7 +3288,10 @@ void gui_update(dt_iop_module_t *self)
       break;
   }
   dt_bauhaus_combobox_set(g->mode, combobox_index);
-  gtk_widget_set_visible(g->overshooting, (p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO));
+  gboolean auto_mode = (p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO);
+  gtk_widget_set_visible(g->shadows, !auto_mode);
+  gtk_widget_set_visible(g->bias, !auto_mode);
+  gtk_widget_set_visible(g->overshooting, auto_mode);
   if(p->a[0] == -1.0)
   {
     dt_bauhaus_combobox_set(g->profile, 0);
