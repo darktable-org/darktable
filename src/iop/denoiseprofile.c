@@ -3264,7 +3264,7 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->radius, p->radius);
   dt_bauhaus_slider_set(g->nbhood, p->nbhood);
   dt_bauhaus_slider_set_soft(g->strength, p->strength);
-  dt_bauhaus_slider_set(g->overshooting, p->overshooting);
+  dt_bauhaus_slider_set_soft(g->overshooting, p->overshooting);
   dt_bauhaus_slider_set(g->shadows, p->shadows);
   dt_bauhaus_slider_set_soft(g->bias, p->bias);
   dt_bauhaus_slider_set_soft(g->scattering, p->scattering);
@@ -3326,10 +3326,6 @@ void gui_update(dt_iop_module_t *self)
     dt_bauhaus_slider_set(g->bias, infer_bias_from_profile(a * gain));
   }
   dt_bauhaus_combobox_set(g->mode, combobox_index);
-  gboolean auto_mode = (p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO);
-  gtk_widget_set_visible(g->shadows, !auto_mode);
-  gtk_widget_set_visible(g->bias, !auto_mode);
-  gtk_widget_set_visible(g->overshooting, auto_mode);
   if(p->a[0] == -1.0)
   {
     dt_bauhaus_combobox_set(g->profile, 0);
@@ -3353,8 +3349,10 @@ void gui_update(dt_iop_module_t *self)
   gtk_widget_set_visible(g->fix_anscombe_and_nlmeans_norm, !p->fix_anscombe_and_nlmeans_norm);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->upgrade_vst), p->upgrade_vst);
   gtk_widget_set_visible(g->upgrade_vst, !p->upgrade_vst);
-  gtk_widget_set_visible(g->shadows, p->upgrade_vst);
-  gtk_widget_set_visible(g->bias, p->upgrade_vst);
+  gboolean auto_mode = (p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO);
+  gtk_widget_set_visible(g->overshooting, auto_mode);
+  gtk_widget_set_visible(g->shadows, p->upgrade_vst && !auto_mode);
+  gtk_widget_set_visible(g->bias, p->upgrade_vst && !auto_mode);
 }
 
 void gui_reset(dt_iop_module_t *self)
@@ -3745,8 +3743,9 @@ static void upgrade_vst_callback(GtkWidget *widget, dt_iop_module_t *self)
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   p->upgrade_vst = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  gtk_widget_set_visible(g->shadows, p->upgrade_vst);
-  gtk_widget_set_visible(g->bias, p->upgrade_vst);
+  gboolean auto_mode = (p->mode == MODE_NLMEANS_AUTO) || (p->mode == MODE_WAVELETS_AUTO);
+  gtk_widget_set_visible(g->shadows, p->upgrade_vst && !auto_mode);
+  gtk_widget_set_visible(g->bias, p->upgrade_vst && !auto_mode);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
@@ -3763,6 +3762,7 @@ void gui_init(dt_iop_module_t *self)
   g->strength = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 3);
   dt_bauhaus_slider_enable_soft_boundaries(g->strength, 0.001f, 1000.0f);
   g->overshooting = dt_bauhaus_slider_new_with_range(self, 0.001f, 4.0f, .05, 1.f, 2);
+  dt_bauhaus_slider_enable_soft_boundaries(g->overshooting, 0.001f, 1000.0f);
   g->shadows = dt_bauhaus_slider_new_with_range(self, 0.0f, 1.8f, .05, 1.f, 2);
   g->bias = dt_bauhaus_slider_new_with_range(self, -10.0f, 10.0f, 1.0f, 0.f, 1);
   dt_bauhaus_slider_enable_soft_boundaries(g->bias, -1000.0f, 1000.0f);
@@ -3903,7 +3903,6 @@ void gui_init(dt_iop_module_t *self)
                                                 "differences in the images already processed."));
   gtk_box_pack_start(GTK_BOX(self->widget), g->upgrade_vst, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->upgrade_vst), "toggled", G_CALLBACK(upgrade_vst_callback), self);
-
 
   gtk_widget_show_all(g->box_nlm);
   gtk_widget_show_all(g->box_wavelets);
