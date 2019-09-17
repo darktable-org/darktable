@@ -324,11 +324,10 @@ denoiseprofile_finish_v2(read_only image2d_t in, global float4* U2, write_only i
 
   float4 px = ((float4)u2.w > (float4)0.0f ? u2/u2.w : (float4)0.0f);
 
-  float4 a0 = 2.0f / (sqrt(a) * (2.0f - p));
-  float4 a1 = (1.0f + p / 2.0f) / (2.0f * a0 * a0 * (1.0f - p / 2.0f) / a);
-  float4 delta = px * px + a * 2000.0f * (float4)bias + 15.0f * 4.0f * a0 * a1;
-  float4 z = (px + sqrt(fmax((float4)0.0f, delta))) / (2.0f * a0);
-  px = native_powr(z, 1.0f / (1.0f - p / 2.0f)) - b;
+  float4 delta = px * px + (float4)bias;
+  float4 denominator = 4.0f / (sqrt(a) * (2.0f - p));
+  float4 z1 = (px + sqrt(fmax((float4)0.0f, delta))) / denominator;
+  px = native_powr(z1, 1.0f / (1.0f - p / 2.0f)) - b;
   px = px * wb;
   px.w = alpha;
 
@@ -373,11 +372,10 @@ denoiseprofile_backtransform_v2(read_only image2d_t in, write_only image2d_t out
   float4 px = read_imagef(in, sampleri, (int2)(x, y));
   float alpha = px.w;
 
-  float4 a0 = 2.0f / (sqrt(a) * (2.0f - p));
-  float4 a1 = (1.0f + p / 2.0f) / (2.0f * a0 * a0 * (1.0f - p / 2.0f) / a);
-  float4 delta = px * px + a * 2000.0f * (float4)bias + 15.0f * 4.0f * a0 * a1;
-  float4 z = (px + sqrt(fmax((float4)0.0f, delta))) / (2.0f * a0);
-  px = native_powr(z, 1.0f / (1.0f - p / 2.0f)) - b;
+  float4 delta = px * px + (float4)bias;
+  float4 denominator = 4.0f / (sqrt(a) * (2.0f - p));
+  float4 z1 = (px + sqrt(fmax((float4)0.0f, delta))) / denominator;
+  px = native_powr(z1, 1.0f / (1.0f - p / 2.0f)) - b;
   px = px * wb;
   px.w = alpha;
 
