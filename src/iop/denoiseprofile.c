@@ -3235,10 +3235,22 @@ static void overshooting_callback(GtkWidget *w, dt_iop_module_t *self)
     dt_noiseprofile_t interpolated = dt_iop_denoiseprofile_get_auto_profile(self);
     a = interpolated.a[1];
   }
+  // set the sliders as visible while we are setting their values
+  // otherwise a log message appears
+  gtk_widget_set_visible(g->radius, TRUE);
+  gtk_widget_set_visible(g->scattering, TRUE);
+  gtk_widget_set_visible(g->shadows, TRUE);
+  gtk_widget_set_visible(g->bias, TRUE);
   dt_bauhaus_slider_set_soft(g->radius, infer_radius_from_profile(a * gain));
   dt_bauhaus_slider_set_soft(g->scattering, infer_scattering_from_profile(a * gain));
   dt_bauhaus_slider_set(g->shadows, infer_shadows_from_profile(a * gain));
   dt_bauhaus_slider_set(g->bias, infer_bias_from_profile(a * gain));
+  // set back the sliders to invisible
+  gtk_widget_set_visible(g->radius, FALSE);
+  gtk_widget_set_visible(g->scattering, FALSE);
+  gtk_widget_set_visible(g->shadows, FALSE);
+  gtk_widget_set_visible(g->bias, FALSE);
+
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
