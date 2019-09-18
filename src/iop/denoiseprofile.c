@@ -485,10 +485,10 @@ void init_presets(dt_iop_module_so_t *self)
 {
   // these blobs were exported as dtstyle and copied from there:
   add_preset(self, _("chroma (use on 1st instance)"),
-             "gz03eJxjYGiwZ2B44MAApmGgYf+22P2WdQpGVtxijKbJe3lMs3bfNWFEyNsBCaB6B3uEPvLExKP+2XUv/2dnxslqf+Cdsb3skXp7iDx5GORGEAYAkHIf3g==", 7,
+             "gz03eJxjYGiwZ2B44MAApkEYGYDF9m+L3W9Zp2BkxS3GaJq8l8c0a/ddE0aEGjsgAVTngKSfPDHxqH923cv/2ZlxstofeGdsL3uk3h4iTx4GuRGGAWheIV0=", 8,
              "gz12eJxjZGBgEGYAgRNODESDBnsIHll8AM62GP8=", 7);
   add_preset(self, _("luma (use on 2nd instance)"),
-             "gz03eJxjYGiwZ2B44DBr5kw7Bjho2O9nGWDpPnef5SU9VdNEjucm4ZnWpowIeZBaoD4HIAbpJ1/M78Ef2xOq2na/yxfaGWb/sCtsXQqVJxszgNwJAATFIno=", 7,
+             "gz03eJxjYGiwZ2B44DBr5kw7BjAbGYD4Dfv9LAMs3efus7ykp2qayPHcJDzT2pQRoQaojwGozsEeoZ88Mb8Hf2xPqGrb/S5faGeY/cOusHUpVJ5szMAIxQD2liP5", 8,
              "gz12eJxjZGBgEGAAgR4nBqJBgz0Ejyw+AIdGGMA=", 7);
 }
 
