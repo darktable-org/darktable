@@ -674,6 +674,7 @@ static void _update_collected_images(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
   sqlite3_stmt *stmt;
   int32_t min_before = 0, min_after = -1;
+  int32_t cur_rowid = -1;
 
   /* check if we can get a query from collection */
   gchar *query = g_strdup(dt_collection_get_query(darktable.collection));
@@ -683,7 +684,7 @@ static void _update_collected_images(dt_view_t *self)
   // a temporary (in-memory) table (collected_images).
   //
   // 0. get current lower rowid
-  if (lib->full_preview_id != -1)
+  if(lib->full_preview_id != -1 || lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT MIN(rowid) FROM memory.collected_images",
                                 -1, &stmt, NULL);
@@ -692,6 +693,19 @@ static void _update_collected_images(dt_view_t *self)
       min_before = sqlite3_column_int(stmt, 0);
     }
     sqlite3_finalize(stmt);
+  }
+
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING && lib->slots_count == 1)
+  {
+    gchar *query2
+        = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid=%d", lib->slots[0].imgid);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query2, -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      cur_rowid = sqlite3_column_int(stmt, 0);
+    }
+    sqlite3_finalize(stmt);
+    g_free(query2);
   }
 
   // 1. drop previous data
@@ -742,6 +756,22 @@ static void _update_collected_images(dt_view_t *self)
         lib->full_preview_id = sqlite3_column_int(stmt, 0);
         dt_control_set_mouse_over_id(lib->full_preview_id);
       }
+    }
+    sqlite3_finalize(stmt);
+  }
+
+  if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING && lib->slots_count == 1)
+  {
+    // note that this adjustment is needed as for a memory table the rowid doesn't start to 1 after the DELETE
+    // above, but rowid is incremented each time we INSERT.
+    cur_rowid += (min_after - min_before);
+
+    char col_query[128] = { 0 };
+    snprintf(col_query, sizeof(col_query), "SELECT imgid FROM memory.collected_images WHERE rowid=%d", cur_rowid);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), col_query, -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      lib->slots[0].imgid = sqlite3_column_int(stmt, 0);
     }
     sqlite3_finalize(stmt);
   }
