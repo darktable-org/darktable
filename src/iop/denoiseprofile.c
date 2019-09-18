@@ -3237,17 +3237,28 @@ static void overshooting_callback(GtkWidget *w, dt_iop_module_t *self)
   }
   // set the sliders as visible while we are setting their values
   // otherwise a log message appears
-  gtk_widget_set_visible(g->radius, TRUE);
-  gtk_widget_set_visible(g->scattering, TRUE);
+  if(p->mode == MODE_NLMEANS_AUTO)
+  {
+    gtk_widget_set_visible(g->radius, TRUE);
+    gtk_widget_set_visible(g->scattering, TRUE);
+    dt_bauhaus_slider_set_soft(g->radius, infer_radius_from_profile(a * gain));
+    dt_bauhaus_slider_set_soft(g->scattering, infer_scattering_from_profile(a * gain));
+    gtk_widget_set_visible(g->radius, FALSE);
+    gtk_widget_set_visible(g->scattering, FALSE);
+  }
+  else
+  {
+    // we are in wavelets mode.
+    // we need to show the box_nlm, setting the sliders to visible is not enough
+    gtk_widget_show_all(g->box_nlm);
+    dt_bauhaus_slider_set_soft(g->radius, infer_radius_from_profile(a * gain));
+    dt_bauhaus_slider_set_soft(g->scattering, infer_scattering_from_profile(a * gain));
+    gtk_widget_hide(g->box_nlm);
+  }
   gtk_widget_set_visible(g->shadows, TRUE);
   gtk_widget_set_visible(g->bias, TRUE);
-  dt_bauhaus_slider_set_soft(g->radius, infer_radius_from_profile(a * gain));
-  dt_bauhaus_slider_set_soft(g->scattering, infer_scattering_from_profile(a * gain));
   dt_bauhaus_slider_set(g->shadows, infer_shadows_from_profile(a * gain));
   dt_bauhaus_slider_set(g->bias, infer_bias_from_profile(a * gain));
-  // set back the sliders to invisible
-  gtk_widget_set_visible(g->radius, FALSE);
-  gtk_widget_set_visible(g->scattering, FALSE);
   gtk_widget_set_visible(g->shadows, FALSE);
   gtk_widget_set_visible(g->bias, FALSE);
 
