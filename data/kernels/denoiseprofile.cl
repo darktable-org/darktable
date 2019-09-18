@@ -21,9 +21,9 @@
 
 
 
-/* 
-    To speed up processing we use an algorithm proposed by B. Goossens, H.Q. Luong, J. Aelterman, A. Pizurica,  and W. Philips, 
-    "A GPU-Accelerated Real-Time NLMeans Algorithm for Denoising Color Video Sequences", in Proc. ACIVS (2), 2010, pp.46-57. 
+/*
+    To speed up processing we use an algorithm proposed by B. Goossens, H.Q. Luong, J. Aelterman, A. Pizurica,  and W. Philips,
+    "A GPU-Accelerated Real-Time NLMeans Algorithm for Denoising Color Video Sequences", in Proc. ACIVS (2), 2010, pp.46-57.
 */
 
 float fast_mexp2f(const float x)
@@ -83,7 +83,7 @@ denoiseprofile_precondition_v2(read_only image2d_t in, write_only image2d_t out,
 
   write_imagef (out, (int2)(x, y), t);
 }
-             
+
 
 kernel void
 denoiseprofile_init(global float4* out, const int width, const int height)
@@ -96,10 +96,10 @@ denoiseprofile_init(global float4* out, const int width, const int height)
 
   out[gidx] = (float4)0.0f;
 }
-              
+
 
 kernel void
-denoiseprofile_dist(read_only image2d_t in, global float* U4, const int width, const int height, 
+denoiseprofile_dist(read_only image2d_t in, global float* U4, const int width, const int height,
              const int2 q)
 {
   const int x = get_global_id(0);
@@ -127,7 +127,7 @@ denoiseprofile_dist(read_only image2d_t in, global float* U4, const int width, c
 }
 
 kernel void
-denoiseprofile_horiz(global float* U4_in, global float* U4_out, const int width, const int height, 
+denoiseprofile_horiz(global float* U4_in, global float* U4_out, const int width, const int height,
               const int2 q, const int P, local float *buffer)
 {
   const int lid = get_local_id(0);
@@ -151,7 +151,7 @@ denoiseprofile_horiz(global float* U4_in, global float* U4_out, const int width,
       xx = max(xx, 0);
       buffer[P - l] = U4_in[mad24(y, width, xx)];
     }
-    
+
     /* right wing of buffer */
     for(int n=0; n <= P/lsz; n++)
     {
@@ -299,7 +299,7 @@ denoiseprofile_finish(read_only image2d_t in, global float4* U2, write_only imag
 
   float4 px = ((float4)u2.w > (float4)0.0f ? u2/u2.w : (float4)0.0f);
 
-  px = (px < (float4)0.5f ? (float4)0.0f : 
+  px = (px < (float4)0.5f ? (float4)0.0f :
     0.25f*px*px + 0.25f*sqrt(1.5f)/px - 1.375f/(px*px) + 0.625f*sqrt(1.5f)/(px*px*px) - 0.125f - sigma2);
 
   px *= a;
@@ -349,7 +349,7 @@ denoiseprofile_backtransform(read_only image2d_t in, write_only image2d_t out, c
   float4 px = read_imagef(in, sampleri, (int2)(x, y));
   const float alpha = px.w;
 
-  px = (px < (float4)0.5f ? (float4)0.0f : 
+  px = (px < (float4)0.5f ? (float4)0.0f :
     0.25f*px*px + 0.25f*sqrt(1.5f)/px - 1.375f/(px*px) + 0.625f*sqrt(1.5f)/(px*px*px) - 0.125f - sigma2);
 
   px *= a;
@@ -433,7 +433,7 @@ denoiseprofile_decompose(read_only image2d_t in, write_only image2d_t coarse, wr
 
 
 kernel void
-denoiseprofile_synthesize(read_only image2d_t coarse, read_only image2d_t detail, write_only image2d_t out, 
+denoiseprofile_synthesize(read_only image2d_t coarse, read_only image2d_t detail, write_only image2d_t out,
      const int width, const int height,
      const float t0, const float t1, const float t2, const float t3,
      const float b0, const float b1, const float b2, const float b3)
@@ -455,7 +455,7 @@ denoiseprofile_synthesize(read_only image2d_t coarse, read_only image2d_t detail
 
 
 kernel void
-denoiseprofile_reduce_first(read_only image2d_t in, const int width, const int height, 
+denoiseprofile_reduce_first(read_only image2d_t in, const int width, const int height,
                             global float4 *accu, local float4 *buffer)
 {
   const int x = get_global_id(0);
@@ -494,7 +494,7 @@ denoiseprofile_reduce_first(read_only image2d_t in, const int width, const int h
 }
 
 
-kernel void 
+kernel void
 denoiseprofile_reduce_second(const global float4* input, global float4 *result, const int length, local float4 *buffer)
 {
   int x = get_global_id(0);
@@ -506,7 +506,7 @@ denoiseprofile_reduce_second(const global float4* input, global float4 *result, 
 
     x += get_global_size(0);
   }
-  
+
   int lid = get_local_id(0);
   buffer[lid] = sum_y2;
 
