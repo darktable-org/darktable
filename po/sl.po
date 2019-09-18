@@ -1,8 +1,8 @@
-# # Slovenian translation for Darktable
+# # Slovenian translation for darktable
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 #
-# opombe ob prevodu Darktable ver 1 in 2
+# opombe ob prevodu DarkTable ver 1 in 2
 #  prvi osnutek slovenskega prevoda
 #  nisem prepričan o najboljših terminih za naslednje angleške pojme
 #
@@ -49,13 +49,15 @@
 # tiling = prekrivanje
 # warp = zvitek, izkrivljenje, popačenje, osnova (pri tkanju)
 #
+# ne pozabi na Style Guide Slovenian (sl) https://mozilla-l10n.github.io/styleguides/sl/
+#
 # Matjaž Jeran <matjaz.jeran@amis.net>, 2015-2019.
 msgid ""
 msgstr ""
-"Project-Id-Version: Darktable 2.7.0\n"
+"Project-Id-Version: darktable 2.7.0\n"
 "Report-Msgid-Bugs-To: matjaz.jeran@amis.net\n"
-"POT-Creation-Date: 2019-08-09 08:53+0200\n"
-"PO-Revision-Date: 2019-08-09 10:37+0200\n"
+"POT-Creation-Date: 2019-09-16 11:05+0200\n"
+"PO-Revision-Date: 2019-09-18 12:42+0200\n"
 "Last-Translator: Matjaž Jeran <matjaz.jeran@amis.net>\n"
 "Language-Team: Slovenian <lugos-slo@lugos.si>\n"
 "Language: sl\n"
@@ -66,72 +68,74 @@ msgstr ""
 "%100==4 ? 2 : 3);\n"
 "X-Generator: Poedit 2.2.1\n"
 
-#: ../build/src/preferences_gen.h:2080
+#: ../build/src/preferences_gen.h:2155
 msgid "GUI options"
 msgstr "Možnosti grafičnega vmesnika"
 
-#: ../build/src/preferences_gen.h:2083 ../src/libs/import.c:107
+#: ../build/src/preferences_gen.h:2158 ../src/libs/import.c:107
 msgid "import"
 msgstr "uvozi"
 
-#: ../build/src/preferences_gen.h:2094
+#: ../build/src/preferences_gen.h:2169
 msgid "ignore JPEG images when importing film rolls"
 msgstr "izpusti slike v formatu JPEG kadar uvažaš zvitke filmov"
 
-#: ../build/src/preferences_gen.h:2103 ../build/src/preferences_gen.h:2123
-#: ../build/src/preferences_gen.h:2146 ../build/src/preferences_gen.h:2169
-#: ../build/src/preferences_gen.h:2192 ../build/src/preferences_gen.h:2215
-#: ../build/src/preferences_gen.h:2274 ../build/src/preferences_gen.h:2351
-#: ../build/src/preferences_gen.h:2371 ../build/src/preferences_gen.h:2391
-#: ../build/src/preferences_gen.h:2411 ../build/src/preferences_gen.h:2431
-#: ../build/src/preferences_gen.h:2451 ../build/src/preferences_gen.h:2524
-#: ../build/src/preferences_gen.h:2571 ../build/src/preferences_gen.h:2613
-#: ../build/src/preferences_gen.h:2637 ../build/src/preferences_gen.h:2694
-#: ../build/src/preferences_gen.h:2740 ../build/src/preferences_gen.h:2759
-#: ../build/src/preferences_gen.h:2779 ../build/src/preferences_gen.h:2799
-#: ../build/src/preferences_gen.h:2857 ../build/src/preferences_gen.h:2904
-#: ../build/src/preferences_gen.h:2935 ../build/src/preferences_gen.h:2955
-#: ../build/src/preferences_gen.h:2975 ../build/src/preferences_gen.h:2995
-#: ../build/src/preferences_gen.h:3015 ../build/src/preferences_gen.h:3035
-#: ../build/src/preferences_gen.h:3055 ../build/src/preferences_gen.h:3074
-#: ../build/src/preferences_gen.h:3157 ../build/src/preferences_gen.h:3203
-#: ../build/src/preferences_gen.h:3223 ../build/src/preferences_gen.h:3243
-#: ../build/src/preferences_gen.h:3263 ../build/src/preferences_gen.h:3310
-#: ../build/src/preferences_gen.h:3330 ../build/src/preferences_gen.h:3377
-#: ../build/src/preferences_gen.h:3433 ../build/src/preferences_gen.h:3453
-#: ../build/src/preferences_gen.h:3473 ../build/src/preferences_gen.h:3520
-#: ../build/src/preferences_gen.h:3572 ../build/src/preferences_gen.h:3592
-#: ../build/src/preferences_gen.h:3612 ../build/src/preferences_gen.h:3632
-#: ../build/src/preferences_gen.h:3663 ../build/src/preferences_gen.h:3710
-#: ../build/src/preferences_gen.h:3730 ../build/src/preferences_gen.h:3769
-#: ../build/src/preferences_gen.h:3789 ../build/src/preferences_gen.h:3809
-#: ../build/src/preferences_gen.h:3912 ../build/src/preferences_gen.h:3967
-#: ../build/src/preferences_gen.h:4006 ../build/src/preferences_gen.h:4060
-#: ../build/src/preferences_gen.h:4084 ../build/src/preferences_gen.h:4109
-#: ../build/src/preferences_gen.h:4158 ../build/src/preferences_gen.h:4182
-#: ../build/src/preferences_gen.h:4206 ../src/lua/preferences.c:619
-#: ../src/lua/preferences.c:634 ../src/lua/preferences.c:646
-#: ../src/lua/preferences.c:658 ../src/lua/preferences.c:674
-#: ../src/lua/preferences.c:738
+#: ../build/src/preferences_gen.h:2178 ../build/src/preferences_gen.h:2198
+#: ../build/src/preferences_gen.h:2221 ../build/src/preferences_gen.h:2244
+#: ../build/src/preferences_gen.h:2267 ../build/src/preferences_gen.h:2290
+#: ../build/src/preferences_gen.h:2349 ../build/src/preferences_gen.h:2426
+#: ../build/src/preferences_gen.h:2446 ../build/src/preferences_gen.h:2466
+#: ../build/src/preferences_gen.h:2486 ../build/src/preferences_gen.h:2506
+#: ../build/src/preferences_gen.h:2526 ../build/src/preferences_gen.h:2599
+#: ../build/src/preferences_gen.h:2646 ../build/src/preferences_gen.h:2688
+#: ../build/src/preferences_gen.h:2712 ../build/src/preferences_gen.h:2769
+#: ../build/src/preferences_gen.h:2815 ../build/src/preferences_gen.h:2834
+#: ../build/src/preferences_gen.h:2854 ../build/src/preferences_gen.h:2874
+#: ../build/src/preferences_gen.h:2932 ../build/src/preferences_gen.h:2979
+#: ../build/src/preferences_gen.h:3010 ../build/src/preferences_gen.h:3030
+#: ../build/src/preferences_gen.h:3050 ../build/src/preferences_gen.h:3070
+#: ../build/src/preferences_gen.h:3090 ../build/src/preferences_gen.h:3110
+#: ../build/src/preferences_gen.h:3130 ../build/src/preferences_gen.h:3149
+#: ../build/src/preferences_gen.h:3232 ../build/src/preferences_gen.h:3278
+#: ../build/src/preferences_gen.h:3298 ../build/src/preferences_gen.h:3318
+#: ../build/src/preferences_gen.h:3338 ../build/src/preferences_gen.h:3385
+#: ../build/src/preferences_gen.h:3405 ../build/src/preferences_gen.h:3452
+#: ../build/src/preferences_gen.h:3508 ../build/src/preferences_gen.h:3528
+#: ../build/src/preferences_gen.h:3548 ../build/src/preferences_gen.h:3595
+#: ../build/src/preferences_gen.h:3647 ../build/src/preferences_gen.h:3667
+#: ../build/src/preferences_gen.h:3687 ../build/src/preferences_gen.h:3707
+#: ../build/src/preferences_gen.h:3738 ../build/src/preferences_gen.h:3785
+#: ../build/src/preferences_gen.h:3805 ../build/src/preferences_gen.h:3844
+#: ../build/src/preferences_gen.h:3864 ../build/src/preferences_gen.h:3884
+#: ../build/src/preferences_gen.h:3987 ../build/src/preferences_gen.h:4042
+#: ../build/src/preferences_gen.h:4081 ../build/src/preferences_gen.h:4101
+#: ../build/src/preferences_gen.h:4121 ../build/src/preferences_gen.h:4141
+#: ../build/src/preferences_gen.h:4195 ../build/src/preferences_gen.h:4219
+#: ../build/src/preferences_gen.h:4244 ../build/src/preferences_gen.h:4293
+#: ../build/src/preferences_gen.h:4317 ../build/src/preferences_gen.h:4341
+#: ../src/lua/preferences.c:619 ../src/lua/preferences.c:634
+#: ../src/lua/preferences.c:646 ../src/lua/preferences.c:658
+#: ../src/lua/preferences.c:674 ../src/lua/preferences.c:738
 #, c-format
 msgid "double click to reset to `%s'"
 msgstr "dvokliknite da bi ponovno nastavili na '%s'"
 
-#: ../build/src/preferences_gen.h:2103 ../build/src/preferences_gen.h:2123
-#: ../build/src/preferences_gen.h:2274 ../build/src/preferences_gen.h:2371
-#: ../build/src/preferences_gen.h:2391 ../build/src/preferences_gen.h:2411
-#: ../build/src/preferences_gen.h:2431 ../build/src/preferences_gen.h:2451
-#: ../build/src/preferences_gen.h:2779 ../build/src/preferences_gen.h:2857
-#: ../build/src/preferences_gen.h:3035 ../build/src/preferences_gen.h:3243
-#: ../build/src/preferences_gen.h:3263 ../build/src/preferences_gen.h:3453
-#: ../build/src/preferences_gen.h:3612 ../build/src/preferences_gen.h:3632
-#: ../build/src/preferences_gen.h:3730 ../build/src/preferences_gen.h:3809
-#: ../build/src/preferences_gen.h:4006
+#: ../build/src/preferences_gen.h:2178 ../build/src/preferences_gen.h:2198
+#: ../build/src/preferences_gen.h:2349 ../build/src/preferences_gen.h:2446
+#: ../build/src/preferences_gen.h:2466 ../build/src/preferences_gen.h:2486
+#: ../build/src/preferences_gen.h:2506 ../build/src/preferences_gen.h:2526
+#: ../build/src/preferences_gen.h:2854 ../build/src/preferences_gen.h:2932
+#: ../build/src/preferences_gen.h:3110 ../build/src/preferences_gen.h:3318
+#: ../build/src/preferences_gen.h:3338 ../build/src/preferences_gen.h:3528
+#: ../build/src/preferences_gen.h:3687 ../build/src/preferences_gen.h:3707
+#: ../build/src/preferences_gen.h:3805 ../build/src/preferences_gen.h:3884
+#: ../build/src/preferences_gen.h:4081 ../build/src/preferences_gen.h:4101
+#: ../build/src/preferences_gen.h:4121 ../build/src/preferences_gen.h:4141
 msgctxt "preferences"
 msgid "FALSE"
 msgstr "onemogočeno"
 
-#: ../build/src/preferences_gen.h:2106
+#: ../build/src/preferences_gen.h:2181
 msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
@@ -139,54 +143,54 @@ msgstr ""
 "kadar imate surove in JPEG slike skupaj v eni mapi, nima smisla uvažati obeh. "
 "s tem stikalom preskočite uvoz slik v JPEG."
 
-#: ../build/src/preferences_gen.h:2114
+#: ../build/src/preferences_gen.h:2189
 msgid "recursive directory traversal when importing filmrolls"
 msgstr "rekurzivni sprehod po mapah kadar uvažam zvitke filmov"
 
-#: ../build/src/preferences_gen.h:2133
+#: ../build/src/preferences_gen.h:2208
 msgid "creator to be applied when importing"
 msgstr "tvorec slik, ki naj bo označen po uvažanju"
 
-#: ../build/src/preferences_gen.h:2156
+#: ../build/src/preferences_gen.h:2231
 msgid "publisher to be applied when importing"
 msgstr "izdajatelj slik, ki naj bo označen po uvažanju"
 
-#: ../build/src/preferences_gen.h:2179
+#: ../build/src/preferences_gen.h:2254
 msgid "rights to be applied when importing"
 msgstr "avtorske pravice slik, ki naj bo označene po uvažanju"
 
-#: ../build/src/preferences_gen.h:2202
+#: ../build/src/preferences_gen.h:2277
 msgid "comma separated tags to be applied when importing"
 msgstr "značke ločene s presledki na slikah, ki naj bodo označene po uvažanju"
 
-#: ../build/src/preferences_gen.h:2225
+#: ../build/src/preferences_gen.h:2300
 msgid "initial import rating"
 msgstr "začetna ocena uvoženih slik"
 
-#: ../build/src/preferences_gen.h:2243 ../build/src/preferences_gen.h:2826
-#: ../build/src/preferences_gen.h:2884 ../build/src/preferences_gen.h:3111
-#: ../build/src/preferences_gen.h:3138 ../build/src/preferences_gen.h:3183
-#: ../build/src/preferences_gen.h:3836 ../build/src/preferences_gen.h:3863
-#: ../build/src/preferences_gen.h:3892 ../src/lua/preferences.c:697
+#: ../build/src/preferences_gen.h:2318 ../build/src/preferences_gen.h:2901
+#: ../build/src/preferences_gen.h:2959 ../build/src/preferences_gen.h:3186
+#: ../build/src/preferences_gen.h:3213 ../build/src/preferences_gen.h:3258
+#: ../build/src/preferences_gen.h:3911 ../build/src/preferences_gen.h:3938
+#: ../build/src/preferences_gen.h:3967 ../src/lua/preferences.c:697
 #, c-format
 msgid "double click to reset to `%d'"
 msgstr "dvokliknite za ponovno nastavitev na '%d'"
 
-#: ../build/src/preferences_gen.h:2246
+#: ../build/src/preferences_gen.h:2321
 msgid "initial star rating for all images when importing a filmroll"
 msgstr "začetna ocena slik v zvezdicah po uvozu zvitka filma"
 
-#: ../build/src/preferences_gen.h:2254 ../src/libs/tools/lighttable.c:89
+#: ../build/src/preferences_gen.h:2329 ../src/libs/tools/lighttable.c:89
 #: ../src/views/lighttable.c:249
 msgid "lighttable"
 msgstr "osvetljena podlaga"
 
-#: ../build/src/preferences_gen.h:2265
+#: ../build/src/preferences_gen.h:2340
 msgid "don't use embedded preview JPEG but half-size raw"
 msgstr ""
 "ne uporabljajte vgrajenega predogleda JPEG ampak polovico velikosti surovega"
 
-#: ../build/src/preferences_gen.h:2277
+#: ../build/src/preferences_gen.h:2352
 msgid ""
 "check this option to not use the embedded JPEG from the raw file but process "
 "the raw data. this is slower but gives you color managed thumbnails."
@@ -195,56 +199,56 @@ msgstr ""
 "ampak se obdela slika v surovem formatu. To je počasnejše, a rezultat je "
 "predogledna sličica v kontroliranih barvah."
 
-#: ../build/src/preferences_gen.h:2285
+#: ../build/src/preferences_gen.h:2360
 msgid "high quality thumb processing from size"
 msgstr "visoko kakovostna obdelava predoglednih sličic"
 
-#: ../build/src/preferences_gen.h:2296 ../build/src/preferences_gen.h:3690
+#: ../build/src/preferences_gen.h:2371 ../build/src/preferences_gen.h:3765
 msgctxt "preferences"
 msgid "always"
 msgstr "vedno"
 
-#: ../build/src/preferences_gen.h:2301
+#: ../build/src/preferences_gen.h:2376
 msgctxt "preferences"
 msgid "small"
 msgstr "majhno"
 
-#: ../build/src/preferences_gen.h:2306
+#: ../build/src/preferences_gen.h:2381
 msgctxt "preferences"
 msgid "VGA"
 msgstr "VGA"
 
-#: ../build/src/preferences_gen.h:2311 ../build/src/preferences_gen.h:2351
+#: ../build/src/preferences_gen.h:2386 ../build/src/preferences_gen.h:2426
 msgctxt "preferences"
 msgid "720p"
 msgstr "720p"
 
-#: ../build/src/preferences_gen.h:2316
+#: ../build/src/preferences_gen.h:2391
 msgctxt "preferences"
 msgid "1080p"
 msgstr "1080p"
 
-#: ../build/src/preferences_gen.h:2321
+#: ../build/src/preferences_gen.h:2396
 msgctxt "preferences"
 msgid "WQXGA"
 msgstr "WQXGA"
 
-#: ../build/src/preferences_gen.h:2326
+#: ../build/src/preferences_gen.h:2401
 msgctxt "preferences"
 msgid "4K"
 msgstr "4K"
 
-#: ../build/src/preferences_gen.h:2331
+#: ../build/src/preferences_gen.h:2406
 msgctxt "preferences"
 msgid "5K"
 msgstr "5K"
 
-#: ../build/src/preferences_gen.h:2336 ../build/src/preferences_gen.h:3685
+#: ../build/src/preferences_gen.h:2411 ../build/src/preferences_gen.h:3760
 msgctxt "preferences"
 msgid "never"
 msgstr "nikoli"
 
-#: ../build/src/preferences_gen.h:2354
+#: ../build/src/preferences_gen.h:2429
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "the full quality rendering path (better but slower)."
@@ -252,21 +256,21 @@ msgstr ""
 "če je velikost predogledne sličice večja od te vrednosti, bi sličica izdelana "
 "mape, kjer so iz najkakovostnejši originali (bolje a počasnejše)."
 
-#: ../build/src/preferences_gen.h:2362
+#: ../build/src/preferences_gen.h:2437
 msgid "enable extended thumb overlay"
 msgstr "omogoči razširjeno plast predogledne sličice"
 
-#: ../build/src/preferences_gen.h:2374
+#: ../build/src/preferences_gen.h:2449
 msgid "if set to true, thumb overlay shows filename and some exif data."
 msgstr ""
 "če je vklopljeno, predogledna plast prikazuje ime datoteke in nekaj podatkov "
 "exifa."
 
-#: ../build/src/preferences_gen.h:2382
+#: ../build/src/preferences_gen.h:2457
 msgid "use single-click in the collect panel"
 msgstr "uporabite enojni klik v panoju zbirke"
 
-#: ../build/src/preferences_gen.h:2394
+#: ../build/src/preferences_gen.h:2469
 msgid ""
 "check this option to use single-click to select items in the collect panel. "
 "this will allow you to do range selections for date-time and numeric values."
@@ -274,20 +278,20 @@ msgstr ""
 "preverite to opcijo za uporabo enojnega klika za izbiro slik v panoju zbirk. "
 "ta omogoča izbiro datumsko-časovnega intervala za izbiro."
 
-#: ../build/src/preferences_gen.h:2402
+#: ../build/src/preferences_gen.h:2477
 msgid "expand a single lighttable module at a time"
 msgstr "razširi po en modul osvetljene podlage naenkrat"
 
-#: ../build/src/preferences_gen.h:2414
+#: ../build/src/preferences_gen.h:2489
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr ""
 "ta možnost preklaplja obnašanje tipke <VELIKA> v načinu osvetljene podlage"
 
-#: ../build/src/preferences_gen.h:2422
+#: ../build/src/preferences_gen.h:2497
 msgid "scroll to lighttable modules when expanded/collapsed"
 msgstr "premakni v način osvetljene podlage, kadar razširimo ali zožimo"
 
-#: ../build/src/preferences_gen.h:2434 ../build/src/preferences_gen.h:2802
+#: ../build/src/preferences_gen.h:2509 ../build/src/preferences_gen.h:2877
 msgid ""
 "when this option is enabled then darktable will try to scroll the module to "
 "the top of the visible list"
@@ -295,11 +299,11 @@ msgstr ""
 "kadar je ta možnost omogočena, potem bo darktable poskusil premakniti ta "
 "modul na vrh vidnega seznama"
 
-#: ../build/src/preferences_gen.h:2442
+#: ../build/src/preferences_gen.h:2517
 msgid "rating an image one star twice will not zero out the rating"
 msgstr "določanje ocene slike z dvojnim klikom na prvo zvezdico ne ugasne ocene"
 
-#: ../build/src/preferences_gen.h:2454
+#: ../build/src/preferences_gen.h:2529
 msgid ""
 "do not have the rating of one star behave as documented in the manual--an "
 "image rated one star twice will result in a zero star rating."
@@ -307,45 +311,45 @@ msgstr ""
 "ocena ene zvezdice se ne obnaša kot v priročniku - sliko z eno zvezdico "
 "obravnavamo kot sliko brez zvezdic."
 
-#: ../build/src/preferences_gen.h:2462 ../src/views/darkroom.c:107
+#: ../build/src/preferences_gen.h:2537 ../src/views/darkroom.c:107
 msgid "darkroom"
 msgstr "temnica"
 
-#: ../build/src/preferences_gen.h:2473
+#: ../build/src/preferences_gen.h:2548
 msgid "pen pressure control for brush masks"
 msgstr "nastavitev pritiska peresa za maske čopičev"
 
-#: ../build/src/preferences_gen.h:2484 ../build/src/preferences_gen.h:2524
+#: ../build/src/preferences_gen.h:2559 ../build/src/preferences_gen.h:2599
 msgctxt "preferences"
 msgid "off"
 msgstr "izključeno"
 
-#: ../build/src/preferences_gen.h:2489
+#: ../build/src/preferences_gen.h:2564
 msgctxt "preferences"
 msgid "hardness (relative)"
 msgstr "trdota (relativna)"
 
-#: ../build/src/preferences_gen.h:2494
+#: ../build/src/preferences_gen.h:2569
 msgctxt "preferences"
 msgid "hardness (absolute)"
 msgstr "trdota (absolutna)"
 
-#: ../build/src/preferences_gen.h:2499
+#: ../build/src/preferences_gen.h:2574
 msgctxt "preferences"
 msgid "opacity (relative)"
 msgstr "neprosojnost (relativna)"
 
-#: ../build/src/preferences_gen.h:2504
+#: ../build/src/preferences_gen.h:2579
 msgctxt "preferences"
 msgid "opacity (absolute)"
 msgstr "neprosojnost (absolutna)"
 
-#: ../build/src/preferences_gen.h:2509
+#: ../build/src/preferences_gen.h:2584
 msgctxt "preferences"
 msgid "brush size (relative)"
 msgstr "velikost čopiča (relativna)"
 
-#: ../build/src/preferences_gen.h:2527
+#: ../build/src/preferences_gen.h:2602
 msgid ""
 "off - pressure reading ignored, hardness/opacity/brush size - pressure "
 "reading controls specified attribute, absolute/relative - pressure reading is "
@@ -356,26 +360,26 @@ msgstr ""
 "prebrana direktno kot vrednost atributa ali pomnoženo s prej določeno "
 "vrednostjo."
 
-#: ../build/src/preferences_gen.h:2535
+#: ../build/src/preferences_gen.h:2610
 msgid "smoothing of brush strokes"
 msgstr "glajenje potez s čopičem"
 
-#: ../build/src/preferences_gen.h:2546
+#: ../build/src/preferences_gen.h:2621
 msgctxt "preferences"
 msgid "low"
 msgstr "nizka"
 
-#: ../build/src/preferences_gen.h:2551 ../build/src/preferences_gen.h:2571
+#: ../build/src/preferences_gen.h:2626 ../build/src/preferences_gen.h:2646
 msgctxt "preferences"
 msgid "medium"
 msgstr "srednja"
 
-#: ../build/src/preferences_gen.h:2556
+#: ../build/src/preferences_gen.h:2631
 msgctxt "preferences"
 msgid "high"
 msgstr "visoka"
 
-#: ../build/src/preferences_gen.h:2574
+#: ../build/src/preferences_gen.h:2649
 msgid ""
 "sets level for smoothing of brush strokes. stronger smoothing leads to less "
 "nodes and easier editing but with lower control of accuracy."
@@ -383,21 +387,21 @@ msgstr ""
 "nastavitev ravni glajenja potez s čopičem, močnejše glajenje pomeni manj "
 "vozlišč in enostavnejše urejanje krivulj, a manjšo natančnost."
 
-#: ../build/src/preferences_gen.h:2582
+#: ../build/src/preferences_gen.h:2657
 msgid "display of individual color channels"
 msgstr "prikaži posamezne barvne kanale"
 
-#: ../build/src/preferences_gen.h:2593 ../build/src/preferences_gen.h:2613
+#: ../build/src/preferences_gen.h:2668 ../build/src/preferences_gen.h:2688
 msgctxt "preferences"
 msgid "false color"
 msgstr "napačna barva"
 
-#: ../build/src/preferences_gen.h:2598
+#: ../build/src/preferences_gen.h:2673
 msgctxt "preferences"
 msgid "grey scale"
 msgstr "lestvica sivin"
 
-#: ../build/src/preferences_gen.h:2616
+#: ../build/src/preferences_gen.h:2691
 msgid ""
 "defines how color channels are displayed when activated in the parametric "
 "masks feature."
@@ -405,91 +409,91 @@ msgstr ""
 "določa, kako so prikazani barvni kanali, kadar so aktivirani v parametrski "
 "maski."
 
-#: ../build/src/preferences_gen.h:2624
+#: ../build/src/preferences_gen.h:2699
 msgid "pattern for the image infos line"
 msgstr "vzorec za vrstico informacije o sliki"
 
-#: ../build/src/preferences_gen.h:2640
+#: ../build/src/preferences_gen.h:2715
 msgid "see manual to know all the tags you can use."
 msgstr "poglejte v priročnik za vse možne značke, ki jih lahko uporabite."
 
-#: ../build/src/preferences_gen.h:2648
+#: ../build/src/preferences_gen.h:2723
 msgid "position of the image infos line"
 msgstr "pozicija informacijskih vrstic o sliki"
 
-#: ../build/src/preferences_gen.h:2659
+#: ../build/src/preferences_gen.h:2734
 msgctxt "preferences"
 msgid "top left"
 msgstr "zgoraj levo"
 
-#: ../build/src/preferences_gen.h:2664
+#: ../build/src/preferences_gen.h:2739
 msgctxt "preferences"
 msgid "top right"
 msgstr "zgoraj desno"
 
-#: ../build/src/preferences_gen.h:2669
+#: ../build/src/preferences_gen.h:2744
 msgctxt "preferences"
 msgid "top center"
 msgstr "zgoraj v sredini"
 
-#: ../build/src/preferences_gen.h:2674 ../build/src/preferences_gen.h:2694
+#: ../build/src/preferences_gen.h:2749 ../build/src/preferences_gen.h:2769
 msgctxt "preferences"
 msgid "bottom"
 msgstr "dno"
 
-#: ../build/src/preferences_gen.h:2679
+#: ../build/src/preferences_gen.h:2754
 msgctxt "preferences"
 msgid "hidden"
 msgstr "skrito"
 
-#: ../build/src/preferences_gen.h:2704
+#: ../build/src/preferences_gen.h:2779
 msgid "show search module text entry"
 msgstr "prikaži rubriko za iskanje modulov po imenih"
 
-#: ../build/src/preferences_gen.h:2715
+#: ../build/src/preferences_gen.h:2790
 msgctxt "preferences"
 msgid "show search text"
 msgstr "prikaži besedilo iskanja"
 
-#: ../build/src/preferences_gen.h:2720
+#: ../build/src/preferences_gen.h:2795
 msgctxt "preferences"
 msgid "show groups"
 msgstr "prikaži grupe"
 
-#: ../build/src/preferences_gen.h:2725 ../build/src/preferences_gen.h:2740
+#: ../build/src/preferences_gen.h:2800 ../build/src/preferences_gen.h:2815
 msgctxt "preferences"
 msgid "show both"
 msgstr "prikaži oboje"
 
-#: ../build/src/preferences_gen.h:2750
+#: ../build/src/preferences_gen.h:2825
 msgid "expand a single darkroom module at a time"
 msgstr "razširi po en modul temnice naenkrat"
 
-#: ../build/src/preferences_gen.h:2759 ../build/src/preferences_gen.h:2799
-#: ../build/src/preferences_gen.h:2904 ../build/src/preferences_gen.h:2935
-#: ../build/src/preferences_gen.h:2955 ../build/src/preferences_gen.h:2975
-#: ../build/src/preferences_gen.h:2995 ../build/src/preferences_gen.h:3015
-#: ../build/src/preferences_gen.h:3055 ../build/src/preferences_gen.h:3074
-#: ../build/src/preferences_gen.h:3157 ../build/src/preferences_gen.h:3203
-#: ../build/src/preferences_gen.h:3223 ../build/src/preferences_gen.h:3330
-#: ../build/src/preferences_gen.h:3433 ../build/src/preferences_gen.h:3473
-#: ../build/src/preferences_gen.h:3592 ../build/src/preferences_gen.h:3663
-#: ../build/src/preferences_gen.h:3789 ../build/src/preferences_gen.h:3912
+#: ../build/src/preferences_gen.h:2834 ../build/src/preferences_gen.h:2874
+#: ../build/src/preferences_gen.h:2979 ../build/src/preferences_gen.h:3010
+#: ../build/src/preferences_gen.h:3030 ../build/src/preferences_gen.h:3050
+#: ../build/src/preferences_gen.h:3070 ../build/src/preferences_gen.h:3090
+#: ../build/src/preferences_gen.h:3130 ../build/src/preferences_gen.h:3149
+#: ../build/src/preferences_gen.h:3232 ../build/src/preferences_gen.h:3278
+#: ../build/src/preferences_gen.h:3298 ../build/src/preferences_gen.h:3405
+#: ../build/src/preferences_gen.h:3508 ../build/src/preferences_gen.h:3548
+#: ../build/src/preferences_gen.h:3667 ../build/src/preferences_gen.h:3738
+#: ../build/src/preferences_gen.h:3864 ../build/src/preferences_gen.h:3987
 msgctxt "preferences"
 msgid "TRUE"
 msgstr "omogočeno"
 
-#: ../build/src/preferences_gen.h:2762
+#: ../build/src/preferences_gen.h:2837
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr ""
 "ta možnost preklaplja obnašanje klikanja ob pritisku tipke <VELIKA> v načinu "
 "temnice"
 
-#: ../build/src/preferences_gen.h:2770
+#: ../build/src/preferences_gen.h:2845
 msgid "expand the module when it is activated, and collapse it when disabled"
 msgstr "razširi modul, kadar je aktiviran in ga skrči, kadar je onemogočen"
 
-#: ../build/src/preferences_gen.h:2782
+#: ../build/src/preferences_gen.h:2857
 msgid ""
 "this option allows to expand or collapse automatically the module when it is "
 "enabled or disabled."
@@ -497,15 +501,15 @@ msgstr ""
 "ta nastavitev dovoljuje avtomatsko razširjanje oz. skrčenje modula, kadar je "
 "omogočen oz. onemogočen."
 
-#: ../build/src/preferences_gen.h:2790
+#: ../build/src/preferences_gen.h:2865
 msgid "scroll to darkroom modules when expanded/collapsed"
-msgstr "premakni se v način temnice kadar razširi ali zoži"
+msgstr "premakni se v način temnice kadar je razširjeno ali zožano"
 
-#: ../build/src/preferences_gen.h:2810
+#: ../build/src/preferences_gen.h:2885
 msgid "border around image in darkroom mode"
 msgstr "rob okrog slike v načinu temnice"
 
-#: ../build/src/preferences_gen.h:2829
+#: ../build/src/preferences_gen.h:2904
 msgid ""
 "process the image in darkroom mode with a small border. set to 0 if you don't "
 "want any border."
@@ -513,15 +517,15 @@ msgstr ""
 "obdelaj sliko v načinu temnice s tankim robom. Postavite na 0, če roba ne "
 "želite."
 
-#: ../build/src/preferences_gen.h:2837
+#: ../build/src/preferences_gen.h:2912
 msgid "map / geolocalisation"
 msgstr "zemljevid / geolociranje"
 
-#: ../build/src/preferences_gen.h:2848
+#: ../build/src/preferences_gen.h:2923
 msgid "only draw images on map that are currently collected and filtered"
 msgstr "riši slike samo v mapi, kjer so trenutno zbrane in prečiščene slike"
 
-#: ../build/src/preferences_gen.h:2860
+#: ../build/src/preferences_gen.h:2935
 msgid ""
 "use the current filter settings to select the geotagged images drawn on the "
 "map, i.e. limit the images drawn to the current filmstrip. this limits the "
@@ -531,11 +535,11 @@ msgstr ""
 "karti, npr. omeji samo na trenutni kos filma. To omeji število prikazanih "
 "slik in zmanjša potreben čas za prikaz slik."
 
-#: ../build/src/preferences_gen.h:2868
+#: ../build/src/preferences_gen.h:2943
 msgid "maximum number of images drawn on map"
 msgstr "največje število slik narisanih v mapi"
 
-#: ../build/src/preferences_gen.h:2887
+#: ../build/src/preferences_gen.h:2962
 msgid ""
 "the maximum number of geotagged images drawn on the map. increasing this "
 "number can slow drawing of the map down."
@@ -543,33 +547,33 @@ msgstr ""
 "največje število geokodiranih slik narisanih v mapi. povečanje tega števila "
 "upočasni prikaz vsebine map."
 
-#: ../build/src/preferences_gen.h:2895
+#: ../build/src/preferences_gen.h:2970
 msgid "pretty print the image location"
 msgstr "prijazno tiskaj lokacijo slike"
 
-#: ../build/src/preferences_gen.h:2907
+#: ../build/src/preferences_gen.h:2982
 msgid ""
 "show a more readable representation of the location in the image information "
 "module"
 msgstr "prikaži bolj berljivo obliko lokacije v modulu podatkov o sliki"
 
-#: ../build/src/preferences_gen.h:2915
+#: ../build/src/preferences_gen.h:2990
 msgid "security"
 msgstr "varnost"
 
-#: ../build/src/preferences_gen.h:2926
+#: ../build/src/preferences_gen.h:3001
 msgid "ask before removing images from database"
 msgstr "vprašaj pred odstranjevanjem slike iz baze slik"
 
-#: ../build/src/preferences_gen.h:2938
+#: ../build/src/preferences_gen.h:3013
 msgid "always ask the user before any image is removed from DB."
 msgstr "vedno vprašaj pred odstranjevanjem slike iz baze slik."
 
-#: ../build/src/preferences_gen.h:2946
+#: ../build/src/preferences_gen.h:3021
 msgid "ask before erasing images from disk / discarding history stack"
 msgstr "vprašaj pred brisanjem slik z diska / odstranjevanjem sklada zgodovine"
 
-#: ../build/src/preferences_gen.h:2958
+#: ../build/src/preferences_gen.h:3033
 msgid ""
 "always ask the user before any image file is deleted / history stack is "
 "discarded."
@@ -577,11 +581,11 @@ msgstr ""
 "vedno vprašaj uporabnika pred brisanjem datoteke s sliko / pred "
 "odstranjevanjem sklada zgodovine."
 
-#: ../build/src/preferences_gen.h:2966
+#: ../build/src/preferences_gen.h:3041
 msgid "send files to trash when erasing images"
 msgstr "ob brisanju datotek, jih prestavite v koš za smeti"
 
-#: ../build/src/preferences_gen.h:2978
+#: ../build/src/preferences_gen.h:3053
 msgid ""
 "send files to trash instead of permanently deleting files on system that "
 "supports it"
@@ -589,27 +593,27 @@ msgstr ""
 "prestavite datoteke v koš za smeti namesto nepreklicnega brisanja na "
 "operacijskih sistemih, ki to dopuščajo"
 
-#: ../build/src/preferences_gen.h:2986
+#: ../build/src/preferences_gen.h:3061
 msgid "ask before moving images from film roll folder"
 msgstr "vprašaj pred prenosom slik iz mape z zvitki filmov"
 
-#: ../build/src/preferences_gen.h:2998
+#: ../build/src/preferences_gen.h:3073
 msgid "always ask the user before any image file is moved."
 msgstr "vedno vprašaj pred kakršnimkoli prenosom datoteke s sliko."
 
-#: ../build/src/preferences_gen.h:3006
+#: ../build/src/preferences_gen.h:3081
 msgid "ask before copying images to new film roll folder"
 msgstr "vprašaj pred kopiranjem slik iz mape s filmi"
 
-#: ../build/src/preferences_gen.h:3018
+#: ../build/src/preferences_gen.h:3093
 msgid "always ask the user before any image file is copied."
 msgstr "vedno vprašaj pred kakršnimkoli kopiranjem slik."
 
-#: ../build/src/preferences_gen.h:3026
+#: ../build/src/preferences_gen.h:3101
 msgid "ask before removing empty folders"
 msgstr "vprašaj pred odstranjevanjem praznih map"
 
-#: ../build/src/preferences_gen.h:3038
+#: ../build/src/preferences_gen.h:3113
 msgid ""
 "always ask the user before removing any empty folder. this can happen after "
 "moving or deleting images."
@@ -617,65 +621,65 @@ msgstr ""
 "vedno vprašaj uporabnika pred brisanjem prazne mape. to se lahko zgodi po "
 "prenosu ali brisanjem slik."
 
-#: ../build/src/preferences_gen.h:3046
+#: ../build/src/preferences_gen.h:3121
 msgid "ask before deleting a tag"
 msgstr "vprašaj pred brisanjem značke"
 
-#: ../build/src/preferences_gen.h:3065
+#: ../build/src/preferences_gen.h:3140
 msgid "ask before deleting a style"
 msgstr "vprašaj pred brisanjem sloga"
 
-#: ../build/src/preferences_gen.h:3084 ../build/src/preferences_gen.h:3986
+#: ../build/src/preferences_gen.h:3159 ../build/src/preferences_gen.h:4061
 msgid "miscellaneous"
 msgstr "razno"
 
-#: ../build/src/preferences_gen.h:3095
+#: ../build/src/preferences_gen.h:3170
 msgid "width of the side panels in pixels"
 msgstr "širina bočnih panojev v pikslih"
 
-#: ../build/src/preferences_gen.h:3114
+#: ../build/src/preferences_gen.h:3189
 msgid "(needs a restart)"
 msgstr "(potrebuje ponovni zagon)"
 
-#: ../build/src/preferences_gen.h:3122
+#: ../build/src/preferences_gen.h:3197
 msgid "waiting time between each picture in slideshow"
 msgstr "čas prikaza posamezne slike v diaprojekciji"
 
-#: ../build/src/preferences_gen.h:3148
+#: ../build/src/preferences_gen.h:3223
 msgid "do not show april 1st game"
 msgstr "ne kaži igric za 1. april"
 
-#: ../build/src/preferences_gen.h:3167
+#: ../build/src/preferences_gen.h:3242
 msgid "number of folder levels to show in lists"
 msgstr "število ravni map prikazanih v seznamih"
 
-#: ../build/src/preferences_gen.h:3186
+#: ../build/src/preferences_gen.h:3261
 msgid ""
 "the number of folder levels to show in film roll names, starting from the "
 "right"
 msgstr "število ravni map prikazanih v seznamu map s filmi, začeto z desne"
 
-#: ../build/src/preferences_gen.h:3194
+#: ../build/src/preferences_gen.h:3269
 msgid "enable filmstrip"
 msgstr "omogoči kos filma"
 
-#: ../build/src/preferences_gen.h:3206
+#: ../build/src/preferences_gen.h:3281
 msgid "enable the filmstrip in darkroom, tethering and map modes."
 msgstr "omogoči kos filma v temnici, odd. upravljanju ter pri vpogledu v mape."
 
-#: ../build/src/preferences_gen.h:3214
+#: ../build/src/preferences_gen.h:3289
 msgid "enable timeline"
 msgstr "omogoči časovni trak"
 
-#: ../build/src/preferences_gen.h:3226
+#: ../build/src/preferences_gen.h:3301
 msgid "enable the timeline in lighttable mode."
 msgstr "omogoči časovni trak na osvetljeni podlagi."
 
-#: ../build/src/preferences_gen.h:3234
+#: ../build/src/preferences_gen.h:3309
 msgid "overlay txt sidecar over zoomed images"
 msgstr "prekrij besedilne priklopne datoteke prek zumiranih slik"
 
-#: ../build/src/preferences_gen.h:3246
+#: ../build/src/preferences_gen.h:3321
 msgid ""
 "when there is a txt file next to an image it can be shown as an overlay over "
 "zoomed images on the lighttable. the txt file either has to be there at "
@@ -685,12 +689,12 @@ msgstr ""
 "pomanjšanimi slikami na osvetljeni podlagi. besedilna datoteka je bila tam ob "
 "uvozu ali pa je potrebno aktivirati robotka"
 
-#: ../build/src/preferences_gen.h:3254
+#: ../build/src/preferences_gen.h:3329
 msgid "mouse wheel scrolls modules side panel by default"
 msgstr ""
 "kolešček na miški privzeto omogoča premikanje po modulih na stranskem panelu"
 
-#: ../build/src/preferences_gen.h:3266
+#: ../build/src/preferences_gen.h:3341
 msgid ""
 "when enabled, use mouse wheel to scroll modules side panel.  use ctrl+alt to "
 "use mouse wheel for data entry.  when disabled, this behavior is reversed"
@@ -699,34 +703,34 @@ msgstr ""
 "v stranskem panelu. Uporabite ctrl+alt za uporabo koleščka za vnos podatkov. "
 "kadar je onemogočeno, je tega obnašanja ni"
 
-#: ../build/src/preferences_gen.h:3274
+#: ../build/src/preferences_gen.h:3349
 msgid "show scrollbars for center view"
 msgstr "prikaži drsnike za centralni pogled"
 
-#: ../build/src/preferences_gen.h:3285
+#: ../build/src/preferences_gen.h:3360
 msgctxt "preferences"
 msgid "no scrollbars"
 msgstr "brez drsnikov"
 
-#: ../build/src/preferences_gen.h:3290 ../build/src/preferences_gen.h:3310
+#: ../build/src/preferences_gen.h:3365 ../build/src/preferences_gen.h:3385
 msgctxt "preferences"
 msgid "lighttable"
 msgstr "osvetljena podlaga"
 
-#: ../build/src/preferences_gen.h:3295
+#: ../build/src/preferences_gen.h:3370
 msgctxt "preferences"
 msgid "lighttable + darkroom"
 msgstr "osvetljena podlaga + temnica"
 
-#: ../build/src/preferences_gen.h:3313
+#: ../build/src/preferences_gen.h:3388
 msgid "defines where scrollbars should be displayed"
 msgstr "določa, kje naj bodo prikazani drsniki"
 
-#: ../build/src/preferences_gen.h:3321
+#: ../build/src/preferences_gen.h:3396
 msgid "always show panels' scrollbars"
 msgstr "vedno prikazuj panelne drsnike"
 
-#: ../build/src/preferences_gen.h:3333
+#: ../build/src/preferences_gen.h:3408
 msgid ""
 "defines whether the panel scrollbars should be always visible or activated "
 "only depending on the content.  (need a restart)"
@@ -734,26 +738,26 @@ msgstr ""
 "določi ali so drsniki na panelih vedno vidni ali pa so aktivirani samo v "
 "odvisnosti od vsebine. (potreben je ponovni zagon)"
 
-#: ../build/src/preferences_gen.h:3341
+#: ../build/src/preferences_gen.h:3416
 msgid "method to use for getting the display profile"
 msgstr "metoda za pridobitev profila zaslona"
 
-#: ../build/src/preferences_gen.h:3352 ../build/src/preferences_gen.h:3377
+#: ../build/src/preferences_gen.h:3427 ../build/src/preferences_gen.h:3452
 msgctxt "preferences"
 msgid "all"
 msgstr "vse"
 
-#: ../build/src/preferences_gen.h:3357
+#: ../build/src/preferences_gen.h:3432
 msgctxt "preferences"
 msgid "xatom"
 msgstr "xatom"
 
-#: ../build/src/preferences_gen.h:3362
+#: ../build/src/preferences_gen.h:3437
 msgctxt "preferences"
 msgid "colord"
 msgstr "colord"
 
-#: ../build/src/preferences_gen.h:3380
+#: ../build/src/preferences_gen.h:3455
 msgid ""
 "this option allows to force a specific means of getting the current display "
 "profile. this is useful when one alternative gives wrong results"
@@ -761,21 +765,21 @@ msgstr ""
 "ta možnost dovoljuje poseben način pridobitve trenutni profil zaslona. "
 "Uporabno, kadar drug način daje napačen rezultat"
 
-#: ../build/src/preferences_gen.h:3410
+#: ../build/src/preferences_gen.h:3485
 msgid "core options"
 msgstr "osnovne možnosti"
 
-#: ../build/src/preferences_gen.h:3413 ../src/imageio/format/j2k.c:652
+#: ../build/src/preferences_gen.h:3488 ../src/imageio/format/j2k.c:652
 #: ../src/imageio/format/jpeg.c:594 ../src/imageio/format/webp.c:329
 #: ../src/libs/camera.c:594
 msgid "quality"
 msgstr "kakovost"
 
-#: ../build/src/preferences_gen.h:3424
+#: ../build/src/preferences_gen.h:3499
 msgid "color manage cached thumbnails"
 msgstr "upravljanje barv predoglednih sličic v zalogovniku"
 
-#: ../build/src/preferences_gen.h:3436
+#: ../build/src/preferences_gen.h:3511
 msgid ""
 "if enabled, cached thumbnails will be color managed so that lighttable and "
 "filmstrip can show correct colors. otherwise the results may look wrong once "
@@ -785,42 +789,42 @@ msgstr ""
 "na osvetljeni podlagi in kot kos filma kazale pravilne barve, če ne, so lahko "
 "rezultati napačnih barv, kadar se spremeni profil zaslona."
 
-#: ../build/src/preferences_gen.h:3444
+#: ../build/src/preferences_gen.h:3519
 msgid "always use LittleCMS 2 to apply output color profile"
 msgstr "vedno uporabi LittleCMS 2 za kontrolo izhodnega barvnega profila"
 
-#: ../build/src/preferences_gen.h:3456
+#: ../build/src/preferences_gen.h:3531
 msgid "this is slower than the default."
 msgstr "to je počasnejše od privzete možnosti."
 
-#: ../build/src/preferences_gen.h:3464
+#: ../build/src/preferences_gen.h:3539
 msgid "do high quality processing for slideshow"
 msgstr "izvedi visoko kakovostno obdelavo za diaprojekcijo"
 
-#: ../build/src/preferences_gen.h:3476
+#: ../build/src/preferences_gen.h:3551
 msgid "same option as for export, but applies to slideshow."
 msgstr "enake možnosti za izvoz toda na diaprojekciji."
 
-#: ../build/src/preferences_gen.h:3484
+#: ../build/src/preferences_gen.h:3559
 msgid "demosaicing for zoomed out darkroom mode"
 msgstr "odstranjevanje mozaičnosti izven načina temnice"
 
-#: ../build/src/preferences_gen.h:3495
+#: ../build/src/preferences_gen.h:3570
 msgctxt "preferences"
 msgid "always bilinear (fast)"
 msgstr "vedno bilinearna (hitra)"
 
-#: ../build/src/preferences_gen.h:3500 ../build/src/preferences_gen.h:3520
+#: ../build/src/preferences_gen.h:3575 ../build/src/preferences_gen.h:3595
 msgctxt "preferences"
 msgid "at most PPG (reasonable)"
 msgstr "največ PPG (primerno)"
 
-#: ../build/src/preferences_gen.h:3505
+#: ../build/src/preferences_gen.h:3580
 msgctxt "preferences"
 msgid "full (possibly slow)"
 msgstr "polna (možno da počasno)"
 
-#: ../build/src/preferences_gen.h:3523
+#: ../build/src/preferences_gen.h:3598
 msgid ""
 "interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, but "
 "not as sharp. middle ground is using PPG + interpolation modes specified "
@@ -833,31 +837,31 @@ msgstr ""
 "uporabil enake nastavitve kot za polni izvoz, X-Trans senzorji uporabljajo "
 "VNG namesto PPG na osrednjih tonih."
 
-#: ../build/src/preferences_gen.h:3531
+#: ../build/src/preferences_gen.h:3606
 msgid "pixel interpolator"
 msgstr "interpolacija pikslov"
 
-#: ../build/src/preferences_gen.h:3542
+#: ../build/src/preferences_gen.h:3617
 msgctxt "preferences"
 msgid "bilinear"
 msgstr "bilinearni"
 
-#: ../build/src/preferences_gen.h:3547
+#: ../build/src/preferences_gen.h:3622
 msgctxt "preferences"
 msgid "bicubic"
 msgstr "bikubični"
 
-#: ../build/src/preferences_gen.h:3552
+#: ../build/src/preferences_gen.h:3627
 msgctxt "preferences"
 msgid "lanczos2"
 msgstr "lanczos2"
 
-#: ../build/src/preferences_gen.h:3557 ../build/src/preferences_gen.h:3572
+#: ../build/src/preferences_gen.h:3632 ../build/src/preferences_gen.h:3647
 msgctxt "preferences"
 msgid "lanczos3"
 msgstr "lanczos3"
 
-#: ../build/src/preferences_gen.h:3575
+#: ../build/src/preferences_gen.h:3650
 msgid ""
 "pixel interpolator used in rotation and lens correction (bilinear, bicubic, "
 "lanczos2, lanczos3)."
@@ -865,19 +869,19 @@ msgstr ""
 "uporabljena interpolacija pikslov in rotacij ter popravkov leč (bilinearna, "
 "bikubična, anczos2, lanczos3)."
 
-#: ../build/src/preferences_gen.h:3583
+#: ../build/src/preferences_gen.h:3658
 msgid "auto-apply basecurve"
 msgstr "avtomatično uporabi osnovno krivuljo"
 
-#: ../build/src/preferences_gen.h:3595
+#: ../build/src/preferences_gen.h:3670
 msgid "use a basecurve by default (needs a restart)"
 msgstr "privzeto uporabi osnovno krivuljo (zahteva ponovni zagon)"
 
-#: ../build/src/preferences_gen.h:3603
+#: ../build/src/preferences_gen.h:3678
 msgid "auto-apply per camera basecurve presets"
 msgstr "avtomatsko uporabi nastavitve osnovne krivulje"
 
-#: ../build/src/preferences_gen.h:3615
+#: ../build/src/preferences_gen.h:3690
 msgid ""
 "use the per-camera basecurve by default instead of the generic manufacturer "
 "one if there is one available (needs a restart)"
@@ -885,11 +889,11 @@ msgstr ""
 "uporabi privzeto krivuljo kamere namesto splošne krivulje proizvajalca, če "
 "obstaja (potreben je ponovni zagon)"
 
-#: ../build/src/preferences_gen.h:3623
+#: ../build/src/preferences_gen.h:3698
 msgid "auto-apply sharpen"
 msgstr "avtomatično uporabi ostrenje"
 
-#: ../build/src/preferences_gen.h:3635
+#: ../build/src/preferences_gen.h:3710
 msgid ""
 "this added sharpen is not recommended on cameras without a low-pass filter. "
 "the default is to not add any sharpening automatically as most recent cameras "
@@ -899,15 +903,15 @@ msgstr ""
 "privzeta nastavitev programa je brez dodajanja avtomatskega ostrenja, ker "
 "najnovejše kamere nimajo filtra. (potreben je ponovni zagon)"
 
-#: ../build/src/preferences_gen.h:3643
+#: ../build/src/preferences_gen.h:3718
 msgid "xmp"
 msgstr "xmp"
 
-#: ../build/src/preferences_gen.h:3654
+#: ../build/src/preferences_gen.h:3729
 msgid "write sidecar file for each image"
 msgstr "napiši priklopno datoteko za vsako sliko"
 
-#: ../build/src/preferences_gen.h:3666
+#: ../build/src/preferences_gen.h:3741
 msgid ""
 "these redundant files can later be re-imported into a different database, "
 "preserving your changes to the image."
@@ -915,16 +919,16 @@ msgstr ""
 "te redundantne datoteke lahko kasneje ponovno uvozimo v druga bazo slik, tako "
 "da ohranimo vaše spremembe slik."
 
-#: ../build/src/preferences_gen.h:3674
+#: ../build/src/preferences_gen.h:3749
 msgid "store xmp tags in compressed format"
 msgstr "shrani značke xmp v stisnjenem formatu"
 
-#: ../build/src/preferences_gen.h:3695 ../build/src/preferences_gen.h:3710
+#: ../build/src/preferences_gen.h:3770 ../build/src/preferences_gen.h:3785
 msgctxt "preferences"
 msgid "only large entries"
 msgstr "samo veliki vnosi"
 
-#: ../build/src/preferences_gen.h:3713
+#: ../build/src/preferences_gen.h:3788
 msgid ""
 "entries in xmp tags can get rather large and may exceed the available space "
 "to store the history stack in output files. this option allows xmp tags to be "
@@ -934,11 +938,11 @@ msgstr ""
 "prostega prostora za sklad zgodovine na izhodni datoteki. Ta možnost omogoča "
 "stiskanje značk xmp in varčevanje s prostorom."
 
-#: ../build/src/preferences_gen.h:3721
+#: ../build/src/preferences_gen.h:3796
 msgid "look for updated xmp files on startup"
 msgstr "preglej osvežene datoteke xmp ob zagonu"
 
-#: ../build/src/preferences_gen.h:3733
+#: ../build/src/preferences_gen.h:3808
 msgid ""
 "check file modification times of all xmp files on startup to check if any got "
 "updated in the meantime"
@@ -946,15 +950,15 @@ msgstr ""
 "preveri spremenjene čase vseh datotek xmp ob zagonu, da bi ugotovili ali se "
 "je katera od njih medtem spremenila"
 
-#: ../build/src/preferences_gen.h:3741
+#: ../build/src/preferences_gen.h:3816
 msgid "cpu / gpu / memory"
 msgstr "cpe / gpe / pomnilnik"
 
-#: ../build/src/preferences_gen.h:3752
+#: ../build/src/preferences_gen.h:3827
 msgid "memory in megabytes to use for thumbnail cache"
 msgstr "pomnilnik v megabytih za zalogovnik predoglednih sličic"
 
-#: ../build/src/preferences_gen.h:3772
+#: ../build/src/preferences_gen.h:3847
 msgid ""
 "this controls how much memory is going to be used for thumbnails and other "
 "buffers (needs a restart)."
@@ -962,11 +966,11 @@ msgstr ""
 "to nadzoruje koliko pomnilnika naj porabimo za predogledne sličice in ostale "
 "vmesnike (potreben ponovni zagon)."
 
-#: ../build/src/preferences_gen.h:3780
+#: ../build/src/preferences_gen.h:3855
 msgid "enable disk backend for thumbnail cache"
 msgstr "omogoči diskovni prostor za zalogovnik predoglednih sličic"
 
-#: ../build/src/preferences_gen.h:3792
+#: ../build/src/preferences_gen.h:3867
 msgid ""
 "if enabled, write thumbnails to disk (.cache/darktable/) when evicted from "
 "the memory cache. note that this can take a lot of memory (several gigabytes "
@@ -983,11 +987,11 @@ msgstr ""
 "če veliko brskamo po slikah. če želite generirati vse predogledne sličice off "
 "line, poženemo 'darktable-generate-cache'."
 
-#: ../build/src/preferences_gen.h:3800
+#: ../build/src/preferences_gen.h:3875
 msgid "enable disk backend for full preview cache"
 msgstr "omogoči pomoč diska za začasno shranjevanje polnega predogleda"
 
-#: ../build/src/preferences_gen.h:3812
+#: ../build/src/preferences_gen.h:3887
 msgid ""
 "if enabled, write full preview to disk (.cache/darktable/) when evicted from "
 "the memory cache. note that this can take a lot of memory (several gigabytes "
@@ -1001,11 +1005,11 @@ msgstr ""
 "sličic. sicer je čisto varno ročno brisanje, če želite. odzivnost osvetljene "
 "podlage se bo zelo povečala ob zumiranju slik v načinu predogleda."
 
-#: ../build/src/preferences_gen.h:3820
+#: ../build/src/preferences_gen.h:3895
 msgid "number of background threads"
 msgstr "število procesnih niti v ozadju"
 
-#: ../build/src/preferences_gen.h:3839
+#: ../build/src/preferences_gen.h:3914
 msgid ""
 "this controls for example how many threads are used to create thumbnails "
 "during import. the cache will grow to a maximum of twice this number of full "
@@ -1015,11 +1019,11 @@ msgstr ""
 "uvozu. Zalogovnik bo narasel največ za dvakratnik tega števila slik v polni "
 "ločljivosti (potrebuje ponovni zagon programa)."
 
-#: ../build/src/preferences_gen.h:3847
+#: ../build/src/preferences_gen.h:3922
 msgid "host memory limit (in MB) for tiling"
 msgstr "omejitev porabe pomnilnika (v MB) za prekritje slike"
 
-#: ../build/src/preferences_gen.h:3866
+#: ../build/src/preferences_gen.h:3941
 msgid ""
 "this variable controls the maximum amount of memory (in MB) a module may use "
 "during image processing. lower values will force memory hungry modules to "
@@ -1032,11 +1036,11 @@ msgstr ""
 "na 0 pomeni brez omejitve pomnilnika. vse vrednosti pod 500 bodo pomenili "
 "500MB. (potreben je ponovni zagon programa)."
 
-#: ../build/src/preferences_gen.h:3874
+#: ../build/src/preferences_gen.h:3949
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
 msgstr "najmanjša količina pomnilnika (v MB) za en vmesnik za prekrivanje"
 
-#: ../build/src/preferences_gen.h:3895
+#: ../build/src/preferences_gen.h:3970
 msgid ""
 "if set to a positive, non-zero value this variable defines the minimum amount "
 "of memory (in MB) that tiling should take for a single image buffer. has "
@@ -1047,11 +1051,11 @@ msgstr ""
 "eno samo sliko in ta vrednost ima prednost pred hevristično nastavitvijo, ki "
 "ga določa host_memory_limit (zahteva ponovni zagon)."
 
-#: ../build/src/preferences_gen.h:3903
+#: ../build/src/preferences_gen.h:3978
 msgid "activate OpenCL support"
 msgstr "aktiviraj podporo za OpenCL"
 
-#: ../build/src/preferences_gen.h:3915
+#: ../build/src/preferences_gen.h:3990
 msgid ""
 "if found, use OpenCL runtime on your system for improved processing speed. "
 "can be switched on and off at any time."
@@ -1059,37 +1063,37 @@ msgstr ""
 "če je najdena, uporabi podporo OpenCL za pospešeno obdelavo. možnost lahko "
 "vklopimo ali izklopimo ob poljubnem času."
 
-#: ../build/src/preferences_gen.h:3916 ../build/src/preferences_gen.h:3971
+#: ../build/src/preferences_gen.h:3991 ../build/src/preferences_gen.h:4046
 msgid "not available"
 msgstr "ni na voljo"
 
-#: ../build/src/preferences_gen.h:3919 ../build/src/preferences_gen.h:3923
-#: ../build/src/preferences_gen.h:3974 ../build/src/preferences_gen.h:3978
+#: ../build/src/preferences_gen.h:3994 ../build/src/preferences_gen.h:3998
+#: ../build/src/preferences_gen.h:4049 ../build/src/preferences_gen.h:4053
 msgid "not available on this system"
 msgstr "ni na voljo na tem sistemu"
 
-#: ../build/src/preferences_gen.h:3931
+#: ../build/src/preferences_gen.h:4006
 msgid "OpenCL scheduling profile"
 msgstr "profil časovnega planiranja OpenCL"
 
 #. Adding the restore defaults button
-#: ../build/src/preferences_gen.h:3942 ../build/src/preferences_gen.h:3967
+#: ../build/src/preferences_gen.h:4017 ../build/src/preferences_gen.h:4042
 #: ../src/gui/preferences.c:621
 msgctxt "preferences"
 msgid "default"
 msgstr "privzeto"
 
-#: ../build/src/preferences_gen.h:3947
+#: ../build/src/preferences_gen.h:4022
 msgctxt "preferences"
 msgid "multiple GPUs"
 msgstr "več grafičnih procesorjev"
 
-#: ../build/src/preferences_gen.h:3952
+#: ../build/src/preferences_gen.h:4027
 msgctxt "preferences"
 msgid "very fast GPU"
 msgstr "zelo hiter grafični procesor"
 
-#: ../build/src/preferences_gen.h:3970
+#: ../build/src/preferences_gen.h:4045
 msgid ""
 "defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled "
 "systems. default - GPU processes full and CPU processes preview pipe "
@@ -1103,11 +1107,11 @@ msgstr ""
 "obdelujeta oba tokova na dveh GPE; zelo hiter GPE - zaporedno se obdeluje oba "
 "procesa na GPE."
 
-#: ../build/src/preferences_gen.h:3997
+#: ../build/src/preferences_gen.h:4072
 msgid "omit hierarchy in simple tag lists"
 msgstr "opusti hierarhijo pri enostavnih seznamih oznak"
 
-#: ../build/src/preferences_gen.h:4009
+#: ../build/src/preferences_gen.h:4084
 msgid ""
 "when exporting images the hierarchical tags are also added as a simple list "
 "of non-hierarchical ones to make them visible to some other programs. when "
@@ -1119,39 +1123,76 @@ msgstr ""
 "v preprosti seznam dodal samo zadnjo oznako in izpustil ostale. tko bo 'foo|"
 "bar|baz' dodal samo 'baz'."
 
-#: ../build/src/preferences_gen.h:4017
+#: ../build/src/preferences_gen.h:4092
+msgid "force exportation of private tags"
+msgstr "prisili izvoz zasebnih značk"
+
+#: ../build/src/preferences_gen.h:4104
+msgid ""
+"darktable doesn't export private tags per default. this option allows to "
+"export them to XMP-dc Subject and XMP-lr Hierarchical Subject."
+msgstr ""
+"darktable privzeto ne izvaža zasebni značk. ta opcija dovoljuje izvoz značk v "
+"predmet XMP-dc in XMP-lr hierarhični predmet."
+
+#: ../build/src/preferences_gen.h:4112
+msgid "request exportation of synonyms"
+msgstr "zahtevaj izvoz sinonimov"
+
+#: ../build/src/preferences_gen.h:4124
+msgid ""
+"darktable doesn't export the synonyms per default. this option allows to "
+"export them along with tags to XMP-dc Subject."
+msgstr ""
+"darktable privzeto ne izvaža sinonimov. ta opcija omogoča izvoz sinonimov "
+"skupaj z značkami v predmet XMP-dc."
+
+#: ../build/src/preferences_gen.h:4132
+msgid "disable the entry completion"
+msgstr "onemogoči zaključevanje vnosov"
+
+#: ../build/src/preferences_gen.h:4144
+msgid ""
+"the entry completion is useful for those who enter tags from keybord only. "
+"for others the entry completion can be embarassing. need to restart darktable."
+msgstr ""
+"zaključevanje vnosov je uporabno za tiste, ki vnašajo značke samo prek "
+"tipkovnice. za ostale je lahko zaključevanje vnosov neprijetno. zahteva "
+"ponovni zagon darktable-a."
+
+#: ../build/src/preferences_gen.h:4152
 msgid "password storage backend to use"
 msgstr "uporaba gesla za shranjevanje v ozadju"
 
-#: ../build/src/preferences_gen.h:4028 ../build/src/preferences_gen.h:4060
+#: ../build/src/preferences_gen.h:4163 ../build/src/preferences_gen.h:4195
 msgctxt "preferences"
 msgid "auto"
 msgstr "avto"
 
-#: ../build/src/preferences_gen.h:4033
+#: ../build/src/preferences_gen.h:4168
 msgctxt "preferences"
 msgid "none"
 msgstr "noben"
 
-#: ../build/src/preferences_gen.h:4038
+#: ../build/src/preferences_gen.h:4173
 msgctxt "preferences"
 msgid "libsecret"
 msgstr "libsecret"
 
-#: ../build/src/preferences_gen.h:4044
+#: ../build/src/preferences_gen.h:4179
 msgctxt "preferences"
 msgid "kwallet"
 msgstr "kwallet"
 
-#: ../build/src/preferences_gen.h:4063
+#: ../build/src/preferences_gen.h:4198
 msgid "the storage backend for password storage: auto, none, libsecret, kwallet"
 msgstr "shramba gesel: auto, nič, libsecret, kwallet"
 
-#: ../build/src/preferences_gen.h:4071
+#: ../build/src/preferences_gen.h:4206
 msgid "executable for playing audio files"
 msgstr "program za predvajanje avdio datotek"
 
-#: ../build/src/preferences_gen.h:4087
+#: ../build/src/preferences_gen.h:4222
 msgid ""
 "this external program is used to play audio files some cameras record to keep "
 "notes for images"
@@ -1159,11 +1200,11 @@ msgstr ""
 "ta zunanji program uporabim za predvajanje avdio datotek, kjer nekatere "
 "kamere shranjujejo opombe k slikam"
 
-#: ../build/src/preferences_gen.h:4095
+#: ../build/src/preferences_gen.h:4230
 msgid "3D lut root folder"
 msgstr "korenska mapa za 3D lut"
 
-#: ../build/src/preferences_gen.h:4100 ../src/control/jobs/control_jobs.c:1617
+#: ../build/src/preferences_gen.h:4235 ../src/control/jobs/control_jobs.c:1617
 #: ../src/control/jobs/control_jobs.c:1677 ../src/gui/preferences.c:1607
 #: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/disk.c:194
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/gallery.c:179
@@ -1172,33 +1213,35 @@ msgstr "korenska mapa za 3D lut"
 msgid "select directory"
 msgstr "izberi mapo"
 
-#: ../build/src/preferences_gen.h:4112
-msgid "this folder (and sub-folders) contains Lut files used but lut3d modules"
+#: ../build/src/preferences_gen.h:4247
+msgid ""
+"this folder (and sub-folders) contains Lut files used but lut3d modules. need "
+"to restart darktable."
 msgstr ""
-"ta mapa (in podmape) vsebujejo datoteke za lut, ki jih uporabljajo moduli "
-"lut3d"
+"ta mapa (in podmape) vsebujejo datoteke Lut razen modulov lut3d. potreben je "
+"ponovni zagon darktable-a."
 
-#: ../build/src/preferences_gen.h:4142
+#: ../build/src/preferences_gen.h:4277
 msgid "session options"
 msgstr "možnosti seje"
 
-#: ../build/src/preferences_gen.h:4145
+#: ../build/src/preferences_gen.h:4280
 msgid "base directory naming pattern"
 msgstr "vzorec poimenovanja osnovnih map"
 
-#: ../build/src/preferences_gen.h:4161 ../build/src/preferences_gen.h:4185
+#: ../build/src/preferences_gen.h:4296 ../build/src/preferences_gen.h:4320
 msgid "part of full import path for an import session"
 msgstr "del polne poti za uvažanje"
 
-#: ../build/src/preferences_gen.h:4169
+#: ../build/src/preferences_gen.h:4304
 msgid "sub directory naming pattern"
 msgstr "vzorec poimenovanja podmap"
 
-#: ../build/src/preferences_gen.h:4193
+#: ../build/src/preferences_gen.h:4328
 msgid "file naming pattern"
 msgstr "vzorec poimenovanja datotek"
 
-#: ../build/src/preferences_gen.h:4209
+#: ../build/src/preferences_gen.h:4344
 msgid "file naming pattern used for a import session"
 msgstr "vzorec poimenovanja datotek za uvažanje"
 
@@ -1272,8 +1315,8 @@ msgstr "grafika;fotografije;surove;"
 #: ../src/iop/lut3d.c:1012 ../src/libs/collect.c:242
 #: ../src/libs/copy_history.c:78 ../src/libs/geotagging.c:473
 #: ../src/libs/import.c:759 ../src/libs/import.c:866 ../src/libs/lib.c:228
-#: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:1215
-#: ../src/libs/tagging.c:1255
+#: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2111
+#: ../src/libs/tagging.c:2152
 msgid "_cancel"
 msgstr "_prekliči"
 
@@ -1502,7 +1545,7 @@ msgid "export profile"
 msgstr "profil izvoza"
 
 #: ../src/common/colorspaces.c:984 ../src/common/colorspaces.c:1250
-#: ../src/views/darkroom.c:1998
+#: ../src/views/darkroom.c:1996
 msgid "softproof profile"
 msgstr "profil preizkusnega odtisa"
 
@@ -1595,21 +1638,21 @@ msgstr ""
 
 #: ../src/common/darktable.c:791 ../src/common/variables.c:367
 #: ../src/imageio/format/pdf.c:669 ../src/imageio/format/pdf.c:694
-#: ../src/imageio/storage/flickr.c:499 ../src/imageio/storage/piwigo.c:823
+#: ../src/imageio/storage/flickr.c:499 ../src/imageio/storage/piwigo.c:824
 #: ../src/iop/clipping.c:2005 ../src/libs/export.c:611 ../src/libs/export.c:617
-#: ../src/libs/metadata_view.c:270
+#: ../src/libs/metadata_view.c:277
 msgid "no"
 msgstr "ne"
 
 #: ../src/common/darktable.c:791 ../src/common/variables.c:365
 #: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
-#: ../src/imageio/storage/flickr.c:498 ../src/imageio/storage/piwigo.c:822
+#: ../src/imageio/storage/flickr.c:498 ../src/imageio/storage/piwigo.c:823
 #: ../src/iop/clipping.c:2006 ../src/libs/export.c:612 ../src/libs/export.c:618
-#: ../src/libs/metadata_view.c:270
+#: ../src/libs/metadata_view.c:277
 msgid "yes"
 msgstr "da"
 
-#: ../src/common/database.c:1579
+#: ../src/common/database.c:1605
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1624,16 +1667,16 @@ msgstr ""
 "\n"
 "%s\n"
 
-#: ../src/common/database.c:1586
+#: ../src/common/database.c:1612
 msgid "darktable - error locking database"
 msgstr "darktable - napaka blokira podatkovno bazo"
 
-#: ../src/common/database.c:1586 ../src/common/database.c:1757
-#: ../src/common/database.c:1943 ../src/common/database.c:2021
+#: ../src/common/database.c:1612 ../src/common/database.c:1783
+#: ../src/common/database.c:1969 ../src/common/database.c:2047
 msgid "close darktable"
 msgstr "zapri darktable"
 
-#: ../src/common/database.c:1697
+#: ../src/common/database.c:1723
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
@@ -1642,18 +1685,18 @@ msgstr ""
 "datoteka, ki zaklepa podatkovno bazo vsebuje pid, ki je aktiven v vašem "
 "sistemu: %d"
 
-#: ../src/common/database.c:1703
+#: ../src/common/database.c:1729
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr "izgleda, da je datoteka zaklepanja prazna"
 
-#: ../src/common/database.c:1711
+#: ../src/common/database.c:1737
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr "napaka pri odpiranju datoteke zaklepanja podatkovne baze za branje: %s"
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:1748
+#: ../src/common/database.c:1774
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -1669,17 +1712,17 @@ msgstr ""
 "ali želite nadaljevati ali zapustiti program za poprejšnjo izdelavo varnostne "
 "kopije\n"
 
-#: ../src/common/database.c:1756
+#: ../src/common/database.c:1782
 msgid "darktable - schema migration"
 msgstr "darktable - shema migracije"
 
-#: ../src/common/database.c:1757
+#: ../src/common/database.c:1783
 msgid "upgrade database"
 msgstr "nadgradi podatkovno bazo"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
-#: ../src/common/database.c:1932 ../src/common/database.c:2010
+#: ../src/common/database.c:1958 ../src/common/database.c:2036
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1698,11 +1741,11 @@ msgstr ""
 "ali želite zdaj zapreti darktable in ročno obnoviti\n"
 "podatkovno baze iz varovalne kopije ali tvoriti novo?"
 
-#: ../src/common/database.c:1942 ../src/common/database.c:2020
+#: ../src/common/database.c:1968 ../src/common/database.c:2046
 msgid "darktable - error opening database"
 msgstr "darktable - napaka pri odpiranju podatkovne baze"
 
-#: ../src/common/database.c:1943 ../src/common/database.c:2021
+#: ../src/common/database.c:1969 ../src/common/database.c:2047
 msgid "delete database"
 msgstr "zbriši podatkovno bazo"
 
@@ -1723,6 +1766,7 @@ msgstr[2] "naj odstranim prazne mape?"
 msgstr[3] "naj odstranim prazne mape?"
 
 #: ../src/common/film.c:339 ../src/gui/preferences.c:493
+#: ../src/gui/styles_dialog.c:309
 msgid "name"
 msgstr "ime"
 
@@ -1741,7 +1785,7 @@ msgstr ""
 #: ../src/common/history.c:798 ../src/common/history.c:801
 #: ../src/common/history.c:817 ../src/common/styles.c:894
 #: ../src/common/styles.c:898 ../src/develop/blend_gui.c:2501
-#: ../src/develop/develop.c:1808 ../src/iop/ashift.c:4856
+#: ../src/develop/develop.c:1802 ../src/iop/ashift.c:4856
 #: ../src/libs/live_view.c:437
 msgid "on"
 msgstr "vklopljeno"
@@ -1749,11 +1793,11 @@ msgstr "vklopljeno"
 #: ../src/common/history.c:798 ../src/common/history.c:801
 #: ../src/common/history.c:817 ../src/common/styles.c:894
 #: ../src/common/styles.c:898 ../src/develop/blend_gui.c:2248
-#: ../src/develop/blend_gui.c:2498 ../src/develop/develop.c:1808
+#: ../src/develop/blend_gui.c:2498 ../src/develop/develop.c:1802
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
 #: ../src/iop/ashift.c:4855 ../src/iop/ashift.c:4861 ../src/iop/colorin.c:2107
 #: ../src/iop/demosaic.c:5147 ../src/iop/vignette.c:1150
-#: ../src/libs/history.c:162 ../src/libs/live_view.c:436
+#: ../src/libs/history.c:163 ../src/libs/live_view.c:436
 msgid "off"
 msgstr "izklopljeno"
 
@@ -1899,7 +1943,7 @@ msgstr ""
 msgid "opencl scheduling profile set to default."
 msgstr "privzeti časovni plan opencl."
 
-#: ../src/common/pdf.h:88 ../src/iop/lens.cc:1927
+#: ../src/common/pdf.h:88 ../src/iop/lens.cc:1947
 #: ../src/libs/print_settings.c:1289
 msgid "mm"
 msgstr "mm"
@@ -2013,7 +2057,7 @@ msgid "below sea level"
 msgstr "pod morjem"
 
 #: ../src/common/utility.c:508 ../src/iop/watermark.c:775
-#: ../src/libs/metadata_view.c:569
+#: ../src/libs/metadata_view.c:576
 msgid "m"
 msgstr "m"
 
@@ -2101,7 +2145,7 @@ msgstr[1] "uvažam %d sliki iz kamere"
 msgstr[2] "uvažam %d slik iz kamere"
 msgstr[3] "uvažam %d slik iz kamere"
 
-#: ../src/control/jobs/camera_jobs.c:391 ../src/gui/camera_import_dialog.c:209
+#: ../src/control/jobs/camera_jobs.c:391 ../src/gui/camera_import_dialog.c:287
 msgid "import images from camera"
 msgstr "uvozi slike iz kamere"
 
@@ -3028,7 +3072,7 @@ msgstr "začasno ugasni masko mešanja. samo za modul v centru obdelave"
 msgid "mask refinement"
 msgstr "izboljšanje maske"
 
-#: ../src/develop/develop.c:1590
+#: ../src/develop/develop.c:1589
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: modul `%s' neusklajenost verzije: %d != %d"
@@ -3051,12 +3095,12 @@ msgstr "pomakni navzdol"
 
 #. delete
 #: ../src/develop/imageop.c:1041 ../src/libs/image.c:144
-#: ../src/libs/styles.c:458
+#: ../src/libs/styles.c:458 ../src/libs/tagging.c:1166
+#: ../src/libs/tagging.c:1263
 msgid "delete"
 msgstr "briši"
 
-#: ../src/develop/imageop.c:1048 ../src/libs/tagging.c:845
-#: ../src/libs/tagging.c:1002
+#: ../src/develop/imageop.c:1048 ../src/libs/tagging.c:1736
 msgid "rename"
 msgstr "preimenuj"
 
@@ -3072,8 +3116,8 @@ msgstr "modul %s je onemogočen"
 
 #: ../src/develop/imageop.c:1402 ../src/gui/accelerators.c:686
 #: ../src/gui/accelerators.c:771 ../src/gui/accelerators.c:953
-#: ../src/gui/accelerators.c:979 ../src/gui/presets.c:190
-#: ../src/gui/presets.c:303 ../src/gui/presets.c:644
+#: ../src/gui/accelerators.c:979 ../src/gui/camera_import_dialog.c:445
+#: ../src/gui/presets.c:190 ../src/gui/presets.c:303 ../src/gui/presets.c:644
 #: ../src/iop/temperature.c:1459 ../src/libs/import.c:560 ../src/libs/lib.c:320
 #: ../src/libs/lib.c:348 ../src/libs/lib.c:1125
 msgid "preset"
@@ -3141,7 +3185,9 @@ msgstr "ne morem najti lightroomov XMP!"
 msgid "`%s' not a lightroom XMP!"
 msgstr "'%s' ni lightroomov XMP!"
 
-#: ../src/develop/lightroom.c:1568 ../src/libs/import.c:580
+#. tags
+#: ../src/develop/lightroom.c:1568 ../src/gui/camera_import_dialog.c:465
+#: ../src/libs/import.c:580 ../src/libs/metadata_view.c:136
 msgid "tags"
 msgstr "značke"
 
@@ -3516,7 +3562,7 @@ msgstr "večerno sonce"
 msgid "underwater"
 msgstr "pod vodo"
 
-#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1895
+#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1893
 msgid "black & white"
 msgstr "črno-belo"
 
@@ -3646,52 +3692,54 @@ msgstr "lua"
 msgid "deleting preset for obsolete module"
 msgstr "brisanje začetnih nastavitev zastarelega modula"
 
-#: ../src/gui/camera_import_dialog.c:182
+#: ../src/gui/camera_import_dialog.c:262
 msgid "store value as default"
 msgstr "shrani vrednost kot privzeto"
 
-#: ../src/gui/camera_import_dialog.c:187
+#: ../src/gui/camera_import_dialog.c:267
 msgid "reset value to default"
 msgstr "ponastavi na privzeto vrednost"
 
-#: ../src/gui/camera_import_dialog.c:210 ../src/libs/geotagging.c:419
-#: ../src/libs/tagging.c:845 ../src/libs/tagging.c:1002
+#: ../src/gui/camera_import_dialog.c:288 ../src/libs/geotagging.c:419
+#: ../src/libs/tagging.c:1166 ../src/libs/tagging.c:1263
+#: ../src/libs/tagging.c:1351 ../src/libs/tagging.c:1516
+#: ../src/libs/tagging.c:1736
 msgid "cancel"
 msgstr "prekliči"
 
-#: ../src/gui/camera_import_dialog.c:210
+#: ../src/gui/camera_import_dialog.c:288
 msgctxt "camera import"
 msgid "import"
 msgstr "uvozi"
 
 #. Top info
-#: ../src/gui/camera_import_dialog.c:226
+#: ../src/gui/camera_import_dialog.c:304
 msgid "please wait while prefetching thumbnails of images from camera..."
 msgstr "prosim počakajte dokler ne pridobim predoglednih sličic iz kamere..."
 
-#: ../src/gui/camera_import_dialog.c:233 ../src/libs/session.c:100
+#: ../src/gui/camera_import_dialog.c:311 ../src/libs/session.c:100
 msgid "jobcode"
 msgstr "številka posla"
 
-#: ../src/gui/camera_import_dialog.c:247
+#: ../src/gui/camera_import_dialog.c:325
 msgid "thumbnail"
 msgstr "predogledna sličica"
 
-#: ../src/gui/camera_import_dialog.c:251
+#: ../src/gui/camera_import_dialog.c:329
 msgid "storage file"
 msgstr "datoteka shrambe"
 
 #. general settings
-#: ../src/gui/camera_import_dialog.c:269
+#: ../src/gui/camera_import_dialog.c:347
 msgid "general"
 msgstr "splošno"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:272 ../src/libs/import.c:455
+#: ../src/gui/camera_import_dialog.c:350 ../src/libs/import.c:455
 msgid "ignore JPEG files"
 msgstr "preskoči slike v JPEG"
 
-#: ../src/gui/camera_import_dialog.c:274 ../src/libs/import.c:456
+#: ../src/gui/camera_import_dialog.c:352 ../src/libs/import.c:456
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful when "
 "there are raw+JPEG in a directory."
@@ -3699,11 +3747,40 @@ msgstr ""
 "ne nalagaj datotek s podaljškom .jpg ali .jpeg. uporabno, kadar so v mapi "
 "tako surove slike kot slike v formatu JPEG."
 
-#: ../src/gui/camera_import_dialog.c:283
+#. default metadata
+#: ../src/gui/camera_import_dialog.c:361 ../src/libs/import.c:468
+msgid "apply metadata on import"
+msgstr "uporabi metapodatke za uvoz"
+
+#: ../src/gui/camera_import_dialog.c:362 ../src/libs/import.c:469
+msgid "apply some metadata to all newly imported images."
+msgstr "uporabi metapodatke za vse na novo uvožene slike."
+
+#: ../src/gui/camera_import_dialog.c:396 ../src/libs/import.c:510
+msgid "comma separated list of tags"
+msgstr "seznam značk ločenih z vejico"
+
+#: ../src/gui/camera_import_dialog.c:450 ../src/libs/collect.h:35
+#: ../src/libs/import.c:565 ../src/libs/metadata.c:349
+#: ../src/libs/metadata_view.c:127
+msgid "creator"
+msgstr "ustvarjalec"
+
+#: ../src/gui/camera_import_dialog.c:455 ../src/libs/collect.h:35
+#: ../src/libs/import.c:570 ../src/libs/metadata.c:350
+msgid "publisher"
+msgstr "izdajatelj"
+
+#: ../src/gui/camera_import_dialog.c:460 ../src/libs/collect.h:36
+#: ../src/libs/import.c:575 ../src/libs/metadata.c:351
+msgid "rights"
+msgstr "pravice"
+
+#: ../src/gui/camera_import_dialog.c:489
 msgid "override today's date"
 msgstr "razveljavi današnji datum"
 
-#: ../src/gui/camera_import_dialog.c:286
+#: ../src/gui/camera_import_dialog.c:492
 msgid ""
 "check this, if you want to override the timestamp used when expanding "
 "variables:\n"
@@ -3714,15 +3791,15 @@ msgstr ""
 "$(YEAR), $(MONTH), $(DAY),\n"
 "$(HOUR), $(MINUTE), $(SECOND)"
 
-#: ../src/gui/camera_import_dialog.c:302
+#: ../src/gui/camera_import_dialog.c:508
 msgid "images"
 msgstr "slike"
 
-#: ../src/gui/camera_import_dialog.c:303
+#: ../src/gui/camera_import_dialog.c:509
 msgid "settings"
 msgstr "nastavitve"
 
-#: ../src/gui/camera_import_dialog.c:497
+#: ../src/gui/camera_import_dialog.c:703
 msgid ""
 "select the images from the list below that you want to import into a new "
 "filmroll"
@@ -3730,7 +3807,7 @@ msgstr ""
 "izberite slike iz spodnjega seznama, ki jih želite uvoziti v naslednji zvitek "
 "filma"
 
-#: ../src/gui/camera_import_dialog.c:548
+#: ../src/gui/camera_import_dialog.c:754
 msgid "please use YYYY-MM-DD format for date override"
 msgstr "prosim uporabljajte format YYYY-MM-DD za razveljavitev datuma"
 
@@ -4015,7 +4092,7 @@ msgid "golden spiral"
 msgstr "zlata spirala"
 
 #: ../src/gui/guides.c:444 ../src/imageio/format/pdf.c:681
-#: ../src/iop/denoiseprofile.c:3296 ../src/iop/lens.cc:2306
+#: ../src/iop/denoiseprofile.c:3296 ../src/iop/lens.cc:2326
 #: ../src/iop/rawdenoise.c:985 ../src/libs/tools/filter.c:125
 msgid "all"
 msgstr "vse"
@@ -4070,13 +4147,13 @@ msgstr "ne izberi _nič"
 msgid "_ok"
 msgstr "_ok"
 
-#: ../src/gui/hist_dialog.c:167 ../src/gui/styles_dialog.c:347
-#: ../src/gui/styles_dialog.c:356
+#: ../src/gui/hist_dialog.c:167 ../src/gui/styles_dialog.c:349
+#: ../src/gui/styles_dialog.c:358
 msgid "include"
 msgstr "vključi"
 
-#: ../src/gui/hist_dialog.c:174 ../src/gui/styles_dialog.c:376
-#: ../src/gui/styles_dialog.c:379
+#: ../src/gui/hist_dialog.c:174 ../src/gui/styles_dialog.c:378
+#: ../src/gui/styles_dialog.c:381
 msgid "item"
 msgstr "postavka"
 
@@ -4090,7 +4167,7 @@ msgid "normal images"
 msgstr "normalne slike"
 
 #: ../src/gui/preferences.c:82 ../src/gui/presets.c:57
-#: ../src/libs/metadata_view.c:286
+#: ../src/libs/metadata_view.c:293
 msgid "raw"
 msgstr "surove"
 
@@ -4137,25 +4214,25 @@ msgstr "modul"
 
 #. exif
 #: ../src/gui/preferences.c:497 ../src/gui/preferences.c:1421
-#: ../src/gui/presets.c:431 ../src/libs/metadata_view.c:106
+#: ../src/gui/presets.c:431 ../src/libs/metadata_view.c:110
 msgid "model"
 msgstr "model"
 
 #: ../src/gui/preferences.c:501 ../src/gui/preferences.c:1429
-#: ../src/gui/presets.c:438 ../src/libs/metadata_view.c:107
+#: ../src/gui/presets.c:438 ../src/libs/metadata_view.c:111
 msgid "maker"
 msgstr "izdelovalec"
 
 #: ../src/gui/preferences.c:505 ../src/gui/preferences.c:1437
 #: ../src/gui/presets.c:445 ../src/libs/collect.h:36
-#: ../src/libs/metadata_view.c:108
+#: ../src/libs/metadata_view.c:112
 msgid "lens"
-msgstr "leče"
+msgstr "objektiv"
 
 #. iso
 #: ../src/gui/preferences.c:509 ../src/gui/preferences.c:1443
 #: ../src/gui/presets.c:451 ../src/libs/camera.c:588 ../src/libs/collect.h:37
-#: ../src/libs/metadata_view.c:113
+#: ../src/libs/metadata_view.c:117
 msgid "ISO"
 msgstr "ISO"
 
@@ -4163,21 +4240,21 @@ msgstr "ISO"
 #: ../src/gui/preferences.c:513 ../src/gui/preferences.c:1456
 #: ../src/gui/presets.c:464 ../src/iop/basicadj.c:680 ../src/iop/exposure.c:107
 #: ../src/iop/exposure.c:886 ../src/iop/relight.c:361 ../src/libs/collect.h:37
-#: ../src/libs/metadata_view.c:110
+#: ../src/libs/metadata_view.c:114
 msgid "exposure"
 msgstr "ekspozicija"
 
 #. aperture
 #: ../src/gui/preferences.c:517 ../src/gui/preferences.c:1471
 #: ../src/gui/presets.c:479 ../src/libs/camera.c:575 ../src/libs/camera.c:577
-#: ../src/libs/collect.h:37 ../src/libs/metadata_view.c:109
+#: ../src/libs/collect.h:37 ../src/libs/metadata_view.c:113
 msgid "aperture"
 msgstr "zaslonka"
 
 #. focal length
 #: ../src/gui/preferences.c:521 ../src/gui/preferences.c:1486
 #: ../src/gui/presets.c:494 ../src/iop/ashift.c:4873 ../src/libs/camera.c:580
-#: ../src/libs/collect.h:36 ../src/libs/metadata_view.c:111
+#: ../src/libs/collect.h:36 ../src/libs/metadata_view.c:115
 msgid "focal length"
 msgstr "goriščna razdalja"
 
@@ -4313,7 +4390,7 @@ msgstr ""
 #: ../src/gui/preferences.c:1436 ../src/gui/presets.c:444
 #, no-c-format
 msgid "string to match lens (use % as wildcard)"
-msgstr "šablona za iskanje leče (uporabi % kot splošni model)"
+msgstr "šablona za iskanje objektiva (uporabi % kot splošni model)"
 
 #: ../src/gui/preferences.c:1446 ../src/gui/presets.c:454
 msgid "minimum ISO value"
@@ -4446,19 +4523,25 @@ msgstr "ustvari duplikat sloga pred uveljavljanjem sprememb"
 msgid "create new style"
 msgstr "ustvari nov slog"
 
-#: ../src/gui/styles_dialog.c:309
+#: ../src/gui/styles_dialog.c:310
 msgid "enter a name for the new style"
 msgstr "vnesite ime novega sloga"
 
-#: ../src/gui/styles_dialog.c:313
+#. DT_COLLECTION_SORT_TITLE
+#: ../src/gui/styles_dialog.c:313 ../src/libs/collect.h:35
+#: ../src/libs/metadata.c:348 ../src/libs/tools/filter.c:156
+msgid "description"
+msgstr "opis"
+
+#: ../src/gui/styles_dialog.c:315
 msgid "enter a description for the new style, this description is searchable"
 msgstr "vnesite opis novega sloga, po teh opisih lahko preiskujete"
 
-#: ../src/gui/styles_dialog.c:368
+#: ../src/gui/styles_dialog.c:370
 msgid "update"
 msgstr "osveži"
 
-#: ../src/gui/styles_dialog.c:463
+#: ../src/gui/styles_dialog.c:465
 msgid "can't create style out of unaltered image"
 msgstr "ne morem ustvariti sloga iz nespremenjene slike"
 
@@ -4569,7 +4652,7 @@ msgstr "neveljavna velikost roba, privzemam 0"
 #: ../src/imageio/storage/email.c:136 ../src/imageio/storage/facebook.c:1308
 #: ../src/imageio/storage/flickr.c:656 ../src/imageio/storage/gallery.c:346
 #: ../src/imageio/storage/gallery.c:387
-#: ../src/imageio/storage/googlephoto.c:1377 ../src/imageio/storage/piwigo.c:975
+#: ../src/imageio/storage/googlephoto.c:1377 ../src/imageio/storage/piwigo.c:976
 #, c-format
 msgid "could not export to file `%s'!"
 msgstr "nisem mogel izvoziti v datoteko `%s'!"
@@ -4586,8 +4669,8 @@ msgstr "PDF"
 #: ../src/imageio/format/pdf.c:583 ../src/imageio/storage/facebook.c:1120
 #: ../src/imageio/storage/flickr.c:540 ../src/imageio/storage/gallery.c:185
 #: ../src/imageio/storage/googlephoto.c:1233 ../src/imageio/storage/latex.c:185
-#: ../src/imageio/storage/piwigo.c:865 ../src/libs/collect.h:34
-#: ../src/libs/metadata.c:347 ../src/libs/metadata_view.c:122
+#: ../src/imageio/storage/piwigo.c:866 ../src/libs/collect.h:34
+#: ../src/libs/metadata.c:347 ../src/libs/metadata_view.c:126
 #: ../src/libs/tools/filter.c:155
 msgid "title"
 msgstr "naslov"
@@ -4943,7 +5026,7 @@ msgstr ""
 
 #: ../src/imageio/storage/facebook.c:630 ../src/imageio/storage/facebook.c:725
 msgid "facebook authentication"
-msgstr "overovljenje na facebooku"
+msgstr "overitev na facebooku"
 
 #: ../src/imageio/storage/facebook.c:638
 msgid "URL:"
@@ -4959,11 +5042,11 @@ msgstr "vnesen spletni naslov ni veljaven, mora biti podoben: "
 
 #: ../src/imageio/storage/facebook.c:701
 msgid "authentication successful"
-msgstr "uspešna overovitev"
+msgstr "uspešna overitev"
 
 #: ../src/imageio/storage/facebook.c:705
 msgid "authentication failed"
-msgstr "overovitev je spodletela"
+msgstr "overitev je spodletela"
 
 #: ../src/imageio/storage/facebook.c:718
 msgid ""
@@ -4973,7 +5056,7 @@ msgid ""
 msgstr ""
 "novo okno ali nov zavihek vašega brskalnika bi moral biti naložen. morate se "
 "prijaviti ste na vaš račun v facebooku in pred nadaljevanjem morate dovoliti "
-"programu darktable, da prenese fotografije."
+"programu darktable, da tja prenese fotografije."
 
 #: ../src/imageio/storage/facebook.c:851
 #: ../src/imageio/storage/googlephoto.c:942
@@ -5010,7 +5093,7 @@ msgstr "odjava"
 #: ../src/imageio/storage/googlephoto.c:1044
 #: ../src/imageio/storage/googlephoto.c:1192
 #: ../src/imageio/storage/googlephoto.c:1205
-#: ../src/imageio/storage/googlephoto.c:1272 ../src/imageio/storage/piwigo.c:810
+#: ../src/imageio/storage/googlephoto.c:1272 ../src/imageio/storage/piwigo.c:811
 msgid "login"
 msgstr "prijava"
 
@@ -5031,7 +5114,7 @@ msgid "only me"
 msgstr "samo jaz"
 
 #: ../src/imageio/storage/facebook.c:1171 ../src/imageio/storage/flickr.c:508
-#: ../src/imageio/storage/piwigo.c:836
+#: ../src/imageio/storage/piwigo.c:837
 msgid "friends"
 msgstr "prijatelji"
 
@@ -5070,7 +5153,7 @@ msgstr[3] "%d/%d izvoženo v spletni album na facebook"
 #: ../src/imageio/storage/flickr.c:117
 #, c-format
 msgid "flickr authentication: %s"
-msgstr "overovitev flickr: %s"
+msgstr "overitev za flickr: %s"
 
 #: ../src/imageio/storage/flickr.c:198
 msgid ""
@@ -5080,7 +5163,7 @@ msgid ""
 msgstr ""
 "korak1: novo okno ali nov zavihek vašega brskalnika mora biti naložen. "
 "prijavljeni ste na vaš račun v flickrju in pred nadaljevanjem ste dovolili "
-"programu darktable, da prenese fotografije."
+"programu darktable, da tja prenese fotografije."
 
 #: ../src/imageio/storage/flickr.c:200
 msgid "step 2: click the OK button once you are done."
@@ -5088,7 +5171,7 @@ msgstr "korak 2: kliknite gumb <OK>, ko ste opravili."
 
 #: ../src/imageio/storage/flickr.c:205
 msgid "flickr authentication"
-msgstr "overovitev flickr"
+msgstr "overitev za flickr"
 
 #: ../src/imageio/storage/flickr.c:318
 msgid "flickr webalbum"
@@ -5119,19 +5202,19 @@ msgstr "uporabnik flickr"
 msgid "flickr login"
 msgstr "prijava na flickr"
 
-#: ../src/imageio/storage/flickr.c:497 ../src/imageio/storage/piwigo.c:821
+#: ../src/imageio/storage/flickr.c:497 ../src/imageio/storage/piwigo.c:822
 msgid "export tags"
 msgstr "izvozi značke"
 
-#: ../src/imageio/storage/flickr.c:506 ../src/imageio/storage/piwigo.c:833
+#: ../src/imageio/storage/flickr.c:506 ../src/imageio/storage/piwigo.c:834
 msgid "visible to"
 msgstr "vidno"
 
-#: ../src/imageio/storage/flickr.c:507 ../src/imageio/storage/piwigo.c:838
+#: ../src/imageio/storage/flickr.c:507 ../src/imageio/storage/piwigo.c:839
 msgid "you"
 msgstr "vi"
 
-#: ../src/imageio/storage/flickr.c:509 ../src/imageio/storage/piwigo.c:837
+#: ../src/imageio/storage/flickr.c:509 ../src/imageio/storage/piwigo.c:838
 msgid "family"
 msgstr "družina"
 
@@ -5139,7 +5222,7 @@ msgstr "družina"
 msgid "friends + family"
 msgstr "prijatelji + družina"
 
-#: ../src/imageio/storage/flickr.c:511 ../src/imageio/storage/piwigo.c:834
+#: ../src/imageio/storage/flickr.c:511 ../src/imageio/storage/piwigo.c:835
 msgid "everyone"
 msgstr "vsak"
 
@@ -5148,7 +5231,7 @@ msgstr "vsak"
 msgid "photosets"
 msgstr "zbirke fotografij"
 
-#: ../src/imageio/storage/flickr.c:525 ../src/imageio/storage/piwigo.c:852
+#: ../src/imageio/storage/flickr.c:525 ../src/imageio/storage/piwigo.c:853
 msgid "refresh album list"
 msgstr "osvežen seznam albumov"
 
@@ -5160,7 +5243,7 @@ msgstr "moja nova zbirka fotografij"
 msgid "exported from darktable"
 msgstr "izvoženo iz programa darktable"
 
-#: ../src/imageio/storage/flickr.c:568 ../src/imageio/storage/piwigo.c:883
+#: ../src/imageio/storage/flickr.c:568 ../src/imageio/storage/piwigo.c:884
 msgid "click login button to start"
 msgstr "za začetek kliknite na gumb login"
 
@@ -5207,7 +5290,7 @@ msgstr ""
 
 #: ../src/imageio/storage/googlephoto.c:770
 msgid "google authentication"
-msgstr "googlova avtentikacija"
+msgstr "googlova overitev"
 
 #: ../src/imageio/storage/googlephoto.c:778
 msgid "verification code:"
@@ -5246,7 +5329,7 @@ msgstr "vnesite naslov knjige"
 
 #: ../src/imageio/storage/piwigo.c:478
 msgid "not authenticated, cannot reach server"
-msgstr "ni avtenticirano, strežnika ne morem uporabiti"
+msgstr "ni overjeno, strežnika ne morem uporabiti"
 
 #: ../src/imageio/storage/piwigo.c:589
 msgid "---"
@@ -5256,19 +5339,19 @@ msgstr "---"
 msgid "cannot refresh albums"
 msgstr "ne morem osvežiti albumov"
 
-#: ../src/imageio/storage/piwigo.c:723
+#: ../src/imageio/storage/piwigo.c:724
 msgid "piwigo"
 msgstr "piwigo"
 
-#: ../src/imageio/storage/piwigo.c:748
+#: ../src/imageio/storage/piwigo.c:749
 msgid "accounts"
 msgstr "računi"
 
-#: ../src/imageio/storage/piwigo.c:765
+#: ../src/imageio/storage/piwigo.c:766
 msgid "server"
 msgstr "strežnik"
 
-#: ../src/imageio/storage/piwigo.c:769
+#: ../src/imageio/storage/piwigo.c:770
 msgid ""
 "the server name\n"
 "default protocol is https\n"
@@ -5277,47 +5360,47 @@ msgstr ""
 "ime strežnika\\ privzet protokol je https\n"
 "določite http:// če je kriptografsko nezavarovan strežnik"
 
-#: ../src/imageio/storage/piwigo.c:782
+#: ../src/imageio/storage/piwigo.c:783
 msgid "user"
 msgstr "uporabnik"
 
-#: ../src/imageio/storage/piwigo.c:796
+#: ../src/imageio/storage/piwigo.c:797
 msgid "password"
 msgstr "geslo"
 
-#: ../src/imageio/storage/piwigo.c:811
+#: ../src/imageio/storage/piwigo.c:812
 msgid "piwigo login"
 msgstr "prijava za piwigo"
 
-#: ../src/imageio/storage/piwigo.c:835
+#: ../src/imageio/storage/piwigo.c:836
 msgid "contacts"
 msgstr "kontakti"
 
 #. Available albums
-#: ../src/imageio/storage/piwigo.c:846
-msgid "albums"
-msgstr "albumi"
+#: ../src/imageio/storage/piwigo.c:847
+msgid "album"
+msgstr "album"
 
-#: ../src/imageio/storage/piwigo.c:871
+#: ../src/imageio/storage/piwigo.c:872
 msgid "new album"
 msgstr "novi album"
 
 #. parent album list
 #. Available albums
-#: ../src/imageio/storage/piwigo.c:879
+#: ../src/imageio/storage/piwigo.c:880
 msgid "parent album"
 msgstr "nadrejeni album"
 
-#: ../src/imageio/storage/piwigo.c:996
+#: ../src/imageio/storage/piwigo.c:997
 msgid "cannot create a new piwigo album!"
 msgstr "ne morem tvoriti novega albuma v piwigo!"
 
-#: ../src/imageio/storage/piwigo.c:1005
+#: ../src/imageio/storage/piwigo.c:1006
 msgid "could not upload to piwigo!"
-msgstr "ne morem naložiti v piwigo!"
+msgstr "nisem mogel prenesti v piwigo!"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/piwigo.c:1029
+#: ../src/imageio/storage/piwigo.c:1030
 #, c-format
 msgid "%d/%d exported to piwigo webalbum"
 msgid_plural "%d/%d exported to piwigo webalbum"
@@ -5819,7 +5902,7 @@ msgstr "osnovna krivulja"
 msgid "abscissa: input, ordinate: output. works on RGB channels"
 msgstr "abscisa: vhod, ordinata: izhod - deluje na kanalih RGB"
 
-#: ../src/iop/basecurve.c:2130 ../src/iop/lens.cc:2441
+#: ../src/iop/basecurve.c:2130 ../src/iop/lens.cc:2461
 #: ../src/iop/tonecurve.c:1405 ../src/iop/vignette.c:1156
 #: ../src/iop/watermark.c:1434
 msgid "scale"
@@ -5853,7 +5936,7 @@ msgstr "ohranite barve"
 #: ../src/iop/basicadj.c:702 ../src/iop/clipping.c:1691
 #: ../src/iop/clipping.c:1977 ../src/iop/clipping.c:1995
 #: ../src/iop/clipping.c:2135 ../src/iop/clipping.c:2162
-#: ../src/iop/colorreconstruction.c:1377 ../src/iop/lens.cc:2300
+#: ../src/iop/colorreconstruction.c:1377 ../src/iop/lens.cc:2320
 #: ../src/iop/retouch.c:582 ../src/iop/rgbcurve.c:1585
 #: ../src/iop/rgblevels.c:1117 ../src/iop/tonecurve.c:1393
 #: ../src/libs/export.c:510 ../src/libs/live_view.c:350
@@ -6010,7 +6093,7 @@ msgstr "nastavitev svetlosti"
 #: ../src/iop/colorchecker.c:1385 ../src/iop/colorcorrection.c:292
 #: ../src/iop/colorize.c:431 ../src/iop/colorzones.c:2263
 #: ../src/iop/colorzones.c:2327 ../src/iop/graduatednd.c:1260
-#: ../src/iop/lowpass.c:687 ../src/iop/soften.c:741 ../src/iop/splittoning.c:600
+#: ../src/iop/lowpass.c:687 ../src/iop/soften.c:741 ../src/iop/splittoning.c:626
 #: ../src/iop/vignette.c:1159
 msgid "saturation"
 msgstr "zasičenost"
@@ -6052,11 +6135,11 @@ msgstr "lokalna Laplacova transformacija: nekonsistenten izhod"
 
 #: ../src/iop/bilat.c:525 ../src/iop/colorbalance.c:2365
 #: ../src/iop/denoiseprofile.c:3374 ../src/iop/exposure.c:864
-#: ../src/iop/lens.cc:2449 ../src/iop/levels.c:672
+#: ../src/iop/lens.cc:2469 ../src/iop/levels.c:672
 #: ../src/iop/profile_gamma.c:857 ../src/iop/rgbcurve.c:1478
 #: ../src/iop/rgblevels.c:1010 ../src/libs/copy_history.c:337
 #: ../src/libs/export.c:671 ../src/libs/print_settings.c:1513
-#: ../src/views/darkroom.c:1830
+#: ../src/views/darkroom.c:1828
 msgid "mode"
 msgstr "način"
 
@@ -6099,7 +6182,7 @@ msgid "L difference to detect edges (range sigma of bilateral filter)"
 msgstr "razlika L za določanje robov (sigma obsega bilateralnega filtra)"
 
 #: ../src/iop/bilat.c:551 ../src/iop/monochrome.c:612 ../src/iop/shadhi.c:841
-#: ../src/iop/splittoning.c:638
+#: ../src/iop/splittoning.c:664
 msgid "highlights"
 msgstr "bleščave"
 
@@ -6107,7 +6190,7 @@ msgstr "bleščave"
 msgid "changes the local contrast of highlights"
 msgstr "spremembe lokalnih kontrastov bleščav"
 
-#: ../src/iop/bilat.c:557 ../src/iop/shadhi.c:840 ../src/iop/splittoning.c:633
+#: ../src/iop/bilat.c:557 ../src/iop/shadhi.c:840 ../src/iop/splittoning.c:659
 msgid "shadows"
 msgstr "sence"
 
@@ -6451,7 +6534,7 @@ msgstr "cilj"
 #: ../src/iop/colorize.c:416 ../src/iop/colorreconstruction.c:1374
 #: ../src/iop/colorreconstruction.c:1379 ../src/iop/colorzones.c:2265
 #: ../src/iop/colorzones.c:2326 ../src/iop/graduatednd.c:1245
-#: ../src/iop/splittoning.c:585
+#: ../src/iop/splittoning.c:611
 msgid "hue"
 msgstr "odtenek"
 
@@ -7207,7 +7290,7 @@ msgctxt "accel"
 msgid "source mix"
 msgstr "mešanje vhodov"
 
-#: ../src/iop/colorize.c:423 ../src/iop/splittoning.c:592
+#: ../src/iop/colorize.c:423 ../src/iop/splittoning.c:618
 msgid "select the hue tone"
 msgstr "izberi ton odtenka"
 
@@ -7241,43 +7324,43 @@ msgctxt "accel"
 msgid "acquire as target"
 msgstr "pridobi kot cilj"
 
-#: ../src/iop/colormapping.c:1108
+#: ../src/iop/colormapping.c:1113
 msgid "source clusters:"
 msgstr "izvorne grupe:"
 
-#: ../src/iop/colormapping.c:1117
+#: ../src/iop/colormapping.c:1122
 msgid "target clusters:"
 msgstr "ciljne grupe:"
 
-#: ../src/iop/colormapping.c:1130
+#: ../src/iop/colormapping.c:1135
 msgid "acquire as source"
 msgstr "pridobi kot vhod"
 
-#: ../src/iop/colormapping.c:1132
+#: ../src/iop/colormapping.c:1137
 msgid "analyze this image as a source image"
 msgstr "analiziraj to sliko kot izvirno sliko"
 
-#: ../src/iop/colormapping.c:1136
+#: ../src/iop/colormapping.c:1141
 msgid "acquire as target"
 msgstr "pridobi kot cilj"
 
-#: ../src/iop/colormapping.c:1138
+#: ../src/iop/colormapping.c:1143
 msgid "analyze this image as a target image"
 msgstr "analiziraj to sliko kot ciljno sliko"
 
-#: ../src/iop/colormapping.c:1143
+#: ../src/iop/colormapping.c:1148
 msgid "number of clusters"
 msgstr "število grup"
 
-#: ../src/iop/colormapping.c:1145
+#: ../src/iop/colormapping.c:1150
 msgid "number of clusters to find in image. value change resets all clusters"
 msgstr "število grup za iskanje po sliki. sprememba števila spremeni vse grupe"
 
-#: ../src/iop/colormapping.c:1150
+#: ../src/iop/colormapping.c:1155
 msgid "color dominance"
 msgstr "barvna nadvlada"
 
-#: ../src/iop/colormapping.c:1151
+#: ../src/iop/colormapping.c:1156
 msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
@@ -7285,11 +7368,11 @@ msgstr ""
 "kako so preslikane grupe: temni deli na sorodnosti barv, svetli deli na "
 "barvni nadvladi"
 
-#: ../src/iop/colormapping.c:1158
+#: ../src/iop/colormapping.c:1163
 msgid "histogram equalization"
 msgstr "uravnavanje histograma"
 
-#: ../src/iop/colormapping.c:1159
+#: ../src/iop/colormapping.c:1164
 msgid "level of histogram equalization"
 msgstr "raven uravnavanja histograma"
 
@@ -7315,30 +7398,30 @@ msgstr "namen izhoda"
 
 #: ../src/iop/colorout.c:869 ../src/libs/export.c:654
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1457
-#: ../src/views/darkroom.c:1973 ../src/views/darkroom.c:1981
-#: ../src/views/lighttable.c:4801 ../src/views/lighttable.c:4809
+#: ../src/views/darkroom.c:1971 ../src/views/darkroom.c:1979
+#: ../src/views/lighttable.c:4835 ../src/views/lighttable.c:4843
 msgid "perceptual"
 msgstr "videz"
 
 #: ../src/iop/colorout.c:870 ../src/libs/export.c:655
 #: ../src/libs/print_settings.c:1243 ../src/libs/print_settings.c:1458
-#: ../src/views/darkroom.c:1974 ../src/views/darkroom.c:1982
-#: ../src/views/lighttable.c:4802 ../src/views/lighttable.c:4810
+#: ../src/views/darkroom.c:1972 ../src/views/darkroom.c:1980
+#: ../src/views/lighttable.c:4836 ../src/views/lighttable.c:4844
 msgid "relative colorimetric"
 msgstr "relativni kolorimetrični"
 
 #: ../src/iop/colorout.c:871 ../src/libs/export.c:656
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1459
-#: ../src/views/darkroom.c:1975 ../src/views/darkroom.c:1983
-#: ../src/views/lighttable.c:4803 ../src/views/lighttable.c:4811
+#: ../src/views/darkroom.c:1973 ../src/views/darkroom.c:1981
+#: ../src/views/lighttable.c:4837 ../src/views/lighttable.c:4845
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "nasičenost"
 
 #: ../src/iop/colorout.c:872 ../src/libs/export.c:657
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
-#: ../src/views/darkroom.c:1976 ../src/views/darkroom.c:1984
-#: ../src/views/lighttable.c:4804 ../src/views/lighttable.c:4812
+#: ../src/views/darkroom.c:1974 ../src/views/darkroom.c:1982
+#: ../src/views/lighttable.c:4838 ../src/views/lighttable.c:4846
 msgid "absolute colorimetric"
 msgstr "absolutno kolorimetričen"
 
@@ -8105,7 +8188,7 @@ msgstr ""
 "odstotek izločenih svetlih tonov, preklopite izbirnik barv za aktiviranje"
 
 #: ../src/iop/exposure.c:903 ../src/iop/highlights.c:1087
-#: ../src/views/darkroom.c:1858
+#: ../src/views/darkroom.c:1856
 msgid "clipping threshold"
 msgstr "prag obrezave"
 
@@ -8268,7 +8351,7 @@ msgstr ""
 "ima vpliv predvsem na srednje tone"
 
 #. geotagging
-#: ../src/iop/filmic.c:1761 ../src/libs/metadata_view.c:127
+#: ../src/iop/filmic.c:1761 ../src/libs/metadata_view.c:131
 msgid "latitude"
 msgstr "zemljepisna širina"
 
@@ -8845,7 +8928,7 @@ msgctxt "accel"
 msgid "select corrections"
 msgstr "izberite popravke"
 
-#: ../src/iop/lens.cc:1581
+#: ../src/iop/lens.cc:1601
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -8858,15 +8941,15 @@ msgstr ""
 "bajonet:\t\t%s\n"
 "faktor obrezave:\t%.1f"
 
-#: ../src/iop/lens.cc:1815
+#: ../src/iop/lens.cc:1835
 msgid "camera/lens not found - please select manually"
 msgstr "kamere/objektiva nisem našel - prosim izberite ročno"
 
-#: ../src/iop/lens.cc:1818
+#: ../src/iop/lens.cc:1838
 msgid "try to locate your camera/lens in the above two menus"
 msgstr "poskusite najti objektiv oz. kamero v zgornjih dveh menujih"
 
-#: ../src/iop/lens.cc:1882
+#: ../src/iop/lens.cc:1902
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -8885,143 +8968,143 @@ msgstr ""
 "tip:\t\t%s\n"
 "mounts:\t%s"
 
-#: ../src/iop/lens.cc:1928
+#: ../src/iop/lens.cc:1948
 msgid "focal length (mm)"
 msgstr "goriščna razdalja (mm)"
 
-#: ../src/iop/lens.cc:1952
+#: ../src/iop/lens.cc:1972
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.cc:1953
+#: ../src/iop/lens.cc:1973
 msgid "f-number (aperture)"
 msgstr "f-število (zaslonka)"
 
-#: ../src/iop/lens.cc:1967
+#: ../src/iop/lens.cc:1987
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.cc:1968
+#: ../src/iop/lens.cc:1988
 msgid "distance to subject"
 msgstr "razdalja do predmeta"
 
-#: ../src/iop/lens.cc:2312
+#: ../src/iop/lens.cc:2332
 msgid "distortion & TCA"
 msgstr "popačenje & TCA"
 
-#: ../src/iop/lens.cc:2318
+#: ../src/iop/lens.cc:2338
 msgid "distortion & vignetting"
 msgstr "popačenje & vinjetiranje"
 
-#: ../src/iop/lens.cc:2324
+#: ../src/iop/lens.cc:2344
 msgid "TCA & vignetting"
 msgstr "TCA & vinjetiranje"
 
-#: ../src/iop/lens.cc:2330
+#: ../src/iop/lens.cc:2350
 msgid "only distortion"
 msgstr "samo popačenje"
 
-#: ../src/iop/lens.cc:2336
+#: ../src/iop/lens.cc:2356
 msgid "only TCA"
 msgstr "samo TCA"
 
-#: ../src/iop/lens.cc:2342
+#: ../src/iop/lens.cc:2362
 msgid "only vignetting"
 msgstr "samo vinjetiranje"
 
-#: ../src/iop/lens.cc:2362
+#: ../src/iop/lens.cc:2382
 msgid "find camera"
 msgstr "išči kamero"
 
-#: ../src/iop/lens.cc:2376
+#: ../src/iop/lens.cc:2396
 msgid "find lens"
 msgstr "išči objektiv"
 
-#: ../src/iop/lens.cc:2407
+#: ../src/iop/lens.cc:2427
 msgid "corrections"
 msgstr "popravki"
 
-#: ../src/iop/lens.cc:2409
+#: ../src/iop/lens.cc:2429
 msgid "which corrections to apply"
 msgstr "katere popravke izvesti"
 
-#: ../src/iop/lens.cc:2422
+#: ../src/iop/lens.cc:2442
 msgid "geometry"
 msgstr "geometrija"
 
-#: ../src/iop/lens.cc:2424
+#: ../src/iop/lens.cc:2444
 msgid "target geometry"
 msgstr "geometria cilja"
 
-#: ../src/iop/lens.cc:2425
+#: ../src/iop/lens.cc:2445
 msgid "rectilinear"
 msgstr "pravokotno"
 
-#: ../src/iop/lens.cc:2426
+#: ../src/iop/lens.cc:2446
 msgid "fish-eye"
 msgstr "ribje oko"
 
-#: ../src/iop/lens.cc:2427
+#: ../src/iop/lens.cc:2447
 msgid "panoramic"
 msgstr "panoramsko"
 
-#: ../src/iop/lens.cc:2428
+#: ../src/iop/lens.cc:2448
 msgid "equirectangular"
 msgstr "kvadratna"
 
-#: ../src/iop/lens.cc:2430
+#: ../src/iop/lens.cc:2450
 msgid "orthographic"
 msgstr "ortografska"
 
-#: ../src/iop/lens.cc:2431
+#: ../src/iop/lens.cc:2451
 msgid "stereographic"
 msgstr "stereografska"
 
-#: ../src/iop/lens.cc:2432
+#: ../src/iop/lens.cc:2452
 msgid "equisolid angle"
 msgstr "enakomerni kot"
 
-#: ../src/iop/lens.cc:2433
+#: ../src/iop/lens.cc:2453
 msgid "thoby fish-eye"
 msgstr "ribje oko (thoby)"
 
-#: ../src/iop/lens.cc:2440
+#: ../src/iop/lens.cc:2460
 msgid "auto scale"
 msgstr "avtomatsko merilo"
 
-#: ../src/iop/lens.cc:2451
+#: ../src/iop/lens.cc:2471
 msgid "correct distortions or apply them"
 msgstr "popravi popačenja ali jih izvedi"
 
-#: ../src/iop/lens.cc:2452
+#: ../src/iop/lens.cc:2472
 msgid "correct"
 msgstr "popravi"
 
-#: ../src/iop/lens.cc:2453
+#: ../src/iop/lens.cc:2473
 msgid "distort"
 msgstr "popači"
 
-#: ../src/iop/lens.cc:2458
+#: ../src/iop/lens.cc:2478
 msgid "Transversal Chromatic Aberration red"
 msgstr "transverzalni barvni odklon rdeče"
 
-#: ../src/iop/lens.cc:2459
+#: ../src/iop/lens.cc:2479
 msgid "TCA red"
 msgstr "TCA rdeča"
 
-#: ../src/iop/lens.cc:2464
+#: ../src/iop/lens.cc:2484
 msgid "Transversal Chromatic Aberration blue"
 msgstr "transverzalni barvni odklon modre"
 
-#: ../src/iop/lens.cc:2465
+#: ../src/iop/lens.cc:2485
 msgid "TCA blue"
 msgstr "TCA modra"
 
-#: ../src/iop/lens.cc:2472
+#: ../src/iop/lens.cc:2492
 msgid "corrections done: "
 msgstr "popravki izvedeni: "
 
-#: ../src/iop/lens.cc:2473
+#: ../src/iop/lens.cc:2493
 msgid "which corrections have actually been done"
 msgstr "kateri popravki so bili zares izvedeni"
 
@@ -9740,7 +9823,7 @@ msgstr "širina"
 msgid "the fill-light in EV"
 msgstr "dopolnilna svetloba v EV"
 
-#: ../src/iop/relight.c:367 ../src/libs/metadata_view.c:115
+#: ../src/iop/relight.c:367 ../src/libs/metadata_view.c:119
 #: ../src/libs/print_settings.c:1307
 msgid "width"
 msgstr "širina"
@@ -10161,7 +10244,7 @@ msgstr "popravek barv v bleščavah"
 msgid "white point adjustment"
 msgstr "nastavitev točke beline"
 
-#: ../src/iop/shadhi.c:844 ../src/iop/splittoning.c:651
+#: ../src/iop/shadhi.c:844 ../src/iop/splittoning.c:678
 msgid "compress"
 msgstr "stisni"
 
@@ -10288,23 +10371,23 @@ msgstr "pravý platinotyp"
 msgid "chocolate brown"
 msgstr "čokoladno rjava"
 
-#: ../src/iop/splittoning.c:579
+#: ../src/iop/splittoning.c:605
 msgid "select tone color"
 msgstr "izberi barvni ton"
 
-#: ../src/iop/splittoning.c:603
+#: ../src/iop/splittoning.c:629
 msgid "select the saturation tone"
 msgstr "izberi ton nasičenja"
 
-#: ../src/iop/splittoning.c:645
+#: ../src/iop/splittoning.c:672
 msgid "balance"
 msgstr "ravnotežje"
 
-#: ../src/iop/splittoning.c:655
+#: ../src/iop/splittoning.c:682
 msgid "the balance of center of splittoning"
 msgstr "ravnotežje centra razdeljevanja odtenkov"
 
-#: ../src/iop/splittoning.c:656
+#: ../src/iop/splittoning.c:683
 msgid ""
 "compress the effect on highlights/shadows and\n"
 "preserve midtones"
@@ -11094,35 +11177,16 @@ msgstr "datum"
 msgid "time"
 msgstr "čas"
 
-#: ../src/libs/collect.h:34 ../src/libs/history.c:62
+#: ../src/libs/collect.h:34 ../src/libs/history.c:63
 msgid "history"
 msgstr "zgodovina"
-
-#. DT_COLLECTION_SORT_TITLE
-#: ../src/libs/collect.h:35 ../src/libs/metadata.c:348
-#: ../src/libs/tools/filter.c:156
-msgid "description"
-msgstr "opis"
-
-#: ../src/libs/collect.h:35 ../src/libs/import.c:565 ../src/libs/metadata.c:349
-#: ../src/libs/metadata_view.c:123
-msgid "creator"
-msgstr "ustvarjalec"
-
-#: ../src/libs/collect.h:35 ../src/libs/import.c:570 ../src/libs/metadata.c:350
-msgid "publisher"
-msgstr "izdajatelj"
-
-#: ../src/libs/collect.h:36 ../src/libs/import.c:575 ../src/libs/metadata.c:351
-msgid "rights"
-msgstr "pravice"
 
 #. DT_COLLECTION_SORT_DESCRIPTION
 #: ../src/libs/collect.h:38 ../src/libs/tools/filter.c:157
 msgid "aspect ratio"
 msgstr "razmerje proporcev"
 
-#: ../src/libs/collect.h:38 ../src/libs/metadata_view.c:97
+#: ../src/libs/collect.h:38 ../src/libs/metadata_view.c:101
 #: ../src/libs/tools/filter.c:147
 msgid "filename"
 msgstr "ime datoteke"
@@ -11131,8 +11195,8 @@ msgstr "ime datoteke"
 msgid "grouping"
 msgstr "grupiranje"
 
-#: ../src/libs/collect.h:39 ../src/libs/metadata_view.c:100
-#: ../src/libs/metadata_view.c:291
+#: ../src/libs/collect.h:39 ../src/libs/metadata_view.c:104
+#: ../src/libs/metadata_view.c:298
 msgid "local copy"
 msgstr "lokalna kopija"
 
@@ -11472,7 +11536,7 @@ msgstr "izvozi s trenutnimi nastavitvami"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1250 ../src/libs/styles.c:71
-#: ../src/views/darkroom.c:3164
+#: ../src/views/darkroom.c:3165
 msgctxt "accel"
 msgid "export"
 msgstr "izvozi"
@@ -11596,30 +11660,30 @@ msgctxt "accel"
 msgid "hide histogram"
 msgstr "skrij histogram"
 
-#: ../src/libs/history.c:83
+#: ../src/libs/history.c:84
 msgctxt "accel"
 msgid "create style from history"
 msgstr "ustvari slog iz zgodovine"
 
 #. dt_accel_register_lib(self, NC_("accel", "apply style from popup menu"), 0, 0);
-#: ../src/libs/history.c:85
+#: ../src/libs/history.c:86
 msgctxt "accel"
 msgid "compress history stack"
 msgstr "stisni sklad zgodovine"
 
-#: ../src/libs/history.c:112
+#: ../src/libs/history.c:113
 msgid "compress history stack"
 msgstr "stisni sklad zgodovine"
 
-#: ../src/libs/history.c:114
+#: ../src/libs/history.c:115
 msgid "create a minimal history stack which produces the same image"
 msgstr "ustvari najmanjši sklad zgodovine, ki izdela enako sliko"
 
-#: ../src/libs/history.c:121
+#: ../src/libs/history.c:122
 msgid "create a style from the current history stack"
 msgstr "ustvari slog iz trenutnega sklada zgodovine"
 
-#: ../src/libs/history.c:651 ../src/libs/snapshots.c:346
+#: ../src/libs/history.c:652 ../src/libs/snapshots.c:346
 msgid "original"
 msgstr "izvirnik"
 
@@ -11853,18 +11917,6 @@ msgid ""
 "recursively import subdirectories. each directory goes into a new film roll."
 msgstr "rekurzivno uvozi podmape. vsako mapo uporabim kot nov zvitek filma."
 
-#: ../src/libs/import.c:468
-msgid "apply metadata on import"
-msgstr "uporabi metapodatke za uvoz"
-
-#: ../src/libs/import.c:469
-msgid "apply some metadata to all newly imported images."
-msgstr "uporabi metapodatke za vse na novo uvožene slike."
-
-#: ../src/libs/import.c:510
-msgid "comma separated list of tags"
-msgstr "seznam značk ločenih z vejico"
-
 #: ../src/libs/import.c:785
 msgid "supported images"
 msgstr "podprte slike"
@@ -12000,7 +12052,7 @@ msgstr "identifikator"
 msgid "overlay another image over the live view"
 msgstr "prekrij še eno sliko čez živi pogled"
 
-#: ../src/libs/live_view.c:392 ../src/libs/metadata_view.c:95
+#: ../src/libs/live_view.c:392 ../src/libs/metadata_view.c:99
 msgid "image id"
 msgstr "id slike"
 
@@ -12247,64 +12299,64 @@ msgid "all rights reserved."
 msgstr "vse pravice pridržane."
 
 #. internal
-#: ../src/libs/metadata_view.c:94
+#: ../src/libs/metadata_view.c:98
 msgid "filmroll"
 msgstr "zvitek filma"
 
-#: ../src/libs/metadata_view.c:96
+#: ../src/libs/metadata_view.c:100
 msgid "group id"
 msgstr "id grupe"
 
-#: ../src/libs/metadata_view.c:98
+#: ../src/libs/metadata_view.c:102
 msgid "version"
 msgstr "verzija"
 
 #. DT_COLLECTION_SORT_GROUP
-#: ../src/libs/metadata_view.c:99 ../src/libs/tools/filter.c:153
+#: ../src/libs/metadata_view.c:103 ../src/libs/tools/filter.c:153
 msgid "full path"
 msgstr "celotna pot"
 
-#: ../src/libs/metadata_view.c:102
+#: ../src/libs/metadata_view.c:106
 msgid "flags"
 msgstr "zastavice"
 
-#: ../src/libs/metadata_view.c:112
+#: ../src/libs/metadata_view.c:116
 msgid "focus distance"
 msgstr "izmerjena razdalja"
 
-#: ../src/libs/metadata_view.c:114
+#: ../src/libs/metadata_view.c:118
 msgid "datetime"
 msgstr "datum in čas"
 
-#: ../src/libs/metadata_view.c:116 ../src/libs/print_settings.c:1311
+#: ../src/libs/metadata_view.c:120 ../src/libs/print_settings.c:1311
 msgid "height"
 msgstr "višina"
 
-#: ../src/libs/metadata_view.c:118
+#: ../src/libs/metadata_view.c:122
 msgid "export width"
 msgstr "širina izvoza"
 
-#: ../src/libs/metadata_view.c:119
+#: ../src/libs/metadata_view.c:123
 msgid "export height"
 msgstr "višina izvoza"
 
-#: ../src/libs/metadata_view.c:124
+#: ../src/libs/metadata_view.c:128
 msgid "copyright"
 msgstr "copyright"
 
-#: ../src/libs/metadata_view.c:128
+#: ../src/libs/metadata_view.c:132
 msgid "longitude"
 msgstr "zemljepisna dolžina"
 
-#: ../src/libs/metadata_view.c:129
+#: ../src/libs/metadata_view.c:133
 msgid "elevation"
 msgstr "višina"
 
-#: ../src/libs/metadata_view.c:140
+#: ../src/libs/metadata_view.c:147
 msgid "image information"
 msgstr "informacije o sliki"
 
-#: ../src/libs/metadata_view.c:252
+#: ../src/libs/metadata_view.c:259
 #, c-format
 msgid ""
 "double click to jump to film roll\n"
@@ -12313,47 +12365,47 @@ msgstr ""
 "dvoklik za prehod na zvitek filma\n"
 "%s"
 
-#: ../src/libs/metadata_view.c:283
+#: ../src/libs/metadata_view.c:290
 msgid "unused"
 msgstr "neuporabljeno"
 
-#: ../src/libs/metadata_view.c:284
+#: ../src/libs/metadata_view.c:291
 msgid "unused/deprecated"
 msgstr "neuporabljeno/zastarelo"
 
-#: ../src/libs/metadata_view.c:285
+#: ../src/libs/metadata_view.c:292
 msgid "ldr"
 msgstr "ldr"
 
-#: ../src/libs/metadata_view.c:287
+#: ../src/libs/metadata_view.c:294
 msgid "hdr"
 msgstr "hdr"
 
-#: ../src/libs/metadata_view.c:288
+#: ../src/libs/metadata_view.c:295
 msgid "marked for deletion"
 msgstr "označeno za brisanje"
 
-#: ../src/libs/metadata_view.c:289
+#: ../src/libs/metadata_view.c:296
 msgid "auto-applying presets applied"
 msgstr "uporabljene avtomatske nastavitve"
 
-#: ../src/libs/metadata_view.c:290
+#: ../src/libs/metadata_view.c:297
 msgid "legacy flag. set for all new images"
 msgstr "oznaka zapuščine. za vse nove slike"
 
-#: ../src/libs/metadata_view.c:292
+#: ../src/libs/metadata_view.c:299
 msgid "has .txt"
 msgstr "ima .txt"
 
-#: ../src/libs/metadata_view.c:293
+#: ../src/libs/metadata_view.c:300
 msgid "has .wav"
 msgstr "ima .wav"
 
-#: ../src/libs/metadata_view.c:305
+#: ../src/libs/metadata_view.c:312
 msgid "image rejected"
 msgstr "slika zavrnjena"
 
-#: ../src/libs/metadata_view.c:310
+#: ../src/libs/metadata_view.c:317
 #, c-format
 msgid "image has %d star"
 msgid_plural "image has %d stars"
@@ -12362,56 +12414,56 @@ msgstr[1] "slika ima %d zvezdici"
 msgstr[2] "slika ima %d zvezdice"
 msgstr[3] "slika ima %d zvezdic"
 
-#: ../src/libs/metadata_view.c:390 ../src/libs/snapshots.c:354
+#: ../src/libs/metadata_view.c:397 ../src/libs/snapshots.c:354
 msgid "unknown"
 msgstr "neznano"
 
-#: ../src/libs/metadata_view.c:391
+#: ../src/libs/metadata_view.c:398
 msgid "tiff"
 msgstr "tiff"
 
-#: ../src/libs/metadata_view.c:392
+#: ../src/libs/metadata_view.c:399
 msgid "png"
 msgstr "png"
 
-#: ../src/libs/metadata_view.c:393
+#: ../src/libs/metadata_view.c:400
 msgid "j2k"
 msgstr "j2k"
 
-#: ../src/libs/metadata_view.c:394
+#: ../src/libs/metadata_view.c:401
 msgid "jpeg"
 msgstr "jpeg"
 
-#: ../src/libs/metadata_view.c:395
+#: ../src/libs/metadata_view.c:402
 msgid "exr"
 msgstr "exr"
 
-#: ../src/libs/metadata_view.c:396
+#: ../src/libs/metadata_view.c:403
 msgid "rgbe"
 msgstr "rgbe"
 
-#: ../src/libs/metadata_view.c:397
+#: ../src/libs/metadata_view.c:404
 msgid "pfm"
 msgstr "pfm"
 
-#: ../src/libs/metadata_view.c:398
+#: ../src/libs/metadata_view.c:405
 msgid "GraphicsMagick"
 msgstr "GraphicsMagick"
 
-#: ../src/libs/metadata_view.c:399
+#: ../src/libs/metadata_view.c:406
 msgid "rawspeed"
 msgstr "rawspeed"
 
-#: ../src/libs/metadata_view.c:400
+#: ../src/libs/metadata_view.c:407
 msgid "netpnm"
 msgstr "netpnm"
 
-#: ../src/libs/metadata_view.c:405
+#: ../src/libs/metadata_view.c:412
 #, c-format
 msgid "loader: %s"
 msgstr "nalagalnik: %s"
 
-#: ../src/libs/metadata_view.c:646
+#: ../src/libs/metadata_view.c:678
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "skoči na zvitek filma"
@@ -12568,8 +12620,8 @@ msgstr "1600%"
 
 #: ../src/libs/navigation.c:569
 msgctxt "accel"
-msgid "toggle navigation thumbnail visibility"
-msgstr "preklopi vidnost predogleda za navigacijo"
+msgid "hide navigation thumbnail"
+msgstr "skrij navigacijsko sličico"
 
 #. //////////////////////// PRINT SETTINGS
 #: ../src/libs/print_settings.c:44 ../src/libs/print_settings.c:1399
@@ -12932,31 +12984,49 @@ msgstr "uvozi slog iz datoteke sloga"
 msgid "export the selected style into a style file"
 msgstr "izvozi izbrani slog v datoteko sloga"
 
-#: ../src/libs/tagging.c:97
+#: ../src/libs/tagging.c:96
 msgid "tagging"
 msgstr "značke"
 
-#: ../src/libs/tagging.c:122
+#: ../src/libs/tagging.c:121
 msgctxt "accel"
 msgid "attach"
 msgstr "priloži"
 
-#: ../src/libs/tagging.c:123
+#: ../src/libs/tagging.c:122
 msgctxt "accel"
 msgid "detach"
 msgstr "razdvoji"
 
-#: ../src/libs/tagging.c:124
+#: ../src/libs/tagging.c:123
 msgctxt "accel"
 msgid "new"
 msgstr "nov"
 
-#: ../src/libs/tagging.c:125
+#: ../src/libs/tagging.c:124
 msgctxt "accel"
 msgid "tag"
 msgstr "značka"
 
-#: ../src/libs/tagging.c:757
+#: ../src/libs/tagging.c:1042
+msgid "attach tag to all"
+msgstr "prilepi značko vsem"
+
+#: ../src/libs/tagging.c:1050
+msgid "detach tag"
+msgstr "odstrani značko"
+
+#: ../src/libs/tagging.c:1165
+msgid "delete tag?"
+msgstr "zbrišem značko?"
+
+#: ../src/libs/tagging.c:1172 ../src/libs/tagging.c:1269
+#: ../src/libs/tagging.c:1522
+#, c-format
+msgid "tag: %s "
+msgstr "značka: %s"
+
+#: ../src/libs/tagging.c:1179
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -12977,38 +13047,29 @@ msgstr[3] ""
 "ali res želite zbrisati značko '%s'?\n"
 "%d slikam je dodeljena ta značka!"
 
-#: ../src/libs/tagging.c:763
-msgid "delete tag?"
-msgstr "zbrišem značko?"
-
-#: ../src/libs/tagging.c:844
-msgid "rename tag?"
-msgstr "preimenuj značko?"
-
-#: ../src/libs/tagging.c:848
+#: ../src/libs/tagging.c:1215
 #, c-format
-msgid ""
-"selected tag: %s\n"
-" "
-msgstr ""
-"izbrana značka: %s\n"
-" "
+msgid "tag %s removed"
+msgstr "značka %s odstranjena"
 
-#: ../src/libs/tagging.c:853 ../src/libs/tagging.c:1010
+#: ../src/libs/tagging.c:1262 ../src/libs/tagging.c:1916
+msgid "delete branch"
+msgstr "briši vejo"
+
+#: ../src/libs/tagging.c:1276
 #, c-format
-msgid "<u>%d</u> tag will be updated."
-msgid_plural "<u>%d</u> tags will be updated."
-msgstr[0] "značka <u>%d</u> bo osvežena."
-msgstr[1] "znački <u>%d</u> bosta osveženi."
-msgstr[2] "značke <u>%d</u> bodo osvežene."
-msgstr[3] "značke <u>%d</u> bodo osvežene."
+msgid "<u>%d</u> tag will be deleted."
+msgid_plural "<u>%d</u> tags will be deleted."
+msgstr[0] "<u>%d</u> značka bo zbrisana."
+msgstr[1] "<u>%d</u> znački bosta zbrisani."
+msgstr[2] "<u>%d</u> značke bodo zbrisane."
+msgstr[3] "<u>%d</u> značk bo zbrisanih."
 
-#: ../src/libs/tagging.c:859 ../src/libs/tagging.c:1017
+#: ../src/libs/tagging.c:1281 ../src/libs/tagging.c:1534
+#: ../src/libs/tagging.c:1754
 #, c-format
 msgid "<u>%d</u> image will be updated"
-msgid_plural ""
-"<u>%d</u> images will be updated\n"
-" "
+msgid_plural "<u>%d</u> images will be updated "
 msgstr[0] "slika <u>%d</u> bo osvežena"
 msgstr[1] ""
 "sliki <u>%d</u> bosta osveženi\n"
@@ -13020,11 +13081,67 @@ msgstr[3] ""
 "slike <u>%d</u> bodo osvežene\n"
 " "
 
-#: ../src/libs/tagging.c:879 ../src/libs/tagging.c:1038
+#: ../src/libs/tagging.c:1307
+#, c-format
+msgid "%d tags removed"
+msgstr "%d značk odstranjenih"
+
+#: ../src/libs/tagging.c:1350
+msgid "create tag"
+msgstr "ustvari značko"
+
+#: ../src/libs/tagging.c:1351 ../src/libs/tagging.c:1516
+msgid "save"
+msgstr "shrani"
+
+#: ../src/libs/tagging.c:1360 ../src/libs/tagging.c:1542
+msgid "name: "
+msgstr "ime:"
+
+#: ../src/libs/tagging.c:1373
+#, c-format
+msgid "add to: \"%s\" "
+msgstr "dodaj k: \"%s\""
+
+#: ../src/libs/tagging.c:1379 ../src/libs/tagging.c:1557
+msgid "category"
+msgstr "kategorija"
+
+#: ../src/libs/tagging.c:1382 ../src/libs/tagging.c:1560
+msgid "private"
+msgstr "zasebno"
+
+#: ../src/libs/tagging.c:1388 ../src/libs/tagging.c:1566
+msgid "synonyms: "
+msgstr "sinonimi:"
+
+#: ../src/libs/tagging.c:1405 ../src/libs/tagging.c:1587
+#: ../src/libs/tagging.c:1776
 msgid "empty tag is not allowed, aborting"
 msgstr "prazna značka ni dovoljena, prekinjam"
 
-#: ../src/libs/tagging.c:881
+#: ../src/libs/tagging.c:1407
+msgid "'|' character is not allowed to create a tag. aborting."
+msgstr "znak '|' ni dovoljen za tvorbo značk. prekinjam."
+
+#: ../src/libs/tagging.c:1421
+msgid "tag name already exists. aborting."
+msgstr "to ime značke že obstaja. prekinjam."
+
+#: ../src/libs/tagging.c:1515
+msgid "edit tag"
+msgstr "uredi značko"
+
+#: ../src/libs/tagging.c:1529 ../src/libs/tagging.c:1749
+#, c-format
+msgid "<u>%d</u> tag will be updated."
+msgid_plural "<u>%d</u> tags will be updated."
+msgstr[0] "značka <u>%d</u> bo osvežena."
+msgstr[1] "znački <u>%d</u> bosta osveženi."
+msgstr[2] "značke <u>%d</u> bodo osvežene."
+msgstr[3] "značke <u>%d</u> bodo osvežene."
+
+#: ../src/libs/tagging.c:1589
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierachy use rename path instead. Aborting."
@@ -13032,130 +13149,169 @@ msgstr ""
 "znak '|' ni dovoljen za preimenovanje značke.\n"
 "za spremembo hierarhije uporabite preimenovanje poti. prekinjam."
 
-#: ../src/libs/tagging.c:919
+#: ../src/libs/tagging.c:1627
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
 msgstr "vsaj ena značka (%s) že obstaja, prekinjam"
 
-#: ../src/libs/tagging.c:1001
+#: ../src/libs/tagging.c:1735
 msgid "rename path?"
 msgstr "preimenuj pot?"
 
-#: ../src/libs/tagging.c:1005
+#: ../src/libs/tagging.c:1742
 #, c-format
-msgid ""
-"selected path: %s\n"
-" "
-msgstr ""
-"izbrana pot: %s\n"
-" "
+msgid "selected path: %s "
+msgstr "izbrana pot: %s"
 
-#: ../src/libs/tagging.c:1014 ../src/libs/tagging.c:1021
-msgid "insert a '|' to create a new level, remove a '|' to delete a level"
-msgstr "vstavi '|' za tvorbo novega nivoja, odstrani '|' za brisanje nivoja"
-
-#: ../src/libs/tagging.c:1040
+#: ../src/libs/tagging.c:1778
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr "'|' na napačnem mestu, prazna značka ni dovoljena, prekinjam"
 
-#: ../src/libs/tagging.c:1066
+#: ../src/libs/tagging.c:1804
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
 msgstr "vsaj ena nova značka (%s) že obstaja, prekinjam."
 
-#: ../src/libs/tagging.c:1127
-msgid "copy to entry"
-msgstr "kopiraj v vnos"
+#: ../src/libs/tagging.c:1904
+msgid "attach tag"
+msgstr "pripni značko"
 
-#: ../src/libs/tagging.c:1143 ../src/libs/tagging.c:1151
+#: ../src/libs/tagging.c:1912
 msgid "delete tag"
 msgstr "briši značko"
 
-#: ../src/libs/tagging.c:1158
-msgid "rename tag..."
-msgstr "preimenuj značko..."
+#: ../src/libs/tagging.c:1922
+msgid "create tag..."
+msgstr "ustvari značko..."
 
-#: ../src/libs/tagging.c:1165
+#: ../src/libs/tagging.c:1926
+msgid "edit tag..."
+msgstr "uredi značko..."
+
+#: ../src/libs/tagging.c:1935
 msgid "rename path..."
 msgstr "preimenuj pot..."
 
-#: ../src/libs/tagging.c:1213
+#: ../src/libs/tagging.c:1942
+msgid "copy to entry"
+msgstr "kopiraj v vnos"
+
+#: ../src/libs/tagging.c:1966
+msgid "go to tag collection"
+msgstr "pojdi na zbirko značk"
+
+#: ../src/libs/tagging.c:1972
+msgid "go back to work"
+msgstr "pojdi nazaj na delo"
+
+#: ../src/libs/tagging.c:2082
+#, c-format
+msgid "%s"
+msgstr "%s"
+
+#: ../src/libs/tagging.c:2083
+msgid "(private)"
+msgstr "(zasebno)"
+
+#: ../src/libs/tagging.c:2109
 msgid "Select a keyword file"
 msgstr "Izberi datoteko ključnih besed"
 
-#: ../src/libs/tagging.c:1216
+#: ../src/libs/tagging.c:2112
 msgid "_import"
 msgstr "_uvoz"
 
-#: ../src/libs/tagging.c:1230
+#: ../src/libs/tagging.c:2126
 msgid "error importing tags"
 msgstr "napaka pri uvozu značk"
 
-#: ../src/libs/tagging.c:1232
+#: ../src/libs/tagging.c:2128
 #, c-format
 msgid "%zd tags imported"
 msgstr "%zd značk uvoženo"
 
-#: ../src/libs/tagging.c:1253
+#: ../src/libs/tagging.c:2150
 msgid "Select file to export to"
 msgstr "Izberite datoteko za izvoz"
 
-#: ../src/libs/tagging.c:1256
+#: ../src/libs/tagging.c:2153
 msgid "_export"
 msgstr "_izvoz"
 
-#: ../src/libs/tagging.c:1271
+#: ../src/libs/tagging.c:2168
 msgid "error exporting tags"
 msgstr "napaka pri izvozu značk"
 
-#: ../src/libs/tagging.c:1273
+#: ../src/libs/tagging.c:2170
 #, c-format
 msgid "%zd tags exported"
 msgstr "%zd značk izvoženo"
 
-#: ../src/libs/tagging.c:1422
+#: ../src/libs/tagging.c:2528
 msgid ""
 "attached tags,\n"
-"double-click to detach"
+"double-click to detach\n"
+"right-click for other actions on attached tag,\n"
+"ctrl-wheel scroll to resize the window"
 msgstr ""
-"dodeljene značke,\n"
-"dvojni klik za ločitev"
+"pripete značke\n"
+"dvoklik za odpenjanje\n"
+"desni klik za druge aktivnosti na pripeti znački,\n"
+"ctrl-kolešček za spremembo velikosti okna"
 
-#: ../src/libs/tagging.c:1430
+#: ../src/libs/tagging.c:2539
 msgid "attach"
 msgstr "priloži"
 
-#: ../src/libs/tagging.c:1432
+#: ../src/libs/tagging.c:2542
 msgid "attach tag to all selected images"
 msgstr "priloži značko k vsem izbranimi slikam"
 
-#: ../src/libs/tagging.c:1437
+#: ../src/libs/tagging.c:2547
 msgid "detach"
 msgstr "razdvoji"
 
-#: ../src/libs/tagging.c:1439
+#: ../src/libs/tagging.c:2550
 msgid "detach tag from all selected images"
 msgstr "oddvoji značko od vseh izbranih slik"
 
-#: ../src/libs/tagging.c:1452
+#: ../src/libs/tagging.c:2557
+msgid "toggle list with / without hierarchy"
+msgstr "preklopi za seznam z / brez hierarhije"
+
+#: ../src/libs/tagging.c:2565
+msgid "toggle sort by name or by count"
+msgstr "preklopi za sort po imenu ali po številu"
+
+#: ../src/libs/tagging.c:2575
+msgid "toggle show or not darktable tags"
+msgstr "preklopi za prikaz ali ne darktablovih značk"
+
+#: ../src/libs/tagging.c:2591
 msgid "enter tag name"
 msgstr "vnesite ime značke"
 
-#: ../src/libs/tagging.c:1494
-msgid ""
-"related tags,\n"
-"double-click to attach,\n"
-"right-click for other actions on selected tag"
-msgstr ""
-"dodeljene značke,\n"
-"dvojni klik za dodelitev,\n"
-"desni klik za ostale aktivnosti na izbrani znački"
+#: ../src/libs/tagging.c:2601
+msgid "clear entry"
+msgstr "zbriši vnose"
 
-#: ../src/libs/tagging.c:1505
+#: ../src/libs/tagging.c:2653
+msgid ""
+"tag dictionary,\n"
+"double-click to attach,\n"
+"right-click for other actions on selected tag,\n"
+"ctrl-wheel scroll to resize the window"
+msgstr ""
+"slovar značk,\n"
+"dvoklik za pripenjanje,\n"
+"desni klik za druge akcije na izbrani znački,\n"
+"ctrl-kolešček za spremembo velikosti okna"
+
+#: ../src/libs/tagging.c:2668
 msgid "new"
 msgstr "nova"
 
-#: ../src/libs/tagging.c:1507
+#: ../src/libs/tagging.c:2671
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -13163,31 +13319,38 @@ msgstr ""
 "ustvarite novo značko z\n"
 "vnesenim imenom"
 
-#: ../src/libs/tagging.c:1512
+#: ../src/libs/tagging.c:2676
 msgctxt "verb"
 msgid "import"
 msgstr "uvozi"
 
-#: ../src/libs/tagging.c:1514
+#: ../src/libs/tagging.c:2679
 msgid "import tags from a Lightroom keyword file"
 msgstr "uvoz značk iz datoteke ključnih besed Lightroom"
 
-#: ../src/libs/tagging.c:1519
+#: ../src/libs/tagging.c:2684
 msgctxt "verb"
 msgid "export"
 msgstr "izvoz"
 
-#: ../src/libs/tagging.c:1521
+#: ../src/libs/tagging.c:2687
 msgid "export all tags to a Lightroom keyword file"
 msgstr "izvozi vse značke v datoteko ključnih besed Lightroom"
 
-#: ../src/libs/tagging.c:1528
+#: ../src/libs/tagging.c:2694
 msgid "toggle list / tree view"
 msgstr "preklopi seznam / drevesni pogled"
 
-#: ../src/libs/tagging.c:1536
-msgid "toggle with / without suggestion"
-msgstr "preklopi z / brez namigov"
+#: ../src/libs/tagging.c:2702
+msgid "toggle list with / without suggestion"
+msgstr "preklipi seznam z / brez namigov"
+
+#: ../src/libs/tagging.c:2807
+msgid ""
+"tag shortcut is not active with tag tree view. please switch to list view"
+msgstr ""
+"bližnjica na značko ni aktivna v drevesnem prikazu značk. prosim preklopite "
+"na prikaz seznama"
 
 #: ../src/libs/tools/battery_indicator.c:38
 #: ../src/libs/tools/battery_indicator.c:71
@@ -13266,37 +13429,37 @@ msgstr "kos filma"
 
 #. setup rating key accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:4312
+#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:4346
 msgctxt "accel"
 msgid "rate 0"
 msgstr "ocena 0"
 
-#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:4313
+#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:4347
 msgctxt "accel"
 msgid "rate 1"
 msgstr "ocena 1"
 
-#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:4314
+#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:4348
 msgctxt "accel"
 msgid "rate 2"
 msgstr "ocena 2"
 
-#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:4315
+#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:4349
 msgctxt "accel"
 msgid "rate 3"
 msgstr "ocena 3"
 
-#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:4316
+#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:4350
 msgctxt "accel"
 msgid "rate 4"
 msgstr "ocena 4"
 
-#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:4317
+#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:4351
 msgctxt "accel"
 msgid "rate 5"
 msgstr "ocena 5"
 
-#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:4318
+#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:4352
 msgctxt "accel"
 msgid "rate reject"
 msgstr "ocena škart"
@@ -13335,27 +13498,27 @@ msgstr "dupliciraj sliko"
 #. setup color label accelerators
 #. Initializing accelerators
 #. Color labels keys
-#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:4304
+#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:4338
 msgctxt "accel"
 msgid "color red"
 msgstr "rdeča barva"
 
-#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:4305
+#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:4339
 msgctxt "accel"
 msgid "color yellow"
 msgstr "rumena barva"
 
-#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:4306
+#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:4340
 msgctxt "accel"
 msgid "color green"
 msgstr "zelena barva"
 
-#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:4307
+#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:4341
 msgctxt "accel"
 msgid "color blue"
 msgstr "modra barva"
 
-#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:4308
+#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:4342
 msgctxt "accel"
 msgid "color purple"
 msgstr "škrlatna barva"
@@ -13569,32 +13732,32 @@ msgstr "kontrola barvnega razpona"
 msgid "soft proof"
 msgstr "preizkusni odtis"
 
-#: ../src/views/darkroom.c:1030
+#: ../src/views/darkroom.c:1028
 msgid "no userdefined presets for favorite modules were found"
 msgstr "ne najdem uporabnikovih nastavitev za priljubljene module"
 
-#: ../src/views/darkroom.c:1035
+#: ../src/views/darkroom.c:1033
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "uporabljen slog '%s' na trenutni sliki"
 
-#: ../src/views/darkroom.c:1147
+#: ../src/views/darkroom.c:1145
 msgid "no styles have been created yet"
 msgstr "nobenega sloga še ni ustvarjenega"
 
-#: ../src/views/darkroom.c:1774
+#: ../src/views/darkroom.c:1772
 msgid "quick access to presets of your favorites"
 msgstr "hitri dostop do začetnih nastavitev vaših priljubljenih modulov"
 
-#: ../src/views/darkroom.c:1783
+#: ../src/views/darkroom.c:1781
 msgid "quick access for applying any of your styles"
 msgstr "hitri dostop za uporabo kateregakoli vašega sloga"
 
-#: ../src/views/darkroom.c:1796
+#: ../src/views/darkroom.c:1794
 msgid "display a second darkroom image window"
 msgstr "prikaži drugo okno programa darkroom"
 
-#: ../src/views/darkroom.c:1807
+#: ../src/views/darkroom.c:1805
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -13602,47 +13765,47 @@ msgstr ""
 "preklopi indikator preosvetljenosti\n"
 "desni klik za dodatne možnosti"
 
-#: ../src/views/darkroom.c:1831
+#: ../src/views/darkroom.c:1829
 msgid "mark with CFA color"
 msgstr "označi z barvo CFA"
 
-#: ../src/views/darkroom.c:1832
+#: ../src/views/darkroom.c:1830
 msgid "mark with solid color"
 msgstr "označi s trdno barvo"
 
-#: ../src/views/darkroom.c:1833
+#: ../src/views/darkroom.c:1831
 msgid "false color"
 msgstr "napačna barva"
 
-#: ../src/views/darkroom.c:1835
+#: ../src/views/darkroom.c:1833
 msgid "select how to mark the clipped pixels"
 msgstr "izberite kako označiti izrezane piksle"
 
-#: ../src/views/darkroom.c:1842 ../src/views/darkroom.c:1894
+#: ../src/views/darkroom.c:1840 ../src/views/darkroom.c:1892
 msgid "color scheme"
 msgstr "barvna shema"
 
-#: ../src/views/darkroom.c:1843
+#: ../src/views/darkroom.c:1841
 msgctxt "solidcolor"
 msgid "red"
 msgstr "rdeča"
 
-#: ../src/views/darkroom.c:1844
+#: ../src/views/darkroom.c:1842
 msgctxt "solidcolor"
 msgid "green"
 msgstr "zelena"
 
-#: ../src/views/darkroom.c:1845
+#: ../src/views/darkroom.c:1843
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "modra"
 
-#: ../src/views/darkroom.c:1846
+#: ../src/views/darkroom.c:1844
 msgctxt "solidcolor"
 msgid "black"
 msgstr "črna"
 
-#: ../src/views/darkroom.c:1850
+#: ../src/views/darkroom.c:1848
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -13650,7 +13813,7 @@ msgstr ""
 "izberite trdno barvo za oznako preosvetljenosti.\n"
 "uporabili jo bomo samo v načinu 'označi s trdno barvo'"
 
-#: ../src/views/darkroom.c:1860
+#: ../src/views/darkroom.c:1858
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -13660,7 +13823,7 @@ msgstr ""
 "1.0 - nivo beline\n"
 "0.0 - nivo črne"
 
-#: ../src/views/darkroom.c:1871
+#: ../src/views/darkroom.c:1869
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -13668,35 +13831,35 @@ msgstr ""
 "preklop indikatorja pre/pod eksponiranosti\n"
 "desni klik za več možnosti"
 
-#: ../src/views/darkroom.c:1896
+#: ../src/views/darkroom.c:1894
 msgid "red & blue"
 msgstr "rdeča & modra"
 
-#: ../src/views/darkroom.c:1897
+#: ../src/views/darkroom.c:1895
 msgid "purple & green"
 msgstr "škrlatna & zelena"
 
-#: ../src/views/darkroom.c:1899
+#: ../src/views/darkroom.c:1897
 msgid "select colors to indicate over/under exposure"
 msgstr "izberite barve za oznako pre/pod eksponiranih delov"
 
-#: ../src/views/darkroom.c:1908
+#: ../src/views/darkroom.c:1906
 msgid "lower threshold"
 msgstr "spodnji prag"
 
-#: ../src/views/darkroom.c:1909
+#: ../src/views/darkroom.c:1907
 msgid "threshold of what shall be considered underexposed"
 msgstr "prag pod katerim se vse smatra za podeksponirano"
 
-#: ../src/views/darkroom.c:1917
+#: ../src/views/darkroom.c:1915
 msgid "upper threshold"
 msgstr "gornji prag"
 
-#: ../src/views/darkroom.c:1918
+#: ../src/views/darkroom.c:1916
 msgid "threshold of what shall be considered overexposed"
 msgstr "prag nad katerim se vse smatra za preeksponirano"
 
-#: ../src/views/darkroom.c:1929
+#: ../src/views/darkroom.c:1927
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -13704,7 +13867,7 @@ msgstr ""
 "preklop preizkusnega odtisa\n"
 "desni klik za možnosti profila"
 
-#: ../src/views/darkroom.c:1943
+#: ../src/views/darkroom.c:1941
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -13712,195 +13875,195 @@ msgstr ""
 "preklapljaj preverjanje barvnega razpona\n"
 "desni klik za nastavitve profila"
 
-#: ../src/views/darkroom.c:1971 ../src/views/lighttable.c:4799
+#: ../src/views/darkroom.c:1969 ../src/views/lighttable.c:4833
 msgid "display intent"
 msgstr "namen prikaza"
 
-#: ../src/views/darkroom.c:1979 ../src/views/lighttable.c:4807
+#: ../src/views/darkroom.c:1977 ../src/views/lighttable.c:4841
 msgid "preview display intent"
 msgstr "predogled namere prikaza"
 
-#: ../src/views/darkroom.c:1999 ../src/views/lighttable.c:4815
+#: ../src/views/darkroom.c:1997 ../src/views/lighttable.c:4849
 msgid "display profile"
 msgstr "profil zaslona"
 
-#: ../src/views/darkroom.c:2000 ../src/views/lighttable.c:4819
+#: ../src/views/darkroom.c:1998 ../src/views/lighttable.c:4853
 msgid "preview display profile"
 msgstr "profil prikaza predogleda"
 
-#: ../src/views/darkroom.c:2001
+#: ../src/views/darkroom.c:1999
 msgid "histogram profile"
 msgstr "profil histograma"
 
-#: ../src/views/darkroom.c:2055 ../src/views/lighttable.c:4849
+#: ../src/views/darkroom.c:2053 ../src/views/lighttable.c:4883
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "prikaži profile ICC v %s ali %s"
 
-#: ../src/views/darkroom.c:2058 ../src/views/lighttable.c:4852
+#: ../src/views/darkroom.c:2056 ../src/views/lighttable.c:4886
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "predogled prikaza profilov ICC v %s ali %s"
 
-#: ../src/views/darkroom.c:2061
+#: ../src/views/darkroom.c:2059
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "profili preizkusnih odtisov ICC v %s ali %s"
 
-#: ../src/views/darkroom.c:2064
+#: ../src/views/darkroom.c:2062
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr "profili histograma in nabiralnika barve ICC v %s ali %s"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:3156 ../src/views/map.c:892 ../src/views/print.c:328
+#: ../src/views/darkroom.c:3157 ../src/views/map.c:892 ../src/views/print.c:328
 #: ../src/views/tethering.c:396
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "preklopi kos filma"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:3159
+#: ../src/views/darkroom.c:3160
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "približaj z zumom"
 
-#: ../src/views/darkroom.c:3160
+#: ../src/views/darkroom.c:3161
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "dopolni z zumiranjem"
 
-#: ../src/views/darkroom.c:3161
+#: ../src/views/darkroom.c:3162
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "prilagodi z zumiranjem"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:3167
+#: ../src/views/darkroom.c:3168
 msgctxt "accel"
 msgid "image forward"
 msgstr "sliko naprej"
 
-#: ../src/views/darkroom.c:3168
+#: ../src/views/darkroom.c:3169
 msgctxt "accel"
 msgid "image back"
 msgstr "sliko nazaj"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:3171
+#: ../src/views/darkroom.c:3172
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "preklopi indikator preosvetljenosti"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:3174
+#: ../src/views/darkroom.c:3175
 msgctxt "accel"
 msgid "overexposed"
 msgstr "preeksponirane"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:3177
+#: ../src/views/darkroom.c:3178
 msgctxt "accel"
 msgid "softproof"
 msgstr "preizkusni odtis"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:3180
+#: ../src/views/darkroom.c:3181
 msgctxt "accel"
 msgid "gamut check"
 msgstr "kontrola barvnega razpona"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:3183
+#: ../src/views/darkroom.c:3184
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "povečaj velikost čopiča"
 
-#: ../src/views/darkroom.c:3184
+#: ../src/views/darkroom.c:3185
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "zmanjšaj velikost čopiča"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:3187
+#: ../src/views/darkroom.c:3188
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "povečaj trdoto čopiča"
 
-#: ../src/views/darkroom.c:3188
+#: ../src/views/darkroom.c:3189
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "zmanjšaj trdoto čopiča"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:3191
+#: ../src/views/darkroom.c:3192
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "povečaj neprosojnost čopiča"
 
-#: ../src/views/darkroom.c:3192
+#: ../src/views/darkroom.c:3193
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "pomanjšaj neprosojnost čopiča"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:3195
+#: ../src/views/darkroom.c:3196
 msgctxt "accel"
 msgid "full preview"
 msgstr "polni pogled"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3198 ../src/views/lighttable.c:4343
+#: ../src/views/darkroom.c:3199 ../src/views/lighttable.c:4377
 #: ../src/views/map.c:889
 msgctxt "accel"
 msgid "undo"
 msgstr "prekliči zadnjo operacijo"
 
-#: ../src/views/darkroom.c:3199 ../src/views/lighttable.c:4344
+#: ../src/views/darkroom.c:3200 ../src/views/lighttable.c:4378
 #: ../src/views/map.c:890
 msgctxt "accel"
 msgid "redo"
 msgstr "ponovno uporabi zadnjo operacijo"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:3202
+#: ../src/views/darkroom.c:3203
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "dovoli pomik in zumiranje ob urejanju mask"
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:3205
+#: ../src/views/darkroom.c:3206
 msgctxt "accel"
 msgid "search modules"
 msgstr "moduli iskanja"
 
-#: ../src/views/darkroom.c:3304
+#: ../src/views/darkroom.c:3305
 msgid "switch to lighttable"
 msgstr "preklop na osvetljeno podlago"
 
-#: ../src/views/darkroom.c:3309 ../src/views/lighttable.c:4490
+#: ../src/views/darkroom.c:3310 ../src/views/lighttable.c:4524
 msgid "zoom in the image"
 msgstr "zoom na sliko"
 
-#: ../src/views/darkroom.c:3315
+#: ../src/views/darkroom.c:3316
 msgid "unbounded zoom in the image"
 msgstr "neomejeni zoom na sliko"
 
-#: ../src/views/darkroom.c:3320
+#: ../src/views/darkroom.c:3321
 msgid "zoom to 100% 200% and back"
 msgstr "zoom na 100% 200% in nazaj"
 
-#: ../src/views/darkroom.c:3326
+#: ../src/views/darkroom.c:3327
 msgid "[modules] expand module without closing others"
 msgstr "[modules] razširi modul brez zapiranja drugih"
 
-#: ../src/views/darkroom.c:3332
+#: ../src/views/darkroom.c:3333
 msgid "[modules] change module position in pipe"
 msgstr "[modules] spremeni vrstni red modula zaporedju obdelav"
 
 #. workaround for GTK Quartz backend bug
-#: ../src/views/darkroom.c:4034 ../src/views/darkroom.c:4052
+#: ../src/views/darkroom.c:4035 ../src/views/darkroom.c:4053
 msgid "darktable - darkroom preview"
 msgstr "darktable - predogled temnice"
 
@@ -13908,27 +14071,27 @@ msgstr "darktable - predogled temnice"
 msgid "good knight"
 msgstr "dober vitez"
 
-#: ../src/views/lighttable.c:1056 ../src/views/slideshow.c:348
+#: ../src/views/lighttable.c:1075 ../src/views/slideshow.c:348
 msgid "there are no images in this collection"
 msgstr "v tej zbirki ni slik"
 
-#: ../src/views/lighttable.c:1060
+#: ../src/views/lighttable.c:1079
 msgid "if you have not imported any images yet"
 msgstr "niste uvozili še nobene slike"
 
-#: ../src/views/lighttable.c:1064
+#: ../src/views/lighttable.c:1083
 msgid "you can do so in the import module"
 msgstr "to lahko naredite v modulu uvoza"
 
-#: ../src/views/lighttable.c:1072
+#: ../src/views/lighttable.c:1091
 msgid "try to relax the filter settings in the top panel"
 msgstr "poskusite omehčati nastavitve filtra v zgornjem panelu"
 
-#: ../src/views/lighttable.c:1081
+#: ../src/views/lighttable.c:1100
 msgid "or add images in the collection module in the left panel"
 msgstr "ali dodajte slike v modulu zbirk v levem panelu"
 
-#: ../src/views/lighttable.c:3194
+#: ../src/views/lighttable.c:3213
 #, c-format
 msgid "you have reached the start of your selection (%d image)"
 msgid_plural "you have reached the start of your selection (%d images)"
@@ -13937,11 +14100,11 @@ msgstr[1] "prišli ste do začetka vašega izbora (%d sliki)"
 msgstr[2] "prišli ste do začetka vašega izbora (%d slike)"
 msgstr[3] "prišli ste do začetka vašega izbora (%d slik)"
 
-#: ../src/views/lighttable.c:3199
+#: ../src/views/lighttable.c:3218
 msgid "you have reached the start of your collection"
 msgstr "prišli ste do začetka vaše zbirke"
 
-#: ../src/views/lighttable.c:3223
+#: ../src/views/lighttable.c:3242
 #, c-format
 msgid "you have reached the end of your selection (%d image)"
 msgid_plural "you have reached the end of your selection (%d images)"
@@ -13950,165 +14113,165 @@ msgstr[1] "prišli ste do konca vašega izbora (%d sliki)"
 msgstr[2] "prišli ste do konca vašega izbora (%d slike)"
 msgstr[3] "prišli ste do konca vašega izbora (%d slik)"
 
-#: ../src/views/lighttable.c:3228
+#: ../src/views/lighttable.c:3247
 msgid "you have reached the end of your collection"
 msgstr "prišli ste do konca vaše zbirke"
 
-#: ../src/views/lighttable.c:3548
+#: ../src/views/lighttable.c:3567
 #, c-format
 msgid "zooming is limited to %d images"
 msgstr "zoomiranje je omejeno na %d slik"
 
-#: ../src/views/lighttable.c:4309
+#: ../src/views/lighttable.c:4343
 msgctxt "accel"
 msgid "clear color labels"
 msgstr "zbriši barvne oznake"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:4321
+#: ../src/views/lighttable.c:4355
 msgctxt "accel"
 msgid "navigate up"
 msgstr "napotite gor"
 
-#: ../src/views/lighttable.c:4322
+#: ../src/views/lighttable.c:4356
 msgctxt "accel"
 msgid "navigate down"
 msgstr "napotite dol"
 
-#: ../src/views/lighttable.c:4323
+#: ../src/views/lighttable.c:4357
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "napotite eno stran navzgor"
 
-#: ../src/views/lighttable.c:4324
+#: ../src/views/lighttable.c:4358
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "napotite eno stran navzdol"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:4327
+#: ../src/views/lighttable.c:4361
 msgctxt "accel"
 msgid "scroll up"
 msgstr "zvijaj gor"
 
-#: ../src/views/lighttable.c:4328
+#: ../src/views/lighttable.c:4362
 msgctxt "accel"
 msgid "scroll down"
 msgstr "zvijaj dol"
 
-#: ../src/views/lighttable.c:4329
+#: ../src/views/lighttable.c:4363
 msgctxt "accel"
 msgid "scroll left"
 msgstr "zvijaj v levo"
 
-#: ../src/views/lighttable.c:4330
+#: ../src/views/lighttable.c:4364
 msgctxt "accel"
 msgid "scroll right"
 msgstr "zvijaj v desno"
 
-#: ../src/views/lighttable.c:4331
+#: ../src/views/lighttable.c:4365
 msgctxt "accel"
 msgid "scroll center"
 msgstr "zvijaj center"
 
-#: ../src/views/lighttable.c:4332
+#: ../src/views/lighttable.c:4366
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "ponovno poravnaj slike na mrežo"
 
-#: ../src/views/lighttable.c:4333
+#: ../src/views/lighttable.c:4367
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "izberi preklop slik"
 
-#: ../src/views/lighttable.c:4334
+#: ../src/views/lighttable.c:4368
 msgctxt "accel"
 msgid "select single image"
 msgstr "izberi posamično sliko"
 
 #. Preview key
-#: ../src/views/lighttable.c:4337
+#: ../src/views/lighttable.c:4371
 msgctxt "accel"
 msgid "preview"
 msgstr "predogled"
 
-#: ../src/views/lighttable.c:4338
+#: ../src/views/lighttable.c:4372
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "predogled z detekcijo goriščnice"
 
-#: ../src/views/lighttable.c:4339
+#: ../src/views/lighttable.c:4373
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "lepljiv predogled"
 
-#: ../src/views/lighttable.c:4340
+#: ../src/views/lighttable.c:4374
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "lepljiv predogled z detekcijo goriščne razdalje"
 
 #. zoom for full preview
-#: ../src/views/lighttable.c:4347
+#: ../src/views/lighttable.c:4381
 msgctxt "accel"
 msgid "preview zoom 100%"
 msgstr "predogledni zoom 100%"
 
-#: ../src/views/lighttable.c:4348
+#: ../src/views/lighttable.c:4382
 msgctxt "accel"
 msgid "preview zoom fit"
 msgstr "predogledni zoom prilagojen oknu"
 
 #. timeline
-#: ../src/views/lighttable.c:4351
+#: ../src/views/lighttable.c:4385
 msgctxt "accel"
 msgid "toggle timeline"
 msgstr "preklopi časovni trak"
 
-#: ../src/views/lighttable.c:4477
+#: ../src/views/lighttable.c:4511
 msgid "open image in darkroom"
 msgstr "odpri sliko v temnici"
 
-#: ../src/views/lighttable.c:4484
+#: ../src/views/lighttable.c:4518
 msgid "switch to next/previous image"
 msgstr "preklopi na naslednjo/prejšnjo sliko"
 
-#: ../src/views/lighttable.c:4497 ../src/views/lighttable.c:4519
+#: ../src/views/lighttable.c:4531 ../src/views/lighttable.c:4553
 msgid "scroll the collection"
 msgstr "premik po zbirki"
 
-#: ../src/views/lighttable.c:4503
+#: ../src/views/lighttable.c:4537
 msgid "change number of images per row"
 msgstr "spremeni število slik v vrsti"
 
-#: ../src/views/lighttable.c:4511
+#: ../src/views/lighttable.c:4545
 msgid "change image order"
 msgstr "spremeni zaporedje slik"
 
-#: ../src/views/lighttable.c:4525
+#: ../src/views/lighttable.c:4559
 msgid "zoom all the images"
 msgstr "zoomiraj vse slike"
 
-#: ../src/views/lighttable.c:4530
+#: ../src/views/lighttable.c:4564
 msgid "pan inside all the images"
 msgstr "pomikaj se znotraj vseh slik"
 
-#: ../src/views/lighttable.c:4536
+#: ../src/views/lighttable.c:4570
 msgid "zoom current image"
 msgstr "zoomiraj trenutno sliko"
 
-#: ../src/views/lighttable.c:4542
+#: ../src/views/lighttable.c:4576
 msgid "pan inside current image"
 msgstr "premikaj se znotraj trenutne slike"
 
-#: ../src/views/lighttable.c:4549
+#: ../src/views/lighttable.c:4583
 msgid "zoom the main view"
 msgstr "zoomiraj glavni pogled"
 
-#: ../src/views/lighttable.c:4554
+#: ../src/views/lighttable.c:4588
 msgid "pan inside the main view"
 msgstr "premija se znotraj glavnega pogleda"
 
-#: ../src/views/lighttable.c:4775
+#: ../src/views/lighttable.c:4809
 msgid "set display profile"
 msgstr "nastavi profil zaslona"
 
@@ -14185,63 +14348,62 @@ msgstr "nova seja je zagnala '%s'"
 msgid "no camera with tethering support available for use..."
 msgstr "ne najdem nobene kamere, ki bi dovoljevala upravljanje..."
 
-#: ../src/views/view.c:2174
+#: ../src/views/view.c:2181
 msgid "Left click"
 msgstr "Levi klik"
 
-#: ../src/views/view.c:2177
+#: ../src/views/view.c:2184
 msgid "Right click"
 msgstr "Desni klik"
 
-#: ../src/views/view.c:2180
+#: ../src/views/view.c:2187
 msgid "Middle click"
 msgstr "Srednji klik"
 
-#: ../src/views/view.c:2183
+#: ../src/views/view.c:2190
 msgid "Scroll"
 msgstr "pomik"
 
-#: ../src/views/view.c:2186
+#: ../src/views/view.c:2193
 msgid "Left double-click"
 msgstr "Levi dvoklik"
 
-#: ../src/views/view.c:2189
+#: ../src/views/view.c:2196
 msgid "Right double-click"
 msgstr "Desni dvoklik"
 
-#: ../src/views/view.c:2192
+#: ../src/views/view.c:2199
 msgid "Drag and drop"
 msgstr "Povleci in spusti"
 
-#: ../src/views/view.c:2195
+#: ../src/views/view.c:2202
 msgid "Left click+Drag"
 msgstr "Levi klik + povleci"
 
-#: ../src/views/view.c:2198
+#: ../src/views/view.c:2205
 msgid "Right click+Drag"
 msgstr "Desni klik + povleci"
 
-#: ../src/views/view.c:2222
+#: ../src/views/view.c:2229
 msgid "darktable - accels window"
 msgstr "darktable - okno pospeševanja"
 
-#: ../src/views/view.c:2278
+#: ../src/views/view.c:2285
 msgid "switch to a classic window which will stay open after key release."
 msgstr "preklopi na klasično okno, ki bo ostalo odprto po sprostitvi tipke."
 
-#: ../src/views/view.c:2391
+#: ../src/views/view.c:2398
 msgid "+Scroll"
 msgstr "+Scroll"
 
-#: ../src/views/view.c:2406
+#: ../src/views/view.c:2413
 msgid "mouse actions"
 msgstr "aktivnosti miške"
 
-#: ../src/views/view.c:2444
+#: ../src/views/view.c:2451
 msgid "Accel"
 msgstr "Pospeševanje"
 
-#: ../src/views/view.c:2446
+#: ../src/views/view.c:2453
 msgid "Action"
 msgstr "Akcija"
-
