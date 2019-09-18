@@ -701,18 +701,18 @@
       </row>
       <row>
         <entry>
-          views/lighttable/preview with focus detection
+          views/lighttable/preview
         </entry>
         <entry>
-          &lt;Primary&gt;z
+          w
         </entry>
       </row>
       <row>
         <entry>
-          views/lighttable/preview
+          views/lighttable/preview with focus detection
         </entry>
         <entry>
-          z
+          &lt;Primary&gt;w
         </entry>
       </row>
       <row>
@@ -833,6 +833,22 @@
         </entry>
         <entry>
           space
+        </entry>
+      </row>
+      <row>
+        <entry>
+          views/lighttable/sticky preview
+        </entry>
+        <entry>
+          &lt;Alt&gt;w
+        </entry>
+      </row>
+      <row>
+        <entry>
+          views/lighttable/sticky preview with focus detection
+        </entry>
+        <entry>
+          &lt;Primary&gt;&lt;Alt&gt;w
         </entry>
       </row>
       <row>
