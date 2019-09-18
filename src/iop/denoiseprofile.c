@@ -3944,7 +3944,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->scattering, NULL, _("scattering (coarse-grain noise)"));
   dt_bauhaus_widget_set_label(g->central_pixel_weight, NULL, _("central pixel weight (details)"));
   dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
-  dt_bauhaus_widget_set_label(g->overshooting, NULL, _("adjustment of autoset parameters"));
+  dt_bauhaus_widget_set_label(g->overshooting, NULL, _("adjust autoset parameters"));
   dt_bauhaus_widget_set_label(g->shadows, NULL, _("preserve shadows"));
   dt_bauhaus_widget_set_label(g->bias, NULL, _("bias correction"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means"));
