@@ -53,7 +53,7 @@ denoiseprofile_precondition(read_only image2d_t in, write_only image2d_t out, co
   if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  float alpha = pixel.w;
+  const float alpha = pixel.w;
 
   float4 t = pixel / a;
   float4 d = fmax((float4)0.0f, t + (float4)0.375f + sigma2);
@@ -75,7 +75,7 @@ denoiseprofile_precondition_v2(read_only image2d_t in, write_only image2d_t out,
   if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
-  float alpha = pixel.w;
+  const float alpha = pixel.w;
 
   float4 t = 2.0f * native_powr(fmax((float4)0.0f, pixel / wb + b), 1.0f - p / 2.0f) / ((-p + 2.0f) * sqrt(a));
 
@@ -295,7 +295,7 @@ denoiseprofile_finish(read_only image2d_t in, global float4* U2, write_only imag
   if(x >= width || y >= height) return;
 
   float4 u2   = U2[gidx];
-  float alpha = read_imagef(in, sampleri, (int2)(x, y)).w;
+  const float alpha = read_imagef(in, sampleri, (int2)(x, y)).w;
 
   float4 px = ((float4)u2.w > (float4)0.0f ? u2/u2.w : (float4)0.0f);
 
@@ -320,7 +320,7 @@ denoiseprofile_finish_v2(read_only image2d_t in, global float4* U2, write_only i
   if(x >= width || y >= height) return;
 
   float4 u2   = U2[gidx];
-  float alpha = read_imagef(in, sampleri, (int2)(x, y)).w;
+  const float alpha = read_imagef(in, sampleri, (int2)(x, y)).w;
 
   float4 px = ((float4)u2.w > (float4)0.0f ? u2/u2.w : (float4)0.0f);
 
@@ -347,7 +347,7 @@ denoiseprofile_backtransform(read_only image2d_t in, write_only image2d_t out, c
   if(x >= width || y >= height) return;
 
   float4 px = read_imagef(in, sampleri, (int2)(x, y));
-  float alpha = px.w;
+  const float alpha = px.w;
 
   px = (px < (float4)0.5f ? (float4)0.0f : 
     0.25f*px*px + 0.25f*sqrt(1.5f)/px - 1.375f/(px*px) + 0.625f*sqrt(1.5f)/(px*px*px) - 0.125f - sigma2);
@@ -370,7 +370,7 @@ denoiseprofile_backtransform_v2(read_only image2d_t in, write_only image2d_t out
   if(x >= width || y >= height) return;
 
   float4 px = read_imagef(in, sampleri, (int2)(x, y));
-  float alpha = px.w;
+  const float alpha = px.w;
 
   float4 delta = px * px + (float4)bias;
   float4 denominator = 4.0f / (sqrt(a) * (2.0f - p));
