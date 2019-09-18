@@ -941,8 +941,12 @@ void dt_history_compress_on_image(int32_t imgid)
   if(masks_count > 0)
   {
     // set the masks history as first entry
+    // I think the above old comment show the wrong intention. jhs
+    // num always reflects the ownership of this mask.
+    // As we later increase the num for every history stack item in main.history for this image
+    // we also have to increase the num in masks_history.
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE main.masks_history SET num = 0 WHERE imgid = ?1", -1, &stmt, NULL);
+                                "UPDATE main.masks_history SET num=num+1 WHERE imgid = ?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
