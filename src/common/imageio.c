@@ -95,7 +95,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
     *color_space = DT_COLORSPACE_SRGB;
     if(dt_imageio_jpeg_decompress(&jpg, *buffer))
     {
-      free(*buffer);
+      dt_free_align(*buffer);
       *buffer = NULL;
       goto error;
     }
@@ -139,7 +139,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
       if(gm_ret != MagickPass)
       {
         fprintf(stderr, "[dt_imageio_large_thumbnail GM] error_gm reading thumbnail\n");
-        free(*buffer);
+        dt_free_align(*buffer);
         *buffer = NULL;
         goto error_gm;
       }
