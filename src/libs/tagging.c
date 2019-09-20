@@ -905,11 +905,11 @@ static void attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   dt_image_synch_xmp(imgsel);
 }
 
-static void detach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
+static void detach_selected_tag(GtkTreeView *view, dt_lib_module_t *self, dt_lib_tagging_t *d)
 {
   GtkTreeIter iter;
   GtkTreeModel *model = NULL;
-  GtkTreeSelection *selection = gtk_tree_view_get_selection(d->attached_view);
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
   if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
   guint tagid;
   gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_ID, &tagid, -1);
@@ -920,9 +920,7 @@ static void detach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
   imgsel = dt_view_get_image_to_act_on();
   GList *affected_images = dt_tag_get_images_from_selection(imgsel, tagid);
 
-  // dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated_callback), self);
   dt_tag_detach(tagid, imgsel);
-  // dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated_callback), self);
 
   init_treeview(self, 0);
   if (d->tree_flag || !d->suggestion_flag)
@@ -973,7 +971,7 @@ static void attach_button_clicked(GtkButton *button, dt_lib_module_t *self)
 static void detach_button_clicked(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
-  detach_selected_tag(self, d);
+  detach_selected_tag(d->attached_view, self, d);
 }
 
 static void pop_menu_attached_attach_to_all(GtkWidget *menuitem, dt_lib_module_t *self)
@@ -1021,7 +1019,7 @@ static void pop_menu_attached_attach_to_all(GtkWidget *menuitem, dt_lib_module_t
 static void pop_menu_attached_detach(GtkWidget *menuitem, dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
-  detach_selected_tag(self, d);
+  detach_selected_tag(d->attached_view, self, d);
 }
 
 static void pop_menu_attached(GtkWidget *treeview, GdkEventButton *event, dt_lib_module_t *self)
@@ -1084,7 +1082,7 @@ static gboolean click_on_view_attached(GtkWidget *view, GdkEventButton *event, d
       }
       else if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
       {
-        detach_selected_tag(self, d);
+        detach_selected_tag(d->attached_view, self, d);
         gtk_tree_path_free(path);
         return TRUE;
       }
@@ -1405,14 +1403,19 @@ static void pop_menu_dictionary_create_tag(GtkWidget *menuitem, dt_lib_module_t 
       message = _("empty tag is not allowed, aborting");
     if(strchr(newtag, '|') != 0)
       message = _("'|' character is not allowed to create a tag. aborting.");
-    char *new_tagname = g_strdup(newtag);
-    const gboolean root = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(parent));
+    char *new_tagname = NULL;
+    gboolean root = TRUE;
+    if (tagid)
+    {
+      root = !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(parent));
+    }
     if (!root)
     {
       new_tagname = g_strdup(path);
       new_tagname = dt_util_dstrcat(new_tagname, "|%s", newtag);
     }
     else new_tagname = g_strdup(newtag);
+
     if (dt_tag_exists(new_tagname, NULL))
       message = _("tag name already exists. aborting.");
     if (message)
@@ -1891,6 +1894,12 @@ static void pop_menu_dictionary_attach_tag(GtkWidget *menuitem, dt_lib_module_t 
   attach_selected_tag(self, d);
 }
 
+static void pop_menu_dictionary_detach_tag(GtkWidget *menuitem, dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  detach_selected_tag(d->dictionary_view, self, d);
+}
+
 static void pop_menu_dictionary(GtkWidget *treeview, GdkEventButton *event, dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
@@ -1899,6 +1908,10 @@ static void pop_menu_dictionary(GtkWidget *treeview, GdkEventButton *event, dt_l
 
   menuitem = gtk_menu_item_new_with_label(_("attach tag"));
   g_signal_connect(menuitem, "activate", (GCallback)pop_menu_dictionary_attach_tag, self);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+  menuitem = gtk_menu_item_new_with_label(_("detach tag"));
+  g_signal_connect(menuitem, "activate", (GCallback)pop_menu_dictionary_detach_tag, self);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
   if (d->tree_flag || !d->suggestion_flag)

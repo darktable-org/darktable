@@ -2516,14 +2516,14 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
           dt_image_raw_parameters_t out;
       } raw_params;
       raw_params.in = pos->toLong();
-      int32_t user_flip = raw_params.out.user_flip;
+      const int32_t user_flip = raw_params.out.user_flip;
       img->legacy_flip.user_flip = user_flip;
       img->legacy_flip.legacy = 0;
     }
 
     if((pos = xmpData.findKey(Exiv2::XmpKey("Xmp.darktable.auto_presets_applied"))) != xmpData.end())
     {
-      int32_t i = pos->toLong();
+      const int32_t i = pos->toLong();
       // set or clear bit in image struct
       if(i == 1) img->flags |= DT_IMAGE_AUTO_PRESETS_APPLIED;
       if(i == 0) img->flags &= ~DT_IMAGE_AUTO_PRESETS_APPLIED;

@@ -1,0 +1,94 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 status="draft" id="lut3d">
+
+  <title>3D LUT</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>lut3d</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>lut3d</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              <para>
+                A <emphasis>3D LUT</emphasis> is a tridimensional table which allows for
+                the transforming any RGB value into another RGB value, normally used for film
+                simulation and color grading.
+              </para>
+              <para>
+                The module accepts <emphasis>.cube</emphasis> and <emphasis>.png (haldclut)</emphasis> files.
+                The 3D LUT data are not saved in database nor in the XMP file, only the 3D LUT file path
+                inside the 3D LUT folder is saved (see below).
+              </para>
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/lut3d-1.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <para>
+      The module lut3d needs to find the 3D LUT file at the same place in your 3D LUT folder
+      to calculate the output image.
+      This means you have to backup properly your 3D LUT folder.
+      Sharing an image with its XMP is useless if the recipient doesn't have the same 3D LUT file
+      in his 3D LUT folder.
+    </para>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <sect5>
+      <title>file selection</title>
+      <para>
+        File selection is inactive as long as the 3D LUT folder (where you have stored your LUT files)
+        is not defined in <emphasis>3D LUT root folder</emphasis> under
+        <emphasis>preferences/core options/miscellaneous</emphasis>.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>application color space</title>
+      <para>
+        A 3D LUT is relative to a specific color space. You have to select the one for which it has been built.
+        Cube files are usually related to <emphasis>REC.709</emphasis> while most of others are
+        related to <emphasis>sRGB</emphasis>.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>interpolation</title>
+      <para>
+        The interpolation method defines how to calculate output colors when input colors are not exactly on a node
+        of the RGB cube (described by the 3D LUT).
+        There are three interpolation methods available: <emphasis>tetrahedral</emphasis> (the default one),
+        <emphasis>trilinear</emphasis> and <emphasis>pyramid</emphasis>.
+        Usually you won't see any difference between the interpolation methods except with small size LUTs.
+      </para>
+    </sect5>
+
+  </sect4>
+
+</sect3>

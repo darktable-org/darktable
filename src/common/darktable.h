@@ -34,6 +34,11 @@
 #include "win/win.h"
 #endif
 
+#if !defined(O_BINARY)
+// To have portable g_open() on *nix and on Windows
+#define O_BINARY 0
+#endif
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

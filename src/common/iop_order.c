@@ -54,10 +54,84 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
   {
     _ioppr_move_iop_after(_iop_order_list, "colorin", "demosaic", dont_move);
     _ioppr_move_iop_before(_iop_order_list, "colorout", "clahe", dont_move);
-    _ioppr_insert_iop_after(_iop_order_list, history_list, "basicadj", "colorin", dont_move);
-    _ioppr_insert_iop_after(_iop_order_list, history_list, "rgbcurve", "levels", dont_move);
-    _ioppr_insert_iop_after(_iop_order_list, history_list, "lut3d", "grain", dont_move);
-    _ioppr_insert_iop_before(_iop_order_list, history_list, "rgblevels", "rgbcurve", dont_move);
+
+    // GENERAL RULE FOR SIGNAL PROCESSING/RECONSTRUCTION
+    // pictures are formed through this path :
+    // scene/surfaces/shapes -> atmosphere -> lens -> sensor -> RAW file
+    // we then need to reconstruct/clean the signal the other way :
+    // RAW file -> sensor denoise -> lens profile / deblur -> atmosphere dehaze -> surfaces perspective correction
+
+    // correct exposure in camera RGB space (otherwise, it's not really exposure)
+    _ioppr_move_iop_before(_iop_order_list, "exposure", "colorin", dont_move);
+
+    // move local distorsions/pixel shifts after general distorsions
+    _ioppr_move_iop_before(_iop_order_list, "retouch", "exposure", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "spots", "retouch", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "liquify", "spots", dont_move);
+
+    // move general perspective/distorsions module after lens
+    _ioppr_move_iop_before(_iop_order_list, "clipping", "liquify", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "flip", "clipping", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "ashift", "flip", dont_move);
+
+    // dehaze
+    _ioppr_move_iop_before(_iop_order_list, "hazeremoval", "ashift", dont_move);
+
+    // lens profiles need a pure sensor reading with no correction
+    _ioppr_move_iop_before(_iop_order_list, "lens", "hazeremoval", dont_move);
+
+    // move denoising before any deformation to avoid anisotropic noise creation
+    _ioppr_move_iop_before(_iop_order_list, "bilateral", "lens", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "denoiseprofile", "bilateral", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "demosaic", "denoiseprofile", dont_move);
+
+    // move Lab denoising/reconstruction after input profile where signal is linear
+    // NB: denoising in non-linear spaces makes no sense
+    _ioppr_move_iop_before(_iop_order_list, "colorin", "nlmeans", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "defringe", "nlmeans", dont_move);
+
+    // move frequency filters right after input profile - convolutions need L2 spaces
+    // to respect Parseval's theorem and avoid halos at edges
+    // NB: again, frequency filter in Lab make no sense
+    _ioppr_move_iop_after(_iop_order_list, "atrous", "defringe", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "lowpass", "atrous", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "highpass", "lowpass", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "sharpen", "highpass", dont_move);
+
+    // color adjustments in scene-linear space : move right after colorin
+    _ioppr_move_iop_after(_iop_order_list, "channelmixer", "sharpen", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colorchecker", "channelmixer", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colorbalance", "colorchecker", dont_move);
+
+    _ioppr_insert_iop_after(_iop_order_list, history_list, "lut3d", "colorchecker", dont_move);
+    _ioppr_insert_iop_after(_iop_order_list, history_list, "basicadj", "colorbalance", dont_move);
+    _ioppr_insert_iop_after(_iop_order_list, history_list, "rgbcurve", "basicadj", dont_move);
+    _ioppr_insert_iop_after(_iop_order_list, history_list, "rgblevels", "rgbcurve", dont_move);
+
+    // scene-linear to display-referred encoding
+    // !!! WALL OF THE NON-LINEARITY !!! There is no coming back for colour ratios
+    _ioppr_move_iop_after(_iop_order_list, "basecurve", "colorbalance", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "filmic", "basecurve", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colisa", "filmic", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "tonecurve", "colisa", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "levels", "tonecurve", dont_move);
+
+    _ioppr_move_iop_after(_iop_order_list, "shadhi", "levels", dont_move);
+
+    // recover local contrast after non-linear tone edits
+    _ioppr_move_iop_after(_iop_order_list, "bilat", "shadhi", dont_move);
+
+    // display-referred colour edits
+    _ioppr_move_iop_after(_iop_order_list, "colorcorrection", "bilat", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "velvia", "colorcorrection", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "vibrance", "velvia", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colorzones", "vibrance", dont_move);
+
+    // fix clipping before going in colourout
+    _ioppr_move_iop_before(_iop_order_list, "colorreconstruct", "colorout", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "vignette", "colorreconstruct", dont_move);
+
+
     _ioppr_move_iop_before(_iop_order_list, "dither", "borders", dont_move);
 
     new_version = 2;
@@ -577,7 +651,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
           else
           {
             can_move = 0;
-            fprintf(stderr, "[dt_ioppr_check_duplicate_iop_order 1] modules %s %s(%f) and %s %s(%f) has the same iop_order\n",
+            fprintf(stderr, "[dt_ioppr_check_duplicate_iop_order 1] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
                 mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
           }
         }
@@ -589,7 +663,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
 
       if(!can_move)
       {
-        fprintf(stderr, "[dt_ioppr_check_duplicate_iop_order] modules %s %s(%f) and %s %s(%f) has the same iop_order\n",
+        fprintf(stderr, "[dt_ioppr_check_duplicate_iop_order] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
             mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
       }
     }
@@ -800,7 +874,7 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
         }
         else if(mod1->iop_order == mod2->iop_order)
         {
-          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) and %s %s(%f) has the same iop_order\n",
+          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) and %s %s(%f) have the same iop_order\n",
               mod1->op, mod1->multi_name, mod1->iop_order, mod2->op, mod2->multi_name, mod2->iop_order);
         }
         else
@@ -897,7 +971,7 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
         }
         else if(mod1->iop_order == mod2->iop_order)
         {
-          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) and %s %s(%f) has the same iop_order\n",
+          fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] %s %s(%f) and %s %s(%f) have the same iop_order\n",
               mod1->op, mod1->multi_name, mod1->iop_order, mod2->op, mod2->multi_name, mod2->iop_order);
         }
         else
@@ -914,7 +988,7 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
   }
   else
   {
-    fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] modules %s %s(%f) and %s %s(%f) has the same iop_order\n",
+    fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
         module->op, module->multi_name, module->iop_order, module_next->op, module_next->multi_name, module_next->iop_order);
   }
 
@@ -1331,7 +1405,7 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
             iop_order_ok = 0;
             fprintf(
                 stderr,
-                "[dt_ioppr_check_iop_order] module %s %s(%i)(%f) and %s %s(%i)(%f) has the same order image %i (%s)\n",
+                "[dt_ioppr_check_iop_order] module %s %s(%i)(%f) and %s %s(%i)(%f) have the same order image %i (%s)\n",
                 mod->op, mod->multi_name, mod->multi_priority, mod->iop_order, mod_prev->op,
                 mod_prev->multi_name, mod_prev->multi_priority, mod_prev->iop_order, imgid, msg);
           }

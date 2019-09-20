@@ -531,10 +531,10 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
     cmsSaveProfileToMem(out_profile, 0, &len);
     if(len > 0)
     {
-      unsigned char *buf = malloc((size_t)len * sizeof(unsigned char));
+      unsigned char *buf = dt_alloc_align(64, (size_t)len * sizeof(unsigned char));
       cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg.cinfo), buf, len);
-      free(buf);
+      dt_free_align(buf);
     }
   }
 

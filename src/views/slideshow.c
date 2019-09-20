@@ -79,10 +79,7 @@ typedef struct dt_slideshow_t
 
 typedef struct dt_slideshow_format_t
 {
-  int max_width, max_height;
-  int width, height;
-  char style[128];
-  gboolean style_append;
+  dt_imageio_module_data_t head;
   dt_slideshow_t *d;
   dt_slideshow_slot_t slot;
   int32_t rank;
@@ -113,7 +110,6 @@ static int write_image(dt_imageio_module_data_t *datai, const char *filename, co
                        void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe)
 {
   dt_slideshow_format_t *data = (dt_slideshow_format_t *)datai;
-  dt_pthread_mutex_lock(&data->d->lock);
 
   const dt_slideshow_slot_t slot = data->slot;
 
@@ -124,7 +120,6 @@ static int write_image(dt_imageio_module_data_t *datai, const char *filename, co
     data->d->buf[slot].width = datai->width;
     data->d->buf[slot].height = datai->height;
   }
-  dt_pthread_mutex_unlock(&data->d->lock);
   return 0;
 }
 
@@ -175,10 +170,12 @@ static int process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   buf.bpp = bpp;
   buf.write_image = write_image;
 
+  dt_pthread_mutex_lock(&d->lock);
+
   dt_slideshow_format_t dat;
-  dat.width = dat.max_width = d->width;
-  dat.height = dat.max_height = d->height;
-  dat.style[0] = '\0';
+  dat.head.width = dat.head.max_width = d->width;
+  dat.head.height = dat.head.max_height = d->height;
+  dat.head.style[0] = '\0';
   dat.d = d;
   dat.slot = slot;
   dat.rank = d->buf[slot].rank;
@@ -191,11 +188,11 @@ static int process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   if(rank<0 || rank>=d->col_count)
   {
     d->buf[slot].invalidated = FALSE;
-    return 1;
+    goto error;
   }
 
   const gchar *query = dt_collection_get_query(darktable.collection);
-  if(!query) return 1;
+  if(!query) goto error;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rank);
@@ -208,15 +205,22 @@ static int process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
 
   if(id)
   {
+    d->buf[slot].invalidated = FALSE;
+
     // the flags are: ignore exif, display byteorder, high quality, upscale, thumbnail
     dt_imageio_export_with_flags(id, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, TRUE,
                                  high_quality, TRUE, FALSE, NULL, FALSE, DT_COLORSPACE_DISPLAY,
                                  NULL, DT_INTENT_LAST, NULL, NULL, 1, 1, NULL);
   }
+  else
+    d->buf[slot].invalidated = TRUE;
 
-  d->buf[slot].invalidated = FALSE;
-
+  dt_pthread_mutex_unlock(&d->lock);
   return 0;
+
+ error:
+  dt_pthread_mutex_unlock(&d->lock);
+  return 1;
 }
 
 static int32_t process_job_run(dt_job_t *job)
@@ -366,7 +370,6 @@ void enter(dt_view_t *self)
 
   // also hide arrows
   dt_control_queue_redraw();
-
 
   // alloc screen-size double buffer
   GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
@@ -562,28 +565,32 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     d->delay = CLAMP(d->delay + 1, 1, 60);
     dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
     dt_conf_set_int("slideshow_delay", d->delay);
-    return 0;
   }
   else if(key == GDK_KEY_Down || key == GDK_KEY_KP_Subtract)
   {
     d->delay = CLAMP(d->delay - 1, 1, 60);
     dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
     dt_conf_set_int("slideshow_delay", d->delay);
-    return 0;
   }
   else if(key == GDK_KEY_Left || key == GDK_KEY_Shift_L)
   {
+    if (d->auto_advance) dt_control_log(_("slideshow paused"));
+    d->auto_advance = 0;
     _step_state(d, S_REQUEST_STEP_BACK);
-    return 0;
   }
   else if(key == GDK_KEY_Right || key == GDK_KEY_Shift_R)
   {
+    if (d->auto_advance) dt_control_log(_("slideshow paused"));
+    d->auto_advance = 0;
     _step_state(d, S_REQUEST_STEP);
-    return 0;
+  }
+  else
+  {
+    // go back to lt mode
+    d->auto_advance = 0;
+    dt_ctl_switch_mode_to("lighttable");
   }
 
-  // go back to lt mode
-  dt_ctl_switch_mode_to("lighttable");
   return 0;
 }
 

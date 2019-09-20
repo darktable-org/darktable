@@ -252,11 +252,6 @@
       </itemizedlist>
     </para>
 
-    <para>
-      Please note that changes to drawn masks (see <xref linkend="drawn_mask"/>) are not
-      recorded and thus cannot be undone.
-    </para>
-
   </sect3>
 
 </sect2>

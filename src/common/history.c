@@ -870,10 +870,31 @@ int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge, GList 
   return res;
 }
 
+
+static void _clear_history_stack()
+{
+  while(darktable.develop->history)
+  {
+    dt_dev_free_history_item(((dt_dev_history_item_t *)darktable.develop->history->data));
+    darktable.develop->history = g_list_delete_link(darktable.develop->history, darktable.develop->history);
+  }
+}
+
+/* Please note: dt_history_compress_on_image 
+  - is used in lighttable and darkroom mode
+  - compresses history only in the database
+  - *must* not touch the history stack
+*/
 void dt_history_compress_on_image(int32_t imgid)
 {
-  // make sure the right history is in there:
-  dt_dev_write_history(darktable.develop);
+  // We load the specific images history if necessary
+  if(!dt_dev_is_current_image(darktable.develop, imgid))
+  {
+    darktable.develop->iop = dt_iop_load_modules(darktable.develop);
+    dt_dev_read_history_ext(darktable.develop, imgid, FALSE);
+  }
+  else
+    dt_dev_write_history(darktable.develop);
 
   // compress history, keep disabled modules as documented
   sqlite3_stmt *stmt;
@@ -955,26 +976,12 @@ void dt_history_compress_on_image(int32_t imgid)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
-
-  // Update XMP files
-  dt_image_synch_xmp(imgid);
 }
 
-void dt_history_compress_on_image_and_reload(int32_t imgid)
-{
-  dt_history_compress_on_image(imgid);
-
-  /* if current image in develop reload history */
-  if(dt_dev_is_current_image(darktable.develop, imgid))
-  {
-    dt_dev_reload_history_items(darktable.develop);
-    dt_dev_write_history(darktable.develop);
-    dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
-  }
-}
 
 void dt_history_compress_on_selection()
 {
+  int32_t imgid = -1;
   // Get the list of selected images
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images", -1, &stmt,
@@ -982,9 +989,33 @@ void dt_history_compress_on_selection()
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    dt_history_compress_on_image_and_reload(sqlite3_column_int(stmt, 0));
+    imgid = sqlite3_column_int(stmt, 0);
+    dt_history_compress_on_image(imgid);
+    // Now read the history again into the stack
+    _clear_history_stack();
+    dt_dev_read_history_ext(darktable.develop, imgid, FALSE);
+    // writing ensures we have no gaps
+    dt_dev_write_history_ext(darktable.develop, imgid);
+    dt_image_synch_xmp(imgid);
   }
   sqlite3_finalize(stmt);
+  _clear_history_stack();  
+}
+
+gboolean dt_history_check_module_exists(int32_t imgid, const char *operation)
+{
+  gboolean result = FALSE;
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(
+    dt_database_get(darktable.db),
+    "SELECT imgid FROM main.history WHERE imgid= ?1 AND operation = ?2", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, operation, -1, SQLITE_TRANSIENT);
+  if (sqlite3_step(stmt) == SQLITE_ROW) result = TRUE;
+  sqlite3_finalize(stmt);
+
+  return result;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
