@@ -192,7 +192,7 @@ void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel
     else if(strcmp(views[i], "*") == 0)
       accel->views |= DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT
                       | DT_VIEW_SLIDESHOW;
-    i++;
+    i++;  
   }
   darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
 }
