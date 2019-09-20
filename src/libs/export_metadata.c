@@ -222,7 +222,7 @@ static void formula_edited(GtkCellRenderer *renderer, gchar *path, gchar *new_te
 
 uint32_t dt_lib_export_metadata_default_flags()
 {
-  const uint32_t flags = DT_META_EXIF | DT_META_METADATA | DT_META_GEOTAG | DT_META_TAG;
+  const uint32_t flags = DT_META_EXIF | DT_META_METADATA | DT_META_GEOTAG | DT_META_TAG | DT_META_DT_HISTORY;
   return flags;
 }
 
