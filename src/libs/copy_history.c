@@ -152,30 +152,27 @@ static void copy_button_clicked(GtkWidget *widget, gpointer user_data)
 
 static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  const int img = dt_view_get_image_to_act_on();
+  const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  if (dt_collection_get_selected_count(darktable.collection) < 1 ) return;
 
-  if(img < 0)
-    dt_history_compress_on_selection();
-  else
-  { 
-    dt_history_compress_on_image(img);
-    // Now read the history again into the stack
-    while(darktable.develop->history)
-    {
-      dt_dev_free_history_item(((dt_dev_history_item_t *)darktable.develop->history->data));
-      darktable.develop->history = g_list_delete_link(darktable.develop->history, darktable.develop->history);
-    }
-    dt_dev_read_history_ext(darktable.develop, img, FALSE);
-    // writing ensures we have no gaps
-    dt_dev_write_history_ext(darktable.develop, img);
-    dt_image_synch_xmp(img);
-    while(darktable.develop->history)
-    {
-      dt_dev_free_history_item(((dt_dev_history_item_t *)darktable.develop->history->data));
-      darktable.develop->history = g_list_delete_link(darktable.develop->history, darktable.develop->history);
-    }
-  }
+  int missing = dt_history_compress_on_selection();
+
+  dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
+  if (missing)
+  { 
+    GtkWidget *dialog = gtk_message_dialog_new(
+    GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_CLOSE,
+    ngettext("No history compression of an image.\nSee tag: darktable|problem|history-compress.",
+             "No history compression of %d images.\nSee tag: darktable|problem|history-compress.", missing ), missing);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(dialog);
+#endif
+
+    gtk_window_set_title(GTK_WINDOW(dialog), _("History compression warning"));
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+    }
 }
 
 static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
