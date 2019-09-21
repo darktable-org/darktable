@@ -29,6 +29,7 @@
 #include "gui/styles.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#include "common/history.h"
 
 DT_MODULE(1)
 
@@ -672,7 +673,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   GList *history = g_list_first(darktable.develop->history);
   while(history)
   {
-    dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
+    const dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
 
     gchar *label;
     if(!hitem->multi_name[0] || strcmp(hitem->multi_name, "0") == 0)
@@ -699,92 +700,17 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 
 static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer user_data)
 {
-  const int imgid = darktable.develop->image_storage.id;
+  const int32_t imgid = darktable.develop->image_storage.id;
   if(!imgid) return;
-  // make sure the right history is in there:
-  dt_dev_write_history(darktable.develop);
+
+  dt_history_compress_on_image(imgid);
+
   sqlite3_stmt *stmt;
-
-  // compress history
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1 AND num "
-                                                             "NOT IN (SELECT MAX(num) FROM main.history WHERE "
-                                                             "imgid = ?1 AND num < ?2 GROUP BY operation, "
-                                                             "multi_priority)", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, darktable.develop->history_end);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  // delete all mask_manager entries
-  int masks_count = 0;
-  char op_mask_manager[20] = {0};
-  g_strlcpy(op_mask_manager, "mask_manager", sizeof(op_mask_manager));
-
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1 AND operation = ?2", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  // compress masks history
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid = ?1 AND num "
-                                                             "NOT IN (SELECT MAX(num) FROM main.masks_history WHERE "
-                                                             "imgid = ?1 AND num < ?2)", -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, darktable.develop->history_end);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
-  // if there's masks create a mask manage entry
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT COUNT(*) FROM main.masks_history WHERE imgid = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW) masks_count = sqlite3_column_int(stmt, 0);
-  sqlite3_finalize(stmt);
-
-  if(masks_count > 0)
-  {
-    // set the masks history as first entry
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.masks_history SET num = 0 WHERE imgid = ?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-
-    // make room for mask manager history entry
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.history SET num=num+1 WHERE imgid = ?1",
-        -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-
-    // update history end
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.images SET history_end = history_end+1 WHERE id = ?1",
-        -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-
-    const double iop_order = dt_ioppr_get_iop_order(darktable.develop->iop_order_list, op_mask_manager);
-
-    // create a mask manager entry in history as first entry
-    DT_DEBUG_SQLITE3_PREPARE_V2(
-        dt_database_get(darktable.db),
-        "INSERT INTO main.history (imgid, num, operation, op_params, module, enabled, "
-             "blendop_params, blendop_version, multi_priority, multi_name, iop_order) "
-        "VALUES(?1, 0, ?2, NULL, 1, 0, NULL, 0, 0, '', ?3)",
-        -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 3, iop_order);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-
-  }
 
   // load new history and write it back to ensure that all history are properly numbered without a gap
   dt_dev_reload_history_items(darktable.develop);
   dt_dev_write_history(darktable.develop);
+  dt_image_synch_xmp(imgid);
 
   // then we can get the item to select in the new clean-up history retrieve the position of the module
   // corresponding to the history end.
@@ -805,6 +731,7 @@ static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer u
   sqlite3_finalize(stmt);
 
   dt_dev_reload_history_items(darktable.develop);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
 }
 
@@ -831,7 +758,7 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   if(darktable.gui->reset) return;
 
   /* revert to given history item. */
-  int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history-number"));
+  const int num = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(widget), "history-number"));
   dt_dev_pop_history_items(darktable.develop, num);
   // set the module list order
   dt_dev_reorder_gui_module_list(darktable.develop);

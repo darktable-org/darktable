@@ -86,7 +86,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
     // Decompress the JPG into our own memory format
     dt_imageio_jpeg_t jpg;
     if(dt_imageio_jpeg_decompress_header(buf, bufsize, &jpg)) goto error;
-    *buffer = (uint8_t *)malloc((size_t)sizeof(uint8_t) * jpg.width * jpg.height * 4);
+    *buffer = (uint8_t *)dt_alloc_align(64, (size_t)sizeof(uint8_t) * jpg.width * jpg.height * 4);
     if(!*buffer) goto error;
 
     *width = jpg.width;
@@ -95,7 +95,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
     *color_space = DT_COLORSPACE_SRGB;
     if(dt_imageio_jpeg_decompress(&jpg, *buffer))
     {
-      free(*buffer);
+      dt_free_align(*buffer);
       *buffer = NULL;
       goto error;
     }
@@ -126,7 +126,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
     *height = image->rows;
     *color_space = DT_COLORSPACE_SRGB; // FIXME: this assumes that embedded thumbnails are always srgb
 
-    *buffer = (uint8_t *)malloc((size_t)sizeof(uint8_t) * image->columns * image->rows * 4);
+    *buffer = (uint8_t *)dt_alloc_align(64, (size_t)sizeof(uint8_t) * image->columns * image->rows * 4);
     if(!*buffer) goto error_gm;
 
     for(uint32_t row = 0; row < image->rows; row++)
@@ -139,7 +139,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
       if(gm_ret != MagickPass)
       {
         fprintf(stderr, "[dt_imageio_large_thumbnail GM] error_gm reading thumbnail\n");
-        free(*buffer);
+        dt_free_align(*buffer);
         *buffer = NULL;
         goto error_gm;
       }
@@ -899,7 +899,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   /* now write xmp into that container, if possible */
   if(copy_metadata && (format->flags(format_params) & FORMAT_FLAGS_SUPPORT_XMP))
   {
-    dt_exif_xmp_attach(imgid, filename);
+    dt_exif_xmp_attach_export(imgid, filename);
     // no need to cancel the export if this fail
   }
 

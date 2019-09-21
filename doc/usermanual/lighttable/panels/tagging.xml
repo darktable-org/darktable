@@ -3,7 +3,7 @@
                 <!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
                 %darktable_dtd;
                 ]>
-<sect2 status="final" id="tagging">
+<sect2 status="draft" id="tagging">
 
   <title>Tagging</title>
 
@@ -16,61 +16,402 @@
     <primary>tags</primary>
   </indexterm>
 
-  <informaltable frame="none">
-    <tgroup cols="2" colsep="0" rowsep="0">
-      <colspec colwidth="6*"/>
-      <colspec colwidth="4*"/>
-      <tbody>
-        <row>
-          <entry>
-            This panel is for managing tags on images. Tags are stored in both sidecar files
-            (.xmp) and within the darktable database for a faster access. The panel is divided
-            into two parts: the upper part contains the tag(s) currently attached to the image
-            under the cursor or the selected image(s) if the mouse is outside the lighttable.
-            The lower part contains a list of all available tags in the database, which can be
-            filtered in the text box above.
-          </entry>
-          <entry>
-            <graphic fileref="lighttable/images/panel_tagging.png" scalefit="1" width="80%" align="center" />
-          </entry>
-        </row>
-      </tbody>
-    </tgroup>
-  </informaltable>
+  <sect3 id="tagging_overview">
 
-  <para>
-    New tags get added to the list either by typing into the text box and pressing the
-    <quote>new</quote> button, or if an automatically generated tag gets attached to an image,
-    or on import of already tagged images. darktable sorts the list of tags by relevance and
-    frequency of usage.
-  </para>
+    <title>Overview</title>
 
-  <para>
-    Hierarchical tags are supported and can be created using the pipe symbol <quote>|</quote>.
-  </para>
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              <para>
+                This panel is for managing tags on images. Tags are stored in both sidecar files
+                (.xmp) and within the darktable database for a faster access. The panel is divided
+                into two parts: the upper part contains the tag(s) currently attached to the image
+                under the cursor or the selected image(s) if the mouse is outside the lighttable.
+                The lower part contains a list of all available tags in the database, the dictionary, which can be
+                filtered in the text box above.
+              </para>
+              <para>
+                The list of available tags can be displayed in three different manners:
+                <itemizedlist>
 
-  <para>
-    As you may notice there are automatically created tags like <quote>darktable|
-    exported</quote> or <quote>darktable|styles|your style</quote>, which keep track of your
-    actions and let you easily find already exported images or images with specific styles
-    applied.
-  </para>
+                  <listitem><para>
+                    A flat list of tags
+                  </para></listitem>
 
-  <para>
-    <emphasis> Tip: ctrl-t opens a small text box at the bottom of the central view for quickly
-    tagging your selected images by typing a tag phrase and hitting return. </emphasis>
-  </para>
+                  <listitem><para>
+                    A tree view to navigate within your hierarchical tags
+                  </para></listitem>
+
+                  <listitem><para>
+                    A list of suggestions based on already attached tags on selected images.
+                  </para></listitem>
+
+                </itemizedlist>
+              </para>
+            </entry>
+            <entry>
+              <graphic fileref="lighttable/images/panel_tagging-default.png" scalefit="1" width="90%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <para>
+      The goal of tags is to add information to the images within a given keyword set.
+      But when the number of tags becomes large it is interesting to organize them in a hierachical manner, as a tree.
+      The parent tags may not add information to the image, for example the tag <quote>color</quote>
+      in <quote>color|white</quote>. In this case <quote>color</quote> will automatically
+      seen as <quote>category</quote> if it is not in the dictionary itself. If exist as a tag, it can be set
+      explicitly as a <quote>category</quote> (see create or edit command).
+    </para>
+
+    <sect4 id="tagging_tag_properties">
+
+      <title>tag properties</title>
+
+      <para>
+        Besides its name the tag can set as private or as a category.
+        It can also be attached synonyms.
+        These attributes help to control the information you join to exported images.
+        These information are related to <quote>XMP-dc Subject</quote> and
+        <quote>XMP-lr Hierarchical Subject</quote> metadata.
+      </para>
+
+      <para>
+        A tag set as <quote>private</quote> is by default not exported. The configuration point
+        "force exportation of private tags" allows you to keep private tags on exported images.
+        Both <quote>XMP-dc Subject</quote> and <quote>XMP-lr Hierarchical Subject</quote> are affected.
+      </para>
+
+      <para>
+        A tag set as <quote>category</quote> is not exported in <quote>XMP-dc Subject</quote>.
+        However it is exported in <quote>XMP-lr Hierarchical Subject</quote> as this XMP metadata
+        holds the organization of your tags.
+      </para>
+
+      <para>
+        <quote>synonyms</quote> enriches the tag information and is mainly destined to search engines.
+        For example <quote>juvenile</quote>, <quote>kid</quote> or <quote>youth</quote>
+        can be set as synonyms of <quote>child</quote>.
+        An other usage is to translate the tag in other languages.
+        The configuration point "request exportation of synonyms", when set, makes the image exportation
+        add synonyms to <quote>XMP-dc Subject</quote> metadata.
+      </para>
+
+    </sect4>
+
+    <sect4 id="tagging_displayed_information">
+
+      <title>displayed information</title>
+
+      <para>
+        <graphic fileref="lighttable/images/panel_tagging-attached.png" scalefit="1" width="55%" align="center" />
+      </para>
+
+      <para>
+        All the views have the following characteristics:
+      </para>
+
+      <para>
+        On the left there is an indicator giving the status of the tag in relation with the selected images.
+        A <quote>check-mark</quote> means the tag is attached to all selected images.
+        A <quote>minus</quote> means that the tag is attached at least to one selected image.
+        On tree view, on the parent node, it means that at least one child tag is attached to
+        a selected image.
+      </para>
+
+      <para>
+        On the right the count of images attached to the tag, in the database for dictionary view or
+        among the selected images for attached view.
+      </para>
+
+      <para>
+        An <emphasis>italic</emphasis> tag is considered as a category. A category is a tag which helps
+        to organize the tags but doesn't bring information to the image. A category is not exported.
+      </para>
+
+      <para>
+        Right-click opens a submenu with available commands for that tag.
+      </para>
+
+      <para>
+        <graphic fileref="lighttable/images/panel_tagging-submenu.png" scalefit="1" width="55%" align="center" />
+      </para>
+
+      <para>
+        An overlay appears hovering a tag which has some properties set.
+        This avoids to edit the tag to see its properties.
+      </para>
+
+      <para>
+        <graphic fileref="lighttable/images/panel_tagging-overlay.png" scalefit="1" width="55%" align="center" />
+      </para>
+
+      <para>
+        The list views are controlled with the three upper graphic buttons:
+      </para>
+
+      <para>
+        By default the full tag name is shown. The list is sorted alphabetically and
+        the attached view includes the darktable tags.
+      </para>
+
+      <para>
+        the toggle button
+        <inlinegraphic fileref="&icon_tagging_dt_tag;" scalefit="1" width="2%" align="center"/>
+        hides or shows the automatic darktable tags.
+      </para>
+
+      <para>
+        <graphic fileref="lighttable/images/panel_tagging-dttag.png" scalefit="1" width="55%" align="center" />
+      </para>
+
+      <para>
+        the toggle button
+        <inlinegraphic fileref="&icon_tagging_sort;" scalefit="1" width="2%" align="center"/>
+        sorts the list alphabetically or by number of tagged images.
+      </para>
+
+      <para>
+        <graphic fileref="lighttable/images/panel_tagging-sort.png" scalefit="1" width="55%" align="center" />
+      </para>
+
+      <para>
+        the toggle button
+        <inlinegraphic fileref="&icon_tagging_short_name;" scalefit="1" width="2%" align="center"/>
+        shows the short or long tag name.
+      </para>
+
+      <para>
+        <graphic fileref="lighttable/images/panel_tagging-short.png" scalefit="1" width="55%" align="center" />
+      </para>
+
+      <para>
+        You can resize the height of attached view or dictionary view using ctrl-wheel.
+        New sizes are kept for ulterior darktable sessions.
+      </para>
+
+    </sect4>
+
+    <sect4 id="tagging_view_selection">
+
+      <title>view selection</title>
+
+
+      <para>
+        The choice of views is controlled with the two bottom graphic buttons:
+      </para>
+
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="6*"/>
+          <colspec colwidth="4*"/>
+          <tbody>
+            <row>
+              <entry>
+                <para>
+                  the toggle button
+                  <inlinegraphic fileref="&icon_tagging_tree;" scalefit="1" width="2%" align="center"/>
+                  shows the tag dictionary as a list or as a tree.
+                </para>
+                <para>
+                  Tip: shift-click on tree node fully expands it (all sub-levels).
+                </para>
+              </entry>
+              <entry>
+                <graphic fileref="lighttable/images/panel_tagging-treebutton.png" scalefit="1" width="90%" align="center" />
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <para>
+                  the toggle button
+                  <inlinegraphic fileref="&icon_tagging_suggestion;" scalefit="1" width="2%" align="center"/>
+                  switches the list to suggestions or full dictionary tag list (inactive on tree view).
+                  The suggestions list is based on already attached tags on selected images.
+                </para>
+              </entry>
+              <entry>
+                <graphic fileref="lighttable/images/panel_tagging-suggbutton.png" scalefit="1" width="90%" align="center" />
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+    </sect4>
+
+    <sect4 id="tagging_text_entry">
+
+      <title>text entry</title>
+
+      <para>
+        The text entry box, between the two lists, has multiple purposes.
+      </para>
+
+      <para>
+        First, for those who like not to leave the keyboard, when the dictionary view is in list mode,
+        as soon as you start to enter a keyword, it opens a list of corresponding tags.
+        When you see the one you look for, use the <quote>down</quote> arrow
+        to highlight it, press twice <quote>enter</quote> to get the tag attached !
+      </para>
+
+      <para>
+        Those for who this procedure is not convenient can deactivate this function using
+        the configuration "disable the entry completion".
+      </para>
+
+      <para>
+        Besides this, the entry box lets you filter the dictionary (list and tree) just below searching
+        amongst the tag names but also the synonyms.
+      </para>
+
+      <para>
+        Pressing enter, either the tag just written does not exist in the dictionary.
+        In such a case the new tag is added to the dictionary and attached to the selected images.
+        Or it is already in the dictionary and it's only attached.
+      </para>
+
+      <para>
+        You can use the submenu <quote>copy to entry</quote> to copy an existing tag
+        from the dictionary into the entry box.
+        Then you can modify it to create a new tag without having
+        to type it in completely.
+      </para>
+
+    </sect4>
+
+  </sect3>
 
   <sect3 id="tagging_usage">
 
     <title>Usage</title>
+
+    <sect4 id="tagging_usage_create">
+
+      <title>create</title>
+
+      <para>
+        New tags get added to the list in different ways.
+      </para>
+
+      <para>
+        On import of a text file. You can import whatever text file as soon as it follows
+        the lightroom tagging file format. It is possible to import several files.
+        It is also possible to export your tags, add information in it and re-import it.
+        As long as you don't change the tag name, the import function updates the existing
+        tags with new information and create the new ones.
+      </para>
+
+      <para>
+        On import of already tagged images. This is not a well controlled way especially
+        if your dictionary is hierarchical.
+      </para>
+
+      <para>
+        In submenu <quote>create tag</quote>. A tag can be created manually, under an
+        existing one (hierarchical) or at the root level.
+      </para>
+
+      <para>
+        <graphic fileref="lighttable/images/panel_tagging-create.png" scalefit="1" width="90%" align="center" />
+      </para>
+
+      <para>
+        By typing into the text box and pressing the <quote>new</quote> button.
+        Hierarchical tags are created using the pipe symbol <quote>|</quote>.
+        Note that the tag is also attached to selected images.
+      </para>
+
+      <para>
+        As you may notice there are automatically created tags like <quote>darktable|exported</quote>
+        or <quote>darktable|styles|your style</quote>, which keep track of your
+        actions and let you easily find already exported images or images with specific styles
+        applied.
+      </para>
+
+    </sect4>
+
+    <sect4 id="tagging_usage_edit_rename">
+
+      <title>edit, rename</title>
+
+      <para>
+        The maintenance of the dictionary can be done through <quote>edit tag...</quote>
+        and <quote>rename path...</quote> submenu (right-click on dictionary view tag).
+      </para>
+
+      <para>
+        The command <quote>edit tag...</quote> shows the number of tags and images which are
+        potentially impacted by a change of this tag.
+        The edit window lets the user change the name of a node on the path but not the rest of the path
+        of hierarchical tags (pipe symbol <quote>|</quote> not allowed).
+        The command is aborted if there is at least one tag corresponding to the new name.
+        <quote>private</quote>, <quote>category</quote> flags and <quote>synonyms</quote>
+        can be change here.
+      </para>
+
+      <para>
+        <graphic fileref="lighttable/images/panel_tagging-edit.png" scalefit="1" width="70%" align="center" />
+      </para>
+
+      <para>
+        The command <quote>rename path...</quote> appears only on the tree view and shows
+        the number of tags and images which are potentially impacted by a change of this tag.
+        The rename path window lets the user change the full path of tag. You can or remove the pipe symbol
+        <quote>|</quote>. This command is powerful but you must know what your doing.
+        The command is aborted if there is at least one tag corresponding to the new path.
+      </para>
+
+      <para>
+        <graphic fileref="lighttable/images/panel_tagging-renamepath.png" scalefit="1" width="90%" align="center" />
+      </para>
+
+    </sect4>
 
     <sect4 id="tagging_usage_attach">
 
       <title>attach</title>
 
       <para>
-        Attach the selected tag from the list below to all selected images.
+        Selected tags are attached to selected images with the following actions.
+      </para>
+
+      <para>
+        Click on button <quote>attach</quote> attaches the selected tag in dictionary.
+      </para>
+
+      <para>
+        Click-right on a tag of dictionary view and sub-menu <quote>attach tag</quote>
+      </para>
+
+      <para>
+        Double-click on a tag of dictionary view.
+      </para>
+
+      <para>
+        Click-right on a tag of attached view and sub-menu <quote>attach tag to all</quote>
+      </para>
+
+      <para>
+        by typing into the text box and pressing the <quote>new</quote> button or enter.
+        Note that the tag is also created if doesn't exist already.
+      </para>
+
+      <para>
+        ctrl-t opens a small text box at the bottom of the central view for quickly
+        tagging your selected images by typing a tag phrase and hitting return.
+      </para>
+
+      <para>
+        Hovering the images in ligthtable you can control the already attached tags either
+        on the attached view and in image information as well.
       </para>
 
     </sect4>
@@ -80,18 +421,19 @@
       <title>detach</title>
 
       <para>
-        Detach the selected tag from all selected images. This also can be done by double
-        clicking the specific tag.
+        An attached tag can be detached in the following ways.
       </para>
 
-    </sect4>
-
-    <sect4 id="tagging_usage_new">
-
-      <title>new</title>
+      <para>
+        Click on button <quote>detach</quote> detaches the selected tag in attached view.
+      </para>
 
       <para>
-        Create a new tag for the list.
+        Double-click on a tag of attached view.
+      </para>
+
+      <para>
+        Click-right on a tag of attached view and sub-menu <quote>detach</quote>
       </para>
 
     </sect4>
@@ -103,7 +445,59 @@
       <para>
         Delete a tag from the list and from all images. A warning will be displayed on how many
         images have this tag attached. Take this warning seriously as there is no way to recover
-        or later find the affected images.
+        or later find the affected images (except backup).
+        A tag in dictionary view can be deleted in the following ways.
+      </para>
+
+      <para>
+        Click on button <quote>delete</quote> delete the selected one.
+      </para>
+
+      <para>
+        Click-right on a tag of dictionary view and sub-menu <quote>delete tag</quote>.
+      </para>
+
+      <para>
+        Click-right on a tag of dictionary view and sub-menu <quote>delete branch</quote>.
+        In that case the tag itself and sub tags are deleted.
+      </para>
+
+    </sect4>
+
+    <sect4 id="tagging_usage_import_export">
+
+      <title>import - export</title>
+
+      <para>
+        The button <quote>import</quote> let you choose a text file, which must follows
+        the lightroom tag text file format and import its content.
+        If a tag already exists, its properties will be updated.
+        Otherwise the tag is created.
+      </para>
+
+      <para>
+        The button <quote>export</quote> exports all your tag dictionary into a text
+        file of your choice (lightroom tag text file format).
+      </para>
+
+    </sect4>
+
+    <sect4 id="tagging_usage_navigation">
+
+      <title>navigation</title>
+
+      <para>
+        Right-click on an attached tag (count not null) in the dictionary view make appear in
+        the submenu an entry <quote>go to tag collection</quote>. This opens the collection
+        associated to this tag and let you see the images which have this tag attached.
+        It is possible to jump from one tag collection to the other.
+      </para>
+
+      <para>
+        To come back to the original collection, where you were working before moving to
+        a tag collection, the submenu presents the entry <quote>go back to work</quote>.
+        This option is kept as long your don't change the collection in collect module and
+        you are not back to the original collection.
       </para>
 
     </sect4>
