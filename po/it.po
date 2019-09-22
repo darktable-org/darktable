@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-09-04 19:19+0200\n"
-"PO-Revision-Date: 2018-02-10 00:55+0100\n"
+"PO-Revision-Date: 2019-09-22 10:12+0200\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <>\n"
 "Language: it_IT\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Lokalize 2.0\n"
+"X-Generator: Poedit 2.2.1\n"
 
 #: ../build/src/preferences_gen.h:2155
 msgid "GUI options"
@@ -20,11 +20,11 @@ msgstr "Opzioni Interfaccia"
 
 #: ../build/src/preferences_gen.h:2158 ../src/libs/import.c:107
 msgid "import"
-msgstr "Importa "
+msgstr "importa "
 
 #: ../build/src/preferences_gen.h:2169
 msgid "ignore JPEG images when importing film rolls"
-msgstr "Ignora le immagini jpeg quando importi i rullini"
+msgstr "ignora le immagini jpeg quando importi i rullini"
 
 #: ../build/src/preferences_gen.h:2178 ../build/src/preferences_gen.h:2198
 #: ../build/src/preferences_gen.h:2221 ../build/src/preferences_gen.h:2244
@@ -64,7 +64,7 @@ msgstr "Ignora le immagini jpeg quando importi i rullini"
 #: ../src/lua/preferences.c:674 ../src/lua/preferences.c:738
 #, c-format
 msgid "double click to reset to `%s'"
-msgstr "Doppio click per ripristinare a '%s'"
+msgstr "doppio click per ripristinare a '%s'"
 
 #: ../build/src/preferences_gen.h:2178 ../build/src/preferences_gen.h:2198
 #: ../build/src/preferences_gen.h:2349 ../build/src/preferences_gen.h:2446
@@ -86,24 +86,24 @@ msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
 msgstr ""
-"Quando si hanno RAW+jpeg nella stessa cartella non ha senso importarli "
-"entrambi. Con questo flag si possono ignorare tutti i jpeg."
+"quando si hanno RAW+jpeg nella stessa cartella non ha senso importarli "
+"entrambi. con questo flag si possono ignorare tutti i jpeg trovati."
 
 #: ../build/src/preferences_gen.h:2189
 msgid "recursive directory traversal when importing filmrolls"
-msgstr "Cartella ricorsiva trasversale quanto importi i rullini"
+msgstr "cartelle ricorsive trasversali quanto importi i rullini"
 
 #: ../build/src/preferences_gen.h:2208
 msgid "creator to be applied when importing"
-msgstr "Creatore da assegnare al momento dell'importazione "
+msgstr "autore da assegnare al momento dell'importazione "
 
 #: ../build/src/preferences_gen.h:2231
 msgid "publisher to be applied when importing"
-msgstr "Editore da assegnare al momento dell'importazione "
+msgstr "editore da assegnare al momento dell'importazione "
 
 #: ../build/src/preferences_gen.h:2254
 msgid "rights to be applied when importing"
-msgstr "Diritti da assegnare al momento dell'importazione "
+msgstr "diritti da assegnare al momento dell'importazione "
 
 #: ../build/src/preferences_gen.h:2277
 msgid "comma separated tags to be applied when importing"
@@ -111,7 +111,7 @@ msgstr "Tag separati da verigola  da assegnare al momento dell'importazione "
 
 #: ../build/src/preferences_gen.h:2300
 msgid "initial import rating"
-msgstr "Valutazione iniziale da assegnare al momento dell'importazione "
+msgstr "valutazione iniziale da assegnare al momento dell'importazione"
 
 #: ../build/src/preferences_gen.h:2318 ../build/src/preferences_gen.h:2901
 #: ../build/src/preferences_gen.h:2959 ../build/src/preferences_gen.h:3186
@@ -120,7 +120,7 @@ msgstr "Valutazione iniziale da assegnare al momento dell'importazione "
 #: ../build/src/preferences_gen.h:3967 ../src/lua/preferences.c:697
 #, c-format
 msgid "double click to reset to `%d'"
-msgstr "Doppio click per ripristinare a '%d'"
+msgstr "doppio click per ripristinare a '%d'"
 
 #: ../build/src/preferences_gen.h:2321
 msgid "initial star rating for all images when importing a filmroll"
