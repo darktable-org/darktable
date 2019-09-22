@@ -113,7 +113,9 @@ static inline int choleski_decompose_fast(const float *const restrict A,
     {
       float sum = 0.0f;
 
-      for(size_t k = 0; k < j; k++) sum += L[i * n + k] * L[j * n + k];
+      for(size_t k = 0; k < j; k++)
+        sum += L[i * n + k] * L[j * n + k];
+
       L[i * n + j] = (i == j) ?
                         sqrtf(A[i * n + i] - sum) :
                         (A[i * n + j] - sum) / L[j * n + j];
@@ -139,7 +141,8 @@ static inline int choleski_decompose_safe(const float *const restrict A,
     {
       float sum = 0.0f;
 
-      for(size_t k = 0; k < j; k++) sum += L[i * n + k] * L[j * n + k];
+      for(size_t k = 0; k < j; k++)
+        sum += L[i * n + k] * L[j * n + k];
 
       if(i == j)
       {
@@ -182,7 +185,9 @@ static inline int triangular_descent_fast(const float *const restrict L,
   for(size_t i = 0; i < n; ++i)
   {
     float sum = y[i];
-    for(size_t j = 0; j < i; ++j) sum -= L[i * n + j] * b[j];
+    for(size_t j = 0; j < i; ++j)
+      sum -= L[i * n + j] * b[j];
+
     b[i] = sum / L[i * n + i];
   }
 
@@ -203,9 +208,11 @@ static inline int triangular_descent_safe(const float *const restrict L,
   for(size_t i = 0; i < n; ++i)
   {
     float sum = y[i];
-    for(size_t j = 0; j < i; ++j) sum -= L[i * n + j] * b[j];
+    for(size_t j = 0; j < i; ++j)
+      sum -= L[i * n + j] * b[j];
 
     const float temp = L[i * n + i];
+
     if(temp != 0.0f)
       b[i] = sum / temp;
     else
@@ -230,7 +237,9 @@ static inline int triangular_ascent_fast(const float *const restrict L,
   for(int i = (n - 1); i > -1 ; --i)
   {
     float sum = b[i];
-    for(int j = (n - 1); j > i; --j) sum -= L[j * n + i] * x[j];
+    for(int j = (n - 1); j > i; --j)
+      sum -= L[j * n + i] * x[j];
+
     x[i] = sum / L[i * n + i];
   }
 
@@ -251,7 +260,8 @@ static inline int triangular_ascent_safe(const float *const restrict L,
   for(int i = (n - 1); i > -1 ; --i)
   {
     float sum = b[i];
-    for(int j = (n - 1); j > i; --j) sum -= L[j * n + i] * x[j];
+    for(int j = (n - 1); j > i; --j)
+      sum -= L[j * n + i] * x[j];
 
     const float temp = L[i * n + i];
     if(temp != 0.0f)
@@ -337,7 +347,9 @@ static inline int transpose_dot_matrix(float *const restrict A, // input
     for(size_t j = 0; j < (i + 1); ++j)
     {
       float sum = 0.0f;
-      for(size_t k = 0; k < m; ++k) sum += A[k * n + i] * A[k * n + j];
+      for(size_t k = 0; k < m; ++k)
+        sum += A[k * n + i] * A[k * n + j];
+
       A_square[i * n + j] = sum;
     }
 
@@ -356,7 +368,9 @@ static inline int transpose_dot_vector(float *const restrict A, // input
   for(size_t i = 0; i < n; ++i)
   {
     float sum = 0.0f;
-    for(size_t k = 0; k < m; ++k) sum += A[k * n + i] * y[k];
+    for(size_t k = 0; k < m; ++k)
+      sum += A[k * n + i] * y[k];
+
     y_square[i] = sum;
   }
 

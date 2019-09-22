@@ -545,8 +545,8 @@ static int sanity_check(dt_iop_module_t *self)
   // the pixel buffer will be in landscape orientation even for pictures displayed in portrait orientation
   // so the interactive editing will fail. Disable the module and issue a warning then.
 
-  double position_self = self->iop_order;
-  double position_min = dt_ioppr_get_iop_order(self->dev->iop_order_list, "flip");
+  const double position_self = self->iop_order;
+  const double position_min = dt_ioppr_get_iop_order(self->dev->iop_order_list, "flip");
 
   if(position_self < position_min && self->enabled)
   {
@@ -809,7 +809,7 @@ static inline void apply_toneequalizer(const float *const restrict in,
                                        const size_t ch,
                                        const dt_iop_toneequalizer_data_t *const d)
 {
-  size_t num_elem = roi_in->width * roi_in->height;
+  const size_t num_elem = roi_in->width * roi_in->height;
   float *const restrict correction = dt_alloc_sse_ps(dt_round_size_sse(num_elem));
 
   if(correction)
@@ -1013,7 +1013,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
   if(!cached) dt_free_align(luminance);
 
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(in, out, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    dt_iop_alpha_copy(in, out, roi_out->width, roi_out->height);
 }
 
 
@@ -1029,7 +1030,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   // Get the scaled window radius for the box average
   const int max_size = (piece->iwidth > piece->iheight) ? piece->iwidth : piece->iheight;
   const float diameter = d->blending * max_size * roi_in->scale;
-  int radius = (int)((diameter - 1.0f) / ( 2.0f));
+  const int radius = (int)((diameter - 1.0f) / ( 2.0f));
   d->radius = radius;
 
   // Enlarge the preview roi with padding if needed
@@ -1139,7 +1140,7 @@ static int compute_channels_gains(const float in[CHANNELS], float out[CHANNELS])
   // Helper function to compute the new channels gains (log) from the factors (linear)
   assert(PIXEL_CHAN == 8);
 
-  int valid = 1;
+  const int valid = 1;
 
   for(int i = 0; i < CHANNELS; ++i)
     out[i] = log2f(in[i]);
@@ -1760,7 +1761,7 @@ static void smoothing_callback(GtkWidget *slider, gpointer user_data)
   get_channels_factors(factors, p);
 
   // Solve the interpolation by least-squares to check the validity of the smoothing param
-  int valid = update_curve_lut(self);
+  const int valid = update_curve_lut(self);
   if(!valid) dt_control_log(_("the interpolation is unstable, decrease the curve smoothing"));
 
   // Redraw graph before launching computation
@@ -1834,7 +1835,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
   {
     // Reset the contrast boost and do nothing
     p->exposure_boost = 0.0f;
-    int reset = darktable.gui->reset;
+    const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
     dt_bauhaus_slider_set_soft(g->exposure_boost, p->exposure_boost);
     darktable.gui->reset = reset;
@@ -1864,7 +1865,7 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
   p->exposure_boost += target - g->histogram_average;
 
   // Update the GUI stuff
-  int reset = darktable.gui->reset;
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->exposure_boost, p->exposure_boost);
   darktable.gui->reset = reset;
@@ -1894,7 +1895,7 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
   {
     // Reset the contrast boost and do nothing
     p->contrast_boost = 0.0f;
-    int reset = darktable.gui->reset;
+    const int reset = darktable.gui->reset;
     darktable.gui->reset = 1;
     dt_bauhaus_slider_set_soft(g->contrast_boost, p->contrast_boost);
     darktable.gui->reset = reset;
@@ -1925,7 +1926,7 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
   p->contrast_boost = (3.0f - origin);
 
   // Update the GUI stuff
-  int reset = darktable.gui->reset;
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->contrast_boost, p->contrast_boost);
   darktable.gui->reset = reset;
@@ -2013,7 +2014,6 @@ static void show_luminance_mask_callback(GtkWidget *togglebutton, dt_iop_module_
   }
 
   g_object_unref(cursor);
-
 }
 
 
@@ -2032,8 +2032,8 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   dt_pthread_mutex_unlock(&g->lock);
   if(fail) return 0;
 
-  int const wd = dev->preview_pipe->backbuf_width;
-  int const ht = dev->preview_pipe->backbuf_height;
+  const int wd = dev->preview_pipe->backbuf_width;
+  const int ht = dev->preview_pipe->backbuf_height;
 
   if(g == NULL) return 0;
   if(wd < 1 || ht < 1) return 0;
@@ -2217,7 +2217,7 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
   if(commit)
   {
     // Update GUI with new params
-    int reset = self->dt->gui->reset;
+    const int reset = self->dt->gui->reset;
     self->dt->gui->reset = 1;
     update_exposure_sliders(g, p);
     self->dt->gui->reset = reset;
@@ -2227,84 +2227,6 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
 
   return 1;
 }
-
-
-/*
-int button_pressed(struct dt_iop_module_t *self, double x, double y, double pressure, int which, int type,
-                   uint32_t state)
-{
-  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
-  dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
-
-  fprintf(stdout, "button released started \n");
-
-  if(self->dt->gui->reset) return 0;
-  if(g == NULL) return 0;
-
-  dt_pthread_mutex_lock(&g->lock);
-  const int fail = (!g->cursor_valid || !g->luminance_valid || !g->scrolling);
-  dt_pthread_mutex_unlock(&g->lock);
-
-  if(fail) return 0;
-
-  if(which == 1 && g->user_param_valid)
-  {
-    dt_pthread_mutex_lock(&g->lock);
-
-    // Reset scrolling
-    g->scrolling = 0;
-
-    // Convert the linear temp parameters to log gains
-    float gains[CHANNELS] DT_ALIGNED_ARRAY;
-    compute_channels_gains(g->temp_user_params, gains);
-
-    dt_pthread_mutex_unlock(&g->lock);
-
-    // commit changes and history
-    commit_channels_gains(gains, p);
-    dt_dev_add_history_item(darktable.develop, self, TRUE);
-
-    fprintf(stdout, "button released finished \n");
-    return 1;
-  }
-  else if(which == 3)
-  {
-    // Abort setting
-    dt_pthread_mutex_lock(&g->lock);
-
-    // restore user parameters
-    float factors[CHANNELS] DT_ALIGNED_ARRAY;
-    get_channels_factors(factors, p);
-    dt_simd_memcpy(factors, g->temp_user_params, CHANNELS);
-
-    // flush the caches
-    g->lut_valid = 0;
-    g->scrolling = 0;
-
-    // recompute the approximation weights
-    int valid = pseudo_solve(g->interpolation_matrix, factors, CHANNELS, PIXEL_CHAN, 1);
-    if(valid) dt_simd_memcpy(factors, g->factors, PIXEL_CHAN);
-
-    dt_pthread_mutex_unlock(&g->lock);
-
-    self->dt->gui->reset = 1;
-    dt_bauhaus_slider_set_soft(g->noise, p->noise);
-    dt_bauhaus_slider_set_soft(g->ultra_deep_blacks, p->ultra_deep_blacks);
-    dt_bauhaus_slider_set_soft(g->deep_blacks, p->deep_blacks);
-    dt_bauhaus_slider_set_soft(g->blacks, p->blacks);
-    dt_bauhaus_slider_set_soft(g->shadows, p->shadows);
-    dt_bauhaus_slider_set_soft(g->midtones, p->midtones);
-    dt_bauhaus_slider_set_soft(g->highlights, p->highlights);
-    dt_bauhaus_slider_set_soft(g->whites, p->whites);
-    dt_bauhaus_slider_set_soft(g->speculars, p->speculars);
-    gtk_widget_queue_draw(GTK_WIDGET(g->area));
-    self->dt->gui->reset = 0;
-    return 1;
-  }
-
-  return 0;
-}
-*/
 
 /***
  * GTK/Cairo drawings and custom widgets
@@ -2538,15 +2460,6 @@ static inline gboolean _init_drawing(GtkWidget *widget, dt_iop_toneequalizer_gui
 
   // display x-axis and y-axis legends (EV)
   set_color(g->cr, darktable.bauhaus->graph_fg);
-  /*
-  snprintf(text, sizeof(text), "(EV)");
-  pango_layout_set_text(g->layout, text, -1);
-  pango_layout_get_pixel_extents(g->layout, &g->ink, NULL);
-  cairo_move_to(g->cr, - g->ink.x - g->line_height - 2 * g->inner_padding,
-                  g->graph_height + 2 * g->inner_padding - g->ink.y - g->ink.height / 2.0 + g->line_height / 2.0);
-  pango_cairo_show_layout(g->cr, g->layout);
-  cairo_stroke(g->cr);
-  */
 
   float value = -8.0f;
 
@@ -2606,15 +2519,6 @@ static inline gboolean _init_drawing(GtkWidget *widget, dt_iop_toneequalizer_gui
   set_color(g->cr, darktable.bauhaus->graph_border);
   cairo_rectangle(g->cr, 0, 0, g->graph_width, g->graph_height);
   cairo_stroke_preserve(g->cr);
-
-  // Clip inside frame with some outer margin for nodes bullets
-  /*
-  cairo_rectangle(g->cr, -2 * g->inner_padding,
-                         -2 * g->inner_padding,
-                        g->graph_width + 4 * g->inner_padding,
-                        g->graph_height + 4 * g->inner_padding);
-  */
-  //cairo_clip(g->cr);
 
   // end of caching section, this will not be drawn again
 
@@ -2921,7 +2825,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
     p->speculars = d->speculars;
 
     // update UI sliders
-    int reset = self->dt->gui->reset;
+    const int reset = self->dt->gui->reset;
     self->dt->gui->reset = 1;
     update_exposure_sliders(g, p);
     self->dt->gui->reset = reset;
@@ -2959,7 +2863,7 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
   dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
 
   const float current_y = event->y - g->inset;
-  int height_valid = (current_y > 0.0f && current_y < g->graph_height);
+  const gboolean height_valid = (current_y > 0.0f && current_y < g->graph_height);
 
   if(g->area_dragging && height_valid)
   {
@@ -3351,7 +3255,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   free(self->gui_data);
   self->gui_data = NULL;
 }
-
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

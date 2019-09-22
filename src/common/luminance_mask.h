@@ -127,7 +127,7 @@ static void pixel_rgb_value(const float *const restrict image,
 {
   // max(RGB) is equivalent to HSV value
 
-  float lum = exposure_boost * fmaxf(fmaxf(image[k], image[k + 1]), image[k + 2]);
+  const float lum = exposure_boost * fmaxf(fmaxf(image[k], image[k + 1]), image[k + 2]);
   luminance[k / ch] = linear_contrast(lum, fulcrum, contrast_boost);
 }
 
