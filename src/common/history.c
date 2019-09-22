@@ -1037,13 +1037,45 @@ void dt_history_compress_on_image(int32_t imgid)
   }
 }
 
+#define no_forced_reordering FALSE
+#define give_reorder_information FALSE
+static void _history_reorder(int32_t imgid)
+{
+  int32_t dummy = 0x7fffffff;
+  sqlite3_stmt *stmt;
+  if(give_reorder_information) fprintf(stderr,"\n\n_history reorder for image: %i",imgid);
+
+  if(no_forced_reordering)
+  {
+    if (give_reorder_information) fprintf(stderr,", no action");
+  }
+  else
+  {
+    if (give_reorder_information) fprintf(stderr,", reorder");
+
+    _history_copy_and_paste_on_image_overwrite(imgid, dummy, 0);
+    _history_copy_and_paste_on_image_overwrite(dummy, imgid, 0);
+
+    // make sure a cleanup
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dummy);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid = ?1", -1, &stmt,NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dummy);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
+}  
+#undef give_reorder_information
+#undef no_forced_reordering
 
 int dt_history_compress_on_selection()
 {
   int test;
   int uncompressed=0;
   int32_t imgid = -1;
-  int32_t dummy = 0x7fffffff;
 
   // Get the list of selected images
   sqlite3_stmt *stmt;
@@ -1057,9 +1089,8 @@ int dt_history_compress_on_selection()
     {
       dt_set_history_compress_problem(imgid, FALSE);
       dt_history_compress_on_image(imgid);
-      _history_copy_and_paste_on_image_overwrite(imgid, dummy, 0);
-      _history_copy_and_paste_on_image_overwrite(dummy, imgid, 0);
-
+      _history_reorder(imgid);
+ 
       // now the modules are in right order but need renumbering to remove leaks
       int max=0;    // the maximum num in main_history for an image
       int size=0;   // the number of items in main_history for an image
@@ -1118,19 +1149,6 @@ int dt_history_compress_on_selection()
       sqlite3_finalize(stmt2);
 
       dt_image_write_sidecar_file(imgid);
-
-      // make sure a cleanup
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1,
-        &stmt2, NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, dummy);
-      sqlite3_step(stmt2);
-      sqlite3_finalize(stmt2);
-
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid = ?1", -1, &stmt2,
-        NULL);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt2, 1, dummy);
-      sqlite3_step(stmt2);
-      sqlite3_finalize(stmt2);
     }
     if (test == 0) // no compression as history_end is right in the middle of history
     {
