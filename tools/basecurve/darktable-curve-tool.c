@@ -470,18 +470,16 @@ fit_curve(CurveData* best, int* nopt, float* minsqerr, CurveSample* csample, int
   {
     if(i == 0 || drand48() < p_large)
     { // large step
-      for(int k=0;k<tent.m_numAnchors;k++)
+      for(int k=0;k<tent.m_numAnchors-1;k++)
       {
         float x = k/(tent.m_numAnchors-1.0f);
         x *= x*x; // move closer to 0
-        uint32_t pos = 0;
-        if (x * CURVE_RESOLUTION > CURVE_RESOLUTION) {
-            pos = x * CURVE_RESOLUTION;
-        }
-        if(pos >= CURVE_RESOLUTION) pos = CURVE_RESOLUTION-1;
+        uint32_t pos = x * CURVE_RESOLUTION;
         tent.m_anchors[k].x = x;
         tent.m_anchors[k].y = curve[pos];
       }
+      tent.m_anchors[tent.m_numAnchors-1].x = 1.0f;
+      tent.m_anchors[tent.m_numAnchors-1].y = curve[CURVE_RESOLUTION-1];
     }
     else
     { // mutate
