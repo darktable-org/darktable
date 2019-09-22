@@ -34,6 +34,7 @@
  **/
 #if defined(__clang__)
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
+#undef _OPENMP
 #endif
 
 #if defined(__GNUC__)
