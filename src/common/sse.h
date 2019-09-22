@@ -18,6 +18,10 @@
 
 #include "common/darktable.h"
 
+#if defined(__clang__)
+#undef _OPENMP
+#endif
+
 __DT_CLONE_TARGETS__
 static inline void dt_simd_memcpy(const float *const restrict in,
                                   float *const restrict out,
