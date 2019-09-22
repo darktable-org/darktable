@@ -63,6 +63,7 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
 
     // correct exposure in camera RGB space (otherwise, it's not really exposure)
     _ioppr_move_iop_before(_iop_order_list, "exposure", "colorin", dont_move);
+    _ioppr_insert_iop_after(_iop_order_list, history_list, "toneequal", "clipping", dont_move);
 
     // move local distorsions/pixel shifts after general distorsions
     _ioppr_move_iop_before(_iop_order_list, "retouch", "exposure", dont_move);
@@ -133,7 +134,6 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
 
 
     _ioppr_move_iop_before(_iop_order_list, "dither", "borders", dont_move);
-
     new_version = 2;
   }
 
