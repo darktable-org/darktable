@@ -4,7 +4,7 @@
 # Maurizio Paglia <mpaglia0@gmail.com>, 2016, 2017, 2018, 2019.
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 2.4\n"
+"Project-Id-Version: darktable 2.6\n"
 "POT-Creation-Date: 2019-03-14 20:49+0100\n"
 "PO-Revision-Date: 2019-04-07 15:52+0200\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
