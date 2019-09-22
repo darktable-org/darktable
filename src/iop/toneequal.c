@@ -116,6 +116,7 @@ DT_MODULE_INTROSPECTION(2, dt_iop_toneequalizer_params_t)
  **/
 #if defined(__clang__)
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
+#undef _OPENMP
 #endif
 
 #if defined(__GNUC__)
