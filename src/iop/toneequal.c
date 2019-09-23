@@ -828,7 +828,8 @@ static inline void apply_toneequalizer(const float *const restrict in,
 
 
 __DT_CLONE_TARGETS__
-void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+static
+void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
              const void *const restrict ivoid, void *const restrict ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -1018,6 +1019,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     dt_iop_alpha_copy(in, out, roi_out->width, roi_out->height);
 }
 
+void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+             const void *const restrict ivoid, void *const restrict ovoid,
+             const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+    toneeq_process(self, piece, ivoid, ovoid, roi_in, roi_out);
+}
 
 
 void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
