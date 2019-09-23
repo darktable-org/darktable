@@ -1585,8 +1585,6 @@ void update_exposure_sliders(dt_iop_toneequalizer_gui_data_t *g, dt_iop_toneequa
   dt_bauhaus_slider_set_soft(g->speculars, p->speculars);
 }
 
-static gboolean _init_drawing(GtkWidget *widget, dt_iop_toneequalizer_gui_data_t *g);
-
 
 void gui_update(struct dt_iop_module_t *self)
 {
@@ -1608,7 +1606,6 @@ void gui_update(struct dt_iop_module_t *self)
 
   show_guiding_controls(self);
   gui_cache_init(self);
-  _init_drawing(self->widget, g);
 
   dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->show_luminance_mask), g->mask_display);
 }
@@ -3091,8 +3088,6 @@ void gui_init(struct dt_iop_module_t *self)
   // Advanced view
   g->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
   gtk_box_pack_start(GTK_BOX(page2), GTK_WIDGET(g->area), FALSE, FALSE, 0);
-  _init_drawing(self->widget, g);
-
   gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                                  | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
@@ -3236,7 +3231,6 @@ void gui_init(struct dt_iop_module_t *self)
                             G_CALLBACK(_develop_ui_pipe_started_callback), self);
 
   show_guiding_controls(self);
-  _init_drawing(self->widget, g);
 }
 
 
