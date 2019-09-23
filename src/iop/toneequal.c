@@ -114,11 +114,6 @@ DT_MODULE_INTROSPECTION(2, dt_iop_toneequalizer_params_t)
  * fp-contract=fast enables hardware-accelerated Fused Multiply-Add
  * the rest is loop reorganization and vectorization optimization
  **/
-#if defined(__clang__)
-#pragma GCC diagnostic ignored "-Wunknown-pragmas"
-#undef _OPENMP
-#endif
-
 #if defined(__GNUC__)
 #pragma GCC optimize ("unroll-loops", "tree-loop-if-convert", \
                       "tree-loop-distribution", "no-strict-aliasing", \
