@@ -2232,6 +2232,9 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
  * GTK/Cairo drawings and custom widgets
  **/
 
+static inline gboolean _init_drawing(GtkWidget *widget, dt_iop_toneequalizer_gui_data_t *g);
+
+
 void cairo_draw_hatches(cairo_t *cr, double center[2], double span[2], int instances, double line_width, double shade)
 {
   // center is the (x, y) coordinates of the region to draw
@@ -2315,6 +2318,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   const int fail = (!g->cursor_valid || !g->interpolation_valid || !g->luminance_valid || dev->pipe->processing || !sanity_check(self));
   dt_pthread_mutex_unlock(&g->lock);
   if(fail) return;
+
+  if(!g->graph_valid)
+    if(!_init_drawing(self->widget, g)) return;
 
   dt_pthread_mutex_lock(&g->lock);
 
