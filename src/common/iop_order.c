@@ -91,10 +91,15 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     // lens profiles need a pure sensor reading with no correction
     _ioppr_move_iop_before(_iop_order_list, "lens", "hazeremoval", dont_move);
 
+    // pixel scaling
+    _ioppr_move_iop_before(_iop_order_list, "scalepixels", "lens", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "rotatepixels", "scalepixels", dont_move);
+
     // move denoising before any deformation to avoid anisotropic noise creation
-    _ioppr_move_iop_before(_iop_order_list, "bilateral", "lens", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "bilateral", "rotatepixels", dont_move);
     _ioppr_move_iop_before(_iop_order_list, "denoiseprofile", "bilateral", dont_move);
     _ioppr_move_iop_before(_iop_order_list, "demosaic", "denoiseprofile", dont_move);
+
 
     // move Lab denoising/reconstruction after input profile where signal is linear
     // NB: denoising in non-linear spaces makes no sense
@@ -112,7 +117,8 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     // color adjustments in scene-linear space : move right after colorin
     _ioppr_move_iop_after(_iop_order_list, "channelmixer", "sharpen", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colorchecker", "channelmixer", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colorbalance", "colorchecker", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colormapping", "colorchecker", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colorbalance", "colormapping", dont_move);
 
     _ioppr_move_iop_after(_iop_order_list, "lut3d", "colorchecker", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "basicadj", "colorbalance", dont_move);
@@ -122,7 +128,7 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
 
     // scene-linear to display-referred encoding
     // !!! WALL OF THE NON-LINEARITY !!! There is no coming back for colour ratios
-    _ioppr_move_iop_after(_iop_order_list, "basecurve", "colorbalance", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "basecurve", "bloom", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "filmic", "basecurve", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colisa", "filmic", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "tonecurve", "colisa", dont_move);
@@ -135,9 +141,11 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
 
     // display-referred colour edits
     _ioppr_move_iop_after(_iop_order_list, "colorcorrection", "bilat", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "velvia", "colorcorrection", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "vibrance", "velvia", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colorzones", "vibrance", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colorzones", "colorcorrection", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "vibrance", "colorzones", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "velvia", "vibrance", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colorize", "velvia", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colorcontrast", "colorize", dont_move);
 
     // fix clipping before going in colourout
     _ioppr_move_iop_before(_iop_order_list, "colorreconstruct", "colorout", dont_move);
