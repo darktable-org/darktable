@@ -28,6 +28,10 @@ CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wold-style-declaration)
 
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wthread-safety)
 
+# since checking if defined(__GNUC__) is not enough to prevent Clang from using GCC-specific pragmas
+# (so Clang defines __GNUC__ ???) we need to disable the warnings about unknown pragmas
+CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-unknown-pragmas)
+
 # may be our bug :(
 CHECK_COMPILER_FLAG_AND_ENABLE_IT(-Wno-error=varargs)
 
