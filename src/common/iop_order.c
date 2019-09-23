@@ -100,7 +100,6 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     _ioppr_move_iop_before(_iop_order_list, "denoiseprofile", "bilateral", dont_move);
     _ioppr_move_iop_before(_iop_order_list, "demosaic", "denoiseprofile", dont_move);
 
-
     // move Lab denoising/reconstruction after input profile where signal is linear
     // NB: denoising in non-linear spaces makes no sense
     _ioppr_move_iop_before(_iop_order_list, "colorin", "nlmeans", dont_move);
@@ -120,7 +119,8 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     _ioppr_move_iop_after(_iop_order_list, "colormapping", "colorchecker", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colorbalance", "colormapping", dont_move);
 
-    _ioppr_move_iop_after(_iop_order_list, "lut3d", "colorchecker", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "lut3d", "colortransfer", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colortransfer", "colorchecker", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "basicadj", "colorbalance", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "rgbcurve", "basicadj", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "rgblevels", "rgbcurve", dont_move);
