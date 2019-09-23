@@ -30,9 +30,6 @@
  * fp-contract=fast enables hardware-accelerated Fused Multiply-Add
  * the rest is loop reorganization and vectorization optimization
  **/
-#if defined(__clang__)
-#pragma GCC diagnostic ignored "-Wunknown-pragmas"
-#endif
 
 #if defined(__GNUC__)
 #pragma GCC optimize ("unroll-loops", "tree-loop-if-convert", \
