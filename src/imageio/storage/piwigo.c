@@ -82,7 +82,7 @@ typedef struct dt_storage_piwigo_gui_data_t
   GtkEntry *server_entry;
   GtkEntry *user_entry, *pwd_entry, *new_album_entry;
   GtkBox *create_box;                               // Create album options...
-  GtkWidget *permission_list, *export_tags;
+  GtkWidget *permission_list;
   GtkWidget *album_list, *parent_album_list;
   GtkWidget *account_list;
 
@@ -107,7 +107,7 @@ typedef struct dt_storage_piwigo_params_t
   char *album;
   gboolean new_album;
   int privacy;
-  gboolean export_tags;
+  gboolean export_tags; // deprecated - let here not to change params size. to be removed on next version change
   gchar *tags;
 } dt_storage_piwigo_params_t;
 
@@ -694,9 +694,8 @@ static gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p, gchar *f
   if(description && strlen(description)>0)
     args = _piwigo_query_add_arguments(args, "comment", description);
 
-  if(p->export_tags && p->tags && strlen(p->tags)>0)
+  if(p->tags && strlen(p->tags)>0)
     args = _piwigo_query_add_arguments(args, "tags", p->tags);
-
   _piwigo_api_post(p->api, args, fname, FALSE);
 
   g_list_free(args);
@@ -818,14 +817,6 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_widget_set_halign(GTK_WIDGET(ui->status_label), GTK_ALIGN_START);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(ui->status_label), FALSE, FALSE, 0);
 
-  ui->export_tags = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(ui->export_tags, NULL, _("export tags"));
-  dt_bauhaus_combobox_add(ui->export_tags, _("yes"));
-  dt_bauhaus_combobox_add(ui->export_tags, _("no"));
-  dt_bauhaus_combobox_set(ui->export_tags, 0);
-  gtk_widget_set_hexpand(ui->export_tags, TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), ui->export_tags, FALSE, FALSE, 0);
-
   // select account
   if(account_index != -1) dt_bauhaus_combobox_set(ui->account_list, account_index);
 
@@ -911,7 +902,7 @@ void finalize_store(struct dt_imageio_module_storage_t *self, dt_imageio_module_
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
           const gboolean high_quality, const gboolean upscale, dt_colorspaces_color_profile_type_t icc_type,
-          const gchar *icc_filename, dt_iop_color_intent_t icc_intent)
+          const gchar *icc_filename, dt_iop_color_intent_t icc_intent, dt_export_metadata_t *metadata)
 {
   dt_storage_piwigo_gui_data_t *ui = self->gui_data;
 
@@ -939,54 +930,54 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     return 1;
   }
   close(fd);
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
 
+  if ((metadata->flags & DT_META_METADATA) && !(metadata->flags & DT_META_CALCULATED))
+  {
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
   // If title is not existing, then use the filename without extension. If not, then use title instead
-  GList *title = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
-  if(title != NULL)
-  {
-    caption = g_strdup(title->data);
-    g_list_free_full(title, &g_free);
-  }
-  else
-  {
-    caption = g_path_get_basename(img->filename);
-    (g_strrstr(caption, "."))[0] = '\0'; // chop extension...
-  }
+    GList *title = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
+    if(title != NULL)
+    {
+      caption = g_strdup(title->data);
+      g_list_free_full(title, &g_free);
+    }
+    else
+    {
+      caption = g_path_get_basename(img->filename);
+      (g_strrstr(caption, "."))[0] = '\0'; // chop extension...
+    }
 
-  GList *desc = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
-  if(desc != NULL)
-  {
-    description = g_strdup(desc->data);
-    g_list_free_full(desc, &g_free);
-  }
-  dt_image_cache_read_release(darktable.image_cache, img);
+    GList *desc = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
+    if(desc != NULL)
+    {
+      description = g_strdup(desc->data);
+      g_list_free_full(desc, &g_free);
+    }
+    dt_image_cache_read_release(darktable.image_cache, img);
 
-  GList *auth = dt_metadata_get(img->id, "Xmp.dc.creator", NULL);
-  if(auth != NULL)
-  {
-    author = g_strdup(auth->data);
-    g_list_free_full(auth, &g_free);
+    GList *auth = dt_metadata_get(img->id, "Xmp.dc.creator", NULL);
+    if(auth != NULL)
+    {
+      author = g_strdup(auth->data);
+      g_list_free_full(auth, &g_free);
+    }
   }
-
-  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, FALSE, icc_type, icc_filename, icc_intent,
-                       self, sdata, num, total) != 0)
+  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, TRUE, icc_type, icc_filename, icc_intent,
+                       self, sdata, num, total, metadata) != 0)
   {
     fprintf(stderr, "[imageio_storage_piwigo] could not export to file: `%s'!\n", fname);
     dt_control_log(_("could not export to file `%s'!"), fname);
     result = 1;
     goto cleanup;
   }
-
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
   {
     gboolean status = TRUE;
     dt_storage_piwigo_params_t *p = (dt_storage_piwigo_params_t *)sdata;
 
-    if(p->export_tags)
+    if(metadata->flags & DT_META_TAG)
     {
-      GList *tags_list = dt_tag_get_list_export(imgid);
-      if(p->tags) g_free(p->tags);
+      GList *tags_list = dt_tag_get_list_export(imgid, metadata->flags);
       p->tags = dt_util_glist_to_str(",", tags_list);
       g_list_free_full(tags_list, g_free);
     }
@@ -1012,6 +1003,11 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
         p->new_album = FALSE;
         _piwigo_refresh_albums(ui, p->album);
       }
+    }
+    if (p->tags)
+    {
+      g_free(p->tags);
+      p->tags = NULL;
     }
   }
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
@@ -1083,7 +1079,6 @@ void *get_params(dt_imageio_module_storage_t *self)
     int index = dt_bauhaus_combobox_get(ui->album_list);
 
     p->album_id = 0;
-    p->export_tags = (dt_bauhaus_combobox_get(ui->export_tags) == 0);
     p->tags = NULL;
 
     switch(dt_bauhaus_combobox_get(ui->permission_list))

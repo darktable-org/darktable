@@ -20,6 +20,7 @@
 
 #include "common/colorspaces.h"
 #include "common/darktable.h"
+#include "common/metadata_export.h"
 #include <gmodule.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
@@ -177,7 +178,7 @@ typedef struct dt_imageio_module_storage_t
                const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
                const int num, const int total, const gboolean high_quality, const gboolean upscale,
                dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
-               dt_iop_color_intent_t icc_intent);
+               dt_iop_color_intent_t icc_intent, dt_export_metadata_t *metadata_flags);
   /* called once at the end (after exporting all images), if implemented. */
   void (*finalize_store)(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
 
@@ -190,7 +191,7 @@ typedef struct dt_imageio_module_storage_t
   int (*set_params)(struct dt_imageio_module_storage_t *self, const void *params, const int size);
 
   void (*export_dispatched)(struct dt_imageio_module_storage_t *self);
-  
+
   char *(*ask_user_confirmation)(struct dt_imageio_module_storage_t *self);
 
   luaA_Type parameter_lua_type;

@@ -67,7 +67,6 @@ typedef struct dt_storage_flickr_gui_data_t
 
   GtkLabel *status_label;
   GtkEntry *user_entry, *title_entry, *summary_entry;
-  GtkWidget *export_tags;
   GtkBox *create_box;                               // Create album options...
   GtkWidget *permission_list, *album_list;
 
@@ -86,7 +85,7 @@ typedef struct dt_storage_flickr_params_t
 {
   int64_t hash;
   _flickr_api_context_t *flickr_api;
-  gboolean export_tags;
+  gboolean export_tags;   // deprecated. let here not to change params size. to be removed on next version change
   gboolean public_perm;
   gboolean friend_perm;
   gboolean family_perm;
@@ -97,7 +96,7 @@ typedef struct dt_storage_flickr_params_t
 static _flickr_api_context_t *_flickr_api_authenticate(dt_storage_flickr_gui_data_t *ui);
 
 static flickcurl_upload_status *_flickr_api_upload_photo(dt_storage_flickr_params_t *params, char *data,
-                                                         char *caption, char *description, gint imgid);
+                                                         char *caption, char *description, gint imgid, uint32_t flags);
 
 static void _flickr_api_free(_flickr_api_context_t *ctx)
 {
@@ -264,7 +263,7 @@ static _flickr_api_context_t *_flickr_api_authenticate(dt_storage_flickr_gui_dat
 
 
 static flickcurl_upload_status *_flickr_api_upload_photo(dt_storage_flickr_params_t *p, char *fname,
-                                                         char *caption, char *description, gint imgid)
+                                                         char *caption, char *description, gint imgid, uint32_t flags)
 {
 
   flickcurl_upload_params *params = g_malloc0(sizeof(flickcurl_upload_params));
@@ -278,7 +277,7 @@ static flickcurl_upload_status *_flickr_api_upload_photo(dt_storage_flickr_param
 
   if(imgid)
   {
-    GList *tags_list = dt_tag_get_list_export(imgid);
+    GList *tags_list = dt_tag_get_list_export(imgid, flags);
     params->tags = dt_util_glist_to_str(",", tags_list);
     g_list_free_full(tags_list, g_free);
   }
@@ -493,15 +492,6 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(ui->status_label), 1, line++, 1, 1);
 
 
-  ui->export_tags = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(ui->export_tags, NULL, _("export tags"));
-  dt_bauhaus_combobox_add(ui->export_tags, _("yes"));
-  dt_bauhaus_combobox_add(ui->export_tags, _("no"));
-  dt_bauhaus_combobox_set(ui->export_tags, 0);
-  gtk_widget_set_hexpand(ui->export_tags, TRUE);
-  gtk_grid_attach(GTK_GRID(self->widget), ui->export_tags, 0, line++, 2, 1);
-
-
   ui->permission_list = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(ui->permission_list, NULL, _("visible to"));
   dt_bauhaus_combobox_add(ui->permission_list, _("you"));
@@ -598,7 +588,7 @@ void gui_reset(dt_imageio_module_storage_t *self)
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
           const gboolean high_quality, const gboolean upscale, dt_colorspaces_color_profile_type_t icc_type,
-          const gchar *icc_filename, dt_iop_color_intent_t icc_intent)
+          const gchar *icc_filename, dt_iop_color_intent_t icc_intent, dt_export_metadata_t *metadata)
 {
   gint result = 0;
   dt_storage_flickr_params_t *p = (dt_storage_flickr_params_t *)sdata;
@@ -617,7 +607,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
   char *caption = NULL;
   char *description = NULL;
-
+  GList *title = NULL;
+  GList *desc = NULL;
 
   gint fd = g_mkstemp(fname);
   fprintf(stderr, "tempfile: %s\n", fname);
@@ -627,30 +618,33 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     return 1;
   }
   close(fd);
-  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
 
-  // If title is not existing, then use the filename without extension. If not, then use title instead
-  GList *title = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
-  if(title != NULL)
+  if ((metadata->flags & DT_META_METADATA) && !(metadata->flags & DT_META_CALCULATED))
   {
-    caption = g_strdup(title->data);
-    g_list_free_full(title, &g_free);
-  }
-  else
-  {
-    caption = g_path_get_basename(img->filename);
-    (g_strrstr(caption, "."))[0] = '\0'; // chop extension...
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+    // If title is not existing, then use the filename without extension. If not, then use title instead
+    title = dt_metadata_get(img->id, "Xmp.dc.title", NULL);
+    if(title != NULL)
+    {
+      caption = g_strdup(title->data);
+      g_list_free_full(title, &g_free);
+    }
+    else
+    {
+      caption = g_path_get_basename(img->filename);
+      (g_strrstr(caption, "."))[0] = '\0'; // chop extension...
+    }
+
+    desc = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
+    if(desc != NULL)
+    {
+      description = desc->data;
+    }
+    dt_image_cache_read_release(darktable.image_cache, img);
   }
 
-  GList *desc = dt_metadata_get(img->id, "Xmp.dc.description", NULL);
-  if(desc != NULL)
-  {
-    description = desc->data;
-  }
-  dt_image_cache_read_release(darktable.image_cache, img);
-
-  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, FALSE, icc_type, icc_filename, icc_intent,
-                       self, sdata, num, total) != 0)
+  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, TRUE, icc_type, icc_filename, icc_intent,
+                       self, sdata, num, total, metadata) != 0)
   {
     fprintf(stderr, "[imageio_storage_flickr] could not export to file: `%s'!\n", fname);
     dt_control_log(_("could not export to file `%s'!"), fname);
@@ -666,8 +660,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     //      upload time for one image to export another image to disk.
     // Upload image
     // Do we export tags?
-    if(p->export_tags == TRUE) tags = imgid;
-    photo_status = _flickr_api_upload_photo(p, fname, caption, description, tags);
+    if(metadata->flags & DT_META_TAG) tags = imgid;
+    photo_status = _flickr_api_upload_photo(p, fname, caption, description, tags, metadata->flags);
   }
 
   if(!photo_status)
@@ -788,8 +782,6 @@ void *get_params(dt_imageio_module_storage_t *self)
       g_free(d);
       return NULL;
     }
-
-    d->export_tags = (dt_bauhaus_combobox_get(ui->export_tags) == 0);
 
     /* Handle the permissions */
     int perm_index = (int)dt_bauhaus_combobox_get(ui->permission_list);

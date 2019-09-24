@@ -99,7 +99,7 @@ void gui_reset(dt_imageio_module_storage_t *self)
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
           const gboolean high_quality, const gboolean upscale, dt_colorspaces_color_profile_type_t icc_type,
-          const gchar *icc_filename, dt_iop_color_intent_t icc_intent)
+          const gchar *icc_filename, dt_iop_color_intent_t icc_intent, dt_export_metadata_t *metadata)
 {
   dt_imageio_email_t *d = (dt_imageio_email_t *)sdata;
 
@@ -129,8 +129,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
 
   attachment->file = g_build_filename(tmpdir, dirname, (char *)NULL);
 
-  if(dt_imageio_export(imgid, attachment->file, format, fdata, high_quality, upscale, FALSE, icc_type, icc_filename,
-                       icc_intent, self, sdata, num, total) != 0)
+  if(dt_imageio_export(imgid, attachment->file, format, fdata, high_quality, upscale, TRUE, icc_type, icc_filename,
+                       icc_intent, self, sdata, num, total, metadata) != 0)
   {
     fprintf(stderr, "[imageio_storage_email] could not export to file: `%s'!\n", attachment->file);
     dt_control_log(_("could not export to file `%s'!"), attachment->file);

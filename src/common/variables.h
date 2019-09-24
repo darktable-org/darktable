@@ -51,6 +51,8 @@ void dt_variables_set_max_width_height(dt_variables_params_t *params, int max_wi
 void dt_variables_set_time(dt_variables_params_t *params, time_t time);
 /** set the time to use for EXIF variables */
 void dt_variables_set_exif_time(dt_variables_params_t *params, time_t time);
+/** set flags for tags to be exported */
+void dt_variables_set_tags_flags(dt_variables_params_t *params, uint32_t flags);
 
 /** expands variables in string. the result should be freed with g_free(). */
 char *dt_variables_expand(dt_variables_params_t *params, gchar *source, gboolean iterate);

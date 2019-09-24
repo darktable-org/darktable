@@ -852,14 +852,14 @@ GList *dt_tag_get_hierarchical(gint imgid)
   return tags;
 }
 
-GList *dt_tag_get_list_export(gint imgid)
+GList *dt_tag_get_list_export(gint imgid, int32_t flags)
 {
   GList *taglist = NULL;
   GList *tags = NULL;
 
-  gboolean omit_tag_hierarchy = dt_conf_get_bool("omit_tag_hierarchy");
-  gboolean export_private_tags = dt_conf_get_bool("plugins/lighttable/export/export_private_tags");
-  gboolean export_tag_synomyms = dt_conf_get_bool("plugins/lighttable/export/export_tag_synonyms");
+  gboolean omit_tag_hierarchy = flags & DT_META_OMIT_HIERARCHY;
+  gboolean export_private_tags = flags & DT_META_PRIVATE_TAG;
+  gboolean export_tag_synomyms = flags & DT_META_SYNONYMS_TAG;
 
   uint32_t count = dt_tag_get_attached_export(imgid, &taglist);
 
@@ -902,7 +902,7 @@ GList *dt_tag_get_list_export(gint imgid)
   return dt_util_glist_uniq(tags);
 }
 
-GList *dt_tag_get_hierarchical_export(gint imgid)
+GList *dt_tag_get_hierarchical_export(gint imgid, int32_t flags)
 {
   GList *taglist = NULL;
   GList *tags = NULL;
@@ -910,7 +910,7 @@ GList *dt_tag_get_hierarchical_export(gint imgid)
   const int count = dt_tag_get_attached(imgid, &taglist, TRUE);
 
   if(count < 1) return NULL;
-  const gboolean export_private_tags = dt_conf_get_bool("plugins/lighttable/export/export_private_tags");
+  const gboolean export_private_tags = flags & DT_META_PRIVATE_TAG;
 
   while(taglist)
   {
@@ -1587,6 +1587,36 @@ void dt_tag_update_used_tags()
                                                        "FROM data.tags AS t, main.tagged_images AS i "
                                                        "ON t.id = i.tagid GROUP BY t.id",
                         NULL, NULL, NULL);
+}
+
+char *dt_tag_get_subtag(const gint imgid, const char *category, const int level)
+{
+  if (!category) return NULL;
+  const guint rootnb = dt_util_string_count_char(category, '|');
+  char *result = NULL;
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+          "SELECT DISTINCT T.name FROM main.tagged_images AS I "
+          "INNER JOIN data.tags AS T "
+          "ON T.id = I.tagid AND SUBSTR(T.name, 1, LENGTH(?2)) = ?2 "
+          "WHERE I.imgid = ?1",
+          -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, category, -1, SQLITE_TRANSIENT);
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    char *tag = (char *)sqlite3_column_text(stmt, 0);
+    const guint tagnb = dt_util_string_count_char(tag, '|');
+    if (tagnb >= rootnb + level)
+    {
+      gchar **pch = g_strsplit(tag, "|", -1);
+      result = g_strdup(pch[rootnb + level]);
+      g_strfreev(pch);
+      break;
+    }
+  }
+  sqlite3_finalize(stmt);
+  return result;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
