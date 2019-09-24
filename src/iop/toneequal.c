@@ -1969,9 +1969,9 @@ static void show_luminance_mask_callback(GtkWidget *togglebutton, dt_iop_module_
  * GUI Interactivity
  **/
 
- static void switch_cursors(struct dt_iop_module_t *self)
- {
-  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+static void switch_cursors(struct dt_iop_module_t *self)
+{
+  const dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   if(g == NULL) return;
 
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
