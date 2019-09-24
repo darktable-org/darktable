@@ -43,6 +43,7 @@ group_basic=(
     'profile_gamma'
     'temperature'
     'filmic'
+    'filmicrgb'
     'basicadj'
 )
 
