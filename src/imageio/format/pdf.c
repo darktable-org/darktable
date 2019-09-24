@@ -338,7 +338,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
 
   dt_pdf_image_t *image = dt_pdf_add_image(d->pdf, image_data, d->params.global.width, d->params.global.height, d->params.bpp, icc_id, d->page_border);
 
-  free(image_data);
+  dt_free_align(image_data);
 
   d->images = g_list_append(d->images, image);
 
