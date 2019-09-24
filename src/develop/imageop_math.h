@@ -183,8 +183,7 @@ static inline void dt_iop_alpha_copy(const void *const __restrict__ ivoid,
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width) \
-  shared(ovoid, ivoid) \
+  dt_omp_firstprivate(height, width, ovoid, ivoid) \
   schedule(static)
 #endif
   for(int j = 0; j < height; j++)
