@@ -391,7 +391,7 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
     jpeg_write_scanlines(&(jpg->cinfo), tmp, 1);
   }
   jpeg_finish_compress(&(jpg->cinfo));
-  free(row);
+  dt_free_align(row);
   jpeg_destroy_compress(&(jpg->cinfo));
   fclose(f);
 
@@ -453,13 +453,13 @@ int read_image(dt_imageio_module_data_t *jpg_tmp, uint8_t *out)
   if(setjmp(jerr.setjmp_buffer))
   {
     jpeg_destroy_decompress(&(jpg->dinfo));
-    free(row_pointer[0]);
+    dt_free_align(row_pointer[0]);
     fclose(jpg->f);
     return 1;
   }
   (void)jpeg_finish_decompress(&(jpg->dinfo));
   jpeg_destroy_decompress(&(jpg->dinfo));
-  free(row_pointer[0]);
+  dt_free_align(row_pointer[0]);
   fclose(jpg->f);
   return 0;
 }
