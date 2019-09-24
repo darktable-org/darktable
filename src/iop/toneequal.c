@@ -509,6 +509,11 @@ void init_presets(dt_iop_module_so_t *self)
  * Helper functions
  **/
 
+static gboolean in_mask_editing(dt_iop_module_t *self)
+{
+  const dt_develop_t *dev = self->dev;
+  return dev->form_gui && dev->form_visible;
+}
 
 static void hash_set_get(uint64_t *hash_in, uint64_t *hash_out, dt_pthread_mutex_t *lock)
 {
@@ -1977,7 +1982,8 @@ static void switch_cursors(struct dt_iop_module_t *self)
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
   GdkCursor *cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");
 
-  if(!sanity_check(self))
+  // if we are editing masks, do not display controls
+  if(!sanity_check(self) || in_mask_editing(self))
   {
     // display default cursor
     gdk_window_set_cursor(gtk_widget_get_window(widget), cursor);
@@ -2178,7 +2184,7 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
   if(g == NULL) return 0;
 
   // add an option to allow skip mouse events while editing masks
-  if(darktable.develop->darkroom_skip_mouse_events) return 0;
+  if(darktable.develop->darkroom_skip_mouse_events || in_mask_editing(self)) return 0;
 
   // if GUI buffers not ready, exit but still handle the cursor
   dt_pthread_mutex_lock(&g->lock);
@@ -2313,6 +2319,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   dt_develop_t *dev = self->dev;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+
+  // if we are editing masks, do not display controls
+  if(in_mask_editing(self)) return;
 
   dt_pthread_mutex_lock(&g->lock);
   const int fail = (!g->cursor_valid || !g->interpolation_valid || !g->luminance_valid || dev->pipe->processing || !sanity_check(self));
