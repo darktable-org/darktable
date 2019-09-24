@@ -24,8 +24,6 @@
 #include <time.h>
 
 #include "common/darktable.h"
-#include "common/sse.h"
-
 
 /** Note :
  * we use finite-math-only and fast-math because divisions by zero are manually avoided in the code
