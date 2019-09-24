@@ -23,7 +23,7 @@
 #include <time.h>
 
 #include "common/darktable.h"
-#include "common/sse.h"
+#include "develop/imageop_math.h"
 
 /** Note :
  * we use finite-math-only and fast-math because divisions by zero are manually avoided in the code
