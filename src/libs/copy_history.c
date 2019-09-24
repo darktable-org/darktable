@@ -155,7 +155,7 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
   const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   if (dt_collection_get_selected_count(darktable.collection) < 1 ) return;
 
-  int missing = dt_history_compress_on_selection();
+  const int missing = dt_history_compress_on_selection();
 
   dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
@@ -163,13 +163,13 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
   { 
     GtkWidget *dialog = gtk_message_dialog_new(
     GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_CLOSE,
-    ngettext("No history compression of an image.\nSee tag: darktable|problem|history-compress.",
-             "No history compression of %d images.\nSee tag: darktable|problem|history-compress.", missing ), missing);
+    ngettext("no history compression of 1 image.\nsee tag: darktable|problem|history-compress.",
+             "no history compression of %d images.\nsee tag: darktable|problem|history-compress.", missing ), missing);
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
 #endif
 
-    gtk_window_set_title(GTK_WINDOW(dialog), _("History compression warning"));
+    gtk_window_set_title(GTK_WINDOW(dialog), _("history compression warning"));
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
     }
