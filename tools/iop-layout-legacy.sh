@@ -51,6 +51,7 @@ group_tone=(
     'bilat'
     'globaltonemap'
     'filmic'
+    'filmicrgb'
 )
 
 group_color=(
