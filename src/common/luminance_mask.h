@@ -25,6 +25,7 @@
 #include <time.h>
 
 #include "common/darktable.h"
+#include "develop/imageop_math.h"
 
 
 /** Note :
