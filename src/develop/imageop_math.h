@@ -168,6 +168,9 @@ schedule(simd:static) aligned(in, out:64)
 
 
 /** evaluates the exp fit. */
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static inline float dt_iop_eval_exp(const float *const coeff, const float x)
 {
   return coeff[1] * powf(x * coeff[0], coeff[2]);
