@@ -1074,7 +1074,6 @@ static void _history_reorder(int32_t imgid)
 int dt_history_compress_on_selection()
 {
   int uncompressed=0;
-  int32_t imgid = -1;
 
   // Get the list of selected images
   sqlite3_stmt *stmt;
@@ -1082,7 +1081,7 @@ int dt_history_compress_on_selection()
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    imgid = sqlite3_column_int(stmt, 0);
+    int imgid = sqlite3_column_int(stmt, 0);
     const int test = dt_history_end_attop(imgid);
     if (test == 1) // we do a compression and we know for sure history_end is at the top!
     {
