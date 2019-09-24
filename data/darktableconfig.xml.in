@@ -199,21 +199,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>omit hierarchy in simple tag lists</shortdescription>
-    <longdescription>when exporting images the hierarchical tags are also added as a simple list of non-hierarchical ones to make them visible to some other programs. when this option is checked darktable will only include their last part and ignore the rest. so 'foo|bar|baz' will only add 'baz'.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="core">
-    <name>plugins/lighttable/export/export_private_tags</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>force exportation of private tags</shortdescription>
-    <longdescription>darktable doesn't export private tags per default. this option allows to export them to XMP-dc Subject and XMP-lr Hierarchical Subject.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="core">
-    <name>plugins/lighttable/export/export_tag_synonyms</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>request exportation of synonyms</shortdescription>
-    <longdescription>darktable doesn't export the synonyms per default. this option allows to export them along with tags to XMP-dc Subject.</longdescription>
+    <longdescription>when creating XMP file the hierarchical tags are also added as a simple list of non-hierarchical ones to make them visible to some other programs. when this option is checked darktable will only include their last part and ignore the rest. so 'foo|bar|baz' will only add 'baz'.</longdescription>
   </dtconfig>
   <dtconfig prefs="core">
     <name>plugins/lighttable/tagging/no_entry_completion</name>
