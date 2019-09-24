@@ -124,7 +124,7 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_iop
  * if matrix cannot be generated it default to linear rec 2020
  * returns the actual profile that has been set
  */
-dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, 
+dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
     const int type, const char *filename, const int intent);
 /** returns a reference to the histogram profile info
  * histogram profile must not be cleanup()

@@ -130,6 +130,7 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     // !!! WALL OF THE NON-LINEARITY !!! There is no coming back for colour ratios
     _ioppr_move_iop_after(_iop_order_list, "basecurve", "bloom", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "filmic", "basecurve", dont_move);
+    _ioppr_insert_iop_after(_iop_order_list, history_list, "filmicrgb", "filmic", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colisa", "filmic", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "tonecurve", "colisa", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "levels", "tonecurve", dont_move);
@@ -1688,7 +1689,12 @@ static inline void _transform_lcms2_rgb(const float *const image_in, float *cons
                               profile_info_to->intent);
 }
 
-static float lerp_lut(const float *const lut, const float v, const int lutsize)
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+__DT_CLONE_TARGETS__
+static inline float lerp_lut(const float *const lut, const float v, const int lutsize)
 {
   // TODO: check if optimization is worthwhile!
   const float ft = CLAMPS(v * (lutsize - 1), 0, lutsize - 1);
@@ -1699,7 +1705,12 @@ static float lerp_lut(const float *const lut, const float v, const int lutsize)
   return l1 * (1.0f - f) + l2 * f;
 }
 
-static inline void _apply_trc_in(const float *const rgb_in, float *rgb_out, const dt_iop_order_iccprofile_info_t *const profile_info)
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+__DT_CLONE_TARGETS__
+static inline void _apply_trc_in(const float *const restrict rgb_in, float *const restrict rgb_out, const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   for(int c = 0; c < 3; c++)
   {
@@ -2350,7 +2361,11 @@ void dt_ioppr_get_histogram_profile_type(int *profile_type, char **profile_filen
   }
 }
 
-float dt_ioppr_get_rgb_matrix_luminance(const float *const rgb, const dt_iop_order_iccprofile_info_t *const profile_info)
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+inline float dt_ioppr_get_rgb_matrix_luminance(const float *const rgb, const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   float luminance = 0.f;
 
