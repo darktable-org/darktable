@@ -870,7 +870,7 @@ int dt_history_copy_and_paste_on_selection(int32_t imgid, gboolean merge, GList 
   return res;
 }
 
-void dt_set_history_compress_problem(int32_t imgid, gboolean set)
+void dt_history_set_compress_problem(int32_t imgid, gboolean set)
 {
   guint tagid = 0;
   char tagname[64];
@@ -955,7 +955,7 @@ void dt_history_compress_on_image(int32_t imgid)
   int masks_count = 0;
   char op_mask_manager[20] = { 0 };
 
-  bool manager_position = FALSE;
+  gboolean manager_position = FALSE;
   // do we already have a mask manager at the correct position? We don't want to increase history nums later
   g_strlcpy(op_mask_manager, "mask_manager", sizeof(op_mask_manager));
 
@@ -1047,11 +1047,11 @@ static void _history_reorder(int32_t imgid)
 
   if(no_forced_reordering)
   {
-    if (give_reorder_information) fprintf(stderr,", no action");
+    if (give_reorder_information) fprintf(stderr,", no action\n");
   }
   else
   {
-    if (give_reorder_information) fprintf(stderr,", reorder");
+    if (give_reorder_information) fprintf(stderr,", reorder\n");
 
     _history_copy_and_paste_on_image_overwrite(imgid, dummy, 0);
     _history_copy_and_paste_on_image_overwrite(dummy, imgid, 0);
@@ -1073,7 +1073,6 @@ static void _history_reorder(int32_t imgid)
 
 int dt_history_compress_on_selection()
 {
-  int test;
   int uncompressed=0;
   int32_t imgid = -1;
 
@@ -1084,10 +1083,10 @@ int dt_history_compress_on_selection()
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     imgid = sqlite3_column_int(stmt, 0);
-    test = dt_history_end_attop(imgid);
+    const int test = dt_history_end_attop(imgid);
     if (test == 1) // we do a compression and we know for sure history_end is at the top!
     {
-      dt_set_history_compress_problem(imgid, FALSE);
+      dt_history_set_compress_problem(imgid, FALSE);
       dt_history_compress_on_image(imgid);
       _history_reorder(imgid);
  
@@ -1153,10 +1152,10 @@ int dt_history_compress_on_selection()
     if (test == 0) // no compression as history_end is right in the middle of history
     {
       uncompressed++;
-      dt_set_history_compress_problem(imgid, TRUE);
+      dt_history_set_compress_problem(imgid, TRUE);
     }
     if (test == -1)
-      dt_set_history_compress_problem(imgid, FALSE);
+      dt_history_set_compress_problem(imgid, FALSE);
   }
 
   sqlite3_finalize(stmt);
