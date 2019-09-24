@@ -101,7 +101,7 @@ typedef unsigned int u_int;
 /* Create cloned functions for various CPU SSE generations */
 /* See for instructions https://hannes.hauswedell.net/post/2017/12/09/fmv/ */
 /* TL;DR : use only on SIMD functions containing low-level paralellized/vectorized loops */
-#if __has_attribute(target_clones) && !defined(_WIN32)
+#if __has_attribute(target_clones) && !defined(_WIN32) && defined(__SSE__)
 #define __DT_CLONE_TARGETS__ __attribute__((target_clones("default", "sse2", "sse3", "sse4.1", "sse4.2", "popcnt", "avx", "avx2", "avx512f", "fma4")))
 #else
 #define __DT_CLONE_TARGETS__
