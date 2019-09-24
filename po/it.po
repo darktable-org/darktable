@@ -6,14 +6,14 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
 "PO-Revision-Date: 2019-11-30 14:56+0100\n"
-"Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
-"Language-Team: Italian <kde-i18n-it@kde.org>\n"
+"Last-Translator: mmardegan <11093569+mmardegan@users.noreply.github.com>\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Poedit 2.2.4\n"
+"Language-Team: Italian <kde-i18n-it@kde.org>\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
@@ -488,7 +488,7 @@ msgstr "Mappa / Geolocalizzazione"
 #: ../build/src/preferences_gen.h:2864
 #: ../build/src/preferences_gen.h:2912
 msgid "map / geolocalisation"
-msgstr ""
+msgstr "Mappa / Geolocalizzazione"
 
 #: ../build/src/preferences_gen.h:2923
 msgid "only draw images on map that are currently collected and filtered"
@@ -610,7 +610,7 @@ msgstr "Chiedi prima di eliminare un tag"
 
 #: ../build/src/preferences_gen.h:3159 ../build/src/preferences_gen.h:4061
 msgid "miscellaneous"
-msgstr ""
+msgstr "Miscellaneo"
 
 #: ../build/src/preferences_gen.h:3170
 msgid "width of the side panels in pixels"
@@ -622,11 +622,11 @@ msgstr "(Riavvio necessario)"
 
 #: ../build/src/preferences_gen.h:3197
 msgid "waiting time between each picture in slideshow"
-msgstr ""
+msgstr "Intervallo di tempo tra le foto durante la presentazione"
 
 #: ../build/src/preferences_gen.h:3223
 msgid "do not show april 1st game"
-msgstr ""
+msgstr "Non mostrare il gioco del 1° aprile"
 
 #: ../build/src/preferences_gen.h:3242
 msgid "number of folder levels to show in lists"
@@ -655,7 +655,7 @@ msgstr "Abilita modulo"
 
 #: ../build/src/preferences_gen.h:3301
 msgid "enable the timeline in lighttable mode."
-msgstr ""
+msgstr "Attiva linea del tempo in modalità Tavolo Luminoso."
 
 #: ../build/src/preferences_gen.h:3309
 
@@ -1242,6 +1242,12 @@ msgstr "Errore durante l'esportazione delle tag"
 msgid "omit hierarchy in simple tag lists"
 msgstr "Nasconde la gerarchia e visualizza una lista di etichette"
 #: ../build/src/preferences_gen.h:4012
+"Darktable non esporta i Tag privati in modo predefinito, questa opzione"
+" consente "
+"di esportarli su XMP-dc Subject e XMP-lr Hierarchical Subject."
+# Verificare la traduzione di synonyms
+# verificare la traduzione di synonyms e XMP-dc Subject
+#, fuzzy
 msgid ""
 "when creating XMP file the hierarchical tags are also added as a simple list "
 "of non-hierarchical ones to make them visible to some other programs. when "
@@ -5564,9 +5570,8 @@ msgid "enter the title of the book"
 msgstr "Inserisci il titolo del libro"
 
 #: ../src/imageio/storage/piwigo.c:478
-#, fuzzy
 msgid "not authenticated, cannot reach server"
-msgstr "Non autenticato"
+msgstr "Non autenticato, server non raggiungibile"
 
 #: ../src/imageio/storage/piwigo.c:589
 #, fuzzy
@@ -5580,7 +5585,7 @@ msgstr "Aggiorna lista album"
 
 #: ../src/imageio/storage/piwigo.c:723
 msgid "piwigo"
-msgstr ""
+msgstr "Piwigo"
 
 #: ../src/imageio/storage/piwigo.c:748
 #, fuzzy
@@ -5589,7 +5594,7 @@ msgstr "Calcolo"
 
 #: ../src/imageio/storage/piwigo.c:765
 msgid "server"
-msgstr ""
+msgstr "Server"
 
 #: ../src/imageio/storage/piwigo.c:769
 msgid ""
@@ -5597,6 +5602,9 @@ msgid ""
 "default protocol is https\n"
 "specify http:// if non secure server"
 msgstr ""
+"Il nome del server\n"
+"Il protocollo di default è https\n"
+"Specifica http:// per server non sicuro"
 
 #: ../src/imageio/storage/piwigo.c:782
 msgid "user"
@@ -5608,12 +5616,11 @@ msgstr "mot de passe"
 
 #: ../src/imageio/storage/piwigo.c:811
 msgid "piwigo login"
-msgstr ""
+msgstr "Piwigo login"
 
 #: ../src/imageio/storage/piwigo.c:835
-#, fuzzy
 msgid "contacts"
-msgstr "Foglio contatto"
+msgstr "Contatti"
 
 #. Available albums
 #: ../src/imageio/storage/piwigo.c:846
@@ -6391,6 +6398,7 @@ msgid "clip"
 msgstr "Taglia"
 
 #: ../src/iop/basicadj.c:766
+#, fuzzy
 msgid "adjusts clipping value for auto exposure calculation"
 msgstr "Regola il valore di taglio per il calcolo di auto esposizione"
 
@@ -6904,7 +6912,6 @@ msgstr "B/N Kodak Tri-X 400"
 #: ../src/iop/choleski.h:303 ../src/iop/choleski.h:401
 msgid ""
 "Choleski decomposition failed to allocate memory, check your RAM settings"
-msgstr ""
 "La decomposizione Coleski non è riuscita ad allocare la memoria. Verifica le "
 "impostazioni della RAM"
 
@@ -9079,39 +9086,39 @@ msgstr "Provino"
 
 #: ../src/iop/filmic.c:311
 msgid "09 EV (low-key)"
-msgstr ""
+msgstr "09 EV (tono scuro)"
 
 #: ../src/iop/filmic.c:318
 msgid "10 EV (indoors)"
-msgstr ""
+msgstr "10 EV (interni)"
 
 #: ../src/iop/filmic.c:325
 msgid "11 EV (dim outdoors)"
-msgstr ""
+msgstr "11 EV (esterni scuri)"
 
 #: ../src/iop/filmic.c:332
 msgid "12 EV (outdoors)"
-msgstr ""
+msgstr "12 EV (esterni)"
 
 #: ../src/iop/filmic.c:339
 msgid "13 EV (bright outdoors)"
-msgstr ""
+msgstr "13 EV (esterni luminosi)"
 
 #: ../src/iop/filmic.c:346
 msgid "14 EV (backlighting)"
-msgstr ""
+msgstr "14 EV (retroilluminazione)"
 
 #: ../src/iop/filmic.c:353
 msgid "15 EV (sunset)"
-msgstr ""
+msgstr "15 EV (tramonto)"
 
 #: ../src/iop/filmic.c:360
 msgid "16 EV (HDR)"
-msgstr ""
+msgstr "16 EV (HDR)"
 
 #: ../src/iop/filmic.c:367
 msgid "18 EV (HDR++)"
-msgstr ""
+msgstr "18 EV (HDR++)"
 
 #: ../src/iop/filmic.c:1679
 msgid "read-only graph, use the parameters below to set the nodes"
@@ -9143,6 +9150,9 @@ msgid ""
 "this is a reading a lightmeter would give you on the scene.\n"
 "adjust so highlights clipping is avoided"
 msgstr ""
+"Numero di stop tra il grigio intermedio ed il bianco.\n"
+"Questa è la lettura che darebbe un esposimetro sulla scena.\n"
+"Regola in modo da evitare aree sovraesposte"
 
 #: ../src/iop/filmic.c:1715 ../src/iop/profile_gamma.c:908
 #, fuzzy
@@ -9156,6 +9166,10 @@ msgid ""
 "increase to get more contrast.\n"
 "decrease to recover more details in low-lights."
 msgstr ""
+"Numero di stop tra il grigio intermedio ed il nero.\n"
+"Questa è la lettura che darebbe un esposimetro sulla scena.\n"
+"Aumenta per ottenere maggior contrasto.\n"
+"Diminuisci per recuperare dettaglio nelle zone d'ombra."
 
 #: ../src/iop/filmic.c:1728 ../src/iop/profile_gamma.c:932
 #, fuzzy
@@ -9259,7 +9273,7 @@ msgstr ""
 #. monotonic spline
 #: ../src/iop/filmic.c:1808
 msgid "optimized"
-msgstr ""
+msgstr "Ottimizzato"
 
 #: ../src/iop/filmic.c:1810
 msgid "change this method if you see reversed contrast or faded blacks"
@@ -11016,7 +11030,6 @@ msgid ""
 "apply auto levels based on a region defined by the user\n"
 "click and drag to draw the area\n"
 "right click to cancel"
-msgstr ""
 "Applica i livelli automatici in base ad un'area definita dall'utente\n"
 "Click e trascina per selezionare l'area\n"
 "Click destro per cancellarla"
@@ -11031,7 +11044,7 @@ msgstr "Prendi colore interfaccia dall'immagine"
 
 #: ../src/iop/rgbcurve.c:1576 ../src/iop/rgbcurve.c:1578
 msgid "compensate middle grey"
-msgstr ""
+msgstr "Compensa il grigio intermedio"
 
 #: ../src/iop/rgblevels.c:108
 #, fuzzy
@@ -11410,7 +11423,6 @@ msgstr "Curva di tono"
 #: ../src/iop/tonecurve.c:1308
 msgid "color space"
 msgstr "Spazio colore"
-msgstr "Combinazione colori"
 
 #: ../src/iop/tonecurve.c:1309
 msgid "Lab, linked channels"
@@ -14856,7 +14868,6 @@ msgstr "Attiva la lista con o senza suggerimento"
 #: ../src/libs/tagging.c:2821
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
-msgstr ""
 "Le scorciatoie non sono disponibili sulla visualizzazione ad albero. Abilita "
 "la visualizzazione lista."
 
