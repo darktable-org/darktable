@@ -148,6 +148,25 @@ static inline void dt_iop_estimate_exp(const float *const x, const float *const 
   coeff[2] = g;
 }
 
+
+__DT_CLONE_TARGETS__
+static inline void dt_simd_memcpy(const float *const __restrict__ in,
+                                  float *const __restrict__ out,
+                                  const size_t num_elem)
+{
+  // Perform a parallel vectorized memcpy on 64-bits aligned
+  // contiguous buffers. This is several times faster than the original memcpy
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+dt_omp_firstprivate(in, out, num_elem) \
+schedule(simd:static) aligned(in, out:64)
+#endif
+  for(size_t k = 0; k < num_elem; k++)
+    out[k] = in[k];
+}
+
+
 /** evaluates the exp fit. */
 static inline float dt_iop_eval_exp(const float *const coeff, const float x)
 {
