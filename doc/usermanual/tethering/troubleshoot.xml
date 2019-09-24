@@ -104,7 +104,7 @@
     <para>
       If you successfully went through all the tests above, your camera will most likely be
       supported by darktable. Even if successful, if you stumble upon a problem in darktable,
-      please file a bug at <ulink url="https://www.darktable.org/redmine">redmine</ulink>.
+      please file a bug on the <ulink url="https://github.com/darktable-org/darktable/issues">bugtracker</ulink>.
       Please attach the log outputs from the steps above and the log file output generated after
       starting darktable with the following command.
     </para>
