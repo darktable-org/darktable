@@ -53,8 +53,11 @@ int dt_history_load_and_apply(int imgid, gchar *filename, int history_only);
 void dt_history_delete_on_selection();
 
 /** compress history stack */
-void dt_history_compress_on_selection();
+int dt_history_compress_on_selection();
 void dt_history_compress_on_image(int32_t imgid);
+/* set or clear a tag representing an error state while compressing history */
+void dt_history_set_compress_problem(int32_t imgid, gboolean set);
+
 
 typedef struct dt_history_item_t
 {

@@ -703,6 +703,10 @@ static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer u
   const int32_t imgid = darktable.develop->image_storage.id;
   if(!imgid) return;
 
+  // As dt_history_compress_on_image does *not* use the history stack data at all
+  // make sure the current stack is in the database
+  dt_dev_write_history(darktable.develop);
+
   dt_history_compress_on_image(imgid);
 
   sqlite3_stmt *stmt;
