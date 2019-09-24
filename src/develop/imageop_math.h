@@ -174,7 +174,9 @@ static inline float dt_iop_eval_exp(const float *const coeff, const float x)
 }
 
 /** Copy alpha channel 1:1 from input to output */
-static inline void dt_iop_alpha_copy(const void *ivoid, void *ovoid, const int width, const int height)
+static inline void dt_iop_alpha_copy(const void *const __restrict__ ivoid,
+                                     void *const __restrict__ ovoid,
+                                     const int width, const int height)
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
