@@ -1,18 +1,19 @@
 # Germano Massullo <germano.massullo@gmail.com>, 2018.
+# mmardegan <11093569+mmardegan@users.noreply.github.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-09-04 19:19+0200\n"
-"PO-Revision-Date: 2019-09-22 10:12+0200\n"
-"Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
+"PO-Revision-Date: 2019-09-24 23:26+0100\n"
+"Last-Translator: mmardegan <11093569+mmardegan@users.noreply.github.com>\n"
 "Language-Team: Italian <>\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2.1\n"
+"X-Generator: Lokalize 2.0\n"
 
 #: ../build/src/preferences_gen.h:2155
 msgid "GUI options"
@@ -395,7 +396,7 @@ msgstr "margine inferiore"
 #: ../build/src/preferences_gen.h:2754
 msgctxt "preferences"
 msgid "hidden"
-msgstr ""
+msgstr "Nascosto"
 
 #: ../build/src/preferences_gen.h:2779
 msgid "show search module text entry"
@@ -404,7 +405,7 @@ msgstr ""
 #: ../build/src/preferences_gen.h:2790
 msgctxt "preferences"
 msgid "show search text"
-msgstr ""
+msgstr "Mostra il testo da cercare"
 
 #: ../build/src/preferences_gen.h:2795
 #, fuzzy
@@ -604,11 +605,11 @@ msgstr "(Riavvio necessario)"
 
 #: ../build/src/preferences_gen.h:3197
 msgid "waiting time between each picture in slideshow"
-msgstr ""
+msgstr "Intervallo di tempo tra le foto durante la presentazione"
 
 #: ../build/src/preferences_gen.h:3223
 msgid "do not show april 1st game"
-msgstr ""
+msgstr "Non mostrare il gioco del 1° aprile"
 
 #: ../build/src/preferences_gen.h:3242
 msgid "number of folder levels to show in lists"
@@ -637,7 +638,7 @@ msgstr "Abilita modulo"
 
 #: ../build/src/preferences_gen.h:3301
 msgid "enable the timeline in lighttable mode."
-msgstr ""
+msgstr "Attiva linea del tempo in modalità Tavolo Luminoso."
 
 #: ../build/src/preferences_gen.h:3309
 msgid "overlay txt sidecar over zoomed images"
@@ -666,12 +667,12 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3349
 msgid "show scrollbars for center view"
-msgstr ""
+msgstr "Mostra le barre di scorrimento per la Vista Centrale"
 
 #: ../build/src/preferences_gen.h:3360
 msgctxt "preferences"
 msgid "no scrollbars"
-msgstr ""
+msgstr "Nessuna barra di scorrimento"
 
 #: ../build/src/preferences_gen.h:3365 ../build/src/preferences_gen.h:3385
 #, fuzzy
@@ -687,11 +688,11 @@ msgstr "Tavolo luminoso e camera oscura virtuali"
 
 #: ../build/src/preferences_gen.h:3388
 msgid "defines where scrollbars should be displayed"
-msgstr ""
+msgstr "Stabilisci dove dovrebbero esser mostrate le barre di scorrimento"
 
 #: ../build/src/preferences_gen.h:3396
 msgid "always show panels' scrollbars"
-msgstr ""
+msgstr "Mostra sempre le barre di scorrimento dei pannelli"
 
 #: ../build/src/preferences_gen.h:3408
 msgid ""
@@ -842,7 +843,7 @@ msgstr "Applica automaticamente i preset della curva base per la fotocamera"
 
 #: ../build/src/preferences_gen.h:3670
 msgid "use a basecurve by default (needs a restart)"
-msgstr ""
+msgstr "Usa la curva base in modo predefinito (richiede il riavvio)"
 
 #: ../build/src/preferences_gen.h:3678
 msgid "auto-apply per camera basecurve presets"
@@ -918,7 +919,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3816
 msgid "cpu / gpu / memory"
-msgstr ""
+msgstr "CPU / GPU / Memoria"
 
 #: ../build/src/preferences_gen.h:3827
 msgid "memory in megabytes to use for thumbnail cache"
@@ -1103,21 +1104,30 @@ msgstr ""
 msgid "force exportation of private tags"
 msgstr "Errore durante l'esportazione delle tag"
 
+# Verificare se corretto mantenere XMP-dc Subject e XMP-lr Hierarchical Subject
 #: ../build/src/preferences_gen.h:4104
 msgid ""
 "darktable doesn't export private tags per default. this option allows to "
 "export them to XMP-dc Subject and XMP-lr Hierarchical Subject."
 msgstr ""
+"Darktable non esporta i Tag privati in modo predefinito, questa opzione"
+" consente "
+"di esportarli su XMP-dc Subject e XMP-lr Hierarchical Subject."
 
+# Verificare la traduzione di synonyms
 #: ../build/src/preferences_gen.h:4112
 msgid "request exportation of synonyms"
-msgstr ""
+msgstr "Richiedi l'esportazione dei sinonimi"
 
+# verificare la traduzione di synonyms e XMP-dc Subject
 #: ../build/src/preferences_gen.h:4124
+#, fuzzy
 msgid ""
 "darktable doesn't export the synonyms per default. this option allows to "
 "export them along with tags to XMP-dc Subject."
 msgstr ""
+"Darktable non esporta in modo predefinito i sinonimi, questa opzione consente "
+"di esportarli insieme ai Tag nell'XMP-dc Subject."
 
 #: ../build/src/preferences_gen.h:4132
 msgid "disable the entry completion"
@@ -4009,7 +4019,7 @@ msgstr "Centro orizzontale"
 
 #: ../src/gui/guides.c:109
 msgid "number of horizontal guide lines"
-msgstr ""
+msgstr "Numero delle linee guida orizzontali"
 
 #: ../src/gui/guides.c:115
 #, fuzzy
@@ -4144,12 +4154,12 @@ msgid ""
 "set the language of the user interface. the system default is marked with an "
 "* (needs a restart)"
 msgstr ""
-"imposta la lingua per l'interfaccia utente. il sistema è impostato in modo "
-"predefinito con un valore * (è necessario un riavvio)"
+"Imposta la lingua per l'interfaccia utente. Il sistema è impostato in modo "
+"predefinito con un valore * (è necessario il riavvio)"
 
 #: ../src/gui/preferences.c:244
 msgid "theme"
-msgstr ""
+msgstr "Tema"
 
 #: ../src/gui/preferences.c:268
 #, fuzzy
@@ -4912,7 +4922,7 @@ msgstr "Sovrascrivi"
 
 #: ../src/imageio/storage/disk.c:202
 msgid "skip"
-msgstr ""
+msgstr "Salta"
 
 #: ../src/imageio/storage/disk.c:281 ../src/imageio/storage/gallery.c:274
 #: ../src/imageio/storage/latex.c:273
@@ -5286,9 +5296,8 @@ msgid "enter the title of the book"
 msgstr "Inserisci il titolo del libro"
 
 #: ../src/imageio/storage/piwigo.c:478
-#, fuzzy
 msgid "not authenticated, cannot reach server"
-msgstr "Non autenticato"
+msgstr "Non autenticato, server non raggiungibile"
 
 #: ../src/imageio/storage/piwigo.c:589
 #, fuzzy
@@ -5311,7 +5320,7 @@ msgstr "Calcolo"
 
 #: ../src/imageio/storage/piwigo.c:765
 msgid "server"
-msgstr ""
+msgstr "Server"
 
 #: ../src/imageio/storage/piwigo.c:769
 msgid ""
@@ -5939,7 +5948,7 @@ msgstr "Media"
 #: ../src/iop/rgbcurve.c:1589 ../src/iop/rgblevels.c:1121
 #: ../src/iop/tonecurve.c:1397
 msgid "sum rgb"
-msgstr ""
+msgstr "Somma RGB"
 
 #: ../src/iop/basecurve.c:2145 ../src/iop/basicadj.c:707
 #: ../src/iop/rgbcurve.c:1590 ../src/iop/rgblevels.c:1122
@@ -6093,8 +6102,9 @@ msgid "clip"
 msgstr ""
 
 #: ../src/iop/basicadj.c:761
+#, fuzzy
 msgid "adjusts clipping value for auto exposure calculation"
-msgstr ""
+msgstr "Regola il valore di ritaglio per il calcolo di auto esposizione"
 
 #: ../src/iop/bilat.c:95 ../src/iop/clahe.c:66
 msgid "local contrast"
@@ -7898,9 +7908,8 @@ msgid "G"
 msgstr ""
 
 #: ../src/iop/denoiseprofile.c:3302 ../src/iop/rawdenoise.c:991
-#, fuzzy
 msgid "B"
-msgstr "WB"
+msgstr "B"
 
 #: ../src/iop/denoiseprofile.c:3336
 msgid "whitebalance-adaptive transform"
@@ -8260,6 +8269,9 @@ msgid ""
 "this is a reading a lightmeter would give you on the scene.\n"
 "adjust so highlights clipping is avoided"
 msgstr ""
+"Numero di stop tra il grigio intermedio ed il bianco.\n"
+"Questa è la lettura che darebbe un esposimetro sulla scena.\n"
+"Regola in modo da evitare aree sovraesposte"
 
 #: ../src/iop/filmic.c:1715 ../src/iop/profile_gamma.c:908
 #, fuzzy
@@ -8273,6 +8285,10 @@ msgid ""
 "increase to get more contrast.\n"
 "decrease to recover more details in low-lights."
 msgstr ""
+"Numero di stop tra il grigio intermedio ed il nero.\n"
+"Questa è la lettura che darebbe un esposimetro sulla scena.\n"
+"Aumenta per ottenere maggior contrasto.\n"
+"Diminuisci per recuperare dettaglio nelle zone d'ombra."
 
 #: ../src/iop/filmic.c:1728 ../src/iop/profile_gamma.c:932
 #, fuzzy
@@ -9623,6 +9639,8 @@ msgid ""
 "number of stops between middle grey and pure black\n"
 "this is a reading a posemeter would give you on the scene"
 msgstr ""
+"Numero di stop tra il grigio intermedio ed il nero.\n"
+"Questa è la lettura che darebbe un esposimetro sulla scena."
 
 #: ../src/iop/profile_gamma.c:920
 #, fuzzy
@@ -10117,7 +10135,7 @@ msgstr "Curva tono per canale L"
 
 #: ../src/iop/rgbcurve.c:1499 ../src/iop/rgblevels.c:1031
 msgid "  B  "
-msgstr ""
+msgstr "  B  "
 
 #: ../src/iop/rgbcurve.c:1502 ../src/iop/rgblevels.c:1034
 #, fuzzy
@@ -10509,9 +10527,8 @@ msgid "tone curve"
 msgstr "Curva di tono"
 
 #: ../src/iop/tonecurve.c:1308
-#, fuzzy
 msgid "color space"
-msgstr "Combinazione colori"
+msgstr "Spazio colore"
 
 #: ../src/iop/tonecurve.c:1309
 #, fuzzy
@@ -10563,9 +10580,8 @@ msgid "tonecurve for b channel"
 msgstr "Curva tono per canale b"
 
 #: ../src/iop/tonecurve.c:1407
-#, fuzzy
 msgid "log"
-msgstr "Login"
+msgstr "Log"
 
 #: ../src/iop/tonecurve.c:1415
 #, fuzzy
@@ -11971,7 +11987,7 @@ msgstr "Modifica '%s'"
 
 #: ../src/libs/lib.c:504
 msgid "nothing to save"
-msgstr ""
+msgstr "Niente da salvare"
 
 #: ../src/libs/live_view.c:140
 msgid "live view"
@@ -12524,7 +12540,7 @@ msgstr "Visualizza modulo"
 
 #: ../src/libs/modulegroups.c:236
 msgid "search modules by name or tag"
-msgstr ""
+msgstr "Cerca i moduli tramite il nome o un Tag"
 
 #: ../src/libs/modulegroups.c:243
 #, fuzzy
@@ -13130,7 +13146,7 @@ msgstr "privé"
 
 #: ../src/libs/tagging.c:1285 ../src/libs/tagging.c:1459
 msgid "synonyms: "
-msgstr ""
+msgstr "Sinonimi: "
 
 #: ../src/libs/tagging.c:1302 ../src/libs/tagging.c:1480
 #: ../src/libs/tagging.c:1669
@@ -13303,7 +13319,7 @@ msgstr ""
 
 #: ../src/libs/tagging.c:2468
 msgid "toggle show or not darktable tags"
-msgstr ""
+msgstr "Attiva o disattiva la visualizzazione dei Tag di Darktable"
 
 #: ../src/libs/tagging.c:2482
 msgid "enter tag name"
@@ -13354,12 +13370,12 @@ msgstr "Passa alla visione reale"
 
 #: ../src/libs/tagging.c:2587
 msgid "toggle list with / without suggestion"
-msgstr ""
+msgstr "Attiva la lista con o senza suggerimento"
 
 #: ../src/libs/tools/battery_indicator.c:38
 #: ../src/libs/tools/battery_indicator.c:71
 msgid "battery indicator"
-msgstr ""
+msgstr "Indicatore della batteria"
 
 #: ../src/libs/tools/colorlabels.c:40
 msgid "colorlabels"
@@ -13546,12 +13562,12 @@ msgstr "Ordina per"
 #. DT_COLLECTION_SORT_PAT
 #: ../src/libs/tools/filter.c:154
 msgid "custom sort"
-msgstr ""
+msgstr "Ordinamento personalizzato"
 
 #. DT_COLLECTION_SORT_ASPECT_RATIO
 #: ../src/libs/tools/filter.c:158
 msgid "shuffle"
-msgstr ""
+msgstr "Mescola"
 
 #: ../src/libs/tools/global_toolbox.c:52
 msgid "preferences"
@@ -13584,11 +13600,11 @@ msgstr "Mostra preferenze globali"
 
 #: ../src/libs/tools/global_toolbox.c:232
 msgid "do you want to access https://darktable.gitlab.io/doc/?"
-msgstr ""
+msgstr "Vuoi aprire https://darktable.gitlab.io/doc/?"
 
 #: ../src/libs/tools/global_toolbox.c:237
 msgid "access the online usermanual?"
-msgstr ""
+msgstr "Vuoi aprire il manuale utente online?"
 
 #: ../src/libs/tools/global_toolbox.c:277
 msgid "help url opened in web browser"
@@ -13636,7 +13652,7 @@ msgstr ""
 
 #: ../src/libs/tools/lighttable.c:174
 msgid "dynamic zoom"
-msgstr ""
+msgstr "Zoom dinamico"
 
 #. view accels
 #: ../src/libs/tools/lighttable.c:212
@@ -14057,7 +14073,7 @@ msgstr ""
 
 #: ../src/views/darkroom.c:3320
 msgid "zoom to 100% 200% and back"
-msgstr ""
+msgstr "Ingrandisci del 100%, 200% e ritorna"
 
 #: ../src/views/darkroom.c:3326
 msgid "[modules] expand module without closing others"
@@ -14112,12 +14128,12 @@ msgstr ""
 #, c-format
 msgid "you have reached the end of your selection (%d image)"
 msgid_plural "you have reached the end of your selection (%d images)"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Hai raggiunto la fine della tua selezione (%d immagine)"
+msgstr[1] "Hai raggiunto la fine della tua selezione (%d immagini)"
 
 #: ../src/views/lighttable.c:3228
 msgid "you have reached the end of your collection"
-msgstr ""
+msgstr "Hai raggiunto la fine della tua collezione"
 
 #: ../src/views/lighttable.c:3548
 #, fuzzy, c-format
@@ -14216,7 +14232,7 @@ msgstr "anteprima adesiva con il rilevamento della messa a fuoco"
 #: ../src/views/lighttable.c:4362
 msgctxt "accel"
 msgid "preview zoom 100%"
-msgstr ""
+msgstr "Ingrandimento dell'anteprima al 100%"
 
 #: ../src/views/lighttable.c:4363
 #, fuzzy
@@ -14323,19 +14339,18 @@ msgstr "Presentazione"
 
 #: ../src/views/slideshow.c:438
 msgid "waiting to start slideshow"
-msgstr ""
+msgstr "In attesa di iniziare la presentazione"
 
 #: ../src/views/slideshow.c:556
-#, fuzzy
 msgid "slideshow paused"
-msgstr "Vista presentazione"
+msgstr "Presentazione in pausa"
 
 #: ../src/views/slideshow.c:563 ../src/views/slideshow.c:570
 #, c-format
 msgid "slideshow delay set to %d second"
 msgid_plural "slideshow delay set to %d seconds"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Ritardo per la presentazione impostato su %d secondo"
+msgstr[1] "Ritardo per la presentazione impostato su %d secondi"
 
 #: ../src/views/slideshow.c:592
 msgctxt "accel"
@@ -14343,13 +14358,12 @@ msgid "start and stop"
 msgstr "Avvia e Stop"
 
 #: ../src/views/slideshow.c:606
-#, fuzzy
 msgid "go to next image"
-msgstr "Salta al file successivo"
+msgstr "Salta all'immagine successiva"
 
 #: ../src/views/slideshow.c:611
 msgid "go to previous image"
-msgstr ""
+msgstr "Vai all'immagine precedente"
 
 #: ../src/views/tethering.c:93
 msgid "tethering"
@@ -14371,11 +14385,11 @@ msgstr "deflicker"
 
 #: ../src/views/view.c:2177
 msgid "Right click"
-msgstr ""
+msgstr "Click destro"
 
 #: ../src/views/view.c:2180
 msgid "Middle click"
-msgstr ""
+msgstr "Click centrale"
 
 #: ../src/views/view.c:2183
 #, fuzzy
@@ -14398,7 +14412,7 @@ msgstr ""
 
 #: ../src/views/view.c:2195
 msgid "Left click+Drag"
-msgstr ""
+msgstr "Tasto sinistro+trascina"
 
 #: ../src/views/view.c:2198
 msgid "Right click+Drag"
@@ -14425,11 +14439,11 @@ msgstr "Correzioni"
 
 #: ../src/views/view.c:2444
 msgid "Accel"
-msgstr ""
+msgstr "Accel"
 
 #: ../src/views/view.c:2446
 msgid "Action"
-msgstr ""
+msgstr "Azione"
 
 #~ msgid ""
 #~ "the image will first be processed in full resolution, and downscaled at "
