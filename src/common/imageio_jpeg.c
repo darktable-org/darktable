@@ -180,7 +180,7 @@ static int decompress_plain(dt_imageio_jpeg_t *jpg, uint8_t *out)
   {
     if(jpeg_read_scanlines(&(jpg->dinfo), row_pointer, 1) != 1)
     {
-      free(row_pointer[0]);
+      dt_free_align(row_pointer[0]);
       return 1;
     }
     for(unsigned int i = 0; i < jpg->dinfo.image_width; i++)
@@ -189,7 +189,7 @@ static int decompress_plain(dt_imageio_jpeg_t *jpg, uint8_t *out)
     }
     tmp += 4 * jpg->width;
   }
-  free(row_pointer[0]);
+  dt_free_align(row_pointer[0]);
   return 0;
 }
 
@@ -302,7 +302,7 @@ int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, c
     jpeg_write_scanlines(&(jpg.cinfo), tmp, 1);
   }
   jpeg_finish_compress(&(jpg.cinfo));
-  free(row);
+  dt_free_align(row);
   jpeg_destroy_compress(&(jpg.cinfo));
   return 4 * width * height * sizeof(uint8_t) - jpg.dest.free_in_buffer;
 }
@@ -552,7 +552,7 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
     jpeg_write_scanlines(&(jpg.cinfo), tmp, 1);
   }
   jpeg_finish_compress(&(jpg.cinfo));
-  free(row);
+  dt_free_align(row);
   jpeg_destroy_compress(&(jpg.cinfo));
   fclose(f);
   return 0;
@@ -622,7 +622,7 @@ static int read_plain(dt_imageio_jpeg_t *jpg, uint8_t *out)
     if(jpeg_read_scanlines(&(jpg->dinfo), row_pointer, 1) != 1)
     {
       jpeg_destroy_decompress(&(jpg->dinfo));
-      free(row_pointer[0]);
+      dt_free_align(row_pointer[0]);
       fclose(jpg->f);
       return 1;
     }
@@ -630,7 +630,7 @@ static int read_plain(dt_imageio_jpeg_t *jpg, uint8_t *out)
       for(int k = 0; k < 3; k++) tmp[4 * i + k] = row_pointer[0][3 * i + k];
     tmp += 4 * jpg->width;
   }
-  free(row_pointer[0]);
+  dt_free_align(row_pointer[0]);
   return 0;
 }
 
@@ -742,7 +742,7 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, 
   uint8_t *tmp = (uint8_t *)dt_alloc_align(64, sizeof(uint8_t) * jpg.width * jpg.height * 4);
   if(dt_imageio_jpeg_read(&jpg, tmp))
   {
-    free(tmp);
+    dt_free_align(tmp);
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
@@ -751,14 +751,14 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, 
   void *buf = dt_mipmap_cache_alloc(mbuf, img);
   if(!buf)
   {
-    free(tmp);
+    dt_free_align(tmp);
     return DT_IMAGEIO_CACHE_FULL;
   }
 
   dt_imageio_flip_buffers_ui8_to_float((float *)buf, tmp, 0.0f, 255.0f, 4, jpg.width, jpg.height, jpg.width,
                                        jpg.height, 4 * jpg.width, 0);
 
-  free(tmp);
+  dt_free_align(tmp);
 
   return DT_IMAGEIO_OK;
 }
