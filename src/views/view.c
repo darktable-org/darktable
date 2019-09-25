@@ -1138,26 +1138,10 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
 
   if(draw_thumb_background)
   {
-    double x0 = DT_PIXEL_APPLY_DPI(1), y0 = DT_PIXEL_APPLY_DPI(1), rect_width = width - DT_PIXEL_APPLY_DPI(2),
-           rect_height = height - DT_PIXEL_APPLY_DPI(2), radius = DT_PIXEL_APPLY_DPI(5);
-    double x1, y1, off, off1;
-
-    x1 = x0 + rect_width;
-    y1 = y0 + rect_height;
-    off = radius * 0.666;
-    off1 = radius - off;
-    cairo_move_to(cr, x0, y0 + radius);
-    cairo_curve_to(cr, x0, y0 + off1, x0 + off1, y0, x0 + radius, y0);
-    cairo_line_to(cr, x1 - radius, y0);
-    cairo_curve_to(cr, x1 - off1, y0, x1, y0 + off1, x1, y0 + radius);
-    cairo_line_to(cr, x1, y1 - radius);
-    cairo_curve_to(cr, x1, y1 - off1, x1 - off1, y1, x1 - radius, y1);
-    cairo_line_to(cr, x0 + radius, y1);
-    cairo_curve_to(cr, x0 + off1, y1, x0, y1 - off1, x0, y1 - radius);
-    cairo_close_path(cr);
+    cairo_rectangle(cr, 0, 0, width, height);
     dt_gui_gtk_set_source_rgb(cr, bgcol);
     cairo_fill_preserve(cr);
-    cairo_set_line_width(cr, 0.005 * width);
+    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0));
     if(surrounded)
       dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
     else
@@ -1397,11 +1381,10 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
         cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
 
       cairo_rectangle(cr, rectx, recty, rectw, recth);
-
       cairo_fill(cr);
+
       if(!vals->full_surface || !*(vals->full_surface)) cairo_surface_destroy(surface);
 
-      cairo_rectangle(cr, rectx, recty, rectw, recth);
     }
 
     if(!vals->full_rgbbuf || !*(vals->full_rgbbuf)) free(rgbbuf);
@@ -1412,64 +1395,41 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
       cairo_save(cr);
       cairo_new_path(cr);
     }
-    else
+    else if(buf_ok && (zoom != 1 || dt_view_lighttable_culling_is_image_visible(darktable.view_manager, imgid)))
     {
       // border around image
-      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_BORDER);
-      if(buf_ok && surrounded && zoom != 1)
+      if(selected)
       {
-        const float border = zoom == 1 ? DT_PIXEL_APPLY_DPI(16 / scale) : DT_PIXEL_APPLY_DPI(2 / scale);
-        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1. / scale));
-        cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-        cairo_new_sub_path(cr);
-        cairo_rectangle(cr, rectx - border, recty - border, rectw + 2. * border, recth + 2. * border);
-        cairo_stroke_preserve(cr);
-        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
-        cairo_fill(cr);
-      }
-      else if(buf_ok && (selected || zoom == 1))
-      {
-        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1. / scale));
-        if(zoom == 1)
+        // if border color is transparent, don't draw
+        if(darktable.gui->colors[DT_GUI_COLOR_PREVIEW_BORDER].alpha > 0.0)
         {
-          // if border color is transparent, don't draw
-          if(darktable.gui->colors[DT_GUI_COLOR_PREVIEW_BORDER].alpha > 0.0)
-          {
-            dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_PREVIEW_BORDER);
-            cairo_stroke(cr);
-            cairo_set_fill_rule(cr, CAIRO_FILL_RULE_EVEN_ODD);
-            float alpha = 1.0f;
-            for(int k = 0; k < 16; k++)
-            {
-              cairo_rectangle(cr, rectx, recty, rectw, recth);
-              cairo_new_sub_path(cr);
-              cairo_rectangle(cr, rectx - k / scale, recty - k / scale, rectw + 2. * k / scale,
-                              recth + 2. * k / scale);
-              dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_PREVIEW_BORDER, alpha);
-              alpha *= 0.6f;
-              cairo_fill(cr);
-            }
-          }
-
-          // draw hover border if it's not transparent
-          if(vals->mouse_over && darktable.gui->colors[DT_GUI_COLOR_PREVIEW_HOVER_BORDER].alpha > 0.0)
-          {
-            dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_PREVIEW_HOVER_BORDER);
-            cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5 / scale));
-            cairo_rectangle(cr, rectx, recty, rectw, recth);
-            cairo_stroke(cr);
-          }
+          const float border = DT_PIXEL_APPLY_DPI(4.0 / scale);
+          cairo_set_line_width(cr, border);
+          cairo_rectangle(cr, rectx - border / 1.98, recty - border / 1.98, rectw + 0.99 * border, recth + 0.99 * border);
+          dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_PREVIEW_BORDER);
+          cairo_stroke_preserve(cr);
         }
-        else
+
+        // draw hover border if it's not transparent
+        if(vals->mouse_over && darktable.gui->colors[DT_GUI_COLOR_PREVIEW_HOVER_BORDER].alpha > 0.0)
         {
-          cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5 / scale));
+          cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0 / scale));
+          dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_PREVIEW_HOVER_BORDER);
           cairo_stroke(cr);
         }
+
       }
-      else if(buf_ok)
+      else
       {
-        cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(0.5 / scale));
-        cairo_stroke(cr);
+        // draw hover border if it's not transparent
+        if(vals->mouse_over && darktable.gui->colors[DT_GUI_COLOR_PREVIEW_HOVER_BORDER].alpha > 0.0)
+        {
+          const float border = DT_PIXEL_APPLY_DPI(2.0 / scale);
+          cairo_set_line_width(cr, border);
+          cairo_rectangle(cr, rectx - border / 1.98, recty - border / 1.98, rectw + 0.99 * border, recth + 0.99 * border);
+          dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_PREVIEW_HOVER_BORDER);
+          cairo_stroke(cr);
+        }
       }
     }
   }
@@ -1515,23 +1475,9 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
           double y0 = height - overlay_height;
           double rect_width = width - DT_PIXEL_APPLY_DPI(2);
           double rect_height = overlay_height - DT_PIXEL_APPLY_DPI(2);
-          double radius = DT_PIXEL_APPLY_DPI(5);
-          double x1, y1, off, off1;
 
-          x1 = x0 + rect_width;
-          y1 = y0 + rect_height;
-          off = radius * 0.666;
-          off1 = radius - off;
           cairo_save(cr);
-          cairo_move_to(cr, x0, y0 + radius);
-          cairo_curve_to(cr, x0, y0 + off1, x0 + off1, y0, x0 + radius, y0);
-          cairo_line_to(cr, x1 - radius, y0);
-          cairo_curve_to(cr, x1 - off1, y0, x1, y0 + off1, x1, y0 + radius);
-          cairo_line_to(cr, x1, y1 - radius);
-          cairo_curve_to(cr, x1, y1 - off1, x1 - off1, y1, x1 - radius, y1);
-          cairo_line_to(cr, x0 + radius, y1);
-          cairo_curve_to(cr, x0 + off1, y1, x0, y1 - off1, x0, y1 - radius);
-          cairo_close_path(cr);
+          cairo_rectangle(cr, x0, y0, rect_width, rect_height);
           dt_gui_gtk_set_source_rgb(cr, bgcol);
           cairo_fill_preserve(cr);
           cairo_set_line_width(cr, 0.005 * width);
@@ -1695,17 +1641,11 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
 
         if (zoom != 1)
         {
-          const double x0 = DT_PIXEL_APPLY_DPI(1), y0 = DT_PIXEL_APPLY_DPI(1), rect_width = width - DT_PIXEL_APPLY_DPI(2),
-                radius = DT_PIXEL_APPLY_DPI(5);
-          double x1, off, off1;
-
-          x1 = x0 + rect_width;
-          off = radius * 0.666;
-          off1 = radius - off;
+          const double x0 = 0, y0 = 0;
+          double x1 = x0 + width;
 
           cairo_move_to(cr, x1 - width * 0.08, y0);
-          cairo_line_to(cr, x1 - radius, y0);
-          cairo_curve_to(cr, x1 - off1, y0, x1, y0 + off1, x1, y0 + radius);
+          cairo_line_to(cr, x1, y0);
           cairo_line_to(cr, x1, y0 + height * 0.08);
           cairo_close_path(cr);
           cairo_set_source_rgb(cr, 1, 1, 1);
