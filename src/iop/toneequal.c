@@ -2896,7 +2896,7 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
   else if(g->area_dragging && !height_valid)
   {
     // cursor left area : force commit to avoid glitches
-    int reset = self->dt->gui->reset;
+    const int reset = self->dt->gui->reset;
     self->dt->gui->reset = 1;
     update_exposure_sliders(g, p);
     self->dt->gui->reset = reset;
@@ -2949,7 +2949,7 @@ static gboolean area_button_release(GtkWidget *widget, GdkEventButton *event, gp
     if(g->area_dragging)
     {
       // Update GUI with new params
-      int reset = self->dt->gui->reset;
+      const int reset = self->dt->gui->reset;
       self->dt->gui->reset = 1;
       update_exposure_sliders(g, p);
       self->dt->gui->reset = reset;
