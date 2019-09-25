@@ -164,7 +164,7 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 
 - Add color pickers in the split toning module.
 
-- Add color pickers in the graduateddnd module.
+- Add color pickers in the graduatednd module.
 
 - Add color picker to the watermark module.
 
