@@ -118,9 +118,9 @@
     <para>
       Controls how lighttable panels are expanded. If this option is enabled, expanding a panel by
       <emphasis>clicking</emphasis> collapses any currently expanded panel. If you want to expand
-      a panel without collapsing the others you do so with <emphasis>shift-click</emphasis>.
+      a panel without collapsing the others you do so with <emphasis>Shift+click</emphasis>.
       Disabling this option reverts the meaning of <emphasis>click</emphasis> and
-      <emphasis>shift-click</emphasis> (default off).
+      <emphasis>Shift+click</emphasis> (default off).
     </para>
 
     <bridgehead renderas="sect5">scroll to lighttable modules when expanded/collapsed</bridgehead>
@@ -197,9 +197,9 @@
     <para>
       Controls how darkroom modules are expanded. If this option is enabled, expanding a module by
       <emphasis>clicking</emphasis> collapses any currently expanded module. If you want to expand
-      a module without collapsing the others you do so with <emphasis>shift-click</emphasis>.
+      a module without collapsing the others you do so with <emphasis>Shift+click</emphasis>.
       Disabling this option reverts the meaning of <emphasis>click</emphasis> and
-      <emphasis>shift-click</emphasis> (default on).
+      <emphasis>Shift+click</emphasis> (default on).
     </para>
 
     <bridgehead renderas="sect5">expand the module when it is activated, and collapse it when disabled</bridgehead>
@@ -362,7 +362,7 @@
     <bridgehead renderas="sect5">mouse wheel scrolls modules side panel by default</bridgehead>
 
     <para>
-      When enabled, mouse wheel scroll modules side panel, and ctrl+alt+mouse wheel scroll data entry.
+      When enabled, mouse wheel scroll modules side panel, and Ctrl+Alt+mouse wheel scroll data entry.
       When disabled, this behavior is reversed (default off).
     </para>
 

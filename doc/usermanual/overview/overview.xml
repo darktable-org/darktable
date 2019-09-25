@@ -900,7 +900,7 @@
             <tbody>
               <row>
                 <entry>
-                  <emphasis>l</emphasis>
+                  <emphasis>L</emphasis>
                 </entry>
                 <entry>
                   switches to lighttable
@@ -908,7 +908,7 @@
               </row>
               <row>
                 <entry>
-                  <emphasis>d</emphasis>
+                  <emphasis>D</emphasis>
                 </entry>
                 <entry>
                   switches to darkroom
@@ -916,7 +916,7 @@
               </row>
               <row>
                 <entry>
-                  <emphasis>t</emphasis>
+                  <emphasis>T</emphasis>
                 </entry>
                 <entry>
                   switches to camera tethering
@@ -924,7 +924,7 @@
               </row>
               <row>
                 <entry>
-                  <emphasis>m</emphasis>
+                  <emphasis>M</emphasis>
                 </entry>
                 <entry>
                   switches to map
@@ -932,7 +932,7 @@
               </row>
               <row>
                 <entry>
-                  <emphasis>s</emphasis>
+                  <emphasis>S</emphasis>
                 </entry>
                 <entry>
                   switches to slideshow
@@ -940,7 +940,7 @@
               </row>
               <row>
                 <entry>
-                  <emphasis>p</emphasis>
+                  <emphasis>P</emphasis>
                 </entry>
                 <entry>
                   switches to print
@@ -1059,7 +1059,7 @@
       <para>
         The filmstrip along the bottom shows the same images as lighttable, with respect to
         filters and sort order. It is turned on/off with key accelerator
-        <emphasis>ctrl-f</emphasis>. You can navigate along the filmstrip by scrolling with the
+        <emphasis>Ctrl+F</emphasis>. You can navigate along the filmstrip by scrolling with the
         mouse wheel and change the height of the filmstrip panel by dragging its top. The
         filmstrip allows you to interact with images while you are not in lighttable mode. For
         example, you can, while developing an image in darkroom mode, switch to another image to
