@@ -2550,7 +2550,7 @@ static inline void init_nodes_x(dt_iop_toneequalizer_gui_data_t *g)
   if(g == NULL) return;
 
   dt_pthread_mutex_lock(&g->lock);
-  if(!g->valid_nodes_x && g->graph_height)
+  if(!g->valid_nodes_x && g->graph_width)
   {
     for(int i = 0; i < CHANNELS; ++i)
       g->nodes_x[i] = (((float)i) / ((float)(CHANNELS - 1))) * g->graph_width;
