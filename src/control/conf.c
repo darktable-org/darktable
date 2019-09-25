@@ -276,7 +276,7 @@ void dt_conf_cleanup(dt_conf_t *cf)
   dt_pthread_mutex_destroy(&darktable.conf->mutex);
 }
 
-/** check if key exists, return 1 if lookup successed, 0 if failed..*/
+/** check if key exists, return 1 if lookup succeeded, 0 if failed..*/
 int dt_conf_key_exists(const char *key)
 {
   dt_pthread_mutex_lock(&darktable.conf->mutex);

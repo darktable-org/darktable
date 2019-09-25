@@ -1258,7 +1258,7 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
   if(black < gavg)
   {
     const int maxwhiteclip = (gavg - black) * 4 / 3
-                             + black; // dont let whiteclip be such large that the histogram average goes above 3/4
+                             + black; // don't let whiteclip be so large that the histogram average goes above 3/4
 
     if(whiteclipg < maxwhiteclip)
     {
@@ -1269,7 +1269,7 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
   whiteclipg
       = igamma2(whiteclipg); // need to inverse gamma transform to get correct exposure compensation parameter
 
-  // corection with gamma
+  // correction with gamma
   black = (black / whiteclipg);
 
   expcomp = CLAMP(expcomp, -5.0f, 12.0f);

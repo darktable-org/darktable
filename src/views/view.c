@@ -296,7 +296,7 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 
   // destroy old module list
 
-  /*  clear the undo list, for now we do this inconditionally. At some point we will probably want to clear
+  /*  clear the undo list, for now we do this unconditionally. At some point we will probably want to clear
      only part
       of the undo list. This should probably done with a view proxy routine returning the type of undo to
      remove. */
@@ -2358,7 +2358,7 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
         gchar **elems = g_strsplit(da->translated_path, "/", -1);
         if(elems[0] && elems[1] && elems[2])
         {
-          // do we already have a categorie ?
+          // do we already have a category ?
           bl = blocs;
           _bloc_t *b = NULL;
           while(bl)

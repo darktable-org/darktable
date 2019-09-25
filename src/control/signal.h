@@ -115,7 +115,7 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED,
 
-  /** \brief This signal is rasied when pipe is finished and the gui is attached
+  /** \brief This signal is raised when pipe is finished and the gui is attached
   no param, no returned value
     */
   DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
@@ -131,7 +131,7 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_DEVELOP_MODULE_REMOVE,
 
-  /** \brief This signal is rasied when image is changed in darkroom */
+  /** \brief This signal is raised when image is changed in darkroom */
   DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
 
   /** \brief This signal is raised when the screen profile has changed

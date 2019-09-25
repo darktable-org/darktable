@@ -234,8 +234,8 @@
     <bridgehead renderas="sect5">disable the entry completion</bridgehead>
 
     <para>
-      The entry completion is useful for those who enter tags from keybord only.
-      For others the entry completion can be embarassing (default off). (need a restart)
+      The entry completion is useful for those who enter tags from keyboard only.
+      For others the entry completion can be embarrassing (default off). (need a restart)
     </para>
 
     <bridgehead renderas="sect5">password storage backend to use</bridgehead>

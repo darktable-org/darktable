@@ -206,7 +206,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>disable the entry completion</shortdescription>
-    <longdescription>the entry completion is useful for those who enter tags from keybord only. for others the entry completion can be embarassing. need to restart darktable.</longdescription>
+    <longdescription>the entry completion is useful for those who enter tags from keyboard only. for others the entry completion can be embarrassing. need to restart darktable.</longdescription>
   </dtconfig>
   <dtconfig prefs="core" capability="opencl" section="cpugpu">
     <name>opencl</name>

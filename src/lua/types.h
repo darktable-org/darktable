@@ -77,17 +77,17 @@ luaA_Type dt_lua_init_type_type(lua_State *L, luaA_Type type_id);
 /*********************************/
 /* MEMBER REGISTRATION FUNCTIONS */
 /*********************************/
-/// register a read-only member, the member function is poped from the stack
+/// register a read-only member, the member function is popped from the stack
 #define dt_lua_type_register_const(L, type_name, name)                                                       \
   dt_lua_type_register_const_type(L, luaA_type_find(L, #type_name), name)
 void dt_lua_type_register_const_type(lua_State *L, luaA_Type type_id, const char *name);
 
-/// register a read-write member, the member function is poped from the stack
+/// register a read-write member, the member function is popped from the stack
 #define dt_lua_type_register(L, type_name, name)                                                             \
   dt_lua_type_register_type(L, luaA_type_find(L, #type_name), name)
 void dt_lua_type_register_type(lua_State *L, luaA_Type type_id, const char *name);
 
-/// register a function for all fields of luaautoc struct, the member function is poped from the stack
+/// register a function for all fields of luaautoc struct, the member function is popped from the stack
 /// detects red-only vs read-write automatically
 #define dt_lua_type_register_struct(L, type_name)                                                            \
   dt_lua_type_register_struct_type(L, luaA_type_find(L, #type_name))
@@ -162,7 +162,7 @@ void dt_lua_type_gpointer_drop(lua_State*L, void* pointer);
 luaA_Type dt_lua_init_singleton(lua_State *L, const char *unique_name, void *data);
 
 /**
- * similar to dt_lua_init_singleton but the singleton has push and pop functions to save/restor
+ * similar to dt_lua_init_singleton but the singleton has push and pop functions to save/restore
  * the lua object called on
  */
 luaA_Type dt_lua_init_wrapped_singleton(lua_State *L, lua_CFunction pusher, lua_CFunction getter,

@@ -1541,7 +1541,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
                                  { 215.0f/255.0f, 182.0f/255.0f, 0.0f}};// b = 128 @ L = 75, a = 0
 
    // since Cairo paints with sRGB at gamma 2.4, linear gradients are not linear and, at 50%,
-   // we dont see the neutral grey we would expect in the middle of a linear gradient between
+   // we don't see the neutral grey we would expect in the middle of a linear gradient between
    // 2 complimentary colors. So we add it artificially, but that will break the smoothness
    // of the transition.
 

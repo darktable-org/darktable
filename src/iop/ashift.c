@@ -1655,7 +1655,7 @@ static int fact(const int n)
 // original RANSAC works on linear optimization problems. Our model is nonlinear. We
 // take advantage of the fact that lines interesting for our model are vantage lines
 // that meet in one vantage point for each subset of lines (vertical/horizontal).
-// Stragegy: we construct a model by (random) sampling within the subset of lines and
+// Strategy: we construct a model by (random) sampling within the subset of lines and
 // calculate the vantage point. Then we check the "distance" of all other lines to the
 // vantage point. The model that gives highest number of lines combined with the highest
 // total weight and lowest overall "distance" wins.
@@ -1753,7 +1753,7 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
         const float *L3 = lines[index_set[n]].L;
 
         // we take the absolute value of the dot product of V and L as a measure
-        // of the "distance" between point and line. Note that this is not the real euclidian
+        // of the "distance" between point and line. Note that this is not the real euclidean
         // distance but - with the given normalization - just a pragmatically selected number
         // that goes to zero if V lies on L and increases the more V and L are apart
         const float d = fabs(vec3scalar(V, L3));
