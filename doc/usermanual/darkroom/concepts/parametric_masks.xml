@@ -93,7 +93,7 @@
       </para>
       <para>
         You can inspect the image data corresponding to an individual color channel by holding
-        down the <emphasis>shift</emphasis> key while entering the respective slider with the
+        down the <emphasis>Shift</emphasis> key while entering the respective slider with the
         mouse cursor. The center image changes to display the selected color channel either in
         graycale values or in false colors, depending on the corresponding preference setting in
         <quote>GUI options</quote> (see <xref linkend="gui_options"/>). You may additionally

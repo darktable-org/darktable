@@ -62,9 +62,9 @@
 
     <para>
       The source positioning has two modes: absolute or relative. To set the absolute mode,
-      while creating a shape, <emphasis>shift+ctrl+click</emphasis> on the desired position.
+      while creating a shape, <emphasis>Shift+Ctrl+click</emphasis> on the desired position.
       From now on, all new shapes will have the source created at that position. To set the
-      relative mode, still while creating a shape, <emphasis>shift+click</emphasis> on the
+      relative mode, still while creating a shape, <emphasis>Shift+click</emphasis> on the
       desired position. The current shape will have the source created at that position and the
       subsequent ones will have the source created at the same relative position.
     </para>

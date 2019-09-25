@@ -59,7 +59,7 @@
       On the left side you find the <emphasis>collect images</emphasis> panel which is described
       in more detail in <xref linkend="collect_images"/>. This panel lets you define which
       images are present in the filmstrip. Visibility of the filmstrip&nbsp;&ndash; located in
-      the bottom panel&nbsp;&ndash; is toggled by pressing <emphasis>ctrl-f</emphasis> (see
+      the bottom panel&nbsp;&ndash; is toggled by pressing <emphasis>Ctrl+F</emphasis> (see
       <xref linkend="filmstrip_overview"/>). On the left side you also have an <emphasis>image
       information</emphasis> panel which displays useful Exif data of the image in the center
       area, or the filmstrip image under the pointer, respectively (see
