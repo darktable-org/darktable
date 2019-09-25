@@ -798,17 +798,13 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
   int ret = 0; // return value
 
   float fscale = DT_PIXEL_APPLY_DPI(fminf(width, height));
-  float r1, r2;
-  if(zoom != 1)
-  {
-    r1 = 0.05 * width;
-    r2 = 0.022 * width;
-  }
-  else
-  {
-    r1 = 0.015 * fscale;
-    r2 = 0.007 * fscale;
-  }
+
+  // we need to squeeze 5 stars + 2 symbols on a thumbnail width
+  // each of them having a width of 2 * r1 and spaced by r1
+  // that's 14 * r1 of content + 6 * r1 of spacing
+  // inner margins are 0.045 * width
+  float r1 = fminf(DT_PIXEL_APPLY_DPI(20.0f) / 2.0f, 0.91 * width / 20.0f);
+  float r2 = r1 / 2.5f;
 
   if(cr)
   {
@@ -819,7 +815,7 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
   gboolean extended_thumb_overlay = dt_conf_get_bool("plugins/lighttable/extended_thumb_overlay");
   float x, y;
   if(zoom != 1)
-    y = (extended_thumb_overlay ? 0.93 : 0.9) * height;
+    y = (extended_thumb_overlay ? 0.93 * height : 0.955 * height - r1);
   else
     y = .12 * fscale;
 
@@ -833,9 +829,9 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
     case DT_VIEW_STAR_4:
     case DT_VIEW_STAR_5:
       if(zoom != 1)
-        x = (0.26 + (what - DT_VIEW_STAR_1) * 0.12) * width;
+        x = 0.5f * width - 5.0f * r1 + (what - DT_VIEW_STAR_1) * 2.5f * r1;
       else
-        x = (.08 + (what - DT_VIEW_STAR_1) * 0.04) * fscale;
+        x = .08 * fscale + (what - DT_VIEW_STAR_1) * 2.5f * r1;
 
       if(cr) dt_draw_star(cr, x, y, r1, r2);
 
@@ -858,7 +854,7 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
 
     case DT_VIEW_REJECT:
       if(zoom != 1)
-        x = 0.08 * width;
+        x = 0.045f * width + r1;
       else
         x = .04 * fscale;
 
@@ -870,20 +866,22 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
         if(cr)
         {
           cairo_new_sub_path(cr);
-          cairo_arc(cr, x, y, (r1 + r2) * .5, 0, 2.0f * M_PI);
+          cairo_arc(cr, x, y, r1, 0, 2.0f * M_PI);
           cairo_stroke(cr);
         }
       }
 
       if(cr)
       {
-        if(rejected) cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2));
+        if(rejected) cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5));
+
+        const float r3 = (r1 / sqrtf(2.0f)) * 0.95f;
 
         // reject cross:
-        cairo_move_to(cr, x - r2, y - r2);
-        cairo_line_to(cr, x + r2, y + r2);
-        cairo_move_to(cr, x + r2, y - r2);
-        cairo_line_to(cr, x - r2, y + r2);
+        cairo_move_to(cr, x - r3, y - r3);
+        cairo_line_to(cr, x + r3, y + r3);
+        cairo_move_to(cr, x + r3, y - r3);
+        cairo_line_to(cr, x - r3, y + r3);
         cairo_close_path(cr);
         cairo_stroke(cr);
         dt_gui_gtk_set_source_rgb(cr, outlinecol);
@@ -896,11 +894,11 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
     {
       // draw grouping icon and border if the current group is expanded
       // align to the right, left of altered
-      float s = (r1 + r2) * .5;
+      float s = r1;
       if(zoom != 1)
       {
-        x = width * 0.9 - s * 2.5;
-        y = height * 0.1 - s * .4;
+        x = width * 0.955 - s * 4.5;
+        y = height * 0.045;
       }
       else
       {
@@ -911,7 +909,7 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
       {
         cairo_save(cr);
         if(img && (img->id != img->group_id)) dt_gui_gtk_set_source_rgb(cr, fontcol);
-        dtgtk_cairo_paint_grouping(cr, x, y, s, s, 23, NULL);
+        dtgtk_cairo_paint_grouping(cr, x, y, 2 * s, 2 * s, 23, NULL);
         cairo_restore(cr);
       }
 
@@ -923,11 +921,11 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
     case DT_VIEW_AUDIO:
     {
       // align to right
-      float s = (r1 + r2) * .5;
+      float s = r1;
       if(zoom != 1)
       {
-        x = width * 0.9 - s * 5;
-        y = height * 0.1;
+        x = width * 0.955 - s * 5;
+        y = height * 0.045 + s;
       }
       else
         x = (.04 + 8 * 0.04 - 1.9 * .04) * fscale;
@@ -941,11 +939,11 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
     case DT_VIEW_ALTERED:
     {
       // align to right
-      float s = (r1 + r2) * .5;
+      float s = r1;
       if(zoom != 1)
       {
-        x = width * 0.9;
-        y = height * 0.1;
+        x = width * 0.955 - s;
+        y = height * 0.045 + s;
       }
       else
         x = (.04 + 8 * 0.04) * fscale;
@@ -1154,7 +1152,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
       PangoRectangle ink;
       PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
       pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-      const int fontsize = DT_PIXEL_APPLY_DPI(22.0);
+      const int fontsize = fminf(DT_PIXEL_APPLY_DPI(20.0), .09 * width);
       pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
       layout = pango_cairo_create_layout(cr);
       pango_layout_set_font_description(layout, desc);
@@ -1179,7 +1177,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
         {
           pango_layout_set_text(layout, &upcase_ext[i], 1);
           pango_layout_get_pixel_extents(layout, &ink, NULL);
-          cairo_move_to(cr, .045 * width - ink.x + (max_chr_width - ink.width) / 2, .09 * height - yoffs + fontsize / 2.0);
+          cairo_move_to(cr, .045 * width - ink.x + (max_chr_width - ink.width) / 2, .045 * height - yoffs + fontsize);
           pango_cairo_show_layout(cr, layout);
         }
       }
@@ -1187,7 +1185,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
       {
         pango_layout_set_text(layout, upcase_ext, -1);
         pango_layout_get_pixel_extents(layout, &ink, NULL);
-        cairo_move_to(cr, .045 * width - ink.x, .09 * height - fontsize / 2.0);
+        cairo_move_to(cr, .045 * width - ink.x, .045 * height);
         pango_cairo_show_layout(cr, layout);
       }
       g_free(upcase_ext);
@@ -1395,7 +1393,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
       cairo_save(cr);
       cairo_new_path(cr);
     }
-    else if(buf_ok && (zoom != 1 || dt_view_lighttable_culling_is_image_visible(darktable.view_manager, imgid)))
+    else if(buf_ok && dt_view_lighttable_culling_is_image_visible(darktable.view_manager, imgid))
     {
       // border around image
       if(selected)
@@ -1407,7 +1405,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
           cairo_set_line_width(cr, border);
           cairo_rectangle(cr, rectx - border / 1.98, recty - border / 1.98, rectw + 0.99 * border, recth + 0.99 * border);
           dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_PREVIEW_BORDER);
-          cairo_stroke_preserve(cr);
+          cairo_stroke(cr);
         }
 
         // draw hover border if it's not transparent
@@ -1432,6 +1430,24 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
         }
       }
     }
+  }
+
+  cairo_restore(cr);
+
+  cairo_save(cr);
+  if((darktable.gui->show_overlays || vals->mouse_over) && zoom != 1)
+  {
+    // overlay a dark transparent background on thumbs to help legibility of overlays
+    cairo_set_operator(cr, CAIRO_OPERATOR_MULTIPLY);
+    cairo_pattern_t *pat;
+    pat = cairo_pattern_create_linear(0, 0.8528749999999999 * height,  0, height);
+    cairo_pattern_add_color_stop_rgba(pat, 0, 0.5, 0.5, 0.5, 0);
+    cairo_pattern_add_color_stop_rgba(pat, 0.25, 0.5, 0.5, 0.5, 0.25);
+    cairo_pattern_add_color_stop_rgba(pat, 1, 0.5, 0.5, 0.5, 1);
+    cairo_rectangle(cr, 0, 0.8528749999999999 * height, width, (1.0 - 0.8528749999999999) * height);
+    cairo_set_source (cr, pat);
+    cairo_fill (cr);
+    cairo_pattern_destroy(pat);
   }
   cairo_restore(cr);
 
@@ -1578,12 +1594,12 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     if(width > DECORATION_SIZE_LIMIT)
     {
       // color labels:
-      const float x[] = {0.84, 0.92, 0.88, 0.84, 0.92};
-      const float y[] = {0.84, 0.84, 0.88, 0.92, 0.92};
-      const float x_zoom[] = {0.27, 0.30, 0.285, 0.27, 0.30};
-      const float y_zoom[] = {0.095, 0.095, 0.11, 0.125, 0.125};
+      const float r = zoom == 1 ? 0.01 * fscale : 0.0455 * width / 2.0;
+      const float x[5] = {0.86425, 0.9325, 0.8983749999999999, 0.86425, 0.9325};
+      const float y[5] = {0.86425, 0.86425, 0.8983749999999999, 0.9325, 0.9325};
+      const float x_zoom[5] = {0.27, 0.30, 0.285, 0.27, 0.30};
+      const float y_zoom[5] = {0.095, 0.095, 0.11, 0.125, 0.125};
       const int max_col = sizeof(x) / sizeof(x[0]);
-      const float r = zoom == 1 ? 0.01 * fscale : 0.03 * width;
 
       gboolean colorlabel_painted = FALSE;
       gboolean painted_col[] = {FALSE, FALSE, FALSE, FALSE, FALSE};
