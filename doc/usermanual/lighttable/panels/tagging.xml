@@ -193,7 +193,7 @@
       </para>
 
       <para>
-        You can resize the height of attached view or dictionary view using ctrl-wheel.
+        You can resize the height of attached view or dictionary view using Ctrl+wheel.
         New sizes are kept for ulterior darktable sessions.
       </para>
 
@@ -221,7 +221,7 @@
                   shows the tag dictionary as a list or as a tree.
                 </para>
                 <para>
-                  Tip: shift-click on tree node fully expands it (all sub-levels).
+                  Tip: Shift+click on tree node fully expands it (all sub-levels).
                 </para>
               </entry>
               <entry>
@@ -405,7 +405,7 @@
       </para>
 
       <para>
-        ctrl-t opens a small text box at the bottom of the central view for quickly
+        Ctrl+T opens a small text box at the bottom of the central view for quickly
         tagging your selected images by typing a tag phrase and hitting return.
       </para>
 

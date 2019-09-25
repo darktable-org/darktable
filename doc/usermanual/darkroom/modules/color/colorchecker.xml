@@ -85,12 +85,12 @@
       </para>
       <para>
         To change the source color of a patch you select a new color from your image by using
-        the color picker, and shift-click on the patch you want to replace. You can switch
+        the color picker, and Shift+click on the patch you want to replace. You can switch
         between point and area sampling mode from within the global color picker panel (see
         <xref linkend="global_color_picker"/>).
       </para>
       <para>
-        To reset a patch, double-click it. Right-click a patch to delete it. Shift-click on
+        To reset a patch, double-click it. Right-click a patch to delete it. Shift+click on
         empty space to add a new patch (with the currently picked color as source color).
       </para>
     </sect5>

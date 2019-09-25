@@ -98,7 +98,7 @@
       </para>
       <para>
         A point is formed by a single node. In a point the strength vector has three different
-        modes which are toggled using ctrl-click over the arrowhead of the strength vector:
+        modes which are toggled using Ctrl+click over the arrowhead of the strength vector:
         <informaltable frame="none" width="80%">
           <tgroup cols="3" colsep="0" rowsep="0">
             <colspec colwidth='2*'/>
@@ -220,14 +220,14 @@
         </informaltable>
       </para>
       <para>
-        It is possible to add a control point on a line by ctrl-click on a segment. You may
-        remove a control point from a line by ctrl-right- click on the node center.
+        It is possible to add a control point on a line by Ctrl+Click on a segment. You may
+        remove a control point from a line by Ctrl+right click on the node center.
       </para>
       <para>
         A right-click on a segment will remove the shape completely.
       </para>
       <para>
-        A ctrl-alt-click on a segment will change it to a curve segment.
+        A Ctrl+Alt+click on a segment will change it to a curve segment.
       </para>
     </sect5>
 
@@ -260,18 +260,18 @@
         </informaltable>
       </para>
       <para>
-        It is possible to add a control point on a curve by ctrl-click on a segment. You may
-        remove a control point from a curve by ctrl-right- click on the node center.
+        It is possible to add a control point on a curve by Ctrl+click on a segment. You may
+        remove a control point from a curve by Ctrl+right click on the node center.
       </para>
       <para>
         A right-click on a segment will remove the shape completely.
       </para>
       <para>
-        A ctrl-alt-click on a segment will change it to a line segment.
+        A Ctrl+Alt+click on a segment will change it to a line segment.
       </para>
       <para>
         It is possible to change the way the points of the curve are linked together by using
-        ctrl-click on the center. There are four modes which correspond to different ways of
+        Ctrl+click on the center. There are four modes which correspond to different ways of
         handling the steepness of the bezier curve by control handles:
         <informaltable frame="none" width="80%">
           <tgroup cols="3" colsep="0" rowsep="0">
