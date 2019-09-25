@@ -130,7 +130,6 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     // !!! WALL OF THE NON-LINEARITY !!! There is no coming back for colour ratios
     _ioppr_move_iop_after(_iop_order_list, "basecurve", "bloom", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "filmic", "basecurve", dont_move);
-    _ioppr_insert_iop_after(_iop_order_list, history_list, "filmicrgb", "filmic", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colisa", "filmic", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "tonecurve", "colisa", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "levels", "tonecurve", dont_move);
@@ -153,6 +152,9 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     _ioppr_move_iop_before(_iop_order_list, "vignette", "colorreconstruct", dont_move);
 
     _ioppr_move_iop_before(_iop_order_list, "dither", "borders", dont_move);
+
+    // new modules here
+    _ioppr_insert_iop_after(_iop_order_list, history_list, "filmicrgb", "filmic", dont_move);
 
     new_version = 3;
   }
