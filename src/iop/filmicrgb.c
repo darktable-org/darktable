@@ -1434,9 +1434,9 @@ void gui_init(dt_iop_module_t *self)
   g->preserve_color = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->preserve_color, NULL, _("preserve chroma"));
   dt_bauhaus_combobox_add(g->preserve_color, _("no"));
-  dt_bauhaus_combobox_add(g->preserve_color, _("with max RGB"));
-  dt_bauhaus_combobox_add(g->preserve_color, _("with luminance Y"));
-  dt_bauhaus_combobox_add(g->preserve_color, _("with RGB power norm"));
+  dt_bauhaus_combobox_add(g->preserve_color, _("max RGB"));
+  dt_bauhaus_combobox_add(g->preserve_color, _("luminance Y"));
+  dt_bauhaus_combobox_add(g->preserve_color, _("RGB power norm"));
   gtk_widget_set_tooltip_text(g->preserve_color, _("ensure the original color are preserved.\n"
                                                    "may reinforce chromatic aberrations.\n"
                                                    "you need to manually tune the saturation when using this mode."));
