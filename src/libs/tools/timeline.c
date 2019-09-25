@@ -701,7 +701,7 @@ static dt_lib_timeline_time_t _selection_scroll_to(dt_lib_timeline_time_t t, dt_
     // we ensure that we are not before the strip bound
     if(_time_compare(tt, strip->time_mini) <= 0) return strip->time_mini;
 
-    // and we dont want to display blocks after the bounds too
+    // and we don't want to display blocks after the bounds too
     dt_lib_timeline_time_t ttt = tt;
     _time_add(&ttt, nb - 1, strip->zoom);
     if(_time_compare(ttt, strip->time_maxi) <= 0) return tt;

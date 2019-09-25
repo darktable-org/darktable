@@ -31,8 +31,8 @@
  * Because it works before camera RGB -> XYZ conversion, the exposure cannot be computed from
  * any human-based perceptual colour model (Y channel), hence why several RGB norms are provided as estimators of
  * the pixel energy to compute a luminance map. None of them is perfect, and I'm still
- * looking forward to a real spectral energy estimator. The best physically-accurate norm should be the euclidian
- * norm, but the best looking is often the power norm, which has no theoritical background.
+ * looking forward to a real spectral energy estimator. The best physically-accurate norm should be the euclidean
+ * norm, but the best looking is often the power norm, which has no theoretical background.
  * The geometric mean also display interesting properties as it interprets saturated colours
  * as low-lights, allowing to lighten and desaturate them in a realistic way.
  *
@@ -843,8 +843,8 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   if(in == NULL || out == NULL)
   {
     // Pointers are not 64-bits aligned, and SSE code will segfault
-    dt_control_log(_("tone equalizer in/out buffer are ill-aligned, please report the bug to the developpers"));
-    fprintf(stdout, "tone equalizer in/out buffer are ill-aligned, please report the bug to the developpers\n");
+    dt_control_log(_("tone equalizer in/out buffer are ill-aligned, please report the bug to the developers"));
+    fprintf(stdout, "tone equalizer in/out buffer are ill-aligned, please report the bug to the developers\n");
     return;
   }
 
@@ -1066,7 +1066,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
  * and y are the desired exposure compensation for each channel.
  *
  * This (x, y) set is interpolated by radial-basis function using a series of 8 gaussians.
- * Loosing 1 degree of freedom makes it an approximation rather than an interpolation but
+ * Losing 1 degree of freedom makes it an approximation rather than an interpolation but
  * helps reducing a bit the oscillations and fills a full AVX vector.
  *
  * The coefficients/factors used in the interpolation/approximation are linear, but keep in
@@ -1074,7 +1074,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
  * flip/flop between both.
  *
  * User params of exposure compensation are expected between [-2 ; +2] EV for practical UI reasons
- * and probably numerical stability reasons, but there is no theoritical obstacle to enlarge
+ * and probably numerical stability reasons, but there is no theoretical obstacle to enlarge
  * this range. The main reason for not allowing it is tone equalizer is mostly intended
  * to do local changes, and these don't look so well if you are too harsh on the changes.
  * For heavier tonemapping, it should be used in combination with a tone curve or filmic.
@@ -3136,7 +3136,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->method, "HSL lightness");
   dt_bauhaus_combobox_add(g->method, "HSV value / RGB max");
   dt_bauhaus_combobox_add(g->method, "RGB sum");
-  dt_bauhaus_combobox_add(g->method, "RGB euclidian norm");
+  dt_bauhaus_combobox_add(g->method, "RGB euclidean norm");
   dt_bauhaus_combobox_add(g->method, "RGB power norm");
   dt_bauhaus_combobox_add(g->method, "RGB geometric mean");
   g_signal_connect(G_OBJECT(g->method), "value-changed", G_CALLBACK(method_changed), self);

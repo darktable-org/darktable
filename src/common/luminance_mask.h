@@ -181,7 +181,7 @@ static void pixel_rgb_norm_2(const float *const restrict image,
                              const float exposure_boost,
                              const float fulcrum, const float contrast_boost)
 {
-  // vector norm L2 : euclidian norm
+  // vector norm L2 : euclidean norm
 
   float result = 0.0f;
 

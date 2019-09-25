@@ -360,7 +360,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
           norm += weight;
         }
         // here we could try using a "balance" between original and changed value, this could be used to
-        // reduce artifcats
+        // reduce artifacts
         // but on first tries, results weren't very convincing, and there are blend settings available anyway
         // in dt
         // float balance = (out[v*width*ch +t*ch +3]-thresh)/out[v*width*ch +t*ch +3];
