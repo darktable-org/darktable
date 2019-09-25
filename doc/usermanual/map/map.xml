@@ -98,7 +98,7 @@
 
       <para>
         In order to assign geo coordinates to an image, activate the film-strip on the lower
-        panel (press <emphasis> Ctrl-f</emphasis>). You can simply assign a geo location to an
+        panel (press <emphasis>Ctrl+F</emphasis>). You can simply assign a geo location to an
         image by dragging the image icon from the film-strip and position it onto the map.
         darktable will record the new geo location (longitude and latitude) as part of the image
         metadata. Exported images will include this data.
@@ -138,11 +138,11 @@
         <itemizedlist>
 
           <listitem><para>
-            <emphasis>Ctrl-z</emphasis> : undo last move
+            <emphasis>Ctrl+Z</emphasis> : undo last move
           </para></listitem>
 
           <listitem><para>
-            <emphasis>Ctrl-y</emphasis> : redo last undo (does nothing if undo has not been used
+            <emphasis>Ctrl+Y</emphasis> : redo last undo (does nothing if undo has not been used
             yet)
           </para></listitem>
 
