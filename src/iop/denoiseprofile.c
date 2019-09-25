@@ -634,7 +634,7 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
 // anscombe transform.
 // In the generalized anscombe transform, the profiles gives a and b such as:
 // V(X) = a * E[X] + b
-// In this new transform, we have an additionnal parameter, p, such as:
+// In this new transform, we have an additional parameter, p, such as:
 // V(X) = a * (E[X] + b) ^ p
 // When p == 1, we get back the equation of generalized anscombe transform.
 // Now, let's see how we derive the precondition.
@@ -645,7 +645,7 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
 //          = f'(X)^2 * V(X-E[X])
 //          = f'(X)^2 * V(X)
 // So the condition V(f(X)) = constant gives us the following condition:
-// V(X) = contant / f'(X)^2
+// V(X) = constant / f'(X)^2
 // Usually, we take constant = 1
 // If we have V(X) = a * (E[X] + b) ^ p
 // then: f'(X) = 1 / sqrt(a) * (E[X] + b) ^ (-p / 2)
@@ -735,7 +735,7 @@ static inline void precondition_v2(const float *const in, float *const buf, cons
 // That's why we introduce a user-controled bias parameter to be able to
 // control the bias:
 // we replace the 2 * p * constant / (2 - p) part of delta by user
-// defined bias controler.
+// defined bias controller.
 static inline void backtransform_v2(float *const buf, const int wd, const int ht, const float a, const float p[3],
                                     const float b, const float bias, const float wb[3])
 {

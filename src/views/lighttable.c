@@ -2050,7 +2050,7 @@ static gboolean _culling_recreate_slots(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
 
   int display_first_image = -1;
-  // special if we start dt in culling + fxed + selection
+  // special if we start dt in culling + fixed + selection
   if(!lib->already_started && lib->culling_use_selection
      && dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_FIXED)
   {

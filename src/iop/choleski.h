@@ -78,7 +78,7 @@
  *
  * We didn't bother to parallelize the code nor to make it use double floating point precision
  * because it's already fast enough (2 to 45 ms for 16×16 matrix on Xeon) and used for properly
- * conditionned matrices.
+ * conditioned matrices.
  *
  * Vectorization leads to slow-downs here since we access matrices row-wise and column-wise,
  * in a non-contiguous fashion.
@@ -282,7 +282,7 @@ static inline int solve_hermitian(const float *const restrict A,
   // Solve A x = y where A an hermitian positive definite matrix n × n
   // x and y are n vectors. Output the result in y
 
-  // A and y need to be 64-bits aligned, which is darktable's default memory alignement
+  // A and y need to be 64-bits aligned, which is darktable's default memory alignment
   // if you used DT_ALIGNED_ARRAY and dt_alloc_sse_ps(...) to declare arrays and pointers
 
   // If you are sure about the properties of the matrix A (symmetrical square definite positive)

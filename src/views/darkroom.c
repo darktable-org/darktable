@@ -353,7 +353,7 @@ void expose(
     g_assert(darktable.develop->proxy.snapshot.filename != NULL);
 
     /* Store current image surface to snapshot file.
-       FIXME: add checks so that we dont make snapshots of preview pipe image surface.
+       FIXME: add checks so that we don't make snapshots of preview pipe image surface.
     */
     int fd = g_open(darktable.develop->proxy.snapshot.filename, O_CREAT | O_WRONLY | O_BINARY, 0600);
     cairo_surface_write_to_png_stream(image_surface, write_snapshot_data, GINT_TO_POINTER(fd));
@@ -2625,7 +2625,7 @@ void leave(dt_view_t *self)
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 
   darktable.develop->image_storage.id = -1;
-  // darkroom development could have changed a collection, so update that before beeing back in lightroom 
+  // darkroom development could have changed a collection, so update that before being back in lightroom 
   dt_collection_update_query(darktable.collection);
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }
