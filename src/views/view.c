@@ -1154,7 +1154,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
       PangoRectangle ink;
       PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
       pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-      const int fontsize = 0.20 * width;
+      const int fontsize = DT_PIXEL_APPLY_DPI(22.0);
       pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
       layout = pango_cairo_create_layout(cr);
       pango_layout_set_font_description(layout, desc);
@@ -1179,7 +1179,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
         {
           pango_layout_set_text(layout, &upcase_ext[i], 1);
           pango_layout_get_pixel_extents(layout, &ink, NULL);
-          cairo_move_to(cr, .025 * width - ink.x + (max_chr_width - ink.width) / 2, .2 * height - yoffs);
+          cairo_move_to(cr, .045 * width - ink.x + (max_chr_width - ink.width) / 2, .09 * height - yoffs + fontsize / 2.0);
           pango_cairo_show_layout(cr, layout);
         }
       }
@@ -1187,7 +1187,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
       {
         pango_layout_set_text(layout, upcase_ext, -1);
         pango_layout_get_pixel_extents(layout, &ink, NULL);
-        cairo_move_to(cr, .025 * width - ink.x, .2 * height - fontsize);
+        cairo_move_to(cr, .045 * width - ink.x, .09 * height - fontsize / 2.0);
         pango_cairo_show_layout(cr, layout);
       }
       g_free(upcase_ext);
