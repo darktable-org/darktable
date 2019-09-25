@@ -47,18 +47,18 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
   Note that this requires Gtk 3.22 or higher to work properly.
 
 - The color picker on the blend, tone curve, color zones and fill
-  light modules now allows to select an area by <kbd>ctrl+click</kbd> on it.
+  light modules now allows to select an area by <kbd>Ctrl+click</kbd> on it.
 
 - Add undo/redo support in lighttable for tags, color labels, rating,
   metadata, deleted history stack, pasted history stack and applied
   style.
 
   IMPORTANT:
-  As <kbd>ctrl-z</kbd> is commonly used for undo/redo this is what is used
-  on the lighttable. This conflicts with the previous <kbd>ctrl-z</kbd> which
+  As <kbd>Ctrl-z</kbd> is commonly used for undo/redo this is what is used
+  on the lighttable. This conflicts with the previous <kbd>Ctrl-z</kbd> which
   was assigned to preview with focus point. The preview (previously <kbd>z</kbd>)
-  and preview with focus detection (previously <kbd>ctrl-z</kbd>) are now assigned
-  respectively to <kbd>w</kbd> and <kbd>ctrl-w</kbd>.
+  and preview with focus detection (previously <kbd>Ctrl-z</kbd>) are now assigned
+  respectively to <kbd>w</kbd> and <kbd>Ctrl-w</kbd>.
 
 - A new timeline view has been introduced in the lighttable.
 
@@ -76,7 +76,7 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 - Add new raster mask supports. This is a copy of a parametric mask
   which is stable during the whole pixel-pipe.
 
-- Modules can now be re-ordered with <kbd>shift+drag</kbd>.
+- Modules can now be re-ordered with <kbd>Ctrl+Shift+drag</kbd>.
 
 - The color zones module now display an histogram based on the ‘select
   by’ channel and displays the selected range if the color picker is
@@ -88,7 +88,7 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
   A new process mode has been added: smooth is the former one, strong is new.
   An interpolation method has been added that allows to select different types
   of curves.
-  The color picker allows to select by area with <kbd>ctrl+click</kbd>.
+  The color picker allows to select by area with <kbd>Ctrl+click</kbd>.
   A new color picker has been added that creates a curve based on the area
   selected from the image.
   When pressing the shortcut 'pan&zoom while editing masks' the draw area
@@ -125,7 +125,7 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 - A new color picker has been added to the blend module next to the
   existing one that adjusts the range sliders based on the selected
   area from the image. Click to adjust the input image slider,
-  <kbd>ctrl+click</kbd> to adjust the out image one.
+  <kbd>Ctrl+click</kbd> to adjust the out image one.
 
 - The picasa module has been renamed to googlephoto and completely
   rewrote to support the new Google Photo API. It is now again
@@ -194,7 +194,7 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
   It works with the rgb colorspace selected on the work profile.
   The curves and histogram can be displayed using the work profile or
   can be scaled to be 50% grey.
-  The color picker allows to select by area with ctrl+click.
+  The color picker allows to select by area with Ctrl+click.
   The second color picker add 4 nodes to the curve based on the area
   selected from the image: min, average, middle, max.
   When pressing the shortcut 'pan&zoom while editing masks' the draw area
