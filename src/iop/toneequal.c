@@ -260,8 +260,8 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   GtkStyleContext *context;
 
   // Event for equalizer drawing
-  float nodes_x[CHANNELS] DT_ALIGNED_ARRAY;
-  float nodes_y[CHANNELS] DT_ALIGNED_ARRAY;
+  float nodes_x[CHANNELS];
+  float nodes_y[CHANNELS];
   float area_x; // x coordinate of cursor over graph/drawing area
   float area_y; // y coordinate
   int area_active_node;
@@ -2550,7 +2550,7 @@ static inline void init_nodes_x(dt_iop_toneequalizer_gui_data_t *g)
   if(g == NULL) return;
 
   dt_pthread_mutex_lock(&g->lock);
-  if(!g->valid_nodes_x && g->graph_width)
+  if(!g->valid_nodes_x && g->graph_width > 0)
   {
     for(int i = 0; i < CHANNELS; ++i)
       g->nodes_x[i] = (((float)i) / ((float)(CHANNELS - 1))) * g->graph_width;
@@ -2565,7 +2565,7 @@ static inline void init_nodes_y(dt_iop_toneequalizer_gui_data_t *g)
   if(g == NULL) return;
 
   dt_pthread_mutex_lock(&g->lock);
-  if(g->user_param_valid && g->graph_height)
+  if(g->user_param_valid && g->graph_height > 0)
   {
     for(int i = 0; i < CHANNELS; ++i)
       g->nodes_y[i] =  (0.5 - log2f(g->temp_user_params[i]) / 4.0) * g->graph_height; // assumes factors in [-2 ; 2] EV
