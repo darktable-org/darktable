@@ -363,8 +363,8 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       // if there's some search text show matching modules only
       if(text_entered && text_entered[0] != '\0')
       {
-        /* don't show deprecated ones */
-        if(module->flags() & IOP_FLAGS_DEPRECATED)
+        /* don't show deprecated ones unless they are enabled */
+        if(module->flags() & IOP_FLAGS_DEPRECATED && !(module->enabled))
         {
           if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
           if(w) gtk_widget_hide(w);
