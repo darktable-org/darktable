@@ -2264,7 +2264,7 @@ void cairo_draw_hatches(cairo_t *cr, double center[2], double span[2], int insta
   }
 }
 
-static void dt_get_shade_from_luminance(cairo_t *cr, float luminance, float alpha)
+static void get_shade_from_luminance(cairo_t *cr, const float luminance, const float alpha)
 {
   // TODO: fetch screen gamma from ICC display profile
   const float gamma = 1.0f / 2.2f;
@@ -2273,14 +2273,14 @@ static void dt_get_shade_from_luminance(cairo_t *cr, float luminance, float alph
 }
 
 
-static void dt_draw_exposure_cursor(cairo_t *cr, double pointerx, double pointery, double radius, float luminance, float zoom_scale, int instances)
+static void draw_exposure_cursor(cairo_t *cr, const double pointerx, const double pointery, const double radius, const float luminance, const float zoom_scale, const int instances, const float alpha)
 {
   // Draw a circle cursor filled with a grey shade corresponding to a luminance value
   // or hatches if the value is above the overexposed threshold
 
   const double radius_z = radius / zoom_scale;
 
-  dt_get_shade_from_luminance(cr, luminance, 1.0);
+  get_shade_from_luminance(cr, luminance, alpha);
   cairo_arc(cr, pointerx, pointery, radius_z, 0, 2 * M_PI);
   cairo_fill_preserve(cr);
   cairo_save(cr);
@@ -2297,7 +2297,7 @@ static void dt_draw_exposure_cursor(cairo_t *cr, double pointerx, double pointer
 }
 
 
-static void dt_match_color_to_background(cairo_t *cr, float exposure, float alpha)
+static void match_color_to_background(cairo_t *cr, const float exposure, const float alpha)
 {
   float shade = 0.0f;
   // TODO: put that as a preference in darktablerc
@@ -2308,7 +2308,7 @@ static void dt_match_color_to_background(cairo_t *cr, float exposure, float alph
   else
     shade = (fmaxf(exposure / contrast, -5.0f) + 2.5f);
 
-  dt_get_shade_from_luminance(cr, exp2f(shade), alpha);
+  get_shade_from_luminance(cr, exp2f(shade), alpha);
 }
 
 
@@ -2355,13 +2355,13 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   dt_pthread_mutex_unlock(&g->lock);
 
   // Rescale and shift Cairo drawing coordinates
-  float wd = dev->preview_pipe->backbuf_width;
-  float ht = dev->preview_pipe->backbuf_height;
-  float zoom_y = dt_control_get_dev_zoom_y();
-  float zoom_x = dt_control_get_dev_zoom_x();
-  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  int closeup = dt_control_get_dev_closeup();
-  float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+  const float wd = dev->preview_pipe->backbuf_width;
+  const float ht = dev->preview_pipe->backbuf_height;
+  const float zoom_y = dt_control_get_dev_zoom_y();
+  const float zoom_x = dt_control_get_dev_zoom_x();
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
   cairo_translate(cr, width / 2.0, height / 2.0);
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
@@ -2370,12 +2370,12 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   // set custom cursor dimensions
   const double outer_radius = 16.;
-  const double inner_radius = outer_radius / 2.0;
+  const double inner_radius = outer_radius / 1.5;
   const double setting_scale = 2. * outer_radius / zoom_scale;
   const double setting_offset_x = (outer_radius + 4. * g->inner_padding) / zoom_scale;
 
   // setting fill bars
-  dt_match_color_to_background(cr, exposure_out, 1.0);
+  match_color_to_background(cr, exposure_out, 1.0);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(6. / zoom_scale));
   cairo_move_to(cr, x_pointer - setting_offset_x, y_pointer);
   cairo_line_to(cr, x_pointer - setting_offset_x, y_pointer - correction * setting_scale);
@@ -2394,8 +2394,8 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_fill(cr);
 
   // draw exposure cursor
-  dt_draw_exposure_cursor(cr, x_pointer, y_pointer, outer_radius, luminance_in, zoom_scale, 6);
-  dt_draw_exposure_cursor(cr, x_pointer, y_pointer, inner_radius, luminance_out, zoom_scale, 3);
+  draw_exposure_cursor(cr, x_pointer, y_pointer, outer_radius, luminance_in, zoom_scale, 6, .9);
+  draw_exposure_cursor(cr, x_pointer, y_pointer, inner_radius, luminance_out, zoom_scale, 3, .9);
 
   // Create Pango objects : texts
   char text[256];
@@ -2415,7 +2415,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   pango_layout_get_pixel_extents(layout, &ink, NULL);
 
   // Draw the text plain blackground
-  dt_get_shade_from_luminance(cr, luminance_out, 0.75);
+  get_shade_from_luminance(cr, luminance_out, 0.75);
   cairo_rectangle(cr, x_pointer + (outer_radius + 2. * g->inner_padding) / zoom_scale,
                       y_pointer - ink.y - ink.height / 2.0 - g->inner_padding / zoom_scale,
                       ink.width + 2.0 * ink.x + 4. * g->inner_padding / zoom_scale,
@@ -2423,7 +2423,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_fill(cr);
 
   // Display the EV reading
-  dt_match_color_to_background(cr, exposure_out, 1.0);
+  match_color_to_background(cr, exposure_out, 1.0);
   cairo_move_to(cr, x_pointer + (outer_radius + 4. * g->inner_padding) / zoom_scale,
                     y_pointer - ink.y - ink.height / 2.);
   pango_cairo_show_layout(cr, layout);
