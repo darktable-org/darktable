@@ -798,7 +798,7 @@ gint dt_sort_iop_by_order(gconstpointer a, gconstpointer b)
 // if module can be placed before than module_next on the pipe
 // it returns the new iop_order
 // if it cannot be placed it returns -1.0
-// this assums that the order is always positive
+// this assumes that the order is always positive
 double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *module, dt_iop_module_t *module_next,
                                   const int validate_order, const int log_error)
 {
@@ -838,7 +838,7 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
       {
         dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
 
-        // if we reach module_next everithing is OK
+        // if we reach module_next everything is OK
         if(mod == module_next)
         {
           mod2 = mod;
@@ -935,7 +935,7 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
       {
         dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
 
-        // we reach the module next to module_next, everithing is OK
+        // we reach the module next to module_next, everything is OK
         if(mod2 != NULL)
         {
           mod1 = mod;
@@ -1018,7 +1018,7 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
 // if module can be placed after than module_prev on the pipe
 // it returns the new iop_order
 // if it cannot be placed it returns -1.0
-// this assums that the order is always positive
+// this assumes that the order is always positive
 double dt_ioppr_get_iop_order_after_iop(GList *iop_list, dt_iop_module_t *module, dt_iop_module_t *module_prev,
                                  const int validate_order, const int log_error)
 {

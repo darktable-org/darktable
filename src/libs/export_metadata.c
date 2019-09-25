@@ -263,7 +263,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
     gtk_box_pack_start(GTK_BOX(vbox2), box, FALSE, TRUE, 0);
     GtkWidget *vbox3 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_box_pack_start(GTK_BOX(box), vbox3, FALSE, TRUE, 10); 
-    calculated = gtk_check_button_new_with_label(_("only embbeded"));
+    calculated = gtk_check_button_new_with_label(_("only embedded"));
     gtk_widget_set_tooltip_text(calculated, _("per default the interface sends some (limited) metadata beside the image to remote storage.\n"
         "to avoid this and let only image embedded dt xmp metadata, check this flag.\n"
         "if remote storage doesn't understand dt xmp metadata, you can use calculated metadata instead"));
@@ -378,7 +378,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   gtk_box_pack_start(GTK_BOX(vbox), box, FALSE, TRUE, 0);
 
   GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_plus_simple, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  gtk_widget_set_tooltip_text(button, _("add an ouput metadata tag"));
+  gtk_widget_set_tooltip_text(button, _("add an output metadata tag"));
   gtk_box_pack_end(GTK_BOX(box), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(add_tag_button_clicked), (gpointer)d);
 
