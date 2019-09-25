@@ -5,15 +5,15 @@ msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-09-04 19:19+0200\n"
-"PO-Revision-Date: 2019-09-24 23:26+0100\n"
+"PO-Revision-Date: 2019-09-25 11:22+0100\n"
 "Last-Translator: mmardegan <11093569+mmardegan@users.noreply.github.com>\n"
-"Language-Team: Italian <>\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Lokalize 2.0\n"
+"Language-Team: Italian <kde-i18n-it@kde.org>\n"
 
 #: ../build/src/preferences_gen.h:2155
 msgid "GUI options"
@@ -108,7 +108,7 @@ msgstr "diritti da assegnare al momento dell'importazione "
 
 #: ../build/src/preferences_gen.h:2277
 msgid "comma separated tags to be applied when importing"
-msgstr "Tag separati da verigola  da assegnare al momento dell'importazione "
+msgstr "Tag separati da virgola da assegnare al momento dell'importazione"
 
 #: ../build/src/preferences_gen.h:2300
 msgid "initial import rating"
@@ -362,7 +362,7 @@ msgstr "Stampa la posizione dell'immagine"
 
 #: ../build/src/preferences_gen.h:2715
 msgid "see manual to know all the tags you can use."
-msgstr ""
+msgstr "Vedi il manuale per conoscere tutti i Tag che puoi usare."
 
 #: ../build/src/preferences_gen.h:2723
 #, fuzzy
@@ -593,7 +593,7 @@ msgstr "Chiedi prima di eliminare un tag"
 
 #: ../build/src/preferences_gen.h:3159 ../build/src/preferences_gen.h:4061
 msgid "miscellaneous"
-msgstr ""
+msgstr "Miscellaneo"
 
 #: ../build/src/preferences_gen.h:3170
 msgid "width of the side panels in pixels"
@@ -1523,7 +1523,7 @@ msgstr "Matrice colore alternativa"
 
 #: ../src/common/colorspaces.c:982
 msgid "BRG (experimental)"
-msgstr ""
+msgstr "BRG (sperimentale)"
 
 #: ../src/common/colorspaces.c:983 ../src/common/colorspaces.c:1246
 #: ../src/iop/colorout.c:881
@@ -2052,7 +2052,7 @@ msgstr "Elaborazione..."
 #: ../src/control/control.c:685
 #, c-format
 msgid "scroll to change <b>%s</b> of %s module"
-msgstr ""
+msgstr "Scorri per cambiare  <b>%s</b> del modulo %s"
 
 #: ../src/control/crawler.c:342 ../src/libs/select.c:40
 msgid "select"
@@ -4038,7 +4038,7 @@ msgstr "Visione diurna"
 
 #: ../src/gui/guides.c:123
 msgid "number of subdivisions per grid rectangle"
-msgstr ""
+msgstr "Numero di suddivisioni per la griglia rettangolare"
 
 #: ../src/gui/guides.c:440
 msgid "extra"
@@ -4939,7 +4939,7 @@ msgstr "Impossibile scrivere nella directory '%s'!"
 #, c-format
 msgid "%d/%d skipping `%s'"
 msgid_plural "%d/%d skipping `%s'"
-msgstr[0] ""
+msgstr[0] "%d/%d saltando `%s'"
 msgstr[1] ""
 
 #: ../src/imageio/storage/disk.c:337 ../src/imageio/storage/email.c:143
@@ -4957,6 +4957,10 @@ msgid ""
 "\n"
 "do you really want to continue?"
 msgstr ""
+"Stai esportando in modalità sovrascrittura, questo sovrascrive ogni immagine"
+" \n"
+"\n"
+"Sei sicuro di continuare?"
 
 #: ../src/imageio/storage/email.c:52
 msgid "send as email"
@@ -5311,7 +5315,7 @@ msgstr "Aggiorna lista album"
 
 #: ../src/imageio/storage/piwigo.c:723
 msgid "piwigo"
-msgstr ""
+msgstr "Piwigo"
 
 #: ../src/imageio/storage/piwigo.c:748
 #, fuzzy
@@ -5328,6 +5332,9 @@ msgid ""
 "default protocol is https\n"
 "specify http:// if non secure server"
 msgstr ""
+"Il nome del server\n"
+"Il protocollo di default è https\n"
+"Specifica http:// per server non sicuro"
 
 #: ../src/imageio/storage/piwigo.c:782
 msgid "user"
@@ -5339,12 +5346,11 @@ msgstr "mot de passe"
 
 #: ../src/imageio/storage/piwigo.c:811
 msgid "piwigo login"
-msgstr ""
+msgstr "Piwigo login"
 
 #: ../src/imageio/storage/piwigo.c:835
-#, fuzzy
 msgid "contacts"
-msgstr "Foglio contatto"
+msgstr "Contatti"
 
 #. Available albums
 #: ../src/imageio/storage/piwigo.c:846
@@ -5954,7 +5960,7 @@ msgstr "Somma RGB"
 #: ../src/iop/rgbcurve.c:1590 ../src/iop/rgblevels.c:1122
 #: ../src/iop/tonecurve.c:1398
 msgid "norm rgb"
-msgstr ""
+msgstr "norm RGB"
 
 #: ../src/iop/basecurve.c:2146 ../src/iop/basicadj.c:708
 #: ../src/iop/rgbcurve.c:1591 ../src/iop/rgblevels.c:1123
@@ -6568,7 +6574,7 @@ msgstr "Aumento artefatti del colore"
 
 #: ../src/iop/channelmixer.c:522
 msgid "B/W luminance-based"
-msgstr ""
+msgstr "B/W basato sulla luminanza"
 
 #: ../src/iop/channelmixer.c:527
 msgid "B/W artifacts boost"
@@ -6584,35 +6590,35 @@ msgstr "Riduzione artefatti blu B/N"
 
 #: ../src/iop/channelmixer.c:543
 msgid "B/W Ilford Delta 100-400"
-msgstr ""
+msgstr "B/W Ilford Delta 100-400"
 
 #: ../src/iop/channelmixer.c:549
 msgid "B/W Ilford Delta 3200"
-msgstr ""
+msgstr "B/W Ilford Delta 3200"
 
 #: ../src/iop/channelmixer.c:555
 msgid "B/W Ilford FP4"
-msgstr ""
+msgstr "B/W Ilford FP4"
 
 #: ../src/iop/channelmixer.c:561
 msgid "B/W Ilford HP5"
-msgstr ""
+msgstr "B/W Ilford HP5"
 
 #: ../src/iop/channelmixer.c:567
 msgid "B/W Ilford SFX"
-msgstr ""
+msgstr "B/W Ilford SFX"
 
 #: ../src/iop/channelmixer.c:573
 msgid "B/W Kodak T-Max 100"
-msgstr ""
+msgstr "B/W Kodak T-Max 100"
 
 #: ../src/iop/channelmixer.c:579
 msgid "B/W Kodak T-max 400"
-msgstr ""
+msgstr "B/W Kodak T-max 400"
 
 #: ../src/iop/channelmixer.c:585
 msgid "B/W Kodak Tri-X 400"
-msgstr ""
+msgstr "B/W Kodak Tri-X 400"
 
 #: ../src/iop/clahe.c:337 ../src/iop/sharpen.c:791
 msgid "amount"
@@ -6854,15 +6860,15 @@ msgstr "Generico"
 
 #: ../src/iop/colorbalance.c:286
 msgid "similar to Kodak Portra"
-msgstr ""
+msgstr "Simile a Kodak Portra"
 
 #: ../src/iop/colorbalance.c:290
 msgid "similar to Kodak Ektar"
-msgstr ""
+msgstr "Simile a Kodak Ektar"
 
 #: ../src/iop/colorbalance.c:294
 msgid "similar to Kodachrome"
-msgstr ""
+msgstr "Simile a Kodachrome"
 
 #: ../src/iop/colorbalance.c:301 ../src/iop/exposure.c:127
 #: ../src/iop/profile_gamma.c:126
@@ -6918,11 +6924,11 @@ msgstr "Contrasto colore"
 
 #: ../src/iop/colorbalance.c:2376
 msgid "HSL"
-msgstr ""
+msgstr "HSL"
 
 #: ../src/iop/colorbalance.c:2377
 msgid "RGBL"
-msgstr ""
+msgstr "RGBL"
 
 #: ../src/iop/colorbalance.c:2388
 #, fuzzy
@@ -6936,7 +6942,7 @@ msgstr "Saturazione"
 
 #: ../src/iop/colorbalance.c:2395
 msgid "saturation correction before the color balance"
-msgstr ""
+msgstr "Correzione della saturazione prima del bilanciamento colore"
 
 #: ../src/iop/colorbalance.c:2401
 #, fuzzy
@@ -6945,7 +6951,7 @@ msgstr "Saturazione"
 
 #: ../src/iop/colorbalance.c:2403
 msgid "saturation correction after the color balance"
-msgstr ""
+msgstr "Correzione della saturazione dopo il bilanciamento colore"
 
 #: ../src/iop/colorbalance.c:2407
 #, fuzzy
@@ -7083,19 +7089,19 @@ msgstr "Equalizzazione istogramma"
 
 #: ../src/iop/colorchecker.c:311
 msgid "Fuji Classic Chrome emulation"
-msgstr ""
+msgstr "Emulazione Fuji Classic Chrome"
 
 #: ../src/iop/colorchecker.c:323
 msgid "Fuji Monochrome emulation"
-msgstr ""
+msgstr "Emulazione Fuji Monochrome"
 
 #: ../src/iop/colorchecker.c:335
 msgid "Fuji Provia emulation"
-msgstr ""
+msgstr "Emulazione Fuji Provia"
 
 #: ../src/iop/colorchecker.c:347
 msgid "Fuji Velvia emulation"
-msgstr ""
+msgstr "Emulazione Fuji Velvia"
 
 #: ../src/iop/colorchecker.c:845 ../src/iop/colorchecker.c:1359
 #, c-format
@@ -7261,9 +7267,8 @@ msgid "input profile"
 msgstr "Profilo di uscita"
 
 #: ../src/iop/colorin.c:2073
-#, fuzzy
 msgid "working profile"
-msgstr "Filtro di riscaldamento"
+msgstr "Profilo di lavoro"
 
 #: ../src/iop/colorin.c:2083 ../src/iop/colorin.c:2094
 #: ../src/iop/colorout.c:892
@@ -7612,13 +7617,15 @@ msgstr "Scegli il criterio di selezione, sarà l'ascissa del grafico"
 msgid "process mode"
 msgstr "Modalità di messa a fuoco"
 
+# Verificare il contesto
+#
 #: ../src/iop/colorzones.c:2335
 msgid "strong"
-msgstr ""
+msgstr "Forte"
 
 #: ../src/iop/colorzones.c:2337
 msgid "choose between a smoother or stronger effect"
-msgstr ""
+msgstr "Scegli tra un effetto più morbido o più intenso"
 
 #: ../src/iop/colorzones.c:2373 ../src/iop/rgbcurve.c:1563
 #: ../src/iop/tonecurve.c:1380
@@ -7859,7 +7866,7 @@ msgstr "Interpolato tra ISO %d e %d"
 
 #: ../src/iop/denoiseprofile.c:2822 ../src/iop/denoiseprofile.c:3387
 msgid "compute variance"
-msgstr ""
+msgstr "Calcola la varianza"
 
 #: ../src/iop/denoiseprofile.c:3261
 msgid ""
@@ -7867,6 +7874,9 @@ msgid ""
 "uniform image if you want to\n"
 "estimate the noise variance."
 msgstr ""
+"Usare solo con un'immagine\n"
+"perfettamente uniforme se vuoi\n"
+"notare la variazione del disturbo."
 
 #: ../src/iop/denoiseprofile.c:3268
 msgid "variance red: "
@@ -7901,11 +7911,11 @@ msgstr "Click per nascondere il canale blu"
 
 #: ../src/iop/denoiseprofile.c:3298 ../src/iop/rawdenoise.c:987
 msgid "R"
-msgstr ""
+msgstr "R"
 
 #: ../src/iop/denoiseprofile.c:3300 ../src/iop/rawdenoise.c:989
 msgid "G"
-msgstr ""
+msgstr "G"
 
 #: ../src/iop/denoiseprofile.c:3302 ../src/iop/rawdenoise.c:991
 msgid "B"
@@ -8205,39 +8215,39 @@ msgstr "Provino"
 
 #: ../src/iop/filmic.c:311
 msgid "09 EV (low-key)"
-msgstr ""
+msgstr "09 EV (tono scuro)"
 
 #: ../src/iop/filmic.c:318
 msgid "10 EV (indoors)"
-msgstr ""
+msgstr "10 EV (interni)"
 
 #: ../src/iop/filmic.c:325
 msgid "11 EV (dim outdoors)"
-msgstr ""
+msgstr "11 EV (esterni scuri)"
 
 #: ../src/iop/filmic.c:332
 msgid "12 EV (outdoors)"
-msgstr ""
+msgstr "12 EV (esterni)"
 
 #: ../src/iop/filmic.c:339
 msgid "13 EV (bright outdoors)"
-msgstr ""
+msgstr "13 EV (esterni luminosi)"
 
 #: ../src/iop/filmic.c:346
 msgid "14 EV (backlighting)"
-msgstr ""
+msgstr "14 EV (retroilluminazione)"
 
 #: ../src/iop/filmic.c:353
 msgid "15 EV (sunset)"
-msgstr ""
+msgstr "15 EV (tramonto)"
 
 #: ../src/iop/filmic.c:360
 msgid "16 EV (HDR)"
-msgstr ""
+msgstr "16 EV (HDR)"
 
 #: ../src/iop/filmic.c:367
 msgid "18 EV (HDR++)"
-msgstr ""
+msgstr "18 EV (HDR++)"
 
 #: ../src/iop/filmic.c:1679
 msgid "read-only graph, use the parameters below to set the nodes"
@@ -8392,7 +8402,7 @@ msgstr ""
 #. monotonic spline
 #: ../src/iop/filmic.c:1808
 msgid "optimized"
-msgstr ""
+msgstr "Ottimizzato"
 
 #: ../src/iop/filmic.c:1810
 msgid "change this method if you see reversed contrast or faded blacks"
@@ -9476,7 +9486,7 @@ msgstr ""
 
 #: ../src/iop/lut3d.c:1118
 msgid "REC.709"
-msgstr ""
+msgstr "REC.709"
 
 #: ../src/iop/lut3d.c:1119
 msgid "lin sRGB/REC.709"
@@ -9595,23 +9605,23 @@ msgstr "Ombre"
 
 #: ../src/iop/profile_gamma.c:158
 msgid "16 EV dynamic range (generic)"
-msgstr ""
+msgstr "16 EV  di gamma dinamica (generico)"
 
 #: ../src/iop/profile_gamma.c:163
 msgid "14 EV dynamic range (generic)"
-msgstr ""
+msgstr "14 EV  di gamma dinamica (generico)"
 
 #: ../src/iop/profile_gamma.c:168
 msgid "12 EV dynamic range (generic)"
-msgstr ""
+msgstr "12 EV  di gamma dinamica (generico)"
 
 #: ../src/iop/profile_gamma.c:173
 msgid "10 EV dynamic range (generic)"
-msgstr ""
+msgstr "10 EV  di gamma dinamica (generico)"
 
 #: ../src/iop/profile_gamma.c:178
 msgid "08 EV dynamic range (generic)"
-msgstr ""
+msgstr "08 EV di gamma dinamica (generico)"
 
 #: ../src/iop/profile_gamma.c:861
 #, fuzzy
@@ -9803,7 +9813,7 @@ msgstr "Cambia strumento per prelevare la luminosità media nell'immagine"
 
 #: ../src/iop/retouch.c:193
 msgid "retouch"
-msgstr ""
+msgstr "Ritocca"
 
 #: ../src/iop/retouch.c:1931
 msgid "cannot display scales when the blending mask is displayed"
@@ -9984,9 +9994,8 @@ msgstr "Imposta l'opacità della fusione"
 
 #. add all the controls to the iop
 #: ../src/iop/retouch.c:2956
-#, fuzzy
 msgid "retouch tools"
-msgstr "strumento curva"
+msgstr "Ritocca gli strumenti"
 
 #. wavelet decompose
 #: ../src/iop/retouch.c:2965
@@ -10003,22 +10012,22 @@ msgstr "Forma"
 #: ../src/iop/retouch.c:3333
 msgctxt "accel"
 msgid "retouch tool circle"
-msgstr ""
+msgstr "Ritocca lo strumento cerchio"
 
 #: ../src/iop/retouch.c:3334
 msgctxt "accel"
 msgid "retouch tool ellipse"
-msgstr ""
+msgstr "Ritocca lo strumento ellisse"
 
 #: ../src/iop/retouch.c:3335
 msgctxt "accel"
 msgid "retouch tool path"
-msgstr ""
+msgstr "Ritocca lo strumento percorso"
 
 #: ../src/iop/retouch.c:3336
 msgctxt "accel"
 msgid "retouch tool brush"
-msgstr ""
+msgstr "Ritocca lo strumento pennello"
 
 #: ../src/iop/retouch.c:3338
 #, fuzzy
@@ -10117,7 +10126,7 @@ msgstr ""
 
 #: ../src/iop/rgbcurve.c:1489 ../src/iop/rgblevels.c:1021
 msgid "  R  "
-msgstr ""
+msgstr "  R  "
 
 #: ../src/iop/rgbcurve.c:1492 ../src/iop/rgblevels.c:1024
 #, fuzzy
@@ -10126,7 +10135,7 @@ msgstr "Curva tono per canale L"
 
 #: ../src/iop/rgbcurve.c:1494 ../src/iop/rgblevels.c:1026
 msgid "  G  "
-msgstr ""
+msgstr "  G  "
 
 #: ../src/iop/rgbcurve.c:1497 ../src/iop/rgblevels.c:1029
 #, fuzzy
@@ -12096,7 +12105,7 @@ msgstr "Modalità sovrapposizione"
 #: ../src/libs/live_view.c:409
 msgctxt "blendmode"
 msgid "xor"
-msgstr "xor"
+msgstr "Xor"
 
 #: ../src/libs/live_view.c:410
 msgctxt "blendmode"
@@ -12632,7 +12641,7 @@ msgstr "Adatta allo schermo"
 
 #: ../src/libs/navigation.c:512
 msgid "50%"
-msgstr ""
+msgstr "50%"
 
 #: ../src/libs/navigation.c:516
 msgid "100%"
@@ -12644,15 +12653,15 @@ msgstr "200%"
 
 #: ../src/libs/navigation.c:524
 msgid "400%"
-msgstr ""
+msgstr "400%"
 
 #: ../src/libs/navigation.c:528
 msgid "800%"
-msgstr ""
+msgstr "800%"
 
 #: ../src/libs/navigation.c:532
 msgid "1600%"
-msgstr ""
+msgstr "1600%"
 
 #: ../src/libs/navigation.c:569
 msgctxt "accel"
@@ -13067,7 +13076,7 @@ msgstr "Eliminare etichetta?"
 #: ../src/libs/tagging.c:1415
 #, c-format
 msgid "tag: %s "
-msgstr ""
+msgstr "Tag: %s "
 
 #: ../src/libs/tagging.c:1076
 #, c-format
@@ -13133,7 +13142,7 @@ msgstr "Nome file"
 #: ../src/libs/tagging.c:1270
 #, c-format
 msgid "add to: \"%s\" "
-msgstr ""
+msgstr "Aggiungi a: \"%s\" "
 
 #: ../src/libs/tagging.c:1276 ../src/libs/tagging.c:1450
 #, fuzzy
@@ -13221,11 +13230,11 @@ msgstr "créer un style"
 
 #: ../src/libs/tagging.c:1819
 msgid "edit tag..."
-msgstr ""
+msgstr "Modifica il Tag..."
 
 #: ../src/libs/tagging.c:1828
 msgid "rename path..."
-msgstr ""
+msgstr "Rinomina il percorso..."
 
 #: ../src/libs/tagging.c:1835
 #, fuzzy
@@ -13239,12 +13248,12 @@ msgstr "Rimuovi dalla raccolta"
 
 #: ../src/libs/tagging.c:1865
 msgid "go back to work"
-msgstr ""
+msgstr "Ritorna a lavorare"
 
 #: ../src/libs/tagging.c:1975
 #, c-format
 msgid "%s"
-msgstr ""
+msgstr "%s"
 
 #: ../src/libs/tagging.c:1976
 #, fuzzy
@@ -14408,7 +14417,7 @@ msgstr "Doppio click per ripristinare"
 
 #: ../src/views/view.c:2192
 msgid "Drag and drop"
-msgstr ""
+msgstr "Drag and drop"
 
 #: ../src/views/view.c:2195
 msgid "Left click+Drag"
@@ -14416,7 +14425,7 @@ msgstr "Tasto sinistro+trascina"
 
 #: ../src/views/view.c:2198
 msgid "Right click+Drag"
-msgstr ""
+msgstr "Tasto destro+Trascina"
 
 #: ../src/views/view.c:2222
 #, fuzzy
