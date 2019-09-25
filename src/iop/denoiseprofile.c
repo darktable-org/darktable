@@ -1301,9 +1301,9 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     wb[2] = 2.0f * piece->pipe->dsc.processed_maximum[2];
   }
   // adaptive p depending on white balance
-  const float p[3] = { MAX(d->shadows - 0.1 * logf(wb[0]) + 0.1 * logf(in_scale), 0.0f) ,
-                       MAX(d->shadows - 0.1 * logf(wb[1]) + 0.1 * logf(in_scale), 0.0f),
-                       MAX(d->shadows - 0.1 * logf(wb[2]) + 0.1 * logf(in_scale), 0.0f)};
+  const float p[3] = { MAX(d->shadows + 0.1 * logf(in_scale / wb[0]), 0.0f) ,
+                       MAX(d->shadows + 0.1 * logf(in_scale / wb[1]), 0.0f),
+                       MAX(d->shadows + 0.1 * logf(in_scale / wb[2]), 0.0f)};
 
   // update the coeffs with strength and scale
   for(int i = 0; i < 3; i++) wb[i] *= d->strength * in_scale;
@@ -1505,9 +1505,9 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
     for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
   }
   // adaptive p depending on white balance
-  const float p[3] = { MAX(d->shadows - 0.1 * logf(wb[0]) + 0.1 * logf(scale), 0.0f) ,
-                       MAX(d->shadows - 0.1 * logf(wb[1]) + 0.1 * logf(scale), 0.0f),
-                       MAX(d->shadows - 0.1 * logf(wb[2]) + 0.1 * logf(scale), 0.0f)};
+  const float p[3] = { MAX(d->shadows + 0.1 * logf(scale / wb[0]), 0.0f) ,
+                       MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f),
+                       MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f)};
 
   // update the coeffs with strength and scale
   for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
@@ -1729,9 +1729,9 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
     for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
   }
   // adaptive p depending on white balance
-  const float p[3] = { MAX(d->shadows - 0.1 * logf(wb[0]) + 0.1 * logf(scale), 0.0f) ,
-                       MAX(d->shadows - 0.1 * logf(wb[1]) + 0.1 * logf(scale), 0.0f),
-                       MAX(d->shadows - 0.1 * logf(wb[2]) + 0.1 * logf(scale), 0.0f)};
+  const float p[3] = { MAX(d->shadows + 0.1 * logf(scale / wb[0]), 0.0f) ,
+                       MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f),
+                       MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f)};
   // update the coeffs with strength and scale
   for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
   const float central_pixel_weight = d->central_pixel_weight * scale;
@@ -2166,9 +2166,9 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     for(int i = 0; i < 3; i++) wb[i] = piece->pipe->dsc.processed_maximum[i];
   }
   // adaptive p depending on white balance
-  const float p[4] = { MAX(d->shadows - 0.1 * logf(wb[0]) + 0.1 * logf(scale), 0.0f),
-                       MAX(d->shadows - 0.1 * logf(wb[1]) + 0.1 * logf(scale), 0.0f),
-                       MAX(d->shadows - 0.1 * logf(wb[2]) + 0.1 * logf(scale), 0.0f), 1.0f};
+  const float p[4] = { MAX(d->shadows + 0.1 * logf(scale / wb[0]), 0.0f),
+                       MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f),
+                       MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f), 1.0f};
 
   // update the coeffs with strength and scale
   for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
@@ -2522,9 +2522,9 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     wb[2] = 2.0f * piece->pipe->dsc.processed_maximum[2];
   }
   // adaptive p depending on white balance
-  const float p[4] = { MAX(d->shadows - 0.1 * logf(wb[0]) + 0.1 * logf(scale), 0.0f),
-                       MAX(d->shadows - 0.1 * logf(wb[1]) + 0.1 * logf(scale), 0.0f),
-                       MAX(d->shadows - 0.1 * logf(wb[2]) + 0.1 * logf(scale), 0.0f), 1.0f};
+  const float p[4] = { MAX(d->shadows + 0.1 * logf(scale / wb[0]), 0.0f),
+                       MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f),
+                       MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f), 1.0f};
 
   // update the coeffs with strength and scale
   for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
