@@ -1391,37 +1391,25 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     else if(buf_ok && dt_view_lighttable_culling_is_image_visible(darktable.view_manager, imgid))
     {
       // border around image
-      if(selected)
+      if(selected && darktable.gui->colors[DT_GUI_COLOR_PREVIEW_BORDER].alpha > 0.0)
       {
-        // if border color is transparent, don't draw
-        if(darktable.gui->colors[DT_GUI_COLOR_PREVIEW_BORDER].alpha > 0.0)
-        {
-          const float border = DT_PIXEL_APPLY_DPI(4.0 / scale);
-          cairo_set_line_width(cr, border);
-          cairo_rectangle(cr, rectx - border / 1.98, recty - border / 1.98, rectw + 0.99 * border, recth + 0.99 * border);
-          dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_PREVIEW_BORDER);
-          cairo_stroke(cr);
-        }
-
-        // draw hover border if it's not transparent
-        if(vals->mouse_over && darktable.gui->colors[DT_GUI_COLOR_PREVIEW_HOVER_BORDER].alpha > 0.0)
-        {
-          cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0 / scale));
-          dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_PREVIEW_HOVER_BORDER);
-          cairo_stroke(cr);
-        }
+        const float border = DT_PIXEL_APPLY_DPI(4.0 / scale);
+        cairo_set_line_width(cr, border);
+        cairo_rectangle(cr, rectx - border / 1.98, recty - border / 1.98, rectw + 0.99 * border,
+                        recth + 0.99 * border);
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_PREVIEW_BORDER);
+        cairo_stroke(cr);
       }
-      else
+
+      // draw hover border if it's not transparent
+      if(vals->mouse_over && darktable.gui->colors[DT_GUI_COLOR_PREVIEW_HOVER_BORDER].alpha > 0.0)
       {
-        // draw hover border if it's not transparent
-        if(vals->mouse_over && darktable.gui->colors[DT_GUI_COLOR_PREVIEW_HOVER_BORDER].alpha > 0.0)
-        {
-          const float border = DT_PIXEL_APPLY_DPI(2.0 / scale);
-          cairo_set_line_width(cr, border);
-          cairo_rectangle(cr, rectx - border / 1.98, recty - border / 1.98, rectw + 0.99 * border, recth + 0.99 * border);
-          dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_PREVIEW_HOVER_BORDER);
-          cairo_stroke(cr);
-        }
+        const float border = DT_PIXEL_APPLY_DPI(2.0 / scale);
+        cairo_set_line_width(cr, border);
+        cairo_rectangle(cr, rectx - border / 1.98, recty - border / 1.98, rectw + 0.99 * border,
+                        recth + 0.99 * border);
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_PREVIEW_HOVER_BORDER);
+        cairo_stroke(cr);
       }
     }
   }
