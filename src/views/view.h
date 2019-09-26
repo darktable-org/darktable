@@ -195,6 +195,7 @@ typedef struct dt_view_image_expose_t
   int32_t px;
   int32_t py;
   gboolean full_preview;
+  gboolean filmstrip;
   gboolean image_only;
   gboolean no_deco;
   gboolean mouse_over;
