@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-09-26 18:35+0200\n"
-"PO-Revision-Date: 2019-09-26 18:28+0200\n"
+"POT-Creation-Date: 2019-09-26 18:56+0200\n"
+"PO-Revision-Date: 2019-09-26 18:57+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -5580,8 +5580,8 @@ msgid "[%s] unselect all segments from zone"
 msgstr "[%s] désélectionner tous les segments de la zone"
 
 #: ../src/iop/atrous.c:117
-msgid "equalizer"
-msgstr "égaliseur"
+msgid "contrast equalizer"
+msgstr "égaliseur de contraste"
 
 #: ../src/iop/atrous.c:137 ../src/iop/soften.c:108
 msgctxt "accel"
@@ -14955,6 +14955,9 @@ msgstr "raccourcis"
 #: ../src/views/view.c:2402
 msgid "Action"
 msgstr "action"
+
+#~ msgid "equalizer"
+#~ msgstr "égaliseur"
 
 #~ msgid "force exportation of private tags"
 #~ msgstr "forcer l'exportation de mots-clés cachés"
