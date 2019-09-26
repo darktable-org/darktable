@@ -373,7 +373,7 @@ sub new
   bless($reference, $self);
 
   $reference->{unsigned} = 0;
-  @{$reference->{limits}} = ("G_MININT8", "G_MAXINT8", "0", "0", "G_MAXUINT8", "0");
+  @{$reference->{limits}} = ("CHAR_MIN", "CHAR_MAX", "0", "0", "UCHAR_MAX", "0");
   $reference->{code_type} = "char";
 
   return $reference;
