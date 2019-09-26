@@ -2115,7 +2115,7 @@ static GList *read_history_v2(Exiv2::XmpData &xmpData, const char *filename)
       }
       else if(g_str_has_prefix(key_iter, "darktable:iop_order"))
       {
-        current_entry->iop_order = history->value().toFloat();
+        current_entry->iop_order = history->value().toFloat();  // This is a problem ??
       }
       else if(g_str_has_prefix(key_iter, "darktable:blendop_version"))
       {
@@ -2441,7 +2441,7 @@ static int history_v1_to_v3(const int imgid)
       sqlite3_finalize(stmt);
       if(multi_priority_max >= 0)
       {
-        const float iop_order = ((float)(multi_priority_max + 1 - multi_priority) / 1000.0) + prior_v1->iop_order;
+        const double iop_order = ((float)(multi_priority_max + 1 - multi_priority) / 1000.0) + prior_v1->iop_order;
 
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                     "UPDATE main.history SET iop_order = ?2 WHERE imgid = ?1 AND num = ?3", -1,
@@ -2918,7 +2918,14 @@ static void dt_set_xmp_dt_history(Exiv2::XmpData &xmpData, const int imgid, int 
     snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:multi_priority", num);
     xmpData[key] = multi_priority;
     snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:iop_order", num);
-    xmpData[key] = iop_order;
+    // This code only writes iop_order as the default which is float, so it's wrong.
+    // We **must** ensure it's written with high precision instead.
+    // xmpData[key] = iop_order;
+    char *str = (char *)g_malloc(G_ASCII_DTOSTR_BUF_SIZE);
+    g_ascii_formatd(str, G_ASCII_DTOSTR_BUF_SIZE, "%.13f", iop_order);
+    xmpData[key] = str;
+    g_free(str);
+
     if(blendop_blob)
     {
       // this shouldn't fail in general, but reading is robust enough to allow it,

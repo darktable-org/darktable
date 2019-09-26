@@ -33,6 +33,8 @@
 
 #define DT_IOP_ORDER_VERSION 3
 
+#define DT_IOP_ORDER_INFO FALSE	// used while debugging
+
 static void _ioppr_insert_iop_after(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_previous, const int dont_move);
 static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_next, const int dont_move);
 static void _ioppr_move_iop_after(GList **_iop_order_list, const char *op_current, const char *op_prev, const int dont_move);
@@ -386,6 +388,7 @@ static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_lis
     {
       // set the iop_order
       iop_order_new->iop_order = iop_order_prev + (iop_order_next - iop_order_prev) / 2.0;
+      if (DT_IOP_ORDER_INFO) fprintf(stderr,"\n  _ioppr_insert_iop_before %16s: %14.11f [xmp:%8.4f], prev %14.11f, next %14.11f",op_new,iop_order_new->iop_order,iop_order_new->iop_order,iop_order_prev,iop_order_next);
 
       // insert it on the proper order
       iop_order_list = g_list_insert(iop_order_list, iop_order_new, position);
@@ -495,6 +498,7 @@ static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_curre
 
     // insert it on the proper order
     iop_order_list = g_list_insert(iop_order_list, iop_order_current, position);
+    if (DT_IOP_ORDER_INFO) fprintf(stderr,"\n  _ioppr_move_iop_before   %16s: %14.11f [xmp:%8.4f], prev %14.11f, next %14.11f",op_current,iop_order_current->iop_order,iop_order_current->iop_order,iop_order_prev->iop_order,iop_order_next->iop_order);
   }
   else
     fprintf(stderr, "[_ioppr_move_iop_before] next module %s don't exists on iop order list\n", op_next);
@@ -562,6 +566,7 @@ GList *dt_ioppr_get_iop_order_list(int *_version)
 // if a module do not exists on iop_order_list it is flagged as unused with DBL_MAX
 void dt_ioppr_set_default_iop_order(GList **_iop_list, GList *iop_order_list)
 {
+  if (DT_IOP_ORDER_INFO) fprintf(stderr,"\n\ndt_ioppr_set_default_iop_order "); // dt_iop_module_so_t in develop/imageop.h
   GList *iop_list = *_iop_list;
 
   GList *modules = g_list_first(iop_list);
@@ -579,12 +584,14 @@ void dt_ioppr_set_default_iop_order(GList **_iop_list, GList *iop_order_list)
       mod->iop_order = DBL_MAX;
     }
 
+    if (DT_IOP_ORDER_INFO) fprintf(stderr,"\n  db: %14.11f   xmp %8.4f   %16s",mod->iop_order,mod->iop_order,mod->op);
     modules = g_list_next(modules);
   }
   // we need to set the right order
   iop_list = g_list_sort(iop_list, dt_sort_iop_by_order);
 
   *_iop_list = iop_list;
+    if (DT_IOP_ORDER_INFO) fprintf(stderr,"\n");
 }
 
 // returns the first dt_dev_history_item_t on history_list where hist->module == mod
@@ -3229,3 +3236,5 @@ cleanup:
   return (err == CL_SUCCESS) ? TRUE : FALSE;
 }
 #endif
+
+#undef DT_IOP_ORDER_INFO // used while debugging
