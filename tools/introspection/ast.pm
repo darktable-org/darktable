@@ -179,7 +179,7 @@ sub get_introspection_code
 
   # we have to add the outermost struct here
   my $description = $self->get_description();
-  my $header = "DT_INTROSPECTION_TYPE_STRUCT, (char*)\"$self->{name}\", (char*)\"\", (char*)\"\", (char*)\"$description\", sizeof(($params_type*)NULL), 0, NULL";
+  my $header = "DT_INTROSPECTION_TYPE_STRUCT, (char*)\"$self->{name}\", (char*)\"\", (char*)\"\", (char*)\"$description\", sizeof($params_type), 0, NULL";
   my $specific = $self->{type}->get_introspection_code($name_prefix, $params_type);
   my $linear_line = ".Struct = {\n    { $header },\n    $specific\n  }";
   $self->{type}->add_to_linear("", $linear_line);
