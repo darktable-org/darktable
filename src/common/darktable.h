@@ -101,11 +101,18 @@ typedef unsigned int u_int;
 /* Create cloned functions for various CPU SSE generations */
 /* See for instructions https://hannes.hauswedell.net/post/2017/12/09/fmv/ */
 /* TL;DR : use only on SIMD functions containing low-level paralellized/vectorized loops */
-#if __has_attribute(target_clones)
+#if __has_attribute(target_clones) && !defined(_WIN32) && defined(__SSE__)
 #define __DT_CLONE_TARGETS__ __attribute__((target_clones("default", "sse2", "sse3", "sse4.1", "sse4.2", "popcnt", "avx", "avx2", "avx512f", "fma4")))
 #else
 #define __DT_CLONE_TARGETS__
 #endif
+
+/* Helper to force heap vectors to be aligned on 64 bits blocks to enable AVX2 */
+#define DT_ALIGNED_ARRAY __attribute__((aligned(64)))
+#define DT_ALIGNED_PIXEL __attribute__((aligned(16)))
+
+/* Helper to force stack vectors to be aligned on 64 bits blocks to enable AVX2 */
+#define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, 64);
 
 #ifndef _RELEASE
 #include "common/poison.h"
@@ -285,6 +292,9 @@ void dt_print(dt_debug_thread_t thread, const char *msg, ...) __attribute__((for
 void dt_gettime_t(char *datetime, size_t datetime_len, time_t t);
 void dt_gettime(char *datetime, size_t datetime_len);
 void *dt_alloc_align(size_t alignment, size_t size);
+size_t dt_round_size(const size_t size, const size_t alignment);
+size_t dt_round_size_sse(const size_t size);
+
 #ifdef _WIN32
 void dt_free_align(void *mem);
 #define dt_free_align_ptr dt_free_align
@@ -296,6 +306,19 @@ void dt_free_align(void *mem);
 static inline gboolean dt_is_aligned(const void *pointer, size_t byte_count)
 {
     return (uintptr_t)pointer % byte_count == 0;
+}
+
+static inline void * dt_alloc_sse_ps(size_t pixels)
+{
+  return __builtin_assume_aligned(dt_alloc_align(64, pixels * sizeof(float)), 64);
+}
+
+static inline void * dt_check_sse_aligned(void * pointer)
+{
+  if(dt_is_aligned(pointer, 64))
+    return __builtin_assume_aligned(pointer, 64);
+  else
+    return NULL;
 }
 
 int dt_capabilities_check(char *capability);

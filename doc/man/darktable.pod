@@ -519,7 +519,7 @@ Typical places are C</opt/darktable/share/doc/darktable/> and C</usr/share/doc/d
 =head1 REPORTING BUGS
 
 Please use the bug tracker on
-L<https://www.darktable.org/redmine/projects/darktable/issues/> to report
+L<https://github.com/darktable-org/darktable/issues> to report
 bugs, feature requests and so on.
 
 =head1 AUTHORS

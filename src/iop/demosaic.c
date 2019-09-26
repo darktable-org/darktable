@@ -2820,7 +2820,7 @@ static int demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
       break;
   }
 
-  // For suficiently small scaling, one or more repetitition of the
+  // For sufficiently small scaling, one or more repetitition of the
   // CFA pattern can be merged into a single pixel, hence it is
   // possible to skip the full demosaic and perform a quick downscale.
   // Note even though the X-Trans CFA is 6x6, for this purposes we can

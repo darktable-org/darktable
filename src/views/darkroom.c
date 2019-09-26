@@ -353,7 +353,7 @@ void expose(
     g_assert(darktable.develop->proxy.snapshot.filename != NULL);
 
     /* Store current image surface to snapshot file.
-       FIXME: add checks so that we dont make snapshots of preview pipe image surface.
+       FIXME: add checks so that we don't make snapshots of preview pipe image surface.
     */
     int fd = g_open(darktable.develop->proxy.snapshot.filename, O_CREAT | O_WRONLY | O_BINARY, 0600);
     cairo_surface_write_to_png_stream(image_surface, write_snapshot_data, GINT_TO_POINTER(fd));
@@ -970,14 +970,16 @@ static gboolean export_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
   dt_colorspaces_color_profile_type_t icc_type = dt_conf_get_int("plugins/lighttable/export/icctype");
   gchar *icc_filename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
   dt_iop_color_intent_t icc_intent = dt_conf_get_int("plugins/lighttable/export/iccintent");
+  gchar *metadata_export = dt_conf_get_string("plugins/lighttable/export/metadata");
   // darkroom is for single images, so only export the one the user is working on
   GList *l = g_list_append(NULL, GINT_TO_POINTER(dev->image_storage.id));
   dt_control_export(l, max_width, max_height, format_index, storage_index, high_quality, upscale, style, style_append,
-                    icc_type, icc_filename, icc_intent);
+                    icc_type, icc_filename, icc_intent, metadata_export);
   g_free(format_name);
   g_free(storage_name);
   g_free(style);
   g_free(icc_filename);
+  g_free(metadata_export);
   return TRUE;
 }
 
@@ -2623,7 +2625,8 @@ void leave(dt_view_t *self)
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 
   darktable.develop->image_storage.id = -1;
-
+  // darkroom development could have changed a collection, so update that before being back in lightroom 
+  dt_collection_update_query(darktable.collection);
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }
 

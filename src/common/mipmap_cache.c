@@ -406,7 +406,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
 read_error:
           g_unlink(filename);
         }
-        free(blob);
+        dt_free_align(blob);
         fclose(f);
       }
     }
@@ -1213,7 +1213,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
           // scale to fit
           dt_iop_flip_and_zoom_8(tmp, thumb_width, thumb_height, buf, wd, ht, orientation, width, height);
         }
-        free(tmp);
+        dt_free_align(tmp);
       }
     }
   }
@@ -1253,7 +1253,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
     // no upscaling and signal we want thumbnail export
     res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE,
                                        FALSE, TRUE, NULL, FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL, NULL,
-                                       1, 1);
+                                       1, 1, NULL);
     if(!res)
     {
       // might be smaller, or have a different aspect than what we got as input.

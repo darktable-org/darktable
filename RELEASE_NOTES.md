@@ -94,6 +94,18 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
   When pressing the shortcut 'pan&zoom while editing masks' the draw area
   can now be zoomed. Double-click on the bottom bar resets the zoom.
 
+- New module Filmic RBG. This module is designed to replace the base
+  curve, shadows and highlights. The new filmic rgb module replaces
+  the old one introduced in 2.6.2 and should be easier to use and will
+  reduce color casts. The old filmic module is now deprecated and
+  cannot be used on new developments.
+
+- New module tone equalizer which brings an easy and safe way to
+  adjust the tones in different areas of the image. The module comes
+  with 9 controls ranging from blacks area to specular ones. It
+  possible to adjust each area with slides, curve or directly over the
+  image with a controllable picker.
+
 ## New Features And Changes
 
 - A new module for handling 3D Lut transformations (PNG Hald-CLUT and
@@ -152,7 +164,7 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 
 - Add color pickers in the split toning module.
 
-- Add color pickers in the graduateddnd module.
+- Add color pickers in the graduatednd module.
 
 - Add color picker to the watermark module.
 

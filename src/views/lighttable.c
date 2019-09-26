@@ -1016,7 +1016,7 @@ void cleanup(dt_view_t *self)
   dt_conf_set_float("lighttable/ui/zoom_y", lib->zoom_y);
   if(lib->audio_player_id != -1) _stop_audio(lib);
   g_hash_table_destroy(lib->thumbs_table);
-  free(lib->full_res_thumb);
+  dt_free_align(lib->full_res_thumb);
   free(lib->slots);
   free(self->data);
 }
@@ -2050,7 +2050,7 @@ static gboolean _culling_recreate_slots(dt_view_t *self)
   dt_library_t *lib = (dt_library_t *)self->data;
 
   int display_first_image = -1;
-  // special if we start dt in culling + fxed + selection
+  // special if we start dt in culling + fixed + selection
   if(!lib->already_started && lib->culling_use_selection
      && dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_FIXED)
   {
@@ -2636,7 +2636,7 @@ static int expose_full_preview(dt_view_t *self, cairo_t *cr, int32_t width, int3
       gboolean from_cache = TRUE;
       char filename[PATH_MAX] = { 0 };
       dt_image_full_path(lib->full_preview_id, filename, sizeof(filename), &from_cache);
-      free(lib->full_res_thumb);
+      dt_free_align(lib->full_res_thumb);
       lib->full_res_thumb = NULL;
       dt_colorspaces_color_profile_type_t color_space;
       if(!dt_imageio_large_thumbnail(filename, &lib->full_res_thumb,

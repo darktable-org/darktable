@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-09-17 22:33+0200\n"
-"PO-Revision-Date: 2019-09-17 22:33+0200\n"
+"POT-Creation-Date: 2019-09-18 21:55+0200\n"
+"PO-Revision-Date: 2019-09-18 23:14+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1274,8 +1274,8 @@ msgstr "graphisme;photographie;raw;"
 #: ../src/iop/lut3d.c:1012 ../src/libs/collect.c:242
 #: ../src/libs/copy_history.c:78 ../src/libs/geotagging.c:473
 #: ../src/libs/import.c:759 ../src/libs/import.c:866 ../src/libs/lib.c:228
-#: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2111
-#: ../src/libs/tagging.c:2152
+#: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2120
+#: ../src/libs/tagging.c:2161
 msgid "_cancel"
 msgstr "_annuler"
 
@@ -3023,12 +3023,12 @@ msgstr "descendre"
 
 #. delete
 #: ../src/develop/imageop.c:1041 ../src/libs/image.c:144
-#: ../src/libs/styles.c:458 ../src/libs/tagging.c:1166
-#: ../src/libs/tagging.c:1263
+#: ../src/libs/styles.c:458 ../src/libs/tagging.c:1164
+#: ../src/libs/tagging.c:1261
 msgid "delete"
 msgstr "supprimer"
 
-#: ../src/develop/imageop.c:1048 ../src/libs/tagging.c:1736
+#: ../src/develop/imageop.c:1048 ../src/libs/tagging.c:1735
 msgid "rename"
 msgstr "renommer"
 
@@ -3629,9 +3629,9 @@ msgid "reset value to default"
 msgstr "réinitialiser à la valeur par défaut"
 
 #: ../src/gui/camera_import_dialog.c:288 ../src/libs/geotagging.c:419
-#: ../src/libs/tagging.c:1166 ../src/libs/tagging.c:1263
-#: ../src/libs/tagging.c:1351 ../src/libs/tagging.c:1516
-#: ../src/libs/tagging.c:1736
+#: ../src/libs/tagging.c:1164 ../src/libs/tagging.c:1261
+#: ../src/libs/tagging.c:1349 ../src/libs/tagging.c:1515
+#: ../src/libs/tagging.c:1735
 msgid "cancel"
 msgstr "annuler"
 
@@ -4024,7 +4024,7 @@ msgid "golden spiral"
 msgstr "spirale d'or"
 
 #: ../src/gui/guides.c:444 ../src/imageio/format/pdf.c:681
-#: ../src/iop/denoiseprofile.c:3296 ../src/iop/lens.cc:2326
+#: ../src/iop/denoiseprofile.c:3850 ../src/iop/lens.cc:2326
 #: ../src/iop/rawdenoise.c:985 ../src/libs/tools/filter.c:125
 msgid "all"
 msgstr "tout"
@@ -5676,12 +5676,12 @@ msgstr "défloutage: moyen, force 1"
 msgid "deblur: fine blur, strength 1"
 msgstr "défloutage: fine, force 1"
 
-#: ../src/iop/atrous.c:1597 ../src/iop/denoiseprofile.c:3059
+#: ../src/iop/atrous.c:1597 ../src/iop/denoiseprofile.c:3596
 #: ../src/iop/rawdenoise.c:813
 msgid "coarse"
 msgstr "global"
 
-#: ../src/iop/atrous.c:1604 ../src/iop/denoiseprofile.c:3067
+#: ../src/iop/atrous.c:1604 ../src/iop/denoiseprofile.c:3604
 #: ../src/iop/rawdenoise.c:821
 msgid "fine"
 msgstr "détail"
@@ -5691,12 +5691,12 @@ msgid "contrasty"
 msgstr "contrasté"
 
 #: ../src/iop/atrous.c:1617 ../src/iop/atrous.c:1621
-#: ../src/iop/colorzones.c:2334 ../src/iop/denoiseprofile.c:3076
+#: ../src/iop/colorzones.c:2334 ../src/iop/denoiseprofile.c:3613
 #: ../src/iop/rawdenoise.c:830
 msgid "smooth"
 msgstr "flou"
 
-#: ../src/iop/atrous.c:1622 ../src/iop/denoiseprofile.c:3081
+#: ../src/iop/atrous.c:1622 ../src/iop/denoiseprofile.c:3618
 #: ../src/iop/rawdenoise.c:835
 msgid "noisy"
 msgstr "bruité"
@@ -6064,7 +6064,7 @@ msgid "local laplacian: inconsistent output"
 msgstr "laplacien local: résultat incohérent"
 
 #: ../src/iop/bilat.c:525 ../src/iop/colorbalance.c:2365
-#: ../src/iop/denoiseprofile.c:3374 ../src/iop/exposure.c:864
+#: ../src/iop/denoiseprofile.c:3939 ../src/iop/exposure.c:864
 #: ../src/iop/lens.cc:2469 ../src/iop/levels.c:672
 #: ../src/iop/profile_gamma.c:857 ../src/iop/rgbcurve.c:1478
 #: ../src/iop/rgblevels.c:1010 ../src/libs/copy_history.c:353
@@ -6230,7 +6230,7 @@ msgstr "seuil"
 msgid "the threshold of light"
 msgstr "seuil de lumière"
 
-#: ../src/iop/bloom.c:542 ../src/iop/denoiseprofile.c:3381
+#: ../src/iop/bloom.c:542 ../src/iop/denoiseprofile.c:3946
 #: ../src/iop/grain.c:636 ../src/iop/hazeremoval.c:233
 #: ../src/iop/hotpixels.c:476 ../src/iop/nlmeans.c:845 ../src/iop/velvia.c:389
 msgid "strength"
@@ -7343,21 +7343,21 @@ msgstr "rendu (sortie)"
 #: ../src/iop/colorout.c:869 ../src/libs/export.c:654
 #: ../src/libs/print_settings.c:1239 ../src/libs/print_settings.c:1454
 #: ../src/views/darkroom.c:1971 ../src/views/darkroom.c:1979
-#: ../src/views/lighttable.c:4835 ../src/views/lighttable.c:4843
+#: ../src/views/lighttable.c:4866 ../src/views/lighttable.c:4874
 msgid "perceptual"
 msgstr "perceptif"
 
 #: ../src/iop/colorout.c:870 ../src/libs/export.c:655
 #: ../src/libs/print_settings.c:1240 ../src/libs/print_settings.c:1455
 #: ../src/views/darkroom.c:1972 ../src/views/darkroom.c:1980
-#: ../src/views/lighttable.c:4836 ../src/views/lighttable.c:4844
+#: ../src/views/lighttable.c:4867 ../src/views/lighttable.c:4875
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
 #: ../src/iop/colorout.c:871 ../src/libs/export.c:656
 #: ../src/libs/print_settings.c:1241 ../src/libs/print_settings.c:1456
 #: ../src/views/darkroom.c:1973 ../src/views/darkroom.c:1981
-#: ../src/views/lighttable.c:4837 ../src/views/lighttable.c:4845
+#: ../src/views/lighttable.c:4868 ../src/views/lighttable.c:4876
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturation"
@@ -7365,7 +7365,7 @@ msgstr "saturation"
 #: ../src/iop/colorout.c:872 ../src/libs/export.c:657
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1457
 #: ../src/views/darkroom.c:1974 ../src/views/darkroom.c:1982
-#: ../src/views/lighttable.c:4838 ../src/views/lighttable.c:4846
+#: ../src/views/lighttable.c:4869 ../src/views/lighttable.c:4877
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
 
@@ -7786,34 +7786,34 @@ msgstr ""
 "dématriçage\n"
 "uniquement pour les images raw"
 
-#: ../src/iop/denoiseprofile.c:352
+#: ../src/iop/denoiseprofile.c:432
 msgid "denoise (profiled)"
 msgstr "réduction bruit (profil)"
 
 #. these blobs were exported as dtstyle and copied from there:
-#: ../src/iop/denoiseprofile.c:407
+#: ../src/iop/denoiseprofile.c:487
 msgid "chroma (use on 1st instance)"
 msgstr "chroma (utiliser sur 1ère instance)"
 
-#: ../src/iop/denoiseprofile.c:410
+#: ../src/iop/denoiseprofile.c:490
 msgid "luma (use on 2nd instance)"
 msgstr "luma (utiliser sur la 2nd instance)"
 
-#: ../src/iop/denoiseprofile.c:2511
+#: ../src/iop/denoiseprofile.c:2893
 #, c-format
 msgid "found match for ISO %d"
 msgstr "profil pour ISO %d trouvé"
 
-#: ../src/iop/denoiseprofile.c:2520
+#: ../src/iop/denoiseprofile.c:2902
 #, c-format
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolé depuis ISO %d et %d"
 
-#: ../src/iop/denoiseprofile.c:2822 ../src/iop/denoiseprofile.c:3387
+#: ../src/iop/denoiseprofile.c:3333 ../src/iop/denoiseprofile.c:3957
 msgid "compute variance"
 msgstr "calcul la variance"
 
-#: ../src/iop/denoiseprofile.c:3261
+#: ../src/iop/denoiseprofile.c:3815
 msgid ""
 "use only with a perfectly\n"
 "uniform image if you want to\n"
@@ -7823,50 +7823,50 @@ msgstr ""
 "complètement uniforme pour estimer\n"
 "la variance du bruit."
 
-#: ../src/iop/denoiseprofile.c:3268
+#: ../src/iop/denoiseprofile.c:3822
 msgid "variance red: "
 msgstr "variance rouge: "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3271
+#: ../src/iop/denoiseprofile.c:3825
 msgid "variance computed on the red channel"
 msgstr "la variance calculée sur le canal rouge"
 
-#: ../src/iop/denoiseprofile.c:3276
+#: ../src/iop/denoiseprofile.c:3830
 msgid "variance green: "
 msgstr "variance vert: "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3279
+#: ../src/iop/denoiseprofile.c:3833
 msgid "variance computed on the green channel"
 msgstr "la variance calculée sur le canal vert"
 
-#: ../src/iop/denoiseprofile.c:3284
+#: ../src/iop/denoiseprofile.c:3838
 msgid "variance blue: "
 msgstr "variance bleu: "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3287
+#: ../src/iop/denoiseprofile.c:3841
 msgid "variance computed on the blue channel"
 msgstr "la variance calculée sur le canal bleu"
 
-#: ../src/iop/denoiseprofile.c:3298 ../src/iop/rawdenoise.c:987
+#: ../src/iop/denoiseprofile.c:3852 ../src/iop/rawdenoise.c:987
 msgid "R"
 msgstr "R"
 
-#: ../src/iop/denoiseprofile.c:3300 ../src/iop/rawdenoise.c:989
+#: ../src/iop/denoiseprofile.c:3854 ../src/iop/rawdenoise.c:989
 msgid "G"
 msgstr "G"
 
-#: ../src/iop/denoiseprofile.c:3302 ../src/iop/rawdenoise.c:991
+#: ../src/iop/denoiseprofile.c:3856 ../src/iop/rawdenoise.c:991
 msgid "B"
 msgstr "B"
 
-#: ../src/iop/denoiseprofile.c:3336
+#: ../src/iop/denoiseprofile.c:3890
 msgid "whitebalance-adaptive transform"
 msgstr "balance des blancs - adaptative"
 
-#: ../src/iop/denoiseprofile.c:3338
+#: ../src/iop/denoiseprofile.c:3892
 msgid ""
 "adapt denoising according to the\n"
 "white balance coefficients.\n"
@@ -7882,11 +7882,11 @@ msgstr ""
 "devrait être désactivé si une instance précédente\n"
 "a été utilisée avec le mode de fusion sur la couleur."
 
-#: ../src/iop/denoiseprofile.c:3355
-msgid "migrate to fixed algorithm"
-msgstr "migrer vers algorithme corrigé"
+#: ../src/iop/denoiseprofile.c:3912
+msgid "fix various bugs in algorithm"
+msgstr "correction de bugs dans l'algorithme"
 
-#: ../src/iop/denoiseprofile.c:3357
+#: ../src/iop/denoiseprofile.c:3914
 msgid ""
 "fix bugs in anscombe transform resulting\n"
 "in undersmoothing of the green channel in\n"
@@ -7907,40 +7907,76 @@ msgstr ""
 "en activant cette option le traitement est changé, une fois activé\n"
 "il ne sera plus possible de revenir aux anciens algorithmes."
 
-#: ../src/iop/denoiseprofile.c:3373 ../src/libs/export.c:630
+#: ../src/iop/denoiseprofile.c:3925
+msgid "upgrade profiled transform"
+msgstr "mise à niveau du modèle"
+
+#: ../src/iop/denoiseprofile.c:3927
+msgid ""
+"upgrade the variance stabilizing algorithm.\n"
+"new algorithm extends the current one.\n"
+"it is more flexible but could give small\n"
+"differences in the images already processed."
+msgstr ""
+"mise à niveau de l'algorithme de stabilisation de la variance.\n"
+"le nouvel algorithme étend l'actuel.\n"
+"il est plus flexible mais peu donner de petites différences\n"
+"sur les images déjà développées."
+
+#: ../src/iop/denoiseprofile.c:3938 ../src/libs/export.c:630
 #: ../src/libs/print_settings.c:1183 ../src/libs/print_settings.c:1403
 msgid "profile"
 msgstr "profil"
 
-#: ../src/iop/denoiseprofile.c:3375 ../src/iop/nlmeans.c:843
+#: ../src/iop/denoiseprofile.c:3940 ../src/iop/nlmeans.c:843
 msgid "patch size"
 msgstr "taille"
 
-#: ../src/iop/denoiseprofile.c:3377
+#: ../src/iop/denoiseprofile.c:3942
 msgid "search radius"
 msgstr "rayon"
 
-#: ../src/iop/denoiseprofile.c:3379
+#: ../src/iop/denoiseprofile.c:3944
 msgid "scattering (coarse-grain noise)"
 msgstr "diffusion (bruit à grain grossier)"
 
-#: ../src/iop/denoiseprofile.c:3380
+#: ../src/iop/denoiseprofile.c:3945
 msgid "central pixel weight (details)"
 msgstr "poids du point central (détails)"
 
-#: ../src/iop/denoiseprofile.c:3382
+#: ../src/iop/denoiseprofile.c:3947
+msgid "adjust autoset parameters"
+msgstr "ajuster paramètres auto"
+
+#: ../src/iop/denoiseprofile.c:3948
+msgid "preserve shadows"
+msgstr "préserver les ombres"
+
+#: ../src/iop/denoiseprofile.c:3949
+msgid "bias correction"
+msgstr "correction du biais"
+
+#: ../src/iop/denoiseprofile.c:3950
 msgid "non-local means"
 msgstr "moyennes non-locales"
 
-#: ../src/iop/denoiseprofile.c:3383
+#: ../src/iop/denoiseprofile.c:3951
+msgid "non-local means auto"
+msgstr "moyennes non-locales auto"
+
+#: ../src/iop/denoiseprofile.c:3952
 msgid "wavelets"
 msgstr "ondelettes"
 
-#: ../src/iop/denoiseprofile.c:3389
+#: ../src/iop/denoiseprofile.c:3953
+msgid "wavelets auto"
+msgstr "ondelettes auto"
+
+#: ../src/iop/denoiseprofile.c:3959
 msgid "profile used for variance stabilization"
 msgstr "profil utilisé pour la stabilisation de variance"
 
-#: ../src/iop/denoiseprofile.c:3390
+#: ../src/iop/denoiseprofile.c:3960
 msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
@@ -7949,7 +7985,7 @@ msgstr ""
 "fonctionne mieux pour le mode de fusion 'luminosité'. 'ondelettes' "
 "fonctionnent pour le mode de fusion 'couleur'"
 
-#: ../src/iop/denoiseprofile.c:3393
+#: ../src/iop/denoiseprofile.c:3963
 msgid ""
 "radius of the patches to match.\n"
 "increase for more sharpness on strong edges, and better denoising of smooth "
@@ -7963,7 +7999,7 @@ msgstr ""
 "si les détails sont trop lissés, réduire cette valeur ou augmenter le "
 "contrôle des détails."
 
-#: ../src/iop/denoiseprofile.c:3396
+#: ../src/iop/denoiseprofile.c:3966
 msgid ""
 "emergency use only: radius of the neighbourhood to search patches in. "
 "increase for better denoising performance, but watch the long runtimes! "
@@ -7973,7 +8009,7 @@ msgstr ""
 "meilleure suppression du bruit au détriment de la performance qui peut très "
 "vite devenir très pénalisante."
 
-#: ../src/iop/denoiseprofile.c:3398
+#: ../src/iop/denoiseprofile.c:3968
 msgid ""
 "scattering of the neighbourhood to search patches in. increase for better "
 "coarse-grain noise reduction. does not affect execution time."
@@ -7981,7 +8017,7 @@ msgstr ""
 "diffusion du voisinage pour la recherche de similarité, augmenter pour "
 "traiter un grain grossier. n'affecte pas le temps d'exécution."
 
-#: ../src/iop/denoiseprofile.c:3400
+#: ../src/iop/denoiseprofile.c:3970
 msgid ""
 "increase the weight of the central pixel\n"
 "of the patch in the patch comparison.\n"
@@ -7992,9 +8028,41 @@ msgstr ""
 "du patch lors de la comparaison des patchs.\n"
 "utile pour retrouver des détails lorsque la taille des patchs est importante."
 
-#: ../src/iop/denoiseprofile.c:3404
+#: ../src/iop/denoiseprofile.c:3974
 msgid "finetune denoising strength"
 msgstr "réglage fin de la force de réduction"
+
+#: ../src/iop/denoiseprofile.c:3975
+msgid ""
+"controls the way parameters are autoset\n"
+"increase if shadows are not denoised enough\n"
+"or if chroma noise remains.\n"
+"this can happen if your picture is underexposed."
+msgstr ""
+"contrôle la façon dont les paramètres positionnés\n"
+"augmenter si la réduction du bruit des ombres n'est pas assez forte\n"
+"ou si le bruit de chrominance persiste.\n"
+"cela peut arriver si l'images est sous-exposée. "
+
+#: ../src/iop/denoiseprofile.c:3979
+msgid ""
+"finetune shadows denoising.\n"
+"decrease to denoise more aggressively\n"
+"dark areas of the image.\n"
+msgstr ""
+"contrôle finement la réduction du bruit des ombres.\n"
+"diminuer pour réduire le bruit plus agressivement\n"
+"les zones sombres de l'image.\n"
+
+#: ../src/iop/denoiseprofile.c:3982
+msgid ""
+"correct color cast in shadows.\n"
+"decrease if shadows are too purple.\n"
+"increase if shadows are too green."
+msgstr ""
+"correction des dérives de couleur dans les ombres.\n"
+"diminuer si les ombres sont trop violettes.\n"
+"augmenter si les ombres sont trop vertes."
 
 #: ../src/iop/dither.c:103 ../src/iop/vignette.c:1164
 msgid "dithering"
@@ -13057,27 +13125,27 @@ msgctxt "accel"
 msgid "tag"
 msgstr "mot-clé"
 
-#: ../src/libs/tagging.c:1042
+#: ../src/libs/tagging.c:1040
 msgid "attach tag to all"
 msgstr ""
 "attache le mot-clé\n"
 "à toutes les images sélectionnées"
 
-#: ../src/libs/tagging.c:1050
+#: ../src/libs/tagging.c:1048 ../src/libs/tagging.c:1913
 msgid "detach tag"
 msgstr "détacher le mot-clé"
 
-#: ../src/libs/tagging.c:1165
+#: ../src/libs/tagging.c:1163
 msgid "delete tag?"
 msgstr "supprimer le mot-clé ?"
 
-#: ../src/libs/tagging.c:1172 ../src/libs/tagging.c:1269
-#: ../src/libs/tagging.c:1522
+#: ../src/libs/tagging.c:1170 ../src/libs/tagging.c:1267
+#: ../src/libs/tagging.c:1521
 #, c-format
 msgid "tag: %s "
 msgstr "mot-clé sélectionné : « %s »"
 
-#: ../src/libs/tagging.c:1179
+#: ../src/libs/tagging.c:1177
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -13093,91 +13161,91 @@ msgstr[1] ""
 "ce mot-clé est assigné à %d images"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/libs/tagging.c:1215
+#: ../src/libs/tagging.c:1213
 #, c-format
 msgid "tag %s removed"
 msgstr "mot-clé %s supprimé"
 
-#: ../src/libs/tagging.c:1262 ../src/libs/tagging.c:1916
+#: ../src/libs/tagging.c:1260 ../src/libs/tagging.c:1925
 msgid "delete branch"
 msgstr "supprimer la branche"
 
-#: ../src/libs/tagging.c:1276
+#: ../src/libs/tagging.c:1274
 #, c-format
 msgid "<u>%d</u> tag will be deleted."
 msgid_plural "<u>%d</u> tags will be deleted."
 msgstr[0] "<u>%d</u> mot-clé sera supprimé."
 msgstr[1] "<u>%d</u> mot-clé seront supprimés."
 
-#: ../src/libs/tagging.c:1281 ../src/libs/tagging.c:1534
-#: ../src/libs/tagging.c:1754
+#: ../src/libs/tagging.c:1279 ../src/libs/tagging.c:1533
+#: ../src/libs/tagging.c:1753
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated "
 msgstr[0] "<u>%d</u> image sera mise à jour."
 msgstr[1] "<u>%d</u> images seront mises à jour."
 
-#: ../src/libs/tagging.c:1307
+#: ../src/libs/tagging.c:1305
 #, c-format
 msgid "%d tags removed"
 msgstr "%d mots-clés supprimés"
 
-#: ../src/libs/tagging.c:1350
+#: ../src/libs/tagging.c:1348
 msgid "create tag"
 msgstr "créer un mot-clé"
 
-#: ../src/libs/tagging.c:1351 ../src/libs/tagging.c:1516
+#: ../src/libs/tagging.c:1349 ../src/libs/tagging.c:1515
 msgid "save"
 msgstr "enregistrer"
 
-#: ../src/libs/tagging.c:1360 ../src/libs/tagging.c:1542
+#: ../src/libs/tagging.c:1358 ../src/libs/tagging.c:1541
 msgid "name: "
 msgstr "nom"
 
-#: ../src/libs/tagging.c:1373
+#: ../src/libs/tagging.c:1371
 #, c-format
 msgid "add to: \"%s\" "
 msgstr "ajouter à : \"%s\" "
 
-#: ../src/libs/tagging.c:1379 ../src/libs/tagging.c:1557
+#: ../src/libs/tagging.c:1377 ../src/libs/tagging.c:1556
 msgid "category"
 msgstr "sans catégorie"
 
-#: ../src/libs/tagging.c:1382 ../src/libs/tagging.c:1560
+#: ../src/libs/tagging.c:1380 ../src/libs/tagging.c:1559
 msgid "private"
 msgstr "privé"
 
-#: ../src/libs/tagging.c:1388 ../src/libs/tagging.c:1566
+#: ../src/libs/tagging.c:1386 ../src/libs/tagging.c:1565
 msgid "synonyms: "
 msgstr "synonymes :"
 
-#: ../src/libs/tagging.c:1405 ../src/libs/tagging.c:1587
-#: ../src/libs/tagging.c:1776
+#: ../src/libs/tagging.c:1403 ../src/libs/tagging.c:1586
+#: ../src/libs/tagging.c:1775
 msgid "empty tag is not allowed, aborting"
 msgstr "mot-clé vide interdit, annulation"
 
-#: ../src/libs/tagging.c:1407
+#: ../src/libs/tagging.c:1405
 msgid "'|' character is not allowed to create a tag. aborting."
 msgstr ""
 "'|' est interdit dans le nom d'un mot-clé\n"
 "pour modifier une hiérarchie utiliser l'action renommer un chemin, annulation"
 
-#: ../src/libs/tagging.c:1421
+#: ../src/libs/tagging.c:1420
 msgid "tag name already exists. aborting."
 msgstr "au moins un nouveau mot-clé (%s) existe déjà, annulation"
 
-#: ../src/libs/tagging.c:1515
+#: ../src/libs/tagging.c:1514
 msgid "edit tag"
 msgstr "éditer le mot-clé"
 
-#: ../src/libs/tagging.c:1529 ../src/libs/tagging.c:1749
+#: ../src/libs/tagging.c:1528 ../src/libs/tagging.c:1748
 #, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
 msgstr[0] "<u>%d</u> mot-clé sera mis à jour"
 msgstr[1] "<u>%d</u> mot-clé seront mis à jour"
 
-#: ../src/libs/tagging.c:1589
+#: ../src/libs/tagging.c:1588
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierachy use rename path instead. Aborting."
@@ -13185,105 +13253,105 @@ msgstr ""
 "'|' est interdit dans le nom d'un mot-clé\n"
 "pour modifier une hiérarchie utiliser l'action renommer un chemin, annulation"
 
-#: ../src/libs/tagging.c:1627
+#: ../src/libs/tagging.c:1626
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
 msgstr "au moins un nouveau mot-clé (%s) existe déjà, annulation"
 
-#: ../src/libs/tagging.c:1735
+#: ../src/libs/tagging.c:1734
 msgid "rename path?"
 msgstr "renommer un chemin?"
 
-#: ../src/libs/tagging.c:1742
+#: ../src/libs/tagging.c:1741
 #, c-format
 msgid "selected path: %s "
 msgstr "chemin sélectionné : « %s »"
 
-#: ../src/libs/tagging.c:1778
+#: ../src/libs/tagging.c:1777
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr "'|' mal placé, un mot-clé vide est interdit, annulation"
 
-#: ../src/libs/tagging.c:1804
+#: ../src/libs/tagging.c:1803
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
 msgstr "au moins un nouveau mot-clé (%s) existe déjà, annulation"
 
-#: ../src/libs/tagging.c:1904
+#: ../src/libs/tagging.c:1909
 msgid "attach tag"
 msgstr "attacher le mot-clé"
 
-#: ../src/libs/tagging.c:1912
+#: ../src/libs/tagging.c:1921
 msgid "delete tag"
 msgstr "supprimer un mot-clé"
 
-#: ../src/libs/tagging.c:1922
+#: ../src/libs/tagging.c:1931
 msgid "create tag..."
 msgstr "créer un mot-clé..."
 
-#: ../src/libs/tagging.c:1926
+#: ../src/libs/tagging.c:1935
 msgid "edit tag..."
 msgstr "éditer le mot-clé..."
 
-#: ../src/libs/tagging.c:1935
+#: ../src/libs/tagging.c:1944
 msgid "rename path..."
 msgstr "renommer un chemin..."
 
-#: ../src/libs/tagging.c:1942
+#: ../src/libs/tagging.c:1951
 msgid "copy to entry"
 msgstr "copier l'entrée"
 
-#: ../src/libs/tagging.c:1966
+#: ../src/libs/tagging.c:1975
 msgid "go to tag collection"
 msgstr "aller à la collection liée au mot-clé"
 
-#: ../src/libs/tagging.c:1972
+#: ../src/libs/tagging.c:1981
 msgid "go back to work"
 msgstr "retourner au module de mots-clés"
 
-#: ../src/libs/tagging.c:2082
+#: ../src/libs/tagging.c:2091
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: ../src/libs/tagging.c:2083
+#: ../src/libs/tagging.c:2092
 msgid "(private)"
 msgstr "privé"
 
-#: ../src/libs/tagging.c:2109
+#: ../src/libs/tagging.c:2118
 msgid "Select a keyword file"
 msgstr "sélectionner un fichier de mot-clé"
 
-#: ../src/libs/tagging.c:2112
+#: ../src/libs/tagging.c:2121
 msgid "_import"
 msgstr "_importer"
 
-#: ../src/libs/tagging.c:2126
+#: ../src/libs/tagging.c:2135
 msgid "error importing tags"
 msgstr "erreur lors de l'import de mot-clé"
 
-#: ../src/libs/tagging.c:2128
+#: ../src/libs/tagging.c:2137
 #, c-format
 msgid "%zd tags imported"
 msgstr "« %zd » mots-clés importés"
 
-#: ../src/libs/tagging.c:2150
+#: ../src/libs/tagging.c:2159
 msgid "Select file to export to"
 msgstr "sélectionne le fichier pour l'export"
 
-#: ../src/libs/tagging.c:2153
+#: ../src/libs/tagging.c:2162
 msgid "_export"
 msgstr "_exporter"
 
-#: ../src/libs/tagging.c:2168
+#: ../src/libs/tagging.c:2177
 msgid "error exporting tags"
 msgstr "erreur lors de l'export de mot-clé"
 
-#: ../src/libs/tagging.c:2170
+#: ../src/libs/tagging.c:2179
 #, c-format
 msgid "%zd tags exported"
 msgstr "« %zd » mots-clés exportés"
 
-#: ../src/libs/tagging.c:2528
+#: ../src/libs/tagging.c:2537
 msgid ""
 "attached tags,\n"
 "double-click to detach\n"
@@ -13295,47 +13363,47 @@ msgstr ""
 "clic-droit pour afficher le menu des actions du mot-clé sélectionné\n"
 "ctrl+molette souris pour redimensionner la fenêtre"
 
-#: ../src/libs/tagging.c:2539
+#: ../src/libs/tagging.c:2548
 msgid "attach"
 msgstr "attacher"
 
-#: ../src/libs/tagging.c:2542
+#: ../src/libs/tagging.c:2551
 msgid "attach tag to all selected images"
 msgstr ""
 "attache le mot-clé\n"
 "à toutes les images sélectionnées"
 
-#: ../src/libs/tagging.c:2547
+#: ../src/libs/tagging.c:2556
 msgid "detach"
 msgstr "détacher"
 
-#: ../src/libs/tagging.c:2550
+#: ../src/libs/tagging.c:2559
 msgid "detach tag from all selected images"
 msgstr ""
 "détache le mot-clé\n"
 "de toutes les images sélectionnées"
 
-#: ../src/libs/tagging.c:2557
+#: ../src/libs/tagging.c:2566
 msgid "toggle list with / without hierarchy"
 msgstr "active/désactive la liste hiérarchique"
 
-#: ../src/libs/tagging.c:2565
+#: ../src/libs/tagging.c:2574
 msgid "toggle sort by name or by count"
 msgstr "activer le classement par nom ou par nombre"
 
-#: ../src/libs/tagging.c:2575
+#: ../src/libs/tagging.c:2584
 msgid "toggle show or not darktable tags"
 msgstr "activer/désactiver l'affichage des mots-clés spécifiques à darktable"
 
-#: ../src/libs/tagging.c:2591
+#: ../src/libs/tagging.c:2600
 msgid "enter tag name"
 msgstr "entrez un mot-clé"
 
-#: ../src/libs/tagging.c:2601
+#: ../src/libs/tagging.c:2610
 msgid "clear entry"
 msgstr "effacer texte"
 
-#: ../src/libs/tagging.c:2653
+#: ../src/libs/tagging.c:2662
 msgid ""
 "tag dictionary,\n"
 "double-click to attach,\n"
@@ -13347,11 +13415,11 @@ msgstr ""
 "clic-droit pour afficher le menu des actions du mot-clé sélectionné\n"
 "ctrl+molette souris pour redimensionner la fenêtre"
 
-#: ../src/libs/tagging.c:2668
+#: ../src/libs/tagging.c:2677
 msgid "new"
 msgstr "nouveau"
 
-#: ../src/libs/tagging.c:2671
+#: ../src/libs/tagging.c:2680
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -13359,33 +13427,33 @@ msgstr ""
 "crée un nouveau mot-clé à\n"
 "partir de la saisie"
 
-#: ../src/libs/tagging.c:2676
+#: ../src/libs/tagging.c:2685
 msgctxt "verb"
 msgid "import"
 msgstr "importer"
 
-#: ../src/libs/tagging.c:2679
+#: ../src/libs/tagging.c:2688
 msgid "import tags from a Lightroom keyword file"
 msgstr "importer des mots-clés depuis un fichier Lightroom"
 
-#: ../src/libs/tagging.c:2684
+#: ../src/libs/tagging.c:2693
 msgctxt "verb"
 msgid "export"
 msgstr "exporter"
 
-#: ../src/libs/tagging.c:2687
+#: ../src/libs/tagging.c:2696
 msgid "export all tags to a Lightroom keyword file"
 msgstr "exporte tous les tags dans un fichier de mot-clé Lightroom"
 
-#: ../src/libs/tagging.c:2694
+#: ../src/libs/tagging.c:2703
 msgid "toggle list / tree view"
 msgstr "passe de la vue liste / arbre"
 
-#: ../src/libs/tagging.c:2702
+#: ../src/libs/tagging.c:2711
 msgid "toggle list with / without suggestion"
 msgstr "active/désactive les suggestions"
 
-#: ../src/libs/tagging.c:2807
+#: ../src/libs/tagging.c:2816
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
@@ -13477,37 +13545,37 @@ msgstr "bandeau"
 
 #. setup rating key accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:4346
+#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:4376
 msgctxt "accel"
 msgid "rate 0"
 msgstr "0 étoile"
 
-#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:4347
+#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:4377
 msgctxt "accel"
 msgid "rate 1"
 msgstr "1 étoile"
 
-#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:4348
+#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:4378
 msgctxt "accel"
 msgid "rate 2"
 msgstr "2 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:4349
+#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:4379
 msgctxt "accel"
 msgid "rate 3"
 msgstr "3 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:4350
+#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:4380
 msgctxt "accel"
 msgid "rate 4"
 msgstr "4 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:4351
+#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:4381
 msgctxt "accel"
 msgid "rate 5"
 msgstr "5 étoiles"
 
-#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:4352
+#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:4382
 msgctxt "accel"
 msgid "rate reject"
 msgstr "rejeter"
@@ -13546,27 +13614,27 @@ msgstr "cloner l'image"
 #. setup color label accelerators
 #. Initializing accelerators
 #. Color labels keys
-#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:4338
+#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:4368
 msgctxt "accel"
 msgid "color red"
 msgstr "couleur rouge"
 
-#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:4339
+#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:4369
 msgctxt "accel"
 msgid "color yellow"
 msgstr "couleur jaune"
 
-#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:4340
+#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:4370
 msgctxt "accel"
 msgid "color green"
 msgstr "couleur verte"
 
-#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:4341
+#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:4371
 msgctxt "accel"
 msgid "color blue"
 msgstr "couleur bleue"
 
-#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:4342
+#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:4372
 msgctxt "accel"
 msgid "color purple"
 msgstr "couleur violette"
@@ -13924,19 +13992,19 @@ msgstr ""
 "activer/désactiver vérification de gamut\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:1969 ../src/views/lighttable.c:4833
+#: ../src/views/darkroom.c:1969 ../src/views/lighttable.c:4864
 msgid "display intent"
 msgstr "rendu (écran)"
 
-#: ../src/views/darkroom.c:1977 ../src/views/lighttable.c:4841
+#: ../src/views/darkroom.c:1977 ../src/views/lighttable.c:4872
 msgid "preview display intent"
 msgstr "rendu (écran secondaire)"
 
-#: ../src/views/darkroom.c:1997 ../src/views/lighttable.c:4849
+#: ../src/views/darkroom.c:1997 ../src/views/lighttable.c:4880
 msgid "display profile"
 msgstr "profil (écran)"
 
-#: ../src/views/darkroom.c:1998 ../src/views/lighttable.c:4853
+#: ../src/views/darkroom.c:1998 ../src/views/lighttable.c:4884
 msgid "preview display profile"
 msgstr "profil (écran secondaire)"
 
@@ -13944,12 +14012,12 @@ msgstr "profil (écran secondaire)"
 msgid "histogram profile"
 msgstr "profil de l'histogramme"
 
-#: ../src/views/darkroom.c:2053 ../src/views/lighttable.c:4883
+#: ../src/views/darkroom.c:2053 ../src/views/lighttable.c:4914
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage dans %s ou %s"
 
-#: ../src/views/darkroom.c:2056 ../src/views/lighttable.c:4886
+#: ../src/views/darkroom.c:2056 ../src/views/lighttable.c:4917
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage secondaire dans « %s » ou « %s »"
@@ -14063,13 +14131,13 @@ msgid "full preview"
 msgstr "aperçu complet"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3199 ../src/views/lighttable.c:4377
+#: ../src/views/darkroom.c:3199 ../src/views/lighttable.c:4408
 #: ../src/views/map.c:889
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/darkroom.c:3200 ../src/views/lighttable.c:4378
+#: ../src/views/darkroom.c:3200 ../src/views/lighttable.c:4409
 #: ../src/views/map.c:890
 msgctxt "accel"
 msgid "redo"
@@ -14091,7 +14159,7 @@ msgstr "rechercher module"
 msgid "switch to lighttable"
 msgstr "passer à la table lumineuse"
 
-#: ../src/views/darkroom.c:3310 ../src/views/lighttable.c:4524
+#: ../src/views/darkroom.c:3310 ../src/views/lighttable.c:4555
 msgid "zoom in the image"
 msgstr "zoom dans l'image"
 
@@ -14120,204 +14188,204 @@ msgstr "darktable - pré-visualisation chambre noire"
 msgid "good knight"
 msgstr "bon chevalier"
 
-#: ../src/views/lighttable.c:1075 ../src/views/slideshow.c:352
+#: ../src/views/lighttable.c:1105 ../src/views/slideshow.c:352
 msgid "there are no images in this collection"
 msgstr "il n'y a pas d'images dans cette collection"
 
-#: ../src/views/lighttable.c:1079
+#: ../src/views/lighttable.c:1109
 msgid "if you have not imported any images yet"
 msgstr "si vous n'avez pas encore importé d'images"
 
-#: ../src/views/lighttable.c:1083
+#: ../src/views/lighttable.c:1113
 msgid "you can do so in the import module"
 msgstr "vous pouvez le faire dans le module « importer »"
 
-#: ../src/views/lighttable.c:1091
+#: ../src/views/lighttable.c:1121
 msgid "try to relax the filter settings in the top panel"
 msgstr "vous pouvez modifier le filtre de notation dans le panneau supérieur"
 
-#: ../src/views/lighttable.c:1100
+#: ../src/views/lighttable.c:1130
 msgid "or add images in the collection module in the left panel"
 msgstr ""
 "ou modifier les filtres de collection dans le menu de collection à gauche."
 
-#: ../src/views/lighttable.c:3213
+#: ../src/views/lighttable.c:3243
 #, c-format
 msgid "you have reached the start of your selection (%d image)"
 msgid_plural "you have reached the start of your selection (%d images)"
 msgstr[0] "début de la sélection atteinte (%d image)"
 msgstr[1] "début de la sélection atteinte (%d images)"
 
-#: ../src/views/lighttable.c:3218
+#: ../src/views/lighttable.c:3248
 msgid "you have reached the start of your collection"
 msgstr "début de la collection atteinte"
 
-#: ../src/views/lighttable.c:3242
+#: ../src/views/lighttable.c:3272
 #, c-format
 msgid "you have reached the end of your selection (%d image)"
 msgid_plural "you have reached the end of your selection (%d images)"
 msgstr[0] "fin de la sélection atteinte (%d image)"
 msgstr[1] "fin de la sélection atteinte (%d images)"
 
-#: ../src/views/lighttable.c:3247
+#: ../src/views/lighttable.c:3277
 msgid "you have reached the end of your collection"
 msgstr " fin de la collection atteinte"
 
-#: ../src/views/lighttable.c:3567
+#: ../src/views/lighttable.c:3597
 #, c-format
 msgid "zooming is limited to %d images"
 msgstr "le zoom est limité à %d images."
 
-#: ../src/views/lighttable.c:4343
+#: ../src/views/lighttable.c:4373
 msgctxt "accel"
 msgid "clear color labels"
 msgstr "aucun label couleur"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:4355
+#: ../src/views/lighttable.c:4385
 msgctxt "accel"
 msgid "navigate up"
 msgstr "aller en haut"
 
-#: ../src/views/lighttable.c:4356
+#: ../src/views/lighttable.c:4386
 msgctxt "accel"
 msgid "navigate down"
 msgstr "aller en bas"
 
-#: ../src/views/lighttable.c:4357
+#: ../src/views/lighttable.c:4387
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "défiler par page vers le haut"
 
-#: ../src/views/lighttable.c:4358
+#: ../src/views/lighttable.c:4388
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "défiler par page vers le bas"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:4361
+#: ../src/views/lighttable.c:4391
 msgctxt "accel"
 msgid "scroll up"
 msgstr "défiler en arrière"
 
-#: ../src/views/lighttable.c:4362
+#: ../src/views/lighttable.c:4392
 msgctxt "accel"
 msgid "scroll down"
 msgstr "défiler en avant"
 
-#: ../src/views/lighttable.c:4363
+#: ../src/views/lighttable.c:4393
 msgctxt "accel"
 msgid "scroll left"
 msgstr "défiler vers la gauche"
 
-#: ../src/views/lighttable.c:4364
+#: ../src/views/lighttable.c:4394
 msgctxt "accel"
 msgid "scroll right"
 msgstr "défiler vers la droite"
 
-#: ../src/views/lighttable.c:4365
+#: ../src/views/lighttable.c:4395
 msgctxt "accel"
 msgid "scroll center"
 msgstr "défiler vers le centre"
 
-#: ../src/views/lighttable.c:4366
+#: ../src/views/lighttable.c:4396
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "aligner les images sur la grille"
 
-#: ../src/views/lighttable.c:4367
+#: ../src/views/lighttable.c:4397
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "inverse sélection de l'image"
 
-#: ../src/views/lighttable.c:4368
+#: ../src/views/lighttable.c:4398
 msgctxt "accel"
 msgid "select single image"
 msgstr "sélectionne image unique"
 
 #. Preview key
-#: ../src/views/lighttable.c:4371
+#: ../src/views/lighttable.c:4401
 msgctxt "accel"
 msgid "preview"
 msgstr "aperçu"
 
-#: ../src/views/lighttable.c:4372
+#: ../src/views/lighttable.c:4402
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "aperçu avec détection de la mise au point"
 
-#: ../src/views/lighttable.c:4373
+#: ../src/views/lighttable.c:4403
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "aperçu persistant"
 
-#: ../src/views/lighttable.c:4374
+#: ../src/views/lighttable.c:4404
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "aperçu persistant avec détection de la mise au point"
 
 #. zoom for full preview
-#: ../src/views/lighttable.c:4381
+#: ../src/views/lighttable.c:4412
 msgctxt "accel"
 msgid "preview zoom 100%"
 msgstr "zoom image 100%"
 
-#: ../src/views/lighttable.c:4382
+#: ../src/views/lighttable.c:4413
 msgctxt "accel"
 msgid "preview zoom fit"
 msgstr "zoom image ajustée"
 
 #. timeline
-#: ../src/views/lighttable.c:4385
+#: ../src/views/lighttable.c:4416
 msgctxt "accel"
 msgid "toggle timeline"
 msgstr "activer/désactiver la chronologie"
 
-#: ../src/views/lighttable.c:4511
+#: ../src/views/lighttable.c:4542
 msgid "open image in darkroom"
 msgstr "ouvrir l'image dans la chambre noire"
 
-#: ../src/views/lighttable.c:4518
+#: ../src/views/lighttable.c:4549
 msgid "switch to next/previous image"
 msgstr "passer à l'image suivante/précédente"
 
-#: ../src/views/lighttable.c:4531 ../src/views/lighttable.c:4553
+#: ../src/views/lighttable.c:4562 ../src/views/lighttable.c:4584
 msgid "scroll the collection"
 msgstr "défiler la collection"
 
-#: ../src/views/lighttable.c:4537
+#: ../src/views/lighttable.c:4568
 msgid "change number of images per row"
 msgstr "changer le nombre d'image par ligne"
 
-#: ../src/views/lighttable.c:4545
+#: ../src/views/lighttable.c:4576
 msgid "change image order"
 msgstr "changer l'ordre des images"
 
-#: ../src/views/lighttable.c:4559
+#: ../src/views/lighttable.c:4590
 msgid "zoom all the images"
 msgstr "zoom toutes les images"
 
-#: ../src/views/lighttable.c:4564
+#: ../src/views/lighttable.c:4595
 msgid "pan inside all the images"
 msgstr "déplacer toutes les images"
 
-#: ../src/views/lighttable.c:4570
+#: ../src/views/lighttable.c:4601
 msgid "zoom current image"
 msgstr "zoom image"
 
-#: ../src/views/lighttable.c:4576
+#: ../src/views/lighttable.c:4607
 msgid "pan inside current image"
 msgstr "déplacer l'image"
 
-#: ../src/views/lighttable.c:4583
+#: ../src/views/lighttable.c:4614
 msgid "zoom the main view"
 msgstr "zoom vue principale"
 
-#: ../src/views/lighttable.c:4588
+#: ../src/views/lighttable.c:4619
 msgid "pan inside the main view"
 msgstr "déplacer la vue principale"
 
-#: ../src/views/lighttable.c:4809
+#: ../src/views/lighttable.c:4840
 msgid "set display profile"
 msgstr "profil (écran)"
 
@@ -14452,6 +14520,9 @@ msgstr "raccourcis"
 #: ../src/views/view.c:2453
 msgid "Action"
 msgstr "action"
+
+#~ msgid "migrate to fixed algorithm"
+#~ msgstr "migrer vers algorithme corrigé"
 
 #~ msgid "albums"
 #~ msgstr "albums"

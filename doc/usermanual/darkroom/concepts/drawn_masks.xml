@@ -80,11 +80,11 @@
     <para>
       Independent of the specific shape you can <emphasis>scroll</emphasis> to change the size
       of the shape, <emphasis>shift+scroll</emphasis> to change the feather of the shape and
-      <emphasis>ctrl+scroll</emphasis> to change the opacity of the shape.
+      <emphasis>Ctrl+scroll</emphasis> to change the opacity of the shape.
     </para>
 
     <para>
-      If you <emphasis>ctrl-click</emphasis> on the edit mode symbol you enter a restricted edit
+      If you <emphasis>Ctrl+click</emphasis> on the edit mode symbol you enter a restricted edit
       mode. Certain actions like dragging a complete shape or changing its size are blocked.
       Only finetuning changes like dragging a node are allowed.
     </para>
@@ -121,7 +121,7 @@
         while keeping the button pressed. The brush stroke is finalized once you release the
         mouse button. Brush size, hardness and opacity can be changed by
         <emphasis>scrolling</emphasis>, <emphasis>shift+scrolling</emphasis>, and
-        <emphasis>ctrl+scrolling</emphasis>, respectively, either before you start drawing or at
+        <emphasis>Ctrl+scrolling</emphasis>, respectively, either before you start drawing or at
         any time during the operation. Likewise you can use keys
         <emphasis>[&nbsp;|&nbsp;]</emphasis> to decrease/increase brush size,
         <emphasis>{&nbsp;|&nbsp;}</emphasis> to decrease/increase hardness, and
@@ -185,7 +185,7 @@
         Use the scroll wheel of your mouse while in the circle to change the diameter;
         <emphasis>scroll</emphasis> within the circle border to adjust the width of the gradual
         decay or <emphasis>shift+scroll</emphasis> anywhere in the shape for the same effect.
-        With <emphasis>ctrl+scroll</emphasis> you can adjust the opacity of the
+        With <emphasis>Ctrl+scroll</emphasis> you can adjust the opacity of the
         circle&nbsp;&ndash; this is best observed with the mask displayed by pressing the
         <inlinegraphic fileref="&icon_module_mask;" scalefit="1" width="2%" align="center"/>
         button.
@@ -225,9 +225,9 @@
       <para>
         The general principle is the same as for the circle shape. In addition you get four
         nodes on the ellipse line. <emphasis>Click</emphasis> on the nodes to adjust the
-        ellipse's eccentricity. <emphasis>Ctrl-click</emphasis> on them to rotate the ellipse
-        or, alternatively, use <emphasis>shift+ctrl+scroll</emphasis>.
-        <emphasis>Shift-click</emphasis> in the shape to toggle the gradual decay between
+        ellipse's eccentricity. <emphasis>Ctrl+click</emphasis> on them to rotate the ellipse
+        or, alternatively, use <emphasis>Shift+Ctrl+scroll</emphasis>.
+        <emphasis>Shift+click</emphasis> in the shape to toggle the gradual decay between
         equidistant and proportional mode.
       </para>
       <informaltable frame="none">
@@ -266,12 +266,12 @@
         <emphasis>Left-click</emphasis> into the canvas to define path nodes; terminate the path
         by <emphasis>right-clicking</emphasis> after having set the last point. Per default
         nodes are connected by smooth lines. If you want a node to define a sharp corner, you
-        can do so by creating it with <emphasis>ctrl-click</emphasis>.
+        can do so by creating it with <emphasis>Ctrl+click</emphasis>.
       </para>
       <para>
         In the edit mode you can convert existing nodes from smooth to sharp corners and vice
-        versa by <emphasis>ctrl-clicking</emphasis> on them. You can insert additional nodes by
-        <emphasis>ctrl-clicking</emphasis> on one of the line segments. Single nodes can be
+        versa by <emphasis>Ctrl+clicking</emphasis> on them. You can insert additional nodes by
+        <emphasis>Ctrl+clicking</emphasis> on one of the line segments. Single nodes can be
         deleted by <emphasis>right-clicking</emphasis> on them; make sure that the mouse pointer
         is over the desired node and the node is highlighted, or else you might accidentally
         remove the whole path.
@@ -280,7 +280,7 @@
         The size of the complete shape can be modified by
         <emphasis>scrolling</emphasis>&nbsp;&ndash; analogous to the circle shape. The same
         holds true for the width of the border, i.e. the area with a gradual opacity decay,
-        which can be changed by <emphasis>shift+scroll</emphasis> from anywhere within the shape.
+        which can be changed by <emphasis>Shift+scroll</emphasis> from anywhere within the shape.
         Single nodes as well as path segments can be moved by mouse <emphasis>dragging</emphasis>.
         If a node is selected by <emphasis>clicking</emphasis> on it, a further control point
         appears&nbsp;&ndash; you can move it around to modify the curvature of the line and

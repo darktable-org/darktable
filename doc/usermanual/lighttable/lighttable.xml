@@ -76,7 +76,7 @@
               <entry>
                 set the rating of the image; if an image has 1 star and you hit the
                 <emphasis>1</emphasis> key, the image will be unrated. Pressing
-                <emphasis>r</emphasis> rejects the image.
+                <emphasis>R</emphasis> rejects the image.
               </entry>
             </row>
             <row>
@@ -89,7 +89,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>ctrl-c</emphasis>
+                <emphasis>Ctrl+C</emphasis>
               </entry>
               <entry>
                 copy the history stack
@@ -97,7 +97,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>ctrl-v</emphasis>
+                <emphasis>Ctrl+V</emphasis>
               </entry>
               <entry>
                 paste the copied history stack
@@ -105,7 +105,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>d</emphasis>
+                <emphasis>D</emphasis>
               </entry>
               <entry>
                 open in darkroom view for developing
@@ -113,7 +113,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>z</emphasis>
+                <emphasis>Z</emphasis>
               </entry>
               <entry>
                 fully zoom into the image while the key is pressed
@@ -121,7 +121,7 @@
             </row>
             <row>
               <entry>
-                <emphasis>ctrl-z</emphasis>
+                <emphasis>Ctrl+Z</emphasis>
               </entry>
               <entry>
                 fully zoom into the image and show areas in focus
@@ -189,24 +189,24 @@
       <para>
         In this layout, you
         can can change the number of images in each row, using the slider next to the layouts
-        option, or by using <emphasis>ctrl-(mouse wheel)</emphasis>. Use your mouse wheel to
+        option, or by using <emphasis>Ctrl+(mouse wheel)</emphasis>. Use your mouse wheel to
         navigate through your collection.
       </para>
 
       <para>
         You can navigate left/right/up/down through your collection using
-        &larr;/&rarr;/&uarr;/&darr;. Pressing <emphasis>g</emphasis> goes to
-        the top, <emphasis>shift-g</emphasis> to the bottom, <emphasis>PageUp</emphasis> brings
+        &larr;/&rarr;/&uarr;/&darr;. Pressing <emphasis>G</emphasis> goes to
+        the top, <emphasis>Shift+G</emphasis> to the bottom, <emphasis>PageUp</emphasis> brings
         you one page up and <emphasis>PageDown</emphasis> one page down.
       </para>
 
       <para>
         You can select the image under the pointer by <emphasis>left-clicking</emphasis> on its
-        thumbnail or by pressing <emphasis>return</emphasis>. A range of images is selected by
+        thumbnail or by pressing <emphasis>Return</emphasis>. A range of images is selected by
         <emphasis>clicking</emphasis> on the first one and then
-        <emphasis>shift-clicking</emphasis> on the last one. Images are added or removed from your
-        selection by <emphasis>ctrl-clicking</emphasis> on their thumbnails or pressing
-        <emphasis>space</emphasis>.
+        <emphasis>Shift+clicking</emphasis> on the last one. Images are added or removed from your
+        selection by <emphasis>Ctrl+clicking</emphasis> on their thumbnails or pressing
+        <emphasis>Spacebar</emphasis>.
       </para>
 
       <para>
@@ -260,8 +260,8 @@
         </para>
 
         <para>
-          In this mode, you'll navigate throught all selected images. If no selection is set
-          (or if only 1 image is selected), you'll navigate throught all images.
+          In this mode, you'll navigate through all selected images. If no selection is set
+          (or if only 1 image is selected), you'll navigate through all images.
         </para>
 
         <para>
@@ -280,7 +280,7 @@
         </para>
 
         <para>
-          Default shortcut for entering culling in fixed mode is <emphasis>ctrl+X</emphasis>.
+          Default shortcut for entering culling in fixed mode is <emphasis>Ctrl+X</emphasis>.
         </para>
 
       </sect3>
@@ -294,12 +294,12 @@
         </para>
 
         <para>
-          <emphasis>ctrl+scroll</emphasis> to zoom in/out images. <emphasis>left click + drag</emphasis> to pan in zoomed images.
+          <emphasis>Ctrl+scroll</emphasis> to zoom in/out images. <emphasis>left click + drag</emphasis> to pan in zoomed images.
         </para>
 
         <para>
           By default, zooming and panning are synchronized between all visible images. If you want to zoom or pan only a specific image,
-          add <emphasis>shift</emphasis> key to above actions.
+          add <emphasis>Shift</emphasis> key to above actions.
         </para>
 
         <para>
@@ -316,7 +316,7 @@
       <title>Full preview</title>
 
       <para>
-        While holding down the <emphasis>w</emphasis> key a fully zoomed preview of the image
+        While holding down the <emphasis>W</emphasis> key a fully zoomed preview of the image
         under the mouse cursor is displayed. You can use this feature for a quick inspection of
         image quality while rating and selecting images.
       </para>
@@ -326,7 +326,7 @@
       </indexterm>
 
       <para>
-        Holding down the <emphasis>ctlr-w</emphasis> key fully zooms into the image and
+        Holding down the <emphasis>Ctlr+W</emphasis> key fully zooms into the image and
         additionally activates an analysis for sharp regions, detecting those parts of the image
         that are in focus. Areas of high sharpness are indicated by a red border&nbsp;&ndash; the
         higher the color intensity the better the sharpness. In case that no area of
@@ -336,7 +336,7 @@
       </para>
 
       <para>
-        Sometimes pressing <emphasis>w</emphasis> or <emphasis>ctrl-w</emphasis> may not reveal an
+        Sometimes pressing <emphasis>W</emphasis> or <emphasis>Ctrl+W</emphasis> may not reveal an
         immediate effect&nbsp;&ndash; in that case please click into the center area and press the
         corresponding key again.
       </para>
@@ -348,7 +348,7 @@
           <tbody>
             <row>
               <entry>
-                Fully zoomed-in image view while holding down the <emphasis>ctrl-w</emphasis> key
+                Fully zoomed-in image view while holding down the <emphasis>Ctrl+W</emphasis> key
                 with indication of the sharp areas in focus. Sharpness detection is based on an
                 embedded JPEG thumbnail of the original raw file independent of any processing
                 steps within darktable.
@@ -362,9 +362,9 @@
       </informaltable>
 
       <para>
-        If you want the full preview to stay, without having to hold <emphasis>w</emphasis> key,
-        you can use sticky preview mode with <emphasis>alt-w</emphasis> key or
-        <emphasis>ctrl-alt-w</emphasis> if you want focus detection.
+        If you want the full preview to stay, without having to hold <emphasis>W</emphasis> key,
+        you can use sticky preview mode with <emphasis>Alt+W</emphasis> key or
+        <emphasis>Ctrl+Alt+W</emphasis> if you want focus detection.
         In sticky preview mode, you can zoom and pan in the image, exactly like in culling layout
         (see <xref linkend="lighttable_culling_zoom"/>).
       </para>

@@ -30,6 +30,8 @@ gchar *dt_util_str_replace(const gchar *string, const gchar *pattern, const gcha
 guint dt_util_str_occurence(const gchar *haystack, const gchar *needle);
 /** generate a string from the elements of the list, separated by separator. the result has to be freed. */
 gchar *dt_util_glist_to_str(const gchar *separator, GList *items);
+/** generate a GList from the elements of a string, separated by separator. the result has to be freed. */
+GList *dt_util_str_to_glist(const gchar *separator, const gchar *text);
 /** take a list of strings and remove all duplicates. the result will be sorted. */
 GList *dt_util_glist_uniq(GList *items);
 /** fixes the given path by replacing a possible tilde with the correct home directory */
@@ -41,6 +43,8 @@ off_t dt_util_get_file_size(const char *filename);
 gboolean dt_util_is_dir_empty(const char *dirname);
 /** returns a valid UTF-8 string for the given char array. has to be freed with g_free(). */
 gchar *dt_util_foo_to_utf8(const char *string);
+/** returns the number of occurence of character in a text. */
+guint dt_util_string_count_char(const char *text, const char needle);
 
 typedef enum dt_logo_season_t
 {

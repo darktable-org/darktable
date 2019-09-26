@@ -16,6 +16,9 @@
 
 #include <xmmintrin.h>
 
+#include "common/darktable.h"
+
+
 /**
  * Fast SSE2 implementation of special math functions.
  */

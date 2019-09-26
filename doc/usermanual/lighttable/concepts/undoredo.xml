@@ -32,11 +32,11 @@
       <itemizedlist>
 
         <listitem><para>
-          <emphasis>Ctrl-z</emphasis> : undo last modifications
+          <emphasis>Ctrl+Z</emphasis> : undo last modifications
         </para></listitem>
 
         <listitem><para>
-          <emphasis>Ctrl-y</emphasis> : redo last undo (does nothing if undo has not been used
+          <emphasis>Ctrl+Y</emphasis> : redo last undo (does nothing if undo has not been used
           yet)
         </para></listitem>
 

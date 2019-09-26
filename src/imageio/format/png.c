@@ -202,7 +202,7 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
    */
   png_set_filler(png_ptr, 0, PNG_FILLER_AFTER);
 
-  png_bytep *row_pointers = malloc((size_t)height * sizeof(png_bytep));
+  png_bytep *row_pointers = dt_alloc_align(64, (size_t)height * sizeof(png_bytep));
 
   if(p->bpp > 8)
   {
@@ -218,7 +218,7 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
 
   png_write_image(png_ptr, row_pointers);
 
-  free(row_pointers);
+  dt_free_align(row_pointers);
 
   png_write_end(png_ptr, info_ptr);
   png_destroy_write_struct(&png_ptr, &info_ptr);

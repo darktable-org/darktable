@@ -689,6 +689,9 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
   dt_dev_read_history(dev);
 
   dev->first_load = 0;
+
+  // Loading an image means we do some developing and so remove the darktable|problem|history-compress tag
+  dt_history_set_compress_problem(imgid, FALSE);
 }
 
 void dt_dev_configure(dt_develop_t *dev, int wd, int ht)
@@ -1212,20 +1215,18 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   GList *history = dev->history;
-  // the history size is NOT defined by current history_end but by the number actually written
-  int hist_size = 0;
+
   for(int i = 0; history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     (void)dt_dev_write_history_item(imgid, hist, i);
     history = g_list_next(history);
-    hist_size++;
   }
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE main.images SET history_end = ?1, iop_order_version = ?3 WHERE id = ?2", -1,
                               &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, hist_size);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dev->history_end);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, dev->iop_order_version);
   sqlite3_step(stmt);

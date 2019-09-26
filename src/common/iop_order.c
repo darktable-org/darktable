@@ -31,7 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DT_IOP_ORDER_VERSION 2
+#define DT_IOP_ORDER_VERSION 3
 
 static void _ioppr_insert_iop_after(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_previous, const int dont_move);
 static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_next, const int dont_move);
@@ -54,7 +54,18 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
   {
     _ioppr_move_iop_after(_iop_order_list, "colorin", "demosaic", dont_move);
     _ioppr_move_iop_before(_iop_order_list, "colorout", "clahe", dont_move);
+    _ioppr_insert_iop_after(_iop_order_list, history_list, "basicadj", "colorin", dont_move);
+    _ioppr_insert_iop_after(_iop_order_list, history_list, "rgbcurve", "levels", dont_move);
+    _ioppr_insert_iop_after(_iop_order_list, history_list, "lut3d", "grain", dont_move);
+    _ioppr_insert_iop_before(_iop_order_list, history_list, "rgblevels", "rgbcurve", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "dither", "borders", dont_move);
+    _ioppr_insert_iop_after(_iop_order_list, history_list, "toneequal", "clipping", dont_move);
 
+    new_version = 2;
+  }
+  // version 2 --> 3
+  else if(old_version == 2)
+  {
     // GENERAL RULE FOR SIGNAL PROCESSING/RECONSTRUCTION
     // pictures are formed through this path :
     // scene/surfaces/shapes -> atmosphere -> lens -> sensor -> RAW file
@@ -80,8 +91,12 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     // lens profiles need a pure sensor reading with no correction
     _ioppr_move_iop_before(_iop_order_list, "lens", "hazeremoval", dont_move);
 
+    // pixel scaling
+    _ioppr_move_iop_before(_iop_order_list, "scalepixels", "lens", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "rotatepixels", "scalepixels", dont_move);
+
     // move denoising before any deformation to avoid anisotropic noise creation
-    _ioppr_move_iop_before(_iop_order_list, "bilateral", "lens", dont_move);
+    _ioppr_move_iop_before(_iop_order_list, "bilateral", "rotatepixels", dont_move);
     _ioppr_move_iop_before(_iop_order_list, "denoiseprofile", "bilateral", dont_move);
     _ioppr_move_iop_before(_iop_order_list, "demosaic", "denoiseprofile", dont_move);
 
@@ -101,16 +116,19 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     // color adjustments in scene-linear space : move right after colorin
     _ioppr_move_iop_after(_iop_order_list, "channelmixer", "sharpen", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colorchecker", "channelmixer", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colorbalance", "colorchecker", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colormapping", "colorchecker", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colorbalance", "colormapping", dont_move);
 
-    _ioppr_insert_iop_after(_iop_order_list, history_list, "lut3d", "colorchecker", dont_move);
-    _ioppr_insert_iop_after(_iop_order_list, history_list, "basicadj", "colorbalance", dont_move);
-    _ioppr_insert_iop_after(_iop_order_list, history_list, "rgbcurve", "basicadj", dont_move);
-    _ioppr_insert_iop_after(_iop_order_list, history_list, "rgblevels", "rgbcurve", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "lut3d", "colortransfer", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colortransfer", "colorchecker", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "basicadj", "colorbalance", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "rgbcurve", "basicadj", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "rgblevels", "rgbcurve", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "bloom", "rgblevels", dont_move);
 
     // scene-linear to display-referred encoding
     // !!! WALL OF THE NON-LINEARITY !!! There is no coming back for colour ratios
-    _ioppr_move_iop_after(_iop_order_list, "basecurve", "colorbalance", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "basecurve", "bloom", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "filmic", "basecurve", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colisa", "filmic", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "tonecurve", "colisa", dont_move);
@@ -123,18 +141,22 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
 
     // display-referred colour edits
     _ioppr_move_iop_after(_iop_order_list, "colorcorrection", "bilat", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "velvia", "colorcorrection", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "vibrance", "velvia", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colorzones", "vibrance", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colorzones", "colorcorrection", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "vibrance", "colorzones", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "velvia", "vibrance", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colorize", "velvia", dont_move);
+    _ioppr_move_iop_after(_iop_order_list, "colorcontrast", "colorize", dont_move);
 
     // fix clipping before going in colourout
     _ioppr_move_iop_before(_iop_order_list, "colorreconstruct", "colorout", dont_move);
     _ioppr_move_iop_before(_iop_order_list, "vignette", "colorreconstruct", dont_move);
 
-
     _ioppr_move_iop_before(_iop_order_list, "dither", "borders", dont_move);
 
-    new_version = 2;
+    // new modules here
+    _ioppr_insert_iop_after(_iop_order_list, history_list, "filmicrgb", "filmic", dont_move);
+
+    new_version = 3;
   }
 
   if(new_version <= 0)
@@ -778,7 +800,7 @@ gint dt_sort_iop_by_order(gconstpointer a, gconstpointer b)
 // if module can be placed before than module_next on the pipe
 // it returns the new iop_order
 // if it cannot be placed it returns -1.0
-// this assums that the order is always positive
+// this assumes that the order is always positive
 double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *module, dt_iop_module_t *module_next,
                                   const int validate_order, const int log_error)
 {
@@ -818,7 +840,7 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
       {
         dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
 
-        // if we reach module_next everithing is OK
+        // if we reach module_next everything is OK
         if(mod == module_next)
         {
           mod2 = mod;
@@ -915,7 +937,7 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
       {
         dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
 
-        // we reach the module next to module_next, everithing is OK
+        // we reach the module next to module_next, everything is OK
         if(mod2 != NULL)
         {
           mod1 = mod;
@@ -998,7 +1020,7 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
 // if module can be placed after than module_prev on the pipe
 // it returns the new iop_order
 // if it cannot be placed it returns -1.0
-// this assums that the order is always positive
+// this assumes that the order is always positive
 double dt_ioppr_get_iop_order_after_iop(GList *iop_list, dt_iop_module_t *module, dt_iop_module_t *module_prev,
                                  const int validate_order, const int log_error)
 {
@@ -1669,7 +1691,12 @@ static inline void _transform_lcms2_rgb(const float *const image_in, float *cons
                               profile_info_to->intent);
 }
 
-static float lerp_lut(const float *const lut, const float v, const int lutsize)
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+__DT_CLONE_TARGETS__
+static inline float lerp_lut(const float *const lut, const float v, const int lutsize)
 {
   // TODO: check if optimization is worthwhile!
   const float ft = CLAMPS(v * (lutsize - 1), 0, lutsize - 1);
@@ -1680,7 +1707,12 @@ static float lerp_lut(const float *const lut, const float v, const int lutsize)
   return l1 * (1.0f - f) + l2 * f;
 }
 
-static inline void _apply_trc_in(const float *const rgb_in, float *rgb_out, const dt_iop_order_iccprofile_info_t *const profile_info)
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+__DT_CLONE_TARGETS__
+static inline void _apply_trc_in(const float *const restrict rgb_in, float *const restrict rgb_out, const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   for(int c = 0; c < 3; c++)
   {
@@ -2331,7 +2363,11 @@ void dt_ioppr_get_histogram_profile_type(int *profile_type, char **profile_filen
   }
 }
 
-float dt_ioppr_get_rgb_matrix_luminance(const float *const rgb, const dt_iop_order_iccprofile_info_t *const profile_info)
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+inline float dt_ioppr_get_rgb_matrix_luminance(const float *const rgb, const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   float luminance = 0.f;
 
