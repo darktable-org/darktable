@@ -1418,6 +1418,8 @@ escape_image_loop:
     if(sqlite3_step(lib->statements.is_grouped) != SQLITE_ROW) mouse_over_group = -1;
   }
 
+  cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+
   for(int row = 0; row < max_rows; row++)
   {
     for(int col = 0; col < max_cols; col++)
