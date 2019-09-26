@@ -3186,7 +3186,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_can_focus(GTK_WIDGET(g->bar), TRUE);
   g_signal_connect(G_OBJECT(g->bar), "draw", G_CALLBACK(dt_iop_toneequalizer_bar_draw), self);
   g_object_set(G_OBJECT(g->bar), "tooltip-text", _("mask histogram span between the first and last deciles.\n"
-                                                   "the central line shows the average. Orange bars appear at extrema if clipping occurs."), (char *)NULL);
+                                                   "the central line shows the average. orange bars appear at extrema if clipping occurs."), (char *)NULL);
 
 
   g->quantization = dt_bauhaus_slider_new_with_range(self, 0.00, 2., 0.25, 0.0, 2);
