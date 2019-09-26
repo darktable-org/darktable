@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-09-04 19:19+0200\n"
-"PO-Revision-Date: 2019-09-25 11:22+0100\n"
+"PO-Revision-Date: 2019-09-26 08:37+0100\n"
 "Last-Translator: mmardegan <11093569+mmardegan@users.noreply.github.com>\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
@@ -471,7 +471,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2912
 msgid "map / geolocalisation"
-msgstr ""
+msgstr "Mappa / Geolocalizzazione"
 
 #: ../build/src/preferences_gen.h:2923
 msgid "only draw images on map that are currently collected and filtered"
@@ -1823,12 +1823,12 @@ msgstr "Rimozione copia locale per %d immagine"
 #: ../src/common/image.c:1483
 #, c-format
 msgid "error moving `%s': file not found"
-msgstr ""
+msgstr "Errore spostando `%s': file non trovato"
 
 #: ../src/common/image.c:1487
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
-msgstr ""
+msgstr "Errore spostando `%s' -> `%s': file già esistente"
 
 #: ../src/common/image.c:1491
 #, fuzzy, c-format
@@ -3200,11 +3200,11 @@ msgstr ""
 
 #: ../src/develop/masks/masks.c:202
 msgid "[PATH] change size"
-msgstr ""
+msgstr "[TRACCIATO] cambia la dimensione"
 
 #: ../src/develop/masks/masks.c:208
 msgid "[PATH] change opacity"
-msgstr ""
+msgstr "[TRACCIATO] cambia l'opacità"
 
 #: ../src/develop/masks/masks.c:214
 msgid "[PATH] change feather size"
@@ -3226,15 +3226,15 @@ msgstr ""
 
 #: ../src/develop/masks/masks.c:237
 msgid "[GRADIENT] change opacity"
-msgstr ""
+msgstr "[GRADIENTE] cambia l'opacità"
 
 #: ../src/develop/masks/masks.c:244
 msgid "[ELLIPSE] change size"
-msgstr ""
+msgstr "[ELLISSE] cambia la dimensione"
 
 #: ../src/develop/masks/masks.c:250
 msgid "[ELLIPSE] change opacity"
-msgstr ""
+msgstr "[ELLISSE] cambia l'opacità"
 
 #: ../src/develop/masks/masks.c:256
 msgid "[ELLIPSE] switch feathering mode"
@@ -3247,7 +3247,7 @@ msgstr "Muovi per ruotare la forma"
 
 #: ../src/develop/masks/masks.c:269
 msgid "[BRUSH creation] change size"
-msgstr ""
+msgstr "[PENNELLO creazione] cambia la dimensione"
 
 #: ../src/develop/masks/masks.c:275
 msgid "[BRUSH creation] change hardness"
@@ -3255,19 +3255,19 @@ msgstr ""
 
 #: ../src/develop/masks/masks.c:281
 msgid "[BRUSH] change opacity"
-msgstr ""
+msgstr "[PENNELLO] cambia l'opacità"
 
 #: ../src/develop/masks/masks.c:286
 msgid "[BRUSH] change hardness"
-msgstr ""
+msgstr "[PENNELLO] cambia la durezza"
 
 #: ../src/develop/masks/masks.c:293
 msgid "[CIRCLE] change size"
-msgstr ""
+msgstr "[CIRCLE] cambia dimensione"
 
 #: ../src/develop/masks/masks.c:299
 msgid "[CIRCLE] change opacity"
-msgstr ""
+msgstr "[CERCHIO] cambia l'opacità"
 
 #: ../src/develop/masks/masks.c:305
 msgid "[CIRCLE] change feather size"
@@ -4940,7 +4940,7 @@ msgstr "Impossibile scrivere nella directory '%s'!"
 msgid "%d/%d skipping `%s'"
 msgid_plural "%d/%d skipping `%s'"
 msgstr[0] "%d/%d saltando `%s'"
-msgstr[1] ""
+msgstr[1] "%d/%d saltando `%s'"
 
 #: ../src/imageio/storage/disk.c:337 ../src/imageio/storage/email.c:143
 #: ../src/imageio/storage/gallery.c:395 ../src/imageio/storage/latex.c:362
@@ -5941,7 +5941,7 @@ msgstr "Dominanza colore"
 #: ../src/iop/rgbcurve.c:1587 ../src/iop/rgblevels.c:1119
 #: ../src/iop/tonecurve.c:1395
 msgid "max rgb"
-msgstr ""
+msgstr "max RGB"
 
 #: ../src/iop/basecurve.c:2143 ../src/iop/basicadj.c:705
 #: ../src/iop/rgbcurve.c:1588 ../src/iop/rgblevels.c:1120
@@ -6059,7 +6059,7 @@ msgstr "Regolazione contrasto"
 
 #: ../src/iop/basicadj.c:714
 msgid "middle grey"
-msgstr ""
+msgstr "Grigio intermedio"
 
 #: ../src/iop/basicadj.c:716
 #, fuzzy
@@ -7060,7 +7060,7 @@ msgstr "Fattore del blu per il gain"
 
 #: ../src/iop/colorbalance.c:2644
 msgid "auto optimizers"
-msgstr ""
+msgstr "Ottimizzatori automatici"
 
 #: ../src/iop/colorbalance.c:2656
 msgid "fit the whole histogram and center the average luma"
@@ -9507,7 +9507,7 @@ msgstr "Intepolatore pixel"
 
 #: ../src/iop/lut3d.c:1127
 msgid "tetrahedral"
-msgstr ""
+msgstr "Tetaedro"
 
 #: ../src/iop/lut3d.c:1128
 #, fuzzy
@@ -9864,7 +9864,7 @@ msgstr "Scala"
 
 #: ../src/iop/retouch.c:2745
 msgid "current:"
-msgstr ""
+msgstr "Corrente:"
 
 #: ../src/iop/retouch.c:2754
 #, fuzzy
@@ -9934,7 +9934,7 @@ msgstr "Modalità di fusione"
 
 #: ../src/iop/retouch.c:2890
 msgid "erase"
-msgstr ""
+msgstr "Cancella"
 
 #: ../src/iop/retouch.c:2891 ../src/iop/watermark.c:1381
 msgid "color"
@@ -9942,7 +9942,7 @@ msgstr "Colore"
 
 #: ../src/iop/retouch.c:2892
 msgid "erase the detail or fills with chosen color"
-msgstr ""
+msgstr "Cancella il dettaglio o riempi con il colore prescelto"
 
 #: ../src/iop/retouch.c:2904 ../src/iop/retouch.c:2905
 #, fuzzy
@@ -10069,7 +10069,7 @@ msgstr "Compressione contrasto"
 
 #: ../src/iop/rgbcurve.c:216 ../src/iop/tonecurve.c:552
 msgid "gamma 1.0 (linear)"
-msgstr ""
+msgstr "Gamma 1.0 (lineare)"
 
 #: ../src/iop/rgbcurve.c:225 ../src/iop/tonecurve.c:561
 #, fuzzy
@@ -10157,7 +10157,7 @@ msgstr "Prendi colore interfaccia dall'immagine"
 
 #: ../src/iop/rgbcurve.c:1576 ../src/iop/rgbcurve.c:1578
 msgid "compensate middle grey"
-msgstr ""
+msgstr "Compensa il grigio intermedio"
 
 #: ../src/iop/rgblevels.c:108
 #, fuzzy
@@ -12582,7 +12582,7 @@ msgstr ""
 #. image reconstruction
 #: ../src/libs/modulelist.c:380
 msgid "workspace: all-purpose"
-msgstr ""
+msgstr "Spazio di lavoro: per tutte le necessità"
 
 #. raw handling
 #. tones
@@ -12593,11 +12593,11 @@ msgstr ""
 #. HDR reconstruction - colors
 #: ../src/libs/modulelist.c:392
 msgid "workspace: landscape & HDR"
-msgstr ""
+msgstr "Spazio di lavoro: panorama ed HDR"
 
 #: ../src/libs/modulelist.c:404
 msgid "workspace: architecture & streets"
-msgstr ""
+msgstr "Spazio di lavoro: architettura e strade"
 
 #. raw handling
 #. tones
@@ -12607,7 +12607,7 @@ msgstr ""
 #. retouch
 #: ../src/libs/modulelist.c:415
 msgid "workspace: portrait & beauty"
-msgstr ""
+msgstr "Spazio di lavoro: ritratto e bellezza"
 
 #. raw handling
 #. tones
@@ -12617,7 +12617,7 @@ msgstr ""
 #. denoising
 #: ../src/libs/modulelist.c:426
 msgid "workspace: lowlight & high ISO"
-msgstr ""
+msgstr "Spazio di lavoro: luce tenue e alti ISO"
 
 #: ../src/libs/modulelist.c:434
 msgid "subset: creative modules only"
@@ -13617,7 +13617,7 @@ msgstr "Vuoi aprire il manuale utente online?"
 
 #: ../src/libs/tools/global_toolbox.c:277
 msgid "help url opened in web browser"
-msgstr ""
+msgstr "Url di aiuto aperto nel web browser"
 
 #: ../src/libs/tools/global_toolbox.c:282
 #, fuzzy
@@ -14126,12 +14126,12 @@ msgstr "o aggiungi immagini alla raccolta nel pannello di sinistra"
 #, c-format
 msgid "you have reached the start of your selection (%d image)"
 msgid_plural "you have reached the start of your selection (%d images)"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Hai raggiunto l'inizio della tua selezione (%d immagine)"
+msgstr[1] "Hai raggiunto l'inizio della tua selezione (%d immagini)"
 
 #: ../src/views/lighttable.c:3199
 msgid "you have reached the start of your collection"
-msgstr ""
+msgstr "Hai raggiunto l'inizio della tua collezione"
 
 #: ../src/views/lighttable.c:3223
 #, c-format
