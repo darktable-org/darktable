@@ -45,7 +45,8 @@
 
 #define DT_IOP_DENOISE_PROFILE_INSET DT_PIXEL_APPLY_DPI(5)
 #define DT_IOP_DENOISE_PROFILE_RES 64
-#define DT_IOP_DENOISE_PROFILE_BANDS 5
+#define DT_IOP_DENOISE_PROFILE_V8_BANDS 5
+#define DT_IOP_DENOISE_PROFILE_BANDS 7
 
 // the following fulcrum is used to help user to set shadows and strength
 // parameters.
@@ -75,7 +76,7 @@ typedef enum dt_iop_denoiseprofile_channel_t
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
-DT_MODULE_INTROSPECTION(8, dt_iop_denoiseprofile_params_t)
+DT_MODULE_INTROSPECTION(9, dt_iop_denoiseprofile_params_t)
 
 typedef struct dt_iop_denoiseprofile_params_v1_t
 {
@@ -91,8 +92,8 @@ typedef struct dt_iop_denoiseprofile_params_v4_t
   float strength;   // noise level after equalization
   float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
   dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
-  float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
-  float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
+  float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_V8_BANDS];
+  float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_V8_BANDS]; // values to change wavelet force by frequency
 } dt_iop_denoiseprofile_params_v4_t;
 
 typedef struct dt_iop_denoiseprofile_params_v5_t
@@ -102,8 +103,8 @@ typedef struct dt_iop_denoiseprofile_params_v5_t
   float strength;                    // noise level after equalization
   float a[3], b[3];                  // fit for poissonian-gaussian noise per color channel.
   dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
-  float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
-  float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
+  float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_V8_BANDS];
+  float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_V8_BANDS]; // values to change wavelet force by frequency
 } dt_iop_denoiseprofile_params_v5_t;
 
 typedef struct dt_iop_denoiseprofile_params_v6_t
@@ -114,8 +115,8 @@ typedef struct dt_iop_denoiseprofile_params_v6_t
   float scattering;                  // spread the patch search zone without increasing number of patches
   float a[3], b[3];                  // fit for poissonian-gaussian noise per color channel.
   dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
-  float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
-  float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
+  float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_V8_BANDS];
+  float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_V8_BANDS]; // values to change wavelet force by frequency
 } dt_iop_denoiseprofile_params_v6_t;
 
 typedef struct dt_iop_denoiseprofile_params_v7_t
@@ -127,12 +128,32 @@ typedef struct dt_iop_denoiseprofile_params_v7_t
   float central_pixel_weight;        // increase central pixel's weight in patch comparison
   float a[3], b[3];                  // fit for poissonian-gaussian noise per color channel.
   dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
-  float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS];
-  float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_BANDS]; // values to change wavelet force by frequency
+  float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_V8_BANDS];
+  float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_V8_BANDS]; // values to change wavelet force by frequency
   gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
   // backward compatibility options
   gboolean fix_anscombe_and_nlmeans_norm;
 } dt_iop_denoiseprofile_params_v7_t;
+
+typedef struct dt_iop_denoiseprofile_params_v8_t
+{
+  float radius;     // patch size
+  float nbhood;     // search radius
+  float strength;   // noise level after equalization
+  float shadows;    // control the impact on shadows
+  float bias;       // allows to reduce backtransform bias
+  float scattering; // spread the patch search zone without increasing number of patches
+  float central_pixel_weight; // increase central pixel's weight in patch comparison
+  float overshooting; // adjusts the way parameters are autoset
+  float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
+  dt_iop_denoiseprofile_mode_t mode; // switch between nlmeans and wavelets
+  float x[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_V8_BANDS];
+  float y[DT_DENOISE_PROFILE_NONE][DT_IOP_DENOISE_PROFILE_V8_BANDS]; // values to change wavelet force by frequency
+  gboolean wb_adaptive_anscombe; // whether to adapt anscombe transform to wb coeffs
+  // backward compatibility options
+  gboolean fix_anscombe_and_nlmeans_norm;
+  gboolean use_new_vst;
+} dt_iop_denoiseprofile_params_v8_t;
 
 typedef struct dt_iop_denoiseprofile_params_t
 {
@@ -258,11 +279,11 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     memcpy(n->a, o->a, sizeof(float) * 3);
     memcpy(n->b, o->b, sizeof(float) * 3);
     // init curves coordinates
-    for(int b = 0; b < DT_IOP_DENOISE_PROFILE_BANDS; b++)
+    for(int b = 0; b < DT_IOP_DENOISE_PROFILE_V8_BANDS; b++)
     {
       for(int c = 0; c < DT_DENOISE_PROFILE_NONE; c++)
       {
-        n->x[c][b] = b / (DT_IOP_DENOISE_PROFILE_BANDS - 1.0f);
+        n->x[c][b] = b / (DT_IOP_DENOISE_PROFILE_V8_BANDS - 1.0f);
         n->y[c][b] = 0.5f;
       }
     }
@@ -308,7 +329,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       v5->a[k] = v4.a[k];
       v5->b[k] = v4.b[k];
     }
-    for(int b = 0; b < DT_IOP_DENOISE_PROFILE_BANDS; b++)
+    for(int b = 0; b < DT_IOP_DENOISE_PROFILE_V8_BANDS; b++)
     {
       for(int c = 0; c < DT_DENOISE_PROFILE_NONE; c++)
       {
@@ -340,7 +361,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       v6->a[k] = v5.a[k];
       v6->b[k] = v5.b[k];
     }
-    for(int b = 0; b < DT_IOP_DENOISE_PROFILE_BANDS; b++)
+    for(int b = 0; b < DT_IOP_DENOISE_PROFILE_V8_BANDS; b++)
     {
       for(int c = 0; c < DT_DENOISE_PROFILE_NONE; c++)
       {
@@ -371,7 +392,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       v7->a[k] = v6.a[k];
       v7->b[k] = v6.b[k];
     }
-    for(int b = 0; b < DT_IOP_DENOISE_PROFILE_BANDS; b++)
+    for(int b = 0; b < DT_IOP_DENOISE_PROFILE_V8_BANDS; b++)
     {
       for(int c = 0; c < DT_DENOISE_PROFILE_NONE; c++)
       {
@@ -395,7 +416,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     }
     else
       memcpy(&v7, old_params, sizeof(v7)); // was v7 already
-    dt_iop_denoiseprofile_params_t *v8 = new_params;
+    dt_iop_denoiseprofile_params_v8_t *v8 = new_params;
     v8->radius = v7.radius;
     v8->strength = v7.strength;
     v8->mode = v7.mode;
@@ -405,7 +426,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       v8->a[k] = v7.a[k];
       v8->b[k] = v7.b[k];
     }
-    for(int b = 0; b < DT_IOP_DENOISE_PROFILE_BANDS; b++)
+    for(int b = 0; b < DT_IOP_DENOISE_PROFILE_V8_BANDS; b++)
     {
       for(int c = 0; c < DT_DENOISE_PROFILE_NONE; c++)
       {
@@ -421,6 +442,51 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     v8->bias = 0.0f;
     v8->use_new_vst = FALSE;
     v8->overshooting = 1.0f;
+    return 0;
+  }
+  else if(new_version == 9)
+  {
+    dt_iop_denoiseprofile_params_v8_t v8;
+    if(old_version < 8)
+    {
+      // first update to v8
+      if(legacy_params(self, old_params, old_version, &v8, 8)) return 1;
+    }
+    else
+      memcpy(&v8, old_params, sizeof(v8)); // was v8 already
+    dt_iop_denoiseprofile_params_t *v9 = new_params;
+    v9->radius = v8.radius;
+    v9->strength = v8.strength;
+    v9->mode = v8.mode;
+    v9->nbhood = v8.nbhood;
+    for(int k = 0; k < 3; k++)
+    {
+      v9->a[k] = v8.a[k];
+      v9->b[k] = v8.b[k];
+    }
+    for(int b = 0; b < DT_IOP_DENOISE_PROFILE_BANDS; b++)
+    {
+      for(int c = 0; c < DT_DENOISE_PROFILE_NONE; c++)
+      {
+        v9->x[c][b] = b / (DT_IOP_DENOISE_PROFILE_BANDS - 1.0f);
+        v9->y[c][b] = 0.0f;
+      }
+    }
+    for(int b = 0; b < DT_IOP_DENOISE_PROFILE_V8_BANDS; b++)
+    {
+      for(int c = 0; c < DT_DENOISE_PROFILE_NONE; c++)
+      {
+        v9->y[c][b + DT_IOP_DENOISE_PROFILE_BANDS - DT_IOP_DENOISE_PROFILE_V8_BANDS] = v8.y[c][b];
+      }
+    }
+    v9->scattering = v8.scattering;
+    v9->central_pixel_weight = v8.central_pixel_weight;
+    v9->fix_anscombe_and_nlmeans_norm = v8.fix_anscombe_and_nlmeans_norm;
+    v9->wb_adaptive_anscombe = v8.wb_adaptive_anscombe;
+    v9->shadows = v8.shadows;
+    v9->bias = v8.shadows;
+    v9->use_new_vst = v8.use_new_vst;
+    v9->overshooting = v8.overshooting;
     return 0;
   }
   return 1;
