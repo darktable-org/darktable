@@ -803,8 +803,8 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
   // each of them having a width of 2 * r1 and spaced by r1
   // that's 14 * r1 of content + 6 * r1 of spacing
   // inner margins are 0.045 * width
-  float r1 = fminf(DT_PIXEL_APPLY_DPI(20.0f) / 2.0f, 0.91 * width / 20.0f);
-  float r2 = r1 / 2.5f;
+  const float r1 = fminf(DT_PIXEL_APPLY_DPI(20.0f) / 2.0f, 0.91 * width / 20.0f);
+  const float r2 = r1 / 2.5f;
 
   if(cr)
   {
@@ -819,7 +819,7 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
   else
     y = .12 * fscale;
 
-  int rejected = img && (img->flags & 0x7) == 6;
+  const int rejected = img && (img->flags & 0x7) == 6;
 
   switch(what)
   {
@@ -894,10 +894,9 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
     {
       // draw grouping icon and border if the current group is expanded
       // align to the right, left of altered
-      float s = r1;
       if(zoom != 1)
       {
-        x = width * 0.955 - s * 4.5;
+        x = width * 0.955 - r1 * 4.5;
         y = height * 0.045;
       }
       else
@@ -909,11 +908,11 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
       {
         cairo_save(cr);
         if(img && (img->id != img->group_id)) dt_gui_gtk_set_source_rgb(cr, fontcol);
-        dtgtk_cairo_paint_grouping(cr, x, y, 2 * s, 2 * s, 23, NULL);
+        dtgtk_cairo_paint_grouping(cr, x, y, 2 * r1, 2 * r1, 23, NULL);
         cairo_restore(cr);
       }
 
-      if(active && fabs(px - x - .5 * s) <= .8 * s && fabs(py - y - .5 * s) <= .8 * s) ret = 1;
+      if(active && fabs(px - x - .5 * r1) <= .8 * r1 && fabs(py - y - .5 * r1) <= .8 * r1) ret = 1;
 
       break;
     }
@@ -921,17 +920,16 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
     case DT_VIEW_AUDIO:
     {
       // align to right
-      float s = r1;
       if(zoom != 1)
       {
-        x = width * 0.955 - s * 5;
-        y = height * 0.045 + s;
+        x = width * 0.955 - r1 * 5;
+        y = height * 0.045 + r1;
       }
       else
         x = (.04 + 8 * 0.04 - 1.9 * .04) * fscale;
-      if(cr) dt_view_draw_audio(cr, x, y, s);
+      if(cr) dt_view_draw_audio(cr, x, y, r1);
       // mouse is over the audio icon
-      if(active && fabsf(px - x) <= 1.2 * s && fabsf(py - y) <= 1.2 * s) ret = 1;
+      if(active && fabsf(px - x) <= 1.2 * r1 && fabsf(py - y) <= 1.2 * r1) ret = 1;
 
       break;
     }
@@ -939,16 +937,15 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
     case DT_VIEW_ALTERED:
     {
       // align to right
-      float s = r1;
       if(zoom != 1)
       {
-        x = width * 0.955 - s;
-        y = height * 0.045 + s;
+        x = width * 0.955 - r1;
+        y = height * 0.045 + r1;
       }
       else
         x = (.04 + 8 * 0.04) * fscale;
-      if(cr) dt_view_draw_altered(cr, x, y, s);
-      if(active && fabsf(px - x) <= 1.2 * s && fabsf(py - y) <= 1.2 * s) ret = 1;
+      if(cr) dt_view_draw_altered(cr, x, y, r1);
+      if(active && fabsf(px - x) <= 1.2 * r1 && fabsf(py - y) <= 1.2 * r1) ret = 1;
 
       break;
     }
@@ -963,9 +960,8 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
 dt_view_image_over_t dt_view_guess_image_over(int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py)
 {
   // active if zoom>1 or in the proper area
-  gboolean in_metadata_zone = (px < width && py < height / 2) || (zoom > 1);
-
-  gboolean draw_metadata = darktable.gui->show_overlays || in_metadata_zone;
+  const gboolean in_metadata_zone = (px < width && py < height / 2) || (zoom > 1);
+  const gboolean draw_metadata = darktable.gui->show_overlays || in_metadata_zone;
 
   if(draw_metadata && width > DECORATION_SIZE_LIMIT)
   {
@@ -1382,7 +1378,6 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
       cairo_fill(cr);
 
       if(!vals->full_surface || !*(vals->full_surface)) cairo_surface_destroy(surface);
-
     }
 
     if(!vals->full_rgbbuf || !*(vals->full_rgbbuf)) free(rgbbuf);
@@ -1415,7 +1410,6 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
           dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_PREVIEW_HOVER_BORDER);
           cairo_stroke(cr);
         }
-
       }
       else
       {
@@ -1439,8 +1433,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   {
     // overlay a dark transparent background on thumbs to help legibility of overlays
     cairo_set_operator(cr, CAIRO_OPERATOR_MULTIPLY);
-    cairo_pattern_t *pat;
-    pat = cairo_pattern_create_linear(0, 0.8528749999999999 * height,  0, height);
+    cairo_pattern_t *pat = cairo_pattern_create_linear(0, 0.8528749999999999 * height,  0, height);
     cairo_pattern_add_color_stop_rgba(pat, 0, 0.5, 0.5, 0.5, 0);
     cairo_pattern_add_color_stop_rgba(pat, 0.25, 0.5, 0.5, 0.5, 0.25);
     cairo_pattern_add_color_stop_rgba(pat, 1, 0.5, 0.5, 0.5, 1);
@@ -1487,10 +1480,10 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
           const double line_offs = 1.15 * fontsize;
 
 
-          double x0 = DT_PIXEL_APPLY_DPI(1);
-          double y0 = height - overlay_height;
-          double rect_width = width - DT_PIXEL_APPLY_DPI(2);
-          double rect_height = overlay_height - DT_PIXEL_APPLY_DPI(2);
+          const double x0 = DT_PIXEL_APPLY_DPI(1);
+          const double y0 = height - overlay_height;
+          const double rect_width = width - DT_PIXEL_APPLY_DPI(2);
+          const double rect_height = overlay_height - DT_PIXEL_APPLY_DPI(2);
 
           cairo_save(cr);
           cairo_rectangle(cr, x0, y0, rect_width, rect_height);
@@ -1530,7 +1523,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
         {
           for(int k = 0; k < 5; k++)
           {
-            dt_view_image_over_t star = DT_VIEW_STAR_1 + k;
+            const dt_view_image_over_t star = DT_VIEW_STAR_1 + k;
             if(dt_view_process_image_over(star, vals->mouse_over || zoom == 1, cr, img, width, height, zoom, px,
                                           py, outlinecol, fontcol))
               *image_over = star;
@@ -1658,7 +1651,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
         if (zoom != 1)
         {
           const double x0 = 0, y0 = 0;
-          double x1 = x0 + width;
+          const double x1 = x0 + width;
 
           cairo_move_to(cr, x1 - width * 0.08, y0);
           cairo_line_to(cr, x1, y0);
