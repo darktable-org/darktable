@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-09-04 19:19+0200\n"
-"PO-Revision-Date: 2019-09-26 08:37+0100\n"
+"PO-Revision-Date: 2019-09-26 09:07+0100\n"
 "Last-Translator: mmardegan <11093569+mmardegan@users.noreply.github.com>\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
@@ -593,7 +593,7 @@ msgstr "Chiedi prima di eliminare un tag"
 
 #: ../build/src/preferences_gen.h:3159 ../build/src/preferences_gen.h:4061
 msgid "miscellaneous"
-msgstr "Miscellaneo"
+msgstr "Altro"
 
 #: ../build/src/preferences_gen.h:3170
 msgid "width of the side panels in pixels"
@@ -632,13 +632,12 @@ msgid "enable the filmstrip in darkroom, tethering and map modes."
 msgstr "Abilita i provini in modalità Camera Oscura, Tethering e Mappa."
 
 #: ../build/src/preferences_gen.h:3289
-#, fuzzy
 msgid "enable timeline"
-msgstr "Abilita modulo"
+msgstr "Abilita la linea temporale"
 
 #: ../build/src/preferences_gen.h:3301
 msgid "enable the timeline in lighttable mode."
-msgstr "Attiva linea del tempo in modalità Tavolo Luminoso."
+msgstr "Attiva la linea temporale in modalità Tavolo Luminoso."
 
 #: ../build/src/preferences_gen.h:3309
 msgid "overlay txt sidecar over zoomed images"
@@ -1104,7 +1103,7 @@ msgstr ""
 msgid "force exportation of private tags"
 msgstr "Errore durante l'esportazione delle tag"
 
-# Verificare se corretto mantenere XMP-dc Subject e XMP-lr Hierarchical Subject
+# Mantenere in inglese XMP-dc Subject e XMP-lr Hierarchical Subject
 #: ../build/src/preferences_gen.h:4104
 msgid ""
 "darktable doesn't export private tags per default. this option allows to "
@@ -1121,7 +1120,6 @@ msgstr "Richiedi l'esportazione dei sinonimi"
 
 # verificare la traduzione di synonyms e XMP-dc Subject
 #: ../build/src/preferences_gen.h:4124
-#, fuzzy
 msgid ""
 "darktable doesn't export the synonyms per default. this option allows to "
 "export them along with tags to XMP-dc Subject."
@@ -4960,7 +4958,7 @@ msgstr ""
 "Stai esportando in modalità sovrascrittura, questo sovrascrive ogni immagine"
 " \n"
 "\n"
-"Sei sicuro di continuare?"
+"Sei sicuro di voler continuare?"
 
 #: ../src/imageio/storage/email.c:52
 msgid "send as email"
@@ -6108,9 +6106,8 @@ msgid "clip"
 msgstr ""
 
 #: ../src/iop/basicadj.c:761
-#, fuzzy
 msgid "adjusts clipping value for auto exposure calculation"
-msgstr "Regola il valore di ritaglio per il calcolo di auto esposizione"
+msgstr "Regola il valore di taglio per il calcolo di auto esposizione"
 
 #: ../src/iop/bilat.c:95 ../src/iop/clahe.c:66
 msgid "local contrast"
@@ -9813,7 +9810,7 @@ msgstr "Cambia strumento per prelevare la luminosità media nell'immagine"
 
 #: ../src/iop/retouch.c:193
 msgid "retouch"
-msgstr "Ritocca"
+msgstr "Ritocco"
 
 #: ../src/iop/retouch.c:1931
 msgid "cannot display scales when the blending mask is displayed"
@@ -9995,7 +9992,7 @@ msgstr "Imposta l'opacità della fusione"
 #. add all the controls to the iop
 #: ../src/iop/retouch.c:2956
 msgid "retouch tools"
-msgstr "Ritocca gli strumenti"
+msgstr "Strumenti di ritocco"
 
 #. wavelet decompose
 #: ../src/iop/retouch.c:2965
@@ -10012,22 +10009,22 @@ msgstr "Forma"
 #: ../src/iop/retouch.c:3333
 msgctxt "accel"
 msgid "retouch tool circle"
-msgstr "Ritocca lo strumento cerchio"
+msgstr "Strumento di ritocco cerchio"
 
 #: ../src/iop/retouch.c:3334
 msgctxt "accel"
 msgid "retouch tool ellipse"
-msgstr "Ritocca lo strumento ellisse"
+msgstr "Strumento di ritocco ellisse"
 
 #: ../src/iop/retouch.c:3335
 msgctxt "accel"
 msgid "retouch tool path"
-msgstr "Ritocca lo strumento percorso"
+msgstr "Strumento di ritocco tracciato"
 
 #: ../src/iop/retouch.c:3336
 msgctxt "accel"
 msgid "retouch tool brush"
-msgstr "Ritocca lo strumento pennello"
+msgstr "Strumento di ritocco pennello"
 
 #: ../src/iop/retouch.c:3338
 #, fuzzy
@@ -13328,7 +13325,7 @@ msgstr ""
 
 #: ../src/libs/tagging.c:2468
 msgid "toggle show or not darktable tags"
-msgstr "Attiva o disattiva la visualizzazione dei Tag di Darktable"
+msgstr "Attiva o disattiva la visualizzazione dei Tag di darktable"
 
 #: ../src/libs/tagging.c:2482
 msgid "enter tag name"
@@ -13699,9 +13696,8 @@ msgid "ratings"
 msgstr "Valutazione"
 
 #: ../src/libs/tools/timeline.c:110
-#, fuzzy
 msgid "timeline"
-msgstr "Ora"
+msgstr "Linea temporale"
 
 #: ../src/libs/tools/timeline.c:1487
 #, fuzzy
@@ -14251,10 +14247,9 @@ msgstr "Adatta"
 
 #. timeline
 #: ../src/views/lighttable.c:4366
-#, fuzzy
 msgctxt "accel"
 msgid "toggle timeline"
-msgstr "Passa alla visione reale"
+msgstr "Attiva la linea temporale"
 
 #: ../src/views/lighttable.c:4492
 #, fuzzy
@@ -14368,7 +14363,7 @@ msgstr "Avvia e Stop"
 
 #: ../src/views/slideshow.c:606
 msgid "go to next image"
-msgstr "Salta all'immagine successiva"
+msgstr "Vai all'immagine successiva"
 
 #: ../src/views/slideshow.c:611
 msgid "go to previous image"
