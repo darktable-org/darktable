@@ -610,7 +610,7 @@ msgstr "Chiedi prima di eliminare un tag"
 
 #: ../build/src/preferences_gen.h:3159 ../build/src/preferences_gen.h:4061
 msgid "miscellaneous"
-msgstr "Miscellaneo"
+msgstr "Altro"
 
 #: ../build/src/preferences_gen.h:3170
 msgid "width of the side panels in pixels"
@@ -649,13 +649,12 @@ msgid "enable the filmstrip in darkroom, tethering and map modes."
 msgstr "Abilita i provini in modalità Camera Oscura, Tethering e Mappa."
 
 #: ../build/src/preferences_gen.h:3289
-#, fuzzy
 msgid "enable timeline"
-msgstr "Abilita modulo"
+msgstr "Abilita la linea temporale"
 
 #: ../build/src/preferences_gen.h:3301
 msgid "enable the timeline in lighttable mode."
-msgstr "Attiva linea del tempo in modalità Tavolo Luminoso."
+msgstr "Attiva la linea temporale in modalità Tavolo Luminoso."
 
 #: ../build/src/preferences_gen.h:3309
 
@@ -1247,7 +1246,6 @@ msgstr "Nasconde la gerarchia e visualizza una lista di etichette"
 "di esportarli su XMP-dc Subject e XMP-lr Hierarchical Subject."
 # Verificare la traduzione di synonyms
 # verificare la traduzione di synonyms e XMP-dc Subject
-#, fuzzy
 msgid ""
 "when creating XMP file the hierarchical tags are also added as a simple list "
 "of non-hierarchical ones to make them visible to some other programs. when "
@@ -6398,7 +6396,6 @@ msgid "clip"
 msgstr "Taglia"
 
 #: ../src/iop/basicadj.c:766
-#, fuzzy
 msgid "adjusts clipping value for auto exposure calculation"
 msgstr "Regola il valore di taglio per il calcolo di auto esposizione"
 
