@@ -265,7 +265,7 @@
         </para>
 
         <para>
-          Default shortcut for entering culling in fixed mode is <emphasis>X</emphasis>.
+          Default keyboard shortcut for entering culling in fixed mode is <emphasis>X</emphasis>.
         </para>
 
       </sect3>
@@ -280,7 +280,7 @@
         </para>
 
         <para>
-          Default shortcut for entering culling in fixed mode is <emphasis>Ctrl+X</emphasis>.
+          Default keyboard shortcut for entering culling in dynamic mode is <emphasis>Ctrl+X</emphasis>.
         </para>
 
       </sect3>
