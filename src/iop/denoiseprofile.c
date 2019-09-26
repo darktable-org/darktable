@@ -551,11 +551,11 @@ void init_presets(dt_iop_module_so_t *self)
 {
   // these blobs were exported as dtstyle and copied from there:
   add_preset(self, _("chroma (use on 1st instance)"),
-             "gz03eJxjYGiwZ2B44MAApkEYGYDF9m+L3W9Zp2BkxS3GaJq8l8c0a/ddE0aEGjsgAVTngKSfPDHxqH923cv/2ZlxstofeGdsL3uk3h4iTx4GuRGGAWheIV0=", 8,
-             "gz12eJxjZGBgEGYAgRNODESDBnsIHll8AM62GP8=", 7);
+             "gz03eJxjYGiwZ2B44MAApmEYBsD8/dti91vWKRhZcYsxmibv5THN2n3XhAWqYvUqLbvVq1bZAZn2QLZ9aGgo3AwayIGxeNQ/u+7l/+zMOFntD7wztpc9Ug+XoyZmBBIwDAC4Ejr7", 9,
+             "gz11eJxjZGBgkGUAgRNODGiAEV0AJ2iwh+CRyscOAA9yGQo=", 9);
   add_preset(self, _("luma (use on 2nd instance)"),
-             "gz03eJxjYGiwZ2B44DBr5kw7BjAbGYD4Dfv9LAMs3efus7ykp2qayPHcJDzT2pQRoQaojwGozsEeoZ88Mb8Hf2xPqGrb/S5faGeY/cOusHUpVJ5szMAIxQD2liP5", 8,
-             "gz12eJxjZGBgEGAAgR4nBqJBgz0Ejyw+AIdGGMA=", 7);
+             "gz03eJxjYGiwZ2B44DBr5kw7BjAbhGEAzN/vZxlg6T53n+UlPVXTRI7nJuGZ1qYsUBWrV2nZrV61CqiXwR7Itg8NDYWbQW25Svb/tvZCv22/6Py1PaGqbfe7fKGdYfYPu8LWpWC1NMAMjFAMAAFgQFE=", 9,
+             "gz11eJxjZGBgkGEAgR4nBjTAiC6AEzTYQ/BI5WMHAL7TGM0=", 9);
 }
 
 typedef union floatint_t
