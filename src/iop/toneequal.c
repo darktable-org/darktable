@@ -552,7 +552,7 @@ static int sanity_check(dt_iop_module_t *self)
   if(position_self < position_min && self->enabled)
   {
     dt_control_log(_("tone equalizer needs to be after distorsion modules in the pipeline – disabled"));
-    fprintf(stdout, _("tone equalizer needs to be after distorsion modules in the pipeline – disabled\n"));
+    fprintf(stdout, "tone equalizer needs to be after distorsion modules in the pipeline – disabled\n");
     self->enabled = 0;
     dt_dev_add_history_item(darktable.develop, self, FALSE);
 
