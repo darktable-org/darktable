@@ -114,7 +114,7 @@ typedef struct dt_iop_atrous_data_t
 
 const char *name()
 {
-  return _("equalizer");
+  return _("contrast equalizer");
 }
 
 int default_group()
