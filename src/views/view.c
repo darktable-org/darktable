@@ -1134,13 +1134,18 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   {
     cairo_rectangle(cr, 0, 0, width, height);
     dt_gui_gtk_set_source_rgb(cr, bgcol);
-    cairo_fill_preserve(cr);
-    cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0));
-    if(surrounded)
-      dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
-    else
-      dt_gui_gtk_set_source_rgb(cr, outlinecol);
-    cairo_stroke(cr);
+    cairo_fill(cr);
+    if(vals->filmstrip)
+    {
+      cairo_rectangle(cr, DT_PIXEL_APPLY_DPI(1.0), DT_PIXEL_APPLY_DPI(1.0), width - DT_PIXEL_APPLY_DPI(2.0),
+                      height - DT_PIXEL_APPLY_DPI(2.0));
+      cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0));
+      if(surrounded)
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
+      else
+        dt_gui_gtk_set_source_rgb(cr, outlinecol);
+      cairo_stroke(cr);
+    }
 
     if(img)
     {
