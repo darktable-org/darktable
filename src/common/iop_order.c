@@ -181,6 +181,10 @@ GList *dt_ioppr_get_iop_order_rules()
                                                 { "demosaic", "colorin" },
                                                 { "colorin", "colorout" },
                                                 { "colorout", "gamma" },
+						/* clipping GUI broken if flip is done on top */
+                                                { "flip", "clipping" },
+						/* clipping GUI broken if ashift is done on top */
+                                                { "ashift", "clipping" },
                                                 { "\0", "\0" } };
 
   int i = 0;
