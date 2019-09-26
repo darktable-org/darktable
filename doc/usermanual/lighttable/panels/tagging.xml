@@ -76,8 +76,8 @@
       </para>
 
       <para>
-        A tag set as <quote>private</quote> is by default not exported. The configuration point
-        "force exportation of private tags" allows you to keep private tags on exported images.
+        A tag set as <quote>private</quote> is by default not exported. The metadata export setting
+        "private tags" allows you to keep private tags on exported images.
         Both <quote>XMP-dc Subject</quote> and <quote>XMP-lr Hierarchical Subject</quote> are affected.
       </para>
 
@@ -92,7 +92,7 @@
         For example <quote>juvenile</quote>, <quote>kid</quote> or <quote>youth</quote>
         can be set as synonyms of <quote>child</quote>.
         An other usage is to translate the tag in other languages.
-        The configuration point "request exportation of synonyms", when set, makes the image exportation
+        The metadata export setting "synonyms", when set, makes the image exportation
         add synonyms to <quote>XMP-dc Subject</quote> metadata.
       </para>
 
