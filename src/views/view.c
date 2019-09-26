@@ -1435,7 +1435,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   cairo_restore(cr);
 
   cairo_save(cr);
-  if((darktable.gui->show_overlays || vals->mouse_over) && zoom != 1)
+  if((darktable.gui->show_overlays && vals->mouse_over) && zoom != 1)
   {
     // overlay a dark transparent background on thumbs to help legibility of overlays
     cairo_set_operator(cr, CAIRO_OPERATOR_MULTIPLY);
