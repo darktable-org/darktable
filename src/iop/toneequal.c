@@ -2370,7 +2370,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   // set custom cursor dimensions
   const double outer_radius = 16.;
-  const double inner_radius = outer_radius / 1.5;
+  const double inner_radius = outer_radius / 2.0;
   const double setting_scale = 2. * outer_radius / zoom_scale;
   const double setting_offset_x = (outer_radius + 4. * g->inner_padding) / zoom_scale;
 
