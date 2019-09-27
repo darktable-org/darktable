@@ -982,8 +982,8 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   dt_view_image_over_t *image_over = vals->image_over;
   const uint32_t imgid = vals->imgid;
   cairo_t *cr = vals->cr;
-  const int32_t width = vals->width;
-  const int32_t height = vals->height;
+  const float width = vals->width;
+  const float height = vals->height;
   const int32_t zoom = vals->zoom;
   const int32_t px = vals->px;
   const int32_t py = vals->py;
@@ -1025,7 +1025,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   }
 
   // do we need to surround the image ?
-  gboolean surrounded = selected;
+  gboolean surrounded = FALSE;
   const dt_view_t *cur_view = dt_view_manager_get_current_view(darktable.view_manager);
   if(!full_preview && darktable.view_manager->proxy.lighttable.view
      && cur_view == darktable.view_manager->proxy.lighttable.view
@@ -1070,7 +1070,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   }
 
   gboolean draw_thumb_background = FALSE;
-  float imgwd = 0.90f;
+  float imgwd = 0.91f;
   if (image_only)
   {
     imgwd = 1.0;
@@ -1132,11 +1132,9 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
   {
     cairo_rectangle(cr, 0, 0, width, height);
     dt_gui_gtk_set_source_rgb(cr, bgcol);
-    cairo_fill(cr);
+    cairo_fill_preserve(cr);
     if(vals->filmstrip)
     {
-      cairo_rectangle(cr, DT_PIXEL_APPLY_DPI(1.0), DT_PIXEL_APPLY_DPI(1.0), width - DT_PIXEL_APPLY_DPI(2.0),
-                      height - DT_PIXEL_APPLY_DPI(2.0));
       cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(2.0));
       if(surrounded)
         dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
