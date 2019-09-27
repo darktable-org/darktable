@@ -819,6 +819,22 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
 
   const int rejected = img && (img->flags & 0x7) == 6;
 
+  // Search which star is hovered by cursor
+  int star = -1;
+
+  if(active)
+  {
+    for(int i = DT_VIEW_STAR_1; i < DT_VIEW_STAR_5 + 1; ++i)
+    {
+      if(zoom != 1)
+        x = 0.5f * width - 5.0f * r1 + (i - DT_VIEW_STAR_1) * 2.5f * r1;
+      else
+        x = 3.0f * r1 + (what - DT_VIEW_STAR_1 + 1.5f) * 2.5f * r1;
+
+      if((px - x) * (px - x) + (py - y) * (py - y) < r1 * r1) star = i;
+    }
+  }
+
   switch(what)
   {
     case DT_VIEW_STAR_1:
@@ -833,19 +849,28 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
 
       if(cr) dt_draw_star(cr, x, y, r1, r2);
 
-      if(active && (px - x) * (px - x) + (py - y) * (py - y) < r1 * r1)
+      if(active && star > what - DT_VIEW_STAR_1)
       {
+        // hovering display
         ret = 1;
-        if(cr) cairo_fill(cr);
+        if(cr)
+        {
+          cairo_fill_preserve(cr);
+          dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
+          cairo_stroke(cr);
+          dt_gui_gtk_set_source_rgb(cr, outlinecol);
+        }
       }
-      else if(cr && img && (img->flags & 0x7) > what - DT_VIEW_STAR_1)
+      else if(cr && img && (img->flags & 0x7) > what - DT_VIEW_STAR_1 && ((star > what - DT_VIEW_STAR_1) || star == -1))
       {
+        // static display with stars set
         cairo_fill_preserve(cr);
         dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_THUMBNAIL_SELECTED_BORDER);
         cairo_stroke(cr);
         dt_gui_gtk_set_source_rgb(cr, outlinecol);
       }
       else if(cr)
+        // empty static display
         cairo_stroke(cr);
 
       break;
