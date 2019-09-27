@@ -1638,15 +1638,12 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
           const double x0 = 0, y0 = 0;
           const double x1 = x0 + width;
 
-          cairo_move_to(cr, x1 - width * 0.08, y0);
+          cairo_move_to(cr, x1 - z1_fontsize, y0);
           cairo_line_to(cr, x1, y0);
-          cairo_line_to(cr, x1, y0 + height * 0.08);
+          cairo_line_to(cr, x1, y0 + z1_fontsize);
           cairo_close_path(cr);
           cairo_set_source_rgb(cr, 1, 1, 1);
-          cairo_fill_preserve(cr);
-          cairo_set_line_width(cr, 0.005 * width);
-          dt_gui_gtk_set_source_rgb(cr, outlinecol);
-          cairo_stroke(cr);
+          cairo_fill(cr);
         }
         else
         {
@@ -1655,10 +1652,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
           cairo_line_to(cr, 0, 1.5 * z1_fontsize);
           cairo_close_path(cr);
           cairo_set_source_rgb(cr, 1, 1, 1);
-          cairo_fill_preserve(cr);
-          cairo_set_line_width(cr, 0.05 * z1_fontsize);
-          dt_gui_gtk_set_source_rgb(cr, outlinecol);
-          cairo_stroke(cr);
+          cairo_fill(cr);
         }
         cairo_restore(cr);
       }
