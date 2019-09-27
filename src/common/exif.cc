@@ -2918,9 +2918,7 @@ static void dt_set_xmp_dt_history(Exiv2::XmpData &xmpData, const int imgid, int 
     snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:multi_priority", num);
     xmpData[key] = multi_priority;
     snprintf(key, sizeof(key), "Xmp.darktable.history[%d]/darktable:iop_order", num);
-    // This code only writes iop_order as the default which is float, so it's wrong.
-    // We **must** ensure it's written with high precision instead.
-    // xmpData[key] = iop_order;
+    // we ensure writing the iop_order as high precision...
     char *str = (char *)g_malloc(G_ASCII_DTOSTR_BUF_SIZE);
     g_ascii_formatd(str, G_ASCII_DTOSTR_BUF_SIZE, "%.13f", iop_order);
     xmpData[key] = str;
