@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-09-27 10:20+0200\n"
-"PO-Revision-Date: 2019-09-27 10:22+0200\n"
+"PO-Revision-Date: 2019-09-27 13:39+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -10932,7 +10932,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:3133
 msgid "luminance estimator"
-msgstr "estimateur de luminance"
+msgstr "estimateur luminance"
 
 #: ../src/iop/toneequal.c:3145
 msgid "preserve details"
