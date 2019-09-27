@@ -1444,7 +1444,7 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
 
   cairo_save(cr);
   const int z1_fontsize = fminf(DT_PIXEL_APPLY_DPI(20.0f), 0.91 * width / 10.0f);
-  if((darktable.gui->show_overlays && vals->mouse_over) && zoom != 1)
+  if(vals->mouse_over && zoom != 1)
   {
     // overlay a dark transparent background on thumbs to help legibility of overlays
     cairo_set_operator(cr, CAIRO_OPERATOR_MULTIPLY);
