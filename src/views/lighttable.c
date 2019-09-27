@@ -1656,6 +1656,8 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   const float ht = width / zoom;
   lib->thumb_size = wd;
 
+  const float line_width = DT_PIXEL_APPLY_DPI(2.0);
+
   static float oldzoom = -1;
   if(oldzoom < 0) oldzoom = zoom;
 
@@ -1868,8 +1870,8 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
           params.imgid = id;
           params.mouse_over = (id == mouse_over_id);
           params.cr = cr;
-          params.width = wd;
-          params.height = (zoom == 1) ? height : ht;
+          params.width = wd - 2 * line_width;
+          params.height = (zoom == 1) ? height : ht - line_width;
           params.px = img_pointerx;
           params.py = img_pointery;
           params.zoom = zoom;
