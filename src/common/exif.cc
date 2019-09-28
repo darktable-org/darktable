@@ -2120,7 +2120,7 @@ static GList *read_history_v2(Exiv2::XmpData &xmpData, const char *filename)
         static const std::locale& c_locale = std::locale("C");
         std::istringstream istring(str);
         istring.imbue(c_locale);
-	      istring >> current_entry->iop_order;
+        istring >> current_entry->iop_order;
       }
       else if(g_str_has_prefix(key_iter, "darktable:blendop_version"))
       {
