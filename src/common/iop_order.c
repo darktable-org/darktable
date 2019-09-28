@@ -386,7 +386,7 @@ static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_lis
       }
     }
     else
-      fprintf(stderr, "[_ioppr_insert_iop_before] module %s don't exists on iop order list\n", op_next);
+      fprintf(stderr, "[_ioppr_insert_iop_before] module %s does not exist in iop order list\n", op_next);
 
     if(found)
     {
@@ -399,7 +399,7 @@ static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_lis
     }
   }
   else
-    fprintf(stderr, "[_ioppr_insert_iop_before] module %s already exists on iop order list\n", op_new);
+    fprintf(stderr, "[_ioppr_insert_iop_before] module %s already exists in iop order list\n", op_new);
 
   *_iop_order_list = iop_order_list;
 }
@@ -472,7 +472,7 @@ static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_curre
     iop_order_list = g_list_remove_link(iop_order_list, iops_order_current);
   }
   else
-    fprintf(stderr, "[_ioppr_move_iop_before] current module %s don't exists on iop order list\n", op_current);
+    fprintf(stderr, "[_ioppr_move_iop_before] current module %s does not exist in iop order list\n", op_current);
 
   // search for the previous and next one
   if(found)
@@ -505,7 +505,7 @@ static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_curre
     if (DT_IOP_ORDER_INFO) fprintf(stderr,"\n  _ioppr_move_iop_before   %16s: %14.11f [xmp:%8.4f], prev %14.11f, next %14.11f",op_current,iop_order_current->iop_order,iop_order_current->iop_order,iop_order_prev->iop_order,iop_order_next->iop_order);
   }
   else
-    fprintf(stderr, "[_ioppr_move_iop_before] next module %s don't exists on iop order list\n", op_next);
+    fprintf(stderr, "[_ioppr_move_iop_before] next module %s does not exist in iop order list\n", op_next);
 
   *_iop_order_list = iop_order_list;
 }
@@ -913,9 +913,10 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
         else
         {
           // calculate new iop_order
-          iop_order = mod1->iop_order + (mod2->iop_order - mod1->iop_order) / 8.0;
-          /* fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] 2-calculated new iop_order=%f for %s(%f) between %s(%f) and %s(%f)\n",
-                 iop_order, module->op, module->iop_order, module_next->op, module_next->iop_order, mod->op, mod->iop_order); */
+          const double new_iop_order = mod1->iop_order + (mod2->iop_order - mod1->iop_order) / 8.0;
+          if (DT_IOP_ORDER_INFO) fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] 8-calculated new iop_order=%f for %s(%f) between %s(%f) and %s(%f)\n",
+                 new_iop_order, module->op, module->iop_order, mod1->op, mod1->iop_order, mod2->op, mod2->iop_order);
+          iop_order = new_iop_order;
         }
       }
     }
@@ -1010,9 +1011,10 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
         else
         {
           // calculate new iop_order
-          iop_order = mod1->iop_order + (mod2->iop_order - mod1->iop_order) / 8.0;
-          /* fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] 2-calculated new iop_order=%f for %s(%f) between %s(%f) and %s(%f)\n",
-                 iop_order, module->op, module->iop_order, module_next->op, module_next->iop_order, mod->op, mod->iop_order); */
+          const double new_iop_order = mod1->iop_order + (mod2->iop_order - mod1->iop_order) / 8.0;
+          if (DT_IOP_ORDER_INFO) fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] 8-calculated new iop_order=%f for %s(%f) between %s(%f) and %s(%f)\n",
+                 new_iop_order, module->op, module->iop_order, mod1->op, mod1->iop_order, mod2->op, mod2->iop_order);
+          iop_order = new_iop_order;
         }
       }
     }
