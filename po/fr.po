@@ -3850,7 +3850,7 @@ msgstr "$(SEQUENCE) - nombre séquentiel"
 
 #: ../src/gui/gtkentry.c:192
 msgid "$(MAX_WIDTH) - maximum image export width"
-msgstr "$(MAX_HEIGHT) - largeur maximum de l'image exportée"
+msgstr "$(MAX_WIDTH) - largeur maximum de l'image exportée"
 
 #: ../src/gui/gtkentry.c:193
 msgid "$(MAX_HEIGHT) - maximum image export height"
