@@ -1325,22 +1325,12 @@ void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const int im
 
 static void _dev_add_default_modules(dt_develop_t *dev, const int imgid)
 {
-  const int is_raw = dt_image_is_raw(&dev->image_storage);
-  const int is_monochrome = dt_image_is_monochrome(&(dev->image_storage));
-
   for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
 
-    // Note that we special case temperature & highlights as both modules are not
-    // enabled by default. They get enabled depending on the image kind.
-
     if(!dt_history_check_module_exists(imgid, module->op)
-       && (module->enabled == 1
-           // add temperature into history for non monochrome RAW
-           || (!strcmp(module->op, "temperature") && is_raw && !is_monochrome)
-           // and highlights into history for RAW
-           || (!strcmp(module->op, "highlights") && is_raw))
+       && module->default_enabled == 1
        && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
     {
       _dev_insert_module(dev, module, imgid);
