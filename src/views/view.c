@@ -945,12 +945,17 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
       // align to right
       if(zoom != 1)
       {
-        x = width * 0.955 - r1 * 5;
+        x = width * 0.955 - r1 * 6;
         y = height * 0.045 + r1;
       }
       else
         x = (3.0 + 2.0 + 1.0 + 5 * 2.5 + 2.0 + 6.0) * r1;
-      if(cr) dt_view_draw_audio(cr, x, y, r1);
+      if(cr)
+      {
+        dt_gui_gtk_set_source_rgb(cr, fontcol);
+        dt_view_draw_audio(cr, x, y, r1);
+      }
+
       // mouse is over the audio icon
       if(active && fabsf(px - x) <= 1.2 * r1 && fabsf(py - y) <= 1.2 * r1) ret = 1;
 
@@ -967,7 +972,11 @@ int dt_view_process_image_over(dt_view_image_over_t what, int active, cairo_t *c
       }
       else
         x = (3.0 + 2.0 + 1.0 + 5 * 2.5 + 2.0) * r1;
-      if(cr) dt_view_draw_altered(cr, x, y, r1);
+      if(cr)
+      {
+        dt_gui_gtk_set_source_rgb(cr, fontcol);
+        dt_view_draw_altered(cr, x, y, r1);
+      }
       if(active && fabsf(px - x) <= 1.2 * r1 && fabsf(py - y) <= 1.2 * r1) ret = 1;
 
       break;
