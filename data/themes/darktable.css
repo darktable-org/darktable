@@ -1125,15 +1125,19 @@ cell:selected
     color: #FFFF00;
 }
 
-#pref_section
-{
-    border-bottom: 2px solid @fg_color;
+#preferences_notebook scrolledwindow viewport {
+  padding: 5px;
 }
-#pref_section *
+
+#preferences_notebook scrolledwindow label {
+  min-height: 1.5em;
+}
+
+#preferences_notebook scrolledwindow #pref_section > label
 {
-    font-size: 1.3em;
-    margin-left: 10em;
-    margin-right: 10em;
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-top: 1.1em;
 }
 
 /* Color picker */
