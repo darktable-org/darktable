@@ -2115,7 +2115,12 @@ static GList *read_history_v2(Exiv2::XmpData &xmpData, const char *filename)
       }
       else if(g_str_has_prefix(key_iter, "darktable:iop_order"))
       {
-        current_entry->iop_order = history->value().toFloat();  // This is a problem ??
+        // we ensure reading the iop_order as a high precision float
+        string str = g_strdup(history->value().toString().c_str());
+
+        // don't want to modify the locale so we do a simple test and maybe replace a dot by a comma
+        if ( 0.5f > stod("0.6")) replace(str.begin(), str.end(), '.', ',');
+        current_entry->iop_order = std::strtod(str.c_str(), NULL);
       }
       else if(g_str_has_prefix(key_iter, "darktable:blendop_version"))
       {
