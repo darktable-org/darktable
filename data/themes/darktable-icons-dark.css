@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019 Nicolas Auffray
+    copyright (c) 2019 Pascal Obry
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,5 +16,5 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-@import url("darktable-icons-dark.css");
-@import url("darktable-elegant-grey.css");
+@import url("darktable-icons-darker.css");
+@import url("darktable-elegant-dark.css");
