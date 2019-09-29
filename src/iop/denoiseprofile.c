@@ -1553,14 +1553,14 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
   {
     // much faster slightly more inaccurate preview
-    int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
+    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
     K = MIN(3, K);
     scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
   }
   if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
     // much faster slightly more inaccurate preview
-    int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
+    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
     K = MAX(MIN(4, K), K * scale);
     scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
   }
@@ -1794,14 +1794,14 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
   {
     // much faster slightly more inaccurate preview
-    int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
+    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
     K = MIN(3, K);
     scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
   }
   if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
     // much faster slightly more inaccurate preview
-    int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
+    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
     K = MAX(MIN(4, K), K * scale);
     scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
   }
@@ -2231,14 +2231,14 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
   {
     // much faster slightly more inaccurate preview
-    int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
+    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
     K = MIN(3, K);
     scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
   }
   if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
   {
     // much faster slightly more inaccurate preview
-    int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
+    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
     K = MAX(MIN(4, K), K * scale);
     scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
   }
