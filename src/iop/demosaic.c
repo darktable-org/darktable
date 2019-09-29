@@ -2073,11 +2073,6 @@ static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, con
             maxval = (maxval < hm[d] ? hm[d] : maxval);
           }
           maxval -= maxval >> 3;
-          for(int d = 0; d < ndir - 4; d++)
-            if(hm[d] < hm[d + 4])
-              hm[d] = 0;
-            else if(hm[d] > hm[d + 4])
-              hm[d + 4] = 0;
           float avg[4] = { 0.f };
           for(int d = 0; d < ndir; d++)
             if(hm[d] >= maxval)
