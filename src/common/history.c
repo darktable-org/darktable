@@ -920,7 +920,7 @@ static int dt_history_end_attop(int32_t imgid)
 }
 
 
-/* Please note: dt_history_compress_on_image 
+/* Please note: dt_history_compress_on_image
   - is used in lighttable and darkroom mode
   - It compresses history *exclusively* in the database and does *not* touch anything on the history stack
 */
@@ -937,7 +937,7 @@ void dt_history_compress_on_image(int32_t imgid)
   if (sqlite3_step(stmt) == SQLITE_ROW)
     my_history_end = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
- 
+
   if (my_history_end == 0) return;
 
   // compress history, keep disabled modules as documented
@@ -1067,7 +1067,7 @@ static void _history_reorder(int32_t imgid)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
-}  
+}
 #undef give_reorder_information
 #undef no_forced_reordering
 
@@ -1088,14 +1088,14 @@ int dt_history_compress_on_selection()
       dt_history_set_compress_problem(imgid, FALSE);
       dt_history_compress_on_image(imgid);
       _history_reorder(imgid);
- 
+
       // now the modules are in right order but need renumbering to remove leaks
       int max=0;    // the maximum num in main_history for an image
       int size=0;   // the number of items in main_history for an image
       int done=0;   // used for renumbering index
 
       sqlite3_stmt *stmt2;
-    
+
       // get highest num in history
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
         "SELECT MAX(num) FROM main.history WHERE imgid=?1", -1, &stmt2, NULL);
