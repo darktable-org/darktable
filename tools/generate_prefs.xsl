@@ -11,7 +11,6 @@
   GtkWidget *grid = gtk_grid_new();
   gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
-  gtk_grid_set_row_homogeneous(GTK_GRID(grid), TRUE);
   gtk_widget_set_valign(grid, GTK_ALIGN_START);
   int line = 0;
   char tooltip[1024];
@@ -85,8 +84,6 @@
       GtkWidget *seclabel = gtk_label_new(_("import"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
@@ -102,8 +99,6 @@
       GtkWidget *seclabel = gtk_label_new(_("lighttable"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
@@ -119,8 +114,6 @@
       GtkWidget *seclabel = gtk_label_new(_("darkroom"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
@@ -136,8 +129,6 @@
       GtkWidget *seclabel = gtk_label_new(_("map / geolocalisation"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
@@ -153,8 +144,6 @@
       GtkWidget *seclabel = gtk_label_new(_("security"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
@@ -170,8 +159,6 @@
       GtkWidget *seclabel = gtk_label_new(_("miscellaneous"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
@@ -192,8 +179,6 @@
       GtkWidget *seclabel = gtk_label_new(_("quality"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
@@ -209,8 +194,6 @@
       GtkWidget *seclabel = gtk_label_new(_("xmp"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
@@ -226,8 +209,6 @@
       GtkWidget *seclabel = gtk_label_new(_("cpu / gpu / memory"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
@@ -245,8 +226,6 @@
       GtkWidget *seclabel = gtk_label_new(_("miscellaneous"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
-      gtk_widget_set_halign(seclabel, GTK_ALIGN_CENTER);
-      gtk_widget_set_halign(lbox, GTK_ALIGN_CENTER);
       gtk_widget_set_hexpand(lbox, TRUE);
       gtk_widget_set_name(lbox, "pref_section");
       gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
