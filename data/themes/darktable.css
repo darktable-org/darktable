@@ -1135,9 +1135,18 @@ cell:selected
 
 #preferences_notebook scrolledwindow #pref_section > label
 {
-    font-size: 1.5em;
+    font-size: 1.2em;
     font-weight: bold;
+}
+
+#preferences_notebook scrolledwindow #pref_section
+{
     margin-top: 1.1em;
+}
+
+#preferences_notebook scrolledwindow #pref_section:first-child
+{
+    margin-top: 0;
 }
 
 /* Color picker */
