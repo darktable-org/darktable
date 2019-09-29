@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <inttypes.h>
 #include <glib.h>
 #include <stdlib.h>
 
@@ -38,7 +39,8 @@ typedef enum dt_introspection_type_t
   DT_INTROSPECTION_TYPE_DOUBLE,
   DT_INTROSPECTION_TYPE_FLOATCOMPLEX,
   DT_INTROSPECTION_TYPE_CHAR,
-  DT_INTROSPECTION_TYPE_UCHAR,
+  DT_INTROSPECTION_TYPE_INT8,
+  DT_INTROSPECTION_TYPE_UINT8,
   DT_INTROSPECTION_TYPE_SHORT,
   DT_INTROSPECTION_TYPE_USHORT,
   DT_INTROSPECTION_TYPE_INT,
@@ -96,18 +98,26 @@ typedef struct dt_introspection_type_float_complex_t
 typedef struct dt_introspection_type_char_t
 {
   dt_introspection_type_header_t      header;
-  char                                Min;          // minimum allowed value for this char field. taken from comments. defaults to G_MININT8
-  char                                Max;          // maximum allowed value for this char field. taken from comments. defaults to G_MAXINT8
+  char                                Min;          // minimum allowed value for this char field. taken from comments. defaults to CHAR_MIN
+  char                                Max;          // maximum allowed value for this char field. taken from comments. defaults to CHAR_MAX
   char                                Default;      // default value for this char field. taken from comments. defaults to 0
 } dt_introspection_type_char_t;
 
-typedef struct dt_introspection_type_uchar_t
+typedef struct dt_introspection_type_int8_t
 {
   dt_introspection_type_header_t      header;
-  unsigned char                       Min;          // minimum allowed value for this char field. taken from comments. defaults to 0
-  unsigned char                       Max;          // maximum allowed value for this char field. taken from comments. defaults to G_MAXUINT8
-  unsigned char                       Default;      // default value for this char field. taken from comments. defaults to 0
-} dt_introspection_type_uchar_t;
+  int8_t                              Min;          // minimum allowed value for this char field. taken from comments. defaults to G_MININT8
+  int8_t                              Max;          // maximum allowed value for this char field. taken from comments. defaults to G_MAXINT8
+  char                                Default;      // default value for this char field. taken from comments. defaults to 0
+} dt_introspection_type_int8_t;
+
+typedef struct dt_introspection_type_uint8_t
+{
+  dt_introspection_type_header_t      header;
+  uint8_t                             Min;          // minimum allowed value for this char field. taken from comments. defaults to 0
+  uint8_t                             Max;          // maximum allowed value for this char field. taken from comments. defaults to G_MAXUINT8
+  uint8_t                             Default;      // default value for this char field. taken from comments. defaults to 0
+} dt_introspection_type_uint8_t;
 
 typedef struct dt_introspection_type_short_t
 {
@@ -207,7 +217,8 @@ typedef union dt_introspection_field_t
   dt_introspection_type_double_t        Double;        // a double
   dt_introspection_type_float_complex_t FloatComplex;  // a float complex
   dt_introspection_type_char_t          Char;          // a char
-  dt_introspection_type_uchar_t         UChar;         // an unsigned char
+  dt_introspection_type_int8_t          Int8;          // a signed char or int8_t
+  dt_introspection_type_uint8_t         UInt8;         // an unsigned char or uint8_t
   dt_introspection_type_short_t         Short;         // a short
   dt_introspection_type_ushort_t        UShort;        // an unsigned short
   dt_introspection_type_int_t           Int;           // an int
