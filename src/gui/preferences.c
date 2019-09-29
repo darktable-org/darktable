@@ -213,6 +213,15 @@ static gboolean reset_language_widget(GtkWidget *label, GdkEventButton *event, G
 
 static void hardcoded_gui(GtkWidget *grid, int *line)
 {
+
+  GtkWidget *seclabel = gtk_label_new(_("general"));
+  GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+  gtk_widget_set_hexpand(lbox, TRUE);
+  gtk_widget_set_name(lbox, "pref_section");
+  gtk_grid_attach(GTK_GRID(grid), lbox, 0, (*line)++, 2, 1);
+
+
   // language
 
   GtkWidget *label = gtk_label_new(_("interface language"));
