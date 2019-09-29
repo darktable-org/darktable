@@ -1056,27 +1056,9 @@ void init_by_array(sfmt_state_t *s, uint32_t *init_key, int key_length)
 {
   int i, j, count;
   uint32_t r;
-  int lag;
-  int mid;
+  int lag = 11;
   int size = N * 4;
-
-  if(size >= 623)
-  {
-    lag = 11;
-  }
-  else if(size >= 68)
-  {
-    lag = 7;
-  }
-  else if(size >= 39)
-  {
-    lag = 5;
-  }
-  else
-  {
-    lag = 3;
-  }
-  mid = (size - lag) / 2;
+  int mid = (size - lag) / 2;
 
   memset(s->sfmt, 0x8b, sizeof(s->sfmt));
   if(key_length + 1 > N32)
