@@ -144,7 +144,6 @@ const char *dt_image_film_roll_name(const char *path)
   int numparts = dt_conf_get_int("show_folder_levels");
   numparts = CLAMPS(numparts, 1, 5);
   int count = 0;
-  if(numparts < 1) numparts = 1;
   while(folder > path)
   {
     if(*folder == G_DIR_SEPARATOR)
