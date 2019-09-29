@@ -400,7 +400,7 @@ static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_lis
     if(found)
     {
       // set the iop_order
-      iop_order_new->iop_order = iop_order_prev + (iop_order_next - iop_order_prev) / 2.0;
+      iop_order_new->iop_order = iop_order_prev + (iop_order_next - iop_order_prev) / 8.0;
       if (DT_IOP_ORDER_INFO) fprintf(stderr,"\n  _ioppr_insert_iop_before %16s: %14.11f [xmp:%8.4f], prev %14.11f, next %14.11f",op_new,iop_order_new->iop_order,iop_order_new->iop_order,iop_order_prev,iop_order_next);
 
       // insert it on the proper order
@@ -507,7 +507,7 @@ static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_curre
   if(found)
   {
     // set the iop_order
-    iop_order_current->iop_order = iop_order_prev->iop_order + (iop_order_next->iop_order - iop_order_prev->iop_order) / 2.0;
+    iop_order_current->iop_order = iop_order_prev->iop_order + (iop_order_next->iop_order - iop_order_prev->iop_order) / 8.0;
 
     // insert it on the proper order
     iop_order_list = g_list_insert(iop_order_list, iop_order_current, position);
@@ -664,7 +664,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
           dt_iop_module_t *mod_next = (dt_iop_module_t *)(modules1->data);
           if(mod->iop_order != mod_next->iop_order)
           {
-            mod->iop_order += (mod_next->iop_order - mod->iop_order) / 2.0;
+            mod->iop_order += (mod_next->iop_order - mod->iop_order) / 8.0;
           }
           else
           {
@@ -688,7 +688,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
           dt_iop_module_t *mod_next = (dt_iop_module_t *)(modules1->data);
           if(mod_prev->iop_order != mod_next->iop_order)
           {
-            mod_prev->iop_order -= (mod_prev->iop_order - mod_next->iop_order) / 2.0;
+            mod_prev->iop_order -= (mod_prev->iop_order - mod_next->iop_order) / 8.0;
           }
           else
           {
