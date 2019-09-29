@@ -110,12 +110,16 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     // move frequency filters right after input profile - convolutions need L2 spaces
     // to respect Parseval's theorem and avoid halos at edges
     // NB: again, frequency filter in Lab make no sense
+    // sharpen is marking the end of this section
+    _ioppr_move_iop_after(_iop_order_list, "sharpen", "defringe", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "atrous", "defringe", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "lowpass", "atrous", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "highpass", "lowpass", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "sharpen", "highpass", dont_move);
+//    _ioppr_move_iop_after(_iop_order_list, "sharpen", "highpass", dont_move);
 
     // color adjustments in scene-linear space : move right after colorin
+    // bloom is marking the end of this section
+    _ioppr_move_iop_after(_iop_order_list, "bloom", "sharpen", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "channelmixer", "sharpen", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colorchecker", "channelmixer", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colormapping", "colorchecker", dont_move);
@@ -126,28 +130,33 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     _ioppr_move_iop_after(_iop_order_list, "basicadj", "colorbalance", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "rgbcurve", "basicadj", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "rgblevels", "rgbcurve", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "bloom", "rgblevels", dont_move);
+//    _ioppr_move_iop_after(_iop_order_list, "bloom", "rgblevels", dont_move);
 
     // scene-linear to display-referred encoding
     // !!! WALL OF THE NON-LINEARITY !!! There is no coming back for colour ratios
+    // shadi ending this section
+    _ioppr_move_iop_after(_iop_order_list, "shadhi", "bloom", dont_move);
+
     _ioppr_move_iop_after(_iop_order_list, "basecurve", "bloom", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "filmic", "basecurve", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colisa", "filmic", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "tonecurve", "colisa", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "levels", "tonecurve", dont_move);
 
-    _ioppr_move_iop_after(_iop_order_list, "shadhi", "levels", dont_move);
+//    _ioppr_move_iop_after(_iop_order_list, "shadhi", "levels", dont_move);
 
     // recover local contrast after non-linear tone edits
     _ioppr_move_iop_after(_iop_order_list, "bilat", "shadhi", dont_move);
 
     // display-referred colour edits
+    // colorcontrast ending this section
+    _ioppr_move_iop_after(_iop_order_list, "colorcontrast", "bilat", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colorcorrection", "bilat", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colorzones", "colorcorrection", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "vibrance", "colorzones", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "velvia", "vibrance", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colorize", "velvia", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colorcontrast", "colorize", dont_move);
+//    _ioppr_move_iop_after(_iop_order_list, "colorcontrast", "colorize", dont_move);
 
     // fix clipping before going in colourout
     _ioppr_move_iop_before(_iop_order_list, "colorreconstruct", "colorout", dont_move);
@@ -391,7 +400,7 @@ static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_lis
     if(found)
     {
       // set the iop_order
-      iop_order_new->iop_order = iop_order_prev + (iop_order_next - iop_order_prev) / 8.0;
+      iop_order_new->iop_order = iop_order_prev + (iop_order_next - iop_order_prev) / 2.0;
       if (DT_IOP_ORDER_INFO) fprintf(stderr,"\n  _ioppr_insert_iop_before %16s: %14.11f [xmp:%8.4f], prev %14.11f, next %14.11f",op_new,iop_order_new->iop_order,iop_order_new->iop_order,iop_order_prev,iop_order_next);
 
       // insert it on the proper order
@@ -498,7 +507,7 @@ static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_curre
   if(found)
   {
     // set the iop_order
-    iop_order_current->iop_order = iop_order_prev->iop_order + (iop_order_next->iop_order - iop_order_prev->iop_order) / 8.0;
+    iop_order_current->iop_order = iop_order_prev->iop_order + (iop_order_next->iop_order - iop_order_prev->iop_order) / 2.0;
 
     // insert it on the proper order
     iop_order_list = g_list_insert(iop_order_list, iop_order_current, position);
@@ -655,7 +664,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
           dt_iop_module_t *mod_next = (dt_iop_module_t *)(modules1->data);
           if(mod->iop_order != mod_next->iop_order)
           {
-            mod->iop_order += (mod_next->iop_order - mod->iop_order) / 8.0;
+            mod->iop_order += (mod_next->iop_order - mod->iop_order) / 2.0;
           }
           else
           {
@@ -679,7 +688,7 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
           dt_iop_module_t *mod_next = (dt_iop_module_t *)(modules1->data);
           if(mod_prev->iop_order != mod_next->iop_order)
           {
-            mod_prev->iop_order -= (mod_prev->iop_order - mod_next->iop_order) / 8.0;
+            mod_prev->iop_order -= (mod_prev->iop_order - mod_next->iop_order) / 2.0;
           }
           else
           {
@@ -913,8 +922,8 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
         else
         {
           // calculate new iop_order
-          const double new_iop_order = mod1->iop_order + (mod2->iop_order - mod1->iop_order) / 8.0;
-          if (DT_IOP_ORDER_INFO) fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] 8-calculated new iop_order=%f for %s(%f) between %s(%f) and %s(%f)\n",
+          const double new_iop_order = mod1->iop_order + (mod2->iop_order - mod1->iop_order) / 2.0;
+          if (DT_IOP_ORDER_INFO) fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] calculated new iop_order=%f for %s(%f) between %s(%f) and %s(%f)\n",
                  new_iop_order, module->op, module->iop_order, mod1->op, mod1->iop_order, mod2->op, mod2->iop_order);
           iop_order = new_iop_order;
         }
@@ -1011,8 +1020,8 @@ double dt_ioppr_get_iop_order_before_iop(GList *iop_list, dt_iop_module_t *modul
         else
         {
           // calculate new iop_order
-          const double new_iop_order = mod1->iop_order + (mod2->iop_order - mod1->iop_order) / 8.0;
-          if (DT_IOP_ORDER_INFO) fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] 8-calculated new iop_order=%f for %s(%f) between %s(%f) and %s(%f)\n",
+          const double new_iop_order = mod1->iop_order + (mod2->iop_order - mod1->iop_order) / 2.0;
+          if (DT_IOP_ORDER_INFO) fprintf(stderr, "[dt_ioppr_get_iop_order_before_iop] calculated new iop_order=%f for %s(%f) between %s(%f) and %s(%f)\n",
                  new_iop_order, module->op, module->iop_order, mod1->op, mod1->iop_order, mod2->op, mod2->iop_order);
           iop_order = new_iop_order;
         }
