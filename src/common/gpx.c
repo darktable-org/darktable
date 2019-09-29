@@ -91,7 +91,7 @@ dt_gpx_t *dt_gpx_new(const gchar *filename)
   gpx = g_malloc0(sizeof(dt_gpx_t));
 
   /* skip UTF-8 BOM */
-  if(gpxmf_size > 3 && gpxmf_content[0] == '\xef' && gpxmf_content[1] == '\xbb' && gpxmf_content[2] == '\xbf')
+  if(gpxmf_content[0] == '\xef' && gpxmf_content[1] == '\xbb' && gpxmf_content[2] == '\xbf')
     bom_offset = 3;
 
   /* initialize the parser and start parse gpx xml data */
