@@ -316,8 +316,7 @@ static void _lib_filter_reset(dt_lib_module_t *self, gboolean smart_filter)
     const int new_filter_rating = MIN(initial_rating, current_filter_rating);
 
     /* convert new filter rating to filter dropdown selector */
-    const int new_filter = (new_filter_rating >= 1 && new_filter_rating <= 5) ? new_filter_rating + 1
-                                                                              : new_filter_rating;
+    const int new_filter = (new_filter_rating >= 1) ? new_filter_rating + 1 : new_filter_rating;
 
     /* Reset to new filter dropdown item */
     gtk_combo_box_set_active(GTK_COMBO_BOX(dropdowns->filter), new_filter);
