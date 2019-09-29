@@ -791,8 +791,7 @@ static GtkTreeModel *_create_filtered_model(GtkTreeModel *model, dt_lib_collect_
 
     if(level > 0)
     {
-      if(level > 0 &&
-         gtk_tree_model_iter_n_children(model, &iter) == 0 &&
+      if(gtk_tree_model_iter_n_children(model, &iter) == 0 &&
          gtk_tree_model_iter_parent(model, &child, &iter))
       {
         path = gtk_tree_model_get_path(model, &child);
