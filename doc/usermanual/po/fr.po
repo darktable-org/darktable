@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2019-09-27 16:03+0200\n"
-"PO-Revision-Date: 2019-09-27 23:50+0200\n"
+"PO-Revision-Date: 2019-09-30 00:11+0200\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -2307,7 +2307,6 @@ msgstr ""
 "\"image_information\"><placeholder-1/></link> en bas à gauche."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1698(para)
-#, fuzzy
 msgid ""
 "While the mouse is over an image frame, there are a number of actions you "
 "can perform. Here is a table of keyboard shortcuts and assigned actions. "
@@ -2334,16 +2333,16 @@ msgstr ""
 "colwidth=\"3*\"/><tbody><row><entry><emphasis>0 – 5</emphasis></"
 "entry><entry>définir l’évaluation de l’image : si une image a 1 étoile et "
 "que vous pressez la touche <emphasis>1</emphasis> alors elle deviendra non "
-"évaluée. Presser <emphasis>r</emphasis> rejettera l’image.</entry></"
+"évaluée. Presser <emphasis>R</emphasis> rejettera l’image.</entry></"
 "row><row><entry><emphasis>F1 – F5</emphasis></entry><entry>définir un label "
-"de couleur.</entry></row><row><entry><emphasis>ctrl-c</emphasis></"
+"de couleur.</entry></row><row><entry><emphasis>Ctrl+C</emphasis></"
 "entry><entry>copier l’historique de développement.</entry></"
-"row><row><entry><emphasis>ctrl-v</emphasis></entry><entry>coller "
+"row><row><entry><emphasis>Ctrl+V</emphasis></entry><entry>coller "
 "l’historique de développement précédemment copié.</entry></"
-"row><row><entry><emphasis>d</emphasis></entry><entry>ouvrir la chambre noire "
-"pour le développement.</entry></row><row><entry><emphasis>z</emphasis></"
+"row><row><entry><emphasis>D</emphasis></entry><entry>ouvrir la chambre noire "
+"pour le développement.</entry></row><row><entry><emphasis>W</emphasis></"
 "entry><entry> zoomer entièrement l’image tant que la touche est pressée.</"
-"entry></row><row><entry><emphasis>ctrl-z</emphasis></entry><entry> zoomer "
+"entry></row><row><entry><emphasis>Ctrl+W</emphasis></entry><entry> zoomer "
 "entièrement l'image et montrer les zones de mise au point.</entry></row></"
 "tbody></tgroup></informaltable>"
 
@@ -2458,7 +2457,6 @@ msgstr ""
 "souris pour naviguer dans votre collection."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1830(para)
-#, fuzzy
 msgid ""
 "You can navigate left/right/up/down through your collection using ←/→/↑/↓. "
 "Pressing <emphasis>G</emphasis> goes to the top, <emphasis>Shift+G</"
@@ -2468,12 +2466,11 @@ msgstr ""
 "Dans les deux modes vous pouvez naviguer dans votre collection à gauche/à "
 "droite/en haut/en bas/  en utilisant les touches ←/→/↑/↓. Taper <emphasis>g</"
 "emphasis> dans le mode navigateur de fichier vous dirige vers le haut, taper "
-"<emphasis>shift-g</emphasis> vous dirige vers le bas, taper "
-"<emphasis>PageUp</emphasis> vous emmène une page au-dessus et taper "
-"<emphasis>PageDown</emphasis> vous emmène une page en-dessous."
+"<emphasis>Maj-g</emphasis> vous dirige vers le bas, taper <emphasis>PageUp</"
+"emphasis> vous emmène une page au-dessus et taper <emphasis>PageDown</"
+"emphasis> vous emmène une page en-dessous."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1837(para)
-#, fuzzy
 msgid ""
 "You can select the image under the pointer by <emphasis>left-clicking</"
 "emphasis> on its thumbnail or by pressing <emphasis>Return</emphasis>. A "
@@ -2487,7 +2484,7 @@ msgstr ""
 "<emphasis>entrée</emphasis>. Une plage d'images est sélectionnée en "
 "<emphasis>cliquant</emphasis> sur la première et puis en <emphasis>Maj-"
 "cliquant</emphasis> sur la dernière. Des images sont ajoutées ou retirées de "
-"votre sélection en <emphasis>ctrl-cliquant</emphasis> sur leur miniature ou "
+"votre sélection en <emphasis>Ctrl-cliquant</emphasis> sur leur miniature ou "
 "en tapant <emphasis>la barre d'espace</emphasis>."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1846(para)
@@ -2618,19 +2615,25 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1924(title)
 msgid "Zoom and pan"
-msgstr ""
+msgstr "Zoom et panoramique"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1926(para)
 msgid ""
 "In culling mode, you can zoom and pan in the images to see details. Images "
 "can be zoomed until 100%."
 msgstr ""
+"En mode sélection, vous pouvez effectuer un zoom et un panoramique des "
+"images pour afficher les détails. Les images peuvent être zoomées jusqu'à "
+"100%."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1930(para)
 msgid ""
 "<emphasis>Ctrl+scroll</emphasis> to zoom in/out images. <emphasis>left click "
 "+ drag</emphasis> to pan in zoomed images."
 msgstr ""
+"<emphasis> Ctrl + défilement </emphasis> pour zoomer / dézoomer les images. "
+"<emphasis> faites un clic gauche / glisser </emphasis> pour faire un "
+"panoramique des images zoomées."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1934(para)
 msgid ""
@@ -2645,10 +2648,14 @@ msgid ""
 "backend for full preview cache in preferences (see <xref linkend="
 "\"core_options\"/>). Keep in mind that this could take a lot of disk space..."
 msgstr ""
+"Pour améliorer les performances lors du chargement d'images zoomées, vous "
+"pouvez activer le disque dur comme cache de prévisualisation complet dans "
+"les préférences (voir <xref linkend=\"core_options\"/>). Gardez à l'esprit "
+"que cela pourrait prendre beaucoup d'espace disque ..."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1950(title)
 msgid "Full preview"
-msgstr ""
+msgstr "Aperçu complet"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1952(para)
 #, fuzzy
@@ -2667,7 +2674,6 @@ msgid "focus detection"
 msgstr "détection de la mise au point"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1962(para)
-#, fuzzy
 msgid ""
 "Holding down the <emphasis>Ctlr+W</emphasis> key fully zooms into the image "
 "and additionally activates an analysis for sharp regions, detecting those "
@@ -2678,7 +2684,7 @@ msgid ""
 "blue border. For this tool to work the input image needs to hold an embedded "
 "JPEG thumbnail which is the case for most raw files."
 msgstr ""
-"Presser la touche <emphasis>ctrl-z</emphasis> affiche un aperçu entièrement "
+"Presser la touche <emphasis>Ctrl-W</emphasis> affiche un aperçu entièrement "
 "zoomé de l’image et de plus active la recherche des zones nettes, détectant "
 "les parties de l'image correspondant à la mise au point. Les zones ayant une "
 "forte netteté sont signalées par une bordure rouge – plus l’intensité de la "
@@ -2689,13 +2695,12 @@ msgstr ""
 "est le cas pour la plupart des fichiers RAW."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1972(para)
-#, fuzzy
 msgid ""
 "Sometimes pressing <emphasis>W</emphasis> or <emphasis>Ctrl+W</emphasis> may "
 "not reveal an immediate effect – in that case please click into the center "
 "area and press the corresponding key again."
 msgstr ""
-"Parfois, presser <emphasis>z</emphasis> ou <emphasis>ctrl-z</emphasis> n’a "
+"Parfois, presser <emphasis>W</emphasis> ou <emphasis>Ctrl-W</emphasis> n’a "
 "pas d’effet immédiat – dans ce cas, cliquez au centre de la zone et pressez "
 "de nouveau la touche correspondante."
 
@@ -2725,6 +2730,13 @@ msgid ""
 "exactly like in culling layout (see <xref linkend=\"lighttable_culling_zoom"
 "\"/>)."
 msgstr ""
+"Si vous souhaitez conserver l'aperçu complet sans avoir à maintenir la "
+"touche <emphasis> W </emphasis>, vous pouvez utiliser le mode d'aperçu "
+"persistant avec la touche <emphasis> Alt + W </emphasis> ou <emphasis> Ctrl "
+"+ Alt + W </emphasis> si vous souhaitez une détection de la mise au point. "
+"En mode d'aperçu persistant, vous pouvez effectuer un zoom et un panoramique "
+"de l'image, exactement comme dans la disposition sélection (voir <xref "
+"linkend=\"lighttable_culling_zoom\"/>)."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2014(title)
 msgid "Lighttable concepts"
@@ -3296,7 +3308,6 @@ msgstr ""
 "collection d’images lorsqu’elle est affichée dans la vue table lumineuse."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2429(para)
-#, fuzzy
 msgid ""
 "You can combine images into a group by selecting them, and clicking the "
 "<quote>group</quote> button in the <emphasis>selected image(s)</emphasis> "
@@ -3311,9 +3322,9 @@ msgstr ""
 "Vous pouvez combiner des images en un groupe en les sélectionnant et en "
 "cliquant le bouton <quote>grouper</quote> dans le panneau <emphasis>images "
 "sélectionnées</emphasis> (<xref linkend=\"selected_images\"/>), ou en "
-"pressant <emphasis>ctrl-g</emphasis>. De la même manière, vous pouvez "
+"pressant <emphasis>Ctrl-G</emphasis>. De la même manière, vous pouvez "
 "retirer les images sélectionnées d’un groupe en cliquant le bouton "
-"<quote>dégrouper</quote> ou en pressant <emphasis>Maj-ctrl-g</emphasis>. Les "
+"<quote>dégrouper</quote> ou en pressant <emphasis>Maj-Ctrl-G</emphasis>. Les "
 "images générées en clonant des images existantes sont automatiquement "
 "groupées. Si vous importez des images depuis le système de fichiers ou "
 "depuis un appareil photo, les images ayant le même nom de base mais des "
@@ -3793,20 +3804,17 @@ msgstr ""
 "réinitialisée à chaque fois que l'on change d'image dans la chambre noire."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2816(para)
-#, fuzzy
 msgid "<emphasis>Ctrl+Z</emphasis> : undo last modifications"
-msgstr ""
-"<emphasis>ctrl-z</emphasis> : annule la dernière modification de l'historique"
+msgstr "<emphasis>Ctrl-Z</emphasis> : annule les dernières modifications"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2820(para)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6151(para)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20032(para)
-#, fuzzy
 msgid ""
 "<emphasis>Ctrl+Y</emphasis> : redo last undo (does nothing if undo has not "
 "been used yet)"
 msgstr ""
-"<emphasis>ctrl-y</emphasis> : refait le dernier annuler (ne fait rien si "
+"<emphasis>Ctrl-Y</emphasis> : refait le dernier annuler (ne fait rien si "
 "annuler n'a pas encore été utilisé)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2812(para)
@@ -4553,6 +4561,9 @@ msgid ""
 "If you have set single-click mode, you'll be able to select range of values "
 "with mouse. This only works for numerical and date-time attributes."
 msgstr ""
+"Si vous avez défini le mode simple clic, vous pourrez sélectionner une plage "
+"de valeurs avec la souris. Cela ne fonctionne que pour les attributs "
+"numériques et date-heure."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3406(para)
 msgid ""
@@ -4713,6 +4724,9 @@ msgid ""
 "shortcut <emphasis>Ctrl+T</emphasis> This allow you to see the repartition "
 "of all your images by date-time."
 msgstr ""
+"Dans la table lumineuse, vous pouvez afficher une chronologie dans le "
+"panneau inférieur avec le raccourci <emphasis> Ctrl + T </emphasis>. Cela "
+"vous permet de voir la répartition de toutes vos images par date-heure."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3546(para)
 msgid ""
@@ -4720,6 +4734,10 @@ msgid ""
 "scroll</emphasis>. <emphasis>Ctrl+scroll</emphasis> allow you to zoom in/out "
 "the timeline."
 msgstr ""
+"Dans la chronologie, vous pouvez afficher les dates suivantes et précédentes "
+"avec <emphasis> le défilement souris </emphasis>. <emphasis> Ctrl + "
+"défilement </emphasis> vous permet de faire un zoom avant / arrière sur la "
+"chronologie."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3551(para)
 msgid ""
@@ -6067,12 +6085,11 @@ msgid ""
 msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4837(para)
-#, fuzzy
 msgid ""
 "Ctrl+T opens a small text box at the bottom of the central view for quickly "
 "tagging your selected images by typing a tag phrase and hitting return."
 msgstr ""
-"Astuce : ctrl-t ouvre une petite zone de texte en bas de la vue centrale "
+"Astuce : Ctrl-T ouvre une petite zone de texte en bas de la vue centrale "
 "afin de marquer rapidement les images que vous avez sélectionnées en tapant "
 "une phrase et en frappant Entrée."
 
@@ -6185,10 +6202,9 @@ msgid "file export"
 msgstr "exporter un fichier"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4965(emphasis)
-#, fuzzy
 msgid "Tip: you can use Ctrl+E from within the darkroom mode to export."
 msgstr ""
-"Astuce : dans le mode chambre noire vous pouvez utiliser ctrl-e pour "
+"Astuce : dans le mode chambre noire vous pouvez utiliser Ctrl+E pour "
 "exporter."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4962(entry)
@@ -7168,10 +7184,9 @@ msgstr ""
 "pouvez aussi effectuer un zoom entre 1:1 et l’adaptation de l’image à "
 "l’écran en utilisant le défilement avec la molette de la souris. Un "
 "défilement avec la molette de la souris tout en maintenant pressée la touche "
-"ctrl vous donnera une plage de zoom comprise entre 2:1 et 1:10."
+"Ctrl vous donnera une plage de zoom comprise entre 2:1 et 1:10."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5793(para)
-#, fuzzy
 msgid ""
 "You normally export multiple images from the lighttable view but you can "
 "also export the current image directly from the darkroom by using the "
@@ -7180,7 +7195,7 @@ msgid ""
 msgstr ""
 "Vous exportez normalement plusieurs images depuis la vue table lumineuse "
 "mais vous pouvez aussi exporter l’image courante directement depuis la "
-"chambre noire en utilisant le raccourci <emphasis>ctrl-e</emphasis>. Les "
+"chambre noire en utilisant le raccourci <emphasis>Ctrl+E</emphasis>. Les "
 "paramètres d’exportation sont alors ceux actuellement sélectionnés sur la "
 "table lumineuse."
 
@@ -7588,14 +7603,13 @@ msgstr ""
 "scale_rough_step_multiplier=10.0 </programlisting>."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6076(para)
-#, fuzzy
 msgid ""
 "You can hold <emphasis>Ctrl</emphasis> key decreasing the stepsize by a "
 "factor of 10. You can change this multiplier: <programlisting format="
 "\"linespecific\">darkroom/ui/scale_precise_step_multiplier=0.1 </"
 "programlisting>"
 msgstr ""
-"Vous pouvez maintenir pressée la touche <emphasis>ctrl</emphasis> pour "
+"Vous pouvez maintenir pressée la touche <emphasis>Ctrl</emphasis> pour "
 "diviser le pas d'un facteur 10. Vous pouvez changer ce multiplicateur : "
 "<programlisting format=\"linespecific\">darkroom/ui/"
 "scale_precise_step_multiplier=0.1 </programlisting>."
@@ -7666,10 +7680,9 @@ msgstr ""
 "réinitialisée à chaque fois que l'on change d'image dans la chambre noire."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6147(para)
-#, fuzzy
 msgid "<emphasis>Ctrl+Z</emphasis> : undo last history modification"
 msgstr ""
-"<emphasis>ctrl-z</emphasis> : annule la dernière modification de l'historique"
+"<emphasis>Ctrl+Z</emphasis> : annule la dernière modification de l'historique"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6143(para)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20024(para)
@@ -8576,7 +8589,6 @@ msgstr ""
 "liste des formes définies."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6796(para)
-#, fuzzy
 msgid ""
 "Independent of the specific shape you can <emphasis>scroll</emphasis> to "
 "change the size of the shape, <emphasis>shift+scroll</emphasis> to change "
@@ -8584,19 +8596,18 @@ msgid ""
 "opacity of the shape."
 msgstr ""
 "Indépendamment de la forme spécifique vous pouvez <emphasis>défiler</"
-"emphasis> pour changer sa taille, <emphasis>maj+défiler</emphasis> pour "
-"changer son adoucissement et <emphasis>ctrl+défiler</emphasis> pour changer "
+"emphasis> pour changer sa taille, <emphasis>Maj+défiler</emphasis> pour "
+"changer son adoucissement et <emphasis>Ctrl+défiler</emphasis> pour changer "
 "son opacité."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6802(para)
-#, fuzzy
 msgid ""
 "If you <emphasis>Ctrl+click</emphasis> on the edit mode symbol you enter a "
 "restricted edit mode. Certain actions like dragging a complete shape or "
 "changing its size are blocked. Only finetuning changes like dragging a node "
 "are allowed."
 msgstr ""
-"Si vous faites un <emphasis>ctrl-clic</emphasis> sur le symbole de mode "
+"Si vous faites un <emphasis>Ctrl+clic</emphasis> sur le symbole de mode "
 "d’édition, vous entrez dans un mode d’édition restreint. Certaines actions, "
 "telles que le glisser d’une forme complète ou la modification de ses "
 "dimensions sont bloquées. Seules les modifications d’ajustement précis "
@@ -8635,7 +8646,6 @@ msgstr ""
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> ajoute un coup de pinceau."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6835(para)
-#, fuzzy
 msgid ""
 "Start drawing by <emphasis>left-clicking</emphasis> into the canvas and "
 "moving the mouse while keeping the button pressed. The brush stroke is "
@@ -8653,7 +8663,7 @@ msgstr ""
 "dimension, la dureté et l’opacité de la brosse peuvent être modifiées "
 "respectivement en utilisant le <emphasis>défilement</emphasis>  avec la "
 "molette de la souris, un <emphasis>maj-défilement</emphasis>, et un "
-"<emphasis>ctrl+défilement</emphasis>, ou bien avant de commencer à dessiner "
+"<emphasis>Ctrl+défilement</emphasis>, ou bien avant de commencer à dessiner "
 "ou bien à tout moment au cours de l'opération. De même vous pouvez utiliser "
 "les touches <emphasis>[ | ]</emphasis> pour diminuer/augmenter la dimension "
 "de la brosse, <emphasis>{ | }</emphasis> pour diminuer/augmenter sa dureté, "
@@ -8722,7 +8732,6 @@ msgstr ""
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> ajoute une forme circulaire."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6898(para)
-#, fuzzy
 msgid ""
 "<emphasis>Click</emphasis> into the canvas to place the circle. "
 "<emphasis>Left-click</emphasis> and drag the circle to a different position "
@@ -8741,9 +8750,9 @@ msgstr ""
 "<emphasis>défiler</emphasis> avec la molette de la souris lorsque que le "
 "curseur est à l'intérieur du cercle pour en modifier le diamètre. Un "
 "<emphasis>défilement</emphasis> alors que le curseur est sur le contour "
-"ajustera graduellement la largeur de la zone de transition, un <emphasis>maj-"
-"défilement</emphasis> n'importe où dans la forme aura le même effet. Avec un "
-"<emphasis>ctrl+défilement</emphasis>, vous pouvez ajuster l’opacité du "
+"ajustera graduellement la largeur de la zone de transition, un <emphasis>Maj"
+"+défilement</emphasis> n'importe où dans la forme aura le même effet. Avec "
+"un <emphasis>Ctrl+défilement</emphasis>, vous pouvez ajuster l’opacité du "
 "cercle – ceci est mieux observé lorsque le masque est affiché en pressant le "
 "bouton <inlinegraphic fileref=\"images/darkroom_module_icon_mask.png\"  "
 "scalefit=\"1\" width=\"2%\" align=\"center\"/>."
@@ -8768,7 +8777,6 @@ msgstr ""
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> ajoute une forme elliptique."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6941(para)
-#, fuzzy
 msgid ""
 "The general principle is the same as for the circle shape. In addition you "
 "get four nodes on the ellipse line. <emphasis>Click</emphasis> on the nodes "
@@ -8780,9 +8788,9 @@ msgstr ""
 "Le principe général est le même que pour la forme circulaire. Vous obtenez "
 "en plus quatre nœuds sur le contour de l’ellipse. <emphasis>Cliquez</"
 "emphasis> sur les nœuds pour ajuster l’excentricité de l’ellipse. Un "
-"<emphasis>ctrl+clic</emphasis> sur ces nœuds pour faire pivoter l’ellipse "
-"ou, alternativement, utilisez un <emphasis>maj+ctrl+défiler</emphasis>. Un "
-"<emphasis>maj-clic</emphasis> dans la forme bascule la zone de transition "
+"<emphasis>Ctrl+clic</emphasis> sur ces nœuds pour faire pivoter l’ellipse "
+"ou, alternativement, utilisez un <emphasis>Maj+Ctrl+défiler</emphasis>. Un "
+"<emphasis>Maj-clic</emphasis> dans la forme bascule la zone de transition "
 "graduelle entre les modes équidistant et proportionnel."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6955(entry)
@@ -8807,7 +8815,6 @@ msgstr ""
 "fermé défini par l’utilisateur."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6981(para)
-#, fuzzy
 msgid ""
 "<emphasis>Left-click</emphasis> into the canvas to define path nodes; "
 "terminate the path by <emphasis>right-clicking</emphasis> after having set "
@@ -8819,10 +8826,9 @@ msgstr ""
 "nœuds du chemin ; terminez le chemin par un <emphasis>clic-droit</emphasis> "
 "après avoir placé le dernier point. Par défaut, les nœuds sont connectés par "
 "une ligne lissée. Si vous désirez qu’un nœud définisse un point anguleux, "
-"vous pouvez le faire en le créant avec <emphasis>ctrl+clic</emphasis>."
+"vous pouvez le faire en le créant avec <emphasis>Ctrl+clic</emphasis>."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6987(para)
-#, fuzzy
 msgid ""
 "In the edit mode you can convert existing nodes from smooth to sharp corners "
 "and vice versa by <emphasis>Ctrl+clicking</emphasis> on them. You can insert "
@@ -8832,9 +8838,9 @@ msgid ""
 "node is highlighted, or else you might accidentally remove the whole path."
 msgstr ""
 "Dans le mode édition, vous pouvez convertir un nœud existant définissant un "
-"angle vif en un nœud standard et vice versa par un <emphasis>ctrl-clic</"
+"angle vif en un nœud standard et vice versa par un <emphasis>Ctrl-clic</"
 "emphasis> sur celui-ci. Vous pouvez insérer des nœuds supplémentaires en "
-"faisant un <emphasis>ctrl-clic</emphasis> sur l’un des segments de la ligne. "
+"faisant un <emphasis>Ctrl+clic</emphasis> sur l’un des segments de la ligne. "
 "Des nœuds individuels peuvent être supprimés par un <emphasis>clic-droit</"
 "emphasis> sur ceux-ci. Assurez-vous que le pointeur de la souris se trouve "
 "sur le nœud désiré et que le nœud est en surbrillance, sinon vous pourriez "
@@ -9165,7 +9171,6 @@ msgstr ""
 "sortie que le module produit avant d’effectuer la fusion."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7220(para)
-#, fuzzy
 msgid ""
 "You can inspect the image data corresponding to an individual color channel "
 "by holding down the <emphasis>Shift</emphasis> key while entering the "
@@ -9178,12 +9183,12 @@ msgid ""
 "after a short delay."
 msgstr ""
 "Vous pouvez examiner les données de l'image relatives à un canal de couleur "
-"en maintenant enfoncée la touche <emphasis>maj</emphasis> quand vous "
+"en maintenant enfoncée la touche <emphasis>Maj</emphasis> quand vous "
 "sélectionnez le curseur correspondant avec la souris. L'image du panneau "
 "central affiche alors le canal de couleur sélectionné soit en nuances de "
 "gris, soit en fausses couleurs, en fonction du choix fait dans dans les "
 "<quote>Options d'interface</quote> (voyez <xref linkend=\"gui_options\"/>). "
-"De plus vous pouvez maintenir enfoncée la touche <emphasis>ctrl</emphasis>, "
+"De plus vous pouvez maintenir enfoncée la touche <emphasis>Ctrl</emphasis>, "
 "ce qui vous permet de voir le masque résultant superposé à l'image. Lorsque "
 "vous quittez le curseur, l'image redevient normale après un court délai."
 
@@ -11596,7 +11601,6 @@ msgid "soft proof"
 msgstr "épreuvage"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9279(para)
-#, fuzzy
 msgid ""
 "Clicking the <inlinegraphic fileref=\"images/darkroom_module_icon_softproof."
 "png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> icon activates the soft "
@@ -11613,7 +11617,7 @@ msgstr ""
 "L'épreuvage vous permet de prévisualiser votre image rendue en utilisant un "
 "profil d'imprimante afin de voir comment les couleurs apparaîtront sur "
 "l'impression finale. Vous pouvez aussi activer l'épreuvage avec le raccourci "
-"clavier <quote>ctrl-s</quote>. Un message d'information <quote>épreuvage</"
+"clavier <quote>Ctrl+S</quote>. Un message d'information <quote>épreuvage</"
 "quote> en bas à gauche de votre image vous informe que vous êtes en mode "
 "épreuvage écran."
 
@@ -11681,7 +11685,6 @@ msgid "gamut check"
 msgstr "vérification du gamut"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9349(para)
-#, fuzzy
 msgid ""
 "Clicking the <inlinegraphic fileref=\"images/darkroom_module_icon_gamutcheck."
 "png\" scalefit=\"1\" width=\"2%\" align=\"center\"/> icon activates the "
@@ -11697,7 +11700,7 @@ msgstr ""
 "\"center\"/> active le mode vérification du gamut de votre image. La "
 "vérification du gamut met en évidence en cyan tous les pixels hors gamut "
 "conformément au profil d'épreuvage sélectionné. Vous pouvez aussi activer la "
-"vérification du gamut avec le raccourci clavier <quote>ctrl-g</quote>. Un "
+"vérification du gamut avec le raccourci clavier <quote>Ctrl+G</quote>. Un "
 "message d'information <quote>vérification de gamut</quote> en bas à gauche "
 "de votre image vous informe que vous êtes en mode d'affichage de la "
 "vérification de gamut. Vérification de gamut et épreuvage sont des modes "
@@ -11724,14 +11727,13 @@ msgstr ""
 "affichées sont les mêmes que celles de la table lumineuse."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9380(para)
-#, fuzzy
 msgid ""
 "The filmstrip can be switched on and off using the shortcut <emphasis>Ctrl"
 "+F</emphasis>. You can change the height of the filmstrip panel by dragging "
 "its top."
 msgstr ""
 "Le bandeau peut être activé ou désactivé en utilisant le raccourci "
-"<emphasis>ctrl-f</emphasis>. Vous pouvez modifier la hauteur du panneau du "
+"<emphasis>Ctrl+F</emphasis>. Vous pouvez modifier la hauteur du panneau du "
 "bandeau en glissant sa partie supérieure."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9385(para)
@@ -11749,7 +11751,6 @@ msgstr ""
 "touche retour pour traiter la précédente."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9391(para)
-#, fuzzy
 msgid ""
 "The picture currently processed is selected and highlighted; with a single "
 "click you can select any other picture from the filmstrip without changing "
@@ -11760,13 +11761,12 @@ msgid ""
 msgstr ""
 "L'image en traitement est sélectionnée et mise en surbrillance ; d'un simple "
 "clic vous pouvez sélectionner une autre image de la pellicule sans changer "
-"l'image en traitement. Avec le raccourci <emphasis>ctrl-a</emphasis> vous "
+"l'image en traitement. Avec le raccourci <emphasis>Ctrl-A</emphasis> vous "
 "sélectionnez toutes les images de la pellicule. Avec le raccourci "
-"<emphasis>ctrl-shift-a</emphasis> vous désélectionnez toutes les images, et "
-"avec <emphasis>ctrl-i</emphasis> vous inversez la sélection courante."
+"<emphasis>Ctrl-Maj-A</emphasis> vous désélectionnez toutes les images, et "
+"avec <emphasis>Ctrl-I</emphasis> vous inversez la sélection courante."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9399(para)
-#, fuzzy
 msgid ""
 "The following shortcuts are available to act on the selected picture(s): "
 "<informaltable frame=\"none\"><tgroup cols=\"2\" colsep=\"0\" rowsep="
@@ -11792,14 +11792,14 @@ msgstr ""
 "label de couleur (rouge, jaune, vert, bleu, violet) </entry></"
 "row><row><entry><emphasis>0 – 5</emphasis></entry><entry> fixe ou change la "
 "notation de l'image</entry></row><row><entry><emphasis>r</emphasis></"
-"entry><entry> rejette l'image </entry></row><row><entry><emphasis>ctrl-d</"
+"entry><entry> rejette l'image </entry></row><row><entry><emphasis>Ctrl+D</"
 "emphasis></entry><entry> clone l'image </entry></"
-"row><row><entry><emphasis>ctrl-c</emphasis></entry><entry> copie toute la "
-"pile de l'historique</entry></row><row><entry><emphasis>ctrl-v</emphasis></"
+"row><row><entry><emphasis>Ctrl+C</emphasis></entry><entry> copie toute la "
+"pile de l'historique</entry></row><row><entry><emphasis>Ctrl+V</emphasis></"
 "entry><entry> colle toute la pile de l'historique qui a été copiée</entry></"
-"row><row><entry><emphasis>alt-ctrl-c</emphasis></entry><entry> copie "
-"sélectivement la pile de l'historique</entry></row><row><entry><emphasis>alt-"
-"ctrl-v</emphasis></entry><entry> colle sélectivement la partie copiée de la "
+"row><row><entry><emphasis>Alt+Ctrl+C</emphasis></entry><entry> copie "
+"sélectivement la pile de l'historique</entry></row><row><entry><emphasis>Alt"
+"+Ctrl+V</emphasis></entry><entry> colle sélectivement la partie copiée de la "
 "pile de l'historique</entry></row></tbody></tgroup></informaltable>"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9489(title)
@@ -12478,7 +12478,6 @@ msgstr ""
 "courbe de base correspondant au boîtier ou la courbe de base du fabricant."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10089(para)
-#, fuzzy
 msgid ""
 "You can adjust an existing base curve or create a new one. The base curve is "
 "defined by two or more nodes. You can move any node to modify the curve. You "
@@ -12493,7 +12492,7 @@ msgstr ""
 "La courbe de base est définie par deux nœuds ou plus. Vous pouvez glisser un "
 "nœud quelconque pour modifier la courbe. Vous pouvez aussi ajouter des nœuds "
 "en <emphasis>cliquant</emphasis> sur un segment de courbe entre deux nœuds. "
-"Avec un <emphasis>ctrl-clic</emphasis> vous créez un nouveau nœud ayant "
+"Avec un <emphasis>Ctrl+clic</emphasis> vous créez un nouveau nœud ayant "
 "l'abscisse x du pointeur de la souris et l'ordonnée y du point correspondant "
 "de la courbe courante – ceci ajoute un nœud sans risque de modification "
 "accidentelle de la courbe. Pour supprimer un nœud, glissez-le en dehors de "
@@ -13934,7 +13933,6 @@ msgstr ""
 "différents : RGB, XYZ ou Lab."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11377(para)
-#, fuzzy
 msgid ""
 "In its default state, curves will be straight lines, defined by few anchor "
 "nodes. You can move the nodes to modify the curve. You can generate new "
@@ -13947,7 +13945,7 @@ msgstr ""
 "Par défaut les courbes seront des lignes droites, définies par deux nœuds "
 "d'ancrage. Vous pouvez déplacer ces nœuds pour modifier la courbe. Vous "
 "pouvez générer des nouveaux nœuds en <emphasis>cliquant</emphasis> sur la "
-"courbe. Avec un <emphasis>ctrl-clic</emphasis> vous créez un nouveau nœud "
+"courbe. Avec un <emphasis>Ctrl-clic</emphasis> vous créez un nouveau nœud "
 "ayant l'abscisse x du pointeur de la souris et l'ordonnée y du point "
 "correspondant de la courbe courante – ceci ajoute un nœud sans risque de "
 "modification accidentelle de la courbe. Jusqu'à 20 nœuds peuvent être "
@@ -17921,7 +17919,6 @@ msgstr ""
 "le placer."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14881(para)
-#, fuzzy
 msgid ""
 "A point is formed by a single node. In a point the strength vector has three "
 "different modes which are toggled using Ctrl+click over the arrowhead of the "
@@ -17949,7 +17946,7 @@ msgid ""
 msgstr ""
 "Un outil point est constitué d'un seul nœud. Dans l'outil point le vecteur "
 "force a trois différents modes. On passe cycliquement de l'un à l'autre par "
-"un ctrl-clic sur la tête de la flèche du vecteur force : <informaltable "
+"un Ctrl+clic sur la tête de la flèche du vecteur force : <informaltable "
 "frame=\"none\" width=\"80%\"><tgroup cols=\"3\" colsep=\"0\" rowsep="
 "\"0\"><colspec colwidth=\"2*\"/><colspec colwidth=\"4*\"/><colspec colwidth="
 "\"4*\"/><tbody><row><entry><emphasis>linéaire</emphasis></entry><entry> Le "
@@ -18042,14 +18039,13 @@ msgstr ""
 "ensemble de vecteurs force."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15004(para)
-#, fuzzy
 msgid ""
 "It is possible to add a control point on a line by Ctrl+Click on a segment. "
 "You may remove a control point from a line by Ctrl+right click on the node "
 "center."
 msgstr ""
-"Par un ctrl-clic sur un segment il est possible d'ajouter un nœud à un outil "
-"ligne. Vous pouvez supprimer un nœud d'un outil ligne par un ctrl-clic-droit "
+"Par un Ctrl+clic sur un segment il est possible d'ajouter un nœud à un outil "
+"ligne. Vous pouvez supprimer un nœud d'un outil ligne par un Ctrl+clic droit "
 "sur son centre."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15008(para)
@@ -18058,10 +18054,9 @@ msgid "A right-click on a segment will remove the shape completely."
 msgstr "Un clic-droit sur un segment supprimera complètement l'outil."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15011(para)
-#, fuzzy
 msgid "A Ctrl+Alt+click on a segment will change it to a curve segment."
 msgstr ""
-"Un ctrl-alt-clic sur un segment le transformera en un segment de courbe."
+"Un Ctrl+Alt+clic sur un segment le transformera en un segment de courbe."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15017(title)
 msgid "curve tool"
@@ -18094,25 +18089,22 @@ msgstr ""
 "combinés par interpolation d'un ensemble de vecteurs de force."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15044(para)
-#, fuzzy
 msgid ""
 "It is possible to add a control point on a curve by Ctrl+click on a segment. "
 "You may remove a control point from a curve by Ctrl+right click on the node "
 "center."
 msgstr ""
-"Il est possible d'ajouter un nœud à un outil courbe par un ctrl-clic sur un "
+"Il est possible d'ajouter un nœud à un outil courbe par un Ctrl+clic sur un "
 "segment de la courbe. Vous pouvez supprimer un nœud de l'outil courbe par un "
-"ctrl-clic-droit sur le centre du nœud."
+"Ctrl+ clic droit sur le centre du nœud."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15051(para)
-#, fuzzy
 msgid "A Ctrl+Alt+click on a segment will change it to a line segment."
 msgstr ""
-"Un ctrl-alt-clic sur un segment de la courbe le transformera en un segment "
+"Un Ctrl+Alt+clic sur un segment de la courbe le transformera en un segment "
 "de droite."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15054(para)
-#, fuzzy
 msgid ""
 "It is possible to change the way the points of the curve are linked together "
 "by using Ctrl+click on the center. There are four modes which correspond to "
@@ -18132,7 +18124,7 @@ msgid ""
 "in the node center. </entry></row></tbody></tgroup></informaltable>"
 msgstr ""
 "Il est possible de modifier la manière dont les points de la courbe son "
-"reliés entre eux en utilisant un ctrl-clic sur le centre. Il y a quatre "
+"reliés entre eux en utilisant un Ctrl+clic sur le centre. Il y a quatre "
 "modes qui correspondent aux différentes façons de gérer la \"pente\" de la "
 "courbe de Bézier à l'aide de poignées de contrôle : <informaltable frame="
 "\"none\" width=\"80%\"><tgroup cols=\"3\" colsep=\"0\" rowsep=\"0\"><colspec "
@@ -18180,7 +18172,7 @@ msgstr "correction de perspective"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15148(emphasis)
 msgid "ShiftN"
-msgstr "ShiftN"
+msgstr "Maj+N"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15144(entry)
 msgid ""
@@ -18276,8 +18268,8 @@ msgstr ""
 "emphasis></entry><entry> droites qui sont horizontales mais qui ne font pas "
 "partie de l'ensemble des droites convergentes </entry></"
 "row><row><entry><emphasis>gris</emphasis></entry><entry> autres droites "
-"identifiées mais san intérêt pour ce module </entry></row></tbody></tgroup></"
-"informaltable>"
+"identifiées mais sans intérêt pour ce module </entry></row></tbody></"
+"tgroup></informaltable>"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15239(para)
 #, fuzzy
@@ -18463,7 +18455,6 @@ msgid "automatic fit"
 msgstr "correction automatique"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15348(para)
-#, fuzzy
 msgid ""
 "Clicking on one of the icons starts an automatic fitting of the module "
 "parameters based on the selected vertical and/or horizontal lines. You can "
@@ -18486,8 +18477,8 @@ msgstr ""
 "darkroom_module_ashift_horizontal.png\" scalefit=\"1\" width=\"2%\" align="
 "\"center\"/>) ou les deux types de distorsions simultanément (<inlinegraphic "
 "fileref=\"images/darkroom_module_ashift_both.png\" scalefit=\"1\" width=\"2%"
-"\" align=\"center\"/>). <emphasis>ctrl-cliquer</emphasis> sur l'une des "
-"icônes ajuste seulement la rotation. <emphasis>maj-cliquer</emphasis> sur "
+"\" align=\"center\"/>). Un <emphasis>Ctrl-clic</emphasis> sur l'une des "
+"icônes ajuste seulement la rotation. Un <emphasis>Maj-clic</emphasis> sur "
 "l'une des icônes ajuste seulement la correction verticale et/ou horizontale."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15364(title)
@@ -18495,7 +18486,6 @@ msgid "get structure"
 msgstr "récupère les structures"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15365(para)
-#, fuzzy
 msgid ""
 "Clicking on the <inlinegraphic fileref=\"images/"
 "darkroom_module_ashift_structure.png\" scalefit=\"1\" width=\"2%\" align="
@@ -18513,9 +18503,9 @@ msgstr ""
 "Cliquer sur l'icône <inlinegraphic fileref=\"images/"
 "darkroom_module_ashift_structure.png\" scalefit=\"1\" width=\"2%\" align="
 "\"center\"/> provoque une analyse (ou une nouvelle analyse) de l'image pour "
-"trouver des segments de droite appropriés. Un <emphasis>maj-clic</emphasis> "
+"trouver des segments de droite appropriés. Un <emphasis>Maj-clic</emphasis> "
 "applique une étape préliminaire d'amélioration du contraste, un "
-"<emphasis>ctrl-clic</emphasis> applique une étape de renforcement des bords. "
+"<emphasis>Ctrl-clic</emphasis> applique une étape de renforcement des bords. "
 "Ces deux possibilités peuvent être utilisées seules ou combinées si la "
 "configuration par défaut n'est pas capable de détecter suffisamment de "
 "lignes. Cliquez sur l'icône <inlinegraphic fileref=\"images/"
@@ -18897,7 +18887,6 @@ msgstr ""
 "positionnée."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15753(para)
-#, fuzzy
 msgid ""
 "The source positioning has two modes: absolute or relative. To set the "
 "absolute mode, while creating a shape, <emphasis>Shift+Ctrl+click</emphasis> "
@@ -18908,10 +18897,10 @@ msgid ""
 "will have the source created at the same relative position."
 msgstr ""
 "Le positionnement de la source a deux modes : absolu ou relatif. Pour "
-"choisir le mode absolu, lorsque vous créez une forme, faites un <emphasis>maj"
-"+ctrl+clic</emphasis> à la position désirée. Dorénavant, toutes les "
+"choisir le mode absolu, lorsque vous créez une forme, faites un <emphasis>Maj"
+"+Ctrl+Clic</emphasis> à la position désirée. Dorénavant, toutes les "
 "nouvelles formes auront leur source créée à cette position. Pour choisir le "
-"mode relatif, toujours lorsque vous créez une forme, faites un <emphasis>maj"
+"mode relatif, toujours lorsque vous créez une forme, faites un <emphasis>Maj"
 "+clic</emphasis> à la position désirée. La forme courante aura sa source "
 "créée à cette position et les suivantes auront leur source créée à la même "
 "position relative."
@@ -19226,11 +19215,11 @@ msgid ""
 msgstr ""
 "La barre d'outils formes permet d'ajouter de nouvelles formes à l'image. La "
 "création / édition des formes se comporte comme dans le module correction "
-"des taches. De plus, en faisant un ctrl+clic sur le bouton d'une forme "
+"des taches. De plus, en faisant un Ctrl+clic sur le bouton d'une forme "
 "quelconque, on active le <emphasis>mode ajouter en continu</emphasis>. Dès "
 "qu'une forme est ajoutée, darktable reste en mode création, permettant "
 "d'ajouter une autre forme du même type. Pour changer le type de la forme à "
-"ajouter, faites un ctrl+clic sur le bouton d'une autre forme pour continuer "
+"ajouter, faites un Ctrl+clic sur le bouton d'une autre forme pour continuer "
 "en mode ajouter en continu ou faites un simple clic pour ajouter une seule "
 "forme. Pour quitter le mode ajouter en continu faites un clic droit sur une "
 "zone libre quelconque de l'image."
@@ -22617,7 +22606,6 @@ msgstr ""
 "sont affichées sous forme de petites icônes sur la carte."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19987(para)
-#, fuzzy
 msgid ""
 "In order to assign geo coordinates to an image, activate the film-strip on "
 "the lower panel (press <emphasis>Ctrl+F</emphasis>). You can simply assign a "
@@ -22627,7 +22615,7 @@ msgid ""
 "include this data."
 msgstr ""
 "Afin de pouvoir assigner des coordonnées géographiques, activez le bandeau "
-"sur le panneau inférieur (pressez <emphasis>ctrl-f</emphasis>). Vous pouvez "
+"sur le panneau inférieur (pressez <emphasis>Ctrl+F</emphasis>). Vous pouvez "
 "assigner simplement un emplacement géographique à une image en glissant son "
 "icône depuis le bandeau et en la positionnant sur la carte. darktable va "
 "enregistrer la nouvelle position géographique (longitude et latitude) dans "
@@ -22662,9 +22650,8 @@ msgstr ""
 "réinitialisée chaque fois que la vue carte est quittée."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20028(para)
-#, fuzzy
 msgid "<emphasis>Ctrl+Z</emphasis> : undo last move"
-msgstr "<emphasis>ctrl-z</emphasis> : annule le dernier mouvement"
+msgstr "<emphasis>Ctrl+Z</emphasis> : annule le dernier mouvement"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20048(title)
 msgid "Map panels"
@@ -22929,7 +22916,6 @@ msgstr ""
 "par l'image."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20383(para)
-#, fuzzy
 msgid ""
 "On the left side you find the <emphasis>collect images</emphasis> panel "
 "which is described in more detail in <xref linkend=\"collect_images\"/>. "
@@ -22945,7 +22931,7 @@ msgstr ""
 "collection</emphasis> qui est décrit plus en détails dans la <xref linkend="
 "\"collect_images\"/>. Ce panneau vous laisse définir quelles images sont "
 "présentes dans le bandeau. La visibilité du bandeau  – situé dans le panneau "
-"du bas – est activée ou désactivée en pressant <emphasis>ctrl-f </"
+"du bas – est activée ou désactivée en pressant <emphasis>Ctrl+F </"
 "emphasis>(voyez la <xref linkend=\"filmstrip_overview\"/>). Dans la partie "
 "gauche vous avez aussi un panneau des <emphasis> informations de l'image</"
 "emphasis> qui affiche des données EXIF utiles de l'image située dans la "
@@ -24606,7 +24592,7 @@ msgstr "options globales/quittter"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21571(entry)
 msgid "Ctrl+Q"
-msgstr ""
+msgstr "Ctrl+Q"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21576(entry)
 msgid "global/lighttable view"
@@ -24615,7 +24601,7 @@ msgstr "options globales/passer en vue table lumineuse"
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21579(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22339(entry)
 msgid "L"
-msgstr ""
+msgstr "L"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21584(entry)
 msgid "global/darkroom view"
@@ -24623,7 +24609,7 @@ msgstr "options globales/ passer en vue chambre noire"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21587(entry)
 msgid "D"
-msgstr ""
+msgstr "D"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21592(entry)
 msgid "global/tethering view"
@@ -24631,7 +24617,7 @@ msgstr "options globales/passer en vue capture"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21595(entry)
 msgid "T"
-msgstr ""
+msgstr "T"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21600(entry)
 msgid "global/map view"
@@ -24639,7 +24625,7 @@ msgstr "options globales/ passer en vue carte"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21603(entry)
 msgid "M"
-msgstr ""
+msgstr "M"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21608(entry)
 msgid "global/slideshow view"
@@ -24647,7 +24633,7 @@ msgstr "options globales/passer en vue diaporama"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21611(entry)
 msgid "S"
-msgstr ""
+msgstr "S"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21616(entry)
 msgid "global/print view"
@@ -24655,7 +24641,7 @@ msgstr "options globales/ passer en vue impression"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21619(entry)
 msgid "P"
-msgstr ""
+msgstr "P"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21624(entry)
 msgid "global/switch view"
@@ -24672,7 +24658,7 @@ msgstr "options globales/activer|désactiver le panneau supérieur"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21635(entry)
 msgid "Ctrl+H"
-msgstr ""
+msgstr "Ctrl+H"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21640(entry)
 msgid "global/toggle side borders"
@@ -24704,7 +24690,7 @@ msgstr "options globales/ zoomer"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21667(entry)
 msgid "Ctrl+Plus sign"
-msgstr ""
+msgstr "Ctrl+Signe plus"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21672(entry)
 msgid "global/zoom out"
@@ -24712,7 +24698,7 @@ msgstr "options globales/dézoomer"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21675(entry)
 msgid "Ctrl+Minus sign"
-msgstr ""
+msgstr "Ctrl+Signe moins"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21680(entry)
 #, fuzzy
@@ -24721,7 +24707,7 @@ msgstr "options globales/changer de vue"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21683(entry)
 msgid "H"
-msgstr ""
+msgstr "H"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21688(entry)
 msgid "image operations/clipping/commit"
@@ -24757,7 +24743,7 @@ msgstr "modules/développement/tout copier"
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21715(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21795(entry)
 msgid "Ctrl+C"
-msgstr ""
+msgstr "Ctrl+C"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21720(entry)
 msgid "modules/copy_history/copy"
@@ -24766,7 +24752,7 @@ msgstr "modules/développement/copier"
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21723(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21803(entry)
 msgid "Ctrl+Shift+C"
-msgstr ""
+msgstr "Ctrl+Maj+C"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21728(entry)
 msgid "modules/copy_history/paste all"
@@ -24775,7 +24761,7 @@ msgstr "modules/développement/tout coller"
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21731(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21827(entry)
 msgid "Ctrl+V"
-msgstr ""
+msgstr "Ctrl+V"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21736(entry)
 msgid "modules/copy_history/paste"
@@ -24784,7 +24770,7 @@ msgstr "modules/développement/coller"
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21739(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21835(entry)
 msgid "Ctrl+Shift+V"
-msgstr ""
+msgstr "Ctrl+Maj+V"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21744(entry)
 msgid "modules/export/export"
@@ -24793,7 +24779,7 @@ msgstr "modules/exporter sélection/exporter"
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21747(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22083(entry)
 msgid "Ctrl+E"
-msgstr ""
+msgstr "Ctrl+E"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21752(entry)
 msgid "modules/filmstrip/color blue"
@@ -24855,7 +24841,7 @@ msgstr "modules/bandeau/cloner l'image"
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21811(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21915(entry)
 msgid "Ctrl+D"
-msgstr ""
+msgstr "Ctrl+D"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21816(entry)
 msgid "modules/filmstrip/invert selection"
@@ -24864,7 +24850,7 @@ msgstr "modules/bandeau/inverser la sélection"
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21819(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21955(entry)
 msgid "Ctrl+I"
-msgstr ""
+msgstr "Ctrl+I"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21824(entry)
 msgid "modules/filmstrip/paste history"
@@ -24935,7 +24921,7 @@ msgstr "modules/bandeau/rejeter"
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21891(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22331(entry)
 msgid "R"
-msgstr ""
+msgstr "R"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21896(entry)
 msgid "modules/filmstrip/select all"
@@ -24944,7 +24930,7 @@ msgstr "modules/bandeau/tout sélectionner"
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21899(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21963(entry)
 msgid "Ctrl+A"
-msgstr ""
+msgstr "Ctrl+A"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21904(entry)
 msgid "modules/filmstrip/select none"
@@ -24953,7 +24939,7 @@ msgstr "modules/bandeau/ne rien sélectionner"
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21907(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21971(entry)
 msgid "Ctrl+Shift+A"
-msgstr ""
+msgstr "Ctrl+Maj+A"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21912(entry)
 msgid "modules/image/duplicate"
@@ -24966,7 +24952,7 @@ msgstr "modules/images sélectionnées/grouper"
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21923(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22099(entry)
 msgid "Ctrl+G"
-msgstr ""
+msgstr "Ctrl+G"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21928(entry)
 msgid "modules/image/remove from collection"
@@ -24982,7 +24968,7 @@ msgstr "modules/images sélectionnées/dégrouper"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21939(entry)
 msgid "Ctrl+Shift+G"
-msgstr ""
+msgstr "Ctrl+Maj+G"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21944(entry)
 msgid "modules/import/import folder"
@@ -24990,7 +24976,7 @@ msgstr "modules/importer/importer un dossier"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21947(entry)
 msgid "Ctrl+Shift+I"
-msgstr ""
+msgstr "Ctrl+Maj+I"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21952(entry)
 msgid "modules/lighttable_mode/invert selection"
@@ -25011,7 +24997,7 @@ msgstr "modules/table lumineuse/zoomer"
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21979(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22179(entry)
 msgid "Alt+2"
-msgstr ""
+msgstr "Alt+2"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21984(entry)
 msgid "modules/lighttable_mode/zoom max"
@@ -25020,7 +25006,7 @@ msgstr "modules/table lumineuse/zoom maxi"
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21987(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22171(entry)
 msgid "Alt+1"
-msgstr ""
+msgstr "Alt+1"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21992(entry)
 msgid "modules/lighttable_mode/zoom min"
@@ -25028,7 +25014,7 @@ msgstr "modules/table lumineuse/zoom mini"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21995(entry)
 msgid "Alt+4"
-msgstr ""
+msgstr "Alt+4"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22000(entry)
 msgid "modules/lighttable_mode/zoom out"
@@ -25037,7 +25023,7 @@ msgstr "modules/table lumineuse/dézoomer"
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22003(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22187(entry)
 msgid "Alt+3"
-msgstr ""
+msgstr "Alt+3"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22008(entry)
 msgid "modules/live_view/toggle live view"
@@ -25045,7 +25031,7 @@ msgstr "modules/visée directe/activer|désactiver la visée directe"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22011(entry)
 msgid "V"
-msgstr ""
+msgstr "V"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22016(entry)
 msgid "modules/metadata_view/jump to film roll"
@@ -25053,7 +25039,7 @@ msgstr "modules/informations de l'image/aller à la pellicule"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22019(entry)
 msgid "Ctrl+J"
-msgstr ""
+msgstr "Ctrl+J"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22024(entry)
 msgid "modules/recentcollect/jump back to previous collection"
@@ -25061,7 +25047,7 @@ msgstr "modules/collections récentes/aller à la collection précédente"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22027(entry)
 msgid "Ctrl+K"
-msgstr ""
+msgstr "Ctrl+K"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22032(entry)
 msgid "modules/tagging/tag"
@@ -25069,7 +25055,7 @@ msgstr "modules/mots-clés/mot-clé"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22035(entry)
 msgid "Ctrl+T"
-msgstr ""
+msgstr "Ctrl+T"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22040(entry)
 msgid "views/darkroom/undo"
@@ -25079,7 +25065,7 @@ msgstr "vues/chambre noire/annuler"
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22419(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22443(entry)
 msgid "Ctrl+Z"
-msgstr ""
+msgstr "Ctrl+Z"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22048(entry)
 msgid "views/darkroom/redo"
@@ -25088,7 +25074,7 @@ msgstr "vues/chambre noire/refaire"
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22051(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22427(entry)
 msgid "Ctrl+Y"
-msgstr ""
+msgstr "Ctrl+Y"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22056(entry)
 msgid "views/darkroom/decrease brush hardness"
@@ -25120,7 +25106,7 @@ msgstr "vues/chambre noire/aperçu complet"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22091(entry)
 msgid "Z"
-msgstr ""
+msgstr "Z"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22096(entry)
 msgid "views/darkroom/gamut check"
@@ -25171,7 +25157,7 @@ msgstr "vues/chambre noire/surexposition"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22147(entry)
 msgid "O"
-msgstr ""
+msgstr "O"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22152(entry)
 msgid "views/darkroom/softproof"
@@ -25179,7 +25165,7 @@ msgstr "vues/chambre noire/épreuvage"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22155(entry)
 msgid "Ctrl+S"
-msgstr ""
+msgstr "Ctrl+S"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22160(entry)
 msgid "views/darkroom/toggle film strip"
@@ -25190,7 +25176,7 @@ msgstr "vues/chambre noire/activer|désactiver le bandeau"
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22451(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22467(entry)
 msgid "Ctrl+F"
-msgstr ""
+msgstr "Ctrl+F"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22168(entry)
 msgid "views/darkroom/zoom close-up"
@@ -25229,9 +25215,8 @@ msgid "views/lighttable/navigate down"
 msgstr "vues/table lumineuse/défiler vers le bas"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22235(entry)
-#, fuzzy
 msgid "Shift+G"
-msgstr "ShiftN"
+msgstr "Maj+G"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22240(entry)
 msgid "views/lighttable/navigate page down"
@@ -25255,7 +25240,7 @@ msgstr "vues/table lumineuse/défiler vers le haut"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22259(entry)
 msgid "G"
-msgstr ""
+msgstr "G"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22264(entry)
 msgid "views/lighttable/preview"
@@ -25263,7 +25248,7 @@ msgstr "vues/table lumineuse/aperçu"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22267(entry)
 msgid "W"
-msgstr ""
+msgstr "W"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22272(entry)
 msgid "views/lighttable/preview with focus detection"
@@ -25315,7 +25300,7 @@ msgstr "vues/table lumineuse/défiler vers le bas"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22355(entry)
 msgid "Down"
-msgstr "&lt;Bas&gt;"
+msgstr "Bas"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22360(entry)
 msgid "views/lighttable/scroll left"
@@ -25323,7 +25308,7 @@ msgstr "vues/table lumineuse/défiler vers la gauche"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22363(entry)
 msgid "Left"
-msgstr "&lt;Gauche&gt;"
+msgstr "Gauche"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22368(entry)
 msgid "views/lighttable/scroll right"
@@ -25331,7 +25316,7 @@ msgstr "vues/table lumineuse/défiler vers la droite"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22371(entry)
 msgid "Right"
-msgstr "&lt;Droite&gt;"
+msgstr "Droite"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22376(entry)
 msgid "views/lighttable/scroll up"
@@ -25339,7 +25324,7 @@ msgstr "vues/table lumineuse/défiler vers le haut"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22379(entry)
 msgid "Up"
-msgstr "&lt;Haut&gt;"
+msgstr "Haut"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22384(entry)
 msgid "views/lighttable/select single image"
@@ -25356,7 +25341,7 @@ msgstr "vues/table lumineuse/aperçu"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22403(entry)
 msgid "Alt+W"
-msgstr ""
+msgstr "Alt+W"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22408(entry)
 #, fuzzy
@@ -25365,7 +25350,7 @@ msgstr "vues/table lumineuse/aperçu avec détection de la mise au point"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22411(entry)
 msgid "Ctrl+Alt+W"
-msgstr ""
+msgstr "Ctrl+Alt+W"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22416(entry)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22440(entry)
