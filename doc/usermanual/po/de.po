@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable-usermanual\n"
 "POT-Creation-Date: 2019-09-18 19:46+0200\n"
-"PO-Revision-Date: 2019-09-20 16:22+0200\n"
+"PO-Revision-Date: 2019-09-29 10:22+0200\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de\n"
@@ -2442,12 +2442,12 @@ msgid ""
 "emphasis> to the bottom, <emphasis>PageUp</emphasis> brings you one page up "
 "and <emphasis>PageDown</emphasis> one page down."
 msgstr ""
-"Es ist möglich, mit den Pfeiltasten durch die Sammlung zu navigieren. Im"
-" Modus <emphasis>Dateiverwaltung</emphasis> gelangen Sie mit der Taste <"
-"emphasis>G</emphasis> an den Anfang der Sammlung bzw. mit der"
-" Tastenkombination <emphasis>Shift + G</emphasis> ans Ende. Die Taste <"
-"emphasis>Bild Auf</emphasis> blättert eine Seite nach oben und <emphasis>Bild"
-" Ab</emphasis> eine Seite nach unten."
+"Mit den Pfeiltasten kann durch die Sammlung navigiert werden. Im Modus <"
+"emphasis>Dateiverwaltung</emphasis> gelangen Sie mit der Taste <emphasis>G<"
+"/emphasis> an den Anfang der Sammlung bzw. mit der Tastenkombination <"
+"emphasis>Shift+G</emphasis> ans Ende. Die Taste <emphasis>Bild Auf</emphasis>"
+" blättert eine Seite nach oben und <emphasis>Bild Ab</emphasis> eine Seite"
+" nach unten."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1837(para)
 msgid ""
@@ -2508,9 +2508,8 @@ msgstr ""
 " wird durch die obere und untere Bildlaufleiste angezeigt."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1876(title)
-#, fuzzy
 msgid "Culling"
-msgstr "Kachelung"
+msgstr "Auswahl treffen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1878(para)
 msgid ""
@@ -2518,17 +2517,24 @@ msgid ""
 "There's 2 different modes to define the number of images to show at the same "
 "time : <quote>Fixed mode</quote> and <quote>Dynamic mode</quote>."
 msgstr ""
+"Das Layout des Auswahl und Vergleichs-Modus ermöglicht die Darstellung von"
+" Bildern nebeneinander, um diese leichter vergleichen zu können. Um die"
+" Anzahl der gleichzeitig anzuzeigenden Bilder festzulegen, gibt es den <quote"
+">Fixed-Modus</quote> und "
+"den <quote>Dynamic-Modus</quote>."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1883(para)
 msgid ""
 "Once in culling mode, you can switch between those 2 mode with <emphasis>&lt;"
 "</emphasis> key accel."
 msgstr ""
+"Im Auswahl und Vergleichs-Modus kann mit der Tastenkombination <emphasis"
+">&lt;</emphasis> "
+"Taste zwischen den beiden Modi gewechselt werden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1889(title)
-#, fuzzy
 msgid "Fixed mode"
-msgstr "Mischmodus"
+msgstr "Fixed-Modus"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1891(para)
 msgid ""
@@ -2536,18 +2542,26 @@ msgid ""
 "independently of the selection length. This number can be set with the "
 "slider in the bottom panel, near the modes option."
 msgstr ""
+"Im Fixed-Modus ist die Anzahl der angezeigten Bilder immer gleich, "
+"unabhängig von der Auswahl. Die Anzahl der angezeigten Bilder kann mit dem "
+"Schieberegler im unteren Fensterbereich eingestellt werden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1896(para)
 msgid ""
 "In this mode, you'll navigate throught all selected images. If no selection "
 "is set (or if only 1 image is selected), you'll navigate throught all images."
 msgstr ""
+"In diesem Modus navigieren Sie durch alle ausgewählten Bilder. Wenn keine "
+"Auswahl gesetzt oder nur 1 Bild ausgewählt ist, navigieren Sie durch alle "
+"Bilder."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1901(para)
 msgid ""
 "Default shortcut for entering culling in fixed mode is <emphasis>X</"
 "emphasis>."
 msgstr ""
+"Mit der voreingestellte Kurzwahltaste <emphasis>X</emphasis> wird Culling im"
+" Fixed-Modus ist X aktiviert."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1909(title)
 msgid "Dynamic mode"
@@ -2567,8 +2581,8 @@ msgid ""
 "Default shortcut for entering culling in fixed mode is <emphasis>ctrl+X</"
 "emphasis>."
 msgstr ""
-"Die voreingestellte Tastenkombination um in den Culing Modus zu gelangen, ist"
-" <emphasis>Strg + X</emphasis>."
+"Über die voreingestellte Kurzwahltaste <emphasis>Strg+X</emphasis> kann der"
+" Auswahl und Vergleichs-Modus direkt im dynamischen Modus aktiviert werden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1924(title)
 msgid "Zoom and pan"
@@ -2579,8 +2593,9 @@ msgid ""
 "In culling mode, you can zoom and pan in the images to see details. Images "
 "can be zoomed until 100%."
 msgstr ""
-"Im Auslesemodus können Bilder gezoomt und verschoben werden, um Details zu"
-" sehen. Bilder können bis zu 100% gezoomt werden."
+"Um Detail der Bilder besser zu sehen, kann im Auslesemodus in die Bilder"
+" gezoomt und der Bildausschnitt verschoben werden. Bilder können bis zu 100%"
+" gezoomt werden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1930(para)
 msgid ""
@@ -4677,6 +4692,8 @@ msgid ""
 "You can also use timeline to select images by date range with mouse click + "
 "pan."
 msgstr ""
+"Mithilfe der Zeitachse können Bilder nach einem Datumsbereich ausgewählt"
+" werden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:3561(title)
 msgid "Image information"
@@ -5354,6 +5371,10 @@ msgid ""
 "using the pipe symbol <quote>|</quote> as a separator. For example "
 "<quote>print|tone curve +0.5 EV</quote> will create a print category."
 msgstr ""
+"Das Panel unterstützt eine hierarchische Ansicht, d.h. Sie können Kategorien"
+" mit dem Pipe Symbol <quote>|</quote> als Trennzeichen anlegen. Zum Beispiel"
+" wird mit <quote>print|tone curve +0.5 EV</quote> eine Kategorie print"
+" angelegt."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4192(title)
 msgid "edit"
@@ -5378,6 +5399,8 @@ msgstr ""
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4201(para)
 msgid "See <emphasis>create</emphasis> how to create a hierarchical view."
 msgstr ""
+"Um eine Hierarchie zu erstellen siehe Abschnitt <emphasis>erstellen</emphasis"
+">."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4209(title)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4871(title)
@@ -5623,7 +5646,6 @@ msgid "tags"
 msgstr "Tag"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4458(para)
-#, fuzzy
 msgid ""
 "This panel is for managing tags on images. Tags are stored in both sidecar "
 "files (.xmp) and within the darktable database for a faster access. The "
@@ -5633,26 +5655,28 @@ msgid ""
 "available tags in the database, the dictionary, which can be filtered in the "
 "text box above."
 msgstr ""
-"Dieses Eingabefeld dient zur Verwaltung von Tags bei Bildern. Tags werden in "
-"der Begleitdatei (.xmp) und in der darktable-Datenbank gespeichert. Das "
-"Eingabefeld ist in zwei Teile gegliedert: Der obere Teil enthält die "
-"Markierung(en), die aktuell mit dem Bild unter dem Cursor verbunden sind "
-"oder die markierten Bilder, wenn sich die Maus außerhalb des Leuchttisches "
-"befindet. Der untere Teil enthält eine Liste aller verfügbaren Tags in der "
-"Datenbank, die im obigen Textfeld gefiltert werden können."
+"Dieses Eingabefeld dient zur Verwaltung von Tags bei Bildern. Tags werden in"
+" der Begleitdatei (.xmp) und für einen schnelleren Zugriff in der Datenbank"
+" von darktable gespeichert. Das Eingabefeld ist in zwei Teile gegliedert: Der"
+" obere Teil enthält die Tags des Bildes unter dem Mauszeiger oder die Tags"
+" der markierten Bilder, wenn sich der Mauszeiger außerhalb des Leuchttisches"
+" befindet. Der untere Teil enthält eine Liste aller verfügbaren Tags, welche"
+" mit dem darüber liegenden Textfeld gefiltert werden können."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4470(para)
 msgid "A flat list of tags"
-msgstr ""
+msgstr "flache Liste der Tags"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4474(para)
 msgid "A tree view to navigate within your hierarchical tags"
-msgstr ""
+msgstr "Baumansicht zur Navigation innerhalb der hierarchischen Tags"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4478(para)
 msgid ""
 "A list of suggestions based on already attached tags on selected images."
 msgstr ""
+"Liste mit Vorschlägen basierend auf den ausgewählten Bildern und den bereits"
+" hinzugefügten Tags"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4466(para)
 msgid ""
@@ -5673,10 +5697,20 @@ msgid ""
 "itself. If exist as a tag, it can be set explicitly as a <quote>category</"
 "quote> (see create or edit command)."
 msgstr ""
+"Das Ziel von Tags ist es, Informationen zu den Bildern innerhalb eines"
+" bestimmten Schlüsselwort-Sets hinzuzufügen. Wird die Anzahl der Tags zu"
+" groß, ist es interessant diese hierarchisch als Baum zu organisieren. Das"
+" übergeordneten Tag sollen dem Bild keine Informationen hinzufügen, z.B. das"
+" Tag <quote>Farbe</quote> in <quote>Farbe|weiß</quote>. In diesem Fall wird <"
+"quote>Farbe</quote> automatisch als <quote>Kategorie</quote> angesehen,"
+" vorausgesetzt es befindet sich nicht als eigenständiges Schlüsselwort im"
+" Verzeichnis. Wenn es bereits als Schlüsselwort existiert, kann es explizit"
+" als <quote>Kategorie</quote> geändert werden (siehe erstellen oder"
+" bearbeiten)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4504(title)
 msgid "tag properties"
-msgstr ""
+msgstr "Tag-Eigenschaften"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4506(para)
 msgid ""
