@@ -552,7 +552,7 @@ static int sanity_check(dt_iop_module_t *self)
   if(position_self < position_min && self->enabled)
   {
     dt_control_log(_("tone equalizer needs to be after distorsion modules in the pipeline – disabled"));
-    fprintf(stdout, _("tone equalizer needs to be after distorsion modules in the pipeline – disabled\n"));
+    fprintf(stdout, "tone equalizer needs to be after distorsion modules in the pipeline – disabled\n");
     self->enabled = 0;
     dt_dev_add_history_item(darktable.develop, self, FALSE);
 
@@ -2370,7 +2370,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   // set custom cursor dimensions
   const double outer_radius = 16.;
-  const double inner_radius = outer_radius / 1.5;
+  const double inner_radius = outer_radius / 2.0;
   const double setting_scale = 2. * outer_radius / zoom_scale;
   const double setting_offset_x = (outer_radius + 4. * g->inner_padding) / zoom_scale;
 
@@ -3164,7 +3164,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->blending, 0.01, 100.0);
   dt_bauhaus_slider_set_format(g->blending, "%.2f %%");
   dt_bauhaus_widget_set_label(g->blending, NULL, _("smoothing diameter"));
-  g_object_set(G_OBJECT(g->blending), "tooltip-text", _("diameter of the blur in % of the largest image size"), (char *)NULL);
+  g_object_set(G_OBJECT(g->blending), "tooltip-text", _("diameter of the blur in percent of the largest image size"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(page3), g->blending, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->blending), "value-changed", G_CALLBACK(blending_callback), self);
 
@@ -3186,7 +3186,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_can_focus(GTK_WIDGET(g->bar), TRUE);
   g_signal_connect(G_OBJECT(g->bar), "draw", G_CALLBACK(dt_iop_toneequalizer_bar_draw), self);
   g_object_set(G_OBJECT(g->bar), "tooltip-text", _("mask histogram span between the first and last deciles.\n"
-                                                   "the central line shows the average. Orange bars appear at extrema if clipping occurs."), (char *)NULL);
+                                                   "the central line shows the average. orange bars appear at extrema if clipping occurs."), (char *)NULL);
 
 
   g->quantization = dt_bauhaus_slider_new_with_range(self, 0.00, 2., 0.25, 0.0, 2);
