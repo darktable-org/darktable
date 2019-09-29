@@ -33,7 +33,7 @@
 
 #define DT_IOP_ORDER_VERSION 3
 
-#define DT_IOP_ORDER_INFO FALSE	// used while debugging
+#define DT_IOP_ORDER_INFO TRUE	// used while debugging
 
 static void _ioppr_insert_iop_after(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_previous, const int dont_move);
 static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_next, const int dont_move);
@@ -110,12 +110,16 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     // move frequency filters right after input profile - convolutions need L2 spaces
     // to respect Parseval's theorem and avoid halos at edges
     // NB: again, frequency filter in Lab make no sense
+    // sharpen is marking the end of this section
+    _ioppr_move_iop_after(_iop_order_list, "sharpen", "defringe", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "atrous", "defringe", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "lowpass", "atrous", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "highpass", "lowpass", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "sharpen", "highpass", dont_move);
+//    _ioppr_move_iop_after(_iop_order_list, "sharpen", "highpass", dont_move);
 
     // color adjustments in scene-linear space : move right after colorin
+    // bloom is marking the end of this section
+    _ioppr_move_iop_after(_iop_order_list, "bloom", "sharpen", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "channelmixer", "sharpen", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colorchecker", "channelmixer", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colormapping", "colorchecker", dont_move);
@@ -126,28 +130,33 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     _ioppr_move_iop_after(_iop_order_list, "basicadj", "colorbalance", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "rgbcurve", "basicadj", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "rgblevels", "rgbcurve", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "bloom", "rgblevels", dont_move);
+//    _ioppr_move_iop_after(_iop_order_list, "bloom", "rgblevels", dont_move);
 
     // scene-linear to display-referred encoding
     // !!! WALL OF THE NON-LINEARITY !!! There is no coming back for colour ratios
+    // shadi ending this section
+    _ioppr_move_iop_after(_iop_order_list, "shadhi", "bloom", dont_move);
+
     _ioppr_move_iop_after(_iop_order_list, "basecurve", "bloom", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "filmic", "basecurve", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colisa", "filmic", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "tonecurve", "colisa", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "levels", "tonecurve", dont_move);
 
-    _ioppr_move_iop_after(_iop_order_list, "shadhi", "levels", dont_move);
+//    _ioppr_move_iop_after(_iop_order_list, "shadhi", "levels", dont_move);
 
     // recover local contrast after non-linear tone edits
     _ioppr_move_iop_after(_iop_order_list, "bilat", "shadhi", dont_move);
 
     // display-referred colour edits
+    // colorcontrast ending this section
+    _ioppr_move_iop_after(_iop_order_list, "colorcontrast", "bilat", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colorcorrection", "bilat", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colorzones", "colorcorrection", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "vibrance", "colorzones", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "velvia", "vibrance", dont_move);
     _ioppr_move_iop_after(_iop_order_list, "colorize", "velvia", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colorcontrast", "colorize", dont_move);
+//    _ioppr_move_iop_after(_iop_order_list, "colorcontrast", "colorize", dont_move);
 
     // fix clipping before going in colourout
     _ioppr_move_iop_before(_iop_order_list, "colorreconstruct", "colorout", dont_move);
