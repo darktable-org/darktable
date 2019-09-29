@@ -33,6 +33,7 @@
 #include <cairo.h>
 #include <complex.h>
 #include <math.h>
+#include <stdbool.h>
 #include <stdlib.h>
 
 #ifdef _OPENMP
@@ -2804,7 +2805,7 @@ int mouse_moved (struct dt_iop_module_t *module,
                  int which)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
-  int handled = g->last_hit.elem ? 1 : 0;
+  bool handled = g->last_hit.elem ? true : false;
   float complex pt;
   float scale;
 
@@ -2831,7 +2832,7 @@ int mouse_moved (struct dt_iop_module_t *module,
         last_hovered->header.hovered = 0;
       // change in hover display
       dt_control_hinter_message (darktable.control, dt_liquify_layers[hit.layer].hint);
-      handled = 1;
+      handled = true;
       goto done;
     }
   }
@@ -2949,16 +2950,16 @@ int mouse_moved (struct dt_iop_module_t *module,
        default:
          break;
     }
-    handled = 1;
+    handled = true;
   }
 
 done:
   dt_pthread_mutex_unlock (&g->lock);
   if (handled)
   {
-    sync_pipe (module, handled == 2);
+    sync_pipe (module, false);
   }
-  return handled;
+  return (int)handled;
 }
 
 /*
