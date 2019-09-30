@@ -18,9 +18,6 @@
 
 @import url("darktable.css");
 
-/* hide frames in lighttable preview and culling */
-@define-color preview_border_color transparent;
-
 /* This has been tested with GTK 3.24 on Gnome */
 
 *
@@ -34,6 +31,7 @@
 #lib-plugin-ui,
 #iop-plugin-ui,
 #lib-modulelist,
+#bauhaus-popup,
 #modules-tabs,
 #left,
 #right,

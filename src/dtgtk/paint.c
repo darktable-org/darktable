@@ -1383,7 +1383,7 @@ void dtgtk_cairo_paint_overlays(cairo_t *cr, gint x, gint y, gint w, gint h, gin
   cairo_scale(cr, s, s);
   cairo_set_line_width(cr, .1);
 
-  dt_draw_star(cr, 0.5, 0.5, 1.0, 0.5);
+  dt_draw_star(cr, 0.5, 0.5, 1.0, 1.0/2.5);
 
   cairo_stroke(cr);
 }
