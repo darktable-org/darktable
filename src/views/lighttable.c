@@ -1067,8 +1067,11 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
 
   lib->images_in_row = iir;
 
-  const float wd = width / (float)iir;
-  const float ht = width / (float)iir;
+  /* empty space between thumbnails */
+  const float line_width = DT_PIXEL_APPLY_DPI(2.0);
+
+  const float wd = (width - line_width)  / (float)iir;
+  const float ht = (width - line_width) / (float)iir;
   lib->thumb_size = wd;
 
   int pi = pointerx / (float)wd;
@@ -1158,7 +1161,7 @@ static int expose_filemanager(dt_view_t *self, cairo_t *cr, int32_t width, int32
   /* update scroll borders */
   int shown_rows = ceilf((float)lib->collection_count / iir);
   if(iir > 1) shown_rows += max_rows - 2;
-  dt_view_set_scrollbar(self, 0, 0, 1, 1, offset, 0, shown_rows * iir, (max_rows - 1) * iir);
+  dt_view_set_scrollbar(self, 0, 0, 0, 0, offset, 0, shown_rows * iir, (max_rows - 1) * iir);
 
   /* let's reset and reuse the main_query statement */
   DT_DEBUG_SQLITE3_CLEAR_BINDINGS(lib->statements.main_query);
@@ -1314,6 +1317,7 @@ end_query_cache:
           dt_control_set_mouse_over_id(mouse_over_id);
 
         cairo_save(cr);
+        cairo_translate(cr, line_width, line_width);
 
         if(iir == 1)
         {
@@ -1337,10 +1341,10 @@ end_query_cache:
           params.imgid = id;
           params.mouse_over = (id == mouse_over_id);
           params.cr = cr;
-          params.width = wd;
-          params.height = iir == 1 ? height : ht;
-          params.px = pi == col && pj == row ? img_pointerx : -1;
-          params.py = pi == col && pj == row ? img_pointery : -1;
+          params.width = wd - line_width;
+          params.height = (iir == 1) ? height : ht - line_width;
+          params.px = (pi == col && pj == row) ? img_pointerx : -1;
+          params.py = (pi == col && pj == row) ? img_pointery : -1;
           params.zoom = iir;
           const int thumb_missed = dt_view_image_expose(&params);
 
@@ -1348,8 +1352,8 @@ end_query_cache:
           {
             lib->pointed_img_x = col * wd;
             lib->pointed_img_y = row * ht;
-            lib->pointed_img_wd = wd;
-            lib->pointed_img_ht = iir == 1 ? height : ht;
+            lib->pointed_img_wd = wd - line_width;
+            lib->pointed_img_ht = (iir == 1) ? height : ht - line_width;
             lib->pointed_img_over = dt_view_guess_image_over(lib->pointed_img_wd, lib->pointed_img_ht, iir,
                                                              img_pointerx, img_pointery);
           }
@@ -1377,6 +1381,9 @@ escape_image_loop:
   if(!lib->pan && (iir != 1 || mouse_over_id != -1)) dt_control_set_mouse_over_id(mouse_over_id);
 
   // and now the group borders
+
+  cairo_set_line_width(cr, line_width);
+
   cairo_save(cr);
   current_image = 0;
   if(lib->offset < 0)
@@ -1389,18 +1396,18 @@ escape_image_loop:
   {
     // clear rows & cols around thumbs, needed to clear the group borders
     cairo_save(cr);
+    cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
     dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LIGHTTABLE_BG);
-    for(int row = 0; row < max_rows; row++)
+    for(int row = 0; row < max_rows + 1; row++)
     {
-      cairo_move_to(cr, 0, row * ht);
-      cairo_line_to(cr, width, row * ht);
+      cairo_move_to(cr, line_width / 2.0, row * ht + line_width / 2.0);
+      cairo_line_to(cr, width + line_width / 2.0, row * ht + line_width / 2.0);
     }
-    for(int col = 0; col < max_cols; col++)
+    for(int col = 0; col < max_cols + 1; col++)
     {
-      cairo_move_to(cr, col * wd, 0);
-      cairo_line_to(cr, col * wd, height);
+      cairo_move_to(cr, col * wd + line_width / 2.0, line_width / 2.0);
+      cairo_line_to(cr, col * wd + line_width / 2.0, height + line_width / 2.0);
     }
-    cairo_set_line_width(cr, 0.011 * wd);
     cairo_stroke(cr);
     cairo_restore(cr);
   }
@@ -1482,8 +1489,8 @@ escape_image_loop:
           }
           if(neighbour_group != group_id)
           {
-            cairo_move_to(cr, 0, 0);
-            cairo_line_to(cr, wd, 0);
+            cairo_move_to(cr, line_width / 2.0, line_width / 2.0);
+            cairo_line_to(cr, wd + line_width / 2.0, line_width / 2.0);
           }
           // left border
           neighbour_group = -1;
@@ -1499,8 +1506,8 @@ escape_image_loop:
           }
           if(neighbour_group != group_id)
           {
-            cairo_move_to(cr, 0, 0);
-            cairo_line_to(cr, 0, ht);
+            cairo_move_to(cr, line_width / 2.0, line_width /2.0);
+            cairo_line_to(cr, line_width / 2.0, ht + line_width / 2.0);
           }
           // bottom border
           neighbour_group = -1;
@@ -1516,8 +1523,8 @@ escape_image_loop:
           }
           if(neighbour_group != group_id)
           {
-            cairo_move_to(cr, 0, ht);
-            cairo_line_to(cr, wd, ht);
+            cairo_move_to(cr, line_width / 2.0, ht + line_width / 2.0);
+            cairo_line_to(cr, wd + line_width / 2.0, ht + line_width / 2.0);
           }
           // right border
           neighbour_group = -1;
@@ -1533,10 +1540,10 @@ escape_image_loop:
           }
           if(neighbour_group != group_id)
           {
-            cairo_move_to(cr, wd, 0);
-            cairo_line_to(cr, wd, ht);
+            cairo_move_to(cr, wd + line_width / 2.0, line_width / 2.0);
+            cairo_line_to(cr, wd + line_width / 2.0, ht + line_width / 2.0);
           }
-          cairo_set_line_width(cr, 0.01 * wd);
+          cairo_set_line_width(cr, line_width);
           cairo_stroke(cr);
         }
 
@@ -1648,6 +1655,8 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
   const float wd = width / zoom;
   const float ht = width / zoom;
   lib->thumb_size = wd;
+
+  const float line_width = DT_PIXEL_APPLY_DPI(2.0);
 
   static float oldzoom = -1;
   if(oldzoom < 0) oldzoom = zoom;
@@ -1861,8 +1870,8 @@ static int expose_zoomable(dt_view_t *self, cairo_t *cr, int32_t width, int32_t 
           params.imgid = id;
           params.mouse_over = (id == mouse_over_id);
           params.cr = cr;
-          params.width = wd;
-          params.height = zoom == 1 ? height : ht;
+          params.width = wd - 2 * line_width;
+          params.height = (zoom == 1) ? height : ht - line_width;
           params.px = img_pointerx;
           params.py = img_pointery;
           params.zoom = zoom;

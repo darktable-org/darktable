@@ -189,12 +189,13 @@ typedef struct dt_view_image_expose_t
   dt_view_image_over_t *image_over;
   uint32_t imgid;
   cairo_t *cr;
-  int32_t width;
-  int32_t height;
+  float width;
+  float height;
   int32_t zoom;
   int32_t px;
   int32_t py;
   gboolean full_preview;
+  gboolean filmstrip;
   gboolean image_only;
   gboolean no_deco;
   gboolean mouse_over;
