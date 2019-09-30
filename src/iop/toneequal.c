@@ -1507,13 +1507,13 @@ void init(dt_iop_module_t *module)
                                                                       .speculars = 0.0f,
                                                                       .quantization = 1.0f,
                                                                       .smoothing = sqrtf(2.0f),
-                                                                      .iterations = 3,
+                                                                      .iterations = 2,
                                                                       .method = DT_TONEEQ_NORM_2,
                                                                       .details = DT_TONEEQ_GUIDED,
                                                                       .blending = 25.0f,
                                                                       .feathering = 10.0f,
-                                                                      .contrast_boost = 0.0f,
-                                                                      .exposure_boost = 0.0f };
+                                                                      .contrast_boost = 2.0f,
+                                                                      .exposure_boost = -1.0f };
   memcpy(module->params, &tmp, sizeof(dt_iop_toneequalizer_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_toneequalizer_params_t));
 }
