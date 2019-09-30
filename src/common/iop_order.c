@@ -31,7 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DT_IOP_ORDER_VERSION 3
+#define DT_IOP_ORDER_VERSION 4
 
 #define DT_IOP_ORDER_INFO FALSE	// used while debugging
 
@@ -40,6 +40,24 @@ static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_lis
 static void _ioppr_move_iop_after(GList **_iop_order_list, const char *op_current, const char *op_prev, const int dont_move);
 static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_current, const char *op_next, const int dont_move);
 
+// this routine rewrite the iop-order to have all them evenly spaced
+// into the list ensuring that we can insert safly at least 40 iop
+// between any two of them. Probably not the best fix, this is mostly
+// a workaround the current limitation and will avoid issues for next
+// release.
+// ?? TODO: redo the whole pipe ordering
+static void _rewrite_order(GList *iop_order_list)
+{
+  GList *l = iop_order_list;
+  double order = 1.0;
+  while(l)
+  {
+    dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)l->data;
+    order_entry->iop_order = order;
+    order += 1.0;
+    l = g_list_next(l);
+  }
+}
 
 /* migrates *_iop_order_list from old_version to the next version (version + 1)
  * limitations:
@@ -159,6 +177,11 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     _ioppr_insert_iop_after(_iop_order_list, history_list, "filmicrgb", "filmic", dont_move);
 
     new_version = 3;
+  }
+  else if(old_version == 3)
+  {
+    if(!dont_move) _rewrite_order(*_iop_order_list);
+    new_version = 4;
   }
 
   if(new_version <= 0)
