@@ -1497,24 +1497,22 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
       {
         if(zoom != 1 && (!darktable.gui->show_overlays || vals->mouse_over) && extended_thumb_overlay)
         {
-          const double overlay_height = 0.26 * height;
-          const int exif_offset = DT_PIXEL_APPLY_DPI(3);
-          const int fontsize = 0.18 * overlay_height;
-          const double line_offs = 1.15 * fontsize;
+          // size of stars overlays
+          const double r1 = MIN(DT_PIXEL_APPLY_DPI(20.0), 0.91 * width / 10.0);
+          const double fontsize = MIN(DT_PIXEL_APPLY_DPI(16.0), 0.67 * 0.91 * width / 10.0);
+          const double exif_offset = 0.045 * width;
+          const double line_offs = 1.25 * fontsize;
+          const double overlay_height = 2 * exif_offset + r1 + 1.75 * line_offs;
 
-
-          const double x0 = DT_PIXEL_APPLY_DPI(1);
+          const double x0 = 0;
           const double y0 = height - overlay_height;
-          const double rect_width = width - DT_PIXEL_APPLY_DPI(2);
-          const double rect_height = overlay_height - DT_PIXEL_APPLY_DPI(2);
+          const double rect_width = width;
+          const double rect_height = overlay_height;
 
           cairo_save(cr);
           cairo_rectangle(cr, x0, y0, rect_width, rect_height);
           dt_gui_gtk_set_source_rgb(cr, bgcol);
-          cairo_fill_preserve(cr);
-          cairo_set_line_width(cr, 0.005 * width);
-          dt_gui_gtk_set_source_rgb(cr, outlinecol);
-          cairo_stroke(cr);
+          cairo_fill(cr);
 
           // some exif data
           PangoLayout *layout;
@@ -1525,13 +1523,13 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
           pango_layout_set_font_description(layout, desc);
           dt_gui_gtk_set_source_rgb(cr, outlinecol);
 
-          cairo_move_to(cr, x0 + exif_offset, y0 + exif_offset);
+          cairo_move_to(cr, x0 + exif_offset, y0 + exif_offset / 2.0);
           pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
           pango_layout_set_width(layout, (int)(PANGO_SCALE * (width - 2 * exif_offset)));
           pango_layout_set_text(layout, img->filename, -1);
           pango_cairo_show_layout(cr, layout);
           char exifline[50];
-          cairo_move_to(cr, x0 + exif_offset, y0 + exif_offset + line_offs);
+          cairo_move_to(cr, x0 + exif_offset, y0 + exif_offset / 2.0 + line_offs);
           dt_image_print_exif(img, exifline, sizeof(exifline));
           pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
           pango_layout_set_text(layout, exifline, -1);
