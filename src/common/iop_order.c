@@ -92,97 +92,126 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     // we then need to reconstruct/clean the signal the other way :
     // RAW file -> sensor denoise -> lens profile / deblur -> atmosphere dehaze -> surfaces perspective correction
 
-    // correct exposure in camera RGB space (otherwise, it's not really exposure)
-    _ioppr_move_iop_before(_iop_order_list, "exposure", "colorin", dont_move);
+    // The following is a flattened list from original code. The goal is to have a clean starting point for
+    // futur modifications.
+    const dt_iop_order_entry_t iop_v3[] = {
+      {  1.0000000000000, "rawprepare"},
+      {  2.0000000000000, "invert"},
+      {  3.0000000000000, "temperature"},
+      {  4.0000000000000, "highlights"},
+      {  5.0000000000000, "cacorrect"},
+      {  6.0000000000000, "hotpixels"},
+      {  7.0000000000000, "rawdenoise"},
+      {  7.5000305175781, "demosaic"},
+      {  8.0000610351562, "denoiseprofile"},
+      {  8.0001220703125, "bilateral"},
+      {  8.0002441406250, "rotatepixels"},
+      {  8.0004882812500, "scalepixels"},
+      {  8.0009765625000, "lens"},
+      {  8.0019531250000, "hazeremoval"},
+      {  8.0039062500000, "ashift"},
+      {  8.0078125000000, "flip"},
+      {  8.0156250000000, "clipping"},
+      {  8.0312500000000, "liquify"},
+      {  8.0625000000000, "spots"},
+      {  8.1250000000000, "retouch"},
+      {  8.2500000000000, "exposure"},
+      {  9.0000000000000, "mask_manager"},
+      { 11.0000000000000, "tonemap"},
+      { 21.5000000000000, "toneequal"},
+      { 22.0000000000000, "graduatednd"},
+      { 25.0000000000000, "profile_gamma"},
+      { 31.0000000000000, "equalizer"},
+      { 36.0000000000000, "lut3d"},
+      { 37.5000000000000, "colorin"},
+      { 38.0000000000000, "nlmeans"},
+      { 38.5000000000000, "defringe"},
+      { 38.7500000000000, "atrous"},
+      { 38.8750000000000, "lowpass"},
+      { 38.9375000000000, "highpass"},
+      { 38.9687500000000, "sharpen"},
+      { 38.9843750000000, "channelmixer"},
+      { 38.9921875000000, "colorchecker"},
+      { 38.9941406250000, "colortransfer"},
+      { 38.9960937500000, "colormapping"},
+      { 38.9980468750000, "colorbalance"},
+      { 38.9990234375000, "basicadj"},
+      { 38.9995117187500, "rgbcurve"},
+      { 38.9997558593750, "rgblevels"},
+      { 38.9998779296875, "bloom"},
+      { 38.9999389648438, "basecurve"},
+      { 38.9999694824219, "filmic"},
+      { 38.9999771118164, "filmicrgb"},
+      { 38.9999847412109, "colisa"},
+      { 38.9999923706055, "tonecurve"},
+      { 38.9999961853027, "levels"},
+      { 38.9999980926514, "shadhi"},
+      { 38.9999990463257, "bilat"},
+      { 38.9999995231628, "colorcorrection"},
+      { 38.9999997615814, "colorzones"},
+      { 38.9999998807907, "vibrance"},
+      { 38.9999999403954, "velvia"},
+      { 38.9999999701977, "colorize"},
+      { 38.9999999850988, "colorcontrast"},
+      { 39.0000000000000, "globaltonemap"},
+      { 44.0000000000000, "lowlight"},
+      { 45.0000000000000, "monochrome"},
+      { 48.0000000000000, "zonesystem"},
+      { 51.0000000000000, "relight"},
+      { 56.0000000000000, "grain"},
+      { 60.0000000000000, "soften"},
+      { 62.0000000000000, "splittoning"},
+      { 62.3750000000000, "vignette"},
+      { 62.7500000000000, "colorreconstruct"},
+      { 63.5000000000000, "colorout"},
+      { 64.0000000000000, "clahe"},
+      { 65.0000000000000, "finalscale"},
+      { 66.0000000000000, "overexposed"},
+      { 67.0000000000000, "rawoverexposed"},
+      { 67.5000000000000, "dither"},
+      { 68.0000000000000, "borders"},
+      { 69.0000000000000, "watermark"},
+      { 71.0000000000000, "gamma"},
+      {  0.0            , "\0" }
+    };
 
-    // move local distorsions/pixel shifts after general distorsions
-    _ioppr_move_iop_before(_iop_order_list, "retouch", "exposure", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "spots", "retouch", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "liquify", "spots", dont_move);
+    // clear previous list as we start from scratch with all modules
+    g_list_free(*_iop_order_list);
+    *_iop_order_list = NULL;
 
-    // move general perspective/distorsions module after lens
-    _ioppr_move_iop_before(_iop_order_list, "clipping", "liquify", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "flip", "clipping", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "ashift", "flip", dont_move);
+    int i = 0;
+    while(iop_v3[i].operation[0] != '\0')
+    {
+      dt_iop_order_entry_t *entry = calloc(1, sizeof(dt_iop_order_entry_t));
 
-    // dehaze
-    _ioppr_move_iop_before(_iop_order_list, "hazeremoval", "ashift", dont_move);
+      entry->iop_order = iop_v3[i].iop_order;
+      snprintf(entry->operation, sizeof(entry->operation), "%s", iop_v3[i].operation);
+      *_iop_order_list = g_list_append(*_iop_order_list, entry);
 
-    // lens profiles need a pure sensor reading with no correction
-    _ioppr_move_iop_before(_iop_order_list, "lens", "hazeremoval", dont_move);
-
-    // pixel scaling
-    _ioppr_move_iop_before(_iop_order_list, "scalepixels", "lens", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "rotatepixels", "scalepixels", dont_move);
-
-    // move denoising before any deformation to avoid anisotropic noise creation
-    _ioppr_move_iop_before(_iop_order_list, "bilateral", "rotatepixels", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "denoiseprofile", "bilateral", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "demosaic", "denoiseprofile", dont_move);
-
-    // move Lab denoising/reconstruction after input profile where signal is linear
-    // NB: denoising in non-linear spaces makes no sense
-    _ioppr_move_iop_before(_iop_order_list, "colorin", "nlmeans", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "defringe", "nlmeans", dont_move);
-
-    // move frequency filters right after input profile - convolutions need L2 spaces
-    // to respect Parseval's theorem and avoid halos at edges
-    // NB: again, frequency filter in Lab make no sense
-    _ioppr_move_iop_after(_iop_order_list, "atrous", "defringe", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "lowpass", "atrous", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "highpass", "lowpass", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "sharpen", "highpass", dont_move);
-
-    // color adjustments in scene-linear space : move right after colorin
-    _ioppr_move_iop_after(_iop_order_list, "channelmixer", "sharpen", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colorchecker", "channelmixer", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colormapping", "colorchecker", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colorbalance", "colormapping", dont_move);
-
-    _ioppr_move_iop_after(_iop_order_list, "lut3d", "colortransfer", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colortransfer", "colorchecker", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "basicadj", "colorbalance", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "rgbcurve", "basicadj", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "rgblevels", "rgbcurve", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "bloom", "rgblevels", dont_move);
-
-    // scene-linear to display-referred encoding
-    // !!! WALL OF THE NON-LINEARITY !!! There is no coming back for colour ratios
-    _ioppr_move_iop_after(_iop_order_list, "basecurve", "bloom", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "filmic", "basecurve", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colisa", "filmic", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "tonecurve", "colisa", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "levels", "tonecurve", dont_move);
-
-    _ioppr_move_iop_after(_iop_order_list, "shadhi", "levels", dont_move);
-
-    // recover local contrast after non-linear tone edits
-    _ioppr_move_iop_after(_iop_order_list, "bilat", "shadhi", dont_move);
-
-    // display-referred colour edits
-    _ioppr_move_iop_after(_iop_order_list, "colorcorrection", "bilat", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colorzones", "colorcorrection", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "vibrance", "colorzones", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "velvia", "vibrance", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colorize", "velvia", dont_move);
-    _ioppr_move_iop_after(_iop_order_list, "colorcontrast", "colorize", dont_move);
-
-    // fix clipping before going in colourout
-    _ioppr_move_iop_before(_iop_order_list, "colorreconstruct", "colorout", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "vignette", "colorreconstruct", dont_move);
-
-    _ioppr_move_iop_before(_iop_order_list, "dither", "borders", dont_move);
-
-    // new modules here
-    _ioppr_insert_iop_after(_iop_order_list, history_list, "filmicrgb", "filmic", dont_move);
+      i++;
+    }
 
     new_version = 3;
   }
   else if(old_version == 3)
   {
+    // version 3 is a rewrite of the iop-order of previous list. As it
+    // can be seen above some modules have very close iop-order values
+    // and does not have lot of room for insertion (multi-instance
+    // module and/or reordering).
+
     if(!dont_move) _rewrite_order(*_iop_order_list);
     new_version = 4;
   }
+/*
+  // each new version MUST be written as the following (_rewrite_order IS VERY important)
+  else if(old_version == <N>)
+  {
+    _ioppr_move_iop_[before|after](_iop_order_list, "new_module", "some_module", dont_move);
+    if(!dont_move) _rewrite_order(*_iop_order_list);
+    new_version = <N+1>;
+  }
+*/
 
   if(new_version <= 0)
     fprintf(stderr, "[_ioppr_legacy_iop_order_step] missing step migrating from version %i\n", old_version);
