@@ -348,7 +348,7 @@ dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const 
 double dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name)
 {
   double iop_order = DBL_MAX;
-  dt_iop_order_entry_t *order_entry = dt_ioppr_get_iop_order_entry(iop_order_list, op_name);
+  const dt_iop_order_entry_t *order_entry = dt_ioppr_get_iop_order_entry(iop_order_list, op_name);
 
   if(order_entry)
     iop_order = order_entry->iop_order;
