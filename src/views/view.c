@@ -1426,13 +1426,25 @@ int dt_view_image_expose(dt_view_image_expose_t *vals)
     else if(buf_ok && dt_view_lighttable_culling_is_image_visible(darktable.view_manager, imgid))
     {
       // border around image
-      if(selected && darktable.gui->colors[DT_GUI_COLOR_PREVIEW_BORDER].alpha > 0.0)
+      if(selected && !vals->filmstrip && darktable.gui->colors[DT_GUI_COLOR_CULLING_SELECTED_BORDER].alpha > 0.0)
       {
         const float border = DT_PIXEL_APPLY_DPI(4.0 / scale);
         cairo_set_line_width(cr, border);
         cairo_rectangle(cr, rectx - border / 1.98, recty - border / 1.98, rectw + 0.99 * border,
                         recth + 0.99 * border);
-        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_PREVIEW_BORDER);
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_CULLING_SELECTED_BORDER);
+        cairo_stroke(cr);
+      }
+
+      // border around image filmstrip
+      if(selected && vals->filmstrip
+         && darktable.gui->colors[DT_GUI_COLOR_CULLING_FILMSTRIP_SELECTED_BORDER].alpha > 0.0)
+      {
+        const float border = DT_PIXEL_APPLY_DPI(4.0 / scale);
+        cairo_set_line_width(cr, border);
+        cairo_rectangle(cr, rectx - border / 1.98, recty - border / 1.98, rectw + 0.99 * border,
+                        recth + 0.99 * border);
+        dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_CULLING_FILMSTRIP_SELECTED_BORDER);
         cairo_stroke(cr);
       }
 
