@@ -198,7 +198,7 @@ entry *,
 dialog,
 dialog *,
 colorswatch,
-colorswatch *
+colorswatch *,
 stack,
 stack *,
 scrollbar,
@@ -464,7 +464,7 @@ entry selection
   font-weight: normal;
   font-stretch: condensed;
   font-family: sans-serif;
-  font-size: 0.9em;
+  font-size: larger;
 }
 
 /* Labels of controls sections in modules */

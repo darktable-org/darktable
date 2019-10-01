@@ -972,11 +972,8 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
 
 
   /* add module label */
-  char label[128];
-  // TODO: figure out why the span larger size is needed here and CSS styling is uneffective
-  g_snprintf(label, sizeof(label), "<span size=\"larger\">%s</span>", module->name(module));
   hw[DT_MODULE_LABEL] = gtk_label_new("");
-  gtk_label_set_markup(GTK_LABEL(hw[DT_MODULE_LABEL]), label);
+  gtk_label_set_markup(GTK_LABEL(hw[DT_MODULE_LABEL]), module->name(module));
   gtk_widget_set_tooltip_text(hw[DT_MODULE_LABEL], module->name(module));
   gtk_label_set_ellipsize(GTK_LABEL(hw[DT_MODULE_LABEL]), PANGO_ELLIPSIZE_MIDDLE);
   gtk_widget_set_name(hw[DT_MODULE_LABEL], "lib-panel-label");
