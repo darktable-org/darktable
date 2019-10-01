@@ -56,6 +56,8 @@ typedef struct dt_lib_export_t
 } dt_lib_export_t;
 
 uint32_t dt_lib_export_metadata_default_flags();
+char *dt_lib_export_metadata_get_conf();
+void dt_lib_export_metadata_set_conf(const char *metadata_presets);
 char *dt_lib_export_metadata_configuration_dialog(char *list, const gboolean ondisk);
 /** Updates the combo box and shows only the supported formats of current selected storage module */
 static void _update_formats_combobox(dt_lib_export_t *d);
@@ -234,7 +236,7 @@ void gui_reset(dt_lib_module_t *self)
 
   // export metadata presets
   if (d->metadata_export) g_free(d->metadata_export);
-  d->metadata_export = dt_util_dstrcat(NULL, "%x", dt_lib_export_metadata_default_flags());
+  d->metadata_export = dt_lib_export_metadata_get_conf();
 
   dt_imageio_module_format_t *mformat = dt_imageio_get_format();
   if(mformat) mformat->gui_reset(mformat);
@@ -1227,6 +1229,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   buf += strlen(metadata_export) + 1;
   if (d->metadata_export) g_free(d->metadata_export);
   d->metadata_export = g_strdup(metadata_export);
+  dt_lib_export_metadata_set_conf(d->metadata_export);
   const char *iccfilename = buf;
   buf += strlen(iccfilename) + 1;
 
