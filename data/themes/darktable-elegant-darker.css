@@ -20,6 +20,9 @@
 
 /* This has been tested with GTK 3.24 on Gnome */
 
+/* hide selection frame in culling */
+@define-color culling_selected_border_color transparent;
+
 *
 {
     font-weight: 200;
