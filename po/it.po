@@ -236,6 +236,7 @@ msgstr ""
 "Abilita questa opzione per utilizzare il click singolo per selezionare le "
 "immagini nel pannello della collezione. Questo vi permetterà di effettuare "
 "selezioni in base a valori data/ora e valori numerici."
+" valori numerici."
 
 #: ../build/src/preferences_gen.h:2422
 msgid "expand a single lighttable module at a time"
@@ -456,6 +457,7 @@ msgstr ""
 #: ../build/src/preferences_gen.h:2788
 msgid "expand the module when it is activated, and collapse it when disabled"
 msgstr "Espandi il modulo quando attivato e comprimilo quando disattivato"
+"Espandi il modulo quando questo è attivato e riducilo quando è disattivato"
 
 #: ../build/src/preferences_gen.h:2800
 msgid ""
@@ -798,6 +800,8 @@ msgstr ""
 #: ../build/src/preferences_gen.h:3266
 msgid "mouse wheel scrolls modules side panel by default"
 msgstr "La rotella del mouse scorre i moduli all'interno dei pannelli laterali"
+"La rotella del mouse scorre il pannello laterale dei moduli in modo"
+" predefinito"
 
 #: ../build/src/preferences_gen.h:3278
 msgid ""
@@ -1334,6 +1338,7 @@ msgid ""
 msgstr ""
 "Questa cartella (e le relative sotto-cartelle) contengono i files Lut "
 "utilizzati dai moduli lut3d. Richiede il riavvio."
+"Necessario riavviare darktable."
 
 #: ../build/src/preferences_gen.h:4164
 msgid "session options"
@@ -3112,7 +3117,7 @@ msgstr "Immagine in ingresso"
 
 #: ../src/develop/blend_gui.c:2531
 msgid "choose to guide mask by input or output image"
-msgstr ""
+msgstr "Scegli la maschera guida attraverso l'immagine di input o di output"
 "Scegli di guidare la maschera in base all'immagine in ingresso o uscita"
 
 #: ../src/develop/blend_gui.c:2537
@@ -3428,6 +3433,8 @@ msgstr "[CIRCLE] Cambia dimensione"
 msgid "[CIRCLE] change opacity"
 msgstr "[CIRCLE] Cambia l'opacità"
 
+# feather: verificare lo strumento. Potrebbe esser "cambia la dimensione del tratto"
+# [CIRCLE] va tradotto o è una variabile o un tag utilizzato dal programma?
 #: ../src/develop/masks/masks.c:305
 msgid "[CIRCLE] change feather size"
 msgstr "[CIRCLE] Cambia dimensione sfumatura"
@@ -3435,7 +3442,6 @@ msgstr "[CIRCLE] Cambia dimensione sfumatura"
 #: ../src/develop/masks/masks.c:331
 #: ../src/develop/masks/masks.c:305
 msgid "[CIRCLE] change feather size"
-msgstr ""
 
 #: ../src/develop/masks/masks.c:331
 msgid "ctrl+click to add a sharp node"
@@ -4076,7 +4082,7 @@ msgstr "$(MAX_WIDTH) - Larghezza max immagine esportata"
 
 #: ../src/gui/gtkentry.c:193
 msgid "$(MAX_HEIGHT) - maximum image export height"
-msgstr ""
+msgstr "$(MAX_HEIGHT) - Altezza massima dell'immagine da esportare"
 
 #: ../src/gui/gtkentry.c:194
 
@@ -4190,7 +4196,6 @@ msgstr "$(OPENCL_ACTIVATED) - Se OpenCL è attivato"
 
 #: ../src/gui/gtkentry.c:220
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
-msgstr ""
 "$(CATEGORY0(category)) - Sotto-etichetta del livello 0 nelle etichette "
 "gerarchiche"
 
@@ -10360,6 +10365,7 @@ msgstr ""
 "l'immagine (e non tra i dati lut)\n"
 "ATTENZIONE: la cartella lut deve essere impostata nin Preferenze/Opzioni "
 "Principali/Varie prima di selezionare il file llut"
+"prima di scegliere il file del LUT"
 
 #: ../src/iop/lut3d.c:1117
 msgid "application color space"
@@ -11054,6 +11060,9 @@ msgid ""
 "click and drag to draw the area\n"
 "right click to cancel"
 msgstr ""
+"Applicat i livelli automatici basati su una regione definita dall'utente\n"
+"Clicca e trascina per disegnare l'area\n"
+"Clicca col destro per cancellare"
 
 #: ../src/iop/rotatepixels.c:76
 msgctxt "modulename"
@@ -14636,7 +14645,7 @@ msgstr "Non puoi utilizzare un'etichetta vuota, operazione annullata"
 
 #: ../src/libs/tagging.c:1404
 msgid "'|' character is not allowed to create a tag. aborting."
-msgstr ""
+msgstr "Il carattere '|' non è ammesso per la creazione dei Tag. Interruzione."
 "Il carattere '|' non può essere utilizzato per creare un'etichetta. "
 "Operazione annullata."
 
@@ -14680,7 +14689,7 @@ msgstr "Percorso selezionato: %s"
 
 #: ../src/libs/tagging.c:1776
 msgid "'|' misplaced, empty tag is not allowed, aborting"
-msgstr ""
+msgstr "'|' posizionato male, non è ammesso un Tag vuoto, interruzione"
 "'|' fuori posto, non è permesso utilizzare un'etichetta vuota. Operazione "
 "annullata"
 
@@ -14780,6 +14789,7 @@ msgstr ""
 "Doppio click per scollegarle,\n"
 "Click destro per altre azioni sull'etichetta allegata,\n"
 "Ctrl+(rotella mouse) per ridimensionare la finestra"
+"CTRL+rotella del mouse per ridimensionare la finestra"
 
 #: ../src/libs/tagging.c:2553
 msgid "attach"
@@ -15224,7 +15234,7 @@ msgstr "Altro"
 #: ../src/lua/lualib.c:295
 msgctxt "accel"
 msgid "reset lib parameters"
-msgstr "Resetta parametri collezione"
+msgstr "Resetta i parametri della raccolta"
 
 #: ../src/lua/preferences.c:644
 msgid "select file"
