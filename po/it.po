@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-09-04 19:19+0200\n"
-"PO-Revision-Date: 2019-09-26 09:07+0100\n"
+"PO-Revision-Date: 2019-10-01 11:24+0100\n"
 "Last-Translator: mmardegan <11093569+mmardegan@users.noreply.github.com>\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
@@ -657,12 +657,17 @@ msgstr ""
 #: ../build/src/preferences_gen.h:3329
 msgid "mouse wheel scrolls modules side panel by default"
 msgstr ""
+"La rotella del mouse scorre il pannello laterale dei moduli in modo"
+" predefinito"
 
 #: ../build/src/preferences_gen.h:3341
 msgid ""
 "when enabled, use mouse wheel to scroll modules side panel.  use ctrl+alt to "
 "use mouse wheel for data entry.  when disabled, this behavior is reversed"
 msgstr ""
+"Quando abilitato, usa la rotella del mouse per scorrere il pannello laterale"
+" dei moduli. Usa CTRL+ALT per usare la rotella del mouse per inserimento"
+" dati. Quando disabilitato, questo comportamento è invertito"
 
 #: ../build/src/preferences_gen.h:3349
 msgid "show scrollbars for center view"
@@ -1129,7 +1134,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:4132
 msgid "disable the entry completion"
-msgstr ""
+msgstr "Disabilita il completamento automatico"
 
 #: ../build/src/preferences_gen.h:4144
 msgid ""
@@ -1257,7 +1262,7 @@ msgstr ""
 
 #: ../data/darktable.appdata.xml.in.h:5
 msgid "Virtual light table, showing a collection"
-msgstr "Tavolo luminoso virtuale, visualizza una collezione"
+msgstr "Tavolo luminoso virtuale, visualizza una raccolta"
 
 #: ../data/darktable.appdata.xml.in.h:6
 msgid "Virtual dark room with an opened image"
@@ -1392,7 +1397,7 @@ msgstr ""
 
 #: ../src/common/collection.c:521
 msgid "too much time to update aspect ratio for the collection"
-msgstr ""
+msgstr "Troppo tempo per aggiornare le proporzioni nella raccolta"
 
 #: ../src/common/collection.c:1241 ../src/develop/lightroom.c:824
 #: ../src/iop/bilateral.cc:371 ../src/iop/channelmixer.c:459
@@ -1446,7 +1451,7 @@ msgstr "Identificatore gruppo"
 #: ../src/common/collection.c:1681
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
-msgstr "selezionata %d immagine di %d (#%d) nella collezione attuale"
+msgstr "selezionata %d immagine di %d (#%d) nella raccolta attuale"
 
 #: ../src/common/collection.c:1687
 #, c-format
@@ -3206,7 +3211,7 @@ msgstr "[TRACCIATO] cambia l'opacità"
 
 #: ../src/develop/masks/masks.c:214
 msgid "[PATH] change feather size"
-msgstr ""
+msgstr "[TRACCIATO] cambia la dimensione del pennino"
 
 #: ../src/develop/masks/masks.c:221
 #, fuzzy
@@ -3261,15 +3266,17 @@ msgstr "[PENNELLO] cambia la durezza"
 
 #: ../src/develop/masks/masks.c:293
 msgid "[CIRCLE] change size"
-msgstr "[CIRCLE] cambia dimensione"
+msgstr "[CERCHIO] cambia dimensione"
 
 #: ../src/develop/masks/masks.c:299
 msgid "[CIRCLE] change opacity"
 msgstr "[CERCHIO] cambia l'opacità"
 
+# feather: verificare lo strumento. Potrebbe esser "cambia la dimensione del tratto"
+# [CIRCLE] va tradotto o è una variabile o un tag utilizzato dal programma?
 #: ../src/develop/masks/masks.c:305
 msgid "[CIRCLE] change feather size"
-msgstr ""
+msgstr "[CERCHIO] cambia la dimensione del pennino"
 
 #: ../src/develop/masks/masks.c:331
 msgid "ctrl+click to add a sharp node"
@@ -3904,11 +3911,11 @@ msgstr "$(SEQUENCE) - numero sequenza"
 
 #: ../src/gui/gtkentry.c:192
 msgid "$(MAX_WIDTH) - maximum image export width"
-msgstr ""
+msgstr "$(MAX_WIDTH) -  Larghezza massima dell'immagine da esportare"
 
 #: ../src/gui/gtkentry.c:193
 msgid "$(MAX_HEIGHT) - maximum image export height"
-msgstr ""
+msgstr "$(MAX_HEIGHT) - Altezza massima dell'immagine da esportare"
 
 #: ../src/gui/gtkentry.c:194
 msgid "$(YEAR) - year"
@@ -4008,7 +4015,7 @@ msgstr "$(RIGHTS) - diritti dai metadata"
 
 #: ../src/gui/gtkentry.c:218
 msgid "$(OPENCL_ACTIVATED) - whether OpenCL is activated"
-msgstr ""
+msgstr "$(OPENCL_ACTIVATED) - Qualora OpenCL sia attivato"
 
 #: ../src/gui/guides.c:108
 #, fuzzy
@@ -5572,7 +5579,7 @@ msgstr ""
 #: ../src/iop/ashift.c:4983
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
-"Regola il rapporto d'aspetto dell'immagine ridimensionando orizzontalmente e "
+"Regola le proporzioni dell'immagine ridimensionando orizzontalmente e "
 "verticalmente"
 
 #: ../src/iop/ashift.c:4984
@@ -6103,7 +6110,7 @@ msgstr ""
 
 #: ../src/iop/basicadj.c:760
 msgid "clip"
-msgstr ""
+msgstr "Graffetta"
 
 #: ../src/iop/basicadj.c:761
 msgid "adjusts clipping value for auto exposure calculation"
@@ -6796,12 +6803,12 @@ msgstr "Angolo "
 #: ../src/iop/clipping.c:3239
 #, c-format
 msgid "[%s on borders] crop"
-msgstr ""
+msgstr "[%s sui bordi] Ritaglia"
 
 #: ../src/iop/clipping.c:3245
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
-msgstr ""
+msgstr "[%s sui bordi] Ritaglia mantenendo il rapporto"
 
 #: ../src/iop/clipping.c:3250
 #, c-format
@@ -10027,10 +10034,9 @@ msgid "retouch tool brush"
 msgstr "Strumento di ritocco pennello"
 
 #: ../src/iop/retouch.c:3338
-#, fuzzy
 msgctxt "accel"
 msgid "continuous add circle"
-msgstr "Aggiungi forma circolare"
+msgstr "Aggiunta continua di forme circolari"
 
 #: ../src/iop/retouch.c:3339
 #, fuzzy
@@ -11190,9 +11196,8 @@ msgstr "Coda di sviluppo"
 
 #. DT_COLLECTION_SORT_DESCRIPTION
 #: ../src/libs/collect.h:38 ../src/libs/tools/filter.c:157
-#, fuzzy
 msgid "aspect ratio"
-msgstr "inverse les côtés"
+msgstr "Proporzione"
 
 #: ../src/libs/collect.h:38 ../src/libs/metadata_view.c:101
 #: ../src/libs/tools/filter.c:147
@@ -12492,7 +12497,7 @@ msgstr "rawspeed"
 
 #: ../src/libs/metadata_view.c:407
 msgid "netpnm"
-msgstr ""
+msgstr "netpnm"
 
 #: ../src/libs/metadata_view.c:412
 #, c-format
@@ -13157,11 +13162,11 @@ msgstr "Sinonimi: "
 #: ../src/libs/tagging.c:1302 ../src/libs/tagging.c:1480
 #: ../src/libs/tagging.c:1669
 msgid "empty tag is not allowed, aborting"
-msgstr ""
+msgstr "Non è ammesso un tag vuoto, interruzione"
 
 #: ../src/libs/tagging.c:1304
 msgid "'|' character is not allowed to create a tag. aborting."
-msgstr ""
+msgstr "Il carattere '|' non è ammesso per la creazione dei Tag. Interruzione."
 
 #: ../src/libs/tagging.c:1314
 #, fuzzy
@@ -13185,6 +13190,8 @@ msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierachy use rename path instead. Aborting."
 msgstr ""
+"Il carattere '|' non è ammesso quale Tag per la rinomina.\n"
+"per modificare la gerarchia rinomina il percorso piuttosto. Interruzione."
 
 #: ../src/libs/tagging.c:1520
 #, fuzzy, c-format
@@ -13203,7 +13210,7 @@ msgstr "Seleziona parti"
 
 #: ../src/libs/tagging.c:1671
 msgid "'|' misplaced, empty tag is not allowed, aborting"
-msgstr ""
+msgstr "'|' posizionato male, non è ammesso un Tag vuoto, interruzione"
 
 #: ../src/libs/tagging.c:1697
 #, fuzzy, c-format
@@ -13298,6 +13305,10 @@ msgid ""
 "right-click for other actions on attached tag,\n"
 "Ctrl-wheel scroll to resize the window"
 msgstr ""
+"Tag applicati,\n"
+"Doppio click per rimuovere\n"
+"Click destro per altre azioni sul Tag applicato,\n"
+"CTRL+rotella del mouse per ridimensionare la finestra"
 
 #: ../src/libs/tagging.c:2432
 msgid "attach"
@@ -13338,6 +13349,10 @@ msgid ""
 "right-click for other actions on selected tag,\n"
 "Ctrl-wheel scroll to resize the window"
 msgstr ""
+"Dizionario dei Tag,\n"
+"Doppio click per applicare,\n"
+"Click destro per altre azioni sul Tag selezionato,\n"
+"CTRL+rotella del mouse per ridimensionare la finestra"
 
 #: ../src/libs/tagging.c:2553
 msgid "new"
@@ -13728,7 +13743,7 @@ msgstr "Altro"
 #: ../src/lua/lualib.c:295
 msgctxt "accel"
 msgid "reset lib parameters"
-msgstr "Resetta parametri collezione"
+msgstr "Resetta i parametri della raccolta"
 
 #: ../src/lua/preferences.c:644
 msgid "select file"
@@ -14127,7 +14142,7 @@ msgstr[1] "Hai raggiunto l'inizio della tua selezione (%d immagini)"
 
 #: ../src/views/lighttable.c:3199
 msgid "you have reached the start of your collection"
-msgstr "Hai raggiunto l'inizio della tua collezione"
+msgstr "Hai raggiunto l'inizio della tua raccolta"
 
 #: ../src/views/lighttable.c:3223
 #, c-format
@@ -14138,7 +14153,7 @@ msgstr[1] "Hai raggiunto la fine della tua selezione (%d immagini)"
 
 #: ../src/views/lighttable.c:3228
 msgid "you have reached the end of your collection"
-msgstr "Hai raggiunto la fine della tua collezione"
+msgstr "Hai raggiunto la fine della tua raccolta"
 
 #: ../src/views/lighttable.c:3548
 #, fuzzy, c-format
