@@ -676,7 +676,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
     const dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
     char marker [32] = "";
     if(hitem->module->flags() & IOP_FLAGS_DEPRECATED)
-      g_snprintf(marker, sizeof(marker), "\u267B");
+      g_snprintf(marker, sizeof(marker), "/!\\"); // instead of an UTF character
     gchar *label;
     if(!hitem->multi_name[0] || strcmp(hitem->multi_name, "0") == 0)
       label = g_strdup_printf("%s %s", marker, hitem->module->name());
