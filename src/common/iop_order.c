@@ -34,6 +34,8 @@
 #define DT_IOP_ORDER_VERSION 4
 
 #define DT_IOP_ORDER_INFO FALSE	// used while debugging
+#define DT_ONTHEFLY_INFO FALSE   // while debugging on-the-fly conversion
+#define DT_ONTHEFLY_WRITING TRUE // If TRUE will do history update
 
 static void _ioppr_insert_iop_after(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_previous, const int dont_move);
 static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_next, const int dont_move);
@@ -1409,6 +1411,152 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
   }
 
   if(fences) g_list_free(fences);
+}
+
+
+// how is on-the-fly conversion done
+// Currently a hack to support v3 history to later
+// returns the history version of imgid
+int dt_ioppr_convert_onthefly(const int imgid)
+{
+  int my_iop_order_version = 0;
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order_version FROM main.images WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    my_iop_order_version = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+
+  if (my_iop_order_version == DT_IOP_ORDER_VERSION) return my_iop_order_version;
+
+  if (my_iop_order_version != 3) return my_iop_order_version; // this keeps other edit as they are
+
+  // ************** from here on we deal only with the v3 history problems; although *******************************
+
+  // As we have to calculate within the images history data we will create a struct array holding all relevant data
+  // for housekeeping.
+  // Also this ensures we can write test output before we really write data to main.history
+
+  int history_size = 0;
+  // We need the size of the images history for the struct array
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(*) FROM main.history WHERE imgid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW) history_size = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  if (history_size <1)
+  {
+    fprintf(stderr,"\n[dt_ioppr_convert_onthefly] for image %i has no valid history\n",imgid);
+    return my_iop_order_version;
+  }
+
+  GList *current_iop_list = dt_ioppr_get_iop_order_list(NULL);
+
+  // get the number of known iops
+  const int valid_iops = g_list_length (current_iop_list);
+
+  if (DT_ONTHEFLY_INFO) fprintf(stderr,"\n*** checking for %i known iops ***\n",valid_iops);
+
+  GList *iops_order = g_list_last(current_iop_list);
+  while(iops_order)
+  {
+    dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)iops_order->data;
+    if (DT_ONTHEFLY_INFO) fprintf(stderr,"  %s, %f\n",order_entry->operation,order_entry->iop_order);
+    iops_order = g_list_previous(iops_order);
+  }
+
+  typedef struct dt_onthefly_history_t
+  {
+    int num;
+    char operation[20];
+    double old_iop_order;
+    double new_iop_order;
+    int multi_priority;
+  } dt_onthefly_history_t;
+  struct dt_onthefly_history_t *myhistory = (dt_onthefly_history_t *)calloc(history_size, sizeof(dt_onthefly_history_t));
+
+  // read in the history
+  for (int i=0;i<history_size;i++)
+  {
+    int hits=0;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+      "SELECT num, operation, iop_order, multi_priority FROM main.history WHERE imgid=?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    { 
+      struct dt_onthefly_history_t *this = &myhistory[hits];
+      this->num = sqlite3_column_int(stmt, 0);
+      g_strlcpy(this->operation, (char *)sqlite3_column_text(stmt, 1), 20);
+      this->old_iop_order = this->new_iop_order = sqlite3_column_double(stmt,2);
+      this->multi_priority = sqlite3_column_int(stmt, 3);      
+      hits++;
+    }
+    sqlite3_finalize(stmt);
+  }
+
+  // process history
+  for (int i=0;i<history_size;i++)
+  {
+    struct dt_onthefly_history_t *this = &myhistory[i];
+    this->new_iop_order = dt_ioppr_get_iop_order(current_iop_list, this->operation) + (double)this->multi_priority / 100.0;
+  }
+
+  // process some more checks possibly; any sort data that can't be correct?
+
+  // print complete history information 
+  fprintf(stderr,"\n\n ***** On-the-fly history V[%i]->V[%i], imageid: %i ****************",my_iop_order_version,DT_IOP_ORDER_VERSION,imgid);  
+  for (int i=0;i<history_size;i++)
+  {
+    struct dt_onthefly_history_t *this = &myhistory[i];
+    fprintf(stderr,"\n %3i %20s multi%3i :: iop %14.11f -> %14.11f",this->num,this->operation,this->multi_priority,this->old_iop_order,this->new_iop_order);
+  }
+
+  // really write history?, not yet
+  if (DT_ONTHEFLY_WRITING)
+  {
+    sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
+    for (int i=0;i<history_size;i++)
+    {
+      struct dt_onthefly_history_t *this = &myhistory[i];
+      if (this->old_iop_order != this->new_iop_order)
+      {
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+          "UPDATE main.history SET iop_order = ?1 WHERE imgid = ?2 AND num = ?3", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 1, this->new_iop_order);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, this->num);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+      }
+    }
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+      "UPDATE main.images SET iop_order_version = ?2 WHERE id = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_IOP_ORDER_VERSION);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+  sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+  }
+
+  free(myhistory);
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order_version FROM main.images WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    my_iop_order_version = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+
+  return my_iop_order_version;
 }
 
 int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg)
@@ -3296,4 +3444,6 @@ cleanup:
 }
 #endif
 
+#undef DT_ONTHEFLY_WRITING
+#undef DT_ONTHEFLY_INFO
 #undef DT_IOP_ORDER_INFO // used while debugging
