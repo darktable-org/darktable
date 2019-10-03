@@ -34,6 +34,7 @@
 #define DT_IOP_ORDER_VERSION 4
 
 #define DT_IOP_ORDER_INFO FALSE	// used while debugging
+#define DT_ONTHEFLY_INFO TRUE   // while debugging on-the-fly conversion
 
 static void _ioppr_insert_iop_after(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_previous, const int dont_move);
 static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_next, const int dont_move);
@@ -1409,6 +1410,64 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
   }
 
   if(fences) g_list_free(fences);
+}
+
+
+// how is on-the-fly conversion done
+// Currently a hack to support v3 history to later
+void dt_ioppr_convert_onthefly(const int imgid)
+{
+  int my_iop_order_version = 0;
+
+
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order_version FROM main.images WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    my_iop_order_version = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+
+  if (my_iop_order_version == DT_IOP_ORDER_VERSION) return;
+
+  if (my_iop_order_version < 3) return;	// this keeps older edit as they are
+  // from here on we deal only with the v3 history problems; although ...
+
+  if (DT_ONTHEFLY_INFO)
+    fprintf(stderr,"\nOn-the-fly history V[%i]->V[%i], imageid: %i",my_iop_order_version,DT_IOP_ORDER_VERSION,imgid);  
+
+  GList *current_iop_list = dt_ioppr_get_iop_order_list(NULL);
+
+  // get the number of known iops
+  int valid_iops = 0;
+
+  GList *iops_order = g_list_last(current_iop_list);
+  while(iops_order)
+  {
+    valid_iops++; 
+    iops_order = g_list_previous(iops_order);
+  }
+  if (DT_ONTHEFLY_INFO) fprintf(stderr,", found %i iops\n",valid_iops);
+
+  // now fill in the array for processing the image
+  // define and allocate it 
+
+
+
+  valid_iops = 0; // reuse it as an index  
+  iops_order = g_list_last(current_iop_list);
+  while(iops_order)
+  {
+    dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)iops_order->data;
+    if (DT_ONTHEFLY_INFO) fprintf(stderr,"  %s, %f\n",order_entry->operation,order_entry->iop_order);
+    valid_iops++; 
+    iops_order = g_list_previous(iops_order);
+  }
+
+
+
 }
 
 int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg)
@@ -3296,4 +3355,5 @@ cleanup:
 }
 #endif
 
+#undef DT_ONTHEFLY_INFO
 #undef DT_IOP_ORDER_INFO // used while debugging
