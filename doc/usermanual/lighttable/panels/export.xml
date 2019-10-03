@@ -341,6 +341,14 @@
             </row>
             <row>
               <entry>
+                <code>$(DECRIPTION)</code>
+              </entry>
+              <entry>
+                description from metadata
+              </entry>
+            </row>
+            <row>
+              <entry>
                 <code>$(CREATOR)</code>
               </entry>
               <entry>
@@ -393,6 +401,22 @@
               </entry>
               <entry>
                 desktop folder
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(TAGS)</code>
+              </entry>
+              <entry>
+                tags list (Xmp.dc.Subject)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(CATEGORYn$(category))</code>
+              </entry>
+              <entry>
+                tag name of level n [0,3] of selected category (or tag)
               </entry>
             </row>
           </tbody>
@@ -786,6 +810,47 @@
         You may <emphasis>abort</emphasis> the export job by clicking on the
         <inlinegraphic fileref="&icon_lighttable_abort;" scalefit="1" width="2%" align="center" />
         icon located close to the progress bar.
+      </para>
+
+    </sect4>
+
+    <sect4 id="export_selected_usage_metadata">
+
+      <title>metadata</title>
+
+      <para>
+        Pressing the 
+        <inlinegraphic fileref="&icon_preferences;" scalefit="1" width="2%" align="center" /> icon
+        on the right of export button opens a window to configure which metadata are to be embedded
+        into the exported image.
+      </para>
+      
+      <para>
+        Metadata configuration is saved along with other export selected parameters to your favorites presets.
+      </para>
+      
+      <para>
+        <graphic fileref="lighttable/images/panel_exportselected-metadata-config.png" scalefit="1" width="80%" align="center" />
+        The left part lets you select the groups of metadata to be exported.
+        The  entry <emphasis>metadata</emphasis> corresponds to metadata defined in metadata editor.
+        Under entry <emphasis>tags</emphasis> you can request the exportation of private tags, 
+        synonyms and omit to include the path elements of hierarchical tags. Remember that a tag set up as a category is never exported.
+      </para>
+
+      <para>
+        The right part lets you define a formula per metadata. What you define here 
+        has priority on the left settings.
+        The first column identifies the metadata. The second one is editable and defines the metadata calculation.
+        Letting the formula empty prevents to export this specific metadata (Exif.GPSInfo.GPSVersionID in the above example).
+        Otherwise you can use any of the variables and rules defined above for filename.
+        Click on <emphasis>enter</emphasis> to validate the formula.
+      </para>
+
+      <para>
+        Use the icon <quote>-</quote> to remove a metadata from the list, the 
+        icon <quote>+</quote> to add a new one from the predefined list:
+        <graphic fileref="lighttable/images/panel_exportselected-metadata-selection.png" scalefit="1" width="40%" align="center" />
+        Double-click or click on button <emphasis>add</emphasis> to add a metadata to the configuration list.
       </para>
 
     </sect4>
