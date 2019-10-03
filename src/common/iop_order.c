@@ -33,7 +33,7 @@
 
 #define DT_IOP_ORDER_VERSION 4
 
-#define DT_IOP_ORDER_INFO FALSE	// used while debugging
+#define DT_IOP_ORDER_INFO FALSE  // used while debugging
 #define DT_ONTHEFLY_INFO FALSE   // while debugging on-the-fly conversion
 #define DT_ONTHEFLY_WRITING TRUE // If TRUE will do history update
 
@@ -240,9 +240,9 @@ GList *dt_ioppr_get_iop_order_rules()
                                                 { "demosaic", "colorin" },
                                                 { "colorin", "colorout" },
                                                 { "colorout", "gamma" },
-						/* clipping GUI broken if flip is done on top */
+                                                /* clipping GUI broken if flip is done on top */
                                                 { "flip", "clipping" },
-						/* clipping GUI broken if ashift is done on top */
+                                                /* clipping GUI broken if ashift is done on top */
                                                 { "ashift", "clipping" },
                                                 { "\0", "\0" } };
 
@@ -1488,12 +1488,12 @@ int dt_ioppr_convert_onthefly(const int imgid)
       "SELECT num, operation, iop_order, multi_priority FROM main.history WHERE imgid=?1", -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
     while(sqlite3_step(stmt) == SQLITE_ROW)
-    { 
+    {
       struct dt_onthefly_history_t *this = &myhistory[hits];
       this->num = sqlite3_column_int(stmt, 0);
       g_strlcpy(this->operation, (char *)sqlite3_column_text(stmt, 1), 20);
       this->old_iop_order = this->new_iop_order = sqlite3_column_double(stmt,2);
-      this->multi_priority = sqlite3_column_int(stmt, 3);      
+      this->multi_priority = sqlite3_column_int(stmt, 3);
       hits++;
     }
     sqlite3_finalize(stmt);
@@ -1508,8 +1508,8 @@ int dt_ioppr_convert_onthefly(const int imgid)
 
   // process some more checks possibly; any sort data that can't be correct?
 
-  // print complete history information 
-  fprintf(stderr,"\n\n ***** On-the-fly history V[%i]->V[%i], imageid: %i ****************",my_iop_order_version,DT_IOP_ORDER_VERSION,imgid);  
+  // print complete history information
+  fprintf(stderr,"\n\n ***** On-the-fly history V[%i]->V[%i], imageid: %i ****************",my_iop_order_version,DT_IOP_ORDER_VERSION,imgid);
   for (int i=0;i<history_size;i++)
   {
     struct dt_onthefly_history_t *this = &myhistory[i];
