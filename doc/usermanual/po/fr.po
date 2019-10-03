@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
-"POT-Creation-Date: 2019-10-02 11:06+0200\n"
-"PO-Revision-Date: 2019-10-01 17:36+0200\n"
+"POT-Creation-Date: 2019-10-03 19:15+0200\n"
+"PO-Revision-Date: 2019-10-03 19:33+0200\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -1655,17 +1655,16 @@ msgstr ""
 "manuel utilisateur s'ouvrira dans votre navigateur Web."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1268(title)
-#, fuzzy
 msgid "Shortcuts window"
-msgstr "Raccourcis"
+msgstr "Fenêtre des raccourcis"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1270(para)
-#, fuzzy
 msgid ""
 "You can display all the available shortcuts in the current context by "
 "pressing <emphasis>H</emphasis>."
 msgstr ""
-"On peut basculer en mode plein écran en pressant <emphasis>F11</emphasis>."
+"Vous pouvez afficher tous les raccourcis disponibles dans le contexte "
+"courant en pressant <emphasis>H</emphasis>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1275(para)
 #, fuzzy
@@ -2436,9 +2435,8 @@ msgstr ""
 "différentes dispositions."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1817(title)
-#, fuzzy
 msgid "Filemanager"
-msgstr "Gestionnaire des clones"
+msgstr "Gestionnaire de fichiers"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1819(para)
 #, fuzzy
@@ -2641,6 +2639,10 @@ msgid ""
 "If you want to zoom or pan only a specific image, add <emphasis>Shift</"
 "emphasis> key to above actions."
 msgstr ""
+"Par défaut, zoomer et centrer la surface sont synchronisés entre toutes les "
+"images visibles. Si vous souhaitez effectuer un zoom ou un panoramique "
+"uniquement sur une image spécifique, ajoutez la touche <emphasis> Maj</"
+"emphasis> aux actions ci-dessus."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1939(para)
 msgid ""
@@ -5729,7 +5731,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4476(para)
 msgid "A tree view to navigate within your hierarchical tags"
-msgstr ""
+msgstr "Une arborescence pour naviguer dans vos mots-clés hiérarchiques"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4480(para)
 #, fuzzy
@@ -5802,7 +5804,7 @@ msgstr "informations de l’image"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4547(para)
 msgid "All the views have the following characteristics:"
-msgstr ""
+msgstr "Toutes les vues ont les caractéristiques suivantes :"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4551(para)
 msgid ""
@@ -16811,12 +16813,12 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13689(title)
 msgid "3D LUT"
-msgstr ""
+msgstr "3D LUT"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13693(secondary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13697(primary)
 msgid "lut3d"
-msgstr ""
+msgstr "lut3d"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13711(para)
 msgid ""
@@ -17042,11 +17044,11 @@ msgstr ""
 "correctement interpréter ses couleurs."
 
 #. <para>
-#.         Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
-#.         by their specification. However, there is an established de-facto standard to embed
-#.         profiles which darktable adheres to. Beware that some applications might fail to correctly
-#.         handle those profiles and render colors incorrectly.
-#.       </para>
+#. Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
+#. by their specification. However, there is an established de-facto standard to embed
+#. profiles which darktable adheres to. Beware that some applications might fail to correctly
+#. handle those profiles and render colors incorrectly.
+#. </para>
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13958(para)
 msgid ""
 "As not all applications, e.g. image viewers, are aware of color profiles, a "
@@ -24347,6 +24349,8 @@ msgid ""
 "This folder (and sub-folders) contains Lut files used by lut3d modules. "
 "(need a restart)"
 msgstr ""
+"Ce dossier (et ses sous-dossiers) contient les fichiers Lut utilisés par les "
+"modules lut3d. (nécessite un redémarrage)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21279(title)
 msgid "Session options"
