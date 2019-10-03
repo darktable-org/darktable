@@ -35,7 +35,7 @@
 
 #define DT_IOP_ORDER_INFO FALSE	// used while debugging
 #define DT_ONTHEFLY_INFO FALSE   // while debugging on-the-fly conversion
-#define DT_ONTHEFLY_WRITING FALSE // If TRUE will do history update
+#define DT_ONTHEFLY_WRITING TRUE // If TRUE will do history update
 
 static void _ioppr_insert_iop_after(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_previous, const int dont_move);
 static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_next, const int dont_move);
