@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-10-03 07:50+0200\n"
-"PO-Revision-Date: 2019-10-03 08:38+0200\n"
+"PO-Revision-Date: 2019-10-03 12:58+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -3931,7 +3931,7 @@ msgstr "$(OPENCL_ACTIVATED) - of OpenCL is geactiveerd"
 
 #: ../src/gui/gtkentry.c:220
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
-msgstr ""
+msgstr "$(CATEGORY0(category)) - sublabel van level 0 in hiërarchische labels"
 
 #: ../src/gui/gtkentry.c:221
 msgid "$(TAGS) - tags as set in metadata settings"
@@ -12023,7 +12023,7 @@ msgstr "metadata"
 
 #: ../src/libs/export_metadata.c:338
 msgid "export dt xmp metadata (from metadata editor module)"
-msgstr ""
+msgstr "exporteer dt xmp metadata (van metadata bewerkingsmodule)"
 
 #: ../src/libs/export_metadata.c:348
 msgid "only embedded"
@@ -12082,7 +12082,7 @@ msgstr "hiërarchische labels"
 
 #: ../src/libs/export_metadata.c:377
 msgid "export hierarchical tags (to Xmp.lr.Hierarchical Subject)"
-msgstr ""
+msgstr "hiërarchische labels exporteren(naar Xmp.lr.Hierarchical Subject)"
 
 #: ../src/libs/export_metadata.c:379
 msgid "develop history"
@@ -12093,6 +12093,8 @@ msgid ""
 "export dt development data (recovery purpose in case of loss of database or "
 "xmp file)"
 msgstr ""
+"export dt ontwikkelingsgegevens (herstel doelstelling in geval van verlies "
+"van database of xmp bestand)"
 
 #: ../src/libs/export_metadata.c:387
 msgid "per metadata settings"
@@ -12111,6 +12113,13 @@ msgid ""
 "file\n"
 "click on formula cell to edit. recognized variables:"
 msgstr ""
+"lijst met berekende metagegevens\n"
+"als de formule leeg is, worden de bijbehorende metagegevens verwijderd\n"
+"uit het geëxporteerde bestand\n"
+"anders worden de bijbehorende metagegevens berekend en toegevoegd\n"
+"aan het geëxporteerde bestand\n"
+"klik op formulecel om te bewerken\n"
+"erkende variabelen:"
 
 #: ../src/libs/export_metadata.c:463
 msgid "add an output metadata tag"
