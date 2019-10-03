@@ -1458,24 +1458,15 @@ int dt_ioppr_convert_onthefly(const int imgid)
   GList *current_iop_list = dt_ioppr_get_iop_order_list(NULL);
 
   // get the number of known iops
-  int valid_iops = 0;
+  const int valid_iops = g_list_length (current_iop_list);
+
+  if (DT_ONTHEFLY_INFO) fprintf(stderr,"\n*** checking for %i known iops ***\n",valid_iops);
 
   GList *iops_order = g_list_last(current_iop_list);
   while(iops_order)
   {
-    valid_iops++; 
-    iops_order = g_list_previous(iops_order);
-  }
-
-  if (DT_ONTHEFLY_INFO) fprintf(stderr,"\n*** checking for known iops ***\n");
-
-  valid_iops = 0; // reuse it as an index  
-  iops_order = g_list_last(current_iop_list);
-  while(iops_order)
-  {
     dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)iops_order->data;
     if (DT_ONTHEFLY_INFO) fprintf(stderr,"  %s, %f\n",order_entry->operation,order_entry->iop_order);
-    valid_iops++; 
     iops_order = g_list_previous(iops_order);
   }
 
