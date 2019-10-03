@@ -35,6 +35,7 @@
 
 #define DT_IOP_ORDER_INFO FALSE	// used while debugging
 #define DT_ONTHEFLY_INFO FALSE   // while debugging on-the-fly conversion
+#define DT_ONTHEFLY_WRITING FALSE // If TRUE will do history update
 
 static void _ioppr_insert_iop_after(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_previous, const int dont_move);
 static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_next, const int dont_move);
@@ -1507,7 +1508,6 @@ void dt_ioppr_convert_onthefly(const int imgid)
   }
 
   // process history
-  // read in the history
   for (int i=0;i<history_size;i++)
   {
     struct dt_onthefly_history_t *this = &myhistory[i];
@@ -1522,11 +1522,33 @@ void dt_ioppr_convert_onthefly(const int imgid)
     fprintf(stderr,"\n %3i %20s multi%3i :: iop %14.11f -> %14.11f",this->num,this->operation,this->multi_priority,this->old_iop_order,this->new_iop_order);
   }
 
-  // really write history, not yet
+  // really write history?, not yet
+  if (DT_ONTHEFLY_WRITING)
+  {
+    for (int i=0;i<history_size;i++)
+    {
+      struct dt_onthefly_history_t *this = &myhistory[i];
+      if (this->old_iop_order != this->new_iop_order)
+      {
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+          "UPDATE main.history SET iop_order = ?1 WHERE imgid = ?2 AND num = ?3", -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 1, this->new_iop_order);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, this->num);
+        sqlite3_step(stmt);
+        sqlite3_finalize(stmt);
+      }
+    }
 
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+      "UPDATE main.images SET iop_order_version = ?2 WHERE id = ?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_IOP_ORDER_VERSION);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+  }
 
   free(myhistory);
-
 }
 
 int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg)
@@ -3414,5 +3436,6 @@ cleanup:
 }
 #endif
 
+#undef DT_ONTHEFLY_WRITING
 #undef DT_ONTHEFLY_INFO
 #undef DT_IOP_ORDER_INFO // used while debugging
