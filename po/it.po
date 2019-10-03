@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-09-04 19:19+0200\n"
-"PO-Revision-Date: 2019-10-01 11:24+0100\n"
+"PO-Revision-Date: 2019-10-03 23:28+0100\n"
 "Last-Translator: mmardegan <11093569+mmardegan@users.noreply.github.com>\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
@@ -204,21 +204,27 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2437
 msgid "enable extended thumb overlay"
-msgstr ""
+msgstr "Abilita la sovrapposizione delle anteprime estesa"
 
 #: ../build/src/preferences_gen.h:2449
 msgid "if set to true, thumb overlay shows filename and some exif data."
 msgstr ""
+"Se impostato a vero, la sovrapposizione delle anteprime mostra il nome del"
+" file ed alcuni valori exif."
 
 #: ../build/src/preferences_gen.h:2457
 msgid "use single-click in the collect panel"
-msgstr ""
+msgstr "Usa un click singolo nel pannello della raccolta"
 
 #: ../build/src/preferences_gen.h:2469
 msgid ""
 "check this option to use single-click to select items in the collect panel. "
 "this will allow you to do range selections for date-time and numeric values."
 msgstr ""
+"Selezione questa opzione per usare il click singolo per gli oggetti nel"
+" pannello della raccolta. "
+"Questo ti consentirà di fare un intervallo di selezione per date-time e"
+" valori numerici."
 
 #: ../build/src/preferences_gen.h:2477
 msgid "expand a single lighttable module at a time"
@@ -400,7 +406,7 @@ msgstr "Nascosto"
 
 #: ../build/src/preferences_gen.h:2779
 msgid "show search module text entry"
-msgstr ""
+msgstr "Mostra il testo di ricerca modulo"
 
 #: ../build/src/preferences_gen.h:2790
 msgctxt "preferences"
@@ -446,12 +452,15 @@ msgstr ""
 #: ../build/src/preferences_gen.h:2845
 msgid "expand the module when it is activated, and collapse it when disabled"
 msgstr ""
+"Espandi il modulo quando questo è attivato e riducilo quando è disattivato"
 
 #: ../build/src/preferences_gen.h:2857
 msgid ""
 "this option allows to expand or collapse automatically the module when it is "
 "enabled or disabled."
 msgstr ""
+"Questa opzione consente di espandere o ridurre automaticamente il modulo"
+" quando esso viene attivato o disattivato."
 
 #: ../build/src/preferences_gen.h:2865
 msgid "scroll to darkroom modules when expanded/collapsed"
@@ -1204,6 +1213,9 @@ msgid ""
 "this folder (and sub-folders) contains Lut files used but lut3d modules. "
 "need to restart darktable."
 msgstr ""
+"Questa cartella (e le sotttocartelle) contiene i file dei LUT usati ma moduli"
+" LUT3D. "
+"Necessario riavviare darktable."
 
 #: ../build/src/preferences_gen.h:4277
 msgid "session options"
@@ -1700,7 +1712,7 @@ msgstr ""
 
 #: ../src/common/database.c:1782
 msgid "darktable - schema migration"
-msgstr ""
+msgstr "darktable - schema di migrazione"
 
 #: ../src/common/database.c:1783
 #, fuzzy
@@ -2602,6 +2614,9 @@ msgid ""
 "click+drag to use the input image\n"
 "ctrl+click + drag to use the output image"
 msgstr ""
+"Imposta l'intervallo basato su un'area dell'immagine\n"
+"Click+trascina per usare l'immagine di input\n"
+"Ctrl+Click+trascina per usare l'immagine di output"
 
 #: ../src/develop/blend_gui.c:1512
 msgid "reset blend mask settings"
@@ -2958,7 +2973,7 @@ msgstr "Importa immagine"
 
 #: ../src/develop/blend_gui.c:2523
 msgid "choose to guide mask by input or output image"
-msgstr ""
+msgstr "Scegli la maschera guida attraverso l'immagine di input o di output"
 
 #: ../src/develop/blend_gui.c:2529
 #, fuzzy
@@ -3017,7 +3032,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2602
 msgid "mask refinement"
-msgstr ""
+msgstr "Perfezionamento della maschera"
 
 #: ../src/develop/develop.c:1590
 #, c-format
@@ -3169,11 +3184,11 @@ msgstr[1] "%s sono stati importati con successo"
 
 #: ../src/develop/masks/masks.c:157
 msgid "[SHAPE] remove shape"
-msgstr ""
+msgstr "[FORMA] rimuovi la forma"
 
 #: ../src/develop/masks/masks.c:164
 msgid "[PATH creation] add a smooth node"
-msgstr ""
+msgstr "[TRACCIANTO creazione] aggiungi un nodo sfumato"
 
 #: ../src/develop/masks/masks.c:170
 #, fuzzy
@@ -3182,7 +3197,7 @@ msgstr "Ctrl+click per aggiungere un nodo acuto"
 
 #: ../src/develop/masks/masks.c:175
 msgid "[PATH creation] terminate path creation"
-msgstr ""
+msgstr "[TRACCIATO creazione] termina di creare il tracciato"
 
 #: ../src/develop/masks/masks.c:181
 #, fuzzy
@@ -3191,11 +3206,11 @@ msgstr "Ctrl+click per commutare tra nodo arrotondato/acuto"
 
 #: ../src/develop/masks/masks.c:186
 msgid "[PATH on node] remove the node"
-msgstr ""
+msgstr "[TRACCIATO sul nodo] rimuovi il nodo"
 
 #: ../src/develop/masks/masks.c:191
 msgid "[PATH on feather] reset curvature"
-msgstr ""
+msgstr "[TRACCIATO sul pennino] ripristina la curvatura"
 
 #: ../src/develop/masks/masks.c:197
 msgid "[PATH on segment] add node"
@@ -7584,6 +7599,7 @@ msgstr "Pellicola bianco e nero"
 #: ../src/iop/colorzones.c:2068 ../src/iop/retouch.c:2238
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
+"Non è possibile mostrare le maschere quando è mostrata la maschera di fusione"
 
 #: ../src/iop/colorzones.c:2275 ../src/iop/rgbcurve.c:1510
 msgid ""
@@ -9383,7 +9399,7 @@ msgstr "Quale filtro usare per la sfocatura"
 
 #: ../src/iop/lut3d.c:91
 msgid "lut 3D"
-msgstr ""
+msgstr "LUT 3D"
 
 #: ../src/iop/lut3d.c:355
 #, fuzzy, c-format
@@ -9425,7 +9441,7 @@ msgstr ""
 
 #: ../src/iop/lut3d.c:609
 msgid "1D cube lut is not supported"
-msgstr ""
+msgstr "Il cubo del LUT 1D non è supportato"
 
 #: ../src/iop/lut3d.c:623
 #, fuzzy
@@ -9434,15 +9450,15 @@ msgstr "Impossibile allocare il buffer per la fusione"
 
 #: ../src/iop/lut3d.c:634
 msgid "error - cube lut size is not defined"
-msgstr ""
+msgstr "Errore - dimensione del cubo di LUT non definita"
 
 #: ../src/iop/lut3d.c:651
 msgid "error - cube lut lines number is not correct"
-msgstr ""
+msgstr "Errore - il numero di linee del cubo di LUT non è corretto"
 
 #: ../src/iop/lut3d.c:1006
 msgid "Lut root folder not defined"
-msgstr ""
+msgstr "Cartella principale del LUT non definita"
 
 #: ../src/iop/lut3d.c:1012
 #, fuzzy
@@ -9456,11 +9472,11 @@ msgstr "Seleziona"
 
 #: ../src/iop/lut3d.c:1030
 msgid "hald cluts (png)"
-msgstr ""
+msgstr "Hald Cluts (PNG)"
 
 #: ../src/iop/lut3d.c:1037
 msgid "3D lut (cube)"
-msgstr ""
+msgstr "3D LUT (cubo)"
 
 #: ../src/iop/lut3d.c:1043 ../src/libs/copy_history.c:93
 #: ../src/libs/geotagging.c:495 ../src/libs/import.c:790
@@ -9471,10 +9487,11 @@ msgstr "Tutti i file"
 #: ../src/iop/lut3d.c:1058
 msgid "Select file outside Lut root folder is not allowed"
 msgstr ""
+"Non è ammesso selezionare file al di fuori della cartella principale dei LUT"
 
 #: ../src/iop/lut3d.c:1102
 msgid "select a png (haldclut) or a cube file"
-msgstr ""
+msgstr "Seleziona un PNG (haldclut) o un file di cubo"
 
 #: ../src/iop/lut3d.c:1109
 msgid ""
@@ -9483,6 +9500,11 @@ msgid ""
 "CAUTION: lut folder must be set in preferences/core options/miscellaneous "
 "before choosing the lut file"
 msgstr ""
+"Il percorso del file (relativo alla cartella del LUT) è salvato con"
+" l'immagine (e non i dati del LUT stesso)\n"
+"ATTENZIONE: la cartella del LUT dev'esser impostata in preferenze/opzioni"
+" principali/altro "
+"prima di scegliere il file del LUT"
 
 #: ../src/iop/lut3d.c:1116
 msgid "application color space"
@@ -9502,7 +9524,7 @@ msgstr ""
 
 #: ../src/iop/lut3d.c:1122
 msgid "select the color space in which the LUT has to be applied"
-msgstr ""
+msgstr "Seleziona lo spazio colore nel quale il LUT deve essere applicato"
 
 #: ../src/iop/lut3d.c:1126
 #, fuzzy
@@ -9822,6 +9844,7 @@ msgstr "Ritocco"
 #: ../src/iop/retouch.c:1931
 msgid "cannot display scales when the blending mask is displayed"
 msgstr ""
+"Non è possibile mostrare le scale quando è mostrata la maschera di fusione"
 
 #: ../src/iop/retouch.c:2649
 #, fuzzy
@@ -9890,7 +9913,7 @@ msgstr "affiche le masque"
 
 #: ../src/iop/retouch.c:2795
 msgid "temporarily switch off shapes"
-msgstr ""
+msgstr "Spegni temporaneamente le forme"
 
 #: ../src/iop/retouch.c:2802
 #, fuzzy
@@ -9899,11 +9922,11 @@ msgstr "affiche le masque"
 
 #: ../src/iop/retouch.c:2810
 msgid "cut shapes from current scale"
-msgstr ""
+msgstr "Taglia le forme dalla scala corrente"
 
 #: ../src/iop/retouch.c:2816
 msgid "paste cut shapes to current scale"
-msgstr ""
+msgstr "Incolla le forme tagliate alla scala corrente"
 
 #: ../src/iop/retouch.c:2840
 #, fuzzy
@@ -10058,7 +10081,7 @@ msgstr "Aggiungi pennello"
 #: ../src/iop/retouch.c:4425 ../src/iop/retouch.c:5281
 #, c-format
 msgid "max scale is %i for this image size"
-msgstr ""
+msgstr "La scala massima è %i per questa dimensione d'immagine"
 
 #: ../src/iop/rgbcurve.c:126
 #, fuzzy
@@ -10125,7 +10148,7 @@ msgstr "canale verde RGB"
 
 #: ../src/iop/rgbcurve.c:1482 ../src/iop/rgblevels.c:1014
 msgid "choose between linked and independent channels."
-msgstr ""
+msgstr "Scegli tra canali vincolati o indipendenti."
 
 #: ../src/iop/rgbcurve.c:1489 ../src/iop/rgblevels.c:1021
 msgid "  R  "
@@ -10173,6 +10196,9 @@ msgid ""
 "click and drag to draw the area\n"
 "right click to cancel"
 msgstr ""
+"Applicat i livelli automatici basati su una regione definita dall'utente\n"
+"Clicca e trascina per disegnare l'area\n"
+"Clicca col destro per cancellare"
 
 #: ../src/iop/rotatepixels.c:76
 msgctxt "modulename"
