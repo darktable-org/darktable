@@ -125,7 +125,7 @@ static gboolean click_on_metadata_list(GtkWidget *view, GdkEventButton *event, d
 {
   if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
   {
-    
+
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
     GtkTreePath *path = NULL;
     // Get tree path for row that was clicked
@@ -176,7 +176,7 @@ static void add_tag_button_clicked(GtkButton *button, dt_lib_export_metadata_t *
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(liststore));
   g_object_unref(liststore);
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(click_on_metadata_list), (gpointer)d);
-  
+
   #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(dialog);
   #endif
@@ -226,6 +226,88 @@ uint32_t dt_lib_export_metadata_default_flags()
   return flags;
 }
 
+const char flags_keyword[] = "plugins/lighttable/export/metadata_flags";
+const char formula_keyword[] = "plugins/lighttable/export/metadata_formula";
+
+char *dt_lib_export_metadata_get_conf()
+{
+  char *metadata_presets = NULL;
+  if(dt_conf_key_exists(flags_keyword))
+  {
+    metadata_presets = dt_conf_get_string(flags_keyword);
+    int i = 0;
+    char *conf_keyword = dt_util_dstrcat(NULL,"%s%d", formula_keyword, i);
+    while (dt_conf_key_exists(conf_keyword))
+    {
+      char *nameformula = dt_conf_get_string(conf_keyword);
+      g_free(conf_keyword);
+      if(nameformula[0])
+      {
+        char *formula = g_strstr_len(nameformula, strlen(nameformula), ";");
+        if(formula)
+        {
+          formula[0] = '\0';
+          formula ++;
+          metadata_presets = dt_util_dstrcat(metadata_presets,"\1%s\1%s", nameformula, formula);
+        }
+      }
+      g_free(nameformula);
+      i++;
+      conf_keyword = dt_util_dstrcat(NULL,"%s%d", formula_keyword, i);
+    }
+    g_free(conf_keyword);
+  }
+  else
+  {
+    metadata_presets = dt_util_dstrcat(NULL, "%x", dt_lib_export_metadata_default_flags());
+  }
+  return metadata_presets;
+}
+
+void dt_lib_export_metadata_set_conf(const char *metadata_presets)
+{
+  GList *list = dt_util_str_to_glist("\1", metadata_presets);
+  int i = 0;
+  char *conf_keyword = NULL;
+  char *nameformula = NULL;
+  if (list)
+  {
+    char *flags_hexa = list->data;
+    dt_conf_set_string(flags_keyword, flags_hexa);
+    list = g_list_remove(list, flags_hexa);
+    g_free(flags_hexa);
+    if (list)
+    {
+      for (GList *tags = list; tags; tags = g_list_next(tags))
+      {
+        const char *tagname = (char *)tags->data;
+        tags = g_list_next(tags);
+        if (!tags) break;
+        const char *formula = (char *)tags->data;
+        nameformula = dt_util_dstrcat(NULL,"%s;%s", tagname, formula);
+        conf_keyword = dt_util_dstrcat(NULL,"%s%d", formula_keyword, i);
+        dt_conf_set_string(conf_keyword, nameformula);
+        g_free(nameformula);
+        g_free(conf_keyword);
+        i++;
+      }
+    }
+  }
+  else dt_conf_set_string(flags_keyword, "");
+  g_list_free_full(list, g_free);
+
+  // clean up deprecated formulas
+  conf_keyword = dt_util_dstrcat(NULL,"%s%d", formula_keyword, i);
+  while (dt_conf_key_exists(conf_keyword))
+  {
+    dt_conf_set_string(conf_keyword, "");
+    g_free(conf_keyword);
+    i++;
+    conf_keyword = dt_util_dstrcat(NULL,"%s%d", formula_keyword, i);
+  }
+  g_free(conf_keyword);
+}
+
 char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const gboolean ondisk)
 {
   dt_lib_export_metadata_t *d = calloc(1, sizeof(dt_lib_export_metadata_t));
@@ -255,21 +337,21 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   GtkWidget *dtmetadata = gtk_check_button_new_with_label(_("metadata"));
   gtk_widget_set_tooltip_text(dtmetadata, _("export dt xmp metadata (from metadata editor module)"));
   gtk_box_pack_start(GTK_BOX(vbox2), dtmetadata, FALSE, TRUE, 0);
-  
+
   GtkWidget *calculated;
   if (!ondisk)
   {
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_box_pack_start(GTK_BOX(vbox2), box, FALSE, TRUE, 0);
     GtkWidget *vbox3 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_box_pack_start(GTK_BOX(box), vbox3, FALSE, TRUE, 10); 
+    gtk_box_pack_start(GTK_BOX(box), vbox3, FALSE, TRUE, 10);
     calculated = gtk_check_button_new_with_label(_("only embedded"));
     gtk_widget_set_tooltip_text(calculated, _("per default the interface sends some (limited) metadata beside the image to remote storage.\n"
         "to avoid this and let only image embedded dt xmp metadata, check this flag.\n"
         "if remote storage doesn't understand dt xmp metadata, you can use calculated metadata instead"));
     gtk_box_pack_start(GTK_BOX(vbox3), calculated, FALSE, TRUE, 0);
   }
-  
+
   GtkWidget *geotag = gtk_check_button_new_with_label(_("geo tags"));
   gtk_widget_set_tooltip_text(geotag, _("export geo tags"));
   gtk_box_pack_start(GTK_BOX(vbox2), geotag, FALSE, TRUE, 0);
@@ -294,7 +376,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   GtkWidget *hierarchical = gtk_check_button_new_with_label(_("hierarchical tags"));
   gtk_widget_set_tooltip_text(hierarchical, _("export hierarchical tags (to Xmp.lr.Hierarchical Subject)"));
   gtk_box_pack_start(GTK_BOX(vbox2), hierarchical, FALSE, TRUE, 0);
-  GtkWidget *dthistory = gtk_check_button_new_with_label(_("dt history"));
+  GtkWidget *dthistory = gtk_check_button_new_with_label(_("develop history"));
   gtk_widget_set_tooltip_text(dthistory, _("export dt development data (recovery purpose in case of loss of database or xmp file)"));
   gtk_box_pack_start(GTK_BOX(vbox2), dthistory, FALSE, TRUE, 0);
 
@@ -344,9 +426,9 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
     char *flags_hexa = list->data;
     flags = strtol(flags_hexa, NULL, 16);
     list = g_list_remove(list, flags_hexa);
+    g_free(flags_hexa);
     if (list)
     {
-      g_free(flags_hexa);
       for (GList *tags = list; tags; tags = g_list_next(tags))
       {
         GtkTreeIter iter;
@@ -405,7 +487,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
                     (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hierarchical)) ? DT_META_HIERARCHICAL_TAG : 0) |
                     (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(dthistory)) ? DT_META_DT_HISTORY : 0) |
                     (!ondisk  ? (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(calculated)) ? DT_META_CALCULATED : 0) : 0) |
-                    (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(omithierarchy)) ? DT_META_OMIT_HIERARCHY : 0)                    
+                    (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(omithierarchy)) ? DT_META_OMIT_HIERARCHY : 0)
                     );
 
     newlist = dt_util_dstrcat(NULL,"%x", newflags);
@@ -423,6 +505,7 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
       valid = gtk_tree_model_iter_next (GTK_TREE_MODEL(d->liststore), &iter);
     }
     g_free(metadata_presets);
+    dt_lib_export_metadata_set_conf(newlist);
   }
   gtk_widget_destroy(dialog);
   free(d);

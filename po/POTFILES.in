@@ -157,6 +157,7 @@ src/libs/colorpicker.c
 src/libs/copy_history.c
 src/libs/duplicate.c
 src/libs/export.c
+src/libs/export_metadata.c
 src/libs/geotagging.c
 src/libs/histogram.c
 src/libs/history.c

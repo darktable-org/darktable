@@ -674,12 +674,14 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   while(history)
   {
     const dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)(history->data);
-
+    char marker [32] = "";
+    if(hitem->module->flags() & IOP_FLAGS_DEPRECATED)
+      g_snprintf(marker, sizeof(marker), "/!\\"); // instead of an UTF character
     gchar *label;
     if(!hitem->multi_name[0] || strcmp(hitem->multi_name, "0") == 0)
-      label = g_strdup_printf("%s", hitem->module->name());
+      label = g_strdup_printf("%s %s", marker, hitem->module->name());
     else
-      label = g_strdup_printf("%s %s", hitem->module->name(), hitem->multi_name);
+      label = g_strdup_printf("%s %s %s", marker, hitem->module->name(), hitem->multi_name);
 
     gboolean selected = (num == darktable.develop->history_end - 1);
     GtkWidget *widget = _lib_history_create_button(self, num, label, (hitem->enabled || (strcmp(hitem->op_name, "mask_manager") == 0)), selected);

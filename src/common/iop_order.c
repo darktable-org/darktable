@@ -31,7 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DT_IOP_ORDER_VERSION 3
+#define DT_IOP_ORDER_VERSION 4
 
 #define DT_IOP_ORDER_INFO FALSE	// used while debugging
 
@@ -40,6 +40,24 @@ static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_lis
 static void _ioppr_move_iop_after(GList **_iop_order_list, const char *op_current, const char *op_prev, const int dont_move);
 static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_current, const char *op_next, const int dont_move);
 
+// this routine rewrite the iop-order to have all them evenly spaced
+// into the list ensuring that we can insert safely at least 40 iop
+// between any two of them. Probably not the best fix, this is mostly
+// a workaround for current limitation and will avoid issues for the next
+// release.
+// ?? TODO: redo the whole pipe ordering
+static void _rewrite_order(GList *iop_order_list)
+{
+  GList *l = iop_order_list;
+  double order = 1.0;
+  while(l)
+  {
+    dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)l->data;
+    order_entry->iop_order = order;
+    order += 1.0;
+    l = g_list_next(l);
+  }
+}
 
 /* migrates *_iop_order_list from old_version to the next version (version + 1)
  * limitations:
@@ -160,6 +178,43 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
 
     new_version = 3;
   }
+  else if(old_version == 3)
+  {
+    // version 4 is a rewrite of the iop-order of previous list. As it
+    // can be seen above some modules have very close iop-order values
+    // and does not have lot of room for insertion (multi-instance
+    // module and/or reordering).
+
+    if(!dont_move) _rewrite_order(*_iop_order_list);
+    new_version = 4;
+  }
+  // each new version MUST be written as the following (_rewrite_order IS VERY important)
+
+  // If a new module is to be added, it must be added in the current
+  // version (just above) and then a new version must be created with
+  // the following code to ensure modules are evenly spaced (leaving
+  // room for multi-instances and user's re-ordering):
+  /*
+  else if(old_version == <N>)
+  {
+    // reorder modules to ensure they are all evenly spaced
+    if(!dont_move) _rewrite_order(*_iop_order_list);
+    new_version = <N+1>;
+  }
+  */
+
+  // If a module is to be reodered in the pipe, the following code
+  // must be used. A new version must be created to ensure modules are
+  // evenly spaced (leaving room for multi-instances and user's
+  // re-ordering):
+  /*
+  else if(old_version == <N>)
+  {
+    _ioppr_move_iop_[before|after](_iop_order_list, "new_module", "some_module", dont_move);
+    if(!dont_move) _rewrite_order(*_iop_order_list);
+    new_version = <N+1>;
+  }
+  */
 
   if(new_version <= 0)
     fprintf(stderr, "[_ioppr_legacy_iop_order_step] missing step migrating from version %i\n", old_version);
@@ -325,7 +380,7 @@ dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const 
 double dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name)
 {
   double iop_order = DBL_MAX;
-  dt_iop_order_entry_t *order_entry = dt_ioppr_get_iop_order_entry(iop_order_list, op_name);
+  const dt_iop_order_entry_t *order_entry = dt_ioppr_get_iop_order_entry(iop_order_list, op_name);
 
   if(order_entry)
     iop_order = order_entry->iop_order;
