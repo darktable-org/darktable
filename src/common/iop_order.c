@@ -1507,7 +1507,12 @@ void dt_ioppr_convert_onthefly(const int imgid)
   }
 
   // process history
-
+  // read in the history
+  for (int i=0;i<history_size;i++)
+  {
+    struct dt_onthefly_history_t *this = &myhistory[i];
+    this->new_iop_order = dt_ioppr_get_iop_order(current_iop_list, this->operation) + (double)this->multi_priority / 100.0;
+  }
 
   // print complete history information 
   fprintf(stderr,"\n\n ***** On-the-fly history V[%i]->V[%i], imageid: %i ****************",my_iop_order_version,DT_IOP_ORDER_VERSION,imgid);  
