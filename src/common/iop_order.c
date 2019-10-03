@@ -1528,6 +1528,7 @@ int dt_ioppr_convert_onthefly(const int imgid)
   // really write history?, not yet
   if (DT_ONTHEFLY_WRITING)
   {
+    sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
     for (int i=0;i<history_size;i++)
     {
       struct dt_onthefly_history_t *this = &myhistory[i];
@@ -1549,10 +1550,22 @@ int dt_ioppr_convert_onthefly(const int imgid)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_IOP_ORDER_VERSION);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+
+  sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
   }
 
   free(myhistory);
-  return DT_IOP_ORDER_VERSION;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order_version FROM main.images WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    my_iop_order_version = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+
+  return my_iop_order_version;
 }
 
 int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg)
