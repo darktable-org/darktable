@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-02 15:18+0200\n"
-"PO-Revision-Date: 2019-10-02 16:22+0200\n"
+"POT-Creation-Date: 2019-10-03 07:50+0200\n"
+"PO-Revision-Date: 2019-10-03 08:38+0200\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -1059,41 +1059,31 @@ msgid "omit hierarchy in simple tag lists"
 msgstr "verwijder hierarchie van gewone label lijsten"
 
 #: ../build/src/preferences_gen.h:4012
-#, fuzzy
-#| msgid ""
-#| "when exporting images the hierarchical tags are also added as a simple "
-#| "list of non-hierarchical ones to make them visible to some other "
-#| "programs. when this option is checked darktable will only include their "
-#| "last part and ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgid ""
 "when creating XMP file the hierarchical tags are also added as a simple list "
 "of non-hierarchical ones to make them visible to some other programs. when "
 "this option is checked darktable will only include their last part and "
 "ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgstr ""
-"Bij het exporteren van afbeeldingen worden de hiërarchische labels "
-"toegevoegd als een eenvoudige lijst van niet-hiërarchische vorm met als doel "
-"ze zichtbaar te maken voor andere programma's. Als deze optie is aangevinkt "
-"zal Darktable allen het laatste deel insluiten. Dus 'naam1|naam2|naam3' "
-"wordt 'naam'."
+"bij de aanmaak van een xmp-bestand worden ook de hiërarchische labels "
+"toegevoegd als\n"
+"een eenvoudige lijst van niet-hiërarchische vorm met als doel \n"
+"ze zichtbaar te maken voor andere programma's\n"
+"indien aangevinkt zal Darktable allen het laatste deel insluiten\n"
+"dus 'naam1|naam2|naam3' wordt 'naam3'"
 
 #: ../build/src/preferences_gen.h:4020
 msgid "disable the entry completion"
 msgstr "het voltooien van de invoer uitschakelen"
 
 #: ../build/src/preferences_gen.h:4032
-#, fuzzy
-#| msgid ""
-#| "the entry completion is useful for those who enter tags from keybord "
-#| "only. for others the entry completion can be embarassing. need to restart "
-#| "darktable."
 msgid ""
 "the entry completion is useful for those who enter tags from keyboard only. "
 "for others the entry completion can be embarrassing. need to restart "
 "darktable."
 msgstr ""
-"de invoer bevestiging is handig voor degenen die alleen tags invoeren via "
-"het toetsenbord. darktable moet opnieuw worden opgestart."
+"de invoer bevestiging is alleen handig voor degenen die labels invoeren met "
+"behulp van het toetsenbord. darktable moet opnieuw worden opgestart."
 
 #: ../build/src/preferences_gen.h:4040
 msgid "password storage backend to use"
@@ -2878,7 +2868,7 @@ msgstr "pas het masker in omgekeerde vorm toe"
 
 #: ../src/develop/blend_gui.c:2511
 msgid "feathering guide"
-msgstr "doezelaars gids"
+msgstr "doezelaar"
 
 #: ../src/develop/blend_gui.c:2513
 msgid "output image"
@@ -2891,11 +2881,12 @@ msgstr "invoer afbeelding"
 #: ../src/develop/blend_gui.c:2523
 msgid "choose to guide mask by input or output image"
 msgstr ""
-"kies om het masker te laten gidsen door de invoer of de uitvoer afbeelding"
+"kies om het masker te laten leiden\n"
+"door de invoer of door de uitvoer afbeelding"
 
 #: ../src/develop/blend_gui.c:2529
 msgid "feathering radius"
-msgstr "doezelaar straal"
+msgstr "straal doezelaar"
 
 #: ../src/develop/blend_gui.c:2531
 msgid "spatial radius of feathering"
@@ -2950,7 +2941,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2602
 msgid "mask refinement"
-msgstr "maskerverfijning"
+msgstr "masker optimalisering"
 
 #: ../src/develop/develop.c:1648
 #, c-format
@@ -8491,32 +8482,26 @@ msgstr ""
 "wijzig dit alleen als je zeker weet wat je doet"
 
 #: ../src/iop/filmicrgb.c:193
-#| msgid "filmic"
 msgid "filmic rgb"
 msgstr "filmic rgb"
 
 #: ../src/iop/filmicrgb.c:234
-#| msgid "10 EV (indoors)"
 msgid "07 EV (studio)"
 msgstr "07 EV (studio)"
 
 #: ../src/iop/filmicrgb.c:240
-#| msgid "10 EV (indoors)"
 msgid "09 EV (indoors)"
 msgstr "09 EV (binnenshuis)"
 
 #: ../src/iop/filmicrgb.c:252
-#| msgid "12 EV (outdoors)"
 msgid "13 EV (outdoors)"
 msgstr "13 EV (buitenshuis)"
 
 #: ../src/iop/filmicrgb.c:258
-#| msgid "14 EV (backlighting)"
 msgid "15 EV (backlighting)"
 msgstr "15 EV (achtergrondverlichting"
 
 #: ../src/iop/filmicrgb.c:264
-#| msgid "16 EV (HDR)"
 msgid "17 EV (HDR)"
 msgstr "17 EV (HDR)"
 
@@ -8575,7 +8560,6 @@ msgid "look"
 msgstr "uiterlijk"
 
 #: ../src/iop/filmicrgb.c:1321
-#| msgid "display masks"
 msgid "display"
 msgstr "display"
 
@@ -10810,10 +10794,12 @@ msgid ""
 "tone equalizer needs to be after distorsion modules in the pipeline – "
 "disabled"
 msgstr ""
+"plaats toon equalizer in de pijplijn na de vervormingsmodules - uitgeschakeld"
 
 #: ../src/iop/toneequal.c:824 ../src/iop/toneequal.c:945
 msgid "tone equalizer failed to allocate memory, check your RAM settings"
 msgstr ""
+"toon equalizer kon geen geheugen toewijzen, controleer uw RAM-instellingen"
 
 #. Pointers are not 64-bits aligned, and SSE code will segfault
 #: ../src/iop/toneequal.c:846
@@ -10821,16 +10807,16 @@ msgid ""
 "tone equalizer in/out buffer are ill-aligned, please report the bug to the "
 "developers"
 msgstr ""
+"toon equalizer in/uit buffer is slecht uitgelijnd, meld de bug aan de "
+"ontwikkelaars"
 
 #: ../src/iop/toneequal.c:1770 ../src/iop/toneequal.c:2143
 msgid "the interpolation is unstable, decrease the curve smoothing"
 msgstr "de interpolatie is onstabiel, verlaag de curve afvlakking"
 
 #: ../src/iop/toneequal.c:1855 ../src/iop/toneequal.c:1915
-#, fuzzy
-#| msgid "wait for the preview to be updated."
 msgid "wait for the preview to finish recomputing"
-msgstr "wacht op een update van de preview"
+msgstr "wacht tot het voorbeeld klaar is met het opnieuw berekenen"
 
 #: ../src/iop/toneequal.c:2148
 msgid "some parameters are out-of-bounds"
@@ -10857,12 +10843,10 @@ msgid "-7 EV : deep shadows"
 msgstr "-7 EV : diepe schaduwen"
 
 #: ../src/iop/toneequal.c:3063
-#| msgid "shadows"
 msgid "-6 EV : shadows"
 msgstr "-6 EV : shaduwen"
 
 #: ../src/iop/toneequal.c:3069
-#| msgid "lighten shadows"
 msgid "-5 EV : light shadows"
 msgstr "-5 EV : lichte schaduwen"
 
@@ -10871,12 +10855,10 @@ msgid "-4 EV : midtones"
 msgstr "-4 EV : middentonen"
 
 #: ../src/iop/toneequal.c:3081
-#| msgid "highlights"
 msgid "-3 EV : dark highlights"
 msgstr "-3 EV : donkere hooglichten"
 
 #: ../src/iop/toneequal.c:3087
-#| msgid "highlights"
 msgid "-2 EV : highlights"
 msgstr "-2 EV : hooglichten"
 
@@ -10899,6 +10881,10 @@ msgid ""
 "negative values will avoid oscillations and behave more robustly\n"
 "but may produce brutal tone transitions and damage local contrast."
 msgstr ""
+"positieve waarden zullen meer progressieve toonovergangen produceren\n"
+"maar de curve kan bij sommige instellingen oscilleren\n"
+"negatieve waarden voorkomen oscillaties en gedragen zich robuuster\n"
+"maar kan brute toonovergangen veroorzaken en het lokale contrast beschadigen"
 
 #: ../src/iop/toneequal.c:3133
 msgid "luminance estimator"
@@ -10916,6 +10902,11 @@ msgid ""
 "contrast\n"
 "'averaged guided filter' is a geometric mean of both methods"
 msgstr ""
+"'nee' beïnvloedt globaal en lokaal contrast (veilig als u alleen contrast "
+"toevoegt)\n"
+"'begeleid filter' heeft alleen invloed op het globale contrast en probeert "
+"het lokale contrast te behouden\n"
+"'gemiddeld begeleid filter' is een geometrisch gemiddelde van beide methoden"
 
 #: ../src/iop/toneequal.c:3157
 msgid "filter diffusion"
@@ -10926,6 +10917,9 @@ msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
 msgstr ""
+"het toe te passen aantal passages van het geleide filter\n"
+"het helpt de randen van het filter te verspreiden maar gaat ten koste van de "
+"snelheid"
 
 #: ../src/iop/toneequal.c:3166
 msgid "smoothing diameter"
@@ -10949,6 +10943,11 @@ msgid ""
 "lower values give smoother gradients and better smoothing\n"
 "but may lead to inaccurate edges taping"
 msgstr ""
+"precisie van de doezelaar:\n"
+"hogere waarden dwingen het masker om meer de randen te volgen\n"
+"maar kan het effect van het vloeiend maken juist vermijden\n"
+"lagere waarden geven vloeiendere gradiënten en betere vloeiingen\n"
+"maar kan leiden tot onnauwkeurige randen"
 
 #: ../src/iop/toneequal.c:3182
 msgid "mask post-processing"
@@ -10960,6 +10959,9 @@ msgid ""
 "the central line shows the average. orange bars appear at extrema if "
 "clipping occurs."
 msgstr ""
+"teveel spanwijdte tussen eerste en laatste deciel in het masker histogram\n"
+"de centrale lijn geeft het gemiddelde aan\n"
+"oranje balken verschijnen bij extremen indien clipping optreedt"
 
 #: ../src/iop/toneequal.c:3193
 msgid "mask quantization"
@@ -10971,9 +10973,14 @@ msgid ""
 "higher values posterize the luminance mask to help the guiding\n"
 "produce piece-wise smooth areas when using high feathering values"
 msgstr ""
+"0 schakelt de kwantisatie uit.\n"
+"hogere waarden posterizeren en helpen daarmee het gidsen van het luminantie "
+"masker\n"
+"produceert stuksgewijze vloeiendere gebieden bij het gebruik van hogere "
+"doezelaar waarden\n"
+"NB posterizeren is iets uitbeelden met een lager aantal kleurtonen"
 
 #: ../src/iop/toneequal.c:3203
-#| msgid "black point compensation"
 msgid "mask exposure compensation"
 msgstr "belichtingscompensatie masker"
 
@@ -10983,6 +10990,9 @@ msgid ""
 "for better control of the exposure corrections.\n"
 "the picker will auto-adjust the average exposure at -4EV."
 msgstr ""
+"verschuif hiermee de gemiddelde belichting van het masker langs de kanalen\n"
+"voor een betere controle van de belichtingscorrecties.\n"
+"de kiezer past de gemiddelde belichting automatisch aan op -4EV."
 
 #: ../src/iop/toneequal.c:3217
 msgid "mask contrast compensation"
@@ -11963,7 +11973,7 @@ msgstr "exporteer met huidige instellingen"
 
 #: ../src/libs/export.c:724
 msgid "edit metadata exportation details"
-msgstr ""
+msgstr "bewerk exporteer details metagegevens"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1311 ../src/libs/styles.c:71
@@ -12104,7 +12114,7 @@ msgstr ""
 
 #: ../src/libs/export_metadata.c:463
 msgid "add an output metadata tag"
-msgstr ""
+msgstr "voeg een output metadata label toe"
 
 #: ../src/libs/export_metadata.c:468
 msgid "delete metadata tag"
