@@ -1416,7 +1416,8 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
 
 // how is on-the-fly conversion done
 // Currently a hack to support v3 history to later
-void dt_ioppr_convert_onthefly(const int imgid)
+// returns the history version of imgid
+int dt_ioppr_convert_onthefly(const int imgid)
 {
   int my_iop_order_version = 0;
 
@@ -1430,9 +1431,9 @@ void dt_ioppr_convert_onthefly(const int imgid)
   }
   sqlite3_finalize(stmt);
 
-  if (my_iop_order_version == DT_IOP_ORDER_VERSION) return;
+  if (my_iop_order_version == DT_IOP_ORDER_VERSION) return my_iop_order_version;
 
-  if (my_iop_order_version != 3) return; // this keeps other edit as they are
+  if (my_iop_order_version != 3) return my_iop_order_version; // this keeps other edit as they are
 
   // ************** from here on we deal only with the v3 history problems; although *******************************
 
@@ -1451,7 +1452,7 @@ void dt_ioppr_convert_onthefly(const int imgid)
   if (history_size <1)
   {
     fprintf(stderr,"\n[dt_ioppr_convert_onthefly] for image %i has no valid history\n",imgid);
-    return;
+    return my_iop_order_version;
   }
 
   GList *current_iop_list = dt_ioppr_get_iop_order_list(NULL);
@@ -1514,6 +1515,8 @@ void dt_ioppr_convert_onthefly(const int imgid)
     this->new_iop_order = dt_ioppr_get_iop_order(current_iop_list, this->operation) + (double)this->multi_priority / 100.0;
   }
 
+  // process some more checks possibly; any sort data that can't be correct?
+
   // print complete history information 
   fprintf(stderr,"\n\n ***** On-the-fly history V[%i]->V[%i], imageid: %i ****************",my_iop_order_version,DT_IOP_ORDER_VERSION,imgid);  
   for (int i=0;i<history_size;i++)
@@ -1549,6 +1552,7 @@ void dt_ioppr_convert_onthefly(const int imgid)
   }
 
   free(myhistory);
+  return DT_IOP_ORDER_VERSION;
 }
 
 int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg)
