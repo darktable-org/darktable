@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2019-10-03 19:15+0200\n"
-"PO-Revision-Date: 2019-10-03 19:33+0200\n"
+"PO-Revision-Date: 2019-10-04 19:06+0200\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -2613,16 +2613,15 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1924(title)
 msgid "Zoom and pan"
-msgstr "Zoom et panoramique"
+msgstr "Zoom et pan"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1926(para)
 msgid ""
 "In culling mode, you can zoom and pan in the images to see details. Images "
 "can be zoomed until 100%."
 msgstr ""
-"En mode sélection, vous pouvez effectuer un zoom et un panoramique des "
-"images pour afficher les détails. Les images peuvent être zoomées jusqu'à "
-"100%."
+"En mode sélection, vous pouvez zoomer et pan des images pour afficher les "
+"détails. Les images peuvent être zoomées jusqu'à 100%."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1930(para)
 msgid ""
@@ -2630,8 +2629,8 @@ msgid ""
 "+ drag</emphasis> to pan in zoomed images."
 msgstr ""
 "<emphasis> Ctrl + défilement </emphasis> pour zoomer / dézoomer les images. "
-"<emphasis> faites un clic gauche / glisser </emphasis> pour faire un "
-"panoramique des images zoomées."
+"<emphasis> faites un clic gauche / glisser </emphasis> pour pan in des "
+"images zoomées."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1934(para)
 msgid ""
@@ -2639,10 +2638,10 @@ msgid ""
 "If you want to zoom or pan only a specific image, add <emphasis>Shift</"
 "emphasis> key to above actions."
 msgstr ""
-"Par défaut, zoomer et centrer la surface sont synchronisés entre toutes les "
-"images visibles. Si vous souhaitez effectuer un zoom ou un panoramique "
-"uniquement sur une image spécifique, ajoutez la touche <emphasis> Maj</"
-"emphasis> aux actions ci-dessus."
+"Par défaut, zoomer et panning sont synchronisés entre toutes les images "
+"visibles. Si vous souhaitez zoomer ou pan uniquement sur une image "
+"spécifique, ajoutez la touche <emphasis> Maj</emphasis> aux actions ci-"
+"dessus."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1939(para)
 msgid ""
@@ -2736,9 +2735,9 @@ msgstr ""
 "touche <emphasis> W </emphasis>, vous pouvez utiliser le mode d'aperçu "
 "persistant avec la touche <emphasis> Alt + W </emphasis> ou <emphasis> Ctrl "
 "+ Alt + W </emphasis> si vous souhaitez une détection de la mise au point. "
-"En mode d'aperçu persistant, vous pouvez effectuer un zoom et un panoramique "
-"de l'image, exactement comme dans la disposition sélection (voir <xref "
-"linkend=\"lighttable_culling_zoom\"/>)."
+"En mode d'aperçu persistant, vous pouvez zoomer et pan in  l'image, "
+"exactement comme dans la disposition sélection (voir <xref linkend="
+"\"lighttable_culling_zoom\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2014(title)
 msgid "Lighttable concepts"
@@ -4746,6 +4745,8 @@ msgid ""
 "You can also use timeline to select images by date range with mouse click + "
 "pan."
 msgstr ""
+"Vous pouvez également utiliser la chronologie pour sélectionner des images "
+"par période avec un clic de souris + pan."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3561(title)
 msgid "Image information"
@@ -5727,7 +5728,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4472(para)
 msgid "A flat list of tags"
-msgstr ""
+msgstr "Une liste simple de mots-clés"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4476(para)
 msgid "A tree view to navigate within your hierarchical tags"
@@ -5759,10 +5760,20 @@ msgid ""
 "itself. If exist as a tag, it can be set explicitly as a <quote>category</"
 "quote> (see create or edit command)."
 msgstr ""
+"Le but des balises est d’ajouter des informations aux images dans un "
+"ensemble donné de mots-clés. Mais lorsque le nombre de balises devient "
+"important, il est intéressant de les organiser de manière hiérarchique, sous "
+"forme d'arborescence. Les balises parent ne peuvent pas ajouter "
+"d'informations à l'image, par exemple la balise <quote> color </quote> dans "
+"<quote> couleur | blanc </quote>. Dans ce cas, la balise <quote> color </"
+"quote> sera automatiquement considérée comme une <quote> catégorie </quote> "
+"si elle ne figure pas dans le dictionnaire lui-même. Si elle existe en tant "
+"que balise, elle peut être définie explicitement comme une <quote> catégorie "
+"</quote> (voir la commande create ou edit)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4506(title)
 msgid "tag properties"
-msgstr ""
+msgstr "propriétés d'une balise"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4508(para)
 msgid ""
@@ -5771,6 +5782,11 @@ msgid ""
 "to exported images. These information are related to <quote>XMP-dc Subject</"
 "quote> and <quote>XMP-lr Hierarchical Subject</quote> metadata."
 msgstr ""
+"Outre son nom la balise peut être définie comme privée ou comme catégorie. "
+"Elle peut également être attachée à des synonymes. Ces attributs permettent "
+"de contrôler les informations que vous associez aux images exportées. Ces "
+"informations concernent les métadonnées <quote> XMP-dc Subject </quote> et "
+"<quote>XMP-lr Hierarchical Subject</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4516(para)
 msgid ""
@@ -5779,6 +5795,11 @@ msgid ""
 "private tags on exported images. Both <quote>XMP-dc Subject</quote> and "
 "<quote>XMP-lr Hierarchical Subject</quote> are affected."
 msgstr ""
+"Par défaut, une balise définie comme <quote>privée</quote> ne sera pas "
+"exportée. L'attribut de configuration \"forcer l'exportation des balises "
+"privées\" vous permet de conserver des balises privées dans les images "
+"exportées. À la fois <quote>XMP-dc Subject</quote> et<quote>XMP-lr "
+"Hierarchical Subject</quote> sont concernés."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4522(para)
 msgid ""
@@ -5786,6 +5807,10 @@ msgid ""
 "Subject</quote>. However it is exported in <quote>XMP-lr Hierarchical "
 "Subject</quote> as this XMP metadata holds the organization of your tags."
 msgstr ""
+"Une balise définie comme <quote>catégorie</quote> n'est pas exportée dans "
+"<quote>XMP-dc Subject</quote>. Cependant elle est exportée dans <quote>XMP-"
+"lr Hierarchical Subject</quote> car ces métadonnées XMP contiennent "
+"l'organisation de vos balises."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4528(para)
 msgid ""
@@ -5796,6 +5821,14 @@ msgid ""
 "point \"request exportation of synonyms\", when set, makes the image "
 "exportation add synonyms to <quote>XMP-dc Subject</quote> metadata."
 msgstr ""
+"<quote>Les synonymes</quote> enrichissent les informations de la balise et "
+"sont principalement destinés aux moteurs de recherche. Par exemple "
+"<quote>jeune</quote>, <quote>petit</quote> ou <quote>jeunesse</quote> "
+"peuvent être définis comme synonymes de <quote>enfant</quote>. Une autre "
+"utilisation est la traduction des balises dans d'autres langages. L'attribut "
+"\"demande d'exportation de synonymes\", lorsqu'il est défini, permet à "
+"l'exportation d'image d'ajouter des synonymes aux métadonnées <quote>XMP-dc "
+"Subject</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4541(title)
 #, fuzzy
@@ -5814,12 +5847,21 @@ msgid ""
 "is attached at least to one selected image. On tree view, on the parent "
 "node, it means that at least one child tag is attached to a selected image."
 msgstr ""
+"Sur la gauche, un indicateur donne le statut de la balise par rapport aux "
+"images sélectionnées. Une <quote> coche </quote> signifie que la balise est "
+"attachée à toutes les images sélectionnées. Un <quote> moins </quote> "
+"signifie que la balise est associée à au moins une image sélectionnée. Dans "
+"l'arborescence, sur le nœud parent, cela signifie qu'au moins une balise "
+"enfant est attachée à une image sélectionnée."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4559(para)
 msgid ""
 "On the right the count of images attached to the tag, in the database for "
 "dictionary view or among the selected images for attached view."
 msgstr ""
+"A droite, le nombre d'images attachées à la balise, dans la base de données "
+"pour la vue dictionnaire ou parmi les images sélectionnées pour la vue "
+"attachée."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4564(para)
 msgid ""
@@ -5827,26 +5869,38 @@ msgid ""
 "is a tag which helps to organize the tags but doesn't bring information to "
 "the image. A category is not exported."
 msgstr ""
+"Une balise <emphasis>en italique </emphasis> est considérée comme une "
+"catégorie. Une catégorie est une balise qui aide à organiser les balises "
+"mais n'apporte pas d'informations à l'image. Une catégorie n'est pas "
+"exportée."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4569(para)
 msgid "Right-click opens a submenu with available commands for that tag."
 msgstr ""
+"Un clic droit ouvre un sous-menu avec les commandes disponibles pour cette "
+"balise."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4577(para)
 msgid ""
 "An overlay appears hovering a tag which has some properties set. This avoids "
 "to edit the tag to see its properties."
 msgstr ""
+"Une surimpression apparaît au survol d'une balise comportant certaines "
+"propriétés. Cela évite d'éditer la balise pour voir ses propriétés."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4586(para)
 msgid "The list views are controlled with the three upper graphic buttons:"
 msgstr ""
+"Les vues de liste sont contrôlées avec les trois boutons graphiques "
+"supérieurs :"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4590(para)
 msgid ""
 "By default the full tag name is shown. The list is sorted alphabetically and "
 "the attached view includes the darktable tags."
 msgstr ""
+"Par défaut, le nom complet de la balise est affiché. La liste est triée par "
+"ordre alphabétique et la vue attachée inclut les balises darktable."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4595(para)
 #, fuzzy
@@ -5886,6 +5940,9 @@ msgid ""
 "You can resize the height of attached view or dictionary view using Ctrl"
 "+wheel. New sizes are kept for ulterior darktable sessions."
 msgstr ""
+"Vous pouvez redimensionner la hauteur de la vue attachée ou de la vue "
+"dictionnaire en utilisant Ctrl + molette. Les nouvelles tailles sont "
+"conservées pour les sessions ultérieures de darktable."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4634(title)
 #, fuzzy
@@ -5895,6 +5952,7 @@ msgstr "inverser"
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4637(para)
 msgid "The choice of views is controlled with the two bottom graphic buttons:"
 msgstr ""
+"Le choix des vues est contrôlé avec les deux boutons graphiques du bas :"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4648(para)
 #, fuzzy
@@ -5910,6 +5968,8 @@ msgstr ""
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4653(para)
 msgid "Tip: Shift+click on tree node fully expands it (all sub-levels)."
 msgstr ""
+"Astuce : un Maj+clic sur un nœud de l’arborescence le développe complètement "
+"(tous ses sous-niveaux)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4663(para)
 #, fuzzy
@@ -5933,6 +5993,7 @@ msgstr "police du texte"
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4684(para)
 msgid "The text entry box, between the two lists, has multiple purposes."
 msgstr ""
+"La zone de saisie de texte, entre les deux listes, a plusieurs objectifs."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4688(para)
 msgid ""
@@ -5942,18 +6003,30 @@ msgid ""
 "<quote>down</quote> arrow to highlight it, press twice <quote>enter</quote> "
 "to get the tag attached !"
 msgstr ""
+"Premièrement, pour ceux qui préfèrent ne pas quitter le clavier, lorsque la "
+"vue dictionnaire est en mode liste, dès que vous commencez à saisir un mot-"
+"clé, une liste des balises correspondantes s'ouvre. Lorsque vous voyez celui "
+"que vous cherchez, utilisez la flèche <quote> Bas</quote> pour le "
+"sélectionner, appuyez deux fois sur <quote>Entrée </quote> pour obtenir la "
+"balise attachée !"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4695(para)
 msgid ""
 "Those for who this procedure is not convenient can deactivate this function "
 "using the configuration \"disable the entry completion\"."
 msgstr ""
+"Ceux pour qui cette procédure ne convient pas peuvent désactiver cette "
+"fonction en utilisant la configuration \"désactiver la complétion de saisie"
+"\"."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4700(para)
 msgid ""
 "Besides this, the entry box lets you filter the dictionary (list and tree) "
 "just below searching amongst the tag names but also the synonyms."
 msgstr ""
+"En outre, la zone de saisie vous permet de filtrer le dictionnaire (liste et "
+"arborescence) juste en dessous cherchant parmi les noms de balises mais "
+"également parmi les synonymes."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4705(para)
 msgid ""
@@ -5962,6 +6035,10 @@ msgid ""
 "attached to the selected images. Or it is already in the dictionary and it's "
 "only attached."
 msgstr ""
+"En appuyant sur Entrée, si la balise qui vient d’être écrite n’existe pas "
+"dans le dictionnaire, alors la nouvelle balise est ajoutée au dictionnaire "
+"et attachée aux images sélectionnées. Si elle est déjà dans le dictionnaire "
+"alors elle est seulement attachée."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4711(para)
 msgid ""
@@ -5969,10 +6046,15 @@ msgid ""
 "from the dictionary into the entry box. Then you can modify it to create a "
 "new tag without having to type it in completely."
 msgstr ""
+"Vous pouvez utiliser le sous-menu <quote> copie dans l'entrée </quote> pour "
+"copier une balise existante du dictionnaire dans la zone de saisie. Vous "
+"pouvez ensuite la modifier pour créer une nouvelle balise sans avoir à la "
+"taper complètement."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4730(para)
 msgid "New tags get added to the list in different ways."
 msgstr ""
+"Les nouvelles balises sont ajoutées à la liste de différentes manières."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4734(para)
 msgid ""
@@ -5982,12 +6064,21 @@ msgid ""
 "import it. As long as you don't change the tag name, the import function "
 "updates the existing tags with new information and create the new ones."
 msgstr ""
+"À l'importation d'un fichier texte. Vous pouvez importer n'importe quel "
+"fichier texte dès qu'il suit le format de fichier de balisage de lightroom. "
+"Il est possible d'importer plusieurs fichiers. Il est également possible "
+"d'exporter vos balises, d'y ajouter des informations et de les réimporter. "
+"Tant que vous ne modifiez pas le nom de la balise, la fonction d'importation "
+"met à jour les balises existantes avec les nouvelles informations et en crée "
+"de nouvelles."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4742(para)
 msgid ""
 "On import of already tagged images. This is not a well controlled way "
 "especially if your dictionary is hierarchical."
 msgstr ""
+"À l'importation d'images déjà marquées. Ce n'est pas un moyen bien contrôlé, "
+"surtout si votre dictionnaire est hiérarchique."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4747(para)
 msgid ""
@@ -25338,18 +25429,17 @@ msgid "views/lighttable/select toggle image"
 msgstr "vues/table lumineuse/inverse sélection de l'image"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22400(entry)
-#, fuzzy
 msgid "views/lighttable/sticky preview"
-msgstr "vues/table lumineuse/aperçu"
+msgstr "vues/table lumineuse/aperçu persistant"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22403(entry)
 msgid "Alt+W"
 msgstr "Alt+W"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22408(entry)
-#, fuzzy
 msgid "views/lighttable/sticky preview with focus detection"
-msgstr "vues/table lumineuse/aperçu avec détection de la mise au point"
+msgstr ""
+"vues/table lumineuse/aperçu persistant avec détection de la mise au point"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22411(entry)
 msgid "Ctrl+Alt+W"
@@ -27874,7 +27964,7 @@ msgid ""
 "opencl_async_pixelpipe below)."
 msgstr ""
 "Après chaque retraitement du pipeline graphique – provoqué par un changement "
-"de paramètre de module, un zoom, un déplacement latéral, etc. – vous "
+"de paramètre de module, un zoom, un panning déplacement latéral, etc. – vous "
 "obtiendrez le temps total et le temps de chacun des noyaux OpenCL. La valeur "
 "la plus fiable est le temps passé dans le pipeline graphique. Veuillez noter "
 "que les temps indiqués pour chaque module individuel sont imprécis lorsque "
@@ -28016,6 +28106,7 @@ msgid "opencl_micro_nap"
 msgstr "opencl_micro_nap"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24367(para)
+#, fuzzy
 msgid ""
 "In an ideal case you keep your GPU busy at 100% when reprocessing the "
 "pixelpipe. That's good. On the other hand your GPU is also needed to do "
