@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable hebrew translation\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-03 20:26+0300\n"
-"PO-Revision-Date: 2019-10-04 14:31+0300\n"
-"Last-Translator: Shlomi Alon-Braitbart <sbraitbart@gmail.com>\n"
+"POT-Creation-Date: 2019-10-04 16:38+0300\n"
+"PO-Revision-Date: 2019-10-04 18:01+0300\n"
+"Last-Translator: Shlomi Alon-Braitbart <shlomi@librem.one>\n"
 "Language-Team: \n"
 "Language: he_IL\n"
 "MIME-Version: 1.0\n"
@@ -18,55 +18,50 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 2.2.1\n"
 
-#: ../build/src/preferences_gen.h:1620
+#: ../build/src/preferences_gen.h:2104
 msgid "GUI options"
 msgstr "אפשרויות ממשק גראפי"
 
-#: ../build/src/preferences_gen.h:1623
-msgid "width of the side panels in pixels"
-msgstr "רוחב הפאנלים הצדדיים בפיקסלים"
+#: ../build/src/preferences_gen.h:2107 ../src/libs/import.c:107
+msgid "import"
+msgstr "ייבא"
 
-#: ../build/src/preferences_gen.h:1639 ../build/src/preferences_gen.h:1806
-#: ../build/src/preferences_gen.h:1966 ../build/src/preferences_gen.h:2280
-#: ../build/src/preferences_gen.h:2427 ../build/src/preferences_gen.h:2638
-#: ../build/src/preferences_gen.h:2665 ../build/src/preferences_gen.h:2694
-#: ../src/lua/preferences.c:697
-#, c-format
-msgid "double click to reset to `%d'"
-msgstr "לחיצה כפולה לאתחל ל `%d'"
+#: ../build/src/preferences_gen.h:2116
+msgid "ignore JPEG images when importing film rolls"
+msgstr "התעלם מקבצי JPEG ביבוא גלילי פילם"
 
-#: ../build/src/preferences_gen.h:1642
-msgid "(needs a restart)"
-msgstr "(דורש אתחול)"
-
-#: ../build/src/preferences_gen.h:1650
-msgid "don't use embedded preview JPEG but half-size raw"
-msgstr "אל תשתמש ב JPEG המוטמע כתצוגה מקדימה אלא בחצי גודל raw"
-
-#: ../build/src/preferences_gen.h:1659 ../build/src/preferences_gen.h:1679
-#: ../build/src/preferences_gen.h:1699 ../build/src/preferences_gen.h:1719
-#: ../build/src/preferences_gen.h:1739 ../build/src/preferences_gen.h:1759
-#: ../build/src/preferences_gen.h:1779 ../build/src/preferences_gen.h:1826
-#: ../build/src/preferences_gen.h:1846 ../build/src/preferences_gen.h:1869
-#: ../build/src/preferences_gen.h:1892 ../build/src/preferences_gen.h:1915
-#: ../build/src/preferences_gen.h:1938 ../build/src/preferences_gen.h:1986
-#: ../build/src/preferences_gen.h:2063 ../build/src/preferences_gen.h:2125
-#: ../build/src/preferences_gen.h:2172 ../build/src/preferences_gen.h:2214
-#: ../build/src/preferences_gen.h:2234 ../build/src/preferences_gen.h:2253
-#: ../build/src/preferences_gen.h:2300 ../build/src/preferences_gen.h:2320
-#: ../build/src/preferences_gen.h:2340 ../build/src/preferences_gen.h:2360
-#: ../build/src/preferences_gen.h:2380 ../build/src/preferences_gen.h:2400
-#: ../build/src/preferences_gen.h:2447 ../build/src/preferences_gen.h:2467
-#: ../build/src/preferences_gen.h:2514 ../build/src/preferences_gen.h:2571
-#: ../build/src/preferences_gen.h:2591 ../build/src/preferences_gen.h:2611
-#: ../build/src/preferences_gen.h:2714 ../build/src/preferences_gen.h:2761
-#: ../build/src/preferences_gen.h:2781 ../build/src/preferences_gen.h:2801
-#: ../build/src/preferences_gen.h:2856 ../build/src/preferences_gen.h:2884
-#: ../build/src/preferences_gen.h:2904 ../build/src/preferences_gen.h:2951
-#: ../build/src/preferences_gen.h:3003 ../build/src/preferences_gen.h:3057
-#: ../build/src/preferences_gen.h:3077 ../build/src/preferences_gen.h:3101
-#: ../build/src/preferences_gen.h:3121 ../build/src/preferences_gen.h:3174
-#: ../build/src/preferences_gen.h:3198 ../build/src/preferences_gen.h:3222
+#: ../build/src/preferences_gen.h:2125 ../build/src/preferences_gen.h:2145
+#: ../build/src/preferences_gen.h:2168 ../build/src/preferences_gen.h:2191
+#: ../build/src/preferences_gen.h:2214 ../build/src/preferences_gen.h:2237
+#: ../build/src/preferences_gen.h:2294 ../build/src/preferences_gen.h:2371
+#: ../build/src/preferences_gen.h:2391 ../build/src/preferences_gen.h:2411
+#: ../build/src/preferences_gen.h:2431 ../build/src/preferences_gen.h:2451
+#: ../build/src/preferences_gen.h:2471 ../build/src/preferences_gen.h:2542
+#: ../build/src/preferences_gen.h:2589 ../build/src/preferences_gen.h:2631
+#: ../build/src/preferences_gen.h:2655 ../build/src/preferences_gen.h:2712
+#: ../build/src/preferences_gen.h:2758 ../build/src/preferences_gen.h:2777
+#: ../build/src/preferences_gen.h:2797 ../build/src/preferences_gen.h:2817
+#: ../build/src/preferences_gen.h:2873 ../build/src/preferences_gen.h:2920
+#: ../build/src/preferences_gen.h:2949 ../build/src/preferences_gen.h:2969
+#: ../build/src/preferences_gen.h:2989 ../build/src/preferences_gen.h:3009
+#: ../build/src/preferences_gen.h:3029 ../build/src/preferences_gen.h:3049
+#: ../build/src/preferences_gen.h:3069 ../build/src/preferences_gen.h:3088
+#: ../build/src/preferences_gen.h:3169 ../build/src/preferences_gen.h:3215
+#: ../build/src/preferences_gen.h:3235 ../build/src/preferences_gen.h:3255
+#: ../build/src/preferences_gen.h:3275 ../build/src/preferences_gen.h:3322
+#: ../build/src/preferences_gen.h:3342 ../build/src/preferences_gen.h:3389
+#: ../build/src/preferences_gen.h:3442 ../build/src/preferences_gen.h:3462
+#: ../build/src/preferences_gen.h:3482 ../build/src/preferences_gen.h:3529
+#: ../build/src/preferences_gen.h:3581 ../build/src/preferences_gen.h:3601
+#: ../build/src/preferences_gen.h:3621 ../build/src/preferences_gen.h:3641
+#: ../build/src/preferences_gen.h:3670 ../build/src/preferences_gen.h:3717
+#: ../build/src/preferences_gen.h:3737 ../build/src/preferences_gen.h:3774
+#: ../build/src/preferences_gen.h:3794 ../build/src/preferences_gen.h:3814
+#: ../build/src/preferences_gen.h:3917 ../build/src/preferences_gen.h:3972
+#: ../build/src/preferences_gen.h:4009 ../build/src/preferences_gen.h:4029
+#: ../build/src/preferences_gen.h:4083 ../build/src/preferences_gen.h:4107
+#: ../build/src/preferences_gen.h:4132 ../build/src/preferences_gen.h:4180
+#: ../build/src/preferences_gen.h:4204 ../build/src/preferences_gen.h:4228
 #: ../src/lua/preferences.c:619 ../src/lua/preferences.c:634
 #: ../src/lua/preferences.c:646 ../src/lua/preferences.c:658
 #: ../src/lua/preferences.c:674 ../src/lua/preferences.c:738
@@ -74,108 +69,21 @@ msgstr "אל תשתמש ב JPEG המוטמע כתצוגה מקדימה אלא ב
 msgid "double click to reset to `%s'"
 msgstr "לחיצה כפולה לאתחל ל `%s'"
 
-#: ../build/src/preferences_gen.h:1659 ../build/src/preferences_gen.h:1779
-#: ../build/src/preferences_gen.h:1826 ../build/src/preferences_gen.h:1846
-#: ../build/src/preferences_gen.h:2253 ../build/src/preferences_gen.h:2320
-#: ../build/src/preferences_gen.h:2340 ../build/src/preferences_gen.h:2380
-#: ../build/src/preferences_gen.h:2467 ../build/src/preferences_gen.h:2781
-#: ../build/src/preferences_gen.h:2884 ../build/src/preferences_gen.h:2904
-#: ../build/src/preferences_gen.h:3077 ../build/src/preferences_gen.h:3121
+#: ../build/src/preferences_gen.h:2125 ../build/src/preferences_gen.h:2145
+#: ../build/src/preferences_gen.h:2294 ../build/src/preferences_gen.h:2391
+#: ../build/src/preferences_gen.h:2411 ../build/src/preferences_gen.h:2431
+#: ../build/src/preferences_gen.h:2451 ../build/src/preferences_gen.h:2471
+#: ../build/src/preferences_gen.h:2797 ../build/src/preferences_gen.h:2873
+#: ../build/src/preferences_gen.h:3049 ../build/src/preferences_gen.h:3255
+#: ../build/src/preferences_gen.h:3275 ../build/src/preferences_gen.h:3462
+#: ../build/src/preferences_gen.h:3621 ../build/src/preferences_gen.h:3641
+#: ../build/src/preferences_gen.h:3737 ../build/src/preferences_gen.h:3814
+#: ../build/src/preferences_gen.h:4009 ../build/src/preferences_gen.h:4029
 msgctxt "preferences"
 msgid "FALSE"
 msgstr "מנוטרל"
 
-#: ../build/src/preferences_gen.h:1662
-msgid ""
-"check this option to not use the embedded JPEG from the raw file but process "
-"the raw data. this is slower but gives you color managed thumbnails."
-msgstr ""
-"בחר אפשרות זו על מנת לא להשתמש ב JPEG המוטמע בקובץ ה raw אלא לעבד את נתוני ה "
-"raw. אפשרות זו איטית יותר אך מספקת תמונות ממוזערות מנוהלות צבע."
-
-#: ../build/src/preferences_gen.h:1670
-msgid "ask before removing images from database"
-msgstr "בקש אישור לפני הסרה של תמונות ממסד הנתונים"
-
-#: ../build/src/preferences_gen.h:1679 ../build/src/preferences_gen.h:1699
-#: ../build/src/preferences_gen.h:1719 ../build/src/preferences_gen.h:1739
-#: ../build/src/preferences_gen.h:1759 ../build/src/preferences_gen.h:1986
-#: ../build/src/preferences_gen.h:2234 ../build/src/preferences_gen.h:2300
-#: ../build/src/preferences_gen.h:2360 ../build/src/preferences_gen.h:2400
-#: ../build/src/preferences_gen.h:2447 ../build/src/preferences_gen.h:2591
-#: ../build/src/preferences_gen.h:2611 ../build/src/preferences_gen.h:2714
-#: ../build/src/preferences_gen.h:2801
-msgctxt "preferences"
-msgid "TRUE"
-msgstr "הפעל"
-
-#: ../build/src/preferences_gen.h:1682
-msgid "always ask the user before any image is removed from DB."
-msgstr "תמיד בקש אישור מהמשתמש לפני הסרת תמונה ממסד הנתונים."
-
-#: ../build/src/preferences_gen.h:1690
-msgid "ask before erasing images from disk / discarding history stack"
-msgstr "בקש אישור לפני מחיקת תמונות מהדיסק / התעלם ממחסנית הסטוריה"
-
-#: ../build/src/preferences_gen.h:1702
-msgid ""
-"always ask the user before any image file is deleted / history stack is "
-"discarded."
-msgstr "תמיד בקש אישור מהמשתמש לפני כל מחיקה של תמונה / התעלם ממחסנית הסטוריה."
-
-#: ../build/src/preferences_gen.h:1710
-msgid "send files to trash when erasing images"
-msgstr "שלח קבצים לסל המחזור במחיקת תמונות"
-
-#: ../build/src/preferences_gen.h:1722
-msgid ""
-"send files to trash instead of permanently deleting files on system that "
-"supports it"
-msgstr "שלח קבצים לסל המחזור במקום למחקם לחלוטין במערכות התומכות בכך"
-
-#: ../build/src/preferences_gen.h:1730
-msgid "ask before moving images from film roll folder"
-msgstr "בקש אישור לפני העברת תמונות מגליל הפילם"
-
-#: ../build/src/preferences_gen.h:1742
-msgid "always ask the user before any image file is moved."
-msgstr "תמיד בקש אישור מהמשתמש לפני העברה של כל תמונה."
-
-#: ../build/src/preferences_gen.h:1750
-msgid "ask before copying images to new film roll folder"
-msgstr "בקש אישור לפני העתקה של תמונות לתיקיית גליל פילם חדש"
-
-#: ../build/src/preferences_gen.h:1762
-msgid "always ask the user before any image file is copied."
-msgstr "תמיד בקש אישור מהמשתמש לפני העתקה של קובץ תמונה כלשהו."
-
-#: ../build/src/preferences_gen.h:1770
-msgid "ask before removing empty folders"
-msgstr "בקש אישור לפני הסרה של תיקיות ריקות"
-
-#: ../build/src/preferences_gen.h:1782
-msgid ""
-"always ask the user before removing any empty folder. this can happen after "
-"moving or deleting images."
-msgstr ""
-"תמיד שאל את המשתמש לפני הסרת כל תיקיה ריקה. מצב כזה יתכן לאחר העברת או מחיקת "
-"תמונות."
-
-#: ../build/src/preferences_gen.h:1790
-msgid "number of folder levels to show in lists"
-msgstr "מספר רמות להצגת תת תיקיות ברשימות"
-
-#: ../build/src/preferences_gen.h:1809
-msgid ""
-"the number of folder levels to show in film roll names, starting from the "
-"right"
-msgstr "מספר רמות להצגת תת תיקיות בשמות של גלילי פילם, החל מימין"
-
-#: ../build/src/preferences_gen.h:1817
-msgid "ignore JPEG images when importing film rolls"
-msgstr "התעלם מקבצי JPEG ביבוא גלילי פילם"
-
-#: ../build/src/preferences_gen.h:1829
+#: ../build/src/preferences_gen.h:2128
 msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
@@ -183,92 +91,110 @@ msgstr ""
 "כאשר תיקיה מכילה קבצי  raw+JPEG ביחד אין היגיון לייבא את שניהם. עם סימון זה "
 "ניתן להתעלם מכל קבצי ה  JPEG שנמצאו."
 
-#: ../build/src/preferences_gen.h:1837
+#: ../build/src/preferences_gen.h:2136
 msgid "recursive directory traversal when importing filmrolls"
 msgstr "חצייה רקורסיבית של תיקיות בעת ייבוא גלילי פילם"
 
-#: ../build/src/preferences_gen.h:1856
+#: ../build/src/preferences_gen.h:2155
 msgid "creator to be applied when importing"
 msgstr "הכנסת היוצר בעת ייבוא"
 
-#: ../build/src/preferences_gen.h:1879
+#: ../build/src/preferences_gen.h:2178
 msgid "publisher to be applied when importing"
 msgstr "הכנסת המפרסם בעת ייבוא"
 
-#: ../build/src/preferences_gen.h:1902
+#: ../build/src/preferences_gen.h:2201
 msgid "rights to be applied when importing"
 msgstr "הכנסת זכויות בעת ייבוא"
 
-#: ../build/src/preferences_gen.h:1925
+#: ../build/src/preferences_gen.h:2224
 msgid "comma separated tags to be applied when importing"
 msgstr "הכנס תגיות מופרדות בפסיק בעת ייבוא"
 
-#: ../build/src/preferences_gen.h:1948
+#: ../build/src/preferences_gen.h:2247
 msgid "initial import rating"
 msgstr "דירוג ראשוני בייבוא"
 
-#: ../build/src/preferences_gen.h:1969
+#: ../build/src/preferences_gen.h:2265 ../build/src/preferences_gen.h:2844
+#: ../build/src/preferences_gen.h:2900 ../build/src/preferences_gen.h:3123
+#: ../build/src/preferences_gen.h:3150 ../build/src/preferences_gen.h:3195
+#: ../build/src/preferences_gen.h:3841 ../build/src/preferences_gen.h:3868
+#: ../build/src/preferences_gen.h:3897 ../src/lua/preferences.c:697
+#, c-format
+msgid "double click to reset to `%d'"
+msgstr "לחיצה כפולה לאתחל ל `%d'"
+
+#: ../build/src/preferences_gen.h:2268
 msgid "initial star rating for all images when importing a filmroll"
 msgstr "דירוג כוכבים ראשוני עבור כל התמונות בעת ייבוא גליל פילם"
 
-#: ../build/src/preferences_gen.h:1977
-msgid "enable filmstrip"
-msgstr "אפשר סרט שקופיות"
+#: ../build/src/preferences_gen.h:2276 ../src/libs/tools/lighttable.c:89
+#: ../src/views/lighttable.c:249
+msgid "lighttable"
+msgstr "שולחן אור"
 
-#: ../build/src/preferences_gen.h:1989
-msgid "enable the filmstrip in darkroom, tethering and map modes."
-msgstr "אפשר סרט שקופיות במצבי עבודה חדר חושך, קשירה, ומפה."
+#: ../build/src/preferences_gen.h:2285
+msgid "don't use embedded preview JPEG but half-size raw"
+msgstr "אל תשתמש ב JPEG המוטמע כתצוגה מקדימה אלא בחצי גודל raw"
 
-#: ../build/src/preferences_gen.h:1997
+#: ../build/src/preferences_gen.h:2297
+msgid ""
+"check this option to not use the embedded JPEG from the raw file but process "
+"the raw data. this is slower but gives you color managed thumbnails."
+msgstr ""
+"בחר אפשרות זו על מנת לא להשתמש ב JPEG המוטמע בקובץ ה raw אלא לעבד את נתוני ה "
+"raw. אפשרות זו איטית יותר אך מספקת תמונות ממוזערות מנוהלות צבע."
+
+#: ../build/src/preferences_gen.h:2305
 msgid "high quality thumb processing from size"
 msgstr "עיבוד באיכות גבוהה של תמונות ממוזערות מתוך גודל"
 
-#: ../build/src/preferences_gen.h:2008 ../build/src/preferences_gen.h:2741
+#: ../build/src/preferences_gen.h:2316 ../build/src/preferences_gen.h:3697
 msgctxt "preferences"
 msgid "always"
 msgstr "תמיד"
 
-#: ../build/src/preferences_gen.h:2013
+#: ../build/src/preferences_gen.h:2321
 msgctxt "preferences"
 msgid "small"
 msgstr "קטן"
 
-#: ../build/src/preferences_gen.h:2018
+#: ../build/src/preferences_gen.h:2326
 msgctxt "preferences"
 msgid "VGA"
 msgstr "VGA"
 
-#: ../build/src/preferences_gen.h:2023 ../build/src/preferences_gen.h:2063
+#: ../build/src/preferences_gen.h:2331 ../build/src/preferences_gen.h:2371
 msgctxt "preferences"
 msgid "720p"
 msgstr "720p"
 
-#: ../build/src/preferences_gen.h:2028
+#: ../build/src/preferences_gen.h:2336
 msgctxt "preferences"
 msgid "1080p"
 msgstr "1080p"
 
-#: ../build/src/preferences_gen.h:2033
+#: ../build/src/preferences_gen.h:2341
 msgctxt "preferences"
 msgid "WQXGA"
 msgstr "WQXGA"
 
-#: ../build/src/preferences_gen.h:2038
+#: ../build/src/preferences_gen.h:2346
 msgctxt "preferences"
 msgid "4K"
 msgstr "4K"
 
-#: ../build/src/preferences_gen.h:2043
+#: ../build/src/preferences_gen.h:2351
 msgctxt "preferences"
 msgid "5K"
 msgstr "5K"
 
-#: ../build/src/preferences_gen.h:2048 ../build/src/preferences_gen.h:2736
+#: ../build/src/preferences_gen.h:2356 ../build/src/preferences_gen.h:3692
 msgctxt "preferences"
 msgid "never"
 msgstr "אף פעם"
 
-#: ../build/src/preferences_gen.h:2066
+#: ../build/src/preferences_gen.h:2374
 msgid ""
 "if the thumbnail size is greater than this value, it will be processed using "
 "the full quality rendering path (better but slower)."
@@ -276,41 +202,96 @@ msgstr ""
 "אם גודל התמונה הממוזערת גדול מערך זה, הוא יעובד במסלול איכות מלא (איכותי "
 "יותר אך איטי יותר)."
 
-#: ../build/src/preferences_gen.h:2074
+#: ../build/src/preferences_gen.h:2382
+msgid "enable extended thumb overlay"
+msgstr "אפשר כיסוי מורחב של תמונות מקדימות"
+
+#: ../build/src/preferences_gen.h:2394
+msgid "if set to true, thumb overlay shows filename and some exif data."
+msgstr "אם מופעל, כיסוי התמונות הממוזערות יציג שם קובץ וחלק מנתוני ה exif."
+
+#: ../build/src/preferences_gen.h:2402
+msgid "use single-click in the collect panel"
+msgstr "השתמש בקליק בודד בפאנל האיסוף"
+
+#: ../build/src/preferences_gen.h:2414
+msgid ""
+"check this option to use single-click to select items in the collect panel. "
+"this will allow you to do range selections for date-time and numeric values."
+msgstr ""
+"בחר אפשרות זו על מנת להשתמש בקליק יחיד לבחירת פריטים בפאנל האיסוף. מאפשר "
+"בחירת טווח עבור תאריכים וערכים נומריים."
+
+#: ../build/src/preferences_gen.h:2422
+msgid "expand a single lighttable module at a time"
+msgstr "הרחב מודול אחד בלבד בכל עת על שולחן האור"
+
+#: ../build/src/preferences_gen.h:2434
+msgid "this option toggles the behavior of shift clicking in lighttable mode"
+msgstr "אפשרות זו ממתגת את התנהגות ההקלקה עם shift במצב שולחן אור"
+
+#: ../build/src/preferences_gen.h:2442
+msgid "scroll to lighttable modules when expanded/collapsed"
+msgstr "גלול למודולים של שולחן אור כאשר מורחב/מקופל"
+
+#: ../build/src/preferences_gen.h:2454 ../build/src/preferences_gen.h:2820
+msgid ""
+"when this option is enabled then darktable will try to scroll the module to "
+"the top of the visible list"
+msgstr ""
+"כאשר אפשרות זו מופעלת darktable תנסה לגלול את המודול לראש הרשימה הנראית"
+
+#: ../build/src/preferences_gen.h:2462
+msgid "rating an image one star twice will not zero out the rating"
+msgstr "דירוג תמונה בכוכב אחד פעמיים לא יאפס את הדירוג"
+
+#: ../build/src/preferences_gen.h:2474
+msgid ""
+"do not have the rating of one star behave as documented in the manual--an "
+"image rated one star twice will result in a zero star rating."
+msgstr ""
+"אל תגרום לדירוג של כוכב אחד להתנהג כפי שמצוין בהוראות ההפעלה -- דירוג בכוכב "
+"אחד פעמיים יגרום לאיפוס הדירוג."
+
+#: ../build/src/preferences_gen.h:2482 ../src/views/darkroom.c:107
+msgid "darkroom"
+msgstr "חדר חושך"
+
+#: ../build/src/preferences_gen.h:2491
 msgid "pen pressure control for brush masks"
 msgstr "שליטה בלחץ העט עבור מסיכות מכחול"
 
-#: ../build/src/preferences_gen.h:2085 ../build/src/preferences_gen.h:2125
+#: ../build/src/preferences_gen.h:2502 ../build/src/preferences_gen.h:2542
 msgctxt "preferences"
 msgid "off"
 msgstr "כבוי"
 
-#: ../build/src/preferences_gen.h:2090
+#: ../build/src/preferences_gen.h:2507
 msgctxt "preferences"
 msgid "hardness (relative)"
 msgstr "קשיחות (יחסי)"
 
-#: ../build/src/preferences_gen.h:2095
+#: ../build/src/preferences_gen.h:2512
 msgctxt "preferences"
 msgid "hardness (absolute)"
 msgstr "קשיחות (אבסולוטי)"
 
-#: ../build/src/preferences_gen.h:2100
+#: ../build/src/preferences_gen.h:2517
 msgctxt "preferences"
 msgid "opacity (relative)"
 msgstr "אטימות (יחסי)"
 
-#: ../build/src/preferences_gen.h:2105
+#: ../build/src/preferences_gen.h:2522
 msgctxt "preferences"
 msgid "opacity (absolute)"
 msgstr "אטימות (אבסולוטי)"
 
-#: ../build/src/preferences_gen.h:2110
+#: ../build/src/preferences_gen.h:2527
 msgctxt "preferences"
 msgid "brush size (relative)"
 msgstr "גודל מכחול (יחסי)"
 
-#: ../build/src/preferences_gen.h:2128
+#: ../build/src/preferences_gen.h:2545
 msgid ""
 "off - pressure reading ignored, hardness/opacity/brush size - pressure "
 "reading controls specified attribute, absolute/relative - pressure reading "
@@ -320,26 +301,26 @@ msgstr ""
 "בתכונה הספציפית, אבסולוטי/יחסי - קריאת לחץ המכחול נלקחת ישירות כערך התכונה "
 "או מוכפלת בערך שהוגדר מראש."
 
-#: ../build/src/preferences_gen.h:2136
+#: ../build/src/preferences_gen.h:2553
 msgid "smoothing of brush strokes"
 msgstr "החלקת נגיעות מכחול"
 
-#: ../build/src/preferences_gen.h:2147
+#: ../build/src/preferences_gen.h:2564
 msgctxt "preferences"
 msgid "low"
 msgstr "נמוך"
 
-#: ../build/src/preferences_gen.h:2152 ../build/src/preferences_gen.h:2172
+#: ../build/src/preferences_gen.h:2569 ../build/src/preferences_gen.h:2589
 msgctxt "preferences"
 msgid "medium"
 msgstr "בינוני"
 
-#: ../build/src/preferences_gen.h:2157
+#: ../build/src/preferences_gen.h:2574
 msgctxt "preferences"
 msgid "high"
 msgstr "גבוהה"
 
-#: ../build/src/preferences_gen.h:2175
+#: ../build/src/preferences_gen.h:2592
 msgid ""
 "sets level for smoothing of brush strokes. stronger smoothing leads to less "
 "nodes and easier editing but with lower control of accuracy."
@@ -347,36 +328,152 @@ msgstr ""
 "מגדיר רמות לחלקה של נגיעות מכחול. החלקה משמעותית יותר מובילה למיעוט צמתים "
 "ועריכה קלה יותר במחיר של שליטה מועטה בדיוק."
 
-#: ../build/src/preferences_gen.h:2183
+#: ../build/src/preferences_gen.h:2600
 msgid "display of individual color channels"
 msgstr "הצגה של ערוצי צבע בודדים"
 
-#: ../build/src/preferences_gen.h:2194 ../build/src/preferences_gen.h:2214
+#: ../build/src/preferences_gen.h:2611 ../build/src/preferences_gen.h:2631
 msgctxt "preferences"
 msgid "false color"
 msgstr "צבע לא נכון"
 
-#: ../build/src/preferences_gen.h:2199
+#: ../build/src/preferences_gen.h:2616
 msgctxt "preferences"
 msgid "grey scale"
 msgstr "גווני אפור"
 
-#: ../build/src/preferences_gen.h:2217
+#: ../build/src/preferences_gen.h:2634
 msgid ""
 "defines how color channels are displayed when activated in the parametric "
 "masks feature."
 msgstr ""
 "מגדיר את הצורה בה מוצגים ערוצי הצבע כאשר מופעלים בתכונת המסיכה הפרמטרית."
 
-#: ../build/src/preferences_gen.h:2225
-msgid "ask before deleting a tag"
-msgstr "בקש אישור לפני מחיקת תגית"
+#: ../build/src/preferences_gen.h:2642
+#, fuzzy
+msgid "pattern for the image infos line"
+msgstr "הדפסה מסוגננת של מיקום הצילום"
 
-#: ../build/src/preferences_gen.h:2244
+#: ../build/src/preferences_gen.h:2658
+msgid "see manual to know all the tags you can use."
+msgstr "ראה מדריך למשתמש לפירוט כל התגים הניתנים לשימוש."
+
+#: ../build/src/preferences_gen.h:2666
+#, fuzzy
+msgid "position of the image infos line"
+msgstr "צפיפות נקודות dpi של התמונה בתוך ה pdf"
+
+#: ../build/src/preferences_gen.h:2677
+#, fuzzy
+msgctxt "preferences"
+msgid "top left"
+msgstr "הפוך בחירה"
+
+#: ../build/src/preferences_gen.h:2682
+#, fuzzy
+msgctxt "preferences"
+msgid "top right"
+msgstr "זכויות יוצרים"
+
+#: ../build/src/preferences_gen.h:2687
+#, fuzzy
+msgctxt "preferences"
+msgid "top center"
+msgstr "מרכז"
+
+#: ../build/src/preferences_gen.h:2692 ../build/src/preferences_gen.h:2712
+#, fuzzy
+msgctxt "preferences"
+msgid "bottom"
+msgstr "רווח תחתון"
+
+#: ../build/src/preferences_gen.h:2697
+msgctxt "preferences"
+msgid "hidden"
+msgstr "חבוי"
+
+#: ../build/src/preferences_gen.h:2722
+#, fuzzy
+msgid "show search module text entry"
+msgstr "הראה מודול"
+
+#: ../build/src/preferences_gen.h:2733
+#, fuzzy
+msgctxt "preferences"
+msgid "show search text"
+msgstr "נקה"
+
+#: ../build/src/preferences_gen.h:2738
+#, fuzzy
+msgctxt "preferences"
+msgid "show groups"
+msgstr "קבוצת טונים"
+
+#: ../build/src/preferences_gen.h:2743 ../build/src/preferences_gen.h:2758
+#, fuzzy
+msgctxt "preferences"
+msgid "show both"
+msgstr "שניהם"
+
+#: ../build/src/preferences_gen.h:2768
+msgid "expand a single darkroom module at a time"
+msgstr "הרחב מודול אחד בלבד בכל רגע נתון במצב חדר חושך"
+
+#: ../build/src/preferences_gen.h:2777 ../build/src/preferences_gen.h:2817
+#: ../build/src/preferences_gen.h:2920 ../build/src/preferences_gen.h:2949
+#: ../build/src/preferences_gen.h:2969 ../build/src/preferences_gen.h:2989
+#: ../build/src/preferences_gen.h:3009 ../build/src/preferences_gen.h:3029
+#: ../build/src/preferences_gen.h:3069 ../build/src/preferences_gen.h:3088
+#: ../build/src/preferences_gen.h:3169 ../build/src/preferences_gen.h:3215
+#: ../build/src/preferences_gen.h:3235 ../build/src/preferences_gen.h:3342
+#: ../build/src/preferences_gen.h:3442 ../build/src/preferences_gen.h:3482
+#: ../build/src/preferences_gen.h:3601 ../build/src/preferences_gen.h:3670
+#: ../build/src/preferences_gen.h:3794 ../build/src/preferences_gen.h:3917
+msgctxt "preferences"
+msgid "TRUE"
+msgstr "הפעל"
+
+#: ../build/src/preferences_gen.h:2780
+msgid "this option toggles the behavior of shift clicking in darkroom mode"
+msgstr "אפשרות זו ממתגת את התנהגות ההקלקה עם shift במצב חדר חושך"
+
+#: ../build/src/preferences_gen.h:2788
+msgid "expand the module when it is activated, and collapse it when disabled"
+msgstr "הרחב את המודול כאשר פעיל, וצמצמו כשמנוטרל"
+
+#: ../build/src/preferences_gen.h:2800
+msgid ""
+"this option allows to expand or collapse automatically the module when it is "
+"enabled or disabled."
+msgstr ""
+"אופציה זו מאפשרת להרחיב או לצמצם מודולים אוטומטית כאשר הם מופעלים או "
+"מנוטרלים."
+
+#: ../build/src/preferences_gen.h:2808
+msgid "scroll to darkroom modules when expanded/collapsed"
+msgstr "גלול למודולים של חדר החושך כאשר מורחב/מקופל"
+
+#: ../build/src/preferences_gen.h:2828
+msgid "border around image in darkroom mode"
+msgstr "גבולות סביב התמונה במצב חדר חושך"
+
+#: ../build/src/preferences_gen.h:2847
+msgid ""
+"process the image in darkroom mode with a small border. set to 0 if you "
+"don't want any border."
+msgstr ""
+"עבד את התמונה במצב חדר חושך עם מסגרת צרה. קבע ל 0 אם אינך מעוניין במסגרת כלל."
+
+#: ../build/src/preferences_gen.h:2855
+#, fuzzy
+msgid "map / geolocalisation"
+msgstr "פעולות על התמונה"
+
+#: ../build/src/preferences_gen.h:2864
 msgid "only draw images on map that are currently collected and filtered"
 msgstr "הצג על המפה אך ורק תמונות שכרגע נאספו וסוננו"
 
-#: ../build/src/preferences_gen.h:2256
+#: ../build/src/preferences_gen.h:2876
 msgid ""
 "use the current filter settings to select the geotagged images drawn on the "
 "map, i.e. limit the images drawn to the current filmstrip. this limits the "
@@ -386,11 +483,11 @@ msgstr ""
 "המפה, כלומר הגבל את התמונות המוצגות לסרט השקופיות הנוכחי. הדבר מגביל את מספר "
 "התמונות המוצגות ועל ידי כך מקטין את הזמן הנדרש להצגתם."
 
-#: ../build/src/preferences_gen.h:2264
+#: ../build/src/preferences_gen.h:2884
 msgid "maximum number of images drawn on map"
 msgstr "מספר מרבי של תמונות המוצגות על המפה"
 
-#: ../build/src/preferences_gen.h:2283
+#: ../build/src/preferences_gen.h:2903
 msgid ""
 "the maximum number of geotagged images drawn on the map. increasing this "
 "number can slow drawing of the map down."
@@ -398,21 +495,138 @@ msgstr ""
 "המספר המרבי של התמונות המוצגות על המפה. הגדלת מספר זה עלולה להאט את הצגת "
 "המפה."
 
-#: ../build/src/preferences_gen.h:2291
+#: ../build/src/preferences_gen.h:2911
 msgid "pretty print the image location"
 msgstr "הדפסה מסוגננת של מיקום הצילום"
 
-#: ../build/src/preferences_gen.h:2303
+#: ../build/src/preferences_gen.h:2923
 msgid ""
 "show a more readable representation of the location in the image information "
 "module"
 msgstr "הראה הצגה קריאה יותר של המיקום במודול מידע על התמונה"
 
-#: ../build/src/preferences_gen.h:2311
+#: ../build/src/preferences_gen.h:2931
+#, fuzzy
+msgid "security"
+msgstr "צלילות"
+
+#: ../build/src/preferences_gen.h:2940
+msgid "ask before removing images from database"
+msgstr "בקש אישור לפני הסרה של תמונות ממסד הנתונים"
+
+#: ../build/src/preferences_gen.h:2952
+msgid "always ask the user before any image is removed from DB."
+msgstr "תמיד בקש אישור מהמשתמש לפני הסרת תמונה ממסד הנתונים."
+
+#: ../build/src/preferences_gen.h:2960
+msgid "ask before erasing images from disk / discarding history stack"
+msgstr "בקש אישור לפני מחיקת תמונות מהדיסק / התעלם ממחסנית הסטוריה"
+
+#: ../build/src/preferences_gen.h:2972
+msgid ""
+"always ask the user before any image file is deleted / history stack is "
+"discarded."
+msgstr "תמיד בקש אישור מהמשתמש לפני כל מחיקה של תמונה / התעלם ממחסנית הסטוריה."
+
+#: ../build/src/preferences_gen.h:2980
+msgid "send files to trash when erasing images"
+msgstr "שלח קבצים לסל המחזור במחיקת תמונות"
+
+#: ../build/src/preferences_gen.h:2992
+msgid ""
+"send files to trash instead of permanently deleting files on system that "
+"supports it"
+msgstr "שלח קבצים לסל המחזור במקום למחקם לחלוטין במערכות התומכות בכך"
+
+#: ../build/src/preferences_gen.h:3000
+msgid "ask before moving images from film roll folder"
+msgstr "בקש אישור לפני העברת תמונות מגליל הפילם"
+
+#: ../build/src/preferences_gen.h:3012
+msgid "always ask the user before any image file is moved."
+msgstr "תמיד בקש אישור מהמשתמש לפני העברה של כל תמונה."
+
+#: ../build/src/preferences_gen.h:3020
+msgid "ask before copying images to new film roll folder"
+msgstr "בקש אישור לפני העתקה של תמונות לתיקיית גליל פילם חדש"
+
+#: ../build/src/preferences_gen.h:3032
+msgid "always ask the user before any image file is copied."
+msgstr "תמיד בקש אישור מהמשתמש לפני העתקה של קובץ תמונה כלשהו."
+
+#: ../build/src/preferences_gen.h:3040
+msgid "ask before removing empty folders"
+msgstr "בקש אישור לפני הסרה של תיקיות ריקות"
+
+#: ../build/src/preferences_gen.h:3052
+msgid ""
+"always ask the user before removing any empty folder. this can happen after "
+"moving or deleting images."
+msgstr ""
+"תמיד שאל את המשתמש לפני הסרת כל תיקיה ריקה. מצב כזה יתכן לאחר העברת או מחיקת "
+"תמונות."
+
+#: ../build/src/preferences_gen.h:3060
+msgid "ask before deleting a tag"
+msgstr "בקש אישור לפני מחיקת תגית"
+
+#: ../build/src/preferences_gen.h:3079
+#, fuzzy
+msgid "ask before deleting a style"
+msgstr "בקש אישור לפני מחיקת תגית"
+
+#: ../build/src/preferences_gen.h:3098 ../build/src/preferences_gen.h:3991
+msgid "miscellaneous"
+msgstr "שונות"
+
+#: ../build/src/preferences_gen.h:3107
+msgid "width of the side panels in pixels"
+msgstr "רוחב הפאנלים הצדדיים בפיקסלים"
+
+#: ../build/src/preferences_gen.h:3126
+msgid "(needs a restart)"
+msgstr "(דורש אתחול)"
+
+#: ../build/src/preferences_gen.h:3134
+msgid "waiting time between each picture in slideshow"
+msgstr "זמן המתנה בין תמונות במצגת השקופיות"
+
+#: ../build/src/preferences_gen.h:3160
+msgid "do not show april 1st game"
+msgstr "אל תראה את משחק האחד באפריל"
+
+#: ../build/src/preferences_gen.h:3179
+msgid "number of folder levels to show in lists"
+msgstr "מספר רמות להצגת תת תיקיות ברשימות"
+
+#: ../build/src/preferences_gen.h:3198
+msgid ""
+"the number of folder levels to show in film roll names, starting from the "
+"right"
+msgstr "מספר רמות להצגת תת תיקיות בשמות של גלילי פילם, החל מימין"
+
+#: ../build/src/preferences_gen.h:3206
+msgid "enable filmstrip"
+msgstr "אפשר סרט שקופיות"
+
+#: ../build/src/preferences_gen.h:3218
+msgid "enable the filmstrip in darkroom, tethering and map modes."
+msgstr "אפשר סרט שקופיות במצבי עבודה חדר חושך, קשירה, ומפה."
+
+#: ../build/src/preferences_gen.h:3226
+#, fuzzy
+msgid "enable timeline"
+msgstr "מתג תצוגה חיה"
+
+#: ../build/src/preferences_gen.h:3238
+msgid "enable the timeline in lighttable mode."
+msgstr "אפשר את ציר הזמן בשולחן האור."
+
+#: ../build/src/preferences_gen.h:3246
 msgid "overlay txt sidecar over zoomed images"
 msgstr "צפה txt נלווה תמונות מוגדלות"
 
-#: ../build/src/preferences_gen.h:2323
+#: ../build/src/preferences_gen.h:3258
 msgid ""
 "when there is a txt file next to an image it can be shown as an overlay over "
 "zoomed images on the lighttable. the txt file either has to be there at "
@@ -421,88 +635,73 @@ msgstr ""
 "כאשר יש קובץ txt בסמוך לתמונה ניתן לצפות אתו תמונות מוגדלות על שולחן האור. "
 "קובץ ה txt צריך להיות זמין בעת פעולת היבוא או שהזחלן צריך להיות מאופשר"
 
-#: ../build/src/preferences_gen.h:2331
-msgid "expand a single lighttable module at a time"
-msgstr "הרחב מודול אחד בלבד בכל עת על שולחן האור"
+#: ../build/src/preferences_gen.h:3266
+msgid "mouse wheel scrolls modules side panel by default"
+msgstr "גלגלת העכבר גוללת פאנל צידי של מודולים כברירת מחדל"
 
-#: ../build/src/preferences_gen.h:2343
-msgid "this option toggles the behavior of shift clicking in lighttable mode"
-msgstr "אפשרות זו ממתגת את התנהגות ההקלקה עם shift במצב שולחן אור"
-
-#: ../build/src/preferences_gen.h:2351
-msgid "expand a single darkroom module at a time"
-msgstr "הרחב מודול אחד בלבד בכל רגע נתון במצב חדר חושך"
-
-#: ../build/src/preferences_gen.h:2363
-msgid "this option toggles the behavior of shift clicking in darkroom mode"
-msgstr "אפשרות זו ממתגת את התנהגות ההקלקה עם shift במצב חדר חושך"
-
-#: ../build/src/preferences_gen.h:2371
-msgid "scroll to lighttable modules when expanded/collapsed"
-msgstr "גלול למודולים של שולחן אור כאשר מורחב/מקופל"
-
-#: ../build/src/preferences_gen.h:2383 ../build/src/preferences_gen.h:2403
+#: ../build/src/preferences_gen.h:3278
 msgid ""
-"when this option is enabled then darktable will try to scroll the module to "
-"the top of the visible list"
+"when enabled, use mouse wheel to scroll modules side panel.  use ctrl+alt to "
+"use mouse wheel for data entry.  when disabled, this behavior is reversed"
 msgstr ""
-"כאשר אפשרות זו מופעלת darktable תנסה לגלול את המודול לראש הרשימה הנראית"
+"כאשר מופעל, השתמש בגלגלת העכבר לגלול פאנל צידי של מודולים. ctrl+alt להכנסת "
+"נתונים בעזרת גלגלת העכבר. כאשר מנוטרל, התנהגות זו הפוכה"
 
-#: ../build/src/preferences_gen.h:2391
-msgid "scroll to darkroom modules when expanded/collapsed"
-msgstr "גלול למודולים של חדר החושך כאשר מורחב/מקופל"
+#: ../build/src/preferences_gen.h:3286
+msgid "show scrollbars for center view"
+msgstr "הראה פסי גלילה במבט המרכזי"
 
-#: ../build/src/preferences_gen.h:2411
-msgid "border around image in darkroom mode"
-msgstr "גבולות סביב התמונה במצב חדר חושך"
+#: ../build/src/preferences_gen.h:3297
+msgctxt "preferences"
+msgid "no scrollbars"
+msgstr "ללא פסי גלילה"
 
-#: ../build/src/preferences_gen.h:2430
+#: ../build/src/preferences_gen.h:3302 ../build/src/preferences_gen.h:3322
+#, fuzzy
+msgctxt "preferences"
+msgid "lighttable"
+msgstr "שולחן אור"
+
+#: ../build/src/preferences_gen.h:3307
+#, fuzzy
+msgctxt "preferences"
+msgid "lighttable + darkroom"
+msgstr "שולחן אור וחדר חושך וירטואלי"
+
+#: ../build/src/preferences_gen.h:3325
+msgid "defines where scrollbars should be displayed"
+msgstr "מגדיר היכן פסי הגלילה יוצגו"
+
+#: ../build/src/preferences_gen.h:3333
+msgid "always show panels' scrollbars"
+msgstr "תמיד הצג את פסי הגלילה של הפאנלים"
+
+#: ../build/src/preferences_gen.h:3345
 msgid ""
-"process the image in darkroom mode with a small border. set to 0 if you "
-"don't want any border."
-msgstr ""
-"עבד את התמונה במצב חדר חושך עם מסגרת צרה. קבע ל 0 אם אינך מעוניין במסגרת כלל."
+"defines whether the panel scrollbars should be always visible or activated "
+"only depending on the content.  (need a restart)"
+msgstr "מגדיר באם פסי הגלילה של הפאנל יוצגו תמיד או כתלות בתוכן. (מצריך אתחול)"
 
-#: ../build/src/preferences_gen.h:2438
-msgid "do high quality processing for slideshow"
-msgstr "בצע עיבוד באיכות גבוהה עבור מצגת"
-
-#: ../build/src/preferences_gen.h:2450
-msgid "same option as for export, but applies to slideshow."
-msgstr "אפשרות זהה עבור ייצוא, רק עבור מצגת."
-
-#: ../build/src/preferences_gen.h:2458
-msgid "rating an image one star twice will not zero out the rating"
-msgstr "דירוג תמונה בכוכב אחד פעמיים לא יאפס את הדירוג"
-
-#: ../build/src/preferences_gen.h:2470
-msgid ""
-"do not have the rating of one star behave as documented in the manual--an "
-"image rated one star twice will result in a zero star rating."
-msgstr ""
-"אל תגרום לדירוג של כוכב אחד להתנהג כפי שמצוין בהוראות ההפעלה -- דירוג בכוכב "
-"אחד פעמיים יגרום לאיפוס הדירוג."
-
-#: ../build/src/preferences_gen.h:2478
+#: ../build/src/preferences_gen.h:3353
 msgid "method to use for getting the display profile"
 msgstr "שיטה לשימוש עבור קבלת פרופיל התצוגה"
 
-#: ../build/src/preferences_gen.h:2489 ../build/src/preferences_gen.h:2514
+#: ../build/src/preferences_gen.h:3364 ../build/src/preferences_gen.h:3389
 msgctxt "preferences"
 msgid "all"
 msgstr "הכל"
 
-#: ../build/src/preferences_gen.h:2494
+#: ../build/src/preferences_gen.h:3369
 msgctxt "preferences"
 msgid "xatom"
 msgstr "דופי"
 
-#: ../build/src/preferences_gen.h:2499
+#: ../build/src/preferences_gen.h:3374
 msgctxt "preferences"
 msgid "colord"
 msgstr "צבוע"
 
-#: ../build/src/preferences_gen.h:2517
+#: ../build/src/preferences_gen.h:3392
 msgid ""
 "this option allows to force a specific means of getting the current display "
 "profile. this is useful when one alternative gives wrong results"
@@ -510,15 +709,198 @@ msgstr ""
 "אפשרות זו מאפשרת לאלץ דרך מסוימת לקבל את פרופיל התצוגה הנוכחי. דבר זה שימושי "
 "כאשר אחת דרכים מספקת תוצאות לא רצויות"
 
-#: ../build/src/preferences_gen.h:2551
+#: ../build/src/preferences_gen.h:3421
 msgid "core options"
 msgstr "אפשרויות ליבה"
 
-#: ../build/src/preferences_gen.h:2554
+#: ../build/src/preferences_gen.h:3424 ../src/imageio/format/j2k.c:652
+#: ../src/imageio/format/jpeg.c:594 ../src/imageio/format/webp.c:329
+#: ../src/libs/camera.c:594
+msgid "quality"
+msgstr "איכות"
+
+#: ../build/src/preferences_gen.h:3433
+msgid "color manage cached thumbnails"
+msgstr "השתמש בניהול צבע עבור תמונות ממוזערות שבזיכרון המטמון"
+
+#: ../build/src/preferences_gen.h:3445
+msgid ""
+"if enabled, cached thumbnails will be color managed so that lighttable and "
+"filmstrip can show correct colors. otherwise the results may look wrong once "
+"the display profile gets changed."
+msgstr ""
+"אם מופעל, תמונות ממוזערות בזיכרון המטמון יהיו מנוהלות צבע כך ששולחן  האור "
+"וסרט השקופיות יוכלו להציג צבעים נכונים. אחרת התוצאות עלולות להיראות לא "
+"מדויקות באם ישתנה פרופיל התצוגה."
+
+#: ../build/src/preferences_gen.h:3453
+msgid "always use LittleCMS 2 to apply output color profile"
+msgstr "השתמש תמיד ב LittleCMS 2 ליישום פרופיל צבע לפלט"
+
+#: ../build/src/preferences_gen.h:3465
+msgid "this is slower than the default."
+msgstr "זה איטי יותר מברירת המחדל."
+
+#: ../build/src/preferences_gen.h:3473
+msgid "do high quality processing for slideshow"
+msgstr "בצע עיבוד באיכות גבוהה עבור מצגת"
+
+#: ../build/src/preferences_gen.h:3485
+msgid "same option as for export, but applies to slideshow."
+msgstr "אפשרות זהה עבור ייצוא, רק עבור מצגת."
+
+#: ../build/src/preferences_gen.h:3493
+msgid "demosaicing for zoomed out darkroom mode"
+msgstr "תהליך demosaicing עבור תמונות מוקטנות במצב חדר חושך"
+
+#: ../build/src/preferences_gen.h:3504
+msgctxt "preferences"
+msgid "always bilinear (fast)"
+msgstr "תמיד bilinear (מהיר)"
+
+#: ../build/src/preferences_gen.h:3509 ../build/src/preferences_gen.h:3529
+msgctxt "preferences"
+msgid "at most PPG (reasonable)"
+msgstr "לכל היותר PPG (סביר)"
+
+#: ../build/src/preferences_gen.h:3514
+msgctxt "preferences"
+msgid "full (possibly slow)"
+msgstr "מלא (אטי בפוטנציה)"
+
+#: ../build/src/preferences_gen.h:3532
+msgid ""
+"interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, "
+"but not as sharp. middle ground is using PPG + interpolation modes specified "
+"below, full will use exactly the settings for full-size export. X-Trans "
+"sensors use VNG rather than PPG as middle ground."
+msgstr ""
+"אינטרפולציה כאשר לא צופים ביחס 1:1 במצב חדר חושך: bilinear הוא המהיר ביותר "
+"אבל לא הכי חד. פשרה סבירה היא שימוש ב PPG + אינטרפולציה כמצוין למטה. מלא "
+"ישתמש בדיוק בהגדרות עבור ייצוא בגודל מלא. חיישנים מסוג X-Trans משתמשים ב VNG "
+"במקום PPG כפשרה סבירה."
+
+#: ../build/src/preferences_gen.h:3540
+msgid "pixel interpolator"
+msgstr "פיקסל אינטרפולטור"
+
+#: ../build/src/preferences_gen.h:3551
+msgctxt "preferences"
+msgid "bilinear"
+msgstr "bilinear"
+
+#: ../build/src/preferences_gen.h:3556
+msgctxt "preferences"
+msgid "bicubic"
+msgstr "bicubic"
+
+#: ../build/src/preferences_gen.h:3561
+msgctxt "preferences"
+msgid "lanczos2"
+msgstr "lanczos2"
+
+#: ../build/src/preferences_gen.h:3566 ../build/src/preferences_gen.h:3581
+msgctxt "preferences"
+msgid "lanczos3"
+msgstr "lanczos3"
+
+#: ../build/src/preferences_gen.h:3584
+msgid ""
+"pixel interpolator used in rotation and lens correction (bilinear, bicubic, "
+"lanczos2, lanczos3)."
+msgstr ""
+"פיקסל אינטרפולטור שישמש בסיבוב ובתיקון עדשה (bilinear, bicubic, lanczos2, "
+"lanczos3)."
+
+#: ../build/src/preferences_gen.h:3592
+#, fuzzy
+msgid "auto-apply basecurve"
+msgstr "יישום אוטומטי לעקום הבסיס המוגדר מראש עבור כל מצלמה"
+
+#: ../build/src/preferences_gen.h:3604
+msgid "use a basecurve by default (needs a restart)"
+msgstr "השתמש בעקום הבסיס כברירת מחדל (מצריך אתחול)"
+
+#: ../build/src/preferences_gen.h:3612
+msgid "auto-apply per camera basecurve presets"
+msgstr "יישום אוטומטי לעקום הבסיס המוגדר מראש עבור כל מצלמה"
+
+#: ../build/src/preferences_gen.h:3624
+msgid ""
+"use the per-camera basecurve by default instead of the generic manufacturer "
+"one if there is one available (needs a restart)"
+msgstr ""
+"השתמש בעקום הבסיס המוגדר לכל מצלמה כברירת מחדל במקום העקום הגנרי שהגדיר "
+"היצרן אם קיים כזה (מצריך אתחול)"
+
+#: ../build/src/preferences_gen.h:3632
+#, fuzzy
+msgid "auto-apply sharpen"
+msgstr "יישום אוטומטי של פריסטים מופעל"
+
+#: ../build/src/preferences_gen.h:3644
+msgid ""
+"this added sharpen is not recommended on cameras without a low-pass filter. "
+"the default is to not add any sharpening automatically as most recent "
+"cameras have no low-pass filter. (need a restart)"
+msgstr ""
+"חידוד נוסף זה לא מומלץ למצלמות ללא פילטר תדרים נמוכים. ברירת המחדל לא להוסיף "
+"חידוד אוטומטי כיוון שלרוב המצלמות אין פילטר תדרים נמוכים. (מצריך אתחול)"
+
+#: ../build/src/preferences_gen.h:3652
+#, fuzzy
+msgid "xmp"
+msgstr "מפה"
+
+#: ../build/src/preferences_gen.h:3661
+msgid "write sidecar file for each image"
+msgstr "כתוב קובץ נלווה לכל תמונה"
+
+#: ../build/src/preferences_gen.h:3673
+msgid ""
+"these redundant files can later be re-imported into a different database, "
+"preserving your changes to the image."
+msgstr ""
+"ניתן לייבא מחדש בשלב מאוחר יותר קבצים מיותרים אלה לתוך מסד נתונים אחר, תוך "
+"שימור כל השינויים שנעשו לתמונה."
+
+#: ../build/src/preferences_gen.h:3681
+msgid "store xmp tags in compressed format"
+msgstr "שמור תגיות xmp בפורמט דחוס"
+
+#: ../build/src/preferences_gen.h:3702 ../build/src/preferences_gen.h:3717
+msgctxt "preferences"
+msgid "only large entries"
+msgstr "רק ערכים גדולים"
+
+#: ../build/src/preferences_gen.h:3720
+msgid ""
+"entries in xmp tags can get rather large and may exceed the available space "
+"to store the history stack in output files. this option allows xmp tags to "
+"be compressed and save space."
+msgstr ""
+"ערכים בתגיות xmp עלולים להיות גדולים למדי ולחרוג מהנפח הזמין לשמירת "
+"ההיסטוריה בקובץ הפלט. אפשרות זו מתירה לתגיות ה xmp להידחס ולחסוך מקום."
+
+#: ../build/src/preferences_gen.h:3728
+msgid "look for updated xmp files on startup"
+msgstr "חפש קבצי xmp מעודכנים בעלייה"
+
+#: ../build/src/preferences_gen.h:3740
+msgid ""
+"check file modification times of all xmp files on startup to check if any "
+"got updated in the meantime"
+msgstr "בדוק זמני עדכון עבור כל קבצי xmp בעליה בכדי לבדוק אם עודכנו בינתיים"
+
+#: ../build/src/preferences_gen.h:3748
+msgid "cpu / gpu / memory"
+msgstr "cpu / gpu / memory"
+
+#: ../build/src/preferences_gen.h:3757
 msgid "memory in megabytes to use for thumbnail cache"
 msgstr "זיכרון ב מגה בייטים לשימוש כמטמון עבור תמונות ממוזערות"
 
-#: ../build/src/preferences_gen.h:2574
+#: ../build/src/preferences_gen.h:3777
 msgid ""
 "this controls how much memory is going to be used for thumbnails and other "
 "buffers (needs a restart)."
@@ -526,11 +908,11 @@ msgstr ""
 "זה שולט בכמות הזיכרון שתוקצה עבור תמונות ממוזערות ומנגנוני זכרון זמניים "
 "אחרים (דורש אתחול)."
 
-#: ../build/src/preferences_gen.h:2582
+#: ../build/src/preferences_gen.h:3785
 msgid "enable disk backend for thumbnail cache"
 msgstr "הפעל שימוש בדיסק לצורך מטמון תמונות ממוזערות"
 
-#: ../build/src/preferences_gen.h:2594
+#: ../build/src/preferences_gen.h:3797
 msgid ""
 "if enabled, write thumbnails to disk (.cache/darktable/) when evicted from "
 "the memory cache. note that this can take a lot of memory (several gigabytes "
@@ -545,25 +927,31 @@ msgstr ""
 "ביצועי שולחן האור ישתפרו מאד בדפדוף מרובה. על מנת ליצור את כל התמונות "
 "הממוזערות שבאוסף הרץ   'darktable-generate-cache'."
 
-#: ../build/src/preferences_gen.h:2602
-msgid "color manage cached thumbnails"
-msgstr "השתמש בניהול צבע עבור תמונות ממוזערות שבזיכרון המטמון"
+#: ../build/src/preferences_gen.h:3805
+#, fuzzy
+msgid "enable disk backend for full preview cache"
+msgstr "הפעל שימוש בדיסק לצורך מטמון תמונות ממוזערות"
 
-#: ../build/src/preferences_gen.h:2614
+#: ../build/src/preferences_gen.h:3817
+#, fuzzy
 msgid ""
-"if enabled, cached thumbnails will be color managed so that lighttable and "
-"filmstrip can show correct colors. otherwise the results may look wrong once "
-"the display profile gets changed."
+"if enabled, write full preview to disk (.cache/darktable/) when evicted from "
+"the memory cache. note that this can take a lot of memory (several gigabytes "
+"for 20k images) and will never delete cached thumbnails again. it's safe "
+"though to delete these manually, if you want. light table performance will "
+"be increased greatly when zooming image in full preview mode."
 msgstr ""
-"אם מופעל, תמונות ממוזערות בזיכרון המטמון יהיו מנוהלות צבע כך ששולחן  האור "
-"וסרט השקופיות יוכלו להציג צבעים נכונים. אחרת התוצאות עלולות להיראות לא "
-"מדויקות באם ישתנה פרופיל התצוגה."
+"אם מופעל, כתוב תמונות ממוזערות לדיסק (.cache/darktable/) כאשר מתפנות מזיכרון "
+"המטמון. שים לב שהדבר עלול לצרוך זכרון רב ( מספר גיגה בייטים ל 20k תמונות) "
+"ותמונות ממוזערות אלה לעולם לא יימחקו. אולם בטוח למחוק תמונות אלה ידנית. "
+"ביצועי שולחן האור ישתפרו מאד בדפדוף מרובה. על מנת ליצור את כל התמונות "
+"הממוזערות שבאוסף הרץ   'darktable-generate-cache'."
 
-#: ../build/src/preferences_gen.h:2622
+#: ../build/src/preferences_gen.h:3825
 msgid "number of background threads"
 msgstr "מספר תהליכונים ברקע"
 
-#: ../build/src/preferences_gen.h:2641
+#: ../build/src/preferences_gen.h:3844
 msgid ""
 "this controls for example how many threads are used to create thumbnails "
 "during import. the cache will grow to a maximum of twice this number of full "
@@ -572,11 +960,11 @@ msgstr ""
 "זה מכתיב לדוגמה כמה תהליכונים ישמשו ליצירת תמונות ממוזערות בזמן ייבוא. "
 "המטמון יגדל לפעמיים מספר זה לכל היותר של תמונות ברזולוציה מלאה (דורש אתחול)"
 
-#: ../build/src/preferences_gen.h:2649
+#: ../build/src/preferences_gen.h:3852
 msgid "host memory limit (in MB) for tiling"
 msgstr "מגבלת זיכרון (ב MB) לצורך ריצוף"
 
-#: ../build/src/preferences_gen.h:2668
+#: ../build/src/preferences_gen.h:3871
 msgid ""
 "this variable controls the maximum amount of memory (in MB) a module may use "
 "during image processing. lower values will force memory hungry modules to "
@@ -588,11 +976,11 @@ msgstr ""
 "אריחים. קיבוע ערך זה ל 0 יסיר כל מגבלה. מספר נמוך מ 500 יעוגל ל 500 (דורש "
 "אתחול)."
 
-#: ../build/src/preferences_gen.h:2676
+#: ../build/src/preferences_gen.h:3879
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
 msgstr "כמות מינימלית של זיכרון (ב MB) עבור זכרון זמני בודד לצורך ריצוף"
 
-#: ../build/src/preferences_gen.h:2697
+#: ../build/src/preferences_gen.h:3900
 msgid ""
 "if set to a positive, non-zero value this variable defines the minimum "
 "amount of memory (in MB) that tiling should take for a single image buffer. "
@@ -602,43 +990,70 @@ msgstr ""
 "הריצוף יצרוך עבור תמונה בודדת. נוטל קדימות על הנחות המבוססות על "
 "host_memory_limit (דורש אתחול)."
 
-#: ../build/src/preferences_gen.h:2705
-msgid "write sidecar file for each image"
-msgstr "כתוב קובץ נלווה לכל תמונה"
+#: ../build/src/preferences_gen.h:3908
+msgid "activate OpenCL support"
+msgstr "הפעל תמיכה ב OpenCL"
 
-#: ../build/src/preferences_gen.h:2717
+#: ../build/src/preferences_gen.h:3920
 msgid ""
-"these redundant files can later be re-imported into a different database, "
-"preserving your changes to the image."
+"if found, use OpenCL runtime on your system for improved processing speed. "
+"can be switched on and off at any time."
 msgstr ""
-"ניתן לייבא מחדש בשלב מאוחר יותר קבצים מיותרים אלה לתוך מסד נתונים אחר, תוך "
-"שימור כל השינויים שנעשו לתמונה."
+"אם ניתן, השתמש ב OpenCL על מערכת זו לשיפור זמן העיבוד. ניתן להדליק ולכבות "
+"בכל עת."
 
-#: ../build/src/preferences_gen.h:2725
-msgid "store xmp tags in compressed format"
-msgstr "שמור תגיות xmp בפורמט דחוס"
+#: ../build/src/preferences_gen.h:3921 ../build/src/preferences_gen.h:3976
+msgid "not available"
+msgstr "לא זמין"
 
-#: ../build/src/preferences_gen.h:2746 ../build/src/preferences_gen.h:2761
+#: ../build/src/preferences_gen.h:3924 ../build/src/preferences_gen.h:3928
+#: ../build/src/preferences_gen.h:3979 ../build/src/preferences_gen.h:3983
+msgid "not available on this system"
+msgstr "לא זמין על מערכת זו"
+
+#: ../build/src/preferences_gen.h:3936
+msgid "OpenCL scheduling profile"
+msgstr "פרופיל התזמון של OpenCL"
+
+#. Adding the restore defaults button
+#: ../build/src/preferences_gen.h:3947 ../build/src/preferences_gen.h:3972
+#: ../src/gui/preferences.c:630
 msgctxt "preferences"
-msgid "only large entries"
-msgstr "רק ערכים גדולים"
+msgid "default"
+msgstr "ברירת מחדל"
 
-#: ../build/src/preferences_gen.h:2764
+#: ../build/src/preferences_gen.h:3952
+msgctxt "preferences"
+msgid "multiple GPUs"
+msgstr "מעבדים גראפיים (GPU) מרובים"
+
+#: ../build/src/preferences_gen.h:3957
+msgctxt "preferences"
+msgid "very fast GPU"
+msgstr "מעבד גראפי (GPU) מהיר מאד"
+
+#: ../build/src/preferences_gen.h:3975
+#, fuzzy
 msgid ""
-"entries in xmp tags can get rather large and may exceed the available space "
-"to store the history stack in output files. this option allows xmp tags to "
-"be compressed and save space."
+"defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled "
+"systems. default - GPU processes full and CPU processes preview pipe "
+"(adaptable by config parameters); multiple GPUs - process both pixelpipes in "
+"parallel on two different GPUs; very fast GPU - process both pixelpipes "
+"sequentially on the GPU."
 msgstr ""
-"ערכים בתגיות xmp עלולים להיות גדולים למדי ולחרוג מהנפח הזמין לשמירת "
-"ההיסטוריה בקובץ הפלט. אפשרות זו מתירה לתגיות ה xmp להידחס ולחסוך מקום."
+"מגדיר את הדרך בה הצגה מקדימה ומשימות pixelpipe מלא מתוזמנות במערכת עם OpenCL "
+"מופעל. ברירת המחדל - GPU מטפל במלא ו CPU בתצוגה המקדימה (ניתן להתאמה ע\"י "
+"פרמטרי קונפיגורציה); GPU מרובים - מטפל בשני ה pixelpipes במקביל כל אחד ב GPU "
+"נפרד; GPU מהיר מאד - מטפל בשני ה pixelpipes באופן טורי על אותו GPU."
 
-#: ../build/src/preferences_gen.h:2772
+#: ../build/src/preferences_gen.h:4000
 msgid "omit hierarchy in simple tag lists"
 msgstr "השמט היררכיה ברשימות תיוג פשוטות"
 
-#: ../build/src/preferences_gen.h:2784
+#: ../build/src/preferences_gen.h:4012
+#, fuzzy
 msgid ""
-"when exporting images the hierarchical tags are also added as a simple list "
+"when creating XMP file the hierarchical tags are also added as a simple list "
 "of non-hierarchical ones to make them visible to some other programs. when "
 "this option is checked darktable will only include their last part and "
 "ignore the rest. so 'foo|bar|baz' will only add 'baz'."
@@ -647,189 +1062,54 @@ msgstr ""
 "היררכיות על מנת שתכנות אחרות יוכלו לראותן. כאשר אפשרות זו מסומנת darktable "
 "יכלול רק את חלקן האחרון ויתעלם מהיתר. כך ש  'foo|bar|baz'  יוסיף רק  'baz'."
 
-#: ../build/src/preferences_gen.h:2792
-msgid "activate OpenCL support"
-msgstr "הפעל תמיכה ב OpenCL"
+#: ../build/src/preferences_gen.h:4020
+#, fuzzy
+msgid "disable the entry completion"
+msgstr "הסר מהאוסף"
 
-#: ../build/src/preferences_gen.h:2804
+#: ../build/src/preferences_gen.h:4032
 msgid ""
-"if found, use OpenCL runtime on your system for improved processing speed. "
-"can be switched on and off at any time."
+"the entry completion is useful for those who enter tags from keyboard only. "
+"for others the entry completion can be embarrassing. need to restart "
+"darktable."
 msgstr ""
-"אם ניתן, השתמש ב OpenCL על מערכת זו לשיפור זמן העיבוד. ניתן להדליק ולכבות "
-"בכל עת."
+"השלמת הכנסת טקסט מועילה למשתמשים במקלדת בלבד להכנסת תגים. לאחרים השלמה יכולה "
+"להיות מביכה. (מצריך אתחול)"
 
-#: ../build/src/preferences_gen.h:2805 ../build/src/preferences_gen.h:2860
-msgid "not available"
-msgstr "לא זמין"
-
-#: ../build/src/preferences_gen.h:2808 ../build/src/preferences_gen.h:2812
-#: ../build/src/preferences_gen.h:2863 ../build/src/preferences_gen.h:2867
-msgid "not available on this system"
-msgstr "לא זמין על מערכת זו"
-
-#: ../build/src/preferences_gen.h:2820
-msgid "OpenCL scheduling profile"
-msgstr "פרופיל התזמון של OpenCL"
-
-#. Adding the restore defaults button
-#: ../build/src/preferences_gen.h:2831 ../build/src/preferences_gen.h:2856
-#: ../src/gui/preferences.c:630
-msgctxt "preferences"
-msgid "default"
-msgstr "ברירת מחדל"
-
-#: ../build/src/preferences_gen.h:2836
-msgctxt "preferences"
-msgid "multiple GPUs"
-msgstr "מעבדים גראפיים (GPU) מרובים"
-
-#: ../build/src/preferences_gen.h:2841
-msgctxt "preferences"
-msgid "very fast GPU"
-msgstr "מעבד גראפי (GPU) מהיר מאד"
-
-#: ../build/src/preferences_gen.h:2859
-msgid ""
-"defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled "
-"systems. default - GPU processes full and CPU processes preview pipe "
-"(adaptable by config parameters); multiple GPUs - process both pixelpipes in "
-"parallel on two different GPUs; very fast GPU - process both pixelipes "
-"sequentially on the GPU."
-msgstr ""
-"מגדיר את הדרך בה הצגה מקדימה ומשימות pixelpipe מלא מתוזמנות במערכת עם OpenCL "
-"מופעל. ברירת המחדל - GPU מטפל במלא ו CPU בתצוגה המקדימה (ניתן להתאמה ע\"י "
-"פרמטרי קונפיגורציה); GPU מרובים - מטפל בשני ה pixelpipes במקביל כל אחד ב GPU "
-"נפרד; GPU מהיר מאד - מטפל בשני ה pixelpipes באופן טורי על אותו GPU."
-
-#: ../build/src/preferences_gen.h:2875
-msgid "always use LittleCMS 2 to apply output color profile"
-msgstr "השתמש תמיד ב LittleCMS 2 ליישום פרופיל צבע לפלט"
-
-#: ../build/src/preferences_gen.h:2887
-msgid "this is slower than the default."
-msgstr "זה איטי יותר מברירת המחדל."
-
-#: ../build/src/preferences_gen.h:2895 ../src/libs/export.c:634
-msgid "do high quality resampling during export"
-msgstr "בצע דגימה מחדש באיכות גבוהה במהלך הייצוא"
-
-#: ../build/src/preferences_gen.h:2907
-msgid ""
-"the image will first be processed in full resolution, and downscaled at the "
-"very end. this can result in better quality sometimes, but will always be "
-"slower."
-msgstr ""
-"התמונה תעובד בתחילה ברזולוציה מלאה, ואז תוקטן ממש לקראת הסוף. לתוצאה המתקבלת "
-"סיכוי לצאת באיכות גבוהה יותר, אך תמיד לאט יותר."
-
-#: ../build/src/preferences_gen.h:2915
-msgid "demosaicing for zoomed out darkroom mode"
-msgstr "תהליך demosaicing עבור תמונות מוקטנות במצב חדר חושך"
-
-#: ../build/src/preferences_gen.h:2926
-msgctxt "preferences"
-msgid "always bilinear (fast)"
-msgstr "תמיד bilinear (מהיר)"
-
-#: ../build/src/preferences_gen.h:2931 ../build/src/preferences_gen.h:2951
-msgctxt "preferences"
-msgid "at most PPG (reasonable)"
-msgstr "לכל היותר PPG (סביר)"
-
-#: ../build/src/preferences_gen.h:2936
-msgctxt "preferences"
-msgid "full (possibly slow)"
-msgstr "מלא (אטי בפוטנציה)"
-
-#: ../build/src/preferences_gen.h:2954
-msgid ""
-"interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, "
-"but not as sharp. middle ground is using PPG + interpolation modes specified "
-"below, full will use exactly the settings for full-size export. X-Trans "
-"sensors use VNG rather than PPG as middle ground."
-msgstr ""
-"אינטרפולציה כאשר לא צופים ביחס 1:1 במצב חדר חושך: bilinear הוא המהיר ביותר "
-"אבל לא הכי חד. פשרה סבירה היא שימוש ב PPG + אינטרפולציה כמצוין למטה. מלא "
-"ישתמש בדיוק בהגדרות עבור ייצוא בגודל מלא. חיישנים מסוג X-Trans משתמשים ב VNG "
-"במקום PPG כפשרה סבירה."
-
-#: ../build/src/preferences_gen.h:2962
-msgid "pixel interpolator"
-msgstr "פיקסל אינטרפולטור"
-
-#: ../build/src/preferences_gen.h:2973
-msgctxt "preferences"
-msgid "bilinear"
-msgstr "bilinear"
-
-#: ../build/src/preferences_gen.h:2978
-msgctxt "preferences"
-msgid "bicubic"
-msgstr "bicubic"
-
-#: ../build/src/preferences_gen.h:2983
-msgctxt "preferences"
-msgid "lanczos2"
-msgstr "lanczos2"
-
-#: ../build/src/preferences_gen.h:2988 ../build/src/preferences_gen.h:3003
-msgctxt "preferences"
-msgid "lanczos3"
-msgstr "lanczos3"
-
-#: ../build/src/preferences_gen.h:3006
-msgid ""
-"pixel interpolator used in rotation and lens correction (bilinear, bicubic, "
-"lanczos2, lanczos3)."
-msgstr ""
-"פיקסל אינטרפולטור שישמש בסיבוב ובתיקון עדשה (bilinear, bicubic, lanczos2, "
-"lanczos3)."
-
-#: ../build/src/preferences_gen.h:3014
+#: ../build/src/preferences_gen.h:4040
 msgid "password storage backend to use"
 msgstr "תשתית אחסון ססמאות בה להשתמש"
 
-#: ../build/src/preferences_gen.h:3025 ../build/src/preferences_gen.h:3057
+#: ../build/src/preferences_gen.h:4051 ../build/src/preferences_gen.h:4083
 msgctxt "preferences"
 msgid "auto"
 msgstr "אוטו'"
 
-#: ../build/src/preferences_gen.h:3030
+#: ../build/src/preferences_gen.h:4056
 msgctxt "preferences"
 msgid "none"
 msgstr "ללא"
 
-#: ../build/src/preferences_gen.h:3035
+#: ../build/src/preferences_gen.h:4061
 msgctxt "preferences"
 msgid "libsecret"
 msgstr "libsecret"
 
-#: ../build/src/preferences_gen.h:3041
+#: ../build/src/preferences_gen.h:4067
 msgctxt "preferences"
 msgid "kwallet"
 msgstr "kwallet"
 
-#: ../build/src/preferences_gen.h:3060
+#: ../build/src/preferences_gen.h:4086
 msgid ""
 "the storage backend for password storage: auto, none, libsecret, kwallet"
 msgstr "תשתית אחסון ססמאות: אוטומטי, ללא, libsecret, kwallet, gnome keyring"
 
-#: ../build/src/preferences_gen.h:3068
-msgid "look for updated xmp files on startup"
-msgstr "חפש קבצי xmp מעודכנים בעלייה"
-
-#: ../build/src/preferences_gen.h:3080
-msgid ""
-"check file modification times of all xmp files on startup to check if any "
-"got updated in the meantime"
-msgstr "בדוק זמני עדכון עבור כל קבצי xmp בעליה בכדי לבדוק אם עודכנו בינתיים"
-
-#: ../build/src/preferences_gen.h:3088
+#: ../build/src/preferences_gen.h:4094
 msgid "executable for playing audio files"
 msgstr "קובץ ריצה לניגון קבצי שמע"
 
-#: ../build/src/preferences_gen.h:3104
+#: ../build/src/preferences_gen.h:4110
 msgid ""
 "this external program is used to play audio files some cameras record to "
 "keep notes for images"
@@ -837,40 +1117,50 @@ msgstr ""
 "תוכנה חיצונית זו משמשת לניגון קבצי שמע בהם מצלמות מסוימות משתמשות להקלטת "
 "הערות על תמונות"
 
-#: ../build/src/preferences_gen.h:3112
-msgid "auto-apply per camera basecurve presets"
-msgstr "יישום אוטומטי לעקום הבסיס המוגדר מראש עבור כל מצלמה"
+#: ../build/src/preferences_gen.h:4118
+#, fuzzy
+msgid "3D lut root folder"
+msgstr "העבר לתיקיה אחרת"
 
-#: ../build/src/preferences_gen.h:3124
+#: ../build/src/preferences_gen.h:4123 ../src/control/jobs/control_jobs.c:1629
+#: ../src/control/jobs/control_jobs.c:1689 ../src/gui/preferences.c:1616
+#: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/disk.c:194
+#: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/gallery.c:179
+#: ../src/imageio/storage/latex.c:107 ../src/imageio/storage/latex.c:178
+#: ../src/libs/styles.c:300 ../src/lua/preferences.c:631
+msgid "select directory"
+msgstr "בחר תיקיה"
+
+#: ../build/src/preferences_gen.h:4135
 msgid ""
-"use the per-camera basecurve by default instead of the generic manufacturer "
-"one if there is one available (needs a restart)"
+"this folder (and sub-folders) contains Lut files used by lut3d modules. need "
+"to restart darktable."
 msgstr ""
-"השתמש בעקום הבסיס המוגדר לכל מצלמה כברירת מחדל במקום העקום הגנרי שהגדיר "
-"היצרן אם קיים כזה (מצריך אתחול)"
+"תיקיה זו (ותת התיקיות שבה) מכילה קבצי Lut בהם נעשה שימוש על ידי מודולי "
+"lut3d. יש לאתחל את darktable."
 
-#: ../build/src/preferences_gen.h:3158
+#: ../build/src/preferences_gen.h:4164
 msgid "session options"
 msgstr "אפשרויות מושב"
 
-#: ../build/src/preferences_gen.h:3161
+#: ../build/src/preferences_gen.h:4167
 msgid "base directory naming pattern"
 msgstr "תבנית יצירת שם עבור תיקיית הבסיס"
 
 # !!! I think there is a error here. Doesn't make sense !!!
-#: ../build/src/preferences_gen.h:3177 ../build/src/preferences_gen.h:3201
+#: ../build/src/preferences_gen.h:4183 ../build/src/preferences_gen.h:4207
 msgid "part of full import path for an import session"
 msgstr "חלק מתוך הנתיב המלא לייבוא מושב"
 
-#: ../build/src/preferences_gen.h:3185
+#: ../build/src/preferences_gen.h:4191
 msgid "sub directory naming pattern"
 msgstr "תבנית נתינת שם לתיקיות משנה"
 
-#: ../build/src/preferences_gen.h:3209
+#: ../build/src/preferences_gen.h:4215
 msgid "file naming pattern"
 msgstr "תבנית נתינת שם לקובץ"
 
-#: ../build/src/preferences_gen.h:3225
+#: ../build/src/preferences_gen.h:4231
 msgid "file naming pattern used for a import session"
 msgstr "תבנית נתינת שם המשמשת לייבוא מושב"
 
@@ -1968,15 +2258,6 @@ msgstr "מחק תמונות?"
 #: ../src/control/jobs/control_jobs.c:1625
 msgid "move images"
 msgstr "העבר תמונות"
-
-#: ../src/control/jobs/control_jobs.c:1629
-#: ../src/control/jobs/control_jobs.c:1689 ../src/gui/preferences.c:1616
-#: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/disk.c:194
-#: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/gallery.c:179
-#: ../src/imageio/storage/latex.c:107 ../src/imageio/storage/latex.c:178
-#: ../src/libs/styles.c:300 ../src/lua/preferences.c:631
-msgid "select directory"
-msgstr "בחר תיקיה"
 
 #: ../src/control/jobs/control_jobs.c:1630
 #: ../src/control/jobs/control_jobs.c:1690
@@ -4152,11 +4433,6 @@ msgstr "J2K"
 #: ../src/imageio/format/j2k.c:646
 msgid "jp2"
 msgstr "jp2"
-
-#: ../src/imageio/format/j2k.c:652 ../src/imageio/format/jpeg.c:594
-#: ../src/imageio/format/webp.c:329 ../src/libs/camera.c:594
-msgid "quality"
-msgstr "איכות"
 
 #: ../src/imageio/format/j2k.c:659
 msgid "DCP mode"
@@ -7835,7 +8111,7 @@ msgstr "18 EV (HDR++)"
 
 #: ../src/iop/filmic.c:1679
 msgid "read-only graph, use the parameters below to set the nodes"
-msgstr ""
+msgstr "גרף לקריאה בלבד. השתמש בפרמטרים למטה לקביעת הצמתים"
 
 #: ../src/iop/filmic.c:1683
 msgid "logarithmic shaper"
@@ -7843,13 +8119,15 @@ msgstr "מטווה צורה לוגריתמי"
 
 #: ../src/iop/filmic.c:1688 ../src/iop/filmicrgb.c:1332
 msgid "middle grey luminance"
-msgstr ""
+msgstr "לומיננס של גוני אפור בינוני."
 
 #: ../src/iop/filmic.c:1691 ../src/iop/filmicrgb.c:1335
 msgid ""
 "adjust to match the average luminance of the subject.\n"
 "except in back-lighting situations, this should be around 18%."
 msgstr ""
+"כוונן להתאמת הלומיננס הממוצע לנושא הצילום.\n"
+"למעט במקריםשל תאורה אחורית, ערך זה צריך להיות בסביבות 18%."
 
 #: ../src/iop/filmic.c:1701 ../src/iop/filmicrgb.c:1345
 msgid "white relative exposure"
@@ -7861,6 +8139,9 @@ msgid ""
 "this is a reading a lightmeter would give you on the scene.\n"
 "adjust so highlights clipping is avoided"
 msgstr ""
+"מספר הסטופים בין אפור בינוני ללבן טהור.\n"
+"זו מדידה שמד אור היה נותן בשטח.\n"
+"כוונן כך שחיתוך פרטים בהירים ימנע."
 
 #: ../src/iop/filmic.c:1715 ../src/iop/filmicrgb.c:1359
 #: ../src/iop/profile_gamma.c:908
@@ -7874,6 +8155,10 @@ msgid ""
 "increase to get more contrast.\n"
 "decrease to recover more details in low-lights."
 msgstr ""
+"מספר הסטופים בין אפור בינוני לשחור מוחלט.\n"
+"זו מדידה שמד אור היה נותן בשטח.\n"
+"הגבר לחיזוק הקונטרסט.\n"
+"הנמך לשחזור יותר פרטים בתנאי אור חלש."
 
 #: ../src/iop/filmic.c:1728 ../src/iop/profile_gamma.c:932
 msgid "safety factor"
@@ -7884,6 +8169,8 @@ msgid ""
 "enlarge or shrink the computed dynamic range.\n"
 "useful in conjunction with \"auto tune levels\"."
 msgstr ""
+"הגדל או כווץ את התחום הדינמי המחושב.\n"
+"שימושי בצמוד ל \"כוונן רמות אוטומטית\"."
 
 #: ../src/iop/filmic.c:1737 ../src/iop/filmicrgb.c:1382
 #: ../src/iop/profile_gamma.c:940
@@ -7897,6 +8184,10 @@ msgid ""
 "works better for landscapes and evenly-lit pictures\n"
 "but fails for high-keys and low-keys."
 msgstr ""
+"נסה למטב את ההגדרות עם קצת ניחוש.\n"
+"זה יתאים את טווח הלומיננס לתוך גבולות ההסטוגרמה.\n"
+"עובד טוב יותר עבור תמונות נוף ותמונות המוארות בצורה אחידה\n"
+"אבל כושל בפרטים החשוכים והבהירים."
 
 #: ../src/iop/filmic.c:1747
 msgid "filmic S curve"
@@ -7907,6 +8198,8 @@ msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
 msgstr ""
+"שיפוע החלק הלינארי של העקום\n"
+"משפיע בעיקר על הטונים הבינוניים"
 
 #. geotagging
 #: ../src/iop/filmic.c:1761 ../src/iop/filmicrgb.c:1405
@@ -7920,6 +8213,9 @@ msgid ""
 "increase to get more contrast at the extreme luminances.\n"
 "this has no effect on mid-tones."
 msgstr ""
+"רוחב המתחם הלינארי במרכז העקום.\n"
+"הגבר לקבלת יותר קונטרסט בלומיננס קיצוני.\n"
+"אין לכך השפעה על הטונים הבינוניים."
 
 #: ../src/iop/filmic.c:1771 ../src/iop/filmicrgb.c:1415
 msgid "shadows/highlights balance"
@@ -7932,6 +8228,10 @@ msgid ""
 "use it if you need to protect the details\n"
 "at one extremity of the histogram."
 msgstr ""
+"מחליק את קו הרוחב לאורך השיפוע\n"
+"על מנת לתת יותר מקום לצללים ולפרטים הבהירים.\n"
+"השתמש בזה אם יש צורך לשמור על הפרטים\n"
+"באחד מנקודות הקיצון של ההסטוגרמה."
 
 #: ../src/iop/filmic.c:1780
 msgid "global saturation"
@@ -7943,6 +8243,9 @@ msgid ""
 "you need to set this value below 100%\n"
 "if the chrominance preservation is enabled."
 msgstr ""
+"מפחית את רווית הקלט למודול גלובלית.\n"
+"יש לקבוע ערך זה מתחת ל 100%\n"
+"אם שימור chrominance מופעל."
 
 #: ../src/iop/filmic.c:1790 ../src/iop/filmicrgb.c:1424
 msgid "extreme luminance saturation"
@@ -11457,6 +11760,10 @@ msgstr "הרשה הגדלה"
 msgid "high quality resampling"
 msgstr "בצע דגימה מחדש באיכות גבוהה במהלך הייצוא"
 
+#: ../src/libs/export.c:634
+msgid "do high quality resampling during export"
+msgstr "בצע דגימה מחדש באיכות גבוהה במהלך הייצוא"
+
 #: ../src/libs/export.c:647 ../src/libs/export.c:668
 #: ../src/libs/print_settings.c:1406 ../src/libs/print_settings.c:1453
 msgid "image settings"
@@ -11826,10 +12133,6 @@ msgstr "קבץ"
 msgctxt "accel"
 msgid "ungroup"
 msgstr "בטל קיבוץ"
-
-#: ../src/libs/import.c:107
-msgid "import"
-msgstr "ייבא"
 
 #: ../src/libs/import.c:129
 msgctxt "accel"
@@ -13578,10 +13881,6 @@ msgstr "הצג ציפויים"
 msgid "hinter"
 msgstr "רומז"
 
-#: ../src/libs/tools/lighttable.c:89 ../src/views/lighttable.c:249
-msgid "lighttable"
-msgstr "שולחן אור"
-
 #: ../src/libs/tools/lighttable.c:140
 msgid "zoomable light table"
 msgstr "שולחן אור ניתן לקירוב"
@@ -13685,10 +13984,6 @@ msgstr "הקלקה כפולה לאתחל ל `%f'"
 #: ../src/lua/preferences.c:800
 msgid "lua options"
 msgstr "אפשרויות lua"
-
-#: ../src/views/darkroom.c:107
-msgid "darkroom"
-msgstr "חדר חושך"
 
 #: ../src/views/darkroom.c:484
 msgid "gamut check"
@@ -14393,6 +14688,14 @@ msgstr "האצה"
 #: ../src/views/view.c:2403
 msgid "Action"
 msgstr "פעולה"
+
+#~ msgid ""
+#~ "the image will first be processed in full resolution, and downscaled at "
+#~ "the very end. this can result in better quality sometimes, but will "
+#~ "always be slower."
+#~ msgstr ""
+#~ "התמונה תעובד בתחילה ברזולוציה מלאה, ואז תוקטן ממש לקראת הסוף. לתוצאה "
+#~ "המתקבלת סיכוי לצאת באיכות גבוהה יותר, אך תמיד לאט יותר."
 
 #~ msgid ""
 #~ "activate blending: uniformly, with drawn mask, with parametric mask, or "
