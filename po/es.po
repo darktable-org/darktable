@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-02 23:13-0500\n"
-"PO-Revision-Date: 2019-10-03 00:02-0500\n"
+"POT-Creation-Date: 2019-10-03 20:09-0500\n"
+"PO-Revision-Date: 2019-10-03 20:11-0500\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1597,14 +1597,14 @@ msgstr ""
 #: ../src/imageio/format/pdf.c:669 ../src/imageio/format/pdf.c:694
 #: ../src/iop/clipping.c:2005 ../src/iop/filmicrgb.c:1436
 #: ../src/libs/export.c:628 ../src/libs/export.c:634
-#: ../src/libs/metadata_view.c:277
+#: ../src/libs/metadata_view.c:279
 msgid "no"
 msgstr "no"
 
 #: ../src/common/darktable.c:791 ../src/common/variables.c:378
 #: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
 #: ../src/iop/clipping.c:2006 ../src/libs/export.c:629 ../src/libs/export.c:635
-#: ../src/libs/metadata_view.c:277
+#: ../src/libs/metadata_view.c:279
 msgid "yes"
 msgstr "sí"
 
@@ -1736,7 +1736,7 @@ msgstr "Necesita copiar el historial de una imagen antes de pegarlo en otra"
 #: ../src/common/history.c:798 ../src/common/history.c:801
 #: ../src/common/history.c:817 ../src/common/styles.c:894
 #: ../src/common/styles.c:898 ../src/develop/blend_gui.c:2501
-#: ../src/develop/develop.c:1861 ../src/iop/ashift.c:4856
+#: ../src/develop/develop.c:1863 ../src/iop/ashift.c:4856
 #: ../src/libs/live_view.c:437
 msgid "on"
 msgstr "encendido"
@@ -1744,7 +1744,7 @@ msgstr "encendido"
 #: ../src/common/history.c:798 ../src/common/history.c:801
 #: ../src/common/history.c:817 ../src/common/styles.c:894
 #: ../src/common/styles.c:898 ../src/develop/blend_gui.c:2248
-#: ../src/develop/blend_gui.c:2498 ../src/develop/develop.c:1861
+#: ../src/develop/blend_gui.c:2498 ../src/develop/develop.c:1863
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
 #: ../src/iop/ashift.c:4855 ../src/iop/ashift.c:4861 ../src/iop/colorin.c:2107
 #: ../src/iop/demosaic.c:5147 ../src/iop/vignette.c:1150
@@ -2008,7 +2008,7 @@ msgid "below sea level"
 msgstr "bajo el nivel del mar"
 
 #: ../src/common/utility.c:508 ../src/iop/watermark.c:775
-#: ../src/libs/metadata_view.c:576
+#: ../src/libs/metadata_view.c:578
 msgid "m"
 msgstr "m"
 
@@ -2978,7 +2978,7 @@ msgstr "apagar temporalmente la mezcla de máscara. solo para módulo enfocado"
 msgid "mask refinement"
 msgstr "afinar máscara"
 
-#: ../src/develop/develop.c:1648
+#: ../src/develop/develop.c:1650
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: módulo '%s' versión no coincidente: %d != %d"
@@ -3095,7 +3095,7 @@ msgstr "`%s' no es una mesa de luz XMP"
 #. tags
 #: ../src/develop/lightroom.c:1568 ../src/gui/camera_import_dialog.c:465
 #: ../src/libs/export_metadata.c:358 ../src/libs/import.c:580
-#: ../src/libs/metadata_view.c:136
+#: ../src/libs/metadata_view.c:137
 msgid "tags"
 msgstr "etiquetas"
 
@@ -3673,7 +3673,7 @@ msgstr "lista de etiquetas separadas por coma"
 
 #: ../src/gui/camera_import_dialog.c:450 ../src/libs/collect.h:35
 #: ../src/libs/import.c:565 ../src/libs/metadata.c:349
-#: ../src/libs/metadata_view.c:127
+#: ../src/libs/metadata_view.c:128
 msgid "creator"
 msgstr "autor"
 
@@ -4092,7 +4092,7 @@ msgid "normal images"
 msgstr "imagenes normales"
 
 #: ../src/gui/preferences.c:82 ../src/gui/presets.c:57
-#: ../src/libs/metadata_view.c:293
+#: ../src/libs/metadata_view.c:295
 msgid "raw"
 msgstr "raw"
 
@@ -4139,25 +4139,25 @@ msgstr "módulo"
 
 #. exif
 #: ../src/gui/preferences.c:506 ../src/gui/preferences.c:1430
-#: ../src/gui/presets.c:431 ../src/libs/metadata_view.c:110
+#: ../src/gui/presets.c:431 ../src/libs/metadata_view.c:111
 msgid "model"
 msgstr "modelo"
 
 #: ../src/gui/preferences.c:510 ../src/gui/preferences.c:1438
-#: ../src/gui/presets.c:438 ../src/libs/metadata_view.c:111
+#: ../src/gui/presets.c:438 ../src/libs/metadata_view.c:112
 msgid "maker"
 msgstr "fabricante"
 
 #: ../src/gui/preferences.c:514 ../src/gui/preferences.c:1446
 #: ../src/gui/presets.c:445 ../src/libs/collect.h:36
-#: ../src/libs/metadata_view.c:112
+#: ../src/libs/metadata_view.c:113
 msgid "lens"
 msgstr "lente"
 
 #. iso
 #: ../src/gui/preferences.c:518 ../src/gui/preferences.c:1452
 #: ../src/gui/presets.c:451 ../src/libs/camera.c:588 ../src/libs/collect.h:37
-#: ../src/libs/metadata_view.c:117
+#: ../src/libs/metadata_view.c:118
 msgid "ISO"
 msgstr "ISO"
 
@@ -4165,21 +4165,21 @@ msgstr "ISO"
 #: ../src/gui/preferences.c:522 ../src/gui/preferences.c:1465
 #: ../src/gui/presets.c:464 ../src/iop/basicadj.c:680 ../src/iop/exposure.c:107
 #: ../src/iop/exposure.c:886 ../src/iop/relight.c:361 ../src/libs/collect.h:37
-#: ../src/libs/metadata_view.c:114
+#: ../src/libs/metadata_view.c:115
 msgid "exposure"
 msgstr "exposición"
 
 #. aperture
 #: ../src/gui/preferences.c:526 ../src/gui/preferences.c:1480
 #: ../src/gui/presets.c:479 ../src/libs/camera.c:575 ../src/libs/camera.c:577
-#: ../src/libs/collect.h:37 ../src/libs/metadata_view.c:113
+#: ../src/libs/collect.h:37 ../src/libs/metadata_view.c:114
 msgid "aperture"
 msgstr "apertura"
 
 #. focal length
 #: ../src/gui/preferences.c:530 ../src/gui/preferences.c:1495
 #: ../src/gui/presets.c:494 ../src/iop/ashift.c:4873 ../src/libs/camera.c:580
-#: ../src/libs/collect.h:36 ../src/libs/metadata_view.c:115
+#: ../src/libs/collect.h:36 ../src/libs/metadata_view.c:116
 msgid "focal length"
 msgstr "longitud focal"
 
@@ -4599,7 +4599,7 @@ msgstr "PDF"
 #: ../src/imageio/storage/flickr.c:530 ../src/imageio/storage/gallery.c:185
 #: ../src/imageio/storage/googlephoto.c:1233 ../src/imageio/storage/latex.c:185
 #: ../src/imageio/storage/piwigo.c:857 ../src/libs/collect.h:34
-#: ../src/libs/metadata.c:347 ../src/libs/metadata_view.c:126
+#: ../src/libs/metadata.c:347 ../src/libs/metadata_view.c:127
 #: ../src/libs/tools/filter.c:155
 msgid "title"
 msgstr "título"
@@ -8372,7 +8372,7 @@ msgstr ""
 
 #. geotagging
 #: ../src/iop/filmic.c:1761 ../src/iop/filmicrgb.c:1405
-#: ../src/libs/metadata_view.c:131
+#: ../src/libs/metadata_view.c:132
 msgid "latitude"
 msgstr "latitud"
 
@@ -9964,7 +9964,7 @@ msgstr "ancho"
 msgid "the fill-light in EV"
 msgstr "la luz de relleno en EV"
 
-#: ../src/iop/relight.c:367 ../src/libs/metadata_view.c:119
+#: ../src/iop/relight.c:367 ../src/libs/metadata_view.c:120
 #: ../src/libs/print_settings.c:1304
 msgid "width"
 msgstr "ancho"
@@ -11656,7 +11656,7 @@ msgstr "historial"
 msgid "aspect ratio"
 msgstr "proporción de aspecto"
 
-#: ../src/libs/collect.h:38 ../src/libs/metadata_view.c:101
+#: ../src/libs/collect.h:38 ../src/libs/metadata_view.c:102
 #: ../src/libs/tools/filter.c:147
 msgid "filename"
 msgstr "nombre"
@@ -11665,8 +11665,8 @@ msgstr "nombre"
 msgid "grouping"
 msgstr "agrupadas"
 
-#: ../src/libs/collect.h:39 ../src/libs/metadata_view.c:104
-#: ../src/libs/metadata_view.c:298
+#: ../src/libs/collect.h:39 ../src/libs/metadata_view.c:105
+#: ../src/libs/metadata_view.c:300
 msgid "local copy"
 msgstr "copia local"
 
@@ -12712,7 +12712,7 @@ msgstr "id"
 msgid "overlay another image over the live view"
 msgstr "superponer otra imagen sobre el live view"
 
-#: ../src/libs/live_view.c:392 ../src/libs/metadata_view.c:99
+#: ../src/libs/live_view.c:392 ../src/libs/metadata_view.c:100
 msgid "image id"
 msgstr "imagen"
 
@@ -12956,65 +12956,69 @@ msgid "all rights reserved."
 msgstr "todos los derechos reservados."
 
 #. internal
-#: ../src/libs/metadata_view.c:98
+#: ../src/libs/metadata_view.c:99
 msgid "filmroll"
 msgstr "sesión"
 
 # Cámbio el orden de las palagras "grupo id" por la siguiente "id. grupo", ya que la primera proviene de "group id", en Español se pondría en el segundo caso, también le pongo "." a la abreviatura "id" para no confundirla con la acción de ir a un lugar
-#: ../src/libs/metadata_view.c:100
+#: ../src/libs/metadata_view.c:101
 msgid "group id"
 msgstr "id. grupo"
 
-#: ../src/libs/metadata_view.c:102
+#: ../src/libs/metadata_view.c:103
 msgid "version"
 msgstr "versión"
 
 #. DT_COLLECTION_SORT_GROUP
-#: ../src/libs/metadata_view.c:103 ../src/libs/tools/filter.c:153
+#: ../src/libs/metadata_view.c:104 ../src/libs/tools/filter.c:153
 msgid "full path"
 msgstr "ruta completa"
 
-#: ../src/libs/metadata_view.c:106
+#: ../src/libs/metadata_view.c:107
 msgid "flags"
 msgstr "banderas"
 
-#: ../src/libs/metadata_view.c:116
+#: ../src/libs/metadata_view.c:117
 msgid "focus distance"
 msgstr "distancia focal"
 
-#: ../src/libs/metadata_view.c:118
+#: ../src/libs/metadata_view.c:119
 msgid "datetime"
 msgstr "fecha/hora"
 
-#: ../src/libs/metadata_view.c:120 ../src/libs/print_settings.c:1308
+#: ../src/libs/metadata_view.c:121 ../src/libs/print_settings.c:1308
 msgid "height"
 msgstr "alto"
 
-#: ../src/libs/metadata_view.c:122
+#: ../src/libs/metadata_view.c:123
 msgid "export width"
 msgstr "ancho de exportación"
 
-#: ../src/libs/metadata_view.c:123
+#: ../src/libs/metadata_view.c:124
 msgid "export height"
 msgstr "altura de exportación"
 
-#: ../src/libs/metadata_view.c:128
+#: ../src/libs/metadata_view.c:129
 msgid "copyright"
 msgstr "derechos"
 
-#: ../src/libs/metadata_view.c:132
+#: ../src/libs/metadata_view.c:133
 msgid "longitude"
 msgstr "longitud"
 
-#: ../src/libs/metadata_view.c:133
+#: ../src/libs/metadata_view.c:134
 msgid "elevation"
 msgstr "elevación"
 
-#: ../src/libs/metadata_view.c:147
+#: ../src/libs/metadata_view.c:138
+msgid "categories"
+msgstr "categorías"
+
+#: ../src/libs/metadata_view.c:149
 msgid "image information"
 msgstr "información de la imagen"
 
-#: ../src/libs/metadata_view.c:259
+#: ../src/libs/metadata_view.c:261
 #, c-format
 msgid ""
 "double click to jump to film roll\n"
@@ -13023,103 +13027,103 @@ msgstr ""
 "doble clic para saltar al carrete\n"
 "%s"
 
-#: ../src/libs/metadata_view.c:290
+#: ../src/libs/metadata_view.c:292
 msgid "unused"
 msgstr "sin usar"
 
-#: ../src/libs/metadata_view.c:291
+#: ../src/libs/metadata_view.c:293
 msgid "unused/deprecated"
 msgstr "sin usar/obsoleto"
 
-#: ../src/libs/metadata_view.c:292
+#: ../src/libs/metadata_view.c:294
 msgid "ldr"
 msgstr "ldr"
 
-#: ../src/libs/metadata_view.c:294
+#: ../src/libs/metadata_view.c:296
 msgid "hdr"
 msgstr "hdr"
 
-#: ../src/libs/metadata_view.c:295
+#: ../src/libs/metadata_view.c:297
 msgid "marked for deletion"
 msgstr "marcado para ser eliminado"
 
-#: ../src/libs/metadata_view.c:296
+#: ../src/libs/metadata_view.c:298
 msgid "auto-applying presets applied"
 msgstr "ajustes automáticos establecidos"
 
-#: ../src/libs/metadata_view.c:297
+#: ../src/libs/metadata_view.c:299
 msgid "legacy flag. set for all new images"
 msgstr "banderas (antiguo). asignadas a todas las imágenes nuevas"
 
-#: ../src/libs/metadata_view.c:299
+#: ../src/libs/metadata_view.c:301
 msgid "has .txt"
 msgstr "tiene .txt"
 
-#: ../src/libs/metadata_view.c:300
+#: ../src/libs/metadata_view.c:302
 msgid "has .wav"
 msgstr "tiene .wav"
 
-#: ../src/libs/metadata_view.c:312
+#: ../src/libs/metadata_view.c:314
 msgid "image rejected"
 msgstr "imagen rechazada"
 
-#: ../src/libs/metadata_view.c:317
+#: ../src/libs/metadata_view.c:319
 #, c-format
 msgid "image has %d star"
 msgid_plural "image has %d stars"
 msgstr[0] "la imagen tiene %d estrella"
 msgstr[1] "la imagen tiene %d estrellas"
 
-#: ../src/libs/metadata_view.c:397 ../src/libs/snapshots.c:354
+#: ../src/libs/metadata_view.c:399 ../src/libs/snapshots.c:354
 msgid "unknown"
 msgstr "desconocido"
 
-#: ../src/libs/metadata_view.c:398
+#: ../src/libs/metadata_view.c:400
 msgid "tiff"
 msgstr "tiff"
 
-#: ../src/libs/metadata_view.c:399
+#: ../src/libs/metadata_view.c:401
 msgid "png"
 msgstr "png"
 
-#: ../src/libs/metadata_view.c:400
+#: ../src/libs/metadata_view.c:402
 msgid "j2k"
 msgstr "j2k"
 
-#: ../src/libs/metadata_view.c:401
+#: ../src/libs/metadata_view.c:403
 msgid "jpeg"
 msgstr "jpeg"
 
-#: ../src/libs/metadata_view.c:402
+#: ../src/libs/metadata_view.c:404
 msgid "exr"
 msgstr "exr"
 
-#: ../src/libs/metadata_view.c:403
+#: ../src/libs/metadata_view.c:405
 msgid "rgbe"
 msgstr "rgbe"
 
-#: ../src/libs/metadata_view.c:404
+#: ../src/libs/metadata_view.c:406
 msgid "pfm"
 msgstr "pfm"
 
-#: ../src/libs/metadata_view.c:405
+#: ../src/libs/metadata_view.c:407
 msgid "GraphicsMagick"
 msgstr "GraphicsMagick"
 
-#: ../src/libs/metadata_view.c:406
+#: ../src/libs/metadata_view.c:408
 msgid "rawspeed"
 msgstr "velocidad de disparo"
 
-#: ../src/libs/metadata_view.c:407
+#: ../src/libs/metadata_view.c:409
 msgid "netpnm"
 msgstr "netpnm"
 
-#: ../src/libs/metadata_view.c:412
+#: ../src/libs/metadata_view.c:414
 #, c-format
 msgid "loader: %s"
 msgstr "cargando: %s"
 
-#: ../src/libs/metadata_view.c:678
+#: ../src/libs/metadata_view.c:704
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "saltar al carrete"
