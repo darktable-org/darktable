@@ -31,7 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DT_IOP_ORDER_VERSION 4
+#define DT_IOP_ORDER_VERSION 5
 
 #define DT_IOP_ORDER_INFO FALSE  // used while debugging
 #define DT_ONTHEFLY_INFO FALSE   // while debugging on-the-fly conversion
@@ -188,6 +188,131 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
 
     if(!dont_move) _rewrite_order(*_iop_order_list);
     new_version = 4;
+  }
+  else if(old_version == 4)
+  {
+    if(!dont_move)
+    {
+      // The following is a flattened list from original code. The goal is to have a clean starting point for
+      // future modifications.
+      const dt_iop_order_entry_t iop_v5[] = {
+        {  1.0, "rawprepare"},
+        {  2.0, "invert"},
+        {  3.0, "temperature"},
+        {  4.0, "highlights"},
+        {  5.0, "cacorrect"},
+        {  6.0, "hotpixels"},
+        {  7.0, "rawdenoise"},
+        {  8.0, "demosaic"},
+        {  9.0, "denoiseprofile"},
+        { 10.0, "bilateral"},
+        { 11.0, "rotatepixels"},
+        { 12.0, "scalepixels"},
+        { 13.0, "lens"},
+        { 14.0, "hazeremoval"},
+        { 15.0, "ashift"},
+        { 16.0, "flip"},
+        { 17.0, "clipping"},
+        { 18.0, "liquify"},
+        { 19.0, "spots"},
+        { 20.0, "retouch"},
+        { 21.0, "exposure"},
+        { 22.0, "mask_manager"},
+        { 23.0, "tonemap"},
+        { 24.0, "toneequal"},
+        { 25.0, "graduatednd"},
+        { 26.0, "profile_gamma"},
+        { 27.0, "equalizer"},
+        { 28.0, "colorin"},
+
+        { 29.0, "nlmeans"},         // signal processing (denoising)
+                                    //    -> needs a signal as scene-referred as possible (even if it works in Lab)
+        { 30.0, "colorchecker"},    // calibration to "neutral" exchange colour space
+                                    //    -> improve colour calibration of colorin and reproductibility
+                                    //    of further edits (styles etc.)
+        { 31.0, "defringe"},        // desaturate fringes in Lab, so needs properly calibrated colours
+                                    //    in order for chromaticity to be meaningful,
+        { 32.0, "atrous"},          // frequential operation, needs a signal as scene-referred as possible to avoid halos
+        { 33.0, "lowpass"},         // same
+        { 34.0, "highpass"},        // same
+        { 35.0, "sharpen"},         // same, worst than atrous in same use-case, less control overall
+        { 36.0, "lut3d"},           // apply a creative style or film emulation, possibly non-linear,
+                                    //    so better move it after frequential ops that need L2 Hilbert spaces
+                                    //    of square summable functions
+        { 37.0, "colortransfer"},   // probably better if source and destination colours are neutralized in the same
+                                    //    colour exchange space, hence after colorin and colorcheckr,
+                                    //    but apply after frequential ops in case it does non-linear witchcraft,
+                                    //    just to be safe
+        { 59.0, "colormapping"},    // same
+        { 38.0, "channelmixer"},    // does exactly the same thing as colorin, aka RGB to RGB matrix conversion,
+                                    //    but coefs are user-defined instead of calibrated and read from ICC profile.
+                                    //    Really versatile yet under-used module, doing linear ops,
+                                    //    very good in scene-referred workflow
+        { 39.0, "basicadj"},        // module mixing view/model/control at once, usage should be discouraged
+        { 40.0, "colorbalance"},    // scene-referred color manipulation
+        { 41.0, "rgbcurve"},        // really versatile way to edit colour in scene-referred and display-referred workflow
+        { 42.0, "rgblevels"},       // same
+        { 43.0, "basecurve"},       // conversion from scene-referred to display referred, reverse-engineered
+                                    //    on camera JPEG default look
+        { 44.0, "filmic"},          // same, but different (parametric) approach
+        { 45.0, "filmicrgb"},       // same, upgraded
+        { 46.0, "colisa"},          // edit contrast while damaging colour
+        { 47.0, "tonecurve"},       // same
+        { 48.0, "levels"},          // same
+        { 49.0, "shadhi"},          // same
+        { 50.0, "zonesystem"},      // same
+        { 51.0, "globaltonemap"},   // same
+        { 52.0, "relight"},         // flatten local contrast while pretending do add lightness
+        { 53.0, "bilat"},           // improve clarity/local contrast after all the bad things we have done
+                                    //    to it with tonemapping
+        { 54.0, "colorcorrection"}, // now that the colours have been damaged by contrast manipulations,
+                                    // try to recover them - global adjustment of white balance for shadows and highlights
+        { 55.0, "colorcontrast"},   // adjust chrominance globally
+        { 56.0, "velvia"},          // same
+        { 57.0, "vibrance"},        // same, but more subtle
+        { 58.0, "colorzones"},      // same, but locally
+        { 60.0, "bloom"},           // creative module
+        { 61.0, "colorize"},        // creative module
+        { 62.0, "lowlight"},        // creative module
+        { 63.0, "monochrome"},      // creative module
+        { 64.0, "grain"},           // creative module
+        { 65.0, "soften"},          // creative module
+        { 66.0, "splittoning"},     // creative module
+        { 67.0, "vignette"},        // creative module
+        { 68.0, "colorreconstruct"},// try to salvage blown areas before ICC intents in LittleCMS2 do things with them.
+
+        { 69.0, "colorout"},
+        { 70.0, "clahe"},
+        { 71.0, "finalscale"},
+        { 72.0, "overexposed"},
+        { 73.0, "rawoverexposed"},
+        { 74.0, "dither"},
+        { 75.0, "borders"},
+        { 76.0, "watermark"},
+        { 77.0, "gamma"},
+      };
+
+      if(g_list_length(*_iop_order_list) != 77)
+      {
+        fprintf(stderr, "_ioppr_legacy_iop_order_step list should have 77 entries found %d\n",
+                g_list_length(*_iop_order_list));
+        return 4;
+      }
+
+      // note that we cannot delete the *_iop_order_list and recreate it
+
+      GList *l = *_iop_order_list;
+      int i = 0;
+      while(l)
+      {
+        dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+        entry->iop_order = iop_v5[i].iop_order;
+        g_strlcpy(entry->operation, iop_v5[i].operation, sizeof(entry->operation));
+        i++;
+        l = g_list_next(l);
+      }
+    }
+    new_version = 5;
   }
   // each new version MUST be written as the following (_rewrite_order IS VERY important)
 
@@ -1413,7 +1538,7 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
 }
 
 // how is on-the-fly conversion done
-// Currently a hack to support v3 history to later
+// Currently a hack to support v3/v4 history to later
 // returns the history version of imgid
 int dt_ioppr_convert_onthefly(const int imgid)
 {
@@ -1433,11 +1558,11 @@ int dt_ioppr_convert_onthefly(const int imgid)
   // already latest
   if (my_iop_order_version == DT_IOP_ORDER_VERSION) return my_iop_order_version;
 
-  // ??? we handle only iop-version 3 (which has been broken) and move
-  // it to new v4.  this routine will be reused later when dt will
+  // ??? we handle only iop-version 3/4 (which have been broken) and move
+  // it to new v5.  this routine will be reused later when dt will
   // propose in GUI a possibility to migrate old edits to a new
   // version of iop-order.
-  if (my_iop_order_version != 3) return my_iop_order_version; // this keeps other edit as they are
+  if (my_iop_order_version < 3) return my_iop_order_version; // this keeps other edit as they are
 
   // ************** from here on we deal only with the v3 history problems; although *******************************
 
