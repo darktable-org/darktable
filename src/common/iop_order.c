@@ -1567,6 +1567,11 @@ int dt_ioppr_convert_onthefly(const int imgid)
   }
   sqlite3_finalize(stmt);
 
+  // now let's write the corresponding sidecar file which is also
+  // broken. this is needed when the lighttable refresh a thumb and
+  // the conversion happens.
+  dt_image_write_sidecar_file(imgid);
+
   return my_iop_order_version;
 }
 
