@@ -75,12 +75,17 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
   {
     _ioppr_move_iop_after(_iop_order_list, "colorin", "demosaic", dont_move);
     _ioppr_move_iop_before(_iop_order_list, "colorout", "clahe", dont_move);
+
+    // EVERY NEW MODULE MUST BE ADDED HERE
+    // there should be no _ioppr_insert_iop[before|after] in any other places
     _ioppr_insert_iop_after(_iop_order_list, history_list, "basicadj", "colorin", dont_move);
     _ioppr_insert_iop_after(_iop_order_list, history_list, "rgbcurve", "levels", dont_move);
     _ioppr_insert_iop_after(_iop_order_list, history_list, "lut3d", "grain", dont_move);
     _ioppr_insert_iop_before(_iop_order_list, history_list, "rgblevels", "rgbcurve", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "dither", "borders", dont_move);
     _ioppr_insert_iop_after(_iop_order_list, history_list, "toneequal", "clipping", dont_move);
+    _ioppr_insert_iop_after(_iop_order_list, history_list, "filmicrgb", "filmic", dont_move);
+
+    _ioppr_move_iop_before(_iop_order_list, "dither", "borders", dont_move);
 
     new_version = 2;
   }
@@ -173,9 +178,6 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     _ioppr_move_iop_before(_iop_order_list, "vignette", "colorreconstruct", dont_move);
 
     _ioppr_move_iop_before(_iop_order_list, "dither", "borders", dont_move);
-
-    // new modules here
-    _ioppr_insert_iop_after(_iop_order_list, history_list, "filmicrgb", "filmic", dont_move);
 
     new_version = 3;
   }
@@ -1537,34 +1539,13 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
   if(fences) g_list_free(fences);
 }
 
-// how is on-the-fly conversion done
-// Currently a hack to support v3/v4 history to later
-// returns the history version of imgid
-int dt_ioppr_convert_onthefly(const int imgid)
+// migrate the given image to another iop_order version (new_iop_order_version)
+// note that this is actually a non exported routine but it will
+// be when dt GUI will provide a way to migrate to a new iop_order version.
+static int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order_version, const int new_iop_order_version)
 {
-  int my_iop_order_version = 0;
-
-  // check current iop order version
+  int _iop_order_version = new_iop_order_version;
   sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order_version FROM main.images WHERE id = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    my_iop_order_version = sqlite3_column_int(stmt, 0);
-  }
-  sqlite3_finalize(stmt);
-
-  // already latest
-  if (my_iop_order_version == DT_IOP_ORDER_VERSION) return my_iop_order_version;
-
-  // ??? we handle only iop-version 3/4 (which have been broken) and move
-  // it to new v5.  this routine will be reused later when dt will
-  // propose in GUI a possibility to migrate old edits to a new
-  // version of iop-order.
-  if (my_iop_order_version < 3) return my_iop_order_version; // this keeps other edit as they are
-
-  // ************** from here on we deal only with the v3 history problems; although *******************************
 
   // As we have to calculate within the images history data we will create a struct array holding all relevant data
   // for housekeeping.
@@ -1580,11 +1561,17 @@ int dt_ioppr_convert_onthefly(const int imgid)
 
   if (history_size <1)
   {
-    fprintf(stderr,"\n[dt_ioppr_convert_onthefly] for image %i has no valid history\n",imgid);
-    return my_iop_order_version;
+    fprintf(stderr,"\n[dt_ioppr_migrate_iop_order] for image %i has no valid history\n", imgid);
+    return current_iop_order_version;
   }
 
-  GList *current_iop_list = dt_ioppr_get_iop_order_list(NULL);
+  GList *current_iop_list = dt_ioppr_get_iop_order_list(&_iop_order_version);
+
+  if(_iop_order_version != new_iop_order_version)
+  {
+    fprintf(stderr,"\n[dt_ioppr_migrate_iop_order] cannot get new iop-order list for image %i\n", imgid);
+    return current_iop_order_version;
+  }
 
   // get the number of known iops
   const int valid_iops = g_list_length (current_iop_list);
@@ -1645,7 +1632,7 @@ int dt_ioppr_convert_onthefly(const int imgid)
 
   // print complete history information
   fprintf(stderr,"\n\n ***** On-the-fly history V[%i]->V[%i], imageid: %i ****************",
-          my_iop_order_version, DT_IOP_ORDER_VERSION,imgid);
+          current_iop_order_version, _iop_order_version, imgid);
   for (int i=0;i<history_size;i++)
   {
     struct dt_onthefly_history_t *this = &myhistory[i];
@@ -1674,7 +1661,7 @@ int dt_ioppr_convert_onthefly(const int imgid)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE main.images SET iop_order_version = ?2 WHERE id = ?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, DT_IOP_ORDER_VERSION);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, _iop_order_version);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
@@ -1688,7 +1675,7 @@ int dt_ioppr_convert_onthefly(const int imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    my_iop_order_version = sqlite3_column_int(stmt, 0);
+    _iop_order_version = sqlite3_column_int(stmt, 0);
   }
   sqlite3_finalize(stmt);
 
@@ -1696,6 +1683,46 @@ int dt_ioppr_convert_onthefly(const int imgid)
   // broken. this is needed when the lighttable refresh a thumb and
   // the conversion happens.
   dt_image_write_sidecar_file(imgid);
+
+  return _iop_order_version;
+}
+
+// how is on-the-fly conversion done
+// Currently a hack to support v3/v4 history to later
+// returns the history version of imgid
+int dt_ioppr_convert_onthefly(const int imgid)
+{
+  int my_iop_order_version = 0;
+
+  // check current iop order version
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order_version FROM main.images WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    my_iop_order_version = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+
+  // already latest
+  if (my_iop_order_version == DT_IOP_ORDER_VERSION)
+  {
+    return my_iop_order_version;
+  }
+  else if (my_iop_order_version == 1)
+  {
+    // if an original image edited before iop-order was introduced we migrate it to v2
+    return _ioppr_migrate_iop_order(imgid, my_iop_order_version, 2);
+  }
+  else if (my_iop_order_version == 3 || my_iop_order_version == 4)
+  {
+    // ??? we handle only iop-version 3/4 (which have been broken) and move
+    // it to latest version whatever the latest version is. As v3 or v4 are quite
+    // broken it makes no difference to whatever order we move to. At the time if this
+    // implementation the last/fixed version is v5.
+    return _ioppr_migrate_iop_order(imgid, my_iop_order_version, DT_IOP_ORDER_VERSION);
+  }
 
   return my_iop_order_version;
 }
