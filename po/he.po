@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable hebrew translation\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-04 16:38+0300\n"
-"PO-Revision-Date: 2019-10-04 18:01+0300\n"
-"Last-Translator: Shlomi Alon-Braitbart <shlomi@librem.one>\n"
+"POT-Creation-Date: 2019-10-05 23:38+0300\n"
+"PO-Revision-Date: 2019-10-06 00:24+0300\n"
+"Last-Translator: Shlomi Alon-Braitbart <sbraitbart@gmail.com>\n"
 "Language-Team: \n"
 "Language: he_IL\n"
 "MIME-Version: 1.0\n"
@@ -350,9 +350,8 @@ msgstr ""
 "מגדיר את הצורה בה מוצגים ערוצי הצבע כאשר מופעלים בתכונת המסיכה הפרמטרית."
 
 #: ../build/src/preferences_gen.h:2642
-#, fuzzy
 msgid "pattern for the image infos line"
-msgstr "הדפסה מסוגננת של מיקום הצילום"
+msgstr "תבנית לשורת קו האנפורמציה של התמונה"
 
 #: ../build/src/preferences_gen.h:2658
 msgid "see manual to know all the tags you can use."
@@ -8257,6 +8256,9 @@ msgid ""
 "specifically at extreme luminances.\n"
 "decrease if shadows and/or highlights are over-saturated."
 msgstr ""
+"מוריד רוויה בפלט המודול\n"
+"ספציפית בלומיננס קיצוני.\n"
+"הפחת אם הצללים ו/או הפרטים הבהירים רווים מדי."
 
 #: ../src/iop/filmic.c:1804 ../src/libs/export.c:667
 #: ../src/libs/print_settings.c:1238 ../src/libs/print_settings.c:1451
@@ -8279,7 +8281,7 @@ msgstr "ממוטב"
 
 #: ../src/iop/filmic.c:1810
 msgid "change this method if you see reversed contrast or faded blacks"
-msgstr ""
+msgstr "שנה שיטה זו אם גורם לקונטרסט הפוך או שחורים דהויים"
 
 #. Preserve color
 #: ../src/iop/filmic.c:1814
@@ -8292,6 +8294,9 @@ msgid ""
 "may reinforce chromatic aberrations.\n"
 "you need to manually tune the saturation when using this mode."
 msgstr ""
+"וודא שהצבעים המקוריים נשמרים.\n"
+"עשוי להחמיר אברציות כרומטיות.\n"
+"יש לכוונן רוויה ידנית כאשר משתמשים במודול זה."
 
 #: ../src/iop/filmic.c:1826
 msgid "destination/display"
@@ -8306,6 +8311,8 @@ msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
 msgstr ""
+"לומיננס של שחור מוחלט בפלט, צריך להיות 0%\n"
+"אלא אם נדרש מבט דהוי"
 
 #: ../src/iop/filmic.c:1851 ../src/iop/filmicrgb.c:1457
 msgid "target middle grey"
@@ -8316,6 +8323,8 @@ msgid ""
 "midde grey value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
 msgstr ""
+"ערך אפור בינוני עבור תצוגת המטרה או מרחב הצבע.\n"
+"לעולם אל תשנה ערך זה אלא אם אתה יודע מה אתה עושה."
 
 #: ../src/iop/filmic.c:1860 ../src/iop/filmicrgb.c:1466
 msgid "target white luminance"
@@ -8326,6 +8335,8 @@ msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
 msgstr ""
+"לומיננס של לבן מוחלט לפלט, צריך להיות 100%\n"
+"אלא אם נדרש מראה דהוי"
 
 #: ../src/iop/filmic.c:1869
 msgid "target gamma"
@@ -8337,6 +8348,9 @@ msgid ""
 "of the display or color space.\n"
 "you should never touch that unless you know what you are doing."
 msgstr ""
+"חזקה או גאמה לפונקציית התמסורת\n"
+"של המסך או מרחב הצבע.\n"
+"לעולם אל תשנה ערך זה אלא אם אתה יודע מה אתה עושה."
 
 #: ../src/iop/filmicrgb.c:193
 msgid "filmic rgb"
@@ -8375,7 +8389,7 @@ msgstr "חשיפת שחור"
 #: ../src/iop/filmicrgb.c:271
 msgctxt "accel"
 msgid "middle grey luminance"
-msgstr ""
+msgstr "לומיננס של אפור בינוני"
 
 #: ../src/iop/filmicrgb.c:272
 msgctxt "accel"
@@ -8403,6 +8417,9 @@ msgid ""
 "the bright curve is the filmic tone mapping curve\n"
 "the dark curve is the desaturation curve\n"
 msgstr ""
+"גרף לא ניתן לעריכה, השתמש בפרמטרים למטה לקבוע את הצמתים\n"
+"העקום הבהיר הוא עקום המיפוי לטון הקולנועי\n"
+"העקום הכהה הוא עקום הפחתת הרוויה\n"
 
 #: ../src/iop/filmicrgb.c:1319
 msgid "scene"
@@ -9447,6 +9464,9 @@ msgid ""
 "CAUTION: lut folder must be set in preferences/core options/miscellaneous "
 "before choosing the lut file"
 msgstr ""
+"הנתיב לקובץ (יחסית לתיקיית ה lut) נשמר עם התמונה (ולא נתוני ה lut עצמם)\n"
+"זהירות: תיקיית ה lut חייבת להיות קבועה ב העדפות/אפשרויות ליבה/שונות לפני "
+"בחירת קובץ ה lut"
 
 #: ../src/iop/lut3d.c:1116
 msgid "application color space"
@@ -9601,13 +9621,15 @@ msgstr "לומה לאפור בינוני"
 
 #: ../src/iop/profile_gamma.c:899
 msgid "adjust to match the average luma of the subject"
-msgstr ""
+msgstr "כוונן להתאמת הלומה הממוצעת לנושא הצילום"
 
 #: ../src/iop/profile_gamma.c:911
 msgid ""
 "number of stops between middle grey and pure black\n"
 "this is a reading a posemeter would give you on the scene"
 msgstr ""
+"מספר הסטופים בין אפור בינוני לשחור מוחלט\n"
+"זו קריאה שמד אור היה נותן בשטח"
 
 #: ../src/iop/profile_gamma.c:920
 msgid "dynamic range"
@@ -9618,6 +9640,8 @@ msgid ""
 "number of stops between pure black and pure white\n"
 "this is a reading a posemeter would give you on the scene"
 msgstr ""
+"מספר הסטופים בין שחור מוחלט ללבן מוחלט\n"
+"זו קריאה שמד אור היה נותן בשטח"
 
 #. Security factor
 #: ../src/iop/profile_gamma.c:930
@@ -9629,10 +9653,12 @@ msgid ""
 "enlarge or shrink the computed dynamic range\n"
 "this is useful when noise perturbates the measurements"
 msgstr ""
+"הרחב או כווץ את התחום הדינאמי המחושב\n"
+"זה מועיל כאשר רעש מפריע למדידה"
 
 #: ../src/iop/profile_gamma.c:945
 msgid "make an optimization with some guessing"
-msgstr ""
+msgstr "בצע אופטימיזציה עם ניחוש מסוים"
 
 #: ../src/iop/rawdenoise.c:123
 msgid "raw denoise"
@@ -9772,7 +9798,7 @@ msgstr "רטש"
 
 #: ../src/iop/retouch.c:1931
 msgid "cannot display scales when the blending mask is displayed"
-msgstr ""
+msgstr "לא ניתן להציג סקאלות כאשר מסיכת ערבוב מוצגת"
 
 #: ../src/iop/retouch.c:2649
 msgid "# shapes:"
@@ -9783,6 +9809,8 @@ msgid ""
 "to add a shape select an algorithm and a shape type and click on the image.\n"
 "shapes are added to the current scale"
 msgstr ""
+"להוספת צורה בחר אלגוריתם וסוג צורה והקלק על התמונה.\n"
+"צורות נוספות לסקאלה הנוכחית"
 
 #: ../src/iop/retouch.c:2661
 #, fuzzy
@@ -9799,15 +9827,15 @@ msgstr "מפעיל כלי מילוי"
 
 #: ../src/iop/retouch.c:2708
 msgid "activates blur tool"
-msgstr ""
+msgstr "מפעיל כלי טשטוש"
 
 #: ../src/iop/retouch.c:2715
 msgid "activates healing tool"
-msgstr ""
+msgstr "מפעיל כלי החלמה"
 
 #: ../src/iop/retouch.c:2722
 msgid "activates cloning tool"
-msgstr ""
+msgstr "מפעיל כלי שיבוט"
 
 #: ../src/iop/retouch.c:2736
 msgid "# scales:"
@@ -9828,6 +9856,10 @@ msgid ""
 "red box indicates the current scale\n"
 "green line indicates that the scale has shapes on it"
 msgstr ""
+"סליידר עליון מכוונן את תחילת סקאלת המיזוג\n"
+"סליידר תחתון מכוונן את מספר הסקאלות\n"
+"ריבוע אדום מציין את הסקאלה הנוכחית\n"
+"קו ירוק מציין שיש צורות על הסקאלה"
 
 #: ../src/iop/retouch.c:2789
 msgid "display masks"
@@ -9835,7 +9867,7 @@ msgstr "הצג מסיכות"
 
 #: ../src/iop/retouch.c:2795
 msgid "temporarily switch off shapes"
-msgstr ""
+msgstr "כבה צורות באופן זמני"
 
 #: ../src/iop/retouch.c:2802
 msgid "display wavelet scale"
@@ -9843,11 +9875,11 @@ msgstr "הצג סקאלת wavelet"
 
 #: ../src/iop/retouch.c:2810
 msgid "cut shapes from current scale"
-msgstr ""
+msgstr "חתוך צורות מהסקאלה הנוכחית"
 
 #: ../src/iop/retouch.c:2816
 msgid "paste cut shapes to current scale"
-msgstr ""
+msgstr "הדבק צורות חתוכות לסקאלה הנוכחית"
 
 #: ../src/iop/retouch.c:2840
 #, fuzzy
@@ -9872,6 +9904,8 @@ msgid ""
 "click on a shape to select it,\n"
 "to unselect click on an empty space"
 msgstr ""
+"הקלק על צורה לבחירתה,\n"
+"לביטול בחירה הקלק על אזור ריק"
 
 #: ../src/iop/retouch.c:2889
 msgid "fill mode"
@@ -9887,7 +9921,7 @@ msgstr "צבע"
 
 #: ../src/iop/retouch.c:2892
 msgid "erase the detail or fills with chosen color"
-msgstr ""
+msgstr "מוחק את הפרט או ממלא עם הצבע הנבחר"
 
 #: ../src/iop/retouch.c:2904 ../src/iop/retouch.c:2905
 msgid "select fill color"
@@ -9903,7 +9937,7 @@ msgstr "צבע מילוי: "
 
 #: ../src/iop/retouch.c:2920
 msgid "adjusts color brightness to fine-tune it. works with erase as well"
-msgstr ""
+msgstr "כוונון עדין של בהירות צבע. עובד גם עם מחק"
 
 #: ../src/iop/retouch.c:2934
 msgid "blur type"
@@ -9978,7 +10012,7 @@ msgstr "הוספה רציפה של אליפסה"
 #: ../src/iop/retouch.c:3340
 msgctxt "accel"
 msgid "continuous add path"
-msgstr ""
+msgstr "הוספה רציפה של נתיב"
 
 #: ../src/iop/retouch.c:3341
 msgctxt "accel"
@@ -9988,7 +10022,7 @@ msgstr "הוספה רציפה של מברשת"
 #: ../src/iop/retouch.c:4425 ../src/iop/retouch.c:5281
 #, c-format
 msgid "max scale is %i for this image size"
-msgstr ""
+msgstr "סקאלה מקסימלית לגודל תמונה זה %i"
 
 #: ../src/iop/rgbcurve.c:126
 msgid "rgb curve"
@@ -10001,7 +10035,7 @@ msgstr "דחיסת ניגודיות"
 
 #: ../src/iop/rgbcurve.c:216 ../src/iop/tonecurve.c:552
 msgid "gamma 1.0 (linear)"
-msgstr ""
+msgstr "גאמה 1.0 (לינארי)"
 
 #: ../src/iop/rgbcurve.c:225 ../src/iop/tonecurve.c:561
 msgid "contrast - med (linear)"
@@ -10013,11 +10047,11 @@ msgstr "קונטרסט - גבוהה (לינארי)"
 
 #: ../src/iop/rgbcurve.c:246 ../src/iop/tonecurve.c:580
 msgid "contrast - med (gamma 2.2)"
-msgstr ""
+msgstr "קונטרסט - בינוני (גאמה 2.2)"
 
 #: ../src/iop/rgbcurve.c:258 ../src/iop/tonecurve.c:590
 msgid "contrast - high (gamma 2.2)"
-msgstr ""
+msgstr "קונטרסט - גבוהה (גאמה 2.2)"
 
 #: ../src/iop/rgbcurve.c:269 ../src/iop/tonecurve.c:601
 msgid "gamma 2.0"
@@ -10033,7 +10067,7 @@ msgstr "לוגריתם (בסיס 2)"
 
 #: ../src/iop/rgbcurve.c:281 ../src/iop/tonecurve.c:613
 msgid "exponential (base 2)"
-msgstr ""
+msgstr "מעריכי (בסיס 2)"
 
 #: ../src/iop/rgbcurve.c:1479 ../src/iop/rgblevels.c:1011
 #: ../src/iop/tonecurve.c:1312
@@ -10046,7 +10080,7 @@ msgstr "RGB, ערוצים בלתי תלויים"
 
 #: ../src/iop/rgbcurve.c:1482 ../src/iop/rgblevels.c:1014
 msgid "choose between linked and independent channels."
-msgstr ""
+msgstr "בחר בין ערוצים קשורים או בלתי תלויים."
 
 #: ../src/iop/rgbcurve.c:1489 ../src/iop/rgblevels.c:1021
 msgid "  R  "
@@ -10081,7 +10115,7 @@ msgstr "בחר צבע לממשק מהתמונה"
 
 #: ../src/iop/rgbcurve.c:1576 ../src/iop/rgbcurve.c:1578
 msgid "compensate middle grey"
-msgstr ""
+msgstr "פצה אפור בינוני"
 
 #: ../src/iop/rgblevels.c:108
 #, fuzzy
@@ -10094,6 +10128,9 @@ msgid ""
 "click and drag to draw the area\n"
 "right click to cancel"
 msgstr ""
+"ישם רמות אוטומטיות על אזור מוגדר על ידי המשתמש\n"
+"הקלק וגרור לציור האזור\n"
+"קליק ימני לביטול"
 
 #: ../src/iop/rotatepixels.c:76
 msgctxt "modulename"
@@ -10468,7 +10505,7 @@ msgstr "ערוץ-L ב Lab"
 
 #: ../src/iop/tonecurve.c:1310
 msgid "Lab, independent channels"
-msgstr ""
+msgstr "Lab, ערוצים בלתי תלוים"
 
 #: ../src/iop/tonecurve.c:1311
 #, fuzzy
@@ -10563,12 +10600,12 @@ msgstr "לבן"
 #: ../src/iop/toneequal.c:318
 msgctxt "accel"
 msgid "speculars"
-msgstr ""
+msgstr "מבריקים"
 
 #: ../src/iop/toneequal.c:319
 msgctxt "accel"
 msgid "filter diffusion"
-msgstr ""
+msgstr "דיפוזיית פילטר"
 
 #: ../src/iop/toneequal.c:320
 #, fuzzy
@@ -10579,7 +10616,7 @@ msgstr "מסנן קר"
 #: ../src/iop/toneequal.c:321
 msgctxt "accel"
 msgid "edges refinement/feathering"
-msgstr ""
+msgstr "קצוות עידון/נוצה"
 
 #: ../src/iop/toneequal.c:322
 #, fuzzy
@@ -10607,15 +10644,15 @@ msgstr "בחר מצב ערבוב"
 
 #: ../src/iop/toneequal.c:428
 msgid "mask blending : landscapes"
-msgstr ""
+msgstr "ערבוב מסיכה : אופקי"
 
 #: ../src/iop/toneequal.c:436
 msgid "mask blending : all purposes"
-msgstr ""
+msgstr "ערבוב מסיכה : שימוש כללי"
 
 #: ../src/iop/toneequal.c:444
 msgid "mask blending : isolated subjects"
-msgstr ""
+msgstr "ערבוב מסיכה : נושאים מבודדים"
 
 #: ../src/iop/toneequal.c:465
 #, fuzzy
@@ -10681,11 +10718,11 @@ msgstr "מנהל מסיכות"
 
 #: ../src/iop/toneequal.c:3051
 msgid "-8 EV : blacks"
-msgstr ""
+msgstr "-8 EV : שחורים"
 
 #: ../src/iop/toneequal.c:3057
 msgid "-7 EV : deep shadows"
-msgstr ""
+msgstr "-7 EV : צללים עמוקים"
 
 #: ../src/iop/toneequal.c:3063
 #, fuzzy
@@ -10694,11 +10731,11 @@ msgstr "צללים"
 
 #: ../src/iop/toneequal.c:3069
 msgid "-5 EV : light shadows"
-msgstr ""
+msgstr "-5 EV : צללים רדודים"
 
 #: ../src/iop/toneequal.c:3075
 msgid "-4 EV : midtones"
-msgstr ""
+msgstr "-4 EV : טונים בינונים"
 
 #: ../src/iop/toneequal.c:3081
 #, fuzzy
@@ -10712,11 +10749,11 @@ msgstr "פרטים בהירים"
 
 #: ../src/iop/toneequal.c:3093
 msgid "-1 EV : whites"
-msgstr ""
+msgstr "-1 EV : לבנים"
 
 #: ../src/iop/toneequal.c:3099
 msgid "+0 EV : speculars"
-msgstr ""
+msgstr "+0 EV : הברקות"
 
 #: ../src/iop/toneequal.c:3123
 #, fuzzy
