@@ -1618,7 +1618,7 @@ void dt_control_move_images()
   // Open file chooser dialog
   gchar *dir = NULL;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  int number = dt_collection_get_selected_count(darktable.collection);
+  const int number = dt_collection_get_selected_count(darktable.collection);
 
   // Do not show the dialog if no image is selected:
   if(number == 0) return;
