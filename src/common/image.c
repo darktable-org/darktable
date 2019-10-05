@@ -1378,6 +1378,7 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
     // move image
     GError *moveError = NULL;
     gboolean moveStatus = g_file_move(old, new, 0, NULL, NULL, NULL, &moveError);
+
     if(moveStatus)
     {
       // statement for getting ids of the image to be moved and its duplicates
@@ -1482,11 +1483,17 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
       {
 	dt_control_log(_("error moving `%s': file not found"), oldimg);
       }
-      else if(g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_EXISTS) || g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_IS_DIRECTORY))
+      // only display error message if newname is set (renaming and
+      // not moving) as when moving it can be the case where a
+      // duplicate is being moved, so only the .xmp are present but
+      // the original file may already have been moved.
+      else if(newname
+              && (g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_EXISTS)
+                  || g_error_matches(moveError, G_IO_ERROR, G_IO_ERROR_IS_DIRECTORY)))
       {
 	dt_control_log(_("error moving `%s' -> `%s': file exists"), oldimg, newimg);
       }
-      else
+      else if(newname)
       {
 	dt_control_log(_("error moving `%s' -> `%s'"), oldimg, newimg);
       }
