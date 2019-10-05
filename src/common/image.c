@@ -1392,7 +1392,7 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
       DT_DEBUG_SQLITE3_BIND_INT(duplicates_stmt, 1, imgid);
       while(sqlite3_step(duplicates_stmt) == SQLITE_ROW)
       {
-        int32_t id = sqlite3_column_int(duplicates_stmt, 0);
+        const int32_t id = sqlite3_column_int(duplicates_stmt, 0);
         dup_list = g_list_append(dup_list, GINT_TO_POINTER(id));
         gchar oldxmp[PATH_MAX] = { 0 }, newxmp[PATH_MAX] = { 0 };
         g_strlcpy(oldxmp, oldimg, sizeof(oldxmp));
@@ -1417,7 +1417,7 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
       // would return wrong version!
       while(dup_list)
       {
-        int id = GPOINTER_TO_INT(dup_list->data);
+        const int id = GPOINTER_TO_INT(dup_list->data);
         dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'w');
         img->film_id = filmid;
         if(newname)
