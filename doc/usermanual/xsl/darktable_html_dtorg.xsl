@@ -23,7 +23,7 @@
 <xsl:param name="html.cleanup" select="1"></xsl:param>
 <xsl:param name="make.clean.html" select="1"></xsl:param>
 <xsl:param name="html.stylesheet.type">text/css</xsl:param>
-<xsl:param name="html.stylesheet">/theme/css/normalize.css /theme/css/skeleton.css /theme/css/darktable.css /theme/css/usermanual.css</xsl:param>
+<xsl:param name="html.stylesheet">/theme/css/normalize.css /theme/css/skeleton.css /theme/css/open-sans.css /theme/css/darktable.css /theme/css/usermanual.css</xsl:param>
 <xsl:param name="docbook.css.source" />
 <xsl:param name="docbook.css.link" select="0"></xsl:param>
 <xsl:param name="generate.meta.abstract" select="1"></xsl:param>
