@@ -632,6 +632,10 @@ dialog combobox window
   color: @section_label;
 }
 
+#view_label {
+  margin: 0.5em 0;
+}
+
 menuitem button,
 popover button,
 tooltip button
