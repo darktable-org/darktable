@@ -20,7 +20,6 @@
 #endif
 
 #include "common/darktable.h"
-#include "common/colorspaces_inline_conversions.h"
 #include "common/iop_order.h"
 #include "common/debug.h"
 #include "develop/imageop.h"
@@ -35,6 +34,23 @@
 
 #define DT_IOP_ORDER_INFO FALSE  // used while debugging
 #define DT_ONTHEFLY_INFO FALSE   // while debugging on-the-fly conversion
+
+/** Note :
+ * we use finite-math-only and fast-math because divisions by zero are manually avoided in the code
+ * fp-contract=fast enables hardware-accelerated Fused Multiply-Add
+ * the rest is loop reorganization and vectorization optimization
+ **/
+#if defined(__GNUC__)
+#pragma GCC optimize ("unroll-loops", "tree-loop-if-convert", \
+                      "tree-loop-distribution", "no-strict-aliasing", \
+                      "loop-interchange", "loop-nest-optimize", "tree-loop-im", \
+                      "unswitch-loops", "tree-loop-ivcanon", "ira-loop-pressure", \
+                      "split-ivs-in-unroller", "variable-expansion-in-unroller", \
+                      "split-loops", "ivopts", "predictive-commoning",\
+                      "tree-loop-linear", "loop-block", "loop-strip-mine", \
+                      "finite-math-only", "fp-contract=fast", "fast-math", \
+                      "tree-vectorize")
+#endif
 
 static void _ioppr_insert_iop_after(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_previous, const int dont_move);
 static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_next, const int dont_move);
@@ -2074,253 +2090,8 @@ static inline void _transform_lcms2_rgb(const float *const image_in, float *cons
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-__DT_CLONE_TARGETS__
-static inline float lerp_lut(const float *const lut, const float v, const int lutsize)
-{
-  // TODO: check if optimization is worthwhile!
-  const float ft = CLAMPS(v * (lutsize - 1), 0, lutsize - 1);
-  const int t = ft < lutsize - 2 ? ft : lutsize - 2;
-  const float f = ft - t;
-  const float l1 = lut[t];
-  const float l2 = lut[t + 1];
-  return l1 * (1.0f - f) + l2 * f;
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-__DT_CLONE_TARGETS__
-static inline void _apply_trc_in(const float *const restrict rgb_in, float *const restrict rgb_out, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  for(int c = 0; c < 3; c++)
-  {
-    rgb_out[c] = (profile_info->lut_in[c][0] >= 0.0f) ? ((rgb_in[c] < 1.0f) ? lerp_lut(profile_info->lut_in[c], rgb_in[c], profile_info->lutsize)
-                                                        : dt_iop_eval_exp(profile_info->unbounded_coeffs_in[c], rgb_in[c]))
-                                                        : rgb_in[c];
-  }
-}
-
-static inline void _apply_trc_out(const float *const rgb_in, float *rgb_out, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  for(int c = 0; c < 3; c++)
-  {
-    rgb_out[c] = (profile_info->lut_out[c][0] >= 0.0f) ? ((rgb_in[c] < 1.0f) ? lerp_lut(profile_info->lut_out[c], rgb_in[c], profile_info->lutsize)
-                                                        : dt_iop_eval_exp(profile_info->unbounded_coeffs_out[c], rgb_in[c]))
-                                                        : rgb_in[c];
-  }
-}
-
-static void _ioppr_linear_rgb_matrix_to_xyz(const float *const rgb, float *xyz, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  for(int c = 0; c < 3; c++)
-  {
-    xyz[c] = 0.0f;
-    for(int i = 0; i < 3; i++)
-    {
-      xyz[c] += profile_info->matrix_in[3 * c + i] * rgb[i];
-    }
-  }
-}
-
-static void _ioppr_xyz_to_linear_rgb_matrix(const float *const xyz, float *rgb, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  for(int c = 0; c < 3; c++)
-  {
-    rgb[c] = 0.0f;
-    for(int i = 0; i < 3; i++)
-    {
-      rgb[c] += profile_info->matrix_out[3 * c + i] * xyz[i];
-    }
-  }
-}
-
-static void _apply_tonecurves(const float *const image_in, float *const image_out, const int width,
-                              const int height, const float *const lutr, const float *const lutg,
-                              const float *const lutb, const float *const unbounded_coeffsr,
-                              const float *const unbounded_coeffsg, const float *const unbounded_coeffsb,
-                              const int lutsize)
-{
-  const int ch = 4;
-  const float *const lut[3] = { lutr, lutg, lutb };
-  const float *const unbounded_coeffs[3] = { unbounded_coeffsr, unbounded_coeffsg, unbounded_coeffsb };
-  const size_t stride = (size_t)ch * width * height;
-
-  // do we have any lut to apply, or is this a linear profile?
-  if((lut[0][0] >= 0.0f) && (lut[1][0] >= 0.0f) && (lut[2][0] >= 0.0f))
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(stride, image_in, image_out, lut, lutsize, unbounded_coeffs, ch) \
-    schedule(static)
-#endif
-    for(size_t k = 0; k < stride; k += ch)
-    {
-      for(int c = 0; c < 3; c++)
-      {
-        image_out[k + c] = (image_in[k + c] < 1.0f) ? lerp_lut(lut[c], image_in[k + c], lutsize)
-                                                    : dt_iop_eval_exp(unbounded_coeffs[c], image_in[k + c]);
-      }
-    }
-  }
-  else if((lut[0][0] >= 0.0f) || (lut[1][0] >= 0.0f) || (lut[2][0] >= 0.0f))
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(stride, image_in, image_out, lut, lutsize, unbounded_coeffs, ch) \
-    schedule(static)
-#endif
-    for(size_t k = 0; k < stride; k += ch)
-    {
-      for(int c = 0; c < 3; c++)
-      {
-        if(lut[c][0] >= 0.0f)
-        {
-          image_out[k + c] = (image_in[k + c] < 1.0f) ? lerp_lut(lut[c], image_in[k + c], lutsize)
-                                                      : dt_iop_eval_exp(unbounded_coeffs[c], image_in[k + c]);
-        }
-      }
-    }
-  }
-}
-
-static void _transform_rgb_to_lab_matrix(const float *const image_in, float *const image_out, const int width,
-                                         const int height,
-                                         const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  const int ch = 4;
-  const size_t stride = (size_t)(width * height);
-
-  if(profile_info->nonlinearlut)
-  {
-    _apply_tonecurves(image_in, image_out, width, height, profile_info->lut_in[0], profile_info->lut_in[1],
-                      profile_info->lut_in[2], profile_info->unbounded_coeffs_in[0],
-                      profile_info->unbounded_coeffs_in[1], profile_info->unbounded_coeffs_in[2],
-                      profile_info->lutsize);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(image_out, profile_info, stride, ch) \
-    schedule(static)
-#endif
-    for(size_t y = 0; y < stride; y++)
-    {
-      float *const in = image_out + y * ch;
-
-      float xyz[3] = { 0.0f, 0.0f, 0.0f };
-
-      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, profile_info);
-      dt_XYZ_to_Lab(xyz, in);
-    }
-  }
-  else
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(image_in, image_out, profile_info, stride, ch) \
-    schedule(static)
-#endif
-    for(size_t y = 0; y < stride; y++)
-    {
-      const float *const in = image_in + y * ch;
-      float *const out = image_out + y * ch;
-
-      float xyz[3] = { 0.0f, 0.0f, 0.0f };
-
-      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, profile_info);
-      dt_XYZ_to_Lab(xyz, out);
-    }
-  }
-}
-
-static void _transform_lab_to_rgb_matrix(const float *const image_in, float *const image_out, const int width,
-                                         const int height,
-                                         const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  const int ch = 4;
-  const size_t stride = (size_t)width * height;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(image_in, image_out, stride, profile_info, ch) \
-  schedule(static)
-#endif
-  for(size_t y = 0; y < stride; y++)
-  {
-    const float *const in = image_in + y * ch;
-    float *const out = image_out + y * ch;
-
-    float xyz[3] = { 0.0f, 0.0f, 0.0f };
-
-    dt_Lab_to_XYZ(in, xyz);
-    _ioppr_xyz_to_linear_rgb_matrix(xyz, out, profile_info);
-  }
-
-  _apply_tonecurves(image_out, image_out, width, height, profile_info->lut_out[0], profile_info->lut_out[1],
-                    profile_info->lut_out[2], profile_info->unbounded_coeffs_out[0],
-                    profile_info->unbounded_coeffs_out[1], profile_info->unbounded_coeffs_out[2],
-                    profile_info->lutsize);
-}
-
-static void _transform_matrix_rgb(const float *const image_in, float *const image_out, const int width,
-                                  const int height, const dt_iop_order_iccprofile_info_t *const profile_info_from,
-                                  const dt_iop_order_iccprofile_info_t *const profile_info_to)
-{
-  const int ch = 4;
-  const size_t stride = (size_t)(width * height);
-
-  if(profile_info_from->nonlinearlut)
-  {
-    _apply_tonecurves(image_in, image_out, width, height, profile_info_from->lut_in[0],
-                      profile_info_from->lut_in[1], profile_info_from->lut_in[2],
-                      profile_info_from->unbounded_coeffs_in[0], profile_info_from->unbounded_coeffs_in[1],
-                      profile_info_from->unbounded_coeffs_in[2], profile_info_from->lutsize);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(stride, image_out, profile_info_from, profile_info_to, ch) \
-    schedule(static)
-#endif
-    for(size_t y = 0; y < stride; y++)
-    {
-      float *const in = image_out + y * ch;
-
-      float xyz[3] = { 0.0f, 0.0f, 0.0f };
-
-      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, profile_info_from);
-      _ioppr_xyz_to_linear_rgb_matrix(xyz, in, profile_info_to);
-    }
-  }
-  else
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(stride, image_in, image_out, profile_info_from, profile_info_to, ch) \
-    schedule(static)
-#endif
-    for(size_t y = 0; y < stride; y++)
-    {
-      const float *const in = image_in + y * ch;
-      float *const out = image_out + y * ch;
-
-      float xyz[3] = { 0.0f, 0.0f, 0.0f };
-
-      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, profile_info_from);
-      _ioppr_xyz_to_linear_rgb_matrix(xyz, out, profile_info_to);
-    }
-  }
-
-  _apply_tonecurves(image_out, image_out, width, height, profile_info_to->lut_out[0], profile_info_to->lut_out[1],
-                    profile_info_to->lut_out[2], profile_info_to->unbounded_coeffs_out[0],
-                    profile_info_to->unbounded_coeffs_out[1], profile_info_to->unbounded_coeffs_out[2],
-                    profile_info_to->lutsize);
-}
-
-static int _init_unbounded_coeffs(float *lutr, float *lutg, float *lutb,
-    float *unbounded_coeffsr, float *unbounded_coeffsg, float *unbounded_coeffsb, const int lutsize)
+static inline int _init_unbounded_coeffs(float *const lutr, float *const lutg, float *const lutb,
+    float *const unbounded_coeffsr, float *const unbounded_coeffsg, float *const unbounded_coeffsb, const int lutsize)
 {
   int nonlinearlut = 0;
   float *lut[3] = { lutr, lutg, lutb };
@@ -2331,9 +2102,9 @@ static int _init_unbounded_coeffs(float *lutr, float *lutg, float *lutb,
     // omit luts marked as linear (negative as marker)
     if(lut[k][0] >= 0.0f)
     {
-      const float x[4] = { 0.7f, 0.8f, 0.9f, 1.0f };
-      const float y[4] = { lerp_lut(lut[k], x[0], lutsize), lerp_lut(lut[k], x[1], lutsize), lerp_lut(lut[k], x[2], lutsize),
-                           lerp_lut(lut[k], x[3], lutsize) };
+      const float x[4] DT_ALIGNED_PIXEL = { 0.7f, 0.8f, 0.9f, 1.0f };
+      const float y[4] DT_ALIGNED_PIXEL = { extrapolate_lut(lut[k], x[0], lutsize), extrapolate_lut(lut[k], x[1], lutsize), extrapolate_lut(lut[k], x[2], lutsize),
+                                            extrapolate_lut(lut[k], x[3], lutsize) };
       dt_iop_estimate_exp(x, y, 4, unbounded_coeffs[k]);
 
       nonlinearlut++;
@@ -2345,7 +2116,205 @@ static int _init_unbounded_coeffs(float *lutr, float *lutg, float *lutb,
   return nonlinearlut;
 }
 
-static void _transform_matrix(struct dt_iop_module_t *self, const float *const image_in, float *const image_out,
+
+static inline void _apply_tonecurves(const float *const image_in, float *const image_out,
+                                     const int width, const int height,
+                                     const float *const restrict lutr,
+                                     const float *const restrict lutg,
+                                     const float *const restrict lutb,
+                                     const float *const restrict unbounded_coeffsr,
+                                     const float *const restrict unbounded_coeffsg,
+                                     const float *const restrict unbounded_coeffsb,
+                                     const int lutsize)
+{
+  const int ch = 4;
+  const float *const lut[3] = { lutr, lutg, lutb };
+  const float *const unbounded_coeffs[3] = { unbounded_coeffsr, unbounded_coeffsg, unbounded_coeffsb };
+  const size_t stride = (size_t)ch * width * height;
+
+  // do we have any lut to apply, or is this a linear profile?
+  if((lut[0][0] >= 0.0f) && (lut[1][0] >= 0.0f) && (lut[2][0] >= 0.0f))
+  {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(stride, image_in, image_out, lut, lutsize, unbounded_coeffs, ch) \
+    schedule(static) collapse(2) aligned(image_in, image_out:64)
+#endif
+    for(size_t k = 0; k < stride; k += ch)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        image_out[k + c] = (image_in[k + c] < 1.0f) ? extrapolate_lut(lut[c], image_in[k + c], lutsize)
+                                                    : eval_exp(unbounded_coeffs[c], image_in[k + c]);
+      }
+    }
+  }
+  else if((lut[0][0] >= 0.0f) || (lut[1][0] >= 0.0f) || (lut[2][0] >= 0.0f))
+  {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(stride, image_in, image_out, lut, lutsize, unbounded_coeffs, ch) \
+    schedule(static) collapse(2) aligned(image_in, image_out:64)
+#endif
+    for(size_t k = 0; k < stride; k += ch)
+    {
+      for(int c = 0; c < 3; c++)
+      {
+        if(lut[c][0] >= 0.0f)
+        {
+          image_out[k + c] = (image_in[k + c] < 1.0f) ? extrapolate_lut(lut[c], image_in[k + c], lutsize)
+                                                      : eval_exp(unbounded_coeffs[c], image_in[k + c]);
+        }
+      }
+    }
+  }
+}
+
+
+static inline void _transform_rgb_to_lab_matrix(const float *const restrict image_in, float *const restrict image_out,
+                                                const int width, const int height,
+                                                const dt_iop_order_iccprofile_info_t *const profile_info)
+{
+  const int ch = 4;
+  const size_t stride = (size_t)(width * height * ch);
+  const float *const restrict matrix = profile_info->matrix_in;
+
+  if(profile_info->nonlinearlut)
+  {
+    _apply_tonecurves(image_in, image_out, width, height, profile_info->lut_in[0], profile_info->lut_in[1],
+                      profile_info->lut_in[2], profile_info->unbounded_coeffs_in[0],
+                      profile_info->unbounded_coeffs_in[1], profile_info->unbounded_coeffs_in[2],
+                      profile_info->lutsize);
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(image_out, profile_info, stride, ch, matrix) \
+    schedule(static) aligned(image_out:64) aligned(matrix:16)
+#endif
+    for(size_t y = 0; y < stride; y += ch)
+    {
+      float *const in = image_out + y;
+      float xyz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, matrix);
+      dt_XYZ_to_Lab(xyz, in);
+    }
+  }
+  else
+  {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(image_in, image_out, profile_info, stride, ch, matrix) \
+    schedule(static) aligned(image_in, image_out:64) aligned(matrix:16)
+#endif
+    for(size_t y = 0; y < stride; y += ch)
+    {
+      const float *const in = image_in + y ;
+      float *const out = image_out + y;
+
+      float xyz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+
+      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, matrix);
+      dt_XYZ_to_Lab(xyz, out);
+    }
+  }
+}
+
+
+static inline void _transform_lab_to_rgb_matrix(const float *const restrict image_in, float *const restrict image_out, const int width,
+                                         const int height,
+                                         const dt_iop_order_iccprofile_info_t *const profile_info)
+{
+  const int ch = 4;
+  const size_t stride = (size_t)width * height * ch;
+  const float *const restrict matrix = profile_info->matrix_out;
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(image_in, image_out, stride, profile_info, ch, matrix) \
+  schedule(static) aligned(image_in, image_out:64) aligned(matrix:16)
+#endif
+  for(size_t y = 0; y < stride; y += ch)
+  {
+    const float *const in = image_in + y;
+    float *const out = image_out + y;
+
+    float xyz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+
+    dt_Lab_to_XYZ(in, xyz);
+    _ioppr_xyz_to_linear_rgb_matrix(xyz, out, matrix);
+  }
+
+  if(profile_info->nonlinearlut)
+  {
+    _apply_tonecurves(image_out, image_out, width, height, profile_info->lut_out[0], profile_info->lut_out[1],
+                      profile_info->lut_out[2], profile_info->unbounded_coeffs_out[0],
+                      profile_info->unbounded_coeffs_out[1], profile_info->unbounded_coeffs_out[2],
+                      profile_info->lutsize);
+  }
+}
+
+
+static inline void _transform_matrix_rgb(const float *const restrict image_in, float *const restrict image_out, const int width,
+                                  const int height, const dt_iop_order_iccprofile_info_t *const profile_info_from,
+                                  const dt_iop_order_iccprofile_info_t *const profile_info_to)
+{
+  const int ch = 4;
+  const size_t stride = (size_t)(width * height * ch);
+  const float *const restrict matrix_in = profile_info_from->matrix_in;
+  const float *const restrict matrix_out = profile_info_to->matrix_out;
+
+  if(profile_info_from->nonlinearlut)
+  {
+    _apply_tonecurves(image_in, image_out, width, height, profile_info_from->lut_in[0],
+                      profile_info_from->lut_in[1], profile_info_from->lut_in[2],
+                      profile_info_from->unbounded_coeffs_in[0], profile_info_from->unbounded_coeffs_in[1],
+                      profile_info_from->unbounded_coeffs_in[2], profile_info_from->lutsize);
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(stride, image_out, profile_info_from, profile_info_to, ch, matrix_in, matrix_out) \
+    schedule(static) aligned(image_out:64) aligned(matrix_in, matrix_out:16)
+#endif
+    for(size_t y = 0; y < stride; y += ch)
+    {
+      float *const in = image_out + y;
+
+      float xyz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+
+      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, matrix_in);
+      _ioppr_xyz_to_linear_rgb_matrix(xyz, in, matrix_out);
+    }
+  }
+  else
+  {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(stride, image_in, image_out, profile_info_from, profile_info_to, ch, matrix_in, matrix_out) \
+    schedule(static) aligned(image_in, image_out:64) aligned(matrix_in, matrix_out:16)
+#endif
+    for(size_t y = 0; y < stride; y += ch)
+    {
+      const float *const in = image_in + y;
+      float *const out = image_out + y;
+
+      float xyz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+
+      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, matrix_in);
+      _ioppr_xyz_to_linear_rgb_matrix(xyz, out, matrix_out);
+    }
+  }
+
+  if(profile_info_to->nonlinearlut)
+  {
+    _apply_tonecurves(image_out, image_out, width, height, profile_info_to->lut_out[0], profile_info_to->lut_out[1],
+                      profile_info_to->lut_out[2], profile_info_to->unbounded_coeffs_out[0],
+                      profile_info_to->unbounded_coeffs_out[1], profile_info_to->unbounded_coeffs_out[2],
+                      profile_info_to->lutsize);
+  }
+}
+
+
+static inline void _transform_matrix(struct dt_iop_module_t *self, const float *const restrict image_in, float *const restrict image_out,
                               const int width, const int height, const int cst_from, const int cst_to,
                               int *converted_cst, const dt_iop_order_iccprofile_info_t *const profile_info)
 {
@@ -2372,6 +2341,7 @@ static void _transform_matrix(struct dt_iop_module_t *self, const float *const i
   }
 }
 
+
 #define DT_IOPPR_LUT_SAMPLES 0x10000
 
 void dt_ioppr_init_profile_info(dt_iop_order_iccprofile_info_t *profile_info, const int lutsize)
@@ -2388,9 +2358,9 @@ void dt_ioppr_init_profile_info(dt_iop_order_iccprofile_info_t *profile_info, co
   profile_info->lutsize = (lutsize > 0) ? lutsize: DT_IOPPR_LUT_SAMPLES;
   for(int i = 0; i < 3; i++)
   {
-    profile_info->lut_in[i] = malloc(profile_info->lutsize * sizeof(float));
+    profile_info->lut_in[i] = dt_alloc_sse_ps(profile_info->lutsize);
     profile_info->lut_in[i][0] = -1.0f;
-    profile_info->lut_out[i] = malloc(profile_info->lutsize * sizeof(float));
+    profile_info->lut_out[i] = dt_alloc_sse_ps(profile_info->lutsize);
     profile_info->lut_out[i][0] = -1.0f;
   }
 }
@@ -2401,8 +2371,8 @@ void dt_ioppr_cleanup_profile_info(dt_iop_order_iccprofile_info_t *profile_info)
 {
   for(int i = 0; i < 3; i++)
   {
-    if(profile_info->lut_in[i]) free(profile_info->lut_in[i]);
-    if(profile_info->lut_out[i]) free(profile_info->lut_out[i]);
+    if(profile_info->lut_in[i]) dt_free_align(profile_info->lut_in[i]);
+    if(profile_info->lut_out[i]) dt_free_align(profile_info->lut_out[i]);
   }
 }
 
@@ -2499,8 +2469,8 @@ static int dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profil
 
   if(!isnan(profile_info->matrix_in[0]) && !isnan(profile_info->matrix_out[0]) && profile_info->nonlinearlut)
   {
-    float rgb[3] = { 0.1842f, 0.1842f, 0.1842f };
-    profile_info->grey = dt_ioppr_get_rgb_matrix_luminance(rgb, profile_info);
+    const float rgb[3] = { 0.1842f, 0.1842f, 0.1842f };
+    profile_info->grey = dt_ioppr_get_rgb_matrix_luminance(rgb, profile_info->matrix_in, profile_info->lut_in, profile_info->unbounded_coeffs_in, profile_info->lutsize, profile_info->nonlinearlut);
   }
 
   return err_code;
@@ -2746,85 +2716,6 @@ void dt_ioppr_get_histogram_profile_type(int *profile_type, char **profile_filen
 }
 
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-inline float dt_ioppr_get_rgb_matrix_luminance(const float *const rgb, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  float luminance = 0.f;
-
-  if(profile_info->nonlinearlut)
-  {
-    float linear_rgb[3] = { 0.f };
-
-    _apply_trc_in(rgb, linear_rgb, profile_info);
-    luminance = profile_info->matrix_in[3] * linear_rgb[0] + profile_info->matrix_in[4] * linear_rgb[1] + profile_info->matrix_in[5] * linear_rgb[2];
-  }
-  else
-    luminance = profile_info->matrix_in[3] * rgb[0] + profile_info->matrix_in[4] * rgb[1] + profile_info->matrix_in[5] * rgb[2];
-
-  return luminance;
-}
-
-void dt_ioppr_rgb_matrix_to_xyz(const float *const rgb, float *xyz, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  if(profile_info->nonlinearlut)
-  {
-    float linear_rgb[3];
-    _apply_trc_in(rgb, linear_rgb, profile_info);
-    _ioppr_linear_rgb_matrix_to_xyz(linear_rgb, xyz, profile_info);
-  }
-  else
-    _ioppr_linear_rgb_matrix_to_xyz(rgb, xyz, profile_info);
-}
-
-void dt_ioppr_lab_to_rgb_matrix(const float *const lab, float *rgb, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  float xyz[3] = { 0.0f, 0.0f, 0.0f };
-
-  dt_Lab_to_XYZ(lab, xyz);
-
-  _ioppr_xyz_to_linear_rgb_matrix(xyz, rgb, profile_info);
-
-  if(profile_info->nonlinearlut) _apply_trc_out(rgb, rgb, profile_info);
-}
-
-void dt_ioppr_rgb_matrix_to_lab(const float *const rgb, float *lab, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  float xyz[3] = { 0.0f, 0.0f, 0.0f };
-
-  dt_ioppr_rgb_matrix_to_xyz(rgb, xyz, profile_info);
-
-  dt_XYZ_to_Lab(xyz, lab);
-}
-
-float dt_ioppr_get_profile_info_middle_grey(const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  return profile_info->grey;
-}
-
-float dt_ioppr_compensate_middle_grey(const float x, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  // we transform the curve nodes from the image colorspace to lab
-  float lab[3] = { 0 };
-  float rgb[3] = { 0 };
-
-  rgb[0] = rgb[1] = rgb[2] = x;
-  dt_ioppr_rgb_matrix_to_lab(rgb, lab, profile_info);
-  return lab[0] * .01f;
-}
-
-float dt_ioppr_uncompensate_middle_grey(const float x, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  // we transform the curve nodes from lab to the image colorspace
-  float lab[3] = { 0 };
-  float rgb[3] = { 0 };
-
-  lab[0] = x * 100.f;
-  dt_ioppr_lab_to_rgb_matrix(lab, rgb, profile_info);
-  return rgb[0];
-}
-
 #if defined(__SSE2__x) // FIXME: this is slower than the C version
 static __m128 _ioppr_linear_rgb_matrix_to_xyz_sse(const __m128 rgb, const dt_iop_order_iccprofile_info_t *const profile_info)
 {
@@ -3049,7 +2940,7 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const flo
     fprintf(stderr, "[dt_ioppr_transform_image_colorspace] invalid conversion from %i to %i\n", cst_from, cst_to);
 }
 
-void dt_ioppr_transform_image_colorspace_rgb(const float *const image_in, float *const image_out, const int width,
+void dt_ioppr_transform_image_colorspace_rgb(const float *const restrict image_in, float *const restrict image_out, const int width,
                                              const int height,
                                              const dt_iop_order_iccprofile_info_t *const profile_info_from,
                                              const dt_iop_order_iccprofile_info_t *const profile_info_to,
@@ -3442,7 +3333,8 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
   }
 
   const int ch = 4;
-  float *src_buffer = NULL;
+  float *src_buffer_in = NULL;
+  float *src_buffer_out = NULL;
   int in_place = (dev_img_in == dev_img_out);
 
   int kernel_transform = 0;
@@ -3566,8 +3458,9 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
   else
   {
     // no matrix, call lcms2
-    src_buffer = dt_alloc_align(64, width * height * ch * sizeof(float));
-    if(src_buffer == NULL)
+    src_buffer_in = dt_alloc_align(64, width * height * ch * sizeof(float));
+    src_buffer_out = dt_alloc_align(64, width * height * ch * sizeof(float));
+    if(src_buffer_in == NULL || src_buffer_out)
     {
       fprintf(stderr,
               "[dt_ioppr_transform_image_colorspace_rgb_cl] error allocating memory for color transformation 1\n");
@@ -3575,7 +3468,7 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
       goto cleanup;
     }
 
-    err = dt_opencl_copy_device_to_host(devid, src_buffer, dev_img_in, width, height, ch * sizeof(float));
+    err = dt_opencl_copy_device_to_host(devid, src_buffer_in, dev_img_in, width, height, ch * sizeof(float));
     if(err != CL_SUCCESS)
     {
       fprintf(stderr,
@@ -3584,10 +3477,10 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
     }
 
     // just call the CPU version for now
-    dt_ioppr_transform_image_colorspace_rgb(src_buffer, src_buffer, width, height, profile_info_from,
+    dt_ioppr_transform_image_colorspace_rgb(src_buffer_in, src_buffer_out, width, height, profile_info_from,
                                             profile_info_to, message);
 
-    err = dt_opencl_write_host_to_device(devid, src_buffer, dev_img_out, width, height, ch * sizeof(float));
+    err = dt_opencl_write_host_to_device(devid, src_buffer_out, dev_img_out, width, height, ch * sizeof(float));
     if(err != CL_SUCCESS)
     {
       fprintf(stderr,
@@ -3597,7 +3490,8 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
   }
 
 cleanup:
-  if(src_buffer) dt_free_align(src_buffer);
+  if(src_buffer_in) dt_free_align(src_buffer_in);
+  if(src_buffer_out) dt_free_align(src_buffer_out);
   if(dev_tmp && in_place) dt_opencl_release_mem_object(dev_tmp);
 
   if(dev_profile_info_from) dt_opencl_release_mem_object(dev_profile_info_from);
