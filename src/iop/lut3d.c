@@ -956,14 +956,14 @@ static void remove_root_from_path(const char *const lutfolder, char *const filep
   filepath[i] = '\0';
 }
 
-gboolean check_same_extension(char *filename, char *ext)
+gboolean check_extension(char *filename)
 {
   gboolean res = FALSE;
-  if (strlen(filename) < strlen(ext)) return res;  // crash Pascal
+  if (!filename || !filename[0]) return res;
   char *p = g_strrstr(filename,".");
   if (!p) return res;
   char *fext = g_ascii_strdown(g_strdup(p), -1);
-  if (!g_strcmp0(fext, ext)) res = TRUE;
+  if (!g_strcmp0(fext, ".png") || !g_strcmp0(fext, ".cube")) res = TRUE;
   g_free(fext);
   return res;
 }
@@ -979,7 +979,8 @@ static void update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, char *filepath,
   if (!filepath[0])
     dt_bauhaus_combobox_clear(g->filepath);
   else if (!dt_bauhaus_combobox_set_from_text(g->filepath, filepath))
-  { // new folder -> update the files list
+  {
+    // new folder -> update the files list
     char *relativepath = g_path_get_dirname(filepath);
     char *folder = g_build_filename(lutfolder, relativepath, NULL);
     struct dirent *dir;
@@ -987,27 +988,22 @@ static void update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, char *filepath,
     if (d)
     {
       dt_bauhaus_combobox_clear(g->filepath);
-      char *ext = g_ascii_strdown(g_strdup(g_strrstr(filepath,".")), -1);
-      if (ext && ext[0])
+      while ((dir = readdir(d)) != NULL)
       {
-        while ((dir = readdir(d)) != NULL)
+        char *file = dir->d_name;
+        if (check_extension(file))
         {
-          char *file = dir->d_name;
-          if (check_same_extension(file, ext))
-          {
-            char *ofilepath = (strcmp(relativepath, ".") != 0)
-                  ? g_build_filename(relativepath, file, NULL)
-                  : g_strdup(file);
-            filepath_set_unix_separator(ofilepath);
-            dt_bauhaus_combobox_add(g->filepath, ofilepath);
-            g_free(ofilepath);
-          }
+          char *ofilepath = (strcmp(relativepath, ".") != 0)
+                ? g_build_filename(relativepath, file, NULL)
+                : g_strdup(file);
+          filepath_set_unix_separator(ofilepath);
+          dt_bauhaus_combobox_add(g->filepath, ofilepath);
+          g_free(ofilepath);
         }
-        dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(g->filepath);
-        dt_bauhaus_combobox_data_t *combo_data = &w->data.combobox;
-        combo_data->entries = g_list_sort(combo_data->entries, list_str_cmp);
       }
-      g_free(ext);
+      dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(g->filepath);
+      dt_bauhaus_combobox_data_t *combo_data = &w->data.combobox;
+      combo_data->entries = g_list_sort(combo_data->entries, list_str_cmp);
       closedir(d);
     }
     dt_bauhaus_combobox_set_from_text(g->filepath, filepath);
@@ -1018,7 +1014,6 @@ static void update_filepath_combobox(dt_iop_lut3d_gui_data_t *g, char *filepath,
 
 static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
 {
-  int filetype;
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_iop_lut3d_params_t *p = (dt_iop_lut3d_params_t *)self->params;
   gchar* lutfolder = dt_conf_get_string("plugins/darkroom/lut3d/def_path");
@@ -1042,24 +1037,16 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
     gtk_file_chooser_select_filename(GTK_FILE_CHOOSER(filechooser), composed);
   g_free(composed);
 
-  filetype = 1;
-  if (p->filepath[0] && (g_str_has_suffix (p->filepath, ".cube") || g_str_has_suffix (p->filepath, ".CUBE")))
-    filetype = 2;
-
   GtkFileFilter* filter = GTK_FILE_FILTER(gtk_file_filter_new());
   gtk_file_filter_add_pattern(filter, "*.png");
   gtk_file_filter_add_pattern(filter, "*.PNG");
-  gtk_file_filter_set_name(filter, _("hald cluts (png)"));
-  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
-  if (filetype == 1) gtk_file_chooser_set_filter (GTK_FILE_CHOOSER(filechooser), filter);
-
-  filter = GTK_FILE_FILTER(gtk_file_filter_new());
   gtk_file_filter_add_pattern(filter, "*.cube");
   gtk_file_filter_add_pattern(filter, "*.CUBE");
-  gtk_file_filter_set_name(filter, _("3D lut (cube)"));
+  gtk_file_filter_set_name(filter, _("hald cluts (png) or 3D lut (cube)"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
-  if (filetype == 2) gtk_file_chooser_set_filter (GTK_FILE_CHOOSER(filechooser), filter);
 
+  // let this option to allow the user to see the actual content of the folder
+  // but any selected file with ext <> png or cube will be ignored
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
   gtk_file_filter_add_pattern(filter, "*");
   gtk_file_filter_set_name(filter, _("all files"));
