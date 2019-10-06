@@ -688,6 +688,13 @@ filechooserdialog scrolledwindow
   margin: 0;
 }
 
+.dialog-vbox treeview check
+{
+  border-radius: 2px;
+  border: 1px solid @border_color;
+  background-color: shade(@bg_color, 0.7);
+}
+
 /* Tree view (lists and tables) */
 
 treeview,
