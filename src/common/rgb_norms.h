@@ -31,7 +31,14 @@ static inline float dt_rgb_norm(const float *in, const int norm, const dt_iop_or
 {
   if (norm == DT_RGB_NORM_LUMINANCE)
   {
-    return (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(in, work_profile) : dt_camera_rgb_luminance(in);
+    // TODO: unpack work_profile members higher, at loop level, to enable more optimizations
+    return (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(in,
+                                                              work_profile->matrix_in,
+                                                              work_profile->lut_in,
+                                                              work_profile->unbounded_coeffs_in,
+                                                              work_profile->lutsize,
+                                                              work_profile->nonlinearlut)
+                          : dt_camera_rgb_luminance(in);
   }
   else if (norm == DT_RGB_NORM_MAX)
   {

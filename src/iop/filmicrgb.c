@@ -126,7 +126,6 @@ typedef struct dt_iop_filmic_rgb_spline_t
 } dt_iop_filmic_rgb_spline_t;
 
 
-
 typedef struct dt_iop_filmicrgb_params_t
 {
   float grey_point_source;
@@ -183,8 +182,8 @@ typedef struct dt_iop_filmicrgb_data_t
 
 typedef struct dt_iop_filmicrgb_global_data_t
 {
-  int kernel_filmic;
-  int kernel_filmic_log;
+  int kernel_filmic_rgb_split;
+  int kernel_filmic_rgb_chroma;
 } dt_iop_filmicrgb_global_data_t;
 
 
@@ -308,7 +307,7 @@ static inline float pixel_rgb_norm_power(const float pixel[4])
   // weird norm sort of perceptual. This is black magic really, but it looks good.
 
   float numerator = 0.0f;
-  float denominator = 1.52587890625e-05f;
+  float denominator = 0.0f;
 
 #ifdef _OPENMP
 #pragma omp simd aligned(pixel:16) reduction(+:numerator, denominator)
@@ -339,14 +338,24 @@ static inline float get_pixel_norm(const float pixel[4], const dt_iop_filmicrgb_
       return fmaxf(fmaxf(pixel[0], pixel[1]), pixel[2]);
 
     case(DT_FILMIC_METHOD_LUMINANCE):
-      return (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(pixel, work_profile)
+      return (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(pixel,
+                                                                work_profile->matrix_in,
+                                                                work_profile->lut_in,
+                                                                work_profile->unbounded_coeffs_in,
+                                                                work_profile->lutsize,
+                                                                work_profile->nonlinearlut)
                             : dt_camera_rgb_luminance(pixel);
 
     case(DT_FILMIC_METHOD_POWER_NORM):
       return pixel_rgb_norm_power(pixel);
 
     default:
-      return (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(pixel, work_profile)
+      return (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(pixel,
+                                                                work_profile->matrix_in,
+                                                                work_profile->lut_in,
+                                                                work_profile->unbounded_coeffs_in,
+                                                                work_profile->lutsize,
+                                                                work_profile->nonlinearlut)
                             : dt_camera_rgb_luminance(pixel);
   }
 }
@@ -435,7 +444,6 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const float *const restrict in = (float *)ivoid;
   float *const restrict out = (float *)ovoid;
 
-
   const int variant = data->preserve_color;
   const dt_iop_filmic_rgb_spline_t spline = (dt_iop_filmic_rgb_spline_t)data->spline;
 
@@ -457,9 +465,14 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
         temp[c] = log_tonemapping((pix_in[c] < 1.52587890625e-05f) ? 1.52587890625e-05f : pix_in[c],
                                    data->grey_source, data->black_source, data->dynamic_range);
 
-      // Get the desaturation value based on the log value
-      const float lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(temp, work_profile)
-                                         : dt_camera_rgb_luminance(temp);
+      // Get the desaturation coeff based on the log value
+      const float lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(temp,
+                                                                           work_profile->matrix_in,
+                                                                           work_profile->lut_in,
+                                                                           work_profile->unbounded_coeffs_in,
+                                                                           work_profile->lutsize,
+                                                                           work_profile->nonlinearlut)
+                                        : dt_camera_rgb_luminance(temp);
       const float desaturation = filmic_desaturate(lum, data->sigma_toe, data->sigma_shoulder, data->saturation);
 
       // Desaturate on the non-linear parts of the curve
@@ -500,8 +513,13 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       // Get the desaturation value based on the log value
       const float desaturation = filmic_desaturate(norm, data->sigma_toe, data->sigma_shoulder, data->saturation);
 
-      const float lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(ratios, work_profile) :
-                                         dt_camera_rgb_luminance(ratios);
+      const float lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(ratios,
+                                                                           work_profile->matrix_in,
+                                                                           work_profile->lut_in,
+                                                                           work_profile->unbounded_coeffs_in,
+                                                                           work_profile->lutsize,
+                                                                           work_profile->nonlinearlut)
+                                        : dt_camera_rgb_luminance(ratios);
 
       // Desaturate on the non-linear parts of the curve and save ratios
       for(int c = 0; c < 3; ++c) ratios[c] = linear_saturation(ratios[c] * norm, lum, desaturation) / norm;
@@ -518,6 +536,100 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
+
+#ifdef HAVE_OPENCL
+int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
+               const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_filmicrgb_data_t *const d = (dt_iop_filmicrgb_data_t *)piece->data;
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  dt_iop_filmicrgb_global_data_t *const gd = (dt_iop_filmicrgb_global_data_t *)self->global_data;
+  const dt_iop_filmic_rgb_spline_t spline = (dt_iop_filmic_rgb_spline_t)d->spline;
+
+  cl_int err = -999;
+
+  const int devid = piece->pipe->devid;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  const int use_work_profile = (work_profile == NULL) ? 0 : 1;
+
+  cl_mem dev_profile_info = NULL;
+  cl_mem dev_profile_lut = NULL;
+  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl;
+  cl_float *profile_lut_cl = NULL;
+
+  err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &profile_info_cl, &profile_lut_cl,
+                                            &dev_profile_info, &dev_profile_lut);
+  if(err != CL_SUCCESS) goto error;
+
+  size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
+
+  if(d->preserve_color == DT_FILMIC_METHOD_NONE)
+  {
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 4, sizeof(float), (void *)&d->dynamic_range);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 5, sizeof(float), (void *)&d->black_source);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 6, sizeof(float), (void *)&d->grey_source);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 7, sizeof(cl_mem), (void *)&dev_profile_info);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 8, sizeof(cl_mem), (void *)&dev_profile_lut);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 9, sizeof(int), (void *)&use_work_profile);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 10, sizeof(float), (void *)&d->sigma_toe);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 11, sizeof(float), (void *)&d->sigma_shoulder);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 12, sizeof(float), (void *)&d->saturation);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 13, 4 * sizeof(float), (void *)&spline.M1);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 14, 4 * sizeof(float), (void *)&spline.M2);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 15, 4 * sizeof(float), (void *)&spline.M3);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 16, 4 * sizeof(float), (void *)&spline.M4);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 17, 4 * sizeof(float), (void *)&spline.M5);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 18, sizeof(float), (void *)&spline.latitude_min);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 19, sizeof(float), (void *)&spline.latitude_max);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 20, sizeof(float), (void *)&d->output_power);
+
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_rgb_split, sizes);
+    if(err != CL_SUCCESS) goto error;
+    dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
+    return TRUE;
+  }
+  else
+  {
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 0, sizeof(cl_mem), (void *)&dev_in);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 1, sizeof(cl_mem), (void *)&dev_out);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 4, sizeof(float), (void *)&d->dynamic_range);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 5, sizeof(float), (void *)&d->black_source);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 6, sizeof(float), (void *)&d->grey_source);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 7, sizeof(cl_mem), (void *)&dev_profile_info);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 8, sizeof(cl_mem), (void *)&dev_profile_lut);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 9, sizeof(int), (void *)&use_work_profile);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 10, sizeof(float), (void *)&d->sigma_toe);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 11, sizeof(float), (void *)&d->sigma_shoulder);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 12, sizeof(float), (void *)&d->saturation);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 13, 4 * sizeof(float), (void *)&spline.M1);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 14, 4 * sizeof(float), (void *)&spline.M2);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 15, 4 * sizeof(float), (void *)&spline.M3);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 16, 4 * sizeof(float), (void *)&spline.M4);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 17, 4 * sizeof(float), (void *)&spline.M5);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 18, sizeof(float), (void *)&spline.latitude_min);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 19, sizeof(float), (void *)&spline.latitude_max);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 20, sizeof(float), (void *)&d->output_power);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 21, sizeof(float), (void *)&d->preserve_color);
+
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_rgb_chroma, sizes);
+    if(err != CL_SUCCESS) goto error;
+    dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
+    return TRUE;
+  }
+error:
+  dt_print(DT_DEBUG_OPENCL, "[opencl_filmicrgb] couldn't enqueue kernel! %d\n", err);
+  dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
+  return FALSE;
+}
+#endif
+
 
 static void apply_auto_grey(dt_iop_module_t *self)
 {
@@ -1147,17 +1259,18 @@ void init(dt_iop_module_t *module)
   memcpy(module->default_params, &tmp, sizeof(dt_iop_filmicrgb_params_t));
 }
 
-/*
+
 void init_global(dt_iop_module_so_t *module)
 {
-  //const int program = 22; // filmic.cl, from programs.conf
+  const int program = 22; // filmic.cl, from programs.conf
   dt_iop_filmicrgb_global_data_t *gd
       = (dt_iop_filmicrgb_global_data_t *)malloc(sizeof(dt_iop_filmicrgb_global_data_t));
 
   module->data = gd;
-  //gd->kernel_filmic = dt_opencl_create_kernel(program, "filmic");
+  gd->kernel_filmic_rgb_split = dt_opencl_create_kernel(program, "filmicrgb_split");
+  gd->kernel_filmic_rgb_chroma = dt_opencl_create_kernel(program, "filmicrgb_chroma");
+
 }
-* */
 
 void cleanup(dt_iop_module_t *module)
 {
@@ -1165,15 +1278,16 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
 }
 
-/*
+
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_filmicrgb_global_data_t *gd = (dt_iop_filmicrgb_global_data_t *)module->data;
-  //dt_opencl_free_kernel(gd->kernel_filmic);
+  dt_opencl_free_kernel(gd->kernel_filmic_rgb_split);
+  dt_opencl_free_kernel(gd->kernel_filmic_rgb_chroma);
   free(module->data);
   module->data = NULL;
 }
-* */
+
 
 void gui_reset(dt_iop_module_t *self)
 {
