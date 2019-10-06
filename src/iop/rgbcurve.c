@@ -330,7 +330,13 @@ static void picker_scale(const float *const in, float *out, dt_iop_rgbcurve_para
     case DT_S_SCALE_AUTOMATIC_RGB:
     {
       const float val
-          = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(in, work_profile) : dt_camera_rgb_luminance(in);
+          = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(in,
+                                                               work_profile->matrix_in,
+                                                               work_profile->lut_in,
+                                                               work_profile->unbounded_coeffs_in,
+                                                               work_profile->lutsize,
+                                                               work_profile->nonlinearlut)
+                           : dt_camera_rgb_luminance(in);
       if(p->compensate_middle_grey && work_profile)
       {
         out[0] = dt_ioppr_compensate_middle_grey(val, work_profile);
@@ -540,7 +546,13 @@ static inline int _add_node_from_picker(dt_iop_rgbcurve_params_t *p, const float
   float val = 0.f;
 
   if(p->curve_autoscale == DT_S_SCALE_AUTOMATIC_RGB)
-    val = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(in, work_profile) : dt_camera_rgb_luminance(in);
+    val = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(in,
+                                                             work_profile->matrix_in,
+                                                             work_profile->lut_in,
+                                                             work_profile->unbounded_coeffs_in,
+                                                             work_profile->lutsize,
+                                                             work_profile->nonlinearlut)
+                         : dt_camera_rgb_luminance(in);
   else
     val = in[ch];
 
