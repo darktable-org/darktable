@@ -7,9 +7,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable hebrew translation\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-05 23:38+0300\n"
-"PO-Revision-Date: 2019-10-06 00:24+0300\n"
-"Last-Translator: Shlomi Alon-Braitbart <sbraitbart@gmail.com>\n"
+"POT-Creation-Date: 2019-10-07 08:42+0300\n"
+"PO-Revision-Date: 2019-10-07 19:01+0300\n"
+"Last-Translator: Shlomi Alon-Braitbart <shlomi@librem.one>\n"
 "Language-Team: \n"
 "Language: he_IL\n"
 "MIME-Version: 1.0\n"
@@ -358,33 +358,28 @@ msgid "see manual to know all the tags you can use."
 msgstr "ראה מדריך למשתמש לפירוט כל התגים הניתנים לשימוש."
 
 #: ../build/src/preferences_gen.h:2666
-#, fuzzy
 msgid "position of the image infos line"
-msgstr "צפיפות נקודות dpi של התמונה בתוך ה pdf"
+msgstr "מיקום קו הנתונים בתמונה"
 
 #: ../build/src/preferences_gen.h:2677
-#, fuzzy
 msgctxt "preferences"
 msgid "top left"
-msgstr "הפוך בחירה"
+msgstr "שמאלי עליון"
 
 #: ../build/src/preferences_gen.h:2682
-#, fuzzy
 msgctxt "preferences"
 msgid "top right"
-msgstr "זכויות יוצרים"
+msgstr "ימני עליון"
 
 #: ../build/src/preferences_gen.h:2687
-#, fuzzy
 msgctxt "preferences"
 msgid "top center"
-msgstr "מרכז"
+msgstr "מרכזי עליון"
 
 #: ../build/src/preferences_gen.h:2692 ../build/src/preferences_gen.h:2712
-#, fuzzy
 msgctxt "preferences"
 msgid "bottom"
-msgstr "רווח תחתון"
+msgstr "תחתית"
 
 #: ../build/src/preferences_gen.h:2697
 msgctxt "preferences"
@@ -392,27 +387,23 @@ msgid "hidden"
 msgstr "חבוי"
 
 #: ../build/src/preferences_gen.h:2722
-#, fuzzy
 msgid "show search module text entry"
-msgstr "הראה מודול"
+msgstr "הראה חלונית הכנסת ערך של מודול החיפוש"
 
 #: ../build/src/preferences_gen.h:2733
-#, fuzzy
 msgctxt "preferences"
 msgid "show search text"
-msgstr "נקה"
+msgstr "הצג טקסט חיפוש"
 
 #: ../build/src/preferences_gen.h:2738
-#, fuzzy
 msgctxt "preferences"
 msgid "show groups"
-msgstr "קבוצת טונים"
+msgstr "הראה קבוצות"
 
 #: ../build/src/preferences_gen.h:2743 ../build/src/preferences_gen.h:2758
-#, fuzzy
 msgctxt "preferences"
 msgid "show both"
-msgstr "שניהם"
+msgstr "הראה גם וגם"
 
 #: ../build/src/preferences_gen.h:2768
 msgid "expand a single darkroom module at a time"
@@ -464,9 +455,8 @@ msgstr ""
 "עבד את התמונה במצב חדר חושך עם מסגרת צרה. קבע ל 0 אם אינך מעוניין במסגרת כלל."
 
 #: ../build/src/preferences_gen.h:2855
-#, fuzzy
 msgid "map / geolocalisation"
-msgstr "פעולות על התמונה"
+msgstr "מפה / גיאולוקליזציה"
 
 #: ../build/src/preferences_gen.h:2864
 msgid "only draw images on map that are currently collected and filtered"
@@ -478,7 +468,7 @@ msgid ""
 "map, i.e. limit the images drawn to the current filmstrip. this limits the "
 "number of images drawn and thus reduces the time needed to draw the images."
 msgstr ""
-"השתמש בהגדרה הנוכחית של המסנן לבחירת התגית הגאוגרפית של התמונות המוצגות על "
+"השתמש בהגדרה הנוכחית של המסנן לבחירת התג הגאוגרפי של התמונות המוצגות על "
 "המפה, כלומר הגבל את התמונות המוצגות לסרט השקופיות הנוכחי. הדבר מגביל את מספר "
 "התמונות המוצגות ועל ידי כך מקטין את הזמן הנדרש להצגתם."
 
@@ -505,9 +495,8 @@ msgid ""
 msgstr "הראה הצגה קריאה יותר של המיקום במודול מידע על התמונה"
 
 #: ../build/src/preferences_gen.h:2931
-#, fuzzy
 msgid "security"
-msgstr "צלילות"
+msgstr "ביטחון"
 
 #: ../build/src/preferences_gen.h:2940
 msgid "ask before removing images from database"
@@ -567,12 +556,11 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3060
 msgid "ask before deleting a tag"
-msgstr "בקש אישור לפני מחיקת תגית"
+msgstr "בקש אישור לפני מחיקת תג"
 
 #: ../build/src/preferences_gen.h:3079
-#, fuzzy
 msgid "ask before deleting a style"
-msgstr "בקש אישור לפני מחיקת תגית"
+msgstr "בקש אישור לפני מחיקת תג"
 
 #: ../build/src/preferences_gen.h:3098 ../build/src/preferences_gen.h:3991
 msgid "miscellaneous"
@@ -613,9 +601,8 @@ msgid "enable the filmstrip in darkroom, tethering and map modes."
 msgstr "אפשר סרט שקופיות במצבי עבודה חדר חושך, קשירה, ומפה."
 
 #: ../build/src/preferences_gen.h:3226
-#, fuzzy
 msgid "enable timeline"
-msgstr "מתג תצוגה חיה"
+msgstr "אפשר ציר זמן"
 
 #: ../build/src/preferences_gen.h:3238
 msgid "enable the timeline in lighttable mode."
@@ -656,16 +643,14 @@ msgid "no scrollbars"
 msgstr "ללא פסי גלילה"
 
 #: ../build/src/preferences_gen.h:3302 ../build/src/preferences_gen.h:3322
-#, fuzzy
 msgctxt "preferences"
 msgid "lighttable"
 msgstr "שולחן אור"
 
 #: ../build/src/preferences_gen.h:3307
-#, fuzzy
 msgctxt "preferences"
 msgid "lighttable + darkroom"
-msgstr "שולחן אור וחדר חושך וירטואלי"
+msgstr "שולחן אור + חדר חושך"
 
 #: ../build/src/preferences_gen.h:3325
 msgid "defines where scrollbars should be displayed"
@@ -812,9 +797,8 @@ msgstr ""
 "lanczos3)."
 
 #: ../build/src/preferences_gen.h:3592
-#, fuzzy
 msgid "auto-apply basecurve"
-msgstr "יישום אוטומטי לעקום הבסיס המוגדר מראש עבור כל מצלמה"
+msgstr "יישם  עקום בסיס אוטומטית"
 
 #: ../build/src/preferences_gen.h:3604
 msgid "use a basecurve by default (needs a restart)"
@@ -833,9 +817,8 @@ msgstr ""
 "היצרן אם קיים כזה (מצריך אתחול)"
 
 #: ../build/src/preferences_gen.h:3632
-#, fuzzy
 msgid "auto-apply sharpen"
-msgstr "יישום אוטומטי של פריסטים מופעל"
+msgstr "יישם חידוד אוטומטית"
 
 #: ../build/src/preferences_gen.h:3644
 msgid ""
@@ -847,9 +830,8 @@ msgstr ""
 "חידוד אוטומטי כיוון שלרוב המצלמות אין פילטר תדרים נמוכים. (מצריך אתחול)"
 
 #: ../build/src/preferences_gen.h:3652
-#, fuzzy
 msgid "xmp"
-msgstr "מפה"
+msgstr "xmp"
 
 #: ../build/src/preferences_gen.h:3661
 msgid "write sidecar file for each image"
@@ -927,12 +909,10 @@ msgstr ""
 "הממוזערות שבאוסף הרץ   'darktable-generate-cache'."
 
 #: ../build/src/preferences_gen.h:3805
-#, fuzzy
 msgid "enable disk backend for full preview cache"
-msgstr "הפעל שימוש בדיסק לצורך מטמון תמונות ממוזערות"
+msgstr "הפעל שימוש בדיסק לצורך מטמון תמונות תצוגה מקדימה"
 
 #: ../build/src/preferences_gen.h:3817
-#, fuzzy
 msgid ""
 "if enabled, write full preview to disk (.cache/darktable/) when evicted from "
 "the memory cache. note that this can take a lot of memory (several gigabytes "
@@ -940,11 +920,10 @@ msgid ""
 "though to delete these manually, if you want. light table performance will "
 "be increased greatly when zooming image in full preview mode."
 msgstr ""
-"אם מופעל, כתוב תמונות ממוזערות לדיסק (.cache/darktable/) כאשר מתפנות מזיכרון "
+"אם מופעל, כתוב תמונות ממוזערות לדיסק (cache/darktable.) כאשר מתפנות מזיכרון "
 "המטמון. שים לב שהדבר עלול לצרוך זכרון רב ( מספר גיגה בייטים ל 20k תמונות) "
-"ותמונות ממוזערות אלה לעולם לא יימחקו. אולם בטוח למחוק תמונות אלה ידנית. "
-"ביצועי שולחן האור ישתפרו מאד בדפדוף מרובה. על מנת ליצור את כל התמונות "
-"הממוזערות שבאוסף הרץ   'darktable-generate-cache'."
+"ותמונות ממוזערות אלה לעולם לא יימחקו. בטוח למחוק תמונות אלה ידנית כרצונך. "
+"ביצועי שולחן האור ישתפרו מאד בהגדלת תמונה במצב תצוגה מקדימה מלאה."
 
 #: ../build/src/preferences_gen.h:3825
 msgid "number of background threads"
@@ -1032,7 +1011,6 @@ msgid "very fast GPU"
 msgstr "מעבד גראפי (GPU) מהיר מאד"
 
 #: ../build/src/preferences_gen.h:3975
-#, fuzzy
 msgid ""
 "defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled "
 "systems. default - GPU processes full and CPU processes preview pipe "
@@ -1050,21 +1028,19 @@ msgid "omit hierarchy in simple tag lists"
 msgstr "השמט היררכיה ברשימות תיוג פשוטות"
 
 #: ../build/src/preferences_gen.h:4012
-#, fuzzy
 msgid ""
 "when creating XMP file the hierarchical tags are also added as a simple list "
 "of non-hierarchical ones to make them visible to some other programs. when "
 "this option is checked darktable will only include their last part and "
 "ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgstr ""
-"כאשר מייצאים תמונות התגיות ההיררכיות נוספות גם הן כרשימה פשוטה של תגיות לא "
-"היררכיות על מנת שתכנות אחרות יוכלו לראותן. כאשר אפשרות זו מסומנת darktable "
-"יכלול רק את חלקן האחרון ויתעלם מהיתר. כך ש  'foo|bar|baz'  יוסיף רק  'baz'."
+"כאשר יוצרים קובץ XMP התגים ההיררכים נוספים גם הם כרשימה פשוטה של תגיות לא "
+"היררכיות על מנת שתוכנות אחרות יוכלו לראותן. כאשר אפשרות זו מסומנת darktable "
+"יכלול רק את חלקן האחרון ויתעלם מהיתר. כך ש  'foo|bar|baz'  יוסיף רק את 'baz'."
 
 #: ../build/src/preferences_gen.h:4020
-#, fuzzy
 msgid "disable the entry completion"
-msgstr "הסר מהאוסף"
+msgstr "נטרל השלמת ערך"
 
 #: ../build/src/preferences_gen.h:4032
 msgid ""
@@ -1072,8 +1048,8 @@ msgid ""
 "for others the entry completion can be embarrassing. need to restart "
 "darktable."
 msgstr ""
-"השלמת הכנסת טקסט מועילה למשתמשים במקלדת בלבד להכנסת תגים. לאחרים השלמה יכולה "
-"להיות מביכה. (מצריך אתחול)"
+"השלמת ערך מועילה למשתמשים במקלדת בלבד להכנסת תגים. לאחרים השלמה יכולה להיות "
+"מביכה. (מצריך אתחול)"
 
 #: ../build/src/preferences_gen.h:4040
 msgid "password storage backend to use"
@@ -1117,9 +1093,8 @@ msgstr ""
 "הערות על תמונות"
 
 #: ../build/src/preferences_gen.h:4118
-#, fuzzy
 msgid "3D lut root folder"
-msgstr "העבר לתיקיה אחרת"
+msgstr "תיקיית שורש של 3D lut"
 
 #: ../build/src/preferences_gen.h:4123 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/preferences.c:1616
@@ -3869,7 +3844,7 @@ msgstr "$(OPENCL_ACTIVATED) - האם OpenCL מופעל"
 
 #: ../src/gui/gtkentry.c:220
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
-msgstr "$(CATEGORY0(category)) - תת תגית ברמה 0 בתגיות היררכיות"
+msgstr "$(CATEGORY0(category)) - תת תג ברמה 0 בתגי היררכיות"
 
 #: ../src/gui/gtkentry.c:221
 msgid "$(TAGS) - tags as set in metadata settings"
@@ -7010,7 +6985,7 @@ msgid ""
 "drag the line for split toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
 msgstr ""
-"גרור את הקו לפיצול התאמות. בהיר עבור גוונים בהירים, חשוך עבור צללים. השתמש "
+"גרור את הקו לפיצול התאמות. בהיר עבור טונים בהירים, חשוך עבור צללים. השתמש "
 "בגלגל העכבר לשינוי הרוויה."
 
 #: ../src/iop/colorcorrection.c:291
@@ -8118,7 +8093,7 @@ msgstr "מטווה צורה לוגריתמי"
 
 #: ../src/iop/filmic.c:1688 ../src/iop/filmicrgb.c:1332
 msgid "middle grey luminance"
-msgstr "לומיננס של גוני אפור בינוני."
+msgstr "לומיננס של גוני אפור בינוני"
 
 #: ../src/iop/filmic.c:1691 ../src/iop/filmicrgb.c:1335
 msgid ""
@@ -8140,7 +8115,7 @@ msgid ""
 msgstr ""
 "מספר הסטופים בין אפור בינוני ללבן טהור.\n"
 "זו מדידה שמד אור היה נותן בשטח.\n"
-"כוונן כך שחיתוך פרטים בהירים ימנע."
+"כוונן כך שחיתוך פרטים בהירים ימנע"
 
 #: ../src/iop/filmic.c:1715 ../src/iop/filmicrgb.c:1359
 #: ../src/iop/profile_gamma.c:908
@@ -8218,7 +8193,7 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1771 ../src/iop/filmicrgb.c:1415
 msgid "shadows/highlights balance"
-msgstr "איזון צללים/ פרטים בהירים"
+msgstr "איזון צללים/ בהירים"
 
 #: ../src/iop/filmic.c:1774 ../src/iop/filmicrgb.c:1418
 msgid ""
@@ -8404,7 +8379,7 @@ msgstr "קו רוחב"
 #: ../src/iop/filmicrgb.c:275
 msgctxt "accel"
 msgid "shadows/highlights balance"
-msgstr "איזון צללים/פרטים בהירים"
+msgstr "איזון צללים/ בהירים"
 
 #: ../src/iop/filmicrgb.c:276
 msgctxt "accel"
@@ -8734,7 +8709,7 @@ msgstr "שיטת שחזור פרטים בהירים"
 msgid ""
 "manually adjust the clipping threshold against magenta highlights (you "
 "shouldn't ever need to touch this)"
-msgstr "כוונן ידנית את סף החיתוך כנגד פרטים בהירים במג'נטה (אין צורך לגעת בזה)"
+msgstr "כוונן ידנית את סף החיתוך כנגד בהירים במג'נטה (אין צורך לגעת בזה)"
 
 #: ../src/iop/highpass.c:76
 msgid "highpass"
@@ -9371,9 +9346,9 @@ msgid "lut 3D"
 msgstr "lut 3D"
 
 #: ../src/iop/lut3d.c:355
-#, fuzzy, c-format
+#, c-format
 msgid "invalid png header from %s"
-msgstr "גודל ניר לא חוקי"
+msgstr "תחילית קובץ png לא חוקית מ %s"
 
 #: ../src/iop/lut3d.c:363
 #, c-format
@@ -9395,9 +9370,9 @@ msgid "error - could not read png image %s"
 msgstr "שגיאה - לא ניתן לקרוא קובץ png %s"
 
 #: ../src/iop/lut3d.c:573
-#, fuzzy, c-format
+#, c-format
 msgid "error - invalid cube file: %s"
-msgstr "שגיאה: לא יכול לפתוח קובץ %s"
+msgstr "שגיאה: קובץ cube לא חוקי %s"
 
 #: ../src/iop/lut3d.c:589
 msgid "DOMAIN MIN <> 0.0 is not supported"
@@ -9782,11 +9757,12 @@ msgid "width of fill-light area defined in zones"
 msgstr "רוחב שטח מילוי-אור המוגדר באזורים"
 
 #: ../src/iop/relight.c:380
-#, fuzzy
 msgid ""
 "select the center of fill-light\n"
 "ctrl+click to select an area"
-msgstr "בחר מרכז מילוי-אור"
+msgstr ""
+"בחר מרכז מילוי-אור\n"
+"קליק+ctrl לבחירת אזור"
 
 #: ../src/iop/relight.c:395
 msgid "toggle tool for picking median lightness in image"
@@ -9813,9 +9789,8 @@ msgstr ""
 "צורות נוספות לסקאלה הנוכחית"
 
 #: ../src/iop/retouch.c:2661
-#, fuzzy
 msgid "show and edit shapes on the current scale"
-msgstr "הצג וערוך אלמנטים במסיכה"
+msgstr "הצג וערוך צורות בסקאלה הנוכחית"
 
 #: ../src/iop/retouch.c:2696
 msgid "algorithms:"
@@ -9882,14 +9857,12 @@ msgid "paste cut shapes to current scale"
 msgstr "הדבק צורות חתוכות לסקאלה הנוכחית"
 
 #: ../src/iop/retouch.c:2840
-#, fuzzy
 msgid "preview single scale"
-msgstr "בחר תמונה בודדת"
+msgstr "תצוגה מקדימה של סקאלה בודדת"
 
 #: ../src/iop/retouch.c:2847
-#, fuzzy
 msgid "adjust preview levels"
-msgstr "כוון רמת שחור"
+msgstr "כוונן רמות תצוגה מקדימה"
 
 #: ../src/iop/retouch.c:2866
 msgid "auto levels"
@@ -9960,9 +9933,8 @@ msgid "radius of the selected blur type"
 msgstr "רדיוס סוג הטשטוש הנבחר"
 
 #: ../src/iop/retouch.c:2952
-#, fuzzy
 msgid "set the opacity on the selected shape"
-msgstr "קבע את אטימות הערבוב"
+msgstr "קבע את אטימות הצורה הנבחרת"
 
 #. add all the controls to the iop
 #: ../src/iop/retouch.c:2956
@@ -10087,27 +10059,24 @@ msgid "  R  "
 msgstr "  R  "
 
 #: ../src/iop/rgbcurve.c:1492 ../src/iop/rgblevels.c:1024
-#, fuzzy
 msgid "curve nodes for r channel"
-msgstr "עקום טון עבור ערוץ L"
+msgstr "צמתי עקום עבור ערוץ r"
 
 #: ../src/iop/rgbcurve.c:1494 ../src/iop/rgblevels.c:1026
 msgid "  G  "
 msgstr "  G  "
 
 #: ../src/iop/rgbcurve.c:1497 ../src/iop/rgblevels.c:1029
-#, fuzzy
 msgid "curve nodes for g channel"
-msgstr "עקום טון עבור ערוץ L"
+msgstr "צמתי עקום עבור ערוץ g"
 
 #: ../src/iop/rgbcurve.c:1499 ../src/iop/rgblevels.c:1031
 msgid "  B  "
 msgstr "  B  "
 
 #: ../src/iop/rgbcurve.c:1502 ../src/iop/rgblevels.c:1034
-#, fuzzy
 msgid "curve nodes for b channel"
-msgstr "עקום טון עבור ערוץ b"
+msgstr "צמתי עקום עבור ערוץ b"
 
 #: ../src/iop/rgbcurve.c:1522
 msgid "pick GUI color from image"
@@ -10118,9 +10087,8 @@ msgid "compensate middle grey"
 msgstr "פצה אפור בינוני"
 
 #: ../src/iop/rgblevels.c:108
-#, fuzzy
 msgid "rgb levels"
-msgstr "רמות"
+msgstr "רמות rgb"
 
 #: ../src/iop/rgblevels.c:1094
 msgid ""
@@ -10142,11 +10110,8 @@ msgid "automatic pixel rotation"
 msgstr "סיבוב אוטומטי של פיקסלים"
 
 #: ../src/iop/rotatepixels.c:358
-#, fuzzy
 msgid "automatic pixel rotation only works for the sensors that need it."
-msgstr ""
-"סיבוב אוטומטי של פיקסלים\n"
-"עובד רק עבור חיישנים הזקוקים לכך."
+msgstr "סיבוב אוטומטי של פיקסלים עובד רק עבור חיישנים הזקוקים לכך."
 
 #: ../src/iop/scalepixels.c:56
 msgctxt "modulename"
@@ -10158,11 +10123,8 @@ msgid "automatic pixel scaling"
 msgstr "שינוי גודל פיקסלים אוטומטי"
 
 #: ../src/iop/scalepixels.c:275
-#, fuzzy
 msgid "automatic pixel scaling only works for the sensors that need it."
-msgstr ""
-"שינוי גודל פיקסלים אוטומטי\n"
-"עובד רק עבור חיישנים הזקוקים לכך."
+msgstr "שינוי גודל אוטומטי של פיקסלים  עובד רק עבור חיישנים הזקוקים לכך."
 
 #: ../src/iop/shadhi.c:177
 msgid "shadows and highlights"
@@ -10236,7 +10198,7 @@ msgid ""
 "compress the effect on shadows/highlights and\n"
 "preserve midtones"
 msgstr ""
-"דחוס את האפקט על צללים/פרטים בהירים\n"
+"דחוס את האפקט על צללים/ בהירים\n"
 "שמר טונים בינוניים"
 
 #: ../src/iop/shadhi.c:870
@@ -10245,10 +10207,9 @@ msgstr "כוונן רוויה בצללים"
 
 #: ../src/iop/shadhi.c:871
 msgid "adjust saturation of highlights"
-msgstr "כוונן רוויה בפרטים הבהירים"
+msgstr "כוונן רוויה בבהירים"
 
 #: ../src/iop/sharpen.c:72
-#, fuzzy
 msgctxt "modulename"
 msgid "sharpen"
 msgstr "חדד"
@@ -10352,7 +10313,7 @@ msgid ""
 "compress the effect on highlights/shadows and\n"
 "preserve midtones"
 msgstr ""
-"דחוס את האפקט על צללים/פרטים בהירים\n"
+"דחוס את האפקט על צללים/ בהירים\n"
 "שמר טונים בינוניים"
 
 #: ../src/iop/spots.c:55
@@ -10494,23 +10455,20 @@ msgid "tone curve"
 msgstr "עקום טון"
 
 #: ../src/iop/tonecurve.c:1308
-#, fuzzy
 msgid "color space"
-msgstr "תוכנית צבע"
+msgstr "מרחב צבע"
 
 #: ../src/iop/tonecurve.c:1309
-#, fuzzy
 msgid "Lab, linked channels"
-msgstr "ערוץ-L ב Lab"
+msgstr "ערוצים מקושרים, Lab"
 
 #: ../src/iop/tonecurve.c:1310
 msgid "Lab, independent channels"
 msgstr "Lab, ערוצים בלתי תלוים"
 
 #: ../src/iop/tonecurve.c:1311
-#, fuzzy
 msgid "XYZ, linked channels"
-msgstr "ערוץ אדום ב RGB"
+msgstr "ערוצים מקושרים, XYZ"
 
 #: ../src/iop/tonecurve.c:1314
 msgid ""
@@ -10547,55 +10505,46 @@ msgid "tonecurve for b channel"
 msgstr "עקום טון עבור ערוץ b"
 
 #: ../src/iop/tonecurve.c:1407
-#, fuzzy
 msgid "log"
-msgstr "כנס לחשבון"
+msgstr "יומן"
 
 #: ../src/iop/tonecurve.c:1415
-#, fuzzy
 msgid "base of the logarithm"
-msgstr "שם הפריסט"
+msgstr "בסיס הלוגריתם"
 
 #: ../src/iop/toneequal.c:290
-#, fuzzy
 msgid "tone equalizer"
-msgstr "אקולייזר"
+msgstr "אקולייזר טונים"
 
 #: ../src/iop/toneequal.c:310
-#, fuzzy
 msgctxt "accel"
 msgid "blacks"
-msgstr "שחור"
+msgstr "שחורים"
 
 #: ../src/iop/toneequal.c:311
-#, fuzzy
 msgctxt "accel"
 msgid "deep shadows"
-msgstr "צללים"
+msgstr "צללים עמוקים"
 
 #: ../src/iop/toneequal.c:313
-#, fuzzy
 msgctxt "accel"
 msgid "light shadows"
-msgstr "צללים"
+msgstr "צללים קלים"
 
 #: ../src/iop/toneequal.c:314
-#, fuzzy
 msgctxt "accel"
 msgid "midtones"
-msgstr "הסחה של טונים בינוניים"
+msgstr "טונים בינוניים"
 
 #: ../src/iop/toneequal.c:315
-#, fuzzy
 msgctxt "accel"
 msgid "dark highlights"
-msgstr "פרטים בהירים"
+msgstr "עיקר הכהים"
 
 #: ../src/iop/toneequal.c:317
-#, fuzzy
 msgctxt "accel"
 msgid "whites"
-msgstr "לבן"
+msgstr "לבנים"
 
 #: ../src/iop/toneequal.c:318
 msgctxt "accel"
@@ -10608,10 +10557,9 @@ msgid "filter diffusion"
 msgstr "דיפוזיית פילטר"
 
 #: ../src/iop/toneequal.c:320
-#, fuzzy
 msgctxt "accel"
 msgid "smoothing diameter"
-msgstr "מסנן קר"
+msgstr "קוטר החלקה"
 
 #: ../src/iop/toneequal.c:321
 msgctxt "accel"
@@ -10619,28 +10567,24 @@ msgid "edges refinement/feathering"
 msgstr "קצוות עידון/נוצה"
 
 #: ../src/iop/toneequal.c:322
-#, fuzzy
 msgctxt "accel"
 msgid "mask quantization"
-msgstr "איזון היסטוגרמה"
+msgstr "קוונטיזצית מסיכה"
 
 #: ../src/iop/toneequal.c:323
-#, fuzzy
 msgctxt "accel"
 msgid "mask exposure compensation"
-msgstr "פיצוי נקודה שחורה"
+msgstr "מסך פיצוי חשיפה"
 
 #: ../src/iop/toneequal.c:324
-#, fuzzy
 msgctxt "accel"
 msgid "mask contrast compensation"
-msgstr "דחיסת ניגודיות"
+msgstr "דחיסת ניגודיות של מסיכה"
 
 #. No blending
 #: ../src/iop/toneequal.c:416
-#, fuzzy
 msgid "mask blending : none"
-msgstr "בחר מצב ערבוב"
+msgstr "ערבוב מסיכה: כלום"
 
 #: ../src/iop/toneequal.c:428
 msgid "mask blending : landscapes"
@@ -10655,32 +10599,26 @@ msgid "mask blending : isolated subjects"
 msgstr "ערבוב מסיכה : נושאים מבודדים"
 
 #: ../src/iop/toneequal.c:465
-#, fuzzy
 msgid "compress shadows/highlights : soft"
-msgstr ""
-"דחוס את האפקט על צללים/פרטים בהירים\n"
-"שמר טונים בינוניים"
+msgstr "דחוס צללים/בהירים: רך"
 
 #: ../src/iop/toneequal.c:484
-#, fuzzy
 msgid "compress shadows/highlights : strong"
-msgstr ""
-"דחוס את האפקט על צללים/פרטים בהירים\n"
-"שמר טונים בינוניים"
+msgstr "דחוס צללים/ בהירים: חזק"
 
 #: ../src/iop/toneequal.c:503
 msgid "relight : fill-in"
-msgstr ""
+msgstr "האר מחדש: מילוי אור"
 
 #: ../src/iop/toneequal.c:554
 msgid ""
 "tone equalizer needs to be after distorsion modules in the pipeline – "
 "disabled"
-msgstr ""
+msgstr "אקולייזר טונים צריך לבוא אחרי מודולי דיסטורציה בסדר הפעולות - מנוטרל"
 
 #: ../src/iop/toneequal.c:824 ../src/iop/toneequal.c:945
 msgid "tone equalizer failed to allocate memory, check your RAM settings"
-msgstr ""
+msgstr "אקולייזר טונים כשל בהקצאת זיכרון, בדוק את הגדרות ה RAM"
 
 #. Pointers are not 64-bits aligned, and SSE code will segfault
 #: ../src/iop/toneequal.c:846
@@ -10688,33 +10626,31 @@ msgid ""
 "tone equalizer in/out buffer are ill-aligned, please report the bug to the "
 "developers"
 msgstr ""
+"זכרונות קלט/פלט של אקולייזר הטונים לא מיושרים כראוי, אנה דווח באג למפתחים"
 
 #: ../src/iop/toneequal.c:1770 ../src/iop/toneequal.c:2143
 msgid "the interpolation is unstable, decrease the curve smoothing"
-msgstr ""
+msgstr "האינטרפולציה לא יציבה, הפחת את החלקת עקום"
 
 #: ../src/iop/toneequal.c:1855 ../src/iop/toneequal.c:1915
 msgid "wait for the preview to finish recomputing"
-msgstr ""
+msgstr "המתן עד שחישוב התצוגה המקדימה יסתיים"
 
 #: ../src/iop/toneequal.c:2148
 msgid "some parameters are out-of-bounds"
-msgstr ""
+msgstr "חלק מהפרמטרים מחוץ לתחום"
 
 #: ../src/iop/toneequal.c:3035
-#, fuzzy
 msgid "simple"
-msgstr "הוסף דגימה"
+msgstr "פשוט"
 
 #: ../src/iop/toneequal.c:3036
-#, fuzzy
 msgid "advanced"
-msgstr "איזון"
+msgstr "מתקדם"
 
 #: ../src/iop/toneequal.c:3037
-#, fuzzy
 msgid "masking"
-msgstr "מנהל מסיכות"
+msgstr "מיסוך"
 
 #: ../src/iop/toneequal.c:3051
 msgid "-8 EV : blacks"
@@ -10725,9 +10661,8 @@ msgid "-7 EV : deep shadows"
 msgstr "-7 EV : צללים עמוקים"
 
 #: ../src/iop/toneequal.c:3063
-#, fuzzy
 msgid "-6 EV : shadows"
-msgstr "צללים"
+msgstr "-6 EV : צללים"
 
 #: ../src/iop/toneequal.c:3069
 msgid "-5 EV : light shadows"
@@ -10738,14 +10673,12 @@ msgid "-4 EV : midtones"
 msgstr "-4 EV : טונים בינונים"
 
 #: ../src/iop/toneequal.c:3081
-#, fuzzy
 msgid "-3 EV : dark highlights"
-msgstr "פרטים בהירים"
+msgstr "-3 EV : כהים פרטים בהירים"
 
 #: ../src/iop/toneequal.c:3087
-#, fuzzy
 msgid "-2 EV : highlights"
-msgstr "פרטים בהירים"
+msgstr "-2 EV : בהירים"
 
 #: ../src/iop/toneequal.c:3093
 msgid "-1 EV : whites"
@@ -10756,9 +10689,8 @@ msgid "+0 EV : speculars"
 msgstr "+0 EV : הברקות"
 
 #: ../src/iop/toneequal.c:3123
-#, fuzzy
 msgid "curve smoothing"
-msgstr "החלקת צבע"
+msgstr "החלקת עקום"
 
 #: ../src/iop/toneequal.c:3124
 msgid ""
@@ -10767,15 +10699,18 @@ msgid ""
 "negative values will avoid oscillations and behave more robustly\n"
 "but may produce brutal tone transitions and damage local contrast."
 msgstr ""
+"ערכים חיוביים ייצרו מעברי טונים מדורגים\n"
+"אבל העקום עלול להיות לתנוד במצבים מסויימים.\n"
+"ערכים שליליים ימנעו אוסצילציות ויתנהגו יותר רובסטי\n"
+"אבל עלולים לייצר מעברי טונים קיצוניים ולפגוע בקונטרסט מקומי."
 
 #: ../src/iop/toneequal.c:3133
 msgid "luminance estimator"
-msgstr ""
+msgstr "מעריך לומיננס"
 
 #: ../src/iop/toneequal.c:3145
-#, fuzzy
 msgid "preserve details"
-msgstr "פריסטים"
+msgstr "שמר פרטים"
 
 #: ../src/iop/toneequal.c:3150
 msgid ""
@@ -10784,30 +10719,33 @@ msgid ""
 "contrast\n"
 "'averaged guided filter' is a geometric mean of both methods"
 msgstr ""
+"'לא' משפיע על קונטרסט גלובלי ומקומי (בטוח לשימוש אם רק מעלים קונטרסט)\n"
+"'פילטר מונחה' משפיע על קונטרסט גלובלי בלבד ומנסה לשמור על קונטרסט מקומי\n"
+"'פילטר מונחה ממוצע' הוא ממוצע גיאומטרי של שתי השיטות"
 
 #: ../src/iop/toneequal.c:3157
 msgid "filter diffusion"
-msgstr ""
+msgstr "דיפוזיית פילטר"
 
 #: ../src/iop/toneequal.c:3158
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
 msgstr ""
+"מספר מעברים של פילטר מונחה לבצע\n"
+"עוזר לטשטש את קצוות הפילטר על חשבון מהירות"
 
 #: ../src/iop/toneequal.c:3166
-#, fuzzy
 msgid "smoothing diameter"
-msgstr "מסנן קר"
+msgstr "קוטר החלקה"
 
 #: ../src/iop/toneequal.c:3167
-#, fuzzy
 msgid "diameter of the blur in percent of the largest image size"
-msgstr "עובי מסגרת באחוזים מגודל התמונה המלא"
+msgstr "קוטר הטשטוש באחוזים מהתמונה הגדולה ביותר"
 
 #: ../src/iop/toneequal.c:3173
 msgid "edges refinement/feathering"
-msgstr ""
+msgstr "עידון/נוצה לקצוות"
 
 #: ../src/iop/toneequal.c:3174
 msgid ""
@@ -10817,10 +10755,15 @@ msgid ""
 "lower values give smoother gradients and better smoothing\n"
 "but may lead to inaccurate edges taping"
 msgstr ""
+"דיוק פעולת הנוצה:\n"
+"ערכים גבוהים מכריחים את המסיכה לעקוב אחר קצוות בצמידות רבה יותר\n"
+"אבל עלול לנטרל את אפקט ההחלקה\n"
+"ערכים נמוכים מובילים לגראדיינטים חלקים יותר והחלקה טובה יותר\n"
+"אך עלולים להוביל לניהול לא מדויק של הקצוות"
 
 #: ../src/iop/toneequal.c:3182
 msgid "mask post-processing"
-msgstr ""
+msgstr "עיבוד מאוחר של מסיכה"
 
 #: ../src/iop/toneequal.c:3188
 msgid ""
@@ -10828,11 +10771,12 @@ msgid ""
 "the central line shows the average. orange bars appear at extrema if "
 "clipping occurs."
 msgstr ""
+"טווח ההסטוגרמה בין העשירונים הראשון והאחרון.\n"
+"הקו המרכזי מראה ממוצע. פסים כתומים יופיעו בקצוות במידה שיש חיתוך."
 
 #: ../src/iop/toneequal.c:3193
-#, fuzzy
 msgid "mask quantization"
-msgstr "איזון היסטוגרמה"
+msgstr "קוונטיזצית מסיכה"
 
 #: ../src/iop/toneequal.c:3195
 msgid ""
@@ -10840,11 +10784,13 @@ msgid ""
 "higher values posterize the luminance mask to help the guiding\n"
 "produce piece-wise smooth areas when using high feathering values"
 msgstr ""
+"0 מנטרל את הקוואנטיזציה.\n"
+"ערכים גבוהים יוצרים אפקט פוסטר למסיכת הלומיננס שעוזר לניתוב\n"
+"לייצר אזורים חלקים כאשר משתמשים בערכי נוצה גבוהים"
 
 #: ../src/iop/toneequal.c:3203
-#, fuzzy
 msgid "mask exposure compensation"
-msgstr "פיצוי נקודה שחורה"
+msgstr "מסך פיצוי חשיפה"
 
 #: ../src/iop/toneequal.c:3205
 msgid ""
@@ -10852,11 +10798,13 @@ msgid ""
 "for better control of the exposure corrections.\n"
 "the picker will auto-adjust the average exposure at -4EV."
 msgstr ""
+"השתמש בזה על מנת להחליק את החשיפה הממוצעת של המסיכה לאורך הערוצים\n"
+"לשליטה טובה יותר בתיקון החשיפה.\n"
+"כלי הבחירה יכוונן אוטומטית את ממוצע החשיפה ל -4EV."
 
 #: ../src/iop/toneequal.c:3217
-#, fuzzy
 msgid "mask contrast compensation"
-msgstr "דחיסת ניגודיות"
+msgstr "דחיסת ניגודיות של מסיכה"
 
 #: ../src/iop/toneequal.c:3219
 msgid ""
@@ -10864,11 +10812,13 @@ msgid ""
 "this allows to spread the exposure histogram over more channels\n"
 "for better control of the exposure corrections."
 msgstr ""
+"השתמש בזה להרחבת קונטרסט המסיכה מסביב לחשיפה הממוצעת שלה\n"
+"הדבר מאפשר לפרוס את היסטוגרמת החשיפה על יותר ערוצים\n"
+"לשליטה טובה יותר בתיקון החשיפה."
 
 #: ../src/iop/toneequal.c:3231 ../src/iop/toneequal.c:3235
-#, fuzzy
 msgid "display exposure mask"
-msgstr "הצג מסיכה"
+msgstr "הצג מסיכת חשיפה"
 
 #: ../src/iop/tonemap.cc:73
 msgid "tone mapping"
@@ -11034,17 +10984,17 @@ msgstr "הוסף מידה מסוימת של רעש אקראי למניעת פס�
 #: ../src/iop/vignette.c:1220
 #, c-format
 msgid "[%s on node] change vignette/feather size"
-msgstr ""
+msgstr "[%s on node] שנה גודל הצללה/נוצה"
 
 #: ../src/iop/vignette.c:1226
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
-msgstr ""
+msgstr "[%s on node] שנה גודל הצללה/נוצה תוך שמירה על היחס"
 
 #: ../src/iop/vignette.c:1232
 #, c-format
 msgid "[%s on center] move vignette"
-msgstr ""
+msgstr "[%s on center] הזז הצללה"
 
 #: ../src/iop/watermark.c:236
 msgid "watermark"
@@ -11088,7 +11038,7 @@ msgid ""
 "watermark color, tag:\n"
 "$(WATERMARK_COLOR)"
 msgstr ""
-"צבע חותמת מים, תגית:\n"
+"צבע חותמת מים, תג:\n"
 "$(WATERMARK_COLOR)"
 
 #: ../src/iop/watermark.c:1385
@@ -11096,9 +11046,8 @@ msgid "select watermark color"
 msgstr "בחר את צבע חותמת המים"
 
 #: ../src/iop/watermark.c:1388
-#, fuzzy
 msgid "pick color from image"
-msgstr "בחר צבע לממשק מהתמונה"
+msgstr "בחר צבע מהתמונה"
 
 #. Simple text
 #: ../src/iop/watermark.c:1398
@@ -11110,7 +11059,7 @@ msgid ""
 "text string, tag:\n"
 "$(WATERMARK_TEXT)"
 msgstr ""
-"מחרוזת טקסט, תגית:\n"
+"מחרוזת טקסט, תג:\n"
 "$(WATERMARK_TEXT)"
 
 #. Text font
@@ -11125,7 +11074,7 @@ msgid ""
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
 msgstr ""
-"פונט לטקסט, תגית:\n"
+"פונט לטקסט, תג:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
@@ -11377,9 +11326,8 @@ msgid "copied locally"
 msgstr "הועתק מקומית"
 
 #: ../src/libs/collect.c:1373
-#, fuzzy
 msgid "group followers"
-msgstr "קבץ את הצורות"
+msgstr "עוקבי הקבוצה"
 
 #: ../src/libs/collect.c:1549 ../src/libs/collect.c:1564
 #: ../src/libs/collect.c:1947
@@ -11462,9 +11410,8 @@ msgstr "היסטוריה"
 
 #. DT_COLLECTION_SORT_DESCRIPTION
 #: ../src/libs/collect.h:38 ../src/libs/tools/filter.c:157
-#, fuzzy
 msgid "aspect ratio"
-msgstr "כיוון הבט"
+msgstr "יחס רוחב גובה"
 
 #: ../src/libs/collect.h:38 ../src/libs/metadata_view.c:101
 #: ../src/libs/tools/filter.c:147
@@ -11472,7 +11419,6 @@ msgid "filename"
 msgstr "שם קובץ"
 
 #: ../src/libs/collect.h:39
-#, fuzzy
 msgid "grouping"
 msgstr "קיבוץ"
 
@@ -11569,11 +11515,15 @@ msgid_plural ""
 "no history compression of %d images.\n"
 "see tag: darktable|problem|history-compress."
 msgstr[0] ""
+"אין דחיסת היסטוריה של תמונה 1.\n"
+"ראה תג: darktable|problem|history-compress."
 msgstr[1] ""
+"אין דחיסת היסטוריה של תמונות %d.\n"
+"ראה תג: darktable|problem|history-compress."
 
 #: ../src/libs/copy_history.c:172
 msgid "history compression warning"
-msgstr ""
+msgstr "אזהרת דחיסת היסטוריה"
 
 #: ../src/libs/copy_history.c:220
 #, c-format
@@ -11631,17 +11581,15 @@ msgstr ""
 "כל התמונות הנבחרות"
 
 #: ../src/libs/copy_history.c:337
-#, fuzzy
 msgid "compress history"
-msgstr "דחוס מחסנית היסטוריה"
+msgstr "דחוס היסטוריה"
 
 #: ../src/libs/copy_history.c:339
-#, fuzzy
 msgid ""
 "compress history stack of\n"
 "all selected images"
 msgstr ""
-"השלך את מחסנית ההיסטוריה\n"
+"דחוס את מחסנית ההיסטוריה\n"
 "של כל התמונות הנבחרות"
 
 #: ../src/libs/copy_history.c:342
@@ -11716,33 +11664,28 @@ msgid "write sidecar files"
 msgstr "כתוב קובץ נלווה"
 
 #: ../src/libs/duplicate.c:67
-#, fuzzy
 msgid "duplicate manager"
-msgstr "שכפל תמונה"
+msgstr "מנהל שכפולים"
 
 #: ../src/libs/duplicate.c:487
-#, fuzzy
 msgid "existing duplicates"
-msgstr "צור העתק"
+msgstr "העתקים קיימים"
 
 #: ../src/libs/duplicate.c:490
-#, fuzzy
 msgid "create a 'virgin' duplicate of the image without any development"
-msgstr "יוצר העתק של התמונה לפני יישום הסגנון"
+msgstr "צור העתק 'בתולי' של התמונה ללא כל פיתוח"
 
 #: ../src/libs/duplicate.c:494
-#, fuzzy
 msgid "create a duplicate of the image with same history stack"
-msgstr "יוצר העתק של התמונה לפני יישום הסגנון"
+msgstr "צור העתק של התמונה עם אותה מחסנית הסטוריה"
 
 #: ../src/libs/export.c:69
 msgid "export selected"
 msgstr "ייצא את שנבחר"
 
 #: ../src/libs/export.c:127
-#, fuzzy
 msgid "export to disk"
-msgstr "ייצא תגיות"
+msgstr "ייצא לדיסק"
 
 #: ../src/libs/export.c:548
 msgid "storage options"
@@ -11793,9 +11736,8 @@ msgid "allow upscaling"
 msgstr "הרשה הגדלה"
 
 #: ../src/libs/export.c:631
-#, fuzzy
 msgid "high quality resampling"
-msgstr "בצע דגימה מחדש באיכות גבוהה במהלך הייצוא"
+msgstr "דגימה מחדש באיכות גבוהה"
 
 #: ../src/libs/export.c:634
 msgid "do high quality resampling during export"
@@ -11838,7 +11780,7 @@ msgstr "ייצא עם הגדרות נוכחיות"
 
 #: ../src/libs/export.c:722
 msgid "edit metadata exportation details"
-msgstr ""
+msgstr "ערוך פרטי ייצוא של מטה נתונים"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1308 ../src/libs/styles.c:71
@@ -11962,10 +11904,9 @@ msgstr ""
 "קליק כפול מאתחל"
 
 #: ../src/libs/histogram.c:588
-#, fuzzy
 msgctxt "accel"
 msgid "hide histogram"
-msgstr "היסטוגרמה"
+msgstr "החבא היסטוגרמה"
 
 #: ../src/libs/history.c:84
 msgctxt "accel"
@@ -12093,7 +12034,7 @@ msgstr "הסר תמונות נבחרות מהקבוצה"
 
 #: ../src/libs/image.c:279
 msgid "update image information to match changes to file"
-msgstr ""
+msgstr "עדכן נתוני תמונה שיתאימו לשינויים בקובץ"
 
 #: ../src/libs/image.c:302
 msgctxt "accel"
@@ -12106,13 +12047,11 @@ msgid "delete from disk or send to trash"
 msgstr "מחק מהדיסק או שלח לאשפה"
 
 #: ../src/libs/image.c:304
-#, fuzzy
 msgctxt "accel"
 msgid "move to other folder"
 msgstr "העבר לתיקיה אחרת"
 
 #: ../src/libs/image.c:305
-#, fuzzy
 msgctxt "accel"
 msgid "copy to other folder"
 msgstr "העתק לתיקיה אחרת"
@@ -12143,22 +12082,19 @@ msgid "reset rotation"
 msgstr "אתחל סיבוב"
 
 #: ../src/libs/image.c:311
-#, fuzzy
 msgctxt "accel"
 msgid "copy the image locally"
 msgstr "העתק תמונה מקומית"
 
 #: ../src/libs/image.c:312
-#, fuzzy
 msgctxt "accel"
 msgid "resync the local copy"
-msgstr "סנכרן מחדש עותק מקומי"
+msgstr "סנכרן מחדש את העותק המקומי"
 
 #: ../src/libs/image.c:313
-#, fuzzy
 msgctxt "accel"
 msgid "refresh exif"
-msgstr "רענן"
+msgstr "רענן exif"
 
 #. Grouping keys
 #: ../src/libs/image.c:315
@@ -12809,37 +12745,33 @@ msgstr "קבוצת אפקטים"
 
 #. search box
 #: ../src/libs/modulegroups.c:229
-#, fuzzy
 msgid "search module"
-msgstr "הראה מודול"
+msgstr "מודול חיפוש"
 
 #: ../src/libs/modulegroups.c:236
 msgid "search modules by name or tag"
-msgstr ""
+msgstr "חפש מודולים לפי שם או תג"
 
 #: ../src/libs/modulegroups.c:243
-#, fuzzy
 msgid "clear text"
-msgstr "נקה"
+msgstr "נקה טקסט"
 
 #: ../src/libs/modulelist.c:58
 msgid "more modules"
 msgstr "מודולים נוספים"
 
 #: ../src/libs/modulelist.c:366
-#, fuzzy
 msgid "subset: no module"
-msgstr "הראה מודול"
+msgstr "תת קבוצה: ללא מודול"
 
 #: ../src/libs/modulelist.c:367
-#, fuzzy
 msgid "subset: all modules"
-msgstr "אפשר מודול"
+msgstr "תת קבוצה: כל המודולים"
 
 #. the modules that are activated by default in the initial configuration
 #: ../src/libs/modulelist.c:370
 msgid "subset: default modules"
-msgstr ""
+msgstr "תת קבוצה: מודולים ברירת מחדל"
 
 #. raw handling
 #. tones
@@ -12848,7 +12780,7 @@ msgstr ""
 #. image reconstruction
 #: ../src/libs/modulelist.c:380
 msgid "workspace: all-purpose"
-msgstr ""
+msgstr "סביבת עבודה: כללי"
 
 #. raw handling
 #. tones
@@ -12859,11 +12791,11 @@ msgstr ""
 #. HDR reconstruction - colors
 #: ../src/libs/modulelist.c:392
 msgid "workspace: landscape & HDR"
-msgstr ""
+msgstr "סביבת עבודה: נוף ו HDR"
 
 #: ../src/libs/modulelist.c:404
 msgid "workspace: architecture & streets"
-msgstr ""
+msgstr "סביבת עבודה: ארכיטקטורה ורחובות"
 
 #. raw handling
 #. tones
@@ -12873,7 +12805,7 @@ msgstr ""
 #. retouch
 #: ../src/libs/modulelist.c:415
 msgid "workspace: portrait & beauty"
-msgstr ""
+msgstr "סביבת עבודה: פורטרטים ויופי"
 
 #. raw handling
 #. tones
@@ -12883,15 +12815,15 @@ msgstr ""
 #. denoising
 #: ../src/libs/modulelist.c:426
 msgid "workspace: lowlight & high ISO"
-msgstr ""
+msgstr "סביבת עבודה: תאורה חלשה ו ISO גבוהה"
 
 #: ../src/libs/modulelist.c:434
 msgid "subset: creative modules only"
-msgstr ""
+msgstr "תת קבוצה: מודולים יצירתיים בלבד"
 
 #: ../src/libs/modulelist.c:444
 msgid "subset: technical modules only"
-msgstr ""
+msgstr "תת קבוצה: מודולים טכניים בלבד"
 
 #: ../src/libs/navigation.c:62
 msgid "navigation"
@@ -12932,7 +12864,7 @@ msgstr "1600%"
 #: ../src/libs/navigation.c:569
 msgctxt "accel"
 msgid "hide navigation thumbnail"
-msgstr ""
+msgstr "החבא תמונת ניווט"
 
 #. //////////////////////// PRINT SETTINGS
 #: ../src/libs/print_settings.c:44 ../src/libs/print_settings.c:1396
@@ -13227,9 +13159,9 @@ msgid "import"
 msgstr "ייבא"
 
 #: ../src/libs/styles.c:274
-#, fuzzy, c-format
+#, c-format
 msgid "do you really want to delete style '%s'?"
-msgstr "האם את/ה בטוח/ה שברצונך למחוק את פריסט `%s'?"
+msgstr "האם באמת ברצונך למחוק את סגנון `%s'?"
 
 #: ../src/libs/styles.c:279
 msgid "delete style?"
@@ -13252,9 +13184,8 @@ msgstr ""
 "הקלק כפול ליישום"
 
 #: ../src/libs/styles.c:417
-#, fuzzy
 msgid "filter style names"
-msgstr "הכנס שם סגנון"
+msgstr "שמות סגנונות פילטרים"
 
 #: ../src/libs/styles.c:432
 msgid "create duplicate"
@@ -13317,27 +13248,25 @@ msgstr "חדש"
 #: ../src/libs/tagging.c:124
 msgctxt "accel"
 msgid "tag"
-msgstr "תגית"
+msgstr "תג"
 
 #: ../src/libs/tagging.c:1040
-#, fuzzy
 msgid "attach tag to all"
-msgstr "צרף תגית לכל התמונות הנבחרות"
+msgstr "צרף תג לכל התמונות הנבחרות"
 
 #: ../src/libs/tagging.c:1048 ../src/libs/tagging.c:1913
-#, fuzzy
 msgid "detach tag"
-msgstr "נתק"
+msgstr "נתק תג"
 
 #: ../src/libs/tagging.c:1163
 msgid "delete tag?"
-msgstr "מחק תגית?"
+msgstr "מחק תג?"
 
 #: ../src/libs/tagging.c:1170 ../src/libs/tagging.c:1267
 #: ../src/libs/tagging.c:1521
 #, c-format
 msgid "tag: %s "
-msgstr ""
+msgstr "תג: %s "
 
 #: ../src/libs/tagging.c:1177
 #, c-format
@@ -13348,16 +13277,16 @@ msgid_plural ""
 "do you really want to delete the tag `%s'?\n"
 "%d images are assigned this tag!"
 msgstr[0] ""
-"האם באמת ברצונך למחוק את התגית `%s'?\n"
-"לתמונה %d מוקצית תגית זו!"
+"האם באמת ברצונך למחוק את התג `%s'?\n"
+"לתמונה %d מוקצה תג זה!"
 msgstr[1] ""
-"האם באמת ברצונך למחוק את התגית `%s'?\n"
-"ל %d תמונות מוקצית תגית זו!"
+"האם באמת ברצונך למחוק את התג `%s'?\n"
+"ל %d תמונות מוקצה תג זה!"
 
 #: ../src/libs/tagging.c:1213
-#, fuzzy, c-format
+#, c-format
 msgid "tag %s removed"
-msgstr "הסר"
+msgstr "תג %s הוסר"
 
 #: ../src/libs/tagging.c:1260 ../src/libs/tagging.c:1925
 msgid "delete branch"
@@ -13367,31 +13296,29 @@ msgstr "מחק ענף"
 #, c-format
 msgid "<u>%d</u> tag will be deleted."
 msgid_plural "<u>%d</u> tags will be deleted."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "תג <u>%d</u> יימחק."
+msgstr[1] "תגים <u>%d</u> יימחקו."
 
 #: ../src/libs/tagging.c:1279 ../src/libs/tagging.c:1533
 #: ../src/libs/tagging.c:1753
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated "
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "תמונה <u>%d</u> תעודכן"
+msgstr[1] "תמונות <u>%d</u> יעודכנו "
 
 #: ../src/libs/tagging.c:1305
-#, fuzzy, c-format
+#, c-format
 msgid "%d tags removed"
-msgstr "יובאו תגיות %zd"
+msgstr "%d תגים הוסרו"
 
 #: ../src/libs/tagging.c:1348
-#, fuzzy
 msgid "create tag"
-msgstr "צור"
+msgstr "צור תג"
 
 #: ../src/libs/tagging.c:1349 ../src/libs/tagging.c:1515
-#, fuzzy
 msgid "save"
-msgstr "_שמירה"
+msgstr "שמירה"
 
 #: ../src/libs/tagging.c:1358 ../src/libs/tagging.c:1541
 msgid "name: "
@@ -13400,57 +13327,56 @@ msgstr "שם: "
 #: ../src/libs/tagging.c:1371
 #, c-format
 msgid "add to: \"%s\" "
-msgstr ""
+msgstr "הוסף ל: \"%s\" "
 
 #: ../src/libs/tagging.c:1377 ../src/libs/tagging.c:1556
-#, fuzzy
 msgid "category"
-msgstr "לא מקוטלג"
+msgstr "קטגוריה"
 
 #: ../src/libs/tagging.c:1380 ../src/libs/tagging.c:1559
-#, fuzzy
 msgid "private"
-msgstr "פרטיות"
+msgstr "פרטי"
 
 #: ../src/libs/tagging.c:1386 ../src/libs/tagging.c:1565
 msgid "synonyms: "
-msgstr ""
+msgstr "מילים נרדפות: "
 
 #: ../src/libs/tagging.c:1403 ../src/libs/tagging.c:1586
 #: ../src/libs/tagging.c:1775
 msgid "empty tag is not allowed, aborting"
-msgstr ""
+msgstr "תג ריק אינו מותר, מבטל"
 
 #: ../src/libs/tagging.c:1405
 msgid "'|' character is not allowed to create a tag. aborting."
-msgstr ""
+msgstr "סימן '|' אינו מותר ביצירת תג, מבטל."
 
 #: ../src/libs/tagging.c:1420
 msgid "tag name already exists. aborting."
-msgstr "שם תגית כבר קיים. מבטל."
+msgstr "שם תג כבר קיים. מבטל."
 
 #: ../src/libs/tagging.c:1514
-#, fuzzy
 msgid "edit tag"
-msgstr "ערוך סגנון"
+msgstr "ערוך תג"
 
 #: ../src/libs/tagging.c:1528 ../src/libs/tagging.c:1748
 #, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "תג <u>%d</u>  יעודכן."
+msgstr[1] "תגים <u>%d</u>  יעודכנו."
 
 #: ../src/libs/tagging.c:1588
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierachy use rename path instead. Aborting."
 msgstr ""
+"הסימן '|' לא מותר בשינוי שם תג.\n"
+"לשינוי ההירכיה שנה את שם הנתיב במקום. מבטל."
 
 #: ../src/libs/tagging.c:1626
-#, fuzzy, c-format
+#, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
-msgstr "סגנון בשם '%s' כבר קיים"
+msgstr "לפחות תג חדש אחד בשם (%s) כבר קיים, מבטל"
 
 #: ../src/libs/tagging.c:1734
 msgid "rename path?"
@@ -13463,43 +13389,40 @@ msgstr "נתיב נבחר: %s "
 
 #: ../src/libs/tagging.c:1777
 msgid "'|' misplaced, empty tag is not allowed, aborting"
-msgstr ""
+msgstr "הסימן '|' אינו ממוקם נכון, תג ריק אינו מותר, מבטל"
 
 #: ../src/libs/tagging.c:1803
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
-msgstr "לפחות תגית חדשה אחת בשם (%s) כבר קיימת, מבטל."
+msgstr "לפחות תג חדש אחת בשם (%s) כבר קיים, מבטל."
 
 #: ../src/libs/tagging.c:1909
-#, fuzzy
 msgid "attach tag"
-msgstr "צרף"
+msgstr "הדבק תג"
 
 #: ../src/libs/tagging.c:1921
 msgid "delete tag"
-msgstr "מחק תגית"
+msgstr "מחק תג"
 
 #: ../src/libs/tagging.c:1931
 msgid "create tag..."
-msgstr "צור תגית..."
+msgstr "יוצר תג..."
 
 #: ../src/libs/tagging.c:1935
 msgid "edit tag..."
-msgstr ""
+msgstr "ערוך תג..."
 
 #: ../src/libs/tagging.c:1944
 msgid "rename path..."
-msgstr ""
+msgstr "שנה שם נתיב..."
 
 #: ../src/libs/tagging.c:1951
-#, fuzzy
 msgid "copy to entry"
-msgstr "העתק היסטוריה"
+msgstr "העתק לערך"
 
 #: ../src/libs/tagging.c:1975
-#, fuzzy
 msgid "go to tag collection"
-msgstr "הסר מהאוסף"
+msgstr "עבור לאוסף התגים"
 
 #: ../src/libs/tagging.c:1981
 msgid "go back to work"
@@ -13555,6 +13478,10 @@ msgid ""
 "right-click for other actions on attached tag,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
+"תגים מודבקים,\n"
+"קליק כפול לניתוק\n"
+"קליק ימני לפעולות נוספות על תג מודבק,\n"
+"גלילה-ctrl חלון"
 
 #: ../src/libs/tagging.c:2548
 msgid "attach"
@@ -13562,7 +13489,7 @@ msgstr "צרף"
 
 #: ../src/libs/tagging.c:2551
 msgid "attach tag to all selected images"
-msgstr "צרף תגית לכל התמונות הנבחרות"
+msgstr "צרף תג לכל התמונות הנבחרות"
 
 #: ../src/libs/tagging.c:2556
 msgid "detach"
@@ -13570,28 +13497,27 @@ msgstr "נתק"
 
 #: ../src/libs/tagging.c:2559
 msgid "detach tag from all selected images"
-msgstr "נתק תגית מכל התמונות הנבחרות"
+msgstr "נתק תג מכל התמונות הנבחרות"
 
 #: ../src/libs/tagging.c:2566
 msgid "toggle list with / without hierarchy"
-msgstr ""
+msgstr "מתג רשימה עם / בלי היררכיה"
 
 #: ../src/libs/tagging.c:2574
 msgid "toggle sort by name or by count"
-msgstr ""
+msgstr "מתג סידור לפי שם או כמות"
 
 #: ../src/libs/tagging.c:2584
 msgid "toggle show or not darktable tags"
-msgstr ""
+msgstr "מתג הצגת תגי darktable"
 
 #: ../src/libs/tagging.c:2600
 msgid "enter tag name"
-msgstr "הכנס שם לתגית"
+msgstr "הכנס שם לתג"
 
 #: ../src/libs/tagging.c:2610
-#, fuzzy
 msgid "clear entry"
-msgstr "נקה"
+msgstr "נקה ערך"
 
 #: ../src/libs/tagging.c:2662
 msgid ""
@@ -13600,6 +13526,10 @@ msgid ""
 "right-click for other actions on selected tag,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
+"מילון תגים,\n"
+"קליק כפול להדבקה,\n"
+"קליק ימני לפעולות אחרות על התג הנבחר,\n"
+"גלילה-ctrl לשינוי גודל חלון"
 
 #: ../src/libs/tagging.c:2677
 msgid "new"
@@ -13610,7 +13540,7 @@ msgid ""
 "create a new tag with the\n"
 "name you entered"
 msgstr ""
-"צור תגית חדשה עם\n"
+"צור תג חדש עם\n"
 "השם שהכנסת"
 
 #: ../src/libs/tagging.c:2685
@@ -13632,18 +13562,17 @@ msgid "export all tags to a Lightroom keyword file"
 msgstr "ייצא את כל התגיות ל קובץ מילות מפתח של Lightroom"
 
 #: ../src/libs/tagging.c:2703
-#, fuzzy
 msgid "toggle list / tree view"
-msgstr "מתג תצוגה חיה"
+msgstr "מתג תצוגת רשימה / עץ"
 
 #: ../src/libs/tagging.c:2711
 msgid "toggle list with / without suggestion"
-msgstr ""
+msgstr "מתג רשימה עם / בלי הצעה"
 
 #: ../src/libs/tagging.c:2816
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
-msgstr ""
+msgstr "קיצור דרך לתג לא פעיל במבט עץ. אנה עבור למבט רשימה"
 
 #: ../src/libs/tools/battery_indicator.c:38
 #: ../src/libs/tools/battery_indicator.c:71
@@ -13845,7 +13774,7 @@ msgstr "סדר לפי"
 #. DT_COLLECTION_SORT_PAT
 #: ../src/libs/tools/filter.c:154
 msgid "custom sort"
-msgstr ""
+msgstr "סידור מותאם"
 
 #. DT_COLLECTION_SORT_ASPECT_RATIO
 #: ../src/libs/tools/filter.c:158
@@ -13882,9 +13811,8 @@ msgid "show global preferences"
 msgstr "הצג העדפות גלובליות"
 
 #: ../src/libs/tools/global_toolbox.c:232
-#, fuzzy
 msgid "do you want to access https://darktable.gitlab.io/doc/?"
-msgstr "האם ברצונך לגשת אל https://www.darktable.org/?"
+msgstr "האם ברצונך לגשת אל https://darktable.gitlab.io/doc/?"
 
 #: ../src/libs/tools/global_toolbox.c:237
 msgid "access the online usermanual?"
@@ -13892,12 +13820,11 @@ msgstr "פתח את המדריך למשתמש המכוון?"
 
 #: ../src/libs/tools/global_toolbox.c:277
 msgid "help url opened in web browser"
-msgstr ""
+msgstr "כתובת url לעזרה נפתחה בדפדפן"
 
 #: ../src/libs/tools/global_toolbox.c:282
-#, fuzzy
 msgid "there is no help available for this element"
-msgstr "לא זמין על מערכת זו"
+msgstr "אין עזרה זמינה עבור אלמנט זה"
 
 #: ../src/libs/tools/global_toolbox.c:324
 msgctxt "accel"
@@ -13950,10 +13877,9 @@ msgid "zoom min"
 msgstr "זום מינימלי"
 
 #: ../src/libs/tools/lighttable.c:217
-#, fuzzy
 msgctxt "accel"
 msgid "toggle culling mode"
-msgstr "מתג גבולות צדדיים"
+msgstr "מתג מצב ליקוט"
 
 #: ../src/libs/tools/lighttable.c:218
 msgctxt "accel"
@@ -13974,21 +13900,18 @@ msgid "ratings"
 msgstr "דירוגים"
 
 #: ../src/libs/tools/timeline.c:110
-#, fuzzy
 msgid "timeline"
-msgstr "זמן"
+msgstr "ציר זמן"
 
 #: ../src/libs/tools/timeline.c:1487
-#, fuzzy
 msgctxt "accel"
 msgid "start selection"
-msgstr "נקה בחירה"
+msgstr "התחל בחירה"
 
 #: ../src/libs/tools/timeline.c:1488
-#, fuzzy
 msgctxt "accel"
 msgid "stop selection"
-msgstr "הפוך בחירה"
+msgstr "עצור בחירה"
 
 #: ../src/libs/tools/view_toolbox.c:46
 msgid "view toolbox"
@@ -14053,7 +13976,7 @@ msgstr "גישה מהירה ליישום כל אחד מהסגנונות שלך"
 
 #: ../src/views/darkroom.c:1796
 msgid "display a second darkroom image window"
-msgstr ""
+msgstr "הצג חלון תמונה נוסף של חדר חושך"
 
 #: ../src/views/darkroom.c:1807
 msgid ""
@@ -14178,23 +14101,20 @@ msgid "display intent"
 msgstr "כוונת ההצגה"
 
 #: ../src/views/darkroom.c:1979 ../src/views/lighttable.c:4883
-#, fuzzy
 msgid "preview display intent"
-msgstr "כוונת ההצגה"
+msgstr "כוונת התצוגה המקדימה"
 
 #: ../src/views/darkroom.c:1999 ../src/views/lighttable.c:4891
 msgid "display profile"
 msgstr "פרופיל תצוגה"
 
 #: ../src/views/darkroom.c:2000 ../src/views/lighttable.c:4895
-#, fuzzy
 msgid "preview display profile"
-msgstr "קבע פרופיל תצוגה"
+msgstr "תצוגה מקדימה של פרופיל התצוגה"
 
 #: ../src/views/darkroom.c:2001
-#, fuzzy
 msgid "histogram profile"
-msgstr "היסטוגרמה"
+msgstr "פרופיל היסטוגרמה"
 
 #: ../src/views/darkroom.c:2055 ../src/views/lighttable.c:4925
 #, c-format
@@ -14202,9 +14122,9 @@ msgid "display ICC profiles in %s or %s"
 msgstr "הצג פרופיל ICC ב %s או %s"
 
 #: ../src/views/darkroom.c:2058 ../src/views/lighttable.c:4928
-#, fuzzy, c-format
+#, c-format
 msgid "preview display ICC profiles in %s or %s"
-msgstr "הצג פרופיל ICC ב %s או %s"
+msgstr "הצגה מקדימה של פרופיל ICC ב %s או %s"
 
 #: ../src/views/darkroom.c:2061
 #, c-format
@@ -14212,9 +14132,9 @@ msgid "softproof ICC profiles in %s or %s"
 msgstr "פרופיל ICC לסימולציית הדפסה ב %s או %s"
 
 #: ../src/views/darkroom.c:2064
-#, fuzzy, c-format
+#, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
-msgstr "פרופיל ICC לסימולציית הדפסה ב %s או %s"
+msgstr "פרופילי ICC של ההיסטוגרמה ובוחר הצבע ב %s או %s"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
@@ -14331,46 +14251,42 @@ msgstr "שחזר"
 #: ../src/views/darkroom.c:3206
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
-msgstr ""
+msgstr "הרשה הזזה וזום תוך כדי עריכת מסיכות"
 
 #. set focus to the search modules text box
 #: ../src/views/darkroom.c:3209
-#, fuzzy
 msgctxt "accel"
 msgid "search modules"
-msgstr "הראה מודול"
+msgstr "מודולי חיפוש"
 
 #: ../src/views/darkroom.c:3308
-#, fuzzy
 msgid "switch to lighttable"
-msgstr "שולחן אור"
+msgstr "עבור לשולחן אור"
 
 #: ../src/views/darkroom.c:3313 ../src/views/lighttable.c:4566
-#, fuzzy
 msgid "zoom in the image"
-msgstr "זום של תצוגה חיה"
+msgstr "הגדל את התמונה"
 
 #: ../src/views/darkroom.c:3319
 msgid "unbounded zoom in the image"
-msgstr ""
+msgstr "זום לא מתוחם בתמונה"
 
 #: ../src/views/darkroom.c:3324
 msgid "zoom to 100% 200% and back"
-msgstr ""
+msgstr "זום ל 100% 200% וחזרה"
 
 #: ../src/views/darkroom.c:3330
 msgid "[modules] expand module without closing others"
-msgstr ""
+msgstr "[מודולים] הרחב מודולים מבלי לסגור אחרים"
 
 #: ../src/views/darkroom.c:3336
 msgid "[modules] change module position in pipe"
-msgstr ""
+msgstr "[מודולים] שנה מיקום מודול בתהליך"
 
 #. workaround for GTK Quartz backend bug
 #: ../src/views/darkroom.c:4038 ../src/views/darkroom.c:4056
-#, fuzzy
 msgid "darktable - darkroom preview"
-msgstr "שגיאה בפתיחת מסד נתונים - darktable"
+msgstr "darktable - תצוגה מקדימה של חדר חושך"
 
 #: ../src/views/knight.c:334
 msgid "good knight"
@@ -14400,28 +14316,28 @@ msgstr "או הוסף תמונות במודול האיסוף בפאנל השמא
 #, c-format
 msgid "you have reached the start of your selection (%d image)"
 msgid_plural "you have reached the start of your selection (%d images)"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "הגעת לתחילת המבחר (תמונה %d )"
+msgstr[1] "הגעת לתחילת המבחר (תמונות %d )"
 
 #: ../src/views/lighttable.c:3259
 msgid "you have reached the start of your collection"
-msgstr ""
+msgstr "הגעת לתחילת המבחר"
 
 #: ../src/views/lighttable.c:3283
 #, c-format
 msgid "you have reached the end of your selection (%d image)"
 msgid_plural "you have reached the end of your selection (%d images)"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "הגעת לסוף המבחר (תמונה %d )"
+msgstr[1] "הגעת לסוף המבחר (תמונות %d )"
 
 #: ../src/views/lighttable.c:3288
 msgid "you have reached the end of your collection"
-msgstr ""
+msgstr "הגעת לסוף האוסף"
 
 #: ../src/views/lighttable.c:3608
-#, fuzzy, c-format
+#, c-format
 msgid "zooming is limited to %d images"
-msgstr "מיישם דירוג %d לתמונה %d"
+msgstr "יכולת לביצוע זום מוגבלת ל %d תמונות"
 
 #: ../src/views/lighttable.c:4384
 msgctxt "accel"
@@ -14515,34 +14431,30 @@ msgstr "תצוגה מקדימה דביקה עם גילוי מוקד"
 #: ../src/views/lighttable.c:4423
 msgctxt "accel"
 msgid "preview zoom 100%"
-msgstr ""
+msgstr "זום תצוגה מקדימה 100%"
 
 #: ../src/views/lighttable.c:4424
-#, fuzzy
 msgctxt "accel"
 msgid "preview zoom fit"
-msgstr "זום התאם"
+msgstr "התאם הגדלה לתצוגה מקדימה"
 
 #. timeline
 #: ../src/views/lighttable.c:4427
-#, fuzzy
 msgctxt "accel"
 msgid "toggle timeline"
-msgstr "מתג תצוגה חיה"
+msgstr "מתג ציר זמן"
 
 #: ../src/views/lighttable.c:4553
-#, fuzzy
 msgid "open image in darkroom"
-msgstr "גבולות סביב התמונה במצב חדר חושך"
+msgstr "פתח תמונה בחדר חושך"
 
 #: ../src/views/lighttable.c:4560
 msgid "switch to next/previous image"
-msgstr ""
+msgstr "עבור לתמונה הבאה/קודמת"
 
 #: ../src/views/lighttable.c:4573 ../src/views/lighttable.c:4595
-#, fuzzy
 msgid "scroll the collection"
-msgstr "הסר מהאוסף"
+msgstr "גלול את האוסף"
 
 #: ../src/views/lighttable.c:4579
 msgid "change number of images per row"
@@ -14553,33 +14465,28 @@ msgid "change image order"
 msgstr "שנה סידור תמונה"
 
 #: ../src/views/lighttable.c:4601
-#, fuzzy
 msgid "zoom all the images"
-msgstr "סובב תמונה"
+msgstr "הגדל את כל התמונות"
 
 #: ../src/views/lighttable.c:4606
-#, fuzzy
 msgid "pan inside all the images"
-msgstr "מחק תמונות"
+msgstr "הזז בכל התמונות"
 
 #: ../src/views/lighttable.c:4612
-#, fuzzy
 msgid "zoom current image"
-msgstr "רכוש תמונות"
+msgstr "הגדל תמונה נוכחית"
 
 #: ../src/views/lighttable.c:4618
-#, fuzzy
 msgid "pan inside current image"
-msgstr "סגנון `%s' יושם על התמונה הנוכחית"
+msgstr "הזז בתמונה הנוכחית"
 
 #: ../src/views/lighttable.c:4625
-#, fuzzy
 msgid "zoom the main view"
-msgstr "זום של תצוגה חיה"
+msgstr "הגדל מבט ראשי"
 
 #: ../src/views/lighttable.c:4630
 msgid "pan inside the main view"
-msgstr ""
+msgstr "הזז בתוך חלון הת הראשי"
 
 #: ../src/views/lighttable.c:4851
 msgid "set display profile"
@@ -14590,18 +14497,16 @@ msgid "map"
 msgstr "מפה"
 
 #: ../src/views/map.c:1405
-#, fuzzy
 msgid "[on image] open in darkroom"
-msgstr "גבולות סביב התמונה במצב חדר חושך"
+msgstr "[על תמונה] פתח בחדר חושך"
 
 #: ../src/views/map.c:1410
 msgid "[on map] zoom map"
-msgstr ""
+msgstr "[על המפה] הגדל מפה"
 
 #: ../src/views/map.c:1415
-#, fuzzy
 msgid "move image location"
-msgstr "פעולות על התמונה"
+msgstr "הזז את מיקום התמונה"
 
 #: ../src/views/print.c:50
 msgctxt "view"
@@ -14618,20 +14523,19 @@ msgstr "מצגת שקופיות"
 
 #: ../src/views/slideshow.c:441
 msgid "waiting to start slideshow"
-msgstr ""
+msgstr "ממתין להתחיל את מצגת השקופיות"
 
 #: ../src/views/slideshow.c:559 ../src/views/slideshow.c:577
 #: ../src/views/slideshow.c:583
-#, fuzzy
 msgid "slideshow paused"
-msgstr "מצב הקרנת שקופיות"
+msgstr "מצגת שקופיות בהמתנה"
 
 #: ../src/views/slideshow.c:566 ../src/views/slideshow.c:572
 #, c-format
 msgid "slideshow delay set to %d second"
 msgid_plural "slideshow delay set to %d seconds"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "השהייה בין שקופיות %d שניה"
+msgstr[1] "השהייה בין שקופיות %d שניות"
 
 #: ../src/views/slideshow.c:599
 msgctxt "accel"
@@ -14639,13 +14543,12 @@ msgid "start and stop"
 msgstr "התחל ועצור"
 
 #: ../src/views/slideshow.c:613
-#, fuzzy
 msgid "go to next image"
-msgstr "דלג לקובץ הבא"
+msgstr "עבור לקובץ הבא"
 
 #: ../src/views/slideshow.c:618
 msgid "go to previous image"
-msgstr ""
+msgstr "עבור לתמונה הקודמת"
 
 #: ../src/views/tethering.c:93
 msgid "tethering"
@@ -14662,61 +14565,55 @@ msgstr "אין מצלמה זמינה לשימוש עם תמיכה בקשירה..
 
 #: ../src/views/view.c:2131
 msgid "Left click"
-msgstr ""
+msgstr "קליק שמאלי"
 
 #: ../src/views/view.c:2134
 msgid "Right click"
-msgstr ""
+msgstr "קליק ימני"
 
 #: ../src/views/view.c:2137
 msgid "Middle click"
-msgstr ""
+msgstr "קליק אמצעי"
 
 #: ../src/views/view.c:2140
-#, fuzzy
 msgid "Scroll"
-msgstr "גלול מעלה"
+msgstr "גלול"
 
 #: ../src/views/view.c:2143
-#, fuzzy
 msgid "Left double-click"
-msgstr "דאבל-קליק לאתחול"
+msgstr "דאבל-קליק שמאלי"
 
 #: ../src/views/view.c:2146
-#, fuzzy
 msgid "Right double-click"
-msgstr "דאבל-קליק לאתחול"
+msgstr "דאבל-קליק ימני"
 
 #: ../src/views/view.c:2149
 msgid "Drag and drop"
-msgstr ""
+msgstr "גרור ושחרר"
 
 #: ../src/views/view.c:2152
 msgid "Left click+Drag"
-msgstr ""
+msgstr "קליק שמאלי+גרור"
 
 #: ../src/views/view.c:2155
 msgid "Right click+Drag"
-msgstr ""
+msgstr "קליק ימני+גרור"
 
 #: ../src/views/view.c:2179
-#, fuzzy
 msgid "darktable - accels window"
-msgstr "darktable » %s"
+msgstr "darktable - חלון קיצורים"
 
 #: ../src/views/view.c:2235
 msgid "switch to a classic window which will stay open after key release."
-msgstr ""
+msgstr "עבור לחלון קלאסי שישאר פתוח לאחר שחרור המקש."
 
 #: ../src/views/view.c:2348
-#, fuzzy
 msgid "+Scroll"
-msgstr "גלול מעלה"
+msgstr "+גלול"
 
 #: ../src/views/view.c:2363
-#, fuzzy
 msgid "mouse actions"
-msgstr "תיקונים"
+msgstr "פעולות עכבר"
 
 #: ../src/views/view.c:2401
 msgid "Accel"
