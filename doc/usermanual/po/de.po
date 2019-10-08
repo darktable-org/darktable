@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable-usermanual\n"
 "POT-Creation-Date: 2019-09-29 10:30+0200\n"
-"PO-Revision-Date: 2019-10-03 08:14+0200\n"
+"PO-Revision-Date: 2019-10-03 08:46+0200\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de\n"
@@ -5720,6 +5720,12 @@ msgid ""
 "to exported images. These information are related to <quote>XMP-dc Subject</"
 "quote> and <quote>XMP-lr Hierarchical Subject</quote> metadata."
 msgstr ""
+"Zusätzlich zu seinem Namen kann das Tag als privat oder als Kategorie"
+" definiert werden. Es können auch Synonyme hinzugefügt werden. Diese"
+" Attribute dienen dazu, die Informationen zu steuern, die Sie mit"
+" exportierten Bildern verbinden. Diese Informationen beziehen sich auf <quote"
+">XMP-dc Subject</quote> und <quote>XMP-lr Hierarchical Subject</quote>"
+" Metadaten."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4516(para)
 msgid ""
@@ -6262,7 +6268,7 @@ msgstr "$(MAX_WIDTH)"
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5071(entry)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21373(entry)
 msgid "maximum image width to limit within export session"
-msgstr ""
+msgstr "maximale Bildbreite, um die Breite innerhalb des Exports zu begrenzen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5077(code)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21378(entry)
@@ -6272,7 +6278,7 @@ msgstr "$(MAX_HEIGHT)"
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5079(entry)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21381(entry)
 msgid "maximum image height to limit within export session"
-msgstr ""
+msgstr "maximale Bildhöhe, um die Höhe innerhalb des Exports zu begrenzen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5085(code)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21394(entry)
@@ -6412,11 +6418,11 @@ msgstr "$(EXIF_FOCUS_DISTANCE)"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5207(entry)
 msgid "Exif focus distance"
-msgstr ""
+msgstr "Exif Fokusentfernung"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5213(code)
 msgid "$(LONGITUDE)"
-msgstr ""
+msgstr "$(LONGITUDE)"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5215(entry)
 msgid "Longitude"
@@ -9381,7 +9387,7 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7490(title)
 msgid "Drop-down menu"
-msgstr ""
+msgstr "Dropdown-Liste"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7491(para)
 msgid ""
@@ -9389,6 +9395,9 @@ msgid ""
 "the raster mask. You can easily identify the mask by the name of the module "
 "it was defined in."
 msgstr ""
+"Wenn in einem anderen Modul eine Maske vorhanden ist, erscheint diese im"
+" Dropdown-Liste der Filtermaske. Sie können die Maske leicht am Namen des"
+" Moduls erkennen, in dem sie definiert wurde."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7505(title)
 msgid "Combining drawn and parametric masks"
@@ -10376,6 +10385,7 @@ msgstr "Bildinformation"
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8234(entry)
 msgid "You can display a line with very important image infos."
 msgstr ""
+"Es kann eine Zeile mit sehr wichtigen Bildinformationen angezeigt werden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8245(para)
 msgid ""
@@ -10384,12 +10394,19 @@ msgid ""
 "module (see <xref linkend=\"export_selected_usage_filename\"/>). You can "
 "also add new lines by using <code>$(NL)</code> variable."
 msgstr ""
+"Der Inhalt der Informationszeile kann in den Voreinstellungen bestimmt werden"
+" (siehe <xref linkend=\"gui_options\"/>). Die verfügbaren Variablen sind die"
+" gleichen wie für das Exportmodul (siehe <xref"
+" linkend=\"export_selected_usage_filename\"/>). Zusätzliche Zeilen können"
+" mithilfe der <code>$(NL)</code> Variable hinzugefügt werden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8251(para)
 msgid ""
 "Position of the infos line can also be set in preferences (see <xref linkend="
 "\"gui_options\"/>)."
 msgstr ""
+"Die Position der Informationszeile kann auch in den Voreinstellungen bestimmt"
+" werden (siehe <xref linkend=\"gui_options\"/>)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8260(title)
 msgid "Navigation"
@@ -15672,7 +15689,7 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12966(title)
 msgid "Mode"
-msgstr ""
+msgstr "Modus"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:12971(para)
 msgid ""
@@ -15798,7 +15815,7 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13073(title)
 msgid "Contrast and Contrast fulcrum"
-msgstr ""
+msgstr "Kontrast und Kontrastdrehpunkt"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13074(para)
 msgid ""
@@ -16380,12 +16397,12 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13689(title)
 msgid "3D LUT"
-msgstr ""
+msgstr "3D LUT"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13693(secondary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13697(primary)
 msgid "lut3d"
-msgstr ""
+msgstr "lut3d"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13711(para)
 msgid ""
@@ -22757,17 +22774,19 @@ msgstr "Diese Optionen steuern das Erscheinungsbild von Darktable."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20636(bridgehead)
 msgid "interface language"
-msgstr ""
+msgstr "Sprache der Benutzeroberfläche"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20638(para)
 msgid ""
 "set the language of the user interface. the system default is marked with an "
 "* (needs a restart)"
 msgstr ""
+"Sprache der Benutzeroberfläche einstellen. Der Standardwert des Systems ist"
+" mit einem * markiert (benötigt einen Neustart)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20642(bridgehead)
 msgid "theme"
-msgstr ""
+msgstr "Theme"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20644(para)
 msgid "set the theme for the user interface"
@@ -22904,7 +22923,7 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20727(bridgehead)
 msgid "use single-click in the collect panel"
-msgstr ""
+msgstr "Verwende single Klick im collect Panel"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20729(para)
 msgid ""
