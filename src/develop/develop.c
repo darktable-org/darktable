@@ -1065,7 +1065,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
   dt_dev_reorder_gui_module_list(dev);
 
   // we update show params for multi-instances for each other instances
-  //dt_dev_modules_update_multishow(dev);
+  dt_dev_modules_update_multishow(dev);
 }
 
 void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
