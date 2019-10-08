@@ -414,7 +414,8 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 
         case DT_MODULEGROUP_FAVORITES:
         {
-          if(module->so->state == dt_iop_state_FAVORITE)
+          if((module->so->state == dt_iop_state_FAVORITE)
+             && (!(module->flags() & IOP_FLAGS_DEPRECATED)))
           {
             if(w) gtk_widget_show(w);
           }
