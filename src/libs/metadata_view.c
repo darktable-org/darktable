@@ -622,7 +622,6 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         }
       }
       if(tagstring) tagstring[strlen(tagstring)-2] = '\0';
-      _metadata_update_value(d->metadata[md_tag_names], tagstring);
     }
     _metadata_update_value(d->metadata[md_tag_names], tagstring ? tagstring : NODATA_STRING);
     _metadata_update_value(d->metadata[md_categories], categoriesstring ? categoriesstring : NODATA_STRING);
