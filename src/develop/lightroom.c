@@ -1295,13 +1295,13 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       switch(data.orientation)
       {
         case 8:
-          data.pf.orientation = 0;
+          data.pf.orientation = 3;
           break;
         case 3:
           data.pf.orientation = 5;
           break;
         case 6:
-          data.pf.orientation = 3;
+          data.pf.orientation = 0;
           break;
         case 1:
           data.pf.orientation = 6;
