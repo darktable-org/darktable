@@ -145,7 +145,7 @@ static gboolean _lib_ratings_draw_callback(GtkWidget *widget, cairo_t *crf, gpoi
   for(int k = 0; k < 5; k++)
   {
     /* outline star */
-    dt_draw_star(cr, star_size / 2.0 + x, star_size / 2.0, star_size / 2.0, star_size / 4.0);
+    dt_draw_star(cr, star_size / 2.0 + x, star_size / 2.0, star_size / 2.0, star_size / (2.0 * 2.5));
     if(x < d->pointerx)
     {
       cairo_fill_preserve(cr);

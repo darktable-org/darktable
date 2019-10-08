@@ -69,6 +69,16 @@
       more details see <xref linkend="darktable_commandline_parameters"/>. If you generate your
       own noise profiles don't forget to share your results with the darktable team!
     </para>
+    
+    <para>
+      /!\ WARNING /!\
+      The darkroom zoomed out preview is not completely accurate. Always check your result at 100% zoom level!
+    </para>
+
+    <para>
+      Note that (almost) all sliders of this module can take values higher than their visible bounds
+      by entering values using Right-click and keyboard.
+    </para>
 
     <sect5>
       <title>profile</title>
@@ -86,17 +96,30 @@
     <sect5>
       <title>mode</title>
       <para>
-        This module can eliminate noise with two different core algorithms. <quote>non-local
-        means</quote> can tackle efficiently luma (lightness) noise whereas it is less efficient
-        with chroma (color noise). <quote>wavelet</quote> is particularly efficient at
-        eliminating chroma (color) noise but can also give good results for luma noise. It also
-        lets you adjust the force of the denoising depending on the noise coarseness. If needed
+        This module can eliminate noise by two different core algorithms. Both <quote>non-local
+        means</quote> and <quote>wavelet</quote> can tackle efficiently luma (lightness) noise
+        and chroma (color) noise.  <quote>wavelet</quote>  mode also lets you adjust the force
+        of the denoising depending on the noise coarseness. If needed
         you can apply two instances of this module (see <xref linkend="multiple_instances"/>):
         one instance to tackle luma noise with blend mode <quote>lightness</quote> or <quote>HSV
         lightness</quote>, and another one to tackle chroma noise with blend mode
         <quote>color</quote> or <quote>HSV color </quote>. An example of the use of two
         instances with blending modes is available within the presets of this module. For more
         information on blend modes have a look at <xref linkend="blending_operators"/>.
+        The module also offers an automatic mode for each algorithm. Automatic modes allow
+        to set module's parameters in an easier way, as it guesses several parameters from
+        the profile.
+        All sliders of this module can take values higher than their bounds if needed using Right-click.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>whitebalance-adaptive transform</title>
+      <para>
+        As white-balance amplifies the RGB channels differently, they exhibit
+        different noise levels. This checkbox makes the algorithm adaptive to white balance.
+        This option should be disabled on the second instance if you use a first instance
+        with a color blend mode.
       </para>
     </sect5>
 
@@ -105,8 +128,8 @@
       <para>
         This slider is only available if mode <quote>non-local means</quote> is selected. It
         controls the size of the patches being matched when deciding which pixels to average
-        (see also <xref linkend="denoise_non_local_means"/>). Setting this to higher values can
-        give more sharpness, especially on strong edges, but may also give more artifacts.
+        (see also <xref linkend="denoise_non_local_means"/>). Set this to higher values as the
+        noise gets higher. Beware that high values may smooth out small edges though.
         Processing time will stay about the same.
       </para>
     </sect5>
@@ -115,11 +138,34 @@
       <title>search radius</title>
       <para>
         This slider is only available if mode <quote>non-local means</quote> is selected. It
-        controls the how far from a pixel the algorithm will try to find similar patches. The
-        processing time is hugely impacted by this parameter: it depends on the square of the
-        parameter. A lower value will make execution faster, a higher value will make it slower.
+        controls how far from a pixel the algorithm will try to find similar patches.
         Increasing the value can give better results for very noisy images when coarse grain
-        noise is visible.
+        noise is visible, but you should better use the scattering slider instead.
+        The processing time is hugely impacted by this parameter: it depends on the square of the
+        parameter. A lower value will make execution faster, a higher value will make it slower.
+      </para>
+    </sect5>
+    
+    <sect5>
+      <title>scattering</title>
+      <para>
+        This slider is only available if mode <quote>non-local means</quote> is selected. Like
+        the search radius, it controls how far from a pixel the algorithm will try to find similar
+        patches, but does this without increasing the number of patches considered. As such,
+        processing time will stay about the same. Increasing the value will reduce coarse grain
+        noise, but may smooth local contrast. This slider is particularly effective to reduce
+        chroma noise.
+      </para>
+    </sect5>
+    
+    <sect5>
+      <title>central pixel weight</title>
+      <para>
+        This slider is only available if mode <quote>non-local means</quote> or <quote>non-local means
+        auto</quote> is selected. It controls the amount of details which should be preserved by the
+        algorithm. It can be used as a way to control the amount of luma noise smoothing: giving a big
+        value to this slider will result mostly in chroma noise smoothing with little smoothing of luma
+        noise. This slider has no effect if patch-size is set to 0.
       </para>
     </sect5>
 
@@ -173,6 +219,37 @@
         of taste if you prefer a rather low noise level at the costs of a higher loss of detail,
         or if you accept more remaining noise in order to have finer structures better preserved
         within your image.
+      </para>
+    </sect5>
+    
+    <sect5>
+      <title>preserve shadows</title>
+      <para>
+        This option is available in <quote>wavelets</quote> and <quote>non local means</quote> modes.
+        It allows to denoise more agressively the shadows or the highlights. Lower the value to denoise
+        more the shadows than the highlights. Usually, as noise increases, you will need to lower this
+        value.
+      </para>
+    </sect5>
+    
+    <sect5>
+      <title>bias correction</title>
+      <para>
+        This option is available in <quote>wavelets</quote> and <quote>non local means</quote> modes.
+        It allows to correct the color cast that may appear in the shadows. Increase this value
+        if dark shadows appear too greenish, decrease it if they appear purple-ish.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>adjust autoset parameters</title>
+      <para>
+        This option is available in <quote>auto</quote> modes. In these modes, darktable tries to
+        derive denoising parameters from the camera profile. Depending on your image the automatically
+        derived parameters may not be optimal. E.g. if your image is heavily underexposed and you lifted
+        the exposure, you will have to increase this parameter to get a proper denoising. This parameter
+        should reflect the amplification you add to your image: if you add 1EV of exposure, the signal
+        is multiplied by 2, so this parameter should be set to 2.
       </para>
     </sect5>
 

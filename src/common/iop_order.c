@@ -31,15 +31,34 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DT_IOP_ORDER_VERSION 3
+#define DT_IOP_ORDER_VERSION 5
 
-#define DT_IOP_ORDER_INFO FALSE	// used while debugging
+#define DT_IOP_ORDER_INFO FALSE  // used while debugging
+#define DT_ONTHEFLY_INFO FALSE   // while debugging on-the-fly conversion
 
 static void _ioppr_insert_iop_after(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_previous, const int dont_move);
 static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_next, const int dont_move);
 static void _ioppr_move_iop_after(GList **_iop_order_list, const char *op_current, const char *op_prev, const int dont_move);
 static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_current, const char *op_next, const int dont_move);
 
+// this routine rewrite the iop-order to have all them evenly spaced
+// into the list ensuring that we can insert safely at least 40 iop
+// between any two of them. Probably not the best fix, this is mostly
+// a workaround for current limitation and will avoid issues for the next
+// release.
+// ?? TODO: redo the whole pipe ordering
+static void _rewrite_order(GList *iop_order_list)
+{
+  GList *l = iop_order_list;
+  double order = 1.0;
+  while(l)
+  {
+    dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)l->data;
+    order_entry->iop_order = order;
+    order += 1.0;
+    l = g_list_next(l);
+  }
+}
 
 /* migrates *_iop_order_list from old_version to the next version (version + 1)
  * limitations:
@@ -56,12 +75,17 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
   {
     _ioppr_move_iop_after(_iop_order_list, "colorin", "demosaic", dont_move);
     _ioppr_move_iop_before(_iop_order_list, "colorout", "clahe", dont_move);
+
+    // EVERY NEW MODULE MUST BE ADDED HERE
+    // there should be no _ioppr_insert_iop[before|after] in any other places
     _ioppr_insert_iop_after(_iop_order_list, history_list, "basicadj", "colorin", dont_move);
     _ioppr_insert_iop_after(_iop_order_list, history_list, "rgbcurve", "levels", dont_move);
     _ioppr_insert_iop_after(_iop_order_list, history_list, "lut3d", "grain", dont_move);
     _ioppr_insert_iop_before(_iop_order_list, history_list, "rgblevels", "rgbcurve", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "dither", "borders", dont_move);
     _ioppr_insert_iop_after(_iop_order_list, history_list, "toneequal", "clipping", dont_move);
+    _ioppr_insert_iop_after(_iop_order_list, history_list, "filmicrgb", "filmic", dont_move);
+
+    _ioppr_move_iop_before(_iop_order_list, "dither", "borders", dont_move);
 
     new_version = 2;
   }
@@ -155,11 +179,170 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
 
     _ioppr_move_iop_before(_iop_order_list, "dither", "borders", dont_move);
 
-    // new modules here
-    _ioppr_insert_iop_after(_iop_order_list, history_list, "filmicrgb", "filmic", dont_move);
-
     new_version = 3;
   }
+  else if(old_version == 3)
+  {
+    // version 4 is a rewrite of the iop-order of previous list. As it
+    // can be seen above some modules have very close iop-order values
+    // and does not have lot of room for insertion (multi-instance
+    // module and/or reordering).
+
+    if(!dont_move) _rewrite_order(*_iop_order_list);
+    new_version = 4;
+  }
+  else if(old_version == 4)
+  {
+    if(!dont_move)
+    {
+      // The following is a flattened list from original code. The goal is to have a clean starting point for
+      // future modifications.
+      const dt_iop_order_entry_t iop_v5[] = {
+        {  1.0, "rawprepare"},
+        {  2.0, "invert"},
+        {  3.0, "temperature"},
+        {  4.0, "highlights"},
+        {  5.0, "cacorrect"},
+        {  6.0, "hotpixels"},
+        {  7.0, "rawdenoise"},
+        {  8.0, "demosaic"},
+        {  9.0, "denoiseprofile"},
+        { 10.0, "bilateral"},
+        { 11.0, "rotatepixels"},
+        { 12.0, "scalepixels"},
+        { 13.0, "lens"},
+        { 14.0, "hazeremoval"},
+        { 15.0, "ashift"},
+        { 16.0, "flip"},
+        { 17.0, "clipping"},
+        { 18.0, "liquify"},
+        { 19.0, "spots"},
+        { 20.0, "retouch"},
+        { 21.0, "exposure"},
+        { 22.0, "mask_manager"},
+        { 23.0, "tonemap"},
+        { 24.0, "toneequal"},
+        { 25.0, "graduatednd"},
+        { 26.0, "profile_gamma"},
+        { 27.0, "equalizer"},
+        { 28.0, "colorin"},
+
+        { 29.0, "nlmeans"},         // signal processing (denoising)
+                                    //    -> needs a signal as scene-referred as possible (even if it works in Lab)
+        { 30.0, "colorchecker"},    // calibration to "neutral" exchange colour space
+                                    //    -> improve colour calibration of colorin and reproductibility
+                                    //    of further edits (styles etc.)
+        { 31.0, "defringe"},        // desaturate fringes in Lab, so needs properly calibrated colours
+                                    //    in order for chromaticity to be meaningful,
+        { 32.0, "atrous"},          // frequential operation, needs a signal as scene-referred as possible to avoid halos
+        { 33.0, "lowpass"},         // same
+        { 34.0, "highpass"},        // same
+        { 35.0, "sharpen"},         // same, worst than atrous in same use-case, less control overall
+        { 36.0, "lut3d"},           // apply a creative style or film emulation, possibly non-linear,
+                                    //    so better move it after frequential ops that need L2 Hilbert spaces
+                                    //    of square summable functions
+        { 37.0, "colortransfer"},   // probably better if source and destination colours are neutralized in the same
+                                    //    colour exchange space, hence after colorin and colorcheckr,
+                                    //    but apply after frequential ops in case it does non-linear witchcraft,
+                                    //    just to be safe
+        { 59.0, "colormapping"},    // same
+        { 38.0, "channelmixer"},    // does exactly the same thing as colorin, aka RGB to RGB matrix conversion,
+                                    //    but coefs are user-defined instead of calibrated and read from ICC profile.
+                                    //    Really versatile yet under-used module, doing linear ops,
+                                    //    very good in scene-referred workflow
+        { 39.0, "basicadj"},        // module mixing view/model/control at once, usage should be discouraged
+        { 40.0, "colorbalance"},    // scene-referred color manipulation
+        { 41.0, "rgbcurve"},        // really versatile way to edit colour in scene-referred and display-referred workflow
+        { 42.0, "rgblevels"},       // same
+        { 43.0, "basecurve"},       // conversion from scene-referred to display referred, reverse-engineered
+                                    //    on camera JPEG default look
+        { 44.0, "filmic"},          // same, but different (parametric) approach
+        { 45.0, "filmicrgb"},       // same, upgraded
+        { 46.0, "colisa"},          // edit contrast while damaging colour
+        { 47.0, "tonecurve"},       // same
+        { 48.0, "levels"},          // same
+        { 49.0, "shadhi"},          // same
+        { 50.0, "zonesystem"},      // same
+        { 51.0, "globaltonemap"},   // same
+        { 52.0, "relight"},         // flatten local contrast while pretending do add lightness
+        { 53.0, "bilat"},           // improve clarity/local contrast after all the bad things we have done
+                                    //    to it with tonemapping
+        { 54.0, "colorcorrection"}, // now that the colours have been damaged by contrast manipulations,
+                                    // try to recover them - global adjustment of white balance for shadows and highlights
+        { 55.0, "colorcontrast"},   // adjust chrominance globally
+        { 56.0, "velvia"},          // same
+        { 57.0, "vibrance"},        // same, but more subtle
+        { 58.0, "colorzones"},      // same, but locally
+        { 60.0, "bloom"},           // creative module
+        { 61.0, "colorize"},        // creative module
+        { 62.0, "lowlight"},        // creative module
+        { 63.0, "monochrome"},      // creative module
+        { 64.0, "grain"},           // creative module
+        { 65.0, "soften"},          // creative module
+        { 66.0, "splittoning"},     // creative module
+        { 67.0, "vignette"},        // creative module
+        { 68.0, "colorreconstruct"},// try to salvage blown areas before ICC intents in LittleCMS2 do things with them.
+
+        { 69.0, "colorout"},
+        { 70.0, "clahe"},
+        { 71.0, "finalscale"},
+        { 72.0, "overexposed"},
+        { 73.0, "rawoverexposed"},
+        { 74.0, "dither"},
+        { 75.0, "borders"},
+        { 76.0, "watermark"},
+        { 77.0, "gamma"},
+      };
+
+      if(g_list_length(*_iop_order_list) != 77)
+      {
+        fprintf(stderr, "_ioppr_legacy_iop_order_step list should have 77 entries found %d\n",
+                g_list_length(*_iop_order_list));
+        return 4;
+      }
+
+      // note that we cannot delete the *_iop_order_list and recreate it
+
+      GList *l = *_iop_order_list;
+      int i = 0;
+      while(l)
+      {
+        dt_iop_order_entry_t *entry = (dt_iop_order_entry_t *)l->data;
+        entry->iop_order = iop_v5[i].iop_order;
+        g_strlcpy(entry->operation, iop_v5[i].operation, sizeof(entry->operation));
+        i++;
+        l = g_list_next(l);
+      }
+    }
+    new_version = 5;
+  }
+  // each new version MUST be written as the following (_rewrite_order IS VERY important)
+
+  // If a new module is to be added, it must be added in the current
+  // version (just above) and then a new version must be created with
+  // the following code to ensure modules are evenly spaced (leaving
+  // room for multi-instances and user's re-ordering):
+  /*
+  else if(old_version == <N>)
+  {
+    // reorder modules to ensure they are all evenly spaced
+    if(!dont_move) _rewrite_order(*_iop_order_list);
+    new_version = <N+1>;
+  }
+  */
+
+  // If a module is to be reodered in the pipe, the following code
+  // must be used. A new version must be created to ensure modules are
+  // evenly spaced (leaving room for multi-instances and user's
+  // re-ordering):
+  /*
+  else if(old_version == <N>)
+  {
+    _ioppr_move_iop_[before|after](_iop_order_list, "new_module", "some_module", dont_move);
+    if(!dont_move) _rewrite_order(*_iop_order_list);
+    new_version = <N+1>;
+  }
+  */
 
   if(new_version <= 0)
     fprintf(stderr, "[_ioppr_legacy_iop_order_step] missing step migrating from version %i\n", old_version);
@@ -183,9 +366,9 @@ GList *dt_ioppr_get_iop_order_rules()
                                                 { "demosaic", "colorin" },
                                                 { "colorin", "colorout" },
                                                 { "colorout", "gamma" },
-						/* clipping GUI broken if flip is done on top */
+                                                /* clipping GUI broken if flip is done on top */
                                                 { "flip", "clipping" },
-						/* clipping GUI broken if ashift is done on top */
+                                                /* clipping GUI broken if ashift is done on top */
                                                 { "ashift", "clipping" },
                                                 { "\0", "\0" } };
 
@@ -325,7 +508,7 @@ dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const 
 double dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name)
 {
   double iop_order = DBL_MAX;
-  dt_iop_order_entry_t *order_entry = dt_ioppr_get_iop_order_entry(iop_order_list, op_name);
+  const dt_iop_order_entry_t *order_entry = dt_ioppr_get_iop_order_entry(iop_order_list, op_name);
 
   if(order_entry)
     iop_order = order_entry->iop_order;
@@ -1354,6 +1537,194 @@ static void _ioppr_check_rules(GList *iop_list, const int imgid, const char *msg
   }
 
   if(fences) g_list_free(fences);
+}
+
+// migrate the given image to another iop_order version (new_iop_order_version)
+// note that this is actually a non exported routine but it will
+// be when dt GUI will provide a way to migrate to a new iop_order version.
+static int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order_version, const int new_iop_order_version)
+{
+  int _iop_order_version = new_iop_order_version;
+  sqlite3_stmt *stmt;
+
+  // As we have to calculate within the images history data we will create a struct array holding all relevant data
+  // for housekeeping.
+  // Also this ensures we can write test output before we really write data to main.history
+
+  int history_size = 0;
+  // We need the size of the images history for the struct array
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(*) FROM main.history WHERE imgid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW) history_size = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  if (history_size <1)
+  {
+    fprintf(stderr,"\n[dt_ioppr_migrate_iop_order] for image %i has no valid history\n", imgid);
+    return current_iop_order_version;
+  }
+
+  GList *current_iop_list = dt_ioppr_get_iop_order_list(&_iop_order_version);
+
+  if(_iop_order_version != new_iop_order_version)
+  {
+    fprintf(stderr,"\n[dt_ioppr_migrate_iop_order] cannot get new iop-order list for image %i\n", imgid);
+    return current_iop_order_version;
+  }
+
+  // get the number of known iops
+  const int valid_iops = g_list_length (current_iop_list);
+
+  if (DT_ONTHEFLY_INFO)
+  {
+    fprintf(stderr,"\n*** checking for %i known iops ***\n",valid_iops);
+
+    GList *iops_order = g_list_last(current_iop_list);
+    while(iops_order)
+    {
+      dt_iop_order_entry_t *order_entry = (dt_iop_order_entry_t *)iops_order->data;
+      fprintf(stderr,"  %s, %f\n",order_entry->operation,order_entry->iop_order);
+      iops_order = g_list_previous(iops_order);
+    }
+  }
+
+  typedef struct dt_onthefly_history_t
+  {
+    int num;
+    char operation[20];
+    double old_iop_order;
+    double new_iop_order;
+    int multi_priority;
+  } dt_onthefly_history_t;
+
+  struct dt_onthefly_history_t *myhistory = (dt_onthefly_history_t *)calloc(history_size, sizeof(dt_onthefly_history_t));
+
+  // read in the history
+  for (int i=0;i<history_size;i++)
+  {
+    int hits=0;
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+      "SELECT num, operation, iop_order, multi_priority FROM main.history WHERE imgid=?1", -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      struct dt_onthefly_history_t *this = &myhistory[hits];
+      this->num = sqlite3_column_int(stmt, 0);
+      g_strlcpy(this->operation, (char *)sqlite3_column_text(stmt, 1), 20);
+      this->old_iop_order = this->new_iop_order = sqlite3_column_double(stmt,2);
+      this->multi_priority = sqlite3_column_int(stmt, 3);
+      hits++;
+    }
+    sqlite3_finalize(stmt);
+  }
+
+  // process history, we assign iop-order to one from v4.
+  for (int i=0;i<history_size;i++)
+  {
+    struct dt_onthefly_history_t *this = &myhistory[i];
+    this->new_iop_order =
+      dt_ioppr_get_iop_order(current_iop_list, this->operation) + (double)this->multi_priority / 100.0;
+  }
+
+  // process some more checks possibly; any sort data that can't be correct?
+
+  // print complete history information
+  fprintf(stderr,"\n\n ***** On-the-fly history V[%i]->V[%i], imageid: %i ****************",
+          current_iop_order_version, _iop_order_version, imgid);
+  for (int i=0;i<history_size;i++)
+  {
+    struct dt_onthefly_history_t *this = &myhistory[i];
+    fprintf(stderr,"\n %3i %20s multi%3i :: iop %14.11f -> %14.11f",
+            this->num, this->operation, this->multi_priority, this->old_iop_order, this->new_iop_order);
+  }
+
+  // Now write history
+
+  sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
+  for (int i=0; i<history_size; i++)
+  {
+    struct dt_onthefly_history_t *this = &myhistory[i];
+    if (this->old_iop_order != this->new_iop_order)
+    {
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "UPDATE main.history SET iop_order = ?1 WHERE imgid = ?2 AND num = ?3", -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_BIND_DOUBLE(stmt, 1, this->new_iop_order);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, this->num);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
+  }
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.images SET iop_order_version = ?2 WHERE id = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, _iop_order_version);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
+
+  free(myhistory);
+
+  // return back the actual iop_order_version as written above to be extra safe
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order_version FROM main.images WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    _iop_order_version = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+
+  // now let's write the corresponding sidecar file which is also
+  // broken. this is needed when the lighttable refresh a thumb and
+  // the conversion happens.
+  dt_image_write_sidecar_file(imgid);
+
+  return _iop_order_version;
+}
+
+// how is on-the-fly conversion done
+// Currently a hack to support v3/v4 history to later
+// returns the history version of imgid
+int dt_ioppr_convert_onthefly(const int imgid)
+{
+  int my_iop_order_version = 0;
+
+  // check current iop order version
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order_version FROM main.images WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    my_iop_order_version = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+
+  // already latest
+  if (my_iop_order_version == DT_IOP_ORDER_VERSION)
+  {
+    return my_iop_order_version;
+  }
+  else if (my_iop_order_version == 1)
+  {
+    // if an original image edited before iop-order was introduced we migrate it to v2
+    return _ioppr_migrate_iop_order(imgid, my_iop_order_version, 2);
+  }
+  else if (my_iop_order_version == 3 || my_iop_order_version == 4)
+  {
+    // ??? we handle only iop-version 3/4 (which have been broken) and move
+    // it to latest version whatever the latest version is. As v3 or v4 are quite
+    // broken it makes no difference to whatever order we move to. At the time if this
+    // implementation the last/fixed version is v5.
+    return _ioppr_migrate_iop_order(imgid, my_iop_order_version, DT_IOP_ORDER_VERSION);
+  }
+
+  return my_iop_order_version;
 }
 
 int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg)
@@ -3241,4 +3612,6 @@ cleanup:
 }
 #endif
 
+#undef DT_ONTHEFLY_WRITING
+#undef DT_ONTHEFLY_INFO
 #undef DT_IOP_ORDER_INFO // used while debugging

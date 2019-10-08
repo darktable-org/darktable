@@ -16,84 +16,91 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-@import url("darktable-elegant.css");
-
 /* This has been tested with GTK 3.24 on Gnome */
+
+@import url("darktable-elegant-dark.css");
 
 /* Perceptually uniform grey gradient */
 
-/* grey_00 = pure black is forbidden for visual assessment */
-@define-color grey_05 #454545;
-@define-color grey_10 #4f4f4f;
-@define-color grey_15 #525252;
-@define-color grey_20 #5c5c5c;
-@define-color grey_25 #626262;
-@define-color grey_30 #6a6a6a;
-@define-color grey_35 #6d6d6d;
-@define-color grey_40 #6f6f6f;
-@define-color grey_45 #717171;
-@define-color grey_60 #8d8d8d;
-@define-color grey_65 #9c9c9c;
-@define-color grey_85 #dddddd;
-/* grey_100 = pure white is forbidden for visual assessment */
-
-
 /* General */
-@define-color selected_bg_color @grey_30; /* legacy stuff */
-@define-color border_color @grey_15; /* border, when used */
-@define-color bg_color @grey_30; /* general background */
-@define-color fg_color @grey_85; /* general text */
-@define-color text_color @grey_10; /* same */
-@define-color disabled_fg_color @grey_65; /* disabled controls */
+@define-color selected_bg_color @grey_65; /* legacy stuff */
+@define-color border_color @grey_40; /* border, when used */
+@define-color bg_color @grey_45; /* general background */
+@define-color fg_color @grey_95; /* general text */
+@define-color base_color @fg_color; /* legacy stuff */
+@define-color text_color @grey_35; /* same */
+@define-color disabled_fg_color @grey_70; /* disabled controls */
 
 /* Scroll bars (sliders) */
-@define-color scroll_bar_inactive @grey_50;
-@define-color scroll_bar_active @grey_60;
-@define-color scroll_bar_focus @grey_55;
-@define-color scroll_bar_bg @grey_20;
+@define-color scroll_bar_inactive @grey_70;
+@define-color scroll_bar_active @grey_90;
+@define-color scroll_bar_focus @grey_75;
+@define-color scroll_bar_bg @grey_40;
 
 /* Modules box (plugins) */
-@define-color plugin_bg_color @grey_45;
+@define-color plugin_bg_color @grey_50;
 @define-color plugin_fg_color @grey_90;
-@define-color section_label @grey_75;
+@define-color section_label @grey_80;
 @define-color plugin_label_color @grey_80;
 
 /* Modules controls (sliders and comboboxes) */
-@define-color bauhaus_fg @grey_85;
-@define-color bauhaus_indicator_border @grey_45;
-@define-color bauhaus_fill @grey_60;
-@define-color bauhaus_bg @grey_55;
+@define-color bauhaus_fg @grey_90;
+@define-color bauhaus_border shade(@plugin_bg_color, 0.5);
+@define-color bauhaus_indicator_border @grey_50;
+@define-color bauhaus_fill @grey_70;
+@define-color bauhaus_bg @grey_45;
+@define-color bauhaus_fg_hover @grey_100;
+@define-color bauhaus_fg_selected @grey_95;
+@define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5);
 
 /* GTK Buttons and tabs */
+@define-color button_border @grey_60;
+@define-color button_bg @grey_55;
 @define-color button_fg @grey_95;
-@define-color button_border @grey_55;
-@define-color button_focus_bg @grey_60;
-@define-color button_hover_bg @grey_65;
+@define-color button_focus_bg @grey_65;
+@define-color button_focus_fg @grey_100;
+@define-color button_checked_bg @grey_75;
+@define-color button_checked_fg @grey_100;
+@define-color button_hover_bg @grey_85;
+@define-color button_hover_fg @grey_45;
 
 /* text fields */
-@define-color field_bg @grey_30;
-@define-color field_fg @grey_85;
-@define-color field_active_bg @grey_50;
-@define-color field_active_fg @grey_90;
+@define-color field_bg @grey_45;
+@define-color field_fg @grey_95;
+@define-color field_active_bg @grey_55;
+@define-color field_active_fg @grey_95;
+@define-color field_selected_bg @grey_65;
+@define-color field_selected_fg @grey_100;
+@define-color field_hover_bg @grey_75;
+@define-color field_hover_fg @grey_35;
 
 /* Tooltips and contextual helpers */
-@define-color tooltip_bg_color @grey_15;
-@define-color tooltip_fg_color @grey_75;
+@define-color tooltip_bg_color @grey_35;
+@define-color tooltip_fg_color @grey_95;
+@define-color really_dark_bg_color @grey_35;
 
 /* Views */
-@define-color darkroom_preview_bg_color @grey_35;
-@define-color lighttable_preview_bg_color @grey_35;
+@define-color darkroom_bg_color @grey_75;
+@define-color darkroom_preview_bg_color @grey_65;
+@define-color lighttable_bg_color @grey_75;
+@define-color lighttable_preview_bg_color @grey_65;
 
 /* Lighttable and film-strip */
-@define-color thumbnail_bg_color @grey_55; /* area between border and outline */
-@define-color thumbnail_selected_border_color @grey_80;
+@define-color thumbnail_font_color @grey_80;
+@define-color thumbnail_bg_color @grey_70; /* area between border and outline */
+@define-color thumbnail_outline_color @grey_80; /* square around image+metadata */
+@define-color thumbnail_selected_font_color @grey_80;
+@define-color thumbnail_selected_bg_color @grey_90;
+@define-color thumbnail_selected_outline_color @grey_80;
+@define-color thumbnail_hover_font_color @grey_80;
+@define-color thumbnail_hover_bg_color @grey_100;
+@define-color thumbnail_hover_outline_color @grey_80;
+@define-color filmstrip_bg_color @darkroom_bg_color;
 
-#outer-border
-{
-  background-color: @grey_20;
-}
-
-treeview *:selected
-{
-    background-color: @field_active_bg;
-}
+/* Graphs : histogram, navigation thumbnail and some items on tone curve */
+@define-color graph_bg @grey_40;
+@define-color graph_border @grey_35;
+@define-color graph_fg @grey_100;
+@define-color graph_fg_active @grey_95;
+@define-color graph_grid @grey_35;
+@define-color inset_histogram alpha(@grey_95, 0.50);

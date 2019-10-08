@@ -1065,7 +1065,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
   dt_dev_reorder_gui_module_list(dev);
 
   // we update show params for multi-instances for each other instances
-  //dt_dev_modules_update_multishow(dev);
+  dt_dev_modules_update_multishow(dev);
 }
 
 void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
@@ -1470,14 +1470,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 
   dev->iop_order_version = 0;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order_version FROM main.images WHERE id = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW) // seriously, this should never fail
-  {
-    dev->iop_order_version = sqlite3_column_int(stmt, 0);
-  }
-  sqlite3_finalize(stmt);
+  dev->iop_order_version = dt_ioppr_convert_onthefly(imgid);
 
   // free iop_order if any
   if(dev->iop_order_list) g_list_free_full(dev->iop_order_list, free);
@@ -2236,9 +2229,9 @@ gchar *dt_history_item_get_name_html(const struct dt_iop_module_t *module)
   gchar *label;
   /* create a history button and add to box */
   if(!module->multi_name[0] || strcmp(module->multi_name, "0") == 0)
-    label = g_strdup_printf("<span size=\"larger\">%s</span>", module->name());
+    label = g_strdup_printf("%s", module->name());
   else
-    label = g_strdup_printf("<span size=\"larger\">%s</span> %s", module->name(), module->multi_name);
+    label = g_strdup_printf("%s <span size=\"smaller\">%s</span>", module->name(), module->multi_name);
   return label;
 }
 

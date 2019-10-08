@@ -1536,7 +1536,35 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
   // adjust to zoom size:
   const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
-  const int K = d->nbhood; // nbhood
+  int K = d->nbhood; // nbhood
+  float scattering = d->scattering;
+  // Each patch has a width of 2P+1 and a height of 2P+1
+  // thus, divide by (2P+1)^2.
+  // The 0.045 was derived from the old formula, to keep the
+  // norm identical when P=1, as the norm for P=1 seemed
+  // to work quite well: 0.045 = 0.015 * (2 * P + 1) with P=1.
+  float norm = .045f / ((2 * P + 1) * (2 * P + 1));
+  if(!d->fix_anscombe_and_nlmeans_norm)
+  {
+    // use old formula
+    norm = .015f / (2 * P + 1);
+  }
+
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
+  {
+    // much faster slightly more inaccurate preview
+    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
+    K = MIN(3, K);
+    scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
+  }
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  {
+    // much faster slightly more inaccurate preview
+    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
+    K = MAX(MIN(4, K), K * scale);
+    scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
+  }
+
 
   // P == 0 : this will degenerate to a (fast) bilateral filter.
 
@@ -1600,8 +1628,8 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
       // - avoiding grid artifacts by trying to take patches on various lines and columns
       const int abs_kj = abs(kj_index);
       const int abs_ki = abs(ki_index);
-      int kj = scale * ((abs_kj * abs_kj * abs_kj + 7.0 * abs_kj * sqrt(abs_ki)) * sign(kj_index) * d->scattering / 6.0 + kj_index);
-      int ki = scale * ((abs_ki * abs_ki * abs_ki + 7.0 * abs_ki * sqrt(abs_kj)) * sign(ki_index) * d->scattering / 6.0 + ki_index);
+      int kj = scale * ((abs_kj * abs_kj * abs_kj + 7.0 * abs_kj * sqrt(abs_ki)) * sign(kj_index) * scattering / 6.0 + kj_index);
+      int ki = scale * ((abs_ki * abs_ki * abs_ki + 7.0 * abs_ki * sqrt(abs_kj)) * sign(ki_index) * scattering / 6.0 + ki_index);
       // TODO: adaptive K tests here!
       // TODO: expf eval for real bilateral experience :)
 
@@ -1613,7 +1641,7 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
       dt_omp_firstprivate(d, ovoid, P, roi_in, roi_out, central_pixel_weight) \
-      firstprivate(inited_slide) \
+      firstprivate(inited_slide, norm) \
       shared(kj, ki, in, Sa) \
       schedule(static)
 #endif
@@ -1662,17 +1690,6 @@ static void process_nlmeans(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t
           {
             // TODO: could put that outside the loop.
             // DEBUG XXX bring back to computable range:
-            // Each patch has a width of 2P+1 and a height of 2P+1
-            // thus, divide by (2P+1)^2.
-            // The 0.045 was derived from the old formula, to keep the
-            // norm identical when P=1, as the norm for P=1 seemed
-            // to work quite well: 0.045 = 0.015 * (2 * P + 1) with P=1.
-            float norm = .045f / ((2 * P + 1) * (2 * P + 1));
-            if(!d->fix_anscombe_and_nlmeans_norm)
-            {
-              // use old formula
-              norm = .015f / (2 * P + 1);
-            }
             const float iv[4] = { ins[0], ins[1], ins[2], 1.0f };
             const float *inp = in + 4 * i + (size_t)4 * roi_in->width * j;
             const float *inps = in + 4 * i + 4l * ((size_t)roi_in->width * (j + kj) + ki);
@@ -1760,7 +1777,34 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
   // adjust to zoom size:
   const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
-  const int K = d->nbhood; // nbhood
+  int K = d->nbhood; // nbhood
+  float scattering = d->scattering;
+  // Each patch has a width of 2P+1 and a height of 2P+1
+  // thus, divide by (2P+1)^2.
+  // The 0.045 was derived from the old formula, to keep the
+  // norm identical when P=1, as the norm for P=1 seemed
+  // to work quite well: 0.045 = 0.015 * (2 * P + 1) with P=1.
+  float norm = .045f / ((2 * P + 1) * (2 * P + 1));
+  if(!d->fix_anscombe_and_nlmeans_norm)
+  {
+    // use old formula
+    norm = .015f / (2 * P + 1);
+  }
+
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
+  {
+    // much faster slightly more inaccurate preview
+    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
+    K = MIN(3, K);
+    scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
+  }
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  {
+    // much faster slightly more inaccurate preview
+    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
+    K = MAX(MIN(4, K), K * scale);
+    scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
+  }
 
   // P == 0 : this will degenerate to a (fast) bilateral filter.
 
@@ -1825,8 +1869,8 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
       // - avoiding grid artifacts by trying to take patches on various lines and columns
       const int abs_kj = abs(kj_index);
       const int abs_ki = abs(ki_index);
-      int kj = scale * ((abs_kj * abs_kj * abs_kj + 7.0 * abs_kj * sqrt(abs_ki)) * sign(kj_index) * d->scattering / 6.0 + kj_index);
-      int ki = scale * ((abs_ki * abs_ki * abs_ki + 7.0 * abs_ki * sqrt(abs_kj)) * sign(ki_index) * d->scattering / 6.0 + ki_index);
+      int kj = scale * ((abs_kj * abs_kj * abs_kj + 7.0 * abs_kj * sqrt(abs_ki)) * sign(kj_index) * scattering / 6.0 + kj_index);
+      int ki = scale * ((abs_ki * abs_ki * abs_ki + 7.0 * abs_ki * sqrt(abs_kj)) * sign(ki_index) * scattering / 6.0 + ki_index);
 
       int inited_slide = 0;
 // don't construct summed area tables but use sliding window! (applies to cpu version res < 1k only, or else
@@ -1836,7 +1880,7 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
       dt_omp_firstprivate(ovoid, P, roi_in, roi_out, central_pixel_weight) \
-      firstprivate(inited_slide, d) \
+      firstprivate(inited_slide, d, norm) \
       shared(kj, ki, in, Sa) \
       schedule(static)
 #endif
@@ -1885,17 +1929,6 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
           {
             // TODO: could put that outside the loop.
             // DEBUG XXX bring back to computable range:
-            // Each patch has a width of 2P+1 and a height of 2P+1
-            // thus, divide by (2P+1)^2.
-            // The 0.045 was derived from the old formula, to keep the
-            // norm identical when P=1, as the norm for P=1 seemed
-            // to work quite well: 0.045 = 0.015 * (2 * P + 1) with P=1.
-            float norm = .045f / ((2 * P + 1) * (2 * P + 1));
-            if(!d->fix_anscombe_and_nlmeans_norm)
-            {
-              // use old formula
-              norm = .015f / (2 * P + 1);
-            }
             const __m128 iv = { ins[0], ins[1], ins[2], 1.0f };
             const float *inp = in + 4 * i + (size_t)4 * roi_in->width * j;
             const float *inps = in + 4 * i + 4l * ((size_t)roi_in->width * (j + kj) + ki);
@@ -2192,7 +2225,23 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
   const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
-  const int K = d->nbhood; // nbhood
+  int K = d->nbhood; // nbhood
+  float scattering = d->scattering;
+
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW || piece->pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
+  {
+    // much faster slightly more inaccurate preview
+    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
+    K = MIN(3, K);
+    scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
+  }
+  if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  {
+    // much faster slightly more inaccurate preview
+    const int maxk = (K * K * K + 7.0 * K * sqrt(K)) * scattering / 6.0 + K;
+    K = MAX(MIN(4, K), K * scale);
+    scattering = (maxk - K) * 6.0 / (K * K * K + 7.0 * K * sqrt(K));
+  }
 
   // Each patch has a width of 2P+1 and a height of 2P+1
   // thus, divide by (2P+1)^2.
@@ -2336,8 +2385,8 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       // - avoiding grid artifacts by trying to take patches on various lines and columns
       const int abs_kj = abs(kj_index);
       const int abs_ki = abs(ki_index);
-      const int j = scale * ((abs_kj * abs_kj * abs_kj + 7.0 * abs_kj * sqrt(abs_ki)) * sign(kj_index) * d->scattering / 6.0 + kj_index);
-      const int i = scale * ((abs_ki * abs_ki * abs_ki + 7.0 * abs_ki * sqrt(abs_kj)) * sign(ki_index) * d->scattering / 6.0 + ki_index);
+      const int j = scale * ((abs_kj * abs_kj * abs_kj + 7.0 * abs_kj * sqrt(abs_ki)) * sign(kj_index) * scattering / 6.0 + kj_index);
+      const int i = scale * ((abs_ki * abs_ki * abs_ki + 7.0 * abs_ki * sqrt(abs_kj)) * sign(ki_index) * scattering / 6.0 + ki_index);
       int q[2] = { i, j };
 
       dev_U4 = buckets[bucket_next(&state, NUM_BUCKETS)];
