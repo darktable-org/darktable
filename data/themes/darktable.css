@@ -643,6 +643,15 @@ tooltip button
   background-color: transparent;
 }
 
+menuitem check
+{
+  border-radius: 2px;
+  border: 1px solid shade(@tooltip_bg_color, 4);
+  min-width: 10px;
+  min-height: 10px;
+  margin-right: 5px;
+}
+
 #header-toolbar combobox,
 #footer-toolbar combobox
 {
