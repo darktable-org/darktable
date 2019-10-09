@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-10-09 09:04+0200\n"
-"PO-Revision-Date: 2019-10-09 09:09+0200\n"
+"PO-Revision-Date: 2019-10-09 10:38+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -8451,7 +8451,7 @@ msgstr ""
 #. Preserve color
 #: ../src/iop/filmic.c:1814
 msgid "preserve the chrominance"
-msgstr "préserver la chrominance"
+msgstr "préserver couleur"
 
 #: ../src/iop/filmic.c:1816 ../src/iop/filmicrgb.c:1440
 msgid ""
@@ -8606,7 +8606,7 @@ msgstr "échelle plage dynamique"
 
 #: ../src/iop/filmicrgb.c:1435
 msgid "preserve chroma"
-msgstr "préserver la chrominance"
+msgstr "préserver couleur"
 
 #: ../src/iop/filmicrgb.c:1437
 msgid "max RGB"
