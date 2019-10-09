@@ -1797,6 +1797,7 @@ void gui_init(dt_view_t *self)
   dt_view_manager_view_toolbox_add(darktable.view_manager, dev->second_window.button, DT_VIEW_DARKROOM);
 
   const int panel_width = dt_conf_get_int("panel_width");
+  const int dialog_width = panel_width > 350 ? panel_width : 350;
 
   /* create rawoverexposed popup tool */
   {
@@ -1816,7 +1817,7 @@ void gui_init(dt_view_t *self)
 
     // and the popup window
     dev->rawoverexposed.floating_window = gtk_popover_new(dev->rawoverexposed.button);
-    gtk_widget_set_size_request(GTK_WIDGET(dev->rawoverexposed.floating_window), panel_width, -1);
+    gtk_widget_set_size_request(GTK_WIDGET(dev->rawoverexposed.floating_window), dialog_width, -1);
 #if GTK_CHECK_VERSION(3, 16, 0)
     g_object_set(G_OBJECT(dev->rawoverexposed.floating_window), "transitions-enabled", FALSE, NULL);
 #endif
@@ -1880,7 +1881,7 @@ void gui_init(dt_view_t *self)
 
     // and the popup window
     dev->overexposed.floating_window = gtk_popover_new(dev->overexposed.button);
-    gtk_widget_set_size_request(GTK_WIDGET(dev->overexposed.floating_window), panel_width, -1);
+    gtk_widget_set_size_request(GTK_WIDGET(dev->overexposed.floating_window), dialog_width, -1);
 #if GTK_CHECK_VERSION(3, 16, 0)
     g_object_set(G_OBJECT(dev->overexposed.floating_window), "transitions-enabled", FALSE, NULL);
 #endif
@@ -1952,7 +1953,7 @@ void gui_init(dt_view_t *self)
 
     // and the popup window, which is shared between the two profile buttons
     dev->profile.floating_window = gtk_popover_new(NULL);
-    gtk_widget_set_size_request(GTK_WIDGET(dev->profile.floating_window), panel_width, -1);
+    gtk_widget_set_size_request(GTK_WIDGET(dev->profile.floating_window), dialog_width, -1);
 #if GTK_CHECK_VERSION(3, 16, 0)
     g_object_set(G_OBJECT(dev->profile.floating_window), "transitions-enabled", FALSE, NULL);
 #endif
@@ -2625,7 +2626,7 @@ void leave(dt_view_t *self)
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 
   darktable.develop->image_storage.id = -1;
-  // darkroom development could have changed a collection, so update that before being back in lightroom 
+  // darkroom development could have changed a collection, so update that before being back in lightroom
   dt_collection_update_query(darktable.collection);
   dt_print(DT_DEBUG_CONTROL, "[run_job-] 11 %f in darkroom mode\n", dt_get_wtime());
 }
