@@ -718,8 +718,11 @@ static void menuitem_favourite_toggled(GtkCheckMenuItem *checkmenuitem, gpointer
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
   // the module is currently visible, otherwise we wouldn't show the popup. it should also stay visible.
   dt_iop_module_state_t state = module->so->state;
-  if(state == dt_iop_state_FAVORITE) state = dt_iop_state_ACTIVE;
-  else state = dt_iop_state_FAVORITE;
+  if(state == dt_iop_state_FAVORITE)
+    state = dt_iop_state_ACTIVE;
+  else
+    state = dt_iop_state_FAVORITE;
+
   dt_iop_gui_set_state(module, state);
   if(state == dt_iop_state_FAVORITE)
     dt_dev_modulegroups_set(darktable.develop, DT_MODULEGROUP_FAVORITES);
