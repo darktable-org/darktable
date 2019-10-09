@@ -18,6 +18,7 @@ public:
 private:
   std::string lon_;
   std::string lat_;
+  std::string alt_;
 };
 
 }
