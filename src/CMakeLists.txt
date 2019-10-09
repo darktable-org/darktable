@@ -94,6 +94,7 @@ FILE(GLOB SOURCE_FILES
   "develop/lightroom/add_history.cc"
   "develop/lightroom/bilat_iop.cc"
   "develop/lightroom/clipping_iop.cc"
+  "develop/lightroom/colisa_iop.cc"
   "develop/lightroom/colorin_iop.cc"
   "develop/lightroom/colorlabel_iop.cc"
   "develop/lightroom/colorzones_iop.cc"

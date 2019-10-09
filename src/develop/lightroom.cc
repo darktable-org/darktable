@@ -49,6 +49,7 @@ extern "C"
 
 #include "develop/lightroom/bilat_iop.h"
 #include "develop/lightroom/clipping_iop.h"
+#include "develop/lightroom/colisa_iop.h"
 #include "develop/lightroom/colorin_iop.h"
 #include "develop/lightroom/colorlabel_iop.h"
 #include "develop/lightroom/colorzones_iop.h"
@@ -79,6 +80,7 @@ public:
     , clipping{ dev, flip }
     , temperature{ dev }
     , exposure{ dev }
+    , colisa{ dev }
     , bilat{ dev }
     , tonecurve{ dev }
     , colorzones{ dev }
@@ -114,6 +116,7 @@ private:
   lightroom::ClippingIop clipping;
   lightroom::TemperatureIop temperature;
   lightroom::ExposureIop exposure;
+  lightroom::CoLiSaIop colisa;
   lightroom::BilatIop bilat;
   lightroom::ToneCurveIop tonecurve;
   lightroom::ColorZonesIop colorzones;
@@ -123,8 +126,8 @@ private:
   lightroom::SpotIop spot;
 
   std::vector<lightroom::Iop *> iops = {
-    &tags,     &rating, &colorlabel, &geotagging, &dimensions,  &colorin, &flip,     &clipping, &temperature,
-    &exposure, &bilat,  &tonecurve,  &colorzones, &splittoning, &grain,   &vignette, &spot,
+    &tags,     &rating, &colorlabel, &geotagging, &dimensions, &colorin,     &flip,  &clipping, &temperature,
+    &exposure, &colisa, &bilat,      &tonecurve,  &colorzones, &splittoning, &grain, &vignette, &spot,
   };
 };
 
@@ -304,7 +307,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   xmlXPathRegisterNs(xpathCtx, BAD_CAST "rdf", BAD_CAST "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 
   // All prefixes to parse from the XMP document
-  static char const *names[] = { "crs", "dc", "tiff", "xmp", "exif", "lr", nullptr };
+  static char const *names[] = { "exif", "tiff", "xmp", "dc", "lr", "crs", nullptr };
 
   for(int i = 0; names[i] != nullptr; i++)
   {
