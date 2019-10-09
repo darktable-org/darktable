@@ -3164,7 +3164,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->blending, 0.01, 100.0);
   dt_bauhaus_slider_set_format(g->blending, "%.2f %%");
   dt_bauhaus_widget_set_label(g->blending, NULL, _("smoothing diameter"));
-  g_object_set(G_OBJECT(g->blending), "tooltip-text", _("diameter of the blur in percent of the largest image size"), (char *)NULL);
+  g_object_set(G_OBJECT(g->blending), "tooltip-text", _("diameter of the blur in percent of the largest image size\n"
+                                                        "warning: big values of this parameter can make the darkroom\n"
+                                                        "preview much slower if denoise profiled is used."), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(page3), g->blending, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->blending), "value-changed", G_CALLBACK(blending_callback), self);
 
