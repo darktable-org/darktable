@@ -1794,7 +1794,7 @@ static void dt_colorspaces_pseudoinverse(double (*in)[3], double (*out)[3], int 
     }
 }
 
-int dt_colorspaces_conversion_matrices_xyz(const char *name, float in_XYZ_to_CAM[9], double XYZ_to_CAM[4][3], double CAM_to_XYZ[3][4])
+int dt_colorspaces_conversion_matrices_xyz(const char *name, float const in_XYZ_to_CAM[9], double XYZ_to_CAM[4][3], double CAM_to_XYZ[3][4])
 {
   if(!isnan(in_XYZ_to_CAM[0]))
   {

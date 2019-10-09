@@ -105,6 +105,7 @@ FILE(GLOB SOURCE_FILES
   "develop/lightroom/splittoning_iop.cc"
   "develop/lightroom/spot_iop.cc"
   "develop/lightroom/tags_iop.cc"
+  "develop/lightroom/temperature_iop.cc"
   "develop/lightroom/tonecurve_iop.cc"
   "develop/lightroom/vignette_iop.cc"
   "develop/pixelpipe.c"

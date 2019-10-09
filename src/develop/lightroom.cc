@@ -61,6 +61,7 @@ extern "C"
 #include "develop/lightroom/splittoning_iop.h"
 #include "develop/lightroom/spot_iop.h"
 #include "develop/lightroom/tags_iop.h"
+#include "develop/lightroom/temperature_iop.h"
 #include "develop/lightroom/tonecurve_iop.h"
 #include "develop/lightroom/vignette_iop.h"
 
@@ -76,6 +77,7 @@ public:
     , colorin{ dev }
     , flip{ dev }
     , clipping{ dev, flip }
+    , temperature{ dev }
     , exposure{ dev }
     , bilat{ dev }
     , tonecurve{ dev }
@@ -110,6 +112,7 @@ private:
   lightroom::ColorInIop colorin;
   lightroom::FlipIop flip;
   lightroom::ClippingIop clipping;
+  lightroom::TemperatureIop temperature;
   lightroom::ExposureIop exposure;
   lightroom::BilatIop bilat;
   lightroom::ToneCurveIop tonecurve;
@@ -120,7 +123,7 @@ private:
   lightroom::SpotIop spot;
 
   std::vector<lightroom::Iop *> iops = {
-    &tags,     &rating, &colorlabel, &geotagging, &dimensions,  &colorin, &flip,     &clipping,
+    &tags,     &rating, &colorlabel, &geotagging, &dimensions,  &colorin, &flip,     &clipping, &temperature,
     &exposure, &bilat,  &tonecurve,  &colorzones, &splittoning, &grain,   &vignette, &spot,
   };
 };
