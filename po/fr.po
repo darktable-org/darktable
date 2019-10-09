@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-02 13:47+0200\n"
-"PO-Revision-Date: 2019-10-02 14:09+0200\n"
+"POT-Creation-Date: 2019-10-09 09:04+0200\n"
+"PO-Revision-Date: 2019-10-09 09:09+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -11,7 +11,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2.3\n"
+"X-Generator: Poedit 2.2.4\n"
 
 #: ../build/src/preferences_gen.h:2104
 msgid "GUI options"
@@ -1578,14 +1578,14 @@ msgstr ""
 #: ../src/imageio/format/pdf.c:669 ../src/imageio/format/pdf.c:694
 #: ../src/iop/clipping.c:2005 ../src/iop/filmicrgb.c:1436
 #: ../src/libs/export.c:628 ../src/libs/export.c:634
-#: ../src/libs/metadata_view.c:277
+#: ../src/libs/metadata_view.c:279
 msgid "no"
 msgstr "non"
 
 #: ../src/common/darktable.c:791 ../src/common/variables.c:378
 #: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
 #: ../src/iop/clipping.c:2006 ../src/libs/export.c:629 ../src/libs/export.c:635
-#: ../src/libs/metadata_view.c:277
+#: ../src/libs/metadata_view.c:279
 msgid "yes"
 msgstr "oui"
 
@@ -1721,7 +1721,7 @@ msgstr ""
 #: ../src/common/history.c:798 ../src/common/history.c:801
 #: ../src/common/history.c:817 ../src/common/styles.c:894
 #: ../src/common/styles.c:898 ../src/develop/blend_gui.c:2501
-#: ../src/develop/develop.c:1861 ../src/iop/ashift.c:4856
+#: ../src/develop/develop.c:1854 ../src/iop/ashift.c:4856
 #: ../src/libs/live_view.c:437
 msgid "on"
 msgstr "activé(e)"
@@ -1729,7 +1729,7 @@ msgstr "activé(e)"
 #: ../src/common/history.c:798 ../src/common/history.c:801
 #: ../src/common/history.c:817 ../src/common/styles.c:894
 #: ../src/common/styles.c:898 ../src/develop/blend_gui.c:2248
-#: ../src/develop/blend_gui.c:2498 ../src/develop/develop.c:1861
+#: ../src/develop/blend_gui.c:2498 ../src/develop/develop.c:1854
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
 #: ../src/iop/ashift.c:4855 ../src/iop/ashift.c:4861 ../src/iop/colorin.c:2107
 #: ../src/iop/demosaic.c:5147 ../src/iop/vignette.c:1150
@@ -1759,52 +1759,52 @@ msgstr ""
 msgid "orphaned image"
 msgstr "image orpheline"
 
-#: ../src/common/image.c:1454
+#: ../src/common/image.c:1455
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "accès à la copie locale « %s » impossible."
 
-#: ../src/common/image.c:1460
+#: ../src/common/image.c:1461
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "création de la copie locale « %s » impossible."
 
-#: ../src/common/image.c:1467
+#: ../src/common/image.c:1468
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "erreur lors du déplacement de la copie locale de « %s » → « %s »"
 
-#: ../src/common/image.c:1483
+#: ../src/common/image.c:1484
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "erreur de déplacement « %s », le fichier n'existe pas"
 
-#: ../src/common/image.c:1487
+#: ../src/common/image.c:1494
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "erreur de déplacement « %s » → « %s », le fichier existe"
 
-#: ../src/common/image.c:1491
+#: ../src/common/image.c:1498
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "erreur lors du déplacement « %s » → « %s »"
 
-#: ../src/common/image.c:1748
+#: ../src/common/image.c:1755
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "impossible de créer la copie locale lorsque l'original n'est pas accessible."
 
-#: ../src/common/image.c:1762
+#: ../src/common/image.c:1769
 msgid "cannot create local copy."
 msgstr "copie locale impossible."
 
-#: ../src/common/image.c:1828 ../src/control/jobs/control_jobs.c:665
+#: ../src/common/image.c:1835 ../src/control/jobs/control_jobs.c:665
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "impossible de supprimer la copie locale lorsque l'original n'est pas "
 "accessible"
 
-#: ../src/common/image.c:1997
+#: ../src/common/image.c:2004
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -1991,7 +1991,7 @@ msgid "below sea level"
 msgstr "sous le niveau de la mer"
 
 #: ../src/common/utility.c:508 ../src/iop/watermark.c:775
-#: ../src/libs/metadata_view.c:576
+#: ../src/libs/metadata_view.c:578
 msgid "m"
 msgstr "m"
 
@@ -2971,7 +2971,7 @@ msgstr ""
 msgid "mask refinement"
 msgstr "amélioration du masque"
 
-#: ../src/develop/develop.c:1648
+#: ../src/develop/develop.c:1641
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module « %s » version non cohérente: %d != %d"
@@ -3089,7 +3089,7 @@ msgstr "« %s » n'est pas un XMP de Lightroom !"
 #. tags
 #: ../src/develop/lightroom.c:1568 ../src/gui/camera_import_dialog.c:465
 #: ../src/libs/export_metadata.c:358 ../src/libs/import.c:580
-#: ../src/libs/metadata_view.c:136
+#: ../src/libs/metadata_view.c:137
 msgid "tags"
 msgstr "mots-clés"
 
@@ -3667,7 +3667,7 @@ msgstr "liste de mots-clés séparés par une virgule"
 
 #: ../src/gui/camera_import_dialog.c:450 ../src/libs/collect.h:35
 #: ../src/libs/import.c:565 ../src/libs/metadata.c:349
-#: ../src/libs/metadata_view.c:127
+#: ../src/libs/metadata_view.c:128
 msgid "creator"
 msgstr "auteur"
 
@@ -4086,7 +4086,7 @@ msgid "normal images"
 msgstr "images normales"
 
 #: ../src/gui/preferences.c:82 ../src/gui/presets.c:57
-#: ../src/libs/metadata_view.c:293
+#: ../src/libs/metadata_view.c:295
 msgid "raw"
 msgstr "raw"
 
@@ -4133,25 +4133,25 @@ msgstr "module"
 
 #. exif
 #: ../src/gui/preferences.c:506 ../src/gui/preferences.c:1430
-#: ../src/gui/presets.c:431 ../src/libs/metadata_view.c:110
+#: ../src/gui/presets.c:431 ../src/libs/metadata_view.c:111
 msgid "model"
 msgstr "modèle"
 
 #: ../src/gui/preferences.c:510 ../src/gui/preferences.c:1438
-#: ../src/gui/presets.c:438 ../src/libs/metadata_view.c:111
+#: ../src/gui/presets.c:438 ../src/libs/metadata_view.c:112
 msgid "maker"
 msgstr "fabricant"
 
 #: ../src/gui/preferences.c:514 ../src/gui/preferences.c:1446
 #: ../src/gui/presets.c:445 ../src/libs/collect.h:36
-#: ../src/libs/metadata_view.c:112
+#: ../src/libs/metadata_view.c:113
 msgid "lens"
 msgstr "objectif"
 
 #. iso
 #: ../src/gui/preferences.c:518 ../src/gui/preferences.c:1452
 #: ../src/gui/presets.c:451 ../src/libs/camera.c:588 ../src/libs/collect.h:37
-#: ../src/libs/metadata_view.c:117
+#: ../src/libs/metadata_view.c:118
 msgid "ISO"
 msgstr "ISO"
 
@@ -4159,21 +4159,21 @@ msgstr "ISO"
 #: ../src/gui/preferences.c:522 ../src/gui/preferences.c:1465
 #: ../src/gui/presets.c:464 ../src/iop/basicadj.c:680 ../src/iop/exposure.c:107
 #: ../src/iop/exposure.c:886 ../src/iop/relight.c:361 ../src/libs/collect.h:37
-#: ../src/libs/metadata_view.c:114
+#: ../src/libs/metadata_view.c:115
 msgid "exposure"
 msgstr "exposition"
 
 #. aperture
 #: ../src/gui/preferences.c:526 ../src/gui/preferences.c:1480
 #: ../src/gui/presets.c:479 ../src/libs/camera.c:575 ../src/libs/camera.c:577
-#: ../src/libs/collect.h:37 ../src/libs/metadata_view.c:113
+#: ../src/libs/collect.h:37 ../src/libs/metadata_view.c:114
 msgid "aperture"
 msgstr "ouverture"
 
 #. focal length
 #: ../src/gui/preferences.c:530 ../src/gui/preferences.c:1495
 #: ../src/gui/presets.c:494 ../src/iop/ashift.c:4873 ../src/libs/camera.c:580
-#: ../src/libs/collect.h:36 ../src/libs/metadata_view.c:115
+#: ../src/libs/collect.h:36 ../src/libs/metadata_view.c:116
 msgid "focal length"
 msgstr "focale"
 
@@ -4592,7 +4592,7 @@ msgstr "PDF"
 #: ../src/imageio/storage/flickr.c:530 ../src/imageio/storage/gallery.c:185
 #: ../src/imageio/storage/googlephoto.c:1233 ../src/imageio/storage/latex.c:185
 #: ../src/imageio/storage/piwigo.c:857 ../src/libs/collect.h:34
-#: ../src/libs/metadata.c:347 ../src/libs/metadata_view.c:126
+#: ../src/libs/metadata.c:347 ../src/libs/metadata_view.c:127
 #: ../src/libs/tools/filter.c:155
 msgid "title"
 msgstr "titre"
@@ -8366,7 +8366,7 @@ msgstr ""
 
 #. geotagging
 #: ../src/iop/filmic.c:1761 ../src/iop/filmicrgb.c:1405
-#: ../src/libs/metadata_view.c:131
+#: ../src/libs/metadata_view.c:132
 msgid "latitude"
 msgstr "latitude"
 
@@ -9957,7 +9957,7 @@ msgstr "largeur"
 msgid "the fill-light in EV"
 msgstr "lumière d'appoint en IL"
 
-#: ../src/iop/relight.c:367 ../src/libs/metadata_view.c:119
+#: ../src/iop/relight.c:367 ../src/libs/metadata_view.c:120
 #: ../src/libs/print_settings.c:1304
 msgid "width"
 msgstr "largeur"
@@ -10969,14 +10969,20 @@ msgid "smoothing diameter"
 msgstr "diamètre adoucissement"
 
 #: ../src/iop/toneequal.c:3167
-msgid "diameter of the blur in percent of the largest image size"
-msgstr "diamètre du flou en pourcentage de la plus grande dimension de l'image"
+msgid ""
+"diameter of the blur in percent of the largest image size\n"
+"warning: big values of this parameter can make the darkroom\n"
+"preview much slower if denoise profiled is used."
+msgstr ""
+"diamètre du flou en pourcentage du plus grand coté de l'image.\n"
+"attention: une grande valeur peut ralentir conséquemment la\n"
+"prévisualisation si le module de réduction du bruit par profil est utilisé."
 
-#: ../src/iop/toneequal.c:3173
+#: ../src/iop/toneequal.c:3175
 msgid "edges refinement/feathering"
 msgstr "raffinement/adoucissement bords"
 
-#: ../src/iop/toneequal.c:3174
+#: ../src/iop/toneequal.c:3176
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -10991,11 +10997,11 @@ msgstr ""
 "adoucissement\n"
 "mais peut alors créer des bords peu précis."
 
-#: ../src/iop/toneequal.c:3182
+#: ../src/iop/toneequal.c:3184
 msgid "mask post-processing"
 msgstr "post-traitement masque"
 
-#: ../src/iop/toneequal.c:3188
+#: ../src/iop/toneequal.c:3190
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -11005,11 +11011,11 @@ msgstr ""
 "la ligne centrale montre la moyenne. des bars oranges apparaissent aux "
 "extrémités si troncatures."
 
-#: ../src/iop/toneequal.c:3193
+#: ../src/iop/toneequal.c:3195
 msgid "mask quantization"
 msgstr "quantification masque"
 
-#: ../src/iop/toneequal.c:3195
+#: ../src/iop/toneequal.c:3197
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -11020,11 +11026,11 @@ msgstr ""
 " à produire des zones plus lisse lors de l'utilisation de grandes valeurs "
 "d'adoucissement"
 
-#: ../src/iop/toneequal.c:3203
+#: ../src/iop/toneequal.c:3205
 msgid "mask exposure compensation"
 msgstr "compensation masque exposition"
 
-#: ../src/iop/toneequal.c:3205
+#: ../src/iop/toneequal.c:3207
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for better control of the exposure corrections.\n"
@@ -11035,11 +11041,11 @@ msgstr ""
 "pour un meilleur contrôle de la correction d'exposition.\n"
 "la pipette ajustera automatiquement l'exposition moyenne à -4EV."
 
-#: ../src/iop/toneequal.c:3217
+#: ../src/iop/toneequal.c:3219
 msgid "mask contrast compensation"
 msgstr "compensation masque contraste"
 
-#: ../src/iop/toneequal.c:3219
+#: ../src/iop/toneequal.c:3221
 msgid ""
 "use this to dilate the mask contrast around its average exposure\n"
 "this allows to spread the exposure histogram over more channels\n"
@@ -11050,7 +11056,7 @@ msgstr ""
 "ceci permet d'étaler l'histogramme d'exposition à travers plus de canaux\n"
 "pour un meilleur contrôle de la correction d'exposition."
 
-#: ../src/iop/toneequal.c:3231 ../src/iop/toneequal.c:3235
+#: ../src/iop/toneequal.c:3233 ../src/iop/toneequal.c:3237
 msgid "display exposure mask"
 msgstr "affiche le masque d'exposition"
 
@@ -11659,7 +11665,7 @@ msgstr "historique"
 msgid "aspect ratio"
 msgstr "aspect"
 
-#: ../src/libs/collect.h:38 ../src/libs/metadata_view.c:101
+#: ../src/libs/collect.h:38 ../src/libs/metadata_view.c:102
 #: ../src/libs/tools/filter.c:147
 msgid "filename"
 msgstr "nom de fichier"
@@ -11668,8 +11674,8 @@ msgstr "nom de fichier"
 msgid "grouping"
 msgstr "groupe"
 
-#: ../src/libs/collect.h:39 ../src/libs/metadata_view.c:104
-#: ../src/libs/metadata_view.c:298
+#: ../src/libs/collect.h:39 ../src/libs/metadata_view.c:105
+#: ../src/libs/metadata_view.c:300
 msgid "local copy"
 msgstr "copie locale"
 
@@ -12162,8 +12168,8 @@ msgid "export hierarchical tags (to Xmp.lr.Hierarchical Subject)"
 msgstr "exporter mots-clés hiérarchiques (vers Xmp.lt.Hierarchical.Subject)"
 
 #: ../src/libs/export_metadata.c:379
-msgid "dt history"
-msgstr "historique développement"
+msgid "develop history"
+msgstr "historique"
 
 #: ../src/libs/export_metadata.c:380
 msgid ""
@@ -12738,7 +12744,7 @@ msgstr "numéro"
 msgid "overlay another image over the live view"
 msgstr "superpose une autre image au-dessus de la visée directe"
 
-#: ../src/libs/live_view.c:392 ../src/libs/metadata_view.c:99
+#: ../src/libs/live_view.c:392 ../src/libs/metadata_view.c:100
 msgid "image id"
 msgstr "numéro"
 
@@ -13004,64 +13010,68 @@ msgid "all rights reserved."
 msgstr "tous droits réservés"
 
 #. internal
-#: ../src/libs/metadata_view.c:98
+#: ../src/libs/metadata_view.c:99
 msgid "filmroll"
 msgstr "pellicule"
 
-#: ../src/libs/metadata_view.c:100
+#: ../src/libs/metadata_view.c:101
 msgid "group id"
 msgstr "numéro groupe"
 
-#: ../src/libs/metadata_view.c:102
+#: ../src/libs/metadata_view.c:103
 msgid "version"
 msgstr "version"
 
 #. DT_COLLECTION_SORT_GROUP
-#: ../src/libs/metadata_view.c:103 ../src/libs/tools/filter.c:153
+#: ../src/libs/metadata_view.c:104 ../src/libs/tools/filter.c:153
 msgid "full path"
 msgstr "chemin complet"
 
-#: ../src/libs/metadata_view.c:106
+#: ../src/libs/metadata_view.c:107
 msgid "flags"
 msgstr "états"
 
-#: ../src/libs/metadata_view.c:116
+#: ../src/libs/metadata_view.c:117
 msgid "focus distance"
 msgstr "mise au point"
 
-#: ../src/libs/metadata_view.c:118
+#: ../src/libs/metadata_view.c:119
 msgid "datetime"
 msgstr "date/heure"
 
-#: ../src/libs/metadata_view.c:120 ../src/libs/print_settings.c:1308
+#: ../src/libs/metadata_view.c:121 ../src/libs/print_settings.c:1308
 msgid "height"
 msgstr "hauteur"
 
-#: ../src/libs/metadata_view.c:122
+#: ../src/libs/metadata_view.c:123
 msgid "export width"
 msgstr "largeur exporté"
 
-#: ../src/libs/metadata_view.c:123
+#: ../src/libs/metadata_view.c:124
 msgid "export height"
 msgstr "hauteur exporté"
 
-#: ../src/libs/metadata_view.c:128
+#: ../src/libs/metadata_view.c:129
 msgid "copyright"
 msgstr "droits"
 
-#: ../src/libs/metadata_view.c:132
+#: ../src/libs/metadata_view.c:133
 msgid "longitude"
 msgstr "longitude"
 
-#: ../src/libs/metadata_view.c:133
+#: ../src/libs/metadata_view.c:134
 msgid "elevation"
 msgstr "élévation"
 
-#: ../src/libs/metadata_view.c:147
+#: ../src/libs/metadata_view.c:138
+msgid "categories"
+msgstr "catégories"
+
+#: ../src/libs/metadata_view.c:149
 msgid "image information"
 msgstr "informations de l'image"
 
-#: ../src/libs/metadata_view.c:259
+#: ../src/libs/metadata_view.c:261
 #, c-format
 msgid ""
 "double click to jump to film roll\n"
@@ -13070,103 +13080,103 @@ msgstr ""
 "double-cliquer pour aller à la pellicule\n"
 "%s"
 
-#: ../src/libs/metadata_view.c:290
+#: ../src/libs/metadata_view.c:292
 msgid "unused"
 msgstr "non utilisé"
 
-#: ../src/libs/metadata_view.c:291
+#: ../src/libs/metadata_view.c:293
 msgid "unused/deprecated"
 msgstr "non utilisé/déprécié"
 
-#: ../src/libs/metadata_view.c:292
+#: ../src/libs/metadata_view.c:294
 msgid "ldr"
 msgstr "ldr"
 
-#: ../src/libs/metadata_view.c:294
+#: ../src/libs/metadata_view.c:296
 msgid "hdr"
 msgstr "hdr"
 
-#: ../src/libs/metadata_view.c:295
+#: ../src/libs/metadata_view.c:297
 msgid "marked for deletion"
 msgstr "marqué pour suppression"
 
-#: ../src/libs/metadata_view.c:296
+#: ../src/libs/metadata_view.c:298
 msgid "auto-applying presets applied"
 msgstr "pré-réglage automatique appliqué"
 
-#: ../src/libs/metadata_view.c:297
+#: ../src/libs/metadata_view.c:299
 msgid "legacy flag. set for all new images"
 msgstr "ancien état. positionné pour toutes nouvelles images"
 
-#: ../src/libs/metadata_view.c:299
+#: ../src/libs/metadata_view.c:301
 msgid "has .txt"
 msgstr "a .txt"
 
-#: ../src/libs/metadata_view.c:300
+#: ../src/libs/metadata_view.c:302
 msgid "has .wav"
 msgstr "a .wav"
 
-#: ../src/libs/metadata_view.c:312
+#: ../src/libs/metadata_view.c:314
 msgid "image rejected"
 msgstr "image rejetée"
 
-#: ../src/libs/metadata_view.c:317
+#: ../src/libs/metadata_view.c:319
 #, c-format
 msgid "image has %d star"
 msgid_plural "image has %d stars"
 msgstr[0] "l'image a %d étoile"
 msgstr[1] "l'image a %d étoiles"
 
-#: ../src/libs/metadata_view.c:397 ../src/libs/snapshots.c:354
+#: ../src/libs/metadata_view.c:399 ../src/libs/snapshots.c:354
 msgid "unknown"
 msgstr "inconnu"
 
-#: ../src/libs/metadata_view.c:398
+#: ../src/libs/metadata_view.c:400
 msgid "tiff"
 msgstr "tiff"
 
-#: ../src/libs/metadata_view.c:399
+#: ../src/libs/metadata_view.c:401
 msgid "png"
 msgstr "png"
 
-#: ../src/libs/metadata_view.c:400
+#: ../src/libs/metadata_view.c:402
 msgid "j2k"
 msgstr "j2k"
 
-#: ../src/libs/metadata_view.c:401
+#: ../src/libs/metadata_view.c:403
 msgid "jpeg"
 msgstr "jpeg"
 
-#: ../src/libs/metadata_view.c:402
+#: ../src/libs/metadata_view.c:404
 msgid "exr"
 msgstr "exr"
 
-#: ../src/libs/metadata_view.c:403
+#: ../src/libs/metadata_view.c:405
 msgid "rgbe"
 msgstr "rgbe"
 
-#: ../src/libs/metadata_view.c:404
+#: ../src/libs/metadata_view.c:406
 msgid "pfm"
 msgstr "pfm"
 
-#: ../src/libs/metadata_view.c:405
+#: ../src/libs/metadata_view.c:407
 msgid "GraphicsMagick"
 msgstr "GraphicsMagick"
 
-#: ../src/libs/metadata_view.c:406
+#: ../src/libs/metadata_view.c:408
 msgid "rawspeed"
 msgstr "rawspeed"
 
-#: ../src/libs/metadata_view.c:407
+#: ../src/libs/metadata_view.c:409
 msgid "netpnm"
 msgstr "netpnm"
 
-#: ../src/libs/metadata_view.c:412
+#: ../src/libs/metadata_view.c:414
 #, c-format
 msgid "loader: %s"
 msgstr "chargement: %s"
 
-#: ../src/libs/metadata_view.c:678
+#: ../src/libs/metadata_view.c:703
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "aller à la pellicule"
@@ -15108,6 +15118,13 @@ msgstr "raccourcis"
 #: ../src/views/view.c:2415
 msgid "Action"
 msgstr "action"
+
+#~ msgid "diameter of the blur in percent of the largest image size"
+#~ msgstr ""
+#~ "diamètre du flou en pourcentage de la plus grande dimension de l'image"
+
+#~ msgid "dt history"
+#~ msgstr "historique développement"
 
 #~ msgid "equalizer"
 #~ msgstr "égaliseur"
