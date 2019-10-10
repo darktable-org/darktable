@@ -468,7 +468,7 @@ static inline void fast_surface_blur(float *const restrict image,
 
     // Perform the patch-wise variance analyse to get
     // the a and b parameters for the linear blending s.t. mask = a * I + b
-    variance_analyse(ds_image, ds_mask, ds_ab, ds_width, ds_height, ds_radius, feathering);
+    variance_analyse(ds_mask, ds_image, ds_ab, ds_width, ds_height, ds_radius, feathering);
 
     // Compute the patch-wise average of parameters a and b
     box_average(ds_ab, ds_width, ds_height, 2, ds_radius);
