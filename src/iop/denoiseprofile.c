@@ -817,7 +817,7 @@ static inline void backtransform_v2(float *const buf, const int wd, const int ht
     {
       for(int c = 0; c < 3; c++)
       {
-        const float x = buf2[c];
+        const float x = MAX(buf2[c], 0.0f);
         const float delta = x * x + bias;
         const float denominator = 4.0f / (sqrt(a) * (2.0f - p[c]));
         const float z1 = (x + sqrt(MAX(delta, 0.0f))) / denominator;
