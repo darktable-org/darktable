@@ -372,6 +372,7 @@ denoiseprofile_backtransform_v2(read_only image2d_t in, write_only image2d_t out
   float4 px = read_imagef(in, sampleri, (int2)(x, y));
   const float alpha = px.w;
 
+  px = fmax((float4)0.0f, px);
   float4 delta = px * px + (float4)bias;
   float4 denominator = 4.0f / (sqrt(a) * (2.0f - p));
   float4 z1 = (px + sqrt(fmax((float4)0.0f, delta))) / denominator;
