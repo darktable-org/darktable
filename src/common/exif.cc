@@ -3404,18 +3404,19 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
       dt_remove_xmp_keys(xmpData, keys, n_keys);
     }
 
-    if (m && !(m->flags & DT_META_EXIF))
-      img->clearExifData();
-
     // last but not least attach what we have in DB to the XMP. in theory that should be
     // the same as what we just copied over from the sidecar file, but you never know ...
-    dt_exif_xmp_read_data_export(xmpData, imgid, m);
-
-    Exiv2::IptcData &iptcData = img->iptcData();
-    Exiv2::ExifData &exifData = img->exifData();
     // make sure to remove all geotags if necessary
     if(m)
     {
+      if (!(m->flags & DT_META_EXIF))
+        img->clearExifData();
+
+      dt_exif_xmp_read_data_export(xmpData, imgid, m);
+
+      Exiv2::IptcData &iptcData = img->iptcData();
+      Exiv2::ExifData &exifData = img->exifData();
+
       if(!(m->flags & DT_META_GEOTAG))
         dt_remove_exif_geotag(exifData);
       // calculated metadata
