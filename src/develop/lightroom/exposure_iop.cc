@@ -14,7 +14,7 @@ std::string ExposureIop::operation_name() const
 
 bool ExposureIop::import(xmlDocPtr, xmlNodePtr, const xmlChar *name, const xmlChar *value)
 {
-  return import_value(black_, "Blacks2012", name, value) || import_value(exposure_, "Exposure2012", name, value);
+  return import_value(black_, "Blacks", name, value) || import_value(black_, "Blacks2012", name, value) || import_value(black_, "Blacks2012", name, value) || import_value(exposure_, "Exposure", name, value) || import_value(exposure_, "Exposure2012", name, value);
 }
 
 bool ExposureIop::apply(int imgid) const

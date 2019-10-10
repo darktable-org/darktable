@@ -14,7 +14,7 @@ std::string BilatIop::operation_name() const
 
 bool BilatIop::import(xmlDocPtr, xmlNodePtr, const xmlChar *name, const xmlChar *value)
 {
-  return import_value(clarity_, "Clarity2012", name, value);
+  return import_value(clarity_, "Clarity", name, value) || import_value(clarity_, "Clarity2012", name, value);
 }
 
 bool BilatIop::apply(int imgid) const

@@ -264,7 +264,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     xmlNodePtr xnode = xnodes->nodeTab[0];
     xmlChar *value = xmlNodeListGetString(doc, xnode->xmlChildrenNode, 1);
 
-    if(!strstr((char *)value, "Lightroom"))
+    if(!strstr((char *)value, "Lightroom") && !strstr((char *)value, "Camera Raw"))
     {
       xmlXPathFreeContext(xpathCtx);
       xmlXPathFreeObject(xpathObj);
