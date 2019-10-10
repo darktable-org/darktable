@@ -47,6 +47,7 @@
 #define DT_DEV_AVERAGE_DELAY_START 250
 #define DT_DEV_PREVIEW_AVERAGE_DELAY_START 50
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
+#define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
 const gchar *dt_dev_histogram_type_names[DT_DEV_HISTOGRAM_N] = { "logarithmic", "linear", "waveform" };
 
@@ -1215,13 +1216,21 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   GList *history = dev->history;
-
+  if (DT_IOP_ORDER_INFO)
+    fprintf(stderr,"\n^^^^ Writing history image: %i",imgid);
   for(int i = 0; history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     (void)dt_dev_write_history_item(imgid, hist, i);
+    if (DT_IOP_ORDER_INFO)
+    {
+      fprintf(stderr,"\n%20s, num %i, order %9.5f, v(%i), multiprio %i",hist->module->op,i,hist->iop_order,hist->module->version(),hist->multi_priority);
+      if (hist->enabled) fprintf(stderr,", enabled");
+    }
     history = g_list_next(history);
   }
+  if (DT_IOP_ORDER_INFO)
+    fprintf(stderr,"\nvvvv\n");
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE main.images SET history_end = ?1, iop_order_version = ?3 WHERE id = ?2", -1,

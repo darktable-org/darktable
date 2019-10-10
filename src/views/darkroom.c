@@ -2210,9 +2210,9 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
   {
     double iop_order = -1.0;
     if(module_src->iop_order < module_dest->iop_order)
-      iop_order = dt_ioppr_get_iop_order_after_iop(darktable.develop->iop, module_src, module_dest, 1, 0);
+      iop_order = dt_ioppr_get_iop_order_after_iop(darktable.develop->iop, module_src, module_dest, 1, (darktable.unmuted & DT_DEBUG_IOPORDER));
     else
-      iop_order = dt_ioppr_get_iop_order_before_iop(darktable.develop->iop, module_src, module_dest, 1, 0);
+      iop_order = dt_ioppr_get_iop_order_before_iop(darktable.develop->iop, module_src, module_dest, 1, (darktable.unmuted & DT_DEBUG_IOPORDER));
 
     if(iop_order > 0.0 && iop_order != module_src->iop_order)
       can_moved = TRUE;
