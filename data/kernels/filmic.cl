@@ -18,6 +18,15 @@
 
 #include "basic.cl"
 
+typedef enum dt_iop_filmicrgb_methods_type_t
+{
+  DT_FILMIC_METHOD_NONE = 0,
+  DT_FILMIC_METHOD_MAX_RGB = 1,
+  DT_FILMIC_METHOD_LUMINANCE = 2,
+  DT_FILMIC_METHOD_POWER_NORM = 3
+} dt_iop_filmicrgb_methods_type_t;
+
+
 kernel void
 filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
         const float dynamic_range, const float shadows_range, const float grey,
@@ -103,4 +112,174 @@ filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
   i.xyz = prophotorgb_to_Lab(o).xyz;
 
   write_imagef(out, (int2)(x, y), i);
+}
+
+
+inline float filmic_desaturate(const float x, const float sigma_toe, const float sigma_shoulder, const float saturation)
+{
+  const float radius_toe = x;
+  const float radius_shoulder = 1.0f - x;
+
+  const float key_toe = native_exp(-0.5f * radius_toe * radius_toe / sigma_toe);
+  const float key_shoulder = native_exp(-0.5f * radius_shoulder * radius_shoulder / sigma_shoulder);
+
+  return 1.0f - clamp((key_toe + key_shoulder) / saturation, 0.0f, 1.0f);
+}
+
+
+inline float filmic_spline(const float x,
+                           const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
+                           const float latitude_min, const float latitude_max)
+{
+  const int toe = (x < latitude_min);
+  const int shoulder = (x > latitude_max);
+  const int latitude = (toe == shoulder); // == FALSE
+  const float4 mask = { toe, shoulder, latitude, 0 };
+  const float4 x4 = x;
+  return dot(mask, M1 + x4 * (M2 + x4 * (M3 + x4 * (M4 + x4 * M5))));
+}
+
+
+inline float4 linear_saturation(const float4 x, const float luminance, const float saturation)
+{
+  const float4 lum = luminance;
+  const float4 sat = saturation;
+  float4 result = lum + sat * (x - lum);
+  result.w = 0.0f;
+  return result;
+}
+
+
+kernel void
+filmicrgb_split (read_only image2d_t in, write_only image2d_t out,
+                 int width, int height,
+                 const float dynamic_range, const float black_exposure, const float grey_value,
+                 global const dt_colorspaces_iccprofile_info_cl_t *profile_info,
+                 read_only image2d_t lut, const int use_work_profile,
+                 const float sigma_toe, const float sigma_shoulder, const float saturation,
+                 const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
+                 const float latitude_min, const float latitude_max, const float output_power)
+{
+  const unsigned int x = get_global_id(0);
+  const unsigned int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  float4 o;
+
+  const float4 noise4 = native_powr(2.0f, -16.0f);
+  const float4 dynamic4 = dynamic_range;
+  const float4 blacks4 = black_exposure;
+  const float4 grey4 = grey_value;
+
+  // Log tonemapping
+  o = (i < noise4) ? noise4 : i;
+  o = (native_log2(o / grey4) - blacks4) / dynamic4;
+  o = clamp(o, noise4, (float4)1.0f);
+
+  // Selective desaturation of extreme luminances
+  const float luminance = (use_work_profile) ? get_rgb_matrix_luminance(o, profile_info, lut) : dt_camera_rgb_luminance(o);
+  const float desaturation = filmic_desaturate(luminance, sigma_toe, sigma_shoulder, saturation);
+  o = linear_saturation(o, luminance, desaturation);
+
+  // Filmic spline
+  o.x = filmic_spline(o.x, M1, M2, M3, M4, M5, latitude_min, latitude_max);
+  o.y = filmic_spline(o.y, M1, M2, M3, M4, M5, latitude_min, latitude_max);
+  o.z = filmic_spline(o.z, M1, M2, M3, M4, M5, latitude_min, latitude_max);
+
+  // Output power
+  o = native_powr(clamp(o, (float4)0.0f, (float4)1.0f), output_power);
+
+  // Copy alpha layer and save
+  o.w = i.w;
+  write_imagef(out, (int2)(x, y), o);
+}
+
+
+inline float pixel_rgb_norm_power(const float4 pixel)
+{
+  // weird norm sort of perceptual. This is black magic really, but it looks good.
+  float4 RGB = fabs(pixel);
+  RGB.w = 0.0f; // ensure we don't count the alpha channel in the norm
+  const float4 RGB_square = RGB * RGB;
+  const float4 RGB_cubic = RGB_square * RGB;
+  const float4 ones = 1.0f;
+  return dot(RGB_cubic, ones) / dot(RGB_square, ones);
+}
+
+
+inline float get_pixel_norm(const float4 pixel, const dt_iop_filmicrgb_methods_type_t variant,
+                            global const dt_colorspaces_iccprofile_info_cl_t *const work_profile,
+                            read_only image2d_t lut, const int use_work_profile)
+{
+  switch(variant)
+  {
+    case DT_FILMIC_METHOD_MAX_RGB:
+      return fmax(fmax(pixel.x, pixel.y), pixel.z);
+
+    case DT_FILMIC_METHOD_LUMINANCE:
+      return dt_rgb_norm(pixel, DT_RGB_NORM_LUMINANCE, use_work_profile, work_profile, lut);
+
+    case DT_FILMIC_METHOD_POWER_NORM:
+      return pixel_rgb_norm_power(pixel);
+
+    case DT_FILMIC_METHOD_NONE:
+      // path cannot be taken
+      ;
+  }
+}
+
+
+kernel void
+filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
+                 int width, int height,
+                 const float dynamic_range, const float black_exposure, const float grey_value,
+                 global const dt_colorspaces_iccprofile_info_cl_t *profile_info,
+                 read_only image2d_t lut, const int use_work_profile,
+                 const float sigma_toe, const float sigma_shoulder, const float saturation,
+                 const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
+                 const float latitude_min, const float latitude_max, const float output_power,
+                 const dt_iop_filmicrgb_methods_type_t variant)
+{
+  const unsigned int x = get_global_id(0);
+  const unsigned int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  const float4 i = read_imagef(in, sampleri, (int2)(x, y));
+
+  const float noise = native_powr(2.0f, -16.0f);
+
+  float norm = get_pixel_norm(i, variant, profile_info, lut, use_work_profile);
+  norm =  (norm < noise) ? noise : norm;
+
+  // Save the ratios
+  float4 o = i / (float4)norm;
+
+  // Sanitize the ratios
+  const float min_ratios = fmin(fmin(o.x, o.y), o.z);
+  if(min_ratios < 0.0f) o -= (float4)min_ratios;
+
+  // Log tonemapping
+  norm = (native_log2(norm / grey_value) - black_exposure) / dynamic_range;
+  norm = clamp(norm, noise, 1.0f);
+
+  // Selective desaturation of extreme luminances
+  o *= (float4)norm;
+  const float luminance = (use_work_profile) ? get_rgb_matrix_luminance(o, profile_info, lut) : dt_camera_rgb_luminance(o);
+  const float desaturation = filmic_desaturate(norm, sigma_toe, sigma_shoulder, saturation);
+  o = linear_saturation(o, luminance, desaturation);
+  o /= (float4)norm;
+
+  // Filmic spline
+  norm = filmic_spline(norm, M1, M2, M3, M4, M5, latitude_min, latitude_max);
+
+  // Output power
+  norm = native_powr(clamp(norm, 0.0f, 1.0f), output_power);
+
+  // Copy alpha layer and save
+  o *= norm;
+  o.w = i.w;
+  write_imagef(out, (int2)(x, y), o);
 }
