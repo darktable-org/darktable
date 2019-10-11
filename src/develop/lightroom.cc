@@ -59,6 +59,7 @@ extern "C"
 #include "develop/lightroom/geotagging_iop.h"
 #include "develop/lightroom/grain_iop.h"
 #include "develop/lightroom/rating_iop.h"
+#include "develop/lightroom/shadhi_iop.h"
 #include "develop/lightroom/splittoning_iop.h"
 #include "develop/lightroom/spot_iop.h"
 #include "develop/lightroom/tags_iop.h"
@@ -80,6 +81,7 @@ public:
     , clipping{ dev, flip }
     , temperature{ dev }
     , exposure{ dev }
+    , shadhi{ dev }
     , colisa{ dev }
     , bilat{ dev }
     , tonecurve{ dev }
@@ -116,6 +118,7 @@ private:
   lightroom::ClippingIop clipping;
   lightroom::TemperatureIop temperature;
   lightroom::ExposureIop exposure;
+  lightroom::ShadHiIop shadhi;
   lightroom::CoLiSaIop colisa;
   lightroom::BilatIop bilat;
   lightroom::ToneCurveIop tonecurve;
@@ -126,8 +129,9 @@ private:
   lightroom::SpotIop spot;
 
   std::vector<lightroom::Iop *> iops = {
-    &tags,     &rating, &colorlabel, &geotagging, &dimensions, &colorin,     &flip,  &clipping, &temperature,
-    &exposure, &colisa, &bilat,      &tonecurve,  &colorzones, &splittoning, &grain, &vignette, &spot,
+    &tags,       &rating,      &colorlabel, &geotagging, &dimensions, &colorin, &flip,
+    &clipping,   &temperature, &exposure,   &shadhi,     &colisa,     &bilat,   &tonecurve,
+    &colorzones, &splittoning, &grain,      &vignette,   &spot,
   };
 };
 

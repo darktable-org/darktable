@@ -103,6 +103,7 @@ FILE(GLOB SOURCE_FILES
   "develop/lightroom/geotagging_iop.cc"
   "develop/lightroom/grain_iop.cc"
   "develop/lightroom/rating_iop.cc"
+  "develop/lightroom/shadhi_iop.cc"
   "develop/lightroom/splittoning_iop.cc"
   "develop/lightroom/spot_iop.cc"
   "develop/lightroom/tags_iop.cc"
