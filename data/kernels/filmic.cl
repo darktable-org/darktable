@@ -203,7 +203,7 @@ inline float pixel_rgb_norm_power(const float4 pixel)
   const float4 RGB_square = RGB * RGB;
   const float4 RGB_cubic = RGB_square * RGB;
   const float4 ones = 1.0f;
-  return dot(RGB_cubic, ones)/ dot(RGB_square, ones);
+  return dot(RGB_cubic, ones) / dot(RGB_square, ones);
 }
 
 
@@ -258,7 +258,7 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
   float4 o = i / (float4)norm;
 
   // Sanitize the ratios
-  float min_ratios = fmin(fmin(o.x, o.y), o.z);
+  const float min_ratios = fmin(fmin(o.x, o.y), o.z);
   if(min_ratios < 0.0f) o -= (float4)min_ratios;
 
   // Log tonemapping

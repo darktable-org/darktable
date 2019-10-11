@@ -413,8 +413,7 @@ static inline float dt_ioppr_compensate_middle_grey(const float x, const dt_iop_
 {
   // we transform the curve nodes from the image colorspace to lab
   float lab[3] DT_ALIGNED_PIXEL = { 0.0f };
-  float rgb[3] DT_ALIGNED_PIXEL = { 0.0f };
-  rgb[0] = rgb[1] = rgb[2] = x;
+  const float rgb[3] DT_ALIGNED_PIXEL = { x, x, x };
   dt_ioppr_rgb_matrix_to_lab(rgb, lab, profile_info->matrix_in, profile_info->lut_in, profile_info->unbounded_coeffs_in, profile_info->lutsize, profile_info->nonlinearlut);
   return lab[0] * .01f;
 }
@@ -425,10 +424,9 @@ static inline float dt_ioppr_compensate_middle_grey(const float x, const dt_iop_
 static inline float dt_ioppr_uncompensate_middle_grey(const float x, const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   // we transform the curve nodes from lab to the image colorspace
-  float lab[3] DT_ALIGNED_PIXEL = { 0.0f };
+  const float lab[3] DT_ALIGNED_PIXEL = { x * 100.f, 0.0f, 0.0f };
   float rgb[3] DT_ALIGNED_PIXEL = { 0.0f };
 
-  lab[0] = x * 100.f;
   dt_ioppr_lab_to_rgb_matrix(lab, rgb, profile_info->matrix_out, profile_info->lut_out, profile_info->unbounded_coeffs_out, profile_info->lutsize, profile_info->nonlinearlut);
   return rgb[0];
 }
