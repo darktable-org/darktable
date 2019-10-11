@@ -33,8 +33,8 @@
 
 #define DT_IOP_ORDER_VERSION 5
 
-#define DT_IOP_ORDER_INFO FALSE  // used while debugging
-#define DT_ONTHEFLY_INFO FALSE   // while debugging on-the-fly conversion
+#define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
+
 
 static void _ioppr_insert_iop_after(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_previous, const int dont_move);
 static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_list, const char *op_new, const char *op_next, const int dont_move);
@@ -569,8 +569,9 @@ static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_lis
       }
     }
     else
-      fprintf(stderr, "[_ioppr_insert_iop_before] module %s don't exists on iop order list\n", op_next);
-
+    {
+      if (DT_IOP_ORDER_INFO) fprintf(stderr, "[_ioppr_insert_iop_before] module %s don't exists on iop order list\n", op_next);
+    }
     if(found)
     {
       // set the iop_order
@@ -582,8 +583,9 @@ static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_lis
     }
   }
   else
-    fprintf(stderr, "[_ioppr_insert_iop_before] module %s already exists on iop order list\n", op_new);
-
+  {
+     if (DT_IOP_ORDER_INFO) fprintf(stderr, "[_ioppr_insert_iop_before] module %s already exists on iop order list\n", op_new);
+  }
   *_iop_order_list = iop_order_list;
 }
 
@@ -607,8 +609,7 @@ static void _ioppr_insert_iop_after(GList **_iop_order_list, GList *history_list
   }
   if(prior_next == NULL)
   {
-    fprintf(
-        stderr,
+    if (DT_IOP_ORDER_INFO) fprintf(stderr,
         "[_ioppr_insert_iop_after] can't find module previous to %s while moving %s after it\n",
         op_prev, op_new);
   }
@@ -655,8 +656,9 @@ static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_curre
     iop_order_list = g_list_remove_link(iop_order_list, iops_order_current);
   }
   else
-    fprintf(stderr, "[_ioppr_move_iop_before] current module %s don't exists on iop order list\n", op_current);
-
+  {
+    if (DT_IOP_ORDER_INFO) fprintf(stderr, "[_ioppr_move_iop_before] current module %s don't exists on iop order list\n", op_current);
+  }
   // search for the previous and next one
   if(found)
   {
@@ -688,8 +690,9 @@ static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_curre
     if (DT_IOP_ORDER_INFO) fprintf(stderr,"\n  _ioppr_move_iop_before   %16s: %14.11f [xmp:%8.4f], prev %14.11f, next %14.11f",op_current,iop_order_current->iop_order,iop_order_current->iop_order,iop_order_prev->iop_order,iop_order_next->iop_order);
   }
   else
-    fprintf(stderr, "[_ioppr_move_iop_before] next module %s don't exists on iop order list\n", op_next);
-
+  {
+    if (DT_IOP_ORDER_INFO) fprintf(stderr, "[_ioppr_move_iop_before] next module %s don't exists on iop order list\n", op_next);
+  }
   *_iop_order_list = iop_order_list;
 }
 
@@ -714,8 +717,7 @@ static void _ioppr_move_iop_after(GList **_iop_order_list, const char *op_curren
   }
   if(prior_next == NULL)
   {
-    fprintf(
-        stderr,
+    if (DT_IOP_ORDER_INFO) fprintf(stderr,
         "[_ioppr_move_iop_after] can't find module previous to %s while moving %s after it\n",
         op_prev, op_current);
   }
@@ -740,7 +742,7 @@ GList *dt_ioppr_get_iop_order_list(int *_version)
 
   if(old_version != version)
   {
-    fprintf(stderr, "[dt_ioppr_get_iop_order_list] error building iop_order_list to version %i\n", version);
+    if (DT_IOP_ORDER_INFO) fprintf(stderr, "[dt_ioppr_get_iop_order_list] error building iop_order_list to version %i\n", version);
   }
 
   if(_version && *_version == 0 && old_version > 0) *_version = old_version;
@@ -867,7 +869,8 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
           else
           {
             can_move = 0;
-            fprintf(stderr, "[dt_ioppr_check_duplicate_iop_order 1] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
+            if (DT_IOP_ORDER_INFO) fprintf(stderr,
+                "[dt_ioppr_check_duplicate_iop_order 1] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
                 mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
           }
         }
@@ -879,7 +882,8 @@ void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list)
 
       if(!can_move)
       {
-        fprintf(stderr, "[dt_ioppr_check_duplicate_iop_order] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
+        if (DT_IOP_ORDER_INFO) fprintf(stderr,
+            "[dt_ioppr_check_duplicate_iop_order] modules %s %s(%f) and %s %s(%f) have the same iop_order\n",
             mod_prev->op, mod_prev->multi_name, mod_prev->iop_order, mod->op, mod->multi_name, mod->iop_order);
       }
     }
@@ -928,7 +932,7 @@ void dt_ioppr_legacy_iop_order(GList **_iop_list, GList **_iop_order_list, GList
     if(mod->multi_priority == 0 && mod->iop_order == DBL_MAX)
     {
       mod->iop_order = dt_ioppr_get_iop_order(iop_order_list, mod->op);
-      if(mod->iop_order == DBL_MAX)
+      if((mod->iop_order == DBL_MAX) && (DT_IOP_ORDER_INFO)) 
         fprintf(stderr, "[dt_ioppr_legacy_iop_order] can't find iop_order for module %s\n", mod->op);
     }
 
@@ -959,7 +963,7 @@ int dt_ioppr_check_so_iop_order(GList *iop_list, GList *iop_order_list)
     if(entry == NULL)
     {
       iop_order_missing = 1;
-      fprintf(stderr, "[dt_ioppr_check_so_iop_order] missing iop_order for module %s\n", mod->op);
+      if (DT_IOP_ORDER_INFO) fprintf(stderr, "[dt_ioppr_check_so_iop_order] missing iop_order for module %s\n", mod->op);
     }
     modules = g_list_next(modules);
   }
@@ -1576,7 +1580,7 @@ static int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order
   // get the number of known iops
   const int valid_iops = g_list_length (current_iop_list);
 
-  if (DT_ONTHEFLY_INFO)
+  if (DT_IOP_ORDER_INFO)
   {
     fprintf(stderr,"\n*** checking for %i known iops ***\n",valid_iops);
 
@@ -3612,6 +3616,5 @@ cleanup:
 }
 #endif
 
-#undef DT_ONTHEFLY_WRITING
-#undef DT_ONTHEFLY_INFO
-#undef DT_IOP_ORDER_INFO // used while debugging
+#undef DT_IOP_ORDER_INFO
+
