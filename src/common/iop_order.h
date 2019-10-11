@@ -190,7 +190,7 @@ void dt_ioppr_get_profile_info_cl(const dt_iop_order_iccprofile_info_t *const pr
  */
 cl_float *dt_ioppr_get_trc_cl(const dt_iop_order_iccprofile_info_t *const profile_info);
 
-/** build the required parameters for a kernell that uses a profile info */
+/** build the required parameters for a kernel that uses a profile info */
 cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t *const profile_info,
                                            const int devid, dt_colorspaces_iccprofile_info_cl_t **_profile_info_cl,
                                            cl_float **_profile_lut_cl, cl_mem *_dev_profile_info,
