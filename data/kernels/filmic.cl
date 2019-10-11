@@ -224,9 +224,8 @@ inline float get_pixel_norm(const float4 pixel, const dt_iop_filmicrgb_methods_t
     case(DT_FILMIC_METHOD_POWER_NORM):
       return pixel_rgb_norm_power(pixel);
 
-    default:
-      return (use_work_profile) ? get_rgb_matrix_luminance(pixel, work_profile, lut)
-                                : dt_camera_rgb_luminance(pixel);
+    case(DT_FILMIC_METHOD_NONE):
+      ;
   }
 }
 
