@@ -144,7 +144,9 @@ inline float4 linear_saturation(const float4 x, const float luminance, const flo
 {
   const float4 lum = luminance;
   const float4 sat = saturation;
-  return lum + sat * (x - lum);
+  float4 result = lum + sat * (x - lum);
+  result.w = 0.0f;
+  return result;
 }
 
 
@@ -211,20 +213,19 @@ inline float get_pixel_norm(const float4 pixel, const dt_iop_filmicrgb_methods_t
                             global const dt_colorspaces_iccprofile_info_cl_t *const work_profile,
                             read_only image2d_t lut, const int use_work_profile)
 {
-
   switch(variant)
   {
-    case(DT_FILMIC_METHOD_MAX_RGB):
+    case DT_FILMIC_METHOD_MAX_RGB:
       return fmax(fmax(pixel.x, pixel.y), pixel.z);
 
-    case(DT_FILMIC_METHOD_LUMINANCE):
-      return (use_work_profile) ? get_rgb_matrix_luminance(pixel, work_profile, lut)
-                                : dt_camera_rgb_luminance(pixel);
+    case DT_FILMIC_METHOD_LUMINANCE:
+      return dt_rgb_norm(pixel, DT_RGB_NORM_LUMINANCE, use_work_profile, work_profile, lut);
 
-    case(DT_FILMIC_METHOD_POWER_NORM):
+    case DT_FILMIC_METHOD_POWER_NORM:
       return pixel_rgb_norm_power(pixel);
 
-    case(DT_FILMIC_METHOD_NONE):
+    case DT_FILMIC_METHOD_NONE:
+      // path cannot be taken
       ;
   }
 }
