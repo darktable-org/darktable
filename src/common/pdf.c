@@ -558,7 +558,7 @@ dt_pdf_page_t *dt_pdf_add_page(dt_pdf_t *pdf, dt_pdf_image_t **images, int n_ima
       translate_x += scale_y;
     }
 
-    // unfortunately regular fprintf honours the decimal separator as set by the current locale,
+    // unfortunately regular fprintf honors the decimal separator as set by the current locale,
     // we want '.' in all cases though.
     char translate_x_str[G_ASCII_DTOSTR_BUF_SIZE];
     char translate_y_str[G_ASCII_DTOSTR_BUF_SIZE];
