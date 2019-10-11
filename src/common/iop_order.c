@@ -36,7 +36,7 @@
 #define DT_ONTHEFLY_INFO FALSE   // while debugging on-the-fly conversion
 
 /** Note :
- * we use finite-math-only and fast-math because divisions by zero are manually avoided in the code
+ * we do not use finite-math-only and fast-math because divisions by zero are not manually avoided in the code
  * fp-contract=fast enables hardware-accelerated Fused Multiply-Add
  * the rest is loop reorganization and vectorization optimization
  **/
@@ -48,7 +48,7 @@
                       "split-ivs-in-unroller", "variable-expansion-in-unroller", \
                       "split-loops", "ivopts", "predictive-commoning",\
                       "tree-loop-linear", "loop-block", "loop-strip-mine", \
-                      "finite-math-only", "fp-contract=fast", "fast-math", \
+                      "fp-contract=fast", \
                       "tree-vectorize")
 #endif
 
