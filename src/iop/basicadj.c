@@ -518,7 +518,12 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpi
   dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
 
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-  p->middle_grey = (work_profile) ? (dt_ioppr_get_rgb_matrix_luminance(self->picked_color, work_profile) * 100.f)
+  p->middle_grey = (work_profile) ? (dt_ioppr_get_rgb_matrix_luminance(self->picked_color,
+                                                                       work_profile->matrix_in,
+                                                                       work_profile->lut_in,
+                                                                       work_profile->unbounded_coeffs_in,
+                                                                       work_profile->lutsize,
+                                                                       work_profile->nonlinearlut) * 100.f)
                                   : dt_camera_rgb_luminance(self->picked_color);
 
   const int reset = darktable.gui->reset;
@@ -1654,7 +1659,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // highlight compression
     if(process_hlcompr)
     {
-      const float lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(out + k, work_profile)
+      const float lum = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(out + k,
+                                                                           work_profile->matrix_in,
+                                                                           work_profile->lut_in,
+                                                                           work_profile->unbounded_coeffs_in,
+                                                                           work_profile->lutsize,
+                                                                           work_profile->nonlinearlut)
                                        : dt_camera_rgb_luminance(out + k);
       if(lum > 0.f)
       {
@@ -1697,7 +1707,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // saturation
     if(process_saturation)
     {
-      const float luminance = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(out + k, work_profile)
+      const float luminance = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(out + k,
+                                                                                 work_profile->matrix_in,
+                                                                                 work_profile->lut_in,
+                                                                                 work_profile->unbounded_coeffs_in,
+                                                                                 work_profile->lutsize,
+                                                                                 work_profile->nonlinearlut)
                                              : dt_camera_rgb_luminance(out + k);
 
       for(size_t c = 0; c < 3; c++)

@@ -135,7 +135,11 @@ static void _blendif_scale(dt_iop_colorspace_type_t cst, const float *in, float 
       if(work_profile == NULL)
         out[0] = CLAMP_RANGE(0.3f * in[0] + 0.59f * in[1] + 0.11f * in[2], 0.0f, 1.0f);
       else
-        out[0] = CLAMP_RANGE(dt_ioppr_get_rgb_matrix_luminance(in, work_profile), 0.0f, 1.0f);
+        out[0] = CLAMP_RANGE(dt_ioppr_get_rgb_matrix_luminance(in, work_profile->matrix_in,
+                                                                   work_profile->lut_in,
+                                                                   work_profile->unbounded_coeffs_in,
+                                                                   work_profile->lutsize,
+                                                                   work_profile->nonlinearlut), 0.0f, 1.0f);
       out[1] = CLAMP_RANGE(in[0], 0.0f, 1.0f);
       out[2] = CLAMP_RANGE(in[1], 0.0f, 1.0f);
       out[3] = CLAMP_RANGE(in[2], 0.0f, 1.0f);
@@ -171,7 +175,11 @@ static void _blendif_cook(dt_iop_colorspace_type_t cst, const float *in, float *
       if(work_profile == NULL)
         out[0] = (0.3f * in[0] + 0.59f * in[1] + 0.11f * in[2]) * 255.0f;
       else
-        out[0] = dt_ioppr_get_rgb_matrix_luminance(in, work_profile) * 255.0f;
+        out[0] = dt_ioppr_get_rgb_matrix_luminance(in, work_profile->matrix_in,
+                                                       work_profile->lut_in,
+                                                       work_profile->unbounded_coeffs_in,
+                                                       work_profile->lutsize,
+                                                       work_profile->nonlinearlut) * 255.0f;
       out[1] = in[0] * 255.0f;
       out[2] = in[1] * 255.0f;
       out[3] = in[2] * 255.0f;

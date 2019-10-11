@@ -17,7 +17,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-float4 Lab_2_LCH(float4 Lab)
+inline float4 Lab_2_LCH(float4 Lab)
 {
   float H = atan2(Lab.z, Lab.y);
 
@@ -30,7 +30,7 @@ float4 Lab_2_LCH(float4 Lab)
 }
 
 
-float4 LCH_2_Lab(float4 LCH)
+inline float4 LCH_2_Lab(float4 LCH)
 {
   float L = LCH.x;
   float a = cos(2.0f*M_PI_F*LCH.z) * LCH.y;
@@ -39,45 +39,20 @@ float4 LCH_2_Lab(float4 LCH)
   return (float4)(L, a, b, LCH.w);
 }
 
-float cbrt_5f(float f)
-{
-  union { float f; unsigned int i; } p;
-  p.f = f;
-  p.i = p.i / 3 + 709921077;
-  return p.f;
-}
 
-float cbrta_halleyf(float a, float R)
+inline float4 lab_f(float4 x)
 {
-  const float a3 = a * a * a;
-  const float b = a * (a3 + R + R) / (a3 + a3 + R);
-  return b;
-}
-
-float lab_f(float x)
-{
-  const float epsilon = 216.0f / 24389.0f;
-  const float kappa = 24389.0f / 27.0f;
-  if(x > epsilon)
-  {
-    // approximate cbrtf(x):
-    const float a = cbrt_5f(x);
-    return cbrta_halleyf(a, x);
-  }
-  else
-    return (kappa * x + 16.0f) / 116.0f;
+  const float4 epsilon = 216.0f / 24389.0f;
+  const float4 kappa = 24389.0f / 27.0f;
+  return (x > epsilon) ? native_powr(x, (float4)(1.0f/3.0f)) : (kappa * x + (float4)16.0f) / ((float4)116.0f);
 }
 
 
-float4 XYZ_to_Lab(float4 xyz)
+inline float4 XYZ_to_Lab(float4 xyz)
 {
   float4 lab;
   const float4 d50 = (float4)(0.9642f, 1.0f, 0.8249f, 1.0f);
-  
-  xyz /= d50;
-  xyz.x = lab_f(xyz.x);
-  xyz.y = lab_f(xyz.y);
-  xyz.z = lab_f(xyz.z);
+  xyz = lab_f(xyz / d50);
   lab.x = 116.0f * xyz.y - 16.0f;
   lab.y = 500.0f * (xyz.x - xyz.y);
   lab.z = 200.0f * (xyz.y - xyz.z);
@@ -86,15 +61,15 @@ float4 XYZ_to_Lab(float4 xyz)
 }
 
 
-float4 lab_f_inv(float4 x)
+inline float4 lab_f_inv(float4 x)
 {
-  const float4 epsilon = (float4)0.206896551f;
-  const float4 kappa   = (float4)(24389.0f/27.0f);
-  return (x > epsilon) ? x*x*x : (116.0f*x - (float4)16.0f)/kappa;
+  const float4 epsilon = 0.206896551f;
+  const float4 kappa   = 24389.0f / 27.0f;
+  return (x > epsilon) ? x*x*x : ((float4)116.0f * x - (float4)16.0f)/kappa;
 }
 
 
-float4 Lab_to_XYZ(float4 Lab)
+inline float4 Lab_to_XYZ(float4 Lab)
 {
   const float4 d50 = (float4)(0.9642f, 1.0f, 0.8249f, 0.0f);
   float4 f, XYZ;
@@ -106,7 +81,7 @@ float4 Lab_to_XYZ(float4 Lab)
   return XYZ;
 }
 
-float4 prophotorgb_to_XYZ(float4 rgb)
+inline float4 prophotorgb_to_XYZ(float4 rgb)
 {
   const float rgb_to_xyz[3][3] = { // prophoto rgb
     {0.7976749f, 0.1351917f, 0.0313534f},
@@ -126,7 +101,7 @@ float4 prophotorgb_to_XYZ(float4 rgb)
   return XYZ;
 }
 
-float4 XYZ_to_prophotorgb(float4 XYZ)
+inline float4 XYZ_to_prophotorgb(float4 XYZ)
 {
   const float xyz_to_rgb[3][3] = { // prophoto rgb d50
     { 1.3459433f, -0.2556075f, -0.0511118f},
@@ -146,19 +121,19 @@ float4 XYZ_to_prophotorgb(float4 XYZ)
   return rgb;
 }
 
-float4 Lab_to_prophotorgb(float4 Lab)
+inline float4 Lab_to_prophotorgb(float4 Lab)
 {
   float4 XYZ = Lab_to_XYZ(Lab);
   return XYZ_to_prophotorgb(XYZ);
 }
 
-float4 prophotorgb_to_Lab(float4 rgb)
+inline float4 prophotorgb_to_Lab(float4 rgb)
 {
   float4 XYZ = prophotorgb_to_XYZ(rgb);
   return XYZ_to_Lab(XYZ);
 }
 
-float4 RGB_2_HSL(const float4 RGB)
+inline float4 RGB_2_HSL(const float4 RGB)
 {
   float H, S, L;
 
@@ -200,7 +175,7 @@ float4 RGB_2_HSL(const float4 RGB)
 
 
 
-float Hue_2_RGB(float v1, float v2, float vH)
+inline float Hue_2_RGB(float v1, float v2, float vH)
 {
   if (vH < 0.0f) vH += 1.0f;
   if (vH > 1.0f) vH -= 1.0f;
@@ -212,7 +187,7 @@ float Hue_2_RGB(float v1, float v2, float vH)
 
 
 
-float4 HSL_2_RGB(const float4 HSL)
+inline float4 HSL_2_RGB(const float4 HSL)
 {
   float R, G, B;
 
@@ -242,7 +217,7 @@ float4 HSL_2_RGB(const float4 HSL)
   return (float4)(R, G, B, HSL.w);
 }
 
-float4 RGB_2_HSV(const float4 RGB)
+inline float4 RGB_2_HSV(const float4 RGB)
 {
   float4 HSV;
 
@@ -254,7 +229,7 @@ float4 RGB_2_HSV(const float4 RGB)
   HSV.w = RGB.w;
 
   if (fabs(maxv) > 1e-6f && fabs(delta) > 1e-6f)
-  { 
+  {
     HSV.y = delta / maxv;
   }
   else
@@ -279,7 +254,7 @@ float4 RGB_2_HSV(const float4 RGB)
   return HSV;
 }
 
-float4 HSV_2_RGB(const float4 HSV)
+inline float4 HSV_2_RGB(const float4 HSV)
 {
   float4 RGB;
 
@@ -324,7 +299,7 @@ float4 HSV_2_RGB(const float4 HSV)
 
 
 // XYZ -> sRGB matrix, D65
-float4 XYZ_to_sRGB(float4 XYZ)
+inline float4 XYZ_to_sRGB(float4 XYZ)
 {
   float4 sRGB;
 
@@ -338,7 +313,7 @@ float4 XYZ_to_sRGB(float4 XYZ)
 
 
 // sRGB -> XYZ matrix, D65
-float4 sRGB_to_XYZ(float4 sRGB)
+inline float4 sRGB_to_XYZ(float4 sRGB)
 {
   float4 XYZ;
 
