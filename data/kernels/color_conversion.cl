@@ -147,7 +147,7 @@ inline float4 xyz_to_linear_rgb_matrix(const float4 xyz, global const dt_colorsp
 inline float get_rgb_matrix_luminance(const float4 rgb, global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
 {
   float luminance = 0.f;
-  const float4 matrix2 = { profile_info->matrix_out[3], profile_info->matrix_out[4], profile_info->matrix_out[5], 0.0f };
+  const float4 matrix2 = { profile_info->matrix_in[3], profile_info->matrix_in[4], profile_info->matrix_in[5], 0.0f };
 
   if(profile_info->nonlinearlut)
   {
