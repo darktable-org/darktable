@@ -1217,7 +1217,7 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   sqlite3_finalize(stmt);
   GList *history = dev->history;
   if (DT_IOP_ORDER_INFO)
-    fprintf(stderr,"\n^^^^ Writing history image: %i",imgid);
+    fprintf(stderr,"\n^^^^ Writing history image: %i, iop version: %i",imgid,dev->iop_order_version);
   for(int i = 0; history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
