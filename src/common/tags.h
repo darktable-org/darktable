@@ -167,7 +167,7 @@ void dt_tag_free_result(GList **result);
 /** reorganize tags */
 void dt_tag_reorganize(const gchar *source, const gchar *dest);
 
-/** get number of seleted images */
+/** get number of selected images */
 uint32_t dt_selected_images_count();
 
 /** get number of images affected with that tag */

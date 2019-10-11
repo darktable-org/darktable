@@ -75,7 +75,7 @@ void dt_get_printer_info(const char *printer_name, dt_printer_info_t *pinfo)
       cupsMarkOptions(ppd, dest->num_options, dest->options);
 
       // first check if this is turboprint drived printer, two solutions:
-      // 1. ModelName constains TurboPrint
+      // 1. ModelName contains TurboPrint
       // 2. zedoPrinterDriver exists
       ppd_attr_t *attr = ppdFindAttr(ppd, "ModelName", NULL);
 
