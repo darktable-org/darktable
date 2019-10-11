@@ -589,8 +589,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_split, 20, sizeof(float), (void *)&d->output_power);
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_rgb_split, sizes);
-    if(err != CL_SUCCESS) goto error;
     dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
+    if(err != CL_SUCCESS) goto error;
     return TRUE;
   }
   else
@@ -619,13 +619,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_rgb_chroma, 21, sizeof(float), (void *)&d->preserve_color);
 
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_rgb_chroma, sizes);
-    if(err != CL_SUCCESS) goto error;
     dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
+    if(err != CL_SUCCESS) goto error;
     return TRUE;
   }
 error:
   dt_print(DT_DEBUG_OPENCL, "[opencl_filmicrgb] couldn't enqueue kernel! %d\n", err);
-  dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   return FALSE;
 }
 #endif
@@ -1269,7 +1268,6 @@ void init_global(dt_iop_module_so_t *module)
   module->data = gd;
   gd->kernel_filmic_rgb_split = dt_opencl_create_kernel(program, "filmicrgb_split");
   gd->kernel_filmic_rgb_chroma = dt_opencl_create_kernel(program, "filmicrgb_chroma");
-
 }
 
 void cleanup(dt_iop_module_t *module)
