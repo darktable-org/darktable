@@ -30,6 +30,7 @@
 DT_MODULE(1)
 
 #define PADDING 2
+#define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
 #include "modulegroups.h"
 
@@ -336,6 +337,9 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
                                   ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))
                                   : NULL;
 
+  if (DT_IOP_ORDER_INFO)
+    fprintf(stderr,"\n^^^^^ modulegroups");
+
   GList *modules = darktable.develop->iop;
   if(modules)
   {
@@ -347,6 +351,12 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
     {
       dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
       GtkWidget *w = module->expander;
+
+      if ((DT_IOP_ORDER_INFO) && (module->enabled))
+      {
+        fprintf(stderr,"\n%20s %9.5f",module->op,module->iop_order);
+        if(dt_iop_is_hidden(module)) fprintf(stderr,", hidden");
+      }
 
       /* skip modules without an gui */
       if(dt_iop_is_hidden(module)) continue;
@@ -460,7 +470,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       }
     } while((modules = g_list_next(modules)) != NULL);
   }
-
+  if (DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
   // now that visibility has been updated set multi-show
   dt_dev_modules_update_multishow(darktable.develop);
 }
