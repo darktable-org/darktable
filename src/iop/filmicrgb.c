@@ -220,7 +220,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   // Input - standard raw picture
   p.contrast = 1.4f;
-  p.preserve_color = 1;
+  p.preserve_color = DT_FILMIC_METHOD_MAX_RGB;
   p.balance = 0.0f;
   p.saturation = 0.0f;
   p.latitude = 15.0f;
@@ -1253,7 +1253,7 @@ void init(dt_iop_module_t *module)
                                  .contrast            = 1.25,  // intent contrast
                                  .saturation          = 0.0,   // intent saturation
                                  .balance             = 0.0, // balance shadows/highlights
-                                 .preserve_color      = 1 // run the saturated variant
+                                 .preserve_color      = DT_FILMIC_METHOD_MAX_RGB // run the saturated variant
                               };
   memcpy(module->params, &tmp, sizeof(dt_iop_filmicrgb_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_filmicrgb_params_t));
