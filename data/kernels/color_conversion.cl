@@ -65,8 +65,8 @@ inline float lerp_lookup_unbounded(const float x, read_only image2d_t lut, globa
 
 inline float lookup(read_only image2d_t lut, const float x)
 {
-  int xi = clamp((int)(x * 0x10000ul), 0, 0xffff);
-  int2 p = (int2)((xi & 0xff), (xi >> 8));
+  const int xi = clamp((int)(x * 0x10000ul), 0, 0xffff);
+  const int2 p = (int2)((xi & 0xff), (xi >> 8));
   return read_imagef(lut, sampleri, p).x;
 }
 
