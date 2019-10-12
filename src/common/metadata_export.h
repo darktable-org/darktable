@@ -37,6 +37,10 @@ typedef struct dt_export_metadata_t
   GList *list;
 } dt_export_metadata_t;
 
+uint32_t dt_lib_export_metadata_default_flags();
+char *dt_lib_export_metadata_get_conf();
+void dt_lib_export_metadata_set_conf(const char *metadata_presets);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
