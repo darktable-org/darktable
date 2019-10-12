@@ -1052,6 +1052,9 @@ static void _history_reorder(int32_t imgid)
   else
   {
     if (give_reorder_information) fprintf(stderr,", reorder\n");
+    // make sure running jobs can't interfere here as the followiing code uses a fixed dummy id
+    // and also intends to have a "properly" orderered database
+    dt_pthread_mutex_lock(&darktable.db_insert);
 
     _history_copy_and_paste_on_image_overwrite(imgid, dummy, 0);
     _history_copy_and_paste_on_image_overwrite(dummy, imgid, 0);
@@ -1066,6 +1069,7 @@ static void _history_reorder(int32_t imgid)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dummy);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+    dt_pthread_mutex_unlock(&darktable.db_insert);
   }
 }
 #undef give_reorder_information
