@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-06-10 11:25+0200\n"
-"PO-Revision-Date: 2019-06-10 11:26+0200\n"
+"PO-Revision-Date: 2019-10-15 07:38+0200\n"
 "Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2.1\n"
+"X-Generator: Poedit 2.0.6\n"
 
 #: ../build/src/preferences_gen.h:2080
 msgid "GUI options"
@@ -354,68 +354,60 @@ msgstr ""
 "Maske eingeschaltet wurden."
 
 #: ../build/src/preferences_gen.h:2624
-#, fuzzy
 msgid "pattern for the image infos line"
-msgstr "Bildposition schön formatieren"
+msgstr "Format der Bildinformationszeile"
 
 #: ../build/src/preferences_gen.h:2640
 msgid "see manual to know all the tags you can use."
-msgstr ""
+msgstr "Siehe Handbuch, um mehr über mögliche Tags zu erfahren."
 
 #: ../build/src/preferences_gen.h:2648
-#, fuzzy
 msgid "position of the image infos line"
-msgstr "DPI der Bilder im PDF"
+msgstr "Position der Bildinformationszeile"
 
 #: ../build/src/preferences_gen.h:2659
-#, fuzzy
 msgctxt "preferences"
 msgid "top left"
-msgstr "links"
+msgstr "oben links"
 
 #: ../build/src/preferences_gen.h:2664
-#, fuzzy
 msgctxt "preferences"
 msgid "top right"
-msgstr "Rechte"
+msgstr "oben rechts"
 
 #: ../build/src/preferences_gen.h:2669
-#, fuzzy
 msgctxt "preferences"
 msgid "top center"
-msgstr "zentrieren"
+msgstr "oben mittig"
 
 #: ../build/src/preferences_gen.h:2674 ../build/src/preferences_gen.h:2694
-#, fuzzy
 msgctxt "preferences"
 msgid "bottom"
-msgstr "unterer Rand"
+msgstr "unten"
 
 #: ../build/src/preferences_gen.h:2679
 msgctxt "preferences"
 msgid "hidden"
-msgstr ""
+msgstr "verborgen"
 
 #: ../build/src/preferences_gen.h:2704
 msgid "show search module text entry"
-msgstr ""
+msgstr "zeige Suchmodul-Texteintrag"
 
 #: ../build/src/preferences_gen.h:2715
 msgctxt "preferences"
 msgid "show search text"
-msgstr ""
+msgstr "zeige Suchtext"
 
 #: ../build/src/preferences_gen.h:2720
-#, fuzzy
 msgctxt "preferences"
 msgid "show groups"
-msgstr "Helligkeitsgruppe"
+msgstr "zeige Gruppen"
 
 #: ../build/src/preferences_gen.h:2725 ../build/src/preferences_gen.h:2740
-#, fuzzy
 msgctxt "preferences"
 msgid "show both"
-msgstr "nichts anzeigen"
+msgstr "zeige beide"
 
 #: ../build/src/preferences_gen.h:2750
 msgid "expand a single darkroom module at a time"
@@ -443,13 +435,15 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2770
 msgid "expand the module when it is activated, and collapse it when disabled"
-msgstr ""
+msgstr "Modul ausklappen wenn aktiv, einklappen wenn inaktiv"
 
 #: ../build/src/preferences_gen.h:2782
 msgid ""
 "this option allows to expand or collapse automatically the module when it is "
 "enabled or disabled."
 msgstr ""
+"Diese Option erlaubt, Module automatisch ein- bzw. auszuklappen wenn "
+"aktiviert bzw. deaktiviert."
 
 #: ../build/src/preferences_gen.h:2790
 msgid "scroll to darkroom modules when expanded/collapsed"
@@ -469,7 +463,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2837
 msgid "map / geolocalisation"
-msgstr "Karte/"
+msgstr "Karte / Geolokalisierung"
 
 # gefällt mir nicht, weder im Original, noch die Übersetzung.
 #: ../build/src/preferences_gen.h:2848
@@ -602,7 +596,7 @@ msgstr "Wartezeit zwischen zwei Bildern in der Diaschau"
 
 #: ../build/src/preferences_gen.h:3148
 msgid "do not show april 1st game"
-msgstr ""
+msgstr "1.-April-Spiel nicht starten"
 
 #: ../build/src/preferences_gen.h:3167
 msgid "number of folder levels to show in lists"
@@ -626,13 +620,12 @@ msgid "enable the filmstrip in darkroom, tethering and map modes."
 msgstr "Filmstreifen im Dunkelkammer-, Tethering- und Karten-Modus aktivieren."
 
 #: ../build/src/preferences_gen.h:3214
-#, fuzzy
 msgid "enable timeline"
-msgstr "Modul aktivieren"
+msgstr "Zeitleiste aktivieren"
 
 #: ../build/src/preferences_gen.h:3226
 msgid "enable the timeline in lighttable mode."
-msgstr ""
+msgstr "Zeitleiste im Leuchttisch-Modus aktivieren"
 
 #: ../build/src/preferences_gen.h:3234
 msgid "overlay txt sidecar over zoomed images"
@@ -942,12 +935,10 @@ msgstr ""
 "darktables zu erstellen kann ‚darktable-generate-cache‘ benutzt werden."
 
 #: ../build/src/preferences_gen.h:3800
-#, fuzzy
 msgid "enable disk backend for full preview cache"
 msgstr "Festplattencache für Vorschaubilder benutzen"
 
 #: ../build/src/preferences_gen.h:3812
-#, fuzzy
 msgid ""
 "if enabled, write full preview to disk (.cache/darktable/) when evicted from "
 "the memory cache. note that this can take a lot of memory (several gigabytes "
@@ -955,13 +946,14 @@ msgid ""
 "though to delete these manually, if you want. light table performance will "
 "be increased greatly when zooming image in full preview mode."
 msgstr ""
-"Wenn der Festplattencache (.cache/darktable/) aktiviert ist, dann werden "
-"Vorschaubilder auf die Festplatte ausgelagert. Dies kann viel Speicherplatz "
-"belegen (mehrere Gigabyte für 20k Bilder) und es wird auch von selbst kein "
-"Speicherplatz wieder freigegeben. Es ist jedoch sicher, diese Dateien "
-"manuell zu löschen. Der Leuchttisch wird stark beschleunigt wenn man viele "
-"Bilder betrachtet. Um alle Vorschaubilder der ganzen Sammlung außerhalb "
-"darktables zu erstellen kann ‚darktable-generate-cache‘ benutzt werden."
+"Wenn der Festplattencache aktiviert ist, werden Vorschaubilder auf die "
+"Festplatte (.cache/darktable/) geschrieben. Dies kann viel Speicherplatz "
+"belegen (mehrere Gigabyte für 20.000 Bilder) und es wird auch kein "
+"Speicherplatz automatisiert wieder freigegeben. Diese Dateien können jedoch "
+"gefahrlos manuell gelöscht werden. Diese Option kann den Leuchttisch stark "
+"beschleunigen, wenn man viele Bilder betrachtet. Mit dem Programm „darktable-"
+"generate-cache” können Vorschaubilder der ganzen Sammlung auch außerhalb "
+"darktables erstellt werden."
 
 #: ../build/src/preferences_gen.h:3820
 msgid "number of background threads"
@@ -1126,9 +1118,8 @@ msgstr ""
 "einige Kameras für Notizen zu Bildern aufzeichnen"
 
 #: ../build/src/preferences_gen.h:4095
-#, fuzzy
 msgid "3D lut root folder"
-msgstr "in anderen Ordner verschieben"
+msgstr "3D-LUT-Verzeichnis"
 
 #: ../build/src/preferences_gen.h:4100 ../src/control/jobs/control_jobs.c:1581
 #: ../src/control/jobs/control_jobs.c:1641 ../src/gui/preferences.c:1605
@@ -1142,6 +1133,8 @@ msgstr "Verzeichnis wählen"
 #: ../build/src/preferences_gen.h:4112
 msgid "this folder (and sub-folders) contains Lut files used but lut3d modules"
 msgstr ""
+"Dieses Verzeichnis (einschließlich dessen Unterverzeichnisse) enthält die "
+"von lut-3D-Modul verwendeten LUT-Dateien."
 
 # zu frei?
 #: ../build/src/preferences_gen.h:4142
@@ -1458,9 +1451,8 @@ msgid "alternate color matrix"
 msgstr "Alternative Farb-Matrix"
 
 #: ../src/common/colorspaces.c:961
-#, fuzzy
 msgid "BRG (experimental)"
-msgstr "VNG4 (experimentell)"
+msgstr "BRG (experimentell)"
 
 #: ../src/common/colorspaces.c:962 ../src/common/colorspaces.c:1225
 #: ../src/iop/colorout.c:880
@@ -1475,9 +1467,8 @@ msgstr "Softproof-Profil"
 
 #. init the category profile with NULL profile, the actual profile must be retrieved dynamically by the caller
 #: ../src/common/colorspaces.c:964 ../src/common/colorspaces.c:1222
-#, fuzzy
 msgid "work profile"
-msgstr "Profil"
+msgstr "Arbeitsprofil"
 
 #: ../src/common/colorspaces.c:1244
 msgid "sRGB (e.g. JPG)"
@@ -1634,14 +1625,12 @@ msgid ""
 msgstr ""
 
 #: ../src/common/database.c:1755
-#, fuzzy
 msgid "darktable - schema migration"
-msgstr "darktable - Geschwindigkeitseinstellungen anpassen?"
+msgstr "darktable - Datenbank Umstellung"
 
 #: ../src/common/database.c:1756
-#, fuzzy
 msgid "upgrade database"
-msgstr "Datenbank löschen"
+msgstr "Datenbank aktualisieren"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
@@ -1745,34 +1734,34 @@ msgid "orphaned image"
 msgstr "verwaistes Bild"
 
 #: ../src/common/image.c:1444
-#, fuzzy, c-format
+#, c-format
 msgid "cannot access local copy `%s'"
-msgstr "lokale Kopie kann nicht erzeugt werden."
+msgstr "auf lokale Kopie „%s” kann nicht zugegriffen werden."
 
 #: ../src/common/image.c:1450
-#, fuzzy, c-format
+#, c-format
 msgid "cannot write local copy `%s'"
-msgstr "lokale Kopie kann nicht erzeugt werden."
+msgstr "lokale Kopie „%s” kann nicht erzeugt werden."
 
 #: ../src/common/image.c:1457
-#, fuzzy, c-format
+#, c-format
 msgid "error moving local copy `%s' -> `%s'"
-msgstr "lokale Kopie von %d Bild entfernen"
+msgstr "Fehler beim Verschieben lokaler Kopie „%s” auf „%s”"
 
 #: ../src/common/image.c:1473
 #, c-format
 msgid "error moving `%s': file not found"
-msgstr ""
+msgstr "Fehler beim Verschieben „%s”: Datei nicht gefunden"
 
 #: ../src/common/image.c:1477
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
-msgstr ""
+msgstr "Fehler beim Verschieben „%s” auf „%s”: Datei existiert bereits"
 
 #: ../src/common/image.c:1481
-#, fuzzy, c-format
+#, c-format
 msgid "error moving `%s' -> `%s'"
-msgstr "Fehler beim Drucken von Bild „%s” auf „%s”"
+msgstr "Fehler beim Verschieben „%s” auf „%s”"
 
 #: ../src/common/image.c:1736
 msgid "cannot create local copy when the original file is not accessible."
@@ -1951,9 +1940,9 @@ msgid "no image selected!"
 msgstr "Kein Bild ausgewählt!"
 
 #: ../src/common/styles.c:609
-#, fuzzy, c-format
+#, c-format
 msgid "module `%s' version mismatch: %d != %d"
-msgstr "%s: Modul „%s” hat unpassende Version: %d != %d"
+msgstr "Modul „%s” hat Versionskonflikt: %d ≠ %d"
 
 #: ../src/common/styles.c:979
 #, c-format
@@ -2127,9 +2116,8 @@ msgid "physically delete"
 msgstr "physisch von der Festplatte löschen"
 
 #: ../src/control/jobs/control_jobs.c:750
-#, fuzzy
 msgid "physically delete all files"
-msgstr "physisch von der Festplatte löschen"
+msgstr "alle Dateien physisch von der Festplatte löschen"
 
 #: ../src/control/jobs/control_jobs.c:752
 msgid "only remove from the collection"
@@ -2521,11 +2509,11 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:1503 ../src/iop/colorzones.c:2287
 #: ../src/iop/tonecurve.c:1255
-#, fuzzy
 msgid ""
 "pick GUI color from image\n"
 "ctrl+click to select an area"
-msgstr "GUI-Farbe aus dem Bild übernehmen"
+msgstr ""
+"mit Strg-Mausklick Bereich auswählen, um GUI-Farbe aus dem Bild zu übernehmen"
 
 #: ../src/develop/blend_gui.c:1507
 msgid ""
@@ -2544,7 +2532,8 @@ msgstr "Polarität aller Kanäle umkehren"
 
 #: ../src/develop/blend_gui.c:1527 ../src/develop/blend_gui.c:1531
 msgid "toggle polarity. best seen by enabling 'display mask'"
-msgstr "Polarität umkehren. Es hilft, ‚Maske anzeigen‘ einzuschalten"
+msgstr ""
+"Polarität umkehren. Am besten sichtbar, wenn „Maske anzeigen” ausgewäht"
 
 #: ../src/develop/blend_gui.c:1540
 msgid "output"
@@ -3447,10 +3436,9 @@ msgid "edit"
 msgstr "Bearbeiten"
 
 #: ../src/gui/accelerators.c:61 ../src/gui/accelerators.c:104
-#, fuzzy
 msgctxt "accel"
 msgid "dynamic"
-msgstr "Dynamikbereich"
+msgstr "Dynamik"
 
 #: ../src/gui/accelerators.c:66 ../src/gui/accelerators.c:109
 msgctxt "accel"
@@ -3607,30 +3595,28 @@ msgstr "Seitenränder umschalten"
 #: ../src/gui/gtk.c:1207
 msgctxt "accel"
 msgid "toggle panels collapsing controls"
-msgstr ""
+msgstr "Bedienelemente zum Ein- und Ausklappen der Bedienfelder umschalten"
 
+# besser "Bedienfeld"?
 #: ../src/gui/gtk.c:1211
-#, fuzzy
 msgctxt "accel"
 msgid "toggle left panel"
-msgstr "Live-View umschalten"
+msgstr "linkes Feld umschalten"
 
 #: ../src/gui/gtk.c:1215
-#, fuzzy
 msgctxt "accel"
 msgid "toggle right panel"
-msgstr "Kopfbereich umschalten"
+msgstr "rechtes Feld umschalten"
 
 #: ../src/gui/gtk.c:1219
-#, fuzzy
 msgctxt "accel"
 msgid "toggle top panel"
-msgstr "Kopfbereich umschalten"
+msgstr "oberes Feld umschalten"
 
 #: ../src/gui/gtk.c:1223
 msgctxt "accel"
 msgid "toggle bottom panel"
-msgstr ""
+msgstr "unteres Feld umschalten"
 
 #. toggle view of header
 #: ../src/gui/gtk.c:1228
@@ -3997,14 +3983,14 @@ msgid "press key combination to remap..."
 msgstr "Neue Tastenkombination drücken..."
 
 #: ../src/gui/preferences.c:1009
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s accel is already mapped to\n"
 "%s.\n"
 "do you want to replace it ?"
 msgstr ""
-"Voreinstellung „%s” existiert bereits.\n"
-"Soll sie überschrieben werden?"
+"Tastenkombination „%s” bereits „%s”\n"
+"zugewiesen. Soll sie überschrieben werden?"
 
 #: ../src/gui/preferences.c:1015
 #, fuzzy
@@ -4650,7 +4636,7 @@ msgstr "überschreiben"
 
 #: ../src/imageio/storage/disk.c:202
 msgid "skip"
-msgstr ""
+msgstr "überspringen"
 
 #: ../src/imageio/storage/disk.c:279 ../src/imageio/storage/gallery.c:273
 #: ../src/imageio/storage/latex.c:272
@@ -5661,9 +5647,8 @@ msgid "exposure bias"
 msgstr "Belichtungstendenz"
 
 #: ../src/iop/basicadj.c:97
-#, fuzzy
 msgid "basic adjustments"
-msgstr "Kontrastanpassung"
+msgstr "grundlegende Anpassungen"
 
 #: ../src/iop/basicadj.c:672 ../src/iop/exposure.c:889
 msgid "black level correction"
@@ -5688,9 +5673,8 @@ msgid "adjust the exposure correction"
 msgstr "Belichtungskorrektur anpassen"
 
 #: ../src/iop/basicadj.c:692
-#, fuzzy
 msgid "highlight compression"
-msgstr "Spitzlicht-Rekonstruktion"
+msgstr "Spitzlichtkompression"
 
 #: ../src/iop/basicadj.c:693
 #, fuzzy
@@ -5708,9 +5692,8 @@ msgid "contrast adjustment"
 msgstr "Kontrastanpassung"
 
 #: ../src/iop/basicadj.c:705 ../src/iop/rgbcurve.c:1594
-#, fuzzy
 msgid "preserve colors"
-msgstr "Farbe des Rahmens"
+msgstr "erhalte Farben"
 
 # wtf?
 #: ../src/iop/basicadj.c:707 ../src/iop/rgbcurve.c:1596
@@ -7246,9 +7229,8 @@ msgid "edit the curve nodes by area"
 msgstr ""
 
 #: ../src/iop/colorzones.c:2315
-#, fuzzy
 msgid "display selection"
-msgstr "entferne die aktuelle Auswahl"
+msgstr "Auswahl anzeigen"
 
 #: ../src/iop/colorzones.c:2324
 msgid "select by"
@@ -7260,13 +7242,12 @@ msgstr "Auswahlkriterium, wird auf der x-Achse des Graphen angezeigt."
 
 # keine Ahnung, ob das passt, konnte den String in der GUI nicht finden.
 #: ../src/iop/colorzones.c:2333
-#, fuzzy
 msgid "process mode"
-msgstr "Fokussierung"
+msgstr "Modus"
 
 #: ../src/iop/colorzones.c:2335
 msgid "strong"
-msgstr ""
+msgstr "stark"
 
 #: ../src/iop/colorzones.c:2337
 msgid "choose between a smoother or stronger effect"
@@ -7545,9 +7526,8 @@ msgid "variance computed on the green channel"
 msgstr "klicken, um den Grün-Kanal auszublenden"
 
 #: ../src/iop/denoiseprofile.c:3283
-#, fuzzy
 msgid "variance blue: "
-msgstr "Maske weichzeichnen"
+msgstr "Varianz blau:"
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3286
@@ -8485,7 +8465,7 @@ msgstr ""
 #: ../src/iop/invert.c:98 ../src/iop/invert.c:522
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image"
-msgstr "„%s” Farbmatrix für 4Bayer-Bild nicht gefunden"
+msgstr "„%s” Farbmatrix für 4-Bayer-Bild nicht gefunden"
 
 #: ../src/iop/invert.c:114
 msgid "invert"
@@ -9058,84 +9038,80 @@ msgstr "Filter, der zum Weichzeichnen genutzt wird"
 
 #: ../src/iop/lut3d.c:90
 msgid "lut 3D"
-msgstr ""
+msgstr "3D LUT"
 
 #: ../src/iop/lut3d.c:354
-#, fuzzy, c-format
+#, c-format
 msgid "invalid png header from %s"
-msgstr "ungültiges Papierformat"
+msgstr "ungültiger PNG-Dateikopf in „%s”"
 
 #: ../src/iop/lut3d.c:362
 #, c-format
 msgid "png bit-depth %d not supported"
-msgstr ""
+msgstr "PNG-Bittiefe %d nicht unterstützt"
 
 #: ../src/iop/lut3d.c:374
 #, c-format
 msgid "invalid level in png file %d %d"
-msgstr ""
+msgstr "ungültiger Grad PNG-Datei %d %d"
 
 #: ../src/iop/lut3d.c:389 ../src/iop/lut3d.c:406
-#, fuzzy
 msgid "error - allocating buffer for png lut"
-msgstr "konnte keinen Puffer zum Überblenden reservieren"
+msgstr "Fehler: konnte keinen Puffer für PNG-LUT-Datei reservieren"
 
 #: ../src/iop/lut3d.c:396
-#, fuzzy, c-format
+#, c-format
 msgid "error - could not read png image %s"
-msgstr "Fehler beim Laden von Datei „%s”"
+msgstr "Fehler: konnte Datei „%s” nicht laden"
 
 #: ../src/iop/lut3d.c:572
-#, fuzzy, c-format
+#, c-format
 msgid "error - invalid cube file: %s"
-msgstr "FEHLER : ungültiges temporäres Verzeichnis : %s\n"
+msgstr "Fehler: ungültige Cube-Datei: %s"
 
 #: ../src/iop/lut3d.c:588
 msgid "DOMAIN MIN <> 0.0 is not supported"
-msgstr ""
+msgstr "DOMAIN MIN ≠ 0.0 nicht unterstützt"
 
 #: ../src/iop/lut3d.c:599
 msgid "DOMAIN MAX <> 1.0 is not supported"
-msgstr ""
+msgstr "DOMAIN MAX ≠ 1.0 nicht unterstützt"
 
 #: ../src/iop/lut3d.c:608
 msgid "1D cube lut is not supported"
-msgstr ""
+msgstr "1D-Cube-LUTs nicht unterstützt"
 
 #: ../src/iop/lut3d.c:622
-#, fuzzy
 msgid "error - allocating buffer for cube lut"
-msgstr "konnte keinen Puffer zum Überblenden reservieren"
+msgstr "Fehler: konnte keinen Puffer für Cube-LUT reservieren"
 
 #: ../src/iop/lut3d.c:633
 msgid "error - cube lut size is not defined"
-msgstr ""
+msgstr "Fehler: Cube-LUT-Größe nicht definiert"
 
 #: ../src/iop/lut3d.c:650
 msgid "error - cube lut lines number is not correct"
-msgstr ""
+msgstr "Fehler: Cube-LUT-Zeilenzahl nicht korrekt"
 
 #: ../src/iop/lut3d.c:927
 msgid "Lut root folder not defined"
-msgstr ""
+msgstr "LUT-Verzeichnis nicht definiert"
 
 #: ../src/iop/lut3d.c:933
-#, fuzzy
 msgid "select lut file"
-msgstr "Datei auswählen"
+msgstr "LUT-Datei auswählen"
 
 #: ../src/iop/lut3d.c:934
-#, fuzzy
 msgid "_select"
-msgstr "Auswahl"
+msgstr "Auswählen"
 
 #: ../src/iop/lut3d.c:951
 msgid "hald cluts (png)"
-msgstr ""
+msgstr "HaldCLUTs (png)"
 
 #: ../src/iop/lut3d.c:958
 msgid "3D lut (cube)"
-msgstr ""
+msgstr "3D-LUT (cube)"
 
 #: ../src/iop/lut3d.c:964 ../src/libs/copy_history.c:93
 #: ../src/libs/geotagging.c:494 ../src/libs/import.c:789
@@ -9145,7 +9121,7 @@ msgstr "alle Dateien"
 
 #: ../src/iop/lut3d.c:982
 msgid "Select file outside Lut root folder is not allowed"
-msgstr ""
+msgstr "Dateiauswahl außerhalb des LUT-Verzeichnisses nicht erlaubt"
 
 #: ../src/iop/lut3d.c:1031
 msgid ""
@@ -9154,55 +9130,54 @@ msgid ""
 "CAUTION: lut folder must be set in preferences/core options/miscellaneous "
 "before choosing the lut file"
 msgstr ""
+"Der Dateipfad (relativ zum LUT-Verzeichnis) wird im Bild mitgespeichert "
+"(nicht die LUT-Daten selbst).\n"
+"Achtung: Das LUT-Verzeichnis muss in „Voreinstellungen/zentrale Optionen/"
+"Verschieden” festgelegt werden, bevor eine LUT-Datei gewählt werden kann."
 
 #: ../src/iop/lut3d.c:1037
 msgid "select a png (haldclut) or a cube file"
-msgstr ""
+msgstr "eine png- (HaldCLUT) oder eine cube-Datei auswählen"
 
 #: ../src/iop/lut3d.c:1044
-#, fuzzy
 msgid "application color space"
-msgstr "Farbraum"
+msgstr "Anwendungsfarbraum"
 
 #: ../src/iop/lut3d.c:1046
 msgid "REC.709"
-msgstr ""
+msgstr "REC.709"
 
 #: ../src/iop/lut3d.c:1047
 msgid "lin sRGB/REC.709"
-msgstr ""
+msgstr "lineares sRGB/REC.709"
 
 #: ../src/iop/lut3d.c:1048
 msgid "lin prophoto RGB"
-msgstr ""
+msgstr "lineares prophoto-RGB"
 
 #: ../src/iop/lut3d.c:1050
 msgid "select the color space in which the LUT has to be applied"
-msgstr ""
+msgstr "den Farbraum wählen, in dem die LUT angewendet wird"
 
 #: ../src/iop/lut3d.c:1054
-#, fuzzy
 msgid "interpolation"
 msgstr "Interpolationsverfahren"
 
 #: ../src/iop/lut3d.c:1055
 msgid "tetrahedral"
-msgstr ""
+msgstr "tetraedrisch"
 
 #: ../src/iop/lut3d.c:1056
-#, fuzzy
 msgid "trilinear"
-msgstr "bilinear"
+msgstr "trilinear"
 
 #: ../src/iop/lut3d.c:1057
-#, fuzzy
 msgid "pyramid"
-msgstr "Panorama"
+msgstr "py­ra­mi­dal"
 
 #: ../src/iop/lut3d.c:1059
-#, fuzzy
 msgid "select the interpolation method"
-msgstr "Interpolationsverfahren"
+msgstr "Interpolationsverfahren wählen"
 
 #: ../src/iop/monochrome.c:74
 msgid "monochrome"
@@ -9727,9 +9702,8 @@ msgid "max scale is %i for this image size"
 msgstr "Die maximale Skalierung ist %i für diese Bildgröße"
 
 #: ../src/iop/rgbcurve.c:136
-#, fuzzy
 msgid "rgb curve"
-msgstr "Basiskurve"
+msgstr "RGB-Kurve"
 
 #: ../src/iop/rgbcurve.c:218 ../src/iop/tonecurve.c:464
 #: ../src/iop/tonemap.cc:297
@@ -9777,9 +9751,8 @@ msgid "RGB, linked channels"
 msgstr "RGB, verknüpfte Kanäle"
 
 #: ../src/iop/rgbcurve.c:1490
-#, fuzzy
 msgid "RGB, independent channels"
-msgstr "Lab, unabhängige Kanäle"
+msgstr "RBG, unabhängige Kanäle"
 
 #: ../src/iop/rgbcurve.c:1492
 #, fuzzy
@@ -9788,7 +9761,7 @@ msgstr "Lab, unabhängige Kanäle"
 
 #: ../src/iop/rgbcurve.c:1499
 msgid "  R  "
-msgstr ""
+msgstr "  R   "
 
 #: ../src/iop/rgbcurve.c:1502
 #, fuzzy
@@ -9797,7 +9770,7 @@ msgstr "Farbkurve für L-Kanal"
 
 #: ../src/iop/rgbcurve.c:1504
 msgid "  G  "
-msgstr ""
+msgstr "  G  "
 
 #: ../src/iop/rgbcurve.c:1507
 #, fuzzy
@@ -9806,7 +9779,7 @@ msgstr "Farbkurve für L-Kanal"
 
 #: ../src/iop/rgbcurve.c:1509
 msgid "  B  "
-msgstr ""
+msgstr "  B  "
 
 #: ../src/iop/rgbcurve.c:1512
 #, fuzzy
@@ -10617,7 +10590,7 @@ msgstr "Batterie"
 
 #: ../src/libs/camera.c:358
 msgid "n/a"
-msgstr "n/a"
+msgstr "unbekannt"
 
 #. Camera control
 #: ../src/libs/camera.c:431
@@ -11031,17 +11004,15 @@ msgstr ""
 "ausgewählten Bildern ein"
 
 #: ../src/libs/copy_history.c:412
-#, fuzzy
 msgid "compress history"
-msgstr "Verlaufsstapel zusammenfassen"
+msgstr "Verlaufsstapel komprimieren"
 
 #: ../src/libs/copy_history.c:414
-#, fuzzy
 msgid ""
 "compress history stack of\n"
 "all selected images"
 msgstr ""
-"verwerfe den Verlaufsstapel\n"
+"komprimiere den Verlaufsstapel\n"
 "aller ausgewählten Bilder"
 
 #: ../src/libs/copy_history.c:417
@@ -11139,9 +11110,8 @@ msgid "export selected"
 msgstr "ausgewählte exportieren"
 
 #: ../src/libs/export.c:122
-#, fuzzy
 msgid "export to disk"
-msgstr "Tags exportieren"
+msgstr "Exportieren"
 
 #: ../src/libs/export.c:532
 msgid "storage options"
@@ -11362,10 +11332,9 @@ msgstr ""
 "Doppelklick zum Zurücksetzen"
 
 #: ../src/libs/histogram.c:588
-#, fuzzy
 msgctxt "accel"
 msgid "hide histogram"
-msgstr "Histogramm"
+msgstr "Histogramm verbergen"
 
 #: ../src/libs/history.c:83
 msgctxt "accel"
@@ -12227,18 +12196,16 @@ msgstr "Effektgruppe"
 
 #. search box
 #: ../src/libs/modulegroups.c:229
-#, fuzzy
 msgid "search module"
-msgstr "Modul zeigen"
+msgstr "Modul suchen"
 
 #: ../src/libs/modulegroups.c:236
 msgid "search modules by name or tag"
-msgstr ""
+msgstr "Modul nach Namen oder Markierung suchen"
 
 #: ../src/libs/modulegroups.c:243
-#, fuzzy
 msgid "clear text"
-msgstr "löschen"
+msgstr "Text löschen"
 
 #: ../src/libs/modulelist.c:57
 msgid "more modules"
@@ -12348,7 +12315,7 @@ msgstr "1600%"
 #: ../src/libs/navigation.c:599
 msgctxt "accel"
 msgid "toggle navigation thumbnail visibility"
-msgstr ""
+msgstr "Sichtbarkeit von Navigationsvorschaubild umschalten"
 
 #. //////////////////////// PRINT SETTINGS
 #: ../src/libs/print_settings.c:43 ../src/libs/print_settings.c:1398
@@ -13150,11 +13117,11 @@ msgstr "Dateiverwaltung"
 
 #: ../src/libs/tools/lighttable.c:142
 msgid "culling"
-msgstr ""
+msgstr "Sichten"
 
 #: ../src/libs/tools/lighttable.c:173
 msgid "fixed zoom"
-msgstr ""
+msgstr "manuelle Sortierung"
 
 #: ../src/libs/tools/lighttable.c:174
 #, fuzzy
@@ -13173,21 +13140,19 @@ msgid "zoom min"
 msgstr "Minimaler Zoom"
 
 #: ../src/libs/tools/lighttable.c:217
-#, fuzzy
 msgctxt "accel"
 msgid "toggle culling mode"
-msgstr "Exposé-Modus umschalten"
+msgstr "Sichten-Modus umschalten"
 
 #: ../src/libs/tools/lighttable.c:218
 msgctxt "accel"
 msgid "toggle culling dynamic mode"
-msgstr ""
+msgstr "dynamischen Sichten-Modus umschalten"
 
 #: ../src/libs/tools/lighttable.c:219
-#, fuzzy
 msgctxt "accel"
 msgid "toggle culling zoom mode"
-msgstr "Exposé-Modus umschalten"
+msgstr "Sichten-Zoommodus umschalten"
 
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
@@ -13198,21 +13163,18 @@ msgid "ratings"
 msgstr "Bewertungen"
 
 #: ../src/libs/tools/timeline.c:110
-#, fuzzy
 msgid "timeline"
-msgstr "Datum/Uhrzeit"
+msgstr "Zeitleiste"
 
 #: ../src/libs/tools/timeline.c:1487
-#, fuzzy
 msgctxt "accel"
 msgid "start selection"
-msgstr "entferne die aktuelle Auswahl"
+msgstr "Auswahl starten"
 
 #: ../src/libs/tools/timeline.c:1488
-#, fuzzy
 msgctxt "accel"
 msgid "stop selection"
-msgstr "Auswahl invertieren"
+msgstr "Auswahl beenden"
 
 #: ../src/libs/tools/view_toolbox.c:46
 msgid "view toolbox"
@@ -13241,7 +13203,7 @@ msgstr "Datei auswählen"
 #: ../src/lua/preferences.c:724
 #, c-format
 msgid "double click to reset to `%f'"
-msgstr "Doppelklick, um auf ‚%f‘ zurückzusetzen"
+msgstr "Doppelklick, um auf „%f” zurückzusetzen"
 
 #: ../src/lua/preferences.c:800
 msgid "lua options"
@@ -13279,7 +13241,7 @@ msgstr "Schnellzugriff um einen Stil anzuwenden"
 
 #: ../src/views/darkroom.c:1776
 msgid "display a second darkroom image window"
-msgstr ""
+msgstr "ein zweites Dunkelkammer-Vorschaufenster anzeigen"
 
 #: ../src/views/darkroom.c:1787
 msgid ""
@@ -13563,16 +13525,14 @@ msgstr "erlauben das Schwenken und Zoomen während der Bearbeitung von Masken"
 
 #. set focus to the search modules text box
 #: ../src/views/darkroom.c:3165
-#, fuzzy
 msgctxt "accel"
 msgid "search modules"
-msgstr "Suchradius"
+msgstr "suche Modul"
 
 #. workaround for GTK Quartz backend bug
 #: ../src/views/darkroom.c:3940 ../src/views/darkroom.c:3958
-#, fuzzy
 msgid "darktable - darkroom preview"
-msgstr "darktable - Fehler beim Öffnen der Datenbank"
+msgstr "darktable - Dunkelkammer Vorschau"
 
 #: ../src/views/knight.c:334
 msgid "good knight"
@@ -13621,9 +13581,9 @@ msgid "you have reached the end of your collection"
 msgstr ""
 
 #: ../src/views/lighttable.c:3545
-#, fuzzy, c-format
+#, c-format
 msgid "zooming is limited to %d images"
-msgstr "wende Bewertung %d auf %d Bild an"
+msgstr "Zoom ist auf %d Bilder beschränkt"
 
 #: ../src/views/lighttable.c:4305
 msgctxt "accel"
@@ -13717,20 +13677,18 @@ msgstr "Vorschau mit Fokuserkennung"
 #: ../src/views/lighttable.c:4343
 msgctxt "accel"
 msgid "preview zoom 100%"
-msgstr ""
+msgstr "100%-Vorschau"
 
 #: ../src/views/lighttable.c:4344
-#, fuzzy
 msgctxt "accel"
 msgid "preview zoom fit"
-msgstr "Ansicht einpassen"
+msgstr "Vorschau einpassen"
 
 #. timeline
 #: ../src/views/lighttable.c:4347
-#, fuzzy
 msgctxt "accel"
 msgid "toggle timeline"
-msgstr "Live-View umschalten"
+msgstr "Zeitleiste umschalten"
 
 #: ../src/views/lighttable.c:4679
 msgid "set display profile"
