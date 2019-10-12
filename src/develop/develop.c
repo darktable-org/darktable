@@ -1350,6 +1350,9 @@ static void _dev_add_default_modules(dt_develop_t *dev, const int imgid)
 static void _dev_merge_history(dt_develop_t *dev, const int imgid)
 {
   sqlite3_stmt *stmt;
+  // be extra sure that we don't mess up history in separate threads:
+  // the mutex locking here is necessary because of the later workaround a sqlite3 "feature".
+  dt_pthread_mutex_lock(&darktable.db_insert);
 
   // count what we found:
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM memory.history", -1,
@@ -1466,6 +1469,7 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
       }
     }
   }
+  dt_pthread_mutex_unlock(&darktable.db_insert);
 }
 
 void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_image)
