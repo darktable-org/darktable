@@ -396,8 +396,12 @@ int main(int argc, char *arg[])
   for(GList *iter = id_list; iter; iter = g_list_next(iter), num++)
   {
     int id = GPOINTER_TO_INT(iter->data);
+    // TODO: have a parameter in command line to get the export presets
+    dt_export_metadata_t metadata;
+    metadata.flags = dt_lib_export_metadata_default_flags();
+    metadata.list = NULL;
     storage->store(storage, sdata, id, format, fdata, num, total, high_quality, upscale,
-                   icc_type, icc_filename, icc_intent, NULL);
+                   icc_type, icc_filename, icc_intent, &metadata);
   }
 
   // cleanup time
