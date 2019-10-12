@@ -226,7 +226,7 @@ inline float get_pixel_norm(const float4 pixel, const dt_iop_filmicrgb_methods_t
 
     case DT_FILMIC_METHOD_NONE:
       // path cannot be taken
-      return 0.0;
+      return 0.0f;
   }
 }
 
