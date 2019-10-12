@@ -111,6 +111,25 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 - A new module for handling 3D Lut transformations (PNG Hald-CLUT and
   Cube files are supported).
 
+- Many changes to denoise profiled. The variance stabilisation transform
+  has changed, allowing a finer control of denoising. In particular,
+  it is possible to better denoise the shadows, and correct color casts
+  that may occur in the shadows. This change mainly improves the denoising
+  of high ISO images.
+  The non-local means mode has 2 new options: an option to scatter
+  the search zone, and an option to control the amount of details to keep.
+  In addition, one "auto" mode was added both for wavelets and non-local
+  means. This mode infers some parameters from the profile used.
+  The default values of the sliders are also changed dynamically in the same
+  way. As such, user who want a one click denoising can activate the module
+  and get straight away a good trade-off between noise smoothing and detail
+  preservation.
+  The auto modes allow the user to create their own presets that will
+  adapt to various ISOs.
+  Finally denoise profiled controls now have soft boundaries, which means
+  that users can enter values out of visible bounds using the keyboard if
+  they need to.
+
 - A new profile ‘histogram profile’ has been added on the same pop-up
   that the softproof one on the darkroom. It controls the color space
   of the histogram, color picker and overexposed check. When gamut or
@@ -147,9 +166,6 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 - The collect module supports range selection (for numeric/dates)
   when using single click mode.
 
-- Add option to scatter the search zone in denoise profile non local
-  means mode.
-
 - The gradient mask orientation is now clearly displayed by using an
   arrow.
 
@@ -179,8 +195,6 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 
 - The slideshow will now be more responsive when changing the picture
   backward and forward.
-
-- Add soft boundaries for denoise profile controls.
 
 - A new module 'basic adjustments' has been added. It allows to adjust
   the exposure, highlight compression, contrast, brightness and saturation.
