@@ -948,7 +948,7 @@ void dt_ioppr_legacy_iop_order(GList **_iop_list, GList **_iop_order_list, GList
     if(mod->multi_priority == 0 && mod->iop_order == DBL_MAX)
     {
       mod->iop_order = dt_ioppr_get_iop_order(iop_order_list, mod->op);
-      if((mod->iop_order == DBL_MAX) && (DT_IOP_ORDER_INFO)) 
+      if((mod->iop_order == DBL_MAX) && (DT_IOP_ORDER_INFO))
         fprintf(stderr, "[dt_ioppr_legacy_iop_order] can't find iop_order for module %s\n", mod->op);
     }
 
@@ -3511,4 +3511,3 @@ cleanup:
 #endif
 
 #undef DT_IOP_ORDER_INFO
-
