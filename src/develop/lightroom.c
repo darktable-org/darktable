@@ -497,9 +497,9 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
     else if(!xmlStrcmp(name, (const xmlChar *)"Orientation"))
     {
       data->orientation = atoi((char *)value);
-      if(dev != NULL && ((dev->image_storage.orientation == 6 && data->orientation != 6)
-                        || (dev->image_storage.orientation == 5 && data->orientation != 8)
-                        || (dev->image_storage.orientation == 0 && data->orientation != 1)))
+      if(dev != NULL && ((dev->image_storage.orientation == ORIENTATION_NONE && data->orientation != EXIF_ORIENTATION_NONE)
+                        || (dev->image_storage.orientation == ORIENTATION_ROTATE_CW_90_DEG && data->orientation != EXIF_ORIENTATION_ROTATE_CW_90_DEG)
+                        || (dev->image_storage.orientation == ORIENTATION_ROTATE_CCW_90_DEG && data->orientation != EXIF_ORIENTATION_ROTATE_CCW_90_DEG)))
         data->has_flip = TRUE;
     }
     else if(!xmlStrcmp(name, (const xmlChar *)"HasCrop"))
@@ -1151,7 +1151,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
   data.crop_roundness = NAN;        // from lightroom
   data.iwidth = 0;
   data.iheight = 0;                 // image width / height
-  data.orientation = 1;
+  data.orientation = EXIF_ORIENTATION_NONE;
 
   // record the name-spaces needed for the parsing
   xmlXPathRegisterNs
@@ -1234,14 +1234,14 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
       switch(dev->image_storage.orientation)
       {
-        case 5: // portrait - counter-clockwise
+        case ORIENTATION_ROTATE_CCW_90_DEG: // portrait - counter-clockwise
           tmp = data.pc.ch;
           data.pc.ch = 1.0 - data.pc.cx;
           data.pc.cx = data.pc.cy;
           data.pc.cy = 1.0 - data.pc.cw;
           data.pc.cw = tmp;
           break;
-        case 6: // portrait - clockwise
+        case ORIENTATION_ROTATE_CW_90_DEG: // portrait - clockwise
           tmp = data.pc.ch;
           data.pc.ch = data.pc.cw;
           data.pc.cw = 1.0 - data.pc.cy;
@@ -1288,69 +1288,69 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
   if(dev != NULL && data.has_flip)
   {
-    data.pf.orientation = 0;
+    data.pf.orientation = ORIENTATION_NONE;
 
-    if(dev->image_storage.orientation == 5)
+    if(dev->image_storage.orientation == ORIENTATION_ROTATE_CW_90_DEG)
       // portrait
       switch(data.orientation)
       {
-        case 8:
-          data.pf.orientation = 3;
+        case EXIF_ORIENTATION_ROTATE_CCW_90_DEG:
+          data.pf.orientation = ORIENTATION_ROTATE_180_DEG;
           break;
-        case 3:
-          data.pf.orientation = 5;
+        case EXIF_ORIENTATION_ROTATE_180_DEG:
+          data.pf.orientation = ORIENTATION_ROTATE_CW_90_DEG;
           break;
-        case 6:
-          data.pf.orientation = 0;
+        case EXIF_ORIENTATION_ROTATE_CW_90_DEG:
+          data.pf.orientation = ORIENTATION_NONE;
           break;
-        case 1:
-          data.pf.orientation = 6;
+        case EXIF_ORIENTATION_NONE:
+          data.pf.orientation = ORIENTATION_ROTATE_CCW_90_DEG;
           break;
 
-        // with horizontal flip
-        case 7:
-          data.pf.orientation = 1;
+        // with flip
+        case EXIF_ORIENTATION_TRANSVERSE:
+          data.pf.orientation = ORIENTATION_FLIP_HORIZONTALLY;
           break;
-        case 2:
-          data.pf.orientation = 4;
+        case EXIF_ORIENTATION_FLIP_HORIZONTALLY:
+          data.pf.orientation = ORIENTATION_TRANSPOSE;
           break;
-        case 5:
-          data.pf.orientation = 2;
+        case EXIF_ORIENTATION_TRANSPOSE:
+          data.pf.orientation = ORIENTATION_FLIP_VERTICALLY;
           break;
-        case 4:
-          data.pf.orientation = 7;
+        case EXIF_ORIENTATION_FLIP_VERTICALLY:
+          data.pf.orientation = ORIENTATION_TRANSVERSE;
           break;
       }
 
-    else if(dev->image_storage.orientation == 6)
+    else if(dev->image_storage.orientation == ORIENTATION_ROTATE_CCW_90_DEG)
       // portrait
       switch(data.orientation)
       {
-        case 8:
-          data.pf.orientation = 3;
+        case EXIF_ORIENTATION_ROTATE_CCW_90_DEG:
+          data.pf.orientation = ORIENTATION_NONE;
           break;
-        case 3:
-          data.pf.orientation = 6;
+        case EXIF_ORIENTATION_ROTATE_180_DEG:
+          data.pf.orientation = ORIENTATION_ROTATE_CCW_90_DEG;
           break;
-        case 6:
-          data.pf.orientation = 0;
+        case EXIF_ORIENTATION_ROTATE_CW_90_DEG:
+          data.pf.orientation = ORIENTATION_ROTATE_180_DEG;
           break;
-        case 1:
-          data.pf.orientation = 5;
+        case EXIF_ORIENTATION_NONE:
+          data.pf.orientation = ORIENTATION_ROTATE_CW_90_DEG;
           break;
 
-        // with horizontal flip
-        case 7:
-          data.pf.orientation = 2;
+        // with flip
+        case EXIF_ORIENTATION_TRANSVERSE:
+          data.pf.orientation = ORIENTATION_FLIP_VERTICALLY;
           break;
-        case 2:
-          data.pf.orientation = 7;
+        case EXIF_ORIENTATION_FLIP_HORIZONTALLY:
+          data.pf.orientation = ORIENTATION_TRANSVERSE;
           break;
-        case 5:
-          data.pf.orientation = 1;
+        case EXIF_ORIENTATION_TRANSPOSE:
+          data.pf.orientation = ORIENTATION_FLIP_HORIZONTALLY;
           break;
-        case 4:
-          data.pf.orientation = 4;
+        case EXIF_ORIENTATION_FLIP_VERTICALLY:
+          data.pf.orientation = ORIENTATION_TRANSPOSE;
           break;
       }
 
@@ -1358,31 +1358,31 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       // landscape
       switch(data.orientation)
       {
-        case 8:
-          data.pf.orientation = 5;
+        case EXIF_ORIENTATION_ROTATE_CCW_90_DEG:
+          data.pf.orientation = ORIENTATION_ROTATE_CCW_90_DEG;
           break;
-        case 3:
-          data.pf.orientation = 3;
+        case EXIF_ORIENTATION_ROTATE_180_DEG:
+          data.pf.orientation = ORIENTATION_ROTATE_180_DEG;
           break;
-        case 6:
-          data.pf.orientation = 6;
+        case EXIF_ORIENTATION_ROTATE_CW_90_DEG:
+          data.pf.orientation = ORIENTATION_ROTATE_CW_90_DEG;
           break;
-        case 1:
-          data.pf.orientation = 0;
+        case EXIF_ORIENTATION_NONE:
+          data.pf.orientation = ORIENTATION_NONE;
           break;
 
-        // with horizontal flip
-        case 7:
-          data.pf.orientation = 7;
+        // with flip
+        case EXIF_ORIENTATION_TRANSVERSE:
+          data.pf.orientation = ORIENTATION_TRANSVERSE;
           break;
-        case 2:
-          data.pf.orientation = 1;
+        case EXIF_ORIENTATION_FLIP_HORIZONTALLY:
+          data.pf.orientation = ORIENTATION_FLIP_HORIZONTALLY;
           break;
-        case 5:
-          data.pf.orientation = 4;
+        case EXIF_ORIENTATION_TRANSPOSE:
+          data.pf.orientation = ORIENTATION_TRANSPOSE;
           break;
-        case 4:
-          data.pf.orientation = 2;
+        case EXIF_ORIENTATION_FLIP_VERTICALLY:
+          data.pf.orientation = ORIENTATION_FLIP_VERTICALLY;
           break;
       }
 

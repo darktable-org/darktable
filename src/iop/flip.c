@@ -120,7 +120,7 @@ static dt_image_orientation_t merge_two_orientations(dt_image_orientation_t raw_
       raw_orientation_corrected |= ORIENTATION_SWAP_XY;
   }
 
-  // and now we can automagically compute new new flip
+  // and now we can automagically compute new flip
   return raw_orientation_corrected ^ user_orientation;
 }
 
