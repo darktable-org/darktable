@@ -738,10 +738,10 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
       if (DT_IOP_ORDER_INFO)
       {
         fprintf(stderr,"\n  module %20s, order %9.5f->%9.5f, v(%i), multiprio %i",
-          style_item.operation,old_iop_order,style_item.iop_order,style_item.module_version,style_item.multi_priority); 
+                style_item.operation, old_iop_order, style_item.iop_order, style_item.module_version, style_item.multi_priority);
         if (style_item.enabled) fprintf(stderr,", enabled");
       }
-      
+
       dt_styles_apply_style_item(dev_dest, &style_item, &modules_used, FALSE);
     }
     sqlite3_finalize(stmt);
@@ -1460,4 +1460,3 @@ dt_style_t *dt_styles_get_by_name(const char *name)
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
-
