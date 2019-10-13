@@ -2127,6 +2127,24 @@ char *dt_image_get_text_path(const int32_t imgid)
   return dt_image_get_text_path_from_path(image_path);
 }
 
+int dt_image_get_iop_order_version(const int32_t imgid)
+{
+  int iop_order_version = 0;
+
+  // check current iop order version
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order_version FROM main.images WHERE id = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    iop_order_version = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+
+  return iop_order_version;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
