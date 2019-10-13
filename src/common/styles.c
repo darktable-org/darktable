@@ -732,7 +732,7 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
       style_item.params_size = sqlite3_column_bytes(stmt, 3);
       style_item.blendop_params_size = sqlite3_column_bytes(stmt, 5);
 
-      double old_iop_order = sqlite3_column_double(stmt, 9);
+      const double old_iop_order = sqlite3_column_double(stmt, 9);
       style_item.iop_order = dt_ioppr_get_iop_order(current_iop_list, style_item.operation) + (double)style_item.multi_priority / 100.0f;
 
       if (DT_IOP_ORDER_INFO)
