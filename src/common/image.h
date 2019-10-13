@@ -71,7 +71,7 @@ typedef enum
   // image is a bayer pattern with 4 colors (e.g., CYGM or RGBE)
   DT_IMAGE_4BAYER = 16384,
   // image was detected as monochrome
-  DT_IMAGE_MONOCHROME = 32768, 
+  DT_IMAGE_MONOCHROME = 32768,
   // image has usercrop information
   DT_IMAGE_HAS_USERCROP = 65536,
 } dt_image_flags_t;
