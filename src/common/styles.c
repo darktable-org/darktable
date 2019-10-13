@@ -688,16 +688,7 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
 
     dt_dev_pop_history_items_ext(dev_dest, dev_dest->history_end);
 
-    int my_iop_order_version = 0;
-    // check images iop order version
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order_version FROM main.images WHERE id = ?1",
-                              -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-    if(sqlite3_step(stmt) == SQLITE_ROW)
-    {
-      my_iop_order_version = sqlite3_column_int(stmt, 0);
-    }
-    sqlite3_finalize(stmt);
+    int my_iop_order_version = dt_image_get_iop_order_version(imgid);
 
     GList *current_iop_list = dt_ioppr_get_iop_order_list(&my_iop_order_version);
 
