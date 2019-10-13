@@ -39,6 +39,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
+
 typedef struct
 {
   GString *name;
@@ -686,7 +688,23 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
 
     dt_dev_pop_history_items_ext(dev_dest, dev_dest->history_end);
 
+    int my_iop_order_version = 0;
+    // check images iop order version
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order_version FROM main.images WHERE id = ?1",
+                              -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      my_iop_order_version = sqlite3_column_int(stmt, 0);
+    }
+    sqlite3_finalize(stmt);
+
+    GList *current_iop_list = dt_ioppr_get_iop_order_list(&my_iop_order_version);
+
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 1");
+
+    if (DT_IOP_ORDER_INFO)
+      fprintf(stderr,"\n^^^^^ Apply style on image %i, iop_order version %i, history size %i",imgid,my_iop_order_version,dev_dest->history_end);
 
     // go through all entries in style
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -713,11 +731,22 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
       style_item.blendop_params = (void *)sqlite3_column_blob(stmt, 5);
       style_item.params_size = sqlite3_column_bytes(stmt, 3);
       style_item.blendop_params_size = sqlite3_column_bytes(stmt, 5);
-      style_item.iop_order = sqlite3_column_double(stmt, 9);
 
+      double old_iop_order = sqlite3_column_double(stmt, 9);
+      style_item.iop_order = dt_ioppr_get_iop_order(current_iop_list, style_item.operation) + (double)style_item.multi_priority / 100.0f;
+
+      if (DT_IOP_ORDER_INFO)
+      {
+        fprintf(stderr,"\n  module %20s, order %9.5f->%9.5f, v(%i), multiprio %i",
+          style_item.operation,old_iop_order,style_item.iop_order,style_item.module_version,style_item.multi_priority); 
+        if (style_item.enabled) fprintf(stderr,", enabled");
+      }
+      
       dt_styles_apply_style_item(dev_dest, &style_item, &modules_used, FALSE);
     }
     sqlite3_finalize(stmt);
+
+    if (DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv --> look for written history below\n");
 
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 2");
 
@@ -750,6 +779,7 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
     {
       dt_dev_reload_history_items(darktable.develop);
       dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
+      dt_dev_modules_update_multishow(darktable.develop);
     }
 
     /* update xmp file */
@@ -1425,6 +1455,9 @@ dt_style_t *dt_styles_get_by_name(const char *name)
     return NULL;
   }
 }
+
+#undef DT_IOP_ORDER_INFO
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
+
