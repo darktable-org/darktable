@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-09-04 19:19+0200\n"
-"PO-Revision-Date: 2019-10-03 23:28+0100\n"
+"PO-Revision-Date: 2019-10-04 18:06+0100\n"
 "Last-Translator: mmardegan <11093569+mmardegan@users.noreply.github.com>\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
@@ -13202,7 +13202,7 @@ msgstr "Stile con nome '%s' già esistente"
 #: ../src/libs/tagging.c:1408
 #, fuzzy
 msgid "edit tag"
-msgstr "Modifica stile"
+msgstr "Modifica il Tag..."
 
 #: ../src/libs/tagging.c:1422 ../src/libs/tagging.c:1642
 #, c-format
@@ -13227,7 +13227,7 @@ msgstr "Stile con nome '%s' già esistente"
 #: ../src/libs/tagging.c:1628
 #, fuzzy
 msgid "rename path?"
-msgstr "Aggiungi tracciato"
+msgstr "Rinomina il percorso..."
 
 #: ../src/libs/tagging.c:1635
 #, fuzzy, c-format
@@ -14123,7 +14123,7 @@ msgstr "Ingrandisci del 100%, 200% e ritorna"
 
 #: ../src/views/darkroom.c:3326
 msgid "[modules] expand module without closing others"
-msgstr ""
+msgstr "[moduli] espandi il modulo senza chiudere gli altri"
 
 #: ../src/views/darkroom.c:3332
 msgid "[modules] change module position in pipe"
