@@ -1690,14 +1690,8 @@ static int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order
   free(myhistory);
 
   // return back the actual iop_order_version as written above to be extra safe
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order_version FROM main.images WHERE id = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    _iop_order_version = sqlite3_column_int(stmt, 0);
-  }
-  sqlite3_finalize(stmt);
+  const int my_iop_order_version = dt_image_get_iop_order_version(imgid);
+  if(my_iop_order_version > 0) _iop_order_version = my_iop_order_version;
 
   // now let's write the corresponding sidecar file which is also
   // broken. this is needed when the lighttable refresh a thumb and
@@ -1712,18 +1706,8 @@ static int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order
 // returns the history version of imgid
 int dt_ioppr_convert_onthefly(const int imgid)
 {
-  int my_iop_order_version = 0;
-
   // check current iop order version
-  sqlite3_stmt *stmt;
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order_version FROM main.images WHERE id = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW)
-  {
-    my_iop_order_version = sqlite3_column_int(stmt, 0);
-  }
-  sqlite3_finalize(stmt);
+  const int my_iop_order_version = dt_image_get_iop_order_version(imgid);
 
   // already latest
   if (my_iop_order_version == DT_IOP_ORDER_VERSION)
