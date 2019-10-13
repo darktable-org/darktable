@@ -419,38 +419,38 @@ void init_presets(dt_iop_module_so_t *self)
   p.details = DT_TONEEQ_GUIDED;
   p.method = DT_TONEEQ_NORM_2;
 
-  p.blending = 12.5f;
-  p.feathering = 5.0f;
-  p.iterations = 3;
-  p.quantization = 1.0f;
-  p.exposure_boost = -1.0f;
-  p.contrast_boost = 2.0f;
+  p.blending = 33.0f;
+  p.feathering = 10.0f;
+  p.iterations = 1;
+  p.quantization = 0.0f;
+  p.exposure_boost = 0.0f;
+  p.contrast_boost = 0.0f;
   dt_gui_presets_add_generic(_("mask blending : landscapes"), self->op, self->version(), &p, sizeof(p), 1);
 
   p.blending = 25.0f;
-  p.feathering = 5.0f;
+  p.feathering = 25.0f;
   p.iterations = 2;
-  p.quantization = 1.0f;
-  p.exposure_boost = -1.5f;
-  p.contrast_boost = 3.0f;
+  p.quantization = 0.0f;
+  p.exposure_boost = 0.0f;
+  p.contrast_boost = 0.0f;
   dt_gui_presets_add_generic(_("mask blending : all purposes"), self->op, self->version(), &p, sizeof(p), 1);
 
   p.blending = 25.0f;
   p.feathering = 25.0f;
   p.iterations = 4;
-  p.quantization = 1.0f;
-  p.exposure_boost = -1.5f;
-  p.contrast_boost = 3.0f;
+  p.quantization = 0.0f;
+  p.exposure_boost = -0.5f;
+  p.contrast_boost = 1.0f;
   dt_gui_presets_add_generic(_("mask blending : isolated subjects"), self->op, self->version(), &p, sizeof(p), 1);
 
   // Shadows/highlights presets
 
   p.blending = 25.0f;
-  p.feathering = 10.0f;
+  p.feathering = 25.0f;
   p.iterations = 2;
-  p.quantization = 1.0f;
-  p.exposure_boost = -1.5f;
-  p.contrast_boost = 3.0f;
+  p.quantization = 0.0f;
+  p.exposure_boost = -0.5f;
+  p.contrast_boost = 1.0f;
 
   p.noise = 0.05f;
   p.ultra_deep_blacks = 0.15f;
@@ -464,12 +464,12 @@ void init_presets(dt_iop_module_so_t *self)
 
   dt_gui_presets_add_generic(_("compress shadows/highlights : soft"), self->op, self->version(), &p, sizeof(p), 1);
 
-  p.blending = 12.5f;
-  p.feathering = 20.0f;
-  p.iterations = 3;
-  p.quantization = 1.0f;
-  p.exposure_boost = -1.0f;
-  p.contrast_boost = 2.0f;
+  p.blending = 25.0f;
+  p.feathering = 10.0f;
+  p.iterations = 2;
+  p.quantization = 0.0f;
+  p.exposure_boost = -0.5f;
+  p.contrast_boost = 1.0f;
 
   p.noise = 0.5f;
   p.ultra_deep_blacks = 0.9f;
@@ -484,11 +484,11 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("compress shadows/highlights : strong"), self->op, self->version(), &p, sizeof(p), 1);
 
   p.blending = 25.0f;
-  p.feathering = 10.0f;
+  p.feathering = 25.0f;
   p.iterations = 2;
-  p.quantization = 1.0f;
-  p.exposure_boost = -1.5f;
-  p.contrast_boost = 3.0f;
+  p.quantization = 0.0f;
+  p.exposure_boost = 0.0f;
+  p.contrast_boost = 0.0f;
 
   p.noise = 0.0f;
   p.ultra_deep_blacks = 0.15f;
@@ -660,7 +660,9 @@ static inline void compute_correction(const float *const restrict luminance,
     // build the correction for the current pixel
     // as the sum of the contribution of each luminance channelcorrection
     float result = 0.0f;
-    const float exposure = log2f(luminance[k]);
+
+    // The radial-basis interpolation is valid in [-8; 0] EV and can quickely diverge outside
+    const float exposure = fast_clamp(log2f(luminance[k]), -8.0f, 0.0f);
 
 #ifdef _OPENMP
 #pragma omp simd aligned(luminance, centers_ops, factors:64) safelen(PIXEL_CHAN) reduction(+:result)
@@ -668,28 +670,30 @@ static inline void compute_correction(const float *const restrict luminance,
     for(int i = 0; i < PIXEL_CHAN; ++i)
       result += gaussian_func(exposure - centers_ops[i], gauss_denom) * factors[i];
 
-    correction[k] = result;
+    // the user-set correction is expected in [-2;+2] EV, so is the interpolated one
+    correction[k] = fast_clamp(result, 0.25f, 4.0f);
   }
 }
 
 
 __DT_CLONE_TARGETS__
-static float pixel_correction(const float exposure,
-                              const float *const restrict factors,
-                              const float sigma)
+static inline float pixel_correction(const float exposure,
+                                     const float *const restrict factors,
+                                     const float sigma)
 {
   // build the correction for the current pixel
   // as the sum of the contribution of each luminance channel
   float result = 0.0f;
   const float gauss_denom = gaussian_denom(sigma);
+  const float expo = fast_clamp(exposure, -8.0f, 0.0f);
 
 #ifdef _OPENMP
 #pragma omp simd aligned(centers_ops, factors:64) safelen(PIXEL_CHAN) reduction(+:result)
 #endif
   for(int i = 0; i < PIXEL_CHAN; ++i)
-    result += gaussian_func(exposure - centers_ops[i], gauss_denom) * factors[i];
+    result += gaussian_func(expo - centers_ops[i], gauss_denom) * factors[i];
 
-  return result;
+  return fast_clamp(result, 0.25f, 4.0f);
 }
 
 
@@ -712,7 +716,7 @@ static inline void compute_luminance_mask(const float *const restrict in, float 
       // Still no contrast boost
       luminance_mask(in, luminance, width, height, ch, d->method, d->exposure_boost, 0.0f, 1.0f);
       fast_surface_blur(luminance, width, height, d->radius, d->feathering, d->iterations,
-                    DT_GF_BLENDING_GEOMEAN, d->scale, d->quantization, exp2f(-8.0f), 1.0f);
+                    DT_GF_BLENDING_GEOMEAN, d->scale, d->quantization, exp2f(-14.0f), 4.0f);
       break;
     }
 
@@ -728,7 +732,7 @@ static inline void compute_luminance_mask(const float *const restrict in, float 
       luminance_mask(in, luminance, width, height, ch, d->method, d->exposure_boost,
                       CONTRAST_FULCRUM, d->contrast_boost);
       fast_surface_blur(luminance, width, height, d->radius, d->feathering, d->iterations,
-                    DT_GF_BLENDING_LINEAR, d->scale, d->quantization, exp2f(-8.0f), 1.0f);
+                    DT_GF_BLENDING_LINEAR, d->scale, d->quantization, exp2f(-14.0f), 4.0f);
       break;
     }
 
@@ -1505,15 +1509,15 @@ void init(dt_iop_module_t *module)
                                                                       .highlights = 0.0f,
                                                                       .whites = 0.0f,
                                                                       .speculars = 0.0f,
-                                                                      .quantization = 1.0f,
+                                                                      .quantization = 0.0f,
                                                                       .smoothing = sqrtf(2.0f),
                                                                       .iterations = 2,
                                                                       .method = DT_TONEEQ_NORM_2,
                                                                       .details = DT_TONEEQ_GUIDED,
                                                                       .blending = 25.0f,
-                                                                      .feathering = 10.0f,
-                                                                      .contrast_boost = 2.0f,
-                                                                      .exposure_boost = -1.0f };
+                                                                      .feathering = 25.0f,
+                                                                      .contrast_boost = 0.0f,
+                                                                      .exposure_boost = 0.0f };
   memcpy(module->params, &tmp, sizeof(dt_iop_toneequalizer_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_toneequalizer_params_t));
 }
