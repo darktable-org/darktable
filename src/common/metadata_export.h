@@ -38,6 +38,7 @@ typedef struct dt_export_metadata_t
 } dt_export_metadata_t;
 
 uint32_t dt_lib_export_metadata_default_flags();
+uint32_t dt_lib_export_metadata_get_conf_flags();
 char *dt_lib_export_metadata_get_conf();
 void dt_lib_export_metadata_set_conf(const char *metadata_presets);
 
