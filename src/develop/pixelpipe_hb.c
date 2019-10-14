@@ -1337,7 +1337,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
     module->tiling_callback(module, piece, &roi_in, roi_out, &tiling);
 
     /* does this module involve blending? */
-    if(piece->blendop_data && (dt_develop_blend_params_t *)piece->blendop_data != DEVELOP_MASK_DISABLED)
+    if(piece->blendop_data && ((dt_develop_blend_params_t *)piece->blendop_data)->mask_mode != DEVELOP_MASK_DISABLED)
     {
       /* get specific memory requirement for blending */
       dt_develop_tiling_t tiling_blendop = { 0 };
