@@ -53,6 +53,7 @@ FILE(GLOB SOURCE_FILES
   "common/locallaplaciancl.c"
   "common/l10n.c"
   "common/metadata.c"
+  "common/metadata_export.c"
   "common/mipmap_cache.c"
   "common/module.c"
   "common/noiseprofiles.c"

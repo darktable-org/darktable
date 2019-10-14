@@ -50,26 +50,26 @@ matrix:
     sudo: required
     services:
       - docker
-    env: CC=gcc-9 CXX=g++-9 TARGET=build
+    env: CC=gcc-9 CXX=g++-9 TARGET=build ECO="-DTESTBUILD_OPENCL_PROGRAMS=OFF"
   #- os: osx
   #  env: CC=cc CXX=c++ TARGET=build # can't use CXX=g++ fails for osx.mm
   - os: linux
     sudo: required
     services:
       - docker
-    env: CC=clang-7 CXX=clang++-7 TARGET=build
+    env: CC=clang-9 CXX=clang++-9 TARGET=build ECO="-DTESTBUILD_OPENCL_PROGRAMS=OFF"
   - os: linux
     sudo: required
     services:
       - docker
-    env: CC=clang-7 CXX=clang++-7 TARGET=build ECO="-DUSE_OPENMP=OFF -DUSE_OPENCL=OFF"
+    env: CC=clang-9 CXX=clang++-9 TARGET=build ECO="-DTESTBUILD_OPENCL_PROGRAMS=OFF -DUSE_OPENMP=OFF -DUSE_OPENCL=OFF"
   #- os: osx
   #  env: CC=gcc-9 CXX=c++ TARGET=build # can't use CXX=g++ fails for osx.mm
   - os: linux
     sudo: required
     services:
       - docker
-    env: CC=gcc-9 CXX=g++-9 TARGET=usermanual # EXTRA_TMPFS="--tmpfs /tmp"
+    env: CC=gcc-9 CXX=g++-9 TARGET=usermanual ECO="-DTESTBUILD_OPENCL_PROGRAMS=OFF" # EXTRA_TMPFS="--tmpfs /tmp"
 
 script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then docker run --read-only --volume $TRAVIS_BUILD_DIR:$SRC_DIR:ro --tmpfs $BUILD_DIR --workdir $BUILD_DIR --tmpfs $INSTALL_PREFIX $EXTRA_TMPFS --env CC --env CXX --env CFLAGS --env CXXFLAGS --env SRC_DIR --env BUILD_DIR --env INSTALL_PREFIX --env TARGET --env ECO darktable/darktable sh -c "$SRC_DIR/.ci/ci-script.sh"; fi

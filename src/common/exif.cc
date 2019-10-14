@@ -3404,58 +3404,60 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
       dt_remove_xmp_keys(xmpData, keys, n_keys);
     }
 
-    if (!(m->flags & DT_META_EXIF))
-      img->clearExifData();
-
-
-
     // last but not least attach what we have in DB to the XMP. in theory that should be
     // the same as what we just copied over from the sidecar file, but you never know ...
-    dt_exif_xmp_read_data_export(xmpData, imgid, m);
-
-    Exiv2::IptcData &iptcData = img->iptcData();
-    Exiv2::ExifData &exifData = img->exifData();
     // make sure to remove all geotags if necessary
-    if (!(m->flags & DT_META_GEOTAG))
-      dt_remove_exif_geotag(exifData);
-    // calculated metadata
-    dt_variables_params_t *params;
-    dt_variables_params_init(&params);
-    params->filename = input_filename;
-    params->jobcode = "export";
-    params->sequence = 0;
-    params->imgid = imgid;
-    dt_variables_set_tags_flags(params, m->flags);
-    for (GList *tags = m->list; tags; tags = g_list_next(tags))
+    if(m)
     {
-      gchar *tagname = (gchar *)tags->data;
-      tags = g_list_next(tags);
-      if (!tags) break;
-      gchar *formula = (gchar *)tags->data;
-      if (formula[0])
+      if (!(m->flags & DT_META_EXIF))
+        img->clearExifData();
+
+      dt_exif_xmp_read_data_export(xmpData, imgid, m);
+
+      Exiv2::IptcData &iptcData = img->iptcData();
+      Exiv2::ExifData &exifData = img->exifData();
+
+      if(!(m->flags & DT_META_GEOTAG))
+        dt_remove_exif_geotag(exifData);
+      // calculated metadata
+      dt_variables_params_t *params;
+      dt_variables_params_init(&params);
+      params->filename = input_filename;
+      params->jobcode = "export";
+      params->sequence = 0;
+      params->imgid = imgid;
+
+      dt_variables_set_tags_flags(params, m->flags);
+      for (GList *tags = m->list; tags; tags = g_list_next(tags))
       {
-        gchar *result = dt_variables_expand(params, formula, FALSE);
-        if (result && result[0])
+        gchar *tagname = (gchar *)tags->data;
+        tags = g_list_next(tags);
+        if (!tags) break;
+        gchar *formula = (gchar *)tags->data;
+        if (formula[0])
+        {
+          gchar *result = dt_variables_expand(params, formula, FALSE);
+          if (result && result[0])
+          {
+            if (g_str_has_prefix(tagname, "Xmp."))
+              xmpData[tagname] = result;
+            else if (g_str_has_prefix(tagname, "Iptc."))
+              iptcData[tagname] = result;
+            else if (g_str_has_prefix(tagname, "Exif."))
+              exifData[tagname] = result;
+          }
+          g_free(result);
+        }
+        else
         {
           if (g_str_has_prefix(tagname, "Xmp."))
-            xmpData[tagname] = result;
-          else if (g_str_has_prefix(tagname, "Iptc."))
-            iptcData[tagname] = result;
+            dt_remove_xmp_key(xmpData, tagname);
           else if (g_str_has_prefix(tagname, "Exif."))
-            exifData[tagname] = result;
+            dt_remove_exif_key(exifData, tagname);
         }
-        g_free(result);
       }
-      else
-      {
-        if (g_str_has_prefix(tagname, "Xmp."))
-          dt_remove_xmp_key(xmpData, tagname);
-        else if (g_str_has_prefix(tagname, "Exif."))
-          dt_remove_exif_key(exifData, tagname);
-      }
+      dt_variables_params_destroy(params);
     }
-    dt_variables_params_destroy(params);
-
 
     img->writeMetadata();
     return 0;

@@ -71,7 +71,7 @@ typedef enum
   // image is a bayer pattern with 4 colors (e.g., CYGM or RGBE)
   DT_IMAGE_4BAYER = 16384,
   // image was detected as monochrome
-  DT_IMAGE_MONOCHROME = 32768, 
+  DT_IMAGE_MONOCHROME = 32768,
   // image has usercrop information
   DT_IMAGE_HAS_USERCROP = 65536,
 } dt_image_flags_t;
@@ -312,6 +312,8 @@ void dt_image_local_copy_synch(void);
 void dt_image_write_sidecar_file(int imgid);
 void dt_image_synch_xmp(const int selected);
 void dt_image_synch_all_xmp(const gchar *pathname);
+// return the iop-order-version used by imgid (0 if unknown iop-order-version)
+int dt_image_get_iop_order_version(const int32_t imgid);
 
 // add an offset to the exif_datetime_taken field
 void dt_image_add_time_offset(const int imgid, const long int offset);

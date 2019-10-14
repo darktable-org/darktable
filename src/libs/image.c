@@ -104,7 +104,7 @@ static void _ungroup_helper_function(void)
 
 static void button_clicked(GtkWidget *widget, gpointer user_data)
 {
-  int i = GPOINTER_TO_INT(user_data);
+  const int i = GPOINTER_TO_INT(user_data);
   if(i == 0)
     dt_control_remove_images();
   else if(i == 1)

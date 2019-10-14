@@ -47,6 +47,7 @@
 #define DT_DEV_AVERAGE_DELAY_START 250
 #define DT_DEV_PREVIEW_AVERAGE_DELAY_START 50
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
+#define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
 const gchar *dt_dev_histogram_type_names[DT_DEV_HISTOGRAM_N] = { "logarithmic", "linear", "waveform" };
 
@@ -1065,7 +1066,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
   dt_dev_reorder_gui_module_list(dev);
 
   // we update show params for multi-instances for each other instances
-  //dt_dev_modules_update_multishow(dev);
+  dt_dev_modules_update_multishow(dev);
 }
 
 void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
@@ -1215,13 +1216,21 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   GList *history = dev->history;
-
+  if (DT_IOP_ORDER_INFO)
+    fprintf(stderr,"\n^^^^ Writing history image: %i, iop version: %i",imgid,dev->iop_order_version);
   for(int i = 0; history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     (void)dt_dev_write_history_item(imgid, hist, i);
+    if (DT_IOP_ORDER_INFO)
+    {
+      fprintf(stderr,"\n%20s, num %i, order %9.5f, v(%i), multiprio %i",hist->module->op,i,hist->iop_order,hist->module->version(),hist->multi_priority);
+      if (hist->enabled) fprintf(stderr,", enabled");
+    }
     history = g_list_next(history);
   }
+  if (DT_IOP_ORDER_INFO)
+    fprintf(stderr,"\nvvvv\n");
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE main.images SET history_end = ?1, iop_order_version = ?3 WHERE id = ?2", -1,
@@ -1341,6 +1350,9 @@ static void _dev_add_default_modules(dt_develop_t *dev, const int imgid)
 static void _dev_merge_history(dt_develop_t *dev, const int imgid)
 {
   sqlite3_stmt *stmt;
+  // be extra sure that we don't mess up history in separate threads:
+  // the mutex locking here is necessary because of the later workaround a sqlite3 "feature".
+  dt_pthread_mutex_lock(&darktable.db_insert);
 
   // count what we found:
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM memory.history", -1,
@@ -1457,6 +1469,7 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
       }
     }
   }
+  dt_pthread_mutex_unlock(&darktable.db_insert);
 }
 
 void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_image)
@@ -1470,14 +1483,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 
   dev->iop_order_version = 0;
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT iop_order_version FROM main.images WHERE id = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  if(sqlite3_step(stmt) == SQLITE_ROW) // seriously, this should never fail
-  {
-    dev->iop_order_version = sqlite3_column_int(stmt, 0);
-  }
-  sqlite3_finalize(stmt);
+  dev->iop_order_version = dt_ioppr_convert_onthefly(imgid);
 
   // free iop_order if any
   if(dev->iop_order_list) g_list_free_full(dev->iop_order_list, free);
