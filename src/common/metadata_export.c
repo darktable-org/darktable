@@ -29,6 +29,14 @@ uint32_t dt_lib_export_metadata_default_flags()
 const char flags_keyword[] = "plugins/lighttable/export/metadata_flags";
 const char formula_keyword[] = "plugins/lighttable/export/metadata_formula";
 
+uint32_t dt_lib_export_metadata_get_conf_flags()
+{
+  char *metadata_flags = dt_conf_get_string(flags_keyword);
+  const int32_t flags = strtol(metadata_flags, NULL, 16);
+  g_free(metadata_flags);
+  return flags;
+}
+
 char *dt_lib_export_metadata_get_conf()
 {
   char *metadata_presets = NULL;
