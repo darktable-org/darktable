@@ -1230,26 +1230,30 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
     if(data.has_crop)
     {
+      dt_image_orientation_t orientation = dt_image_orientation_to_flip_bits(data.orientation);
+
       // adjust crop data according to the rotation
 
-      switch(dev->image_storage.orientation)
+      if(orientation & ORIENTATION_FLIP_X)
       {
-        case ORIENTATION_ROTATE_CCW_90_DEG: // portrait - counter-clockwise
-          tmp = data.pc.ch;
-          data.pc.ch = 1.0 - data.pc.cx;
+          tmp = data.pc.cx;
+          data.pc.cx = 1.0 - data.pc.cw;
+          data.pc.cw = 1.0 - tmp;
+      }
+      if(orientation & ORIENTATION_FLIP_Y)
+      {
+          tmp = data.pc.cy;
+          data.pc.cy = 1.0 - data.pc.ch;
+          data.pc.ch = 1.0 - tmp;
+      }
+      if(orientation & ORIENTATION_SWAP_XY)
+      {
+          tmp = data.pc.cx;
           data.pc.cx = data.pc.cy;
-          data.pc.cy = 1.0 - data.pc.cw;
-          data.pc.cw = tmp;
-          break;
-        case ORIENTATION_ROTATE_CW_90_DEG: // portrait - clockwise
-          tmp = data.pc.ch;
-          data.pc.ch = data.pc.cw;
-          data.pc.cw = 1.0 - data.pc.cy;
-          data.pc.cy = data.pc.cx;
-          data.pc.cx = 1.0 - tmp;
-          break;
-        default:
-          break;
+          data.pc.cy = tmp;
+          tmp = data.pc.cw;
+          data.pc.cw = data.pc.ch;
+          data.pc.ch = tmp;
       }
 
       if(data.pc.angle != 0)
