@@ -38,7 +38,7 @@ struct dt_view_t;
 #pragma GCC visibility push(default)
 
 /** version */
-int version();
+int version(void);
 /** get name of the module, to be translated. */
 const char *name(struct dt_lib_module_t *self);
 

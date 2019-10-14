@@ -86,7 +86,7 @@ typedef struct dt_lib_module_t
   GtkWidget *expander;
 
   /** version */
-  int (*version)();
+  int (*version)(void);
   /** get name of the module, to be translated. */
   const char *(*name)(struct dt_lib_module_t *self);
   /** get the views which the module should be loaded in. */

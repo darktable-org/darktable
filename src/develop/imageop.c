@@ -106,25 +106,25 @@ static void dt_iop_modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pi
 }
 
 /* default group for modules which do not implement the default_group() function */
-static int default_group()
+static int default_group(void)
 {
   return IOP_GROUP_BASIC;
 }
 
 /* default flags for modules which does not implement the flags() function */
-static int default_flags()
+static int default_flags(void)
 {
   return 0;
 }
 
 /* default operation tags for modules which does not implement the flags() function */
-static int default_operation_tags()
+static int default_operation_tags(void)
 {
   return 0;
 }
 
 /* default operation tags filter for modules which does not implement the flags() function */
-static int default_operation_tags_filter()
+static int default_operation_tags_filter(void)
 {
   return 0;
 }
@@ -192,11 +192,11 @@ static void default_process(struct dt_iop_module_t *self, struct dt_dev_pixelpip
     dt_unreachable_codepath_with_desc(self->op);
 }
 
-static dt_introspection_field_t *default_get_introspection_linear()
+static dt_introspection_field_t *default_get_introspection_linear(void)
 {
   return NULL;
 }
-static dt_introspection_t *default_get_introspection()
+static dt_introspection_t *default_get_introspection(void)
 {
   return NULL;
 }
@@ -1433,7 +1433,7 @@ static void dt_iop_init_module_so(void *m)
   }
 }
 
-void dt_iop_load_modules_so()
+void dt_iop_load_modules_so(void)
 {
   darktable.iop = dt_module_load_modules("/plugins", sizeof(dt_iop_module_so_t), dt_iop_load_module_so,
                                          dt_iop_init_module_so, NULL);
@@ -2044,7 +2044,7 @@ void dt_iop_nap(int32_t usec)
   g_usleep(usec);
 }
 
-dt_iop_module_t *get_colorout_module()
+dt_iop_module_t *get_colorout_module(void)
 {
   GList *modules = darktable.develop->iop;
   while(modules)

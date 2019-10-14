@@ -1290,24 +1290,24 @@ GSList *mouse_actions(struct dt_iop_module_t *self)
 
   a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
   a->action = DT_MOUSE_ACTION_LEFT_DRAG;
-  g_snprintf(a->name, sizeof(a->name), _("[%s on nodes] change line rotation"), self->name(self));
+  g_snprintf(a->name, sizeof(a->name), _("[%s on nodes] change line rotation"), self->name());
   lm = g_slist_append(lm, a);
 
   a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
   a->action = DT_MOUSE_ACTION_LEFT_DRAG;
-  g_snprintf(a->name, sizeof(a->name), _("[%s on line] move line"), self->name(self));
+  g_snprintf(a->name, sizeof(a->name), _("[%s on line] move line"), self->name());
   lm = g_slist_append(lm, a);
 
   a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
   a->key.accel_mods = GDK_CONTROL_MASK;
   a->action = DT_MOUSE_ACTION_SCROLL;
-  g_snprintf(a->name, sizeof(a->name), _("[%s on line] change density"), self->name(self));
+  g_snprintf(a->name, sizeof(a->name), _("[%s on line] change density"), self->name());
   lm = g_slist_append(lm, a);
 
   a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
   a->key.accel_mods = GDK_SHIFT_MASK;
   a->action = DT_MOUSE_ACTION_SCROLL;
-  g_snprintf(a->name, sizeof(a->name), _("[%s on line] change compression"), self->name(self));
+  g_snprintf(a->name, sizeof(a->name), _("[%s on line] change compression"), self->name());
   lm = g_slist_append(lm, a);
 
   return lm;

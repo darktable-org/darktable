@@ -62,19 +62,19 @@ void init_global(struct dt_iop_module_so_t *self);
 void cleanup_global(struct dt_iop_module_so_t *self);
 
 /** version of the parameters in the database. */
-int version();
+int version(void);
 /** get name of the module, to be translated. */
-const char *name();
+const char *name(void);
 /** get the default group this module belongs to. */
-int default_group();
+int default_group(void);
 /** get the iop module flags. */
-int flags();
+int flags(void);
 
 /** get a descriptive text used for example in a tooltip in more modules */
-const char *description();
+const char *description(void);
 
-int operation_tags();
-int operation_tags_filter();
+int operation_tags(void);
+int operation_tags_filter(void);
 
 /** what do the iop want as an input? */
 void input_format(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_t *pipe,
@@ -213,8 +213,8 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
 // introspection related callbacks, will be auto-implemented if DT_MODULE_INTROSPECTION() is used,
 int introspection_init(struct dt_iop_module_so_t *self, int api_version);
-dt_introspection_t *get_introspection();
-dt_introspection_field_t *get_introspection_linear();
+dt_introspection_t *get_introspection(void);
+dt_introspection_field_t *get_introspection_linear(void);
 void *get_p(const void *param, const char *name);
 dt_introspection_field_t *get_f(const char *name);
 
