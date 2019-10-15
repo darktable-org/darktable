@@ -168,7 +168,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     const dt_iop_colorin_params_v1_t *old = (dt_iop_colorin_params_v1_t *)old_params;
     dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
-    memset(new_params, 0, sizeof(*new_params));
+    memset(new, 0, sizeof(*new));
 
     if(!strcmp(old->iccprofile, "eprofile"))
       new->type = DT_COLORSPACE_EMBEDDED_ICC;
@@ -220,7 +220,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     const dt_iop_colorin_params_v2_t *old = (dt_iop_colorin_params_v2_t *)old_params;
     dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
-    memset(new_params, 0, sizeof(*new_params));
+    memset(new, 0, sizeof(*new));
 
     if(!strcmp(old->iccprofile, "eprofile"))
       new->type = DT_COLORSPACE_EMBEDDED_ICC;
@@ -273,7 +273,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     const dt_iop_colorin_params_v3_t *old = (dt_iop_colorin_params_v3_t *)old_params;
     dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
-    memset(new_params, 0, sizeof(*new_params));
+    memset(new, 0, sizeof(*new));
 
     if(!strcmp(old->iccprofile, "eprofile"))
       new->type = DT_COLORSPACE_EMBEDDED_ICC;
@@ -328,7 +328,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     const dt_iop_colorin_params_v4_t *old = (dt_iop_colorin_params_v4_t *)old_params;
     dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
-    memset(new_params, 0, sizeof(*new_params));
+    memset(new, 0, sizeof(*new));
 
     new->type = old->type;
     g_strlcpy(new->filename, old->filename, sizeof(new->filename));
@@ -356,7 +356,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     const dt_iop_colorin_params_v5_t *old = (dt_iop_colorin_params_v5_t *)old_params;
     dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
-    memset(new_params, 0, sizeof(*new_params));
+    memset(new, 0, sizeof(*new));
 
     new->type = old->type;
     g_strlcpy(new->filename, old->filename, sizeof(new->filename));
