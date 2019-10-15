@@ -319,10 +319,10 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     printf("[opencl_init] device %d: %s \n", k, infostr);
     printf("     GLOBAL_MEM_SIZE:          %.0fMB\n", (double)cl->dev[dev].max_global_mem / 1024.0 / 1024.0);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(infoint), &infoint, NULL);
-    printf("     MAX_WORK_GROUP_SIZE:      %zd\n", infoint);
+    printf("     MAX_WORK_GROUP_SIZE:      %zu\n", infoint);
     (cl->dlocl->symbols->dt_clGetDeviceInfo)(devid, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, sizeof(infoint), &infoint,
                                              NULL);
-    printf("     MAX_WORK_ITEM_DIMENSIONS: %zd\n", infoint);
+    printf("     MAX_WORK_ITEM_DIMENSIONS: %zu\n", infoint);
     printf("     MAX_WORK_ITEM_SIZES:      [ ");
 
     size_t infointtab_size;
@@ -330,7 +330,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
                                     &infointtab_size);
     if(err == CL_SUCCESS)
     {
-      for(size_t i = 0; i < infoint; i++) printf("%zd ", infointtab[i]);
+      for(size_t i = 0; i < infoint; i++) printf("%zu ", infointtab[i]);
       free(infointtab);
       infointtab = NULL;
     }
