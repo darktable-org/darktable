@@ -35,6 +35,7 @@
 #include <fcntl.h>
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <inttypes.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -436,7 +437,7 @@ static void dt_mipmap_cache_unlink_ondisk_thumbnail(void *data, uint32_t imgid, 
   if(cache->cachedir[0])
   {
     char filename[PATH_MAX] = { 0 };
-    snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, imgid);
+    snprintf(filename, sizeof(filename), "%s.d/%d/%"PRIu32".jpg", cache->cachedir, (int)mip, imgid);
     g_unlink(filename);
   }
 }
@@ -613,10 +614,10 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
          cache->mip_thumbs.cache.cost / (1024.0 * 1024.0),
          cache->mip_thumbs.cache.cost_quota / (1024.0 * 1024.0),
          100.0f * (float)cache->mip_thumbs.cache.cost / (float)cache->mip_thumbs.cache.cost_quota);
-  printf("[mipmap_cache] float fill %d/%d slots (%.2f%%)\n",
+  printf("[mipmap_cache] float fill %"PRIu32"/%"PRIu32" slots (%.2f%%)\n",
          (uint32_t)cache->mip_f.cache.cost, (uint32_t)cache->mip_f.cache.cost_quota,
          100.0f * (float)cache->mip_f.cache.cost / (float)cache->mip_f.cache.cost_quota);
-  printf("[mipmap_cache] full  fill %d/%d slots (%.2f%%)\n",
+  printf("[mipmap_cache] full  fill %"PRIu32"/%"PRIu32" slots (%.2f%%)\n",
          (uint32_t)cache->mip_full.cache.cost, (uint32_t)cache->mip_full.cache.cost_quota,
          100.0f * (float)cache->mip_full.cache.cost / (float)cache->mip_full.cache.cost_quota);
 
@@ -730,7 +731,7 @@ void dt_mipmap_cache_get_with_caller(
     if(mip > DT_MIPMAP_FULL || (int)mip < DT_MIPMAP_0)
       return; // remove the (int) once we no longer have to support gcc < 4.8 :/
     char filename[PATH_MAX] = {0};
-    snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, key);
+    snprintf(filename, sizeof(filename), "%s.d/%d/%"PRIu32".jpg", cache->cachedir, (int)mip, key);
     // don't attempt to load if disk cache doesn't exist
     if(!g_file_test(filename, G_FILE_TEST_EXISTS)) return;
     dt_control_add_job(darktable.control, DT_JOB_QUEUE_SYSTEM_FG, dt_image_load_job_create(imgid, mip));
@@ -915,7 +916,7 @@ void dt_mipmap_cache_get_with_caller(
     if(cache->cachedir[0])
     {
       char filename[PATH_MAX] = {0};
-      snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, key);
+      snprintf(filename, sizeof(filename), "%s.d/%d/%"PRIu32".jpg", cache->cachedir, (int)mip, key);
       if(g_file_test(filename, G_FILE_TEST_EXISTS))
         dt_mipmap_cache_get(cache, 0, imgid, DT_MIPMAP_0, DT_MIPMAP_PREFETCH_DISK, 0);
     }
@@ -1299,8 +1300,8 @@ void dt_mipmap_cache_copy_thumbnails(const dt_mipmap_cache_t *cache, const uint3
       // try and load from disk, if successful set flag
       char srcpath[PATH_MAX] = {0};
       char dstpath[PATH_MAX] = {0};
-      snprintf(srcpath, sizeof(srcpath), "%s.d/%d/%d.jpg", cache->cachedir, mip, src_imgid);
-      snprintf(dstpath, sizeof(dstpath), "%s.d/%d/%d.jpg", cache->cachedir, mip, dst_imgid);
+      snprintf(srcpath, sizeof(srcpath), "%s.d/%d/%"PRIu32".jpg", cache->cachedir, (int)mip, src_imgid);
+      snprintf(dstpath, sizeof(dstpath), "%s.d/%d/%"PRIu32".jpg", cache->cachedir, (int)mip, dst_imgid);
       GFile *src = g_file_new_for_path(srcpath);
       GFile *dst = g_file_new_for_path(dstpath);
       GError *gerror = NULL;

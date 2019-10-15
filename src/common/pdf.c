@@ -733,9 +733,9 @@ time_error:
   if(*time_str)
   {
     bytes_written += fprintf(pdf->fd,
-      "/CreationDate (%1$s)\n"
-      "/ModDate (%1$s)\n",
-      time_str
+      "/CreationDate (%s)\n"
+      "/ModDate (%s)\n",
+      time_str, time_str
     );
   }
   bytes_written += fprintf(pdf->fd, "/Producer (%s https://www.darktable.org)\n"
