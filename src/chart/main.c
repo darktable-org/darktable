@@ -1780,9 +1780,9 @@ static int main_csv(dt_lut_t *self, int argc, char *argv[])
 
 static void show_usage(const char *exe)
 {
-  fprintf(stderr, "Usage: %1$s [<input Lab pfm file>] [<cht file>] [<reference cgats/it8 or Lab pfm file>]\n"
-                  "       %1$s --csv <csv file> <number patches> <output dtstyle file>\n",
-          exe);
+  fprintf(stderr, "Usage: %s [<input Lab pfm file>] [<cht file>] [<reference cgats/it8 or Lab pfm file>]\n"
+                  "       %s --csv <csv file> <number patches> <output dtstyle file>\n",
+          exe, exe);
 }
 
 int main(int argc, char *argv[])
