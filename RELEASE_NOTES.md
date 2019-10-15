@@ -208,7 +208,7 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
   It works with the rgb colorspace selected on the work profile.
   The curves and histogram can be displayed using the work profile or
   can be scaled to be 50% grey.
-  The color picker allows to select by area with Ctrl+click.
+  The color picker allows to select by area with <kbd>Ctrl+click</kbd>.
   The second color picker add 4 nodes to the curve based on the area
   selected from the image: min, average, middle, max.
   When pressing the shortcut 'pan&zoom while editing masks' the draw area
