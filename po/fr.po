@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-10-09 09:04+0200\n"
-"PO-Revision-Date: 2019-10-09 10:38+0200\n"
+"PO-Revision-Date: 2019-10-15 09:09+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -2477,7 +2477,7 @@ msgstr " B "
 
 #: ../src/develop/blend_gui.c:1344
 msgid " H "
-msgstr " H "
+msgstr " T "
 
 #: ../src/develop/blend_gui.c:1344
 msgid " S "
@@ -2505,15 +2505,15 @@ msgstr "conditions de fusion sur le canal bleu"
 
 #: ../src/develop/blend_gui.c:1347
 msgid "sliders for hue channel (of HSL)"
-msgstr "conditions de fusion sur le canal de teinte h (de HSL)"
+msgstr "conditions de fusion sur le canal de teinte (de TSL)"
 
 #: ../src/develop/blend_gui.c:1348
 msgid "sliders for chroma channel (of HSL)"
-msgstr "conditions de fusion sur le canal de saturation (de HSL)"
+msgstr "conditions de fusion sur le canal de saturation (de TSL)"
 
 #: ../src/develop/blend_gui.c:1348
 msgid "sliders for value channel (of HSL)"
-msgstr "conditions de fusion sur le canal de valeur L (de HSL)"
+msgstr "conditions de fusion sur le canal de valeur L (de TSL)"
 
 #: ../src/develop/blend_gui.c:1350
 msgid ""
@@ -12799,22 +12799,22 @@ msgstr "exclusion"
 #: ../src/libs/live_view.c:424
 msgctxt "blendmode"
 msgid "HSL hue"
-msgstr "teinte HSL"
+msgstr "teinte TSL"
 
 #: ../src/libs/live_view.c:425
 msgctxt "blendmode"
 msgid "HSL saturation"
-msgstr "saturation HSL"
+msgstr "saturation TSL"
 
 #: ../src/libs/live_view.c:426
 msgctxt "blendmode"
 msgid "HSL color"
-msgstr "couleur HSL"
+msgstr "couleur TSL"
 
 #: ../src/libs/live_view.c:427
 msgctxt "blendmode"
 msgid "HSL luminosity"
-msgstr "clarté HSL"
+msgstr "clarté TSL"
 
 #: ../src/libs/live_view.c:429
 msgid "mode of the overlay"
