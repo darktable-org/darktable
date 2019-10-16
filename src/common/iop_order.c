@@ -592,7 +592,7 @@ static void _ioppr_insert_iop_before(GList **_iop_order_list, GList *history_lis
     {
       // set the iop_order
       iop_order_new->iop_order = iop_order_prev + (iop_order_next - iop_order_prev) / 2.0;
-      if (DT_IOP_ORDER_INFO) fprintf(stderr,"\n  _ioppr_insert_iop_before %16s: %14.11f [xmp:%8.4f], prev %14.11f, next %14.11f",op_new,iop_order_new->iop_order,iop_order_new->iop_order,iop_order_prev,iop_order_next);
+//      if (DT_IOP_ORDER_INFO) fprintf(stderr,"\n  _ioppr_insert_iop_before %16s: %14.11f [xmp:%8.4f], prev %14.11f, next %14.11f",op_new,iop_order_new->iop_order,iop_order_new->iop_order,iop_order_prev,iop_order_next);
 
       // insert it on the proper order
       iop_order_list = g_list_insert(iop_order_list, iop_order_new, position);
@@ -703,7 +703,8 @@ static void _ioppr_move_iop_before(GList **_iop_order_list, const char *op_curre
 
     // insert it on the proper order
     iop_order_list = g_list_insert(iop_order_list, iop_order_current, position);
-    if (DT_IOP_ORDER_INFO) fprintf(stderr,"\n  _ioppr_move_iop_before   %16s: %14.11f [xmp:%8.4f], prev %14.11f, next %14.11f",op_current,iop_order_current->iop_order,iop_order_current->iop_order,iop_order_prev->iop_order,iop_order_next->iop_order);
+   // VERY noisy so disable now
+   //    if (DT_IOP_ORDER_INFO) fprintf(stderr,"\n  _ioppr_move_iop_before   %16s: %14.11f [xmp:%8.4f], prev %14.11f, next %14.11f",op_current,iop_order_current->iop_order,iop_order_current->iop_order,iop_order_prev->iop_order,iop_order_next->iop_order);
   }
   else
   {
