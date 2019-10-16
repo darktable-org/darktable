@@ -612,10 +612,9 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
       dt_iop_module_t *mod_src = (dt_iop_module_t *)(modules_src->data);
 
       // copy from history only if
-      if((_search_history_by_module(dev_src, mod_src) != NULL) &&  // module is in history of source image
-         !(mod_src->default_enabled && !mod_src->enabled) &&       // it's not a disabled module normally enabled by default
-         !dt_iop_is_hidden(mod_src) &&                             // it's not a hidden module
-         !memcmp(mod_src->params, mod_src->default_params, mod_src->params_size)
+      if((_search_history_by_module(dev_src, mod_src) != NULL) && // module is in history of source image
+         !(mod_src->default_enabled && mod_src->enabled && !memcmp(mod_src->params, mod_src->default_params, mod_src->params_size) && // it's not a enabled by default module with unmodified settings
+         !dt_iop_is_hidden(mod_src)) 
         )
       {
         double old_iop_order = mod_src->iop_order;
