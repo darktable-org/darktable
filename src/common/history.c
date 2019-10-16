@@ -578,21 +578,25 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
     GList *l = g_list_last(ops);
     while(l)
     {
-      unsigned int num = GPOINTER_TO_UINT(l->data);
+      const unsigned int num = GPOINTER_TO_UINT(l->data);
 
-      dt_dev_history_item_t *hist = g_list_nth_data(dev_src->history, num);
+      const dt_dev_history_item_t *hist = g_list_nth_data(dev_src->history, num);
 
       if(hist)
       {
-        double old_iop_order = hist->module->iop_order;
+        const double old_iop_order = hist->module->iop_order;
 
         if (iop_order_version_src != iop_order_version_dest)
-          hist->module->iop_order = dt_ioppr_get_iop_order(dest_iop_list, hist->module->op) + (double)hist->module->multi_priority / 100.0f;
+        {
+          hist->module->iop_order =
+            dt_ioppr_get_iop_order(dest_iop_list, hist->module->op) + (double)hist->module->multi_priority / 100.0f;
+        }
 
         if (!dt_iop_is_hidden(hist->module))
-        { if (DT_IOP_ORDER_INFO)
-          fprintf(stderr,"\n  module %20s, order %9.5f->%9.5f, multiprio %i",
-                hist->module->op, old_iop_order, hist->module->iop_order, hist->module->multi_priority);
+        {
+          if (DT_IOP_ORDER_INFO)
+            fprintf(stderr,"\n  module %20s, order %9.5f->%9.5f, multiprio %i",
+                    hist->module->op, old_iop_order, hist->module->iop_order, hist->module->multi_priority);
 
           // merge the entry
           dt_history_merge_module_into_history(dev_dest, dev_src, hist->module, &modules_used, FALSE);
@@ -612,18 +616,24 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
       dt_iop_module_t *mod_src = (dt_iop_module_t *)(modules_src->data);
 
       // copy from history only if
-      if((_search_history_by_module(dev_src, mod_src) != NULL) && // module is in history of source image
-         !(mod_src->default_enabled && mod_src->enabled && !memcmp(mod_src->params, mod_src->default_params, mod_src->params_size) && // it's not a enabled by default module with unmodified settings
-         !dt_iop_is_hidden(mod_src)) 
+      if((_search_history_by_module(dev_src, mod_src) != NULL) // module is in history of source image
+         && !(mod_src->default_enabled && mod_src->enabled
+              && !memcmp(mod_src->params, mod_src->default_params, mod_src->params_size) // it's not a enabled by default module with unmodified settings
+              && !dt_iop_is_hidden(mod_src))
         )
       {
-        double old_iop_order = mod_src->iop_order;
+        const double old_iop_order = mod_src->iop_order;
         if (iop_order_version_src != iop_order_version_dest)
-          mod_src->iop_order = dt_ioppr_get_iop_order(dest_iop_list, mod_src->op) + (double)mod_src->multi_priority / 100.0f;
+        {
+          mod_src->iop_order =
+            dt_ioppr_get_iop_order(dest_iop_list, mod_src->op) + (double)mod_src->multi_priority / 100.0f;
+        }
 
         if (DT_IOP_ORDER_INFO)
+        {
           fprintf(stderr,"\n  module %20s, order %9.5f->%9.5f, multiprio %i",
-                mod_src->op, old_iop_order, mod_src->iop_order, mod_src->multi_priority);
+                  mod_src->op, old_iop_order, mod_src->iop_order, mod_src->multi_priority);
+        }
 
         // merge the module into dest image
         dt_history_merge_module_into_history(dev_dest, dev_src, mod_src, &modules_used, FALSE);
