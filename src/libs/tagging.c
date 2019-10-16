@@ -822,6 +822,8 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     GtkTreeModel *store = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model));
     GtkTreeIter iter;
     const int imgsel = dt_view_get_image_to_act_on();
+    if(imgsel < 0 && dt_collection_get_selected_count(darktable.collection) == 0)
+      return 0;
     gchar **tokens = g_strsplit(buf, ",", 0);
     if(tokens)
     {
@@ -870,11 +872,11 @@ static void attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
     return;
   guint tagid;
   gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_ID, &tagid, -1);
-
-  int imgsel = -1;
   if(tagid <= 0) return;
 
-  imgsel = dt_view_get_image_to_act_on();
+  const int imgsel = dt_view_get_image_to_act_on();
+  if(imgsel < 0 && dt_collection_get_selected_count(darktable.collection) == 0)
+    return;
   dt_tag_attach(tagid, imgsel);
 
   init_treeview(self, 0);
@@ -913,11 +915,11 @@ static void detach_selected_tag(GtkTreeView *view, dt_lib_module_t *self, dt_lib
   if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
   guint tagid;
   gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_ID, &tagid, -1);
-
-  int imgsel = -1;
   if(tagid <= 0) return;
 
-  imgsel = dt_view_get_image_to_act_on();
+  const int imgsel = dt_view_get_image_to_act_on();
+  if(imgsel < 0 && dt_collection_get_selected_count(darktable.collection) == 0)
+    return;
   GList *affected_images = dt_tag_get_images_from_selection(imgsel, tagid);
 
   dt_tag_detach(tagid, imgsel);
@@ -984,11 +986,9 @@ static void pop_menu_attached_attach_to_all(GtkWidget *menuitem, dt_lib_module_t
     return;
   guint tagid;
   gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_ID, &tagid, -1);
-
-  int imgsel = -1;
   if(tagid <= 0) return;
 
-  imgsel = dt_view_get_image_to_act_on();
+  const int imgsel = dt_view_get_image_to_act_on();
   dt_tag_attach(tagid, imgsel);
 
   init_treeview(self, 0);
