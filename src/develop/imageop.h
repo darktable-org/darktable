@@ -619,6 +619,9 @@ void dt_iop_nap(int32_t usec);
 dt_iop_module_t *get_colorout_module(void);
 dt_iop_module_t *get_module_by_name(const char *op);
 
+/** get module flags, works in dev and lt mode */
+int get_module_flags(const char *op);
+
 /** returns the localized plugin name for a given op name. must not be freed. */
 gchar *dt_iop_get_localized_name(const gchar *op);
 

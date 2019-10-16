@@ -2061,6 +2061,18 @@ dt_iop_module_t *get_module_by_name(const char *op)
   return NULL;
 }
 
+int get_module_flags(const char *op)
+{
+  GList *modules = darktable.iop;
+  while(modules)
+  {
+    dt_iop_module_so_t *module = (dt_iop_module_so_t *)modules->data;
+    if(!strcmp(module->op, op)) return module->flags();
+    modules = g_list_next(modules);
+  }
+  return 0;
+}
+
 static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                      GdkModifierType modifier, gpointer data)
 
