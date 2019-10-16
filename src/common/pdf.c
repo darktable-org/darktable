@@ -558,7 +558,7 @@ dt_pdf_page_t *dt_pdf_add_page(dt_pdf_t *pdf, dt_pdf_image_t **images, int n_ima
       translate_x += scale_y;
     }
 
-    // unfortunately regular fprintf honours the decimal separator as set by the current locale,
+    // unfortunately regular fprintf honors the decimal separator as set by the current locale,
     // we want '.' in all cases though.
     char translate_x_str[G_ASCII_DTOSTR_BUF_SIZE];
     char translate_y_str[G_ASCII_DTOSTR_BUF_SIZE];
@@ -733,9 +733,9 @@ time_error:
   if(*time_str)
   {
     bytes_written += fprintf(pdf->fd,
-      "/CreationDate (%1$s)\n"
-      "/ModDate (%1$s)\n",
-      time_str
+      "/CreationDate (%s)\n"
+      "/ModDate (%s)\n",
+      time_str, time_str
     );
   }
   bytes_written += fprintf(pdf->fd, "/Producer (%s https://www.darktable.org)\n"

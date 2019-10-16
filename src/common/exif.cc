@@ -2688,7 +2688,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     }
     sqlite3_finalize(stmt);
 
-    // if masks have been readed create a mask manager entry in history
+    // if masks have been read, create a mask manager entry in history
     if(version < 3)
     {
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM main.masks_history WHERE imgid = ?1", -1,

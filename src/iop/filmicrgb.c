@@ -312,7 +312,7 @@ static inline float pixel_rgb_norm_power(const float pixel[4])
 #ifdef _OPENMP
 #pragma omp simd aligned(pixel:16) reduction(+:numerator, denominator)
 #endif
-  for(int c = 0; c < 3; ++c)
+  for(int c = 0; c < 3; c++)
   {
     const float value = fabsf(pixel[c]);
     const float RGB_square = value * value;
@@ -331,7 +331,6 @@ static inline float pixel_rgb_norm_power(const float pixel[4])
 static inline float get_pixel_norm(const float pixel[4], const dt_iop_filmicrgb_methods_type_t variant,
                                    const dt_iop_order_iccprofile_info_t *const work_profile)
 {
-
   switch(variant)
   {
     case(DT_FILMIC_METHOD_MAX_RGB):
@@ -461,7 +460,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       float DT_ALIGNED_PIXEL temp[4];
 
       // Log tone-mapping
-      for(int c = 0; c < 3; ++c)
+      for(int c = 0; c < 3; c++)
         temp[c] = log_tonemapping((pix_in[c] < 1.52587890625e-05f) ? 1.52587890625e-05f : pix_in[c],
                                    data->grey_source, data->black_source, data->dynamic_range);
 
@@ -478,7 +477,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       // Desaturate on the non-linear parts of the curve
       // Filmic S curve on the max RGB
       // Apply the transfer function of the display
-      for(int c = 0; c < 3; ++c)
+      for(int c = 0; c < 3; c++)
         pix_out[c] = powf(clamp_simd(filmic_spline(linear_saturation(temp[c], lum, desaturation), spline.M1, spline.M2, spline.M3, spline.M4, spline.M5, spline.latitude_min, spline.latitude_max)), data->output_power);
 
     }
@@ -501,11 +500,11 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       norm = (norm < 1.52587890625e-05f) ? 1.52587890625e-05f : norm; // norm can't be < to 2^(-16)
 
       // Save the ratios
-      for(int c = 0; c < 3; ++c) ratios[c] = pix_in[c] / norm;
+      for(int c = 0; c < 3; c++) ratios[c] = pix_in[c] / norm;
 
       // Sanitize the ratios
       const float min_ratios = fminf(fminf(ratios[0], ratios[1]), ratios[2]);
-      if(min_ratios < 0.0f) for(int c = 0; c < 3; ++c) ratios[c] -= min_ratios;
+      if(min_ratios < 0.0f) for(int c = 0; c < 3; c++) ratios[c] -= min_ratios;
 
       // Log tone-mapping
       norm = log_tonemapping(norm, data->grey_source, data->black_source, data->dynamic_range);
@@ -522,14 +521,14 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
                                         : dt_camera_rgb_luminance(ratios);
 
       // Desaturate on the non-linear parts of the curve and save ratios
-      for(int c = 0; c < 3; ++c) ratios[c] = linear_saturation(ratios[c] * norm, lum, desaturation) / norm;
+      for(int c = 0; c < 3; c++) ratios[c] = linear_saturation(ratios[c] * norm, lum, desaturation) / norm;
 
       // Filmic S curve on the max RGB
       // Apply the transfer function of the display
       norm = powf(clamp_simd(filmic_spline(norm, spline.M1, spline.M2, spline.M3, spline.M4, spline.M5, spline.latitude_min, spline.latitude_max)), data->output_power);
 
       // Re-apply ratios
-      for(int c = 0; c < 3; ++c) pix_out[c] = ratios[c] * norm;
+      for(int c = 0; c < 3; c++) pix_out[c] = ratios[c] * norm;
     }
   }
 

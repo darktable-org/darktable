@@ -89,6 +89,18 @@ typedef struct dt_image_raw_parameters_t
   unsigned user_flip : 8; // +8 = 32 bits.
 } dt_image_raw_parameters_t;
 
+typedef enum dt_exif_image_orientation_t
+{
+  EXIF_ORIENTATION_NONE              = 1,
+  EXIF_ORIENTATION_FLIP_HORIZONTALLY = 2,
+  EXIF_ORIENTATION_FLIP_VERTICALLY   = 4,
+  EXIF_ORIENTATION_ROTATE_180_DEG    = 3,
+  EXIF_ORIENTATION_TRANSPOSE         = 5,
+  EXIF_ORIENTATION_ROTATE_CCW_90_DEG = 8,
+  EXIF_ORIENTATION_ROTATE_CW_90_DEG  = 6,
+  EXIF_ORIENTATION_TRANSVERSE        = 7
+} dt_exif_image_orientation_t;
+
 typedef enum dt_image_orientation_t
 {
   ORIENTATION_NULL    = -1,     //-1, or autodetect
@@ -268,21 +280,21 @@ static inline dt_image_orientation_t dt_image_orientation_to_flip_bits(const int
 {
   switch(orient)
   {
-    case 1:
+    case EXIF_ORIENTATION_NONE:
       return ORIENTATION_NONE;
-    case 2:
+    case EXIF_ORIENTATION_FLIP_HORIZONTALLY:
       return ORIENTATION_FLIP_HORIZONTALLY;
-    case 3:
+    case EXIF_ORIENTATION_ROTATE_180_DEG:
       return ORIENTATION_ROTATE_180_DEG;
-    case 4:
+    case EXIF_ORIENTATION_FLIP_VERTICALLY:
       return ORIENTATION_FLIP_VERTICALLY;
-    case 5:
+    case EXIF_ORIENTATION_TRANSPOSE:
       return ORIENTATION_TRANSPOSE;
-    case 6:
+    case EXIF_ORIENTATION_ROTATE_CW_90_DEG:
       return ORIENTATION_ROTATE_CW_90_DEG;
-    case 7:
+    case EXIF_ORIENTATION_TRANSVERSE:
       return ORIENTATION_TRANSVERSE;
-    case 8:
+    case EXIF_ORIENTATION_ROTATE_CCW_90_DEG:
       return ORIENTATION_ROTATE_CCW_90_DEG;
     default:
       return ORIENTATION_NONE;

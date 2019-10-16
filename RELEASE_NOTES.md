@@ -155,6 +155,21 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
   via the preferences. This module can replace the image information
   displayed on the histogram.
 
+- The tagging module is faster than before and has got new features.
+  The most visible one is the ability to display hierarchical tags in a
+  tree view. New commands (context menu) have been added to help to maintain
+  your tags dictionary.
+  It introduces also the notions of private tags (not exported by default),
+  synonyms (to help search engines) and categories (not exported,
+  can be used as an helper to structure your tags without polluting them and/or
+  to define metadata fitting with your needs).
+  In line with these new features, exported metadata are now configured
+  in export selected module.
+  The main metadata types can be set as exported or not,
+  but you can also define one by one specific metadata, you fill in with
+  available dt information, in particular tags and categories (metadata
+  formulas share the same set of variables than file name in the same module).
+
 - Many code optimizations for CPU and SSE paths.
 
 - A new preference to expand/collapse a darkroom module when it is
@@ -208,7 +223,7 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
   It works with the rgb colorspace selected on the work profile.
   The curves and histogram can be displayed using the work profile or
   can be scaled to be 50% grey.
-  The color picker allows to select by area with Ctrl+click.
+  The color picker allows to select by area with <kbd>Ctrl+click</kbd>.
   The second color picker add 4 nodes to the curve based on the area
   selected from the image: min, average, middle, max.
   When pressing the shortcut 'pan&zoom while editing masks' the draw area
