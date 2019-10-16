@@ -73,6 +73,11 @@ static void _gui_hist_set_items(dt_gui_hist_dialog_t *d, gboolean active)
   }
 }
 
+static gint _g_list_find_module_by_name(gconstpointer a, gconstpointer b)
+{
+  return strncmp(((dt_iop_module_t *)a)->op, b, strlen(((dt_iop_module_t *)a)->op));
+}
+
 static void _gui_hist_copy_response(GtkDialog *dialog, gint response_id, dt_gui_hist_dialog_t *g)
 {
   switch(response_id)
@@ -209,6 +214,12 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(GTK_TREE_VIEW(d->items)), GTK_SELECTION_SINGLE);
   gtk_tree_view_set_model(GTK_TREE_VIEW(d->items), GTK_TREE_MODEL(liststore));
 
+  // we need access to the modules flags so ...
+  dt_develop_t _dev_test = { 0 };
+  dt_develop_t *dev_test = &_dev_test;
+  dt_dev_init(dev_test, FALSE);
+  dev_test->iop = dt_iop_load_modules_ext(dev_test, TRUE);
+
   /* fill list with history items */
   GtkTreeIter iter;
   GList *items = dt_history_get_items(imgid, FALSE);
@@ -217,8 +228,21 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
     do
     {
       dt_history_item_t *item = (dt_history_item_t *)items->data;
-      // This is sort of a hack, any better solution?
-      if (strcmp(item->op,"gamma") != 0)
+
+      /* lookup history item module */
+      gboolean enabled = TRUE;
+      dt_iop_module_t *module = NULL;
+      GList *modules = g_list_first(dev_test->iop);
+      if(modules)
+      {
+        GList *result = g_list_find_custom(modules, item->op, _g_list_find_module_by_name);
+        if(result)
+        {
+          module = (dt_iop_module_t *)(result->data);
+          if ((module->flags() & IOP_FLAGS_HIDDEN)) enabled = FALSE;
+        }
+      }
+      if (enabled)
       {
         gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
         gtk_list_store_set(GTK_LIST_STORE(liststore), &iter, DT_HIST_ITEMS_COL_ENABLED,
@@ -233,6 +257,8 @@ int dt_gui_hist_dialog_new(dt_gui_hist_dialog_t *d, int imgid, gboolean iscopy)
     dt_control_log(_("can't copy history out of unaltered image"));
     return GTK_RESPONSE_CANCEL;
   }
+
+  dt_dev_cleanup(dev_test);      
 
   g_signal_connect(GTK_TREE_VIEW(d->items), "row-activated", (GCallback) tree_on_row_activated, GTK_WIDGET(dialog));
   g_object_unref(liststore);
