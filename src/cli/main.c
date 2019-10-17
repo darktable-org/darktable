@@ -45,6 +45,10 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#ifdef __APPLE__
+#include "osx/osx.h"
+#endif
+
 #ifdef _WIN32
 #include "win/main_wrapper.h"
 #endif
@@ -61,6 +65,9 @@ static void usage(const char *progname)
 
 int main(int argc, char *arg[])
 {
+#ifdef __APPLE__
+  dt_osx_prepare_environment();
+#endif
   bindtextdomain(GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
   bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
   textdomain(GETTEXT_PACKAGE);

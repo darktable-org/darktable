@@ -30,6 +30,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef __APPLE__
+#include "osx/osx.h"
+#endif
+
 #ifdef _WIN32
 #include "win/main_wrapper.h"
 #endif
@@ -1787,6 +1791,9 @@ static void show_usage(const char *exe)
 
 int main(int argc, char *argv[])
 {
+#ifdef __APPLE__
+  dt_osx_prepare_environment();
+#endif
 #ifdef _WIN32
   SetErrorMode(SEM_FAILCRITICALERRORS);
 #endif

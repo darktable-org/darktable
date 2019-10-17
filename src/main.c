@@ -19,12 +19,19 @@
 #include "gui/gtk.h"
 #include <stdlib.h>
 
+#ifdef __APPLE__
+#include "osx/osx.h"
+#endif
+
 #ifdef _WIN32
 #include "win/main_wrapper.h"
 #endif
 
 int main(int argc, char *argv[])
 {
+#ifdef __APPLE__
+  dt_osx_prepare_environment();
+#endif
 #ifdef _WIN32
   // on Windows we have a hard time showing stuff printed to stdout/stderr to the user.
   // because of that we write it to a log file.
