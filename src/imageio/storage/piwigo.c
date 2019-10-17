@@ -33,6 +33,7 @@
 #include "imageio/storage/imageio_storage_api.h"
 #include <curl/curl.h>
 #include <json-glib/json-glib.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -612,7 +613,7 @@ static void _piwigo_refresh_albums(dt_storage_piwigo_gui_data_t *ui, const gchar
         while(*p++) if(*p == ',') indent++;
       }
 
-      snprintf(data, sizeof(data), "%*c%s (%ld)", indent * 3, ' ', new_album->name, new_album->size);
+      snprintf(data, sizeof(data), "%*c%s (%" PRId64 ")", indent * 3, ' ', new_album->name, new_album->size);
 
       if(to_select && !strcmp(new_album->name, to_select)) index = i + 1;
 
@@ -644,7 +645,7 @@ static const gboolean _piwigo_api_create_new_album(dt_storage_piwigo_params_t *p
   if(p->parent_album_id != 0)
   {
     char pid[100];
-    snprintf(pid, sizeof(pid), "%ld", p->parent_album_id);
+    snprintf(pid, sizeof(pid), "%" PRId64, p->parent_album_id);
     args = _piwigo_query_add_arguments(args, "parent", pid);
   }
   args = _piwigo_query_add_arguments(args, "status", p->privacy==0?"public":"private");
@@ -674,7 +675,7 @@ static const gboolean _piwigo_api_upload_photo(dt_storage_piwigo_params_t *p, gc
   char cat[10];
   char privacy[10];
 
-  snprintf(cat, sizeof(cat), "%ld", p->album_id);
+  snprintf(cat, sizeof(cat), "%" PRId64, p->album_id);
   snprintf(privacy, sizeof(privacy), "%d", p->privacy);
 
   args = _piwigo_query_add_arguments(args, "method", "pwg.images.addSimple");

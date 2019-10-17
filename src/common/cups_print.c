@@ -154,7 +154,7 @@ static int _detect_printers_callback(dt_job_t *job)
   int res;
 #if ((CUPS_VERSION_MAJOR == 1) && (CUPS_VERSION_MINOR >= 6)) || CUPS_VERSION_MAJOR > 1
 #if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_8
-  if (cupsEnumDests != NULL)
+  if (&cupsEnumDests != NULL)
 #endif
     res = cupsEnumDests(CUPS_MEDIA_FLAGS_DEFAULT, 30000, &_cancel, 0, 0, _dest_cb, pctl);
 #if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_8
@@ -248,8 +248,8 @@ GList *dt_get_papers(const dt_printer_info_t *printer)
 
 #if ((CUPS_VERSION_MAJOR == 1) && (CUPS_VERSION_MINOR >= 7)) || CUPS_VERSION_MAJOR > 1
 #if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_9
-  if (cupsConnectDest != NULL && cupsCopyDestInfo != NULL && cupsGetDestMediaCount != NULL &&
-      cupsGetDestMediaByIndex != NULL && cupsFreeDestInfo != NULL)
+  if (&cupsConnectDest != NULL && &cupsCopyDestInfo != NULL && &cupsGetDestMediaCount != NULL &&
+      &cupsGetDestMediaByIndex != NULL && &cupsFreeDestInfo != NULL)
 #endif
   {
     cups_dest_t *dests;

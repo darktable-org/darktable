@@ -629,8 +629,7 @@ find_package(Pugixml 1.2 REQUIRED)
 include_directories(SYSTEM ${Pugixml_INCLUDE_DIRS})
 list(APPEND LIBS ${Pugixml_LIBRARIES})
 
-if(NOT SOURCE_PACKAGE AND NOT APPLE)
-  # apple build fails on deprecated warnings..
+if(NOT SOURCE_PACKAGE)
   add_definitions(-Werror)
 endif()
 
