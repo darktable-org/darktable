@@ -279,8 +279,10 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
 
   if(!image_support)
   {
-    dt_print(DT_DEBUG_OPENCL, "[opencl_init] discarding device %d `%s' due to missing image support.\n", k,
-             infostr);
+    dt_print(DT_DEBUG_OPENCL,
+             "[opencl_init] discarding device %d `%s' - The OpenCL driver "
+             "doesn't provide image support. See also 'clinfo' output.\n",
+             k, infostr);
     res = -1;
     goto end;
   }
