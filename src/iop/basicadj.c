@@ -841,7 +841,7 @@ static inline double xlog(double d)
   const double m = ldexpk(d, -e);
 
   double x = (m - 1) / (m + 1);
-  double x2 = x * x;
+  const double x2 = x * x;
 
   double t = 0.148197055177935105296783;
   t = fma(t, x2, 0.153108178020442575739679);
@@ -855,8 +855,8 @@ static inline double xlog(double d)
   x = x * t + 0.693147180559945286226764 * e;
 
   if(isinf(d)) x = INFINITY;
-  if(d < 0) x = NAN;
-  if(d == 0) x = -INFINITY;
+  if(d < 0)    x = NAN;
+  if(d == 0)   x = -INFINITY;
 
   return x;
 }
@@ -1201,22 +1201,22 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
     expcomp = 0.5 * (double)expcomp1 + 0.5 * (double)expcomp2; // for small expcomp
   }
 
-  float gain = exp((float)expcomp * log(2.f));
+  const float gain = exp((float)expcomp * log(2.f));
 
-  float corr = sqrt(gain * scale / rawmax);
+  const float corr = sqrt(gain * scale / rawmax);
   black = shc * corr;
 
   // now tune hlcompr to bring back rawmax to 65535
   hlcomprthresh = 0.f;
   // this is a series approximation of the actual formula for comp,
   // which is a transcendental equation
-  float comp = (gain * ((float)whiteclip) / scale - 1.f) * 2.3f; // 2.3 instead of 2 to increase slightly comp
+  const float comp = (gain * ((float)whiteclip) / scale - 1.f) * 2.3f; // 2.3 instead of 2 to increase slightly comp
   hlcompr = (comp / (fmaxf(0.0f, expcomp) + 1.0f));
   hlcompr = fmaxf(0.f, fminf(100.f, hlcompr));
 
   // now find brightness if gain didn't bring ave to midgray using
   // the envelope of the actual 'control cage' brightness curve for simplicity
-  float midtmp = gain * sqrt(median * ave) / scale;
+  const float midtmp = gain * sqrt(median * ave) / scale;
 
   if(midtmp < 0.1f)
   {
