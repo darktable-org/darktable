@@ -2184,7 +2184,7 @@ static void _accels_window_sticky(GtkWidget *widget, GdkEventButton *event, dt_v
   // creating new window
   GtkWindow *win = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
 #ifdef GDK_WINDOWING_QUARTZ
-  dt_osx_disallow_fullscreen(win);
+  dt_osx_disallow_fullscreen(GTK_WIDGET(win));
 #endif
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(win));
   gtk_style_context_add_class(context, "accels_window");
