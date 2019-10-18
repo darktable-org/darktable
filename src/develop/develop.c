@@ -1004,6 +1004,9 @@ void dt_dev_free_history_item(gpointer data)
 void dt_dev_reload_history_items(dt_develop_t *dev)
 {
   dev->focus_hash = 0;
+
+  dt_pthread_mutex_lock(&darktable.db_insert);
+
   dt_dev_pop_history_items(dev, 0);
 
   // remove unused history items:
@@ -1067,6 +1070,8 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
 
   // we update show params for multi-instances for each other instances
   dt_dev_modules_update_multishow(dev);
+
+  dt_pthread_mutex_unlock(&darktable.db_insert);
 }
 
 void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
@@ -1255,9 +1260,6 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   if(imgid <= 0) return FALSE;
 
-  // be extra sure that we don't mess up history in separate threads:
-  dt_pthread_mutex_lock(&darktable.db_insert);
-
   gboolean run = FALSE;
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
   if(!(image->flags & DT_IMAGE_AUTO_PRESETS_APPLIED)) run = TRUE;
@@ -1267,7 +1269,6 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   if(!run || image->id <= 0)
   {
     dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
-    dt_pthread_mutex_unlock(&darktable.db_insert);
     return FALSE;
   }
 
@@ -1307,7 +1308,6 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   sqlite3_finalize(stmt);
 
   image->flags |= DT_IMAGE_AUTO_PRESETS_APPLIED | DT_IMAGE_NO_LEGACY_PRESETS;
-  dt_pthread_mutex_unlock(&darktable.db_insert);
 
   // make sure these end up in the image_cache + xmp (sync through here if we set the flag)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
@@ -1350,9 +1350,6 @@ static void _dev_add_default_modules(dt_develop_t *dev, const int imgid)
 static void _dev_merge_history(dt_develop_t *dev, const int imgid)
 {
   sqlite3_stmt *stmt;
-  // be extra sure that we don't mess up history in separate threads:
-  // the mutex locking here is necessary because of the later workaround a sqlite3 "feature".
-  dt_pthread_mutex_lock(&darktable.db_insert);
 
   // count what we found:
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM memory.history", -1,
@@ -1469,7 +1466,6 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
       }
     }
   }
-  dt_pthread_mutex_unlock(&darktable.db_insert);
 }
 
 void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_image)
@@ -1733,7 +1729,9 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 
 void dt_dev_read_history(dt_develop_t *dev)
 {
+  dt_pthread_mutex_lock(&darktable.db_insert);
   dt_dev_read_history_ext(dev, dev->image_storage.id, FALSE);
+  dt_pthread_mutex_unlock(&darktable.db_insert);
 }
 
 void dt_dev_reprocess_all(dt_develop_t *dev)
