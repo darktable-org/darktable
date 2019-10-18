@@ -756,9 +756,6 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
     return 1;
   }
 
-  // Just in case lock the database
-  dt_pthread_mutex_lock(&darktable.db_insert);
-
   // be sure the current history is written before pasting some other history data
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM) dt_dev_write_history(darktable.develop);
@@ -802,8 +799,6 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
     dt_image_set_aspect_ratio(dest_imgid);
   else
     dt_image_reset_aspect_ratio(dest_imgid);
-
-  dt_pthread_mutex_unlock(&darktable.db_insert);
 
   return ret_val;
 }
