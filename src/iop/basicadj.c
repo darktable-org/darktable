@@ -824,7 +824,7 @@ static inline int ilogbp1(double d)
 // calculate  x * 2^q
 static inline double ldexpk(double x, int32_t q)
 {
-  int32_t m = q < 0 ? 1 : 0;
+  int32_t m = q < 0 ? -1 : 0;
   m = (((m + q) >> 9) - m) << 7;
   q = q - (m << 2);
   double u = longBitsToDouble(((int64_t)(m + 0x3ff)) << 52);
