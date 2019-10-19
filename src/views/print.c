@@ -208,7 +208,7 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width_i, int32_t height_i, in
   const dt_print_t *prt=(dt_print_t*)self->data;
 
   // clear the current surface
-  cairo_set_source_rgb (cri, 0.1, 0.1, 0.1);
+  dt_gui_gtk_set_source_rgb(cri, DT_GUI_COLOR_PRINT_BG);
   cairo_paint(cri);
 
   if (prt->image_id > 0)

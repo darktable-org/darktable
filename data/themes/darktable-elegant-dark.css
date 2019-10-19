@@ -82,6 +82,7 @@
 @define-color darkroom_preview_bg_color @grey_50;
 @define-color lighttable_bg_color @grey_60;
 @define-color lighttable_preview_bg_color @grey_50;
+@define-color print_bg_color @grey_60;
 
 /* Lighttable and film-strip */
 @define-color thumbnail_font_color @grey_65;
