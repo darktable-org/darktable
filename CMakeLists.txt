@@ -83,6 +83,17 @@ option(BUILD_NOISE_TOOLS "Build tools for generating noise proifles" OFF)
 
 if (USE_OPENMP)
   find_package(OpenMP 3.1 REQUIRED)
+
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR
+      CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+
+    # Clang has an option to specify the OpenMP standard to use. Specify it.
+    # FIXME: Implement this in FindOpenMP.cmake
+    set(OPENMP_VERSION_SPECIFIER "-fopenmp-version=31")
+
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OPENMP_VERSION_SPECIFIER}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OPENMP_VERSION_SPECIFIER}")
+  endif()
 endif()
 
 if(USE_OPENCL)
