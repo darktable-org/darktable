@@ -672,6 +672,8 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
 
 void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
 {
+  dt_pthread_mutex_lock(&darktable.db_insert);
+
   _dt_dev_load_raw(dev, imgid);
 
   if(dev->pipe)
@@ -693,6 +695,8 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
 
   // Loading an image means we do some developing and so remove the darktable|problem|history-compress tag
   dt_history_set_compress_problem(imgid, FALSE);
+
+  dt_pthread_mutex_unlock(&darktable.db_insert);
 }
 
 void dt_dev_configure(dt_develop_t *dev, int wd, int ht)
