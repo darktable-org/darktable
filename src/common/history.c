@@ -34,6 +34,8 @@
 #include "develop/blend.h"
 #include "develop/masks.h"
 
+#define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
+
 void dt_history_item_free(gpointer data)
 {
   dt_history_item_t *item = (dt_history_item_t *)data;
@@ -546,6 +548,8 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
   dev_dest->iop = dt_iop_load_modules_ext(dev_dest, TRUE);
 
   dt_dev_read_history_ext(dev_src, imgid, TRUE);
+
+  // This prepends the default modules and converts just in case it's an empty history
   dt_dev_read_history_ext(dev_dest, dest_imgid, TRUE);
 
   dt_ioppr_check_iop_order(dev_src, imgid, "_history_copy_and_paste_on_image_merge ");
@@ -557,21 +561,46 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
   dt_ioppr_check_iop_order(dev_src, imgid, "_history_copy_and_paste_on_image_merge 1");
   dt_ioppr_check_iop_order(dev_dest, imgid, "_history_copy_and_paste_on_image_merge 1");
 
+  const int iop_order_version_src = dt_image_get_iop_order_version(imgid);
+
+  int iop_order_version_dest = dt_image_get_iop_order_version(dest_imgid);
+  GList *dest_iop_list = dt_ioppr_get_iop_order_list(&iop_order_version_dest);
+
   // the user have selected some history entries
+  if (DT_IOP_ORDER_INFO)
+    fprintf(stderr,"\n ^^^^^ Merging history from image %i v(%i) --> %i v(%i), ",
+            imgid, iop_order_version_src, dest_imgid, iop_order_version_dest);
+
   if(ops)
   {
+    if (DT_IOP_ORDER_INFO) fprintf(stderr," selected ops");
     // copy only selected history entries
     GList *l = g_list_last(ops);
     while(l)
     {
-      unsigned int num = GPOINTER_TO_UINT(l->data);
+      const unsigned int num = GPOINTER_TO_UINT(l->data);
 
-      dt_dev_history_item_t *hist = g_list_nth_data(dev_src->history, num);
+      const dt_dev_history_item_t *hist = g_list_nth_data(dev_src->history, num);
 
       if(hist)
       {
-        // merge the entry
-        dt_history_merge_module_into_history(dev_dest, dev_src, hist->module, &modules_used, FALSE);
+        const double old_iop_order = hist->module->iop_order;
+
+        if (iop_order_version_src != iop_order_version_dest)
+        {
+          hist->module->iop_order =
+            dt_ioppr_get_iop_order(dest_iop_list, hist->module->op) + (double)hist->module->multi_priority / 100.0f;
+        }
+
+        if (!dt_iop_is_hidden(hist->module))
+        {
+          if (DT_IOP_ORDER_INFO)
+            fprintf(stderr,"\n  module %20s, order %9.5f->%9.5f, multiprio %i",
+                    hist->module->op, old_iop_order, hist->module->iop_order, hist->module->multi_priority);
+
+          // merge the entry
+          dt_history_merge_module_into_history(dev_dest, dev_src, hist->module, &modules_used, FALSE);
+        }
       }
 
       l = g_list_previous(l);
@@ -579,15 +608,33 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
   }
   else
   {
+    if (DT_IOP_ORDER_INFO) fprintf(stderr," all modules");
     // we will copy all modules
     GList *modules_src = g_list_first(dev_src->iop);
     while(modules_src)
     {
       dt_iop_module_t *mod_src = (dt_iop_module_t *)(modules_src->data);
 
-      // but only if module is in history in source image
-      if(_search_history_by_module(dev_src, mod_src) != NULL)
+      // copy from history only if
+      if((_search_history_by_module(dev_src, mod_src) != NULL) // module is in history of source image
+         && !(mod_src->default_enabled && mod_src->enabled
+              && !memcmp(mod_src->params, mod_src->default_params, mod_src->params_size) // it's not a enabled by default module with unmodified settings
+              && !dt_iop_is_hidden(mod_src))
+        )
       {
+        const double old_iop_order = mod_src->iop_order;
+        if (iop_order_version_src != iop_order_version_dest)
+        {
+          mod_src->iop_order =
+            dt_ioppr_get_iop_order(dest_iop_list, mod_src->op) + (double)mod_src->multi_priority / 100.0f;
+        }
+
+        if (DT_IOP_ORDER_INFO)
+        {
+          fprintf(stderr,"\n  module %20s, order %9.5f->%9.5f, multiprio %i",
+                  mod_src->op, old_iop_order, mod_src->iop_order, mod_src->multi_priority);
+        }
+
         // merge the module into dest image
         dt_history_merge_module_into_history(dev_dest, dev_src, mod_src, &modules_used, FALSE);
       }
@@ -595,6 +642,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
       modules_src = g_list_next(modules_src);
     }
   }
+  if (DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
 
   dt_ioppr_check_iop_order(dev_src, imgid, "_history_copy_and_paste_on_image_merge 2");
   dt_ioppr_check_iop_order(dev_dest, imgid, "_history_copy_and_paste_on_image_merge 2");
@@ -1181,6 +1229,7 @@ gboolean dt_history_check_module_exists(int32_t imgid, const char *operation)
   return result;
 }
 
+#undef DT_IOP_ORDER_INFO
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

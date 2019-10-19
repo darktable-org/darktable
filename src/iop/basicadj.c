@@ -792,15 +792,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->gui_data = NULL;
 }
 
-static inline double mla(double x, double y, double z)
-{
-  return x * y + z;
-}
-static inline int xisinf(double x)
-{
-  return x == INFINITY || x == -INFINITY;
-}
-
 static inline int64_t doubleToRawLongBits(double d)
 {
   union {
@@ -830,14 +821,13 @@ static inline int ilogbp1(double d)
   return q;
 }
 
-static inline double ldexpk(double x, int q)
+// calculate  x * 2^q
+static inline double ldexpk(double x, int32_t q)
 {
-  double u;
-  int m;
-  m = q >> 31;
+  int32_t m = q < 0 ? -1 : 0;
   m = (((m + q) >> 9) - m) << 7;
   q = q - (m << 2);
-  u = longBitsToDouble(((int64_t)(m + 0x3ff)) << 52);
+  double u = longBitsToDouble(((int64_t)(m + 0x3ff)) << 52);
   double u2 = u * u;
   u2 = u2 * u2;
   x = x * u2;
@@ -847,27 +837,26 @@ static inline double ldexpk(double x, int q)
 
 static inline double xlog(double d)
 {
-  double x, x2, t;
   const int e = ilogbp1(d * 0.7071);
   const double m = ldexpk(d, -e);
 
-  x = (m - 1) / (m + 1);
-  x2 = x * x;
+  double x = (m - 1) / (m + 1);
+  const double x2 = x * x;
 
-  t = 0.148197055177935105296783;
-  t = mla(t, x2, 0.153108178020442575739679);
-  t = mla(t, x2, 0.181837339521549679055568);
-  t = mla(t, x2, 0.22222194152736701733275);
-  t = mla(t, x2, 0.285714288030134544449368);
-  t = mla(t, x2, 0.399999999989941956712869);
-  t = mla(t, x2, 0.666666666666685503450651);
-  t = mla(t, x2, 2);
+  double t = 0.148197055177935105296783;
+  t = fma(t, x2, 0.153108178020442575739679);
+  t = fma(t, x2, 0.181837339521549679055568);
+  t = fma(t, x2, 0.22222194152736701733275);
+  t = fma(t, x2, 0.285714288030134544449368);
+  t = fma(t, x2, 0.399999999989941956712869);
+  t = fma(t, x2, 0.666666666666685503450651);
+  t = fma(t, x2, 2);
 
   x = x * t + 0.693147180559945286226764 * e;
 
-  if(xisinf(d)) x = INFINITY;
-  if(d < 0) x = NAN;
-  if(d == 0) x = -INFINITY;
+  if(isinf(d)) x = INFINITY;
+  if(d < 0)    x = NAN;
+  if(d == 0)   x = -INFINITY;
 
   return x;
 }
@@ -1212,22 +1201,22 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
     expcomp = 0.5 * (double)expcomp1 + 0.5 * (double)expcomp2; // for small expcomp
   }
 
-  float gain = exp((float)expcomp * log(2.f));
+  const float gain = exp((float)expcomp * log(2.f));
 
-  float corr = sqrt(gain * scale / rawmax);
+  const float corr = sqrt(gain * scale / rawmax);
   black = shc * corr;
 
   // now tune hlcompr to bring back rawmax to 65535
   hlcomprthresh = 0.f;
   // this is a series approximation of the actual formula for comp,
   // which is a transcendental equation
-  float comp = (gain * ((float)whiteclip) / scale - 1.f) * 2.3f; // 2.3 instead of 2 to increase slightly comp
+  const float comp = (gain * ((float)whiteclip) / scale - 1.f) * 2.3f; // 2.3 instead of 2 to increase slightly comp
   hlcompr = (comp / (fmaxf(0.0f, expcomp) + 1.0f));
   hlcompr = fmaxf(0.f, fminf(100.f, hlcompr));
 
   // now find brightness if gain didn't bring ave to midgray using
   // the envelope of the actual 'control cage' brightness curve for simplicity
-  float midtmp = gain * sqrt(median * ave) / scale;
+  const float midtmp = gain * sqrt(median * ave) / scale;
 
   if(midtmp < 0.1f)
   {
