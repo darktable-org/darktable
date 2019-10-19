@@ -124,6 +124,7 @@
 @define-color darkroom_preview_bg_color @grey_35;
 @define-color lighttable_bg_color @grey_45;
 @define-color lighttable_preview_bg_color @grey_35;
+@define-color print_bg_color @grey_45;
 
 /* Brushes */
 @define-color brush_cursor alpha(white, .9);
