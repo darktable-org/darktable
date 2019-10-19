@@ -432,7 +432,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.progname = argv[0];
 
   // FIXME: move there into dt_database_t
-  dt_pthread_mutex_init(&(darktable.db_insert), NULL);
+  pthread_mutexattr_t recursive_locking;
+  pthread_mutexattr_init(&recursive_locking);
+  pthread_mutexattr_settype(&recursive_locking, PTHREAD_MUTEX_RECURSIVE);
+
+  dt_pthread_mutex_init(&(darktable.db_insert), &recursive_locking);
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.capabilities_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.exiv2_threadsafe), NULL);
