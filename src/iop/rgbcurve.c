@@ -394,6 +394,14 @@ static gboolean _color_picker_callback_button_press(GtkWidget *widget, GdkEventB
   return dt_iop_color_picker_callback_button_press(widget, e, color_picker);
 }
 
+static gboolean _is_identity(dt_iop_rgbcurve_params_t *p, rgbcurve_channel_t channel)
+{
+  for(int k=0; k<p->curve_num_nodes[channel]; k++)
+    if(p->curve_nodes[channel][k].x != p->curve_nodes[channel][k].y) return FALSE;
+
+  return TRUE;
+}
+
 static void autoscale_callback(GtkWidget *widget, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -406,6 +414,21 @@ static void autoscale_callback(GtkWidget *widget, dt_iop_module_t *self)
   p->curve_autoscale = combo;
 
   _rgbcurve_show_hide_controls(p, g);
+
+  // swithing to manual scale, if G and B not touched yet, just make them identical to global setting (R)
+  if(combo == DT_S_SCALE_MANUAL_RGB
+     && _is_identity(p, DT_IOP_RGBCURVE_G)
+     && _is_identity(p, DT_IOP_RGBCURVE_B))
+  {
+    for(int k=0; k<DT_IOP_RGBCURVE_MAXNODES; k++)
+      p->curve_nodes[DT_IOP_RGBCURVE_G][k]
+        = p->curve_nodes[DT_IOP_RGBCURVE_B][k] = p->curve_nodes[DT_IOP_RGBCURVE_R][k];
+
+    p->curve_num_nodes[DT_IOP_RGBCURVE_G] = p->curve_num_nodes[DT_IOP_RGBCURVE_B]
+      = p->curve_num_nodes[DT_IOP_RGBCURVE_R];
+    p->curve_type[DT_IOP_RGBCURVE_G] = p->curve_type[DT_IOP_RGBCURVE_B]
+      = p->curve_type[DT_IOP_RGBCURVE_R];
+  }
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
