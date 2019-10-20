@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2019-10-14 12:27+0200\n"
-"PO-Revision-Date: 2019-10-17 23:41+0200\n"
+"PO-Revision-Date: 2019-10-19 13:12+0200\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -5978,9 +5978,8 @@ msgstr ""
 "attachés aux images sélectionnées."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4682(title)
-#, fuzzy
 msgid "text entry"
-msgstr "police du texte"
+msgstr "entrée texte"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4684(para)
 msgid "The text entry box, between the two lists, has multiple purposes."
@@ -5997,10 +5996,10 @@ msgid ""
 msgstr ""
 "Premièrement, pour ceux qui préfèrent ne pas quitter le clavier, lorsque la "
 "vue dictionnaire est en mode liste, dès que vous commencez à saisir un mot-"
-"clé, une liste des balises correspondantes s'ouvre. Lorsque vous voyez celui "
-"que vous cherchez, utilisez la flèche <quote> Bas</quote> pour le "
-"sélectionner, appuyez deux fois sur <quote>Entrée </quote> pour obtenir la "
-"balise attachée !"
+"clé, une liste des mots-clés correspondants s'ouvre. Lorsque vous voyez "
+"celui que vous cherchez, utilisez la flèche <quote> Bas</quote> pour le "
+"sélectionner, appuyez deux fois sur <quote>Entrée </quote> pour obtenir le "
+"mot-clé attaché !"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4695(para)
 msgid ""
@@ -6017,7 +6016,7 @@ msgid ""
 "just below searching amongst the tag names but also the synonyms."
 msgstr ""
 "En outre, la zone de saisie vous permet de filtrer le dictionnaire (liste et "
-"arborescence) juste en dessous cherchant parmi les noms de balises mais "
+"arborescence) juste en dessous cherchant parmi les noms de mots-clés mais "
 "également parmi les synonymes."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4705(para)
@@ -6027,10 +6026,10 @@ msgid ""
 "attached to the selected images. Or it is already in the dictionary and it's "
 "only attached."
 msgstr ""
-"En appuyant sur Entrée, si la balise qui vient d’être écrite n’existe pas "
-"dans le dictionnaire, alors la nouvelle balise est ajoutée au dictionnaire "
-"et attachée aux images sélectionnées. Si elle est déjà dans le dictionnaire "
-"alors elle est seulement attachée."
+"En appuyant sur Entrée, si le mot-clé qui vient d’être écrit n’existe pas "
+"dans le dictionnaire, alors le nouveau mot-clé est ajouté au dictionnaire et "
+"est attaché aux images sélectionnées. S'il est déjà dans le dictionnaire "
+"alors il est attaché."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4711(para)
 msgid ""
@@ -6039,14 +6038,14 @@ msgid ""
 "new tag without having to type it in completely."
 msgstr ""
 "Vous pouvez utiliser le sous-menu <quote> copie dans l'entrée </quote> pour "
-"copier une balise existante du dictionnaire dans la zone de saisie. Vous "
-"pouvez ensuite la modifier pour créer une nouvelle balise sans avoir à la "
+"copier un mot-clé existant du dictionnaire dans la zone de saisie. Vous "
+"pouvez ensuite le modifier pour créer un nouveau mot-clé sans avoir à le "
 "taper complètement."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4730(para)
 msgid "New tags get added to the list in different ways."
 msgstr ""
-"Les nouvelles balises sont ajoutées à la liste de différentes manières."
+"Les nouveaux mots-clés sont ajoutés à la liste de différentes manières."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4734(para)
 msgid ""
@@ -6057,12 +6056,12 @@ msgid ""
 "updates the existing tags with new information and create the new ones."
 msgstr ""
 "À l'importation d'un fichier texte. Vous pouvez importer n'importe quel "
-"fichier texte dès qu'il suit le format de fichier de balisage de lightroom. "
-"Il est possible d'importer plusieurs fichiers. Il est également possible "
-"d'exporter vos balises, d'y ajouter des informations et de les réimporter. "
-"Tant que vous ne modifiez pas le nom de la balise, la fonction d'importation "
-"met à jour les balises existantes avec les nouvelles informations et en crée "
-"de nouvelles."
+"fichier texte dès qu'il suit le format des fichiers de mots-clés de "
+"lightroom. Il est possible d'importer plusieurs fichiers. Il est également "
+"possible d'exporter vos mots-clés, d'y ajouter des informations et de les "
+"réimporter. Tant que vous ne modifiez pas le nom du mot-clé, la fonction "
+"d'importation met à jour les mots-clés existants avec les nouvelles "
+"informations et en crée de nouveaux."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4742(para)
 msgid ""
@@ -6093,23 +6092,21 @@ msgstr ""
 "sélectionnées."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4762(para)
-#, fuzzy
 msgid ""
 "As you may notice there are automatically created tags like <quote>darktable|"
 "exported</quote> or <quote>darktable|styles|your style</quote>, which keep "
 "track of your actions and let you easily find already exported images or "
 "images with specific styles applied."
 msgstr ""
-"Comme vous devez le noter il y a des mots-clés automatiquement créés comme "
+"Comme vous pouvez le noter il y a des mots-clés automatiquement créés comme "
 "<quote>darktable|exported</quote> ou <quote>darktable|styles|your style</"
 "quote>, qui gardent trace de vos actions et vous laissent aisément retrouver "
 "des images déjà exportées ou des images auxquelles des styles spécifiques "
 "ont été appliqués. "
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4773(title)
-#, fuzzy
 msgid "edit, rename"
-msgstr "filename"
+msgstr "éditer, renommer"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4775(para)
 msgid ""
@@ -6134,10 +6131,10 @@ msgstr ""
 "La commande <quote>éditer un mot-clé</quote> montre le nombre de mots-clés "
 "et d'images potentiellement impactés par la modification de ce mot-clé. La "
 "fenêtre d'édition laisse l'utilisateur changer le nom d'un nœud sur le "
-"chemin mais pas le reste de la hiérarchie des mots-clés (le symbole de pipe "
+"chemin mais pas le reste de la hiérarchie des mots-clés (le symbole pipe "
 "<quote> | </quote> n'est pas autorisé). La commande est annulée s'il existe "
 "au moins un mot-clé correspondant au nouveau nom. Les indicateurs <quote> "
-"privé</quote>, <quote> catégorie </quote> et <quote> synonymes </ quote> "
+"privé</quote>, <quote> catégorie </quote> et <quote> synonymes </quote> "
 "peuvent être modifiés ici."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4794(para)
@@ -6149,13 +6146,13 @@ msgid ""
 "command is powerful but you must know what your doing. The command is "
 "aborted if there is at least one tag corresponding to the new path."
 msgstr ""
-"La commande <quote> renommer un chemin ... </quote> apparaît uniquement dans "
+"La commande <quote>renommer un chemin ...</quote> apparaît uniquement dans "
 "la vue de l'arborescence et indique le nombre de mots-clés et d'images "
 "potentiellement impactés par un changement de ce mot-clé. La fenêtre de la "
 "commande renommer un chemin permet à l'utilisateur de modifier le chemin "
-"d'accès complet de la balise. Vous pouvez ou supprimer le symbole de tuyau "
-"<quote> | </ quote>. Cette commande est puissante mais vous devez savoir ce "
-"que vous faites. La commande est abandonnée s'il existe au moins une balise "
+"complet d'accès au mot-clé. Vous pouvez aussi supprimer le symbole de pipe "
+"<quote> | </quote>. Cette commande est puissante mais vous devez savoir ce "
+"que vous faites. La commande est abandonnée s'il existe au moins un mot-clé "
 "correspondant au nouveau chemin."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4810(title)
@@ -6166,34 +6163,45 @@ msgstr "attacher"
 msgid ""
 "Selected tags are attached to selected images with the following actions."
 msgstr ""
+"Les mots-clés sélectionnés sont attachés aux images sélectionnées par les "
+"actions suivantes :"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4816(para)
 msgid ""
 "Click on button <quote>attach</quote> attaches the selected tag in "
 "dictionary."
 msgstr ""
+"Cliquer le bouton <quote>attacher</quote> attache le mot-clé sélectionné du "
+"dictionnaire."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4820(para)
 msgid ""
 "Click-right on a tag of dictionary view and sub-menu <quote>attach tag</"
 "quote>"
 msgstr ""
+"Cliquer-droit sur un mot-clé de la vue dictionnaire ou du sous-menu "
+"<quote>attacher un mot-clé</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4824(para)
 msgid "Double-click on a tag of dictionary view."
-msgstr ""
+msgstr "Double-cliquer sur un mot-clé de la vue dictionnaire."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4828(para)
 msgid ""
 "Click-right on a tag of attached view and sub-menu <quote>attach tag to all</"
 "quote>"
 msgstr ""
+"Cliquer-droit sur un mot-clé de la vue attachée ou du sous-menu "
+"<quote>attacher le mot-clé à toutes les images sélectionnées</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4832(para)
 msgid ""
 "by typing into the text box and pressing the <quote>new</quote> button or "
 "enter. Note that the tag is also created if doesn't exist already."
 msgstr ""
+"En tapant le mot-clé dans la zone de texte et en pressant le bouton "
+"<quote>nouveau</quote> ou la touche Entrée. Notez que ce mot-clé est créé "
+"s'il n’existait pas."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4837(para)
 msgid ""
@@ -6209,30 +6217,36 @@ msgid ""
 "Hovering the images in ligthtable you can control the already attached tags "
 "either on the attached view and in image information as well."
 msgstr ""
+"En survolant les images de la table lumineuse vous pouvez contrôler les mots-"
+"clés déjà attachés, à la fois dans la vue attachée et dans les informations "
+"de l'image."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4851(title)
 msgid "detach"
 msgstr "détacher"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4853(para)
-#, fuzzy
 msgid "An attached tag can be detached in the following ways."
-msgstr "Un mot-clé pouvant être associé à une image."
+msgstr "Un mot-clé attaché peut être détaché par les actions suivantes :"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4857(para)
 msgid ""
 "Click on button <quote>detach</quote> detaches the selected tag in attached "
 "view."
 msgstr ""
+"Cliquer sur le bouton <quote>détacher</quote> détache le mot-clé dans la vue "
+"attachée."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4861(para)
 msgid "Double-click on a tag of attached view."
-msgstr ""
+msgstr "Double-cliquer sur un mot-clé de la vue attachée."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4865(para)
 msgid ""
 "Click-right on a tag of attached view and sub-menu <quote>detach</quote>"
 msgstr ""
+"Double-cliquer sur un mot-clé de la vue attachée ou du sous-menu "
+"<quote>détacher</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4875(para)
 #, fuzzy
@@ -6250,12 +6264,16 @@ msgstr ""
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4882(para)
 msgid "Click on button <quote>delete</quote> delete the selected one."
 msgstr ""
+"Cliquer sur le bouton <quote>supprimer</quote> supprime celui qui est "
+"sélectionné."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4886(para)
 msgid ""
 "Click-right on a tag of dictionary view and sub-menu <quote>delete tag</"
 "quote>."
 msgstr ""
+"Cliquer-droit sur un mot-clé de la vue dictionnaire ou du sous-menu "
+"<quote>supprimer un mot clé</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4890(para)
 msgid ""
