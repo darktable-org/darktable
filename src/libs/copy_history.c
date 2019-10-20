@@ -339,7 +339,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->compress_button), _("compress history stack of\nall selected images"));
   gtk_grid_attach(grid, GTK_WIDGET(d->compress_button), 0, line, 3, 1);
 
-  GtkWidget *delete = gtk_button_new_with_label(_("discard"));
+  GtkWidget *delete = gtk_button_new_with_label(_("discard history"));
   ellipsize_button(delete);
   d->delete_button = delete;
   gtk_widget_set_tooltip_text(delete, _("discard history stack of\nall selected images"));
