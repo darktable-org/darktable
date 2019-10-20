@@ -2700,10 +2700,25 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 
     if(g->cursor_valid)
     {
-      cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(1.5));
-      set_color(g->cr, darktable.bauhaus->graph_fg);
-      cairo_move_to(g->cr, (g->cursor_exposure + 8.0f) / 8.0f * g->graph_width, 0.0);
-      cairo_line_to(g->cr,(g->cursor_exposure + 8.0f) / 8.0f * g->graph_width, g->graph_height);
+
+      float x_pos = (g->cursor_exposure + 8.0f) / 8.0f * g->graph_width;
+
+      if(x_pos > g->graph_width || x_pos < 0.0f)
+      {
+        // exposure at current position is outside [-8; 0] EV :
+        // bound it in the graph limits and show it in orange
+        cairo_set_source_rgb(g->cr, 0.75, 0.50, 0.);
+        cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(3));
+        x_pos = (x_pos < 0.0f) ? 0.0f : g->graph_width;
+      }
+      else
+      {
+        set_color(g->cr, darktable.bauhaus->graph_fg);
+        cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(1.5));
+      }
+
+      cairo_move_to(g->cr, x_pos, 0.0);
+      cairo_line_to(g->cr, x_pos, g->graph_height);
       cairo_stroke(g->cr);
     }
   }
