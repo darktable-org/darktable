@@ -1,7 +1,7 @@
 #/bin/bash
 #
 #   This file is part of darktable,
-#   copyright (c) 20199 pascal obry
+#   copyright (c) 2019 pascal obry
 #
 #   darktable is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
