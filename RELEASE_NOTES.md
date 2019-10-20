@@ -28,6 +28,7 @@ and the changelog as compared to 2.6.1 can be found below.
 
 ## Bugfixes
 
+- Souce with OpenMP can be compiled with GCC-9
 - Module colorzones uodate skin tone preset
 - Fix compiling with exiv 0.27.2.1
 - Fix compilation on MacOS
