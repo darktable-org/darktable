@@ -645,7 +645,8 @@ static const gchar *gphoto_upload_photo_to_album(dt_gphoto_context_t *ctx, gchar
         o = json_node_get_object(json_object_get_member(o, "status"));
         if(json_object_has_member(o, "message"))
         {
-          if(g_strcmp0(json_object_get_string_member(o, "message"), "OK"))
+          if(g_strcmp0(json_object_get_string_member(o, "message"), "OK")
+             && g_strcmp0(json_object_get_string_member(o, "message"), "Success"))
             return NULL;
         }
         else
