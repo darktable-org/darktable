@@ -2632,6 +2632,26 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
     cairo_line_to(g->cr, g->graph_width, g->graph_height);
     cairo_close_path(g->cr);
     cairo_fill(g->cr);
+
+    if(g->histogram_last_decile > -0.1f)
+    {
+      // histogram overflows controls in highlights : display warning
+      cairo_save(g->cr);
+      cairo_set_source_rgb(g->cr, 0.75, 0.50, 0.);
+      dtgtk_cairo_paint_gamut_check(g->cr, g->graph_width - 2.5 * g->line_height, 0.5 * g->line_height,
+                                           2.0 * g->line_height, 2.0 * g->line_height, 0, NULL);
+      cairo_restore(g->cr);
+    }
+
+    if(g->histogram_first_decile < -7.9f)
+    {
+      // histogram overflows controls in lowlights : display warning
+      cairo_save(g->cr);
+      cairo_set_source_rgb(g->cr, 0.75, 0.50, 0.);
+      dtgtk_cairo_paint_gamut_check(g->cr, 0.5 * g->line_height, 0.5 * g->line_height,
+                                           2.0 * g->line_height, 2.0 * g->line_height, 0, NULL);
+      cairo_restore(g->cr);
+    }
   }
 
   if(g->lut_valid)
@@ -2772,13 +2792,13 @@ static gboolean dt_iop_toneequalizer_bar_draw(GtkWidget *widget, cairo_t *crf, g
     // draw clipping bars
     cairo_set_source_rgb(cr, 0.75, 0.50, 0);
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(6));
-    if(left <= 0.0f)
+    if(g->histogram_first_decile < -7.9f)
     {
       cairo_move_to(cr, DT_PIXEL_APPLY_DPI(3), 0.0);
       cairo_line_to(cr, DT_PIXEL_APPLY_DPI(3), allocation.height);
       cairo_stroke(cr);
     }
-    if(right >= 1.0f)
+    if(g->histogram_last_decile > - 0.1f)
     {
       cairo_move_to(cr, allocation.width - DT_PIXEL_APPLY_DPI(3), 0.0);
       cairo_line_to(cr, allocation.width - DT_PIXEL_APPLY_DPI(3), allocation.height);
