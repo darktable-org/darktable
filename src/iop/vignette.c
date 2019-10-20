@@ -740,7 +740,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   unsigned int *const tea_states = calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(data, yscale, xscale, dither) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, dscale, exp1, exp2, fscale, ivoid, ovoid, \
+                      roi_center_scaled, roi_out, tea_states, unbound) \
+  shared(data, yscale, xscale, dither) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {

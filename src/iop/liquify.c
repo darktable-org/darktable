@@ -1337,7 +1337,9 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   assert (ch == 4);
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, in, out, roi_in, roi_out) \
+  schedule(static)
 #endif
   for (int i = 0; i < roi_out->height; i++)
   {

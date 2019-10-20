@@ -483,7 +483,9 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     // fprintf(stderr, "Using cmatrix codepath\n");
     // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, clipping, d, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -562,7 +564,9 @@ static void process_cmatrix_fastpath_simple(struct dt_iop_module_t *self, dt_dev
 // fprintf(stderr, "Using cmatrix codepath\n");
 // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -594,7 +598,9 @@ static void process_cmatrix_fastpath_clipping(struct dt_iop_module_t *self, dt_d
 // fprintf(stderr, "Using cmatrix codepath\n");
 // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -659,7 +665,9 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpip
 // fprintf(stderr, "Using cmatrix codepath\n");
 // only color matrix. use our optimized fast path!
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, clipping, d, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -755,7 +763,9 @@ static void process_lcms2_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
 // use general lcms2 fallback
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -800,7 +810,9 @@ static void process_lcms2_proper(struct dt_iop_module_t *self, dt_dev_pixelpipe_
 
 // use general lcms2 fallback
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -884,7 +896,10 @@ static void process_sse2_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpi
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out, in) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, clipping, cmat, d, lmat, nmat, roi_in, roi_out) \
+  shared(out, in) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -956,7 +971,9 @@ static void process_sse2_cmatrix_fastpath_simple(struct dt_iop_module_t *self, d
   const __m128 cm2 = _mm_set_ps(0.0f, cmat[8], cmat[5], cmat[2]);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, cm0, cm1, cm2, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -994,7 +1011,9 @@ static void process_sse2_cmatrix_fastpath_clipping(struct dt_iop_module_t *self,
   const __m128 lm2 = _mm_set_ps(0.0f, lmat[8], lmat[5], lmat[2]);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, ivoid, lm0, lm1, lm2, nm0, nm1, nm2, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -1047,7 +1066,10 @@ static void process_sse2_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pix
   float *in = (float *)ivoid;
   float *out = (float *)ovoid;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out, in) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, clipping, cmat, d, lmat, nmat, roi_in, roi_out) \
+  shared(out, in) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -1131,7 +1153,9 @@ static void process_sse2_lcms2_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
 // use general lcms2 fallback
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {
@@ -1179,7 +1203,9 @@ static void process_sse2_lcms2_proper(struct dt_iop_module_t *self, dt_dev_pixel
 
 // use general lcms2 fallback
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out) \
+  schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {

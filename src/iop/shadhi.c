@@ -373,7 +373,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 // invert and desaturate
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(roi_out) \
+  shared(out) \
+  schedule(static)
 #endif
   for(size_t j = 0; j < (size_t)roi_out->width * roi_out->height * 4; j += 4)
   {
@@ -391,7 +394,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, compress, doublemax, flags, halfmax, height, \
+                      highlights, highlights_ccorrect, lmax, lmin, \
+                      low_approximation, max, min,  shadows, \
+                      shadows_ccorrect, unbound_mask, whitepoint, width) \
+  shared(in, out) \
+  schedule(static)
 #endif
   for(size_t j = 0; j < (size_t)width * height * ch; j += ch)
   {

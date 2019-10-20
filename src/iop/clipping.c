@@ -844,7 +844,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
      && roi_in->height == roi_out->height)
   {
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(d)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, ivoid, ovoid, roi_out) \
+    shared(d) \
+    schedule(static)
 #endif
     for(int j = 0; j < roi_out->height; j++)
     {
@@ -870,8 +873,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     keystone_get_matrix(k_space, kxa, kxb, kxc, kxd, kya, kyb, kyc, kyd, &ma, &mb, &md, &me, &mg, &mh);
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) shared(d, interpolation, k_space, ma, mb, md, me,    \
-                                                               mg, mh)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(ch, ch_width, ivoid, kxa, kya, ovoid, roi_in, roi_out) \
+    shared(d, interpolation, k_space, ma, mb, md, me, mg, mh) \
+    schedule(static)
 #endif
     // (slow) point-by-point transformation.
     // TODO: optimize with scanlines and linear steps between?

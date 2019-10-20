@@ -410,7 +410,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more
 // memory
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, Sa)
+#pragma omp parallel for default(none) \
+      dt_omp_firstprivate(ivoid, norm2, ovoid, P, roi_in, roi_out, sharpness) \
+      firstprivate(inited_slide) \
+      shared(kj, ki, Sa) \
+      schedule(static)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {
@@ -496,7 +500,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *const out = ((float *const)ovoid);
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static) collapse(2)
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(ch, in, invert, out, roi_out, weight) \
+  schedule(static) \
+  collapse(2)
 #endif
   for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
   {
@@ -554,7 +561,11 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 // do this in parallel with a little threading overhead. could parallelize the outer loops with a bit more
 // memory
 #ifdef _OPENMP
-#pragma omp parallel for schedule(static) default(none) firstprivate(inited_slide) shared(kj, ki, Sa)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ivoid, norm2, ovoid, P, roi_in, roi_out, sharpness) \
+  firstprivate(inited_slide) \
+  shared(kj, ki, Sa) \
+  schedule(static)
 #endif
       for(int j = 0; j < roi_out->height; j++)
       {
@@ -686,7 +697,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const __m128 weight = _mm_set_ps(1.0f, d->chroma, d->chroma, d->luma);
   const __m128 invert = _mm_sub_ps(_mm_set1_ps(1.0f), weight);
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) shared(d)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(invert, ivoid, ovoid, roi_out, weight) \
+  shared(d) \
+  schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {

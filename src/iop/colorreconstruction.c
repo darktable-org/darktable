@@ -365,7 +365,9 @@ static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bila
 
   // splat into downsampled grid
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(b, precedence, params)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, threshold) \
+  shared(b, precedence, params)
 #endif
   for(int j = 0; j < b->height; j++)
   {
@@ -439,7 +441,9 @@ static void blur_line(dt_iop_colorreconstruct_Lab_t *buf, const int offset1, con
   const float w1 = 4.f / 16.f;
   const float w2 = 1.f / 16.f;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(offset1, offset2, offset3, size1, size2, size3) \
+  shared(buf)
 #endif
   for(int k = 0; k < size1; k++)
   {
@@ -515,7 +519,8 @@ static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruc
   const int oy = b->size_x;
   const int oz = b->size_y * b->size_x;
 #ifdef _OPENMP
-#pragma omp parallel for default(none)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(b, in, out, oy, oz, rescale, roi, threshold)
 #endif
   for(int j = 0; j < roi->height; j++)
   {

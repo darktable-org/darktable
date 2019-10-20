@@ -400,7 +400,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch = piece->colors;
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+  dt_omp_firstprivate(ch, d, i, o, roi_out) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k++)
   {
@@ -425,7 +427,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const __m128 scalev = _mm_set1_ps(d->scale);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(blackv, ch, i, o, roi_out, scalev) \
+  schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {

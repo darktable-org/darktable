@@ -1378,7 +1378,9 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
     int64_t ts_resampling = getts();
 #endif
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(in, in_stride, out_stride, roi_out, x0, l) \
+    shared(out)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
@@ -1424,7 +1426,9 @@ static void dt_interpolation_resample_plain(const struct dt_interpolation *itor,
 
 // Process each output line
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out, hindex, hlength, hkernel, vindex, vlength, vkernel, vmeta)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, in_stride, out_stride, roi_out) \
+  shared(out, hindex, hlength, hkernel, vindex, vlength, vkernel, vmeta)
 #endif
   for(int oy = 0; oy < roi_out->height; oy++)
   {
@@ -1536,7 +1540,9 @@ static void dt_interpolation_resample_sse(const struct dt_interpolation *itor, f
     int64_t ts_resampling = getts();
 #endif
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(in, in_stride, out_stride, roi_out, x0, l) \
+    shared(out)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
@@ -1582,7 +1588,9 @@ static void dt_interpolation_resample_sse(const struct dt_interpolation *itor, f
 
 // Process each output line
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(out, hindex, hlength, hkernel, vindex, vlength, vkernel, vmeta)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, in_stride, out_stride, roi_out) \
+  shared(out, hindex, hlength, hkernel, vindex, vlength, vkernel, vmeta)
 #endif
   for(int oy = 0; oy < roi_out->height; oy++)
   {

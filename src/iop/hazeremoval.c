@@ -369,7 +369,9 @@ static void box_max(const gray_image img1, const gray_image img2, const int w)
   if(img1.data == img2.data)
   {
 #ifdef _OPENMP
-#pragma omp parallel default(none) private(img2_bak)
+#pragma omp parallel default(none) \
+    dt_omp_firstprivate(img1, img2, w) \
+    private(img2_bak)
 #endif
     {
       img2_bak = new_gray_image(img2.width, 1);
@@ -387,7 +389,9 @@ static void box_max(const gray_image img1, const gray_image img2, const int w)
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel default(none) private(img2_bak)
+#pragma omp parallel default(none) \
+    dt_omp_firstprivate(img1, img2, w) \
+    private(img2_bak)
 #endif
     {
 #ifdef _OPENMP
@@ -398,7 +402,9 @@ static void box_max(const gray_image img1, const gray_image img2, const int w)
     }
   }
 #ifdef _OPENMP
-#pragma omp parallel default(none) private(img2_bak)
+#pragma omp parallel default(none) \
+  dt_omp_firstprivate(img1, img2, w) \
+  private(img2_bak)
 #endif
   {
     img2_bak = new_gray_image(1, img2.height);
@@ -440,7 +446,9 @@ static void box_min(const gray_image img1, const gray_image img2, const int w)
   if(img1.data == img2.data)
   {
 #ifdef _OPENMP
-#pragma omp parallel default(none) private(img2_bak)
+#pragma omp parallel default(none) \
+    dt_omp_firstprivate(img1, img2, w) \
+    private(img2_bak)
 #endif
     {
       img2_bak = new_gray_image(img2.width, 1);
@@ -458,7 +466,9 @@ static void box_min(const gray_image img1, const gray_image img2, const int w)
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel default(none) private(img2_bak)
+#pragma omp parallel default(none) \
+    dt_omp_firstprivate(img1, img2, w) \
+    private(img2_bak)
 #endif
     {
 #ifdef _OPENMP
@@ -469,7 +479,9 @@ static void box_min(const gray_image img1, const gray_image img2, const int w)
     }
   }
 #ifdef _OPENMP
-#pragma omp parallel default(none) private(img2_bak)
+#pragma omp parallel default(none) \
+  dt_omp_firstprivate(img1, img2, w) \
+  private(img2_bak)
 #endif
   {
     img2_bak = new_gray_image(1, img2.height);
@@ -490,7 +502,9 @@ static void dark_channel(const const_rgb_image img1, const gray_image img2, cons
 {
   const size_t size = (size_t)img1.height * img1.width;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(img1, img2, size) \
+  schedule(static)
 #endif
   for(size_t i = 0; i < size; i++)
   {
@@ -509,7 +523,9 @@ static void transition_map(const const_rgb_image img1, const gray_image img2, co
 {
   const size_t size = (size_t)img1.height * img1.width;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(A0, img1, img2, size, strength) \
+  schedule(static)
 #endif
   for(size_t i = 0; i < size; i++)
   {
@@ -782,7 +798,10 @@ static float ambient_light(const const_rgb_image img, int w1, rgb_pixel *pA0)
   size_t N_bright_hazy = 0;
   const float *const data = dark_ch.data;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static) reduction(+ : N_bright_hazy, A0_r, A0_g, A0_b)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(crit_brightness, crit_haze_level, data, img, size) \
+  schedule(static) \
+  reduction(+ : N_bright_hazy, A0_r, A0_g, A0_b)
 #endif
   for(size_t i = 0; i < size; i++)
   {
@@ -898,7 +917,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const gray_image c_trans_map_filtered = trans_map_filtered;
 #ifdef _OPENMP
 // use dynamic load ballancing as tiles may have varying size
-#pragma omp parallel for default(none) schedule(dynamic) collapse(2)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(c_trans_map, c_trans_map_filtered, height, img_in, w2, eps, tile_width, width) \
+  schedule(dynamic) \
+  collapse(2)
 #endif
   for(int j = 0; j < height; j += tile_width)
   {
@@ -914,7 +936,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       = fmaxf(expf(-distance * distance_max), 1.f / 1024); // minimum allowed value for transition map
   const float *const c_A0 = A0;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(c_A0, c_trans_map_filtered, img_in, img_out, size, t_min) \
+  schedule(static)
 #endif
   for(size_t i = 0; i < size; i++)
   {

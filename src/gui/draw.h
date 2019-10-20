@@ -24,6 +24,7 @@
 #include "config.h"
 #endif
 
+#include "common/darktable.h"
 #include "common/curve_tools.h"
 #include <cairo.h>
 #include <glib.h>
@@ -229,14 +230,20 @@ static inline void dt_draw_curve_calc_values(dt_draw_curve_t *c, const float min
   if(x)
   {
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) shared(x) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+    dt_omp_firstprivate(res) \
+    shared(x) \
+    schedule(static)
 #endif
     for(int k = 0; k < res; k++) x[k] = k * (1.0f / res);
   }
   if(y)
   {
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) shared(y, c) schedule(static)
+#pragma omp parallel for SIMD() default(none) \
+    dt_omp_firstprivate(min, max, res) \
+    shared(y, c) \
+    schedule(static)
 #endif
     for(int k = 0; k < res; k++) y[k] = min + (max - min) * c->csample.m_Samples[k] * (1.0f / 0x10000);
   }

@@ -307,7 +307,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int unbound_ab = d->unbound_ab;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(d) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(autoscale_ab, ch, height, i, low_approximation, o, \
+                      xm_al, xm_ar, xm_bl, xm_br, xm_L, unbound_ab, width) \
+  shared(d) \
+  schedule(static)
 #endif
   for(int k = 0; k < height; k++)
   {

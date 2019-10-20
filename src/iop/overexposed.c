@@ -125,7 +125,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *const out = (float *const)ovoid;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, in, lower, lower_color, out, roi_out, \
+                      upper, upper_color) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
   {
@@ -174,7 +177,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const __m128 lower_color = _mm_load_ps(dt_iop_overexposed_colors[colorscheme][1]);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, ivoid, lower, lower_color, ovoid, roi_out, \
+                      mupper, mlower, upper, upper_color) \
+  schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {

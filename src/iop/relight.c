@@ -128,7 +128,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float c = (data->width / 10.0) / 2.0; // Width
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(data) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(b, c, ch, ivoid, ovoid, roi_out) \
+  shared(data) \
+  schedule(static)
 #endif
   for(int k = 0; k < roi_out->height; k++)
   {

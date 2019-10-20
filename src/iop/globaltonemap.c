@@ -139,7 +139,10 @@ static inline void process_reinhard(struct dt_iop_module_t *self, dt_dev_pixelpi
   const int ch = piece->colors;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, data) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, roi_out) \
+  shared(in, out, data) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -216,7 +219,10 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   const float bl = logf(fmaxf(eps, data->drago.bias)) / logf(0.5);
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, lwmax) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, bl, ldc, roi_out) \
+  shared(in, out, lwmax) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -240,7 +246,10 @@ static inline void process_filmic(struct dt_iop_module_t *self, dt_dev_pixelpipe
   const int ch = piece->colors;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, data) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, roi_out) \
+  shared(in, out, data) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {

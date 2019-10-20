@@ -950,7 +950,9 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
   if(buf == NULL) goto error;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, tea_states, width) \
+  shared(buf)
 #endif
   for(size_t j = 0; j < height; j++)
   {
@@ -1023,7 +1025,9 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
   if(buf == NULL) goto error;
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(buf)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, width, tea_states) \
+  shared(buf)
 #endif
   for(size_t j = 0; j < height; j++)
   {

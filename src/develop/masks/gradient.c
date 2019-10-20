@@ -805,7 +805,9 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(points)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(mh, mw, px, py) \
+  shared(points)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -849,7 +851,9 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(points)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(cosv, hwscale, normf, offset, mh, mw, steepness, sinv) \
+  shared(points)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -879,7 +883,9 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 // we fill the mask buffer by interpolation
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(points, buffer)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(h, mw, w) \
+  shared(points, buffer)
 #else
 #pragma omp parallel for shared(points, buffer)
 #endif
@@ -933,7 +939,9 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
 
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(points)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(iscale, mh, mw, py, px) \
+  shared(points)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -979,7 +987,9 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
 
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(points)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(cosv, hwscale, mh, mw, normf, offset, sinv, steepness) \
+  shared(points)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -1002,7 +1012,9 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
 // we fill the mask buffer by interpolation
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) shared(points, buffer)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(h, mw, w) \
+  shared(points, buffer)
 #else
 #pragma omp parallel for shared(points, buffer)
 #endif

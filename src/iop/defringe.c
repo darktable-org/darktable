@@ -251,8 +251,11 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   }
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(width, height,                                                 \
-                                              d) reduction(+ : avg_edge_chroma) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, in, out) \
+  shared(width, height, d) \
+  reduction(+ : avg_edge_chroma) \
+  schedule(static)
 #endif
   for(int v = 0; v < height; v++)
   {
@@ -288,8 +291,11 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
 #ifdef _OPENMP
 // dynamically/guided scheduled due to possible uneven edge-chroma distribution (thanks to rawtherapee code
 // for this hint!)
-#pragma omp parallel for default(none) shared(width, height, d, xy_small, xy_avg, xy_artifact)               \
-    firstprivate(thresh, avg_edge_chroma) schedule(guided, 32)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, in, out, samples_avg, samples_small) \
+  shared(width, height, d, xy_small, xy_avg, xy_artifact) \
+  firstprivate(thresh, avg_edge_chroma) \
+  schedule(guided, 32)
 #endif
   for(int v = 0; v < height; v++)
   {

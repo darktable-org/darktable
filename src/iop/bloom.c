@@ -126,7 +126,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 /* get the thresholded lights into buffer */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(data, blurlightness) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, ivoid, roi_out, scale) \
+  shared(data, blurlightness) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -146,7 +149,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(blurlightness) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(hr, roi_out, scanline_buf, size) \
+    shared(blurlightness) \
+    schedule(static)
 #endif
     for(int y = 0; y < roi_out->height; y++)
     {
@@ -180,7 +186,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(blurlightness) schedule(static)
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(hr, npoffs, opoffs, roi_out, size, scanline_buf) \
+    shared(blurlightness) \
+    schedule(static)
 #endif
     for(int x = 0; x < roi_out->width; x++)
     {
@@ -214,7 +223,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 /* screen blend lightness with original */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) shared(in, out, data, blurlightness) schedule(static)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ch, roi_out) \
+  shared(in, out, data, blurlightness) \
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
