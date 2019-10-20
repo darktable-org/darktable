@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2019-10-14 12:27+0200\n"
-"PO-Revision-Date: 2019-10-19 13:12+0200\n"
+"PO-Revision-Date: 2019-10-20 12:55+0200\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -6179,7 +6179,7 @@ msgid ""
 "Click-right on a tag of dictionary view and sub-menu <quote>attach tag</"
 "quote>"
 msgstr ""
-"Cliquer-droit sur un mot-clé de la vue dictionnaire ou du sous-menu "
+"Cliquer-droit sur un mot-clé de la vue dictionnaire et du sous-menu "
 "<quote>attacher un mot-clé</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4824(para)
@@ -6191,7 +6191,7 @@ msgid ""
 "Click-right on a tag of attached view and sub-menu <quote>attach tag to all</"
 "quote>"
 msgstr ""
-"Cliquer-droit sur un mot-clé de la vue attachée ou du sous-menu "
+"Cliquer-droit sur un mot-clé de la vue attachée et du sous-menu "
 "<quote>attacher le mot-clé à toutes les images sélectionnées</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4832(para)
@@ -6245,11 +6245,10 @@ msgstr "Double-cliquer sur un mot-clé de la vue attachée."
 msgid ""
 "Click-right on a tag of attached view and sub-menu <quote>detach</quote>"
 msgstr ""
-"Double-cliquer sur un mot-clé de la vue attachée ou du sous-menu "
+"Double-cliquer sur un mot-clé de la vue attachée et du sous-menu "
 "<quote>détacher</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4875(para)
-#, fuzzy
 msgid ""
 "Delete a tag from the list and from all images. A warning will be displayed "
 "on how many images have this tag attached. Take this warning seriously as "
@@ -6259,7 +6258,9 @@ msgstr ""
 "Supprimer un mot-clé de la liste et de toutes les images. Un avertissement "
 "sera affiché indiquant le nombre d'images auxquelles il est attaché. Prenez "
 "cet avertissement au sérieux car il n'y a aucun moyen de récupération, et "
-"par la suite, aucun moyen de retrouver les images concernées."
+"par la suite, aucun moyen de retrouver les images concernées (excepté dans "
+"la sauvegarde). Un mot-clé de la vue dictionnaire peut être supprimé en "
+"utilisant les actions suivantes :"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4882(para)
 msgid "Click on button <quote>delete</quote> delete the selected one."
@@ -6272,7 +6273,7 @@ msgid ""
 "Click-right on a tag of dictionary view and sub-menu <quote>delete tag</"
 "quote>."
 msgstr ""
-"Cliquer-droit sur un mot-clé de la vue dictionnaire ou du sous-menu "
+"Cliquer-droit sur un mot-clé de la vue dictionnaire et du sous-menu "
 "<quote>supprimer un mot clé</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4890(para)
@@ -6280,6 +6281,9 @@ msgid ""
 "Click-right on a tag of dictionary view and sub-menu <quote>delete branch</"
 "quote>. In that case the tag itself and sub tags are deleted."
 msgstr ""
+"Cliquer-droit sur un mot-clé de la vue dictionnaire et du sous-menu "
+"<quote>supprimer la branche</quote>. Dans ce cas le mot-clé lui-même et les "
+"mot-clés suivants de la branche sont supprimés."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4899(title)
 #, fuzzy
