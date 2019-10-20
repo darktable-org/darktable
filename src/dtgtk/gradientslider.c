@@ -364,7 +364,7 @@ static gboolean _gradient_slider_scroll_event(GtkWidget *widget, GdkEventScroll 
   gtk_widget_grab_focus(widget);
 
   gdouble delta_y;
-  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_delta(event, &delta_y))
   {
     delta_y *= -gslider->increment;
     return _gradient_slider_add_delta_internal(widget, delta_y, event->state, selected);

@@ -1377,10 +1377,10 @@ static gboolean _lib_timeline_scroll_callback(GtkWidget *w, GdkEventScroll *e, g
   }
   else
   {
-    int delta_x, delta_y;
-    if(dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y))
+    int delta;
+    if(dt_gui_get_scroll_unit_delta(e, &delta))
     {
-      int move = -delta_x - delta_y;
+      int move = -delta;
       if(e->state & GDK_SHIFT_MASK) move *= 2;
 
       _time_add(&(strip->time_pos), move, strip->zoom);
