@@ -1532,7 +1532,7 @@ static gboolean _area_scrolled_callback(GtkWidget *widget, GdkEventScroll *event
 
   if(c->selected < 0 && !c->edit_by_area) return TRUE;
 
-  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_delta(event, &delta_y))
   {
     if(c->color_picker.current_picker == DT_IOP_COLORZONES_PICK_SET_VALUES) dt_iop_color_picker_reset(self, TRUE);
 
