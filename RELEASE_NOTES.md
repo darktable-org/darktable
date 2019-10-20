@@ -21,7 +21,8 @@ and the changelog as compared to 2.6.1 can be found below.
 
 ## New Features
 
-- Add preference to disable april 1st game
+- April 1st game is now diabled by default
+- Add preference to disable/enable april 1st game
 - Print module default margin set 17mm
 - Add support for disabling base-curve by default
 - Add support for disabling sharpen by default
@@ -29,7 +30,7 @@ and the changelog as compared to 2.6.1 can be found below.
 ## Bugfixes
 
 - Souce with OpenMP can be compiled with GCC-9
-- Module colorzones uodate skin tone preset
+- Uodate skin tone preset on color-zones module
 - Fix compiling with exiv 0.27.2.1
 - Fix compilation on MacOS
 - Fix picasa, piwigo and facebook SSL support
