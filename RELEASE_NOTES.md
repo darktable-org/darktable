@@ -31,7 +31,7 @@ and the changelog as compared to 2.6.1 can be found below.
 
 - Source with OpenMP can be compiled with GCC-9 and clang
 - Update skin tone preset on color-zones module
-- Fix compiling with exiv 0.27.2.1
+- Fix compiling with exiv2 0.27.2.1
 - Fix file access permissions on macOS Catalina 10.15
 - Fix shift+scroll only scrolling in one direction on macOS
 - Fix picasa, piwigo and facebook SSL support
