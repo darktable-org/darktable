@@ -432,7 +432,7 @@ static void green_equilibration_lavg(float *out, const float *const in, const in
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, in, thr, width) \
+  dt_omp_firstprivate(height, in, thr, width, maximum)   \
   shared(out, oi, oj) \
   schedule(static)
 #endif
@@ -2484,7 +2484,7 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
 // for all pixels: interpolate green into float array, or copy color.
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(filters, out, roi_in, roi_out) \
+  dt_omp_firstprivate(filters, out, roi_in, roi_out, offx, offy, offX, offY) \
   shared(input) \
   schedule(static)
 #endif

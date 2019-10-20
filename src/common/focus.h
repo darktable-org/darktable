@@ -47,7 +47,7 @@ static inline void _dt_focus_cdf22_wtf(uint8_t *buf, const int l, const int widt
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, st, step, width) \
+  dt_omp_firstprivate(height, st, step, width, ch) \
   shared(buf) \
   schedule(static)
 #endif
@@ -70,7 +70,7 @@ static inline void _dt_focus_cdf22_wtf(uint8_t *buf, const int l, const int widt
   }
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, st, step, width) \
+  dt_omp_firstprivate(height, st, step, width, ch) \
   shared(buf) \
   schedule(static)
 #endif

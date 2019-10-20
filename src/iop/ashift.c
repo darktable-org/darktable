@@ -1069,7 +1069,7 @@ static void rgb2grey256(const float *in, double *out, const int width, const int
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width) \
+  dt_omp_firstprivate(height, width, ch)  \
   shared(in, out) \
   schedule(static)
 #endif
@@ -1099,7 +1099,7 @@ static void edge_enhance_1d(const double *in, double *out, const int width, cons
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width) \
+  dt_omp_firstprivate(height, width, khwidth, kwidth)    \
   shared(in, out, kernel) \
   schedule(static)
 #endif
@@ -1126,7 +1126,7 @@ static void edge_enhance_1d(const double *in, double *out, const int width, cons
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width) \
+  dt_omp_firstprivate(height, width, khwidth, kwidth)    \
   shared(out) \
   schedule(static)
 #endif

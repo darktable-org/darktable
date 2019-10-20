@@ -129,7 +129,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(b, c, ch, ivoid, ovoid, roi_out) \
+  dt_omp_firstprivate(a, b, c, ch, ivoid, ovoid, roi_out)        \
   shared(data) \
   schedule(static)
 #endif

@@ -334,7 +334,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
-      dt_omp_firstprivate(ch, grey, ivoid, ovoid, roi_out) \
+  dt_omp_firstprivate(ch, grey, ivoid, ovoid, roi_out, noise) \
       shared(data) \
       schedule(static)
 #endif
@@ -538,7 +538,7 @@ static void grey_point_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return;
-  
+
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
   dt_iop_color_picker_reset(&g->color_picker, TRUE);
 

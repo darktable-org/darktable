@@ -220,7 +220,7 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, bl, ldc, roi_out) \
+  dt_omp_firstprivate(ch, bl, ldc, roi_out, eps)    \
   shared(in, out, lwmax) \
   schedule(static)
 #endif

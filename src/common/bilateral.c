@@ -127,7 +127,7 @@ void dt_bilateral_splat(dt_bilateral_t *b, const float *const in)
   const int oz = b->size_y * b->size_x;
 // splat into downsampled grid
 #ifdef _OPENMP
-#pragma omp parallel for default(none) dt_omp_firstprivate(in, oy, oz) shared(b)
+#pragma omp parallel for default(none) dt_omp_firstprivate(in, ox, oy, oz) shared(b)
 #endif
   for(int j = 0; j < b->height; j++)
   {
@@ -171,7 +171,7 @@ static void blur_line_z(float *buf, const int offset1, const int offset2, const 
   const float w2 = 2.f / 16.f;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(size1, size2, size3, offset1, offset2, offset3) \
+    dt_omp_firstprivate(w1, w2, size1, size2, size3, offset1, offset2, offset3) \
     shared(buf)
 #endif
   for(int k = 0; k < size1; k++)
@@ -211,7 +211,7 @@ static void blur_line(float *buf, const int offset1, const int offset2, const in
   const float w2 = 1.f / 16.f;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(size1, size2, size3, offset1, offset2, offset3) \
+    dt_omp_firstprivate(size1, size2, size3, offset1, offset2, offset3, w0, w1, w2) \
     shared(buf)
 #endif
   for(int k = 0; k < size1; k++)
@@ -265,7 +265,7 @@ void dt_bilateral_slice(const dt_bilateral_t *const b, const float *const in, fl
   const int oz = b->size_y * b->size_x;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(b, in, norm, oy, oz) \
+    dt_omp_firstprivate(b, in, norm, oy, oz, ox)   \
     shared(out)
 #endif
   for(int j = 0; j < b->height; j++)
@@ -313,7 +313,7 @@ void dt_bilateral_slice_to_output(const dt_bilateral_t *const b, const float *co
   const int oz = b->size_y * b->size_x;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(b, in, norm, oy, oz) \
+    dt_omp_firstprivate(b, in, norm, ox, oy, oz)   \
     shared(out)
 #endif
   for(int j = 0; j < b->height; j++)
