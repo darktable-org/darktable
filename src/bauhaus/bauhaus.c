@@ -1836,7 +1836,7 @@ static gboolean dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *even
   if(w->type != DT_BAUHAUS_SLIDER) return FALSE;
   gtk_widget_grab_focus(widget);
 
-  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_delta(event, &delta_y))
   {
     delta_y *= -w->data.slider.scale / 5.0;
     return dt_bauhaus_slider_add_delta_internal(widget, delta_y, event->state);

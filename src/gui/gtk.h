@@ -177,6 +177,20 @@ gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x,
  * scroll events. */
 gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x, int *delta_y);
 
+/* Note that on macOS Shift+vertical scroll can be reported as Shift+horizontal scroll.
+ * So if Shift changes scrolling effect, both scrolls should be handled the same.
+ * For this case (or if it's otherwise useful) use the following 2 functions. */
+
+/* Return sum of scroll deltas from event. Return TRUE if any deltas
+ * can be retrieved. Handles both GDK_SCROLL_UP/DOWN/LEFT/RIGHT and
+ * GDK_SCROLL_SMOOTH style scroll events. */
+gboolean dt_gui_get_scroll_delta(const GdkEventScroll *event, gdouble *delta);
+/* Same as above, except accumulate smooth scrolls deltas of < 1 and
+ * only set delta and return TRUE once scrolls accumulate to >= 1.
+ * Effectively makes smooth scroll events act like old-style unit
+ * scroll events. */
+gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta);
+
 /** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
 void dt_gui_key_accel_block_on_focus_connect(GtkWidget *w);
 /** clean up connected signal handlers before destroying your widget: */
