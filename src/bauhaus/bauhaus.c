@@ -529,7 +529,7 @@ void dt_bauhaus_load_theme()
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 128, 128);
   cairo_t *cr = cairo_create(cst);
   layout = pango_cairo_create_layout(cr);
-  pango_layout_set_text(layout, "X", -1);
+  pango_layout_set_text(layout, "m", -1);
   pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
   pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
   int pango_width, pango_height;
@@ -538,7 +538,7 @@ void dt_bauhaus_load_theme()
   cairo_destroy(cr);
   cairo_surface_destroy(cst);
 
-  darktable.bauhaus->scale = 1.3f;
+  darktable.bauhaus->scale = 1.33f;
   darktable.bauhaus->line_height = pango_height / PANGO_SCALE;
   darktable.bauhaus->widget_space = INNER_PADDING / 2.0f; // used as a top/bottom margin for widgets
   darktable.bauhaus->quad_width = darktable.bauhaus->line_height;
