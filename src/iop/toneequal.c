@@ -2412,6 +2412,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   pango_font_description_set_size (desc, (int)(old_size / zoom_scale));
   layout = pango_cairo_create_layout(cr);
   pango_layout_set_font_description(layout, desc);
+  pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
 
   // Build text object
   snprintf(text, sizeof(text), "%+.1f EV", exposure_in);
@@ -2444,6 +2445,7 @@ static inline gboolean _init_drawing(GtkWidget *widget, dt_iop_toneequalizer_gui
   g->layout = pango_cairo_create_layout(g->cr);
   g->desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
   pango_layout_set_font_description(g->layout, g->desc);
+  pango_cairo_context_set_resolution(pango_layout_get_context(g->layout), darktable.gui->dpi);
   g->context = gtk_widget_get_style_context(widget);
 
   char text[256];
