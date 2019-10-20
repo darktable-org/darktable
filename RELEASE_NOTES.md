@@ -29,7 +29,7 @@ and the changelog as compared to 2.6.1 can be found below.
 
 ## Bugfixes
 
-- Source with OpenMP can be compiled with GCC-9
+- Source with OpenMP can be compiled with GCC-9 and clang
 - Update skin tone preset on color-zones module
 - Fix compiling with exiv 0.27.2.1
 - Fix compilation on MacOS
