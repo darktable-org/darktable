@@ -1,33 +1,36 @@
 * developers:
-Roman Lebedev,
 Pascal Obry,
 Tobias Ellinghaus,
+Roman Lebedev,
 Stefan Schöfegger,
-Peter Budai,
 Ulrich Pegelow,
-johannes hanika,
+Peter Budai,
 parafin,
+johannes hanika,
 Alexandre Prokoudine,
 Aldric Renaudin,
+Pascal de Bruijn,
 Edouard Gomez.
 
 * translators:
 Pascal Obry,
 Ger Siemerink,
-Tobias Ellinghaus,
-Maurizio Paglia,
+Michel Leblond,
+Nilvus,
 Timur I. Davletshin,
-Alexandre Prokoudine,
+Tobias Ellinghaus,
 mepi0011,
+Maurizio Paglia,
+Alexandre Prokoudine,
 Báthory Péter,
+Heiko Bauke,
 Jeronimo Pellegrini,
 Matjaž Jeran,
-shlomi braitbart,
+Ulrich Pegelow,
 Aurélien PIERRE,
-Heiko Bauke,
+EdgarLux,
 Josep V. Moragues,
 Marko Vertainen,
-Michel Leblond,
 Milan Knížek,
 Novy Sawai,
 Ragnar Wisløff,
@@ -38,30 +41,32 @@ Aurélien PIERRE,
 rawfiner,
 edgardoh,
 Dan Torop,
-Ger Siemerink,
 Matthieu Moy,
+Ger Siemerink,
+Michel Leblond,
+Heiko Bauke,
 Maurizio Paglia,
 Andreas Schneider,
-Heiko Bauke,
+Nilvus,
 Rikard Öxler,
 Timur I. Davletshin,
+mepi0011,
 Benoit Brummer,
 Philippe Weyland,
 grand-piano,
 luzpaz,
 Mario Lueder,
-Robert Bridge,
-mepi0011.
+Robert Bridge.
 
 * RawSpeed contributors (at least 1 commit):
-Stefan Löffler,
-Stefan Hoffmeister,
-parafin,
-Robert Bieber,
-Tobias Ellinghaus,
-Matthieu Volat,
-Shita Yuuma,
-Stefan Schöfegger,
-luz.paz.
+Roman Lebedev
+Robert Bridge
+bobobo1618
+luz.paz
+Bastian Bechtold
+Pascal de Bruijn
+dllu
+hanno@schwalm-bremen.de
+junkyardsparkle
 
 And all those of you that made previous releases possible
