@@ -25,6 +25,8 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ curl -Lo ~/ports/graphics/libraw/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/libraw-stdlib.diff
      $ cp -R "$(port dir pugixml)" ~/ports/textproc
      $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/pugixml-stdlib.patch | patch -d ~/ports -p0
+     $ cp -R "$(port dir librsvg)" ~/ports/graphics
+     $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/librsvg-nocargo.patch | patch -d ~/ports -p0
     then append this line:
      patchfiles-append patch.diff
     to ~/ports/*/*/Portfile files you just copied (except for pugixml) and run:
