@@ -25,7 +25,7 @@ done
 if [ -z "$STRIPDEBUGINFO" ]
 then
 	find package/darktable.app/Contents/Resources/lib/darktable \( -name \*.dylib -or -name \*.so \) -exec dsymutil \{} \;
-	for i in package/darktable.app/Contents/MacOS/*-bin
+	for i in package/darktable.app/Contents/MacOS/darktable{,-chart,-cli,-cltest,-generate-cache}
 	do
 		dsymutil "$i"
 	done
@@ -33,7 +33,7 @@ fi
 
 if [ -n "$CODECERT" ]
 then
-	find package/darktable.app/Contents/Resources/lib -type d -name \*.dSYM -prune -or -type f \! -name loaders.cache -exec codesign --verbose --force --options runtime -s "${CODECERT}" \{} \;
+	find package/darktable.app/Contents/Resources/lib -type d -name \*.dSYM -prune -or -type f -exec codesign --verbose --force --options runtime -s "${CODECERT}" \{} \;
 	codesign --deep --verbose --force --options runtime -s "${CODECERT}" package/darktable.app
 fi
 
