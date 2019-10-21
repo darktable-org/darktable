@@ -43,6 +43,9 @@
 #include "libs/colorpicker.h"
 #include "views/view.h"
 #include "views/view_api.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 
 #ifdef USE_LUA
 #include "lua/image.h"

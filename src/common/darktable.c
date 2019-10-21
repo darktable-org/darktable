@@ -699,6 +699,13 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         argv[k] = NULL;
         break;
       }
+#ifdef __APPLE__
+      else if(!strncmp(argv[k], "-psn_", 5))
+      {
+        // "-psn_*" argument is added automatically by macOS and should be ignored
+        argv[k] = NULL;
+      }
+#endif
       else
         return usage(argv[0]); // fail on unrecognized options
     }

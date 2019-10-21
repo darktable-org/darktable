@@ -1998,7 +1998,7 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
   if(c->selected < 0) return TRUE;
 
   gdouble delta_y;
-  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_delta(event, &delta_y))
   {
     delta_y *= -BASECURVE_DEFAULT_STEP;
     return _move_point_internal(self, widget, 0.0, delta_y, event->state);
