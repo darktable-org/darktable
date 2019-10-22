@@ -3144,7 +3144,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->method, _("RGB euclidean norm"));
   dt_bauhaus_combobox_add(g->method, _("RGB power norm"));
   dt_bauhaus_combobox_add(g->method, _("RGB geometric mean"));
-  g_object_set(G_OBJECT(g->method), "tooltip-text", _("preview the mask and chose the estimator that gives you the\"
+  g_object_set(G_OBJECT(g->method), "tooltip-text", _("preview the mask and chose the estimator that gives you the\n"
                                                       "higher contrast between areas to dodge and areas to burn"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->method), "value-changed", G_CALLBACK(method_changed), self);
   
