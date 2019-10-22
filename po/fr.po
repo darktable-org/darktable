@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-22 09:23+0200\n"
-"PO-Revision-Date: 2019-10-22 09:51+0200\n"
+"POT-Creation-Date: 2019-10-22 09:57+0200\n"
+"PO-Revision-Date: 2019-10-22 09:59+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -5863,28 +5863,28 @@ msgid "luminance"
 msgstr "luminance"
 
 #: ../src/iop/basecurve.c:2142 ../src/iop/basicadj.c:709
-#: ../src/iop/rgbcurve.c:1622 ../src/iop/rgblevels.c:1119
-#: ../src/iop/tonecurve.c:1395
-msgid "max rgb"
-msgstr "max rvb"
+#: ../src/iop/filmicrgb.c:1548 ../src/iop/rgbcurve.c:1622
+#: ../src/iop/rgblevels.c:1119 ../src/iop/tonecurve.c:1395
+msgid "max RGB"
+msgstr "max RVB"
 
 #: ../src/iop/basecurve.c:2143 ../src/iop/basicadj.c:710
 #: ../src/iop/rgbcurve.c:1623 ../src/iop/rgblevels.c:1120
 #: ../src/iop/tonecurve.c:1396
-msgid "average rgb"
-msgstr "moyenne rvb"
+msgid "average RGB"
+msgstr "moyenne RVB"
 
 #: ../src/iop/basecurve.c:2144 ../src/iop/basicadj.c:711
 #: ../src/iop/rgbcurve.c:1624 ../src/iop/rgblevels.c:1121
 #: ../src/iop/tonecurve.c:1397
-msgid "sum rgb"
-msgstr "somme rvb"
+msgid "sum RGB"
+msgstr "somme RVB"
 
 #: ../src/iop/basecurve.c:2145 ../src/iop/basicadj.c:712
 #: ../src/iop/rgbcurve.c:1625 ../src/iop/rgblevels.c:1122
 #: ../src/iop/tonecurve.c:1398
-msgid "norm rgb"
-msgstr "norme rvb"
+msgid "norm RGB"
+msgstr "norme RVB"
 
 #: ../src/iop/basecurve.c:2146 ../src/iop/basicadj.c:713
 #: ../src/iop/rgbcurve.c:1626 ../src/iop/rgblevels.c:1123
@@ -8607,10 +8607,6 @@ msgstr "échelle plage dynamique"
 #: ../src/iop/filmicrgb.c:1546
 msgid "preserve chroma"
 msgstr "préserver couleur"
-
-#: ../src/iop/filmicrgb.c:1548
-msgid "max RGB"
-msgstr "max RVB"
 
 #: ../src/iop/filmicrgb.c:1549
 msgid "luminance Y"
@@ -15172,6 +15168,18 @@ msgstr "raccourcis"
 #: ../src/views/view.c:2415
 msgid "Action"
 msgstr "action"
+
+#~ msgid "max rgb"
+#~ msgstr "max rvb"
+
+#~ msgid "average rgb"
+#~ msgstr "moyenne rvb"
+
+#~ msgid "sum rgb"
+#~ msgstr "somme rvb"
+
+#~ msgid "norm rgb"
+#~ msgstr "norme rvb"
 
 # lorsque l'action engendre une suppression physique non annulable, on emploie le terme "supprimer"
 #~ msgid "discard"
