@@ -995,8 +995,11 @@ void dt_history_compress_on_image(int32_t imgid)
     my_history_end = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
 
-  if (my_history_end == 0) return;
-
+  if (my_history_end == 0)
+  {
+    dt_history_delete_on_image(imgid);
+    return;
+  }
   // compress history, keep disabled modules as documented
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "DELETE FROM main.history WHERE imgid = ?1 AND num "
