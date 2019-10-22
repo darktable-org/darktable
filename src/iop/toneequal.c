@@ -3118,7 +3118,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(area_leave_notify), self);
   g_signal_connect(G_OBJECT(g->area), "enter-notify-event", G_CALLBACK(area_enter_notify), self);
   g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(area_motion_notify), self);
-  g_object_set(G_OBJECT(g->area), "tooltip-text", _("double-click to reset the cturve"), (char *)NULL);
+  g_object_set(G_OBJECT(g->area), "tooltip-text", _("double-click to reset the curve"), (char *)NULL);
   /*
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(_scrolled), self);
   g_signal_connect(G_OBJECT(c->area), "key-press-event", G_CALLBACK(dt_iop_tonecurve_key_press), self);*/
