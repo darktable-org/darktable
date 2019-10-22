@@ -230,25 +230,25 @@ void init_presets(dt_iop_module_so_t *self)
   p.grey_point_source = 18.45f;
   p.white_point_source = 3.5f;
   p.black_point_source = -3.5f;
-  dt_gui_presets_add_generic(_("07 EV (studio)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("07 EV dynamic range"), self->op, self->version(), &p, sizeof(p), 1);
 
   // Presets indoors
   p.grey_point_source = 9.225f;
   p.white_point_source = 4.5f;
   p.black_point_source = -4.5f;
-  dt_gui_presets_add_generic(_("09 EV (indoors)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("09 EV dynamic range"), self->op, self->version(), &p, sizeof(p), 1);
 
   // Presets dim-outdoors
   p.grey_point_source = 4.6125f;
   p.white_point_source = 5.5f;
   p.black_point_source = -5.5f;
-  dt_gui_presets_add_generic(_("11 EV (dim outdoors)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("11 EV dynamic range"), self->op, self->version(), &p, sizeof(p), 1);
 
   // Presets outdoors
   p.grey_point_source = 2.30625f;
   p.white_point_source = 6.5f;
   p.black_point_source = -6.5f;
-  dt_gui_presets_add_generic(_("13 EV (outdoors)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("13 EV dynamic range"), self->op, self->version(), &p, sizeof(p), 1);
 
   // Presets backlighting
   p.grey_point_source = 1.153125f;
