@@ -2414,7 +2414,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   pango_layout_set_font_description(layout, desc);
 
   // Build text object
-  snprintf(text, sizeof(text), "%+.1f EV", exposure_in);
+  snprintf(text, sizeof(text), _("%+.1f EV"), exposure_in);
   pango_layout_set_text(layout, text, -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
 
@@ -3051,55 +3051,55 @@ void gui_init(struct dt_iop_module_t *self)
   const float bottom = -2.0;
 
   g->noise = dt_bauhaus_slider_new_with_range(self, bottom, top, 0.1, 0.0, 2);
-  dt_bauhaus_slider_set_format(g->noise, "%+.2f EV");
+  dt_bauhaus_slider_set_format(g->noise, _("%+.2f EV"));
   dt_bauhaus_widget_set_label(g->noise, NULL, _("-8 EV : blacks"));
   gtk_box_pack_start(GTK_BOX(page1), g->noise, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->noise), "value-changed", G_CALLBACK(noise_callback), self);
 
   g->ultra_deep_blacks = dt_bauhaus_slider_new_with_range(self, bottom, top, 0.1, 0.0, 2);
-  dt_bauhaus_slider_set_format(g->ultra_deep_blacks, "%+.2f EV");
+  dt_bauhaus_slider_set_format(g->ultra_deep_blacks, _("%+.2f EV"));
   dt_bauhaus_widget_set_label(g->ultra_deep_blacks, NULL, _("-7 EV : deep shadows"));
   gtk_box_pack_start(GTK_BOX(page1), g->ultra_deep_blacks, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->ultra_deep_blacks), "value-changed", G_CALLBACK(ultra_deep_blacks_callback), self);
 
   g->deep_blacks = dt_bauhaus_slider_new_with_range(self, bottom, top, 0.1, 0.0, 2);
-  dt_bauhaus_slider_set_format(g->deep_blacks, "%+.2f EV");
+  dt_bauhaus_slider_set_format(g->deep_blacks, _("%+.2f EV"));
   dt_bauhaus_widget_set_label(g->deep_blacks, NULL, _("-6 EV : shadows"));
   gtk_box_pack_start(GTK_BOX(page1), g->deep_blacks, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->deep_blacks), "value-changed", G_CALLBACK(deep_blacks_callback), self);
 
   g->blacks = dt_bauhaus_slider_new_with_range(self, bottom, top, 0.1, 0.0, 2);
-  dt_bauhaus_slider_set_format(g->blacks, "%+.2f EV");
+  dt_bauhaus_slider_set_format(g->blacks, _("%+.2f EV"));
   dt_bauhaus_widget_set_label(g->blacks, NULL, _("-5 EV : light shadows"));
   gtk_box_pack_start(GTK_BOX(page1), g->blacks, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->blacks), "value-changed", G_CALLBACK(blacks_callback), self);
 
   g->shadows = dt_bauhaus_slider_new_with_range(self, bottom, top, 0.1, 0.0, 2);
-  dt_bauhaus_slider_set_format(g->shadows, "%+.2f EV");
+  dt_bauhaus_slider_set_format(g->shadows, _("%+.2f EV"));
   dt_bauhaus_widget_set_label(g->shadows, NULL, _("-4 EV : midtones"));
   gtk_box_pack_start(GTK_BOX(page1), g->shadows, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->shadows), "value-changed", G_CALLBACK(shadows_callback), self);
 
   g->midtones = dt_bauhaus_slider_new_with_range(self, bottom, top, 0.1, 0.0, 2);
-  dt_bauhaus_slider_set_format(g->midtones, "%+.2f EV");
+  dt_bauhaus_slider_set_format(g->midtones, _("%+.2f EV"));
   dt_bauhaus_widget_set_label(g->midtones, NULL, _("-3 EV : dark highlights"));
   gtk_box_pack_start(GTK_BOX(page1), g->midtones, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->midtones), "value-changed", G_CALLBACK(midtones_callback), self);
 
   g->highlights = dt_bauhaus_slider_new_with_range(self, bottom, top, 0.1, 0.0, 2);
-  dt_bauhaus_slider_set_format(g->highlights, "%+.2f EV");
+  dt_bauhaus_slider_set_format(g->highlights, _("%+.2f EV"));
   dt_bauhaus_widget_set_label(g->highlights, NULL, _("-2 EV : highlights"));
   gtk_box_pack_start(GTK_BOX(page1), g->highlights, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->highlights), "value-changed", G_CALLBACK(highlights_callback), self);
 
   g->whites = dt_bauhaus_slider_new_with_range(self, bottom, top, 0.1, 0.0, 2);
-  dt_bauhaus_slider_set_format(g->whites, "%+.2f EV");
+  dt_bauhaus_slider_set_format(g->whites, _("%+.2f EV"));
   dt_bauhaus_widget_set_label(g->whites, NULL, _("-1 EV : whites"));
   gtk_box_pack_start(GTK_BOX(page1), g->whites, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->whites), "value-changed", G_CALLBACK(whites_callback), self);
 
   g->speculars = dt_bauhaus_slider_new_with_range(self, bottom, top, 0.1, 0.0, 2);
-  dt_bauhaus_slider_set_format(g->speculars, "%+.2f EV");
+  dt_bauhaus_slider_set_format(g->speculars, _("%+.2f EV"));
   dt_bauhaus_widget_set_label(g->speculars, NULL, _("+0 EV : speculars"));
   gtk_box_pack_start(GTK_BOX(page1), g->speculars, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->speculars), "value-changed", G_CALLBACK(speculars_callback), self);
@@ -3136,21 +3136,21 @@ void gui_init(struct dt_iop_module_t *self)
   g->method = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(g->method, NULL, _("luminance estimator"));
   gtk_box_pack_start(GTK_BOX(page3), g->method, FALSE, FALSE, 0);
-  dt_bauhaus_combobox_add(g->method, "RGB average");
-  dt_bauhaus_combobox_add(g->method, "HSL lightness");
-  dt_bauhaus_combobox_add(g->method, "HSV value / RGB max");
-  dt_bauhaus_combobox_add(g->method, "RGB sum");
-  dt_bauhaus_combobox_add(g->method, "RGB euclidean norm");
-  dt_bauhaus_combobox_add(g->method, "RGB power norm");
-  dt_bauhaus_combobox_add(g->method, "RGB geometric mean");
+  dt_bauhaus_combobox_add(g->method, _("RGB average"));
+  dt_bauhaus_combobox_add(g->method, _("HSL lightness"));
+  dt_bauhaus_combobox_add(g->method, _("HSV value / RGB max"));
+  dt_bauhaus_combobox_add(g->method, _("RGB sum"));
+  dt_bauhaus_combobox_add(g->method, _("RGB euclidean norm"));
+  dt_bauhaus_combobox_add(g->method, _("RGB power norm"));
+  dt_bauhaus_combobox_add(g->method, _("RGB geometric mean"));
   g_signal_connect(G_OBJECT(g->method), "value-changed", G_CALLBACK(method_changed), self);
 
   g->details = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(g->details, NULL, _("preserve details"));
   gtk_box_pack_start(GTK_BOX(page3), g->details, FALSE, FALSE, 0);
-  dt_bauhaus_combobox_add(g->details, "no");
-  dt_bauhaus_combobox_add(g->details, "averaged guided filter");
-  dt_bauhaus_combobox_add(g->details, "guided filter");
+  dt_bauhaus_combobox_add(g->details, _("no"));
+  dt_bauhaus_combobox_add(g->details, _("averaged guided filter"));
+  dt_bauhaus_combobox_add(g->details, _("guided filter"));
   g_object_set(G_OBJECT(g->details), "tooltip-text", _("'no' affects global and local contrast (safe if you only add contrast)\n"
                                                        "'guided filter' only affects global contrast and tries to preserve local contrast\n"
                                                        "'averaged guided filter' is a geometric mean of both methods"), (char *)NULL);

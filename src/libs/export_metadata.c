@@ -312,12 +312,12 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("list of available tags"));
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-  GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes("redefined tag", renderer, "text", 0, NULL);
+  GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes(_("redefined tag"), renderer, "text", 0, NULL);
   gtk_tree_view_append_column(view, col);
   renderer = gtk_cell_renderer_text_new();
   g_object_set(renderer, "editable", TRUE, NULL);
   g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(formula_edited), (gpointer)d);
-  col = gtk_tree_view_column_new_with_attributes("formula", renderer, "text", 1, NULL);
+  col = gtk_tree_view_column_new_with_attributes(_("formula"), renderer, "text", 1, NULL);
   gtk_tree_view_append_column(view, col);
   char *tooltip_text = dt_gtkentry_build_completion_tooltip_text(
                         _("list of calculated metadata\n"
