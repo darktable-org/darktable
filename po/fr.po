@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-10-22 09:57+0200\n"
-"PO-Revision-Date: 2019-10-22 09:59+0200\n"
+"PO-Revision-Date: 2019-10-22 10:07+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -8520,7 +8520,7 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:192
 msgid "filmic rgb"
-msgstr "filmique rgb"
+msgstr "filmique rvb"
 
 #: ../src/iop/filmicrgb.c:233
 msgid "07 EV (studio)"
@@ -10211,7 +10211,7 @@ msgstr "l'échelle maximum est %i pour la taille de cette image"
 
 #: ../src/iop/rgbcurve.c:126
 msgid "rgb curve"
-msgstr "courbe rgb"
+msgstr "courbe rvb"
 
 #: ../src/iop/rgbcurve.c:208 ../src/iop/tonecurve.c:544
 #: ../src/iop/tonemap.cc:297
