@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-21 19:21+0200\n"
-"PO-Revision-Date: 2019-10-21 19:22+0200\n"
+"POT-Creation-Date: 2019-10-22 09:23+0200\n"
+"PO-Revision-Date: 2019-10-22 09:51+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1412,23 +1412,23 @@ msgstr[1] "%d images sur %d sélectionnées"
 #: ../src/common/colorspaces.c:968 ../src/iop/colorin.c:2108
 #: ../src/iop/lut3d.c:1118
 msgid "sRGB"
-msgstr "sRGB"
+msgstr "sRVB"
 
 #. this is only used in error messages, no need for the (...) description
 #: ../src/common/colorspaces.c:969 ../src/common/colorspaces.c:1274
 #: ../src/iop/colorin.c:2109 ../src/libs/print_settings.c:1034
 msgid "Adobe RGB (compatible)"
-msgstr "Adobe RGB (compatible)"
+msgstr "Adobe RVB (compatible)"
 
 #: ../src/common/colorspaces.c:970 ../src/common/colorspaces.c:1279
 #: ../src/iop/colorin.c:2110
 msgid "linear Rec709 RGB"
-msgstr "RGB Rec709 linéaire"
+msgstr "RVB Rec709 linéaire"
 
 #: ../src/common/colorspaces.c:971 ../src/common/colorspaces.c:1288
 #: ../src/iop/colorin.c:2111
 msgid "linear Rec2020 RGB"
-msgstr "RGB Rec2020 linéaire"
+msgstr "RVB Rec2020 linéaire"
 
 #: ../src/common/colorspaces.c:972 ../src/common/colorspaces.c:1298
 msgid "linear XYZ"
@@ -1441,7 +1441,7 @@ msgstr "Lab"
 
 #: ../src/common/colorspaces.c:974 ../src/common/colorspaces.c:1307
 msgid "linear infrared BGR"
-msgstr "infrarouge linéaire BGR"
+msgstr "infrarouge linéaire BVR"
 
 #: ../src/common/colorspaces.c:975 ../src/common/colorspaces.c:986
 #: ../src/common/colorspaces.c:1256 ../src/common/colorspaces.c:1259
@@ -1474,7 +1474,7 @@ msgstr "alternative à la matrice de couleur"
 
 #: ../src/common/colorspaces.c:982
 msgid "BRG (experimental)"
-msgstr "BRG (expérimental)"
+msgstr "BRV (expérimental)"
 
 #: ../src/common/colorspaces.c:983 ../src/common/colorspaces.c:1246
 #: ../src/iop/colorout.c:881
@@ -1493,23 +1493,23 @@ msgstr "profil de travail"
 
 #: ../src/common/colorspaces.c:1265
 msgid "sRGB (e.g. JPG)"
-msgstr "sRGB (ex: JPG)"
+msgstr "sRVB (ex: JPG)"
 
 #: ../src/common/colorspaces.c:1269 ../src/libs/print_settings.c:1027
 msgid "sRGB (web-safe)"
-msgstr "sRGB (web)"
+msgstr "sRVB (web)"
 
 #: ../src/common/colorspaces.c:1283
 msgid "gamma Rec709 RGB"
-msgstr "RGB Rec709 gamma"
+msgstr "RVB Rec709 gamma"
 
 #: ../src/common/colorspaces.c:1293
 msgid "linear prophoto RGB"
-msgstr "prophoto RGB linéaire"
+msgstr "prophoto RVB linéaire"
 
 #: ../src/common/colorspaces.c:1311
 msgid "BRG (for testing)"
-msgstr "BRG (pour test)"
+msgstr "BRV (pour test)"
 
 #: ../src/common/cups_print.c:408
 #, c-format
@@ -1577,8 +1577,8 @@ msgstr ""
 #: ../src/common/darktable.c:804 ../src/common/variables.c:380
 #: ../src/imageio/format/pdf.c:669 ../src/imageio/format/pdf.c:694
 #: ../src/iop/clipping.c:2005 ../src/iop/filmicrgb.c:1547
-#: ../src/libs/export.c:628 ../src/libs/export.c:634
-#: ../src/libs/metadata_view.c:279
+#: ../src/iop/toneequal.c:3151 ../src/libs/export.c:628
+#: ../src/libs/export.c:634 ../src/libs/metadata_view.c:279
 msgid "no"
 msgstr "non"
 
@@ -2793,27 +2793,27 @@ msgstr "Lab canal-b"
 #: ../src/develop/blend_gui.c:2232
 msgctxt "blendmode"
 msgid "HSV lightness"
-msgstr "valeur TSV"
+msgstr "luminance TSL"
 
 #: ../src/develop/blend_gui.c:2234
 msgctxt "blendmode"
 msgid "HSV color"
-msgstr "couleur TSV"
+msgstr "couleur TSL"
 
 #: ../src/develop/blend_gui.c:2235
 msgctxt "blendmode"
 msgid "RGB red channel"
-msgstr "RGB cannal rouge"
+msgstr "RVB cannal rouge"
 
 #: ../src/develop/blend_gui.c:2237
 msgctxt "blendmode"
 msgid "RGB green channel"
-msgstr "RGB canal vert"
+msgstr "RVB canal vert"
 
 #: ../src/develop/blend_gui.c:2239
 msgctxt "blendmode"
 msgid "RGB blue channel"
-msgstr "RGB canal bleu"
+msgstr "RVB canal bleu"
 
 #. * deprecated blend modes: make them available as legacy history stacks might want them
 #: ../src/develop/blend_gui.c:2243
@@ -5811,7 +5811,7 @@ msgstr "courbe de base"
 
 #: ../src/iop/basecurve.c:2125
 msgid "abscissa: input, ordinate: output. works on RGB channels"
-msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RGB"
+msgstr "abscisse : entrée, ordonnée : sortie. fonctionne sur les canaux RVB"
 
 #: ../src/iop/basecurve.c:2130 ../src/iop/lens.cc:2461
 #: ../src/iop/tonecurve.c:1405 ../src/iop/vignette.c:1156
@@ -5866,25 +5866,25 @@ msgstr "luminance"
 #: ../src/iop/rgbcurve.c:1622 ../src/iop/rgblevels.c:1119
 #: ../src/iop/tonecurve.c:1395
 msgid "max rgb"
-msgstr "max rgb"
+msgstr "max rvb"
 
 #: ../src/iop/basecurve.c:2143 ../src/iop/basicadj.c:710
 #: ../src/iop/rgbcurve.c:1623 ../src/iop/rgblevels.c:1120
 #: ../src/iop/tonecurve.c:1396
 msgid "average rgb"
-msgstr "moyenne rgb"
+msgstr "moyenne rvb"
 
 #: ../src/iop/basecurve.c:2144 ../src/iop/basicadj.c:711
 #: ../src/iop/rgbcurve.c:1624 ../src/iop/rgblevels.c:1121
 #: ../src/iop/tonecurve.c:1397
 msgid "sum rgb"
-msgstr "somme rgb"
+msgstr "somme rvb"
 
 #: ../src/iop/basecurve.c:2145 ../src/iop/basicadj.c:712
 #: ../src/iop/rgbcurve.c:1625 ../src/iop/rgblevels.c:1122
 #: ../src/iop/tonecurve.c:1398
 msgid "norm rgb"
-msgstr "norme rgb"
+msgstr "norme rvb"
 
 #: ../src/iop/basecurve.c:2146 ../src/iop/basicadj.c:713
 #: ../src/iop/rgbcurve.c:1626 ../src/iop/rgblevels.c:1123
@@ -5958,7 +5958,7 @@ msgstr ""
 "ajuste le niveau du noir pour éviter les valeurs négatives.\n"
 "ce réglage ne devrait jamais être utilisé pour augmenter la densité\n"
 "si mal ajusté, les couleurs très sombres hors gamut seront tronquées\n"
-"en poussant les valeurs RGB négativement."
+"en poussant les valeurs RVB négativement."
 
 #: ../src/iop/basicadj.c:687 ../src/iop/exposure.c:884
 msgid "adjust the exposure correction"
@@ -6830,15 +6830,15 @@ msgstr "neutraliser les couleurs"
 
 #: ../src/iop/colorbalance.c:2366
 msgid "lift, gamma, gain (ProPhotoRGB)"
-msgstr "lift, gamma, gain (ProPhotoRGB)"
+msgstr "lift, gamma, gain (ProPhotoRVB)"
 
 #: ../src/iop/colorbalance.c:2367
 msgid "slope, offset, power (ProPhotoRGB)"
-msgstr "slope, offset, power (ProPhotoRGB)"
+msgstr "slope, offset, power (ProPhotoRVB)"
 
 #: ../src/iop/colorbalance.c:2368
 msgid "lift, gamma, gain (sRGB)"
-msgstr "lift, gamma, gain (sRGB)"
+msgstr "lift, gamma, gain (sRVB)"
 
 #: ../src/iop/colorbalance.c:2370 ../src/iop/colorbalance.c:2381
 msgid "color-grading mapping method"
@@ -6854,7 +6854,7 @@ msgstr "TSL"
 
 #: ../src/iop/colorbalance.c:2377
 msgid "RGBL"
-msgstr "RGBL"
+msgstr "RVBL"
 
 #: ../src/iop/colorbalance.c:2388
 msgid "master"
@@ -6988,7 +6988,7 @@ msgstr "ajuste l'histogramme et centre la luminosité moyenne"
 
 #: ../src/iop/colorbalance.c:2665
 msgid "optimize the RGB curves to remove color casts"
-msgstr "optimise les courbes RGB et supprime les dérives de couleur"
+msgstr "optimise les courbes RVB et supprime les dérives de couleur"
 
 #: ../src/iop/colorchecker.c:115
 msgid "color look up table"
@@ -7165,7 +7165,7 @@ msgid ""
 "RGB!"
 msgstr ""
 "impossible d'extraire la matrice depuis l'espace « %s », il sera remplacé "
-"par Rec2020 RGB!"
+"par Rec2020 RVB!"
 
 #: ../src/iop/colorin.c:1583
 #, c-format
@@ -7178,7 +7178,7 @@ msgstr "impossible de générer le profil d'entrée"
 
 #: ../src/iop/colorin.c:1700
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
-msgstr "profil d'entrée non supporté, remplacé par linéaire RGB Rec709 !"
+msgstr "profil d'entrée non supporté, remplacé par linéaire RVB Rec709 !"
 
 #: ../src/iop/colorin.c:2069
 msgid "input profile"
@@ -7200,7 +7200,7 @@ msgstr "troncature gamut"
 
 #: ../src/iop/colorin.c:2113
 msgid "confine Lab values to gamut of RGB color space"
-msgstr "cantonne les valeurs Lab au gamut de l'espace RGB"
+msgstr "cantonne les valeurs Lab au gamut de l'espace RVB"
 
 #: ../src/iop/colorize.c:88
 msgid "colorize"
@@ -7310,15 +7310,15 @@ msgstr "profil de couleur de sortie "
 
 #: ../src/iop/colorout.c:667
 msgid "missing output profile has been replaced by sRGB!"
-msgstr "profil de sortie non trouvé, remplacé par sRGB !"
+msgstr "profil de sortie non trouvé, remplacé par sRVB !"
 
 #: ../src/iop/colorout.c:686
 msgid "missing softproof profile has been replaced by sRGB!"
-msgstr "profil d'épreuvage non trouvé, remplacé par sRGB !"
+msgstr "profil d'épreuvage non trouvé, remplacé par sRVB !"
 
 #: ../src/iop/colorout.c:729
 msgid "unsupported output profile has been replaced by sRGB!"
-msgstr "profil de sortie non supporté, remplacé par sRGB !"
+msgstr "profil de sortie non supporté, remplacé par sRVB !"
 
 #: ../src/iop/colorout.c:868
 msgid "output intent"
@@ -7841,7 +7841,7 @@ msgstr "R"
 
 #: ../src/iop/denoiseprofile.c:3975 ../src/iop/rawdenoise.c:989
 msgid "G"
-msgstr "G"
+msgstr "V"
 
 #: ../src/iop/denoiseprofile.c:3977 ../src/iop/rawdenoise.c:991
 msgid "B"
@@ -8072,11 +8072,11 @@ msgstr "floyd-steinberg 4-bit gris"
 
 #: ../src/iop/dither.c:798
 msgid "floyd-steinberg 8-bit RGB"
-msgstr "floyd-steinberg 8-bit RGB"
+msgstr "floyd-steinberg 8-bit RVB"
 
 #: ../src/iop/dither.c:799
 msgid "floyd-steinberg 16-bit RGB"
-msgstr "floyd-steinberg 16-bit RGB"
+msgstr "floyd-steinberg 16-bit RVB"
 
 #: ../src/iop/dither.c:800
 msgid "floyd-steinberg auto"
@@ -8187,7 +8187,7 @@ msgstr ""
 "ajuste le niveau du noir pour éviter les valeurs négatives.\n"
 "ce réglage ne devrait jamais être utilisé pour augmenter la densité\n"
 "si mal ajusté, les couleurs très sombres hors gamut seront tronquées\n"
-"en poussant les valeurs RGB négativement."
+"en poussant les valeurs RVB négativement."
 
 #: ../src/iop/exposure.c:901
 msgid ""
@@ -8218,7 +8218,7 @@ msgstr "valeur cible"
 msgid ""
 "where to place the exposure level for processed pics, EV below overexposure."
 msgstr ""
-"où placer le niveau d'exposition pour l'image développée, EV en dessous de "
+"où placer le niveau d'exposition pour l'image développée, IL en dessous de "
 "la surexposition"
 
 #: ../src/iop/exposure.c:930
@@ -8236,39 +8236,39 @@ msgstr "filmique"
 
 #: ../src/iop/filmic.c:311
 msgid "09 EV (low-key)"
-msgstr "09 EV (clair-obscur)"
+msgstr "09 IL (clair-obscur)"
 
 #: ../src/iop/filmic.c:318
 msgid "10 EV (indoors)"
-msgstr "10 EV (intérieur)"
+msgstr "10 IL (intérieur)"
 
 #: ../src/iop/filmic.c:325 ../src/iop/filmicrgb.c:245
 msgid "11 EV (dim outdoors)"
-msgstr "11 EV (extérieur sombre)"
+msgstr "11 IL (extérieur sombre)"
 
 #: ../src/iop/filmic.c:332
 msgid "12 EV (outdoors)"
-msgstr "12 EV (extérieur)"
+msgstr "12 IL (extérieur)"
 
 #: ../src/iop/filmic.c:339
 msgid "13 EV (bright outdoors)"
-msgstr "13 EV (extérieur lumineux)"
+msgstr "13 IL (extérieur lumineux)"
 
 #: ../src/iop/filmic.c:346
 msgid "14 EV (backlighting)"
-msgstr "14 EV (contre-jour)"
+msgstr "14 IL (contre-jour)"
 
 #: ../src/iop/filmic.c:353
 msgid "15 EV (sunset)"
-msgstr "15 EV (coucher de soleil)"
+msgstr "15 IL (coucher de soleil)"
 
 #: ../src/iop/filmic.c:360
 msgid "16 EV (HDR)"
-msgstr "16 EV (HDR)"
+msgstr "16 IL (HDR)"
 
 #: ../src/iop/filmic.c:367
 msgid "18 EV (HDR++)"
-msgstr "18 EV (HDR++)"
+msgstr "18 IL (HDR++)"
 
 #: ../src/iop/filmic.c:1679
 msgid "read-only graph, use the parameters below to set the nodes"
@@ -8524,23 +8524,23 @@ msgstr "filmique rgb"
 
 #: ../src/iop/filmicrgb.c:233
 msgid "07 EV (studio)"
-msgstr "07 EV (studio)"
+msgstr "07 IL (studio)"
 
 #: ../src/iop/filmicrgb.c:239
 msgid "09 EV (indoors)"
-msgstr "09 EV (intérieur)"
+msgstr "09 IL (intérieur)"
 
 #: ../src/iop/filmicrgb.c:251
 msgid "13 EV (outdoors)"
-msgstr "13 EV (extérieur)"
+msgstr "13 IL (extérieur)"
 
 #: ../src/iop/filmicrgb.c:257
 msgid "15 EV (backlighting)"
-msgstr "15 EV (contre-jour)"
+msgstr "15 IL (contre-jour)"
 
 #: ../src/iop/filmicrgb.c:263
 msgid "17 EV (HDR)"
-msgstr "17 EV (HDR)"
+msgstr "17 IL (HDR)"
 
 #: ../src/iop/filmicrgb.c:268
 msgctxt "accel"
@@ -8610,15 +8610,15 @@ msgstr "préserver couleur"
 
 #: ../src/iop/filmicrgb.c:1548
 msgid "max RGB"
-msgstr "RGB max"
+msgstr "max RVB"
 
 #: ../src/iop/filmicrgb.c:1549
 msgid "luminance Y"
 msgstr "luminance Y"
 
-#: ../src/iop/filmicrgb.c:1550
+#: ../src/iop/filmicrgb.c:1550 ../src/iop/toneequal.c:3144
 msgid "RGB power norm"
-msgstr "norme puissance RGB"
+msgstr "norme puissance RVB"
 
 #: ../src/iop/filmicrgb.c:1586
 msgid "target power transfer function"
@@ -8796,7 +8796,7 @@ msgstr "densité"
 
 #: ../src/iop/graduatednd.c:1218
 msgid "the density in EV for the filter"
-msgstr "densité du filtre en IL [EV]"
+msgstr "densité du filtre en IL"
 
 #: ../src/iop/graduatednd.c:1226
 #, no-c-format
@@ -9229,7 +9229,7 @@ msgstr "Aberrations Chromatiques Transversales bleu"
 
 #: ../src/iop/lens.cc:2485
 msgid "TCA blue"
-msgstr "bleu"
+msgstr "AC bleu"
 
 #: ../src/iop/lens.cc:2492
 msgid "corrections done: "
@@ -9661,11 +9661,11 @@ msgstr "REC.709"
 
 #: ../src/iop/lut3d.c:1120
 msgid "lin sRGB/REC.709"
-msgstr "lin sRGB/REC.709"
+msgstr "lin sRVB/REC.709"
 
 #: ../src/iop/lut3d.c:1121
 msgid "lin prophoto RGB"
-msgstr "lin prophoto RGB"
+msgstr "lin prophoto RVB"
 
 #: ../src/iop/lut3d.c:1123
 msgid "select the color space in which the LUT has to be applied"
@@ -9771,23 +9771,23 @@ msgstr "étendue des ombres"
 
 #: ../src/iop/profile_gamma.c:158
 msgid "16 EV dynamic range (generic)"
-msgstr "plage dynamique 16EV (générique)"
+msgstr "plage dynamique 16IL (générique)"
 
 #: ../src/iop/profile_gamma.c:163
 msgid "14 EV dynamic range (generic)"
-msgstr "plage dynamique 14EV (générique)"
+msgstr "plage dynamique 14IL (générique)"
 
 #: ../src/iop/profile_gamma.c:168
 msgid "12 EV dynamic range (generic)"
-msgstr "plage dynamique 12EV (générique)"
+msgstr "plage dynamique 12 IL (générique)"
 
 #: ../src/iop/profile_gamma.c:173
 msgid "10 EV dynamic range (generic)"
-msgstr "plage dynamique 10EV (générique)"
+msgstr "plage dynamique 10 IL (générique)"
 
 #: ../src/iop/profile_gamma.c:178
 msgid "08 EV dynamic range (generic)"
-msgstr "plage dynamique 8EV (générique)"
+msgstr "plage dynamique 8 IL (générique)"
 
 #: ../src/iop/profile_gamma.c:861
 msgid "tone mapping method"
@@ -10261,11 +10261,11 @@ msgstr "exponentielle (base 2)"
 #: ../src/iop/rgbcurve.c:1514 ../src/iop/rgblevels.c:1011
 #: ../src/iop/tonecurve.c:1312
 msgid "RGB, linked channels"
-msgstr "RGB, canaux liés"
+msgstr "RVB, canaux liés"
 
 #: ../src/iop/rgbcurve.c:1515 ../src/iop/rgblevels.c:1012
 msgid "RGB, independent channels"
-msgstr "RGB, canaux indépendants"
+msgstr "RVB, canaux indépendants"
 
 #: ../src/iop/rgbcurve.c:1517 ../src/iop/rgblevels.c:1014
 msgid "choose between linked and independent channels."
@@ -10281,11 +10281,11 @@ msgstr "point de contrôle pour canal R"
 
 #: ../src/iop/rgbcurve.c:1529 ../src/iop/rgblevels.c:1026
 msgid "  G  "
-msgstr "  G  "
+msgstr "  V  "
 
 #: ../src/iop/rgbcurve.c:1532 ../src/iop/rgblevels.c:1029
 msgid "curve nodes for g channel"
-msgstr "point de contrôle pour canal G"
+msgstr "point de contrôle pour canal V"
 
 #: ../src/iop/rgbcurve.c:1534 ../src/iop/rgblevels.c:1031
 msgid "  B  "
@@ -10305,7 +10305,7 @@ msgstr "compenser le gris moyen"
 
 #: ../src/iop/rgblevels.c:108
 msgid "rgb levels"
-msgstr "niveaux rgb"
+msgstr "niveaux rvb"
 
 #: ../src/iop/rgblevels.c:1094
 msgid ""
@@ -10865,6 +10865,12 @@ msgstr "attendez que la pré-visualisation soit mise à jour"
 msgid "some parameters are out-of-bounds"
 msgstr "certains paramètres sont hors bornes"
 
+#. Build text object
+#: ../src/iop/toneequal.c:2417
+#, c-format
+msgid "%+.1f EV"
+msgstr "%+.1f IL"
+
 #: ../src/iop/toneequal.c:3039
 msgid "simple"
 msgstr "simple"
@@ -10877,41 +10883,50 @@ msgstr "avancé"
 msgid "masking"
 msgstr "masque"
 
+#: ../src/iop/toneequal.c:3054 ../src/iop/toneequal.c:3060
+#: ../src/iop/toneequal.c:3066 ../src/iop/toneequal.c:3072
+#: ../src/iop/toneequal.c:3078 ../src/iop/toneequal.c:3084
+#: ../src/iop/toneequal.c:3090 ../src/iop/toneequal.c:3096
+#: ../src/iop/toneequal.c:3102
+#, c-format
+msgid "%+.2f EV"
+msgstr "%+.2f IL"
+
 #: ../src/iop/toneequal.c:3055
 msgid "-8 EV : blacks"
-msgstr "-8 EV : noirs"
+msgstr "-8 IL : noirs"
 
 #: ../src/iop/toneequal.c:3061
 msgid "-7 EV : deep shadows"
-msgstr "-7 EV : ombres profondes"
+msgstr "-7 IL : ombres profondes"
 
 #: ../src/iop/toneequal.c:3067
 msgid "-6 EV : shadows"
-msgstr "-6 EV : ombres"
+msgstr "-6 IL : ombres"
 
 #: ../src/iop/toneequal.c:3073
 msgid "-5 EV : light shadows"
-msgstr "-5 EV : ombres légères"
+msgstr "-5 IL : ombres légères"
 
 #: ../src/iop/toneequal.c:3079
 msgid "-4 EV : midtones"
-msgstr "-4 EV : tons moyens"
+msgstr "-4 IL : tons moyens"
 
 #: ../src/iop/toneequal.c:3085
 msgid "-3 EV : dark highlights"
-msgstr "-3 EV : ombres profondes"
+msgstr "-3 IL : ombres profondes"
 
 #: ../src/iop/toneequal.c:3091
 msgid "-2 EV : highlights"
-msgstr "-2 EV : hautes lumières"
+msgstr "-2 IL : hautes lumières"
 
 #: ../src/iop/toneequal.c:3097
 msgid "-1 EV : whites"
-msgstr "-1 EV : blancs"
+msgstr "-1 IL : blancs"
 
 #: ../src/iop/toneequal.c:3103
 msgid "+0 EV : speculars"
-msgstr "+0 EV : spéculaires"
+msgstr "+0 IL : spéculaires"
 
 #: ../src/iop/toneequal.c:3127
 msgid "curve smoothing"
@@ -10935,9 +10950,41 @@ msgstr ""
 msgid "luminance estimator"
 msgstr "estimateur luminance"
 
+#: ../src/iop/toneequal.c:3139
+msgid "RGB average"
+msgstr "moyenne RVB"
+
+#: ../src/iop/toneequal.c:3140
+msgid "HSL lightness"
+msgstr "luminance TSL"
+
+#: ../src/iop/toneequal.c:3141
+msgid "HSV value / RGB max"
+msgstr "luminance TSV / max RVB"
+
+#: ../src/iop/toneequal.c:3142
+msgid "RGB sum"
+msgstr "somme RVB"
+
+#: ../src/iop/toneequal.c:3143
+msgid "RGB euclidean norm"
+msgstr "norme euclidienne RVB"
+
+#: ../src/iop/toneequal.c:3145
+msgid "RGB geometric mean"
+msgstr "moyenne géométrique RVB"
+
 #: ../src/iop/toneequal.c:3149
 msgid "preserve details"
 msgstr "préserver détails"
+
+#: ../src/iop/toneequal.c:3152
+msgid "averaged guided filter"
+msgstr "filtre guidé moyenné"
+
+#: ../src/iop/toneequal.c:3153
+msgid "guided filter"
+msgstr "filtre guidé"
 
 #: ../src/iop/toneequal.c:3154
 msgid ""
@@ -11039,7 +11086,7 @@ msgstr ""
 "utiliser pour déplacer la moyenne du masque d'exposition à travers les "
 "canaux\n"
 "pour un meilleur contrôle de la correction d'exposition.\n"
-"la pipette ajustera automatiquement l'exposition moyenne à -4EV."
+"la pipette ajustera automatiquement l'exposition moyenne à -4IL."
 
 #: ../src/iop/toneequal.c:3223
 msgid "mask contrast compensation"
@@ -11730,7 +11777,7 @@ msgstr "max"
 
 #: ../src/libs/colorpicker.c:581 ../src/libs/colorpicker.c:618
 msgid "RGB"
-msgstr "RGB"
+msgstr "RVB"
 
 #: ../src/libs/colorpicker.c:593
 msgid "restrict histogram to selection"
@@ -12185,6 +12232,14 @@ msgstr "configuration par métadonnée"
 #: ../src/libs/export_metadata.c:312
 msgid "list of available tags"
 msgstr "liste des mots-clés disponibles"
+
+#: ../src/libs/export_metadata.c:315
+msgid "redefined tag"
+msgstr "mot-clé redéfini"
+
+#: ../src/libs/export_metadata.c:320
+msgid "formula"
+msgstr "formule"
 
 #: ../src/libs/export_metadata.c:323
 msgid ""
