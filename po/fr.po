@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-22 09:57+0200\n"
-"PO-Revision-Date: 2019-10-22 10:07+0200\n"
+"POT-Creation-Date: 2019-10-22 22:11+0200\n"
+"PO-Revision-Date: 2019-10-22 22:18+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1577,7 +1577,7 @@ msgstr ""
 #: ../src/common/darktable.c:804 ../src/common/variables.c:380
 #: ../src/imageio/format/pdf.c:669 ../src/imageio/format/pdf.c:694
 #: ../src/iop/clipping.c:2005 ../src/iop/filmicrgb.c:1547
-#: ../src/iop/toneequal.c:3151 ../src/libs/export.c:628
+#: ../src/iop/toneequal.c:3155 ../src/libs/export.c:628
 #: ../src/libs/export.c:634 ../src/libs/metadata_view.c:279
 msgid "no"
 msgstr "non"
@@ -8242,7 +8242,7 @@ msgstr "09 IL (clair-obscur)"
 msgid "10 EV (indoors)"
 msgstr "10 IL (intérieur)"
 
-#: ../src/iop/filmic.c:325 ../src/iop/filmicrgb.c:245
+#: ../src/iop/filmic.c:325
 msgid "11 EV (dim outdoors)"
 msgstr "11 IL (extérieur sombre)"
 
@@ -8523,16 +8523,20 @@ msgid "filmic rgb"
 msgstr "filmique rvb"
 
 #: ../src/iop/filmicrgb.c:233
-msgid "07 EV (studio)"
-msgstr "07 IL (studio)"
+msgid "07 EV dynamic range"
+msgstr "plage dynamique 7 IL"
 
 #: ../src/iop/filmicrgb.c:239
-msgid "09 EV (indoors)"
-msgstr "09 IL (intérieur)"
+msgid "09 EV dynamic range"
+msgstr "plage dynamique 9 IL"
+
+#: ../src/iop/filmicrgb.c:245
+msgid "11 EV dynamic range"
+msgstr "plage dynamique 11 IL"
 
 #: ../src/iop/filmicrgb.c:251
-msgid "13 EV (outdoors)"
-msgstr "13 IL (extérieur)"
+msgid "13 EV dynamic range"
+msgstr "plage dynamique 13 IL"
 
 #: ../src/iop/filmicrgb.c:257
 msgid "15 EV (backlighting)"
@@ -8612,7 +8616,7 @@ msgstr "préserver couleur"
 msgid "luminance Y"
 msgstr "luminance Y"
 
-#: ../src/iop/filmicrgb.c:1550 ../src/iop/toneequal.c:3144
+#: ../src/iop/filmicrgb.c:1550 ../src/iop/toneequal.c:3145
 msgid "RGB power norm"
 msgstr "norme puissance RVB"
 
@@ -10889,46 +10893,50 @@ msgid "%+.2f EV"
 msgstr "%+.2f IL"
 
 #: ../src/iop/toneequal.c:3055
-msgid "-8 EV : blacks"
-msgstr "-8 IL : noirs"
+msgid "-8 EV"
+msgstr "-8 IL"
 
 #: ../src/iop/toneequal.c:3061
-msgid "-7 EV : deep shadows"
-msgstr "-7 IL : ombres profondes"
+msgid "-7 EV"
+msgstr "-7 IL"
 
 #: ../src/iop/toneequal.c:3067
-msgid "-6 EV : shadows"
-msgstr "-6 IL : ombres"
+msgid "-6 EV"
+msgstr "-6 IL"
 
 #: ../src/iop/toneequal.c:3073
-msgid "-5 EV : light shadows"
-msgstr "-5 IL : ombres légères"
+msgid "-5 EV"
+msgstr "-5 IL"
 
 #: ../src/iop/toneequal.c:3079
-msgid "-4 EV : midtones"
-msgstr "-4 IL : tons moyens"
+msgid "-4 EV"
+msgstr "-4 IL"
 
 #: ../src/iop/toneequal.c:3085
-msgid "-3 EV : dark highlights"
-msgstr "-3 IL : ombres profondes"
+msgid "-3 EV"
+msgstr "-3 IL"
 
 #: ../src/iop/toneequal.c:3091
-msgid "-2 EV : highlights"
-msgstr "-2 IL : hautes lumières"
+msgid "-2 EV"
+msgstr "-2 IL"
 
 #: ../src/iop/toneequal.c:3097
-msgid "-1 EV : whites"
-msgstr "-1 IL : blancs"
+msgid "-1 EV"
+msgstr "-1 IL"
 
 #: ../src/iop/toneequal.c:3103
-msgid "+0 EV : speculars"
-msgstr "+0 IL : spéculaires"
+msgid "+0 EV"
+msgstr "+0 IL"
 
-#: ../src/iop/toneequal.c:3127
+#: ../src/iop/toneequal.c:3121
+msgid "double-click to reset the curve"
+msgstr "double-cliquer pour réinitialiser la courbe"
+
+#: ../src/iop/toneequal.c:3128
 msgid "curve smoothing"
 msgstr "lissage de la courbe"
 
-#: ../src/iop/toneequal.c:3128
+#: ../src/iop/toneequal.c:3129
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -10942,47 +10950,56 @@ msgstr ""
 "mais les transitions seront plus brutales et le contraste local sera "
 "endommagé."
 
-#: ../src/iop/toneequal.c:3137
+#: ../src/iop/toneequal.c:3138
 msgid "luminance estimator"
 msgstr "estimateur luminance"
 
-#: ../src/iop/toneequal.c:3139
+#: ../src/iop/toneequal.c:3140
 msgid "RGB average"
 msgstr "moyenne RVB"
 
-#: ../src/iop/toneequal.c:3140
+#: ../src/iop/toneequal.c:3141
 msgid "HSL lightness"
 msgstr "luminance TSL"
 
-#: ../src/iop/toneequal.c:3141
+#: ../src/iop/toneequal.c:3142
 msgid "HSV value / RGB max"
 msgstr "luminance TSV / max RVB"
 
-#: ../src/iop/toneequal.c:3142
+#: ../src/iop/toneequal.c:3143
 msgid "RGB sum"
 msgstr "somme RVB"
 
-#: ../src/iop/toneequal.c:3143
+#: ../src/iop/toneequal.c:3144
 msgid "RGB euclidean norm"
 msgstr "norme euclidienne RVB"
 
-#: ../src/iop/toneequal.c:3145
+#: ../src/iop/toneequal.c:3146
 msgid "RGB geometric mean"
 msgstr "moyenne géométrique RVB"
 
-#: ../src/iop/toneequal.c:3149
+#: ../src/iop/toneequal.c:3147
+msgid ""
+"preview the mask and chose the estimator that gives you the\n"
+"higher contrast between areas to dodge and areas to burn"
+msgstr ""
+"prévisualisation du masque et choisir l'estimateur qui donne le\n"
+"contraste le plus important entre les zones à éclaircir et les zones à "
+"assombrir"
+
+#: ../src/iop/toneequal.c:3153
 msgid "preserve details"
 msgstr "préserver détails"
 
-#: ../src/iop/toneequal.c:3152
+#: ../src/iop/toneequal.c:3156
 msgid "averaged guided filter"
 msgstr "filtre guidé moyenné"
 
-#: ../src/iop/toneequal.c:3153
+#: ../src/iop/toneequal.c:3157
 msgid "guided filter"
 msgstr "filtre guidé"
 
-#: ../src/iop/toneequal.c:3154
+#: ../src/iop/toneequal.c:3158
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -10995,11 +11012,11 @@ msgstr ""
 "préserver le contraste local\n"
 "'filtre guidé moyen' est une moyenne des deux méthodes"
 
-#: ../src/iop/toneequal.c:3161
+#: ../src/iop/toneequal.c:3165
 msgid "filter diffusion"
 msgstr "filtre de diffusion"
 
-#: ../src/iop/toneequal.c:3162
+#: ../src/iop/toneequal.c:3166
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -11007,11 +11024,11 @@ msgstr ""
 "nombre de passe du filtre guidé à appliquer\n"
 "aide à diffuser les bords du filtre mais dégrade les performances"
 
-#: ../src/iop/toneequal.c:3170
+#: ../src/iop/toneequal.c:3174
 msgid "smoothing diameter"
 msgstr "diamètre adoucissement"
 
-#: ../src/iop/toneequal.c:3171
+#: ../src/iop/toneequal.c:3175
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -11021,17 +11038,18 @@ msgstr ""
 "attention: une grande valeur peut ralentir conséquemment la\n"
 "prévisualisation si le module de réduction du bruit par profil est utilisé."
 
-#: ../src/iop/toneequal.c:3179
+#: ../src/iop/toneequal.c:3183
 msgid "edges refinement/feathering"
 msgstr "raffinement/adoucissement bords"
 
-#: ../src/iop/toneequal.c:3180
+#: ../src/iop/toneequal.c:3184
+#, fuzzy
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
 "but may void the effect of the smoothing\n"
 "lower values give smoother gradients and better smoothing\n"
-"but may lead to inaccurate edges taping"
+"but may lead to inaccurate edges taping and halos"
 msgstr ""
 "précision de l'adoucissement :\n"
 "les grandes valeurs force le masque à suivre les bords plus précisement\n"
@@ -11040,11 +11058,11 @@ msgstr ""
 "adoucissement\n"
 "mais peut alors créer des bords peu précis."
 
-#: ../src/iop/toneequal.c:3188
+#: ../src/iop/toneequal.c:3192
 msgid "mask post-processing"
 msgstr "post-traitement masque"
 
-#: ../src/iop/toneequal.c:3194
+#: ../src/iop/toneequal.c:3198
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -11054,11 +11072,11 @@ msgstr ""
 "la ligne centrale montre la moyenne. des bars oranges apparaissent aux "
 "extrémités si troncatures."
 
-#: ../src/iop/toneequal.c:3199
+#: ../src/iop/toneequal.c:3203
 msgid "mask quantization"
 msgstr "quantification masque"
 
-#: ../src/iop/toneequal.c:3201
+#: ../src/iop/toneequal.c:3205
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -11069,14 +11087,14 @@ msgstr ""
 " à produire des zones plus lisse lors de l'utilisation de grandes valeurs "
 "d'adoucissement"
 
-#: ../src/iop/toneequal.c:3209
+#: ../src/iop/toneequal.c:3213
 msgid "mask exposure compensation"
 msgstr "compensation masque exposition"
 
-#: ../src/iop/toneequal.c:3211
+#: ../src/iop/toneequal.c:3215
 msgid ""
 "use this to slide the mask average exposure along channels\n"
-"for better control of the exposure corrections.\n"
+"for a better control of the exposure correction with the available nodes.\n"
 "the picker will auto-adjust the average exposure at -4EV."
 msgstr ""
 "utiliser pour déplacer la moyenne du masque d'exposition à travers les "
@@ -11084,22 +11102,27 @@ msgstr ""
 "pour un meilleur contrôle de la correction d'exposition.\n"
 "la pipette ajustera automatiquement l'exposition moyenne à -4IL."
 
-#: ../src/iop/toneequal.c:3223
+#: ../src/iop/toneequal.c:3227
 msgid "mask contrast compensation"
 msgstr "compensation masque contraste"
 
-#: ../src/iop/toneequal.c:3225
+#: ../src/iop/toneequal.c:3229
 msgid ""
-"use this to dilate the mask contrast around its average exposure\n"
+"use this to counter the averaging effect of the guided filter\n"
+"and dilate the mask contrast around -4EV\n"
 "this allows to spread the exposure histogram over more channels\n"
-"for better control of the exposure corrections."
+"for a better control of the exposure correction."
 msgstr ""
 "à utiliser pour dilater le masque de contraste autour de sa moyene de "
 "luminosité\n"
 "ceci permet d'étaler l'histogramme d'exposition à travers plus de canaux\n"
 "pour un meilleur contrôle de la correction d'exposition."
 
-#: ../src/iop/toneequal.c:3237 ../src/iop/toneequal.c:3241
+#: ../src/iop/toneequal.c:3242
+msgid "display the exposure mask"
+msgstr "affiche le masque d'exposition"
+
+#: ../src/iop/toneequal.c:3246
 msgid "display exposure mask"
 msgstr "affiche le masque d'exposition"
 
@@ -15169,6 +15192,42 @@ msgstr "raccourcis"
 msgid "Action"
 msgstr "action"
 
+#~ msgid "07 EV (studio)"
+#~ msgstr "07 IL (studio)"
+
+#~ msgid "09 EV (indoors)"
+#~ msgstr "09 IL (intérieur)"
+
+#~ msgid "13 EV (outdoors)"
+#~ msgstr "13 IL (extérieur)"
+
+#~ msgid "-8 EV : blacks"
+#~ msgstr "-8 IL : noirs"
+
+#~ msgid "-7 EV : deep shadows"
+#~ msgstr "-7 IL : ombres profondes"
+
+#~ msgid "-6 EV : shadows"
+#~ msgstr "-6 IL : ombres"
+
+#~ msgid "-5 EV : light shadows"
+#~ msgstr "-5 IL : ombres légères"
+
+#~ msgid "-4 EV : midtones"
+#~ msgstr "-4 IL : tons moyens"
+
+#~ msgid "-3 EV : dark highlights"
+#~ msgstr "-3 IL : ombres profondes"
+
+#~ msgid "-2 EV : highlights"
+#~ msgstr "-2 IL : hautes lumières"
+
+#~ msgid "-1 EV : whites"
+#~ msgstr "-1 IL : blancs"
+
+#~ msgid "+0 EV : speculars"
+#~ msgstr "+0 IL : spéculaires"
+
 #~ msgid "max rgb"
 #~ msgstr "max rvb"
 
@@ -15437,9 +15496,6 @@ msgstr "action"
 
 #~ msgid "destination power factor"
 #~ msgstr "gamma cible"
-
-#~ msgid "double click to reset curve"
-#~ msgstr "double-cliquer pour réinitialiser"
 
 #~ msgid "auto tuning safety factor"
 #~ msgstr "facteur de sécurité"
