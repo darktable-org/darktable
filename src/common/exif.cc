@@ -1300,11 +1300,9 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
 
     // get rid of thumbnails
     Exiv2::ExifThumb(exifData).erase();
+    Exiv2::ExifData::const_iterator pos;
 
-    // ufraw-style exif stripping:
-    Exiv2::ExifData::iterator pos;
     {
-    /* Delete original TIFF data, which is irrelevant*/
       static const char *keys[] = {
         "Exif.Image.ImageWidth",
         "Exif.Image.ImageLength",
@@ -1324,119 +1322,132 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
       dt_remove_exif_keys(exifData, keys, n_keys);
     }
 
-    if(!dng_mode)
-    {
-      /* Delete various MakerNote fields only applicable to the raw file */
-
-      exifData["Exif.Image.Orientation"] = uint16_t(1);
-
-      {
-        static const char *keys[] = {
-          // Embedded color profile info
-          "Exif.Image.BaselineExposureOffset",
-          "Exif.Image.CalibrationIlluminant1",
-          "Exif.Image.CalibrationIlluminant2",
-          "Exif.Image.ColorMatrix1",
-          "Exif.Image.ColorMatrix2",
-          "Exif.Image.DefaultBlackRender",
-          "Exif.Image.ForwardMatrix1",
-          "Exif.Image.ForwardMatrix2",
-          "Exif.Image.ProfileCalibrationSignature",
-          "Exif.Image.ProfileCopyright",
-          "Exif.Image.ProfileEmbedPolicy",
-          "Exif.Image.ProfileHueSatMapData1",
-          "Exif.Image.ProfileHueSatMapData2",
-          "Exif.Image.ProfileHueSatMapDims",
-          "Exif.Image.ProfileHueSatMapEncoding",
-          "Exif.Image.ProfileLookTableData",
-          "Exif.Image.ProfileLookTableDims",
-          "Exif.Image.ProfileLookTableEncoding",
-          "Exif.Image.ProfileName",
-          "Exif.Image.ProfileToneCurve",
-          "Exif.Image.ReductionMatrix1",
-          "Exif.Image.ReductionMatrix2",
-
-          // Canon color space info
-          "Exif.Canon.ColorSpace",
-          "Exif.Canon.ColorData",
-
-          // Nikon thumbnail data
-          "Exif.Nikon3.Preview",
-          "Exif.NikonPreview.JPEGInterchangeFormat",
-
-          // DNG private data
-          "Exif.Image.DNGPrivateData",
-
-          // Pentax thumbnail data
-          "Exif.Pentax.PreviewResolution",
-          "Exif.Pentax.PreviewLength",
-          "Exif.Pentax.PreviewOffset",
-          "Exif.PentaxDng.PreviewResolution",
-          "Exif.PentaxDng.PreviewLength",
-          "Exif.PentaxDng.PreviewOffset",
-          // Pentax color info
-          "Exif.PentaxDng.ColorInfo",
-
-          // Minolta thumbnail data
-          "Exif.Minolta.Thumbnail",
-          "Exif.Minolta.ThumbnailOffset",
-          "Exif.Minolta.ThumbnailLength",
-
-          // Sony thumbnail data
-          "Exif.SonyMinolta.ThumbnailOffset",
-          "Exif.SonyMinolta.ThumbnailLength",
-
-          // Olympus thumbnail data
-          "Exif.Olympus.Thumbnail",
-          "Exif.Olympus.ThumbnailOffset",
-          "Exif.Olympus.ThumbnailLength"
-        };
-        static const guint n_keys = G_N_ELEMENTS(keys);
-        dt_remove_exif_keys(exifData, keys, n_keys);
-      }
+      /* Many tags should be removed in all cases as they are simply wrong also for dng files */
 
       // remove subimage* trees, related to thumbnails or HDR usually
-      for(Exiv2::ExifData::iterator i = exifData.begin(); i != exifData.end();)
-      {
-        static const std::string needle = "Exif.SubImage";
-        if(i->key().compare(0, needle.length(), needle) == 0)
-          i = exifData.erase(i);
-        else
-          ++i;
-      }
+    for(Exiv2::ExifData::iterator i = exifData.begin(); i != exifData.end();)
+    {
+      static const std::string needle = "Exif.SubImage";
+      if(i->key().compare(0, needle.length(), needle) == 0)
+        i = exifData.erase(i);
+      else
+        ++i;
+    }
 
-#if EXIV2_MINOR_VERSION >= 23
-      {
-        // Exiv2 versions older than 0.23 drop all EXIF if the code below is executed
-        // Samsung makernote cleanup, the entries below have no relevance for exported images
-        static const char *keys[] = {
-          "Exif.Samsung2.SensorAreas",
-          "Exif.Samsung2.ColorSpace",
-          "Exif.Samsung2.EncryptionKey",
-          "Exif.Samsung2.WB_RGGBLevelsUncorrected",
-          "Exif.Samsung2.WB_RGGBLevelsAuto",
-          "Exif.Samsung2.WB_RGGBLevelsIlluminator1",
-          "Exif.Samsung2.WB_RGGBLevelsIlluminator2",
-          "Exif.Samsung2.WB_RGGBLevelsBlack",
-          "Exif.Samsung2.ColorMatrix",
-          "Exif.Samsung2.ColorMatrixSRGB",
-          "Exif.Samsung2.ColorMatrixAdobeRGB",
-          "Exif.Samsung2.ToneCurve1",
-          "Exif.Samsung2.ToneCurve2",
-          "Exif.Samsung2.ToneCurve3",
-          "Exif.Samsung2.ToneCurve4"
+    {
+      static const char *keys[] = {
+        // Canon color space info
+        "Exif.Canon.ColorSpace",
+        "Exif.Canon.ColorData",
+
+        // Nikon thumbnail data
+        "Exif.Nikon3.Preview",
+        "Exif.NikonPreview.JPEGInterchangeFormat",
+
+        // DNG stuff that is irrelevant
+        "Exif.Image.DNGPrivateData",
+        "Exif.Image.DefaultBlackRender",
+        "Exif.Image.DefaultCropOrigin",
+        "Exif.Image.DefaultCropSize",
+        "Exif.Image.RawDataUniqueID",
+        "Exif.Image.OriginalRawFileName",
+        "Exif.Image.OriginalRawFileData",
+        "Exif.Image.ActiveArea",
+        "Exif.Image.MaskedAreas",
+        "Exif.Image.AsShotICCProfile",
+        "Exif.Image.OpcodeList1",
+        "Exif.Image.OpcodeList2",
+        "Exif.Image.OpcodeList3",
+        "Exif.Photo.MakerNote",
+
+        // Pentax thumbnail data
+        "Exif.Pentax.PreviewResolution",
+        "Exif.Pentax.PreviewLength",
+        "Exif.Pentax.PreviewOffset",
+        "Exif.PentaxDng.PreviewResolution",
+        "Exif.PentaxDng.PreviewLength",
+        "Exif.PentaxDng.PreviewOffset",
+        // Pentax color info
+        "Exif.PentaxDng.ColorInfo",
+
+        // Minolta thumbnail data
+        "Exif.Minolta.Thumbnail",
+        "Exif.Minolta.ThumbnailOffset",
+        "Exif.Minolta.ThumbnailLength",
+
+        // Sony thumbnail data
+        "Exif.SonyMinolta.ThumbnailOffset",
+        "Exif.SonyMinolta.ThumbnailLength",
+
+        // Olympus thumbnail data
+        "Exif.Olympus.Thumbnail",
+        "Exif.Olympus.ThumbnailOffset",
+        "Exif.Olympus.ThumbnailLength"
+
+        "Exif.Image.BaselineExposureOffset",
         };
-        static const guint n_keys = G_N_ELEMENTS(keys);
-        dt_remove_exif_keys(exifData, keys, n_keys);
-      }
+      static const guint n_keys = G_N_ELEMENTS(keys);
+      dt_remove_exif_keys(exifData, keys, n_keys);
+    }
+#if EXIV2_MINOR_VERSION >= 23
+    {
+      // Exiv2 versions older than 0.23 drop all EXIF if the code below is executed
+      // Samsung makernote cleanup, the entries below have no relevance for exported images
+      static const char *keys[] = {
+        "Exif.Samsung2.SensorAreas",
+        "Exif.Samsung2.ColorSpace",
+        "Exif.Samsung2.EncryptionKey",
+        "Exif.Samsung2.WB_RGGBLevelsUncorrected",
+        "Exif.Samsung2.WB_RGGBLevelsAuto",
+        "Exif.Samsung2.WB_RGGBLevelsIlluminator1",
+        "Exif.Samsung2.WB_RGGBLevelsIlluminator2",
+        "Exif.Samsung2.WB_RGGBLevelsBlack",
+        "Exif.Samsung2.ColorMatrix",
+        "Exif.Samsung2.ColorMatrixSRGB",
+        "Exif.Samsung2.ColorMatrixAdobeRGB",
+        "Exif.Samsung2.ToneCurve1",
+        "Exif.Samsung2.ToneCurve2",
+        "Exif.Samsung2.ToneCurve3",
+        "Exif.Samsung2.ToneCurve4"
+      };
+      static const guint n_keys = G_N_ELEMENTS(keys);
+      dt_remove_exif_keys(exifData, keys, n_keys);
+    }
 #endif
 
-      /* Write appropriate color space tag if using sRGB output */
-      if(sRGB)
-        exifData["Exif.Photo.ColorSpace"] = uint16_t(1); /* sRGB */
-      else
-        exifData["Exif.Photo.ColorSpace"] = uint16_t(0xFFFF); /* Uncalibrated */
-    }
+      static const char *dngkeys[] = {
+        // Embedded color profile info
+        "Exif.Image.CalibrationIlluminant1",
+        "Exif.Image.CalibrationIlluminant2",
+        "Exif.Image.ColorMatrix1",
+        "Exif.Image.ColorMatrix2",
+        "Exif.Image.ForwardMatrix1",
+        "Exif.Image.ForwardMatrix2",
+        "Exif.Image.ProfileCalibrationSignature",
+        "Exif.Image.ProfileCopyright",
+        "Exif.Image.ProfileEmbedPolicy",
+        "Exif.Image.ProfileHueSatMapData1",
+        "Exif.Image.ProfileHueSatMapData2",
+        "Exif.Image.ProfileHueSatMapDims",
+        "Exif.Image.ProfileHueSatMapEncoding",
+        "Exif.Image.ProfileLookTableData",
+        "Exif.Image.ProfileLookTableDims",
+        "Exif.Image.ProfileLookTableEncoding",
+        "Exif.Image.ProfileName",
+        "Exif.Image.ProfileToneCurve",
+        "Exif.Image.ReductionMatrix1",
+        "Exif.Image.ReductionMatrix2"
+        };
+      static const guint n_dngkeys = G_N_ELEMENTS(dngkeys);
+    dt_remove_exif_keys(exifData, dngkeys, n_dngkeys);
+
+    /* Write appropriate color space tag if using sRGB output */
+    if(sRGB)
+      exifData["Exif.Photo.ColorSpace"] = uint16_t(1); /* sRGB */
+    else
+      exifData["Exif.Photo.ColorSpace"] = uint16_t(0xFFFF); /* Uncalibrated */
+
+    exifData["Exif.Image.Orientation"] = uint16_t(1);
 
     /* Replace RAW dimension with output dimensions (for example after crop/scale, or orientation for dng
      * mode) */
