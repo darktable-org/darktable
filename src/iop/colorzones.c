@@ -43,19 +43,22 @@ DT_MODULE_INTROSPECTION(4, dt_iop_colorzones_params_t)
 
 #define DT_IOP_COLORZONES_MIN_X_DISTANCE 0.0025f
 
-typedef enum dt_iop_colorzones_modes_t {
+typedef enum dt_iop_colorzones_modes_t
+{
   DT_IOP_COLORZONES_MODE_OLD = 0,
   DT_IOP_COLORZONES_MODE_NEW = 1
 } dt_iop_colorzones_modes_t;
 
-typedef enum dt_iop_colorzones_channel_t {
+typedef enum dt_iop_colorzones_channel_t
+{
   DT_IOP_COLORZONES_L = 0,
   DT_IOP_COLORZONES_C = 1,
   DT_IOP_COLORZONES_h = 2,
   DT_IOP_COLORZONES_MAX_CHANNELS = 3
 } dt_iop_colorzones_channel_t;
 
-typedef enum dt_iop_colorzones_pickcolor_type_t {
+typedef enum dt_iop_colorzones_pickcolor_type_t
+{
   DT_IOP_COLORZONES_PICK_NONE = 0,
   DT_IOP_COLORZONES_PICK_COLORPICK = 1,
   DT_IOP_COLORZONES_PICK_SET_VALUES = 2
@@ -70,10 +73,10 @@ typedef struct dt_iop_colorzones_node_t
 typedef struct dt_iop_colorzones_params_t
 {
   int32_t channel;
-  dt_iop_colorzones_node_t curve[DT_IOP_COLORZONES_MAX_CHANNELS]
-                                [DT_IOP_COLORZONES_MAXNODES]; // three curves (L, C, h) with max number of nodes
-  int curve_num_nodes[DT_IOP_COLORZONES_MAX_CHANNELS];        // number of nodes per curve
-  int curve_type[DT_IOP_COLORZONES_MAX_CHANNELS];             // CUBIC_SPLINE, CATMULL_ROM, MONOTONE_HERMITE
+  // three curves (L, C, h) with max number of nodes
+  dt_iop_colorzones_node_t curve[DT_IOP_COLORZONES_MAX_CHANNELS][DT_IOP_COLORZONES_MAXNODES];
+  int curve_num_nodes[DT_IOP_COLORZONES_MAX_CHANNELS]; // number of nodes per curve
+  int curve_type[DT_IOP_COLORZONES_MAX_CHANNELS];      // CUBIC_SPLINE, CATMULL_ROM, MONOTONE_HERMITE
   float strength;
   int mode;
 } dt_iop_colorzones_params_t;
@@ -149,8 +152,8 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
-int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
-                  void *new_params, const int new_version)
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
+                  const int new_version)
 {
 #define DT_IOP_COLORZONES1_BANDS 6
 
@@ -331,10 +334,7 @@ void process_v3(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, con
   dt_iop_colorzones_data_t *d = (dt_iop_colorzones_data_t *)(piece->data);
   const int ch = piece->colors;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, i, o, roi_out) \
-  shared(d) \
-  schedule(static)
+#pragma omp parallel for default(none) dt_omp_firstprivate(ch, i, o, roi_out) shared(d) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
   {
@@ -1043,8 +1043,9 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
     {
       const int ch_hist = p.channel;
       const uint32_t *hist = self->histogram;
-      const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? self->histogram_max[ch_hist]
-                                                                            : logf(1.0 + self->histogram_max[ch_hist]);
+      const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR
+                                 ? self->histogram_max[ch_hist]
+                                 : logf(1.0 + self->histogram_max[ch_hist]);
       if(hist && hist_max > 0.0f)
       {
         cairo_save(cr);
@@ -1500,7 +1501,9 @@ static gboolean _area_scrolled_callback(GtkWidget *widget, GdkEventScroll *event
   dt_iop_colorzones_gui_data_t *c = (dt_iop_colorzones_gui_data_t *)self->gui_data;
   dt_iop_colorzones_params_t *p = (dt_iop_colorzones_params_t *)self->params;
 
-  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
+  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask)
+     != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default"))
+    return FALSE;
   gdouble delta_y;
 
   if(darktable.develop->darkroom_skip_mouse_events)
@@ -2255,14 +2258,12 @@ void gui_init(struct dt_iop_module_t *self)
 
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
 
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
                            gtk_label_new(_("lightness")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
                            gtk_label_new(_("saturation")));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)), gtk_label_new(_("hue")));
+  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs), GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)),
+                           gtk_label_new(_("hue")));
 
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
   gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
@@ -2456,7 +2457,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 #endif
 
   // display selection don't work with opencl
-  piece->process_cl_ready = (g && g->display_mask) ? 0: 1;
+  piece->process_cl_ready = (g && g->display_mask) ? 0 : 1;
   d->channel = (dt_iop_colorzones_channel_t)p->channel;
   d->mode = p->mode;
   for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++)
