@@ -439,6 +439,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     dt_pthread_mutex_init(&(darktable.db_image[k]),&(darktable.db_image_attr[k]));
   }
   dt_pthread_mutex_init(&(darktable.db_film), NULL);
+  dt_pthread_mutex_init(&(darktable.db_multi_image), NULL);
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.capabilities_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.exiv2_threadsafe), NULL);
@@ -1150,6 +1151,7 @@ void dt_cleanup()
     dt_pthread_mutex_destroy(&(darktable.db_image[k]));
   }
   dt_pthread_mutex_destroy(&(darktable.db_film));
+  dt_pthread_mutex_destroy(&(darktable.db_multi_image));
   dt_pthread_mutex_destroy(&(darktable.plugin_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.capabilities_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.exiv2_threadsafe));

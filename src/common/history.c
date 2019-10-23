@@ -765,6 +765,7 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
     return 1;
   }
 
+  dt_pthread_mutex_lock(&darktable.db_multi_image);
   dt_database_lock_image(imgid);
   dt_database_lock_image(dest_imgid);
 
@@ -814,6 +815,7 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
 
   dt_database_unlock_image(dest_imgid);
   dt_database_unlock_image(imgid);
+  dt_pthread_mutex_unlock(&darktable.db_multi_image);
 
   return ret_val;
 }
@@ -1123,6 +1125,7 @@ static void _history_reorder(int32_t imgid)
     if (give_reorder_information) fprintf(stderr,", reorder\n");
     // make sure running jobs can't interfere here as the followiing code uses a fixed dummy id
     // and also intends to have a "properly" orderered database
+    dt_pthread_mutex_lock(&darktable.db_multi_image);
     dt_database_lock_image(imgid);
     dt_database_lock_image(dummy);
 
@@ -1141,6 +1144,7 @@ static void _history_reorder(int32_t imgid)
     sqlite3_finalize(stmt);
     dt_database_unlock_image(dummy);
     dt_database_unlock_image(imgid);
+    dt_pthread_mutex_unlock(&darktable.db_multi_image);
   }
 }
 #undef give_reorder_information
