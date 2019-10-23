@@ -25,6 +25,7 @@
 //  types that are known by the undo module
 typedef enum dt_undo_type_t
 {
+  DT_UNDO_NONE        = 0,
   DT_UNDO_GEOTAG      = 1 << 0,
   DT_UNDO_HISTORY     = 1 << 1,
   DT_UNDO_MASK        = 1 << 2,

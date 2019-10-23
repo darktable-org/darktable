@@ -44,7 +44,7 @@ dt_undo_t *dt_undo_init(void)
   udata->disable_next = FALSE;
   udata->locked = FALSE;
   dt_pthread_mutex_init(&udata->mutex, NULL);
-  udata->group = 0;
+  udata->group = DT_UNDO_NONE;
   udata->group_indent = 0;
   return udata;
 }
@@ -119,7 +119,7 @@ void dt_undo_start_group(dt_undo_t *self, dt_undo_type_t type)
 {
   if(!self) return;
 
-  if(self->group == 0)
+  if(self->group == DT_UNDO_NONE)
   {
     self->group = type;
     self->group_indent = 1;
@@ -138,7 +138,7 @@ void dt_undo_end_group(dt_undo_t *self)
   if(self->group_indent == 0)
   {
     _undo_record(self, NULL, self->group, NULL, TRUE, NULL, NULL);
-    self->group = 0;
+    self->group = DT_UNDO_NONE;
   }
 }
 
