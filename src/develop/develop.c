@@ -1213,6 +1213,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
 {
   sqlite3_stmt *stmt;
+  dt_database_lock_image(imgid);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1,
                               &stmt, NULL);
@@ -1249,6 +1250,7 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, dev->iop_order_version);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+  dt_database_unlock_image(imgid);
 }
 
 void dt_dev_write_history(dt_develop_t *dev)
@@ -1476,6 +1478,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 {
   if(imgid <= 0) return;
   if(!dev->iop) return;
+
+  dt_database_lock_image(imgid);
 
   int history_end_current = 0;
 
@@ -1729,13 +1733,12 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   }
   dt_dev_masks_list_change(dev);
+  dt_database_unlock_image(imgid);
 }
 
 void dt_dev_read_history(dt_develop_t *dev)
 {
-  dt_database_lock_image(dev->image_storage.id);
   dt_dev_read_history_ext(dev, dev->image_storage.id, FALSE);
-  dt_database_unlock_image(dev->image_storage.id);
 }
 
 void dt_dev_reprocess_all(dt_develop_t *dev)
