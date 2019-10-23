@@ -433,7 +433,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
       select = CLAMP(select, 0.f, 1.f);
 
-      out[3] = fabs(lookup(d->lut[display_channel], select) - .5f) * 4.f;
+      out[3] = fabsf(lookup(d->lut[display_channel], select) - .5f) * 4.f;
       out[3] = CLAMP(out[3], 0.f, 1.f);
     }
 
@@ -539,8 +539,8 @@ void init_presets(dt_iop_module_so_t *self)
   dt_iop_colorzones_params_t p = { 0 };
   const int version = 4;
 
-  p.strength = 0.0;
-  p.mode = DT_IOP_COLORZONES_MODE_SMOOTH;
+  p.strength = 0.f;
+  p.mode = DT_IOP_COLORZONES_MODE_OLD;
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
 
@@ -1068,7 +1068,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
         cairo_scale(cr, width / 255.0, -(height - DT_PIXEL_APPLY_DPI(5)) / hist_max);
 
         cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
-        dt_draw_histogram_8_zoomed(cr, hist, 4, ch_hist, c->zoom_factor, c->offset_x * 255.0,
+        dt_draw_histogram_8_zoomed(cr, hist, 4, ch_hist, c->zoom_factor, c->offset_x * 255.f,
                                    c->offset_y * hist_max, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
 
         cairo_restore(cr);
@@ -1181,30 +1181,30 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
     p = *(dt_iop_colorzones_params_t *)self->params;
     dt_iop_colorzones_get_params(&p, c, c->channel, c->mouse_x, 1., c->mouse_radius);
     if(p.channel == DT_IOP_COLORZONES_h)
-      dt_draw_curve_set_point(c->minmax_curve[ch], 0, p.curve[ch][bands - 2].x - 1.0, p.curve[ch][bands - 2].y);
+      dt_draw_curve_set_point(c->minmax_curve[ch], 0, p.curve[ch][bands - 2].x - 1.f, p.curve[ch][bands - 2].y);
     else
-      dt_draw_curve_set_point(c->minmax_curve[ch], 0, p.curve[ch][bands - 2].x - 1.0, p.curve[ch][0].y);
+      dt_draw_curve_set_point(c->minmax_curve[ch], 0, p.curve[ch][bands - 2].x - 1.f, p.curve[ch][0].y);
     for(int k = 0; k < bands; k++)
       dt_draw_curve_set_point(c->minmax_curve[ch], k + 1, p.curve[ch][k].x, p.curve[ch][k].y);
     if(p.channel == DT_IOP_COLORZONES_h)
-      dt_draw_curve_set_point(c->minmax_curve[ch], bands + 1, p.curve[ch][1].x + 1.0, p.curve[ch][1].y);
+      dt_draw_curve_set_point(c->minmax_curve[ch], bands + 1, p.curve[ch][1].x + 1.f, p.curve[ch][1].y);
     else
-      dt_draw_curve_set_point(c->minmax_curve[ch], bands + 1, p.curve[ch][1].x + 1.0, p.curve[ch][bands - 1].y);
-    dt_draw_curve_calc_values(c->minmax_curve[ch], 0.0, 1.0, DT_IOP_COLORZONES_RES, NULL, c->draw_min_ys);
+      dt_draw_curve_set_point(c->minmax_curve[ch], bands + 1, p.curve[ch][1].x + 1.f, p.curve[ch][bands - 1].y);
+    dt_draw_curve_calc_values(c->minmax_curve[ch], 0.f, 1.f, DT_IOP_COLORZONES_RES, NULL, c->draw_min_ys);
 
     p = *(dt_iop_colorzones_params_t *)self->params;
     dt_iop_colorzones_get_params(&p, c, c->channel, c->mouse_x, .0, c->mouse_radius);
     if(p.channel == DT_IOP_COLORZONES_h)
-      dt_draw_curve_set_point(c->minmax_curve[ch], 0, p.curve[ch][bands - 2].x - 1.0, p.curve[ch][bands - 2].y);
+      dt_draw_curve_set_point(c->minmax_curve[ch], 0, p.curve[ch][bands - 2].x - 1.f, p.curve[ch][bands - 2].y);
     else
-      dt_draw_curve_set_point(c->minmax_curve[ch], 0, p.curve[ch][bands - 2].x - 1.0, p.curve[ch][0].y);
+      dt_draw_curve_set_point(c->minmax_curve[ch], 0, p.curve[ch][bands - 2].x - 1.f, p.curve[ch][0].y);
     for(int k = 0; k < bands; k++)
       dt_draw_curve_set_point(c->minmax_curve[ch], k + 1, p.curve[ch][k].x, p.curve[ch][k].y);
     if(p.channel == DT_IOP_COLORZONES_h)
-      dt_draw_curve_set_point(c->minmax_curve[ch], bands + 1, p.curve[ch][1].x + 1.0, p.curve[ch][1].y);
+      dt_draw_curve_set_point(c->minmax_curve[ch], bands + 1, p.curve[ch][1].x + 1.f, p.curve[ch][1].y);
     else
-      dt_draw_curve_set_point(c->minmax_curve[ch], bands + 1, p.curve[ch][1].x + 1.0, p.curve[ch][bands - 1].y);
-    dt_draw_curve_calc_values(c->minmax_curve[ch], 0.0, 1.0, DT_IOP_COLORZONES_RES, NULL, c->draw_max_ys);
+      dt_draw_curve_set_point(c->minmax_curve[ch], bands + 1, p.curve[ch][1].x + 1.f, p.curve[ch][bands - 1].y);
+    dt_draw_curve_calc_values(c->minmax_curve[ch], 0.f, 1.f, DT_IOP_COLORZONES_RES, NULL, c->draw_max_ys);
 
     // restore params values
     p = *(dt_iop_colorzones_params_t *)self->params;
@@ -1244,7 +1244,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
     const int k = DT_IOP_COLORZONES_RES * _mouse_to_curve(c->mouse_x, c->zoom_factor, c->offset_x);
     const float x = c->mouse_x, y = _curve_to_mouse(c->draw_ys[ch][k], c->zoom_factor, c->offset_y);
 
-    cairo_arc(cr, x * width, -height * y, c->mouse_radius * width, 0, 2.f * DT_M_PI);
+    cairo_arc(cr, x * width, -height * y, c->mouse_radius * width, 0, 2. * DT_M_PI);
     cairo_stroke(cr);
   }
   else
@@ -1258,7 +1258,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
       const float x = _curve_to_mouse(p.curve[c->channel][c->selected].x, c->zoom_factor, c->offset_x),
                   y = _curve_to_mouse(p.curve[c->channel][c->selected].y, c->zoom_factor, c->offset_y);
 
-      cairo_arc(cr, x * width, -y * height, DT_PIXEL_APPLY_DPI(4), 0, 2.f * DT_M_PI);
+      cairo_arc(cr, x * width, -y * height, DT_PIXEL_APPLY_DPI(4), 0, 2. * M_PI);
       cairo_stroke(cr);
     }
   }
@@ -2255,15 +2255,15 @@ void gui_init(struct dt_iop_module_t *self)
   c->channel = dt_conf_get_int("plugins/darkroom/colorzones/gui_channel");
   for(int ch = 0; ch < DT_IOP_COLORZONES_MAX_CHANNELS; ch++)
   {
-    c->minmax_curve[ch] = dt_draw_curve_new(0.0, 1.0, p->curve_type[ch]);
+    c->minmax_curve[ch] = dt_draw_curve_new(0.f, 1.f, p->curve_type[ch]);
     c->minmax_curve_nodes[ch] = p->curve_num_nodes[ch];
     c->minmax_curve_type[ch] = p->curve_type[ch];
 
-    dt_draw_curve_add_point(c->minmax_curve[ch], p->curve[ch][p->curve_num_nodes[ch] - 2].x - 1.0,
+    dt_draw_curve_add_point(c->minmax_curve[ch], p->curve[ch][p->curve_num_nodes[ch] - 2].x - 1.f,
                             p->curve[ch][p->curve_num_nodes[ch] - 2].y);
     for(int k = 0; k < p->curve_num_nodes[ch]; k++)
       dt_draw_curve_add_point(c->minmax_curve[ch], p->curve[ch][k].x, p->curve[ch][k].y);
-    dt_draw_curve_add_point(c->minmax_curve[ch], p->curve[ch][1].x + 1.0, p->curve[ch][1].y);
+    dt_draw_curve_add_point(c->minmax_curve[ch], p->curve[ch][1].x + 1.f, p->curve[ch][1].y);
   }
 
   c->mouse_x = c->mouse_y = -1.0;
@@ -2272,7 +2272,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->zoom_factor = 1.f;
   c->picker_set_upper_lower = 0;
   c->x_move = -1;
-  c->mouse_radius = 1.0 / DT_IOP_COLORZONES_BANDS;
+  c->mouse_radius = 1.f / DT_IOP_COLORZONES_BANDS;
   c->dragging = 0;
   c->edit_by_area = 0;
   c->display_mask = FALSE;
@@ -2502,32 +2502,31 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     if(d->curve_type[ch] != p->curve_type[ch] || d->curve_nodes[ch] != p->curve_num_nodes[ch])
     {
       dt_draw_curve_destroy(d->curve[ch]);
-      d->curve[ch] = dt_draw_curve_new(0.0, 1.0, p->curve_type[ch]);
+      d->curve[ch] = dt_draw_curve_new(0.f, 1.f, p->curve_type[ch]);
       d->curve_nodes[ch] = p->curve_num_nodes[ch];
       d->curve_type[ch] = p->curve_type[ch];
 
       if(d->channel == DT_IOP_COLORZONES_h)
-        (void)dt_draw_curve_add_point(d->curve[ch], p->curve[ch][p->curve_num_nodes[ch] - 2].x - 1.0,
-                                      strength(p->curve[ch][p->curve_num_nodes[ch] - 2].y, p->strength));
+        dt_draw_curve_add_point(d->curve[ch], p->curve[ch][p->curve_num_nodes[ch] - 2].x - 1.f,
+                                strength(p->curve[ch][p->curve_num_nodes[ch] - 2].y, p->strength));
       else
-        (void)dt_draw_curve_add_point(d->curve[ch], p->curve[ch][p->curve_num_nodes[ch] - 2].x - 1.0,
-                                      strength(p->curve[ch][0].y, p->strength));
+        dt_draw_curve_add_point(d->curve[ch], p->curve[ch][p->curve_num_nodes[ch] - 2].x - 1.f,
+                                strength(p->curve[ch][0].y, p->strength));
       for(int k = 0; k < p->curve_num_nodes[ch]; k++)
-        (void)dt_draw_curve_add_point(d->curve[ch], p->curve[ch][k].x, strength(p->curve[ch][k].y, p->strength));
+        dt_draw_curve_add_point(d->curve[ch], p->curve[ch][k].x, strength(p->curve[ch][k].y, p->strength));
       if(d->channel == DT_IOP_COLORZONES_h)
-        (void)dt_draw_curve_add_point(d->curve[ch], p->curve[ch][1].x + 1.0,
-                                      strength(p->curve[ch][1].y, p->strength));
+        dt_draw_curve_add_point(d->curve[ch], p->curve[ch][1].x + 1.f, strength(p->curve[ch][1].y, p->strength));
       else
-        (void)dt_draw_curve_add_point(d->curve[ch], p->curve[ch][1].x + 1.0,
-                                      strength(p->curve[ch][p->curve_num_nodes[ch] - 1].y, p->strength));
+        dt_draw_curve_add_point(d->curve[ch], p->curve[ch][1].x + 1.f,
+                                strength(p->curve[ch][p->curve_num_nodes[ch] - 1].y, p->strength));
     }
     else
     {
       if(d->channel == DT_IOP_COLORZONES_h)
-        dt_draw_curve_set_point(d->curve[ch], 0, p->curve[ch][p->curve_num_nodes[ch] - 2].x - 1.0,
+        dt_draw_curve_set_point(d->curve[ch], 0, p->curve[ch][p->curve_num_nodes[ch] - 2].x - 1.f,
                                 strength(p->curve[ch][p->curve_num_nodes[ch] - 2].y, p->strength));
       else
-        dt_draw_curve_set_point(d->curve[ch], 0, p->curve[ch][p->curve_num_nodes[ch] - 2].x - 1.0,
+        dt_draw_curve_set_point(d->curve[ch], 0, p->curve[ch][p->curve_num_nodes[ch] - 2].x - 1.f,
                                 strength(p->curve[ch][0].y, p->strength));
       for(int k = 0; k < p->curve_num_nodes[ch]; k++)
         dt_draw_curve_set_point(d->curve[ch], k + 1, p->curve[ch][k].x, strength(p->curve[ch][k].y, p->strength));
