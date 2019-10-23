@@ -2259,11 +2259,11 @@ void gui_init(struct dt_iop_module_t *self)
     c->minmax_curve_nodes[ch] = p->curve_num_nodes[ch];
     c->minmax_curve_type[ch] = p->curve_type[ch];
 
-    (void)dt_draw_curve_add_point(c->minmax_curve[ch], p->curve[ch][p->curve_num_nodes[ch] - 2].x - 1.0,
-                                  p->curve[ch][p->curve_num_nodes[ch] - 2].y);
+    dt_draw_curve_add_point(c->minmax_curve[ch], p->curve[ch][p->curve_num_nodes[ch] - 2].x - 1.0,
+                            p->curve[ch][p->curve_num_nodes[ch] - 2].y);
     for(int k = 0; k < p->curve_num_nodes[ch]; k++)
-      (void)dt_draw_curve_add_point(c->minmax_curve[ch], p->curve[ch][k].x, p->curve[ch][k].y);
-    (void)dt_draw_curve_add_point(c->minmax_curve[ch], p->curve[ch][1].x + 1.0, p->curve[ch][1].y);
+      dt_draw_curve_add_point(c->minmax_curve[ch], p->curve[ch][k].x, p->curve[ch][k].y);
+    dt_draw_curve_add_point(c->minmax_curve[ch], p->curve[ch][1].x + 1.0, p->curve[ch][1].y);
   }
 
   c->mouse_x = c->mouse_y = -1.0;
@@ -2554,13 +2554,12 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
     d->curve[ch] = dt_draw_curve_new(0.0, 1.0, default_params->curve_type[ch]);
     d->curve_nodes[ch] = default_params->curve_num_nodes[ch];
     d->curve_type[ch] = default_params->curve_type[ch];
-    (void)dt_draw_curve_add_point(d->curve[ch],
-                                  default_params->curve[ch][default_params->curve_num_nodes[ch] - 2].x - 1.0,
-                                  default_params->curve[ch][default_params->curve_num_nodes[ch] - 2].y);
+    dt_draw_curve_add_point(d->curve[ch],
+                            default_params->curve[ch][default_params->curve_num_nodes[ch] - 2].x - 1.0,
+                            default_params->curve[ch][default_params->curve_num_nodes[ch] - 2].y);
     for(int k = 0; k < default_params->curve_num_nodes[ch]; k++)
-      (void)dt_draw_curve_add_point(d->curve[ch], default_params->curve[ch][k].x, default_params->curve[ch][k].y);
-    (void)dt_draw_curve_add_point(d->curve[ch], default_params->curve[ch][1].x + 1.0,
-                                  default_params->curve[ch][1].y);
+      dt_draw_curve_add_point(d->curve[ch], default_params->curve[ch][k].x, default_params->curve[ch][k].y);
+    dt_draw_curve_add_point(d->curve[ch], default_params->curve[ch][1].x + 1.0, default_params->curve[ch][1].y);
   }
   d->channel = (dt_iop_colorzones_channel_t)default_params->channel;
   d->mode = default_params->mode;
