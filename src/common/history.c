@@ -67,7 +67,7 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
     dt_history_snapshot_undo_create(hist->imgid, &hist->before, &hist->before_history_end);
   }
 
-  dt_pthread_mutex_lock(&darktable.db_insert);
+  dt_database_lock_image(imgid);
 
   sqlite3_stmt *stmt;
 
@@ -104,7 +104,7 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
   dt_tag_detach_by_string("darktable|style%", imgid);
   dt_tag_detach_by_string("darktable|changed", imgid);
 
-  dt_pthread_mutex_unlock(&darktable.db_insert);
+  dt_database_unlock_image(imgid);
 
   if(undo)
   {
@@ -761,7 +761,8 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   }
 
   // Just in case lock the database
-  dt_pthread_mutex_lock(&darktable.db_insert);
+  dt_database_lock_image(imgid);
+  dt_database_lock_image(dest_imgid);
 
   // be sure the current history is written before pasting some other history data
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
@@ -807,7 +808,8 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   else
     dt_image_reset_aspect_ratio(dest_imgid);
 
-  dt_pthread_mutex_unlock(&darktable.db_insert);
+  dt_database_unlock_image(dest_imgid);
+  dt_database_unlock_image(imgid);
 
   return ret_val;
 }
@@ -1114,7 +1116,8 @@ static void _history_reorder(int32_t imgid)
     if (give_reorder_information) fprintf(stderr,", reorder\n");
     // make sure running jobs can't interfere here as the followiing code uses a fixed dummy id
     // and also intends to have a "properly" orderered database
-    dt_pthread_mutex_lock(&darktable.db_insert);
+    dt_database_lock_image(imgid);
+    dt_database_lock_image(dummy);
 
     _history_copy_and_paste_on_image_overwrite(imgid, dummy, 0);
     _history_copy_and_paste_on_image_overwrite(dummy, imgid, 0);
@@ -1129,7 +1132,8 @@ static void _history_reorder(int32_t imgid)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dummy);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
-    dt_pthread_mutex_unlock(&darktable.db_insert);
+    dt_database_unlock_image(dummy);
+    dt_database_unlock_image(imgid);
   }
 }
 #undef give_reorder_information

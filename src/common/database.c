@@ -2219,6 +2219,16 @@ gboolean dt_database_get_lock_acquired(const dt_database_t *db)
   return db->lock_acquired;
 }
 
+void dt_database_lock_image(uint32_t imgid)
+{
+  dt_pthread_mutex_lock(&darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)]);
+}
+
+void dt_database_unlock_image(uint32_t imgid)
+{
+  dt_pthread_mutex_unlock(&darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)]);
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

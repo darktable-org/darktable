@@ -35,6 +35,10 @@ gboolean dt_database_get_lock_acquired(const struct dt_database_t *db);
 /** show an error popup. this has to be postponed until after we tried using dbus to reach another instance */
 void dt_database_show_error(const struct dt_database_t *db);
 
+/** handle the database locking on a per-image base */
+void dt_database_lock_image(u_int32_t imgid);
+void dt_database_unlock_image(u_int32_t imgid);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

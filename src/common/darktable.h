@@ -185,6 +185,8 @@ static inline int dt_version()
 #undef STR
 #define STR(x) STR_HELPER(x)
 
+#define DT_IMAGE_DBLOCKS 64
+
 struct dt_gui_gtk_t;
 struct dt_control_t;
 struct dt_develop_t;
@@ -261,6 +263,8 @@ typedef struct darktable_t
   struct dt_undo_t *undo;
   struct dt_colorspaces_t *color_profiles;
   struct dt_l10n_t *l10n;
+  dt_pthread_mutex_t db_image[DT_IMAGE_DBLOCKS];
+  pthread_mutexattr_t db_image_attr[DT_IMAGE_DBLOCKS];  
   dt_pthread_mutex_t db_insert;
   dt_pthread_mutex_t plugin_threadsafe;
   dt_pthread_mutex_t capabilities_threadsafe;

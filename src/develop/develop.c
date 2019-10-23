@@ -672,7 +672,7 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
 
 void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
 {
-  dt_pthread_mutex_lock(&darktable.db_insert);
+  dt_database_lock_image(imgid);
 
   _dt_dev_load_raw(dev, imgid);
 
@@ -696,7 +696,7 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
   // Loading an image means we do some developing and so remove the darktable|problem|history-compress tag
   dt_history_set_compress_problem(imgid, FALSE);
 
-  dt_pthread_mutex_unlock(&darktable.db_insert);
+  dt_database_unlock_image(imgid);
 }
 
 void dt_dev_configure(dt_develop_t *dev, int wd, int ht)
@@ -1009,7 +1009,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
 {
   dev->focus_hash = 0;
 
-  dt_pthread_mutex_lock(&darktable.db_insert);
+  dt_database_lock_image(dev->image_storage.id);
 
   dt_dev_pop_history_items(dev, 0);
 
@@ -1075,7 +1075,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
   // we update show params for multi-instances for each other instances
   dt_dev_modules_update_multishow(dev);
 
-  dt_pthread_mutex_unlock(&darktable.db_insert);
+  dt_database_unlock_image(dev->image_storage.id);
 }
 
 void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
@@ -1733,9 +1733,9 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 
 void dt_dev_read_history(dt_develop_t *dev)
 {
-  dt_pthread_mutex_lock(&darktable.db_insert);
+  dt_database_lock_image(dev->image_storage.id);
   dt_dev_read_history_ext(dev, dev->image_storage.id, FALSE);
-  dt_pthread_mutex_unlock(&darktable.db_insert);
+  dt_database_unlock_image(dev->image_storage.id);
 }
 
 void dt_dev_reprocess_all(dt_develop_t *dev)
