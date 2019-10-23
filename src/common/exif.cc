@@ -1324,7 +1324,7 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
 
       /* Many tags should be removed in all cases as they are simply wrong also for dng files */
 
-      // remove subimage* trees, related to thumbnails or HDR usually
+      // remove subimage* trees, related to thumbnails or HDR usually; also UserCrop
     for(Exiv2::ExifData::iterator i = exifData.begin(); i != exifData.end();)
     {
       static const std::string needle = "Exif.SubImage";
@@ -1344,7 +1344,7 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
         "Exif.Nikon3.Preview",
         "Exif.NikonPreview.JPEGInterchangeFormat",
 
-        // DNG stuff that is irrelevant
+        // DNG stuff that is irrelevant or misleading
         "Exif.Image.DNGPrivateData",
         "Exif.Image.DefaultBlackRender",
         "Exif.Image.DefaultCropOrigin",
@@ -1447,7 +1447,9 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
     else
       exifData["Exif.Photo.ColorSpace"] = uint16_t(0xFFFF); /* Uncalibrated */
 
-    exifData["Exif.Image.Orientation"] = uint16_t(1);
+    // we don't write the orientation here as it is set in dt_imageio_dng_write_tiff_header
+    // or might be defined in this blob.
+    // exifData["Exif.Image.Orientation"] = uint16_t(1);
 
     /* Replace RAW dimension with output dimensions (for example after crop/scale, or orientation for dng
      * mode) */
