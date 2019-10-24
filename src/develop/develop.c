@@ -2706,6 +2706,25 @@ void dt_second_window_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float 
   if(boxhh) *boxhh = boxh;
 }
 
+dt_iop_module_t *dt_dev_get_base_module(GList *iop_list, const char *op)
+{
+  dt_iop_module_t *result = NULL;
+
+  GList *modules = g_list_first(iop_list);
+  while(modules)
+  {
+    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    if(strcmp(mod->op, op) == 0)
+    {
+      result = mod;
+      break;
+    }
+    modules = g_list_next(modules);
+  }
+
+  return result;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
