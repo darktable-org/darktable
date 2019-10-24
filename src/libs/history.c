@@ -45,7 +45,6 @@ typedef struct dt_lib_history_t
   /* vbox with managed history items */
   GtkWidget *history_box;
   GtkWidget *create_button;
-//   GtkWidget *apply_button;
   GtkWidget *compress_button;
   gboolean record_undo;
 } dt_lib_history_t;
