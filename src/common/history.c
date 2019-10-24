@@ -764,16 +764,18 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
     dt_control_log(_("you need to copy history from an image before you paste it onto another"));
     return 1;
   }
-  // ascending order as suggested by parafin
-  int32_t sorted[2] = {imgid,dest_imgid};
-  if (dest_imgid < imgid)
-  {
-    sorted[0]=dest_imgid;
-    sorted[1]=imgid;
-  }
 
-  dt_pthread_mutex_lock(&(darktable.db_image[sorted[0] & (DT_IMAGE_DBLOCKS-1)]));
-  dt_pthread_mutex_lock(&(darktable.db_image[sorted[1] & (DT_IMAGE_DBLOCKS-1)]));
+// ascending order as suggested by parafin
+if (dest_imgid < imgid)
+  {
+    dt_pthread_mutex_lock(&(darktable.db_image[dest_imgid & (DT_IMAGE_DBLOCKS-1)]));
+    dt_pthread_mutex_lock(&(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)]));
+  }
+  else
+  {
+    dt_pthread_mutex_lock(&(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)]));
+    dt_pthread_mutex_lock(&(darktable.db_image[dest_imgid & (DT_IMAGE_DBLOCKS-1)]));
+  }
 
   // be sure the current history is written before pasting some other history data
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
@@ -819,8 +821,8 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   else
     dt_image_reset_aspect_ratio(dest_imgid);
 
-  dt_pthread_mutex_unlock(&(darktable.db_image[sorted[0] & (DT_IMAGE_DBLOCKS-1)]));
-  dt_pthread_mutex_unlock(&(darktable.db_image[sorted[1] & (DT_IMAGE_DBLOCKS-1)]));
+  dt_pthread_mutex_unlock(&(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)]));
+  dt_pthread_mutex_unlock(&(darktable.db_image[dest_imgid & (DT_IMAGE_DBLOCKS-1)]));
 
   return ret_val;
 }
