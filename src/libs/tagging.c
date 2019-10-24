@@ -101,7 +101,7 @@ const char **views(dt_lib_module_t *self)
   static const char *v1[] = {"lighttable", "darkroom", "map", "tethering", NULL};
   static const char *v2[] = {"lighttable", "map", "tethering", NULL};
 
-  if(dt_conf_get_bool("plugins/darktable/tagging/visible"))
+  if(dt_conf_get_bool("plugins/darkroom/tagging/visible"))
     return v1;
   else
     return v2;
