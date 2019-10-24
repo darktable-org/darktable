@@ -897,6 +897,11 @@ void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gbo
 void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
 {
   if(!darktable.gui || darktable.gui->reset) return;
+
+  if(dev->gui_attached)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end);
+
   dt_pthread_mutex_lock(&dev->history_mutex);
 
   if(dev->gui_attached)
@@ -971,6 +976,11 @@ void dt_dev_add_masks_history_item_ext(dt_develop_t *dev, dt_iop_module_t *_modu
 void dt_dev_add_masks_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
 {
   if(!darktable.gui || darktable.gui->reset) return;
+
+  if(dev->gui_attached)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end);
+
   dt_pthread_mutex_lock(&dev->history_mutex);
 
   if(dev->gui_attached)
@@ -1479,6 +1489,10 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
   if(!dev->iop) return;
 
   dt_lock_image(imgid);
+
+  if(dev->gui_attached)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end);
 
   int history_end_current = 0;
 
@@ -2134,6 +2148,9 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
   int del = 0;
   if(dev->gui_attached)
   {
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end);
+
     GList *elem = g_list_first(dev->history);
     while(elem != NULL)
     {
