@@ -489,7 +489,7 @@ static int _create_deleted_modules(GList **_iop_list, GList *history_list)
     {
       changed = 1;
 
-      const dt_iop_module_t *base_module = get_base_module(iop_list, hitem->op_name);
+      const dt_iop_module_t *base_module = dt_dev_get_base_module(iop_list, hitem->op_name);
       if(base_module == NULL)
       {
         fprintf(stderr, "[_create_deleted_modules] can't find base module for %s\n", hitem->op_name);
