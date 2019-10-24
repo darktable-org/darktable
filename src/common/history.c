@@ -1241,6 +1241,53 @@ gboolean dt_history_check_module_exists(int32_t imgid, const char *operation)
   return result;
 }
 
+GList *dt_history_duplicate(GList *hist)
+{
+  GList *result = NULL;
+
+  GList *h = g_list_first(hist);
+  while(h)
+  {
+    const dt_dev_history_item_t *old = (dt_dev_history_item_t *)(h->data);
+
+    dt_dev_history_item_t *new = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
+
+    memcpy(new, old, sizeof(dt_dev_history_item_t));
+
+    int32_t params_size = 0;
+    if(old->module)
+    {
+      params_size = old->module->params_size;
+    }
+    else
+    {
+      dt_iop_module_t *base = dt_dev_get_base_module(darktable.develop->iop, old->op_name);
+      if(base)
+      {
+        params_size = base->params_size;
+      }
+      else
+      {
+        // nothing else to do
+        fprintf(stderr, "[_duplicate_history] can't find base module for %s\n", old->op_name);
+      }
+    }
+
+    new->params = malloc(params_size);
+    new->blend_params = malloc(sizeof(dt_develop_blend_params_t));
+
+    memcpy(new->params, old->params, params_size);
+    memcpy(new->blend_params, old->blend_params, sizeof(dt_develop_blend_params_t));
+
+    if(old->forms) new->forms = dt_masks_dup_forms_deep(old->forms, NULL);
+
+    result = g_list_append(result, new);
+
+    h = g_list_next(h);
+  }
+  return result;
+}
+
 #undef DT_IOP_ORDER_INFO
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
