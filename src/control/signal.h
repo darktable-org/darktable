@@ -120,6 +120,13 @@ typedef enum dt_signal_t
     */
   DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
 
+  /** \brief This signal is raised when develop history is about to be changed
+    1 : GList *  the current history
+    1 : uint32_t the correpsing history end
+  no returned value
+    */
+  DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+
   /** \brief This signal is raised when develop history is changed
   no param, no returned value
     */
