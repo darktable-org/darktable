@@ -52,8 +52,8 @@ fast_expf(const float x)
 */
 kernel void
 basecurve_lut(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-              const float mul, read_only image2d_t table, global float *a, const int preserve_colors,
-              global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut,
+              const float mul, read_only image2d_t table, constant float *a, const int preserve_colors,
+              constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut,
               const int use_work_profile)
 {
   const int x = get_global_id(0);
@@ -96,7 +96,7 @@ basecurve_zero(write_only image2d_t out, const int width, const int height)
 */
 kernel void
 basecurve_legacy_lut(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-                   const float mul, read_only image2d_t table, global float *a)
+                   const float mul, read_only image2d_t table, constant float *a)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);

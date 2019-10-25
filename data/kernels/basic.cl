@@ -427,7 +427,7 @@ highlights_1f_lch_xtrans (read_only image2d_t in, write_only image2d_t out, cons
 #undef SQRT12
 
 float
-lookup_unbounded_twosided(read_only image2d_t lut, const float x, global const float *a)
+lookup_unbounded_twosided(read_only image2d_t lut, const float x, constant float *a)
 {
   // in case the tone curve is marked as linear, return the fast
   // path to linear unbounded (does not clip x at 1)
@@ -446,7 +446,7 @@ lookup_unbounded_twosided(read_only image2d_t lut, const float x, global const f
     {
       // two-sided extrapolation (with inverted x-axis for left side)
       const float xx = (x >= ar) ? x : 1.0f - x;
-      global const float *aa = (x >= ar) ? a : a + 3;
+      constant float *aa = (x >= ar) ? a : a + 3;
       return aa[1] * native_powr(xx*aa[0], aa[2]);
     }
   }
@@ -592,9 +592,9 @@ colorin_clipping (read_only image2d_t in, write_only image2d_t out, const int wi
 kernel void
 tonecurve (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
            read_only image2d_t table_L, read_only image2d_t table_a, read_only image2d_t table_b,
-           const int autoscale_ab, const int unbound_ab, global float *coeffs_L, global float *coeffs_ab,
+           const int autoscale_ab, const int unbound_ab, constant float *coeffs_L, constant float *coeffs_ab,
            const float low_approximation, const int preserve_colors,
-           global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
+           constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -2180,7 +2180,7 @@ lowlight (read_only image2d_t in, write_only image2d_t out, const int width, con
 /* kernel for the contrast lightness saturation module */
 kernel void
 colisa (read_only image2d_t in, write_only image2d_t out, unsigned int width, unsigned int height, const float saturation,
-        read_only image2d_t ctable, global const float *ca, read_only image2d_t ltable, global const float *la)
+        read_only image2d_t ctable, constant float *ca, read_only image2d_t ltable, constant float *la)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -2203,7 +2203,7 @@ colisa (read_only image2d_t in, write_only image2d_t out, unsigned int width, un
 
 kernel void
 profilegamma (read_only image2d_t in, write_only image2d_t out, int width, int height,
-        read_only image2d_t table, global const float *ta)
+        read_only image2d_t table, constant float *ta)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
