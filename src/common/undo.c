@@ -44,7 +44,7 @@ dt_undo_t *dt_undo_init(void)
   udata->disable_next = FALSE;
   udata->locked = FALSE;
   dt_pthread_mutex_init(&udata->mutex, NULL);
-  udata->group = 0;
+  udata->group = DT_UNDO_NONE;
   udata->group_indent = 0;
   return udata;
 }
@@ -119,7 +119,7 @@ void dt_undo_start_group(dt_undo_t *self, dt_undo_type_t type)
 {
   if(!self) return;
 
-  if(self->group == 0)
+  if(self->group == DT_UNDO_NONE)
   {
     self->group = type;
     self->group_indent = 1;
@@ -138,7 +138,7 @@ void dt_undo_end_group(dt_undo_t *self)
   if(self->group_indent == 0)
   {
     _undo_record(self, NULL, self->group, NULL, TRUE, NULL, NULL);
-    self->group = 0;
+    self->group = DT_UNDO_NONE;
   }
 }
 
@@ -149,13 +149,17 @@ void dt_undo_record(dt_undo_t *self, gpointer user_data, dt_undo_type_t type, dt
   _undo_record(self, user_data, type, data, FALSE, undo, free_data);
 }
 
-void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
+static void _undo_do_undo_redo(dt_undo_t *self, uint32_t filter, dt_undo_action_t action)
 {
   if(!self) return;
 
   LOCK;
 
-  GList *l = g_list_first(self->redo_list);
+  // we take/remove item from the FROM list and add them into the TO list:
+  GList **from = action == DT_ACTION_UNDO ? &self->undo_list : &self->redo_list;
+  GList **to   = action == DT_ACTION_UNDO ? &self->redo_list : &self->undo_list;
+
+  GList *l = g_list_first(*from);
 
   // check for first item that is matching the given pattern
 
@@ -171,26 +175,26 @@ void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
 
         GList *next = g_list_next(l);
 
-        //  first move the group item into the undo list
-        self->redo_list = g_list_remove(self->redo_list, item);
-        self->undo_list = g_list_prepend(self->undo_list, item);
+        //  first move the group item into the TO list
+        *from = g_list_remove(*from, item);
+        *to   = g_list_prepend(*to, item);
 
         while((l = next) && !is_group)
         {
           item = (dt_undo_item_t *)l->data;
           next = g_list_next(l);
 
-          //  first remove element from _redo_list
-          self->redo_list = g_list_remove(self->redo_list, item);
+          //  first remove element from FROM list
+          *from = g_list_remove(*from, item);
 
-          //  callback with redo data
+          //  callback with undo or redo data
           if(item->is_group)
             is_group = TRUE;
           else
-            item->undo(item->user_data, item->type, item->data, DT_ACTION_REDO);
+            item->undo(item->user_data, item->type, item->data, action);
 
-          //  add old position back into the undo list
-          self->undo_list = g_list_prepend(self->undo_list, item);
+          //  add old position back into the TO list
+          *to = g_list_prepend(*to, item);
         }
       }
       else
@@ -198,27 +202,27 @@ void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
         const double first_item_ts = item->ts;
         gboolean in_group = FALSE;
 
-        //  when found, redo all items of the same type and in the same time period
+        //  when found, handle all items of the same type and in the same time period
 
         do
         {
           GList *next = g_list_next(l);
 
-          //  first remove element from _redo_list
-          self->redo_list = g_list_remove(self->redo_list, item);
+          //  first remove element from FROM list
+          *from = g_list_remove(*from, item);
 
           if(item->is_group)
             in_group = !in_group;
           else
-            //  callback with redo data
-            item->undo(item->user_data, item->type, item->data, DT_ACTION_REDO);
+            //  callback with redo or redo data
+            item->undo(item->user_data, item->type, item->data, action);
 
-          //  add old position back into the undo list
-          self->undo_list = g_list_prepend(self->undo_list, item);
+          //  add old position back into the TO list
+          *to = g_list_prepend(*to, item);
 
           l = next;
           if (l) item = (dt_undo_item_t *)l->data;
-        } while (l && (item->type & filter) && (in_group || (item->ts - first_item_ts < MAX_TIME_PERIOD)));
+        } while (l && (item->type & filter) && (in_group || (fabs(item->ts - first_item_ts) < MAX_TIME_PERIOD)));
       }
 
       break;
@@ -230,86 +234,14 @@ void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
   dt_collection_update_query(darktable.collection);
 }
 
+void dt_undo_do_redo(dt_undo_t *self, uint32_t filter)
+{
+  _undo_do_undo_redo(self, filter, DT_ACTION_REDO);
+}
+
 void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
 {
-  if(!self) return;
-
-  LOCK;
-
-  GList *l = g_list_first(self->undo_list);
-
-  // the first matching item (current state) is moved into the redo list
-
-  while(l)
-  {
-    dt_undo_item_t *item = (dt_undo_item_t *)l->data;
-    GList *next = g_list_next(l);
-
-    if(item->type & filter)
-    {
-      self->undo_list = g_list_remove(self->undo_list, item);
-      self->redo_list = g_list_prepend(self->redo_list, item);
-
-      if(item->is_group)
-      {
-        l = next;
-        while (l)
-        {
-          next = g_list_next(l);
-          item = (dt_undo_item_t *)l->data;
-
-          self->undo_list = g_list_remove(self->undo_list, item);
-          self->redo_list = g_list_prepend(self->redo_list, item);
-
-          //  undo item
-          if(item->is_group)
-            break;
-          else
-            item->undo(item->user_data, item->type, item->data, DT_ACTION_UNDO);
-
-          l = next;
-        }
-        break;
-      }
-      else
-      {
-        const double first_item_ts = item->ts;
-        gboolean in_group = FALSE;
-
-        //  now record in the redo list also all items that are on the same time period
-
-        l = next;
-        while (l)
-        {
-          next = g_list_next(l);
-          item = (dt_undo_item_t *)l->data;
-
-          //  if we have reached a group
-          if(item->is_group)
-            in_group = !in_group;
-          else
-            item->undo(item->user_data, item->type, item->data, DT_ACTION_UNDO);
-
-          //  if we are on the same time frame, just continue
-          if ((item->type & filter) && (in_group || (first_item_ts - item->ts < MAX_TIME_PERIOD)))
-          {
-            self->undo_list = g_list_remove(self->undo_list, item);
-            self->redo_list = g_list_prepend(self->redo_list, item);
-            l = next;
-          }
-          else
-            break;
-        }
-      }
-      break;
-    }
-
-    l = next;
-  }
-
-  UNLOCK;
-
-  dt_collection_update_query(darktable.collection);
+  _undo_do_undo_redo(self, filter, DT_ACTION_UNDO);
 }
 
 static void _undo_clear_list(GList **list, uint32_t filter)
