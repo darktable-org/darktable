@@ -27,6 +27,7 @@
 #include "common/interpolation.h"
 #include "common/iop_group.h"
 #include "common/module.h"
+#include "common/history.h"
 #include "common/opencl.h"
 #include "common/usermanual_url.h"
 #include "control/control.h"
@@ -563,6 +564,10 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
     modules = g_list_next(modules);
   }
   if(!next) return; // what happened ???
+
+  if(dev->gui_attached)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end);
 
   // we must pay attention if priority is 0
   gboolean is_zero = (module->multi_priority == 0);

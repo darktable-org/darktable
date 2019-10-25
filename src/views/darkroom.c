@@ -833,6 +833,10 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   darktable.view_manager->accels_window.prevent_refresh = FALSE;
   if(darktable.view_manager->accels_window.window && darktable.view_manager->accels_window.sticky)
     dt_view_accels_refresh(darktable.view_manager);
+
+  // just make sure at this stage we have only history info into the undo, all automatic
+  // tagging should be ignored.
+  dt_undo_clear(darktable.undo, DT_UNDO_TAGS);
 }
 
 static void film_strip_activated(const int imgid, void *data)
@@ -2505,6 +2509,10 @@ void enter(dt_view_t *self)
     _darkroom_display_second_window(dev);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dev->second_window.button), TRUE);
   }
+
+  // just make sure at this stage we have only history info into the undo, all automatic
+  // tagging should be ignored.
+  dt_undo_clear(darktable.undo, DT_UNDO_TAGS);
 
   // update accels_window
   darktable.view_manager->accels_window.prevent_refresh = FALSE;

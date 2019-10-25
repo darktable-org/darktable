@@ -57,7 +57,8 @@ int dt_history_compress_on_selection();
 void dt_history_compress_on_image(int32_t imgid);
 /* set or clear a tag representing an error state while compressing history */
 void dt_history_set_compress_problem(int32_t imgid, gboolean set);
-
+/* duplicate an history list */
+GList *dt_history_duplicate(GList *hist);
 
 typedef struct dt_history_item_t
 {
