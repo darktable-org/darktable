@@ -67,7 +67,7 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
     dt_history_snapshot_undo_create(hist->imgid, &hist->before, &hist->before_history_end);
   }
 
-  dt_pthread_mutex_lock(&darktable.db_insert);
+  dt_lock_image(imgid);
 
   sqlite3_stmt *stmt;
 
@@ -104,7 +104,7 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
   dt_tag_detach_by_string("darktable|style%", imgid);
   dt_tag_detach_by_string("darktable|changed", imgid);
 
-  dt_pthread_mutex_unlock(&darktable.db_insert);
+  dt_unlock_image(imgid);
 
   if(undo)
   {
@@ -156,6 +156,7 @@ void dt_history_delete_on_selection()
 
 int dt_history_load_and_apply(const int imgid, gchar *filename, int history_only)
 {
+  dt_lock_image(imgid);
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
   if(img)
   {
@@ -163,8 +164,11 @@ int dt_history_load_and_apply(const int imgid, gchar *filename, int history_only
     hist->imgid = imgid;
     dt_history_snapshot_undo_create(hist->imgid, &hist->before, &hist->before_history_end);
 
-    if(dt_exif_xmp_read(img, filename, history_only)) return 1;
-
+    if(dt_exif_xmp_read(img, filename, history_only))
+    {
+      dt_unlock_image(imgid);
+      return 1;
+    }
     dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
     dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
     dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
@@ -178,6 +182,7 @@ int dt_history_load_and_apply(const int imgid, gchar *filename, int history_only
     dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
     dt_image_reset_final_size(imgid);
   }
+  dt_unlock_image(imgid);
   return 0;
 }
 
@@ -760,8 +765,7 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
     return 1;
   }
 
-  // Just in case lock the database
-  dt_pthread_mutex_lock(&darktable.db_insert);
+  dt_lock_image_pair(imgid,dest_imgid);
 
   // be sure the current history is written before pasting some other history data
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
@@ -807,7 +811,7 @@ int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboole
   else
     dt_image_reset_aspect_ratio(dest_imgid);
 
-  dt_pthread_mutex_unlock(&darktable.db_insert);
+  dt_unlock_image_pair(imgid,dest_imgid);
 
   return ret_val;
 }
@@ -983,6 +987,7 @@ static int dt_history_end_attop(int32_t imgid)
 */
 void dt_history_compress_on_image(int32_t imgid)
 {
+  dt_lock_image(imgid);
   sqlite3_stmt *stmt;
 
   // get history_end for image
@@ -998,6 +1003,7 @@ void dt_history_compress_on_image(int32_t imgid)
   if (my_history_end == 0)
   {
     dt_history_delete_on_image(imgid);
+    dt_unlock_image(imgid);
     return;
   }
   // compress history, keep disabled modules as documented
@@ -1095,45 +1101,33 @@ void dt_history_compress_on_image(int32_t imgid)
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
   }
+  dt_unlock_image(imgid);
 }
 
-#define no_forced_reordering FALSE
-#define give_reorder_information FALSE
 static void _history_reorder(int32_t imgid)
 {
   int32_t dummy = 0x7fffffff;
   sqlite3_stmt *stmt;
-  if(give_reorder_information) fprintf(stderr,"\n\n_history reorder for image: %i",imgid);
 
-  if(no_forced_reordering)
-  {
-    if (give_reorder_information) fprintf(stderr,", no action\n");
-  }
-  else
-  {
-    if (give_reorder_information) fprintf(stderr,", reorder\n");
-    // make sure running jobs can't interfere here as the followiing code uses a fixed dummy id
-    // and also intends to have a "properly" orderered database
-    dt_pthread_mutex_lock(&darktable.db_insert);
+  // make sure running jobs can't interfere here as the followiing code uses a fixed dummy id
+  // and also intends to have a "properly" orderered database
+  dt_lock_image_pair(imgid,dummy);
 
-    _history_copy_and_paste_on_image_overwrite(imgid, dummy, 0);
-    _history_copy_and_paste_on_image_overwrite(dummy, imgid, 0);
+  _history_copy_and_paste_on_image_overwrite(imgid, dummy, 0);
+  _history_copy_and_paste_on_image_overwrite(dummy, imgid, 0);
 
-    // make sure a cleanup
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dummy);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
+  // make sure a cleanup
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dummy);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
 
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid = ?1", -1, &stmt,NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dummy);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-    dt_pthread_mutex_unlock(&darktable.db_insert);
-  }
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid = ?1", -1, &stmt,NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, dummy);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+  dt_unlock_image_pair(imgid,dummy);
 }
-#undef give_reorder_information
-#undef no_forced_reordering
 
 int dt_history_compress_on_selection()
 {
@@ -1146,6 +1140,7 @@ int dt_history_compress_on_selection()
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int imgid = sqlite3_column_int(stmt, 0);
+    dt_lock_image(imgid);
     const int test = dt_history_end_attop(imgid);
     if (test == 1) // we do a compression and we know for sure history_end is at the top!
     {
@@ -1219,6 +1214,9 @@ int dt_history_compress_on_selection()
     }
     if (test == -1)
       dt_history_set_compress_problem(imgid, FALSE);
+
+    dt_unlock_image(imgid);
+
   }
 
   sqlite3_finalize(stmt);
@@ -1227,6 +1225,7 @@ int dt_history_compress_on_selection()
 
 gboolean dt_history_check_module_exists(int32_t imgid, const char *operation)
 {
+  dt_lock_image(imgid);
   gboolean result = FALSE;
   sqlite3_stmt *stmt;
 
@@ -1238,6 +1237,7 @@ gboolean dt_history_check_module_exists(int32_t imgid, const char *operation)
   if (sqlite3_step(stmt) == SQLITE_ROW) result = TRUE;
   sqlite3_finalize(stmt);
 
+  dt_unlock_image(imgid);
   return result;
 }
 
