@@ -1447,9 +1447,9 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
     else
       exifData["Exif.Photo.ColorSpace"] = uint16_t(0xFFFF); /* Uncalibrated */
 
-    // we don't write the orientation here as it is set in dt_imageio_dng_write_tiff_header
+    // we don't write the orientation here for dng as it is set in dt_imageio_dng_write_tiff_header
     // or might be defined in this blob.
-    // exifData["Exif.Image.Orientation"] = uint16_t(1);
+    if(!dng_mode) exifData["Exif.Image.Orientation"] = uint16_t(1);
 
     /* Replace RAW dimension with output dimensions (for example after crop/scale, or orientation for dng
      * mode) */
