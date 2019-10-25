@@ -28,10 +28,10 @@
 
 /* $Revision: 11708 $ on $Date: 2010-06-13 23:36:24 -0700 (Sun, 13 Jun 2010) $ */
 
-#ifndef __OPENCL_CL_D3D10_H
-#define __OPENCL_CL_D3D10_H
+#ifndef __OPENCL_CL_D3D11_H
+#define __OPENCL_CL_D3D11_H
 
-#include <d3d10.h>
+#include <d3d11.h>
 #include <CL/cl.h>
 #include <CL/cl_platform.h>
 
@@ -40,92 +40,92 @@ extern "C" {
 #endif
 
 /******************************************************************************
- * cl_khr_d3d10_sharing                                                       */
-#define cl_khr_d3d10_sharing 1
+ * cl_khr_d3d11_sharing                                                       */
+#define cl_khr_d3d11_sharing 1
 
-typedef cl_uint cl_d3d10_device_source_khr;
-typedef cl_uint cl_d3d10_device_set_khr;
+typedef cl_uint cl_d3d11_device_source_khr;
+typedef cl_uint cl_d3d11_device_set_khr;
 
 /******************************************************************************/
 
 /* Error Codes */
-#define CL_INVALID_D3D10_DEVICE_KHR                  -1002
-#define CL_INVALID_D3D10_RESOURCE_KHR                -1003
-#define CL_D3D10_RESOURCE_ALREADY_ACQUIRED_KHR       -1004
-#define CL_D3D10_RESOURCE_NOT_ACQUIRED_KHR           -1005
+#define CL_INVALID_D3D11_DEVICE_KHR                  -1006
+#define CL_INVALID_D3D11_RESOURCE_KHR                -1007
+#define CL_D3D11_RESOURCE_ALREADY_ACQUIRED_KHR       -1008
+#define CL_D3D11_RESOURCE_NOT_ACQUIRED_KHR           -1009
 
-/* cl_d3d10_device_source_nv */
-#define CL_D3D10_DEVICE_KHR                          0x4010
-#define CL_D3D10_DXGI_ADAPTER_KHR                    0x4011
+/* cl_d3d11_device_source */
+#define CL_D3D11_DEVICE_KHR                          0x4019
+#define CL_D3D11_DXGI_ADAPTER_KHR                    0x401A
 
-/* cl_d3d10_device_set_nv */
-#define CL_PREFERRED_DEVICES_FOR_D3D10_KHR           0x4012
-#define CL_ALL_DEVICES_FOR_D3D10_KHR                 0x4013
+/* cl_d3d11_device_set */
+#define CL_PREFERRED_DEVICES_FOR_D3D11_KHR           0x401B
+#define CL_ALL_DEVICES_FOR_D3D11_KHR                 0x401C
 
 /* cl_context_info */
-#define CL_CONTEXT_D3D10_DEVICE_KHR                  0x4014
-#define CL_CONTEXT_D3D10_PREFER_SHARED_RESOURCES_KHR 0x402C
+#define CL_CONTEXT_D3D11_DEVICE_KHR                  0x401D
+#define CL_CONTEXT_D3D11_PREFER_SHARED_RESOURCES_KHR 0x402D
 
 /* cl_mem_info */
-#define CL_MEM_D3D10_RESOURCE_KHR                    0x4015
+#define CL_MEM_D3D11_RESOURCE_KHR                    0x401E
 
 /* cl_image_info */
-#define CL_IMAGE_D3D10_SUBRESOURCE_KHR               0x4016
+#define CL_IMAGE_D3D11_SUBRESOURCE_KHR               0x401F
 
 /* cl_command_type */
-#define CL_COMMAND_ACQUIRE_D3D10_OBJECTS_KHR         0x4017
-#define CL_COMMAND_RELEASE_D3D10_OBJECTS_KHR         0x4018
+#define CL_COMMAND_ACQUIRE_D3D11_OBJECTS_KHR         0x4020
+#define CL_COMMAND_RELEASE_D3D11_OBJECTS_KHR         0x4021
 
 /******************************************************************************/
 
-typedef CL_API_ENTRY cl_int (CL_API_CALL *clGetDeviceIDsFromD3D10KHR_fn)(
+typedef CL_API_ENTRY cl_int (CL_API_CALL *clGetDeviceIDsFromD3D11KHR_fn)(
     cl_platform_id             platform,
-    cl_d3d10_device_source_khr d3d_device_source,
+    cl_d3d11_device_source_khr d3d_device_source,
     void *                     d3d_object,
-    cl_d3d10_device_set_khr    d3d_device_set,
+    cl_d3d11_device_set_khr    d3d_device_set,
     cl_uint                    num_entries,
     cl_device_id *             devices,
-    cl_uint *                  num_devices) CL_API_SUFFIX__VERSION_1_0;
+    cl_uint *                  num_devices) CL_API_SUFFIX__VERSION_1_2;
 
-typedef CL_API_ENTRY cl_mem (CL_API_CALL *clCreateFromD3D10BufferKHR_fn)(
+typedef CL_API_ENTRY cl_mem (CL_API_CALL *clCreateFromD3D11BufferKHR_fn)(
     cl_context     context,
     cl_mem_flags   flags,
-    ID3D10Buffer * resource,
-    cl_int *       errcode_ret) CL_API_SUFFIX__VERSION_1_0;
+    ID3D11Buffer * resource,
+    cl_int *       errcode_ret) CL_API_SUFFIX__VERSION_1_2;
 
-typedef CL_API_ENTRY cl_mem (CL_API_CALL *clCreateFromD3D10Texture2DKHR_fn)(
+typedef CL_API_ENTRY cl_mem (CL_API_CALL *clCreateFromD3D11Texture2DKHR_fn)(
     cl_context        context,
     cl_mem_flags      flags,
-    ID3D10Texture2D * resource,
+    ID3D11Texture2D * resource,
     UINT              subresource,
-    cl_int *          errcode_ret) CL_API_SUFFIX__VERSION_1_0;
+    cl_int *          errcode_ret) CL_API_SUFFIX__VERSION_1_2;
 
-typedef CL_API_ENTRY cl_mem (CL_API_CALL *clCreateFromD3D10Texture3DKHR_fn)(
+typedef CL_API_ENTRY cl_mem (CL_API_CALL *clCreateFromD3D11Texture3DKHR_fn)(
     cl_context        context,
     cl_mem_flags      flags,
-    ID3D10Texture3D * resource,
+    ID3D11Texture3D * resource,
     UINT              subresource,
-    cl_int *          errcode_ret) CL_API_SUFFIX__VERSION_1_0;
+    cl_int *          errcode_ret) CL_API_SUFFIX__VERSION_1_2;
 
-typedef CL_API_ENTRY cl_int (CL_API_CALL *clEnqueueAcquireD3D10ObjectsKHR_fn)(
+typedef CL_API_ENTRY cl_int (CL_API_CALL *clEnqueueAcquireD3D11ObjectsKHR_fn)(
     cl_command_queue command_queue,
     cl_uint          num_objects,
     const cl_mem *   mem_objects,
     cl_uint          num_events_in_wait_list,
     const cl_event * event_wait_list,
-    cl_event *       event) CL_API_SUFFIX__VERSION_1_0;
+    cl_event *       event) CL_API_SUFFIX__VERSION_1_2;
 
-typedef CL_API_ENTRY cl_int (CL_API_CALL *clEnqueueReleaseD3D10ObjectsKHR_fn)(
+typedef CL_API_ENTRY cl_int (CL_API_CALL *clEnqueueReleaseD3D11ObjectsKHR_fn)(
     cl_command_queue command_queue,
     cl_uint          num_objects,
     const cl_mem *   mem_objects,
     cl_uint          num_events_in_wait_list,
     const cl_event * event_wait_list,
-    cl_event *       event) CL_API_SUFFIX__VERSION_1_0;
+    cl_event *       event) CL_API_SUFFIX__VERSION_1_2;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  /* __OPENCL_CL_D3D10_H */
+#endif  /* __OPENCL_CL_D3D11_H */
 
