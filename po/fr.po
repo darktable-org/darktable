@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-22 22:11+0200\n"
-"PO-Revision-Date: 2019-10-22 22:18+0200\n"
+"POT-Creation-Date: 2019-10-25 16:39+0200\n"
+"PO-Revision-Date: 2019-10-25 16:43+0200\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1482,7 +1482,7 @@ msgid "export profile"
 msgstr "profil d'exportation"
 
 #: ../src/common/colorspaces.c:984 ../src/common/colorspaces.c:1250
-#: ../src/views/darkroom.c:2002
+#: ../src/views/darkroom.c:2006
 msgid "softproof profile"
 msgstr "épreuvage écran"
 
@@ -1556,11 +1556,11 @@ msgstr "le fichier « %s » possède un format inconnu !"
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier « %s »"
 
-#: ../src/common/darktable.c:799
+#: ../src/common/darktable.c:801
 msgid "darktable - run performance configuration?"
 msgstr "darktable - exécute la configuration des performances?"
 
-#: ../src/common/darktable.c:800
+#: ../src/common/darktable.c:802
 msgid ""
 "we have an updated performance configuration logic - executing that might "
 "improve the performance of darktable.\n"
@@ -1574,15 +1574,15 @@ msgstr ""
 "particulièrement si la configuration a été changée manuellement.\n"
 "voulez-vous exécuter une nouvelle configuration de la performance?\n"
 
-#: ../src/common/darktable.c:804 ../src/common/variables.c:380
+#: ../src/common/darktable.c:806 ../src/common/variables.c:380
 #: ../src/imageio/format/pdf.c:669 ../src/imageio/format/pdf.c:694
-#: ../src/iop/clipping.c:2005 ../src/iop/filmicrgb.c:1547
+#: ../src/iop/clipping.c:2005 ../src/iop/filmicrgb.c:1556
 #: ../src/iop/toneequal.c:3155 ../src/libs/export.c:628
 #: ../src/libs/export.c:634 ../src/libs/metadata_view.c:279
 msgid "no"
 msgstr "non"
 
-#: ../src/common/darktable.c:804 ../src/common/variables.c:378
+#: ../src/common/darktable.c:806 ../src/common/variables.c:378
 #: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
 #: ../src/iop/clipping.c:2006 ../src/libs/export.c:629 ../src/libs/export.c:635
 #: ../src/libs/metadata_view.c:279
@@ -1688,52 +1688,52 @@ msgstr "darktable - erreur lors de l'ouverture de la base de données"
 msgid "delete database"
 msgstr "effacer la base de données"
 
-#: ../src/common/film.c:313
+#: ../src/common/film.c:311
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
 msgstr[0] "êtes-vous sûr de vouloir supprimer ce répertoire vide?"
 msgstr[1] "êtes-vous sûr de vouloir supprimer ces répertoires vides?"
 
-#: ../src/common/film.c:320
+#: ../src/common/film.c:318
 msgid "remove empty directory?"
 msgid_plural "remove empty directories?"
 msgstr[0] "supprimer le répertoire vide?"
 msgstr[1] "supprimer les répertoires vides?"
 
-#: ../src/common/film.c:339 ../src/gui/preferences.c:502
+#: ../src/common/film.c:337 ../src/gui/preferences.c:502
 #: ../src/gui/styles_dialog.c:309
 msgid "name"
 msgstr "nom"
 
-#: ../src/common/film.c:437
+#: ../src/common/film.c:435
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr ""
 "impossible de supprimer un film comprenant des copies locales dont les "
 "originaux ne sont pas accessibles"
 
-#: ../src/common/history.c:759
+#: ../src/common/history.c:764
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr ""
 "il est nécessaire de copier le développement d'une image avant de le coller "
 "sur une autre"
 
-#: ../src/common/history.c:855 ../src/common/history.c:858
-#: ../src/common/history.c:874 ../src/common/styles.c:915
+#: ../src/common/history.c:859 ../src/common/history.c:862
+#: ../src/common/history.c:878 ../src/common/styles.c:915
 #: ../src/common/styles.c:919 ../src/develop/blend_gui.c:2509
-#: ../src/develop/develop.c:1869 ../src/iop/ashift.c:4856
+#: ../src/develop/develop.c:1885 ../src/iop/ashift.c:4856
 #: ../src/libs/live_view.c:437
 msgid "on"
 msgstr "activé(e)"
 
-#: ../src/common/history.c:855 ../src/common/history.c:858
-#: ../src/common/history.c:874 ../src/common/styles.c:915
+#: ../src/common/history.c:859 ../src/common/history.c:862
+#: ../src/common/history.c:878 ../src/common/styles.c:915
 #: ../src/common/styles.c:919 ../src/develop/blend_gui.c:2256
-#: ../src/develop/blend_gui.c:2506 ../src/develop/develop.c:1869
+#: ../src/develop/blend_gui.c:2506 ../src/develop/develop.c:1885
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
 #: ../src/iop/ashift.c:4855 ../src/iop/ashift.c:4861 ../src/iop/colorin.c:2107
 #: ../src/iop/demosaic.c:5147 ../src/iop/vignette.c:1150
-#: ../src/libs/history.c:163 ../src/libs/live_view.c:436
+#: ../src/libs/history.c:169 ../src/libs/live_view.c:436
 msgid "off"
 msgstr "désactivé(e)"
 
@@ -2971,51 +2971,51 @@ msgstr ""
 msgid "mask refinement"
 msgstr "amélioration du masque"
 
-#: ../src/develop/develop.c:1654
+#: ../src/develop/develop.c:1671
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module « %s » version non cohérente: %d != %d"
 
-#: ../src/develop/imageop.c:1017
+#: ../src/develop/imageop.c:1022
 msgid "new instance"
 msgstr "nouvelle instance"
 
 # "duplicate" traduit par "cloner" avec une bulle d'explication utilisant le terme de "copie virtuelle", dans le sens que l'image n'est pas physiquement dupliquée
-#: ../src/develop/imageop.c:1023
+#: ../src/develop/imageop.c:1028
 msgid "duplicate instance"
 msgstr "cloner l'instance"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
-#: ../src/develop/imageop.c:1029 ../src/libs/masks.c:1153
+#: ../src/develop/imageop.c:1034 ../src/libs/masks.c:1153
 msgid "move up"
 msgstr "monter"
 
-#: ../src/develop/imageop.c:1035 ../src/libs/masks.c:1156
+#: ../src/develop/imageop.c:1040 ../src/libs/masks.c:1156
 msgid "move down"
 msgstr "descendre"
 
 #. delete
-#: ../src/develop/imageop.c:1041 ../src/libs/image.c:144
+#: ../src/develop/imageop.c:1046 ../src/libs/image.c:144
 #: ../src/libs/styles.c:458 ../src/libs/tagging.c:1164
 #: ../src/libs/tagging.c:1261
 msgid "delete"
 msgstr "supprimer"
 
-#: ../src/develop/imageop.c:1048 ../src/libs/tagging.c:1735
+#: ../src/develop/imageop.c:1053 ../src/libs/tagging.c:1735
 msgid "rename"
 msgstr "renommer"
 
-#: ../src/develop/imageop.c:1091 ../src/develop/imageop.c:1975
+#: ../src/develop/imageop.c:1096 ../src/develop/imageop.c:1980
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:1091 ../src/develop/imageop.c:1975
+#: ../src/develop/imageop.c:1096 ../src/develop/imageop.c:1980
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
 
-#: ../src/develop/imageop.c:1402 ../src/gui/accelerators.c:686
+#: ../src/develop/imageop.c:1407 ../src/gui/accelerators.c:686
 #: ../src/gui/accelerators.c:771 ../src/gui/accelerators.c:953
 #: ../src/gui/accelerators.c:979 ../src/gui/camera_import_dialog.c:445
 #: ../src/gui/presets.c:190 ../src/gui/presets.c:303 ../src/gui/presets.c:644
@@ -3024,33 +3024,33 @@ msgstr "%s est désactivé"
 msgid "preset"
 msgstr "pré-réglage"
 
-#: ../src/develop/imageop.c:1422
+#: ../src/develop/imageop.c:1427
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusion"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1427
+#: ../src/develop/imageop.c:1432
 msgctxt "accel"
 msgid "show module"
 msgstr "afficher le module"
 
-#: ../src/develop/imageop.c:1428
+#: ../src/develop/imageop.c:1433
 msgctxt "accel"
 msgid "enable module"
 msgstr "activer le module"
 
-#: ../src/develop/imageop.c:1430 ../src/libs/lib.c:614
+#: ../src/develop/imageop.c:1435 ../src/libs/lib.c:614
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "réinitialiser les paramètres"
 
-#: ../src/develop/imageop.c:1431 ../src/libs/lib.c:618
+#: ../src/develop/imageop.c:1436 ../src/libs/lib.c:618
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "afficher le menu des pré-réglages"
 
-#: ../src/develop/imageop.c:1947
+#: ../src/develop/imageop.c:1952
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -3058,17 +3058,17 @@ msgstr ""
 "actions instances multiples\n"
 "clic-milieu pour créer une nouvelle instance"
 
-#: ../src/develop/imageop.c:1958 ../src/libs/lib.c:984
+#: ../src/develop/imageop.c:1963 ../src/libs/lib.c:984
 msgid "reset parameters"
 msgstr "réinitialiser les paramètres"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:1966 ../src/gui/preferences.c:484
+#: ../src/develop/imageop.c:1971 ../src/gui/preferences.c:484
 #: ../src/libs/lib.c:993
 msgid "presets"
 msgstr "pré-réglages"
 
-#: ../src/develop/imageop.c:1968
+#: ../src/develop/imageop.c:1973
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -3464,7 +3464,7 @@ msgstr "lumière du soir"
 msgid "underwater"
 msgstr "sous l'eau"
 
-#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1899
+#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1903
 msgid "black & white"
 msgstr "noir et blanc"
 
@@ -5863,7 +5863,7 @@ msgid "luminance"
 msgstr "luminance"
 
 #: ../src/iop/basecurve.c:2142 ../src/iop/basicadj.c:709
-#: ../src/iop/filmicrgb.c:1548 ../src/iop/rgbcurve.c:1622
+#: ../src/iop/filmicrgb.c:1557 ../src/iop/rgbcurve.c:1622
 #: ../src/iop/rgblevels.c:1119 ../src/iop/tonecurve.c:1395
 msgid "max RGB"
 msgstr "max RVB"
@@ -5974,7 +5974,7 @@ msgstr "ajustement de la compression des hautes lumières"
 
 #: ../src/iop/basicadj.c:700 ../src/iop/bilat.c:546 ../src/iop/colisa.c:379
 #: ../src/iop/colorbalance.c:2419 ../src/iop/colorbalance.c:2421
-#: ../src/iop/filmic.c:1752 ../src/iop/filmicrgb.c:1507
+#: ../src/iop/filmic.c:1752 ../src/iop/filmicrgb.c:1511
 #: ../src/iop/lowpass.c:685
 msgid "contrast"
 msgstr "contraste"
@@ -6053,7 +6053,7 @@ msgstr "laplacien local: résultat incohérent"
 #: ../src/iop/profile_gamma.c:857 ../src/iop/rgbcurve.c:1513
 #: ../src/iop/rgblevels.c:1010 ../src/libs/copy_history.c:350
 #: ../src/libs/export.c:688 ../src/libs/print_settings.c:1510
-#: ../src/views/darkroom.c:1834
+#: ../src/views/darkroom.c:1838
 msgid "mode"
 msgstr "mode"
 
@@ -7326,21 +7326,21 @@ msgstr "rendu (sortie)"
 
 #: ../src/iop/colorout.c:869 ../src/libs/export.c:671
 #: ../src/libs/print_settings.c:1239 ../src/libs/print_settings.c:1454
-#: ../src/views/darkroom.c:1977 ../src/views/darkroom.c:1985
+#: ../src/views/darkroom.c:1981 ../src/views/darkroom.c:1989
 #: ../src/views/lighttable.c:4877 ../src/views/lighttable.c:4885
 msgid "perceptual"
 msgstr "perceptif"
 
 #: ../src/iop/colorout.c:870 ../src/libs/export.c:672
 #: ../src/libs/print_settings.c:1240 ../src/libs/print_settings.c:1455
-#: ../src/views/darkroom.c:1978 ../src/views/darkroom.c:1986
+#: ../src/views/darkroom.c:1982 ../src/views/darkroom.c:1990
 #: ../src/views/lighttable.c:4878 ../src/views/lighttable.c:4886
 msgid "relative colorimetric"
 msgstr "colorimétrie relative"
 
 #: ../src/iop/colorout.c:871 ../src/libs/export.c:673
 #: ../src/libs/print_settings.c:1241 ../src/libs/print_settings.c:1456
-#: ../src/views/darkroom.c:1979 ../src/views/darkroom.c:1987
+#: ../src/views/darkroom.c:1983 ../src/views/darkroom.c:1991
 #: ../src/views/lighttable.c:4879 ../src/views/lighttable.c:4887
 msgctxt "rendering intent"
 msgid "saturation"
@@ -7348,7 +7348,7 @@ msgstr "saturation"
 
 #: ../src/iop/colorout.c:872 ../src/libs/export.c:674
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1457
-#: ../src/views/darkroom.c:1980 ../src/views/darkroom.c:1988
+#: ../src/views/darkroom.c:1984 ../src/views/darkroom.c:1992
 #: ../src/views/lighttable.c:4880 ../src/views/lighttable.c:4888
 msgid "absolute colorimetric"
 msgstr "colorimétrie absolue"
@@ -8196,7 +8196,7 @@ msgstr ""
 "pourcentage de valeurs hautes tronquées, utiliser la pipette pour définir"
 
 #: ../src/iop/exposure.c:903 ../src/iop/highlights.c:1086
-#: ../src/views/darkroom.c:1862
+#: ../src/views/darkroom.c:1866
 msgid "clipping threshold"
 msgstr "seuil de troncature"
 
@@ -8284,7 +8284,7 @@ msgstr "transformation logarithmique"
 msgid "middle grey luminance"
 msgstr "luminance du gris moyen"
 
-#: ../src/iop/filmic.c:1691 ../src/iop/filmicrgb.c:1446
+#: ../src/iop/filmic.c:1691
 msgid ""
 "adjust to match the average luminance of the subject.\n"
 "except in back-lighting situations, this should be around 18%."
@@ -8292,11 +8292,11 @@ msgstr ""
 "ajuster pour correspondre à la luminance moyenne du sujet.\n"
 "sauf pour les scènes sombres, cette valeur devrait être autour de 18%"
 
-#: ../src/iop/filmic.c:1701 ../src/iop/filmicrgb.c:1456
+#: ../src/iop/filmic.c:1701 ../src/iop/filmicrgb.c:1457
 msgid "white relative exposure"
 msgstr "exposition relative du blanc"
 
-#: ../src/iop/filmic.c:1704 ../src/iop/filmicrgb.c:1459
+#: ../src/iop/filmic.c:1704 ../src/iop/filmicrgb.c:1460
 msgid ""
 "number of stops between middle grey and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -8306,12 +8306,12 @@ msgstr ""
 "ceci est la valeur que vous donnerait un posemètre sur la scène\n"
 "ajuster pour éviter de tronquer les hautes lumières."
 
-#: ../src/iop/filmic.c:1715 ../src/iop/filmicrgb.c:1470
+#: ../src/iop/filmic.c:1715 ../src/iop/filmicrgb.c:1471
 #: ../src/iop/profile_gamma.c:908
 msgid "black relative exposure"
 msgstr "exposition relative du noir"
 
-#: ../src/iop/filmic.c:1718 ../src/iop/filmicrgb.c:1473
+#: ../src/iop/filmic.c:1718 ../src/iop/filmicrgb.c:1474
 msgid ""
 "number of stops between middle grey and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -8327,7 +8327,7 @@ msgstr ""
 msgid "safety factor"
 msgstr "facteur de sécurité"
 
-#: ../src/iop/filmic.c:1731 ../src/iop/filmicrgb.c:1487
+#: ../src/iop/filmic.c:1731
 msgid ""
 "enlarge or shrink the computed dynamic range.\n"
 "useful in conjunction with \"auto tune levels\"."
@@ -8335,12 +8335,12 @@ msgstr ""
 "élargir ou rétrécir la plage dynamique calculée\n"
 "ceci est utile avec l'utilisation des « niveaux automatiques »"
 
-#: ../src/iop/filmic.c:1737 ../src/iop/filmicrgb.c:1493
+#: ../src/iop/filmic.c:1737 ../src/iop/filmicrgb.c:1494
 #: ../src/iop/profile_gamma.c:940
 msgid "auto tune levels"
 msgstr "niveaux automatiques"
 
-#: ../src/iop/filmic.c:1742 ../src/iop/filmicrgb.c:1498
+#: ../src/iop/filmic.c:1742
 msgid ""
 "try to optimize the settings with some guessing.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -8356,7 +8356,7 @@ msgstr ""
 msgid "filmic S curve"
 msgstr "courbe filmique en S"
 
-#: ../src/iop/filmic.c:1754 ../src/iop/filmicrgb.c:1509
+#: ../src/iop/filmic.c:1754 ../src/iop/filmicrgb.c:1513
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
@@ -8365,12 +8365,12 @@ msgstr ""
 "touche principalement les tons moyens."
 
 #. geotagging
-#: ../src/iop/filmic.c:1761 ../src/iop/filmicrgb.c:1516
+#: ../src/iop/filmic.c:1761 ../src/iop/filmicrgb.c:1520
 #: ../src/libs/metadata_view.c:132
 msgid "latitude"
 msgstr "latitude"
 
-#: ../src/iop/filmic.c:1764 ../src/iop/filmicrgb.c:1519
+#: ../src/iop/filmic.c:1764
 msgid ""
 "width of the linear domain in the middle of the curve.\n"
 "increase to get more contrast at the extreme luminances.\n"
@@ -8380,11 +8380,11 @@ msgstr ""
 "augmenter pour obtenir plus de contraste dans les luminances extrêmes\n"
 "ce réglage n'a aucun effet dans les tons moyens."
 
-#: ../src/iop/filmic.c:1771 ../src/iop/filmicrgb.c:1526
+#: ../src/iop/filmic.c:1771 ../src/iop/filmicrgb.c:1532
 msgid "shadows/highlights balance"
 msgstr "balance ombres/hautes lumières"
 
-#: ../src/iop/filmic.c:1774 ../src/iop/filmicrgb.c:1529
+#: ../src/iop/filmic.c:1774 ../src/iop/filmicrgb.c:1535
 msgid ""
 "slides the latitude along the slope\n"
 "to give more room to shadows or highlights.\n"
@@ -8410,11 +8410,11 @@ msgstr ""
 "la valeur doit être en dessous de 100%\n"
 "si la conservation de la chrominance est activée."
 
-#: ../src/iop/filmic.c:1790 ../src/iop/filmicrgb.c:1535
+#: ../src/iop/filmic.c:1790 ../src/iop/filmicrgb.c:1543
 msgid "extreme luminance saturation"
 msgstr "saturation luminance extrême"
 
-#: ../src/iop/filmic.c:1794 ../src/iop/filmicrgb.c:1539
+#: ../src/iop/filmic.c:1794
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -8453,7 +8453,7 @@ msgstr ""
 msgid "preserve the chrominance"
 msgstr "préserver couleur"
 
-#: ../src/iop/filmic.c:1816 ../src/iop/filmicrgb.c:1551
+#: ../src/iop/filmic.c:1816
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations.\n"
@@ -8468,11 +8468,11 @@ msgstr ""
 msgid "destination/display"
 msgstr "destination/affichage"
 
-#: ../src/iop/filmic.c:1842 ../src/iop/filmicrgb.c:1559
+#: ../src/iop/filmic.c:1842 ../src/iop/filmicrgb.c:1568
 msgid "target black luminance"
 msgstr "luminance du noir cible"
 
-#: ../src/iop/filmic.c:1845 ../src/iop/filmicrgb.c:1562
+#: ../src/iop/filmic.c:1845 ../src/iop/filmicrgb.c:1571
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -8480,11 +8480,11 @@ msgstr ""
 "luminance du noir pur de sortie, devrait être 0%\n"
 "sauf pour obtenir des tons fades"
 
-#: ../src/iop/filmic.c:1851 ../src/iop/filmicrgb.c:1568
+#: ../src/iop/filmic.c:1851 ../src/iop/filmicrgb.c:1577
 msgid "target middle grey"
 msgstr "gris moyen cible"
 
-#: ../src/iop/filmic.c:1854 ../src/iop/filmicrgb.c:1571
+#: ../src/iop/filmic.c:1854 ../src/iop/filmicrgb.c:1580
 msgid ""
 "midde grey value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -8492,11 +8492,11 @@ msgstr ""
 "valeur du gris moyen de la cible de sortie ou de l'espace de couleur.\n"
 "ne jamais toucher sauf si vous savez ce que vous faites."
 
-#: ../src/iop/filmic.c:1860 ../src/iop/filmicrgb.c:1577
+#: ../src/iop/filmic.c:1860 ../src/iop/filmicrgb.c:1586
 msgid "target white luminance"
 msgstr "luminance du blanc cible"
 
-#: ../src/iop/filmic.c:1863 ../src/iop/filmicrgb.c:1580
+#: ../src/iop/filmic.c:1863 ../src/iop/filmicrgb.c:1589
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -8508,7 +8508,7 @@ msgstr ""
 msgid "target gamma"
 msgstr "gamma cible"
 
-#: ../src/iop/filmic.c:1871 ../src/iop/filmicrgb.c:1588
+#: ../src/iop/filmic.c:1871 ../src/iop/filmicrgb.c:1597
 msgid ""
 "power or gamma of the transfer function\n"
 "of the display or color space.\n"
@@ -8604,23 +8604,93 @@ msgstr "look"
 msgid "display"
 msgstr "affichage"
 
-#: ../src/iop/filmicrgb.c:1484
+#: ../src/iop/filmicrgb.c:1446
+msgid ""
+"adjust to match the average luminance of the image's subject.\n"
+"the value entered here will then be remapped to 18.45%.\n"
+"decrease the value to increase the overall brightness."
+msgstr ""
+"ajuster pour correspondre à la luminance moyenne du sujet de l'image.\n"
+"la valeur entrée ici sera alors ajustée pour correspondre à 18.45%\n"
+"diminuer la valeur augment la luminosité globale."
+
+#: ../src/iop/filmicrgb.c:1485
 msgid "dynamic range scaling"
 msgstr "échelle plage dynamique"
 
-#: ../src/iop/filmicrgb.c:1546
-msgid "preserve chroma"
+#: ../src/iop/filmicrgb.c:1488
+msgid ""
+"symmetrically enlarge or shrink the computed dynamic range.\n"
+"useful to give a safety margin to extreme luminances."
+msgstr ""
+"élargir ou rétrécir la plage dynamique calculée\n"
+"ceci est utile pour donner une marge de sécurité aux luminances extrêmes."
+
+#: ../src/iop/filmicrgb.c:1499
+msgid ""
+"try to optimize the settings with some statistical assumptions.\n"
+"this will fit the luminance range inside the histogram bounds.\n"
+"works better for landscapes and evenly-lit pictures\n"
+"but fails for high-keys, low-keys and high-ISO pictures.\n"
+"this is not an artificial intelligence, but a simple guess.\n"
+"ensure you understand its assumptions before using it."
+msgstr ""
+"essai d'optimiser les réglages par analyse.\n"
+"l'étendu de la luminance sera placée dans l'histogramme.\n"
+"marche mieux sur les paysages et images exposées uniformément\n"
+"et donnera de mauvais résultat sur des clairs-obscurs et high-key.\n"
+"cela n'est pas de l'intelligence artificielle, mais une simple analyse.\n"
+"s'assurer de bien comprendre l'analyse avant de l'utiliser."
+
+#: ../src/iop/filmicrgb.c:1523
+msgid ""
+"width of the linear domain in the middle of the curve,\n"
+"in percent of the dynamic range (white exposure - black exposure).\n"
+"increase to get more contrast and less desaturation at extreme luminances,\n"
+"decrease otherwise. no desaturation happens in the latitude range.\n"
+"this has no effect on mid-tones."
+msgstr ""
+"domaine de linéarité au centre de la courbe\n"
+"en pourcentage de l'étendu dynamique (exposition du noir - exposition du "
+"blanc)\n"
+"augmenter pour obtenir plus de contraste dans les luminances extrêmes\n"
+"diminuer sinon. aucune désaturation n'est faites dans l'étendu de la "
+"latitude.\n"
+"ce réglage n'a aucun effet dans les tons moyens."
+
+#: ../src/iop/filmicrgb.c:1547
+msgid ""
+"desaturates the output of the module\n"
+"specifically at extreme luminances.\n"
+"increase if shadows and/or highlights are under-saturated."
+msgstr ""
+"désature la sortie du module\n"
+"plus particulièrement aux luminances extrêmes.\n"
+"augmenter si les ombres et/ou les hautes lumières sont sous-saturées."
+
+#: ../src/iop/filmicrgb.c:1555
+msgid "preserve chrominance"
 msgstr "préserver couleur"
 
-#: ../src/iop/filmicrgb.c:1549
+#: ../src/iop/filmicrgb.c:1558
 msgid "luminance Y"
 msgstr "luminance Y"
 
-#: ../src/iop/filmicrgb.c:1550 ../src/iop/toneequal.c:3145
+#: ../src/iop/filmicrgb.c:1559 ../src/iop/toneequal.c:3145
 msgid "RGB power norm"
 msgstr "norme puissance RVB"
 
-#: ../src/iop/filmicrgb.c:1586
+#: ../src/iop/filmicrgb.c:1560
+msgid ""
+"ensure the original color are preserved.\n"
+"may reinforce chromatic aberrations and chroma noise,\n"
+"so ensure they are properly corrected elsewhere.\n"
+msgstr ""
+"préserve les couleurs d'origine\n"
+"peut renforcer les aberrations chromatiques et le bruit chromatique\n"
+"il est nécessaire de s'assurer qu'ils sont correctement corrigés avant.\n"
+
+#: ../src/iop/filmicrgb.c:1595
 msgid "target power transfer function"
 msgstr "puissance fonction transfert cible"
 
@@ -11043,7 +11113,6 @@ msgid "edges refinement/feathering"
 msgstr "raffinement/adoucissement bords"
 
 #: ../src/iop/toneequal.c:3184
-#, fuzzy
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -11052,11 +11121,11 @@ msgid ""
 "but may lead to inaccurate edges taping and halos"
 msgstr ""
 "précision de l'adoucissement :\n"
-"les grandes valeurs force le masque à suivre les bords plus précisement\n"
+"les grandes valeurs force le masque à suivre les bords plus précisément\n"
 "mais peut alors annuler l'adoucissement\n"
 "les petites valeurs donne des gradients plus progressif et un meilleur "
 "adoucissement\n"
-"mais peut alors créer des bords peu précis."
+"mais peut alors créer des bords peu précis et des halos"
 
 #: ../src/iop/toneequal.c:3192
 msgid "mask post-processing"
@@ -11722,7 +11791,7 @@ msgstr "date"
 msgid "time"
 msgstr "date/heure"
 
-#: ../src/libs/collect.h:34 ../src/libs/history.c:63
+#: ../src/libs/collect.h:34 ../src/libs/history.c:65
 msgid "history"
 msgstr "historique"
 
@@ -12115,7 +12184,7 @@ msgstr "modification de l'exportation des métadonnées"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1311 ../src/libs/styles.c:71
-#: ../src/views/darkroom.c:3172
+#: ../src/views/darkroom.c:3180
 msgctxt "accel"
 msgid "export"
 msgstr "exporter"
@@ -12405,30 +12474,30 @@ msgctxt "accel"
 msgid "hide histogram"
 msgstr "cacher histogramme"
 
-#: ../src/libs/history.c:84
+#: ../src/libs/history.c:86
 msgctxt "accel"
 msgid "create style from history"
 msgstr "crée un style depuis l'historique actuel"
 
 #. dt_accel_register_lib(self, NC_("accel", "apply style from popup menu"), 0, 0);
-#: ../src/libs/history.c:86
+#: ../src/libs/history.c:88
 msgctxt "accel"
 msgid "compress history stack"
 msgstr "compresser l'historique"
 
-#: ../src/libs/history.c:113
+#: ../src/libs/history.c:117
 msgid "compress history stack"
 msgstr "compresser l'historique"
 
-#: ../src/libs/history.c:115
+#: ../src/libs/history.c:119
 msgid "create a minimal history stack which produces the same image"
 msgstr "génère l'historique minimum qui produit la même image"
 
-#: ../src/libs/history.c:122
+#: ../src/libs/history.c:126
 msgid "create a style from the current history stack"
 msgstr "crée un style depuis l'historique actuel"
 
-#: ../src/libs/history.c:652 ../src/libs/snapshots.c:346
+#: ../src/libs/history.c:620 ../src/libs/snapshots.c:346
 msgid "original"
 msgstr "original"
 
@@ -14520,32 +14589,32 @@ msgstr "vérification de gamut"
 msgid "soft proof"
 msgstr "épreuvage"
 
-#: ../src/views/darkroom.c:1033
+#: ../src/views/darkroom.c:1037
 msgid "no userdefined presets for favorite modules were found"
 msgstr "aucun pré-réglage trouvé pour les modules favoris"
 
-#: ../src/views/darkroom.c:1038
+#: ../src/views/darkroom.c:1042
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "applique le style « %s » à l'image actuelle"
 
-#: ../src/views/darkroom.c:1150
+#: ../src/views/darkroom.c:1154
 msgid "no styles have been created yet"
 msgstr "aucun style disponible"
 
-#: ../src/views/darkroom.c:1777
+#: ../src/views/darkroom.c:1781
 msgid "quick access to presets of your favorites"
 msgstr "accès rapide aux pré-réglages des favoris"
 
-#: ../src/views/darkroom.c:1786
+#: ../src/views/darkroom.c:1790
 msgid "quick access for applying any of your styles"
 msgstr "accès rapide à vos styles"
 
-#: ../src/views/darkroom.c:1799
+#: ../src/views/darkroom.c:1803
 msgid "display a second darkroom image window"
 msgstr "activer l'affichage secondaire de la chambre noire"
 
-#: ../src/views/darkroom.c:1811
+#: ../src/views/darkroom.c:1815
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -14553,47 +14622,47 @@ msgstr ""
 "activer/désactiver les zones sur-/sous-exposées raw\n"
 "clic-droit pour les options"
 
-#: ../src/views/darkroom.c:1835
+#: ../src/views/darkroom.c:1839
 msgid "mark with CFA color"
 msgstr "marquer les couleurs CFA"
 
-#: ../src/views/darkroom.c:1836
+#: ../src/views/darkroom.c:1840
 msgid "mark with solid color"
 msgstr "marquer avec une couleur unie"
 
-#: ../src/views/darkroom.c:1837
+#: ../src/views/darkroom.c:1841
 msgid "false color"
 msgstr "fausse couleur"
 
-#: ../src/views/darkroom.c:1839
+#: ../src/views/darkroom.c:1843
 msgid "select how to mark the clipped pixels"
 msgstr "sélectionner comment marquer les pixels tronqués"
 
-#: ../src/views/darkroom.c:1846 ../src/views/darkroom.c:1898
+#: ../src/views/darkroom.c:1850 ../src/views/darkroom.c:1902
 msgid "color scheme"
 msgstr "schéma de couleur"
 
-#: ../src/views/darkroom.c:1847
+#: ../src/views/darkroom.c:1851
 msgctxt "solidcolor"
 msgid "red"
 msgstr "rouge"
 
-#: ../src/views/darkroom.c:1848
+#: ../src/views/darkroom.c:1852
 msgctxt "solidcolor"
 msgid "green"
 msgstr "vert"
 
-#: ../src/views/darkroom.c:1849
+#: ../src/views/darkroom.c:1853
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "bleu"
 
-#: ../src/views/darkroom.c:1850
+#: ../src/views/darkroom.c:1854
 msgctxt "solidcolor"
 msgid "black"
 msgstr "noir"
 
-#: ../src/views/darkroom.c:1854
+#: ../src/views/darkroom.c:1858
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -14601,7 +14670,7 @@ msgstr ""
 "sélectionner la couleur pour marquer les sur-expositions.\n"
 "utiliser uniquement si le mode est « marquer avec une couleur unie »"
 
-#: ../src/views/darkroom.c:1864
+#: ../src/views/darkroom.c:1868
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -14611,7 +14680,7 @@ msgstr ""
 "1.0 - niveau blanc\n"
 "0.0 - niveau noir"
 
-#: ../src/views/darkroom.c:1875
+#: ../src/views/darkroom.c:1879
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -14619,35 +14688,35 @@ msgstr ""
 "activer/désactiver les zones sur-/sous-exposées\n"
 "clic-droit pour les options"
 
-#: ../src/views/darkroom.c:1900
+#: ../src/views/darkroom.c:1904
 msgid "red & blue"
 msgstr "rouge et bleu"
 
-#: ../src/views/darkroom.c:1901
+#: ../src/views/darkroom.c:1905
 msgid "purple & green"
 msgstr "violet et vert"
 
-#: ../src/views/darkroom.c:1903
+#: ../src/views/darkroom.c:1907
 msgid "select colors to indicate over/under exposure"
 msgstr "sélectionne les couleurs indiquant une sur-/sous-exposition"
 
-#: ../src/views/darkroom.c:1912
+#: ../src/views/darkroom.c:1916
 msgid "lower threshold"
 msgstr "seuil bas"
 
-#: ../src/views/darkroom.c:1913
+#: ../src/views/darkroom.c:1917
 msgid "threshold of what shall be considered underexposed"
 msgstr "seuil en-dessous duquel les pixels sont considérés sous-exposés"
 
-#: ../src/views/darkroom.c:1921
+#: ../src/views/darkroom.c:1925
 msgid "upper threshold"
 msgstr "seuil haut"
 
-#: ../src/views/darkroom.c:1922
+#: ../src/views/darkroom.c:1926
 msgid "threshold of what shall be considered overexposed"
 msgstr "seuil au-dessus duquel les pixels sont considérés sur-exposés"
 
-#: ../src/views/darkroom.c:1933
+#: ../src/views/darkroom.c:1937
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -14655,7 +14724,7 @@ msgstr ""
 "activer/désactiver l'épreuvage écran\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:1947
+#: ../src/views/darkroom.c:1951
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -14663,195 +14732,195 @@ msgstr ""
 "activer/désactiver vérification de gamut\n"
 "clic-droit pour les options de profil"
 
-#: ../src/views/darkroom.c:1975 ../src/views/lighttable.c:4875
+#: ../src/views/darkroom.c:1979 ../src/views/lighttable.c:4875
 msgid "display intent"
 msgstr "rendu (écran)"
 
-#: ../src/views/darkroom.c:1983 ../src/views/lighttable.c:4883
+#: ../src/views/darkroom.c:1987 ../src/views/lighttable.c:4883
 msgid "preview display intent"
 msgstr "rendu (écran secondaire)"
 
-#: ../src/views/darkroom.c:2003 ../src/views/lighttable.c:4891
+#: ../src/views/darkroom.c:2007 ../src/views/lighttable.c:4891
 msgid "display profile"
 msgstr "profil (écran)"
 
-#: ../src/views/darkroom.c:2004 ../src/views/lighttable.c:4895
+#: ../src/views/darkroom.c:2008 ../src/views/lighttable.c:4895
 msgid "preview display profile"
 msgstr "profil (écran secondaire)"
 
-#: ../src/views/darkroom.c:2005
+#: ../src/views/darkroom.c:2009
 msgid "histogram profile"
 msgstr "profil de l'histogramme"
 
-#: ../src/views/darkroom.c:2059 ../src/views/lighttable.c:4925
+#: ../src/views/darkroom.c:2063 ../src/views/lighttable.c:4925
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage dans %s ou %s"
 
-#: ../src/views/darkroom.c:2062 ../src/views/lighttable.c:4928
+#: ../src/views/darkroom.c:2066 ../src/views/lighttable.c:4928
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "profils ICC d'affichage secondaire dans « %s » ou « %s »"
 
-#: ../src/views/darkroom.c:2065
+#: ../src/views/darkroom.c:2069
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "profils ICC d'épreuvage dans %s ou %s"
 
-#: ../src/views/darkroom.c:2068
+#: ../src/views/darkroom.c:2072
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr "profils ICC pour l'histogramme et la pipette dans %s ou %s"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:3164 ../src/views/map.c:892 ../src/views/print.c:328
+#: ../src/views/darkroom.c:3172 ../src/views/map.c:892 ../src/views/print.c:328
 #: ../src/views/tethering.c:396
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "activer/désactiver le bandeau"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:3167
+#: ../src/views/darkroom.c:3175
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom en gros plan"
 
-#: ../src/views/darkroom.c:3168
+#: ../src/views/darkroom.c:3176
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoomer"
 
-#: ../src/views/darkroom.c:3169
+#: ../src/views/darkroom.c:3177
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajusté"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:3175
+#: ../src/views/darkroom.c:3183
 msgctxt "accel"
 msgid "image forward"
 msgstr "image suivante"
 
-#: ../src/views/darkroom.c:3176
+#: ../src/views/darkroom.c:3184
 msgctxt "accel"
 msgid "image back"
 msgstr "image précédente"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:3179
+#: ../src/views/darkroom.c:3187
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "raw sur-exposé"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:3182
+#: ../src/views/darkroom.c:3190
 msgctxt "accel"
 msgid "overexposed"
 msgstr "sur-exposition"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:3185
+#: ../src/views/darkroom.c:3193
 msgctxt "accel"
 msgid "softproof"
 msgstr "épreuvage"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:3188
+#: ../src/views/darkroom.c:3196
 msgctxt "accel"
 msgid "gamut check"
 msgstr "vérification de gamut"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:3191
+#: ../src/views/darkroom.c:3199
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "augmenter la taille du pinceau"
 
-#: ../src/views/darkroom.c:3192
+#: ../src/views/darkroom.c:3200
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "diminuer la taille du pinceau"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:3195
+#: ../src/views/darkroom.c:3203
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "augmenter la dureté du pinceau"
 
-#: ../src/views/darkroom.c:3196
+#: ../src/views/darkroom.c:3204
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "diminuer la dureté du pinceau"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:3199
+#: ../src/views/darkroom.c:3207
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "augmenter la luminosité du pinceau"
 
-#: ../src/views/darkroom.c:3200
+#: ../src/views/darkroom.c:3208
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "diminuer la luminosité du pinceau"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:3203
+#: ../src/views/darkroom.c:3211
 msgctxt "accel"
 msgid "full preview"
 msgstr "aperçu complet"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3206 ../src/views/lighttable.c:4419
+#: ../src/views/darkroom.c:3214 ../src/views/lighttable.c:4419
 #: ../src/views/map.c:889
 msgctxt "accel"
 msgid "undo"
 msgstr "défaire"
 
-#: ../src/views/darkroom.c:3207 ../src/views/lighttable.c:4420
+#: ../src/views/darkroom.c:3215 ../src/views/lighttable.c:4420
 #: ../src/views/map.c:890
 msgctxt "accel"
 msgid "redo"
 msgstr "refaire"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:3210
+#: ../src/views/darkroom.c:3218
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "permet de recadrer et zoomer pendant l'édition des masques"
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:3213
+#: ../src/views/darkroom.c:3221
 msgctxt "accel"
 msgid "search modules"
 msgstr "rechercher module"
 
-#: ../src/views/darkroom.c:3312
+#: ../src/views/darkroom.c:3320
 msgid "switch to lighttable"
 msgstr "passer à la table lumineuse"
 
-#: ../src/views/darkroom.c:3317 ../src/views/lighttable.c:4566
+#: ../src/views/darkroom.c:3325 ../src/views/lighttable.c:4566
 msgid "zoom in the image"
 msgstr "zoom dans l'image"
 
-#: ../src/views/darkroom.c:3323
+#: ../src/views/darkroom.c:3331
 msgid "unbounded zoom in the image"
 msgstr "zoom sans limites dans l'image"
 
-#: ../src/views/darkroom.c:3328
+#: ../src/views/darkroom.c:3336
 msgid "zoom to 100% 200% and back"
 msgstr "zoom à 100% 200% en cycle"
 
-#: ../src/views/darkroom.c:3334
+#: ../src/views/darkroom.c:3342
 msgid "[modules] expand module without closing others"
 msgstr "[modules] déplie le module sans replier les autres"
 
-#: ../src/views/darkroom.c:3340
+#: ../src/views/darkroom.c:3348
 msgid "[modules] change module position in pipe"
 msgstr "[modules] change la position du module dans le flux"
 
 #. workaround for GTK Quartz backend bug
-#: ../src/views/darkroom.c:4042 ../src/views/darkroom.c:4060
+#: ../src/views/darkroom.c:4050 ../src/views/darkroom.c:4068
 msgid "darktable - darkroom preview"
 msgstr "darktable - pré-visualisation chambre noire"
 
@@ -15191,6 +15260,9 @@ msgstr "raccourcis"
 #: ../src/views/view.c:2415
 msgid "Action"
 msgstr "action"
+
+#~ msgid "preserve chroma"
+#~ msgstr "préserver couleur"
 
 #~ msgid "07 EV (studio)"
 #~ msgstr "07 IL (studio)"
