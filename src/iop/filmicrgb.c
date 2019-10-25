@@ -1443,8 +1443,9 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->grey_point_source, NULL, _("middle grey luminance"));
   gtk_box_pack_start(GTK_BOX(page1), g->grey_point_source, FALSE, FALSE, 0);
   dt_bauhaus_slider_set_format(g->grey_point_source, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->grey_point_source, _("adjust to match the average luminance of the subject.\n"
-                                                      "except in back-lighting situations, this should be around 18%."));
+  gtk_widget_set_tooltip_text(g->grey_point_source, _("adjust to match the average luminance of the image's subject.\n"
+                                                      "the value entered here will then be remapped to 18.45%.\n"
+                                                      "decrease the value to increase the overall brightness."));
   g_signal_connect(G_OBJECT(g->grey_point_source), "value-changed", G_CALLBACK(grey_point_source_callback), self);
   dt_bauhaus_widget_set_quad_paint(g->grey_point_source, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->grey_point_source, TRUE);
@@ -1484,8 +1485,8 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->security_factor, NULL, _("dynamic range scaling"));
   gtk_box_pack_start(GTK_BOX(page1), g->security_factor, FALSE, FALSE, 0);
   dt_bauhaus_slider_set_format(g->security_factor, "%+.2f %%");
-  gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or shrink the computed dynamic range.\n"
-                                                    "useful in conjunction with \"auto tune levels\"."));
+  gtk_widget_set_tooltip_text(g->security_factor, _("symmetrically enlarge or shrink the computed dynamic range.\n"
+                                                    "useful to give a safety margin to extreme luminances."));
   g_signal_connect(G_OBJECT(g->security_factor), "value-changed", G_CALLBACK(security_threshold_callback), self);
 
   // Auto tune slider
@@ -1495,9 +1496,12 @@ void gui_init(dt_iop_module_t *self)
                                    CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->auto_button, TRUE);
   g_signal_connect(G_OBJECT(g->auto_button), "quad-pressed", G_CALLBACK(dt_iop_color_picker_callback), &g->color_picker);
-  gtk_widget_set_tooltip_text(g->auto_button, _("try to optimize the settings with some guessing.\n"
+  gtk_widget_set_tooltip_text(g->auto_button, _("try to optimize the settings with some statistical assumptions.\n"
                                                 "this will fit the luminance range inside the histogram bounds.\n"
-                                                "works better for landscapes and evenly-lit pictures\nbut fails for high-keys and low-keys." ));
+                                                "works better for landscapes and evenly-lit pictures\n"
+                                                "but fails for high-keys, low-keys and high-ISO pictures.\n"
+                                                "this is not an artificial intelligence, but a simple guess.\n"
+                                                "ensure you understand its assumptions before using it."));
   gtk_box_pack_start(GTK_BOX(page1), g->auto_button, FALSE, FALSE, 0);
 
 
@@ -1516,9 +1520,11 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->latitude, NULL, _("latitude"));
   dt_bauhaus_slider_set_format(g->latitude, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(page2), g->latitude, FALSE, FALSE, 0);
-  gtk_widget_set_tooltip_text(g->latitude, _("width of the linear domain in the middle of the curve.\n"
-                                                   "increase to get more contrast at the extreme luminances.\n"
-                                                   "this has no effect on mid-tones."));
+  gtk_widget_set_tooltip_text(g->latitude, _("width of the linear domain in the middle of the curve,\n"
+                                             "in percent of the dynamic range (white exposure - black exposure).\n"
+                                             "increase to get more contrast and less desaturation at extreme luminances,\n"
+                                             "decrease otherwise. no desaturation happens in the latitude range.\n"
+                                             "this has no effect on mid-tones."));
   g_signal_connect(G_OBJECT(g->latitude), "value-changed", G_CALLBACK(latitude_callback), self);
 
   // balance slider
@@ -1526,8 +1532,10 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->balance, NULL, _("shadows/highlights balance"));
   gtk_box_pack_start(GTK_BOX(page2), g->balance, FALSE, FALSE, 0);
   dt_bauhaus_slider_set_format(g->balance, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->balance, _("slides the latitude along the slope\nto give more room to shadows or highlights.\n"
-                                            "use it if you need to protect the details\nat one extremity of the histogram."));
+  gtk_widget_set_tooltip_text(g->balance, _("slides the latitude along the slope\n"
+                                            "to give more room to shadows or highlights.\n"
+                                            "use it if you need to protect the details\n"
+                                            "at one extremity of the histogram."));
   g_signal_connect(G_OBJECT(g->balance), "value-changed", G_CALLBACK(balance_callback), self);
 
   // saturation slider
@@ -1536,21 +1544,22 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->saturation, -50, 200.0);
   dt_bauhaus_slider_set_format(g->saturation, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(page2), g->saturation, FALSE, FALSE, 0);
-  gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output of the module\nspecifically at extreme luminances.\n"
-                                               "decrease if shadows and/or highlights are over-saturated."));
+  gtk_widget_set_tooltip_text(g->saturation, _("desaturates the output of the module\n"
+                                               "specifically at extreme luminances.\n"
+                                               "increase if shadows and/or highlights are under-saturated."));
   g_signal_connect(G_OBJECT(g->saturation), "value-changed", G_CALLBACK(saturation_callback), self);
 
 
   // Preserve color
   g->preserve_color = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->preserve_color, NULL, _("preserve chroma"));
+  dt_bauhaus_widget_set_label(g->preserve_color, NULL, _("preserve chrominance"));
   dt_bauhaus_combobox_add(g->preserve_color, _("no"));
   dt_bauhaus_combobox_add(g->preserve_color, _("max RGB"));
   dt_bauhaus_combobox_add(g->preserve_color, _("luminance Y"));
   dt_bauhaus_combobox_add(g->preserve_color, _("RGB power norm"));
   gtk_widget_set_tooltip_text(g->preserve_color, _("ensure the original color are preserved.\n"
-                                                   "may reinforce chromatic aberrations.\n"
-                                                   "you need to manually tune the saturation when using this mode."));
+                                                   "may reinforce chromatic aberrations and chroma noise,\n"
+                                                   "so ensure they are properly corrected elsewhere.\n"));
   gtk_box_pack_start(GTK_BOX(page2), g->preserve_color , FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->preserve_color), "value-changed", G_CALLBACK(preserve_color_callback), self);
 

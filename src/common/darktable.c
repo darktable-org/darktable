@@ -435,8 +435,10 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   pthread_mutexattr_t recursive_locking;
   pthread_mutexattr_init(&recursive_locking);
   pthread_mutexattr_settype(&recursive_locking, PTHREAD_MUTEX_RECURSIVE);
-
-  dt_pthread_mutex_init(&(darktable.db_insert), &recursive_locking);
+  for (int k=0; k<DT_IMAGE_DBLOCKS; k++)  
+  {
+    dt_pthread_mutex_init(&(darktable.db_image[k]),&(recursive_locking));
+  }
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.capabilities_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.exiv2_threadsafe), NULL);
@@ -1143,7 +1145,10 @@ void dt_cleanup()
 
   dt_capabilities_cleanup();
 
-  dt_pthread_mutex_destroy(&(darktable.db_insert));
+  for (int k=0; k<DT_IMAGE_DBLOCKS; k++)  
+  {
+    dt_pthread_mutex_destroy(&(darktable.db_image[k]));
+  }
   dt_pthread_mutex_destroy(&(darktable.plugin_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.capabilities_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.exiv2_threadsafe));

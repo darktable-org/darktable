@@ -48,7 +48,7 @@ rgblevels (read_only image2d_t in, write_only image2d_t out, const int width, co
            const int autoscale, const int preserve_colors,
            read_only image2d_t lutr, read_only image2d_t lutg, read_only image2d_t lutb,
            global const float (*const levels)[3], global const float *inv_gamma,
-           global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut,
+           constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut,
            const int use_work_profile)
 {
   const int x = get_global_id(0);

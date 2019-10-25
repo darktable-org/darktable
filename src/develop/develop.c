@@ -32,7 +32,6 @@
 #include "common/mipmap_cache.h"
 #include "common/opencl.h"
 #include "common/tags.h"
-#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -672,7 +671,7 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
 
 void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
 {
-  dt_pthread_mutex_lock(&darktable.db_insert);
+  dt_lock_image(imgid);
 
   _dt_dev_load_raw(dev, imgid);
 
@@ -696,7 +695,7 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
   // Loading an image means we do some developing and so remove the darktable|problem|history-compress tag
   dt_history_set_compress_problem(imgid, FALSE);
 
-  dt_pthread_mutex_unlock(&darktable.db_insert);
+  dt_unlock_image(imgid);
 }
 
 void dt_dev_configure(dt_develop_t *dev, int wd, int ht)
@@ -898,6 +897,11 @@ void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gbo
 void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
 {
   if(!darktable.gui || darktable.gui->reset) return;
+
+  if(dev->gui_attached)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end);
+
   dt_pthread_mutex_lock(&dev->history_mutex);
 
   if(dev->gui_attached)
@@ -972,6 +976,11 @@ void dt_dev_add_masks_history_item_ext(dt_develop_t *dev, dt_iop_module_t *_modu
 void dt_dev_add_masks_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
 {
   if(!darktable.gui || darktable.gui->reset) return;
+
+  if(dev->gui_attached)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end);
+
   dt_pthread_mutex_lock(&dev->history_mutex);
 
   if(dev->gui_attached)
@@ -1009,7 +1018,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
 {
   dev->focus_hash = 0;
 
-  dt_pthread_mutex_lock(&darktable.db_insert);
+  dt_lock_image(dev->image_storage.id);
 
   dt_dev_pop_history_items(dev, 0);
 
@@ -1075,7 +1084,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
   // we update show params for multi-instances for each other instances
   dt_dev_modules_update_multishow(dev);
 
-  dt_pthread_mutex_unlock(&darktable.db_insert);
+  dt_unlock_image(dev->image_storage.id);
 }
 
 void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
@@ -1213,6 +1222,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
 {
   sqlite3_stmt *stmt;
+  dt_lock_image(imgid);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1,
                               &stmt, NULL);
@@ -1249,6 +1259,7 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, dev->iop_order_version);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+  dt_unlock_image(imgid);
 }
 
 void dt_dev_write_history(dt_develop_t *dev)
@@ -1476,6 +1487,12 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 {
   if(imgid <= 0) return;
   if(!dev->iop) return;
+
+  dt_lock_image(imgid);
+
+  if(dev->gui_attached)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end);
 
   int history_end_current = 0;
 
@@ -1729,13 +1746,12 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   }
   dt_dev_masks_list_change(dev);
+  dt_unlock_image(imgid);
 }
 
 void dt_dev_read_history(dt_develop_t *dev)
 {
-  dt_pthread_mutex_lock(&darktable.db_insert);
   dt_dev_read_history_ext(dev, dev->image_storage.id, FALSE);
-  dt_pthread_mutex_unlock(&darktable.db_insert);
 }
 
 void dt_dev_reprocess_all(dt_develop_t *dev)
@@ -2132,6 +2148,9 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
   int del = 0;
   if(dev->gui_attached)
   {
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end);
+
     GList *elem = g_list_first(dev->history);
     while(elem != NULL)
     {
@@ -2702,6 +2721,25 @@ void dt_second_window_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float 
 
   if(boxww) *boxww = boxw;
   if(boxhh) *boxhh = boxh;
+}
+
+dt_iop_module_t *dt_dev_get_base_module(GList *iop_list, const char *op)
+{
+  dt_iop_module_t *result = NULL;
+
+  GList *modules = g_list_first(iop_list);
+  while(modules)
+  {
+    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    if(strcmp(mod->op, op) == 0)
+    {
+      result = mod;
+      break;
+    }
+    modules = g_list_next(modules);
+  }
+
+  return result;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
