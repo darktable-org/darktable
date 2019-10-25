@@ -154,7 +154,7 @@ kernel void
 filmicrgb_split (read_only image2d_t in, write_only image2d_t out,
                  int width, int height,
                  const float dynamic_range, const float black_exposure, const float grey_value,
-                 global const dt_colorspaces_iccprofile_info_cl_t *profile_info,
+                 constant dt_colorspaces_iccprofile_info_cl_t *profile_info,
                  read_only image2d_t lut, const int use_work_profile,
                  const float sigma_toe, const float sigma_shoulder, const float saturation,
                  const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
@@ -179,7 +179,7 @@ filmicrgb_split (read_only image2d_t in, write_only image2d_t out,
   o = clamp(o, noise4, (float4)1.0f);
 
   // Selective desaturation of extreme luminances
-  const float luminance = (use_work_profile) ? get_rgb_matrix_luminance(o, profile_info, lut) : dt_camera_rgb_luminance(o);
+  const float luminance = (use_work_profile) ? get_rgb_matrix_luminance(o, profile_info, profile_info->matrix_in, lut) : dt_camera_rgb_luminance(o);
   const float desaturation = filmic_desaturate(luminance, sigma_toe, sigma_shoulder, saturation);
   o = linear_saturation(o, luminance, desaturation);
 
@@ -210,7 +210,7 @@ inline float pixel_rgb_norm_power(const float4 pixel)
 
 
 inline float get_pixel_norm(const float4 pixel, const dt_iop_filmicrgb_methods_type_t variant,
-                            global const dt_colorspaces_iccprofile_info_cl_t *const work_profile,
+                            constant dt_colorspaces_iccprofile_info_cl_t *const profile_info,
                             read_only image2d_t lut, const int use_work_profile)
 {
   switch(variant)
@@ -219,7 +219,7 @@ inline float get_pixel_norm(const float4 pixel, const dt_iop_filmicrgb_methods_t
       return fmax(fmax(pixel.x, pixel.y), pixel.z);
 
     case DT_FILMIC_METHOD_LUMINANCE:
-      return dt_rgb_norm(pixel, DT_RGB_NORM_LUMINANCE, use_work_profile, work_profile, lut);
+      return (use_work_profile) ? dt_camera_rgb_luminance(pixel): get_rgb_matrix_luminance(pixel, profile_info, profile_info->matrix_in, lut);
 
     case DT_FILMIC_METHOD_POWER_NORM:
       return pixel_rgb_norm_power(pixel);
@@ -235,7 +235,7 @@ kernel void
 filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
                  int width, int height,
                  const float dynamic_range, const float black_exposure, const float grey_value,
-                 global const dt_colorspaces_iccprofile_info_cl_t *profile_info,
+                 constant dt_colorspaces_iccprofile_info_cl_t *profile_info,
                  read_only image2d_t lut, const int use_work_profile,
                  const float sigma_toe, const float sigma_shoulder, const float saturation,
                  const float4 M1, const float4 M2, const float4 M3, const float4 M4, const float4 M5,
@@ -267,7 +267,7 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
 
   // Selective desaturation of extreme luminances
   o *= (float4)norm;
-  const float luminance = (use_work_profile) ? get_rgb_matrix_luminance(o, profile_info, lut) : dt_camera_rgb_luminance(o);
+  const float luminance = (use_work_profile) ? get_rgb_matrix_luminance(o, profile_info, profile_info->matrix_in, lut) : dt_camera_rgb_luminance(o);
   const float desaturation = filmic_desaturate(norm, sigma_toe, sigma_shoulder, saturation);
   o = linear_saturation(o, luminance, desaturation);
   o /= (float4)norm;

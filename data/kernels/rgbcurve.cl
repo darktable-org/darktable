@@ -22,9 +22,9 @@
 kernel void
 rgbcurve(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
            read_only image2d_t table_r, read_only image2d_t table_g, read_only image2d_t table_b,
-           global float *coeffs_r, global float *coeffs_g, global float *coeffs_b,
+           constant float *coeffs_r, constant float *coeffs_g, constant float *coeffs_b,
            const int autoscale, const int preserve_colors,
-           global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut,
+           constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut,
            const int use_work_profile)
 {
   const int x = get_global_id(0);
