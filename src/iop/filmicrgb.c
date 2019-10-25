@@ -1521,9 +1521,9 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->latitude, "%.2f %%");
   gtk_box_pack_start(GTK_BOX(page2), g->latitude, FALSE, FALSE, 0);
   gtk_widget_set_tooltip_text(g->latitude, _("width of the linear domain in the middle of the curve,\n"
-                                             "in % of the dynamic range (white exposure - black exposure).\n"
+                                             "in percent of the dynamic range (white exposure - black exposure).\n"
                                              "increase to get more contrast and less desaturation at extreme luminances,\n"
-                                             "decrease otherwise. No desaturation happens in the latitude range.\n"
+                                             "decrease otherwise. no desaturation happens in the latitude range.\n"
                                              "this has no effect on mid-tones."));
   g_signal_connect(G_OBJECT(g->latitude), "value-changed", G_CALLBACK(latitude_callback), self);
 
