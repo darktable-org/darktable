@@ -393,8 +393,9 @@ static inline void backtransform(float *x, float *o, const float *m, const float
 
 static inline void transform(float *x, float *o, const float *m, const float t_h, const float t_v)
 {
-  const float rt[] = { m[0], -m[1], -m[2], m[3] };
-  mul_mat_vec_2(rt, x, o);
+  const float det = (m[0] * m[3]) - (m[1] * m[2]);
+  const float m_inv[] = { m[3] / det, -m[1] / det, -m[2] / det , m[0] / det };
+  mul_mat_vec_2(m_inv, x, o);
   o[1] *= (1.0f + o[0] * t_h);
   o[0] *= (1.0f + o[1] * t_v);
 }
