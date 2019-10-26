@@ -51,7 +51,7 @@ DT_MODULE_INTROSPECTION(5, dt_iop_clipping_params_t)
 typedef enum dt_iop_clipping_flags_t
 {
   FLAG_FLIP_HORIZONTAL = 1 << 0,
-  FLAG_FLIP_VERTICAL = 1 << 1
+  FLAG_FLIP_VERTICAL   = 1 << 1
 } dt_iop_clipping_flags_t;
 
 typedef struct dt_iop_clipping_aspect_t
@@ -71,19 +71,19 @@ typedef struct dt_iop_clipping_params_t
 
 typedef enum _grab_region_t
 {
-  GRAB_CENTER = 0,                                            // 0
-  GRAB_LEFT = 1 << 0,                                         // 1
-  GRAB_TOP = 1 << 1,                                          // 2
-  GRAB_RIGHT = 1 << 2,                                        // 4
-  GRAB_BOTTOM = 1 << 3,                                       // 8
-  GRAB_TOP_LEFT = GRAB_TOP | GRAB_LEFT,                       // 3
-  GRAB_TOP_RIGHT = GRAB_TOP | GRAB_RIGHT,                     // 6
-  GRAB_BOTTOM_RIGHT = GRAB_BOTTOM | GRAB_RIGHT,               // 12
-  GRAB_BOTTOM_LEFT = GRAB_BOTTOM | GRAB_LEFT,                 // 9
-  GRAB_HORIZONTAL = GRAB_LEFT | GRAB_RIGHT,                   // 5
-  GRAB_VERTICAL = GRAB_TOP | GRAB_BOTTOM,                     // 10
-  GRAB_ALL = GRAB_LEFT | GRAB_TOP | GRAB_RIGHT | GRAB_BOTTOM, // 15
-  GRAB_NONE = 1 << 4                                          // 16
+  GRAB_CENTER       = 0,                                               // 0
+  GRAB_LEFT         = 1 << 0,                                          // 1
+  GRAB_TOP          = 1 << 1,                                          // 2
+  GRAB_RIGHT        = 1 << 2,                                          // 4
+  GRAB_BOTTOM       = 1 << 3,                                          // 8
+  GRAB_TOP_LEFT     = GRAB_TOP | GRAB_LEFT,                            // 3
+  GRAB_TOP_RIGHT    = GRAB_TOP | GRAB_RIGHT,                           // 6
+  GRAB_BOTTOM_RIGHT = GRAB_BOTTOM | GRAB_RIGHT,                        // 12
+  GRAB_BOTTOM_LEFT  = GRAB_BOTTOM | GRAB_LEFT,                         // 9
+  GRAB_HORIZONTAL   = GRAB_LEFT | GRAB_RIGHT,                          // 5
+  GRAB_VERTICAL     = GRAB_TOP | GRAB_BOTTOM,                          // 10
+  GRAB_ALL          = GRAB_LEFT | GRAB_TOP | GRAB_RIGHT | GRAB_BOTTOM, // 15
+  GRAB_NONE         = 1 << 4                                           // 16
 } _grab_region_t;
 
 /* calculate the aspect ratios for current image */
@@ -395,8 +395,8 @@ static inline void transform(float *x, float *o, const float *m, const float t_h
 {
   const float rt[] = { m[0], -m[1], -m[2], m[3] };
   mul_mat_vec_2(rt, x, o);
-  o[1] *= 1.0f + o[0] * t_h;
-  o[0] *= 1.0f + o[1] * t_v;
+  o[1] *= (1.0f + o[0] * t_h);
+  o[0] *= (1.0f + o[1] * t_v);
 }
 
 
@@ -417,6 +417,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
   const float rx = piece->buf_in.width;
   const float ry = piece->buf_in.height;
+
   float k_space[4] = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
   const float kxa = d->kxa * rx, kxb = d->kxb * rx, kxc = d->kxc * rx, kxd = d->kxd * rx;
   const float kya = d->kya * ry, kyb = d->kyb * ry, kyc = d->kyc * ry, kyd = d->kyd * ry;
@@ -506,6 +507,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
     }
 
     backtransform(pi, po, d->m, d->k_h, d->k_v);
+
     po[0] += d->tx / factor;
     po[1] += d->ty / factor;
     if(d->k_apply == 1) keystone_backtransform(po, k_space, ma, mb, md, me, mg, mh, kxa, kya);
@@ -1720,16 +1722,16 @@ void gui_update(struct dt_iop_module_t *self)
   if(p->cw < 0)
   {
     if(p->ch < 0)
-      hvflip = 3;
+      hvflip = 3; // BOTH
     else
-      hvflip = 1;
+      hvflip = 1; // HORIZONTAL
   }
   else
   {
     if(p->ch < 0)
-      hvflip = 2;
+      hvflip = 2; // VERTICAL
     else
-      hvflip = 0;
+      hvflip = 0; // NONE
   }
   dt_bauhaus_combobox_set(g->hvflip, hvflip);
 
