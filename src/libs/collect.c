@@ -1615,6 +1615,10 @@ static void combo_changed(GtkComboBox *combo, dt_lib_collect_rule_t *d)
                                 _("type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
                                   "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"));
   }
+  else if(property == DT_COLLECTION_PROP_FILENAME)
+  {
+    gtk_widget_set_tooltip_text(d->text, _("type your query, use `%' as wildcard and `,' to separate values"));
+  }
   else
   {
     /* xgettext:no-c-format */
