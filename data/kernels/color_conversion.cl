@@ -111,7 +111,7 @@ inline float4 apply_trc_out(const float4 rgb_in, constant dt_colorspaces_iccprof
   return rgb_out;
 }
 
-inline float4 matrix_product(const float4 xyz, constant float matrix[9])
+inline float4 matrix_product(const float4 xyz, constant float *matrix)
 {
   float4 output = 0.0f;
   output.x = matrix[0] * xyz.x + matrix[1] * xyz.y + matrix[2] * xyz.z;
@@ -121,7 +121,7 @@ inline float4 matrix_product(const float4 xyz, constant float matrix[9])
   return output;
 }
 
-inline float get_rgb_matrix_luminance(const float4 rgb, constant dt_colorspaces_iccprofile_info_cl_t *profile_info, constant float matrix[9], read_only image2d_t lut)
+inline float get_rgb_matrix_luminance(const float4 rgb, constant dt_colorspaces_iccprofile_info_cl_t *profile_info, constant float *matrix, read_only image2d_t lut)
 {
   float luminance = 0.f;
 
