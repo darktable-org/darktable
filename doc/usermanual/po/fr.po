@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2019-10-14 12:27+0200\n"
-"PO-Revision-Date: 2019-10-25 21:40+0200\n"
+"PO-Revision-Date: 2019-10-27 22:04+0100\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -11650,7 +11650,6 @@ msgid "underexposed warning"
 msgstr "alerte de sous-exposition"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9215(para)
-#, fuzzy
 msgid ""
 "By clicking the <inlinegraphic fileref=\"images/"
 "darkroom_module_icon_overexposed.png\" scalefit=\"1\" width=\"2%\" align="
@@ -11666,7 +11665,7 @@ msgstr ""
 "dynamique, proches du blanc pur ou proches du noir pur seront mis en "
 "évidence avec un signal de couleur. Vous pouvez aussi activer "
 "l’avertissement de surexposition et de sous-exposition avec le raccourci "
-"clavier <quote>o</quote>."
+"clavier <quote>O</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9243(para)
 msgid ""
@@ -11853,7 +11852,6 @@ msgstr ""
 "bandeau en glissant sa partie supérieure."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9385(para)
-#, fuzzy
 msgid ""
 "You can scroll with your mouse to quickly navigate through the images. You "
 "can change the photo being processed by double clicking on another picture. "
@@ -14112,7 +14110,6 @@ msgstr ""
 "trois espaces colorimétriques différents : <placeholder-1/>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11408(para)
-#, fuzzy
 msgid ""
 "Lab is a perceptual color space that is designed to approximate the way "
 "human beings perceive colors and lightness, and representing the color "
@@ -15002,7 +14999,6 @@ msgstr ""
 "lecture de l'exposition du noir et utilisez un dématriçage de haute qualité."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12160(para)
-#, fuzzy
 msgid ""
 "If you plan using filmic's chrominance preservation mode, avoid using any "
 "tone mapping module as well as the base curve module. These may produce "
@@ -15010,10 +15006,10 @@ msgid ""
 "useless. Neither of these modules is usually needed if you use filmic."
 msgstr ""
 "Si vous prévoyez d’utiliser le mode de préservation de la chrominance de "
-"filmique, évitez d’utiliser un module de mappage de tonalités ainsi que le "
-"module de courbe de base. Ceux-ci peuvent produire des changements de "
-"couleur imprévisibles rendant la conservation de la chrominance inutile. "
-"Aucun de ces modules n'est généralement nécessaire si vous utilisez filmique."
+"filmique, évitez d’utiliser un module de mappage des tonalités ainsi que le "
+"module courbe de base. Ceux-ci peuvent produire des changements de couleur "
+"imprévisibles rendant la conservation de la chrominance inutile. Aucun de "
+"ces modules n'est généralement nécessaire si vous utilisez filmique."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12129(para)
 msgid ""
@@ -15293,7 +15289,6 @@ msgid "Contrast"
 msgstr "Contraste"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12311(para)
-#, fuzzy
 msgid ""
 "The filmic S curve is created from the user parameters, by computing the "
 "position of virtual nodes and interpolating them, similarly to the tone "
@@ -15308,9 +15303,9 @@ msgstr ""
 "manière que le module courbe des tonalités (mais ici, les nœuds ne peuvent "
 "pas être déplacés manuellement). Bien que cela permette un réglage plus "
 "rapide de la courbe, toutes les combinaisons de réglages ne permettent pas "
-"d’obtenir de bonnes courbes, le graphique affiché donne une bonne aide "
-"visuelle. Les bonnes courbes sont soit gracieuses en S avec une partie "
-"centrale linéaire et des extrémités courbés, ou des lignes suivant la "
+"d’obtenir de bonnes courbes. L'affichage graphique donnera une interface de "
+"diagnostic. Les bonnes courbes sont soit des S élégants avec une partie "
+"centrale linéaire et des extrémités incurvées, soit des lignes suivant la "
 "diagonale du graphique."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12319(para)
@@ -15538,7 +15533,6 @@ msgid "Black luminance"
 msgstr "Luminance du noir cible"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12434(para)
-#, fuzzy
 msgid ""
 "The destination parameters set the target luminance values used to remap the "
 "tones through filmic. The default parameters will work 99% of the times, the "
@@ -15549,11 +15543,11 @@ msgid ""
 msgstr ""
 "Les paramètres de destination définissent les valeurs de luminance cibles "
 "utilisées pour ajuster les tons à travers filmique. Les paramètres par "
-"défaut fonctionnent 99% du temps, les 1% restants correspondant à une sortie "
-"dans un espace RGB linéaire (REC709, REC2020) pour le traitement des données "
-"logicielles encodées. Ces paramètres doivent ensuite être utilisés avec "
-"prudence, car darktable ne permet pas de pipelines distincts pour la "
-"prévisualisation de l'affichage et la sortie du fichier."
+"défaut fonctionneront 99% du temps, le 1% restant correspondant à la sortie "
+"dans un espace RGB linéaire (REC709, REC2020) pour les données codées du "
+"traitement des médias. Ces paramètres doivent ensuite être utilisés avec "
+"prudence, car darktable n'autorise pas l'utilisation de pipelines distincts "
+"pour l'affichage de l'aperçu et pour le fichier de sortie."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12441(para)
 msgid ""
