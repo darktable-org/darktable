@@ -194,14 +194,14 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(1));
 
 
-  button = gtk_button_new_with_label(_("move"));
+  button = gtk_button_new_with_label(_("move..."));
   ellipsize_button(button);
   d->move_button = button;
   gtk_widget_set_tooltip_text(button, _("move to other folder"));
   gtk_grid_attach(grid, button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(8));
 
-  button = gtk_button_new_with_label(_("copy"));
+  button = gtk_button_new_with_label(_("copy..."));
   ellipsize_button(button);
   d->copy_button = button;
   gtk_widget_set_tooltip_text(button, _("copy to other folder"));
