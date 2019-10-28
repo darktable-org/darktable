@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-28 09:05+0100\n"
-"PO-Revision-Date: 2019-10-28 09:05+0100\n"
+"POT-Creation-Date: 2019-10-28 11:48+0100\n"
+"PO-Revision-Date: 2019-10-28 11:52+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -6255,8 +6255,7 @@ msgstr "15x10 blanc"
 msgid "15:10 postcard black"
 msgstr "15x10 noir"
 
-#. add import single image buttons
-#: ../src/iop/borders.c:939 ../src/libs/import.c:982
+#: ../src/iop/borders.c:939
 msgid "image"
 msgstr "image"
 
@@ -12009,8 +12008,8 @@ msgid "how to handle existing history"
 msgstr "gestion des développements pré-existants"
 
 #: ../src/libs/copy_history.c:359
-msgid "load sidecar file"
-msgstr "charger"
+msgid "load sidecar file..."
+msgstr "charger un xmp..."
 
 #: ../src/libs/copy_history.c:362
 msgid ""
@@ -12762,14 +12761,19 @@ msgstr "le fichier possède un format inconnu !"
 msgid "import film"
 msgstr "importer un dossier"
 
+#. add import single image buttons
+#: ../src/libs/import.c:982
+msgid "image..."
+msgstr "image..."
+
 #: ../src/libs/import.c:986
 msgid "select one or more images to import"
 msgstr "sélectionner une ou plusieurs images à importer"
 
 #. adding the import folder button
 #: ../src/libs/import.c:993
-msgid "folder"
-msgstr "dossier"
+msgid "folder..."
+msgstr "dossier..."
 
 #: ../src/libs/import.c:997
 msgid "select a folder to import as film roll"
