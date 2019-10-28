@@ -1365,7 +1365,7 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
   fdata->max_height = (settings->max_height != 0 && h != 0) ? MIN(h, settings->max_height) : MAX(h, settings->max_height);
   g_strlcpy(fdata->style, settings->style, sizeof(fdata->style));
   fdata->style_append = settings->style_append;
-  guint num = 0;
+
   // Invariant: the tagid for 'darktable|changed' will not change while this function runs. Is this a
   // sensible assumption?
   guint tagid = 0, etagid = 0;
@@ -1383,14 +1383,10 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
   while(t && dt_control_job_get_state(job) != DT_JOB_STATE_CANCELLED)
   {
-    if(!t)
-      imgid = 0;
-    else
-    {
-      imgid = GPOINTER_TO_INT(t->data);
-      t = g_list_delete_link(t, t);
-      num = total - g_list_length(t);
-    }
+    const guint num = total - g_list_length(t);
+
+    imgid = GPOINTER_TO_INT(t->data);
+    t = g_list_delete_link(t, t);
 
     // remove 'changed' tag from image
     dt_tag_detach(tagid, imgid);
