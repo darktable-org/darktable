@@ -160,7 +160,7 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_collection_update_query(darktable.collection);
   dt_control_queue_redraw_center();
   if (missing)
-  { 
+  {
     GtkWidget *dialog = gtk_message_dialog_new(
     GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_CLOSE,
     ngettext("no history compression of 1 image.\nsee tag: darktable|problem|history-compress.",
@@ -305,7 +305,7 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_hist_dialog_init(&d->dg);
 
 
-  GtkWidget *copy_parts = gtk_button_new_with_label(_("copy"));
+  GtkWidget *copy_parts = gtk_button_new_with_label(_("copy..."));
   ellipsize_button(copy_parts);
   d->copy_parts_button = copy_parts;
   gtk_widget_set_tooltip_text(copy_parts, _("copy part history stack of\nfirst selected image"));
@@ -320,7 +320,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, copy, 3, line++, 3, 1);
 
 
-  d->paste_parts = GTK_BUTTON(gtk_button_new_with_label(_("paste")));
+  d->paste_parts = GTK_BUTTON(gtk_button_new_with_label(_("paste...")));
   ellipsize_button(d->paste_parts);
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->paste_parts), _("paste part history stack to\nall selected images"));
   dt_gui_add_help_link(GTK_WIDGET(d->paste_parts), "history_stack.html#history_stack_usage");
