@@ -462,7 +462,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox1), widget, TRUE, TRUE, 0);
 
   // import button
-  GtkWidget *importButton = gtk_button_new_with_label(C_("styles", "import..."));
+  GtkWidget *importButton = gtk_button_new_with_label(C_("verb", "import..."));
   d->import_button = importButton;
   gtk_widget_set_tooltip_text(importButton, _("import style from a style file"));
   g_signal_connect(importButton, "clicked", G_CALLBACK(import_clicked), d);
