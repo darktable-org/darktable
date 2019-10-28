@@ -24,8 +24,9 @@
 #include "config.h"
 #endif
 
-#include "common/darktable.h"
 #include "common/curve_tools.h"
+#include "common/darktable.h"
+#include "common/splines.h"
 #include <cairo.h>
 #include <glib.h>
 #include <math.h>
@@ -44,7 +45,7 @@ typedef struct dt_draw_curve_t
 } dt_draw_curve_t;
 
 /** draws a rating star
-*/
+ */
 static inline void dt_draw_star(cairo_t *cr, float x, float y, float r1, float r2)
 {
   const float d = 2.0 * M_PI * 0.1f;
@@ -110,8 +111,8 @@ static inline void dt_draw_grid_zoomed(cairo_t *cr, const int num, const float l
   }
 }
 
-static inline void dt_draw_loglog_grid(cairo_t *cr, const int num, const int left, const int top,
-                                       const int right, const int bottom, const float base)
+static inline void dt_draw_loglog_grid(cairo_t *cr, const int num, const int left, const int top, const int right,
+                                       const int bottom, const float base)
 {
   float width = right - left;
   float height = bottom - top;
@@ -127,7 +128,7 @@ static inline void dt_draw_loglog_grid(cairo_t *cr, const int num, const int lef
 }
 
 static inline void dt_draw_semilog_x_grid(cairo_t *cr, const int num, const int left, const int top,
-                                       const int right, const int bottom, const float base)
+                                          const int right, const int bottom, const float base)
 {
   float width = right - left;
   float height = bottom - top;
@@ -143,7 +144,7 @@ static inline void dt_draw_semilog_x_grid(cairo_t *cr, const int num, const int 
 }
 
 static inline void dt_draw_semilog_y_grid(cairo_t *cr, const int num, const int left, const int top,
-                                       const int right, const int bottom, const float base)
+                                          const int right, const int bottom, const float base)
 {
   float width = right - left;
   float height = bottom - top;
@@ -175,7 +176,7 @@ static inline void dt_draw_waveform_lines(cairo_t *cr, const int left, const int
   for(int k = 1; k < num; k++)
   {
     cairo_set_dash(cr, &dashes, k == white || k == middle, 0);
-    cairo_set_line_width(cr, k == white ? wd*3 : k == middle ? wd*2 : wd);
+    cairo_set_line_width(cr, k == white ? wd * 3 : k == middle ? wd * 2 : wd);
     dt_draw_line(cr, left, top + k / (float)num * height, right, top + k / (float)num * height);
     cairo_stroke(cr);
   }
@@ -259,33 +260,60 @@ static inline void dt_draw_curve_set_point(dt_draw_curve_t *c, const int num, co
   c->c.m_anchors[num].y = y;
 }
 
-static inline void dt_draw_curve_calc_values(dt_draw_curve_t *c, const float min, const float max,
-                                             const int res, float *x, float *y)
+static inline void dt_draw_curve_smaple_values(dt_draw_curve_t *c, const float min, const float max, const int res,
+                                               float *x, float *y)
 {
-  c->csample.m_samplingRes = res;
-  c->csample.m_outputRes = 0x10000;
-  CurveDataSample(&c->c, &c->csample);
   if(x)
   {
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(res) \
-    shared(x) \
-    schedule(static)
+#pragma omp parallel for SIMD() default(none) dt_omp_firstprivate(res) shared(x) schedule(static)
 #endif
     for(int k = 0; k < res; k++) x[k] = k * (1.0f / res);
   }
   if(y)
   {
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(min, max, res) \
-    shared(y, c) \
-    schedule(static)
+#pragma omp parallel for SIMD() default(none) dt_omp_firstprivate(min, max, res) shared(y, c) schedule(static)
 #endif
     for(int k = 0; k < res; k++) y[k] = min + (max - min) * c->csample.m_Samples[k] * (1.0f / 0x10000);
   }
 }
+
+static inline void dt_draw_curve_calc_values(dt_draw_curve_t *c, const float min, const float max, const int res,
+                                             float *x, float *y)
+{
+  c->csample.m_samplingRes = res;
+  c->csample.m_outputRes = 0x10000;
+  CurveDataSample(&c->c, &c->csample);
+  dt_draw_curve_smaple_values(c, min, max, res, x, y);
+}
+
+static inline void dt_draw_curve_calc_values_V2_nonperiodic(dt_draw_curve_t *c, const float min, const float max,
+                                                            const int res, float *x, float *y)
+{
+  c->csample.m_samplingRes = res;
+  c->csample.m_outputRes = 0x10000;
+  CurveDataSampleV2(&c->c, &c->csample);
+  dt_draw_curve_smaple_values(c, min, max, res, x, y);
+}
+
+static inline void dt_draw_curve_calc_values_V2_periodic(dt_draw_curve_t *c, const float min, const float max,
+                                                         const int res, float *x, float *y)
+{
+  c->csample.m_samplingRes = res;
+  c->csample.m_outputRes = 0x10000;
+  CurveDataSampleV2Periodic(&c->c, &c->csample);
+  dt_draw_curve_smaple_values(c, min, max, res, x, y);
+}
+
+static inline void dt_draw_curve_calc_values_V2(dt_draw_curve_t *c, const float min, const float max,
+                                                const int res, float *x, float *y, const gboolean periodic)
+{
+  if(periodic)
+    dt_draw_curve_calc_values_V2_periodic(c, min, max, res, x, y);
+  else
+    dt_draw_curve_calc_values_V2_nonperiodic(c, min, max, res, x, y);
+ }
 
 static inline float dt_draw_curve_calc_value(dt_draw_curve_t *c, const float x)
 {
@@ -315,7 +343,8 @@ static inline int dt_draw_curve_add_point(dt_draw_curve_t *c, const float x, con
 }
 
 // linear x linear y
-static inline void dt_draw_histogram_8_linxliny(cairo_t *cr, const uint32_t *hist, int32_t channels, int32_t channel)
+static inline void dt_draw_histogram_8_linxliny(cairo_t *cr, const uint32_t *hist, int32_t channels,
+                                                int32_t channel)
 {
   cairo_move_to(cr, 0, 0);
   for(int k = 0; k < 256; k++) cairo_line_to(cr, k, hist[channels * k + channel]);
@@ -332,7 +361,7 @@ static inline void dt_draw_histogram_8_zoomed(cairo_t *cr, const uint32_t *hist,
   for(int k = 0; k < 256; k++)
   {
     const float value = ((float)hist[channels * k + channel] - zoom_offset_y) * zoom_factor;
-    const float hist_value = value<0 ? 0.f : value;
+    const float hist_value = value < 0 ? 0.f : value;
     cairo_line_to(cr, ((float)k - zoom_offset_x) * zoom_factor, linear ? hist_value : log(1.0f + hist_value));
   }
   cairo_line_to(cr, (255.f - zoom_offset_x), -zoom_offset_y * zoom_factor);
@@ -341,7 +370,8 @@ static inline void dt_draw_histogram_8_zoomed(cairo_t *cr, const uint32_t *hist,
 }
 
 // log x (scalable) & linear y
-static inline void dt_draw_histogram_8_logxliny(cairo_t *cr, const uint32_t *hist, int32_t channels, int32_t channel, float base_log)
+static inline void dt_draw_histogram_8_logxliny(cairo_t *cr, const uint32_t *hist, int32_t channels,
+                                                int32_t channel, float base_log)
 {
   cairo_move_to(cr, 0, 0);
   for(int k = 0; k < 256; k++)
@@ -356,7 +386,8 @@ static inline void dt_draw_histogram_8_logxliny(cairo_t *cr, const uint32_t *his
 }
 
 // log x (scalable) & log y
-static inline void dt_draw_histogram_8_logxlogy(cairo_t *cr, const uint32_t *hist, int32_t channels, int32_t channel, float base_log)
+static inline void dt_draw_histogram_8_logxlogy(cairo_t *cr, const uint32_t *hist, int32_t channels,
+                                                int32_t channel, float base_log)
 {
   cairo_move_to(cr, 0, 0);
   for(int k = 0; k < 256; k++)
@@ -371,7 +402,8 @@ static inline void dt_draw_histogram_8_logxlogy(cairo_t *cr, const uint32_t *his
 }
 
 // linear x log y
-static inline void dt_draw_histogram_8_linxlogy(cairo_t *cr, const uint32_t *hist, int32_t channels, int32_t channel)
+static inline void dt_draw_histogram_8_linxlogy(cairo_t *cr, const uint32_t *hist, int32_t channels,
+                                                int32_t channel)
 {
   cairo_move_to(cr, 0, 0);
   for(int k = 0; k < 256; k++) cairo_line_to(cr, k, logf(1.0 + hist[channels * k + channel]));
@@ -381,21 +413,23 @@ static inline void dt_draw_histogram_8_linxlogy(cairo_t *cr, const uint32_t *his
 }
 
 // log x (scalable)
-static inline void dt_draw_histogram_8_log_base(cairo_t *cr, const uint32_t *hist, int32_t channels, int32_t channel, const gboolean linear, float base_log)
+static inline void dt_draw_histogram_8_log_base(cairo_t *cr, const uint32_t *hist, int32_t channels,
+                                                int32_t channel, const gboolean linear, float base_log)
 {
 
   if(linear) // linear y
     dt_draw_histogram_8_logxliny(cr, hist, channels, channel, base_log);
-  else  // log y
+  else // log y
     dt_draw_histogram_8_logxlogy(cr, hist, channels, channel, base_log);
 }
 
 // linear x
-static inline void dt_draw_histogram_8(cairo_t *cr, const uint32_t *hist, int32_t channels, int32_t channel, const gboolean linear)
+static inline void dt_draw_histogram_8(cairo_t *cr, const uint32_t *hist, int32_t channels, int32_t channel,
+                                       const gboolean linear)
 {
   if(linear) // linear y
     dt_draw_histogram_8_linxliny(cr, hist, channels, channel);
-  else  // log y
+  else // log y
     dt_draw_histogram_8_linxlogy(cr, hist, channels, channel);
 }
 
