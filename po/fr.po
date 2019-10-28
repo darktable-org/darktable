@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-25 16:39+0200\n"
-"PO-Revision-Date: 2019-10-25 16:43+0200\n"
+"POT-Creation-Date: 2019-10-28 09:05+0100\n"
+"PO-Revision-Date: 2019-10-28 09:05+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1576,7 +1576,7 @@ msgstr ""
 
 #: ../src/common/darktable.c:806 ../src/common/variables.c:380
 #: ../src/imageio/format/pdf.c:669 ../src/imageio/format/pdf.c:694
-#: ../src/iop/clipping.c:2005 ../src/iop/filmicrgb.c:1556
+#: ../src/iop/clipping.c:2010 ../src/iop/filmicrgb.c:1556
 #: ../src/iop/toneequal.c:3155 ../src/libs/export.c:628
 #: ../src/libs/export.c:634 ../src/libs/metadata_view.c:279
 msgid "no"
@@ -1584,7 +1584,7 @@ msgstr "non"
 
 #: ../src/common/darktable.c:806 ../src/common/variables.c:378
 #: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
-#: ../src/iop/clipping.c:2006 ../src/libs/export.c:629 ../src/libs/export.c:635
+#: ../src/iop/clipping.c:2011 ../src/libs/export.c:629 ../src/libs/export.c:635
 #: ../src/libs/metadata_view.c:279
 msgid "yes"
 msgstr "oui"
@@ -4466,8 +4466,7 @@ msgstr "modifier"
 msgid "can't create style out of unaltered image"
 msgstr "impossible de créer un style depuis une image non développée"
 
-#: ../src/imageio/format/copy.c:124 ../src/libs/copy_history.c:308
-#: ../src/libs/image.c:204
+#: ../src/imageio/format/copy.c:124 ../src/libs/image.c:204
 msgid "copy"
 msgstr "copier"
 
@@ -5371,14 +5370,14 @@ msgid "lens shift (%s)"
 msgstr "correction d'objectif (%s)"
 
 #: ../src/iop/ashift.c:4623 ../src/iop/ashift.c:4624 ../src/iop/ashift.c:4727
-#: ../src/iop/ashift.c:4728 ../src/iop/clipping.c:1693
-#: ../src/iop/clipping.c:1978 ../src/iop/clipping.c:1997
+#: ../src/iop/ashift.c:4728 ../src/iop/clipping.c:1698
+#: ../src/iop/clipping.c:1983 ../src/iop/clipping.c:2002
 msgid "horizontal"
 msgstr "horizontale"
 
 #: ../src/iop/ashift.c:4623 ../src/iop/ashift.c:4624 ../src/iop/ashift.c:4727
-#: ../src/iop/ashift.c:4728 ../src/iop/clipping.c:1692
-#: ../src/iop/clipping.c:1979 ../src/iop/clipping.c:1996
+#: ../src/iop/ashift.c:4728 ../src/iop/clipping.c:1697
+#: ../src/iop/clipping.c:1984 ../src/iop/clipping.c:2001
 msgid "vertical"
 msgstr "verticale"
 
@@ -5399,12 +5398,12 @@ msgstr "correction d'objectif (horizontale)"
 msgid "shear"
 msgstr "cisaillement"
 
-#: ../src/iop/ashift.c:4854 ../src/iop/clipping.c:2128
+#: ../src/iop/ashift.c:4854 ../src/iop/clipping.c:2133
 #: ../src/libs/live_view.c:343
 msgid "guides"
 msgstr "guides"
 
-#: ../src/iop/ashift.c:4860 ../src/iop/clipping.c:2004
+#: ../src/iop/ashift.c:4860 ../src/iop/clipping.c:2009
 msgid "automatic cropping"
 msgstr "recadrage"
 
@@ -5464,7 +5463,7 @@ msgstr "cisaillement de l'image selon une diagonale"
 msgid "display guide lines overlay"
 msgstr "superpose des lignes guides"
 
-#: ../src/iop/ashift.c:4973 ../src/iop/clipping.c:2007
+#: ../src/iop/ashift.c:4973 ../src/iop/clipping.c:2012
 msgid "automatically crop to avoid black edges"
 msgstr "recadre automatique pour éviter les bords noirs"
 
@@ -5844,9 +5843,9 @@ msgid "preserve colors"
 msgstr "préserver couleur"
 
 #: ../src/iop/basecurve.c:2140 ../src/iop/basecurve.c:2153
-#: ../src/iop/basicadj.c:707 ../src/iop/clipping.c:1691
-#: ../src/iop/clipping.c:1977 ../src/iop/clipping.c:1995
-#: ../src/iop/clipping.c:2135 ../src/iop/clipping.c:2162
+#: ../src/iop/basicadj.c:707 ../src/iop/clipping.c:1696
+#: ../src/iop/clipping.c:1982 ../src/iop/clipping.c:2000
+#: ../src/iop/clipping.c:2140 ../src/iop/clipping.c:2167
 #: ../src/iop/colorreconstruction.c:1377 ../src/iop/lens.cc:2320
 #: ../src/iop/retouch.c:582 ../src/iop/rgbcurve.c:1620
 #: ../src/iop/rgblevels.c:1117 ../src/iop/tonecurve.c:1393
@@ -6277,7 +6276,7 @@ msgstr "2:1"
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:944 ../src/iop/clipping.c:2023
+#: ../src/iop/borders.c:944 ../src/iop/clipping.c:2028
 msgid "golden cut"
 msgstr "rapport d'or"
 
@@ -6297,7 +6296,7 @@ msgstr "DIN"
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:949 ../src/iop/clipping.c:2013
+#: ../src/iop/borders.c:949 ../src/iop/clipping.c:2018
 msgid "square"
 msgstr "carré"
 
@@ -6333,7 +6332,7 @@ msgstr "taille du cadre"
 msgid "size of the border in percent of the full image"
 msgstr "taille du cadre en pourcentage de l'image"
 
-#: ../src/iop/borders.c:1014 ../src/iop/clipping.c:2110
+#: ../src/iop/borders.c:1014 ../src/iop/clipping.c:2115
 msgid "aspect"
 msgstr "aspect"
 
@@ -6570,130 +6569,130 @@ msgstr "force de l'effet"
 msgid "crop and rotate"
 msgstr "recadrer et pivoter"
 
-#: ../src/iop/clipping.c:1590
+#: ../src/iop/clipping.c:1595
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "format de dimension non reconnu. il devrait être  \"nombre:nombre\""
 
-#: ../src/iop/clipping.c:1694 ../src/iop/clipping.c:1998
+#: ../src/iop/clipping.c:1699 ../src/iop/clipping.c:2003
 msgid "full"
 msgstr "les deux"
 
-#: ../src/iop/clipping.c:1695
+#: ../src/iop/clipping.c:1700
 msgid "old system"
 msgstr "système précédent"
 
-#: ../src/iop/clipping.c:1696
+#: ../src/iop/clipping.c:1701
 msgid "correction applied"
 msgstr "correction appliquée"
 
-#: ../src/iop/clipping.c:1976 ../src/libs/live_view.c:374
+#: ../src/iop/clipping.c:1981 ../src/libs/live_view.c:374
 msgid "flip"
 msgstr "symétrie miroir"
 
-#: ../src/iop/clipping.c:1980 ../src/iop/clipping.c:2165
+#: ../src/iop/clipping.c:1985 ../src/iop/clipping.c:2170
 #: ../src/iop/colorbalance.c:2378 ../src/libs/live_view.c:378
 msgid "both"
 msgstr "les deux"
 
-#: ../src/iop/clipping.c:1982
+#: ../src/iop/clipping.c:1987
 msgid "mirror image horizontally and/or vertically"
 msgstr "retourne l'image horizontalement et/ou horizontalement"
 
-#: ../src/iop/clipping.c:1987
+#: ../src/iop/clipping.c:1992
 msgid "angle"
 msgstr "rotation"
 
-#: ../src/iop/clipping.c:1990
+#: ../src/iop/clipping.c:1995
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr "clic-droit et tracer une ligne pour indiquer l'horizontale"
 
-#: ../src/iop/clipping.c:1994
+#: ../src/iop/clipping.c:1999
 msgid "keystone"
 msgstr "perspective"
 
-#: ../src/iop/clipping.c:1999
+#: ../src/iop/clipping.c:2004
 msgid "set perspective correction for your image"
 msgstr "règle la correction de perspective"
 
-#: ../src/iop/clipping.c:2011
+#: ../src/iop/clipping.c:2016
 msgid "freehand"
 msgstr "libre"
 
-#: ../src/iop/clipping.c:2012
+#: ../src/iop/clipping.c:2017
 msgid "original image"
 msgstr "image"
 
-#: ../src/iop/clipping.c:2014
+#: ../src/iop/clipping.c:2019
 msgid "10:8 in print"
 msgstr "10:8 in print"
 
-#: ../src/iop/clipping.c:2015
+#: ../src/iop/clipping.c:2020
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:2016
+#: ../src/iop/clipping.c:2021
 msgid "11x14"
 msgstr "11x14"
 
-#: ../src/iop/clipping.c:2017
+#: ../src/iop/clipping.c:2022
 msgid "8.5x11, letter"
 msgstr "8.5x11, letter"
 
-#: ../src/iop/clipping.c:2018
+#: ../src/iop/clipping.c:2023
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:2019
+#: ../src/iop/clipping.c:2024
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:2020
+#: ../src/iop/clipping.c:2025
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:2021
+#: ../src/iop/clipping.c:2026
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:2022
+#: ../src/iop/clipping.c:2027
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:2024
+#: ../src/iop/clipping.c:2029
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:2025
+#: ../src/iop/clipping.c:2030
 msgid "widescreen"
 msgstr "panoramique"
 
-#: ../src/iop/clipping.c:2026
+#: ../src/iop/clipping.c:2031
 msgid "2:1, univisium"
 msgstr "2:1, univisium"
 
-#: ../src/iop/clipping.c:2027
+#: ../src/iop/clipping.c:2032
 msgid "cinemascope"
 msgstr "cinemascope"
 
-#: ../src/iop/clipping.c:2028
+#: ../src/iop/clipping.c:2033
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:2029
+#: ../src/iop/clipping.c:2034
 msgid "anamorphic"
 msgstr "anamorphique"
 
-#: ../src/iop/clipping.c:2030
+#: ../src/iop/clipping.c:2035
 msgid "3:1, panorama"
 msgstr "3:1, panorama"
 
-#: ../src/iop/clipping.c:2062 ../src/iop/clipping.c:2074
+#: ../src/iop/clipping.c:2067 ../src/iop/clipping.c:2079
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr ""
 "format de dimension non reconnu « %s ». il devrait être  \"nombre:nombre\""
 
-#: ../src/iop/clipping.c:2121
+#: ../src/iop/clipping.c:2126
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square"
@@ -6701,44 +6700,44 @@ msgstr ""
 "sélectionne les dimensions\n"
 "la liste est triée de la moins à la plus carrée"
 
-#: ../src/iop/clipping.c:2157 ../src/libs/live_view.c:370
+#: ../src/iop/clipping.c:2162 ../src/libs/live_view.c:370
 msgid "display guide lines to help compose your photograph"
 msgstr "affiche des guides pour vous aider à composer votre photo"
 
-#: ../src/iop/clipping.c:2161 ../src/iop/clipping.c:2166
+#: ../src/iop/clipping.c:2166 ../src/iop/clipping.c:2171
 #: ../src/libs/live_view.c:379
 msgid "flip guides"
 msgstr "retourne les guides"
 
-#: ../src/iop/clipping.c:2163 ../src/libs/live_view.c:376
+#: ../src/iop/clipping.c:2168 ../src/libs/live_view.c:376
 msgid "horizontally"
 msgstr "horizontale"
 
-#: ../src/iop/clipping.c:2164 ../src/libs/live_view.c:377
+#: ../src/iop/clipping.c:2169 ../src/libs/live_view.c:377
 msgid "vertically"
 msgstr "verticale"
 
-#: ../src/iop/clipping.c:3217
+#: ../src/iop/clipping.c:3222
 msgctxt "accel"
 msgid "commit"
 msgstr "valider"
 
-#: ../src/iop/clipping.c:3218
+#: ../src/iop/clipping.c:3223
 msgctxt "accel"
 msgid "angle"
 msgstr "rotation"
 
-#: ../src/iop/clipping.c:3239
+#: ../src/iop/clipping.c:3244
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s sur bords] recadrer"
 
-#: ../src/iop/clipping.c:3245
+#: ../src/iop/clipping.c:3250
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s sur bords] recadrer avec ratio"
 
-#: ../src/iop/clipping.c:3250
+#: ../src/iop/clipping.c:3255
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] définir/orienter l'horizon"
@@ -11929,6 +11928,10 @@ msgstr[1] ""
 msgid "delete images' history?"
 msgstr "supprimer l'historiqe des images ?"
 
+#: ../src/libs/copy_history.c:308
+msgid "copy..."
+msgstr "copier..."
+
 #: ../src/libs/copy_history.c:311
 msgid ""
 "copy part history stack of\n"
@@ -11950,8 +11953,8 @@ msgstr ""
 "la première image sélectionnée"
 
 #: ../src/libs/copy_history.c:323
-msgid "paste"
-msgstr "coller"
+msgid "paste..."
+msgstr "coller..."
 
 #: ../src/libs/copy_history.c:325
 msgid ""
