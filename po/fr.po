@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-28 14:51+0100\n"
-"PO-Revision-Date: 2019-10-28 14:52+0100\n"
+"POT-Creation-Date: 2019-10-28 15:09+0100\n"
+"PO-Revision-Date: 2019-10-28 15:10+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -4464,7 +4464,7 @@ msgstr "modifier"
 msgid "can't create style out of unaltered image"
 msgstr "impossible de créer un style depuis une image non développée"
 
-#: ../src/imageio/format/copy.c:124 ../src/libs/image.c:204
+#: ../src/imageio/format/copy.c:124
 msgid "copy"
 msgstr "copier"
 
@@ -11925,7 +11925,7 @@ msgstr[1] ""
 msgid "delete images' history?"
 msgstr "supprimer l'historiqe des images ?"
 
-#: ../src/libs/copy_history.c:308
+#: ../src/libs/copy_history.c:308 ../src/libs/image.c:204
 msgid "copy..."
 msgstr "copier..."
 
@@ -12521,10 +12521,9 @@ msgstr "supprime physiquement du disque"
 msgid "remove from the collection"
 msgstr "enlève de la bibliothèque"
 
-# lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
 #: ../src/libs/image.c:197
-msgid "move"
-msgstr "déplacer"
+msgid "move..."
+msgstr "déplacer..."
 
 #: ../src/libs/image.c:200
 msgid "move to other folder"
@@ -15269,6 +15268,10 @@ msgstr "raccourcis"
 #: ../src/views/view.c:2415
 msgid "Action"
 msgstr "action"
+
+# lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
+#~ msgid "move"
+#~ msgstr "déplacer"
 
 #~ msgctxt "styles"
 #~ msgid "import..."
