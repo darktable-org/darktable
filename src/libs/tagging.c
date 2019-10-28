@@ -2682,7 +2682,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(new_button_clicked), (gpointer)self);
 
-  button = gtk_button_new_with_label(C_("verb", "import"));
+  button = gtk_button_new_with_label(C_("verb", "import..."));
   d->import_button = button;
   gtk_widget_set_hexpand(button, TRUE);
   gtk_widget_set_tooltip_text(button, _("import tags from a Lightroom keyword file"));
@@ -2690,7 +2690,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_button_clicked), (gpointer)self);
 
-  button = gtk_button_new_with_label(C_("verb", "export"));
+  button = gtk_button_new_with_label(C_("verb", "export..."));
   d->export_button = button;
   gtk_widget_set_hexpand(button, TRUE);
   gtk_widget_set_tooltip_text(button, _("export all tags to a Lightroom keyword file"));
