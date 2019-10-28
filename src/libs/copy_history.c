@@ -356,7 +356,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_set(d->pastemode, dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
 
 
-  GtkWidget *loadbutton = gtk_button_new_with_label(_("load sidecar file"));
+  GtkWidget *loadbutton = gtk_button_new_with_label(_("load sidecar file..."));
   ellipsize_button(loadbutton);
   d->load_button = loadbutton;
   gtk_widget_set_tooltip_text(loadbutton, _("open an XMP sidecar file\nand apply it to selected images"));
