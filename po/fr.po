@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-28 11:48+0100\n"
-"PO-Revision-Date: 2019-10-28 11:52+0100\n"
+"POT-Creation-Date: 2019-10-28 14:51+0100\n"
+"PO-Revision-Date: 2019-10-28 14:52+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1733,7 +1733,7 @@ msgstr "activé(e)"
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
 #: ../src/iop/ashift.c:4855 ../src/iop/ashift.c:4861 ../src/iop/colorin.c:2107
 #: ../src/iop/demosaic.c:5147 ../src/iop/vignette.c:1150
-#: ../src/libs/history.c:169 ../src/libs/live_view.c:436
+#: ../src/libs/history.c:168 ../src/libs/live_view.c:436
 msgid "off"
 msgstr "désactivé(e)"
 
@@ -4203,9 +4203,7 @@ msgid "binding"
 msgstr "lien"
 
 #. Export button
-#. export button
 #: ../src/gui/preferences.c:642 ../src/libs/export.c:716
-#: ../src/libs/styles.c:472
 msgid "export"
 msgstr "exporter"
 
@@ -12406,8 +12404,8 @@ msgstr "applique le décalage horaire aux images sélectionnées"
 
 #. gpx
 #: ../src/libs/geotagging.c:815
-msgid "apply GPX track file"
-msgstr "applique un ficher GPX"
+msgid "apply GPX track file..."
+msgstr "applique un ficher GPX..."
 
 #: ../src/libs/geotagging.c:816
 msgid "parses a GPX file and updates location of selected images"
@@ -12491,15 +12489,15 @@ msgstr "compresser l'historique"
 msgid "compress history stack"
 msgstr "compresser l'historique"
 
-#: ../src/libs/history.c:119
+#: ../src/libs/history.c:118
 msgid "create a minimal history stack which produces the same image"
 msgstr "génère l'historique minimum qui produit la même image"
 
-#: ../src/libs/history.c:126
+#: ../src/libs/history.c:125
 msgid "create a style from the current history stack"
 msgstr "crée un style depuis l'historique actuel"
 
-#: ../src/libs/history.c:620 ../src/libs/snapshots.c:346
+#: ../src/libs/history.c:619 ../src/libs/snapshots.c:346
 msgid "original"
 msgstr "original"
 
@@ -13743,8 +13741,7 @@ msgstr "non développées"
 msgid "session"
 msgstr "session"
 
-#. create
-#: ../src/libs/session.c:109 ../src/libs/styles.c:445
+#: ../src/libs/session.c:109
 msgid "create"
 msgstr "créer"
 
@@ -13821,14 +13818,19 @@ msgstr "cloner l'image et appliquer le style"
 msgid "creates a duplicate of the image before applying style"
 msgstr "crée une image virtuelle avant d'appliquer le style"
 
+#. create
+#: ../src/libs/styles.c:445
+msgid "create..."
+msgstr "créer..."
+
 #: ../src/libs/styles.c:447
 msgid "create styles from history stack of selected images"
 msgstr "créer des styles à partir des images sélectionnées"
 
 #. edit
 #: ../src/libs/styles.c:451
-msgid "edit"
-msgstr "modifier"
+msgid "edit..."
+msgstr "éditer..."
 
 #: ../src/libs/styles.c:454
 msgid "edit the selected style in list above"
@@ -13839,14 +13841,19 @@ msgid "deletes the selected style in list above"
 msgstr "supprime le style sélectionné dans la liste ci-dessus"
 
 #. import button
-#: ../src/libs/styles.c:465
-msgctxt "styles"
-msgid "import"
-msgstr "importer"
+#: ../src/libs/styles.c:465 ../src/libs/tagging.c:2685
+msgctxt "verb"
+msgid "import..."
+msgstr "importer..."
 
 #: ../src/libs/styles.c:467
 msgid "import style from a style file"
 msgstr "importe un style depuis un fichier"
+
+#. export button
+#: ../src/libs/styles.c:472
+msgid "export..."
+msgstr "exporter..."
 
 #: ../src/libs/styles.c:474
 msgid "export the selected style into a style file"
@@ -14174,19 +14181,14 @@ msgstr ""
 "crée un nouveau mot-clé à\n"
 "partir de la saisie"
 
-#: ../src/libs/tagging.c:2685
-msgctxt "verb"
-msgid "import"
-msgstr "importer"
-
 #: ../src/libs/tagging.c:2688
 msgid "import tags from a Lightroom keyword file"
 msgstr "importer des mots-clés depuis un fichier Lightroom"
 
 #: ../src/libs/tagging.c:2693
 msgctxt "verb"
-msgid "export"
-msgstr "exporter"
+msgid "export..."
+msgstr "exporter..."
 
 #: ../src/libs/tagging.c:2696
 msgid "export all tags to a Lightroom keyword file"
@@ -15267,6 +15269,25 @@ msgstr "raccourcis"
 #: ../src/views/view.c:2415
 msgid "Action"
 msgstr "action"
+
+#~ msgctxt "styles"
+#~ msgid "import..."
+#~ msgstr "importer..."
+
+#~ msgid "edit"
+#~ msgstr "modifier"
+
+#~ msgctxt "styles"
+#~ msgid "import"
+#~ msgstr "importer"
+
+#~ msgctxt "verb"
+#~ msgid "import"
+#~ msgstr "importer"
+
+#~ msgctxt "verb"
+#~ msgid "export"
+#~ msgstr "exporter"
 
 #~ msgid "preserve chroma"
 #~ msgstr "préserver couleur"
