@@ -3147,7 +3147,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->method), "tooltip-text", _("preview the mask and chose the estimator that gives you the\n"
                                                       "higher contrast between areas to dodge and areas to burn"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->method), "value-changed", G_CALLBACK(method_changed), self);
-  
+
 
   g->details = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(g->details, NULL, _("preserve details"));
@@ -3239,7 +3239,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 
   g->show_luminance_mask = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->show_luminance_mask, NULL, _("display the exposure mask"));
+  dt_bauhaus_widget_set_label(g->show_luminance_mask, NULL, _("display exposure mask"));
   dt_bauhaus_widget_set_quad_paint(g->show_luminance_mask, dtgtk_cairo_paint_showmask,
                                    CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->show_luminance_mask, TRUE);
