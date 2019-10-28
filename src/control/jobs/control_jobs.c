@@ -1352,11 +1352,6 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
   const guint total = g_list_length(t);
   dt_control_log(ngettext("exporting %d image..", "exporting %d images..", total), total);
-  char message[512] = { 0 };
-  snprintf(message, sizeof(message), ngettext("exporting %d image to %s", "exporting %d images to %s", total),
-           total, mstorage->name(mstorage));
-  // update the message. initialize_store() might have changed the number of images
-  dt_control_job_set_progress_message(job, message);
 
   double fraction = 0;
 
@@ -1387,6 +1382,12 @@ static int32_t dt_control_export_job_run(dt_job_t *job)
 
     imgid = GPOINTER_TO_INT(t->data);
     t = g_list_delete_link(t, t);
+
+    // progress message
+    char message[512] = { 0 };
+    snprintf(message, sizeof(message), "exporting %d / %d to %s", num, total, mstorage->name(mstorage));
+    // update the message. initialize_store() might have changed the number of images
+    dt_control_job_set_progress_message(job, message);
 
     // remove 'changed' tag from image
     dt_tag_detach(tagid, imgid);
