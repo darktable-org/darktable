@@ -47,13 +47,14 @@
 // 2. add LRDT_<iop_name>_VERSION with corresponding module version
 // 3. use this version to pass in dt_add_hist()
 
-#define LRDT_CLIPPING_VERSION 4
+#define LRDT_CLIPPING_VERSION 5
 typedef struct dt_iop_clipping_params_t
 {
   float angle, cx, cy, cw, ch, k_h, k_v;
   float kxa, kya, kxb, kyb, kxc, kyc, kxd, kyd;
   int k_type, k_sym;
   int k_apply, crop_auto;
+  int ratio_n, ratio_d;
 } dt_iop_clipping_params_t;
 
 #define LRDT_FLIP_VERSION 2
@@ -1267,6 +1268,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     data.pc.k_sym = 0;
     data.pc.k_apply = 0;
     data.pc.crop_auto = 0;  // Cannot use crop-auto=1 (the default at clipping GUI), as it does not allow to cover all cropping cases.
+    data.pc.ratio_n = data.pc.ratio_d = -2;
     data.pc.k_h = data.pc.k_v = 0;
     data.pc.k_type = 0;
     data.pc.kxa = data.pc.kxd = 0.2f;
