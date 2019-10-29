@@ -1020,6 +1020,11 @@ static void _handle_xpath(dt_develop_t *dev, xmlDoc *doc, int imgid, xmlXPathCon
     }
 }
 
+static inline float dabs(double a)
+{
+  return a > 0.0f ? a : -a;
+}
+
 static inline void flip(float *x, float *y)
 {
   const float tmp = *x;
@@ -1032,6 +1037,29 @@ static inline void swap(float *x, float *y)
   const float tmp = *x;
   *x = *y;
   *y = tmp;
+}
+
+static inline double rotate_x(double x, double y, const double rangle)
+{
+  return x*cos(rangle) + y*sin(rangle);
+}
+
+static inline double rotate_y(double x, double y, const double rangle)
+{
+  return -x*sin(rangle) + y*cos(rangle);
+}
+
+static inline void rotate_xy(double *cx, double *cy, const double rangle)
+{
+  const double x = *cx;
+  const double y = *cy;
+  *cx = rotate_x(x, y, rangle);
+  *cy = rotate_y(x, y, rangle);
+}
+
+static inline float round5(double x)
+{
+  return round(x * 100000.f) / 100000.f;
 }
 
 void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
@@ -1231,9 +1259,14 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
   if(dev != NULL && data.has_crop)
   {
+    double rangle;
+    double cx, cw, cy, ch;
+    double new_width, new_height;
+    dt_image_orientation_t orientation = dt_image_orientation_to_flip_bits(data.orientation);
+
     data.pc.k_sym = 0;
     data.pc.k_apply = 0;
-    data.pc.crop_auto = 0;
+    data.pc.crop_auto = 0;  // Cannot use crop-auto=1 (the default at clipping GUI), as it does not allow to cover all cropping cases.
     data.pc.k_h = data.pc.k_v = 0;
     data.pc.k_type = 0;
     data.pc.kxa = data.pc.kxd = 0.2f;
@@ -1241,50 +1274,46 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     data.pc.kya = data.pc.kyb = 0.2f;
     data.pc.kyc = data.pc.kyd = 0.8f;
 
-    if(data.has_crop)
+    // Convert image in image-centered coordinate system, [-image_size / 2; + image_size / 2]
+    cx = (data.pc.cx - 0.5f) * data.iwidth;
+    cw = (data.pc.cw - 0.5f) * data.iwidth;
+    cy = (data.pc.cy - 0.5f) * data.iheight;
+    ch = (data.pc.ch - 0.5f) * data.iheight;
+
+    // Rotate the cropped zone according to rotation angle
+    // All rotations done using center of the image
+    rangle = data.pc.angle * (M_PI / 180.0f);
+    rotate_xy(&cx, &cy, -rangle);
+    rotate_xy(&cw, &ch, -rangle);
+
+    // Calculate the new overall image size (black zone included) after rotation
+    // rangle is limited to -45°;+45° by LR
+    new_width  = rotate_x(+data.iwidth, -data.iheight, -dabs(rangle));
+    new_height = rotate_y(+data.iwidth, +data.iheight, -dabs(rangle));
+
+    // apply new size & convert image back in initial coordinate system [0.0 ; +1.0]
+    data.pc.cx = round5((cx / new_width)  + 0.5f);
+    data.pc.cw = round5((cw / new_width)  + 0.5f);
+    data.pc.cy = round5((cy / new_height) + 0.5f);
+    data.pc.ch = round5((ch / new_height) + 0.5f);
+
+    // adjust crop data according to the orientation - Must be done after rotation
+    if(orientation & ORIENTATION_FLIP_X)
+      flip(&data.pc.cx, &data.pc.cw);
+    if(orientation & ORIENTATION_FLIP_Y)
+      flip(&data.pc.cy, &data.pc.ch);
+    if(orientation & ORIENTATION_SWAP_XY)
     {
-      dt_image_orientation_t orientation = dt_image_orientation_to_flip_bits(data.orientation);
-
-      // adjust crop data according to the rotation
-
-      if(orientation & ORIENTATION_FLIP_X)
-        flip(&data.pc.cx, &data.pc.cw);
-
-      if(orientation & ORIENTATION_FLIP_Y)
-        flip(&data.pc.cy, &data.pc.ch);
-
-      if(orientation & ORIENTATION_SWAP_XY)
-      {
-        swap(&data.pc.cx, &data.pc.cy);
-        swap(&data.pc.cw, &data.pc.ch);
-      }
-
-      if(data.pc.angle != 0)
-      {
-        const float rangle = -data.pc.angle * (3.141592 / 180);
-        float x, y;
-
-        // do the rotation (rangle) using center of image (0.5, 0.5)
-
-        x = data.pc.cx - 0.5;
-        y = 0.5 - data.pc.cy;
-        data.pc.cx = 0.5 + x * cos(rangle) - y * sin(rangle);
-        data.pc.cy = 0.5 - (x * sin(rangle) + y * cos(rangle));
-
-        x = data.pc.cw - 0.5;
-        y = 0.5 - data.pc.ch;
-        data.pc.cw = 0.5 + x * cos(rangle) - y * sin(rangle);
-        data.pc.ch = 0.5 - (x * sin(rangle) + y * cos(rangle));
-      }
+      swap(&data.pc.cx, &data.pc.cy);
+      swap(&data.pc.cw, &data.pc.ch);
     }
-    else
-    {
-      data.pc.angle = 0;
-      data.pc.cx = 0;
-      data.pc.cy = 0;
-      data.pc.cw = 1;
-      data.pc.ch = 1;
-    }
+
+    // Invert angle when orientation is flipped
+    if(orientation == ORIENTATION_FLIP_HORIZONTALLY
+    || orientation == ORIENTATION_FLIP_VERTICALLY
+    || orientation == ORIENTATION_TRANSPOSE
+    || orientation == ORIENTATION_TRANSVERSE)
+      data.pc.angle = -data.pc.angle;
 
     data.fratio = (data.pc.cw - data.pc.cx) / (data.pc.ch - data.pc.cy);
 
