@@ -47,19 +47,20 @@
 // 2. add LRDT_<iop_name>_VERSION with corresponding module version
 // 3. use this version to pass in dt_add_hist()
 
-#define LRDT_CLIPPING_VERSION 4
+#define LRDT_CLIPPING_VERSION 5
 typedef struct dt_iop_clipping_params_t
 {
   float angle, cx, cy, cw, ch, k_h, k_v;
   float kxa, kya, kxb, kyb, kxc, kyc, kxd, kyd;
   int k_type, k_sym;
   int k_apply, crop_auto;
+  int ratio_n, ratio_d;
 } dt_iop_clipping_params_t;
 
-#define LRDT_FLIP_VERSION 1
+#define LRDT_FLIP_VERSION 2
 typedef struct dt_iop_flip_params_t
 {
-  int32_t orientation;
+  dt_image_orientation_t orientation;
 } dt_iop_flip_params_t;
 
 #define LRDT_EXPOSURE_VERSION 2
@@ -431,7 +432,7 @@ typedef struct lr_data_t
   float fratio;                // factor ratio image
   float crop_roundness;        // from lightroom
   int iwidth, iheight;         // image width / height
-  int orientation;
+  dt_exif_image_orientation_t orientation;
 } lr_data_t;
 
 // three helper functions for parsing RetouchInfo entries. sscanf doesn't work due to floats.
@@ -1020,6 +1021,43 @@ static void _handle_xpath(dt_develop_t *dev, xmlDoc *doc, int imgid, xmlXPathCon
     }
 }
 
+static inline void flip(float *x, float *y)
+{
+  const float tmp = *x;
+  *x = 1.0 - *y;
+  *y = 1.0 - tmp;
+}
+
+static inline void swap(float *x, float *y)
+{
+  const float tmp = *x;
+  *x = *y;
+  *y = tmp;
+}
+
+static inline double rotate_x(double x, double y, const double rangle)
+{
+  return x*cos(rangle) + y*sin(rangle);
+}
+
+static inline double rotate_y(double x, double y, const double rangle)
+{
+  return -x*sin(rangle) + y*cos(rangle);
+}
+
+static inline void rotate_xy(double *cx, double *cy, const double rangle)
+{
+  const double x = *cx;
+  const double y = *cy;
+  *cx = rotate_x(x, y, rangle);
+  *cy = rotate_y(x, y, rangle);
+}
+
+static inline float round5(double x)
+{
+  return round(x * 100000.f) / 100000.f;
+}
+
 void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 {
   gboolean refresh_needed = FALSE;
@@ -1217,71 +1255,62 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
   if(dev != NULL && data.has_crop)
   {
+    double rangle;
+    double cx, cw, cy, ch;
+    double new_width, new_height;
+    dt_image_orientation_t orientation = dt_image_orientation_to_flip_bits(data.orientation);
+
     data.pc.k_sym = 0;
     data.pc.k_apply = 0;
-    data.pc.crop_auto = 0;
+    data.pc.crop_auto = 0;  // Cannot use crop-auto=1 (the default at clipping GUI), as it does not allow to cover all cropping cases.
+    data.pc.ratio_n = data.pc.ratio_d = -2;
     data.pc.k_h = data.pc.k_v = 0;
     data.pc.k_type = 0;
     data.pc.kxa = data.pc.kxd = 0.2f;
     data.pc.kxc = data.pc.kxb = 0.8f;
     data.pc.kya = data.pc.kyb = 0.2f;
     data.pc.kyc = data.pc.kyd = 0.8f;
-    float tmp;
 
-    if(data.has_crop)
+    // Convert image in image-centered coordinate system, [-image_size / 2; + image_size / 2]
+    cx = (data.pc.cx - 0.5f) * data.iwidth;
+    cw = (data.pc.cw - 0.5f) * data.iwidth;
+    cy = (data.pc.cy - 0.5f) * data.iheight;
+    ch = (data.pc.ch - 0.5f) * data.iheight;
+
+    // Rotate the cropped zone according to rotation angle
+    // All rotations done using center of the image
+    rangle = data.pc.angle * (M_PI / 180.0f);
+    rotate_xy(&cx, &cy, -rangle);
+    rotate_xy(&cw, &ch, -rangle);
+
+    // Calculate the new overall image size (black zone included) after rotation
+    // rangle is limited to -45°;+45° by LR
+    new_width  = rotate_x(+data.iwidth, -data.iheight, -fabs(rangle));
+    new_height = rotate_y(+data.iwidth, +data.iheight, -fabs(rangle));
+
+    // apply new size & convert image back in initial coordinate system [0.0 ; +1.0]
+    data.pc.cx = round5((cx / new_width)  + 0.5f);
+    data.pc.cw = round5((cw / new_width)  + 0.5f);
+    data.pc.cy = round5((cy / new_height) + 0.5f);
+    data.pc.ch = round5((ch / new_height) + 0.5f);
+
+    // adjust crop data according to the orientation - Must be done after rotation
+    if(orientation & ORIENTATION_FLIP_X)
+      flip(&data.pc.cx, &data.pc.cw);
+    if(orientation & ORIENTATION_FLIP_Y)
+      flip(&data.pc.cy, &data.pc.ch);
+    if(orientation & ORIENTATION_SWAP_XY)
     {
-      dt_image_orientation_t orientation = dt_image_orientation_to_flip_bits(data.orientation);
-
-      // adjust crop data according to the rotation
-
-      if(orientation & ORIENTATION_FLIP_X)
-      {
-          tmp = data.pc.cx;
-          data.pc.cx = 1.0 - data.pc.cw;
-          data.pc.cw = 1.0 - tmp;
-      }
-      if(orientation & ORIENTATION_FLIP_Y)
-      {
-          tmp = data.pc.cy;
-          data.pc.cy = 1.0 - data.pc.ch;
-          data.pc.ch = 1.0 - tmp;
-      }
-      if(orientation & ORIENTATION_SWAP_XY)
-      {
-          tmp = data.pc.cx;
-          data.pc.cx = data.pc.cy;
-          data.pc.cy = tmp;
-          tmp = data.pc.cw;
-          data.pc.cw = data.pc.ch;
-          data.pc.ch = tmp;
-      }
-
-      if(data.pc.angle != 0)
-      {
-        const float rangle = -data.pc.angle * (3.141592 / 180);
-        float x, y;
-
-        // do the rotation (rangle) using center of image (0.5, 0.5)
-
-        x = data.pc.cx - 0.5;
-        y = 0.5 - data.pc.cy;
-        data.pc.cx = 0.5 + x * cos(rangle) - y * sin(rangle);
-        data.pc.cy = 0.5 - (x * sin(rangle) + y * cos(rangle));
-
-        x = data.pc.cw - 0.5;
-        y = 0.5 - data.pc.ch;
-        data.pc.cw = 0.5 + x * cos(rangle) - y * sin(rangle);
-        data.pc.ch = 0.5 - (x * sin(rangle) + y * cos(rangle));
-      }
+      swap(&data.pc.cx, &data.pc.cy);
+      swap(&data.pc.cw, &data.pc.ch);
     }
-    else
-    {
-      data.pc.angle = 0;
-      data.pc.cx = 0;
-      data.pc.cy = 0;
-      data.pc.cw = 1;
-      data.pc.ch = 1;
-    }
+
+    // Invert angle when orientation is flipped
+    if(orientation == ORIENTATION_FLIP_HORIZONTALLY
+    || orientation == ORIENTATION_FLIP_VERTICALLY
+    || orientation == ORIENTATION_TRANSPOSE
+    || orientation == ORIENTATION_TRANSVERSE)
+      data.pc.angle = -data.pc.angle;
 
     data.fratio = (data.pc.cw - data.pc.cx) / (data.pc.ch - data.pc.cy);
 
@@ -1292,103 +1321,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
   if(dev != NULL && data.has_flip)
   {
-    data.pf.orientation = ORIENTATION_NONE;
-
-    if(dev->image_storage.orientation == ORIENTATION_ROTATE_CW_90_DEG)
-      // portrait
-      switch(data.orientation)
-      {
-        case EXIF_ORIENTATION_ROTATE_CCW_90_DEG:
-          data.pf.orientation = ORIENTATION_ROTATE_180_DEG;
-          break;
-        case EXIF_ORIENTATION_ROTATE_180_DEG:
-          data.pf.orientation = ORIENTATION_ROTATE_CW_90_DEG;
-          break;
-        case EXIF_ORIENTATION_ROTATE_CW_90_DEG:
-          data.pf.orientation = ORIENTATION_NONE;
-          break;
-        case EXIF_ORIENTATION_NONE:
-          data.pf.orientation = ORIENTATION_ROTATE_CCW_90_DEG;
-          break;
-
-        // with flip
-        case EXIF_ORIENTATION_TRANSVERSE:
-          data.pf.orientation = ORIENTATION_FLIP_HORIZONTALLY;
-          break;
-        case EXIF_ORIENTATION_FLIP_HORIZONTALLY:
-          data.pf.orientation = ORIENTATION_TRANSPOSE;
-          break;
-        case EXIF_ORIENTATION_TRANSPOSE:
-          data.pf.orientation = ORIENTATION_FLIP_VERTICALLY;
-          break;
-        case EXIF_ORIENTATION_FLIP_VERTICALLY:
-          data.pf.orientation = ORIENTATION_TRANSVERSE;
-          break;
-      }
-
-    else if(dev->image_storage.orientation == ORIENTATION_ROTATE_CCW_90_DEG)
-      // portrait
-      switch(data.orientation)
-      {
-        case EXIF_ORIENTATION_ROTATE_CCW_90_DEG:
-          data.pf.orientation = ORIENTATION_NONE;
-          break;
-        case EXIF_ORIENTATION_ROTATE_180_DEG:
-          data.pf.orientation = ORIENTATION_ROTATE_CCW_90_DEG;
-          break;
-        case EXIF_ORIENTATION_ROTATE_CW_90_DEG:
-          data.pf.orientation = ORIENTATION_ROTATE_180_DEG;
-          break;
-        case EXIF_ORIENTATION_NONE:
-          data.pf.orientation = ORIENTATION_ROTATE_CW_90_DEG;
-          break;
-
-        // with flip
-        case EXIF_ORIENTATION_TRANSVERSE:
-          data.pf.orientation = ORIENTATION_FLIP_VERTICALLY;
-          break;
-        case EXIF_ORIENTATION_FLIP_HORIZONTALLY:
-          data.pf.orientation = ORIENTATION_TRANSVERSE;
-          break;
-        case EXIF_ORIENTATION_TRANSPOSE:
-          data.pf.orientation = ORIENTATION_FLIP_HORIZONTALLY;
-          break;
-        case EXIF_ORIENTATION_FLIP_VERTICALLY:
-          data.pf.orientation = ORIENTATION_TRANSPOSE;
-          break;
-      }
-
-    else
-      // landscape
-      switch(data.orientation)
-      {
-        case EXIF_ORIENTATION_ROTATE_CCW_90_DEG:
-          data.pf.orientation = ORIENTATION_ROTATE_CCW_90_DEG;
-          break;
-        case EXIF_ORIENTATION_ROTATE_180_DEG:
-          data.pf.orientation = ORIENTATION_ROTATE_180_DEG;
-          break;
-        case EXIF_ORIENTATION_ROTATE_CW_90_DEG:
-          data.pf.orientation = ORIENTATION_ROTATE_CW_90_DEG;
-          break;
-        case EXIF_ORIENTATION_NONE:
-          data.pf.orientation = ORIENTATION_NONE;
-          break;
-
-        // with flip
-        case EXIF_ORIENTATION_TRANSVERSE:
-          data.pf.orientation = ORIENTATION_TRANSVERSE;
-          break;
-        case EXIF_ORIENTATION_FLIP_HORIZONTALLY:
-          data.pf.orientation = ORIENTATION_FLIP_HORIZONTALLY;
-          break;
-        case EXIF_ORIENTATION_TRANSPOSE:
-          data.pf.orientation = ORIENTATION_TRANSPOSE;
-          break;
-        case EXIF_ORIENTATION_FLIP_VERTICALLY:
-          data.pf.orientation = ORIENTATION_FLIP_VERTICALLY;
-          break;
-      }
+    data.pf.orientation = dt_image_orientation_to_flip_bits(data.orientation);
 
     dt_add_hist(imgid, "flip", (dt_iop_params_t *)&data.pf, sizeof(dt_iop_flip_params_t), imported,
                 sizeof(imported), LRDT_FLIP_VERSION, &n_import, dt_ioppr_get_iop_order(dev->iop_order_list, "flip"));
