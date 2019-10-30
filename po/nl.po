@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-10-30 12:51+0100\n"
-"PO-Revision-Date: 2019-10-30 12:59+0100\n"
+"PO-Revision-Date: 2019-10-30 19:20+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -8613,11 +8613,6 @@ msgstr ""
 "en werkt niet bij highkey en lowkey afbeeldingen"
 
 #: ../src/iop/filmicrgb.c:1523
-#, fuzzy
-#| msgid ""
-#| "width of the linear domain in the middle of the curve.\n"
-#| "increase to get more contrast at the extreme luminances.\n"
-#| "this has no effect on mid-tones."
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "in percent of the dynamic range (white exposure - black exposure).\n"
@@ -8625,24 +8620,22 @@ msgid ""
 "decrease otherwise. no desaturation happens in the latitude range.\n"
 "this has no effect on mid-tones."
 msgstr ""
-"breedte van het lineaire domein in het midden van de curve\n"
-"verhoog voor meer contrast bij extreme luminanties\n"
+"breedte van het lineaire domein in het midden van de curve,\n"
+"in procenten van het dynamische bereik (witbelichting - zwartbelichting).\n"
+"verhoog om meer contrast en minder desaturatie te krijgen bij extreme "
+"luminanties,\n"
+"verminderen zonodig, er treedt geen desaturatie op in het breedtebereik.\n"
 "het heeft geen effect op middenkleuren"
 
 #: ../src/iop/filmicrgb.c:1547
-#, fuzzy
-#| msgid ""
-#| "desaturates the output of the module\n"
-#| "specifically at extreme luminances.\n"
-#| "decrease if shadows and/or highlights are over-saturated."
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
 "increase if shadows and/or highlights are under-saturated."
 msgstr ""
-"vermindert globaal de verzadiging van de uitvoer\n"
+"verlaagde de uitgangsverzadiging van de module\\n\n"
 "met name bij extreme luminanties\n"
-"verlaag het als schaduwen en/of hooglichten oververzadigd zijn"
+"verhoog dit als schaduwen en/of hooglichten onderverzadigd zijn"
 
 #: ../src/iop/filmicrgb.c:1555
 msgid "preserve chrominance"
@@ -8657,20 +8650,14 @@ msgid "RGB power norm"
 msgstr "RGB machtsnorm"
 
 #: ../src/iop/filmicrgb.c:1560
-#, fuzzy
-#| msgid ""
-#| "ensure the original color are preserved.\n"
-#| "may reinforce chromatic aberrations.\n"
-#| "you need to manually tune the saturation when using this mode."
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
 "so ensure they are properly corrected elsewhere.\n"
 msgstr ""
 "zorg ervoor dat de originele kleur behouden blijft\n"
-"mogelijk worden chromatische aberraties versterkt\n"
-"bij het gebruik van deze modus zul je handmatig de verzadiging moeten "
-"afstellen"
+"mogelijk worden chromatische aberraties en ruis versterkt\n"
+"dus zorg ervoor dat ze elders correct worden gecorrigeerd\n"
 
 #: ../src/iop/filmicrgb.c:1595
 msgid "target power transfer function"
@@ -10964,7 +10951,7 @@ msgstr "-3 EV"
 
 #: ../src/iop/toneequal.c:3091
 msgid "-2 EV"
-msgstr ""
+msgstr "-2 EV"
 
 #: ../src/iop/toneequal.c:3097
 msgid "-1 EV"
@@ -11035,10 +11022,8 @@ msgid "preserve details"
 msgstr "behoud details"
 
 #: ../src/iop/toneequal.c:3156
-#, fuzzy
-#| msgid "red filter"
 msgid "averaged guided filter"
-msgstr "rood filter"
+msgstr "gemiddeld geleid filter"
 
 #: ../src/iop/toneequal.c:3157
 msgid "guided filter"
@@ -11053,9 +11038,9 @@ msgid ""
 msgstr ""
 "'nee' beïnvloedt globaal en lokaal contrast (veilig als u alleen contrast "
 "toevoegt)\n"
-"'begeleid filter' heeft alleen invloed op het globale contrast en probeert "
-"het lokale contrast te behouden\n"
-"'gemiddeld begeleid filter' is een geometrisch gemiddelde van beide methoden"
+"'geleid filter' heeft alleen invloed op het globale contrast en probeert het "
+"lokale contrast te behouden\n"
+"'gemiddeld geleid filter' is een geometrisch gemiddelde van beide methoden"
 
 #: ../src/iop/toneequal.c:3165
 msgid "filter diffusion"
@@ -11066,7 +11051,7 @@ msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
 msgstr ""
-"het toe te passen aantal passages van het geleide filter\n"
+"het toe te passen aantal passages van het geleid filter\n"
 "het helpt de randen van het filter te verspreiden maar gaat ten koste van de "
 "snelheid"
 
@@ -11086,13 +11071,6 @@ msgid "edges refinement/feathering"
 msgstr "randen verfijning/verdoezelen"
 
 #: ../src/iop/toneequal.c:3184
-#, fuzzy
-#| msgid ""
-#| "precision of the feathering :\n"
-#| "higher values force the mask to follow edges more closely\n"
-#| "but may void the effect of the smoothing\n"
-#| "lower values give smoother gradients and better smoothing\n"
-#| "but may lead to inaccurate edges taping"
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -11101,10 +11079,10 @@ msgid ""
 "but may lead to inaccurate edges taping and halos"
 msgstr ""
 "precisie van de doezelaar:\n"
-"hogere waarden dwingen het masker om meer de randen te volgen\n"
-"maar kan het effect van het vloeiend maken juist vermijden\n"
+"hogere waarden dwingt het masker om meer de randen te volgen\n"
+"maar zal het effect van het vloeiend maken juist vermijden\n"
 "lagere waarden geven vloeiendere gradiënten en betere vloeiingen\n"
-"maar kan leiden tot onnauwkeurige randen"
+"maar zal leiden tot onnauwkeurige randen en halos"
 
 #: ../src/iop/toneequal.c:3192
 msgid "mask post-processing"
@@ -11142,18 +11120,14 @@ msgid "mask exposure compensation"
 msgstr "belichtingscompensatie masker"
 
 #: ../src/iop/toneequal.c:3215
-#, fuzzy
-#| msgid ""
-#| "use this to slide the mask average exposure along channels\n"
-#| "for better control of the exposure corrections.\n"
-#| "the picker will auto-adjust the average exposure at -4EV."
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
 "the picker will auto-adjust the average exposure at -4EV."
 msgstr ""
 "verschuif hiermee de gemiddelde belichting van het masker langs de kanalen\n"
-"voor een betere controle van de belichtingscorrecties.\n"
+"voor een betere controle van de belichtingscorrecties met de beschikbare "
+"knooppunten.\n"
 "de kiezer past de gemiddelde belichting automatisch aan op -4EV."
 
 #: ../src/iop/toneequal.c:3227
@@ -11161,19 +11135,14 @@ msgid "mask contrast compensation"
 msgstr "contrast compensatie masker"
 
 #: ../src/iop/toneequal.c:3229
-#, fuzzy
-#| msgid ""
-#| "use this to dilate the mask contrast around its average exposure\n"
-#| "this allows to spread the exposure histogram over more channels\n"
-#| "for better control of the exposure corrections."
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
 "this allows to spread the exposure histogram over more channels\n"
 "for a better control of the exposure correction."
 msgstr ""
-"gebruik dit om het maskercontrast rond de gemiddelde blootstelling te "
-"verwijden\n"
+"gebruik dit om het gemiddelde effect van het geleid filter tegen te gaan\n"
+"en verwijd het maskercontrast naar -4EV\n"
 "hierdoor kan het belichtingshistogram over meerdere kanalen worden verdeeld\n"
 "voor een betere controle van de belichtingscorrecties"
 
