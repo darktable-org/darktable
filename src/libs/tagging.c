@@ -382,18 +382,17 @@ void tree_tagname_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTre
 {
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
-  guint id;
   gchar *name;
   gchar *path;
   guint count;
   gchar *coltext;
   gint flags;
 
-  gtk_tree_model_get(model, iter, DT_LIB_TAGGING_COL_ID, &id, DT_LIB_TAGGING_COL_TAG, &name,
+  gtk_tree_model_get(model, iter, DT_LIB_TAGGING_COL_TAG, &name,
                   DT_LIB_TAGGING_COL_COUNT, &count, DT_LIB_TAGGING_COL_FLAGS, &flags,
                   DT_LIB_TAGGING_COL_PATH, &path, -1);
   const gboolean hide = dictionary_view ? (d->tree_flag ? TRUE : d->hide_path_flag) : d->hide_path_flag;
-  const gboolean istag = id && !(flags & DT_TF_CATEGORY);
+  const gboolean istag = !(flags & DT_TF_CATEGORY);
   if ((dictionary_view && !count) || (!dictionary_view && count <= 1))
   {
     coltext = g_markup_printf_escaped(istag ? "%s" : "<i>%s</i>", hide ? name : path);
@@ -2039,10 +2038,13 @@ static gboolean mouse_scroll_attached(GtkWidget *treeview, GdkEventScroll *event
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
   if (event->state & GDK_CONTROL_MASK)
   {
+    const gint increment = DT_PIXEL_APPLY_DPI(10.0);
+    const gint min_height = DT_PIXEL_APPLY_DPI(100.0);
+    const gint max_height = DT_PIXEL_APPLY_DPI(500.0);
     gint width, height;
     gtk_widget_get_size_request (GTK_WIDGET(d->attached_window), &width, &height);
-    height = height + 10.0 * event->delta_y;
-    height = (height < 100.0) ? 100.0 : (height > 500.0) ? 500.0 : height;
+    height = height + increment * event->delta_y;
+    height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
     gtk_widget_set_size_request(GTK_WIDGET(d->attached_window), -1, DT_PIXEL_APPLY_DPI((gint)height));
     dt_conf_set_int("plugins/lighttable/tagging/heightattachedwindow", (gint)height);
     return TRUE;
@@ -2055,10 +2057,13 @@ static gboolean mouse_scroll_dictionary(GtkWidget *treeview, GdkEventScroll *eve
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
   if (event->state & GDK_CONTROL_MASK)
   {
+    const gint increment = DT_PIXEL_APPLY_DPI(10.0);
+    const gint min_height = DT_PIXEL_APPLY_DPI(100.0);
+    const gint max_height = DT_PIXEL_APPLY_DPI(1000.0);
     gint width, height;
     gtk_widget_get_size_request (GTK_WIDGET(d->dictionary_window), &width, &height);
-    height = height + 10.0 * event->delta_y;
-    height = (height < 100.0) ? 100.0 : (height > 1000.0) ? 1000.0 : height;
+    height = height + increment * event->delta_y;
+    height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
     gtk_widget_set_size_request(GTK_WIDGET(d->dictionary_window), -1, DT_PIXEL_APPLY_DPI((gint)height));
     dt_conf_set_int("plugins/lighttable/tagging/heightdictionarywindow", (gint)height);
     return TRUE;
