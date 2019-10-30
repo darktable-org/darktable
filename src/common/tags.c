@@ -164,7 +164,7 @@ gboolean dt_tag_new(const char *name, guint *tagid)
 
   if(g_strstr_len(name, -1, "darktable|") == name)
   {
-    // clear darktable tags list
+    // clear darktable tags list to make sure the new tag will be added by next call to dt_set_darktable_tags()
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.darktable_tags", NULL, NULL, NULL);
   }
 
@@ -596,6 +596,7 @@ void dt_tag_detach_by_string(const char *name, gint imgid)
   dt_tag_update_used_tags();
 }
 
+// to be called before issuing any query based on memory.darktable_tags
 static void dt_set_darktable_tags()
 {
   sqlite3_stmt *stmt;
@@ -890,7 +891,7 @@ GList *dt_tag_get_list_export(gint imgid, int32_t flags)
       gchar *tagname = t->leave;
       tags = g_list_prepend(tags, g_strdup(tagname));
 
-      // add path tag as necessary
+      // add path tags as necessary
       if(!omit_tag_hierarchy)
       {
         GList *next = g_list_next(sorted_tags);
@@ -1596,7 +1597,7 @@ ssize_t dt_tag_export(const char *filename)
         }
       }
       else
-        fprintf(fd, "[%s]\n", tokens[i]);
+        fprintf(fd, "%s\n", tokens[i]);
     }
   }
 
