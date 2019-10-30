@@ -1021,11 +1021,6 @@ static void _handle_xpath(dt_develop_t *dev, xmlDoc *doc, int imgid, xmlXPathCon
     }
 }
 
-static inline float dabs(double a)
-{
-  return a > 0.0f ? a : -a;
-}
-
 static inline void flip(float *x, float *y)
 {
   const float tmp = *x;
@@ -1290,8 +1285,8 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
 
     // Calculate the new overall image size (black zone included) after rotation
     // rangle is limited to -45°;+45° by LR
-    new_width  = rotate_x(+data.iwidth, -data.iheight, -dabs(rangle));
-    new_height = rotate_y(+data.iwidth, +data.iheight, -dabs(rangle));
+    new_width  = rotate_x(+data.iwidth, -data.iheight, -fabs(rangle));
+    new_height = rotate_y(+data.iwidth, +data.iheight, -fabs(rangle));
 
     // apply new size & convert image back in initial coordinate system [0.0 ; +1.0]
     data.pc.cx = round5((cx / new_width)  + 0.5f);
