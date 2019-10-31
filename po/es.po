@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-28 18:14-0600\n"
+"POT-Creation-Date: 2019-10-30 18:06-0600\n"
 "PO-Revision-Date: 2019-10-29 01:01-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
@@ -1269,8 +1269,8 @@ msgstr "gráficos;fotografía;raw;"
 #: ../src/iop/lut3d.c:1013 ../src/libs/collect.c:242
 #: ../src/libs/copy_history.c:78 ../src/libs/geotagging.c:473
 #: ../src/libs/import.c:759 ../src/libs/import.c:866 ../src/libs/lib.c:228
-#: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2120
-#: ../src/libs/tagging.c:2161
+#: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2125
+#: ../src/libs/tagging.c:2166
 msgid "_cancel"
 msgstr "_cancelar"
 
@@ -1367,19 +1367,19 @@ msgid "too much time to update aspect ratio for the collection"
 msgstr ""
 "demasiado tiempo para actualizar la relación de aspecto para la colección"
 
-#: ../src/common/collection.c:1241 ../src/develop/lightroom.c:824
+#: ../src/common/collection.c:1241 ../src/develop/lightroom.c:825
 #: ../src/iop/bilateral.cc:371 ../src/iop/channelmixer.c:456
 #: ../src/iop/channelmixer.c:467 ../src/iop/colorbalance.c:2525
 #: ../src/iop/temperature.c:1378 ../src/libs/collect.c:1284
 msgid "red"
 msgstr "rojo"
 
-#: ../src/common/collection.c:1243 ../src/develop/lightroom.c:826
+#: ../src/common/collection.c:1243 ../src/develop/lightroom.c:827
 #: ../src/iop/temperature.c:1369 ../src/libs/collect.c:1284
 msgid "yellow"
 msgstr "amarillo"
 
-#: ../src/common/collection.c:1245 ../src/develop/lightroom.c:828
+#: ../src/common/collection.c:1245 ../src/develop/lightroom.c:829
 #: ../src/iop/bilateral.cc:372 ../src/iop/channelmixer.c:457
 #: ../src/iop/channelmixer.c:473 ../src/iop/colorbalance.c:2532
 #: ../src/iop/temperature.c:1366 ../src/iop/temperature.c:1379
@@ -1387,7 +1387,7 @@ msgstr "amarillo"
 msgid "green"
 msgstr "verde"
 
-#: ../src/common/collection.c:1247 ../src/develop/lightroom.c:830
+#: ../src/common/collection.c:1247 ../src/develop/lightroom.c:831
 #: ../src/iop/bilateral.cc:373 ../src/iop/channelmixer.c:458
 #: ../src/iop/channelmixer.c:479 ../src/iop/colorbalance.c:2539
 #: ../src/iop/temperature.c:1380 ../src/libs/collect.c:1284
@@ -3001,12 +3001,12 @@ msgstr "bajar"
 
 #. delete
 #: ../src/develop/imageop.c:1046 ../src/libs/image.c:144
-#: ../src/libs/styles.c:458 ../src/libs/tagging.c:1164
-#: ../src/libs/tagging.c:1261
+#: ../src/libs/styles.c:458 ../src/libs/tagging.c:1163
+#: ../src/libs/tagging.c:1260
 msgid "delete"
 msgstr "borrar"
 
-#: ../src/develop/imageop.c:1053 ../src/libs/tagging.c:1735
+#: ../src/develop/imageop.c:1053 ../src/libs/tagging.c:1734
 msgid "rename"
 msgstr "renombrar"
 
@@ -3082,40 +3082,40 @@ msgstr ""
 "Pulse el botón central sobre el preajuste para establecerlo en una instancia "
 "nueva"
 
-#: ../src/develop/lightroom.c:1034
+#: ../src/develop/lightroom.c:1072
 msgid "cannot find lightroom XMP!"
 msgstr "No se encuentra mesa de luz XMP"
 
-#: ../src/develop/lightroom.c:1066 ../src/develop/lightroom.c:1088
-#: ../src/develop/lightroom.c:1108
+#: ../src/develop/lightroom.c:1104 ../src/develop/lightroom.c:1126
+#: ../src/develop/lightroom.c:1146
 #, c-format
 msgid "`%s' not a lightroom XMP!"
 msgstr "`%s' no es una mesa de luz XMP"
 
 #. tags
-#: ../src/develop/lightroom.c:1572 ../src/gui/camera_import_dialog.c:465
+#: ../src/develop/lightroom.c:1505 ../src/gui/camera_import_dialog.c:465
 #: ../src/libs/export_metadata.c:273 ../src/libs/import.c:580
 #: ../src/libs/metadata_view.c:137
 msgid "tags"
 msgstr "etiquetas"
 
 #. DT_COLLECTION_SORT_DATETIME
-#: ../src/develop/lightroom.c:1581 ../src/libs/tools/filter.c:149
+#: ../src/develop/lightroom.c:1514 ../src/libs/tools/filter.c:149
 msgid "rating"
 msgstr "valoración"
 
-#: ../src/develop/lightroom.c:1593 ../src/libs/collect.h:38
+#: ../src/develop/lightroom.c:1526 ../src/libs/collect.h:38
 #: ../src/libs/geotagging.c:63
 msgid "geotagging"
 msgstr "geoetiquetado"
 
 #. DT_COLLECTION_SORT_ID
-#: ../src/develop/lightroom.c:1602 ../src/libs/collect.h:34
+#: ../src/develop/lightroom.c:1535 ../src/libs/collect.h:34
 #: ../src/libs/tools/filter.c:151
 msgid "color label"
 msgstr "marcas de color"
 
-#: ../src/develop/lightroom.c:1608
+#: ../src/develop/lightroom.c:1541
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -3610,9 +3610,9 @@ msgid "reset value to default"
 msgstr "Restablecer valor a predeterminado"
 
 #: ../src/gui/camera_import_dialog.c:288 ../src/libs/export_metadata.c:232
-#: ../src/libs/geotagging.c:419 ../src/libs/tagging.c:1164
-#: ../src/libs/tagging.c:1261 ../src/libs/tagging.c:1349
-#: ../src/libs/tagging.c:1515 ../src/libs/tagging.c:1735
+#: ../src/libs/geotagging.c:419 ../src/libs/tagging.c:1163
+#: ../src/libs/tagging.c:1260 ../src/libs/tagging.c:1348
+#: ../src/libs/tagging.c:1514 ../src/libs/tagging.c:1734
 msgid "cancel"
 msgstr "cancelar"
 
@@ -8216,8 +8216,8 @@ msgstr "nivel de objetivo"
 msgid ""
 "where to place the exposure level for processed pics, EV below overexposure."
 msgstr ""
-"donde ubicar el nivel de exposición de las fotos procesadas, EV bajo la "
-"sobre-exposición."
+"El lugar del nivel de exposición en las fotos procesadas, debajo de la "
+"sobreexposición EV."
 
 #: ../src/iop/exposure.c:930
 msgid "computed EC: "
@@ -8226,7 +8226,7 @@ msgstr "computed EC: "
 #. This gets filled in by process
 #: ../src/iop/exposure.c:934
 msgid "what exposure correction has actually been used"
-msgstr "qué correcciones de exposición se han utilizado actualmente"
+msgstr "Las correcciones de exposición que se han utilizado realmente"
 
 #: ../src/iop/filmic.c:174
 msgid "filmic"
@@ -9043,8 +9043,8 @@ msgid ""
 "hot pixel correction\n"
 "only works for raw images."
 msgstr ""
-"corrección de píxeles calientes\n"
-"sólo funciona en imágenes raw."
+"Corrección de píxeles calientes\n"
+"Sólo funciona con imágenes RAW."
 
 #: ../src/iop/invert.c:98 ../src/iop/invert.c:530
 #, c-format
@@ -9938,8 +9938,8 @@ msgid ""
 "raw denoising\n"
 "only works for raw images."
 msgstr ""
-"reducción de ruido raw\n"
-"solo funciona para imágenes raw."
+"Reducción de ruido en RAW\n"
+"Solo funciona con imágenes RAW."
 
 #: ../src/iop/rawoverexposed.c:68
 msgid "raw overexposed"
@@ -12197,8 +12197,8 @@ msgstr ""
 msgid "edit metadata exportation"
 msgstr "editar exportación de metadatos"
 
-#: ../src/libs/export_metadata.c:232 ../src/libs/tagging.c:1349
-#: ../src/libs/tagging.c:1515
+#: ../src/libs/export_metadata.c:232 ../src/libs/tagging.c:1348
+#: ../src/libs/tagging.c:1514
 msgid "save"
 msgstr "guardar"
 
@@ -12776,17 +12776,17 @@ msgstr "nada que guardar"
 
 #: ../src/libs/live_view.c:140
 msgid "live view"
-msgstr "live view"
+msgstr "visualización en vivo"
 
 #: ../src/libs/live_view.c:166
 msgctxt "accel"
 msgid "toggle live view"
-msgstr "activar live view"
+msgstr "Activar visualización en vivo"
 
 #: ../src/libs/live_view.c:167
 msgctxt "accel"
 msgid "zoom live view"
-msgstr "zoom en live view"
+msgstr "zoom en la visualización en vivo"
 
 #: ../src/libs/live_view.c:170
 msgctxt "accel"
@@ -12815,11 +12815,11 @@ msgstr "alejar el foco (pasos grandes)"
 
 #: ../src/libs/live_view.c:293
 msgid "toggle live view"
-msgstr "activar live view"
+msgstr "activar visualización en vivo"
 
 #: ../src/libs/live_view.c:294
 msgid "zoom live view"
-msgstr "zoom en live view"
+msgstr "zoom en visualización en vivo"
 
 #: ../src/libs/live_view.c:295
 msgid "rotate 90 degrees ccw"
@@ -12831,7 +12831,7 @@ msgstr "rotar 90 grados en sentido horario"
 
 #: ../src/libs/live_view.c:297
 msgid "flip live view horizontally"
-msgstr "voltear live view horizontalmente"
+msgstr "voltear horizontalmente en la visualización en vivo"
 
 #: ../src/libs/live_view.c:323
 msgid "move focus point in (big steps)"
@@ -12864,7 +12864,7 @@ msgstr "id"
 
 #: ../src/libs/live_view.c:387
 msgid "overlay another image over the live view"
-msgstr "superponer otra imagen sobre el live view"
+msgstr "superponer otra imagen sobre la visualización en vivo"
 
 #: ../src/libs/live_view.c:392 ../src/libs/metadata_view.c:100
 msgid "image id"
@@ -13796,7 +13796,7 @@ msgid "deletes the selected style in list above"
 msgstr "borrar el estilo seleccionado en la lista anterior"
 
 #. import button
-#: ../src/libs/styles.c:465 ../src/libs/tagging.c:2685
+#: ../src/libs/styles.c:465 ../src/libs/tagging.c:2690
 msgctxt "verb"
 msgid "import..."
 msgstr "importar..."
@@ -13838,25 +13838,25 @@ msgctxt "accel"
 msgid "tag"
 msgstr "etiqueta"
 
-#: ../src/libs/tagging.c:1040
+#: ../src/libs/tagging.c:1039
 msgid "attach tag to all"
 msgstr "añadir etiqueta a todas las imágenes"
 
-#: ../src/libs/tagging.c:1048 ../src/libs/tagging.c:1913
+#: ../src/libs/tagging.c:1047 ../src/libs/tagging.c:1912
 msgid "detach tag"
 msgstr "quitar etiqueta"
 
-#: ../src/libs/tagging.c:1163
+#: ../src/libs/tagging.c:1162
 msgid "delete tag?"
 msgstr "¿borrar etiqueta?"
 
-#: ../src/libs/tagging.c:1170 ../src/libs/tagging.c:1267
-#: ../src/libs/tagging.c:1521
+#: ../src/libs/tagging.c:1169 ../src/libs/tagging.c:1266
+#: ../src/libs/tagging.c:1520
 #, c-format
 msgid "tag: %s "
 msgstr "etiqueta: %s "
 
-#: ../src/libs/tagging.c:1177
+#: ../src/libs/tagging.c:1176
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -13871,85 +13871,85 @@ msgstr[1] ""
 "¿desea borrar las etiqueta `%s'?\n"
 "%d imágenes tienen asignada esta etiqueta!"
 
-#: ../src/libs/tagging.c:1213
+#: ../src/libs/tagging.c:1212
 #, c-format
 msgid "tag %s removed"
 msgstr "etiqueta %s eliminada"
 
-#: ../src/libs/tagging.c:1260 ../src/libs/tagging.c:1925
+#: ../src/libs/tagging.c:1259 ../src/libs/tagging.c:1924
 msgid "delete branch"
 msgstr "Borrar rama"
 
-#: ../src/libs/tagging.c:1274
+#: ../src/libs/tagging.c:1273
 #, c-format
 msgid "<u>%d</u> tag will be deleted."
 msgid_plural "<u>%d</u> tags will be deleted."
 msgstr[0] "<u>%d</u> etiqueta se eliminará."
 msgstr[1] "<u>%d</u> etiqueta se eliminarán."
 
-#: ../src/libs/tagging.c:1279 ../src/libs/tagging.c:1533
-#: ../src/libs/tagging.c:1753
+#: ../src/libs/tagging.c:1278 ../src/libs/tagging.c:1532
+#: ../src/libs/tagging.c:1752
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated "
 msgstr[0] "<u>%d</u> imagen se actualizará."
 msgstr[1] "<u>%d</u> imágenes se actualizarán."
 
-#: ../src/libs/tagging.c:1305
+#: ../src/libs/tagging.c:1304
 #, c-format
 msgid "%d tags removed"
 msgstr "%d etiquetas eliminadas"
 
-#: ../src/libs/tagging.c:1348
+#: ../src/libs/tagging.c:1347
 msgid "create tag"
 msgstr "Crear etiqueta"
 
-#: ../src/libs/tagging.c:1358 ../src/libs/tagging.c:1541
+#: ../src/libs/tagging.c:1357 ../src/libs/tagging.c:1540
 msgid "name: "
 msgstr "nombre:"
 
-#: ../src/libs/tagging.c:1371
+#: ../src/libs/tagging.c:1370
 #, c-format
 msgid "add to: \"%s\" "
 msgstr "añadir a: \"%s\" "
 
-#: ../src/libs/tagging.c:1377 ../src/libs/tagging.c:1556
+#: ../src/libs/tagging.c:1376 ../src/libs/tagging.c:1555
 msgid "category"
 msgstr "categoría"
 
-#: ../src/libs/tagging.c:1380 ../src/libs/tagging.c:1559
+#: ../src/libs/tagging.c:1379 ../src/libs/tagging.c:1558
 msgid "private"
 msgstr "privado"
 
-#: ../src/libs/tagging.c:1386 ../src/libs/tagging.c:1565
+#: ../src/libs/tagging.c:1385 ../src/libs/tagging.c:1564
 msgid "synonyms: "
 msgstr "sinónimos:"
 
-#: ../src/libs/tagging.c:1403 ../src/libs/tagging.c:1586
-#: ../src/libs/tagging.c:1775
+#: ../src/libs/tagging.c:1402 ../src/libs/tagging.c:1585
+#: ../src/libs/tagging.c:1774
 msgid "empty tag is not allowed, aborting"
 msgstr "No se permite una etiqueta en blanco, abortando"
 
-#: ../src/libs/tagging.c:1405
+#: ../src/libs/tagging.c:1404
 msgid "'|' character is not allowed to create a tag. aborting."
 msgstr "El caracter '|' no se puede usar para crear una etiqueta. Abortando."
 
-#: ../src/libs/tagging.c:1420
+#: ../src/libs/tagging.c:1419
 msgid "tag name already exists. aborting."
 msgstr "El nombre de la etiqueta ya existe. Abortando."
 
-#: ../src/libs/tagging.c:1514
+#: ../src/libs/tagging.c:1513
 msgid "edit tag"
 msgstr "editar etiqueta"
 
-#: ../src/libs/tagging.c:1528 ../src/libs/tagging.c:1748
+#: ../src/libs/tagging.c:1527 ../src/libs/tagging.c:1747
 #, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
 msgstr[0] "<u>%d</u> etiqueta se actualizará."
 msgstr[1] "<u>%d</u> etiquetas se actualizarán."
 
-#: ../src/libs/tagging.c:1588
+#: ../src/libs/tagging.c:1587
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierachy use rename path instead. Aborting."
@@ -13957,105 +13957,105 @@ msgstr ""
 "El caracter '|' no se puede usar para renombrar una etiqueta.\n"
 "Use cambiar ruta para modificar la jerarquía. Abortando."
 
-#: ../src/libs/tagging.c:1626
+#: ../src/libs/tagging.c:1625
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
 msgstr "Al menos un nuevo nombre de etiqueta (% s) ya existe... abortando"
 
-#: ../src/libs/tagging.c:1734
+#: ../src/libs/tagging.c:1733
 msgid "rename path?"
 msgstr "¿confirma cambiar la ruta?"
 
-#: ../src/libs/tagging.c:1741
+#: ../src/libs/tagging.c:1740
 #, c-format
 msgid "selected path: %s "
 msgstr "Ruta seleccionada: %s "
 
-#: ../src/libs/tagging.c:1777
+#: ../src/libs/tagging.c:1776
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr "'|' fuera de lugar. No se permite una etiqueta en blanco... abortando"
 
-#: ../src/libs/tagging.c:1803
+#: ../src/libs/tagging.c:1802
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
 msgstr "Al menos un nombre de etiqueta nuevo (% s) ya existe... abortando."
 
-#: ../src/libs/tagging.c:1909
+#: ../src/libs/tagging.c:1908
 msgid "attach tag"
 msgstr "añadir etiqueta"
 
-#: ../src/libs/tagging.c:1921
+#: ../src/libs/tagging.c:1920
 msgid "delete tag"
 msgstr "¿borrar etiqueta?"
 
-#: ../src/libs/tagging.c:1931
+#: ../src/libs/tagging.c:1930
 msgid "create tag..."
 msgstr "crear etiqueta..."
 
-#: ../src/libs/tagging.c:1935
+#: ../src/libs/tagging.c:1934
 msgid "edit tag..."
 msgstr "editar etiqueta..."
 
-#: ../src/libs/tagging.c:1944
+#: ../src/libs/tagging.c:1943
 msgid "rename path..."
 msgstr "cambiar la ruta..."
 
-#: ../src/libs/tagging.c:1951
+#: ../src/libs/tagging.c:1950
 msgid "copy to entry"
 msgstr "copiar al campo de texto"
 
-#: ../src/libs/tagging.c:1975
+#: ../src/libs/tagging.c:1974
 msgid "go to tag collection"
 msgstr "ir a la colección de etiquetas"
 
-#: ../src/libs/tagging.c:1981
+#: ../src/libs/tagging.c:1980
 msgid "go back to work"
 msgstr "regresar al trabajo"
 
-#: ../src/libs/tagging.c:2091
+#: ../src/libs/tagging.c:2096
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: ../src/libs/tagging.c:2092
+#: ../src/libs/tagging.c:2097
 msgid "(private)"
 msgstr "(privado)"
 
-#: ../src/libs/tagging.c:2118
+#: ../src/libs/tagging.c:2123
 msgid "Select a keyword file"
 msgstr "Selecciona un archivo de palabras clave"
 
-#: ../src/libs/tagging.c:2121
+#: ../src/libs/tagging.c:2126
 msgid "_import"
 msgstr "_import"
 
-#: ../src/libs/tagging.c:2135
+#: ../src/libs/tagging.c:2140
 msgid "error importing tags"
 msgstr "error importando etiquetas"
 
-#: ../src/libs/tagging.c:2137
+#: ../src/libs/tagging.c:2142
 #, c-format
 msgid "%zd tags imported"
 msgstr "%zd etiquetas importadas"
 
-#: ../src/libs/tagging.c:2159
+#: ../src/libs/tagging.c:2164
 msgid "Select file to export to"
 msgstr "Seleccione el archivo a exportar"
 
-#: ../src/libs/tagging.c:2162
+#: ../src/libs/tagging.c:2167
 msgid "_export"
 msgstr "_export"
 
-#: ../src/libs/tagging.c:2177
+#: ../src/libs/tagging.c:2182
 msgid "error exporting tags"
 msgstr "error exportando etiquetas"
 
-#: ../src/libs/tagging.c:2179
+#: ../src/libs/tagging.c:2184
 #, c-format
 msgid "%zd tags exported"
 msgstr "%zd etiquetas exportadas"
 
-#: ../src/libs/tagging.c:2537
+#: ../src/libs/tagging.c:2542
 msgid ""
 "attached tags,\n"
 "double-click to detach\n"
@@ -14067,43 +14067,43 @@ msgstr ""
 "pulse clic derecho para mostrar más opciones\n"
 "Ctrl+rueda del ratón para cambiar el tamaño de la ventana"
 
-#: ../src/libs/tagging.c:2548
+#: ../src/libs/tagging.c:2553
 msgid "attach"
 msgstr "añadir"
 
-#: ../src/libs/tagging.c:2551
+#: ../src/libs/tagging.c:2556
 msgid "attach tag to all selected images"
 msgstr "añadir etiqueta a todas las imágenes seleccionadas"
 
-#: ../src/libs/tagging.c:2556
+#: ../src/libs/tagging.c:2561
 msgid "detach"
 msgstr "quitar"
 
-#: ../src/libs/tagging.c:2559
+#: ../src/libs/tagging.c:2564
 msgid "detach tag from all selected images"
 msgstr "quitar etiquetas de todas las imágenes seleccionadas"
 
-#: ../src/libs/tagging.c:2566
+#: ../src/libs/tagging.c:2571
 msgid "toggle list with / without hierarchy"
 msgstr "alternar lista (con jerarquía o sin jerarquía)"
 
-#: ../src/libs/tagging.c:2574
+#: ../src/libs/tagging.c:2579
 msgid "toggle sort by name or by count"
 msgstr "Alternar entre ordenar por nombre u ordenar por recuento"
 
-#: ../src/libs/tagging.c:2584
+#: ../src/libs/tagging.c:2589
 msgid "toggle show or not darktable tags"
 msgstr "Alternar entre mostrar u ocultar etiquetas de darktable"
 
-#: ../src/libs/tagging.c:2600
+#: ../src/libs/tagging.c:2605
 msgid "enter tag name"
 msgstr "introducir nombre de etiqueta"
 
-#: ../src/libs/tagging.c:2610
+#: ../src/libs/tagging.c:2615
 msgid "clear entry"
 msgstr "borrar texto"
 
-#: ../src/libs/tagging.c:2662
+#: ../src/libs/tagging.c:2667
 msgid ""
 "tag dictionary,\n"
 "double-click to attach,\n"
@@ -14115,11 +14115,11 @@ msgstr ""
 "para más opciones con clic derecho en la etiqueta seleccionada,\n"
 "Ctrl+rueda del ratón para redimensionar la ventana"
 
-#: ../src/libs/tagging.c:2677
+#: ../src/libs/tagging.c:2682
 msgid "new"
 msgstr "nueva"
 
-#: ../src/libs/tagging.c:2680
+#: ../src/libs/tagging.c:2685
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -14127,28 +14127,28 @@ msgstr ""
 "crea una nueva etiqueta con el\n"
 "nombre designado"
 
-#: ../src/libs/tagging.c:2688
+#: ../src/libs/tagging.c:2693
 msgid "import tags from a Lightroom keyword file"
 msgstr "importar etiquetas desde el archivo Lightroom"
 
-#: ../src/libs/tagging.c:2693
+#: ../src/libs/tagging.c:2698
 msgctxt "verb"
 msgid "export..."
 msgstr "exportar..."
 
-#: ../src/libs/tagging.c:2696
+#: ../src/libs/tagging.c:2701
 msgid "export all tags to a Lightroom keyword file"
 msgstr "exportar todas las etiquetas al archivo Lightroom"
 
-#: ../src/libs/tagging.c:2703
+#: ../src/libs/tagging.c:2708
 msgid "toggle list / tree view"
 msgstr "alternar vista (de lista o de árbol)"
 
-#: ../src/libs/tagging.c:2711
+#: ../src/libs/tagging.c:2716
 msgid "toggle list with / without suggestion"
 msgstr "Alternar entre lista con o sin sugerencia"
 
-#: ../src/libs/tagging.c:2816
+#: ../src/libs/tagging.c:2821
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
@@ -14573,8 +14573,8 @@ msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
 msgstr ""
-"activar el indicador de sobre exposición\n"
-"clic derecho para opciones"
+"Activa el indicador de sobreexposición de la imagen virgen\n"
+"Pulse botón derecho para más opciones"
 
 #: ../src/views/darkroom.c:1839
 msgid "mark with CFA color"
@@ -14621,8 +14621,8 @@ msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
 msgstr ""
-"seleccione el color sólido para indicar sobre-exposición.\n"
-"solo será utilizado si el modo = esta marcado con un color sólido"
+"Seleccione el color sólido para indicar sobreexposición.\n"
+"Solo será utilizado si el modo = esta marcado con un color sólido"
 
 #: ../src/views/darkroom.c:1868
 msgid ""
@@ -14630,7 +14630,7 @@ msgid ""
 "1.0 - white level\n"
 "0.0 - black level"
 msgstr ""
-"umbral sobre el que se considerará sobre-expuesto\n"
+"El umbral sobre el que se considerará sobreexpuesto\n"
 "1.0 - nivel blanco\n"
 "0.0 - nivel negro"
 
@@ -14639,8 +14639,8 @@ msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
 msgstr ""
-"activar el indicador de exposición\n"
-"clic derecho para opciones"
+"Activa el indicador de exposición\n"
+"Pulse botón derecho para más opciones"
 
 #: ../src/views/darkroom.c:1904
 msgid "red & blue"
@@ -14675,16 +14675,16 @@ msgid ""
 "toggle softproofing\n"
 "right click for profile options"
 msgstr ""
-"activar pruebas en pantalla\n"
-"clic derecho para opciones de perfil"
+"Activa las pruebas en pantalla\n"
+"Pulse botón derecho para las opciones de perfil"
 
 #: ../src/views/darkroom.c:1951
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
 msgstr ""
-"activar la revisión de gama\n"
-"clic derecho para opciones del perfil"
+"Activa la revisión de gama\n"
+"Pulse botón derecho las para opciones del perfil"
 
 #: ../src/views/darkroom.c:1979 ../src/views/lighttable.c:4875
 msgid "display intent"
@@ -14765,7 +14765,7 @@ msgstr "imagen anterior"
 #: ../src/views/darkroom.c:3187
 msgctxt "accel"
 msgid "raw overexposed"
-msgstr "raw sobre-expuesto"
+msgstr "Imagen virgen sobreexpuesta"
 
 #. toggle overexposure indication
 #: ../src/views/darkroom.c:3190
