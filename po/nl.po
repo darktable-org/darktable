@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-30 12:51+0100\n"
-"PO-Revision-Date: 2019-10-30 19:20+0100\n"
+"POT-Creation-Date: 2019-10-31 14:17+0100\n"
+"PO-Revision-Date: 2019-10-31 14:57+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -131,7 +131,9 @@ msgstr "bibliotheek"
 
 #: ../build/src/preferences_gen.h:2285
 msgid "don't use embedded preview JPEG but half-size raw"
-msgstr "gebruik deel raw afbeelding i.p.v. het ingesloten JPEG-miniatuur"
+msgstr ""
+"gebruik de helft van het raw afbeeldings miniatuur i.p.v. het ingesloten "
+"JPEG-miniatuur"
 
 #: ../build/src/preferences_gen.h:2297
 msgid ""
@@ -946,13 +948,13 @@ msgid ""
 "though to delete these manually, if you want. light table performance will "
 "be increased greatly when zooming image in full preview mode."
 msgstr ""
-"indien ingeschakeld, schrijf voorbeelden op de schijf (.cache/darktable) "
-"wanneer ze zijn uitgezet van de geheugencache, let op dit kan veel geheugen "
-"kosten (meerdere gigabytes voor 20k afbeeldingen) en hiermee zullen "
-"opgeslagen miniaturen niet worden verwijderd, indien gewenst is handmatig "
-"verwijderen veilig, de bibliotheekprestaties zullen daardoor enorm "
+"indien ingeschakeld, bewaar de volledige voorbeelden op de schijf (.cache/"
+"darktable) wanneer ze zijn uitgezet van de geheugencache, let op dit kan "
+"veel geheugen kosten (meerdere gigabytes voor 20k afbeeldingen) en hiermee "
+"zullen opgeslagen miniaturen niet worden verwijderd, indien gewenst is "
+"handmatig verwijderen veilig, de bibliotheekprestaties zullen daardoor enorm "
 "verbeteren, om alle miniaturen van de gehele collectie offline aan te maken "
-"geef commando  , run 'darktable-generate-cache'."
+"geef commando, run 'darktable-generate-cache'."
 
 #: ../build/src/preferences_gen.h:3825
 msgid "number of background threads"
@@ -1239,8 +1241,8 @@ msgstr "grafische vormgeving;fotografie;raw;"
 #: ../src/iop/lut3d.c:1013 ../src/libs/collect.c:242
 #: ../src/libs/copy_history.c:78 ../src/libs/geotagging.c:473
 #: ../src/libs/import.c:759 ../src/libs/import.c:866 ../src/libs/lib.c:228
-#: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2120
-#: ../src/libs/tagging.c:2161
+#: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2125
+#: ../src/libs/tagging.c:2166
 msgid "_cancel"
 msgstr "_annuleer"
 
@@ -1334,19 +1336,19 @@ msgstr ""
 msgid "too much time to update aspect ratio for the collection"
 msgstr "teveel tijd om de beeldverhouding van de collectie te updaten"
 
-#: ../src/common/collection.c:1241 ../src/develop/lightroom.c:824
+#: ../src/common/collection.c:1241 ../src/develop/lightroom.c:825
 #: ../src/iop/bilateral.cc:371 ../src/iop/channelmixer.c:456
 #: ../src/iop/channelmixer.c:467 ../src/iop/colorbalance.c:2525
 #: ../src/iop/temperature.c:1378 ../src/libs/collect.c:1284
 msgid "red"
 msgstr "rood"
 
-#: ../src/common/collection.c:1243 ../src/develop/lightroom.c:826
+#: ../src/common/collection.c:1243 ../src/develop/lightroom.c:827
 #: ../src/iop/temperature.c:1369 ../src/libs/collect.c:1284
 msgid "yellow"
 msgstr "geel"
 
-#: ../src/common/collection.c:1245 ../src/develop/lightroom.c:828
+#: ../src/common/collection.c:1245 ../src/develop/lightroom.c:829
 #: ../src/iop/bilateral.cc:372 ../src/iop/channelmixer.c:457
 #: ../src/iop/channelmixer.c:473 ../src/iop/colorbalance.c:2532
 #: ../src/iop/temperature.c:1366 ../src/iop/temperature.c:1379
@@ -1354,7 +1356,7 @@ msgstr "geel"
 msgid "green"
 msgstr "groen"
 
-#: ../src/common/collection.c:1247 ../src/develop/lightroom.c:830
+#: ../src/common/collection.c:1247 ../src/develop/lightroom.c:831
 #: ../src/iop/bilateral.cc:373 ../src/iop/channelmixer.c:458
 #: ../src/iop/channelmixer.c:479 ../src/iop/colorbalance.c:2539
 #: ../src/iop/temperature.c:1380 ../src/libs/collect.c:1284
@@ -2966,12 +2968,12 @@ msgstr "later"
 
 #. delete
 #: ../src/develop/imageop.c:1046 ../src/libs/image.c:144
-#: ../src/libs/styles.c:458 ../src/libs/tagging.c:1164
-#: ../src/libs/tagging.c:1261
+#: ../src/libs/styles.c:458 ../src/libs/tagging.c:1163
+#: ../src/libs/tagging.c:1260
 msgid "delete"
 msgstr "verwijderen"
 
-#: ../src/develop/imageop.c:1053 ../src/libs/tagging.c:1735
+#: ../src/develop/imageop.c:1053 ../src/libs/tagging.c:1734
 msgid "rename"
 msgstr "module naam wijzigen"
 
@@ -3046,40 +3048,40 @@ msgstr ""
 "voorkeuren\n"
 "klik midden muisknop voor toepassing op een nieuw exemplaar"
 
-#: ../src/develop/lightroom.c:1034
+#: ../src/develop/lightroom.c:1072
 msgid "cannot find lightroom XMP!"
 msgstr "ligthroom xmp niet gevonden!"
 
-#: ../src/develop/lightroom.c:1066 ../src/develop/lightroom.c:1088
-#: ../src/develop/lightroom.c:1108
+#: ../src/develop/lightroom.c:1104 ../src/develop/lightroom.c:1126
+#: ../src/develop/lightroom.c:1146
 #, c-format
 msgid "`%s' not a lightroom XMP!"
 msgstr "`%s' is geen lightroom xmp!"
 
 #. tags
-#: ../src/develop/lightroom.c:1572 ../src/gui/camera_import_dialog.c:465
+#: ../src/develop/lightroom.c:1505 ../src/gui/camera_import_dialog.c:465
 #: ../src/libs/export_metadata.c:273 ../src/libs/import.c:580
 #: ../src/libs/metadata_view.c:137
 msgid "tags"
 msgstr "labels"
 
 #. DT_COLLECTION_SORT_DATETIME
-#: ../src/develop/lightroom.c:1581 ../src/libs/tools/filter.c:149
+#: ../src/develop/lightroom.c:1514 ../src/libs/tools/filter.c:149
 msgid "rating"
 msgstr "classificatie"
 
-#: ../src/develop/lightroom.c:1593 ../src/libs/collect.h:38
+#: ../src/develop/lightroom.c:1526 ../src/libs/collect.h:38
 #: ../src/libs/geotagging.c:63
 msgid "geotagging"
 msgstr "geotagging"
 
 #. DT_COLLECTION_SORT_ID
-#: ../src/develop/lightroom.c:1602 ../src/libs/collect.h:34
+#: ../src/develop/lightroom.c:1535 ../src/libs/collect.h:34
 #: ../src/libs/tools/filter.c:151
 msgid "color label"
 msgstr "kleurlabel"
 
-#: ../src/develop/lightroom.c:1608
+#: ../src/develop/lightroom.c:1541
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -3572,9 +3574,9 @@ msgid "reset value to default"
 msgstr "reset waarde naar standaard"
 
 #: ../src/gui/camera_import_dialog.c:288 ../src/libs/export_metadata.c:232
-#: ../src/libs/geotagging.c:419 ../src/libs/tagging.c:1164
-#: ../src/libs/tagging.c:1261 ../src/libs/tagging.c:1349
-#: ../src/libs/tagging.c:1515 ../src/libs/tagging.c:1735
+#: ../src/libs/geotagging.c:419 ../src/libs/tagging.c:1163
+#: ../src/libs/tagging.c:1260 ../src/libs/tagging.c:1348
+#: ../src/libs/tagging.c:1514 ../src/libs/tagging.c:1734
 msgid "cancel"
 msgstr "annuleer"
 
@@ -5840,14 +5842,12 @@ msgstr "gemiddelde RGB"
 #: ../src/iop/basecurve.c:2144 ../src/iop/basicadj.c:711
 #: ../src/iop/rgbcurve.c:1624 ../src/iop/rgblevels.c:1121
 #: ../src/iop/tonecurve.c:1397
-#| msgid "max RGB"
 msgid "sum RGB"
 msgstr "som RGB"
 
 #: ../src/iop/basecurve.c:2145 ../src/iop/basicadj.c:712
 #: ../src/iop/rgbcurve.c:1625 ../src/iop/rgblevels.c:1122
 #: ../src/iop/tonecurve.c:1398
-#| msgid "max RGB"
 msgid "norm RGB"
 msgstr "norm RGB"
 
@@ -8484,22 +8484,18 @@ msgid "filmic rgb"
 msgstr "filmic rgb"
 
 #: ../src/iop/filmicrgb.c:233
-#| msgid "dynamic range"
 msgid "07 EV dynamic range"
 msgstr "07 EV dynamisch bereik"
 
 #: ../src/iop/filmicrgb.c:239
-#| msgid "dynamic range"
 msgid "09 EV dynamic range"
 msgstr "09 EV dynamisch bereik"
 
 #: ../src/iop/filmicrgb.c:245
-#| msgid "dynamic range"
 msgid "11 EV dynamic range"
 msgstr "11 EV dynamisch bereik"
 
 #: ../src/iop/filmicrgb.c:251
-#| msgid "dynamic range"
 msgid "13 EV dynamic range"
 msgstr "13 EV dynamisch bereik"
 
@@ -8575,30 +8571,24 @@ msgid ""
 "the value entered here will then be remapped to 18.45%.\n"
 "decrease the value to increase the overall brightness."
 msgstr ""
+"pas aan om de gemiddelde helderheid van het afbeeldingsonderwerp te laten "
+"overeenkomen\n"
+"de hier ingevoerde waarde wordt dan opnieuw toegewezen aan 18,45%.\n"
+"verlaag de waarde om de algehele helderheid te verhogen."
 
 #: ../src/iop/filmicrgb.c:1485
 msgid "dynamic range scaling"
 msgstr "herschalen dynamisch bereik"
 
 #: ../src/iop/filmicrgb.c:1488
-#, fuzzy
-#| msgid ""
-#| "enlarge or shrink the computed dynamic range.\n"
-#| "useful in conjunction with \"auto tune levels\"."
 msgid ""
 "symmetrically enlarge or shrink the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
 msgstr ""
-"vergroot of verklein het berekende dynamisch bereik\n"
-"nuttig in combinatie met \"automatische afstemming niveaus\""
+"vergroot of verklein het berekende dynamisch bereik dynamisch\n"
+"dat is nuttig voor een veiligheidsmarge bij extreme luminanties."
 
 #: ../src/iop/filmicrgb.c:1499
-#, fuzzy
-#| msgid ""
-#| "try to optimize the settings with some guessing.\n"
-#| "this will fit the luminance range inside the histogram bounds.\n"
-#| "works better for landscapes and evenly-lit pictures\n"
-#| "but fails for high-keys and low-keys."
 msgid ""
 "try to optimize the settings with some statistical assumptions.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -8607,10 +8597,13 @@ msgid ""
 "this is not an artificial intelligence, but a simple guess.\n"
 "ensure you understand its assumptions before using it."
 msgstr ""
-"probeert instellingen te optimaliseren door te gissen\n"
-"dit plaatst het luminantie bereik binnen de histogramgrenzen\n"
-"het is met name geschikt voor landschappen en gelijkmatig verlichte foto's\n"
-"en werkt niet bij highkey en lowkey afbeeldingen"
+"probeer de instellingen te optimaliseren met enkele statistische "
+"veronderstellingen\n"
+"dit past bij het luminantie bereik binnen de histogram grenzen\n"
+"het werkt beter bij landschappen en gelijkmatig verlichte foto's\n"
+"maar niet bij high-key, low-key en afbeeldingen met hoge iso-waarden\n"
+"dit is geen kunstmatige intelligentie, maar een eenvoudige gok\n"
+"zorg ervoor dat u de veronderstellingen begrijpt voordat u het gebruikt."
 
 #: ../src/iop/filmicrgb.c:1523
 msgid ""
@@ -10112,7 +10105,7 @@ msgstr "voorbeeld enkele schaal"
 
 #: ../src/iop/retouch.c:2847
 msgid "adjust preview levels"
-msgstr "aanpassen preview niveaus"
+msgstr "pas preview niveaus aan"
 
 #: ../src/iop/retouch.c:2866
 msgid "auto levels"
@@ -10892,7 +10885,7 @@ msgstr "de interpolatie is onstabiel, verlaag de curve afvlakking"
 
 #: ../src/iop/toneequal.c:1859 ../src/iop/toneequal.c:1919
 msgid "wait for the preview to finish recomputing"
-msgstr "wacht tot het voorbeeld klaar is met het opnieuw berekenen"
+msgstr "wacht op het voorbeeld tot het opnieuw berekenen is gebeurd"
 
 #: ../src/iop/toneequal.c:2152
 msgid "some parameters are out-of-bounds"
@@ -11002,7 +10995,6 @@ msgid "RGB sum"
 msgstr "RGB som"
 
 #: ../src/iop/toneequal.c:3144
-#| msgid "RGB power norm"
 msgid "RGB euclidean norm"
 msgstr "RGB euclidean norm"
 
@@ -11015,6 +11007,8 @@ msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
 msgstr ""
+"bekijk het masker en kies de schatter welke een hoger contrast veroorzaakt\n"
+"tussen te ontwijken gebieden en in te branden gebieden"
 
 # of behoud kleuren
 #: ../src/iop/toneequal.c:3153
@@ -11065,6 +11059,10 @@ msgid ""
 "warning: big values of this parameter can make the darkroom\n"
 "preview much slower if denoise profiled is used."
 msgstr ""
+"diameter van de vervaging in percentages van de grootste beeldgrootte\n"
+"let op: grote waarden maken de weergave in ontwikkel modus behoorlijk "
+"langzaam\n"
+"indien gebruik wordt gemaakt van de ruisreductie (profiled)"
 
 #: ../src/iop/toneequal.c:3183
 msgid "edges refinement/feathering"
@@ -12152,8 +12150,8 @@ msgstr ""
 msgid "edit metadata exportation"
 msgstr "bewerk metadata uitvoer"
 
-#: ../src/libs/export_metadata.c:232 ../src/libs/tagging.c:1349
-#: ../src/libs/tagging.c:1515
+#: ../src/libs/export_metadata.c:232 ../src/libs/tagging.c:1348
+#: ../src/libs/tagging.c:1514
 msgid "save"
 msgstr "opslaan"
 
@@ -12269,7 +12267,6 @@ msgid "redefined tag"
 msgstr "opnieuw gedefinieerd label"
 
 #: ../src/libs/export_metadata.c:320
-#| msgid "format"
 msgid "formula"
 msgstr "formule"
 
@@ -13761,7 +13758,7 @@ msgid "deletes the selected style in list above"
 msgstr "verwijder stijl"
 
 #. import button
-#: ../src/libs/styles.c:465 ../src/libs/tagging.c:2685
+#: ../src/libs/styles.c:465 ../src/libs/tagging.c:2690
 msgctxt "verb"
 msgid "import..."
 msgstr "importeren ..."
@@ -13803,25 +13800,25 @@ msgctxt "accel"
 msgid "tag"
 msgstr "label"
 
-#: ../src/libs/tagging.c:1040
+#: ../src/libs/tagging.c:1039
 msgid "attach tag to all"
 msgstr "verbind label aan alles"
 
-#: ../src/libs/tagging.c:1048 ../src/libs/tagging.c:1913
+#: ../src/libs/tagging.c:1047 ../src/libs/tagging.c:1912
 msgid "detach tag"
 msgstr "ontbind label"
 
-#: ../src/libs/tagging.c:1163
+#: ../src/libs/tagging.c:1162
 msgid "delete tag?"
 msgstr "label verwijderen?"
 
-#: ../src/libs/tagging.c:1170 ../src/libs/tagging.c:1267
-#: ../src/libs/tagging.c:1521
+#: ../src/libs/tagging.c:1169 ../src/libs/tagging.c:1266
+#: ../src/libs/tagging.c:1520
 #, c-format
 msgid "tag: %s "
 msgstr "label: %s "
 
-#: ../src/libs/tagging.c:1177
+#: ../src/libs/tagging.c:1176
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -13836,85 +13833,85 @@ msgstr[1] ""
 "wilt u het label '%s'?\n"
 "verwijderen?%d afbeeldingen zijn verbonden met dit label!"
 
-#: ../src/libs/tagging.c:1213
+#: ../src/libs/tagging.c:1212
 #, c-format
 msgid "tag %s removed"
 msgstr "label %s verwijderd"
 
-#: ../src/libs/tagging.c:1260 ../src/libs/tagging.c:1925
+#: ../src/libs/tagging.c:1259 ../src/libs/tagging.c:1924
 msgid "delete branch"
 msgstr "verwijder branch"
 
-#: ../src/libs/tagging.c:1274
+#: ../src/libs/tagging.c:1273
 #, c-format
 msgid "<u>%d</u> tag will be deleted."
 msgid_plural "<u>%d</u> tags will be deleted."
 msgstr[0] "<u>%d</u> label wordt verwijderd"
 msgstr[1] "<u>%d</u> labels worden verwijderd"
 
-#: ../src/libs/tagging.c:1279 ../src/libs/tagging.c:1533
-#: ../src/libs/tagging.c:1753
+#: ../src/libs/tagging.c:1278 ../src/libs/tagging.c:1532
+#: ../src/libs/tagging.c:1752
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated "
 msgstr[0] "<u>%d</u> afbeelding wordt bijgewerkt"
 msgstr[1] "<u>%d</u> afbeeldingen worden bijgewerkt"
 
-#: ../src/libs/tagging.c:1305
+#: ../src/libs/tagging.c:1304
 #, c-format
 msgid "%d tags removed"
 msgstr "%d labels verwijderd"
 
-#: ../src/libs/tagging.c:1348
+#: ../src/libs/tagging.c:1347
 msgid "create tag"
 msgstr "creëer label"
 
-#: ../src/libs/tagging.c:1358 ../src/libs/tagging.c:1541
+#: ../src/libs/tagging.c:1357 ../src/libs/tagging.c:1540
 msgid "name: "
 msgstr "naam: "
 
-#: ../src/libs/tagging.c:1371
+#: ../src/libs/tagging.c:1370
 #, c-format
 msgid "add to: \"%s\" "
 msgstr "voeg toe aan: \"%s\" "
 
-#: ../src/libs/tagging.c:1377 ../src/libs/tagging.c:1556
+#: ../src/libs/tagging.c:1376 ../src/libs/tagging.c:1555
 msgid "category"
 msgstr "categorie"
 
-#: ../src/libs/tagging.c:1380 ../src/libs/tagging.c:1559
+#: ../src/libs/tagging.c:1379 ../src/libs/tagging.c:1558
 msgid "private"
 msgstr "persoonlijk"
 
-#: ../src/libs/tagging.c:1386 ../src/libs/tagging.c:1565
+#: ../src/libs/tagging.c:1385 ../src/libs/tagging.c:1564
 msgid "synonyms: "
 msgstr "synoniemen: "
 
-#: ../src/libs/tagging.c:1403 ../src/libs/tagging.c:1586
-#: ../src/libs/tagging.c:1775
+#: ../src/libs/tagging.c:1402 ../src/libs/tagging.c:1585
+#: ../src/libs/tagging.c:1774
 msgid "empty tag is not allowed, aborting"
 msgstr "leeg label is niet toegestaan, afbreken"
 
-#: ../src/libs/tagging.c:1405
+#: ../src/libs/tagging.c:1404
 msgid "'|' character is not allowed to create a tag. aborting."
 msgstr "'|' karakter is niet toegestaan bij aanmaak label, abreken"
 
-#: ../src/libs/tagging.c:1420
+#: ../src/libs/tagging.c:1419
 msgid "tag name already exists. aborting."
 msgstr "label naam bestaat al, afbreken"
 
-#: ../src/libs/tagging.c:1514
+#: ../src/libs/tagging.c:1513
 msgid "edit tag"
 msgstr "bewerk label"
 
-#: ../src/libs/tagging.c:1528 ../src/libs/tagging.c:1748
+#: ../src/libs/tagging.c:1527 ../src/libs/tagging.c:1747
 #, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
 msgstr[0] "<u>%d</u> label wordt bijgewerkt"
 msgstr[1] "<u>%d</u> labels worden bijgewerkt"
 
-#: ../src/libs/tagging.c:1588
+#: ../src/libs/tagging.c:1587
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierachy use rename path instead. Aborting."
@@ -13922,105 +13919,105 @@ msgstr ""
 "het '|' symbool is niet toegestaan \n"
 "gebruik een aangepast pad om de hiërarchie te wijzigen "
 
-#: ../src/libs/tagging.c:1626
+#: ../src/libs/tagging.c:1625
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
 msgstr "minimaal een nieuwe label benaming (%s) bestaat al, afbreken"
 
-#: ../src/libs/tagging.c:1734
+#: ../src/libs/tagging.c:1733
 msgid "rename path?"
 msgstr "hernoem pad?"
 
-#: ../src/libs/tagging.c:1741
+#: ../src/libs/tagging.c:1740
 #, c-format
 msgid "selected path: %s "
 msgstr "geselecteerd pad: %s"
 
-#: ../src/libs/tagging.c:1777
+#: ../src/libs/tagging.c:1776
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr "'|' misplaatst, lege label is niet toegestaan, afbreken"
 
-#: ../src/libs/tagging.c:1803
+#: ../src/libs/tagging.c:1802
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
 msgstr "ten minste één nieuw tagname (%s) bestaat al, annuleren"
 
-#: ../src/libs/tagging.c:1909
+#: ../src/libs/tagging.c:1908
 msgid "attach tag"
 msgstr "label toevoegen"
 
-#: ../src/libs/tagging.c:1921
+#: ../src/libs/tagging.c:1920
 msgid "delete tag"
 msgstr "verwijder label"
 
-#: ../src/libs/tagging.c:1931
+#: ../src/libs/tagging.c:1930
 msgid "create tag..."
 msgstr "creëer label ..."
 
-#: ../src/libs/tagging.c:1935
+#: ../src/libs/tagging.c:1934
 msgid "edit tag..."
 msgstr "bewerk label ..."
 
-#: ../src/libs/tagging.c:1944
+#: ../src/libs/tagging.c:1943
 msgid "rename path..."
 msgstr "hernoem pad ..."
 
-#: ../src/libs/tagging.c:1951
+#: ../src/libs/tagging.c:1950
 msgid "copy to entry"
 msgstr "kopieer naar invoer"
 
-#: ../src/libs/tagging.c:1975
+#: ../src/libs/tagging.c:1974
 msgid "go to tag collection"
 msgstr "ga naar label verzameling"
 
-#: ../src/libs/tagging.c:1981
+#: ../src/libs/tagging.c:1980
 msgid "go back to work"
 msgstr "ga terug aan het werk"
 
-#: ../src/libs/tagging.c:2091
+#: ../src/libs/tagging.c:2096
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: ../src/libs/tagging.c:2092
+#: ../src/libs/tagging.c:2097
 msgid "(private)"
 msgstr "(persoonlijk)"
 
-#: ../src/libs/tagging.c:2118
+#: ../src/libs/tagging.c:2123
 msgid "Select a keyword file"
 msgstr "selecteer trefwoorden bestand"
 
-#: ../src/libs/tagging.c:2121
+#: ../src/libs/tagging.c:2126
 msgid "_import"
 msgstr "_importeren"
 
-#: ../src/libs/tagging.c:2135
+#: ../src/libs/tagging.c:2140
 msgid "error importing tags"
 msgstr "fout bij importeren van labels"
 
-#: ../src/libs/tagging.c:2137
+#: ../src/libs/tagging.c:2142
 #, c-format
 msgid "%zd tags imported"
 msgstr "%zd  labels geïmporteerd"
 
-#: ../src/libs/tagging.c:2159
+#: ../src/libs/tagging.c:2164
 msgid "Select file to export to"
 msgstr "kies bestand om naar te exporteren"
 
-#: ../src/libs/tagging.c:2162
+#: ../src/libs/tagging.c:2167
 msgid "_export"
 msgstr "_exporteren"
 
-#: ../src/libs/tagging.c:2177
+#: ../src/libs/tagging.c:2182
 msgid "error exporting tags"
 msgstr "fout bij het exporteren van labels"
 
-#: ../src/libs/tagging.c:2179
+#: ../src/libs/tagging.c:2184
 #, c-format
 msgid "%zd tags exported"
 msgstr "%zd labels geëxporteerd"
 
-#: ../src/libs/tagging.c:2537
+#: ../src/libs/tagging.c:2542
 msgid ""
 "attached tags,\n"
 "double-click to detach\n"
@@ -14032,43 +14029,43 @@ msgstr ""
 "rechtermuis klik voor andere opties\n"
 "ctrl-wiel scroll om venster te vergroten/te verkleinen"
 
-#: ../src/libs/tagging.c:2548
+#: ../src/libs/tagging.c:2553
 msgid "attach"
 msgstr "verbind"
 
-#: ../src/libs/tagging.c:2551
+#: ../src/libs/tagging.c:2556
 msgid "attach tag to all selected images"
 msgstr "verbind label aan geselecteerde afbeelding(en)"
 
-#: ../src/libs/tagging.c:2556
+#: ../src/libs/tagging.c:2561
 msgid "detach"
 msgstr "ontbind"
 
-#: ../src/libs/tagging.c:2559
+#: ../src/libs/tagging.c:2564
 msgid "detach tag from all selected images"
 msgstr "ontbind label van geselecteerde afbeelding(en)"
 
-#: ../src/libs/tagging.c:2566
+#: ../src/libs/tagging.c:2571
 msgid "toggle list with / without hierarchy"
 msgstr "wisselt lijst met/zonder hiërarchie"
 
-#: ../src/libs/tagging.c:2574
+#: ../src/libs/tagging.c:2579
 msgid "toggle sort by name or by count"
 msgstr "wissel sortering op naam of aantal"
 
-#: ../src/libs/tagging.c:2584
+#: ../src/libs/tagging.c:2589
 msgid "toggle show or not darktable tags"
 msgstr "wissel weergave of niet darktable labels"
 
-#: ../src/libs/tagging.c:2600
+#: ../src/libs/tagging.c:2605
 msgid "enter tag name"
 msgstr "voer in label naam"
 
-#: ../src/libs/tagging.c:2610
+#: ../src/libs/tagging.c:2615
 msgid "clear entry"
 msgstr "wis invoer"
 
-#: ../src/libs/tagging.c:2662
+#: ../src/libs/tagging.c:2667
 msgid ""
 "tag dictionary,\n"
 "double-click to attach,\n"
@@ -14080,11 +14077,11 @@ msgstr ""
 "rechtermuis klik voor andere opties\n"
 "ctrl-wiel scroll om venster te vergroten/te verkleinen"
 
-#: ../src/libs/tagging.c:2677
+#: ../src/libs/tagging.c:2682
 msgid "new"
 msgstr "nieuw"
 
-#: ../src/libs/tagging.c:2680
+#: ../src/libs/tagging.c:2685
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -14092,28 +14089,28 @@ msgstr ""
 "creëer een nieuw label met een\n"
 "door u ingevoerde naam"
 
-#: ../src/libs/tagging.c:2688
+#: ../src/libs/tagging.c:2693
 msgid "import tags from a Lightroom keyword file"
 msgstr "importeer labels vanuit een Lightroom trefwoorden-bestand"
 
-#: ../src/libs/tagging.c:2693
+#: ../src/libs/tagging.c:2698
 msgctxt "verb"
 msgid "export..."
 msgstr "exporteren ..."
 
-#: ../src/libs/tagging.c:2696
+#: ../src/libs/tagging.c:2701
 msgid "export all tags to a Lightroom keyword file"
 msgstr "exporteer alle labels naar een Lightroom trefwoorden bestand"
 
-#: ../src/libs/tagging.c:2703
+#: ../src/libs/tagging.c:2708
 msgid "toggle list / tree view"
 msgstr "wisselt lijst/boom weergave"
 
-#: ../src/libs/tagging.c:2711
+#: ../src/libs/tagging.c:2716
 msgid "toggle list with / without suggestion"
 msgstr "wissel lijst met/zonder suggestie"
 
-#: ../src/libs/tagging.c:2816
+#: ../src/libs/tagging.c:2821
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
@@ -14788,7 +14785,7 @@ msgstr "verminder penseeldekking"
 #: ../src/views/darkroom.c:3211
 msgctxt "accel"
 msgid "full preview"
-msgstr "voorbeeld"
+msgstr "volledige voorbeeld"
 
 #. undo/redo
 #: ../src/views/darkroom.c:3214 ../src/views/lighttable.c:4419
