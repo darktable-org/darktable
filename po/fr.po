@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-01 11:08+0100\n"
-"PO-Revision-Date: 2019-11-01 11:08+0100\n"
+"POT-Creation-Date: 2019-11-01 11:25+0100\n"
+"PO-Revision-Date: 2019-11-01 11:31+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -12,6 +12,20 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Poedit 2.2.4\n"
+
+#: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
+msgid "Virtual Lighttable and Darkroom"
+msgstr "Table Lumineuse et Chambre Noire virtuelles"
+
+#: ../build/data/darktable.desktop.in.h:2 ../data/darktable.appdata.xml.in.h:1
+#: ../data/darktable.desktop.in.h:2
+msgid "Organize and develop images from digital cameras"
+msgstr "Organiser et développer les images d'un boîtier numérique"
+
+#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: ../build/data/darktable.desktop.in.h:4 ../data/darktable.desktop.in.h:4
+msgid "graphics;photography;raw;"
+msgstr "graphisme;photographie;raw;"
 
 #: ../build/src/preferences_gen.h:2104
 msgid "GUI options"
@@ -1179,10 +1193,6 @@ msgstr "nommage des fichiers"
 msgid "file naming pattern used for a import session"
 msgstr "nommage des fichiers pour la session d'importation"
 
-#: ../data/darktable.appdata.xml.in.h:1 ../data/darktable.desktop.in.h:2
-msgid "Organize and develop images from digital cameras"
-msgstr "Organiser et développer les images d'un boîtier numérique"
-
 #: ../data/darktable.appdata.xml.in.h:2
 msgid ""
 "darktable manages your digital negatives in a database and lets you view "
@@ -1229,14 +1239,15 @@ msgstr "Montre des images sur la carte"
 msgid "Print your images"
 msgstr "Imprimer vos images"
 
-#: ../data/darktable.desktop.in.h:1
-msgid "Virtual Lighttable and Darkroom"
-msgstr "Table Lumineuse et Chambre Noire virtuelles"
+#: ../src/bauhaus/bauhaus.c:2260
+#, c-format
+msgid "%s/%s: %s"
+msgstr ""
 
-#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: ../data/darktable.desktop.in.h:4
-msgid "graphics;photography;raw;"
-msgstr "graphisme;photographie;raw;"
+#: ../src/bauhaus/bauhaus.c:2262
+#, c-format
+msgid "%s: %s"
+msgstr ""
 
 #: ../src/chart/main.c:463 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/hist_dialog.c:171
@@ -1688,6 +1699,10 @@ msgstr "darktable - erreur lors de l'ouverture de la base de données"
 msgid "delete database"
 msgstr "effacer la base de données"
 
+#: ../src/common/fast_guided_filter.h:456
+msgid "fast guided filter failed to allocate memory, check your RAM settings"
+msgstr "le filtre guidé n'a pas assez de mémoire, vérifier votre RAM"
+
 #: ../src/common/film.c:311
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
@@ -1848,6 +1863,11 @@ msgid ""
 msgstr ""
 "impossible d'affecter un nom unique pour la session. vérifier les réglages "
 "d'importation."
+
+#: ../src/common/iop_order.c:1893
+#, c-format
+msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
+msgstr "profil de travail %s non supporté, remplacé par Rec 2020 RVB !\n"
 
 #: ../src/common/noiseprofiles.c:27
 msgid "generic poissonian"
@@ -6550,6 +6570,11 @@ msgstr "N/B Kodak T-max 400"
 msgid "B/W Kodak Tri-X 400"
 msgstr "N/B Kodak Tri-X 400"
 
+#: ../src/iop/choleski.h:303 ../src/iop/choleski.h:401
+msgid ""
+"Choleski decomposition failed to allocate memory, check your RAM settings"
+msgstr "la décomposition de Choleski n'a pas assez de mémoire, vérifier la RAM"
+
 #: ../src/iop/clahe.c:337 ../src/iop/sharpen.c:791
 msgid "amount"
 msgstr "quantité"
@@ -9756,6 +9781,10 @@ msgstr "pyramide"
 #: ../src/iop/lut3d.c:1132
 msgid "select the interpolation method"
 msgstr "sélectionner la méthode d'interpolation"
+
+#: ../src/iop/mask_manager.c:45 ../src/libs/masks.c:56
+msgid "mask manager"
+msgstr "gestion des masques"
 
 #: ../src/iop/monochrome.c:74
 msgid "monochrome"
@@ -13000,10 +13029,6 @@ msgid "select the source of the map. some entries might not work"
 msgstr ""
 "sélectionne l'origine de la carte. certaines peuvent ne pas fonctionner"
 
-#: ../src/libs/masks.c:56
-msgid "mask manager"
-msgstr "gestion des masques"
-
 #: ../src/libs/masks.c:242
 #, c-format
 msgid "group #%d"
@@ -14484,6 +14509,10 @@ msgstr "affiche les surimpressions"
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
 msgstr "rendu"
+
+#: ../src/libs/tools/image_infos.c:40
+msgid "image infos"
+msgstr "information de l'image"
 
 #: ../src/libs/tools/lighttable.c:140
 msgid "zoomable light table"
