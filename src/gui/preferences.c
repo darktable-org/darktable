@@ -541,7 +541,7 @@ static void init_tab_presets(GtkWidget *book)
   // Adding the import/export buttons
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  GtkWidget *button = gtk_button_new_with_label(C_("preferences", "import"));
+  GtkWidget *button = gtk_button_new_with_label(C_("preferences", "import..."));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_preset), (gpointer)model);
 
@@ -634,12 +634,12 @@ static void init_tab_accels(GtkWidget *book)
 
   // Adding the import/export buttons
 
-  button = gtk_button_new_with_label(C_("preferences", "import"));
+  button = gtk_button_new_with_label(C_("preferences", "import..."));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_export), (gpointer)0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(update_accels_model), (gpointer)model);
 
-  button = gtk_button_new_with_label(_("export"));
+  button = gtk_button_new_with_label(_("export..."));
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_export), (gpointer)1);
 
