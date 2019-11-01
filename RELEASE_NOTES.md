@@ -78,6 +78,16 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 
 - Modules can now be re-ordered with <kbd>Ctrl+Shift+drag</kbd>.
 
+  IPORTANT PLEASE READ:
+
+  Note that this is NOT a GUI re-ordering but a pixel-pipe
+  reordering. If you're not familiar with pixel pipe order and the
+  actual quality that could result from changing the default, do not
+  change the order.
+
+  The default order has been set to give the best result in the
+  majorty of time and will never be on the wrong side.
+
 - The color zones module now display an histogram based on the ‘select
   by’ channel and displays the selected range if the color picker is
   in area mode.
