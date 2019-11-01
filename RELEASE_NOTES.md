@@ -273,6 +273,9 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
   fixed. This was visible when a liquify mask was used together with
   the perspective correction module activated.
 
+- A bug on mask distort from crop & rotate when using flip and
+  some angle has been fixed.
+
 - Fix manual crop in perspective correction module when not in default
   orientation.
 
