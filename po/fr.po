@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-01 11:36+0100\n"
-"PO-Revision-Date: 2019-11-01 11:36+0100\n"
+"POT-Creation-Date: 2019-11-01 21:51+0100\n"
+"PO-Revision-Date: 2019-11-01 21:51+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1239,12 +1239,12 @@ msgstr "Montre des images sur la carte"
 msgid "Print your images"
 msgstr "Imprimer vos images"
 
-#: ../src/bauhaus/bauhaus.c:2260
+#: ../src/bauhaus/bauhaus.c:2266
 #, c-format
 msgid "%s/%s: %s"
 msgstr "%s/%s: %s"
 
-#: ../src/bauhaus/bauhaus.c:2262
+#: ../src/bauhaus/bauhaus.c:2268
 #, c-format
 msgid "%s: %s"
 msgstr "%s: %s"
@@ -1878,26 +1878,26 @@ msgstr "distribution générique"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "le profil de gestion du bruit « %s » n'est pas valide"
 
-#: ../src/common/opencl.c:785
+#: ../src/common/opencl.c:786
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr "l'accélération matérielle opencl est lente et a donc été désactivée"
 
-#: ../src/common/opencl.c:792
+#: ../src/common/opencl.c:793
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly."
 msgstr ""
 "GPU multiples détectés - la planification opencl a été positionnée en "
 "conséquence"
 
-#: ../src/common/opencl.c:799
+#: ../src/common/opencl.c:800
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly."
 msgstr ""
 "GPU très rapide détecté - la planification opencl a été positionnée en "
 "conséquence"
 
-#: ../src/common/opencl.c:806
+#: ../src/common/opencl.c:807
 msgid "opencl scheduling profile set to default."
 msgstr "profil de planification opencl par défaut positionné"
 
@@ -10881,8 +10881,8 @@ msgstr "diamètre adoucissement"
 
 #: ../src/iop/toneequal.c:321
 msgctxt "accel"
-msgid "edges refinement/feathering"
-msgstr "raffinement/adoucissement des bords"
+msgid "edges refinement or feathering"
+msgstr "raffinement ou adoucissement des bords"
 
 #: ../src/iop/toneequal.c:322
 msgctxt "accel"
