@@ -318,7 +318,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "speculars"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "filter diffusion"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "smoothing diameter"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "edges refinement/feathering"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "edges refinement or feathering"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mask quantization"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mask exposure compensation"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mask contrast compensation"));
@@ -339,7 +339,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "speculars", GTK_WIDGET(g->speculars));
   dt_accel_connect_slider_iop(self, "filter diffusion", GTK_WIDGET(g->iterations));
   dt_accel_connect_slider_iop(self, "smoothing diameter", GTK_WIDGET(g->blending));
-  dt_accel_connect_slider_iop(self, "edges refinement/feathering", GTK_WIDGET(g->feathering));
+  dt_accel_connect_slider_iop(self, "edges refinement or feathering", GTK_WIDGET(g->feathering));
   dt_accel_connect_slider_iop(self, "mask quantization", GTK_WIDGET(g->quantization));
   dt_accel_connect_slider_iop(self, "mask exposure compensation", GTK_WIDGET(g->exposure_boost));
   dt_accel_connect_slider_iop(self, "mask contrast compensation", GTK_WIDGET(g->contrast_boost));
