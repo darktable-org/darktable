@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-31 14:17+0100\n"
+"POT-Creation-Date: 2019-11-01 11:31+0100\n"
 "PO-Revision-Date: 2019-10-31 14:57+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
@@ -12,6 +12,20 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 2.2.1\n"
+
+#: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
+msgid "Virtual Lighttable and Darkroom"
+msgstr "virtuele bibliotheek  en donkere kamer"
+
+#: ../build/data/darktable.desktop.in.h:2 ../data/darktable.appdata.xml.in.h:1
+#: ../data/darktable.desktop.in.h:2
+msgid "Organize and develop images from digital cameras"
+msgstr "organiseer en ontwikkel afbeeldingen van digitale camera's"
+
+#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: ../build/data/darktable.desktop.in.h:4 ../data/darktable.desktop.in.h:4
+msgid "graphics;photography;raw;"
+msgstr "grafische vormgeving;fotografie;raw;"
 
 #: ../build/src/preferences_gen.h:2104
 msgid "GUI options"
@@ -1173,10 +1187,6 @@ msgstr "bestandsnaamgevings model"
 msgid "file naming pattern used for a import session"
 msgstr "bestandsnaamgevings model gebruikt voor import sessie"
 
-#: ../data/darktable.appdata.xml.in.h:1 ../data/darktable.desktop.in.h:2
-msgid "Organize and develop images from digital cameras"
-msgstr "organiseer en ontwikkel afbeeldingen van digitale camera's"
-
 #: ../data/darktable.appdata.xml.in.h:2
 msgid ""
 "darktable manages your digital negatives in a database and lets you view "
@@ -1222,14 +1232,15 @@ msgstr "toon afbeeldingen op een kaart"
 msgid "Print your images"
 msgstr "de afbeeldingen printen"
 
-#: ../data/darktable.desktop.in.h:1
-msgid "Virtual Lighttable and Darkroom"
-msgstr "virtuele bibliotheek  en donkere kamer"
+#: ../src/bauhaus/bauhaus.c:2260
+#, c-format
+msgid "%s/%s: %s"
+msgstr ""
 
-#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: ../data/darktable.desktop.in.h:4
-msgid "graphics;photography;raw;"
-msgstr "grafische vormgeving;fotografie;raw;"
+#: ../src/bauhaus/bauhaus.c:2262
+#, c-format
+msgid "%s: %s"
+msgstr ""
 
 #: ../src/chart/main.c:463 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/hist_dialog.c:171
@@ -1673,6 +1684,12 @@ msgstr "darktable - fout bij openen database"
 msgid "delete database"
 msgstr "verwijder database"
 
+#: ../src/common/fast_guided_filter.h:456
+#, fuzzy
+msgid "fast guided filter failed to allocate memory, check your RAM settings"
+msgstr ""
+"toon equalizer kon geen geheugen toewijzen, controleer uw RAM-instellingen"
+
 #: ../src/common/film.c:311
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
@@ -1829,6 +1846,12 @@ msgid ""
 msgstr ""
 "uitbreiding naar unieke bestandsnaam voor deze sessie is mislukt, controleer "
 "uw importeer-instellingen"
+
+#: ../src/common/iop_order.c:1893
+#, fuzzy, c-format
+msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
+msgstr ""
+"niet ondersteund ingegeven profiel is vervangen door lineair Rec709 RGB!"
 
 #: ../src/common/noiseprofiles.c:27
 msgid "generic poissonian"
@@ -4154,9 +4177,10 @@ msgstr "auto"
 
 #. Adding the import/export buttons
 #: ../src/gui/preferences.c:544 ../src/gui/preferences.c:637
+#, fuzzy
 msgctxt "preferences"
-msgid "import"
-msgstr "importeren"
+msgid "import..."
+msgstr "importeren ..."
 
 #. Adding the outer container
 #: ../src/gui/preferences.c:584
@@ -4171,10 +4195,10 @@ msgstr "snelkoppeling"
 msgid "binding"
 msgstr "koppeling"
 
-#. Export button
-#: ../src/gui/preferences.c:642 ../src/libs/export.c:716
-msgid "export"
-msgstr "exporteren"
+#. export button
+#: ../src/gui/preferences.c:642 ../src/libs/styles.c:472
+msgid "export..."
+msgstr "exporteren ..."
 
 #. Setting the notification text
 #: ../src/gui/preferences.c:919
@@ -6512,6 +6536,13 @@ msgstr "B/W Kodak T-max 400"
 #: ../src/iop/channelmixer.c:582
 msgid "B/W Kodak Tri-X 400"
 msgstr "B/W Kodak Tri-X 400"
+
+#: ../src/iop/choleski.h:303 ../src/iop/choleski.h:401
+#, fuzzy
+msgid ""
+"Choleski decomposition failed to allocate memory, check your RAM settings"
+msgstr ""
+"toon equalizer kon geen geheugen toewijzen, controleer uw RAM-instellingen"
 
 #: ../src/iop/clahe.c:337 ../src/iop/sharpen.c:791
 msgid "amount"
@@ -9719,6 +9750,10 @@ msgstr "piramide"
 msgid "select the interpolation method"
 msgstr "selecteer interpolatiemethode"
 
+#: ../src/iop/mask_manager.c:45 ../src/libs/masks.c:56
+msgid "mask manager"
+msgstr "masker-manager"
+
 #: ../src/iop/monochrome.c:74
 msgid "monochrome"
 msgstr "monochroom"
@@ -12114,6 +12149,11 @@ msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr "of de stijlitems worden toegevoegd of ze vervangen de geschiedenis"
 
+#. Export button
+#: ../src/libs/export.c:716
+msgid "export"
+msgstr "exporteren"
+
 #: ../src/libs/export.c:718
 msgid "export with current settings"
 msgstr "exporteer met huidige instellingen"
@@ -12940,10 +12980,6 @@ msgstr "kaartaanbieder"
 msgid "select the source of the map. some entries might not work"
 msgstr "kies een kaart aanbieder, mogelijk werken niet alle aanbieders"
 
-#: ../src/libs/masks.c:56
-msgid "mask manager"
-msgstr "masker-manager"
-
 #: ../src/libs/masks.c:242
 #, c-format
 msgid "group #%d"
@@ -13767,11 +13803,6 @@ msgstr "importeren ..."
 msgid "import style from a style file"
 msgstr "importeer stijl uit een stijl bestand"
 
-#. export button
-#: ../src/libs/styles.c:472
-msgid "export..."
-msgstr "exporteren ..."
-
 #: ../src/libs/styles.c:474
 msgid "export the selected style into a style file"
 msgstr "exporteer stijl in een stijl bestand"
@@ -14394,6 +14425,11 @@ msgstr "toon overlays"
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
 msgstr "'hinter' (achter?)"
+
+#: ../src/libs/tools/image_infos.c:40
+#, fuzzy
+msgid "image infos"
+msgstr "afbeeldingshint"
 
 #: ../src/libs/tools/lighttable.c:140
 msgid "zoomable light table"
@@ -15177,6 +15213,10 @@ msgstr "Accel"
 #: ../src/views/view.c:2415
 msgid "Action"
 msgstr "actie"
+
+#~ msgctxt "preferences"
+#~ msgid "import"
+#~ msgstr "importeren"
 
 #~ msgid "max rgb"
 #~ msgstr "max rgb"
