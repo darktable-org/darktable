@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-01 21:51+0100\n"
-"PO-Revision-Date: 2019-11-01 21:51+0100\n"
+"POT-Creation-Date: 2019-11-01 22:21+0100\n"
+"PO-Revision-Date: 2019-11-01 22:21+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -8594,8 +8594,8 @@ msgstr "latitude"
 
 #: ../src/iop/filmicrgb.c:274
 msgctxt "accel"
-msgid "shadows/highlights balance"
-msgstr "balance ombres/hautes lumières"
+msgid "shadows highlights balance"
+msgstr "balance ombres hautes lumières"
 
 #: ../src/iop/filmicrgb.c:275
 msgctxt "accel"
@@ -15293,6 +15293,10 @@ msgstr "raccourcis"
 #: ../src/views/view.c:2415
 msgid "Action"
 msgstr "action"
+
+#~ msgctxt "accel"
+#~ msgid "shadows/highlights balance"
+#~ msgstr "balance ombres/hautes lumières"
 
 #~ msgctxt "preferences"
 #~ msgid "import"
