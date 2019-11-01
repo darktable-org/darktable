@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-28 17:14+0300\n"
-"PO-Revision-Date: 2019-10-28 18:45+0300\n"
+"POT-Creation-Date: 2019-11-01 08:32+0300\n"
+"PO-Revision-Date: 2019-11-01 12:45+0300\n"
 "Last-Translator: Timur Davletshin <timur.davletshin@gmail.com>\n"
 "Language-Team: русский\n"
 "Language: ru\n"
@@ -509,7 +509,7 @@ msgstr "Всегда запрашивать подтверждение на уд
 
 #: ../build/src/preferences_gen.h:2960
 msgid "ask before erasing images from disk / discarding history stack"
-msgstr "Подтверждение удаления снимков и удаления истории изменений."
+msgstr "Подтверждение удаления снимков и истории изменений"
 
 #: ../build/src/preferences_gen.h:2972
 msgid ""
@@ -1222,8 +1222,8 @@ msgstr "graphics;photography;raw;"
 #: ../src/iop/lut3d.c:1013 ../src/libs/collect.c:242
 #: ../src/libs/copy_history.c:78 ../src/libs/geotagging.c:473
 #: ../src/libs/import.c:759 ../src/libs/import.c:866 ../src/libs/lib.c:228
-#: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2120
-#: ../src/libs/tagging.c:2161
+#: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2125
+#: ../src/libs/tagging.c:2166
 msgid "_cancel"
 msgstr "_Отмена"
 
@@ -1316,19 +1316,19 @@ msgid "too much time to update aspect ratio for the collection"
 msgstr ""
 "Обновление информации о соотношении сторон занимает продолжительное время"
 
-#: ../src/common/collection.c:1241 ../src/develop/lightroom.c:824
+#: ../src/common/collection.c:1241 ../src/develop/lightroom.c:825
 #: ../src/iop/bilateral.cc:371 ../src/iop/channelmixer.c:456
 #: ../src/iop/channelmixer.c:467 ../src/iop/colorbalance.c:2525
 #: ../src/iop/temperature.c:1378 ../src/libs/collect.c:1284
 msgid "red"
 msgstr "Красный"
 
-#: ../src/common/collection.c:1243 ../src/develop/lightroom.c:826
+#: ../src/common/collection.c:1243 ../src/develop/lightroom.c:827
 #: ../src/iop/temperature.c:1369 ../src/libs/collect.c:1284
 msgid "yellow"
 msgstr "Жёлтый"
 
-#: ../src/common/collection.c:1245 ../src/develop/lightroom.c:828
+#: ../src/common/collection.c:1245 ../src/develop/lightroom.c:829
 #: ../src/iop/bilateral.cc:372 ../src/iop/channelmixer.c:457
 #: ../src/iop/channelmixer.c:473 ../src/iop/colorbalance.c:2532
 #: ../src/iop/temperature.c:1366 ../src/iop/temperature.c:1379
@@ -1336,7 +1336,7 @@ msgstr "Жёлтый"
 msgid "green"
 msgstr "Зелёный"
 
-#: ../src/common/collection.c:1247 ../src/develop/lightroom.c:830
+#: ../src/common/collection.c:1247 ../src/develop/lightroom.c:831
 #: ../src/iop/bilateral.cc:373 ../src/iop/channelmixer.c:458
 #: ../src/iop/channelmixer.c:479 ../src/iop/colorbalance.c:2539
 #: ../src/iop/temperature.c:1380 ../src/libs/collect.c:1284
@@ -1387,21 +1387,21 @@ msgstr "sRGB"
 #: ../src/common/colorspaces.c:969 ../src/common/colorspaces.c:1274
 #: ../src/iop/colorin.c:2109 ../src/libs/print_settings.c:1034
 msgid "Adobe RGB (compatible)"
-msgstr "Adobe RGB (совместимый)"
+msgstr "Adobe RGB (совм.)"
 
 #: ../src/common/colorspaces.c:970 ../src/common/colorspaces.c:1279
 #: ../src/iop/colorin.c:2110
 msgid "linear Rec709 RGB"
-msgstr "Линейный RGB по Rec709"
+msgstr "RGB по Rec709 (линейн.)"
 
 #: ../src/common/colorspaces.c:971 ../src/common/colorspaces.c:1288
 #: ../src/iop/colorin.c:2111
 msgid "linear Rec2020 RGB"
-msgstr "Линейный RGB по Rec2020"
+msgstr "RGB по Rec2020 (линейн.)"
 
 #: ../src/common/colorspaces.c:972 ../src/common/colorspaces.c:1298
 msgid "linear XYZ"
-msgstr "Линейный XYZ"
+msgstr "XYZ (линейн.)"
 
 #: ../src/common/colorspaces.c:973 ../src/common/colorspaces.c:1302
 #: ../src/libs/colorpicker.c:582 ../src/libs/colorpicker.c:619
@@ -1410,7 +1410,7 @@ msgstr "Lab"
 
 #: ../src/common/colorspaces.c:974 ../src/common/colorspaces.c:1307
 msgid "linear infrared BGR"
-msgstr "Линейный инфракрасный BGR"
+msgstr "Инфракрасный BGR (линейн.)"
 
 #: ../src/common/colorspaces.c:975 ../src/common/colorspaces.c:986
 #: ../src/common/colorspaces.c:1256 ../src/common/colorspaces.c:1259
@@ -1427,23 +1427,23 @@ msgstr "Встроенная матрица"
 
 #: ../src/common/colorspaces.c:978
 msgid "standard color matrix"
-msgstr "Стандартная цветовая матрица"
+msgstr "Стандартная цвет. матрица"
 
 #: ../src/common/colorspaces.c:979
 msgid "enhanced color matrix"
-msgstr "Улучшенная цветовая матрица"
+msgstr "Улучшенная цвет. матрица"
 
 #: ../src/common/colorspaces.c:980
 msgid "vendor color matrix"
-msgstr "Цветовая матрица как у производителя"
+msgstr "От производителя"
 
 #: ../src/common/colorspaces.c:981
 msgid "alternate color matrix"
-msgstr "Альтернативная цветовая матрица"
+msgstr "Альтернативная цвет. матрица"
 
 #: ../src/common/colorspaces.c:982
 msgid "BRG (experimental)"
-msgstr "BRG (для тестирования)"
+msgstr "BRG (тестирование)"
 
 #: ../src/common/colorspaces.c:983 ../src/common/colorspaces.c:1246
 #: ../src/iop/colorout.c:881
@@ -1466,19 +1466,19 @@ msgstr "sRGB (например, JPEG)"
 
 #: ../src/common/colorspaces.c:1269 ../src/libs/print_settings.c:1027
 msgid "sRGB (web-safe)"
-msgstr "sRGB (для веба)"
+msgstr "sRGB (для веб)"
 
 #: ../src/common/colorspaces.c:1283
 msgid "gamma Rec709 RGB"
-msgstr "Гамма RGB по Rec709"
+msgstr "RGB по Rec709 (гамма)"
 
 #: ../src/common/colorspaces.c:1293
 msgid "linear prophoto RGB"
-msgstr "Линейное ProPhotoRGB"
+msgstr "ProPhotoRGB (линейн.)"
 
 #: ../src/common/colorspaces.c:1311
 msgid "BRG (for testing)"
-msgstr "BRG (для тестирования)"
+msgstr "BRG (тестирование)"
 
 #: ../src/common/cups_print.c:408
 #, c-format
@@ -1699,7 +1699,7 @@ msgstr "Вкл."
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
 #: ../src/iop/ashift.c:4855 ../src/iop/ashift.c:4861 ../src/iop/colorin.c:2107
 #: ../src/iop/demosaic.c:5147 ../src/iop/vignette.c:1150
-#: ../src/libs/history.c:169 ../src/libs/live_view.c:436
+#: ../src/libs/history.c:168 ../src/libs/live_view.c:436
 msgid "off"
 msgstr "Выкл."
 
@@ -2284,7 +2284,7 @@ msgstr "Удаление снимков в корзину"
 
 #: ../src/control/jobs/control_jobs.c:1604
 msgid "delete images?"
-msgstr "Удалить снимки?"
+msgstr "Удаление снимков"
 
 #: ../src/control/jobs/control_jobs.c:1625
 msgid "move images"
@@ -2965,12 +2965,12 @@ msgstr "Опустить"
 
 #. delete
 #: ../src/develop/imageop.c:1046 ../src/libs/image.c:144
-#: ../src/libs/styles.c:458 ../src/libs/tagging.c:1164
-#: ../src/libs/tagging.c:1261
+#: ../src/libs/styles.c:458 ../src/libs/tagging.c:1163
+#: ../src/libs/tagging.c:1260
 msgid "delete"
 msgstr "Удалить с диска"
 
-#: ../src/develop/imageop.c:1053 ../src/libs/tagging.c:1735
+#: ../src/develop/imageop.c:1053 ../src/libs/tagging.c:1734
 msgid "rename"
 msgstr "Переименовать"
 
@@ -3045,40 +3045,40 @@ msgstr ""
 "Профили\n"
 "Щелчок средней кнопкой мыши для применения над новой копией."
 
-#: ../src/develop/lightroom.c:1034
+#: ../src/develop/lightroom.c:1072
 msgid "cannot find lightroom XMP!"
 msgstr "Ошибка при поиске файла XMP от Lightroom!"
 
-#: ../src/develop/lightroom.c:1066 ../src/develop/lightroom.c:1088
-#: ../src/develop/lightroom.c:1108
+#: ../src/develop/lightroom.c:1104 ../src/develop/lightroom.c:1126
+#: ../src/develop/lightroom.c:1146
 #, c-format
 msgid "`%s' not a lightroom XMP!"
 msgstr "«%s» не является файлом XMP от Lightroom!"
 
 #. tags
-#: ../src/develop/lightroom.c:1572 ../src/gui/camera_import_dialog.c:465
+#: ../src/develop/lightroom.c:1505 ../src/gui/camera_import_dialog.c:465
 #: ../src/libs/export_metadata.c:273 ../src/libs/import.c:580
 #: ../src/libs/metadata_view.c:137
 msgid "tags"
 msgstr "Метки"
 
 #. DT_COLLECTION_SORT_DATETIME
-#: ../src/develop/lightroom.c:1581 ../src/libs/tools/filter.c:149
+#: ../src/develop/lightroom.c:1514 ../src/libs/tools/filter.c:149
 msgid "rating"
 msgstr "Оценка"
 
-#: ../src/develop/lightroom.c:1593 ../src/libs/collect.h:38
+#: ../src/develop/lightroom.c:1526 ../src/libs/collect.h:38
 #: ../src/libs/geotagging.c:63
 msgid "geotagging"
 msgstr "Геотеггинг"
 
 #. DT_COLLECTION_SORT_ID
-#: ../src/develop/lightroom.c:1602 ../src/libs/collect.h:34
+#: ../src/develop/lightroom.c:1535 ../src/libs/collect.h:34
 #: ../src/libs/tools/filter.c:151
 msgid "color label"
 msgstr "Цветовая метка"
 
-#: ../src/develop/lightroom.c:1608
+#: ../src/develop/lightroom.c:1541
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -3567,9 +3567,9 @@ msgid "reset value to default"
 msgstr "Сбросить до значения по умолчанию"
 
 #: ../src/gui/camera_import_dialog.c:288 ../src/libs/export_metadata.c:232
-#: ../src/libs/geotagging.c:419 ../src/libs/tagging.c:1164
-#: ../src/libs/tagging.c:1261 ../src/libs/tagging.c:1349
-#: ../src/libs/tagging.c:1515 ../src/libs/tagging.c:1735
+#: ../src/libs/geotagging.c:419 ../src/libs/tagging.c:1163
+#: ../src/libs/tagging.c:1260 ../src/libs/tagging.c:1348
+#: ../src/libs/tagging.c:1514 ../src/libs/tagging.c:1734
 msgid "cancel"
 msgstr "Отменить"
 
@@ -4161,9 +4161,7 @@ msgid "binding"
 msgstr "Комбинация"
 
 #. Export button
-#. export button
 #: ../src/gui/preferences.c:642 ../src/libs/export.c:716
-#: ../src/libs/styles.c:472
 msgid "export"
 msgstr "Экспорт"
 
@@ -4426,7 +4424,7 @@ msgstr "Обновить"
 msgid "can't create style out of unaltered image"
 msgstr "Невозможно создать стиль из снимка без изменений"
 
-#: ../src/imageio/format/copy.c:124 ../src/libs/image.c:204
+#: ../src/imageio/format/copy.c:124
 msgid "copy"
 msgstr "Копировать"
 
@@ -5604,7 +5602,7 @@ msgstr "Удаление размытия: средние детали, уров
 
 #: ../src/iop/atrous.c:1256
 msgid "deblur: fine blur, strength 2"
-msgstr "Удаление размытия: мелкие детали, уровень 1"
+msgstr "Удаление размытия: мелкие детали, уровень 2"
 
 #: ../src/iop/atrous.c:1273
 msgid "deblur: large blur, strength 1"
@@ -5786,7 +5784,7 @@ msgstr "Линейный график"
 
 #: ../src/iop/basecurve.c:2132 ../src/iop/profile_gamma.c:858
 msgid "logarithmic"
-msgstr "Логарифмическая кривая"
+msgstr "Логарифмич. кривая"
 
 #: ../src/iop/basecurve.c:2133 ../src/iop/tonecurve.c:1408
 msgid ""
@@ -6199,11 +6197,11 @@ msgstr "Взять цвет линии рамки со снимка"
 
 #: ../src/iop/borders.c:591
 msgid "15:10 postcard white"
-msgstr "Белая открытка 15×10"
+msgstr "Белый фон, 15×10"
 
 #: ../src/iop/borders.c:594
 msgid "15:10 postcard black"
-msgstr "Чёрная открытка 15×10"
+msgstr "Чёрный фон, 15×10"
 
 #: ../src/iop/borders.c:939
 msgid "image"
@@ -7053,7 +7051,7 @@ msgstr "Зелёный / Пурпурный"
 #: ../src/iop/colorcontrast.c:129
 msgctxt "accel"
 msgid "blue vs yellow"
-msgstr "Синий / Жёлтый»"
+msgstr "Синий / Жёлтый"
 
 #: ../src/iop/colorcontrast.c:404
 msgid "green vs magenta"
@@ -7065,7 +7063,7 @@ msgstr "Крутизна кривой a* в Lab"
 
 #: ../src/iop/colorcontrast.c:412
 msgid "blue vs yellow"
-msgstr "Синий / Жёлтый»"
+msgstr "Синий / Жёлтый"
 
 #: ../src/iop/colorcontrast.c:414
 msgid "steepness of the b* curve in Lab"
@@ -7370,7 +7368,7 @@ msgstr "Приоритетный тон"
 
 #: ../src/iop/colortransfer.c:100
 msgid "color transfer"
-msgstr "Перенос цвета"
+msgstr "Старый перенос цветов"
 
 #: ../src/iop/colortransfer.c:121
 msgctxt "accel"
@@ -7388,9 +7386,10 @@ msgid ""
 "and is only here so you can switch it off\n"
 "and move to the new color mapping module."
 msgstr ""
-"Этот модуль будет в дальнейшем удалён.\n"
-"Некоторое время он доступен, чтобы вы могли отключить\n"
-"применение старой версии и перейти на новую."
+"Этот модуль будет в будущем удалён.\n"
+"Некоторое время он будет доступен, чтобы\n"
+"вы могли мигрировать на новый модуль\n"
+"переноса цветов."
 
 #: ../src/iop/colortransfer.c:686
 msgid "number of clusters to find in image"
@@ -7991,23 +7990,23 @@ msgstr "Случайный"
 
 #: ../src/iop/dither.c:796
 msgid "floyd-steinberg 1-bit B&W"
-msgstr "Флойда-Штайнберга, 1 бит, ч-б"
+msgstr "Флойд-Штайнберг, 1 бит, ч-б"
 
 #: ../src/iop/dither.c:797
 msgid "floyd-steinberg 4-bit gray"
-msgstr "Флойда-Штайнберга, 4 бита, серый"
+msgstr "Флойд-Штайнберг, 4 бита, серый"
 
 #: ../src/iop/dither.c:798
 msgid "floyd-steinberg 8-bit RGB"
-msgstr "Флойда-Штайнберга, 8 бит, RGB"
+msgstr "Флойд-Штайнберг, 8 бит, RGB"
 
 #: ../src/iop/dither.c:799
 msgid "floyd-steinberg 16-bit RGB"
-msgstr "Флойда-Штайнберга, 16 бит, RGB"
+msgstr "Флойд-Штайнберг, 16 бит, RGB"
 
 #: ../src/iop/dither.c:800
 msgid "floyd-steinberg auto"
-msgstr "Флойда-Штайнберга, автоматический"
+msgstr "Флойд-Штайнберг (авто)"
 
 #: ../src/iop/dither.c:805
 msgid "radius for blurring step"
@@ -8031,7 +8030,7 @@ msgstr "Гашение"
 
 #: ../src/iop/equalizer.c:88
 msgid "legacy equalizer"
-msgstr "Прежний эквалайзер"
+msgstr "Старый эквалайзер"
 
 #: ../src/iop/equalizer.c:309
 msgid "sharpen (strong)"
@@ -8058,7 +8057,7 @@ msgid ""
 msgstr ""
 "Этот модуль будет в будущем удалён.\n"
 "Некоторое время он будет доступен, чтобы\n"
-"вы могли спокойно перейти на новый эквалайзер."
+"вы могли мигрировать на новый эквалайзер."
 
 #: ../src/iop/exposure.c:128
 msgctxt "accel"
@@ -8434,11 +8433,11 @@ msgstr "Динамический диапазон 13 EV"
 
 #: ../src/iop/filmicrgb.c:257
 msgid "15 EV (backlighting)"
-msgstr "15 EV (свет в камеру)"
+msgstr "Динамический диапазон 15 EV (свет в камеру)"
 
 #: ../src/iop/filmicrgb.c:263
 msgid "17 EV (HDR)"
-msgstr "17 EV (HDR)"
+msgstr "Динамический диапазон 17 EV (HDR)"
 
 #: ../src/iop/filmicrgb.c:268
 msgctxt "accel"
@@ -9013,7 +9012,7 @@ msgstr ""
 
 #: ../src/iop/lens.cc:1835
 msgid "camera/lens not found - please select manually"
-msgstr "Камера и/или объектив не найдены."
+msgstr "Камера и/или объектив не найдены"
 
 #: ../src/iop/lens.cc:1838
 msgid "try to locate your camera/lens in the above two menus"
@@ -9600,11 +9599,11 @@ msgstr "REC.709"
 
 #: ../src/iop/lut3d.c:1120
 msgid "lin sRGB/REC.709"
-msgstr "Линейное sRGB/REC.709"
+msgstr "sRGB/REC.709 (линейн.)"
 
 #: ../src/iop/lut3d.c:1121
 msgid "lin prophoto RGB"
-msgstr "Линейное ProPhotoRGB"
+msgstr "ProPhotoRGB (линейн.)"
 
 #: ../src/iop/lut3d.c:1123
 msgid "select the color space in which the LUT has to be applied"
@@ -9725,7 +9724,7 @@ msgstr "Динамический диапазон 10 EV"
 
 #: ../src/iop/profile_gamma.c:178
 msgid "08 EV dynamic range (generic)"
-msgstr "Динамический диапазон 8 EV"
+msgstr "Динамический диапазон 08 EV"
 
 #: ../src/iop/profile_gamma.c:861
 msgid "tone mapping method"
@@ -9867,9 +9866,7 @@ msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
 msgstr ""
-"Коррекция черной и белой точек Raw\n"
-"включается только при работе с требующими\n"
-"этого сенсорами"
+"Коррекция черной и белой точек raw включается только при работе с требующими этого сенсорами."
 
 #: ../src/iop/relight.c:55
 msgid "fill-light 0.25EV with 4 zones"
@@ -9967,11 +9964,11 @@ msgstr "Уровней:"
 
 #: ../src/iop/retouch.c:2745
 msgid "current:"
-msgstr "текущий:"
+msgstr "Текущий:"
 
 #: ../src/iop/retouch.c:2754
 msgid "merge from:"
-msgstr "объединение с:"
+msgstr "Объединение с:"
 
 #: ../src/iop/retouch.c:2767
 msgid ""
@@ -10262,9 +10259,7 @@ msgstr "Автоматическое вращение пикселей"
 #: ../src/iop/rotatepixels.c:358
 msgid "automatic pixel rotation only works for the sensors that need it."
 msgstr ""
-"Автоматическое вращение пикселей\n"
-"включается только при работе с требующими\n"
-"этого сенсорами"
+"Автоматическое вращение пикселей включается только при работе с требующими этого сенсорами."
 
 #: ../src/iop/scalepixels.c:56
 msgctxt "modulename"
@@ -10278,9 +10273,7 @@ msgstr "Автоматическое масштабирование пиксел
 #: ../src/iop/scalepixels.c:275
 msgid "automatic pixel scaling only works for the sensors that need it."
 msgstr ""
-"Автоматическое масштабирование пикселей\n"
-"включается только при работе с требующими\n"
-"этого сенсорами"
+"Автоматическое масштабирование пикселей включается только при работе с требующими этого сенсорами."
 
 #: ../src/iop/shadhi.c:177
 msgid "shadows and highlights"
@@ -11036,11 +11029,7 @@ msgstr ""
 "эффектом управляемого фильтра и для подгонки контраста\n"
 "под -4EV."
 
-#: ../src/iop/toneequal.c:3242
-msgid "display the exposure mask"
-msgstr "Показать маску экспозиций"
-
-#: ../src/iop/toneequal.c:3246
+#: ../src/iop/toneequal.c:3242 ../src/iop/toneequal.c:3246
 msgid "display exposure mask"
 msgstr "Показать маску экспозиций"
 
@@ -11158,7 +11147,7 @@ msgstr "Форма"
 
 #: ../src/iop/vignette.c:1163
 msgid "width/height ratio"
-msgstr "Ширина/Высота"
+msgstr "Ширина / Высота"
 
 #: ../src/iop/vignette.c:1183
 msgid "the radii scale of vignette for start of fall-off"
@@ -11729,7 +11718,7 @@ msgstr "История изменений"
 
 #: ../src/libs/copy_history.c:78
 msgid "open sidecar file"
-msgstr "Открыть файл с историей изменений"
+msgstr "Выбор файла с историей изменений"
 
 #: ../src/libs/copy_history.c:88
 msgid "XMP sidecar files"
@@ -11777,7 +11766,7 @@ msgstr[2] ""
 msgid "delete images' history?"
 msgstr "Удаление истории изменений"
 
-#: ../src/libs/copy_history.c:308
+#: ../src/libs/copy_history.c:308 ../src/libs/image.c:204
 msgid "copy..."
 msgstr "Копировать..."
 
@@ -12054,8 +12043,8 @@ msgstr ""
 msgid "edit metadata exportation"
 msgstr "Редактор экспортируемых метаданных"
 
-#: ../src/libs/export_metadata.c:232 ../src/libs/tagging.c:1349
-#: ../src/libs/tagging.c:1515
+#: ../src/libs/export_metadata.c:232 ../src/libs/tagging.c:1348
+#: ../src/libs/tagging.c:1514
 msgid "save"
 msgstr "Сохранить"
 
@@ -12202,7 +12191,7 @@ msgstr "OK"
 
 #: ../src/libs/geotagging.c:473
 msgid "open GPX file"
-msgstr "Открыть файл GPX"
+msgstr "Выбор файла GPX"
 
 #: ../src/libs/geotagging.c:490
 msgid "GPS data exchange format"
@@ -12238,8 +12227,8 @@ msgstr "Применить смещение времени к выбранным
 
 #. gpx
 #: ../src/libs/geotagging.c:815
-msgid "apply GPX track file"
-msgstr "Загрузить из GPX"
+msgid "apply GPX track file..."
+msgstr "Загрузить из GPX..."
 
 #: ../src/libs/geotagging.c:816
 msgid "parses a GPX file and updates location of selected images"
@@ -12324,15 +12313,15 @@ msgstr "Сжать историю"
 msgid "compress history stack"
 msgstr "Сжать историю"
 
-#: ../src/libs/history.c:119
+#: ../src/libs/history.c:118
 msgid "create a minimal history stack which produces the same image"
 msgstr "Минимизировать историю изменений"
 
-#: ../src/libs/history.c:126
+#: ../src/libs/history.c:125
 msgid "create a style from the current history stack"
 msgstr "Создать стиль из текущей истории изменений"
 
-#: ../src/libs/history.c:620 ../src/libs/snapshots.c:346
+#: ../src/libs/history.c:619 ../src/libs/snapshots.c:346
 msgid "original"
 msgstr "Оригинал"
 
@@ -12357,8 +12346,8 @@ msgid "remove from the collection"
 msgstr "Удалить из коллекции"
 
 #: ../src/libs/image.c:197
-msgid "move"
-msgstr "Переместить"
+msgid "move..."
+msgstr "Переместить..."
 
 #: ../src/libs/image.c:200
 msgid "move to other folder"
@@ -13534,8 +13523,7 @@ msgstr "Выделить все без изменений"
 msgid "session"
 msgstr "Сеанс"
 
-#. create
-#: ../src/libs/session.c:109 ../src/libs/styles.c:445
+#: ../src/libs/session.c:109
 msgid "create"
 msgstr "Создать"
 
@@ -13586,7 +13574,7 @@ msgstr "Удалить стиль?"
 
 #: ../src/libs/styles.c:323
 msgid "select style"
-msgstr "Выберите стиль"
+msgstr "Выбор файла стилей"
 
 #: ../src/libs/styles.c:336
 msgid "darktable style files"
@@ -13612,14 +13600,19 @@ msgstr "Создать дубликат"
 msgid "creates a duplicate of the image before applying style"
 msgstr "Создать дубликат снимка перед применением стиля"
 
+#. create
+#: ../src/libs/styles.c:445
+msgid "create..."
+msgstr "Создать..."
+
 #: ../src/libs/styles.c:447
 msgid "create styles from history stack of selected images"
 msgstr "Создать стиль из истории изменений выбранных снимков"
 
 #. edit
 #: ../src/libs/styles.c:451
-msgid "edit"
-msgstr "Изменить"
+msgid "edit..."
+msgstr "Изменить..."
 
 #: ../src/libs/styles.c:454
 msgid "edit the selected style in list above"
@@ -13630,14 +13623,19 @@ msgid "deletes the selected style in list above"
 msgstr "Удалить выбранный в списке стиль"
 
 #. import button
-#: ../src/libs/styles.c:465
-msgctxt "styles"
-msgid "import"
-msgstr "Импорт"
+#: ../src/libs/styles.c:465 ../src/libs/tagging.c:2690
+msgctxt "verb"
+msgid "import..."
+msgstr "Импорт..."
 
 #: ../src/libs/styles.c:467
 msgid "import style from a style file"
 msgstr "Импорт стиля из файла"
+
+#. export button
+#: ../src/libs/styles.c:472
+msgid "export..."
+msgstr "Экспорт..."
 
 #: ../src/libs/styles.c:474
 msgid "export the selected style into a style file"
@@ -13667,25 +13665,25 @@ msgctxt "accel"
 msgid "tag"
 msgstr "Метка"
 
-#: ../src/libs/tagging.c:1040
+#: ../src/libs/tagging.c:1039
 msgid "attach tag to all"
 msgstr "Прикрепить метку ко всем снимкам"
 
-#: ../src/libs/tagging.c:1048 ../src/libs/tagging.c:1913
+#: ../src/libs/tagging.c:1047 ../src/libs/tagging.c:1912
 msgid "detach tag"
 msgstr "Снять метку"
 
-#: ../src/libs/tagging.c:1163
+#: ../src/libs/tagging.c:1162
 msgid "delete tag?"
 msgstr "Удалить метку?"
 
-#: ../src/libs/tagging.c:1170 ../src/libs/tagging.c:1267
-#: ../src/libs/tagging.c:1521
+#: ../src/libs/tagging.c:1169 ../src/libs/tagging.c:1266
+#: ../src/libs/tagging.c:1520
 #, c-format
 msgid "tag: %s "
 msgstr "Метка: %s"
 
-#: ../src/libs/tagging.c:1177
+#: ../src/libs/tagging.c:1176
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -13703,16 +13701,16 @@ msgstr[2] ""
 "Вы действительно хотите удалить метку «%s»?\n"
 "Она применена к %d снимкам."
 
-#: ../src/libs/tagging.c:1213
+#: ../src/libs/tagging.c:1212
 #, c-format
 msgid "tag %s removed"
 msgstr "Метка %s удалена"
 
-#: ../src/libs/tagging.c:1260 ../src/libs/tagging.c:1925
+#: ../src/libs/tagging.c:1259 ../src/libs/tagging.c:1924
 msgid "delete branch"
 msgstr "Удалить ветвь"
 
-#: ../src/libs/tagging.c:1274
+#: ../src/libs/tagging.c:1273
 #, c-format
 msgid "<u>%d</u> tag will be deleted."
 msgid_plural "<u>%d</u> tags will be deleted."
@@ -13720,8 +13718,8 @@ msgstr[0] "<u>%d</u> метка будет удалена"
 msgstr[1] "<u>%d</u> метки будут удалены"
 msgstr[2] "<u>%d</u> меток будут удалены"
 
-#: ../src/libs/tagging.c:1279 ../src/libs/tagging.c:1533
-#: ../src/libs/tagging.c:1753
+#: ../src/libs/tagging.c:1278 ../src/libs/tagging.c:1532
+#: ../src/libs/tagging.c:1752
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated "
@@ -13729,54 +13727,54 @@ msgstr[0] "<u>%d</u> снимок будет обновлён"
 msgstr[1] "<u>%d</u> снимка будут обновлены"
 msgstr[2] "<u>%d</u> снимков будут обновлены"
 
-#: ../src/libs/tagging.c:1305
+#: ../src/libs/tagging.c:1304
 #, c-format
 msgid "%d tags removed"
 msgstr "Удалено меток: %d"
 
-#: ../src/libs/tagging.c:1348
+#: ../src/libs/tagging.c:1347
 msgid "create tag"
 msgstr "Создать метку"
 
-#: ../src/libs/tagging.c:1358 ../src/libs/tagging.c:1541
+#: ../src/libs/tagging.c:1357 ../src/libs/tagging.c:1540
 msgid "name: "
 msgstr "Имя:"
 
-#: ../src/libs/tagging.c:1371
+#: ../src/libs/tagging.c:1370
 #, c-format
 msgid "add to: \"%s\" "
 msgstr "Добавить к: \"%s\" "
 
-#: ../src/libs/tagging.c:1377 ../src/libs/tagging.c:1556
+#: ../src/libs/tagging.c:1376 ../src/libs/tagging.c:1555
 msgid "category"
 msgstr "Категория"
 
-#: ../src/libs/tagging.c:1380 ../src/libs/tagging.c:1559
+#: ../src/libs/tagging.c:1379 ../src/libs/tagging.c:1558
 msgid "private"
 msgstr "Персональная"
 
-#: ../src/libs/tagging.c:1386 ../src/libs/tagging.c:1565
+#: ../src/libs/tagging.c:1385 ../src/libs/tagging.c:1564
 msgid "synonyms: "
 msgstr "Синонимы: "
 
-#: ../src/libs/tagging.c:1403 ../src/libs/tagging.c:1586
-#: ../src/libs/tagging.c:1775
+#: ../src/libs/tagging.c:1402 ../src/libs/tagging.c:1585
+#: ../src/libs/tagging.c:1774
 msgid "empty tag is not allowed, aborting"
 msgstr "Имя метки не может быть пустым. Действие прервано."
 
-#: ../src/libs/tagging.c:1405
+#: ../src/libs/tagging.c:1404
 msgid "'|' character is not allowed to create a tag. aborting."
 msgstr "Имя метки не может содержать символ «|». Действие прервано."
 
-#: ../src/libs/tagging.c:1420
+#: ../src/libs/tagging.c:1419
 msgid "tag name already exists. aborting."
 msgstr "Метка уже существует. Действие прервано."
 
-#: ../src/libs/tagging.c:1514
+#: ../src/libs/tagging.c:1513
 msgid "edit tag"
 msgstr "Изменить метку"
 
-#: ../src/libs/tagging.c:1528 ../src/libs/tagging.c:1748
+#: ../src/libs/tagging.c:1527 ../src/libs/tagging.c:1747
 #, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
@@ -13784,114 +13782,114 @@ msgstr[0] "<u>%d</u> метка будет изменена"
 msgstr[1] "<u>%d</u> метки будут изменены"
 msgstr[2] "<u>%d</u> меток будут изменены"
 
-#: ../src/libs/tagging.c:1588
+#: ../src/libs/tagging.c:1587
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierachy use rename path instead. Aborting."
 msgstr "Имя метки не может содержать символ «|». Действие прервано."
 
-#: ../src/libs/tagging.c:1626
+#: ../src/libs/tagging.c:1625
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
 msgstr ""
 "По крайней мере одна новая метка «%s» уже существует. Действие прервано."
 
-#: ../src/libs/tagging.c:1734
+#: ../src/libs/tagging.c:1733
 msgid "rename path?"
 msgstr "Переименовать путь?"
 
-#: ../src/libs/tagging.c:1741
+#: ../src/libs/tagging.c:1740
 #, c-format
 msgid "selected path: %s "
 msgstr "Выбранный путь: %s "
 
-#: ../src/libs/tagging.c:1777
+#: ../src/libs/tagging.c:1776
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr ""
 "Ошибка в использовании символа «|» для разделения меток. Действие прервано."
 
-#: ../src/libs/tagging.c:1803
+#: ../src/libs/tagging.c:1802
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
 msgstr ""
 "По крайней мере одна новая метка «%s» уже существует. Действие прервано."
 
-#: ../src/libs/tagging.c:1909
+#: ../src/libs/tagging.c:1908
 msgid "attach tag"
 msgstr "Прикрепить"
 
-#: ../src/libs/tagging.c:1921
+#: ../src/libs/tagging.c:1920
 msgid "delete tag"
 msgstr "Удалить"
 
-#: ../src/libs/tagging.c:1931
+#: ../src/libs/tagging.c:1930
 msgid "create tag..."
 msgstr "Создать метку..."
 
-#: ../src/libs/tagging.c:1935
+#: ../src/libs/tagging.c:1934
 msgid "edit tag..."
 msgstr "Изменить метку..."
 
-#: ../src/libs/tagging.c:1944
+#: ../src/libs/tagging.c:1943
 msgid "rename path..."
 msgstr "Переименовать путь..."
 
-#: ../src/libs/tagging.c:1951
+#: ../src/libs/tagging.c:1950
 msgid "copy to entry"
 msgstr "Копировать в запись"
 
-#: ../src/libs/tagging.c:1975
+#: ../src/libs/tagging.c:1974
 msgid "go to tag collection"
 msgstr "В метки"
 
-#: ../src/libs/tagging.c:1981
+#: ../src/libs/tagging.c:1980
 msgid "go back to work"
 msgstr "Вернуться назад"
 
-#: ../src/libs/tagging.c:2091
+#: ../src/libs/tagging.c:2096
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: ../src/libs/tagging.c:2092
+#: ../src/libs/tagging.c:2097
 msgid "(private)"
 msgstr "(персональн.)"
 
-#: ../src/libs/tagging.c:2118
+#: ../src/libs/tagging.c:2123
 msgid "Select a keyword file"
 msgstr "Выбор файла меток"
 
-#: ../src/libs/tagging.c:2121
+#: ../src/libs/tagging.c:2126
 msgid "_import"
 msgstr "_Импортировать"
 
-#: ../src/libs/tagging.c:2135
+#: ../src/libs/tagging.c:2140
 msgid "error importing tags"
 msgstr "Ошибка при импорте меток!"
 
-#: ../src/libs/tagging.c:2137
+#: ../src/libs/tagging.c:2142
 #, c-format
 msgid "%zd tags imported"
 msgstr "Импортировано меток: %zd"
 
-#: ../src/libs/tagging.c:2159
+#: ../src/libs/tagging.c:2164
 msgid "Select file to export to"
 msgstr "Выбор файла для экспорта"
 
-#: ../src/libs/tagging.c:2162
+#: ../src/libs/tagging.c:2167
 msgid "_export"
 msgstr "_Экспортировать"
 
-#: ../src/libs/tagging.c:2177
+#: ../src/libs/tagging.c:2182
 msgid "error exporting tags"
 msgstr "Ошибка при экспорте меток!"
 
-#: ../src/libs/tagging.c:2179
+#: ../src/libs/tagging.c:2184
 #, c-format
 msgid "%zd tags exported"
 msgstr "Экспортировано меток: %zd"
 
-#: ../src/libs/tagging.c:2537
+#: ../src/libs/tagging.c:2542
 msgid ""
 "attached tags,\n"
 "double-click to detach\n"
@@ -13903,43 +13901,43 @@ msgstr ""
 "Правый щелчок для других действий над выбранной меткой.\n"
 "Ctrl+Колесо мыши для изменения размеров окна."
 
-#: ../src/libs/tagging.c:2548
+#: ../src/libs/tagging.c:2553
 msgid "attach"
 msgstr "Прикрепить"
 
-#: ../src/libs/tagging.c:2551
+#: ../src/libs/tagging.c:2556
 msgid "attach tag to all selected images"
 msgstr "Прикрепить метку к выбранным снимкам"
 
-#: ../src/libs/tagging.c:2556
+#: ../src/libs/tagging.c:2561
 msgid "detach"
 msgstr "Снять"
 
-#: ../src/libs/tagging.c:2559
+#: ../src/libs/tagging.c:2564
 msgid "detach tag from all selected images"
 msgstr "Снять метку с выбранных снимков"
 
-#: ../src/libs/tagging.c:2566
+#: ../src/libs/tagging.c:2571
 msgid "toggle list with / without hierarchy"
-msgstr "Переключить режим / без иерархии"
+msgstr "Переключить режим с иерархией или без неё"
 
-#: ../src/libs/tagging.c:2574
+#: ../src/libs/tagging.c:2579
 msgid "toggle sort by name or by count"
 msgstr "Переключить режим сортировки"
 
-#: ../src/libs/tagging.c:2584
+#: ../src/libs/tagging.c:2589
 msgid "toggle show or not darktable tags"
 msgstr "Видимость меток"
 
-#: ../src/libs/tagging.c:2600
+#: ../src/libs/tagging.c:2605
 msgid "enter tag name"
 msgstr "Название метки"
 
-#: ../src/libs/tagging.c:2610
+#: ../src/libs/tagging.c:2615
 msgid "clear entry"
 msgstr "Очистить"
 
-#: ../src/libs/tagging.c:2662
+#: ../src/libs/tagging.c:2667
 msgid ""
 "tag dictionary,\n"
 "double-click to attach,\n"
@@ -13951,43 +13949,38 @@ msgstr ""
 "Правый щелчок для других действий над выбранной меткой.\n"
 "Ctrl+Колесо мыши для изменения размеров окна."
 
-#: ../src/libs/tagging.c:2677
+#: ../src/libs/tagging.c:2682
 msgid "new"
 msgstr "Новая"
 
-#: ../src/libs/tagging.c:2680
+#: ../src/libs/tagging.c:2685
 msgid ""
 "create a new tag with the\n"
 "name you entered"
 msgstr "Создать новую метку с введённым именем"
 
-#: ../src/libs/tagging.c:2685
-msgctxt "verb"
-msgid "import"
-msgstr "Импорт"
-
-#: ../src/libs/tagging.c:2688
+#: ../src/libs/tagging.c:2693
 msgid "import tags from a Lightroom keyword file"
 msgstr "Импорт из файла меток Lightroom"
 
-#: ../src/libs/tagging.c:2693
+#: ../src/libs/tagging.c:2698
 msgctxt "verb"
-msgid "export"
-msgstr "Экспорт"
+msgid "export..."
+msgstr "Экспорт..."
 
-#: ../src/libs/tagging.c:2696
+#: ../src/libs/tagging.c:2701
 msgid "export all tags to a Lightroom keyword file"
 msgstr "Экспорт в файл меток Lightroom"
 
-#: ../src/libs/tagging.c:2703
+#: ../src/libs/tagging.c:2708
 msgid "toggle list / tree view"
-msgstr "Переключить режим / дерево"
+msgstr "Переключить режим список или дерево"
 
-#: ../src/libs/tagging.c:2711
+#: ../src/libs/tagging.c:2716
 msgid "toggle list with / without suggestion"
-msgstr "Переключить режим / без подсказок"
+msgstr "Переключить режим с подсказками или без них"
 
-#: ../src/libs/tagging.c:2816
+#: ../src/libs/tagging.c:2821
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
@@ -14524,7 +14517,7 @@ msgstr "Профиль"
 
 #: ../src/views/darkroom.c:2008 ../src/views/lighttable.c:4895
 msgid "preview display profile"
-msgstr "Предпросмотр цветового профиля монитора"
+msgstr "Предпросмотр профиля монитора"
 
 #: ../src/views/darkroom.c:2009
 msgid "histogram profile"
@@ -14538,7 +14531,7 @@ msgstr "Профиль монитора из %s или %s"
 #: ../src/views/darkroom.c:2066 ../src/views/lighttable.c:4928
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
-msgstr "Предпросмотр цветового профиля монитора в %s или %s"
+msgstr "Предпросмотр профиля монитора из %s или %s"
 
 #: ../src/views/darkroom.c:2069
 #, c-format
@@ -15042,6 +15035,27 @@ msgstr "Комбинация"
 #: ../src/views/view.c:2415
 msgid "Action"
 msgstr "Действие"
+
+#~ msgid "display the exposure mask"
+#~ msgstr "Показать маску экспозиций"
+
+#~ msgid "move"
+#~ msgstr "Переместить"
+
+#~ msgid "edit"
+#~ msgstr "Изменить"
+
+#~ msgctxt "styles"
+#~ msgid "import"
+#~ msgstr "Импорт"
+
+#~ msgctxt "verb"
+#~ msgid "import"
+#~ msgstr "Импорт"
+
+#~ msgctxt "verb"
+#~ msgid "export"
+#~ msgstr "Экспорт"
 
 #~ msgid "max rgb"
 #~ msgstr "Макс. RGB"
