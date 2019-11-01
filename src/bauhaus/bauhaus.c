@@ -421,8 +421,12 @@ static gboolean dt_bauhaus_popup_button_release(GtkWidget *widget, GdkEventButto
     darktable.bauhaus->end_mouse_x = x - wx;
     darktable.bauhaus->end_mouse_y = y - wy;
     dt_bauhaus_widget_accept(darktable.bauhaus->current);
+    dt_bauhaus_hide_popup();
   }
-  dt_bauhaus_hide_popup();
+  else if(darktable.bauhaus->hiding)
+  {
+    dt_bauhaus_hide_popup();
+  }
   return TRUE;
 }
 
@@ -454,6 +458,7 @@ static gboolean dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton 
   {
     dt_bauhaus_widget_reject(darktable.bauhaus->current);
   }
+  darktable.bauhaus->hiding = TRUE;
   return TRUE;
 }
 
@@ -1868,6 +1873,7 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
   memset(darktable.bauhaus->keys, 0, sizeof(darktable.bauhaus->keys));
   darktable.bauhaus->change_active = 0;
   darktable.bauhaus->mouse_line_distance = 0.0f;
+  darktable.bauhaus->hiding = FALSE;
   _stop_cursor();
 
   if(w->module)
