@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-01 08:32+0300\n"
+"POT-Creation-Date: 2019-11-01 11:31+0100\n"
 "PO-Revision-Date: 2019-11-01 12:45+0300\n"
 "Last-Translator: Timur Davletshin <timur.davletshin@gmail.com>\n"
 "Language-Team: русский\n"
@@ -19,6 +19,20 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Poedit 2.2.1\n"
+
+#: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
+msgid "Virtual Lighttable and Darkroom"
+msgstr "Виртуальный световой стол и фоторедактор"
+
+#: ../build/data/darktable.desktop.in.h:2 ../data/darktable.appdata.xml.in.h:1
+#: ../data/darktable.desktop.in.h:2
+msgid "Organize and develop images from digital cameras"
+msgstr "Организация и обработка цифровых фотографий"
+
+#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: ../build/data/darktable.desktop.in.h:4 ../data/darktable.desktop.in.h:4
+msgid "graphics;photography;raw;"
+msgstr "graphics;photography;raw;"
 
 #: ../build/src/preferences_gen.h:2104
 msgid "GUI options"
@@ -1154,10 +1168,6 @@ msgstr "Шаблон имени файлов"
 msgid "file naming pattern used for a import session"
 msgstr "Шаблон именования файлов, применяемый при импорте"
 
-#: ../data/darktable.appdata.xml.in.h:1 ../data/darktable.desktop.in.h:2
-msgid "Organize and develop images from digital cameras"
-msgstr "Организация и обработка цифровых фотографий"
-
 #: ../data/darktable.appdata.xml.in.h:2
 msgid ""
 "darktable manages your digital negatives in a database and lets you view "
@@ -1203,14 +1213,15 @@ msgstr "Показ снимков на карте"
 msgid "Print your images"
 msgstr "Печать снимков"
 
-#: ../data/darktable.desktop.in.h:1
-msgid "Virtual Lighttable and Darkroom"
-msgstr "Виртуальный световой стол и фоторедактор"
+#: ../src/bauhaus/bauhaus.c:2260
+#, c-format
+msgid "%s/%s: %s"
+msgstr ""
 
-#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: ../data/darktable.desktop.in.h:4
-msgid "graphics;photography;raw;"
-msgstr "graphics;photography;raw;"
+#: ../src/bauhaus/bauhaus.c:2262
+#, c-format
+msgid "%s: %s"
+msgstr ""
 
 #: ../src/chart/main.c:463 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/hist_dialog.c:171
@@ -1652,6 +1663,11 @@ msgstr "darktable - ошибка открытия базы данных"
 msgid "delete database"
 msgstr "Удалить базу данных"
 
+#: ../src/common/fast_guided_filter.h:456
+#, fuzzy
+msgid "fast guided filter failed to allocate memory, check your RAM settings"
+msgstr "Эквалайзер тонов: ошибка выделения памяти! Проверьте настройки памяти."
+
 #: ../src/common/film.c:311
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
@@ -1809,6 +1825,11 @@ msgid ""
 "session settings."
 msgstr ""
 "Ошибка получения уникального имени файла сеанса! Проверьте параметры импорта."
+
+#: ../src/common/iop_order.c:1893
+#, fuzzy, c-format
+msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
+msgstr "Неподдерживаемый профиль ввода заменён на линейный RGB по Rec709!"
 
 #: ../src/common/noiseprofiles.c:27
 msgid "generic poissonian"
@@ -4143,9 +4164,10 @@ msgstr "Авто"
 
 #. Adding the import/export buttons
 #: ../src/gui/preferences.c:544 ../src/gui/preferences.c:637
+#, fuzzy
 msgctxt "preferences"
-msgid "import"
-msgstr "Импорт"
+msgid "import..."
+msgstr "Импорт..."
 
 #. Adding the outer container
 #: ../src/gui/preferences.c:584
@@ -4160,10 +4182,10 @@ msgstr "Действие"
 msgid "binding"
 msgstr "Комбинация"
 
-#. Export button
-#: ../src/gui/preferences.c:642 ../src/libs/export.c:716
-msgid "export"
-msgstr "Экспорт"
+#. export button
+#: ../src/gui/preferences.c:642 ../src/libs/styles.c:472
+msgid "export..."
+msgstr "Экспорт..."
 
 #. Setting the notification text
 #: ../src/gui/preferences.c:919
@@ -6494,6 +6516,12 @@ msgstr "Ч-б Kodak T-Max 400"
 #: ../src/iop/channelmixer.c:582
 msgid "B/W Kodak Tri-X 400"
 msgstr "Ч-б Kodak Tri-X 400"
+
+#: ../src/iop/choleski.h:303 ../src/iop/choleski.h:401
+#, fuzzy
+msgid ""
+"Choleski decomposition failed to allocate memory, check your RAM settings"
+msgstr "Эквалайзер тонов: ошибка выделения памяти! Проверьте настройки памяти."
 
 #: ../src/iop/clahe.c:337 ../src/iop/sharpen.c:791
 msgid "amount"
@@ -9629,6 +9657,10 @@ msgstr "Пирамидальная"
 msgid "select the interpolation method"
 msgstr "Алгоритм интерполяции"
 
+#: ../src/iop/mask_manager.c:45 ../src/libs/masks.c:56
+msgid "mask manager"
+msgstr "Маски"
+
 #: ../src/iop/monochrome.c:74
 msgid "monochrome"
 msgstr "Преобразование в ч-б"
@@ -9866,7 +9898,8 @@ msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
 msgstr ""
-"Коррекция черной и белой точек raw включается только при работе с требующими этого сенсорами."
+"Коррекция черной и белой точек raw включается только при работе с требующими "
+"этого сенсорами."
 
 #: ../src/iop/relight.c:55
 msgid "fill-light 0.25EV with 4 zones"
@@ -10259,7 +10292,8 @@ msgstr "Автоматическое вращение пикселей"
 #: ../src/iop/rotatepixels.c:358
 msgid "automatic pixel rotation only works for the sensors that need it."
 msgstr ""
-"Автоматическое вращение пикселей включается только при работе с требующими этого сенсорами."
+"Автоматическое вращение пикселей включается только при работе с требующими "
+"этого сенсорами."
 
 #: ../src/iop/scalepixels.c:56
 msgctxt "modulename"
@@ -10273,7 +10307,8 @@ msgstr "Автоматическое масштабирование пиксел
 #: ../src/iop/scalepixels.c:275
 msgid "automatic pixel scaling only works for the sensors that need it."
 msgstr ""
-"Автоматическое масштабирование пикселей включается только при работе с требующими этого сенсорами."
+"Автоматическое масштабирование пикселей включается только при работе с "
+"требующими этого сенсорами."
 
 #: ../src/iop/shadhi.c:177
 msgid "shadows and highlights"
@@ -12008,6 +12043,11 @@ msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr "Как поступать с историей изменений и применяемым стилем обработки"
 
+#. Export button
+#: ../src/libs/export.c:716
+msgid "export"
+msgstr "Экспорт"
+
 #: ../src/libs/export.c:718
 msgid "export with current settings"
 msgstr "Экспортировать с текущими настройками"
@@ -12806,10 +12846,6 @@ msgid "select the source of the map. some entries might not work"
 msgstr ""
 "Выбор источника картографических данных. Некоторые источники могут быть "
 "недоступны."
-
-#: ../src/libs/masks.c:56
-msgid "mask manager"
-msgstr "Маски"
 
 #: ../src/libs/masks.c:242
 #, c-format
@@ -13632,11 +13668,6 @@ msgstr "Импорт..."
 msgid "import style from a style file"
 msgstr "Импорт стиля из файла"
 
-#. export button
-#: ../src/libs/styles.c:472
-msgid "export..."
-msgstr "Экспорт..."
-
 #: ../src/libs/styles.c:474
 msgid "export the selected style into a style file"
 msgstr "Экспорт стиля в файл"
@@ -14251,6 +14282,11 @@ msgstr "Показать подсказки о снимках"
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
 msgstr "hinter"
+
+#: ../src/libs/tools/image_infos.c:40
+#, fuzzy
+msgid "image infos"
+msgstr "Тип изображения"
 
 #: ../src/libs/tools/lighttable.c:140
 msgid "zoomable light table"
@@ -15035,6 +15071,10 @@ msgstr "Комбинация"
 #: ../src/views/view.c:2415
 msgid "Action"
 msgstr "Действие"
+
+#~ msgctxt "preferences"
+#~ msgid "import"
+#~ msgstr "Импорт"
 
 #~ msgid "display the exposure mask"
 #~ msgstr "Показать маску экспозиций"
