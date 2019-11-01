@@ -22,7 +22,7 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 
 - Over 2420 commits to darktable+rawspeed since 2.6
 - 553 pull requests handled
-- 65 issues closed
+- 66 issues closed
 - Updated user manual is coming soon™
 
 ## The Big Ones
