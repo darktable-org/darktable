@@ -34,7 +34,6 @@ function short-log()
 function for-submodule()
 {
     local SUBPATH=$1
-    local MIN=$2
 
     local SHEAD=$(git log --patch -1 $HEAD -- $SUBPATH | grep "Subproject commit" | tail -1 | cut -d' ' -f3)
 
