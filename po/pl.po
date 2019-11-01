@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 1.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-01 11:31+0100\n"
-"PO-Revision-Date: 2019-10-28 21:13+0100\n"
+"POT-Creation-Date: 2019-11-01 21:39+0100\n"
+"PO-Revision-Date: 2019-11-01 21:51+0100\n"
 "Last-Translator: Tomasz Golinski <tomaszg@math.uwb.edu.pl>\n"
 "Language-Team: Polish < >\n"
 "Language: pl_PL\n"
@@ -1230,15 +1230,15 @@ msgstr "Pokaż zdjęcia na mapie"
 msgid "Print your images"
 msgstr "Drukuj swoje zdjęcia"
 
-#: ../src/bauhaus/bauhaus.c:2260
+#: ../src/bauhaus/bauhaus.c:2266
 #, c-format
 msgid "%s/%s: %s"
-msgstr ""
+msgstr "%s/%s: %s"
 
-#: ../src/bauhaus/bauhaus.c:2262
+#: ../src/bauhaus/bauhaus.c:2268
 #, c-format
 msgid "%s: %s"
-msgstr ""
+msgstr "%s: %s"
 
 #: ../src/chart/main.c:463 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/hist_dialog.c:171
@@ -1684,9 +1684,8 @@ msgid "delete database"
 msgstr "skasuj bazę danych"
 
 #: ../src/common/fast_guided_filter.h:456
-#, fuzzy
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
-msgstr "korektor tonów nie mógł zaalokować pamięci, sprawdź ustawienia RAM"
+msgstr "błąd alokacji pamięci dla filtra prowadzonego, sprawdź ustawienia RAM"
 
 #: ../src/common/film.c:311
 msgid "do you want to remove this empty directory?"
@@ -1846,10 +1845,10 @@ msgstr ""
 "ustawienia sesji importu."
 
 #: ../src/common/iop_order.c:1893
-#, fuzzy, c-format
+#, c-format
 msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
 msgstr ""
-"nieobsługiwany profil wejściowy został zastąpiony przez liniowy Rec709 RGB!"
+"nieobsługiwany profil roboczy %s został zastąpiony przez Rec2020 RGB!\n"
 
 #: ../src/common/noiseprofiles.c:27
 msgid "generic poissonian"
@@ -1860,27 +1859,27 @@ msgstr "generyczny poissonowski"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "plik „%s” z profilem szumu nie jest poprawny"
 
-#: ../src/common/opencl.c:785
+#: ../src/common/opencl.c:786
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr ""
 "z powodu wolnej karty graficznej akceleracja przez opencl została wyłączona."
 
-#: ../src/common/opencl.c:792
+#: ../src/common/opencl.c:793
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly."
 msgstr ""
 "wykryto kilka kart graficznych - profil szeregowania opencl ustawiony "
 "odpowiednio."
 
-#: ../src/common/opencl.c:799
+#: ../src/common/opencl.c:800
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly."
 msgstr ""
 "wykryto bardzo szybką kartę graficzną - profil szeregowania opencl ustawiony "
 "odpowiednio."
 
-#: ../src/common/opencl.c:806
+#: ../src/common/opencl.c:807
 msgid "opencl scheduling profile set to default."
 msgstr "profil szeregowania opencl ustawiony na domyślny."
 
@@ -4194,7 +4193,6 @@ msgstr "auto"
 
 #. Adding the import/export buttons
 #: ../src/gui/preferences.c:544 ../src/gui/preferences.c:637
-#, fuzzy
 msgctxt "preferences"
 msgid "import..."
 msgstr "importuj..."
@@ -6543,10 +6541,9 @@ msgid "B/W Kodak Tri-X 400"
 msgstr "B/W Kodak Tri-X 400"
 
 #: ../src/iop/choleski.h:303 ../src/iop/choleski.h:401
-#, fuzzy
 msgid ""
 "Choleski decomposition failed to allocate memory, check your RAM settings"
-msgstr "korektor tonów nie mógł zaalokować pamięci, sprawdź ustawienia RAM"
+msgstr "błąd alokacji pamięci dla rozkładu Choleskiego, sprawdź ustawienia RAM"
 
 #: ../src/iop/clahe.c:337 ../src/iop/sharpen.c:791
 msgid "amount"
@@ -11823,7 +11820,7 @@ msgstr "RGB"
 
 #: ../src/libs/colorpicker.c:593
 msgid "restrict histogram to selection"
-msgstr "histogram ograniczony do zaznaczenia"
+msgstr "ogranicz histogram do obszaru"
 
 #: ../src/libs/colorpicker.c:626 ../src/libs/export_metadata.c:152
 msgid "add"
@@ -11831,7 +11828,7 @@ msgstr "dodaj"
 
 #: ../src/libs/colorpicker.c:635
 msgid "display sample areas on image"
-msgstr "wyświetlanie obszarów próbkowania"
+msgstr "pokaż obszary próbkowania"
 
 #: ../src/libs/copy_history.c:55
 msgid "history stack"
@@ -11934,7 +11931,7 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:337
 msgid "compress history"
-msgstr "skompresuj historię edycji"
+msgstr "skompresuj historię"
 
 #: ../src/libs/copy_history.c:339
 msgid ""
@@ -11946,7 +11943,7 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:342
 msgid "discard history"
-msgstr "porzuć historię edycji"
+msgstr "porzuć historię"
 
 #: ../src/libs/copy_history.c:345
 msgid ""
@@ -12531,7 +12528,7 @@ msgstr "tworzy lokalną kopię obrazu"
 
 #: ../src/libs/image.c:254
 msgid "resync local copy"
-msgstr "synchronizuj kopię lokalną"
+msgstr "synch. kopię lokalną"
 
 #: ../src/libs/image.c:257
 msgid "synchronize the image's XMP and remove the local copy"
@@ -13658,25 +13655,25 @@ msgstr "utwórz"
 
 #: ../src/libs/snapshots.c:80
 msgid "snapshots"
-msgstr "migawki"
+msgstr "zrzuty obrazu"
 
 #: ../src/libs/snapshots.c:101
 msgctxt "accel"
 msgid "take snapshot"
-msgstr "pobierz migawkę"
+msgstr "zrób zrzut obrazu"
 
 #. create take snapshot button
 #: ../src/libs/snapshots.c:271
 msgid "take snapshot"
-msgstr "pobierz migawkę"
+msgstr "zrób zrzut obrazu"
 
 #: ../src/libs/snapshots.c:274
 msgid ""
 "take snapshot to compare with another image or the same image at another "
 "stage of development"
 msgstr ""
-"pobiera migawkę przydatną w porównaniu z innym obrazem lub tym samym obrazem "
-"w innym stadium przetwarzania"
+"robi zrzut obrazu przydatny w porównaniu go z innym, lub tym samym obrazem w "
+"innym stadium przetwarzania"
 
 #: ../src/libs/styles.c:49
 msgid "styles"
@@ -14388,9 +14385,8 @@ msgid "hinter"
 msgstr "hinter"
 
 #: ../src/libs/tools/image_infos.c:40
-#, fuzzy
 msgid "image infos"
-msgstr "sugerowany rodzaj obrazu"
+msgstr "informacje o obrazach"
 
 #: ../src/libs/tools/lighttable.c:140
 msgid "zoomable light table"
