@@ -78,7 +78,7 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 
 - Modules can now be re-ordered with <kbd>Ctrl+Shift+drag</kbd>.
 
-  IPORTANT PLEASE READ:
+  IMPORTANT PLEASE READ:
 
   Note that this is NOT a GUI re-ordering but a pixel-pipe
   reordering. If you're not familiar with pixel pipe order and the
@@ -86,7 +86,7 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
   change the order.
 
   The default order has been set to give the best result in the
-  majorty of time and will never be on the wrong side.
+  majority of time and will never be on the wrong side.
 
 - The color zones module now display an histogram based on the ‘select
   by’ channel and displays the selected range if the color picker is
@@ -121,7 +121,7 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 - A new module for handling 3D Lut transformations (PNG Hald-CLUT and
   Cube files are supported).
 
-- Many changes to denoise profiled. The variance stabilisation transform
+- Many changes to denoise profiled. The variance stabilization transform
   has changed, allowing a finer control of denoising. In particular,
   it is possible to better denoise the shadows, and correct color casts
   that may occur in the shadows. This change mainly improves the denoising
@@ -230,7 +230,7 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 
 - A new module 'rgb curve' has been added. It has linked and
   independent RGB channels.
-  It works with the rgb colorspace selected on the work profile.
+  It works with the rgb color space selected on the work profile.
   The curves and histogram can be displayed using the work profile or
   can be scaled to be 50% grey.
   The color picker allows to select by area with <kbd>Ctrl+click</kbd>.
@@ -243,9 +243,10 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 - A new module 'rgb levels' has been added. It has linked and
   independent channels, preserve colors option and is native RGB.
 
-- A search text has been added to the module groups in the darkroom. It has a
-  config option to show only the modules groups, only the search text or both.
-  Modules are searched by name (localized).
+- A search text has been added to the module groups in the
+  darkroom. It has a configuration option to show only the modules
+  groups, only the search text or both.  Modules are searched by name
+  (localized).
 
   If displaying only the search text, the active pipe modules are
   displayed when the search text is empty.  A darkroom shortcut can be
