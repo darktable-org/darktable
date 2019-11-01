@@ -35,7 +35,7 @@ find_package_handle_standard_args(WEBP DEFAULT_MSG WEBP_LIBRARY WEBP_INCLUDE_DIR
 
 
 if(WEBP_FIND_VERSION)
-  cmake_minimum_required(VERSION 3.4.0)
+  cmake_minimum_required(VERSION 3.10.0)
   set(WEBP_FAILED_VERSION_CHECK true)
 
   if(WEBP_FIND_VERSION_EXACT)
