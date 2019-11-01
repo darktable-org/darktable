@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-30 18:06-0600\n"
+"POT-Creation-Date: 2019-11-01 11:31+0100\n"
 "PO-Revision-Date: 2019-10-29 01:01-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
@@ -13,6 +13,20 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-Bookmarks: -1,1170,-1,-1,-1,-1,-1,-1,-1,-1\n"
 "X-Generator: Poedit 2.2.4\n"
+
+#: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
+msgid "Virtual Lighttable and Darkroom"
+msgstr "Mesa de Luz y Cuarto Oscuro Virtuales"
+
+#: ../build/data/darktable.desktop.in.h:2 ../data/darktable.appdata.xml.in.h:1
+#: ../data/darktable.desktop.in.h:2
+msgid "Organize and develop images from digital cameras"
+msgstr "Revele y organice las imágenes de cámaras digitales"
+
+#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: ../build/data/darktable.desktop.in.h:4 ../data/darktable.desktop.in.h:4
+msgid "graphics;photography;raw;"
+msgstr "gráficos;fotografía;raw;"
 
 #: ../build/src/preferences_gen.h:2104
 msgid "GUI options"
@@ -1200,10 +1214,6 @@ msgstr "Patrón para nombrar archivos"
 msgid "file naming pattern used for a import session"
 msgstr "Patrón de nombres utilizado para importar una sesión"
 
-#: ../data/darktable.appdata.xml.in.h:1 ../data/darktable.desktop.in.h:2
-msgid "Organize and develop images from digital cameras"
-msgstr "Revele y organice las imágenes de cámaras digitales"
-
 #: ../data/darktable.appdata.xml.in.h:2
 msgid ""
 "darktable manages your digital negatives in a database and lets you view "
@@ -1250,14 +1260,15 @@ msgstr "Mostrar imágenes en un mapa"
 msgid "Print your images"
 msgstr "Imprimir tus imagenes"
 
-#: ../data/darktable.desktop.in.h:1
-msgid "Virtual Lighttable and Darkroom"
-msgstr "Mesa de Luz y Cuarto Oscuro Virtuales"
+#: ../src/bauhaus/bauhaus.c:2260
+#, c-format
+msgid "%s/%s: %s"
+msgstr ""
 
-#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: ../data/darktable.desktop.in.h:4
-msgid "graphics;photography;raw;"
-msgstr "gráficos;fotografía;raw;"
+#: ../src/bauhaus/bauhaus.c:2262
+#, c-format
+msgid "%s: %s"
+msgstr ""
 
 #: ../src/chart/main.c:463 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/hist_dialog.c:171
@@ -1705,6 +1716,13 @@ msgstr "Error en darktable al abrir la base de datos"
 msgid "delete database"
 msgstr "borrar base de datos"
 
+#: ../src/common/fast_guided_filter.h:456
+#, fuzzy
+msgid "fast guided filter failed to allocate memory, check your RAM settings"
+msgstr ""
+"El ecualizador de tono no pudo asignar memoria, verifique la configuración "
+"de RAM"
+
 #: ../src/common/film.c:311
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
@@ -1863,6 +1881,12 @@ msgid ""
 msgstr ""
 "no se pudo expandir a un nombre único de archivo. revise la configuración de "
 "importación."
+
+#: ../src/common/iop_order.c:1893
+#, fuzzy, c-format
+msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
+msgstr ""
+"perfil de entrada no soportado ha sido remplazado por linear Rec709 RGB!"
 
 #: ../src/common/noiseprofiles.c:27
 msgid "generic poissonian"
@@ -4191,9 +4215,10 @@ msgstr "auto"
 
 #. Adding the import/export buttons
 #: ../src/gui/preferences.c:544 ../src/gui/preferences.c:637
+#, fuzzy
 msgctxt "preferences"
-msgid "import"
-msgstr "importar"
+msgid "import..."
+msgstr "importar..."
 
 #. Adding the outer container
 #: ../src/gui/preferences.c:584
@@ -4208,10 +4233,10 @@ msgstr "atajo de teclado"
 msgid "binding"
 msgstr "combinación"
 
-#. Export button
-#: ../src/gui/preferences.c:642 ../src/libs/export.c:716
-msgid "export"
-msgstr "exportar"
+#. export button
+#: ../src/gui/preferences.c:642 ../src/libs/styles.c:472
+msgid "export..."
+msgstr "exportar..."
 
 #. Setting the notification text
 #: ../src/gui/preferences.c:919
@@ -6549,6 +6574,14 @@ msgstr "B/N Kodak T-max 400"
 #: ../src/iop/channelmixer.c:582
 msgid "B/W Kodak Tri-X 400"
 msgstr "B/N Kodak Tri-X 400"
+
+#: ../src/iop/choleski.h:303 ../src/iop/choleski.h:401
+#, fuzzy
+msgid ""
+"Choleski decomposition failed to allocate memory, check your RAM settings"
+msgstr ""
+"El ecualizador de tono no pudo asignar memoria, verifique la configuración "
+"de RAM"
 
 #: ../src/iop/clahe.c:337 ../src/iop/sharpen.c:791
 msgid "amount"
@@ -9766,6 +9799,10 @@ msgstr "pirámide"
 msgid "select the interpolation method"
 msgstr "elija el método de interpolación"
 
+#: ../src/iop/mask_manager.c:45 ../src/libs/masks.c:56
+msgid "mask manager"
+msgstr "gestor de máscaras"
+
 #: ../src/iop/monochrome.c:74
 msgid "monochrome"
 msgstr "monocromo"
@@ -12162,6 +12199,11 @@ msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr "los elementos del estilo se anexan al historial o los reemplazan"
 
+#. Export button
+#: ../src/libs/export.c:716
+msgid "export"
+msgstr "exportar"
+
 #: ../src/libs/export.c:718
 msgid "export with current settings"
 msgstr "exportar con la configuración actual"
@@ -12973,10 +13015,6 @@ msgstr "fuente de mapa"
 #: ../src/libs/map_settings.c:109
 msgid "select the source of the map. some entries might not work"
 msgstr "seleccionar la fuente del mapa. algunas entradas podrían no funcionar"
-
-#: ../src/libs/masks.c:56
-msgid "mask manager"
-msgstr "gestor de máscaras"
 
 #: ../src/libs/masks.c:242
 #, c-format
@@ -13805,11 +13843,6 @@ msgstr "importar..."
 msgid "import style from a style file"
 msgstr "importar el estilo desde un fichero"
 
-#. export button
-#: ../src/libs/styles.c:472
-msgid "export..."
-msgstr "exportar..."
-
 #: ../src/libs/styles.c:474
 msgid "export the selected style into a style file"
 msgstr "exportar el estilo seleccionado a un fichero"
@@ -14434,6 +14467,11 @@ msgstr "mostrar info superpuesta"
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
 msgstr "tip"
+
+#: ../src/libs/tools/image_infos.c:40
+#, fuzzy
+msgid "image infos"
+msgstr "indicio de imagen"
 
 #: ../src/libs/tools/lighttable.c:140
 msgid "zoomable light table"
@@ -15216,6 +15254,10 @@ msgstr "Atajos del teclado"
 #: ../src/views/view.c:2415
 msgid "Action"
 msgstr "Acción"
+
+#~ msgctxt "preferences"
+#~ msgid "import"
+#~ msgstr "importar"
 
 #~ msgid "display the exposure mask"
 #~ msgstr "Mostrar la máscara de exposición"
