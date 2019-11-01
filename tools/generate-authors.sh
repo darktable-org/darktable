@@ -120,7 +120,7 @@ echo "* translators:"
 short-log $RANGE $TRANSLATOR_THRESHOLD "./po/*.po ./doc/man/po/*.po ./doc/usermanual/po/*.po"
 
 echo
-echo "* contributors (at least 4 commits):"
+echo "* contributors (at least $CONTRIBUTOR_THRESHOLD commits):"
 short-log $RANGE $CONTRIBUTOR_THRESHOLD |
     while read name; do
         is-developer "$name"
