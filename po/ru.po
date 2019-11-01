@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 2.7\n"
+"Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:31+0100\n"
-"PO-Revision-Date: 2019-11-01 12:45+0300\n"
+"PO-Revision-Date: 2019-11-01 15:00+0300\n"
 "Last-Translator: Timur Davletshin <timur.davletshin@gmail.com>\n"
 "Language-Team: русский\n"
 "Language: ru\n"
@@ -261,13 +261,13 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2462
 msgid "rating an image one star twice will not zero out the rating"
-msgstr "Отключить нулевой рейтинг по двойному клику одной звезды"
+msgstr "Отключить снятие рейтинга по двухкратному выставлению одной звезды"
 
 #: ../build/src/preferences_gen.h:2474
 msgid ""
 "do not have the rating of one star behave as documented in the manual--an "
 "image rated one star twice will result in a zero star rating."
-msgstr "Установка одной звезды дважды убирает рейтинг снимка вообще."
+msgstr "Двухкратная установка одной звезды снимает рейтинг снимка."
 
 #: ../build/src/preferences_gen.h:2482 ../src/views/darkroom.c:110
 msgid "darkroom"
@@ -1216,12 +1216,12 @@ msgstr "Печать снимков"
 #: ../src/bauhaus/bauhaus.c:2260
 #, c-format
 msgid "%s/%s: %s"
-msgstr ""
+msgstr "%s/%s: %s"
 
 #: ../src/bauhaus/bauhaus.c:2262
 #, c-format
 msgid "%s: %s"
-msgstr ""
+msgstr "%s: %s"
 
 #: ../src/chart/main.c:463 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/hist_dialog.c:171
@@ -1664,9 +1664,8 @@ msgid "delete database"
 msgstr "Удалить базу данных"
 
 #: ../src/common/fast_guided_filter.h:456
-#, fuzzy
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
-msgstr "Эквалайзер тонов: ошибка выделения памяти! Проверьте настройки памяти."
+msgstr "Управляемый фильтр: ошибка выделения памяти! Проверьте настройки памяти."
 
 #: ../src/common/film.c:311
 msgid "do you want to remove this empty directory?"
@@ -1827,9 +1826,9 @@ msgstr ""
 "Ошибка получения уникального имени файла сеанса! Проверьте параметры импорта."
 
 #: ../src/common/iop_order.c:1893
-#, fuzzy, c-format
+#, c-format
 msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
-msgstr "Неподдерживаемый профиль ввода заменён на линейный RGB по Rec709!"
+msgstr "Неподдерживаемый рабочий профиль %s заменён на RGB по Rec2020!\n"
 
 #: ../src/common/noiseprofiles.c:27
 msgid "generic poissonian"
@@ -1983,7 +1982,7 @@ msgstr "м"
 
 #: ../src/control/control.c:307
 msgid "working.."
-msgstr "Идёт обработка..."
+msgstr "Операция выполняется..."
 
 #: ../src/control/control.c:685
 #, c-format
@@ -4164,7 +4163,6 @@ msgstr "Авто"
 
 #. Adding the import/export buttons
 #: ../src/gui/preferences.c:544 ../src/gui/preferences.c:637
-#, fuzzy
 msgctxt "preferences"
 msgid "import..."
 msgstr "Импорт..."
@@ -6518,10 +6516,9 @@ msgid "B/W Kodak Tri-X 400"
 msgstr "Ч-б Kodak Tri-X 400"
 
 #: ../src/iop/choleski.h:303 ../src/iop/choleski.h:401
-#, fuzzy
 msgid ""
 "Choleski decomposition failed to allocate memory, check your RAM settings"
-msgstr "Эквалайзер тонов: ошибка выделения памяти! Проверьте настройки памяти."
+msgstr "Разложение Холецкого: ошибка выделения памяти! Проверьте настройки памяти."
 
 #: ../src/iop/clahe.c:337 ../src/iop/sharpen.c:791
 msgid "amount"
@@ -14284,9 +14281,8 @@ msgid "hinter"
 msgstr "hinter"
 
 #: ../src/libs/tools/image_infos.c:40
-#, fuzzy
 msgid "image infos"
-msgstr "Тип изображения"
+msgstr "Метаданные"
 
 #: ../src/libs/tools/lighttable.c:140
 msgid "zoomable light table"
