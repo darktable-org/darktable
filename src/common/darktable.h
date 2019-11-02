@@ -39,8 +39,6 @@
 #define O_BINARY 0
 #endif
 
-#include "ThreadSafetyAnalysis.h"
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -187,8 +185,6 @@ static inline int dt_version()
 #undef STR
 #define STR(x) STR_HELPER(x)
 
-#define DT_IMAGE_DBLOCKS 64
-
 struct dt_gui_gtk_t;
 struct dt_control_t;
 struct dt_develop_t;
@@ -265,7 +261,7 @@ typedef struct darktable_t
   struct dt_undo_t *undo;
   struct dt_colorspaces_t *color_profiles;
   struct dt_l10n_t *l10n;
-  dt_pthread_mutex_t db_image[DT_IMAGE_DBLOCKS];
+  dt_pthread_mutex_t db_insert;
   dt_pthread_mutex_t plugin_threadsafe;
   dt_pthread_mutex_t capabilities_threadsafe;
   dt_pthread_mutex_t exiv2_threadsafe;
@@ -307,36 +303,6 @@ void dt_free_align(void *mem);
 #define dt_free_align(A) free(A)
 #define dt_free_align_ptr free
 #endif
-
-static inline void dt_lock_image(uint32_t imgid) ACQUIRE(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)])
-{
-  dt_pthread_mutex_lock(&(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)]));
-}
-
-static inline void dt_unlock_image(uint32_t imgid) RELEASE(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)])
-{
-  dt_pthread_mutex_unlock(&(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)]));
-}
-
-static inline void dt_lock_image_pair(uint32_t imgid1, uint32_t imgid2) ACQUIRE(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)], darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)])
-{
-  if(imgid1 < imgid2)
-  {
-    dt_pthread_mutex_lock(&(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)]));
-    dt_pthread_mutex_lock(&(darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)]));
-  }
-  else
-  {
-    dt_pthread_mutex_lock(&(darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)]));
-    dt_pthread_mutex_lock(&(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)]));
-  }
-}
-
-static inline void dt_unlock_image_pair(uint32_t imgid1, uint32_t imgid2) RELEASE(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)], darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)])
-{
-  dt_pthread_mutex_unlock(&(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)]));
-  dt_pthread_mutex_unlock(&(darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)]));
-}
 
 static inline gboolean dt_is_aligned(const void *pointer, size_t byte_count)
 {

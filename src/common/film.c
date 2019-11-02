@@ -200,6 +200,7 @@ int dt_film_new(dt_film_t *film, const char *directory)
                                 -1, &stmt, NULL);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, datetime, -1, SQLITE_STATIC);
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, directory, -1, SQLITE_STATIC);
+    dt_pthread_mutex_lock(&darktable.db_insert);
     rc = sqlite3_step(stmt);
     if(rc != SQLITE_DONE)
       fprintf(stderr, "[film_new] failed to insert film roll! %s\n",
@@ -210,6 +211,7 @@ int dt_film_new(dt_film_t *film, const char *directory)
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, directory, -1, SQLITE_STATIC);
     if(sqlite3_step(stmt) == SQLITE_ROW) film->id = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
+    dt_pthread_mutex_unlock(&darktable.db_insert);
   }
 
   if(film->id <= 0) return 0;
