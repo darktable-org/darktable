@@ -1288,7 +1288,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_accel_register_global(NC_("accel", "zoom out"), GDK_KEY_minus, GDK_CONTROL_MASK);
 
   // accels window
-  dt_accel_register_global(NC_("accel", "show accels window"), 0, 0);
+  dt_accel_register_global(NC_("accel", "show accels window"), GDK_KEY_h, 0);
 
   darktable.gui->reset = 0;
 
