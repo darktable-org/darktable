@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-01 22:21+0100\n"
-"PO-Revision-Date: 2019-11-02 11:41+0100\n"
+"POT-Creation-Date: 2019-11-02 12:29+0100\n"
+"PO-Revision-Date: 2019-11-02 12:30+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -8197,6 +8197,11 @@ msgstr "manuel"
 #: ../src/iop/exposure.c:869 ../src/iop/levels.c:677 ../src/iop/vignette.c:1147
 msgid "automatic"
 msgstr "automatique"
+
+#: ../src/iop/exposure.c:885 ../src/iop/exposure.c:924
+#, c-format
+msgid "%.2fEV"
+msgstr "%.2fIL"
 
 #: ../src/iop/exposure.c:891
 msgid ""
