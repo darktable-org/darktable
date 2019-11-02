@@ -260,6 +260,14 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 
 - Allow to change algorithm clone/heal and blur/color in retouch module.
 
+- An accels window has been added to summarize all available shortcuts and mouse
+  actions available in the current context.
+
+- Dynamic shortcuts have been added for darkroom module sliders. They allow to
+  change slider values with an accel + mouse scroll.
+
+- Add zoom & pan feature to lighttable full preview..
+
 ## Bug fixes
 
 - The color picker support has been fixed by a complete rewrite. It
