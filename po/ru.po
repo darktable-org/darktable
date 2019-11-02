@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-01 21:57+0300\n"
+"POT-Creation-Date: 2019-11-02 08:06+0300\n"
 "PO-Revision-Date: 2019-11-01 22:17+0300\n"
 "Last-Translator: Timur Davletshin <timur.davletshin@gmail.com>\n"
 "Language-Team: русский\n"
@@ -8493,8 +8493,8 @@ msgstr "Широта"
 
 #: ../src/iop/filmicrgb.c:274
 msgctxt "accel"
-msgid "shadows/highlights balance"
-msgstr "Тени и света (баланс)"
+msgid "shadows highlights balance"
+msgstr "Баланс теней и светов"
 
 #: ../src/iop/filmicrgb.c:275
 msgctxt "accel"
@@ -10742,7 +10742,7 @@ msgstr "Диаметр сглаживания"
 
 #: ../src/iop/toneequal.c:321
 msgctxt "accel"
-msgid "edges refinement/feathering"
+msgid "edges refinement or feathering"
 msgstr "Растушёвка"
 
 #: ../src/iop/toneequal.c:322
@@ -15069,6 +15069,10 @@ msgstr "Комбинация"
 #: ../src/views/view.c:2415
 msgid "Action"
 msgstr "Действие"
+
+#~ msgctxt "accel"
+#~ msgid "shadows/highlights balance"
+#~ msgstr "Тени и света (баланс)"
 
 #~ msgctxt "preferences"
 #~ msgid "import"
