@@ -679,6 +679,7 @@ filechooserdialog *
 dialog headerbar,
 filechooserdialog headerbar
 {
+  background-color: @border_color;
   margin: 0;
   padding: 0.1em 0.6em;
 }
