@@ -498,6 +498,8 @@ if(NOT CUSTOM_CFLAGS)
   if(BUILD_SSE2_CODEPATHS)
     #we MUST always specify our required instruction set, native might not detect it
     set(DT_REQ_INSTRUCTIONS "-msse2")
+  else(BUILD_ALTIVEC_CODEPATHS)
+    set(DT_REQ_INSTRUCTIONS "-maltivec")
   endif()
 
   include(march-mtune)

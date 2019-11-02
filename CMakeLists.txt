@@ -78,6 +78,16 @@ endif()
 
 MESSAGE(STATUS "Building SSE2-optimized codepaths: ${BUILD_SSE2_CODEPATHS}")
 
+if(BUILD_ALTIVEC_CODEPATHS)
+  CHECK_C_COMPILER_FLAG("-maltivec" _MALTIVEC)
+  if(NOT _MALTIVEC)
+    MESSAGE(WARNING "Building of altivec optimized codepaths is enabled, but the compiler does not understand -maltivec.")
+    set(BUILD_ALTIVEC_CODEPATHS OFF)
+  endif()
+endif()
+
+MESSAGE(STATUS "Building altivec optimized codepaths: ${BUILD_ALTIVEC_CODEPATHS}")
+
 #
 # Set platform defaults...
 #
