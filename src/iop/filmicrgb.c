@@ -1240,17 +1240,17 @@ void init(dt_iop_module_t *module)
   dt_iop_filmicrgb_params_t tmp
     = (dt_iop_filmicrgb_params_t){
                                  .grey_point_source   = 9.225, // source grey
-                                 .black_point_source  = -4.37,  // source black
-                                 .white_point_source  = 4.37,  // source white
-                                 .security_factor     = 22.4f,
+                                 .black_point_source  = -4.0f,  // source black
+                                 .white_point_source  = 4.0f,  // source white
+                                 .security_factor     = 16.0f,
                                  .grey_point_target   = 18.45, // target grey
                                  .black_point_target  = 0.0,  // target black
                                  .white_point_target  = 100.0,  // target white
                                  .output_power        = 2.44,  // target power (~ gamma)
-                                 .latitude            = 25.0,  // intent latitude
-                                 .contrast            = 1.25,  // intent contrast
+                                 .latitude            = 30.0f,  // intent latitude
+                                 .contrast            = 1.4,  // intent contrast
                                  .saturation          = 0.0,   // intent saturation
-                                 .balance             = 0.0, // balance shadows/highlights
+                                 .balance             = 20.0f, // balance shadows/highlights
                                  .preserve_color      = DT_FILMIC_METHOD_MAX_RGB // run the saturated variant
                               };
   memcpy(module->params, &tmp, sizeof(dt_iop_filmicrgb_params_t));
