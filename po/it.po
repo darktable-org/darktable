@@ -792,8 +792,8 @@ msgid ""
 msgstr ""
 "Quando c'è un file di testo accanto ad un'immagine, esso può essere mostrato "
 "in sovrimpressione sulle immagini ingrandite nella modalità Tavolo Luminoso. "
-"Il file di testo deve essere lì durante l'importazione oppure l'analizzatore "
-"dovrà essere abilitato"
+"Luminoso. Il file di testo deve essere lì durante l'importazione oppure "
+"l'analizzatore dovrà essere abilitato"
 
 #: ../build/src/preferences_gen.h:3266
 msgid "mouse wheel scrolls modules side panel by default"
@@ -3118,7 +3118,7 @@ msgstr "Estensione spaziale della sfumatura"
 
 #: ../src/develop/blend_gui.c:2545
 msgid "spatial radius of feathering"
-msgstr "Estensione spaziale della rifocalizzazione"
+msgstr "Estensione spaziale della sfumatura"
 
 #: ../src/develop/blend_gui.c:2545
 msgid "mask blur"
@@ -3484,7 +3484,7 @@ msgid ""
 msgstr ""
 "Maiusc+click per cambiare modalità di sfumatura, Ctrl+click per ruotare\n"
 "Maiusc+(rotella mouse) per impostare la dimensione della sfumatura, Ctrl"
-"+(rotella mouse) per impostare l'opacità della forma (%d%%)"
+"Ctrl+(rotella mouse) per impostare l'opacità della forma (%d%%)"
 
 #: ../src/develop/masks/masks.c:363
 #, c-format
@@ -10244,7 +10244,6 @@ msgstr ""
 "Ctrl+Alt+click: alterna linea/curva"
 
 #: ../src/iop/liquify.c:3607
-#, fuzzy
 msgid ""
 "click and drag to move - click: show/hide feathering controls\n"
 "ctrl-click: autosmooth, cusp, smooth, symmetrical - right click to remove"
@@ -12064,18 +12063,14 @@ msgid "deep shadows"
 msgstr "Ombre"
 
 #: ../src/iop/toneequal.c:313
-#, fuzzy
-#| msgid "lighten shadows"
 msgctxt "accel"
 msgid "light shadows"
-msgstr "éclaircit les ombres"
+msgstr "Schiarire le ombre"
 
 #: ../src/iop/toneequal.c:314
-#, fuzzy
-#| msgid "midtones bias"
 msgctxt "accel"
 msgid "midtones"
-msgstr "imprecisione mezzi-toni"
+msgstr "Mezzi-toni"
 
 #: ../src/iop/toneequal.c:315
 #, fuzzy
@@ -12094,12 +12089,12 @@ msgstr "Bianco"
 #: ../src/iop/toneequal.c:318
 msgctxt "accel"
 msgid "speculars"
-msgstr ""
+msgstr "Speculari"
 
 #: ../src/iop/toneequal.c:319
 msgctxt "accel"
 msgid "filter diffusion"
-msgstr ""
+msgstr "Filtro di diffusione"
 
 #: ../src/iop/toneequal.c:320
 #, fuzzy
@@ -12111,7 +12106,7 @@ msgstr "Filtro di rafreddamento"
 #: ../src/iop/toneequal.c:321
 msgctxt "accel"
 msgid "edges refinement/feathering"
-msgstr ""
+msgstr "rifinitura bordi/sfumatura"
 
 #: ../src/iop/toneequal.c:322
 #, fuzzy
@@ -12143,15 +12138,15 @@ msgstr "Seleziona il metodo di fusione"
 
 #: ../src/iop/toneequal.c:428
 msgid "mask blending : landscapes"
-msgstr ""
+msgstr "Fusione maschera: paesaggi"
 
 #: ../src/iop/toneequal.c:436
 msgid "mask blending : all purposes"
-msgstr ""
+msgstr "Fusione maschera: generico"
 
 #: ../src/iop/toneequal.c:444
 msgid "mask blending : isolated subjects"
-msgstr ""
+msgstr "Fusione maschera: soggetti isolati"
 
 #: ../src/iop/toneequal.c:465
 #, fuzzy
@@ -12205,7 +12200,7 @@ msgstr ""
 #: ../src/iop/toneequal.c:2417
 #, c-format
 msgid "%+.1f EV"
-msgstr ""
+msgstr "%+.1f EV"
 
 #: ../src/iop/toneequal.c:3039
 #, fuzzy
@@ -12233,43 +12228,43 @@ msgstr "masques"
 #: ../src/iop/toneequal.c:3102
 #, c-format
 msgid "%+.2f EV"
-msgstr ""
+msgstr "%+.2f WV"
 
 #: ../src/iop/toneequal.c:3055
 msgid "-8 EV"
-msgstr ""
+msgstr "-8 EV"
 
 #: ../src/iop/toneequal.c:3061
 msgid "-7 EV"
-msgstr ""
+msgstr "-7 EV"
 
 #: ../src/iop/toneequal.c:3067
 msgid "-6 EV"
-msgstr ""
+msgstr "-6 EV"
 
 #: ../src/iop/toneequal.c:3073
 msgid "-5 EV"
-msgstr ""
+msgstr "-5 EV"
 
 #: ../src/iop/toneequal.c:3079
 msgid "-4 EV"
-msgstr ""
+msgstr "-4 EV"
 
 #: ../src/iop/toneequal.c:3085
 msgid "-3 EV"
-msgstr ""
+msgstr "-3 EV"
 
 #: ../src/iop/toneequal.c:3091
 msgid "-2 EV"
-msgstr ""
+msgstr "-2 EV"
 
 #: ../src/iop/toneequal.c:3097
 msgid "-1 EV"
-msgstr ""
+msgstr "-1 EV"
 
 #: ../src/iop/toneequal.c:3103
 msgid "+0 EV"
-msgstr ""
+msgstr "+0 EV"
 
 #: ../src/iop/toneequal.c:3121
 #, fuzzy
@@ -12297,18 +12292,12 @@ msgid "luminance estimator"
 msgstr "Dominanza colore"
 
 #: ../src/iop/toneequal.c:3140
-#, fuzzy
-#| msgctxt "blendmode"
-#| msgid "average"
 msgid "RGB average"
-msgstr "Media"
+msgstr "Media RGB"
 
 #: ../src/iop/toneequal.c:3141
-#, fuzzy
-#| msgctxt "blendmode"
-#| msgid "HSV lightness"
 msgid "HSL lightness"
-msgstr "Luminosità HSV"
+msgstr "Luminosità HSL"
 
 #: ../src/iop/toneequal.c:3142
 msgid "HSV value / RGB max"
@@ -12316,7 +12305,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:3143
 msgid "RGB sum"
-msgstr ""
+msgstr "Somma RGB"
 
 #: ../src/iop/toneequal.c:3144
 msgid "RGB euclidean norm"
@@ -12382,7 +12371,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:3183
 msgid "edges refinement/feathering"
-msgstr ""
+msgstr "rifinitura bordi/sfumatura"
 
 #: ../src/iop/toneequal.c:3184
 msgid ""
