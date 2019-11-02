@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 22:21+0100\n"
-"PO-Revision-Date: 2019-11-01 22:21+0100\n"
+"PO-Revision-Date: 2019-11-02 11:41+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -10872,7 +10872,7 @@ msgstr "spéculaires"
 #: ../src/iop/toneequal.c:319
 msgctxt "accel"
 msgid "filter diffusion"
-msgstr "filtre de diffusion"
+msgstr "diffusion du filtre"
 
 #: ../src/iop/toneequal.c:320
 msgctxt "accel"
@@ -10882,7 +10882,7 @@ msgstr "diamètre adoucissement"
 #: ../src/iop/toneequal.c:321
 msgctxt "accel"
 msgid "edges refinement or feathering"
-msgstr "raffinement ou adoucissement des bords"
+msgstr "raffinement ou respect des bords"
 
 #: ../src/iop/toneequal.c:322
 msgctxt "accel"
@@ -10892,12 +10892,12 @@ msgstr "quantification masque"
 #: ../src/iop/toneequal.c:323
 msgctxt "accel"
 msgid "mask exposure compensation"
-msgstr "compensation masque exposition"
+msgstr "compensation exposition du masque"
 
 #: ../src/iop/toneequal.c:324
 msgctxt "accel"
 msgid "mask contrast compensation"
-msgstr "compensation masque contraste"
+msgstr "compensation contraste du masque"
 
 #. No blending
 #: ../src/iop/toneequal.c:416
@@ -11109,7 +11109,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:3165
 msgid "filter diffusion"
-msgstr "filtre de diffusion"
+msgstr "diffusion du filtre"
 
 #: ../src/iop/toneequal.c:3166
 msgid ""
@@ -11135,7 +11135,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:3183
 msgid "edges refinement/feathering"
-msgstr "raffinement/adoucissement bords"
+msgstr "raffinement/respect des bords"
 
 #: ../src/iop/toneequal.c:3184
 msgid ""
@@ -11183,7 +11183,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:3213
 msgid "mask exposure compensation"
-msgstr "compensation masque exposition"
+msgstr "compensation exposition masque"
 
 #: ../src/iop/toneequal.c:3215
 msgid ""
@@ -11198,7 +11198,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:3227
 msgid "mask contrast compensation"
-msgstr "compensation masque contraste"
+msgstr "compensation contraste masque"
 
 #: ../src/iop/toneequal.c:3229
 msgid ""
