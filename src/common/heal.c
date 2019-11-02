@@ -22,6 +22,9 @@
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
+#if defined(__ALTIVEC__)
+#include <altivec.h>
+#endif
 
 /* Based on the original source code of GIMP's Healing Tool, by Jean-Yves Couleaud
  *
@@ -132,6 +135,61 @@ static float dt_heal_laplace_iteration_sse(float *pixels, const float *const Adi
 }
 #endif
 
+#if defined(__ALTIVEC__)
+static float dt_heal_laplace_iteration_altivec(float *pixels, const float *const Adiag, const int *const Aidx,
+                                               const float w, const int nmask_from, const int nmask_to)
+{
+  float err = 0.f;
+
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(Adiag, Aidx, w, nmask_from, nmask_to) \
+  shared(pixels) \
+  schedule(static) \
+  reduction(+ : err)
+#endif 
+  for(int i = nmask_from; i < nmask_to; i++)
+  {
+    int ii = i * 5;
+    int j0 = Aidx[ii + 0];
+    int j1 = Aidx[ii + 1];
+    int j2 = Aidx[ii + 2];
+    int j3 = Aidx[ii + 3];
+    int j4 = Aidx[ii + 4];
+
+    __vector float valb_a = { Adiag[i], Adiag[i], Adiag[i], Adiag[i] };
+    __vector float valb_w = { w, w, w, w };
+
+    __vector float valb_j0 = vec_ld(j0, pixels); // center
+    __vector float valb_j1 = vec_ld(j1, pixels); // E
+    __vector float valb_j2 = vec_ld(j2, pixels); // S
+    __vector float valb_j3 = vec_ld(j3, pixels); // W
+    __vector float valb_j4 = vec_ld(j4, pixels); // N
+
+    /*  float diff = w * (a * pixels[j0 + k] -
+                            (pixels[j1 + k] +
+                             pixels[j2 + k] +
+                             pixels[j3 + k] +
+                             pixels[j4 + k]));*/
+    __vector float valb_diff
+        = vec_mul(valb_w, vec_sub(vec_mul(valb_a, valb_j0),
+                                        vec_add(valb_j1, vec_add(valb_j2, vec_add(valb_j3, valb_j4)))));
+
+    /*  pixels[j0 + k] -= diff;*/
+    vec_st(vec_sub(valb_j0, valb_diff), j0, pixels);
+    /*  err += diff * diff;*/
+    union {
+      __vector float v;
+      float f[4];
+    } valb_err;
+    valb_err.v = vec_mul(valb_diff, valb_diff);
+    err += valb_err.f[0] + valb_err.f[1] + valb_err.f[2];
+  }
+
+  return err;
+}
+#endif
+
 // Perform one iteration of Gauss-Seidel, and return the sum squared residual.
 static float dt_heal_laplace_iteration(float *pixels, const float *const Adiag, const int *const Aidx,
                                        const float w, const int nmask_from, const int nmask_to, const int ch,
@@ -139,6 +197,9 @@ static float dt_heal_laplace_iteration(float *pixels, const float *const Adiag, 
 {
 #if defined(__SSE__)
   if(ch == 4 && use_sse) return dt_heal_laplace_iteration_sse(pixels, Adiag, Aidx, w, nmask_from, nmask_to);
+#endif
+#if defined(__ALTIVEC__)
+  if(ch == 4 && use_sse) return dt_heal_laplace_iteration_altivec(pixels, Adiag, Aidx, w, nmask_from, nmask_to);
 #endif
 
   float err = 0.f;
