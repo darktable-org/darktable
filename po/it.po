@@ -217,21 +217,27 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2382
 msgid "enable extended thumb overlay"
-msgstr ""
+msgstr "Abilita la sovrapposizione delle anteprime estesa"
 
 #: ../build/src/preferences_gen.h:2394
 msgid "if set to true, thumb overlay shows filename and some exif data."
 msgstr ""
+"Se impostato a vero, la sovrapposizione delle anteprime mostra il nome del"
+" file ed alcuni valori exif."
 
 #: ../build/src/preferences_gen.h:2402
 msgid "use single-click in the collect panel"
-msgstr ""
+msgstr "Usa un click singolo nel pannello della raccolta"
 
 #: ../build/src/preferences_gen.h:2414
 msgid ""
 "check this option to use single-click to select items in the collect panel. "
 "this will allow you to do range selections for date-time and numeric values."
 msgstr ""
+"Selezione questa opzione per usare il click singolo per gli oggetti nel"
+" pannello della raccolta. "
+"Questo ti consentirà di fare un intervallo di selezione per date-time e"
+" valori numerici."
 
 #: ../build/src/preferences_gen.h:2422
 msgid "expand a single lighttable module at a time"
@@ -452,13 +458,16 @@ msgstr ""
 msgid "expand the module when it is activated, and collapse it when disabled"
 msgstr "Espandi il modulo quando attivato e comprimilo quando disattivato"
 
+
 #: ../build/src/preferences_gen.h:2800
 msgid ""
 "this option allows to expand or collapse automatically the module when it is "
 "enabled or disabled."
 msgstr ""
+
 "Questa opzione permette di espandere o di comprimere il modulo "
 "automaticamente quando viene attivato o disattivato."
+
 
 #: ../build/src/preferences_gen.h:2808
 msgid "scroll to darkroom modules when expanded/collapsed"
@@ -663,12 +672,17 @@ msgstr ""
 #: ../build/src/preferences_gen.h:3266
 msgid "mouse wheel scrolls modules side panel by default"
 msgstr ""
+"La rotella del mouse scorre il pannello laterale dei moduli in modo"
+" predefinito"
 
 #: ../build/src/preferences_gen.h:3278
 msgid ""
 "when enabled, use mouse wheel to scroll modules side panel.  use ctrl+alt to "
 "use mouse wheel for data entry.  when disabled, this behavior is reversed"
 msgstr ""
+"Quando abilitato, usa la rotella del mouse per scorrere il pannello laterale"
+" dei moduli. Usa CTRL+ALT per usare la rotella del mouse per inserimento"
+" dati. Quando disabilitato, questo comportamento è invertito"
 
 #: ../build/src/preferences_gen.h:3286
 msgid "show scrollbars for center view"
@@ -1104,7 +1118,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:4020
 msgid "disable the entry completion"
-msgstr ""
+msgstr "Disabilita il completamento automatico"
 
 #: ../build/src/preferences_gen.h:4032
 msgid ""
@@ -1174,6 +1188,9 @@ msgid ""
 "this folder (and sub-folders) contains Lut files used by lut3d modules. need "
 "to restart darktable."
 msgstr ""
+"Questa cartella (e le sotttocartelle) contiene i file dei LUT usati ma moduli"
+" LUT3D. "
+"Necessario riavviare darktable."
 
 #: ../build/src/preferences_gen.h:4164
 msgid "session options"
@@ -1228,7 +1245,7 @@ msgstr ""
 
 #: ../data/darktable.appdata.xml.in.h:5
 msgid "Virtual light table, showing a collection"
-msgstr "Tavolo luminoso virtuale, visualizza una collezione"
+msgstr "Tavolo luminoso virtuale, visualizza una raccolta"
 
 #: ../data/darktable.appdata.xml.in.h:6
 msgid "Virtual dark room with an opened image"
@@ -1364,7 +1381,7 @@ msgstr ""
 
 #: ../src/common/collection.c:521
 msgid "too much time to update aspect ratio for the collection"
-msgstr ""
+msgstr "Troppo tempo per aggiornare le proporzioni nella raccolta"
 
 #: ../src/common/collection.c:1241 ../src/develop/lightroom.c:825
 #: ../src/iop/bilateral.cc:371 ../src/iop/channelmixer.c:456
@@ -1417,7 +1434,7 @@ msgstr "Identificatore gruppo"
 #: ../src/common/collection.c:1681
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
-msgstr "selezionata %d immagine di %d (#%d) nella collezione attuale"
+msgstr "selezionata %d immagine di %d (#%d) nella raccolta attuale"
 
 #: ../src/common/collection.c:1687
 #, c-format
@@ -1661,7 +1678,7 @@ msgstr ""
 
 #: ../src/common/database.c:1782
 msgid "darktable - schema migration"
-msgstr ""
+msgstr "darktable - schema di migrazione"
 
 #: ../src/common/database.c:1783
 msgid "upgrade database"
@@ -2571,6 +2588,9 @@ msgid ""
 "click+drag to use the input image\n"
 "ctrl+click + drag to use the output image"
 msgstr ""
+"Imposta l'intervallo basato su un'area dell'immagine\n"
+"Click+trascina per usare l'immagine di input\n"
+"Ctrl+Click+trascina per usare l'immagine di output"
 
 #: ../src/develop/blend_gui.c:1520
 msgid "reset blend mask settings"
@@ -2923,7 +2943,7 @@ msgstr "Immagine input"
 
 #: ../src/develop/blend_gui.c:2531
 msgid "choose to guide mask by input or output image"
-msgstr ""
+msgstr "Scegli la maschera guida attraverso l'immagine di input o di output"
 
 #: ../src/develop/blend_gui.c:2537
 msgid "feathering radius"
@@ -2979,7 +2999,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2610
 msgid "mask refinement"
-msgstr ""
+msgstr "Perfezionamento della maschera"
 
 #: ../src/develop/develop.c:1671
 #, c-format
@@ -3131,11 +3151,11 @@ msgstr[1] "%s sono stati importati con successo"
 
 #: ../src/develop/masks/masks.c:157
 msgid "[SHAPE] remove shape"
-msgstr ""
+msgstr "[FORMA] rimuovi la forma"
 
 #: ../src/develop/masks/masks.c:164
 msgid "[PATH creation] add a smooth node"
-msgstr ""
+msgstr "[TRACCIANTO creazione] aggiungi un nodo sfumato"
 
 #: ../src/develop/masks/masks.c:170
 #, fuzzy
@@ -3144,7 +3164,7 @@ msgstr "Ctrl+click per aggiungere un nodo acuto"
 
 #: ../src/develop/masks/masks.c:175
 msgid "[PATH creation] terminate path creation"
-msgstr ""
+msgstr "[TRACCIATO creazione] termina di creare il tracciato"
 
 #: ../src/develop/masks/masks.c:181
 #, fuzzy
@@ -3153,11 +3173,11 @@ msgstr "Ctrl+click per commutare tra nodo arrotondato/acuto"
 
 #: ../src/develop/masks/masks.c:186
 msgid "[PATH on node] remove the node"
-msgstr ""
+msgstr "[TRACCIATO sul nodo] rimuovi il nodo"
 
 #: ../src/develop/masks/masks.c:191
 msgid "[PATH on feather] reset curvature"
-msgstr ""
+msgstr "[TRACCIATO sul pennino] ripristina la curvatura"
 
 #: ../src/develop/masks/masks.c:197
 msgid "[PATH on segment] add node"
@@ -3173,7 +3193,7 @@ msgstr "[TRACCIATO] cambia l'opacità"
 
 #: ../src/develop/masks/masks.c:214
 msgid "[PATH] change feather size"
-msgstr ""
+msgstr "[TRACCIATO] cambia la dimensione del pennino"
 
 #: ../src/develop/masks/masks.c:221
 #, fuzzy
@@ -3228,15 +3248,17 @@ msgstr "[PENNELLO] cambia la durezza"
 
 #: ../src/develop/masks/masks.c:293
 msgid "[CIRCLE] change size"
-msgstr "[CIRCLE] cambia dimensione"
+msgstr "[CERCHIO] cambia dimensione"
 
 #: ../src/develop/masks/masks.c:299
 msgid "[CIRCLE] change opacity"
 msgstr "[CERCHIO] cambia l'opacità"
 
+# feather: verificare lo strumento. Potrebbe esser "cambia la dimensione del tratto"
+# [CIRCLE] va tradotto o è una variabile o un tag utilizzato dal programma?
 #: ../src/develop/masks/masks.c:305
 msgid "[CIRCLE] change feather size"
-msgstr ""
+msgstr "[CERCHIO] cambia la dimensione del pennino"
 
 #: ../src/develop/masks/masks.c:331
 msgid "ctrl+click to add a sharp node"
@@ -3867,11 +3889,11 @@ msgstr "$(SEQUENCE) - numero sequenza"
 
 #: ../src/gui/gtkentry.c:192
 msgid "$(MAX_WIDTH) - maximum image export width"
-msgstr ""
+msgstr "$(MAX_WIDTH) -  Larghezza massima dell'immagine da esportare"
 
 #: ../src/gui/gtkentry.c:193
 msgid "$(MAX_HEIGHT) - maximum image export height"
-msgstr ""
+msgstr "$(MAX_HEIGHT) - Altezza massima dell'immagine da esportare"
 
 #: ../src/gui/gtkentry.c:194
 msgid "$(YEAR) - year"
@@ -3977,7 +3999,7 @@ msgstr "$(RIGHTS) - diritti dai metadata"
 
 #: ../src/gui/gtkentry.c:219
 msgid "$(OPENCL_ACTIVATED) - whether OpenCL is activated"
-msgstr ""
+msgstr "$(OPENCL_ACTIVATED) - Qualora OpenCL sia attivato"
 
 #: ../src/gui/gtkentry.c:220
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
@@ -5526,7 +5548,7 @@ msgstr ""
 #: ../src/iop/ashift.c:4983
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
 msgstr ""
-"Regola il rapporto d'aspetto dell'immagine ridimensionando orizzontalmente e "
+"Regola le proporzioni dell'immagine ridimensionando orizzontalmente e "
 "verticalmente"
 
 #: ../src/iop/ashift.c:4984
@@ -6052,7 +6074,7 @@ msgstr ""
 
 #: ../src/iop/basicadj.c:765
 msgid "clip"
-msgstr ""
+msgstr "Graffetta"
 
 #: ../src/iop/basicadj.c:766
 msgid "adjusts clipping value for auto exposure calculation"
@@ -6749,12 +6771,12 @@ msgstr "Angolo "
 #: ../src/iop/clipping.c:3244
 #, c-format
 msgid "[%s on borders] crop"
-msgstr ""
+msgstr "[%s sui bordi] Ritaglia"
 
 #: ../src/iop/clipping.c:3250
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
-msgstr ""
+msgstr "[%s sui bordi] Ritaglia mantenendo il rapporto"
 
 #: ../src/iop/clipping.c:3255
 #, c-format
@@ -7522,6 +7544,7 @@ msgstr "Pellicola bianco e nero"
 #: ../src/iop/toneequal.c:1964
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
+"Non è possibile mostrare le maschere quando è mostrata la maschera di fusione"
 
 #: ../src/iop/colorzones.c:2275 ../src/iop/rgbcurve.c:1545
 msgid ""
@@ -9544,7 +9567,7 @@ msgstr "Quale filtro usare per la sfocatura"
 
 #: ../src/iop/lut3d.c:91
 msgid "lut 3D"
-msgstr ""
+msgstr "LUT 3D"
 
 #: ../src/iop/lut3d.c:355
 #, fuzzy, c-format
@@ -9586,7 +9609,7 @@ msgstr ""
 
 #: ../src/iop/lut3d.c:609
 msgid "1D cube lut is not supported"
-msgstr ""
+msgstr "Il cubo del LUT 1D non è supportato"
 
 #: ../src/iop/lut3d.c:623
 #, fuzzy
@@ -9595,11 +9618,11 @@ msgstr "Impossibile allocare il buffer per la fusione"
 
 #: ../src/iop/lut3d.c:634
 msgid "error - cube lut size is not defined"
-msgstr ""
+msgstr "Errore - dimensione del cubo di LUT non definita"
 
 #: ../src/iop/lut3d.c:651
 msgid "error - cube lut lines number is not correct"
-msgstr ""
+msgstr "Errore - il numero di linee del cubo di LUT non è corretto"
 
 #: ../src/iop/lut3d.c:1007
 msgid "Lut root folder not defined"
@@ -9615,11 +9638,11 @@ msgstr "_seleziona"
 
 #: ../src/iop/lut3d.c:1031
 msgid "hald cluts (png)"
-msgstr ""
+msgstr "Hald Cluts (PNG)"
 
 #: ../src/iop/lut3d.c:1038
 msgid "3D lut (cube)"
-msgstr ""
+msgstr "3D LUT (cubo)"
 
 #: ../src/iop/lut3d.c:1044 ../src/libs/copy_history.c:93
 #: ../src/libs/geotagging.c:495 ../src/libs/import.c:790
@@ -9630,10 +9653,11 @@ msgstr "Tutti i file"
 #: ../src/iop/lut3d.c:1059
 msgid "Select file outside Lut root folder is not allowed"
 msgstr ""
+"Non è ammesso selezionare file al di fuori della cartella principale dei LUT"
 
 #: ../src/iop/lut3d.c:1103
 msgid "select a png (haldclut) or a cube file"
-msgstr ""
+msgstr "Seleziona un PNG (haldclut) o un file di cubo"
 
 #: ../src/iop/lut3d.c:1110
 msgid ""
@@ -9642,6 +9666,11 @@ msgid ""
 "CAUTION: lut folder must be set in preferences/core options/miscellaneous "
 "before choosing the lut file"
 msgstr ""
+"Il percorso del file (relativo alla cartella del LUT) è salvato con"
+" l'immagine (e non i dati del LUT stesso)\n"
+"ATTENZIONE: la cartella del LUT dev'esser impostata in preferenze/opzioni"
+" principali/altro "
+"prima di scegliere il file del LUT"
 
 #: ../src/iop/lut3d.c:1117
 msgid "application color space"
@@ -9661,7 +9690,7 @@ msgstr ""
 
 #: ../src/iop/lut3d.c:1123
 msgid "select the color space in which the LUT has to be applied"
-msgstr ""
+msgstr "Seleziona lo spazio colore nel quale il LUT deve essere applicato"
 
 #: ../src/iop/lut3d.c:1127
 #, fuzzy
@@ -9982,6 +10011,7 @@ msgstr "Ritocco"
 #: ../src/iop/retouch.c:1931
 msgid "cannot display scales when the blending mask is displayed"
 msgstr ""
+"Non è possibile mostrare le scale quando è mostrata la maschera di fusione"
 
 #: ../src/iop/retouch.c:2649
 #, fuzzy
@@ -10056,7 +10086,7 @@ msgstr "Visualizza la scala wavelet"
 
 #: ../src/iop/retouch.c:2810
 msgid "cut shapes from current scale"
-msgstr "Riaglia le forme dalla scala corrente"
+msgstr "Ritaglia le forme dalla scala corrente"
 
 #: ../src/iop/retouch.c:2816
 msgid "paste cut shapes to current scale"
@@ -10189,10 +10219,9 @@ msgid "retouch tool brush"
 msgstr "Strumento di ritocco pennello"
 
 #: ../src/iop/retouch.c:3338
-#, fuzzy
 msgctxt "accel"
 msgid "continuous add circle"
-msgstr "Aggiungi forma circolare"
+msgstr "Aggiunta continua di forme circolari"
 
 #: ../src/iop/retouch.c:3339
 #, fuzzy
@@ -10328,6 +10357,9 @@ msgid ""
 "click and drag to draw the area\n"
 "right click to cancel"
 msgstr ""
+"Applicat i livelli automatici basati su una regione definita dall'utente\n"
+"Clicca e trascina per disegnare l'area\n"
+"Clicca col destro per cancellare"
 
 #: ../src/iop/rotatepixels.c:76
 msgctxt "modulename"
@@ -11748,7 +11780,7 @@ msgstr "Coda di sviluppo"
 #. DT_COLLECTION_SORT_DESCRIPTION
 #: ../src/libs/collect.h:38 ../src/libs/tools/filter.c:157
 msgid "aspect ratio"
-msgstr "Rapporto di aspetto"
+msgstr "Proporzione"
 
 #: ../src/libs/collect.h:38 ../src/libs/metadata_view.c:102
 #: ../src/libs/tools/filter.c:147
@@ -13253,7 +13285,7 @@ msgstr "rawspeed"
 
 #: ../src/libs/metadata_view.c:409
 msgid "netpnm"
-msgstr ""
+msgstr "netpnm"
 
 #: ../src/libs/metadata_view.c:414
 #, c-format
@@ -13922,11 +13954,11 @@ msgstr "Sinonimi: "
 #: ../src/libs/tagging.c:1402 ../src/libs/tagging.c:1585
 #: ../src/libs/tagging.c:1774
 msgid "empty tag is not allowed, aborting"
-msgstr ""
+msgstr "Non è ammesso un tag vuoto, interruzione"
 
 #: ../src/libs/tagging.c:1404
 msgid "'|' character is not allowed to create a tag. aborting."
-msgstr ""
+msgstr "Il carattere '|' non è ammesso per la creazione dei Tag. Interruzione."
 
 #: ../src/libs/tagging.c:1419
 #, fuzzy
@@ -13936,7 +13968,7 @@ msgstr "Stile con nome '%s' già esistente"
 #: ../src/libs/tagging.c:1513
 #, fuzzy
 msgid "edit tag"
-msgstr "Modifica stile"
+msgstr "Modifica il Tag..."
 
 #: ../src/libs/tagging.c:1527 ../src/libs/tagging.c:1747
 #, c-format
@@ -13950,6 +13982,8 @@ msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierachy use rename path instead. Aborting."
 msgstr ""
+"Il carattere '|' non è ammesso quale Tag per la rinomina.\n"
+"per modificare la gerarchia rinomina il percorso piuttosto. Interruzione."
 
 #: ../src/libs/tagging.c:1625
 #, fuzzy, c-format
@@ -13959,7 +13993,7 @@ msgstr "Stile con nome '%s' già esistente"
 #: ../src/libs/tagging.c:1733
 #, fuzzy
 msgid "rename path?"
-msgstr "Aggiungi tracciato"
+msgstr "Rinomina il percorso..."
 
 #: ../src/libs/tagging.c:1740
 #, fuzzy, c-format
@@ -13968,7 +14002,7 @@ msgstr "Seleziona parti"
 
 #: ../src/libs/tagging.c:1776
 msgid "'|' misplaced, empty tag is not allowed, aborting"
-msgstr ""
+msgstr "'|' posizionato male, non è ammesso un Tag vuoto, interruzione"
 
 #: ../src/libs/tagging.c:1802
 #, fuzzy, c-format
@@ -14063,6 +14097,10 @@ msgid ""
 "right-click for other actions on attached tag,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
+"Tag applicati,\n"
+"Doppio click per rimuovere\n"
+"Click destro per altre azioni sul Tag applicato,\n"
+"CTRL+rotella del mouse per ridimensionare la finestra"
 
 #: ../src/libs/tagging.c:2553
 msgid "attach"
@@ -14108,6 +14146,10 @@ msgid ""
 "right-click for other actions on selected tag,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
+"Dizionario dei Tag,\n"
+"Doppio click per applicare,\n"
+"Click destro per altre azioni sul Tag selezionato,\n"
+"CTRL+rotella del mouse per ridimensionare la finestra"
 
 #: ../src/libs/tagging.c:2682
 msgid "new"
@@ -14506,7 +14548,7 @@ msgstr "Altro"
 #: ../src/lua/lualib.c:295
 msgctxt "accel"
 msgid "reset lib parameters"
-msgstr "Resetta parametri collezione"
+msgstr "Resetta i parametri della raccolta"
 
 #: ../src/lua/preferences.c:644
 msgid "select file"
@@ -14859,7 +14901,7 @@ msgstr "Ingrandisci del 100%, 200% e ritorna"
 
 #: ../src/views/darkroom.c:3342
 msgid "[modules] expand module without closing others"
-msgstr ""
+msgstr "[moduli] espandi il modulo senza chiudere gli altri"
 
 #: ../src/views/darkroom.c:3348
 msgid "[modules] change module position in pipe"
@@ -14904,7 +14946,7 @@ msgstr[1] "Hai raggiunto l'inizio della tua selezione (%d immagini)"
 
 #: ../src/views/lighttable.c:3259
 msgid "you have reached the start of your collection"
-msgstr "Hai raggiunto l'inizio della tua collezione"
+msgstr "Hai raggiunto l'inizio della tua raccolta"
 
 #: ../src/views/lighttable.c:3283
 #, c-format
@@ -14915,7 +14957,7 @@ msgstr[1] "Hai raggiunto la fine della tua selezione (%d immagini)"
 
 #: ../src/views/lighttable.c:3288
 msgid "you have reached the end of your collection"
-msgstr "Hai raggiunto la fine della tua collezione"
+msgstr "Hai raggiunto la fine della tua raccolta"
 
 #: ../src/views/lighttable.c:3608
 #, fuzzy, c-format
