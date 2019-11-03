@@ -1501,8 +1501,6 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
 {
   module->cleanup(module);
 
-  free(module->default_params);
-  module->default_params = NULL;
   free(module->blend_params);
   module->blend_params = NULL;
   free(module->default_blendop_params);

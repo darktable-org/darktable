@@ -138,6 +138,8 @@ void cleanup(dt_iop_module_t *self)
 {
   free(self->params);
   self->params = NULL;
+  free(self->default_params);
+  self->default_params = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
