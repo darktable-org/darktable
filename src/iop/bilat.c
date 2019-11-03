@@ -460,8 +460,8 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
     gtk_widget_set_visible(g->midtone, TRUE);
     gtk_widget_set_visible(g->range, FALSE);
     gtk_widget_set_visible(g->spatial, FALSE);
-    dt_bauhaus_slider_set(g->highlights, 100.0f);
-    dt_bauhaus_slider_set(g->shadows, 100.0f);
+    dt_bauhaus_slider_set(g->highlights, 50.0f);
+    dt_bauhaus_slider_set(g->shadows, 50.0f);
   }
   else
   {
