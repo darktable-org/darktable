@@ -20,7 +20,7 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 
 #### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
-- Over 2420 commits to darktable+rawspeed since 2.6
+- Almost 3 thousand commits to darktable+rawspeed since 2.6
 - 553 pull requests handled
 - 66 issues closed
 - Updated user manual is coming soon™
@@ -313,33 +313,91 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 
 ## Changed Dependencies
 
-- No changes
+- CMake 3.10 is now required
+- OpenMP 4.0 is now required (optional dependency)
+- # FIXME: FIX darktable/cmake/compiler-versions.cmake !
 
 ## RawSpeed changes
 
-- No changes
+### Changed Dependencies
+
+- CMake 3.10 is now required
+- Pugixml 1.8 is now required
+- OpenMP 4.0 is now required (optional dependency)
+- POSIX threads are no longer required
+- zlib 1.2.11 is now required (optional dependency)
+- libjpeg-turbo 1.5.0 is now required (optional dependency)
+
+### Changes
+
+- Threading was migrated to OpenMP from POSIX threads
+- Phase One IIQ decompressor fixes (quadrant scaling, bad column)
+- Large-scale code cleanup,hardening is ongoing still
+- An CMake infrastructure was added to allow integration of RawSpeed into LLVM LNT / Test-Suite
+- Widespread performance tuning, most affected decompressors:
+  * Sony ARW2
+  * Panasonic V5
+  * Samsung V1
+  * Phase One
+- Continuation of collaboration with LLVM Compiler Infrastructure Project
 
 ## Camera support, compared to 2.6.0
 
 ### Base Support
 
+- Epson R-D1s
+- Epson R-D1x
+- Fujifilm FinePix F770EXR
 - Fujifilm FinePix S7000
+- Fujifilm GFX 50R (compressed)
+- Fujifilm X-T30 (compressed)
+- Fujifilm XF10
+- Kodak DCS Pro 14N
+- Kodak EasyShare Z981
+- Kodak EasyShare Z990
+- Leica C (Typ 112) (4:3)
+- Leica CL (dng)
+- Leica Q (Typ 116) (dng)
+- Leica Q2 (dng)
+- Leica SL (Typ 601) (dng)
+- Leica V-LUX (Typ 114) (3:2, 4:3, 16:9, 1:1)
+- Nikon Z 6 (14bit-uncompressed, 12bit-uncompressed)
+- Nikon Z 7 (14bit-uncompressed)
+- Olympus E-M1X
+- Olympus TG-6
+- Panasonic DC-G90 (4:3)
+- Panasonic DC-G91 (4:3)
+- Panasonic DC-G95 (4:3)
+- Panasonic DC-G99 (4:3)
+- Panasonic DC-ZS200 (3:2)
+- Panasonic DMC-TX1 (3:2)
+- Phase One P30
+- Sony DSC-RX0M2
+- Sony DSC-RX100M6
+- Sony ILCE-6400
+- Sony ILCE-7RM4
 
 ### White Balance Presets
 
 - Leica Q2
+- Nikon D500
 - Nikon Z 7
+- Panasonic DC-LX100M2
 - Sony ILCE-6400
 
 ### Noise Profiles
 
 - Leica Q2
 - Nikon D3
+- Nikon D3500
+- Nikon Z 6
 - Nikon Z 7
 - Olympus E-PL8
 - Olympus E-PL9
+- Panasonic DC-LX100M2
 - Sony DSC-RX100M5A
 - Sony ILCE-6400
+- Sony SLT-A35
 
 ## Translations
 
