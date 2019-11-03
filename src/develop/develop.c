@@ -686,9 +686,12 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
   dev->first_load = 1;
   dev->image_status = dev->preview_status = dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
 
+  // we need a global lock as the dev->iop set must not be changed until read history is terminated
+  dt_pthread_mutex_lock(&darktable.dev_threadsafe);
   dev->iop = dt_iop_load_modules(dev);
 
   dt_dev_read_history(dev);
+  dt_pthread_mutex_unlock(&darktable.dev_threadsafe);
 
   dev->first_load = 0;
 
