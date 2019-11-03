@@ -340,6 +340,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
   free(module->global_data);
   module->global_data = NULL;
 }
