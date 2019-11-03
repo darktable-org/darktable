@@ -18,7 +18,7 @@ use ast;
 
 package code_gen;
 
-my $DT_INTROSPECTION_VERSION = 6;
+my $DT_INTROSPECTION_VERSION = 7;
 
 my $is_old_gplusplus = "defined(__cplusplus) && !defined(__clang__) && defined(__GNUC__) && ((__GNUC__*100 + __GNUC_MINOR__) <= 406)";
 my $is_not_old_gplusplus = "!( defined(__cplusplus) && !defined(__clang__) && defined(__GNUC__) && ((__GNUC__*100 + __GNUC_MINOR__) <= 406) )";
@@ -57,7 +57,8 @@ static dt_introspection_t introspection = {
   "$params_type",
   sizeof($params_type),
   &introspection_linear[0],
-  sizeof(dt_iop_module_t)
+  sizeof(dt_iop_module_t),
+  G_STRUCT_OFFSET(dt_iop_module_t, default_params)
 };
 
 dt_introspection_field_t* get_introspection_linear()
@@ -163,7 +164,8 @@ static dt_introspection_t introspection = {
   "$params_type",
   sizeof($params_type),
   &introspection_linear[$max_linear-1],
-  sizeof(dt_iop_module_t)
+  sizeof(dt_iop_module_t),
+  G_STRUCT_OFFSET(dt_iop_module_t, default_params)
 };
 
 dt_introspection_field_t* get_introspection_linear()
