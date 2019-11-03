@@ -545,6 +545,8 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 {
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
   dt_control_accels_t *accels = &darktable.control->accels;
+  const gboolean high_quality = dt_conf_get_bool("plugins/slideshow/high_quality");
+  const int delay_min = high_quality ? 4 : 2;
 
   if(key == accels->slideshow_start.accel_key && state == accels->slideshow_start.accel_mods)
   {
@@ -562,13 +564,13 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   }
   else if(key == GDK_KEY_Up || key == GDK_KEY_KP_Add)
   {
-    d->delay = CLAMP(d->delay + 1, 1, 60);
+    d->delay = CLAMP(d->delay + 1, delay_min, 60);
     dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
     dt_conf_set_int("slideshow_delay", d->delay);
   }
   else if(key == GDK_KEY_Down || key == GDK_KEY_KP_Subtract)
   {
-    d->delay = CLAMP(d->delay - 1, 1, 60);
+    d->delay = CLAMP(d->delay - 1, delay_min, 60);
     dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
     dt_conf_set_int("slideshow_delay", d->delay);
   }
