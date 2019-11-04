@@ -326,7 +326,6 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 - OpenMP 4.0 is now required (optional dependency)
 - POSIX threads are no longer required
 - zlib 1.2.11 is now required (optional dependency)
-- libjpeg-turbo 1.5.0 is now required (optional dependency)
 
 ### Changes
 
