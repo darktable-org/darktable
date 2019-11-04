@@ -315,7 +315,6 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 
 - CMake 3.10 is now required
 - OpenMP 4.0 is now required (optional dependency)
-- # FIXME: FIX darktable/cmake/compiler-versions.cmake !
 
 ## RawSpeed changes
 
