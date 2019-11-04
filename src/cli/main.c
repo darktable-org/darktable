@@ -228,7 +228,7 @@ int main(int argc, char *arg[])
 
   if(g_file_test(input_filename, G_FILE_TEST_IS_DIR))
   {
-    int filmid = dt_film_import(input_filename);
+    const int filmid = dt_film_import(input_filename);
     if(!filmid)
     {
       fprintf(stderr, _("error: can't open folder %s"), input_filename);
@@ -259,7 +259,7 @@ int main(int argc, char *arg[])
     id_list = g_list_append(id_list, GINT_TO_POINTER(id));
   }
 
-  int total = g_list_length(id_list);
+  const int total = g_list_length(id_list);
 
   if(total == 0)
   {

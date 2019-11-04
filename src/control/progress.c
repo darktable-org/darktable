@@ -184,7 +184,7 @@ static void global_progress_end(dt_control_t *control, dt_progress_t *progress)
   {
     // this is called after the current progress got removed from the list!
     dt_progress_t *p = (dt_progress_t *)iter->data;
-    double value = dt_control_progress_get_progress(p);
+    const double value = dt_control_progress_get_progress(p);
     control->progress_system.global_progress = MAX(control->progress_system.global_progress, value);
   }
 
