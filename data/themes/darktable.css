@@ -1014,8 +1014,7 @@ cell:selected
 
 #live-sample-data
 {
-   font-family: courier;
-   font-weight: bold;
+   font-family: monospace;
 }
 
 /* Accels window reminder */
