@@ -712,8 +712,7 @@ filechooserdialog scrolledwindow
 /* Tree view (lists and tables) */
 
 treeview,
-filechooserwidget treeview,
-treeview.view *
+filechooserwidget treeview
 {
   background-color: @field_bg;
   color: @field_fg;
