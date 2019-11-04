@@ -1432,10 +1432,12 @@ static void pop_menu_dictionary_create_tag(GtkWidget *menuitem, dt_lib_module_t 
     {
       const gint new_flags = ((gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(category)) ? DT_TF_CATEGORY : 0) |
                       (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(private)) ? DT_TF_PRIVATE : 0));
+      if (new_tagid) dt_tag_set_flags(new_tagid, new_flags);
       GtkTextIter start, end;
       gtk_text_buffer_get_start_iter(buffer, &start);
       gtk_text_buffer_get_end_iter(buffer, &end);
       gchar *new_synonyms_list = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
+      if (new_tagid && new_synonyms_list && new_synonyms_list[0]) dt_tag_set_synonyms(new_tagid, new_synonyms_list);
 
       GtkTreeIter store_iter, store_parent;
       GtkTreeModel *store = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model));
