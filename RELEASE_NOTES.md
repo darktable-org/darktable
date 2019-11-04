@@ -32,17 +32,19 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
   Gtk C code. This makes the whole GUI themable. This version comes
   with different theme:
 
-     - darktable              : the default theme
+     - darktable                : the default theme
 
-     - darktable-elegant      : more condensed fonts
-                                best experience if Roboto font installed
+     - darktable-elegant-darker : more condensed fonts
+                                  best experience if Roboto font installed
 
-     - darktable-icons        : as elegant, with IOP icons
-                                best experience if Roboto font installed
+     - darktable-icons-darker   : as elegant, with IOP icons
+                                  best experience if Roboto font installed
 
-     - darktable-elegant-grey : as above but grey instead of dark
+     - darktable-elegant-dark   : lighter version
+     - darktable-elegant-grey   : even lighter version
 
-     - darktable-icons-grey   : as above but grey instead of dark
+     - darktable-icons-dark     : lighter version
+     - darktable-icons-grey     : even lighter version
 
   Note that this requires Gtk 3.22 or higher to work properly.
 
