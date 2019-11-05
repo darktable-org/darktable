@@ -64,7 +64,7 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 
 - A new timeline view has been introduced in the lighttable.
 
-- A new 'culling' mode has been added added to the lightable view. It
+- A new 'culling' mode has been added to the lightable view. It
   displays a fixed number of consecutive images starting from the first
   selected, and allows you to pan & zoom them. The number of displayed images
   can be set by the user, and they can be navigated with the mouse wheel
