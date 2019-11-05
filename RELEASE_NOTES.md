@@ -180,9 +180,9 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
   manually moving backward and forward through the images.
 
 - A new 'basic adjustments' module has been added. It allows to adjust
-  the exposure, highlight compression, contrast, brightness and saturation.
-  It also has an auto feature based on Rawtherapee's auto levels that can
-  work on the entire image or a user selected area.
+  the black level, exposure, highlight compression, contrast, middle grey,
+  brightness and saturation. It also has an auto feature based on Rawtherapee's
+  auto levels that can work on the entire image or a user selected area.
 
 - A new 'rgb curve' module has been added. It has modes for linked and
   independent RGB channels. The curves and histogram can be displayed using
@@ -205,7 +205,7 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 - A new option 'skip' is added to the 'on conflict' setting on the export module
   which skips the exporting to existing destination files.
 
-- Allow to select between clone/heal and blur/color modes in 'retouch' module.
+- Allow to switch between clone/heal and blur/color modes in 'retouch' module.
 
 - An accels window has been added to summarize all available shortcuts and mouse
   actions available in the current context.
