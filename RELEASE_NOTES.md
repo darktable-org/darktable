@@ -70,7 +70,7 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
   can be set by the user, and they can be navigated with the mouse wheel
   and keyboard.
 
-- A quite extensive rewrite of the lighttable (including the film strip) has
+- A quite extensive rewrite of the lighttable view (including the darkroom filmstrip) has
   been made to greatly improve the overall performance.The lighttable is now
   usable on 4K and 5K monitors.
 
