@@ -3490,15 +3490,15 @@ static void btn_make_radio_callback (GtkToggleButton *btn, dt_iop_module_t *modu
     if (btn == g->btn_point_tool)
       dt_control_hinter_message
         (darktable.control, _("click and drag to add point\nscroll to change size\n"
-                              "shift-scroll to change strength - ctrl-scroll to change direction"));
+                              "shift+scroll to change strength - ctrl+scroll to change direction"));
     else if (btn == g->btn_line_tool)
       dt_control_hinter_message
         (darktable.control, _("click to add line\nscroll to change size\n"
-                              "shift-scroll to change strength - ctrl-scroll to change direction"));
+                              "shift+scroll to change strength - ctrl+scroll to change direction"));
     else if (btn == g->btn_curve_tool)
       dt_control_hinter_message
         (darktable.control, _("click to add curve\nscroll to change size\n"
-                              "shift-scroll to change strength - ctrl-scroll to change direction"));
+                              "shift+scroll to change strength - ctrl+scroll to change direction"));
     else if (btn == g->btn_node_tool)
       dt_control_hinter_message (darktable.control, _("click to edit nodes"));
 
@@ -3604,10 +3604,10 @@ void gui_init (dt_iop_module_t *module)
   gtk_toggle_button_set_active(g->btn_node_tool, 0);
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->btn_node_tool), FALSE, FALSE, 0);
 
-  dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           = _("ctrl-click: add node - right click: remove path\n"
-                                                              "ctrl-alt-click: toggle line/curve");
+  dt_liquify_layers[DT_LIQUIFY_LAYER_PATH].hint           = _("ctrl+click: add node - right click: remove path\n"
+                                                              "ctrl+alt+click: toggle line/curve");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CENTERPOINT].hint    = _("click and drag to move - click: show/hide feathering controls\n"
-                                                              "ctrl-click: autosmooth, cusp, smooth, symmetrical"
+                                                              "ctrl+click: autosmooth, cusp, smooth, symmetrical"
                                                               " - right click to remove");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT1].hint     = _("drag to change shape of path");
   dt_liquify_layers[DT_LIQUIFY_LAYER_CTRLPOINT2].hint     = _("drag to change shape of path");
@@ -3615,7 +3615,7 @@ void gui_init (dt_iop_module_t *module)
   dt_liquify_layers[DT_LIQUIFY_LAYER_HARDNESSPOINT1].hint = _("drag to adjust hardness (center)");
   dt_liquify_layers[DT_LIQUIFY_LAYER_HARDNESSPOINT2].hint = _("drag to adjust hardness (feather)");
   dt_liquify_layers[DT_LIQUIFY_LAYER_STRENGTHPOINT].hint  = _("drag to adjust warp strength\n"
-                                                              "ctrl-click: linear, grow, and shrink");
+                                                              "ctrl+click: linear, grow, and shrink");
 }
 
 void gui_cleanup (dt_iop_module_t *module)
