@@ -596,7 +596,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   }
   else
   {
-    const int max_max_scale = 5; // hard limit
+    const int max_max_scale = DT_IOP_DENOISE_PROFILE_BANDS; // hard limit
     int max_scale = 0;
     const float scale = roi_in->scale / piece->iscale;
     // largest desired filter on input buffer (20% of input dim)
