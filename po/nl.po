@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-05 07:54+0100\n"
-"PO-Revision-Date: 2019-11-05 08:16+0100\n"
+"PO-Revision-Date: 2019-11-05 08:20+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -102,19 +102,19 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2136
 msgid "recursive directory traversal when importing filmrolls"
-msgstr "doorkruisen herhalen bij het importeren van mappen"
+msgstr "bij het importeren van mappen doorkruisen herhalen"
 
 #: ../build/src/preferences_gen.h:2155
 msgid "creator to be applied when importing"
-msgstr "bij het importeren de auteursnaam opnemen"
+msgstr "bij het importeren deze auteursnaam opnemen"
 
 #: ../build/src/preferences_gen.h:2178
 msgid "publisher to be applied when importing"
-msgstr "bij het importeren de uitgeversnaam opnemen"
+msgstr "bij het importeren deze uitgeversnaam opnemen"
 
 #: ../build/src/preferences_gen.h:2201
 msgid "rights to be applied when importing"
-msgstr "bij het importeren auteursrechten opnemen"
+msgstr "bij het importeren deze auteursrechten opnemen"
 
 #: ../build/src/preferences_gen.h:2224
 msgid "comma separated tags to be applied when importing"
