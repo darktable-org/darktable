@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
-"POT-Creation-Date: 2019-10-28 10:20+0100\n"
+"POT-Creation-Date: 2019-11-05 22:32+0100\n"
 "PO-Revision-Date: 2019-11-05 22:02+0100\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
@@ -17168,11 +17168,11 @@ msgstr ""
 "correctement interpréter ses couleurs."
 
 #. <para>
-#. Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
-#. by their specification. However, there is an established de-facto standard to embed
-#. profiles which darktable adheres to. Beware that some applications might fail to correctly
-#. handle those profiles and render colors incorrectly.
-#. </para>
+#.         Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
+#.         by their specification. However, there is an established de-facto standard to embed
+#.         profiles which darktable adheres to. Beware that some applications might fail to correctly
+#.         handle those profiles and render colors incorrectly.
+#.       </para>
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13958(para)
 msgid ""
 "As not all applications, e.g. image viewers, are aware of color profiles, a "
