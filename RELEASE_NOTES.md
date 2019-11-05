@@ -59,7 +59,7 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
   IMPORTANT:
   The 'preview' (previously <kbd>Z</kbd>) and 'preview with focus detection'
   (previously <kbd>Ctrl+Z</kbd>) actions are now assigned respectively to
-  <kbd>w</kbd> and <kbd>Ctrl+W</kbd> in order to follow the convention of using <kbd>Ctrl+Z</kbd> for the "undo" function.
+  <kbd>W</kbd> and <kbd>Ctrl+W</kbd> in order to follow the convention of using <kbd>Ctrl+Z</kbd> for the "undo" function.
 
 - A new timeline view has been introduced in the lighttable.
 
