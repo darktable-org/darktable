@@ -235,7 +235,7 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
   orientation.
 
 - The modification of date/time is now stored into the XMP. This
-  ensure that removing the picture and reloading will keep the changes.
+  ensures that removing the picture and reloading will keep the changes.
 
 - Fix orientation to support all cases as exposed in these examples:
   https://github.com/recurser/exif-orientation-examples
