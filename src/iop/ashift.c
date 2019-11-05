@@ -4984,21 +4984,21 @@ void gui_init(struct dt_iop_module_t *self)
                                               "set to zero for the generic case"));
   gtk_widget_set_tooltip_text(g->aspect, _("adjust aspect ratio of image by horizontal and vertical scaling"));
   gtk_widget_set_tooltip_text(g->fit_v, _("automatically correct for vertical perspective distortion\n"
-                                          "ctrl-click to only fit rotation\n"
-                                          "shift-click to only fit lens shift"));
+                                          "ctrl+click to only fit rotation\n"
+                                          "shift+click to only fit lens shift"));
   gtk_widget_set_tooltip_text(g->fit_h, _("automatically correct for horizontal perspective distortion\n"
-                                          "ctrl-click to only fit rotation\n"
-                                          "shift-click to only fit lens shift"));
+                                          "ctrl+click to only fit rotation\n"
+                                          "shift+click to only fit lens shift"));
   gtk_widget_set_tooltip_text(g->fit_both, _("automatically correct for vertical and "
                                              "horizontal perspective distortions; fitting rotation,"
                                              "lens shift in both directions, and shear\n"
-                                             "ctrl-click to only fit rotation\n"
-                                             "shift-click to only fit lens shift\n"
-                                             "ctrl-shift-click to only fit rotation and lens shift"));
+                                             "ctrl+click to only fit rotation\n"
+                                             "shift+click to only fit lens shift\n"
+                                             "ctrl+shift+click to only fit rotation and lens shift"));
   gtk_widget_set_tooltip_text(g->structure, _("analyse line structure in image\n"
-                                              "ctrl-click for an additional edge enhancement\n"
-                                              "shift-click for an additional detail enhancement\n"
-                                              "ctrl-shift-click for a combination of both methods"));
+                                              "ctrl+click for an additional edge enhancement\n"
+                                              "shift+click for an additional detail enhancement\n"
+                                              "ctrl+shift+click for a combination of both methods"));
   gtk_widget_set_tooltip_text(g->clean, _("remove line structure information"));
   gtk_widget_set_tooltip_text(g->eye, _("toggle visibility of structure lines"));
 
