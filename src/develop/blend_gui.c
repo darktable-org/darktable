@@ -2569,8 +2569,8 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
 
     bd->showmask = dtgtk_button_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-    gtk_widget_set_tooltip_text(bd->showmask, _("display mask and/or color channel. ctrl-click to display mask, "
-                                                "shift-click to display channel. hover over parametric mask slider to "
+    gtk_widget_set_tooltip_text(bd->showmask, _("display mask and/or color channel. ctrl+click to display mask, "
+                                                "shift+click to display channel. hover over parametric mask slider to "
                                                 "select channel for display"));
     g_signal_connect(G_OBJECT(bd->showmask), "button-press-event", G_CALLBACK(_blendop_blendif_showmask_clicked), module);
     gtk_widget_set_name(bd->showmask, "show_mask_button");
