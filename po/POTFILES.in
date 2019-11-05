@@ -1,6 +1,8 @@
+build/data/darktable.desktop.in
 build/src/preferences_gen.h
 data/darktable.appdata.xml.in
 data/darktable.desktop.in
+src/bauhaus/bauhaus.c
 src/chart/main.c
 src/cli/main.c
 src/common/collection.c
@@ -10,12 +12,14 @@ src/common/darktable.c
 src/common/darktable.h
 src/common/database.c
 src/common/debug.h
+src/common/fast_guided_filter.h
 src/common/film.c
 src/common/history.c
 src/common/http_server.c
 src/common/image.c
 src/common/imageio.c
 src/common/import_session.c
+src/common/iop_order.c
 src/common/mipmap_cache.c
 src/common/noiseprofiles.c
 src/common/opencl.c
@@ -83,6 +87,7 @@ src/iop/bloom.c
 src/iop/borders.c
 src/iop/cacorrect.c
 src/iop/channelmixer.c
+src/iop/choleski.h
 src/iop/clahe.c
 src/iop/clipping.c
 src/iop/colisa.c
@@ -122,6 +127,7 @@ src/iop/liquify.c
 src/iop/lowlight.c
 src/iop/lowpass.c
 src/iop/lut3d.c
+src/iop/mask_manager.c
 src/iop/monochrome.c
 src/iop/nlmeans.c
 src/iop/overexposed.c
@@ -187,6 +193,7 @@ src/libs/tools/filmstrip.c
 src/libs/tools/filter.c
 src/libs/tools/global_toolbox.c
 src/libs/tools/hinter.c
+src/libs/tools/image_infos.c
 src/libs/tools/lighttable.c
 src/libs/tools/module_toolbox.c
 src/libs/tools/ratings.c

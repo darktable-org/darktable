@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable hebrew translation\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-09 19:05+0300\n"
+"POT-Creation-Date: 2019-11-01 11:31+0100\n"
 "PO-Revision-Date: 2019-10-09 19:05+0300\n"
 "Last-Translator: Shlomi Alon-Braitbart <sbraitbart@gmail.com>\n"
 "Language-Team: \n"
@@ -17,6 +17,20 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 2.2.1\n"
+
+#: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
+msgid "Virtual Lighttable and Darkroom"
+msgstr "שולחן אור וחדר חושך וירטואלי"
+
+#: ../build/data/darktable.desktop.in.h:2 ../data/darktable.appdata.xml.in.h:1
+#: ../data/darktable.desktop.in.h:2
+msgid "Organize and develop images from digital cameras"
+msgstr "ארגן ופתח תמונות ממצלמות דיגיטליות"
+
+#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
+#: ../build/data/darktable.desktop.in.h:4 ../data/darktable.desktop.in.h:4
+msgid "graphics;photography;raw;"
+msgstr "גרפיקה;צילום;raw;"
 
 #: ../build/src/preferences_gen.h:2104
 msgid "GUI options"
@@ -253,7 +267,7 @@ msgstr ""
 "אל תגרום לדירוג של כוכב אחד להתנהג כפי שמצוין בהוראות ההפעלה -- דירוג בכוכב "
 "אחד פעמיים יגרום לאיפוס הדירוג."
 
-#: ../build/src/preferences_gen.h:2482 ../src/views/darkroom.c:107
+#: ../build/src/preferences_gen.h:2482 ../src/views/darkroom.c:110
 msgid "darkroom"
 msgstr "חדר חושך"
 
@@ -1138,10 +1152,6 @@ msgstr "תבנית נתינת שם לקובץ"
 msgid "file naming pattern used for a import session"
 msgstr "תבנית נתינת שם המשמשת לייבוא מושב"
 
-#: ../data/darktable.appdata.xml.in.h:1 ../data/darktable.desktop.in.h:2
-msgid "Organize and develop images from digital cameras"
-msgstr "ארגן ופתח תמונות ממצלמות דיגיטליות"
-
 #: ../data/darktable.appdata.xml.in.h:2
 msgid ""
 "darktable manages your digital negatives in a database and lets you view "
@@ -1187,38 +1197,39 @@ msgstr "הצג תמונות על מפה"
 msgid "Print your images"
 msgstr "הדפס תמונותיך"
 
-#: ../data/darktable.desktop.in.h:1
-msgid "Virtual Lighttable and Darkroom"
-msgstr "שולחן אור וחדר חושך וירטואלי"
+#: ../src/bauhaus/bauhaus.c:2260
+#, c-format
+msgid "%s/%s: %s"
+msgstr ""
 
-#. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
-#: ../data/darktable.desktop.in.h:4
-msgid "graphics;photography;raw;"
-msgstr "גרפיקה;צילום;raw;"
+#: ../src/bauhaus/bauhaus.c:2262
+#, c-format
+msgid "%s: %s"
+msgstr ""
 
-#: ../src/chart/main.c:459 ../src/control/jobs/control_jobs.c:1629
+#: ../src/chart/main.c:463 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/hist_dialog.c:171
 #: ../src/gui/preferences.c:1156 ../src/gui/preferences.c:1182
 #: ../src/gui/preferences.c:1266 ../src/gui/preferences.c:1388
 #: ../src/gui/preferences.c:1616 ../src/gui/presets.c:387
 #: ../src/gui/styles_dialog.c:283 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
-#: ../src/iop/lut3d.c:1012 ../src/libs/collect.c:242
+#: ../src/iop/lut3d.c:1013 ../src/libs/collect.c:242
 #: ../src/libs/copy_history.c:78 ../src/libs/geotagging.c:473
 #: ../src/libs/import.c:759 ../src/libs/import.c:866 ../src/libs/lib.c:228
-#: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2120
-#: ../src/libs/tagging.c:2161
+#: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2125
+#: ../src/libs/tagging.c:2166
 msgid "_cancel"
 msgstr "_בטל"
 
-#: ../src/chart/main.c:459 ../src/gui/preferences.c:1156
+#: ../src/chart/main.c:463 ../src/gui/preferences.c:1156
 #: ../src/gui/preferences.c:1387 ../src/gui/styles_dialog.c:284
 #: ../src/libs/styles.c:301
 msgid "_save"
 msgstr "_שמירה"
 
 #. TODO: is the rank interesting, too?
-#: ../src/chart/main.c:963
+#: ../src/chart/main.c:967
 #, c-format
 msgid ""
 "average dE: %.02f\n"
@@ -1227,68 +1238,68 @@ msgstr ""
 "ממוצע dE: %.02f\n"
 "מקסימום dE: %.02f"
 
-#: ../src/cli/main.c:110
+#: ../src/cli/main.c:117
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
 msgstr ""
 "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
 
-#: ../src/cli/main.c:122
+#: ../src/cli/main.c:129
 msgid "unknown option for --hq"
 msgstr "אפשרות לא ידועה עבור hq--"
 
-#: ../src/cli/main.c:138
+#: ../src/cli/main.c:145
 msgid "unknown option for --upscale"
 msgstr "אפשרות לא ידועה עבור upscale--"
 
-#: ../src/cli/main.c:201
+#: ../src/cli/main.c:208
 #, c-format
 msgid "error: output file is a directory. please specify file name"
 msgstr "שגיאה: קובץ פלט הוא תיקייה. אנה ציין שם קובץ"
 
-#: ../src/cli/main.c:210
+#: ../src/cli/main.c:217
 msgid "output file already exists, it will get renamed"
 msgstr "קובץ פלט קיים, שמו ישונה"
 
-#: ../src/cli/main.c:227
+#: ../src/cli/main.c:234
 #, c-format
 msgid "error: can't open folder %s"
 msgstr "שגיאה: לא יכול לפתוח תיקיה %s"
 
-#: ../src/cli/main.c:245
+#: ../src/cli/main.c:252
 #, c-format
 msgid "error: can't open file %s"
 msgstr "שגיאה: לא יכול לפתוח קובץ %s"
 
-#: ../src/cli/main.c:259
+#: ../src/cli/main.c:266
 #, c-format
 msgid "no images to export, aborting\n"
 msgstr "אין תמונות לייצוא, מבטל\n"
 
-#: ../src/cli/main.c:273
+#: ../src/cli/main.c:280
 #, c-format
 msgid "error: can't open xmp file %s"
 msgstr "שגיאה: לא יכול לפתוח קובץ xmp %s"
 
-#: ../src/cli/main.c:291
+#: ../src/cli/main.c:298
 msgid "empty history stack"
 msgstr "מחסנית ההיסטוריה ריקה"
 
-#: ../src/cli/main.c:314
+#: ../src/cli/main.c:321
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
 msgstr "מודול אחסון לא נמצא. אנה בדוק את ההתקנה, משהו כנראה שבור."
 
-#: ../src/cli/main.c:322
+#: ../src/cli/main.c:329
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr "קבלת פרמטרים ממודול האחסון נכשלה, מבטל ייצוא ..."
 
-#: ../src/cli/main.c:335
+#: ../src/cli/main.c:342
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "סיומת לא ידועה  '.%s'"
 
-#: ../src/cli/main.c:344
+#: ../src/cli/main.c:351
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr "קבלת פרמטרים ממודול העיצוב, מבטל ייצוא ..."
 
@@ -1296,19 +1307,19 @@ msgstr "קבלת פרמטרים ממודול העיצוב, מבטל ייצוא .
 msgid "too much time to update aspect ratio for the collection"
 msgstr "זמן רב מדי לעדכון יחס רוחב גובה של האוסף"
 
-#: ../src/common/collection.c:1241 ../src/develop/lightroom.c:824
+#: ../src/common/collection.c:1241 ../src/develop/lightroom.c:825
 #: ../src/iop/bilateral.cc:371 ../src/iop/channelmixer.c:456
 #: ../src/iop/channelmixer.c:467 ../src/iop/colorbalance.c:2525
 #: ../src/iop/temperature.c:1378 ../src/libs/collect.c:1284
 msgid "red"
 msgstr "אדום"
 
-#: ../src/common/collection.c:1243 ../src/develop/lightroom.c:826
+#: ../src/common/collection.c:1243 ../src/develop/lightroom.c:827
 #: ../src/iop/temperature.c:1369 ../src/libs/collect.c:1284
 msgid "yellow"
 msgstr "צהוב"
 
-#: ../src/common/collection.c:1245 ../src/develop/lightroom.c:828
+#: ../src/common/collection.c:1245 ../src/develop/lightroom.c:829
 #: ../src/iop/bilateral.cc:372 ../src/iop/channelmixer.c:457
 #: ../src/iop/channelmixer.c:473 ../src/iop/colorbalance.c:2532
 #: ../src/iop/temperature.c:1366 ../src/iop/temperature.c:1379
@@ -1316,7 +1327,7 @@ msgstr "צהוב"
 msgid "green"
 msgstr "ירוק"
 
-#: ../src/common/collection.c:1247 ../src/develop/lightroom.c:830
+#: ../src/common/collection.c:1247 ../src/develop/lightroom.c:831
 #: ../src/iop/bilateral.cc:373 ../src/iop/channelmixer.c:458
 #: ../src/iop/channelmixer.c:479 ../src/iop/colorbalance.c:2539
 #: ../src/iop/temperature.c:1380 ../src/libs/collect.c:1284
@@ -1358,7 +1369,7 @@ msgstr[1] "נבחרו %d תמונות מתוך %d באוסף הנוכחי"
 
 #. 0th entry is a dummy for DT_COLORSPACE_FILE and not used
 #: ../src/common/colorspaces.c:968 ../src/iop/colorin.c:2108
-#: ../src/iop/lut3d.c:1117
+#: ../src/iop/lut3d.c:1118
 msgid "sRGB"
 msgstr "sRGB"
 
@@ -1430,7 +1441,7 @@ msgid "export profile"
 msgstr "פרופיל פלט"
 
 #: ../src/common/colorspaces.c:984 ../src/common/colorspaces.c:1250
-#: ../src/views/darkroom.c:1999
+#: ../src/views/darkroom.c:2006
 msgid "softproof profile"
 msgstr "פרופיל סימולציית הדפסה"
 
@@ -1503,11 +1514,11 @@ msgstr "לקובץ '%s' פורמט לא ידוע!"
 msgid "error loading file `%s'"
 msgstr "שגיאה בהעלאת קובץ '%s'"
 
-#: ../src/common/darktable.c:786
+#: ../src/common/darktable.c:801
 msgid "darktable - run performance configuration?"
 msgstr "darktable - ?הפעל הגדרת ביצועים"
 
-#: ../src/common/darktable.c:787
+#: ../src/common/darktable.c:802
 msgid ""
 "we have an updated performance configuration logic - executing that might "
 "improve the performance of darktable.\n"
@@ -1520,17 +1531,17 @@ msgstr ""
 "יתכן שחלק מההגדרות הנוכחיות יידרסו - במיוחד ערכים ששינית ידנית.\n"
 "האם ברצונך להפעיל את עדכון קונפיגורציית הביצועים?\n"
 
-#: ../src/common/darktable.c:791 ../src/common/variables.c:380
+#: ../src/common/darktable.c:806 ../src/common/variables.c:380
 #: ../src/imageio/format/pdf.c:669 ../src/imageio/format/pdf.c:694
-#: ../src/iop/clipping.c:2005 ../src/iop/filmicrgb.c:1436
-#: ../src/libs/export.c:628 ../src/libs/export.c:634
-#: ../src/libs/metadata_view.c:279
+#: ../src/iop/clipping.c:2010 ../src/iop/filmicrgb.c:1556
+#: ../src/iop/toneequal.c:3155 ../src/libs/export.c:628
+#: ../src/libs/export.c:634 ../src/libs/metadata_view.c:279
 msgid "no"
 msgstr "לא"
 
-#: ../src/common/darktable.c:791 ../src/common/variables.c:378
+#: ../src/common/darktable.c:806 ../src/common/variables.c:378
 #: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
-#: ../src/iop/clipping.c:2006 ../src/libs/export.c:629 ../src/libs/export.c:635
+#: ../src/iop/clipping.c:2011 ../src/libs/export.c:629 ../src/libs/export.c:635
 #: ../src/libs/metadata_view.c:279
 msgid "yes"
 msgstr "כן"
@@ -1629,48 +1640,53 @@ msgstr "שגיאה בפתיחת מסד נתונים - darktable"
 msgid "delete database"
 msgstr "מחק מסד נתונים"
 
-#: ../src/common/film.c:313
+#: ../src/common/fast_guided_filter.h:456
+#, fuzzy
+msgid "fast guided filter failed to allocate memory, check your RAM settings"
+msgstr "אקולייזר טונים כשל בהקצאת זיכרון, בדוק את הגדרות ה RAM"
+
+#: ../src/common/film.c:311
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
 msgstr[0] "האם באמת ברצונך להסיר ספריה ריקה זו?"
 msgstr[1] "האם באמת ברצונך להסיר ספריות ריקות אלו?"
 
-#: ../src/common/film.c:320
+#: ../src/common/film.c:318
 msgid "remove empty directory?"
 msgid_plural "remove empty directories?"
 msgstr[0] "הסר ספריה ריקה?"
 msgstr[1] "הסר ספריות ריקות?"
 
-#: ../src/common/film.c:339 ../src/gui/preferences.c:502
+#: ../src/common/film.c:337 ../src/gui/preferences.c:502
 #: ../src/gui/styles_dialog.c:309
 msgid "name"
 msgstr "שם"
 
-#: ../src/common/film.c:437
+#: ../src/common/film.c:435
 msgid ""
 "cannot remove film roll having local copies with non accessible originals"
 msgstr "לא ניתן להסיר גליל פילם המכיל קבצים מקומיים ללא קבצי מקור זמינים"
 
-#: ../src/common/history.c:707
+#: ../src/common/history.c:764
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr "צריך ראשית להעתיק את ההיסטוריה מהקובץ לפני הדבקתו לאחר"
 
-#: ../src/common/history.c:798 ../src/common/history.c:801
-#: ../src/common/history.c:817 ../src/common/styles.c:894
-#: ../src/common/styles.c:898 ../src/develop/blend_gui.c:2501
-#: ../src/develop/develop.c:1854 ../src/iop/ashift.c:4856
+#: ../src/common/history.c:859 ../src/common/history.c:862
+#: ../src/common/history.c:878 ../src/common/styles.c:915
+#: ../src/common/styles.c:919 ../src/develop/blend_gui.c:2509
+#: ../src/develop/develop.c:1885 ../src/iop/ashift.c:4856
 #: ../src/libs/live_view.c:437
 msgid "on"
 msgstr "דלוק"
 
-#: ../src/common/history.c:798 ../src/common/history.c:801
-#: ../src/common/history.c:817 ../src/common/styles.c:894
-#: ../src/common/styles.c:898 ../src/develop/blend_gui.c:2248
-#: ../src/develop/blend_gui.c:2498 ../src/develop/develop.c:1854
+#: ../src/common/history.c:859 ../src/common/history.c:862
+#: ../src/common/history.c:878 ../src/common/styles.c:915
+#: ../src/common/styles.c:919 ../src/develop/blend_gui.c:2256
+#: ../src/develop/blend_gui.c:2506 ../src/develop/develop.c:1885
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
 #: ../src/iop/ashift.c:4855 ../src/iop/ashift.c:4861 ../src/iop/colorin.c:2107
 #: ../src/iop/demosaic.c:5147 ../src/iop/vignette.c:1150
-#: ../src/libs/history.c:163 ../src/libs/live_view.c:436
+#: ../src/libs/history.c:168 ../src/libs/live_view.c:436
 msgid "off"
 msgstr "כבוי"
 
@@ -1744,7 +1760,7 @@ msgid_plural "%d local copies have been synchronized"
 msgstr[0] "%d עותק מקומי סונכרן"
 msgstr[1] "%d עותקים מקומיים סונכרנו"
 
-#: ../src/common/imageio.c:637 ../src/common/mipmap_cache.c:1059
+#: ../src/common/imageio.c:637 ../src/common/mipmap_cache.c:1060
 #, c-format
 msgid "image `%s' is not available!"
 msgstr "תמונה '%s' לא זמינה!"
@@ -1779,6 +1795,11 @@ msgid ""
 "session settings."
 msgstr "לא ניתן להתרחב לשם קובץ יחיד עבור המושב, אנה בדוק הגדרות ייבוא מושב."
 
+#: ../src/common/iop_order.c:1893
+#, fuzzy, c-format
+msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
+msgstr "פרופיל קלט לא נתמך הוחלף ב Rec709 RGB לינארי!"
+
 #: ../src/common/noiseprofiles.c:27
 msgid "generic poissonian"
 msgstr "פואסוני פשוט"
@@ -1788,22 +1809,22 @@ msgstr "פואסוני פשוט"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "קובץ פרופיל צבע `%s' אינו חוקי"
 
-#: ../src/common/opencl.c:783
+#: ../src/common/opencl.c:785
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr "בשל חומרת GPU חלשה האצה בחומרה OpenCL נוטרלה."
 
-#: ../src/common/opencl.c:790
+#: ../src/common/opencl.c:792
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly."
 msgstr "נתגלו כרטיסים גרפיים מרובים - פרופיל התזמון של opencl הוגדר בהתאם."
 
-#: ../src/common/opencl.c:797
+#: ../src/common/opencl.c:799
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly."
 msgstr "נתגלה כרטיס גרפי מהיר מאד - פרופיל התזמון של opencl הוגדר בהתאם."
 
-#: ../src/common/opencl.c:804
+#: ../src/common/opencl.c:806
 msgid "opencl scheduling profile set to default."
 msgstr "פרופיל התזמון של opencl הוגדר לברירת המחדל."
 
@@ -1862,48 +1883,48 @@ msgstr[1] "מיישם דירוג %d לתמונות %d"
 msgid "no images selected to apply rating"
 msgstr "לא נבחרו תמונות לדירוג"
 
-#: ../src/common/styles.c:186
+#: ../src/common/styles.c:188
 #, c-format
 msgid "style with name '%s' already exists"
 msgstr "סגנון בשם '%s' כבר קיים"
 
 #. freed by _destroy_style_shortcut_callback
-#: ../src/common/styles.c:312 ../src/common/styles.c:316
-#: ../src/common/styles.c:396 ../src/common/styles.c:465
-#: ../src/common/styles.c:797 ../src/common/styles.c:1379
-#: ../src/common/styles.c:1398
+#: ../src/common/styles.c:314 ../src/common/styles.c:318
+#: ../src/common/styles.c:398 ../src/common/styles.c:467
+#: ../src/common/styles.c:818 ../src/common/styles.c:1400
+#: ../src/common/styles.c:1419
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
 msgstr "סגנונות/יישום %s"
 
-#: ../src/common/styles.c:402 ../src/gui/styles_dialog.c:144
+#: ../src/common/styles.c:404 ../src/gui/styles_dialog.c:144
 #, c-format
 msgid "style named '%s' successfully created"
 msgstr "סגנון בשם '%s' נוצר בהצלחה"
 
 #. fail :(
-#: ../src/common/styles.c:501 ../src/common/styles.c:519
-#: ../src/views/darkroom.c:539 ../src/views/print.c:248
+#: ../src/common/styles.c:503 ../src/common/styles.c:521
+#: ../src/views/darkroom.c:542 ../src/views/print.c:248
 msgid "no image selected!"
 msgstr "לא נבחרו תמונות!"
 
-#: ../src/common/styles.c:610
+#: ../src/common/styles.c:612
 #, c-format
 msgid "module `%s' version mismatch: %d != %d"
 msgstr "מודול `%s' חוסר התאמה בגרסאות: %d != %d"
 
-#: ../src/common/styles.c:986
+#: ../src/common/styles.c:1007
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "הניסיון לדרוס קובץ סגנון כשל עבור %s"
 
-#: ../src/common/styles.c:992
+#: ../src/common/styles.c:1013
 #, c-format
 msgid "style file for %s exists"
 msgstr "קובץ סגנון עבור %s קיים"
 
-#: ../src/common/styles.c:1269
+#: ../src/common/styles.c:1290
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "סגנון %s יובא בהצלחה"
@@ -2166,7 +2187,7 @@ msgid_plural "exporting %d images to %s"
 msgstr[0] "מייצא %d תמונה אל %s"
 msgstr[1] "מייצא %d תמונות אל %s"
 
-#: ../src/control/jobs/control_jobs.c:1408 ../src/views/darkroom.c:552
+#: ../src/control/jobs/control_jobs.c:1408 ../src/views/darkroom.c:555
 #: ../src/views/print.c:261
 #, c-format
 msgid "image `%s' is currently unavailable"
@@ -2340,92 +2361,92 @@ msgstr "מייבא תמונה %s"
 msgid "import image"
 msgstr "ייבא תמונה"
 
-#: ../src/develop/blend.c:2806 ../src/develop/blend.c:3122
+#: ../src/develop/blend.c:2826 ../src/develop/blend.c:3142
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
 msgstr "עירוב לו בוצע במודול '%s': אזורי עניין לא תואמים"
 
-#: ../src/develop/blend.c:2842 ../src/develop/blend.c:3157
+#: ../src/develop/blend.c:2862 ../src/develop/blend.c:3177
 msgid "could not allocate buffer for blending"
 msgstr "לא נמצא זיכרון לתהליך העירוב"
 
-#: ../src/develop/blend_gui.c:1342
+#: ../src/develop/blend_gui.c:1350
 msgid "sliders for L channel"
 msgstr "סליידרים לערוץ L"
 
-#: ../src/develop/blend_gui.c:1342
+#: ../src/develop/blend_gui.c:1350
 msgid "sliders for a channel"
 msgstr "סליידרים לערוץ a"
 
-#: ../src/develop/blend_gui.c:1342
+#: ../src/develop/blend_gui.c:1350
 msgid "sliders for b channel"
 msgstr "סליידרים לערוץ b"
 
-#: ../src/develop/blend_gui.c:1343
+#: ../src/develop/blend_gui.c:1351
 msgid "sliders for chroma channel (of LCh)"
 msgstr "סליידרים לערוץ הכרומה (של LCh)"
 
-#: ../src/develop/blend_gui.c:1343
+#: ../src/develop/blend_gui.c:1351
 msgid "sliders for hue channel (of LCh)"
 msgstr "סליידרים לערוץ הגוון (של LCh)"
 
-#: ../src/develop/blend_gui.c:1344
+#: ../src/develop/blend_gui.c:1352
 msgid " g "
 msgstr " g "
 
-#: ../src/develop/blend_gui.c:1344
+#: ../src/develop/blend_gui.c:1352
 msgid " R "
 msgstr " R "
 
-#: ../src/develop/blend_gui.c:1344
+#: ../src/develop/blend_gui.c:1352
 msgid " G "
 msgstr " G "
 
-#: ../src/develop/blend_gui.c:1344
+#: ../src/develop/blend_gui.c:1352
 msgid " B "
 msgstr " B "
 
-#: ../src/develop/blend_gui.c:1344
+#: ../src/develop/blend_gui.c:1352
 msgid " H "
 msgstr " H "
 
-#: ../src/develop/blend_gui.c:1344
+#: ../src/develop/blend_gui.c:1352
 msgid " S "
 msgstr " S "
 
-#: ../src/develop/blend_gui.c:1344
+#: ../src/develop/blend_gui.c:1352
 msgid " L "
 msgstr " L "
 
-#: ../src/develop/blend_gui.c:1346
+#: ../src/develop/blend_gui.c:1354
 msgid "sliders for gray value"
 msgstr "סליידרים לרמת אפור"
 
-#: ../src/develop/blend_gui.c:1346
+#: ../src/develop/blend_gui.c:1354
 msgid "sliders for red channel"
 msgstr "סליידרים לערוץ האדום"
 
-#: ../src/develop/blend_gui.c:1346
+#: ../src/develop/blend_gui.c:1354
 msgid "sliders for green channel"
 msgstr "סליידרים לערוץ הירוק"
 
-#: ../src/develop/blend_gui.c:1347
+#: ../src/develop/blend_gui.c:1355
 msgid "sliders for blue channel"
 msgstr "סליידרים לערוץ הכחול"
 
-#: ../src/develop/blend_gui.c:1347
+#: ../src/develop/blend_gui.c:1355
 msgid "sliders for hue channel (of HSL)"
 msgstr "סליידרים לערוץ הגוון (של HSL)"
 
-#: ../src/develop/blend_gui.c:1348
+#: ../src/develop/blend_gui.c:1356
 msgid "sliders for chroma channel (of HSL)"
 msgstr "סליידרים לערוץ הכרומה (של HCL)"
 
-#: ../src/develop/blend_gui.c:1348
+#: ../src/develop/blend_gui.c:1356
 msgid "sliders for value channel (of HSL)"
 msgstr "סליידרים לערוץ הערך (של HSL)"
 
-#: ../src/develop/blend_gui.c:1350
+#: ../src/develop/blend_gui.c:1358
 msgid ""
 "adjustment based on input received by this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -2437,7 +2458,7 @@ msgstr ""
 "* טווח הוגדר על ידי סמנים תחתונים: אל תערבב כלל\n"
 "* טווח בין סמנים סמוכים עליון/תחתון: ערבב בהדרגה"
 
-#: ../src/develop/blend_gui.c:1354
+#: ../src/develop/blend_gui.c:1362
 msgid ""
 "adjustment based on unblended output of this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -2449,7 +2470,7 @@ msgstr ""
 "* טווח הוגדר על ידי סמנים תחתונים: אל תערבב כלל\n"
 "* טווח בין סמנים סמוכים עליון/תחתון: ערבב בהדרגה"
 
-#: ../src/develop/blend_gui.c:1504 ../src/iop/colorzones.c:2287
+#: ../src/develop/blend_gui.c:1512 ../src/iop/colorzones.c:2287
 #: ../src/iop/tonecurve.c:1340
 msgid ""
 "pick GUI color from image\n"
@@ -2458,7 +2479,7 @@ msgstr ""
 "בחר צבע לממשק מהתמונה\n"
 "קליק+ctrl לבחירת אזור"
 
-#: ../src/develop/blend_gui.c:1508
+#: ../src/develop/blend_gui.c:1516
 msgid ""
 "set the range based on an area from the image\n"
 "click+drag to use the input image\n"
@@ -2468,376 +2489,376 @@ msgstr ""
 "קליק+גרור להשתמש בתמונת הקלט\n"
 "קליק+ctrl+גרור להשתמש בתמונת הפלט"
 
-#: ../src/develop/blend_gui.c:1512
+#: ../src/develop/blend_gui.c:1520
 msgid "reset blend mask settings"
 msgstr "אתחל הגדרות של מסיכת ערבוב"
 
-#: ../src/develop/blend_gui.c:1515
+#: ../src/develop/blend_gui.c:1523
 msgid "invert all channel's polarities"
 msgstr "הפוך קוטביות של כל הערוצים"
 
-#: ../src/develop/blend_gui.c:1528 ../src/develop/blend_gui.c:1532
+#: ../src/develop/blend_gui.c:1536 ../src/develop/blend_gui.c:1540
 msgid "toggle polarity. best seen by enabling 'display mask'"
 msgstr "מתג קוטביות. נראה מיטבית על ידי אפשור 'הצג מסיכה'"
 
-#: ../src/develop/blend_gui.c:1541
+#: ../src/develop/blend_gui.c:1549
 msgid "output"
 msgstr "פלט"
 
-#: ../src/develop/blend_gui.c:1552
+#: ../src/develop/blend_gui.c:1560
 msgid "input"
 msgstr "קלט"
 
-#: ../src/develop/blend_gui.c:1563 ../src/develop/blend_gui.c:1564
+#: ../src/develop/blend_gui.c:1571 ../src/develop/blend_gui.c:1572
 msgid "double click to reset"
 msgstr "הקלקה כפולה לאתחול"
 
-#: ../src/develop/blend_gui.c:1602 ../src/develop/blend_gui.c:2272
+#: ../src/develop/blend_gui.c:1610 ../src/develop/blend_gui.c:2280
 msgid "parametric mask"
 msgstr "מסיכה פרמטרית"
 
-#: ../src/develop/blend_gui.c:1636
+#: ../src/develop/blend_gui.c:1644
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
 msgstr[0] "נעשה שימוש בצורה %d"
 msgstr[1] "נעשה שימוש בצורות %d"
 
-#: ../src/develop/blend_gui.c:1641 ../src/develop/blend_gui.c:1696
-#: ../src/develop/blend_gui.c:1785 ../src/develop/blend_gui.c:1896
+#: ../src/develop/blend_gui.c:1649 ../src/develop/blend_gui.c:1704
+#: ../src/develop/blend_gui.c:1793 ../src/develop/blend_gui.c:1904
 msgid "no mask used"
 msgstr "לא נעשה שימוש במסיכה"
 
-#: ../src/develop/blend_gui.c:1695 ../src/develop/blend_gui.c:1895
-#: ../src/develop/blend_gui.c:2305 ../src/develop/blend_gui.c:2466
-#: ../src/develop/blend_gui.c:2474 ../src/develop/blend_gui.c:2496
-#: ../src/develop/blend_gui.c:2529 ../src/develop/blend_gui.c:2537
-#: ../src/develop/blend_gui.c:2545 ../src/develop/blend_gui.c:2555
+#: ../src/develop/blend_gui.c:1703 ../src/develop/blend_gui.c:1903
+#: ../src/develop/blend_gui.c:2313 ../src/develop/blend_gui.c:2474
+#: ../src/develop/blend_gui.c:2482 ../src/develop/blend_gui.c:2504
+#: ../src/develop/blend_gui.c:2537 ../src/develop/blend_gui.c:2545
+#: ../src/develop/blend_gui.c:2553 ../src/develop/blend_gui.c:2563
 msgid "blend"
 msgstr "ערבב"
 
-#: ../src/develop/blend_gui.c:1695 ../src/develop/blend_gui.c:1760
-#: ../src/develop/blend_gui.c:2263
+#: ../src/develop/blend_gui.c:1703 ../src/develop/blend_gui.c:1768
+#: ../src/develop/blend_gui.c:2271
 msgid "drawn mask"
 msgstr "מסיכה מצויירת"
 
-#: ../src/develop/blend_gui.c:1707
+#: ../src/develop/blend_gui.c:1715
 msgid "show and edit mask elements"
 msgstr "הצג וערוך אלמנטים במסיכה"
 
-#: ../src/develop/blend_gui.c:1713
+#: ../src/develop/blend_gui.c:1721
 msgid "toggle polarity of drawn mask"
 msgstr "מתג קוטביות של המסיכה המצוירת"
 
-#: ../src/develop/blend_gui.c:1723 ../src/libs/masks.c:993
+#: ../src/develop/blend_gui.c:1731 ../src/libs/masks.c:993
 #: ../src/libs/masks.c:1032 ../src/libs/masks.c:1643
 msgid "add gradient"
 msgstr "הוסף גרדיאנט"
 
-#: ../src/develop/blend_gui.c:1731 ../src/iop/retouch.c:2675
+#: ../src/develop/blend_gui.c:1739 ../src/iop/retouch.c:2675
 #: ../src/iop/spots.c:664 ../src/libs/masks.c:989 ../src/libs/masks.c:1028
 #: ../src/libs/masks.c:1649
 msgid "add path"
 msgstr "הוסף נתיב"
 
-#: ../src/develop/blend_gui.c:1739 ../src/iop/retouch.c:2682
+#: ../src/develop/blend_gui.c:1747 ../src/iop/retouch.c:2682
 #: ../src/iop/spots.c:671 ../src/libs/masks.c:985 ../src/libs/masks.c:1024
 #: ../src/libs/masks.c:1656
 msgid "add ellipse"
 msgstr "הוסף אליפסה"
 
-#: ../src/develop/blend_gui.c:1747 ../src/iop/retouch.c:2689
+#: ../src/develop/blend_gui.c:1755 ../src/iop/retouch.c:2689
 #: ../src/iop/spots.c:678 ../src/libs/masks.c:981 ../src/libs/masks.c:1020
 #: ../src/libs/masks.c:1663
 msgid "add circle"
 msgstr "הוסף מעגל"
 
-#: ../src/develop/blend_gui.c:1755 ../src/iop/retouch.c:2669
+#: ../src/develop/blend_gui.c:1763 ../src/iop/retouch.c:2669
 #: ../src/libs/masks.c:1016 ../src/libs/masks.c:1669
 msgid "add brush"
 msgstr "הוסף מברשת"
 
-#: ../src/develop/blend_gui.c:1895 ../src/develop/blend_gui.c:2293
+#: ../src/develop/blend_gui.c:1903 ../src/develop/blend_gui.c:2301
 msgid "raster mask"
 msgstr "מסיכת רסטר"
 
-#: ../src/develop/blend_gui.c:1905
+#: ../src/develop/blend_gui.c:1913
 msgid "toggle polarity of raster mask"
 msgstr "מתג קוטביות של מסיכת רסטר"
 
 #. * generate a list of all available blend modes
-#: ../src/develop/blend_gui.c:2193 ../src/libs/live_view.c:408
+#: ../src/develop/blend_gui.c:2201 ../src/libs/live_view.c:408
 msgctxt "blendmode"
 msgid "normal"
 msgstr "רגיל"
 
-#: ../src/develop/blend_gui.c:2194
+#: ../src/develop/blend_gui.c:2202
 msgctxt "blendmode"
 msgid "normal bounded"
 msgstr "רגיל מוגבל"
 
-#: ../src/develop/blend_gui.c:2195 ../src/libs/live_view.c:417
+#: ../src/develop/blend_gui.c:2203 ../src/libs/live_view.c:417
 msgctxt "blendmode"
 msgid "lighten"
 msgstr "האר"
 
-#: ../src/develop/blend_gui.c:2196 ../src/libs/live_view.c:416
+#: ../src/develop/blend_gui.c:2204 ../src/libs/live_view.c:416
 msgctxt "blendmode"
 msgid "darken"
 msgstr "החשך"
 
-#: ../src/develop/blend_gui.c:2197 ../src/libs/live_view.c:413
+#: ../src/develop/blend_gui.c:2205 ../src/libs/live_view.c:413
 msgctxt "blendmode"
 msgid "multiply"
 msgstr "הכפל"
 
-#: ../src/develop/blend_gui.c:2198
+#: ../src/develop/blend_gui.c:2206
 msgctxt "blendmode"
 msgid "average"
 msgstr "ממוצע"
 
-#: ../src/develop/blend_gui.c:2199
+#: ../src/develop/blend_gui.c:2207
 msgctxt "blendmode"
 msgid "addition"
 msgstr "הוספה"
 
-#: ../src/develop/blend_gui.c:2200
+#: ../src/develop/blend_gui.c:2208
 msgctxt "blendmode"
 msgid "subtract"
 msgstr "החסרה"
 
-#: ../src/develop/blend_gui.c:2201 ../src/libs/live_view.c:422
+#: ../src/develop/blend_gui.c:2209 ../src/libs/live_view.c:422
 msgctxt "blendmode"
 msgid "difference"
 msgstr "הפרש"
 
-#: ../src/develop/blend_gui.c:2202 ../src/libs/live_view.c:414
+#: ../src/develop/blend_gui.c:2210 ../src/libs/live_view.c:414
 msgctxt "blendmode"
 msgid "screen"
 msgstr "מסך"
 
-#: ../src/develop/blend_gui.c:2203 ../src/libs/live_view.c:415
+#: ../src/develop/blend_gui.c:2211 ../src/libs/live_view.c:415
 msgctxt "blendmode"
 msgid "overlay"
 msgstr "תכסית"
 
-#: ../src/develop/blend_gui.c:2204
+#: ../src/develop/blend_gui.c:2212
 msgctxt "blendmode"
 msgid "softlight"
 msgstr "תאורה רכה"
 
-#: ../src/develop/blend_gui.c:2205
+#: ../src/develop/blend_gui.c:2213
 msgctxt "blendmode"
 msgid "hardlight"
 msgstr "תאורה קשה"
 
-#: ../src/develop/blend_gui.c:2206
+#: ../src/develop/blend_gui.c:2214
 msgctxt "blendmode"
 msgid "vividlight"
 msgstr "תאורה חיה"
 
-#: ../src/develop/blend_gui.c:2207
+#: ../src/develop/blend_gui.c:2215
 msgctxt "blendmode"
 msgid "linearlight"
 msgstr "תאורה לינארית"
 
-#: ../src/develop/blend_gui.c:2208
+#: ../src/develop/blend_gui.c:2216
 msgctxt "blendmode"
 msgid "pinlight"
 msgstr "pinlight"
 
-#: ../src/develop/blend_gui.c:2209
+#: ../src/develop/blend_gui.c:2217
 msgctxt "blendmode"
 msgid "lightness"
 msgstr "תאורה"
 
-#: ../src/develop/blend_gui.c:2210
+#: ../src/develop/blend_gui.c:2218
 msgctxt "blendmode"
 msgid "chroma"
 msgstr "כרומה"
 
-#: ../src/develop/blend_gui.c:2211
+#: ../src/develop/blend_gui.c:2219
 msgctxt "blendmode"
 msgid "hue"
 msgstr "גוון"
 
-#: ../src/develop/blend_gui.c:2212
+#: ../src/develop/blend_gui.c:2220
 msgctxt "blendmode"
 msgid "color"
 msgstr "צבע"
 
-#: ../src/develop/blend_gui.c:2213
+#: ../src/develop/blend_gui.c:2221
 msgctxt "blendmode"
 msgid "coloradjustment"
 msgstr "כוונון צבע"
 
-#: ../src/develop/blend_gui.c:2215
+#: ../src/develop/blend_gui.c:2223
 msgctxt "blendmode"
 msgid "Lab lightness"
 msgstr "תאורת מעבדה"
 
-#: ../src/develop/blend_gui.c:2217
+#: ../src/develop/blend_gui.c:2225
 msgctxt "blendmode"
 msgid "Lab color"
 msgstr "צבע מעבדה"
 
-#: ../src/develop/blend_gui.c:2218
+#: ../src/develop/blend_gui.c:2226
 msgctxt "blendmode"
 msgid "Lab L-channel"
 msgstr "ערוץ-L ב Lab"
 
-#: ../src/develop/blend_gui.c:2220
+#: ../src/develop/blend_gui.c:2228
 msgctxt "blendmode"
 msgid "Lab a-channel"
 msgstr "ערוץ-a ב Lab"
 
-#: ../src/develop/blend_gui.c:2222
+#: ../src/develop/blend_gui.c:2230
 msgctxt "blendmode"
 msgid "Lab b-channel"
 msgstr "ערוץ-b ב Lab"
 
-#: ../src/develop/blend_gui.c:2224
+#: ../src/develop/blend_gui.c:2232
 msgctxt "blendmode"
 msgid "HSV lightness"
 msgstr "תאורת HSV"
 
-#: ../src/develop/blend_gui.c:2226
+#: ../src/develop/blend_gui.c:2234
 msgctxt "blendmode"
 msgid "HSV color"
 msgstr "צבע HSV"
 
-#: ../src/develop/blend_gui.c:2227
+#: ../src/develop/blend_gui.c:2235
 msgctxt "blendmode"
 msgid "RGB red channel"
 msgstr "ערוץ אדום ב RGB"
 
-#: ../src/develop/blend_gui.c:2229
+#: ../src/develop/blend_gui.c:2237
 msgctxt "blendmode"
 msgid "RGB green channel"
 msgstr "ערוץ ירוק ב RGB"
 
-#: ../src/develop/blend_gui.c:2231
+#: ../src/develop/blend_gui.c:2239
 msgctxt "blendmode"
 msgid "RGB blue channel"
 msgstr "ערוץ כחול ב RGB"
 
 #. * deprecated blend modes: make them available as legacy history stacks might want them
-#: ../src/develop/blend_gui.c:2235
+#: ../src/develop/blend_gui.c:2243
 msgctxt "blendmode"
 msgid "difference (deprecated)"
 msgstr "הפרש (לא מומלץ)"
 
-#: ../src/develop/blend_gui.c:2237
+#: ../src/develop/blend_gui.c:2245
 msgctxt "blendmode"
 msgid "inverse (deprecated)"
 msgstr "הפוך (לא מומלץ)"
 
-#: ../src/develop/blend_gui.c:2239
+#: ../src/develop/blend_gui.c:2247
 msgctxt "blendmode"
 msgid "normal (deprecated)"
 msgstr "רגיל (לא מומלץ)"
 
-#: ../src/develop/blend_gui.c:2240
+#: ../src/develop/blend_gui.c:2248
 msgctxt "blendmode"
 msgid "unbounded (deprecated)"
 msgstr "בלתי מוגבל"
 
-#: ../src/develop/blend_gui.c:2255
+#: ../src/develop/blend_gui.c:2263
 msgid "uniformly"
 msgstr "באופן אחיד"
 
 #. overlays and
-#: ../src/develop/blend_gui.c:2283
+#: ../src/develop/blend_gui.c:2291
 msgid "drawn & parametric mask"
 msgstr "מצויר עם מסיכה פרמטרית"
 
-#: ../src/develop/blend_gui.c:2305
+#: ../src/develop/blend_gui.c:2313
 msgid "blend mode"
 msgstr "מצב ערבוב"
 
-#: ../src/develop/blend_gui.c:2306
+#: ../src/develop/blend_gui.c:2314
 msgid "choose blending mode"
 msgstr "בחר מצב ערבוב"
 
-#: ../src/develop/blend_gui.c:2466 ../src/iop/watermark.c:1430
+#: ../src/develop/blend_gui.c:2474 ../src/iop/watermark.c:1430
 msgid "opacity"
 msgstr "אטימות"
 
-#: ../src/develop/blend_gui.c:2469
+#: ../src/develop/blend_gui.c:2477
 msgid "set the opacity of the blending"
 msgstr "קבע את אטימות הערבוב"
 
-#: ../src/develop/blend_gui.c:2474
+#: ../src/develop/blend_gui.c:2482
 msgid "combine masks"
 msgstr "שלב מסיכות"
 
-#: ../src/develop/blend_gui.c:2476
+#: ../src/develop/blend_gui.c:2484
 msgid "exclusive"
 msgstr "לא כולל"
 
-#: ../src/develop/blend_gui.c:2479
+#: ../src/develop/blend_gui.c:2487
 msgid "inclusive"
 msgstr "כולל"
 
-#: ../src/develop/blend_gui.c:2482
+#: ../src/develop/blend_gui.c:2490
 msgid "exclusive & inverted"
 msgstr "לא כולל ומהופך"
 
-#: ../src/develop/blend_gui.c:2485
+#: ../src/develop/blend_gui.c:2493
 msgid "inclusive & inverted"
 msgstr "כולל ומהופך"
 
-#: ../src/develop/blend_gui.c:2490
+#: ../src/develop/blend_gui.c:2498
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
 msgstr "איך לשלב מסיכה מצוירת מסוימת עם ערוצים שונים של מסיכה פרמטרית"
 
-#: ../src/develop/blend_gui.c:2496
+#: ../src/develop/blend_gui.c:2504
 msgid "invert mask"
 msgstr "הפוך מסיכה"
 
-#: ../src/develop/blend_gui.c:2505
+#: ../src/develop/blend_gui.c:2513
 msgid "apply mask in normal or inverted mode"
 msgstr "יישם מסיכה במצב רגיל או מהופך"
 
-#: ../src/develop/blend_gui.c:2511
+#: ../src/develop/blend_gui.c:2519
 msgid "feathering guide"
 msgstr "מוביל הנוצה"
 
-#: ../src/develop/blend_gui.c:2513
+#: ../src/develop/blend_gui.c:2521
 msgid "output image"
 msgstr "תמונת הפלט"
 
-#: ../src/develop/blend_gui.c:2517
+#: ../src/develop/blend_gui.c:2525
 msgid "input image"
 msgstr "תמונת הקלט"
 
-#: ../src/develop/blend_gui.c:2523
+#: ../src/develop/blend_gui.c:2531
 msgid "choose to guide mask by input or output image"
 msgstr "בחר להנחות מסיכה תמונת הקלט או הפלט"
 
-#: ../src/develop/blend_gui.c:2529
+#: ../src/develop/blend_gui.c:2537
 msgid "feathering radius"
 msgstr "רדיוס הנוצה"
 
-#: ../src/develop/blend_gui.c:2531
+#: ../src/develop/blend_gui.c:2539
 msgid "spatial radius of feathering"
 msgstr "רדיוס מרחבי של הנוצה"
 
-#: ../src/develop/blend_gui.c:2537
+#: ../src/develop/blend_gui.c:2545
 msgid "mask blur"
 msgstr "מריחת מסיכה"
 
-#: ../src/develop/blend_gui.c:2539
+#: ../src/develop/blend_gui.c:2547
 msgid "radius for gaussian blur of blend mask"
 msgstr "רדיוס עבור מריחה גאוסית של מסיכת ערבוב"
 
-#: ../src/develop/blend_gui.c:2545 ../src/iop/retouch.c:2951
+#: ../src/develop/blend_gui.c:2553 ../src/iop/retouch.c:2951
 msgid "mask opacity"
 msgstr "אטימות מסיכה"
 
-#: ../src/develop/blend_gui.c:2547
+#: ../src/develop/blend_gui.c:2555
 msgid ""
 "shifts and tilts the tone curve of the blend mask to adjust its brightness "
 "without affecting fully transparent/fully opaque regions"
@@ -2845,16 +2866,16 @@ msgstr ""
 "מסיח ומטה את את עקומת הטון של מסיכת הערבוב על מנת לכוונן את בהירותה מבלי "
 "להשפיע על אזורים שקופים / אטומים במלואם"
 
-#: ../src/develop/blend_gui.c:2555
+#: ../src/develop/blend_gui.c:2563
 msgid "mask contrast"
 msgstr "ניגודיות מסיכה"
 
-#: ../src/develop/blend_gui.c:2557
+#: ../src/develop/blend_gui.c:2565
 msgid ""
 "gives the tone curve of the blend mask an s-like shape to adjust its contrast"
 msgstr "מעניק לעקום הטון של מסיכת הערבוב צורת s לכוונון הקונטרסט"
 
-#: ../src/develop/blend_gui.c:2564
+#: ../src/develop/blend_gui.c:2572
 msgid ""
 "display mask and/or color channel. ctrl-click to display mask, shift-click "
 "to display channel. hover over parametric mask slider to select channel for "
@@ -2863,57 +2884,57 @@ msgstr ""
 "הצג מסיכה ו/או ערוץ צבע. ctrl-קליק להצגת מסיכה, shift-קליק להצגת ערוץ. רחף "
 "מעל הסליידר של המסיכה הפרמטרית לבחירת ערוץ להצגה"
 
-#: ../src/develop/blend_gui.c:2572
+#: ../src/develop/blend_gui.c:2580
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr "כבה זמנית מסיכת ערבוב. רק עבור המודול בפוקוס"
 
-#: ../src/develop/blend_gui.c:2602
+#: ../src/develop/blend_gui.c:2610
 msgid "mask refinement"
 msgstr "כוונון מסיכה עדין"
 
-#: ../src/develop/develop.c:1641
+#: ../src/develop/develop.c:1671
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: module `%s' version mismatch: %d != %d"
 
-#: ../src/develop/imageop.c:1017
+#: ../src/develop/imageop.c:1022
 msgid "new instance"
 msgstr "שלב חדש"
 
-#: ../src/develop/imageop.c:1023
+#: ../src/develop/imageop.c:1028
 msgid "duplicate instance"
 msgstr "שכפל שלב"
 
-#: ../src/develop/imageop.c:1029 ../src/libs/masks.c:1153
+#: ../src/develop/imageop.c:1034 ../src/libs/masks.c:1153
 msgid "move up"
 msgstr "הזז מעלה"
 
-#: ../src/develop/imageop.c:1035 ../src/libs/masks.c:1156
+#: ../src/develop/imageop.c:1040 ../src/libs/masks.c:1156
 msgid "move down"
 msgstr "הזז מטה"
 
 #. delete
-#: ../src/develop/imageop.c:1041 ../src/libs/image.c:144
-#: ../src/libs/styles.c:458 ../src/libs/tagging.c:1164
-#: ../src/libs/tagging.c:1261
+#: ../src/develop/imageop.c:1046 ../src/libs/image.c:144
+#: ../src/libs/styles.c:458 ../src/libs/tagging.c:1163
+#: ../src/libs/tagging.c:1260
 msgid "delete"
 msgstr "מחק"
 
-#: ../src/develop/imageop.c:1048 ../src/libs/tagging.c:1735
+#: ../src/develop/imageop.c:1053 ../src/libs/tagging.c:1734
 msgid "rename"
 msgstr "שנה שם"
 
-#: ../src/develop/imageop.c:1091 ../src/develop/imageop.c:1975
+#: ../src/develop/imageop.c:1096 ../src/develop/imageop.c:1980
 #, c-format
 msgid "%s is switched on"
 msgstr "%s דלוק"
 
-#: ../src/develop/imageop.c:1091 ../src/develop/imageop.c:1975
+#: ../src/develop/imageop.c:1096 ../src/develop/imageop.c:1980
 #, c-format
 msgid "%s is switched off"
 msgstr "%s כבוי"
 
-#: ../src/develop/imageop.c:1402 ../src/gui/accelerators.c:686
+#: ../src/develop/imageop.c:1407 ../src/gui/accelerators.c:686
 #: ../src/gui/accelerators.c:771 ../src/gui/accelerators.c:953
 #: ../src/gui/accelerators.c:979 ../src/gui/camera_import_dialog.c:445
 #: ../src/gui/presets.c:190 ../src/gui/presets.c:303 ../src/gui/presets.c:644
@@ -2922,33 +2943,33 @@ msgstr "%s כבוי"
 msgid "preset"
 msgstr "פריסט"
 
-#: ../src/develop/imageop.c:1422
+#: ../src/develop/imageop.c:1427
 msgctxt "accel"
 msgid "fusion"
 msgstr "היתוך"
 
 #. Adding the optional show accelerator to the table (blank)
-#: ../src/develop/imageop.c:1427
+#: ../src/develop/imageop.c:1432
 msgctxt "accel"
 msgid "show module"
 msgstr "הראה מודול"
 
-#: ../src/develop/imageop.c:1428
+#: ../src/develop/imageop.c:1433
 msgctxt "accel"
 msgid "enable module"
 msgstr "אפשר מודול"
 
-#: ../src/develop/imageop.c:1430 ../src/libs/lib.c:614
+#: ../src/develop/imageop.c:1435 ../src/libs/lib.c:614
 msgctxt "accel"
 msgid "reset module parameters"
 msgstr "אתחל את הפרמרטרים של המודול"
 
-#: ../src/develop/imageop.c:1431 ../src/libs/lib.c:618
+#: ../src/develop/imageop.c:1436 ../src/libs/lib.c:618
 msgctxt "accel"
 msgid "show preset menu"
 msgstr "הצג תפריט פריסטים"
 
-#: ../src/develop/imageop.c:1947
+#: ../src/develop/imageop.c:1952
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -2956,17 +2977,17 @@ msgstr ""
 "פעולות של שלבים מרובים\n"
 "קליק-אמצעי יוצר שלב חדש"
 
-#: ../src/develop/imageop.c:1958 ../src/libs/lib.c:984
+#: ../src/develop/imageop.c:1963 ../src/libs/lib.c:984
 msgid "reset parameters"
 msgstr "אתחל פרמטרים"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:1966 ../src/gui/preferences.c:484
+#: ../src/develop/imageop.c:1971 ../src/gui/preferences.c:484
 #: ../src/libs/lib.c:993
 msgid "presets"
 msgstr "פריסטים"
 
-#: ../src/develop/imageop.c:1968
+#: ../src/develop/imageop.c:1973
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -2974,40 +2995,40 @@ msgstr ""
 "פעולות של שלבים מרובים\n"
 "קליק-אמצעי יוצר שלב חדש"
 
-#: ../src/develop/lightroom.c:1034
+#: ../src/develop/lightroom.c:1072
 msgid "cannot find lightroom XMP!"
 msgstr "לא נמצא XMP של lightroom!"
 
-#: ../src/develop/lightroom.c:1066 ../src/develop/lightroom.c:1088
-#: ../src/develop/lightroom.c:1108
+#: ../src/develop/lightroom.c:1104 ../src/develop/lightroom.c:1126
+#: ../src/develop/lightroom.c:1146
 #, c-format
 msgid "`%s' not a lightroom XMP!"
 msgstr "שג' `%s' לא קובץ XMP של lightroom!"
 
 #. tags
-#: ../src/develop/lightroom.c:1568 ../src/gui/camera_import_dialog.c:465
-#: ../src/libs/export_metadata.c:358 ../src/libs/import.c:580
+#: ../src/develop/lightroom.c:1505 ../src/gui/camera_import_dialog.c:465
+#: ../src/libs/export_metadata.c:273 ../src/libs/import.c:580
 #: ../src/libs/metadata_view.c:137
 msgid "tags"
 msgstr "תגיות"
 
 #. DT_COLLECTION_SORT_DATETIME
-#: ../src/develop/lightroom.c:1577 ../src/libs/tools/filter.c:149
+#: ../src/develop/lightroom.c:1514 ../src/libs/tools/filter.c:149
 msgid "rating"
 msgstr "דירוג"
 
-#: ../src/develop/lightroom.c:1589 ../src/libs/collect.h:38
+#: ../src/develop/lightroom.c:1526 ../src/libs/collect.h:38
 #: ../src/libs/geotagging.c:63
 msgid "geotagging"
 msgstr "גאו-תגיות"
 
 #. DT_COLLECTION_SORT_ID
-#: ../src/develop/lightroom.c:1598 ../src/libs/collect.h:34
+#: ../src/develop/lightroom.c:1535 ../src/libs/collect.h:34
 #: ../src/libs/tools/filter.c:151
 msgid "color label"
 msgstr "תווית צבע"
 
-#: ../src/develop/lightroom.c:1604
+#: ../src/develop/lightroom.c:1541
 #, c-format
 msgid "%s has been imported"
 msgid_plural "%s have been imported"
@@ -3354,7 +3375,7 @@ msgstr "שמש בין ערביים"
 msgid "underwater"
 msgstr "מתחת למים"
 
-#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1896
+#: ../src/external/wb_presets.c:73 ../src/views/darkroom.c:1903
 msgid "black & white"
 msgstr "שחור לבן"
 
@@ -3374,32 +3395,32 @@ msgstr "איזון לבן (WB) מצלמה"
 msgid "auto WB"
 msgstr "איזון לבן (WB) אוטו'"
 
-#: ../src/generate-cache/main.c:45
+#: ../src/generate-cache/main.c:49
 #, c-format
 msgid "creating cache directories\n"
 msgstr "יוצר מחיצות מטמון\n"
 
-#: ../src/generate-cache/main.c:51
+#: ../src/generate-cache/main.c:55
 #, c-format
 msgid "creating cache directory '%s'\n"
 msgstr "יוצר מחיצת מטמון '%s'\n"
 
-#: ../src/generate-cache/main.c:54
+#: ../src/generate-cache/main.c:58
 #, c-format
 msgid "could not create directory '%s'!\n"
 msgstr "יצירת תיקיה '%s' נכשלה!\n"
 
-#: ../src/generate-cache/main.c:78
+#: ../src/generate-cache/main.c:82
 #, c-format
 msgid "warning: no images are matching the requested image id range\n"
 msgstr "אזהרה: אף תמונה לא תואמת את זהות התמונה המבוקשת\n"
 
-#: ../src/generate-cache/main.c:81
+#: ../src/generate-cache/main.c:85
 #, c-format
 msgid "warning: did you want to swap these boundaries?\n"
 msgstr "אזהרה: האם רצית להחליף גבולות אלה?\n"
 
-#: ../src/generate-cache/main.c:211
+#: ../src/generate-cache/main.c:218
 #, c-format
 msgid ""
 "warning: disk backend for thumbnail cache is disabled (cache_disk_backend)\n"
@@ -3412,12 +3433,12 @@ msgstr ""
 "עליך לאפשר שימוש בדיסק כמטמון עבור תמונות ממוזערות\n"
 "תמונות ממוזערות לא ייוצרו, נעשה."
 
-#: ../src/generate-cache/main.c:221
+#: ../src/generate-cache/main.c:228
 #, c-format
 msgid "error: ensure that min_mip <= max_mip\n"
 msgstr "שגיאה: וודא ש min_mip <= max_mip\n"
 
-#: ../src/generate-cache/main.c:226
+#: ../src/generate-cache/main.c:233
 #, c-format
 msgid "creating complete lighttable thumbnail cache\n"
 msgstr "יוצר מטמון מלא של תמונות ממוזערות עבור שולחן אור\n"
@@ -3490,10 +3511,10 @@ msgstr "שמור ערך כברירת מחדל"
 msgid "reset value to default"
 msgstr "אתחל ערך לברירת המחדל"
 
-#: ../src/gui/camera_import_dialog.c:288 ../src/libs/export_metadata.c:317
-#: ../src/libs/geotagging.c:419 ../src/libs/tagging.c:1164
-#: ../src/libs/tagging.c:1261 ../src/libs/tagging.c:1349
-#: ../src/libs/tagging.c:1515 ../src/libs/tagging.c:1735
+#: ../src/gui/camera_import_dialog.c:288 ../src/libs/export_metadata.c:232
+#: ../src/libs/geotagging.c:419 ../src/libs/tagging.c:1163
+#: ../src/libs/tagging.c:1260 ../src/libs/tagging.c:1348
+#: ../src/libs/tagging.c:1514 ../src/libs/tagging.c:1734
 msgid "cancel"
 msgstr "בטל"
 
@@ -3600,109 +3621,109 @@ msgid "please use YYYY-MM-DD format for date override"
 msgstr "אנא השתמש בפורמט YYYY-MM-DD לעקיפת התאריך"
 
 #. register keys for view switching
-#: ../src/gui/gtk.c:1167
+#: ../src/gui/gtk.c:1213
 msgctxt "accel"
 msgid "tethering view"
 msgstr "תצוגת קשירה"
 
-#: ../src/gui/gtk.c:1168
+#: ../src/gui/gtk.c:1214
 msgctxt "accel"
 msgid "lighttable view"
 msgstr "מצב שולחן אור"
 
-#: ../src/gui/gtk.c:1169
+#: ../src/gui/gtk.c:1215
 msgctxt "accel"
 msgid "darkroom view"
 msgstr "מצב חדר חושך"
 
-#: ../src/gui/gtk.c:1170
+#: ../src/gui/gtk.c:1216
 msgctxt "accel"
 msgid "map view"
 msgstr "מצב מפה"
 
-#: ../src/gui/gtk.c:1171
+#: ../src/gui/gtk.c:1217
 msgctxt "accel"
 msgid "slideshow view"
 msgstr "מצב הקרנת שקופיות"
 
-#: ../src/gui/gtk.c:1172
+#: ../src/gui/gtk.c:1218
 msgctxt "accel"
 msgid "print view"
 msgstr "מצב הדפסה"
 
 #. register ctrl-q to quit:
-#: ../src/gui/gtk.c:1195
+#: ../src/gui/gtk.c:1241
 msgctxt "accel"
 msgid "quit"
 msgstr "עזוב"
 
 #. Full-screen accelerators
-#: ../src/gui/gtk.c:1200
+#: ../src/gui/gtk.c:1246
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "מתג מסך מלא"
 
-#: ../src/gui/gtk.c:1201
+#: ../src/gui/gtk.c:1247
 msgctxt "accel"
 msgid "leave fullscreen"
 msgstr "צא ממסך מלא"
 
 #. Side-border hide/show
-#: ../src/gui/gtk.c:1209
+#: ../src/gui/gtk.c:1255
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "מתג גבולות צדדיים"
 
-#: ../src/gui/gtk.c:1211
+#: ../src/gui/gtk.c:1257
 msgctxt "accel"
 msgid "toggle panels collapsing controls"
 msgstr "מתג בקרי פאנל מתקפלים"
 
-#: ../src/gui/gtk.c:1215
+#: ../src/gui/gtk.c:1261
 msgctxt "accel"
 msgid "toggle left panel"
 msgstr "מתג פאנל שמאלי"
 
-#: ../src/gui/gtk.c:1219
+#: ../src/gui/gtk.c:1265
 msgctxt "accel"
 msgid "toggle right panel"
 msgstr "מתג פאנל ימני"
 
-#: ../src/gui/gtk.c:1223
+#: ../src/gui/gtk.c:1269
 msgctxt "accel"
 msgid "toggle top panel"
 msgstr "מתג פאנל עליון"
 
-#: ../src/gui/gtk.c:1227
+#: ../src/gui/gtk.c:1273
 msgctxt "accel"
 msgid "toggle bottom panel"
 msgstr "מתג פאנל תחתון"
 
 #. toggle view of header
-#: ../src/gui/gtk.c:1232
+#: ../src/gui/gtk.c:1278
 msgctxt "accel"
 msgid "toggle header"
 msgstr "מתג כותרת"
 
 #. View-switch
-#: ../src/gui/gtk.c:1235
+#: ../src/gui/gtk.c:1281
 msgctxt "accel"
 msgid "switch view"
 msgstr "החלף מבט"
 
 #. Global zoom in & zoom out
-#: ../src/gui/gtk.c:1241 ../src/libs/tools/lighttable.c:213
+#: ../src/gui/gtk.c:1287 ../src/libs/tools/lighttable.c:213
 msgctxt "accel"
 msgid "zoom in"
 msgstr "קרב"
 
-#: ../src/gui/gtk.c:1242 ../src/libs/tools/lighttable.c:214
+#: ../src/gui/gtk.c:1288 ../src/libs/tools/lighttable.c:214
 msgctxt "accel"
 msgid "zoom out"
 msgstr "הרחק"
 
 #. accels window
-#: ../src/gui/gtk.c:1245
+#: ../src/gui/gtk.c:1291
 msgctxt "accel"
 msgid "show accels window"
 msgstr "הצג חלון האצה"
@@ -3892,7 +3913,7 @@ msgid "golden spiral"
 msgstr "ספירלת זהב"
 
 #: ../src/gui/guides.c:444 ../src/imageio/format/pdf.c:681
-#: ../src/iop/denoiseprofile.c:3970 ../src/iop/lens.cc:2326
+#: ../src/iop/denoiseprofile.c:3971 ../src/iop/lens.cc:2326
 #: ../src/iop/rawdenoise.c:985 ../src/libs/tools/filter.c:125
 msgid "all"
 msgstr "הכל"
@@ -3957,7 +3978,7 @@ msgstr "הכלל"
 msgid "item"
 msgstr "פריט"
 
-#: ../src/gui/hist_dialog.c:231
+#: ../src/gui/hist_dialog.c:233
 msgid "can't copy history out of unaltered image"
 msgstr "לא ניתן להעתיק היסטוריה מתוך תמונה שלא שונתה"
 
@@ -4036,7 +4057,7 @@ msgstr "ISO"
 
 #. exposure
 #: ../src/gui/preferences.c:522 ../src/gui/preferences.c:1465
-#: ../src/gui/presets.c:464 ../src/iop/basicadj.c:680 ../src/iop/exposure.c:107
+#: ../src/gui/presets.c:464 ../src/iop/basicadj.c:685 ../src/iop/exposure.c:107
 #: ../src/iop/exposure.c:886 ../src/iop/relight.c:361 ../src/libs/collect.h:37
 #: ../src/libs/metadata_view.c:115
 msgid "exposure"
@@ -4056,7 +4077,7 @@ msgstr "מפתח"
 msgid "focal length"
 msgstr "אורך מוקד"
 
-#: ../src/gui/preferences.c:535 ../src/iop/basicadj.c:741
+#: ../src/gui/preferences.c:535 ../src/iop/basicadj.c:746
 #: ../src/iop/borders.c:1022 ../src/iop/levels.c:705
 #: ../src/iop/rgblevels.c:1089
 msgid "auto"
@@ -4064,9 +4085,10 @@ msgstr "אוטו'"
 
 #. Adding the import/export buttons
 #: ../src/gui/preferences.c:544 ../src/gui/preferences.c:637
+#, fuzzy
 msgctxt "preferences"
-msgid "import"
-msgstr "ייבוא"
+msgid "import..."
+msgstr "ייבא"
 
 #. Adding the outer container
 #: ../src/gui/preferences.c:584
@@ -4081,11 +4103,10 @@ msgstr "קיצור דרך"
 msgid "binding"
 msgstr "כריכה"
 
-#. Export button
 #. export button
-#: ../src/gui/preferences.c:642 ../src/libs/export.c:716
-#: ../src/libs/styles.c:472
-msgid "export"
+#: ../src/gui/preferences.c:642 ../src/libs/styles.c:472
+#, fuzzy
+msgid "export..."
 msgstr "ייצא"
 
 #. Setting the notification text
@@ -4272,31 +4293,31 @@ msgstr "דרוס פריסט?"
 msgid "name of the preset"
 msgstr "שם הפריסט"
 
-#: ../src/gui/presets.c:878 ../src/gui/presets.c:891
+#: ../src/gui/presets.c:881 ../src/gui/presets.c:894
 msgid "(default)"
 msgstr "(ברירת מחדל)"
 
-#: ../src/gui/presets.c:902
+#: ../src/gui/presets.c:905
 msgid "disabled: wrong module version"
 msgstr "מנוטרל: גרסת מודול לא נכונה"
 
-#: ../src/gui/presets.c:926 ../src/libs/lib.c:489
+#: ../src/gui/presets.c:929 ../src/libs/lib.c:489
 msgid "edit this preset.."
 msgstr "ערוך פריסט זה.."
 
-#: ../src/gui/presets.c:930 ../src/libs/lib.c:493
+#: ../src/gui/presets.c:933 ../src/libs/lib.c:493
 msgid "delete this preset"
 msgstr "מחק פריסט זה"
 
-#: ../src/gui/presets.c:936 ../src/libs/lib.c:500
+#: ../src/gui/presets.c:939 ../src/libs/lib.c:500
 msgid "store new preset.."
 msgstr "שמור פריסט חדש.."
 
-#: ../src/gui/presets.c:942 ../src/libs/lib.c:512
+#: ../src/gui/presets.c:945 ../src/libs/lib.c:512
 msgid "update preset"
 msgstr "עדכן פריסט"
 
-#: ../src/gui/presets.c:955
+#: ../src/gui/presets.c:958
 msgid "favourite"
 msgstr "מועדף"
 
@@ -4344,8 +4365,7 @@ msgstr "עדכן"
 msgid "can't create style out of unaltered image"
 msgstr "לא ניתן ליצור סגנון מתוך תמונה שלא שונתה"
 
-#: ../src/imageio/format/copy.c:124 ../src/libs/copy_history.c:308
-#: ../src/libs/image.c:204
+#: ../src/imageio/format/copy.c:124
 msgid "copy"
 msgstr "העתק"
 
@@ -4451,7 +4471,7 @@ msgstr "גודל מסגרת לא חוקית, משתמש ב 0"
 #: ../src/imageio/storage/email.c:136 ../src/imageio/storage/facebook.c:1311
 #: ../src/imageio/storage/flickr.c:650 ../src/imageio/storage/gallery.c:349
 #: ../src/imageio/storage/gallery.c:390
-#: ../src/imageio/storage/googlephoto.c:1380
+#: ../src/imageio/storage/googlephoto.c:1381
 #: ../src/imageio/storage/piwigo.c:969
 #, c-format
 msgid "could not export to file `%s'!"
@@ -4468,7 +4488,7 @@ msgstr "PDF"
 #. DT_COLLECTION_SORT_CUSTOM_ORDER
 #: ../src/imageio/format/pdf.c:583 ../src/imageio/storage/facebook.c:1120
 #: ../src/imageio/storage/flickr.c:530 ../src/imageio/storage/gallery.c:185
-#: ../src/imageio/storage/googlephoto.c:1233 ../src/imageio/storage/latex.c:185
+#: ../src/imageio/storage/googlephoto.c:1234 ../src/imageio/storage/latex.c:185
 #: ../src/imageio/storage/piwigo.c:857 ../src/libs/collect.h:34
 #: ../src/libs/metadata.c:347 ../src/libs/metadata_view.c:127
 #: ../src/libs/tools/filter.c:155
@@ -4850,29 +4870,29 @@ msgstr ""
 "הרשאה ל darktable להעלות תמונות לפני שתמשיך."
 
 #: ../src/imageio/storage/facebook.c:851
-#: ../src/imageio/storage/googlephoto.c:942
+#: ../src/imageio/storage/googlephoto.c:943
 msgid "new account"
 msgstr "חשבון חדש"
 
 #: ../src/imageio/storage/facebook.c:856
-#: ../src/imageio/storage/googlephoto.c:947
+#: ../src/imageio/storage/googlephoto.c:948
 msgid "other account"
 msgstr "חשבון אחר"
 
 #: ../src/imageio/storage/facebook.c:885
-#: ../src/imageio/storage/googlephoto.c:975
+#: ../src/imageio/storage/googlephoto.c:976
 msgid "unable to retrieve the album list"
 msgstr "לא ניתן לאחזר את רשימת האלבומים"
 
 #: ../src/imageio/storage/facebook.c:893 ../src/imageio/storage/flickr.c:393
-#: ../src/imageio/storage/flickr.c:420 ../src/imageio/storage/googlephoto.c:985
+#: ../src/imageio/storage/flickr.c:420 ../src/imageio/storage/googlephoto.c:986
 #: ../src/imageio/storage/piwigo.c:524 ../src/imageio/storage/piwigo.c:588
 msgid "create new album"
 msgstr "צור אלבום חדש"
 
 #: ../src/imageio/storage/facebook.c:965
-#: ../src/imageio/storage/googlephoto.c:1038
-#: ../src/imageio/storage/googlephoto.c:1188
+#: ../src/imageio/storage/googlephoto.c:1039
+#: ../src/imageio/storage/googlephoto.c:1189
 msgid "logout"
 msgstr "צא מהחשבון"
 
@@ -4882,10 +4902,10 @@ msgstr "צא מהחשבון"
 #: ../src/imageio/storage/facebook.c:1038
 #: ../src/imageio/storage/facebook.c:1064
 #: ../src/imageio/storage/facebook.c:1183 ../src/imageio/storage/flickr.c:481
-#: ../src/imageio/storage/googlephoto.c:1044
-#: ../src/imageio/storage/googlephoto.c:1192
-#: ../src/imageio/storage/googlephoto.c:1205
-#: ../src/imageio/storage/googlephoto.c:1272
+#: ../src/imageio/storage/googlephoto.c:1045
+#: ../src/imageio/storage/googlephoto.c:1193
+#: ../src/imageio/storage/googlephoto.c:1206
+#: ../src/imageio/storage/googlephoto.c:1273
 #: ../src/imageio/storage/piwigo.c:810
 msgid "login"
 msgstr "כנס לחשבון"
@@ -4920,12 +4940,12 @@ msgid "friends of friends"
 msgstr "חברים של חברים"
 
 #: ../src/imageio/storage/facebook.c:1320
-#: ../src/imageio/storage/googlephoto.c:1389
+#: ../src/imageio/storage/googlephoto.c:1390
 msgid "unable to create album, no title provided"
 msgstr "לא ניתן ליצר אלבום, לא סופק שם לאלבום"
 
 #: ../src/imageio/storage/facebook.c:1329
-#: ../src/imageio/storage/googlephoto.c:1396
+#: ../src/imageio/storage/googlephoto.c:1397
 msgid "unable to create album"
 msgstr "יצירת אלבום נכשלה"
 
@@ -5054,7 +5074,7 @@ msgid "enter the title of the website"
 msgstr "הכנס את שם אתר האינטרנט"
 
 #. //////////// build & show the validation dialog
-#: ../src/imageio/storage/googlephoto.c:761
+#: ../src/imageio/storage/googlephoto.c:762
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your google account there and authorize darktable to "
@@ -5063,34 +5083,34 @@ msgstr ""
 "שלב 1: אמור להיפתח חלון או כרטיסיה חדשה בדפדפן. היכנס לחשבון ה google שלך "
 "ותן הרשאה ל darktable להעלות תמונות לפני מעבר לשלב הבא."
 
-#: ../src/imageio/storage/googlephoto.c:764
+#: ../src/imageio/storage/googlephoto.c:765
 msgid ""
 "step 2: paste the verification code shown to you in the browser and click "
 "the OK button once you are done."
 msgstr "שלב 2: הדבק את קוד האימות המופיע בדפדפן ולחץ על OK לכשתסיים."
 
-#: ../src/imageio/storage/googlephoto.c:770
+#: ../src/imageio/storage/googlephoto.c:771
 msgid "google authentication"
 msgstr "אימות google"
 
-#: ../src/imageio/storage/googlephoto.c:778
+#: ../src/imageio/storage/googlephoto.c:779
 msgid "verification code:"
 msgstr "קוד אימות:"
 
-#: ../src/imageio/storage/googlephoto.c:801
+#: ../src/imageio/storage/googlephoto.c:802
 msgid "please enter the verification code"
 msgstr "אנה הכנס קוד אימות"
 
-#: ../src/imageio/storage/googlephoto.c:1220
+#: ../src/imageio/storage/googlephoto.c:1221
 msgid "google photos"
 msgstr "google photos"
 
-#: ../src/imageio/storage/googlephoto.c:1406
+#: ../src/imageio/storage/googlephoto.c:1407
 msgid "unable to export to google photos album"
 msgstr "לא ניתן ליצא תמונות לאלבום google"
 
 #. this makes sense only if the export was successful
-#: ../src/imageio/storage/googlephoto.c:1419
+#: ../src/imageio/storage/googlephoto.c:1420
 #, c-format
 msgid "%d/%d exported to google photos album"
 msgid_plural "%d/%d exported to google photos album"
@@ -5242,14 +5262,14 @@ msgid "lens shift (%s)"
 msgstr "הסחת עדשה (%s)"
 
 #: ../src/iop/ashift.c:4623 ../src/iop/ashift.c:4624 ../src/iop/ashift.c:4727
-#: ../src/iop/ashift.c:4728 ../src/iop/clipping.c:1693
-#: ../src/iop/clipping.c:1978 ../src/iop/clipping.c:1997
+#: ../src/iop/ashift.c:4728 ../src/iop/clipping.c:1698
+#: ../src/iop/clipping.c:1983 ../src/iop/clipping.c:2002
 msgid "horizontal"
 msgstr "אופקי"
 
 #: ../src/iop/ashift.c:4623 ../src/iop/ashift.c:4624 ../src/iop/ashift.c:4727
-#: ../src/iop/ashift.c:4728 ../src/iop/clipping.c:1692
-#: ../src/iop/clipping.c:1979 ../src/iop/clipping.c:1996
+#: ../src/iop/ashift.c:4728 ../src/iop/clipping.c:1697
+#: ../src/iop/clipping.c:1984 ../src/iop/clipping.c:2001
 msgid "vertical"
 msgstr "אנכי"
 
@@ -5270,12 +5290,12 @@ msgstr "הסחת עדשה (אופקית)"
 msgid "shear"
 msgstr "גזור"
 
-#: ../src/iop/ashift.c:4854 ../src/iop/clipping.c:2128
+#: ../src/iop/ashift.c:4854 ../src/iop/clipping.c:2133
 #: ../src/libs/live_view.c:343
 msgid "guides"
 msgstr "מנחים"
 
-#: ../src/iop/ashift.c:4860 ../src/iop/clipping.c:2004
+#: ../src/iop/ashift.c:4860 ../src/iop/clipping.c:2009
 msgid "automatic cropping"
 msgstr "חיתוך אוטומטי"
 
@@ -5335,7 +5355,7 @@ msgstr "גזור תמונה לאורך האלכסון"
 msgid "display guide lines overlay"
 msgstr "הצג תכסית של קווים מנחים"
 
-#: ../src/iop/ashift.c:4973 ../src/iop/clipping.c:2007
+#: ../src/iop/ashift.c:4973 ../src/iop/clipping.c:2012
 msgid "automatically crop to avoid black edges"
 msgstr "חתוך אוטומטית על מנת להימנע משוליים שחורים"
 
@@ -5522,12 +5542,12 @@ msgstr "deblur: טשטוש בינוני, חוזק 1"
 msgid "deblur: fine blur, strength 1"
 msgstr "deblur: טשטוש עדין, חוזק 1"
 
-#: ../src/iop/atrous.c:1597 ../src/iop/denoiseprofile.c:3716
+#: ../src/iop/atrous.c:1597 ../src/iop/denoiseprofile.c:3717
 #: ../src/iop/rawdenoise.c:813
 msgid "coarse"
 msgstr "גס"
 
-#: ../src/iop/atrous.c:1604 ../src/iop/denoiseprofile.c:3724
+#: ../src/iop/atrous.c:1604 ../src/iop/denoiseprofile.c:3725
 #: ../src/iop/rawdenoise.c:821
 msgid "fine"
 msgstr "עדין"
@@ -5537,12 +5557,12 @@ msgid "contrasty"
 msgstr "ניגודי (קונטרסטי)"
 
 #: ../src/iop/atrous.c:1617 ../src/iop/atrous.c:1621
-#: ../src/iop/colorzones.c:2334 ../src/iop/denoiseprofile.c:3733
+#: ../src/iop/colorzones.c:2334 ../src/iop/denoiseprofile.c:3734
 #: ../src/iop/rawdenoise.c:830
 msgid "smooth"
 msgstr "חלק"
 
-#: ../src/iop/atrous.c:1622 ../src/iop/denoiseprofile.c:3738
+#: ../src/iop/atrous.c:1622 ../src/iop/denoiseprofile.c:3739
 #: ../src/iop/rawdenoise.c:835
 msgid "noisy"
 msgstr "רועש"
@@ -5664,7 +5684,7 @@ msgstr "דומה ל nokia"
 #. clang-format off
 #. smoother cubic spline curve
 #: ../src/iop/basecurve.c:250 ../src/iop/colorzones.c:2374
-#: ../src/iop/rgbcurve.c:1564 ../src/iop/tonecurve.c:1381
+#: ../src/iop/rgbcurve.c:1599 ../src/iop/tonecurve.c:1381
 msgid "cubic spline"
 msgstr "אינטרפולציית spline ממעלה שלישית"
 
@@ -5698,18 +5718,18 @@ msgid ""
 "near the blacks"
 msgstr "סקאלה לשימוש בגרף"
 
-#: ../src/iop/basecurve.c:2139 ../src/iop/basicadj.c:701
-#: ../src/iop/rgbcurve.c:1584 ../src/iop/rgblevels.c:1116
+#: ../src/iop/basecurve.c:2139 ../src/iop/basicadj.c:706
+#: ../src/iop/rgbcurve.c:1619 ../src/iop/rgblevels.c:1116
 #: ../src/iop/tonecurve.c:1392
 msgid "preserve colors"
 msgstr "שמר צבעים"
 
 #: ../src/iop/basecurve.c:2140 ../src/iop/basecurve.c:2153
-#: ../src/iop/basicadj.c:702 ../src/iop/clipping.c:1691
-#: ../src/iop/clipping.c:1977 ../src/iop/clipping.c:1995
-#: ../src/iop/clipping.c:2135 ../src/iop/clipping.c:2162
+#: ../src/iop/basicadj.c:707 ../src/iop/clipping.c:1696
+#: ../src/iop/clipping.c:1982 ../src/iop/clipping.c:2000
+#: ../src/iop/clipping.c:2140 ../src/iop/clipping.c:2167
 #: ../src/iop/colorreconstruction.c:1377 ../src/iop/lens.cc:2320
-#: ../src/iop/retouch.c:582 ../src/iop/rgbcurve.c:1585
+#: ../src/iop/retouch.c:582 ../src/iop/rgbcurve.c:1620
 #: ../src/iop/rgblevels.c:1117 ../src/iop/tonecurve.c:1393
 #: ../src/libs/export.c:520 ../src/libs/live_view.c:350
 #: ../src/libs/live_view.c:375 ../src/libs/live_view.c:384
@@ -5717,44 +5737,47 @@ msgstr "שמר צבעים"
 msgid "none"
 msgstr "ללא"
 
-#: ../src/iop/basecurve.c:2141 ../src/iop/basicadj.c:703
-#: ../src/iop/rgbcurve.c:1586 ../src/iop/rgblevels.c:1118
+#: ../src/iop/basecurve.c:2141 ../src/iop/basicadj.c:708
+#: ../src/iop/rgbcurve.c:1621 ../src/iop/rgblevels.c:1118
 #: ../src/iop/tonecurve.c:1394
 msgid "luminance"
 msgstr "לומיננס"
 
-#: ../src/iop/basecurve.c:2142 ../src/iop/basicadj.c:704
-#: ../src/iop/rgbcurve.c:1587 ../src/iop/rgblevels.c:1119
-#: ../src/iop/tonecurve.c:1395
-msgid "max rgb"
-msgstr "max rgb"
+#: ../src/iop/basecurve.c:2142 ../src/iop/basicadj.c:709
+#: ../src/iop/filmicrgb.c:1557 ../src/iop/rgbcurve.c:1622
+#: ../src/iop/rgblevels.c:1119 ../src/iop/tonecurve.c:1395
+msgid "max RGB"
+msgstr "max RGB"
 
-#: ../src/iop/basecurve.c:2143 ../src/iop/basicadj.c:705
-#: ../src/iop/rgbcurve.c:1588 ../src/iop/rgblevels.c:1120
+#: ../src/iop/basecurve.c:2143 ../src/iop/basicadj.c:710
+#: ../src/iop/rgbcurve.c:1623 ../src/iop/rgblevels.c:1120
 #: ../src/iop/tonecurve.c:1396
-msgid "average rgb"
-msgstr "ממוצע rgb"
+#, fuzzy
+msgid "average RGB"
+msgstr "ממוצע"
 
-#: ../src/iop/basecurve.c:2144 ../src/iop/basicadj.c:706
-#: ../src/iop/rgbcurve.c:1589 ../src/iop/rgblevels.c:1121
+#: ../src/iop/basecurve.c:2144 ../src/iop/basicadj.c:711
+#: ../src/iop/rgbcurve.c:1624 ../src/iop/rgblevels.c:1121
 #: ../src/iop/tonecurve.c:1397
-msgid "sum rgb"
-msgstr "sum rgb"
+#, fuzzy
+msgid "sum RGB"
+msgstr "max RGB"
 
-#: ../src/iop/basecurve.c:2145 ../src/iop/basicadj.c:707
-#: ../src/iop/rgbcurve.c:1590 ../src/iop/rgblevels.c:1122
+#: ../src/iop/basecurve.c:2145 ../src/iop/basicadj.c:712
+#: ../src/iop/rgbcurve.c:1625 ../src/iop/rgblevels.c:1122
 #: ../src/iop/tonecurve.c:1398
-msgid "norm rgb"
-msgstr "norm rgb"
+#, fuzzy
+msgid "norm RGB"
+msgstr "max RGB"
 
-#: ../src/iop/basecurve.c:2146 ../src/iop/basicadj.c:708
-#: ../src/iop/rgbcurve.c:1591 ../src/iop/rgblevels.c:1123
+#: ../src/iop/basecurve.c:2146 ../src/iop/basicadj.c:713
+#: ../src/iop/rgbcurve.c:1626 ../src/iop/rgblevels.c:1123
 #: ../src/iop/tonecurve.c:1399
 msgid "basic power"
 msgstr "עצמה בסיסית"
 
-#: ../src/iop/basecurve.c:2148 ../src/iop/basicadj.c:710
-#: ../src/iop/rgbcurve.c:1593 ../src/iop/rgblevels.c:1125
+#: ../src/iop/basecurve.c:2148 ../src/iop/basicadj.c:715
+#: ../src/iop/rgbcurve.c:1628 ../src/iop/rgblevels.c:1125
 #: ../src/iop/tonecurve.c:1401
 msgid "method to preserve colors when applying contrast"
 msgstr "שיטה לשימור צבע בהפעלת קונטרסט"
@@ -5801,11 +5824,11 @@ msgstr "הטיית חשיפה"
 msgid "basic adjustments"
 msgstr "כוונון בסיסי"
 
-#: ../src/iop/basicadj.c:668 ../src/iop/exposure.c:896
+#: ../src/iop/basicadj.c:673 ../src/iop/exposure.c:896
 msgid "black level correction"
 msgstr "תיקון רמת שחור"
 
-#: ../src/iop/basicadj.c:670
+#: ../src/iop/basicadj.c:675
 msgid ""
 "adjust the black level to unclip negative RGB values.\n"
 "you should never use it to add more density in blacks!\n"
@@ -5817,48 +5840,48 @@ msgstr ""
 "בשימוש לא נכון, ייגרם חיתוך של ערכי צבע קרובים לשחור\n"
 "על ידי דחיפת ערכי RGB לערכים שליליים"
 
-#: ../src/iop/basicadj.c:682 ../src/iop/exposure.c:884
+#: ../src/iop/basicadj.c:687 ../src/iop/exposure.c:884
 msgid "adjust the exposure correction"
 msgstr "כוון תיקון חשיפה"
 
-#: ../src/iop/basicadj.c:688
+#: ../src/iop/basicadj.c:693
 msgid "highlight compression"
 msgstr "דחיסת פרטים בהירים"
 
-#: ../src/iop/basicadj.c:689
+#: ../src/iop/basicadj.c:694
 msgid "highlight compression adjustment"
 msgstr "כוונון דחיסת פרטים בהירים"
 
-#: ../src/iop/basicadj.c:695 ../src/iop/bilat.c:546 ../src/iop/colisa.c:379
+#: ../src/iop/basicadj.c:700 ../src/iop/bilat.c:546 ../src/iop/colisa.c:379
 #: ../src/iop/colorbalance.c:2419 ../src/iop/colorbalance.c:2421
-#: ../src/iop/filmic.c:1752 ../src/iop/filmicrgb.c:1396
+#: ../src/iop/filmic.c:1752 ../src/iop/filmicrgb.c:1511
 #: ../src/iop/lowpass.c:685
 msgid "contrast"
 msgstr "ניגודיות"
 
-#: ../src/iop/basicadj.c:696 ../src/iop/colisa.c:387
+#: ../src/iop/basicadj.c:701 ../src/iop/colisa.c:387
 msgid "contrast adjustment"
 msgstr "כוונון ניגודיות"
 
-#: ../src/iop/basicadj.c:714
+#: ../src/iop/basicadj.c:719
 msgid "middle grey"
 msgstr "אפור בינוני"
 
-#: ../src/iop/basicadj.c:716
+#: ../src/iop/basicadj.c:721
 msgid "middle grey adjustment"
 msgstr "כוונון רמות אפור בינוניות"
 
-#: ../src/iop/basicadj.c:728 ../src/iop/colisa.c:380 ../src/iop/retouch.c:2918
+#: ../src/iop/basicadj.c:733 ../src/iop/colisa.c:380 ../src/iop/retouch.c:2918
 #: ../src/iop/soften.c:748 ../src/iop/vignette.c:1158
 msgid "brightness"
 msgstr "בהירות"
 
-#: ../src/iop/basicadj.c:729 ../src/iop/colisa.c:388
+#: ../src/iop/basicadj.c:734 ../src/iop/colisa.c:388
 msgid "brightness adjustment"
 msgstr "כוונון בהירות"
 
 #. dt_bauhaus_slider_set_format(g->gslider2, "");
-#: ../src/iop/basicadj.c:734 ../src/iop/channelmixer.c:454
+#: ../src/iop/basicadj.c:739 ../src/iop/channelmixer.c:454
 #: ../src/iop/colisa.c:381 ../src/iop/colorbalance.c:2517
 #: ../src/iop/colorbalance.c:2567 ../src/iop/colorbalance.c:2616
 #: ../src/iop/colorchecker.c:1385 ../src/iop/colorcorrection.c:292
@@ -5869,15 +5892,15 @@ msgstr "כוונון בהירות"
 msgid "saturation"
 msgstr "רוויה"
 
-#: ../src/iop/basicadj.c:735
+#: ../src/iop/basicadj.c:740
 msgid "saturation adjustment"
 msgstr "כוונון רווית צבע"
 
-#: ../src/iop/basicadj.c:742
+#: ../src/iop/basicadj.c:747
 msgid "apply auto exposure based on the entire image"
 msgstr "יישם חשיפה אוטומטית בהתבסס על כל התמונה"
 
-#: ../src/iop/basicadj.c:750
+#: ../src/iop/basicadj.c:755
 msgid ""
 "apply auto exposure based on a region defined by the user\n"
 "click and drag to draw the area\n"
@@ -5887,11 +5910,11 @@ msgstr ""
 "הקלק וגרור לציור האזור\n"
 "קליק ימני לביטול"
 
-#: ../src/iop/basicadj.c:760
+#: ../src/iop/basicadj.c:765
 msgid "clip"
 msgstr "חתוך"
 
-#: ../src/iop/basicadj.c:761
+#: ../src/iop/basicadj.c:766
 msgid "adjusts clipping value for auto exposure calculation"
 msgstr "כוונן ערך חיתוך עבור חישוב חשיפה אוטומטית"
 
@@ -5905,12 +5928,12 @@ msgid "local laplacian: inconsistent output"
 msgstr "לפלאסיין מקומי: פלט לא עקבי"
 
 #: ../src/iop/bilat.c:525 ../src/iop/colorbalance.c:2365
-#: ../src/iop/denoiseprofile.c:4059 ../src/iop/exposure.c:864
+#: ../src/iop/denoiseprofile.c:4060 ../src/iop/exposure.c:864
 #: ../src/iop/lens.cc:2469 ../src/iop/levels.c:672
-#: ../src/iop/profile_gamma.c:857 ../src/iop/rgbcurve.c:1478
+#: ../src/iop/profile_gamma.c:857 ../src/iop/rgbcurve.c:1513
 #: ../src/iop/rgblevels.c:1010 ../src/libs/copy_history.c:350
 #: ../src/libs/export.c:688 ../src/libs/print_settings.c:1510
-#: ../src/views/darkroom.c:1831
+#: ../src/views/darkroom.c:1838
 msgid "mode"
 msgstr "מצב"
 
@@ -6063,7 +6086,7 @@ msgstr "סף"
 msgid "the threshold of light"
 msgstr "סף האור"
 
-#: ../src/iop/bloom.c:542 ../src/iop/denoiseprofile.c:4066
+#: ../src/iop/bloom.c:542 ../src/iop/denoiseprofile.c:4067
 #: ../src/iop/grain.c:636 ../src/iop/hazeremoval.c:233
 #: ../src/iop/hotpixels.c:476 ../src/iop/nlmeans.c:845 ../src/iop/velvia.c:389
 msgid "strength"
@@ -6105,8 +6128,7 @@ msgstr "גלויה לבנה 15:10"
 msgid "15:10 postcard black"
 msgstr "גלויה שחורה 15:10"
 
-#. add import single image buttons
-#: ../src/iop/borders.c:939 ../src/libs/import.c:982
+#: ../src/iop/borders.c:939
 msgid "image"
 msgstr "תמונה"
 
@@ -6126,7 +6148,7 @@ msgstr "2:1"
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:944 ../src/iop/clipping.c:2023
+#: ../src/iop/borders.c:944 ../src/iop/clipping.c:2028
 msgid "golden cut"
 msgstr "חיתוך לפי יחס הזהב"
 
@@ -6146,7 +6168,7 @@ msgstr "DIN"
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:949 ../src/iop/clipping.c:2013
+#: ../src/iop/borders.c:949 ../src/iop/clipping.c:2018
 msgid "square"
 msgstr "ריבוע"
 
@@ -6182,7 +6204,7 @@ msgstr "עובי מסגרת"
 msgid "size of the border in percent of the full image"
 msgstr "עובי מסגרת באחוזים מגודל התמונה המלא"
 
-#: ../src/iop/borders.c:1014 ../src/iop/clipping.c:2110
+#: ../src/iop/borders.c:1014 ../src/iop/clipping.c:2115
 msgid "aspect"
 msgstr "כיוון"
 
@@ -6396,6 +6418,12 @@ msgstr "B/W Kodak T-max 400"
 msgid "B/W Kodak Tri-X 400"
 msgstr "B/W Kodak Tri-X 400"
 
+#: ../src/iop/choleski.h:303 ../src/iop/choleski.h:401
+#, fuzzy
+msgid ""
+"Choleski decomposition failed to allocate memory, check your RAM settings"
+msgstr "אקולייזר טונים כשל בהקצאת זיכרון, בדוק את הגדרות ה RAM"
+
 #: ../src/iop/clahe.c:337 ../src/iop/sharpen.c:791
 msgid "amount"
 msgstr "כמות"
@@ -6412,129 +6440,129 @@ msgstr "עוצמת האפקט"
 msgid "crop and rotate"
 msgstr "חתוך וסובב"
 
-#: ../src/iop/clipping.c:1590
+#: ../src/iop/clipping.c:1595
 msgid "invalid ratio format. it should be \"number:number\""
 msgstr "פורמט יחס לא חוקי. נדרש \"מספר:מספר\""
 
-#: ../src/iop/clipping.c:1694 ../src/iop/clipping.c:1998
+#: ../src/iop/clipping.c:1699 ../src/iop/clipping.c:2003
 msgid "full"
 msgstr "מלא"
 
-#: ../src/iop/clipping.c:1695
+#: ../src/iop/clipping.c:1700
 msgid "old system"
 msgstr "מערכת ישנה"
 
-#: ../src/iop/clipping.c:1696
+#: ../src/iop/clipping.c:1701
 msgid "correction applied"
 msgstr "תיקונים יושמו"
 
-#: ../src/iop/clipping.c:1976 ../src/libs/live_view.c:374
+#: ../src/iop/clipping.c:1981 ../src/libs/live_view.c:374
 msgid "flip"
 msgstr "הפוך"
 
-#: ../src/iop/clipping.c:1980 ../src/iop/clipping.c:2165
+#: ../src/iop/clipping.c:1985 ../src/iop/clipping.c:2170
 #: ../src/iop/colorbalance.c:2378 ../src/libs/live_view.c:378
 msgid "both"
 msgstr "שניהם"
 
-#: ../src/iop/clipping.c:1982
+#: ../src/iop/clipping.c:1987
 msgid "mirror image horizontally and/or vertically"
 msgstr "שקף את התמונה אופקית ו/או אנכית"
 
-#: ../src/iop/clipping.c:1987
+#: ../src/iop/clipping.c:1992
 msgid "angle"
 msgstr "זווית"
 
-#: ../src/iop/clipping.c:1990
+#: ../src/iop/clipping.c:1995
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr "הקלק כפתור ימני וגרור קו על התמונה לקבע קו ישר"
 
-#: ../src/iop/clipping.c:1994
+#: ../src/iop/clipping.c:1999
 msgid "keystone"
 msgstr "keystone"
 
-#: ../src/iop/clipping.c:1999
+#: ../src/iop/clipping.c:2004
 msgid "set perspective correction for your image"
 msgstr "קבע תיקון פרספקטיבה עבור התמונה"
 
-#: ../src/iop/clipping.c:2011
+#: ../src/iop/clipping.c:2016
 msgid "freehand"
 msgstr "יד חופשית"
 
-#: ../src/iop/clipping.c:2012
+#: ../src/iop/clipping.c:2017
 msgid "original image"
 msgstr "תמונה מקורית"
 
-#: ../src/iop/clipping.c:2014
+#: ../src/iop/clipping.c:2019
 msgid "10:8 in print"
 msgstr "בהדפסה 10:8"
 
-#: ../src/iop/clipping.c:2015
+#: ../src/iop/clipping.c:2020
 msgid "5:4, 4x5, 8x10"
 msgstr "5:4, 4x5, 8x10"
 
-#: ../src/iop/clipping.c:2016
+#: ../src/iop/clipping.c:2021
 msgid "11x14"
 msgstr "11x14"
 
-#: ../src/iop/clipping.c:2017
+#: ../src/iop/clipping.c:2022
 msgid "8.5x11, letter"
 msgstr "8.5x11, letter"
 
-#: ../src/iop/clipping.c:2018
+#: ../src/iop/clipping.c:2023
 msgid "4:3, VGA, TV"
 msgstr "4:3, VGA, TV"
 
-#: ../src/iop/clipping.c:2019
+#: ../src/iop/clipping.c:2024
 msgid "5x7"
 msgstr "5x7"
 
-#: ../src/iop/clipping.c:2020
+#: ../src/iop/clipping.c:2025
 msgid "ISO 216, DIN 476, A4"
 msgstr "ISO 216, DIN 476, A4"
 
-#: ../src/iop/clipping.c:2021
+#: ../src/iop/clipping.c:2026
 msgid "3:2, 4x6, 35mm"
 msgstr "3:2, 4x6, 35mm"
 
-#: ../src/iop/clipping.c:2022
+#: ../src/iop/clipping.c:2027
 msgid "16:10, 8x5"
 msgstr "16:10, 8x5"
 
-#: ../src/iop/clipping.c:2024
+#: ../src/iop/clipping.c:2029
 msgid "16:9, HDTV"
 msgstr "16:9, HDTV"
 
-#: ../src/iop/clipping.c:2025
+#: ../src/iop/clipping.c:2030
 msgid "widescreen"
 msgstr "מסך רחב"
 
-#: ../src/iop/clipping.c:2026
+#: ../src/iop/clipping.c:2031
 msgid "2:1, univisium"
 msgstr "2:1, univisium"
 
-#: ../src/iop/clipping.c:2027
+#: ../src/iop/clipping.c:2032
 msgid "cinemascope"
 msgstr "סינמהסקופ"
 
-#: ../src/iop/clipping.c:2028
+#: ../src/iop/clipping.c:2033
 msgid "21:9"
 msgstr "21:9"
 
-#: ../src/iop/clipping.c:2029
+#: ../src/iop/clipping.c:2034
 msgid "anamorphic"
 msgstr "אנאמורפי"
 
-#: ../src/iop/clipping.c:2030
+#: ../src/iop/clipping.c:2035
 msgid "3:1, panorama"
 msgstr "פנורמה 3:1"
 
-#: ../src/iop/clipping.c:2062 ../src/iop/clipping.c:2074
+#: ../src/iop/clipping.c:2067 ../src/iop/clipping.c:2079
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr "פורמט יחס לא חוקי עבור `%s'. צריך להיות \"מספר:מספר\""
 
-#: ../src/iop/clipping.c:2121
+#: ../src/iop/clipping.c:2126
 msgid ""
 "set the aspect ratio\n"
 "the list is sorted: from most square to least square"
@@ -6542,44 +6570,44 @@ msgstr ""
 "קבע יחס גובה רוחב\n"
 "הרשימה מסודרת: מהריבועי ביותר עד המלבני ביותר"
 
-#: ../src/iop/clipping.c:2157 ../src/libs/live_view.c:370
+#: ../src/iop/clipping.c:2162 ../src/libs/live_view.c:370
 msgid "display guide lines to help compose your photograph"
 msgstr "הצג קווים מנחים בכדי לעזור בהרכבת התמונה"
 
-#: ../src/iop/clipping.c:2161 ../src/iop/clipping.c:2166
+#: ../src/iop/clipping.c:2166 ../src/iop/clipping.c:2171
 #: ../src/libs/live_view.c:379
 msgid "flip guides"
 msgstr "הפוך קווים מנחים"
 
-#: ../src/iop/clipping.c:2163 ../src/libs/live_view.c:376
+#: ../src/iop/clipping.c:2168 ../src/libs/live_view.c:376
 msgid "horizontally"
 msgstr "אופקי"
 
-#: ../src/iop/clipping.c:2164 ../src/libs/live_view.c:377
+#: ../src/iop/clipping.c:2169 ../src/libs/live_view.c:377
 msgid "vertically"
 msgstr "אנכי"
 
-#: ../src/iop/clipping.c:3217
+#: ../src/iop/clipping.c:3222
 msgctxt "accel"
 msgid "commit"
 msgstr "התחייב"
 
-#: ../src/iop/clipping.c:3218
+#: ../src/iop/clipping.c:3223
 msgctxt "accel"
 msgid "angle"
 msgstr "זווית"
 
-#: ../src/iop/clipping.c:3239
+#: ../src/iop/clipping.c:3244
 #, c-format
 msgid "[%s on borders] crop"
 msgstr "[%s on borders] חתוך"
 
-#: ../src/iop/clipping.c:3245
+#: ../src/iop/clipping.c:3250
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
 msgstr "[%s on borders] חתוך תוך שמירת יחס"
 
-#: ../src/iop/clipping.c:3250
+#: ../src/iop/clipping.c:3255
 #, c-format
 msgid "[%s] define/rotate horizon"
 msgstr "[%s] הגדר/סובב אופק"
@@ -6588,7 +6616,7 @@ msgstr "[%s] הגדר/סובב אופק"
 msgid "contrast brightness saturation"
 msgstr "ניגודיות בהירות רוויה"
 
-#: ../src/iop/colisa.c:99 ../src/iop/filmicrgb.c:273 ../src/iop/lowpass.c:197
+#: ../src/iop/colisa.c:99 ../src/iop/filmicrgb.c:272 ../src/iop/lowpass.c:197
 msgctxt "accel"
 msgid "contrast"
 msgstr "ניגודיות"
@@ -7161,21 +7189,21 @@ msgstr "כוונת פלט"
 
 #: ../src/iop/colorout.c:869 ../src/libs/export.c:671
 #: ../src/libs/print_settings.c:1239 ../src/libs/print_settings.c:1454
-#: ../src/views/darkroom.c:1974 ../src/views/darkroom.c:1982
+#: ../src/views/darkroom.c:1981 ../src/views/darkroom.c:1989
 #: ../src/views/lighttable.c:4877 ../src/views/lighttable.c:4885
 msgid "perceptual"
 msgstr "פרספטבילי"
 
 #: ../src/iop/colorout.c:870 ../src/libs/export.c:672
 #: ../src/libs/print_settings.c:1240 ../src/libs/print_settings.c:1455
-#: ../src/views/darkroom.c:1975 ../src/views/darkroom.c:1983
+#: ../src/views/darkroom.c:1982 ../src/views/darkroom.c:1990
 #: ../src/views/lighttable.c:4878 ../src/views/lighttable.c:4886
 msgid "relative colorimetric"
 msgstr "קולורימטרי יחסי"
 
 #: ../src/iop/colorout.c:871 ../src/libs/export.c:673
 #: ../src/libs/print_settings.c:1241 ../src/libs/print_settings.c:1456
-#: ../src/views/darkroom.c:1976 ../src/views/darkroom.c:1984
+#: ../src/views/darkroom.c:1983 ../src/views/darkroom.c:1991
 #: ../src/views/lighttable.c:4879 ../src/views/lighttable.c:4887
 msgctxt "rendering intent"
 msgid "saturation"
@@ -7183,7 +7211,7 @@ msgstr "רווי"
 
 #: ../src/iop/colorout.c:872 ../src/libs/export.c:674
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1457
-#: ../src/views/darkroom.c:1977 ../src/views/darkroom.c:1985
+#: ../src/views/darkroom.c:1984 ../src/views/darkroom.c:1992
 #: ../src/views/lighttable.c:4880 ../src/views/lighttable.c:4888
 msgid "absolute colorimetric"
 msgstr "קולורימטרי מוחלט"
@@ -7328,11 +7356,11 @@ msgid "black & white film"
 msgstr "פילם שחור לבן"
 
 #: ../src/iop/colorzones.c:2068 ../src/iop/retouch.c:2238
-#: ../src/iop/toneequal.c:1960
+#: ../src/iop/toneequal.c:1964
 msgid "cannot display masks when the blending mask is displayed"
 msgstr "לא ניתן להציג מסיכות בזמן שמסיכת הערבוב מוצגת"
 
-#: ../src/iop/colorzones.c:2275 ../src/iop/rgbcurve.c:1510
+#: ../src/iop/colorzones.c:2275 ../src/iop/rgbcurve.c:1545
 msgid ""
 "create a curve based on an area from the image\n"
 "click to create a flat curve\n"
@@ -7377,22 +7405,22 @@ msgstr "חזק"
 msgid "choose between a smoother or stronger effect"
 msgstr "בחר בין אפקט חלק יותר לחזק יותר"
 
-#: ../src/iop/colorzones.c:2373 ../src/iop/rgbcurve.c:1563
+#: ../src/iop/colorzones.c:2373 ../src/iop/rgbcurve.c:1598
 #: ../src/iop/tonecurve.c:1380
 msgid "interpolation method"
 msgstr "שיטת אנטרפולציה"
 
-#: ../src/iop/colorzones.c:2375 ../src/iop/rgbcurve.c:1565
+#: ../src/iop/colorzones.c:2375 ../src/iop/rgbcurve.c:1600
 #: ../src/iop/tonecurve.c:1382
 msgid "centripetal spline"
 msgstr "אינטרפולציית spline צנטריפטלית"
 
-#: ../src/iop/colorzones.c:2376 ../src/iop/rgbcurve.c:1566
+#: ../src/iop/colorzones.c:2376 ../src/iop/rgbcurve.c:1601
 #: ../src/iop/tonecurve.c:1383
 msgid "monotonic spline"
 msgstr "אינטרפולציית spline מונוטונית"
 
-#: ../src/iop/colorzones.c:2380 ../src/iop/rgbcurve.c:1570
+#: ../src/iop/colorzones.c:2380 ../src/iop/rgbcurve.c:1605
 #: ../src/iop/tonecurve.c:1385
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
@@ -7604,21 +7632,21 @@ msgstr "כרומה (הפעל על השלב הראשון)"
 msgid "luma (use on 2nd instance)"
 msgstr "לומה (הפעל על השלב השני)"
 
-#: ../src/iop/denoiseprofile.c:3013
+#: ../src/iop/denoiseprofile.c:3014
 #, c-format
 msgid "found match for ISO %d"
 msgstr "נמצאה התאמה עבור ISO %d"
 
-#: ../src/iop/denoiseprofile.c:3022
+#: ../src/iop/denoiseprofile.c:3023
 #, c-format
 msgid "interpolated from ISO %d and %d"
 msgstr "נאמד מתוך ISO  %d ו %d"
 
-#: ../src/iop/denoiseprofile.c:3453 ../src/iop/denoiseprofile.c:4077
+#: ../src/iop/denoiseprofile.c:3454 ../src/iop/denoiseprofile.c:4078
 msgid "compute variance"
 msgstr "חשב שונות"
 
-#: ../src/iop/denoiseprofile.c:3935
+#: ../src/iop/denoiseprofile.c:3936
 msgid ""
 "use only with a perfectly\n"
 "uniform image if you want to\n"
@@ -7628,50 +7656,50 @@ msgstr ""
 "עם אחידות מושלמת אם ברצונך\n"
 "להעריך את שונות הרעש."
 
-#: ../src/iop/denoiseprofile.c:3942
+#: ../src/iop/denoiseprofile.c:3943
 msgid "variance red: "
 msgstr "שונות אדום: "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3945
+#: ../src/iop/denoiseprofile.c:3946
 msgid "variance computed on the red channel"
 msgstr "שונות מחושבת על הערוץ האדום"
 
-#: ../src/iop/denoiseprofile.c:3950
+#: ../src/iop/denoiseprofile.c:3951
 msgid "variance green: "
 msgstr "שונות ירוק: "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3953
+#: ../src/iop/denoiseprofile.c:3954
 msgid "variance computed on the green channel"
 msgstr "שונות מחושבת על הערוץ הירוק"
 
-#: ../src/iop/denoiseprofile.c:3958
+#: ../src/iop/denoiseprofile.c:3959
 msgid "variance blue: "
 msgstr "שונות כחול: "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3961
+#: ../src/iop/denoiseprofile.c:3962
 msgid "variance computed on the blue channel"
 msgstr "שונות מחושבת על הערוץ הכחול"
 
-#: ../src/iop/denoiseprofile.c:3972 ../src/iop/rawdenoise.c:987
+#: ../src/iop/denoiseprofile.c:3973 ../src/iop/rawdenoise.c:987
 msgid "R"
 msgstr "R"
 
-#: ../src/iop/denoiseprofile.c:3974 ../src/iop/rawdenoise.c:989
+#: ../src/iop/denoiseprofile.c:3975 ../src/iop/rawdenoise.c:989
 msgid "G"
 msgstr "G"
 
-#: ../src/iop/denoiseprofile.c:3976 ../src/iop/rawdenoise.c:991
+#: ../src/iop/denoiseprofile.c:3977 ../src/iop/rawdenoise.c:991
 msgid "B"
 msgstr "B"
 
-#: ../src/iop/denoiseprofile.c:4010
+#: ../src/iop/denoiseprofile.c:4011
 msgid "whitebalance-adaptive transform"
 msgstr "הטמרת איזון לבן אדפטיבי"
 
-#: ../src/iop/denoiseprofile.c:4012
+#: ../src/iop/denoiseprofile.c:4013
 msgid ""
 "adapt denoising according to the\n"
 "white balance coefficients.\n"
@@ -7687,11 +7715,11 @@ msgstr ""
 "צריך להיות מנוטרל אם פעולה קודמת\n"
 "הכוללת מיזוג צבעים נעשתה."
 
-#: ../src/iop/denoiseprofile.c:4032
+#: ../src/iop/denoiseprofile.c:4033
 msgid "fix various bugs in algorithm"
 msgstr "תקן באגים שונים באלגוריתם"
 
-#: ../src/iop/denoiseprofile.c:4034
+#: ../src/iop/denoiseprofile.c:4035
 msgid ""
 "fix bugs in anscombe transform resulting\n"
 "in undersmoothing of the green channel in\n"
@@ -7713,11 +7741,11 @@ msgstr ""
 "you get. once enabled, you won't be able to\n"
 "return back to old algorithm."
 
-#: ../src/iop/denoiseprofile.c:4045
+#: ../src/iop/denoiseprofile.c:4046
 msgid "upgrade profiled transform"
 msgstr "שדרג התמרה עם פרופיל"
 
-#: ../src/iop/denoiseprofile.c:4047
+#: ../src/iop/denoiseprofile.c:4048
 msgid ""
 "upgrade the variance stabilizing algorithm.\n"
 "new algorithm extends the current one.\n"
@@ -7729,60 +7757,60 @@ msgstr ""
 "החדש יותר גמיש אבל עלול לייצר\n"
 "הבדלים קטנים בתמונות שכבר עובדו."
 
-#: ../src/iop/denoiseprofile.c:4058 ../src/libs/export.c:647
+#: ../src/iop/denoiseprofile.c:4059 ../src/libs/export.c:647
 #: ../src/libs/print_settings.c:1183 ../src/libs/print_settings.c:1403
 msgid "profile"
 msgstr "פרופיל"
 
-#: ../src/iop/denoiseprofile.c:4060 ../src/iop/nlmeans.c:843
+#: ../src/iop/denoiseprofile.c:4061 ../src/iop/nlmeans.c:843
 msgid "patch size"
 msgstr "גודל טלאי"
 
-#: ../src/iop/denoiseprofile.c:4062
+#: ../src/iop/denoiseprofile.c:4063
 msgid "search radius"
 msgstr "רדיוס חיפוש"
 
-#: ../src/iop/denoiseprofile.c:4064
+#: ../src/iop/denoiseprofile.c:4065
 msgid "scattering (coarse-grain noise)"
 msgstr "פיזור (רעש מגורען גס)"
 
-#: ../src/iop/denoiseprofile.c:4065
+#: ../src/iop/denoiseprofile.c:4066
 msgid "central pixel weight (details)"
 msgstr "משקל פיקסל מרכזי (פרטים)"
 
-#: ../src/iop/denoiseprofile.c:4067
+#: ../src/iop/denoiseprofile.c:4068
 msgid "adjust autoset parameters"
 msgstr "כוונן פרמטרים אוטומטיים"
 
-#: ../src/iop/denoiseprofile.c:4068
+#: ../src/iop/denoiseprofile.c:4069
 msgid "preserve shadows"
 msgstr "שמר צללים"
 
-#: ../src/iop/denoiseprofile.c:4069
+#: ../src/iop/denoiseprofile.c:4070
 msgid "bias correction"
 msgstr "תיקון הסחה"
 
-#: ../src/iop/denoiseprofile.c:4070
+#: ../src/iop/denoiseprofile.c:4071
 msgid "non-local means"
 msgstr "non-local means"
 
-#: ../src/iop/denoiseprofile.c:4071
+#: ../src/iop/denoiseprofile.c:4072
 msgid "non-local means auto"
 msgstr "non-local means auto"
 
-#: ../src/iop/denoiseprofile.c:4072
+#: ../src/iop/denoiseprofile.c:4073
 msgid "wavelets"
 msgstr "wavelets"
 
-#: ../src/iop/denoiseprofile.c:4073
+#: ../src/iop/denoiseprofile.c:4074
 msgid "wavelets auto"
 msgstr "wavelets auto"
 
-#: ../src/iop/denoiseprofile.c:4079
+#: ../src/iop/denoiseprofile.c:4080
 msgid "profile used for variance stabilization"
 msgstr "פרופיל בו השתמשו לייצוב השונות"
 
-#: ../src/iop/denoiseprofile.c:4080
+#: ../src/iop/denoiseprofile.c:4081
 msgid ""
 "method used in the denoising core. non-local means works best for "
 "`lightness' blending, wavelets work best for `color' blending"
@@ -7790,7 +7818,7 @@ msgstr ""
 "שיטות בהם משתמשים בלב תהליך סילוק הרעש. שיטת non-local מתאימה ביותר עבור "
 "ערבוב `בהירות', wavelets מתאימה ביותר לערבוב `צבע'"
 
-#: ../src/iop/denoiseprofile.c:4083
+#: ../src/iop/denoiseprofile.c:4084
 msgid ""
 "radius of the patches to match.\n"
 "increase for more sharpness on strong edges, and better denoising of smooth "
@@ -7802,7 +7830,7 @@ msgstr ""
 "הגבר ליותר חדות בקצוות חדים, וסילק רעש טוב יותר באזורים חלקים.\n"
 "אם פרטים מוחלקים יתר על המידה, הפחת ערך זה או הגבר את סליידר הפרטים."
 
-#: ../src/iop/denoiseprofile.c:4086
+#: ../src/iop/denoiseprofile.c:4087
 msgid ""
 "emergency use only: radius of the neighbourhood to search patches in. "
 "increase for better denoising performance, but watch the long runtimes! "
@@ -7812,7 +7840,7 @@ msgstr ""
 "יותר, אך שים לב לזמני הריצה הארוכים!רדיוסים גדולים יכולים להיות איטיים מאד. "
 "ראה הוזהרת"
 
-#: ../src/iop/denoiseprofile.c:4088
+#: ../src/iop/denoiseprofile.c:4089
 msgid ""
 "scattering of the neighbourhood to search patches in. increase for better "
 "coarse-grain noise reduction. does not affect execution time."
@@ -7820,7 +7848,7 @@ msgstr ""
 "פיזור הסביבה לחיפוש טלאים. הגבר לסילוק יעיל יותר של רעש גרעון גס. לא משפיע "
 "על זמן הפעולה."
 
-#: ../src/iop/denoiseprofile.c:4090
+#: ../src/iop/denoiseprofile.c:4091
 msgid ""
 "increase the weight of the central pixel\n"
 "of the patch in the patch comparison.\n"
@@ -7831,11 +7859,11 @@ msgstr ""
 "של הטלאי בהשוואת הטלאים.\n"
 "שימושי לאחזור פרטים כאשר הטלאי גדול יחסית."
 
-#: ../src/iop/denoiseprofile.c:4094
+#: ../src/iop/denoiseprofile.c:4095
 msgid "finetune denoising strength"
 msgstr "כוונן עצמת סילוק רעשים"
 
-#: ../src/iop/denoiseprofile.c:4095
+#: ../src/iop/denoiseprofile.c:4096
 msgid ""
 "controls the way parameters are autoset\n"
 "increase if shadows are not denoised enough\n"
@@ -7847,7 +7875,7 @@ msgstr ""
 "או נותר רעש כרומה.\n"
 "מצב זה עלול לקרות אם התמונה בחשיפת חסר."
 
-#: ../src/iop/denoiseprofile.c:4099
+#: ../src/iop/denoiseprofile.c:4100
 msgid ""
 "finetune shadows denoising.\n"
 "decrease to denoise more aggressively\n"
@@ -7857,7 +7885,7 @@ msgstr ""
 "הפחת לסילוק אגרסיבי יותר של\n"
 "אזורים חשוכים בתמונה.\n"
 
-#: ../src/iop/denoiseprofile.c:4102
+#: ../src/iop/denoiseprofile.c:4103
 msgid ""
 "correct color cast in shadows.\n"
 "decrease if shadows are too purple.\n"
@@ -8013,7 +8041,7 @@ msgid ""
 msgstr "אחוז הערכים הבהירים שנחתכו החוצה, סמן בוחר צבע להפעלה"
 
 #: ../src/iop/exposure.c:903 ../src/iop/highlights.c:1086
-#: ../src/views/darkroom.c:1859
+#: ../src/views/darkroom.c:1866
 msgid "clipping threshold"
 msgstr "סף חיתוך"
 
@@ -8056,7 +8084,7 @@ msgstr "09 EV (low-key)"
 msgid "10 EV (indoors)"
 msgstr "10 EV (בפנים)"
 
-#: ../src/iop/filmic.c:325 ../src/iop/filmicrgb.c:246
+#: ../src/iop/filmic.c:325
 msgid "11 EV (dim outdoors)"
 msgstr "11 EV (אפלולי בחוץ)"
 
@@ -8092,11 +8120,11 @@ msgstr "גרף לקריאה בלבד. השתמש בפרמטרים למטה לק�
 msgid "logarithmic shaper"
 msgstr "מטווה צורה לוגריתמי"
 
-#: ../src/iop/filmic.c:1688 ../src/iop/filmicrgb.c:1332
+#: ../src/iop/filmic.c:1688 ../src/iop/filmicrgb.c:1443
 msgid "middle grey luminance"
 msgstr "לומיננס של גוני אפור בינוני"
 
-#: ../src/iop/filmic.c:1691 ../src/iop/filmicrgb.c:1335
+#: ../src/iop/filmic.c:1691
 msgid ""
 "adjust to match the average luminance of the subject.\n"
 "except in back-lighting situations, this should be around 18%."
@@ -8104,11 +8132,11 @@ msgstr ""
 "כוונן להתאמת הלומיננס הממוצע לנושא הצילום.\n"
 "למעט במקריםשל תאורה אחורית, ערך זה צריך להיות בסביבות 18%."
 
-#: ../src/iop/filmic.c:1701 ../src/iop/filmicrgb.c:1345
+#: ../src/iop/filmic.c:1701 ../src/iop/filmicrgb.c:1457
 msgid "white relative exposure"
 msgstr "חשיפה יחסית ללבן"
 
-#: ../src/iop/filmic.c:1704 ../src/iop/filmicrgb.c:1348
+#: ../src/iop/filmic.c:1704 ../src/iop/filmicrgb.c:1460
 msgid ""
 "number of stops between middle grey and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -8118,12 +8146,12 @@ msgstr ""
 "זו מדידה שמד אור היה נותן בשטח.\n"
 "כוונן כך שחיתוך פרטים בהירים ימנע"
 
-#: ../src/iop/filmic.c:1715 ../src/iop/filmicrgb.c:1359
+#: ../src/iop/filmic.c:1715 ../src/iop/filmicrgb.c:1471
 #: ../src/iop/profile_gamma.c:908
 msgid "black relative exposure"
 msgstr "חשיפה יחסית לשחור"
 
-#: ../src/iop/filmic.c:1718 ../src/iop/filmicrgb.c:1362
+#: ../src/iop/filmic.c:1718 ../src/iop/filmicrgb.c:1474
 msgid ""
 "number of stops between middle grey and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -8139,7 +8167,7 @@ msgstr ""
 msgid "safety factor"
 msgstr "מקדם ביטחון"
 
-#: ../src/iop/filmic.c:1731 ../src/iop/filmicrgb.c:1376
+#: ../src/iop/filmic.c:1731
 msgid ""
 "enlarge or shrink the computed dynamic range.\n"
 "useful in conjunction with \"auto tune levels\"."
@@ -8147,12 +8175,12 @@ msgstr ""
 "הגדל או כווץ את התחום הדינמי המחושב.\n"
 "שימושי בצמוד ל \"כוונן רמות אוטומטית\"."
 
-#: ../src/iop/filmic.c:1737 ../src/iop/filmicrgb.c:1382
+#: ../src/iop/filmic.c:1737 ../src/iop/filmicrgb.c:1494
 #: ../src/iop/profile_gamma.c:940
 msgid "auto tune levels"
 msgstr "כוונן רמות אוטומטית"
 
-#: ../src/iop/filmic.c:1742 ../src/iop/filmicrgb.c:1387
+#: ../src/iop/filmic.c:1742
 msgid ""
 "try to optimize the settings with some guessing.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -8168,7 +8196,7 @@ msgstr ""
 msgid "filmic S curve"
 msgstr "filmic S curve"
 
-#: ../src/iop/filmic.c:1754 ../src/iop/filmicrgb.c:1398
+#: ../src/iop/filmic.c:1754 ../src/iop/filmicrgb.c:1513
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
@@ -8177,12 +8205,12 @@ msgstr ""
 "משפיע בעיקר על הטונים הבינוניים"
 
 #. geotagging
-#: ../src/iop/filmic.c:1761 ../src/iop/filmicrgb.c:1405
+#: ../src/iop/filmic.c:1761 ../src/iop/filmicrgb.c:1520
 #: ../src/libs/metadata_view.c:132
 msgid "latitude"
 msgstr "קו רוחב"
 
-#: ../src/iop/filmic.c:1764 ../src/iop/filmicrgb.c:1408
+#: ../src/iop/filmic.c:1764
 msgid ""
 "width of the linear domain in the middle of the curve.\n"
 "increase to get more contrast at the extreme luminances.\n"
@@ -8192,11 +8220,11 @@ msgstr ""
 "הגבר לקבלת יותר קונטרסט בלומיננס קיצוני.\n"
 "אין לכך השפעה על הטונים הבינוניים."
 
-#: ../src/iop/filmic.c:1771 ../src/iop/filmicrgb.c:1415
+#: ../src/iop/filmic.c:1771 ../src/iop/filmicrgb.c:1532
 msgid "shadows/highlights balance"
 msgstr "איזון צללים/ בהירים"
 
-#: ../src/iop/filmic.c:1774 ../src/iop/filmicrgb.c:1418
+#: ../src/iop/filmic.c:1774 ../src/iop/filmicrgb.c:1535
 msgid ""
 "slides the latitude along the slope\n"
 "to give more room to shadows or highlights.\n"
@@ -8222,11 +8250,11 @@ msgstr ""
 "יש לקבוע ערך זה מתחת ל 100%\n"
 "אם שימור chrominance מופעל."
 
-#: ../src/iop/filmic.c:1790 ../src/iop/filmicrgb.c:1424
+#: ../src/iop/filmic.c:1790 ../src/iop/filmicrgb.c:1543
 msgid "extreme luminance saturation"
 msgstr "רווית לומיננס קיצוני"
 
-#: ../src/iop/filmic.c:1794 ../src/iop/filmicrgb.c:1428
+#: ../src/iop/filmic.c:1794
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -8264,7 +8292,7 @@ msgstr "שנה שיטה זו אם גורם לקונטרסט הפוך או שחו
 msgid "preserve the chrominance"
 msgstr "שמר chrominance"
 
-#: ../src/iop/filmic.c:1816 ../src/iop/filmicrgb.c:1440
+#: ../src/iop/filmic.c:1816
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations.\n"
@@ -8278,11 +8306,11 @@ msgstr ""
 msgid "destination/display"
 msgstr "יעד/תצוגה"
 
-#: ../src/iop/filmic.c:1842 ../src/iop/filmicrgb.c:1448
+#: ../src/iop/filmic.c:1842 ../src/iop/filmicrgb.c:1568
 msgid "target black luminance"
 msgstr "בהירות מטרה של שחור"
 
-#: ../src/iop/filmic.c:1845 ../src/iop/filmicrgb.c:1451
+#: ../src/iop/filmic.c:1845 ../src/iop/filmicrgb.c:1571
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
@@ -8290,11 +8318,11 @@ msgstr ""
 "לומיננס של שחור מוחלט בפלט, צריך להיות 0%\n"
 "אלא אם נדרש מבט דהוי"
 
-#: ../src/iop/filmic.c:1851 ../src/iop/filmicrgb.c:1457
+#: ../src/iop/filmic.c:1851 ../src/iop/filmicrgb.c:1577
 msgid "target middle grey"
 msgstr "יעד רמות אפור בינוניות"
 
-#: ../src/iop/filmic.c:1854 ../src/iop/filmicrgb.c:1460
+#: ../src/iop/filmic.c:1854 ../src/iop/filmicrgb.c:1580
 msgid ""
 "midde grey value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -8302,11 +8330,11 @@ msgstr ""
 "ערך אפור בינוני עבור תצוגת המטרה או מרחב הצבע.\n"
 "לעולם אל תשנה ערך זה אלא אם אתה יודע מה אתה עושה."
 
-#: ../src/iop/filmic.c:1860 ../src/iop/filmicrgb.c:1466
+#: ../src/iop/filmic.c:1860 ../src/iop/filmicrgb.c:1586
 msgid "target white luminance"
 msgstr "יעד לומיננס לבן"
 
-#: ../src/iop/filmic.c:1863 ../src/iop/filmicrgb.c:1469
+#: ../src/iop/filmic.c:1863 ../src/iop/filmicrgb.c:1589
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -8318,7 +8346,7 @@ msgstr ""
 msgid "target gamma"
 msgstr "יעד גאמה"
 
-#: ../src/iop/filmic.c:1871 ../src/iop/filmicrgb.c:1477
+#: ../src/iop/filmic.c:1871 ../src/iop/filmicrgb.c:1597
 msgid ""
 "power or gamma of the transfer function\n"
 "of the display or color space.\n"
@@ -8328,66 +8356,74 @@ msgstr ""
 "של המסך או מרחב הצבע.\n"
 "לעולם אל תשנה ערך זה אלא אם אתה יודע מה אתה עושה."
 
-#: ../src/iop/filmicrgb.c:193
+#: ../src/iop/filmicrgb.c:192
 msgid "filmic rgb"
 msgstr "filmic rgb"
 
-#: ../src/iop/filmicrgb.c:234
-msgid "07 EV (studio)"
-msgstr "07 EV (סטודיו)"
+#: ../src/iop/filmicrgb.c:233
+#, fuzzy
+msgid "07 EV dynamic range"
+msgstr "תחום דינאמי"
 
-#: ../src/iop/filmicrgb.c:240
-msgid "09 EV (indoors)"
-msgstr "09 EV (בפנים)"
+#: ../src/iop/filmicrgb.c:239
+#, fuzzy
+msgid "09 EV dynamic range"
+msgstr "תחום דינאמי"
 
-#: ../src/iop/filmicrgb.c:252
-msgid "13 EV (outdoors)"
-msgstr "13 EV (בחוץ)"
+#: ../src/iop/filmicrgb.c:245
+#, fuzzy
+msgid "11 EV dynamic range"
+msgstr "תחום דינאמי"
 
-#: ../src/iop/filmicrgb.c:258
+#: ../src/iop/filmicrgb.c:251
+#, fuzzy
+msgid "13 EV dynamic range"
+msgstr "תחום דינאמי"
+
+#: ../src/iop/filmicrgb.c:257
 msgid "15 EV (backlighting)"
 msgstr "15 EV (תאורה אחורית)"
 
-#: ../src/iop/filmicrgb.c:264
+#: ../src/iop/filmicrgb.c:263
 msgid "17 EV (HDR)"
 msgstr "17 EV (HDR)"
 
-#: ../src/iop/filmicrgb.c:269
+#: ../src/iop/filmicrgb.c:268
 msgctxt "accel"
 msgid "white exposure"
 msgstr "חשיפת לבן"
 
-#: ../src/iop/filmicrgb.c:270
+#: ../src/iop/filmicrgb.c:269
 msgctxt "accel"
 msgid "black exposure"
 msgstr "חשיפת שחור"
 
-#: ../src/iop/filmicrgb.c:271
+#: ../src/iop/filmicrgb.c:270
 msgctxt "accel"
 msgid "middle grey luminance"
 msgstr "לומיננס של אפור בינוני"
 
-#: ../src/iop/filmicrgb.c:272
+#: ../src/iop/filmicrgb.c:271
 msgctxt "accel"
 msgid "dynamic range scaling"
 msgstr "מתיחה וכיווץ תחום דינמי"
 
-#: ../src/iop/filmicrgb.c:274
+#: ../src/iop/filmicrgb.c:273
 msgctxt "accel"
 msgid "latitude"
 msgstr "קו רוחב"
 
-#: ../src/iop/filmicrgb.c:275
+#: ../src/iop/filmicrgb.c:274
 msgctxt "accel"
 msgid "shadows/highlights balance"
 msgstr "איזון צללים/ בהירים"
 
-#: ../src/iop/filmicrgb.c:276
+#: ../src/iop/filmicrgb.c:275
 msgctxt "accel"
 msgid "extreme luminance saturation"
 msgstr "רווית לומיננס קיצוני"
 
-#: ../src/iop/filmicrgb.c:1307
+#: ../src/iop/filmicrgb.c:1418
 msgid ""
 "read-only graph, use the parameters below to set the nodes\n"
 "the bright curve is the filmic tone mapping curve\n"
@@ -8397,39 +8433,102 @@ msgstr ""
 "העקום הבהיר הוא עקום המיפוי לטון הקולנועי\n"
 "העקום הכהה הוא עקום הפחתת הרוויה\n"
 
-#: ../src/iop/filmicrgb.c:1319
+#: ../src/iop/filmicrgb.c:1430
 msgid "scene"
 msgstr "סצנה"
 
-#: ../src/iop/filmicrgb.c:1320
+#: ../src/iop/filmicrgb.c:1431
 msgid "look"
 msgstr "מראה"
 
-#: ../src/iop/filmicrgb.c:1321
+#: ../src/iop/filmicrgb.c:1432
 msgid "display"
 msgstr "הצג"
 
-#: ../src/iop/filmicrgb.c:1373
+#: ../src/iop/filmicrgb.c:1446
+msgid ""
+"adjust to match the average luminance of the image's subject.\n"
+"the value entered here will then be remapped to 18.45%.\n"
+"decrease the value to increase the overall brightness."
+msgstr ""
+
+#: ../src/iop/filmicrgb.c:1485
 msgid "dynamic range scaling"
 msgstr "שינוי גודל תחום דינאמי"
 
-#: ../src/iop/filmicrgb.c:1435
-msgid "preserve chroma"
-msgstr "שמר כרומה"
+#: ../src/iop/filmicrgb.c:1488
+#, fuzzy
+msgid ""
+"symmetrically enlarge or shrink the computed dynamic range.\n"
+"useful to give a safety margin to extreme luminances."
+msgstr ""
+"הגדל או כווץ את התחום הדינמי המחושב.\n"
+"שימושי בצמוד ל \"כוונן רמות אוטומטית\"."
 
-#: ../src/iop/filmicrgb.c:1437
-msgid "max RGB"
-msgstr "max RGB"
+#: ../src/iop/filmicrgb.c:1499
+#, fuzzy
+msgid ""
+"try to optimize the settings with some statistical assumptions.\n"
+"this will fit the luminance range inside the histogram bounds.\n"
+"works better for landscapes and evenly-lit pictures\n"
+"but fails for high-keys, low-keys and high-ISO pictures.\n"
+"this is not an artificial intelligence, but a simple guess.\n"
+"ensure you understand its assumptions before using it."
+msgstr ""
+"נסה למטב את ההגדרות עם קצת ניחוש.\n"
+"זה יתאים את טווח הלומיננס לתוך גבולות ההסטוגרמה.\n"
+"עובד טוב יותר עבור תמונות נוף ותמונות המוארות בצורה אחידה\n"
+"אבל כושל בפרטים החשוכים והבהירים."
 
-#: ../src/iop/filmicrgb.c:1438
+#: ../src/iop/filmicrgb.c:1523
+#, fuzzy
+msgid ""
+"width of the linear domain in the middle of the curve,\n"
+"in percent of the dynamic range (white exposure - black exposure).\n"
+"increase to get more contrast and less desaturation at extreme luminances,\n"
+"decrease otherwise. no desaturation happens in the latitude range.\n"
+"this has no effect on mid-tones."
+msgstr ""
+"רוחב המתחם הלינארי במרכז העקום.\n"
+"הגבר לקבלת יותר קונטרסט בלומיננס קיצוני.\n"
+"אין לכך השפעה על הטונים הבינוניים."
+
+#: ../src/iop/filmicrgb.c:1547
+#, fuzzy
+msgid ""
+"desaturates the output of the module\n"
+"specifically at extreme luminances.\n"
+"increase if shadows and/or highlights are under-saturated."
+msgstr ""
+"מוריד רוויה בפלט המודול\n"
+"ספציפית בלומיננס קיצוני.\n"
+"הפחת אם הצללים ו/או הפרטים הבהירים רווים מדי."
+
+#: ../src/iop/filmicrgb.c:1555
+#, fuzzy
+msgid "preserve chrominance"
+msgstr "שמר chrominance"
+
+#: ../src/iop/filmicrgb.c:1558
 msgid "luminance Y"
 msgstr "לומיננס Y"
 
-#: ../src/iop/filmicrgb.c:1439
+#: ../src/iop/filmicrgb.c:1559 ../src/iop/toneequal.c:3145
 msgid "RGB power norm"
 msgstr "RGB power norm"
 
-#: ../src/iop/filmicrgb.c:1475
+#: ../src/iop/filmicrgb.c:1560
+#, fuzzy
+msgid ""
+"ensure the original color are preserved.\n"
+"may reinforce chromatic aberrations and chroma noise,\n"
+"so ensure they are properly corrected elsewhere.\n"
+msgstr ""
+"וודא שהצבעים המקוריים נשמרים.\n"
+"עשוי להחמיר אברציות כרומטיות.\n"
+"יש לכוונן רוויה ידנית כאשר משתמשים במודול זה."
+
+#: ../src/iop/filmicrgb.c:1595
 msgid "target power transfer function"
 msgstr "target power transfer function"
 
@@ -9399,41 +9498,41 @@ msgstr "שגיאה - גודל cube lut לא מוגדר"
 msgid "error - cube lut lines number is not correct"
 msgstr "שגיאה - מספר שורות cube lut לא נכון"
 
-#: ../src/iop/lut3d.c:1006
+#: ../src/iop/lut3d.c:1007
 msgid "Lut root folder not defined"
 msgstr "תיקיית השורש של lut לא מוגדרת"
 
-#: ../src/iop/lut3d.c:1012
+#: ../src/iop/lut3d.c:1013
 msgid "select lut file"
 msgstr "בחר קובץ lut"
 
-#: ../src/iop/lut3d.c:1013
+#: ../src/iop/lut3d.c:1014
 msgid "_select"
 msgstr "_select"
 
-#: ../src/iop/lut3d.c:1030
+#: ../src/iop/lut3d.c:1031
 msgid "hald cluts (png)"
 msgstr "hald cluts (png)"
 
-#: ../src/iop/lut3d.c:1037
+#: ../src/iop/lut3d.c:1038
 msgid "3D lut (cube)"
 msgstr "3D lut (cube)"
 
-#: ../src/iop/lut3d.c:1043 ../src/libs/copy_history.c:93
+#: ../src/iop/lut3d.c:1044 ../src/libs/copy_history.c:93
 #: ../src/libs/geotagging.c:495 ../src/libs/import.c:790
 #: ../src/libs/styles.c:341
 msgid "all files"
 msgstr "כל הקבצים"
 
-#: ../src/iop/lut3d.c:1058
+#: ../src/iop/lut3d.c:1059
 msgid "Select file outside Lut root folder is not allowed"
 msgstr "בחירת קובץ מחוץ לתיקיית השורש של Lut אסורה"
 
-#: ../src/iop/lut3d.c:1102
+#: ../src/iop/lut3d.c:1103
 msgid "select a png (haldclut) or a cube file"
 msgstr "בחר קובץ (png (haldclut או קובץ cube"
 
-#: ../src/iop/lut3d.c:1109
+#: ../src/iop/lut3d.c:1110
 msgid ""
 "the file path (relative to lut folder) is saved with image (and not the lut "
 "data themselves)\n"
@@ -9444,45 +9543,49 @@ msgstr ""
 "זהירות: תיקיית ה lut חייבת להיות קבועה ב העדפות/אפשרויות ליבה/שונות לפני "
 "בחירת קובץ ה lut"
 
-#: ../src/iop/lut3d.c:1116
+#: ../src/iop/lut3d.c:1117
 msgid "application color space"
 msgstr "מרחב צבע לאפליקציה"
 
-#: ../src/iop/lut3d.c:1118
+#: ../src/iop/lut3d.c:1119
 msgid "REC.709"
 msgstr "REC.709"
 
-#: ../src/iop/lut3d.c:1119
+#: ../src/iop/lut3d.c:1120
 msgid "lin sRGB/REC.709"
 msgstr "lin sRGB/REC.709"
 
-#: ../src/iop/lut3d.c:1120
+#: ../src/iop/lut3d.c:1121
 msgid "lin prophoto RGB"
 msgstr "lin prophoto RGB"
 
-#: ../src/iop/lut3d.c:1122
+#: ../src/iop/lut3d.c:1123
 msgid "select the color space in which the LUT has to be applied"
 msgstr "בחר את מרחב הצבע בו ה LUT ייושם"
 
-#: ../src/iop/lut3d.c:1126
+#: ../src/iop/lut3d.c:1127
 msgid "interpolation"
 msgstr "אינטרפולציה"
 
-#: ../src/iop/lut3d.c:1127
+#: ../src/iop/lut3d.c:1128
 msgid "tetrahedral"
 msgstr "טטרהדרלי"
 
-#: ../src/iop/lut3d.c:1128
+#: ../src/iop/lut3d.c:1129
 msgid "trilinear"
 msgstr "טרילינארי"
 
-#: ../src/iop/lut3d.c:1129
+#: ../src/iop/lut3d.c:1130
 msgid "pyramid"
 msgstr "פירמידה"
 
-#: ../src/iop/lut3d.c:1131
+#: ../src/iop/lut3d.c:1132
 msgid "select the interpolation method"
 msgstr "בחר שיטת אינטרפולציה"
+
+#: ../src/iop/mask_manager.c:45 ../src/libs/masks.c:56
+msgid "mask manager"
+msgstr "מנהל מסיכות"
 
 #: ../src/iop/monochrome.c:74
 msgid "monochrome"
@@ -9992,7 +10095,7 @@ msgctxt "accel"
 msgid "continuous add brush"
 msgstr "הוספה רציפה של מברשת"
 
-#: ../src/iop/retouch.c:4425 ../src/iop/retouch.c:5281
+#: ../src/iop/retouch.c:4431 ../src/iop/retouch.c:5287
 #, c-format
 msgid "max scale is %i for this image size"
 msgstr "סקאלה מקסימלית לגודל תמונה זה %i"
@@ -10042,48 +10145,48 @@ msgstr "לוגריתם (בסיס 2)"
 msgid "exponential (base 2)"
 msgstr "מעריכי (בסיס 2)"
 
-#: ../src/iop/rgbcurve.c:1479 ../src/iop/rgblevels.c:1011
+#: ../src/iop/rgbcurve.c:1514 ../src/iop/rgblevels.c:1011
 #: ../src/iop/tonecurve.c:1312
 msgid "RGB, linked channels"
 msgstr "RGB, ערוצים מקושרים"
 
-#: ../src/iop/rgbcurve.c:1480 ../src/iop/rgblevels.c:1012
+#: ../src/iop/rgbcurve.c:1515 ../src/iop/rgblevels.c:1012
 msgid "RGB, independent channels"
 msgstr "RGB, ערוצים בלתי תלויים"
 
-#: ../src/iop/rgbcurve.c:1482 ../src/iop/rgblevels.c:1014
+#: ../src/iop/rgbcurve.c:1517 ../src/iop/rgblevels.c:1014
 msgid "choose between linked and independent channels."
 msgstr "בחר בין ערוצים קשורים או בלתי תלויים."
 
-#: ../src/iop/rgbcurve.c:1489 ../src/iop/rgblevels.c:1021
+#: ../src/iop/rgbcurve.c:1524 ../src/iop/rgblevels.c:1021
 msgid "  R  "
 msgstr "  R  "
 
-#: ../src/iop/rgbcurve.c:1492 ../src/iop/rgblevels.c:1024
+#: ../src/iop/rgbcurve.c:1527 ../src/iop/rgblevels.c:1024
 msgid "curve nodes for r channel"
 msgstr "צמתי עקום עבור ערוץ r"
 
-#: ../src/iop/rgbcurve.c:1494 ../src/iop/rgblevels.c:1026
+#: ../src/iop/rgbcurve.c:1529 ../src/iop/rgblevels.c:1026
 msgid "  G  "
 msgstr "  G  "
 
-#: ../src/iop/rgbcurve.c:1497 ../src/iop/rgblevels.c:1029
+#: ../src/iop/rgbcurve.c:1532 ../src/iop/rgblevels.c:1029
 msgid "curve nodes for g channel"
 msgstr "צמתי עקום עבור ערוץ g"
 
-#: ../src/iop/rgbcurve.c:1499 ../src/iop/rgblevels.c:1031
+#: ../src/iop/rgbcurve.c:1534 ../src/iop/rgblevels.c:1031
 msgid "  B  "
 msgstr "  B  "
 
-#: ../src/iop/rgbcurve.c:1502 ../src/iop/rgblevels.c:1034
+#: ../src/iop/rgbcurve.c:1537 ../src/iop/rgblevels.c:1034
 msgid "curve nodes for b channel"
 msgstr "צמתי עקום עבור ערוץ b"
 
-#: ../src/iop/rgbcurve.c:1522
+#: ../src/iop/rgbcurve.c:1557
 msgid "pick GUI color from image"
 msgstr "בחר צבע לממשק מהתמונה"
 
-#: ../src/iop/rgbcurve.c:1576 ../src/iop/rgbcurve.c:1578
+#: ../src/iop/rgbcurve.c:1611 ../src/iop/rgbcurve.c:1613
 msgid "compensate middle grey"
 msgstr "פצה אפור בינוני"
 
@@ -10617,83 +10720,103 @@ msgid ""
 "disabled"
 msgstr "אקולייזר טונים צריך לבוא אחרי מודולי דיסטורציה בסדר הפעולות - מנוטרל"
 
-#: ../src/iop/toneequal.c:824 ../src/iop/toneequal.c:945
+#: ../src/iop/toneequal.c:828 ../src/iop/toneequal.c:949
 msgid "tone equalizer failed to allocate memory, check your RAM settings"
 msgstr "אקולייזר טונים כשל בהקצאת זיכרון, בדוק את הגדרות ה RAM"
 
 #. Pointers are not 64-bits aligned, and SSE code will segfault
-#: ../src/iop/toneequal.c:846
+#: ../src/iop/toneequal.c:850
 msgid ""
 "tone equalizer in/out buffer are ill-aligned, please report the bug to the "
 "developers"
 msgstr ""
 "זכרונות קלט/פלט של אקולייזר הטונים לא מיושרים כראוי, אנה דווח באג למפתחים"
 
-#: ../src/iop/toneequal.c:1770 ../src/iop/toneequal.c:2143
+#: ../src/iop/toneequal.c:1774 ../src/iop/toneequal.c:2147
 msgid "the interpolation is unstable, decrease the curve smoothing"
 msgstr "האינטרפולציה לא יציבה, הפחת את החלקת עקום"
 
-#: ../src/iop/toneequal.c:1855 ../src/iop/toneequal.c:1915
+#: ../src/iop/toneequal.c:1859 ../src/iop/toneequal.c:1919
 msgid "wait for the preview to finish recomputing"
 msgstr "המתן עד שחישוב התצוגה המקדימה יסתיים"
 
-#: ../src/iop/toneequal.c:2148
+#: ../src/iop/toneequal.c:2152
 msgid "some parameters are out-of-bounds"
 msgstr "חלק מהפרמטרים מחוץ לתחום"
 
-#: ../src/iop/toneequal.c:3035
+#. Build text object
+#: ../src/iop/toneequal.c:2417
+#, c-format
+msgid "%+.1f EV"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3039
 msgid "simple"
 msgstr "פשוט"
 
-#: ../src/iop/toneequal.c:3036
+#: ../src/iop/toneequal.c:3040
 msgid "advanced"
 msgstr "מתקדם"
 
-#: ../src/iop/toneequal.c:3037
+#: ../src/iop/toneequal.c:3041
 msgid "masking"
 msgstr "מיסוך"
 
-#: ../src/iop/toneequal.c:3051
-msgid "-8 EV : blacks"
-msgstr "-8 EV : שחורים"
+#: ../src/iop/toneequal.c:3054 ../src/iop/toneequal.c:3060
+#: ../src/iop/toneequal.c:3066 ../src/iop/toneequal.c:3072
+#: ../src/iop/toneequal.c:3078 ../src/iop/toneequal.c:3084
+#: ../src/iop/toneequal.c:3090 ../src/iop/toneequal.c:3096
+#: ../src/iop/toneequal.c:3102
+#, c-format
+msgid "%+.2f EV"
+msgstr ""
 
-#: ../src/iop/toneequal.c:3057
-msgid "-7 EV : deep shadows"
-msgstr "-7 EV : צללים עמוקים"
+#: ../src/iop/toneequal.c:3055
+msgid "-8 EV"
+msgstr ""
 
-#: ../src/iop/toneequal.c:3063
-msgid "-6 EV : shadows"
-msgstr "-6 EV : צללים"
+#: ../src/iop/toneequal.c:3061
+msgid "-7 EV"
+msgstr ""
 
-#: ../src/iop/toneequal.c:3069
-msgid "-5 EV : light shadows"
-msgstr "-5 EV : צללים רדודים"
+#: ../src/iop/toneequal.c:3067
+msgid "-6 EV"
+msgstr ""
 
-#: ../src/iop/toneequal.c:3075
-msgid "-4 EV : midtones"
-msgstr "-4 EV : טונים בינונים"
+#: ../src/iop/toneequal.c:3073
+msgid "-5 EV"
+msgstr ""
 
-#: ../src/iop/toneequal.c:3081
-msgid "-3 EV : dark highlights"
-msgstr "-3 EV : כהים פרטים בהירים"
+#: ../src/iop/toneequal.c:3079
+msgid "-4 EV"
+msgstr ""
 
-#: ../src/iop/toneequal.c:3087
-msgid "-2 EV : highlights"
-msgstr "-2 EV : בהירים"
+#: ../src/iop/toneequal.c:3085
+msgid "-3 EV"
+msgstr ""
 
-#: ../src/iop/toneequal.c:3093
-msgid "-1 EV : whites"
-msgstr "-1 EV : לבנים"
+#: ../src/iop/toneequal.c:3091
+msgid "-2 EV"
+msgstr ""
 
-#: ../src/iop/toneequal.c:3099
-msgid "+0 EV : speculars"
-msgstr "+0 EV : הברקות"
+#: ../src/iop/toneequal.c:3097
+msgid "-1 EV"
+msgstr ""
 
-#: ../src/iop/toneequal.c:3123
+#: ../src/iop/toneequal.c:3103
+msgid "+0 EV"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3121
+#, fuzzy
+msgid "double-click to reset the curve"
+msgstr "הקלקה כפולה לאתחול עקום"
+
+#: ../src/iop/toneequal.c:3128
 msgid "curve smoothing"
 msgstr "החלקת עקום"
 
-#: ../src/iop/toneequal.c:3124
+#: ../src/iop/toneequal.c:3129
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -10705,15 +10828,58 @@ msgstr ""
 "ערכים שליליים ימנעו אוסצילציות ויתנהגו יותר רובסטי\n"
 "אבל עלולים לייצר מעברי טונים קיצוניים ולפגוע בקונטרסט מקומי."
 
-#: ../src/iop/toneequal.c:3133
+#: ../src/iop/toneequal.c:3138
 msgid "luminance estimator"
 msgstr "מעריך לומיננס"
 
-#: ../src/iop/toneequal.c:3145
+#: ../src/iop/toneequal.c:3140
+#, fuzzy
+msgid "RGB average"
+msgstr "ממוצע"
+
+#: ../src/iop/toneequal.c:3141
+#, fuzzy
+msgid "HSL lightness"
+msgstr "תאורת HSV"
+
+#: ../src/iop/toneequal.c:3142
+msgid "HSV value / RGB max"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3143
+msgid "RGB sum"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3144
+#, fuzzy
+msgid "RGB euclidean norm"
+msgstr "RGB power norm"
+
+#: ../src/iop/toneequal.c:3146
+msgid "RGB geometric mean"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3147
+msgid ""
+"preview the mask and chose the estimator that gives you the\n"
+"higher contrast between areas to dodge and areas to burn"
+msgstr ""
+
+#: ../src/iop/toneequal.c:3153
 msgid "preserve details"
 msgstr "שמר פרטים"
 
-#: ../src/iop/toneequal.c:3150
+#: ../src/iop/toneequal.c:3156
+#, fuzzy
+msgid "averaged guided filter"
+msgstr "פילטר אדום"
+
+#: ../src/iop/toneequal.c:3157
+#, fuzzy
+msgid "guided filter"
+msgstr "פילטר אדום"
+
+#: ../src/iop/toneequal.c:3158
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -10724,11 +10890,11 @@ msgstr ""
 "'פילטר מונחה' משפיע על קונטרסט גלובלי בלבד ומנסה לשמור על קונטרסט מקומי\n"
 "'פילטר מונחה ממוצע' הוא ממוצע גיאומטרי של שתי השיטות"
 
-#: ../src/iop/toneequal.c:3157
+#: ../src/iop/toneequal.c:3165
 msgid "filter diffusion"
 msgstr "דיפוזיית פילטר"
 
-#: ../src/iop/toneequal.c:3158
+#: ../src/iop/toneequal.c:3166
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -10736,11 +10902,11 @@ msgstr ""
 "מספר מעברים של פילטר מונחה לבצע\n"
 "עוזר לטשטש את קצוות הפילטר על חשבון מהירות"
 
-#: ../src/iop/toneequal.c:3166
+#: ../src/iop/toneequal.c:3174
 msgid "smoothing diameter"
 msgstr "קוטר החלקה"
 
-#: ../src/iop/toneequal.c:3167
+#: ../src/iop/toneequal.c:3175
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -10750,17 +10916,18 @@ msgstr ""
 "אזהרה: ערכים גדולים של פרמטר זה עלולים לגרום לתצוגה המקדימה\n"
 "של חדר החושך להיות איטית בהרבה אם נעשה שימוש בפרופיל סילוק רעש."
 
-#: ../src/iop/toneequal.c:3175
+#: ../src/iop/toneequal.c:3183
 msgid "edges refinement/feathering"
 msgstr "עידון/נוצה לקצוות"
 
-#: ../src/iop/toneequal.c:3176
+#: ../src/iop/toneequal.c:3184
+#, fuzzy
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
 "but may void the effect of the smoothing\n"
 "lower values give smoother gradients and better smoothing\n"
-"but may lead to inaccurate edges taping"
+"but may lead to inaccurate edges taping and halos"
 msgstr ""
 "דיוק פעולת הנוצה:\n"
 "ערכים גבוהים מכריחים את המסיכה לעקוב אחר קצוות בצמידות רבה יותר\n"
@@ -10768,11 +10935,11 @@ msgstr ""
 "ערכים נמוכים מובילים לגראדיינטים חלקים יותר והחלקה טובה יותר\n"
 "אך עלולים להוביל לניהול לא מדויק של הקצוות"
 
-#: ../src/iop/toneequal.c:3184
+#: ../src/iop/toneequal.c:3192
 msgid "mask post-processing"
 msgstr "עיבוד מאוחר של מסיכה"
 
-#: ../src/iop/toneequal.c:3190
+#: ../src/iop/toneequal.c:3198
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -10781,11 +10948,11 @@ msgstr ""
 "טווח ההסטוגרמה בין העשירונים הראשון והאחרון.\n"
 "הקו המרכזי מראה ממוצע. פסים כתומים יופיעו בקצוות במידה שיש חיתוך."
 
-#: ../src/iop/toneequal.c:3195
+#: ../src/iop/toneequal.c:3203
 msgid "mask quantization"
 msgstr "קוונטיזצית מסיכה"
 
-#: ../src/iop/toneequal.c:3197
+#: ../src/iop/toneequal.c:3205
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -10795,35 +10962,38 @@ msgstr ""
 "ערכים גבוהים יוצרים אפקט פוסטר למסיכת הלומיננס שעוזר לניתוב\n"
 "לייצר אזורים חלקים כאשר משתמשים בערכי נוצה גבוהים"
 
-#: ../src/iop/toneequal.c:3205
+#: ../src/iop/toneequal.c:3213
 msgid "mask exposure compensation"
 msgstr "מסך פיצוי חשיפה"
 
-#: ../src/iop/toneequal.c:3207
+#: ../src/iop/toneequal.c:3215
+#, fuzzy
 msgid ""
 "use this to slide the mask average exposure along channels\n"
-"for better control of the exposure corrections.\n"
+"for a better control of the exposure correction with the available nodes.\n"
 "the picker will auto-adjust the average exposure at -4EV."
 msgstr ""
 "השתמש בזה על מנת להחליק את החשיפה הממוצעת של המסיכה לאורך הערוצים\n"
 "לשליטה טובה יותר בתיקון החשיפה.\n"
 "כלי הבחירה יכוונן אוטומטית את ממוצע החשיפה ל -4EV."
 
-#: ../src/iop/toneequal.c:3219
+#: ../src/iop/toneequal.c:3227
 msgid "mask contrast compensation"
 msgstr "דחיסת ניגודיות של מסיכה"
 
-#: ../src/iop/toneequal.c:3221
+#: ../src/iop/toneequal.c:3229
+#, fuzzy
 msgid ""
-"use this to dilate the mask contrast around its average exposure\n"
+"use this to counter the averaging effect of the guided filter\n"
+"and dilate the mask contrast around -4EV\n"
 "this allows to spread the exposure histogram over more channels\n"
-"for better control of the exposure corrections."
+"for a better control of the exposure correction."
 msgstr ""
 "השתמש בזה להרחבת קונטרסט המסיכה מסביב לחשיפה הממוצעת שלה\n"
 "הדבר מאפשר לפרוס את היסטוגרמת החשיפה על יותר ערוצים\n"
 "לשליטה טובה יותר בתיקון החשיפה."
 
-#: ../src/iop/toneequal.c:3233 ../src/iop/toneequal.c:3237
+#: ../src/iop/toneequal.c:3242 ../src/iop/toneequal.c:3246
 msgid "display exposure mask"
 msgstr "הצג מסיכת חשיפה"
 
@@ -11411,7 +11581,7 @@ msgstr "תאריך"
 msgid "time"
 msgstr "זמן"
 
-#: ../src/libs/collect.h:34 ../src/libs/history.c:63
+#: ../src/libs/collect.h:34 ../src/libs/history.c:65
 msgid "history"
 msgstr "היסטוריה"
 
@@ -11488,7 +11658,7 @@ msgstr "RGB"
 msgid "restrict histogram to selection"
 msgstr "הגבל היסטוגרמה לבחירה"
 
-#: ../src/libs/colorpicker.c:626 ../src/libs/export_metadata.c:149
+#: ../src/libs/colorpicker.c:626 ../src/libs/export_metadata.c:152
 msgid "add"
 msgstr "הוסף"
 
@@ -11543,6 +11713,11 @@ msgstr[1] "האם את/ה באמת מעוניין/ת לנקות את ההיסט�
 msgid "delete images' history?"
 msgstr "מחק את ההיסטוריה של התמונות?"
 
+#: ../src/libs/copy_history.c:308 ../src/libs/image.c:204
+#, fuzzy
+msgid "copy..."
+msgstr "העתק"
+
 #: ../src/libs/copy_history.c:311
 msgid ""
 "copy part history stack of\n"
@@ -11564,7 +11739,8 @@ msgstr ""
 "תמונה נבחרת ראשונה"
 
 #: ../src/libs/copy_history.c:323
-msgid "paste"
+#, fuzzy
+msgid "paste..."
 msgstr "הדבק"
 
 #: ../src/libs/copy_history.c:325
@@ -11600,8 +11776,9 @@ msgstr ""
 "של כל התמונות הנבחרות"
 
 #: ../src/libs/copy_history.c:342
-msgid "discard"
-msgstr "השלך"
+#, fuzzy
+msgid "discard history"
+msgstr "השלך היסטוריה"
 
 #: ../src/libs/copy_history.c:345
 msgid ""
@@ -11620,7 +11797,8 @@ msgid "how to handle existing history"
 msgstr "כיצד לטפל בהיסטוריה הקיימת"
 
 #: ../src/libs/copy_history.c:359
-msgid "load sidecar file"
+#, fuzzy
+msgid "load sidecar file..."
 msgstr "טען קובץ נלווה"
 
 #: ../src/libs/copy_history.c:362
@@ -11781,6 +11959,11 @@ msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr "האם פריטי העיצוב מצורפים להיסטוריה הקיימת או מחליפים אותה"
 
+#. Export button
+#: ../src/libs/export.c:716
+msgid "export"
+msgstr "ייצא"
+
 #: ../src/libs/export.c:718
 msgid "export with current settings"
 msgstr "ייצא עם הגדרות נוכחיות"
@@ -11791,60 +11974,60 @@ msgstr "ערוך פרטי ייצוא של מטה נתונים"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1311 ../src/libs/styles.c:71
-#: ../src/views/darkroom.c:3169
+#: ../src/views/darkroom.c:3180
 msgctxt "accel"
 msgid "export"
 msgstr "ייצא"
 
-#: ../src/libs/export_metadata.c:148
+#: ../src/libs/export_metadata.c:151
 msgid "select tag"
 msgstr "בחר תג"
 
-#: ../src/libs/export_metadata.c:149
+#: ../src/libs/export_metadata.c:152
 msgid "done"
 msgstr "בוצע"
 
-#: ../src/libs/export_metadata.c:163
+#: ../src/libs/export_metadata.c:166
 msgid ""
 "list of available tags. click 'add' button or double-click on tag to add the "
 "selected one"
 msgstr ""
 "רשימה של תגים זמינים. הקלק על כפתור 'הוסף' או הקלק כפול על תג להוספת הנבחר"
 
-#: ../src/libs/export_metadata.c:316
+#: ../src/libs/export_metadata.c:231
 msgid "edit metadata exportation"
 msgstr "ערוך פרטי ייצוא של מטה נתונים"
 
-#: ../src/libs/export_metadata.c:317 ../src/libs/tagging.c:1349
-#: ../src/libs/tagging.c:1515
+#: ../src/libs/export_metadata.c:232 ../src/libs/tagging.c:1348
+#: ../src/libs/tagging.c:1514
 msgid "save"
 msgstr "שמירה"
 
-#: ../src/libs/export_metadata.c:329
+#: ../src/libs/export_metadata.c:244
 msgid "general settings"
 msgstr "הגדרות כלליות"
 
-#: ../src/libs/export_metadata.c:334
+#: ../src/libs/export_metadata.c:249
 msgid "exif data"
 msgstr "נתוני exif"
 
-#: ../src/libs/export_metadata.c:335
+#: ../src/libs/export_metadata.c:250
 msgid "export exif metadata"
 msgstr "ייצא מטא נתונים exif"
 
-#: ../src/libs/export_metadata.c:337
+#: ../src/libs/export_metadata.c:252
 msgid "metadata"
 msgstr "מטא-נתונים"
 
-#: ../src/libs/export_metadata.c:338
+#: ../src/libs/export_metadata.c:253
 msgid "export dt xmp metadata (from metadata editor module)"
 msgstr "ייצא מטא נתונים של dt xmp (מתוך מודול עורך המטא נתונים)"
 
-#: ../src/libs/export_metadata.c:348
+#: ../src/libs/export_metadata.c:263
 msgid "only embedded"
 msgstr "רק מוטמעים"
 
-#: ../src/libs/export_metadata.c:349
+#: ../src/libs/export_metadata.c:264
 msgid ""
 "per default the interface sends some (limited) metadata beside the image to "
 "remote storage.\n"
@@ -11858,72 +12041,82 @@ msgstr ""
 "אם האחסון המרוחק לא מבין מטא נתונים dt xmp, ביכולתך להשתמש במטא נתונים "
 "המחושבים במקום"
 
-#: ../src/libs/export_metadata.c:355
+#: ../src/libs/export_metadata.c:270
 msgid "geo tags"
 msgstr "גיאו תגים"
 
-#: ../src/libs/export_metadata.c:356
+#: ../src/libs/export_metadata.c:271
 msgid "export geo tags"
 msgstr "ייצא גיאו תגים"
 
-#: ../src/libs/export_metadata.c:359
+#: ../src/libs/export_metadata.c:274
 msgid "export tags (to Xmp.dc.Subject)"
 msgstr "ייצא תגים (ל Xmp.dc.Subject)"
 
-#: ../src/libs/export_metadata.c:366
+#: ../src/libs/export_metadata.c:281
 msgid "private tags"
 msgstr "תגים פרטיים"
 
-#: ../src/libs/export_metadata.c:367
+#: ../src/libs/export_metadata.c:282
 msgid "export private tags"
 msgstr "ייצא תגים פרטיים"
 
-#: ../src/libs/export_metadata.c:369
+#: ../src/libs/export_metadata.c:284
 msgid "synonyms"
 msgstr "מילים נרדפות"
 
-#: ../src/libs/export_metadata.c:370
+#: ../src/libs/export_metadata.c:285
 msgid "export tags synonyms"
 msgstr "ייצא תגיות נרדפות"
 
-#: ../src/libs/export_metadata.c:372
+#: ../src/libs/export_metadata.c:287
 msgid "omit hierarchy"
 msgstr "השמט היררכיה"
 
-#: ../src/libs/export_metadata.c:373
+#: ../src/libs/export_metadata.c:288
 msgid ""
 "only the last part of the hierarchical tags is included. can be useful if "
 "categories are not used"
 msgstr ""
 "רק החלק האחרון של התגים ההיררכים כלולים. שימושי אם לא נעשה שימוש בקטגוריות"
 
-#: ../src/libs/export_metadata.c:376
+#: ../src/libs/export_metadata.c:291
 msgid "hierarchical tags"
 msgstr "תגים היררכים"
 
-#: ../src/libs/export_metadata.c:377
+#: ../src/libs/export_metadata.c:292
 msgid "export hierarchical tags (to Xmp.lr.Hierarchical Subject)"
 msgstr "ייצא תגים היררכים (ל Xmp.lr.Hierarchical Subject)"
 
-#: ../src/libs/export_metadata.c:379
+#: ../src/libs/export_metadata.c:294
 msgid "develop history"
 msgstr "היסטורית פיתוח"
 
-#: ../src/libs/export_metadata.c:380
+#: ../src/libs/export_metadata.c:295
 msgid ""
 "export dt development data (recovery purpose in case of loss of database or "
 "xmp file)"
 msgstr "ייצא נתוני פיתוח של dt (לשם שחזור במקרה של אבדן נתונים או קובץ xmp)"
 
-#: ../src/libs/export_metadata.c:387
+#: ../src/libs/export_metadata.c:302
 msgid "per metadata settings"
 msgstr "לפי הגדרות מטא נתונים"
 
-#: ../src/libs/export_metadata.c:397
+#: ../src/libs/export_metadata.c:312
 msgid "list of available tags"
 msgstr "רשימת תגים זמינים"
 
-#: ../src/libs/export_metadata.c:408
+#: ../src/libs/export_metadata.c:315
+#, fuzzy
+msgid "redefined tag"
+msgstr "ערוך תג"
+
+#: ../src/libs/export_metadata.c:320
+#, fuzzy
+msgid "formula"
+msgstr "פורמט"
+
+#: ../src/libs/export_metadata.c:323
 msgid ""
 "list of calculated metadata\n"
 "if formula is empty, the corresponding metadata is removed from exported "
@@ -11937,11 +12130,11 @@ msgstr ""
 "אחרת המטא נתונים המתאימים יחושבו ויוספו לקובץ המיוצא\n"
 "הקלק על תא הנוסחה לערוך. משתנים מוכרים:"
 
-#: ../src/libs/export_metadata.c:463
+#: ../src/libs/export_metadata.c:378
 msgid "add an output metadata tag"
 msgstr "הוסף תג מטא נתונים לפלט"
 
-#: ../src/libs/export_metadata.c:468
+#: ../src/libs/export_metadata.c:383
 msgid "delete metadata tag"
 msgstr "מחק תגית מטא נתונים"
 
@@ -11995,7 +12188,8 @@ msgstr "יישם הסחת זמן לתמונות נבחרות"
 
 #. gpx
 #: ../src/libs/geotagging.c:815
-msgid "apply GPX track file"
+#, fuzzy
+msgid "apply GPX track file..."
 msgstr "יישם קובץ מעקב GPX"
 
 #: ../src/libs/geotagging.c:816
@@ -12064,30 +12258,30 @@ msgctxt "accel"
 msgid "hide histogram"
 msgstr "החבא היסטוגרמה"
 
-#: ../src/libs/history.c:84
+#: ../src/libs/history.c:86
 msgctxt "accel"
 msgid "create style from history"
 msgstr "צור סגנון מהיסטוריה"
 
 #. dt_accel_register_lib(self, NC_("accel", "apply style from popup menu"), 0, 0);
-#: ../src/libs/history.c:86
+#: ../src/libs/history.c:88
 msgctxt "accel"
 msgid "compress history stack"
 msgstr "דחוס מחסנית היסטוריה"
 
-#: ../src/libs/history.c:113
+#: ../src/libs/history.c:117
 msgid "compress history stack"
 msgstr "דחוס מחסנית היסטוריה"
 
-#: ../src/libs/history.c:115
+#: ../src/libs/history.c:118
 msgid "create a minimal history stack which produces the same image"
 msgstr "צור מחסנית היסטוריה מינימלית שמפיקה תמונה זהה"
 
-#: ../src/libs/history.c:122
+#: ../src/libs/history.c:125
 msgid "create a style from the current history stack"
 msgstr "צור סגנון ממחסנית היסטוריה נוכחית"
 
-#: ../src/libs/history.c:652 ../src/libs/snapshots.c:346
+#: ../src/libs/history.c:619 ../src/libs/snapshots.c:346
 msgid "original"
 msgstr "מקור"
 
@@ -12112,8 +12306,9 @@ msgid "remove from the collection"
 msgstr "הסר מהאוסף"
 
 #: ../src/libs/image.c:197
-msgid "move"
-msgstr "העבר"
+#, fuzzy
+msgid "move..."
+msgstr "הסר..."
 
 #: ../src/libs/image.c:200
 msgid "move to other folder"
@@ -12333,13 +12528,20 @@ msgstr "לקובץ פורמט לא מזוהה!"
 msgid "import film"
 msgstr "ייבא פילם"
 
+#. add import single image buttons
+#: ../src/libs/import.c:982
+#, fuzzy
+msgid "image..."
+msgstr "תמונה"
+
 #: ../src/libs/import.c:986
 msgid "select one or more images to import"
 msgstr "בחר תמונה או יותר לייבוא"
 
 #. adding the import folder button
 #: ../src/libs/import.c:993
-msgid "folder"
+#, fuzzy
+msgid "folder..."
 msgstr "תיקיה"
 
 #: ../src/libs/import.c:997
@@ -12563,10 +12765,6 @@ msgstr "מקור המפה"
 #: ../src/libs/map_settings.c:109
 msgid "select the source of the map. some entries might not work"
 msgstr "בחר את מקור המפה. חלק מהאפשרויות עלולות שלא לעבוד"
-
-#: ../src/libs/masks.c:56
-msgid "mask manager"
-msgstr "מנהל מסיכות"
 
 #: ../src/libs/masks.c:242
 #, c-format
@@ -12871,48 +13069,48 @@ msgctxt "accel"
 msgid "jump to film roll"
 msgstr "קפוץ לגליל פילם"
 
-#: ../src/libs/modulegroups.c:84
+#: ../src/libs/modulegroups.c:85
 msgid "modulegroups"
 msgstr "קבוצות מודולים"
 
-#: ../src/libs/modulegroups.c:180
+#: ../src/libs/modulegroups.c:181
 msgid "show only active modules"
 msgstr "הצג רק מודולים פעילים"
 
-#: ../src/libs/modulegroups.c:187
+#: ../src/libs/modulegroups.c:188
 msgid "show only your favourite modules (selected in `more modules' below)"
 msgstr "הצג רק מודולים מועדפים (שנבחרו ב 'מודולים נוספים' למטה)"
 
-#: ../src/libs/modulegroups.c:193
+#: ../src/libs/modulegroups.c:194
 msgid "basic group"
 msgstr "קבוצה בסיסית"
 
-#: ../src/libs/modulegroups.c:199
+#: ../src/libs/modulegroups.c:200
 msgid "tone group"
 msgstr "קבוצת טונים"
 
-#: ../src/libs/modulegroups.c:205
+#: ../src/libs/modulegroups.c:206
 msgid "color group"
 msgstr "קבוצת צבע"
 
-#: ../src/libs/modulegroups.c:211
+#: ../src/libs/modulegroups.c:212
 msgid "correction group"
 msgstr "קבוצת תיקונים"
 
-#: ../src/libs/modulegroups.c:217
+#: ../src/libs/modulegroups.c:218
 msgid "effects group"
 msgstr "קבוצת אפקטים"
 
 #. search box
-#: ../src/libs/modulegroups.c:229
+#: ../src/libs/modulegroups.c:230
 msgid "search module"
 msgstr "מודול חיפוש"
 
-#: ../src/libs/modulegroups.c:236
+#: ../src/libs/modulegroups.c:237
 msgid "search modules by name or tag"
 msgstr "חפש מודולים לפי שם או תג"
 
-#: ../src/libs/modulegroups.c:243
+#: ../src/libs/modulegroups.c:244
 msgid "clear text"
 msgstr "נקה טקסט"
 
@@ -13279,8 +13477,7 @@ msgstr "בחר שלא נערכו"
 msgid "session"
 msgstr "מושב"
 
-#. create
-#: ../src/libs/session.c:109 ../src/libs/styles.c:445
+#: ../src/libs/session.c:109
 msgid "create"
 msgstr "צור"
 
@@ -13355,14 +13552,21 @@ msgstr "צור העתק"
 msgid "creates a duplicate of the image before applying style"
 msgstr "יוצר העתק של התמונה לפני יישום הסגנון"
 
+#. create
+#: ../src/libs/styles.c:445
+#, fuzzy
+msgid "create..."
+msgstr "יוצר תג..."
+
 #: ../src/libs/styles.c:447
 msgid "create styles from history stack of selected images"
 msgstr "יוצר סגנונות מתוך מחסנית ההיסטוריה של התמונות הנבחרות"
 
 #. edit
 #: ../src/libs/styles.c:451
-msgid "edit"
-msgstr "ערוך"
+#, fuzzy
+msgid "edit..."
+msgstr "ערוך תג..."
 
 #: ../src/libs/styles.c:454
 msgid "edit the selected style in list above"
@@ -13373,9 +13577,10 @@ msgid "deletes the selected style in list above"
 msgstr "מחק את הסגנון הנבחר מהרשימה למעלה"
 
 #. import button
-#: ../src/libs/styles.c:465
-msgctxt "styles"
-msgid "import"
+#: ../src/libs/styles.c:465 ../src/libs/tagging.c:2690
+#, fuzzy
+msgctxt "verb"
+msgid "import..."
 msgstr "ייבא"
 
 #: ../src/libs/styles.c:467
@@ -13410,25 +13615,25 @@ msgctxt "accel"
 msgid "tag"
 msgstr "תג"
 
-#: ../src/libs/tagging.c:1040
+#: ../src/libs/tagging.c:1039
 msgid "attach tag to all"
 msgstr "צרף תג לכל התמונות הנבחרות"
 
-#: ../src/libs/tagging.c:1048 ../src/libs/tagging.c:1913
+#: ../src/libs/tagging.c:1047 ../src/libs/tagging.c:1912
 msgid "detach tag"
 msgstr "נתק תג"
 
-#: ../src/libs/tagging.c:1163
+#: ../src/libs/tagging.c:1162
 msgid "delete tag?"
 msgstr "מחק תג?"
 
-#: ../src/libs/tagging.c:1170 ../src/libs/tagging.c:1267
-#: ../src/libs/tagging.c:1521
+#: ../src/libs/tagging.c:1169 ../src/libs/tagging.c:1266
+#: ../src/libs/tagging.c:1520
 #, c-format
 msgid "tag: %s "
 msgstr "תג: %s "
 
-#: ../src/libs/tagging.c:1177
+#: ../src/libs/tagging.c:1176
 #, c-format
 msgid ""
 "do you really want to delete the tag `%s'?\n"
@@ -13443,85 +13648,85 @@ msgstr[1] ""
 "האם באמת ברצונך למחוק את התג `%s'?\n"
 "ל %d תמונות מוקצה תג זה!"
 
-#: ../src/libs/tagging.c:1213
+#: ../src/libs/tagging.c:1212
 #, c-format
 msgid "tag %s removed"
 msgstr "תג %s הוסר"
 
-#: ../src/libs/tagging.c:1260 ../src/libs/tagging.c:1925
+#: ../src/libs/tagging.c:1259 ../src/libs/tagging.c:1924
 msgid "delete branch"
 msgstr "מחק ענף"
 
-#: ../src/libs/tagging.c:1274
+#: ../src/libs/tagging.c:1273
 #, c-format
 msgid "<u>%d</u> tag will be deleted."
 msgid_plural "<u>%d</u> tags will be deleted."
 msgstr[0] "תג <u>%d</u> יימחק."
 msgstr[1] "תגים <u>%d</u> יימחקו."
 
-#: ../src/libs/tagging.c:1279 ../src/libs/tagging.c:1533
-#: ../src/libs/tagging.c:1753
+#: ../src/libs/tagging.c:1278 ../src/libs/tagging.c:1532
+#: ../src/libs/tagging.c:1752
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated "
 msgstr[0] "תמונה <u>%d</u> תעודכן"
 msgstr[1] "תמונות <u>%d</u> יעודכנו "
 
-#: ../src/libs/tagging.c:1305
+#: ../src/libs/tagging.c:1304
 #, c-format
 msgid "%d tags removed"
 msgstr "%d תגים הוסרו"
 
-#: ../src/libs/tagging.c:1348
+#: ../src/libs/tagging.c:1347
 msgid "create tag"
 msgstr "צור תג"
 
-#: ../src/libs/tagging.c:1358 ../src/libs/tagging.c:1541
+#: ../src/libs/tagging.c:1357 ../src/libs/tagging.c:1540
 msgid "name: "
 msgstr "שם: "
 
-#: ../src/libs/tagging.c:1371
+#: ../src/libs/tagging.c:1370
 #, c-format
 msgid "add to: \"%s\" "
 msgstr "הוסף ל: \"%s\" "
 
-#: ../src/libs/tagging.c:1377 ../src/libs/tagging.c:1556
+#: ../src/libs/tagging.c:1376 ../src/libs/tagging.c:1555
 msgid "category"
 msgstr "קטגוריה"
 
-#: ../src/libs/tagging.c:1380 ../src/libs/tagging.c:1559
+#: ../src/libs/tagging.c:1379 ../src/libs/tagging.c:1558
 msgid "private"
 msgstr "פרטי"
 
-#: ../src/libs/tagging.c:1386 ../src/libs/tagging.c:1565
+#: ../src/libs/tagging.c:1385 ../src/libs/tagging.c:1564
 msgid "synonyms: "
 msgstr "מילים נרדפות: "
 
-#: ../src/libs/tagging.c:1403 ../src/libs/tagging.c:1586
-#: ../src/libs/tagging.c:1775
+#: ../src/libs/tagging.c:1402 ../src/libs/tagging.c:1585
+#: ../src/libs/tagging.c:1774
 msgid "empty tag is not allowed, aborting"
 msgstr "תג ריק אינו מותר, מבטל"
 
-#: ../src/libs/tagging.c:1405
+#: ../src/libs/tagging.c:1404
 msgid "'|' character is not allowed to create a tag. aborting."
 msgstr "סימן '|' אינו מותר ביצירת תג, מבטל."
 
-#: ../src/libs/tagging.c:1420
+#: ../src/libs/tagging.c:1419
 msgid "tag name already exists. aborting."
 msgstr "שם תג כבר קיים. מבטל."
 
-#: ../src/libs/tagging.c:1514
+#: ../src/libs/tagging.c:1513
 msgid "edit tag"
 msgstr "ערוך תג"
 
-#: ../src/libs/tagging.c:1528 ../src/libs/tagging.c:1748
+#: ../src/libs/tagging.c:1527 ../src/libs/tagging.c:1747
 #, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
 msgstr[0] "תג <u>%d</u>  יעודכן."
 msgstr[1] "תגים <u>%d</u>  יעודכנו."
 
-#: ../src/libs/tagging.c:1588
+#: ../src/libs/tagging.c:1587
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierachy use rename path instead. Aborting."
@@ -13529,105 +13734,105 @@ msgstr ""
 "הסימן '|' לא מותר בשינוי שם תג.\n"
 "לשינוי ההירכיה שנה את שם הנתיב במקום. מבטל."
 
-#: ../src/libs/tagging.c:1626
+#: ../src/libs/tagging.c:1625
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
 msgstr "לפחות תג חדש אחד בשם (%s) כבר קיים, מבטל"
 
-#: ../src/libs/tagging.c:1734
+#: ../src/libs/tagging.c:1733
 msgid "rename path?"
 msgstr "שנה שם נתיב?"
 
-#: ../src/libs/tagging.c:1741
+#: ../src/libs/tagging.c:1740
 #, c-format
 msgid "selected path: %s "
 msgstr "נתיב נבחר: %s "
 
-#: ../src/libs/tagging.c:1777
+#: ../src/libs/tagging.c:1776
 msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr "הסימן '|' אינו ממוקם נכון, תג ריק אינו מותר, מבטל"
 
-#: ../src/libs/tagging.c:1803
+#: ../src/libs/tagging.c:1802
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
 msgstr "לפחות תג חדש אחת בשם (%s) כבר קיים, מבטל."
 
-#: ../src/libs/tagging.c:1909
+#: ../src/libs/tagging.c:1908
 msgid "attach tag"
 msgstr "הדבק תג"
 
-#: ../src/libs/tagging.c:1921
+#: ../src/libs/tagging.c:1920
 msgid "delete tag"
 msgstr "מחק תג"
 
-#: ../src/libs/tagging.c:1931
+#: ../src/libs/tagging.c:1930
 msgid "create tag..."
 msgstr "יוצר תג..."
 
-#: ../src/libs/tagging.c:1935
+#: ../src/libs/tagging.c:1934
 msgid "edit tag..."
 msgstr "ערוך תג..."
 
-#: ../src/libs/tagging.c:1944
+#: ../src/libs/tagging.c:1943
 msgid "rename path..."
 msgstr "שנה שם נתיב..."
 
-#: ../src/libs/tagging.c:1951
+#: ../src/libs/tagging.c:1950
 msgid "copy to entry"
 msgstr "העתק לערך"
 
-#: ../src/libs/tagging.c:1975
+#: ../src/libs/tagging.c:1974
 msgid "go to tag collection"
 msgstr "עבור לאוסף התגים"
 
-#: ../src/libs/tagging.c:1981
+#: ../src/libs/tagging.c:1980
 msgid "go back to work"
 msgstr "לך חזרה לעבודה"
 
-#: ../src/libs/tagging.c:2091
+#: ../src/libs/tagging.c:2096
 #, c-format
 msgid "%s"
 msgstr "%s"
 
-#: ../src/libs/tagging.c:2092
+#: ../src/libs/tagging.c:2097
 msgid "(private)"
 msgstr "(פרטי)"
 
-#: ../src/libs/tagging.c:2118
+#: ../src/libs/tagging.c:2123
 msgid "Select a keyword file"
 msgstr "בחר קובץ מילת מפתח"
 
-#: ../src/libs/tagging.c:2121
+#: ../src/libs/tagging.c:2126
 msgid "_import"
 msgstr "_ייבא"
 
-#: ../src/libs/tagging.c:2135
+#: ../src/libs/tagging.c:2140
 msgid "error importing tags"
 msgstr "שגיאה בייבוא תמונה"
 
-#: ../src/libs/tagging.c:2137
+#: ../src/libs/tagging.c:2142
 #, c-format
 msgid "%zd tags imported"
 msgstr "יובאו תגיות %zd"
 
-#: ../src/libs/tagging.c:2159
+#: ../src/libs/tagging.c:2164
 msgid "Select file to export to"
 msgstr "בחר קובץ לייצוא ל"
 
-#: ../src/libs/tagging.c:2162
+#: ../src/libs/tagging.c:2167
 msgid "_export"
 msgstr "_ייצא"
 
-#: ../src/libs/tagging.c:2177
+#: ../src/libs/tagging.c:2182
 msgid "error exporting tags"
 msgstr "שגיאה ביצוא תגיות"
 
-#: ../src/libs/tagging.c:2179
+#: ../src/libs/tagging.c:2184
 #, c-format
 msgid "%zd tags exported"
 msgstr "יוצאו תגיות %zd"
 
-#: ../src/libs/tagging.c:2537
+#: ../src/libs/tagging.c:2542
 msgid ""
 "attached tags,\n"
 "double-click to detach\n"
@@ -13639,43 +13844,43 @@ msgstr ""
 "קליק ימני לפעולות נוספות על תג מודבק,\n"
 "גלילה-ctrl חלון"
 
-#: ../src/libs/tagging.c:2548
+#: ../src/libs/tagging.c:2553
 msgid "attach"
 msgstr "צרף"
 
-#: ../src/libs/tagging.c:2551
+#: ../src/libs/tagging.c:2556
 msgid "attach tag to all selected images"
 msgstr "צרף תג לכל התמונות הנבחרות"
 
-#: ../src/libs/tagging.c:2556
+#: ../src/libs/tagging.c:2561
 msgid "detach"
 msgstr "נתק"
 
-#: ../src/libs/tagging.c:2559
+#: ../src/libs/tagging.c:2564
 msgid "detach tag from all selected images"
 msgstr "נתק תג מכל התמונות הנבחרות"
 
-#: ../src/libs/tagging.c:2566
+#: ../src/libs/tagging.c:2571
 msgid "toggle list with / without hierarchy"
 msgstr "מתג רשימה עם / בלי היררכיה"
 
-#: ../src/libs/tagging.c:2574
+#: ../src/libs/tagging.c:2579
 msgid "toggle sort by name or by count"
 msgstr "מתג סידור לפי שם או כמות"
 
-#: ../src/libs/tagging.c:2584
+#: ../src/libs/tagging.c:2589
 msgid "toggle show or not darktable tags"
 msgstr "מתג הצגת תגי darktable"
 
-#: ../src/libs/tagging.c:2600
+#: ../src/libs/tagging.c:2605
 msgid "enter tag name"
 msgstr "הכנס שם לתג"
 
-#: ../src/libs/tagging.c:2610
+#: ../src/libs/tagging.c:2615
 msgid "clear entry"
 msgstr "נקה ערך"
 
-#: ../src/libs/tagging.c:2662
+#: ../src/libs/tagging.c:2667
 msgid ""
 "tag dictionary,\n"
 "double-click to attach,\n"
@@ -13687,11 +13892,11 @@ msgstr ""
 "קליק ימני לפעולות אחרות על התג הנבחר,\n"
 "גלילה-ctrl לשינוי גודל חלון"
 
-#: ../src/libs/tagging.c:2677
+#: ../src/libs/tagging.c:2682
 msgid "new"
 msgstr "חדש"
 
-#: ../src/libs/tagging.c:2680
+#: ../src/libs/tagging.c:2685
 msgid ""
 "create a new tag with the\n"
 "name you entered"
@@ -13699,33 +13904,29 @@ msgstr ""
 "צור תג חדש עם\n"
 "השם שהכנסת"
 
-#: ../src/libs/tagging.c:2685
-msgctxt "verb"
-msgid "import"
-msgstr "ייבא"
-
-#: ../src/libs/tagging.c:2688
+#: ../src/libs/tagging.c:2693
 msgid "import tags from a Lightroom keyword file"
 msgstr "ייבא תגיות מתוך קובץ מילות מפתח של Lightroom"
 
-#: ../src/libs/tagging.c:2693
+#: ../src/libs/tagging.c:2698
+#, fuzzy
 msgctxt "verb"
-msgid "export"
+msgid "export..."
 msgstr "ייצא"
 
-#: ../src/libs/tagging.c:2696
+#: ../src/libs/tagging.c:2701
 msgid "export all tags to a Lightroom keyword file"
 msgstr "ייצא את כל התגיות ל קובץ מילות מפתח של Lightroom"
 
-#: ../src/libs/tagging.c:2703
+#: ../src/libs/tagging.c:2708
 msgid "toggle list / tree view"
 msgstr "מתג תצוגת רשימה / עץ"
 
-#: ../src/libs/tagging.c:2711
+#: ../src/libs/tagging.c:2716
 msgid "toggle list with / without suggestion"
 msgstr "מתג רשימה עם / בלי הצעה"
 
-#: ../src/libs/tagging.c:2816
+#: ../src/libs/tagging.c:2821
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr "קיצור דרך לתג לא פעיל במבט עץ. אנה עבור למבט רשימה"
@@ -14001,6 +14202,11 @@ msgstr "הצג ציפויים"
 msgid "hinter"
 msgstr "רומז"
 
+#: ../src/libs/tools/image_infos.c:40
+#, fuzzy
+msgid "image infos"
+msgstr "רמז לתמונה"
+
 #: ../src/libs/tools/lighttable.c:140
 msgid "zoomable light table"
 msgstr "שולחן אור ניתן לקירוב"
@@ -14101,40 +14307,40 @@ msgstr "הקלקה כפולה לאתחל ל `%f'"
 msgid "lua options"
 msgstr "אפשרויות lua"
 
-#: ../src/views/darkroom.c:484
+#: ../src/views/darkroom.c:487
 msgid "gamut check"
 msgstr "בדיקת מכלול צבע"
 
-#: ../src/views/darkroom.c:484
+#: ../src/views/darkroom.c:487
 msgid "soft proof"
 msgstr "הדמיית הדפסה"
 
-#: ../src/views/darkroom.c:1030
+#: ../src/views/darkroom.c:1037
 msgid "no userdefined presets for favorite modules were found"
 msgstr "לא נמצאו פריסטים שהוגדרו על ידי המשתמש עבור מודולים מועדפים"
 
-#: ../src/views/darkroom.c:1035
+#: ../src/views/darkroom.c:1042
 #, c-format
 msgid "applied style `%s' on current image"
 msgstr "סגנון `%s' יושם על התמונה הנוכחית"
 
-#: ../src/views/darkroom.c:1147
+#: ../src/views/darkroom.c:1154
 msgid "no styles have been created yet"
 msgstr "לא נוצרו סגנונות עדיין"
 
-#: ../src/views/darkroom.c:1774
+#: ../src/views/darkroom.c:1781
 msgid "quick access to presets of your favorites"
 msgstr "גישה מהירה לפריסטים מועדפים"
 
-#: ../src/views/darkroom.c:1783
+#: ../src/views/darkroom.c:1790
 msgid "quick access for applying any of your styles"
 msgstr "גישה מהירה ליישום כל אחד מהסגנונות שלך"
 
-#: ../src/views/darkroom.c:1796
+#: ../src/views/darkroom.c:1803
 msgid "display a second darkroom image window"
 msgstr "הצג חלון תמונה נוסף של חדר חושך"
 
-#: ../src/views/darkroom.c:1808
+#: ../src/views/darkroom.c:1815
 msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
@@ -14142,47 +14348,47 @@ msgstr ""
 "מתג התראת חשיפת יתר\n"
 "הקלק ימנית לאפשרויות"
 
-#: ../src/views/darkroom.c:1832
+#: ../src/views/darkroom.c:1839
 msgid "mark with CFA color"
 msgstr "סמן בצבע CFA"
 
-#: ../src/views/darkroom.c:1833
+#: ../src/views/darkroom.c:1840
 msgid "mark with solid color"
 msgstr "סמן בצבע אחיד"
 
-#: ../src/views/darkroom.c:1834
+#: ../src/views/darkroom.c:1841
 msgid "false color"
 msgstr "צבע לא נכון"
 
-#: ../src/views/darkroom.c:1836
+#: ../src/views/darkroom.c:1843
 msgid "select how to mark the clipped pixels"
 msgstr "בחר את צורת הסימון של פיקסלים חתוכים"
 
-#: ../src/views/darkroom.c:1843 ../src/views/darkroom.c:1895
+#: ../src/views/darkroom.c:1850 ../src/views/darkroom.c:1902
 msgid "color scheme"
 msgstr "תוכנית צבע"
 
-#: ../src/views/darkroom.c:1844
+#: ../src/views/darkroom.c:1851
 msgctxt "solidcolor"
 msgid "red"
 msgstr "אדום"
 
-#: ../src/views/darkroom.c:1845
+#: ../src/views/darkroom.c:1852
 msgctxt "solidcolor"
 msgid "green"
 msgstr "ירוק"
 
-#: ../src/views/darkroom.c:1846
+#: ../src/views/darkroom.c:1853
 msgctxt "solidcolor"
 msgid "blue"
 msgstr "כחול"
 
-#: ../src/views/darkroom.c:1847
+#: ../src/views/darkroom.c:1854
 msgctxt "solidcolor"
 msgid "black"
 msgstr "שחור"
 
-#: ../src/views/darkroom.c:1851
+#: ../src/views/darkroom.c:1858
 msgid ""
 "select the solid color to indicate over exposure.\n"
 "will only be used if mode = mark with solid color"
@@ -14190,7 +14396,7 @@ msgstr ""
 "בחר את הצבע האחיד לציון חשיפת יתר.\n"
 "יבוא לידי ביטוי רק אם מצב = סמן בצבע אחיד"
 
-#: ../src/views/darkroom.c:1861
+#: ../src/views/darkroom.c:1868
 msgid ""
 "threshold of what shall be considered overexposed\n"
 "1.0 - white level\n"
@@ -14200,7 +14406,7 @@ msgstr ""
 "1.0 - רמת לבן\n"
 "0.0 - רמת שחור"
 
-#: ../src/views/darkroom.c:1872
+#: ../src/views/darkroom.c:1879
 msgid ""
 "toggle over/under exposed indication\n"
 "right click for options"
@@ -14208,35 +14414,35 @@ msgstr ""
 "מתג התראת חשיפת יתר/חסר\n"
 "הקלק ימנית לאפשרויות"
 
-#: ../src/views/darkroom.c:1897
+#: ../src/views/darkroom.c:1904
 msgid "red & blue"
 msgstr "אדום וכחול"
 
-#: ../src/views/darkroom.c:1898
+#: ../src/views/darkroom.c:1905
 msgid "purple & green"
 msgstr "סגול וירוק"
 
-#: ../src/views/darkroom.c:1900
+#: ../src/views/darkroom.c:1907
 msgid "select colors to indicate over/under exposure"
 msgstr "בחר צבעים לציון חשיפת יתר/חסר"
 
-#: ../src/views/darkroom.c:1909
+#: ../src/views/darkroom.c:1916
 msgid "lower threshold"
 msgstr "סף תחתון"
 
-#: ../src/views/darkroom.c:1910
+#: ../src/views/darkroom.c:1917
 msgid "threshold of what shall be considered underexposed"
 msgstr "סף למה שיחשב חשיפת חסר"
 
-#: ../src/views/darkroom.c:1918
+#: ../src/views/darkroom.c:1925
 msgid "upper threshold"
 msgstr "סף עליון"
 
-#: ../src/views/darkroom.c:1919
+#: ../src/views/darkroom.c:1926
 msgid "threshold of what shall be considered overexposed"
 msgstr "סף למה שיחשב חשיפת יתר"
 
-#: ../src/views/darkroom.c:1930
+#: ../src/views/darkroom.c:1937
 msgid ""
 "toggle softproofing\n"
 "right click for profile options"
@@ -14244,7 +14450,7 @@ msgstr ""
 "מתג סימולציית הדפסה\n"
 "הקלק ימנית לאפשרויות פרופיל"
 
-#: ../src/views/darkroom.c:1944
+#: ../src/views/darkroom.c:1951
 msgid ""
 "toggle gamut checking\n"
 "right click for profile options"
@@ -14252,195 +14458,195 @@ msgstr ""
 "מתג בדיקת מכלול צבע\n"
 "הקלק ימנית לאפשרויות פרופיל"
 
-#: ../src/views/darkroom.c:1972 ../src/views/lighttable.c:4875
+#: ../src/views/darkroom.c:1979 ../src/views/lighttable.c:4875
 msgid "display intent"
 msgstr "כוונת ההצגה"
 
-#: ../src/views/darkroom.c:1980 ../src/views/lighttable.c:4883
+#: ../src/views/darkroom.c:1987 ../src/views/lighttable.c:4883
 msgid "preview display intent"
 msgstr "כוונת התצוגה המקדימה"
 
-#: ../src/views/darkroom.c:2000 ../src/views/lighttable.c:4891
+#: ../src/views/darkroom.c:2007 ../src/views/lighttable.c:4891
 msgid "display profile"
 msgstr "פרופיל תצוגה"
 
-#: ../src/views/darkroom.c:2001 ../src/views/lighttable.c:4895
+#: ../src/views/darkroom.c:2008 ../src/views/lighttable.c:4895
 msgid "preview display profile"
 msgstr "תצוגה מקדימה של פרופיל התצוגה"
 
-#: ../src/views/darkroom.c:2002
+#: ../src/views/darkroom.c:2009
 msgid "histogram profile"
 msgstr "פרופיל היסטוגרמה"
 
-#: ../src/views/darkroom.c:2056 ../src/views/lighttable.c:4925
+#: ../src/views/darkroom.c:2063 ../src/views/lighttable.c:4925
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "הצג פרופיל ICC ב %s או %s"
 
-#: ../src/views/darkroom.c:2059 ../src/views/lighttable.c:4928
+#: ../src/views/darkroom.c:2066 ../src/views/lighttable.c:4928
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "הצגה מקדימה של פרופיל ICC ב %s או %s"
 
-#: ../src/views/darkroom.c:2062
+#: ../src/views/darkroom.c:2069
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
 msgstr "פרופיל ICC לסימולציית הדפסה ב %s או %s"
 
-#: ../src/views/darkroom.c:2065
+#: ../src/views/darkroom.c:2072
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
 msgstr "פרופילי ICC של ההיסטוגרמה ובוחר הצבע ב %s או %s"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
-#: ../src/views/darkroom.c:3161 ../src/views/map.c:892 ../src/views/print.c:328
+#: ../src/views/darkroom.c:3172 ../src/views/map.c:892 ../src/views/print.c:328
 #: ../src/views/tethering.c:396
 msgctxt "accel"
 msgid "toggle film strip"
 msgstr "מתג גליל פילם"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:3164
+#: ../src/views/darkroom.c:3175
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "זום תקריב"
 
-#: ../src/views/darkroom.c:3165
+#: ../src/views/darkroom.c:3176
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "זום מילוי"
 
-#: ../src/views/darkroom.c:3166
+#: ../src/views/darkroom.c:3177
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "זום התאם"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:3172
+#: ../src/views/darkroom.c:3183
 msgctxt "accel"
 msgid "image forward"
 msgstr "תמונה קדימה"
 
-#: ../src/views/darkroom.c:3173
+#: ../src/views/darkroom.c:3184
 msgctxt "accel"
 msgid "image back"
 msgstr "תמונה אחורה"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:3176
+#: ../src/views/darkroom.c:3187
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "קובץ ה raw בחשיפת יתר"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:3179
+#: ../src/views/darkroom.c:3190
 msgctxt "accel"
 msgid "overexposed"
 msgstr "חשיפת יתר"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:3182
+#: ../src/views/darkroom.c:3193
 msgctxt "accel"
 msgid "softproof"
 msgstr "סימולציית הדפסה"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:3185
+#: ../src/views/darkroom.c:3196
 msgctxt "accel"
 msgid "gamut check"
 msgstr "בדיקת מכלול צבע"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:3188
+#: ../src/views/darkroom.c:3199
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "הגדל מברשת"
 
-#: ../src/views/darkroom.c:3189
+#: ../src/views/darkroom.c:3200
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "הקטן מברשת"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:3192
+#: ../src/views/darkroom.c:3203
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "הגבר קשיחות מברשת"
 
-#: ../src/views/darkroom.c:3193
+#: ../src/views/darkroom.c:3204
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "הקטן קשיחות מברשת"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:3196
+#: ../src/views/darkroom.c:3207
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "הגבר אטימות מברשת"
 
-#: ../src/views/darkroom.c:3197
+#: ../src/views/darkroom.c:3208
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "הקטן אטימות מברשת"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:3200
+#: ../src/views/darkroom.c:3211
 msgctxt "accel"
 msgid "full preview"
 msgstr "תצוגה מקדימה מלאה"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3203 ../src/views/lighttable.c:4419
+#: ../src/views/darkroom.c:3214 ../src/views/lighttable.c:4419
 #: ../src/views/map.c:889
 msgctxt "accel"
 msgid "undo"
 msgstr "בטל"
 
-#: ../src/views/darkroom.c:3204 ../src/views/lighttable.c:4420
+#: ../src/views/darkroom.c:3215 ../src/views/lighttable.c:4420
 #: ../src/views/map.c:890
 msgctxt "accel"
 msgid "redo"
 msgstr "שחזר"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:3207
+#: ../src/views/darkroom.c:3218
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "הרשה הזזה וזום תוך כדי עריכת מסיכות"
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:3210
+#: ../src/views/darkroom.c:3221
 msgctxt "accel"
 msgid "search modules"
 msgstr "מודולי חיפוש"
 
-#: ../src/views/darkroom.c:3309
+#: ../src/views/darkroom.c:3320
 msgid "switch to lighttable"
 msgstr "עבור לשולחן אור"
 
-#: ../src/views/darkroom.c:3314 ../src/views/lighttable.c:4566
+#: ../src/views/darkroom.c:3325 ../src/views/lighttable.c:4566
 msgid "zoom in the image"
 msgstr "הגדל את התמונה"
 
-#: ../src/views/darkroom.c:3320
+#: ../src/views/darkroom.c:3331
 msgid "unbounded zoom in the image"
 msgstr "זום לא מתוחם בתמונה"
 
-#: ../src/views/darkroom.c:3325
+#: ../src/views/darkroom.c:3336
 msgid "zoom to 100% 200% and back"
 msgstr "זום ל 100% 200% וחזרה"
 
-#: ../src/views/darkroom.c:3331
+#: ../src/views/darkroom.c:3342
 msgid "[modules] expand module without closing others"
 msgstr "[מודולים] הרחב מודולים מבלי לסגור אחרים"
 
-#: ../src/views/darkroom.c:3337
+#: ../src/views/darkroom.c:3348
 msgid "[modules] change module position in pipe"
 msgstr "[מודולים] שנה מיקום מודול בתהליך"
 
 #. workaround for GTK Quartz backend bug
-#: ../src/views/darkroom.c:4039 ../src/views/darkroom.c:4057
+#: ../src/views/darkroom.c:4050 ../src/views/darkroom.c:4068
 msgid "darktable - darkroom preview"
 msgstr "darktable - תצוגה מקדימה של חדר חושך"
 
@@ -14779,6 +14985,82 @@ msgstr "האצה"
 msgid "Action"
 msgstr "פעולה"
 
+#~ msgctxt "preferences"
+#~ msgid "import"
+#~ msgstr "ייבוא"
+
+#~ msgid "max rgb"
+#~ msgstr "max rgb"
+
+#~ msgid "average rgb"
+#~ msgstr "ממוצע rgb"
+
+#~ msgid "sum rgb"
+#~ msgstr "sum rgb"
+
+#~ msgid "norm rgb"
+#~ msgstr "norm rgb"
+
+#~ msgid "07 EV (studio)"
+#~ msgstr "07 EV (סטודיו)"
+
+#~ msgid "09 EV (indoors)"
+#~ msgstr "09 EV (בפנים)"
+
+#~ msgid "13 EV (outdoors)"
+#~ msgstr "13 EV (בחוץ)"
+
+#~ msgid "preserve chroma"
+#~ msgstr "שמר כרומה"
+
+#~ msgid "-8 EV : blacks"
+#~ msgstr "-8 EV : שחורים"
+
+#~ msgid "-7 EV : deep shadows"
+#~ msgstr "-7 EV : צללים עמוקים"
+
+#~ msgid "-6 EV : shadows"
+#~ msgstr "-6 EV : צללים"
+
+#~ msgid "-5 EV : light shadows"
+#~ msgstr "-5 EV : צללים רדודים"
+
+#~ msgid "-4 EV : midtones"
+#~ msgstr "-4 EV : טונים בינונים"
+
+#~ msgid "-3 EV : dark highlights"
+#~ msgstr "-3 EV : כהים פרטים בהירים"
+
+#~ msgid "-2 EV : highlights"
+#~ msgstr "-2 EV : בהירים"
+
+#~ msgid "-1 EV : whites"
+#~ msgstr "-1 EV : לבנים"
+
+#~ msgid "+0 EV : speculars"
+#~ msgstr "+0 EV : הברקות"
+
+#~ msgid "discard"
+#~ msgstr "השלך"
+
+#~ msgid "move"
+#~ msgstr "העבר"
+
+#~ msgid "edit"
+#~ msgstr "ערוך"
+
+#~ msgctxt "styles"
+#~ msgid "import"
+#~ msgstr "ייבא"
+
+#~ msgctxt "verb"
+#~ msgid "import"
+#~ msgstr "ייבא"
+
+#~ msgctxt "verb"
+#~ msgid "export"
+#~ msgstr "ייצא"
+
 #~ msgid "diameter of the blur in percent of the largest image size"
 #~ msgstr "קוטר הטשטוש באחוזים מהתמונה הגדולה ביותר"
 
@@ -14828,9 +15110,6 @@ msgstr "פעולה"
 
 #~ msgid "high contrast"
 #~ msgstr "ניגודיות גבוהה"
-
-#~ msgid "double click to reset curve"
-#~ msgstr "הקלקה כפולה לאתחול עקום"
 
 #~ msgid "scale chroma"
 #~ msgstr "משקל כרומה"

@@ -318,7 +318,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "speculars"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "filter diffusion"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "smoothing diameter"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "edges refinement/feathering"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "edges refinement or feathering"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mask quantization"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mask exposure compensation"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mask contrast compensation"));
@@ -339,7 +339,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "speculars", GTK_WIDGET(g->speculars));
   dt_accel_connect_slider_iop(self, "filter diffusion", GTK_WIDGET(g->iterations));
   dt_accel_connect_slider_iop(self, "smoothing diameter", GTK_WIDGET(g->blending));
-  dt_accel_connect_slider_iop(self, "edges refinement/feathering", GTK_WIDGET(g->feathering));
+  dt_accel_connect_slider_iop(self, "edges refinement or feathering", GTK_WIDGET(g->feathering));
   dt_accel_connect_slider_iop(self, "mask quantization", GTK_WIDGET(g->quantization));
   dt_accel_connect_slider_iop(self, "mask exposure compensation", GTK_WIDGET(g->exposure_boost));
   dt_accel_connect_slider_iop(self, "mask contrast compensation", GTK_WIDGET(g->contrast_boost));
@@ -1515,9 +1515,9 @@ void init(dt_iop_module_t *module)
                                                                       .method = DT_TONEEQ_NORM_2,
                                                                       .details = DT_TONEEQ_GUIDED,
                                                                       .blending = 25.0f,
-                                                                      .feathering = 25.0f,
-                                                                      .contrast_boost = 0.0f,
-                                                                      .exposure_boost = 0.0f };
+                                                                      .feathering = 10.0f,
+                                                                      .contrast_boost = 3.0f,
+                                                                      .exposure_boost = -3.0f };
   memcpy(module->params, &tmp, sizeof(dt_iop_toneequalizer_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_toneequalizer_params_t));
 }
@@ -1526,6 +1526,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 
@@ -3147,7 +3149,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(G_OBJECT(g->method), "tooltip-text", _("preview the mask and chose the estimator that gives you the\n"
                                                       "higher contrast between areas to dodge and areas to burn"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->method), "value-changed", G_CALLBACK(method_changed), self);
-  
+
 
   g->details = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(g->details, NULL, _("preserve details"));
@@ -3239,7 +3241,7 @@ void gui_init(struct dt_iop_module_t *self)
 
 
   g->show_luminance_mask = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->show_luminance_mask, NULL, _("display the exposure mask"));
+  dt_bauhaus_widget_set_label(g->show_luminance_mask, NULL, _("display exposure mask"));
   dt_bauhaus_widget_set_quad_paint(g->show_luminance_mask, dtgtk_cairo_paint_showmask,
                                    CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   dt_bauhaus_widget_set_quad_toggle(g->show_luminance_mask, TRUE);

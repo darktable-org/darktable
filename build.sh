@@ -3,7 +3,7 @@
 set -e
 
 # setup local hooks
-git config core.hooksPath .githooks
+[ -d .git ] && git config core.hooksPath .githooks
 
 DT_SRC_DIR=$(dirname "$0")
 DT_SRC_DIR=$(cd "$DT_SRC_DIR" && pwd -P)

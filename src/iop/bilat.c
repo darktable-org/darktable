@@ -394,7 +394,7 @@ void init(dt_iop_module_t *module)
   module->params_size = sizeof(dt_iop_bilat_params_t);
   module->gui_data = NULL;
   // init defaults:
-  dt_iop_bilat_params_t tmp = (dt_iop_bilat_params_t){ s_mode_local_laplacian, 1.0, 1.0, 0.2, 0.2 };
+  dt_iop_bilat_params_t tmp = (dt_iop_bilat_params_t){ s_mode_local_laplacian, 0.5, 0.5, 0.25, 0.5 };
 
   memcpy(module->params, &tmp, sizeof(dt_iop_bilat_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_bilat_params_t));
@@ -404,6 +404,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 static void spatial_callback(GtkWidget *w, dt_iop_module_t *self)
@@ -460,8 +462,8 @@ static void mode_callback(GtkWidget *w, dt_iop_module_t *self)
     gtk_widget_set_visible(g->midtone, TRUE);
     gtk_widget_set_visible(g->range, FALSE);
     gtk_widget_set_visible(g->spatial, FALSE);
-    dt_bauhaus_slider_set(g->highlights, 100.0f);
-    dt_bauhaus_slider_set(g->shadows, 100.0f);
+    dt_bauhaus_slider_set(g->highlights, 50.0f);
+    dt_bauhaus_slider_set(g->shadows, 50.0f);
   }
   else
   {
