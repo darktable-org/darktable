@@ -112,9 +112,9 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
   Cube files are supported).
 
 - Many improvements to the 'denoise (profiled)' module. The degree of shadow
-  denoising can be can be controlled, including the correction of color casts
-  (mainly improves high-ISO images). An "auto" mode was added which infers
-  some parameters from the profile used, and allows users to create presets
+  denoising can be controlled, including the correction of color casts
+  (mainly improves high-ISO images). "Auto" modes which infer some parameters
+  from the profile are available, allowing users to create presets
   which are adaptive to various ISO values. The default values of the sliders
   are also adapted dynamically on module activation, giving a good trade-off
   between noise smoothing and detail preservation.  The non-local means mode
