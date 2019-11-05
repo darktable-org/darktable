@@ -48,9 +48,9 @@ will not be possible to downgrade from 3.0 to 2.6.x any more.
 
   Note that the new GUI requires Gtk+ 3.22 or higher to work properly.
 
-- The color picker on the blend, tone curve, color zones and fill
-  light modules now allows you to select an area when enabled by
-  using <kbd>Ctrl+click</kbd> on the button.
+- The color picker on the tone curve, color zones and fill light modules,
+  as well as the parametric mask controls, now allows you to select an
+  area when enabled by using <kbd>Ctrl+click</kbd> on the button.
 
 - Added undo/redo support in lighttable for tags, color labels, ratings,
   metadata, deleted history stack, pasted history stack and applied
