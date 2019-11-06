@@ -71,6 +71,20 @@ static const char *dt_supported_extensions[] __attribute__((unused)) = {"@DT_SUP
 // the default fallback is going for version 220 anyway.
 #define CL_TARGET_OPENCL_VERSION 220
 
+/******************************************************************************
+ * OpenCL target settings
+ *****************************************************************************/
+
+// OpenCL 1.2 is the highest version supported by Nvidia drivers as of end 2019
+// we force use it because we don't have time to support every (vendor driver × OpenCL version)
+#define CL_TARGET_OPENCL_VERSION 120
+#define CL_USE_DEPRECATED_OPENCL_1_2_APIS
+#define CL_VERSION_1_2  1
+
+/******************************************************************************
+ * formerly in src/external/CL/cl.h
+ *****************************************************************************/
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
