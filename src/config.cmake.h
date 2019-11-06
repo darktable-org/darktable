@@ -68,9 +68,6 @@ static const char *dt_supported_extensions[] __attribute__((unused)) = {"@DT_SUP
 
 #cmakedefine HAVE_OMP_FIRSTPRIVATE_WITH_CONST 1
 
-// the default fallback is going for version 220 anyway.
-#define CL_TARGET_OPENCL_VERSION 220
-
 /******************************************************************************
  * OpenCL target settings
  *****************************************************************************/
