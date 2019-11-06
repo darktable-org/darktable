@@ -21,8 +21,12 @@
 
 #include "common/colorspaces_inline_conversions.h"
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #ifdef HAVE_OPENCL
-#include "CL/cl.h"           // for cl_mem
+#include <CL/cl.h>           // for cl_mem
 #endif
 
 struct dt_iop_module_t;

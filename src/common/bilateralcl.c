@@ -19,8 +19,6 @@
 #ifdef HAVE_OPENCL
 
 #include "common/bilateralcl.h"
-#include "CL/cl.h"            // for _cl_mem, cl_mem, CL_SUCCESS
-#include "CL/cl_platform.h"   // for cl_int
 #include "common/darktable.h" // for CLAMPS, dt_print, darktable, darktable_t
 #include "common/opencl.h"    // for dt_opencl_set_kernel_arg, dt_opencl_cr...
 #include <glib.h>             // for MAX
