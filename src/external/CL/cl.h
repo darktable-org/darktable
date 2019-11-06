@@ -26,21 +26,6 @@
  * MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
  ******************************************************************************/
 
-
-/******************************************************************************
- * Custom darktable stuff
- *****************************************************************************/
-
-// OpenCL 1.2 is the highest version supported by Nvidia drivers as of end 2019
-// we force use it because we don't have time to support every (vendor driver × OpenCL version)
-#define CL_TARGET_OPENCL_VERSION 120
-#define CL_USE_DEPRECATED_OPENCL_1_2_APIS
-#define CL_VERSION_1_2  1
-
-/******************************************************************************
- * End of custom darktable stuff
- *****************************************************************************/
-
 #ifndef __OPENCL_CL_H
 #define __OPENCL_CL_H
 
