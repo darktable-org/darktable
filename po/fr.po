@@ -3843,7 +3843,7 @@ msgstr "dézoom"
 #: ../src/gui/gtk.c:1291
 msgctxt "accel"
 msgid "show accels window"
-msgstr "[raccourcis] afficher la fenêtre des raccourcis"
+msgstr "afficher la fenêtre des raccourcis"
 
 #: ../src/gui/gtkentry.c:186
 msgid "$(ROLL_NAME) - roll of the input image"
