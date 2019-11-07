@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
-"PO-Revision-Date: 2019-11-07 22:05+0100\n"
+"PO-Revision-Date: 2019-11-07 22:36+0100\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
@@ -5919,7 +5919,7 @@ msgid ""
 "high dynamic range. expose for the highlights before use."
 msgstr ""
 "fondi l'immagine sovra/sottoesposta con se stessa per comprimere un'ampia "
-"gamma dinamica. esporre per le alte luci prima di utilizzarla"
+"gamma dinamica. esporre per le alteluci prima di utilizzarla"
 
 #: ../src/iop/basecurve.c:2162
 msgid "how many stops to shift the individual exposures apart"
@@ -5934,8 +5934,8 @@ msgid ""
 "whether to shift exposure up or down (-1: reduce highlight, +1: reduce "
 "shadows)"
 msgstr ""
-"decidi se spostare l'esposizione in alto o in basso (-1: riduce le alte "
-"luci, +1: riduce le ombre)"
+"decidi se spostare l'esposizione in alto o in basso (-1: riduce le alteluci, "
+"+1: riduce le ombre)"
 
 #: ../src/iop/basecurve.c:2175
 msgid "exposure bias"
@@ -6096,7 +6096,7 @@ msgstr "Alteluci"
 
 #: ../src/iop/bilat.c:553
 msgid "changes the local contrast of highlights"
-msgstr "modifica il contrasto locale delle alte luci"
+msgstr "modifica il contrasto locale delle alteluci"
 
 #: ../src/iop/bilat.c:557 ../src/iop/shadhi.c:840 ../src/iop/splittoning.c:659
 msgid "shadows"
@@ -6108,7 +6108,7 @@ msgstr "modifica il contrasto locale delle ombre"
 
 #: ../src/iop/bilat.c:563
 msgid "midtone range"
-msgstr "gamma dei mezzi-toni"
+msgstr "gamma dei mezzitoni"
 
 #: ../src/iop/bilat.c:564
 msgid ""
@@ -6116,9 +6116,9 @@ msgid ""
 "(reduce shadow and highlight contrast), increase for more powerful local "
 "contrast"
 msgstr ""
-"definisce che cosa considerare come mezzi-toni. abbassare per una miglior "
+"definisce che cosa considerare come mezzitoni. abbassare per una miglior "
 "compressione della gamma dinamica (riduce il contrasto delle ombre e delle "
-"alte luci), aumentare per un contrasto locale più forte"
+"alteluci), aumentare per un contrasto locale più forte"
 
 #: ../src/iop/bilateral.cc:69
 msgid "denoise (bilateral filter)"
@@ -8785,7 +8785,7 @@ msgstr "Intensità della grana applicata"
 
 #: ../src/iop/grain.c:644
 msgid "midtones bias"
-msgstr "imprecisione mezzi-toni"
+msgstr "imprecisione mezzitoni"
 
 #: ../src/iop/grain.c:647
 msgid ""
@@ -8793,7 +8793,7 @@ msgid ""
 "greater the bias, the more pronounced the fall off of the grain in shadows "
 "and highlights"
 msgstr ""
-"ammontare dell'imprecisione dei mezzi-toni in base alla risposta della carta "
+"ammontare dell'imprecisione dei mezzitoni in base alla risposta della carta "
 "fotografica. più elevata è l'imprecisione e più pronunciata sarà la caduta "
 "della grana nelle ombre e nelle alte-luci"
 
@@ -10655,7 +10655,7 @@ msgstr "Schiarire le ombre"
 #: ../src/iop/toneequal.c:314
 msgctxt "accel"
 msgid "midtones"
-msgstr "Mezzi-toni"
+msgstr "Mezzitoni"
 
 #: ../src/iop/toneequal.c:315
 msgctxt "accel"
@@ -14938,7 +14938,7 @@ msgstr "Azioni mouse"
 
 #: ../src/views/view.c:2413
 msgid "Accel"
-msgstr "Accel"
+msgstr "Scorciatoia"
 
 #: ../src/views/view.c:2415
 msgid "Action"
