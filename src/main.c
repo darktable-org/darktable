@@ -84,9 +84,10 @@ int main(int argc, char *argv[])
     printf("start: %s\n", datetime);
     printf("\n");
 
-    // make sure GTK client side decoration is disabled, otherwise windows resizing issues can be oberved
-    g_setenv("GTK_CSD", "0", TRUE);
   }
+
+  // make sure GTK client side decoration is disabled, otherwise windows resizing issues can be observed
+  g_setenv("GTK_CSD", "0", TRUE);
 #endif
 
   if(dt_init(argc, argv, TRUE, TRUE, NULL)) exit(1);
