@@ -532,7 +532,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->mode, s_mode_local_laplacian);
   gtk_widget_set_tooltip_text(g->mode, _("the filter used for local contrast enhancement. bilateral is faster but can lead to artifacts around edges for extreme settings."));
 
-  g->detail = dt_bauhaus_slider_new_with_range(self, 0.0, 500.0, 1.0, 120.0, 0);
+  g->detail = dt_bauhaus_slider_new_with_range(self, 0.0, 500.0, 1.0, 125.0, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->detail, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->detail, NULL, _("detail"));
   dt_bauhaus_slider_set_format(g->detail, "%.0f%%");
@@ -548,19 +548,19 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->range, NULL, _("contrast"));
   gtk_widget_set_tooltip_text(g->range, _("L difference to detect edges (range sigma of bilateral filter)"));
 
-  g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 1.0, 100.0, 0);
+  g->highlights = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 1.0, 50.0, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->highlights, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->highlights, NULL, _("highlights"));
   dt_bauhaus_slider_set_format(g->highlights, "%.0f%%");
   gtk_widget_set_tooltip_text(g->highlights, _("changes the local contrast of highlights"));
 
-  g->shadows = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 1.0, 100.0, 0);
+  g->shadows = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 1.0, 50.0, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->shadows, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->shadows, NULL, _("shadows"));
   gtk_widget_set_tooltip_text(g->shadows, _("changes the local contrast of shadows"));
   dt_bauhaus_slider_set_format(g->shadows, "%.0f%%");
 
-  g->midtone = dt_bauhaus_slider_new_with_range(self, 0.001, 1.0, 0.001, 0.2, 3);
+  g->midtone = dt_bauhaus_slider_new_with_range(self, 0.001, 1.0, 0.001, 0.5, 3);
   gtk_box_pack_start(GTK_BOX(self->widget), g->midtone, TRUE, TRUE, 0);
   dt_bauhaus_widget_set_label(g->midtone, NULL, _("midtone range"));
   gtk_widget_set_tooltip_text(g->midtone, _("defines what counts as midtones. lower for better dynamic range compression (reduce shadow and highlight contrast), increase for more powerful local contrast"));
