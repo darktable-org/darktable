@@ -73,10 +73,10 @@ colorspaces_transform_rgb_matrix_to_rgb(read_only image2d_t in, write_only image
 
   float4 xyz, linear_rgb;
 
-  linear_rgb = pixel; //apply_trc_in(pixel, profile_info_from, lut_from);
+  linear_rgb = apply_trc_in(pixel, profile_info_from, lut_from);
   xyz = matrix_product(linear_rgb, profile_info_from->matrix_in);
   linear_rgb = matrix_product(xyz, profile_info_to->matrix_out);
-  pixel.xyz = linear_rgb.xyz; //apply_trc_out(linear_rgb, profile_info_to, lut_to).xyz;
+  pixel.xyz = apply_trc_out(linear_rgb, profile_info_to, lut_to).xyz;
 
   write_imagef(out, (int2)(x, y), pixel);
 }
