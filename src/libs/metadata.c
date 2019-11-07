@@ -320,7 +320,7 @@ void connect_key_accels(dt_lib_module_t *self)
 
 void gui_init(dt_lib_module_t *self)
 {
-  GtkBox *hbox;
+  GtkGrid *grid;
   GtkWidget *button;
   GtkWidget *label;
   GtkEntryCompletion *completion;
@@ -379,25 +379,24 @@ void gui_init(dt_lib_module_t *self)
     gtk_grid_attach_next_to(GTK_GRID(self->widget), combobox, label, GTK_POS_RIGHT, 1, 1);
   }
 
-  // reset/apply buttons
-  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  // clear/apply buttons
+
+  grid = GTK_GRID(gtk_grid_new());
+  gtk_grid_set_column_homogeneous(grid, TRUE);
 
   button = gtk_button_new_with_label(_("clear"));
   d->clear_button = button;
-  gtk_widget_set_hexpand(GTK_WIDGET(button), TRUE);
   gtk_widget_set_tooltip_text(button, _("remove metadata from selected images"));
+  gtk_grid_attach(grid, button, 0, 0, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(clear_button_clicked), (gpointer)self);
-  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
 
   button = gtk_button_new_with_label(_("apply"));
   d->apply_button = button;
-  gtk_widget_set_hexpand(GTK_WIDGET(button), TRUE);
   gtk_widget_set_tooltip_text(button, _("write metadata for selected images"));
+  gtk_grid_attach(grid, button, 1, 0, 1, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(apply_button_clicked), (gpointer)self);
-  gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
-  gtk_widget_set_margin_top(GTK_WIDGET(hbox), 0);
 
-  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(hbox), 0, line, 2, 1);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(grid), 0, line, 2, 1);
 
   /* lets signup for mouse over image change signals */
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
