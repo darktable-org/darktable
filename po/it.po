@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
-"PO-Revision-Date: 2019-11-07 22:36+0100\n"
+"PO-Revision-Date: 2019-11-07 22:49+0100\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
@@ -662,7 +662,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3266
 msgid "mouse wheel scrolls modules side panel by default"
-msgstr ""
+msgstr "La rotella del mouse scorre i moduli all'interno dei pannelli laterali"
 
 #: ../build/src/preferences_gen.h:3278
 msgid ""
@@ -12916,7 +12916,7 @@ msgstr "Esporta altezza"
 
 #: ../src/libs/metadata_view.c:129
 msgid "copyright"
-msgstr "Diritti d'autore"
+msgstr "Copyright"
 
 #: ../src/libs/metadata_view.c:133
 msgid "longitude"
@@ -14296,7 +14296,7 @@ msgstr "Accesso rapido all'applicazione degli stili"
 
 #: ../src/views/darkroom.c:1803
 msgid "display a second darkroom image window"
-msgstr ""
+msgstr "Visualizza una seconda finestra in Camera Oscura"
 
 #: ../src/views/darkroom.c:1815
 msgid ""
@@ -14597,11 +14597,11 @@ msgstr "Ingrandisci del 100%, 200% e ritorna"
 
 #: ../src/views/darkroom.c:3342
 msgid "[modules] expand module without closing others"
-msgstr ""
+msgstr "[moduli] espandi il modulo senza chiudere gli altri"
 
 #: ../src/views/darkroom.c:3348
 msgid "[modules] change module position in pipe"
-msgstr ""
+msgstr "[moduli] cambia la posizione del modulo nel flusso di sviluppo"
 
 #. workaround for GTK Quartz backend bug
 #: ../src/views/darkroom.c:4050 ../src/views/darkroom.c:4068
@@ -14610,7 +14610,7 @@ msgstr "darktable - anteprima Camera Oscura"
 
 #: ../src/views/knight.c:334
 msgid "good knight"
-msgstr "Buona notte"
+msgstr "Buona cavaliere"
 
 #: ../src/views/lighttable.c:1108 ../src/views/slideshow.c:352
 msgid "there are no images in this collection"
@@ -14927,6 +14927,8 @@ msgstr "darktable - finestra scorciatoie"
 #: ../src/views/view.c:2247
 msgid "switch to a classic window which will stay open after key release."
 msgstr ""
+"Passa ad una finestra classica che rimane aperta dopo che il tasto è stato "
+"rilasciato."
 
 #: ../src/views/view.c:2360
 msgid "+Scroll"
