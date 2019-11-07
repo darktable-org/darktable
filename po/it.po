@@ -6280,7 +6280,7 @@ msgid ""
 "shadows)"
 msgstr ""
 "Decidi se spostare l'esposizione in alto o in basso (-1: riduce le alteluci, "
-"luci, +1: riduce le ombre)"
+"+1: riduce le ombre)"
 
 #: ../src/iop/basecurve.c:2175
 msgid "exposure bias"
@@ -12020,7 +12020,6 @@ msgstr "Schiarire le ombre"
 #: ../src/iop/toneequal.c:314
 msgctxt "accel"
 msgid "midtones"
-msgstr "Mezzi-toni"
 
 #: ../src/iop/toneequal.c:315
 msgctxt "accel"
