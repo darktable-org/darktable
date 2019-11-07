@@ -1224,21 +1224,15 @@ msgstr ""
 "configurazione); GPUs multiple - processa tutti i flussi di sviluppo "
 "(pixelpipe) in parallelo su due GPU differenti; GPU molto veloce - processa "
 "tutti i flussi di sviluppo (pixelpipe) sequenzialmente sulla GPU "
-#, fuzzy
-#| msgid ""
-#| "when exporting images the hierarchical tags are also added as a simple "
-#| "list of non-hierarchical ones to make them visible to some other "
-#| "programs. when this option is checked darktable will only include their "
-#| "last part and ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 "of non-hierarchical ones to make them visible to some other programs. when "
 "this option is checked darktable will only include their last part and "
 "ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgstr ""
-"quando si esportano delle immagini le etichette gerarchiche vengono aggiunte "
-"come una lista di etichette non-gerarchiche per renderle visibili ad altri "
-"programmi. quando questa opzione è abilitata darktable includerà solo "
-"l'ultima parte e ignorerà il resto. in questo modo 'foo|bar|baz' diventerà "
-"solamente 'bar'."
+"Quando si crea il file XMP le etichette gerarchiche vengono aggiunte come "
+"una lista di etichette non-gerarchiche per renderle visibili ad altri "
+"programmi. Quando questa opzione è abilitata darktable includerà solo "
+"l'ultima parte e ignorerà il resto. In questo modo 'foo|bar|baz' diventerà "
+"solamente 'baz'."
 #: ../build/src/preferences_gen.h:4000
 msgid "omit hierarchy in simple tag lists"
 msgstr "Nasconde la gerarchia e visualizza una lista di etichette"
@@ -1311,7 +1305,6 @@ msgstr ""
 #: ../build/src/preferences_gen.h:4118
 msgid "3D lut root folder"
 msgstr "Cartella radice 3D lut"
-msgstr "Sposta in un'altra cartella"
 
 #: ../build/src/preferences_gen.h:4123 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/preferences.c:1616
@@ -5125,7 +5118,7 @@ msgstr[1] "%d/%d saltando `%s'"
 
 #: ../src/imageio/storage/disk.c:337 ../src/imageio/storage/email.c:143
 #: ../src/imageio/storage/gallery.c:398 ../src/imageio/storage/latex.c:362
-#, fuzzy, c-format
+#, c-format
 msgid "%d/%d exported to `%s'"
 msgid_plural "%d/%d exported to `%s'"
 
@@ -5424,7 +5417,6 @@ msgstr "Inserisci il titolo del sito web"
 
 #. //////////// build & show the validation dialog
 #: ../src/imageio/storage/googlephoto.c:762
-#, fuzzy
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your google account there and authorize darktable to "
@@ -5573,9 +5565,8 @@ msgid "not authenticated, cannot reach server"
 msgstr "Non autenticato, server non raggiungibile"
 
 #: ../src/imageio/storage/piwigo.c:589
-#, fuzzy
 msgid "---"
-msgstr "(---)"
+msgstr "---"
 
 #: ../src/imageio/storage/piwigo.c:630
 msgid "cannot refresh albums"
@@ -5625,9 +5616,8 @@ msgid "album"
 msgstr "album"
 
 #: ../src/imageio/storage/piwigo.c:863
-#, fuzzy
 msgid "new album"
-msgstr "mon nouvel album"
+msgstr "Nuovo album"
 
 #. parent album list
 #. Available albums
@@ -5645,11 +5635,11 @@ msgstr "Impossibile caricare su piwigo!"
 
 #. this makes sense only if the export was successful
 #: ../src/imageio/storage/piwigo.c:1026
-#, fuzzy, c-format
+#, c-format
 msgid "%d/%d exported to piwigo webalbum"
 msgid_plural "%d/%d exported to piwigo webalbum"
-msgstr[0] "%d/%d exportée(s) vers picasa web"
-msgstr[1] "%d/%d exportée(s) vers picasa web"
+msgstr[0] "%d/%d esportato in Piwigo"
+msgstr[1] "%d/%d esportati in Piwigo"
 
 #: ../src/iop/ashift.c:112
 msgid "perspective correction"
@@ -8314,7 +8304,7 @@ msgstr "Correzione distorsione"
 
 #: ../src/iop/denoiseprofile.c:4071
 msgid "bias correction"
-msgstr "Correzione obiettivo"
+msgstr "Correzione distorsione"
 
 #: ../src/iop/denoiseprofile.c:4071
 msgid "non-local means"
@@ -9124,9 +9114,8 @@ msgid "read-only graph, use the parameters below to set the nodes"
 msgstr ""
 
 #: ../src/iop/filmic.c:1683
-#, fuzzy
 msgid "logarithmic shaper"
-msgstr "Logaritmica"
+msgstr "Curva logaritmica"
 
 #: ../src/iop/filmic.c:1688 ../src/iop/filmicrgb.c:1443
 msgid "middle grey luminance"
@@ -9139,9 +9128,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/filmic.c:1701 ../src/iop/filmicrgb.c:1457
-#, fuzzy
 msgid "white relative exposure"
-msgstr "tre esposizioni"
+msgstr "Esposizione bianco relativo"
 
 #: ../src/iop/filmic.c:1704 ../src/iop/filmicrgb.c:1460
 msgid ""
@@ -9155,9 +9143,8 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1715 ../src/iop/filmicrgb.c:1471
 #: ../src/iop/profile_gamma.c:908
-#, fuzzy
 msgid "black relative exposure"
-msgstr "tre esposizioni"
+msgstr "Esposizione nero relativo"
 
 #: ../src/iop/filmic.c:1718 ../src/iop/filmicrgb.c:1474
 msgid ""
@@ -9172,9 +9159,8 @@ msgstr ""
 "Diminuisci per recuperare dettaglio nelle zone d'ombra."
 
 #: ../src/iop/filmic.c:1728 ../src/iop/profile_gamma.c:932
-#, fuzzy
 msgid "safety factor"
-msgstr "Fattore di scala"
+msgstr "Fattore di sicurezza"
 
 #: ../src/iop/filmic.c:1731
 msgid ""
@@ -9184,9 +9170,8 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1737 ../src/iop/filmicrgb.c:1494
 #: ../src/iop/profile_gamma.c:940
-#, fuzzy
 msgid "auto tune levels"
-msgstr "Applica livelli automatici"
+msgstr "Regola automaticamente i livelli"
 
 #: ../src/iop/filmic.c:1742
 msgid ""
@@ -9197,9 +9182,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/filmic.c:1747
-#, fuzzy
 msgid "filmic S curve"
-msgstr "Clic per aggiungere una curva"
+msgstr "Curva ad S di filmic"
 
 #: ../src/iop/filmic.c:1754 ../src/iop/filmicrgb.c:1513
 msgid ""
@@ -9221,9 +9205,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/filmic.c:1771 ../src/iop/filmicrgb.c:1532
-#, fuzzy
 msgid "shadows/highlights balance"
-msgstr "Ombre e alteluci"
+msgstr "Bilanciamento ombre/luci"
 
 #: ../src/iop/filmic.c:1774 ../src/iop/filmicrgb.c:1535
 msgid ""
@@ -9234,9 +9217,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/filmic.c:1780
-#, fuzzy
 msgid "global saturation"
-msgstr "Imposta la saturazione globale"
+msgstr "Saturazione globale"
 
 #: ../src/iop/filmic.c:1784
 msgid ""
@@ -9246,9 +9228,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/filmic.c:1790 ../src/iop/filmicrgb.c:1543
-#, fuzzy
 msgid "extreme luminance saturation"
-msgstr "Imposta la saturazione globale"
+msgstr "Saturazione alte-luci"
 
 #: ../src/iop/filmic.c:1794
 msgid ""
@@ -9263,9 +9244,8 @@ msgid "intent"
 msgstr "Intento"
 
 #: ../src/iop/filmic.c:1805
-#, fuzzy
 msgid "contrasted"
-msgstr "Contrasto"
+msgstr "Contrastato"
 
 #. cubic spline
 #: ../src/iop/filmic.c:1806
@@ -9294,9 +9274,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/filmic.c:1826
-#, fuzzy
 msgid "destination/display"
-msgstr "Destinazione"
+msgstr "Destinazione/schermo"
 
 #: ../src/iop/filmic.c:1842 ../src/iop/filmicrgb.c:1568
 msgid "target black luminance"
@@ -9309,9 +9288,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/filmic.c:1851 ../src/iop/filmicrgb.c:1577
-#, fuzzy
 msgid "target middle grey"
-msgstr "Livello target"
+msgstr "Obiettivo grigio medio"
 
 #: ../src/iop/filmic.c:1854 ../src/iop/filmicrgb.c:1580
 msgid ""
@@ -9320,9 +9298,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/filmic.c:1860 ../src/iop/filmicrgb.c:1586
-#, fuzzy
 msgid "target white luminance"
-msgstr "boîtier"
+msgstr "Imposta luminanza del bianco"
 
 #: ../src/iop/filmic.c:1863 ../src/iop/filmicrgb.c:1589
 msgid ""
@@ -9331,9 +9308,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/filmic.c:1869
-#, fuzzy
 msgid "target gamma"
-msgstr "Geometria di destinazione"
+msgstr "Obiettivo gamma"
 
 #: ../src/iop/filmic.c:1871 ../src/iop/filmicrgb.c:1597
 msgid ""
@@ -9343,66 +9319,52 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/filmicrgb.c:192
-#, fuzzy
 msgid "filmic rgb"
-msgstr "Provino"
+msgstr "filmic RGB"
 
 #: ../src/iop/filmicrgb.c:233
-#, fuzzy
 msgid "07 EV dynamic range"
-msgstr "gamma dei mezzi-toni"
+msgstr "Gamma dinamica 07 EV"
 
 #: ../src/iop/filmicrgb.c:239
-#, fuzzy
 msgid "09 EV dynamic range"
-msgstr "gamma dei mezzi-toni"
+msgstr "Gamma dinamica 09 EV"
 
 #: ../src/iop/filmicrgb.c:245
-#, fuzzy
 msgid "11 EV dynamic range"
-msgstr "gamma dei mezzi-toni"
+msgstr "Gamma dinamica 11 EV"
 
 #: ../src/iop/filmicrgb.c:251
-#, fuzzy
 msgid "13 EV dynamic range"
-msgstr "gamma dei mezzi-toni"
+msgstr "Gamma dinamica 13 EV"
 
 #: ../src/iop/filmicrgb.c:257
-#, fuzzy
-#| msgid "14 EV (backlighting)"
 msgid "15 EV (backlighting)"
-msgstr "14 EV (retroilluminazione)"
+msgstr "15 EV (retroilluminazione)"
 
 #: ../src/iop/filmicrgb.c:263
-#, fuzzy
-#| msgid "16 EV (HDR)"
 msgid "17 EV (HDR)"
-msgstr "16 EV (HDR)"
+msgstr "17 EV (HDR)"
 
 #: ../src/iop/filmicrgb.c:268
-#, fuzzy
-#| msgid "three exposures"
 msgctxt "accel"
 msgid "white exposure"
-msgstr "tre esposizioni"
+msgstr "Esposizione del bianco"
 
 #: ../src/iop/filmicrgb.c:269
-#, fuzzy
 msgctxt "accel"
 msgid "black exposure"
-msgstr "tre esposizioni"
+msgstr "Esposizione del nero"
 
 #: ../src/iop/filmicrgb.c:270
-#, fuzzy
 msgctxt "accel"
 msgid "middle grey luminance"
-msgstr "Regolazione luminosità"
+msgstr "Luminanza grigio medio"
 
 #: ../src/iop/filmicrgb.c:271
-#, fuzzy
 msgctxt "accel"
 msgid "dynamic range scaling"
-msgstr "gamma dei mezzi-toni"
+msgstr "Scala gamma dinamica"
 
 #: ../src/iop/filmicrgb.c:273
 msgctxt "accel"
@@ -9415,10 +9377,9 @@ msgid "shadows/highlights balance"
 msgstr "Bilanciamento ombre e alteluci"
 
 #: ../src/iop/filmicrgb.c:275
-#, fuzzy
 msgctxt "accel"
 msgid "extreme luminance saturation"
-msgstr "Imposta la saturazione globale"
+msgstr "Saturazione alte-luci"
 
 #: ../src/iop/filmicrgb.c:1418
 msgid ""
@@ -9436,9 +9397,8 @@ msgid "look"
 msgstr ""
 
 #: ../src/iop/filmicrgb.c:1432
-#, fuzzy
 msgid "display"
-msgstr "affiche le masque"
+msgstr "Visualizza"
 
 #: ../src/iop/filmicrgb.c:1446
 msgid ""
@@ -9448,9 +9408,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/filmicrgb.c:1485
-#, fuzzy
 msgid "dynamic range scaling"
-msgstr "gamma dei mezzi-toni"
+msgstr "Scala gamma dinamica"
 
 #: ../src/iop/filmicrgb.c:1488
 msgid ""
@@ -9958,7 +9917,7 @@ msgid "try to locate your camera/lens in the above two menus"
 msgstr "Trova la tua fotocamera/obiettivo nei due menu soprastanti"
 
 #: ../src/iop/lens.cc:1902
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "maker:\t\t%s\n"
 "model:\t\t%s\n"
@@ -10682,7 +10641,7 @@ msgstr "Metodo mappatura dei toni"
 
 #: ../src/iop/profile_gamma.c:876
 msgid "tone mapping method"
-msgstr "Mappatura dei toni"
+msgstr "Metodo mappatura dei toni"
 
 #: ../src/iop/profile_gamma.c:876
 msgid "linear part"
@@ -11208,7 +11167,7 @@ msgid ""
 
 #: ../src/iop/rotatepixels.c:76
 msgid "curve nodes for b channel"
-msgstr "Curva tono per canale b"
+msgstr "Nodi curva per canale b"
 
 #: ../src/iop/rgbcurve.c:1557
 msgid "pick GUI color from image"
@@ -11219,9 +11178,8 @@ msgid "compensate middle grey"
 msgstr "Compensa il grigio intermedio"
 
 #: ../src/iop/rgblevels.c:108
-#, fuzzy
 msgid "rgb levels"
-msgstr "Livelli"
+msgstr "Livelli rgb"
 
 #: ../src/iop/rgblevels.c:1094
 msgid ""
@@ -11602,7 +11560,6 @@ msgstr "Spazio colore"
 #: ../src/iop/tonecurve.c:1309
 msgid "Lab, linked channels"
 msgstr "Lab, canali collegati"
-msgstr "canale Lab L"
 
 #: ../src/iop/tonecurve.c:1310
 msgid "Lab, independent channels"
@@ -12042,22 +11999,15 @@ msgid "display exposure mask"
 msgstr "Visualizza esposizione maschera"
 
 #: ../src/iop/toneequal.c:290
-#, fuzzy
-#| msgid "equalizer"
 msgid "tone equalizer"
-msgstr "Equalizzatore"
+msgstr "Equalizzatore tono"
 
 #: ../src/iop/toneequal.c:310
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "black"
 msgctxt "accel"
 msgid "blacks"
-msgstr "Nero "
+msgstr "Neri"
 
 #: ../src/iop/toneequal.c:311
-#, fuzzy
-#| msgid "shadows"
 msgctxt "accel"
 msgid "deep shadows"
 msgstr "Ombre"
@@ -12073,18 +12023,14 @@ msgid "midtones"
 msgstr "Mezzi-toni"
 
 #: ../src/iop/toneequal.c:315
-#, fuzzy
-#| msgid "highlights"
 msgctxt "accel"
 msgid "dark highlights"
-msgstr "Alteluci"
+msgstr "Alteluci scure"
 
 #: ../src/iop/toneequal.c:317
-#, fuzzy
-#| msgid "white"
 msgctxt "accel"
 msgid "whites"
-msgstr "Bianco"
+msgstr "Bianchi"
 
 #: ../src/iop/toneequal.c:318
 msgctxt "accel"
@@ -12097,11 +12043,9 @@ msgid "filter diffusion"
 msgstr "Filtro di diffusione"
 
 #: ../src/iop/toneequal.c:320
-#, fuzzy
-#| msgid "cooling filter"
 msgctxt "accel"
 msgid "smoothing diameter"
-msgstr "Filtro di rafreddamento"
+msgstr "Diametro omogeinizzazione"
 
 #: ../src/iop/toneequal.c:321
 msgctxt "accel"
@@ -12109,32 +12053,24 @@ msgid "edges refinement/feathering"
 msgstr "rifinitura bordi/sfumatura"
 
 #: ../src/iop/toneequal.c:322
-#, fuzzy
-#| msgid "picasa authentication"
 msgctxt "accel"
 msgid "mask quantization"
-msgstr "authentification picasa"
+msgstr ""
 
 #: ../src/iop/toneequal.c:323
-#, fuzzy
-#| msgid "black point compensation"
 msgctxt "accel"
 msgid "mask exposure compensation"
-msgstr "Compensazione del punto di nero"
+msgstr "Compensazione esposizione maschera"
 
 #: ../src/iop/toneequal.c:324
-#, fuzzy
-#| msgid "contrast compression"
 msgctxt "accel"
 msgid "mask contrast compensation"
-msgstr "Compressione contrasto"
+msgstr "Compensazione contrasto maschera"
 
 #. No blending
 #: ../src/iop/toneequal.c:416
-#, fuzzy
-#| msgid "choose blending mode"
 msgid "mask blending : none"
-msgstr "Seleziona il metodo di fusione"
+msgstr "Fusione maschera: nessuna"
 
 #: ../src/iop/toneequal.c:428
 msgid "mask blending : landscapes"
@@ -12149,19 +12085,12 @@ msgid "mask blending : isolated subjects"
 msgstr "Fusione maschera: soggetti isolati"
 
 #: ../src/iop/toneequal.c:465
-#, fuzzy
 msgid "compress shadows/highlights : soft"
-msgstr "Ombre e alteluci"
+msgstr "Compressione ombre/alteluci: leggera"
 
 #: ../src/iop/toneequal.c:484
-#, fuzzy
-#| msgid ""
-#| "compress the effect on shadows/highlights and\n"
-#| "preserve midtones"
 msgid "compress shadows/highlights : strong"
-msgstr ""
-"Comprimi l'effetto su alteluci/ombre e\n"
-"preserva i toni medi"
+msgstr "Compressione ombre/alteluci: forte"
 
 #: ../src/iop/toneequal.c:503
 msgid "relight : fill-in"
@@ -12203,23 +12132,16 @@ msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
 #: ../src/iop/toneequal.c:3039
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "add sample"
 msgid "simple"
-msgstr "Aggiungi campione"
+msgstr "Semplice"
 
 #: ../src/iop/toneequal.c:3040
-#, fuzzy
-#| msgid "balance"
 msgid "advanced"
-msgstr "Bilanciamento"
+msgstr "Avanzato"
 
 #: ../src/iop/toneequal.c:3041
-#, fuzzy
-#| msgid "masks"
 msgid "masking"
-msgstr "masques"
+msgstr "Applica maschera"
 
 #: ../src/iop/toneequal.c:3054 ../src/iop/toneequal.c:3060
 #: ../src/iop/toneequal.c:3066 ../src/iop/toneequal.c:3072
@@ -12267,16 +12189,12 @@ msgid "+0 EV"
 msgstr "+0 EV"
 
 #: ../src/iop/toneequal.c:3121
-#, fuzzy
-#| msgid "double click to reset curve"
 msgid "double-click to reset the curve"
 msgstr "Doppio click per ripristinare la curva"
 
 #: ../src/iop/toneequal.c:3128
-#, fuzzy
-#| msgid "color smoothing"
 msgid "curve smoothing"
-msgstr "Sfumatura colore"
+msgstr "Addolcire la curva"
 
 #: ../src/iop/toneequal.c:3129
 msgid ""
@@ -12287,9 +12205,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/toneequal.c:3138
-#, fuzzy
 msgid "luminance estimator"
-msgstr "Dominanza colore"
+msgstr "Stima la luminanza"
 
 #: ../src/iop/toneequal.c:3140
 msgid "RGB average"
@@ -12322,21 +12239,16 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/toneequal.c:3153
-#, fuzzy
 msgid "preserve details"
-msgstr "Colore bordo"
+msgstr "Conserva i dettagli"
 
 #: ../src/iop/toneequal.c:3156
-#, fuzzy
-#| msgid "red filter"
 msgid "averaged guided filter"
-msgstr "Filtro rosso"
+msgstr "Media filtro guidato"
 
 #: ../src/iop/toneequal.c:3157
-#, fuzzy
-#| msgid "red filter"
 msgid "guided filter"
-msgstr "Filtro rosso"
+msgstr "Filtro guidato"
 
 #: ../src/iop/toneequal.c:3158
 msgid ""
@@ -12357,10 +12269,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/toneequal.c:3174
-#, fuzzy
-#| msgid "cooling filter"
 msgid "smoothing diameter"
-msgstr "Filtro di rafreddamento"
+msgstr "Diametro omogeinizzazione"
 
 #: ../src/iop/toneequal.c:3175
 msgid ""
@@ -12394,10 +12304,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/toneequal.c:3203
-#, fuzzy
-#| msgid "picasa authentication"
 msgid "mask quantization"
-msgstr "authentification picasa"
+msgstr ""
 
 #: ../src/iop/toneequal.c:3205
 msgid ""
@@ -12407,10 +12315,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/toneequal.c:3213
-#, fuzzy
-#| msgid "black point compensation"
 msgid "mask exposure compensation"
-msgstr "Compensazione del punto di nero"
+msgstr "Compensazione esposizione maschera"
 
 #: ../src/iop/toneequal.c:3215
 msgid ""
@@ -12420,10 +12326,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/toneequal.c:3227
-#, fuzzy
-#| msgid "contrast compression"
 msgid "mask contrast compensation"
-msgstr "Compressione contrasto"
+msgstr "Compensazione contrasto maschera"
 
 #: ../src/iop/toneequal.c:3229
 msgid ""
@@ -12434,9 +12338,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/toneequal.c:3242 ../src/iop/toneequal.c:3246
-#, fuzzy
 msgid "display exposure mask"
-msgstr "affiche le masque"
+msgstr "Visualizza esposizione maschera"
 
 #: ../src/iop/tonemap.cc:73
 msgid "tone mapping"
@@ -13319,7 +13222,7 @@ msgstr "Crea duplicato dell'immagine con la medesima coda di sviluppo"
 
 #: ../src/libs/export.c:71
 msgid "create a duplicate of the image with same history stack"
-msgstr "Crea duplicato dell'immagine prima di applicare lo stile"
+msgstr "Crea duplicato dell'immagine con la medesima coda di sviluppo"
 
 #: ../src/libs/export.c:71
 msgid "export selected"
@@ -13616,10 +13519,8 @@ msgid "add an output metadata tag"
 msgstr ""
 
 #: ../src/libs/export_metadata.c:383
-#, fuzzy
-#| msgid "delete selected tag"
 msgid "delete metadata tag"
-msgstr "Elimina l'etichetta selezionata"
+msgstr "Elimina metadati etichetta"
 
 #: ../src/libs/geotagging.c:411
 msgid ""
@@ -14439,7 +14340,7 @@ msgstr "Esporta altezza"
 
 #: ../src/libs/metadata_view.c:129
 msgid "copyright"
-msgstr "Copyright"
+msgstr "Diritti d'autore"
 
 #: ../src/libs/metadata_view.c:133
 msgid "longitude"
@@ -14739,9 +14640,8 @@ msgid "processing `%s' for `%s'"
 msgstr "Processo '%s' per '%s'"
 
 #: ../src/libs/print_settings.c:279
-#, fuzzy, c-format
 msgid "processing `%s' for `%s'"
-msgstr "Modifica '%s' per il modulo '%s'"
+msgstr "Processo '%s' per '%s'"
 
 #: ../src/libs/print_settings.c:279
 #, c-format
@@ -15080,7 +14980,7 @@ msgstr "Crea uno stile dalla coda di sviluppo delle immagini selezionate"
 msgid "edit..."
 msgstr "Modifica..."
 msgid "edit..."
-msgstr "Modifica il Tag..."
+msgstr "Modifica..."
 
 #: ../src/libs/styles.c:454
 msgid "edit the selected style in list above"
@@ -15170,7 +15070,6 @@ msgid "tag %s removed"
 msgstr "Etichetta %s rimossa"
 
 #: ../src/libs/tagging.c:1259 ../src/libs/tagging.c:1924
-#, fuzzy
 msgid "delete branch"
 
 #: ../src/libs/tagging.c:1259 ../src/libs/tagging.c:1924
@@ -15324,9 +15223,8 @@ msgid "(private)"
 msgstr "(Privato)"
 
 #: ../src/libs/tagging.c:2123
-#, fuzzy
 msgid "(private)"
-msgstr "privé"
+msgstr "(privato)"
 
 #: ../src/libs/tagging.c:2123
 msgid "Select a keyword file"
@@ -15440,8 +15338,6 @@ msgid "import tags from a Lightroom keyword file"
 msgstr "Importa tags da un keyword file di Lightroom"
 
 #: ../src/libs/tagging.c:2698
-#, fuzzy
-#| msgid "export"
 msgctxt "verb"
 msgid "export..."
 msgstr "Esporta..."
@@ -15732,7 +15628,7 @@ msgstr "Suggerimento"
 msgid "image infos"
 msgstr "Informazioni immagine"
 msgid "image infos"
-msgstr "Suggerimento immagine"
+msgstr "Informazioni immagine"
 
 #: ../src/libs/tools/lighttable.c:140
 msgid "zoomable light table"
@@ -15766,7 +15662,6 @@ msgid "zoom min"
 msgstr "Ingrandimento minimo"
 
 #: ../src/libs/tools/lighttable.c:217
-#, fuzzy
 msgctxt "accel"
 msgid "toggle culling mode"
 msgstr "Attiva la modalità selezione"
@@ -16187,7 +16082,7 @@ msgid "darktable - darkroom preview"
 msgstr "darktable - Anteprima Camera Oscura"
 
 msgid "darktable - darkroom preview"
-msgstr "darktable - errore nell'apertura del database"
+msgstr "darktable - anteprima Camera Oscura"
 
 #: ../src/views/knight.c:334
 msgid "good knight"
@@ -16390,12 +16285,10 @@ msgid "pan inside the main view"
 msgstr "Scorri all'interno della vista principale"
 
 #: ../src/views/lighttable.c:4851
-msgstr "analyser les lignes de structure dans l'image"
 
 #: ../src/views/lighttable.c:4625
-#, fuzzy
 msgid "zoom the main view"
-msgstr "Zoom visione reale"
+msgstr "Ingrandisci la vista principale"
 
 #: ../src/views/lighttable.c:4630
 msgid "pan inside the main view"
@@ -16483,7 +16376,6 @@ msgstr "Non è disponibile nessuna fotocamera supportata per il tethering ..."
 #: ../src/views/view.c:2143
 msgid "Left click"
 msgstr "Click sinistro"
-msgstr "deflicker"
 
 #: ../src/views/view.c:2146
 msgid "Right click"
