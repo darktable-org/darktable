@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
     printf("\n");
 
     // make sure GTK client side decoration is disabled, otherwise windows resizing issues can be oberved
-    putenv("GTK_CSD=0");
+    g_setenv("GTK_CSD", "0", TRUE);
   }
 #endif
 
