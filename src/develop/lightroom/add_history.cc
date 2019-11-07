@@ -75,4 +75,24 @@ void add_history(int imgid, dt_develop_t const *dev, std::string const &operatio
   sqlite3_finalize(stmt);
 }
 
+void remove_history(int imgid, std::string const &operation_name)
+{
+  sqlite3_stmt *stmt;
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "DELETE FROM main.history WHERE imgid = ?1 AND operation = ?2", -1, &stmt, nullptr);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, operation_name.c_str(), operation_name.length(), SQLITE_TRANSIENT);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
+  // also bump history_end
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.images SET history_end = (SELECT IFNULL(MAX(num) + 1, 0) FROM "
+                              "main.history WHERE imgid = ?1) WHERE id = ?1",
+                              -1, &stmt, nullptr);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
+
 }

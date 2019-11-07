@@ -14,4 +14,6 @@ namespace lightroom
 void add_history(int imgid, dt_develop_t const *dev, std::string const &operation_name, int version,
                  void const *params, int params_size);
 
+void remove_history(int imgid, std::string const &operation_name);
+
 }

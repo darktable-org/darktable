@@ -51,6 +51,8 @@ bool FlipIop::apply(int imgid) const
 {
   if(!dev()) return false;
 
+  remove_history(imgid, operation_name());
+
   struct params_t
   {
     dt_image_orientation_t orientation;
