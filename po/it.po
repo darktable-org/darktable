@@ -6,7 +6,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
 "PO-Revision-Date: 2019-11-30 14:56+0100\n"
-"Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
+"Last-Translator: Maurizio Paglia <maurizio.paglia@dana.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
@@ -78,7 +78,7 @@ msgstr "Ignora le immagini JPEG quando importi i rullini"
 #: ../src/lua/preferences.c:674 ../src/lua/preferences.c:738
 #, c-format
 msgid "double click to reset to `%s'"
-msgstr "doppio click per ripristinare a '%s'"
+msgstr "Doppio click per ripristinare a '%s'"
 
 #: ../build/src/preferences_gen.h:2125 ../build/src/preferences_gen.h:2145
 #: ../build/src/preferences_gen.h:2294 ../build/src/preferences_gen.h:2391
@@ -134,7 +134,7 @@ msgstr "Valutazione iniziale da assegnare al momento dell'importazione"
 #: ../build/src/preferences_gen.h:3897 ../src/lua/preferences.c:697
 #, c-format
 msgid "double click to reset to `%d'"
-msgstr "doppio click per ripristinare a '%d'"
+msgstr "Doppio click per ripristinare a '%d'"
 
 #: ../build/src/preferences_gen.h:2268
 msgid "initial star rating for all images when importing a filmroll"
@@ -237,7 +237,6 @@ msgstr ""
 "Abilita questa opzione per utilizzare il click singolo per selezionare le "
 "immagini nel pannello della collezione. Questo vi permetterà di effettuare "
 "selezioni in base a valori data/ora e valori numerici."
-" valori numerici."
 
 #: ../build/src/preferences_gen.h:2422
 msgid "expand a single lighttable module at a time"
@@ -458,7 +457,6 @@ msgstr ""
 msgid "expand the module when it is activated, and collapse it when disabled"
 msgstr "Espandi il modulo quando attivato e comprimilo quando disattivato"
 "Espandi il modulo quando questo è attivato e riducilo quando è disattivato"
-
 #: ../build/src/preferences_gen.h:2800
 msgid ""
 "this option allows to expand or collapse automatically the module when it is "
@@ -546,7 +544,7 @@ msgstr "Chiedi sempre prima che un'immagine sia rimossa dal database."
 #: ../build/src/preferences_gen.h:2960
 msgid "ask before erasing images from disk / discarding history stack"
 msgstr ""
-"chiedi conferma prima di cancellare le immagini dal disco / eliminare la "
+"Chiedi conferma prima di cancellare le immagini dal disco / eliminare la "
 "coda di sviluppo"
 
 #: ../build/src/preferences_gen.h:2972
@@ -554,7 +552,7 @@ msgid ""
 "always ask the user before any image file is deleted / history stack is "
 "discarded."
 msgstr ""
-"chiedi sempre conferma all'utente prima di cancellare qualsiasi immagine dal "
+"Chiedi sempre conferma all'utente prima di cancellare qualsiasi immagine dal "
 "disco / rimuovere la coda di sviluppo."
 
 #: ../build/src/preferences_gen.h:2980
@@ -587,14 +585,14 @@ msgstr "Chiedi sempre prima di copiare il file di un'immagine."
 
 #: ../build/src/preferences_gen.h:3040
 msgid "ask before removing empty folders"
-msgstr "chiedi conferma prima di rimuovere le cartelle vuote"
+msgstr "Chiedi conferma prima di rimuovere le cartelle vuote"
 
 #: ../build/src/preferences_gen.h:3052
 msgid ""
 "always ask the user before removing any empty folder. this can happen after "
 "moving or deleting images."
 msgstr ""
-"chiedi sempre conferma all'utente prima di rimuovere una cartella vuota: "
+"Chiedi sempre conferma all'utente prima di rimuovere una cartella vuota: "
 "questo può accadere dopo che una serie di immagini sia stata spostata o "
 "cancellata."
 
@@ -1322,7 +1320,6 @@ msgid ""
 msgstr ""
 "Questa cartella (e le relative sotto-cartelle) contengono i files Lut "
 "utilizzati dai moduli lut3d. Richiede il riavvio."
-"Necessario riavviare darktable."
 
 #: ../build/src/preferences_gen.h:4164
 msgid "session options"
@@ -1377,7 +1374,7 @@ msgstr ""
 
 #: ../data/darktable.appdata.xml.in.h:5
 msgid "Virtual light table, showing a collection"
-msgstr "Tavolo luminoso virtuale, visualizza una raccolta"
+msgstr "Tavolo luminoso virtuale, visualizza una collezione"
 
 #: ../data/darktable.appdata.xml.in.h:6
 msgid "Virtual dark room with an opened image"
@@ -3098,7 +3095,7 @@ msgstr "Immagine in ingresso"
 
 #: ../src/develop/blend_gui.c:2531
 msgid "choose to guide mask by input or output image"
-msgstr "Scegli la maschera guida attraverso l'immagine di input o di output"
+msgstr ""
 "Scegli di guidare la maschera in base all'immagine in ingresso o uscita"
 
 #: ../src/develop/blend_gui.c:2537
@@ -3412,8 +3409,6 @@ msgstr "[CIRCLE] Cambia dimensione"
 msgid "[CIRCLE] change opacity"
 msgstr "[CIRCLE] Cambia l'opacità"
 
-# feather: verificare lo strumento. Potrebbe esser "cambia la dimensione del tratto"
-# [CIRCLE] va tradotto o è una variabile o un tag utilizzato dal programma?
 #: ../src/develop/masks/masks.c:305
 msgid "[CIRCLE] change feather size"
 msgstr "[CIRCLE] Cambia dimensione sfumatura"
@@ -3477,7 +3472,7 @@ msgid ""
 msgstr ""
 "Maiusc+click per cambiare modalità di sfumatura, Ctrl+click per ruotare\n"
 "Maiusc+(rotella mouse) per impostare la dimensione della sfumatura, Ctrl"
-"Ctrl+(rotella mouse) per impostare l'opacità della forma (%d%%)"
+"+(rotella mouse) per impostare l'opacità della forma (%d%%)"
 
 #: ../src/develop/masks/masks.c:363
 #, c-format
@@ -4061,7 +4056,7 @@ msgstr "$(MAX_WIDTH) - Larghezza max immagine esportata"
 
 #: ../src/gui/gtkentry.c:193
 msgid "$(MAX_HEIGHT) - maximum image export height"
-msgstr "$(MAX_HEIGHT) - Altezza massima dell'immagine da esportare"
+msgstr ""
 
 #: ../src/gui/gtkentry.c:194
 
@@ -4834,6 +4829,7 @@ msgid "paper size"
 msgstr "Formato carta"
 
 #: ../src/imageio/format/pdf.c:611
+#, fuzzy
 msgid ""
 "paper size of the pdf\n"
 "either one from the list or \"<width> [unit] x <height> <unit>\n"
@@ -5596,11 +5592,10 @@ msgstr ""
 
 #: ../src/imageio/storage/piwigo.c:782
 msgid "user"
-msgstr "utilisateur"
 
 #: ../src/imageio/storage/piwigo.c:796
 msgid "password"
-msgstr "mot de passe"
+msgstr "Password"
 
 #: ../src/imageio/storage/piwigo.c:811
 msgid "piwigo login"
@@ -5613,7 +5608,7 @@ msgstr "Contatti"
 #. Available albums
 #: ../src/imageio/storage/piwigo.c:838
 msgid "album"
-msgstr "album"
+msgstr "Album"
 
 #: ../src/imageio/storage/piwigo.c:863
 msgid "new album"
@@ -7322,23 +7317,23 @@ msgstr "Alteluci: gain / slope"
 
 #: ../src/iop/colorbalance.c:2598
 msgid "factor of gain"
-msgstr "Fattore del gain"
+msgstr "Fattore di guadagno"
 
 #: ../src/iop/colorbalance.c:2598
 msgid "gain"
-msgstr "Gain"
+msgstr "Guadagno"
 
 #: ../src/iop/colorbalance.c:2623
 msgid "factor of red for gain"
-msgstr "Fattore del rosso per il gain"
+msgstr "Fattore del rosso per il guadagno"
 
 #: ../src/iop/colorbalance.c:2630
 msgid "factor of green for gain"
-msgstr "Fattore del verde per il gain"
+msgstr "Fattore del verde per il guadagno"
 
 #: ../src/iop/colorbalance.c:2637
 msgid "factor of blue for gain"
-msgstr "Fattore del blu per il gain"
+msgstr "Fattore del blu per il guadagno"
 
 #: ../src/iop/colorbalance.c:2644
 msgid "auto optimizers"
@@ -7386,7 +7381,6 @@ msgstr "Emulazione Fuji Velvia"
 
 #: ../src/iop/colorchecker.c:845 ../src/iop/colorchecker.c:1359
 #: ../src/iop/colorchecker.c:845 ../src/iop/colorchecker.c:1359
-#, c-format
 msgid "patch #%d"
 msgstr "Campione #%d"
 
@@ -7408,10 +7402,12 @@ msgstr ""
 "Shift-click con la pipetta di estrazione del colore per sostituire la patch"
 
 #: ../src/iop/colorchecker.c:1354
+#, fuzzy
 msgid "patch"
 msgstr "Campione"
 
 #: ../src/iop/colorchecker.c:1355
+#, fuzzy
 msgid "color checker patch"
 msgstr "Campione per la verifica del colore"
 
@@ -9071,7 +9067,7 @@ msgstr "Imposta la funzione di trasferimento della potenza"
 
 #: ../src/iop/filmic.c:174
 msgid "filmic"
-msgstr "filmic"
+msgstr "Filmic"
 
 #: ../src/iop/filmic.c:311
 msgid "09 EV (low-key)"
@@ -9095,7 +9091,7 @@ msgstr "13 EV (esterni luminosi)"
 
 #: ../src/iop/filmic.c:346
 msgid "14 EV (backlighting)"
-msgstr "14 EV (retroilluminazione)"
+msgstr "14 EV (controluce)"
 
 #: ../src/iop/filmic.c:353
 msgid "15 EV (sunset)"
@@ -9139,7 +9135,7 @@ msgid ""
 msgstr ""
 "Numero di stop tra il grigio intermedio ed il bianco.\n"
 "Questa è la lettura che darebbe un esposimetro sulla scena.\n"
-"Regola in modo da evitare aree sovraesposte"
+"Regola in modo da evitare il taglio delle alteluci"
 
 #: ../src/iop/filmic.c:1715 ../src/iop/filmicrgb.c:1471
 #: ../src/iop/profile_gamma.c:908
@@ -9183,7 +9179,7 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1747
 msgid "filmic S curve"
-msgstr "Curva ad S di filmic"
+msgstr "Curva ad S di Filmic"
 
 #: ../src/iop/filmic.c:1754 ../src/iop/filmicrgb.c:1513
 msgid ""
@@ -9206,7 +9202,7 @@ msgstr ""
 
 #: ../src/iop/filmic.c:1771 ../src/iop/filmicrgb.c:1532
 msgid "shadows/highlights balance"
-msgstr "Bilanciamento ombre/luci"
+msgstr "Bilanciamento ombre/alteluci"
 
 #: ../src/iop/filmic.c:1774 ../src/iop/filmicrgb.c:1535
 msgid ""
@@ -9320,7 +9316,7 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:192
 msgid "filmic rgb"
-msgstr "filmic RGB"
+msgstr "Filmic RGB"
 
 #: ../src/iop/filmicrgb.c:233
 msgid "07 EV dynamic range"
@@ -9340,7 +9336,7 @@ msgstr "Gamma dinamica 13 EV"
 
 #: ../src/iop/filmicrgb.c:257
 msgid "15 EV (backlighting)"
-msgstr "15 EV (retroilluminazione)"
+msgstr "15 EV (controluce)"
 
 #: ../src/iop/filmicrgb.c:263
 msgid "17 EV (HDR)"
@@ -10489,7 +10485,6 @@ msgstr ""
 "l'immagine (e non tra i dati lut)\n"
 "ATTENZIONE: la cartella lut deve essere impostata nin Preferenze/Opzioni "
 "Principali/Varie prima di selezionare il file llut"
-"prima di scegliere il file del LUT"
 
 #: ../src/iop/lut3d.c:1117
 msgid "application color space"
@@ -11187,9 +11182,6 @@ msgid ""
 "click and drag to draw the area\n"
 "right click to cancel"
 msgstr ""
-"Applicat i livelli automatici basati su una regione definita dall'utente\n"
-"Clicca e trascina per disegnare l'area\n"
-"Clicca col destro per cancellare"
 
 #: ../src/iop/rotatepixels.c:76
 msgctxt "modulename"
@@ -12049,7 +12041,6 @@ msgstr "Diametro omogeinizzazione"
 #: ../src/iop/toneequal.c:321
 msgctxt "accel"
 msgid "edges refinement/feathering"
-msgstr "rifinitura bordi/sfumatura"
 
 #: ../src/iop/toneequal.c:322
 msgctxt "accel"
@@ -12059,12 +12050,12 @@ msgstr ""
 #: ../src/iop/toneequal.c:323
 msgctxt "accel"
 msgid "mask exposure compensation"
-msgstr "Compensazione esposizione maschera"
+msgstr "Compens. esposizione maschera"
 
 #: ../src/iop/toneequal.c:324
 msgctxt "accel"
 msgid "mask contrast compensation"
-msgstr "Compensazione contrasto maschera"
+msgstr "Compens. contrasto maschera"
 
 #. No blending
 #: ../src/iop/toneequal.c:416
@@ -12239,7 +12230,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:3153
 msgid "preserve details"
-msgstr "Conserva i dettagli"
+msgstr "Preserva i dettagli"
 
 #: ../src/iop/toneequal.c:3156
 msgid "averaged guided filter"
@@ -12280,7 +12271,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:3183
 msgid "edges refinement/feathering"
-msgstr "rifinitura bordi/sfumatura"
+msgstr "Rifinitura bordi/sfumatura"
 
 #: ../src/iop/toneequal.c:3184
 msgid ""
@@ -12315,7 +12306,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:3213
 msgid "mask exposure compensation"
-msgstr "Compensazione esposizione maschera"
+msgstr "Compens. esposizione maschera"
 
 #: ../src/iop/toneequal.c:3215
 msgid ""
@@ -12326,7 +12317,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:3227
 msgid "mask contrast compensation"
-msgstr "Compensazione contrasto maschera"
+msgstr "Compens. contrasto maschera"
 
 #: ../src/iop/toneequal.c:3229
 msgid ""
@@ -14339,7 +14330,7 @@ msgstr "Esporta altezza"
 
 #: ../src/libs/metadata_view.c:129
 msgid "copyright"
-msgstr "Diritti d'autore"
+msgstr "Copyright"
 
 #: ../src/libs/metadata_view.c:133
 msgid "longitude"
@@ -15127,7 +15118,7 @@ msgstr "Non puoi utilizzare un'etichetta vuota, operazione annullata"
 
 #: ../src/libs/tagging.c:1404
 msgid "'|' character is not allowed to create a tag. aborting."
-msgstr "Il carattere '|' non è ammesso per la creazione dei Tag. Interruzione."
+msgstr ""
 "Il carattere '|' non può essere utilizzato per creare un'etichetta. "
 "Operazione annullata."
 
@@ -15171,7 +15162,7 @@ msgstr "Percorso selezionato: %s"
 
 #: ../src/libs/tagging.c:1776
 msgid "'|' misplaced, empty tag is not allowed, aborting"
-msgstr "'|' posizionato male, non è ammesso un Tag vuoto, interruzione"
+msgstr ""
 "'|' fuori posto, non è permesso utilizzare un'etichetta vuota. Operazione "
 "annullata"
 
@@ -15223,7 +15214,6 @@ msgstr "(Privato)"
 
 #: ../src/libs/tagging.c:2123
 msgid "(private)"
-msgstr "(privato)"
 
 #: ../src/libs/tagging.c:2123
 msgid "Select a keyword file"
@@ -15269,7 +15259,7 @@ msgstr ""
 "Doppio click per scollegarle,\n"
 "Click destro per altre azioni sull'etichetta allegata,\n"
 "Ctrl+(rotella mouse) per ridimensionare la finestra"
-"CTRL+rotella del mouse per ridimensionare la finestra"
+"Ctrl+(rotella mouse) per ridimensionare la finestra"
 
 #: ../src/libs/tagging.c:2553
 msgid "attach"
@@ -15357,6 +15347,7 @@ msgstr "Attiva la lista con o senza suggerimento"
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 "Le scorciatoie non sono disponibili sulla visualizzazione ad albero. Abilita "
+"la visualizzazione lista."
 "la visualizzazione lista."
 
 #: ../src/libs/tools/battery_indicator.c:38
@@ -15717,7 +15708,7 @@ msgstr "Altro"
 #: ../src/lua/lualib.c:295
 msgctxt "accel"
 msgid "reset lib parameters"
-msgstr "Resetta i parametri della raccolta"
+msgstr "Resetta parametri collezione"
 
 #: ../src/lua/preferences.c:644
 msgid "select file"
@@ -15891,7 +15882,6 @@ msgstr "Intento video"
 #: ../src/views/darkroom.c:1987 ../src/views/lighttable.c:4883
 msgid "preview display intent"
 msgstr "Anteprima intento video"
-msgstr "Intento video"
 
 #: ../src/views/darkroom.c:2007 ../src/views/lighttable.c:4891
 msgid "display profile"
@@ -16081,7 +16071,6 @@ msgid "darktable - darkroom preview"
 msgstr "darktable - Anteprima Camera Oscura"
 
 msgid "darktable - darkroom preview"
-msgstr "darktable - anteprima Camera Oscura"
 
 #: ../src/views/knight.c:334
 msgid "good knight"
@@ -16116,7 +16105,7 @@ msgstr[1] "Hai raggiunto l'inizio della tua selezione (%d immagini)"
 
 #: ../src/views/lighttable.c:3259
 msgid "you have reached the start of your collection"
-msgstr "Hai raggiunto l'inizio della tua raccolta"
+msgstr "Hai raggiunto l'inizio della tua collezione"
 
 #: ../src/views/lighttable.c:3283
 #, c-format
@@ -16127,7 +16116,7 @@ msgstr[1] "Hai raggiunto la fine della tua selezione (%d immagini)"
 
 #: ../src/views/lighttable.c:3288
 msgid "you have reached the end of your collection"
-msgstr "Hai raggiunto la fine della tua raccolta"
+msgstr "Hai raggiunto la fine della tua collezione"
 
 #: ../src/views/lighttable.c:3608
 #, c-format
@@ -16291,7 +16280,7 @@ msgstr "Ingrandisci la vista principale"
 
 #: ../src/views/lighttable.c:4630
 msgid "pan inside the main view"
-msgstr ""
+msgstr "Scorri all'interno della vista principale"
 
 #: ../src/views/lighttable.c:4851
 msgid "set display profile"
