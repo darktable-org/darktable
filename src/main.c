@@ -83,6 +83,9 @@ int main(int argc, char *argv[])
     printf("version: %s\n", darktable_package_string);
     printf("start: %s\n", datetime);
     printf("\n");
+
+    // make sure GTK client side decoration is disabled, otherwise windows resizing issues can be oberved
+    putenv("GTK_CSD=0");
   }
 #endif
 
