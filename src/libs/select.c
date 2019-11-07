@@ -132,7 +132,7 @@ void gui_init(dt_lib_module_t *self)
   ellipsize_button(button);
   d->select_untouched_button = button;
   gtk_widget_set_tooltip_text(button, _("select untouched images in\ncurrent collection"));
-  gtk_grid_attach(grid, button, 0, line, 1, 1);
+  gtk_grid_attach(grid, button, 0, line, 2, 1);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), GINT_TO_POINTER(4));
 }
 #undef ellipsize_button
