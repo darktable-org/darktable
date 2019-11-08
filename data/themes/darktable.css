@@ -465,7 +465,6 @@ entry selection
   border:0;
   padding: 0 2pt 2pt 0.5em;
   font-weight: normal;
-  font-stretch: condensed;
   font-family: sans-serif;
   font-size: larger;
 }
@@ -768,11 +767,13 @@ notebook tab
 {
   border-bottom: 2px solid transparent;
   padding: 3px;
+  font-weight: normal;
 }
 
 notebook tab label /* disabled tabs */
 {
   color: shade(@button_checked_fg, 0.75);
+  font-weight: normal;
 }
 
 /* This will avoid have too much height on entry items in dialog windows; label and button are needed as they are related */
@@ -1189,7 +1190,7 @@ notebook tab:hover
   background-color: @button_hover_bg;
 }
 
-notebook tab:hover label
+notebook tab:hover labelnotebook
 {
   color: @button_hover_fg;
 }
