@@ -361,16 +361,6 @@ static cmsHPROFILE dt_colorspaces_create_adobergb_profile(void)
   return profile;
 }
 
-static cmsToneCurve *build_linear_gamma(void)
-{
-  double Parameters[2];
-
-  Parameters[0] = 1.0;
-  Parameters[1] = 0;
-
-  return cmsBuildParametricToneCurve(0, 1, Parameters);
-}
-
 int dt_colorspaces_get_darktable_matrix(const char *makermodel, float *matrix)
 {
   dt_profiled_colormatrix_t *preset = NULL;
@@ -465,7 +455,7 @@ cmsHPROFILE dt_colorspaces_create_alternate_profile(const char *makermodel)
   cmsToneCurve *Gamma[3];
   cmsHPROFILE hp;
 
-  Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
+  Gamma[0] = Gamma[1] = Gamma[2] = cmsBuildGamma(NULL, 1.0);
 
   hp = cmsCreateRGBProfile(&WP, &XYZPrimaries, Gamma);
   cmsFreeToneCurve(Gamma[0]);
@@ -515,7 +505,7 @@ cmsHPROFILE dt_colorspaces_create_vendor_profile(const char *makermodel)
   cmsToneCurve *Gamma[3];
   cmsHPROFILE hp;
 
-  Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
+  Gamma[0] = Gamma[1] = Gamma[2] = cmsBuildGamma(NULL, 1.0);
 
   hp = cmsCreateRGBProfile(&WP, &XYZPrimaries, Gamma);
   cmsFreeToneCurve(Gamma[0]);
@@ -565,7 +555,7 @@ cmsHPROFILE dt_colorspaces_create_darktable_profile(const char *makermodel)
   cmsToneCurve *Gamma[3];
   cmsHPROFILE hp;
 
-  Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
+  Gamma[0] = Gamma[1] = Gamma[2] = cmsBuildGamma(NULL, 1.0);
 
   hp = cmsCreateRGBProfile(&WP, &XYZPrimaries, Gamma);
   cmsFreeToneCurve(Gamma[0]);
@@ -619,7 +609,7 @@ static cmsHPROFILE dt_colorspaces_create_xyz_profile(void)
 
 static cmsHPROFILE dt_colorspaces_create_linear_rec709_rgb_profile(void)
 {
-  cmsToneCurve *transferFunction = build_linear_gamma();
+  cmsToneCurve *transferFunction = cmsBuildGamma(NULL, 1.0);
 
   cmsHPROFILE profile = _create_lcms_profile("Linear Rec709 RGB", "Linear Rec709 RGB",
                                              &rec709_primaries_pre_quantized, transferFunction, TRUE);
@@ -631,7 +621,7 @@ static cmsHPROFILE dt_colorspaces_create_linear_rec709_rgb_profile(void)
 
 static cmsHPROFILE dt_colorspaces_create_linear_rec2020_rgb_profile(void)
 {
-  cmsToneCurve *transferFunction = build_linear_gamma();
+  cmsToneCurve *transferFunction = cmsBuildGamma(NULL, 1.0);
 
   cmsHPROFILE profile = _create_lcms_profile("Linear Rec2020 RGB", "Linear Rec2020 RGB",
                                              &rec2020_primaries_prequantized, transferFunction, TRUE);
@@ -643,7 +633,7 @@ static cmsHPROFILE dt_colorspaces_create_linear_rec2020_rgb_profile(void)
 
 static cmsHPROFILE dt_colorspaces_create_linear_prophoto_rgb_profile(void)
 {
-  cmsToneCurve *transferFunction = build_linear_gamma();
+  cmsToneCurve *transferFunction = cmsBuildGamma(NULL, 1.0);
 
   cmsHPROFILE profile = _create_lcms_profile("Linear prophoto RGB", "Linear prophoto RGB",
                                              &prophoto_primaries_prequantized, transferFunction, TRUE);
@@ -661,7 +651,7 @@ static cmsHPROFILE dt_colorspaces_create_linear_infrared_profile(void)
     rec709_primaries_pre_quantized.Green,
     rec709_primaries_pre_quantized.Red,
   };
-  cmsToneCurve *transferFunction = build_linear_gamma();
+  cmsToneCurve *transferFunction = cmsBuildGamma(NULL, 1.0);
 
   cmsHPROFILE profile = _create_lcms_profile("linear infrared bgr", "Darktable Linear Infrared BGR",
                                              &primaries_pre_quantized, transferFunction, FALSE);
@@ -768,7 +758,7 @@ static cmsHPROFILE dt_colorspaces_create_xyzmatrix_profile(float mat[3][3])
   cmsXYZ2xyY(&D65, &d65);
 
   cmsToneCurve *Gamma[3];
-  Gamma[0] = Gamma[1] = Gamma[2] = build_linear_gamma();
+  Gamma[0] = Gamma[1] = Gamma[2] = cmsBuildGamma(NULL, 1.0);
   profile = cmsCreateRGBProfile(&D65, &CameraPrimaries, Gamma);
   cmsFreeToneCurve(Gamma[0]);
   if(profile == NULL) return NULL;
