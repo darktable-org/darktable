@@ -2594,6 +2594,13 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
   //if(!g->graph_valid)
   if(!_init_drawing(self->widget, g)) return FALSE; // this can be cached and drawn just once, but too lazy to debug a cache invalidation for Cairo objects
 
+  // since the widget sizes are not cached and invalidated properly above (yet…)
+  // force the invalidation of the nodes coordinates to account for possible widget resizing
+  dt_pthread_mutex_lock(&g->lock);
+  g->valid_nodes_x = FALSE;
+  g->valid_nodes_y = FALSE;
+  dt_pthread_mutex_unlock(&g->lock);
+
   // Refresh cached UI elements
   update_histogram(g);
   update_curve_lut(self);
