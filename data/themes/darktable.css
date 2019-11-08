@@ -1174,7 +1174,6 @@ filechooser *:checked
 #bauhaus-slider:focus
 {
   color: @bauhaus_fg_hover;
-  font-weight: 800;
 }
 
 #bauhaus-popup:disabled
@@ -1252,5 +1251,4 @@ scale contents trough slider:focus
 #lib-plugin-ui *:focus,
 #lib-plugin-ui *:focus
 {
-  font-weight: 600;
 }
