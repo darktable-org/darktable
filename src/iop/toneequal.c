@@ -2414,6 +2414,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   pango_font_description_set_size (desc, (int)(old_size / zoom_scale));
   layout = pango_cairo_create_layout(cr);
   pango_layout_set_font_description(layout, desc);
+  pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
 
   // Build text object
   snprintf(text, sizeof(text), _("%+.1f EV"), exposure_in);
@@ -2446,6 +2447,7 @@ static inline gboolean _init_drawing(GtkWidget *widget, dt_iop_toneequalizer_gui
   g->layout = pango_cairo_create_layout(g->cr);
   g->desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
   pango_layout_set_font_description(g->layout, g->desc);
+  pango_cairo_context_set_resolution(pango_layout_get_context(g->layout), darktable.gui->dpi);
   g->context = gtk_widget_get_style_context(widget);
 
   char text[256];
@@ -2632,6 +2634,26 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
     cairo_line_to(g->cr, g->graph_width, g->graph_height);
     cairo_close_path(g->cr);
     cairo_fill(g->cr);
+
+    if(g->histogram_last_decile > -0.1f)
+    {
+      // histogram overflows controls in highlights : display warning
+      cairo_save(g->cr);
+      cairo_set_source_rgb(g->cr, 0.75, 0.50, 0.);
+      dtgtk_cairo_paint_gamut_check(g->cr, g->graph_width - 2.5 * g->line_height, 0.5 * g->line_height,
+                                           2.0 * g->line_height, 2.0 * g->line_height, 0, NULL);
+      cairo_restore(g->cr);
+    }
+
+    if(g->histogram_first_decile < -7.9f)
+    {
+      // histogram overflows controls in lowlights : display warning
+      cairo_save(g->cr);
+      cairo_set_source_rgb(g->cr, 0.75, 0.50, 0.);
+      dtgtk_cairo_paint_gamut_check(g->cr, 0.5 * g->line_height, 0.5 * g->line_height,
+                                           2.0 * g->line_height, 2.0 * g->line_height, 0, NULL);
+      cairo_restore(g->cr);
+    }
   }
 
   if(g->lut_valid)
@@ -2700,10 +2722,25 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 
     if(g->cursor_valid)
     {
-      cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(1.5));
-      set_color(g->cr, darktable.bauhaus->graph_fg);
-      cairo_move_to(g->cr, (g->cursor_exposure + 8.0f) / 8.0f * g->graph_width, 0.0);
-      cairo_line_to(g->cr,(g->cursor_exposure + 8.0f) / 8.0f * g->graph_width, g->graph_height);
+
+      float x_pos = (g->cursor_exposure + 8.0f) / 8.0f * g->graph_width;
+
+      if(x_pos > g->graph_width || x_pos < 0.0f)
+      {
+        // exposure at current position is outside [-8; 0] EV :
+        // bound it in the graph limits and show it in orange
+        cairo_set_source_rgb(g->cr, 0.75, 0.50, 0.);
+        cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(3));
+        x_pos = (x_pos < 0.0f) ? 0.0f : g->graph_width;
+      }
+      else
+      {
+        set_color(g->cr, darktable.bauhaus->graph_fg);
+        cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(1.5));
+      }
+
+      cairo_move_to(g->cr, x_pos, 0.0);
+      cairo_line_to(g->cr, x_pos, g->graph_height);
       cairo_stroke(g->cr);
     }
   }
@@ -2757,13 +2794,13 @@ static gboolean dt_iop_toneequalizer_bar_draw(GtkWidget *widget, cairo_t *crf, g
     // draw clipping bars
     cairo_set_source_rgb(cr, 0.75, 0.50, 0);
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(6));
-    if(left <= 0.0f)
+    if(g->histogram_first_decile < -7.9f)
     {
       cairo_move_to(cr, DT_PIXEL_APPLY_DPI(3), 0.0);
       cairo_line_to(cr, DT_PIXEL_APPLY_DPI(3), allocation.height);
       cairo_stroke(cr);
     }
-    if(right >= 1.0f)
+    if(g->histogram_last_decile > - 0.1f)
     {
       cairo_move_to(cr, allocation.width - DT_PIXEL_APPLY_DPI(3), 0.0);
       cairo_line_to(cr, allocation.width - DT_PIXEL_APPLY_DPI(3), allocation.height);
