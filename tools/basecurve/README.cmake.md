@@ -44,12 +44,12 @@ You can build the tool using the following commands:
     $ cd "$DARKATBLE_SRC_ROOT/tools/basecurve"
     $ mkdir build
     $ cd build/
-    $ cmake -DCMAKE_INSTALL_FULL_PREFIX="${CMAKE_INSTALL_FULL_PREFIX}" -DDCMAKE_INSTALL_FULL_LIBEXECDIR="${CMAKE_INSTALL_FULL_LIBEXECDIR}" -DCMAKE_BUILD_TYPE=Release ..
+    $ cmake -DCMAKE_INSTALL_PREFIX="@CMAKE_INSTALL_PREFIX@" -DCMAKE_INSTALL_LIBEXECDIR="@CMAKE_INSTALL_LIBEXECDIR@" -DCMAKE_BUILD_TYPE=Release ..
     $ cmake --build . -- install
 
 You are invited to print the help message to get to know the tool's options:
 
-    $ "${CMAKE_INSTALL_FULL_LIBEXECDIR}/darktable/tools/darktable-curve-tool" -h
+    $ "@CMAKE_INSTALL_FULL_LIBEXECDIR@/darktable/tools/darktable-curve-tool" -h
 
 It may help you better understand the following paragraphs.
 
@@ -62,7 +62,7 @@ script should automate many steps of the curve determination process.
 
 It is assumed that `$YOUR_INSTALL_PATH` is in your `$PATH`. If not you can run in bash/zsh:
 
-export PATH="$PATH:${CMAKE_INSTALL_FULL_LIBEXECDIR}/darktable/tools/"
+export PATH="$PATH:@CMAKE_INSTALL_FULL_LIBEXECDIR@/darktable/tools/"
 
 
 ### Gathering the statistics
@@ -228,8 +228,8 @@ Two [GNUPlot](http://gnuplot.info/) scripts are provided in the same source dire
 They require files `basecurve.dat` and `basecurve.fit.dat` resp. `tonecurve.dat`
 and `tonecurve.fit.dat` to be present in the `$DARKATBLE_SRC_ROOT/tools/basecurve` directory.
 
-    $ gnuplot -c "${CMAKE_INSTALL_FULL_DATAROOTDIR}/darktable/tools/basecurve/gnuplot.tonecurve"
-    $ gnuplot -c "${CMAKE_INSTALL_FULL_DATAROOTDIR}/darktable/tools/basecurve/gnuplot.basecurve"
+    $ gnuplot -c "@CMAKE_INSTALL_FULL_DATAROOTDIR@/darktable/tools/basecurve/gnuplot.tonecurve"
+    $ gnuplot -c "@CMAKE_INSTALL_FULL_DATAROOTDIR@/darktable/tools/basecurve/gnuplot.basecurve"
 
 This generates a `basecurve.pdf` resp. `tonecurve.pdf` file with a graph of
 the gathered data and the fitted curves. This can help you measuring how much of
