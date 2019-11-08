@@ -792,7 +792,7 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
   {
     if(col < col_start)
     {
-      cairo_translate(cr, wd + line_width, 0);
+      cairo_translate(cr, wd, 0);
       continue;
     }
 
