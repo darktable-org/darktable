@@ -72,10 +72,6 @@
 @define-color field_hover_bg @grey_60;
 @define-color field_hover_fg @grey_20;
 
-/* Tooltips and contextual helpers */
-@define-color tooltip_bg_color @grey_20;
-@define-color tooltip_fg_color @grey_85;
-@define-color really_dark_bg_color @grey_20;
 
 /* Views */
 @define-color darkroom_bg_color @grey_60;
