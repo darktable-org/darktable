@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-05 10:05-0600\n"
-"PO-Revision-Date: 2019-11-05 19:11-0600\n"
+"POT-Creation-Date: 2019-11-08 22:09-0600\n"
+"PO-Revision-Date: 2019-11-08 23:06-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -482,7 +482,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2855
 msgid "map / geolocalisation"
-msgstr "Mapa y geolocalización"
+msgstr "mapa y geolocalización"
 
 #: ../build/src/preferences_gen.h:2864
 msgid "only draw images on map that are currently collected and filtered"
@@ -1606,7 +1606,7 @@ msgstr ""
 #: ../src/common/darktable.c:807 ../src/common/variables.c:380
 #: ../src/imageio/format/pdf.c:669 ../src/imageio/format/pdf.c:694
 #: ../src/iop/clipping.c:2012 ../src/iop/filmicrgb.c:1558
-#: ../src/iop/toneequal.c:3157 ../src/libs/export.c:628
+#: ../src/iop/toneequal.c:3194 ../src/libs/export.c:628
 #: ../src/libs/export.c:634 ../src/libs/metadata_view.c:279
 msgid "no"
 msgstr "no"
@@ -3270,8 +3270,8 @@ msgstr "Ctrl+clic para agregar un nodo"
 msgid ""
 "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"
 msgstr ""
-"Mayús+rueda del ratón ajusta difuminado, Ctrl+rueda del ratón ajusta "
-"opacidad (%d%%)"
+"Mayús+rueda del ratón ajusta difuminado, \n"
+"Ctrl+rueda del ratón ajusta opacidad (%d%%)"
 
 #: ../src/develop/masks/masks.c:344
 #, c-format
@@ -3666,7 +3666,7 @@ msgstr "archivo de almacenamiento"
 #. general settings
 #: ../src/gui/camera_import_dialog.c:347 ../src/gui/preferences.c:217
 msgid "general"
-msgstr "General"
+msgstr "general"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
 #: ../src/gui/camera_import_dialog.c:350 ../src/libs/import.c:455
@@ -7491,7 +7491,7 @@ msgstr "adquirir"
 msgid "analyze this image"
 msgstr "analizar esta imagen"
 
-#: ../src/iop/colortransfer.c:698 ../src/libs/metadata.c:392
+#: ../src/iop/colortransfer.c:698 ../src/libs/metadata.c:393
 msgid "apply"
 msgstr "establecer"
 
@@ -7599,12 +7599,12 @@ msgid ""
 "- monotonic is better for accuracy of pure analytical functions (log, gamma, "
 "exp)\n"
 msgstr ""
-"cambie este método si ve oscilaciones o cúspides en la curva\n"
+"Cambie este método si ve oscilaciones o cúspides en la curva\n"
 "- La curva segmentaria cúbica es mejor para producir curvas suaves, pero "
 "oscila cuando los nodos están demasiado cerca.\n"
 "- Centrípeta es mejor para evitar cúspides y oscilaciones con nódulos "
 "cercanos, pero es menos suave.\n"
-"- monótona es mejor para la precisión de las funciones analíticas puras "
+"- Monótona es mejor para la precisión de las funciones analíticas puras "
 "(log, gamma, exp)\n"
 
 #: ../src/iop/defringe.c:68
@@ -8654,11 +8654,11 @@ msgstr ""
 "Disminuya el valor para aumentar el brillo general."
 
 #: ../src/iop/filmicrgb.c:1461 ../src/iop/filmicrgb.c:1475
-#: ../src/iop/toneequal.c:3056 ../src/iop/toneequal.c:3062
-#: ../src/iop/toneequal.c:3068 ../src/iop/toneequal.c:3074
-#: ../src/iop/toneequal.c:3080 ../src/iop/toneequal.c:3086
-#: ../src/iop/toneequal.c:3092 ../src/iop/toneequal.c:3098
-#: ../src/iop/toneequal.c:3104
+#: ../src/iop/toneequal.c:3093 ../src/iop/toneequal.c:3099
+#: ../src/iop/toneequal.c:3105 ../src/iop/toneequal.c:3111
+#: ../src/iop/toneequal.c:3117 ../src/iop/toneequal.c:3123
+#: ../src/iop/toneequal.c:3129 ../src/iop/toneequal.c:3135
+#: ../src/iop/toneequal.c:3141
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
@@ -8725,7 +8725,7 @@ msgstr "preservar la crominancia"
 msgid "luminance Y"
 msgstr "luminancia Y"
 
-#: ../src/iop/filmicrgb.c:1561 ../src/iop/toneequal.c:3147
+#: ../src/iop/filmicrgb.c:1561 ../src/iop/toneequal.c:3184
 msgid "RGB power norm"
 msgstr "Norma de potencia RGB"
 
@@ -9799,7 +9799,7 @@ msgstr "interpolación"
 
 #: ../src/iop/lut3d.c:1130
 msgid "tetrahedral"
-msgstr "tetahedro"
+msgstr "tetaedro"
 
 #: ../src/iop/lut3d.c:1131
 msgid "trilinear"
@@ -9851,15 +9851,15 @@ msgstr "crominancia"
 
 #: ../src/iop/nlmeans.c:853
 msgid "radius of the patches to match"
-msgstr "radio de los parches a localizar"
+msgstr "radio de los parches para que coincida"
 
 #: ../src/iop/nlmeans.c:855
 msgid "how much to smooth brightness"
-msgstr "cuánto suavizar el brillo"
+msgstr "cantidad de suavizado del brillo"
 
 #: ../src/iop/nlmeans.c:856
 msgid "how much to smooth colors"
-msgstr "cuánto suavizar los colores"
+msgstr "cantidad de suavizado de los colores"
 
 #: ../src/iop/overexposed.c:71
 msgid "overexposed"
@@ -9916,7 +9916,7 @@ msgstr "08 EV Rango dinámico (genérico)"
 
 #: ../src/iop/profile_gamma.c:863
 msgid "tone mapping method"
-msgstr "método mapeo de tonos"
+msgstr "método de mapeo de tonos"
 
 #: ../src/iop/profile_gamma.c:878
 msgid "linear part"
@@ -9939,8 +9939,8 @@ msgid ""
 "number of stops between middle grey and pure black\n"
 "this is a reading a posemeter would give you on the scene"
 msgstr ""
-"número de pasos entre el gris medio y el negro puro\n"
-"esta es una lectura que un exposímetro te daría en la escena"
+"Número de pasos entre el gris medio y el negro puro\n"
+"Es la lectura que un exposimetro daría en la escena"
 
 #: ../src/iop/profile_gamma.c:922
 msgid "dynamic range"
@@ -9951,8 +9951,8 @@ msgid ""
 "number of stops between pure black and pure white\n"
 "this is a reading a posemeter would give you on the scene"
 msgstr ""
-"número de pasos entre el negro puro y el blanco puro\n"
-"esta es una lectura que un exposimetro te daría en la escena"
+"Número de pasos entre el negro puro y el blanco puro\n"
+"Es la lectura que un exposimetro daría en la escena"
 
 #. Security factor
 #: ../src/iop/profile_gamma.c:932
@@ -9964,12 +9964,12 @@ msgid ""
 "enlarge or shrink the computed dynamic range\n"
 "this is useful when noise perturbates the measurements"
 msgstr ""
-"ampliar o reducir el rango dinámico calculado.\n"
-"esto es útil cuando el ruido perturba las mediciones"
+"Ampliar o reducir el rango dinámico calculado.\n"
+"Es útil cuando el ruido perturba las mediciones"
 
 #: ../src/iop/profile_gamma.c:947
 msgid "make an optimization with some guessing"
-msgstr "hacer una optimización con algunas estimaciones"
+msgstr "Optimizar con algunas estimaciones"
 
 #: ../src/iop/rawdenoise.c:123
 msgid "raw denoise"
@@ -10991,68 +10991,68 @@ msgid "some parameters are out-of-bounds"
 msgstr "Algunos parámetros están fuera de los límites"
 
 #. Build text object
-#: ../src/iop/toneequal.c:2419
+#: ../src/iop/toneequal.c:2420
 #, c-format
 msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
-#: ../src/iop/toneequal.c:3041
+#: ../src/iop/toneequal.c:3078
 msgid "simple"
 msgstr "sencillo"
 
-#: ../src/iop/toneequal.c:3042
+#: ../src/iop/toneequal.c:3079
 msgid "advanced"
 msgstr "avanzado"
 
-#: ../src/iop/toneequal.c:3043
+#: ../src/iop/toneequal.c:3080
 msgid "masking"
 msgstr "máscaras"
 
-#: ../src/iop/toneequal.c:3057
+#: ../src/iop/toneequal.c:3094
 msgid "-8 EV"
 msgstr "-8 EV"
 
-#: ../src/iop/toneequal.c:3063
+#: ../src/iop/toneequal.c:3100
 msgid "-7 EV"
 msgstr "-7 EV"
 
-#: ../src/iop/toneequal.c:3069
+#: ../src/iop/toneequal.c:3106
 msgid "-6 EV"
 msgstr "-6 EV"
 
-#: ../src/iop/toneequal.c:3075
+#: ../src/iop/toneequal.c:3112
 msgid "-5 EV"
 msgstr "-5 EV"
 
-#: ../src/iop/toneequal.c:3081
+#: ../src/iop/toneequal.c:3118
 msgid "-4 EV"
 msgstr "-4 EV"
 
-#: ../src/iop/toneequal.c:3087
+#: ../src/iop/toneequal.c:3124
 msgid "-3 EV"
 msgstr "-3 EV"
 
-#: ../src/iop/toneequal.c:3093
+#: ../src/iop/toneequal.c:3130
 msgid "-2 EV"
 msgstr "-2 EV"
 
-#: ../src/iop/toneequal.c:3099
+#: ../src/iop/toneequal.c:3136
 msgid "-1 EV"
 msgstr "-1 EV"
 
-#: ../src/iop/toneequal.c:3105
+#: ../src/iop/toneequal.c:3142
 msgid "+0 EV"
 msgstr "+0 EV"
 
-#: ../src/iop/toneequal.c:3123
+#: ../src/iop/toneequal.c:3160
 msgid "double-click to reset the curve"
 msgstr "doble clic para restablecer la curva"
 
-#: ../src/iop/toneequal.c:3130
+#: ../src/iop/toneequal.c:3167
 msgid "curve smoothing"
 msgstr "suavizado de curva"
 
-#: ../src/iop/toneequal.c:3131
+#: ../src/iop/toneequal.c:3168
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -11066,35 +11066,35 @@ msgstr ""
 "pero puede producir transiciones de tonos abruptas y dañar el contraste "
 "local."
 
-#: ../src/iop/toneequal.c:3140
+#: ../src/iop/toneequal.c:3177
 msgid "luminance estimator"
 msgstr "estimador de luminancia"
 
-#: ../src/iop/toneequal.c:3142
+#: ../src/iop/toneequal.c:3179
 msgid "RGB average"
 msgstr "RGB promedio"
 
-#: ../src/iop/toneequal.c:3143
+#: ../src/iop/toneequal.c:3180
 msgid "HSL lightness"
 msgstr "Luminosidad HSV"
 
-#: ../src/iop/toneequal.c:3144
+#: ../src/iop/toneequal.c:3181
 msgid "HSV value / RGB max"
 msgstr "valor HSV / máx. RGB"
 
-#: ../src/iop/toneequal.c:3145
+#: ../src/iop/toneequal.c:3182
 msgid "RGB sum"
 msgstr "RGB suma"
 
-#: ../src/iop/toneequal.c:3146
+#: ../src/iop/toneequal.c:3183
 msgid "RGB euclidean norm"
 msgstr "RGB norma euclidiana"
 
-#: ../src/iop/toneequal.c:3148
+#: ../src/iop/toneequal.c:3185
 msgid "RGB geometric mean"
 msgstr "RGB media geométrica"
 
-#: ../src/iop/toneequal.c:3149
+#: ../src/iop/toneequal.c:3186
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -11102,19 +11102,19 @@ msgstr ""
 "Previsualice la máscara y elija el estimador que le proporcione\n"
 "mayor contraste entre las áreas a aclarar y las áreas a oscurecer"
 
-#: ../src/iop/toneequal.c:3155
+#: ../src/iop/toneequal.c:3192
 msgid "preserve details"
 msgstr "preservar los detalles"
 
-#: ../src/iop/toneequal.c:3158
+#: ../src/iop/toneequal.c:3195
 msgid "averaged guided filter"
 msgstr "filtro guiado promediado"
 
-#: ../src/iop/toneequal.c:3159
+#: ../src/iop/toneequal.c:3196
 msgid "guided filter"
 msgstr "filtro guiado"
 
-#: ../src/iop/toneequal.c:3160
+#: ../src/iop/toneequal.c:3197
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -11126,11 +11126,11 @@ msgstr ""
 "contraste local\n"
 "'filtro guiado promediado' es una media geométrica de ambos métodos"
 
-#: ../src/iop/toneequal.c:3167
+#: ../src/iop/toneequal.c:3204
 msgid "filter diffusion"
 msgstr "difusión de filtro"
 
-#: ../src/iop/toneequal.c:3168
+#: ../src/iop/toneequal.c:3205
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -11138,11 +11138,11 @@ msgstr ""
 "Número de pasadas del filtro guiado para aplicar\n"
 "Ayuda a difuminar los bordes del filtro a expensas de la velocidad"
 
-#: ../src/iop/toneequal.c:3176
+#: ../src/iop/toneequal.c:3213
 msgid "smoothing diameter"
 msgstr "diámetro de suavizado"
 
-#: ../src/iop/toneequal.c:3177
+#: ../src/iop/toneequal.c:3214
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -11154,11 +11154,11 @@ msgstr ""
 "oscuro \n"
 "sea mucho más lenta si se usa la reducción de ruido perfilado."
 
-#: ../src/iop/toneequal.c:3185
+#: ../src/iop/toneequal.c:3222
 msgid "edges refinement/feathering"
 msgstr "afinar o difuminar bordes"
 
-#: ../src/iop/toneequal.c:3186
+#: ../src/iop/toneequal.c:3223
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -11173,11 +11173,11 @@ msgstr ""
 "Con valores inferiores, se dan gradientes más lisos y mejor suavizado,\n"
 "pero pueden darse bordes imprecisos y halos"
 
-#: ../src/iop/toneequal.c:3194
+#: ../src/iop/toneequal.c:3231
 msgid "mask post-processing"
 msgstr "postprocesado de máscara"
 
-#: ../src/iop/toneequal.c:3200
+#: ../src/iop/toneequal.c:3237
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -11187,11 +11187,11 @@ msgstr ""
 "La línea central muestra el promedio. Aparecerán barras naranjas en los "
 "extremos si se produce un recorte."
 
-#: ../src/iop/toneequal.c:3205
+#: ../src/iop/toneequal.c:3242
 msgid "mask quantization"
 msgstr "cuantificación de máscara"
 
-#: ../src/iop/toneequal.c:3207
+#: ../src/iop/toneequal.c:3244
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -11203,11 +11203,11 @@ msgstr ""
 "Cuando se usan valores de difuminado altos, produce áreas lisas por "
 "segmentos "
 
-#: ../src/iop/toneequal.c:3215
+#: ../src/iop/toneequal.c:3252
 msgid "mask exposure compensation"
 msgstr "compensación de exposición de máscara"
 
-#: ../src/iop/toneequal.c:3217
+#: ../src/iop/toneequal.c:3254
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -11219,11 +11219,11 @@ msgstr ""
 "disponibles.\n"
 "El cuentagotas ajustará automáticamente la exposición promedio a -4EV."
 
-#: ../src/iop/toneequal.c:3229
+#: ../src/iop/toneequal.c:3266
 msgid "mask contrast compensation"
 msgstr "compensación de contraste de máscara"
 
-#: ../src/iop/toneequal.c:3231
+#: ../src/iop/toneequal.c:3268
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -11235,7 +11235,7 @@ msgstr ""
 "Permite extender el histograma de exposición a más canales.\n"
 "Ofrece un mejor control sobre la corrección de exposición."
 
-#: ../src/iop/toneequal.c:3244 ../src/iop/toneequal.c:3248
+#: ../src/iop/toneequal.c:3281 ../src/iop/toneequal.c:3285
 msgid "display exposure mask"
 msgstr "mostrar la máscara de exposición"
 
@@ -13083,11 +13083,11 @@ msgctxt "accel"
 msgid "clear"
 msgstr "eliminar"
 
-#: ../src/libs/metadata.c:385
+#: ../src/libs/metadata.c:387
 msgid "clear"
 msgstr "eliminar"
 
-#: ../src/libs/metadata.c:388
+#: ../src/libs/metadata.c:389
 msgid "remove metadata from selected images"
 msgstr "eliminar metadatos de todas las imágenes seleccionadas"
 
@@ -13096,59 +13096,59 @@ msgid "write metadata for selected images"
 msgstr "escribir metadatos de las imágenes seleccionadas"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:434
+#: ../src/libs/metadata.c:433
 msgid "CC BY"
 msgstr "CC BY"
 
-#: ../src/libs/metadata.c:434
+#: ../src/libs/metadata.c:433
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "Creative Commons Atribución (CC BY)"
 
-#: ../src/libs/metadata.c:435
+#: ../src/libs/metadata.c:434
 msgid "CC BY-SA"
 msgstr "CC BY-SA"
 
-#: ../src/libs/metadata.c:435
+#: ../src/libs/metadata.c:434
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr "Creative Commons Atribución-Compartir Igual (CC BY-SA)"
 
-#: ../src/libs/metadata.c:436
+#: ../src/libs/metadata.c:435
 msgid "CC BY-ND"
 msgstr "CC BY-ND"
 
-#: ../src/libs/metadata.c:436
+#: ../src/libs/metadata.c:435
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr "Creative Commons Atribución-Sin Derivadas (CC BY-ND)"
 
-#: ../src/libs/metadata.c:437
+#: ../src/libs/metadata.c:436
 msgid "CC BY-NC"
 msgstr "CC BY-NC"
 
-#: ../src/libs/metadata.c:437
+#: ../src/libs/metadata.c:436
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr "Creative Commons Atribución-No Comercial  (CC BY-NC)"
 
-#: ../src/libs/metadata.c:438
+#: ../src/libs/metadata.c:437
 msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA"
 
-#: ../src/libs/metadata.c:439
+#: ../src/libs/metadata.c:438
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr "Creative Commons Atribución-No Comercial-Compartir Igual (CC BY-NC-SA)"
 
-#: ../src/libs/metadata.c:440
+#: ../src/libs/metadata.c:439
 msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-ND"
 
-#: ../src/libs/metadata.c:441
+#: ../src/libs/metadata.c:440
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr "Creative Commons Atribución-No Comercial-Sin Derivadas (CC BY-NC-ND)"
 
-#: ../src/libs/metadata.c:442
+#: ../src/libs/metadata.c:441
 msgid "all rights reserved"
 msgstr "todos los derechos reservados"
 
-#: ../src/libs/metadata.c:442
+#: ../src/libs/metadata.c:441
 msgid "all rights reserved."
 msgstr "todos los derechos reservados."
 
@@ -14924,7 +14924,7 @@ msgstr "darktable: vista previa del cuarto oscuro"
 msgid "good knight"
 msgstr "buen caballero"
 
-#: ../src/views/lighttable.c:1123 ../src/views/slideshow.c:352
+#: ../src/views/lighttable.c:1123 ../src/views/slideshow.c:372
 msgid "there are no images in this collection"
 msgstr "no hay imágenes en esta colección"
 
@@ -15145,42 +15145,42 @@ msgctxt "view"
 msgid "print"
 msgstr "imprimir"
 
-#: ../src/views/slideshow.c:290 ../src/views/slideshow.c:306
+#: ../src/views/slideshow.c:310 ../src/views/slideshow.c:326
 msgid "end of images. press any key to return to lighttable mode"
 msgstr ""
 "Ha llegado al final. Presione cualquier tecla para volver al modo de mesa de "
 "luz"
 
-#: ../src/views/slideshow.c:320
+#: ../src/views/slideshow.c:340
 msgid "slideshow"
 msgstr "diapositivas"
 
-#: ../src/views/slideshow.c:441
+#: ../src/views/slideshow.c:462
 msgid "waiting to start slideshow"
 msgstr "Esperando para empezar la presentación de diapositivas"
 
-#: ../src/views/slideshow.c:559 ../src/views/slideshow.c:577
-#: ../src/views/slideshow.c:583
+#: ../src/views/slideshow.c:586 ../src/views/slideshow.c:602
+#: ../src/views/slideshow.c:608
 msgid "slideshow paused"
 msgstr "Presentación de diapositivas pausado"
 
-#: ../src/views/slideshow.c:566 ../src/views/slideshow.c:572
+#: ../src/views/slideshow.c:593 ../src/views/slideshow.c:598
 #, c-format
 msgid "slideshow delay set to %d second"
 msgid_plural "slideshow delay set to %d seconds"
 msgstr[0] "Intervalo entre diapositivas establecido en% d segundo"
 msgstr[1] "Intervalo entre diapositivas establecido en% d segundos"
 
-#: ../src/views/slideshow.c:599
+#: ../src/views/slideshow.c:624
 msgctxt "accel"
 msgid "start and stop"
 msgstr "inicio y detención"
 
-#: ../src/views/slideshow.c:613
+#: ../src/views/slideshow.c:638
 msgid "go to next image"
 msgstr "pasar a la siguiente imagen"
 
-#: ../src/views/slideshow.c:618
+#: ../src/views/slideshow.c:643
 msgid "go to previous image"
 msgstr "retroceder a la imagen anterior"
 
