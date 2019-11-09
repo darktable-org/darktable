@@ -10,13 +10,15 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      +no_gnome +no_x11 +quartz -x11 -gnome
     You will also need to add patches for python (https://trac.macports.org/ticket/51736), GraphicsMagick, ImageMagick, libraw and pugixml
     (all fixes are required due to set deployment target):
-     $ mkdir -p ~/ports/devel/gnutls/files ~/ports/lang/python36/files ~/ports/lang/python37/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/graphics/libraw/files ~/ports/textproc
+     $ mkdir -p ~/ports/devel/gnutls/files ~/ports/lang/python36/files ~/ports/lang/python37/files ~/ports/lang/python38/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/graphics/libraw/files ~/ports/textproc
      $ cp -R "$(port dir gnutls)" ~/ports/devel
      $ curl -Lo ~/ports/devel/gnutls/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gnutls-disable-connectx.diff
      $ cp -R "$(port dir python36)" ~/ports/lang
      $ curl -Lo ~/ports/lang/python36/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python36-stack_size.diff
      $ cp -R "$(port dir python37)" ~/ports/lang
      $ curl -Lo ~/ports/lang/python37/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python36-stack_size.diff
+     $ cp -R "$(port dir python38)" ~/ports/lang
+     $ curl -Lo ~/ports/lang/python38/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python38-stack_size.diff
      $ cp -R "$(port dir GraphicsMagick)" ~/ports/graphics
      $ curl -Lo ~/ports/graphics/GraphicsMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gm-deployment_target.diff
      $ cp -R "$(port dir ImageMagick)" ~/ports/graphics
@@ -29,7 +31,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/librsvg-nocargo.patch | patch -d ~/ports -p0
     then append this line:
      patchfiles-append patch.diff
-    to ~/ports/*/*/Portfile files you just copied (except for pugixml) and run:
+    to ~/ports/*/*/Portfile files you just copied (except for pugixml and librsvg) and run:
      $ portindex ~/ports
     Add "file:///Users/<username>/ports" (change <username> to your actual login) to /opt/local/etc/macports/sources.conf before [default] line.
     Install required dependencies:
