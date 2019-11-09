@@ -547,7 +547,12 @@
 #iop-panel-icon-globaltonemap,
 #iop-panel-icon-colorcontrast,
 #iop-panel-icon-bilat,
-#iop-panel-icon-profile_gamma
+#iop-panel-icon-profile_gamma,
+#iop-panel-icon-filmicrgb,
+#iop-panel-icon-rgblevels,
+#iop-panel-icon-lut3d,
+#iop-panel-icon-toneequal,
+#iop-panel-icon-equalizer
 {
     background-image: url('../pixmaps/plugins/darkroom/default.svg');
     background-size: contain;
