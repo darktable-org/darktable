@@ -1533,18 +1533,6 @@ void cleanup(dt_iop_module_t *module)
 }
 
 
-void reload_defaults(struct dt_iop_module_t *self)
-{
-  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
-  if(g == NULL) return;
-
-  invalidate_luminance_cache(self);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  dt_dev_reprocess_all(self->dev);
-  gui_cache_init(self);
-}
-
-
 void show_guiding_controls(struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
@@ -1984,7 +1972,7 @@ static void show_luminance_mask_callback(GtkWidget *togglebutton, dt_iop_module_
 
 static void switch_cursors(struct dt_iop_module_t *self)
 {
-  const dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   if(g == NULL) return;
 
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
@@ -2000,10 +1988,13 @@ static void switch_cursors(struct dt_iop_module_t *self)
     return;
   }
 
-  if(!dtgtk_expander_get_expanded(DTGTK_EXPANDER(self->expander)) || !self->enabled || !g->has_focus)
+  if(!dtgtk_expander_get_expanded(DTGTK_EXPANDER(self->expander)) || !self->enabled)
   {
     // if module lost focus or is disabled
     // do nothing and let the app decide
+    dt_pthread_mutex_lock(&g->lock);
+    g->has_focus = FALSE;
+    dt_pthread_mutex_unlock(&g->lock);
   }
   else if( (self->dev->pipe->processing) ||
           (self->dev->image_status == DT_DEV_PIXELPIPE_DIRTY) ||
@@ -2017,6 +2008,10 @@ static void switch_cursors(struct dt_iop_module_t *self)
   else if(g->cursor_valid && !self->dev->pipe->processing) // seems reduntand but is not
   {
     // hide GTK cursor because we display ours
+    dt_pthread_mutex_lock(&g->lock);
+    g->has_focus = TRUE;
+    dt_pthread_mutex_unlock(&g->lock);
+
     dt_control_change_cursor(GDK_BLANK_CURSOR);
     dt_control_queue_redraw_center();
   }
@@ -2886,12 +2881,7 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
 
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
-  // Give focus to module
   dt_iop_request_focus(self);
-  dt_pthread_mutex_lock(&g->lock);
-  g->has_focus = TRUE;
-  dt_pthread_mutex_unlock(&g->lock);
-  switch_cursors(self);
 
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
@@ -3014,10 +3004,6 @@ static gboolean area_button_release(GtkWidget *widget, GdkEventButton *event, gp
 
   // Give focus to module
   dt_iop_request_focus(self);
-  dt_pthread_mutex_lock(&g->lock);
-  g->has_focus = TRUE;
-  dt_pthread_mutex_unlock(&g->lock);
-  switch_cursors(self);
 
   if(event->button == 1)
   {
@@ -3049,14 +3035,8 @@ static gboolean notebook_button_press(GtkWidget *widget, GdkEventButton *event, 
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return 1;
 
-  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
-
   // Give focus to module
   dt_iop_request_focus(self);
-  dt_pthread_mutex_lock(&g->lock);
-  g->has_focus = TRUE;
-  dt_pthread_mutex_unlock(&g->lock);
-  switch_cursors(self);
 
   return 0;
 }
@@ -3107,6 +3087,19 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   if(g == NULL) return;
   switch_cursors(self);
+}
+
+
+void gui_reset(struct dt_iop_module_t *self)
+{
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+  if(g == NULL) return;
+  dt_iop_request_focus(self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_reprocess_all(self->dev);
+
+  // Redraw graph
+  gtk_widget_queue_draw(self->widget);
 }
 
 
