@@ -272,6 +272,7 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   int area_cursor_valid;    // TRUE if mouse cursor is over the graph area
   int area_dragging;        // TRUE if left-button has been pushed but not released and cursor motion is recorded
   int cursor_valid;         // TRUE if mouse cursor is over the preview image
+  int has_focus;            // TRUE if the widget has the focus from GTK
 
   // Flags for buffer caches invalidation
   int interpolation_valid;  // TRUE if the interpolation_matrix is ready
@@ -1208,6 +1209,7 @@ static void gui_cache_init(struct dt_iop_module_t *self)
   g->area_cursor_valid = FALSE;    // TRUE if mouse cursor is over the graph area
   g->area_dragging = FALSE;        // TRUE if left-button has been pushed but not released and cursor motion is recorded
   g->cursor_valid = FALSE;         // TRUE if mouse cursor is over the preview image
+  g->has_focus = FALSE;            // TRUE if module has focus from GTK
 
   g->full_preview_buf = NULL;
   g->full_preview_buf_width = 0;
@@ -1528,18 +1530,6 @@ void cleanup(dt_iop_module_t *module)
   module->params = NULL;
   free(module->default_params);
   module->default_params = NULL;
-}
-
-
-void reload_defaults(struct dt_iop_module_t *self)
-{
-  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
-  if(g == NULL) return;
-
-  invalidate_luminance_cache(self);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  dt_dev_reprocess_all(self->dev);
-  gui_cache_init(self);
 }
 
 
@@ -1982,7 +1972,7 @@ static void show_luminance_mask_callback(GtkWidget *togglebutton, dt_iop_module_
 
 static void switch_cursors(struct dt_iop_module_t *self)
 {
-  const dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   if(g == NULL) return;
 
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
@@ -2002,6 +1992,9 @@ static void switch_cursors(struct dt_iop_module_t *self)
   {
     // if module lost focus or is disabled
     // do nothing and let the app decide
+    dt_pthread_mutex_lock(&g->lock);
+    g->has_focus = FALSE;
+    dt_pthread_mutex_unlock(&g->lock);
   }
   else if( (self->dev->pipe->processing) ||
           (self->dev->image_status == DT_DEV_PIXELPIPE_DIRTY) ||
@@ -2015,6 +2008,10 @@ static void switch_cursors(struct dt_iop_module_t *self)
   else if(g->cursor_valid && !self->dev->pipe->processing) // seems reduntand but is not
   {
     // hide GTK cursor because we display ours
+    dt_pthread_mutex_lock(&g->lock);
+    g->has_focus = TRUE;
+    dt_pthread_mutex_unlock(&g->lock);
+
     dt_control_change_cursor(GDK_BLANK_CURSOR);
     dt_control_queue_redraw_center();
   }
@@ -2194,7 +2191,7 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
 
   // if GUI buffers not ready, exit but still handle the cursor
   dt_pthread_mutex_lock(&g->lock);
-  const int fail = (!g->cursor_valid || !g->luminance_valid || !g->interpolation_valid || !g->user_param_valid || dev->pipe->processing);
+  const int fail = (!g->cursor_valid || !g->luminance_valid || !g->interpolation_valid || !g->user_param_valid || dev->pipe->processing || !g->has_focus);
   dt_pthread_mutex_unlock(&g->lock);
   if(fail) return 1;
 
@@ -2330,7 +2327,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   if(in_mask_editing(self)) return;
 
   dt_pthread_mutex_lock(&g->lock);
-  const int fail = (!g->cursor_valid || !g->interpolation_valid || !g->luminance_valid || dev->pipe->processing || !sanity_check(self));
+  const int fail = (!g->cursor_valid || !g->interpolation_valid || !g->luminance_valid || dev->pipe->processing || !sanity_check(self) || !g->has_focus);
   dt_pthread_mutex_unlock(&g->lock);
   if(fail) return;
 
@@ -2435,6 +2432,16 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
                     y_pointer - ink.y - ink.height / 2.);
   pango_cairo_show_layout(cr, layout);
   cairo_stroke(cr);
+}
+
+
+void gui_focus(struct dt_iop_module_t *self, gboolean in)
+{
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+  dt_pthread_mutex_lock(&g->lock);
+  g->has_focus = in;
+  dt_pthread_mutex_unlock(&g->lock);
+  switch_cursors(self);
 }
 
 
@@ -2593,6 +2600,13 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
   // Init or refresh the drawing cache
   //if(!g->graph_valid)
   if(!_init_drawing(self->widget, g)) return FALSE; // this can be cached and drawn just once, but too lazy to debug a cache invalidation for Cairo objects
+
+  // since the widget sizes are not cached and invalidated properly above (yet…)
+  // force the invalidation of the nodes coordinates to account for possible widget resizing
+  dt_pthread_mutex_lock(&g->lock);
+  g->valid_nodes_x = FALSE;
+  g->valid_nodes_y = FALSE;
+  dt_pthread_mutex_unlock(&g->lock);
 
   // Refresh cached UI elements
   update_histogram(g);
@@ -2865,11 +2879,14 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return 1;
 
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+
+  dt_iop_request_focus(self);
+
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
     dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
     dt_iop_toneequalizer_params_t *d = (dt_iop_toneequalizer_params_t *)self->default_params;
-    dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
     // reset nodes params
     p->noise = d->noise;
@@ -2895,7 +2912,6 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
   }
   else if(event->button == 1)
   {
-    dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
     if(self->enabled)
     {
       g->area_dragging = 1;
@@ -2984,9 +3000,13 @@ static gboolean area_button_release(GtkWidget *widget, GdkEventButton *event, gp
   if(self->dt->gui->reset) return 1;
   if(!self->enabled) return 0;
 
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+
+  // Give focus to module
+  dt_iop_request_focus(self);
+
   if(event->button == 1)
   {
-    dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
     dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
 
     if(g->area_dragging)
@@ -3010,6 +3030,17 @@ static gboolean area_button_release(GtkWidget *widget, GdkEventButton *event, gp
 }
 
 
+static gboolean notebook_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return 1;
+
+  // Give focus to module
+  dt_iop_request_focus(self);
+
+  return 0;
+}
+
 /**
  * Post pipe events
  **/
@@ -3022,7 +3053,7 @@ static void _develop_ui_pipe_started_callback(gpointer instance, gpointer user_d
   if(g == NULL) return;
   switch_cursors(self);
 
-  if(!dtgtk_expander_get_expanded(DTGTK_EXPANDER(self->expander)))
+  if(!dtgtk_expander_get_expanded(DTGTK_EXPANDER(self->expander)) || !self->enabled || !g->has_focus)
   {
     // if module is not active, disable mask preview
     dt_pthread_mutex_lock(&g->lock);
@@ -3059,6 +3090,19 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
 }
 
 
+void gui_reset(struct dt_iop_module_t *self)
+{
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+  if(g == NULL) return;
+  dt_iop_request_focus(self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_reprocess_all(self->dev);
+
+  // Redraw graph
+  gtk_widget_queue_draw(self->widget);
+}
+
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_toneequalizer_gui_data_t));
@@ -3080,6 +3124,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page3, gtk_label_new(_("masking")));
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->notebook, 0)));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->notebook), "button-press-event", G_CALLBACK(notebook_button_press), self);
 
   gtk_container_child_set(GTK_CONTAINER(g->notebook), page1, "tab-expand", TRUE, "tab-fill", TRUE, NULL);
   gtk_container_child_set(GTK_CONTAINER(g->notebook), page2, "tab-expand", TRUE, "tab-fill", TRUE, NULL);
