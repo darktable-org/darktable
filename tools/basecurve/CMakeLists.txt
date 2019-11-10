@@ -11,6 +11,8 @@ if (OPENMP_FOUND)
 endif()
 target_link_libraries(darktable-curve-tool ${EXIV2_LIBRARY} ${OpenMP_CXX_LIBRARIES} m)
 
+configure_file(README.cmake.md README.md)
+
 install(TARGETS
             darktable-curve-tool
         RUNTIME DESTINATION
@@ -20,3 +22,15 @@ install(PROGRAMS
             darktable-curve-tool-helper
         DESTINATION
             ${CMAKE_INSTALL_LIBEXECDIR}/darktable/tools)
+
+
+install(FILES
+            plot.basecurve plot.tonecurve
+        DESTINATION
+            ${CMAKE_INSTALL_DATAROOTDIR}/darktable/tools/basecurve/)
+install(FILES
+            ${CMAKE_CURRENT_BINARY_DIR}/README.md
+        RENAME
+            README.tools.basecurve.md
+        DESTINATION
+            ${CMAKE_INSTALL_DOCDIR}/)

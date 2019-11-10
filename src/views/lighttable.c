@@ -535,13 +535,22 @@ static void _view_lighttable_collection_listener_internal(dt_view_t *self, dt_li
 
   _update_collected_images(self);
 
-  // we ensure selection visibility if any
-  GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
-  // we have at least 1 selected image
-  if(first_selected)
+  // we ensure selection/image-under-mouse visibility if any
+  // because we may have added/removed a lot of image before this one
+  int cur_id = dt_control_get_mouse_over_id();
+  if(cur_id <= 0)
   {
-    gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid = %d",
-                                   GPOINTER_TO_INT(first_selected->data));
+    GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
+    if(first_selected)
+    {
+      cur_id = GPOINTER_TO_INT(first_selected->data);
+      g_list_free(first_selected);
+    }
+  }
+  // we have at least 1 selected image
+  if(cur_id > 0)
+  {
+    gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid = %d", cur_id);
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
@@ -550,7 +559,6 @@ static void _view_lighttable_collection_listener_internal(dt_view_t *self, dt_li
     }
     if(stmt) sqlite3_finalize(stmt);
     g_free(query);
-    g_list_free(first_selected);
   }
 }
 
@@ -3165,7 +3173,7 @@ static gboolean rating_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
 
   dt_collection_update_query(darktable.collection); // update the counter
 
-  if(layout != DT_LIGHTTABLE_LAYOUT_CULLING && lib->collection_count != _culling_get_selection_count())
+  if(layout != DT_LIGHTTABLE_LAYOUT_CULLING && lib->collection_count != dt_collection_get_count(darktable.collection))
   {
     // some images disappeared from collection. Selection is now invisible.
     // lib->collection_count  --> before the rating

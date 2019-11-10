@@ -2047,7 +2047,7 @@ static gboolean mouse_scroll_attached(GtkWidget *treeview, GdkEventScroll *event
     gtk_widget_get_size_request (GTK_WIDGET(d->attached_window), &width, &height);
     height = height + increment * event->delta_y;
     height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
-    gtk_widget_set_size_request(GTK_WIDGET(d->attached_window), -1, DT_PIXEL_APPLY_DPI((gint)height));
+    gtk_widget_set_size_request(GTK_WIDGET(d->attached_window), -1, (gint)height);
     dt_conf_set_int("plugins/lighttable/tagging/heightattachedwindow", (gint)height);
     return TRUE;
   }
@@ -2066,7 +2066,7 @@ static gboolean mouse_scroll_dictionary(GtkWidget *treeview, GdkEventScroll *eve
     gtk_widget_get_size_request (GTK_WIDGET(d->dictionary_window), &width, &height);
     height = height + increment * event->delta_y;
     height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
-    gtk_widget_set_size_request(GTK_WIDGET(d->dictionary_window), -1, DT_PIXEL_APPLY_DPI((gint)height));
+    gtk_widget_set_size_request(GTK_WIDGET(d->dictionary_window), -1, (gint)height);
     dt_conf_set_int("plugins/lighttable/tagging/heightdictionarywindow", (gint)height);
     return TRUE;
   }
