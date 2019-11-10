@@ -72,6 +72,9 @@
 @define-color field_hover_bg @grey_60;
 @define-color field_hover_fg @grey_20;
 
+/* Tooltips and contextual helpers */
+@define-color tooltip_bg_color @grey_20;
+@define-color menu_bg_color @grey_20;
 
 /* Views */
 @define-color darkroom_bg_color @grey_60;
@@ -99,3 +102,9 @@
 @define-color graph_fg_active @grey_95;
 @define-color graph_grid @grey_20;
 @define-color inset_histogram alpha(@grey_80, 0.50);
+
+menu,
+menuitem arrow
+{
+  background-color: @menu_bg_color;
+}
