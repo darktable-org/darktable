@@ -1193,10 +1193,14 @@ filechooser *:checked
   color: @plugin_fg_color;
 }
 
-#view_dropdown *:disabled,
 #view_label:disabled
 {
   color: @tooltip_bg_color;
+}
+
+#view_dropdown *:disabled
+{
+  color: @disabled_fg_color;
 }
 
 #bauhaus-popup:hover,
@@ -1288,4 +1292,9 @@ scale contents trough slider:focus
 #lib-plugin-ui *:focus,
 #lib-plugin-ui *:focus
 {
+}
+
+menuitem submenu
+{
+  color: #ff0000;
 }
