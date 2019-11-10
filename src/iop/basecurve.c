@@ -168,7 +168,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   {
     dt_iop_basecurve_params5_t *o = (dt_iop_basecurve_params5_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
-    memcpy(n, o, sizeof(dt_iop_basecurve_params4_t));
+    memcpy(n, o, sizeof(dt_iop_basecurve_params5_t));
     n->preserve_colors = DT_RGB_NORM_NONE;
     return 0;
   }
