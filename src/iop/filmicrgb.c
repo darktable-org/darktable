@@ -1240,17 +1240,17 @@ void init(dt_iop_module_t *module)
   dt_iop_filmicrgb_params_t tmp
     = (dt_iop_filmicrgb_params_t){
                                  .grey_point_source   = 9.225, // source grey
-                                 .black_point_source  = -4.37,  // source black
-                                 .white_point_source  = 4.37,  // source white
-                                 .security_factor     = 22.4f,
+                                 .black_point_source  = -4.0f,  // source black
+                                 .white_point_source  = 4.0f,  // source white
+                                 .security_factor     = 16.0f,
                                  .grey_point_target   = 18.45, // target grey
                                  .black_point_target  = 0.0,  // target black
                                  .white_point_target  = 100.0,  // target white
                                  .output_power        = 2.44,  // target power (~ gamma)
-                                 .latitude            = 25.0,  // intent latitude
-                                 .contrast            = 1.25,  // intent contrast
+                                 .latitude            = 30.0f,  // intent latitude
+                                 .contrast            = 1.4,  // intent contrast
                                  .saturation          = 0.0,   // intent saturation
-                                 .balance             = 0.0, // balance shadows/highlights
+                                 .balance             = 20.0f, // balance shadows/highlights
                                  .preserve_color      = DT_FILMIC_METHOD_MAX_RGB // run the saturated variant
                               };
   memcpy(module->params, &tmp, sizeof(dt_iop_filmicrgb_params_t));
@@ -1273,6 +1273,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 
@@ -1456,7 +1458,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->white_point_source, 0.0, 16.0);
   dt_bauhaus_widget_set_label(g->white_point_source, NULL, _("white relative exposure"));
   gtk_box_pack_start(GTK_BOX(page1), g->white_point_source, FALSE, FALSE, 0);
-  dt_bauhaus_slider_set_format(g->white_point_source, "%+.2f EV");
+  dt_bauhaus_slider_set_format(g->white_point_source, _("%+.2f EV"));
   gtk_widget_set_tooltip_text(g->white_point_source, _("number of stops between middle grey and pure white.\n"
                                                        "this is a reading a lightmeter would give you on the scene.\n"
                                                        "adjust so highlights clipping is avoided"));
@@ -1470,7 +1472,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->black_point_source, -16.0, -0.1);
   dt_bauhaus_widget_set_label(g->black_point_source, NULL, _("black relative exposure"));
   gtk_box_pack_start(GTK_BOX(page1), g->black_point_source, FALSE, FALSE, 0);
-  dt_bauhaus_slider_set_format(g->black_point_source, "%+.2f EV");
+  dt_bauhaus_slider_set_format(g->black_point_source, _("%+.2f EV"));
   gtk_widget_set_tooltip_text(g->black_point_source, _("number of stops between middle grey and pure black.\n"
                                                        "this is a reading a lightmeter would give you on the scene.\n"
                                                        "increase to get more contrast.\ndecrease to recover more details in low-lights."));

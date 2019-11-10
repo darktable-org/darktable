@@ -4,15 +4,15 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
-"PO-Revision-Date: 2019-11-03 08:19+0100\n"
-"Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
+"PO-Revision-Date: 2019-11-04 09:42+0100\n"
+"Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Lokalize 19.08.2\n"
+"X-Generator: Poedit 2.2.4\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
@@ -871,11 +871,10 @@ msgid ""
 "the default is to not add any sharpening automatically as most recent "
 "cameras have no low-pass filter. (need a restart)"
 msgstr ""
-"Diese zusätzliche Schärfung wird bei Kameras ohne Tiefpassfilter nicht"
-" empfohlen. "
-"Die Standardeinstellung ist, keine automatische Schärfung hinzuzufügen, da"
-" die meisten aktuellen Kameras keinen Tiefpassfilter haben. (benötigt einen"
-" Neustart)"
+"Diese zusätzliche Schärfung wird bei Kameras ohne Tiefpassfilter nicht "
+"empfohlen. Die Standardeinstellung ist, keine automatische Schärfung "
+"hinzuzufügen, da die meisten aktuellen Kameras keinen Tiefpassfilter haben. "
+"(benötigt einen Neustart)"
 
 #: ../build/src/preferences_gen.h:3652
 msgid "xmp"
@@ -1174,6 +1173,7 @@ msgid "select directory"
 msgstr "Verzeichnis wählen"
 
 #: ../build/src/preferences_gen.h:4135
+#, fuzzy
 msgid ""
 "this folder (and sub-folders) contains Lut files used by lut3d modules. need "
 "to restart darktable."
@@ -1499,6 +1499,7 @@ msgstr "BRG (experimentell)"
 
 #: ../src/common/colorspaces.c:983 ../src/common/colorspaces.c:1246
 #: ../src/iop/colorout.c:881
+#, fuzzy
 msgid "export profile"
 msgstr "Exportprofil"
 
@@ -1521,10 +1522,12 @@ msgid "sRGB (web-safe)"
 msgstr "sRGB (web-sicher)"
 
 #: ../src/common/colorspaces.c:1283
+#, fuzzy
 msgid "gamma Rec709 RGB"
 msgstr "gamma Rec709-RGB"
 
 #: ../src/common/colorspaces.c:1293
+#, fuzzy
 msgid "linear prophoto RGB"
 msgstr "lineares prophoto-RGB"
 
@@ -1883,8 +1886,7 @@ msgstr ""
 #, c-format
 msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
 msgstr ""
-"Nicht unterstütztes Eingabeprofil %s wurde durch lineares Rec709-RGB "
-"ersetzt!\n"
+"Nicht unterstütztes Eingabeprofil %s wurde durch Rec2020-RGB ersetzt!\n"
 
 #: ../src/common/noiseprofiles.c:27
 msgid "generic poissonian"
@@ -2409,6 +2411,7 @@ msgid "local copy images"
 msgstr "Bilder lokal kopieren"
 
 #: ../src/control/jobs/control_jobs.c:1751 ../src/libs/image.c:276
+#, fuzzy
 msgid "refresh exif"
 msgstr "Exif aktualisieren"
 
@@ -3163,6 +3166,7 @@ msgid "[PATH creation] add a smooth node"
 msgstr "[PATH creation] weichen Knoten hinzufügen"
 
 #: ../src/develop/masks/masks.c:170
+#, fuzzy
 msgid "[PATH creation] add a sharp node"
 msgstr "[PATH creation] scharfen Knoten hinzufügen"
 
@@ -3171,6 +3175,7 @@ msgid "[PATH creation] terminate path creation"
 msgstr "[PATH creation] Pfaderstellung beenden"
 
 #: ../src/develop/masks/masks.c:181
+#, fuzzy
 msgid "[PATH on node] switch between smooth/sharp node"
 msgstr "[PATH on node] wechseln zwischen weichen und scharfen Knoten"
 
@@ -3196,13 +3201,15 @@ msgstr "[PATH] Deckkraft ändern"
 
 #: ../src/develop/masks/masks.c:214
 msgid "[PATH] change feather size"
-msgstr "[PATH] Bereich des Ausblenden ändern"
+msgstr "[PATH] Bereich des Ausblendens ändern"
 
 #: ../src/develop/masks/masks.c:221
+#, fuzzy
 msgid "[GRADIENT on pivot] rotate shape"
 msgstr "[GRADIENT on pivot] Form drehen"
 
 #: ../src/develop/masks/masks.c:226
+#, fuzzy
 msgid "[GRADIENT creation] set rotation"
 msgstr "[GRADIENT creation] Drehrichtung einstellen"
 
@@ -3227,6 +3234,7 @@ msgid "[ELLIPSE] switch feathering mode"
 msgstr "[ELLIPSE] Modus für Ausblenden umschalten"
 
 #: ../src/develop/masks/masks.c:262
+#, fuzzy
 msgid "[ELLIPSE] rotate shape"
 msgstr "[ELLIPSE] Form drehen"
 
@@ -3256,7 +3264,7 @@ msgstr "[CIRCLE] Deckkraft ändern"
 
 #: ../src/develop/masks/masks.c:305
 msgid "[CIRCLE] change feather size"
-msgstr "[CIRCLE] Bereich des Ausblenden ändern"
+msgstr "[CIRCLE] Bereich des Ausblendens ändern"
 
 #: ../src/develop/masks/masks.c:331
 msgid "ctrl+click to add a sharp node"
@@ -3982,6 +3990,7 @@ msgid "$(TITLE) - title from metadata"
 msgstr "$(TITLE) – Titel aus den Metadaten"
 
 #: ../src/gui/gtkentry.c:215
+#, fuzzy
 msgid "$(DESCRIPTION) - description from metadata"
 msgstr "$(DESCRIPTION) - Beschreibung aus den Metadaten"
 
@@ -4010,6 +4019,7 @@ msgid "$(TAGS) - tags as set in metadata settings"
 msgstr "$(TAGS) – Tags gemäß den Metadateneinstellungen"
 
 #: ../src/gui/guides.c:108
+#, fuzzy
 msgid "horizontal lines"
 msgstr "horizontale Linien"
 
@@ -4018,14 +4028,17 @@ msgid "number of horizontal guide lines"
 msgstr "Anzahl der horizontalen Hilfslinien"
 
 #: ../src/gui/guides.c:115
+#, fuzzy
 msgid "vertical lines"
 msgstr "vertikale Linien"
 
 #: ../src/gui/guides.c:116
+#, fuzzy
 msgid "number of vertical guide lines"
 msgstr "Anzahl der vertikalen Hilfslinien"
 
 #: ../src/gui/guides.c:122
+#, fuzzy
 msgid "subdivisions"
 msgstr "Unterteilung"
 
@@ -4225,6 +4238,7 @@ msgstr "auto"
 
 #. Adding the import/export buttons
 #: ../src/gui/preferences.c:544 ../src/gui/preferences.c:637
+#, fuzzy
 msgctxt "preferences"
 msgid "import..."
 msgstr "importieren..."
@@ -4244,6 +4258,7 @@ msgstr "Belegung"
 
 #. export button
 #: ../src/gui/preferences.c:642 ../src/libs/styles.c:472
+#, fuzzy
 msgid "export..."
 msgstr "exportieren..."
 
@@ -4263,6 +4278,7 @@ msgstr ""
 "zugewiesen. Soll sie überschrieben werden?"
 
 #: ../src/gui/preferences.c:1026
+#, fuzzy
 msgid "accel conflict"
 msgstr "Konflikt bei der Beschleunigung"
 
@@ -5627,6 +5643,7 @@ msgid "[%s] unselect all segments from zone"
 msgstr "[%s] alle Segmente aus Region abwählen"
 
 #: ../src/iop/atrous.c:117
+#, fuzzy
 msgid "contrast equalizer"
 msgstr "Kontrast Equalizer"
 
@@ -5905,9 +5922,11 @@ msgstr "erhalte Farben"
 msgid "none"
 msgstr "keine"
 
+# wtf?
 #: ../src/iop/basecurve.c:2141 ../src/iop/basicadj.c:708
 #: ../src/iop/rgbcurve.c:1621 ../src/iop/rgblevels.c:1118
 #: ../src/iop/tonecurve.c:1394
+#, fuzzy
 msgid "luminance"
 msgstr "Luminanz"
 
@@ -5920,6 +5939,7 @@ msgstr "max RGB"
 #: ../src/iop/basecurve.c:2143 ../src/iop/basicadj.c:710
 #: ../src/iop/rgbcurve.c:1623 ../src/iop/rgblevels.c:1120
 #: ../src/iop/tonecurve.c:1396
+#, fuzzy
 msgid "average RGB"
 msgstr "mittleres RGB"
 
@@ -5938,6 +5958,7 @@ msgstr "Normalisiertes RGB"
 #: ../src/iop/basecurve.c:2146 ../src/iop/basicadj.c:713
 #: ../src/iop/rgbcurve.c:1626 ../src/iop/rgblevels.c:1123
 #: ../src/iop/tonecurve.c:1399
+#, fuzzy
 msgid "basic power"
 msgstr ""
 
@@ -5998,6 +6019,7 @@ msgid "black level correction"
 msgstr "Schwarzwert-Anpassung"
 
 #: ../src/iop/basicadj.c:675
+#, fuzzy
 msgid ""
 "adjust the black level to unclip negative RGB values.\n"
 "you should never use it to add more density in blacks!\n"
@@ -7229,8 +7251,8 @@ msgid ""
 "can't extract matrix from colorspace `%s', it will be replaced by Rec2020 "
 "RGB!"
 msgstr ""
-"kann Matrix nicht aus dem Farbraum `%s' extrahieren, wird durch Rec2020 RGB"
-" ersetzt!"
+"kann Matrix nicht aus dem Farbraum `%s' extrahieren, wird durch Rec2020 RGB "
+"ersetzt!"
 
 #: ../src/iop/colorin.c:1583
 #, c-format
@@ -7878,6 +7900,7 @@ msgstr "Varianz rot:"
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3946
+#, fuzzy
 msgid "variance computed on the red channel"
 msgstr "berechnete Varianz des Rot-Kanal"
 
@@ -7887,6 +7910,7 @@ msgstr "Varianz grün:"
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3954
+#, fuzzy
 msgid "variance computed on the green channel"
 msgstr "berechnete Varianz des Grün-Kanal"
 
@@ -7896,6 +7920,7 @@ msgstr "Varianz blau:"
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3962
+#, fuzzy
 msgid "variance computed on the blue channel"
 msgstr "berechnete Varianz des Blau-Kanal"
 
@@ -7912,6 +7937,7 @@ msgid "B"
 msgstr "B"
 
 #: ../src/iop/denoiseprofile.c:4011
+#, fuzzy
 msgid "whitebalance-adaptive transform"
 msgstr "Weißabgleichsadaptive Transformation"
 
@@ -10408,6 +10434,7 @@ msgid "RGB, independent channels"
 msgstr "RBG, unabhängige Kanäle"
 
 #: ../src/iop/rgbcurve.c:1517 ../src/iop/rgblevels.c:1014
+#, fuzzy
 msgid "choose between linked and independent channels."
 msgstr "zwischen verknüpften und unabhängigen Kanälen wählen."
 
@@ -11983,6 +12010,7 @@ msgid "delete images' history?"
 msgstr "Bearbeitungsverlauf der Bilder löschen?"
 
 #: ../src/libs/copy_history.c:308 ../src/libs/image.c:204
+#, fuzzy
 msgid "copy..."
 msgstr "kopieren..."
 
@@ -12007,6 +12035,7 @@ msgstr ""
 "ersten ausgewählten Bildes"
 
 #: ../src/libs/copy_history.c:323
+#, fuzzy
 msgid "paste..."
 msgstr "einfügen..."
 
@@ -12066,6 +12095,7 @@ msgstr ""
 "Verlauf umgegangen werden"
 
 #: ../src/libs/copy_history.c:359
+#, fuzzy
 msgid "load sidecar file..."
 msgstr "XMP Begleitdatei laden"
 
@@ -12468,6 +12498,7 @@ msgstr "Zeitversatz auf ausgewählte Bilder anwenden"
 
 #. gpx
 #: ../src/libs/geotagging.c:815
+#, fuzzy
 msgid "apply GPX track file..."
 msgstr "GPX-Track-Datei anwenden..."
 
@@ -12821,6 +12852,7 @@ msgstr "Film importieren"
 
 #. add import single image buttons
 #: ../src/libs/import.c:982
+#, fuzzy
 msgid "image..."
 msgstr "Bild..."
 
@@ -12830,6 +12862,7 @@ msgstr "Ein oder mehrere Bilder zum Import wählen"
 
 #. adding the import folder button
 #: ../src/libs/import.c:993
+#, fuzzy
 msgid "folder..."
 msgstr "Verzeichnis..."
 
@@ -13857,6 +13890,7 @@ msgstr "Erzeuge ein Duplikat des Bildes, bevor der Stil angewendet wird."
 
 #. create
 #: ../src/libs/styles.c:445
+#, fuzzy
 msgid "create..."
 msgstr "erzeugen..."
 
@@ -13866,6 +13900,7 @@ msgstr "Stile aus den Verlaufsstapeln der ausgewählten Bilder erzeugen"
 
 #. edit
 #: ../src/libs/styles.c:451
+#, fuzzy
 msgid "edit..."
 msgstr "bearbeiten..."
 
@@ -13881,6 +13916,7 @@ msgstr "ausgewählten Stil in der Liste löschen"
 
 #. import button
 #: ../src/libs/styles.c:465 ../src/libs/tagging.c:2690
+#, fuzzy
 msgctxt "verb"
 msgid "import..."
 msgstr "Importieren..."
@@ -13959,6 +13995,7 @@ msgid "tag %s removed"
 msgstr "entfernen"
 
 #: ../src/libs/tagging.c:1259 ../src/libs/tagging.c:1924
+#, fuzzy
 msgid "delete branch"
 msgstr "Zweig löschen"
 
@@ -13988,6 +14025,7 @@ msgid "create tag"
 msgstr "erzeugen"
 
 #: ../src/libs/tagging.c:1357 ../src/libs/tagging.c:1540
+#, fuzzy
 msgid "name: "
 msgstr "Name: "
 
@@ -14019,6 +14057,7 @@ msgid "'|' character is not allowed to create a tag. aborting."
 msgstr ""
 
 #: ../src/libs/tagging.c:1419
+#, fuzzy
 msgid "tag name already exists. aborting."
 msgstr "Tag-Name existiert bereits. Abbruch."
 
@@ -14046,6 +14085,7 @@ msgid "at least one new tag name (%s) already exists, aborting"
 msgstr "Stil mit dem Namen „%s” existiert bereits"
 
 #: ../src/libs/tagging.c:1733
+#, fuzzy
 msgid "rename path?"
 msgstr "Pfad umbenennen?"
 
@@ -14070,10 +14110,12 @@ msgid "attach tag"
 msgstr "anhängen"
 
 #: ../src/libs/tagging.c:1920
+#, fuzzy
 msgid "delete tag"
 msgstr "Tag löschen"
 
 #: ../src/libs/tagging.c:1930
+#, fuzzy
 msgid "create tag..."
 msgstr "Tag erzeugen..."
 
@@ -14082,6 +14124,7 @@ msgid "edit tag..."
 msgstr ""
 
 #: ../src/libs/tagging.c:1943
+#, fuzzy
 msgid "rename path..."
 msgstr "Pfad umbenennen..."
 
@@ -14091,6 +14134,7 @@ msgid "copy to entry"
 msgstr "Verlauf kopieren"
 
 #: ../src/libs/tagging.c:1974
+#, fuzzy
 msgid "go to tag collection"
 msgstr "gehe zur Tag-Kollektion"
 
@@ -14104,6 +14148,7 @@ msgid "%s"
 msgstr ""
 
 #: ../src/libs/tagging.c:2097
+#, fuzzy
 msgid "(private)"
 msgstr "(privat)"
 
@@ -14211,6 +14256,7 @@ msgid "import tags from a Lightroom keyword file"
 msgstr "Tags aus einer Lightroom-Stichwortdatei importieren"
 
 #: ../src/libs/tagging.c:2698
+#, fuzzy
 msgctxt "verb"
 msgid "export..."
 msgstr "exportieren..."

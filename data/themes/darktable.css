@@ -679,6 +679,7 @@ filechooserdialog *
 dialog headerbar,
 filechooserdialog headerbar
 {
+  background-color: @border_color;
   margin: 0;
   padding: 0.1em 0.6em;
 }
@@ -712,8 +713,7 @@ filechooserdialog scrolledwindow
 /* Tree view (lists and tables) */
 
 treeview,
-filechooserwidget treeview,
-treeview.view *
+filechooserwidget treeview
 {
   background-color: @field_bg;
   color: @field_fg;
@@ -1014,8 +1014,7 @@ cell:selected
 
 #live-sample-data
 {
-   font-family: courier;
-   font-weight: bold;
+   font-family: monospace;
 }
 
 /* Accels window reminder */

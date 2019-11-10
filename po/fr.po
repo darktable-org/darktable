@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-01 22:21+0100\n"
-"PO-Revision-Date: 2019-11-01 22:21+0100\n"
+"POT-Creation-Date: 2019-11-02 12:42+0100\n"
+"PO-Revision-Date: 2019-11-02 12:42+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -8189,6 +8189,12 @@ msgstr "défauts de magic lantern"
 msgid "failed to get raw buffer from image `%s'"
 msgstr "échec de l'obtention du cache pour l'image « %s »"
 
+#: ../src/iop/exposure.c:806 ../src/iop/exposure.c:885
+#: ../src/iop/exposure.c:924
+#, c-format
+msgid "%.2f EV"
+msgstr "%.2f IL"
+
 #: ../src/iop/exposure.c:866 ../src/iop/levels.c:674
 msgctxt "mode"
 msgid "manual"
@@ -8634,6 +8640,16 @@ msgstr ""
 "ajuster pour correspondre à la luminance moyenne du sujet de l'image.\n"
 "la valeur entrée ici sera alors ajustée pour correspondre à 18.45%\n"
 "diminuer la valeur augment la luminosité globale."
+
+#: ../src/iop/filmicrgb.c:1459 ../src/iop/filmicrgb.c:1473
+#: ../src/iop/toneequal.c:3054 ../src/iop/toneequal.c:3060
+#: ../src/iop/toneequal.c:3066 ../src/iop/toneequal.c:3072
+#: ../src/iop/toneequal.c:3078 ../src/iop/toneequal.c:3084
+#: ../src/iop/toneequal.c:3090 ../src/iop/toneequal.c:3096
+#: ../src/iop/toneequal.c:3102
+#, c-format
+msgid "%+.2f EV"
+msgstr "%+.2f IL"
 
 #: ../src/iop/filmicrgb.c:1485
 msgid "dynamic range scaling"
@@ -10872,7 +10888,7 @@ msgstr "spéculaires"
 #: ../src/iop/toneequal.c:319
 msgctxt "accel"
 msgid "filter diffusion"
-msgstr "filtre de diffusion"
+msgstr "diffusion du filtre"
 
 #: ../src/iop/toneequal.c:320
 msgctxt "accel"
@@ -10882,7 +10898,7 @@ msgstr "diamètre adoucissement"
 #: ../src/iop/toneequal.c:321
 msgctxt "accel"
 msgid "edges refinement or feathering"
-msgstr "raffinement ou adoucissement des bords"
+msgstr "raffinement ou respect des bords"
 
 #: ../src/iop/toneequal.c:322
 msgctxt "accel"
@@ -10892,12 +10908,12 @@ msgstr "quantification masque"
 #: ../src/iop/toneequal.c:323
 msgctxt "accel"
 msgid "mask exposure compensation"
-msgstr "compensation masque exposition"
+msgstr "compensation exposition du masque"
 
 #: ../src/iop/toneequal.c:324
 msgctxt "accel"
 msgid "mask contrast compensation"
-msgstr "compensation masque contraste"
+msgstr "compensation contraste du masque"
 
 #. No blending
 #: ../src/iop/toneequal.c:416
@@ -10977,15 +10993,6 @@ msgstr "avancé"
 #: ../src/iop/toneequal.c:3041
 msgid "masking"
 msgstr "masque"
-
-#: ../src/iop/toneequal.c:3054 ../src/iop/toneequal.c:3060
-#: ../src/iop/toneequal.c:3066 ../src/iop/toneequal.c:3072
-#: ../src/iop/toneequal.c:3078 ../src/iop/toneequal.c:3084
-#: ../src/iop/toneequal.c:3090 ../src/iop/toneequal.c:3096
-#: ../src/iop/toneequal.c:3102
-#, c-format
-msgid "%+.2f EV"
-msgstr "%+.2f IL"
 
 #: ../src/iop/toneequal.c:3055
 msgid "-8 EV"
@@ -11109,7 +11116,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:3165
 msgid "filter diffusion"
-msgstr "filtre de diffusion"
+msgstr "diffusion du filtre"
 
 #: ../src/iop/toneequal.c:3166
 msgid ""
@@ -11135,7 +11142,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:3183
 msgid "edges refinement/feathering"
-msgstr "raffinement/adoucissement bords"
+msgstr "raffinement/respect des bords"
 
 #: ../src/iop/toneequal.c:3184
 msgid ""
@@ -11183,7 +11190,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:3213
 msgid "mask exposure compensation"
-msgstr "compensation masque exposition"
+msgstr "compensation exposition masque"
 
 #: ../src/iop/toneequal.c:3215
 msgid ""
@@ -11198,7 +11205,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:3227
 msgid "mask contrast compensation"
-msgstr "compensation masque contraste"
+msgstr "compensation contraste masque"
 
 #: ../src/iop/toneequal.c:3229
 msgid ""
@@ -15293,6 +15300,9 @@ msgstr "raccourcis"
 #: ../src/views/view.c:2415
 msgid "Action"
 msgstr "action"
+
+#~ msgid "%.2fEV"
+#~ msgstr "%.2fIL"
 
 #~ msgctxt "accel"
 #~ msgid "shadows/highlights balance"

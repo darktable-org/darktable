@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-01 11:31+0100\n"
-"PO-Revision-Date: 2019-11-01 15:00+0300\n"
+"POT-Creation-Date: 2019-11-02 08:06+0300\n"
+"PO-Revision-Date: 2019-11-01 22:17+0300\n"
 "Last-Translator: Timur Davletshin <timur.davletshin@gmail.com>\n"
 "Language-Team: русский\n"
 "Language: ru\n"
@@ -1213,12 +1213,12 @@ msgstr "Показ снимков на карте"
 msgid "Print your images"
 msgstr "Печать снимков"
 
-#: ../src/bauhaus/bauhaus.c:2260
+#: ../src/bauhaus/bauhaus.c:2266
 #, c-format
 msgid "%s/%s: %s"
 msgstr "%s/%s: %s"
 
-#: ../src/bauhaus/bauhaus.c:2262
+#: ../src/bauhaus/bauhaus.c:2268
 #, c-format
 msgid "%s: %s"
 msgstr "%s: %s"
@@ -1665,7 +1665,8 @@ msgstr "Удалить базу данных"
 
 #: ../src/common/fast_guided_filter.h:456
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
-msgstr "Управляемый фильтр: ошибка выделения памяти! Проверьте настройки памяти."
+msgstr ""
+"Управляемый фильтр: ошибка выделения памяти! Проверьте настройки памяти."
 
 #: ../src/common/film.c:311
 msgid "do you want to remove this empty directory?"
@@ -1839,26 +1840,26 @@ msgstr "Распределение Пуассона"
 msgid "noiseprofile file `%s' is not valid"
 msgstr "Файл шумового профиля «%s» некорректный"
 
-#: ../src/common/opencl.c:785
+#: ../src/common/opencl.c:786
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr "Из-за медленного GPU ускорение OpenCL отключено."
 
-#: ../src/common/opencl.c:792
+#: ../src/common/opencl.c:793
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly."
 msgstr ""
 "Обнаружено несколько GPU — настройки планировщика OpenCL изменены "
 "соответствующим образом."
 
-#: ../src/common/opencl.c:799
+#: ../src/common/opencl.c:800
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly."
 msgstr ""
 "Обнаружен очень быстрый GPU — настройки планировщика OpenCL изменены "
 "соответствующим образом."
 
-#: ../src/common/opencl.c:806
+#: ../src/common/opencl.c:807
 msgid "opencl scheduling profile set to default."
 msgstr "Настройки планировщика OpenCL установлены по умолчанию."
 
@@ -6518,7 +6519,8 @@ msgstr "Ч-б Kodak Tri-X 400"
 #: ../src/iop/choleski.h:303 ../src/iop/choleski.h:401
 msgid ""
 "Choleski decomposition failed to allocate memory, check your RAM settings"
-msgstr "Разложение Холецкого: ошибка выделения памяти! Проверьте настройки памяти."
+msgstr ""
+"Разложение Холецкого: ошибка выделения памяти! Проверьте настройки памяти."
 
 #: ../src/iop/clahe.c:337 ../src/iop/sharpen.c:791
 msgid "amount"
@@ -8491,8 +8493,8 @@ msgstr "Широта"
 
 #: ../src/iop/filmicrgb.c:274
 msgctxt "accel"
-msgid "shadows/highlights balance"
-msgstr "Тени и света (баланс)"
+msgid "shadows highlights balance"
+msgstr "Баланс теней и светов"
 
 #: ../src/iop/filmicrgb.c:275
 msgctxt "accel"
@@ -10740,7 +10742,7 @@ msgstr "Диаметр сглаживания"
 
 #: ../src/iop/toneequal.c:321
 msgctxt "accel"
-msgid "edges refinement/feathering"
+msgid "edges refinement or feathering"
 msgstr "Растушёвка"
 
 #: ../src/iop/toneequal.c:322
@@ -11659,7 +11661,7 @@ msgstr "Дата и время"
 
 #: ../src/libs/collect.h:34 ../src/libs/history.c:65
 msgid "history"
-msgstr "История изменений"
+msgstr "История"
 
 #. DT_COLLECTION_SORT_DESCRIPTION
 #: ../src/libs/collect.h:38 ../src/libs/tools/filter.c:157
@@ -15067,6 +15069,10 @@ msgstr "Комбинация"
 #: ../src/views/view.c:2415
 msgid "Action"
 msgstr "Действие"
+
+#~ msgctxt "accel"
+#~ msgid "shadows/highlights balance"
+#~ msgstr "Тени и света (баланс)"
 
 #~ msgctxt "preferences"
 #~ msgid "import"
