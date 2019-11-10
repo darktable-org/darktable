@@ -442,7 +442,7 @@ void tree_select_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTree
 static void _lib_tagging_redraw_callback(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
-  int imgsel = dt_control_get_mouse_over_id();
+  const int imgsel = dt_control_get_mouse_over_id();
   if(imgsel != d->imgsel)
   {
     init_treeview(self, 0);
