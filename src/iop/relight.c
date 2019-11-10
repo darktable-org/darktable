@@ -343,9 +343,6 @@ static void _iop_color_picker_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->tbutton1), g->color_picker.current_picker == 1);
 
   darktable.gui->reset = reset;
-
-  if(g->color_picker.current_picker != 1)
-    dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(g->gslider1), NAN);
 }
 
 void gui_init(struct dt_iop_module_t *self)
