@@ -1286,15 +1286,3 @@ scale contents trough slider:focus
 {
   background-color: @scroll_bar_focus;
 }
-
-#lib-plugin-ui *:hover,
-#iop-plugin-ui *:hover,
-#lib-plugin-ui *:focus,
-#lib-plugin-ui *:focus
-{
-}
-
-menuitem submenu
-{
-  color: #ff0000;
-}
