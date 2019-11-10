@@ -3908,8 +3908,11 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
                                         lib->images_in_row == 1 ? x : fmodf(x + lib->zoom_x, lib->pointed_img_wd),
                                         lib->images_in_row == 1 ? y : fmodf(y + lib->zoom_y, lib->pointed_img_ht)))
   {
-    dt_control_queue_redraw_center();
+    // if zoomable lt a redraw all will be issued later
+    if(get_layout() != DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+      dt_control_queue_redraw_center();
   }
+  if(get_layout() == DT_LIGHTTABLE_LAYOUT_ZOOMABLE) _force_expose_all(self);
 }
 
 int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)
