@@ -106,31 +106,29 @@ void gui_init(dt_lib_module_t *self)
     // let's fall back to the PNG
     char *logo;
     char datadir[PATH_MAX] = { 0 };
-    cairo_surface_t *surface;
-    cairo_t *cr;
 
     dt_loc_get_datadir(datadir, sizeof(datadir));
-    dt_logo_season_t season = dt_util_get_logo_season();
+    const dt_logo_season_t season = dt_util_get_logo_season();
     if(season != DT_LOGO_SEASON_NONE)
       logo = g_strdup_printf("idbutton-%d.png", (int)season);
     else
       logo = g_strdup("idbutton.png");
     char *filename = g_build_filename(datadir, "pixmaps", logo, NULL);
 
-    surface = cairo_image_surface_create_from_png(filename);
+    cairo_surface_t *surface = cairo_image_surface_create_from_png(filename);
     g_free(logo);
     if(cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS)
     {
       fprintf(stderr, "warning: can't load darktable logo from PNG file `%s'\n", filename);
       goto done;
     }
-    int png_width = cairo_image_surface_get_width(surface),
-        png_height = cairo_image_surface_get_height(surface);
+    const int png_width = cairo_image_surface_get_width(surface),
+              png_height = cairo_image_surface_get_height(surface);
 
     // blow up the PNG. Ugly, but at least it has the correct size afterwards :-/
-    int width = DT_PIXEL_APPLY_DPI(png_width) * darktable.gui->ppd,
-        height = DT_PIXEL_APPLY_DPI(png_height) * darktable.gui->ppd;
-    int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
+    const int width = DT_PIXEL_APPLY_DPI(png_width) * darktable.gui->ppd,
+              height = DT_PIXEL_APPLY_DPI(png_height) * darktable.gui->ppd;
+    const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
 
     d->image_buffer = (guint8 *)calloc(stride * height, sizeof(guint8));
     d->image
@@ -145,7 +143,7 @@ void gui_init(dt_lib_module_t *self)
       goto done;
     }
 
-    cr = cairo_create(d->image);
+    cairo_t *cr = cairo_create(d->image);
     cairo_rectangle(cr, 0, 0, width, height);
     cairo_scale(cr, darktable.gui->dpi_factor, darktable.gui->dpi_factor);
     cairo_set_source_surface(cr, surface, 0, 0);
