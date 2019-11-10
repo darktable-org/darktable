@@ -59,7 +59,7 @@
 @define-color button_focus_fg @grey_90;
 @define-color button_checked_bg @grey_60;
 @define-color button_checked_fg @grey_100;
-@define-color button_hover_bg @grey_70;
+@define-color button_hover_bg @grey_65;
 @define-color button_hover_fg @grey_30;
 
 /* text fields */
