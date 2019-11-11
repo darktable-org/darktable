@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-10 19:18+0300\n"
+"POT-Creation-Date: 2019-11-10 10:50+0300\n"
 "PO-Revision-Date: 2019-11-01 22:17+0300\n"
 "Last-Translator: Timur Davletshin <timur.davletshin@gmail.com>\n"
 "Language-Team: русский\n"
@@ -1678,9 +1678,9 @@ msgstr[2] "Вы действительно хотите удалить эти п
 #: ../src/common/film.c:318
 msgid "remove empty directory?"
 msgid_plural "remove empty directories?"
-msgstr[0] "Удалить пустой каталог?"
-msgstr[1] "Удалить пустые каталоги?"
-msgstr[2] "Удалить пустые каталоги?"
+msgstr[0] "Удаление пустого каталога"
+msgstr[1] "Удаление пустых каталогов"
+msgstr[2] "Удаление пустых каталогов"
 
 #: ../src/common/film.c:337 ../src/gui/preferences.c:502
 #: ../src/gui/styles_dialog.c:309
@@ -1925,7 +1925,7 @@ msgstr "Для применения оценки нужно выбрать хо�
 #: ../src/common/styles.c:188
 #, c-format
 msgid "style with name '%s' already exists"
-msgstr "Стиль с названием «%s» уже существует"
+msgstr "Стиль «%s» уже существует"
 
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:314 ../src/common/styles.c:318
@@ -1940,7 +1940,7 @@ msgstr "Стили/Применить «%s»"
 #: ../src/common/styles.c:404 ../src/gui/styles_dialog.c:144
 #, c-format
 msgid "style named '%s' successfully created"
-msgstr "Стиль с названием «%s» успешно создан"
+msgstr "Стиль «%s» успешно создан"
 
 #. fail :(
 #: ../src/common/styles.c:503 ../src/common/styles.c:521
@@ -3045,7 +3045,7 @@ msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
 msgstr ""
-"Действия с несколькими копиями модуля.\n"
+"Копии модуля.\n"
 "Щелчок правой кнопкой мыши создаёт новую копию."
 
 #: ../src/develop/imageop.c:1961 ../src/libs/lib.c:984
@@ -3063,7 +3063,7 @@ msgid ""
 "presets\n"
 "middle-click to apply on new instance"
 msgstr ""
-"Профили\n"
+"Профили.\n"
 "Щелчок средней кнопкой мыши для применения над новой копией."
 
 #: ../src/develop/lightroom.c:1072
@@ -4252,7 +4252,7 @@ msgstr "Ошибка импорта профиля!"
 #: ../src/gui/preferences.c:1384 ../src/gui/presets.c:385
 #, c-format
 msgid "edit `%s' for module `%s'"
-msgstr "Изменить профиль «%s» для модуля «%s»"
+msgstr "Изменение профиля «%s» для модуля «%s»"
 
 #: ../src/gui/preferences.c:1407 ../src/gui/presets.c:408 ../src/libs/lib.c:252
 msgid "description or further information"
@@ -4261,20 +4261,18 @@ msgstr "Описание профиля"
 #: ../src/gui/preferences.c:1410 ../src/gui/presets.c:411
 msgid "auto apply this preset to matching images"
 msgstr ""
-"Автоматически применять к снимкам,\n"
-"соответствующим указанным критериям"
+"Автоматически применять к снимкам, соответствующим указанным критериям"
 
 #: ../src/gui/preferences.c:1413 ../src/gui/presets.c:414
 msgid "only show this preset for matching images"
 msgstr ""
-"Показывать профиль только для снимков, \n"
-"соответствующих указанным критериям"
+"Показывать профиль только для снимков, соответствующих указанным критериям"
 
 #: ../src/gui/preferences.c:1415 ../src/gui/presets.c:415
 msgid ""
 "be very careful with this option. this might be the last time you see your "
 "preset."
-msgstr "Будьте осторожны — возможно, вы видите этот профиль в последний раз"
+msgstr "Будьте осторожны! Возможно, вы видите этот профиль в последний раз."
 
 #: ../src/gui/preferences.c:1429 ../src/gui/presets.c:430
 #, no-c-format
@@ -4346,7 +4344,7 @@ msgstr "Профиль «%s» успешно импортирован"
 #: ../src/libs/lib.c:312 ../src/libs/lib.c:320 ../src/libs/lib.c:322
 #: ../src/libs/lib.c:324
 msgid "new preset"
-msgstr "новый профиль"
+msgstr "Новый профиль"
 
 #: ../src/gui/presets.c:224
 msgid "please give preset a name"
@@ -13213,7 +13211,7 @@ msgstr "Скрыть все"
 
 #: ../src/libs/modulelist.c:362
 msgid "subset: all modules"
-msgstr "Показать все"
+msgstr "Все модули"
 
 #. basic raw handling
 #. cropping & orientation
@@ -13313,7 +13311,7 @@ msgstr "Портретная фотография"
 #. extra denoising methods
 #: ../src/libs/modulelist.c:470
 msgid "workspace: lowlight & high ISO"
-msgstr "Низкие и высокие значения ISO"
+msgstr "Низкие и высокие ISO"
 
 #: ../src/libs/modulelist.c:478
 msgid "subset: creative modules only"
