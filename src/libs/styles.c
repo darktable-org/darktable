@@ -68,7 +68,7 @@ int position()
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "delete"), 0, 0);
+  dt_accel_register_lib(self, NC_("accel", "remove"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "export"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "import"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "edit"), 0, 0);
@@ -78,7 +78,7 @@ void connect_key_accels(dt_lib_module_t *self)
 {
   dt_lib_styles_t *d = (dt_lib_styles_t *)self->data;
 
-  dt_accel_connect_button_lib(self, "delete", d->delete_button);
+  dt_accel_connect_button_lib(self, "remove", d->delete_button);
   dt_accel_connect_button_lib(self, "export", d->export_button);
   dt_accel_connect_button_lib(self, "import", d->import_button);
   if(d->edit_button) dt_accel_connect_button_lib(self, "edit", d->edit_button);
@@ -272,12 +272,12 @@ static void delete_clicked(GtkWidget *w, gpointer user_data)
 
       GtkWidget *dialog = gtk_message_dialog_new
       (GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-       _("do you really want to delete style '%s'?"), name);
+       _("do you really want to remove style '%s'?"), name);
 #ifdef GDK_WINDOWING_QUARTZ
       dt_osx_disallow_fullscreen(dialog);
 #endif
 
-      gtk_window_set_title(GTK_WINDOW(dialog), _("delete style?"));
+      gtk_window_set_title(GTK_WINDOW(dialog), _("remove style?"));
       res = gtk_dialog_run(GTK_DIALOG(dialog));
       gtk_widget_destroy(dialog);
     }
@@ -473,7 +473,7 @@ void gui_init(dt_lib_module_t *self)
   widget = gtk_button_new_with_label(_("remove"));
   d->delete_button = widget;
   g_signal_connect(widget, "clicked", G_CALLBACK(delete_clicked), d);
-  gtk_widget_set_tooltip_text(widget, _("deletes the selected style in list above"));
+  gtk_widget_set_tooltip_text(widget, _("removes the selected style in list above"));
   gtk_box_pack_start(GTK_BOX(hbox1), widget, TRUE, TRUE, 0);
 
   // import button
