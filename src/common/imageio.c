@@ -669,12 +669,20 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
     GList *modules_used = NULL;
 
+    int imgid_iop_order_version = dt_image_get_iop_order_version(imgid);
+    GList *current_iop_list = dt_ioppr_get_iop_order_list(&imgid_iop_order_version);
+
     dt_dev_pop_history_items_ext(&dev, dev.history_end);
 
     GList *st_items = g_list_last(style_items);
     while(st_items)
     {
       dt_style_item_t *st_item = (dt_style_item_t *)(st_items->data);
+
+      // we need to adjust the iop-order for each item
+
+      st_item->iop_order =
+        dt_ioppr_get_iop_order(current_iop_list, st_item->operation) + (double)st_item->multi_priority / 100.0f;
 
       dt_styles_apply_style_item(&dev, st_item, &modules_used, format_params->style_append);
 
