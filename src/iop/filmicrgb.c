@@ -640,7 +640,7 @@ static void apply_auto_grey(dt_iop_module_t *self)
   const float grey = get_pixel_norm(self->picked_color, p->preserve_color, work_profile) / 2.0f;
 
   const float prev_grey = p->grey_point_source;
-  p->grey_point_source = 100.f * grey;
+  p->grey_point_source = CLAMP(100.f * grey, 0.001f, 100.0f);
   const float grey_var = log2f(prev_grey / p->grey_point_source);
   p->black_point_source = p->black_point_source - grey_var;
   p->white_point_source = p->white_point_source + grey_var;
@@ -669,7 +669,7 @@ static void apply_auto_black(dt_iop_module_t *self)
         = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
   const float black = get_pixel_norm(self->picked_color_min, p->preserve_color, work_profile);
 
-  float EVmin = log2f(black / (p->grey_point_source / 100.0f));
+  float EVmin = CLAMP(log2f(black / (p->grey_point_source / 100.0f)), -16.0f, -1.0f);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
   p->black_point_source = fmaxf(EVmin, -16.0f);
@@ -697,7 +697,7 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
         = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
   const float white = get_pixel_norm(self->picked_color_max, p->preserve_color, work_profile);
 
-  float EVmax = log2f(white / (p->grey_point_source / 100.0f));
+  float EVmax = CLAMP(log2f(white / (p->grey_point_source / 100.0f)), 1.0f, 16.0f);
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
   p->white_point_source = EVmax;
@@ -722,16 +722,16 @@ static void apply_autotune(dt_iop_module_t *self)
 
   // Grey
   const float grey = get_pixel_norm(self->picked_color, p->preserve_color, work_profile) / 2.0f;
-  p->grey_point_source = 100.f * grey;
+  p->grey_point_source = CLAMP(100.f * grey, 0.001f, 100.0f);
 
   // White
   const float white = get_pixel_norm(self->picked_color_max, p->preserve_color, work_profile);
-  float EVmax = log2f(white / (p->grey_point_source / 100.0f));
+  float EVmax = CLAMP(log2f(white / (p->grey_point_source / 100.0f)), 1.0f, 16.0f);
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
   // Black
   const float black = get_pixel_norm(self->picked_color_min, p->preserve_color, work_profile);
-  float EVmin = log2f(black / (p->grey_point_source / 100.0f));
+  float EVmin = CLAMP(log2f(black / (p->grey_point_source / 100.0f)), -16.0f, -1.0f);
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
   p->black_point_source = fmaxf(EVmin, -16.0f);
