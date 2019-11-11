@@ -328,7 +328,9 @@ button
 }
 
 #recent-collection-button,
-#history-button
+#history-button,
+#history-button-always-enabled,
+#history-button-default-enabled
 {
   /* Exception because history and recent collections modules make use of a
    * list of GTK buttons but we don't want them to look like action buttons */
@@ -336,6 +338,12 @@ button
   border-color: transparent;
   border: 0;
   font-weight: normal;
+}
+
+#history-button-always-enabled *,
+#history-button-default-enabled *
+{
+  color: shade(@plugin_label_color, 0.9);
 }
 
 #dt-button button,
