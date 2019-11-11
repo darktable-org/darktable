@@ -1066,12 +1066,15 @@ void gui_init(dt_iop_module_t *self)
 
   c->blackpick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(c->blackpick, _("pick black point from image"));
+  gtk_widget_set_name(GTK_WIDGET(c->blackpick), "picker-black");
 
   c->greypick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(c->greypick, _("pick medium gray point from image"));
+  gtk_widget_set_name(GTK_WIDGET(c->greypick), "picker-grey");
 
   c->whitepick = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(c->whitepick, _("pick white point from image"));
+  gtk_widget_set_name(GTK_WIDGET(c->whitepick), "picker-white");
 
   GdkRGBA color = { 0 };
   color.alpha = 1.0;
