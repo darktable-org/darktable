@@ -1293,3 +1293,20 @@ scale contents trough slider:focus
 {
   background-color: @scroll_bar_focus;
 }
+
+/* color picker visibility for levels and rgb levels modules, be careful to not change that unless you really now what you do */
+
+#picker-black
+{
+  color: @grey_00;
+}
+
+#picker-grey
+{
+  color: @grey_50;
+}
+
+#picker-white
+{
+  color: @grey_100;
+}
