@@ -1859,6 +1859,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
 
+  dtgtk_justify_notebook_tabs(c->channel_tabs);
+
   // graph
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(0.75));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
