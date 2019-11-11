@@ -691,6 +691,7 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
     g_list_free(modules_used);
     g_list_free_full(style_items, dt_style_item_free);
+    g_list_free_full(current_iop_list, free);
   }
 
   dt_dev_pixelpipe_set_icc(&pipe, icc_type, icc_filename, icc_intent);

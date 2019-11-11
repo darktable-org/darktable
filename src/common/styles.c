@@ -689,7 +689,6 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
     dt_dev_pop_history_items_ext(dev_dest, dev_dest->history_end);
 
     int my_iop_order_version = dt_image_get_iop_order_version(imgid);
-
     GList *current_iop_list = dt_ioppr_get_iop_order_list(&my_iop_order_version);
 
     dt_ioppr_check_iop_order(dev_dest, newimgid, "dt_styles_apply_to_image 1");
@@ -736,6 +735,7 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
       dt_styles_apply_style_item(dev_dest, &style_item, &modules_used, FALSE);
     }
     sqlite3_finalize(stmt);
+    g_list_free_full(current_iop_list, free);
 
     if (DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv --> look for written history below\n");
 
