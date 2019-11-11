@@ -110,3 +110,9 @@ menuitem arrow
 {
   background-color: @menu_bg_color;
 }
+
+/* Adjust middle grey picker on levels and rgb levels modules to make it visible */
+#picker-grey
+{
+  color: @grey_65;
+}
