@@ -644,12 +644,14 @@ static void apply_auto_grey(dt_iop_module_t *self)
   const float grey_var = log2f(prev_grey / p->grey_point_source);
   p->black_point_source = p->black_point_source - grey_var;
   p->white_point_source = p->white_point_source + grey_var;
+  p->output_power =  logf(p->grey_point_target / 100.0f) / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
 
   const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->grey_point_source, p->grey_point_source);
   dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
   dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
+  dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
   darktable.gui->reset = reset;
 
   gtk_widget_queue_draw(self->widget);
@@ -670,11 +672,13 @@ static void apply_auto_black(dt_iop_module_t *self)
   float EVmin = log2f(black / (p->grey_point_source / 100.0f));
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
-  p->black_point_source = fmaxf(fmaxf(EVmin, -p->white_point_source), -16.0f);
+  p->black_point_source = fmaxf(EVmin, -16.0f);
+  p->output_power =  logf(p->grey_point_target / 100.0f) / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
 
   const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
+  dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
   darktable.gui->reset = reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -697,10 +701,12 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
   EVmax *= (1.0f + p->security_factor / 100.0f);
 
   p->white_point_source = EVmax;
+  p->output_power =  logf(p->grey_point_target / 100.0f) / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
 
   const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
+  dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
   darktable.gui->reset = reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -728,14 +734,16 @@ static void apply_autotune(dt_iop_module_t *self)
   float EVmin = log2f(black / (p->grey_point_source / 100.0f));
   EVmin *= (1.0f + p->security_factor / 100.0f);
 
-  p->black_point_source = fmaxf(fmaxf(EVmin, -EVmax), -16.0f);
+  p->black_point_source = fmaxf(EVmin, -16.0f);
   p->white_point_source = EVmax;
+  p->output_power =  logf(p->grey_point_target / 100.0f) / logf(-p->black_point_source / (p->white_point_source - p->black_point_source));
 
   const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
   dt_bauhaus_slider_set_soft(g->grey_point_source, p->grey_point_source);
   dt_bauhaus_slider_set_soft(g->black_point_source, p->black_point_source);
   dt_bauhaus_slider_set_soft(g->white_point_source, p->white_point_source);
+  dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
   darktable.gui->reset = reset;
 
   gtk_widget_queue_draw(self->widget);
