@@ -1076,14 +1076,6 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(c->whitepick, _("pick white point from image"));
   gtk_widget_set_name(GTK_WIDGET(c->whitepick), "picker-white");
 
-  GdkRGBA color = { 0 };
-  color.alpha = 1.0;
-  dtgtk_togglebutton_override_color(DTGTK_TOGGLEBUTTON(c->blackpick), &color);
-  color.red = color.green = color.blue = 0.5;
-  dtgtk_togglebutton_override_color(DTGTK_TOGGLEBUTTON(c->greypick), &color);
-  color.red = color.green = color.blue = 1.0;
-  dtgtk_togglebutton_override_color(DTGTK_TOGGLEBUTTON(c->whitepick), &color);
-
   GtkWidget *pick_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_start(GTK_BOX(pick_hbox), GTK_WIDGET(c->blackpick), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(pick_hbox), GTK_WIDGET(c->greypick), TRUE, TRUE, 0);
