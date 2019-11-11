@@ -831,19 +831,19 @@
       </para>
 
       <para>
-        The right part lets you define a formula per metadata. What you define here
+        The right part lets you define a formula per metadata entry. What you define here
         has priority on the left settings.
-        The first column identifies the metadata. The second one is editable and defines the metadata calculation.
-        Letting the formula empty prevents to export this specific metadata (Exif.GPSInfo.GPSVersionID in the above example).
-        Otherwise you can use any of the variables and rules defined above for filename.
-        Click on <emphasis>enter</emphasis> to validate the formula.
+        The first column identifies the entry to be edited. The second column is editable and defines the calculation of the metadata entry.
+        Leaving the formula empty prevents the exporting of this specific metadata entry (Exif.GPSInfo.GPSVersionID in the above example).
+        To define a formula, you can use the same variables and rules as for filenames (as documented in <xref linkend="export_selected_usage_filename"/>).
+        Press <emphasis>enter</emphasis> to validate the formula.
       </para>
 
       <para>
-        Use the icon <quote>-</quote> to remove a metadata from the list, the
-        icon <quote>+</quote> to add a new one from the predefined list:
+        Use the <quote>-</quote> icon to remove a metadata entry from the list, the
+        <quote>+</quote> icon to add a new one from the predefined list:
         <graphic fileref="lighttable/images/panel_exportselected-metadata-selection.png" scalefit="1" width="40%" align="center" />
-        Double-click or click on button <emphasis>add</emphasis> to add a metadata to the configuration list.
+        Double-click or click on button <emphasis>add</emphasis> to add a metadata entry to the configuration list.
       </para>
 
       <para>
@@ -852,30 +852,34 @@
         formulas, export the values in the xmp or iptc tags of your choice. The exported tags
         can be different from one export to the other depending on the destination of the images.
         Just remember that tags set as <emphasis>category</emphasis> are not exported.
-        Tags and Categories are displayed separately in image informations.
+        Tags and Categories are displayed separately in image information.
       </para>
 
       <para>
-        Example 1. A first level tag called <emphasis>places</emphasis> set as category followed
-        by four levels, country, region, city and location: <code>places|France|Nord|Lille|rue Nationale</code>.
-        The formulas <code>$(CATEGORY0(places))</code>, <code>$(CATEGORY1(places))</code>,
-        <code>$(CATEGORY2(places))</code> and <code>$(CATEGORY3(places))</code>
-        retrieve the four values (when exist) which can be assigned separately to the xmp tags you need.
-        Image informations display the four values in tags list. They can also be exported as simple tags <code>$(TAGS)</code>, unlike
-        the tag <emphasis>places</emphasis>.
+        Example 1. A first level tag called <emphasis>places</emphasis> is set as a category,
+        and is followed by four levels of information (or keywords), country, region, city and location:
+        <code>places|France|Nord|Lille|rue Nationale</code>.
+        Each level can be retrieved (when it is defined) by one of the variables
+        <code>$(CATEGORY0(places))</code>, <code>$(CATEGORY1(places))</code>,
+        <code>$(CATEGORY2(places))</code> and <code>$(CATEGORY3(places))</code>.
+        In that example, the returned values are respectively: <emphasis>France</emphasis>,
+        <emphasis>Nord</emphasis>, <emphasis>Lille</emphasis> and <emphasis>rue Nationale</emphasis>.
+        These keywords can also be retrieved as simple tags by the variable <code>$(TAGS)</code>.
+        The last keyword level defined (the leaf) is displayed in Image informations, here <emphasis>rue Nationale</emphasis>.
       </para>
 
       <para>
         Example 2. A first level tag called <emphasis>creator</emphasis> followed by the name of the photographer,
         both set as <emphasis>category</emphasis>: <code>creator|firstname lastname</code>.
         The formula <code>copyrights $(YEAR) $(CATEGORY0(creator))</code> builds the text associated to image rights.
-        Image informations display in categories the following: <code>creator: firstname lastname</code>.
-        <code>firstname lastname</code> doesn't appear in tags list and is not exported as simple tag.
+        Image information display in categories the following: <code>creator: firstname lastname</code>.
+        Neither <code>creator</code> nor <code>firstname lastname</code> appear in tags list;
+        they are also not exported as simple tags.
       </para>
 
       <para>
-        Note: tagging is not appropriate to define free text metadata like title or description, which may be
-        specific to each image. Prefer metadata editor for this type of information.
+        Note: tagging is not appropriate to define free text metadata, like a title or a description, which may be
+        specific to each image. Prefer using the metadata editor for this type of information (see <xref linkend="metadata_editor"/>).
       </para>
 
     </sect4>
