@@ -378,6 +378,11 @@ button
   min-width: 1em;
 }
 
+#module-always-enabled-button /* Button on always activated module */
+{
+  color: @plugin_label_color;
+}
+
 /* Button to open/close the dropdown section, especially header ones */
 #control-button
 {
