@@ -798,6 +798,7 @@ GtkGrid* init_tab_lua(GtkWidget *dialog, GtkWidget *tab)
   gtk_container_add(GTK_CONTAINER(scroll), viewport);
   gtk_container_add(GTK_CONTAINER(viewport), grid);
   gtk_notebook_append_page(GTK_NOTEBOOK(tab), scroll, gtk_label_new(_("lua options")));
+  dtgtk_justify_notebook_tabs(GTK_NOTEBOOK(tab));
 
   pref_element *cur_elt = pref_list;
   while(cur_elt)
