@@ -459,8 +459,16 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
   {
     const int ch = c->channel;
     const uint32_t *hist = self->histogram;
-    const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? self->histogram_max[ch]
-                                                                          : logf(1.0 + self->histogram_max[ch]);
+    float hist_max;
+
+    if(p->autoscale == DT_IOP_RGBLEVELS_LINKED_CHANNELS)
+      hist_max = fmaxf(self->histogram_max[DT_IOP_RGBLEVELS_R], fmaxf(self->histogram_max[DT_IOP_RGBLEVELS_G],self->histogram_max[DT_IOP_RGBLEVELS_B]));
+    else
+      hist_max = self->histogram_max[ch];
+
+    if (dev->histogram_type != DT_DEV_HISTOGRAM_LINEAR)
+      hist_max = logf(1.0 + hist_max);
+
     if(hist && hist_max > 0.0f)
     {
       cairo_save(cr);
@@ -471,13 +479,13 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
         cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
 
         cairo_set_source_rgba(cr, 1., 0., 0., 0.2);
-        dt_draw_histogram_8(cr, hist, 4, 0, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+        dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_R, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
 
         cairo_set_source_rgba(cr, 0., 1., 0., 0.2);
-        dt_draw_histogram_8(cr, hist, 4, 1, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+        dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_G, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
 
         cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
-        dt_draw_histogram_8(cr, hist, 4, 2, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+        dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_B, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
       }
       else if(p->autoscale == DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS)
       {
