@@ -341,6 +341,14 @@
             </row>
             <row>
               <entry>
+                <code>$(DECRIPTION)</code>
+              </entry>
+              <entry>
+                description from metadata
+              </entry>
+            </row>
+            <row>
+              <entry>
                 <code>$(CREATOR)</code>
               </entry>
               <entry>
@@ -393,6 +401,22 @@
               </entry>
               <entry>
                 desktop folder
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(TAGS)</code>
+              </entry>
+              <entry>
+                tags list (Xmp.dc.Subject)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(CATEGORYn$(category))</code>
+              </entry>
+              <entry>
+                tag name of level n [0,3] of selected category (or tag)
               </entry>
             </row>
           </tbody>
@@ -670,15 +694,8 @@
       </para>
 
       <para>
-        If you don't want to distribute history stack data with your images, there are various
-        tools to delete embedded XMP tags. As an example you can use the program
-        <ulink url="http://www.sno.phy.queensu.ca/~phil/exiftool/"><emphasis>exiftool</emphasis></ulink>
-        with:
-      </para>
-
-      <para>
-<programlisting>Exiftool -XMP:all=   image.jpg
-</programlisting>
+        If you don't want to distribute history stack data (or any other type of metadata) with your images
+        your can tweak the export metadata configuration.
       </para>
 
     </sect4>
@@ -786,6 +803,83 @@
         You may <emphasis>abort</emphasis> the export job by clicking on the
         <inlinegraphic fileref="&icon_lighttable_abort;" scalefit="1" width="2%" align="center" />
         icon located close to the progress bar.
+      </para>
+
+    </sect4>
+
+    <sect4 id="export_selected_usage_metadata">
+
+      <title>metadata</title>
+
+      <para>
+        Pressing the
+        <inlinegraphic fileref="&icon_preferences;" scalefit="1" width="2%" align="center" /> icon
+        on the right of export button opens a window to configure which metadata are to be embedded
+        into the exported image.
+      </para>
+
+      <para>
+        Metadata configuration is saved along with other export selected parameters to your favorites presets.
+      </para>
+
+      <para>
+        <graphic fileref="lighttable/images/panel_exportselected-metadata-config.png" scalefit="1" width="80%" align="center" />
+        The left part lets you select the groups of metadata to be exported.
+        The  entry <emphasis>metadata</emphasis> corresponds to metadata defined in metadata editor.
+        Under entry <emphasis>tags</emphasis> you can request the exportation of private tags,
+        synonyms and omit to include the path elements of hierarchical tags. Remember that a tag set up as a category is never exported.
+      </para>
+
+      <para>
+        The right part lets you define a formula per metadata entry. What you define here
+        has priority on the left settings.
+        The first column identifies the entry to be edited. The second column is editable and defines the calculation of the metadata entry.
+        Leaving the formula empty prevents the exporting of this specific metadata entry (Exif.GPSInfo.GPSVersionID in the above example).
+        To define a formula, you can use the same variables and rules as for filenames (as documented in <xref linkend="export_selected_usage_filename"/>).
+        Press <emphasis>enter</emphasis> to validate the formula.
+      </para>
+
+      <para>
+        Use the <quote>-</quote> icon to remove a metadata entry from the list, the
+        <quote>+</quote> icon to add a new one from the predefined list:
+        <graphic fileref="lighttable/images/panel_exportselected-metadata-selection.png" scalefit="1" width="40%" align="center" />
+        Double-click or click on button <emphasis>add</emphasis> to add a metadata entry to the configuration list.
+      </para>
+
+      <para>
+        The formulas allow you to get the most of the tagging function. You can virtually define
+        all the metadata you need to qualify your images in tagging and, thanks to these
+        formulas, export the values in the xmp or iptc tags of your choice. The exported tags
+        can be different from one export to the other depending on the destination of the images.
+        Just remember that tags set as <emphasis>category</emphasis> are not exported.
+        Tags and Categories are displayed separately in image information.
+      </para>
+
+      <para>
+        Example 1. A first level tag called <emphasis>places</emphasis> is set as a category,
+        and is followed by four levels of information (or keywords), country, region, city and location:
+        <code>places|France|Nord|Lille|rue Nationale</code>.
+        Each level can be retrieved (when it is defined) by one of the variables
+        <code>$(CATEGORY0(places))</code>, <code>$(CATEGORY1(places))</code>,
+        <code>$(CATEGORY2(places))</code> and <code>$(CATEGORY3(places))</code>.
+        In that example, the returned values are respectively: <emphasis>France</emphasis>,
+        <emphasis>Nord</emphasis>, <emphasis>Lille</emphasis> and <emphasis>rue Nationale</emphasis>.
+        These keywords can also be retrieved as simple tags by the variable <code>$(TAGS)</code>.
+        The last keyword level defined (the leaf) is displayed in Image informations, here <emphasis>rue Nationale</emphasis>.
+      </para>
+
+      <para>
+        Example 2. A first level tag called <emphasis>creator</emphasis> followed by the name of the photographer,
+        both set as <emphasis>category</emphasis>: <code>creator|firstname lastname</code>.
+        The formula <code>copyrights $(YEAR) $(CATEGORY0(creator))</code> builds the text associated to image rights.
+        Image information display in categories the following: <code>creator: firstname lastname</code>.
+        Neither <code>creator</code> nor <code>firstname lastname</code> appear in tags list;
+        they are also not exported as simple tags.
+      </para>
+
+      <para>
+        Note: tagging is not appropriate to define free text metadata, like a title or a description, which may be
+        specific to each image. Prefer using the metadata editor for this type of information (see <xref linkend="metadata_editor"/>).
       </para>
 
     </sect4>
