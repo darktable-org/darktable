@@ -774,21 +774,30 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
 
 static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable, gboolean no_image, gboolean include_masks)
 {
+  int kept_module = 0;
   GList *history = g_list_nth(dev->history, dev->history_end);
   // look for leaks on top of history in two steps
   // first remove obsolete items above history_end
+  // but keep the always-on modules
   while(history)
   {
     GList *next = g_list_next(history);
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     // printf("removing obsoleted history item: %s\n", hist->module->op);
-    dt_dev_free_history_item(hist);
-    dev->history = g_list_delete_link(dev->history, history);
+    if(!hist->module->hide_enable_button && !hist->module->default_enabled)
+    {
+      dt_dev_free_history_item(hist);
+      dev->history = g_list_delete_link(dev->history, history);
+    }
+    else
+      kept_module++;
     history = next;
   }
   // then remove NIL items there
   while ((dev->history_end>0) && (! g_list_nth(dev->history, dev->history_end - 1)))
     dev->history_end--;
+
+  dev->history_end += kept_module;
 
   history = g_list_nth(dev->history, dev->history_end - 1);
   dt_dev_history_item_t *hist = history ? (dt_dev_history_item_t *)(history->data) : 0;
