@@ -74,7 +74,6 @@
 /* Scroll bars (sliders) */
 @define-color scroll_bar_inactive @grey_40;
 @define-color scroll_bar_active @grey_50;
-@define-color scroll_bar_focus @grey_45;
 @define-color scroll_bar_bg @grey_10;
 
 /* Modules box (plugins) */
@@ -97,8 +96,6 @@
 @define-color button_border @grey_30;
 @define-color button_bg @grey_25;
 @define-color button_fg @grey_65;
-@define-color button_focus_bg @grey_35;
-@define-color button_focus_fg @grey_75;
 @define-color button_checked_bg @grey_45;
 @define-color button_checked_fg @grey_85;
 @define-color button_hover_bg @grey_50;
@@ -1077,8 +1074,6 @@ menuitem:selected,
 combobox window *:selected,
 menuitem:active,
 combobox window *:active,
-menuitem:focus,
-combobox window *:focus,
 #recent-collection-button:selected,
 #history-button:selected,
 #history-button-always-enabled:selected,
@@ -1101,6 +1096,19 @@ combobox window *:focus,
   color: @button_checked_fg;
 }
 
+#history-button:selected *,
+#history-button-always-enabled:selected *,
+#history-button-default-enabled:selected *,
+#history-button:active *,
+#history-button-always-enabled:active *,
+#history-button-default-enabled:active *,
+#history-button:checked *,
+#history-button-always-enabled:checked *,
+#history-button-default-enabled:checked *
+{
+  color: @button_checked_fg;
+}
+
 * button:hover,
 button:hover,
 menuitem:hover,
@@ -1108,6 +1116,8 @@ menuitem:hover arrow,
 combobox window *:hover,
 #recent-collection-button:hover,
 #history-button:hover,
+#history-button-always-enabled:hover,
+#history-button-default-enabled:hover,
 #iop-plugin-ui button:hover,
 #lib-plugin-ui button:hover,
 #iop-plugin-ui #control-button:hover,
@@ -1131,7 +1141,7 @@ notebook tab:hover label,
 #lib-plugin-ui menuitem:hover *,
 #preferences_notebook menuitem:hover *,
 #recent-collection-button:hover,
-#history-button:hover,
+#history-button:hover *,
 #history-button-always-enabled:hover *,
 #history-button-default-enabled:hover *,
 #iop-plugin-ui button:hover,
@@ -1142,53 +1152,16 @@ notebook tab:hover label,
 #control-button:hover,
 #view_label:hover,
 #view_dropdown menuitem:hover,
-#view_dropdown:hover
+#view_dropdown .combo:hover *
 {
   color: @button_hover_fg;
 }
 
-* button:focus,
-button:focus,
-button:focus label,
-button:focus cellview,
-#recent-collection-button:focus,
-#history-button:focus,
-#iop-plugin-ui button:focus,
-#lib-plugin-ui button:focus,
-#iop-plugin-ui #control-button:focus,
-#lib-plugin-ui #control-button:focus,
-#right #iop-plugin-ui #control-button:focus
-{
-  background-color: @button_focus_bg;
-}
-
-* button:focus,
-button:focus,
-button:focus label,
-button:focus cellview,
-notebook tab:focus label,
-#header-toolbar menuitem:focus *,
-#footer-toolbar menuitem:focus *,
-#lib-plugin-ui menuitem:focus *,
-#preferences_notebook menuitem:focus *,
-#recent-collection-button:focus,
-#history-button:focus,
-#history-button-always-enabled:focus *,
-#history-button-default-enabled:focus *,
-#iop-plugin-ui button:focus,
-#lib-plugin-ui button:focus,
-#iop-plugin-ui #control-button:focus,
-#lib-plugin-ui #control-button:focus,
-#right #iop-plugin-ui #control-button:focus,
-#view_dropdown:focus,
-#view_label:focus
-{
-  color: @button_focus_fg;
-}
-
 button:disabled,
 #recent-collection-button:disabled,
-#history-button:disabled
+#history-button:disabled,
+#history-button-always-enabled:disabled,
+#history-button-default-enabled:disabled
 {
   color: @disabled_fg_color;
   background-color: transparent;
@@ -1240,13 +1213,6 @@ filechooser *:checked
   color: @bauhaus_fg_hover;
 }
 
-#bauhaus-popup:focus,
-#bauhaus-combobox:focus,
-#bauhaus-slider:focus
-{
-  color: @bauhaus_fg_hover;
-}
-
 #bauhaus-popup:disabled
 {
   color: @plugin_bg;
@@ -1264,15 +1230,13 @@ notebook tab:hover labelnotebook
   color: @button_hover_fg;
 }
 
-notebook tab:checked,
-notebook tab:focus
+notebook tab:checked
 {
   border-bottom: 2px solid @button_checked_fg;
   color: @button_checked_fg;
 }
 
-notebook tab:checked label,
-notebook tab:focus label
+notebook tab:checked label
 {
   color: @button_checked_fg;
 }
@@ -1284,8 +1248,7 @@ entry:hover
 }
 
 entry:checked,
-entry:active,
-entry:focus
+entry:active
 {
   color: @field_active_fg;
   background-color: @field_active_bg;
@@ -1305,16 +1268,6 @@ dialog scrollbar slider:hover,
 scale contents trough slider:hover
 {
   background-color: @scroll_bar_active;
-}
-
-scrollbar.horizontal slider:focus,
-scrollbar.vertical slider:focus,
-#iop-plugin-ui scrollbar slider:focus,
-#lib-plugin-ui scrollbar slider:focus,
-dialog scrollbar slider:focus,
-scale contents trough slider:focus
-{
-  background-color: @scroll_bar_focus;
 }
 
 /* color picker visibility for levels and rgb levels modules, be careful to not change that unless you really now what you do */
