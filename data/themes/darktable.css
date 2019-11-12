@@ -101,7 +101,7 @@
 @define-color button_focus_fg @grey_75;
 @define-color button_checked_bg @grey_45;
 @define-color button_checked_fg @grey_85;
-@define-color button_hover_bg @grey_55;
+@define-color button_hover_bg @grey_50;
 @define-color button_hover_fg @grey_15;
 
 /* text fields */
@@ -328,7 +328,9 @@ button
 }
 
 #recent-collection-button,
-#history-button
+#history-button,
+#history-button-always-enabled,
+#history-button-default-enabled
 {
   /* Exception because history and recent collections modules make use of a
    * list of GTK buttons but we don't want them to look like action buttons */
@@ -336,6 +338,12 @@ button
   border-color: transparent;
   border: 0;
   font-weight: normal;
+}
+
+#history-button-always-enabled *,
+#history-button-default-enabled *
+{
+  color: shade(@plugin_label_color, 0.9);
 }
 
 #dt-button button,
@@ -378,6 +386,11 @@ button
   min-width: 1em;
 }
 
+#module-always-enabled-button /* Button on always activated module */
+{
+  color: @plugin_label_color;
+}
+
 /* Button to open/close the dropdown section, especially header ones */
 #control-button
 {
@@ -410,7 +423,6 @@ button
     margin: 0;
     border: 0;
 }
-
 
 /* Checkbox */
 
@@ -1086,6 +1098,7 @@ combobox window *:focus,
 * button:hover,
 button:hover,
 menuitem:hover,
+menuitem:hover arrow,
 combobox window *:hover,
 #recent-collection-button:hover,
 #history-button:hover,
@@ -1095,19 +1108,41 @@ combobox window *:hover,
 #lib-plugin-ui #control-button:hover,
 #right #iop-plugin-ui #control-button:hover,
 #control-button:hover,
-menuitem:hover,
-menuitem:hover arrow,
+#view_label:hover,
 #view_dropdown menuitem:hover,
-combobox window *:hover,
-#view_dropdown:hover,
-#view_label:hover
+#view_dropdown:hover
 {
   background-color: @button_hover_bg;
+}
+
+* button:hover,
+button:hover,
+button:hover label,
+button:hover cellview,
+notebook tab:hover label,
+#header-toolbar menuitem:hover *,
+#footer-toolbar menuitem:hover *,
+#lib-plugin-ui menuitem:hover *,
+#preferences_notebook menuitem:hover *,
+#recent-collection-button:hover,
+#history-button:hover,
+#iop-plugin-ui button:hover,
+#lib-plugin-ui button:hover,
+#iop-plugin-ui #control-button:hover,
+#lib-plugin-ui #control-button:hover,
+#right #iop-plugin-ui #control-button:hover,
+#control-button:hover,
+#view_label:hover,
+#view_dropdown menuitem:hover,
+#view_dropdown:hover
+{
   color: @button_hover_fg;
 }
 
 * button:focus,
 button:focus,
+button:focus label,
+button:focus cellview,
 #recent-collection-button:focus,
 #history-button:focus,
 #iop-plugin-ui button:focus,
@@ -1117,6 +1152,27 @@ button:focus,
 #right #iop-plugin-ui #control-button:focus
 {
   background-color: @button_focus_bg;
+}
+
+* button:focus,
+button:focus,
+button:focus label,
+button:focus cellview,
+notebook tab:focus label,
+#header-toolbar menuitem:focus *,
+#footer-toolbar menuitem:focus *,
+#lib-plugin-ui menuitem:focus *,
+#preferences_notebook menuitem:focus *,
+#recent-collection-button:focus,
+#history-button:focus,
+#iop-plugin-ui button:focus,
+#lib-plugin-ui button:focus,
+#iop-plugin-ui #control-button:focus,
+#lib-plugin-ui #control-button:focus,
+#right #iop-plugin-ui #control-button:focus,
+#view_dropdown:focus,
+#view_label:focus
+{
   color: @button_focus_fg;
 }
 
@@ -1157,10 +1213,14 @@ filechooser *:checked
   color: @plugin_fg_color;
 }
 
-#view_dropdown *:disabled,
 #view_label:disabled
 {
   color: @tooltip_bg_color;
+}
+
+#view_dropdown *:disabled
+{
+  color: @disabled_fg_color;
 }
 
 #bauhaus-popup:hover,
@@ -1247,9 +1307,19 @@ scale contents trough slider:focus
   background-color: @scroll_bar_focus;
 }
 
-#lib-plugin-ui *:hover,
-#iop-plugin-ui *:hover,
-#lib-plugin-ui *:focus,
-#lib-plugin-ui *:focus
+/* color picker visibility for levels and rgb levels modules, be careful to not change that unless you really now what you do */
+
+#picker-black
 {
+  color: @grey_00;
+}
+
+#picker-grey
+{
+  color: @grey_50;
+}
+
+#picker-white
+{
+  color: @grey_100;
 }

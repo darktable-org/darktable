@@ -168,7 +168,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   {
     dt_iop_basecurve_params5_t *o = (dt_iop_basecurve_params5_t *)old_params;
     dt_iop_basecurve_params_t *n = (dt_iop_basecurve_params_t *)new_params;
-    memcpy(n, o, sizeof(dt_iop_basecurve_params4_t));
+    memcpy(n, o, sizeof(dt_iop_basecurve_params5_t));
     n->preserve_colors = DT_RGB_NORM_NONE;
     return 0;
   }
@@ -597,7 +597,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
         dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 1, sizeof(cl_mem), (void *)&dev_tmp1);
         dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 2, sizeof(int), (void *)&width);
         dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 3, sizeof(int), (void *)&height);
-        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 4, sizeof(float), (void *)&mul);       
+        dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 4, sizeof(float), (void *)&mul);
         dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 5, sizeof(cl_mem), (void *)&dev_m);
         dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 6, sizeof(cl_mem), (void *)&dev_coeffs);
         dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 7, sizeof(int), (void *)&preserve_colors);
@@ -857,7 +857,7 @@ int process_cl_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 1, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 2, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 4, sizeof(float), (void *)&mul); 
+    dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 4, sizeof(float), (void *)&mul);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 5, sizeof(cl_mem), (void *)&dev_m);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 6, sizeof(cl_mem), (void *)&dev_coeffs);
     dt_opencl_set_kernel_arg(devid, gd->kernel_basecurve_lut, 7, sizeof(int), (void *)&preserve_colors);
