@@ -316,7 +316,7 @@ void dtgtk_cairo_paint_plusminus(cairo_t *cr, gint x, gint y, gint w, gint h, gi
   {
     cairo_arc(cr, 0.5, 0.5, 0.45, 0, 2 * M_PI);
     cairo_fill(cr);
-    cairo_set_source_rgba(cr, 0.1, 0.1, 0.1, 1.0);
+    cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 1.0);
     cairo_move_to(cr, 0.2, 0.5);
     cairo_line_to(cr, 0.8, 0.5);
     cairo_stroke(cr);
