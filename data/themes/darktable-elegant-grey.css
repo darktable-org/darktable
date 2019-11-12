@@ -34,7 +34,6 @@
 /* Scroll bars (sliders) */
 @define-color scroll_bar_inactive @grey_70;
 @define-color scroll_bar_active @grey_90;
-@define-color scroll_bar_focus @grey_75;
 @define-color scroll_bar_bg @grey_40;
 
 /* Modules box (plugins) */
@@ -57,8 +56,6 @@
 @define-color button_border @grey_60;
 @define-color button_bg @grey_55;
 @define-color button_fg @grey_95;
-@define-color button_focus_bg @grey_65;
-@define-color button_focus_fg @grey_100;
 @define-color button_checked_bg @grey_75;
 @define-color button_checked_fg @grey_100;
 @define-color button_hover_bg @grey_70;
