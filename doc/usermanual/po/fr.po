@@ -3,7 +3,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
-"POT-Creation-Date: 2019-11-05 22:32+0100\n"
+"POT-Creation-Date: 2019-11-09 17:43+0100\n"
 "PO-Revision-Date: 2019-11-05 22:02+0100\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
