@@ -47,7 +47,17 @@ making a backup is strongly advised.
      - darktable-icons-dark     : lighter version. with module icons
      - darktable-icons-grey     : even lighter version, with module icons
 
+  New shortcuts have been introduced to quickely collapse borders, sidebars, histogram and 
+  navigation modules, allowing a new borderless editing experience.
+  
   Note that the new GUI requires Gtk+ 3.22 or higher to work properly.
+  
+- It is now possible to associate dynamic key shortcuts to sliders, and then
+  use the mouse wheel or the arrow keys to move the value up and down. 
+  For example, associating "E" to the exposure setting, you can press "E" and 
+  scroll to increase the exposure without having to open the module. 
+  You get a fast head-up access to all you favorite settings, as if you
+  were using a dedicated multimedia console.
 
 - The color picker on the 'tone curve', 'color zones' and 'fill light' modules,
   as well as the parametric mask controls, now allows you to select an
@@ -95,21 +105,27 @@ making a backup is strongly advised.
   and a new color picker which creates a curve based on selected image area.
 
 - A new module 'filmic RGB' which, like the previous 'filmic', is designed
-  to replace the 'base curve' and 'shadows and highlights' modules. This new
-  version replaces the one introduced in 2.6.2; it should be easier to use,
+  to replace the 'base curve', 'shadows and highlights' modules and other tone-mapping options. 
+  This new version replaces the one introduced in 2.6.2; it should be easier to use,
   and it will reduce color casts. The old 'filmic' module is now deprecated and
   is only available on images where it was already used for editing.
 
-- A new module 'tone equalizer', designed to replace the 'tone mapping' module,
-  brings an easy and safe way to adjust the tones in different areas of the
-  image. The module comes with 9 controls (available as fixed sliders or nodes
-  on a spline) covering the range from blacks to specular highlights. It also
-  features an advanced picker tool which can be moved over the image to make
-  tonal modifications to specific areas.
+- A new module 'tone equalizer', designed to merge the features of 'local tone mapping', 
+  'zone system' and 'shadows and highlights' modules in a scene-referred RGB space,
+  brings an easy and safe way to remap tones locally, to perform a quick 
+  zone-based dodging and burning using Ansel Adam's zone system logic. 
+  The module provides an interface similar to HiFi audio bands equalizers,
+  with 9 gains (available as fixed sliders or nodes on an equalizer view), 
+  covering the dynamic range from blacks to specular highlights, and allows
+  to selectively push or pull the exposure for each band. It also
+  features an interactive cursor that allows to push or pull the exposure gains directly from
+  the image preview, simply hovering the areas to affect. It uses a guided filter
+  internally to refine the dodging and burning mask in order to preserve the local contrast
+  without producing halos along edges.
 
 ## New Features And Changes
 
-- A new module for handling 3D Lut transformations (PNG Hald-CLUT and
+- A new module for handling 3D RGB Lut transformations (PNG Hald-CLUT and
   Cube files are supported).
 
 - Many improvements to the 'denoise (profiled)' module. The degree of shadow
@@ -154,7 +170,15 @@ making a backup is strongly advised.
   'export selected' module, allowing you to choose which main types are exported,
   as well as define values for specific tags based on formulas.
 
-- Many code optimizations for CPU and SSE paths.
+- Many code optimizations for CPU and SSE paths. The tone equalizer module
+  introduces a new optimization paradigm (GCC target clones), aimed toward users 
+  of pre-built Linux packages. The image-processing code will be cloned for several 
+  CPU generations (SSE2, SSE3, SSE4, AVX, AVX2) at compilation time, and the best-suited 
+  version of the code will be chosen by the system at run time. This experiment is 
+  to be generalized to other modules if proven successful, and will allow users of pre-built
+  packages to get the same performance as if the program was specifically compiled for their 
+  computer. It needs GCC 9 compiler and does not work on Windows at this moment, 
+  due to the lack of support of target clones on the OS side.
 
 - A new preference to expand/collapse a darkroom module when it is
   activated/deactivated.
