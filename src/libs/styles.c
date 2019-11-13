@@ -455,7 +455,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox1), widget, TRUE, TRUE, 0);
 
   // delete
-  widget = gtk_button_new_with_label(_("delete"));
+  widget = gtk_button_new_with_label(_("remove"));
   d->delete_button = widget;
   g_signal_connect(widget, "clicked", G_CALLBACK(delete_clicked), d);
   gtk_widget_set_tooltip_text(widget, _("deletes the selected style in list above"));
