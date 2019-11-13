@@ -485,8 +485,10 @@ static void _blendop_blendif_lower_callback(GtkDarktableGradientSlider *slider, 
 
 static void _blendop_blendif_polarity_callback(GtkToggleButton *togglebutton, dt_iop_gui_blend_data_t *data)
 {
-  int active = gtk_toggle_button_get_active(togglebutton);
   if(darktable.gui->reset) return;
+
+  int active = gtk_toggle_button_get_active(togglebutton);
+
   dt_develop_blend_params_t *bp = data->module->blend_params;
 
   int tab = data->tab;
@@ -509,6 +511,7 @@ static void _blendop_blendif_polarity_callback(GtkToggleButton *togglebutton, dt
       slider, active ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 3);
 
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+  dt_control_queue_redraw_widget(GTK_WIDGET(togglebutton));
 }
 
 static dt_iop_colorspace_type_t _blendop_blendif_get_picker_colorspace(dt_iop_gui_blend_data_t *bd)
@@ -723,6 +726,7 @@ static void _blendop_blendif_suppress_toggled(GtkToggleButton *togglebutton, dt_
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
   dt_iop_request_focus(module);
 
+  dt_control_queue_redraw_widget(GTK_WIDGET(togglebutton));
   dt_dev_reprocess_all(module->dev);
 }
 
@@ -959,6 +963,7 @@ static void _blendop_masks_polarity_callback(GtkToggleButton *togglebutton, dt_i
     bp->mask_combine &= ~DEVELOP_COMBINE_MASKS_POS;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_control_queue_redraw_widget(GTK_WIDGET(togglebutton));
 }
 
 static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
@@ -1532,11 +1537,11 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     bd->upper_slider = DTGTK_GRADIENT_SLIDER_MULTIVALUE(dtgtk_gradient_slider_multivalue_new(4));
 
     bd->lower_polarity
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);
     gtk_widget_set_tooltip_text(bd->lower_polarity, _("toggle polarity. best seen by enabling 'display mask'"));
 
     bd->upper_polarity
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);
     gtk_widget_set_tooltip_text(bd->upper_polarity, _("toggle polarity. best seen by enabling 'display mask'"));
 
     gtk_box_pack_start(GTK_BOX(upslider), GTK_WIDGET(bd->upper_slider), TRUE, TRUE, 0);
@@ -1717,7 +1722,7 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
     gtk_box_pack_start(GTK_BOX(hbox), bd->masks_edit, FALSE, FALSE, 0);
 
     bd->masks_polarity
-        = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+        = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);
     gtk_widget_set_tooltip_text(bd->masks_polarity, _("toggle polarity of drawn mask"));
     g_signal_connect(G_OBJECT(bd->masks_polarity), "toggled", G_CALLBACK(_blendop_masks_polarity_callback),
                      module);
@@ -1882,6 +1887,7 @@ static void _raster_polarity_callback(GtkToggleButton *togglebutton, dt_iop_modu
   bp->raster_mask_invert = gtk_toggle_button_get_active(togglebutton);
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_control_queue_redraw_widget(GTK_WIDGET(togglebutton));
 }
 
 void dt_iop_gui_init_raster(GtkBox *blendw, dt_iop_module_t *module)
@@ -1908,7 +1914,7 @@ void dt_iop_gui_init_raster(GtkBox *blendw, dt_iop_module_t *module)
     dt_bauhaus_combobox_add_populate_fct(bd->raster_combo, _raster_combo_populate);
     gtk_box_pack_start(GTK_BOX(hbox), bd->raster_combo, TRUE, TRUE, 0);
 
-    bd->raster_polarity = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER,
+    bd->raster_polarity = dtgtk_togglebutton_new(dtgtk_cairo_paint_plusminus, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE,
                                                  NULL);
     gtk_widget_set_tooltip_text(bd->raster_polarity, _("toggle polarity of raster mask"));
     g_signal_connect(G_OBJECT(bd->raster_polarity), "toggled", G_CALLBACK(_raster_polarity_callback), module);

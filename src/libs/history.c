@@ -153,7 +153,7 @@ void gui_cleanup(dt_lib_module_t *self)
 }
 
 static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, const char *label,
-                                             gboolean enabled, gboolean selected)
+                                             gboolean enabled, gboolean default_enabled, gboolean always_on, gboolean selected)
 {
   /* create label */
   GtkWidget *widget = NULL;
@@ -171,7 +171,14 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
   /* create toggle button */
   widget = gtk_toggle_button_new_with_label(numlabel);
   gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_START);
-  gtk_widget_set_name(GTK_WIDGET(widget), "history-button");
+
+  if(always_on)
+    gtk_widget_set_name(widget, "history-button-always-enabled");
+  else if(default_enabled)
+    gtk_widget_set_name(widget, "history-button-default-enabled");
+  else
+    gtk_widget_set_name(GTK_WIDGET(widget), "history-button");
+
   g_object_set_data(G_OBJECT(widget), "history_number", GINT_TO_POINTER(num + 1));
   g_object_set_data(G_OBJECT(widget), "label", (gpointer)label);
   if(selected) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), TRUE);
@@ -615,9 +622,10 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
 
   /* add default which always should be */
   int num = -1;
-  gtk_box_pack_start(GTK_BOX(d->history_box),
-                     _lib_history_create_button(self, num, _("original"), FALSE, darktable.develop->history_end == 0),
-                     TRUE, TRUE, 0);
+  GtkWidget *widget =
+    _lib_history_create_button(self, num, _("original"), FALSE, FALSE, FALSE, darktable.develop->history_end == 0);
+  gtk_widget_set_name(widget, "history-button-always-enabled");
+  gtk_box_pack_start(GTK_BOX(d->history_box), widget, TRUE, TRUE, 0);
   num++;
 
   if (d->record_undo == TRUE)
@@ -652,8 +660,11 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
     else
       label = g_strdup_printf("%s%s %s", marker, hitem->module->name(), hitem->multi_name);
 
-    gboolean selected = (num == darktable.develop->history_end - 1);
-    GtkWidget *widget = _lib_history_create_button(self, num, label, (hitem->enabled || (strcmp(hitem->op_name, "mask_manager") == 0)), selected);
+    const gboolean selected = (num == darktable.develop->history_end - 1);
+    widget =
+      _lib_history_create_button(self, num, label, (hitem->enabled || (strcmp(hitem->op_name, "mask_manager") == 0)),
+                                 hitem->module->default_enabled, hitem->module->hide_enable_button, selected);
+
     g_free(label);
 
     gtk_box_pack_start(GTK_BOX(d->history_box), widget, TRUE, TRUE, 0);

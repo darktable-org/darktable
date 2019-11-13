@@ -482,6 +482,7 @@ static void init_tab_presets(GtkWidget *book)
 
   // Adding the outer container
   gtk_notebook_append_page(GTK_NOTEBOOK(book), container, gtk_label_new(_("presets")));
+  dtgtk_justify_notebook_tabs(GTK_NOTEBOOK(book));
 
   tree_insert_presets(model);
 

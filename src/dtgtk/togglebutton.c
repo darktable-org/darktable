@@ -58,6 +58,8 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   }
   if(button->icon_flags & CPF_CUSTOM_FG)
     fg_color = button->fg;
+  else if(button->icon_flags & CPF_IGNORE_FG_STATE)
+    gtk_style_context_get_color(context, state & ~GTK_STATE_FLAG_SELECTED, &fg_color);
   else
     gtk_style_context_get_color(context, state, &fg_color);
 
@@ -104,7 +106,7 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
         cairo_fill(cr);
       }
     }
-    else if(!(flags & CPF_ACTIVE))
+    else if(!(flags & CPF_ACTIVE) || (flags & CPF_IGNORE_FG_STATE))
     {
       fg_color.alpha = CLAMP(fg_color.alpha / 2.0, 0.3, 1.0);
     }
@@ -135,9 +137,6 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   /* draw icon */
   if(DTGTK_TOGGLEBUTTON(widget)->icon)
   {
-    //     if (flags & CPF_IGNORE_FG_STATE)
-    //       state = GTK_STATE_NORMAL;
-
     int icon_width = text ? height - (border * 2) : width - (border * 2);
     int icon_height = height - (border * 2);
     void *icon_data = DTGTK_TOGGLEBUTTON(widget)->icon_data;

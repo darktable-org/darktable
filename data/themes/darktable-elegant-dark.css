@@ -32,7 +32,6 @@
 /* Scroll bars (sliders) */
 @define-color scroll_bar_inactive @grey_55;
 @define-color scroll_bar_active @grey_65;
-@define-color scroll_bar_focus @grey_60;
 @define-color scroll_bar_bg @grey_25;
 
 /* Modules box (plugins) */
@@ -55,11 +54,9 @@
 @define-color button_border @grey_45;
 @define-color button_bg @grey_40;
 @define-color button_fg @grey_80;
-@define-color button_focus_bg @grey_50;
-@define-color button_focus_fg @grey_90;
 @define-color button_checked_bg @grey_60;
 @define-color button_checked_fg @grey_100;
-@define-color button_hover_bg @grey_70;
+@define-color button_hover_bg @grey_65;
 @define-color button_hover_fg @grey_30;
 
 /* text fields */
@@ -72,6 +69,9 @@
 @define-color field_hover_bg @grey_60;
 @define-color field_hover_fg @grey_20;
 
+/* Tooltips and contextual helpers */
+@define-color tooltip_bg_color @grey_20;
+@define-color menu_bg_color @grey_20;
 
 /* Views */
 @define-color darkroom_bg_color @grey_60;
@@ -99,3 +99,9 @@
 @define-color graph_fg_active @grey_95;
 @define-color graph_grid @grey_20;
 @define-color inset_histogram alpha(@grey_80, 0.50);
+
+menu,
+menuitem arrow
+{
+  background-color: @menu_bg_color;
+}
