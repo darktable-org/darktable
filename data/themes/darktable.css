@@ -337,10 +337,10 @@ button
   font-weight: normal;
 }
 
-#history-button-always-enabled *,
-#history-button-default-enabled *
+#history-number
 {
-  color: shade(@plugin_label_color, 0.9);
+   padding: 2px;
+   font-family: monospace;
 }
 
 #dt-button button,
@@ -919,7 +919,12 @@ checkbutton check
   padding: 2px;
 }
 
-#left #history-button /* choose here spacing between history items in darkroom */
+#left #history-button, /* choose here spacing between history items in darkroom */
+#left #history-switch,
+#left #history-button-always-enabled,
+#left #history-switch-always-enabled,
+#left #history-button-default-enabled,
+#left #history-switch-default-enabled
 {
   padding: 1px 2px 2px 2px;
   margin: 0px 1px 1px 1px;
@@ -1157,14 +1162,34 @@ notebook tab:hover label,
   color: @button_hover_fg;
 }
 
+#history-button *
+{
+  color: @plugin_fg_color;
+  background-color: transparent;
+}
+
 button:disabled,
-#recent-collection-button:disabled,
-#history-button:disabled,
-#history-button-always-enabled:disabled,
-#history-button-default-enabled:disabled
+#recent-collection-button:disabled
 {
   color: @disabled_fg_color;
   background-color: transparent;
+}
+
+/* disabled switch buttons in history, make them well visible */
+#history-switch:disabled,
+#history-switch-always-enabled:disabled,
+#history-switch-default-enabled:disabled
+{
+  color: @plugin_label_color;
+}
+
+/* switch button on the left of the history entry */
+#history-switch,
+#history-switch-default-enabled,
+#history-switch-always-enabled
+{
+    min-width: .6em;
+    min-height: .6em;
 }
 
 treeview *:hover,
