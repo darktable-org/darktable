@@ -77,21 +77,20 @@ static void _rewrite_order(GList *iop_order_list)
 }
 
 /* migrates *_iop_order_list from old_version to the next version (version + 1)
- * limitations:
- * - to move an existing module that is always enabled a new version must be created, otherwise
- *   modules can be added/moved in the current version
- * - a module can't be more than once on the same version
+ *
+ * Basically here there is two orders:
+ *   v2 : legacy order used for edits done prior to 3.0
+ *   v5 : new order for all edits starting with 3.0
  */
 static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_list, const int old_version, const int dont_move)
 {
   int new_version = -1;
 
   // version 1 --> 2
+  // v2 is the version that will be used for all edits started before 3.0 was out.
+  // v2 corresponds to the legacy order (as proposed up to 2.6.3) with the new modules available.
   if(old_version == 1)
   {
-    _ioppr_move_iop_after(_iop_order_list, "colorin", "demosaic", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "colorout", "clahe", dont_move);
-
     // EVERY NEW MODULE MUST BE ADDED HERE
     // there should be no _ioppr_insert_iop[before|after] in any other places
     _ioppr_insert_iop_after(_iop_order_list, history_list, "basicadj", "colorin", dont_move);
@@ -106,6 +105,7 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     new_version = 2;
   }
   // version 2 --> 3
+  // v3 is a temporary version corresponding to first attempt to propose a new order during development of 3.0.
   else if(old_version == 2)
   {
     // GENERAL RULE FOR SIGNAL PROCESSING/RECONSTRUCTION
@@ -197,6 +197,8 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
 
     new_version = 3;
   }
+  // version 3 --> 4
+  // v4 is a temporary version corresponding to second attempt to propose a new order during development of 3.0.
   else if(old_version == 3)
   {
     // version 4 is a rewrite of the iop-order of previous list. As it
@@ -207,6 +209,8 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
     if(!dont_move) _rewrite_order(*_iop_order_list);
     new_version = 4;
   }
+  // version 4 --> 5
+  // v5 is the final order proposed for new edits in 3.0.
   else if(old_version == 4)
   {
     if(!dont_move)
