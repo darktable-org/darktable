@@ -4,15 +4,15 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
-"PO-Revision-Date: 2019-11-04 09:42+0100\n"
-"Last-Translator: Tobias Ellinghaus <me@houz.org>\n"
+"PO-Revision-Date: 2019-11-10 09:14+0100\n"
+"Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2.4\n"
+"X-Generator: Lokalize 19.08.2\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
@@ -7994,6 +7994,10 @@ msgid ""
 "it is more flexible but could give small\n"
 "differences in the images already processed."
 msgstr ""
+"Upgrade des Varianzstabilisierungsalgorithmus.\n"
+"Ein neuer Algorithmus erweitert den aktuellen.\n"
+"Es ist flexibler, kann aber kleine Unterschiede\n"
+"in den bereits verarbeiteten Bildern aufweisen."
 
 #: ../src/iop/denoiseprofile.c:4059 ../src/libs/export.c:647
 #: ../src/libs/print_settings.c:1183 ../src/libs/print_settings.c:1403
@@ -8014,7 +8018,7 @@ msgstr "Streuung (grobes Rauschen)"
 
 #: ../src/iop/denoiseprofile.c:4066
 msgid "central pixel weight (details)"
-msgstr ""
+msgstr "zentrales Pixelgewicht (Details)"
 
 #: ../src/iop/denoiseprofile.c:4068
 #, fuzzy
@@ -8069,6 +8073,11 @@ msgid ""
 "if details are oversmoothed, reduce this value or increase the details "
 "slider."
 msgstr ""
+"Radius der übereinstimmenden Patches.\n"
+"Erhöhen für mehr Schärfe an starken Kanten und besseres Entrauschen von"
+" glatten Flächen.\n"
+"Wenn Details überglättet sind, reduzieren Sie diesen Wert oder erhöhen Sie"
+" den Detailregler."
 
 #: ../src/iop/denoiseprofile.c:4087
 msgid ""
@@ -8096,6 +8105,10 @@ msgid ""
 "useful to recover details when patch size\n"
 "is quite big."
 msgstr ""
+"Erhöhen Sie das Gewicht des zentralen Pixels\n"
+"des Patches im Patch-Vergleich.\n"
+"Nützlich, um Details wiederherzustellen,\n"
+"bei denen die Patch-Größe relativ groß ist."
 
 #: ../src/iop/denoiseprofile.c:4095
 msgid "finetune denoising strength"
@@ -8108,6 +8121,10 @@ msgid ""
 "or if chroma noise remains.\n"
 "this can happen if your picture is underexposed."
 msgstr ""
+"Steuert die Art und Weise, wie Parameter im Autoset erhöht\n"
+"werden, wenn die Schatten nicht ausreichend entrauscht\n"
+"werden oder wenn das Chroma-Rauschen erhalten bleibt.\n"
+"Dies kann bei unterbelichteten Bildern passieren."
 
 #: ../src/iop/denoiseprofile.c:4100
 msgid ""
@@ -8115,6 +8132,9 @@ msgid ""
 "decrease to denoise more aggressively\n"
 "dark areas of the image.\n"
 msgstr ""
+"Finetune Schattenentrauschen.\n"
+"Verringern des Wertes, um dunkle Bereiche\n"
+"des Bildes aggressivere zu entrauschen."
 
 #: ../src/iop/denoiseprofile.c:4103
 msgid ""
@@ -8122,6 +8142,9 @@ msgid ""
 "decrease if shadows are too purple.\n"
 "increase if shadows are too green."
 msgstr ""
+"Korrigiert Farbstiche im Schatten.\n"
+"Verringern, wenn die Schatten zu violett sind.\n"
+"Erhöhen, wenn die Schatten zu grün sind.\n"
 
 #: ../src/iop/dither.c:103 ../src/iop/vignette.c:1164
 msgid "dithering"
@@ -8682,11 +8705,11 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:1430
 msgid "scene"
-msgstr ""
+msgstr "Szene"
 
 #: ../src/iop/filmicrgb.c:1431
 msgid "look"
-msgstr ""
+msgstr "Aussehen"
 
 #: ../src/iop/filmicrgb.c:1432
 #, fuzzy
@@ -8977,22 +9000,22 @@ msgstr "Sättigung des Filters wählen"
 #: ../src/iop/graduatednd.c:1293
 #, c-format
 msgid "[%s on nodes] change line rotation"
-msgstr ""
+msgstr "[%s on nodes] Rotation der Linie ändern"
 
 #: ../src/iop/graduatednd.c:1298
 #, c-format
 msgid "[%s on line] move line"
-msgstr ""
+msgstr "[%s on line] Linie bewegen"
 
 #: ../src/iop/graduatednd.c:1304
 #, c-format
 msgid "[%s on line] change density"
-msgstr ""
+msgstr "[%s on line] Dichte ändern"
 
 #: ../src/iop/graduatednd.c:1310
 #, c-format
 msgid "[%s on line] change compression"
-msgstr ""
+msgstr "[%s on line] Kompression ändern"
 
 #: ../src/iop/grain.c:418
 msgid "grain"
@@ -10950,12 +10973,12 @@ msgstr "Weiß"
 #: ../src/iop/toneequal.c:318
 msgctxt "accel"
 msgid "speculars"
-msgstr ""
+msgstr "Spiegelungen"
 
 #: ../src/iop/toneequal.c:319
 msgctxt "accel"
 msgid "filter diffusion"
-msgstr ""
+msgstr "Filterdiffusion"
 
 #: ../src/iop/toneequal.c:320
 #, fuzzy
@@ -14828,7 +14851,7 @@ msgstr "Anzeigevorsatz"
 
 #: ../src/views/darkroom.c:2007 ../src/views/lighttable.c:4891
 msgid "display profile"
-msgstr "Anzeigeprofil"
+msgstr "Bildschirmprofil"
 
 #: ../src/views/darkroom.c:2008 ../src/views/lighttable.c:4895
 #, fuzzy
