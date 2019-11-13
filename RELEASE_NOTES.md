@@ -1,4 +1,4 @@
-We're proud to announce the first release candidate for the upcoming 3.0 series of darktable, 3.0.0rc1!
+We're proud to announce the second release candidate for the upcoming 3.0 series of darktable, 3.0.0rc1!
 
 The github release is here: [https://github.com/darktable-org/darktable/releases/tag/release-3.0.0rc1](https://github.com/darktable-org/darktable/releases/tag/release-3.0.0rc1).
 
