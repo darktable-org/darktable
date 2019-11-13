@@ -1122,6 +1122,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -1217,19 +1219,19 @@ GSList *mouse_actions(struct dt_iop_module_t *self)
 
   a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
   a->action = DT_MOUSE_ACTION_LEFT_DRAG;
-  g_snprintf(a->name, sizeof(a->name), _("[%s on node] change vignette/feather size"), self->name(self));
+  g_snprintf(a->name, sizeof(a->name), _("[%s on node] change vignette/feather size"), self->name());
   lm = g_slist_append(lm, a);
 
   a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
   a->key.accel_mods = GDK_CONTROL_MASK;
   a->action = DT_MOUSE_ACTION_LEFT_DRAG;
   g_snprintf(a->name, sizeof(a->name), _("[%s on node] change vignette/feather size keeping ratio"),
-             self->name(self));
+             self->name());
   lm = g_slist_append(lm, a);
 
   a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
   a->action = DT_MOUSE_ACTION_LEFT_DRAG;
-  g_snprintf(a->name, sizeof(a->name), _("[%s on center] move vignette"), self->name(self));
+  g_snprintf(a->name, sizeof(a->name), _("[%s on center] move vignette"), self->name());
   lm = g_slist_append(lm, a);
 
   return lm;

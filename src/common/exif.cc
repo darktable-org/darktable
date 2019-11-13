@@ -1300,11 +1300,9 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
 
     // get rid of thumbnails
     Exiv2::ExifThumb(exifData).erase();
+    Exiv2::ExifData::const_iterator pos;
 
-    // ufraw-style exif stripping:
-    Exiv2::ExifData::iterator pos;
     {
-    /* Delete original TIFF data, which is irrelevant*/
       static const char *keys[] = {
         "Exif.Image.ImageWidth",
         "Exif.Image.ImageLength",
@@ -1324,119 +1322,134 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
       dt_remove_exif_keys(exifData, keys, n_keys);
     }
 
-    if(!dng_mode)
+      /* Many tags should be removed in all cases as they are simply wrong also for dng files */
+
+      // remove subimage* trees, related to thumbnails or HDR usually; also UserCrop
+    for(Exiv2::ExifData::iterator i = exifData.begin(); i != exifData.end();)
     {
-      /* Delete various MakerNote fields only applicable to the raw file */
+      static const std::string needle = "Exif.SubImage";
+      if(i->key().compare(0, needle.length(), needle) == 0)
+        i = exifData.erase(i);
+      else
+        ++i;
+    }
 
-      exifData["Exif.Image.Orientation"] = uint16_t(1);
+    {
+      static const char *keys[] = {
+        // Canon color space info
+        "Exif.Canon.ColorSpace",
+        "Exif.Canon.ColorData",
 
-      {
-        static const char *keys[] = {
-          // Embedded color profile info
-          "Exif.Image.BaselineExposureOffset",
-          "Exif.Image.CalibrationIlluminant1",
-          "Exif.Image.CalibrationIlluminant2",
-          "Exif.Image.ColorMatrix1",
-          "Exif.Image.ColorMatrix2",
-          "Exif.Image.DefaultBlackRender",
-          "Exif.Image.ForwardMatrix1",
-          "Exif.Image.ForwardMatrix2",
-          "Exif.Image.ProfileCalibrationSignature",
-          "Exif.Image.ProfileCopyright",
-          "Exif.Image.ProfileEmbedPolicy",
-          "Exif.Image.ProfileHueSatMapData1",
-          "Exif.Image.ProfileHueSatMapData2",
-          "Exif.Image.ProfileHueSatMapDims",
-          "Exif.Image.ProfileHueSatMapEncoding",
-          "Exif.Image.ProfileLookTableData",
-          "Exif.Image.ProfileLookTableDims",
-          "Exif.Image.ProfileLookTableEncoding",
-          "Exif.Image.ProfileName",
-          "Exif.Image.ProfileToneCurve",
-          "Exif.Image.ReductionMatrix1",
-          "Exif.Image.ReductionMatrix2",
+        // Nikon thumbnail data
+        "Exif.Nikon3.Preview",
+        "Exif.NikonPreview.JPEGInterchangeFormat",
 
-          // Canon color space info
-          "Exif.Canon.ColorSpace",
-          "Exif.Canon.ColorData",
+        // DNG stuff that is irrelevant or misleading
+        "Exif.Image.DNGPrivateData",
+        "Exif.Image.DefaultBlackRender",
+        "Exif.Image.DefaultCropOrigin",
+        "Exif.Image.DefaultCropSize",
+        "Exif.Image.RawDataUniqueID",
+        "Exif.Image.OriginalRawFileName",
+        "Exif.Image.OriginalRawFileData",
+        "Exif.Image.ActiveArea",
+        "Exif.Image.MaskedAreas",
+        "Exif.Image.AsShotICCProfile",
+        "Exif.Image.OpcodeList1",
+        "Exif.Image.OpcodeList2",
+        "Exif.Image.OpcodeList3",
+        "Exif.Photo.MakerNote",
 
-          // Nikon thumbnail data
-          "Exif.Nikon3.Preview",
-          "Exif.NikonPreview.JPEGInterchangeFormat",
+        // Pentax thumbnail data
+        "Exif.Pentax.PreviewResolution",
+        "Exif.Pentax.PreviewLength",
+        "Exif.Pentax.PreviewOffset",
+        "Exif.PentaxDng.PreviewResolution",
+        "Exif.PentaxDng.PreviewLength",
+        "Exif.PentaxDng.PreviewOffset",
+        // Pentax color info
+        "Exif.PentaxDng.ColorInfo",
 
-          // DNG private data
-          "Exif.Image.DNGPrivateData",
+        // Minolta thumbnail data
+        "Exif.Minolta.Thumbnail",
+        "Exif.Minolta.ThumbnailOffset",
+        "Exif.Minolta.ThumbnailLength",
 
-          // Pentax thumbnail data
-          "Exif.Pentax.PreviewResolution",
-          "Exif.Pentax.PreviewLength",
-          "Exif.Pentax.PreviewOffset",
-          "Exif.PentaxDng.PreviewResolution",
-          "Exif.PentaxDng.PreviewLength",
-          "Exif.PentaxDng.PreviewOffset",
-          // Pentax color info
-          "Exif.PentaxDng.ColorInfo",
+        // Sony thumbnail data
+        "Exif.SonyMinolta.ThumbnailOffset",
+        "Exif.SonyMinolta.ThumbnailLength",
 
-          // Minolta thumbnail data
-          "Exif.Minolta.Thumbnail",
-          "Exif.Minolta.ThumbnailOffset",
-          "Exif.Minolta.ThumbnailLength",
+        // Olympus thumbnail data
+        "Exif.Olympus.Thumbnail",
+        "Exif.Olympus.ThumbnailOffset",
+        "Exif.Olympus.ThumbnailLength"
 
-          // Sony thumbnail data
-          "Exif.SonyMinolta.ThumbnailOffset",
-          "Exif.SonyMinolta.ThumbnailLength",
-
-          // Olympus thumbnail data
-          "Exif.Olympus.Thumbnail",
-          "Exif.Olympus.ThumbnailOffset",
-          "Exif.Olympus.ThumbnailLength"
+        "Exif.Image.BaselineExposureOffset",
         };
-        static const guint n_keys = G_N_ELEMENTS(keys);
-        dt_remove_exif_keys(exifData, keys, n_keys);
-      }
-
-      // remove subimage* trees, related to thumbnails or HDR usually
-      for(Exiv2::ExifData::iterator i = exifData.begin(); i != exifData.end();)
-      {
-        static const std::string needle = "Exif.SubImage";
-        if(i->key().compare(0, needle.length(), needle) == 0)
-          i = exifData.erase(i);
-        else
-          ++i;
-      }
-
+      static const guint n_keys = G_N_ELEMENTS(keys);
+      dt_remove_exif_keys(exifData, keys, n_keys);
+    }
 #if EXIV2_MINOR_VERSION >= 23
-      {
-        // Exiv2 versions older than 0.23 drop all EXIF if the code below is executed
-        // Samsung makernote cleanup, the entries below have no relevance for exported images
-        static const char *keys[] = {
-          "Exif.Samsung2.SensorAreas",
-          "Exif.Samsung2.ColorSpace",
-          "Exif.Samsung2.EncryptionKey",
-          "Exif.Samsung2.WB_RGGBLevelsUncorrected",
-          "Exif.Samsung2.WB_RGGBLevelsAuto",
-          "Exif.Samsung2.WB_RGGBLevelsIlluminator1",
-          "Exif.Samsung2.WB_RGGBLevelsIlluminator2",
-          "Exif.Samsung2.WB_RGGBLevelsBlack",
-          "Exif.Samsung2.ColorMatrix",
-          "Exif.Samsung2.ColorMatrixSRGB",
-          "Exif.Samsung2.ColorMatrixAdobeRGB",
-          "Exif.Samsung2.ToneCurve1",
-          "Exif.Samsung2.ToneCurve2",
-          "Exif.Samsung2.ToneCurve3",
-          "Exif.Samsung2.ToneCurve4"
-        };
-        static const guint n_keys = G_N_ELEMENTS(keys);
-        dt_remove_exif_keys(exifData, keys, n_keys);
-      }
+    {
+      // Exiv2 versions older than 0.23 drop all EXIF if the code below is executed
+      // Samsung makernote cleanup, the entries below have no relevance for exported images
+      static const char *keys[] = {
+        "Exif.Samsung2.SensorAreas",
+        "Exif.Samsung2.ColorSpace",
+        "Exif.Samsung2.EncryptionKey",
+        "Exif.Samsung2.WB_RGGBLevelsUncorrected",
+        "Exif.Samsung2.WB_RGGBLevelsAuto",
+        "Exif.Samsung2.WB_RGGBLevelsIlluminator1",
+        "Exif.Samsung2.WB_RGGBLevelsIlluminator2",
+        "Exif.Samsung2.WB_RGGBLevelsBlack",
+        "Exif.Samsung2.ColorMatrix",
+        "Exif.Samsung2.ColorMatrixSRGB",
+        "Exif.Samsung2.ColorMatrixAdobeRGB",
+        "Exif.Samsung2.ToneCurve1",
+        "Exif.Samsung2.ToneCurve2",
+        "Exif.Samsung2.ToneCurve3",
+        "Exif.Samsung2.ToneCurve4"
+      };
+      static const guint n_keys = G_N_ELEMENTS(keys);
+      dt_remove_exif_keys(exifData, keys, n_keys);
+    }
 #endif
 
-      /* Write appropriate color space tag if using sRGB output */
-      if(sRGB)
-        exifData["Exif.Photo.ColorSpace"] = uint16_t(1); /* sRGB */
-      else
-        exifData["Exif.Photo.ColorSpace"] = uint16_t(0xFFFF); /* Uncalibrated */
-    }
+      static const char *dngkeys[] = {
+        // Embedded color profile info
+        "Exif.Image.CalibrationIlluminant1",
+        "Exif.Image.CalibrationIlluminant2",
+        "Exif.Image.ColorMatrix1",
+        "Exif.Image.ColorMatrix2",
+        "Exif.Image.ForwardMatrix1",
+        "Exif.Image.ForwardMatrix2",
+        "Exif.Image.ProfileCalibrationSignature",
+        "Exif.Image.ProfileCopyright",
+        "Exif.Image.ProfileEmbedPolicy",
+        "Exif.Image.ProfileHueSatMapData1",
+        "Exif.Image.ProfileHueSatMapData2",
+        "Exif.Image.ProfileHueSatMapDims",
+        "Exif.Image.ProfileHueSatMapEncoding",
+        "Exif.Image.ProfileLookTableData",
+        "Exif.Image.ProfileLookTableDims",
+        "Exif.Image.ProfileLookTableEncoding",
+        "Exif.Image.ProfileName",
+        "Exif.Image.ProfileToneCurve",
+        "Exif.Image.ReductionMatrix1",
+        "Exif.Image.ReductionMatrix2"
+        };
+      static const guint n_dngkeys = G_N_ELEMENTS(dngkeys);
+    dt_remove_exif_keys(exifData, dngkeys, n_dngkeys);
+
+    /* Write appropriate color space tag if using sRGB output */
+    if(sRGB)
+      exifData["Exif.Photo.ColorSpace"] = uint16_t(1); /* sRGB */
+    else
+      exifData["Exif.Photo.ColorSpace"] = uint16_t(0xFFFF); /* Uncalibrated */
+
+    // we don't write the orientation here for dng as it is set in dt_imageio_dng_write_tiff_header
+    // or might be defined in this blob.
+    if(!dng_mode) exifData["Exif.Image.Orientation"] = uint16_t(1);
 
     /* Replace RAW dimension with output dimensions (for example after crop/scale, or orientation for dng
      * mode) */
@@ -2688,7 +2701,7 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
     }
     sqlite3_finalize(stmt);
 
-    // if masks have been readed create a mask manager entry in history
+    // if masks have been read, create a mask manager entry in history
     if(version < 3)
     {
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM main.masks_history WHERE imgid = ?1", -1,
@@ -3404,58 +3417,60 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
       dt_remove_xmp_keys(xmpData, keys, n_keys);
     }
 
-    if (!(m->flags & DT_META_EXIF))
-      img->clearExifData();
-
-
-
     // last but not least attach what we have in DB to the XMP. in theory that should be
     // the same as what we just copied over from the sidecar file, but you never know ...
-    dt_exif_xmp_read_data_export(xmpData, imgid, m);
-
-    Exiv2::IptcData &iptcData = img->iptcData();
-    Exiv2::ExifData &exifData = img->exifData();
     // make sure to remove all geotags if necessary
-    if (!(m->flags & DT_META_GEOTAG))
-      dt_remove_exif_geotag(exifData);
-    // calculated metadata
-    dt_variables_params_t *params;
-    dt_variables_params_init(&params);
-    params->filename = input_filename;
-    params->jobcode = "export";
-    params->sequence = 0;
-    params->imgid = imgid;
-    dt_variables_set_tags_flags(params, m->flags);
-    for (GList *tags = m->list; tags; tags = g_list_next(tags))
+    if(m)
     {
-      gchar *tagname = (gchar *)tags->data;
-      tags = g_list_next(tags);
-      if (!tags) break;
-      gchar *formula = (gchar *)tags->data;
-      if (formula[0])
+      if (!(m->flags & DT_META_EXIF))
+        img->clearExifData();
+
+      dt_exif_xmp_read_data_export(xmpData, imgid, m);
+
+      Exiv2::IptcData &iptcData = img->iptcData();
+      Exiv2::ExifData &exifData = img->exifData();
+
+      if(!(m->flags & DT_META_GEOTAG))
+        dt_remove_exif_geotag(exifData);
+      // calculated metadata
+      dt_variables_params_t *params;
+      dt_variables_params_init(&params);
+      params->filename = input_filename;
+      params->jobcode = "export";
+      params->sequence = 0;
+      params->imgid = imgid;
+
+      dt_variables_set_tags_flags(params, m->flags);
+      for (GList *tags = m->list; tags; tags = g_list_next(tags))
       {
-        gchar *result = dt_variables_expand(params, formula, FALSE);
-        if (result && result[0])
+        gchar *tagname = (gchar *)tags->data;
+        tags = g_list_next(tags);
+        if (!tags) break;
+        gchar *formula = (gchar *)tags->data;
+        if (formula[0])
+        {
+          gchar *result = dt_variables_expand(params, formula, FALSE);
+          if (result && result[0])
+          {
+            if (g_str_has_prefix(tagname, "Xmp."))
+              xmpData[tagname] = result;
+            else if (g_str_has_prefix(tagname, "Iptc."))
+              iptcData[tagname] = result;
+            else if (g_str_has_prefix(tagname, "Exif."))
+              exifData[tagname] = result;
+          }
+          g_free(result);
+        }
+        else
         {
           if (g_str_has_prefix(tagname, "Xmp."))
-            xmpData[tagname] = result;
-          else if (g_str_has_prefix(tagname, "Iptc."))
-            iptcData[tagname] = result;
+            dt_remove_xmp_key(xmpData, tagname);
           else if (g_str_has_prefix(tagname, "Exif."))
-            exifData[tagname] = result;
+            dt_remove_exif_key(exifData, tagname);
         }
-        g_free(result);
       }
-      else
-      {
-        if (g_str_has_prefix(tagname, "Xmp."))
-          dt_remove_xmp_key(xmpData, tagname);
-        else if (g_str_has_prefix(tagname, "Exif."))
-          dt_remove_exif_key(exifData, tagname);
-      }
+      dt_variables_params_destroy(params);
     }
-    dt_variables_params_destroy(params);
-
 
     img->writeMetadata();
     return 0;

@@ -74,7 +74,6 @@
 /* Scroll bars (sliders) */
 @define-color scroll_bar_inactive @grey_40;
 @define-color scroll_bar_active @grey_50;
-@define-color scroll_bar_focus @grey_45;
 @define-color scroll_bar_bg @grey_10;
 
 /* Modules box (plugins) */
@@ -97,11 +96,9 @@
 @define-color button_border @grey_30;
 @define-color button_bg @grey_25;
 @define-color button_fg @grey_65;
-@define-color button_focus_bg @grey_35;
-@define-color button_focus_fg @grey_75;
 @define-color button_checked_bg @grey_45;
 @define-color button_checked_fg @grey_85;
-@define-color button_hover_bg @grey_55;
+@define-color button_hover_bg @grey_50;
 @define-color button_hover_fg @grey_15;
 
 /* text fields */
@@ -124,6 +121,7 @@
 @define-color darkroom_preview_bg_color @grey_35;
 @define-color lighttable_bg_color @grey_45;
 @define-color lighttable_preview_bg_color @grey_35;
+@define-color print_bg_color @grey_45;
 
 /* Brushes */
 @define-color brush_cursor alpha(white, .9);
@@ -327,7 +325,9 @@ button
 }
 
 #recent-collection-button,
-#history-button
+#history-button,
+#history-button-always-enabled,
+#history-button-default-enabled
 {
   /* Exception because history and recent collections modules make use of a
    * list of GTK buttons but we don't want them to look like action buttons */
@@ -335,6 +335,12 @@ button
   border-color: transparent;
   border: 0;
   font-weight: normal;
+}
+
+#history-button-always-enabled *,
+#history-button-default-enabled *
+{
+  color: shade(@plugin_label_color, 0.9);
 }
 
 #dt-button button,
@@ -377,6 +383,11 @@ button
   min-width: 1em;
 }
 
+#module-always-enabled-button /* Button on always activated module */
+{
+  color: @plugin_label_color;
+}
+
 /* Button to open/close the dropdown section, especially header ones */
 #control-button
 {
@@ -409,7 +420,6 @@ button
     margin: 0;
     border: 0;
 }
-
 
 /* Checkbox */
 
@@ -464,7 +474,6 @@ entry selection
   border:0;
   padding: 0 2pt 2pt 0.5em;
   font-weight: normal;
-  font-stretch: condensed;
   font-family: sans-serif;
   font-size: larger;
 }
@@ -643,6 +652,15 @@ tooltip button
   background-color: transparent;
 }
 
+menuitem check
+{
+  border-radius: 2px;
+  border: 1px solid shade(@tooltip_bg_color, 4);
+  min-width: 10px;
+  min-height: 10px;
+  margin-right: 5px;
+}
+
 #header-toolbar combobox,
 #footer-toolbar combobox
 {
@@ -669,6 +687,7 @@ filechooserdialog *
 dialog headerbar,
 filechooserdialog headerbar
 {
+  background-color: @border_color;
   margin: 0;
   padding: 0.1em 0.6em;
 }
@@ -702,8 +721,7 @@ filechooserdialog scrolledwindow
 /* Tree view (lists and tables) */
 
 treeview,
-filechooserwidget treeview,
-treeview.view *
+filechooserwidget treeview
 {
   background-color: @field_bg;
   color: @field_fg;
@@ -758,11 +776,13 @@ notebook tab
 {
   border-bottom: 2px solid transparent;
   padding: 3px;
+  font-weight: normal;
 }
 
 notebook tab label /* disabled tabs */
 {
   color: shade(@button_checked_fg, 0.75);
+  font-weight: normal;
 }
 
 /* This will avoid have too much height on entry items in dialog windows; label and button are needed as they are related */
@@ -1004,8 +1024,7 @@ cell:selected
 
 #live-sample-data
 {
-   font-family: courier;
-   font-weight: bold;
+   font-family: monospace;
 }
 
 /* Accels window reminder */
@@ -1055,14 +1074,18 @@ menuitem:selected,
 combobox window *:selected,
 menuitem:active,
 combobox window *:active,
-menuitem:focus,
-combobox window *:focus,
 #recent-collection-button:selected,
 #history-button:selected,
+#history-button-always-enabled:selected,
+#history-button-default-enabled:selected,
 #recent-collection-button:active,
 #history-button:active,
+#history-button-always-enabled:active,
+#history-button-default-enabled:active,
 #recent-collection-button:checked,
 #history-button:checked,
+#history-button-always-enabled:checked,
+#history-button-default-enabled:checked,
 #iop-plugin-ui button:active,
 #lib-plugin-ui button:active,
 #iop-plugin-ui #control-button:active,
@@ -1073,46 +1096,72 @@ combobox window *:focus,
   color: @button_checked_fg;
 }
 
+#history-button:selected *,
+#history-button-always-enabled:selected *,
+#history-button-default-enabled:selected *,
+#history-button:active *,
+#history-button-always-enabled:active *,
+#history-button-default-enabled:active *,
+#history-button:checked *,
+#history-button-always-enabled:checked *,
+#history-button-default-enabled:checked *
+{
+  color: @button_checked_fg;
+}
+
 * button:hover,
 button:hover,
 menuitem:hover,
+menuitem:hover arrow,
 combobox window *:hover,
 #recent-collection-button:hover,
 #history-button:hover,
+#history-button-always-enabled:hover,
+#history-button-default-enabled:hover,
 #iop-plugin-ui button:hover,
 #lib-plugin-ui button:hover,
 #iop-plugin-ui #control-button:hover,
 #lib-plugin-ui #control-button:hover,
 #right #iop-plugin-ui #control-button:hover,
 #control-button:hover,
-menuitem:hover,
-menuitem:hover arrow,
+#view_label:hover,
 #view_dropdown menuitem:hover,
-combobox window *:hover,
-#view_dropdown:hover,
-#view_label:hover
+#view_dropdown:hover
 {
   background-color: @button_hover_bg;
-  color: @button_hover_fg;
 }
 
-* button:focus,
-button:focus,
-#recent-collection-button:focus,
-#history-button:focus,
-#iop-plugin-ui button:focus,
-#lib-plugin-ui button:focus,
-#iop-plugin-ui #control-button:focus,
-#lib-plugin-ui #control-button:focus,
-#right #iop-plugin-ui #control-button:focus
+* button:hover,
+button:hover,
+button:hover label,
+button:hover cellview,
+notebook tab:hover label,
+#header-toolbar menuitem:hover *,
+#footer-toolbar menuitem:hover *,
+#lib-plugin-ui menuitem:hover *,
+#preferences_notebook menuitem:hover *,
+#recent-collection-button:hover,
+#history-button:hover *,
+#history-button-always-enabled:hover *,
+#history-button-default-enabled:hover *,
+#iop-plugin-ui button:hover,
+#lib-plugin-ui button:hover,
+#iop-plugin-ui #control-button:hover,
+#lib-plugin-ui #control-button:hover,
+#right #iop-plugin-ui #control-button:hover,
+#control-button:hover,
+#view_label:hover,
+#view_dropdown menuitem:hover,
+#view_dropdown .combo:hover *
 {
-  background-color: @button_focus_bg;
-  color: @button_focus_fg;
+  color: @button_hover_fg;
 }
 
 button:disabled,
 #recent-collection-button:disabled,
-#history-button:disabled
+#history-button:disabled,
+#history-button-always-enabled:disabled,
+#history-button-default-enabled:disabled
 {
   color: @disabled_fg_color;
   background-color: transparent;
@@ -1147,10 +1196,14 @@ filechooser *:checked
   color: @plugin_fg_color;
 }
 
-#view_dropdown *:disabled,
 #view_label:disabled
 {
   color: @tooltip_bg_color;
+}
+
+#view_dropdown *:disabled
+{
+  color: @disabled_fg_color;
 }
 
 #bauhaus-popup:hover,
@@ -1158,14 +1211,6 @@ filechooser *:checked
 #bauhaus-slider:hover
 {
   color: @bauhaus_fg_hover;
-}
-
-#bauhaus-popup:focus,
-#bauhaus-combobox:focus,
-#bauhaus-slider:focus
-{
-  color: @bauhaus_fg_hover;
-  font-weight: 800;
 }
 
 #bauhaus-popup:disabled
@@ -1180,20 +1225,18 @@ notebook tab:hover
   background-color: @button_hover_bg;
 }
 
-notebook tab:hover label
+notebook tab:hover labelnotebook
 {
   color: @button_hover_fg;
 }
 
-notebook tab:checked,
-notebook tab:focus
+notebook tab:checked
 {
   border-bottom: 2px solid @button_checked_fg;
   color: @button_checked_fg;
 }
 
-notebook tab:checked label,
-notebook tab:focus label
+notebook tab:checked label
 {
   color: @button_checked_fg;
 }
@@ -1205,8 +1248,7 @@ entry:hover
 }
 
 entry:checked,
-entry:active,
-entry:focus
+entry:active
 {
   color: @field_active_fg;
   background-color: @field_active_bg;
@@ -1228,20 +1270,19 @@ scale contents trough slider:hover
   background-color: @scroll_bar_active;
 }
 
-scrollbar.horizontal slider:focus,
-scrollbar.vertical slider:focus,
-#iop-plugin-ui scrollbar slider:focus,
-#lib-plugin-ui scrollbar slider:focus,
-dialog scrollbar slider:focus,
-scale contents trough slider:focus
+/* color picker visibility for levels and rgb levels modules, be careful to not change that unless you really now what you do */
+
+#picker-black
 {
-  background-color: @scroll_bar_focus;
+  color: @grey_00;
 }
 
-#lib-plugin-ui *:hover,
-#iop-plugin-ui *:hover,
-#lib-plugin-ui *:focus,
-#lib-plugin-ui *:focus
+#picker-grey
 {
-  font-weight: 600;
+  color: @grey_50;
+}
+
+#picker-white
+{
+  color: @grey_100;
 }

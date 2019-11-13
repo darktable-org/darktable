@@ -688,7 +688,7 @@ void dt_lib_init_presets(dt_lib_module_t *module)
       size_t op_params_size = sqlite3_column_bytes(stmt, 2);
       const char *name = (char *)sqlite3_column_text(stmt, 3);
 
-      int version = module->version(module);
+      int version = module->version();
 
       if(op_version < version)
       {
@@ -789,7 +789,7 @@ static void popup_callback(GtkButton *button, GdkEventButton *event, dt_lib_modu
   dt_lib_module_info_t *mi = (dt_lib_module_info_t *)calloc(1, sizeof(dt_lib_module_info_t));
 
   mi->plugin_name = g_strdup(module->plugin_name);
-  mi->version = module->version(module);
+  mi->version = module->version();
   mi->module = module;
   mi->params = module->get_params(module, &mi->params_size);
 

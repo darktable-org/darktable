@@ -1047,14 +1047,14 @@ static void _show_top_line(dt_knight_t *d, cairo_t *cr, int32_t w, int32_t h)
 static void _show_score_1(dt_knight_t *d, cairo_t *cr, int32_t w, int32_t h)
 {
   char text[64];
-  snprintf(text, sizeof(text), "%04d", d->score_1);
+  snprintf(text, sizeof(text), "%04u", d->score_1);
   _show_text(cr, d->letters, text, (LETTER_WIDTH + LETTER_SPACING * 2) * w, 2 * LETTER_HEIGHT * w, w, h, 'l');
 }
 
 static void _show_score_2(dt_knight_t *d, cairo_t *cr, int32_t w, int32_t h)
 {
   char text[64];
-  snprintf(text, sizeof(text), "%04d", d->score_2);
+  snprintf(text, sizeof(text), "%04u", d->score_2);
   _show_text(cr, d->letters, text, (1.0 - (LETTER_WIDTH + LETTER_SPACING * 2)) * w, 2 * LETTER_HEIGHT * w, w,
              h, 'r');
 }
@@ -1062,7 +1062,7 @@ static void _show_score_2(dt_knight_t *d, cairo_t *cr, int32_t w, int32_t h)
 static void _show_high_score(dt_knight_t *d, cairo_t *cr, int32_t w, int32_t h)
 {
   char text[64];
-  snprintf(text, sizeof(text), "%04d", d->high_score);
+  snprintf(text, sizeof(text), "%04u", d->high_score);
   _show_text(cr, d->letters, text, 0.5 * w, 2 * LETTER_HEIGHT * w, w, h, 'c');
 }
 

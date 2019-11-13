@@ -101,7 +101,7 @@ const char **views(dt_lib_module_t *self)
   static const char *v1[] = {"lighttable", "darkroom", "map", "tethering", NULL};
   static const char *v2[] = {"lighttable", "map", "tethering", NULL};
 
-  if(dt_conf_get_bool("plugins/darktable/tagging/visible"))
+  if(dt_conf_get_bool("plugins/darkroom/tagging/visible"))
     return v1;
   else
     return v2;
@@ -382,18 +382,17 @@ void tree_tagname_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTre
 {
   dt_lib_module_t *self = (dt_lib_module_t *)data;
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
-  guint id;
   gchar *name;
   gchar *path;
   guint count;
   gchar *coltext;
   gint flags;
 
-  gtk_tree_model_get(model, iter, DT_LIB_TAGGING_COL_ID, &id, DT_LIB_TAGGING_COL_TAG, &name,
+  gtk_tree_model_get(model, iter, DT_LIB_TAGGING_COL_TAG, &name,
                   DT_LIB_TAGGING_COL_COUNT, &count, DT_LIB_TAGGING_COL_FLAGS, &flags,
                   DT_LIB_TAGGING_COL_PATH, &path, -1);
   const gboolean hide = dictionary_view ? (d->tree_flag ? TRUE : d->hide_path_flag) : d->hide_path_flag;
-  const gboolean istag = id && !(flags & DT_TF_CATEGORY);
+  const gboolean istag = !(flags & DT_TF_CATEGORY);
   if ((dictionary_view && !count) || (!dictionary_view && count <= 1))
   {
     coltext = g_markup_printf_escaped(istag ? "%s" : "<i>%s</i>", hide ? name : path);
@@ -443,7 +442,7 @@ void tree_select_show(GtkTreeViewColumn *col, GtkCellRenderer *renderer, GtkTree
 static void _lib_tagging_redraw_callback(gpointer instance, dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
-  int imgsel = dt_control_get_mouse_over_id();
+  const int imgsel = dt_control_get_mouse_over_id();
   if(imgsel != d->imgsel)
   {
     init_treeview(self, 0);
@@ -822,6 +821,8 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     GtkTreeModel *store = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model));
     GtkTreeIter iter;
     const int imgsel = dt_view_get_image_to_act_on();
+    if(imgsel < 0 && dt_collection_get_selected_count(darktable.collection) == 0)
+      return 0;
     gchar **tokens = g_strsplit(buf, ",", 0);
     if(tokens)
     {
@@ -870,11 +871,11 @@ static void attach_selected_tag(dt_lib_module_t *self, dt_lib_tagging_t *d)
     return;
   guint tagid;
   gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_ID, &tagid, -1);
-
-  int imgsel = -1;
   if(tagid <= 0) return;
 
-  imgsel = dt_view_get_image_to_act_on();
+  const int imgsel = dt_view_get_image_to_act_on();
+  if(imgsel < 0 && dt_collection_get_selected_count(darktable.collection) == 0)
+    return;
   dt_tag_attach(tagid, imgsel);
 
   init_treeview(self, 0);
@@ -913,11 +914,11 @@ static void detach_selected_tag(GtkTreeView *view, dt_lib_module_t *self, dt_lib
   if(!gtk_tree_selection_get_selected(selection, &model, &iter)) return;
   guint tagid;
   gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_ID, &tagid, -1);
-
-  int imgsel = -1;
   if(tagid <= 0) return;
 
-  imgsel = dt_view_get_image_to_act_on();
+  const int imgsel = dt_view_get_image_to_act_on();
+  if(imgsel < 0 && dt_collection_get_selected_count(darktable.collection) == 0)
+    return;
   GList *affected_images = dt_tag_get_images_from_selection(imgsel, tagid);
 
   dt_tag_detach(tagid, imgsel);
@@ -984,11 +985,9 @@ static void pop_menu_attached_attach_to_all(GtkWidget *menuitem, dt_lib_module_t
     return;
   guint tagid;
   gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_ID, &tagid, -1);
-
-  int imgsel = -1;
   if(tagid <= 0) return;
 
-  imgsel = dt_view_get_image_to_act_on();
+  const int imgsel = dt_view_get_image_to_act_on();
   dt_tag_attach(tagid, imgsel);
 
   init_treeview(self, 0);
@@ -1433,10 +1432,12 @@ static void pop_menu_dictionary_create_tag(GtkWidget *menuitem, dt_lib_module_t 
     {
       const gint new_flags = ((gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(category)) ? DT_TF_CATEGORY : 0) |
                       (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(private)) ? DT_TF_PRIVATE : 0));
+      if (new_tagid) dt_tag_set_flags(new_tagid, new_flags);
       GtkTextIter start, end;
       gtk_text_buffer_get_start_iter(buffer, &start);
       gtk_text_buffer_get_end_iter(buffer, &end);
       gchar *new_synonyms_list = gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
+      if (new_tagid && new_synonyms_list && new_synonyms_list[0]) dt_tag_set_synonyms(new_tagid, new_synonyms_list);
 
       GtkTreeIter store_iter, store_parent;
       GtkTreeModel *store = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model));
@@ -2039,11 +2040,14 @@ static gboolean mouse_scroll_attached(GtkWidget *treeview, GdkEventScroll *event
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
   if (event->state & GDK_CONTROL_MASK)
   {
+    const gint increment = DT_PIXEL_APPLY_DPI(10.0);
+    const gint min_height = DT_PIXEL_APPLY_DPI(100.0);
+    const gint max_height = DT_PIXEL_APPLY_DPI(500.0);
     gint width, height;
     gtk_widget_get_size_request (GTK_WIDGET(d->attached_window), &width, &height);
-    height = height + 10.0 * event->delta_y;
-    height = (height < 100.0) ? 100.0 : (height > 500.0) ? 500.0 : height;
-    gtk_widget_set_size_request(GTK_WIDGET(d->attached_window), -1, DT_PIXEL_APPLY_DPI((gint)height));
+    height = height + increment * event->delta_y;
+    height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
+    gtk_widget_set_size_request(GTK_WIDGET(d->attached_window), -1, (gint)height);
     dt_conf_set_int("plugins/lighttable/tagging/heightattachedwindow", (gint)height);
     return TRUE;
   }
@@ -2055,11 +2059,14 @@ static gboolean mouse_scroll_dictionary(GtkWidget *treeview, GdkEventScroll *eve
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
   if (event->state & GDK_CONTROL_MASK)
   {
+    const gint increment = DT_PIXEL_APPLY_DPI(10.0);
+    const gint min_height = DT_PIXEL_APPLY_DPI(100.0);
+    const gint max_height = DT_PIXEL_APPLY_DPI(1000.0);
     gint width, height;
     gtk_widget_get_size_request (GTK_WIDGET(d->dictionary_window), &width, &height);
-    height = height + 10.0 * event->delta_y;
-    height = (height < 100.0) ? 100.0 : (height > 1000.0) ? 1000.0 : height;
-    gtk_widget_set_size_request(GTK_WIDGET(d->dictionary_window), -1, DT_PIXEL_APPLY_DPI((gint)height));
+    height = height + increment * event->delta_y;
+    height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
+    gtk_widget_set_size_request(GTK_WIDGET(d->dictionary_window), -1, (gint)height);
     dt_conf_set_int("plugins/lighttable/tagging/heightdictionarywindow", (gint)height);
     return TRUE;
   }
@@ -2682,7 +2689,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(new_button_clicked), (gpointer)self);
 
-  button = gtk_button_new_with_label(C_("verb", "import"));
+  button = gtk_button_new_with_label(C_("verb", "import..."));
   d->import_button = button;
   gtk_widget_set_hexpand(button, TRUE);
   gtk_widget_set_tooltip_text(button, _("import tags from a Lightroom keyword file"));
@@ -2690,7 +2697,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(hbox, button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_button_clicked), (gpointer)self);
 
-  button = gtk_button_new_with_label(C_("verb", "export"));
+  button = gtk_button_new_with_label(C_("verb", "export..."));
   d->export_button = button;
   gtk_widget_set_hexpand(button, TRUE);
   gtk_widget_set_tooltip_text(button, _("export all tags to a Lightroom keyword file"));

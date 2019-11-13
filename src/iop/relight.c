@@ -297,6 +297,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 
@@ -341,9 +343,6 @@ static void _iop_color_picker_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->tbutton1), g->color_picker.current_picker == 1);
 
   darktable.gui->reset = reset;
-
-  if(g->color_picker.current_picker != 1)
-    dtgtk_gradient_slider_multivalue_set_picker(DTGTK_GRADIENT_SLIDER(g->gslider1), NAN);
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -357,7 +356,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* exposure */
   g->scale1 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.05, p->ev, 2);
-  dt_bauhaus_slider_set_format(g->scale1, "%.2fEV");
+  dt_bauhaus_slider_set_format(g->scale1, _("%.2f EV"));
   dt_bauhaus_widget_set_label(g->scale1, NULL, _("exposure"));
   gtk_widget_set_tooltip_text(g->scale1, _("the fill-light in EV"));
   g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(ev_callback), self);

@@ -545,10 +545,10 @@ static gboolean _lib_filmstrip_scroll_callback(GtkWidget *w, GdkEventScroll *e, 
   dt_lib_filmstrip_t *strip = (dt_lib_filmstrip_t *)self->data;
 
   /* change the offset */
-  int delta_x, delta_y;
-  if(dt_gui_get_scroll_unit_deltas(e, &delta_x, &delta_y))
+  int delta;
+  if(dt_gui_get_scroll_unit_delta(e, &delta))
   {
-    strip->offset = CLAMP(strip->offset + delta_x + delta_y, 0, strip->collection_count-1);
+    strip->offset = CLAMP(strip->offset + delta, 0, strip->collection_count-1);
     strip->force_expose_all = TRUE;
     gtk_widget_queue_draw(strip->filmstrip);
   }
@@ -792,7 +792,7 @@ static gboolean _lib_filmstrip_draw_callback(GtkWidget *widget, cairo_t *wcr, gp
   {
     if(col < col_start)
     {
-      cairo_translate(cr, wd + line_width, 0);
+      cairo_translate(cr, wd, 0);
       continue;
     }
 

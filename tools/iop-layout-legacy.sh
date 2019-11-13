@@ -109,7 +109,9 @@ group_effect=(
 
 ######################################### END OF CONFIGURATION HERE
 
-FILE=$HOME/.config/darktable/darktablerc
+[ -z $DT_CONFIGDIR ] && DT_CONFIGDIR=$HOME/.config/darktable
+
+FILE=$DT_CONFIGDIR/darktablerc
 
 [ ! -f $FILE ] && echo darktable configuration file 'darktablerc' does not exists && exit 1
 

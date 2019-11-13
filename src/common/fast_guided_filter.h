@@ -398,7 +398,7 @@ dt_omp_firstprivate(image, out, num_elem, sampling, clip_min, clip_max) \
 schedule(static) aligned(image, out:64)
 #endif
     for(size_t k = 0; k < num_elem; k++)
-      out[k] = fast_clamp(image[k], clip_min, clip_max);
+      out[k] = image[k];
   }
   else if(sampling == 1.0f)
   {
@@ -468,7 +468,7 @@ static inline void fast_surface_blur(float *const restrict image,
 
     // Perform the patch-wise variance analyse to get
     // the a and b parameters for the linear blending s.t. mask = a * I + b
-    variance_analyse(ds_image, ds_mask, ds_ab, ds_width, ds_height, ds_radius, feathering);
+    variance_analyse(ds_mask, ds_image, ds_ab, ds_width, ds_height, ds_radius, feathering);
 
     // Compute the patch-wise average of parameters a and b
     box_average(ds_ab, ds_width, ds_height, 2, ds_radius);
@@ -477,12 +477,6 @@ static inline void fast_surface_blur(float *const restrict image,
     {
       // Process the intermediate filtered image
       apply_linear_blending(ds_image, ds_ab, num_elem_ds);
-    }
-    else
-    {
-      // Increase the radius for the next iteration
-      ds_radius *= 2.0f;
-      feathering /= 2.0f;
     }
   }
 

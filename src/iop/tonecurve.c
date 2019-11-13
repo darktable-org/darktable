@@ -911,6 +911,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 static void scale_callback(GtkWidget *widget, dt_iop_module_t *self)
@@ -1227,7 +1229,7 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
   if(c->selected < 0) return TRUE;
 
   gdouble delta_y;
-  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_delta(event, &delta_y))
   {
     delta_y *= -TONECURVE_DEFAULT_STEP;
     return _move_point_internal(self, widget, 0.0, delta_y, event->state);
@@ -1392,10 +1394,10 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(c->preserve_colors, NULL, _("preserve colors"));
   dt_bauhaus_combobox_add(c->preserve_colors, _("none"));
   dt_bauhaus_combobox_add(c->preserve_colors, _("luminance"));
-  dt_bauhaus_combobox_add(c->preserve_colors, _("max rgb"));
-  dt_bauhaus_combobox_add(c->preserve_colors, _("average rgb"));
-  dt_bauhaus_combobox_add(c->preserve_colors, _("sum rgb"));
-  dt_bauhaus_combobox_add(c->preserve_colors, _("norm rgb"));
+  dt_bauhaus_combobox_add(c->preserve_colors, _("max RGB"));
+  dt_bauhaus_combobox_add(c->preserve_colors, _("average RGB"));
+  dt_bauhaus_combobox_add(c->preserve_colors, _("sum RGB"));
+  dt_bauhaus_combobox_add(c->preserve_colors, _("norm RGB"));
   dt_bauhaus_combobox_add(c->preserve_colors, _("basic power"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->preserve_colors, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(c->preserve_colors, _("method to preserve colors when applying contrast"));

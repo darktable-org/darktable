@@ -4696,6 +4696,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -5046,24 +5048,24 @@ GSList *mouse_actions(struct dt_iop_module_t *self)
 
   a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
   a->action = DT_MOUSE_ACTION_LEFT;
-  g_snprintf(a->name, sizeof(a->name), _("[%s on segment] select segment"), self->name(self));
+  g_snprintf(a->name, sizeof(a->name), _("[%s on segment] select segment"), self->name());
   lm = g_slist_append(lm, a);
 
   a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
   a->action = DT_MOUSE_ACTION_RIGHT;
-  g_snprintf(a->name, sizeof(a->name), _("[%s on segment] unselect segment"), self->name(self));
+  g_snprintf(a->name, sizeof(a->name), _("[%s on segment] unselect segment"), self->name());
   lm = g_slist_append(lm, a);
 
   a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
   a->key.accel_mods = GDK_SHIFT_MASK;
   a->action = DT_MOUSE_ACTION_LEFT_DRAG;
-  g_snprintf(a->name, sizeof(a->name), _("[%s] select all segments from zone"), self->name(self));
+  g_snprintf(a->name, sizeof(a->name), _("[%s] select all segments from zone"), self->name());
   lm = g_slist_append(lm, a);
 
   a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
   a->key.accel_mods = GDK_SHIFT_MASK;
   a->action = DT_MOUSE_ACTION_RIGHT_DRAG;
-  g_snprintf(a->name, sizeof(a->name), _("[%s] unselect all segments from zone"), self->name(self));
+  g_snprintf(a->name, sizeof(a->name), _("[%s] unselect all segments from zone"), self->name());
   lm = g_slist_append(lm, a);
 
   return lm;

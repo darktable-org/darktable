@@ -32,7 +32,6 @@
 #include "common/mipmap_cache.h"
 #include "common/opencl.h"
 #include "common/tags.h"
-#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -47,6 +46,7 @@
 #define DT_DEV_AVERAGE_DELAY_START 250
 #define DT_DEV_PREVIEW_AVERAGE_DELAY_START 50
 #define DT_DEV_AVERAGE_DELAY_COUNT 5
+#define DT_IOP_ORDER_INFO (darktable.unmuted & DT_DEBUG_IOPORDER)
 
 const gchar *dt_dev_histogram_type_names[DT_DEV_HISTOGRAM_N] = { "logarithmic", "linear", "waveform" };
 
@@ -671,6 +671,8 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
 
 void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
 {
+  dt_lock_image(imgid);
+
   _dt_dev_load_raw(dev, imgid);
 
   if(dev->pipe)
@@ -684,14 +686,19 @@ void dt_dev_load_image(dt_develop_t *dev, const uint32_t imgid)
   dev->first_load = 1;
   dev->image_status = dev->preview_status = dev->preview2_status = DT_DEV_PIXELPIPE_DIRTY;
 
+  // we need a global lock as the dev->iop set must not be changed until read history is terminated
+  dt_pthread_mutex_lock(&darktable.dev_threadsafe);
   dev->iop = dt_iop_load_modules(dev);
 
   dt_dev_read_history(dev);
+  dt_pthread_mutex_unlock(&darktable.dev_threadsafe);
 
   dev->first_load = 0;
 
   // Loading an image means we do some developing and so remove the darktable|problem|history-compress tag
   dt_history_set_compress_problem(imgid, FALSE);
+
+  dt_unlock_image(imgid);
 }
 
 void dt_dev_configure(dt_develop_t *dev, int wd, int ht)
@@ -767,122 +774,131 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
 
 static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable, gboolean no_image, gboolean include_masks)
 {
-    GList *history = g_list_nth(dev->history, dev->history_end);
-    // look for leaks on top of history in two steps
-    // first remove obsolete items above history_end
-    while(history)
+  int kept_module = 0;
+  GList *history = g_list_nth(dev->history, dev->history_end);
+  // look for leaks on top of history in two steps
+  // first remove obsolete items above history_end
+  // but keep the always-on modules
+  while(history)
+  {
+    GList *next = g_list_next(history);
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
+    // printf("removing obsoleted history item: %s\n", hist->module->op);
+    if(!hist->module->hide_enable_button && !hist->module->default_enabled)
     {
-      GList *next = g_list_next(history);
-      dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
-      // printf("removing obsoleted history item: %s\n", hist->module->op);
       dt_dev_free_history_item(hist);
       dev->history = g_list_delete_link(dev->history, history);
-      history = next;
-    }
-    // then remove NIL items there
-    while ((dev->history_end>0) && (! g_list_nth(dev->history, dev->history_end - 1)))
-      dev->history_end--;
-
-    history = g_list_nth(dev->history, dev->history_end - 1);
-    dt_dev_history_item_t *hist = history ? (dt_dev_history_item_t *)(history->data) : 0;
-    if(!history // if no history yet, push new item for sure.
-       || module != hist->module
-       || module->instance != hist->module->instance             // add new item for different op
-       || module->multi_priority != hist->module->multi_priority // or instance
-       || ((dev->focus_hash != hist->focus_hash)                 // or if focused out and in
-       && (// but only add item if there is a difference at all for the same module
-         (module->params_size != hist->module->params_size) ||
-         include_masks ||
-         (module->params_size == hist->module->params_size && memcmp(hist->params, module->params, module->params_size)))))
-    {
-      // new operation, push new item
-      // printf("adding new history item %d - %s\n", dev->history_end, module->op);
-      // if(history) printf("because item %d - %s is different operation.\n", dev->history_end-1,
-      // ((dt_dev_history_item_t *)history->data)->module->op);
-      dev->history_end++;
-
-      hist = (dt_dev_history_item_t *)calloc(1, sizeof(dt_dev_history_item_t));
-      if(enable)
-      {
-        module->enabled = TRUE;
-        if(!no_image)
-        {
-          if(module->off)
-          {
-            const int reset = darktable.gui->reset;
-            darktable.gui->reset = 1;
-            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
-            darktable.gui->reset = reset;
-          }
-        }
-      }
-      snprintf(hist->op_name, sizeof(hist->op_name), "%s", module->op);
-      hist->focus_hash = dev->focus_hash;
-      hist->enabled = module->enabled;
-      hist->module = module;
-      hist->params = malloc(module->params_size);
-      hist->iop_order = module->iop_order;
-      hist->multi_priority = module->multi_priority;
-      snprintf(hist->multi_name, sizeof(hist->multi_name), "%s", module->multi_name);
-      /* allocate and set hist blend_params */
-      hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
-      memcpy(hist->params, module->params, module->params_size);
-      memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
-      if(include_masks)
-        hist->forms = dt_masks_dup_forms_deep(dev->forms, NULL);
-      else
-        hist->forms = NULL;
-
-      dev->history = g_list_append(dev->history, hist);
-      if(!no_image)
-      {
-        dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
-        dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // topology remains, as modules are fixed for now.
-        dev->preview2_pipe->changed |= DT_DEV_PIPE_SYNCH; // topology remains, as modules are fixed for now.
-      }
     }
     else
+      kept_module++;
+    history = next;
+  }
+  // then remove NIL items there
+  while ((dev->history_end>0) && (! g_list_nth(dev->history, dev->history_end - 1)))
+    dev->history_end--;
+
+  dev->history_end += kept_module;
+
+  history = g_list_nth(dev->history, dev->history_end - 1);
+  dt_dev_history_item_t *hist = history ? (dt_dev_history_item_t *)(history->data) : 0;
+  if(!history // if no history yet, push new item for sure.
+     || module != hist->module
+     || module->instance != hist->module->instance             // add new item for different op
+     || module->multi_priority != hist->module->multi_priority // or instance
+     || ((dev->focus_hash != hist->focus_hash)                 // or if focused out and in
+         && (// but only add item if there is a difference at all for the same module
+           (module->params_size != hist->module->params_size) ||
+           include_masks ||
+           (module->params_size == hist->module->params_size && memcmp(hist->params, module->params, module->params_size)))))
+  {
+    // new operation, push new item
+    // printf("adding new history item %d - %s\n", dev->history_end, module->op);
+    // if(history) printf("because item %d - %s is different operation.\n", dev->history_end-1,
+    // ((dt_dev_history_item_t *)history->data)->module->op);
+    dev->history_end++;
+
+    hist = (dt_dev_history_item_t *)calloc(1, sizeof(dt_dev_history_item_t));
+    if(enable)
     {
-      // same operation, change params
-      // printf("changing same history item %d - %s\n", dev->history_end-1, module->op);
-      hist = (dt_dev_history_item_t *)history->data;
-      memcpy(hist->params, module->params, module->params_size);
-
-      if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
-        memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
-
-      // if the user changed stuff and the module is still not enabled, do it:
-      if(!hist->enabled && !module->enabled)
-      {
-        module->enabled = 1;
-        if(!no_image)
-        {
-          if(module->off)
-          {
-            const int reset = darktable.gui->reset;
-            darktable.gui->reset = 1;
-            gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
-            darktable.gui->reset = reset;
-          }
-        }
-      }
-      hist->iop_order = module->iop_order;
-      hist->multi_priority = module->multi_priority;
-      memcpy(hist->multi_name, module->multi_name, sizeof(module->multi_name));
-      hist->enabled = module->enabled;
-
-      if(include_masks)
-      {
-        g_list_free_full(hist->forms, (void (*)(void *))dt_masks_free_form);
-        hist->forms = dt_masks_dup_forms_deep(dev->forms, NULL);
-      }
+      module->enabled = TRUE;
       if(!no_image)
       {
-        dev->pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
-        dev->preview_pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
-        dev->preview2_pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
+        if(module->off)
+        {
+          const int reset = darktable.gui->reset;
+          darktable.gui->reset = 1;
+          gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+          darktable.gui->reset = reset;
+        }
       }
     }
+    snprintf(hist->op_name, sizeof(hist->op_name), "%s", module->op);
+    hist->focus_hash = dev->focus_hash;
+    hist->enabled = module->enabled;
+    hist->module = module;
+    hist->params = malloc(module->params_size);
+    hist->iop_order = module->iop_order;
+    hist->multi_priority = module->multi_priority;
+    snprintf(hist->multi_name, sizeof(hist->multi_name), "%s", module->multi_name);
+    /* allocate and set hist blend_params */
+    hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
+    memcpy(hist->params, module->params, module->params_size);
+    memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
+    if(include_masks)
+      hist->forms = dt_masks_dup_forms_deep(dev->forms, NULL);
+    else
+      hist->forms = NULL;
+
+    dev->history = g_list_append(dev->history, hist);
+    if(!no_image)
+    {
+      dev->pipe->changed |= DT_DEV_PIPE_SYNCH;
+      dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH; // topology remains, as modules are fixed for now.
+      dev->preview2_pipe->changed |= DT_DEV_PIPE_SYNCH; // topology remains, as modules are fixed for now.
+    }
+  }
+  else
+  {
+    // same operation, change params
+    // printf("changing same history item %d - %s\n", dev->history_end-1, module->op);
+    hist = (dt_dev_history_item_t *)history->data;
+    memcpy(hist->params, module->params, module->params_size);
+
+    if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+      memcpy(hist->blend_params, module->blend_params, sizeof(dt_develop_blend_params_t));
+
+    // if the user changed stuff and the module is still not enabled, do it:
+    if(!hist->enabled && !module->enabled)
+    {
+      module->enabled = 1;
+      if(!no_image)
+      {
+        if(module->off)
+        {
+          const int reset = darktable.gui->reset;
+          darktable.gui->reset = 1;
+          gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+          darktable.gui->reset = reset;
+        }
+      }
+    }
+    hist->iop_order = module->iop_order;
+    hist->multi_priority = module->multi_priority;
+    memcpy(hist->multi_name, module->multi_name, sizeof(module->multi_name));
+    hist->enabled = module->enabled;
+
+    if(include_masks)
+    {
+      g_list_free_full(hist->forms, (void (*)(void *))dt_masks_free_form);
+      hist->forms = dt_masks_dup_forms_deep(dev->forms, NULL);
+    }
+    if(!no_image)
+    {
+      dev->pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
+      dev->preview_pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
+      dev->preview2_pipe->changed |= DT_DEV_PIPE_TOP_CHANGED;
+    }
+  }
 }
 
 void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable, const int no_image)
@@ -893,6 +909,11 @@ void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gbo
 void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
 {
   if(!darktable.gui || darktable.gui->reset) return;
+
+  if(dev->gui_attached)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end);
+
   dt_pthread_mutex_lock(&dev->history_mutex);
 
   if(dev->gui_attached)
@@ -967,6 +988,11 @@ void dt_dev_add_masks_history_item_ext(dt_develop_t *dev, dt_iop_module_t *_modu
 void dt_dev_add_masks_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
 {
   if(!darktable.gui || darktable.gui->reset) return;
+
+  if(dev->gui_attached)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end);
+
   dt_pthread_mutex_lock(&dev->history_mutex);
 
   if(dev->gui_attached)
@@ -1003,6 +1029,9 @@ void dt_dev_free_history_item(gpointer data)
 void dt_dev_reload_history_items(dt_develop_t *dev)
 {
   dev->focus_hash = 0;
+
+  dt_lock_image(dev->image_storage.id);
+
   dt_dev_pop_history_items(dev, 0);
 
   // remove unused history items:
@@ -1066,6 +1095,8 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
 
   // we update show params for multi-instances for each other instances
   dt_dev_modules_update_multishow(dev);
+
+  dt_unlock_image(dev->image_storage.id);
 }
 
 void dt_dev_pop_history_items_ext(dt_develop_t *dev, int32_t cnt)
@@ -1203,6 +1234,7 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
 void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
 {
   sqlite3_stmt *stmt;
+  dt_lock_image(imgid);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1,
                               &stmt, NULL);
@@ -1215,13 +1247,21 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   GList *history = dev->history;
-
+  if (DT_IOP_ORDER_INFO)
+    fprintf(stderr,"\n^^^^ Writing history image: %i, iop version: %i",imgid,dev->iop_order_version);
   for(int i = 0; history; i++)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
     (void)dt_dev_write_history_item(imgid, hist, i);
+    if (DT_IOP_ORDER_INFO)
+    {
+      fprintf(stderr,"\n%20s, num %i, order %9.5f, v(%i), multiprio %i",hist->module->op,i,hist->iop_order,hist->module->version(),hist->multi_priority);
+      if (hist->enabled) fprintf(stderr,", enabled");
+    }
     history = g_list_next(history);
   }
+  if (DT_IOP_ORDER_INFO)
+    fprintf(stderr,"\nvvvv\n");
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "UPDATE main.images SET history_end = ?1, iop_order_version = ?3 WHERE id = ?2", -1,
@@ -1231,6 +1271,7 @@ void dt_dev_write_history_ext(dt_develop_t *dev, const int imgid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, dev->iop_order_version);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+  dt_unlock_image(imgid);
 }
 
 void dt_dev_write_history(dt_develop_t *dev)
@@ -1246,9 +1287,6 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   if(imgid <= 0) return FALSE;
 
-  // be extra sure that we don't mess up history in separate threads:
-  dt_pthread_mutex_lock(&darktable.db_insert);
-
   gboolean run = FALSE;
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
   if(!(image->flags & DT_IMAGE_AUTO_PRESETS_APPLIED)) run = TRUE;
@@ -1258,7 +1296,6 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   if(!run || image->id <= 0)
   {
     dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_RELAXED);
-    dt_pthread_mutex_unlock(&darktable.db_insert);
     return FALSE;
   }
 
@@ -1298,7 +1335,6 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   sqlite3_finalize(stmt);
 
   image->flags |= DT_IMAGE_AUTO_PRESETS_APPLIED | DT_IMAGE_NO_LEGACY_PRESETS;
-  dt_pthread_mutex_unlock(&darktable.db_insert);
 
   // make sure these end up in the image_cache + xmp (sync through here if we set the flag)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
@@ -1463,6 +1499,12 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 {
   if(imgid <= 0) return;
   if(!dev->iop) return;
+
+  dt_lock_image(imgid);
+
+  if(dev->gui_attached)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end);
 
   int history_end_current = 0;
 
@@ -1716,6 +1758,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   }
   dt_dev_masks_list_change(dev);
+  dt_unlock_image(imgid);
 }
 
 void dt_dev_read_history(dt_develop_t *dev)
@@ -2117,6 +2160,9 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
   int del = 0;
   if(dev->gui_attached)
   {
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end);
+
     GList *elem = g_list_first(dev->history);
     while(elem != NULL)
     {
@@ -2687,6 +2733,25 @@ void dt_second_window_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float 
 
   if(boxww) *boxww = boxw;
   if(boxhh) *boxhh = boxh;
+}
+
+dt_iop_module_t *dt_dev_get_base_module(GList *iop_list, const char *op)
+{
+  dt_iop_module_t *result = NULL;
+
+  GList *modules = g_list_first(iop_list);
+  while(modules)
+  {
+    dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
+    if(strcmp(mod->op, op) == 0)
+    {
+      result = mod;
+      break;
+    }
+    modules = g_list_next(modules);
+  }
+
+  return result;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

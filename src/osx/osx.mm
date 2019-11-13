@@ -30,6 +30,7 @@
 
 void dt_osx_autoset_dpi(GtkWidget *widget)
 {
+#if 0
   GdkScreen *screen = gtk_widget_get_screen(widget);
   if(!screen)
     screen = gdk_screen_get_default();
@@ -43,6 +44,7 @@ void dt_osx_autoset_dpi(GtkWidget *widget)
   gdk_screen_set_resolution(screen,
       25.4 * sqrt(width * width + height * height)
            / sqrt(size_in_mm.width * size_in_mm.width + size_in_mm.height * size_in_mm.height));
+#endif
 }
 
 float dt_osx_get_ppd()
@@ -123,6 +125,57 @@ char* dt_osx_get_bundle_res_path()
 #endif
 
   return result;
+}
+
+void dt_osx_prepare_environment()
+{
+  char* res_path = dt_osx_get_bundle_res_path();
+  if(res_path)
+  {
+    g_setenv("GTK_DATA_PREFIX", res_path, TRUE);
+    g_setenv("GTK_EXE_PREFIX", res_path, TRUE);
+    g_setenv("GTK_PATH", res_path, TRUE);
+    {
+      gchar* etc_path = g_build_filename(res_path, "etc", NULL);
+      g_setenv("XDG_CONFIG_DIRS", etc_path, TRUE);
+      {
+        gchar* gtk_im_path = g_build_filename(etc_path, "gtk-3.0", "gtk.immodules", NULL);
+        g_setenv("GTK_IM_MODULE_FILE", gtk_im_path, TRUE);
+        g_free(gtk_im_path);
+      }
+      {
+        gchar* pixbuf_path = g_build_filename(etc_path, "gtk-3.0", "loaders.cache", NULL);
+        g_setenv("GDK_PIXBUF_MODULE_FILE", pixbuf_path, TRUE);
+        g_free(pixbuf_path);
+      }
+      g_free(etc_path);
+    }
+    {
+      gchar* share_path = g_build_filename(res_path, "share", NULL);
+      g_setenv("XDG_DATA_DIRS", share_path, TRUE);
+      {
+        gchar* schema_path = g_build_filename(share_path, "glib-2.0", "schemas", NULL);
+        g_setenv("GSETTINGS_SCHEMA_DIR", schema_path, TRUE);
+        g_free(schema_path);
+      }
+      g_free(share_path);
+    }
+    {
+      gchar* lib_path = g_build_filename(res_path, "lib", NULL);
+      {
+        gchar* io_path = g_build_filename(lib_path, "libgphoto2_port", NULL);
+        g_setenv("IOLIBS", io_path, TRUE);
+        g_free(io_path);
+      }
+      {
+        gchar* cam_path = g_build_filename(lib_path, "libgphoto2", NULL);
+        g_setenv("CAMLIBS", cam_path, TRUE);
+        g_free(cam_path);
+      }
+      g_free(lib_path);
+    }
+    g_free(res_path);
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

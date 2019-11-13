@@ -176,15 +176,15 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   for(uint32_t i = 0; i < p->rules; i++)
   {
     /* set item */
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/item%1u", i);
     dt_conf_set_int(confname, p->rule[i].item);
 
     /* set mode */
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1u", i);
     dt_conf_set_int(confname, p->rule[i].mode);
 
     /* set string */
-    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1d", i);
+    snprintf(confname, sizeof(confname), "plugins/lighttable/collect/string%1u", i);
     dt_conf_set_string(confname, p->rule[i].string);
   }
 

@@ -272,6 +272,7 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   int area_cursor_valid;    // TRUE if mouse cursor is over the graph area
   int area_dragging;        // TRUE if left-button has been pushed but not released and cursor motion is recorded
   int cursor_valid;         // TRUE if mouse cursor is over the preview image
+  int has_focus;            // TRUE if the widget has the focus from GTK
 
   // Flags for buffer caches invalidation
   int interpolation_valid;  // TRUE if the interpolation_matrix is ready
@@ -318,7 +319,7 @@ void init_key_accels(dt_iop_module_so_t *self)
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "speculars"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "filter diffusion"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "smoothing diameter"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "edges refinement/feathering"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "edges refinement or feathering"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mask quantization"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mask exposure compensation"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mask contrast compensation"));
@@ -339,7 +340,7 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "speculars", GTK_WIDGET(g->speculars));
   dt_accel_connect_slider_iop(self, "filter diffusion", GTK_WIDGET(g->iterations));
   dt_accel_connect_slider_iop(self, "smoothing diameter", GTK_WIDGET(g->blending));
-  dt_accel_connect_slider_iop(self, "edges refinement/feathering", GTK_WIDGET(g->feathering));
+  dt_accel_connect_slider_iop(self, "edges refinement or feathering", GTK_WIDGET(g->feathering));
   dt_accel_connect_slider_iop(self, "mask quantization", GTK_WIDGET(g->quantization));
   dt_accel_connect_slider_iop(self, "mask exposure compensation", GTK_WIDGET(g->exposure_boost));
   dt_accel_connect_slider_iop(self, "mask contrast compensation", GTK_WIDGET(g->contrast_boost));
@@ -419,38 +420,38 @@ void init_presets(dt_iop_module_so_t *self)
   p.details = DT_TONEEQ_GUIDED;
   p.method = DT_TONEEQ_NORM_2;
 
-  p.blending = 12.5f;
-  p.feathering = 5.0f;
-  p.iterations = 3;
-  p.quantization = 1.0f;
-  p.exposure_boost = -1.0f;
-  p.contrast_boost = 2.0f;
+  p.blending = 33.0f;
+  p.feathering = 10.0f;
+  p.iterations = 1;
+  p.quantization = 0.0f;
+  p.exposure_boost = 0.0f;
+  p.contrast_boost = 0.0f;
   dt_gui_presets_add_generic(_("mask blending : landscapes"), self->op, self->version(), &p, sizeof(p), 1);
 
   p.blending = 25.0f;
-  p.feathering = 5.0f;
+  p.feathering = 25.0f;
   p.iterations = 2;
-  p.quantization = 1.0f;
-  p.exposure_boost = -1.5f;
-  p.contrast_boost = 3.0f;
+  p.quantization = 0.0f;
+  p.exposure_boost = 0.0f;
+  p.contrast_boost = 0.0f;
   dt_gui_presets_add_generic(_("mask blending : all purposes"), self->op, self->version(), &p, sizeof(p), 1);
 
   p.blending = 25.0f;
   p.feathering = 25.0f;
   p.iterations = 4;
-  p.quantization = 1.0f;
-  p.exposure_boost = -1.5f;
-  p.contrast_boost = 3.0f;
+  p.quantization = 0.0f;
+  p.exposure_boost = -0.5f;
+  p.contrast_boost = 1.0f;
   dt_gui_presets_add_generic(_("mask blending : isolated subjects"), self->op, self->version(), &p, sizeof(p), 1);
 
   // Shadows/highlights presets
 
   p.blending = 25.0f;
-  p.feathering = 10.0f;
+  p.feathering = 25.0f;
   p.iterations = 2;
-  p.quantization = 1.0f;
-  p.exposure_boost = -1.5f;
-  p.contrast_boost = 3.0f;
+  p.quantization = 0.0f;
+  p.exposure_boost = -0.5f;
+  p.contrast_boost = 1.0f;
 
   p.noise = 0.05f;
   p.ultra_deep_blacks = 0.15f;
@@ -464,12 +465,12 @@ void init_presets(dt_iop_module_so_t *self)
 
   dt_gui_presets_add_generic(_("compress shadows/highlights : soft"), self->op, self->version(), &p, sizeof(p), 1);
 
-  p.blending = 12.5f;
-  p.feathering = 20.0f;
-  p.iterations = 3;
-  p.quantization = 1.0f;
-  p.exposure_boost = -1.0f;
-  p.contrast_boost = 2.0f;
+  p.blending = 25.0f;
+  p.feathering = 10.0f;
+  p.iterations = 2;
+  p.quantization = 0.0f;
+  p.exposure_boost = -0.5f;
+  p.contrast_boost = 1.0f;
 
   p.noise = 0.5f;
   p.ultra_deep_blacks = 0.9f;
@@ -484,11 +485,11 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("compress shadows/highlights : strong"), self->op, self->version(), &p, sizeof(p), 1);
 
   p.blending = 25.0f;
-  p.feathering = 10.0f;
+  p.feathering = 25.0f;
   p.iterations = 2;
-  p.quantization = 1.0f;
-  p.exposure_boost = -1.5f;
-  p.contrast_boost = 3.0f;
+  p.quantization = 0.0f;
+  p.exposure_boost = 0.0f;
+  p.contrast_boost = 0.0f;
 
   p.noise = 0.0f;
   p.ultra_deep_blacks = 0.15f;
@@ -660,7 +661,9 @@ static inline void compute_correction(const float *const restrict luminance,
     // build the correction for the current pixel
     // as the sum of the contribution of each luminance channelcorrection
     float result = 0.0f;
-    const float exposure = log2f(luminance[k]);
+
+    // The radial-basis interpolation is valid in [-8; 0] EV and can quickely diverge outside
+    const float exposure = fast_clamp(log2f(luminance[k]), -8.0f, 0.0f);
 
 #ifdef _OPENMP
 #pragma omp simd aligned(luminance, centers_ops, factors:64) safelen(PIXEL_CHAN) reduction(+:result)
@@ -668,28 +671,30 @@ static inline void compute_correction(const float *const restrict luminance,
     for(int i = 0; i < PIXEL_CHAN; ++i)
       result += gaussian_func(exposure - centers_ops[i], gauss_denom) * factors[i];
 
-    correction[k] = result;
+    // the user-set correction is expected in [-2;+2] EV, so is the interpolated one
+    correction[k] = fast_clamp(result, 0.25f, 4.0f);
   }
 }
 
 
 __DT_CLONE_TARGETS__
-static float pixel_correction(const float exposure,
-                              const float *const restrict factors,
-                              const float sigma)
+static inline float pixel_correction(const float exposure,
+                                     const float *const restrict factors,
+                                     const float sigma)
 {
   // build the correction for the current pixel
   // as the sum of the contribution of each luminance channel
   float result = 0.0f;
   const float gauss_denom = gaussian_denom(sigma);
+  const float expo = fast_clamp(exposure, -8.0f, 0.0f);
 
 #ifdef _OPENMP
 #pragma omp simd aligned(centers_ops, factors:64) safelen(PIXEL_CHAN) reduction(+:result)
 #endif
   for(int i = 0; i < PIXEL_CHAN; ++i)
-    result += gaussian_func(exposure - centers_ops[i], gauss_denom) * factors[i];
+    result += gaussian_func(expo - centers_ops[i], gauss_denom) * factors[i];
 
-  return result;
+  return fast_clamp(result, 0.25f, 4.0f);
 }
 
 
@@ -712,7 +717,7 @@ static inline void compute_luminance_mask(const float *const restrict in, float 
       // Still no contrast boost
       luminance_mask(in, luminance, width, height, ch, d->method, d->exposure_boost, 0.0f, 1.0f);
       fast_surface_blur(luminance, width, height, d->radius, d->feathering, d->iterations,
-                    DT_GF_BLENDING_GEOMEAN, d->scale, d->quantization, exp2f(-8.0f), 1.0f);
+                    DT_GF_BLENDING_GEOMEAN, d->scale, d->quantization, exp2f(-14.0f), 4.0f);
       break;
     }
 
@@ -728,7 +733,7 @@ static inline void compute_luminance_mask(const float *const restrict in, float 
       luminance_mask(in, luminance, width, height, ch, d->method, d->exposure_boost,
                       CONTRAST_FULCRUM, d->contrast_boost);
       fast_surface_blur(luminance, width, height, d->radius, d->feathering, d->iterations,
-                    DT_GF_BLENDING_LINEAR, d->scale, d->quantization, exp2f(-8.0f), 1.0f);
+                    DT_GF_BLENDING_LINEAR, d->scale, d->quantization, exp2f(-14.0f), 4.0f);
       break;
     }
 
@@ -1204,6 +1209,7 @@ static void gui_cache_init(struct dt_iop_module_t *self)
   g->area_cursor_valid = FALSE;    // TRUE if mouse cursor is over the graph area
   g->area_dragging = FALSE;        // TRUE if left-button has been pushed but not released and cursor motion is recorded
   g->cursor_valid = FALSE;         // TRUE if mouse cursor is over the preview image
+  g->has_focus = FALSE;            // TRUE if module has focus from GTK
 
   g->full_preview_buf = NULL;
   g->full_preview_buf_width = 0;
@@ -1505,15 +1511,15 @@ void init(dt_iop_module_t *module)
                                                                       .highlights = 0.0f,
                                                                       .whites = 0.0f,
                                                                       .speculars = 0.0f,
-                                                                      .quantization = 1.0f,
+                                                                      .quantization = 0.0f,
                                                                       .smoothing = sqrtf(2.0f),
                                                                       .iterations = 2,
                                                                       .method = DT_TONEEQ_NORM_2,
                                                                       .details = DT_TONEEQ_GUIDED,
                                                                       .blending = 25.0f,
                                                                       .feathering = 10.0f,
-                                                                      .contrast_boost = 2.0f,
-                                                                      .exposure_boost = -1.0f };
+                                                                      .contrast_boost = 3.0f,
+                                                                      .exposure_boost = -3.0f };
   memcpy(module->params, &tmp, sizeof(dt_iop_toneequalizer_params_t));
   memcpy(module->default_params, &tmp, sizeof(dt_iop_toneequalizer_params_t));
 }
@@ -1522,18 +1528,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
-}
-
-
-void reload_defaults(struct dt_iop_module_t *self)
-{
-  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
-  if(g == NULL) return;
-
-  invalidate_luminance_cache(self);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  dt_dev_reprocess_all(self->dev);
-  gui_cache_init(self);
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 
@@ -1976,7 +1972,7 @@ static void show_luminance_mask_callback(GtkWidget *togglebutton, dt_iop_module_
 
 static void switch_cursors(struct dt_iop_module_t *self)
 {
-  const dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   if(g == NULL) return;
 
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
@@ -1996,6 +1992,9 @@ static void switch_cursors(struct dt_iop_module_t *self)
   {
     // if module lost focus or is disabled
     // do nothing and let the app decide
+    dt_pthread_mutex_lock(&g->lock);
+    g->has_focus = FALSE;
+    dt_pthread_mutex_unlock(&g->lock);
   }
   else if( (self->dev->pipe->processing) ||
           (self->dev->image_status == DT_DEV_PIXELPIPE_DIRTY) ||
@@ -2009,6 +2008,10 @@ static void switch_cursors(struct dt_iop_module_t *self)
   else if(g->cursor_valid && !self->dev->pipe->processing) // seems reduntand but is not
   {
     // hide GTK cursor because we display ours
+    dt_pthread_mutex_lock(&g->lock);
+    g->has_focus = TRUE;
+    dt_pthread_mutex_unlock(&g->lock);
+
     dt_control_change_cursor(GDK_BLANK_CURSOR);
     dt_control_queue_redraw_center();
   }
@@ -2188,7 +2191,7 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
 
   // if GUI buffers not ready, exit but still handle the cursor
   dt_pthread_mutex_lock(&g->lock);
-  const int fail = (!g->cursor_valid || !g->luminance_valid || !g->interpolation_valid || !g->user_param_valid || dev->pipe->processing);
+  const int fail = (!g->cursor_valid || !g->luminance_valid || !g->interpolation_valid || !g->user_param_valid || dev->pipe->processing || !g->has_focus);
   dt_pthread_mutex_unlock(&g->lock);
   if(fail) return 1;
 
@@ -2324,7 +2327,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   if(in_mask_editing(self)) return;
 
   dt_pthread_mutex_lock(&g->lock);
-  const int fail = (!g->cursor_valid || !g->interpolation_valid || !g->luminance_valid || dev->pipe->processing || !sanity_check(self));
+  const int fail = (!g->cursor_valid || !g->interpolation_valid || !g->luminance_valid || dev->pipe->processing || !sanity_check(self) || !g->has_focus);
   dt_pthread_mutex_unlock(&g->lock);
   if(fail) return;
 
@@ -2408,9 +2411,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   pango_font_description_set_size (desc, (int)(old_size / zoom_scale));
   layout = pango_cairo_create_layout(cr);
   pango_layout_set_font_description(layout, desc);
+  pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
 
   // Build text object
-  snprintf(text, sizeof(text), "%+.1f EV", exposure_in);
+  snprintf(text, sizeof(text), _("%+.1f EV"), exposure_in);
   pango_layout_set_text(layout, text, -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
 
@@ -2431,6 +2435,16 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 }
 
 
+void gui_focus(struct dt_iop_module_t *self, gboolean in)
+{
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+  dt_pthread_mutex_lock(&g->lock);
+  g->has_focus = in;
+  dt_pthread_mutex_unlock(&g->lock);
+  switch_cursors(self);
+}
+
+
 static inline gboolean _init_drawing(GtkWidget *widget, dt_iop_toneequalizer_gui_data_t *g)
 {
   // Cache the equalizer graph objects to avoid recomputing all the view at each redraw
@@ -2440,6 +2454,7 @@ static inline gboolean _init_drawing(GtkWidget *widget, dt_iop_toneequalizer_gui
   g->layout = pango_cairo_create_layout(g->cr);
   g->desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
   pango_layout_set_font_description(g->layout, g->desc);
+  pango_cairo_context_set_resolution(pango_layout_get_context(g->layout), darktable.gui->dpi);
   g->context = gtk_widget_get_style_context(widget);
 
   char text[256];
@@ -2586,6 +2601,13 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
   //if(!g->graph_valid)
   if(!_init_drawing(self->widget, g)) return FALSE; // this can be cached and drawn just once, but too lazy to debug a cache invalidation for Cairo objects
 
+  // since the widget sizes are not cached and invalidated properly above (yet…)
+  // force the invalidation of the nodes coordinates to account for possible widget resizing
+  dt_pthread_mutex_lock(&g->lock);
+  g->valid_nodes_x = FALSE;
+  g->valid_nodes_y = FALSE;
+  dt_pthread_mutex_unlock(&g->lock);
+
   // Refresh cached UI elements
   update_histogram(g);
   update_curve_lut(self);
@@ -2626,6 +2648,26 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
     cairo_line_to(g->cr, g->graph_width, g->graph_height);
     cairo_close_path(g->cr);
     cairo_fill(g->cr);
+
+    if(g->histogram_last_decile > -0.1f)
+    {
+      // histogram overflows controls in highlights : display warning
+      cairo_save(g->cr);
+      cairo_set_source_rgb(g->cr, 0.75, 0.50, 0.);
+      dtgtk_cairo_paint_gamut_check(g->cr, g->graph_width - 2.5 * g->line_height, 0.5 * g->line_height,
+                                           2.0 * g->line_height, 2.0 * g->line_height, 0, NULL);
+      cairo_restore(g->cr);
+    }
+
+    if(g->histogram_first_decile < -7.9f)
+    {
+      // histogram overflows controls in lowlights : display warning
+      cairo_save(g->cr);
+      cairo_set_source_rgb(g->cr, 0.75, 0.50, 0.);
+      dtgtk_cairo_paint_gamut_check(g->cr, 0.5 * g->line_height, 0.5 * g->line_height,
+                                           2.0 * g->line_height, 2.0 * g->line_height, 0, NULL);
+      cairo_restore(g->cr);
+    }
   }
 
   if(g->lut_valid)
@@ -2694,10 +2736,25 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 
     if(g->cursor_valid)
     {
-      cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(1.5));
-      set_color(g->cr, darktable.bauhaus->graph_fg);
-      cairo_move_to(g->cr, (g->cursor_exposure + 8.0f) / 8.0f * g->graph_width, 0.0);
-      cairo_line_to(g->cr,(g->cursor_exposure + 8.0f) / 8.0f * g->graph_width, g->graph_height);
+
+      float x_pos = (g->cursor_exposure + 8.0f) / 8.0f * g->graph_width;
+
+      if(x_pos > g->graph_width || x_pos < 0.0f)
+      {
+        // exposure at current position is outside [-8; 0] EV :
+        // bound it in the graph limits and show it in orange
+        cairo_set_source_rgb(g->cr, 0.75, 0.50, 0.);
+        cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(3));
+        x_pos = (x_pos < 0.0f) ? 0.0f : g->graph_width;
+      }
+      else
+      {
+        set_color(g->cr, darktable.bauhaus->graph_fg);
+        cairo_set_line_width(g->cr, DT_PIXEL_APPLY_DPI(1.5));
+      }
+
+      cairo_move_to(g->cr, x_pos, 0.0);
+      cairo_line_to(g->cr, x_pos, g->graph_height);
       cairo_stroke(g->cr);
     }
   }
@@ -2751,13 +2808,13 @@ static gboolean dt_iop_toneequalizer_bar_draw(GtkWidget *widget, cairo_t *crf, g
     // draw clipping bars
     cairo_set_source_rgb(cr, 0.75, 0.50, 0);
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(6));
-    if(left <= 0.0f)
+    if(g->histogram_first_decile < -7.9f)
     {
       cairo_move_to(cr, DT_PIXEL_APPLY_DPI(3), 0.0);
       cairo_line_to(cr, DT_PIXEL_APPLY_DPI(3), allocation.height);
       cairo_stroke(cr);
     }
-    if(right >= 1.0f)
+    if(g->histogram_last_decile > - 0.1f)
     {
       cairo_move_to(cr, allocation.width - DT_PIXEL_APPLY_DPI(3), 0.0);
       cairo_line_to(cr, allocation.width - DT_PIXEL_APPLY_DPI(3), allocation.height);
@@ -2822,11 +2879,14 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(self->dt->gui->reset) return 1;
 
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+
+  dt_iop_request_focus(self);
+
   if(event->button == 1 && event->type == GDK_2BUTTON_PRESS)
   {
     dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
     dt_iop_toneequalizer_params_t *d = (dt_iop_toneequalizer_params_t *)self->default_params;
-    dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
     // reset nodes params
     p->noise = d->noise;
@@ -2852,7 +2912,6 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
   }
   else if(event->button == 1)
   {
-    dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
     if(self->enabled)
     {
       g->area_dragging = 1;
@@ -2941,9 +3000,13 @@ static gboolean area_button_release(GtkWidget *widget, GdkEventButton *event, gp
   if(self->dt->gui->reset) return 1;
   if(!self->enabled) return 0;
 
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+
+  // Give focus to module
+  dt_iop_request_focus(self);
+
   if(event->button == 1)
   {
-    dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
     dt_iop_toneequalizer_params_t *p = (dt_iop_toneequalizer_params_t *)self->params;
 
     if(g->area_dragging)
@@ -2967,6 +3030,17 @@ static gboolean area_button_release(GtkWidget *widget, GdkEventButton *event, gp
 }
 
 
+static gboolean notebook_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(self->dt->gui->reset) return 1;
+
+  // Give focus to module
+  dt_iop_request_focus(self);
+
+  return 0;
+}
+
 /**
  * Post pipe events
  **/
@@ -2979,7 +3053,7 @@ static void _develop_ui_pipe_started_callback(gpointer instance, gpointer user_d
   if(g == NULL) return;
   switch_cursors(self);
 
-  if(!dtgtk_expander_get_expanded(DTGTK_EXPANDER(self->expander)))
+  if(!dtgtk_expander_get_expanded(DTGTK_EXPANDER(self->expander)) || !self->enabled || !g->has_focus)
   {
     // if module is not active, disable mask preview
     dt_pthread_mutex_lock(&g->lock);
@@ -3016,6 +3090,19 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
 }
 
 
+void gui_reset(struct dt_iop_module_t *self)
+{
+  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+  if(g == NULL) return;
+  dt_iop_request_focus(self);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_dev_reprocess_all(self->dev);
+
+  // Redraw graph
+  gtk_widget_queue_draw(self->widget);
+}
+
+
 void gui_init(struct dt_iop_module_t *self)
 {
   self->gui_data = malloc(sizeof(dt_iop_toneequalizer_gui_data_t));
@@ -3037,66 +3124,65 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_notebook_append_page(GTK_NOTEBOOK(g->notebook), page3, gtk_label_new(_("masking")));
   gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(g->notebook, 0)));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
+  g_signal_connect(G_OBJECT(g->notebook), "button-press-event", G_CALLBACK(notebook_button_press), self);
 
-  gtk_container_child_set(GTK_CONTAINER(g->notebook), page1, "tab-expand", TRUE, "tab-fill", TRUE, NULL);
-  gtk_container_child_set(GTK_CONTAINER(g->notebook), page2, "tab-expand", TRUE, "tab-fill", TRUE, NULL);
-  gtk_container_child_set(GTK_CONTAINER(g->notebook), page3, "tab-expand", TRUE, "tab-fill", TRUE, NULL);
+  dtgtk_justify_notebook_tabs(g->notebook);
 
   // Simple view
   const float top = 2.0;
   const float bottom = -2.0;
 
   g->noise = dt_bauhaus_slider_new_with_range(self, bottom, top, 0.1, 0.0, 2);
-  dt_bauhaus_slider_set_format(g->noise, "%+.2f EV");
-  dt_bauhaus_widget_set_label(g->noise, NULL, _("-8 EV : blacks"));
+  dt_bauhaus_slider_set_format(g->noise, _("%+.2f EV"));
+  dt_bauhaus_widget_set_label(g->noise, NULL, _("-8 EV"));
   gtk_box_pack_start(GTK_BOX(page1), g->noise, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->noise), "value-changed", G_CALLBACK(noise_callback), self);
 
   g->ultra_deep_blacks = dt_bauhaus_slider_new_with_range(self, bottom, top, 0.1, 0.0, 2);
-  dt_bauhaus_slider_set_format(g->ultra_deep_blacks, "%+.2f EV");
-  dt_bauhaus_widget_set_label(g->ultra_deep_blacks, NULL, _("-7 EV : deep shadows"));
+  dt_bauhaus_slider_set_format(g->ultra_deep_blacks, _("%+.2f EV"));
+  dt_bauhaus_widget_set_label(g->ultra_deep_blacks, NULL, _("-7 EV"));
   gtk_box_pack_start(GTK_BOX(page1), g->ultra_deep_blacks, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->ultra_deep_blacks), "value-changed", G_CALLBACK(ultra_deep_blacks_callback), self);
 
   g->deep_blacks = dt_bauhaus_slider_new_with_range(self, bottom, top, 0.1, 0.0, 2);
-  dt_bauhaus_slider_set_format(g->deep_blacks, "%+.2f EV");
-  dt_bauhaus_widget_set_label(g->deep_blacks, NULL, _("-6 EV : shadows"));
+  dt_bauhaus_slider_set_format(g->deep_blacks, _("%+.2f EV"));
+  dt_bauhaus_widget_set_label(g->deep_blacks, NULL, _("-6 EV"));
   gtk_box_pack_start(GTK_BOX(page1), g->deep_blacks, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->deep_blacks), "value-changed", G_CALLBACK(deep_blacks_callback), self);
 
   g->blacks = dt_bauhaus_slider_new_with_range(self, bottom, top, 0.1, 0.0, 2);
-  dt_bauhaus_slider_set_format(g->blacks, "%+.2f EV");
-  dt_bauhaus_widget_set_label(g->blacks, NULL, _("-5 EV : light shadows"));
+  dt_bauhaus_slider_set_format(g->blacks, _("%+.2f EV"));
+  dt_bauhaus_widget_set_label(g->blacks, NULL, _("-5 EV"));
   gtk_box_pack_start(GTK_BOX(page1), g->blacks, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->blacks), "value-changed", G_CALLBACK(blacks_callback), self);
 
   g->shadows = dt_bauhaus_slider_new_with_range(self, bottom, top, 0.1, 0.0, 2);
-  dt_bauhaus_slider_set_format(g->shadows, "%+.2f EV");
-  dt_bauhaus_widget_set_label(g->shadows, NULL, _("-4 EV : midtones"));
+  dt_bauhaus_slider_set_format(g->shadows, _("%+.2f EV"));
+  dt_bauhaus_widget_set_label(g->shadows, NULL, _("-4 EV"));
   gtk_box_pack_start(GTK_BOX(page1), g->shadows, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->shadows), "value-changed", G_CALLBACK(shadows_callback), self);
 
   g->midtones = dt_bauhaus_slider_new_with_range(self, bottom, top, 0.1, 0.0, 2);
-  dt_bauhaus_slider_set_format(g->midtones, "%+.2f EV");
-  dt_bauhaus_widget_set_label(g->midtones, NULL, _("-3 EV : dark highlights"));
+  dt_bauhaus_slider_set_format(g->midtones, _("%+.2f EV"));
+  dt_bauhaus_widget_set_label(g->midtones, NULL, _("-3 EV"));
   gtk_box_pack_start(GTK_BOX(page1), g->midtones, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->midtones), "value-changed", G_CALLBACK(midtones_callback), self);
 
   g->highlights = dt_bauhaus_slider_new_with_range(self, bottom, top, 0.1, 0.0, 2);
-  dt_bauhaus_slider_set_format(g->highlights, "%+.2f EV");
-  dt_bauhaus_widget_set_label(g->highlights, NULL, _("-2 EV : highlights"));
+  dt_bauhaus_slider_set_format(g->highlights, _("%+.2f EV"));
+  dt_bauhaus_widget_set_label(g->highlights, NULL, _("-2 EV"));
   gtk_box_pack_start(GTK_BOX(page1), g->highlights, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->highlights), "value-changed", G_CALLBACK(highlights_callback), self);
 
   g->whites = dt_bauhaus_slider_new_with_range(self, bottom, top, 0.1, 0.0, 2);
-  dt_bauhaus_slider_set_format(g->whites, "%+.2f EV");
-  dt_bauhaus_widget_set_label(g->whites, NULL, _("-1 EV : whites"));
+  dt_bauhaus_slider_set_format(g->whites, _("%+.2f EV"));
+  dt_bauhaus_widget_set_label(g->whites, NULL, _("-1 EV"));
   gtk_box_pack_start(GTK_BOX(page1), g->whites, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->whites), "value-changed", G_CALLBACK(whites_callback), self);
 
   g->speculars = dt_bauhaus_slider_new_with_range(self, bottom, top, 0.1, 0.0, 2);
-  dt_bauhaus_slider_set_format(g->speculars, "%+.2f EV");
-  dt_bauhaus_widget_set_label(g->speculars, NULL, _("+0 EV : speculars"));
+  dt_bauhaus_slider_set_format(g->speculars, _("%+.2f EV"));
+  dt_bauhaus_widget_set_label(g->speculars, NULL, _("+0 EV"));
   gtk_box_pack_start(GTK_BOX(page1), g->speculars, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->speculars), "value-changed", G_CALLBACK(speculars_callback), self);
 
@@ -3114,6 +3200,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->area), "leave-notify-event", G_CALLBACK(area_leave_notify), self);
   g_signal_connect(G_OBJECT(g->area), "enter-notify-event", G_CALLBACK(area_enter_notify), self);
   g_signal_connect(G_OBJECT(g->area), "motion-notify-event", G_CALLBACK(area_motion_notify), self);
+  g_object_set(G_OBJECT(g->area), "tooltip-text", _("double-click to reset the curve"), (char *)NULL);
   /*
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(_scrolled), self);
   g_signal_connect(G_OBJECT(c->area), "key-press-event", G_CALLBACK(dt_iop_tonecurve_key_press), self);*/
@@ -3132,21 +3219,24 @@ void gui_init(struct dt_iop_module_t *self)
   g->method = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(g->method, NULL, _("luminance estimator"));
   gtk_box_pack_start(GTK_BOX(page3), g->method, FALSE, FALSE, 0);
-  dt_bauhaus_combobox_add(g->method, "RGB average");
-  dt_bauhaus_combobox_add(g->method, "HSL lightness");
-  dt_bauhaus_combobox_add(g->method, "HSV value / RGB max");
-  dt_bauhaus_combobox_add(g->method, "RGB sum");
-  dt_bauhaus_combobox_add(g->method, "RGB euclidean norm");
-  dt_bauhaus_combobox_add(g->method, "RGB power norm");
-  dt_bauhaus_combobox_add(g->method, "RGB geometric mean");
+  dt_bauhaus_combobox_add(g->method, _("RGB average"));
+  dt_bauhaus_combobox_add(g->method, _("HSL lightness"));
+  dt_bauhaus_combobox_add(g->method, _("HSV value / RGB max"));
+  dt_bauhaus_combobox_add(g->method, _("RGB sum"));
+  dt_bauhaus_combobox_add(g->method, _("RGB euclidean norm"));
+  dt_bauhaus_combobox_add(g->method, _("RGB power norm"));
+  dt_bauhaus_combobox_add(g->method, _("RGB geometric mean"));
+  g_object_set(G_OBJECT(g->method), "tooltip-text", _("preview the mask and chose the estimator that gives you the\n"
+                                                      "higher contrast between areas to dodge and areas to burn"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->method), "value-changed", G_CALLBACK(method_changed), self);
+
 
   g->details = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(g->details, NULL, _("preserve details"));
   gtk_box_pack_start(GTK_BOX(page3), g->details, FALSE, FALSE, 0);
-  dt_bauhaus_combobox_add(g->details, "no");
-  dt_bauhaus_combobox_add(g->details, "averaged guided filter");
-  dt_bauhaus_combobox_add(g->details, "guided filter");
+  dt_bauhaus_combobox_add(g->details, _("no"));
+  dt_bauhaus_combobox_add(g->details, _("averaged guided filter"));
+  dt_bauhaus_combobox_add(g->details, _("guided filter"));
   g_object_set(G_OBJECT(g->details), "tooltip-text", _("'no' affects global and local contrast (safe if you only add contrast)\n"
                                                        "'guided filter' only affects global contrast and tries to preserve local contrast\n"
                                                        "'averaged guided filter' is a geometric mean of both methods"), (char *)NULL);
@@ -3164,7 +3254,9 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->blending, 0.01, 100.0);
   dt_bauhaus_slider_set_format(g->blending, "%.2f %%");
   dt_bauhaus_widget_set_label(g->blending, NULL, _("smoothing diameter"));
-  g_object_set(G_OBJECT(g->blending), "tooltip-text", _("diameter of the blur in percent of the largest image size"), (char *)NULL);
+  g_object_set(G_OBJECT(g->blending), "tooltip-text", _("diameter of the blur in percent of the largest image size\n"
+                                                        "warning: big values of this parameter can make the darkroom\n"
+                                                        "preview much slower if denoise profiled is used."), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(page3), g->blending, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->blending), "value-changed", G_CALLBACK(blending_callback), self);
 
@@ -3175,7 +3267,7 @@ void gui_init(struct dt_iop_module_t *self)
                                                           "higher values force the mask to follow edges more closely\n"
                                                           "but may void the effect of the smoothing\n"
                                                           "lower values give smoother gradients and better smoothing\n"
-                                                          "but may lead to inaccurate edges taping"), (char *)NULL);
+                                                          "but may lead to inaccurate edges taping and halos"), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(page3), g->feathering, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->feathering), "value-changed", G_CALLBACK(feathering_callback), self);
 
@@ -3203,7 +3295,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->exposure_boost, NULL, _("mask exposure compensation"));
   dt_bauhaus_slider_set_format(g->exposure_boost, "%+.2f EV");
   g_object_set(G_OBJECT(g->exposure_boost), "tooltip-text", _("use this to slide the mask average exposure along channels\n"
-                                                              "for better control of the exposure corrections.\n"
+                                                              "for a better control of the exposure correction with the available nodes.\n"
                                                               "the picker will auto-adjust the average exposure at -4EV."), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(page3), g->exposure_boost, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->exposure_boost), "value-changed", G_CALLBACK(exposure_boost_callback), self);
@@ -3216,9 +3308,10 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_enable_soft_boundaries(g->contrast_boost, -16., 16.);
   dt_bauhaus_widget_set_label(g->contrast_boost, NULL, _("mask contrast compensation"));
   dt_bauhaus_slider_set_format(g->contrast_boost, "%+.2f EV");
-  g_object_set(G_OBJECT(g->contrast_boost), "tooltip-text", _("use this to dilate the mask contrast around its average exposure\n"
+  g_object_set(G_OBJECT(g->contrast_boost), "tooltip-text", _("use this to counter the averaging effect of the guided filter\n"
+                                                              "and dilate the mask contrast around -4EV\n"
                                                               "this allows to spread the exposure histogram over more channels\n"
-                                                              "for better control of the exposure corrections."), (char *)NULL);
+                                                              "for a better control of the exposure correction."), (char *)NULL);
   gtk_box_pack_start(GTK_BOX(page3), g->contrast_boost, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(g->contrast_boost), "value-changed", G_CALLBACK(contrast_boost_callback), self);
 

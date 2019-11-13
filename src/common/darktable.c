@@ -120,7 +120,7 @@ static int usage(const char *argv0)
   printf("  --conf <key>=<value>\n");
   printf("  --configdir <user config directory>\n");
   printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch,input,lighttable,\n");
-  printf("      lua, masks,memory,nan,opencl,perf,pwstorage,print,sql}\n");
+  printf("      lua, masks,memory,nan,opencl,perf,pwstorage,print,sql,ioporder}\n");
   printf("  --datadir <data directory>\n");
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
@@ -432,8 +432,15 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   darktable.progname = argv[0];
 
   // FIXME: move there into dt_database_t
-  dt_pthread_mutex_init(&(darktable.db_insert), NULL);
+  pthread_mutexattr_t recursive_locking;
+  pthread_mutexattr_init(&recursive_locking);
+  pthread_mutexattr_settype(&recursive_locking, PTHREAD_MUTEX_RECURSIVE);
+  for (int k=0; k<DT_IMAGE_DBLOCKS; k++)
+  {
+    dt_pthread_mutex_init(&(darktable.db_image[k]),&(recursive_locking));
+  }
   dt_pthread_mutex_init(&(darktable.plugin_threadsafe), NULL);
+  dt_pthread_mutex_init(&(darktable.dev_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.capabilities_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.exiv2_threadsafe), NULL);
   dt_pthread_mutex_init(&(darktable.readFile_mutex), NULL);
@@ -633,6 +640,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_PRINT; // print errors are reported on console
         else if(!strcmp(argv[k + 1], "camsupport"))
           darktable.unmuted |= DT_DEBUG_CAMERA_SUPPORT; // camera support warnings are reported on console
+        else if(!strcmp(argv[k + 1], "ioporder"))
+          darktable.unmuted |= DT_DEBUG_IOPORDER; // iop order information are reported on console
         else
           return usage(argv[0]);
         k++;
@@ -693,6 +702,13 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         argv[k] = NULL;
         break;
       }
+#ifdef __APPLE__
+      else if(!strncmp(argv[k], "-psn_", 5))
+      {
+        // "-psn_*" argument is added automatically by macOS and should be ignored
+        argv[k] = NULL;
+      }
+#endif
       else
         return usage(argv[0]); // fail on unrecognized options
     }
@@ -1130,8 +1146,12 @@ void dt_cleanup()
 
   dt_capabilities_cleanup();
 
-  dt_pthread_mutex_destroy(&(darktable.db_insert));
+  for (int k=0; k<DT_IMAGE_DBLOCKS; k++)
+  {
+    dt_pthread_mutex_destroy(&(darktable.db_image[k]));
+  }
   dt_pthread_mutex_destroy(&(darktable.plugin_threadsafe));
+  dt_pthread_mutex_destroy(&(darktable.dev_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.capabilities_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.exiv2_threadsafe));
   dt_pthread_mutex_destroy(&(darktable.readFile_mutex));

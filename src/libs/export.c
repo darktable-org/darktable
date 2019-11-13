@@ -34,6 +34,9 @@
 #include "gui/presets.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -55,9 +58,6 @@ typedef struct dt_lib_export_t
   char *metadata_export;
 } dt_lib_export_t;
 
-uint32_t dt_lib_export_metadata_default_flags();
-char *dt_lib_export_metadata_get_conf();
-void dt_lib_export_metadata_set_conf(const char *metadata_presets);
 char *dt_lib_export_metadata_configuration_dialog(char *list, const gboolean ondisk);
 /** Updates the combo box and shows only the supported formats of current selected storage module */
 static void _update_formats_combobox(dt_lib_export_t *d);

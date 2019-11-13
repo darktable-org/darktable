@@ -653,6 +653,8 @@ sub new
   my $reference = $self->SUPER::new($token);
   bless($reference, $self);
 
+  $reference->{code_type} = "float complex";
+
   return $reference;
 }
 
@@ -661,17 +663,10 @@ sub get_type
   return "FloatComplex";
 }
 
-sub get_introspection_code
+sub get_limits
 {
-  return "";
-}
-
-sub print_tree
-{
-  my ($self, $prefix, $indent) = @_;
-  my $spaces = " "x$indent;
-  my $extra = $self->get_static_const();
-  ast::print_out($prefix.$spaces.$extra."float complex\n");
+  my $self = shift;
+  return ("-G_MAXFLOAT + -G_MAXFLOAT * _Complex_I", "G_MAXFLOAT + G_MAXFLOAT * _Complex_I", "0.0 + 0.0 * _Complex_I");
 }
 
 #################### GBOOLEAN TYPE ####################

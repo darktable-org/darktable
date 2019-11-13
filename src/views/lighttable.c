@@ -535,13 +535,22 @@ static void _view_lighttable_collection_listener_internal(dt_view_t *self, dt_li
 
   _update_collected_images(self);
 
-  // we ensure selection visibility if any
-  GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
-  // we have at least 1 selected image
-  if(first_selected)
+  // we ensure selection/image-under-mouse visibility if any
+  // because we may have added/removed a lot of image before this one
+  int cur_id = dt_control_get_mouse_over_id();
+  if(cur_id <= 0)
   {
-    gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid = %d",
-                                   GPOINTER_TO_INT(first_selected->data));
+    GList *first_selected = dt_collection_get_selected(darktable.collection, 1);
+    if(first_selected)
+    {
+      cur_id = GPOINTER_TO_INT(first_selected->data);
+      g_list_free(first_selected);
+    }
+  }
+  // we have at least 1 selected image
+  if(cur_id > 0)
+  {
+    gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM memory.collected_images WHERE imgid = %d", cur_id);
     sqlite3_stmt *stmt;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
@@ -550,7 +559,6 @@ static void _view_lighttable_collection_listener_internal(dt_view_t *self, dt_li
     }
     if(stmt) sqlite3_finalize(stmt);
     g_free(query);
-    g_list_free(first_selected);
   }
 }
 
@@ -625,7 +633,7 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
   if(lib->current_layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     int idover = dt_control_get_mouse_over_id();
-    _culling_check_scrolling_mode(self);
+
     // on dynamic mode, nb of image follow selection size
     int nbsel = _culling_get_selection_count();
     if(dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC)
@@ -633,12 +641,19 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
       const int nz = (nbsel <= 1) ? dt_conf_get_int("plugins/lighttable/culling_num_images") : nbsel;
       dt_view_lighttable_set_zoom(darktable.view_manager, nz);
     }
+    else if(nbsel < 1)
+    {
+      // in fixed mode, we want to be sure that we have at least one image selected,
+      // as the first selected image define the start
+      lib->select_deactivate = TRUE;
+      dt_selection_select(darktable.selection, idover);
+      lib->select_deactivate = FALSE;
+    }
     // be carrefull, all shown images should be selected (except if the click was on one of them)
-    if(nbsel > 1)
+    if(nbsel != 1 && !lib->culling_use_selection)
     {
       for(int i = 0; i < lib->slots_count; i++)
       {
-        if(lib->slots[i].imgid == idover) continue;
         sqlite3_stmt *stmt;
         gchar *query = dt_util_dstrcat(NULL, "SELECT rowid FROM main.selected_images WHERE imgid = %d",
                                        lib->slots[i].imgid);
@@ -650,13 +665,21 @@ static void _view_lighttable_selection_listener_callback(gpointer instance, gpoi
           dt_selection_select(darktable.selection, lib->slots[i].imgid);
           lib->select_deactivate = FALSE;
         }
+        else if(lib->slots[i].imgid == idover)
+        {
+          lib->select_deactivate = TRUE;
+          dt_selection_deselect(darktable.selection, lib->slots[i].imgid);
+          lib->select_deactivate = FALSE;
+        }
         sqlite3_finalize(stmt);
         g_free(query);
       }
+      _culling_check_scrolling_mode(self);
       _culling_recreate_slots_at(self, idover);
     }
     else
     {
+      _culling_check_scrolling_mode(self);
       _culling_destroy_slots(self);
       _culling_recreate_slots(self);
     }
@@ -3150,7 +3173,7 @@ static gboolean rating_key_accel_callback(GtkAccelGroup *accel_group, GObject *a
 
   dt_collection_update_query(darktable.collection); // update the counter
 
-  if(layout != DT_LIGHTTABLE_LAYOUT_CULLING && lib->collection_count != _culling_get_selection_count())
+  if(layout != DT_LIGHTTABLE_LAYOUT_CULLING && lib->collection_count != dt_collection_get_count(darktable.collection))
   {
     // some images disappeared from collection. Selection is now invisible.
     // lib->collection_count  --> before the rating
@@ -3885,8 +3908,11 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
                                         lib->images_in_row == 1 ? x : fmodf(x + lib->zoom_x, lib->pointed_img_wd),
                                         lib->images_in_row == 1 ? y : fmodf(y + lib->zoom_y, lib->pointed_img_ht)))
   {
-    dt_control_queue_redraw_center();
+    // if zoomable lt a redraw all will be issued later
+    if(get_layout() != DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+      dt_control_queue_redraw_center();
   }
+  if(get_layout() == DT_LIGHTTABLE_LAYOUT_ZOOMABLE) _force_expose_all(self);
 }
 
 int button_released(dt_view_t *self, double x, double y, int which, uint32_t state)

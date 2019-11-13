@@ -82,6 +82,11 @@ int default_group()
   return IOP_GROUP_BASIC;
 }
 
+int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
+{
+  return iop_cs_Lab;
+}
+
 /** modify regions of interest (optional, per pixel ops don't need this) */
 // void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t
 // *roi_out, const dt_iop_roi_t *roi_in);
@@ -166,6 +171,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)

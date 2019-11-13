@@ -10,7 +10,7 @@ include(FindPkgConfig)
 pkg_search_module(LUA53 lua53 lua5.3 lua-5.3 lua)
 
 if(LUA53_FIND_VERSION)
-  cmake_minimum_required(VERSION 3.4.0)
+  cmake_minimum_required(VERSION 3.10.0)
   set(LUA53_FAILED_VERSION_CHECK true)
 
   if(LUA53_FIND_VERSION_EXACT)

@@ -27,6 +27,7 @@
 #include "common/interpolation.h"
 #include "common/iop_group.h"
 #include "common/module.h"
+#include "common/history.h"
 #include "common/opencl.h"
 #include "common/usermanual_url.h"
 #include "control/control.h"
@@ -106,25 +107,25 @@ static void dt_iop_modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pi
 }
 
 /* default group for modules which do not implement the default_group() function */
-static int default_group()
+static int default_group(void)
 {
   return IOP_GROUP_BASIC;
 }
 
 /* default flags for modules which does not implement the flags() function */
-static int default_flags()
+static int default_flags(void)
 {
   return 0;
 }
 
 /* default operation tags for modules which does not implement the flags() function */
-static int default_operation_tags()
+static int default_operation_tags(void)
 {
   return 0;
 }
 
 /* default operation tags filter for modules which does not implement the flags() function */
-static int default_operation_tags_filter()
+static int default_operation_tags_filter(void)
 {
   return 0;
 }
@@ -192,11 +193,11 @@ static void default_process(struct dt_iop_module_t *self, struct dt_dev_pixelpip
     dt_unreachable_codepath_with_desc(self->op);
 }
 
-static dt_introspection_field_t *default_get_introspection_linear()
+static dt_introspection_field_t *default_get_introspection_linear(void)
 {
   return NULL;
 }
-static dt_introspection_t *default_get_introspection()
+static dt_introspection_t *default_get_introspection(void)
 {
   return NULL;
 }
@@ -563,6 +564,10 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
     modules = g_list_next(modules);
   }
   if(!next) return; // what happened ???
+
+  if(dev->gui_attached)
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end);
 
   // we must pay attention if priority is 0
   gboolean is_zero = (module->multi_priority == 0);
@@ -1433,7 +1438,7 @@ static void dt_iop_init_module_so(void *m)
   }
 }
 
-void dt_iop_load_modules_so()
+void dt_iop_load_modules_so(void)
 {
   darktable.iop = dt_module_load_modules("/plugins", sizeof(dt_iop_module_so_t), dt_iop_load_module_so,
                                          dt_iop_init_module_so, NULL);
@@ -1496,8 +1501,6 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
 {
   module->cleanup(module);
 
-  free(module->default_params);
-  module->default_params = NULL;
   free(module->blend_params);
   module->blend_params = NULL;
   free(module->default_blendop_params);
@@ -1970,7 +1973,16 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_PRESETS]), "module-preset-button");
 
   /* add enabled button */
-  hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
+  if(module->enabled && module->default_enabled && module->hide_enable_button)
+  {
+    hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch_on, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
+    gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), "module-always-enabled-button");
+  }
+  else
+  {
+    hw[IOP_MODULE_SWITCH] = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_DO_NOT_USE_BORDER, NULL);
+    gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), "module-enable-button");
+  }
   gchar *module_label = dt_history_item_get_name(module);
   snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"),
            module_label);
@@ -1980,8 +1992,6 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_SWITCH]), "toggled", G_CALLBACK(dt_iop_gui_off_callback), module);
   module->off = DTGTK_TOGGLEBUTTON(hw[IOP_MODULE_SWITCH]);
   if(module->hide_enable_button) gtk_widget_set_sensitive(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), FALSE);
-
-  gtk_widget_set_name(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), "module-enable-button");
 
   /* reorder header, for now, iop are always in the right panel */
   for(int i = 0; i < IOP_MODULE_LAST; i++)
@@ -2044,16 +2054,33 @@ void dt_iop_nap(int32_t usec)
   g_usleep(usec);
 }
 
-dt_iop_module_t *get_colorout_module()
+dt_iop_module_t *get_colorout_module(void)
+{
+  return get_module_by_name("colorout");
+}
+
+dt_iop_module_t *get_module_by_name(const char *op)
 {
   GList *modules = darktable.develop->iop;
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
-    if(!strcmp(module->op, "colorout")) return module;
+    if(!strcmp(module->op, op)) return module;
     modules = g_list_next(modules);
   }
   return NULL;
+}
+
+int get_module_flags(const char *op)
+{
+  GList *modules = darktable.iop;
+  while(modules)
+  {
+    dt_iop_module_so_t *module = (dt_iop_module_so_t *)modules->data;
+    if(!strcmp(module->op, op)) return module->flags();
+    modules = g_list_next(modules);
+  }
+  return 0;
 }
 
 static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,

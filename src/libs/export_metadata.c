@@ -29,6 +29,9 @@
 #include "gui/gtkentry.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
@@ -220,101 +223,13 @@ static void formula_edited(GtkCellRenderer *renderer, gchar *path, gchar *new_te
     gtk_list_store_set(d->liststore, &iter, DT_LIB_EXPORT_METADATA_COL_FORMULA, new_text, -1);
 }
 
-uint32_t dt_lib_export_metadata_default_flags()
-{
-  const uint32_t flags = DT_META_EXIF | DT_META_METADATA | DT_META_GEOTAG | DT_META_TAG | DT_META_DT_HISTORY;
-  return flags;
-}
-
-const char flags_keyword[] = "plugins/lighttable/export/metadata_flags";
-const char formula_keyword[] = "plugins/lighttable/export/metadata_formula";
-
-char *dt_lib_export_metadata_get_conf()
-{
-  char *metadata_presets = NULL;
-  if(dt_conf_key_exists(flags_keyword))
-  {
-    metadata_presets = dt_conf_get_string(flags_keyword);
-    int i = 0;
-    char *conf_keyword = dt_util_dstrcat(NULL,"%s%d", formula_keyword, i);
-    while (dt_conf_key_exists(conf_keyword))
-    {
-      char *nameformula = dt_conf_get_string(conf_keyword);
-      g_free(conf_keyword);
-      if(nameformula[0])
-      {
-        char *formula = g_strstr_len(nameformula, strlen(nameformula), ";");
-        if(formula)
-        {
-          formula[0] = '\0';
-          formula ++;
-          metadata_presets = dt_util_dstrcat(metadata_presets,"\1%s\1%s", nameformula, formula);
-        }
-      }
-      g_free(nameformula);
-      i++;
-      conf_keyword = dt_util_dstrcat(NULL,"%s%d", formula_keyword, i);
-    }
-    g_free(conf_keyword);
-  }
-  else
-  {
-    metadata_presets = dt_util_dstrcat(NULL, "%x", dt_lib_export_metadata_default_flags());
-  }
-  return metadata_presets;
-}
-
-void dt_lib_export_metadata_set_conf(const char *metadata_presets)
-{
-  GList *list = dt_util_str_to_glist("\1", metadata_presets);
-  int i = 0;
-  char *conf_keyword = NULL;
-  char *nameformula = NULL;
-  if (list)
-  {
-    char *flags_hexa = list->data;
-    dt_conf_set_string(flags_keyword, flags_hexa);
-    list = g_list_remove(list, flags_hexa);
-    g_free(flags_hexa);
-    if (list)
-    {
-      for (GList *tags = list; tags; tags = g_list_next(tags))
-      {
-        const char *tagname = (char *)tags->data;
-        tags = g_list_next(tags);
-        if (!tags) break;
-        const char *formula = (char *)tags->data;
-        nameformula = dt_util_dstrcat(NULL,"%s;%s", tagname, formula);
-        conf_keyword = dt_util_dstrcat(NULL,"%s%d", formula_keyword, i);
-        dt_conf_set_string(conf_keyword, nameformula);
-        g_free(nameformula);
-        g_free(conf_keyword);
-        i++;
-      }
-    }
-  }
-  else dt_conf_set_string(flags_keyword, "");
-  g_list_free_full(list, g_free);
-
-  // clean up deprecated formulas
-  conf_keyword = dt_util_dstrcat(NULL,"%s%d", formula_keyword, i);
-  while (dt_conf_key_exists(conf_keyword))
-  {
-    dt_conf_set_string(conf_keyword, "");
-    g_free(conf_keyword);
-    i++;
-    conf_keyword = dt_util_dstrcat(NULL,"%s%d", formula_keyword, i);
-  }
-  g_free(conf_keyword);
-}
-
 char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const gboolean ondisk)
 {
   dt_lib_export_metadata_t *d = calloc(1, sizeof(dt_lib_export_metadata_t));
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("edit metadata exportation"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                       _("save"), GTK_RESPONSE_YES, _("cancel"), GTK_RESPONSE_NONE, NULL);
+                                       _("cancel"), GTK_RESPONSE_NONE, _("save"), GTK_RESPONSE_YES, NULL);
   d->dialog = dialog;
   gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
@@ -397,12 +312,12 @@ char *dt_lib_export_metadata_configuration_dialog(char *metadata_presets, const 
   gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("list of available tags"));
   gtk_tree_selection_set_mode(gtk_tree_view_get_selection(view), GTK_SELECTION_SINGLE);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-  GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes("redefined tag", renderer, "text", 0, NULL);
+  GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes(_("redefined tag"), renderer, "text", 0, NULL);
   gtk_tree_view_append_column(view, col);
   renderer = gtk_cell_renderer_text_new();
   g_object_set(renderer, "editable", TRUE, NULL);
   g_signal_connect(G_OBJECT(renderer), "edited", G_CALLBACK(formula_edited), (gpointer)d);
-  col = gtk_tree_view_column_new_with_attributes("formula", renderer, "text", 1, NULL);
+  col = gtk_tree_view_column_new_with_attributes(_("formula"), renderer, "text", 1, NULL);
   gtk_tree_view_append_column(view, col);
   char *tooltip_text = dt_gtkentry_build_completion_tooltip_text(
                         _("list of calculated metadata\n"

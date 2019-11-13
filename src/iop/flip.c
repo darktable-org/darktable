@@ -120,7 +120,7 @@ static dt_image_orientation_t merge_two_orientations(dt_image_orientation_t raw_
       raw_orientation_corrected |= ORIENTATION_SWAP_XY;
   }
 
-  // and now we can automagically compute new new flip
+  // and now we can automagically compute new flip
   return raw_orientation_corrected ^ user_orientation;
 }
 
@@ -466,6 +466,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 static void do_rotate(dt_iop_module_t *self, uint32_t cw)

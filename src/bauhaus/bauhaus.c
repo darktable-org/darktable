@@ -421,8 +421,12 @@ static gboolean dt_bauhaus_popup_button_release(GtkWidget *widget, GdkEventButto
     darktable.bauhaus->end_mouse_x = x - wx;
     darktable.bauhaus->end_mouse_y = y - wy;
     dt_bauhaus_widget_accept(darktable.bauhaus->current);
+    dt_bauhaus_hide_popup();
   }
-  dt_bauhaus_hide_popup();
+  else if(darktable.bauhaus->hiding)
+  {
+    dt_bauhaus_hide_popup();
+  }
   return TRUE;
 }
 
@@ -454,6 +458,7 @@ static gboolean dt_bauhaus_popup_button_press(GtkWidget *widget, GdkEventButton 
   {
     dt_bauhaus_widget_reject(darktable.bauhaus->current);
   }
+  darktable.bauhaus->hiding = TRUE;
   return TRUE;
 }
 
@@ -529,7 +534,7 @@ void dt_bauhaus_load_theme()
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 128, 128);
   cairo_t *cr = cairo_create(cst);
   layout = pango_cairo_create_layout(cr);
-  pango_layout_set_text(layout, "X", -1);
+  pango_layout_set_text(layout, "m", -1);
   pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
   pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
   int pango_width, pango_height;
@@ -538,7 +543,7 @@ void dt_bauhaus_load_theme()
   cairo_destroy(cr);
   cairo_surface_destroy(cst);
 
-  darktable.bauhaus->scale = 1.3f;
+  darktable.bauhaus->scale = 1.33f;
   darktable.bauhaus->line_height = pango_height / PANGO_SCALE;
   darktable.bauhaus->widget_space = INNER_PADDING / 2.0f; // used as a top/bottom margin for widgets
   darktable.bauhaus->quad_width = darktable.bauhaus->line_height;
@@ -1868,6 +1873,7 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
   memset(darktable.bauhaus->keys, 0, sizeof(darktable.bauhaus->keys));
   darktable.bauhaus->change_active = 0;
   darktable.bauhaus->mouse_line_distance = 0.0f;
+  darktable.bauhaus->hiding = FALSE;
   _stop_cursor();
 
   if(w->module)
@@ -1969,7 +1975,7 @@ static gboolean dt_bauhaus_slider_scroll(GtkWidget *widget, GdkEventScroll *even
   if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
   gtk_widget_grab_focus(widget);
 
-  if(dt_gui_get_scroll_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_delta(event, &delta_y))
   {
     delta_y *= -w->data.slider.scale / 5.0;
     gtk_widget_set_state_flags(GTK_WIDGET(w), GTK_STATE_FLAG_FOCUSED, TRUE);

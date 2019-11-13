@@ -60,6 +60,7 @@ typedef enum dt_gui_color_t
   DT_GUI_COLOR_DARKROOM_PREVIEW_BG,
   DT_GUI_COLOR_LIGHTTABLE_BG,
   DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG,
+  DT_GUI_COLOR_PRINT_BG,
   DT_GUI_COLOR_BRUSH_CURSOR,
   DT_GUI_COLOR_BRUSH_TRACE,
   DT_GUI_COLOR_THUMBNAIL_BG,
@@ -180,6 +181,20 @@ gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x,
  * Effectively makes smooth scroll events act like old-style unit
  * scroll events. */
 gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x, int *delta_y);
+
+/* Note that on macOS Shift+vertical scroll can be reported as Shift+horizontal scroll.
+ * So if Shift changes scrolling effect, both scrolls should be handled the same.
+ * For this case (or if it's otherwise useful) use the following 2 functions. */
+
+/* Return sum of scroll deltas from event. Return TRUE if any deltas
+ * can be retrieved. Handles both GDK_SCROLL_UP/DOWN/LEFT/RIGHT and
+ * GDK_SCROLL_SMOOTH style scroll events. */
+gboolean dt_gui_get_scroll_delta(const GdkEventScroll *event, gdouble *delta);
+/* Same as above, except accumulate smooth scrolls deltas of < 1 and
+ * only set delta and return TRUE once scrolls accumulate to >= 1.
+ * Effectively makes smooth scroll events act like old-style unit
+ * scroll events. */
+gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta);
 
 /** block any keyaccelerators when widget have focus, block is released when widget lose focus. */
 void dt_gui_key_accel_block_on_focus_connect(GtkWidget *w);
@@ -312,6 +327,15 @@ static inline GtkWidget *dt_ui_section_label_new(const gchar *str)
   dt_ui_section_label_set(label);
   return label;
 };
+
+static inline void dtgtk_justify_notebook_tabs(GtkNotebook *notebook)
+{
+  // force the notebook tabs to fill the available width
+  for(gint i = 0; i < gtk_notebook_get_n_pages(notebook); ++i)
+    gtk_container_child_set(GTK_CONTAINER(notebook),
+                            gtk_notebook_get_nth_page(notebook, i),
+                            "tab-expand", TRUE, "tab-fill", TRUE, NULL);
+}
 
 // show a dialog box with 2 buttons in case some user interaction is required BEFORE dt's gui is initialised.
 // this expects gtk_init() to be called already which should be the case during most of dt's init phase.

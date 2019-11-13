@@ -420,30 +420,45 @@ gboolean dt_gui_get_scroll_deltas(const GdkEventScroll *event, gdouble *delta_x,
   {
     // is one-unit cardinal, e.g. from a mouse scroll wheel
     case GDK_SCROLL_LEFT:
-      if(delta_x) *delta_x = -1.0;
-      if(delta_y) *delta_y = 0.0;
-      handled = TRUE;
+      if(delta_x)
+      {
+        *delta_x = -1.0;
+        if(delta_y) *delta_y = 0.0;
+        handled = TRUE;
+      }
       break;
     case GDK_SCROLL_RIGHT:
-      if(delta_x) *delta_x = 1.0;
-      if(delta_y) *delta_y = 0.0;
-      handled = TRUE;
+      if(delta_x)
+      {
+        *delta_x = 1.0;
+        if(delta_y) *delta_y = 0.0;
+        handled = TRUE;
+      }
       break;
     case GDK_SCROLL_UP:
-      if(delta_x) *delta_x = 0.0;
-      if(delta_y) *delta_y = -1.0;
-      handled = TRUE;
+      if(delta_y)
+      {
+        if(delta_x) *delta_x = 0.0;
+        *delta_y = -1.0;
+        handled = TRUE;
+      }
       break;
     case GDK_SCROLL_DOWN:
-      if(delta_x) *delta_x = 0.0;
-      if(delta_y) *delta_y = 1.0;
-      handled = TRUE;
+      if(delta_y)
+      {
+        if(delta_x) *delta_x = 0.0;
+        *delta_y = 1.0;
+        handled = TRUE;
+      }
       break;
     // is trackpad (or touch) scroll
     case GDK_SCROLL_SMOOTH:
-      if(delta_x) *delta_x = event->delta_x;
-      if(delta_y) *delta_y = event->delta_y;
-      handled = TRUE;
+      if((delta_x && event->delta_x != 0) || (delta_y && event->delta_y != 0))
+      {
+        if(delta_x) *delta_x = event->delta_x;
+        if(delta_y) *delta_y = event->delta_y;
+        handled = TRUE;
+      }
     default:
       break;
     }
@@ -460,24 +475,36 @@ gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x
   {
     // is one-unit cardinal, e.g. from a mouse scroll wheel
     case GDK_SCROLL_LEFT:
-      if(delta_x) *delta_x = -1;
-      if(delta_y) *delta_y = 0;
-      handled = TRUE;
+      if(delta_x)
+      {
+        *delta_x = -1;
+        if(delta_y) *delta_y = 0;
+        handled = TRUE;
+      }
       break;
     case GDK_SCROLL_RIGHT:
-      if(delta_x) *delta_x = 1;
-      if(delta_y) *delta_y = 0;
-      handled = TRUE;
+      if(delta_x)
+      {
+        *delta_x = 1;
+        if(delta_y) *delta_y = 0;
+        handled = TRUE;
+      }
       break;
     case GDK_SCROLL_UP:
-      if(delta_x) *delta_x = 0;
-      if(delta_y) *delta_y = -1;
-      handled = TRUE;
+      if(delta_y)
+      {
+        if(delta_x) *delta_x = 0;
+        *delta_y = -1;
+        handled = TRUE;
+      }
       break;
     case GDK_SCROLL_DOWN:
-      if(delta_x) *delta_x = 0;
-      if(delta_y) *delta_y = 1;
-      handled = TRUE;
+      if(delta_y)
+      {
+        if(delta_x) *delta_x = 0;
+        *delta_y = 1;
+        handled = TRUE;
+      }
       break;
     // is trackpad (or touch) scroll
     case GDK_SCROLL_SMOOTH:
@@ -494,27 +521,46 @@ gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x
       // handle
       acc_x += event->delta_x;
       acc_y += event->delta_y;
-      if(fabs(acc_x) >= 1.0)
+      gdouble amt_x = trunc(acc_x);
+      gdouble amt_y = trunc(acc_y);
+      if(amt_x != 0 || amt_y != 0)
       {
-        gdouble amt = trunc(acc_x);
-        acc_x -= amt;
-        if(delta_x) *delta_x = (int)amt;
-        if(delta_y) *delta_y = 0;
-        handled = TRUE;
-      }
-      if(fabs(acc_y) >= 1.0)
-      {
-        gdouble amt = trunc(acc_y);
-        acc_y -= amt;
-        if(delta_x && !handled) *delta_x = 0;
-        if(delta_y) *delta_y = (int)amt;
-        handled = TRUE;
+        acc_x -= amt_x;
+        acc_y -= amt_y;
+        if((delta_x && amt_x != 0) || (delta_y && amt_y != 0))
+        {
+          if(delta_x) *delta_x = (int)amt_x;
+          if(delta_y) *delta_y = (int)amt_y;
+          handled = TRUE;
+        }
       }
       break;
     default:
       break;
   }
   return handled;
+}
+
+gboolean dt_gui_get_scroll_delta(const GdkEventScroll *event, gdouble *delta)
+{
+  gdouble delta_x, delta_y;
+  if(dt_gui_get_scroll_deltas(event, &delta_x, &delta_y))
+  {
+    *delta = delta_x + delta_y;
+    return TRUE;
+  }
+  return FALSE;
+}
+
+gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta)
+{
+  int delta_x, delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, &delta_x, &delta_y))
+  {
+    *delta = delta_x + delta_y;
+    return TRUE;
+  }
+  return FALSE;
 }
 
 static gboolean _widget_focus_in_block_key_accelerators(GtkWidget *widget, GdkEventFocus *event, gpointer data)
@@ -658,7 +704,7 @@ static gboolean draw(GtkWidget *da, cairo_t *cr, gpointer user_data)
 static gboolean scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
   int delta_y;
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  if(dt_gui_get_scroll_unit_delta(event, &delta_y))
   {
     dt_view_manager_scrolled(darktable.view_manager, event->x, event->y,
                              delta_y < 0,
@@ -1242,7 +1288,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_accel_register_global(NC_("accel", "zoom out"), GDK_KEY_minus, GDK_CONTROL_MASK);
 
   // accels window
-  dt_accel_register_global(NC_("accel", "show accels window"), 0, 0);
+  dt_accel_register_global(NC_("accel", "show accels window"), GDK_KEY_h, 0);
 
   darktable.gui->reset = 0;
 
@@ -2239,6 +2285,7 @@ void dt_gui_load_theme(const char *theme)
     [DT_GUI_COLOR_DARKROOM_PREVIEW_BG] = { "darkroom_preview_bg_color", { .1, .1, .1, 1.0 } },
     [DT_GUI_COLOR_LIGHTTABLE_BG] = { "lighttable_bg_color", { .2, .2, .2, 1.0 } },
     [DT_GUI_COLOR_LIGHTTABLE_PREVIEW_BG] = { "lighttable_preview_bg_color", { .1, .1, .1, 1.0 } },
+    [DT_GUI_COLOR_PRINT_BG] = { "print_bg_color", { .2, .2, .2, 1.0 } },
     [DT_GUI_COLOR_BRUSH_CURSOR] = { "brush_cursor", { 1., 1., 1., 0.9 } },
     [DT_GUI_COLOR_BRUSH_TRACE] = { "brush_trace", { 0., 0., 0., 0.8 } },
     [DT_GUI_COLOR_THUMBNAIL_BG] = { "thumbnail_bg_color", { 0.4, 0.4, 0.4, 1.0 } },

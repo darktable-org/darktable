@@ -27,13 +27,13 @@
    DT_RGB_NORM_POWER = 6
  } dt_iop_rgb_norms_t;
 
-float
+inline float
 dt_rgb_norm(const float4 in, const int norm, const int work_profile,
-  global const dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
+  constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t lut)
 {
   if (norm == DT_RGB_NORM_LUMINANCE)
   {
-    return (work_profile == 0) ? dt_camera_rgb_luminance(in): get_rgb_matrix_luminance(in, profile_info, lut);
+    return (work_profile == 0) ? dt_camera_rgb_luminance(in): get_rgb_matrix_luminance(in, profile_info, profile_info->matrix_in, lut);
   }
   else if (norm == DT_RGB_NORM_MAX)
   {

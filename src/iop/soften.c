@@ -717,6 +717,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void gui_init(struct dt_iop_module_t *self)
@@ -744,7 +746,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   /* brightness */
   g->scale3 = dt_bauhaus_slider_new_with_range(self, -2.0, 2.0, 0.01, p->brightness, 2);
-  dt_bauhaus_slider_set_format(g->scale3, "%.2fEV");
+  dt_bauhaus_slider_set_format(g->scale3, _("%.2f EV"));
   dt_bauhaus_widget_set_label(g->scale3, NULL, _("brightness"));
   gtk_widget_set_tooltip_text(g->scale3, _("the brightness of blur"));
   g_signal_connect(G_OBJECT(g->scale3), "value-changed", G_CALLBACK(brightness_callback), self);

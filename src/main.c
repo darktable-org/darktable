@@ -19,12 +19,19 @@
 #include "gui/gtk.h"
 #include <stdlib.h>
 
+#ifdef __APPLE__
+#include "osx/osx.h"
+#endif
+
 #ifdef _WIN32
 #include "win/main_wrapper.h"
 #endif
 
 int main(int argc, char *argv[])
 {
+#ifdef __APPLE__
+  dt_osx_prepare_environment();
+#endif
 #ifdef _WIN32
   // on Windows we have a hard time showing stuff printed to stdout/stderr to the user.
   // because of that we write it to a log file.
@@ -77,6 +84,9 @@ int main(int argc, char *argv[])
     printf("start: %s\n", datetime);
     printf("\n");
   }
+
+  // make sure GTK client side decoration is disabled, otherwise windows resizing issues can be observed
+  g_setenv("GTK_CSD", "0", TRUE);
 #endif
 
   if(dt_init(argc, argv, TRUE, TRUE, NULL)) exit(1);

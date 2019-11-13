@@ -5,22 +5,23 @@
     <prefix name="dt">/usr/local</prefix>
     <destination overwrite="yes">package</destination>
     <run-install-name-tool/>
-    <launcher-script>${project}/start</launcher-script>
     <gtk>gtk+-3.0</gtk>
   </meta>
   <plist>${project}/Info.plist</plist>
   <main-binary>${prefix:dt}/bin/darktable</main-binary>
-  <binary dest="${bundle}/Contents/MacOS/darktable-chart-bin">${prefix:dt}/bin/darktable-chart</binary>
-  <binary dest="${bundle}/Contents/MacOS/darktable-cli-bin">${prefix:dt}/bin/darktable-cli</binary>
-  <binary dest="${bundle}/Contents/MacOS/darktable-cltest-bin">${prefix:dt}/bin/darktable-cltest</binary>
-  <binary dest="${bundle}/Contents/MacOS/darktable-generate-cache-bin">${prefix:dt}/bin/darktable-generate-cache</binary>
-  <binary dest="${bundle}/Contents/MacOS/darktable-rs-identify">${prefix:dt}/bin/darktable-rs-identify</binary>
+  <binary dest="${bundle}/Contents/MacOS/">${prefix:dt}/bin/darktable-chart</binary>
+  <binary dest="${bundle}/Contents/MacOS/">${prefix:dt}/bin/darktable-cli</binary>
+  <binary dest="${bundle}/Contents/MacOS/">${prefix:dt}/bin/darktable-cltest</binary>
+  <binary dest="${bundle}/Contents/MacOS/">${prefix:dt}/bin/darktable-generate-cache</binary>
+  <binary dest="${bundle}/Contents/MacOS/">${prefix:dt}/bin/darktable-rs-identify</binary>
+  <binary dest="${bundle}/Contents/MacOS/">${prefix:dt}/libexec/darktable/tools/darktable-curve-tool</binary>
+  <binary dest="${bundle}/Contents/MacOS/">${prefix:dt}/libexec/darktable/tools/darktable-noiseprofile</binary>
   <binary>${prefix:dt}/lib/darktable</binary>
-  <binary>${prefix}/lib/libgphoto2_port/${pkg:libgphoto2_port:VERSION}/*.so</binary>
-  <binary>${prefix}/lib/libgphoto2/${pkg:libgphoto2:VERSION}/*.so</binary>
+  <binary dest="${bundle}/Contents/Resources/lib/libgphoto2_port">${prefix}/lib/libgphoto2_port/${pkg:libgphoto2_port:VERSION}</binary>
+  <binary dest="${bundle}/Contents/Resources/lib/libgphoto2">${prefix}/lib/libgphoto2/${pkg:libgphoto2:VERSION}</binary>
   <binary>${prefix}/lib/${gtkdir}/${pkg:${gtk}:gtk_binary_version}/printbackends/*.so</binary>
   <binary>${prefix}/lib/${gtkdir}/${pkg:${gtk}:gtk_binary_version}/immodules/*.so</binary>
-  <binary>${prefix}/lib/gdk-pixbuf-2.0/${pkg:gdk-pixbuf-2.0:gdk_pixbuf_binary_version}/loaders/*.so</binary>
+  <binary>${prefix}/lib/gdk-pixbuf-2.0/${pkg:gdk-pixbuf-2.0:gdk_pixbuf_binary_version}/loaders</binary>
   <translations name="gtk30">${prefix}/share/locale</translations>
   <translations name="iso_639">${prefix}/share/locale</translations>
   <translations name="darktable">${prefix:dt}/share/locale</translations>
@@ -35,10 +36,6 @@
   <data dest="${bundle}/Contents/Resources/Icons.icns">${project}/Icons.icns</data>
   <data dest="${bundle}/Contents/Resources/share/applications/defaults.list">${project}/defaults.list</data>
   <data dest="${bundle}/Contents/Resources/share/applications/open.desktop">${project}/open.desktop</data>
-  <data dest="${bundle}/Contents/MacOS/darktable-chart">${project}/darktable-chart.sh</data>
-  <data dest="${bundle}/Contents/MacOS/darktable-cli">${project}/darktable-cli.sh</data>
-  <data dest="${bundle}/Contents/MacOS/darktable-cltest">${project}/start</data>
-  <data dest="${bundle}/Contents/MacOS/darktable-generate-cache">${project}/darktable-cli.sh</data>
   <icon-theme icons="all">Adwaita</icon-theme>
   <icon-theme icons="all">Tango</icon-theme>
 </app-bundle>

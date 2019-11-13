@@ -2,12 +2,14 @@
 lensfun-update-data
 cp -R ~/.local/share/lensfun .
 ~/.local/bin/gtk-mac-bundler darktable.bundle
+mv package/darktable.app/Contents/MacOS/darktable-bin package/darktable.app/Contents/MacOS/darktable
+mv package/darktable.app/Contents/Resources/lib/gdk-pixbuf-2.0/*/loaders.cache package/darktable.app/Contents/Resources/etc/gtk-3.0/
 rm -Rf lensfun
 sed -i '' 's|/opt/local/share/locale||' package/darktable.app/Contents/Resources/etc/gtk-3.0/gtk.immodules
 glib-compile-schemas package/darktable.app/Contents/Resources/share/glib-2.0/schemas/
 sed -i '' 's|{VERSION}|'$(git describe --tags --long --match '*[0-9.][0-9.][0-9]'|cut -d- -f2|sed 's/^\([0-9]*\.[0-9]*\)$/\1.0/')'|' package/darktable.app/Contents/Info.plist
 sed -i '' 's|{COMMITS}|'$(git describe --tags --long --match '*[0-9.][0-9.][0-9]'|cut -d- -f3)'|' package/darktable.app/Contents/Info.plist
-for i in package/darktable.app/Contents/MacOS/*-bin
+for i in package/darktable.app/Contents/MacOS/darktable{,-chart,-cli,-cltest,-generate-cache}
 do
 	install_name_tool -rpath @loader_path/../lib/darktable @loader_path/../Resources/lib/darktable "$i"
 done
@@ -23,7 +25,7 @@ done
 if [ -z "$STRIPDEBUGINFO" ]
 then
 	find package/darktable.app/Contents/Resources/lib/darktable \( -name \*.dylib -or -name \*.so \) -exec dsymutil \{} \;
-	for i in package/darktable.app/Contents/MacOS/*-bin
+	for i in package/darktable.app/Contents/MacOS/darktable{,-chart,-cli,-cltest,-generate-cache,-curve-tool,-noiseprofile}
 	do
 		dsymutil "$i"
 	done
@@ -31,7 +33,7 @@ fi
 
 if [ -n "$CODECERT" ]
 then
-	find package/darktable.app/Contents/Resources/lib -type d -name \*.dSYM -prune -or -type f \! -name loaders.cache -exec codesign --verbose --force --options runtime -s "${CODECERT}" \{} \;
+	find package/darktable.app/Contents/Resources/lib -type d -name \*.dSYM -prune -or -type f -exec codesign --verbose --force --options runtime -s "${CODECERT}" \{} \;
 	codesign --deep --verbose --force --options runtime -s "${CODECERT}" package/darktable.app
 fi
 

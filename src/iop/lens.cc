@@ -1434,6 +1434,8 @@ void cleanup(dt_iop_module_t *module)
 {
   free(module->params);
   module->params = NULL;
+  free(module->default_params);
+  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -1676,34 +1678,13 @@ static void camera_menu_fill(dt_iop_module_t *self, const lfCamera *const *camli
   g_ptr_array_free(makers, TRUE);
 }
 
-static void parse_maker_model(const char *txt, char *make, size_t sz_make, char *model, size_t sz_model)
+static void parse_model(const char *txt, char *model, size_t sz_model)
 {
-  const gchar *sep;
-
   while(txt[0] && isspace(txt[0])) txt++;
-  sep = strchr(txt, ',');
-  if(sep)
-  {
-    size_t len = sep - txt;
-    if(len > sz_make - 1) len = sz_make - 1;
-    memcpy(make, txt, len);
-    make[len] = 0;
-
-    while(*++sep && isspace(sep[0]))
-      ;
-    len = strlen(sep);
-    if(len > sz_model - 1) len = sz_model - 1;
-    memcpy(model, sep, len);
-    model[len] = 0;
-  }
-  else
-  {
-    size_t len = strlen(txt);
-    if(len > sz_model - 1) len = sz_model - 1;
-    memcpy(model, txt, len);
-    model[len] = 0;
-    make[0] = 0;
-  }
+  size_t len = strlen(txt);
+  if(len > sz_model - 1) len = sz_model - 1;
+  memcpy(model, txt, len);
+  model[len] = 0;
 }
 
 static void camera_menusearch_clicked(GtkWidget *button, gpointer user_data)
@@ -1751,7 +1732,7 @@ static void camera_autosearch_clicked(GtkWidget *button, gpointer user_data)
   }
   else
   {
-    parse_maker_model(txt, make, sizeof(make), model, sizeof(model));
+    parse_model(txt, model, sizeof(model));
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
     const lfCamera **camlist = dt_iop_lensfun_db->FindCamerasExt(make, model, 0);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
@@ -2101,14 +2082,14 @@ static void lens_autosearch_clicked(GtkWidget *button, gpointer user_data)
   lfDatabase *dt_iop_lensfun_db = (lfDatabase *)gd->db;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   const lfLens **lenslist;
-  char make[200], model[200];
+  char model[200];
   const gchar *txt = ((dt_iop_lensfun_params_t *)self->default_params)->lens;
 
   (void)button;
 
-  parse_maker_model(txt, make, sizeof(make), model, sizeof(model));
+  parse_model(txt, model, sizeof(model));
   dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
-  lenslist = dt_iop_lensfun_db->FindLenses(g->camera, make[0] ? make : NULL,
+  lenslist = dt_iop_lensfun_db->FindLenses(g->camera, NULL,
                                            model[0] ? model : NULL, LF_SEARCH_SORT_AND_UNIQUIFY);
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   if(!lenslist) return;
@@ -2561,10 +2542,10 @@ void gui_update(struct dt_iop_module_t *self)
   }
   if(g->camera && p->lens[0])
   {
-    char make[200], model[200];
-    parse_maker_model(p->lens, make, sizeof(make), model, sizeof(model));
+    char model[200];
+    parse_model(p->lens, model, sizeof(model));
     dt_pthread_mutex_lock(&darktable.plugin_threadsafe);
-    const lfLens **lenslist = dt_iop_lensfun_db->FindLenses(g->camera, make[0] ? make : NULL,
+    const lfLens **lenslist = dt_iop_lensfun_db->FindLenses(g->camera, NULL,
                                                             model[0] ? model : NULL, 0);
     if(lenslist)
       lens_set(self, lenslist[0]);
