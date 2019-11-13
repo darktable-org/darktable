@@ -89,9 +89,6 @@ static int _ioppr_legacy_iop_order_step(GList **_iop_order_list, GList *history_
   // version 1 --> 2
   if(old_version == 1)
   {
-    _ioppr_move_iop_after(_iop_order_list, "colorin", "demosaic", dont_move);
-    _ioppr_move_iop_before(_iop_order_list, "colorout", "clahe", dont_move);
-
     // EVERY NEW MODULE MUST BE ADDED HERE
     // there should be no _ioppr_insert_iop[before|after] in any other places
     _ioppr_insert_iop_after(_iop_order_list, history_list, "basicadj", "colorin", dont_move);
