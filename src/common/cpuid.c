@@ -79,7 +79,7 @@ dt_cpu_flags_t dt_detect_cpu_features()
                    "cmp     %0, %1\n"
                    "setne   %%al\n"
                    "movzb   %%al, %0\n"
-                   : "=r"(ax), "=r"(tmp));
+                   : "=r"(ax), "=r"(tmp) : : "al");
 
     if(ax)
     {
