@@ -2374,14 +2374,19 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   // set custom cursor dimensions
   const double outer_radius = 16.;
   const double inner_radius = outer_radius / 2.0;
-  const double setting_scale = 2. * outer_radius / zoom_scale;
+  //const double setting_scale = 2. * outer_radius / zoom_scale;
   const double setting_offset_x = (outer_radius + 4. * g->inner_padding) / zoom_scale;
 
   // setting fill bars
   match_color_to_background(cr, exposure_out, 1.0);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(6. / zoom_scale));
   cairo_move_to(cr, x_pointer - setting_offset_x, y_pointer);
-  cairo_line_to(cr, x_pointer - setting_offset_x, y_pointer - correction * setting_scale);
+
+  if(correction > 0.0f)
+    cairo_arc(cr, x_pointer, y_pointer, setting_offset_x, M_PI, M_PI + correction * M_PI / 4.0);
+  else
+    cairo_arc_negative(cr, x_pointer, y_pointer, setting_offset_x, M_PI, M_PI + correction * M_PI / 4.0);
+
   cairo_stroke(cr);
 
   // setting ground level
@@ -2393,7 +2398,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_stroke(cr);
 
   // don't display the setting bullets if we are waiting for a luminance computation to finish
-  cairo_arc(cr, x_pointer - setting_offset_x, y_pointer - correction * setting_scale, DT_PIXEL_APPLY_DPI(7. / zoom_scale), 0, 2. * M_PI);
+  const double dx = setting_offset_x * cos(correction * M_PI / 4.0);
+  const double dy = setting_offset_x * sin(correction * M_PI / 4.0);
+  cairo_arc(cr, x_pointer - dx, y_pointer - dy, DT_PIXEL_APPLY_DPI(5. / zoom_scale), 0, 2. * M_PI);
   cairo_fill(cr);
 
   // draw exposure cursor
