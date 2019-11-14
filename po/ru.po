@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-10 10:50+0300\n"
+"POT-Creation-Date: 2019-11-14 11:35+0300\n"
 "PO-Revision-Date: 2019-11-01 22:17+0300\n"
 "Last-Translator: Timur Davletshin <timur.davletshin@gmail.com>\n"
 "Language-Team: русский\n"
@@ -2135,7 +2135,7 @@ msgstr "Физически удалить все файлы с диска"
 
 #: ../src/control/jobs/control_jobs.c:757
 msgid "only remove from the collection"
-msgstr "Удалить из коллекции"
+msgstr "Убрать из коллекции"
 
 #: ../src/control/jobs/control_jobs.c:758
 msgid "skip to next file"
@@ -2147,7 +2147,7 @@ msgstr "Остановить процесс"
 
 #: ../src/control/jobs/control_jobs.c:764
 msgid "trashing error"
-msgstr "Ошибка удаления в корзину!"
+msgstr "Ошибка отправки в корзину!"
 
 #: ../src/control/jobs/control_jobs.c:765
 msgid "deletion error"
@@ -2989,7 +2989,7 @@ msgstr "Опустить"
 #: ../src/libs/styles.c:458 ../src/libs/tagging.c:1163
 #: ../src/libs/tagging.c:1260
 msgid "delete"
-msgstr "Удалить с диска"
+msgstr "Удалить"
 
 #: ../src/develop/imageop.c:1053 ../src/libs/tagging.c:1736
 msgid "rename"
@@ -9633,7 +9633,7 @@ msgstr ""
 
 #: ../src/iop/lut3d.c:1119
 msgid "application color space"
-msgstr "Цветовое пространство"
+msgstr "Пространство"
 
 #: ../src/iop/lut3d.c:1121
 msgid "REC.709"
@@ -10237,11 +10237,11 @@ msgstr "Экспонента (основание 2)"
 #: ../src/iop/rgbcurve.c:1514 ../src/iop/rgblevels.c:1013
 #: ../src/iop/tonecurve.c:1314
 msgid "RGB, linked channels"
-msgstr "RGB"
+msgstr "RGB (объединённые)"
 
 #: ../src/iop/rgbcurve.c:1515 ../src/iop/rgblevels.c:1014
 msgid "RGB, independent channels"
-msgstr "RGB (независимые каналы)"
+msgstr "RGB (независимые)"
 
 #: ../src/iop/rgbcurve.c:1517 ../src/iop/rgblevels.c:1016
 msgid "choose between linked and independent channels."
@@ -10650,19 +10650,19 @@ msgstr "Тональная кривая"
 
 #: ../src/iop/tonecurve.c:1310
 msgid "color space"
-msgstr "Цветовое пространство"
+msgstr "Пространство"
 
 #: ../src/iop/tonecurve.c:1311
 msgid "Lab, linked channels"
-msgstr "Lab"
+msgstr "Lab (объединённые)"
 
 #: ../src/iop/tonecurve.c:1312
 msgid "Lab, independent channels"
-msgstr "Lab (независимые каналы)"
+msgstr "Lab (независимые)"
 
 #: ../src/iop/tonecurve.c:1313
 msgid "XYZ, linked channels"
-msgstr "XYZ"
+msgstr "XYZ (объединённые)"
 
 #: ../src/iop/tonecurve.c:1316
 msgid ""
@@ -11710,7 +11710,7 @@ msgstr ""
 
 #: ../src/libs/colorpicker.c:394 ../src/libs/image.c:182
 msgid "remove"
-msgstr "Удалить"
+msgstr "Убрать"
 
 #: ../src/libs/colorpicker.c:500
 msgid "live samples"
@@ -12388,7 +12388,7 @@ msgstr "Физически удалить с диска"
 
 #: ../src/libs/image.c:185
 msgid "remove from the collection"
-msgstr "Удалить из коллекции"
+msgstr "Убрать из коллекции"
 
 #: ../src/libs/image.c:197
 msgid "move..."
@@ -12474,7 +12474,7 @@ msgstr "Обновить информацию из тегов EXIF"
 #: ../src/libs/image.c:302
 msgctxt "accel"
 msgid "remove from collection"
-msgstr "Удалить из коллекции"
+msgstr "Убрать из коллекции"
 
 #: ../src/libs/image.c:303
 msgctxt "accel"
@@ -13712,7 +13712,7 @@ msgstr "Изменить выбранный стиль"
 
 #: ../src/libs/styles.c:461
 msgid "deletes the selected style in list above"
-msgstr "Удалить выбранный стиль"
+msgstr "Убрать выбранный стиль"
 
 #. import button
 #: ../src/libs/styles.c:465 ../src/libs/tagging.c:2692
