@@ -105,14 +105,14 @@ making a backup is strongly advised.
   and a new color picker which creates a curve based on selected image area.
 
 - A new module 'filmic RGB' which, like the previous 'filmic', is designed
-  to replace 'base curve', 'shadows and highlights' and other tone-mapping modules. 
+  to replace 'base curve', 'shadows and highlights' and other global tone-mapping modules. 
   This new version replaces the one introduced in 2.6.2; it should be easier to use,
   and it will reduce color casts. The old 'filmic' module is now deprecated and
   is only available on images where it was already used for editing.
 
-- A new module 'tone equalizer', designed to merge the features of 'tone mapping', 
-  'zone system' and 'shadows and highlights' modules in a scene-referred RGB space,
-  brings an easy and safe way to remap tones locally, to perform a quick 
+- A new module 'tone equalizer' is designed to merge the features of 'zone system',
+  'shadows and highlights', and (local) 'tone mapping' modules in a scene-referred
+  RGB space. It brings an easy and safe way to remap tones locally, performing a quick 
   zone-based dodging and burning using Ansel Adam's zone system logic. 
   The module provides an interface similar to audio graphic equalizers,
   with 9 bands (available as fixed sliders or nodes on a spline view), 
