@@ -3053,7 +3053,7 @@ static void _develop_ui_pipe_started_callback(gpointer instance, gpointer user_d
   if(g == NULL) return;
   switch_cursors(self);
 
-  if(!dtgtk_expander_get_expanded(DTGTK_EXPANDER(self->expander)) || !self->enabled || !g->has_focus)
+  if(!dtgtk_expander_get_expanded(DTGTK_EXPANDER(self->expander)) || !self->enabled)
   {
     // if module is not active, disable mask preview
     dt_pthread_mutex_lock(&g->lock);
