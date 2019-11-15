@@ -193,9 +193,9 @@ static inline void variance_analyse(const float *const restrict guide, // I
 
   // Convolve box average along columns
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(guide, mask, temp, guide_x_mask, guide_x_guide, width, height, radius) \
-  schedule(simd:static) collapse(2) aligned(temp, guide, mask, guide_x_mask, guide_x_guide:64)
+  schedule(simd:static) collapse(2)
 #endif
   for(size_t i = 0; i < height; i++)
   {
@@ -208,7 +208,7 @@ static inline void variance_analyse(const float *const restrict guide, // I
       float tmp[4] DT_ALIGNED_PIXEL = { 0.0f }; // = { w_mean_I, w_mean_p, w_corr_I, w_corr_Ip }
 
 #ifdef _OPENMP
-#pragma omp reduction(+:tmp) aligned(tmp:16) aligned(guide, mask, guide_x_mask, guide_x_guide:64)
+#pragma omp simd reduction(+:tmp) aligned(tmp:16) aligned(guide, mask, guide_x_mask, guide_x_guide:64)
 #endif
       for(size_t c = begin_convol; c <= end_convol; c++)
       {
@@ -222,7 +222,7 @@ static inline void variance_analyse(const float *const restrict guide, // I
       const size_t index = (i * width + j) * 4;
 
 #ifdef _OPENMP
-#pragma omp aligned(tmp:16) aligned(temp:64)
+#pragma omp simd aligned(tmp:16) aligned(temp:64)
 #endif
       for(size_t c = 0; c < 4; c++)
         temp[index + c] = tmp[c] * num_elem;
@@ -298,9 +298,9 @@ static inline void box_average(float *const restrict in,
 
   // Convolve box average along columns
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, temp, width, height, ch, radius) \
-  schedule(simd:static) collapse(2) aligned(in, temp:64)
+  schedule(simd:static) collapse(2)
 #endif
   for(size_t j = 0; j < width; j++)
   {
@@ -319,7 +319,7 @@ static inline void box_average(float *const restrict in,
       {
         const size_t index_c = (c * width + j) * ch;
 #ifdef _OPENMP
-#pragma omp aligned(in:64) aligned(w:16) reduction(+:w)
+#pragma omp simd aligned(in:64) aligned(w:16) reduction(+:w)
 #endif
         for(size_t k = 0; k < ch; ++k)
           w[k] += in[index_c + k];
@@ -327,7 +327,7 @@ static inline void box_average(float *const restrict in,
 
     // Normalize and Save
 #ifdef _OPENMP
-#pragma omp aligned(temp:64) aligned(w:16)
+#pragma omp simd aligned(temp:64) aligned(w:16)
 #endif
       for(size_t k = 0; k < ch; ++k)
         temp[index + k] = w[k] / num_elem;
@@ -336,9 +336,9 @@ static inline void box_average(float *const restrict in,
 
   // Convolve box average along rows and output result
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, temp, width, height, ch, radius) \
-  schedule(simd:static) collapse(2) aligned(temp, in:64)
+  schedule(simd:static) collapse(2)
 #endif
   for(size_t i = 0; i < height; i++)
   {
@@ -358,7 +358,7 @@ static inline void box_average(float *const restrict in,
       {
         const size_t index_c = (stride + c) * ch;
 #ifdef _OPENMP
-#pragma omp aligned(temp:64) aligned(w:16) reduction(+:w)
+#pragma omp simd aligned(temp:64) aligned(w:16) reduction(+:w)
 #endif
         for(size_t k = 0; k < ch; ++k)
           w[k] += temp[index_c + k];
@@ -366,7 +366,7 @@ static inline void box_average(float *const restrict in,
 
       // Normalize and Save
 #ifdef _OPENMP
-#pragma omp aligned(w:16) aligned(in:64)
+#pragma omp simd aligned(w:16) aligned(in:64)
 #endif
       for(size_t k = 0; k < ch; ++k)
         in[index + k] = w[k] / num_elem;
