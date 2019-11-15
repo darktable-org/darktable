@@ -2068,6 +2068,25 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   darktable.gui->reset = reset;
 }
 
+void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module)
+{
+  if(darktable.gui->reset) return;
+  if(!module) return;
+
+  const int has_mask_display = module->request_mask_display & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
+  const int suppress = module->suppress_mask;
+
+  if((module->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && module->blend_data && (has_mask_display || suppress))
+  {
+    dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
+    dtgtk_button_set_active(DTGTK_BUTTON(bd->showmask), 0);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), 0);
+    module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
+    module->suppress_mask = 0;
+    dt_dev_reprocess_all(module->dev);
+  }
+}
+
 static void _collect_blend_modes(GList **list, const char *name, unsigned int mode)
 {
   dt_iop_blend_mode_t *bm;
