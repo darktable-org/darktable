@@ -1815,7 +1815,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
           // save opencl compiled binary as md5sum-named file
           char link_dest[PATH_MAX] = { 0 };
           snprintf(link_dest, sizeof(link_dest), "%s" G_DIR_SEPARATOR_S "%s", cachedir, md5sum);
-          FILE *f = g_fopen(link_dest, "w");
+          FILE *f = g_fopen(link_dest, "wb");
           if(!f) goto ret;
           size_t bytes_written = fwrite(binaries[i], sizeof(char), binary_sizes[i], f);
           if(bytes_written != binary_sizes[i]) goto ret;
