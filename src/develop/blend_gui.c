@@ -272,17 +272,17 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gu
     if(data->module->blend_colorspace(data->module, NULL, NULL) == iop_cs_RAW)
     {
       data->module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
-      dtgtk_button_set_active(DTGTK_BUTTON(data->showmask), 0);
+      dtgtk_button_set_active(DTGTK_BUTTON(data->showmask), FALSE);
       gtk_widget_hide(GTK_WIDGET(data->showmask));
 
       // disable also guided-filters on RAW based color space
-      gtk_widget_set_sensitive(data->masks_feathering_guide_combo, 0);
+      gtk_widget_set_sensitive(data->masks_feathering_guide_combo, FALSE);
       gtk_widget_hide(GTK_WIDGET(data->masks_feathering_guide_combo));
-      gtk_widget_set_sensitive(data->feathering_radius_slider, 0);
+      gtk_widget_set_sensitive(data->feathering_radius_slider, FALSE);
       gtk_widget_hide(GTK_WIDGET(data->feathering_radius_slider));
-      gtk_widget_set_sensitive(data->brightness_slider, 0);
+      gtk_widget_set_sensitive(data->brightness_slider, FALSE);
       gtk_widget_hide(GTK_WIDGET(data->brightness_slider));
-      gtk_widget_set_sensitive(data->contrast_slider, 0);
+      gtk_widget_set_sensitive(data->contrast_slider, FALSE);
       gtk_widget_hide(GTK_WIDGET(data->contrast_slider));
     }
     else
@@ -295,9 +295,9 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gu
   else
   {
     data->module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
-    dtgtk_button_set_active(DTGTK_BUTTON(data->showmask), 0);
+    dtgtk_button_set_active(DTGTK_BUTTON(data->showmask), FALSE);
     data->module->suppress_mask = 0;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->suppress), 0);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->suppress), FALSE);
 
     gtk_widget_hide(GTK_WIDGET(data->bottom_box));
   }
@@ -642,12 +642,12 @@ static void _blendop_blendif_showmask_clicked(GtkWidget *button, GdkEventButton 
       module->request_mask_display |= (has_mask_display ? 0 : DT_DEV_PIXELPIPE_DISPLAY_MASK);
 
     if(module->request_mask_display & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL))
-      dtgtk_button_set_active(DTGTK_BUTTON(button), 1);
+      dtgtk_button_set_active(DTGTK_BUTTON(button), TRUE);
     else
-      dtgtk_button_set_active(DTGTK_BUTTON(button), 0);
+      dtgtk_button_set_active(DTGTK_BUTTON(button), FALSE);
 
 
-    if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
+    if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), TRUE);
 
     dt_iop_request_focus(module);
     dt_dev_reprocess_all(module->dev);
@@ -728,7 +728,7 @@ static void _blendop_blendif_suppress_toggled(GtkToggleButton *togglebutton, dt_
   module->suppress_mask = gtk_toggle_button_get_active(togglebutton);
   if(darktable.gui->reset) return;
 
-  if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
+  if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), TRUE);
   dt_iop_request_focus(module);
 
   dt_control_queue_redraw_widget(GTK_WIDGET(togglebutton));
@@ -1595,11 +1595,11 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
        && module->dev->form_gui->creation_module == module
        && module->dev->form_visible->type & bd->masks_type[n])
     {
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), 1);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), TRUE);
     }
     else
     {
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), 0);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), FALSE);
     }
   }
 }
@@ -1998,7 +1998,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     if(module->blend_colorspace(module, NULL, NULL) == iop_cs_RAW)
     {
       module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
-      dtgtk_button_set_active(DTGTK_BUTTON(bd->showmask), 0);
+      dtgtk_button_set_active(DTGTK_BUTTON(bd->showmask), FALSE);
       gtk_widget_hide(GTK_WIDGET(bd->showmask));
     }
     else
@@ -2011,9 +2011,9 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   else
   {
     module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
-    dtgtk_button_set_active(DTGTK_BUTTON(bd->showmask), 0);
+    dtgtk_button_set_active(DTGTK_BUTTON(bd->showmask), FALSE);
     module->suppress_mask = 0;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), 0);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), FALSE);
 
     gtk_widget_hide(GTK_WIDGET(bd->bottom_box));
   }
@@ -2079,8 +2079,8 @@ void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module)
   if((module->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && module->blend_data && (has_mask_display || suppress))
   {
     dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
-    dtgtk_button_set_active(DTGTK_BUTTON(bd->showmask), 0);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), 0);
+    dtgtk_button_set_active(DTGTK_BUTTON(bd->showmask), FALSE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), FALSE);
     module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
     module->suppress_mask = 0;
     dt_dev_reprocess_all(module->dev);
