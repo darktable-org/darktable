@@ -846,7 +846,7 @@
       </indexterm>
 
       <para>
-        This binary investigates if the color management subsystem of your computer is correctly
+        This binary (Linux only) investigates if the color management subsystem of your computer is correctly
         configured and it displays some useful information about the installed monitor
         profile(s).
       </para>

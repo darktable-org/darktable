@@ -67,7 +67,7 @@
 
     <para>
       To investigate your display profile configuration you can call the
-      <filename>darktable-cmstest</filename> binary which prints out useful information like
+      <filename>darktable-cmstest</filename> binary (Linux only) which prints out useful information like
       profile name per monitor and tells you if the system is correctly configured (see
       <xref linkend="darktable_cmstest_commandline_parameters"/>).
     </para>
