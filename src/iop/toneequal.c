@@ -2405,12 +2405,6 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_line_to(cr, x_pointer, y_pointer - setting_offset_x);
   cairo_stroke(cr);
 
-  // don't display the setting bullets if we are waiting for a luminance computation to finish
-  const double dx = setting_offset_x * cos(correction * M_PI / 4.0);
-  const double dy = setting_offset_x * sin(correction * M_PI / 4.0);
-  cairo_arc(cr, x_pointer - dx, y_pointer - dy, DT_PIXEL_APPLY_DPI(5. / zoom_scale), 0, 2. * M_PI);
-  cairo_fill(cr);
-
   // draw exposure cursor
   draw_exposure_cursor(cr, x_pointer, y_pointer, outer_radius, luminance_in, zoom_scale, 6, .9);
   draw_exposure_cursor(cr, x_pointer, y_pointer, inner_radius, luminance_out, zoom_scale, 3, .9);
