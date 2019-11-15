@@ -2399,10 +2399,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   // setting cursor cross hair
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5 / zoom_scale));
-  cairo_move_to(cr, x_pointer, y_pointer + setting_offset_x);
+  cairo_move_to(cr, x_pointer, y_pointer + setting_offset_x + DT_PIXEL_APPLY_DPI(3. / zoom_scale));
   cairo_line_to(cr, x_pointer, y_pointer + outer_radius / zoom_scale);
   cairo_move_to(cr, x_pointer, y_pointer - outer_radius / zoom_scale);
-  cairo_line_to(cr, x_pointer, y_pointer - setting_offset_x);
+  cairo_line_to(cr, x_pointer, y_pointer - setting_offset_x - DT_PIXEL_APPLY_DPI(3. / zoom_scale));
   cairo_stroke(cr);
 
   // draw exposure cursor
