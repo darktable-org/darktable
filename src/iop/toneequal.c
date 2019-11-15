@@ -2397,6 +2397,14 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_line_to(cr, x_pointer - setting_offset_x - 4.0 * g->inner_padding / zoom_scale, y_pointer);
   cairo_stroke(cr);
 
+  // setting cursor cross hair
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.5 / zoom_scale));
+  cairo_move_to(cr, x_pointer, y_pointer + setting_offset_x);
+  cairo_line_to(cr, x_pointer, y_pointer + outer_radius / zoom_scale);
+  cairo_move_to(cr, x_pointer, y_pointer - outer_radius / zoom_scale);
+  cairo_line_to(cr, x_pointer, y_pointer - setting_offset_x);
+  cairo_stroke(cr);
+
   // don't display the setting bullets if we are waiting for a luminance computation to finish
   const double dx = setting_offset_x * cos(correction * M_PI / 4.0);
   const double dy = setting_offset_x * sin(correction * M_PI / 4.0);
