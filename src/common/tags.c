@@ -83,7 +83,6 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
     }
 
     dt_tag_update_used_tags();
-    dt_collection_update_query(darktable.collection);
     dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   }
 }
@@ -473,7 +472,7 @@ gboolean dt_tag_attach(guint tagid, gint imgid)
 void dt_tag_attach_from_gui(guint tagid, gint imgid)
 {
   if(dt_tag_attach(tagid, imgid))
-    dt_collection_update_query(darktable.collection);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 void dt_tag_attach_list(GList *tags, gint imgid)
@@ -485,8 +484,7 @@ void dt_tag_attach_list(GList *tags, gint imgid)
     } while((child = g_list_next(child)) != NULL);
 
   dt_tag_update_used_tags();
-
-  dt_collection_update_query(darktable.collection);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 void dt_tag_attach_string_list(const gchar *tags, gint imgid)
@@ -517,8 +515,7 @@ void dt_tag_attach_string_list(const gchar *tags, gint imgid)
     }
 
     dt_tag_update_used_tags();
-
-    dt_collection_update_query(darktable.collection);
+    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   }
   g_strfreev(tokens);
 }
@@ -578,7 +575,7 @@ void dt_tag_detach_from_gui(guint tagid, gint imgid)
 
   dt_tag_update_used_tags();
 
-  dt_collection_update_query(darktable.collection);
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 void dt_tag_detach_by_string(const char *name, gint imgid)
@@ -594,6 +591,7 @@ void dt_tag_detach_by_string(const char *name, gint imgid)
   sqlite3_finalize(stmt);
 
   dt_tag_update_used_tags();
+  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 }
 
 // to be called before issuing any query based on memory.darktable_tags
@@ -830,7 +828,7 @@ GList *dt_tag_get_list(gint imgid)
     }
   }
 
-  g_list_free_full(taglist, g_free);
+  dt_tag_free_result(&taglist);
 
   return dt_util_glist_uniq(tags);
 }
@@ -853,7 +851,7 @@ GList *dt_tag_get_hierarchical(gint imgid)
     taglist = g_list_next(taglist);
   }
 
-  g_list_free_full(taglist, g_free);
+  dt_tag_free_result(&taglist);
 
   tags = g_list_reverse(tags);
   return tags;

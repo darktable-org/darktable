@@ -80,7 +80,7 @@ gboolean dt_tag_exists(const char *name, guint *tagid);
 /** attach a list of tags on selected images. \param[in] tagid id of tag to attach. \param[in] imgid the image
  * id to attach tag to, if < 0 selected images are used. */
 gboolean dt_tag_attach(guint tagid, gint imgid);
-/** same as above but raises a dt_collection_update_query() */
+/** same as above but raises a DT_SIGNAL_TAG_CHANGED */
 void dt_tag_attach_from_gui(guint tagid, gint imgid);
 
 /** attach a list of tags on selected images. \param[in] tags a list of ids of tags. \param[in] imgid the
@@ -95,7 +95,7 @@ void dt_tag_attach_string_list(const gchar *tags, gint imgid);
 /** detach tag from images. \param[in] tagid if of tag to deattach. \param[in] imgid the image id to attach
  * tag from, if < 0 selected images are used. */
 void dt_tag_detach(guint tagid, gint imgid);
-/** same as above but raises a dt_collection_update_query() */
+/** same as above but raises a DT_SIGNAL_TAG_CHANGED */
 void dt_tag_detach_from_gui(guint tagid, gint imgid);
 
 /** detach tags from images that matches name, it is valid to use % to match tag */
