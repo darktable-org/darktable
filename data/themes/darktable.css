@@ -326,6 +326,7 @@ button
 
 #recent-collection-button,
 #history-button,
+#history-button-enabled,
 #history-button-always-enabled,
 #history-button-default-enabled
 {
@@ -339,7 +340,7 @@ button
 
 #history-number
 {
-   padding: 2px;
+   padding-right: 4px;
    font-family: monospace;
 }
 
@@ -920,7 +921,9 @@ checkbutton check
 }
 
 #left #history-button, /* choose here spacing between history items in darkroom */
+#left #history-button-enabled,
 #left #history-switch,
+#left #history-button-enabled,
 #left #history-button-always-enabled,
 #left #history-switch-always-enabled,
 #left #history-button-default-enabled,
@@ -928,6 +931,12 @@ checkbutton check
 {
   padding: 1px 2px 2px 2px;
   margin: 0px 1px 1px 1px;
+}
+
+#left #history-switch-always-enabled,
+#left #history-switch-deprecated
+{
+  font-size: 0.6em;
 }
 
 #iop-bottom-bar
@@ -1081,14 +1090,17 @@ menuitem:active,
 combobox window *:active,
 #recent-collection-button:selected,
 #history-button:selected,
+#history-button-enabled:selected,
 #history-button-always-enabled:selected,
 #history-button-default-enabled:selected,
 #recent-collection-button:active,
 #history-button:active,
+#history-button-enabled:active,
 #history-button-always-enabled:active,
 #history-button-default-enabled:active,
 #recent-collection-button:checked,
 #history-button:checked,
+#history-button-enabled:checked,
 #history-button-always-enabled:checked,
 #history-button-default-enabled:checked,
 #iop-plugin-ui button:active,
@@ -1101,17 +1113,21 @@ combobox window *:active,
   color: @button_checked_fg;
 }
 
+/* currently selected button */
 #history-button:selected *,
+#history-button-enabled:selected *,
 #history-button-always-enabled:selected *,
 #history-button-default-enabled:selected *,
 #history-button:active *,
+#history-button-enabled:active *,
 #history-button-always-enabled:active *,
 #history-button-default-enabled:active *,
 #history-button:checked *,
+#history-button-enabled:checked *,
 #history-button-always-enabled:checked *,
 #history-button-default-enabled:checked *
 {
-  color: @button_checked_fg;
+    color: @button_checked_fg;
 }
 
 * button:hover,
@@ -1121,6 +1137,7 @@ menuitem:hover arrow,
 combobox window *:hover,
 #recent-collection-button:hover,
 #history-button:hover,
+#history-button-enabled:hover,
 #history-button-always-enabled:hover,
 #history-button-default-enabled:hover,
 #iop-plugin-ui button:hover,
@@ -1147,6 +1164,7 @@ notebook tab:hover label,
 #preferences_notebook menuitem:hover *,
 #recent-collection-button:hover,
 #history-button:hover *,
+#history-button-enabled:hover *,
 #history-button-always-enabled:hover *,
 #history-button-default-enabled:hover *,
 #iop-plugin-ui button:hover,
@@ -1162,10 +1180,17 @@ notebook tab:hover label,
   color: @button_hover_fg;
 }
 
-#history-button *
+#history-button-enabled *
 {
   color: @plugin_fg_color;
   background-color: transparent;
+}
+
+#history-button *
+{
+  color: shade(@plugin_fg_color, 0.7);
+  background-color: transparent;
+  font-family: italic;
 }
 
 button:disabled,
@@ -1175,21 +1200,24 @@ button:disabled,
   background-color: transparent;
 }
 
-/* disabled switch buttons in history, make them well visible */
+/* invisible switch buttons */
 #history-switch:disabled,
-#history-switch-always-enabled:disabled,
+#history-switch-enabled:disabled,
 #history-switch-default-enabled:disabled
 {
-  color: @plugin_label_color;
+    color: transparent;
+    background-color: transparent;
+    /* for some reasons we still have a color on those icons,
+       to avoid seeing them too much we make them very small */
+    min-width: .1em;
+    min-height: .1em;
 }
 
-/* switch button on the left of the history entry */
-#history-switch,
-#history-switch-default-enabled,
-#history-switch-always-enabled
+/* deprecated/always-on switch are visible */
+#history-switch-deprecated:disabled,
+#history-switch-always-enabled:disabled
 {
-    min-width: .6em;
-    min-height: .6em;
+    color: @plugin_label_color;
 }
 
 treeview *:hover,
