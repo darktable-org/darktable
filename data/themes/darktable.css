@@ -937,11 +937,15 @@ checkbutton check
 
 #left #history-switch-always-enabled,
 #left #history-switch-default-enabled,
-#left #history-switch-deprecated,
 #left #history-switch,
 #left #history-switch-enabled
 {
   font-size: 0.6em;
+}
+
+#left #history-switch-deprecated
+{
+  font-size: 0.5em;
 }
 
 #iop-bottom-bar
@@ -1204,10 +1208,10 @@ button:disabled,
   background-color: transparent;
 }
 
-/* invisible switch buttons */
+/* deactivated switch buttons, make them less visible */
 #history-switch:disabled
 {
-    color: shade(@plugin_label_color, 0.7);
+    color: shade(@plugin_label_color, .8);
     background-color: transparent;
 }
 
