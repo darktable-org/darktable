@@ -923,7 +923,9 @@ checkbutton check
 #left #history-button, /* choose here spacing between history items in darkroom */
 #left #history-button-enabled,
 #left #history-switch,
+#left #history-switch-enabled,
 #left #history-button-enabled,
+#left #history-switch-deprecated,
 #left #history-button-always-enabled,
 #left #history-switch-always-enabled,
 #left #history-button-default-enabled,
@@ -934,7 +936,10 @@ checkbutton check
 }
 
 #left #history-switch-always-enabled,
-#left #history-switch-deprecated
+#left #history-switch-default-enabled,
+#left #history-switch-deprecated,
+#left #history-switch,
+#left #history-switch-enabled
 {
   font-size: 0.6em;
 }
@@ -1201,21 +1206,17 @@ button:disabled,
 }
 
 /* invisible switch buttons */
-#history-switch:disabled,
-#history-switch-enabled:disabled,
-#history-switch-default-enabled:disabled
+#history-switch:disabled
 {
-    color: transparent;
+    color: shade(@plugin_label_color, 0.7);
     background-color: transparent;
-    /* for some reasons we still have a color on those icons,
-       to avoid seeing them too much we make them very small */
-    min-width: .1em;
-    min-height: .1em;
 }
 
 /* deprecated/always-on switch are visible */
 #history-switch-deprecated:disabled,
-#history-switch-always-enabled:disabled
+#history-switch-always-enabled:disabled,
+#history-switch-enabled:disabled,
+#history-switch-default-enabled:disabled
 {
     color: @plugin_label_color;
 }

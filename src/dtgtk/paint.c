@@ -309,10 +309,13 @@ void dtgtk_cairo_paint_switch_deprecated(cairo_t *cr, gint x, gint y, gint w, gi
   cairo_translate(cr, x + (w / 2.0) - (s / 2.0), y + (h / 2.0) - (s / 2.0));
   cairo_scale(cr, s, s);
 
-  cairo_set_line_width(cr, 0.3);
+  cairo_set_line_width(cr, 0.2);
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-  cairo_move_to(cr, 0.5, -0.5);
-  cairo_line_to(cr, 0.5, 0.5);
+  cairo_move_to(cr, 0, 0);
+  cairo_line_to(cr, 1, 1);
+
+  cairo_move_to(cr, 0, 1);
+  cairo_line_to(cr, 1, 0);
   cairo_stroke(cr);
 
   cairo_identity_matrix(cr);
