@@ -1211,7 +1211,7 @@ button:disabled,
 /* deactivated switch buttons, make them less visible */
 #history-switch:disabled
 {
-    color: shade(@plugin_label_color, .8);
+    color: shade(@plugin_label_color, .7);
     background-color: transparent;
 }
 
