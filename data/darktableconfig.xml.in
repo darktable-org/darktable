@@ -675,7 +675,7 @@
   <dtconfig prefs="gui" section="darkroom">
     <name>plugins/darkroom/image_infos_pattern</name>
     <type>string</type>
-    <default>$(EXIF_ISO) ISO • $(EXIF_EXPOSURE) s • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm</default>
+    <default>$(EXIF_EXPOSURE) s • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • ISO $(EXIF_ISO)</default>
     <shortdescription>pattern for the image infos line</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
