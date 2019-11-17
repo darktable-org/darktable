@@ -593,7 +593,7 @@ static void _view_lighttable_query_listener_callback(gpointer instance, gpointer
   // in filemanager, we want to reset the offset to the beginning
   const dt_lighttable_layout_t layout = get_layout();
   if(layout == lib->current_layout && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && lib->offset > 0
-     && lib->first_visible_filemanager > 0)
+     && lib->first_visible_filemanager > 0 && !lib->offset_changed)
   {
     lib->offset = lib->first_visible_filemanager = 0;
     lib->offset_changed = TRUE;
