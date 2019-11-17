@@ -1838,7 +1838,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
           //store has using a simple filerename
           char finalfilename[PATH_MAX] = { 0 };
           snprintf(finalfilename, sizeof(finalfilename), "%s" G_DIR_SEPARATOR_S "%s.%s", cachedir, bname, md5sum);
-          if(g_rename(link_dest, finalfilename) != 0) goto ret;
+          rename(link_dest, finalfilename);
 #else
           if(symlink(md5sum, bname) != 0) goto ret;
 #endif //!defined(_WIN32)
