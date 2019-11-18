@@ -948,7 +948,7 @@ void dt_image_read_duplicates(const uint32_t id, const char *filename)
       g_free(idfield);
     }
 
-    int newid = dt_image_duplicate_with_version(id, version);
+    const int newid = dt_image_duplicate_with_version(id, version);
     dt_image_t *img = dt_image_cache_get(darktable.image_cache, newid, 'w');
     (void)dt_exif_xmp_read(img, xmpfilename, 0);
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
@@ -1182,7 +1182,7 @@ static uint32_t dt_image_import_internal(const int32_t film_id, const char *file
   // dt_image_path_append_version(id, dtfilename, sizeof(dtfilename));
   g_strlcat(dtfilename, ".xmp", sizeof(dtfilename));
 
-  int res = dt_exif_xmp_read(img, dtfilename, 0);
+  const int res = dt_exif_xmp_read(img, dtfilename, 0);
 
   // write through to db, but not to xmp.
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
