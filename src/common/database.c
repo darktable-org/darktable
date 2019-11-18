@@ -17,6 +17,10 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "common/database.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -1788,6 +1792,37 @@ void ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
   if(!shall_we_update_the_db) exit(1);
 }
 
+void dt_database_backup(const char *filename)
+{
+  char *version = g_strdup_printf("%s", darktable_package_version);
+  int k = 0;
+  // get plain version (no commit id)
+  while(version[k])
+  {
+    if((version[k] < '0' || version[k] > '9') && (version[k] != '.'))
+    {
+      version[k] = '\0';
+      break;
+    }
+    k++;
+  }
+
+  gchar *backup = g_strdup_printf("%s-pre-%s", filename, version);
+
+  if(!g_file_test(backup, G_FILE_TEST_EXISTS))
+  {
+    GError *gerror = NULL;
+    GFile *src = g_file_new_for_path(filename);
+    GFile *dest = g_file_new_for_path(backup);
+    gboolean copyStatus = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+    if (!copyStatus)
+      fprintf(stderr, "[backup failed] %s -> %s\n", filename, backup);
+  }
+
+  g_free(version);
+  g_free(backup);
+}
+
 dt_database_t *dt_database_init(const char *alternative, const gboolean load_data, const gboolean has_gui)
 {
   /*  set the threading mode to Serialized */
@@ -1849,6 +1884,11 @@ start:
   g_mkdir_with_parents(library_path, 0750);
   g_free(data_path);
   g_free(library_path);
+
+  /* check if a database backup is needed */
+
+  dt_database_backup(dbfilename_data);
+  dt_database_backup(dbfilename_library);
 
   /* having more than one instance of darktable using the same database is a bad idea */
   /* try to get locks for the databases */
