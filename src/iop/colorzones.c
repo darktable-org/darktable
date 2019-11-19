@@ -255,7 +255,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       new->curve_num_nodes[c] = DT_IOP_COLORZONES_BANDS;
       new->curve_type[c] = CATMULL_ROM;
     }
-    new->strength = 0.0;
+    new->strength = old->strength;
     new->mode = DT_IOP_COLORZONES_MODE_OLD;
     return 0;
   }
