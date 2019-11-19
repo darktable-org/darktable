@@ -1655,7 +1655,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
         rd = fread(cached_content, sizeof(char), cached_filesize, cached);
         if(rd != cached_filesize)
         {
-          dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not read all of file `%s'!\n", binname);
+          dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] could not read all of file '%s' MD5: %s!\n", binname, md5sum);
         }
         else
         {
@@ -1665,8 +1665,8 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
           if(err != CL_SUCCESS)
           {
             dt_print(DT_DEBUG_OPENCL,
-                     "[opencl_load_program] could not load cached binary program from file `%s'! (%d)\n",
-                     binname, err);
+                     "[opencl_load_program] could not load cached binary program from file '%s' MD5: '%s'! (%d)\n",
+                     binname, md5sum, err);
           }
           else
           {
@@ -1685,6 +1685,7 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   {
     // if loading cached was unsuccessful for whatever reason,
     // try to remove cached binary & link
+#if !defined(_WIN32)
     if(linkedfile_len > 0)
     {
       char link_dest[PATH_MAX] = { 0 };
@@ -1692,6 +1693,10 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
       g_unlink(link_dest);
     }
     g_unlink(binname);
+#else
+    // delete the file which contains the MD5 name
+    g_unlink(dup);
+#endif //!defined(_WIN32)
 
     dt_print(DT_DEBUG_OPENCL,
              "[opencl_load_program] could not load cached binary program, trying to compile source\n");
@@ -1713,10 +1718,10 @@ int dt_opencl_load_program(const int dev, const int prog, const char *filename, 
   else
   {
     free(file);
-    dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] loaded cached binary program from file `%s'\n", binname);
+    dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] loaded cached binary program from file '%s' MD5: '%s' \n", binname, md5sum);
   }
 
-  dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] successfully loaded program from `%s'\n", filename);
+  dt_print(DT_DEBUG_OPENCL, "[opencl_load_program] successfully loaded program from '%s' MD5: '%s'\n", filename, md5sum);
 
   return 1;
 }
@@ -1815,7 +1820,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
           // save opencl compiled binary as md5sum-named file
           char link_dest[PATH_MAX] = { 0 };
           snprintf(link_dest, sizeof(link_dest), "%s" G_DIR_SEPARATOR_S "%s", cachedir, md5sum);
-          FILE *f = g_fopen(link_dest, "w");
+          FILE *f = g_fopen(link_dest, "wb");
           if(!f) goto ret;
           size_t bytes_written = fwrite(binaries[i], sizeof(char), binary_sizes[i], f);
           if(bytes_written != binary_sizes[i]) goto ret;
