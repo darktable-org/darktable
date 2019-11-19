@@ -39,8 +39,8 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 19
-#define CURRENT_DATABASE_VERSION_DATA 3
+#define CURRENT_DATABASE_VERSION_LIBRARY 20
+#define CURRENT_DATABASE_VERSION_DATA 4
 
 typedef struct dt_database_t
 {
@@ -1142,6 +1142,28 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 19;
   }
+  else if(version == 19)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    // create a temp table to invert all multi_priority
+    TRY_EXEC("CREATE TEMPORARY TABLE m_prio (id INTEGER, operation VARCHAR(256), prio INTEGER)",
+             "[init] can't create temporary table for updating `history and style_items'\n");
+
+    TRY_EXEC("INSERT INTO m_prio SELECT imgid, operation, MAX(multi_priority)"
+             " FROM main.history GROUP BY imgid, operation",
+             "[init] can't populate m_prio\n");
+
+    TRY_EXEC("UPDATE main.history SET multi_priority = "
+             "(SELECT prio FROM m_prio "
+             " WHERE main.history.operation = operation AND main.history.imgid = id) - main.history.multi_priority",
+             "[init] can't update multi_priority for history\n");
+
+    TRY_EXEC("DROP TABLE m_prio", "[init] can't drop table `m_prio' from database\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 20;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -1250,6 +1272,30 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
 
     new_version = 3;
+  }
+  else if(version == 3)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    // create a temp table to invert all multi_priority
+    TRY_EXEC("CREATE TEMPORARY TABLE m_prio (id INTEGER, operation VARCHAR(256), prio INTEGER)",
+             "[init] can't create temporary table for updating `history and style_items'\n");
+
+    TRY_EXEC("INSERT INTO m_prio SELECT styleid, operation, MAX(multi_priority)"
+             " FROM data.style_items GROUP BY styleid, operation",
+             "[init] can't populate m_prio\n");
+
+    // update multi_priority for style items and history
+    TRY_EXEC("UPDATE data.style_items SET multi_priority = "
+             "(SELECT prio FROM m_prio "
+             " WHERE data.style_items.operation = operation AND data.style_items.styleid = id)"
+             " - data.style_items.multi_priority",
+             "[init] can't update multi_priority for style_items\n");
+
+    TRY_EXEC("DROP TABLE m_prio", "[init] can't drop table `m_prio' from database\n");
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+
+    new_version = 4;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
