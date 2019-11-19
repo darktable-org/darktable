@@ -531,6 +531,14 @@ static void _lib_export_styles_changed_callback(gpointer instance, gpointer user
   g_list_free_full(styles, dt_style_free);
 }
 
+static gboolean export_scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default"))
+    return TRUE;
+  else
+    return FALSE;
+}
+
 static void metadata_export_clicked(GtkComboBox *widget, dt_lib_export_t *d)
 {
   const gchar *name = dt_bauhaus_combobox_get_text(d->storage);
@@ -606,6 +614,9 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->width), _("maximum output width\nset to 0 for no scaling"));
   d->height = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(0, EXPORT_MAX_IMAGE_SIZE, 1));
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->height), _("maximum output height\nset to 0 for no scaling"));
+
+  g_signal_connect(d->width, "scroll-event", G_CALLBACK(export_scrolled), 0);
+  g_signal_connect(d->height, "scroll-event", G_CALLBACK(export_scrolled), 0);
 
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->width));
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->height));
