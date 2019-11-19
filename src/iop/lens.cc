@@ -74,7 +74,7 @@ typedef enum dt_iop_lensfun_modflag_t
 
 typedef struct dt_iop_lensfun_modifier_t
 {
-  char name[40];
+  char name[80];
   int pos; // position in combo box
   int modflag;
 } dt_iop_lensfun_modifier_t;

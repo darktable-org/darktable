@@ -29,7 +29,7 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
 	#Pacman won’t upgrade packages listed in IgnorePkg and members of IgnoreGroup
     and below, add the following line
 	IgnorePkg = mingw-w64-x86_64-lensfun
-    Copy the lensfun folder and the lensfun-0.3.2-py3.6.egg-info file from /mingw64/lib/python3.6/site-packages to /mingw64/lib/python3.7/site-packages.
+    Copy the lensfun folder and the lensfun-0.3.2-py3.6.egg-info file from /mingw64/lib/python3.6/site-packages to /mingw64/lib/python3.8/site-packages.
 	
 	From MINGW64 terminal, update your lensfun database:
 	$ lensfun-update-data
