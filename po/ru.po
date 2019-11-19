@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-14 11:35+0300\n"
+"POT-Creation-Date: 2019-11-19 18:35+0300\n"
 "PO-Revision-Date: 2019-11-01 22:17+0300\n"
 "Last-Translator: Timur Davletshin <timur.davletshin@gmail.com>\n"
 "Language-Team: русский\n"
@@ -44,7 +44,7 @@ msgstr "Импорт"
 
 #: ../build/src/preferences_gen.h:2116
 msgid "ignore JPEG images when importing film rolls"
-msgstr "Игнорировать JPEG при импорте"
+msgstr "Игнорировать файлы JPEG"
 
 #: ../build/src/preferences_gen.h:2125 ../build/src/preferences_gen.h:2145
 #: ../build/src/preferences_gen.h:2168 ../build/src/preferences_gen.h:2191
@@ -104,8 +104,8 @@ msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
 msgstr ""
-"Включите эту опцию, если в каталогах хранятся одновременно файлы Raw и JPEG. "
-"Данная опция игнорирует файлы JPEG."
+"Данная опция игнорирует файлы JPEG при импорте. "
+"Включите эту опцию, если в каталогах хранятся одновременно файлы Raw и JPEG."
 
 #: ../build/src/preferences_gen.h:2136
 msgid "recursive directory traversal when importing filmrolls"
@@ -113,7 +113,7 @@ msgstr "Импорт из вложенных папок"
 
 #: ../build/src/preferences_gen.h:2155
 msgid "creator to be applied when importing"
-msgstr "Автор (добавить при импорте)"
+msgstr "Создатель (добавить при импорте)"
 
 #: ../build/src/preferences_gen.h:2178
 msgid "publisher to be applied when importing"
@@ -129,7 +129,7 @@ msgstr "Метки (добавить при импорте)"
 
 #: ../build/src/preferences_gen.h:2247
 msgid "initial import rating"
-msgstr "Оценка (добавить при импорте)"
+msgstr "Начальная оценка"
 
 #: ../build/src/preferences_gen.h:2265 ../build/src/preferences_gen.h:2844
 #: ../build/src/preferences_gen.h:2900 ../build/src/preferences_gen.h:3123
@@ -151,19 +151,19 @@ msgstr "Обзор"
 
 #: ../build/src/preferences_gen.h:2285
 msgid "don't use embedded preview JPEG but half-size raw"
-msgstr "Создавать миниатюры из Raw"
+msgstr "Миниатюры из Raw"
 
 #: ../build/src/preferences_gen.h:2297
 msgid ""
 "check this option to not use the embedded JPEG from the raw file but process "
 "the raw data. this is slower but gives you color managed thumbnails."
 msgstr ""
-"Использовать ли миниатюры JPEG, встроенные в Raw файл, или создать их "
-"заново. Позволяет получить миниатюры с точным воспроизведением цветов."
+"Использовать миниатюры, сгенерированные из данных Raw, а не встроенные JPEG "
+"миниатюры. Позволяет получить миниатюры с точным воспроизведением цветов."
 
 #: ../build/src/preferences_gen.h:2305
 msgid "high quality thumb processing from size"
-msgstr "Высококачественная обработка миниатюр"
+msgstr "Мин. размер для качественной обработки миниатюр"
 
 #: ../build/src/preferences_gen.h:2316 ../build/src/preferences_gen.h:3697
 msgctxt "preferences"
@@ -220,7 +220,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2382
 msgid "enable extended thumb overlay"
-msgstr "Расширенная информация о снимках в режиме обзора"
+msgstr "Расширенная информация в режиме обзора"
 
 #: ../build/src/preferences_gen.h:2394
 msgid "if set to true, thumb overlay shows filename and some exif data."
@@ -246,7 +246,7 @@ msgstr "Сворачивать неактивные модули в режиме
 
 #: ../build/src/preferences_gen.h:2434
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
-msgstr "Поведение комбинации Shift+Щелчок в режиме обзора."
+msgstr "Эта опция переключает поведение комбинации Shift+Щелчок в режиме обзора."
 
 #: ../build/src/preferences_gen.h:2442
 msgid "scroll to lighttable modules when expanded/collapsed"
@@ -267,7 +267,7 @@ msgstr "Отключить снятие рейтинга по двухкратн
 msgid ""
 "do not have the rating of one star behave as documented in the manual--an "
 "image rated one star twice will result in a zero star rating."
-msgstr "Двухкратная установка одной звезды снимает рейтинг снимка."
+msgstr "Эта опция отключает снятие рейтинга снимка по двухкратному выставлению одной звезды."
 
 #: ../build/src/preferences_gen.h:2482 ../src/views/darkroom.c:110
 msgid "darkroom"
@@ -275,7 +275,7 @@ msgstr "Обработка"
 
 #: ../build/src/preferences_gen.h:2491
 msgid "pen pressure control for brush masks"
-msgstr "Поддержка силы нажатия у графич. планшетов"
+msgstr "Поддержка силы нажатия для графич. планшетов"
 
 #: ../build/src/preferences_gen.h:2502 ../build/src/preferences_gen.h:2542
 msgctxt "preferences"
@@ -316,7 +316,7 @@ msgstr ""
 "Выключить — сила нажатия пером планшета игнорируется. Растушёвка, "
 "непрозрачность, размер кисти — сила нажатия определяет указанные атрибуты. "
 "Абсолютная/относительная — сила нажатия берётся в качестве значения атрибута "
-"напрямую или умножается на заданный коэффициент."
+"напрямую или умножается на заранее заданный коэффициент."
 
 #: ../build/src/preferences_gen.h:2553
 msgid "smoothing of brush strokes"
@@ -347,7 +347,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2600
 msgid "display of individual color channels"
-msgstr "Отображение цветовых каналов масок"
+msgstr "Цветовые каналы при работе с масками"
 
 #: ../build/src/preferences_gen.h:2611 ../build/src/preferences_gen.h:2631
 msgctxt "preferences"
@@ -368,11 +368,11 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2642
 msgid "pattern for the image infos line"
-msgstr "Шаблон для информации о снимке"
+msgstr "Шаблон информации о снимке"
 
 #: ../build/src/preferences_gen.h:2658
 msgid "see manual to know all the tags you can use."
-msgstr "Обратитесь к документации, чтобы узнать о доступных типах меток."
+msgstr "Обратитесь к документации, чтобы узнать доступные типы отображаемой информации о снимке."
 
 #: ../build/src/preferences_gen.h:2666
 msgid "position of the image infos line"
@@ -442,7 +442,7 @@ msgstr "ВКЛЮЧЕНО"
 
 #: ../build/src/preferences_gen.h:2780
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
-msgstr "Поведение комбинации Shift+Щелчок в режиме обработки."
+msgstr "Эта опция переключает поведение комбинации Shift+Щелчок в режиме обработки."
 
 #: ../build/src/preferences_gen.h:2788
 msgid "expand the module when it is activated, and collapse it when disabled"
@@ -485,19 +485,19 @@ msgid ""
 "number of images drawn and thus reduces the time needed to draw the images."
 msgstr ""
 "Использовать текущие настройки фильтров для показа снимков на карте. Это "
-"уменьшит время, необходимое для их прорисовки."
+"уменьшит время, необходимое для их отображения."
 
 #: ../build/src/preferences_gen.h:2884
 msgid "maximum number of images drawn on map"
-msgstr "Максимальное число снимков на карте"
+msgstr "Макс. количество снимков на карте"
 
 #: ../build/src/preferences_gen.h:2903
 msgid ""
 "the maximum number of geotagged images drawn on the map. increasing this "
 "number can slow drawing of the map down."
 msgstr ""
-"Максимальное количество снимков с геотегами, показываемых на карте. Чем "
-"больше их число, тем медленнее прорисовывается карта."
+"Максимальное количество снимков, показываемых на карте. Чем больше их число, "
+"тем медленнее отображается карта."
 
 #: ../build/src/preferences_gen.h:2911
 msgid "pretty print the image location"
@@ -507,7 +507,7 @@ msgstr "Местоположение в формате градусы° мину
 msgid ""
 "show a more readable representation of the location in the image information "
 "module"
-msgstr "Показывать местоположение в десятичном или в формате градусы° минуты'."
+msgstr "Показывать местоположение в формате градусы° минуты' или в десятичном виде."
 
 #: ../build/src/preferences_gen.h:2931
 msgid "security"
@@ -515,7 +515,7 @@ msgstr "Подтверждения"
 
 #: ../build/src/preferences_gen.h:2940
 msgid "ask before removing images from database"
-msgstr "Подтверждение удаления из коллекции"
+msgstr "Подтверждать удаление из коллекции"
 
 #: ../build/src/preferences_gen.h:2952
 msgid "always ask the user before any image is removed from DB."
@@ -523,14 +523,14 @@ msgstr "Всегда запрашивать подтверждение на уд
 
 #: ../build/src/preferences_gen.h:2960
 msgid "ask before erasing images from disk / discarding history stack"
-msgstr "Подтверждение удаления снимков и истории изменений"
+msgstr "Подтверждать удаление снимков и истории изменений"
 
 #: ../build/src/preferences_gen.h:2972
 msgid ""
 "always ask the user before any image file is deleted / history stack is "
 "discarded."
 msgstr ""
-"Всегда запрашивать подтверждение на удаление снимков с диска или удаление "
+"Всегда запрашивать подтверждение на удаление снимков с диска и удаление "
 "истории изменений."
 
 #: ../build/src/preferences_gen.h:2980
@@ -545,9 +545,9 @@ msgstr ""
 "Отправлять файлы в корзину вместо удаления с диска (работает не во всех "
 "системах)."
 
-#: ../build/src/preferences_gen.h:3000
+#: ../build/src/preferences_gen.h:300
 msgid "ask before moving images from film roll folder"
-msgstr "Подтверждение перемещения снимков"
+msgstr "Подтверждать перемещение снимков"
 
 #: ../build/src/preferences_gen.h:3012
 msgid "always ask the user before any image file is moved."
@@ -555,7 +555,7 @@ msgstr "Всегда запрашивать подтверждение на пе
 
 #: ../build/src/preferences_gen.h:3020
 msgid "ask before copying images to new film roll folder"
-msgstr "Подтверждение копирования снимков"
+msgstr "Подтверждать копирование снимков"
 
 #: ../build/src/preferences_gen.h:3032
 msgid "always ask the user before any image file is copied."
@@ -576,11 +576,11 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3060
 msgid "ask before deleting a tag"
-msgstr "Подтверждение удаления меток"
+msgstr "Подтверждать удаление меток"
 
 #: ../build/src/preferences_gen.h:3079
 msgid "ask before deleting a style"
-msgstr "Подтверждение удаления стилей"
+msgstr "Подтверждать удаление стилей"
 
 #: ../build/src/preferences_gen.h:3098 ../build/src/preferences_gen.h:3991
 msgid "miscellaneous"
@@ -644,15 +644,16 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3266
 msgid "mouse wheel scrolls modules side panel by default"
-msgstr "Прокрутка боковых панелей при помощи мыши"
+msgstr "Отключить ввод данных при помощи колеса мыши"
 
 #: ../build/src/preferences_gen.h:3278
 msgid ""
 "when enabled, use mouse wheel to scroll modules side panel.  use ctrl+alt to "
 "use mouse wheel for data entry.  when disabled, this behavior is reversed"
 msgstr ""
-"Включите эту опцию для прокрутки содержимого боковых панелей при помощи "
-"мыши. Используйте Ctrl+Alt для ввода данных."
+"Включите эту опцию, чтобы отключить ввод данных при помощи колеса мыши. "
+"Колесо мыши используется для прокрутки, а ввод данных осуществляется после "
+"нажатия Ctrl+Alt."
 
 #: ../build/src/preferences_gen.h:3286
 msgid "show scrollbars for center view"
@@ -735,29 +736,29 @@ msgid ""
 "filmstrip can show correct colors. otherwise the results may look wrong once "
 "the display profile gets changed."
 msgstr ""
-"Поддержка управления воспроизведением цветов миниатюр, используемых в режиме "
-"обзора и ленты снимков. Если опция отключена, то миниатюры могут "
-"отображаться неверно в случае смены профиля монитора."
+"Поддержка точного воспроизведения цветов миниатюр, используемых в режиме "
+"обзора и ленты снимков. Если опция отключена, то миниатюры могут отображаться "
+"неверно в случае смены профиля монитора."
 
 #: ../build/src/preferences_gen.h:3453
 msgid "always use LittleCMS 2 to apply output color profile"
-msgstr "Использовать LittleCMS 2 для ICC профиля вывода"
+msgstr "Использовать LittleCMS 2"
 
 #: ../build/src/preferences_gen.h:3465
 msgid "this is slower than the default."
-msgstr "Это медленнее, чем вариант по умолчанию."
+msgstr "Использовать LittleCMS 2 для ICC профиля вывода."
 
 #: ../build/src/preferences_gen.h:3473
 msgid "do high quality processing for slideshow"
-msgstr "Высококачественная обработка слайдов"
+msgstr "Высококачественное слайдшоу"
 
 #: ../build/src/preferences_gen.h:3485
 msgid "same option as for export, but applies to slideshow."
-msgstr "Применить настройки экспорта в режиме слайдшоу."
+msgstr "Использовать настройки экспорта в режиме слайдшоу."
 
 #: ../build/src/preferences_gen.h:3493
 msgid "demosaicing for zoomed out darkroom mode"
-msgstr "Алгоритм дебайеризации в режиме обработки"
+msgstr "Алгоритм дебайеризации"
 
 #: ../build/src/preferences_gen.h:3504
 msgctxt "preferences"
@@ -781,11 +782,10 @@ msgid ""
 "below, full will use exactly the settings for full-size export. X-Trans "
 "sensors use VNG rather than PPG as middle ground."
 msgstr ""
-"Алгоритм, используемый при просмотре снимков в масштабе меньше 100%. "
-"Билинейный быстрее, но недостаточно резкий. Оптимальным является PPG (и "
-"перечисленный в самом низу). Полный использует настройки экспорта "
-"полноразмерного изображения. Для сенсоров X-Trans лучше подойдёт VNG, а не "
-"PPG."
+"Алгоритм, используемый в режиме обработки при просмотре снимков в масштабе "
+"меньше 100%. Билинейный быстрее, но недостаточно чёткий. Настройки экспорта "
+"медленнее, но обеспечивают самый качественный результат. PPG является оптимальный "
+"компромисом между ними."
 
 #: ../build/src/preferences_gen.h:3540
 msgid "pixel interpolator"
@@ -816,32 +816,32 @@ msgid ""
 "pixel interpolator used in rotation and lens correction (bilinear, bicubic, "
 "lanczos2, lanczos3)."
 msgstr ""
-"Алгоритм интерполяции пикселей, используемый при вращении и коррекции "
+"Алгоритм интерполяции, используемый для масштабирования, поворотов и коррекции "
 "оптических искажений."
 
 #: ../build/src/preferences_gen.h:3592
 msgid "auto-apply basecurve"
-msgstr "Автоматически применять базовую кривую"
+msgstr "Применять базовую кривую"
 
 #: ../build/src/preferences_gen.h:3604
 msgid "use a basecurve by default (needs a restart)"
-msgstr "Применять базовую кривую по-умолчанию (требуется перезапуск)."
+msgstr "Автоматически применять базовую кривую (требуется перезапуск)."
 
 #: ../build/src/preferences_gen.h:3612
 msgid "auto-apply per camera basecurve presets"
-msgstr "Использовать индивидуальные базовые кривые"
+msgstr "Индивидуальная базовая кривая"
 
 #: ../build/src/preferences_gen.h:3624
 msgid ""
 "use the per-camera basecurve by default instead of the generic manufacturer "
 "one if there is one available (needs a restart)"
 msgstr ""
-"Использовать индивидуальные базовые кривые (при наличии) вместо общего "
-"профиля для данного производителя камеры (требуется перезапуск)."
+"Автоматически применять индивидуальные базовые кривые (при наличии) вместо общего "
+"профиля для данного производителя камер (требуется перезапуск)."
 
 #: ../build/src/preferences_gen.h:3632
 msgid "auto-apply sharpen"
-msgstr "Автоматически применять модуль резкости"
+msgstr "Применять модуль резкости"
 
 #: ../build/src/preferences_gen.h:3644
 msgid ""
@@ -849,8 +849,8 @@ msgid ""
 "the default is to not add any sharpening automatically as most recent "
 "cameras have no low-pass filter. (need a restart)"
 msgstr ""
-"Автоматически применять модуль резкости. Не рекомендуется для большинства "
-"современных камер, не оборудованных low-pass фильтром (требуется перезапуск)."
+"Автоматически применять модуль резкости. Не рекомендуется для камер, не "
+"оборудованных low-pass фильтром (требуется перезапуск)."
 
 #: ../build/src/preferences_gen.h:3652
 msgid "xmp"
@@ -858,15 +858,15 @@ msgstr "XMP"
 
 #: ../build/src/preferences_gen.h:3661
 msgid "write sidecar file for each image"
-msgstr "Запись файлов XMP для каждого снимка"
+msgstr "Сохранять историю в файл XMP"
 
 #: ../build/src/preferences_gen.h:3673
 msgid ""
 "these redundant files can later be re-imported into a different database, "
 "preserving your changes to the image."
 msgstr ""
-"Файлы XMP позволяют последующий импорт в другую базу данных с сохранением "
-"истории изменений снимка."
+"Сохранять историю редактирования в файл XMP. Это позволяют последующий импорт "
+"в другую базу данных с сохранением истории изменений снимка."
 
 #: ../build/src/preferences_gen.h:3681
 msgid "store xmp tags in compressed format"
@@ -888,14 +888,14 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3728
 msgid "look for updated xmp files on startup"
-msgstr "Проверка обновлений файлов XMP при запуске"
+msgstr "Проверять изменения файлов XMP"
 
 #: ../build/src/preferences_gen.h:3740
 msgid ""
 "check file modification times of all xmp files on startup to check if any "
 "got updated in the meantime"
 msgstr ""
-"Проверять дату модификации файлов XMP при запуске для учёта изменений, "
+"Проверять дату модификации файлов XMP при запуске для отображения изменений, "
 "внесённых другими приложениями."
 
 #: ../build/src/preferences_gen.h:3748
@@ -948,14 +948,14 @@ msgid ""
 "be increased greatly when zooming image in full preview mode."
 msgstr ""
 "Кэшировать полноразмерные изображения на диск (.cache/darktable/). Для "
-"хранения изображений может потребоваться значительный объём дисковой памяти "
+"хранения миниатюр может потребоваться значительный объём дисковой памяти "
 "(несколько гигабайт на коллекцию 20 тыс. снимков) и они автоматически не "
 "удаляются. Их можно очистить вручную, это может положительно сказаться на "
 "производительности режима обзора."
 
 #: ../build/src/preferences_gen.h:3825
 msgid "number of background threads"
-msgstr "Количество фоновых потоков"
+msgstr "Фоновые потоки"
 
 #: ../build/src/preferences_gen.h:3844
 msgid ""
@@ -963,14 +963,13 @@ msgid ""
 "during import. the cache will grow to a maximum of twice this number of full "
 "resolution image buffers (needs a restart)."
 msgstr ""
-"Управляет количеством фоновых потоков, используемых, например, для создания "
-"миниатюр при импорте. Объём используемой оперативной памяти вырастет не "
-"более чем вдвое по сравнению с буфером полноразмерного снимка (требуется "
-"перезапуск)."
+"Количество фоновых потоков, используемых, например, для создания миниатюр "
+"при импорте. Объём используемой оперативной памяти вырастет не более чем "
+"вдвое по сравнению с буфером полноразмерных изображений (требуется перезапуск)."
 
 #: ../build/src/preferences_gen.h:3852
 msgid "host memory limit (in MB) for tiling"
-msgstr "Максимальный объём памяти (в МБ) для модуля"
+msgstr "Макс. объём памяти для мозаичной обработки"
 
 #: ../build/src/preferences_gen.h:3871
 msgid ""
@@ -979,15 +978,15 @@ msgid ""
 "process image with increasing number of tiles. setting this to 0 will omit "
 "any limit. values below 500 will be treated as 500 (needs a restart)."
 msgstr ""
-"Управляет максимальным объёмом памяти (в МБ), которое модуль может "
-"использовать при мозаичной обработке снимка. Чем меньше это значение, тем "
-"большее количество мозаичных элементов потребуется для обработки. Значение 0 "
-"равнозначно отсутствию ограничений. Значения ниже 500 будут округлены до 500 "
-"(требуется перезапуск)."
+"Максимальный объём памяти (в МБ), которое может выделяться модулю при "
+"мозаичной обработке снимка. Чем меньше это значение, тем большее количество "
+"мозаичных элементов потребуется для обработки. Значение 0 равнозначно "
+"отсутствию ограничений. Значения ниже 500 будут округлены до 500 (требуется "
+"перезапуск)."
 
 #: ../build/src/preferences_gen.h:3879
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
-msgstr "Минимальный объём буфера (в МБ) для модуля"
+msgstr "Мин. объём буфера для мозаичной обработки"
 
 #: ../build/src/preferences_gen.h:3900
 msgid ""
@@ -1018,7 +1017,7 @@ msgstr "Не поддерживается"
 #: ../build/src/preferences_gen.h:3924 ../build/src/preferences_gen.h:3928
 #: ../build/src/preferences_gen.h:3979 ../build/src/preferences_gen.h:3983
 msgid "not available on this system"
-msgstr "Не поддерживается на данной системе."
+msgstr "Не поддерживается в данной системе."
 
 #: ../build/src/preferences_gen.h:3936
 msgid "OpenCL scheduling profile"
@@ -1065,8 +1064,8 @@ msgid ""
 "this option is checked darktable will only include their last part and "
 "ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgstr ""
-"При экспорте метки сохраняются в виде простого неиерархического списка и "
-"могут быть доступны для других приложений. Если опция включена, то сложные "
+"При сохранении файла XMP метки сохраняются в виде простого неиерархического списка "
+"и могут быть доступны для других приложений. Если опция включена, то иерархические "
 "метки вроде «foo|bar|baz» будут сокращены до «baz»."
 
 #: ../build/src/preferences_gen.h:4020
@@ -1079,12 +1078,12 @@ msgid ""
 "for others the entry completion can be embarrassing. need to restart "
 "darktable."
 msgstr ""
-"Автоматическое дополнение тегов. Полезно для тех, кто вводит метки с "
-"клавиатуры (требуется перезапуск)."
+"Автоматическое дополнение тегов. Полезно тем, кто предпочитает вводить метки "
+"с клавиатуры (требуется перезапуск)."
 
 #: ../build/src/preferences_gen.h:4040
 msgid "password storage backend to use"
-msgstr "Способ хранения паролей"
+msgstr "Хранилище паролей"
 
 #: ../build/src/preferences_gen.h:4051 ../build/src/preferences_gen.h:4083
 msgctxt "preferences"
@@ -1110,8 +1109,7 @@ msgstr "KWallet"
 msgid ""
 "the storage backend for password storage: auto, none, libsecret, kwallet"
 msgstr ""
-"Способ хранения паролей: выбираемый автоматически, никакого, libsecret, "
-"KWallet."
+"Тип хранилища паролей: Авто, libsecret, KWallet и никакого."
 
 #: ../build/src/preferences_gen.h:4094
 msgid "executable for playing audio files"
@@ -1142,7 +1140,7 @@ msgstr "Выбор каталога"
 msgid ""
 "this folder (and sub-folders) contains Lut files used by lut3d modules. need "
 "to restart darktable."
-msgstr "Каталог с файлами таблиц поиска цветов (требуется перезапуск)."
+msgstr "Каталог для файлов 3D таблиц поиска цветов (требуется перезапуск)."
 
 #: ../build/src/preferences_gen.h:4164
 msgid "session options"
@@ -1988,11 +1986,11 @@ msgstr "Операция выполняется..."
 #: ../src/control/control.c:685
 #, c-format
 msgid "scroll to change <b>%s</b> of %s module"
-msgstr "Прокрутите для изменения <b>%s</b> в модуле %s "
+msgstr "Прокрутите для изменения <b>%s</b> в модуле %s"
 
 #: ../src/control/crawler.c:342 ../src/libs/select.c:40
 msgid "select"
-msgstr "Выделение"
+msgstr "Выбор"
 
 #: ../src/control/crawler.c:346
 msgid "path"
@@ -2000,11 +1998,11 @@ msgstr "Путь"
 
 #: ../src/control/crawler.c:350
 msgid "xmp timestamp"
-msgstr "Отметка времени в XMP"
+msgstr "Время из файла XMP"
 
 #: ../src/control/crawler.c:354
 msgid "database timestamp"
-msgstr "Отметка времени в базе данных"
+msgstr "Время из базы данных"
 
 #: ../src/control/crawler.c:363
 msgid "updated xmp sidecar files found"
@@ -2020,11 +2018,11 @@ msgstr "Выделить всё"
 
 #: ../src/control/crawler.c:387
 msgid "reload selected xmp files"
-msgstr "Заново загрузить выбранные файлы XMP"
+msgstr "Загрузить изменённые XMP"
 
 #: ../src/control/crawler.c:388
 msgid "overwrite selected xmp files"
-msgstr "Перезаписать выбранные файлы XMP"
+msgstr "Перезаписать выбранные XMP"
 
 #: ../src/control/jobs/camera_jobs.c:86
 #, c-format
@@ -3339,13 +3337,12 @@ msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
 msgstr ""
-"Программа обнаружила проблемы совместимости с настройками OpenCL; OpenCL "
-"будет выключен в этом сеансе!"
+"Проблема совместимости OpenCL! OpenCL будет отключен в этом сеансе."
 
 #: ../src/develop/tiling.c:820 ../src/develop/tiling.c:1161
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
-msgstr "Мозаика для модуля «%s» дала сбой. Вывод может быть повреждён."
+msgstr "Ошибка мозаичной обработки в модуле «%s»! Вывод может быть повреждён."
 
 #: ../src/dtgtk/resetlabel.c:58
 msgid "double-click to reset"
@@ -3814,7 +3811,7 @@ msgstr "$(FILE_FOLDER) — каталог с файлами"
 
 #: ../src/gui/gtkentry.c:188
 msgid "$(FILE_NAME) - basename of the input image"
-msgstr "$(FILE_NAME) — название снимка без расширения"
+msgstr "$(FILE_NAME) — файла снимка без расширения"
 
 #: ../src/gui/gtkentry.c:189
 msgid "$(FILE_EXTENSION) - extension of the input image"
@@ -3822,19 +3819,19 @@ msgstr "$(FILE_EXTENSION) — расширение файла снимка"
 
 #: ../src/gui/gtkentry.c:190
 msgid "$(VERSION) - duplicate version"
-msgstr "$(VERSION) — продублировать версию"
+msgstr "$(VERSION) — версия"
 
 #: ../src/gui/gtkentry.c:191
 msgid "$(SEQUENCE) - sequence number"
-msgstr "$(SEQUENCE) — номер последовательности"
+msgstr "$(SEQUENCE) — последовательная нумерация"
 
 #: ../src/gui/gtkentry.c:192
 msgid "$(MAX_WIDTH) - maximum image export width"
-msgstr "$(MAX_WIDTH) - максимальная ширина снимка"
+msgstr "$(MAX_WIDTH) - максимальная ширина снимка (экспорт)"
 
 #: ../src/gui/gtkentry.c:193
 msgid "$(MAX_HEIGHT) - maximum image export height"
-msgstr "$(MAX_HEIGHT) - максимальная высота снимка"
+msgstr "$(MAX_HEIGHT) - максимальная высота снимка (экспорт)"
 
 #: ../src/gui/gtkentry.c:194
 msgid "$(YEAR) - year"
@@ -3890,7 +3887,7 @@ msgstr "$(EXIF_ISO) — значение ISO"
 
 #: ../src/gui/gtkentry.c:207
 msgid "$(MAKER) - camera maker"
-msgstr "$(MAKER) — изготовитель камеры"
+msgstr "$(MAKER) — производитель камеры"
 
 #: ../src/gui/gtkentry.c:208
 msgid "$(MODEL) - camera model"
@@ -3918,7 +3915,7 @@ msgstr "$(DESKTOP) — каталог рабочего стола"
 
 #: ../src/gui/gtkentry.c:214
 msgid "$(TITLE) - title from metadata"
-msgstr "$(TITLE) — заголовок из метаданных"
+msgstr "$(TITLE) — название из метаданных"
 
 #: ../src/gui/gtkentry.c:215
 msgid "$(DESCRIPTION) - description from metadata"
@@ -3926,15 +3923,15 @@ msgstr "$(DESCRIPTION) — описание из метаданных"
 
 #: ../src/gui/gtkentry.c:216
 msgid "$(CREATOR) - creator from metadata"
-msgstr "$(TITLE) — создатель из метаданных"
+msgstr "$(CREATOR) — создатель из метаданных"
 
 #: ../src/gui/gtkentry.c:217
 msgid "$(PUBLISHER) - publisher from metadata"
-msgstr "$(TITLE) — публикующий из метаданных"
+msgstr "$(PUBLISHER) — издатель из метаданных"
 
 #: ../src/gui/gtkentry.c:218
 msgid "$(RIGHTS) - rights from metadata"
-msgstr "$(TITLE) — авторские права из метаданных"
+msgstr "$(RIGHTS) — авторские права из метаданных"
 
 #: ../src/gui/gtkentry.c:219
 msgid "$(OPENCL_ACTIVATED) - whether OpenCL is activated"
@@ -3942,11 +3939,11 @@ msgstr "$(OPENCL_ACTIVATED) — поддержа OpenCL"
 
 #: ../src/gui/gtkentry.c:220
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
-msgstr "$(CATEGORY0(category)) - нулевой уровень в иерархической метке"
+msgstr "$(CATEGORY0(category)) - нулевой уровень в иерархических метках"
 
 #: ../src/gui/gtkentry.c:221
 msgid "$(TAGS) - tags as set in metadata settings"
-msgstr "$(TAGS) - метки из метаданных"
+msgstr "$(TAGS) - метки"
 
 #: ../src/gui/guides.c:108
 msgid "horizontal lines"
@@ -4933,7 +4930,7 @@ msgstr "Введите проверочный URL"
 
 #: ../src/imageio/storage/facebook.c:670
 msgid "the given URL is not valid, it should look like: "
-msgstr "Введённый URL некорректен. Правильный выглядит примерно так:"
+msgstr "Введённый URL некорректен. Правильный выглядит так: "
 
 #: ../src/imageio/storage/facebook.c:701
 msgid "authentication successful"
@@ -4949,9 +4946,9 @@ msgid ""
 "login into your facebook account there and authorize darktable to upload "
 "photos before continuing."
 msgstr ""
-"В браузере должна открыться новая вкладка или окно. Вам нужно будет "
-"авторизоваться в Facebook и дать darktable доступ к вашей учётной записи для "
-"загрузки фотографий."
+"Сейчас в браузере должна открыться новая вкладка или окно. Вам необходимо "
+"авторизоваться в Facebook и предоставить darktable доступ к вашей учётной "
+"записи."
 
 #: ../src/imageio/storage/facebook.c:851
 #: ../src/imageio/storage/googlephoto.c:943
@@ -5004,7 +5001,7 @@ msgstr "Описание"
 
 #: ../src/imageio/storage/facebook.c:1122
 msgid "privacy"
-msgstr "Кому видно"
+msgstr "Видимость"
 
 #: ../src/imageio/storage/facebook.c:1168
 msgid "only me"
@@ -5013,15 +5010,15 @@ msgstr "Только мне"
 #: ../src/imageio/storage/facebook.c:1171 ../src/imageio/storage/flickr.c:498
 #: ../src/imageio/storage/piwigo.c:828
 msgid "friends"
-msgstr "Друзьям"
+msgstr "Друзья"
 
 #: ../src/imageio/storage/facebook.c:1174
 msgid "public"
-msgstr "Всем"
+msgstr "Публично"
 
 #: ../src/imageio/storage/facebook.c:1177
 msgid "friends of friends"
-msgstr "Друзьям друзей"
+msgstr "Друзья друзей"
 
 #: ../src/imageio/storage/facebook.c:1320
 #: ../src/imageio/storage/googlephoto.c:1390
@@ -5057,9 +5054,8 @@ msgid ""
 "have to login into your flickr account there and authorize darktable to "
 "upload photos before continuing."
 msgstr ""
-"Шаг 1: Сейчас Flickr должен открыться в браузере. Вам нужно будет "
-"авторизоваться и дать darktable доступ к вашей учётной записи для загрузки "
-"фотографий."
+"Шаг 1: Сейчас в браузере должна открыться новая вкладка или окно. Вам необходимо "
+"авторизоваться во Flickr и предоставить darktable доступ к вашей учётной записи."
 
 #: ../src/imageio/storage/flickr.c:199
 msgid "step 2: click the OK button once you are done."
@@ -5092,7 +5088,7 @@ msgstr "Без альбома"
 
 #: ../src/imageio/storage/flickr.c:468
 msgid "flickr user"
-msgstr "Логин:"
+msgstr "Логин"
 
 #: ../src/imageio/storage/flickr.c:482
 msgid "flickr login"
@@ -5104,24 +5100,24 @@ msgstr "Видимость"
 
 #: ../src/imageio/storage/flickr.c:497 ../src/imageio/storage/piwigo.c:830
 msgid "you"
-msgstr "Только вам"
+msgstr "Только мне"
 
 #: ../src/imageio/storage/flickr.c:499 ../src/imageio/storage/piwigo.c:829
 msgid "family"
-msgstr "Семье"
+msgstr "Семья"
 
 #: ../src/imageio/storage/flickr.c:500
 msgid "friends + family"
-msgstr "Друзьям и семье"
+msgstr "Друзья и семья"
 
 #: ../src/imageio/storage/flickr.c:501 ../src/imageio/storage/piwigo.c:826
 msgid "everyone"
-msgstr "Всем"
+msgstr "Публично"
 
 #. Available albums
 #: ../src/imageio/storage/flickr.c:509
 msgid "photosets"
-msgstr "Альбомы:"
+msgstr "Альбомы"
 
 #: ../src/imageio/storage/flickr.c:515 ../src/imageio/storage/piwigo.c:844
 msgid "refresh album list"
@@ -5137,7 +5133,7 @@ msgstr "Экспортировано из darktable"
 
 #: ../src/imageio/storage/flickr.c:558 ../src/imageio/storage/piwigo.c:875
 msgid "click login button to start"
-msgstr "Щёлкните кнопку «Войти»"
+msgstr "Нажмите кнопку «Войти»"
 
 #: ../src/imageio/storage/flickr.c:670
 msgid "could not upload to flickr!"
@@ -5167,9 +5163,8 @@ msgid ""
 "have to login into your google account there and authorize darktable to "
 "upload photos before continuing."
 msgstr ""
-"Шаг 1: Сейчас откроется новая вкладка в браузере. Вам нужно будет\n"
-"авторизовать учётную запись Google и предоставить доступ darktable для \n"
-"загрузки фотографий.\""
+"Шаг 1: Сейчас в браузере должна открыться новая вкладка или окно. Вам необходимо "
+"авторизоваться в Google и предоставить darktable доступ к вашей учётной записи."
 
 #: ../src/imageio/storage/googlephoto.c:765
 msgid ""
@@ -5223,7 +5218,7 @@ msgstr "Авторизация отсутствует"
 
 #: ../src/imageio/storage/piwigo.c:589
 msgid "---"
-msgstr "(---)"
+msgstr "---"
 
 #: ../src/imageio/storage/piwigo.c:630
 msgid "cannot refresh albums"
@@ -5260,7 +5255,7 @@ msgstr "Пароль"
 
 #: ../src/imageio/storage/piwigo.c:811
 msgid "piwigo login"
-msgstr "Учётная запись piwigo"
+msgstr "Авторизация на piwigo"
 
 #: ../src/imageio/storage/piwigo.c:827
 msgid "contacts"
@@ -5273,7 +5268,7 @@ msgstr "Альбом"
 
 #: ../src/imageio/storage/piwigo.c:863
 msgid "new album"
-msgstr "Родительский альбом"
+msgstr "Новый альбом"
 
 #. parent album list
 #. Available albums
@@ -9852,7 +9847,7 @@ msgstr "Ошибки экспозиции"
 
 #: ../src/iop/rawprepare.c:46
 msgid "crop x"
-msgstr "Обрезка"
+msgstr "Обрезка X"
 
 #: ../src/iop/rawprepare.c:46
 msgid "crop from left border"
@@ -9912,7 +9907,7 @@ msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
 msgstr ""
-"Коррекция черной и белой точек raw включается только при работе с требующими "
+"Коррекция черной и белой точек Raw включается только при работе с требующими "
 "этого сенсорами."
 
 #: ../src/iop/relight.c:55
@@ -12182,7 +12177,7 @@ msgstr "Экспортировать историю изменений"
 msgid ""
 "export dt development data (recovery purpose in case of loss of database or "
 "xmp file)"
-msgstr "Экспортировать историю изменений (полезно в случае утери xmp файла)"
+msgstr "Экспортировать историю изменений (полезно в случае утери XMP файла)"
 
 #: ../src/libs/export_metadata.c:302
 msgid "per metadata settings"
@@ -12924,12 +12919,12 @@ msgstr "Удалить метаданные из выбранных снимко
 
 #: ../src/libs/metadata.c:395
 msgid "write metadata for selected images"
-msgstr "Записать метаданные выбранных снимков"
+msgstr "Записать метаданные в выбранные снимки"
 
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
 #: ../src/libs/metadata.c:433
 msgid "CC BY"
-msgstr "вид в Live View "
+msgstr "CC BY"
 
 #: ../src/libs/metadata.c:433
 msgid "Creative Commons Attribution (CC BY)"
@@ -12937,7 +12932,7 @@ msgstr "Creative Commons Attribution (CC BY)"
 
 #: ../src/libs/metadata.c:434
 msgid "CC BY-SA"
-msgstr "вид в Live View "
+msgstr "CC BY-SA"
 
 #: ../src/libs/metadata.c:434
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
@@ -12945,7 +12940,7 @@ msgstr "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 
 #: ../src/libs/metadata.c:435
 msgid "CC BY-ND"
-msgstr "вид в Live View "
+msgstr "CC BY-ND"
 
 #: ../src/libs/metadata.c:435
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
@@ -12953,7 +12948,7 @@ msgstr "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 
 #: ../src/libs/metadata.c:436
 msgid "CC BY-NC"
-msgstr "вид в Live View "
+msgstr "CC BY-NC"
 
 #: ../src/libs/metadata.c:436
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
@@ -12961,7 +12956,7 @@ msgstr "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 
 #: ../src/libs/metadata.c:437
 msgid "CC BY-NC-SA"
-msgstr "вид в Live View "
+msgstr "CC BY-NC-SA"
 
 #: ../src/libs/metadata.c:438
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
@@ -12969,7 +12964,7 @@ msgstr "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 
 #: ../src/libs/metadata.c:439
 msgid "CC BY-NC-ND"
-msgstr "вид в Live View "
+msgstr "CC BY-NC-ND"
 
 #: ../src/libs/metadata.c:440
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
@@ -13007,7 +13002,7 @@ msgstr "Флаги"
 
 #: ../src/libs/metadata_view.c:117
 msgid "focus distance"
-msgstr "Дистанция фокусировки"
+msgstr "Дистанция (фокус)"
 
 #: ../src/libs/metadata_view.c:119
 msgid "datetime"
@@ -13762,7 +13757,7 @@ msgstr "Снять метку"
 
 #: ../src/libs/tagging.c:1162
 msgid "delete tag?"
-msgstr "Удалить метку?"
+msgstr "Удаление метки"
 
 #: ../src/libs/tagging.c:1169 ../src/libs/tagging.c:1266
 #: ../src/libs/tagging.c:1522
@@ -13791,11 +13786,11 @@ msgstr[2] ""
 #: ../src/libs/tagging.c:1212
 #, c-format
 msgid "tag %s removed"
-msgstr "Метка %s удалена"
+msgstr "Метка «%s» удалена"
 
 #: ../src/libs/tagging.c:1259 ../src/libs/tagging.c:1926
 msgid "delete branch"
-msgstr "Удалить ветвь"
+msgstr "Удаление ветви"
 
 #: ../src/libs/tagging.c:1273
 #, c-format
@@ -13821,7 +13816,7 @@ msgstr "Удалено меток: %d"
 
 #: ../src/libs/tagging.c:1347
 msgid "create tag"
-msgstr "Создать метку"
+msgstr "Создание метки"
 
 #: ../src/libs/tagging.c:1357 ../src/libs/tagging.c:1542
 msgid "name: "
@@ -13859,15 +13854,15 @@ msgstr "Метка уже существует. Действие прерван�
 
 #: ../src/libs/tagging.c:1515
 msgid "edit tag"
-msgstr "Изменить метку"
+msgstr "Изменение метки"
 
 #: ../src/libs/tagging.c:1529 ../src/libs/tagging.c:1749
 #, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
-msgstr[0] "<u>%d</u> метка будет изменена"
-msgstr[1] "<u>%d</u> метки будут изменены"
-msgstr[2] "<u>%d</u> меток будут изменены"
+msgstr[0] "<u>%d</u> метка будет изменена."
+msgstr[1] "<u>%d</u> метки будут изменены."
+msgstr[2] "<u>%d</u> меток будут изменены."
 
 #: ../src/libs/tagging.c:1589
 msgid ""
@@ -13883,7 +13878,7 @@ msgstr ""
 
 #: ../src/libs/tagging.c:1735
 msgid "rename path?"
-msgstr "Переименовать путь?"
+msgstr "Переименование пути"
 
 #: ../src/libs/tagging.c:1742
 #, c-format
@@ -13923,11 +13918,11 @@ msgstr "Переименовать путь..."
 
 #: ../src/libs/tagging.c:1952
 msgid "copy to entry"
-msgstr "Копировать в запись"
+msgstr "Ввести в строку поиска"
 
 #: ../src/libs/tagging.c:1976
 msgid "go to tag collection"
-msgstr "В метки"
+msgstr "К помеченным снимкам"
 
 #: ../src/libs/tagging.c:1982
 msgid "go back to work"
@@ -13985,8 +13980,8 @@ msgid ""
 msgstr ""
 "Прикреплённые метки.\n"
 "Двойной щелчок для снятия.\n"
-"Правый щелчок для других действий над выбранной меткой.\n"
-"Ctrl+Колесо мыши для изменения размеров окна."
+"Правый щелчок для других действий над прикреплённой меткой.\n"
+"Ctrl+Прокрутка для изменения размеров окна редактора меток."
 
 #: ../src/libs/tagging.c:2555
 msgid "attach"
@@ -14010,11 +14005,11 @@ msgstr "Переключить режим с иерархией или без н
 
 #: ../src/libs/tagging.c:2581
 msgid "toggle sort by name or by count"
-msgstr "Переключить режим сортировки"
+msgstr "Переключить режим сортировки по имени или по количеству"
 
 #: ../src/libs/tagging.c:2591
 msgid "toggle show or not darktable tags"
-msgstr "Видимость меток"
+msgstr "Переключить режим отображения служебных меток"
 
 #: ../src/libs/tagging.c:2607
 msgid "enter tag name"
@@ -14034,7 +14029,7 @@ msgstr ""
 "Словарь меток.\n"
 "Двойной щелчок для прикрепления.\n"
 "Правый щелчок для других действий над выбранной меткой.\n"
-"Ctrl+Колесо мыши для изменения размеров окна."
+"Ctrl+Прокрутка для изменения размеров окна редактора меток."
 
 #: ../src/libs/tagging.c:2684
 msgid "new"
