@@ -593,7 +593,7 @@ static void _view_lighttable_query_listener_callback(gpointer instance, gpointer
   // in filemanager, we want to reset the offset to the beginning
   const dt_lighttable_layout_t layout = get_layout();
   if(layout == lib->current_layout && layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER && lib->offset > 0
-     && lib->first_visible_filemanager > 0)
+     && lib->first_visible_filemanager > 0 && !lib->offset_changed)
   {
     lib->offset = lib->first_visible_filemanager = 0;
     lib->offset_changed = TRUE;
@@ -3369,6 +3369,7 @@ static gboolean _ensure_image_visibility(dt_view_t *self, uint32_t rowid)
   dt_library_t *lib = (dt_library_t *)self->data;
   if(get_layout() != DT_LIGHTTABLE_LAYOUT_FILEMANAGER) return FALSE;
   if(lib->images_in_row == 0 || lib->visible_rows == 0) return FALSE;
+  if(lib->offset == 0x7fffffff) return FALSE;
 
   // if we are before the first visible image, we move back
   int offset = lib->offset;

@@ -275,9 +275,17 @@ static inline void *dt_introspection_access_array(dt_introspection_field_t *self
 static inline void *dt_introspection_get_child(dt_introspection_field_t *self, void *start, const char *name,
                                                dt_introspection_field_t **child)
 {
-  if(!(start && self && name && *name && self->header.type == DT_INTROSPECTION_TYPE_STRUCT)) return NULL;
+  if(!(start && self && name && *name)) return NULL;
 
-  dt_introspection_field_t **iter = self->Struct.fields;
+  dt_introspection_field_t **iter;
+
+  if(self->header.type == DT_INTROSPECTION_TYPE_STRUCT)
+    iter = self->Struct.fields;
+  else if(self->header.type == DT_INTROSPECTION_TYPE_UNION)
+    iter = self->Union.fields;
+  else
+    return NULL;
+
   while(*iter)
   {
     if(!g_strcmp0((*iter)->header.field_name, name))
