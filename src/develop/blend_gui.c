@@ -68,15 +68,24 @@ static const dt_iop_gui_blendif_colorstop_t _gradient_L[]
         { 0.5f, { NEUTRAL_GRAY / 2, NEUTRAL_GRAY / 2, NEUTRAL_GRAY / 2, 1.0 } },
         { 1.0f, { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } } };
 
+
 static const dt_iop_gui_blendif_colorstop_t _gradient_a[]
-    = { { 0.0f, { 0, 0.34 * NEUTRAL_GRAY * 2, 0.27 * NEUTRAL_GRAY * 2, 1.0 } },
-        { 0.5f, { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } },
-        { 1.0f, { 0.53 * NEUTRAL_GRAY * 2, 0.08 * NEUTRAL_GRAY * 2, 0.28 * NEUTRAL_GRAY * 2, 1.0 } } };
+    = { { 0.0f,   { 0, 0.34 * NEUTRAL_GRAY * 2, 0.27 * NEUTRAL_GRAY * 2, 1.0 } },
+        { 0.25f,  { 0.25 * NEUTRAL_GRAY * 2, 0.34 * NEUTRAL_GRAY * 2, 0.39 * NEUTRAL_GRAY * 2, 1.0 } },
+        { 0.375f, { 0.375 * NEUTRAL_GRAY * 2, 0.46 * NEUTRAL_GRAY * 2, 0.45 * NEUTRAL_GRAY * 2, 1.0 } },
+        { 0.5f,   { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } },
+        { 0.625f, { 0.51 * NEUTRAL_GRAY * 2, 0.4 * NEUTRAL_GRAY * 2, 0.45 * NEUTRAL_GRAY * 2, 1.0 } },
+        { 0.75f,  { 0.52 * NEUTRAL_GRAY * 2, 0.29 * NEUTRAL_GRAY * 2, 0.39 * NEUTRAL_GRAY * 2, 1.0 } },
+        { 1.0f,   { 0.53 * NEUTRAL_GRAY * 2, 0.08 * NEUTRAL_GRAY * 2, 0.28 * NEUTRAL_GRAY * 2, 1.0 } } };
 
 static const dt_iop_gui_blendif_colorstop_t _gradient_b[]
-    = { { 0.0f, { 0, 0.27 * NEUTRAL_GRAY * 2, 0.58 * NEUTRAL_GRAY * 2, 1.0 } },
-        { 0.5f, { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } },
-        { 1.0f, { 0.81 * NEUTRAL_GRAY * 2, 0.66 * NEUTRAL_GRAY * 2, 0, 1.0 } } };
+    = { { 0.0f,   { 0, 0.27 * NEUTRAL_GRAY * 2, 0.58 * NEUTRAL_GRAY * 2, 1.0 } },
+        { 0.25f,  { 0.25 * NEUTRAL_GRAY * 2, 0.39 * NEUTRAL_GRAY * 2, 0.54 * NEUTRAL_GRAY * 2, 1.0 } },
+        { 0.375f, { 0.38 * NEUTRAL_GRAY * 2, 0.45 * NEUTRAL_GRAY * 2, 0.52 * NEUTRAL_GRAY * 2, 1.0 } },
+        { 0.5f,   { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } },
+        { 0.625f, { 0.58 * NEUTRAL_GRAY * 2, 0.55 * NEUTRAL_GRAY * 2, 0.38 * NEUTRAL_GRAY * 2, 1.0 } },
+        { 0.75f,  { 0.66 * NEUTRAL_GRAY * 2, 0.59 * NEUTRAL_GRAY * 2, 0.25 * NEUTRAL_GRAY * 2, 1.0 } },
+        { 1.0f,   { 0.81 * NEUTRAL_GRAY * 2, 0.66 * NEUTRAL_GRAY * 2, 0, 1.0 } } };
 
 static const dt_iop_gui_blendif_colorstop_t _gradient_gray[]
     = { { 0.0f, { 0, 0, 0, 1.0 } },
@@ -198,20 +207,39 @@ static void _blendif_cook(dt_iop_colorspace_type_t cst, const float *in, float *
   }
 }
 
+static inline int _blendif_print_digits_default(float value)
+{
+  int digits;
+  if(value < 0.0001f) digits = 0;
+  else if(value < 0.01f) digits = 2;
+  else if(value < 0.1f) digits = 1;
+  else digits = 0;
+
+  return digits;
+}
+
+static inline int _blendif_print_digits_ab(float value)
+{
+  int digits;
+  if(fabs(value) < 10.0f) digits = 1;
+  else digits = 0;
+
+  return digits;
+}
 
 static void _blendif_scale_print_L(float value, char *string, int n)
 {
-  snprintf(string, n, "%-4.0f", value * 100.0f);
+  snprintf(string, n, "%-4.*f", _blendif_print_digits_default(value), value * 100.0f);
 }
 
 static void _blendif_scale_print_ab(float value, char *string, int n)
 {
-  snprintf(string, n, "%-4.0f", value * 256.0f - 128.0f);
+  snprintf(string, n, "%-4.*f", _blendif_print_digits_ab(value * 256.0f - 128.0f), value * 256.0f - 128.0f);
 }
 
 static void _blendif_scale_print_rgb(float value, char *string, int n)
 {
-  snprintf(string, n, "%-4.0f", value * 255.0f);
+  snprintf(string, n, "%-4.*f", _blendif_print_digits_default(value), value * 255.0f);
 }
 
 static void _blendif_scale_print_hue(float value, char *string, int n)
@@ -221,7 +249,7 @@ static void _blendif_scale_print_hue(float value, char *string, int n)
 
 static void _blendif_scale_print_default(float value, char *string, int n)
 {
-  snprintf(string, n, "%-4.0f", value * 100.0f);
+  snprintf(string, n, "%-4.*f", _blendif_print_digits_default(value), value * 100.0f);
 }
 
 static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gui_blend_data_t *data)
@@ -437,7 +465,9 @@ static void _blendop_blendif_upper_callback(GtkDarktableGradientSlider *slider, 
 
   _blendop_blendif_reset_picker_set_values(data);
 
+  dt_pthread_mutex_lock(&data->lock);
   for(int k = 0; k < 4; k++) parameters[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
+  dt_pthread_mutex_unlock(&data->lock);
 
   for(int k = 0; k < 4; k++)
   {
@@ -468,7 +498,9 @@ static void _blendop_blendif_lower_callback(GtkDarktableGradientSlider *slider, 
 
   _blendop_blendif_reset_picker_set_values(data);
 
+  dt_pthread_mutex_lock(&data->lock);
   for(int k = 0; k < 4; k++) parameters[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
+  dt_pthread_mutex_unlock(&data->lock);
 
   for(int k = 0; k < 4; k++)
   {
@@ -540,6 +572,15 @@ static dt_iop_colorspace_type_t _blendop_blendif_get_picker_colorspace(dt_iop_gu
   return picker_cst;
 }
 
+static inline int _blendif_print_digits_picker(float value)
+{
+  int digits;
+  if(value < 10.0f) digits = 2;
+  else digits = 1;
+
+  return digits;
+}
+
 static void _update_gradient_slider(GtkWidget *widget, dt_iop_module_t *module)
 {
   dt_iop_gui_blend_data_t *data = module->blend_data;
@@ -578,7 +619,7 @@ static void _update_gradient_slider(GtkWidget *widget, dt_iop_module_t *module)
     _blendif_scale(cst, raw_max, picker_max, work_profile);
     _blendif_cook(cst, raw_mean, cooked, work_profile);
 
-    snprintf(text, sizeof(text), "(%.1f)", cooked[data->tab]);
+    snprintf(text, sizeof(text), "(%.*f)", _blendif_print_digits_picker(cooked[data->tab]), cooked[data->tab]);
 
     dtgtk_gradient_slider_multivalue_set_picker_meanminmax(
         DTGTK_GRADIENT_SLIDER(widget), picker_mean[data->tab], picker_min[data->tab], picker_max[data->tab]);
@@ -974,8 +1015,10 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *module, dt_dev_pixel
     picker_values[0] = CLAMP(picker_values[0], 0.f, picker_values[1]);
     picker_values[3] = CLAMP(picker_values[3], picker_values[2], 1.f);
 
+    dt_pthread_mutex_lock(&data->lock);
     for(int k = 0; k < 4; k++)
       dtgtk_gradient_slider_multivalue_set_value(slider, picker_values[k], k);
+    dt_pthread_mutex_unlock(&data->lock);
 
     // update picked values
     _update_gradient_slider(GTK_WIDGET(data->lower_slider), module);
@@ -994,8 +1037,10 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *module, dt_dev_pixel
     darktable.gui->reset = reset;
 
     // save values to parameters
+    dt_pthread_mutex_lock(&data->lock);
     for(int k = 0; k < 4; k++)
       parameters[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
+    dt_pthread_mutex_unlock(&data->lock);
 
     // de-activate processing of this channel if maximum span is selected
     if(parameters[1] == 0.0f && parameters[2] == 1.0f)
@@ -1118,8 +1163,11 @@ static gboolean _blendop_blendif_enter(GtkWidget *widget, GdkEventCrossing *even
     dt_dev_reprocess_all(module->dev);
   }
 
+  dt_control_key_accelerators_off(darktable.control);
+  gtk_widget_grab_focus(widget);
   return TRUE;
 }
+
 
 // handler for delayed mask/channel display mode switch-off
 static gboolean _blendop_blendif_leave_delayed(gpointer data)
@@ -1157,9 +1205,166 @@ static gboolean _blendop_blendif_leave(GtkWidget *widget, GdkEventCrossing *even
       data->timeout_handle = g_timeout_add(1000, _blendop_blendif_leave_delayed, module);
     dt_pthread_mutex_unlock(&data->lock);
   }
-
+  if(!darktable.control->key_accelerators_on) dt_control_key_accelerators_on(darktable.control);
   return TRUE;
 }
+
+static float log10_scale_callback(GtkWidget *self, float inval, int dir)
+{
+  float outval;
+  const float tiny = 1.0e-4f;
+  switch(dir)
+  {
+    case GRADIENT_SLIDER_SET:
+      outval = (log10(CLAMP_RANGE(inval, 0.0001f, 1.0f)) + 4.0f) / 4.0f;
+      break;
+    case GRADIENT_SLIDER_GET:
+      outval = CLAMP_RANGE(exp(M_LN10 * (4.0f * inval - 4.0f)), 0.0f, 1.0f);
+      if(outval <= tiny) outval = 0.0f;
+      if(outval >= 1.0f - tiny) outval = 1.0f;
+      break;
+    default:
+      outval = inval;
+  }
+  return outval;
+}
+
+
+
+static int _blendop_blendif_disp_alternative_log(GtkWidget *widget, dt_iop_module_t *module, int mode)
+{
+  dt_iop_gui_blend_data_t *data = module->blend_data;
+  GtkDarktableGradientSlider *slider = (GtkDarktableGradientSlider *)widget;
+  const int uplow = (slider == data->lower_slider) ? 0 : 1;
+  const int tab = data->tab;
+
+  GtkLabel *head = (uplow == 0) ? data->lower_head : data->upper_head;
+  const char *inout = (uplow == 0) ? _("input") : _("output");
+
+  char text[32];
+  float values[4];
+  float resetvalues[4];
+  int newmode = (mode == 1) ? 1 : 0;
+
+  for(int k = 0; k < 4; k++) values[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
+  for(int k = 0; k < 4; k++) resetvalues[k] = dtgtk_gradient_slider_multivalue_get_resetvalue(slider, k);
+
+  if(newmode == 1)
+  {
+    dtgtk_gradient_slider_set_scale_callback(slider, log10_scale_callback);
+    snprintf(text, sizeof(text), "%s%s", inout, _(" (log)"));
+    gtk_label_set_text(head, text);
+  }
+  else
+  {
+    dtgtk_gradient_slider_set_scale_callback(slider, NULL);
+    snprintf(text, sizeof(text), "%s%s", inout, "");
+    gtk_label_set_text(head, text);
+  }
+
+  for(int k = 0; k < 4; k++) dtgtk_gradient_slider_multivalue_set_value(slider, values[k], k);
+  for(int k = 0; k < 4; k++) dtgtk_gradient_slider_multivalue_set_resetvalue(slider, resetvalues[k], k);
+  dtgtk_gradient_slider_multivalue_clear_stops(slider);
+  for(int k = 0; k < data->numberstops[tab]; k++)
+    dtgtk_gradient_slider_multivalue_set_stop(slider,
+                                              (data->colorstops[tab])[k].stoppoint,
+                                              (data->colorstops[tab])[k].color);
+
+  return newmode;
+}
+
+
+static float magnifier_scale_callback(GtkWidget *self, float inval, int dir)
+{
+  float outval;
+  const float range = 6.0f;
+  const float invrange = 1.0f/range;
+  const float scale = tanh(range * 0.5f);
+  const float invscale = 1.0f/scale;
+  const float eps = 1.0e-6f;
+  const float tiny = 1.0e-4f;
+  switch(dir)
+  {
+    case GRADIENT_SLIDER_SET:
+      outval = (invscale * tanh(range * (CLAMP_RANGE(inval, 0.0f, 1.0f) - 0.5f)) + 1.0f) * 0.5f;
+      if(outval <= tiny) outval = 0.0f;
+      if(outval >= 1.0f - tiny) outval = 1.0f;
+      break;
+    case GRADIENT_SLIDER_GET:
+      outval = invrange * atanh((2.0f * CLAMP_RANGE(inval, eps, 1.0f - eps) - 1.0f) * scale) + 0.5f;
+      if(outval <= tiny) outval = 0.0f;
+      if(outval >= 1.0f - tiny) outval = 1.0f;
+      break;
+    default:
+      outval = inval;
+  }
+  return outval;
+}
+
+static int _blendop_blendif_disp_alternative_mag(GtkWidget *widget, dt_iop_module_t *module, int mode)
+{
+  dt_iop_gui_blend_data_t *data = module->blend_data;
+  GtkDarktableGradientSlider *slider = (GtkDarktableGradientSlider *)widget;
+  const int uplow = (slider == data->lower_slider) ? 0 : 1;
+  const int tab = data->tab;
+
+  GtkLabel *head = (uplow == 0) ? data->lower_head : data->upper_head;
+  const char *inout = (uplow == 0) ? _("input") : _("output");
+
+  char text[32];
+  float values[4];
+  float resetvalues[4];
+  int newmode = (mode == 1) ? 1 : 0;
+
+  for(int k = 0; k < 4; k++) values[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
+  for(int k = 0; k < 4; k++) resetvalues[k] = dtgtk_gradient_slider_multivalue_get_resetvalue(slider, k);
+
+  if(newmode == 1)
+  {
+    dtgtk_gradient_slider_set_scale_callback(slider, magnifier_scale_callback);
+    snprintf(text, sizeof(text), "%s%s", inout, _(" (zoom)"));
+    gtk_label_set_text(head, text);
+  }
+  else
+  {
+    dtgtk_gradient_slider_set_scale_callback(slider, NULL);
+    snprintf(text, sizeof(text), "%s%s", inout, "");
+    gtk_label_set_text(head, text);
+  }
+
+  for(int k = 0; k < 4; k++) dtgtk_gradient_slider_multivalue_set_value(slider, values[k], k);
+  for(int k = 0; k < 4; k++) dtgtk_gradient_slider_multivalue_set_resetvalue(slider, resetvalues[k], k);
+  dtgtk_gradient_slider_multivalue_clear_stops(slider);
+  for(int k = 0; k < data->numberstops[tab]; k++)
+    dtgtk_gradient_slider_multivalue_set_stop(slider,
+                                              (data->colorstops[tab])[k].stoppoint,
+                                              (data->colorstops[tab])[k].color);
+
+  return newmode;
+}
+
+
+static gboolean _blendop_blendif_key_press(GtkWidget *widget, GdkEventKey *event, dt_iop_module_t *module)
+{
+  if(darktable.gui->reset) return FALSE;
+
+  dt_iop_gui_blend_data_t *data = module->blend_data;
+  gboolean handled = FALSE;
+
+  const int tab = data->tab;
+  GtkDarktableGradientSlider *slider = (GtkDarktableGradientSlider *)widget;
+  const int uplow = (slider == data->lower_slider) ? 0 : 1;
+
+  if(event->keyval == GDK_KEY_a)
+  {
+    if(data->altdisplay[tab])
+      data->altmode[tab][uplow] = (data->altdisplay[tab])(widget, module, data->altmode[tab][uplow] + 1);
+    handled = TRUE;
+  }
+
+  return handled;
+}
+
 
 void dt_iop_gui_update_blendif(dt_iop_module_t *module)
 {
@@ -1227,6 +1432,7 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
       data->upper_slider,
       opolarity ? GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG : GRADIENT_SLIDER_MARKER_UPPER_OPEN_BIG, 3);
 
+  dt_pthread_mutex_lock(&data->lock);
   for(int k = 0; k < 4; k++)
   {
     dtgtk_gradient_slider_multivalue_set_value(data->lower_slider, iparameters[k], k);
@@ -1234,6 +1440,7 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
     dtgtk_gradient_slider_multivalue_set_resetvalue(data->lower_slider, idefaults[k], k);
     dtgtk_gradient_slider_multivalue_set_resetvalue(data->upper_slider, odefaults[k], k);
   }
+  dt_pthread_mutex_unlock(&data->lock);
 
   for(int k = 0; k < 4; k++)
   {
@@ -1257,8 +1464,15 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
   dtgtk_gradient_slider_multivalue_set_increment(data->lower_slider, data->increments[tab]);
   dtgtk_gradient_slider_multivalue_set_increment(data->upper_slider, data->increments[tab]);
 
+
   _update_gradient_slider(GTK_WIDGET(data->upper_slider), module);
   _update_gradient_slider(GTK_WIDGET(data->lower_slider), module);
+
+  if(data->altdisplay[tab])
+  {
+    data->altmode[tab][0] = (data->altdisplay[tab])(GTK_WIDGET(data->lower_slider), module, data->altmode[tab][0]);
+    data->altmode[tab][1] = (data->altdisplay[tab])(GTK_WIDGET(data->upper_slider), module, data->altmode[tab][1]);
+  }
 
   darktable.gui->reset = reset;
 }
@@ -1347,6 +1561,10 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
         bd->numberstops[3] = sizeof(_gradient_chroma) / sizeof(dt_iop_gui_blendif_colorstop_t);
         bd->colorstops[4] = _gradient_hue;
         bd->numberstops[4] = sizeof(_gradient_hue) / sizeof(dt_iop_gui_blendif_colorstop_t);
+        bd->altdisplay[0] = _blendop_blendif_disp_alternative_log;
+        bd->altdisplay[1] = _blendop_blendif_disp_alternative_mag;
+        bd->altdisplay[2] = _blendop_blendif_disp_alternative_mag;
+        bd->altdisplay[3] = _blendop_blendif_disp_alternative_log;
         break;
       case iop_cs_rgb:
         maxchannels = 7;
@@ -1408,6 +1626,12 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
         bd->numberstops[5] = sizeof(_gradient_chroma) / sizeof(dt_iop_gui_blendif_colorstop_t);
         bd->colorstops[6] = _gradient_gray;
         bd->numberstops[6] = sizeof(_gradient_gray) / sizeof(dt_iop_gui_blendif_colorstop_t);
+        bd->altdisplay[0] = _blendop_blendif_disp_alternative_log;
+        bd->altdisplay[1] = _blendop_blendif_disp_alternative_log;
+        bd->altdisplay[2] = _blendop_blendif_disp_alternative_log;
+        bd->altdisplay[3] = _blendop_blendif_disp_alternative_log;
+        bd->altdisplay[5] = _blendop_blendif_disp_alternative_log;
+        bd->altdisplay[6] = _blendop_blendif_disp_alternative_log;
         break;
       default:
         assert(FALSE); // blendif not supported for RAW, which is already caught upstream; we should not get
@@ -1478,9 +1702,9 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     gtk_box_pack_end(GTK_BOX(lowslider), GTK_WIDGET(bd->lower_polarity), FALSE, FALSE, 0);
 
 
-    GtkWidget *output = gtk_label_new(_("output"));
+    bd->upper_head = GTK_LABEL(gtk_label_new(_("output")));
     bd->upper_picker_label = GTK_LABEL(gtk_label_new(""));
-    gtk_box_pack_start(GTK_BOX(uplabel), GTK_WIDGET(output), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(uplabel), GTK_WIDGET(bd->upper_head), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(uplabel), GTK_WIDGET(bd->upper_picker_label), TRUE, TRUE, 0);
     for(int k = 0; k < 4; k++)
     {
@@ -1489,9 +1713,9 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
       gtk_box_pack_start(GTK_BOX(uplabel), GTK_WIDGET(bd->upper_label[k]), FALSE, FALSE, 0);
     }
 
-    GtkWidget *input = gtk_label_new(_("input"));
+    bd->lower_head = GTK_LABEL(gtk_label_new(_("input")));
     bd->lower_picker_label = GTK_LABEL(gtk_label_new(""));
-    gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(input), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_head), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_picker_label), TRUE, TRUE, 0);
     for(int k = 0; k < 4; k++)
     {
@@ -1502,8 +1726,8 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 
     gtk_widget_set_tooltip_text(GTK_WIDGET(bd->lower_slider), _("double click to reset"));
     gtk_widget_set_tooltip_text(GTK_WIDGET(bd->upper_slider), _("double click to reset"));
-    gtk_widget_set_tooltip_text(output, ttoutput);
-    gtk_widget_set_tooltip_text(input, ttinput);
+    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->lower_head), ttinput);
+    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->upper_head), ttoutput);
 
     g_signal_connect(G_OBJECT(bd->channel_tabs), "switch_page", G_CALLBACK(_blendop_blendif_tab_switch), bd);
 
@@ -1520,6 +1744,10 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     g_signal_connect(G_OBJECT(bd->lower_slider), "enter-notify-event", G_CALLBACK(_blendop_blendif_enter), module);
 
     g_signal_connect(G_OBJECT(bd->upper_slider), "enter-notify-event", G_CALLBACK(_blendop_blendif_enter), module);
+
+    g_signal_connect(G_OBJECT(bd->lower_slider), "key-press-event", G_CALLBACK(_blendop_blendif_key_press), module);
+
+    g_signal_connect(G_OBJECT(bd->upper_slider), "key-press-event", G_CALLBACK(_blendop_blendif_key_press), module);
 
     g_signal_connect(G_OBJECT(bd->colorpicker), "button-press-event", G_CALLBACK(_blendop_blendif_color_picker_callback_button_press), module);
 
@@ -1960,6 +2188,8 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   dt_bauhaus_slider_set(bd->brightness_slider, module->blend_params->brightness);
   dt_bauhaus_slider_set(bd->contrast_slider, module->blend_params->contrast);
 
+  /* reset all alternative display modes for blendif */
+  memset(bd->altmode, 0, sizeof(bd->altmode));
   dt_iop_gui_update_blendif(module);
   dt_iop_gui_update_masks(module);
   dt_iop_gui_update_raster(module);
