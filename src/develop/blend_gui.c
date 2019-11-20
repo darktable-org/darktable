@@ -1688,8 +1688,8 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
       gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_label[k]), FALSE, FALSE, 0);
     }
 
-    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->lower_slider), _("double click to reset"));
-    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->upper_slider), _("double click to reset"));
+    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->lower_slider), _("double click to reset. press 'a' to toggle available view modes"));
+    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->upper_slider), _("double click to reset. press 'a' to toggle available view modes"));
     gtk_widget_set_tooltip_text(GTK_WIDGET(bd->lower_head), ttinput);
     gtk_widget_set_tooltip_text(GTK_WIDGET(bd->upper_head), ttoutput);
 
