@@ -1297,6 +1297,11 @@ static int _blendop_blendif_disp_alternative_log(GtkWidget *widget, dt_iop_modul
   return _blendop_blendif_disp_alternative_worker(widget, module, mode, log10_scale_callback, _(" (log)"));
 }
 
+static void _blendof_blendif_disp_alternative_reset(GtkWidget *widget, dt_iop_module_t *module)
+{
+  (void) _blendop_blendif_disp_alternative_worker(widget, module, 0, NULL, "");
+}
+
 
 static gboolean _blendop_blendif_key_press(GtkWidget *widget, GdkEventKey *event, dt_iop_module_t *module)
 {
@@ -1426,6 +1431,11 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
   {
     data->altmode[tab][0] = (data->altdisplay[tab])(GTK_WIDGET(data->lower_slider), module, data->altmode[tab][0]);
     data->altmode[tab][1] = (data->altdisplay[tab])(GTK_WIDGET(data->upper_slider), module, data->altmode[tab][1]);
+  }
+  else
+  {
+    _blendof_blendif_disp_alternative_reset(GTK_WIDGET(data->lower_slider), module);
+    _blendof_blendif_disp_alternative_reset(GTK_WIDGET(data->upper_slider), module);
   }
 
   darktable.gui->reset = reset;
