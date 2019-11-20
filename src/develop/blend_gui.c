@@ -64,9 +64,11 @@ typedef enum dt_gui_blendif_pickcolor_type_t
 
 
 static const dt_iop_gui_blendif_colorstop_t _gradient_L[]
-    = { { 0.0f, { 0, 0, 0, 1.0 } },
-        { 0.5f, { NEUTRAL_GRAY / 2, NEUTRAL_GRAY / 2, NEUTRAL_GRAY / 2, 1.0 } },
-        { 1.0f, { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } } };
+    = { { 0.0f,   { 0, 0, 0, 1.0 } },
+        { 0.125f, { NEUTRAL_GRAY / 8, NEUTRAL_GRAY / 8, NEUTRAL_GRAY / 8, 1.0 } },
+        { 0.25f,  { NEUTRAL_GRAY / 4, NEUTRAL_GRAY / 4, NEUTRAL_GRAY / 4, 1.0 } },
+        { 0.5f,   { NEUTRAL_GRAY / 2, NEUTRAL_GRAY / 2, NEUTRAL_GRAY / 2, 1.0 } },
+        { 1.0f,   { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } } };
 
 
 static const dt_iop_gui_blendif_colorstop_t _gradient_a[]
@@ -88,26 +90,36 @@ static const dt_iop_gui_blendif_colorstop_t _gradient_b[]
         { 1.0f,   { 0.81 * NEUTRAL_GRAY * 2, 0.66 * NEUTRAL_GRAY * 2, 0, 1.0 } } };
 
 static const dt_iop_gui_blendif_colorstop_t _gradient_gray[]
-    = { { 0.0f, { 0, 0, 0, 1.0 } },
-        { 0.5f, { NEUTRAL_GRAY / 2, NEUTRAL_GRAY / 2, NEUTRAL_GRAY / 2, 1.0 } },
-        { 1.0f, { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } } };
+    = { { 0.0f,   { 0, 0, 0, 1.0 } },
+        { 0.125f, { NEUTRAL_GRAY / 8, NEUTRAL_GRAY / 8, NEUTRAL_GRAY / 8, 1.0 } },
+        { 0.25f,  { NEUTRAL_GRAY / 4, NEUTRAL_GRAY / 4, NEUTRAL_GRAY / 4, 1.0 } },
+        { 0.5f,   { NEUTRAL_GRAY / 2, NEUTRAL_GRAY / 2, NEUTRAL_GRAY / 2, 1.0 } },
+        { 1.0f,   { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } } };
 
-static const dt_iop_gui_blendif_colorstop_t _gradient_red[] = { { 0.0f, { 0, 0, 0, 1.0 } },
-                                                                { 0.5f, { NEUTRAL_GRAY / 2, 0, 0, 1.0 } },
-                                                                { 1.0f, { NEUTRAL_GRAY, 0, 0, 1.0 } } };
+static const dt_iop_gui_blendif_colorstop_t _gradient_red[] = { { 0.0f,   { 0, 0, 0, 1.0 } },
+                                                                { 0.125f, { NEUTRAL_GRAY / 8, 0, 0, 1.0 } },
+                                                                { 0.25f,  { NEUTRAL_GRAY / 4, 0, 0, 1.0 } },
+                                                                { 0.5f,   { NEUTRAL_GRAY / 2, 0, 0, 1.0 } },
+                                                                { 1.0f,   { NEUTRAL_GRAY, 0, 0, 1.0 } } };
 
-static const dt_iop_gui_blendif_colorstop_t _gradient_green[] = { { 0.0f, { 0, 0, 0, 1.0 } },
-                                                                  { 0.5f, { 0, NEUTRAL_GRAY / 2, 0, 1.0 } },
-                                                                  { 1.0f, { 0, NEUTRAL_GRAY, 0, 1.0 } } };
+static const dt_iop_gui_blendif_colorstop_t _gradient_green[] = { { 0.0f,   { 0, 0, 0, 1.0 } },
+                                                                  { 0.125f, { 0, NEUTRAL_GRAY / 8, 0, 1.0 } },
+                                                                  { 0.25f,  { 0, NEUTRAL_GRAY / 8, 0, 1.0 } },
+                                                                  { 0.5f,   { 0, NEUTRAL_GRAY / 2, 0, 1.0 } },
+                                                                  { 1.0f,   { 0, NEUTRAL_GRAY, 0, 1.0 } } };
 
-static const dt_iop_gui_blendif_colorstop_t _gradient_blue[] = { { 0.0f, { 0, 0, 0, 1.0 } },
-                                                                 { 0.5f, { 0, 0, NEUTRAL_GRAY / 2, 1.0 } },
-                                                                 { 1.0f, { 0, 0, NEUTRAL_GRAY, 1.0 } } };
+static const dt_iop_gui_blendif_colorstop_t _gradient_blue[] = { { 0.0f,   { 0, 0, 0, 1.0 } },
+                                                                 { 0.125f, { 0, 0, NEUTRAL_GRAY / 8, 1.0 } },
+                                                                 { 0.25f,  { 0, 0, NEUTRAL_GRAY / 4, 1.0 } },
+                                                                 { 0.5f,   { 0, 0, NEUTRAL_GRAY / 2, 1.0 } },
+                                                                 { 1.0f,   { 0, 0, NEUTRAL_GRAY, 1.0 } } };
 
 static const dt_iop_gui_blendif_colorstop_t _gradient_chroma[]
-    = { { 0.0f, { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } },
-        { 0.5f, { NEUTRAL_GRAY, NEUTRAL_GRAY / 2, NEUTRAL_GRAY, 1.0 } },
-        { 1.0f, { NEUTRAL_GRAY, 0, NEUTRAL_GRAY, 1.0 } } };
+    = { { 0.0f,   { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } },
+        { 0.125f, { NEUTRAL_GRAY, NEUTRAL_GRAY * 0.875, NEUTRAL_GRAY, 1.0 } },
+        { 0.25f,  { NEUTRAL_GRAY, NEUTRAL_GRAY * 0.75, NEUTRAL_GRAY, 1.0 } },
+        { 0.5f,   { NEUTRAL_GRAY, NEUTRAL_GRAY * 0.5, NEUTRAL_GRAY, 1.0 } },
+        { 1.0f,   { NEUTRAL_GRAY, 0, NEUTRAL_GRAY, 1.0 } } };
 
 static const dt_iop_gui_blendif_colorstop_t _gradient_hue[] = {
   { 0.0f, { 1.00f * 1.5f * NEUTRAL_GRAY, 0.68f * 1.5f * NEUTRAL_GRAY, 0.78f * 1.5f * NEUTRAL_GRAY, 1.0 } },
