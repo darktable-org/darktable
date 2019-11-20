@@ -915,7 +915,33 @@ void dtgtk_gradient_slider_set_increment(GtkDarktableGradientSlider *gslider, gd
 
 void dtgtk_gradient_slider_set_scale_callback(GtkDarktableGradientSlider *gslider, float (*callback)(GtkWidget *self, float value, int dir))
 {
-  gslider->scale_callback = (callback == NULL ? _default_linear_scale_callback : callback);
+  float (*old_callback)(GtkWidget*, float, int) = gslider->scale_callback;
+  float (*new_callback)(GtkWidget*, float, int) = (callback == NULL ? _default_linear_scale_callback : callback);
+  GtkWidget *self = (GtkWidget *)gslider;
+  GList *current = NULL;
+
+  for(int k = 0; k < gslider->positions; k++)
+  {
+    gslider->position[k] = new_callback(self, old_callback(self, gslider->position[k], GRADIENT_SLIDER_GET), GRADIENT_SLIDER_SET);
+    gslider->resetvalue[k] = new_callback(self, old_callback(self, gslider->resetvalue[k], GRADIENT_SLIDER_GET), GRADIENT_SLIDER_SET);
+  }
+
+  for(int k = 0; k < 3; k++)
+  {
+    gslider->picker[k] = new_callback(self, old_callback(self, gslider->picker[k], GRADIENT_SLIDER_GET), GRADIENT_SLIDER_SET);
+  }
+
+  if((current = g_list_first(gslider->colors)) != NULL)
+  {
+    do
+    {
+      _gradient_slider_stop_t *stop = (_gradient_slider_stop_t *)current->data;
+      stop->position = new_callback(self, old_callback(self, stop->position, GRADIENT_SLIDER_GET), GRADIENT_SLIDER_SET);
+    } while((current = g_list_next(current)) != NULL);
+  }
+
+  gslider->scale_callback = new_callback;
+  gtk_widget_queue_draw(GTK_WIDGET(gslider));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
