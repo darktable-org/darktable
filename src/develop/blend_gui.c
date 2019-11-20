@@ -1230,50 +1230,6 @@ static float log10_scale_callback(GtkWidget *self, float inval, int dir)
 }
 
 
-
-static int _blendop_blendif_disp_alternative_log(GtkWidget *widget, dt_iop_module_t *module, int mode)
-{
-  dt_iop_gui_blend_data_t *data = module->blend_data;
-  GtkDarktableGradientSlider *slider = (GtkDarktableGradientSlider *)widget;
-  const int uplow = (slider == data->lower_slider) ? 0 : 1;
-  const int tab = data->tab;
-
-  GtkLabel *head = (uplow == 0) ? data->lower_head : data->upper_head;
-  const char *inout = (uplow == 0) ? _("input") : _("output");
-
-  char text[32];
-  float values[4];
-  float resetvalues[4];
-  int newmode = (mode == 1) ? 1 : 0;
-
-  for(int k = 0; k < 4; k++) values[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
-  for(int k = 0; k < 4; k++) resetvalues[k] = dtgtk_gradient_slider_multivalue_get_resetvalue(slider, k);
-
-  if(newmode == 1)
-  {
-    dtgtk_gradient_slider_set_scale_callback(slider, log10_scale_callback);
-    snprintf(text, sizeof(text), "%s%s", inout, _(" (log)"));
-    gtk_label_set_text(head, text);
-  }
-  else
-  {
-    dtgtk_gradient_slider_set_scale_callback(slider, NULL);
-    snprintf(text, sizeof(text), "%s%s", inout, "");
-    gtk_label_set_text(head, text);
-  }
-
-  for(int k = 0; k < 4; k++) dtgtk_gradient_slider_multivalue_set_value(slider, values[k], k);
-  for(int k = 0; k < 4; k++) dtgtk_gradient_slider_multivalue_set_resetvalue(slider, resetvalues[k], k);
-  dtgtk_gradient_slider_multivalue_clear_stops(slider);
-  for(int k = 0; k < data->numberstops[tab]; k++)
-    dtgtk_gradient_slider_multivalue_set_stop(slider,
-                                              (data->colorstops[tab])[k].stoppoint,
-                                              (data->colorstops[tab])[k].color);
-
-  return newmode;
-}
-
-
 static float magnifier_scale_callback(GtkWidget *self, float inval, int dir)
 {
   float outval;
@@ -1301,28 +1257,23 @@ static float magnifier_scale_callback(GtkWidget *self, float inval, int dir)
   return outval;
 }
 
-static int _blendop_blendif_disp_alternative_mag(GtkWidget *widget, dt_iop_module_t *module, int mode)
+static int _blendop_blendif_disp_alternative_worker(GtkWidget *widget, dt_iop_module_t *module, int mode,
+                                                    float (*scale_callback)(GtkWidget*, float, int), const char *label)
 {
   dt_iop_gui_blend_data_t *data = module->blend_data;
   GtkDarktableGradientSlider *slider = (GtkDarktableGradientSlider *)widget;
   const int uplow = (slider == data->lower_slider) ? 0 : 1;
-  const int tab = data->tab;
 
   GtkLabel *head = (uplow == 0) ? data->lower_head : data->upper_head;
   const char *inout = (uplow == 0) ? _("input") : _("output");
 
   char text[32];
-  float values[4];
-  float resetvalues[4];
   int newmode = (mode == 1) ? 1 : 0;
-
-  for(int k = 0; k < 4; k++) values[k] = dtgtk_gradient_slider_multivalue_get_value(slider, k);
-  for(int k = 0; k < 4; k++) resetvalues[k] = dtgtk_gradient_slider_multivalue_get_resetvalue(slider, k);
 
   if(newmode == 1)
   {
-    dtgtk_gradient_slider_set_scale_callback(slider, magnifier_scale_callback);
-    snprintf(text, sizeof(text), "%s%s", inout, _(" (zoom)"));
+    dtgtk_gradient_slider_set_scale_callback(slider, scale_callback);
+    snprintf(text, sizeof(text), "%s%s", inout, label);
     gtk_label_set_text(head, text);
   }
   else
@@ -1332,15 +1283,18 @@ static int _blendop_blendif_disp_alternative_mag(GtkWidget *widget, dt_iop_modul
     gtk_label_set_text(head, text);
   }
 
-  for(int k = 0; k < 4; k++) dtgtk_gradient_slider_multivalue_set_value(slider, values[k], k);
-  for(int k = 0; k < 4; k++) dtgtk_gradient_slider_multivalue_set_resetvalue(slider, resetvalues[k], k);
-  dtgtk_gradient_slider_multivalue_clear_stops(slider);
-  for(int k = 0; k < data->numberstops[tab]; k++)
-    dtgtk_gradient_slider_multivalue_set_stop(slider,
-                                              (data->colorstops[tab])[k].stoppoint,
-                                              (data->colorstops[tab])[k].color);
-
   return newmode;
+}
+
+
+static int _blendop_blendif_disp_alternative_mag(GtkWidget *widget, dt_iop_module_t *module, int mode)
+{
+  return _blendop_blendif_disp_alternative_worker(widget, module, mode, magnifier_scale_callback, _(" (zoom)"));
+}
+
+static int _blendop_blendif_disp_alternative_log(GtkWidget *widget, dt_iop_module_t *module, int mode)
+{
+  return _blendop_blendif_disp_alternative_worker(widget, module, mode, log10_scale_callback, _(" (log)"));
 }
 
 
