@@ -1007,6 +1007,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   }
   else if(version == 17)
   {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
     ////////////////////////////// masks history
     TRY_EXEC("CREATE TABLE main.masks_history (imgid INTEGER, num INTEGER, formid INTEGER, form INTEGER, name VARCHAR(256), "
              "version INTEGER, points BLOB, points_count INTEGER, source BLOB)",
@@ -1121,6 +1123,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   //   }
   else if(version == 18)
   {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
     TRY_EXEC("UPDATE images SET orientation=-2 WHERE orientation=1;",
              "[init] can't update images orientation 1 from database\n");
 
@@ -1250,6 +1254,8 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
   }
   else if(version == 2)
   {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
     //    With sqlite above or equal to 3.25.0 RENAME COLUMN can be used instead of the following code
     //    TRY_EXEC("ALTER TABLE data.tags RENAME COLUMN description TO synonyms;",
     //             "[init] can't change tags column name from description to synonyms\n");
