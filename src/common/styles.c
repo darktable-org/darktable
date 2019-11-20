@@ -726,7 +726,7 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
       style_item.iop_order = dt_ioppr_get_iop_order(current_iop_list, style_item.operation)
         + (double)old_iop_order / 100.0f;
 
-      if (DT_IOP_ORDER_INFO)
+      if(DT_IOP_ORDER_INFO)
       {
         fprintf(stderr,"\n  module %20s, order %9.5f->%9.5f, v(%i), multiprio %i",
                 style_item.operation, old_iop_order, style_item.iop_order, style_item.module_version, style_item.multi_priority);
