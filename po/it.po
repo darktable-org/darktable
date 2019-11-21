@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
-"PO-Revision-Date: 2019-11-11 17:54+0100\n"
+"PO-Revision-Date: 2019-11-21 23:56+0100\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2.4\n"
+"X-Generator: Poedit 2.2.1\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
@@ -217,21 +217,26 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2382
 msgid "enable extended thumb overlay"
-msgstr ""
+msgstr "Abilita visione estesa dati aggiuntivi"
 
 #: ../build/src/preferences_gen.h:2394
 msgid "if set to true, thumb overlay shows filename and some exif data."
 msgstr ""
+"Se abilitata, i dati aggiuntivi mostreranno il nome del file e alcuni dati "
+"Exif"
 
 #: ../build/src/preferences_gen.h:2402
 msgid "use single-click in the collect panel"
-msgstr ""
+msgstr "Utilizza il click singolo nel pannello della collezione"
 
 #: ../build/src/preferences_gen.h:2414
 msgid ""
 "check this option to use single-click to select items in the collect panel. "
 "this will allow you to do range selections for date-time and numeric values."
 msgstr ""
+"Abilita questa opzione per utilizzare il click singolo per selezionare le "
+"immagini nel pannello della collezione. Questo vi permetterà di effettuare "
+"selezioni in base a valori data/ora e valori numerici."
 
 #: ../build/src/preferences_gen.h:2422
 msgid "expand a single lighttable module at a time"
@@ -669,6 +674,9 @@ msgid ""
 "when enabled, use mouse wheel to scroll modules side panel.  use ctrl+alt to "
 "use mouse wheel for data entry.  when disabled, this behavior is reversed"
 msgstr ""
+"Se abilitato permette di utilizzare la rotella del mouse per scorrere i "
+"moduli nel pannello laterale. Usa Crtl+Alt per utilizzare la rotella del "
+"mouse per immettere i dati. Se disabilitato, si comporta al contrario."
 
 #: ../build/src/preferences_gen.h:3286
 msgid "show scrollbars for center view"
@@ -702,6 +710,9 @@ msgid ""
 "defines whether the panel scrollbars should be always visible or activated "
 "only depending on the content.  (need a restart)"
 msgstr ""
+"Definisce se le barre di scorrimento dei pannelli devono essere sempre "
+"visibili o se devono essere attivate solo in base al contenuto (necessario "
+"il riavvio)"
 
 #: ../build/src/preferences_gen.h:3353
 msgid "method to use for getting the display profile"
@@ -869,6 +880,10 @@ msgid ""
 "the default is to not add any sharpening automatically as most recent "
 "cameras have no low-pass filter. (need a restart)"
 msgstr ""
+"L'aggiunta di nitidezza non è consigliata con fotocamere senza il filtro "
+"passa-basso. In modo predefinito non viene aggiunta nessuna nitidezza "
+"automaticamente dal momento che la maggior parte delle fotocamere recenti "
+"non sono dotate di filtro passa-basso (richiede il riavvio)."
 
 #: ../build/src/preferences_gen.h:3652
 msgid "xmp"
@@ -1105,6 +1120,9 @@ msgid ""
 "for others the entry completion can be embarrassing. need to restart "
 "darktable."
 msgstr ""
+"Il completamento automatico è utile per chi immette le etichette utilizzando "
+"solo la tastiera. Diversamente il completamente automatico potrebbe "
+"risultare fastidioso. Richiede il riavvio."
 
 #: ../build/src/preferences_gen.h:4040
 msgid "password storage backend to use"
@@ -1166,6 +1184,8 @@ msgid ""
 "this folder (and sub-folders) contains Lut files used by lut3d modules. need "
 "to restart darktable."
 msgstr ""
+"Questa cartella (e le relative sotto-cartelle) contengono i files Lut "
+"utilizzati dai moduli lut3d. Richiede il riavvio."
 
 #: ../build/src/preferences_gen.h:4164
 msgid "session options"
@@ -1241,12 +1261,12 @@ msgstr "Stampa le tue immagini"
 #: ../src/bauhaus/bauhaus.c:2260
 #, c-format
 msgid "%s/%s: %s"
-msgstr ""
+msgstr "%s/%s: %s"
 
 #: ../src/bauhaus/bauhaus.c:2262
 #, c-format
 msgid "%s: %s"
-msgstr ""
+msgstr "%s: %s"
 
 #: ../src/chart/main.c:463 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/hist_dialog.c:171
@@ -1578,6 +1598,12 @@ msgid ""
 "in case you have manually modified them to custom values.\n"
 "would you like to execute this update of the performance configuration?\n"
 msgstr ""
+"Abbiamo sviluppato una nuova logica di configurazione delle prestazioni che "
+"- se eseguita - potrebbe migliorare le prestazioni di darktable.\n"
+"Questo potrebbe potenzialmente sovrascrivere alcune delle vostre "
+"impostazioni - in special modo se avete modificato manualmente alcuni "
+"parametri.\n"
+"Volete eseguire in ogni caso l'aggiornamento della configurazione?\n"
 
 #: ../src/common/darktable.c:806 ../src/common/variables.c:380
 #: ../src/imageio/format/pdf.c:669 ../src/imageio/format/pdf.c:694
@@ -1649,10 +1675,15 @@ msgid ""
 "\n"
 "do you want to proceed or quit now to do a backup\n"
 msgstr ""
+"Lo schema del database deve essere aggiornato per\n"
+"\n"
+"<span style=\"italic\">%s</span>\n"
+"\n"
+"volete procedere o preferite interrompere per fare un backup?\n"
 
 #: ../src/common/database.c:1782
 msgid "darktable - schema migration"
-msgstr ""
+msgstr "darktable - migrazione schema"
 
 #: ../src/common/database.c:1783
 msgid "upgrade database"
@@ -1690,6 +1721,8 @@ msgstr "Elimina database"
 #: ../src/common/fast_guided_filter.h:456
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
 msgstr ""
+"Il filtro guidato non è riuscito ad allocare la memoria. Verificate le "
+"impostazioni della vostra RAM"
 
 #: ../src/common/film.c:311
 msgid "do you want to remove this empty directory?"
@@ -2564,6 +2597,9 @@ msgid ""
 "click+drag to use the input image\n"
 "ctrl+click + drag to use the output image"
 msgstr ""
+"Impostate il valore sulla base di un'area dell'immagine\n"
+"Click+trascina per utilizzare l'immagine in ingresso\n"
+"Ctrl+Click+trascina per utilizzare l'immagine in uscita"
 
 #: ../src/develop/blend_gui.c:1520
 msgid "reset blend mask settings"
@@ -2916,6 +2952,7 @@ msgstr "Immagine in ingresso"
 #: ../src/develop/blend_gui.c:2531
 msgid "choose to guide mask by input or output image"
 msgstr ""
+"Scegli di guidare la maschera in base all'immagine in ingresso o uscita"
 
 #: ../src/develop/blend_gui.c:2537
 msgid "feathering radius"
@@ -2942,6 +2979,9 @@ msgid ""
 "shifts and tilts the tone curve of the blend mask to adjust its brightness "
 "without affecting fully transparent/fully opaque regions"
 msgstr ""
+"Sposta ed inclina la curva di tono della maschera di fusione per modificare "
+"la luminosità senza interferire con le zone completamente trasparenti od "
+"opache"
 
 #: ../src/develop/blend_gui.c:2563
 msgid "mask contrast"
@@ -2951,6 +2991,8 @@ msgstr "Contrasto maschera"
 msgid ""
 "gives the tone curve of the blend mask an s-like shape to adjust its contrast"
 msgstr ""
+"Dà una forma ad S alle curva di tono della maschera di fusione per regolare "
+"il suo contrasto"
 
 #: ../src/develop/blend_gui.c:2572
 msgid ""
@@ -2970,7 +3012,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2610
 msgid "mask refinement"
-msgstr ""
+msgstr "Aggiustamento fine maschera"
 
 #: ../src/develop/develop.c:1671
 #, c-format
@@ -3121,107 +3163,107 @@ msgstr[1] "%s sono stati importati con successo"
 
 #: ../src/develop/masks/masks.c:157
 msgid "[SHAPE] remove shape"
-msgstr ""
+msgstr "[SHAPE] Rimuovi forma"
 
 #: ../src/develop/masks/masks.c:164
 msgid "[PATH creation] add a smooth node"
-msgstr ""
+msgstr "[PATH creation] Aggiungi un nodo arrotondato"
 
 #: ../src/develop/masks/masks.c:170
 msgid "[PATH creation] add a sharp node"
-msgstr "[Creazione TRACCIATO] Aggiungi un nodo acuto"
+msgstr "[PATH creation] Aggiungi un nodo acuto"
 
 #: ../src/develop/masks/masks.c:175
 msgid "[PATH creation] terminate path creation"
-msgstr ""
+msgstr "[PATH creation] Termina la creazione del tracciato"
 
 #: ../src/develop/masks/masks.c:181
 msgid "[PATH on node] switch between smooth/sharp node"
-msgstr "[nodi TRACCIATO] Commuta tra nodo arrotondato/acuto"
+msgstr "[PATH on node] Commuta tra nodo arrotondato/acuto"
 
 #: ../src/develop/masks/masks.c:186
 msgid "[PATH on node] remove the node"
-msgstr ""
+msgstr "[PATH on node] Rimuovi il nodo"
 
 #: ../src/develop/masks/masks.c:191
 msgid "[PATH on feather] reset curvature"
-msgstr ""
+msgstr "[PATH on feather] Azzera la curvatura"
 
 #: ../src/develop/masks/masks.c:197
 msgid "[PATH on segment] add node"
-msgstr ""
+msgstr "[PATH on segment] Aggiungi nodo"
 
 #: ../src/develop/masks/masks.c:202
 msgid "[PATH] change size"
-msgstr "[TRACCIATO] Cambia la dimensione"
+msgstr "[PATH] Cambia la dimensione"
 
 #: ../src/develop/masks/masks.c:208
 msgid "[PATH] change opacity"
-msgstr "[TRACCIATO] Cambia l'opacità"
+msgstr "[PATH] Cambia l'opacità"
 
 #: ../src/develop/masks/masks.c:214
 msgid "[PATH] change feather size"
-msgstr ""
+msgstr "[PATH] Cambia la dimensione della sfumatura"
 
 #: ../src/develop/masks/masks.c:221
 msgid "[GRADIENT on pivot] rotate shape"
-msgstr ""
+msgstr "[GRADIENT on pivot] Ruota forma"
 
 #: ../src/develop/masks/masks.c:226
 msgid "[GRADIENT creation] set rotation"
-msgstr "[Creazione GRADIENTE] Imposta rotazione"
+msgstr "[GRADIENT creation] Imposta rotazione"
 
 #: ../src/develop/masks/masks.c:231
 msgid "[GRADIENT] change compression"
-msgstr ""
+msgstr "[GRADIENT] Cambia compressione"
 
 #: ../src/develop/masks/masks.c:237
 msgid "[GRADIENT] change opacity"
-msgstr "[GRADIENTE] Cambia l'opacità"
+msgstr "[GRADIENT] Cambia l'opacità"
 
 #: ../src/develop/masks/masks.c:244
 msgid "[ELLIPSE] change size"
-msgstr "[ELLISSE] Cambia la dimensione"
+msgstr "[ELLIPSE] Cambia la dimensione"
 
 #: ../src/develop/masks/masks.c:250
 msgid "[ELLIPSE] change opacity"
-msgstr "[ELLISSE] Cambia l'opacità"
+msgstr "[ELLIPSE] Cambia l'opacità"
 
 #: ../src/develop/masks/masks.c:256
 msgid "[ELLIPSE] switch feathering mode"
-msgstr ""
+msgstr "[ELLIPSE] Modifica modalità di sfumatura"
 
 #: ../src/develop/masks/masks.c:262
 msgid "[ELLIPSE] rotate shape"
-msgstr "[ELLISSE] Ruota la forma"
+msgstr "[ELLIPSE] Ruota la forma"
 
 #: ../src/develop/masks/masks.c:269
 msgid "[BRUSH creation] change size"
-msgstr "[Creazione PENNELLO] Cambia la dimensione"
+msgstr "[BRUSH creation] Cambia la dimensione"
 
 #: ../src/develop/masks/masks.c:275
 msgid "[BRUSH creation] change hardness"
-msgstr ""
+msgstr "[BRUSH creation] Cambia durezza"
 
 #: ../src/develop/masks/masks.c:281
 msgid "[BRUSH] change opacity"
-msgstr "[PENNELLO] Cambia l'opacità"
+msgstr "[BRUSH] Cambia l'opacità"
 
 #: ../src/develop/masks/masks.c:286
 msgid "[BRUSH] change hardness"
-msgstr "[PENNELLO] Cambia la durezza"
+msgstr "[BRUSH] Cambia la durezza"
 
 #: ../src/develop/masks/masks.c:293
 msgid "[CIRCLE] change size"
-msgstr "[CERCHIO] Cambia dimensione"
+msgstr "[CIRCLE] Cambia dimensione"
 
 #: ../src/develop/masks/masks.c:299
 msgid "[CIRCLE] change opacity"
-msgstr "[CERCHIO] Cambia l'opacità"
+msgstr "[CIRCLE] Cambia l'opacità"
 
 #: ../src/develop/masks/masks.c:305
 msgid "[CIRCLE] change feather size"
-msgstr ""
+msgstr "[CIRCLE] Cambia dimensione sfumatura"
 
 #: ../src/develop/masks/masks.c:331
 msgid "ctrl+click to add a sharp node"
@@ -3776,7 +3818,7 @@ msgstr "Nascondi bordi laterali"
 #: ../src/gui/gtk.c:1257
 msgctxt "accel"
 msgid "toggle panels collapsing controls"
-msgstr ""
+msgstr "Nascondi controlli compressione pannelli"
 
 #: ../src/gui/gtk.c:1261
 msgctxt "accel"
@@ -3796,7 +3838,7 @@ msgstr "Nascondi pannello superiore"
 #: ../src/gui/gtk.c:1273
 msgctxt "accel"
 msgid "toggle bottom panel"
-msgstr ""
+msgstr "Nascondi pannello inferiore"
 
 #. toggle view of header
 #: ../src/gui/gtk.c:1278
@@ -3825,7 +3867,7 @@ msgstr "Zoom indietro"
 #: ../src/gui/gtk.c:1291
 msgctxt "accel"
 msgid "show accels window"
-msgstr ""
+msgstr "Visualizza finestra scorciatoie"
 
 #: ../src/gui/gtkentry.c:186
 msgid "$(ROLL_NAME) - roll of the input image"
@@ -3853,11 +3895,11 @@ msgstr "$(SEQUENCE) - Numero sequenza"
 
 #: ../src/gui/gtkentry.c:192
 msgid "$(MAX_WIDTH) - maximum image export width"
-msgstr ""
+msgstr "$(MAX_WIDTH) - Larghezza max immagine esportata"
 
 #: ../src/gui/gtkentry.c:193
 msgid "$(MAX_HEIGHT) - maximum image export height"
-msgstr ""
+msgstr "$(MAX_HEIGHT) - Altezza max immagine esportata"
 
 #: ../src/gui/gtkentry.c:194
 msgid "$(YEAR) - year"
@@ -3961,15 +4003,17 @@ msgstr "$(RIGHTS) - Diritti dai metadata"
 
 #: ../src/gui/gtkentry.c:219
 msgid "$(OPENCL_ACTIVATED) - whether OpenCL is activated"
-msgstr ""
+msgstr "$(OPENCL_ACTIVATED) - Se OpenCL è attivato"
 
 #: ../src/gui/gtkentry.c:220
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
 msgstr ""
+"$(CATEGORY0(category)) - Sotto-etichetta del livello 0 nelle etichette "
+"gerarchiche"
 
 #: ../src/gui/gtkentry.c:221
 msgid "$(TAGS) - tags as set in metadata settings"
-msgstr ""
+msgstr "$(TAGS) - Etichette come impostato nelle impostazioni metadati"
 
 #: ../src/gui/guides.c:108
 msgid "horizontal lines"
@@ -4225,9 +4269,8 @@ msgstr ""
 "Vuoi sostituirla?"
 
 #: ../src/gui/preferences.c:1026
-#, fuzzy
 msgid "accel conflict"
-msgstr "Sul conflitto"
+msgstr "Scorciatoia conflitto"
 
 #: ../src/gui/preferences.c:1115 ../src/gui/presets.c:182 ../src/libs/lib.c:340
 #, c-format
@@ -4610,7 +4653,6 @@ msgid "paper size"
 msgstr "Formato carta"
 
 #: ../src/imageio/format/pdf.c:611
-#, fuzzy
 msgid ""
 "paper size of the pdf\n"
 "either one from the list or \"<width> [unit] x <height> <unit>\n"
@@ -5571,22 +5613,22 @@ msgstr "Attiva la visione delle linee di struttura"
 #: ../src/iop/ashift.c:5049
 #, c-format
 msgid "[%s on segment] select segment"
-msgstr ""
+msgstr "[%s on segment] Seleziona segmento"
 
 #: ../src/iop/ashift.c:5054
 #, c-format
 msgid "[%s on segment] unselect segment"
-msgstr ""
+msgstr "[%s on segment] Deselezione segmento"
 
 #: ../src/iop/ashift.c:5060
 #, c-format
 msgid "[%s] select all segments from zone"
-msgstr ""
+msgstr "[%s] Seleziona tutti i segmenti all'interno dell'area"
 
 #: ../src/iop/ashift.c:5066
 #, c-format
 msgid "[%s] unselect all segments from zone"
-msgstr ""
+msgstr "[%s] Deseleziona tutti i segmenti all'interno dell'area"
 
 #: ../src/iop/atrous.c:117
 msgid "contrast equalizer"
@@ -5874,7 +5916,7 @@ msgstr "Luminanza"
 #: ../src/iop/filmicrgb.c:1557 ../src/iop/rgbcurve.c:1622
 #: ../src/iop/rgblevels.c:1119 ../src/iop/tonecurve.c:1395
 msgid "max RGB"
-msgstr ""
+msgstr "max RGB"
 
 #: ../src/iop/basecurve.c:2143 ../src/iop/basicadj.c:710
 #: ../src/iop/rgbcurve.c:1623 ../src/iop/rgblevels.c:1120
@@ -5886,7 +5928,7 @@ msgstr "RGB medio"
 #: ../src/iop/rgbcurve.c:1624 ../src/iop/rgblevels.c:1121
 #: ../src/iop/tonecurve.c:1397
 msgid "sum RGB"
-msgstr ""
+msgstr "somma RGB"
 
 #: ../src/iop/basecurve.c:2145 ../src/iop/basicadj.c:712
 #: ../src/iop/rgbcurve.c:1625 ../src/iop/rgblevels.c:1122
@@ -5904,7 +5946,7 @@ msgstr "Potenza base"
 #: ../src/iop/rgbcurve.c:1628 ../src/iop/rgblevels.c:1125
 #: ../src/iop/tonecurve.c:1401
 msgid "method to preserve colors when applying contrast"
-msgstr ""
+msgstr "Metodo per preservare i colori quando si applica il contrasto"
 
 #: ../src/iop/basecurve.c:2152
 msgid "fusion"
@@ -5961,6 +6003,11 @@ msgid ""
 "if poorly set, it will clip near-black colors out of gamut\n"
 "by pushing RGB values into negatives"
 msgstr ""
+"Regola il livello di nero per recuperare i valori RGB negativi.\n"
+"Non dovresti mai utilizzarlo per aggiungere densità al nero!\n"
+"Se regolato con poca attenzione porterà i valori di colore vicini al nero "
+"fuori gamma\n"
+"rendendo negativi i valori RGB"
 
 #: ../src/iop/basicadj.c:687 ../src/iop/exposure.c:884
 msgid "adjust the exposure correction"
@@ -6020,7 +6067,7 @@ msgstr "Regolazione saturazione"
 
 #: ../src/iop/basicadj.c:747
 msgid "apply auto exposure based on the entire image"
-msgstr ""
+msgstr "Applica un'esposizione automatica basata sull'intera immagine"
 
 #: ../src/iop/basicadj.c:755
 msgid ""
@@ -6028,10 +6075,13 @@ msgid ""
 "click and drag to draw the area\n"
 "right click to cancel"
 msgstr ""
+"Applica un'esposizione automatica basata su un'area definita dall'utente\n"
+"Click e trascina per definire l'area\n"
+"Click destro per cancellarla"
 
 #: ../src/iop/basicadj.c:765
 msgid "clip"
-msgstr ""
+msgstr "Taglia"
 
 #: ../src/iop/basicadj.c:766
 msgid "adjusts clipping value for auto exposure calculation"
@@ -6548,6 +6598,8 @@ msgstr "B/N Kodak Tri-X 400"
 msgid ""
 "Choleski decomposition failed to allocate memory, check your RAM settings"
 msgstr ""
+"La decomposizione Coleski non è riuscita ad allocare la memoria. Verifica le "
+"impostazioni della RAM"
 
 #: ../src/iop/clahe.c:337 ../src/iop/sharpen.c:791
 msgid "amount"
@@ -6728,17 +6780,17 @@ msgstr "Angolo "
 #: ../src/iop/clipping.c:3244
 #, c-format
 msgid "[%s on borders] crop"
-msgstr ""
+msgstr "[%s on borders] ritaglia"
 
 #: ../src/iop/clipping.c:3250
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
-msgstr ""
+msgstr "[%s on borders] ritaglia e mantieni le proporzioni"
 
 #: ../src/iop/clipping.c:3255
 #, c-format
 msgid "[%s] define/rotate horizon"
-msgstr ""
+msgstr "[%s] Definisci/ruota orizzonte"
 
 #: ../src/iop/colisa.c:78
 msgid "contrast brightness saturation"
@@ -6811,11 +6863,11 @@ msgstr "Controlli"
 
 #: ../src/iop/colorbalance.c:960
 msgid "optimize luma from patches"
-msgstr ""
+msgstr "Ottimizza luminosità dai campioni"
 
 #: ../src/iop/colorbalance.c:962 ../src/iop/colorbalance.c:2651
 msgid "optimize luma"
-msgstr ""
+msgstr "Ottimizza luminosità"
 
 #: ../src/iop/colorbalance.c:966
 msgid "neutralize colors from patches"
@@ -6879,7 +6931,7 @@ msgstr "Fulcro contrasto"
 
 #: ../src/iop/colorbalance.c:2410
 msgid "adjust to match a neutral tone"
-msgstr ""
+msgstr "Regola per arrivare ad un tono neutro"
 
 #: ../src/iop/colorbalance.c:2479 ../src/iop/colorbalance.c:2491
 msgid "factor of "
@@ -6981,11 +7033,11 @@ msgstr "Ottimizzatori automatici"
 
 #: ../src/iop/colorbalance.c:2656
 msgid "fit the whole histogram and center the average luma"
-msgstr ""
+msgstr "Adatta l'istogramma e centra la luminosità media"
 
 #: ../src/iop/colorbalance.c:2665
 msgid "optimize the RGB curves to remove color casts"
-msgstr ""
+msgstr "Ottimizza le curve RGB per rimuovere le dominanti di colore"
 
 #: ../src/iop/colorchecker.c:115
 msgid "color look up table"
@@ -7020,9 +7072,9 @@ msgid "Fuji Velvia emulation"
 msgstr "Emulazione Fuji Velvia"
 
 #: ../src/iop/colorchecker.c:845 ../src/iop/colorchecker.c:1359
-#, fuzzy, c-format
+#, c-format
 msgid "patch #%d"
-msgstr "patch #%d"
+msgstr "Campione #%d"
 
 #: ../src/iop/colorchecker.c:1229
 #, c-format
@@ -7042,9 +7094,8 @@ msgstr ""
 "Shift-click con la pipetta di estrazione del colore per sostituire la patch"
 
 #: ../src/iop/colorchecker.c:1354
-#, fuzzy
 msgid "patch"
-msgstr "patch"
+msgstr "Campione"
 
 #: ../src/iop/colorchecker.c:1355
 #, fuzzy
@@ -7163,6 +7214,8 @@ msgid ""
 "can't extract matrix from colorspace `%s', it will be replaced by Rec2020 "
 "RGB!"
 msgstr ""
+"Non posso estrarre la matrice dallo spazio colore `%s'. La sostituisco con "
+"Rec2020 RGB!"
 
 #: ../src/iop/colorin.c:1583
 #, c-format
@@ -7498,6 +7551,8 @@ msgstr "Pellicola bianco e nero"
 #: ../src/iop/toneequal.c:1964
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
+"Non posso visualizzare le maschere mentre viene visualizzata una maschera di "
+"fusione"
 
 #: ../src/iop/colorzones.c:2275 ../src/iop/rgbcurve.c:1545
 msgid ""
@@ -7506,6 +7561,10 @@ msgid ""
 "ctrl+click to create a positive curve\n"
 "shift+click to create a negative curve"
 msgstr ""
+"Crea una curva basata su di un'area dell'immagine\n"
+"Click per creare una curva piatta\n"
+"Ctrl+click per creare una curva positiva\n"
+"Maiusc+click per creare una curva negativa"
 
 #. edit by area
 #: ../src/iop/colorzones.c:2306
@@ -7514,7 +7573,7 @@ msgstr "Modifica in base all'area"
 
 #: ../src/iop/colorzones.c:2308
 msgid "edit the curve nodes by area"
-msgstr ""
+msgstr "Modifica i nodi della curva in base all'area"
 
 #: ../src/iop/colorzones.c:2315
 msgid "display selection"
@@ -7760,11 +7819,11 @@ msgstr "Riduzione rumore (profilato)"
 #. these blobs were exported as dtstyle and copied from there:
 #: ../src/iop/denoiseprofile.c:553
 msgid "chroma (use on 1st instance)"
-msgstr ""
+msgstr "Crominanza (utilizzata nella 1^ istanza)"
 
 #: ../src/iop/denoiseprofile.c:556
 msgid "luma (use on 2nd instance)"
-msgstr ""
+msgstr "Luminanza (utilizzata nella 2^ istanza)"
 
 #: ../src/iop/denoiseprofile.c:3014
 #, c-format
@@ -7792,7 +7851,7 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:3943
 msgid "variance red: "
-msgstr ""
+msgstr "Varianza rosso:"
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3946
@@ -7801,7 +7860,7 @@ msgstr "Varianza calcolata sul canale del rosso"
 
 #: ../src/iop/denoiseprofile.c:3951
 msgid "variance green: "
-msgstr ""
+msgstr "Varianza verde:"
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3954
@@ -7845,7 +7904,7 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:4033
 msgid "fix various bugs in algorithm"
-msgstr ""
+msgstr "Aggiusta i difetti nell'algoritmo"
 
 #: ../src/iop/denoiseprofile.c:4035
 msgid ""
@@ -8212,6 +8271,7 @@ msgstr "18 EV (HDR++)"
 #: ../src/iop/filmic.c:1679
 msgid "read-only graph, use the parameters below to set the nodes"
 msgstr ""
+"Grafico di sola lettura. Utilizza i parametri qui sotto per impostare i nodi"
 
 #: ../src/iop/filmic.c:1683
 msgid "logarithmic shaper"
@@ -8219,7 +8279,7 @@ msgstr "Curva logaritmica"
 
 #: ../src/iop/filmic.c:1688 ../src/iop/filmicrgb.c:1443
 msgid "middle grey luminance"
-msgstr ""
+msgstr "Luminosità del grigio medio"
 
 #: ../src/iop/filmic.c:1691
 msgid ""
@@ -12033,7 +12093,7 @@ msgstr "Esporta etichette geografiche"
 
 #: ../src/libs/export_metadata.c:274
 msgid "export tags (to Xmp.dc.Subject)"
-msgstr ""
+msgstr "Esporta etichette (in Xmp.dc.Subject)"
 
 #: ../src/libs/export_metadata.c:281
 msgid "private tags"
@@ -12060,6 +12120,8 @@ msgid ""
 "only the last part of the hierarchical tags is included. can be useful if "
 "categories are not used"
 msgstr ""
+"Solamente l'ultima parte delle etichette gerarchiche verrà inclusa. Utile "
+"nel caso in cui le categorie non vengano utilizzate"
 
 #: ../src/libs/export_metadata.c:291
 msgid "hierarchical tags"
@@ -12067,21 +12129,23 @@ msgstr "Etichette gerarchiche"
 
 #: ../src/libs/export_metadata.c:292
 msgid "export hierarchical tags (to Xmp.lr.Hierarchical Subject)"
-msgstr ""
+msgstr "Esporta etichette gerarchiche (in Xmp.lr.Hierarchical Subject)"
 
 #: ../src/libs/export_metadata.c:294
 msgid "develop history"
-msgstr ""
+msgstr "Storico sviluppo"
 
 #: ../src/libs/export_metadata.c:295
 msgid ""
 "export dt development data (recovery purpose in case of loss of database or "
 "xmp file)"
 msgstr ""
+"Esporta di dati di sviluppo di dt (a scopo di recupero in caso di perdita "
+"del database o del file XMP)"
 
 #: ../src/libs/export_metadata.c:302
 msgid "per metadata settings"
-msgstr ""
+msgstr "Impostazioni metadati"
 
 #: ../src/libs/export_metadata.c:312
 msgid "list of available tags"
@@ -12093,7 +12157,7 @@ msgstr "Etichette ridefinite"
 
 #: ../src/libs/export_metadata.c:320
 msgid "formula"
-msgstr "Fromula"
+msgstr "Formula"
 
 #: ../src/libs/export_metadata.c:323
 msgid ""
@@ -12104,10 +12168,16 @@ msgid ""
 "file\n"
 "click on formula cell to edit. recognized variables:"
 msgstr ""
+"Elenco dei metadati calcolati\n"
+"Se la formula è vuota, i metadati corrispondenti verranno rimossi dal file "
+"esportato\n"
+"Viceversa, i metadati corrispondenti verranno calcolati e aggiunti al file "
+"esportato\n"
+"Clicca sul campo della formula per modificarla. Variabili riconosciute:"
 
 #: ../src/libs/export_metadata.c:378
 msgid "add an output metadata tag"
-msgstr ""
+msgstr "Aggiungi un'etichetta con i metadati dell'output"
 
 #: ../src/libs/export_metadata.c:383
 msgid "delete metadata tag"
@@ -12363,6 +12433,7 @@ msgstr "Elimina le immagini selezionate dal gruppo"
 #: ../src/libs/image.c:279
 msgid "update image information to match changes to file"
 msgstr ""
+"Aggiorna le informazioni immagine per riflettere i cambiamenti del file"
 
 #: ../src/libs/image.c:302
 msgctxt "accel"
@@ -13770,7 +13841,7 @@ msgstr "Rinomina il percorso..."
 
 #: ../src/libs/tagging.c:1950
 msgid "copy to entry"
-msgstr ""
+msgstr "Copia alla voce"
 
 #: ../src/libs/tagging.c:1974
 msgid "go to tag collection"
@@ -13993,32 +14064,32 @@ msgstr "Provino"
 #: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:4387
 msgctxt "accel"
 msgid "rate 0"
-msgstr "Valuta 0"
+msgstr "Valuta 0 stelle"
 
 #: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:4388
 msgctxt "accel"
 msgid "rate 1"
-msgstr "Valuta 1"
+msgstr "Valuta 1 stella"
 
 #: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:4389
 msgctxt "accel"
 msgid "rate 2"
-msgstr "Valuta 2"
+msgstr "Valuta 2 stelle"
 
 #: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:4390
 msgctxt "accel"
 msgid "rate 3"
-msgstr "Valuta 3"
+msgstr "Valuta 3 stelle"
 
 #: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:4391
 msgctxt "accel"
 msgid "rate 4"
-msgstr "Valuta 4"
+msgstr "Valuta 4 stelle"
 
 #: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:4392
 msgctxt "accel"
 msgid "rate 5"
-msgstr "Valuta 5"
+msgstr "Valuta 5 stelle"
 
 #: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:4393
 msgctxt "accel"
@@ -14624,11 +14695,11 @@ msgstr "Ingrandisci del 100%, 200% e riprendi"
 
 #: ../src/views/darkroom.c:3342
 msgid "[modules] expand module without closing others"
-msgstr "[moduli] Espandi il modulo senza chiudere gli altri"
+msgstr "[modules] Espandi il modulo senza chiudere gli altri"
 
 #: ../src/views/darkroom.c:3348
 msgid "[modules] change module position in pipe"
-msgstr "[moduli] Cambia la posizione del modulo nel flusso di sviluppo"
+msgstr "[modules] Cambia la posizione del modulo nel flusso di sviluppo"
 
 #. workaround for GTK Quartz backend bug
 #: ../src/views/darkroom.c:4050 ../src/views/darkroom.c:4068
@@ -14637,7 +14708,7 @@ msgstr "darktable - Anteprima Camera Oscura"
 
 #: ../src/views/knight.c:334
 msgid "good knight"
-msgstr "Buon cavaliere"
+msgstr "Good Knight"
 
 #: ../src/views/lighttable.c:1108 ../src/views/slideshow.c:352
 msgid "there are no images in this collection"
@@ -14845,11 +14916,11 @@ msgstr "Mappa"
 
 #: ../src/views/map.c:1405
 msgid "[on image] open in darkroom"
-msgstr "[sull'immagine] Apri in Camera Oscura"
+msgstr "[on image] Apri in Camera Oscura"
 
 #: ../src/views/map.c:1410
 msgid "[on map] zoom map"
-msgstr "[sulla mappa] Ingrandisci mappa"
+msgstr "[on map] Ingrandisci mappa"
 
 #: ../src/views/map.c:1415
 msgid "move image location"
