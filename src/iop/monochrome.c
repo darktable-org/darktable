@@ -31,6 +31,7 @@
 #include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
+#include "gui/accelerators.h"
 #include "iop/iop_api.h"
 #include <assert.h>
 #include <math.h>
@@ -87,6 +88,18 @@ int flags()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_Lab;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_monochrome_gui_data_t *g = (dt_iop_monochrome_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "highlights", GTK_WIDGET(g->highlights));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
