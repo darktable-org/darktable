@@ -249,6 +249,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_search_box, TRUE, TRUE, 0);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[d->current]), TRUE);
+  if(d->current == DT_MODULEGROUP_NONE) _lib_modulegroups_update_iop_visibility(self);
   gtk_widget_show_all(self->widget);
   gtk_widget_show_all(d->hbox_buttons);
   gtk_widget_set_no_show_all(d->hbox_buttons, TRUE);
@@ -538,17 +539,11 @@ static gboolean _lib_modulegroups_set_gui_thread(gpointer user_data)
 
   const int group = _iop_get_group_order(params->group, params->group);
 
-  /* if no change just update visibility */
-  if(d->current == group)
-  {
-    _lib_modulegroups_update_iop_visibility(params->self);
-    free(params);
-    return FALSE;
-  }
-
-  /* set current group */
-  if(params->group < DT_MODULEGROUP_SIZE && GTK_IS_TOGGLE_BUTTON(d->buttons[params->group]))
+  /* set current group or just update iop visibility*/
+  if(d->current != group && params->group < DT_MODULEGROUP_SIZE && GTK_IS_TOGGLE_BUTTON(d->buttons[params->group]))
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->buttons[params->group]), TRUE);
+  else
+    _lib_modulegroups_update_iop_visibility(params->self);
 
   free(params);
   return FALSE;
