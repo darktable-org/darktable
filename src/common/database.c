@@ -1158,6 +1158,11 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("CREATE TEMPORARY TABLE m_prio (id INTEGER, operation VARCHAR(256), prio INTEGER)",
              "[init] can't create temporary table for updating `history and style_items'\n");
 
+    TRY_EXEC("CREATE INDEX m_prio_id_index ON m_prio (id)",
+             "[init] can't create temporary index for updating `history and style_items'\n");
+    TRY_EXEC("CREATE INDEX m_prio_op_index ON m_prio (operation)",
+             "[init] can't create temporary index for updating `history and style_items'\n");
+
     TRY_EXEC("INSERT INTO m_prio SELECT imgid, operation, MAX(multi_priority)"
              " FROM main.history GROUP BY imgid, operation",
              "[init] can't populate m_prio\n");
