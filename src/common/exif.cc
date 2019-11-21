@@ -2493,6 +2493,22 @@ end:
   return all_ok;
 }
 
+// get MAX multi_priority
+int _get_max_multi_priority(GList *history, const char *operation)
+{
+  int max_prio = 0;
+
+  for(GList *iter = history; iter; iter = g_list_next(iter))
+  {
+    history_entry_t *entry = (history_entry_t *)iter->data;
+
+    if(!strcmp(entry->operation, operation))
+      max_prio = MAX(max_prio, entry->multi_priority);
+  }
+
+  return max_prio;
+}
+
 // need a write lock on *img (non-const) to write stars (and soon color labels).
 int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_only)
 {
@@ -2676,7 +2692,10 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
         sqlite3_bind_null(stmt, 7);
       }
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 8, entry->blendop_version);
-      DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, entry->multi_priority);
+      // check for max and do
+      int priority = entry->multi_priority;
+      if(entry->iop_order == -1) priority = _get_max_multi_priority(history_entries, entry->operation) - entry->multi_priority;
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 9, priority);
       if(entry->multi_name)
       {
         DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 10, entry->multi_name, -1, SQLITE_TRANSIENT);

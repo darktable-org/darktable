@@ -172,7 +172,9 @@ static int dt_imageio_load_modules_format(dt_imageio_t *iio)
       continue;
     }
     module->gui_data = NULL;
+    if(darktable.gui) darktable.gui->reset = 1;
     module->gui_init(module);
+    if(darktable.gui) darktable.gui->reset = 0;
     if(module->widget) g_object_ref(module->widget);
     g_free(libname);
     res = g_list_insert_sorted(res, module, dt_imageio_sort_modules_format);
