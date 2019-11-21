@@ -98,10 +98,9 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-#if 0 // BAUHAUS doesn't support keyaccels yet...
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "vibrance"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mid-tones bias"));
 }
 
@@ -109,12 +108,11 @@ void connect_key_accels(dt_iop_module_t *self)
 {
   dt_iop_velvia_gui_data_t *g = (dt_iop_velvia_gui_data_t*)self->gui_data;
 
-  dt_accel_connect_slider_iop(self, "vibrance",
+  dt_accel_connect_slider_iop(self, "strength",
                               GTK_WIDGET(g->strength_scale));
   dt_accel_connect_slider_iop(self, "mid-tones bias",
                               GTK_WIDGET(g->bias_scale));
 }
-#endif
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)

@@ -433,11 +433,12 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
-#if 0 // BAUHAUS doesn't support keyaccels yet...
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "coarseness"));
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "midtones bias"));
+  
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -446,9 +447,8 @@ void connect_key_accels(dt_iop_module_t *self)
 
   dt_accel_connect_slider_iop(self, "coarseness", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->scale2));
+  dt_accel_connect_slider_iop(self, "midtones bias", GTK_WIDGET(g->scale3));
 }
-
-#endif
 
 // see: http://eternallyconfuzzled.com/tuts/algorithms/jsw_tut_hashing.aspx
 // this is the modified bernstein

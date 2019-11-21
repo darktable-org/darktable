@@ -32,6 +32,7 @@
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
+#include "gui/accelerators.h"
 
 // this is the version of the modules parameters,
 // and includes version information about compile-time dt
@@ -110,6 +111,28 @@ int default_group()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_Lab;
+}
+
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "detail"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "coarseness"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "midtone range"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_bilat_gui_data_t *g = (dt_iop_bilat_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "detail", GTK_WIDGET(g->detail));
+  dt_accel_connect_slider_iop(self, "coarseness", GTK_WIDGET(g->spatial));
+  dt_accel_connect_slider_iop(self, "contrast", GTK_WIDGET(g->range));
+  dt_accel_connect_slider_iop(self, "highlights", GTK_WIDGET(g->highlights));
+  dt_accel_connect_slider_iop(self, "shadows", GTK_WIDGET(g->shadows));
+  dt_accel_connect_slider_iop(self, "midtone range", GTK_WIDGET(g->midtone));
 }
 
 int legacy_params(

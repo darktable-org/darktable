@@ -513,6 +513,32 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
+void init_key_accels(dt_iop_module_so_t *self)
+{
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "adjust autoset parameters"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "preserve shadows"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "bias correction"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "patch size"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "search radius"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "scattering"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "central pixel weight"));
+}
+
+void connect_key_accels(dt_iop_module_t *self)
+{
+  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
+
+  dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->strength));
+  dt_accel_connect_slider_iop(self, "adjust autoset parameters", GTK_WIDGET(g->overshooting));
+  dt_accel_connect_slider_iop(self, "preserve shadows", GTK_WIDGET(g->shadows));
+  dt_accel_connect_slider_iop(self, "bias correction", GTK_WIDGET(g->bias));
+  dt_accel_connect_slider_iop(self, "patch size", GTK_WIDGET(g->radius));
+  dt_accel_connect_slider_iop(self, "search radius", GTK_WIDGET(g->nbhood));
+  dt_accel_connect_slider_iop(self, "scattering", GTK_WIDGET(g->scattering));
+  dt_accel_connect_slider_iop(self, "central pixel weight", GTK_WIDGET(g->central_pixel_weight));
+}
+
 static void add_preset(
     dt_iop_module_so_t *self, const char *name,
     const char *pi,  const int version,
