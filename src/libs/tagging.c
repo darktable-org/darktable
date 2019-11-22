@@ -1160,7 +1160,7 @@ static void pop_menu_dictionary_delete_tag(GtkWidget *menuitem, dt_lib_module_t 
   {
     GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
     GtkWidget *dialog = gtk_dialog_new_with_buttons(_("delete tag?"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                  _("delete"), GTK_RESPONSE_YES, _("cancel"), GTK_RESPONSE_NONE, NULL);
+                                  _("cancel"), GTK_RESPONSE_NONE, _("delete"), GTK_RESPONSE_YES, NULL);
     gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
     GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
@@ -1257,7 +1257,7 @@ static void pop_menu_dictionary_delete_path(GtkWidget *menuitem, dt_lib_module_t
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons( _("delete branch"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                _("delete"), GTK_RESPONSE_YES, _("cancel"), GTK_RESPONSE_NONE, NULL);
+                                _("cancel"), GTK_RESPONSE_NONE, _("delete"), GTK_RESPONSE_YES, NULL);
   gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
@@ -1345,7 +1345,7 @@ static void pop_menu_dictionary_create_tag(GtkWidget *menuitem, dt_lib_module_t 
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("create tag"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                       _("save"), GTK_RESPONSE_YES, _("cancel"), GTK_RESPONSE_NONE, NULL);
+                                       _("cancel"), GTK_RESPONSE_NONE, _("save"), GTK_RESPONSE_YES, NULL);
   gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
@@ -1513,7 +1513,7 @@ static void pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *s
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("edit tag"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                       _("save"), GTK_RESPONSE_YES, _("cancel"), GTK_RESPONSE_NONE, NULL);
+                                       _("cancel"), GTK_RESPONSE_NONE, _("save"), GTK_RESPONSE_YES, NULL);
   gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
@@ -1733,7 +1733,7 @@ static void pop_menu_dictionary_rename_path(GtkWidget *menuitem, dt_lib_module_t
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("rename path?"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
-                                       _("rename"), GTK_RESPONSE_YES, _("cancel"), GTK_RESPONSE_NONE, NULL);
+                                       _("cancel"), GTK_RESPONSE_NONE, _("rename"), GTK_RESPONSE_YES, NULL);
   gtk_window_set_default_size(GTK_WINDOW(dialog), 300, -1);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
