@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-22 08:38+0100\n"
-"PO-Revision-Date: 2019-11-22 08:47+0100\n"
+"PO-Revision-Date: 2019-11-22 08:54+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -7239,12 +7239,12 @@ msgstr "kleurenkaart"
 #: ../src/iop/colormapping.c:164
 msgctxt "accel"
 msgid "acquire as source"
-msgstr "verwerf als bron"
+msgstr "verwerk als bron"
 
 #: ../src/iop/colormapping.c:165
 msgctxt "accel"
 msgid "acquire as target"
-msgstr "verwerf als doel"
+msgstr "verwerk als doel"
 
 #: ../src/iop/colormapping.c:1115
 msgid "source clusters:"
@@ -7256,7 +7256,7 @@ msgstr "clusterdoelen"
 
 #: ../src/iop/colormapping.c:1137
 msgid "acquire as source"
-msgstr "verwerf als bron"
+msgstr "verwerk als bron"
 
 #: ../src/iop/colormapping.c:1139
 msgid "analyze this image as a source image"
@@ -7264,7 +7264,7 @@ msgstr "analyseer afbeelding als bronafbeelding"
 
 #: ../src/iop/colormapping.c:1143
 msgid "acquire as target"
-msgstr "verwerf als doel"
+msgstr "verwerk als doel"
 
 #: ../src/iop/colormapping.c:1145
 msgid "analyze this image as a target image"
