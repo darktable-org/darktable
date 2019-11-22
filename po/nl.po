@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-22 08:38+0100\n"
-"PO-Revision-Date: 2019-11-22 08:54+0100\n"
+"PO-Revision-Date: 2019-11-22 09:11+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -14143,7 +14143,7 @@ msgstr "wissel sortering op naam of aantal"
 
 #: ../src/libs/tagging.c:2591
 msgid "toggle show or not darktable tags"
-msgstr "wissel weergave of niet darktable labels"
+msgstr "wissel weergave labels/alles"
 
 #: ../src/libs/tagging.c:2607
 msgid "enter tag name"
