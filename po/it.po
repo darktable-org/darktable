@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
-"PO-Revision-Date: 2019-11-21 23:56+0100\n"
+"PO-Revision-Date: 2019-11-23 00:24+0100\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2.1\n"
+"X-Generator: Poedit 2.2.4\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
@@ -2412,7 +2412,7 @@ msgstr "Copia immagini locale"
 
 #: ../src/control/jobs/control_jobs.c:1751 ../src/libs/image.c:276
 msgid "refresh exif"
-msgstr "Aggiorna exif"
+msgstr "Aggiorna Exif"
 
 #: ../src/control/jobs/control_jobs.c:1814
 #, c-format
@@ -3927,27 +3927,27 @@ msgstr "$(SECOND) - Secondo"
 
 #: ../src/gui/gtkentry.c:200
 msgid "$(EXIF_YEAR) - EXIF year"
-msgstr "$(EXIF_YEAR) - Anno exif"
+msgstr "$(EXIF_YEAR) - Anno Exif"
 
 #: ../src/gui/gtkentry.c:201
 msgid "$(EXIF_MONTH) - EXIF month"
-msgstr "$(EXIF_MONTH) - Mese exif"
+msgstr "$(EXIF_MONTH) - Mese Exif"
 
 #: ../src/gui/gtkentry.c:202
 msgid "$(EXIF_DAY) - EXIF day"
-msgstr "$(EXIF_DAY) - Giorno exif"
+msgstr "$(EXIF_DAY) - Giorno Exif"
 
 #: ../src/gui/gtkentry.c:203
 msgid "$(EXIF_HOUR) - EXIF hour"
-msgstr "$(EXIF_HOUR) - Ora exif"
+msgstr "$(EXIF_HOUR) - Ora Exif"
 
 #: ../src/gui/gtkentry.c:204
 msgid "$(EXIF_MINUTE) - EXIF minute"
-msgstr "$(EXIF_MINUTE) - Minuto exif"
+msgstr "$(EXIF_MINUTE) - Minuto Exif"
 
 #: ../src/gui/gtkentry.c:205
 msgid "$(EXIF_SECOND) - EXIF second"
-msgstr "$(EXIF_SECOND) -Secondo exif"
+msgstr "$(EXIF_SECOND) - Secondo Exif"
 
 #: ../src/gui/gtkentry.c:206
 msgid "$(EXIF_ISO) - ISO value"
@@ -5386,7 +5386,7 @@ msgstr "Spostamento lente (o)"
 #: ../src/iop/ashift.c:522
 msgctxt "accel"
 msgid "shear"
-msgstr "Sforzo di taglio"
+msgstr "Stira"
 
 #: ../src/iop/ashift.c:2602
 msgid "automatic cropping failed"
@@ -5447,7 +5447,7 @@ msgstr "Cambia lente (orizzontale)"
 
 #: ../src/iop/ashift.c:4849
 msgid "shear"
-msgstr "Sforzo di taglio"
+msgstr "Stira"
 
 #: ../src/iop/ashift.c:4854 ../src/iop/clipping.c:2133
 #: ../src/libs/live_view.c:343
@@ -5529,7 +5529,7 @@ msgstr ""
 #: ../src/iop/ashift.c:4976
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
-"Lunghezza focale della lente, valore predefinito impostato dai dati exif "
+"Lunghezza focale della lente, valore predefinito impostato dai dati Exif "
 "qualora disponibili"
 
 #: ../src/iop/ashift.c:4978
@@ -5538,7 +5538,7 @@ msgid ""
 "available, manual setting is often required"
 msgstr ""
 "Fattore di taglio del sensore della fotocamera, imposta un valore di default "
-"dai dati exif (se disponibili), spesso è richiesto un'impostazione manuale"
+"dai dati Exif (se disponibili), spesso è richiesto un'impostazione manuale"
 
 #: ../src/iop/ashift.c:4981
 msgid ""
@@ -5584,7 +5584,7 @@ msgid ""
 msgstr ""
 "Automaticamente corregge la distorsione prospettica verticale ed "
 "orizzontale; la rotazione, l'allineamento della lente in entrambe le "
-"direzioni e lo sforzo di taglio\n"
+"direzioni e lo stiramento\n"
 "Ctrl-click per correggere solamente la rotazione\n"
 "Maiusc-click per correggere solamente l'allineamento della lente\n"
 "Ctrl-Maiusc-click per correggere solamente la rotazione e l'allineamento "
@@ -5671,43 +5671,43 @@ msgstr "Chiarezza"
 
 #: ../src/iop/atrous.c:1169
 msgid "deblur: large blur, strength 4"
-msgstr ""
+msgstr "Nitidezza: largo raggio, forza 4"
 
 #: ../src/iop/atrous.c:1185
 msgid "deblur: large blur, strength 3"
-msgstr ""
+msgstr "Nitidezza: largo raggio, forza 3"
 
 #: ../src/iop/atrous.c:1199
 msgid "deblur: medium blur, strength 3"
-msgstr ""
+msgstr "Nitidezza: medio raggio, forza 3"
 
 #: ../src/iop/atrous.c:1212
 msgid "deblur: fine blur, strength 3"
-msgstr ""
+msgstr "Nitidezza: corto raggio, forza 3"
 
 #: ../src/iop/atrous.c:1229
 msgid "deblur: large blur, strength 2"
-msgstr ""
+msgstr "Nitidezza: largo raggio, forza 2"
 
 #: ../src/iop/atrous.c:1243
 msgid "deblur: medium blur, strength 2"
-msgstr ""
+msgstr "Nitidezza: medio raggio, forza 2"
 
 #: ../src/iop/atrous.c:1256
 msgid "deblur: fine blur, strength 2"
-msgstr ""
+msgstr "Nitidezza: corto raggio, forza 2"
 
 #: ../src/iop/atrous.c:1273
 msgid "deblur: large blur, strength 1"
-msgstr ""
+msgstr "Nitidezza: largo raggio, forza 1"
 
 #: ../src/iop/atrous.c:1287
 msgid "deblur: medium blur, strength 1"
-msgstr ""
+msgstr "Nitidezza: medio raggio, forza 1"
 
 #: ../src/iop/atrous.c:1300
 msgid "deblur: fine blur, strength 1"
-msgstr ""
+msgstr "Nitidezza: corto raggio, forza 1"
 
 #: ../src/iop/atrous.c:1597 ../src/iop/denoiseprofile.c:3717
 #: ../src/iop/rawdenoise.c:813
@@ -6828,11 +6828,11 @@ msgstr "Controllo ombre/mezzitoni/alteluci come negli editor video"
 #. these blobs were exported as dtstyle and copied from there:
 #: ../src/iop/colorbalance.c:275
 msgid "split-toning teal-orange (2nd instance)"
-msgstr ""
+msgstr "Divisione dei toni acquamarina-arancio (2^ istanza)"
 
 #: ../src/iop/colorbalance.c:278
 msgid "split-toning teal-orange (1st instance)"
-msgstr ""
+msgstr "Divisione dei toni acquamarina-arancio (1^ istanza)"
 
 #: ../src/iop/colorbalance.c:282
 msgid "generic film"
@@ -6879,15 +6879,15 @@ msgstr "Neutralizza colori"
 
 #: ../src/iop/colorbalance.c:2366
 msgid "lift, gamma, gain (ProPhotoRGB)"
-msgstr "ombre, mezzitoni, alteluci (ProPhotoRGB)"
+msgstr "lift, gamma, gain (ProPhotoRGB)"
 
 #: ../src/iop/colorbalance.c:2367
 msgid "slope, offset, power (ProPhotoRGB)"
-msgstr ""
+msgstr "slope, offset, power (ProPhotoRGB)"
 
 #: ../src/iop/colorbalance.c:2368
 msgid "lift, gamma, gain (sRGB)"
-msgstr "ombre, mezzitoni, alteluci (sRGB)"
+msgstr "lift, gamma, gain (sRGB)"
 
 #: ../src/iop/colorbalance.c:2370 ../src/iop/colorbalance.c:2381
 msgid "color-grading mapping method"
@@ -6944,7 +6944,7 @@ msgstr "Fattore"
 #. lift
 #: ../src/iop/colorbalance.c:2497
 msgid "shadows : lift / offset"
-msgstr ""
+msgstr "Ombre: lift / offset"
 
 #: ../src/iop/colorbalance.c:2499
 msgid "factor of lift"
@@ -6979,7 +6979,7 @@ msgstr "Fattore del blu per il lift"
 #. gamma
 #: ../src/iop/colorbalance.c:2547
 msgid "mid-tones : gamma / power"
-msgstr ""
+msgstr "mezzitoni: gamma / power"
 
 #: ../src/iop/colorbalance.c:2549
 msgid "factor of gamma"
@@ -7005,27 +7005,27 @@ msgstr "Fattore del blu per il gamma"
 #. gain
 #: ../src/iop/colorbalance.c:2596
 msgid "highlights : gain / slope"
-msgstr ""
+msgstr "alteluci: gain / slope"
 
 #: ../src/iop/colorbalance.c:2598
 msgid "factor of gain"
-msgstr "Fattore di guadagno"
+msgstr "Fattore del gain"
 
 #: ../src/iop/colorbalance.c:2598
 msgid "gain"
-msgstr "Guadagno"
+msgstr "Gain"
 
 #: ../src/iop/colorbalance.c:2623
 msgid "factor of red for gain"
-msgstr "Fattore del rosso per il guadagno"
+msgstr "Fattore del rosso per il gain"
 
 #: ../src/iop/colorbalance.c:2630
 msgid "factor of green for gain"
-msgstr "Fattore del verde per il guadagno"
+msgstr "Fattore del verde per il gain"
 
 #: ../src/iop/colorbalance.c:2637
 msgid "factor of blue for gain"
-msgstr "Fattore del blu per il guadagno"
+msgstr "Fattore del blu per il gain"
 
 #: ../src/iop/colorbalance.c:2644
 msgid "auto optimizers"
@@ -7098,9 +7098,8 @@ msgid "patch"
 msgstr "Campione"
 
 #: ../src/iop/colorchecker.c:1355
-#, fuzzy
 msgid "color checker patch"
-msgstr "patch color checker"
+msgstr "Campione per la verifica del colore"
 
 #: ../src/iop/colorchecker.c:1366
 msgid "lightness offset"
@@ -7627,6 +7626,12 @@ msgid ""
 "- monotonic is better for accuracy of pure analytical functions (log, gamma, "
 "exp)\n"
 msgstr ""
+"Cambia il metodo se noti oscillazioni o cuspidi nella curva\n"
+"- lo spline cubico produce curve morbide ma crea oscillazioni quando i nodi "
+"sono troppo ravvicinati\n"
+"- quello centripeto non produce cuspidi e oscillazioni con nodi ravvicinati "
+"ma è meno morbido\n"
+"- il monotonico è più accurato nelle funzioni di analisi (log, gamma, exp)\n"
 
 #: ../src/iop/defringe.c:68
 msgid "defringe"
@@ -7890,7 +7895,7 @@ msgstr "B"
 
 #: ../src/iop/denoiseprofile.c:4011
 msgid "whitebalance-adaptive transform"
-msgstr ""
+msgstr "Trasformazione bilanciamento del bianco adattivo"
 
 #: ../src/iop/denoiseprofile.c:4013
 msgid ""
@@ -7901,6 +7906,12 @@ msgid ""
 "should be disabled if an earlier instance\n"
 "has been used with a color blending mode."
 msgstr ""
+"Adatta la riduzione del rumore in base a\n"
+"i coefficienti del bilanciamento del bianco.\n"
+"Dovrebbe essere abilitato sulla prima istanza\n"
+"per una migliore riduzione del rumore.\n"
+"Dovrebbe essere disabilitato se un'istanza precedente\n"
+"è stata utilizzata con una modalità di fusione colore."
 
 #: ../src/iop/denoiseprofile.c:4033
 msgid "fix various bugs in algorithm"
@@ -7918,10 +7929,19 @@ msgid ""
 "you get. once enabled, you won't be able to\n"
 "return back to old algorithm."
 msgstr ""
+"Risolve i difetti nella trasformazione ascombe che porta\n"
+"a scarsi risultati nel canale verde in modalità wavelets\n"
+"combinati con una cattiva gestione dei coefficienti di\n"
+"bilanciamento del bianco, e un difetto nella\n"
+"normalizzazione non local means risultante in\n"
+"scarsi risultati quando viene aumentato il campione.\n"
+"Abilitando questa opzione si modifica la riduzione\n"
+"rumore ottenuta. Una volta abilitata non è più\n"
+"possibile tornare al vecchio algoritmo."
 
 #: ../src/iop/denoiseprofile.c:4046
 msgid "upgrade profiled transform"
-msgstr ""
+msgstr "Aggiorna trasformazione profilata"
 
 #: ../src/iop/denoiseprofile.c:4048
 msgid ""
@@ -7930,6 +7950,10 @@ msgid ""
 "it is more flexible but could give small\n"
 "differences in the images already processed."
 msgstr ""
+"Aggiorna l'algoritmo di stabilizzazione della varianza.\n"
+"Il nuovo algoritmo estende quello corrente.\n"
+"E' più flessibile ma può dare solo piccole\n"
+"differenze sulle immagini già processate."
 
 #: ../src/iop/denoiseprofile.c:4059 ../src/libs/export.c:647
 #: ../src/libs/print_settings.c:1183 ../src/libs/print_settings.c:1403
@@ -7946,11 +7970,11 @@ msgstr "Cerca raggio"
 
 #: ../src/iop/denoiseprofile.c:4065
 msgid "scattering (coarse-grain noise)"
-msgstr ""
+msgstr "Diffusione (rumore a grana grossa)"
 
 #: ../src/iop/denoiseprofile.c:4066
 msgid "central pixel weight (details)"
-msgstr ""
+msgstr "Pesatura dei pixel centrali (dettagli)"
 
 #: ../src/iop/denoiseprofile.c:4068
 msgid "adjust autoset parameters"
@@ -8001,6 +8025,11 @@ msgid ""
 "if details are oversmoothed, reduce this value or increase the details "
 "slider."
 msgstr ""
+"Raggio dei campioni da confrontare.\n"
+"Aumentalo se vuoi incidere maggiormente sul bordi netti e ridurre meglio il "
+"rumore nelle aree uniformi.\n"
+"Se i dettagli dovessero risultare troppo ammorbiditi, riduci questo valore "
+"oppure aumenta quello del dettaglio."
 
 #: ../src/iop/denoiseprofile.c:4087
 msgid ""
@@ -8008,12 +8037,19 @@ msgid ""
 "increase for better denoising performance, but watch the long runtimes! "
 "large radii can be very slow. you have been warned"
 msgstr ""
+"Solo per emergenza: raggio di ampiezza per la ricerca di campioni. "
+"Aumentandolo si ottiene una migliore riduzione del rumore ma attenzione alla "
+"lunga distanza! Un raggio molto ampio può essere anche molto lento. Sei "
+"stato avvisato!"
 
 #: ../src/iop/denoiseprofile.c:4089
 msgid ""
 "scattering of the neighbourhood to search patches in. increase for better "
 "coarse-grain noise reduction. does not affect execution time."
 msgstr ""
+"Diffusione delle aree per la ricerca di campioni. Aumentalo per una migliore "
+"riduzione del rumore a grana grossa. Nessuna controindicazione per il tempo "
+"di esecuzione."
 
 #: ../src/iop/denoiseprofile.c:4091
 msgid ""
@@ -8022,6 +8058,10 @@ msgid ""
 "useful to recover details when patch size\n"
 "is quite big."
 msgstr ""
+"Aumenta l'importanza del pixel centrale\n"
+"del campione quando si confrontano i campioni.\n"
+"Utile per recuperare i dettagli quando la\n"
+"dimensione del campione è piuttosto grande."
 
 #: ../src/iop/denoiseprofile.c:4095
 msgid "finetune denoising strength"
@@ -8034,6 +8074,10 @@ msgid ""
 "or if chroma noise remains.\n"
 "this can happen if your picture is underexposed."
 msgstr ""
+"Controlla come vengono auto-regolati i parametri.\n"
+"Aumenta se le ombre non vengono sufficientemente ripulite dal rumore\n"
+"oppure se rimane del rumore di crominanza.\n"
+"Questo può accadere anche se l'immagine è sottoesposta."
 
 #: ../src/iop/denoiseprofile.c:4100
 msgid ""
@@ -8041,6 +8085,9 @@ msgid ""
 "decrease to denoise more aggressively\n"
 "dark areas of the image.\n"
 msgstr ""
+"Regola finemente la riduzione del rumore.\n"
+"Diminuisci il valore per ridurre il rumore\n"
+"nelle aree scure con più aggressività.\n"
 
 #: ../src/iop/denoiseprofile.c:4103
 msgid ""
@@ -8048,6 +8095,9 @@ msgid ""
 "decrease if shadows are too purple.\n"
 "increase if shadows are too green."
 msgstr ""
+"Corregge le dominanti di colore nelle ombre.\n"
+"Diminuisci il valore se le ombre diventano viola.\n"
+"Aumentalo se diventano verdi."
 
 #: ../src/iop/dither.c:103 ../src/iop/vignette.c:1164
 msgid "dithering"
@@ -8184,6 +8234,10 @@ msgid ""
 "if poorly set, it will clip near-black colors out of gamut\n"
 "by pushing RGB values into negatives."
 msgstr ""
+"Regola il livello del nero per evitare valori RGB negativi.\n"
+"Non dovresti mai utilizzarlo per aggiungere densità al nero!\n"
+"Se regolato male, porterà i colori vicini al nero fuori gamma\n"
+"spingendo i valori RGB in valori negativi."
 
 #: ../src/iop/exposure.c:901
 msgid ""
@@ -12056,11 +12110,11 @@ msgstr "Impostazioni generali"
 
 #: ../src/libs/export_metadata.c:249
 msgid "exif data"
-msgstr "Dati exif"
+msgstr "Dati Exif"
 
 #: ../src/libs/export_metadata.c:250
 msgid "export exif metadata"
-msgstr "Esporta metadati exif"
+msgstr "Esporta metadati Exif"
 
 #: ../src/libs/export_metadata.c:252
 msgid "metadata"
@@ -12212,7 +12266,7 @@ msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
 msgstr ""
-"Molte fotocamere non memorizzano il fuso orario fra i dati EXIF. Assegna il "
+"Molte fotocamere non memorizzano il fuso orario fra i dati Exif. Assegna il "
 "fuso orario esatto in modo che i dati GPX possano corrispondere correttamente"
 
 #: ../src/libs/geotagging.c:792
@@ -12394,7 +12448,7 @@ msgstr "Ripristina rotazione"
 
 #: ../src/libs/image.c:242
 msgid "reset rotation to EXIF data"
-msgstr "Ripristina rotazione ai dati EXIF"
+msgstr "Ripristina rotazione ai dati Exif"
 
 #: ../src/libs/image.c:247
 msgid "copy locally"
@@ -12494,7 +12548,7 @@ msgstr "Risincronizza le copie locali"
 #: ../src/libs/image.c:313
 msgctxt "accel"
 msgid "refresh exif"
-msgstr "Aggiorna exif"
+msgstr "Aggiorna Exif"
 
 #. Grouping keys
 #: ../src/libs/image.c:315
