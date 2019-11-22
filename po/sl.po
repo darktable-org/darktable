@@ -39,7 +39,7 @@
 # highlight = bleščava
 # hinter = glajenje robov črk  https://en.wikipedia.org/wiki/Font_hinting
 # hue = odtenek
-# lightness = lahkost
+# lightness = HSV svetlost
 # lighttable = svetlobna podlaga
 # luma = luma    kaj je luminiscenca?
 # luminance = svetlost
@@ -58,10 +58,10 @@
 # Matjaž Jeran <matjaz.jeran@amis.net>, 2015-2019.
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 3.0.0rc-git6.5340d428d\n"
+"Project-Id-Version: darktable 3.0.0rc1~git44.9534ab08d\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-04 22:57+0100\n"
-"PO-Revision-Date: 2019-11-05 18:10+0100\n"
+"PO-Revision-Date: 2019-11-21 09:34+0100\n"
 "Last-Translator: Matjaž Jeran <matjaz.jeran@amis.net>\n"
 "Language-Team: Slovenian <lugos-slo@lugos.si>\n"
 "Language: sl\n"
@@ -1970,11 +1970,11 @@ msgstr "a3"
 
 #: ../src/common/pdf.h:106
 msgid "letter"
-msgstr "ameriško pismo"
+msgstr "ameriško pismo (letter)"
 
 #: ../src/common/pdf.h:107
 msgid "legal"
-msgstr "ameriški pravni format"
+msgstr "ameriški pravni format (legal)"
 
 #: ../src/common/pwstorage/pwstorage.c:83
 msgid "GNOME Keyring backend is no longer supported. configure a different one"
@@ -4701,7 +4701,7 @@ msgid ""
 "example: 210 mm x 2.97 cm"
 msgstr ""
 "velikost papirja za pdf\n"
-"bodisi iz seznama ali \"<širina> [enota] x <višina> <enota>\n"
+"bodisi iz seznama ali \"<širina> [enota] x <višina> [enota]\n"
 "npr.: 210 mm x 2.97 cm"
 
 #: ../src/imageio/format/pdf.c:621
@@ -11088,7 +11088,7 @@ msgstr "RGB povprečje"
 
 #: ../src/iop/toneequal.c:3143
 msgid "HSL lightness"
-msgstr "HSV lahkost"
+msgstr "HSV svetlost"
 
 #: ../src/iop/toneequal.c:3144
 msgid "HSV value / RGB max"
@@ -11493,7 +11493,7 @@ msgstr ""
 #. Text font
 #: ../src/iop/watermark.c:1414
 msgid "font"
-msgstr "črkopis"
+msgstr "pisava"
 
 #: ../src/iop/watermark.c:1420
 msgid ""
@@ -11502,7 +11502,7 @@ msgid ""
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
 msgstr ""
-"črkopis, značke:\n"
+"pisava, značke:\n"
 "$(WATERMARK_FONT_FAMILY)\n"
 "$(WATERMARK_FONT_STYLE)\n"
 "$(WATERMARK_FONT_WEIGHT)"
