@@ -134,6 +134,7 @@ typedef enum dt_image_loader_t
   LOADER_GM = 8,
   LOADER_RAWSPEED = 9,
   LOADER_PNM = 10,
+  LOADER_AVIF = 11,
 } dt_image_loader_t;
 
 typedef struct dt_image_geoloc_t
