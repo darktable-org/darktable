@@ -91,7 +91,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
-#if 0 // BAUHAUS doesn't support keyaccels yet...
 void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "sharpness"));
@@ -106,7 +105,6 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_slider_iop(self, "sharpness", GTK_WIDGET(g->scale1));
   dt_accel_connect_slider_iop(self, "contrast boost", GTK_WIDGET(g->scale2));
 }
-#endif
 
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
