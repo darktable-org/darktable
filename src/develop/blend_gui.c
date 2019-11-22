@@ -1119,6 +1119,73 @@ static gboolean _blendop_blendif_color_picker_callback_button_press(GtkWidget *w
   return dt_iop_color_picker_callback_button_press(widget, e, color_picker);
 }
 
+// activate channel/mask view
+static void _blendop_blendif_channel_mask_view(GtkWidget *widget, dt_iop_module_t *module, dt_dev_pixelpipe_display_mask_t mode)
+{
+  dt_iop_gui_blend_data_t *data = module->blend_data;
+
+  dt_dev_pixelpipe_display_mask_t new_request_mask_display = module->request_mask_display | mode;
+
+  // in case user requests channel display: get the cannel
+  if(new_request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)
+  {
+    int tab = data->tab;
+    int inout = (widget == GTK_WIDGET(data->lower_slider)) ? 0 : 1;
+    dt_dev_pixelpipe_display_mask_t channel = data->display_channel[tab][inout];
+
+    new_request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_ANY;
+    new_request_mask_display |= channel;
+  }
+
+  // only if something has changed: reprocess center view
+  if(new_request_mask_display != module->request_mask_display)
+  {
+    module->request_mask_display = new_request_mask_display;
+    dt_dev_reprocess_all(module->dev);
+  }
+}
+
+// toggle channel/mask view
+static void _blendop_blendif_channel_mask_view_toggle(GtkWidget *widget, dt_iop_module_t *module, dt_dev_pixelpipe_display_mask_t mode)
+{
+  dt_iop_gui_blend_data_t *data = module->blend_data;
+
+  dt_dev_pixelpipe_display_mask_t new_request_mask_display = module->request_mask_display & ~DT_DEV_PIXELPIPE_DISPLAY_STICKY;
+
+  // toggle mode
+  if(module->request_mask_display & mode)
+    new_request_mask_display &= ~mode;
+  else
+    new_request_mask_display |= mode;
+
+  dt_pthread_mutex_lock(&data->lock);
+  if(new_request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_STICKY)
+    data->save_for_leave |= DT_DEV_PIXELPIPE_DISPLAY_STICKY;
+  else
+    data->save_for_leave &= ~DT_DEV_PIXELPIPE_DISPLAY_STICKY;
+  dt_pthread_mutex_unlock(&data->lock);
+
+  new_request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_ANY;
+
+  // in case user requests channel display: get the cannel
+  if(new_request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)
+  {
+    int tab = data->tab;
+    int inout = (widget == GTK_WIDGET(data->lower_slider)) ? 0 : 1;
+    dt_dev_pixelpipe_display_mask_t channel = data->display_channel[tab][inout];
+
+    new_request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_ANY;
+    new_request_mask_display |= channel;
+  }
+
+  if(new_request_mask_display != module->request_mask_display)
+  {
+    module->request_mask_display = new_request_mask_display;
+    dt_dev_reprocess_all(module->dev);
+  }
+}
+
+
 // magic mode: if mouse cursor enters a gradient slider with shift and/or control pressed we
 // enter channel display and/or mask display mode
 static gboolean _blendop_blendif_enter(GtkWidget *widget, GdkEventCrossing *event, dt_iop_module_t *module)
@@ -1136,44 +1203,29 @@ static gboolean _blendop_blendif_enter(GtkWidget *widget, GdkEventCrossing *even
   else
   {
     // save request_mask_display to restore later
-    data->save_for_leave = module->request_mask_display;
+    if(!(data->save_for_leave & DT_DEV_PIXELPIPE_DISPLAY_STICKY))
+      data->save_for_leave = module->request_mask_display & ~DT_DEV_PIXELPIPE_DISPLAY_STICKY;
   }
   dt_pthread_mutex_unlock(&data->lock);
 
-  dt_dev_pixelpipe_display_mask_t new_request_mask_display = module->request_mask_display;
+  dt_dev_pixelpipe_display_mask_t mode = 0;
 
   // depending on shift modifiers we activate channel and/or mask display
   GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
   if((event->state & modifiers) == (GDK_SHIFT_MASK | GDK_CONTROL_MASK))
   {
-    new_request_mask_display |= (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
+    mode = (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
   }
   else if((event->state & modifiers) == GDK_SHIFT_MASK)
   {
-    new_request_mask_display |= DT_DEV_PIXELPIPE_DISPLAY_CHANNEL;
+    mode = DT_DEV_PIXELPIPE_DISPLAY_CHANNEL;
   }
   else if((event->state & modifiers) == GDK_CONTROL_MASK)
   {
-    new_request_mask_display |= DT_DEV_PIXELPIPE_DISPLAY_MASK;
+    mode = DT_DEV_PIXELPIPE_DISPLAY_MASK;
   }
 
-  // in case user requests channel display: get the cannel
-  if(new_request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)
-  {
-    const int tab = data->tab;
-    const int inout = (widget == GTK_WIDGET(data->lower_slider)) ? 0 : 1;
-    dt_dev_pixelpipe_display_mask_t channel = data->display_channel[tab][inout];
-
-    new_request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_ANY;
-    new_request_mask_display |= channel;
-  }
-
-  // only if something has changed: reprocess center view
-  if(new_request_mask_display != module->request_mask_display)
-  {
-    module->request_mask_display = new_request_mask_display;
-    dt_dev_reprocess_all(module->dev);
-  }
+  _blendop_blendif_channel_mask_view(widget, module, mode);
 
   dt_control_key_accelerators_off(darktable.control);
   gtk_widget_grab_focus(widget);
@@ -1189,9 +1241,9 @@ static gboolean _blendop_blendif_leave_delayed(gpointer data)
 
   dt_pthread_mutex_lock(&bd->lock);
   // restore saved request_mask_display and reprocess image
-  if(bd->timeout_handle && (module->request_mask_display != bd->save_for_leave))
+  if(bd->timeout_handle && (module->request_mask_display != (bd->save_for_leave & ~DT_DEV_PIXELPIPE_DISPLAY_STICKY)))
   {
-    module->request_mask_display = bd->save_for_leave;
+    module->request_mask_display = bd->save_for_leave & ~DT_DEV_PIXELPIPE_DISPLAY_STICKY;
     dt_dev_reprocess_all(module->dev);
   }
 
@@ -1208,18 +1260,18 @@ static gboolean _blendop_blendif_leave(GtkWidget *widget, GdkEventCrossing *even
   if(darktable.gui->reset) return FALSE;
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
-  if(module->request_mask_display & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL))
-  {
-    // do not immediately switch-off mask/channel display in case user leaves gradient only briefly.
-    // instead we activate a handler function that gets triggered after some timeout
-    dt_pthread_mutex_lock(&data->lock);
-    if(!data->timeout_handle && (module->request_mask_display != data->save_for_leave))
+  // do not immediately switch-off mask/channel display in case user leaves gradient only briefly.
+  // instead we activate a handler function that gets triggered after some timeout
+  dt_pthread_mutex_lock(&data->lock);
+  if(!(module->request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_STICKY) && !data->timeout_handle &&
+    (module->request_mask_display != (data->save_for_leave & ~DT_DEV_PIXELPIPE_DISPLAY_STICKY)))
       data->timeout_handle = g_timeout_add(1000, _blendop_blendif_leave_delayed, module);
-    dt_pthread_mutex_unlock(&data->lock);
-  }
+  dt_pthread_mutex_unlock(&data->lock);
+
   if(!darktable.control->key_accelerators_on) dt_control_key_accelerators_on(darktable.control);
   return TRUE;
 }
+
 
 static float log10_scale_callback(GtkWidget *self, float inval, int dir)
 {
@@ -1326,12 +1378,30 @@ static gboolean _blendop_blendif_key_press(GtkWidget *widget, GdkEventKey *event
   GtkDarktableGradientSlider *slider = (GtkDarktableGradientSlider *)widget;
   const int uplow = (slider == data->lower_slider) ? 0 : 1;
 
-  if(event->keyval == GDK_KEY_a)
+  switch(event->keyval)
   {
-    if(data->altdisplay[tab])
-      data->altmode[tab][uplow] = (data->altdisplay[tab])(widget, module, data->altmode[tab][uplow] + 1);
-    handled = TRUE;
+    case GDK_KEY_a:
+    case GDK_KEY_A:
+      if(data->altdisplay[tab])
+        data->altmode[tab][uplow] = (data->altdisplay[tab])(widget, module, data->altmode[tab][uplow] + 1);
+      handled = TRUE;
+      break;
+    case GDK_KEY_c:
+      _blendop_blendif_channel_mask_view_toggle(widget, module, DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
+      handled = TRUE;
+      break;
+    case GDK_KEY_C:
+      _blendop_blendif_channel_mask_view_toggle(widget, module, DT_DEV_PIXELPIPE_DISPLAY_CHANNEL | DT_DEV_PIXELPIPE_DISPLAY_STICKY);
+      handled = TRUE;
+      break;
+    case GDK_KEY_m:
+    case GDK_KEY_M:
+      _blendop_blendif_channel_mask_view_toggle(widget, module, DT_DEV_PIXELPIPE_DISPLAY_MASK);
+      handled = TRUE;
   }
+
+  if(handled)
+    dt_iop_request_focus(module);
 
   return handled;
 }
@@ -1353,9 +1423,9 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
   {
     g_source_remove(data->timeout_handle);
     data->timeout_handle = 0;
-    if(module->request_mask_display != data->save_for_leave)
+    if(module->request_mask_display != (data->save_for_leave & ~DT_DEV_PIXELPIPE_DISPLAY_STICKY))
     {
-      module->request_mask_display = data->save_for_leave;
+      module->request_mask_display = data->save_for_leave & ~DT_DEV_PIXELPIPE_DISPLAY_STICKY;
       dt_dev_reprocess_all(module->dev);
     }
   }
@@ -1700,8 +1770,8 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
       gtk_box_pack_start(GTK_BOX(lowlabel), GTK_WIDGET(bd->lower_label[k]), FALSE, FALSE, 0);
     }
 
-    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->lower_slider), _("double click to reset. press 'a' to toggle available view modes"));
-    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->upper_slider), _("double click to reset. press 'a' to toggle available view modes"));
+    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->lower_slider), _("double click to reset. press 'a' to toggle available slider modes.\npress 'c' to toggle view of channel data. press 'm' to toggle mask view."));
+    gtk_widget_set_tooltip_text(GTK_WIDGET(bd->upper_slider), _("double click to reset. press 'a' to toggle available slider modes.\npress 'c' to toggle view of channel data. press 'm' to toggle mask view."));
     gtk_widget_set_tooltip_text(GTK_WIDGET(bd->lower_head), ttinput);
     gtk_widget_set_tooltip_text(GTK_WIDGET(bd->upper_head), ttoutput);
 
@@ -2289,14 +2359,25 @@ void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module)
   const int has_mask_display = module->request_mask_display & (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
   const int suppress = module->suppress_mask;
 
-  if((module->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && module->blend_data && (has_mask_display || suppress))
+  if((module->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && module->blend_data)
   {
     dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
     dtgtk_button_set_active(DTGTK_BUTTON(bd->showmask), FALSE);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), FALSE);
     module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
     module->suppress_mask = 0;
-    dt_dev_reprocess_all(module->dev);
+    dt_pthread_mutex_lock(&bd->lock);
+    bd->save_for_leave = DT_DEV_PIXELPIPE_DISPLAY_NONE;
+    if(bd->timeout_handle)
+    {
+      // purge any remaining timeout handlers
+      g_source_remove(bd->timeout_handle);
+      bd->timeout_handle = 0;
+    }
+    dt_pthread_mutex_unlock(&bd->lock);
+
+    // reprocess if needed
+    if (has_mask_display || suppress) dt_dev_reprocess_all(module->dev);
   }
 }
 
