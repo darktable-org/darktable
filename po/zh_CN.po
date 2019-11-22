@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: git-bd1547418\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:31+0100\n"
-"PO-Revision-Date: 2019-11-21 19:15+0800\n"
+"PO-Revision-Date: 2019-11-22 10:20+0800\n"
 "Last-Translator: Song Li <songl@outlook.com>\n"
 "Language-Team: 汉语 <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
@@ -26,32 +26,29 @@ msgstr ""
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
-msgstr ""
+msgstr "虚拟的光台和暗房"
 
 #: ../build/data/darktable.desktop.in.h:2 ../data/darktable.appdata.xml.in.h:1
 #: ../data/darktable.desktop.in.h:2
-#, fuzzy
 msgid "Organize and develop images from digital cameras"
-msgstr "组织和开发数码相机导出的图片"
+msgstr "组织并冲印来自数码相机的图片"
 
 #. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
 #: ../build/data/darktable.desktop.in.h:4 ../data/darktable.desktop.in.h:4
 msgid "graphics;photography;raw;"
-msgstr ""
+msgstr "graphics;photography;raw;图片;图像;摄影;"
 
 #: ../build/src/preferences_gen.h:2104
-#, fuzzy
 msgid "GUI options"
-msgstr "GUI选项"
+msgstr "GUI 选项"
 
 #: ../build/src/preferences_gen.h:2107 ../src/libs/import.c:107
 msgid "import"
 msgstr "导入"
 
 #: ../build/src/preferences_gen.h:2116
-#, fuzzy
 msgid "ignore JPEG images when importing film rolls"
-msgstr "导入胶卷时忽略jpeg图像"
+msgstr "导入胶卷时忽略 JPEG 图像"
 
 #: ../build/src/preferences_gen.h:2125 ../build/src/preferences_gen.h:2145
 #: ../build/src/preferences_gen.h:2168 ../build/src/preferences_gen.h:2191
@@ -107,13 +104,12 @@ msgid "FALSE"
 msgstr ""
 
 #: ../build/src/preferences_gen.h:2128
-#, fuzzy
 msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
 msgstr ""
-"在目录中图像同时拥有raw和jpeg格式时都导入是没有意义的。使用此标志，可以忽略发"
-"现的所有jpeg文件。"
+"在目录中图像同时拥有raw和JPEG格式时都导入是没有意义的。使用此标志，可以忽略发"
+"现的所有JPEG文件。"
 
 #: ../build/src/preferences_gen.h:2136
 msgid "recursive directory traversal when importing filmrolls"
@@ -158,12 +154,10 @@ msgid "lighttable"
 msgstr "光台"
 
 #: ../build/src/preferences_gen.h:2285
-#, fuzzy
 msgid "don't use embedded preview JPEG but half-size raw"
 msgstr "使用一半尺寸的raw文件，忽略内嵌的预览jpeg"
 
 #: ../build/src/preferences_gen.h:2297
-#, fuzzy
 msgid ""
 "check this option to not use the embedded JPEG from the raw file but process "
 "the raw data. this is slower but gives you color managed thumbnails."
@@ -173,7 +167,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2305
 msgid "high quality thumb processing from size"
-msgstr ""
+msgstr "按大小处理高质量缩略图"
 
 #: ../build/src/preferences_gen.h:2316 ../build/src/preferences_gen.h:3697
 msgctxt "preferences"
@@ -281,7 +275,6 @@ msgid "pen pressure control for brush masks"
 msgstr ""
 
 #: ../build/src/preferences_gen.h:2502 ../build/src/preferences_gen.h:2542
-#, fuzzy
 msgctxt "preferences"
 msgid "off"
 msgstr "关"
@@ -289,29 +282,27 @@ msgstr "关"
 #: ../build/src/preferences_gen.h:2507
 msgctxt "preferences"
 msgid "hardness (relative)"
-msgstr ""
+msgstr "硬度 (相对值)"
 
 #: ../build/src/preferences_gen.h:2512
 msgctxt "preferences"
 msgid "hardness (absolute)"
-msgstr ""
+msgstr "硬度 (绝对值)"
 
 #: ../build/src/preferences_gen.h:2517
 msgctxt "preferences"
 msgid "opacity (relative)"
-msgstr ""
+msgstr "透明度 (相对值)"
 
 #: ../build/src/preferences_gen.h:2522
-#, fuzzy
 msgctxt "preferences"
 msgid "opacity (absolute)"
-msgstr "清晰度(小)"
+msgstr "透明度 (绝对值)"
 
 #: ../build/src/preferences_gen.h:2527
-#, fuzzy
 msgctxt "preferences"
 msgid "brush size (relative)"
-msgstr "尺寸相对于"
+msgstr "笔刷尺寸 (相对值)"
 
 #: ../build/src/preferences_gen.h:2545
 msgid ""
@@ -325,21 +316,19 @@ msgid "smoothing of brush strokes"
 msgstr ""
 
 #: ../build/src/preferences_gen.h:2564
-#, fuzzy
 msgctxt "preferences"
 msgid "low"
-msgstr "黄"
+msgstr "低"
 
 #: ../build/src/preferences_gen.h:2569 ../build/src/preferences_gen.h:2589
 msgctxt "preferences"
 msgid "medium"
-msgstr ""
+msgstr "中"
 
 #: ../build/src/preferences_gen.h:2574
-#, fuzzy
 msgctxt "preferences"
 msgid "high"
-msgstr "高通滤镜"
+msgstr "高"
 
 #: ../build/src/preferences_gen.h:2592
 msgid ""
@@ -352,16 +341,14 @@ msgid "display of individual color channels"
 msgstr ""
 
 #: ../build/src/preferences_gen.h:2611 ../build/src/preferences_gen.h:2631
-#, fuzzy
 msgctxt "preferences"
 msgid "false color"
-msgstr "分帧线颜色"
+msgstr "伪色"
 
 #: ../build/src/preferences_gen.h:2616
-#, fuzzy
 msgctxt "preferences"
 msgid "grey scale"
-msgstr "拉伸"
+msgstr "灰度"
 
 #: ../build/src/preferences_gen.h:2634
 msgid ""
@@ -370,9 +357,8 @@ msgid ""
 msgstr ""
 
 #: ../build/src/preferences_gen.h:2642
-#, fuzzy
 msgid "pattern for the image infos line"
-msgstr "优质的打印图像位置"
+msgstr ""
 
 #: ../build/src/preferences_gen.h:2658
 msgid "see manual to know all the tags you can use."
@@ -383,32 +369,29 @@ msgid "position of the image infos line"
 msgstr ""
 
 #: ../build/src/preferences_gen.h:2677
-#, fuzzy
 msgctxt "preferences"
 msgid "top left"
-msgstr "向左滚动"
+msgstr "左上"
 
 #: ../build/src/preferences_gen.h:2682
-#, fuzzy
 msgctxt "preferences"
 msgid "top right"
-msgstr "版权"
+msgstr "右上"
 
 #: ../build/src/preferences_gen.h:2687
-#, fuzzy
 msgctxt "preferences"
 msgid "top center"
-msgstr "中心"
+msgstr "上中"
 
 #: ../build/src/preferences_gen.h:2692 ../build/src/preferences_gen.h:2712
 msgctxt "preferences"
 msgid "bottom"
-msgstr ""
+msgstr "底部"
 
 #: ../build/src/preferences_gen.h:2697
 msgctxt "preferences"
 msgid "hidden"
-msgstr ""
+msgstr "隐藏"
 
 #: ../build/src/preferences_gen.h:2722
 msgid "show search module text entry"
@@ -420,16 +403,14 @@ msgid "show search text"
 msgstr ""
 
 #: ../build/src/preferences_gen.h:2738
-#, fuzzy
 msgctxt "preferences"
 msgid "show groups"
-msgstr "显示osd"
+msgstr ""
 
 #: ../build/src/preferences_gen.h:2743 ../build/src/preferences_gen.h:2758
-#, fuzzy
 msgctxt "preferences"
 msgid "show both"
-msgstr "显示osd"
+msgstr ""
 
 #: ../build/src/preferences_gen.h:2768
 msgid "expand a single darkroom module at a time"
@@ -497,17 +478,15 @@ msgid "maximum number of images drawn on map"
 msgstr "在地图上绘制图像的最大数量"
 
 #: ../build/src/preferences_gen.h:2903
-#, fuzzy
 msgid ""
 "the maximum number of geotagged images drawn on the map. increasing this "
 "number can slow drawing of the map down."
 msgstr ""
 "绘制在地图上的拥有地理标志的图像的最大数量。增加该值会降低地图绘制的速度。"
-"（需要重新启动）"
 
 #: ../build/src/preferences_gen.h:2911
 msgid "pretty print the image location"
-msgstr "优质的打印图像位置"
+msgstr "打印图像的位置"
 
 #: ../build/src/preferences_gen.h:2923
 msgid ""
@@ -516,9 +495,8 @@ msgid ""
 msgstr "在图像的信息模块中显示更具可读性的位置标示"
 
 #: ../build/src/preferences_gen.h:2931
-#, fuzzy
 msgid "security"
-msgstr "清晰度"
+msgstr "安全性"
 
 #: ../build/src/preferences_gen.h:2940
 msgid "ask before removing images from database"
@@ -529,9 +507,8 @@ msgid "always ask the user before any image is removed from DB."
 msgstr "从数据库移除任何图像前询问用户。"
 
 #: ../build/src/preferences_gen.h:2960
-#, fuzzy
 msgid "ask before erasing images from disk / discarding history stack"
-msgstr "在磁盘中删除图像前询问"
+msgstr "在磁盘中删除图像或丢弃历史前询问"
 
 #: ../build/src/preferences_gen.h:2972
 msgid ""
@@ -566,9 +543,8 @@ msgid "always ask the user before any image file is copied."
 msgstr "复制任何图像前询问用户。"
 
 #: ../build/src/preferences_gen.h:3040
-#, fuzzy
 msgid "ask before removing empty folders"
-msgstr "从数据库移除图像前询问"
+msgstr "移除空文件夹前询问"
 
 #: ../build/src/preferences_gen.h:3052
 msgid ""
@@ -581,13 +557,12 @@ msgid "ask before deleting a tag"
 msgstr "删除标签前询问"
 
 #: ../build/src/preferences_gen.h:3079
-#, fuzzy
 msgid "ask before deleting a style"
-msgstr "删除标签前询问"
+msgstr "删除样式前询问"
 
 #: ../build/src/preferences_gen.h:3098 ../build/src/preferences_gen.h:3991
 msgid "miscellaneous"
-msgstr ""
+msgstr "杂项"
 
 #: ../build/src/preferences_gen.h:3107
 msgid "width of the side panels in pixels"
@@ -624,9 +599,8 @@ msgid "enable the filmstrip in darkroom, tethering and map modes."
 msgstr "在暗房、连机和地图模式中启用幻灯片。"
 
 #: ../build/src/preferences_gen.h:3226
-#, fuzzy
 msgid "enable timeline"
-msgstr "启用模块"
+msgstr "启用时间线"
 
 #: ../build/src/preferences_gen.h:3238
 msgid "enable the timeline in lighttable mode."
@@ -663,16 +637,14 @@ msgid "no scrollbars"
 msgstr ""
 
 #: ../build/src/preferences_gen.h:3302 ../build/src/preferences_gen.h:3322
-#, fuzzy
 msgctxt "preferences"
 msgid "lighttable"
 msgstr "光台"
 
 #: ../build/src/preferences_gen.h:3307
-#, fuzzy
 msgctxt "preferences"
 msgid "lighttable + darkroom"
-msgstr "光台"
+msgstr "光台+暗房"
 
 #: ../build/src/preferences_gen.h:3325
 msgid "defines where scrollbars should be displayed"
@@ -693,7 +665,6 @@ msgid "method to use for getting the display profile"
 msgstr ""
 
 #: ../build/src/preferences_gen.h:3364 ../build/src/preferences_gen.h:3389
-#, fuzzy
 msgctxt "preferences"
 msgid "all"
 msgstr "全部"
@@ -704,10 +675,9 @@ msgid "xatom"
 msgstr ""
 
 #: ../build/src/preferences_gen.h:3374
-#, fuzzy
 msgctxt "preferences"
 msgid "colord"
-msgstr "颜色"
+msgstr ""
 
 #: ../build/src/preferences_gen.h:3392
 msgid ""
@@ -723,7 +693,7 @@ msgstr "核心选项"
 #: ../src/imageio/format/jpeg.c:594 ../src/imageio/format/webp.c:329
 #: ../src/libs/camera.c:594
 msgid "quality"
-msgstr "quality品质"
+msgstr "品质"
 
 #: ../build/src/preferences_gen.h:3433
 msgid "color manage cached thumbnails"
@@ -745,9 +715,8 @@ msgid "this is slower than the default."
 msgstr "比起默认这会显著变慢。"
 
 #: ../build/src/preferences_gen.h:3473
-#, fuzzy
 msgid "do high quality processing for slideshow"
-msgstr "在导出时进行高质量重新采样"
+msgstr "为幻灯使用高质量处理"
 
 #: ../build/src/preferences_gen.h:3485
 msgid "same option as for export, but applies to slideshow."
@@ -785,10 +754,9 @@ msgid "pixel interpolator"
 msgstr "像素内插器(pixel interpolator)"
 
 #: ../build/src/preferences_gen.h:3551
-#, fuzzy
 msgctxt "preferences"
 msgid "bilinear"
-msgstr "线性"
+msgstr ""
 
 #: ../build/src/preferences_gen.h:3556
 msgctxt "preferences"
@@ -812,9 +780,8 @@ msgid ""
 msgstr "用于转动和镜头校正的像素内插器(双线性，双三次，lanczos2，lanczos3)。"
 
 #: ../build/src/preferences_gen.h:3592
-#, fuzzy
 msgid "auto-apply basecurve"
-msgstr "自动曝光"
+msgstr ""
 
 #: ../build/src/preferences_gen.h:3604
 msgid "use a basecurve by default (needs a restart)"
@@ -842,9 +809,8 @@ msgid ""
 msgstr ""
 
 #: ../build/src/preferences_gen.h:3652
-#, fuzzy
 msgid "xmp"
-msgstr "地图"
+msgstr "xmp"
 
 #: ../build/src/preferences_gen.h:3661
 msgid "write sidecar file for each image"
@@ -887,9 +853,8 @@ msgid "cpu / gpu / memory"
 msgstr ""
 
 #: ../build/src/preferences_gen.h:3757
-#, fuzzy
 msgid "memory in megabytes to use for thumbnail cache"
-msgstr "mipmap 缓存所用内存大小（MB）"
+msgstr "缩略图缓存所用内存大小（MB）"
 
 #: ../build/src/preferences_gen.h:3777
 msgid ""
@@ -967,23 +932,20 @@ msgstr ""
 "比基于主机内存限制自动探测的值有更高优先级。需重启生效。"
 
 #: ../build/src/preferences_gen.h:3908
-#, fuzzy
 msgid "activate OpenCL support"
-msgstr "启用opencl支持"
+msgstr "启用 OpenCL 支持"
 
 #: ../build/src/preferences_gen.h:3920
-#, fuzzy
 msgid ""
 "if found, use OpenCL runtime on your system for improved processing speed. "
 "can be switched on and off at any time."
 msgstr ""
-"如果存在，将在您的系统上使用opencl运行时以提高处理速度。这一功能能够随时开启"
+"如果存在，将在您的系统上使用OpenCL运行时以提高处理速度。这一功能能够随时开启"
 "或关闭。"
 
 #: ../build/src/preferences_gen.h:3921 ../build/src/preferences_gen.h:3976
-#, fuzzy
 msgid "not available"
-msgstr "当前系统不可用"
+msgstr "不可用"
 
 #: ../build/src/preferences_gen.h:3924 ../build/src/preferences_gen.h:3928
 #: ../build/src/preferences_gen.h:3979 ../build/src/preferences_gen.h:3983
@@ -997,21 +959,19 @@ msgstr ""
 #. Adding the restore defaults button
 #: ../build/src/preferences_gen.h:3947 ../build/src/preferences_gen.h:3972
 #: ../src/gui/preferences.c:630
-#, fuzzy
 msgctxt "preferences"
 msgid "default"
 msgstr "默认"
 
 #: ../build/src/preferences_gen.h:3952
-#, fuzzy
 msgctxt "preferences"
 msgid "multiple GPUs"
-msgstr "正片叠底(multiply)"
+msgstr "多个GPU"
 
 #: ../build/src/preferences_gen.h:3957
 msgctxt "preferences"
 msgid "very fast GPU"
-msgstr ""
+msgstr "非常快的GPU"
 
 #: ../build/src/preferences_gen.h:3975
 msgid ""
@@ -1050,32 +1010,29 @@ msgid "password storage backend to use"
 msgstr "保存密码所用后端服务"
 
 #: ../build/src/preferences_gen.h:4051 ../build/src/preferences_gen.h:4083
-#, fuzzy
 msgctxt "preferences"
 msgid "auto"
 msgstr "自动"
 
 #: ../build/src/preferences_gen.h:4056
-#, fuzzy
 msgctxt "preferences"
 msgid "none"
-msgstr "没有"
+msgstr "无"
 
 #: ../build/src/preferences_gen.h:4061
 msgctxt "preferences"
 msgid "libsecret"
-msgstr ""
+msgstr "libsecret"
 
 #: ../build/src/preferences_gen.h:4067
 msgctxt "preferences"
 msgid "kwallet"
-msgstr ""
+msgstr "kwallet"
 
 #: ../build/src/preferences_gen.h:4086
-#, fuzzy
 msgid ""
 "the storage backend for password storage: auto, none, libsecret, kwallet"
-msgstr "用于保存密码的后端服务：没有， kwallet，gnome keyring"
+msgstr "用于保存密码的后端服务：自动，无，libsecret, kwallet"
 
 #: ../build/src/preferences_gen.h:4094
 msgid "executable for playing audio files"
@@ -1123,9 +1080,8 @@ msgid "sub directory naming pattern"
 msgstr ""
 
 #: ../build/src/preferences_gen.h:4215
-#, fuzzy
 msgid "file naming pattern"
-msgstr "文件管理器"
+msgstr "文件名模式"
 
 #: ../build/src/preferences_gen.h:4231
 msgid "file naming pattern used for a import session"
@@ -1163,24 +1119,22 @@ msgid "Virtual dark room, sharpening an image"
 msgstr ""
 
 #: ../data/darktable.appdata.xml.in.h:8
-#, fuzzy
 msgid "Show images on a map"
-msgstr "从相机导入图像"
+msgstr "在地图上显示图像"
 
 #: ../data/darktable.appdata.xml.in.h:9
-#, fuzzy
 msgid "Print your images"
-msgstr "添加更多图片"
+msgstr "打印图像"
 
 #: ../src/bauhaus/bauhaus.c:2260
 #, c-format
 msgid "%s/%s: %s"
-msgstr ""
+msgstr "%s/%s: %s"
 
 #: ../src/bauhaus/bauhaus.c:2262
 #, c-format
 msgid "%s: %s"
-msgstr ""
+msgstr "%s: %s"
 
 #: ../src/chart/main.c:463 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/hist_dialog.c:171
@@ -1194,7 +1148,6 @@ msgstr ""
 #: ../src/libs/import.c:759 ../src/libs/import.c:866 ../src/libs/lib.c:228
 #: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2125
 #: ../src/libs/tagging.c:2166
-#, fuzzy
 msgid "_cancel"
 msgstr "取消"
 
@@ -1202,7 +1155,7 @@ msgstr "取消"
 #: ../src/gui/preferences.c:1387 ../src/gui/styles_dialog.c:284
 #: ../src/libs/styles.c:301
 msgid "_save"
-msgstr ""
+msgstr "保存"
 
 #. TODO: is the rank interesting, too?
 #: ../src/chart/main.c:967
@@ -1211,35 +1164,34 @@ msgid ""
 "average dE: %.02f\n"
 "max dE: %.02f"
 msgstr ""
+"平均 dE: %.02f\n"
+"最大 dE: %.02f"
 
 #: ../src/cli/main.c:117
-#, fuzzy
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
-msgstr "TODO：很抱歉，由于api的限制，我们目前还没有设置bbp"
+msgstr "TODO：很抱歉，由于api的限制，我们目前无法将 BPP 设置为"
 
 #: ../src/cli/main.c:129
-#, fuzzy
 msgid "unknown option for --hq"
 msgstr "未知选项 --hq"
 
 #: ../src/cli/main.c:145
-#, fuzzy
 msgid "unknown option for --upscale"
-msgstr "未知选项 --hq"
+msgstr "未知选项 --upscale"
 
 #: ../src/cli/main.c:208
 #, c-format
 msgid "error: output file is a directory. please specify file name"
-msgstr ""
+msgstr "错误：输出文件是一个文件夹，请给出文件名"
 
 #: ../src/cli/main.c:217
 msgid "output file already exists, it will get renamed"
 msgstr "输出文件已经存在,它将会被重命名"
 
 #: ../src/cli/main.c:234
-#, fuzzy, c-format
+#, c-format
 msgid "error: can't open folder %s"
-msgstr "错误：无法打开文件 `%s'"
+msgstr "错误：无法打开文件夹 %s"
 
 #: ../src/cli/main.c:252
 #, c-format
@@ -1252,9 +1204,9 @@ msgid "no images to export, aborting\n"
 msgstr "没有图像要导出，取消\n"
 
 #: ../src/cli/main.c:280
-#, fuzzy, c-format
+#, c-format
 msgid "error: can't open xmp file %s"
-msgstr "错误：无法打开文件 `%s'"
+msgstr "错误：无法打开xmp文件 %s"
 
 #: ../src/cli/main.c:298
 msgid "empty history stack"
@@ -1319,19 +1271,17 @@ msgid "altered"
 msgstr "已改变"
 
 #: ../src/common/collection.c:1264 ../src/libs/collect.c:1260
-#, fuzzy
 msgid "tagged"
-msgstr "+标签"
+msgstr "已加标签"
 
 #: ../src/common/collection.c:1270 ../src/libs/collect.c:1269
 msgid "not copied locally"
-msgstr ""
+msgstr "没有本地复制"
 
 #. grouping
 #: ../src/common/collection.c:1483 ../src/libs/collect.c:1373
-#, fuzzy
 msgid "group leaders"
-msgstr "组合形状"
+msgstr ""
 
 #: ../src/common/collection.c:1681
 #, c-format
@@ -1358,15 +1308,13 @@ msgstr "Adobe RGB (兼容)"
 
 #: ../src/common/colorspaces.c:970 ../src/common/colorspaces.c:1279
 #: ../src/iop/colorin.c:2110
-#, fuzzy
 msgid "linear Rec709 RGB"
-msgstr "线性RGB"
+msgstr "线性 Rec709 RGB"
 
 #: ../src/common/colorspaces.c:971 ../src/common/colorspaces.c:1288
 #: ../src/iop/colorin.c:2111
-#, fuzzy
 msgid "linear Rec2020 RGB"
-msgstr "线性RGB"
+msgstr "线性Rec2020 RGB"
 
 #: ../src/common/colorspaces.c:972 ../src/common/colorspaces.c:1298
 msgid "linear XYZ"
@@ -1387,14 +1335,12 @@ msgid "system display profile"
 msgstr "系统显示配置"
 
 #: ../src/common/colorspaces.c:976
-#, fuzzy
 msgid "embedded ICC profile"
-msgstr "嵌入icc文件"
+msgstr "嵌入的 ICC 文件"
 
 #: ../src/common/colorspaces.c:977
-#, fuzzy
 msgid "embedded matrix"
-msgstr "嵌入矩阵的dng"
+msgstr "嵌入的矩阵"
 
 #: ../src/common/colorspaces.c:978
 msgid "standard color matrix"
@@ -1413,13 +1359,11 @@ msgid "alternate color matrix"
 msgstr "备用颜色矩阵"
 
 #: ../src/common/colorspaces.c:982
-#, fuzzy
 msgid "BRG (experimental)"
-msgstr "启用opencl支持（实验性的）"
+msgstr "BRG (实验性的)"
 
 #: ../src/common/colorspaces.c:983 ../src/common/colorspaces.c:1246
 #: ../src/iop/colorout.c:881
-#, fuzzy
 msgid "export profile"
 msgstr "输出配置"
 
@@ -1430,14 +1374,12 @@ msgstr "软打样配置"
 
 #. init the category profile with NULL profile, the actual profile must be retrieved dynamically by the caller
 #: ../src/common/colorspaces.c:985 ../src/common/colorspaces.c:1243
-#, fuzzy
 msgid "work profile"
-msgstr "档案"
+msgstr "工作档案"
 
 #: ../src/common/colorspaces.c:1265
-#, fuzzy
 msgid "sRGB (e.g. JPG)"
-msgstr "sRGB (例如jpg)"
+msgstr "sRGB (例如JPG)"
 
 #: ../src/common/colorspaces.c:1269 ../src/libs/print_settings.c:1027
 msgid "sRGB (web-safe)"
@@ -1445,16 +1387,15 @@ msgstr "sRGB (网络安全色)"
 
 #: ../src/common/colorspaces.c:1283
 msgid "gamma Rec709 RGB"
-msgstr ""
+msgstr "伽马 Rec709 RGB"
 
 #: ../src/common/colorspaces.c:1293
-#, fuzzy
 msgid "linear prophoto RGB"
-msgstr "线性RGB"
+msgstr "线性prophoto RGB"
 
 #: ../src/common/colorspaces.c:1311
 msgid "BRG (for testing)"
-msgstr ""
+msgstr "BRG (测试用)"
 
 #: ../src/common/cups_print.c:408
 #, c-format
@@ -1462,9 +1403,8 @@ msgid "file `%s' to print not found for image %d on `%s'"
 msgstr ""
 
 #: ../src/common/cups_print.c:427
-#, fuzzy
 msgid "failed to create temporary file for printing options"
-msgstr "覆盖 %s 的样式文件失败"
+msgstr "为打印选项创建临时文件失败"
 
 #: ../src/common/cups_print.c:495
 #, c-format
@@ -1477,9 +1417,9 @@ msgid "error while printing `%s' on `%s'"
 msgstr ""
 
 #: ../src/common/cups_print.c:560
-#, fuzzy, c-format
+#, c-format
 msgid "printing `%s' on `%s'"
-msgstr "编辑 `%s' ——> 模块 `%s'"
+msgstr "打印 `%s' 至 `%s'"
 
 #: ../src/common/darktable.c:230
 #, c-format
@@ -1611,10 +1551,9 @@ msgid "fast guided filter failed to allocate memory, check your RAM settings"
 msgstr ""
 
 #: ../src/common/film.c:311
-#, fuzzy
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
-msgstr[0] "你确定要从当前集合中移除 %d 张已选图像吗？"
+msgstr[0] "你确定要删除此空目录吗？"
 
 #: ../src/common/film.c:318
 msgid "remove empty directory?"
@@ -1679,9 +1618,9 @@ msgid "cannot access local copy `%s'"
 msgstr ""
 
 #: ../src/common/image.c:1461
-#, fuzzy, c-format
+#, c-format
 msgid "cannot write local copy `%s'"
-msgstr "无法写入目录 `%s'！"
+msgstr "无法写入本地拷贝 `%s'！"
 
 #: ../src/common/image.c:1468
 #, c-format
@@ -1699,9 +1638,9 @@ msgid "error moving `%s' -> `%s': file exists"
 msgstr ""
 
 #: ../src/common/image.c:1498
-#, fuzzy, c-format
+#, c-format
 msgid "error moving `%s' -> `%s'"
-msgstr "载入文件 `%s' 错误"
+msgstr ""
 
 #: ../src/common/image.c:1755
 msgid "cannot create local copy when the original file is not accessible."
@@ -1727,20 +1666,18 @@ msgid "image `%s' is not available!"
 msgstr "图像 `%s' 无法获取！"
 
 #: ../src/common/imageio.c:655
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
 "or buy more memory."
-msgstr "为图像导出分配内存失败，请减少用于导出的线程数，或者扩充您的内存。"
+msgstr "为 %s 分配内存失败，请减少用于导出的线程数，或者扩充您的内存。"
 
 #: ../src/common/imageio.c:656
-#, fuzzy
 msgctxt "noun"
 msgid "thumbnail export"
-msgstr "缩略图"
+msgstr "缩略图导出"
 
 #: ../src/common/imageio.c:656
-#, fuzzy
 msgctxt "noun"
 msgid "export"
 msgstr "导出"
@@ -1751,11 +1688,10 @@ msgid "cannot find the style '%s' to apply during export."
 msgstr "无法找到并应用样式 '%s' 用于导出。"
 
 #: ../src/common/import_session.c:272
-#, fuzzy
 msgid ""
 "couldn't expand to a unique filename for session, please check your import "
 "session settings."
-msgstr "导入文件无法扩展至一个特殊的文件名，请检查您的导入设置。"
+msgstr "无法扩展至一个不重复的文件名，请检查您的导入设置。"
 
 #: ../src/common/iop_order.c:1893
 #, c-format
@@ -1793,36 +1729,35 @@ msgstr ""
 #: ../src/common/pdf.h:88 ../src/iop/lens.cc:1947
 #: ../src/libs/print_settings.c:1286
 msgid "mm"
-msgstr "mm 毫米"
+msgstr "毫米"
 
 #: ../src/common/pdf.h:89 ../src/libs/print_settings.c:1287
 msgid "cm"
-msgstr ""
+msgstr "厘米"
 
 #: ../src/common/pdf.h:90 ../src/libs/print_settings.c:1288
 msgid "inch"
-msgstr ""
+msgstr "英寸"
 
 #: ../src/common/pdf.h:91
 msgid "\""
-msgstr ""
+msgstr "\""
 
 #: ../src/common/pdf.h:104
 msgid "a4"
-msgstr ""
+msgstr "a4"
 
 #: ../src/common/pdf.h:105
 msgid "a3"
-msgstr ""
+msgstr "a3"
 
 #: ../src/common/pdf.h:106
-#, fuzzy
 msgid "letter"
-msgstr "电池"
+msgstr "letter"
 
 #: ../src/common/pdf.h:107
 msgid "legal"
-msgstr ""
+msgstr "legal"
 
 #: ../src/common/pwstorage/pwstorage.c:83
 msgid "GNOME Keyring backend is no longer supported. configure a different one"
@@ -1871,9 +1806,9 @@ msgid "no image selected!"
 msgstr "没有选中图片！"
 
 #: ../src/common/styles.c:612
-#, fuzzy, c-format
+#, c-format
 msgid "module `%s' version mismatch: %d != %d"
-msgstr "%s：模块 `%s' 版本不匹配： %d != %d"
+msgstr "模块 `%s' 版本不匹配： %d != %d"
 
 #: ../src/common/styles.c:1007
 #, c-format
@@ -1900,9 +1835,8 @@ msgstr ""
 
 #: ../src/common/utility.c:508 ../src/iop/watermark.c:775
 #: ../src/libs/metadata_view.c:578
-#, fuzzy
 msgid "m"
-msgstr "mm 毫米"
+msgstr "米"
 
 #: ../src/control/control.c:307
 msgid "working.."
@@ -1918,26 +1852,22 @@ msgid "select"
 msgstr "选择"
 
 #: ../src/control/crawler.c:346
-#, fuzzy
 msgid "path"
-msgstr "完整路径"
+msgstr "路径"
 
 #: ../src/control/crawler.c:350
 msgid "xmp timestamp"
-msgstr ""
+msgstr "xmp 时间戳"
 
 #: ../src/control/crawler.c:354
-#, fuzzy
 msgid "database timestamp"
-msgstr "拍摄日期"
+msgstr "数据库时间戳"
 
 #: ../src/control/crawler.c:363
-#, fuzzy
 msgid "updated xmp sidecar files found"
-msgstr "xmp 附属文件"
+msgstr "发现较新的 xmp 附属文件"
 
 #: ../src/control/crawler.c:365
-#, fuzzy
 msgid "_close"
 msgstr "关闭"
 
@@ -1946,14 +1876,12 @@ msgid "select all"
 msgstr "选择全部"
 
 #: ../src/control/crawler.c:387
-#, fuzzy
 msgid "reload selected xmp files"
-msgstr "载入附属文件"
+msgstr "重新载入 xmp 文件"
 
 #: ../src/control/crawler.c:388
-#, fuzzy
 msgid "overwrite selected xmp files"
-msgstr "写入附属文件"
+msgstr "覆盖写入 xmp 文件"
 
 #: ../src/control/jobs/camera_jobs.c:86
 #, c-format
@@ -1966,12 +1894,11 @@ msgid "please set your camera to manual mode first!"
 msgstr "请首先将您的相机设置为手动模式！"
 
 #: ../src/control/jobs/camera_jobs.c:210
-#, fuzzy
 msgid "capture images"
-msgstr "拍摄图片"
+msgstr "捕获图像"
 
 #: ../src/control/jobs/camera_jobs.c:281
-#, fuzzy, c-format
+#, c-format
 msgid "%d/%d imported to %s"
 msgid_plural "%d/%d imported to %s"
 msgstr[0] "%d/%d 被导入至 %s"
@@ -1999,9 +1926,8 @@ msgid "exposure bracketing only works on raw images."
 msgstr "包围曝光只能用于RAW图像。"
 
 #: ../src/control/jobs/control_jobs.c:353
-#, fuzzy
 msgid "images have to be of same size and orientation!"
-msgstr "图像尺寸必须相同！"
+msgstr "图像尺寸和方向必须相同！"
 
 #: ../src/control/jobs/control_jobs.c:448
 #, c-format
@@ -2010,9 +1936,9 @@ msgid_plural "merging %d images"
 msgstr[0] "合并 %d 张图像"
 
 #: ../src/control/jobs/control_jobs.c:510
-#, fuzzy, c-format
+#, c-format
 msgid "wrote merged HDR `%s'"
-msgstr "写入为融合而成的 hdr `%s'"
+msgstr "写入合并的 HDR `%s'"
 
 #: ../src/control/jobs/control_jobs.c:536
 #, c-format
@@ -2038,48 +1964,43 @@ msgid "could not send %s to trash%s%s"
 msgstr ""
 
 #: ../src/control/jobs/control_jobs.c:744
-#, fuzzy, c-format
+#, c-format
 msgid "could not physically delete %s%s%s"
-msgstr "文件删除"
+msgstr "无法物理删除 %s%s%s"
 
 #: ../src/control/jobs/control_jobs.c:754
-#, fuzzy
 msgid "physically delete"
-msgstr "文件删除"
+msgstr "物理删除"
 
 #: ../src/control/jobs/control_jobs.c:755
-#, fuzzy
 msgid "physically delete all files"
-msgstr "文件删除"
+msgstr "物理删除全部文件"
 
 #: ../src/control/jobs/control_jobs.c:757
-#, fuzzy
 msgid "only remove from the collection"
-msgstr "从集合中移除"
+msgstr "仅从集合中移除"
 
 #: ../src/control/jobs/control_jobs.c:758
-#, fuzzy
 msgid "skip to next file"
-msgstr "存储文件"
+msgstr "跳到下一个文件"
 
 #: ../src/control/jobs/control_jobs.c:759
 msgid "stop process"
-msgstr ""
+msgstr "停止处理"
 
 #: ../src/control/jobs/control_jobs.c:764
 msgid "trashing error"
 msgstr ""
 
 #: ../src/control/jobs/control_jobs.c:765
-#, fuzzy
 msgid "deletion error"
-msgstr "删除"
+msgstr "删除错误"
 
 #: ../src/control/jobs/control_jobs.c:908
-#, fuzzy, c-format
+#, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
-msgstr[0] "捕获 %d 张图像"
+msgstr[0] ""
 
 #: ../src/control/jobs/control_jobs.c:910
 #, c-format
@@ -2088,15 +2009,14 @@ msgid_plural "deleting %d images"
 msgstr[0] "删除 %d 张图像"
 
 #: ../src/control/jobs/control_jobs.c:1126
-#, fuzzy
 msgid "failed to parse GPX file"
-msgstr "无法解析gpx文件"
+msgstr "无法解析 GPX 文件"
 
 #: ../src/control/jobs/control_jobs.c:1207
-#, fuzzy, c-format
+#, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
-msgstr[0] "应用匹配的gpx位置到 %d 张图像"
+msgstr[0] "应用匹配的 GPX 位置到 %d 张图像"
 
 #: ../src/control/jobs/control_jobs.c:1222
 #, c-format
@@ -2119,22 +2039,22 @@ msgid "copying %d images"
 msgstr "复制 %d 张图像"
 
 #: ../src/control/jobs/control_jobs.c:1245
-#, fuzzy, c-format
+#, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
-msgstr[0] "丢弃 %d 张图像"
+msgstr[0] ""
 
 #: ../src/control/jobs/control_jobs.c:1248
-#, fuzzy, c-format
+#, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
-msgstr[0] "移除 %d 张图像"
+msgstr[0] ""
 
 #: ../src/control/jobs/control_jobs.c:1287
-#, fuzzy, c-format
+#, c-format
 msgid "refreshing info for %d image"
 msgid_plural "refreshing info for %d images"
-msgstr[0] "丢弃 %d 张图像"
+msgstr[0] ""
 
 #: ../src/control/jobs/control_jobs.c:1354
 #, c-format
@@ -2155,19 +2075,16 @@ msgid "image `%s' is currently unavailable"
 msgstr "图像 `%s' 当前不可获取"
 
 #: ../src/control/jobs/control_jobs.c:1498
-#, fuzzy
 msgid "merge hdr image"
-msgstr "合并 %d 张图像"
+msgstr "合并 hdr 图像"
 
 #: ../src/control/jobs/control_jobs.c:1512
-#, fuzzy
 msgid "duplicate images"
 msgstr "复制图像"
 
 #: ../src/control/jobs/control_jobs.c:1519
-#, fuzzy
 msgid "flip images"
-msgstr "翻转参考线"
+msgstr "翻转图像"
 
 #. get all selected images now, to avoid the set changing during ui interaction
 #: ../src/control/jobs/control_jobs.c:1526
@@ -2191,10 +2108,10 @@ msgid "delete images"
 msgstr "删除图像"
 
 #: ../src/control/jobs/control_jobs.c:1595
-#, fuzzy, c-format
+#, c-format
 msgid "do you really want to send %d selected image to trash?"
 msgid_plural "do you really want to send %d selected images to trash?"
-msgstr[0] "你确定要物理的复制 %d 张已选图像至 %s 吗？"
+msgstr[0] "你确定要将 %d 张已选图像送到垃圾箱吗？"
 
 #: ../src/control/jobs/control_jobs.c:1597
 #, c-format
@@ -2204,9 +2121,8 @@ msgid_plural ""
 msgstr[0] "你确定要从磁盘物理删除 %d 张已选图像吗？"
 
 #: ../src/control/jobs/control_jobs.c:1604
-#, fuzzy
 msgid "trash images?"
-msgstr "移除图像？"
+msgstr "丢弃图像？"
 
 #: ../src/control/jobs/control_jobs.c:1604
 msgid "delete images?"
@@ -2218,9 +2134,8 @@ msgstr "移动图像"
 
 #: ../src/control/jobs/control_jobs.c:1630
 #: ../src/control/jobs/control_jobs.c:1690
-#, fuzzy
 msgid "_select as destination"
-msgstr "目的地"
+msgstr "选择目的地"
 
 #: ../src/control/jobs/control_jobs.c:1651
 #, c-format
@@ -2260,9 +2175,8 @@ msgid "local copy images"
 msgstr "本地复制图像"
 
 #: ../src/control/jobs/control_jobs.c:1751 ../src/libs/image.c:276
-#, fuzzy
 msgid "refresh exif"
-msgstr "刷新"
+msgstr "刷新 exif"
 
 #: ../src/control/jobs/control_jobs.c:1814
 #, c-format
@@ -2270,9 +2184,8 @@ msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr "从存储模块 `%s' 获取参数失败，导出中断.."
 
 #: ../src/control/jobs/control_jobs.c:1829
-#, fuzzy
 msgid "export images"
-msgstr "导出标签"
+msgstr "导出图像"
 
 #: ../src/control/jobs/control_jobs.c:1854
 #, c-format
@@ -2281,10 +2194,10 @@ msgid_plural "adding time offset to %d images"
 msgstr[0] "向 %d 张图像添加时间偏移"
 
 #: ../src/control/jobs/control_jobs.c:1869
-#, fuzzy, c-format
+#, c-format
 msgid "added time offset to %d image"
 msgid_plural "added time offset to %d images"
-msgstr[0] "向 %d 张图像添加时间偏移"
+msgstr[0] "已向 %d 张图像添加时间偏移"
 
 #: ../src/control/jobs/control_jobs.c:1908 ../src/libs/geotagging.c:781
 msgid "time offset"
@@ -2295,9 +2208,8 @@ msgid "write sidecar files"
 msgstr "写入附属文件"
 
 #: ../src/control/jobs/film_jobs.c:71
-#, fuzzy
 msgid "import images"
-msgstr "导入图片"
+msgstr "导入图像"
 
 #: ../src/control/jobs/film_jobs.c:145
 msgid "no supported images were found to be imported"
@@ -2316,7 +2228,7 @@ msgstr "正在导入图像 %s"
 
 #: ../src/control/jobs/image_jobs.c:109 ../src/libs/import.c:759
 msgid "import image"
-msgstr "导入图片"
+msgstr "导入图像"
 
 #: ../src/develop/blend.c:2826 ../src/develop/blend.c:3142
 #, c-format
@@ -2329,7 +2241,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:1350
 msgid "sliders for L channel"
-msgstr "L通道滑块"
+msgstr "滑块 - L 通道"
 
 #: ../src/develop/blend_gui.c:1350
 msgid "sliders for a channel"
@@ -2470,10 +2382,10 @@ msgid "parametric mask"
 msgstr "参数蒙版"
 
 #: ../src/develop/blend_gui.c:1644
-#, fuzzy, c-format
+#, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
-msgstr[0] "已使用的形状"
+msgstr[0] ""
 
 #: ../src/develop/blend_gui.c:1649 ../src/develop/blend_gui.c:1704
 #: ../src/develop/blend_gui.c:1793 ../src/develop/blend_gui.c:1904
@@ -2503,9 +2415,8 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:1731 ../src/libs/masks.c:993
 #: ../src/libs/masks.c:1032 ../src/libs/masks.c:1643
-#, fuzzy
 msgid "add gradient"
-msgstr "渐变范围"
+msgstr "添加渐变"
 
 #: ../src/develop/blend_gui.c:1739 ../src/iop/retouch.c:2675
 #: ../src/iop/spots.c:664 ../src/libs/masks.c:989 ../src/libs/masks.c:1028
@@ -2522,9 +2433,8 @@ msgstr ""
 #: ../src/develop/blend_gui.c:1755 ../src/iop/retouch.c:2689
 #: ../src/iop/spots.c:678 ../src/libs/masks.c:981 ../src/libs/masks.c:1020
 #: ../src/libs/masks.c:1663
-#, fuzzy
 msgid "add circle"
-msgstr "添加圆形蒙版"
+msgstr "添加圆"
 
 #: ../src/develop/blend_gui.c:1763 ../src/iop/retouch.c:2669
 #: ../src/libs/masks.c:1016 ../src/libs/masks.c:1669
@@ -2532,14 +2442,12 @@ msgid "add brush"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:1903 ../src/develop/blend_gui.c:2301
-#, fuzzy
 msgid "raster mask"
-msgstr "参数蒙版"
+msgstr "光栅蒙版"
 
 #: ../src/develop/blend_gui.c:1913
-#, fuzzy
 msgid "toggle polarity of raster mask"
-msgstr "水印的透明度"
+msgstr ""
 
 #. * generate a list of all available blend modes
 #: ../src/develop/blend_gui.c:2201 ../src/libs/live_view.c:408
@@ -2810,33 +2718,28 @@ msgid "apply mask in normal or inverted mode"
 msgstr "使用正常或反转模式应用蒙版"
 
 #: ../src/develop/blend_gui.c:2519
-#, fuzzy
 msgid "feathering guide"
-msgstr "连机拍摄"
+msgstr ""
 
 #: ../src/develop/blend_gui.c:2521
-#, fuzzy
 msgid "output image"
-msgstr "输出目的"
+msgstr "输出图像"
 
 #: ../src/develop/blend_gui.c:2525
-#, fuzzy
 msgid "input image"
-msgstr "导入图片"
+msgstr "输入图像"
 
 #: ../src/develop/blend_gui.c:2531
 msgid "choose to guide mask by input or output image"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:2537
-#, fuzzy
 msgid "feathering radius"
-msgstr "连机拍摄"
+msgstr ""
 
 #: ../src/develop/blend_gui.c:2539
-#, fuzzy
 msgid "spatial radius of feathering"
-msgstr "去模糊的空间范围"
+msgstr ""
 
 #: ../src/develop/blend_gui.c:2545
 msgid "mask blur"
@@ -2847,9 +2750,8 @@ msgid "radius for gaussian blur of blend mask"
 msgstr "混合蒙板的高斯模糊半径"
 
 #: ../src/develop/blend_gui.c:2553 ../src/iop/retouch.c:2951
-#, fuzzy
 msgid "mask opacity"
-msgstr "不透明性"
+msgstr "蒙板透明度"
 
 #: ../src/develop/blend_gui.c:2555
 msgid ""
@@ -2858,9 +2760,8 @@ msgid ""
 msgstr ""
 
 #: ../src/develop/blend_gui.c:2563
-#, fuzzy
 msgid "mask contrast"
-msgstr "暗对比度"
+msgstr "蒙板对比度"
 
 #: ../src/develop/blend_gui.c:2565
 msgid ""
@@ -2892,9 +2793,8 @@ msgid "new instance"
 msgstr "新的副本"
 
 #: ../src/develop/imageop.c:1028
-#, fuzzy
 msgid "duplicate instance"
-msgstr "重复样式"
+msgstr "复制副本"
 
 #: ../src/develop/imageop.c:1034 ../src/libs/masks.c:1153
 msgid "move up"
@@ -2912,9 +2812,8 @@ msgid "delete"
 msgstr "删除"
 
 #: ../src/develop/imageop.c:1053 ../src/libs/tagging.c:1734
-#, fuzzy
 msgid "rename"
-msgstr "名称"
+msgstr "重命名"
 
 #: ../src/develop/imageop.c:1096 ../src/develop/imageop.c:1980
 #, c-format
@@ -2962,11 +2861,12 @@ msgid "show preset menu"
 msgstr "显示预置菜单"
 
 #: ../src/develop/imageop.c:1952
-#, fuzzy
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
-msgstr "多个实例"
+msgstr ""
+"多个实例行为\n"
+"中键点击创建新的实例"
 
 #: ../src/develop/imageop.c:1963 ../src/libs/lib.c:984
 msgid "reset parameters"
@@ -2985,15 +2885,14 @@ msgid ""
 msgstr ""
 
 #: ../src/develop/lightroom.c:1072
-#, fuzzy
 msgid "cannot find lightroom XMP!"
-msgstr "找不到 lightroom xmp！"
+msgstr "找不到 lightroom XMP！"
 
 #: ../src/develop/lightroom.c:1104 ../src/develop/lightroom.c:1126
 #: ../src/develop/lightroom.c:1146
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' not a lightroom XMP!"
-msgstr "'%s' 不是有效的 lightroom xmp！"
+msgstr "`%s' 不是 lightroom XMP!"
 
 #. tags
 #: ../src/develop/lightroom.c:1505 ../src/gui/camera_import_dialog.c:465
@@ -3073,9 +2972,8 @@ msgid "[GRADIENT on pivot] rotate shape"
 msgstr ""
 
 #: ../src/develop/masks/masks.c:226
-#, fuzzy
 msgid "[GRADIENT creation] set rotation"
-msgstr "重置旋转"
+msgstr ""
 
 #: ../src/develop/masks/masks.c:231
 msgid "[GRADIENT] change compression"
@@ -3138,14 +3036,12 @@ msgid "ctrl+click to switch between smooth/sharp node"
 msgstr ""
 
 #: ../src/develop/masks/masks.c:335
-#, fuzzy
 msgid "right-click to reset curvature"
-msgstr "双击重置曲线"
+msgstr "右键点击重置曲线"
 
 #: ../src/develop/masks/masks.c:337
-#, fuzzy
 msgid "ctrl+click to add a node"
-msgstr "单击隐藏红色通道"
+msgstr ""
 
 #: ../src/develop/masks/masks.c:339 ../src/develop/masks/masks.c:377
 #, c-format
@@ -3159,9 +3055,8 @@ msgid "ctrl+scroll to set shape opacity (%d%%)"
 msgstr ""
 
 #: ../src/develop/masks/masks.c:346
-#, fuzzy
 msgid "move to rotate shape"
-msgstr "移到其它文件夹"
+msgstr ""
 
 #: ../src/develop/masks/masks.c:352 ../src/develop/masks/masks.c:374
 #, c-format
@@ -3208,9 +3103,9 @@ msgid "path #%d"
 msgstr ""
 
 #: ../src/develop/masks/masks.c:534
-#, fuzzy, c-format
+#, c-format
 msgid "gradient #%d"
-msgstr "渐变范围"
+msgstr ""
 
 #: ../src/develop/masks/masks.c:536
 #, c-format
@@ -3228,9 +3123,9 @@ msgid "copy of %s"
 msgstr ""
 
 #: ../src/develop/masks/masks.c:1316
-#, fuzzy, c-format
+#, c-format
 msgid "%s: mask version mismatch: %d != %d"
-msgstr "%s：模块 `%s' 版本不匹配： %d != %d"
+msgstr "%s：蒙板版本不匹配：%d != %d"
 
 #: ../src/develop/masks/masks.c:2051 ../src/libs/masks.c:1036
 msgid "add existing shape"
@@ -3549,12 +3444,10 @@ msgstr "常规"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
 #: ../src/gui/camera_import_dialog.c:350 ../src/libs/import.c:455
-#, fuzzy
 msgid "ignore JPEG files"
-msgstr "忽略jpeg文件"
+msgstr "忽略JPEG文件"
 
 #: ../src/gui/camera_import_dialog.c:352 ../src/libs/import.c:456
-#, fuzzy
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -3626,10 +3519,9 @@ msgstr "日期覆盖请用 YYYY-MM-DD 格式"
 
 #. register keys for view switching
 #: ../src/gui/gtk.c:1213
-#, fuzzy
 msgctxt "accel"
 msgid "tethering view"
-msgstr "连机拍摄"
+msgstr ""
 
 #: ../src/gui/gtk.c:1214
 msgctxt "accel"
@@ -3647,16 +3539,14 @@ msgid "map view"
 msgstr "地图视图"
 
 #: ../src/gui/gtk.c:1217
-#, fuzzy
 msgctxt "accel"
 msgid "slideshow view"
-msgstr "实时取景"
+msgstr "幻灯视图"
 
 #: ../src/gui/gtk.c:1218
-#, fuzzy
 msgctxt "accel"
 msgid "print view"
-msgstr "预览"
+msgstr "打印视图"
 
 #. register ctrl-q to quit:
 #: ../src/gui/gtk.c:1241
@@ -3684,30 +3574,27 @@ msgstr "切换侧边框"
 #: ../src/gui/gtk.c:1257
 msgctxt "accel"
 msgid "toggle panels collapsing controls"
-msgstr ""
+msgstr "切换各栏控制收起"
 
 #: ../src/gui/gtk.c:1261
-#, fuzzy
 msgctxt "accel"
 msgid "toggle left panel"
-msgstr "切换实时取景"
+msgstr "切换左栏"
 
 #: ../src/gui/gtk.c:1265
-#, fuzzy
 msgctxt "accel"
 msgid "toggle right panel"
-msgstr "切换头部"
+msgstr "切换右栏"
 
 #: ../src/gui/gtk.c:1269
-#, fuzzy
 msgctxt "accel"
 msgid "toggle top panel"
-msgstr "切换头部"
+msgstr "切换顶栏"
 
 #: ../src/gui/gtk.c:1273
 msgctxt "accel"
 msgid "toggle bottom panel"
-msgstr ""
+msgstr "切换底栏"
 
 #. toggle view of header
 #: ../src/gui/gtk.c:1278
@@ -3736,7 +3623,7 @@ msgstr "视角拉远"
 #: ../src/gui/gtk.c:1291
 msgctxt "accel"
 msgid "show accels window"
-msgstr ""
+msgstr "显示快捷窗口"
 
 #: ../src/gui/gtkentry.c:186
 msgid "$(ROLL_NAME) - roll of the input image"
@@ -3752,11 +3639,11 @@ msgstr "$(FILE_NAME) - 输入图像的主档名"
 
 #: ../src/gui/gtkentry.c:189
 msgid "$(FILE_EXTENSION) - extension of the input image"
-msgstr "$(FILE_EXTENSION) - 输入图像的扩展"
+msgstr "$(FILE_EXTENSION) - 输入图像的扩展名"
 
 #: ../src/gui/gtkentry.c:190
 msgid "$(VERSION) - duplicate version"
-msgstr ""
+msgstr "$(VERSION) - 重复的版本"
 
 #: ../src/gui/gtkentry.c:191
 msgid "$(SEQUENCE) - sequence number"
@@ -3764,11 +3651,11 @@ msgstr "$(SEQUENCE) - 序列号"
 
 #: ../src/gui/gtkentry.c:192
 msgid "$(MAX_WIDTH) - maximum image export width"
-msgstr ""
+msgstr "$(MAX_WIDTH) - 图像导出宽度最大值"
 
 #: ../src/gui/gtkentry.c:193
 msgid "$(MAX_HEIGHT) - maximum image export height"
-msgstr ""
+msgstr "$(MAX_HEIGHT) - 图像导出高度最大值"
 
 #: ../src/gui/gtkentry.c:194
 msgid "$(YEAR) - year"
@@ -3795,48 +3682,40 @@ msgid "$(SECOND) - second"
 msgstr "$(SECOND) - 秒"
 
 #: ../src/gui/gtkentry.c:200
-#, fuzzy
 msgid "$(EXIF_YEAR) - EXIF year"
-msgstr "$(EXIF_YEAR) - exif年"
+msgstr "$(EXIF_YEAR) - EXIF 年"
 
 #: ../src/gui/gtkentry.c:201
-#, fuzzy
 msgid "$(EXIF_MONTH) - EXIF month"
-msgstr "$(EXIF_MONTH) - exif月"
+msgstr "$(EXIF_MONTH) - EXIF 月"
 
 #: ../src/gui/gtkentry.c:202
-#, fuzzy
 msgid "$(EXIF_DAY) - EXIF day"
-msgstr "$(EXIF_DAY) - exif日"
+msgstr "$(EXIF_DAY) - EXIF 日"
 
 #: ../src/gui/gtkentry.c:203
-#, fuzzy
 msgid "$(EXIF_HOUR) - EXIF hour"
-msgstr "$(EXIF_HOUR) - exif时"
+msgstr "$(EXIF_HOUR) - EXIF 时"
 
 #: ../src/gui/gtkentry.c:204
-#, fuzzy
 msgid "$(EXIF_MINUTE) - EXIF minute"
-msgstr "$(EXIF_MINUTE) - exif分"
+msgstr "$(EXIF_MINUTE) - EXIF 分"
 
 #: ../src/gui/gtkentry.c:205
-#, fuzzy
 msgid "$(EXIF_SECOND) - EXIF second"
-msgstr "$(EXIF_SECOND) - exif秒"
+msgstr "$(EXIF_SECOND) - EXIF 秒"
 
 #: ../src/gui/gtkentry.c:206
-#, fuzzy
 msgid "$(EXIF_ISO) - ISO value"
-msgstr "$(EXIF_ISO) - iso 感光度"
+msgstr "$(EXIF_ISO) - ISO 感光度"
 
 #: ../src/gui/gtkentry.c:207
 msgid "$(MAKER) - camera maker"
-msgstr ""
+msgstr "$(MAKER) - 相机制造商"
 
 #: ../src/gui/gtkentry.c:208
-#, fuzzy
 msgid "$(MODEL) - camera model"
-msgstr "相机型号"
+msgstr "$(MODEL) - 相机型号"
 
 #: ../src/gui/gtkentry.c:209
 msgid "$(STARS) - star rating"
@@ -3860,35 +3739,35 @@ msgstr "$(DESKTOP) - 桌面文件夹"
 
 #: ../src/gui/gtkentry.c:214
 msgid "$(TITLE) - title from metadata"
-msgstr ""
+msgstr "$(TITLE) - 来自元数据的标题"
 
 #: ../src/gui/gtkentry.c:215
 msgid "$(DESCRIPTION) - description from metadata"
-msgstr ""
+msgstr "$(DESCRIPTION) - 来自元数据的描述"
 
 #: ../src/gui/gtkentry.c:216
 msgid "$(CREATOR) - creator from metadata"
-msgstr ""
+msgstr "$(CREATOR) - 来自元数据的创作者"
 
 #: ../src/gui/gtkentry.c:217
 msgid "$(PUBLISHER) - publisher from metadata"
-msgstr ""
+msgstr "$(PUBLISHER) - 来自元数据的发布者"
 
 #: ../src/gui/gtkentry.c:218
 msgid "$(RIGHTS) - rights from metadata"
-msgstr ""
+msgstr "$(RIGHTS) - 来自元数据的版权"
 
 #: ../src/gui/gtkentry.c:219
 msgid "$(OPENCL_ACTIVATED) - whether OpenCL is activated"
-msgstr ""
+msgstr "$(OPENCL_ACTIVATED) - OpenCL 是否启用"
 
 #: ../src/gui/gtkentry.c:220
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
-msgstr ""
+msgstr "$(CATEGORY0(category)) - 结构化标签中的0级子标签"
 
 #: ../src/gui/gtkentry.c:221
 msgid "$(TAGS) - tags as set in metadata settings"
-msgstr ""
+msgstr "$(TAGS) - 元数据设定中的标签"
 
 #: ../src/gui/guides.c:108
 msgid "horizontal lines"
@@ -3949,9 +3828,8 @@ msgid "rules of thirds"
 msgstr "三分法"
 
 #: ../src/gui/guides.c:484
-#, fuzzy
 msgid "metering"
-msgstr "连机拍摄"
+msgstr ""
 
 #: ../src/gui/guides.c:485
 msgid "perspective"
@@ -4852,7 +4730,7 @@ msgstr "请输入有效的url地址"
 
 #: ../src/imageio/storage/facebook.c:670
 msgid "the given URL is not valid, it should look like: "
-msgstr "给定的url是无效的，它应该类似于："
+msgstr "给定的url是无效的，它应该类似于: "
 
 #: ../src/imageio/storage/facebook.c:701
 #, fuzzy
@@ -6886,23 +6764,20 @@ msgid "optimize the RGB curves to remove color casts"
 msgstr ""
 
 #: ../src/iop/colorchecker.c:115
-#, fuzzy
 msgid "color look up table"
-msgstr "色彩标识"
+msgstr ""
 
 #: ../src/iop/colorchecker.c:271
-#, fuzzy
 msgid "it8 skin tones"
-msgstr "自然皮肤色调"
+msgstr ""
 
 #: ../src/iop/colorchecker.c:284
 msgid "helmholtz/kohlrausch monochrome"
 msgstr ""
 
 #: ../src/iop/colorchecker.c:299
-#, fuzzy
 msgid "Fuji Astia emulation"
-msgstr "直方图均衡"
+msgstr ""
 
 #: ../src/iop/colorchecker.c:311
 msgid "Fuji Classic Chrome emulation"
@@ -7013,7 +6888,7 @@ msgstr "绿 vs 粉"
 
 #: ../src/iop/colorcontrast.c:406
 msgid "steepness of the a* curve in Lab"
-msgstr "Lab中 a* 曲线的陡度"
+msgstr "在Lab中 a* 曲线的陡度"
 
 #: ../src/iop/colorcontrast.c:412
 msgid "blue vs yellow"
@@ -7021,7 +6896,7 @@ msgstr "蓝 vs 黄"
 
 #: ../src/iop/colorcontrast.c:414
 msgid "steepness of the b* curve in Lab"
-msgstr "Lab中 b* 曲线的陡度"
+msgstr "在Lab中 b* 曲线的陡度"
 
 #: ../src/iop/colorcorrection.c:69
 msgid "color correction"
@@ -7350,7 +7225,7 @@ msgid ""
 msgstr ""
 "该模块未来将被移除\n"
 "请关掉该模块\n"
-"并使用新的\"颜色映射\"模块"
+"并使用新的\"颜色映射\"模块。"
 
 #: ../src/iop/colortransfer.c:686
 msgid "number of clusters to find in image"
@@ -7649,11 +7524,10 @@ msgid "green channels matching method"
 msgstr "绿色通道匹配方法"
 
 #: ../src/iop/demosaic.c:5174
-#, fuzzy
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
-msgstr "包围曝光只能用于RAW图像"
+msgstr "包围曝光只能用于RAW图像。"
 
 #: ../src/iop/denoiseprofile.c:498
 msgid "denoise (profiled)"
@@ -7980,7 +7854,7 @@ msgid ""
 msgstr ""
 "该模块未来将被移除\n"
 "请关掉该模块\n"
-"并使用新的均衡器"
+"并使用新的均衡器。"
 
 #: ../src/iop/exposure.c:128
 msgctxt "accel"
@@ -8840,13 +8714,12 @@ msgid "mark fixed pixels"
 msgstr "标记修复的像素"
 
 #: ../src/iop/hotpixels.c:501
-#, fuzzy
 msgid ""
 "hot pixel correction\n"
 "only works for raw images."
 msgstr ""
 "自动色差校正\n"
-"只作用于RAW图像"
+"只作用于RAW图像。"
 
 #: ../src/iop/invert.c:98 ../src/iop/invert.c:530
 #, c-format
@@ -8979,7 +8852,7 @@ msgstr "f/"
 
 #: ../src/iop/lens.cc:1973
 msgid "f-number (aperture)"
-msgstr "F值(光圈)"
+msgstr "f值(光圈)"
 
 #: ../src/iop/lens.cc:1987
 msgid "d"
@@ -9106,7 +8979,7 @@ msgstr "蓝"
 
 #: ../src/iop/lens.cc:2492
 msgid "corrections done: "
-msgstr "修正完成："
+msgstr "修正完成: "
 
 #: ../src/iop/lens.cc:2493
 msgid "which corrections have actually been done"
@@ -9715,7 +9588,7 @@ msgstr ""
 
 #: ../src/iop/rawdenoise.c:123
 msgid "raw denoise"
-msgstr "RAW降噪"
+msgstr "raw 降噪"
 
 #: ../src/iop/rawdenoise.c:143
 msgctxt "accel"
@@ -9727,11 +9600,10 @@ msgid "noise threshold"
 msgstr "噪点阈值"
 
 #: ../src/iop/rawdenoise.c:1033
-#, fuzzy
 msgid ""
 "raw denoising\n"
 "only works for raw images."
-msgstr "包围曝光只能用于RAW图像"
+msgstr "包围曝光只能用于RAW图像。"
 
 #: ../src/iop/rawoverexposed.c:68
 #, fuzzy
@@ -9809,7 +9681,7 @@ msgstr ""
 
 #: ../src/iop/relight.c:55
 msgid "fill-light 0.25EV with 4 zones"
-msgstr "4区域曝光补偿 0.25EV "
+msgstr "4区域曝光补偿 0.25EV"
 
 #: ../src/iop/relight.c:58
 msgid "fill-shadow -0.25EV with 4 zones"
@@ -9858,9 +9730,8 @@ msgid "cannot display scales when the blending mask is displayed"
 msgstr ""
 
 #: ../src/iop/retouch.c:2649
-#, fuzzy
 msgid "# shapes:"
-msgstr "形状"
+msgstr "形状:"
 
 #: ../src/iop/retouch.c:2654
 msgid ""
@@ -9895,9 +9766,8 @@ msgid "activates cloning tool"
 msgstr ""
 
 #: ../src/iop/retouch.c:2736
-#, fuzzy
 msgid "# scales:"
-msgstr "拉伸"
+msgstr "拉伸:"
 
 #: ../src/iop/retouch.c:2745
 msgid "current:"
@@ -9952,9 +9822,8 @@ msgid "auto levels"
 msgstr "应用自动色阶"
 
 #: ../src/iop/retouch.c:2878
-#, fuzzy
 msgid "shape selected:"
-msgstr "已使用的形状"
+msgstr "已使用的形状:"
 
 #: ../src/iop/retouch.c:2882
 msgid ""
@@ -10157,27 +10026,24 @@ msgid "  R  "
 msgstr ""
 
 #: ../src/iop/rgbcurve.c:1527 ../src/iop/rgblevels.c:1024
-#, fuzzy
 msgid "curve nodes for r channel"
-msgstr "L通道色调曲线"
+msgstr "色调曲线 - r 通道"
 
 #: ../src/iop/rgbcurve.c:1529 ../src/iop/rgblevels.c:1026
 msgid "  G  "
 msgstr ""
 
 #: ../src/iop/rgbcurve.c:1532 ../src/iop/rgblevels.c:1029
-#, fuzzy
 msgid "curve nodes for g channel"
-msgstr "L通道色调曲线"
+msgstr "色调曲线 - g 通道"
 
 #: ../src/iop/rgbcurve.c:1534 ../src/iop/rgblevels.c:1031
 msgid "  B  "
 msgstr ""
 
 #: ../src/iop/rgbcurve.c:1537 ../src/iop/rgblevels.c:1034
-#, fuzzy
 msgid "curve nodes for b channel"
-msgstr "b通道色调曲线"
+msgstr "色调曲线 - b 通道"
 
 #: ../src/iop/rgbcurve.c:1557
 #, fuzzy
@@ -10430,7 +10296,7 @@ msgstr "去污点"
 
 #: ../src/iop/spots.c:656
 msgid "number of strokes:"
-msgstr "笔画数目"
+msgstr "笔画数目:"
 
 #: ../src/iop/spots.c:659
 #, fuzzy
@@ -10472,7 +10338,7 @@ msgstr "白平衡"
 #: ../src/iop/temperature.c:210
 msgctxt "accel"
 msgid "tint"
-msgstr "淡色(掺入白色)"
+msgstr "淡色"
 
 #: ../src/iop/temperature.c:211
 msgctxt "accel"
@@ -10540,7 +10406,7 @@ msgstr "常规"
 
 #: ../src/iop/temperature.c:1444
 msgid "tint"
-msgstr "淡色(掺入白色)"
+msgstr "淡色"
 
 #: ../src/iop/temperature.c:1445
 msgid "temperature"
@@ -10605,7 +10471,7 @@ msgstr "  L  "
 
 #: ../src/iop/tonecurve.c:1326
 msgid "tonecurve for L channel"
-msgstr "L通道色调曲线"
+msgstr "色调曲线 - L 通道"
 
 #: ../src/iop/tonecurve.c:1328
 msgid "  a  "
@@ -10613,7 +10479,7 @@ msgstr "  a  "
 
 #: ../src/iop/tonecurve.c:1330
 msgid "tonecurve for a channel"
-msgstr "a通道色调曲线"
+msgstr "色调曲线 - a 通道"
 
 #: ../src/iop/tonecurve.c:1332
 msgid "  b  "
@@ -10621,52 +10487,44 @@ msgstr "  b  "
 
 #: ../src/iop/tonecurve.c:1334
 msgid "tonecurve for b channel"
-msgstr "b通道色调曲线"
+msgstr "色调曲线 - b 通道"
 
 #: ../src/iop/tonecurve.c:1407
-#, fuzzy
 msgid "log"
-msgstr "登入"
+msgstr "对数"
 
 #: ../src/iop/tonecurve.c:1415
-#, fuzzy
 msgid "base of the logarithm"
-msgstr "预置名称"
+msgstr "对数的底"
 
 #: ../src/iop/toneequal.c:290
-#, fuzzy
 msgid "tone equalizer"
-msgstr "均衡器"
+msgstr "色调均衡器"
 
 #: ../src/iop/toneequal.c:310
-#, fuzzy
 msgctxt "accel"
 msgid "blacks"
-msgstr "黑"
+msgstr ""
 
 #: ../src/iop/toneequal.c:311
-#, fuzzy
 msgctxt "accel"
 msgid "deep shadows"
-msgstr "阴影"
+msgstr ""
 
 #: ../src/iop/toneequal.c:313
-#, fuzzy
 msgctxt "accel"
 msgid "light shadows"
-msgstr "阴影加亮"
+msgstr ""
 
 #: ../src/iop/toneequal.c:314
-#, fuzzy
 msgctxt "accel"
 msgid "midtones"
-msgstr "中间色调偏差"
+msgstr ""
 
 #: ../src/iop/toneequal.c:315
-#, fuzzy
 msgctxt "accel"
 msgid "dark highlights"
-msgstr "高亮"
+msgstr ""
 
 #: ../src/iop/toneequal.c:317
 msgctxt "accel"
@@ -10684,10 +10542,9 @@ msgid "filter diffusion"
 msgstr ""
 
 #: ../src/iop/toneequal.c:320
-#, fuzzy
 msgctxt "accel"
 msgid "smoothing diameter"
-msgstr "冷调滤镜"
+msgstr ""
 
 #: ../src/iop/toneequal.c:321
 msgctxt "accel"
@@ -10695,28 +10552,24 @@ msgid "edges refinement/feathering"
 msgstr ""
 
 #: ../src/iop/toneequal.c:322
-#, fuzzy
 msgctxt "accel"
 msgid "mask quantization"
-msgstr "picasa 授权"
+msgstr "蒙板量化"
 
 #: ../src/iop/toneequal.c:323
-#, fuzzy
 msgctxt "accel"
 msgid "mask exposure compensation"
-msgstr "曝光校正"
+msgstr "蒙板曝光校正"
 
 #: ../src/iop/toneequal.c:324
-#, fuzzy
 msgctxt "accel"
 msgid "mask contrast compensation"
-msgstr "对比度压缩"
+msgstr "蒙板对比度压缩"
 
 #. No blending
 #: ../src/iop/toneequal.c:416
-#, fuzzy
 msgid "mask blending : none"
-msgstr "选择混合模式"
+msgstr ""
 
 #: ../src/iop/toneequal.c:428
 msgid "mask blending : landscapes"
@@ -10731,18 +10584,12 @@ msgid "mask blending : isolated subjects"
 msgstr ""
 
 #: ../src/iop/toneequal.c:465
-#, fuzzy
 msgid "compress shadows/highlights : soft"
 msgstr ""
-"压缩在高亮/阴影处的效果\n"
-"并保留中间色调"
 
 #: ../src/iop/toneequal.c:484
-#, fuzzy
 msgid "compress shadows/highlights : strong"
 msgstr ""
-"压缩在高亮/阴影处的效果\n"
-"并保留中间色调"
 
 #: ../src/iop/toneequal.c:503
 msgid "relight : fill-in"
@@ -11429,14 +11276,13 @@ msgid ""
 msgstr "中心图像每边的包围曝光数量，得到相片总数 = (包围曝光量数*2)+1。"
 
 #: ../src/libs/camera.c:488
-#, fuzzy
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usually 3 "
 "steps per stop\n"
 "with other words, 3 steps is 1EV exposure step between brackets."
 msgstr ""
 "包围曝光步级，步级是相机中可设置的，通常每级3步\n"
-"也就是说，在两次包围曝光之间1EV曝光步为3步"
+"也就是说，在两次包围曝光之间1EV曝光步为3步。"
 
 #. user specified properties
 #: ../src/libs/camera.c:517
@@ -13830,9 +13676,9 @@ msgid "'|' misplaced, empty tag is not allowed, aborting"
 msgstr ""
 
 #: ../src/libs/tagging.c:1802
-#, fuzzy, c-format
+#, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
-msgstr "名为 '%s' 的样式已经存在"
+msgstr "至少一个新的标签名（%s）已经存在，取消。"
 
 #: ../src/libs/tagging.c:1908
 #, fuzzy
@@ -14949,9 +14795,8 @@ msgid "zoom all the images"
 msgstr "采集图片"
 
 #: ../src/views/lighttable.c:4606
-#, fuzzy
 msgid "pan inside all the images"
-msgstr "删除图像？"
+msgstr ""
 
 #: ../src/views/lighttable.c:4612
 #, fuzzy
