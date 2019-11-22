@@ -13,7 +13,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2.1\n"
+"X-Generator: Poedit 2.2.4\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
@@ -7318,23 +7318,23 @@ msgstr "Alteluci: gain / slope"
 
 #: ../src/iop/colorbalance.c:2598
 msgid "factor of gain"
-msgstr "Fattore di guadagno"
+msgstr "Fattore del gain"
 
 #: ../src/iop/colorbalance.c:2598
 msgid "gain"
-msgstr "Guadagno"
+msgstr "Gain"
 
 #: ../src/iop/colorbalance.c:2623
 msgid "factor of red for gain"
-msgstr "Fattore del rosso per il guadagno"
+msgstr "Fattore del rosso per il gain"
 
 #: ../src/iop/colorbalance.c:2630
 msgid "factor of green for gain"
-msgstr "Fattore del verde per il guadagno"
+msgstr "Fattore del verde per il gain"
 
 #: ../src/iop/colorbalance.c:2637
 msgid "factor of blue for gain"
-msgstr "Fattore del blu per il guadagno"
+msgstr "Fattore del blu per il gain"
 
 #: ../src/iop/colorbalance.c:2644
 msgid "auto optimizers"
@@ -7407,7 +7407,6 @@ msgid "patch"
 msgstr "Campione"
 
 #: ../src/iop/colorchecker.c:1355
-#, fuzzy
 msgid "color checker patch"
 msgstr "Campione per la verifica del colore"
 
