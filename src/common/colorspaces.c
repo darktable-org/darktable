@@ -88,6 +88,12 @@ static cmsCIExyYTRIPLE ProPhoto_Primaries = {
   { 0.036598, 0.000105, 1.0000 }, /* blue  */
 };
 
+static const cmsCIEXYZTRIPLE Rec709_Primaries_Prequantized = {
+  {0.43603516, 0.22248840, 0.01391602},
+  {0.38511658, 0.71690369, 0.09706116},
+  {0.14305115, 0.06060791, 0.71392822}
+};
+
 #define generate_mat3inv_body(c_type, A, B)                                                                  \
   int mat3inv_##c_type(c_type *const dst, const c_type *const src)                                           \
   {                                                                                                          \
@@ -835,9 +841,11 @@ static cmsHPROFILE _ensure_rgb_profile(cmsHPROFILE profile)
     cmsSetColorSpace(rgb_profile, cmsSigRgbData);
     cmsSetPCS(rgb_profile, cmsSigXYZData);
 
-    cmsWriteTag(rgb_profile, cmsSigRedColorantTag, (void *)&sRGB_Primaries.Red);
-    cmsWriteTag(rgb_profile, cmsSigGreenColorantTag, (void *)&sRGB_Primaries.Green);
-    cmsWriteTag(rgb_profile, cmsSigBlueColorantTag, (void *)&sRGB_Primaries.Blue);
+    // TODO: we still use prequantized primaries here, we will probably want to rework this
+    // part to create a profile using cmsCreateRGBProfile() as done in _create_lcms_profile().
+    cmsWriteTag(rgb_profile, cmsSigRedColorantTag, (void *)&Rec709_Primaries_Prequantized.Red);
+    cmsWriteTag(rgb_profile, cmsSigGreenColorantTag, (void *)&Rec709_Primaries_Prequantized.Green);
+    cmsWriteTag(rgb_profile, cmsSigBlueColorantTag, (void *)&Rec709_Primaries_Prequantized.Blue);
 
     cmsWriteTag(rgb_profile, cmsSigRedTRCTag, (void *)trc);
     cmsLinkTag(rgb_profile, cmsSigGreenTRCTag, cmsSigRedTRCTag);
