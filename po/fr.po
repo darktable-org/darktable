@@ -222,7 +222,7 @@ msgstr "active la superposition étendue des miniatures"
 msgid "if set to true, thumb overlay shows filename and some exif data."
 msgstr ""
 "si activé, la superposition des miniatures affiche le nom du fichier et "
-"quelques données EXIF."
+"quelques données Exif."
 
 #: ../build/src/preferences_gen.h:2402
 msgid "use single-click in the collect panel"
@@ -2391,7 +2391,7 @@ msgstr "copie locale d'images"
 
 #: ../src/control/jobs/control_jobs.c:1751 ../src/libs/image.c:276
 msgid "refresh exif"
-msgstr "rafraîchir EXIF"
+msgstr "rafraîchir Exif"
 
 #: ../src/control/jobs/control_jobs.c:1814
 #, c-format
@@ -3902,28 +3902,28 @@ msgid "$(SECOND) - second"
 msgstr "$(SECOND) - secondes"
 
 #: ../src/gui/gtkentry.c:200
-msgid "$(EXIF_YEAR) - EXIF year"
-msgstr "$(EXIF_YEAR) - année EXIF"
+msgid "$(EXIF_YEAR) - Exif year"
+msgstr "$(EXIF_YEAR) - année Exif"
 
 #: ../src/gui/gtkentry.c:201
-msgid "$(EXIF_MONTH) - EXIF month"
-msgstr "$(EXIF_MONTH) - mois EXIF"
+msgid "$(EXIF_MONTH) - Exif month"
+msgstr "$(EXIF_MONTH) - mois Exif"
 
 #: ../src/gui/gtkentry.c:202
-msgid "$(EXIF_DAY) - EXIF day"
-msgstr "$(EXIF_DAY) - jour EXIF"
+msgid "$(EXIF_DAY) - Exif day"
+msgstr "$(EXIF_DAY) - jour Exif"
 
 #: ../src/gui/gtkentry.c:203
-msgid "$(EXIF_HOUR) - EXIF hour"
-msgstr "$(EXIF_HOUR) - heure EXIF"
+msgid "$(EXIF_HOUR) - Exif hour"
+msgstr "$(EXIF_HOUR) - heure Exif"
 
 #: ../src/gui/gtkentry.c:204
-msgid "$(EXIF_MINUTE) - EXIF minute"
-msgstr "$(EXIF_MINUTE) - minutes EXIF"
+msgid "$(EXIF_MINUTE) - Exif minute"
+msgstr "$(EXIF_MINUTE) - minutes Exif"
 
 #: ../src/gui/gtkentry.c:205
-msgid "$(EXIF_SECOND) - EXIF second"
-msgstr "$(EXIF_SECOND) - secondes EXIF"
+msgid "$(EXIF_SECOND) - Exif second"
+msgstr "$(EXIF_SECOND) - secondes Exif"
 
 #: ../src/gui/gtkentry.c:206
 msgid "$(EXIF_ISO) - ISO value"
@@ -5496,7 +5496,7 @@ msgstr ""
 #: ../src/iop/ashift.c:4978
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
-"longueur focale de l'objectif, valeur par défaut depuis les EXIF si "
+"longueur focale de l'objectif, valeur par défaut depuis les Exif si "
 "disponible"
 
 #: ../src/iop/ashift.c:4980
@@ -5505,7 +5505,7 @@ msgid ""
 "available, manual setting is often required"
 msgstr ""
 "facteur de cadrage du capteur de l'appareil, valeur par défaut depuis les "
-"EXIF si disponible, positionnement manuel souvent nécessaire"
+"Exif si disponible, positionnement manuel souvent nécessaire"
 
 #: ../src/iop/ashift.c:4983
 msgid ""
@@ -12257,11 +12257,11 @@ msgstr "paramètres généraux"
 
 #: ../src/libs/export_metadata.c:249
 msgid "exif data"
-msgstr "données EXIF"
+msgstr "données Exif"
 
 #: ../src/libs/export_metadata.c:250
 msgid "export exif metadata"
-msgstr "exporter les métadonnées EXIF"
+msgstr "exporter les métadonnées Exif"
 
 #: ../src/libs/export_metadata.c:252
 msgid "metadata"
@@ -12416,11 +12416,11 @@ msgstr "fuseau horaire du boîtier"
 
 #: ../src/libs/geotagging.c:501
 msgid ""
-"most cameras don't store the time zone in EXIF. give the correct time zone "
+"most cameras don't store the time zone in Exif. give the correct time zone "
 "so the GPX data can be correctly matched"
 msgstr ""
 "la plupart des boîtiers n'enregistrent pas le fuseau horaire dans les "
-"données EXIF. en donnant le fuseau horaire correct, les données GPX pourront "
+"données Exif. en donnant le fuseau horaire correct, les données GPX pourront "
 "être recalées."
 
 #: ../src/libs/geotagging.c:792
@@ -12606,10 +12606,10 @@ msgid "reset rotation"
 msgstr "réinitialiser"
 
 #: ../src/libs/image.c:242
-msgid "reset rotation to EXIF data"
+msgid "reset rotation to Exif data"
 msgstr ""
 "réinitialise l'orientation\n"
-"à la valeur EXIF"
+"à la valeur Exif"
 
 #: ../src/libs/image.c:247
 msgid "copy locally"
@@ -12712,7 +12712,7 @@ msgstr "resync copie locale"
 #: ../src/libs/image.c:313
 msgctxt "accel"
 msgid "refresh exif"
-msgstr "rafraîchir EXIF"
+msgstr "rafraîchir Exif"
 
 #. Grouping keys
 #: ../src/libs/image.c:315
@@ -16804,12 +16804,12 @@ msgstr "action"
 #~ "$(HOUR) - hour\n"
 #~ "$(MINUTE) - minute\n"
 #~ "$(SECOND) - second\n"
-#~ "$(EXIF_YEAR) - EXIF year\n"
-#~ "$(EXIF_MONTH) - EXIF month\n"
-#~ "$(EXIF_DAY) - EXIF day\n"
-#~ "$(EXIF_HOUR) - EXIF hour\n"
-#~ "$(EXIF_MINUTE) - EXIF minute\n"
-#~ "$(EXIF_SECOND) - EXIF second\n"
+#~ "$(EXIF_YEAR) - Exif year\n"
+#~ "$(EXIF_MONTH) - Exif month\n"
+#~ "$(EXIF_DAY) - Exif day\n"
+#~ "$(EXIF_HOUR) - Exif hour\n"
+#~ "$(EXIF_MINUTE) - Exif minute\n"
+#~ "$(EXIF_SECOND) - Exif second\n"
 #~ "$(STARS) - star rating\n"
 #~ "$(LABELS) - colorlabels\n"
 #~ "$(PICTURES_FOLDER) - pictures folder\n"
@@ -16828,12 +16828,12 @@ msgstr "action"
 #~ "$(HOUR) - heure\n"
 #~ "$(MINUTE) - minute\n"
 #~ "$(SECOND) - seconde\n"
-#~ "$(EXIF_YEAR) - année EXIF\n"
-#~ "$(EXIF_MONTH) - mois EXIF\n"
-#~ "$(EXIF_DAY) - jour EXIF\n"
-#~ "$(EXIF_HOUR) - heure EXIF\n"
-#~ "$(EXIF_MINUTE) - minute EXIF\n"
-#~ "$(EXIF_SECOND) - seconde EXIF\n"
+#~ "$(EXIF_YEAR) - année Exif\n"
+#~ "$(EXIF_MONTH) - mois Exif\n"
+#~ "$(EXIF_DAY) - jour Exif\n"
+#~ "$(EXIF_HOUR) - heure Exif\n"
+#~ "$(EXIF_MINUTE) - minute Exif\n"
+#~ "$(EXIF_SECOND) - seconde Exif\n"
 #~ "$(STARS) - étoiles\n"
 #~ "$(LABELS) - labels de couleur\n"
 #~ "$(PICTURES_FOLDER) - dossier images\n"
@@ -16884,12 +16884,12 @@ msgstr "action"
 #~ "$(HOUR) - hour\n"
 #~ "$(MINUTE) - minute\n"
 #~ "$(SECOND) - second\n"
-#~ "$(EXIF_YEAR) - EXIF year\n"
-#~ "$(EXIF_MONTH) - EXIF month\n"
-#~ "$(EXIF_DAY) - EXIF day\n"
-#~ "$(EXIF_HOUR) - EXIF hour\n"
-#~ "$(EXIF_MINUTE) - EXIF minute\n"
-#~ "$(EXIF_SECOND) - EXIF second\n"
+#~ "$(EXIF_YEAR) - Exif year\n"
+#~ "$(EXIF_MONTH) - Exif month\n"
+#~ "$(EXIF_DAY) - Exif day\n"
+#~ "$(EXIF_HOUR) - Exif hour\n"
+#~ "$(EXIF_MINUTE) - Exif minute\n"
+#~ "$(EXIF_SECOND) - Exif second\n"
 #~ "$(STARS) - star rating\n"
 #~ "$(LABELS) - colorlabels\n"
 #~ "$(PICTURES_FOLDER) - pictures folder\n"
@@ -16908,12 +16908,12 @@ msgstr "action"
 #~ "$(HOUR) - heure\n"
 #~ "$(MINUTE) - minute\n"
 #~ "$(SECOND) - seconde\n"
-#~ "$(EXIF_YEAR) - année EXIF\n"
-#~ "$(EXIF_MONTH) - mois EXIF\n"
-#~ "$(EXIF_DAY) - jour EXIF\n"
-#~ "$(EXIF_HOUR) - heure EXIF\n"
-#~ "$(EXIF_MINUTE) - minute EXIF\n"
-#~ "$(EXIF_SECOND) - seconde EXIF\n"
+#~ "$(EXIF_YEAR) - année Exif\n"
+#~ "$(EXIF_MONTH) - mois Exif\n"
+#~ "$(EXIF_DAY) - jour Exif\n"
+#~ "$(EXIF_HOUR) - heure Exif\n"
+#~ "$(EXIF_MINUTE) - minute Exif\n"
+#~ "$(EXIF_SECOND) - seconde Exif\n"
 #~ "$(STARS) - étoiles\n"
 #~ "$(LABELS) - labels de couleur\n"
 #~ "$(PICTURES_FOLDER) - dossier images\n"
