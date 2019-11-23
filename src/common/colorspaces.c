@@ -317,7 +317,7 @@ static cmsHPROFILE _create_lcms_profile(const char *desc, const char *dmdd,
 static cmsHPROFILE _colorspaces_create_srgb_profile(gboolean v2)
 {
   cmsFloat64Number srgb_parameters[5] = { 2.4, 1.0 / 1.055,  0.055 / 1.055, 1.0 / 12.92, 0.04045 };
-  cmsToneCurve *transferFunction = cmsBuildParametricToneCurve(NULL, 5, srgb_parameters);
+  cmsToneCurve *transferFunction = cmsBuildParametricToneCurve(NULL, 4, srgb_parameters);
 
   cmsHPROFILE profile = _create_lcms_profile("sRGB", "sRGB",
                                              &D65xyY, &sRGB_Primaries, transferFunction, v2);
@@ -340,7 +340,7 @@ static cmsHPROFILE dt_colorspaces_create_srgb_profile_v4()
 static cmsHPROFILE dt_colorspaces_create_brg_profile()
 {
   cmsFloat64Number srgb_parameters[5] = { 2.4, 1.0 / 1.055,  0.055 / 1.055, 1.0 / 12.92, 0.04045 };
-  cmsToneCurve *transferFunction = cmsBuildParametricToneCurve(NULL, 5, srgb_parameters);
+  cmsToneCurve *transferFunction = cmsBuildParametricToneCurve(NULL, 4, srgb_parameters);
 
   cmsCIExyYTRIPLE BRG_Primaries = { sRGB_Primaries.Blue, sRGB_Primaries.Red, sRGB_Primaries.Green };
 
@@ -355,7 +355,7 @@ static cmsHPROFILE dt_colorspaces_create_brg_profile()
 static cmsHPROFILE dt_colorspaces_create_gamma_rec709_rgb_profile(void)
 {
   cmsFloat64Number srgb_parameters[5] = { 2.2, 1.0 / 1.099,  0.099 / 1.099, 1.0 / 4.5, 0.081 };
-  cmsToneCurve *transferFunction = cmsBuildParametricToneCurve(NULL, 5, srgb_parameters);
+  cmsToneCurve *transferFunction = cmsBuildParametricToneCurve(NULL, 4, srgb_parameters);
 
   cmsHPROFILE profile = _create_lcms_profile("Gamma Rec709 RGB", "Gamma Rec709 RGB",
                                              &D65xyY, &Rec709_Primaries, transferFunction, TRUE);
