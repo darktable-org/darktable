@@ -19,6 +19,7 @@
 #include "gui/accelerators.h"
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/utility.h"
 #include "control/control.h"
 #include "develop/blend.h"
 
@@ -79,8 +80,10 @@ static void dt_accel_path_view_translated(char *s, size_t n, dt_view_t *module, 
 
 static void dt_accel_path_iop_translated(char *s, size_t n, dt_iop_module_so_t *module, const char *path)
 {
-  snprintf(s, n, "<Darktable>/%s/%s/%s", C_("accel", "image operations"), module->name(),
+  gchar *module_name_fixed = dt_util_str_replace(module->name(), "/", "-");
+  snprintf(s, n, "<Darktable>/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path));
+  g_free(module_name_fixed);
 }
 
 static void dt_accel_path_lib_translated(char *s, size_t n, dt_lib_module_t *module, const char *path)
@@ -92,16 +95,18 @@ static void dt_accel_path_lib_translated(char *s, size_t n, dt_lib_module_t *mod
 static void dt_accel_paths_slider_iop_translated(char *s[], size_t n, dt_iop_module_so_t *module,
                                                  const char *path)
 {
-  snprintf(s[0], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module->name(),
+  gchar *module_name_fixed = dt_util_str_replace(module->name(), "/", "-");
+  snprintf(s[0], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path), C_("accel", "increase"));
-  snprintf(s[1], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module->name(),
+  snprintf(s[1], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path), C_("accel", "decrease"));
-  snprintf(s[2], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module->name(),
+  snprintf(s[2], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path), C_("accel", "reset"));
-  snprintf(s[3], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module->name(),
+  snprintf(s[3], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path), C_("accel", "edit"));
-  snprintf(s[4], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module->name(),
+  snprintf(s[4], n, "<Darktable>/%s/%s/%s/%s", C_("accel", "image operations"), module_name_fixed,
            g_dpgettext2(NULL, "accel", path), C_("accel", "dynamic"));
+  g_free(module_name_fixed);
 }
 
 static void dt_accel_path_lua_translated(char *s, size_t n, const char *path)
