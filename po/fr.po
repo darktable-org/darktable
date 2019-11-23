@@ -97,7 +97,7 @@ msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
 msgstr ""
-"lorsque des images RAW et JPEG sont présentes ensemble dans un dossier, cela "
+"lorsque des images raw et JPEG sont présentes ensemble dans un dossier, cela "
 "n'a pas de sens d'importer les deux. en activant cette option les fichiers "
 "JPEG sont ignorés."
 
@@ -145,7 +145,7 @@ msgstr "table lumineuse"
 
 #: ../build/src/preferences_gen.h:2285
 msgid "don't use embedded preview JPEG but half-size raw"
-msgstr "ne pas utiliser les miniatures JPEG, toujours utiliser les RAW réduits"
+msgstr "ne pas utiliser les miniatures JPEG, toujours utiliser les raw réduits"
 
 #: ../build/src/preferences_gen.h:2297
 msgid ""
@@ -153,7 +153,7 @@ msgid ""
 "the raw data. this is slower but gives you color managed thumbnails."
 msgstr ""
 "activer cette option pour ne pas utiliser les miniatures JPEG et calculer "
-"l'image à afficher à partir du RAW. cela ralentit le logiciel mais affiche "
+"l'image à afficher à partir du raw. cela ralentit le logiciel mais affiche "
 "des miniatures plus exactes."
 
 #: ../build/src/preferences_gen.h:2305
@@ -1216,7 +1216,7 @@ msgid ""
 "darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
-"darktable supporte la plupart des formats RAW récents, et fait tous ces "
+"darktable supporte la plupart des formats raw récents, et fait tous ces "
 "calculs avec une très haute précision."
 
 #: ../data/darktable.appdata.xml.in.h:5
@@ -2104,7 +2104,7 @@ msgstr ""
 
 #: ../src/control/jobs/control_jobs.c:346
 msgid "exposure bracketing only works on raw images."
-msgstr "bracketing d'exposition marche uniquement sur les images RAW."
+msgstr "bracketing d'exposition marche uniquement sur les images raw."
 
 #: ../src/control/jobs/control_jobs.c:353
 msgid "images have to be of same size and orientation!"
@@ -3657,18 +3657,18 @@ msgstr "fichier de stockage"
 msgid "general"
 msgstr "général"
 
-#. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
+#. ignoring of JPEGs. hack while we don't handle raw+JPEG in the same directories.
 #: ../src/gui/camera_import_dialog.c:350 ../src/libs/import.c:455
 msgid "ignore JPEG files"
 msgstr "ignorer les fichiers JPEG"
 
 #: ../src/gui/camera_import_dialog.c:352 ../src/libs/import.c:456
 msgid ""
-"do not load files with an extension of .jpg or .jpeg. this can be useful "
+"do not load files with an extension of .JPG or .JPEG. this can be useful "
 "when there are raw+JPEG in a directory."
 msgstr ""
-"les fichiers possédant une extension .jpg ou .jpeg ne sont pas importés. "
-"cela peut être utile lorsqu'un dossier possède des fichiers RAW+JPEG."
+"les fichiers possédant une extension .JPG ou .JPEG ne sont pas importés. "
+"cela peut être utile lorsqu'un dossier possède des fichiers raw+JPEG."
 
 #. default metadata
 #: ../src/gui/camera_import_dialog.c:361 ../src/libs/import.c:468
@@ -4706,11 +4706,11 @@ msgid "what pages should be added to the pdf"
 msgstr "quelles pages sont à ajouter au pdf"
 
 #: ../src/imageio/format/pdf.c:693
-msgid "embed icc profiles"
+msgid "embed ICC profiles"
 msgstr "profil ICC intégré"
 
 #: ../src/imageio/format/pdf.c:698
-msgid "images can be tagged with their icc profile"
+msgid "images can be tagged with their ICC profile"
 msgstr "le profil ICC à embarquer dans les images"
 
 #: ../src/imageio/format/pdf.c:704 ../src/imageio/format/png.c:526
@@ -6041,7 +6041,7 @@ msgstr "applique une exposition automatique en fonction de l'image complète"
 msgid ""
 "apply auto exposure based on a region defined by the user\n"
 "click and drag to draw the area\n"
-"right click to cancel"
+"right-click to cancel"
 msgstr ""
 "applique une exposition automatique en fonction de la sélection définie\n"
 "clic et déplacer pour sélectionner la zone\n"
@@ -6354,7 +6354,7 @@ msgid "aspect"
 msgstr "aspect"
 
 #: ../src/iop/borders.c:1020
-msgid "select the aspect ratio or right click and type your own (w:h)"
+msgid "select the aspect ratio or right-click and type your own (w:h)"
 msgstr ""
 "sélectionne les dimensions ou permet par clic-droit\n"
 "d'entrer des dimensions personnalisées (l:h)"
@@ -6374,7 +6374,7 @@ msgstr "position horizontale"
 
 #: ../src/iop/borders.c:1036
 msgid ""
-"select the horizontal position ratio relative to top or right click and type "
+"select the horizontal position ratio relative to top or right-click and type "
 "your own (y:h)"
 msgstr ""
 "sélectionne la position horizontale par rapport au côté supérieur\n"
@@ -6386,7 +6386,7 @@ msgstr "position verticale"
 
 #: ../src/iop/borders.c:1043
 msgid ""
-"select the vertical position ratio relative to left or right click and type "
+"select the vertical position ratio relative to left or right-click and type "
 "your own (x:w)"
 msgstr ""
 "sélectionne la position horizontale par rapport au côté supérieur\n"
@@ -6459,7 +6459,7 @@ msgid ""
 msgstr ""
 "correction automatique des\n"
 "aberrations chromatiques\n"
-"uniquement pour les images RAW"
+"uniquement pour les images raw"
 
 #: ../src/iop/channelmixer.c:112
 msgid "channel mixer"
@@ -7055,7 +7055,7 @@ msgid ""
 "altered patches are marked with an outline\n"
 "click to select\n"
 "double click to reset\n"
-"right click to delete patch\n"
+"right-click to delete patch\n"
 "shift-click while color picking to replace patch"
 msgstr ""
 "(%2.2f %2.2f %2.2f)\n"
@@ -7790,7 +7790,7 @@ msgid ""
 "only needed for raw images."
 msgstr ""
 "dématriçage\n"
-"uniquement pour les images RAW"
+"uniquement pour les images raw"
 
 #: ../src/iop/denoiseprofile.c:498
 msgid "denoise (profiled)"
@@ -8546,7 +8546,7 @@ msgstr ""
 "ne jamais toucher sauf si vous savez ce que vous faites."
 
 #: ../src/iop/filmicrgb.c:192
-msgid "filmic rgb"
+msgid "filmic RGB"
 msgstr "filmique RVB"
 
 #: ../src/iop/filmicrgb.c:233
@@ -9085,7 +9085,7 @@ msgid ""
 "only works for raw images."
 msgstr ""
 "suppression des pixels chauds\n"
-"uniquement pour les images RAW"
+"uniquement pour les images raw"
 
 #: ../src/iop/invert.c:98 ../src/iop/invert.c:530
 #, c-format
@@ -9465,7 +9465,7 @@ msgstr "outil point: éditer, ajouter et supprimer des points"
 
 #: ../src/iop/liquify.c:3607
 msgid ""
-"ctrl-click: add node - right click: remove path\n"
+"ctrl-click: add node - right-click: remove path\n"
 "ctrl-alt-click: toggle line/curve"
 msgstr ""
 "ctrl-clic: ajouter un point - clic-droit: supprimer un chemin\n"
@@ -9474,7 +9474,7 @@ msgstr ""
 #: ../src/iop/liquify.c:3609
 msgid ""
 "click and drag to move - click: show/hide feathering controls\n"
-"ctrl-click: autosmooth, cusp, smooth, symmetrical - right click to remove"
+"ctrl-click: autosmooth, cusp, smooth, symmetrical - right-click to remove"
 msgstr ""
 "clic et déplacer pour positionner - clic: montre/cache les contrôles de "
 "progressivité\n"
@@ -9959,7 +9959,7 @@ msgstr "faire une optimisation basée sur des suppositions"
 
 #: ../src/iop/rawdenoise.c:123
 msgid "raw denoise"
-msgstr "réduction du bruit RAW"
+msgstr "réduction du bruit raw"
 
 #: ../src/iop/rawdenoise.c:143
 msgctxt "accel"
@@ -9975,8 +9975,8 @@ msgid ""
 "raw denoising\n"
 "only works for raw images."
 msgstr ""
-"réduction du bruit RAW\n"
-"uniquement pour les images RAW"
+"réduction du bruit raw\n"
+"uniquement pour les images raw"
 
 #: ../src/iop/rawoverexposed.c:68
 msgid "raw overexposed"
@@ -10017,7 +10017,7 @@ msgstr "rogner depuis le bas"
 #: ../src/iop/rawprepare.c:97
 msgctxt "modulename"
 msgid "raw black/white point"
-msgstr "point noir/blanc RAW"
+msgstr "point noir/blanc raw"
 
 #: ../src/iop/rawprepare.c:124
 msgid "passthrough"
@@ -10044,11 +10044,11 @@ msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
 msgstr ""
-"correction du point noir/blanc des RAW\n"
+"correction du point noir/blanc des raw\n"
 "seulement pour les capteurs le nécessitant."
 
 #: ../src/iop/relight.c:55
-msgid "fill-light 0.25EV with 4 zones"
+msgid "fill-light 0.25 EV with 4 zones"
 msgstr "lumière d'appoint 0.25 IL sur 4 zones"
 
 #: ../src/iop/relight.c:58
@@ -10325,7 +10325,7 @@ msgid "max scale is %i for this image size"
 msgstr "l'échelle maximum est %i pour la taille de cette image"
 
 #: ../src/iop/rgbcurve.c:126
-msgid "rgb curve"
+msgid "RGB curve"
 msgstr "courbe RVB"
 
 #: ../src/iop/rgbcurve.c:208 ../src/iop/tonecurve.c:544
@@ -10415,14 +10415,14 @@ msgid "compensate middle grey"
 msgstr "compenser le gris moyen"
 
 #: ../src/iop/rgblevels.c:108
-msgid "rgb levels"
+msgid "RGB levels"
 msgstr "niveaux RVB"
 
 #: ../src/iop/rgblevels.c:1096
 msgid ""
 "apply auto levels based on a region defined by the user\n"
 "click and drag to draw the area\n"
-"right click to cancel"
+"right-click to cancel"
 msgstr ""
 "applique un niveau automatique en fonction de la sélection définie\n"
 "clic et déplacer pour sélectionner la zone\n"
@@ -10662,7 +10662,7 @@ msgstr "nombre de corrections :"
 msgid ""
 "click on a shape and drag on canvas.\n"
 "use the mouse wheel to adjust size.\n"
-"right click to remove a shape."
+"right-click to remove a shape."
 msgstr ""
 "cliquer sur une forme pour la déplacer.\n"
 "défiler à la souris pour ajuster la taille.\n"
@@ -11196,7 +11196,7 @@ msgstr "compensation exposition masque"
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
-"the picker will auto-adjust the average exposure at -4EV."
+"the picker will auto-adjust the average exposure at -4 EV."
 msgstr ""
 "utiliser pour déplacer la moyenne du masque d'exposition à travers les "
 "canaux\n"
@@ -11210,7 +11210,7 @@ msgstr "compensation contraste masque"
 #: ../src/iop/toneequal.c:3231
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
-"and dilate the mask contrast around -4EV\n"
+"and dilate the mask contrast around -4 EV\n"
 "this allows to spread the exposure histogram over more channels\n"
 "for a better control of the exposure correction."
 msgstr ""
@@ -11654,7 +11654,7 @@ msgstr ""
 msgid ""
 "the amount of steps per bracket, steps is camera configurable and usually 3 "
 "steps per stop\n"
-"with other words, 3 steps is 1EV exposure step between brackets."
+"with other words, 3 steps is 1 EV exposure step between brackets."
 msgstr ""
 "pas d'exposition, le pas étant configurable par le boîtier et habituellement "
 "de 3 pas par \"stop\"\n"
@@ -12492,7 +12492,7 @@ msgstr "afficher le canal bleu"
 #: ../src/libs/histogram.c:372
 msgid ""
 "drag to change black point,\n"
-"doubleclick resets"
+"double-click resets"
 msgstr ""
 "glisser pour changer les noirs,\n"
 "le double-clic réinitialise"
@@ -12501,7 +12501,7 @@ msgstr ""
 #: ../src/libs/histogram.c:377 ../src/libs/histogram.c:546
 msgid ""
 "drag to change exposure,\n"
-"doubleclick resets"
+"double-click resets"
 msgstr ""
 "glisser pour changer l'exposition,\n"
 "le double-clic ré-initialise"
@@ -13323,16 +13323,16 @@ msgid "j2k"
 msgstr "j2k"
 
 #: ../src/libs/metadata_view.c:403
-msgid "jpeg"
-msgstr "jpeg"
+msgid "JPEG"
+msgstr "JPEG"
 
 #: ../src/libs/metadata_view.c:404
 msgid "exr"
 msgstr "exr"
 
 #: ../src/libs/metadata_view.c:405
-msgid "rgbe"
-msgstr "rgbe"
+msgid "RGBE"
+msgstr "RGBE"
 
 #: ../src/libs/metadata_view.c:406
 msgid "pfm"
@@ -13833,7 +13833,7 @@ msgstr "fichiers de style"
 #: ../src/libs/styles.c:411
 msgid ""
 "available styles,\n"
-"doubleclick to apply"
+"double-click to apply"
 msgstr ""
 "styles disponibles, \n"
 "double-clic pour appliquer"
@@ -14657,9 +14657,9 @@ msgstr "activer l'affichage secondaire de la chambre noire"
 #: ../src/views/darkroom.c:1815
 msgid ""
 "toggle raw over exposed indication\n"
-"right click for options"
+"right-click for options"
 msgstr ""
-"activer/désactiver les zones sur-/sous-exposées RAW\n"
+"activer/désactiver les zones sur-/sous-exposées raw\n"
 "clic-droit pour les options"
 
 #: ../src/views/darkroom.c:1839
@@ -14723,7 +14723,7 @@ msgstr ""
 #: ../src/views/darkroom.c:1879
 msgid ""
 "toggle over/under exposed indication\n"
-"right click for options"
+"right-click for options"
 msgstr ""
 "activer/désactiver les zones sur-/sous-exposées\n"
 "clic-droit pour les options"
@@ -14759,7 +14759,7 @@ msgstr "seuil au-dessus duquel les pixels sont considérés sur-exposés"
 #: ../src/views/darkroom.c:1937
 msgid ""
 "toggle softproofing\n"
-"right click for profile options"
+"right-click for profile options"
 msgstr ""
 "activer/désactiver l'épreuvage écran\n"
 "clic-droit pour les options de profil"
@@ -14767,7 +14767,7 @@ msgstr ""
 #: ../src/views/darkroom.c:1951
 msgid ""
 "toggle gamut checking\n"
-"right click for profile options"
+"right-click for profile options"
 msgstr ""
 "activer/désactiver vérification de gamut\n"
 "clic-droit pour les options de profil"
@@ -15242,8 +15242,8 @@ msgid "no camera with tethering support available for use..."
 msgstr "aucun boîtier disponible pour la capture..."
 
 #: ../src/views/view.c:2143
-msgid "Left click"
-msgstr "clic gauche"
+msgid "Left-click"
+msgstr "clic-gauche"
 
 #: ../src/views/view.c:2146
 msgid "Right click"
@@ -15259,18 +15259,18 @@ msgstr "molette"
 
 #: ../src/views/view.c:2155
 msgid "Left double-click"
-msgstr "double-clic gauche"
+msgstr "double clic-gauche"
 
 #: ../src/views/view.c:2158
 msgid "Right double-click"
 msgstr "double-clic droit"
 
 #: ../src/views/view.c:2161
-msgid "Drag and drop"
+msgid "Drag & drop"
 msgstr "glisser & déposer"
 
 #: ../src/views/view.c:2164
-msgid "Left click+Drag"
+msgid "Left-click + Drag"
 msgstr "clic-gauche + déplacer"
 
 #: ../src/views/view.c:2167
@@ -15377,16 +15377,16 @@ msgstr "action"
 #~ msgid "+0 EV : speculars"
 #~ msgstr "+0 IL : spéculaires"
 
-#~ msgid "max rgb"
+#~ msgid "max RGB"
 #~ msgstr "max RVB"
 
-#~ msgid "average rgb"
+#~ msgid "average RGB"
 #~ msgstr "moyenne RVB"
 
-#~ msgid "sum rgb"
+#~ msgid "sum RGB"
 #~ msgstr "somme RVB"
 
-#~ msgid "norm rgb"
+#~ msgid "norm RGB"
 #~ msgstr "norme RVB"
 
 # lorsque l'action engendre une suppression physique non annulable, on emploie le terme "supprimer"
@@ -15749,10 +15749,10 @@ msgstr "action"
 #~ msgid "And all those of you that made previous releases possible"
 #~ msgstr "Et tous ceux qui ont participé aux versions précédentes"
 
-#~ msgid "0ev, +3ev"
+#~ msgid "0 EV, +3 EV"
 #~ msgstr "0 IL, +3 IL"
 
-#~ msgid "0ev, +3ev, +6ev"
+#~ msgid "0ev, +3 EV, +6 EV"
 #~ msgstr "0 IL, +3 IL, +6 IL"
 
 #~ msgid "color checker lut"
@@ -15893,7 +15893,7 @@ msgstr "action"
 #~ msgstr "image développée"
 
 #~ msgid "source raw data"
-#~ msgstr "données RAW"
+#~ msgstr "données raw"
 
 #~ msgid ""
 #~ "ls\t\t\t\t\tlist content of directory\n"
@@ -16195,8 +16195,8 @@ msgstr "action"
 #~ msgid "Beta RGB (compatible)"
 #~ msgstr "Beta RGB (compatible)"
 
-#~ msgid "RAW"
-#~ msgstr "RAW"
+#~ msgid "raw"
+#~ msgstr "raw"
 
 #~ msgid "error creating GUI, see stderr"
 #~ msgstr "erreur lors de la création de l'interface, voir stderr"
@@ -16384,13 +16384,13 @@ msgstr "action"
 #~ "images). désactiver pour avoir une vitesse de développement légèrement "
 #~ "plus rapide au prix de l'apparition de bandes."
 
-#~ msgid "iso"
+#~ msgid "ISO"
 #~ msgstr "ISO"
 
-#~ msgid "dcp mode"
+#~ msgid "DCP mode"
 #~ msgstr "mode DCP"
 
-#~ msgid "8-bit jpg"
+#~ msgid "8-bit JPG"
 #~ msgstr "JPEG 8-bits"
 
 #~ msgid "16-bit ppm"
@@ -16446,7 +16446,7 @@ msgstr "action"
 #~ msgid "wb"
 #~ msgstr "BdB"
 
-#~ msgid "rgb"
+#~ msgid "RGB"
 #~ msgstr "RVB"
 
 #~ msgid "create hdr"
@@ -16866,7 +16866,7 @@ msgstr "action"
 #~ msgstr "réglages avancés"
 
 #~ msgid "this doesn't work for raw/hdr images."
-#~ msgstr "inactif pour les images RAW/HDR"
+#~ msgstr "inactif pour les images raw/HDR"
 
 #~ msgid "apply distortions instead of correcting them"
 #~ msgstr "applique les distorsions au lieu de les corriger"
@@ -17010,7 +17010,7 @@ msgstr "action"
 #~ msgid "draw a rectangle to give a tint"
 #~ msgstr "tracer un rectangle pour donner une teinte"
 
-#~ msgid "jpeg quality of on-disk thumbnails"
+#~ msgid "JPEG quality of on-disk thumbnails"
 #~ msgstr "qualité JPEG des miniatures sauvegardées sur le disque"
 
 #~ msgid "affects only the thumbnail cache used for quick startup."
