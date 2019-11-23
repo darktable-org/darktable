@@ -1488,7 +1488,8 @@ void change_image(struct dt_iop_module_t *self)
   dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
   if(g)
   {
-    g->channel = DT_IOP_RGBCURVE_R;
+    if(!g->channel)
+      g->channel = DT_IOP_RGBCURVE_R;
     g->mouse_x = g->mouse_y = -1.0;
     g->selected = -1;
     g->offset_x = g->offset_y = 0.f;
