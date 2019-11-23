@@ -265,9 +265,9 @@ static cmsHPROFILE _create_lcms_profile(const char *desc, const char *dmdd,
 
   if(v2) cmsSetProfileVersion(profile, 2.1);
 
-  cmsSetHeaderFlags(profile, cmsUseAnywhere);
+  cmsSetHeaderFlags(profile, cmsEmbeddedProfileTrue | cmsUseAnywhere);
 
-  cmsSetDeviceClass(profile, cmsSigDisplayClass);
+  cmsSetDeviceClass(profile, cmsSigColorSpaceClass);
 
   cmsMLUsetASCII(mlu1, "en", "US", "Public Domain");
   cmsWriteTag(profile, cmsSigCopyrightTag, mlu1);
