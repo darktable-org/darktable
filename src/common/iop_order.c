@@ -1656,13 +1656,13 @@ static int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order
   // process some more checks possibly; any sort data that can't be correct?
 
   // print complete history information
-  fprintf(stderr,"\n\n ***** On-the-fly history V[%i]->V[%i], imageid: %i ****************",
+  fprintf(stderr, "\n ***** On-the-fly history V[%i]->V[%i], imageid: %i ****************\n",
           current_iop_order_version, _iop_order_version, imgid);
   for (int i=0;i<history_size;i++)
   {
     struct dt_onthefly_history_t *this = &myhistory[i];
-    fprintf(stderr,"\n %3i %20s multi%3i :: iop %14.11f -> %14.11f",
-            this->num, this->operation, this->multi_priority, this->old_iop_order, this->new_iop_order);
+    fprintf(stderr, " %3i %20s multi%3i :: iop %14.11f -> %14.11f\n", this->num, this->operation,
+            this->multi_priority, this->old_iop_order, this->new_iop_order);
   }
 
   // Now write history
