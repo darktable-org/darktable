@@ -97,7 +97,7 @@ msgid ""
 "when having raw+JPEG images together in one directory it makes no sense to "
 "import both. with this flag one can ignore all JPEGs found."
 msgstr ""
-"lorsque des images raw et jpeg sont présentes ensemble dans un dossier, cela "
+"lorsque des images RAW et JPEG sont présentes ensemble dans un dossier, cela "
 "n'a pas de sens d'importer les deux. en activant cette option les fichiers "
 "JPEG sont ignorés."
 
@@ -145,7 +145,7 @@ msgstr "table lumineuse"
 
 #: ../build/src/preferences_gen.h:2285
 msgid "don't use embedded preview JPEG but half-size raw"
-msgstr "ne pas utiliser les miniatures JPEG, toujours utiliser les raw réduits"
+msgstr "ne pas utiliser les miniatures JPEG, toujours utiliser les RAW réduits"
 
 #: ../build/src/preferences_gen.h:2297
 msgid ""
@@ -153,7 +153,7 @@ msgid ""
 "the raw data. this is slower but gives you color managed thumbnails."
 msgstr ""
 "activer cette option pour ne pas utiliser les miniatures JPEG et calculer "
-"l'image à afficher à partir du raw. cela ralentit le logiciel mais affiche "
+"l'image à afficher à partir du RAW. cela ralentit le logiciel mais affiche "
 "des miniatures plus exactes."
 
 #: ../build/src/preferences_gen.h:2305
@@ -222,7 +222,7 @@ msgstr "active la superposition étendue des miniatures"
 msgid "if set to true, thumb overlay shows filename and some exif data."
 msgstr ""
 "si activé, la superposition des miniatures affiche le nom du fichier et "
-"quelques données exif."
+"quelques données EXIF."
 
 #: ../build/src/preferences_gen.h:2402
 msgid "use single-click in the collect panel"
@@ -687,7 +687,7 @@ msgstr "table lumineuse et chambre noire"
 
 #: ../build/src/preferences_gen.h:3325
 msgid "defines where scrollbars should be displayed"
-msgstr "défini dans quelles vues les barres de défilement doivent apparaître"
+msgstr "définit dans quelles vues les barres de défilement doivent apparaître"
 
 #: ../build/src/preferences_gen.h:3333
 msgid "always show panels' scrollbars"
@@ -874,7 +874,7 @@ msgstr "xmp"
 
 #: ../build/src/preferences_gen.h:3661
 msgid "write sidecar file for each image"
-msgstr "écrire un fichier xmp redondant pour chaque image"
+msgstr "écrire un fichier XMP redondant pour chaque image"
 
 #: ../build/src/preferences_gen.h:3673
 msgid ""
@@ -886,7 +886,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3681
 msgid "store xmp tags in compressed format"
-msgstr "enregistre les tags xmp avec un format compressé"
+msgstr "enregistre les tags XMP avec un format compressé"
 
 #: ../build/src/preferences_gen.h:3702 ../build/src/preferences_gen.h:3717
 msgctxt "preferences"
@@ -899,20 +899,20 @@ msgid ""
 "to store the history stack in output files. this option allows xmp tags to "
 "be compressed and save space."
 msgstr ""
-"les données des tags xmp peuvent être larges et dépasser la place disponible "
+"les données des tags XMP peuvent être larges et dépasser la place disponible "
 "pour enregistrer les données de développement dans le fichier. cette option "
-"permet de compresser les tags xmp pour gagner de la place."
+"permet de compresser les tags XMP pour gagner de la place."
 
 #: ../build/src/preferences_gen.h:3728
 msgid "look for updated xmp files on startup"
-msgstr "vérifie les fichiers xmp modifiés au démarrage"
+msgstr "vérifie les fichiers XMP modifiés au démarrage"
 
 #: ../build/src/preferences_gen.h:3740
 msgid ""
 "check file modification times of all xmp files on startup to check if any "
 "got updated in the meantime"
 msgstr ""
-"récupère la date de modification de tous les fichiers xmp au démarrage pour "
+"récupère la date de modification de tous les fichiers XMP au démarrage pour "
 "vérifier ceux modifiés depuis la dernière session"
 
 #: ../build/src/preferences_gen.h:3748
@@ -1216,7 +1216,7 @@ msgid ""
 "darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
-"darktable supporte la plupart des formats raw récents, et fait tous ces "
+"darktable supporte la plupart des formats RAW récents, et fait tous ces "
 "calculs avec une très haute précision."
 
 #: ../data/darktable.appdata.xml.in.h:5
@@ -2034,7 +2034,7 @@ msgstr "chemin"
 
 #: ../src/control/crawler.c:350
 msgid "xmp timestamp"
-msgstr "horodatage xmp"
+msgstr "horodatage XMP"
 
 #: ../src/control/crawler.c:354
 msgid "database timestamp"
@@ -2042,7 +2042,7 @@ msgstr "horodatage base de données"
 
 #: ../src/control/crawler.c:363
 msgid "updated xmp sidecar files found"
-msgstr "versions modifiées de fichier xmp trouvées"
+msgstr "versions modifiées de fichier XMP trouvées"
 
 #: ../src/control/crawler.c:365
 msgid "_close"
@@ -2054,11 +2054,11 @@ msgstr "tout"
 
 #: ../src/control/crawler.c:387
 msgid "reload selected xmp files"
-msgstr "relire fichiers xmp selectionnés"
+msgstr "relire fichiers XMP selectionnés"
 
 #: ../src/control/crawler.c:388
 msgid "overwrite selected xmp files"
-msgstr "écraser les fichiers xmp selectionnés"
+msgstr "écraser les fichiers XMP selectionnés"
 
 #: ../src/control/jobs/camera_jobs.c:86
 #, c-format
@@ -2104,7 +2104,7 @@ msgstr ""
 
 #: ../src/control/jobs/control_jobs.c:346
 msgid "exposure bracketing only works on raw images."
-msgstr "bracketing d'exposition marche uniquement sur les images raw."
+msgstr "bracketing d'exposition marche uniquement sur les images RAW."
 
 #: ../src/control/jobs/control_jobs.c:353
 msgid "images have to be of same size and orientation!"
@@ -2269,7 +2269,7 @@ msgstr "image « %s » non disponible actuellement"
 
 #: ../src/control/jobs/control_jobs.c:1498
 msgid "merge hdr image"
-msgstr "fusion hdr d'images"
+msgstr "fusion HDR d'images"
 
 #: ../src/control/jobs/control_jobs.c:1512
 msgid "duplicate images"
@@ -2391,7 +2391,7 @@ msgstr "copie locale d'images"
 
 #: ../src/control/jobs/control_jobs.c:1751 ../src/libs/image.c:276
 msgid "refresh exif"
-msgstr "rafraîchir exif"
+msgstr "rafraîchir EXIF"
 
 #: ../src/control/jobs/control_jobs.c:1814
 #, c-format
@@ -2424,7 +2424,7 @@ msgstr "décalage"
 
 #: ../src/control/jobs/control_jobs.c:1932 ../src/libs/copy_history.c:366
 msgid "write sidecar files"
-msgstr "sauver en xmp"
+msgstr "sauver en XMP"
 
 #: ../src/control/jobs/film_jobs.c:71
 msgid "import images"
@@ -2823,7 +2823,7 @@ msgstr "couleur TSL"
 #: ../src/develop/blend_gui.c:2235
 msgctxt "blendmode"
 msgid "RGB red channel"
-msgstr "RVB cannal rouge"
+msgstr "RVB canal rouge"
 
 #: ../src/develop/blend_gui.c:2237
 msgctxt "blendmode"
@@ -3668,7 +3668,7 @@ msgid ""
 "when there are raw+JPEG in a directory."
 msgstr ""
 "les fichiers possédant une extension .jpg ou .jpeg ne sont pas importés. "
-"cela peut être utile lorsqu'un dossier possède des fichiers raw+JPEG."
+"cela peut être utile lorsqu'un dossier possède des fichiers RAW+JPEG."
 
 #. default metadata
 #: ../src/gui/camera_import_dialog.c:361 ../src/libs/import.c:468
@@ -4707,11 +4707,11 @@ msgstr "quelles pages sont à ajouter au pdf"
 
 #: ../src/imageio/format/pdf.c:693
 msgid "embed icc profiles"
-msgstr "profil icc intégré"
+msgstr "profil ICC intégré"
 
 #: ../src/imageio/format/pdf.c:698
 msgid "images can be tagged with their icc profile"
-msgstr "le profil icc à embarquer dans les images"
+msgstr "le profil ICC à embarquer dans les images"
 
 #: ../src/imageio/format/pdf.c:704 ../src/imageio/format/png.c:526
 #: ../src/imageio/format/tiff.c:466
@@ -5496,7 +5496,7 @@ msgstr ""
 #: ../src/iop/ashift.c:4978
 msgid "focal length of the lens, default value set from exif data if available"
 msgstr ""
-"longueur focale de l'objectif, valeur par défaut depuis les exif si "
+"longueur focale de l'objectif, valeur par défaut depuis les EXIF si "
 "disponible"
 
 #: ../src/iop/ashift.c:4980
@@ -5505,7 +5505,7 @@ msgid ""
 "available, manual setting is often required"
 msgstr ""
 "facteur de cadrage du capteur de l'appareil, valeur par défaut depuis les "
-"exif si disponible, positionnement manuel souvent nécessaire"
+"EXIF si disponible, positionnement manuel souvent nécessaire"
 
 #: ../src/iop/ashift.c:4983
 msgid ""
@@ -6459,7 +6459,7 @@ msgid ""
 msgstr ""
 "correction automatique des\n"
 "aberrations chromatiques\n"
-"uniquement pour les images raw"
+"uniquement pour les images RAW"
 
 #: ../src/iop/channelmixer.c:112
 msgid "channel mixer"
@@ -7790,7 +7790,7 @@ msgid ""
 "only needed for raw images."
 msgstr ""
 "dématriçage\n"
-"uniquement pour les images raw"
+"uniquement pour les images RAW"
 
 #: ../src/iop/denoiseprofile.c:498
 msgid "denoise (profiled)"
@@ -8547,7 +8547,7 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:192
 msgid "filmic rgb"
-msgstr "filmique rvb"
+msgstr "filmique RVB"
 
 #: ../src/iop/filmicrgb.c:233
 msgid "07 EV dynamic range"
@@ -8616,7 +8616,7 @@ msgid ""
 msgstr ""
 "graphe lecture-seul, utiliser les paramètres suivants pour positionner les "
 "nœuds\n"
-"la courbe claires représente le mappage des tonalités\n"
+"la courbe claire représente le mappage des tonalités\n"
 "la courbe sombre représente la dé-saturation.\n"
 
 #: ../src/iop/filmicrgb.c:1432
@@ -8672,10 +8672,10 @@ msgid ""
 "this is not an artificial intelligence, but a simple guess.\n"
 "ensure you understand its assumptions before using it."
 msgstr ""
-"essai d'optimiser les réglages par analyse.\n"
-"l'étendu de la luminance sera placée dans l'histogramme.\n"
-"marche mieux sur les paysages et images exposées uniformément\n"
-"et donnera de mauvais résultat sur des clairs-obscurs et high-key.\n"
+"essaye d'optimiser les réglages par analyse.\n"
+"l'étendue de la luminance sera placée dans l'histogramme.\n"
+"fonctionne mieux sur les paysages et images exposés uniformément\n"
+"et donnera de mauvais résultats sur des clairs-obscurs et high-key.\n"
 "cela n'est pas de l'intelligence artificielle, mais une simple analyse.\n"
 "s'assurer de bien comprendre l'analyse avant de l'utiliser."
 
@@ -8688,10 +8688,10 @@ msgid ""
 "this has no effect on mid-tones."
 msgstr ""
 "domaine de linéarité au centre de la courbe\n"
-"en pourcentage de l'étendu dynamique (exposition du noir - exposition du "
+"en pourcentage de l'étendue dynamique (exposition du noir - exposition du "
 "blanc)\n"
 "augmenter pour obtenir plus de contraste dans les luminances extrêmes\n"
-"diminuer sinon. aucune désaturation n'est faites dans l'étendu de la "
+"diminuer sinon. aucune désaturation n'est faite dans l'étendue de la "
 "latitude.\n"
 "ce réglage n'a aucun effet dans les tons moyens."
 
@@ -9085,7 +9085,7 @@ msgid ""
 "only works for raw images."
 msgstr ""
 "suppression des pixels chauds\n"
-"uniquement pour les images raw"
+"uniquement pour les images RAW"
 
 #: ../src/iop/invert.c:98 ../src/iop/invert.c:530
 #, c-format
@@ -9776,7 +9776,7 @@ msgstr "lin prophoto RVB"
 
 #: ../src/iop/lut3d.c:1125
 msgid "select the color space in which the LUT has to be applied"
-msgstr "sélectionner l'espace couleur pour l'application lut"
+msgstr "sélectionner l'espace couleur pour l'application de la LUT"
 
 #: ../src/iop/lut3d.c:1129
 msgid "interpolation"
@@ -9882,11 +9882,11 @@ msgstr "étendue des ombres"
 
 #: ../src/iop/profile_gamma.c:158
 msgid "16 EV dynamic range (generic)"
-msgstr "plage dynamique 16IL (générique)"
+msgstr "plage dynamique 16 IL (générique)"
 
 #: ../src/iop/profile_gamma.c:163
 msgid "14 EV dynamic range (generic)"
-msgstr "plage dynamique 14IL (générique)"
+msgstr "plage dynamique 14 IL (générique)"
 
 #: ../src/iop/profile_gamma.c:168
 msgid "12 EV dynamic range (generic)"
@@ -9975,8 +9975,8 @@ msgid ""
 "raw denoising\n"
 "only works for raw images."
 msgstr ""
-"réduction du bruit raw\n"
-"uniquement pour les images raw"
+"réduction du bruit RAW\n"
+"uniquement pour les images RAW"
 
 #: ../src/iop/rawoverexposed.c:68
 msgid "raw overexposed"
@@ -10017,7 +10017,7 @@ msgstr "rogner depuis le bas"
 #: ../src/iop/rawprepare.c:97
 msgctxt "modulename"
 msgid "raw black/white point"
-msgstr "point noir/blanc raw"
+msgstr "point noir/blanc RAW"
 
 #: ../src/iop/rawprepare.c:124
 msgid "passthrough"
@@ -10044,7 +10044,7 @@ msgid ""
 "raw black/white point correction\n"
 "only works for the sensors that need it."
 msgstr ""
-"correction du point noir/blanc des raw\n"
+"correction du point noir/blanc des RAW\n"
 "seulement pour les capteurs le nécessitant."
 
 #: ../src/iop/relight.c:55
@@ -10099,7 +10099,7 @@ msgstr "retouche"
 #: ../src/iop/retouch.c:1931
 msgid "cannot display scales when the blending mask is displayed"
 msgstr ""
-"impossible d'afficher les échelles de décomposition en ondelette lorsque les "
+"impossible d'afficher les échelles de décomposition en ondelettes lorsque les "
 "masques de fusion sont affichés"
 
 #: ../src/iop/retouch.c:2651
@@ -10326,7 +10326,7 @@ msgstr "l'échelle maximum est %i pour la taille de cette image"
 
 #: ../src/iop/rgbcurve.c:126
 msgid "rgb curve"
-msgstr "courbe rvb"
+msgstr "courbe RVB"
 
 #: ../src/iop/rgbcurve.c:208 ../src/iop/tonecurve.c:544
 #: ../src/iop/tonemap.cc:299
@@ -10416,7 +10416,7 @@ msgstr "compenser le gris moyen"
 
 #: ../src/iop/rgblevels.c:108
 msgid "rgb levels"
-msgstr "niveaux rvb"
+msgstr "niveaux RVB"
 
 #: ../src/iop/rgblevels.c:1096
 msgid ""
@@ -10961,8 +10961,8 @@ msgid ""
 "tone equalizer in/out buffer are ill-aligned, please report the bug to the "
 "developers"
 msgstr ""
-"les données entrée/sortie de l'égaliseur de don ne sont pas correctement "
-"alignées, reporter le bug aux développeurs"
+"les données entrée/sortie de l'égaliseur de tons ne sont pas correctement "
+"alignées, reporter le bug aux développeurs svp"
 
 #: ../src/iop/toneequal.c:1776 ../src/iop/toneequal.c:2149
 msgid "the interpolation is unstable, decrease the curve smoothing"
@@ -11110,7 +11110,7 @@ msgid ""
 msgstr ""
 "'non' affecte le contraste global et local (sûr si seulement du contraste "
 "est ajouté)\n"
-"'filtre guidé' affecte uniquement le contraste global et essayes de "
+"'filtre guidé' affecte uniquement le contraste global et essaye de "
 "préserver le contraste local\n"
 "'filtre guidé moyen' est une moyenne des deux méthodes"
 
@@ -11123,12 +11123,12 @@ msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
 msgstr ""
-"nombre de passe du filtre guidé à appliquer\n"
+"nombre de passes du filtre guidé à appliquer\n"
 "aide à diffuser les bords du filtre mais dégrade les performances"
 
 #: ../src/iop/toneequal.c:3176
 msgid "smoothing diameter"
-msgstr "diamètre adoucissement"
+msgstr "diamètre d'adoucissement"
 
 #: ../src/iop/toneequal.c:3177
 msgid ""
@@ -11153,9 +11153,9 @@ msgid ""
 "but may lead to inaccurate edges taping and halos"
 msgstr ""
 "précision de l'adoucissement :\n"
-"les grandes valeurs force le masque à suivre les bords plus précisément\n"
+"les grandes valeurs forcent le masque à suivre les bords plus précisément\n"
 "mais peut alors annuler l'adoucissement\n"
-"les petites valeurs donne des gradients plus progressif et un meilleur "
+"les petites valeurs donnent des gradients plus progressifs et un meilleur "
 "adoucissement\n"
 "mais peut alors créer des bords peu précis et des halos"
 
@@ -11170,8 +11170,8 @@ msgid ""
 "clipping occurs."
 msgstr ""
 "l'histogramme du masque s'étend entre le premier et dernier décile.\n"
-"la ligne centrale montre la moyenne. des bars oranges apparaissent aux "
-"extrémités si troncatures."
+"la ligne centrale montre la moyenne. des barres oranges apparaissent aux "
+"extrémités si troncature."
 
 #: ../src/iop/toneequal.c:3205
 msgid "mask quantization"
@@ -11184,8 +11184,8 @@ msgid ""
 "produce piece-wise smooth areas when using high feathering values"
 msgstr ""
 "0 désactive la quantification.\n"
-"les valeurs plus grandes postérise la luminance pour aider le guidage\n"
-" à produire des zones plus lisse lors de l'utilisation de grandes valeurs "
+"les valeurs les plus grandes postérisent la luminance pour aider le guidage\n"
+" à produire des zones plus lisses lors de l'utilisation de grandes valeurs "
 "d'adoucissement"
 
 #: ../src/iop/toneequal.c:3215
@@ -11214,7 +11214,7 @@ msgid ""
 "this allows to spread the exposure histogram over more channels\n"
 "for a better control of the exposure correction."
 msgstr ""
-"à utiliser pour dilater le masque de contraste autour de sa moyene de "
+"à utiliser pour dilater le masque de contraste autour de sa moyenne de "
 "luminosité\n"
 "ceci permet d'étaler l'histogramme d'exposition à travers plus de canaux\n"
 "pour un meilleur contrôle de la correction d'exposition."
@@ -11452,7 +11452,7 @@ msgstr "sélectionne la couleur du filigrane"
 
 #: ../src/iop/watermark.c:1390
 msgid "pick color from image"
-msgstr "choisit une couleur dans l'image"
+msgstr "selectionne une couleur dans l'image"
 
 #. Simple text
 #: ../src/iop/watermark.c:1400
@@ -11914,7 +11914,7 @@ msgstr "développement"
 
 #: ../src/libs/copy_history.c:78
 msgid "open sidecar file"
-msgstr "ouvrir un fichier xmp"
+msgstr "ouvrir un fichier XMP"
 
 #: ../src/libs/copy_history.c:88
 msgid "XMP sidecar files"
@@ -12039,7 +12039,7 @@ msgstr "gestion des développements pré-existants"
 
 #: ../src/libs/copy_history.c:359
 msgid "load sidecar file..."
-msgstr "charger un xmp..."
+msgstr "charger un XMP..."
 
 #: ../src/libs/copy_history.c:362
 msgid ""
@@ -12084,12 +12084,12 @@ msgstr "coller"
 #: ../src/libs/copy_history.c:400
 msgctxt "accel"
 msgid "load sidecar files"
-msgstr "charger un fichier xmp"
+msgstr "charger un fichier XMP"
 
 #: ../src/libs/copy_history.c:401
 msgctxt "accel"
 msgid "write sidecar files"
-msgstr "sauver en xmp"
+msgstr "sauver en XMP"
 
 #: ../src/libs/duplicate.c:67
 msgid "duplicate manager"
@@ -12239,7 +12239,7 @@ msgid ""
 "list of available tags. click 'add' button or double-click on tag to add the "
 "selected one"
 msgstr ""
-"liste des mots-clés disponibles. cliquer sure 'ajouter' ou double-cliquer "
+"liste des mots-clés disponibles. cliquer sur 'ajouter' ou double-cliquer "
 "sur un mot-clé pour l'ajouter"
 
 #: ../src/libs/export_metadata.c:231
@@ -12261,7 +12261,7 @@ msgstr "données EXIF"
 
 #: ../src/libs/export_metadata.c:250
 msgid "export exif metadata"
-msgstr "exporter les métadonnées exif"
+msgstr "exporter les métadonnées EXIF"
 
 #: ../src/libs/export_metadata.c:252
 msgid "metadata"
@@ -12269,7 +12269,7 @@ msgstr "métadonnées"
 
 #: ../src/libs/export_metadata.c:253
 msgid "export dt xmp metadata (from metadata editor module)"
-msgstr "exporter les métadonnées xmp (depuis l'éditeur de métadonnées)"
+msgstr "exporter les métadonnées XMP (depuis l'éditeur de métadonnées)"
 
 #: ../src/libs/export_metadata.c:263
 msgid "only embedded"
@@ -12280,12 +12280,12 @@ msgid ""
 "per default the interface sends some (limited) metadata beside the image to "
 "remote storage.\n"
 "to avoid this and let only image embedded dt xmp metadata, check this flag.\n"
-"if remote storage doesn't understand dt xmp metadata, you can use calculated "
+"if remote storage doesn't understand dt XMP metadata, you can use calculated "
 "metadata instead"
 msgstr ""
-"par défaut des métadonnées sont exporter en plus de celles embarquées dans "
+"par défaut des métadonnées sont exportées en plus de celles embarquées dans "
 "l'image.\n"
-"si sélectionné alors uniquement les métadonnées de embarquées dans l'image "
+"si sélectionné alors uniquement les métadonnées embarquées dans l'image "
 "sont exportées\n"
 "si le stockage distant ne supporte pas les métadonnées de darktable, il est "
 "possible de les définir."
@@ -12348,7 +12348,7 @@ msgid ""
 "xmp file)"
 msgstr ""
 "exporter l'historique de développement de darktable (pratique pour récupérer "
-"un développement en cas de perte des xmp et base de données)."
+"un développement en cas de perte des XMP et base de données)."
 
 #: ../src/libs/export_metadata.c:302
 msgid "per metadata settings"
@@ -12681,7 +12681,7 @@ msgctxt "accel"
 msgid "rotate selected images 90 degrees CCW"
 msgstr ""
 "tourne les images de 90 degrés\n"
-"(sens anit-horaire)"
+"(sens anti-horaire)"
 
 #: ../src/libs/image.c:308
 msgctxt "accel"
@@ -12712,7 +12712,7 @@ msgstr "resync copie locale"
 #: ../src/libs/image.c:313
 msgctxt "accel"
 msgid "refresh exif"
-msgstr "rafraîchir exif"
+msgstr "rafraîchir EXIF"
 
 #. Grouping keys
 #: ../src/libs/image.c:315
@@ -13224,11 +13224,11 @@ msgstr "hauteur"
 
 #: ../src/libs/metadata_view.c:123
 msgid "export width"
-msgstr "largeur exporté"
+msgstr "largeur exportée"
 
 #: ../src/libs/metadata_view.c:124
 msgid "export height"
-msgstr "hauteur exporté"
+msgstr "hauteur exportée"
 
 #: ../src/libs/metadata_view.c:129
 msgid "copyright"
@@ -13392,7 +13392,7 @@ msgstr "modules d'amélioration"
 
 #: ../src/libs/modulegroups.c:218
 msgid "effects group"
-msgstr "groupe d'effets"
+msgstr "modules d'effets"
 
 #. search box
 #: ../src/libs/modulegroups.c:230
@@ -13401,7 +13401,7 @@ msgstr "chercher module"
 
 #: ../src/libs/modulegroups.c:237
 msgid "search modules by name or tag"
-msgstr "rechercher les modules par nom ou mots-clés"
+msgstr "rechercher les modules par nom ou mot-clé"
 
 #: ../src/libs/modulegroups.c:244
 msgid "clear text"
@@ -13648,12 +13648,12 @@ msgstr "change toutes les marges uniformément"
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:1345
 msgid "right margin"
-msgstr "marge droite"
+msgstr "marge de droite"
 
 #. d->b_bottom  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:1349
 msgid "bottom margin"
-msgstr "marge basse"
+msgstr "marge du bas"
 
 #: ../src/libs/print_settings.c:1491
 msgid "temporary style to use while printing"
@@ -13716,7 +13716,7 @@ msgid ""
 "select unselected images\n"
 "in current collection"
 msgstr ""
-"sélectionne les images non-sélectionnées\n"
+"sélectionne les images non sélectionnées\n"
 "dans la collection actuelle"
 
 #: ../src/libs/select.c:123
@@ -13740,7 +13740,7 @@ msgid ""
 "select untouched images in\n"
 "current collection"
 msgstr ""
-"sélectionne les images intouchées\n"
+"sélectionne les images non développées\n"
 "dans la collection actuelle"
 
 #. setup selection accelerators
@@ -14659,7 +14659,7 @@ msgid ""
 "toggle raw over exposed indication\n"
 "right click for options"
 msgstr ""
-"activer/désactiver les zones sur-/sous-exposées raw\n"
+"activer/désactiver les zones sur-/sous-exposées RAW\n"
 "clic-droit pour les options"
 
 #: ../src/views/darkroom.c:1839
@@ -15222,7 +15222,7 @@ msgstr "marche et arrêt"
 
 #: ../src/views/slideshow.c:613
 msgid "go to next image"
-msgstr "passe au fichier suivant"
+msgstr "passe à l'image suivante"
 
 #: ../src/views/slideshow.c:618
 msgid "go to previous image"
@@ -15267,7 +15267,7 @@ msgstr "double-clic droit"
 
 #: ../src/views/view.c:2161
 msgid "Drag and drop"
-msgstr "déplacer & déposer"
+msgstr "glisser & déposer"
 
 #: ../src/views/view.c:2164
 msgid "Left click+Drag"
@@ -15378,16 +15378,16 @@ msgstr "action"
 #~ msgstr "+0 IL : spéculaires"
 
 #~ msgid "max rgb"
-#~ msgstr "max rvb"
+#~ msgstr "max RVB"
 
 #~ msgid "average rgb"
-#~ msgstr "moyenne rvb"
+#~ msgstr "moyenne RVB"
 
 #~ msgid "sum rgb"
-#~ msgstr "somme rvb"
+#~ msgstr "somme RVB"
 
 #~ msgid "norm rgb"
-#~ msgstr "norme rvb"
+#~ msgstr "norme RVB"
 
 # lorsque l'action engendre une suppression physique non annulable, on emploie le terme "supprimer"
 #~ msgid "discard"
@@ -15450,7 +15450,7 @@ msgstr "action"
 #~ "double-clic pour détacher"
 
 #~ msgid "module disabled for monochrome image"
-#~ msgstr "module désactivé pour les images monochrome"
+#~ msgstr "module désactivé pour les images monochromes"
 
 #~ msgid "curve_nodes for r channel"
 #~ msgstr "point de contrôle pour canal R"
@@ -15750,10 +15750,10 @@ msgstr "action"
 #~ msgstr "Et tous ceux qui ont participé aux versions précédentes"
 
 #~ msgid "0ev, +3ev"
-#~ msgstr "0IL, +3IL"
+#~ msgstr "0 IL, +3 IL"
 
 #~ msgid "0ev, +3ev, +6ev"
-#~ msgstr "0IL, +3IL, +6IL"
+#~ msgstr "0 IL, +3 IL, +6 IL"
 
 #~ msgid "color checker lut"
 #~ msgstr "table correspondance couleurs"
@@ -15893,7 +15893,7 @@ msgstr "action"
 #~ msgstr "image développée"
 
 #~ msgid "source raw data"
-#~ msgstr "données raw"
+#~ msgstr "données RAW"
 
 #~ msgid ""
 #~ "ls\t\t\t\t\tlist content of directory\n"
@@ -16385,13 +16385,13 @@ msgstr "action"
 #~ "plus rapide au prix de l'apparition de bandes."
 
 #~ msgid "iso"
-#~ msgstr "iso"
+#~ msgstr "ISO"
 
 #~ msgid "dcp mode"
-#~ msgstr "mode dcp"
+#~ msgstr "mode DCP"
 
 #~ msgid "8-bit jpg"
-#~ msgstr "jpeg 8-bits"
+#~ msgstr "JPEG 8-bits"
 
 #~ msgid "16-bit ppm"
 #~ msgstr "ppm 16-bits"
@@ -16447,10 +16447,10 @@ msgstr "action"
 #~ msgstr "BdB"
 
 #~ msgid "rgb"
-#~ msgstr "rvb"
+#~ msgstr "RVB"
 
 #~ msgid "create hdr"
-#~ msgstr "créer hdr"
+#~ msgstr "créer HDR"
 
 #~ msgid "rotate selected images 90 degrees ccw"
 #~ msgstr ""
@@ -16471,7 +16471,7 @@ msgstr "action"
 
 #~ msgctxt "accel"
 #~ msgid "create hdr"
-#~ msgstr "créer hdr"
+#~ msgstr "créer HDR"
 
 #~ msgid "hsl hue"
 #~ msgstr "teinte hsl"
@@ -16804,12 +16804,12 @@ msgstr "action"
 #~ "$(HOUR) - hour\n"
 #~ "$(MINUTE) - minute\n"
 #~ "$(SECOND) - second\n"
-#~ "$(EXIF_YEAR) - exif year\n"
-#~ "$(EXIF_MONTH) - exif month\n"
-#~ "$(EXIF_DAY) - exif day\n"
-#~ "$(EXIF_HOUR) - exif hour\n"
-#~ "$(EXIF_MINUTE) - exif minute\n"
-#~ "$(EXIF_SECOND) - exif second\n"
+#~ "$(EXIF_YEAR) - EXIF year\n"
+#~ "$(EXIF_MONTH) - EXIF month\n"
+#~ "$(EXIF_DAY) - EXIF day\n"
+#~ "$(EXIF_HOUR) - EXIF hour\n"
+#~ "$(EXIF_MINUTE) - EXIF minute\n"
+#~ "$(EXIF_SECOND) - EXIF second\n"
 #~ "$(STARS) - star rating\n"
 #~ "$(LABELS) - colorlabels\n"
 #~ "$(PICTURES_FOLDER) - pictures folder\n"
@@ -16828,12 +16828,12 @@ msgstr "action"
 #~ "$(HOUR) - heure\n"
 #~ "$(MINUTE) - minute\n"
 #~ "$(SECOND) - seconde\n"
-#~ "$(EXIF_YEAR) - année exif\n"
-#~ "$(EXIF_MONTH) - mois exif\n"
-#~ "$(EXIF_DAY) - jour exif\n"
-#~ "$(EXIF_HOUR) - heure exif\n"
-#~ "$(EXIF_MINUTE) - minute exif\n"
-#~ "$(EXIF_SECOND) - seconde exif\n"
+#~ "$(EXIF_YEAR) - année EXIF\n"
+#~ "$(EXIF_MONTH) - mois EXIF\n"
+#~ "$(EXIF_DAY) - jour EXIF\n"
+#~ "$(EXIF_HOUR) - heure EXIF\n"
+#~ "$(EXIF_MINUTE) - minute EXIF\n"
+#~ "$(EXIF_SECOND) - seconde EXIF\n"
 #~ "$(STARS) - étoiles\n"
 #~ "$(LABELS) - labels de couleur\n"
 #~ "$(PICTURES_FOLDER) - dossier images\n"
@@ -16884,12 +16884,12 @@ msgstr "action"
 #~ "$(HOUR) - hour\n"
 #~ "$(MINUTE) - minute\n"
 #~ "$(SECOND) - second\n"
-#~ "$(EXIF_YEAR) - exif year\n"
-#~ "$(EXIF_MONTH) - exif month\n"
-#~ "$(EXIF_DAY) - exif day\n"
-#~ "$(EXIF_HOUR) - exif hour\n"
-#~ "$(EXIF_MINUTE) - exif minute\n"
-#~ "$(EXIF_SECOND) - exif second\n"
+#~ "$(EXIF_YEAR) - EXIF year\n"
+#~ "$(EXIF_MONTH) - EXIF month\n"
+#~ "$(EXIF_DAY) - EXIF day\n"
+#~ "$(EXIF_HOUR) - EXIF hour\n"
+#~ "$(EXIF_MINUTE) - EXIF minute\n"
+#~ "$(EXIF_SECOND) - EXIF second\n"
 #~ "$(STARS) - star rating\n"
 #~ "$(LABELS) - colorlabels\n"
 #~ "$(PICTURES_FOLDER) - pictures folder\n"
@@ -16908,12 +16908,12 @@ msgstr "action"
 #~ "$(HOUR) - heure\n"
 #~ "$(MINUTE) - minute\n"
 #~ "$(SECOND) - seconde\n"
-#~ "$(EXIF_YEAR) - année exif\n"
-#~ "$(EXIF_MONTH) - mois exif\n"
-#~ "$(EXIF_DAY) - jour exif\n"
-#~ "$(EXIF_HOUR) - heure exif\n"
-#~ "$(EXIF_MINUTE) - minute exif\n"
-#~ "$(EXIF_SECOND) - seconde exif\n"
+#~ "$(EXIF_YEAR) - année EXIF\n"
+#~ "$(EXIF_MONTH) - mois EXIF\n"
+#~ "$(EXIF_DAY) - jour EXIF\n"
+#~ "$(EXIF_HOUR) - heure EXIF\n"
+#~ "$(EXIF_MINUTE) - minute EXIF\n"
+#~ "$(EXIF_SECOND) - seconde EXIF\n"
 #~ "$(STARS) - étoiles\n"
 #~ "$(LABELS) - labels de couleur\n"
 #~ "$(PICTURES_FOLDER) - dossier images\n"
@@ -16924,7 +16924,7 @@ msgstr "action"
 #~ msgstr "AMaZE"
 
 #~ msgid "could not attach xmp data to file `%s'!"
-#~ msgstr "impossible de sauver le fichier attaché xmp du fichier %s !"
+#~ msgstr "impossible de sauver le fichier attaché XMP du fichier %s !"
 
 #~ msgid "black / white"
 #~ msgstr "noir / blanc"
@@ -17011,7 +17011,7 @@ msgstr "action"
 #~ msgstr "tracer un rectangle pour donner une teinte"
 
 #~ msgid "jpeg quality of on-disk thumbnails"
-#~ msgstr "qualité jpeg des miniatures sauvegardées sur le disque"
+#~ msgstr "qualité JPEG des miniatures sauvegardées sur le disque"
 
 #~ msgid "affects only the thumbnail cache used for quick startup."
 #~ msgstr "n'agit que sur le cache des aperçus pour un démarrage rapide"
