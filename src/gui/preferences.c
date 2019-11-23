@@ -1385,8 +1385,8 @@ static void edit_preset(GtkTreeView *tree, const gint rowid, const gchar *name, 
   snprintf(title, sizeof(title), _("edit `%s' for module `%s'"), name, module);
   dialog = gtk_dialog_new_with_buttons(title, GTK_WINDOW(_preferences_dialog),
                                        GTK_DIALOG_DESTROY_WITH_PARENT | GTK_DIALOG_MODAL,
-                                       _("_save"), GTK_RESPONSE_YES,
                                        _("_cancel"), GTK_RESPONSE_CANCEL,
+                                       _("_save"), GTK_RESPONSE_YES,
                                        _("_ok"), GTK_RESPONSE_OK, NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
