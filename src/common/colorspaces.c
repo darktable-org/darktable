@@ -42,31 +42,50 @@
 
 static const cmsCIEXYZ d65 = {0.95045471, 1.00000000, 1.08905029};
 
-// D65 ?:
-static const cmsCIEXYZTRIPLE rec709_primaries_prequantized = {
-  {0.43603516, 0.22248840, 0.01391602},
-  {0.38511658, 0.71690369, 0.09706116},
-  {0.14305115, 0.06060791, 0.71392822}
-};
-// D65 ?:
-static const cmsCIEXYZTRIPLE rec2020_primaries_prequantized = {
-  {0.67349243, 0.27903748, -0.00193787},
-  {0.16566467, 0.67535400, 0.02998352},
-  {0.12504578, 0.04560852, 0.79685974}
-};
+//D65 (sRGB, AdobeRGB, Rec2020)
+static const cmsCIExyY D65xyY = {0.312700492, 0.329000939, 1.0};
+
+//D60
+//static const cmsCIExyY d60 = {0.32168, 0.33767, 1.0};
+
+//D50 (ProPhoto RGB)
+static const cmsCIExyY D50xyY = {0.3457, 0.3585, 1.0};
+
 // D65:
-static const cmsCIEXYZTRIPLE adobe_primaries_prequantized = {
-  {0.60974121, 0.31111145, 0.01947021},
-  {0.20527649, 0.62567139, 0.06086731},
-  {0.14918518, 0.06321716, 0.74456787}
+static const cmsCIExyYTRIPLE sRGB_Primaries = {
+  {0.6400, 0.3300, 1.0}, // red
+  {0.3000, 0.6000, 1.0}, // green
+  {0.1500, 0.0600, 1.0}  // blue
 };
+
+// D65:
+static const cmsCIExyYTRIPLE Rec2020_Primaries = {
+  {0.7000, 0.2920, 1.0}, // red
+  {0.1700, 0.7970, 1.0}, // green
+  {0.1310, 0.0460, 1.0}  // blue
+};
+
+// D65:
+static const cmsCIExyYTRIPLE Rec709_Primaries = {
+  {0.6400, 0.3300, 1.0}, // red
+  {0.3000, 0.6000, 1.0}, // green
+  {0.1500, 0.0600, 1.0}  // blue
+};
+
+// D65:
+static const cmsCIExyYTRIPLE Adobe_Primaries = {
+  {0.6400, 0.3300, 1.0}, // red
+  {0.2100, 0.7100, 1.0}, // green
+  {0.1500, 0.0600, 1.0}  // blue
+};
+
 // https://en.wikipedia.org/wiki/ProPhoto_RGB_color_space
 // D50:
-static cmsCIExyYTRIPLE prophoto_primaries = {
+static cmsCIExyYTRIPLE ProPhoto_Primaries = {
   /*       x,        y,       Y */
-  { 0.734699, 0.265301, 0.28804 }, /* red   */
-  { 0.159597, 0.840403, 0.71188 }, /* green */
-  { 0.036598, 0.000105, 0.00009 }, /* blue  */
+  { 0.734699, 0.265301, 1.0000 }, /* red   */
+  { 0.159597, 0.840403, 1.0000 }, /* green */
+  { 0.036598, 0.000105, 1.0000 }, /* blue  */
 };
 
 #define generate_mat3inv_body(c_type, A, B)                                                                  \
@@ -263,11 +282,17 @@ static cmsHPROFILE _create_lcms_profile(const char *desc, const char *dmdd,
   cmsToneCurve *out_curves[3] = { trc, trc, trc };
   cmsHPROFILE profile = cmsCreateRGBProfile(whitepoint, primaries, out_curves);
 
-  if(v2) cmsSetProfileVersion(profile, 2.1);
 
-  cmsSetHeaderFlags(profile, cmsUseAnywhere);
+  if(v2)
+  {
+    cmsSetProfileVersion(profile, 2.1);
+    cmsCIEXYZ black = { 0, 0, 0 };
+    cmsWriteTag(profile, cmsSigMediaBlackPointTag, &black);
+    cmsWriteTag(profile, cmsSigMediaWhitePointTag, &whitepoint);
+    cmsSetDeviceClass(profile, cmsSigDisplayClass);
+  }
 
-  cmsSetDeviceClass(profile, cmsSigDisplayClass);
+  cmsSetHeaderFlags(profile, cmsEmbeddedProfileTrue | cmsUseAnywhere);
 
   cmsMLUsetASCII(mlu1, "en", "US", "Public Domain");
   cmsWriteTag(profile, cmsSigCopyrightTag, mlu1);
@@ -292,18 +317,10 @@ static cmsHPROFILE _create_lcms_profile(const char *desc, const char *dmdd,
 static cmsHPROFILE _colorspaces_create_srgb_profile(gboolean v2)
 {
   cmsFloat64Number srgb_parameters[5] = { 2.4, 1.0 / 1.055,  0.055 / 1.055, 1.0 / 12.92, 0.04045 };
-  cmsToneCurve *transferFunction = cmsBuildParametricToneCurve(NULL, 4, srgb_parameters);
-  cmsCIExyYTRIPLE primaries;
-
-  cmsXYZ2xyY(&primaries.Red,   &rec709_primaries_prequantized.Red);
-  cmsXYZ2xyY(&primaries.Green, &rec709_primaries_prequantized.Green);
-  cmsXYZ2xyY(&primaries.Blue,  &rec709_primaries_prequantized.Blue);
-
-  cmsCIExyY d65xyY;
-  cmsXYZ2xyY(&d65xyY, &d65);
+  cmsToneCurve *transferFunction = cmsBuildParametricToneCurve(NULL, 5, srgb_parameters);
 
   cmsHPROFILE profile = _create_lcms_profile("sRGB", "sRGB",
-                                             &d65xyY, &primaries, transferFunction, v2);
+                                             &D65xyY, &sRGB_Primaries, transferFunction, v2);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -322,24 +339,13 @@ static cmsHPROFILE dt_colorspaces_create_srgb_profile_v4()
 
 static cmsHPROFILE dt_colorspaces_create_brg_profile()
 {
-  cmsCIEXYZTRIPLE brg_primaries = {
-    rec709_primaries_prequantized.Blue,
-    rec709_primaries_prequantized.Red,
-    rec709_primaries_prequantized.Green,
-  };
   cmsFloat64Number srgb_parameters[5] = { 2.4, 1.0 / 1.055,  0.055 / 1.055, 1.0 / 12.92, 0.04045 };
-  cmsToneCurve *transferFunction = cmsBuildParametricToneCurve(NULL, 4, srgb_parameters);
-  cmsCIExyYTRIPLE primaries;
+  cmsToneCurve *transferFunction = cmsBuildParametricToneCurve(NULL, 5, srgb_parameters);
 
-  cmsXYZ2xyY(&primaries.Red,   &brg_primaries.Red);
-  cmsXYZ2xyY(&primaries.Green, &brg_primaries.Green);
-  cmsXYZ2xyY(&primaries.Blue,  &brg_primaries.Blue);
-
-  cmsCIExyY d65xyY;
-  cmsXYZ2xyY(&d65xyY, &d65);
+  cmsCIExyYTRIPLE BRG_Primaries = { sRGB_Primaries.Blue, sRGB_Primaries.Red, sRGB_Primaries.Green };
 
   cmsHPROFILE profile = _create_lcms_profile("BRG", "BRG",
-                                             &d65xyY, &primaries, transferFunction, TRUE);
+                                             &D65xyY, &BRG_Primaries, transferFunction, TRUE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -349,18 +355,10 @@ static cmsHPROFILE dt_colorspaces_create_brg_profile()
 static cmsHPROFILE dt_colorspaces_create_gamma_rec709_rgb_profile(void)
 {
   cmsFloat64Number srgb_parameters[5] = { 2.2, 1.0 / 1.099,  0.099 / 1.099, 1.0 / 4.5, 0.081 };
-  cmsToneCurve *transferFunction = cmsBuildParametricToneCurve(NULL, 4, srgb_parameters);
-  cmsCIExyYTRIPLE primaries;
-
-  cmsXYZ2xyY(&primaries.Red,   &rec709_primaries_prequantized.Red);
-  cmsXYZ2xyY(&primaries.Green, &rec709_primaries_prequantized.Green);
-  cmsXYZ2xyY(&primaries.Blue,  &rec709_primaries_prequantized.Blue);
-
-  cmsCIExyY d65xyY;
-  cmsXYZ2xyY(&d65xyY, &d65);
+  cmsToneCurve *transferFunction = cmsBuildParametricToneCurve(NULL, 5, srgb_parameters);
 
   cmsHPROFILE profile = _create_lcms_profile("Gamma Rec709 RGB", "Gamma Rec709 RGB",
-                                             &d65xyY, &primaries, transferFunction, TRUE);
+                                             &D65xyY, &Rec709_Primaries, transferFunction, TRUE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -372,17 +370,9 @@ static cmsHPROFILE dt_colorspaces_create_adobergb_profile(void)
 {
   // AdobeRGB's "2.2" gamma is technically defined as 2 + 51/256
   cmsToneCurve *transferFunction = cmsBuildGamma(NULL, 2.19921875);
-  cmsCIExyYTRIPLE primaries;
-
-  cmsXYZ2xyY(&primaries.Red,   &adobe_primaries_prequantized.Red);
-  cmsXYZ2xyY(&primaries.Green, &adobe_primaries_prequantized.Green);
-  cmsXYZ2xyY(&primaries.Blue,  &adobe_primaries_prequantized.Blue);
-
-  cmsCIExyY d65xyY;
-  cmsXYZ2xyY(&d65xyY, &d65);
 
   cmsHPROFILE profile = _create_lcms_profile("Adobe RGB (compatible)", "Adobe RGB",
-                                             &d65xyY, &primaries, transferFunction, TRUE);
+                                             &D65xyY, &Adobe_Primaries, transferFunction, TRUE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -638,17 +628,9 @@ static cmsHPROFILE dt_colorspaces_create_xyz_profile(void)
 static cmsHPROFILE dt_colorspaces_create_linear_rec709_rgb_profile(void)
 {
   cmsToneCurve *transferFunction = cmsBuildGamma(NULL, 1.0);
-  cmsCIExyYTRIPLE primaries;
-
-  cmsXYZ2xyY(&primaries.Red,   &rec709_primaries_prequantized.Red);
-  cmsXYZ2xyY(&primaries.Green, &rec709_primaries_prequantized.Green);
-  cmsXYZ2xyY(&primaries.Blue,  &rec709_primaries_prequantized.Blue);
-
-  cmsCIExyY d65xyY;
-  cmsXYZ2xyY(&d65xyY, &d65);
 
   cmsHPROFILE profile = _create_lcms_profile("Linear Rec709 RGB", "Linear Rec709 RGB",
-                                             &d65xyY, &primaries, transferFunction, TRUE);
+                                             &D65xyY, &Rec709_Primaries, transferFunction, TRUE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -658,17 +640,9 @@ static cmsHPROFILE dt_colorspaces_create_linear_rec709_rgb_profile(void)
 static cmsHPROFILE dt_colorspaces_create_linear_rec2020_rgb_profile(void)
 {
   cmsToneCurve *transferFunction = cmsBuildGamma(NULL, 1.0);
-  cmsCIExyYTRIPLE primaries;
-
-  cmsXYZ2xyY(&primaries.Red,   &rec2020_primaries_prequantized.Red);
-  cmsXYZ2xyY(&primaries.Green, &rec2020_primaries_prequantized.Green);
-  cmsXYZ2xyY(&primaries.Blue,  &rec2020_primaries_prequantized.Blue);
-
-  cmsCIExyY d65xyY;
-  cmsXYZ2xyY(&d65xyY, &d65);
 
   cmsHPROFILE profile = _create_lcms_profile("Linear Rec2020 RGB", "Linear Rec2020 RGB",
-                                             &d65xyY, &primaries, transferFunction, TRUE);
+                                             &D65xyY, &Rec2020_Primaries, transferFunction, TRUE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -680,7 +654,7 @@ static cmsHPROFILE dt_colorspaces_create_linear_prophoto_rgb_profile(void)
   cmsToneCurve *transferFunction = cmsBuildGamma(NULL, 1.0);
 
   cmsHPROFILE profile = _create_lcms_profile("Linear ProPhoto RGB", "Linear ProPhoto RGB",
-                                             cmsD50_xyY(),  &prophoto_primaries, transferFunction, TRUE);
+                                             &D50xyY,  &ProPhoto_Primaries, transferFunction, TRUE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -689,24 +663,13 @@ static cmsHPROFILE dt_colorspaces_create_linear_prophoto_rgb_profile(void)
 
 static cmsHPROFILE dt_colorspaces_create_linear_infrared_profile(void)
 {
-  // linear rgb with r and b swapped:
-  cmsCIEXYZTRIPLE bgr_primaries = {
-    rec709_primaries_prequantized.Blue,
-    rec709_primaries_prequantized.Green,
-    rec709_primaries_prequantized.Red,
-  };
   cmsToneCurve *transferFunction = cmsBuildGamma(NULL, 1.0);
-  cmsCIExyYTRIPLE primaries;
 
-  cmsXYZ2xyY(&primaries.Red,   &bgr_primaries.Red);
-  cmsXYZ2xyY(&primaries.Green, &bgr_primaries.Green);
-  cmsXYZ2xyY(&primaries.Blue,  &bgr_primaries.Blue);
-
-  cmsCIExyY d65xyY;
-  cmsXYZ2xyY(&d65xyY, &d65);
+  // linear rgb with r and b swapped:
+  cmsCIExyYTRIPLE BGR_Primaries = { sRGB_Primaries.Blue, sRGB_Primaries.Green, sRGB_Primaries.Red };
 
   cmsHPROFILE profile = _create_lcms_profile("Linear Infrared BGR", "Darktable Linear Infrared BGR",
-                                             &d65xyY, &primaries, transferFunction, FALSE);
+                                             &D65xyY, &BGR_Primaries, transferFunction, FALSE);
 
   cmsFreeToneCurve(transferFunction);
 
@@ -872,9 +835,9 @@ static cmsHPROFILE _ensure_rgb_profile(cmsHPROFILE profile)
     cmsSetColorSpace(rgb_profile, cmsSigRgbData);
     cmsSetPCS(rgb_profile, cmsSigXYZData);
 
-    cmsWriteTag(rgb_profile, cmsSigRedColorantTag, (void *)&rec709_primaries_prequantized.Red);
-    cmsWriteTag(rgb_profile, cmsSigGreenColorantTag, (void *)&rec709_primaries_prequantized.Green);
-    cmsWriteTag(rgb_profile, cmsSigBlueColorantTag, (void *)&rec709_primaries_prequantized.Blue);
+    cmsWriteTag(rgb_profile, cmsSigRedColorantTag, (void *)&sRGB_Primaries.Red);
+    cmsWriteTag(rgb_profile, cmsSigGreenColorantTag, (void *)&sRGB_Primaries.Green);
+    cmsWriteTag(rgb_profile, cmsSigBlueColorantTag, (void *)&sRGB_Primaries.Blue);
 
     cmsWriteTag(rgb_profile, cmsSigRedTRCTag, (void *)trc);
     cmsLinkTag(rgb_profile, cmsSigGreenTRCTag, cmsSigRedTRCTag);
