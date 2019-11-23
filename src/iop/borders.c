@@ -779,7 +779,7 @@ static void position_v_changed(GtkWidget *combo, dt_iop_module_t *self)
   else if(which < DT_IOP_BORDERS_POSITION_H_COUNT)
   {
     g_strlcpy(p->pos_v_text, text, sizeof(p->pos_v_text));
-    p->pos_v = g->pos_h_ratios[which];
+    p->pos_v = g->pos_v_ratios[which];
   }
   dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
