@@ -88,11 +88,7 @@ static cmsCIExyYTRIPLE ProPhoto_Primaries = {
   { 0.036598, 0.000105, 1.0000 }, /* blue  */
 };
 
-static const cmsCIEXYZTRIPLE Rec709_Primaries_Prequantized = {
-  {0.43603516, 0.22248840, 0.01391602},
-  {0.38511658, 0.71690369, 0.09706116},
-  {0.14305115, 0.06060791, 0.71392822}
-};
+cmsCIEXYZTRIPLE Rec709_Primaries_Prequantized;
 
 #define generate_mat3inv_body(c_type, A, B)                                                                  \
   int mat3inv_##c_type(c_type *const dst, const c_type *const src)                                           \
@@ -274,6 +270,31 @@ int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof, float *matri
 static cmsHPROFILE dt_colorspaces_create_lab_profile()
 {
   return cmsCreateLab4Profile(cmsD50_xyY());
+}
+
+static void _compute_prequantized_primaries(const cmsCIExyY* whitepoint,
+                                            const cmsCIExyYTRIPLE* primaries,
+                                            cmsCIEXYZTRIPLE *primaries_prequantized)
+{
+  cmsHPROFILE profile = cmsCreateRGBProfile(whitepoint, primaries, NULL);
+
+  cmsCIEXYZ *R = cmsReadTag(profile, cmsSigRedColorantTag);
+  cmsCIEXYZ *G = cmsReadTag(profile, cmsSigGreenColorantTag);
+  cmsCIEXYZ *B = cmsReadTag(profile, cmsSigBlueColorantTag);
+
+  primaries_prequantized->Red.X   = (double)R->X;
+  primaries_prequantized->Red.Y   = (double)R->Y;
+  primaries_prequantized->Red.Z   = (double)R->Z;
+
+  primaries_prequantized->Green.X = (double)G->X;
+  primaries_prequantized->Green.Y = (double)G->Y;
+  primaries_prequantized->Green.Z = (double)G->Z;
+
+  primaries_prequantized->Blue.X  = (double)B->X;
+  primaries_prequantized->Blue.Y  = (double)B->Y;
+  primaries_prequantized->Blue.Z  = (double)B->Z;
+
+  cmsCloseProfile(profile);
 }
 
 static cmsHPROFILE _create_lcms_profile(const char *desc, const char *dmdd,
@@ -1242,6 +1263,8 @@ dt_colorspaces_t *dt_colorspaces_init()
   cmsSetLogErrorHandler(cms_error_handler);
 
   dt_colorspaces_t *res = (dt_colorspaces_t *)calloc(1, sizeof(dt_colorspaces_t));
+
+  _compute_prequantized_primaries(&D65xyY, &Rec709_Primaries, &Rec709_Primaries_Prequantized);
 
   pthread_rwlock_init(&res->xprofile_lock, NULL);
 
