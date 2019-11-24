@@ -598,7 +598,8 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
         if (iop_order_version_src != iop_order_version_dest)
         {
           hist->module->iop_order =
-            dt_ioppr_get_iop_order(dest_iop_list, hist->module->op) + (double)hist->module->multi_priority / 100.0f;
+            dt_ioppr_get_iop_order(dest_iop_list, hist->module->op)
+            + (double)hist->module->iop_order / 100.0f;
         }
 
         if (!dt_iop_is_hidden(hist->module))
@@ -635,7 +636,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
         if (iop_order_version_src != iop_order_version_dest)
         {
           mod_src->iop_order =
-            dt_ioppr_get_iop_order(dest_iop_list, mod_src->op) + (double)mod_src->multi_priority / 100.0f;
+            dt_ioppr_get_iop_order(dest_iop_list, mod_src->op) + (double)mod_src->iop_order / 100.0f;
         }
 
         if (DT_IOP_ORDER_INFO)
