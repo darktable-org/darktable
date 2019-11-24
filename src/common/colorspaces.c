@@ -294,7 +294,7 @@ static cmsHPROFILE _create_lcms_profile(const char *desc, const char *dmdd,
     cmsSetProfileVersion(profile, 2.1);
     const cmsCIEXYZ black = { 0, 0, 0 };
     cmsWriteTag(profile, cmsSigMediaBlackPointTag, &black);
-    cmsWriteTag(profile, cmsSigMediaWhitePointTag, &whitepoint);
+    cmsWriteTag(profile, cmsSigMediaWhitePointTag, whitepoint);
     cmsSetDeviceClass(profile, cmsSigDisplayClass);
   }
 
