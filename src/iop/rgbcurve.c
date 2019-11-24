@@ -1513,6 +1513,7 @@ void gui_init(struct dt_iop_module_t *self)
       (void)dt_draw_curve_add_point(g->minmax_curve[ch], p->curve_nodes[ch][k].x, p->curve_nodes[ch][k].y);
   }
 
+  g->channel = DT_IOP_RGBCURVE_R;
   change_image(self);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
