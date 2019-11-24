@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-17 08:08+0100\n"
-"PO-Revision-Date: 2019-11-17 08:36+0100\n"
+"POT-Creation-Date: 2019-11-24 09:34+0100\n"
+"PO-Revision-Date: 2019-11-24 09:45+0100\n"
 "Last-Translator: Dušan Kazik <prescott66@gmail.com>\n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -528,17 +528,17 @@ msgstr ""
 "vždy sa opýtať používateľa pred odstránením akéhokoľvek obrázku z databázy."
 
 #: ../build/src/preferences_gen.h:2887
-#, fuzzy
 msgid "ask before erasing images from disk / discarding history stack"
-msgstr "opýtať sa pred vymazaním súborov z disku"
+msgstr ""
+"vyžadovať podvrdenie pred vymazaním súborov z disku či odstránení z histórie"
 
 #: ../build/src/preferences_gen.h:2899
-#, fuzzy
 msgid ""
 "always ask the user before any image file is deleted / history stack is "
 "discarded."
 msgstr ""
-"vždy sa opýtať používateľa pred odstránením akéhokoľvek súboru obrázku."
+"vždy sa opýtať používateľa pred odstránením akéhokoľvek súboru obrázku či "
+"odstránení histórie."
 
 #: ../build/src/preferences_gen.h:2907
 msgid "send files to trash when erasing images"
@@ -572,26 +572,24 @@ msgid "always ask the user before any image file is copied."
 msgstr "vyžadovať potvrdenie pred kopírovaním obrázku"
 
 #: ../build/src/preferences_gen.h:2967
-#, fuzzy
 msgid "ask before removing empty folders"
-msgstr "opýtať sa pred odstránením obrázkov z databázy"
+msgstr "opýtať sa pred odstránením prázdnych zložiek"
 
 #: ../build/src/preferences_gen.h:2979
-#, fuzzy
 msgid ""
 "always ask the user before removing any empty folder. this can happen after "
 "moving or deleting images."
 msgstr ""
-"vždy sa opýtať používateľa pred odstránením akéhokoľvek súboru obrázku."
+"vždy sa opýtať používateľa pred odstránením prázdnej zložky. môže k tomu "
+"dôjsť pri premiestnení alebo zmazaní súborov obrázkov."
 
 #: ../build/src/preferences_gen.h:2987
 msgid "ask before deleting a tag"
 msgstr "opýtať sa pred zmazaním kľúčového slova"
 
 #: ../build/src/preferences_gen.h:3006
-#, fuzzy
 msgid "ask before deleting a style"
-msgstr "opýtať sa pred zmazaním kľúčového slova"
+msgstr "opýtať sa pred zmazaním štýlu"
 
 #: ../build/src/preferences_gen.h:3025 ../build/src/preferences_gen.h:3919
 msgid "miscellaneous"
@@ -636,9 +634,8 @@ msgstr ""
 "fotokomory, vzdialeného snímania a mapy."
 
 #: ../build/src/preferences_gen.h:3153
-#, fuzzy
 msgid "enable timeline"
-msgstr "povoliť modul"
+msgstr "povoliť čaosvú os"
 
 #: ../build/src/preferences_gen.h:3165
 msgid "enable the timeline in lighttable mode."
@@ -679,13 +676,11 @@ msgid "no scrollbars"
 msgstr ""
 
 #: ../build/src/preferences_gen.h:3229 ../build/src/preferences_gen.h:3249
-#, fuzzy
 msgctxt "preferences"
 msgid "lighttable"
 msgstr "presvetľovací pult"
 
 #: ../build/src/preferences_gen.h:3234
-#, fuzzy
 msgctxt "preferences"
 msgid "lighttable + darkroom"
 msgstr "Virtuálny presvetľovací pult a fotokomora"
@@ -839,9 +834,8 @@ msgstr ""
 "(bilineárny, bikubický, lanczos2, lanczos3)."
 
 #: ../build/src/preferences_gen.h:3520
-#, fuzzy
 msgid "auto-apply basecurve"
-msgstr "automaticky aplikuj základnú krivku podľa typu fotoaparátu"
+msgstr "automaticky aplikuj základnú krivku"
 
 #: ../build/src/preferences_gen.h:3532
 msgid "use a basecurve by default (needs a restart)"
@@ -860,9 +854,8 @@ msgstr ""
 "namiesto generické krivky výrobcu (vyžaduje reštart darktable)"
 
 #: ../build/src/preferences_gen.h:3560
-#, fuzzy
 msgid "auto-apply sharpen"
-msgstr "pred-nastavenia automaticky aplikované"
+msgstr "automaticky aplikovať doostrenie"
 
 #: ../build/src/preferences_gen.h:3572
 msgid ""
@@ -872,9 +865,8 @@ msgid ""
 msgstr ""
 
 #: ../build/src/preferences_gen.h:3580
-#, fuzzy
 msgid "xmp"
-msgstr "mapa"
+msgstr "XMP"
 
 #: ../build/src/preferences_gen.h:3589
 msgid "write sidecar file for each image"
@@ -958,12 +950,10 @@ msgstr ""
 "cache --core --library ~/.config/darktable/library.db'"
 
 #: ../build/src/preferences_gen.h:3733
-#, fuzzy
 msgid "enable disk backend for full preview cache"
-msgstr "použiť disk ako vyrovnávaciu pamäť pre miniatúry"
+msgstr "použiť diskový backend ako vyrovnávaciu pamäť pre miniatúry"
 
 #: ../build/src/preferences_gen.h:3745
-#, fuzzy
 msgid ""
 "if enabled, write full preview to disk (.cache/darktable/) when evicted from "
 "the memory cache. note that this can take a lot of memory (several gigabytes "
@@ -973,11 +963,9 @@ msgid ""
 msgstr ""
 "ak je aktivovaný, zapisuje miniatúry na disk (.cache/darktable/) počas "
 "vyprázdňovania z vyrovnávacej pamäte. Vedzte že toto môže zabrať veľa miesta "
-"na disku (niekoľko Gigabytov pre 20 000 obrázkov) a nikdy už nebudú náhľady "
-"zmazané. Je možné ich zmazať manuálne ak chcete. Presvetľovací pult bude "
-"viac reaktívny počas prehliadania veľkého počtu náhľadov. Ak chcete vytvoriť "
-"náhľady pre celú vašu kolekciu offline, spustite  'darktable-cli --generate-"
-"cache --core --library ~/.config/darktable/library.db'"
+"na disku (niekoľko Gigabytov pre 20k obrázky) a nikdy už nebudú náhľady "
+"zmazané. Je možné ich zmazať manuálne, ak chcete. Výkon presvetľovacieho "
+"pultu bude potom výrazne lepší."
 
 #: ../build/src/preferences_gen.h:3753
 msgid "number of background threads"
@@ -1039,9 +1027,8 @@ msgstr ""
 "Môžete prepnúť kedykoľvek."
 
 #: ../build/src/preferences_gen.h:3849 ../build/src/preferences_gen.h:3904
-#, fuzzy
 msgid "not available"
-msgstr "nie je k dispozícii v systéme"
+msgstr "nie je k dostupné"
 
 #: ../build/src/preferences_gen.h:3852 ../build/src/preferences_gen.h:3856
 #: ../build/src/preferences_gen.h:3907 ../build/src/preferences_gen.h:3911
@@ -1060,10 +1047,9 @@ msgid "default"
 msgstr "predvolené"
 
 #: ../build/src/preferences_gen.h:3880
-#, fuzzy
 msgctxt "preferences"
 msgid "multiple GPUs"
-msgstr "násobiť"
+msgstr "viac jednotiek GPU"
 
 #: ../build/src/preferences_gen.h:3885
 msgctxt "preferences"
@@ -1252,7 +1238,7 @@ msgstr ""
 #: ../src/chart/main.c:463 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/hist_dialog.c:171
 #: ../src/gui/preferences.c:1157 ../src/gui/preferences.c:1183
-#: ../src/gui/preferences.c:1267 ../src/gui/preferences.c:1389
+#: ../src/gui/preferences.c:1267 ../src/gui/preferences.c:1388
 #: ../src/gui/preferences.c:1617 ../src/gui/presets.c:387
 #: ../src/gui/styles_dialog.c:283 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
@@ -1265,7 +1251,7 @@ msgid "_cancel"
 msgstr "_zrušiť"
 
 #: ../src/chart/main.c:463 ../src/gui/preferences.c:1157
-#: ../src/gui/preferences.c:1388 ../src/gui/styles_dialog.c:284
+#: ../src/gui/preferences.c:1389 ../src/gui/styles_dialog.c:284
 #: ../src/libs/styles.c:301
 msgid "_save"
 msgstr "_uložiť"
@@ -1417,109 +1403,109 @@ msgstr[1] "sú vybrané %d obrázky z %d v aktuálnej zbierke"
 msgstr[2] "je vybraných %d obrázkov z %d v aktuálnej zbierke"
 
 #. 0th entry is a dummy for DT_COLORSPACE_FILE and not used
-#: ../src/common/colorspaces.c:1010 ../src/iop/colorin.c:2110
+#: ../src/common/colorspaces.c:981 ../src/iop/colorin.c:2110
 #: ../src/iop/lut3d.c:1120
 msgid "sRGB"
 msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
-#: ../src/common/colorspaces.c:1011 ../src/common/colorspaces.c:1316
+#: ../src/common/colorspaces.c:982 ../src/common/colorspaces.c:1287
 #: ../src/iop/colorin.c:2111 ../src/libs/print_settings.c:1034
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (kompatibilné)"
 
-#: ../src/common/colorspaces.c:1012 ../src/common/colorspaces.c:1321
+#: ../src/common/colorspaces.c:983 ../src/common/colorspaces.c:1292
 #: ../src/iop/colorin.c:2112
 msgid "linear Rec709 RGB"
 msgstr "lineárny Rec709 RGB"
 
-#: ../src/common/colorspaces.c:1013 ../src/common/colorspaces.c:1330
+#: ../src/common/colorspaces.c:984 ../src/common/colorspaces.c:1301
 #: ../src/iop/colorin.c:2113
 msgid "linear Rec2020 RGB"
 msgstr "lineárny Rec2020 RGB"
 
-#: ../src/common/colorspaces.c:1014 ../src/common/colorspaces.c:1340
+#: ../src/common/colorspaces.c:985 ../src/common/colorspaces.c:1311
 msgid "linear XYZ"
 msgstr "lineárny XYZ"
 
-#: ../src/common/colorspaces.c:1015 ../src/common/colorspaces.c:1344
+#: ../src/common/colorspaces.c:986 ../src/common/colorspaces.c:1315
 #: ../src/libs/colorpicker.c:582 ../src/libs/colorpicker.c:619
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/common/colorspaces.c:1016 ../src/common/colorspaces.c:1349
+#: ../src/common/colorspaces.c:987 ../src/common/colorspaces.c:1320
 msgid "linear infrared BGR"
 msgstr "lineárny infračervený BGR"
 
-#: ../src/common/colorspaces.c:1017 ../src/common/colorspaces.c:1028
-#: ../src/common/colorspaces.c:1298 ../src/common/colorspaces.c:1301
+#: ../src/common/colorspaces.c:988 ../src/common/colorspaces.c:999
+#: ../src/common/colorspaces.c:1269 ../src/common/colorspaces.c:1272
 msgid "system display profile"
 msgstr "systémový profil displeja"
 
-#: ../src/common/colorspaces.c:1018
+#: ../src/common/colorspaces.c:989
 msgid "embedded ICC profile"
 msgstr "integrovaný ICC profil"
 
-#: ../src/common/colorspaces.c:1019
+#: ../src/common/colorspaces.c:990
 msgid "embedded matrix"
 msgstr "integrovaná mriežka"
 
-#: ../src/common/colorspaces.c:1020
+#: ../src/common/colorspaces.c:991
 msgid "standard color matrix"
 msgstr "štandardná farebná mriežka"
 
-#: ../src/common/colorspaces.c:1021
+#: ../src/common/colorspaces.c:992
 msgid "enhanced color matrix"
 msgstr "vylepšená farebná mriežka"
 
-#: ../src/common/colorspaces.c:1022
+#: ../src/common/colorspaces.c:993
 msgid "vendor color matrix"
 msgstr "farebná mriežka stanovená výrobcom"
 
-#: ../src/common/colorspaces.c:1023
+#: ../src/common/colorspaces.c:994
 msgid "alternate color matrix"
 msgstr "alternatívna farebná mriežka"
 
-#: ../src/common/colorspaces.c:1024
+#: ../src/common/colorspaces.c:995
 msgid "BRG (experimental)"
 msgstr ""
 
-#: ../src/common/colorspaces.c:1025 ../src/common/colorspaces.c:1288
+#: ../src/common/colorspaces.c:996 ../src/common/colorspaces.c:1259
 #: ../src/iop/colorout.c:883
 #, fuzzy
 msgid "export profile"
 msgstr "výstupný profil"
 
-#: ../src/common/colorspaces.c:1026 ../src/common/colorspaces.c:1292
+#: ../src/common/colorspaces.c:997 ../src/common/colorspaces.c:1263
 #: ../src/views/darkroom.c:2006
 msgid "softproof profile"
 msgstr "softproof profil"
 
 #. init the category profile with NULL profile, the actual profile must be retrieved dynamically by the caller
-#: ../src/common/colorspaces.c:1027 ../src/common/colorspaces.c:1285
+#: ../src/common/colorspaces.c:998 ../src/common/colorspaces.c:1256
 #, fuzzy
 msgid "work profile"
 msgstr "profil"
 
-#: ../src/common/colorspaces.c:1307
+#: ../src/common/colorspaces.c:1278
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (napr. JPG)"
 
-#: ../src/common/colorspaces.c:1311 ../src/libs/print_settings.c:1027
+#: ../src/common/colorspaces.c:1282 ../src/libs/print_settings.c:1027
 msgid "sRGB (web-safe)"
 msgstr "sRGB (pre web)"
 
-#: ../src/common/colorspaces.c:1325
+#: ../src/common/colorspaces.c:1296
 #, fuzzy
 msgid "gamma Rec709 RGB"
 msgstr "lineárny Rec709 RGB"
 
-#: ../src/common/colorspaces.c:1335
+#: ../src/common/colorspaces.c:1306
 #, fuzzy
 msgid "linear prophoto RGB"
 msgstr "lineárna časť"
 
-#: ../src/common/colorspaces.c:1353
+#: ../src/common/colorspaces.c:1324
 msgid "BRG (for testing)"
 msgstr ""
 
@@ -1596,7 +1582,7 @@ msgstr "nie"
 msgid "yes"
 msgstr "áno"
 
-#: ../src/common/database.c:1605
+#: ../src/common/database.c:1666
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1606,35 +1592,35 @@ msgid ""
 "%s\n"
 msgstr ""
 
-#: ../src/common/database.c:1612
+#: ../src/common/database.c:1673
 msgid "darktable - error locking database"
 msgstr ""
 
-#: ../src/common/database.c:1612 ../src/common/database.c:1783
-#: ../src/common/database.c:1969 ../src/common/database.c:2047
+#: ../src/common/database.c:1673 ../src/common/database.c:1844
+#: ../src/common/database.c:2066 ../src/common/database.c:2144
 #, fuzzy
 msgid "close darktable"
 msgstr "darktable"
 
-#: ../src/common/database.c:1723
+#: ../src/common/database.c:1784
 #, c-format
 msgid ""
 "the database lock file contains a pid that seems to be alive in your system: "
 "%d"
 msgstr ""
 
-#: ../src/common/database.c:1729
+#: ../src/common/database.c:1790
 #, c-format
 msgid "the database lock file seems to be empty"
 msgstr ""
 
-#: ../src/common/database.c:1737
+#: ../src/common/database.c:1798
 #, c-format
 msgid "error opening the database lock file for reading: %s"
 msgstr ""
 
 #. the database has to be upgraded, let's ask user
-#: ../src/common/database.c:1774
+#: ../src/common/database.c:1835
 #, c-format
 msgid ""
 "the database schema has to be upgraded for\n"
@@ -1644,17 +1630,17 @@ msgid ""
 "do you want to proceed or quit now to do a backup\n"
 msgstr ""
 
-#: ../src/common/database.c:1782
+#: ../src/common/database.c:1843
 msgid "darktable - schema migration"
 msgstr ""
 
-#: ../src/common/database.c:1783
+#: ../src/common/database.c:1844
 msgid "upgrade database"
 msgstr ""
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
-#: ../src/common/database.c:1958 ../src/common/database.c:2036
+#: ../src/common/database.c:2055 ../src/common/database.c:2133
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1666,11 +1652,11 @@ msgid ""
 "the database from a backup or start with a new one?"
 msgstr ""
 
-#: ../src/common/database.c:1968 ../src/common/database.c:2046
+#: ../src/common/database.c:2065 ../src/common/database.c:2143
 msgid "darktable - error opening database"
 msgstr ""
 
-#: ../src/common/database.c:1969 ../src/common/database.c:2047
+#: ../src/common/database.c:2066 ../src/common/database.c:2144
 #, fuzzy
 msgid "delete database"
 msgstr "odstrániť značku?"
@@ -1706,21 +1692,21 @@ msgid ""
 msgstr ""
 "nemožno zmazať filmovú kazetu s lokálnymi kópiami bez prístupu k originálom"
 
-#: ../src/common/history.c:764
+#: ../src/common/history.c:765
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr "musíte skopírovať históriu z obrázku pred tým ako ho položíte do iného"
 
-#: ../src/common/history.c:859 ../src/common/history.c:862
-#: ../src/common/history.c:878 ../src/common/styles.c:915
-#: ../src/common/styles.c:919 ../src/develop/blend_gui.c:2458
+#: ../src/common/history.c:860 ../src/common/history.c:863
+#: ../src/common/history.c:879 ../src/common/styles.c:916
+#: ../src/common/styles.c:920 ../src/develop/blend_gui.c:2458
 #: ../src/develop/develop.c:1897 ../src/iop/ashift.c:4858
 #: ../src/libs/live_view.c:437
 msgid "on"
 msgstr "zapnuté"
 
-#: ../src/common/history.c:859 ../src/common/history.c:862
-#: ../src/common/history.c:878 ../src/common/styles.c:915
-#: ../src/common/styles.c:919 ../src/develop/blend_gui.c:2205
+#: ../src/common/history.c:860 ../src/common/history.c:863
+#: ../src/common/history.c:879 ../src/common/styles.c:916
+#: ../src/common/styles.c:920 ../src/develop/blend_gui.c:2205
 #: ../src/develop/blend_gui.c:2455 ../src/develop/develop.c:1897
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
 #: ../src/iop/ashift.c:4857 ../src/iop/ashift.c:4863 ../src/iop/colorin.c:2109
@@ -1937,8 +1923,8 @@ msgstr "štýl s názvom „%s“ už existuje"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:314 ../src/common/styles.c:318
 #: ../src/common/styles.c:398 ../src/common/styles.c:467
-#: ../src/common/styles.c:818 ../src/common/styles.c:1400
-#: ../src/common/styles.c:1419
+#: ../src/common/styles.c:819 ../src/common/styles.c:1413
+#: ../src/common/styles.c:1432
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -1960,17 +1946,17 @@ msgstr "nie je vybraný žiadny obrázok!"
 msgid "module `%s' version mismatch: %d != %d"
 msgstr "%s: modul `%s' verzia sa nezhoduje: %d != %d"
 
-#: ../src/common/styles.c:1007
+#: ../src/common/styles.c:1008
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "zlyhalo prepísanie súboru so štýlom pre %s"
 
-#: ../src/common/styles.c:1013
+#: ../src/common/styles.c:1014
 #, c-format
 msgid "style file for %s exists"
 msgstr "súbor so štýlom pre %s existuje"
 
-#: ../src/common/styles.c:1290
+#: ../src/common/styles.c:1303
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "štýl %s bol úspešne importovaný"
@@ -4080,7 +4066,7 @@ msgid "select _none"
 msgstr "_zrušiť výber"
 
 #: ../src/gui/hist_dialog.c:172 ../src/gui/preferences.c:1390
-#: ../src/gui/presets.c:386 ../src/libs/lib.c:227
+#: ../src/gui/presets.c:387 ../src/libs/lib.c:228
 msgid "_ok"
 msgstr "_ok"
 
@@ -6032,7 +6018,7 @@ msgstr "nastavenie jasu"
 #: ../src/iop/basicadj.c:741 ../src/iop/channelmixer.c:456
 #: ../src/iop/colisa.c:383 ../src/iop/colorbalance.c:2519
 #: ../src/iop/colorbalance.c:2569 ../src/iop/colorbalance.c:2618
-#: ../src/iop/colorchecker.c:1387 ../src/iop/colorcorrection.c:294
+#: ../src/iop/colorchecker.c:1390 ../src/iop/colorcorrection.c:294
 #: ../src/iop/colorize.c:433 ../src/iop/colorzones.c:2263
 #: ../src/iop/colorzones.c:2327 ../src/iop/graduatednd.c:1262
 #: ../src/iop/lowpass.c:689 ../src/iop/soften.c:743
@@ -6476,7 +6462,7 @@ msgstr "výstup"
 msgid "hue"
 msgstr "odtieň"
 
-#: ../src/iop/channelmixer.c:457 ../src/iop/colorchecker.c:1369
+#: ../src/iop/channelmixer.c:457 ../src/iop/colorchecker.c:1372
 #: ../src/iop/colorize.c:444 ../src/iop/colorzones.c:2260
 #: ../src/iop/colorzones.c:2328
 msgid "lightness"
@@ -7055,12 +7041,12 @@ msgstr ""
 msgid "Fuji Velvia emulation"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:845 ../src/iop/colorchecker.c:1361
+#: ../src/iop/colorchecker.c:845 ../src/iop/colorchecker.c:1364
 #, fuzzy, c-format
 msgid "patch #%d"
 msgstr "cesta #%d"
 
-#: ../src/iop/colorchecker.c:1231
+#: ../src/iop/colorchecker.c:1234
 #, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
@@ -7071,61 +7057,61 @@ msgid ""
 "shift-click while color picking to replace patch"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:1356
+#: ../src/iop/colorchecker.c:1359
 #, fuzzy
 msgid "patch"
 msgstr "veľkosť záplaty"
 
-#: ../src/iop/colorchecker.c:1357
+#: ../src/iop/colorchecker.c:1360
 #, fuzzy
 msgid "color checker patch"
 msgstr "výber farby"
 
-#: ../src/iop/colorchecker.c:1368
+#: ../src/iop/colorchecker.c:1371
 #, fuzzy
 msgid "lightness offset"
 msgstr "svetlosť"
 
-#: ../src/iop/colorchecker.c:1372
+#: ../src/iop/colorchecker.c:1375
 msgid "chroma offset green/red"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:1373
+#: ../src/iop/colorchecker.c:1376
 #, fuzzy
 msgid "green/red"
 msgstr "zelená"
 
-#: ../src/iop/colorchecker.c:1379
+#: ../src/iop/colorchecker.c:1382
 msgid "chroma offset blue/yellow"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:1380
+#: ../src/iop/colorchecker.c:1383
 #, fuzzy
 msgid "blue/yellow"
 msgstr "modrá vs žltá"
 
-#: ../src/iop/colorchecker.c:1386
+#: ../src/iop/colorchecker.c:1389
 #, fuzzy
 msgid "saturation offset"
 msgstr "sýtosť"
 
-#: ../src/iop/colorchecker.c:1391
+#: ../src/iop/colorchecker.c:1394
 #, fuzzy
 msgid "target color"
 msgstr "skupiny cieľov:"
 
-#: ../src/iop/colorchecker.c:1392
+#: ../src/iop/colorchecker.c:1395
 msgid ""
 "control target color of the patches via relative offsets or via absolute Lab "
 "values"
 msgstr ""
 
-#: ../src/iop/colorchecker.c:1393
+#: ../src/iop/colorchecker.c:1396
 #, fuzzy
 msgid "relative"
 msgstr "perspektíva"
 
-#: ../src/iop/colorchecker.c:1394
+#: ../src/iop/colorchecker.c:1397
 #, fuzzy
 msgid "absolute"
 msgstr "krytie (absolútne)"
@@ -7364,21 +7350,21 @@ msgstr "výstupná predstava"
 #: ../src/iop/colorout.c:871 ../src/libs/export.c:671
 #: ../src/libs/print_settings.c:1239 ../src/libs/print_settings.c:1454
 #: ../src/views/darkroom.c:1981 ../src/views/darkroom.c:1989
-#: ../src/views/lighttable.c:4903 ../src/views/lighttable.c:4911
+#: ../src/views/lighttable.c:4904 ../src/views/lighttable.c:4912
 msgid "perceptual"
 msgstr "percepčne"
 
 #: ../src/iop/colorout.c:872 ../src/libs/export.c:672
 #: ../src/libs/print_settings.c:1240 ../src/libs/print_settings.c:1455
 #: ../src/views/darkroom.c:1982 ../src/views/darkroom.c:1990
-#: ../src/views/lighttable.c:4904 ../src/views/lighttable.c:4912
+#: ../src/views/lighttable.c:4905 ../src/views/lighttable.c:4913
 msgid "relative colorimetric"
 msgstr "relatívna kolorimetria"
 
 #: ../src/iop/colorout.c:873 ../src/libs/export.c:673
 #: ../src/libs/print_settings.c:1241 ../src/libs/print_settings.c:1456
 #: ../src/views/darkroom.c:1983 ../src/views/darkroom.c:1991
-#: ../src/views/lighttable.c:4905 ../src/views/lighttable.c:4913
+#: ../src/views/lighttable.c:4906 ../src/views/lighttable.c:4914
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "sýtosť"
@@ -7386,7 +7372,7 @@ msgstr "sýtosť"
 #: ../src/iop/colorout.c:874 ../src/libs/export.c:674
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1457
 #: ../src/views/darkroom.c:1984 ../src/views/darkroom.c:1992
-#: ../src/views/lighttable.c:4906 ../src/views/lighttable.c:4914
+#: ../src/views/lighttable.c:4907 ../src/views/lighttable.c:4915
 msgid "absolute colorimetric"
 msgstr "absolútna kolorimetria"
 
@@ -11731,7 +11717,7 @@ msgstr "dátum"
 msgid "time"
 msgstr "čas"
 
-#: ../src/libs/collect.h:34 ../src/libs/history.c:65
+#: ../src/libs/collect.h:34 ../src/libs/history.c:70
 msgid "history"
 msgstr "história"
 
@@ -12428,30 +12414,30 @@ msgctxt "accel"
 msgid "hide histogram"
 msgstr "histogram"
 
-#: ../src/libs/history.c:86
+#: ../src/libs/history.c:91
 msgctxt "accel"
 msgid "create style from history"
 msgstr "vytvoriť štýl z histórie"
 
 #. dt_accel_register_lib(self, NC_("accel", "apply style from popup menu"), 0, 0);
-#: ../src/libs/history.c:88
+#: ../src/libs/history.c:93
 msgctxt "accel"
 msgid "compress history stack"
 msgstr "komprimovať zoznam histórie"
 
-#: ../src/libs/history.c:117
+#: ../src/libs/history.c:122
 msgid "compress history stack"
 msgstr "komprimovať zoznam histórie"
 
-#: ../src/libs/history.c:118
+#: ../src/libs/history.c:123
 msgid "create a minimal history stack which produces the same image"
 msgstr "vytvorí kratší zoznam histórie zmien ktorý produkuje rovnaký obrázok"
 
-#: ../src/libs/history.c:125
+#: ../src/libs/history.c:130
 msgid "create a style from the current history stack"
 msgstr "vytvoriť štýl z aktuálneho zoznamu histórie"
 
-#: ../src/libs/history.c:660 ../src/libs/snapshots.c:346
+#: ../src/libs/history.c:665 ../src/libs/snapshots.c:346
 msgid "original"
 msgstr "originál"
 
@@ -14308,37 +14294,37 @@ msgstr "filmový pás"
 
 #. setup rating key accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:4413
+#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:4414
 msgctxt "accel"
 msgid "rate 0"
 msgstr "ohodnotiť 0"
 
-#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:4414
+#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:4415
 msgctxt "accel"
 msgid "rate 1"
 msgstr "ohodnotiť 1"
 
-#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:4415
+#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:4416
 msgctxt "accel"
 msgid "rate 2"
 msgstr "ohodnotiť 2"
 
-#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:4416
+#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:4417
 msgctxt "accel"
 msgid "rate 3"
 msgstr "ohodnotiť 3"
 
-#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:4417
+#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:4418
 msgctxt "accel"
 msgid "rate 4"
 msgstr "ohodnotiť 4"
 
-#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:4418
+#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:4419
 msgctxt "accel"
 msgid "rate 5"
 msgstr "ohodnotiť 5"
 
-#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:4419
+#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:4420
 msgctxt "accel"
 msgid "rate reject"
 msgstr "zamietnuť hodnotenie"
@@ -14377,27 +14363,27 @@ msgstr "duplikovať obrázok"
 #. setup color label accelerators
 #. Initializing accelerators
 #. Color labels keys
-#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:4405
+#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:4406
 msgctxt "accel"
 msgid "color red"
 msgstr "červená farba"
 
-#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:4406
+#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:4407
 msgctxt "accel"
 msgid "color yellow"
 msgstr "žltá farba"
 
-#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:4407
+#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:4408
 msgctxt "accel"
 msgid "color green"
 msgstr "zelená farba"
 
-#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:4408
+#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:4409
 msgctxt "accel"
 msgid "color blue"
 msgstr "modrá farba"
 
-#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:4409
+#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:4410
 msgctxt "accel"
 msgid "color purple"
 msgstr "fialová farba"
@@ -14765,20 +14751,20 @@ msgstr ""
 "prepnúť overovanie gamutu\n"
 "pravím klinutím pre voľby profilu"
 
-#: ../src/views/darkroom.c:1979 ../src/views/lighttable.c:4901
+#: ../src/views/darkroom.c:1979 ../src/views/lighttable.c:4902
 msgid "display intent"
 msgstr "zobraz predpokladaný výstup (displej)"
 
-#: ../src/views/darkroom.c:1987 ../src/views/lighttable.c:4909
+#: ../src/views/darkroom.c:1987 ../src/views/lighttable.c:4910
 #, fuzzy
 msgid "preview display intent"
 msgstr "zobraz predpokladaný výstup (displej)"
 
-#: ../src/views/darkroom.c:2007 ../src/views/lighttable.c:4917
+#: ../src/views/darkroom.c:2007 ../src/views/lighttable.c:4918
 msgid "display profile"
 msgstr "zobraz profil"
 
-#: ../src/views/darkroom.c:2008 ../src/views/lighttable.c:4921
+#: ../src/views/darkroom.c:2008 ../src/views/lighttable.c:4922
 #, fuzzy
 msgid "preview display profile"
 msgstr "nastaviť profilu displeja"
@@ -14788,12 +14774,12 @@ msgstr "nastaviť profilu displeja"
 msgid "histogram profile"
 msgstr "histogram"
 
-#: ../src/views/darkroom.c:2063 ../src/views/lighttable.c:4951
+#: ../src/views/darkroom.c:2063 ../src/views/lighttable.c:4952
 #, fuzzy, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "zobraz ICC profily v %s/color/out alebo %s/color/out"
 
-#: ../src/views/darkroom.c:2066 ../src/views/lighttable.c:4954
+#: ../src/views/darkroom.c:2066 ../src/views/lighttable.c:4955
 #, fuzzy, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "zobraz ICC profily v %s/color/out alebo %s/color/out"
@@ -14908,13 +14894,13 @@ msgid "full preview"
 msgstr "plný náhľad"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3214 ../src/views/lighttable.c:4445
+#: ../src/views/darkroom.c:3214 ../src/views/lighttable.c:4446
 #: ../src/views/map.c:889
 msgctxt "accel"
 msgid "undo"
 msgstr "vrátiť späť"
 
-#: ../src/views/darkroom.c:3215 ../src/views/lighttable.c:4446
+#: ../src/views/darkroom.c:3215 ../src/views/lighttable.c:4447
 #: ../src/views/map.c:890
 msgctxt "accel"
 msgid "redo"
@@ -14938,7 +14924,7 @@ msgstr "zobraziť modul"
 msgid "switch to lighttable"
 msgstr "presvetľovací pult"
 
-#: ../src/views/darkroom.c:3325 ../src/views/lighttable.c:4592
+#: ../src/views/darkroom.c:3325 ../src/views/lighttable.c:4593
 #, fuzzy
 msgid "zoom in the image"
 msgstr "zväčšiť živé zobrazenie"
@@ -15014,173 +15000,173 @@ msgstr[2] ""
 msgid "you have reached the end of your collection"
 msgstr ""
 
-#: ../src/views/lighttable.c:3631
+#: ../src/views/lighttable.c:3632
 #, fuzzy, c-format
 msgid "zooming is limited to %d images"
 msgstr "pridáva sa hodnotenie %d na %d obrázok"
 
-#: ../src/views/lighttable.c:4410
+#: ../src/views/lighttable.c:4411
 #, fuzzy
 msgctxt "accel"
 msgid "clear color labels"
 msgstr "farebná menovka"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:4422
+#: ../src/views/lighttable.c:4423
 msgctxt "accel"
 msgid "navigate up"
 msgstr "posunúť hore"
 
-#: ../src/views/lighttable.c:4423
+#: ../src/views/lighttable.c:4424
 msgctxt "accel"
 msgid "navigate down"
 msgstr "posunúť dolu"
 
-#: ../src/views/lighttable.c:4424
+#: ../src/views/lighttable.c:4425
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "posunúť o stránku hore"
 
-#: ../src/views/lighttable.c:4425
+#: ../src/views/lighttable.c:4426
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "posunúť o stránku dolu"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:4428
+#: ../src/views/lighttable.c:4429
 msgctxt "accel"
 msgid "scroll up"
 msgstr "posuň hore"
 
-#: ../src/views/lighttable.c:4429
+#: ../src/views/lighttable.c:4430
 msgctxt "accel"
 msgid "scroll down"
 msgstr "posuň dolu"
 
-#: ../src/views/lighttable.c:4430
+#: ../src/views/lighttable.c:4431
 msgctxt "accel"
 msgid "scroll left"
 msgstr "posuň vľavo"
 
-#: ../src/views/lighttable.c:4431
+#: ../src/views/lighttable.c:4432
 msgctxt "accel"
 msgid "scroll right"
 msgstr "posuň vpravo"
 
-#: ../src/views/lighttable.c:4432
+#: ../src/views/lighttable.c:4433
 msgctxt "accel"
 msgid "scroll center"
 msgstr "posuň na stred"
 
-#: ../src/views/lighttable.c:4433
+#: ../src/views/lighttable.c:4434
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "znovu zarovnať obrázky do siete"
 
-#: ../src/views/lighttable.c:4434
+#: ../src/views/lighttable.c:4435
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "vybrať prepínanie výberu obrázkov"
 
-#: ../src/views/lighttable.c:4435
+#: ../src/views/lighttable.c:4436
 msgctxt "accel"
 msgid "select single image"
 msgstr "vybrať jeden obrázok"
 
 #. Preview key
-#: ../src/views/lighttable.c:4438
+#: ../src/views/lighttable.c:4439
 msgctxt "accel"
 msgid "preview"
 msgstr "náhľad"
 
-#: ../src/views/lighttable.c:4439
+#: ../src/views/lighttable.c:4440
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "náhľad s detekciou zaostrenia"
 
-#: ../src/views/lighttable.c:4440
+#: ../src/views/lighttable.c:4441
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "lepkavý náhľad"
 
-#: ../src/views/lighttable.c:4441
+#: ../src/views/lighttable.c:4442
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "lepkavý náhľad s detekciou zaostrenia"
 
 #. zoom for full preview
-#: ../src/views/lighttable.c:4449
+#: ../src/views/lighttable.c:4450
 msgctxt "accel"
 msgid "preview zoom 100%"
 msgstr ""
 
-#: ../src/views/lighttable.c:4450
+#: ../src/views/lighttable.c:4451
 #, fuzzy
 msgctxt "accel"
 msgid "preview zoom fit"
 msgstr "zväčšenie prispôsobiť"
 
 #. timeline
-#: ../src/views/lighttable.c:4453
+#: ../src/views/lighttable.c:4454
 #, fuzzy
 msgctxt "accel"
 msgid "toggle timeline"
 msgstr "prepnúť živé zobrazenie"
 
-#: ../src/views/lighttable.c:4579
+#: ../src/views/lighttable.c:4580
 #, fuzzy
 msgid "open image in darkroom"
 msgstr "okraj okolo obrázka vo fotokomore"
 
-#: ../src/views/lighttable.c:4586
+#: ../src/views/lighttable.c:4587
 msgid "switch to next/previous image"
 msgstr ""
 
-#: ../src/views/lighttable.c:4599 ../src/views/lighttable.c:4621
+#: ../src/views/lighttable.c:4600 ../src/views/lighttable.c:4622
 #, fuzzy
 msgid "scroll the collection"
 msgstr "odstrániť zo zbierky"
 
-#: ../src/views/lighttable.c:4605
+#: ../src/views/lighttable.c:4606
 #, fuzzy
 msgid "change number of images per row"
 msgstr "maximálny počet obrázkov zobrazených na mape"
 
-#: ../src/views/lighttable.c:4613
+#: ../src/views/lighttable.c:4614
 #, fuzzy
 msgid "change image order"
 msgstr "skryť doplnkové informácie"
 
-#: ../src/views/lighttable.c:4627
+#: ../src/views/lighttable.c:4628
 #, fuzzy
 msgid "zoom all the images"
 msgstr "otočiť obrázky"
 
-#: ../src/views/lighttable.c:4632
+#: ../src/views/lighttable.c:4633
 #, fuzzy
 msgid "pan inside all the images"
 msgstr "odstrániť obrázky?"
 
-#: ../src/views/lighttable.c:4638
+#: ../src/views/lighttable.c:4639
 #, fuzzy
 msgid "zoom current image"
 msgstr "import obrázku"
 
-#: ../src/views/lighttable.c:4644
+#: ../src/views/lighttable.c:4645
 #, fuzzy
 msgid "pan inside current image"
 msgstr "štýl \"%s\" použitý na aktuálny obrázok"
 
-#: ../src/views/lighttable.c:4651
+#: ../src/views/lighttable.c:4652
 #, fuzzy
 msgid "zoom the main view"
 msgstr "zväčšiť živé zobrazenie"
 
-#: ../src/views/lighttable.c:4656
+#: ../src/views/lighttable.c:4657
 msgid "pan inside the main view"
 msgstr ""
 
-#: ../src/views/lighttable.c:4877
+#: ../src/views/lighttable.c:4878
 msgid "set display profile"
 msgstr "nastaviť profilu displeja"
 
