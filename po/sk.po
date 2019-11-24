@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-24 09:34+0100\n"
-"PO-Revision-Date: 2019-11-24 09:45+0100\n"
+"POT-Creation-Date: 2019-11-24 19:19+0100\n"
+"PO-Revision-Date: 2019-11-24 21:09+0100\n"
 "Last-Translator: Dušan Kazik <prescott66@gmail.com>\n"
 "Language-Team: \n"
 "Language: sk\n"
@@ -1133,9 +1133,8 @@ msgstr ""
 "obrázku"
 
 #: ../build/src/preferences_gen.h:4046
-#, fuzzy
 msgid "3D lut root folder"
-msgstr "presunúť do iného priečinka"
+msgstr "3D LUT koreňová zložka"
 
 #: ../build/src/preferences_gen.h:4051 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/preferences.c:1617
@@ -1203,9 +1202,8 @@ msgstr ""
 "všetky z nich spracovať s veľkou presnosťou."
 
 #: ../data/darktable.appdata.xml.in.h:5
-#, fuzzy
 msgid "Virtual light table, showing a collection"
-msgstr "Virtuálny presvetľovací pult a fotokomora"
+msgstr "Virtuálny presvetľovací pult, zobrazenie zbierky"
 
 #: ../data/darktable.appdata.xml.in.h:6
 msgid "Virtual dark room with an opened image"
@@ -1216,14 +1214,12 @@ msgid "Virtual dark room, sharpening an image"
 msgstr ""
 
 #: ../data/darktable.appdata.xml.in.h:8
-#, fuzzy
 msgid "Show images on a map"
-msgstr "importuj obrázky z fotoaparátu"
+msgstr "Ukázať snímky na mape"
 
 #: ../data/darktable.appdata.xml.in.h:9
-#, fuzzy
 msgid "Print your images"
-msgstr "normálne obrázky"
+msgstr "Vytlačiť vaše obrázky"
 
 #: ../src/bauhaus/bauhaus.c:2266
 #, c-format
@@ -1290,9 +1286,9 @@ msgid "output file already exists, it will get renamed"
 msgstr "výstupný súbor už existuje. bude premenovaný"
 
 #: ../src/cli/main.c:234
-#, fuzzy, c-format
+#, c-format
 msgid "error: can't open folder %s"
-msgstr "chyba: nemôžem otvoriť súbor %s"
+msgstr "chyba: nemôžem otvoriť zložku %s"
 
 #: ../src/cli/main.c:252
 #, c-format
@@ -1300,14 +1296,14 @@ msgid "error: can't open file %s"
 msgstr "chyba: nemôžem otvoriť súbor %s"
 
 #: ../src/cli/main.c:266
-#, fuzzy, c-format
+#, c-format
 msgid "no images to export, aborting\n"
-msgstr "nie sú vybrané žiadne obrázky pre ohodnotenie"
+msgstr "nie sú vybrané žiadne obrázky pre export, zrušené\n"
 
 #: ../src/cli/main.c:280
-#, fuzzy, c-format
+#, c-format
 msgid "error: can't open xmp file %s"
-msgstr "chyba: nemôžem otvoriť súbor %s"
+msgstr "chyba: nie je možné otvoriť XMP súbor %s"
 
 #: ../src/cli/main.c:298
 msgid "empty history stack"
@@ -1379,20 +1375,18 @@ msgid "tagged"
 msgstr "poznačený"
 
 #: ../src/common/collection.c:1270 ../src/libs/collect.c:1269
-#, fuzzy
 msgid "not copied locally"
-msgstr "kopírovať miestne"
+msgstr "nekopírovaný miestne"
 
 #. grouping
 #: ../src/common/collection.c:1483 ../src/libs/collect.c:1373
-#, fuzzy
 msgid "group leaders"
-msgstr "id skupiny"
+msgstr "vedúci skupiny"
 
 #: ../src/common/collection.c:1681
-#, fuzzy, c-format
+#, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
-msgstr "je vybraný %d obrázok z %d v aktuálnej zbierke"
+msgstr "je vybraný %d obrázok z %d (#%d) v aktuálnej zbierke"
 
 #: ../src/common/collection.c:1687
 #, c-format
@@ -1472,9 +1466,8 @@ msgstr ""
 
 #: ../src/common/colorspaces.c:996 ../src/common/colorspaces.c:1259
 #: ../src/iop/colorout.c:883
-#, fuzzy
 msgid "export profile"
-msgstr "výstupný profil"
+msgstr "exportný profil"
 
 #: ../src/common/colorspaces.c:997 ../src/common/colorspaces.c:1263
 #: ../src/views/darkroom.c:2006
@@ -1483,9 +1476,8 @@ msgstr "softproof profil"
 
 #. init the category profile with NULL profile, the actual profile must be retrieved dynamically by the caller
 #: ../src/common/colorspaces.c:998 ../src/common/colorspaces.c:1256
-#, fuzzy
 msgid "work profile"
-msgstr "profil"
+msgstr "pracovný profil"
 
 #: ../src/common/colorspaces.c:1278
 msgid "sRGB (e.g. JPG)"
@@ -1496,14 +1488,12 @@ msgid "sRGB (web-safe)"
 msgstr "sRGB (pre web)"
 
 #: ../src/common/colorspaces.c:1296
-#, fuzzy
 msgid "gamma Rec709 RGB"
-msgstr "lineárny Rec709 RGB"
+msgstr "gamma Rec709 RGB"
 
 #: ../src/common/colorspaces.c:1306
-#, fuzzy
 msgid "linear prophoto RGB"
-msgstr "lineárna časť"
+msgstr "lineárny prophoto RGB"
 
 #: ../src/common/colorspaces.c:1324
 msgid "BRG (for testing)"
@@ -1515,24 +1505,23 @@ msgid "file `%s' to print not found for image %d on `%s'"
 msgstr "súbor `%s' na tlač nenájdený pre obrázok %d na `%s'"
 
 #: ../src/common/cups_print.c:427
-#, fuzzy
 msgid "failed to create temporary file for printing options"
-msgstr "zlyhalo prepísanie súboru so štýlom pre %s"
+msgstr "zlyhalo vytvorenie dočasného súboru pre voľby tlače"
 
 #: ../src/common/cups_print.c:495
-#, fuzzy, c-format
+#, c-format
 msgid "printing on `%s' cancelled"
-msgstr "tlačí sa obrázok %d na „%s“"
+msgstr "tlač na \"%s\" bola zrušená"
 
 #: ../src/common/cups_print.c:558
-#, fuzzy, c-format
+#, c-format
 msgid "error while printing `%s' on `%s'"
-msgstr "chyba počas tlače obrázku %d na „%s“"
+msgstr "chyba počas tlače obrázku  \"%s\" na \"%s\""
 
 #: ../src/common/cups_print.c:560
-#, fuzzy, c-format
+#, c-format
 msgid "printing `%s' on `%s'"
-msgstr "tlačí sa obrázok %d na „%s“"
+msgstr "tlačí sa obrázok \"%s\" na \"%s\""
 
 #: ../src/common/darktable.c:230
 #, c-format
@@ -1598,9 +1587,8 @@ msgstr ""
 
 #: ../src/common/database.c:1673 ../src/common/database.c:1844
 #: ../src/common/database.c:2066 ../src/common/database.c:2144
-#, fuzzy
 msgid "close darktable"
-msgstr "darktable"
+msgstr "zavrieť darktable"
 
 #: ../src/common/database.c:1784
 #, c-format
@@ -1657,27 +1645,24 @@ msgid "darktable - error opening database"
 msgstr ""
 
 #: ../src/common/database.c:2066 ../src/common/database.c:2144
-#, fuzzy
 msgid "delete database"
-msgstr "odstrániť značku?"
+msgstr "vymazať databázu"
 
 #: ../src/common/fast_guided_filter.h:456
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
 msgstr ""
 
 #: ../src/common/film.c:311
-#, fuzzy
 msgid "do you want to remove this empty directory?"
 msgid_plural "do you want to remove these empty directories?"
-msgstr[0] "skutočne chcete odstrániť %d vybraný obrázok zo zbierky?"
+msgstr[0] "skutočne chcete odstrániť túto prázdnu zložku?"
 msgstr[1] "skutočne chcete odstrániť %d vybrané obrázky zo zbierky?"
 msgstr[2] "skutočne chcete odstrániť %d obrázkov zo zbierky?"
 
 #: ../src/common/film.c:318
-#, fuzzy
 msgid "remove empty directory?"
 msgid_plural "remove empty directories?"
-msgstr[0] "vybrať adresár"
+msgstr[0] "odstrániť prázdnu zložku?"
 msgstr[1] "vybrať adresár"
 msgstr[2] "vybrať adresár"
 
@@ -1739,19 +1724,19 @@ msgid "orphaned image"
 msgstr "opustený obrázok"
 
 #: ../src/common/image.c:1455
-#, fuzzy, c-format
+#, c-format
 msgid "cannot access local copy `%s'"
-msgstr "nemožno vytvoriť lokálnu kópiu"
+msgstr "nie je možné čítať miestnu kópiu \"%s\""
 
 #: ../src/common/image.c:1461
-#, fuzzy, c-format
+#, c-format
 msgid "cannot write local copy `%s'"
-msgstr "nemožno vytvoriť lokálnu kópiu"
+msgstr "nie je možné zapísať miestnu kópiu \"%s\""
 
 #: ../src/common/image.c:1468
-#, fuzzy, c-format
+#, c-format
 msgid "error moving local copy `%s' -> `%s'"
-msgstr "odstraňuje sa miestna kópia %d obrázku"
+msgstr "chyba pri premiestňovaní lokálnej kópie \"%s\" -> \"%s\""
 
 #: ../src/common/image.c:1484
 #, c-format
@@ -1764,9 +1749,9 @@ msgid "error moving `%s' -> `%s': file exists"
 msgstr ""
 
 #: ../src/common/image.c:1498
-#, fuzzy, c-format
+#, c-format
 msgid "error moving `%s' -> `%s'"
-msgstr "chyba pri načítavaní súboru „%s“"
+msgstr "chyba pri premiestnení \"%s\" -> \"%s\""
 
 #: ../src/common/image.c:1755
 msgid "cannot create local copy when the original file is not accessible."
@@ -1826,13 +1811,13 @@ msgstr ""
 "importovania."
 
 #: ../src/common/iop_order.c:1897
-#, fuzzy, c-format
+#, c-format
 msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
-msgstr "nepodporovaný vstupný profil bol zmenený za lineárny RGB Rec709 !"
+msgstr "nepodporovaný typ vstupného profilu %s bol nahradený Rec709 RGB!\n"
 
 #: ../src/common/noiseprofiles.c:27
 msgid "generic poissonian"
-msgstr "poissonovo rozdelenie"
+msgstr "obecné poissonovo rozdelenie"
 
 #: ../src/common/noiseprofiles.c:62
 #, c-format
@@ -1942,9 +1927,9 @@ msgid "no image selected!"
 msgstr "nie je vybraný žiadny obrázok!"
 
 #: ../src/common/styles.c:612
-#, fuzzy, c-format
+#, c-format
 msgid "module `%s' version mismatch: %d != %d"
-msgstr "%s: modul `%s' verzia sa nezhoduje: %d != %d"
+msgstr "nezhoda verzie modulu %s: %d != %d"
 
 #: ../src/common/styles.c:1008
 #, c-format
@@ -2032,9 +2017,8 @@ msgid "please set your camera to manual mode first!"
 msgstr "prosím, najskôr nastavte na vašom fotoaparáte manuálny režim!"
 
 #: ../src/control/jobs/camera_jobs.c:210
-#, fuzzy
 msgid "capture images"
-msgstr "urob snímku(y)"
+msgstr "zachytiť snímky"
 
 #: ../src/control/jobs/camera_jobs.c:281
 #, c-format
@@ -2065,9 +2049,8 @@ msgid "failed to create film roll for destination directory, aborting move.."
 msgstr "nemožno vytvoriť cieľový adresár, presun prerušený"
 
 #: ../src/control/jobs/control_jobs.c:346
-#, fuzzy
 msgid "exposure bracketing only works on raw images."
-msgstr "expozičný bracketing funguje iba na obrázkoch raw s bayerovou maskou"
+msgstr "expozičný bracketing funguje iba na obrázkoch raw."
 
 #: ../src/control/jobs/control_jobs.c:353
 msgid "images have to be of same size and orientation!"
@@ -2125,9 +2108,8 @@ msgid "physically delete"
 msgstr "fyzicky odstrániť"
 
 #: ../src/control/jobs/control_jobs.c:755
-#, fuzzy
 msgid "physically delete all files"
-msgstr "fyzicky odstrániť z disku"
+msgstr "fyzicky odstrániť všetky súbory z disku"
 
 #: ../src/control/jobs/control_jobs.c:757
 msgid "only remove from the collection"
@@ -2214,10 +2196,10 @@ msgstr[1] "odstraňujú sa miestne kópie %d obrázkov"
 msgstr[2] "odstraňujú sa miestne kópie %d obrázkov"
 
 #: ../src/control/jobs/control_jobs.c:1287
-#, fuzzy, c-format
+#, c-format
 msgid "refreshing info for %d image"
 msgid_plural "refreshing info for %d images"
-msgstr[0] "presúva sa %d súbor do koša"
+msgstr[0] "obnovovanieí info pre %d snímok"
 msgstr[1] "presúvajú sa %d súbory do koša"
 msgstr[2] "presúva sa %d súborov do koša"
 
@@ -2244,25 +2226,21 @@ msgid "image `%s' is currently unavailable"
 msgstr "obrázok „%s“ je momentálne nedostupný"
 
 #: ../src/control/jobs/control_jobs.c:1498
-#, fuzzy
 msgid "merge hdr image"
-msgstr "zlučuje sa %d obrázok"
+msgstr "zlučovqnie hdr obrázku"
 
 #: ../src/control/jobs/control_jobs.c:1512
-#, fuzzy
 msgid "duplicate images"
-msgstr "duplikovať obrázok"
+msgstr "duplikovať obrázky"
 
 #: ../src/control/jobs/control_jobs.c:1519
-#, fuzzy
 msgid "flip images"
-msgstr "preklop vodítka"
+msgstr "prevrátiť snímky"
 
 #. get all selected images now, to avoid the set changing during ui interaction
 #: ../src/control/jobs/control_jobs.c:1526
-#, fuzzy
 msgid "remove images"
-msgstr "odstrániť obrázky?"
+msgstr "odstrániť obrázky"
 
 #: ../src/control/jobs/control_jobs.c:1548
 #, c-format
@@ -2279,9 +2257,8 @@ msgstr "odstrániť obrázky?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
 #: ../src/control/jobs/control_jobs.c:1571
-#, fuzzy
 msgid "delete images"
-msgstr "odstrániť obrázky?"
+msgstr "odstrániť obrázky"
 
 #: ../src/control/jobs/control_jobs.c:1595
 #, c-format
@@ -2309,9 +2286,8 @@ msgid "delete images?"
 msgstr "odstrániť obrázky?"
 
 #: ../src/control/jobs/control_jobs.c:1625
-#, fuzzy
 msgid "move images"
-msgstr "presunúť obrázok?"
+msgstr "presunúť obrázky"
 
 #: ../src/control/jobs/control_jobs.c:1630
 #: ../src/control/jobs/control_jobs.c:1690
@@ -2344,9 +2320,8 @@ msgstr[1] "presunúť obrázky?"
 msgstr[2] "presunúť obrázky?"
 
 #: ../src/control/jobs/control_jobs.c:1685
-#, fuzzy
 msgid "copy images"
-msgstr "skopírovať obrázok?"
+msgstr "kopírovať obrázky"
 
 #: ../src/control/jobs/control_jobs.c:1711
 #, c-format
@@ -2365,14 +2340,12 @@ msgstr[2] "skopírovať obrázky?"
 
 #: ../src/control/jobs/control_jobs.c:1737
 #: ../src/control/jobs/control_jobs.c:1744
-#, fuzzy
 msgid "local copy images"
-msgstr "miestna kópia"
+msgstr "lokálna kópia obrázkov"
 
 #: ../src/control/jobs/control_jobs.c:1751 ../src/libs/image.c:276
-#, fuzzy
 msgid "refresh exif"
-msgstr "obnoviť"
+msgstr "znova načítať exif"
 
 #: ../src/control/jobs/control_jobs.c:1814
 #, c-format
@@ -2381,9 +2354,8 @@ msgstr ""
 "zlyhalo získanie parametrov z modulu úložiska „%s“, prerušuje sa export.."
 
 #: ../src/control/jobs/control_jobs.c:1829
-#, fuzzy
 msgid "export images"
-msgstr "exportovať štítky"
+msgstr "exportovať obrázky"
 
 #: ../src/control/jobs/control_jobs.c:1854
 #, c-format
@@ -2410,9 +2382,8 @@ msgid "write sidecar files"
 msgstr "zapísať sprievodné súbory XMP"
 
 #: ../src/control/jobs/film_jobs.c:71
-#, fuzzy
 msgid "import images"
-msgstr "import obrázku"
+msgstr "importovať obrázky"
 
 #: ../src/control/jobs/film_jobs.c:145
 msgid "no supported images were found to be imported"
@@ -2550,11 +2521,12 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:1443 ../src/iop/colorzones.c:2287
 #: ../src/iop/tonecurve.c:1342
-#, fuzzy
 msgid ""
 "pick GUI color from image\n"
 "ctrl+click to select an area"
-msgstr "vybrať farbu rozhrania z obrázku"
+msgstr ""
+"vybrať farvu GUI z obrázku\n"
+"ctrl+kliknutie pre výber oblasti"
 
 #: ../src/develop/blend_gui.c:1447
 msgid ""
@@ -2654,14 +2626,12 @@ msgid "add brush"
 msgstr "pridať štetec"
 
 #: ../src/develop/blend_gui.c:1833 ../src/develop/blend_gui.c:2250
-#, fuzzy
 msgid "raster mask"
-msgstr "parametrická maska"
+msgstr "rastrová maska"
 
 #: ../src/develop/blend_gui.c:1843
-#, fuzzy
 msgid "toggle polarity of raster mask"
-msgstr "zameň polaritu nakreslenej masky"
+msgstr "prepnúť polaritu rastrovej masky"
 
 #. * generate a list of all available blend modes
 #: ../src/develop/blend_gui.c:2150 ../src/libs/live_view.c:408
@@ -2805,22 +2775,19 @@ msgid "HSV color"
 msgstr "HSV farba"
 
 #: ../src/develop/blend_gui.c:2184
-#, fuzzy
 msgctxt "blendmode"
 msgid "RGB red channel"
-msgstr "posuvníky pre červený kanál"
+msgstr "červený kanál RGB"
 
 #: ../src/develop/blend_gui.c:2186
-#, fuzzy
 msgctxt "blendmode"
 msgid "RGB green channel"
-msgstr "posuvníky pre zelený kanál"
+msgstr "zelený kanál RGB"
 
 #: ../src/develop/blend_gui.c:2188
-#, fuzzy
 msgctxt "blendmode"
 msgid "RGB blue channel"
-msgstr "posuvníky pre modrý kanál"
+msgstr "modrý kanál RGB"
 
 #. * deprecated blend modes: make them available as legacy history stacks might want them
 #: ../src/develop/blend_gui.c:2192
@@ -2905,33 +2872,28 @@ msgid "apply mask in normal or inverted mode"
 msgstr "použije masku v normálnom alebo invertovanom režime"
 
 #: ../src/develop/blend_gui.c:2468
-#, fuzzy
 msgid "feathering guide"
-msgstr "pohľad vzdialené snímanie"
+msgstr "vodítko prelínania"
 
 #: ../src/develop/blend_gui.c:2470
-#, fuzzy
 msgid "output image"
-msgstr "otočiť obrázok"
+msgstr "výstupný obrázok"
 
 #: ../src/develop/blend_gui.c:2474
-#, fuzzy
 msgid "input image"
-msgstr "import obrázku"
+msgstr "vstupný obrázok"
 
 #: ../src/develop/blend_gui.c:2480
 msgid "choose to guide mask by input or output image"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:2486
-#, fuzzy
 msgid "feathering radius"
-msgstr "pohľad vzdialené snímanie"
+msgstr "polomer prelínania"
 
 #: ../src/develop/blend_gui.c:2488
-#, fuzzy
 msgid "spatial radius of feathering"
-msgstr "priestorové rozšírenie odostrenia"
+msgstr "priestorový polomer prelínania"
 
 #: ../src/develop/blend_gui.c:2494
 msgid "mask blur"
@@ -2942,9 +2904,8 @@ msgid "radius for gaussian blur of blend mask"
 msgstr "polomer gaussovho rozostrenia prelínania masky"
 
 #: ../src/develop/blend_gui.c:2502 ../src/iop/retouch.c:2953
-#, fuzzy
 msgid "mask opacity"
-msgstr "krytie"
+msgstr "krytie masky"
 
 #: ../src/develop/blend_gui.c:2504
 msgid ""
@@ -2953,9 +2914,8 @@ msgid ""
 msgstr ""
 
 #: ../src/develop/blend_gui.c:2512
-#, fuzzy
 msgid "mask contrast"
-msgstr "stredný kontrast"
+msgstr "kontrast masky"
 
 #: ../src/develop/blend_gui.c:2514
 msgid ""
@@ -3004,9 +2964,8 @@ msgid "delete"
 msgstr "odstrániť"
 
 #: ../src/develop/imageop.c:1053 ../src/libs/tagging.c:1736
-#, fuzzy
 msgid "rename"
-msgstr "názov"
+msgstr "premenovať"
 
 #: ../src/develop/imageop.c:1096 ../src/develop/imageop.c:1990
 #, c-format
@@ -3054,11 +3013,12 @@ msgid "show preset menu"
 msgstr "zobraziť ponuku s predvoľbami"
 
 #: ../src/develop/imageop.c:1953
-#, fuzzy
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
-msgstr "akcie viacerých inštancií"
+msgstr ""
+"akcie viacerých inštancií\n"
+"kliknutie prostredného tlačidla vytvorí novú inštanciu"
 
 #: ../src/develop/imageop.c:1964 ../src/libs/lib.c:984
 msgid "reset parameters"
@@ -3126,18 +3086,16 @@ msgid "[PATH creation] add a smooth node"
 msgstr ""
 
 #: ../src/develop/masks/masks.c:170
-#, fuzzy
 msgid "[PATH creation] add a sharp node"
-msgstr "ctrl+kliknutie pridá nový ostrý bod"
+msgstr "[PATH creation] pridať ostrý uzol"
 
 #: ../src/develop/masks/masks.c:175
 msgid "[PATH creation] terminate path creation"
 msgstr ""
 
 #: ../src/develop/masks/masks.c:181
-#, fuzzy
 msgid "[PATH on node] switch between smooth/sharp node"
-msgstr "ctrl+kliknutie prepne medzi mäkkým a ostrým bodom"
+msgstr "[PATH on node] prepnúť medzi vyhladeným/ostrým uzlom"
 
 #: ../src/develop/masks/masks.c:186
 msgid "[PATH on node] remove the node"
@@ -3164,14 +3122,12 @@ msgid "[PATH] change feather size"
 msgstr ""
 
 #: ../src/develop/masks/masks.c:221
-#, fuzzy
 msgid "[GRADIENT on pivot] rotate shape"
-msgstr "posúvať na otáčanie obrazca"
+msgstr "[GRADIENT on pivot] otočiť tvar"
 
 #: ../src/develop/masks/masks.c:226
-#, fuzzy
 msgid "[GRADIENT creation] set rotation"
-msgstr "obnoviť otočenie"
+msgstr "[GRADIENT creation] nastaviť otočenie"
 
 #: ../src/develop/masks/masks.c:231
 msgid "[GRADIENT] change compression"
@@ -3194,9 +3150,8 @@ msgid "[ELLIPSE] switch feathering mode"
 msgstr ""
 
 #: ../src/develop/masks/masks.c:262
-#, fuzzy
 msgid "[ELLIPSE] rotate shape"
-msgstr "posúvať na otáčanie obrazca"
+msgstr "[ELLIPSE] otočiť tvar"
 
 #: ../src/develop/masks/masks.c:269
 msgid "[BRUSH creation] change size"
@@ -3235,64 +3190,68 @@ msgid "ctrl+click to switch between smooth/sharp node"
 msgstr "ctrl+kliknutie prepne medzi mäkkým a ostrým bodom"
 
 #: ../src/develop/masks/masks.c:335
-#, fuzzy
 msgid "right-click to reset curvature"
-msgstr "pravé kliknutie znovu nastaví prelínanie"
+msgstr "pravé kliknutie pre obnovenie zakryvenia"
 
 #: ../src/develop/masks/masks.c:337
 msgid "ctrl+click to add a node"
 msgstr "ctrl+kliknutie pridá bod"
 
 #: ../src/develop/masks/masks.c:339 ../src/develop/masks/masks.c:377
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"
-msgstr "rolovaním nastavíte tvrdosť, ctrl+rolovanie na nastavenie krytia tvaru"
+msgstr ""
+"shift + skrolovanie pre veľkosť prelínaniaí, ctrl + skrolovanie pre "
+"priehľadnosť tvaru (%d%%)"
 
 #: ../src/develop/masks/masks.c:344
-#, fuzzy, c-format
+#, c-format
 msgid "ctrl+scroll to set shape opacity (%d%%)"
-msgstr "ctrl+koliesko myši nastaví priesvitnosť obrazca"
+msgstr "ctrl + skrolovanie pre nastavenie priehľadnosti (%d%%)"
 
 #: ../src/develop/masks/masks.c:346
 msgid "move to rotate shape"
 msgstr "posúvať na otáčanie obrazca"
 
 #: ../src/develop/masks/masks.c:352 ../src/develop/masks/masks.c:374
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "scroll to set size, shift+scroll to set feather size\n"
 "ctrl+scroll to set shape opacity (%d%%)"
 msgstr ""
-"rolovaním nastavíte veľkosť štetca, shift+rolovanie na nastavenie tvrdosti, "
-"ctrl+rolovanie na nastavenie krytia"
+"skrolovaním nastavte veľkosť, shift + skrolovanie pre veľkosť prelínania,\n"
+"ctrl + skrolovanie pre priehľadnosť tvaru (%d%%)"
 
 #: ../src/develop/masks/masks.c:354
 msgid "ctrl+click to rotate"
 msgstr "ctrl+kliknutie na otočenie"
 
 #: ../src/develop/masks/masks.c:357
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "shift+click to switch feathering mode, ctrl+click to rotate\n"
 "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%),"
 msgstr ""
-"rolovaním nastavíte veľkosť štetca, shift+rolovanie na nastavenie tvrdosti, "
-"ctrl+rolovanie na nastavenie krytia"
+"shift + kliknutie: prepnúť režim prelínania, ctrl + kliknutie: rotácia\n"
+"shift + skrolovanie: veľkosť prelínania okraja, ctrl + skrolovanie: "
+"priehľadnosť tvaru (%d%%),"
 
 #: ../src/develop/masks/masks.c:363
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "scroll to set brush size, shift+scroll to set hardness,\n"
 "ctrl+scroll to set opacity (%d%%)"
 msgstr ""
-"rolovaním nastavíte veľkosť štetca, shift+rolovanie na nastavenie tvrdosti, "
-"ctrl+rolovanie na nastavenie krytia"
+"otáčaním kolečka nastavte velľkosť štetca, shift + rolovanie pre tvrdosť,\n"
+"ctrl + rolovanie pre krytie (%d%%)"
 
 #: ../src/develop/masks/masks.c:366
-#, fuzzy, c-format
+#, c-format
 msgid "scroll to set hardness, ctrl+scroll to set shape opacity (%d%%)"
-msgstr "rolovaním nastavíte tvrdosť, ctrl+rolovanie na nastavenie krytia tvaru"
+msgstr ""
+"otáčaním kolečka nastavte tvrdosť, ctrl + rolovanie pre nastavenie krytia (%d"
+"%%)"
 
 #: ../src/develop/masks/masks.c:368
 msgid "scroll to set brush size"
@@ -3581,10 +3540,9 @@ msgid "edit"
 msgstr "upraviť"
 
 #: ../src/gui/accelerators.c:61 ../src/gui/accelerators.c:104
-#, fuzzy
 msgctxt "accel"
 msgid "dynamic"
-msgstr "panoramatický"
+msgstr "dynamický"
 
 #: ../src/gui/accelerators.c:66 ../src/gui/accelerators.c:109
 msgctxt "accel"
@@ -3774,27 +3732,24 @@ msgid "toggle panels collapsing controls"
 msgstr ""
 
 #: ../src/gui/gtk.c:1261
-#, fuzzy
 msgctxt "accel"
 msgid "toggle left panel"
-msgstr "prepnúť živé zobrazenie"
+msgstr "prepnúť ľavý panel"
 
 #: ../src/gui/gtk.c:1265
-#, fuzzy
 msgctxt "accel"
 msgid "toggle right panel"
-msgstr "prepnúť záhlavie"
+msgstr "prepnúť pravý panel"
 
 #: ../src/gui/gtk.c:1269
-#, fuzzy
 msgctxt "accel"
 msgid "toggle top panel"
-msgstr "prepnúť záhlavie"
+msgstr "prepnúť horný panel"
 
 #: ../src/gui/gtk.c:1273
 msgctxt "accel"
 msgid "toggle bottom panel"
-msgstr ""
+msgstr "prepnúť dolný panel"
 
 #. toggle view of header
 #: ../src/gui/gtk.c:1278
@@ -3942,9 +3897,8 @@ msgid "$(TITLE) - title from metadata"
 msgstr "$(TITLE) - názov z metaúdajov"
 
 #: ../src/gui/gtkentry.c:215
-#, fuzzy
 msgid "$(DESCRIPTION) - description from metadata"
-msgstr "$(CREATOR) - autor z metaúdajov"
+msgstr "$(DESCRIPTION) - opis z metadát"
 
 #: ../src/gui/gtkentry.c:216
 msgid "$(CREATOR) - creator from metadata"
@@ -3971,28 +3925,24 @@ msgid "$(TAGS) - tags as set in metadata settings"
 msgstr ""
 
 #: ../src/gui/guides.c:108
-#, fuzzy
 msgid "horizontal lines"
-msgstr "horizontálny stred"
+msgstr "horizontálne čiary"
 
 #: ../src/gui/guides.c:109
 msgid "number of horizontal guide lines"
 msgstr ""
 
 #: ../src/gui/guides.c:115
-#, fuzzy
 msgid "vertical lines"
-msgstr "vertikálny stred"
+msgstr "vertikálne čiary"
 
 #: ../src/gui/guides.c:116
-#, fuzzy
 msgid "number of vertical guide lines"
-msgstr "počet skupín"
+msgstr "počet zvislých vodiacich čiar"
 
 #: ../src/gui/guides.c:122
-#, fuzzy
 msgid "subdivisions"
-msgstr "denná viditeľnosť"
+msgstr "pododdiely"
 
 #: ../src/gui/guides.c:123
 msgid "number of subdivisions per grid rectangle"
@@ -4000,7 +3950,7 @@ msgstr ""
 
 #: ../src/gui/guides.c:440
 msgid "extra"
-msgstr "ďalšie vodítka"
+msgstr "viac"
 
 #: ../src/gui/guides.c:441
 msgid "golden sections"
@@ -4104,9 +4054,8 @@ msgid "interface language"
 msgstr ""
 
 #: ../src/gui/preferences.c:242
-#, fuzzy
 msgid "double click to reset to the system language"
-msgstr "dvojitým klinutím obnovíte na „%s“"
+msgstr "dvojitým klinutím obnovíte systémový jazyk"
 
 #: ../src/gui/preferences.c:244
 msgid ""
@@ -4119,9 +4068,8 @@ msgid "theme"
 msgstr ""
 
 #: ../src/gui/preferences.c:277
-#, fuzzy
 msgid "set the theme for the user interface"
-msgstr "vložiť nadpis webovej stránky"
+msgstr "verete tému používateľského rozhrania"
 
 #: ../src/gui/preferences.c:288
 msgid "darktable preferences"
@@ -4189,10 +4137,9 @@ msgstr "auto"
 
 #. Adding the import/export buttons
 #: ../src/gui/preferences.c:545 ../src/gui/preferences.c:638
-#, fuzzy
 msgctxt "preferences"
 msgid "import..."
-msgstr "import"
+msgstr "importovať..."
 
 #. Adding the outer container
 #: ../src/gui/preferences.c:585
@@ -4209,9 +4156,8 @@ msgstr "prepojenie"
 
 #. export button
 #: ../src/gui/preferences.c:643 ../src/libs/styles.c:472
-#, fuzzy
 msgid "export..."
-msgstr "exportovať"
+msgstr "exportovať..."
 
 #. Setting the notification text
 #: ../src/gui/preferences.c:920
@@ -4219,19 +4165,19 @@ msgid "press key combination to remap..."
 msgstr "stlač kombináciu kláves na nové mapovanie"
 
 #: ../src/gui/preferences.c:1021
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s accel is already mapped to\n"
 "%s.\n"
 "do you want to replace it ?"
 msgstr ""
-"predvoľba „%s“ už existuje.\n"
-"chcete ju prepísať?"
+"%s skratka je už nnastavená\n"
+"%s.\n"
+"chcete ju zmeniť?"
 
 #: ../src/gui/preferences.c:1027
-#, fuzzy
 msgid "accel conflict"
-msgstr "pri konflikte"
+msgstr "konflikt klávesových skratiek"
 
 #: ../src/gui/preferences.c:1116 ../src/gui/presets.c:182 ../src/libs/lib.c:340
 #, c-format
@@ -4269,14 +4215,12 @@ msgstr ""
 
 #. Zero value indicates import
 #: ../src/gui/preferences.c:1266
-#, fuzzy
 msgid "select preset to import"
-msgstr "vyberte súbor na importovanie"
+msgstr "vyberte predvoľbu na importovanie"
 
 #: ../src/gui/preferences.c:1285
-#, fuzzy
 msgid "failed to import preset"
-msgstr "vyberte súbor na importovanie"
+msgstr "import predvoľby zlyhal"
 
 #: ../src/gui/preferences.c:1385 ../src/gui/presets.c:385
 #, c-format
@@ -4362,9 +4306,9 @@ msgid "_select as output destination"
 msgstr "_vybrať ako cieľovú destináciu"
 
 #: ../src/gui/preferences.c:1629
-#, fuzzy, c-format
+#, c-format
 msgid "preset %s was successfully saved"
-msgstr "štýl %s bol úspešne uložený"
+msgstr "predvoľba %s bola úspešne uložená"
 
 #. then show edit dialog
 #: ../src/gui/presets.c:218 ../src/gui/presets.c:637 ../src/gui/presets.c:644
@@ -4787,9 +4731,8 @@ msgid "deflate with predictor (float)"
 msgstr "deflate(skomprimované) s predpoveďou (plávajúca čiarka)"
 
 #: ../src/imageio/format/tiff.c:492
-#, fuzzy
 msgid "compression level"
-msgstr "režim komprimácie"
+msgstr "úroveň komprimácie"
 
 #: ../src/imageio/format/webp.c:289
 msgid "WebP (8-bit)"
@@ -4849,14 +4792,14 @@ msgstr "súbor na disku"
 
 #: ../src/imageio/storage/disk.c:183 ../src/imageio/storage/gallery.c:171
 #: ../src/imageio/storage/latex.c:170
-#, fuzzy
 msgid ""
 "enter the path where to put exported images\n"
 "variables support bash like string manipulation\n"
 "recognized variables:"
 msgstr ""
-"vyberte cestu, kam sa majú umiestniť exportované obrázky\n"
-"rozpoznané premenné:"
+"napíšte cestu, kam se majú uložiť exportované obrázky\n"
+"premenné podporujú manipulácie s reťazcami ako v bashi\n"
+"možné premenné:"
 
 #: ../src/imageio/storage/disk.c:199
 msgid "on conflict"
@@ -4895,12 +4838,12 @@ msgstr[2] ""
 
 #: ../src/imageio/storage/disk.c:337 ../src/imageio/storage/email.c:143
 #: ../src/imageio/storage/gallery.c:398 ../src/imageio/storage/latex.c:362
-#, fuzzy, c-format
+#, c-format
 msgid "%d/%d exported to `%s'"
 msgid_plural "%d/%d exported to `%s'"
-msgstr[0] "%d/%d exportovaný do „%s%s“"
-msgstr[1] "%d/%d exportované do „%s%s“"
-msgstr[2] "%d/%d exportovaných do „%s%s“"
+msgstr[0] "%d/%d exportovaný do `%s'"
+msgstr[1] "%d/%d exportované do `%s'"
+msgstr[2] "%d/%d exportovaných do `%s'"
 
 #: ../src/imageio/storage/disk.c:396
 msgid ""
@@ -4957,7 +4900,7 @@ msgstr "prosím vložte kontrolné URL"
 
 #: ../src/imageio/storage/facebook.c:670
 msgid "the given URL is not valid, it should look like: "
-msgstr "zadané URL nie je platné, malo by vyzerať približne takto:"
+msgstr "zadané URL nie je platné, malo by vyzerať približne takto: "
 
 #: ../src/imageio/storage/facebook.c:701
 msgid "authentication successful"
@@ -5187,7 +5130,6 @@ msgstr "vložiť nadpis webovej stránky"
 
 #. //////////// build & show the validation dialog
 #: ../src/imageio/storage/googlephoto.c:762
-#, fuzzy
 msgid ""
 "step 1: a new window or tab of your browser should have been loaded. you "
 "have to login into your google account there and authorize darktable to "
@@ -5195,8 +5137,8 @@ msgid ""
 msgstr ""
 "krok 1: nové okno alebo nová záložka sa otvorila vo vašom webovom "
 "prehliadači. \n"
-"Napojte sa na vaše konto google+ a dovoľte darktable nahrať súbory a "
-"pokračujte."
+"Kým budete pokračovať, prihláste sa do vašeho konta google a povoľte "
+"darktable nahrať súbory."
 
 #: ../src/imageio/storage/googlephoto.c:765
 msgid ""
@@ -5205,9 +5147,8 @@ msgid ""
 msgstr "krok 2: vložte URL z webového prehliadača a stlačte tlačidlo OK."
 
 #: ../src/imageio/storage/googlephoto.c:771
-#, fuzzy
 msgid "google authentication"
-msgstr "overenie služby google+"
+msgstr "overenie služby google"
 
 #: ../src/imageio/storage/googlephoto.c:779
 msgid "verification code:"
@@ -5218,21 +5159,19 @@ msgid "please enter the verification code"
 msgstr "prosím, zadajte overovací kód"
 
 #: ../src/imageio/storage/googlephoto.c:1221
-#, fuzzy
 msgid "google photos"
-msgstr "fotografie služby google+"
+msgstr "google fotografie"
 
 #: ../src/imageio/storage/googlephoto.c:1407
-#, fuzzy
 msgid "unable to export to google photos album"
-msgstr "nie je možné exportovať fotografie do albumu služby google+"
+msgstr "nebolo možné exportovať fotografie do albumu služby google"
 
 #. this makes sense only if the export was successful
 #: ../src/imageio/storage/googlephoto.c:1420
-#, fuzzy, c-format
+#, c-format
 msgid "%d/%d exported to google photos album"
 msgid_plural "%d/%d exported to google photos album"
-msgstr[0] "%d/%d exportovaný do albumu služby google+"
+msgstr[0] "%d/%d exportovaný do albumu služby google"
 msgstr[1] "%d/%d exportované do albumu služby google+"
 msgstr[2] "%d/%d exportovaných do albumu služby google+"
 
@@ -5246,27 +5185,24 @@ msgid "enter the title of the book"
 msgstr "vložiť názov knihy"
 
 #: ../src/imageio/storage/piwigo.c:478
-#, fuzzy
 msgid "not authenticated, cannot reach server"
-msgstr "neautentifikovaný"
+msgstr "neautentifikovaná identita, nie je možné kontaktovať server"
 
 #: ../src/imageio/storage/piwigo.c:589
 msgid "---"
 msgstr ""
 
 #: ../src/imageio/storage/piwigo.c:630
-#, fuzzy
 msgid "cannot refresh albums"
-msgstr "obnoviť list albumov"
+msgstr "nie je možné obnoviť albumy"
 
 #: ../src/imageio/storage/piwigo.c:723
 msgid "piwigo"
 msgstr ""
 
 #: ../src/imageio/storage/piwigo.c:748
-#, fuzzy
 msgid "accounts"
-msgstr "počet"
+msgstr "účty"
 
 #: ../src/imageio/storage/piwigo.c:765
 msgid "server"
@@ -5292,9 +5228,8 @@ msgid "piwigo login"
 msgstr ""
 
 #: ../src/imageio/storage/piwigo.c:827
-#, fuzzy
 msgid "contacts"
-msgstr "list kontaktov"
+msgstr "kontakty"
 
 #. Available albums
 #: ../src/imageio/storage/piwigo.c:838
@@ -5302,33 +5237,29 @@ msgid "album"
 msgstr ""
 
 #: ../src/imageio/storage/piwigo.c:863
-#, fuzzy
 msgid "new album"
-msgstr "vytvoriť nový album"
+msgstr "nový album"
 
 #. parent album list
 #. Available albums
 #: ../src/imageio/storage/piwigo.c:871
-#, fuzzy
 msgid "parent album"
-msgstr "vytvoriť nový album"
+msgstr "rodičovský album"
 
 #: ../src/imageio/storage/piwigo.c:988
-#, fuzzy
 msgid "cannot create a new piwigo album!"
-msgstr "vytvoriť nový album"
+msgstr "nie je možné vytvoriť nový album piwigo!"
 
 #: ../src/imageio/storage/piwigo.c:997
-#, fuzzy
 msgid "could not upload to piwigo!"
-msgstr "nemožno nahrať na flickr!"
+msgstr "nie je možné nahrať na piwigo!"
 
 #. this makes sense only if the export was successful
 #: ../src/imageio/storage/piwigo.c:1026
-#, fuzzy, c-format
+#, c-format
 msgid "%d/%d exported to piwigo webalbum"
 msgid_plural "%d/%d exported to piwigo webalbum"
-msgstr[0] "%d/%d exportovaný do webového albumu služby flickr"
+msgstr[0] "%d/%d exportované do webového albumu piwigo"
 msgstr[1] "%d/%d exportované do webového albumu služby flickr"
 msgstr[2] "%d/%d exportovaných do webového albumu služby flickr"
 
@@ -5357,9 +5288,8 @@ msgid "shear"
 msgstr ""
 
 #: ../src/iop/ashift.c:2602
-#, fuzzy
 msgid "automatic cropping failed"
-msgstr "automatický výrez"
+msgstr "automatický výrez zlyhal"
 
 #: ../src/iop/ashift.c:2746
 msgid "data pending - please repeat"
@@ -5370,14 +5300,12 @@ msgid "could not detect structural data in image"
 msgstr "nepodarilo sa rozpoznať štrukturované údaje v obrázku"
 
 #: ../src/iop/ashift.c:2763
-#, fuzzy
 msgid "could not run outlier removal"
-msgstr "Program Priateľ v núdzi nemohol byť spustený."
+msgstr "Nie je možné spustiť odstraňovač obrysov"
 
 #: ../src/iop/ashift.c:2817
-#, fuzzy
 msgid "not enough structure for automatic correction"
-msgstr "automatická  korekcia chromatickej ochyľky"
+msgstr "nedostatok štruktúry pre automatickú korekciu"
 
 #: ../src/iop/ashift.c:2822
 msgid "automatic correction failed, please correct manually"
@@ -5428,22 +5356,18 @@ msgid "automatic cropping"
 msgstr "automatický výrez"
 
 #: ../src/iop/ashift.c:4864
-#, fuzzy
 msgid "largest area"
-msgstr "širší okraj"
+msgstr "najväčšia oblasť"
 
 #: ../src/iop/ashift.c:4865
-#, fuzzy
 msgid "original format"
-msgstr "pôvodný obrázok"
+msgstr "pôvodný formát"
 
 #: ../src/iop/ashift.c:4869
-#, fuzzy
 msgid "lens model"
-msgstr "model šošovky"
+msgstr "model objektívu"
 
 #: ../src/iop/ashift.c:4870
-#, fuzzy
 msgid "generic"
 msgstr "všeobecné"
 
@@ -5452,18 +5376,16 @@ msgid "specific"
 msgstr ""
 
 #: ../src/iop/ashift.c:4884
-#, fuzzy
 msgid "crop factor"
-msgstr "faktor"
+msgstr "faktor orezu"
 
 #: ../src/iop/ashift.c:4889
 msgid "lens dependence"
 msgstr ""
 
 #: ../src/iop/ashift.c:4899
-#, fuzzy
 msgid "aspect adjust"
-msgstr "vzhľad"
+msgstr "upraviť pomer"
 
 #: ../src/iop/ashift.c:4909
 msgid "automatic fit"
@@ -5486,9 +5408,8 @@ msgid "shear the image along one diagonal"
 msgstr ""
 
 #: ../src/iop/ashift.c:4974
-#, fuzzy
 msgid "display guide lines overlay"
-msgstr "zobrazí vodítka ktoré pomôžu lepšie komponovať vašu fotografiu"
+msgstr "zobrazit prekryv s vodítkami"
 
 #: ../src/iop/ashift.c:4975 ../src/iop/clipping.c:2014
 msgid "automatically crop to avoid black edges"
@@ -5517,9 +5438,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/ashift.c:4985
-#, fuzzy
 msgid "adjust aspect ratio of image by horizontal and vertical scaling"
-msgstr "prevrátiť obrázok horizontálne a/alebo vertikálne"
+msgstr "upraviť pomer strán obrázku pomocou vodorovného a zvislého škálovania"
 
 #: ../src/iop/ashift.c:4986
 msgid ""
@@ -5553,14 +5473,12 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/ashift.c:5002
-#, fuzzy
 msgid "remove line structure information"
-msgstr "Odstráni z vrstvy informáciu o priehľadnosti"
+msgstr "Odstrániť informáciu o líniách"
 
 #: ../src/iop/ashift.c:5003
-#, fuzzy
 msgid "toggle visibility of structure lines"
-msgstr "prepnúť viditeľnosť prekrytia mapy"
+msgstr "prepnúť viditeľnosť línií štruktúr"
 
 #: ../src/iop/ashift.c:5051
 #, c-format
@@ -5583,9 +5501,8 @@ msgid "[%s] unselect all segments from zone"
 msgstr ""
 
 #: ../src/iop/atrous.c:117
-#, fuzzy
 msgid "contrast equalizer"
-msgstr "ekvalizér"
+msgstr "ekvalizér kontrastu"
 
 #: ../src/iop/atrous.c:137 ../src/iop/soften.c:108
 msgctxt "accel"
@@ -5804,7 +5721,7 @@ msgstr "typická pre nokiu"
 #. clang-format off
 #. smoother cubic spline curve
 #: ../src/iop/basecurve.c:250 ../src/iop/colorzones.c:2374
-#: ../src/iop/rgbcurve.c:1607 ../src/iop/tonecurve.c:1383
+#: ../src/iop/rgbcurve.c:1609 ../src/iop/tonecurve.c:1383
 msgid "cubic spline"
 msgstr "kubické splývanie"
 
@@ -5841,18 +5758,17 @@ msgstr ""
 "mierku"
 
 #: ../src/iop/basecurve.c:2141 ../src/iop/basicadj.c:708
-#: ../src/iop/rgbcurve.c:1627 ../src/iop/rgblevels.c:1121
+#: ../src/iop/rgbcurve.c:1629 ../src/iop/rgblevels.c:1121
 #: ../src/iop/tonecurve.c:1394
-#, fuzzy
 msgid "preserve colors"
-msgstr "farba okraja"
+msgstr "zachovať farby"
 
 #: ../src/iop/basecurve.c:2142 ../src/iop/basecurve.c:2155
 #: ../src/iop/basicadj.c:709 ../src/iop/clipping.c:1696
 #: ../src/iop/clipping.c:1984 ../src/iop/clipping.c:2002
 #: ../src/iop/clipping.c:2142 ../src/iop/clipping.c:2169
 #: ../src/iop/colorreconstruction.c:1379 ../src/iop/lens.cc:2301
-#: ../src/iop/retouch.c:582 ../src/iop/rgbcurve.c:1628
+#: ../src/iop/retouch.c:582 ../src/iop/rgbcurve.c:1630
 #: ../src/iop/rgblevels.c:1122 ../src/iop/tonecurve.c:1395
 #: ../src/libs/export.c:520 ../src/libs/live_view.c:350
 #: ../src/libs/live_view.c:375 ../src/libs/live_view.c:384
@@ -5861,64 +5777,58 @@ msgid "none"
 msgstr "žiadne"
 
 #: ../src/iop/basecurve.c:2143 ../src/iop/basicadj.c:710
-#: ../src/iop/rgbcurve.c:1629 ../src/iop/rgblevels.c:1123
+#: ../src/iop/rgbcurve.c:1631 ../src/iop/rgblevels.c:1123
 #: ../src/iop/tonecurve.c:1396
-#, fuzzy
 msgid "luminance"
-msgstr "farebný nádych"
+msgstr "svietivosť"
 
 #: ../src/iop/basecurve.c:2144 ../src/iop/basicadj.c:711
-#: ../src/iop/filmicrgb.c:1567 ../src/iop/rgbcurve.c:1630
+#: ../src/iop/filmicrgb.c:1567 ../src/iop/rgbcurve.c:1632
 #: ../src/iop/rgblevels.c:1124 ../src/iop/tonecurve.c:1397
 msgid "max RGB"
 msgstr ""
 
 #: ../src/iop/basecurve.c:2145 ../src/iop/basicadj.c:712
-#: ../src/iop/rgbcurve.c:1631 ../src/iop/rgblevels.c:1125
+#: ../src/iop/rgbcurve.c:1633 ../src/iop/rgblevels.c:1125
 #: ../src/iop/tonecurve.c:1398
-#, fuzzy
 msgid "average RGB"
-msgstr "priemer"
+msgstr "priemer RGB"
 
 #: ../src/iop/basecurve.c:2146 ../src/iop/basicadj.c:713
-#: ../src/iop/rgbcurve.c:1632 ../src/iop/rgblevels.c:1126
+#: ../src/iop/rgbcurve.c:1634 ../src/iop/rgblevels.c:1126
 #: ../src/iop/tonecurve.c:1399
 msgid "sum RGB"
 msgstr ""
 
 #: ../src/iop/basecurve.c:2147 ../src/iop/basicadj.c:714
-#: ../src/iop/rgbcurve.c:1633 ../src/iop/rgblevels.c:1127
+#: ../src/iop/rgbcurve.c:1635 ../src/iop/rgblevels.c:1127
 #: ../src/iop/tonecurve.c:1400
 msgid "norm RGB"
 msgstr ""
 
 #: ../src/iop/basecurve.c:2148 ../src/iop/basicadj.c:715
-#: ../src/iop/rgbcurve.c:1634 ../src/iop/rgblevels.c:1128
+#: ../src/iop/rgbcurve.c:1636 ../src/iop/rgblevels.c:1128
 #: ../src/iop/tonecurve.c:1401
-#, fuzzy
 msgid "basic power"
-msgstr "základná skupina"
+msgstr "základná mocnina"
 
 #: ../src/iop/basecurve.c:2150 ../src/iop/basicadj.c:717
-#: ../src/iop/rgbcurve.c:1636 ../src/iop/rgblevels.c:1130
+#: ../src/iop/rgbcurve.c:1638 ../src/iop/rgblevels.c:1130
 #: ../src/iop/tonecurve.c:1403
 msgid "method to preserve colors when applying contrast"
 msgstr ""
 
 #: ../src/iop/basecurve.c:2154
-#, fuzzy
 msgid "fusion"
-msgstr "zplynutie"
+msgstr "fúzia"
 
 #: ../src/iop/basecurve.c:2156
-#, fuzzy
 msgid "two exposures"
-msgstr "automatická expozícia"
+msgstr "dve expozície"
 
 #: ../src/iop/basecurve.c:2157
-#, fuzzy
 msgid "three exposures"
-msgstr "expozícia"
+msgstr "tri expozície"
 
 #: ../src/iop/basecurve.c:2158
 msgid ""
@@ -5931,9 +5841,8 @@ msgid "how many stops to shift the individual exposures apart"
 msgstr ""
 
 #: ../src/iop/basecurve.c:2165
-#, fuzzy
 msgid "exposure shift"
-msgstr "expozícia"
+msgstr "posun expozície"
 
 #: ../src/iop/basecurve.c:2175
 msgid ""
@@ -5942,19 +5851,16 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/basecurve.c:2177
-#, fuzzy
 msgid "exposure bias"
-msgstr "expozícia"
+msgstr "závislosť expozície"
 
 #: ../src/iop/basicadj.c:92
-#, fuzzy
 msgid "basic adjustments"
-msgstr "nastavenie kontrastu"
+msgstr "základné úpravy"
 
 #: ../src/iop/basicadj.c:675 ../src/iop/exposure.c:898
-#, fuzzy
 msgid "black level correction"
-msgstr "úroveň čiernej %i"
+msgstr "korekcia úroveň čiernej"
 
 #: ../src/iop/basicadj.c:677
 msgid ""
@@ -5976,14 +5882,12 @@ msgid "adjust the exposure correction"
 msgstr "nastaviť expozičnú korektúru"
 
 #: ../src/iop/basicadj.c:695
-#, fuzzy
 msgid "highlight compression"
-msgstr "rekonštrukcia svetiel"
+msgstr "stlačenie svetiel"
 
 #: ../src/iop/basicadj.c:696
-#, fuzzy
 msgid "highlight compression adjustment"
-msgstr "saturácia svetiel"
+msgstr "úprava stlačenia svetiel"
 
 #: ../src/iop/basicadj.c:702 ../src/iop/bilat.c:548 ../src/iop/colisa.c:381
 #: ../src/iop/colorbalance.c:2421 ../src/iop/colorbalance.c:2423
@@ -6001,9 +5905,8 @@ msgid "middle grey"
 msgstr ""
 
 #: ../src/iop/basicadj.c:723
-#, fuzzy
 msgid "middle grey adjustment"
-msgstr "nastavenie jasu"
+msgstr "úprava strednej šedej"
 
 #: ../src/iop/basicadj.c:735 ../src/iop/colisa.c:382 ../src/iop/retouch.c:2920
 #: ../src/iop/soften.c:750 ../src/iop/vignette.c:1160
@@ -6027,9 +5930,8 @@ msgid "saturation"
 msgstr "sýtosť"
 
 #: ../src/iop/basicadj.c:742
-#, fuzzy
 msgid "saturation adjustment"
-msgstr "nastavenie sýtosti farieb"
+msgstr "úprava sýtosti farieb"
 
 #: ../src/iop/basicadj.c:749
 msgid "apply auto exposure based on the entire image"
@@ -6062,7 +5964,7 @@ msgstr ""
 #: ../src/iop/bilat.c:527 ../src/iop/colorbalance.c:2367
 #: ../src/iop/denoiseprofile.c:4063 ../src/iop/exposure.c:866
 #: ../src/iop/lens.cc:2450 ../src/iop/levels.c:674
-#: ../src/iop/profile_gamma.c:859 ../src/iop/rgbcurve.c:1521
+#: ../src/iop/profile_gamma.c:859 ../src/iop/rgbcurve.c:1523
 #: ../src/iop/rgblevels.c:1020 ../src/libs/copy_history.c:350
 #: ../src/libs/export.c:688 ../src/libs/print_settings.c:1510
 #: ../src/views/darkroom.c:1838
@@ -6070,14 +5972,12 @@ msgid "mode"
 msgstr "režim"
 
 #: ../src/iop/bilat.c:529
-#, fuzzy
 msgid "bilateral grid"
-msgstr "bilaterálny filter"
+msgstr "bilaterálna sieť"
 
 #: ../src/iop/bilat.c:530
-#, fuzzy
 msgid "local laplacian filter"
-msgstr "polarizačný filter"
+msgstr "lokálny filter laplacian"
 
 #: ../src/iop/bilat.c:533
 msgid ""
@@ -6090,9 +5990,8 @@ msgid "detail"
 msgstr "podrobnosť"
 
 #: ../src/iop/bilat.c:539
-#, fuzzy
 msgid "changes the local contrast"
-msgstr "lokálny kontrast"
+msgstr "zmení lokálny kontrast"
 
 #: ../src/iop/bilat.c:542 ../src/iop/grain.c:630
 msgid "coarseness"
@@ -6112,23 +6011,20 @@ msgid "highlights"
 msgstr "svetlé body"
 
 #: ../src/iop/bilat.c:555
-#, fuzzy
 msgid "changes the local contrast of highlights"
-msgstr "nastaviť sýtosť svetiel "
+msgstr "zmeniť lokálny kontrast svetiel "
 
 #: ../src/iop/bilat.c:559 ../src/iop/shadhi.c:842 ../src/iop/splittoning.c:661
 msgid "shadows"
 msgstr "tiene"
 
 #: ../src/iop/bilat.c:560
-#, fuzzy
 msgid "changes the local contrast of shadows"
-msgstr "nastav sýtosť tieňov"
+msgstr "zmena lokálneho kontrastu v tieňoch"
 
 #: ../src/iop/bilat.c:565
-#, fuzzy
 msgid "midtone range"
-msgstr "vplyv pre stredné tóny"
+msgstr "rozsah stredných tónov"
 
 #: ../src/iop/bilat.c:566
 msgid ""
@@ -6789,9 +6685,8 @@ msgid "split-toning teal-orange (1st instance)"
 msgstr ""
 
 #: ../src/iop/colorbalance.c:282
-#, fuzzy
 msgid "generic film"
-msgstr "všeobecné"
+msgstr "všeobecný film"
 
 #: ../src/iop/colorbalance.c:286
 msgid "similar to Kodak Portra"
@@ -6812,10 +6707,9 @@ msgid "mode"
 msgstr "režim"
 
 #: ../src/iop/colorbalance.c:302
-#, fuzzy
 msgctxt "accel"
 msgid "controls"
-msgstr "kontrast"
+msgstr "ovládanie"
 
 #: ../src/iop/colorbalance.c:960
 msgid "optimize luma from patches"
@@ -6826,14 +6720,12 @@ msgid "optimize luma"
 msgstr ""
 
 #: ../src/iop/colorbalance.c:966
-#, fuzzy
 msgid "neutralize colors from patches"
-msgstr "vypichnúť farbu linky rámika z obrázku"
+msgstr "nastaviť neutrálne farby pre vzorky"
 
 #: ../src/iop/colorbalance.c:968 ../src/iop/colorbalance.c:2662
-#, fuzzy
 msgid "neutralize colors"
-msgstr "žiarivka (neutrálne)"
+msgstr "neutralizovať farby"
 
 #: ../src/iop/colorbalance.c:2368
 msgid "lift, gamma, gain (ProPhotoRGB)"
@@ -6848,14 +6740,12 @@ msgid "lift, gamma, gain (sRGB)"
 msgstr ""
 
 #: ../src/iop/colorbalance.c:2372 ../src/iop/colorbalance.c:2383
-#, fuzzy
 msgid "color-grading mapping method"
-msgstr "mapovanie farieb"
+msgstr "metóda mapovania stupňovania farieb"
 
 #: ../src/iop/colorbalance.c:2377
-#, fuzzy
 msgid "color control sliders"
-msgstr "kontrast farieb"
+msgstr "posuvníky nastavenia farieb"
 
 #: ../src/iop/colorbalance.c:2378
 msgid "HSL"
@@ -6866,41 +6756,36 @@ msgid "RGBL"
 msgstr ""
 
 #: ../src/iop/colorbalance.c:2390
-#, fuzzy
 msgid "master"
-msgstr "vložiť"
+msgstr "master"
 
 #: ../src/iop/colorbalance.c:2395
-#, fuzzy
 msgid "input saturation"
-msgstr "sýtosť"
+msgstr "vstupná sýtosť"
 
 #: ../src/iop/colorbalance.c:2397
 msgid "saturation correction before the color balance"
 msgstr ""
 
 #: ../src/iop/colorbalance.c:2403
-#, fuzzy
 msgid "output saturation"
-msgstr "sýtosť"
+msgstr "výstupná sýtosť"
 
 #: ../src/iop/colorbalance.c:2405
 msgid "saturation correction after the color balance"
 msgstr ""
 
 #: ../src/iop/colorbalance.c:2409
-#, fuzzy
 msgid "contrast fulcrum"
-msgstr "kontrast"
+msgstr "stred kontrastu"
 
 #: ../src/iop/colorbalance.c:2412
 msgid "adjust to match a neutral tone"
 msgstr ""
 
 #: ../src/iop/colorbalance.c:2481 ../src/iop/colorbalance.c:2493
-#, fuzzy
 msgid "factor of "
-msgstr "faktor vytiahnutia"
+msgstr "faktor"
 
 #: ../src/iop/colorbalance.c:2482
 msgid "factor"
@@ -6921,15 +6806,13 @@ msgstr "vytiahnuť"
 
 #: ../src/iop/colorbalance.c:2509 ../src/iop/colorbalance.c:2559
 #: ../src/iop/colorbalance.c:2608
-#, fuzzy
 msgid "select the hue"
-msgstr "vyberie farebný odtieň"
+msgstr "vyberte farebný odtieň"
 
 #: ../src/iop/colorbalance.c:2522 ../src/iop/colorbalance.c:2572
 #: ../src/iop/colorbalance.c:2621
-#, fuzzy
 msgid "select the saturation"
-msgstr "vybrať farebný odtieň"
+msgstr "vyberte sýtosť"
 
 #: ../src/iop/colorbalance.c:2527
 msgid "factor of red for lift"
@@ -7007,23 +6890,20 @@ msgid "optimize the RGB curves to remove color casts"
 msgstr ""
 
 #: ../src/iop/colorchecker.c:115
-#, fuzzy
 msgid "color look up table"
-msgstr "farebná menovka"
+msgstr "vyhľadávacia tabuľka farieb"
 
 #: ../src/iop/colorchecker.c:271
-#, fuzzy
 msgid "it8 skin tones"
-msgstr "prirodzené odtiene pokožky"
+msgstr "odtiene pokožky podľa it8"
 
 #: ../src/iop/colorchecker.c:284
 msgid "helmholtz/kohlrausch monochrome"
 msgstr ""
 
 #: ../src/iop/colorchecker.c:299
-#, fuzzy
 msgid "Fuji Astia emulation"
-msgstr "vyrovnanie histogramu"
+msgstr "emulácia Fuji Astia"
 
 #: ../src/iop/colorchecker.c:311
 msgid "Fuji Classic Chrome emulation"
@@ -7042,9 +6922,9 @@ msgid "Fuji Velvia emulation"
 msgstr ""
 
 #: ../src/iop/colorchecker.c:845 ../src/iop/colorchecker.c:1364
-#, fuzzy, c-format
+#, c-format
 msgid "patch #%d"
-msgstr "cesta #%d"
+msgstr "vzorka #%d"
 
 #: ../src/iop/colorchecker.c:1234
 #, c-format
@@ -7058,47 +6938,40 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/colorchecker.c:1359
-#, fuzzy
 msgid "patch"
-msgstr "veľkosť záplaty"
+msgstr "vzorka"
 
 #: ../src/iop/colorchecker.c:1360
-#, fuzzy
 msgid "color checker patch"
-msgstr "výber farby"
+msgstr "color checker vzorka"
 
 #: ../src/iop/colorchecker.c:1371
-#, fuzzy
 msgid "lightness offset"
-msgstr "svetlosť"
+msgstr "posun jasu"
 
 #: ../src/iop/colorchecker.c:1375
 msgid "chroma offset green/red"
 msgstr ""
 
 #: ../src/iop/colorchecker.c:1376
-#, fuzzy
 msgid "green/red"
-msgstr "zelená"
+msgstr "zelená/červená"
 
 #: ../src/iop/colorchecker.c:1382
 msgid "chroma offset blue/yellow"
 msgstr ""
 
 #: ../src/iop/colorchecker.c:1383
-#, fuzzy
 msgid "blue/yellow"
-msgstr "modrá vs žltá"
+msgstr "modrá/žltá"
 
 #: ../src/iop/colorchecker.c:1389
-#, fuzzy
 msgid "saturation offset"
-msgstr "sýtosť"
+msgstr "posun sýtosti"
 
 #: ../src/iop/colorchecker.c:1394
-#, fuzzy
 msgid "target color"
-msgstr "skupiny cieľov:"
+msgstr "cieľová foarba"
 
 #: ../src/iop/colorchecker.c:1395
 msgid ""
@@ -7107,14 +6980,12 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/colorchecker.c:1396
-#, fuzzy
 msgid "relative"
-msgstr "perspektíva"
+msgstr "relatívny"
 
 #: ../src/iop/colorchecker.c:1397
-#, fuzzy
 msgid "absolute"
-msgstr "krytie (absolútne)"
+msgstr "absolútny"
 
 #: ../src/iop/colorcontrast.c:90
 msgid "color contrast"
@@ -7200,20 +7071,18 @@ msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "nepodporovaný vstupný profil bol zmenený za lineárny RGB Rec709 !"
 
 #: ../src/iop/colorin.c:2071
-#, fuzzy
 msgid "input profile"
-msgstr "výstupný profil"
+msgstr "vstupný profil"
 
 #: ../src/iop/colorin.c:2075
-#, fuzzy
 msgid "working profile"
-msgstr "teplý filter"
+msgstr "pracovný profil"
 
 #: ../src/iop/colorin.c:2085 ../src/iop/colorin.c:2096
 #: ../src/iop/colorout.c:894
-#, fuzzy, c-format
+#, c-format
 msgid "ICC profiles in %s or %s"
-msgstr "ICC profil v %s/farba/v alebo %s/farba/v"
+msgstr "profily ICC v %s alebo %s"
 
 #: ../src/iop/colorin.c:2107
 msgid "gamut clipping"
@@ -7335,9 +7204,8 @@ msgid "missing output profile has been replaced by sRGB!"
 msgstr "Chýbajúci výstupný profil bol nahradený profilom sRGB!"
 
 #: ../src/iop/colorout.c:686
-#, fuzzy
 msgid "missing softproof profile has been replaced by sRGB!"
-msgstr "Chýbajúci výstupný profil bol nahradený profilom sRGB!"
+msgstr "Chýbajúci profil náhľadu bol nahradený profilom sRGB!"
 
 #: ../src/iop/colorout.c:729
 msgid "unsupported output profile has been replaced by sRGB!"
@@ -7527,7 +7395,7 @@ msgstr "čiernobiely film"
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
 
-#: ../src/iop/colorzones.c:2275 ../src/iop/rgbcurve.c:1553
+#: ../src/iop/colorzones.c:2275 ../src/iop/rgbcurve.c:1555
 msgid ""
 "create a curve based on an area from the image\n"
 "click to create a flat curve\n"
@@ -7537,18 +7405,16 @@ msgstr ""
 
 #. edit by area
 #: ../src/iop/colorzones.c:2306
-#, fuzzy
 msgid "edit by area"
-msgstr "upraviť štýl"
+msgstr "upraviť podľa oblasti"
 
 #: ../src/iop/colorzones.c:2308
 msgid "edit the curve nodes by area"
 msgstr ""
 
 #: ../src/iop/colorzones.c:2315
-#, fuzzy
 msgid "display selection"
-msgstr "invertovať"
+msgstr "zobraziť výber"
 
 #: ../src/iop/colorzones.c:2324
 msgid "select by"
@@ -7559,9 +7425,8 @@ msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "kritérium výberu bude úsečka v grafe"
 
 #: ../src/iop/colorzones.c:2333
-#, fuzzy
 msgid "process mode"
-msgstr "režim zaostrenia"
+msgstr "režim spracovania"
 
 #: ../src/iop/colorzones.c:2335
 msgid "strong"
@@ -7571,25 +7436,22 @@ msgstr ""
 msgid "choose between a smoother or stronger effect"
 msgstr ""
 
-#: ../src/iop/colorzones.c:2373 ../src/iop/rgbcurve.c:1606
+#: ../src/iop/colorzones.c:2373 ../src/iop/rgbcurve.c:1608
 #: ../src/iop/tonecurve.c:1382
-#, fuzzy
 msgid "interpolation method"
-msgstr "operačný režim"
+msgstr "metóda interpolácie"
 
-#: ../src/iop/colorzones.c:2375 ../src/iop/rgbcurve.c:1608
+#: ../src/iop/colorzones.c:2375 ../src/iop/rgbcurve.c:1610
 #: ../src/iop/tonecurve.c:1384
-#, fuzzy
 msgid "centripetal spline"
-msgstr "kubické splývanie"
+msgstr "centripetal spline"
 
-#: ../src/iop/colorzones.c:2376 ../src/iop/rgbcurve.c:1609
+#: ../src/iop/colorzones.c:2376 ../src/iop/rgbcurve.c:1611
 #: ../src/iop/tonecurve.c:1385
-#, fuzzy
 msgid "monotonic spline"
-msgstr "kubické splývanie"
+msgstr "monotonic spline"
 
-#: ../src/iop/colorzones.c:2380 ../src/iop/rgbcurve.c:1613
+#: ../src/iop/colorzones.c:2380 ../src/iop/rgbcurve.c:1615
 #: ../src/iop/tonecurve.c:1387
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
@@ -7667,9 +7529,9 @@ msgid "edge threshold"
 msgstr "prah hrán "
 
 #: ../src/iop/demosaic.c:4918
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
-msgstr "`%s' farebná mriežka nenájdená!"
+msgstr "matica farieb \"%s\" pre obrázok 4bayer nebola nájdená!"
 
 #: ../src/iop/demosaic.c:5122 ../src/iop/demosaic.c:5131
 #: ../src/iop/dither.c:803 ../src/iop/highlights.c:1079
@@ -7724,7 +7586,7 @@ msgstr ""
 
 #: ../src/iop/demosaic.c:5143
 msgid "edge threshold"
-msgstr "prah hrán "
+msgstr "prah hrán"
 
 #: ../src/iop/demosaic.c:5147
 msgid "color smoothing"
@@ -10273,51 +10135,51 @@ msgstr "logaritmická"
 msgid "exponential (base 2)"
 msgstr ""
 
-#: ../src/iop/rgbcurve.c:1522 ../src/iop/rgblevels.c:1021
+#: ../src/iop/rgbcurve.c:1524 ../src/iop/rgblevels.c:1021
 #: ../src/iop/tonecurve.c:1314
 msgid "RGB, linked channels"
 msgstr ""
 
-#: ../src/iop/rgbcurve.c:1523 ../src/iop/rgblevels.c:1022
+#: ../src/iop/rgbcurve.c:1525 ../src/iop/rgblevels.c:1022
 msgid "RGB, independent channels"
 msgstr ""
 
-#: ../src/iop/rgbcurve.c:1525 ../src/iop/rgblevels.c:1024
+#: ../src/iop/rgbcurve.c:1527 ../src/iop/rgblevels.c:1024
 msgid "choose between linked and independent channels."
 msgstr ""
 
-#: ../src/iop/rgbcurve.c:1532 ../src/iop/rgblevels.c:1031
+#: ../src/iop/rgbcurve.c:1534 ../src/iop/rgblevels.c:1031
 msgid "  R  "
 msgstr ""
 
-#: ../src/iop/rgbcurve.c:1535 ../src/iop/rgblevels.c:1034
+#: ../src/iop/rgbcurve.c:1537 ../src/iop/rgblevels.c:1034
 #, fuzzy
 msgid "curve nodes for r channel"
 msgstr "tónová krivka pre kanál L"
 
-#: ../src/iop/rgbcurve.c:1537 ../src/iop/rgblevels.c:1036
+#: ../src/iop/rgbcurve.c:1539 ../src/iop/rgblevels.c:1036
 msgid "  G  "
 msgstr ""
 
-#: ../src/iop/rgbcurve.c:1540 ../src/iop/rgblevels.c:1039
+#: ../src/iop/rgbcurve.c:1542 ../src/iop/rgblevels.c:1039
 #, fuzzy
 msgid "curve nodes for g channel"
 msgstr "tónová krivka pre kanál L"
 
-#: ../src/iop/rgbcurve.c:1542 ../src/iop/rgblevels.c:1041
+#: ../src/iop/rgbcurve.c:1544 ../src/iop/rgblevels.c:1041
 msgid "  B  "
 msgstr ""
 
-#: ../src/iop/rgbcurve.c:1545 ../src/iop/rgblevels.c:1044
+#: ../src/iop/rgbcurve.c:1547 ../src/iop/rgblevels.c:1044
 #, fuzzy
 msgid "curve nodes for b channel"
 msgstr "tónová krivka pre kanál b"
 
-#: ../src/iop/rgbcurve.c:1565
+#: ../src/iop/rgbcurve.c:1567
 msgid "pick GUI color from image"
 msgstr "vybrať farbu rozhrania z obrázku"
 
-#: ../src/iop/rgbcurve.c:1619 ../src/iop/rgbcurve.c:1621
+#: ../src/iop/rgbcurve.c:1621 ../src/iop/rgbcurve.c:1623
 msgid "compensate middle grey"
 msgstr ""
 
