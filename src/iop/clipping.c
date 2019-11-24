@@ -2214,7 +2214,7 @@ static _grab_region_t get_grab(float pzx, float pzy, dt_iop_clipping_gui_data_t 
 }
 
 // draw rounded rectangle
-static void gui_draw_rounded_rectangle(cairo_t *cr, int width, int height, int x, int y)
+static void gui_draw_rounded_rectangle(cairo_t *cr, float width, float height, float x, float y)
 {
   float radius = height / 5.0f;
   float degrees = M_PI / 180.0;
@@ -2337,6 +2337,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     xp = CLAMPF(xp, x1 + 2 * margin, x2 - text_w - 2 * margin);
     yp = CLAMPF(yp, y1 + 2 * margin, y2 - text_h - 2 * margin);
 
+    cairo_set_source_rgba(cr, .5, .5, .5, .9);
+    gui_draw_rounded_rectangle(cr, text_w + 2 * margin, text_h + 2 * margin,
+            xp - margin, yp - margin);
+    cairo_set_source_rgb(cr, .7, .7, .7);
     cairo_move_to(cr, xp, yp);
     pango_cairo_show_layout(cr, layout);
     pango_font_description_free(desc);
