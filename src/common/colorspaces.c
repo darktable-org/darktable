@@ -293,8 +293,14 @@ static cmsHPROFILE _create_lcms_profile(const char *desc, const char *dmdd,
   {
     cmsSetProfileVersion(profile, 2.1);
     cmsCIEXYZ black = { 0, 0, 0 };
+    /* cmsWriteTag does a memmove(), we can't pass a global const */
+    cmsCIExyY wp = {
+        .x = whitepoint->x,
+        .y = whitepoint->y,
+        .Y = whitepoint->Y,
+    };
     cmsWriteTag(profile, cmsSigMediaBlackPointTag, &black);
-    cmsWriteTag(profile, cmsSigMediaWhitePointTag, &whitepoint);
+    cmsWriteTag(profile, cmsSigMediaWhitePointTag, &wp);
     cmsSetDeviceClass(profile, cmsSigDisplayClass);
   }
 
