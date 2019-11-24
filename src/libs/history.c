@@ -51,6 +51,11 @@ typedef struct dt_lib_history_t
   int previous_history_end;
 } dt_lib_history_t;
 
+/* 3 widgets in each history line */
+#define HIST_WIDGET_NUMBER 0
+#define HIST_WIDGET_MODULE 1
+#define HIST_WIDGET_STATUS 2
+
 /* compress history stack */
 static void _lib_history_compress_clicked_callback(GtkWidget *widget, gpointer user_data);
 static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer user_data);
@@ -769,7 +774,8 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   GList *children = gtk_container_get_children(GTK_CONTAINER(d->history_box));
   for(GList *l = children; l != NULL; l = g_list_next(l))
   {
-    GtkToggleButton *b = GTK_TOGGLE_BUTTON(l->data);
+    GList *hbox = gtk_container_get_children(GTK_CONTAINER(l->data));
+    GtkToggleButton *b = GTK_TOGGLE_BUTTON(g_list_nth(hbox, HIST_WIDGET_MODULE)->data);
     if(b != GTK_TOGGLE_BUTTON(widget)) g_object_set(G_OBJECT(b), "active", FALSE, (gchar *)0);
   }
   g_list_free(children);
