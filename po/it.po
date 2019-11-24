@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
-"PO-Revision-Date: 2019-11-23 00:24+0100\n"
+"PO-Revision-Date: 2019-11-25 00:36+0100\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
@@ -11261,17 +11261,19 @@ msgstr "Aggiungi un po' di rumore casuale per prevenire il banding (striature)"
 #: ../src/iop/vignette.c:1220
 #, c-format
 msgid "[%s on node] change vignette/feather size"
-msgstr ""
+msgstr "[%s on node] Modifica dimensione vignettatura/sfumatura"
 
 #: ../src/iop/vignette.c:1226
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
 msgstr ""
+"[%s on node] Modifica dimensione vignettatura/sfumatura e mantieni le "
+"proporzioni"
 
 #: ../src/iop/vignette.c:1232
 #, c-format
 msgid "[%s on center] move vignette"
-msgstr ""
+msgstr "[%s on center] Sposta vignettatura"
 
 #: ../src/iop/watermark.c:236
 msgid "watermark"
@@ -11608,7 +11610,7 @@ msgstr "copiato localmente"
 
 #: ../src/libs/collect.c:1373
 msgid "group followers"
-msgstr ""
+msgstr "Seguaci gruppo"
 
 #: ../src/libs/collect.c:1549 ../src/libs/collect.c:1564
 #: ../src/libs/collect.c:1947
@@ -11799,7 +11801,11 @@ msgid_plural ""
 "no history compression of %d images.\n"
 "see tag: darktable|problem|history-compress."
 msgstr[0] ""
+"Nessuna compressione della coda di sviluppo di 1 immagine.\n"
+"Vedi etichetta: darktable|problem|history-compress."
 msgstr[1] ""
+"Nessuna compressione della coda di sviluppo di %d immagini.\n"
+"Vedi etichetta: darktable|problem|history-compress."
 
 #: ../src/libs/copy_history.c:172
 msgid "history compression warning"
@@ -12072,7 +12078,7 @@ msgstr "Esporta con settaggi correnti"
 
 #: ../src/libs/export.c:724
 msgid "edit metadata exportation details"
-msgstr ""
+msgstr "Modifica i dettagli per l'esportazione dei metadati"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1311 ../src/libs/styles.c:71
@@ -12094,6 +12100,8 @@ msgid ""
 "list of available tags. click 'add' button or double-click on tag to add the "
 "selected one"
 msgstr ""
+"Elenco di etichette disponibili. Clicca il pulsante 'Aggiungi' oppure fai "
+"doppio click sull'etichetta selezionata peraggiungerla."
 
 #: ../src/libs/export_metadata.c:231
 msgid "edit metadata exportation"
@@ -12122,11 +12130,11 @@ msgstr "Metadati"
 
 #: ../src/libs/export_metadata.c:253
 msgid "export dt xmp metadata (from metadata editor module)"
-msgstr ""
+msgstr "Esporta i metadati XMP di dt (dal modulo di gestione metadati)"
 
 #: ../src/libs/export_metadata.c:263
 msgid "only embedded"
-msgstr ""
+msgstr "Solo quelli incorporati"
 
 #: ../src/libs/export_metadata.c:264
 msgid ""
@@ -12136,6 +12144,12 @@ msgid ""
 "if remote storage doesn't understand dt xmp metadata, you can use calculated "
 "metadata instead"
 msgstr ""
+"L'interfaccia invia in modo predefinito solo alcuni (limitati) metadati al "
+"servizio di archiviazione remota.\n"
+"Per evitare questo ed inviare solamente i metadati XMP incorporati di dt, "
+"abilita questa opzione.\n"
+"Se il servizio di archiviazione remota non è in grado di gestire i metadati "
+"XMP, puoi utilizzare quelli calcolati."
 
 #: ../src/libs/export_metadata.c:270
 msgid "geo tags"
