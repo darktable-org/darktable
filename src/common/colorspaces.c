@@ -81,7 +81,7 @@ static const cmsCIExyYTRIPLE Adobe_Primaries = {
 
 // https://en.wikipedia.org/wiki/ProPhoto_RGB_color_space
 // D50:
-static cmsCIExyYTRIPLE ProPhoto_Primaries = {
+static const cmsCIExyYTRIPLE ProPhoto_Primaries = {
   /*       x,        y,       Y */
   { 0.734699, 0.265301, 1.0000 }, /* red   */
   { 0.159597, 0.840403, 1.0000 }, /* green */
