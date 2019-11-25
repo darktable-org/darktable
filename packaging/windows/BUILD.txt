@@ -14,7 +14,7 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
 	$ pacman -S git
 
     Install required libraries and dependencies:
-	$ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes,python3-jsonschema,python3-setuptools}
+	$ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes,python3-jsonschema,python3-setuptools,python3-importlib-metadata}
 
     For gphoto2:
     You need to restart the MINGW64 or MSYS terminal to have CAMLIBS and IOLIBS environment variables  properly set for LIBGPHOTO are available. You can check them with:
