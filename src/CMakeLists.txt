@@ -320,6 +320,13 @@ if(USE_WEBP)
   else(USE_WEBP)
 endif(USE_WEBP)
 
+if (USE_AVIF)
+    find_package(libavif 0.5.2)
+    if (TARGET avif)
+        list(APPEND LIBS avif)
+    endif()
+endif()
+
 if(USE_LENSFUN)
   find_package(LensFun)
   if(LENSFUN_FOUND)
