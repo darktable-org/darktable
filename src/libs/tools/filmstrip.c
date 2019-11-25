@@ -152,10 +152,16 @@ const char *name(dt_lib_module_t *self)
   return _("filmstrip");
 }
 
+static gboolean initialising_accels = FALSE;
+
 const char **views(dt_lib_module_t *self)
 {
   static const char *v[] = {"lighttable", "darkroom", "tethering", "map", "print", NULL};
-  return v;
+  static const char *v_accels[] = {"darkroom", "tethering", "map", "print", NULL};
+  if (initialising_accels)
+    return v_accels;
+  else
+    return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
@@ -175,6 +181,12 @@ int position()
 
 void init_key_accels(dt_lib_module_t *self)
 {
+//  First add accelerators that should not be disabled in lighttable
+//  dt_accel_register_lib(self, NC_("accel", "active in lighttable"), 0, 0);
+
+  initialising_accels = TRUE;
+//  The accelerators below will not be active in lighttable
+
   /* setup rating key accelerators */
   dt_accel_register_lib(self, NC_("accel", "rate 0"), GDK_KEY_0, 0);
   dt_accel_register_lib(self, NC_("accel", "rate 1"), GDK_KEY_1, 0);
@@ -208,11 +220,16 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib(self, NC_("accel", "invert selection"), GDK_KEY_i, GDK_CONTROL_MASK);
   dt_accel_register_lib(self, NC_("accel", "select film roll"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "select untouched"), 0, 0);
+
+  initialising_accels = FALSE;
 }
 
 void connect_key_accels(dt_lib_module_t *self)
 {
-  // on lighttable, does nothing and report that it has not been handled
+//  dt_accel_connect_lib(self, "active in lighttable",
+//                       g_cclosure_new(G_CALLBACK(_lib_filmstrip_active_in_lighttable_key_accel_callback),
+//                                      (gpointer)self->data, NULL));
+
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if (cv->view((dt_view_t *)cv) == DT_VIEW_LIGHTTABLE) return;
 
