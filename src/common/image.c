@@ -110,6 +110,8 @@ int dt_image_is_hdr(const dt_image_t *img)
 int dt_image_is_raw(const dt_image_t *img)
 {
   // NULL terminated list of supported non-RAW extensions
+  // rawspeed takes care of RAW dng files by setting the DT_IMAGE_RAW flag
+  // so NON-RAW dng files are tested correctly.  
   const char *dt_non_raw_extensions[]
       = { ".jpeg", ".jpg",  ".pfm", ".hdr", ".exr", ".pxn", ".tif", ".tiff", ".png",
           ".j2c",  ".j2k",  ".jp2", ".jpc", ".gif", ".jpc", ".jp2", ".bmp",  ".dcm",
