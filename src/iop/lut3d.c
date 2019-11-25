@@ -75,7 +75,7 @@ typedef struct dt_iop_lut3d_data_t
 {
   dt_iop_lut3d_params_t params;
   float *clut;  // cube lut pointer
-  uint8_t level; // cube_size
+  uint16_t level; // cube_size
 } dt_iop_lut3d_data_t;
 
 typedef struct dt_iop_lut3d_global_data_t
@@ -108,7 +108,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 // From `HaldCLUT_correct.c' by Eskil Steenberg (http://www.quelsolaar.com) (BSD licensed)
 void correct_pixel_trilinear(const float *const in, float *const out,
-                             const size_t pixel_nb, const float *const restrict clut, const uint8_t level)
+                             const size_t pixel_nb, const float *const restrict clut, const uint16_t level)
 {
   const int level2 = level * level;
 #ifdef _OPENMP
@@ -187,7 +187,7 @@ void correct_pixel_trilinear(const float *const in, float *const out,
 // from OpenColorIO
 // https://github.com/imageworks/OpenColorIO/blob/master/src/OpenColorIO/ops/Lut3D/Lut3DOp.cpp
 void correct_pixel_tetrahedral(const float *const in, float *const out,
-                               const size_t pixel_nb, const float *const restrict clut, const uint8_t level)
+                               const size_t pixel_nb, const float *const restrict clut, const uint16_t level)
 {
   const int level2 = level * level;
 #ifdef _OPENMP
@@ -275,7 +275,7 @@ void correct_pixel_tetrahedral(const float *const in, float *const out,
 // from Study on the 3D Interpolation Models Used in Color Conversion
 // http://ijetch.org/papers/318-T860.pdf
 void correct_pixel_pyramid(const float *const in, float *const out,
-                           const size_t pixel_nb, const float *const restrict clut, const uint8_t level)
+                           const size_t pixel_nb, const float *const restrict clut, const uint16_t level)
 {
   const int level2 = level * level;
 #ifdef _OPENMP
@@ -346,7 +346,7 @@ void correct_pixel_pyramid(const float *const in, float *const out,
   }
 }
 
-uint8_t calculate_clut_haldclut(char *filepath, float **clut)
+uint16_t calculate_clut_haldclut(char *filepath, float **clut)
 {
   dt_imageio_png_t png;
   if(read_header(filepath, &png))
@@ -366,7 +366,7 @@ uint8_t calculate_clut_haldclut(char *filepath, float **clut)
     return 0;
   }
 
-  uint8_t level = 2;
+  uint16_t level = 2;
   while(level * level * level < png.width) ++level;
 
   if(level * level * level != png.width)
@@ -378,6 +378,14 @@ uint8_t calculate_clut_haldclut(char *filepath, float **clut)
     return 0;
   }
   level *= level;  // to be equivalent to cube level
+  if(level > 256)
+  {
+    fprintf(stderr, "[lut3d] error - LUT 3D size %d > 256\n", level);
+    dt_control_log(_("error - LUT 3D size %d > 256"), level);
+    fclose(png.f);
+    png_destroy_read_struct(&png.png_ptr, &png.info_ptr, NULL);
+    return 0;
+  }
   const size_t buf_size = (size_t)png.height * png_get_rowbytes(png.png_ptr, png.info_ptr);
   dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for png file\n", buf_size);
   uint8_t *buf = NULL;
@@ -555,14 +563,14 @@ uint8_t parse_cube_line(char *line, char *token)
   return c;
 }
 
-uint8_t calculate_clut_cube(char *filepath, float **clut)
+uint16_t calculate_clut_cube(char *filepath, float **clut)
 {
   FILE *cube_file;
   char *line = NULL;
   size_t len = 0;
   ssize_t read;
   char token[3][50];
-  uint8_t level = 0;
+  uint16_t level = 0;
   float *lclut = NULL;
   uint32_t i = 0;
   size_t buf_size = 0;
@@ -614,6 +622,14 @@ uint8_t calculate_clut_cube(char *filepath, float **clut)
       else if (strcmp("LUT_3D_SIZE", token[0]) == 0)
       {
         level = atoll(token[1]);
+        if(level > 256)
+        {
+          fprintf(stderr, "[lut3d] error - LUT 3D size %d > 256\n", level);
+          dt_control_log(_("error - LUT 3D size %d > 256"), level);
+          free(line);
+          fclose(cube_file);
+          return 0;
+        }
         buf_size = level * level * level * 3;
         dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for cube lut - level %d\n", buf_size, level);
         lclut = dt_alloc_align(16, buf_size * sizeof(float));
@@ -748,7 +764,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int height = roi_in->height;
   const int ch = piece->colors;
   const float *const clut = (float *)d->clut;
-  const uint8_t level = d->level;
+  const uint16_t level = d->level;
   const int interpolation = d->params.interpolation;
   const int colorspace
     = (d->params.colorspace == DT_IOP_SRGB) ? DT_COLORSPACE_SRGB
