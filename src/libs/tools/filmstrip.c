@@ -154,8 +154,12 @@ const char *name(dt_lib_module_t *self)
 
 const char **views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"lighttable", "darkroom", "tethering", "map", "print", NULL};
-  return v;
+  static const char *v1[] = {"lighttable", "darkroom", "tethering", "map", "print", NULL};
+  static const char *v2[] = {"darkroom", "tethering", "map", "print", NULL};
+  if(self->data)
+    return v1;
+  else
+    return v2; // We are registering accelerators; don't conflict with overlapping lighttable versions
 }
 
 uint32_t container(dt_lib_module_t *self)
