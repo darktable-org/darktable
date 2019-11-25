@@ -1136,7 +1136,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->colorspace, _("sRGB"));
   dt_bauhaus_combobox_add(g->colorspace, _("REC.709"));
   dt_bauhaus_combobox_add(g->colorspace, _("lin sRGB/REC.709"));
-  dt_bauhaus_combobox_add(g->colorspace, _("lin prophoto RGB"));
+  dt_bauhaus_combobox_add(g->colorspace, _("lin REC.2020"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->colorspace) , TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->colorspace, _("select the color space in which the LUT has to be applied"));
   g_signal_connect(G_OBJECT(g->colorspace), "value-changed", G_CALLBACK(colorspace_callback), self);
