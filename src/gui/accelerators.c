@@ -183,7 +183,7 @@ void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel
   const gchar **views = self->views(self);
   while (views[i])
   {
-    if (strcmp(views[i], "lighttable") == 0) accel->views |= DT_VIEW_LIGHTTABLE;
+    if (strcmp(views[i], "lighttable") == 0 && strcmp(accel->module, "filmstrip") != 0) accel->views |= DT_VIEW_LIGHTTABLE;
     else if (strcmp(views[i], "darkroom") == 0) accel->views |= DT_VIEW_DARKROOM;
     else if (strcmp(views[i], "print") == 0) accel->views |= DT_VIEW_PRINT;
     else if (strcmp(views[i], "slideshow") == 0) accel->views |= DT_VIEW_SLIDESHOW;
