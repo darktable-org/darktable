@@ -293,6 +293,11 @@ static void compression_changed(GtkWidget *widget, gpointer user_data)
 {
   const int comp_type = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/imageio/format/webp/comp_type", comp_type);
+
+  if (comp_type == webp_lossless)
+    gtk_widget_set_sensitive(GTK_WIDGET(user_data), FALSE);
+  else
+    gtk_widget_set_sensitive(GTK_WIDGET(user_data), TRUE);
 }
 
 static void quality_changed(GtkWidget *slider, gpointer user_data)
@@ -322,7 +327,6 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_add(gui->compression, _("lossy"));
   dt_bauhaus_combobox_add(gui->compression, _("lossless"));
   dt_bauhaus_combobox_set(gui->compression, comp_type);
-  g_signal_connect(G_OBJECT(gui->compression), "value-changed", G_CALLBACK(compression_changed), NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compression, TRUE, TRUE, 0);
 
   gui->quality = dt_bauhaus_slider_new_with_range(NULL, 5, 100, 1, 95, 0);
@@ -334,6 +338,10 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), gui->quality, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), (gpointer)0);
 
+  g_signal_connect(G_OBJECT(gui->compression), "value-changed", G_CALLBACK(compression_changed), (gpointer)gui->quality);
+
+  if (comp_type == webp_lossless)
+    gtk_widget_set_sensitive(gui->quality, FALSE);
 
   gui->hint = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(gui->hint, NULL, _("image hint"));
