@@ -46,7 +46,7 @@ typedef enum dt_iop_lut3d_colorspace_t
   DT_IOP_SRGB = 0,
   DT_IOP_REC709 = 1,
   DT_IOP_LIN_REC709 = 2,
-  DT_IOP_LIN_PROPHOTORGB = 3,
+  DT_IOP_LIN_REC2020 = 3,
 } dt_iop_lut3d_colorspace_t;
 
 typedef enum dt_iop_lut3d_interpolation_t
@@ -381,7 +381,7 @@ uint16_t calculate_clut_haldclut(char *filepath, float **clut)
   if(level > 256)
   {
     fprintf(stderr, "[lut3d] error - LUT 3D size %d > 256\n", level);
-    dt_control_log(_("error - LUT 3D size %d > 256"), level);
+    dt_control_log(_("error - lut 3D size %d exceeds the maximum supported"), level);
     fclose(png.f);
     png_destroy_read_struct(&png.png_ptr, &png.info_ptr, NULL);
     return 0;
@@ -392,17 +392,17 @@ uint16_t calculate_clut_haldclut(char *filepath, float **clut)
   buf = dt_alloc_align(16, buf_size);
   if(!buf)
   {
-    fclose(png.f);
-    png_destroy_read_struct(&png.png_ptr, &png.info_ptr, NULL);
     fprintf(stderr, "[lut3d] error - allocating buffer for png lut\n");
     dt_control_log(_("error - allocating buffer for png lut"));
+    fclose(png.f);
+    png_destroy_read_struct(&png.png_ptr, &png.info_ptr, NULL);
     return 0;
   }
   if (read_image(&png, buf))
   {
-    dt_free_align(buf);
     fprintf(stderr, "[lut3d] error - could not read png image `%s'\n", filepath);
     dt_control_log(_("error - could not read png image %s"), filepath);
+    dt_free_align(buf);
     return 0;
   }
   const size_t buf_size_lut = (size_t)png.height * png.height * 3;
@@ -410,9 +410,9 @@ uint16_t calculate_clut_haldclut(char *filepath, float **clut)
   float *lclut = dt_alloc_align(16, buf_size_lut * sizeof(float));
   if(!lclut)
   {
-    dt_free_align(buf);
     fprintf(stderr, "[lut3d] error - allocating buffer for png lut\n");
     dt_control_log(_("error - allocating buffer for png lut"));
+    dt_free_align(buf);
     return 0;
   }
   const float norm = 1.0f / (powf(2.f, png.bit_depth) - 1.0f);
@@ -625,7 +625,7 @@ uint16_t calculate_clut_cube(char *filepath, float **clut)
         if(level > 256)
         {
           fprintf(stderr, "[lut3d] error - LUT 3D size %d > 256\n", level);
-          dt_control_log(_("error - LUT 3D size %d > 256"), level);
+          dt_control_log(_("error - lut 3D size %d exceeds the maximum supported"), level);
           free(line);
           fclose(cube_file);
           return 0;
@@ -1134,9 +1134,9 @@ void gui_init(dt_iop_module_t *self)
   g->colorspace = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->colorspace, NULL, _("application color space"));
   dt_bauhaus_combobox_add(g->colorspace, _("sRGB"));
-  dt_bauhaus_combobox_add(g->colorspace, _("REC.709"));
-  dt_bauhaus_combobox_add(g->colorspace, _("lin sRGB/REC.709"));
-  dt_bauhaus_combobox_add(g->colorspace, _("lin REC.2020"));
+  dt_bauhaus_combobox_add(g->colorspace, _("gamma rec709 RGB"));
+  dt_bauhaus_combobox_add(g->colorspace, _("linear rec709 RGB"));
+  dt_bauhaus_combobox_add(g->colorspace, _("linear rec2020 RGB"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->colorspace) , TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->colorspace, _("select the color space in which the LUT has to be applied"));
   g_signal_connect(G_OBJECT(g->colorspace), "value-changed", G_CALLBACK(colorspace_callback), self);
