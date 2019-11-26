@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
-"PO-Revision-Date: 2019-11-24 09:06+0100\n"
+"PO-Revision-Date: 2019-11-26 20:55+0100\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -910,9 +910,8 @@ msgid ""
 msgstr ""
 "Daten in XMP-Stichwörter können recht groß werden und so den verfügbaren "
 "Speicherplatz in exportierten Dateien für Verlaufsstapel überschreiten. "
-"Diese Option erlaubt es, XMP-Stichwörter zu komprimieren und so Speicherplatz"
-" zu "
-"sparen."
+"Diese Option erlaubt es, XMP-Stichwörter zu komprimieren und so "
+"Speicherplatz zu sparen."
 
 #: ../build/src/preferences_gen.h:3728
 msgid "look for updated xmp files on startup"
@@ -1114,10 +1113,10 @@ msgid ""
 "for others the entry completion can be embarrassing. need to restart "
 "darktable."
 msgstr ""
-"Die Eingabevervollständigung ist hilfreich, wenn Stichwörter nur über die"
-" Tastatur "
-"eingegeben werden. Für andere Methoden kann die Eingabevervollständigung "
-"umständlich sein. Neustart von darktable erforderlich."
+"Die Eingabevervollständigung ist hilfreich, wenn Stichwörter nur über die "
+"Tastatur eingegeben werden. Für andere Methoden kann die "
+"Eingabevervollständigung umständlich sein. Neustart von darktable "
+"erforderlich."
 
 #: ../build/src/preferences_gen.h:4040
 msgid "password storage backend to use"
@@ -5960,7 +5959,6 @@ msgstr "Normalisiertes RGB"
 #: ../src/iop/basecurve.c:2146 ../src/iop/basicadj.c:713
 #: ../src/iop/rgbcurve.c:1626 ../src/iop/rgblevels.c:1123
 #: ../src/iop/tonecurve.c:1399
-#, fuzzy
 msgid "basic power"
 msgstr ""
 
@@ -8076,10 +8074,10 @@ msgid ""
 "slider."
 msgstr ""
 "Radius der übereinstimmenden Patches.\n"
-"Erhöhen für mehr Schärfe an starken Kanten und besseres Entrauschen von"
-" glatten Flächen.\n"
-"Wenn Details überglättet sind, reduzieren Sie diesen Wert oder erhöhen Sie"
-" den Detailregler."
+"Erhöhen für mehr Schärfe an starken Kanten und besseres Entrauschen von "
+"glatten Flächen.\n"
+"Wenn Details überglättet sind, reduzieren Sie diesen Wert oder erhöhen Sie "
+"den Detailregler."
 
 #: ../src/iop/denoiseprofile.c:4087
 msgid ""
@@ -8136,7 +8134,7 @@ msgid ""
 msgstr ""
 "Finetune Schattenentrauschen.\n"
 "Verringern des Wertes, um dunkle Bereiche\n"
-"des Bildes aggressivere zu entrauschen."
+"des Bildes aggressivere zu entrauschen.\n"
 
 #: ../src/iop/denoiseprofile.c:4103
 msgid ""
@@ -8146,7 +8144,7 @@ msgid ""
 msgstr ""
 "Korrigiert Farbstiche im Schatten.\n"
 "Verringern, wenn die Schatten zu violett sind.\n"
-"Erhöhen, wenn die Schatten zu grün sind.\n"
+"Erhöhen, wenn die Schatten zu grün sind."
 
 #: ../src/iop/dither.c:103 ../src/iop/vignette.c:1164
 msgid "dithering"
@@ -8780,9 +8778,8 @@ msgstr ""
 "Verringern wenn Schatten/Spitzlichter übersättigt sind."
 
 #: ../src/iop/filmicrgb.c:1555
-#, fuzzy
 msgid "preserve chrominance"
-msgstr " Chrominanz erhalten"
+msgstr "Chrominanz erhalten"
 
 # wtf?
 #: ../src/iop/filmicrgb.c:1558
@@ -8795,7 +8792,6 @@ msgid "RGB power norm"
 msgstr ""
 
 #: ../src/iop/filmicrgb.c:1560
-#, fuzzy
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
@@ -8803,7 +8799,7 @@ msgid ""
 msgstr ""
 "Stellt sicher, dass die Originalfarbe erhalten bleibt.\n"
 "Kann chromatische Aberrationen der Linse verstärken.\n"
-"Sättigung muss manuell angepasst werden, wenn dieser Modus aktiviert wird."
+"Sättigung muss manuell angepasst werden, wenn dieser Modus aktiviert wird.\n"
 
 #: ../src/iop/filmicrgb.c:1595
 msgid "target power transfer function"
@@ -11059,11 +11055,11 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:1859 ../src/iop/toneequal.c:1919
 msgid "wait for the preview to finish recomputing"
-msgstr ""
+msgstr "Warten auf Vorschau, bis die Neuberechnung abgeschlossen ist"
 
 #: ../src/iop/toneequal.c:2152
 msgid "some parameters are out-of-bounds"
-msgstr ""
+msgstr "Einige Parameter sind außerhalb der Grenzen"
 
 #. Build text object
 #: ../src/iop/toneequal.c:2417
@@ -11155,13 +11151,12 @@ msgid "RGB average"
 msgstr "RGB-Durchschnitt"
 
 #: ../src/iop/toneequal.c:3141
-#, fuzzy
 msgid "HSL lightness"
-msgstr "HSV-Helligkeit"
+msgstr "HSL-Helligkeit"
 
 #: ../src/iop/toneequal.c:3142
 msgid "HSV value / RGB max"
-msgstr ""
+msgstr "HSV Wert / RGB Maximal"
 
 #: ../src/iop/toneequal.c:3143
 msgid "RGB sum"
@@ -11182,19 +11177,16 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/toneequal.c:3153
-#, fuzzy
 msgid "preserve details"
-msgstr "erhalte Farben"
+msgstr "Details erhalten"
 
 #: ../src/iop/toneequal.c:3156
-#, fuzzy
 msgid "averaged guided filter"
-msgstr "Rotfilter"
+msgstr "gemittelter geführter Filter"
 
 #: ../src/iop/toneequal.c:3157
-#, fuzzy
 msgid "guided filter"
-msgstr "Rotfilter"
+msgstr "geführter Filter"
 
 #: ../src/iop/toneequal.c:3158
 msgid ""
@@ -11251,9 +11243,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/toneequal.c:3203
-#, fuzzy
 msgid "mask quantization"
-msgstr "Picasa-Authentifizierung"
+msgstr "Maskenquantisierung"
 
 #: ../src/iop/toneequal.c:3205
 msgid ""
@@ -11263,9 +11254,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/toneequal.c:3213
-#, fuzzy
 msgid "mask exposure compensation"
-msgstr "Tiefenkompensation"
+msgstr "Maskenbelichtungskompensation"
 
 #: ../src/iop/toneequal.c:3215
 msgid ""
@@ -11275,9 +11265,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/toneequal.c:3227
-#, fuzzy
 msgid "mask contrast compensation"
-msgstr "Kontrast-Kompression"
+msgstr "Maskenkontrastkompensation"
 
 #: ../src/iop/toneequal.c:3229
 msgid ""
@@ -11469,7 +11458,7 @@ msgstr ""
 #: ../src/iop/vignette.c:1232
 #, c-format
 msgid "[%s on center] move vignette"
-msgstr ""
+msgstr "[%s[in der Mitte] Vignette bewegen"
 
 #: ../src/iop/watermark.c:236
 msgid "watermark"
@@ -12000,12 +11989,13 @@ msgid_plural ""
 "no history compression of %d images.\n"
 "see tag: darktable|problem|history-compress."
 msgstr[0] ""
+"Keine Verlauf-Kompression bei einem Bild."
+"siehe Stichwort: darktable|problem|history-compress."
 msgstr[1] ""
 
 #: ../src/libs/copy_history.c:172
-#, fuzzy
 msgid "history compression warning"
-msgstr "Spitzlichtkompression"
+msgstr "Verlaufskompressionswarnung"
 
 #: ../src/libs/copy_history.c:220
 #, c-format
@@ -12020,7 +12010,6 @@ msgid "delete images' history?"
 msgstr "Bearbeitungsverlauf der Bilder löschen?"
 
 #: ../src/libs/copy_history.c:308 ../src/libs/image.c:204
-#, fuzzy
 msgid "copy..."
 msgstr "kopieren..."
 
@@ -12045,7 +12034,6 @@ msgstr ""
 "ersten ausgewählten Bildes"
 
 #: ../src/libs/copy_history.c:323
-#, fuzzy
 msgid "paste..."
 msgstr "einfügen..."
 
@@ -12082,7 +12070,6 @@ msgstr ""
 "aller ausgewählten Bilder"
 
 #: ../src/libs/copy_history.c:342
-#, fuzzy
 msgid "discard history"
 msgstr "Verlauf verwerfen"
 
@@ -12091,8 +12078,8 @@ msgid ""
 "discard history stack of\n"
 "all selected images"
 msgstr ""
-"verwerfe den Verlaufsstapel\n"
-"aller ausgewählten Bilder"
+"Verlauf aller ausgewählten\n"
+"Bilder verwerfen"
 
 #: ../src/libs/copy_history.c:351
 msgid "append"
@@ -12105,9 +12092,8 @@ msgstr ""
 "Verlauf umgegangen werden"
 
 #: ../src/libs/copy_history.c:359
-#, fuzzy
 msgid "load sidecar file..."
-msgstr "XMP Begleitdatei laden"
+msgstr "XMP Begleitdatei laden..."
 
 #: ../src/libs/copy_history.c:362
 msgid ""
@@ -12283,7 +12269,7 @@ msgstr "mit aktuellen Einstellungen exportieren"
 
 #: ../src/libs/export.c:724
 msgid "edit metadata exportation details"
-msgstr ""
+msgstr "Metadaten-Exportdetails bearbeiten"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1311 ../src/libs/styles.c:71
@@ -12298,13 +12284,15 @@ msgstr "Tag auswählen"
 
 #: ../src/libs/export_metadata.c:152
 msgid "done"
-msgstr ""
+msgstr "erledigt"
 
 #: ../src/libs/export_metadata.c:166
 msgid ""
 "list of available tags. click 'add' button or double-click on tag to add the "
 "selected one"
 msgstr ""
+"Liste der verfügbaren Stichwürter. \"Hinzufügen\" oder Doppelklick auf das"
+" Stichwort, fügt dieses hinzu"
 
 #: ../src/libs/export_metadata.c:231
 msgid "edit metadata exportation"
@@ -12333,7 +12321,7 @@ msgstr "Metadaten"
 
 #: ../src/libs/export_metadata.c:253
 msgid "export dt xmp metadata (from metadata editor module)"
-msgstr ""
+msgstr "Exportiere darktable xmp-Metadaten (aus dem Metadaten-Editor-Modul)"
 
 #: ../src/libs/export_metadata.c:263
 msgid "only embedded"
@@ -12347,6 +12335,12 @@ msgid ""
 "if remote storage doesn't understand dt xmp metadata, you can use calculated "
 "metadata instead"
 msgstr ""
+"Standardmäßig sendet die Schnittstelle einige (begrenzte) Metadaten neben dem"
+" Bild an den Remote-Speicher.\n"
+"Uum dies zu vermeiden und nur eingebettete darktable xmp-Metadaten"
+" anzuzeigen, überprüfen Sie dieses Kontrollkästchen.\n"
+"Wenn der Remote-Speicher darktable xmp-Metadaten nicht versteht, können Sie"
+" stattdessen berechnete Metadaten verwenden."
 
 #: ../src/libs/export_metadata.c:270
 msgid "geo tags"
@@ -12358,7 +12352,7 @@ msgstr "Geo-Tags exportieren"
 
 #: ../src/libs/export_metadata.c:274
 msgid "export tags (to Xmp.dc.Subject)"
-msgstr ""
+msgstr "Stichwörter exportieren (nach Xmp.dc.Subject)"
 
 #: ../src/libs/export_metadata.c:281
 msgid "private tags"
@@ -12378,21 +12372,24 @@ msgstr "Tag Synonym exportieren"
 
 #: ../src/libs/export_metadata.c:287
 msgid "omit hierarchy"
-msgstr ""
+msgstr "Hierarchie ignorieren"
 
 #: ../src/libs/export_metadata.c:288
 msgid ""
 "only the last part of the hierarchical tags is included. can be useful if "
 "categories are not used"
 msgstr ""
+"Nur der letzte Teil der hierarchischen Stichworte ist enthalten. Dies kann"
+" sinnvoll sein, wenn Kategorien nicht verwendet werden."
 
 #: ../src/libs/export_metadata.c:291
 msgid "hierarchical tags"
-msgstr ""
+msgstr "Hierarchische Stichwörter"
 
 #: ../src/libs/export_metadata.c:292
 msgid "export hierarchical tags (to Xmp.lr.Hierarchical Subject)"
 msgstr ""
+"Hierarchische Stichwörter exportieren (nach Xmp.lr.Hierarchical Subject)"
 
 #: ../src/libs/export_metadata.c:294
 msgid "develop history"
@@ -12403,6 +12400,8 @@ msgid ""
 "export dt development data (recovery purpose in case of loss of database or "
 "xmp file)"
 msgstr ""
+"Export von dt Entwicklungsdaten (Wiederherstellung bei Verlust der Datenbank"
+" oder xmp-Datei)"
 
 #: ../src/libs/export_metadata.c:302
 msgid "per metadata settings"
@@ -12414,7 +12413,7 @@ msgstr "Liste der verfügbaren Tags"
 
 #: ../src/libs/export_metadata.c:315
 msgid "redefined tag"
-msgstr ""
+msgstr "neu definiertes Stichwort"
 
 #: ../src/libs/export_metadata.c:320
 msgid "formula"
@@ -12429,10 +12428,16 @@ msgid ""
 "file\n"
 "click on formula cell to edit. recognized variables:"
 msgstr ""
+"Liste der berechneten Metadaten\n"
+"wenn das Formular leer ist, wurden die entsprechenden Metadaten aus der"
+" exportierten Datei entfernt\n"
+"andernfalls werden die entsprechenden Metadaten berechnet und der"
+" exportierten Datei hinzugefügt\n"
+"Klicken Sie auf die Formularzelle, um die erkannten Variablen zu bearbeiten:"
 
 #: ../src/libs/export_metadata.c:378
 msgid "add an output metadata tag"
-msgstr ""
+msgstr "Hinzufügen eines Ausgabe-Metadaten-Stichwort"
 
 #: ../src/libs/export_metadata.c:383
 #, fuzzy
@@ -12688,6 +12693,7 @@ msgstr "Ausgewählte Bilder aus der Gruppe entfernen"
 #: ../src/libs/image.c:279
 msgid "update image information to match changes to file"
 msgstr ""
+"Bildinformationen aktualisieren, um Änderungen an der Datei abzugleichen."
 
 #: ../src/libs/image.c:302
 msgctxt "accel"
@@ -13910,7 +13916,7 @@ msgstr "ausgewählten Stil in eine Stil-Datei exportieren"
 
 #: ../src/libs/tagging.c:96
 msgid "tagging"
-msgstr "Tagging"
+msgstr "Verschlagwortung"
 
 #: ../src/libs/tagging.c:121
 msgctxt "accel"
@@ -13930,7 +13936,7 @@ msgstr "Neu"
 #: ../src/libs/tagging.c:124
 msgctxt "accel"
 msgid "tag"
-msgstr "Taggen"
+msgstr "Stichwort"
 
 #: ../src/libs/tagging.c:1039
 msgid "attach tag to all"
@@ -13948,7 +13954,7 @@ msgstr "Stichwort löschen?"
 #: ../src/libs/tagging.c:1520
 #, c-format
 msgid "tag: %s "
-msgstr ""
+msgstr "Stichwort: %s"
 
 #: ../src/libs/tagging.c:1176
 #, c-format
@@ -13987,7 +13993,7 @@ msgstr[1] "<u>%d</u> Stichwärter werden gelöscht."
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated "
 msgstr[0] "<u>%d</u> Bild wird aktualisiert"
-msgstr[1] ""
+msgstr[1] "<u>%d</u> Bilder werden aktualisiert"
 
 #: ../src/libs/tagging.c:1304
 #, c-format
@@ -14042,7 +14048,7 @@ msgstr "Stichwort bearbeiten"
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
 msgstr[0] "<u>%d</u> Stichwort wird aktualisiert."
-msgstr[1] ""
+msgstr[1] "<u>%d</u> Stichwörter werden aktualisiert."
 
 #: ../src/libs/tagging.c:1587
 msgid ""
@@ -14248,8 +14254,8 @@ msgstr "Wechseln zwischen Liste mit / ohne Vorschlag"
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
-"Stichwort-Kurzbefehl ist in der Baumansicht nicht aktiv. Bitte wechseln Sie"
-" zur Listenansicht."
+"Stichwort-Kurzbefehl ist in der Baumansicht nicht aktiv. Bitte wechseln Sie "
+"zur Listenansicht."
 
 #: ../src/libs/tools/battery_indicator.c:38
 #: ../src/libs/tools/battery_indicator.c:71
@@ -15017,7 +15023,7 @@ msgstr "Anfang der Sammlung erreicht"
 #, c-format
 msgid "you have reached the end of your selection (%d image)"
 msgid_plural "you have reached the end of your selection (%d images)"
-msgstr[0] ""
+msgstr[0] "Ende der Auswahl erreicht (%d Bild)"
 msgstr[1] "Ende der Auswahl erreicht (%d Bilder)"
 
 #: ../src/views/lighttable.c:3288
