@@ -976,6 +976,14 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         for(int i = 0; i < 9; i++) colmatrix[i] = cm1_pos->toFloat(i);
         illu = illu1;
       }
+      // In a few cases we only have one color matrix; it should not be corrected
+      if(illu == -1 && cm1_pos != exifData.end() && cm1_pos->count() == 9 && cm1_pos->size())
+      {
+        for(int i = 0; i < 9; i++) colmatrix[i] = cm1_pos->toFloat(i);
+        illu = 0;
+      }
+
+
       // Take the found CalibrationIlluminant / ColorMatrix pair.
       // D65 or default: just copy. Otherwise multiply by the specific correction matrix.
       if(illu != -1)
