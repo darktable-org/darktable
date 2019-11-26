@@ -90,6 +90,7 @@
 @define-color bauhaus_bg @grey_15;
 @define-color bauhaus_fg_hover @grey_90;
 @define-color bauhaus_fg_selected @grey_80;
+@define-color bauhaus_fg_disabled @grey_70;
 @define-color bauhaus_fg_insensitive alpha(@bauhaus_fg, 0.5);
 
 /* GTK Buttons and tabs */
@@ -1268,6 +1269,13 @@ filechooser *:checked
 #bauhaus-slider:hover
 {
   color: @bauhaus_fg_hover;
+}
+
+#bauhaus-popup:disabled,
+#bauhaus-combobox:disabled,
+#bauhaus-slider:disabled
+{
+  color: @bauhaus_fg_disabled;
 }
 
 #bauhaus-popup:disabled
