@@ -427,6 +427,12 @@ static void compress_combobox_changed(GtkWidget *widget, gpointer user_data)
 {
   const int compress = dt_bauhaus_combobox_get(widget);
   dt_conf_set_int("plugins/imageio/format/tiff/compress", compress);
+
+  if(compress == 0)
+    gtk_widget_set_sensitive(GTK_WIDGET(user_data), FALSE);
+  else
+    gtk_widget_set_sensitive(GTK_WIDGET(user_data), TRUE);
+
 }
 
 static void compress_level_changed(GtkWidget *slider, gpointer user_data)
@@ -485,7 +491,6 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_add(gui->compress, _("deflate with predictor (float)"));
   dt_bauhaus_combobox_set(gui->compress, compress);
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compress, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(gui->compress), "value-changed", G_CALLBACK(compress_combobox_changed), NULL);
 
   // Compression level slider
   gui->compresslevel = dt_bauhaus_slider_new_with_range(NULL, 0, 9, 1, 5, 0);
@@ -493,6 +498,11 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_slider_set(gui->compresslevel, compresslevel);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->compresslevel), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->compresslevel), "value-changed", G_CALLBACK(compress_level_changed), NULL);
+
+  g_signal_connect(G_OBJECT(gui->compress), "value-changed", G_CALLBACK(compress_combobox_changed), (gpointer)gui->compresslevel);
+
+  if(compress == 0)
+    gtk_widget_set_sensitive(gui->compresslevel, FALSE);
 }
 
 void gui_cleanup(dt_imageio_module_format_t *self)
