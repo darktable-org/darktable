@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-22 08:38+0100\n"
-"PO-Revision-Date: 2019-11-22 09:11+0100\n"
+"POT-Creation-Date: 2019-11-27 13:01+0100\n"
+"PO-Revision-Date: 2019-11-27 13:11+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -732,7 +732,7 @@ msgid "core options"
 msgstr "algemene instellingen"
 
 #: ../build/src/preferences_gen.h:3352 ../src/imageio/format/j2k.c:652
-#: ../src/imageio/format/jpeg.c:594 ../src/imageio/format/webp.c:329
+#: ../src/imageio/format/jpeg.c:594 ../src/imageio/format/webp.c:333
 #: ../src/libs/camera.c:594
 msgid "quality"
 msgstr "kwaliteit"
@@ -1245,11 +1245,11 @@ msgstr "%s: %s"
 #: ../src/chart/main.c:463 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/hist_dialog.c:171
 #: ../src/gui/preferences.c:1157 ../src/gui/preferences.c:1183
-#: ../src/gui/preferences.c:1267 ../src/gui/preferences.c:1389
+#: ../src/gui/preferences.c:1267 ../src/gui/preferences.c:1388
 #: ../src/gui/preferences.c:1617 ../src/gui/presets.c:387
 #: ../src/gui/styles_dialog.c:283 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
-#: ../src/iop/lut3d.c:1015 ../src/libs/collect.c:242
+#: ../src/iop/lut3d.c:1031 ../src/libs/collect.c:242
 #: ../src/libs/copy_history.c:78 ../src/libs/geotagging.c:473
 #: ../src/libs/import.c:759 ../src/libs/import.c:866 ../src/libs/lib.c:228
 #: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2127
@@ -1258,7 +1258,7 @@ msgid "_cancel"
 msgstr "_annuleer"
 
 #: ../src/chart/main.c:463 ../src/gui/preferences.c:1157
-#: ../src/gui/preferences.c:1388 ../src/gui/styles_dialog.c:284
+#: ../src/gui/preferences.c:1389 ../src/gui/styles_dialog.c:284
 #: ../src/libs/styles.c:301
 msgid "_save"
 msgstr "_opslaan"
@@ -1408,105 +1408,105 @@ msgstr[0] " geselecteerd %d afbeelding uit %d"
 msgstr[1] "geselecteerd %d afbeeldingen uit %d "
 
 #. 0th entry is a dummy for DT_COLORSPACE_FILE and not used
-#: ../src/common/colorspaces.c:1010 ../src/iop/colorin.c:2110
-#: ../src/iop/lut3d.c:1120
+#: ../src/common/colorspaces.c:1002 ../src/iop/colorin.c:2110
+#: ../src/iop/lut3d.c:1136
 msgid "sRGB"
 msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
-#: ../src/common/colorspaces.c:1011 ../src/common/colorspaces.c:1316
+#: ../src/common/colorspaces.c:1003 ../src/common/colorspaces.c:1310
 #: ../src/iop/colorin.c:2111 ../src/libs/print_settings.c:1034
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatibel)"
 
-#: ../src/common/colorspaces.c:1012 ../src/common/colorspaces.c:1321
+#: ../src/common/colorspaces.c:1004 ../src/common/colorspaces.c:1315
 #: ../src/iop/colorin.c:2112
 msgid "linear Rec709 RGB"
 msgstr "linear Rec709 RGB"
 
-#: ../src/common/colorspaces.c:1013 ../src/common/colorspaces.c:1330
+#: ../src/common/colorspaces.c:1005 ../src/common/colorspaces.c:1324
 #: ../src/iop/colorin.c:2113
 msgid "linear Rec2020 RGB"
 msgstr "linear Rec2020 RGB"
 
-#: ../src/common/colorspaces.c:1014 ../src/common/colorspaces.c:1340
+#: ../src/common/colorspaces.c:1006 ../src/common/colorspaces.c:1334
 msgid "linear XYZ"
 msgstr "lineair XYZ"
 
-#: ../src/common/colorspaces.c:1015 ../src/common/colorspaces.c:1344
-#: ../src/libs/colorpicker.c:582 ../src/libs/colorpicker.c:619
+#: ../src/common/colorspaces.c:1007 ../src/common/colorspaces.c:1338
+#: ../src/libs/colorpicker.c:582 ../src/libs/colorpicker.c:620
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/common/colorspaces.c:1016 ../src/common/colorspaces.c:1349
+#: ../src/common/colorspaces.c:1008 ../src/common/colorspaces.c:1343
 msgid "linear infrared BGR"
 msgstr "lineair infrarood BGR"
 
-#: ../src/common/colorspaces.c:1017 ../src/common/colorspaces.c:1028
-#: ../src/common/colorspaces.c:1298 ../src/common/colorspaces.c:1301
+#: ../src/common/colorspaces.c:1009 ../src/common/colorspaces.c:1020
+#: ../src/common/colorspaces.c:1292 ../src/common/colorspaces.c:1295
 msgid "system display profile"
 msgstr "systeem weergave profiel"
 
-#: ../src/common/colorspaces.c:1018
+#: ../src/common/colorspaces.c:1010
 msgid "embedded ICC profile"
 msgstr "ingesloten ICC profiel"
 
-#: ../src/common/colorspaces.c:1019
+#: ../src/common/colorspaces.c:1011
 msgid "embedded matrix"
 msgstr "ingesloten matrix"
 
-#: ../src/common/colorspaces.c:1020
+#: ../src/common/colorspaces.c:1012
 msgid "standard color matrix"
 msgstr "standaard kleuren matrix"
 
-#: ../src/common/colorspaces.c:1021
+#: ../src/common/colorspaces.c:1013
 msgid "enhanced color matrix"
 msgstr "verbeterde kleuren matrix"
 
-#: ../src/common/colorspaces.c:1022
+#: ../src/common/colorspaces.c:1014
 msgid "vendor color matrix"
 msgstr "leverancier kleuren matrix"
 
-#: ../src/common/colorspaces.c:1023
+#: ../src/common/colorspaces.c:1015
 msgid "alternate color matrix"
 msgstr "alternatieve kleuren matrix"
 
-#: ../src/common/colorspaces.c:1024
+#: ../src/common/colorspaces.c:1016
 msgid "BRG (experimental)"
 msgstr "BRG (experimenteel)"
 
-#: ../src/common/colorspaces.c:1025 ../src/common/colorspaces.c:1288
+#: ../src/common/colorspaces.c:1017 ../src/common/colorspaces.c:1282
 #: ../src/iop/colorout.c:883
 msgid "export profile"
 msgstr "export profiel"
 
-#: ../src/common/colorspaces.c:1026 ../src/common/colorspaces.c:1292
+#: ../src/common/colorspaces.c:1018 ../src/common/colorspaces.c:1286
 #: ../src/views/darkroom.c:2006
 msgid "softproof profile"
 msgstr "softproofprofiel"
 
 #. init the category profile with NULL profile, the actual profile must be retrieved dynamically by the caller
-#: ../src/common/colorspaces.c:1027 ../src/common/colorspaces.c:1285
+#: ../src/common/colorspaces.c:1019 ../src/common/colorspaces.c:1279
 msgid "work profile"
 msgstr "werkprofiel"
 
-#: ../src/common/colorspaces.c:1307
+#: ../src/common/colorspaces.c:1301
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (b.v. JPG)"
 
-#: ../src/common/colorspaces.c:1311 ../src/libs/print_settings.c:1027
+#: ../src/common/colorspaces.c:1305 ../src/libs/print_settings.c:1027
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web-veilig)"
 
-#: ../src/common/colorspaces.c:1325
+#: ../src/common/colorspaces.c:1319
 msgid "gamma Rec709 RGB"
 msgstr "gamma Rec709 RGB"
 
-#: ../src/common/colorspaces.c:1335
+#: ../src/common/colorspaces.c:1329
 msgid "linear prophoto RGB"
 msgstr "lineair prophoto RGB"
 
-#: ../src/common/colorspaces.c:1353
+#: ../src/common/colorspaces.c:1347
 msgid "BRG (for testing)"
 msgstr "BRG (om uit te proberen)"
 
@@ -4051,7 +4051,7 @@ msgid "select _none"
 msgstr "selecteer _niets"
 
 #: ../src/gui/hist_dialog.c:172 ../src/gui/preferences.c:1390
-#: ../src/gui/presets.c:386 ../src/libs/lib.c:227
+#: ../src/gui/presets.c:387 ../src/libs/lib.c:228
 msgid "_ok"
 msgstr "_ok"
 
@@ -4539,12 +4539,12 @@ msgid "JPEG (8-bit)"
 msgstr "JPEG (8-bit)"
 
 #: ../src/imageio/format/pdf.c:79 ../src/imageio/format/png.c:527
-#: ../src/imageio/format/tiff.c:467
+#: ../src/imageio/format/tiff.c:473
 msgid "8 bit"
 msgstr "8 bit"
 
 #: ../src/imageio/format/pdf.c:80 ../src/imageio/format/png.c:528
-#: ../src/imageio/format/tiff.c:468
+#: ../src/imageio/format/tiff.c:474
 msgid "16 bit"
 msgstr "16 bit"
 
@@ -4685,7 +4685,7 @@ msgid "images can be tagged with their icc profile"
 msgstr "afbeeldingen kunnen worden gekoppeld aan hun icc profiel"
 
 #: ../src/imageio/format/pdf.c:704 ../src/imageio/format/png.c:526
-#: ../src/imageio/format/tiff.c:466
+#: ../src/imageio/format/tiff.c:472
 msgid "bit depth"
 msgstr "bitdiepte"
 
@@ -4694,15 +4694,15 @@ msgid "bits per channel of the embedded images"
 msgstr "aantal bits per kanaal van de ingesloten afbeeldingen"
 
 #: ../src/imageio/format/pdf.c:720 ../src/imageio/format/png.c:540
-#: ../src/imageio/format/tiff.c:481 ../src/iop/graduatednd.c:1226
+#: ../src/imageio/format/tiff.c:487 ../src/iop/graduatednd.c:1226
 msgid "compression"
 msgstr "compressie"
 
-#: ../src/imageio/format/pdf.c:721 ../src/imageio/format/tiff.c:482
+#: ../src/imageio/format/pdf.c:721 ../src/imageio/format/tiff.c:488
 msgid "uncompressed"
 msgstr "ongecomprimeerd"
 
-#: ../src/imageio/format/pdf.c:722 ../src/imageio/format/tiff.c:483
+#: ../src/imageio/format/pdf.c:722 ../src/imageio/format/tiff.c:489
 msgid "deflate"
 msgstr "deflatie"
 
@@ -4758,19 +4758,19 @@ msgstr "PPM (16-bit)"
 msgid "TIFF (8/16/32-bit)"
 msgstr "TIFF (8/16/32-bit)"
 
-#: ../src/imageio/format/tiff.c:469
+#: ../src/imageio/format/tiff.c:475
 msgid "32 bit (float)"
 msgstr "32 bit (float)"
 
-#: ../src/imageio/format/tiff.c:484
+#: ../src/imageio/format/tiff.c:490
 msgid "deflate with predictor"
 msgstr "voorspellende deflatie"
 
-#: ../src/imageio/format/tiff.c:485
+#: ../src/imageio/format/tiff.c:491
 msgid "deflate with predictor (float)"
 msgstr "voorspellende deflatie  (float)"
 
-#: ../src/imageio/format/tiff.c:492
+#: ../src/imageio/format/tiff.c:497
 msgid "compression level"
 msgstr "compressie niveau"
 
@@ -4778,27 +4778,27 @@ msgstr "compressie niveau"
 msgid "WebP (8-bit)"
 msgstr "WebP (8-bit)"
 
-#: ../src/imageio/format/webp.c:321
+#: ../src/imageio/format/webp.c:326
 msgid "compression type"
 msgstr "compressietype"
 
-#: ../src/imageio/format/webp.c:322
+#: ../src/imageio/format/webp.c:327
 msgid "lossy"
 msgstr "met verlies"
 
-#: ../src/imageio/format/webp.c:323
+#: ../src/imageio/format/webp.c:328
 msgid "lossless"
 msgstr "verliesloos"
 
-#: ../src/imageio/format/webp.c:332
+#: ../src/imageio/format/webp.c:336
 msgid "applies only to lossy setting"
 msgstr "geldt alleen voor verlieshebbende instellingen"
 
-#: ../src/imageio/format/webp.c:339
+#: ../src/imageio/format/webp.c:347
 msgid "image hint"
 msgstr "afbeeldingshint"
 
-#: ../src/imageio/format/webp.c:341
+#: ../src/imageio/format/webp.c:349
 msgid ""
 "image characteristics hint for the underlying encoder.\n"
 "picture : digital picture, like portrait, inner shot\n"
@@ -4810,19 +4810,19 @@ msgstr ""
 "foto: buiten opname, met natuurlijk licht\n"
 "plaatje: aparte afbeeldingscurve (grafiek, kaart-tegels etc)"
 
-#: ../src/imageio/format/webp.c:345
+#: ../src/imageio/format/webp.c:353
 msgid "default"
 msgstr "standaard"
 
-#: ../src/imageio/format/webp.c:346
+#: ../src/imageio/format/webp.c:354
 msgid "picture"
 msgstr "afbeelding"
 
-#: ../src/imageio/format/webp.c:347
+#: ../src/imageio/format/webp.c:355
 msgid "photo"
 msgstr "foto"
 
-#: ../src/imageio/format/webp.c:348
+#: ../src/imageio/format/webp.c:356
 msgid "graphic"
 msgstr "grafisch"
 
@@ -5785,7 +5785,7 @@ msgstr "gelijk aan nokia"
 #. clang-format off
 #. smoother cubic spline curve
 #: ../src/iop/basecurve.c:250 ../src/iop/colorzones.c:2374
-#: ../src/iop/rgbcurve.c:1607 ../src/iop/tonecurve.c:1383
+#: ../src/iop/rgbcurve.c:1609 ../src/iop/tonecurve.c:1383
 msgid "cubic spline"
 msgstr "kubusvormige wig"
 
@@ -5823,7 +5823,7 @@ msgstr ""
 
 # of behoud kleuren
 #: ../src/iop/basecurve.c:2141 ../src/iop/basicadj.c:708
-#: ../src/iop/rgbcurve.c:1627 ../src/iop/rgblevels.c:1121
+#: ../src/iop/rgbcurve.c:1629 ../src/iop/rgblevels.c:1121
 #: ../src/iop/tonecurve.c:1394
 msgid "preserve colors"
 msgstr "behoud van kleuren"
@@ -5833,7 +5833,7 @@ msgstr "behoud van kleuren"
 #: ../src/iop/clipping.c:1984 ../src/iop/clipping.c:2002
 #: ../src/iop/clipping.c:2142 ../src/iop/clipping.c:2169
 #: ../src/iop/colorreconstruction.c:1379 ../src/iop/lens.cc:2301
-#: ../src/iop/retouch.c:582 ../src/iop/rgbcurve.c:1628
+#: ../src/iop/retouch.c:582 ../src/iop/rgbcurve.c:1630
 #: ../src/iop/rgblevels.c:1122 ../src/iop/tonecurve.c:1395
 #: ../src/libs/export.c:520 ../src/libs/live_view.c:350
 #: ../src/libs/live_view.c:375 ../src/libs/live_view.c:384
@@ -5842,43 +5842,43 @@ msgid "none"
 msgstr "geen"
 
 #: ../src/iop/basecurve.c:2143 ../src/iop/basicadj.c:710
-#: ../src/iop/rgbcurve.c:1629 ../src/iop/rgblevels.c:1123
+#: ../src/iop/rgbcurve.c:1631 ../src/iop/rgblevels.c:1123
 #: ../src/iop/tonecurve.c:1396
 msgid "luminance"
 msgstr "luminantie"
 
 #: ../src/iop/basecurve.c:2144 ../src/iop/basicadj.c:711
-#: ../src/iop/filmicrgb.c:1567 ../src/iop/rgbcurve.c:1630
+#: ../src/iop/filmicrgb.c:1567 ../src/iop/rgbcurve.c:1632
 #: ../src/iop/rgblevels.c:1124 ../src/iop/tonecurve.c:1397
 msgid "max RGB"
 msgstr "max RGB"
 
 #: ../src/iop/basecurve.c:2145 ../src/iop/basicadj.c:712
-#: ../src/iop/rgbcurve.c:1631 ../src/iop/rgblevels.c:1125
+#: ../src/iop/rgbcurve.c:1633 ../src/iop/rgblevels.c:1125
 #: ../src/iop/tonecurve.c:1398
 msgid "average RGB"
 msgstr "gemiddelde RGB"
 
 #: ../src/iop/basecurve.c:2146 ../src/iop/basicadj.c:713
-#: ../src/iop/rgbcurve.c:1632 ../src/iop/rgblevels.c:1126
+#: ../src/iop/rgbcurve.c:1634 ../src/iop/rgblevels.c:1126
 #: ../src/iop/tonecurve.c:1399
 msgid "sum RGB"
 msgstr "som RGB"
 
 #: ../src/iop/basecurve.c:2147 ../src/iop/basicadj.c:714
-#: ../src/iop/rgbcurve.c:1633 ../src/iop/rgblevels.c:1127
+#: ../src/iop/rgbcurve.c:1635 ../src/iop/rgblevels.c:1127
 #: ../src/iop/tonecurve.c:1400
 msgid "norm RGB"
 msgstr "norm RGB"
 
 #: ../src/iop/basecurve.c:2148 ../src/iop/basicadj.c:715
-#: ../src/iop/rgbcurve.c:1634 ../src/iop/rgblevels.c:1128
+#: ../src/iop/rgbcurve.c:1636 ../src/iop/rgblevels.c:1128
 #: ../src/iop/tonecurve.c:1401
 msgid "basic power"
 msgstr "basis kracht"
 
 #: ../src/iop/basecurve.c:2150 ../src/iop/basicadj.c:717
-#: ../src/iop/rgbcurve.c:1636 ../src/iop/rgblevels.c:1130
+#: ../src/iop/rgbcurve.c:1638 ../src/iop/rgblevels.c:1130
 #: ../src/iop/tonecurve.c:1403
 msgid "method to preserve colors when applying contrast"
 msgstr "methode voor behoud van kleuren bij contrast wijziging"
@@ -5997,7 +5997,7 @@ msgstr "aanpassen helderheid"
 #: ../src/iop/basicadj.c:741 ../src/iop/channelmixer.c:456
 #: ../src/iop/colisa.c:383 ../src/iop/colorbalance.c:2519
 #: ../src/iop/colorbalance.c:2569 ../src/iop/colorbalance.c:2618
-#: ../src/iop/colorchecker.c:1387 ../src/iop/colorcorrection.c:294
+#: ../src/iop/colorchecker.c:1390 ../src/iop/colorcorrection.c:294
 #: ../src/iop/colorize.c:433 ../src/iop/colorzones.c:2263
 #: ../src/iop/colorzones.c:2327 ../src/iop/graduatednd.c:1262
 #: ../src/iop/lowpass.c:689 ../src/iop/soften.c:743
@@ -6044,7 +6044,7 @@ msgstr "local laplacian: tegenstrijdige uitgang"
 #: ../src/iop/bilat.c:527 ../src/iop/colorbalance.c:2367
 #: ../src/iop/denoiseprofile.c:4063 ../src/iop/exposure.c:866
 #: ../src/iop/lens.cc:2450 ../src/iop/levels.c:674
-#: ../src/iop/profile_gamma.c:859 ../src/iop/rgbcurve.c:1521
+#: ../src/iop/profile_gamma.c:859 ../src/iop/rgbcurve.c:1523
 #: ../src/iop/rgblevels.c:1020 ../src/libs/copy_history.c:350
 #: ../src/libs/export.c:688 ../src/libs/print_settings.c:1510
 #: ../src/views/darkroom.c:1838
@@ -6449,7 +6449,7 @@ msgstr "bestemming"
 msgid "hue"
 msgstr "tint"
 
-#: ../src/iop/channelmixer.c:457 ../src/iop/colorchecker.c:1369
+#: ../src/iop/channelmixer.c:457 ../src/iop/colorchecker.c:1372
 #: ../src/iop/colorize.c:444 ../src/iop/colorzones.c:2260
 #: ../src/iop/colorzones.c:2328
 msgid "lightness"
@@ -7016,12 +7016,12 @@ msgstr "Fuji Provia emulation"
 msgid "Fuji Velvia emulation"
 msgstr "Fuji Velvia emulation"
 
-#: ../src/iop/colorchecker.c:845 ../src/iop/colorchecker.c:1361
+#: ../src/iop/colorchecker.c:845 ../src/iop/colorchecker.c:1364
 #, c-format
 msgid "patch #%d"
 msgstr "patch #%d"
 
-#: ../src/iop/colorchecker.c:1231
+#: ../src/iop/colorchecker.c:1234
 #, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
@@ -7038,43 +7038,43 @@ msgstr ""
 "verwijder patch met rechtermuisknop\n"
 "vervang patch met shift-klik en kleuropname"
 
-#: ../src/iop/colorchecker.c:1356
+#: ../src/iop/colorchecker.c:1359
 msgid "patch"
 msgstr "patch"
 
-#: ../src/iop/colorchecker.c:1357
+#: ../src/iop/colorchecker.c:1360
 msgid "color checker patch"
 msgstr "color checker patch"
 
-#: ../src/iop/colorchecker.c:1368
+#: ../src/iop/colorchecker.c:1371
 msgid "lightness offset"
 msgstr "compenseer helderheid"
 
-#: ../src/iop/colorchecker.c:1372
+#: ../src/iop/colorchecker.c:1375
 msgid "chroma offset green/red"
 msgstr "compenseer kleurwaarde groen/rood"
 
-#: ../src/iop/colorchecker.c:1373
+#: ../src/iop/colorchecker.c:1376
 msgid "green/red"
 msgstr "groen/rood"
 
-#: ../src/iop/colorchecker.c:1379
+#: ../src/iop/colorchecker.c:1382
 msgid "chroma offset blue/yellow"
 msgstr "compenseer kleurwaarde blauw/geel"
 
-#: ../src/iop/colorchecker.c:1380
+#: ../src/iop/colorchecker.c:1383
 msgid "blue/yellow"
 msgstr "blauw/geel"
 
-#: ../src/iop/colorchecker.c:1386
+#: ../src/iop/colorchecker.c:1389
 msgid "saturation offset"
 msgstr "compenseer verzadiging"
 
-#: ../src/iop/colorchecker.c:1391
+#: ../src/iop/colorchecker.c:1394
 msgid "target color"
 msgstr "doel kleur"
 
-#: ../src/iop/colorchecker.c:1392
+#: ../src/iop/colorchecker.c:1395
 msgid ""
 "control target color of the patches via relative offsets or via absolute Lab "
 "values"
@@ -7082,11 +7082,11 @@ msgstr ""
 "beheer doelkleur van de patronen via relatieve afstand of via absolute Lab "
 "waarden"
 
-#: ../src/iop/colorchecker.c:1393
+#: ../src/iop/colorchecker.c:1396
 msgid "relative"
 msgstr "relatief"
 
-#: ../src/iop/colorchecker.c:1394
+#: ../src/iop/colorchecker.c:1397
 msgid "absolute"
 msgstr "absoluut"
 
@@ -7497,7 +7497,7 @@ msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
 "weergave van maskers is onmogelijk wanneer een mengmasker wordt getoond"
 
-#: ../src/iop/colorzones.c:2275 ../src/iop/rgbcurve.c:1553
+#: ../src/iop/colorzones.c:2275 ../src/iop/rgbcurve.c:1555
 msgid ""
 "create a curve based on an area from the image\n"
 "click to create a flat curve\n"
@@ -7542,22 +7542,22 @@ msgstr "krachtig"
 msgid "choose between a smoother or stronger effect"
 msgstr "kies tussen een gladder of sterker effect"
 
-#: ../src/iop/colorzones.c:2373 ../src/iop/rgbcurve.c:1606
+#: ../src/iop/colorzones.c:2373 ../src/iop/rgbcurve.c:1608
 #: ../src/iop/tonecurve.c:1382
 msgid "interpolation method"
 msgstr "interpolatiemethode"
 
-#: ../src/iop/colorzones.c:2375 ../src/iop/rgbcurve.c:1608
+#: ../src/iop/colorzones.c:2375 ../src/iop/rgbcurve.c:1610
 #: ../src/iop/tonecurve.c:1384
 msgid "centripetal spline"
 msgstr "middelpuntzoekende wig"
 
-#: ../src/iop/colorzones.c:2376 ../src/iop/rgbcurve.c:1609
+#: ../src/iop/colorzones.c:2376 ../src/iop/rgbcurve.c:1611
 #: ../src/iop/tonecurve.c:1385
 msgid "monotonic spline"
 msgstr "monotone wig"
 
-#: ../src/iop/colorzones.c:2380 ../src/iop/rgbcurve.c:1613
+#: ../src/iop/colorzones.c:2380 ../src/iop/rgbcurve.c:1615
 #: ../src/iop/tonecurve.c:1387
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
@@ -9638,79 +9638,84 @@ msgstr "png bitdiepte %d niet ondersteund"
 msgid "invalid level in png file %d %d"
 msgstr "ongeldig niveau in png bestand %d %d"
 
-#: ../src/iop/lut3d.c:390 ../src/iop/lut3d.c:407
+#: ../src/iop/lut3d.c:384 ../src/iop/lut3d.c:628
+#, c-format
+msgid "error - lut 3D size %d exceeds the maximum supported"
+msgstr "error -lut 3D afmeting %d overschrijdt het maximaal ondersteunde"
+
+#: ../src/iop/lut3d.c:396 ../src/iop/lut3d.c:414
 msgid "error - allocating buffer for png lut"
 msgstr "fout - buffer toewijzen voor png lut"
 
-#: ../src/iop/lut3d.c:397
+#: ../src/iop/lut3d.c:404
 #, c-format
 msgid "error - could not read png image %s"
 msgstr "fout - inlezen mislukt voor png afbeelding %s"
 
-#: ../src/iop/lut3d.c:573
+#: ../src/iop/lut3d.c:581
 #, c-format
 msgid "error - invalid cube file: %s"
 msgstr "fout - ongeldig cube bestand: %s"
 
-#: ../src/iop/lut3d.c:589
+#: ../src/iop/lut3d.c:597
 msgid "DOMAIN MIN <> 0.0 is not supported"
 msgstr "DOMAIN MIN <> 0.0 is niet ondersteund"
 
-#: ../src/iop/lut3d.c:600
+#: ../src/iop/lut3d.c:608
 msgid "DOMAIN MAX <> 1.0 is not supported"
 msgstr "DOMAIN MAX <> 1.0 is niet ondersteund"
 
-#: ../src/iop/lut3d.c:609
+#: ../src/iop/lut3d.c:617
 msgid "1D cube lut is not supported"
 msgstr "1D cube lut wordt niet ondersteund"
 
-#: ../src/iop/lut3d.c:623
+#: ../src/iop/lut3d.c:639
 msgid "error - allocating buffer for cube lut"
 msgstr "fout - buffer toewijzen voor cube lut"
 
-#: ../src/iop/lut3d.c:634
+#: ../src/iop/lut3d.c:650
 msgid "error - cube lut size is not defined"
 msgstr "error - cube lut size is niet gedefinieerd"
 
-#: ../src/iop/lut3d.c:651
+#: ../src/iop/lut3d.c:667
 msgid "error - cube lut lines number is not correct"
 msgstr "error - cube lut lines nummer is niet correct"
 
-#: ../src/iop/lut3d.c:1009
+#: ../src/iop/lut3d.c:1025
 msgid "Lut root folder not defined"
 msgstr "Lut hoofdmap niet gedefinieerd"
 
-#: ../src/iop/lut3d.c:1015
+#: ../src/iop/lut3d.c:1031
 msgid "select lut file"
 msgstr "selecteer lut bestand"
 
-#: ../src/iop/lut3d.c:1016
+#: ../src/iop/lut3d.c:1032
 msgid "_select"
 msgstr "_selecteren"
 
-#: ../src/iop/lut3d.c:1033
+#: ../src/iop/lut3d.c:1049
 msgid "hald cluts (png)"
 msgstr "hald cluts (png)"
 
-#: ../src/iop/lut3d.c:1040
+#: ../src/iop/lut3d.c:1056
 msgid "3D lut (cube)"
 msgstr "3D lut (cube)"
 
-#: ../src/iop/lut3d.c:1046 ../src/libs/copy_history.c:93
+#: ../src/iop/lut3d.c:1062 ../src/libs/copy_history.c:93
 #: ../src/libs/geotagging.c:495 ../src/libs/import.c:790
 #: ../src/libs/styles.c:341
 msgid "all files"
 msgstr "alle bestanden"
 
-#: ../src/iop/lut3d.c:1061
+#: ../src/iop/lut3d.c:1077
 msgid "Select file outside Lut root folder is not allowed"
 msgstr "bestandsselectie buiten de Lut hoofdmap is niet toegestaan"
 
-#: ../src/iop/lut3d.c:1105
+#: ../src/iop/lut3d.c:1121
 msgid "select a png (haldclut) or a cube file"
 msgstr "kopieer een png (haldclut) of een cube bestand"
 
-#: ../src/iop/lut3d.c:1112
+#: ../src/iop/lut3d.c:1128
 msgid ""
 "the file path (relative to lut folder) is saved with image (and not the lut "
 "data themselves)\n"
@@ -9723,43 +9728,46 @@ msgstr ""
 "voordat een lut bestand wordt gekozen\n"
 " "
 
-#: ../src/iop/lut3d.c:1119
+#: ../src/iop/lut3d.c:1135
 msgid "application color space"
 msgstr "toepassingskleurruimte"
 
-#: ../src/iop/lut3d.c:1121
-msgid "REC.709"
-msgstr "REC.709"
+#: ../src/iop/lut3d.c:1137
+#| msgid "gamma Rec709 RGB"
+msgid "gamma rec709 RGB"
+msgstr "gamma rec709 RGB"
 
-#: ../src/iop/lut3d.c:1122
-msgid "lin sRGB/REC.709"
-msgstr "lin sRGB/REC.709"
+#: ../src/iop/lut3d.c:1138
+#| msgid "linear Rec709 RGB"
+msgid "linear rec709 RGB"
+msgstr "linear rec709 RGB"
 
-#: ../src/iop/lut3d.c:1123
-msgid "lin prophoto RGB"
-msgstr "lin prophoto RGB"
+#: ../src/iop/lut3d.c:1139
+#| msgid "linear Rec2020 RGB"
+msgid "linear rec2020 RGB"
+msgstr "linear rec2020 RGB"
 
-#: ../src/iop/lut3d.c:1125
+#: ../src/iop/lut3d.c:1141
 msgid "select the color space in which the LUT has to be applied"
 msgstr "selecteer de kleurruimte waarin de LUT moet worden toegepast"
 
-#: ../src/iop/lut3d.c:1129
+#: ../src/iop/lut3d.c:1145
 msgid "interpolation"
 msgstr "interpolatie"
 
-#: ../src/iop/lut3d.c:1130
+#: ../src/iop/lut3d.c:1146
 msgid "tetrahedral"
 msgstr "tetraëdrische"
 
-#: ../src/iop/lut3d.c:1131
+#: ../src/iop/lut3d.c:1147
 msgid "trilinear"
 msgstr "trilineair"
 
-#: ../src/iop/lut3d.c:1132
+#: ../src/iop/lut3d.c:1148
 msgid "pyramid"
 msgstr "piramide"
 
-#: ../src/iop/lut3d.c:1134
+#: ../src/iop/lut3d.c:1150
 msgid "select the interpolation method"
 msgstr "selecteer interpolatiemethode"
 
@@ -10332,48 +10340,48 @@ msgstr "logaritme (basis 2)"
 msgid "exponential (base 2)"
 msgstr "exponentieel (basis 2)"
 
-#: ../src/iop/rgbcurve.c:1522 ../src/iop/rgblevels.c:1021
+#: ../src/iop/rgbcurve.c:1524 ../src/iop/rgblevels.c:1021
 #: ../src/iop/tonecurve.c:1314
 msgid "RGB, linked channels"
 msgstr "RGB, verbonden kanalen"
 
-#: ../src/iop/rgbcurve.c:1523 ../src/iop/rgblevels.c:1022
+#: ../src/iop/rgbcurve.c:1525 ../src/iop/rgblevels.c:1022
 msgid "RGB, independent channels"
 msgstr "rgb, onafhankelijke kanalen"
 
-#: ../src/iop/rgbcurve.c:1525 ../src/iop/rgblevels.c:1024
+#: ../src/iop/rgbcurve.c:1527 ../src/iop/rgblevels.c:1024
 msgid "choose between linked and independent channels."
 msgstr "kies tussen gekoppelde en onafhankelijke kanalen"
 
-#: ../src/iop/rgbcurve.c:1532 ../src/iop/rgblevels.c:1031
+#: ../src/iop/rgbcurve.c:1534 ../src/iop/rgblevels.c:1031
 msgid "  R  "
 msgstr "  R  "
 
-#: ../src/iop/rgbcurve.c:1535 ../src/iop/rgblevels.c:1034
+#: ../src/iop/rgbcurve.c:1537 ../src/iop/rgblevels.c:1034
 msgid "curve nodes for r channel"
 msgstr "curve knooppunten voor r kanaal"
 
-#: ../src/iop/rgbcurve.c:1537 ../src/iop/rgblevels.c:1036
+#: ../src/iop/rgbcurve.c:1539 ../src/iop/rgblevels.c:1036
 msgid "  G  "
 msgstr "  G  "
 
-#: ../src/iop/rgbcurve.c:1540 ../src/iop/rgblevels.c:1039
+#: ../src/iop/rgbcurve.c:1542 ../src/iop/rgblevels.c:1039
 msgid "curve nodes for g channel"
 msgstr "curve knooppunten voor g kanaal"
 
-#: ../src/iop/rgbcurve.c:1542 ../src/iop/rgblevels.c:1041
+#: ../src/iop/rgbcurve.c:1544 ../src/iop/rgblevels.c:1041
 msgid "  B  "
 msgstr "  B  "
 
-#: ../src/iop/rgbcurve.c:1545 ../src/iop/rgblevels.c:1044
+#: ../src/iop/rgbcurve.c:1547 ../src/iop/rgblevels.c:1044
 msgid "curve nodes for b channel"
 msgstr "curve knooppunten voor b kanaal"
 
-#: ../src/iop/rgbcurve.c:1565
+#: ../src/iop/rgbcurve.c:1567
 msgid "pick GUI color from image"
 msgstr "neem GUI kleur van afbeelding"
 
-#: ../src/iop/rgbcurve.c:1619 ../src/iop/rgbcurve.c:1621
+#: ../src/iop/rgbcurve.c:1621 ../src/iop/rgbcurve.c:1623
 msgid "compensate middle grey"
 msgstr "compenseer midden grijs"
 
@@ -11836,31 +11844,31 @@ msgstr "punt"
 msgid "area"
 msgstr "gebied"
 
-#: ../src/libs/colorpicker.c:570 ../src/libs/colorpicker.c:607
+#: ../src/libs/colorpicker.c:570 ../src/libs/colorpicker.c:608
 msgid "mean"
 msgstr "gemiddeld"
 
-#: ../src/libs/colorpicker.c:571 ../src/libs/colorpicker.c:608
+#: ../src/libs/colorpicker.c:571 ../src/libs/colorpicker.c:609
 msgid "min"
 msgstr "min"
 
-#: ../src/libs/colorpicker.c:572 ../src/libs/colorpicker.c:609
+#: ../src/libs/colorpicker.c:572 ../src/libs/colorpicker.c:610
 msgid "max"
 msgstr "max"
 
-#: ../src/libs/colorpicker.c:581 ../src/libs/colorpicker.c:618
+#: ../src/libs/colorpicker.c:581 ../src/libs/colorpicker.c:619
 msgid "RGB"
 msgstr "RGB"
 
-#: ../src/libs/colorpicker.c:593
+#: ../src/libs/colorpicker.c:594
 msgid "restrict histogram to selection"
 msgstr "beperk histogram tot selectie"
 
-#: ../src/libs/colorpicker.c:626 ../src/libs/export_metadata.c:152
+#: ../src/libs/colorpicker.c:627 ../src/libs/export_metadata.c:152
 msgid "add"
 msgstr "toevoegen"
 
-#: ../src/libs/colorpicker.c:635
+#: ../src/libs/colorpicker.c:636
 msgid "display sample areas on image"
 msgstr "toon voorbeeldgebied op afbeelding"
 
@@ -15269,6 +15277,15 @@ msgstr "Accel"
 #: ../src/views/view.c:2415
 msgid "Action"
 msgstr "actie"
+
+#~ msgid "REC.709"
+#~ msgstr "REC.709"
+
+#~ msgid "lin sRGB/REC.709"
+#~ msgstr "lin sRGB/REC.709"
+
+#~ msgid "lin prophoto RGB"
+#~ msgstr "lin prophoto RGB"
 
 #~ msgctxt "accel"
 #~ msgid "shadows/highlights balance"
