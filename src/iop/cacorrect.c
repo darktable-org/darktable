@@ -1503,7 +1503,7 @@ void reload_defaults(dt_iop_module_t *module)
 
   dt_image_t *img = &module->dev->image_storage;
   // can't be switched on for non-raw or x-trans images:
-  if(dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) && !dt_image_is_monochrome(img))
+  if((img->flags & DT_IMAGE_RAW) && (img->buf_dsc.filters != 9u) && !dt_image_is_monochrome(img))
     module->hide_enable_button = 0;
   else
     module->hide_enable_button = 1;
@@ -1560,7 +1560,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(dt_iop_module_t *self)
 {
-  if(dt_image_is_raw(&self->dev->image_storage))
+  if(self->dev->image_storage.flags & DT_IMAGE_RAW)
     if(self->dev->image_storage.buf_dsc.filters != 9u && !dt_image_is_monochrome(&self->dev->image_storage))
       gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction"));
     else
