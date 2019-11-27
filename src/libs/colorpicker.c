@@ -170,11 +170,11 @@ static void _update_picker_output(dt_lib_module_t *self)
     switch(input_color)
     {
       case 0: // rgb
-        snprintf(colstring, sizeof(colstring), "(%d, %d, %d)",
+        snprintf(colstring, sizeof(colstring), "%d, %d, %d",
                  (int)round(rgb[0] * 255.f), (int)round(rgb[1] * 255.f), (int)round(rgb[2] * 255.f));
         break;
       case 1: // Lab
-        snprintf(colstring, sizeof(colstring), "(%.03f, %.03f, %.03f)", lab[0], lab[1], lab[2]);
+        snprintf(colstring, sizeof(colstring), "%.02f %.02f %.02f", lab[0], lab[1], lab[2]);
         break;
     }
     gtk_label_set_label(GTK_LABEL(data->output_label), colstring);
@@ -589,6 +589,7 @@ void gui_init(dt_lib_module_t *self)
   data->output_label = gtk_label_new("");
   gtk_label_set_justify(GTK_LABEL(data->output_label), GTK_JUSTIFY_CENTER);
   gtk_box_pack_start(GTK_BOX(output_options), data->output_label, FALSE, FALSE, 0);
+  gtk_widget_set_name(data->output_label, "live-sample-data");
 
   restrict_button = gtk_check_button_new_with_label(_("restrict histogram to selection"));
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(restrict_button))), PANGO_ELLIPSIZE_MIDDLE);
