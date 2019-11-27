@@ -1935,17 +1935,21 @@ start:
   db->dbfilename_library = g_strdup(dbfilename_library);
 
   /* make sure the folder exists. this might not be the case for new databases */
-  char *data_path = g_path_get_dirname(db->dbfilename_data);
-  char *library_path = g_path_get_dirname(db->dbfilename_library);
-  g_mkdir_with_parents(data_path, 0750);
-  g_mkdir_with_parents(library_path, 0750);
-  g_free(data_path);
-  g_free(library_path);
-
-  /* check if a database backup is needed */
-
-  dt_database_backup(dbfilename_data);
-  dt_database_backup(dbfilename_library);
+  /* also check if a database backup is needed */
+  if(g_strcmp0(dbfilename_data, ":memory:"))
+  {
+    char *data_path = g_path_get_dirname(dbfilename_data);
+    g_mkdir_with_parents(data_path, 0750);
+    g_free(data_path);
+    dt_database_backup(dbfilename_data);
+  }
+  if(g_strcmp0(dbfilename_library, ":memory:"))
+  {
+    char *library_path = g_path_get_dirname(dbfilename_library);
+    g_mkdir_with_parents(library_path, 0750);
+    g_free(library_path);
+    dt_database_backup(dbfilename_library);
+  }
 
   /* having more than one instance of darktable using the same database is a bad idea */
   /* try to get locks for the databases */
