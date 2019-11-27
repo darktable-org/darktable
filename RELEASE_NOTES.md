@@ -381,6 +381,7 @@ making a backup is strongly advised.
 - Chinese
 - Czech
 - Dutch
+- European Spanish
 - Finnish
 - French
 - Galician
