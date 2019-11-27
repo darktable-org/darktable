@@ -98,8 +98,8 @@ appended to it.
 
 =item B<< --apply-custom-presets  >>
 
-With this option you can decided if darktable loads its set of default parameters from
-B<data.db> and applies them. Otherwise the defaults that ship with darktable are used
+With this option you can decide if darktable loads its set of default parameters from
+B<data.db> and applies them. Otherwise the defaults that ship with darktable are used.
 
 =item B<< --verbose  >>
 
