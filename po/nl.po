@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-27 13:01+0100\n"
-"PO-Revision-Date: 2019-11-27 13:11+0100\n"
+"POT-Creation-Date: 2019-11-27 13:16+0100\n"
+"PO-Revision-Date: 2019-11-27 13:16+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -1733,7 +1733,7 @@ msgstr "aan"
 #: ../src/develop/blend_gui.c:2455 ../src/develop/develop.c:1897
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
 #: ../src/iop/ashift.c:4857 ../src/iop/ashift.c:4863 ../src/iop/colorin.c:2109
-#: ../src/iop/demosaic.c:5149 ../src/iop/vignette.c:1152
+#: ../src/iop/demosaic.c:5151 ../src/iop/vignette.c:1152
 #: ../src/libs/live_view.c:436
 msgid "off"
 msgstr "uit"
@@ -7646,48 +7646,48 @@ msgstr "randdrempelwaarde"
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "`%s' kleuren matrix voor 4bayer afbeelding is niet gevonden!"
 
-#: ../src/iop/demosaic.c:5122 ../src/iop/demosaic.c:5131
-#: ../src/iop/dither.c:803 ../src/iop/highlights.c:1079
+#: ../src/iop/demosaic.c:5124 ../src/iop/demosaic.c:5133
+#: ../src/iop/dither.c:803 ../src/iop/highlights.c:1081
 msgid "method"
 msgstr "methode"
 
-#: ../src/iop/demosaic.c:5124
+#: ../src/iop/demosaic.c:5126
 msgid "PPG (fast)"
 msgstr "PPG (snel)"
 
-#: ../src/iop/demosaic.c:5125
+#: ../src/iop/demosaic.c:5127
 msgid "AMaZE (slow)"
 msgstr "AMaZE (langzaam)"
 
-#: ../src/iop/demosaic.c:5126
+#: ../src/iop/demosaic.c:5128
 msgid "VNG4"
 msgstr "VNG4"
 
-#: ../src/iop/demosaic.c:5127 ../src/iop/demosaic.c:5136
+#: ../src/iop/demosaic.c:5129 ../src/iop/demosaic.c:5138
 msgid "passthrough (monochrome) (experimental)"
 msgstr "passthrough (monochroom) (experimenteel)"
 
-#: ../src/iop/demosaic.c:5128 ../src/iop/demosaic.c:5138
+#: ../src/iop/demosaic.c:5130 ../src/iop/demosaic.c:5140
 msgid "demosaicing raw data method"
 msgstr "demosaicing ruwe data-methode"
 
-#: ../src/iop/demosaic.c:5133
+#: ../src/iop/demosaic.c:5135
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:5134
+#: ../src/iop/demosaic.c:5136
 msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1-pass"
 
-#: ../src/iop/demosaic.c:5135
+#: ../src/iop/demosaic.c:5137
 msgid "Markesteijn 3-pass (slow)"
 msgstr "Markesteijn 3-pass (langzaam)"
 
-#: ../src/iop/demosaic.c:5137
+#: ../src/iop/demosaic.c:5139
 msgid "frequency domain chroma (slow)"
 msgstr "frequency domain chroma (langzaam)"
 
-#: ../src/iop/demosaic.c:5141
+#: ../src/iop/demosaic.c:5143
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -7697,63 +7697,63 @@ msgstr ""
 "schakel uit met 0.0\n"
 "kies 1.0 om de randen te negeren"
 
-#: ../src/iop/demosaic.c:5143
+#: ../src/iop/demosaic.c:5145
 msgid "edge threshold"
 msgstr "randdrempelwaarde"
 
-#: ../src/iop/demosaic.c:5147
+#: ../src/iop/demosaic.c:5149
 msgid "color smoothing"
 msgstr "kleuren afvlakken"
 
-#: ../src/iop/demosaic.c:5150
+#: ../src/iop/demosaic.c:5152
 msgid "one time"
 msgstr "een keer"
 
-#: ../src/iop/demosaic.c:5151
+#: ../src/iop/demosaic.c:5153
 msgid "two times"
 msgstr "twee keer"
 
-#: ../src/iop/demosaic.c:5152
+#: ../src/iop/demosaic.c:5154
 msgid "three times"
 msgstr "drie keer"
 
-#: ../src/iop/demosaic.c:5153
+#: ../src/iop/demosaic.c:5155
 msgid "four times"
 msgstr "vier keer"
 
-#: ../src/iop/demosaic.c:5154
+#: ../src/iop/demosaic.c:5156
 msgid "five times"
 msgstr "vijf keer"
 
-#: ../src/iop/demosaic.c:5155
+#: ../src/iop/demosaic.c:5157
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "aantal stappen mediaan kleur afvlakken na demosaicing"
 
-#: ../src/iop/demosaic.c:5159
+#: ../src/iop/demosaic.c:5161
 msgid "match greens"
 msgstr "groen matchen"
 
-#: ../src/iop/demosaic.c:5160
+#: ../src/iop/demosaic.c:5162
 msgid "disabled"
 msgstr "uitgeschakeld"
 
-#: ../src/iop/demosaic.c:5161
+#: ../src/iop/demosaic.c:5163
 msgid "local average"
 msgstr "lokaal gemiddelde"
 
-#: ../src/iop/demosaic.c:5162
+#: ../src/iop/demosaic.c:5164
 msgid "full average"
 msgstr "volledig gemiddelde"
 
-#: ../src/iop/demosaic.c:5163
+#: ../src/iop/demosaic.c:5165
 msgid "full and local average"
 msgstr "volledig en lokaal gemiddelde"
 
-#: ../src/iop/demosaic.c:5164
+#: ../src/iop/demosaic.c:5166
 msgid "green channels matching method"
 msgstr "methode voor matchen groene kanalen"
 
-#: ../src/iop/demosaic.c:5176
+#: ../src/iop/demosaic.c:5178
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -8190,7 +8190,7 @@ msgstr ""
 "percentage van heldere waarden; uitgeclipt, activeer door kleurkiezer te "
 "schakelen"
 
-#: ../src/iop/exposure.c:905 ../src/iop/highlights.c:1088
+#: ../src/iop/exposure.c:905 ../src/iop/highlights.c:1090
 #: ../src/views/darkroom.c:1866
 msgid "clipping threshold"
 msgstr "drempel clipping"
@@ -8958,23 +8958,23 @@ msgstr "begrens de waas verwijdering tot een bepaalde diepte"
 msgid "highlight reconstruction"
 msgstr "hooglichten herstellen"
 
-#: ../src/iop/highlights.c:1080
+#: ../src/iop/highlights.c:1082
 msgid "clip highlights"
 msgstr "comprimeer hooglichten"
 
-#: ../src/iop/highlights.c:1081
+#: ../src/iop/highlights.c:1083
 msgid "reconstruct in LCh"
 msgstr "reconstrueer in LCh"
 
-#: ../src/iop/highlights.c:1082
+#: ../src/iop/highlights.c:1084
 msgid "reconstruct color"
 msgstr "reconstrueer kleur"
 
-#: ../src/iop/highlights.c:1083
+#: ../src/iop/highlights.c:1085
 msgid "highlight reconstruction method"
 msgstr "reconstrueer hooglichten"
 
-#: ../src/iop/highlights.c:1086
+#: ../src/iop/highlights.c:1088
 msgid ""
 "manually adjust the clipping threshold against magenta highlights (you "
 "shouldn't ever need to touch this)"
@@ -9733,17 +9733,14 @@ msgid "application color space"
 msgstr "toepassingskleurruimte"
 
 #: ../src/iop/lut3d.c:1137
-#| msgid "gamma Rec709 RGB"
 msgid "gamma rec709 RGB"
 msgstr "gamma rec709 RGB"
 
 #: ../src/iop/lut3d.c:1138
-#| msgid "linear Rec709 RGB"
 msgid "linear rec709 RGB"
 msgstr "linear rec709 RGB"
 
 #: ../src/iop/lut3d.c:1139
-#| msgid "linear Rec2020 RGB"
 msgid "linear rec2020 RGB"
 msgstr "linear rec2020 RGB"
 
