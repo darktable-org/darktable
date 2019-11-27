@@ -936,7 +936,7 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       // The correction matrices are taken from
       // http://www.brucelindbloom.com - chromatic Adaption.
       // using Bradford method: found Illuminant -> D65
-      const float correctmat[6][9] = {
+      const float correctmat[7][9] = {
         { 0.9555766, -0.0230393, 0.0631636, -0.0282895, 1.0099416, 0.0210077, 0.0122982, -0.0204830,
           1.3299098 }, // 23 = D50
         { 0.9726856, -0.0135482, 0.0361731, -0.0167463, 1.0049102, 0.0120598, 0.0070026, -0.0116372,
@@ -948,7 +948,9 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
         { 0.9415037, -0.0321240, 0.0584672, -0.0428238, 1.0250998, 0.0203309, 0.0101511, -0.0161170,
           1.2847354 }, // 18 = Standard light B
         { 0.9904476, -0.0071683, -0.0116156, -0.0123712, 1.0155950, -0.0029282, -0.0035635, 0.0067697,
-          0.9181569 } // 19 = Standard light C
+          0.9181569 }, // 19 = Standard light C
+        { 0.9212269, -0.0449128, 0.1211620, -0.0553723, 1.0277243, 0.0403563, 0.0235086, -0.0391019,
+          1.6390644 }  // F2 = cool white
       };
 
       if(FIND_EXIF_TAG("Exif.Image.CalibrationIlluminant1")) illu1 = pos->toLong();
@@ -973,19 +975,24 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       {
         for(int i = 0; i < 9; i++) colmatrix[i] = cm1_pos->toFloat(i);
         illu = illu1;
-    }
+      }
+      // In a few cases we only have one color matrix; it should not be corrected
+      if(illu == -1 && cm1_pos != exifData.end() && cm1_pos->count() == 9 && cm1_pos->size())
+      {
+        for(int i = 0; i < 9; i++) colmatrix[i] = cm1_pos->toFloat(i);
+        illu = 0;
+      }
+
+
       // Take the found CalibrationIlluminant / ColorMatrix pair.
-      // If it is D65: just copy otherwise multiply by the specific correction matrix.
+      // D65 or default: just copy. Otherwise multiply by the specific correction matrix.
       if(illu != -1)
       {
        // If no supported Illuminant is found it's better NOT to use the found matrix.
        // The colorin module will write an error message and use a fallback matrix
        // instead of showing wrong colors.
-       switch(illu)
+        switch(illu)
         {
-          case 21:
-            for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = colmatrix[i];
-            break;
           case 23:
             mat3mul(img->d65_color_matrix, correctmat[0], colmatrix);
             break;
@@ -1003,6 +1010,15 @@ static bool dt_exif_read_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
             break;
           case 19:
             mat3mul(img->d65_color_matrix, correctmat[5], colmatrix);
+            break;
+          case 3:
+            mat3mul(img->d65_color_matrix, correctmat[3], colmatrix);
+            break;
+          case 14:
+            mat3mul(img->d65_color_matrix, correctmat[6], colmatrix);
+            break;
+          default:
+            for(int i = 0; i < 9; i++) img->d65_color_matrix[i] = colmatrix[i];
             break;
         }
         // Maybe there is a predefined camera matrix in adobe_coeff?
