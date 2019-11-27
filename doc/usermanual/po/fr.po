@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
-"POT-Creation-Date: 2019-11-19 18:09+0100\n"
-"PO-Revision-Date: 2019-11-19 22:03+0100\n"
+"POT-Creation-Date: 2019-11-24 22:58+0100\n"
+"PO-Revision-Date: 2019-11-25 00:21+0100\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -1380,15 +1380,14 @@ msgid "darktable-cmstest"
 msgstr "darktable-cmstest"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1005(para)
-#, fuzzy
 msgid ""
 "This binary (Linux only) investigates if the color management subsystem of "
 "your computer is correctly configured and it displays some useful "
 "information about the installed monitor profile(s)."
 msgstr ""
-"Cet exécutable détermine si le sous-système de votre ordinateur gérant la "
-"couleur est correctement configuré et affiche des informations sur les "
-"profils-moniteur installés ."
+"Cet exécutable (sous Linux seulement) détermine si le sous-système de votre "
+"ordinateur gérant la couleur est correctement configuré et affiche des "
+"informations utiles sur le(s) profil(s)-moniteur installé(s) ."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1011(para)
 msgid ""
@@ -6677,14 +6676,12 @@ msgid "title from metadata"
 msgstr "titre d'après les métadonnées"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5277(code)
-#, fuzzy
 msgid "$(DECRIPTION)"
-msgstr "$(VERSION)"
+msgstr "$(DESCRIPTION)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5279(entry)
-#, fuzzy
 msgid "description from metadata"
-msgstr "créateur d'après les métadonnées"
+msgstr "description d'après les métadonnées"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5285(code)
 msgid "$(CREATOR)"
@@ -7014,7 +7011,6 @@ msgid "on conflict"
 msgstr "sur conflit"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5586(para)
-#, fuzzy
 msgid ""
 "If this option is set to <quote>create unique filename</quote> darktable "
 "automatically chooses a unique new file name in case of naming conflicts "
@@ -7025,13 +7021,15 @@ msgid ""
 "Setting this to <quote>skip</quote> will result in images not being exported "
 "when the destination filename already exists."
 msgstr ""
-"Si l'option choisie est <quote>créer fichier unique</quote> darktable "
+"Si cette option est définie à <quote>créer fichier unique</quote> darktable "
 "choisit automatiquement un nouveau nom unique de fichier en cas de conflits "
-"de nommage avec des fichiers existants. Le réglage alternatif "
-"<quote>écraser</quote> force darktable à respecter le modèle de nom de "
-"fichier sélectionné, écrasant tous les fichiers existants en conflit. Cette "
-"option est réinitialisée à <quote>créer fichier unique</quote> après chaque "
-"exportation afin de vous protéger d'une perte de données accidentelle."
+"de nommage avec des fichiers existants. Définir cette option à "
+"<quote>écraser</quote> force darktable à respecter exactement le modèle de "
+"nom de fichier sélectionné, écrasant tous les fichiers existants en conflit. "
+"Cette option vous présentera une boîte de dialogue de confirmation afin de "
+"vous protéger d'une perte accidentelle. Si vous définissez cette option à "
+"<quote>sauter</quote> alors les images ne seront pas exportées quand le nom "
+"de fichier de destination existe déjà."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5600(title)
 msgid "file format"
@@ -7272,17 +7270,16 @@ msgid "metadata"
 msgstr "métadonnées"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5748(para)
-#, fuzzy
 msgid ""
 "Pressing the <inlinegraphic fileref=\"images/darkroom_preferences.png\" "
 "scalefit=\"1\" width=\"2%\" align=\"center\"/> icon on the right of export "
 "button opens a window to configure which metadata are to be embedded into "
 "the exported image."
 msgstr ""
-"Un bouton <inlinegraphic fileref=\"images/darkroom_preferences.png\" "
-"scalefit=\"1\" width=\"2%\" align=\"center\"/> situé sur le panneau "
-"supérieur vous permet de définir divers paramètres qui contrôlent le "
-"comportement de darktable."
+"Presser l’icône <inlinegraphic fileref=\"images/darkroom_preferences.png\" "
+"scalefit=\"1\" width=\"2%\" align=\"center\"/> à droite du bouton "
+"d'exportation ouvre une fenêtre pour choisir quelles métadonnées doivent "
+"être intégrées à l'image exportée."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5755(para)
 msgid ""
@@ -7344,6 +7341,12 @@ msgid ""
 "button <emphasis>add</emphasis> to add a metadata entry to the configuration "
 "list."
 msgstr ""
+"Utilisez l'icône <quote>-</quote> pour supprimer une entrée de métadonnées "
+"dans la liste, l'icône <quote>+</quote> pour en ajouter une à partir de la "
+"liste prédéfinie : <graphic fileref=\"lighttable/images/panel_exportselected-"
+"metadata-selection.png\" scalefit=\"1\" width=\"40%\" align=\"center\"/> "
+"Double-cliquez ou cliquez le bouton <emphasis>ajouter</emphasis> pour "
+"ajouter une entrée de métadonnées dans la liste de configuration."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5783(para)
 msgid ""
@@ -7355,6 +7358,15 @@ msgid ""
 "<emphasis>category</emphasis> are not exported. Tags and Categories are "
 "displayed separately in image information."
 msgstr ""
+"Les formules vous permettent de tirer le meilleur parti de la fonction mots-"
+"clés. Vous pouvez virtuellement définir toutes les métadonnées dont vous "
+"avez besoin pour qualifier vos images avec des mots-clés et, grâce à ces "
+"formules, exporter les valeurs dans les mots-clés xmp ou iptc de votre "
+"choix. Les mots-clés exportés peuvent être différents d'une exportation à "
+"l'autre en fonction de la destination des images. Rappelez-vous que les mots-"
+"clés définis comme <emphasis>catégorie</emphasis> ne sont pas exportées. Les "
+"mots-clés et les catégories sont affichés séparément dans les informations "
+"sur l'image."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5792(para)
 msgid ""
@@ -10336,7 +10348,6 @@ msgstr ""
 "graphique utilisateur (voir <xref linkend=\"gui_options\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:8000(para)
-#, fuzzy
 msgid ""
 "To investigate your display profile configuration you can call the <filename "
 "moreinfo=\"none\">darktable-cmstest</filename> binary (Linux only) which "
@@ -10346,9 +10357,10 @@ msgid ""
 msgstr ""
 "Pour étudier la configuration de votre profil d'affichage, vous pouvez "
 "appeler l'exécutable <filename moreinfo=\"none\">darktable-cmstest</"
-"filename> qui affiche des informations utiles comme le nom du profil du "
-"moniteur et qui vous indique si le système est correctement configuré (voir "
-"<xref linkend=\"darktable_cmstest_commandline_parameters\"/>)."
+"filename> (sous Linux uniquement) qui affiche des informations utiles comme "
+"le nom du profil du moniteur et qui vous indique si le système est "
+"correctement configuré (voir <xref linkend="
+"\"darktable_cmstest_commandline_parameters\"/>)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:8007(para)
 msgid ""
