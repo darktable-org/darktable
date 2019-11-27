@@ -9162,6 +9162,8 @@ msgid ""
 "enlarge or shrink the computed dynamic range.\n"
 "useful in conjunction with \"auto tune levels\"."
 msgstr ""
+"Allarga o riduci la gamma dinamica calcolata.\n"
+"Utile se utilizzato insieme a \"regola automaticamente i livelli\""
 
 #: ../src/iop/filmic.c:1737 ../src/iop/filmicrgb.c:1494
 #: ../src/iop/profile_gamma.c:940
@@ -9175,6 +9177,11 @@ msgid ""
 "works better for landscapes and evenly-lit pictures\n"
 "but fails for high-keys and low-keys."
 msgstr ""
+"Tenta di ottimizzare le regolazioni per tentativi.\n"
+"Questo farà rientrare la gamma di luminosità all'interno dei limiti "
+"dell'istogramma.\n"
+"I migliori risultati si otterranno con immagini di paesaggio ben illuminate\n"
+"mentre non funzionerà su scene sovra o sottoesposte."
 
 #: ../src/iop/filmic.c:1747
 msgid "filmic S curve"
@@ -9185,6 +9192,8 @@ msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
 msgstr ""
+"Inclinazione della parte lineare della curva\n"
+"Influirà soprattutto i mezzitoni"
 
 #. geotagging
 #: ../src/iop/filmic.c:1761 ../src/iop/filmicrgb.c:1520
@@ -9198,6 +9207,9 @@ msgid ""
 "increase to get more contrast at the extreme luminances.\n"
 "this has no effect on mid-tones."
 msgstr ""
+"Ampiezza del dominio lineare nel mezzo della curva.\n"
+"Aumenta questo valore per avere più contrasto nelle alteluci.\n"
+"Nessun effetto sui mezzitoni."
 
 #: ../src/iop/filmic.c:1771 ../src/iop/filmicrgb.c:1532
 msgid "shadows/highlights balance"
@@ -9210,6 +9222,10 @@ msgid ""
 "use it if you need to protect the details\n"
 "at one extremity of the histogram."
 msgstr ""
+"Sposta la latitudine lungo l'inclinazione della curva\n"
+"per dare più spazio alle ombre o alle alteluci.\n"
+"Da utilizzare se è necessario preservare i dettagli\n"
+"ad una estremità dell'istogramma."
 
 #: ../src/iop/filmic.c:1780
 msgid "global saturation"
@@ -9221,6 +9237,9 @@ msgid ""
 "you need to set this value below 100%\n"
 "if the chrominance preservation is enabled."
 msgstr ""
+"Desatura globalmente l'ingresso del modulo.\n"
+"Questo valore deve essere inferiore a 100%\n"
+"se avete abilitato 'preserva crominanza'"
 
 #: ../src/iop/filmic.c:1790 ../src/iop/filmicrgb.c:1543
 msgid "extreme luminance saturation"
@@ -9232,6 +9251,9 @@ msgid ""
 "specifically at extreme luminances.\n"
 "decrease if shadows and/or highlights are over-saturated."
 msgstr ""
+"Desatura l'uscita dal modulo\n"
+"soprattutto nelle alteluci.\n"
+"Diminuire il valore se le ombre e/o le alteluci sono super-sature"
 
 #: ../src/iop/filmic.c:1804 ../src/libs/export.c:669
 #: ../src/libs/print_settings.c:1238 ../src/libs/print_settings.c:1451
@@ -9255,6 +9277,7 @@ msgstr "Ottimizzato"
 #: ../src/iop/filmic.c:1810
 msgid "change this method if you see reversed contrast or faded blacks"
 msgstr ""
+"Modifica questo metodo se notate inversioni del contrasto o neri sbiaditi"
 
 #. Preserve color
 #: ../src/iop/filmic.c:1814
@@ -9267,6 +9290,10 @@ msgid ""
 "may reinforce chromatic aberrations.\n"
 "you need to manually tune the saturation when using this mode."
 msgstr ""
+"Preserva i colori originali.\n"
+"Potrebbe aumentare eventuali aberrazioni cromatiche.\n"
+"Quando questa modalità è utilizzata potrebbe essere necessario dover "
+"sistemare manualmente la saturazione."
 
 #: ../src/iop/filmic.c:1826
 msgid "destination/display"
@@ -9281,6 +9308,8 @@ msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
 msgstr ""
+"Luminosità del nero puro in uscita. Dovrebbe essere 0%\n"
+"a meno che non desideriate un risultato sbiadito."
 
 #: ../src/iop/filmic.c:1851 ../src/iop/filmicrgb.c:1577
 msgid "target middle grey"
@@ -9291,6 +9320,10 @@ msgid ""
 "midde grey value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
 msgstr ""
+"Valore del grigio medio dello schermo o dello spazio colore di "
+"destinazione.\n"
+"Non dovresti mai modificare questo valore a meno che tu non sappia "
+"esattamente che cosa stia facendo!"
 
 #: ../src/iop/filmic.c:1860 ../src/iop/filmicrgb.c:1586
 msgid "target white luminance"
@@ -9301,6 +9334,8 @@ msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
 msgstr ""
+"Luminosità del bianco puro in uscita. Dovrebbe essere 100%\n"
+"a meno che non desideriate un risultato sbiadito."
 
 #: ../src/iop/filmic.c:1869
 msgid "target gamma"
@@ -9312,6 +9347,10 @@ msgid ""
 "of the display or color space.\n"
 "you should never touch that unless you know what you are doing."
 msgstr ""
+"Forza della gamma della funzione di trasferimento\n"
+"dello schermo o dello spazio colore.\n"
+"Non dovresti mai modificare questo valore a meno che tu non sappia "
+"esattamente che cosa stia facendo!"
 
 #: ../src/iop/filmicrgb.c:192
 msgid "filmic rgb"
@@ -9489,7 +9528,7 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:1595
 msgid "target power transfer function"
-msgstr ""
+msgstr "Imposta la funzione di trasferimento della potenza"
 
 #: ../src/iop/finalscale.c:39
 msgctxt "modulename"
