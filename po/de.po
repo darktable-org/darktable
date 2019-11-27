@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
-"PO-Revision-Date: 2019-11-26 20:55+0100\n"
+"PO-Revision-Date: 2019-11-27 23:19+0100\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -1072,7 +1072,6 @@ msgid "very fast GPU"
 msgstr "Sehr schnelle GPU"
 
 #: ../build/src/preferences_gen.h:3975
-#, fuzzy
 msgid ""
 "defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled "
 "systems. default - GPU processes full and CPU processes preview pipe "
@@ -1080,11 +1079,12 @@ msgid ""
 "parallel on two different GPUs; very fast GPU - process both pixelpipes "
 "sequentially on the GPU."
 msgstr ""
-"legt fest, wie Vorschau und volle Berechnung auf OpenCL-Systemen ausgeführt "
-"werden. Standard – GPU berechnet das volle Bild und CPU die Vorschau (kann "
-"über die Konfiguration angepasst werden); mehrere GPUs – beide Bilder "
-"parallel auf zwei verschiedenen GPUs berechnen; sehr schnelle GPU – beide "
-"Bilder nacheinander auf der selben GPU berechnen."
+"Legt fest, wie das Vorschaubild und die Pixelpipes auf Systemen mit "
+"aktiviertem OpenCL ausgeführt werden. Standard – GPU berechnet die volle "
+"Pixelpipes und die CPU das Vorschau (kann über die Konfiguration angepasst "
+"werden); mehrere GPUs – beide Pixelpipes werden parallel auf zwei GPUs "
+"berechnen; sehr schnelle GPU – beide Pixelpipes werden nacheinander auf der "
+"selben GPU berechnen."
 
 #: ../build/src/preferences_gen.h:4000
 msgid "omit hierarchy in simple tag lists"
@@ -1174,12 +1174,11 @@ msgid "select directory"
 msgstr "Verzeichnis wählen"
 
 #: ../build/src/preferences_gen.h:4135
-#, fuzzy
 msgid ""
 "this folder (and sub-folders) contains Lut files used by lut3d modules. need "
 "to restart darktable."
 msgstr ""
-"Dieses Verzeichnis (einschließlich dessen Unterverzeichnisse) enthalten LUT-"
+"Dieses Verzeichnis (einschließlich der Unterverzeichnisse) enthalten LUT-"
 "Dateien die vom lut3d-Modul verwendet werden. Neustart von darktable "
 "erforderlich."
 
@@ -1500,7 +1499,6 @@ msgstr "BRG (experimentell)"
 
 #: ../src/common/colorspaces.c:983 ../src/common/colorspaces.c:1246
 #: ../src/iop/colorout.c:881
-#, fuzzy
 msgid "export profile"
 msgstr "Exportprofil"
 
@@ -1523,14 +1521,12 @@ msgid "sRGB (web-safe)"
 msgstr "sRGB (web-sicher)"
 
 #: ../src/common/colorspaces.c:1283
-#, fuzzy
 msgid "gamma Rec709 RGB"
-msgstr "gamma Rec709-RGB"
+msgstr "Gamma Rec709 RGB"
 
 #: ../src/common/colorspaces.c:1293
-#, fuzzy
 msgid "linear prophoto RGB"
-msgstr "lineares prophoto-RGB"
+msgstr "lineares prophoto RGB"
 
 #: ../src/common/colorspaces.c:1311
 msgid "BRG (for testing)"
@@ -2412,7 +2408,6 @@ msgid "local copy images"
 msgstr "Bilder lokal kopieren"
 
 #: ../src/control/jobs/control_jobs.c:1751 ../src/libs/image.c:276
-#, fuzzy
 msgid "refresh exif"
 msgstr "Exif aktualisieren"
 
@@ -2941,7 +2936,7 @@ msgstr "Maske normal oder invertiert anwenden"
 
 #: ../src/develop/blend_gui.c:2519
 msgid "feathering guide"
-msgstr "Maskenanpassung mittels"
+msgstr "Ausblenden anwenden auf"
 
 #: ../src/develop/blend_gui.c:2521
 msgid "output image"
@@ -2959,11 +2954,11 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:2537
 msgid "feathering radius"
-msgstr "Anpassungsradius"
+msgstr "Ausblend-Radius"
 
 #: ../src/develop/blend_gui.c:2539
 msgid "spatial radius of feathering"
-msgstr "Räumlicher Radius für die kantensensitive Anapssung der Maske"
+msgstr "Räumlicher Radius für das Ausblenden"
 
 #: ../src/develop/blend_gui.c:2545
 msgid "mask blur"
@@ -3167,7 +3162,6 @@ msgid "[PATH creation] add a smooth node"
 msgstr "[PATH creation] weichen Knoten hinzufügen"
 
 #: ../src/develop/masks/masks.c:170
-#, fuzzy
 msgid "[PATH creation] add a sharp node"
 msgstr "[PATH creation] scharfen Knoten hinzufügen"
 
@@ -3176,7 +3170,6 @@ msgid "[PATH creation] terminate path creation"
 msgstr "[PATH creation] Pfaderstellung beenden"
 
 #: ../src/develop/masks/masks.c:181
-#, fuzzy
 msgid "[PATH on node] switch between smooth/sharp node"
 msgstr "[PATH on node] wechseln zwischen weichen und scharfen Knoten"
 
@@ -3205,12 +3198,10 @@ msgid "[PATH] change feather size"
 msgstr "[PATH] Bereich des Ausblendens ändern"
 
 #: ../src/develop/masks/masks.c:221
-#, fuzzy
 msgid "[GRADIENT on pivot] rotate shape"
 msgstr "[GRADIENT on pivot] Form drehen"
 
 #: ../src/develop/masks/masks.c:226
-#, fuzzy
 msgid "[GRADIENT creation] set rotation"
 msgstr "[GRADIENT creation] Drehrichtung einstellen"
 
@@ -3235,7 +3226,6 @@ msgid "[ELLIPSE] switch feathering mode"
 msgstr "[ELLIPSE] Modus für Ausblenden umschalten"
 
 #: ../src/develop/masks/masks.c:262
-#, fuzzy
 msgid "[ELLIPSE] rotate shape"
 msgstr "[ELLIPSE] Form drehen"
 
@@ -3991,7 +3981,6 @@ msgid "$(TITLE) - title from metadata"
 msgstr "$(TITLE) – Titel aus den Metadaten"
 
 #: ../src/gui/gtkentry.c:215
-#, fuzzy
 msgid "$(DESCRIPTION) - description from metadata"
 msgstr "$(DESCRIPTION) - Beschreibung aus den Metadaten"
 
@@ -4020,7 +4009,6 @@ msgid "$(TAGS) - tags as set in metadata settings"
 msgstr "$(TAGS) – Tags gemäß den Metadateneinstellungen"
 
 #: ../src/gui/guides.c:108
-#, fuzzy
 msgid "horizontal lines"
 msgstr "horizontale Linien"
 
@@ -4029,17 +4017,14 @@ msgid "number of horizontal guide lines"
 msgstr "Anzahl der horizontalen Hilfslinien"
 
 #: ../src/gui/guides.c:115
-#, fuzzy
 msgid "vertical lines"
 msgstr "vertikale Linien"
 
 #: ../src/gui/guides.c:116
-#, fuzzy
 msgid "number of vertical guide lines"
-msgstr "Anzahl der vertikalen Hilfslinien"
+msgstr "Anzahl vertikaler Hilfslinien"
 
 #: ../src/gui/guides.c:122
-#, fuzzy
 msgid "subdivisions"
 msgstr "Unterteilung"
 
@@ -4239,7 +4224,6 @@ msgstr "auto"
 
 #. Adding the import/export buttons
 #: ../src/gui/preferences.c:544 ../src/gui/preferences.c:637
-#, fuzzy
 msgctxt "preferences"
 msgid "import..."
 msgstr "importieren..."
@@ -4259,7 +4243,6 @@ msgstr "Belegung"
 
 #. export button
 #: ../src/gui/preferences.c:642 ../src/libs/styles.c:472
-#, fuzzy
 msgid "export..."
 msgstr "exportieren..."
 
@@ -4279,7 +4262,6 @@ msgstr ""
 "zugewiesen. Soll sie überschrieben werden?"
 
 #: ../src/gui/preferences.c:1026
-#, fuzzy
 msgid "accel conflict"
 msgstr "Konflikt bei der Beschleunigung"
 
@@ -5644,7 +5626,6 @@ msgid "[%s] unselect all segments from zone"
 msgstr "[%s] alle Segmente aus Region abwählen"
 
 #: ../src/iop/atrous.c:117
-#, fuzzy
 msgid "contrast equalizer"
 msgstr "Kontrast Equalizer"
 
@@ -5923,11 +5904,9 @@ msgstr "erhalte Farben"
 msgid "none"
 msgstr "keine"
 
-# wtf?
 #: ../src/iop/basecurve.c:2141 ../src/iop/basicadj.c:708
 #: ../src/iop/rgbcurve.c:1621 ../src/iop/rgblevels.c:1118
 #: ../src/iop/tonecurve.c:1394
-#, fuzzy
 msgid "luminance"
 msgstr "Luminanz"
 
@@ -5940,7 +5919,6 @@ msgstr "max RGB"
 #: ../src/iop/basecurve.c:2143 ../src/iop/basicadj.c:710
 #: ../src/iop/rgbcurve.c:1623 ../src/iop/rgblevels.c:1120
 #: ../src/iop/tonecurve.c:1396
-#, fuzzy
 msgid "average RGB"
 msgstr "mittleres RGB"
 
@@ -5960,7 +5938,7 @@ msgstr "Normalisiertes RGB"
 #: ../src/iop/rgbcurve.c:1626 ../src/iop/rgblevels.c:1123
 #: ../src/iop/tonecurve.c:1399
 msgid "basic power"
-msgstr ""
+msgstr "Grundleistung"
 
 #: ../src/iop/basecurve.c:2148 ../src/iop/basicadj.c:715
 #: ../src/iop/rgbcurve.c:1628 ../src/iop/rgblevels.c:1125
@@ -6019,19 +5997,16 @@ msgid "black level correction"
 msgstr "Schwarzwert-Anpassung"
 
 #: ../src/iop/basicadj.c:675
-#, fuzzy
 msgid ""
 "adjust the black level to unclip negative RGB values.\n"
 "you should never use it to add more density in blacks!\n"
 "if poorly set, it will clip near-black colors out of gamut\n"
 "by pushing RGB values into negatives"
 msgstr ""
-"Schwarzwert anpassen um das Abschneiden von negativen RGB-Werten zu "
-"verhindern.\n"
-"Nicht verwenden, um die Dichte der schwarzen Bereiche zu erhöhen!\n"
-"Bei schlechter Einstellung werden dunkle Farben aus dem Gamut-Bereich "
-"geschnitten,\n"
-"weil die RGB-Werte negativ werden"
+"Anpassen des Schwarzwert, u, negative RGB-Werten zu entfernen.\n"
+"Niemals verwenden, um die Dichte in den Schwarztönungen zu erhöhen!\n"
+"Bei schlechter Einstellung werden dunkle Farben aus der Farbskala entfernt,\n"
+"weil die RGB-Werte negativ werden."
 
 #: ../src/iop/basicadj.c:687 ../src/iop/exposure.c:884
 msgid "adjust the exposure correction"
@@ -6042,9 +6017,8 @@ msgid "highlight compression"
 msgstr "Spitzlichtkompression"
 
 #: ../src/iop/basicadj.c:694
-#, fuzzy
 msgid "highlight compression adjustment"
-msgstr "Farbanpassung der Spitzlichter"
+msgstr "Spitzlichtkompression anpassen"
 
 #: ../src/iop/basicadj.c:700 ../src/iop/bilat.c:546 ../src/iop/colisa.c:379
 #: ../src/iop/colorbalance.c:2419 ../src/iop/colorbalance.c:2421
@@ -6058,14 +6032,12 @@ msgid "contrast adjustment"
 msgstr "Kontrastanpassung"
 
 #: ../src/iop/basicadj.c:719
-#, fuzzy
 msgid "middle grey"
-msgstr "mittel graue Luminanz"
+msgstr "mittelgrau"
 
 #: ../src/iop/basicadj.c:721
-#, fuzzy
 msgid "middle grey adjustment"
-msgstr "mittelgraues Ziel"
+msgstr "mittlere Graueinstellung"
 
 #: ../src/iop/basicadj.c:733 ../src/iop/colisa.c:380 ../src/iop/retouch.c:2918
 #: ../src/iop/soften.c:748 ../src/iop/vignette.c:1158
@@ -6089,7 +6061,6 @@ msgid "saturation"
 msgstr "Sättigung"
 
 #: ../src/iop/basicadj.c:740
-#, fuzzy
 msgid "saturation adjustment"
 msgstr "Farbsättigungsanpassung"
 
@@ -6920,7 +6891,7 @@ msgstr "Lift, Gamma, Gain (ProPhotoRGB)"
 
 #: ../src/iop/colorbalance.c:2367
 msgid "slope, offset, power (ProPhotoRGB)"
-msgstr "Neigung, Offset, Power (ProPhotoRGB)"
+msgstr "Neigung, Offset, Stärke (ProPhotoRGB)"
 
 #: ../src/iop/colorbalance.c:2368
 msgid "lift, gamma, gain (sRGB)"
@@ -7016,7 +6987,7 @@ msgstr "Blau-Faktor für Lift"
 #. gamma
 #: ../src/iop/colorbalance.c:2547
 msgid "mid-tones : gamma / power"
-msgstr "Mitteltöne: Gamma / Power"
+msgstr "Mitteltöne: Gamma / Stärke"
 
 #: ../src/iop/colorbalance.c:2549
 msgid "factor of gamma"
@@ -7269,14 +7240,12 @@ msgstr ""
 "Nicht unterstütztes Eingabeprofil wurde durch lineares Rec709-RGB ersetzt!"
 
 #: ../src/iop/colorin.c:2069
-#, fuzzy
 msgid "input profile"
-msgstr "Ausgabeprofil"
+msgstr "Eingabeprofil"
 
 #: ../src/iop/colorin.c:2073
-#, fuzzy
 msgid "working profile"
-msgstr "wärmender Filter"
+msgstr "Arbeitsprofil"
 
 #: ../src/iop/colorin.c:2083 ../src/iop/colorin.c:2094
 #: ../src/iop/colorout.c:892
@@ -7606,9 +7575,8 @@ msgstr ""
 
 #. edit by area
 #: ../src/iop/colorzones.c:2306
-#, fuzzy
 msgid "edit by area"
-msgstr "Stil bearbeiten"
+msgstr "Nach Bereich bearbeiten"
 
 #: ../src/iop/colorzones.c:2308
 msgid "edit the curve nodes by area"
@@ -7900,7 +7868,6 @@ msgstr "Varianz rot:"
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3946
-#, fuzzy
 msgid "variance computed on the red channel"
 msgstr "berechnete Varianz des Rot-Kanal"
 
@@ -7910,7 +7877,6 @@ msgstr "Varianz grün:"
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3954
-#, fuzzy
 msgid "variance computed on the green channel"
 msgstr "berechnete Varianz des Grün-Kanal"
 
@@ -7920,7 +7886,6 @@ msgstr "Varianz blau:"
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3962
-#, fuzzy
 msgid "variance computed on the blue channel"
 msgstr "berechnete Varianz des Blau-Kanal"
 
@@ -7937,7 +7902,6 @@ msgid "B"
 msgstr "B"
 
 #: ../src/iop/denoiseprofile.c:4011
-#, fuzzy
 msgid "whitebalance-adaptive transform"
 msgstr "Weißabgleichsadaptive Transformation"
 
@@ -8021,37 +7985,32 @@ msgid "central pixel weight (details)"
 msgstr "zentrales Pixelgewicht (Details)"
 
 #: ../src/iop/denoiseprofile.c:4068
-#, fuzzy
 msgid "adjust autoset parameters"
-msgstr "Einstellungen zurücksetzen"
+msgstr "Einstellen der Autoset-Parameter"
 
 #: ../src/iop/denoiseprofile.c:4069
-#, fuzzy
 msgid "preserve shadows"
-msgstr "erhalte Farben"
+msgstr "Schatten erhalte"
 
 #: ../src/iop/denoiseprofile.c:4070
-#, fuzzy
 msgid "bias correction"
-msgstr "Objektivkorrektur"
+msgstr "Bias-Korrektur"
 
 #: ../src/iop/denoiseprofile.c:4071
 msgid "non-local means"
 msgstr "nicht-lokales Mittel"
 
 #: ../src/iop/denoiseprofile.c:4072
-#, fuzzy
 msgid "non-local means auto"
-msgstr "nicht-lokales Mittel"
+msgstr "nicht-lokales Mittel (auto)"
 
 #: ../src/iop/denoiseprofile.c:4073
 msgid "wavelets"
 msgstr "Wavelets"
 
 #: ../src/iop/denoiseprofile.c:4074
-#, fuzzy
 msgid "wavelets auto"
-msgstr "Wavelets"
+msgstr "Wavelets (auto)"
 
 #: ../src/iop/denoiseprofile.c:4080
 msgid "profile used for variance stabilization"
@@ -8620,51 +8579,42 @@ msgstr ""
 "Sollte nicht geändert werden, es sei denn, Sie wissen, was Sie tun."
 
 #: ../src/iop/filmicrgb.c:192
-#, fuzzy
 msgid "filmic rgb"
-msgstr "filmisch"
+msgstr "filmisch RGB"
 
 #: ../src/iop/filmicrgb.c:233
-#, fuzzy
 msgid "07 EV dynamic range"
-msgstr "Dynamikbereich"
+msgstr "07 EV Dynamikbereich"
 
 #: ../src/iop/filmicrgb.c:239
-#, fuzzy
 msgid "09 EV dynamic range"
-msgstr "Dynamikbereich"
+msgstr "09 EV Dynamikbereich"
 
 #: ../src/iop/filmicrgb.c:245
-#, fuzzy
 msgid "11 EV dynamic range"
-msgstr "Dynamikbereich"
+msgstr "11 EV Dynamikbereich"
 
 #: ../src/iop/filmicrgb.c:251
-#, fuzzy
 msgid "13 EV dynamic range"
-msgstr "Dynamikbereich"
+msgstr "13 EV Dynamikbereich"
 
 #: ../src/iop/filmicrgb.c:257
-#, fuzzy
 msgid "15 EV (backlighting)"
-msgstr "14 EV (Gegenlicht)"
+msgstr "15 EV (Gegenlicht)"
 
 #: ../src/iop/filmicrgb.c:263
-#, fuzzy
 msgid "17 EV (HDR)"
-msgstr "16 EV (HDR)"
+msgstr "17 EV (HDR)"
 
 #: ../src/iop/filmicrgb.c:268
-#, fuzzy
 msgctxt "accel"
 msgid "white exposure"
-msgstr "drei Belichtungen"
+msgstr "Weißbelichtung"
 
 #: ../src/iop/filmicrgb.c:269
-#, fuzzy
 msgctxt "accel"
 msgid "black exposure"
-msgstr "schwarz relative Belichtung"
+msgstr "Schwarzbelichtung"
 
 #: ../src/iop/filmicrgb.c:270
 #, fuzzy
@@ -8702,6 +8652,9 @@ msgid ""
 "the bright curve is the filmic tone mapping curve\n"
 "the dark curve is the desaturation curve\n"
 msgstr ""
+"Schreibgeschützter Graph, Parameter unten benutzen um die Knoten zu setzen\n"
+"Die helle Kurve ist die filmische Farbkurve.\n"
+"Die dunkle Kurve ist die Entsättigungskurve."
 
 #: ../src/iop/filmicrgb.c:1430
 msgid "scene"
@@ -8767,7 +8720,6 @@ msgstr ""
 "Hat keine Auswirkungen auf die Mitten."
 
 #: ../src/iop/filmicrgb.c:1547
-#, fuzzy
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -8775,7 +8727,7 @@ msgid ""
 msgstr ""
 "Entsättigt die Ausgabe des Moduls\n"
 "in Bereichen mit extremer Leuchtkraft.\n"
-"Verringern wenn Schatten/Spitzlichter übersättigt sind."
+"Erhöhen wenn Schatten und/oder Spitzlichter nicht ausreichend gesättigt sind."
 
 #: ../src/iop/filmicrgb.c:1555
 msgid "preserve chrominance"
@@ -8783,9 +8735,8 @@ msgstr "Chrominanz erhalten"
 
 # wtf?
 #: ../src/iop/filmicrgb.c:1558
-#, fuzzy
 msgid "luminance Y"
-msgstr "Farb-Dominanz"
+msgstr "Luminanz Y"
 
 #: ../src/iop/filmicrgb.c:1559 ../src/iop/toneequal.c:3145
 msgid "RGB power norm"
@@ -8803,7 +8754,7 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:1595
 msgid "target power transfer function"
-msgstr ""
+msgstr "Ziel-Stärke-Übertragungsfunktion"
 
 #: ../src/iop/finalscale.c:39
 msgctxt "modulename"
@@ -9175,9 +9126,8 @@ msgid "color of film material"
 msgstr "Farbe des Filmmaterials"
 
 #: ../src/iop/invert.c:611
-#, fuzzy
 msgid "brightness of film material"
-msgstr "Farbe des Filmmaterials"
+msgstr "Helligkeit des Filmmaterials"
 
 #: ../src/iop/invert.c:635
 msgid "select color of film material"
@@ -9268,7 +9218,7 @@ msgid ""
 "type:\t\t%s\n"
 "mounts:\t%s"
 msgstr ""
-"Hersteller:\t%s\n"
+"Hersteller:\t\t%s\n"
 "Modell:\t\t%s\n"
 "Brennweite:\t%s\n"
 "Blende:\t\t%s\n"
@@ -9552,9 +9502,9 @@ msgid ""
 "click and drag to move - click: show/hide feathering controls\n"
 "ctrl-click: autosmooth, cusp, smooth, symmetrical - right click to remove"
 msgstr ""
-"klicken und ziehen zum Bewegen – Klick: Rand-Anfasser zeigen/verbergen\n"
-"Strg-Klick: automatisch glatt, spitz, glatt, symmetrisch – Rechtsklick zum "
-"Entfernen"
+"klicken und ziehen zum Bewegen – Klick: ein-/ausblenden der Ausblend-Regler\n"
+"Strg+Klick: auto weichzeichnen, spitz, glatt, symmetrisch – Rechtsklick zum"
+" Entfernen"
 
 #: ../src/iop/liquify.c:3610 ../src/iop/liquify.c:3611
 msgid "drag to change shape of path"
@@ -10156,11 +10106,12 @@ msgid "width of fill-light area defined in zones"
 msgstr "Breite der Füllicht-Fläche, definiert in Zonen."
 
 #: ../src/iop/relight.c:380
-#, fuzzy
 msgid ""
 "select the center of fill-light\n"
 "ctrl+click to select an area"
-msgstr "Zentrum des Fülllichts wählen"
+msgstr ""
+"Zentrum des Fülllichts wählen\n"
+"Strg+Klick zur Auswahl einer Fläche"
 
 #: ../src/iop/relight.c:395
 msgid "toggle tool for picking median lightness in image"
@@ -10986,7 +10937,7 @@ msgstr "Glättungsdurchmesser"
 #: ../src/iop/toneequal.c:321
 msgctxt "accel"
 msgid "edges refinement/feathering"
-msgstr ""
+msgstr "Kanten verbessern/ausblenden"
 
 #: ../src/iop/toneequal.c:322
 msgctxt "accel"
@@ -11139,6 +11090,11 @@ msgid ""
 "negative values will avoid oscillations and behave more robustly\n"
 "but may produce brutal tone transitions and damage local contrast."
 msgstr ""
+"Positive Werte erzeugen dynamischere Farbübergänge,\n"
+"aber die Kurve kann in einigen Einstellungen schwingen.\n"
+"Negative Werte vermeiden Schwingungen und verhalten sich robuster,\n"
+"können aber zu harten Farbübergängen führen und den lokalen Kontrast"
+" beeinträchtigen."
 
 # wtf?
 #: ../src/iop/toneequal.c:3138
@@ -11175,6 +11131,8 @@ msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
 msgstr ""
+"Vorschau der Maske und Auswahl der Schätzfunktion, ergibt einen\n"
+"höheren Kontrast zwischen den zu vermeidenden und ausgebrannten Bereichen."
 
 #: ../src/iop/toneequal.c:3153
 msgid "preserve details"
@@ -11195,16 +11153,23 @@ msgid ""
 "contrast\n"
 "'averaged guided filter' is a geometric mean of both methods"
 msgstr ""
+"'Nein' beeinflusst den globalen und lokalen Kontrast (sicher, wenn nur der"
+" Kontrast hinzugefügt wird)\n"
+"'geführter Filter' beeinflusst nur den globalen Kontrast und versucht, den"
+" lokalen Kontrast zu erhalten\n"
+"'gemittelte geführte Filter' ist ein geometrisches Mittel beider Verfahren."
 
 #: ../src/iop/toneequal.c:3165
 msgid "filter diffusion"
-msgstr ""
+msgstr "Filterdiffusion"
 
 #: ../src/iop/toneequal.c:3166
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
 msgstr ""
+"Anzahl der Durchgänge des geführten Filters hilft, die Kanten auf Kosten der"
+" Geschwindigkeit zu streuen"
 
 #: ../src/iop/toneequal.c:3174
 #, fuzzy
@@ -11217,10 +11182,13 @@ msgid ""
 "warning: big values of this parameter can make the darkroom\n"
 "preview much slower if denoise profiled is used."
 msgstr ""
+"Durchmesser der Unschärfe in Prozent der größten Bildgröße\n"
+"Warnung: Große Werte dieses Parameters können die Vorschau in der"
+" Dunkelkammer verlangsamen, wenn das Entrauschen (Profil) verwendet wird."
 
 #: ../src/iop/toneequal.c:3183
 msgid "edges refinement/feathering"
-msgstr ""
+msgstr "Kanten verbessern/ausblenden"
 
 #: ../src/iop/toneequal.c:3184
 msgid ""
@@ -11230,6 +11198,11 @@ msgid ""
 "lower values give smoother gradients and better smoothing\n"
 "but may lead to inaccurate edges taping and halos"
 msgstr ""
+"Genauigkeit des Ausblenden:\n"
+"Höhere Werte bewirken, dass die Maske den Kanten genauer folgt,\n"
+"kann aber den Effekt der Glättung aufheben.\n"
+"Niedrigere Werte ergeben weichere Gradienten und eine bessere Glättung,\n"
+"kann aber zu ungenauen Rändern und Halos führen."
 
 #: ../src/iop/toneequal.c:3192
 msgid "mask post-processing"
@@ -11989,9 +11962,11 @@ msgid_plural ""
 "no history compression of %d images.\n"
 "see tag: darktable|problem|history-compress."
 msgstr[0] ""
-"Keine Verlauf-Kompression bei einem Bild."
+"Keine Verlauf-Kompression bei einem Bild,\n"
 "siehe Stichwort: darktable|problem|history-compress."
 msgstr[1] ""
+"Keine Verlauf-Kompression bei %d Bildern,\n"
+"siehe Stichwort: darktable|problem|history-compress."
 
 #: ../src/libs/copy_history.c:172
 msgid "history compression warning"
@@ -12291,8 +12266,8 @@ msgid ""
 "list of available tags. click 'add' button or double-click on tag to add the "
 "selected one"
 msgstr ""
-"Liste der verfügbaren Stichwürter. \"Hinzufügen\" oder Doppelklick auf das"
-" Stichwort, fügt dieses hinzu"
+"Liste der verfügbaren Stichwürter. \"Hinzufügen\" oder Doppelklick auf das "
+"Stichwort, fügt dieses hinzu"
 
 #: ../src/libs/export_metadata.c:231
 msgid "edit metadata exportation"
@@ -12335,12 +12310,12 @@ msgid ""
 "if remote storage doesn't understand dt xmp metadata, you can use calculated "
 "metadata instead"
 msgstr ""
-"Standardmäßig sendet die Schnittstelle einige (begrenzte) Metadaten neben dem"
-" Bild an den Remote-Speicher.\n"
-"Uum dies zu vermeiden und nur eingebettete darktable xmp-Metadaten"
-" anzuzeigen, überprüfen Sie dieses Kontrollkästchen.\n"
-"Wenn der Remote-Speicher darktable xmp-Metadaten nicht versteht, können Sie"
-" stattdessen berechnete Metadaten verwenden."
+"Standardmäßig sendet die Schnittstelle einige (begrenzte) Metadaten neben "
+"dem Bild an den Remote-Speicher.\n"
+"Uum dies zu vermeiden und nur eingebettete darktable xmp-Metadaten "
+"anzuzeigen, überprüfen Sie dieses Kontrollkästchen.\n"
+"Wenn der Remote-Speicher darktable xmp-Metadaten nicht versteht, können Sie "
+"stattdessen berechnete Metadaten verwenden."
 
 #: ../src/libs/export_metadata.c:270
 msgid "geo tags"
@@ -12379,8 +12354,8 @@ msgid ""
 "only the last part of the hierarchical tags is included. can be useful if "
 "categories are not used"
 msgstr ""
-"Nur der letzte Teil der hierarchischen Stichworte ist enthalten. Dies kann"
-" sinnvoll sein, wenn Kategorien nicht verwendet werden."
+"Nur der letzte Teil der hierarchischen Stichworte ist enthalten. Dies kann "
+"sinnvoll sein, wenn Kategorien nicht verwendet werden."
 
 #: ../src/libs/export_metadata.c:291
 msgid "hierarchical tags"
@@ -12400,8 +12375,8 @@ msgid ""
 "export dt development data (recovery purpose in case of loss of database or "
 "xmp file)"
 msgstr ""
-"Export von dt Entwicklungsdaten (Wiederherstellung bei Verlust der Datenbank"
-" oder xmp-Datei)"
+"Export von dt Entwicklungsdaten (Wiederherstellung bei Verlust der Datenbank "
+"oder xmp-Datei)"
 
 #: ../src/libs/export_metadata.c:302
 msgid "per metadata settings"
@@ -12429,10 +12404,10 @@ msgid ""
 "click on formula cell to edit. recognized variables:"
 msgstr ""
 "Liste der berechneten Metadaten\n"
-"wenn das Formular leer ist, wurden die entsprechenden Metadaten aus der"
-" exportierten Datei entfernt\n"
-"andernfalls werden die entsprechenden Metadaten berechnet und der"
-" exportierten Datei hinzugefügt\n"
+"wenn das Formular leer ist, wurden die entsprechenden Metadaten aus der "
+"exportierten Datei entfernt\n"
+"andernfalls werden die entsprechenden Metadaten berechnet und der "
+"exportierten Datei hinzugefügt\n"
 "Klicken Sie auf die Formularzelle, um die erkannten Variablen zu bearbeiten:"
 
 #: ../src/libs/export_metadata.c:378
