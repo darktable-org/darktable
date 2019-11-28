@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-26 14:28-0600\n"
-"PO-Revision-Date: 2019-11-26 14:23-0600\n"
+"POT-Creation-Date: 2019-11-27 12:46-0600\n"
+"PO-Revision-Date: 2019-11-27 12:41-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1276,7 +1276,7 @@ msgstr "%s: %s"
 #: ../src/gui/preferences.c:1617 ../src/gui/presets.c:387
 #: ../src/gui/styles_dialog.c:283 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
-#: ../src/iop/lut3d.c:1015 ../src/libs/collect.c:242
+#: ../src/iop/lut3d.c:1031 ../src/libs/collect.c:242
 #: ../src/libs/copy_history.c:78 ../src/libs/geotagging.c:473
 #: ../src/libs/import.c:759 ../src/libs/import.c:866 ../src/libs/lib.c:228
 #: ../src/libs/styles.c:300 ../src/libs/styles.c:323 ../src/libs/tagging.c:2127
@@ -1300,55 +1300,59 @@ msgstr ""
 "promedio dE: %.02f\n"
 "max dE: %.02f"
 
-#: ../src/cli/main.c:117
+#: ../src/cli/main.c:127
 msgid "TODO: sorry, due to API restrictions we currently cannot set the BPP to"
 msgstr ""
 "TODO: disculpe, debido a restricciones del API no podemos configurar el BPP a"
 
-#: ../src/cli/main.c:129
+#: ../src/cli/main.c:139
 msgid "unknown option for --hq"
 msgstr "opción desconocida para --hq"
 
-#: ../src/cli/main.c:145
+#: ../src/cli/main.c:155
 msgid "unknown option for --upscale"
 msgstr "opción desconocida para --upscale"
 
-#: ../src/cli/main.c:208
+#: ../src/cli/main.c:180
+msgid "unknown option for --apply-custom-presets"
+msgstr "opción desconocida para --apply-custom-presets"
+
+#: ../src/cli/main.c:235
 #, c-format
 msgid "error: output file is a directory. please specify file name"
 msgstr ""
-"error: el archivo de salida es un directorio. por favor, especifique un "
-"nombre de archivo"
+"Error: el archivo de salida es un directorio. Especifique un nombre de "
+"archivo"
 
-#: ../src/cli/main.c:217
+#: ../src/cli/main.c:244
 msgid "output file already exists, it will get renamed"
 msgstr "el archivo de salida ya existe. se renombrará"
 
-#: ../src/cli/main.c:234
+#: ../src/cli/main.c:261
 #, c-format
 msgid "error: can't open folder %s"
-msgstr "error: no se puede abrir la carpeta %s"
+msgstr "Error: no se puede abrir la carpeta %s"
 
-#: ../src/cli/main.c:252
+#: ../src/cli/main.c:279
 #, c-format
 msgid "error: can't open file %s"
-msgstr "error: no se puede abrir el archivo %s"
+msgstr "Error: no se puede abrir el archivo %s"
 
-#: ../src/cli/main.c:266
+#: ../src/cli/main.c:293
 #, c-format
 msgid "no images to export, aborting\n"
 msgstr "no hay imágenes para exportar, abortando\n"
 
-#: ../src/cli/main.c:280
+#: ../src/cli/main.c:307
 #, c-format
 msgid "error: can't open xmp file %s"
 msgstr "error: no se puede abrir el archivo xmp %s"
 
-#: ../src/cli/main.c:298
+#: ../src/cli/main.c:325
 msgid "empty history stack"
 msgstr "borrar historial de acciones"
 
-#: ../src/cli/main.c:321
+#: ../src/cli/main.c:348
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
@@ -1356,18 +1360,18 @@ msgstr ""
 "no se puede encontrar el módulo de almacenamiento en disco. por favor revise "
 "su instalación, algo parece estar roto."
 
-#: ../src/cli/main.c:329
+#: ../src/cli/main.c:356
 msgid "failed to get parameters from storage module, aborting export ..."
 msgstr ""
 "fallo al obtener parámetros del modulo de almacenamiento, abortando "
 "exportado..."
 
-#: ../src/cli/main.c:342
+#: ../src/cli/main.c:369
 #, c-format
 msgid "unknown extension '.%s'"
 msgstr "extensión desconocida '.%s'"
 
-#: ../src/cli/main.c:351
+#: ../src/cli/main.c:378
 msgid "failed to get parameters from format module, aborting export ..."
 msgstr ""
 "fallo al obtener parámetros del modulo de formato, abortando exportado..."
@@ -1439,7 +1443,7 @@ msgstr[1] "%d imágenes seleccionadas de %d de la colección actual"
 
 #. 0th entry is a dummy for DT_COLORSPACE_FILE and not used
 #: ../src/common/colorspaces.c:1002 ../src/iop/colorin.c:2110
-#: ../src/iop/lut3d.c:1120
+#: ../src/iop/lut3d.c:1136
 msgid "sRGB"
 msgstr "sRGB"
 
@@ -1464,7 +1468,7 @@ msgid "linear XYZ"
 msgstr "lineal XYZ"
 
 #: ../src/common/colorspaces.c:1007 ../src/common/colorspaces.c:1338
-#: ../src/libs/colorpicker.c:582 ../src/libs/colorpicker.c:619
+#: ../src/libs/colorpicker.c:582 ../src/libs/colorpicker.c:620
 msgid "Lab"
 msgstr "Lab"
 
@@ -1638,7 +1642,7 @@ msgid "darktable - error locking database"
 msgstr "Error en darktable al bloquear la base de datos"
 
 #: ../src/common/database.c:1673 ../src/common/database.c:1844
-#: ../src/common/database.c:2066 ../src/common/database.c:2144
+#: ../src/common/database.c:2070 ../src/common/database.c:2148
 msgid "close darktable"
 msgstr "cerrar darktable"
 
@@ -1688,7 +1692,7 @@ msgstr "actualizar la base de datos"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
-#: ../src/common/database.c:2055 ../src/common/database.c:2133
+#: ../src/common/database.c:2059 ../src/common/database.c:2137
 #, c-format
 msgid ""
 "an error has occurred while trying to open the database from\n"
@@ -1707,11 +1711,11 @@ msgstr ""
 "¿Desea cerrar manualmente darktable para reiniciar\n"
 "desde el respaldo la base de datos o comenzar con una nueva?"
 
-#: ../src/common/database.c:2065 ../src/common/database.c:2143
+#: ../src/common/database.c:2069 ../src/common/database.c:2147
 msgid "darktable - error opening database"
 msgstr "Error en darktable al abrir la base de datos"
 
-#: ../src/common/database.c:2066 ../src/common/database.c:2144
+#: ../src/common/database.c:2070 ../src/common/database.c:2148
 msgid "delete database"
 msgstr "borrar base de datos"
 
@@ -1763,7 +1767,7 @@ msgstr "activo"
 #: ../src/develop/blend_gui.c:2455 ../src/develop/develop.c:1897
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
 #: ../src/iop/ashift.c:4857 ../src/iop/ashift.c:4863 ../src/iop/colorin.c:2109
-#: ../src/iop/demosaic.c:5149 ../src/iop/vignette.c:1152
+#: ../src/iop/demosaic.c:5151 ../src/iop/vignette.c:1152
 #: ../src/libs/live_view.c:436
 msgid "off"
 msgstr "inactivo"
@@ -3552,7 +3556,7 @@ msgstr ""
 #: ../src/generate-cache/main.c:228
 #, c-format
 msgid "error: ensure that min_mip <= max_mip\n"
-msgstr "error: asegúrese de que min_mip <= max_mip\n"
+msgstr "Error: asegúrese de que min_mip <= max_mip\n"
 
 #: ../src/generate-cache/main.c:233
 #, c-format
@@ -7356,21 +7360,21 @@ msgstr "salida"
 #: ../src/iop/colorout.c:871 ../src/libs/export.c:671
 #: ../src/libs/print_settings.c:1239 ../src/libs/print_settings.c:1454
 #: ../src/views/darkroom.c:1981 ../src/views/darkroom.c:1989
-#: ../src/views/lighttable.c:4904 ../src/views/lighttable.c:4912
+#: ../src/views/lighttable.c:4908 ../src/views/lighttable.c:4916
 msgid "perceptual"
 msgstr "perceptual"
 
 #: ../src/iop/colorout.c:872 ../src/libs/export.c:672
 #: ../src/libs/print_settings.c:1240 ../src/libs/print_settings.c:1455
 #: ../src/views/darkroom.c:1982 ../src/views/darkroom.c:1990
-#: ../src/views/lighttable.c:4905 ../src/views/lighttable.c:4913
+#: ../src/views/lighttable.c:4909 ../src/views/lighttable.c:4917
 msgid "relative colorimetric"
 msgstr "relativo colorimétrico"
 
 #: ../src/iop/colorout.c:873 ../src/libs/export.c:673
 #: ../src/libs/print_settings.c:1241 ../src/libs/print_settings.c:1456
 #: ../src/views/darkroom.c:1983 ../src/views/darkroom.c:1991
-#: ../src/views/lighttable.c:4906 ../src/views/lighttable.c:4914
+#: ../src/views/lighttable.c:4910 ../src/views/lighttable.c:4918
 msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturación"
@@ -7378,7 +7382,7 @@ msgstr "saturación"
 #: ../src/iop/colorout.c:874 ../src/libs/export.c:674
 #: ../src/libs/print_settings.c:1242 ../src/libs/print_settings.c:1457
 #: ../src/views/darkroom.c:1984 ../src/views/darkroom.c:1992
-#: ../src/views/lighttable.c:4907 ../src/views/lighttable.c:4915
+#: ../src/views/lighttable.c:4911 ../src/views/lighttable.c:4919
 msgid "absolute colorimetric"
 msgstr "absoluto colorimétrico"
 
@@ -7676,49 +7680,49 @@ msgstr "borde del umbral"
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "`%s' matriz de color no encontrada para la imagen 4bayer"
 
-#: ../src/iop/demosaic.c:5122 ../src/iop/demosaic.c:5131
-#: ../src/iop/dither.c:803 ../src/iop/highlights.c:1079
+#: ../src/iop/demosaic.c:5124 ../src/iop/demosaic.c:5133
+#: ../src/iop/dither.c:803 ../src/iop/highlights.c:1081
 msgid "method"
 msgstr "método"
 
-#: ../src/iop/demosaic.c:5124
+#: ../src/iop/demosaic.c:5126
 msgid "PPG (fast)"
 msgstr "PPG (rápido)"
 
-#: ../src/iop/demosaic.c:5125
+#: ../src/iop/demosaic.c:5127
 msgid "AMaZE (slow)"
 msgstr "AMaZE (lento)"
 
-#: ../src/iop/demosaic.c:5126
+#: ../src/iop/demosaic.c:5128
 msgid "VNG4"
 msgstr "VNG4"
 
-#: ../src/iop/demosaic.c:5127 ../src/iop/demosaic.c:5136
+#: ../src/iop/demosaic.c:5129 ../src/iop/demosaic.c:5138
 msgid "passthrough (monochrome) (experimental)"
 msgstr "atravesar (monocromo) (experimental)"
 
 # Demosaicing -> Algoritmo de interpolación cromática.
-#: ../src/iop/demosaic.c:5128 ../src/iop/demosaic.c:5138
+#: ../src/iop/demosaic.c:5130 ../src/iop/demosaic.c:5140
 msgid "demosaicing raw data method"
 msgstr "método de interpolación cromática RAW"
 
-#: ../src/iop/demosaic.c:5133
+#: ../src/iop/demosaic.c:5135
 msgid "VNG"
 msgstr "VNG"
 
-#: ../src/iop/demosaic.c:5134
+#: ../src/iop/demosaic.c:5136
 msgid "Markesteijn 1-pass"
 msgstr "Markesteijn 1 pasada"
 
-#: ../src/iop/demosaic.c:5135
+#: ../src/iop/demosaic.c:5137
 msgid "Markesteijn 3-pass (slow)"
 msgstr "Markesteijn 3 pasadas (lento)"
 
-#: ../src/iop/demosaic.c:5137
+#: ../src/iop/demosaic.c:5139
 msgid "frequency domain chroma (slow)"
 msgstr "frecuencia y dominio crominancia (lento)"
 
-#: ../src/iop/demosaic.c:5141
+#: ../src/iop/demosaic.c:5143
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -7728,66 +7732,66 @@ msgstr ""
 "poner en 0.0 para desactivar.\n"
 "poner en 1.0 para ignorar bordes."
 
-#: ../src/iop/demosaic.c:5143
+#: ../src/iop/demosaic.c:5145
 msgid "edge threshold"
 msgstr "borde del umbral"
 
-#: ../src/iop/demosaic.c:5147
+#: ../src/iop/demosaic.c:5149
 msgid "color smoothing"
 msgstr "suavizado de color"
 
-#: ../src/iop/demosaic.c:5150
+#: ../src/iop/demosaic.c:5152
 msgid "one time"
 msgstr "una vez"
 
-#: ../src/iop/demosaic.c:5151
+#: ../src/iop/demosaic.c:5153
 msgid "two times"
 msgstr "dos veces"
 
-#: ../src/iop/demosaic.c:5152
+#: ../src/iop/demosaic.c:5154
 msgid "three times"
 msgstr "tres veces"
 
-#: ../src/iop/demosaic.c:5153
+#: ../src/iop/demosaic.c:5155
 msgid "four times"
 msgstr "cuatro veces"
 
-#: ../src/iop/demosaic.c:5154
+#: ../src/iop/demosaic.c:5156
 msgid "five times"
 msgstr "cinco veces"
 
 # Demosaicing -> Algoritmo de interpolación cromática.
-#: ../src/iop/demosaic.c:5155
+#: ../src/iop/demosaic.c:5157
 msgid "how many color smoothing median steps after demosaicing"
 msgstr ""
 "La cantidad de suavizado con medios pasos después de la interpolación "
 "cromática"
 
-#: ../src/iop/demosaic.c:5159
+#: ../src/iop/demosaic.c:5161
 msgid "match greens"
 msgstr "igualar verdes"
 
-#: ../src/iop/demosaic.c:5160
+#: ../src/iop/demosaic.c:5162
 msgid "disabled"
 msgstr "deshabilitado"
 
-#: ../src/iop/demosaic.c:5161
+#: ../src/iop/demosaic.c:5163
 msgid "local average"
 msgstr "promedio local"
 
-#: ../src/iop/demosaic.c:5162
+#: ../src/iop/demosaic.c:5164
 msgid "full average"
 msgstr "promedio total"
 
-#: ../src/iop/demosaic.c:5163
+#: ../src/iop/demosaic.c:5165
 msgid "full and local average"
 msgstr "promedio total y local"
 
-#: ../src/iop/demosaic.c:5164
+#: ../src/iop/demosaic.c:5166
 msgid "green channels matching method"
 msgstr "método de emparejamiento para el canal verde"
 
-#: ../src/iop/demosaic.c:5176
+#: ../src/iop/demosaic.c:5178
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -8224,7 +8228,7 @@ msgstr ""
 "Porcentaje del valor del brillo excluido, pulsar en el cuentagotas para "
 "activar"
 
-#: ../src/iop/exposure.c:905 ../src/iop/highlights.c:1088
+#: ../src/iop/exposure.c:905 ../src/iop/highlights.c:1090
 #: ../src/views/darkroom.c:1866
 msgid "clipping threshold"
 msgstr "umbral superior"
@@ -8998,23 +9002,23 @@ msgstr ""
 msgid "highlight reconstruction"
 msgstr "reconstrucción de luces"
 
-#: ../src/iop/highlights.c:1080
+#: ../src/iop/highlights.c:1082
 msgid "clip highlights"
 msgstr "recortar luces"
 
-#: ../src/iop/highlights.c:1081
+#: ../src/iop/highlights.c:1083
 msgid "reconstruct in LCh"
 msgstr "reconstruir en LCh"
 
-#: ../src/iop/highlights.c:1082
+#: ../src/iop/highlights.c:1084
 msgid "reconstruct color"
 msgstr "reconstruir color"
 
-#: ../src/iop/highlights.c:1083
+#: ../src/iop/highlights.c:1085
 msgid "highlight reconstruction method"
 msgstr "método de reconstrucción de luces"
 
-#: ../src/iop/highlights.c:1086
+#: ../src/iop/highlights.c:1088
 msgid ""
 "manually adjust the clipping threshold against magenta highlights (you "
 "shouldn't ever need to touch this)"
@@ -9684,79 +9688,84 @@ msgstr "la profundidad de bits %d png no es compatible"
 msgid "invalid level in png file %d %d"
 msgstr "nivel inválido en el archivo png %d %d"
 
-#: ../src/iop/lut3d.c:390 ../src/iop/lut3d.c:407
+#: ../src/iop/lut3d.c:384 ../src/iop/lut3d.c:628
+#, c-format
+msgid "error - lut 3D size %d exceeds the maximum supported"
+msgstr "Error: el tamaño de LUT 3D %d excede el límite establecido"
+
+#: ../src/iop/lut3d.c:396 ../src/iop/lut3d.c:414
 msgid "error - allocating buffer for png lut"
 msgstr "Error: asignar búfer para png lut"
 
-#: ../src/iop/lut3d.c:397
+#: ../src/iop/lut3d.c:404
 #, c-format
 msgid "error - could not read png image %s"
 msgstr "Error: no se pudo leer la imagen png %s"
 
-#: ../src/iop/lut3d.c:573
+#: ../src/iop/lut3d.c:581
 #, c-format
 msgid "error - invalid cube file: %s"
 msgstr "Error: archivo CUBE no válido %s"
 
-#: ../src/iop/lut3d.c:589
+#: ../src/iop/lut3d.c:597
 msgid "DOMAIN MIN <> 0.0 is not supported"
 msgstr "DOMINIO MÍN <> 0.0 no es compatible"
 
-#: ../src/iop/lut3d.c:600
+#: ../src/iop/lut3d.c:608
 msgid "DOMAIN MAX <> 1.0 is not supported"
 msgstr "DOMINIO MÁX <> 0.0 no es compatible"
 
-#: ../src/iop/lut3d.c:609
+#: ../src/iop/lut3d.c:617
 msgid "1D cube lut is not supported"
 msgstr "El cubo lut 1D no es compatible"
 
-#: ../src/iop/lut3d.c:623
+#: ../src/iop/lut3d.c:639
 msgid "error - allocating buffer for cube lut"
 msgstr "Error: asignación de búfer para el cubo lut"
 
-#: ../src/iop/lut3d.c:634
+#: ../src/iop/lut3d.c:650
 msgid "error - cube lut size is not defined"
 msgstr "Error: el tamaño del cubo LUT no está definido"
 
-#: ../src/iop/lut3d.c:651
+#: ../src/iop/lut3d.c:667
 msgid "error - cube lut lines number is not correct"
 msgstr "Error: el número de líneas del cubo LUT no es correcto"
 
-#: ../src/iop/lut3d.c:1009
+#: ../src/iop/lut3d.c:1025
 msgid "Lut root folder not defined"
 msgstr "Carpeta raíz de Lut no está definida"
 
-#: ../src/iop/lut3d.c:1015
+#: ../src/iop/lut3d.c:1031
 msgid "select lut file"
 msgstr "seleccionar archivo LUT"
 
-#: ../src/iop/lut3d.c:1016
+#: ../src/iop/lut3d.c:1032
 msgid "_select"
 msgstr "seleccionar"
 
-#: ../src/iop/lut3d.c:1033
+#: ../src/iop/lut3d.c:1049
 msgid "hald cluts (png)"
 msgstr "hald cluts (png)"
 
-#: ../src/iop/lut3d.c:1040
+#: ../src/iop/lut3d.c:1056
 msgid "3D lut (cube)"
 msgstr "lut 3D (cube)"
 
-#: ../src/iop/lut3d.c:1046 ../src/libs/copy_history.c:93
+#: ../src/iop/lut3d.c:1062 ../src/libs/copy_history.c:93
 #: ../src/libs/geotagging.c:495 ../src/libs/import.c:790
 #: ../src/libs/styles.c:341
 msgid "all files"
 msgstr "todos los archivos"
 
-#: ../src/iop/lut3d.c:1061
+#: ../src/iop/lut3d.c:1077
 msgid "Select file outside Lut root folder is not allowed"
 msgstr "No se permite seleccionar el archivo fuera de la carpeta raíz de LUT"
 
-#: ../src/iop/lut3d.c:1105
+#: ../src/iop/lut3d.c:1121
 msgid "select a png (haldclut) or a cube file"
 msgstr "Seleccione un png (HaldCLUT) o un archivo CUBE"
 
-#: ../src/iop/lut3d.c:1112
+#: ../src/iop/lut3d.c:1128
 msgid ""
 "the file path (relative to lut folder) is saved with image (and not the lut "
 "data themselves)\n"
@@ -9768,43 +9777,43 @@ msgstr ""
 "PRECAUCIÓN: la carpeta LUT se debe configurar en Preferencias/Opciones "
 "básicas/miscelánea antes de elegir el archivo LUT"
 
-#: ../src/iop/lut3d.c:1119
+#: ../src/iop/lut3d.c:1135
 msgid "application color space"
 msgstr "espacio de color de la aplicación"
 
-#: ../src/iop/lut3d.c:1121
-msgid "REC.709"
-msgstr "REC.709"
+#: ../src/iop/lut3d.c:1137
+msgid "gamma rec709 RGB"
+msgstr "RGB gamma Rec709"
 
-#: ../src/iop/lut3d.c:1122
-msgid "lin sRGB/REC.709"
-msgstr "sRGB/REC.709 lineal"
+#: ../src/iop/lut3d.c:1138
+msgid "linear rec709 RGB"
+msgstr "RGB lineal Rec709"
 
-#: ../src/iop/lut3d.c:1123
-msgid "lin prophoto RGB"
-msgstr "Profoto RGB lineal"
+#: ../src/iop/lut3d.c:1139
+msgid "linear rec2020 RGB"
+msgstr "RGB lineal Rec2020"
 
-#: ../src/iop/lut3d.c:1125
+#: ../src/iop/lut3d.c:1141
 msgid "select the color space in which the LUT has to be applied"
 msgstr "Seleccione el espacio de color en el que se debe aplicar el LUT"
 
-#: ../src/iop/lut3d.c:1129
+#: ../src/iop/lut3d.c:1145
 msgid "interpolation"
 msgstr "interpolación"
 
-#: ../src/iop/lut3d.c:1130
+#: ../src/iop/lut3d.c:1146
 msgid "tetrahedral"
 msgstr "tetaedro"
 
-#: ../src/iop/lut3d.c:1131
+#: ../src/iop/lut3d.c:1147
 msgid "trilinear"
 msgstr "trilineal"
 
-#: ../src/iop/lut3d.c:1132
+#: ../src/iop/lut3d.c:1148
 msgid "pyramid"
 msgstr "pirámide"
 
-#: ../src/iop/lut3d.c:1134
+#: ../src/iop/lut3d.c:1150
 msgid "select the interpolation method"
 msgstr "elija el método de interpolación"
 
@@ -11882,31 +11891,31 @@ msgstr "punto"
 msgid "area"
 msgstr "área"
 
-#: ../src/libs/colorpicker.c:570 ../src/libs/colorpicker.c:607
+#: ../src/libs/colorpicker.c:570 ../src/libs/colorpicker.c:608
 msgid "mean"
 msgstr "promedio"
 
-#: ../src/libs/colorpicker.c:571 ../src/libs/colorpicker.c:608
+#: ../src/libs/colorpicker.c:571 ../src/libs/colorpicker.c:609
 msgid "min"
 msgstr "min"
 
-#: ../src/libs/colorpicker.c:572 ../src/libs/colorpicker.c:609
+#: ../src/libs/colorpicker.c:572 ../src/libs/colorpicker.c:610
 msgid "max"
 msgstr "max"
 
-#: ../src/libs/colorpicker.c:581 ../src/libs/colorpicker.c:618
+#: ../src/libs/colorpicker.c:581 ../src/libs/colorpicker.c:619
 msgid "RGB"
 msgstr "RGB"
 
-#: ../src/libs/colorpicker.c:593
+#: ../src/libs/colorpicker.c:594
 msgid "restrict histogram to selection"
 msgstr "restringir el histograma a la selección"
 
-#: ../src/libs/colorpicker.c:626 ../src/libs/export_metadata.c:152
+#: ../src/libs/colorpicker.c:627 ../src/libs/export_metadata.c:152
 msgid "add"
 msgstr "agregar"
 
-#: ../src/libs/colorpicker.c:635
+#: ../src/libs/colorpicker.c:636
 msgid "display sample areas on image"
 msgstr "mostrar sobre la imagen"
 
@@ -14324,37 +14333,37 @@ msgstr "tira de imágenes"
 
 #. setup rating key accelerators
 #. Rating keys
-#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:4414
+#: ../src/libs/tools/filmstrip.c:179 ../src/views/lighttable.c:4418
 msgctxt "accel"
 msgid "rate 0"
 msgstr "0 estrellas"
 
-#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:4415
+#: ../src/libs/tools/filmstrip.c:180 ../src/views/lighttable.c:4419
 msgctxt "accel"
 msgid "rate 1"
 msgstr "1 estrella"
 
-#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:4416
+#: ../src/libs/tools/filmstrip.c:181 ../src/views/lighttable.c:4420
 msgctxt "accel"
 msgid "rate 2"
 msgstr "2 estrellas"
 
-#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:4417
+#: ../src/libs/tools/filmstrip.c:182 ../src/views/lighttable.c:4421
 msgctxt "accel"
 msgid "rate 3"
 msgstr "3 estrellas"
 
-#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:4418
+#: ../src/libs/tools/filmstrip.c:183 ../src/views/lighttable.c:4422
 msgctxt "accel"
 msgid "rate 4"
 msgstr "4 estrellas"
 
-#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:4419
+#: ../src/libs/tools/filmstrip.c:184 ../src/views/lighttable.c:4423
 msgctxt "accel"
 msgid "rate 5"
 msgstr "5 estrellas"
 
-#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:4420
+#: ../src/libs/tools/filmstrip.c:185 ../src/views/lighttable.c:4424
 msgctxt "accel"
 msgid "rate reject"
 msgstr "rechazar"
@@ -14393,27 +14402,27 @@ msgstr "duplicar imagen"
 #. setup color label accelerators
 #. Initializing accelerators
 #. Color labels keys
-#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:4406
+#: ../src/libs/tools/filmstrip.c:199 ../src/views/lighttable.c:4410
 msgctxt "accel"
 msgid "color red"
 msgstr "marca roja"
 
-#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:4407
+#: ../src/libs/tools/filmstrip.c:200 ../src/views/lighttable.c:4411
 msgctxt "accel"
 msgid "color yellow"
 msgstr "marca amarilla"
 
-#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:4408
+#: ../src/libs/tools/filmstrip.c:201 ../src/views/lighttable.c:4412
 msgctxt "accel"
 msgid "color green"
 msgstr "marca verde"
 
-#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:4409
+#: ../src/libs/tools/filmstrip.c:202 ../src/views/lighttable.c:4413
 msgctxt "accel"
 msgid "color blue"
 msgstr "marca azul"
 
-#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:4410
+#: ../src/libs/tools/filmstrip.c:203 ../src/views/lighttable.c:4414
 msgctxt "accel"
 msgid "color purple"
 msgstr "marca morada"
@@ -14775,19 +14784,19 @@ msgstr ""
 "Activa la revisión de gama\n"
 "Pulse botón derecho las para opciones del perfil"
 
-#: ../src/views/darkroom.c:1979 ../src/views/lighttable.c:4902
+#: ../src/views/darkroom.c:1979 ../src/views/lighttable.c:4906
 msgid "display intent"
 msgstr "salida en pantalla"
 
-#: ../src/views/darkroom.c:1987 ../src/views/lighttable.c:4910
+#: ../src/views/darkroom.c:1987 ../src/views/lighttable.c:4914
 msgid "preview display intent"
 msgstr "vista previa de salida en pantalla"
 
-#: ../src/views/darkroom.c:2007 ../src/views/lighttable.c:4918
+#: ../src/views/darkroom.c:2007 ../src/views/lighttable.c:4922
 msgid "display profile"
 msgstr "perfil (pantalla)"
 
-#: ../src/views/darkroom.c:2008 ../src/views/lighttable.c:4922
+#: ../src/views/darkroom.c:2008 ../src/views/lighttable.c:4926
 msgid "preview display profile"
 msgstr "vista previa del perfil (pantalla)"
 
@@ -14795,12 +14804,12 @@ msgstr "vista previa del perfil (pantalla)"
 msgid "histogram profile"
 msgstr "perfil del histograma"
 
-#: ../src/views/darkroom.c:2063 ../src/views/lighttable.c:4952
+#: ../src/views/darkroom.c:2063 ../src/views/lighttable.c:4956
 #, c-format
 msgid "display ICC profiles in %s or %s"
 msgstr "mostrar perfiles ICC en %s o %s"
 
-#: ../src/views/darkroom.c:2066 ../src/views/lighttable.c:4955
+#: ../src/views/darkroom.c:2066 ../src/views/lighttable.c:4959
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
 msgstr "vista previa: mostrar perfiles ICC en %s o %s"
@@ -14914,13 +14923,13 @@ msgid "full preview"
 msgstr "vista previa completa"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3214 ../src/views/lighttable.c:4446
+#: ../src/views/darkroom.c:3214 ../src/views/lighttable.c:4450
 #: ../src/views/map.c:889
 msgctxt "accel"
 msgid "undo"
 msgstr "deshacer"
 
-#: ../src/views/darkroom.c:3215 ../src/views/lighttable.c:4447
+#: ../src/views/darkroom.c:3215 ../src/views/lighttable.c:4451
 #: ../src/views/map.c:890
 msgctxt "accel"
 msgid "redo"
@@ -14942,7 +14951,7 @@ msgstr "buscar módulos"
 msgid "switch to lighttable"
 msgstr "cambiar a mesa de luz"
 
-#: ../src/views/darkroom.c:3325 ../src/views/lighttable.c:4593
+#: ../src/views/darkroom.c:3325 ../src/views/lighttable.c:4597
 msgid "zoom in the image"
 msgstr "acercamiento en la imagen"
 
@@ -14971,203 +14980,203 @@ msgstr "darktable: vista previa del cuarto oscuro"
 msgid "good knight"
 msgstr "buen caballero"
 
-#: ../src/views/lighttable.c:1131 ../src/views/slideshow.c:372
+#: ../src/views/lighttable.c:1135 ../src/views/slideshow.c:372
 msgid "there are no images in this collection"
 msgstr "no hay imágenes en esta colección"
 
-#: ../src/views/lighttable.c:1135
+#: ../src/views/lighttable.c:1139
 msgid "if you have not imported any images yet"
 msgstr "si no ha importado ninguna imagen aún"
 
-#: ../src/views/lighttable.c:1139
+#: ../src/views/lighttable.c:1143
 msgid "you can do so in the import module"
 msgstr "puede hacerlo en el módulo importar"
 
-#: ../src/views/lighttable.c:1147
+#: ../src/views/lighttable.c:1151
 msgid "try to relax the filter settings in the top panel"
 msgstr "intente relajar las condiciones del filtro en el panel superior"
 
-#: ../src/views/lighttable.c:1156
+#: ../src/views/lighttable.c:1160
 msgid "or add images in the collection module in the left panel"
 msgstr "o agregue imágenes en el módulo de colección en el panel izquierdo"
 
-#: ../src/views/lighttable.c:3277
+#: ../src/views/lighttable.c:3281
 #, c-format
 msgid "you have reached the start of your selection (%d image)"
 msgid_plural "you have reached the start of your selection (%d images)"
 msgstr[0] "Se ha llegado al inicio de la selección (%d imagen)"
 msgstr[1] "Se ha llegado al inicio de la selección (%d imágenes)"
 
-#: ../src/views/lighttable.c:3282
+#: ../src/views/lighttable.c:3286
 msgid "you have reached the start of your collection"
 msgstr "Se ha llegado al inicio de la colección."
 
-#: ../src/views/lighttable.c:3306
+#: ../src/views/lighttable.c:3310
 #, c-format
 msgid "you have reached the end of your selection (%d image)"
 msgid_plural "you have reached the end of your selection (%d images)"
 msgstr[0] "Se ha llegado al final de la selección (%d imagen)"
 msgstr[1] "Se ha llegado al final de la selección (%d imágenes)"
 
-#: ../src/views/lighttable.c:3311
+#: ../src/views/lighttable.c:3315
 msgid "you have reached the end of your collection"
 msgstr "Se ha llegado al final de la colección"
 
-#: ../src/views/lighttable.c:3632
+#: ../src/views/lighttable.c:3636
 #, c-format
 msgid "zooming is limited to %d images"
 msgstr "El zoom está limitado a %d imágenes"
 
-#: ../src/views/lighttable.c:4411
+#: ../src/views/lighttable.c:4415
 msgctxt "accel"
 msgid "clear color labels"
 msgstr "quitar marcas de color"
 
 #. Navigation keys
-#: ../src/views/lighttable.c:4423
+#: ../src/views/lighttable.c:4427
 msgctxt "accel"
 msgid "navigate up"
 msgstr "subir"
 
-#: ../src/views/lighttable.c:4424
+#: ../src/views/lighttable.c:4428
 msgctxt "accel"
 msgid "navigate down"
 msgstr "bajar"
 
-#: ../src/views/lighttable.c:4425
+#: ../src/views/lighttable.c:4429
 msgctxt "accel"
 msgid "navigate page up"
 msgstr "avanzar página"
 
-#: ../src/views/lighttable.c:4426
+#: ../src/views/lighttable.c:4430
 msgctxt "accel"
 msgid "navigate page down"
 msgstr "retroceder página"
 
 #. Scroll keys
-#: ../src/views/lighttable.c:4429
+#: ../src/views/lighttable.c:4433
 msgctxt "accel"
 msgid "scroll up"
 msgstr "desplazar arriba"
 
-#: ../src/views/lighttable.c:4430
+#: ../src/views/lighttable.c:4434
 msgctxt "accel"
 msgid "scroll down"
 msgstr "desplazar abajo"
 
-#: ../src/views/lighttable.c:4431
+#: ../src/views/lighttable.c:4435
 msgctxt "accel"
 msgid "scroll left"
 msgstr "desplazar izquierda"
 
-#: ../src/views/lighttable.c:4432
+#: ../src/views/lighttable.c:4436
 msgctxt "accel"
 msgid "scroll right"
 msgstr "deplazar derecha"
 
-#: ../src/views/lighttable.c:4433
+#: ../src/views/lighttable.c:4437
 msgctxt "accel"
 msgid "scroll center"
 msgstr "desplazar al centro"
 
-#: ../src/views/lighttable.c:4434
+#: ../src/views/lighttable.c:4438
 msgctxt "accel"
 msgid "realign images to grid"
 msgstr "realinear imagenes a la cuadrícula"
 
-#: ../src/views/lighttable.c:4435
+#: ../src/views/lighttable.c:4439
 msgctxt "accel"
 msgid "select toggle image"
 msgstr "seleccionar imagen activa"
 
-#: ../src/views/lighttable.c:4436
+#: ../src/views/lighttable.c:4440
 msgctxt "accel"
 msgid "select single image"
 msgstr "seleccionar imagen única"
 
 #. Preview key
-#: ../src/views/lighttable.c:4439
+#: ../src/views/lighttable.c:4443
 msgctxt "accel"
 msgid "preview"
 msgstr "vista previa rápida"
 
-#: ../src/views/lighttable.c:4440
+#: ../src/views/lighttable.c:4444
 msgctxt "accel"
 msgid "preview with focus detection"
 msgstr "vista previa rápida con detección de foco"
 
-#: ../src/views/lighttable.c:4441
+#: ../src/views/lighttable.c:4445
 msgctxt "accel"
 msgid "sticky preview"
 msgstr "vista previa"
 
-#: ../src/views/lighttable.c:4442
+#: ../src/views/lighttable.c:4446
 msgctxt "accel"
 msgid "sticky preview with focus detection"
 msgstr "vista previa con detección de foco"
 
 #. zoom for full preview
-#: ../src/views/lighttable.c:4450
+#: ../src/views/lighttable.c:4454
 msgctxt "accel"
 msgid "preview zoom 100%"
 msgstr "vista previa al 100%"
 
-#: ../src/views/lighttable.c:4451
+#: ../src/views/lighttable.c:4455
 msgctxt "accel"
 msgid "preview zoom fit"
 msgstr "vista previa del ajuste del zoom"
 
 #. timeline
-#: ../src/views/lighttable.c:4454
+#: ../src/views/lighttable.c:4458
 msgctxt "accel"
 msgid "toggle timeline"
 msgstr "alternar línea de tiempo"
 
-#: ../src/views/lighttable.c:4580
+#: ../src/views/lighttable.c:4584
 msgid "open image in darkroom"
 msgstr "Abrir imagen en el cuarto oscuro"
 
-#: ../src/views/lighttable.c:4587
+#: ../src/views/lighttable.c:4591
 msgid "switch to next/previous image"
 msgstr "cambiar a la imagen siguiente/anterior"
 
-#: ../src/views/lighttable.c:4600 ../src/views/lighttable.c:4622
+#: ../src/views/lighttable.c:4604 ../src/views/lighttable.c:4626
 msgid "scroll the collection"
 msgstr "desplazarse por la colección"
 
-#: ../src/views/lighttable.c:4606
+#: ../src/views/lighttable.c:4610
 msgid "change number of images per row"
 msgstr "Cambiar el número de imágenes por fila"
 
-#: ../src/views/lighttable.c:4614
+#: ../src/views/lighttable.c:4618
 msgid "change image order"
 msgstr "cambiar el orden de las imágenes"
 
-#: ../src/views/lighttable.c:4628
+#: ../src/views/lighttable.c:4632
 msgid "zoom all the images"
 msgstr "Ampliar todas las imágenes"
 
-#: ../src/views/lighttable.c:4633
+#: ../src/views/lighttable.c:4637
 msgid "pan inside all the images"
 msgstr "Desplazarse dentro de todas las imágenes"
 
-#: ../src/views/lighttable.c:4639
+#: ../src/views/lighttable.c:4643
 msgid "zoom current image"
 msgstr "ampliar la imagen actual"
 
-#: ../src/views/lighttable.c:4645
+#: ../src/views/lighttable.c:4649
 msgid "pan inside current image"
 msgstr "desplazarse dentro de la imagen actual"
 
-#: ../src/views/lighttable.c:4652
+#: ../src/views/lighttable.c:4656
 msgid "zoom the main view"
 msgstr "ampliar la vista principal"
 
-#: ../src/views/lighttable.c:4657
+#: ../src/views/lighttable.c:4661
 msgid "pan inside the main view"
 msgstr "Panorámica dentro de la vista principal"
 
-#: ../src/views/lighttable.c:4878
+#: ../src/views/lighttable.c:4882
 msgid "set display profile"
 msgstr "ajustar perfil de pantalla"
 
@@ -15305,6 +15314,15 @@ msgstr "Atajos del teclado"
 #: ../src/views/view.c:2415
 msgid "Action"
 msgstr "Acción"
+
+#~ msgid "REC.709"
+#~ msgstr "REC.709"
+
+#~ msgid "lin sRGB/REC.709"
+#~ msgstr "sRGB/REC.709 lineal"
+
+#~ msgid "lin prophoto RGB"
+#~ msgstr "Profoto RGB lineal"
 
 #~ msgctxt "accel"
 #~ msgid "shadows/highlights balance"
