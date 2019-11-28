@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
-"PO-Revision-Date: 2019-11-28 20:40+0100\n"
+"PO-Revision-Date: 2019-11-28 22:53+0100\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -8686,7 +8686,6 @@ msgstr ""
 "Nützlich, um extremer Luminanz einen sicheren Spielraum zu geben."
 
 #: ../src/iop/filmicrgb.c:1499
-#, fuzzy
 msgid ""
 "try to optimize the settings with some statistical assumptions.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -8695,14 +8694,20 @@ msgid ""
 "this is not an artificial intelligence, but a simple guess.\n"
 "ensure you understand its assumptions before using it."
 msgstr ""
-"Versuchen Sie, die Einstellungen durch Ausprobieren zu optimieren.\n"
-"Das Ergebnis wird in den Leuchtdichteumfang der Histrogrammgrenzen passen.\n"
+"Versucht die Einstellungen durch einige statistische Annahmen zu "
+"optimieren.\n"
+"adurch wird der Leuchtdichtebereich innerhalb der Histogrammgrenzen "
+"angepasst.\n"
 "Funktioniert besser mit Landschaften und gleichmäßig ausgeleuchteten "
 "Bildern,\n"
-"aber funktioniert nicht mit schwach oder stark belichteten Bildern."
+"aber funktioniert nicht bei schwach oder stark belichteten oder bei High-ISO-"
+"Bildern.\n"
+"Hierbei handelt es sich nicht um eine künstliche Intelligenz sondern um eine "
+"einfache Vermutung.\n"
+"Vergewissern Sie sich, dass Sie die Annahmen verstehen, bevor Sie sie "
+"verwenden."
 
 #: ../src/iop/filmicrgb.c:1523
-#, fuzzy
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "in percent of the dynamic range (white exposure - black exposure).\n"
@@ -8710,9 +8715,11 @@ msgid ""
 "decrease otherwise. no desaturation happens in the latitude range.\n"
 "this has no effect on mid-tones."
 msgstr ""
-"Breite des linearen Bereiches in der Mitte der Kurve.\n"
-"Erhöhen um mehr Kontrast bei extremen Helligkeitswerten zu erhalten.\n"
-"Hat keine Auswirkungen auf die Mitten."
+"Breite des linearen Bereiches in der Mitte der Kurve,\n"
+"in Prozent des Dynamikbereichs (Weißbelichtung - Schwarzbelichtung).\n"
+"Erhöhen um mehr Kontrast und weniger Endsättigung bei\n"
+"extremen Helligkeitswerten zu erhalten.\n"
+"Hat keine Auswirkungen auf die Mitteltöne."
 
 #: ../src/iop/filmicrgb.c:1547
 msgid ""
@@ -9203,7 +9210,7 @@ msgid "try to locate your camera/lens in the above two menus"
 msgstr "Kamera/Objektiv nach Möglichkeit in den beiden oberen Menüs auswählen"
 
 #: ../src/iop/lens.cc:1902
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "maker:\t\t%s\n"
 "model:\t\t%s\n"
@@ -10401,50 +10408,44 @@ msgid "RGB, independent channels"
 msgstr "RBG, unabhängige Kanäle"
 
 #: ../src/iop/rgbcurve.c:1517 ../src/iop/rgblevels.c:1014
-#, fuzzy
 msgid "choose between linked and independent channels."
-msgstr "zwischen verknüpften und unabhängigen Kanälen wählen."
+msgstr "Zwischen verknüpften und unabhängigen Kanälen wählen."
 
 #: ../src/iop/rgbcurve.c:1524 ../src/iop/rgblevels.c:1021
 msgid "  R  "
 msgstr "  R   "
 
 #: ../src/iop/rgbcurve.c:1527 ../src/iop/rgblevels.c:1024
-#, fuzzy
 msgid "curve nodes for r channel"
-msgstr "Farbkurve für L-Kanal"
+msgstr "Kurvenknoten für den R-Kanal"
 
 #: ../src/iop/rgbcurve.c:1529 ../src/iop/rgblevels.c:1026
 msgid "  G  "
 msgstr "  G  "
 
 #: ../src/iop/rgbcurve.c:1532 ../src/iop/rgblevels.c:1029
-#, fuzzy
 msgid "curve nodes for g channel"
-msgstr "Farbkurve für L-Kanal"
+msgstr "Kurvenknoten für den G-Kanal"
 
 #: ../src/iop/rgbcurve.c:1534 ../src/iop/rgblevels.c:1031
 msgid "  B  "
 msgstr "  B  "
 
 #: ../src/iop/rgbcurve.c:1537 ../src/iop/rgblevels.c:1034
-#, fuzzy
 msgid "curve nodes for b channel"
-msgstr "Farbkurve für b-Kanal"
+msgstr "Kurvenknoten für den B-Kanal"
 
 #: ../src/iop/rgbcurve.c:1557
 msgid "pick GUI color from image"
 msgstr "GUI-Farbe aus dem Bild übernehmen"
 
 #: ../src/iop/rgbcurve.c:1611 ../src/iop/rgbcurve.c:1613
-#, fuzzy
 msgid "compensate middle grey"
-msgstr "Zielwert für Mittleres Grau"
+msgstr "kompensiertes Mittelgrau"
 
 #: ../src/iop/rgblevels.c:108
-#, fuzzy
 msgid "rgb levels"
-msgstr "Werte"
+msgstr "RGB-Stufen"
 
 #: ../src/iop/rgblevels.c:1094
 msgid ""
@@ -10868,54 +10869,46 @@ msgstr "Farbkurve für b-Kanal"
 
 # "anmelden" ist zu lang
 #: ../src/iop/tonecurve.c:1407
-#, fuzzy
 msgid "log"
-msgstr "login"
+msgstr "Login"
 
 #: ../src/iop/tonecurve.c:1415
 msgid "base of the logarithm"
 msgstr "Basis des Logarithmus"
 
 #: ../src/iop/toneequal.c:290
-#, fuzzy
 msgid "tone equalizer"
-msgstr "Equalizer"
+msgstr "Farb-Equalizer"
 
 #: ../src/iop/toneequal.c:310
-#, fuzzy
 msgctxt "accel"
 msgid "blacks"
-msgstr "Schwarz"
+msgstr "Schwarztöne"
 
 #: ../src/iop/toneequal.c:311
-#, fuzzy
 msgctxt "accel"
 msgid "deep shadows"
-msgstr "Schatten"
+msgstr "dunkle Schatten"
 
 #: ../src/iop/toneequal.c:313
-#, fuzzy
 msgctxt "accel"
 msgid "light shadows"
-msgstr "Schatten aufhellen"
+msgstr "helle Schatten"
 
 #: ../src/iop/toneequal.c:314
-#, fuzzy
 msgctxt "accel"
 msgid "midtones"
-msgstr "Mittenbetonung"
+msgstr "Mitteltöne"
 
 #: ../src/iop/toneequal.c:315
-#, fuzzy
 msgctxt "accel"
 msgid "dark highlights"
-msgstr "Spitzlichter"
+msgstr "dunkle Spitzlichter"
 
 #: ../src/iop/toneequal.c:317
-#, fuzzy
 msgctxt "accel"
 msgid "whites"
-msgstr "Weiß"
+msgstr "Weißtöne"
 
 #: ../src/iop/toneequal.c:318
 msgctxt "accel"
@@ -11102,9 +11095,8 @@ msgstr ""
 
 # wtf?
 #: ../src/iop/toneequal.c:3138
-#, fuzzy
 msgid "luminance estimator"
-msgstr "Farb-Dominanz"
+msgstr "Luminanz-Schätzer"
 
 #: ../src/iop/toneequal.c:3140
 msgid "RGB average"
@@ -11176,9 +11168,8 @@ msgstr ""
 "Geschwindigkeit zu streuen"
 
 #: ../src/iop/toneequal.c:3174
-#, fuzzy
 msgid "smoothing diameter"
-msgstr "kühlender Filter"
+msgstr "Glättungsdurchmesser"
 
 #: ../src/iop/toneequal.c:3175
 msgid ""
@@ -14972,7 +14963,7 @@ msgstr "[modules] Module ausklappen, ohne andere zu schließen"
 
 #: ../src/views/darkroom.c:3348
 msgid "[modules] change module position in pipe"
-msgstr " Modulposition ändern"
+msgstr "Modulposition ändern"
 
 #. workaround for GTK Quartz backend bug
 #: ../src/views/darkroom.c:4050 ../src/views/darkroom.c:4068
@@ -15270,7 +15261,7 @@ msgstr "Mittelklick"
 
 #: ../src/views/view.c:2152
 msgid "Scroll"
-msgstr "scrollen"
+msgstr "Scrollen"
 
 #: ../src/views/view.c:2155
 msgid "Left double-click"
