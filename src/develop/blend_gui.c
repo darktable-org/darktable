@@ -431,8 +431,8 @@ static void _blendop_blendif_upper_callback(GtkDarktableGradientSlider *slider, 
   if(darktable.gui->reset) return;
   dt_develop_blend_params_t *bp = data->module->blend_params;
 
-  int tab = data->tab;
-  int ch = data->channels[tab][1];
+  const int tab = data->tab;
+  const int ch = data->channels[tab][1];
 
   float *parameters = &(bp->blendif_parameters[4 * ch]);
 
@@ -462,8 +462,8 @@ static void _blendop_blendif_lower_callback(GtkDarktableGradientSlider *slider, 
   if(darktable.gui->reset) return;
   dt_develop_blend_params_t *bp = data->module->blend_params;
 
-  int tab = data->tab;
-  int ch = data->channels[tab][0];
+  const int tab = data->tab;
+  const int ch = data->channels[tab][0];
 
   float *parameters = &(bp->blendif_parameters[4 * ch]);
 
@@ -496,8 +496,8 @@ static void _blendop_blendif_polarity_callback(GtkToggleButton *togglebutton, dt
 
   dt_develop_blend_params_t *bp = data->module->blend_params;
 
-  int tab = data->tab;
-  int ch = GTK_WIDGET(togglebutton) == data->lower_polarity ? data->channels[tab][0] : data->channels[tab][1];
+  const int tab = data->tab;
+  const int ch = GTK_WIDGET(togglebutton) == data->lower_polarity ? data->channels[tab][0] : data->channels[tab][1];
   GtkDarktableGradientSlider *slider = GTK_WIDGET(togglebutton) == data->lower_polarity ? data->lower_slider
                                                                                         : data->upper_slider;
 
@@ -674,7 +674,7 @@ static void _blendop_masks_modes_toggle(GtkToggleButton *button, dt_iop_module_t
   if(darktable.gui->reset) return;
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
-  gboolean was_toggled = gtk_toggle_button_get_active(button);
+  const gboolean was_toggled = gtk_toggle_button_get_active(button);
 
   // avoids trying to untoggle the cancel button
   if(data->selected_mask_mode
@@ -750,7 +750,7 @@ static void _blendop_blendif_invert(GtkButton *button, dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return;
 
-  dt_iop_gui_blend_data_t *data = module->blend_data;
+  const dt_iop_gui_blend_data_t *data = module->blend_data;
 
   unsigned int toggle_mask = 0;
 
@@ -880,7 +880,7 @@ static void _blendop_masks_polarity_callback(GtkToggleButton *togglebutton, dt_i
 {
   if(darktable.gui->reset) return;
 
-  int active = gtk_toggle_button_get_active(togglebutton);
+  const int active = gtk_toggle_button_get_active(togglebutton);
   dt_develop_blend_params_t *bp = (dt_develop_blend_params_t *)self->blend_params;
 
   if(active)
@@ -1105,8 +1105,8 @@ static gboolean _blendop_blendif_enter(GtkWidget *widget, GdkEventCrossing *even
   // in case user requests channel display: get the cannel
   if(new_request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_CHANNEL)
   {
-    int tab = data->tab;
-    int inout = (widget == GTK_WIDGET(data->lower_slider)) ? 0 : 1;
+    const int tab = data->tab;
+    const int inout = (widget == GTK_WIDGET(data->lower_slider)) ? 0 : 1;
     dt_dev_pixelpipe_display_mask_t channel = data->display_channel[tab][inout];
 
     new_request_mask_display &= ~DT_DEV_PIXELPIPE_DISPLAY_ANY;
@@ -1184,17 +1184,17 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
   }
   dt_pthread_mutex_unlock(&data->lock);
 
-  int tab = data->tab;
-  int in_ch = data->channels[tab][0];
-  int out_ch = data->channels[tab][1];
+  const int tab = data->tab;
+  const int in_ch = data->channels[tab][0];
+  const int out_ch = data->channels[tab][1];
 
   float *iparameters = &(bp->blendif_parameters[4 * in_ch]);
   float *oparameters = &(bp->blendif_parameters[4 * out_ch]);
   float *idefaults = &(dp->blendif_parameters[4 * in_ch]);
   float *odefaults = &(dp->blendif_parameters[4 * out_ch]);
 
-  int ipolarity = !(bp->blendif & (1 << (in_ch + 16)));
-  int opolarity = !(bp->blendif & (1 << (out_ch + 16)));
+  const int ipolarity = !(bp->blendif & (1 << (in_ch + 16)));
+  const int opolarity = !(bp->blendif & (1 << (out_ch + 16)));
   char text[256];
 
   int reset = darktable.gui->reset;
@@ -1571,7 +1571,7 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
   if(grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points) > 0)
   {
     char txt[512];
-    guint n = g_list_length(grp->points);
+    const guint n = g_list_length(grp->points);
     snprintf(txt, sizeof(txt), ngettext("%d shape used", "%d shapes used", n), n);
     dt_bauhaus_combobox_add(bd->masks_combo, txt);
   }
@@ -1884,7 +1884,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
 
   if(!(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING) || !bd || !bd->blend_inited) return;
 
-  unsigned int mode = g_list_index(bd->masks_modes, GUINT_TO_POINTER(module->blend_params->mask_mode));
+  const unsigned int mode = g_list_index(bd->masks_modes, GUINT_TO_POINTER(module->blend_params->mask_mode));
 
   // unsets currently toggled if any, won't try to untoggle the cancel button
   if(bd->selected_mask_mode
@@ -1906,7 +1906,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
         bd->masks_modes_toggles, g_list_index(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_DISABLED)));
   }
 
-  int reset = darktable.gui->reset;
+  const int reset = darktable.gui->reset;
   darktable.gui->reset = 1;
 
   /* special handling of deprecated blend modes */
