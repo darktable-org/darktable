@@ -598,7 +598,11 @@ static gboolean _blendop_blendif_draw(GtkWidget *widget, cairo_t *cr, dt_iop_mod
 {
   if(darktable.gui->reset) return FALSE;
 
+  dt_iop_gui_blend_data_t *data = module->blend_data;
+
+  dt_pthread_mutex_lock(&data->lock);
   _update_gradient_slider(widget, module);
+  dt_pthread_mutex_unlock(&data->lock);
 
   return FALSE;
 }
@@ -1171,6 +1175,9 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
 
   if(!data || !data->blendif_support || !data->blendif_inited) return;
 
+  const int reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
+
   dt_pthread_mutex_lock(&data->lock);
   if(data->timeout_handle)
   {
@@ -1196,9 +1203,6 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
   const int ipolarity = !(bp->blendif & (1 << (in_ch + 16)));
   const int opolarity = !(bp->blendif & (1 << (out_ch + 16)));
   char text[256];
-
-  int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->lower_polarity), ipolarity);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->upper_polarity), opolarity);
@@ -1565,6 +1569,9 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
 
   if(!bd || !bd->masks_support || !bd->masks_inited) return;
 
+  const int reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
+
   /* update masks state */
   dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, module->blend_params->mask_id);
   dt_bauhaus_combobox_clear(bd->masks_combo);
@@ -1602,6 +1609,8 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), FALSE);
     }
   }
+
+  darktable.gui->reset = reset;
 }
 
 void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
@@ -1884,6 +1893,9 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
 
   if(!(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING) || !bd || !bd->blend_inited) return;
 
+  const int reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
+
   const unsigned int mode = g_list_index(bd->masks_modes, GUINT_TO_POINTER(module->blend_params->mask_mode));
 
   // unsets currently toggled if any, won't try to untoggle the cancel button
@@ -1905,9 +1917,6 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     bd->selected_mask_mode = g_list_nth_data(
         bd->masks_modes_toggles, g_list_index(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_DISABLED)));
   }
-
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
 
   /* special handling of deprecated blend modes */
   int blend_mode_number = g_list_index(bd->blend_modes, GUINT_TO_POINTER(module->blend_params->blend_mode));
