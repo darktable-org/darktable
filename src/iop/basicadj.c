@@ -30,7 +30,7 @@
 #include "develop/imageop.h"
 #include "gui/color_picker_proxy.h"
 
-DT_MODULE_INTROSPECTION(1, dt_iop_basicadj_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_basicadj_params_t)
 
 #define exposure2white(x) exp2f(-(x))
 
@@ -45,6 +45,7 @@ typedef struct dt_iop_basicadj_params_t
   float middle_grey;
   float brightness;
   float saturation;
+  float vibrance;
   float clip;
 } dt_iop_basicadj_params_t;
 
@@ -70,6 +71,7 @@ typedef struct dt_iop_basicadj_gui_data_t
   GtkWidget *sl_middle_grey;
   GtkWidget *sl_brightness;
   GtkWidget *sl_saturation;
+  GtkWidget *sl_vibrance;
   GtkWidget *sl_clip;
 
   dt_iop_color_picker_t color_picker;
@@ -219,6 +221,18 @@ static void _saturation_callback(GtkWidget *slider, dt_iop_module_t *self)
   dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
 
   p->saturation = dt_bauhaus_slider_get(slider);
+
+  _turn_selregion_picker_off(self);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+}
+
+static void _vibrance_callback(GtkWidget *slider, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
+
+  p->vibrance = dt_bauhaus_slider_get(slider);
 
   _turn_selregion_picker_off(self);
 
@@ -614,6 +628,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->sl_middle_grey, p->middle_grey);
   dt_bauhaus_slider_set(g->sl_brightness, p->brightness);
   dt_bauhaus_slider_set(g->sl_saturation, p->saturation);
+  dt_bauhaus_slider_set(g->sl_vibrance, p->vibrance);
   dt_bauhaus_slider_set(g->sl_clip, p->clip);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_select_region), g->draw_selected_region);
@@ -742,6 +757,12 @@ void gui_init(struct dt_iop_module_t *self)
   g_object_set(g->sl_saturation, "tooltip-text", _("saturation adjustment"), (char *)NULL);
   g_signal_connect(G_OBJECT(g->sl_saturation), "value-changed", G_CALLBACK(_saturation_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->sl_saturation, TRUE, TRUE, 0);
+
+  g->sl_vibrance = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .01, p->vibrance, 2);
+  dt_bauhaus_widget_set_label(g->sl_vibrance, NULL, _("vibrance"));
+  g_object_set(g->sl_vibrance, "tooltip-text", _("vibrance adjustment"), (char *)NULL);
+  g_signal_connect(G_OBJECT(g->sl_vibrance), "value-changed", G_CALLBACK(_vibrance_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_vibrance, TRUE, TRUE, 0);
 
   GtkWidget *autolevels_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
 
@@ -1471,13 +1492,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int plain_contrast = (!p->preserve_colors && p->contrast != 0.f);
   const int preserve_colors = (p->contrast != 0.f) ? p->preserve_colors : 0;
   const int process_gamma = (p->brightness != 0.f);
-  const int process_saturation = (p->saturation != 0.f);
+  const int process_saturation_vibrance = (p->saturation != 0.f)||(p->vibrance != 0.f);
   const int process_hlcompr = (p->hlcompr > 0.f);
 
   const float black_point = p->black_point;
   const float hlcompr = p->hlcompr;
   const float hlcomprthresh = p->hlcomprthresh;
   const float saturation = p->saturation + 1.0f;
+  const float vibrance = p->vibrance / 1.4f;
   const float contrast = p->contrast + 1.0f;
   const float white = exposure2white(p->exposure);
   const float scale = 1.0f / (white - p->black_point);
@@ -1529,20 +1551,21 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 11, sizeof(int), (void *)&preserve_colors);
   dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 12, sizeof(float), (void *)&contrast);
 
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 13, sizeof(int), (void *)&process_saturation);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 13, sizeof(int), (void *)&process_saturation_vibrance);
   dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 14, sizeof(float), (void *)&saturation);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 15, sizeof(float), (void *)&vibrance);
 
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 15, sizeof(int), (void *)&process_hlcompr);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 16, sizeof(float), (void *)&hlcomp);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 17, sizeof(float), (void *)&hlrange);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 16, sizeof(int), (void *)&process_hlcompr);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 17, sizeof(float), (void *)&hlcomp);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 18, sizeof(float), (void *)&hlrange);
 
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 18, sizeof(float), (void *)&middle_grey);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 19, sizeof(float), (void *)&inv_middle_grey);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 19, sizeof(float), (void *)&middle_grey);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 20, sizeof(float), (void *)&inv_middle_grey);
 
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 20, sizeof(cl_mem), (void *)&dev_profile_info);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 21, sizeof(cl_mem), (void *)&dev_profile_lut);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 21, sizeof(cl_mem), (void *)&dev_profile_info);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 22, sizeof(cl_mem), (void *)&dev_profile_lut);
 
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 22, sizeof(int), (void *)&use_work_profile);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 23, sizeof(int), (void *)&use_work_profile);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basicadj, sizes);
   if(err != CL_SUCCESS)
   {
@@ -1607,6 +1630,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float hlcompr = p->hlcompr;
   const float hlcomprthresh = p->hlcomprthresh;
   const float saturation = p->saturation + 1.0f;
+  const float vibrance = p->vibrance / 1.4f;
   const float contrast = p->contrast + 1.0f;
   const float white = exposure2white(p->exposure);
   const float scale = 1.0f / (white - p->black_point);
@@ -1622,7 +1646,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int plain_contrast = (!p->preserve_colors && p->contrast != 0.f);
   const int preserve_colors = (p->contrast != 0.f) ? p->preserve_colors : 0;
   const int process_gamma = (p->brightness != 0.f);
-  const int process_saturation = (p->saturation != 0.f);
+  const int process_saturation_vibrance = (p->saturation != 0.f)||(p->vibrance != 0.f);
   const int process_hlcompr = (p->hlcompr > 0.f);
 
   const float *const in = (const float *const)ivoid;
@@ -1634,8 +1658,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_omp_firstprivate(black_point, ch, contrast, gamma, hlcomp, hlrange, in, \
                       inv_middle_grey, middle_grey, out, plain_contrast, \
                       preserve_colors, process_hlcompr, process_gamma, \
-                      process_saturation, saturation, scale, stride, \
-                      work_profile) \
+                      process_saturation_vibrance, saturation, vibrance, \
+                      scale, stride, work_profile) \
   shared(d) \
   schedule(static)
 #endif
@@ -1696,19 +1720,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 
     // saturation
-    if(process_saturation)
+    if(process_saturation_vibrance)
     {
-      const float luminance = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(out + k,
-                                                                                 work_profile->matrix_in,
-                                                                                 work_profile->lut_in,
-                                                                                 work_profile->unbounded_coeffs_in,
-                                                                                 work_profile->lutsize,
-                                                                                 work_profile->nonlinearlut)
-                                             : dt_camera_rgb_luminance(out + k);
+      const float average = (out[k] + out[k+1] + out[k+2]) / 3;
+      const float delta = sqrt( (average-out[k])*(average-out[k])+(average-out[k+1])*(average-out[k+1])+(average-out[k+2])*(average-out[k+2]));
+      const float P = vibrance * (1 - powf(delta, fabsf(vibrance)));
 
       for(size_t c = 0; c < 3; c++)
       {
-        out[k + c] = luminance + saturation * (out[k + c] - luminance);
+        out[k + c] = average + (saturation + P) * (out[k+c] - average);
       }
     }
 
