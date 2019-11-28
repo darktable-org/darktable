@@ -9552,7 +9552,7 @@ msgstr "Некорректный уровень файла PNG %d %d!"
 #: ../src/iop/lut3d.c:384 ../src/iop/lut3d.c:628
 #, c-format
 msgid "error - lut 3D size %d exceeds the maximum supported"
-msgstr "Превышен максимальный размер таблицы поиска цветов!"
+msgstr "Превышен максимальный размер %d таблицы поиска цветов!"
 
 #: ../src/iop/lut3d.c:396 ../src/iop/lut3d.c:414
 msgid "error - allocating buffer for png lut"
