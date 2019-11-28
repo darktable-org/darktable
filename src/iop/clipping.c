@@ -205,6 +205,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 typedef struct dt_iop_clipping_gui_data_t
 {
   GtkWidget *angle;
+  GtkWidget *cx,*cy,*cw,*ch;
   GtkWidget *hvflip;
 
   GList *aspect_list;
@@ -1656,6 +1657,33 @@ static void angle_callback(GtkWidget *slider, dt_iop_module_t *self)
   commit_box(self, g, p);
 }
 
+static void cxywh_callback(GtkWidget *slider, dt_iop_module_t *self)
+{
+  dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
+  dt_iop_clipping_params_t *p = (dt_iop_clipping_params_t *)self->params;
+
+  const int reset = darktable.gui->reset;
+  darktable.gui->reset = 1;
+
+  p->cx = dt_bauhaus_slider_get(g->cx) / 100;
+  dt_bauhaus_slider_set_soft_max(g->cw, 100 - p->cx * 100);
+  p->cw = (100 - dt_bauhaus_slider_get(g->cw)) / 100;
+  dt_bauhaus_slider_set_soft_max(g->cx, p->cw * 100);
+  p->cy = dt_bauhaus_slider_get(g->cy) / 100;
+  dt_bauhaus_slider_set_soft_max(g->ch, 100 - p->cy * 100);
+  p->ch = (100 - dt_bauhaus_slider_get(g->ch)) / 100;
+  dt_bauhaus_slider_set_soft_max(g->cy, p->ch * 100);
+
+  darktable.gui->reset = reset;
+
+  g->clip_x = p->cx;
+  g->clip_w = fabsf(p->cw) - p->cx;
+  g->clip_y = p->cy;
+  g->clip_h = fabsf(p->ch) - p->cy;
+
+  commit_box(self, g, p);
+}
+
 void gui_reset(struct dt_iop_module_t *self)
 {
   dt_iop_clipping_gui_data_t *g = (dt_iop_clipping_gui_data_t *)self->gui_data;
@@ -1736,6 +1764,10 @@ void gui_update(struct dt_iop_module_t *self)
 
   /* update ui elements */
   dt_bauhaus_slider_set(g->angle, -p->angle);
+  dt_bauhaus_slider_set(g->cx, p->cx*100);
+  dt_bauhaus_slider_set(g->cy, p->cy*100);
+  dt_bauhaus_slider_set(g->cw, 100-p->cw*100);
+  dt_bauhaus_slider_set(g->ch, 100-p->ch*100);
   int hvflip = 0;
   if(p->cw < 0)
   {
@@ -2011,6 +2043,34 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->angle), "value-changed", G_CALLBACK(angle_callback), self);
   gtk_widget_set_tooltip_text(g->angle, _("right-click and drag a line on the image to drag a straight line"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->angle, TRUE, TRUE, 0);
+
+  g->cx = dt_bauhaus_slider_new_with_range(self, 0, 100, 1, p->cx, 2);
+  dt_bauhaus_widget_set_label(g->cx, NULL, _("left"));
+  dt_bauhaus_slider_set_format(g->cx, "%0.f %%");
+  g_signal_connect(G_OBJECT(g->cx), "value-changed", G_CALLBACK(cxywh_callback), self);
+  gtk_widget_set_tooltip_text(g->cx, _("the left margin cannot overlap with the right margin"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->cx, TRUE, TRUE, 0);
+
+  g->cw = dt_bauhaus_slider_new_with_range(self, 0, 100, 1, p->cw, 2);
+  dt_bauhaus_widget_set_label(g->cw, NULL, _("right"));
+  dt_bauhaus_slider_set_format(g->cw, "%0.f %%");
+  g_signal_connect(G_OBJECT(g->cw), "value-changed", G_CALLBACK(cxywh_callback), self);
+  gtk_widget_set_tooltip_text(g->cw, _("the right margin cannot overlap with the left margin"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->cw, TRUE, TRUE, 0);
+
+  g->cy = dt_bauhaus_slider_new_with_range(self, 0, 100, 1, p->cy, 2);
+  dt_bauhaus_widget_set_label(g->cy, NULL, _("top"));
+  dt_bauhaus_slider_set_format(g->cy, "%0.f %%");
+  g_signal_connect(G_OBJECT(g->cy), "value-changed", G_CALLBACK(cxywh_callback), self);
+  gtk_widget_set_tooltip_text(g->cy, _("the top margin cannot overlap with the bottom margin"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->cy, TRUE, TRUE, 0);
+
+  g->ch = dt_bauhaus_slider_new_with_range(self, 0, 100, 1, p->ch, 2);
+  dt_bauhaus_widget_set_label(g->ch, NULL, _("bottom"));
+  dt_bauhaus_slider_set_format(g->ch, "%0.f %%");
+  g_signal_connect(G_OBJECT(g->ch), "value-changed", G_CALLBACK(cxywh_callback), self);
+  gtk_widget_set_tooltip_text(g->ch, _("the bottom margin cannot overlap with the top margin"));
+  gtk_box_pack_start(GTK_BOX(self->widget), g->ch, TRUE, TRUE, 2);
 
   g->keystone_type = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->keystone_type, NULL, _("keystone"));
@@ -2936,6 +2996,16 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
           p->cy = points[1] / (float)piece->buf_out.height;
           p->cw = copysignf(points[2] / (float)piece->buf_out.width, p->cw);
           p->ch = copysignf(points[3] / (float)piece->buf_out.height, p->ch);
+
+          const int reset = darktable.gui->reset;
+          darktable.gui->reset = 1;
+
+          dt_bauhaus_slider_set(g->cx, p->cx*100);
+          dt_bauhaus_slider_set(g->cy, p->cy*100);
+          dt_bauhaus_slider_set(g->cw, 100-p->cw*100);
+          dt_bauhaus_slider_set(g->ch, 100-p->ch*100);
+
+          darktable.gui->reset = reset;
         }
       }
     }
@@ -3268,6 +3338,10 @@ void init_key_accels(dt_iop_module_so_t *self)
 {
   dt_accel_register_iop(self, TRUE, NC_("accel", "commit"), GDK_KEY_Return, 0);
   dt_accel_register_slider_iop(self, FALSE, NC_("accel", "angle"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "left"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "top"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "right"));
+  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "bottom"));
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -3279,6 +3353,10 @@ void connect_key_accels(dt_iop_module_t *self)
   dt_accel_connect_iop(self, "commit", closure);
 
   dt_accel_connect_slider_iop(self, "angle", GTK_WIDGET(g->angle));
+  dt_accel_connect_slider_iop(self, "left", GTK_WIDGET(g->cx));
+  dt_accel_connect_slider_iop(self, "top", GTK_WIDGET(g->cy));
+  dt_accel_connect_slider_iop(self, "right", GTK_WIDGET(g->cw));
+  dt_accel_connect_slider_iop(self, "bottom", GTK_WIDGET(g->ch));
 }
 
 GSList *mouse_actions(struct dt_iop_module_t *self)
