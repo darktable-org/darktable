@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
-"PO-Revision-Date: 2019-11-27 23:44+0100\n"
+"PO-Revision-Date: 2019-11-28 20:40+0100\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -699,7 +699,7 @@ msgstr "Definiert an welcher Stelle Scrollbalken angezeigt werden"
 
 #: ../build/src/preferences_gen.h:3333
 msgid "always show panels' scrollbars"
-msgstr "zeigt immer die Scrollbalken der Eingabefelder an."
+msgstr "zeigt immer die Scrollbalken der Eingabefelder an"
 
 #: ../build/src/preferences_gen.h:3345
 msgid ""
@@ -8574,7 +8574,7 @@ msgid ""
 "of the display or color space.\n"
 "you should never touch that unless you know what you are doing."
 msgstr ""
-"Power oder Gamma der Übertragungsfunktion\n"
+"Stärke oder Gamma der Übertragungsfunktion\n"
 "des Displays oder des Farbraums.\n"
 "Sollte nicht geändert werden, es sei denn, Sie wissen, was Sie tun."
 
@@ -8617,34 +8617,29 @@ msgid "black exposure"
 msgstr "Schwarzbelichtung"
 
 #: ../src/iop/filmicrgb.c:270
-#, fuzzy
 msgctxt "accel"
 msgid "middle grey luminance"
-msgstr "mittel graue Luminanz"
+msgstr "mittelgraue Luminanz"
 
 #: ../src/iop/filmicrgb.c:271
-#, fuzzy
 msgctxt "accel"
 msgid "dynamic range scaling"
-msgstr "Dynamikbereich"
+msgstr "Skalierung des Dynamikbereichs"
 
 #: ../src/iop/filmicrgb.c:273
-#, fuzzy
 msgctxt "accel"
 msgid "latitude"
-msgstr "Breite"
+msgstr "Breitengrad"
 
 #: ../src/iop/filmicrgb.c:274
-#, fuzzy
 msgctxt "accel"
 msgid "shadows/highlights balance"
-msgstr "Schatten/Spitzlichter-Balance"
+msgstr "Schatten/Spitzlichter-Verhältnis"
 
 #: ../src/iop/filmicrgb.c:275
-#, fuzzy
 msgctxt "accel"
 msgid "extreme luminance saturation"
-msgstr "Sättigung bei extremer Luminanz"
+msgstr "extreme Luminanz-Sättigung"
 
 #: ../src/iop/filmicrgb.c:1418
 msgid ""
@@ -8665,9 +8660,8 @@ msgid "look"
 msgstr "Aussehen"
 
 #: ../src/iop/filmicrgb.c:1432
-#, fuzzy
 msgid "display"
-msgstr "Masken anzeigen"
+msgstr "Anzeige"
 
 #: ../src/iop/filmicrgb.c:1446
 msgid ""
@@ -8675,20 +8669,21 @@ msgid ""
 "the value entered here will then be remapped to 18.45%.\n"
 "decrease the value to increase the overall brightness."
 msgstr ""
+"Anpassen der durchschnittlichen Luminanz des Bildmotivs.\n"
+"Der hier eingegebene Wert wird dabei auf 18,45% umgerechnet.\n"
+"Reduzierung des Werts erhöht die Gesamthelligkeit."
 
 #: ../src/iop/filmicrgb.c:1485
-#, fuzzy
 msgid "dynamic range scaling"
-msgstr "Dynamikbereich"
+msgstr "Skalierung des Dynamikbereichs"
 
 #: ../src/iop/filmicrgb.c:1488
-#, fuzzy
 msgid ""
 "symmetrically enlarge or shrink the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
 msgstr ""
 "Den berechneten Dynamikbereich vergrößern oder verkleinern.\n"
-"Nützlich in Verbindung mit ,Auto-Tune-Levels'."
+"Nützlich, um extremer Luminanz einen sicheren Spielraum zu geben."
 
 #: ../src/iop/filmicrgb.c:1499
 #, fuzzy
@@ -8740,7 +8735,7 @@ msgstr "Luminanz Y"
 
 #: ../src/iop/filmicrgb.c:1559 ../src/iop/toneequal.c:3145
 msgid "RGB power norm"
-msgstr ""
+msgstr "RGB-Stärke-Standard"
 
 #: ../src/iop/filmicrgb.c:1560
 msgid ""
@@ -10457,6 +10452,9 @@ msgid ""
 "click and drag to draw the area\n"
 "right click to cancel"
 msgstr ""
+"Auto-Wert basierend auf einem vom Benutzer definierten Bereich anwenden\n"
+"Klicken und ziehen um den Bereich zu zeichnen.\n"
+"Rechtsklick zum Abbrechen"
 
 #: ../src/iop/rotatepixels.c:76
 msgctxt "modulename"
@@ -10981,17 +10979,21 @@ msgstr "komprimiert Schatten/Spitzlichter: stark"
 
 #: ../src/iop/toneequal.c:503
 msgid "relight : fill-in"
-msgstr ""
+msgstr "aufhellen : ausfüllen"
 
 #: ../src/iop/toneequal.c:554
 msgid ""
 "tone equalizer needs to be after distorsion modules in the pipeline – "
 "disabled"
 msgstr ""
+"Der Farb-Equalizer muss nach den Verzeichnungs-Modulen in der Pipeline "
+"erfolgen - deaktiviert."
 
 #: ../src/iop/toneequal.c:828 ../src/iop/toneequal.c:949
 msgid "tone equalizer failed to allocate memory, check your RAM settings"
 msgstr ""
+"Farb-Equalizer konnte keinen Speicher reservieren, überprüfen Sie Ihre RAM-"
+"Einstellungen."
 
 #. Pointers are not 64-bits aligned, and SSE code will segfault
 #: ../src/iop/toneequal.c:850
@@ -10999,10 +11001,12 @@ msgid ""
 "tone equalizer in/out buffer are ill-aligned, please report the bug to the "
 "developers"
 msgstr ""
+"Ein-/Ausgabepuffer des Farb-Equalizer ist schlecht ausgerichtet, bitte "
+"melden Sie den Fehler an die Entwickler."
 
 #: ../src/iop/toneequal.c:1774 ../src/iop/toneequal.c:2147
 msgid "the interpolation is unstable, decrease the curve smoothing"
-msgstr ""
+msgstr "Die Interpolation ist instabil, verringern Sie die Kurvenglättung."
 
 #: ../src/iop/toneequal.c:1859 ../src/iop/toneequal.c:1919
 msgid "wait for the preview to finish recomputing"
@@ -11206,7 +11210,7 @@ msgstr ""
 
 #: ../src/iop/toneequal.c:3192
 msgid "mask post-processing"
-msgstr ""
+msgstr "Maskennachbearbeitung"
 
 #: ../src/iop/toneequal.c:3198
 msgid ""
@@ -11214,6 +11218,9 @@ msgid ""
 "the central line shows the average. orange bars appear at extrema if "
 "clipping occurs."
 msgstr ""
+"Spanne des Masken-Histogramm zwischen der ersten und letzten Zehntel.Die "
+"Mittellinie zeigt den Mittelwert an. Orangefarbene Balken erscheinen bei "
+"Extrema, wenn es zu Beschneidungen kommt."
 
 #: ../src/iop/toneequal.c:3203
 msgid "mask quantization"
@@ -11225,6 +11232,10 @@ msgid ""
 "higher values posterize the luminance mask to help the guiding\n"
 "produce piece-wise smooth areas when using high feathering values"
 msgstr ""
+"0 deaktiviert die Quantisierung.\n"
+"Höhere Werte verdeutlichen die Luminanz-Maske, um beim Erzeugen\n"
+"von Stückweisen glatte Bereichen bei Verwendung hoher Ausblend-Werten zu "
+"unterstützen."
 
 #: ../src/iop/toneequal.c:3213
 msgid "mask exposure compensation"
@@ -11236,6 +11247,11 @@ msgid ""
 "for a better control of the exposure correction with the available nodes.\n"
 "the picker will auto-adjust the average exposure at -4EV."
 msgstr ""
+"Hiermit kann die durchschnittliche Belichtung der Maske entlang der Kanäle "
+"verschoben\n"
+"werden, um die Belichtungskorrektur mit den verfügbaren Knoten besser zu "
+"steuern.\n"
+"Der Picker passt die durchschnittliche Belichtung bei -4EV automatisch an."
 
 #: ../src/iop/toneequal.c:3227
 msgid "mask contrast compensation"
@@ -11248,11 +11264,14 @@ msgid ""
 "this allows to spread the exposure histogram over more channels\n"
 "for a better control of the exposure correction."
 msgstr ""
+"Hiermit wird der Mittelwertbildung des geführten Filters\n"
+"entgegengewirkt und der Maskenkontrast um -4EV erweitert.\n"
+"Dies ermöglicht eine Streuung des Belichtungshistogramms auf\n"
+"mehrere Kanäle zur besseren Kontrolle der Belichtungskorrektur."
 
 #: ../src/iop/toneequal.c:3242 ../src/iop/toneequal.c:3246
-#, fuzzy
 msgid "display exposure mask"
-msgstr "Masken anzeigen"
+msgstr "Belichtungsmasken anzeigen"
 
 #: ../src/iop/tonemap.cc:73
 msgid "tone mapping"
@@ -11421,12 +11440,14 @@ msgstr ""
 #: ../src/iop/vignette.c:1220
 #, c-format
 msgid "[%s on node] change vignette/feather size"
-msgstr ""
+msgstr "[%s on node] Vignettierung / Ausblendgröße ändern"
 
 #: ../src/iop/vignette.c:1226
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
 msgstr ""
+"[%s on node] Vignettierung / Ausbelndgröße ändern, wobei das Verhältnis "
+"beibehalten wird."
 
 #: ../src/iop/vignette.c:1232
 #, c-format
@@ -12415,9 +12436,8 @@ msgid "add an output metadata tag"
 msgstr "Hinzufügen eines Ausgabe-Metadaten-Stichwort"
 
 #: ../src/libs/export_metadata.c:383
-#, fuzzy
 msgid "delete metadata tag"
-msgstr "ausgewählten Tag löschen"
+msgstr "Metadaten-Tag löschen"
 
 #: ../src/libs/geotagging.c:411
 msgid ""
@@ -14803,9 +14823,9 @@ msgid "softproof ICC profiles in %s or %s"
 msgstr "Softproof-ICC-Profile in %s oder %s"
 
 #: ../src/views/darkroom.c:2072
-#, fuzzy, c-format
+#, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
-msgstr "Histogram und Farbwähler ICC-Profile in %s oder %s"
+msgstr "Histogramm und Farbwähler ICC-Profile in %s oder %s"
 
 #. Film strip shortcuts
 #. Setup key accelerators in capture view...
