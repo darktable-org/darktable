@@ -2117,7 +2117,6 @@ static void _add_blendmode_combo(GList **list, GtkWidget *combobox, GList *compl
 
 void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 {
-
   /* create and add blend mode if module supports it */
   if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
   {
