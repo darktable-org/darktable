@@ -675,8 +675,8 @@ menuitem check
 dialog,
 filechooserdialog
 {
-  background-color: @bg_color;
-  color: @fg_color;
+  background-color: @plugin_bg_color;
+  color: @plugin_fg_color;
 }
 
 dialog *,
@@ -1319,7 +1319,9 @@ entry:active
   background-color: @field_active_bg;
 }
 
-entry:selected
+entry:selected,
+label *,
+textview text *
 {
   color: @field_selected_fg;
   background-color: @field_selected_bg;
