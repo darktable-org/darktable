@@ -193,6 +193,13 @@ typedef enum dt_signal_t
   */
   DT_SIGNAL_CONTROL_NAVIGATION_REDRAW,
 
+  /** \brief This signal is raised when new color picker data are available in the pixelpipe.
+    1 module
+    2 piece
+    no returned value
+  */
+  DT_SIGNAL_CONTROL_PICKERDATA_READY,
+
   /* do not touch !*/
   DT_SIGNAL_COUNT
 } dt_signal_t;
