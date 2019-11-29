@@ -96,6 +96,22 @@ static void _internal_iop_color_picker_update(dt_iop_color_picker_t *picker)
   darktable.gui->reset = reset;
 }
 
+typedef struct _cb_data
+{
+  dt_iop_color_picker_t *picker;
+  dt_iop_module_t *module;
+  dt_dev_pixelpipe_iop_t *piece;
+} _cb_data;
+
+static gboolean _picker_apply(gpointer user_data)
+{
+  _cb_data *data = (_cb_data *)user_data;
+
+  data->picker->apply(data->module, data->piece);
+  g_free(data);
+  return FALSE;
+}
+
 void dt_iop_color_picker_apply_module(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece)
 {
   if(module->request_color_pick == DT_REQUEST_COLORPICK_MODULE && module->picker && module->picker->apply)
@@ -103,7 +119,14 @@ void dt_iop_color_picker_apply_module(dt_iop_module_t *module, dt_dev_pixelpipe_
     if(module->picker->skip_apply)
       module->picker->skip_apply = FALSE;
     else
-      module->picker->apply(module, piece);
+    {
+      // call must be done from the main Gtk loop
+      _cb_data *data = g_malloc0(sizeof(_cb_data));
+      data->module = module;
+      data->piece = piece;
+      data->picker = module->picker;
+      g_timeout_add(0, _picker_apply, (gpointer)data);
+    }
     _iop_record_point(module->picker);
   }
   else if(module->request_color_pick == DT_REQUEST_COLORPICK_BLEND && module->blend_picker && module->blend_picker->apply)
@@ -111,7 +134,14 @@ void dt_iop_color_picker_apply_module(dt_iop_module_t *module, dt_dev_pixelpipe_
     if(module->blend_picker->skip_apply)
       module->blend_picker->skip_apply = FALSE;
     else
-      module->blend_picker->apply(module, piece);
+    {
+      // call must be done from the main Gtk loop
+      _cb_data *data = g_malloc0(sizeof(_cb_data));
+      data->module = module;
+      data->piece = piece;
+      data->picker = module->blend_picker;
+      g_timeout_add(0, _picker_apply, (gpointer)data);
+    }
     _iop_record_point(module->blend_picker);
   }
 }
