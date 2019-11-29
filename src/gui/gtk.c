@@ -1328,6 +1328,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // for some reason this is needed on some systems to pick up the correctly themed cursor
   dt_control_change_cursor(GDK_LEFT_PTR);
 
+  dt_iop_color_picker_init();
+
   return 0;
 }
 

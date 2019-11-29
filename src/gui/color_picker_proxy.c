@@ -20,6 +20,7 @@
 #include "bauhaus/bauhaus.h"
 #include "libs/lib.h"
 #include "control/control.h"
+#include "gui/gtk.h"
 
 typedef enum _internal__status
 {
@@ -315,6 +316,25 @@ dt_iop_colorspace_type_t dt_iop_color_picker_get_active_cst(dt_iop_module_t *mod
 
   return picker_cst;
 }
+
+static void _iop_color_picker_signal_callback(gpointer instance, dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
+                                              gpointer user_data)
+{
+  dt_iop_color_picker_apply_module(module, piece);
+}
+
+
+void dt_iop_color_picker_init(void)
+{
+  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PICKERDATA_READY,
+                            G_CALLBACK(_iop_color_picker_signal_callback), NULL);
+}
+
+void dt_iop_color_picker_cleanup(void)
+{
+  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_iop_color_picker_signal_callback), NULL);
+}
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
