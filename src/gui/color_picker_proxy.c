@@ -320,7 +320,7 @@ dt_iop_colorspace_type_t dt_iop_color_picker_get_active_cst(dt_iop_module_t *mod
 static void _iop_color_picker_signal_callback(gpointer instance, dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
                                               gpointer user_data)
 {
-  printf("thread %lu, module %p, piece %p\n", pthread_self(), module, piece);
+  dt_iop_color_picker_apply_module(module, piece);
 }
 
 
