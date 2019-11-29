@@ -718,8 +718,8 @@ void dt_styles_apply_to_image(const char *name, gboolean duplicate, int32_t imgi
       style_item.module_version = sqlite3_column_int(stmt, 1);
       style_item.blendop_version = sqlite3_column_int(stmt, 6);
       style_item.params = (void *)sqlite3_column_blob(stmt, 3);
-      style_item.blendop_params = (void *)sqlite3_column_blob(stmt, 5);
       style_item.params_size = sqlite3_column_bytes(stmt, 3);
+      style_item.blendop_params = (void *)sqlite3_column_blob(stmt, 5);
       style_item.blendop_params_size = sqlite3_column_bytes(stmt, 5);
 
       const double old_iop_order = sqlite3_column_double(stmt, 9);
@@ -832,7 +832,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
     if(params)
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "SELECT num, multi_priority, module, operation, enabled, op_params, blendop_params, "
-                                  "multi_name, iop_order FROM data.style_items WHERE styleid=?1 ORDER BY num DESC",
+                                  "multi_name, iop_order, blendop_version FROM data.style_items WHERE styleid=?1 ORDER BY num DESC",
                                   -1, &stmt, NULL);
     else if(imgid != -1)
     {
@@ -842,7 +842,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
       DT_DEBUG_SQLITE3_PREPARE_V2(
           dt_database_get(darktable.db),
           "SELECT num, multi_priority, module, operation, enabled, (SELECT MAX(num) FROM main.history WHERE imgid=?2 "
-          "AND operation=data.style_items.operation GROUP BY multi_priority),0,multi_name,iop_order FROM data.style_items WHERE "
+          "AND operation=data.style_items.operation GROUP BY multi_priority),0,multi_name,iop_order,blendop_version FROM data.style_items WHERE "
           "styleid=?1 UNION SELECT -1,main.history.multi_priority,main.history.module,main.history.operation,main.history.enabled, "
           "main.history.num,0,multi_name,iop_order FROM main.history WHERE imgid=?2 AND main.history.enabled=1 AND "
           "(main.history.operation NOT IN (SELECT operation FROM data.style_items WHERE styleid=?1) OR "
@@ -894,6 +894,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
         const int32_t op_len = sqlite3_column_bytes(stmt, 5);
         const unsigned char *bop_blob = sqlite3_column_blob(stmt, 6);
         const int32_t bop_len = sqlite3_column_bytes(stmt, 6);
+        const int32_t bop_ver = sqlite3_column_int(stmt, 9);
 
         item->params = malloc(op_len);
         item->params_size = op_len;
@@ -901,6 +902,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
 
         item->blendop_params = malloc(bop_len);
         item->blendop_params_size = bop_len;
+        item->blendop_version = bop_ver;
         memcpy(item->blendop_params, bop_blob, bop_len);
       }
       else
@@ -923,6 +925,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
         item->blendop_params = NULL;
         item->params_size = 0;
         item->blendop_params_size = 0;
+        item->blendop_version = 0;
         if(imgid != -1 && sqlite3_column_type(stmt, 5) != SQLITE_NULL)
           item->selimg_num = sqlite3_column_int(stmt, 5);
       }
