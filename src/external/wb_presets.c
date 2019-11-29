@@ -4780,6 +4780,15 @@ const wb_data wb_preset[] =
   { "Olympus", "E-M5 Mark II", Underwater, 0,	{ 1.367188, 1, 2.812500, 0 } },
   { "Olympus", "E-M5 Mark II", Flash, 0,		{ 2.187500, 1, 1.570313, 0 } },
 
+  /* Firmware 1.0 */
+  { "Olympus", "E-M5 Mark III", Daylight            , 0, { 1.8515625, 1, 2.03125, 0 } },
+  { "Olympus", "E-M5 Mark III", Shade               , 0, { 2.1796875, 1, 1.6015625, 0 } },
+  { "Olympus", "E-M5 Mark III", Cloudy              , 0, { 1.9921875, 1, 1.8515625, 0 } },
+  { "Olympus", "E-M5 Mark III", Tungsten            , 0, { 1.1328125, 1, 3.765625, 0 } },
+  { "Olympus", "E-M5 Mark III", CoolWhiteFluorescent, 0, { 1.765625, 1, 2.953125, 0 } },
+  { "Olympus", "E-M5 Mark III", Underwater          , 0, { 2.03125, 1, 2.03125, 0 } },
+  { "Olympus", "E-M5 Mark III", Flash               , 0, { 2.109375, 1, 1.734375, 0 } },
+  
   /* Firmware version 1.2 */
   /* -7/+7 fine tuning is -7/+7 in amber-blue and zero in green-magenta */
   { "Olympus", "E-M10", Daylight, -7,		{ 1.671875, 1, 2.070312, 0 } },
