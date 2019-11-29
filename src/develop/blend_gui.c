@@ -594,18 +594,6 @@ static void _update_gradient_slider(GtkWidget *widget, dt_iop_module_t *module)
   darktable.gui->reset = reset;
 }
 
-static gboolean _blendop_blendif_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *module)
-{
-  if(darktable.gui->reset) return FALSE;
-
-  dt_iop_gui_blend_data_t *data = module->blend_data;
-
-  dt_pthread_mutex_lock(&data->lock);
-  _update_gradient_slider(widget, module);
-  dt_pthread_mutex_unlock(&data->lock);
-
-  return FALSE;
-}
 
 static void _blendop_blendif_tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num,
                                         dt_iop_gui_blend_data_t *data)
@@ -1263,6 +1251,9 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
   dtgtk_gradient_slider_multivalue_set_increment(data->lower_slider, data->increments[tab]);
   dtgtk_gradient_slider_multivalue_set_increment(data->upper_slider, data->increments[tab]);
 
+  _update_gradient_slider(GTK_WIDGET(data->upper_slider), module);
+  _update_gradient_slider(GTK_WIDGET(data->lower_slider), module);
+
   darktable.gui->reset = reset;
 }
 
@@ -1507,10 +1498,6 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     gtk_widget_set_tooltip_text(GTK_WIDGET(bd->upper_slider), _("double click to reset"));
     gtk_widget_set_tooltip_text(output, ttoutput);
     gtk_widget_set_tooltip_text(input, ttinput);
-
-    g_signal_connect(G_OBJECT(bd->lower_slider), "draw", G_CALLBACK(_blendop_blendif_draw), module);
-
-    g_signal_connect(G_OBJECT(bd->upper_slider), "draw", G_CALLBACK(_blendop_blendif_draw), module);
 
     g_signal_connect(G_OBJECT(bd->channel_tabs), "switch_page", G_CALLBACK(_blendop_blendif_tab_switch), bd);
 
