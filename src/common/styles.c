@@ -593,11 +593,13 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
               && dt_develop_blend_legacy_params(module, style_item->blendop_params, style_item->blendop_version,
                   module->blend_params, dt_develop_blend_version(), style_item->blendop_params_size) == 0)
       {
+        // legacy style
         // do nothing
       }
       else
       {
-        memcpy(module->blend_params, module->default_blendop_params, sizeof(dt_develop_blend_params_t));
+        // apply style on export
+        memcpy(module->blend_params, style_item->blendop_params, sizeof(dt_develop_blend_params_t));
       }
 
       if(module->version() != style_item->module_version || module->params_size != style_item->params_size
