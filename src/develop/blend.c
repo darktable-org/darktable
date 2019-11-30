@@ -3435,7 +3435,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       dev_mask_2 = tmp;
     }
 
-    if(mask_tone_curve)
+    if(mask_tone_curve && opacity > 1e-4f)
     {
       const float e = expf(3.f * d->contrast);
       const float brightness = d->brightness;
