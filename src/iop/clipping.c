@@ -108,7 +108,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float angle, cx, cy, cw, ch, k_h, k_v;
     } old_params_t;
 
-    old_params_t *o = (old_params_t *)old_params;
+    const old_params_t *o = (old_params_t *)old_params;
 
     k.f = o->k_h;
     int is_horizontal;
@@ -153,7 +153,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float angle, cx, cy, cw, ch, k_h, k_v;
     } old_params_t;
 
-    old_params_t *o = (old_params_t *)old_params;
+    const old_params_t *o = (old_params_t *)old_params;
 
     n->angle = o->angle, n->cx = o->cx, n->cy = o->cy, n->cw = o->cw, n->ch = o->ch;
     n->k_h = o->k_h, n->k_v = o->k_v;
@@ -183,7 +183,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       int k_apply, crop_auto;
     } old_params_t;
 
-    old_params_t *o = (old_params_t *)old_params;
+    const old_params_t *o = (old_params_t *)old_params;
 
     n->angle = o->angle, n->cx = o->cx, n->cy = o->cy, n->cw = o->cw, n->ch = o->ch;
     n->k_h = o->k_h, n->k_v = o->k_v;
@@ -1212,10 +1212,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     else if(p->k_type == 2) // we want vertical points to be aligned
     {
       // line equations parameters
-      float a1 = (d->kyb - d->kya) / (d->kxb - d->kxa);
-      float b1 = d->kya - a1 * d->kxa;
-      float a2 = (d->kyc - d->kyd) / (d->kxc - d->kxd);
-      float b2 = d->kyd - a2 * d->kxd;
+      const float a1 = (d->kyb - d->kya) / (d->kxb - d->kxa);
+      const float b1 = d->kya - a1 * d->kxa;
+      const float a2 = (d->kyc - d->kyd) / (d->kxc - d->kxd);
+      const float b2 = d->kyd - a2 * d->kxd;
 
       if(d->kxa > d->kxd)
       {
@@ -1357,11 +1357,11 @@ static float _ratio_get_aspect(dt_iop_module_t *self)
     else
     {
       const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
-      float whratio = ((float)(iwd - 2 * interpolation->width) * (fabsf(p->cw) - p->cx))
-                      / ((float)(iht - 2 * interpolation->width) * (fabsf(p->ch) - p->cy));
-      float ri = (float)iwd / (float)iht;
+      const float whratio = ((float)(iwd - 2 * interpolation->width) * (fabsf(p->cw) - p->cx))
+                            / ((float)(iht - 2 * interpolation->width) * (fabsf(p->ch) - p->cy));
+      const float ri = (float)iwd / (float)iht;
 
-      float prec = 0.0003f;
+      const float prec = 0.0003f;
       if(fabsf(whratio - 3.0f / 2.0f) < prec)
       {
         p->ratio_d = 3;
@@ -1940,7 +1940,7 @@ static gint _aspect_ratio_cmp(const dt_iop_clipping_aspect_t *a, const dt_iop_cl
 
   if(aratio < bratio) return -1;
 
-  float prec = 0.0003f;
+  const float prec = 0.0003f;
   if(fabsf(aratio - bratio) < prec) return 0;
 
   return 1;
