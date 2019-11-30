@@ -1320,8 +1320,8 @@ entry:active
 }
 
 entry:selected,
-label *,
-textview text *
+label selection,
+textview text selection
 {
   color: @field_selected_fg;
   background-color: @field_selected_bg;
