@@ -2214,7 +2214,7 @@ static _grab_region_t get_grab(float pzx, float pzy, dt_iop_clipping_gui_data_t 
 }
 
 // draw rounded rectangle
-static void gui_draw_rounded_rectangle(cairo_t *cr, int width, int height, int x, int y)
+static void gui_draw_rounded_rectangle(cairo_t *cr, float width, float height, float x, float y)
 {
   float radius = height / 5.0f;
   float degrees = M_PI / 180.0;
@@ -2312,7 +2312,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     char dimensions[16];
     dimensions[0] = '\0';
     PangoLayout *layout;
-    PangoRectangle ink;
+    PangoRectangle ext;
     PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
     pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(16) * PANGO_SCALE / zoom_scale);
@@ -2321,12 +2321,27 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
     int procw, proch;
     dt_dev_get_processed_size(dev, &procw, &proch);
-    snprintf(dimensions, sizeof(dimensions), "%.0fx%.0f", (float)procw * g->clip_w, (float)proch * g->clip_h);
+    snprintf(dimensions, sizeof(dimensions), "%.0f x %.0f", (float)procw * g->clip_w, (float)proch * g->clip_h);
 
     pango_layout_set_text(layout, dimensions, -1);
-    pango_layout_get_pixel_extents(layout, &ink, NULL);
-    cairo_move_to(cr, (g->clip_x + g->clip_w / 2) * wd - ink.width * .5f,
-                  (g->clip_y + g->clip_h / 2) * ht - ink.height * .5f);
+    pango_layout_get_pixel_extents(layout, NULL, &ext);
+    float text_w = ext.width;
+    float text_h = DT_PIXEL_APPLY_DPI(16+2) / zoom_scale;
+    float margin = DT_PIXEL_APPLY_DPI(6) / zoom_scale;
+    float xp = (g->clip_x + g->clip_w * .5f) * wd - text_w * .5f;
+    float yp = (g->clip_y + g->clip_h * .5f) * ht - text_h * .5f;
+
+    // ensure that the rendered string remains visible within the window bounds
+    double x1, y1, x2, y2;
+    cairo_clip_extents(cr, &x1, &y1, &x2, &y2);
+    xp = CLAMPF(xp, x1 + 2 * margin, x2 - text_w - 2 * margin);
+    yp = CLAMPF(yp, y1 + 2 * margin, y2 - text_h - 2 * margin);
+
+    cairo_set_source_rgba(cr, .5, .5, .5, .9);
+    gui_draw_rounded_rectangle(cr, text_w + 2 * margin, text_h + 2 * margin,
+            xp - margin, yp - margin);
+    cairo_set_source_rgb(cr, .7, .7, .7);
+    cairo_move_to(cr, xp, yp);
     pango_cairo_show_layout(cr, layout);
     pango_font_description_free(desc);
     g_object_unref(layout);
