@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
-"PO-Revision-Date: 2019-11-27 18:54+0100\n"
+"PO-Revision-Date: 2019-11-30 14:56+0100\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
@@ -661,9 +661,9 @@ msgid ""
 "import time or the crawler has to be enabled"
 msgstr ""
 "Quando c'è un file di testo accanto ad un'immagine, esso può essere mostrato "
-"in sovraimpressione sulle immagini ingrandite nella modalità Tavolo "
-"Luminoso. Il file di testo deve essere lì durante l'importazione oppure "
-"l'analizzatore dovrà essere abilitato"
+"in sovrimpressione sulle immagini ingrandite nella modalità Tavolo Luminoso. "
+"Il file di testo deve essere lì durante l'importazione oppure l'analizzatore "
+"dovrà essere abilitato"
 
 #: ../build/src/preferences_gen.h:3266
 msgid "mouse wheel scrolls modules side panel by default"
@@ -1240,7 +1240,7 @@ msgstr ""
 
 #: ../data/darktable.appdata.xml.in.h:5
 msgid "Virtual light table, showing a collection"
-msgstr "Tavolo luminoso virtuale, visualizza una collezione"
+msgstr "Tavolo luminoso virtuale, visualizza una raccolta"
 
 #: ../data/darktable.appdata.xml.in.h:6
 msgid "Virtual dark room with an opened image"
@@ -1376,7 +1376,7 @@ msgstr ""
 
 #: ../src/common/collection.c:521
 msgid "too much time to update aspect ratio for the collection"
-msgstr "Troppo tempo per aggiornare le proporzioni della collezione"
+msgstr "Troppo tempo per aggiornare le proporzioni della raccolta"
 
 #: ../src/common/collection.c:1241 ../src/develop/lightroom.c:825
 #: ../src/iop/bilateral.cc:371 ../src/iop/channelmixer.c:456
@@ -1429,7 +1429,7 @@ msgstr "Identificatore gruppo"
 #: ../src/common/collection.c:1681
 #, c-format
 msgid "%d image of %d (#%d) in current collection is selected"
-msgstr "Selezionata %d immagine di %d (#%d) nella collezione attuale"
+msgstr "Selezionata %d immagine di %d (#%d) nella raccolta attuale"
 
 #: ../src/common/collection.c:1687
 #, c-format
@@ -5439,11 +5439,11 @@ msgstr "Rotazione"
 
 #: ../src/iop/ashift.c:4839
 msgid "lens shift (vertical)"
-msgstr "Cambia lente (verticale)"
+msgstr "Allinea lente (verticale)"
 
 #: ../src/iop/ashift.c:4844
 msgid "lens shift (horizontal)"
-msgstr "Cambia lente (orizzontale)"
+msgstr "Allinea lente (orizzontale)"
 
 #: ../src/iop/ashift.c:4849
 msgid "shear"
@@ -5512,7 +5512,7 @@ msgstr "Taglia l'immagine lungo una diagonale"
 
 #: ../src/iop/ashift.c:4972
 msgid "display guide lines overlay"
-msgstr "Sovraimpressione delle linee guida"
+msgstr "Sovrimpressione delle linee guida"
 
 #: ../src/iop/ashift.c:4973 ../src/iop/clipping.c:2012
 msgid "automatically crop to avoid black edges"
@@ -5561,8 +5561,8 @@ msgid ""
 "shift-click to only fit lens shift"
 msgstr ""
 "Corregge automaticamente la distorsione prospettica verticale\n"
-"Ctrl-click per correggere solamente la correzione di rotazione\n"
-"Maiusc-click per correggere solamente la distorsione della lente"
+"Ctrl+click per correggere solamente la correzione di rotazione\n"
+"Maiusc+click per correggere solamente la distorsione della lente"
 
 #: ../src/iop/ashift.c:4987
 msgid ""
@@ -5571,8 +5571,8 @@ msgid ""
 "shift-click to only fit lens shift"
 msgstr ""
 "Corregge automaticamente la distorsione prospettica orizzontale\n"
-"Ctrl-click per correggere solamente la rotazione\n"
-"Maiusc-click per correggere solamente la distorsione della lente"
+"Ctrl+click per correggere solamente la rotazione\n"
+"Maiusc+click per correggere solamente la distorsione della lente"
 
 #: ../src/iop/ashift.c:4990
 msgid ""
@@ -5585,9 +5585,9 @@ msgstr ""
 "Automaticamente corregge la distorsione prospettica verticale ed "
 "orizzontale; la rotazione, l'allineamento della lente in entrambe le "
 "direzioni e lo stiramento\n"
-"Ctrl-click per correggere solamente la rotazione\n"
-"Maiusc-click per correggere solamente l'allineamento della lente\n"
-"Ctrl-Maiusc-click per correggere solamente la rotazione e l'allineamento "
+"Ctrl+click per correggere solamente la rotazione\n"
+"Maiusc+click per correggere solamente l'allineamento della lente\n"
+"Ctrl+Maiusc+click per correggere solamente la rotazione e l'allineamento "
 "della lente"
 
 #: ../src/iop/ashift.c:4996
@@ -5598,9 +5598,9 @@ msgid ""
 "ctrl-shift-click for a combination of both methods"
 msgstr ""
 "Analizza la struttura delle linee in un'immagine\n"
-"Ctrl-click per un ulteriore miglioramento dei bordi\n"
-"Maiusc-click per un ulteriore miglioramento dei dettagli\n"
-"Ctrl-Maiusc-click per una combinazione di entrambi i metodi"
+"Ctrl+click per un ulteriore miglioramento dei bordi\n"
+"Maiusc+click per un ulteriore miglioramento dei dettagli\n"
+"Ctrl+Maiusc+click per una combinazione di entrambi i metodi"
 
 #: ../src/iop/ashift.c:5000
 msgid "remove line structure information"
@@ -5786,7 +5786,7 @@ msgstr "Neutrale"
 
 #: ../src/iop/basecurve.c:179
 msgid "canon eos like"
-msgstr "come Canon EOS"
+msgstr "Come Canon EOS"
 
 #: ../src/iop/basecurve.c:180
 msgid "canon eos like alternate"
@@ -5916,7 +5916,7 @@ msgstr "Luminanza"
 #: ../src/iop/filmicrgb.c:1557 ../src/iop/rgbcurve.c:1622
 #: ../src/iop/rgblevels.c:1119 ../src/iop/tonecurve.c:1395
 msgid "max RGB"
-msgstr "max RGB"
+msgstr "RGB max"
 
 #: ../src/iop/basecurve.c:2143 ../src/iop/basicadj.c:710
 #: ../src/iop/rgbcurve.c:1623 ../src/iop/rgblevels.c:1120
@@ -5928,7 +5928,7 @@ msgstr "RGB medio"
 #: ../src/iop/rgbcurve.c:1624 ../src/iop/rgblevels.c:1121
 #: ../src/iop/tonecurve.c:1397
 msgid "sum RGB"
-msgstr "somma RGB"
+msgstr "Somma RGB"
 
 #: ../src/iop/basecurve.c:2145 ../src/iop/basicadj.c:712
 #: ../src/iop/rgbcurve.c:1625 ../src/iop/rgblevels.c:1122
@@ -6979,7 +6979,7 @@ msgstr "Fattore del blu per il lift"
 #. gamma
 #: ../src/iop/colorbalance.c:2547
 msgid "mid-tones : gamma / power"
-msgstr "mezzitoni: gamma / power"
+msgstr "Mezzitoni: gamma / power"
 
 #: ../src/iop/colorbalance.c:2549
 msgid "factor of gamma"
@@ -7005,7 +7005,7 @@ msgstr "Fattore del blu per il gamma"
 #. gain
 #: ../src/iop/colorbalance.c:2596
 msgid "highlights : gain / slope"
-msgstr "alteluci: gain / slope"
+msgstr "Alteluci: gain / slope"
 
 #: ../src/iop/colorbalance.c:2598
 msgid "factor of gain"
@@ -7666,7 +7666,7 @@ msgid ""
 "more desaturation where required\n"
 " - static: fast, only uses the threshold as a static limit"
 msgstr ""
-"Mmetodo per la protezione colore:\n"
+"Metodo per la protezione colore:\n"
 "-Media globale: veloce, può mostrare anteprime leggermente sbagliate a forti "
 "ingrandimenti; talvolta può proteggere la saturazione troppo o troppo poco "
 "se comparata alla media locale\n"
@@ -14962,7 +14962,7 @@ msgstr[1] "Hai raggiunto l'inizio della tua selezione (%d immagini)"
 
 #: ../src/views/lighttable.c:3259
 msgid "you have reached the start of your collection"
-msgstr "Hai raggiunto l'inizio della tua collezione"
+msgstr "Hai raggiunto l'inizio della tua raccolta"
 
 #: ../src/views/lighttable.c:3283
 #, c-format
@@ -14973,7 +14973,7 @@ msgstr[1] "Hai raggiunto la fine della tua selezione (%d immagini)"
 
 #: ../src/views/lighttable.c:3288
 msgid "you have reached the end of your collection"
-msgstr "Hai raggiunto la fine della tua collezione"
+msgstr "Hai raggiunto la fine della tua raccolta"
 
 #: ../src/views/lighttable.c:3608
 #, c-format
