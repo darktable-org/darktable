@@ -1759,6 +1759,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/masks/opacity</name>
+    <type>float</type>
+    <default>1.0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/masks/circle/size</name>
     <type>float</type>
     <default>0.05</default>
