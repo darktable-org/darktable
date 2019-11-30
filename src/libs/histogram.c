@@ -157,11 +157,18 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  const size_t histsize = 256 * 4 * sizeof(uint32_t); // histogram size is hardcoded :(
+  uint32_t *hist = malloc(histsize);
+  if(hist == NULL) return FALSE;
 
   dt_develop_t *dev = darktable.develop;
-  const uint32_t *hist = dev->histogram;
+
+  dt_pthread_mutex_lock(&dev->preview_pipe_mutex);
+  memcpy(hist, dev->histogram, histsize);
   const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? dev->histogram_max
                                                                         : logf(1.0 + dev->histogram_max);
+  dt_pthread_mutex_unlock(&dev->preview_pipe_mutex);
+
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   const int width = allocation.width, height = allocation.height;
@@ -297,6 +304,9 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
   cairo_surface_destroy(cst);
+
+  free(hist);
+
   return TRUE;
 }
 
