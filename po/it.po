@@ -790,8 +790,8 @@ msgid ""
 msgstr ""
 "Quando c'è un file di testo accanto ad un'immagine, esso può essere mostrato "
 "in sovrimpressione sulle immagini ingrandite nella modalità Tavolo Luminoso. "
-"Luminoso. Il file di testo deve essere lì durante l'importazione oppure "
-"l'analizzatore dovrà essere abilitato"
+"Il file di testo deve essere lì durante l'importazione oppure l'analizzatore "
+"dovrà essere abilitato"
 
 #: ../build/src/preferences_gen.h:3266
 msgid "mouse wheel scrolls modules side panel by default"
@@ -1374,7 +1374,7 @@ msgstr ""
 
 #: ../data/darktable.appdata.xml.in.h:5
 msgid "Virtual light table, showing a collection"
-msgstr "Tavolo luminoso virtuale, visualizza una collezione"
+msgstr "Tavolo luminoso virtuale, visualizza una raccolta"
 
 #: ../data/darktable.appdata.xml.in.h:6
 msgid "Virtual dark room with an opened image"
@@ -6217,7 +6217,7 @@ msgstr "RGB medio"
 #: ../src/iop/rgbcurve.c:1624 ../src/iop/rgblevels.c:1121
 #: ../src/iop/tonecurve.c:1397
 msgid "sum RGB"
-msgstr "somma RGB"
+msgstr "Somma RGB"
 
 #: ../src/iop/basecurve.c:2145 ../src/iop/basicadj.c:712
 #: ../src/iop/rgbcurve.c:1625 ../src/iop/rgblevels.c:1122
@@ -16230,7 +16230,7 @@ msgstr[1] "Hai raggiunto l'inizio della tua selezione (%d immagini)"
 
 #: ../src/views/lighttable.c:3259
 msgid "you have reached the start of your collection"
-msgstr "Hai raggiunto l'inizio della tua collezione"
+msgstr "Hai raggiunto l'inizio della tua raccolta"
 
 #: ../src/views/lighttable.c:3283
 #, c-format
@@ -16241,7 +16241,7 @@ msgstr[1] "Hai raggiunto la fine della tua selezione (%d immagini)"
 
 #: ../src/views/lighttable.c:3288
 msgid "you have reached the end of your collection"
-msgstr "Hai raggiunto la fine della tua collezione"
+msgstr "Hai raggiunto la fine della tua raccolta"
 
 #: ../src/views/lighttable.c:3608
 #, c-format
