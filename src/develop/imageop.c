@@ -1732,6 +1732,9 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
     /* do stuff needed in the blending gui */
     dt_iop_gui_blending_lose_focus(darktable.develop->gui_module);
+
+    /* and finally remove hinter messages */
+    dt_control_hinter_message(darktable.control, "");
   }
 
   darktable.develop->gui_module = module;
