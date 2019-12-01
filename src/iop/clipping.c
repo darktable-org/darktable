@@ -1950,7 +1950,7 @@ static gint _aspect_ratio_cmp(const dt_iop_clipping_aspect_t *a, const dt_iop_cl
 static gchar *format_aspect(gchar *original, int adim, int bdim)
 {
   // Special ratios:  freehand, original image
-  if ( bdim == 0 ) return g_strdup(original);
+  if(bdim == 0) return g_strdup(original);
 
   return g_strdup_printf("%s  %4.2f", original, (float)adim / (float)bdim);
 }
@@ -2339,7 +2339,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
     cairo_set_source_rgba(cr, .5, .5, .5, .9);
     gui_draw_rounded_rectangle(cr, text_w + 2 * margin, text_h + 2 * margin,
-            xp - margin, yp - margin);
+                               xp - margin, yp - margin);
     cairo_set_source_rgb(cr, .7, .7, .7);
     cairo_move_to(cr, xp, yp);
     pango_cairo_show_layout(cr, layout);
@@ -2371,7 +2371,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   if(guide_flip & FLAG_FLIP_VERTICAL) cairo_scale(cr, 1, -1);
 
   const int which = dt_bauhaus_combobox_get(g->guide_lines);
-  dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 1);
+  const dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, which - 1);
   if(guide)
   {
     guide->draw(cr, -cwidth / 2, -cheight / 2, cwidth, cheight, zoom_scale, guide->user_data);
