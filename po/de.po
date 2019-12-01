@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
-"PO-Revision-Date: 2019-11-28 22:53+0100\n"
+"PO-Revision-Date: 2019-12-01 20:00+0100\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -590,7 +590,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3060
 msgid "ask before deleting a tag"
-msgstr "Vor dem Löschen eines Stichwortes nachfragen"
+msgstr "Vor dem Löschen eines Tag nachfragen"
 
 #: ../build/src/preferences_gen.h:3079
 msgid "ask before deleting a style"
@@ -1088,7 +1088,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:4000
 msgid "omit hierarchy in simple tag lists"
-msgstr "Hierarchie in einfacher Stichwort-Liste auslassen"
+msgstr "Hierarchie in einfacher Tag-Liste auslassen"
 
 #: ../build/src/preferences_gen.h:4012
 msgid ""
@@ -7864,7 +7864,7 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:3943
 msgid "variance red: "
-msgstr "Varianz rot:"
+msgstr "Varianz rot: "
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3946
@@ -7873,7 +7873,7 @@ msgstr "berechnete Varianz des Rot-Kanal"
 
 #: ../src/iop/denoiseprofile.c:3951
 msgid "variance green: "
-msgstr "Varianz grün:"
+msgstr "Varianz grün: "
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3954
@@ -7882,7 +7882,7 @@ msgstr "berechnete Varianz des Grün-Kanal"
 
 #: ../src/iop/denoiseprofile.c:3959
 msgid "variance blue: "
-msgstr "Varianz blau:"
+msgstr "Varianz blau: "
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3962
@@ -11975,10 +11975,10 @@ msgid_plural ""
 "see tag: darktable|problem|history-compress."
 msgstr[0] ""
 "Keine Verlauf-Kompression bei einem Bild,\n"
-"siehe Stichwort: darktable|problem|history-compress."
+"siehe Tag: darktable|problem|history-compress."
 msgstr[1] ""
 "Keine Verlauf-Kompression bei %d Bildern,\n"
-"siehe Stichwort: darktable|problem|history-compress."
+"siehe Tag: darktable|problem|history-compress."
 
 #: ../src/libs/copy_history.c:172
 msgid "history compression warning"
@@ -12278,8 +12278,8 @@ msgid ""
 "list of available tags. click 'add' button or double-click on tag to add the "
 "selected one"
 msgstr ""
-"Liste der verfügbaren Stichwürter. \"Hinzufügen\" oder Doppelklick auf das "
-"Stichwort, fügt dieses hinzu"
+"Liste der verfügbaren Tags. Ein Klick auf die Schaltfläche \"Hinzufügen\" "
+"oder Doppelklick auf das Tag, fügt dieses hinzu"
 
 #: ../src/libs/export_metadata.c:231
 msgid "edit metadata exportation"
@@ -12366,8 +12366,8 @@ msgid ""
 "only the last part of the hierarchical tags is included. can be useful if "
 "categories are not used"
 msgstr ""
-"Nur der letzte Teil der hierarchischen Stichworte ist enthalten. Dies kann "
-"sinnvoll sein, wenn Kategorien nicht verwendet werden."
+"Nur der letzte Teil des hierarchischen Tag ist enthalten. Dies kann sinnvoll "
+"sein, wenn Kategorien nicht verwendet werden."
 
 #: ../src/libs/export_metadata.c:291
 msgid "hierarchical tags"
@@ -12400,7 +12400,7 @@ msgstr "Liste der verfügbaren Tags"
 
 #: ../src/libs/export_metadata.c:315
 msgid "redefined tag"
-msgstr "neu definiertes Stichwort"
+msgstr "neu definierter Tag"
 
 #: ../src/libs/export_metadata.c:320
 msgid "formula"
@@ -12424,7 +12424,7 @@ msgstr ""
 
 #: ../src/libs/export_metadata.c:378
 msgid "add an output metadata tag"
-msgstr "Hinzufügen eines Ausgabe-Metadaten-Stichwort"
+msgstr "Hinzufügen eines Ausgabe-Metadaten-Tag"
 
 #: ../src/libs/export_metadata.c:383
 msgid "delete metadata tag"
@@ -13922,26 +13922,27 @@ msgstr "Neu"
 #: ../src/libs/tagging.c:124
 msgctxt "accel"
 msgid "tag"
-msgstr "Stichwort"
+msgstr "Tag"
 
 #: ../src/libs/tagging.c:1039
 msgid "attach tag to all"
-msgstr "Stichwort an alle anhängen"
+msgstr "Tag an alle anhängen"
 
 #: ../src/libs/tagging.c:1047 ../src/libs/tagging.c:1912
 msgid "detach tag"
-msgstr "Stichwort abwählen"
+msgstr "Tag abwählen"
 
 #: ../src/libs/tagging.c:1162
 msgid "delete tag?"
-msgstr "Stichwort löschen?"
+msgstr "Tag löschen?"
 
 #: ../src/libs/tagging.c:1169 ../src/libs/tagging.c:1266
 #: ../src/libs/tagging.c:1520
 #, c-format
 msgid "tag: %s "
-msgstr "Stichwort: %s"
+msgstr "Tag: %s"
 
+# Korrekte Schreibweise nach Duden = das Tag
 #: ../src/libs/tagging.c:1176
 #, c-format
 msgid ""
@@ -13951,8 +13952,8 @@ msgid_plural ""
 "do you really want to delete the tag `%s'?\n"
 "%d images are assigned this tag!"
 msgstr[0] ""
-"soll das Stichwort „%s“ wirklich gelöscht werden?\n"
-"%d Bild(er) ist dieses Stichwort zugewiesen!"
+"soll das Tag „%s“ wirklich gelöscht werden?\n"
+"%d Bild(er) ist dieses Tag zugewiesen!"
 msgstr[1] ""
 "soll der Tag „%s“ wirklich gelöscht werden?\n"
 "%d Bilder haben diesen Tag angehängt!"
@@ -13960,7 +13961,7 @@ msgstr[1] ""
 #: ../src/libs/tagging.c:1212
 #, c-format
 msgid "tag %s removed"
-msgstr "Stichwort %s entfernt"
+msgstr "Tag %s entfernt"
 
 #: ../src/libs/tagging.c:1259 ../src/libs/tagging.c:1924
 msgid "delete branch"
@@ -13970,8 +13971,8 @@ msgstr "Zweig löschen"
 #, c-format
 msgid "<u>%d</u> tag will be deleted."
 msgid_plural "<u>%d</u> tags will be deleted."
-msgstr[0] "<u>%d</u> Stichwort wird gelöscht."
-msgstr[1] "<u>%d</u> Stichwärter werden gelöscht."
+msgstr[0] "<u>%d</u>Tag wird gelöscht."
+msgstr[1] "<u>%d</u> Tags werden gelöscht."
 
 #: ../src/libs/tagging.c:1278 ../src/libs/tagging.c:1532
 #: ../src/libs/tagging.c:1752
@@ -13988,7 +13989,7 @@ msgstr "%d Stichwörter entfernt"
 
 #: ../src/libs/tagging.c:1347
 msgid "create tag"
-msgstr "Stichwort erstellen"
+msgstr "Tag erstellen"
 
 #: ../src/libs/tagging.c:1357 ../src/libs/tagging.c:1540
 msgid "name: "
@@ -14014,27 +14015,26 @@ msgstr "Synonyme: "
 #: ../src/libs/tagging.c:1402 ../src/libs/tagging.c:1585
 #: ../src/libs/tagging.c:1774
 msgid "empty tag is not allowed, aborting"
-msgstr "Leeres Stichwort ist nicht erlaubt. Abbruch."
+msgstr "Leerer Tag ist nicht erlaubt. Abbruch."
 
 #: ../src/libs/tagging.c:1404
 msgid "'|' character is not allowed to create a tag. aborting."
-msgstr ""
-"'|' Zeichen ist für die Erstellung eines Stichwort nicht erlaubt. Abbruch."
+msgstr "'|' Zeichen ist für die Erstellung eines Tag nicht erlaubt. Abbruch."
 
 #: ../src/libs/tagging.c:1419
 msgid "tag name already exists. aborting."
-msgstr "Stichwort existiert bereits. Abbruch."
+msgstr "Tag existiert bereits. Abbruch."
 
 #: ../src/libs/tagging.c:1513
 msgid "edit tag"
-msgstr "Stichwort bearbeiten"
+msgstr "Tag bearbeiten"
 
 #: ../src/libs/tagging.c:1527 ../src/libs/tagging.c:1747
 #, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
-msgstr[0] "<u>%d</u> Stichwort wird aktualisiert."
-msgstr[1] "<u>%d</u> Stichwörter werden aktualisiert."
+msgstr[0] "<u>%d</u> Tag wird aktualisiert."
+msgstr[1] "<u>%d</u> Tags werden aktualisiert."
 
 #: ../src/libs/tagging.c:1587
 msgid ""
@@ -14047,8 +14047,7 @@ msgstr ""
 #: ../src/libs/tagging.c:1625
 #, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
-msgstr ""
-"Mindestens ein neues Stichwort (%s) existiert bereits, Abbruch des Vorgangs"
+msgstr "Mindestens ein neuer Tag (%s) existiert bereits, Abbruch des Vorgangs"
 
 #: ../src/libs/tagging.c:1733
 msgid "rename path?"
@@ -14061,28 +14060,28 @@ msgstr "Pfad auswähler: %s "
 
 #: ../src/libs/tagging.c:1776
 msgid "'|' misplaced, empty tag is not allowed, aborting"
-msgstr "'|' falsch platziert, leeres Stichwort ist nicht erlaubt, Abbruch"
+msgstr "'|' falsch platziert, leerer Tag ist nicht erlaubt, Abbruch"
 
 #: ../src/libs/tagging.c:1802
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
-msgstr "Mindestens ein neues Stichwort (%s) existiert bereits. Abbruch."
+msgstr "Mindestens ein neuer Tag (%s) existiert bereits. Abbruch."
 
 #: ../src/libs/tagging.c:1908
 msgid "attach tag"
-msgstr "Stichwort anhängen"
+msgstr "Tag anhängen"
 
 #: ../src/libs/tagging.c:1920
 msgid "delete tag"
-msgstr "Stichwort löschen"
+msgstr "Tag löschen"
 
 #: ../src/libs/tagging.c:1930
 msgid "create tag..."
-msgstr "Stichwort erstellen..."
+msgstr "Tag erstellen..."
 
 #: ../src/libs/tagging.c:1934
 msgid "edit tag..."
-msgstr "Stichwort bearbeiten..."
+msgstr "Tag bearbeiten..."
 
 #: ../src/libs/tagging.c:1943
 msgid "rename path..."
@@ -14094,7 +14093,7 @@ msgstr "Kopieren in den Eintrag"
 
 #: ../src/libs/tagging.c:1974
 msgid "go to tag collection"
-msgstr "gehe zur Stichwortsammlung"
+msgstr "gehe zur Tag-Sammlung"
 
 #: ../src/libs/tagging.c:1980
 msgid "go back to work"
@@ -14111,7 +14110,7 @@ msgstr "(privat)"
 
 #: ../src/libs/tagging.c:2123
 msgid "Select a keyword file"
-msgstr "Stichwortdatei auswählen"
+msgstr "Tag auswählen"
 
 #: ../src/libs/tagging.c:2126
 msgid "_import"
@@ -14150,9 +14149,9 @@ msgid ""
 "right-click for other actions on attached tag,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
-"angefügte Stichwörter,\n"
+"angefügte Tags,\n"
 "Doppelklick zum Entfernen\n"
-"Rechtsklick für andere Aktionen des ausgewählten Stichwortes,\n"
+"Rechtsklick für andere Aktionen des ausgewählten Tag,\n"
 "Strg-Mausrad, um die Größe des Fensters zu ändern."
 
 #: ../src/libs/tagging.c:2553
@@ -14161,7 +14160,7 @@ msgstr "anhängen"
 
 #: ../src/libs/tagging.c:2556
 msgid "attach tag to all selected images"
-msgstr "Stichwort an alle ausgewählten Bilder anhängen"
+msgstr "Tag an alle ausgewählten Bilder anhängen"
 
 #: ../src/libs/tagging.c:2561
 msgid "detach"
@@ -14169,7 +14168,7 @@ msgstr "entfernen"
 
 #: ../src/libs/tagging.c:2564
 msgid "detach tag from all selected images"
-msgstr "Stichwort von allen ausgewählten Bildern entfernen"
+msgstr "Tag von allen ausgewählten Bildern entfernen"
 
 #: ../src/libs/tagging.c:2571
 msgid "toggle list with / without hierarchy"
@@ -14185,7 +14184,7 @@ msgstr "Anzeige von Stichwörtern aktivieren oder deaktivieren"
 
 #: ../src/libs/tagging.c:2605
 msgid "enter tag name"
-msgstr "Stichwort eingeben"
+msgstr "Tag eingeben"
 
 #: ../src/libs/tagging.c:2615
 msgid "clear entry"
@@ -14198,9 +14197,9 @@ msgid ""
 "right-click for other actions on selected tag,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
-"Stichwort Verzeichnis,\n"
+"Tag-Verzeichnis,\n"
 "Duppelklick für hinzufügen,\n"
-"Rechtsklick für andere Aktionen des ausgewählten Stichwortes,\n"
+"Rechtsklick für andere Aktionen des ausgewählten Tag,\n"
 "Strg-Mausrad, um die Größe des Fensters zu ändern."
 
 #: ../src/libs/tagging.c:2682
@@ -14212,12 +14211,12 @@ msgid ""
 "create a new tag with the\n"
 "name you entered"
 msgstr ""
-"neues Stichwort mit dem einge-\n"
-"gebenen Namen erstellen"
+"neuer Tag mit dem eingegebenen\n"
+"Namen erstellen"
 
 #: ../src/libs/tagging.c:2693
 msgid "import tags from a Lightroom keyword file"
-msgstr "Stichwörter aus einer Lightroom-Stichwortdatei importieren"
+msgstr "Tags aus einer Lightroom-Stichwortdatei importieren"
 
 #: ../src/libs/tagging.c:2698
 msgctxt "verb"
@@ -14226,7 +14225,7 @@ msgstr "exportieren..."
 
 #: ../src/libs/tagging.c:2701
 msgid "export all tags to a Lightroom keyword file"
-msgstr "alle Stichwörter in eine Lightroom-Stichwortdatei exportieren"
+msgstr "alle Tags in eine Lightroom-Stichwortdatei exportieren"
 
 #: ../src/libs/tagging.c:2708
 msgid "toggle list / tree view"
@@ -14240,8 +14239,8 @@ msgstr "Wechseln zwischen Liste mit / ohne Vorschlag"
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
 msgstr ""
-"Stichwort-Kurzbefehl ist in der Baumansicht nicht aktiv. Bitte wechseln Sie "
-"zur Listenansicht."
+"Tag-Kurzbefehle in der Baumansicht nicht aktiv. Bitte zur Listenansicht "
+"wechseln."
 
 #: ../src/libs/tools/battery_indicator.c:38
 #: ../src/libs/tools/battery_indicator.c:71
