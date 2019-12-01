@@ -2014,7 +2014,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   /* add the blending ui if supported */
   gtk_box_pack_start(GTK_BOX(iopw), module->widget, TRUE, TRUE, 0);
-  dt_iop_gui_init_blending(iopw, module);
+  if(!module->hide_enable_button)  dt_iop_gui_init_blending(iopw, module);
   gtk_widget_set_name(module->widget, "iop-plugin-ui-main");
   gtk_widget_hide(iopw);
 
