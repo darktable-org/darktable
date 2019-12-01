@@ -657,6 +657,9 @@ static void _blendop_masks_modes_none_clicked(GtkWidget *button, GdkEventButton 
 
     _blendop_masks_mode_callback(DEVELOP_MASK_DISABLED, data);
     data->selected_mask_mode = button;
+
+    /* and finally remove hinter messages */
+    dt_control_hinter_message(darktable.control, "");
   }
 }
 
@@ -850,7 +853,11 @@ static int _blendop_masks_show_and_edit(GtkWidget *widget, GdkEventButton *event
       }
     }
     else
+    {
       bd->masks_shown = DT_MASKS_EDIT_OFF;
+      /* remove hinter messages */
+      dt_control_hinter_message(darktable.control, "");
+    }
 
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown != DT_MASKS_EDIT_OFF);
     dt_masks_set_edit_mode(self, bd->masks_shown);
