@@ -1727,7 +1727,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
     dt_accel_disconnect_locals_iop(darktable.develop->gui_module);
 
-    /*reset mask view */
+    /* reset mask view */
     dt_masks_reset_form_gui();
 
     /* do stuff needed in the blending gui */
