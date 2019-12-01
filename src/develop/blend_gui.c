@@ -1193,21 +1193,6 @@ static gboolean _blendop_blendif_enter(GtkWidget *widget, GdkEventCrossing *even
   if(darktable.gui->reset) return FALSE;
   dt_iop_gui_blend_data_t *data = module->blend_data;
 
-  dt_pthread_mutex_lock(&data->lock);
-  if(data->timeout_handle)
-  {
-    // purge any remaining timeout handlers
-    g_source_remove(data->timeout_handle);
-    data->timeout_handle = 0;
-  }
-  else
-  {
-    // save request_mask_display to restore later
-    if(!(data->save_for_leave & DT_DEV_PIXELPIPE_DISPLAY_STICKY))
-      data->save_for_leave = module->request_mask_display & ~DT_DEV_PIXELPIPE_DISPLAY_STICKY;
-  }
-  dt_pthread_mutex_unlock(&data->lock);
-
   dt_dev_pixelpipe_display_mask_t mode = 0;
 
   // depending on shift modifiers we activate channel and/or mask display
@@ -1225,7 +1210,22 @@ static gboolean _blendop_blendif_enter(GtkWidget *widget, GdkEventCrossing *even
     mode = DT_DEV_PIXELPIPE_DISPLAY_MASK;
   }
 
-  _blendop_blendif_channel_mask_view(widget, module, mode);
+  dt_pthread_mutex_lock(&data->lock);
+  if(mode && data->timeout_handle)
+  {
+    // purge any remaining timeout handlers
+    g_source_remove(data->timeout_handle);
+    data->timeout_handle = 0;
+  }
+  else if(!data->timeout_handle)
+  {
+    // save request_mask_display to restore later
+    if(!(data->save_for_leave & DT_DEV_PIXELPIPE_DISPLAY_STICKY))
+      data->save_for_leave = module->request_mask_display & ~DT_DEV_PIXELPIPE_DISPLAY_STICKY;
+  }
+  dt_pthread_mutex_unlock(&data->lock);
+
+  if(mode) _blendop_blendif_channel_mask_view(widget, module, mode);
 
   dt_control_key_accelerators_off(darktable.control);
   gtk_widget_grab_focus(widget);
