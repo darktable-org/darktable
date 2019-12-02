@@ -91,11 +91,10 @@ void connect_key_accels(dt_lib_module_t *self)
 
 static gboolean main_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data)
 {
-  guint width, height;
   dt_lib_colorpicker_t *d = (dt_lib_colorpicker_t *)data;
 
-  width = gtk_widget_get_allocated_width(widget);
-  height = gtk_widget_get_allocated_height(widget);
+  const guint width = gtk_widget_get_allocated_width(widget);
+  const guint height = gtk_widget_get_allocated_height(widget);
   gdk_cairo_set_source_rgba (cr, &d->rgb);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_fill (cr);
@@ -105,11 +104,10 @@ static gboolean main_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data
 
 static gboolean sample_draw_callback(GtkWidget *widget, cairo_t *cr, gpointer data)
 {
-  guint width, height;
   dt_colorpicker_sample_t *sample = (dt_colorpicker_sample_t *)data;
 
-  width = gtk_widget_get_allocated_width(widget);
-  height = gtk_widget_get_allocated_height(widget);
+  const guint width = gtk_widget_get_allocated_width(widget);
+  const guint height = gtk_widget_get_allocated_height(widget);
   gdk_cairo_set_source_rgba(cr, &sample->rgb);
   cairo_rectangle(cr, 0, 0, width, height);
   cairo_fill (cr);
