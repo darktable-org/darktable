@@ -457,17 +457,23 @@ void expose(
     }
     else if(point[0] >= 0.0f && point[0] <= 1.0f && point[1] >= 0.0f && point[1] <= 1.0f)
     {
-      cairo_rectangle(cri, point[0] * wd - .01 * wd, point[1] * ht - .01 * wd, .02 * wd, .02 * wd);
+      const float size = (wd + ht) / 2.0;
+      cairo_rectangle(cri,
+                      point[0] * wd - .01 * size,
+                      point[1] * ht - .01 * size,
+                      .02 * size, .02 * size);
       cairo_stroke(cri);
 
       cairo_set_source_rgb(cri, .8, .8, .8);
-      cairo_rectangle(cri, (point[0] - 0.01) * wd + 1.0 / zoom_scale,
-                      point[1] * ht - 0.01 * wd + 1.0 / zoom_scale, .02 * wd - 2. / zoom_scale,
-                      .02 * wd - 2. / zoom_scale);
-      cairo_move_to(cri, point[0] * wd, point[1] * ht - .01 * wd + 1. / zoom_scale);
-      cairo_line_to(cri, point[0] * wd, point[1] * ht + .01 * wd - 1. / zoom_scale);
-      cairo_move_to(cri, point[0] * wd - .01 * wd + 1. / zoom_scale, point[1] * ht);
-      cairo_line_to(cri, point[0] * wd + .01 * wd - 1. / zoom_scale, point[1] * ht);
+      cairo_rectangle(cri,
+                      point[0] * wd - .01 * size + 1.0 / zoom_scale,
+                      point[1] * ht - .01 * size + 1.0 / zoom_scale,
+                      .02 * size - 2. / zoom_scale,
+                      .02 * size - 2. / zoom_scale);
+      cairo_move_to(cri, point[0] * wd, point[1] * ht - .01 * size + 1. / zoom_scale);
+      cairo_line_to(cri, point[0] * wd, point[1] * ht + .01 * size - 1. / zoom_scale);
+      cairo_move_to(cri, point[0] * wd - .01 * size + 1. / zoom_scale, point[1] * ht);
+      cairo_line_to(cri, point[0] * wd + .01 * size - 1. / zoom_scale, point[1] * ht);
       cairo_stroke(cri);
     }
   }
