@@ -827,7 +827,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
         {
           const int reset = darktable.gui->reset;
           darktable.gui->reset = 1;
-          gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+          dt_iop_gui_set_enable_button(module);
           darktable.gui->reset = reset;
         }
       }
@@ -877,7 +877,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
         {
           const int reset = darktable.gui->reset;
           darktable.gui->reset = 1;
-          gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+          dt_iop_gui_set_enable_button(module);
           darktable.gui->reset = reset;
         }
       }
