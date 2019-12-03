@@ -566,6 +566,8 @@ gboolean dt_iop_is_hidden(dt_iop_module_t *module);
 gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group);
 /** cleans up gui of module and of blendops */
 void dt_iop_gui_cleanup_module(dt_iop_module_t *module);
+/** updates the enable button state. (take into account module->enabled and module->hide_enable_button  */
+void dt_iop_gui_set_enable_button(dt_iop_module_t *module);
 /** updates the gui params and the enabled switch. */
 void dt_iop_gui_update(dt_iop_module_t *module);
 /** reset the ui to its defaults */
