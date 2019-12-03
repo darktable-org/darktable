@@ -327,7 +327,6 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gu
   }
   else if(data->raster_inited)
   {
-//     dt_masks_set_edit_mode(data->module, DT_MASKS_EDIT_OFF);
     gtk_widget_hide(GTK_WIDGET(data->raster_box));
   }
   else
@@ -594,18 +593,6 @@ static void _update_gradient_slider(GtkWidget *widget, dt_iop_module_t *module)
   darktable.gui->reset = reset;
 }
 
-static gboolean _blendop_blendif_draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *module)
-{
-  if(darktable.gui->reset) return FALSE;
-
-  dt_iop_gui_blend_data_t *data = module->blend_data;
-
-  dt_pthread_mutex_lock(&data->lock);
-  _update_gradient_slider(widget, module);
-  dt_pthread_mutex_unlock(&data->lock);
-
-  return FALSE;
-}
 
 static void _blendop_blendif_tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num,
                                         dt_iop_gui_blend_data_t *data)
@@ -670,6 +657,9 @@ static void _blendop_masks_modes_none_clicked(GtkWidget *button, GdkEventButton 
 
     _blendop_masks_mode_callback(DEVELOP_MASK_DISABLED, data);
     data->selected_mask_mode = button;
+
+    /* and finally remove hinter messages */
+    dt_control_hinter_message(darktable.control, "");
   }
 }
 
@@ -863,7 +853,11 @@ static int _blendop_masks_show_and_edit(GtkWidget *widget, GdkEventButton *event
       }
     }
     else
+    {
       bd->masks_shown = DT_MASKS_EDIT_OFF;
+      /* remove hinter messages */
+      dt_control_hinter_message(darktable.control, "");
+    }
 
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown != DT_MASKS_EDIT_OFF);
     dt_masks_set_edit_mode(self, bd->masks_shown);
@@ -1263,6 +1257,9 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
   dtgtk_gradient_slider_multivalue_set_increment(data->lower_slider, data->increments[tab]);
   dtgtk_gradient_slider_multivalue_set_increment(data->upper_slider, data->increments[tab]);
 
+  _update_gradient_slider(GTK_WIDGET(data->upper_slider), module);
+  _update_gradient_slider(GTK_WIDGET(data->lower_slider), module);
+
   darktable.gui->reset = reset;
 }
 
@@ -1507,10 +1504,6 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
     gtk_widget_set_tooltip_text(GTK_WIDGET(bd->upper_slider), _("double click to reset"));
     gtk_widget_set_tooltip_text(output, ttoutput);
     gtk_widget_set_tooltip_text(input, ttinput);
-
-    g_signal_connect(G_OBJECT(bd->lower_slider), "draw", G_CALLBACK(_blendop_blendif_draw), module);
-
-    g_signal_connect(G_OBJECT(bd->upper_slider), "draw", G_CALLBACK(_blendop_blendif_draw), module);
 
     g_signal_connect(G_OBJECT(bd->channel_tabs), "switch_page", G_CALLBACK(_blendop_blendif_tab_switch), bd);
 
@@ -2073,6 +2066,11 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
   {
     gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
   }
+
+  if(module->hide_enable_button)
+    gtk_widget_hide(GTK_WIDGET(bd->masks_modes_box));
+  else
+    gtk_widget_show(GTK_WIDGET(bd->masks_modes_box));
 
   darktable.gui->reset = reset;
 }
