@@ -97,6 +97,21 @@ making a backup is strongly advised.
   reason behind the default ordering, and have a specific reason for changing it.
   The default order is still the correct order for most purposes.
 
+  The history stack has been changed to list all mandatory modules. They
+  were previously hidden but always active as necessary for processing
+  images. You cannot remove them by compressing history or selecting
+  one as a stating point to edit an image. The mandatory modules have
+  a specific icon to identify them easily. There is seven of them,
+  some are for RAW only and some are generic:
+
+          - raw black/white point
+          - white balance
+          - highlight reconstruction
+          - demosaic
+          - input color profile
+          - output color profile
+          - gamma
+
 - The 'color zones' module now shows a histogram based on the chosen ‘select
   by’ channel, and if the color picker is in 'select area' mode, the range within
   the selected area will also be shown. By default, the spline adjustment is
