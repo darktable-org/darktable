@@ -400,6 +400,10 @@ static void check_layout(dt_view_t *self)
     g_timeout_add(200, _expose_again_full, self);
     _scrollbars_restore();
   }
+
+  // put back or desactivate the reorder dnd
+  _unregister_custom_image_order_drag_n_drop(self);
+  _register_custom_image_order_drag_n_drop(self);
 }
 
 static inline void _destroy_preview_surface(dt_preview_surface_t *fp_surf)

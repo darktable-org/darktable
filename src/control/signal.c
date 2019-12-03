@@ -128,6 +128,9 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
   { "dt-control-navigation-redraw", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0,
     NULL, NULL, FALSE }, // DT_SIGNAL_CONTROL_NAVIGATION_REDRAW
 
+  { "dt-control-pickerdata-ready", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 2,
+    pointer_2arg, NULL, FALSE }, // DT_SIGNAL_CONTROL_PICKERDATA_REAEDY
+
 };
 
 static GType _signal_type;

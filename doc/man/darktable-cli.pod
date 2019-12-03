@@ -12,11 +12,14 @@ Options:
     --width <max width>
     --height <max height>
     --bpp <bpp>
-    --hq <0|1|true|false>
-    --upscale <0|1|true|false>
+    --hq <0|1|false|true>
+    --upscale <0|1|false|true>
     --style <style name>
     --style-overwrite
+    --apply-custom-presets <0|1|false|true>
     --verbose
+    --help
+    --version
 
 =head1 DESCRIPTION
 
@@ -93,6 +96,11 @@ Defaults to no style specified.
 The specified style overwrites the history stack instead of being
 appended to it.
 
+=item B<< --apply-custom-presets  >>
+
+With this option you can decide if darktable loads its set of default parameters from
+B<data.db> and applies them. Otherwise the defaults that ship with darktable are used.
+
 =item B<< --verbose  >>
 
 Enables verbose output.
@@ -121,11 +129,11 @@ Additions were made by Tobias Ellinghaus E<lt>me@houz.orgE<gt>.
 
 =head1 COPYRIGHT AND LICENSE
 
-B<Copyright (C)> 2009-2017 by Authors.
+B<Copyright (C)> 2009-2019 by Authors.
 
 B<darktable> is free software; you can redistribute it and/or modify it
 under the terms of the GPL v3 or (at your option) any later version.
 
 =for comment
-$Date: 2017-01-20$
-$Release: 2.3$
+$Date: 2019-11-27$
+$Release: 3.0$

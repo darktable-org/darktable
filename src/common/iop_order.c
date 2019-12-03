@@ -1656,13 +1656,13 @@ static int _ioppr_migrate_iop_order(const int imgid, const int current_iop_order
   // process some more checks possibly; any sort data that can't be correct?
 
   // print complete history information
-  fprintf(stderr,"\n\n ***** On-the-fly history V[%i]->V[%i], imageid: %i ****************",
+  fprintf(stderr, "\n ***** On-the-fly history V[%i]->V[%i], imageid: %i ****************\n",
           current_iop_order_version, _iop_order_version, imgid);
   for (int i=0;i<history_size;i++)
   {
     struct dt_onthefly_history_t *this = &myhistory[i];
-    fprintf(stderr,"\n %3i %20s multi%3i :: iop %14.11f -> %14.11f",
-            this->num, this->operation, this->multi_priority, this->old_iop_order, this->new_iop_order);
+    fprintf(stderr, " %3i %20s multi%3i :: iop %14.11f -> %14.11f\n", this->num, this->operation,
+            this->multi_priority, this->old_iop_order, this->new_iop_order);
   }
 
   // Now write history
@@ -2169,7 +2169,7 @@ static inline void _transform_rgb_to_lab_matrix(const float *const restrict imag
                                                 const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   const int ch = 4;
-  const size_t stride = (size_t)(width * height * ch);
+  const size_t stride = (size_t)width * height * ch;
   const float *const restrict matrix = profile_info->matrix_in;
 
   if(profile_info->nonlinearlut)
@@ -2252,7 +2252,7 @@ static inline void _transform_matrix_rgb(const float *const restrict image_in, f
                                   const dt_iop_order_iccprofile_info_t *const profile_info_to)
 {
   const int ch = 4;
-  const size_t stride = (size_t)(width * height * ch);
+  const size_t stride = (size_t)width * height * ch;
   const float *const restrict matrix_in = profile_info_from->matrix_in;
   const float *const restrict matrix_out = profile_info_to->matrix_out;
 
@@ -2755,7 +2755,7 @@ static __m128 _ioppr_xyz_to_linear_rgb_matrix_sse(const __m128 xyz, const dt_iop
 static void _transform_rgb_to_lab_matrix_sse(float *const image, const int width, const int height, const dt_iop_order_iccprofile_info_t *const profile_info)
 {
   const int ch = 4;
-  const size_t stride = (size_t)(width * height);
+  const size_t stride = (size_t)width * height;
 
   _apply_tonecurves(image, width, height, profile_info->lut_in[0], profile_info->lut_in[1], profile_info->lut_in[2],
       profile_info->unbounded_coeffs_in[0], profile_info->unbounded_coeffs_in[1], profile_info->unbounded_coeffs_in[2], profile_info->lutsize);
@@ -2837,7 +2837,7 @@ static void _transform_matrix_rgb_sse(float *const image, const int width, const
                                       const dt_iop_order_iccprofile_info_t *const profile_info_to)
 {
   const int ch = 4;
-  const size_t stride = (size_t)(width * height);
+  const size_t stride = (size_t)width * height;
 
   _apply_tonecurves(image, width, height, profile_info_from->lut_in[0], profile_info_from->lut_in[1],
                     profile_info_from->lut_in[2], profile_info_from->unbounded_coeffs_in[0],
@@ -2881,7 +2881,8 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const flo
   }
   if(profile_info == NULL)
   {
-    fprintf(stderr, "[dt_ioppr_transform_image_colorspace] module %s must be between input color profile and output color profile\n", self->op);
+    if (!dt_image_is_monochrome(&self->dev->image_storage))
+      fprintf(stderr, "[dt_ioppr_transform_image_colorspace] module %s must be between input color profile and output color profile\n", self->op);
     *converted_cst = cst_from;
     return;
   }
@@ -3139,7 +3140,8 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
   }
   if(profile_info == NULL)
   {
-    fprintf(stderr, "[dt_ioppr_transform_image_colorspace_cl] module %s must be between input color profile and output color profile\n", self->op);
+    if (!dt_image_is_monochrome(&self->dev->image_storage))
+      fprintf(stderr, "[dt_ioppr_transform_image_colorspace_cl] module %s must be between input color profile and output color profile\n", self->op);
     *converted_cst = cst_from;
     return FALSE;
   }

@@ -174,7 +174,7 @@ static gboolean _lib_navigation_draw_callback(GtkWidget *widget, cairo_t *crf, g
   gtk_render_background(context, cr, 0, 0, allocation.width, allocation.height);
 
   /* draw navigation image if available */
-  if(dev->preview_pipe->output_backbuf)
+  if(dev->preview_pipe->output_backbuf && dev->image_storage.id == dev->preview_pipe->output_imgid)
   {
     dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
     dt_pthread_mutex_lock(mutex);

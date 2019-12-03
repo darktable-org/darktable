@@ -1488,7 +1488,8 @@ void change_image(struct dt_iop_module_t *self)
   dt_iop_rgbcurve_gui_data_t *g = (dt_iop_rgbcurve_gui_data_t *)self->gui_data;
   if(g)
   {
-    g->channel = DT_IOP_RGBCURVE_R;
+    if(!g->channel)
+      g->channel = DT_IOP_RGBCURVE_R;
     g->mouse_x = g->mouse_y = -1.0;
     g->selected = -1;
     g->offset_x = g->offset_y = 0.f;
@@ -1512,6 +1513,7 @@ void gui_init(struct dt_iop_module_t *self)
       (void)dt_draw_curve_add_point(g->minmax_curve[ch], p->curve_nodes[ch][k].x, p->curve_nodes[ch][k].y);
   }
 
+  g->channel = DT_IOP_RGBCURVE_R;
   change_image(self);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
