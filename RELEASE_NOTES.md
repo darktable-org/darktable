@@ -232,13 +232,11 @@ making a backup is strongly advised.
   which skips the exporting to existing destination files.
 
 - Allow to switch between clone/heal and blur/color modes in 'retouch' module
-  after creating a shape.
+  after creating a shape using <kbd>Ctrl+click</kbd> on corresponding mode icon.
 
-- An accels window has been added to summarize all available shortcuts and mouse
-  actions available in the current context.
-
-- Dynamic shortcuts have been added for darkroom module sliders. They allow to
-  change slider values with an accel + mouse scroll.
+- An accels window (<kbd>H</kbd>) has been added to summarize all
+  available shortcuts and mouse actions available in the current
+  context.
 
 - A zoom & pan feature has been added to lighttable full preview..
 
