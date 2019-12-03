@@ -95,6 +95,7 @@ typedef struct dt_iop_borders_gui_data_t
   float aspect_ratios[DT_IOP_BORDERS_ASPECT_COUNT];
   float pos_h_ratios[DT_IOP_BORDERS_POSITION_H_COUNT];
   float pos_v_ratios[DT_IOP_BORDERS_POSITION_V_COUNT];
+  int combo_changed;
   GtkWidget *frame_size;
   GtkWidget *frame_offset;
   GtkWidget *frame_colorpick;
@@ -680,14 +681,13 @@ static void aspect_changed(GtkWidget *combo, dt_iop_module_t *self)
   const char *text = dt_bauhaus_combobox_get_text(combo);
   if(which == dt_bauhaus_combobox_length(combo)-1)
   {
-    gtk_widget_set_visible(g->aspect_slider,TRUE);
     g_strlcpy(p->aspect_text, text, sizeof(p->aspect_text));
   }
   else if(which < DT_IOP_BORDERS_ASPECT_COUNT)
   {
-    gtk_widget_set_visible(g->aspect_slider,FALSE);
     g_strlcpy(p->aspect_text, text, sizeof(p->aspect_text));
     p->aspect = g->aspect_ratios[which];
+    g->combo_changed = 1;
     dt_bauhaus_slider_set(g->aspect_slider,p->aspect);
   }
   dt_iop_color_picker_reset(self, TRUE);
@@ -698,7 +698,10 @@ static void aspect_slider_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
     if(self->dt->gui->reset) return;
     dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+    dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
+    if(g->combo_changed){g->combo_changed=0;return;}
     p->aspect = dt_bauhaus_slider_get(slider);
+    dt_bauhaus_combobox_set(g->aspect, DT_IOP_BORDERS_ASPECT_COUNT);
     dt_iop_color_picker_reset(self, TRUE);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -720,14 +723,13 @@ static void position_h_changed(GtkWidget *combo, dt_iop_module_t *self)
   const char *text = dt_bauhaus_combobox_get_text(combo);
   if(which == dt_bauhaus_combobox_length(combo)-1)
   {
-    gtk_widget_set_visible(g->pos_h_slider,TRUE);
     g_strlcpy(p->aspect_text, text, sizeof(p->aspect_text));
   }
   else if(which < DT_IOP_BORDERS_POSITION_H_COUNT)
   {
-    gtk_widget_set_visible(g->pos_h_slider,FALSE);
     g_strlcpy(p->pos_h_text, text, sizeof(p->pos_h_text));
     p->pos_h = g->pos_h_ratios[which];
+    g->combo_changed = 1;
     dt_bauhaus_slider_set(g->pos_h_slider,p->pos_h);
   }
   dt_iop_color_picker_reset(self, TRUE);
@@ -738,7 +740,10 @@ static void pos_h_slider_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   if(self->dt->gui->reset) return;
   dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
+  if(g->combo_changed){g->combo_changed=0;return;}
   p->pos_h = dt_bauhaus_slider_get(slider);
+  dt_bauhaus_combobox_set(g->pos_h, DT_IOP_BORDERS_POSITION_H_COUNT);
   dt_iop_color_picker_reset(self, TRUE);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -751,14 +756,13 @@ static void position_v_changed(GtkWidget *combo, dt_iop_module_t *self)
   const char *text = dt_bauhaus_combobox_get_text(combo);
   if(which == dt_bauhaus_combobox_length(combo)-1)
   {
-    gtk_widget_set_visible(g->pos_v_slider,TRUE);
     g_strlcpy(p->aspect_text, text, sizeof(p->aspect_text));
   }
   else if(which < DT_IOP_BORDERS_POSITION_H_COUNT)
   {
-    gtk_widget_set_visible(g->pos_v_slider,FALSE);
     g_strlcpy(p->pos_v_text, text, sizeof(p->pos_v_text));
     p->pos_v = g->pos_h_ratios[which];
+    g->combo_changed = 1;
     dt_bauhaus_slider_set(g->pos_v_slider,p->pos_v);
   }
   dt_iop_color_picker_reset(self, TRUE);
@@ -769,7 +773,10 @@ static void pos_v_slider_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
     if(self->dt->gui->reset) return;
     dt_iop_borders_params_t *p = (dt_iop_borders_params_t *)self->params;
+    dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
+    if(g->combo_changed){g->combo_changed=0;return;}
     p->pos_v = dt_bauhaus_slider_get(slider);
+    dt_bauhaus_combobox_set(g->pos_v, DT_IOP_BORDERS_POSITION_V_COUNT);
     dt_iop_color_picker_reset(self, TRUE);
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -855,7 +862,6 @@ void gui_update(struct dt_iop_module_t *self)
   if(k == DT_IOP_BORDERS_ASPECT_COUNT)
   {
       dt_bauhaus_combobox_set(g->aspect, k);
-      gtk_widget_set_visible(g->aspect_slider,TRUE);
   }
 
   // ----- aspect orientation
@@ -873,7 +879,6 @@ void gui_update(struct dt_iop_module_t *self)
   if(k == DT_IOP_BORDERS_POSITION_H_COUNT)
   {
     dt_bauhaus_combobox_set(g->pos_h, k);
-    gtk_widget_set_visible(g->pos_h_slider,TRUE);
   }
 
   // ----- Position V
@@ -888,13 +893,13 @@ void gui_update(struct dt_iop_module_t *self)
   if(k == DT_IOP_BORDERS_POSITION_V_COUNT)
   {
     dt_bauhaus_combobox_set(g->pos_v, k);
-    gtk_widget_set_visible(g->pos_v_slider,TRUE);
   }
   dt_bauhaus_slider_set(g->aspect_slider, p->aspect);
   dt_bauhaus_slider_set(g->pos_h_slider, p->pos_h);
   dt_bauhaus_slider_set(g->pos_v_slider, p->pos_v);
   dt_bauhaus_slider_set(g->frame_size, p->frame_size * 100.0f);
   dt_bauhaus_slider_set(g->frame_offset, p->frame_offset * 100.0f);
+  g->combo_changed = 0;
 
   // ----- Border Color
   GdkRGBA c = (GdkRGBA){.red = p->color[0], .green = p->color[1], .blue = p->color[2], .alpha = 1.0 };
@@ -1017,7 +1022,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->aspect_slider), "value-changed", G_CALLBACK(aspect_slider_callback), self);
   gtk_widget_set_tooltip_text(g->aspect_slider, _("set the custom aspect ratio"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect_slider, TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->aspect_slider), "no-show-all", TRUE, NULL);
 
   g->aspect_orient = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->aspect_orient, NULL, _("orientation"));
@@ -1041,7 +1045,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->pos_h_slider), "value-changed", G_CALLBACK(pos_h_slider_callback), self);
   gtk_widget_set_tooltip_text(g->pos_h_slider, _("costom horizontal position"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->pos_h_slider, TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->pos_h_slider), "no-show-all", TRUE, NULL);
 
   g->pos_v = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_editable(g->pos_v, 1);
@@ -1056,7 +1059,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->pos_v_slider), "value-changed", G_CALLBACK(pos_v_slider_callback), self);
   gtk_widget_set_tooltip_text(g->pos_v_slider, _("costom vertical position"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->pos_v_slider, TRUE, TRUE, 0);
-  g_object_set(G_OBJECT(g->pos_v_slider), "no-show-all", TRUE, NULL);
 
   gui_init_positions(self);
 
