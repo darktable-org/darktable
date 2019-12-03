@@ -2067,6 +2067,11 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     gtk_widget_hide(GTK_WIDGET(bd->blendif_box));
   }
 
+  if(module->hide_enable_button)
+    gtk_widget_hide(GTK_WIDGET(bd->masks_modes_box));
+  else
+    gtk_widget_show(GTK_WIDGET(bd->masks_modes_box));
+
   darktable.gui->reset = reset;
 }
 
