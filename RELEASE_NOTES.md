@@ -34,6 +34,7 @@ making a backup is strongly advised.
   with several themes:
 
      - darktable                : the default theme
+     - darktable-icons          : the default theme with icons
 
      - darktable-elegant-darker : more condensed fonts
                                   best experience with Roboto font installed
@@ -238,7 +239,7 @@ making a backup is strongly advised.
   available shortcuts and mouse actions available in the current
   context.
 
-- A zoom & pan feature has been added to lighttable full preview..
+- A zoom & pan feature has been added to lighttable full preview.
 
 ## Bug fixes
 
