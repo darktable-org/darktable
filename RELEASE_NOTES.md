@@ -307,13 +307,18 @@ making a backup is strongly advised.
 
 - Threading was migrated to OpenMP from POSIX threads.
 - Phase One IIQ decompressor fixes (quadrant scaling, bad column).
-- Large-scale code cleanup, hardening is still a work in progress.
+- Large-scale code cleanup, hardening is ongoing still.
 - A CMake infrastructure was added to allow integration of RawSpeed into LLVM LNT / Test-Suite.
 - Widespread performance tuning, most affected decompressors:
   * Sony ARW2
   * Panasonic V5
   * Samsung V1
   * Phase One
+  * Nikon
+  * Pentax
+  * Canon
+  * Samsung V1 (compression = '32772')
+  * Samsung V2 (compression = '32773')
 - Continuation of collaboration with LLVM Compiler Infrastructure Project.
 
 ## Camera support, compared to 2.6.0
@@ -325,6 +330,7 @@ making a backup is strongly advised.
 - Fujifilm FinePix F770EXR
 - Fujifilm FinePix S7000
 - Fujifilm GFX 50R (compressed)
+- Fujifilm X-A10
 - Fujifilm X-T30 (compressed)
 - Fujifilm XF10
 - Kodak DCS Pro 14N
@@ -339,6 +345,7 @@ making a backup is strongly advised.
 - Nikon Z 6 (14bit-uncompressed, 12bit-uncompressed)
 - Nikon Z 7 (14bit-uncompressed)
 - Olympus E-M1X
+- Olympus E-M5 Mark III
 - Olympus TG-6
 - Panasonic DC-G90 (4:3)
 - Panasonic DC-G91 (4:3)
@@ -349,7 +356,9 @@ making a backup is strongly advised.
 - Phase One P30
 - Sony DSC-RX0M2
 - Sony DSC-RX100M6
+- Sony DSC-RX100M7
 - Sony ILCE-6400
+- Sony ILCE-6600
 - Sony ILCE-7RM4
 
 ### White Balance Presets
@@ -357,6 +366,7 @@ making a backup is strongly advised.
 - Leica Q2
 - Nikon D500
 - Nikon Z 7
+- Olympus E-M5 Mark III
 - Panasonic DC-LX100M2
 - Sony ILCE-6400
 
