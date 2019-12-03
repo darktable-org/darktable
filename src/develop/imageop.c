@@ -1162,7 +1162,7 @@ static void _iop_gui_update_header(dt_iop_module_t *module)
 
   // set panel name to display correct multi-instance
   _iop_panel_label(lab, module);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+  dt_iop_gui_set_enable_button(module);
 }
 
 void dt_iop_gui_set_enable_button(dt_iop_module_t *module)
@@ -1655,7 +1655,7 @@ void dt_iop_gui_update(dt_iop_module_t *module)
       dt_iop_gui_update_blending(module);
       dt_iop_gui_update_expanded(module);
       _iop_gui_update_label(module);
-      if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), module->enabled);
+      dt_iop_gui_set_enable_button(module);
     }
     darktable.gui->reset = reset;
   }
@@ -2014,7 +2014,7 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hw[IOP_MODULE_SWITCH]), module->enabled);
   g_signal_connect(G_OBJECT(hw[IOP_MODULE_SWITCH]), "toggled", G_CALLBACK(dt_iop_gui_off_callback), module);
   module->off = DTGTK_TOGGLEBUTTON(hw[IOP_MODULE_SWITCH]);
-  if(module->hide_enable_button) gtk_widget_set_sensitive(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), FALSE);
+  gtk_widget_set_sensitive(GTK_WIDGET(hw[IOP_MODULE_SWITCH]), !module->hide_enable_button);
 
   /* reorder header, for now, iop are always in the right panel */
   for(int i = 0; i < IOP_MODULE_LAST; i++)
