@@ -1248,7 +1248,7 @@ filechooser *:checked
     color: @field_selected_fg;
 }
 
-filechooser *:checked
+filechooser checkbutton:checked
 {
     background-color: transparent;
 }
