@@ -366,8 +366,8 @@ button
 #footer-toolbar #dt-button
 {
   padding: 0.9em;
-  min-height: 1em; /* Align toolbox button height on comboboxe's one */
-  min-width: 1em;
+  min-height: 0.9em; /* Align toolbox button height on comboboxe's one */
+  min-width: 0.9em;
   border: 0;
   font-size: .7em;
 }
@@ -628,9 +628,9 @@ dialog combobox window
   border-radius: 2pt;
   border: 0;
   outline-style: none;
-  min-height: 0.5em;
-  min-width: 0.5em;
-  padding: 0.5em;
+  min-height: 0.4em;
+  min-width: 0.4em;
+  padding: 0.4em;
 }
 
 #view_dropdown,
@@ -639,12 +639,12 @@ dialog combobox window
   background-color: transparent;
   outline-style:none;
   border-radius: 2px;
-  padding: 0.5em;
+  padding: 0.4em;
   color: @section_label;
 }
 
 #view_label {
-  margin: 0.5em 0;
+  margin: 0.1em 0;
 }
 
 menuitem button,
@@ -1246,6 +1246,11 @@ filechooser *:checked
 {
     background-color: @field_selected_bg;
     color: @field_selected_fg;
+}
+
+filechooser checkbutton:checked
+{
+    background-color: transparent;
 }
 
 #view_dropdown *:selected,
