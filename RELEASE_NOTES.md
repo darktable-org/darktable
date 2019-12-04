@@ -326,7 +326,6 @@ making a backup is strongly advised.
 - Widespread performance tuning, most affected decompressors:
   * Sony ARW2
   * Panasonic V5
-  * Samsung V1
   * Phase One
   * Nikon
   * Pentax
