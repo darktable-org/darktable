@@ -1248,6 +1248,11 @@ filechooser *:checked
     color: @field_selected_fg;
 }
 
+filechooser *:checked
+{
+    background-color: transparent;
+}
+
 #view_dropdown *:selected,
 #view_label:selected
 {
