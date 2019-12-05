@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable-usermanual\n"
 "POT-Creation-Date: 2019-12-03 17:22+0100\n"
-"PO-Revision-Date: 2019-12-03 17:57+0100\n"
+"PO-Revision-Date: 2019-12-05 20:32+0100\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.2.4\n"
+"X-Generator: Lokalize 19.08.3\n"
 "X-Poedit-Bookmarks: 799,-1,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
@@ -1364,15 +1364,14 @@ msgid "darktable-cmstest"
 msgstr "darktable-cmstest"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1005(para)
-#, fuzzy
 msgid ""
 "This binary (Linux only) investigates if the color management subsystem of "
 "your computer is correctly configured and it displays some useful information "
 "about the installed monitor profile(s)."
 msgstr ""
-"<quote>darktable-cmstest</quote> prüft, ob das Farbmanagement-System des "
-"Computers richtig eingerichtet ist und zeigt ein paar hilfreiche Daten über "
-"die installierten Monitor-Profile an."
+"<quote>darktable-cmstest</quote> (nur unter Linux)prüft, ob das"
+" Farbmanagement-System des Computers richtig eingerichtet ist und zeigt ein"
+" paar hilfreiche Daten über die installierten Monitor-Profile an."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:1011(para)
 msgid ""
@@ -5639,7 +5638,8 @@ msgid "A tree view to navigate within your hierarchical tags"
 msgstr "Baumansicht zur Navigation innerhalb der hierarchischen Tags"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4480(para)
-msgid "A list of suggestions based on already attached tags on selected images."
+msgid ""
+"A list of suggestions based on already attached tags on selected images."
 msgstr ""
 "Liste mit Vorschlägen basierend auf den ausgewählten Bildern und den bereits "
 "hinzugefügten Tags"
@@ -6135,7 +6135,8 @@ msgid "Double-click on a tag of attached view."
 msgstr "Doppelklick auf ein Tag der angehängten Ansicht."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4865(para)
-msgid "Click-right on a tag of attached view and sub-menu <quote>detach</quote>"
+msgid ""
+"Click-right on a tag of attached view and sub-menu <quote>detach</quote>"
 msgstr ""
 "Klicken Sie rechts auf einen Tag der angehängten Ansicht und das Untermenü "
 "<quote>Entfernen</quote>."
@@ -7726,7 +7727,8 @@ msgid "Double-click"
 msgstr "Doppelklick"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6154(para)
-msgid "You can double-click on a parameter label to reset its value to default."
+msgid ""
+"You can double-click on a parameter label to reset its value to default."
 msgstr ""
 "Mit einem Doppelklick auf ein Parameterfeld kann dessen Wert auf den "
 "Standardwert zurücksetzt werden."
@@ -8631,11 +8633,11 @@ msgstr "Gezeichnete Maske"
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7543(primary)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7603(primary)
 msgid "masks"
-msgstr "Maske"
+msgstr "Masken"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6827(secondary)
 msgid "drawn masks"
-msgstr "Gezeichnete Maske"
+msgstr "Gezeichnete Masken"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:6831(primary)
 msgid "local adjustments"
@@ -9543,7 +9545,8 @@ msgid "The resulting blend mask."
 msgstr "Die resultierende Überblendmaske."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7518(para)
-msgid "The final image after module <emphasis>monochrome</emphasis> is applied."
+msgid ""
+"The final image after module <emphasis>monochrome</emphasis> is applied."
 msgstr ""
 "Das endgültige Bild nach dem das Modul <emphasis>Monochrome</emphasis> "
 "angewendet wurde."
@@ -9564,6 +9567,12 @@ msgid ""
 "parametric mask of a module assemble a final mask, which internally is stored "
 "as a raster image and made accessible to other modules."
 msgstr ""
+"Bei aktiver <quote>gezeichneter Maske</quote> oder <quote>parametrischer "
+"Maske</quote> kann die endgültige Maske in anderen Modulen wiederverwendet "
+"werden. Dies funktioniert, weil alle Formen aus der gezeichneten Maske und "
+"alle Verlaufs-Funktionen aus der parametrischen Maske eines Moduls eine "
+"endgültige Maske bilden, die intern als Rasterbild gespeichert und anderen "
+"Modulen zugänglich gemacht wird."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7558(para)
 msgid ""
@@ -9573,6 +9582,11 @@ msgid ""
 "final mask, the final settings of how drastically the effect of the module "
 "will be."
 msgstr ""
+"Jede einzelne Maske wählt eine Anzahl von Pixeln aus und wie stark die "
+"Wirkung des Moduls auf diese Auswahl angewendet wird. Mehrere "
+"Zeichnungsmasken und parametrische Mischfunktionen können definiert werden "
+"und sie alle zusammen bilden die endgültige Maske, die endgültigen "
+"Einstellungen, wie stark die Wirkung des Moduls sein wird."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7565(para)
 msgid ""
@@ -9583,6 +9597,13 @@ msgid ""
 "intensity the module has full effect and for each alpha value in-between the "
 "minimum and the maximum the effect is applied proportionally at that location."
 msgstr ""
+"Die Auswahl dieser Masken kann als Alpha-Map gespeichert werden, d.h. ein"
+" Bild so groß wie das Eingangsbild, in dem für jedes Pixel ein"
+" Intensitätswert zwischen Null und dem maximalen Alpha-Wert gespeichert wird."
+" Wenn der Wert für ein Pixel Null ist, bleibt der Eingang des Moduls"
+" unverändert, wenn der Wert die maximale Intensität hat, hat das Modul volle"
+" Wirkung und für jeden Alpha-Wert zwischen dem Minimum und dem Maximum wird"
+" der Effekt an dieser Stelle proportional angewendet."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7573(para)
 msgid ""
@@ -9590,6 +9611,9 @@ msgid ""
 "other modules in the raster mask button. So a mask from any module can be "
 "reused from any other module easily."
 msgstr ""
+"Intern wird für jedes Modul die Alpha-Map gespeichert und in der Rastermaske "
+"für andere Module zugänglich gemacht. So kann eine Maske aus einem beliebigen "
+"Modul problemlos von jedem anderen Modul wiederverwendet werden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7585(title)
 msgid "Drop-down menu"
@@ -11498,7 +11522,8 @@ msgstr ""
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9251(entry)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9325(entry)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9390(entry)
-msgid "Right-clicking on the icon opens a dialog with configuration parameters."
+msgid ""
+"Right-clicking on the icon opens a dialog with configuration parameters."
 msgstr ""
 "Ein Klick mit der rechten Maustaste auf das Symbol öffnet einen Dialog mit "
 "den Konfigurationsparametern."
@@ -12956,7 +12981,8 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10503(para)
 msgid "This slider adjusts the image's contrast."
-msgstr "Mit diesem Schieberegler können Sie den Kontrast des Bildes einstellen."
+msgstr ""
+"Mit diesem Schieberegler können Sie den Kontrast des Bildes einstellen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10510(para)
 msgid "This slider adjusts the image's brightness."
@@ -13170,7 +13196,8 @@ msgstr "Mit diesem Modul können Sie die Verarbeitung des Entrastern steuern."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10731(para)
 msgid "Demosaic is an essential step of any raw image development process."
-msgstr "Entrastern ein wesentlicher Schritt bei der Entwicklung von Rohbildern."
+msgstr ""
+"Entrastern ein wesentlicher Schritt bei der Entwicklung von Rohbildern."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10735(para)
 msgid ""
@@ -13598,7 +13625,8 @@ msgstr "invertieren"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11092(entry)
 msgid "The main purpose of this module is to invert scanned negatives."
-msgstr "Der Hauptzweck dieses Moduls ist es, gescannte Negative zu invertieren."
+msgstr ""
+"Der Hauptzweck dieses Moduls ist es, gescannte Negative zu invertieren."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11110(title)
 msgid "color of film material"
@@ -15806,12 +15834,19 @@ msgid ""
 "atmosphere of a picture using color grading, a popular technique in the "
 "cinema industry."
 msgstr ""
+"Dieses Modul bietet ein vielseitiges Werkzeug zur Einstellung der Farbbalance "
+"eines Bildes. Es kann verwendet werden, um parasitäre Farbstiche rückgängig "
+"zu machen oder die visuelle Atmosphäre eines Bildes durch Farbkorrekturen zu "
+"verbessern, eine in der Kinoindustrie beliebte Technik."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13031(para)
+#, fuzzy
 msgid ""
 "<emphasis>lift, gamma, gain</emphasis>, the classic way, that allows a more "
 "separated control of shadows versus highlights,"
 msgstr ""
+"<emphasis>lift, gamma, gain</emphasis>, der klassische Weg, der eine "
+"getrenntere Kontrolle von Schatten im Vergleich zu Highlights ermöglicht,"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13036(para)
 msgid ""
@@ -15958,6 +15993,13 @@ msgid ""
 "luminance mask, to create color filters with the color balance settings, like "
 "split-toning or sepia effect (you might want to use blending modes then)."
 msgstr ""
+"Die Eingangssättigung ist eine Sättigungskorrektur, die vor der Farbbalance "
+"angewendet wird. Sie kann verwendet werden, um Farben vor der Einstellung der "
+"Balance zu dämpfen um schwierige Bilder leichter bearbeiten zu können. Wenn "
+"Sie das Bild vollständig entsättigen, entsteht ein leuchtdichtebasiertes "
+"monochromes Bild, das als Luminanzmaske verwendet werden kann, um Farbfilter "
+"mit den Farbbalance-Einstellungen wie Split-Toning oder Sepia-Effekt zu "
+"erstellen (dann sollten Sie vielleicht Mischmodi verwenden)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13158(title)
 msgid "Output saturation"
@@ -15971,6 +16013,11 @@ msgid ""
 "editing each channel saturation separately at the expense of possibly messing "
 "the colors."
 msgstr ""
+"Die Ausgabesättigung ist eine Sättigungskorrektur, die unmittelbar nach der "
+"Farbbalance angewendet wird. Es ist nützlich, wenn Sie eine richtige "
+"Farbtonbalance gefunden haben, den Effekt aber zu stark finden, so dass Sie "
+"die globale Sättigung auf einmal anpassen können, anstatt jede Kanalsättigung "
+"separat zu bearbeiten, auf Kosten einer möglichen Verfälschung der Farben."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13168(title)
 msgid "Contrast and Contrast fulcrum"
@@ -15988,18 +16035,33 @@ msgid ""
 "of dramatic settings (shadows might be resaturated, highlights might be "
 "desaturated, and some color shift is to be expected)."
 msgstr ""
+"Der Kontrastschieber ermöglicht es, den Leuchtdichteabstand zu erhöhen. Der "
+"Drehpunktwert definiert den Leuchtdichtewert, der von der Kontrastkorrektur "
+"nicht beeinflusst wird, so dass der Kontrast über den Drehpunkt rollt. "
+"Leuchtdichtewerte über dem Drehpunkt werden nahezu linear verstärkt. "
+"Leuchtdichtewerte unterhalb des Drehpunktes werden mit einer Exponential-"
+"Funktion (Erzeugung eines Zehs) komprimiert. Diese Korrektur erfolgt nach der "
+"Ausgabesättigung und wird auf alle RGB-Kanäle separat angewendet, so dass "
+"Farbtöne und Sättigungen bei dramatischen Einstellungen möglicherweise nicht "
+"erhalten bleiben (Schatten können gesättigt werden, Lichter können entsättigt "
+"werden, und eine gewisse Farbverschiebung ist zu erwarten)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13183(title)
 msgid "Shadows, Mid-tones, Highlights"
 msgstr "Schatten, Mitteltöne, Spitzlichter"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13184(para)
+#, fuzzy
 msgid ""
 "Depending on the mode set, the shadows settings will control either the lift "
 "or the offset, the mid-tones ones will control either the gamma or the power, "
 "and the highlights ones will control either the gain or the slope. Parameters "
 "are transferred as is when you change the mode."
 msgstr ""
+"Je nach eingestelltem Modus steuern die Schatteneinstellungen entweder den "
+"Lift oder den Offset, die Mitteltöne entweder das Gamma oder die Leistung und "
+"die Lichter entweder die Verstärkung oder die Steigung. Die Parameter werden "
+"unverändert übernommen, wenn Sie den Modus wechseln."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13191(para)
 msgid ""
@@ -16007,10 +16069,14 @@ msgid ""
 "the saturation sliders range is limited to [0%; 25%]. Values outside of these "
 "bounds can be defined from keyboard input after right-click on the slider."
 msgstr ""
+"Im RGBL-Modus ist der Bereich der RGB-Schieberegler auf[-0,5; 0,5] begrenzt. "
+"Im HSL-Modus ist der Bereich der Sättigungsregler auf[0%; 25%] begrenzt. "
+"Werte außerhalb dieser Grenzen können über die Tastatureingabe nach einem "
+"Rechtsklick auf den Schieberegler definiert werden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13200(title)
 msgid "Optimize luma"
-msgstr ""
+msgstr "Luma optimieren"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13201(para)
 msgid ""
@@ -16023,6 +16089,15 @@ msgid ""
 "<emphasis>slope, offset, power</emphasis> mode. It works only fairly in the "
 "other modes."
 msgstr ""
+"Der Farbpicker in der Nähe des Labels <emphasis> Helligkeit optimieren</"
+"emphasis> wählt das gesamte Bild aus und optimiert die <emphasis>Faktoren</"
+"emphasis> für Schatten, Mitteltöne und Lichter, so dass die durchschnittliche "
+"Leuchtdichte des Bildes 50% Lab beträgt, das Maximum 100% und das Minimum 0%, "
+"am Ausgang dieses Moduls. Dies ist im Wesentlichen eine Histogramm-"
+"Normalisierung, ähnlich dem, was das Ebenenmodul erreichen kann. Der "
+"Optimierer ist nur dann genau, wenn er im Modus <emphasis>Steilheit, Offset, "
+"Leistung</emphasis> verwendet wird. Es funktioniert nurungefähr in den "
+"anderen Modi."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13211(para)
 msgid ""
@@ -16039,6 +16114,20 @@ msgid ""
 "quote>. To reset one patch, you can just redo the selection. Patches are not "
 "saved in the parameters and are kept only during the current session."
 msgstr ""
+"Wenn Sie mehr Kontrolle wünschen, können Sie drei Kontrollfelder definieren, "
+"indem Sie die Farbpicker vor jedem Faktor-Schieberegler verwenden, um die "
+"Helligkeit in ausgewählten Bereichen zu messen. Der Schatten-Farbpicker "
+"tastet die minimale Leuchtdichte ab, der für Mitteltöne den Mittelwert und "
+"der für Highlights die maximale Leuchtdichte. Der empfindlichste Parameter "
+"ist der Mitteltonfaktor, da die Auswahl eines etwas anderen Bereichs zu "
+"dramatischen Parameteränderungen führen kann. Die Verwendung der Faktoren "
+"Farbpicker allein, ohne die Luma-Optimierung auszulösen, ermöglicht es, "
+"Anpassungen ohne allgemeine Optimierung durchzuführen, aber jeder Parameter "
+"wird immer entsprechend den beiden anderen berechnet. Sobald Patches "
+"ausgewählt sind, wird das Label zu <quote>optimize luma from patches</quote>. "
+"Um einen Patch zurückzusetzen, können Sie die Auswahl einfach wiederholen. "
+"Patches werden nicht in den Parametern gespeichert und nur während der "
+"aktuellen Sitzung behalten."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13226(para)
 msgid ""
@@ -16052,6 +16141,16 @@ msgid ""
 "adjustments in color balance are better suited for local correction, in "
 "combination with color adjustments, for color-grading with masks."
 msgstr ""
+"Es ist wichtig, nicht zu beachten, dass die durchgeführte "
+"Leuchtdichteanpassung nur auf die Ausgabe des Farbbalancemoduls abzielt und "
+"nicht andere Leuchtdichteanpassungen in Modulen berücksichtigt, die später in "
+"die Pixelpipe kommen (Filmisch, Tonkurve, Farbzonen, Pegel, globales "
+"Tonemapping, etc.). Die Verwendung der Farbbalance zur globalen Neuzuordnung "
+"der Leuchtdichte auf dem Bild wird nicht empfohlen, da sie die Originalfarben "
+"nicht beibehält, und Module wie Tonkurven oder Filmisch sind dafür besser "
+"geeignet. Die Helligkeitseinstellungen in der Farbbalance eignen sich besser "
+"für die lokale Korrektur, in Kombination mit Farbanpassungen, für die "
+"Farbgradierung mit Masken."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13239(title)
 msgid "Neutralize colors"
@@ -16068,6 +16167,15 @@ msgid ""
 "color for shadows, midtones, and highlights so all the color casts are "
 "reverted, and the average color of the picture is a neutral grey."
 msgstr ""
+"In einem Bild, in dem einige Bereiche direktem Sonnenlicht und andere "
+"Bereiche reflektiertem Licht (Schatten) ausgesetzt sind, oder wenn mehrere "
+"künstliche Lichtquellen gleichzeitig vorhanden sind, haben Schatten und "
+"Lichter oft unterschiedliche Farbtemperaturen. Diese Bilder sind besonders "
+"schwer zu korrigieren, da kein allgemeiner Weißabgleich alle Farben auf "
+"einmal abdeckt. Der Farbneutralisationsoptimierer soll Ihnen helfen, die "
+"Komplementärfarbe für Schatten, Mitteltöne und Lichter zu finden, so dass "
+"alle Farbstiche rückgängig gemacht werden und die durchschnittliche Farbe des "
+"Bildes ein neutrales Grau ist."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13250(para)
 msgid ""
@@ -16083,6 +16191,18 @@ msgid ""
 "dark grey. For the mid-tones sample, use a color exposed by both ambient and "
 "spot lights."
 msgstr ""
+"Ähnlich wie bei der Luma-Optimierung löst der Color-Picker neben dem Label "
+"<emphasis>neutralize colors</emphasis> eine allgemeine Optimierung über das "
+"gesamte Bild aus. Dies funktioniert ziemlich gut in der Landschaftsfotografie "
+"oder jeder Fotografie mit einem vollen Spektrum an Farben und Leuchtdichten. "
+"Für Nacht- und Eventfotografie wird dies höchstwahrscheinlich fehlschlagen "
+"und Sie müssen die Sampling-Bereiche mit den Farbpickern vor jedem "
+"Farbtonregler manuell eingeben. Verwenden Sie für das Lichtermuster eine "
+"Farbe, die mit Scheinwerfern belichtet wird, die neutralweiß oder hellgrau "
+"sein sollte. Verwenden Sie für das Schattenmuster eine Farbe, die dem "
+"Umgebungslicht ausgesetzt ist und neutral schwarz oder dunkelgrau sein "
+"sollte. Verwenden Sie für das Mitteltonmuster eine Farbe, die sowohl durch "
+"Umgebungslicht als auch durch Scheinwerfer beleuchtet wird."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13262(para)
 msgid ""
@@ -16096,6 +16216,17 @@ msgid ""
 "optimization the maximum saturation is 25% which might not be enough in very "
 "few cases but will avoid inconsistent results in most."
 msgstr ""
+"Der Erfolg der Optimierung hängt von der Qualität der Proben ab. Nicht jeder "
+"Probensatz wird zu einer guten Lösung konvergieren, Sie müssen sicherstellen, "
+"dass die von Ihnen gewählten Farbfelder im wirklichen Leben wirklich neutrale "
+"Farben sind. In vielen Fällen gibt der Optimierer den richtigen Farbton, aber "
+"eine übermäßige Sättigung aus, die eine zusätzliche Optimierung erfordert. In "
+"einigen Fällen wird keine gültige Optimierung geliefert und Sie müssen die "
+"Sättigungsparameter zurücksetzen und neu beginnen oder einfach nach der "
+"Auswahl der Patches anhalten. Beachten Sie, dass bei der automatischen "
+"Optimierung die maximale Sättigung 25% beträgt, was in sehr wenigen Fällen "
+"nicht ausreicht, aber in den meisten Fällen inkonsistente Ergebnisse "
+"verhindert."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13273(para)
 msgid ""
@@ -16114,12 +16245,29 @@ msgid ""
 "mode, but can work to some extent in <emphasis>lift, gamma, gain</emphasis> "
 "too."
 msgstr ""
+"Wenn Sie Farbfelder aus den Farbtonauswahlen auswählen, ohne die Optimierung "
+"auszulösen, führt die Software nur eine Optimierungsrunde durch und stoppt, "
+"so dass Sie jeden Helligkeitsbereich separat steuern und in Grenzfällen "
+"Abweichungen vermeiden können. Die Farbton- und Sättigungskorrekturen werden "
+"unter Berücksichtigung der beiden anderen Leuchtdichtebereiche und der drei "
+"Faktoren berechnet und geben immer die Komplementärfarbe des ausgewählten "
+"Bereichs aus. Wenn Sie stattdessen die Farbe des Bereichs verstärken möchten, "
+"können Sie den berechneten Farbton um 180° erhöhen. Sobald die Patches "
+"ausgewählt sind, wird das Label <quote>Farben aus Patches neutralisieren</"
+"quote> . Um einen Patch zurückzusetzen, können Sie die Auswahl einfach "
+"wiederholen. Patches werden nicht in den Parametern gespeichert und nur "
+"während der aktuellen Sitzung aufbewahrt.  Die durch die automatische "
+"Neutralisation gefundenen Parameter sind nur im Modus <Emphase>Steilheit, "
+"Offset, Leistung</Emphase> genau, können aber auch im Modus <Emphase>Lift, "
+"Gamma, Verstärkung</Emphase> bis zu einem gewissen Grad funktionieren. "
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13294(para)
 msgid ""
 "Several presets are provided in the module to help you understand how it can "
 "be used."
 msgstr ""
+"Im Modul sind mehrere Voreinstellungen vorhanden, die Ihnen helfen zu "
+"verstehen, wie es verwendet werden kann."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13298(para)
 msgid ""
@@ -16131,12 +16279,22 @@ msgid ""
 "between subjects and backgrounds. The masking and blending parameters will "
 "need to be tweaked to suit every picture, though."
 msgstr ""
+"Die Voreinstellung für die blaugrün/orange Farbabstufung ist ein sehr "
+"beliebter Look im Kino und ein gutes Beispielmodell. Es ist für die "
+"Verwendung mit zwei Instanzen und Masken gedacht: Die erste Instanz schließt "
+"Hauttöne aus und verschiebt neutrale Farben in Richtung Blaugrün. Die zweite "
+"wird die erste teilweise umkehren und nur bei Hauttönen mehr Dynamik "
+"erzeugen. Gemeinsam werden sie dazu beitragen, eine Trennung zwischen "
+"Probanden und Hintergründen zu schaffen. Die Maskierungs- und "
+"Überblendungsparameter müssen jedoch an jedes Bild angepasst werden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13307(para)
 msgid ""
 "Other presets provide Kodak film emulations. In the same way you can recreate "
 "any film look you like with color balance."
 msgstr ""
+"Andere Voreinstellungen bieten Kodak-Filmemulationen. Auf die gleiche Weise "
+"können Sie jeden beliebigen Filmlook mit Farbbalance nachbilden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13318(title)
 msgid "Color look up table"
@@ -16564,6 +16722,9 @@ msgid ""
 "transforming any RGB value into another RGB value, normally used for film "
 "simulation and color grading."
 msgstr ""
+"Eine <emphasis>3D LUT</emphasis> ist eine dreidimensionale Tabelle, die es "
+"ermöglicht, jeden RGB-Wert in einen anderen RGB-Wert zu transformieren, der "
+"normalerweise für die Filmsimulation und Farbkorrektur verwendet wird."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13811(para)
 msgid ""
@@ -16571,6 +16732,10 @@ msgid ""
 "emphasis> files. The 3D LUT data are not saved in database nor in the XMP "
 "file, only the 3D LUT file path inside the 3D LUT folder is saved (see below)."
 msgstr ""
+"Das Modul akzeptiert <emphasis>.cube</emphasis> und <emphasis>.png "
+"(haldclut)</emphasis> Dateien. Die 3D LUT-Daten werden weder in der Datenbank "
+"noch in der XMP-Datei gespeichert, sondern nur der Pfad der 3D LUT-Datei im "
+"Ordner 3D LUT (siehe unten)."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13825(para)
 msgid ""
@@ -16579,6 +16744,11 @@ msgid ""
 "properly your 3D LUT folder. Sharing an image with its XMP is useless if the "
 "recipient doesn't have the same 3D LUT file in his 3D LUT folder."
 msgstr ""
+"Das Modul lut3d muss die 3D-LUT-Datei an der gleichen Stelle in Ihrem 3D-LUT-"
+"Ordner finden, um das Ausgabebild zu berechnen. Das bedeutet, dass Sie Ihren "
+"3D LUT-Ordner ordnungsgemäß sichern müssen. Die Teilen eines Bildes mit "
+"seiner XMP ist nutzlos, wenn der Empfänger nicht die gleiche 3D-LUT-Datei in "
+"seinem 3D-LUT-Ordner hat."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13840(title)
 msgid "file selection"
@@ -16590,6 +16760,9 @@ msgid ""
 "stored your LUT files) is not defined in <emphasis>3D LUT root folder</"
 "emphasis> under <emphasis>preferences/core options/miscellaneous</emphasis>."
 msgstr ""
+"Die Dateiauswahl ist inaktiv, solange der 3D-LUT-Ordner (in dem Sie Ihre LUT-"
+"Dateien gespeichert haben) nicht in <emphasis>3D LUT-Stammordner</emphasis> "
+"unter <emphasis>Präferenzen/Kernoptionen/Sonstiges</emphasis> definiert ist."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13849(title)
 msgid "application color space"
@@ -16602,6 +16775,10 @@ msgid ""
 "<emphasis>REC.709</emphasis> while most of others are related to "
 "<emphasis>sRGB</emphasis>."
 msgstr ""
+"Eine 3D LUT ist relativ zu einem bestimmten Farbraum. Du musst denjenigen "
+"auswählen, für den er gebaut wurde. Cube-Dateien sind normalerweise mit "
+"<emphasis>REC.709</emphasis> verbunden, während die meisten anderen mit "
+"<emphasis>sRGB</emphasis> verbunden sind."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13858(title)
 msgid "interpolation"
@@ -16616,6 +16793,13 @@ msgid ""
 "<emphasis>pyramid</emphasis>. Usually you won't see any difference between "
 "the interpolation methods except with small size LUTs."
 msgstr ""
+"Das Interpolationsverfahren definiert, wie man Ausgabefarben berechnet, wenn "
+"sich die Eingabefarben nicht genau auf einem Knoten des RGB-Würfels befinden "
+"(beschrieben durch die 3D-LUT). Es stehen drei Interpolationsmethoden zur "
+"Verfügung: <emphasis>tetraedrisch</emphasis> (der Standard), "
+"<emphasis>trilinear</emphasis> und <emphasis>pyramid</emphasis>. "
+"Normalerweise sehen Sie keinen Unterschied zwischen den "
+"Interpolationsmethoden, außer bei kleinen LUTs."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13874(title)
 msgid "Monochrome"
@@ -16945,7 +17129,8 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14253(para)
 msgid "The amount of vibrance to apply to the image."
-msgstr "Die Intensität der Schwingung, die auf das Bild angewendet werden soll."
+msgstr ""
+"Die Intensität der Schwingung, die auf das Bild angewendet werden soll."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14266(title)
 msgid "Correction group"
@@ -17260,7 +17445,6 @@ msgstr ""
 "halten."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14628(para)
-#, fuzzy
 msgid ""
 "This module can eliminate noise by two different core algorithms. Both "
 "<quote>non-local means</quote> and <quote>wavelet</quote> can tackle "
@@ -17278,25 +17462,28 @@ msgid ""
 "several parameters from the profile. All sliders of this module can take "
 "values higher than their bounds if needed using Right-click."
 msgstr ""
-"Dieses Modul kann Rauschen mit zwei verschiedenen Kernalgorithmen "
-"eliminieren. <quote>nicht-lokales Mittel</quote> ist besser geeignet, um Luma "
-"(Leichtigkeit) Rauschen zu reduzieren, während es bei Chroma (Farbrauschen) "
-"weniger effizient ist. <quote> Wavelet</quote> ist besonders effizient bei "
-"der Beseitigung von Chroma (Farbe) Rauschen und kann auch gute Ergebnisse bei "
-"Luma-Rauschen erziehlen. Es ermöglicht das Einstellen wie stark entrauscht "
-"werden soll in Abhängigkeit der Rauschstärke.Bei Bedarf kann eine zweite "
-"Instanzen des Moduls angewendet wenden (siehe <xref linkend="
-"\"multiple_instances\"/>). Die <quote>nicht-lokales Mittel</quote> Instanz "
-"sollte mit dem Mischmodus <quote>Helligkeit</quote> oder <quote>HSV "
-"Helligkeit</quote> kombiniert werden; die <quote>wavelet</quote> Instanz mit "
-"dem Mischmodus <quote>Farbe</quote> oder <quote>HSV color</quote>. Ein "
-"Beispiel für die Verwendung von zwei Instanzen mit Überblendmodi ist im "
-"Presets dieses Moduls verfügbar. Weitere Informationen zu den Mischmodi "
-"finden Sie unter <xref linkend=\"blending_operators\"/>."
+"Dieses Modul kann Rauschen durch zwei verschiedene Kernalgorithmen "
+"eliminieren. Sowohl <quote>nicht-lokales Mittel</quote> als auch "
+"<quote>wavelet</quote> können Luma-Rauschen (Helligkeit) und Chroma-Rauschen "
+"(Farbe) effizient bekämpfen. Der Modus <quote>Wavelet</quote> ermöglicht es "
+"Ihnen auch, die Stärke der Entrauschung in Abhängigkeit von der Feinheit des "
+"Rauschens einzustellen. Bei Bedarf können Sie zwei Instanzen dieses Moduls "
+"anwenden (siehe <xref linkend=\"multiple_instances\"/>): eine Instanz zur "
+"Bekämpfung von Luma-Rauschen mit dem Mischmodus <quote>Helligkeit</quote> "
+"oder <quote>HSV-Helligkeit</quote>, und eine andere zur Bekämpfung von Chroma-"
+"Rauschen mit dem Mischmodus <quote>Farbe</quote> oder <quote>HSV-Farbe </"
+"quote>. Ein Beispiel für die Verwendung von zwei Instanzen mit Überblendmodi "
+"ist in den Voreinstellungen dieses Moduls verfügbar. Weitere Informationen zu "
+"den Mischmodi finden Sie unter <xref linkend=\"blending_operators\"/>. Das "
+"Modul bietet auch einen automatischen Modus für jeden Algorithmus. Die "
+"automatischen Modi ermöglichen es, die Parameter des Moduls auf einfachere "
+"Weise einzustellen, da sie mehrere Parameter aus dem Profil erraten. Alle "
+"Schieberegler dieses Moduls können bei Bedarf mit der rechten Maustaste Werte "
+"annehmen, die über ihren Grenzen liegen."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14647(title)
 msgid "whitebalance-adaptive transform"
-msgstr ""
+msgstr "Weißabgleich adaptive Transformation"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14648(para)
 msgid ""
@@ -17305,6 +17492,11 @@ msgid ""
 "balance. This option should be disabled on the second instance if you use a "
 "first instance with a color blend mode."
 msgstr ""
+"Da der Weißabgleich die RGB-Kanäle unterschiedlich verstärkt, weisen sie "
+"unterschiedliche Rauschpegel auf. Dieses Kontrollkästchen macht den "
+"Algorithmus anpassungsfähig an den Weißabgleich. Diese Option sollte in der "
+"zweiten Instanz deaktiviert sein, wenn Sie eine erste Instanz mit einem "
+"Farbmischmodus verwenden."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14657(title)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14841(title)
@@ -17312,7 +17504,6 @@ msgid "patch size"
 msgstr "Blockgröße"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14658(para)
-#, fuzzy
 msgid ""
 "This slider is only available if mode <quote>non-local means</quote> is "
 "selected. It controls the size of the patches being matched when deciding "
@@ -17322,18 +17513,17 @@ msgid ""
 "same."
 msgstr ""
 "Dieser Schieberegler ist nur verfügbar, wenn der Modus <quote>nicht-lokales "
-"Mittel</quote> ausgewählt ist. Sie steuert die Größe der Patches, die bei der "
+"Mittel</quote> ausgewählt ist. Er steuert die Größe der Patches, die bei der "
 "Entscheidung, welche Pixel zu mitteln sind, angepasst werden (siehe auch "
-"<xref linkend=\"denoise_non_local_means\"/>). Wenn Sie diese Einstellung auf "
-"höhere Werte setzen, kann dies zu mehr Schärfe führen. Die Bearbeitungszeit "
-"bleibt in etwa gleich."
+"<xref linkend=\"denoise_non_local_means\"/>). Stellen Sie diesen auf höhere "
+"Werte ein, wenn das Rauschen höher wird. Beachten Sie jedoch, dass hohe Werte "
+"kleine Kanten glätten können. Die Verarbeitungszeit bleibt in etwa gleich."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14668(title)
 msgid "search radius"
 msgstr "Suchradius"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14669(para)
-#, fuzzy
 msgid ""
 "This slider is only available if mode <quote>non-local means</quote> is "
 "selected. It controls how far from a pixel the algorithm will try to find "
@@ -17343,21 +17533,21 @@ msgid ""
 "parameter: it depends on the square of the parameter. A lower value will make "
 "execution faster, a higher value will make it slower."
 msgstr ""
-"Dieser Schieberegler ist nur verfügbar, wenn der Modus <quote>nicht lokals "
-"mittel</quote> ausgewählt ist. Es steuert, wie weit der Algorithmus von einem "
-"Pixel entfernt versucht, ähnliche Patches zu finden. Die Verarbeitungszeit "
-"wird durch diesen Parameter stark beeinflusst und hängt vom Quadrat des "
-"Parameters ab. Ein niedrigerer Wert macht die Ausführung schneller, ein "
-"höherer Wert macht sie langsamer. Eine Erhöhung des Wertes kann bei sehr "
-"verrauschten Bildern zu besseren Ergebnissen führen, wenn grobkörniges "
-"Rauschen sichtbar ist."
+"Dieser Schieberegler ist nur verfügbar, wenn der Modus <quote>nicht lokales "
+"Mittel</quote> ausgewählt ist. Es steuert, wie weit entfernt von einem Pixel "
+"der Algorithmus versuchen wird, ähnliche Patches zu finden. Eine Erhöhung des "
+"Wertes kann bei sehr verrauschten Bildern zu besseren Ergebnissen führen, "
+"wenn grobkörniges Rauschen sichtbar ist, aber Sie sollten stattdessen besser "
+"den Streuschieber verwenden. Die Verarbeitungszeit wird durch diesen "
+"Parameter sehr stark beeinflusst: Sie hängt vom Quadrat des Parameters ab. "
+"Ein niedrigerer Wert macht die Ausführung schneller, ein höherer Wert macht "
+"sie langsamer."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14680(title)
 msgid "scattering"
 msgstr "Streuung"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14681(para)
-#, fuzzy
 msgid ""
 "This slider is only available if mode <quote>non-local means</quote> is "
 "selected. Like the search radius, it controls how far from a pixel the "
@@ -17366,14 +17556,13 @@ msgid ""
 "the same. Increasing the value will reduce coarse grain noise, but may smooth "
 "local contrast. This slider is particularly effective to reduce chroma noise."
 msgstr ""
-"Dieser Schieberegler ist nur verfügbar, wenn der Modus <quote>nicht lokals "
-"mittel</quote> ausgewählt ist. Es steuert, wie weit der Algorithmus von einem "
-"Pixel entfernt versucht, ähnliche Patches zu finden. Die Verarbeitungszeit "
-"wird durch diesen Parameter stark beeinflusst und hängt vom Quadrat des "
-"Parameters ab. Ein niedrigerer Wert macht die Ausführung schneller, ein "
-"höherer Wert macht sie langsamer. Eine Erhöhung des Wertes kann bei sehr "
-"verrauschten Bildern zu besseren Ergebnissen führen, wenn grobkörniges "
-"Rauschen sichtbar ist."
+"Dieser Schieberegler ist nur verfügbar, wenn der Modus <quote>nicht lokales "
+"Mittel</quote> ausgewählt ist. Wie der Suchradius steuert er, wie weit der "
+"Algorithmus von einem Pixel entfernt versucht, ähnliche Patches zu finden, "
+"tut dies aber ohne die Anzahl der betrachteten Patches zu erhöhen. Somit "
+"bleibt die Bearbeitungszeit in etwa gleich. Eine Erhöhung des Wertes "
+"reduziert das grobkörnige Rauschen, kann aber den lokalen Kontrast glätten. "
+"Dieser Schieberegler ist besonders effektiv, um Chroma-Rauschen zu reduzieren."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14692(title)
 msgid "central pixel weight"
@@ -18725,7 +18914,8 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15948(para)
 msgid "Collapse the module to complete the changes."
-msgstr "Wenn Sie das Modul zusammenklappen, werden die Änderungen durchgeführt."
+msgstr ""
+"Wenn Sie das Modul zusammenklappen, werden die Änderungen durchgeführt."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:15968(entry)
 msgid ""
@@ -19654,7 +19844,8 @@ msgstr "Effektgruppe"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16811(para)
 msgid "In the effect group you will find modules with a more artistic touch."
-msgstr "In der Effektgruppe finden Sie Module mit einem künstlerischeren Touch."
+msgstr ""
+"In der Effektgruppe finden Sie Module mit einem künstlerischeren Touch."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16817(title)
 msgid "Watermark"
@@ -20391,7 +20582,8 @@ msgstr ""
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17778(entry)
 msgid ""
 "An image with vignetting and with graphical vignetting controls displayed."
-msgstr "Ein Bild mit Vignettierung und grafischer Vignettierung wird angezeigt."
+msgstr ""
+"Ein Bild mit Vignettierung und grafischer Vignettierung wird angezeigt."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17793(title)
 msgid "Soften"
@@ -20459,11 +20651,13 @@ msgstr ""
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17867(para)
 msgid "Controls the mix of the overexposed image and the overall effect."
-msgstr "Steuert die Mischung aus dem überbelichteten Bild und dem Gesamteffekt."
+msgstr ""
+"Steuert die Mischung aus dem überbelichteten Bild und dem Gesamteffekt."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:17888(entry)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:18411(entry)
-msgid "This is the original image, use it as reference for the changes below..."
+msgid ""
+"This is the original image, use it as reference for the changes below..."
 msgstr ""
 "Dies ist das Originalbild, verwenden Sie es als Referenz für die "
 "untenstehenden Änderungen...."
@@ -21412,7 +21606,8 @@ msgstr "Vorgehen"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19184(para)
 msgid "This procedure uses tone curve, channel mixer and splittoning modules."
-msgstr "Dieses Vorgehen nutzt Farbkurve, Kanalmixer und das Split-Toning-Modul."
+msgstr ""
+"Dieses Vorgehen nutzt Farbkurve, Kanalmixer und das Split-Toning-Modul."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19190(para)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19318(para)
@@ -21476,7 +21671,8 @@ msgstr "Wählen Sie den roten Kanal und ändern Sie den blauen Farbwert auf 0,1.
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19233(para)
 msgid "Select the green channel and change the blue color value to 0.1"
-msgstr "Wählen Sie den grünen Kanal und ändern Sie den blauen Farbwert auf 0,1."
+msgstr ""
+"Wählen Sie den grünen Kanal und ändern Sie den blauen Farbwert auf 0,1."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19243(para)
 msgid ""
@@ -21500,7 +21696,8 @@ msgstr ""
 "ca. 50% ein."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19258(para)
-msgid "Select a yellow/orange tone for highlights and set saturation around 70%"
+msgid ""
+"Select a yellow/orange tone for highlights and set saturation around 70%"
 msgstr ""
 "Wählen Sie einen Gelb-/Orange-Ton für die Lichter und stellen Sie die "
 "Sättigung auf ca. 70% ein."
@@ -21586,7 +21783,8 @@ msgstr ""
 "1,15 ein."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19360(para)
-msgid "Select the blue channel destination and set the blue color value to 1.15"
+msgid ""
+"Select the blue channel destination and set the blue color value to 1.15"
 msgstr ""
 "Wählen Sie das blaue Channel-Ziel und stellen Sie den blauen Farbwert auf "
 "1.15 ein."
@@ -21670,7 +21868,8 @@ msgid "Masking"
 msgstr "Maskieren"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19466(para)
-msgid "Enable the channel mixer module (see <xref linkend=\"channel_mixer\"/>)."
+msgid ""
+"Enable the channel mixer module (see <xref linkend=\"channel_mixer\"/>)."
 msgstr ""
 "Aktivieren Sie das Kanalmixermodul (siehe <xref linkend=\"channel_mixer\"/>)."
 
@@ -23906,7 +24105,8 @@ msgstr ""
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21361(bridgehead)
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23808(term)
 msgid "minimum amount of memory (in MB) for a single buffer in tiling"
-msgstr "minimaler Speicherplatz (in MB) für einen einzelnen Puffer beim Kacheln"
+msgstr ""
+"minimaler Speicherplatz (in MB) für einen einzelnen Puffer beim Kacheln"
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21363(para)
 msgid ""
@@ -28361,7 +28561,8 @@ msgstr ""
 "linkend=\"color_look_up_table\"/>) verwendet."
 
 #: /media/Daten/GitHub/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25027(para)
-msgid "By clicking the <quote>process</quote> button you start the calculation."
+msgid ""
+"By clicking the <quote>process</quote> button you start the calculation."
 msgstr ""
 "Durch Anklicken der Schaltfläche <quote>process</quote> starten Sie die "
 "Berechnung."
