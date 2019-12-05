@@ -764,7 +764,7 @@ finally:
     char *oldchecksum = dt_conf_get_string("opencl_checksum");
 
     // check if the configuration (OpenCL device setup) has changed, indicated by checksum != oldchecksum
-    if(strcmp(oldchecksum, checksum) != 0)
+    if(strcasecmp(oldchecksum, "OFF") != 0 && strcmp(oldchecksum, checksum) != 0)
     {
       // store new checksum value in config
       dt_conf_set_string("opencl_checksum", checksum);
