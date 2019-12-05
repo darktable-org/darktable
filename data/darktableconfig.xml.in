@@ -158,7 +158,7 @@
     <type>string</type>
     <default></default>
     <shortdescription>checksum representing the setup of opencl devices on this computer</shortdescription>
-    <longdescription>darktable re-checks the performance benchmarks of your system in case your setup has changed, which is indicated by a change versus the stored checksum in this config variable; darktable de-activates opencl if the GPU benchmark lies below the one of the CPU.</longdescription>
+    <longdescription>darktable re-checks the performance benchmarks of your system in case your setup has changed, which is indicated by a change versus the stored checksum in this config variable; darktable de-activates opencl if the GPU benchmark lies below the one of the CPU; inital value is the empty string; set to OFF if you want to deactivate any automatic checks and prefer to do all configurations manually.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>pixelpipe_synchronization_timeout</name>
