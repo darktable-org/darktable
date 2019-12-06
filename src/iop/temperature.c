@@ -1023,7 +1023,7 @@ void reload_defaults(dt_iop_module_t *module)
       = (dt_iop_temperature_params_t){.coeffs = { 1.0, 1.0, 1.0, 1.0 } };
 
   // we might be called from presets update infrastructure => there is no image
-  if(!module->dev) goto end;
+  if(!module->dev || module->dev->image_storage.id == -1) goto end;
 
   const int is_raw = dt_image_is_raw(&module->dev->image_storage);
 
