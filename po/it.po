@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
-"PO-Revision-Date: 2019-11-30 14:56+0100\n"
+"PO-Revision-Date: 2019-12-06 22:27+0100\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <kde-i18n-it@kde.org>\n"
 "Language: it_IT\n"
@@ -7396,11 +7396,12 @@ msgid ""
 "shift-click while color picking to replace patch"
 msgstr ""
 "(%2.2f %2.2f %2.2f)\n"
-"Le patch alterate sono marcate con un contorno\n"
+"I campioni alterati sono marcati con un contorno\n"
 "Click per selezionare\n"
 "Doppio click per resettare\n"
-"Click destro per eliminare la patch\n"
-"Shift-click con la pipetta di estrazione del colore per sostituire la patch"
+"Click destro per eliminare il campione\n"
+"Shift-click con la pipetta di estrazione del colore per sostituire il "
+"campione"
 
 #: ../src/iop/colorchecker.c:1354
 msgid "patch"
@@ -7612,11 +7613,11 @@ msgstr "Acquisisci destinazione"
 
 #: ../src/iop/colormapping.c:1113
 msgid "source clusters:"
-msgstr "Cluster di origine:"
+msgstr "Matrice di origine:"
 
 #: ../src/iop/colormapping.c:1122
 msgid "target clusters:"
-msgstr "Cluster di destinazione"
+msgstr "Matrice di destinazione"
 
 #: ../src/iop/colormapping.c:1135
 msgid "acquire as source"
@@ -7636,13 +7637,13 @@ msgstr "Analizza questa immagine come immagine destinazione"
 
 #: ../src/iop/colormapping.c:1148
 msgid "number of clusters"
-msgstr "Numero di cluster"
+msgstr "Numero di matrici"
 
 #: ../src/iop/colormapping.c:1150
 msgid "number of clusters to find in image. value change resets all clusters"
 msgstr ""
-"Numero di cluster da cercare nell'immagine. Un cambiamento del valore "
-"resetta tutti i cluster"
+"Numero di matrici da cercare nell'immagine. Un cambiamento del valore "
+"resetta tutte le matrici"
 
 #: ../src/iop/colormapping.c:1155
 msgid "color dominance"
@@ -7653,7 +7654,7 @@ msgid ""
 "how clusters are mapped. low values: based on color proximity, high values: "
 "based on color dominance"
 msgstr ""
-"Come vengono mappati i cluster. Valori bassi: basato sulla prossimità del "
+"Come vengono mappate le matrici. Valori bassi: basato sulla prossimità del "
 "colore, valori alti: basato sulla dominanza del colore"
 
 #: ../src/iop/colormapping.c:1163
@@ -7813,7 +7814,7 @@ msgstr ""
 
 #: ../src/iop/colortransfer.c:686
 msgid "number of clusters to find in image"
-msgstr "Numro di cluster da cercare nell'immagine"
+msgstr "Numero di matrici da cercare nell'immagine"
 
 #: ../src/iop/colortransfer.c:690
 msgid "acquire"
@@ -8271,7 +8272,7 @@ msgstr "Profilo"
 
 #: ../src/iop/denoiseprofile.c:4061 ../src/iop/nlmeans.c:843
 msgid "patch size"
-msgstr "Dimensione patch"
+msgstr "Dimensione campione"
 
 #: ../src/iop/denoiseprofile.c:4063
 msgid "search radius"
@@ -10635,7 +10636,7 @@ msgstr "Crominanza "
 
 #: ../src/iop/nlmeans.c:851
 msgid "radius of the patches to match"
-msgstr "Raggio delle patch da fare corrispondere"
+msgstr "Raggio dei campioni da fare corrispondere"
 
 #: ../src/iop/nlmeans.c:853
 msgid "how much to smooth brightness"
