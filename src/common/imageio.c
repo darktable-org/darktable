@@ -753,8 +753,8 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
   const double scaley = height > 0 ? fminf(height / (double)pipe.processed_height, max_scale) : max_scale;
   const double scale = fminf(scalex, scaley);
 
-  const int processed_width = scale * pipe.processed_width + .5f;
-  const int processed_height = scale * pipe.processed_height + .5f;
+  const int processed_width = floor(scale * pipe.processed_width);
+  const int processed_height = floor(scale * pipe.processed_height);
 
   const int bpp = format->bpp(format_params);
 
