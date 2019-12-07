@@ -348,7 +348,7 @@ void expose(
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
     cairo_set_font_size(cr, fs);
-    cairo_set_source_rgba(cr, .7, .7, .7, 1.0f);
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_FONT);
     gchar *load_txt = dt_util_dstrcat(NULL, "%s %s ...", _("loading image"), dev->image_storage.filename);
     pango_layout_set_text(layout, load_txt, -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
