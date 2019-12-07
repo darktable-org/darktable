@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: DarkTable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-28 16:47+0900\n"
-"PO-Revision-Date: 2019-11-28 17:00+0900\n"
+"POT-Creation-Date: 2019-11-30 17:22+0900\n"
+"PO-Revision-Date: 2019-12-06 22:48+0900\n"
 "Last-Translator: a3novy <a3novy01@gmail.com>\n"
 "Language-Team: \n"
 "Language: ja\n"
@@ -388,7 +388,7 @@ msgstr "上 右"
 #: ../build/src/preferences_gen.h:2614
 msgctxt "preferences"
 msgid "top center"
-msgstr "上 真ん中"
+msgstr "上 中央"
 
 #: ../build/src/preferences_gen.h:2619 ../build/src/preferences_gen.h:2639
 msgctxt "preferences"
@@ -1125,7 +1125,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:4046
 msgid "3D lut root folder"
-msgstr "3D lut ルートフォルダー"
+msgstr "3D LUT ルートフォルダー"
 
 #: ../build/src/preferences_gen.h:4051 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/preferences.c:1617
@@ -1141,8 +1141,8 @@ msgid ""
 "this folder (and sub-folders) contains Lut files used by lut3d modules. need "
 "to restart darktable."
 msgstr ""
-"このフォルダー (およびサブフォルダー) には、lut3d モジュールで使用される Lut "
-"ファイルが含まれています (用再起動)"
+"このフォルダー (およびサブフォルダー) には、LUT 3D モジュールで使用される "
+"LUT ファイルが含まれています (用再起動)"
 
 #: ../build/src/preferences_gen.h:4093
 msgid "session options"
@@ -1704,17 +1704,17 @@ msgid "you need to copy history from an image before you paste it onto another"
 msgstr "他に貼り付ける前に、画像からの履歴をコピーする必要があります"
 
 #: ../src/common/history.c:860 ../src/common/history.c:863
-#: ../src/common/history.c:879 ../src/common/styles.c:916
-#: ../src/common/styles.c:920 ../src/develop/blend_gui.c:2458
+#: ../src/common/history.c:879 ../src/common/styles.c:918
+#: ../src/common/styles.c:922 ../src/develop/blend_gui.c:2453
 #: ../src/develop/develop.c:1897 ../src/iop/ashift.c:4858
 #: ../src/libs/live_view.c:437
 msgid "on"
 msgstr "ON"
 
 #: ../src/common/history.c:860 ../src/common/history.c:863
-#: ../src/common/history.c:879 ../src/common/styles.c:916
-#: ../src/common/styles.c:920 ../src/develop/blend_gui.c:2205
-#: ../src/develop/blend_gui.c:2455 ../src/develop/develop.c:1897
+#: ../src/common/history.c:879 ../src/common/styles.c:918
+#: ../src/common/styles.c:922 ../src/develop/blend_gui.c:2200
+#: ../src/develop/blend_gui.c:2450 ../src/develop/develop.c:1897
 #: ../src/imageio/format/exr.cc:357 ../src/imageio/format/j2k.c:660
 #: ../src/iop/ashift.c:4857 ../src/iop/ashift.c:4863 ../src/iop/colorin.c:2109
 #: ../src/iop/demosaic.c:5151 ../src/iop/vignette.c:1152
@@ -1937,8 +1937,8 @@ msgstr "`%s' という名前のスタイルは既にあります"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:314 ../src/common/styles.c:318
 #: ../src/common/styles.c:398 ../src/common/styles.c:467
-#: ../src/common/styles.c:819 ../src/common/styles.c:1413
-#: ../src/common/styles.c:1432
+#: ../src/common/styles.c:819 ../src/common/styles.c:1416
+#: ../src/common/styles.c:1435
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -1960,17 +1960,17 @@ msgstr "画像が選択されていません！"
 msgid "module `%s' version mismatch: %d != %d"
 msgstr "モデュール `%s' バージョンの不一致: %d != %d"
 
-#: ../src/common/styles.c:1008
+#: ../src/common/styles.c:1011
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "%s にスタイルファイルを上書きすることができませんでした"
 
-#: ../src/common/styles.c:1014
+#: ../src/common/styles.c:1017
 #, c-format
 msgid "style file for %s exists"
 msgstr "%s スタイルファイルは既にあります"
 
-#: ../src/common/styles.c:1303
+#: ../src/common/styles.c:1306
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "スタイル %s は正常にインポートされました"
@@ -2419,83 +2419,83 @@ msgstr "モジュール '%s' でブレンドをスキップ: roiが一致しま�
 msgid "could not allocate buffer for blending"
 msgstr "ブレンドにバッファを割り当てることができませんでした"
 
-#: ../src/develop/blend_gui.c:1281
+#: ../src/develop/blend_gui.c:1276
 msgid "sliders for L channel"
 msgstr "L チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1281
+#: ../src/develop/blend_gui.c:1276
 msgid "sliders for a channel"
 msgstr "a チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1281
+#: ../src/develop/blend_gui.c:1276
 msgid "sliders for b channel"
 msgstr "b チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1282
+#: ../src/develop/blend_gui.c:1277
 msgid "sliders for chroma channel (of LCh)"
 msgstr "彩度(LCh)チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1282
+#: ../src/develop/blend_gui.c:1277
 msgid "sliders for hue channel (of LCh)"
 msgstr "色相(LCh)チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1283
+#: ../src/develop/blend_gui.c:1278
 msgid " g "
 msgstr " g "
 
-#: ../src/develop/blend_gui.c:1283
+#: ../src/develop/blend_gui.c:1278
 msgid " R "
 msgstr " R "
 
-#: ../src/develop/blend_gui.c:1283
+#: ../src/develop/blend_gui.c:1278
 msgid " G "
 msgstr " G "
 
-#: ../src/develop/blend_gui.c:1283
+#: ../src/develop/blend_gui.c:1278
 msgid " B "
 msgstr " B "
 
-#: ../src/develop/blend_gui.c:1283
+#: ../src/develop/blend_gui.c:1278
 msgid " H "
 msgstr " H "
 
-#: ../src/develop/blend_gui.c:1283
+#: ../src/develop/blend_gui.c:1278
 msgid " S "
 msgstr " S "
 
-#: ../src/develop/blend_gui.c:1283
+#: ../src/develop/blend_gui.c:1278
 msgid " L "
 msgstr " L "
 
-#: ../src/develop/blend_gui.c:1285
+#: ../src/develop/blend_gui.c:1280
 msgid "sliders for gray value"
 msgstr "グレイ値のスライダー"
 
-#: ../src/develop/blend_gui.c:1285
+#: ../src/develop/blend_gui.c:1280
 msgid "sliders for red channel"
 msgstr "レッド・チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1285
+#: ../src/develop/blend_gui.c:1280
 msgid "sliders for green channel"
 msgstr "グリーン・チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1286
+#: ../src/develop/blend_gui.c:1281
 msgid "sliders for blue channel"
 msgstr "ブルー・チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1286
+#: ../src/develop/blend_gui.c:1281
 msgid "sliders for hue channel (of HSL)"
 msgstr "色相(HSL)チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1287
+#: ../src/develop/blend_gui.c:1282
 msgid "sliders for chroma channel (of HSL)"
 msgstr "彩度(HSL)チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1287
+#: ../src/develop/blend_gui.c:1282
 msgid "sliders for value channel (of HSL)"
 msgstr "明度(HSL)チャンネルのスライダー"
 
-#: ../src/develop/blend_gui.c:1289
+#: ../src/develop/blend_gui.c:1284
 msgid ""
 "adjustment based on input received by this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -2507,7 +2507,7 @@ msgstr ""
 "* 下の三角で定義された範囲：すべてブレンドしない\n"
 "* 隣接する上/下のマーカーの間の範囲：徐々にブレンド"
 
-#: ../src/develop/blend_gui.c:1293
+#: ../src/develop/blend_gui.c:1288
 msgid ""
 "adjustment based on unblended output of this module:\n"
 "* range defined by upper markers: blend fully\n"
@@ -2519,7 +2519,7 @@ msgstr ""
 "* 下の三角で定義された範囲：すべてブレンドしない\n"
 "* 隣接する上/下のマーカーの間の範囲：徐々にブレンド"
 
-#: ../src/develop/blend_gui.c:1443 ../src/iop/colorzones.c:2287
+#: ../src/develop/blend_gui.c:1438 ../src/iop/colorzones.c:2287
 #: ../src/iop/tonecurve.c:1342
 msgid ""
 "pick GUI color from image\n"
@@ -2528,7 +2528,7 @@ msgstr ""
 "画像からGUIカラーを抽出\n"
 "Ctrl+クリックで領域を選択します"
 
-#: ../src/develop/blend_gui.c:1447
+#: ../src/develop/blend_gui.c:1442
 msgid ""
 "set the range based on an area from the image\n"
 "click+drag to use the input image\n"
@@ -2538,376 +2538,376 @@ msgstr ""
 "入力画像を使用するには クリック+ドラッグ\n"
 "出力画像を使用するには Ctrl+クリック+ドラッグ"
 
-#: ../src/develop/blend_gui.c:1451
+#: ../src/develop/blend_gui.c:1446
 msgid "reset blend mask settings"
 msgstr "ブレンドマスクの設定をリセット"
 
-#: ../src/develop/blend_gui.c:1454
+#: ../src/develop/blend_gui.c:1449
 msgid "invert all channel's polarities"
 msgstr "すべてのチャンネルの極性を反転"
 
-#: ../src/develop/blend_gui.c:1467 ../src/develop/blend_gui.c:1471
+#: ../src/develop/blend_gui.c:1462 ../src/develop/blend_gui.c:1466
 msgid "toggle polarity. best seen by enabling 'display mask'"
 msgstr "「マスク表示」が見えやすくなるように、極性を切り替えます"
 
-#: ../src/develop/blend_gui.c:1480
+#: ../src/develop/blend_gui.c:1475
 msgid "output"
 msgstr "出力"
 
-#: ../src/develop/blend_gui.c:1491
+#: ../src/develop/blend_gui.c:1486
 msgid "input"
 msgstr "入力"
 
-#: ../src/develop/blend_gui.c:1502 ../src/develop/blend_gui.c:1503
+#: ../src/develop/blend_gui.c:1497 ../src/develop/blend_gui.c:1498
 msgid "double click to reset"
 msgstr "ダブルクリックでリセット"
 
-#: ../src/develop/blend_gui.c:1541 ../src/develop/blend_gui.c:2229
+#: ../src/develop/blend_gui.c:1532 ../src/develop/blend_gui.c:2224
 msgid "parametric mask"
 msgstr "パラメトリック マスク"
 
-#: ../src/develop/blend_gui.c:1575
+#: ../src/develop/blend_gui.c:1569
 #, c-format
 msgid "%d shape used"
 msgid_plural "%d shapes used"
 msgstr[0] "%d シェイプ 使用"
 msgstr[1] "%d シェイプ 使用"
 
-#: ../src/develop/blend_gui.c:1580 ../src/develop/blend_gui.c:1628
-#: ../src/develop/blend_gui.c:1722 ../src/develop/blend_gui.c:1834
+#: ../src/develop/blend_gui.c:1574 ../src/develop/blend_gui.c:1624
+#: ../src/develop/blend_gui.c:1718 ../src/develop/blend_gui.c:1830
 msgid "no mask used"
 msgstr "使用マスク なし"
 
-#: ../src/develop/blend_gui.c:1627 ../src/develop/blend_gui.c:1833
-#: ../src/develop/blend_gui.c:2262 ../src/develop/blend_gui.c:2423
-#: ../src/develop/blend_gui.c:2431 ../src/develop/blend_gui.c:2453
-#: ../src/develop/blend_gui.c:2486 ../src/develop/blend_gui.c:2494
-#: ../src/develop/blend_gui.c:2502 ../src/develop/blend_gui.c:2512
+#: ../src/develop/blend_gui.c:1623 ../src/develop/blend_gui.c:1829
+#: ../src/develop/blend_gui.c:2257 ../src/develop/blend_gui.c:2418
+#: ../src/develop/blend_gui.c:2426 ../src/develop/blend_gui.c:2448
+#: ../src/develop/blend_gui.c:2481 ../src/develop/blend_gui.c:2489
+#: ../src/develop/blend_gui.c:2497 ../src/develop/blend_gui.c:2507
 msgid "blend"
 msgstr "ブレンド"
 
-#: ../src/develop/blend_gui.c:1627 ../src/develop/blend_gui.c:1697
-#: ../src/develop/blend_gui.c:2220
+#: ../src/develop/blend_gui.c:1623 ../src/develop/blend_gui.c:1693
+#: ../src/develop/blend_gui.c:2215
 msgid "drawn mask"
 msgstr "描画マスク"
 
-#: ../src/develop/blend_gui.c:1639
+#: ../src/develop/blend_gui.c:1635
 msgid "show and edit mask elements"
 msgstr "マスク要素の表示と編集"
 
-#: ../src/develop/blend_gui.c:1645
+#: ../src/develop/blend_gui.c:1641
 msgid "toggle polarity of drawn mask"
 msgstr "描画マスクの反転切り替え"
 
-#: ../src/develop/blend_gui.c:1656 ../src/libs/masks.c:993
+#: ../src/develop/blend_gui.c:1652 ../src/libs/masks.c:993
 #: ../src/libs/masks.c:1032 ../src/libs/masks.c:1643
 msgid "add gradient"
 msgstr "グラデーションを追加"
 
-#: ../src/develop/blend_gui.c:1665 ../src/iop/retouch.c:2677
+#: ../src/develop/blend_gui.c:1661 ../src/iop/retouch.c:2677
 #: ../src/iop/spots.c:666 ../src/libs/masks.c:989 ../src/libs/masks.c:1028
 #: ../src/libs/masks.c:1649
 msgid "add path"
 msgstr "パスを追加"
 
-#: ../src/develop/blend_gui.c:1674 ../src/iop/retouch.c:2684
+#: ../src/develop/blend_gui.c:1670 ../src/iop/retouch.c:2684
 #: ../src/iop/spots.c:673 ../src/libs/masks.c:985 ../src/libs/masks.c:1024
 #: ../src/libs/masks.c:1656
 msgid "add ellipse"
 msgstr "楕円を追加"
 
-#: ../src/develop/blend_gui.c:1683 ../src/iop/retouch.c:2691
+#: ../src/develop/blend_gui.c:1679 ../src/iop/retouch.c:2691
 #: ../src/iop/spots.c:680 ../src/libs/masks.c:981 ../src/libs/masks.c:1020
 #: ../src/libs/masks.c:1663
 msgid "add circle"
 msgstr "円を追加"
 
-#: ../src/develop/blend_gui.c:1692 ../src/iop/retouch.c:2671
+#: ../src/develop/blend_gui.c:1688 ../src/iop/retouch.c:2671
 #: ../src/libs/masks.c:1016 ../src/libs/masks.c:1669
 msgid "add brush"
 msgstr "ブラシを追加"
 
-#: ../src/develop/blend_gui.c:1833 ../src/develop/blend_gui.c:2250
+#: ../src/develop/blend_gui.c:1829 ../src/develop/blend_gui.c:2245
 msgid "raster mask"
 msgstr "ラスターマスク"
 
-#: ../src/develop/blend_gui.c:1843
+#: ../src/develop/blend_gui.c:1839
 msgid "toggle polarity of raster mask"
 msgstr "ラスターマスクの極性を切り替えます"
 
 #. * generate a list of all available blend modes
-#: ../src/develop/blend_gui.c:2150 ../src/libs/live_view.c:408
+#: ../src/develop/blend_gui.c:2145 ../src/libs/live_view.c:408
 msgctxt "blendmode"
 msgid "normal"
 msgstr "標準"
 
-#: ../src/develop/blend_gui.c:2151
+#: ../src/develop/blend_gui.c:2146
 msgctxt "blendmode"
 msgid "normal bounded"
 msgstr "正常範囲内"
 
-#: ../src/develop/blend_gui.c:2152 ../src/libs/live_view.c:417
+#: ../src/develop/blend_gui.c:2147 ../src/libs/live_view.c:417
 msgctxt "blendmode"
 msgid "lighten"
 msgstr "比較 (明)"
 
-#: ../src/develop/blend_gui.c:2153 ../src/libs/live_view.c:416
+#: ../src/develop/blend_gui.c:2148 ../src/libs/live_view.c:416
 msgctxt "blendmode"
 msgid "darken"
 msgstr "比較 (暗)"
 
-#: ../src/develop/blend_gui.c:2154 ../src/libs/live_view.c:413
+#: ../src/develop/blend_gui.c:2149 ../src/libs/live_view.c:413
 msgctxt "blendmode"
 msgid "multiply"
 msgstr "乗算"
 
-#: ../src/develop/blend_gui.c:2155
+#: ../src/develop/blend_gui.c:2150
 msgctxt "blendmode"
 msgid "average"
 msgstr "平均"
 
-#: ../src/develop/blend_gui.c:2156
+#: ../src/develop/blend_gui.c:2151
 msgctxt "blendmode"
 msgid "addition"
 msgstr "加算"
 
-#: ../src/develop/blend_gui.c:2157
+#: ../src/develop/blend_gui.c:2152
 msgctxt "blendmode"
 msgid "subtract"
 msgstr "減算"
 
-#: ../src/develop/blend_gui.c:2158 ../src/libs/live_view.c:422
+#: ../src/develop/blend_gui.c:2153 ../src/libs/live_view.c:422
 msgctxt "blendmode"
 msgid "difference"
 msgstr "差の絶対値"
 
-#: ../src/develop/blend_gui.c:2159 ../src/libs/live_view.c:414
+#: ../src/develop/blend_gui.c:2154 ../src/libs/live_view.c:414
 msgctxt "blendmode"
 msgid "screen"
 msgstr "スクリーン"
 
-#: ../src/develop/blend_gui.c:2160 ../src/libs/live_view.c:415
+#: ../src/develop/blend_gui.c:2155 ../src/libs/live_view.c:415
 msgctxt "blendmode"
 msgid "overlay"
 msgstr "オーバーレイ"
 
-#: ../src/develop/blend_gui.c:2161
+#: ../src/develop/blend_gui.c:2156
 msgctxt "blendmode"
 msgid "softlight"
 msgstr "ソフトライト"
 
-#: ../src/develop/blend_gui.c:2162
+#: ../src/develop/blend_gui.c:2157
 msgctxt "blendmode"
 msgid "hardlight"
 msgstr "ハードライト"
 
-#: ../src/develop/blend_gui.c:2163
+#: ../src/develop/blend_gui.c:2158
 msgctxt "blendmode"
 msgid "vividlight"
 msgstr "ビビッドライト"
 
-#: ../src/develop/blend_gui.c:2164
+#: ../src/develop/blend_gui.c:2159
 msgctxt "blendmode"
 msgid "linearlight"
 msgstr "リニアライト"
 
-#: ../src/develop/blend_gui.c:2165
+#: ../src/develop/blend_gui.c:2160
 msgctxt "blendmode"
 msgid "pinlight"
 msgstr "ピンライト"
 
-#: ../src/develop/blend_gui.c:2166
+#: ../src/develop/blend_gui.c:2161
 msgctxt "blendmode"
 msgid "lightness"
 msgstr "明度"
 
-#: ../src/develop/blend_gui.c:2167
+#: ../src/develop/blend_gui.c:2162
 msgctxt "blendmode"
 msgid "chroma"
 msgstr "彩度"
 
-#: ../src/develop/blend_gui.c:2168
+#: ../src/develop/blend_gui.c:2163
 msgctxt "blendmode"
 msgid "hue"
 msgstr "色相"
 
-#: ../src/develop/blend_gui.c:2169
+#: ../src/develop/blend_gui.c:2164
 msgctxt "blendmode"
 msgid "color"
 msgstr "カラー"
 
-#: ../src/develop/blend_gui.c:2170
+#: ../src/develop/blend_gui.c:2165
 msgctxt "blendmode"
 msgid "coloradjustment"
 msgstr "カラー調整"
 
-#: ../src/develop/blend_gui.c:2172
+#: ../src/develop/blend_gui.c:2167
 msgctxt "blendmode"
 msgid "Lab lightness"
 msgstr "Lab 明度"
 
-#: ../src/develop/blend_gui.c:2174
+#: ../src/develop/blend_gui.c:2169
 msgctxt "blendmode"
 msgid "Lab color"
 msgstr "Lab カラー"
 
-#: ../src/develop/blend_gui.c:2175
+#: ../src/develop/blend_gui.c:2170
 msgctxt "blendmode"
 msgid "Lab L-channel"
 msgstr "Lab L-チャンネル"
 
-#: ../src/develop/blend_gui.c:2177
+#: ../src/develop/blend_gui.c:2172
 msgctxt "blendmode"
 msgid "Lab a-channel"
 msgstr "Lab a-チャンネル"
 
-#: ../src/develop/blend_gui.c:2179
+#: ../src/develop/blend_gui.c:2174
 msgctxt "blendmode"
 msgid "Lab b-channel"
 msgstr "Lab b-チャンネル"
 
-#: ../src/develop/blend_gui.c:2181
+#: ../src/develop/blend_gui.c:2176
 msgctxt "blendmode"
 msgid "HSV lightness"
 msgstr "HSV 明度"
 
-#: ../src/develop/blend_gui.c:2183
+#: ../src/develop/blend_gui.c:2178
 msgctxt "blendmode"
 msgid "HSV color"
 msgstr "HSV カラー"
 
-#: ../src/develop/blend_gui.c:2184
+#: ../src/develop/blend_gui.c:2179
 msgctxt "blendmode"
 msgid "RGB red channel"
 msgstr "RGB レッド チャンネル"
 
-#: ../src/develop/blend_gui.c:2186
+#: ../src/develop/blend_gui.c:2181
 msgctxt "blendmode"
 msgid "RGB green channel"
 msgstr "RGB グリーン チャンネル"
 
-#: ../src/develop/blend_gui.c:2188
+#: ../src/develop/blend_gui.c:2183
 msgctxt "blendmode"
 msgid "RGB blue channel"
 msgstr "RGB ブルー チャンネル"
 
 #. * deprecated blend modes: make them available as legacy history stacks might want them
-#: ../src/develop/blend_gui.c:2192
+#: ../src/develop/blend_gui.c:2187
 msgctxt "blendmode"
 msgid "difference (deprecated)"
 msgstr "差の絶対値 (非推奨)"
 
-#: ../src/develop/blend_gui.c:2194
+#: ../src/develop/blend_gui.c:2189
 msgctxt "blendmode"
 msgid "inverse (deprecated)"
 msgstr "反転 (非推奨)"
 
-#: ../src/develop/blend_gui.c:2196
+#: ../src/develop/blend_gui.c:2191
 msgctxt "blendmode"
 msgid "normal (deprecated)"
 msgstr "標準 (非推奨)"
 
-#: ../src/develop/blend_gui.c:2197
+#: ../src/develop/blend_gui.c:2192
 msgctxt "blendmode"
 msgid "unbounded (deprecated)"
 msgstr "範囲限定無し (非推奨)"
 
-#: ../src/develop/blend_gui.c:2212
+#: ../src/develop/blend_gui.c:2207
 msgid "uniformly"
 msgstr "均一"
 
 #. overlays and
-#: ../src/develop/blend_gui.c:2240
+#: ../src/develop/blend_gui.c:2235
 msgid "drawn & parametric mask"
 msgstr "描画 ＆ パラメトリック マスク"
 
-#: ../src/develop/blend_gui.c:2262
+#: ../src/develop/blend_gui.c:2257
 msgid "blend mode"
 msgstr "ブレンドモード"
 
-#: ../src/develop/blend_gui.c:2263
+#: ../src/develop/blend_gui.c:2258
 msgid "choose blending mode"
 msgstr "ブレンドモード選択"
 
-#: ../src/develop/blend_gui.c:2423 ../src/iop/watermark.c:1432
+#: ../src/develop/blend_gui.c:2418 ../src/iop/watermark.c:1432
 msgid "opacity"
 msgstr "不透明度"
 
-#: ../src/develop/blend_gui.c:2426
+#: ../src/develop/blend_gui.c:2421
 msgid "set the opacity of the blending"
 msgstr "ブレンドの不透明度を設定"
 
-#: ../src/develop/blend_gui.c:2431
+#: ../src/develop/blend_gui.c:2426
 msgid "combine masks"
 msgstr "マスク結合"
 
-#: ../src/develop/blend_gui.c:2433
+#: ../src/develop/blend_gui.c:2428
 msgid "exclusive"
 msgstr "排他"
 
-#: ../src/develop/blend_gui.c:2436
+#: ../src/develop/blend_gui.c:2431
 msgid "inclusive"
 msgstr "包含"
 
-#: ../src/develop/blend_gui.c:2439
+#: ../src/develop/blend_gui.c:2434
 msgid "exclusive & inverted"
 msgstr "排他 ＆ 反転"
 
-#: ../src/develop/blend_gui.c:2442
+#: ../src/develop/blend_gui.c:2437
 msgid "inclusive & inverted"
 msgstr "包含 ＆ 反転"
 
-#: ../src/develop/blend_gui.c:2447
+#: ../src/develop/blend_gui.c:2442
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
 msgstr "個々の描画マスクとパラメトリック マスクの異なるチャンネルの結合方法"
 
-#: ../src/develop/blend_gui.c:2453
+#: ../src/develop/blend_gui.c:2448
 msgid "invert mask"
 msgstr "マスク反転"
 
-#: ../src/develop/blend_gui.c:2462
+#: ../src/develop/blend_gui.c:2457
 msgid "apply mask in normal or inverted mode"
 msgstr "標準または反転モードでマスク適用"
 
-#: ../src/develop/blend_gui.c:2468
+#: ../src/develop/blend_gui.c:2463
 msgid "feathering guide"
 msgstr "ぼかし ガイド"
 
-#: ../src/develop/blend_gui.c:2470
+#: ../src/develop/blend_gui.c:2465
 msgid "output image"
 msgstr "出力画像"
 
-#: ../src/develop/blend_gui.c:2474
+#: ../src/develop/blend_gui.c:2469
 msgid "input image"
 msgstr "入力画像"
 
-#: ../src/develop/blend_gui.c:2480
+#: ../src/develop/blend_gui.c:2475
 msgid "choose to guide mask by input or output image"
 msgstr "入力または出力画像でマスクのカイドを選択します"
 
-#: ../src/develop/blend_gui.c:2486
+#: ../src/develop/blend_gui.c:2481
 msgid "feathering radius"
 msgstr "ぼかし半径"
 
-#: ../src/develop/blend_gui.c:2488
+#: ../src/develop/blend_gui.c:2483
 msgid "spatial radius of feathering"
 msgstr "ぼかしの範囲"
 
-#: ../src/develop/blend_gui.c:2494
+#: ../src/develop/blend_gui.c:2489
 msgid "mask blur"
 msgstr "マスクのぼかし"
 
-#: ../src/develop/blend_gui.c:2496
+#: ../src/develop/blend_gui.c:2491
 msgid "radius for gaussian blur of blend mask"
 msgstr "ブレンドマスクのガウスぼかし半径"
 
-#: ../src/develop/blend_gui.c:2502 ../src/iop/retouch.c:2953
+#: ../src/develop/blend_gui.c:2497 ../src/iop/retouch.c:2953
 msgid "mask opacity"
 msgstr "マスクの不透明度"
 
-#: ../src/develop/blend_gui.c:2504
+#: ../src/develop/blend_gui.c:2499
 msgid ""
 "shifts and tilts the tone curve of the blend mask to adjust its brightness "
 "without affecting fully transparent/fully opaque regions"
@@ -2915,18 +2915,18 @@ msgstr ""
 "透明/不透明な領域に影響を与えずに、ブレンドマスクのトーンカーブをシフトとチル"
 "トで、輝度を調整します"
 
-#: ../src/develop/blend_gui.c:2512
+#: ../src/develop/blend_gui.c:2507
 msgid "mask contrast"
 msgstr "マスクのコントラスト"
 
-#: ../src/develop/blend_gui.c:2514
+#: ../src/develop/blend_gui.c:2509
 msgid ""
 "gives the tone curve of the blend mask an s-like shape to adjust its contrast"
 msgstr ""
 "ブレンドマスクのトーンカーブをコントラストを調整するために S のような形にしま"
 "す"
 
-#: ../src/develop/blend_gui.c:2521
+#: ../src/develop/blend_gui.c:2516
 msgid ""
 "display mask and/or color channel. ctrl-click to display mask, shift-click "
 "to display channel. hover over parametric mask slider to select channel for "
@@ -2936,11 +2936,11 @@ msgstr ""
 "クでチャンネル表示。パラメトリックマスク・スライダーの上にカーソルを置くと、"
 "表示するチャンネルが選択されます"
 
-#: ../src/develop/blend_gui.c:2529
+#: ../src/develop/blend_gui.c:2524
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr "一時的にブレンドマスクをオフにします。アクティブなモジュールのみ"
 
-#: ../src/develop/blend_gui.c:2559
+#: ../src/develop/blend_gui.c:2554
 msgid "mask refinement"
 msgstr "マスク精緻化"
 
@@ -8421,7 +8421,7 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:192
 msgid "filmic rgb"
-msgstr "フィルミック rgb"
+msgstr "フィルミック RGB"
 
 #: ../src/iop/filmicrgb.c:233
 msgid "07 EV dynamic range"
@@ -9514,7 +9514,7 @@ msgstr "ぼかしに使用するフィルタの種類"
 
 #: ../src/iop/lut3d.c:91
 msgid "lut 3D"
-msgstr "lut 3D"
+msgstr "LUT 3D"
 
 #: ../src/iop/lut3d.c:355
 #, c-format
@@ -9534,11 +9534,11 @@ msgstr "png file %d %d  のレベルが無効です"
 #: ../src/iop/lut3d.c:384 ../src/iop/lut3d.c:628
 #, c-format
 msgid "error - lut 3D size %d exceeds the maximum supported"
-msgstr "エラー - lut 3D size %d はサポートされている最大値を超えています"
+msgstr "エラー - LUT 3D size %d はサポートされている最大値を超えています"
 
 #: ../src/iop/lut3d.c:396 ../src/iop/lut3d.c:414
 msgid "error - allocating buffer for png lut"
-msgstr "エラー - png lut にバッファを割り当てます"
+msgstr "エラー - png LUT にバッファを割り当てます"
 
 #: ../src/iop/lut3d.c:404
 #, c-format
@@ -9560,27 +9560,27 @@ msgstr "DOMAIN MAX <> 1.0 はサポートされていません"
 
 #: ../src/iop/lut3d.c:617
 msgid "1D cube lut is not supported"
-msgstr "1D cube lut はサポートされていません"
+msgstr "1D cube LUT はサポートされていません"
 
 #: ../src/iop/lut3d.c:639
 msgid "error - allocating buffer for cube lut"
-msgstr "エラー - cube lut にバッファを割り当てます"
+msgstr "エラー - cube LUT にバッファを割り当てます"
 
 #: ../src/iop/lut3d.c:650
 msgid "error - cube lut size is not defined"
-msgstr "エラー - cube lut size が定義されていません"
+msgstr "エラー - cube LUT size が定義されていません"
 
 #: ../src/iop/lut3d.c:667
 msgid "error - cube lut lines number is not correct"
-msgstr "エラー - cube lut lines が定義されていません"
+msgstr "エラー - cube LUT lines が定義されていません"
 
 #: ../src/iop/lut3d.c:1025
 msgid "Lut root folder not defined"
-msgstr "Lut ルートフォルダーが定義されていません"
+msgstr "LUT ルートフォルダーが定義されていません"
 
 #: ../src/iop/lut3d.c:1031
 msgid "select lut file"
-msgstr "lut ファイルを選択します"
+msgstr "LUT ファイルを選択します"
 
 #: ../src/iop/lut3d.c:1032
 msgid "_select"
@@ -9602,7 +9602,7 @@ msgstr "すべてのファイル"
 
 #: ../src/iop/lut3d.c:1077
 msgid "Select file outside Lut root folder is not allowed"
-msgstr "Lut ルートフォルダー外のファイルを選択することはできません"
+msgstr "LUT ルートフォルダー外のファイルを選択することはできません"
 
 #: ../src/iop/lut3d.c:1121
 msgid "select a png (haldclut) or a cube file"
@@ -9615,9 +9615,9 @@ msgid ""
 "CAUTION: lut folder must be set in preferences/core options/miscellaneous "
 "before choosing the lut file"
 msgstr ""
-"ファイルパス (lutフォルダーに相対的)はイメージと共に保存されます (lutデータ自"
+"ファイルパス (LUTフォルダーに相対的)はイメージと共に保存されます (LUTデータ自"
 "体ではありません)\n"
-"注意：lutファイルを選択する前に、lutフォルダーを 設定/内部オプション/その他 "
+"注意：LUTファイルを選択する前に、LUTフォルダーを 設定/内部オプション/その他 "
 "で設定する必要があります"
 
 #: ../src/iop/lut3d.c:1135
@@ -10180,7 +10180,7 @@ msgstr "この画像サイズの最大縮尺は %i です"
 
 #: ../src/iop/rgbcurve.c:126
 msgid "rgb curve"
-msgstr "rgb カーブ"
+msgstr "RGB カーブ"
 
 #: ../src/iop/rgbcurve.c:208 ../src/iop/tonecurve.c:544
 #: ../src/iop/tonemap.cc:299
@@ -10270,7 +10270,7 @@ msgstr "中間グレイを補正"
 
 #: ../src/iop/rgblevels.c:108
 msgid "rgb levels"
-msgstr "rgb レベル"
+msgstr "RGB レベル"
 
 #: ../src/iop/rgblevels.c:1099
 msgid ""
