@@ -87,7 +87,7 @@ typedef enum dt_iop_splittoning_picker_t
 
 const char *name()
 {
-  return _("split toning");
+  return _("Split Toning");
 }
 
 int flags()
@@ -681,7 +681,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_grid_attach(grid, g->compress_scale, 0, line++, 2, 1);
 
 
-  gtk_widget_set_tooltip_text(g->balance_scale, _("the balance of center of splittoning"));
+  gtk_widget_set_tooltip_text(g->balance_scale, _("the balance of center of Split Toning"));
   gtk_widget_set_tooltip_text(g->compress_scale, _("compress the effect on highlights/shadows and\npreserve midtones"));
 
   g_signal_connect(G_OBJECT(g->shadow_hue_gslider), "value-changed", G_CALLBACK(hue_callback), self);
