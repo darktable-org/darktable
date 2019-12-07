@@ -852,7 +852,7 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
   dt_masks_reset_show_masks_icons();
 
   // if selection empty, we hide all
-  int nb = gtk_tree_selection_count_selected_rows(selection);
+  const int nb = gtk_tree_selection_count_selected_rows(selection);
   if(nb == 0)
   {
     dt_masks_change_form_gui(NULL);
