@@ -334,6 +334,29 @@ void expose(
     dt_pthread_mutex_unlock(mutex);
     image_surface_imgid = dev->image_storage.id;
   }
+  else if(dev->preview_pipe->output_imgid != dev->image_storage.id)
+  {
+    // waiting screen
+    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
+    cairo_paint(cr);
+    const float fs = DT_PIXEL_APPLY_DPI(15.0f);
+    const float offy = height * 0.2f;
+    PangoLayout *layout;
+    PangoRectangle ink;
+    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+    pango_font_description_set_absolute_size(desc, fs * PANGO_SCALE);
+    layout = pango_cairo_create_layout(cr);
+    pango_layout_set_font_description(layout, desc);
+    cairo_set_font_size(cr, fs);
+    cairo_set_source_rgba(cr, .7, .7, .7, 1.0f);
+    gchar *load_txt = dt_util_dstrcat(NULL, "%s %s ...", _("loading image"), dev->image_storage.filename);
+    pango_layout_set_text(layout, load_txt, -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+    cairo_move_to(cr, (width - ink.width) * 0.5, offy - ink.height - ink.x);
+    pango_cairo_show_layout(cr, layout);
+    g_free(load_txt);
+    image_surface_imgid = dev->image_storage.id;
+  }
   cairo_restore(cri);
 
   if(image_surface_imgid == dev->image_storage.id)
