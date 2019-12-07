@@ -324,6 +324,15 @@ static void _tree_cleanup(GtkButton *button, dt_lib_module_t *self)
   _lib_masks_recreate_list(self);
 }
 
+static void _add_masks_history_item(dt_lib_masks_t *lm)
+{
+  const int reset = lm->gui_reset;
+  lm->gui_reset = 1;
+  dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
+  lm->gui_reset = reset;
+}
+
+
 static void _tree_inverse(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
@@ -379,7 +388,7 @@ static void _tree_inverse(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
+    _add_masks_history_item(lm);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
@@ -446,7 +455,7 @@ static void _tree_intersection(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
+    _add_masks_history_item(lm);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
@@ -513,7 +522,7 @@ static void _tree_difference(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
+    _add_masks_history_item(lm);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
@@ -580,7 +589,7 @@ static void _tree_exclusion(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
+    _add_masks_history_item(lm);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
@@ -647,7 +656,7 @@ static void _tree_union(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
+    _add_masks_history_item(lm);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
