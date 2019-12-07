@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:40+0100\n"
-"PO-Revision-Date: 2019-12-01 20:00+0100\n"
+"PO-Revision-Date: 2019-12-07 11:58+0100\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -6836,11 +6836,11 @@ msgstr ""
 #. these blobs were exported as dtstyle and copied from there:
 #: ../src/iop/colorbalance.c:275
 msgid "split-toning teal-orange (2nd instance)"
-msgstr "Split-Toning Teal-Orange (2. Instanz)"
+msgstr "Teiltonung Teal-Orange (2. Instanz)"
 
 #: ../src/iop/colorbalance.c:278
 msgid "split-toning teal-orange (1st instance)"
-msgstr "Split-Toning Teal-Orange (1. Instanz)"
+msgstr "Teiltonung Teal-Orange (1. Instanz)"
 
 #: ../src/iop/colorbalance.c:282
 msgid "generic film"
@@ -7205,7 +7205,7 @@ msgid ""
 "drag the line for split toning. bright means highlights, dark means shadows. "
 "use mouse wheel to change saturation."
 msgstr ""
-"Linie für Split-Toning ziehen. Hell steht für Spitzlichter, dunkel für "
+"Linie für Teiltonung ziehen. Hell steht für Spitzlichter, dunkel für "
 "Schatten. Die Sättigung kann mit dem Mausrad geändert werden."
 
 #: ../src/iop/colorcorrection.c:291
@@ -10620,7 +10620,7 @@ msgstr "Stärke des Effekts"
 
 #: ../src/iop/splittoning.c:90
 msgid "split toning"
-msgstr "Split-Toning"
+msgstr "Teiltonung"
 
 #: ../src/iop/splittoning.c:110
 msgctxt "accel"
@@ -10667,7 +10667,7 @@ msgstr "Ausgleich"
 
 #: ../src/iop/splittoning.c:682
 msgid "the balance of center of splittoning"
-msgstr "Mittelpunkt des Split-Toning ausgleichen"
+msgstr "Mittelpunkt der Teiltonung ausgleichen"
 
 #: ../src/iop/splittoning.c:683
 msgid ""
