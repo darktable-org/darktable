@@ -920,6 +920,8 @@ void dtgtk_gradient_slider_set_scale_callback(GtkDarktableGradientSlider *gslide
   GtkWidget *self = (GtkWidget *)gslider;
   GList *current = NULL;
 
+  if(old_callback == new_callback) return;
+
   for(int k = 0; k < gslider->positions; k++)
   {
     gslider->position[k] = new_callback(self, old_callback(self, gslider->position[k], GRADIENT_SLIDER_GET), GRADIENT_SLIDER_SET);
