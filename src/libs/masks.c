@@ -89,7 +89,6 @@ typedef enum dt_masks_tree_cols_t
   TREE_COUNT
 } dt_masks_tree_cols_t;
 
-
 static void _lib_masks_inactivate_icons(dt_lib_module_t *self)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
@@ -102,7 +101,6 @@ static void _lib_masks_inactivate_icons(dt_lib_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lm->bt_brush), FALSE);
 }
 
-
 static void _tree_add_circle(GtkButton *button, dt_iop_module_t *module)
 {
   // we create the new form
@@ -113,6 +111,7 @@ static void _tree_add_circle(GtkButton *button, dt_iop_module_t *module)
   darktable.develop->form_gui->group_selected = 0;
   dt_control_queue_redraw_center();
 }
+
 static void _bt_add_circle(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -125,6 +124,7 @@ static void _bt_add_circle(GtkWidget *widget, GdkEventButton *event, dt_lib_modu
     _tree_add_circle(NULL, NULL);
   }
 }
+
 static void _tree_add_ellipse(GtkButton *button, dt_iop_module_t *module)
 {
   // we create the new form
@@ -135,6 +135,7 @@ static void _tree_add_ellipse(GtkButton *button, dt_iop_module_t *module)
   darktable.develop->form_gui->group_selected = 0;
   dt_control_queue_redraw_center();
 }
+
 static void _bt_add_ellipse(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -147,6 +148,7 @@ static void _bt_add_ellipse(GtkWidget *widget, GdkEventButton *event, dt_lib_mod
     _tree_add_ellipse(NULL, NULL);
   }
 }
+
 static void _tree_add_path(GtkButton *button, dt_iop_module_t *module)
 {
   // we create the new form
@@ -157,6 +159,7 @@ static void _tree_add_path(GtkButton *button, dt_iop_module_t *module)
   darktable.develop->form_gui->group_selected = 0;
   dt_control_queue_redraw_center();
 }
+
 static void _bt_add_path(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -169,6 +172,7 @@ static void _bt_add_path(GtkWidget *widget, GdkEventButton *event, dt_lib_module
     _tree_add_path(NULL, NULL);
   }
 }
+
 static void _tree_add_gradient(GtkButton *button, dt_iop_module_t *module)
 {
   // we create the new form
@@ -179,6 +183,7 @@ static void _tree_add_gradient(GtkButton *button, dt_iop_module_t *module)
   darktable.develop->form_gui->group_selected = 0;
   dt_control_queue_redraw_center();
 }
+
 static void _bt_add_gradient(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -213,7 +218,6 @@ static void _bt_add_brush(GtkWidget *widget, GdkEventButton *event, dt_lib_modul
     _tree_add_brush(NULL, NULL);
   }
 }
-
 
 static void _tree_add_exist(GtkButton *button, dt_masks_form_t *grp)
 {
@@ -320,6 +324,15 @@ static void _tree_cleanup(GtkButton *button, dt_lib_module_t *self)
   _lib_masks_recreate_list(self);
 }
 
+static void _add_masks_history_item(dt_lib_masks_t *lm)
+{
+  const int reset = lm->gui_reset;
+  lm->gui_reset = 1;
+  dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
+  lm->gui_reset = reset;
+}
+
+
 static void _tree_inverse(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
@@ -375,7 +388,7 @@ static void _tree_inverse(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
+    _add_masks_history_item(lm);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
@@ -442,7 +455,7 @@ static void _tree_intersection(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
+    _add_masks_history_item(lm);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
@@ -509,7 +522,7 @@ static void _tree_difference(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
+    _add_masks_history_item(lm);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
@@ -576,7 +589,7 @@ static void _tree_exclusion(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
+    _add_masks_history_item(lm);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
@@ -643,7 +656,7 @@ static void _tree_union(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
+    _add_masks_history_item(lm);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
@@ -728,6 +741,7 @@ static void _tree_movedown(GtkButton *button, dt_lib_module_t *self)
   _lib_masks_recreate_list(self);
   dt_masks_update_image(darktable.develop);
 }
+
 static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
@@ -775,6 +789,7 @@ static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
   lm->gui_reset = 0;
   _lib_masks_recreate_list(self);
 }
+
 static void _tree_duplicate_shape(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
@@ -801,11 +816,13 @@ static void _tree_duplicate_shape(GtkButton *button, dt_lib_module_t *self)
     //_lib_masks_recreate_list(self);
   }
 }
+
 static void _tree_cell_editing_started(GtkCellRenderer *cell, GtkCellEditable *editable, const gchar *path,
                                        gpointer data)
 {
   dt_control_key_accelerators_off(darktable.control);
 }
+
 static void _tree_cell_edited(GtkCellRendererText *cell, gchar *path_string, gchar *new_text,
                               dt_lib_module_t *self)
 {
@@ -844,7 +861,7 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
   dt_masks_reset_show_masks_icons();
 
   // if selection empty, we hide all
-  int nb = gtk_tree_selection_count_selected_rows(selection);
+  const int nb = gtk_tree_selection_count_selected_rows(selection);
   if(nb == 0)
   {
     dt_masks_change_form_gui(NULL);
@@ -915,7 +932,6 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
 
 static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_lib_module_t *self)
 {
-  // dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
   // we first need to adjust selection
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
@@ -1010,6 +1026,7 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
         grpid = g_value_get_int(&gv);
         g_value_unset(&gv);
       }
+
       dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grpid);
       if(grp && (grp->type & DT_MASKS_GROUP))
       {
@@ -1403,7 +1420,7 @@ static void _lib_masks_recreate_list(dt_lib_module_t *self)
 
   gtk_tree_view_set_model(GTK_TREE_VIEW(lm->treeview), GTK_TREE_MODEL(treestore));
   g_object_unref(treestore);
-  
+
   lm->gui_reset = gui_reset;
 }
 
