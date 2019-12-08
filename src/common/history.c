@@ -1007,22 +1007,12 @@ void dt_history_compress_on_image(int32_t imgid)
     dt_unlock_image(imgid);
     return;
   }
-  // compress history, keep disabled modules as documented
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "DELETE FROM main.history WHERE imgid = ?1 AND num "
-                              "NOT IN (SELECT MAX(num) FROM main.history WHERE "
-                              "imgid = ?1 AND num < ?2 GROUP BY operation, "
-                              "multi_priority)",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, my_history_end);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
 
   int masks_count = 0;
   char op_mask_manager[20] = { 0 };
 
   gboolean manager_position = FALSE;
+
   // do we already have a mask manager at the correct position? We don't want to increase history nums later
   g_strlcpy(op_mask_manager, "mask_manager", sizeof(op_mask_manager));
 
@@ -1035,6 +1025,19 @@ void dt_history_compress_on_image(int32_t imgid)
       if (sqlite3_column_int(stmt, 0) == 1) manager_position = TRUE;
     }
   sqlite3_finalize(stmt);
+
+  // compress history, keep disabled modules as documented
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "DELETE FROM main.history WHERE imgid = ?1 AND num "
+                              "NOT IN (SELECT MAX(num) FROM main.history WHERE "
+                              "imgid = ?1 AND num < ?2 GROUP BY operation, "
+                              "multi_priority)",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, my_history_end);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+
 
   // delete all mask_manager entries
   g_strlcpy(op_mask_manager, "mask_manager", sizeof(op_mask_manager));
