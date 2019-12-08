@@ -190,6 +190,13 @@ static cairo_status_t write_snapshot_data(void *closure, const unsigned char *da
   return CAIRO_STATUS_SUCCESS;
 }
 
+static GdkRGBA lookup_color(GtkStyleContext *context, const char *name)
+{
+  GdkRGBA color, fallback = { 1.0, 0.0, 0.0, 1.0 };
+  if(!gtk_style_context_lookup_color(context, name, &color)) color = fallback;
+  return color;
+}
+
 void expose(
     dt_view_t *self,
     cairo_t *cri,
@@ -336,24 +343,35 @@ void expose(
   }
   else if(dev->preview_pipe->output_imgid != dev->image_storage.id)
   {
-    // waiting screen
     dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_BG);
     cairo_paint(cr);
-    const float fs = DT_PIXEL_APPLY_DPI(15.0f);
-    const float offy = height * 0.2f;
-    PangoLayout *layout;
+
+    // waiting message
+    GtkWidget *widget = dt_ui_center(darktable.gui->ui);
+    GtkStyleContext *context = gtk_widget_get_style_context(widget);
+    GdkRGBA selected_bg_color = lookup_color(context, "selected_bg_color");
+    GdkRGBA fg_color = lookup_color(context, "fg_color");
     PangoRectangle ink;
+    PangoLayout *layout;
     PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-    pango_font_description_set_absolute_size(desc, fs * PANGO_SCALE);
+    const float fontsize = DT_PIXEL_APPLY_DPI(14);
+    pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
+    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
-    cairo_set_font_size(cr, fs);
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_DARKROOM_FONT);
     gchar *load_txt = dt_util_dstrcat(NULL, "%s %s ...", _("loading image"), dev->image_storage.filename);
     pango_layout_set_text(layout, load_txt, -1);
     pango_layout_get_pixel_extents(layout, &ink, NULL);
-    cairo_move_to(cr, (width - ink.width) * 0.5, offy - ink.height - ink.x);
-    pango_cairo_show_layout(cr, layout);
+    const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(10), wd = ink.width * .5f;
+    cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
+    pango_cairo_layout_path(cr, layout);
+    cairo_set_line_width(cr, 2.0);
+    gdk_cairo_set_source_rgba(cr, &selected_bg_color);
+    cairo_stroke_preserve(cr);
+    gdk_cairo_set_source_rgba(cr, &fg_color);
+    cairo_fill(cr);
+    pango_font_description_free(desc);
+    g_object_unref(layout);
     g_free(load_txt);
     image_surface_imgid = dev->image_storage.id;
   }
