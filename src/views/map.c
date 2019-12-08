@@ -1192,7 +1192,7 @@ static void _view_map_filmstrip_activate_callback(gpointer instance, gpointer us
   _view_map_center_on_image(self, imgid);
 }
 
-static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action)
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action, GList **imgs)
 {
   dt_view_t *self = (dt_view_t *)user_data;
   dt_map_t *lib = (dt_map_t *)self->data;
@@ -1209,6 +1209,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
 
     _set_image_location(self, geotag->imgid, pos, TRUE);
     g_signal_emit_by_name(lib->map, "changed");
+    *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(geotag->imgid));
   }
 }
 

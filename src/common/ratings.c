@@ -34,7 +34,7 @@ typedef struct dt_undo_ratings_t
 
 static void _ratings_apply_to_image(int imgid, int rating, gboolean undo);
 
-static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action)
+static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t data, dt_undo_action_t action, GList **imgs)
 {
   if(type == DT_UNDO_RATINGS)
   {
@@ -44,6 +44,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
       _ratings_apply_to_image(ratings->imgid, ratings->before_rating, FALSE);
     else
       _ratings_apply_to_image(ratings->imgid, ratings->after_rating, FALSE);
+    *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(ratings->imgid));
   }
 }
 
