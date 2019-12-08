@@ -1027,12 +1027,12 @@ void dt_history_compress_on_image(int32_t imgid)
   g_strlcpy(op_mask_manager, "mask_manager", sizeof(op_mask_manager));
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT num FROM main.history WHERE imgid = ?1 AND operation = ?2", -1, &stmt, NULL);
+                              "SELECT COUNT(*) FROM main.history WHERE imgid = ?1 AND operation = ?2 AND num = 0", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, op_mask_manager, -1, SQLITE_TRANSIENT);
   if(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      if (sqlite3_column_int(stmt, 0) == 0) manager_position = TRUE;
+      if (sqlite3_column_int(stmt, 0) == 1) manager_position = TRUE;
     }
   sqlite3_finalize(stmt);
 
