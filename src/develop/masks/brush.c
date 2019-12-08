@@ -2725,7 +2725,7 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
 }
 
 /** we write a falloff segment respecting limits of buffer */
-static inline void _brush_falloff_roi(float *buffer, int *p0, int *p1, int bw, int bh, float hardness,
+static inline void _brush_falloff_roi(float *buffer, const int *p0, const int *p1, int bw, int bh, float hardness,
                                       float density)
 {
   // segment length (increase by 1 to avoid division-by-zero special case handling)
@@ -2800,7 +2800,7 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   // empty the output buffer
   memset(buffer, 0, (size_t)width * height * sizeof(float));
 
-  guint nb_corner = g_list_length(form->points);
+  const guint nb_corner = g_list_length(form->points);
 
   // we shift and scale down brush and border
   for(int i = nb_corner * 3; i < border_count; i++)
@@ -2860,13 +2860,19 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   }
 
   // now we fill the falloff
-  int p0[2], p1[2];
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(points, border, border_count, payload) \
+  shared(buffer)
+#else
+#pragma omp parallel for shared(buffer)
+#endif
+#endif
   for(int i = nb_corner * 3; i < border_count; i++)
   {
-    p0[0] = points[i * 2];
-    p0[1] = points[i * 2 + 1];
-    p1[0] = border[i * 2];
-    p1[1] = border[i * 2 + 1];
+    const int p0[] = { points[i * 2], points[i * 2 + 1] };
+    const int p1[] = { border[i * 2], border[i * 2 + 1] };
 
     if(MAX(p0[0], p1[0]) < 0 || MIN(p0[0], p1[0]) >= width || MAX(p0[1], p1[1]) < 0
        || MIN(p0[1], p1[1]) >= height)
