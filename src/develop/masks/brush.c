@@ -2628,13 +2628,13 @@ static void _brush_falloff(float **buffer, int *p0, int *p1, int posx, int posy,
     const int x = (int)((float)i * lx / (float)l) + p0[0] - posx;
     const int y = (int)((float)i * ly / (float)l) + p0[1] - posy;
     const float op = density * ((i <= solid) ? 1.0f : 1.0 - (float)(i - solid) / (float)soft);
-    (*buffer)[y * bw + x] = fmaxf((*buffer)[y * bw + x], op);
+    (*buffer)[y * bw + x] = MAX((*buffer)[y * bw + x], op);
     if(x > 0)
       (*buffer)[y * bw + x - 1]
-          = fmaxf((*buffer)[y * bw + x - 1], op); // this one is to avoid gap due to int rounding
+          = MAX((*buffer)[y * bw + x - 1], op); // this one is to avoid gap due to int rounding
     if(y > 0)
       (*buffer)[(y - 1) * bw + x]
-          = fmaxf((*buffer)[(y - 1) * bw + x], op); // this one is to avoid gap due to int rounding
+          = MAX((*buffer)[(y - 1) * bw + x], op); // this one is to avoid gap due to int rounding
   }
 }
 
@@ -2759,11 +2759,11 @@ static inline void _brush_falloff_roi(float *buffer, int *p0, int *p1, int bw, i
 
     float *buf = buffer + (size_t)y * bw + x;
 
-    *buf = fmaxf(*buf, op);
+    *buf = MAX(*buf, op);
     if(x + dx >= 0 && x + dx < bw)
-      buf[dpx] = fmaxf(buf[dpx], op); // this one is to avoid gaps due to int rounding
+      buf[dpx] = MAX(buf[dpx], op); // this one is to avoid gaps due to int rounding
     if(y + dy >= 0 && y + dy < bh)
-      buf[dpy] = fmaxf(buf[dpy], op); // this one is to avoid gaps due to int rounding
+      buf[dpy] = MAX(buf[dpy], op); // this one is to avoid gaps due to int rounding
   }
 }
 
